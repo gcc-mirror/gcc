@@ -1,5 +1,5 @@
 ;; Cavium ThunderX 2 CN99xx pipeline description
-;; Copyright (C) 2016-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2016-2019 Free Software Foundation, Inc.
 ;;
 ;; Contributed by Cavium, Broadcom and Mentor Embedded.
 
@@ -74,7 +74,7 @@
 
 (define_insn_reservation "thunderx2t99_nothing" 0
   (and (eq_attr "tune" "thunderx2t99")
-       (eq_attr "type" "no_insn,block"))
+       (eq_attr "type" "block"))
   "nothing")
 
 (define_insn_reservation "thunderx2t99_mrs" 0

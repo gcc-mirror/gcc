@@ -7,7 +7,7 @@ module exchange_utils
   integer, parameter, public :: knd = 8
 
   type, private :: a
-     logical :: add_vs98 = 0.0_knd ! { dg-error "Can't convert" }
+     logical :: add_vs98 = 0.0_knd ! { dg-error "Cannot convert" }
   end type a
 
   type, private :: x_param_t

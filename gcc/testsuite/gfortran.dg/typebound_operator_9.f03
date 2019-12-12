@@ -1,6 +1,5 @@
 ! { dg-do run }
 ! { dg-add-options ieee }
-! { dg-skip-if "Too big for local store" { spu-*-* } }
 !
 !     Solve a diffusion problem using an object-oriented approach
 !

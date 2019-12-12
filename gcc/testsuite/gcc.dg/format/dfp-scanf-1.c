@@ -17,6 +17,8 @@ voo (_Decimal32 *x, _Decimal64 *y, _Decimal128 *z, int *i, unsigned int *j,
 
   /* Check lack of warnings for valid usage.  */
 
+  scanf ("%Ha", x);
+  scanf ("%HA", x);
   scanf ("%Hf", x);
   scanf ("%HF", x);
   scanf ("%He", x);
@@ -24,6 +26,8 @@ voo (_Decimal32 *x, _Decimal64 *y, _Decimal128 *z, int *i, unsigned int *j,
   scanf ("%Hg", x);
   scanf ("%HG", x);
 
+  scanf ("%Da", y);
+  scanf ("%DA", y);
   scanf ("%Df", y);
   scanf ("%DF", y);
   scanf ("%De", y);
@@ -31,6 +35,8 @@ voo (_Decimal32 *x, _Decimal64 *y, _Decimal128 *z, int *i, unsigned int *j,
   scanf ("%Dg", y);
   scanf ("%DG", y);
 
+  scanf ("%DDa", z);
+  scanf ("%DDA", z);
   scanf ("%DDf", z);
   scanf ("%DDF", z);
   scanf ("%DDe", z);
@@ -43,12 +49,16 @@ voo (_Decimal32 *x, _Decimal64 *y, _Decimal128 *z, int *i, unsigned int *j,
 
   /* Check warnings for type mismatches.  */
 
+  scanf ("%Ha", y);	/* { dg-warning "expects argument" "bad use of %H" } */
+  scanf ("%HA", y);	/* { dg-warning "expects argument" "bad use of %H" } */
   scanf ("%Hf", y);	/* { dg-warning "expects argument" "bad use of %H" } */
   scanf ("%HF", y);	/* { dg-warning "expects argument" "bad use of %H" } */
   scanf ("%He", y);	/* { dg-warning "expects argument" "bad use of %H" } */
   scanf ("%HE", y);	/* { dg-warning "expects argument" "bad use of %H" } */
   scanf ("%Hg", y);	/* { dg-warning "expects argument" "bad use of %H" } */
   scanf ("%HG", y);	/* { dg-warning "expects argument" "bad use of %H" } */
+  scanf ("%Ha", z);	/* { dg-warning "expects argument" "bad use of %H" } */
+  scanf ("%HA", z);	/* { dg-warning "expects argument" "bad use of %H" } */
   scanf ("%Hf", z);	/* { dg-warning "expects argument" "bad use of %H" } */
   scanf ("%HF", z);	/* { dg-warning "expects argument" "bad use of %H" } */
   scanf ("%He", z);	/* { dg-warning "expects argument" "bad use of %H" } */
@@ -56,12 +66,16 @@ voo (_Decimal32 *x, _Decimal64 *y, _Decimal128 *z, int *i, unsigned int *j,
   scanf ("%Hg", z);	/* { dg-warning "expects argument" "bad use of %H" } */
   scanf ("%HG", z);	/* { dg-warning "expects argument" "bad use of %H" } */
 
+  scanf ("%Da", x);	/* { dg-warning "expects argument" "bad use of %D" } */
+  scanf ("%DA", x);	/* { dg-warning "expects argument" "bad use of %D" } */
   scanf ("%Df", x);	/* { dg-warning "expects argument" "bad use of %D" } */
   scanf ("%DF", x);	/* { dg-warning "expects argument" "bad use of %D" } */
   scanf ("%De", x);	/* { dg-warning "expects argument" "bad use of %D" } */
   scanf ("%DE", x);	/* { dg-warning "expects argument" "bad use of %D" } */
   scanf ("%Dg", x);	/* { dg-warning "expects argument" "bad use of %D" } */
   scanf ("%DG", x);	/* { dg-warning "expects argument" "bad use of %D" } */
+  scanf ("%Da", z);	/* { dg-warning "expects argument" "bad use of %D" } */
+  scanf ("%DA", z);	/* { dg-warning "expects argument" "bad use of %D" } */
   scanf ("%Df", z);	/* { dg-warning "expects argument" "bad use of %D" } */
   scanf ("%DF", z);	/* { dg-warning "expects argument" "bad use of %D" } */
   scanf ("%De", z);	/* { dg-warning "expects argument" "bad use of %D" } */
@@ -69,12 +83,16 @@ voo (_Decimal32 *x, _Decimal64 *y, _Decimal128 *z, int *i, unsigned int *j,
   scanf ("%Dg", z);	/* { dg-warning "expects argument" "bad use of %D" } */
   scanf ("%DG", z);	/* { dg-warning "expects argument" "bad use of %D" } */
 
+  scanf ("%DDa", x);	/* { dg-warning "expects argument" "bad use of %DD" } */
+  scanf ("%DDA", x);	/* { dg-warning "expects argument" "bad use of %DD" } */
   scanf ("%DDf", x);	/* { dg-warning "expects argument" "bad use of %DD" } */
   scanf ("%DDF", x);	/* { dg-warning "expects argument" "bad use of %DD" } */
   scanf ("%DDe", x);	/* { dg-warning "expects argument" "bad use of %DD" } */
   scanf ("%DDE", x);	/* { dg-warning "expects argument" "bad use of %DD" } */
   scanf ("%DDg", x);	/* { dg-warning "expects argument" "bad use of %DD" } */
   scanf ("%DDG", x);	/* { dg-warning "expects argument" "bad use of %DD" } */
+  scanf ("%DDa", y);	/* { dg-warning "expects argument" "bad use of %DD" } */
+  scanf ("%DDA", y);	/* { dg-warning "expects argument" "bad use of %DD" } */
   scanf ("%DDf", y);	/* { dg-warning "expects argument" "bad use of %DD" } */
   scanf ("%DDF", y);	/* { dg-warning "expects argument" "bad use of %DD" } */
   scanf ("%DDe", y);	/* { dg-warning "expects argument" "bad use of %DD" } */
@@ -90,8 +108,8 @@ voo (_Decimal32 *x, _Decimal64 *y, _Decimal128 *z, int *i, unsigned int *j,
   scanf ("%Hu\n", j);	/* { dg-warning "length" "bad use of %H" } */
   scanf ("%Hx\n", j);	/* { dg-warning "length" "bad use of %H" } */
   scanf ("%HX\n", j);	/* { dg-warning "length" "bad use of %H" } */
-  scanf ("%Ha\n", d);	/* { dg-warning "length" "bad use of %H" } */
-  scanf ("%HA\n", d);	/* { dg-warning "length" "bad use of %H" } */
+  scanf ("%Ha\n", d);	/* { dg-warning "expects argument" "bad use of %H" } */
+  scanf ("%HA\n", d);	/* { dg-warning "expects argument" "bad use of %H" } */
   scanf ("%Hc\n", i);	/* { dg-warning "length" "bad use of %H" } */
   scanf ("%Hs\n", p);	/* { dg-warning "length" "bad use of %H" } */
   scanf ("%Hp\n", p);	/* { dg-warning "length" "bad use of %H" } */

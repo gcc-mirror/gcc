@@ -1,5 +1,5 @@
 /* Get CPU type and Features for x86 processors.
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by Sriraman Tallam (tmsriram@google.com)
 
 This file is part of GCC.
@@ -108,6 +108,8 @@ get_amd_cpu (unsigned int family, unsigned int model)
       /* AMD family 17h version 1.  */
       if (model <= 0x1f)
 	__cpu_model.__cpu_subtype = AMDFAM17H_ZNVER1;
+      if (model >= 0x30)
+	 __cpu_model.__cpu_subtype = AMDFAM17H_ZNVER2;
       break;
     default:
       break;
@@ -213,9 +215,17 @@ get_intel_cpu (unsigned int family, unsigned int model, unsigned int brand_id)
 	      __cpu_model.__cpu_subtype = INTEL_COREI7_SKYLAKE;
 	      break;
 	    case 0x55:
-	      /* Skylake with AVX-512 support.  */
-	      __cpu_model.__cpu_type = INTEL_COREI7;
-	      __cpu_model.__cpu_subtype = INTEL_COREI7_SKYLAKE_AVX512;
+	      {
+	        unsigned int eax, ebx, ecx, edx;
+	        __cpu_model.__cpu_type = INTEL_COREI7;
+	        __cpuid_count (7, 0, eax, ebx, ecx, edx);
+	        if (ecx & bit_AVX512VNNI)
+	          /* Cascade Lake.  */
+	          __cpu_model.__cpu_subtype = INTEL_COREI7_CASCADELAKE;
+	        else
+	          /* Skylake with AVX-512 support.  */
+	          __cpu_model.__cpu_subtype = INTEL_COREI7_SKYLAKE_AVX512;
+	      }
 	      break;
 	    case 0x66:
 	      /* Cannon Lake.  */
@@ -326,7 +336,7 @@ get_available_features (unsigned int ecx, unsigned int edx,
 	set_feature (FEATURE_FMA);
     }
 
-  /* Get Advanced Features at level 7 (eax = 7, ecx = 0). */
+  /* Get Advanced Features at level 7 (eax = 7, ecx = 0/1). */
   if (max_cpuid_level >= 7)
     {
       __cpuid_count (7, 0, eax, ebx, ecx, edx);
@@ -375,6 +385,10 @@ get_available_features (unsigned int ecx, unsigned int edx,
 	    set_feature (FEATURE_AVX5124VNNIW);
 	  if (edx & bit_AVX5124FMAPS)
 	    set_feature (FEATURE_AVX5124FMAPS);
+
+	  __cpuid_count (7, 1, eax, ebx, ecx, edx);
+	  if (eax & bit_AVX512BF16)
+	    set_feature (FEATURE_AVX512BF16);
 	}
     }
 

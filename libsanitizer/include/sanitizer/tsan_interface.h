@@ -1,7 +1,8 @@
 //===-- tsan_interface.h ----------------------------------------*- C++ -*-===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -42,6 +43,11 @@ const unsigned __tsan_mutex_linker_init      = 1 << 0;
 const unsigned __tsan_mutex_write_reentrant  = 1 << 1;
 // Mutex is read reentrant.
 const unsigned __tsan_mutex_read_reentrant   = 1 << 2;
+// Mutex does not have static storage duration, and must not be used after
+// its destructor runs.  The opposite of __tsan_mutex_linker_init.
+// If this flag is passed to __tsan_mutex_destroy, then the destruction
+// is ignored unless this flag was previously set on the mutex.
+const unsigned __tsan_mutex_not_static       = 1 << 8;
 
 // Mutex operation flags:
 
@@ -68,6 +74,7 @@ void __tsan_mutex_create(void *addr, unsigned flags);
 // Annotate destruction of a mutex.
 // Supported flags:
 //   - __tsan_mutex_linker_init
+//   - __tsan_mutex_not_static
 void __tsan_mutex_destroy(void *addr, unsigned flags);
 
 // Annotate start of lock operation.
@@ -128,6 +135,24 @@ void __tsan_external_register_header(void *tag, const char *header);
 void __tsan_external_assign_tag(void *addr, void *tag);
 void __tsan_external_read(void *addr, void *caller_pc, void *tag);
 void __tsan_external_write(void *addr, void *caller_pc, void *tag);
+
+// Fiber switching API.
+//   - TSAN context for fiber can be created by __tsan_create_fiber
+//     and freed by __tsan_destroy_fiber.
+//   - TSAN context of current fiber or thread can be obtained
+//     by calling __tsan_get_current_fiber.
+//   - __tsan_switch_to_fiber should be called immediatly before switch
+//     to fiber, such as call of swapcontext.
+//   - Fiber name can be set by __tsan_set_fiber_name.
+void *__tsan_get_current_fiber(void);
+void *__tsan_create_fiber(unsigned flags);
+void __tsan_destroy_fiber(void *fiber);
+void __tsan_switch_to_fiber(void *fiber, unsigned flags);
+void __tsan_set_fiber_name(void *fiber, const char *name);
+
+// Flags for __tsan_switch_to_fiber:
+// Do not establish a happens-before relation between fibers
+const unsigned __tsan_switch_to_fiber_no_sync = 1 << 0;
 
 #ifdef __cplusplus
 }  // extern "C"

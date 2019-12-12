@@ -3,9 +3,11 @@
 // license that can be found in the LICENSE file.
 
 // +build ignore
-// -build amd64 amd64p32 386 arm ppc64le s390x
+// +build amd64 amd64p32 386 arm ppc64le ppc64 s390x arm64
 
 package md5
+
+const haveAsm = true
 
 //go:noescape
 

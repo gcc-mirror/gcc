@@ -6,8 +6,8 @@
 template<typename FP_> struct Vec { // { dg-message "note" }
     Vec& operator^=(Vec& rhs)     {
         union {
-            struct {FP_ x,y,z;};
-        }; // { dg-error "anonymous struct" }
+            struct {FP_ x,y,z;}; // { dg-error "20:anonymous struct" }
+        };
         X = y*rhs.z() - z*rhs.y(); // { dg-error "not declared|no member" }
     }
     Vec& operator^(Vec& rhs) {

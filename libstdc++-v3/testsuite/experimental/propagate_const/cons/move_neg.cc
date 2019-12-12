@@ -1,6 +1,6 @@
 // { dg-do compile { target c++14 } }
 
-// Copyright (C) 2015-2018 Free Software Foundation, Inc.
+// Copyright (C) 2015-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,11 +25,6 @@
 using std::experimental::propagate_const;
 using std::unique_ptr;
 
-// { dg-error "no type" "" { target *-*-* } 118 }
-// { dg-error "no type" "" { target *-*-* } 125 }
-// { dg-error "no type" "" { target *-*-* } 134 }
-// { dg-error "no type" "" { target *-*-* } 143 }
-
 int main()
 {
   const int dummy{42};
@@ -39,3 +34,4 @@ int main()
   propagate_const<unique_ptr<const int>> test4 = &dummy; // { dg-error "conversion" }
   propagate_const<unique_ptr<const int>> test5 = std::move(test1); // { dg-error "conversion" }
 }
+// { dg-prune-output "no type" }

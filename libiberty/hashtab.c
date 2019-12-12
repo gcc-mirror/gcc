@@ -1,5 +1,5 @@
 /* An expandable hash tables datatype.  
-   Copyright (C) 1999-2018 Free Software Foundation, Inc.
+   Copyright (C) 1999-2019 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov (vmakarov@cygnus.com).
 
 This file is part of the libiberty library.
@@ -725,7 +725,7 @@ htab_remove_elt_with_hash (htab_t htab, PTR element, hashval_t hash)
   PTR *slot;
 
   slot = htab_find_slot_with_hash (htab, element, hash, NO_INSERT);
-  if (*slot == HTAB_EMPTY_ENTRY)
+  if (slot == NULL)
     return;
 
   if (htab->del_f)

@@ -1,7 +1,8 @@
 //===-- sanitizer_allocator_size_class_map.h --------------------*- C++ -*-===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -159,23 +160,24 @@ class SizeClassMap {
       return 0;
     if (size <= kMidSize)
       return (size + kMinSize - 1) >> kMinSizeLog;
-    uptr l = MostSignificantSetBitIndex(size);
-    uptr hbits = (size >> (l - S)) & M;
-    uptr lbits = size & ((1 << (l - S)) - 1);
-    uptr l1 = l - kMidSizeLog;
+    const uptr l = MostSignificantSetBitIndex(size);
+    const uptr hbits = (size >> (l - S)) & M;
+    const uptr lbits = size & ((1U << (l - S)) - 1);
+    const uptr l1 = l - kMidSizeLog;
     return kMidClass + (l1 << S) + hbits + (lbits > 0);
   }
 
-  static uptr MaxCachedHint(uptr class_id) {
-    // Estimate the result for kBatchClassID because this class does not know
-    // the exact size of TransferBatch. We need to cache fewer batches than user
-    // chunks, so this number can be small.
-    if (UNLIKELY(class_id == kBatchClassID))
-      return 16;
-    if (UNLIKELY(class_id == 0))
+  static uptr MaxCachedHint(uptr size) {
+    DCHECK_LE(size, kMaxSize);
+    if (UNLIKELY(size == 0))
       return 0;
-    uptr n = (1UL << kMaxBytesCachedLog) / Size(class_id);
-    return Max<uptr>(1, Min(kMaxNumCachedHint, n));
+    uptr n;
+    // Force a 32-bit division if the template parameters allow for it.
+    if (kMaxBytesCachedLog > 31 || kMaxSizeLog > 31)
+      n = (1UL << kMaxBytesCachedLog) / size;
+    else
+      n = (1U << kMaxBytesCachedLog) / static_cast<u32>(size);
+    return Max<uptr>(1U, Min(kMaxNumCachedHint, n));
   }
 
   static void Print() {
@@ -188,12 +190,12 @@ class SizeClassMap {
       uptr d = s - prev_s;
       uptr p = prev_s ? (d * 100 / prev_s) : 0;
       uptr l = s ? MostSignificantSetBitIndex(s) : 0;
-      uptr cached = MaxCachedHint(i) * s;
+      uptr cached = MaxCachedHint(s) * s;
       if (i == kBatchClassID)
         d = p = l = 0;
       Printf("c%02zd => s: %zd diff: +%zd %02zd%% l %zd "
              "cached: %zd %zd; id %zd\n",
-             i, Size(i), d, p, l, MaxCachedHint(i), cached, ClassID(s));
+             i, Size(i), d, p, l, MaxCachedHint(s), cached, ClassID(s));
       total_cached += cached;
       prev_s = s;
     }
@@ -229,3 +231,11 @@ class SizeClassMap {
 typedef SizeClassMap<3, 4, 8, 17, 128, 16> DefaultSizeClassMap;
 typedef SizeClassMap<3, 4, 8, 17, 64, 14> CompactSizeClassMap;
 typedef SizeClassMap<2, 5, 9, 16, 64, 14> VeryCompactSizeClassMap;
+
+// The following SizeClassMap only holds a way small number of cached entries,
+// allowing for denser per-class arrays, smaller memory footprint and usually
+// better performances in threaded environments.
+typedef SizeClassMap<3, 4, 8, 17, 8, 10> DenseSizeClassMap;
+// Similar to VeryCompact map above, this one has a small number of different
+// size classes, and also reduced thread-local caches.
+typedef SizeClassMap<2, 5, 9, 16, 8, 10> VeryDenseSizeClassMap;

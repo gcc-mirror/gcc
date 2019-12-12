@@ -1,5 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* && ilp32 } } } */
-/* { dg-options "-O1 -fno-split-wide-types -mcpu=e300c3" } */
+/* { dg-options "-O1 -fno-split-wide-types -mdejagnu-cpu=e300c3" } */
 
 int
 nh (void)

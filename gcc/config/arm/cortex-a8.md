@@ -1,5 +1,5 @@
 ;; ARM Cortex-A8 scheduling description.
-;; Copyright (C) 2007-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2019 Free Software Foundation, Inc.
 ;; Contributed by CodeSourcery.
 
 ;; This file is part of GCC.
@@ -90,7 +90,7 @@
                         adc_imm,adcs_imm,adc_reg,adcs_reg,\
                         adr,bfm,clz,rbit,rev,alu_dsp_reg,\
                         shift_imm,shift_reg,\
-                        multiple,no_insn"))
+                        multiple"))
   "cortex_a8_default")
 
 (define_insn_reservation "cortex_a8_alu_shift" 2

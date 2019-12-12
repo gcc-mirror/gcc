@@ -6,6 +6,6 @@
 
 #include "cmem-ld.inc"
 
-/* { dg-final { scan-assembler "xld " } } */
-/* { dg-final { scan-assembler "xldw " } } */
-/* { dg-final { scan-assembler "xldb " } } */
+/* { dg-final { scan-assembler "xld\\s" } } */
+/* { dg-final { scan-assembler "xldw\\s" } } */
+/* { dg-final { scan-assembler "xldb\\s" } } */

@@ -1,5 +1,5 @@
 /* IPA handling of references.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -22,15 +22,10 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_IPA_REFERENCE_H
 
 /* In ipa-reference.c  */
-bitmap ipa_reference_get_not_read_global (struct cgraph_node *fn);
-bitmap ipa_reference_get_not_written_global (struct cgraph_node *fn);
+bitmap ipa_reference_get_read_global (struct cgraph_node *fn);
+bitmap ipa_reference_get_written_global (struct cgraph_node *fn);
 void ipa_reference_c_finalize (void);
-
-inline int
-ipa_reference_var_uid (tree t)
-{
-  return DECL_UID (symtab_node::get (t)->ultimate_alias_target (NULL)->decl);
-}
+int ipa_reference_var_uid (tree t);
 
 #endif  /* GCC_IPA_REFERENCE_H  */
 

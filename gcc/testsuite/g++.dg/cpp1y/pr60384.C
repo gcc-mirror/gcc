@@ -5,5 +5,5 @@ template<typename> int foo();
 
 struct A
 {
-  typedef auto foo<>();  // { dg-error "typedef declared 'auto'" }
+  typedef auto foo<>();  // { dg-error "11:typedef declared 'auto'" }
 };

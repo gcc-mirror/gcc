@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -54,13 +54,13 @@ namespace __gnu_pbds
       typedef typename allocator_type::size_type 	 size_type;
       typedef _Node 					 node;
 
-      typedef typename _Alloc::template rebind<node>	 __rebind_n;
-      typedef typename __rebind_n::other::pointer      	 node_pointer;
+      typedef typename rebind_traits<_Alloc, node>::pointer node_pointer;
 
-      typedef typename _Alloc::template rebind<node_pointer>  __rebind_np;
 
-      typedef typename __rebind_np::other::pointer 	 entry_pointer;
-      typedef typename __rebind_np::other::const_pointer entry_const_pointer;
+      typedef typename rebind_traits<_Alloc, node_pointer>::pointer
+	entry_pointer;
+      typedef typename rebind_traits<_Alloc, node_pointer>::const_pointer
+	entry_const_pointer;
 
       enum
 	{
@@ -87,7 +87,7 @@ namespace __gnu_pbds
       inline void
       pop();
 
-      inline bool
+      _GLIBCXX_NODISCARD inline bool
       empty() const;
 
       inline size_type
@@ -178,7 +178,7 @@ namespace __gnu_pbds
     }
 
     template<typename _Node, typename _Alloc>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     rc<_Node, _Alloc>::
     empty() const
     {

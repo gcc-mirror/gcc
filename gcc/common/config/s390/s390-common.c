@@ -1,5 +1,5 @@
 /* Common hooks for IBM S/390 and zSeries.
-   Copyright (C) 1999-2018 Free Software Foundation, Inc.
+   Copyright (C) 1999-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,26 +29,27 @@ along with GCC; see the file COPYING3.  If not see
 
 EXPORTED_CONST int processor_flags_table[] =
   {
-    /* g5 */     PF_IEEE_FLOAT,
-    /* g6 */     PF_IEEE_FLOAT,
     /* z900 */   PF_IEEE_FLOAT | PF_ZARCH,
     /* z990 */   PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT,
     /* z9-109 */ PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT
-                 | PF_EXTIMM,
+		 | PF_EXTIMM,
     /* z9-ec */  PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT
-                 | PF_EXTIMM | PF_DFP,
+		 | PF_EXTIMM | PF_DFP,
     /* z10 */    PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT
-                 | PF_EXTIMM | PF_DFP | PF_Z10,
+		 | PF_EXTIMM | PF_DFP | PF_Z10,
     /* z196 */   PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT
-                 | PF_EXTIMM | PF_DFP | PF_Z10 | PF_Z196,
+		 | PF_EXTIMM | PF_DFP | PF_Z10 | PF_Z196,
     /* zEC12 */  PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT
-                 | PF_EXTIMM | PF_DFP | PF_Z10 | PF_Z196 | PF_ZEC12 | PF_TX,
+		 | PF_EXTIMM | PF_DFP | PF_Z10 | PF_Z196 | PF_ZEC12 | PF_TX,
     /* z13 */    PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT
-                 | PF_EXTIMM | PF_DFP | PF_Z10 | PF_Z196 | PF_ZEC12 | PF_TX
-                 | PF_Z13 | PF_VX,
-    /* arch12 */ PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT
-                 | PF_EXTIMM | PF_DFP | PF_Z10 | PF_Z196 | PF_ZEC12 | PF_TX
-                 | PF_Z13 | PF_VX | PF_VXE | PF_ARCH12
+		 | PF_EXTIMM | PF_DFP | PF_Z10 | PF_Z196 | PF_ZEC12 | PF_TX
+		 | PF_Z13 | PF_VX,
+    /* z14 */    PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT
+		 | PF_EXTIMM | PF_DFP | PF_Z10 | PF_Z196 | PF_ZEC12 | PF_TX
+		 | PF_Z13 | PF_VX | PF_VXE | PF_Z14,
+    /* z15 */    PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT
+		 | PF_EXTIMM | PF_DFP | PF_Z10 | PF_Z196 | PF_ZEC12 | PF_TX
+		 | PF_Z13 | PF_VX | PF_VXE | PF_Z14 | PF_VXE2 | PF_Z15
   };
 
 /* Change optimizations to be performed, depending on the
@@ -76,6 +77,9 @@ s390_option_init_struct (struct gcc_options *opts)
   /* By default, always emit DWARF-2 unwind info.  This allows debugging
      without maintaining a stack frame back-chain.  */
   opts->x_flag_asynchronous_unwind_tables = 1;
+
+  /* Enable section anchors by default.  */
+  opts->x_flag_section_anchors = 1;
 }
 
 /* Implement TARGET_HANDLE_OPTION.  */

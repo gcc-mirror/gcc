@@ -1,5 +1,5 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -75,12 +75,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "tree-ssa.h"
 #include "cfgloop.h"
-#include "params.h"
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
 #include "rtl-iter.h"
 #include "print-rtl.h"
+#include "function-abi.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data declarations.  */
@@ -122,11 +122,20 @@ static int last_linenum;
 /* Column number of last NOTE.  */
 static int last_columnnum;
 
-/* Last discriminator written to assembly.  */
+/* Discriminator written to assembly.  */
 static int last_discriminator;
 
-/* Discriminator of current block.  */
+/* Discriminator to be written to assembly for current instruction.
+   Note: actual usage depends on loc_discriminator_kind setting.  */
 static int discriminator;
+static inline int compute_discriminator (location_t loc);
+
+/* Discriminator identifying current basic block among others sharing
+   the same locus.  */
+static int bb_discriminator;
+
+/* Basic block discriminator for previous instruction.  */
+static int last_bb_discriminator;
 
 /* Highest line number in current block.  */
 static int high_block_linenum;
@@ -141,6 +150,7 @@ static const char *last_filename;
 static const char *override_filename;
 static int override_linenum;
 static int override_columnnum;
+static int override_discriminator;
 
 /* Whether to force emission of a line note before the next insn.  */
 static bool force_source_line = false;
@@ -220,7 +230,6 @@ static int alter_cond (rtx);
 #endif
 static int align_fuzz (rtx, rtx, int, unsigned);
 static void collect_fn_hard_reg_usage (void);
-static tree get_call_fndecl (rtx_insn *);
 
 /* Initialize data in final at the beginning of a compilation.  */
 
@@ -596,7 +605,7 @@ insn_current_reference_address (rtx_insn *branch)
 
   rtx_insn *seq = NEXT_INSN (PREV_INSN (branch));
   seq_uid = INSN_UID (seq);
-  if (!JUMP_P (branch))
+  if (!jump_to_label_p (branch))
     /* This can happen for example on the PA; the objective is to know the
        offset to address something in front of the start of the function.
        Thus, we can treat it like a backward branch.
@@ -647,7 +656,7 @@ compute_alignments (void)
     }
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
   profile_count count_threshold = cfun->cfg->count_max.apply_scale
-		 (1, PARAM_VALUE (PARAM_ALIGN_THRESHOLD));
+		 (1, param_align_threshold);
 
   if (dump_file)
     {
@@ -733,7 +742,7 @@ compute_alignments (void)
 	  && branch_count + fallthru_count > count_threshold
 	  && (branch_count
 	      > fallthru_count.apply_scale
-		    (PARAM_VALUE (PARAM_ALIGN_LOOP_ITERATIONS), 1)))
+		    (param_align_loop_iterations, 1)))
 	{
 	  align_flags alignment = LOOP_ALIGN (label);
 	  if (dump_file)
@@ -1701,6 +1710,7 @@ final_start_function_1 (rtx_insn **firstp, FILE *file, int *seen,
   last_linenum = LOCATION_LINE (prologue_location);
   last_columnnum = LOCATION_COLUMN (prologue_location);
   last_discriminator = discriminator = 0;
+  last_bb_discriminator = bb_discriminator = 0;
 
   high_block_linenum = high_function_linenum = last_linenum;
 
@@ -1778,14 +1788,14 @@ final_start_function_1 (rtx_insn **firstp, FILE *file, int *seen,
       TREE_ASM_WRITTEN (DECL_INITIAL (current_function_decl)) = 1;
     }
 
-  HOST_WIDE_INT min_frame_size = constant_lower_bound (get_frame_size ());
-  if (warn_frame_larger_than
-      && min_frame_size > frame_larger_than_size)
+  unsigned HOST_WIDE_INT min_frame_size
+    = constant_lower_bound (get_frame_size ());
+  if (min_frame_size > (unsigned HOST_WIDE_INT) warn_frame_larger_than_size)
     {
       /* Issue a warning */
       warning (OPT_Wframe_larger_than_,
-	       "the frame size of %wd bytes is larger than %wd bytes",
-	       min_frame_size, frame_larger_than_size);
+	       "the frame size of %wu bytes is larger than %wu bytes",
+	       min_frame_size, warn_frame_larger_than_size);
     }
 
   /* First output the function prologue: code to set up the stack frame.  */
@@ -2223,6 +2233,9 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	      ASM_OUTPUT_LABEL (asm_out_file,
 				IDENTIFIER_POINTER (cold_function_name));
 #endif
+	      if (dwarf2out_do_frame ()
+	          && cfun->fde->dw_fde_second_begin != NULL)
+		ASM_OUTPUT_LABEL (asm_out_file, cfun->fde->dw_fde_second_begin);
 	    }
 	  break;
 
@@ -2236,8 +2249,7 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	  if (targetm.asm_out.unwind_emit)
 	    targetm.asm_out.unwind_emit (asm_out_file, insn);
 
-          discriminator = NOTE_BASIC_BLOCK (insn)->discriminator;
-
+	  bb_discriminator = NOTE_BASIC_BLOCK (insn)->discriminator;
 	  break;
 
 	case NOTE_INSN_EH_REGION_BEG:
@@ -2331,6 +2343,7 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		  override_filename = LOCATION_FILE (*locus_ptr);
 		  override_linenum = LOCATION_LINE (*locus_ptr);
 		  override_columnnum = LOCATION_COLUMN (*locus_ptr);
+		  override_discriminator = compute_discriminator (*locus_ptr);
 		}
 	    }
 	  break;
@@ -2368,12 +2381,14 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		  override_filename = LOCATION_FILE (*locus_ptr);
 		  override_linenum = LOCATION_LINE (*locus_ptr);
 		  override_columnnum = LOCATION_COLUMN (*locus_ptr);
+		  override_discriminator = compute_discriminator (*locus_ptr);
 		}
 	      else
 		{
 		  override_filename = NULL;
 		  override_linenum = 0;
 		  override_columnnum = 0;
+		  override_discriminator = 0;
 		}
 	    }
 	  break;
@@ -2414,10 +2429,9 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 
 	case NOTE_INSN_INLINE_ENTRY:
 	  gcc_checking_assert (cfun->debug_nonbind_markers);
-	  if (!DECL_IGNORED_P (current_function_decl))
+	  if (!DECL_IGNORED_P (current_function_decl)
+	      && notice_source_line (insn, NULL))
 	    {
-	      if (!notice_source_line (insn, NULL))
-		break;
 	      (*debug_hooks->inline_entry) (LOCATION_BLOCK
 					    (NOTE_MARKER_LOCATION (insn)));
 	      goto output_source_line;
@@ -3144,6 +3158,66 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p,
 }
 
 
+
+/* Map DECLs to instance discriminators.  This is allocated and
+   defined in ada/gcc-interfaces/trans.c, when compiling with -gnateS.
+   Mappings from this table are saved and restored for LTO, so
+   link-time compilation will have this map set, at least in
+   partitions containing at least one DECL with an associated instance
+   discriminator.  */
+
+decl_to_instance_map_t *decl_to_instance_map;
+
+/* Return the instance number assigned to DECL.  */
+
+static inline int
+map_decl_to_instance (const_tree decl)
+{
+  int *inst;
+
+  if (!decl_to_instance_map || !decl || !DECL_P (decl))
+    return 0;
+
+  inst = decl_to_instance_map->get (decl);
+
+  if (!inst)
+    return 0;
+
+  return *inst;
+}
+
+/* Set DISCRIMINATOR to the appropriate value, possibly derived from LOC.  */
+
+static inline int
+compute_discriminator (location_t loc)
+{
+  int discriminator;
+
+  if (!decl_to_instance_map)
+    discriminator = bb_discriminator;
+  else
+    {
+      tree block = LOCATION_BLOCK (loc);
+
+      while (block && TREE_CODE (block) == BLOCK
+	     && !inlined_function_outer_scope_p (block))
+	block = BLOCK_SUPERCONTEXT (block);
+
+      tree decl;
+
+      if (!block)
+	decl = current_function_decl;
+      else if (DECL_P (block))
+	decl = block;
+      else
+	decl = block_ultimate_origin (block);
+
+      discriminator = map_decl_to_instance (decl);
+    }
+
+  return discriminator;
+}
+
 /* Return whether a source line note needs to be emitted before INSN.
    Sets IS_STMT to TRUE if the line should be marked as a possible
    breakpoint location.  */
@@ -3157,17 +3231,6 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
   if (NOTE_MARKER_P (insn))
     {
       location_t loc = NOTE_MARKER_LOCATION (insn);
-      /* The inline entry markers (gimple, insn, note) carry the
-	 location of the call, because that's what we want to carry
-	 during compilation, but the location we want to output in
-	 debug information for the inline entry point is the location
-	 of the function itself.  */
-      if (NOTE_KIND (insn) == NOTE_INSN_INLINE_ENTRY)
-	{
-	  tree block = LOCATION_BLOCK (loc);
-	  tree fn = block_ultimate_origin (block);
-	  loc = DECL_SOURCE_LOCATION (fn);
-	}
       expanded_location xloc = expand_location (loc);
       if (xloc.line == 0)
 	{
@@ -3178,6 +3241,7 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
       filename = xloc.file;
       linenum = xloc.line;
       columnnum = xloc.column;
+      discriminator = compute_discriminator (loc);
       force_source_line = true;
     }
   else if (override_filename)
@@ -3185,6 +3249,7 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
       filename = override_filename;
       linenum = override_linenum;
       columnnum = override_columnnum;
+      discriminator = override_discriminator;
     }
   else if (INSN_HAS_LOCATION (insn))
     {
@@ -3192,12 +3257,14 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
       filename = xloc.file;
       linenum = xloc.line;
       columnnum = xloc.column;
+      discriminator = compute_discriminator (INSN_LOCATION (insn));
     }
   else
     {
       filename = NULL;
       linenum = 0;
       columnnum = 0;
+      discriminator = 0;
     }
 
   if (filename == NULL)
@@ -4590,7 +4657,11 @@ rest_of_handle_final (void)
   final_start_function_1 (&first, asm_out_file, &seen, optimize);
   final_1 (first, asm_out_file, seen, optimize);
   if (flag_ipa_ra
-      && !lookup_attribute ("noipa", DECL_ATTRIBUTES (current_function_decl)))
+      && !lookup_attribute ("noipa", DECL_ATTRIBUTES (current_function_decl))
+      /* Functions with naked attributes are supported only with basic asm
+	 statements in the body, thus for supported use cases the information
+	 on clobbered registers is not available.  */
+      && !lookup_attribute ("naked", DECL_ATTRIBUTES (current_function_decl)))
     collect_fn_hard_reg_usage ();
   final_end_function ();
 
@@ -4832,7 +4903,8 @@ rest_of_clean_state (void)
   /* We can reduce stack alignment on call site only when we are sure that
      the function body just produced will be actually used in the final
      executable.  */
-  if (decl_binds_to_current_def_p (current_function_decl))
+  if (flag_ipa_stack_alignment
+      && decl_binds_to_current_def_p (current_function_decl))
     {
       unsigned int pref = crtl->preferred_stack_boundary;
       if (crtl->stack_alignment_needed > crtl->preferred_stack_boundary)
@@ -4921,7 +4993,16 @@ collect_fn_hard_reg_usage (void)
   if (!targetm.call_fusage_contains_non_callee_clobbers)
     return;
 
-  CLEAR_HARD_REG_SET (function_used_regs);
+  /* Be conservative - mark fixed and global registers as used.  */
+  function_used_regs = fixed_reg_set;
+
+#ifdef STACK_REGS
+  /* Handle STACK_REGS conservatively, since the df-framework does not
+     provide accurate information for them.  */
+
+  for (i = FIRST_STACK_REG; i <= LAST_STACK_REG; i++)
+    SET_HARD_REG_BIT (function_used_regs, i);
+#endif
 
   for (insn = get_insns (); insn != NULL_RTX; insn = next_insn (insn))
     {
@@ -4932,97 +5013,23 @@ collect_fn_hard_reg_usage (void)
 
       if (CALL_P (insn)
 	  && !self_recursive_call_p (insn))
-	{
-	  if (!get_call_reg_set_usage (insn, &insn_used_regs,
-				       call_used_reg_set))
-	    return;
-
-	  IOR_HARD_REG_SET (function_used_regs, insn_used_regs);
-	}
+	function_used_regs
+	  |= insn_callee_abi (insn).full_and_partial_reg_clobbers ();
 
       find_all_hard_reg_sets (insn, &insn_used_regs, false);
-      IOR_HARD_REG_SET (function_used_regs, insn_used_regs);
+      function_used_regs |= insn_used_regs;
+
+      if (hard_reg_set_subset_p (crtl->abi->full_and_partial_reg_clobbers (),
+				 function_used_regs))
+	return;
     }
 
-  /* Be conservative - mark fixed and global registers as used.  */
-  IOR_HARD_REG_SET (function_used_regs, fixed_reg_set);
-
-#ifdef STACK_REGS
-  /* Handle STACK_REGS conservatively, since the df-framework does not
-     provide accurate information for them.  */
-
-  for (i = FIRST_STACK_REG; i <= LAST_STACK_REG; i++)
-    SET_HARD_REG_BIT (function_used_regs, i);
-#endif
-
-  /* The information we have gathered is only interesting if it exposes a
-     register from the call_used_regs that is not used in this function.  */
-  if (hard_reg_set_subset_p (call_used_reg_set, function_used_regs))
-    return;
+  /* Mask out fully-saved registers, so that they don't affect equality
+     comparisons between function_abis.  */
+  function_used_regs &= crtl->abi->full_and_partial_reg_clobbers ();
 
   node = cgraph_node::rtl_info (current_function_decl);
   gcc_assert (node != NULL);
 
-  COPY_HARD_REG_SET (node->function_used_regs, function_used_regs);
-  node->function_used_regs_valid = 1;
-}
-
-/* Get the declaration of the function called by INSN.  */
-
-static tree
-get_call_fndecl (rtx_insn *insn)
-{
-  rtx note, datum;
-
-  note = find_reg_note (insn, REG_CALL_DECL, NULL_RTX);
-  if (note == NULL_RTX)
-    return NULL_TREE;
-
-  datum = XEXP (note, 0);
-  if (datum != NULL_RTX)
-    return SYMBOL_REF_DECL (datum);
-
-  return NULL_TREE;
-}
-
-/* Return the cgraph_rtl_info of the function called by INSN.  Returns NULL for
-   call targets that can be overwritten.  */
-
-static struct cgraph_rtl_info *
-get_call_cgraph_rtl_info (rtx_insn *insn)
-{
-  tree fndecl;
-
-  if (insn == NULL_RTX)
-    return NULL;
-
-  fndecl = get_call_fndecl (insn);
-  if (fndecl == NULL_TREE
-      || !decl_binds_to_current_def_p (fndecl))
-    return NULL;
-
-  return cgraph_node::rtl_info (fndecl);
-}
-
-/* Find hard registers used by function call instruction INSN, and return them
-   in REG_SET.  Return DEFAULT_SET in REG_SET if not found.  */
-
-bool
-get_call_reg_set_usage (rtx_insn *insn, HARD_REG_SET *reg_set,
-			HARD_REG_SET default_set)
-{
-  if (flag_ipa_ra)
-    {
-      struct cgraph_rtl_info *node = get_call_cgraph_rtl_info (insn);
-      if (node != NULL
-	  && node->function_used_regs_valid)
-	{
-	  COPY_HARD_REG_SET (*reg_set, node->function_used_regs);
-	  AND_HARD_REG_SET (*reg_set, default_set);
-	  return true;
-	}
-    }
-
-  COPY_HARD_REG_SET (*reg_set, default_set);
-  return false;
+  node->function_used_regs = function_used_regs;
 }

@@ -1,6 +1,6 @@
 /* Web construction code for GNU compiler.
    Contributed by Jan Hubicka.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -74,7 +74,7 @@ unionfind_union (web_entry_base *first, web_entry_base *second)
   return false;
 }
 
-class web_entry : public web_entry_base
+struct web_entry : public web_entry_base
 {
  private:
   rtx reg_pvt;

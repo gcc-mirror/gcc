@@ -239,7 +239,7 @@ available policies are:
    <orderedlist>
      <listitem>
        <para>
-       <constant>_S_Atomic</constant>
+       <constant>_S_atomic</constant>
        </para>
        <para>
 Selected when GCC supports a builtin atomic compare-and-swap operation
@@ -252,7 +252,7 @@ synchronisation.
 
      <listitem>
        <para>
-       <constant>_S_Mutex</constant>
+       <constant>_S_mutex</constant>
        </para>
        <para>
 The _Sp_counted_base specialization for this policy contains a mutex,
@@ -263,7 +263,7 @@ builtins aren't available so explicit memory barriers are needed in places.
 
      <listitem>
        <para>
-       <constant>_S_Single</constant>
+       <constant>_S_single</constant>
        </para>
        <para>
 This policy uses a non-reentrant add_ref_lock() with no locking. It is

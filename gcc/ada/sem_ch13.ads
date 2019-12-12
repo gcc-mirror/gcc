@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -189,18 +189,6 @@ package Sem_Ch13 is
    --  change. A False result is possible only for array, enumeration or
    --  record types.
 
-   procedure Validate_Compile_Time_Warning_Error (N : Node_Id);
-   --  N is a pragma Compile_Time_Error or Compile_Warning_Error whose boolean
-   --  expression is not known at compile time. This procedure makes an entry
-   --  in a table. The actual checking is performed by Validate_Compile_Time_
-   --  Warning_Errors, which is invoked after calling the back end.
-
-   procedure Validate_Compile_Time_Warning_Errors;
-   --  This routine is called after calling the back end to validate pragmas
-   --  Compile_Time_Error and Compile_Time_Warning for size and alignment
-   --  appropriateness. The reason it is called that late is to take advantage
-   --  of any back-annotation of size and alignment performed by the back end.
-
    procedure Validate_Unchecked_Conversion
      (N        : Node_Id;
       Act_Unit : Entity_Id);
@@ -354,27 +342,10 @@ package Sem_Ch13 is
    --  for First, Next, and Has_Element. Optionally an Element primitive may
    --  also be defined.
 
-   -----------------------------------------------------------
-   --  Visibility of Discriminants in Aspect Specifications --
-   -----------------------------------------------------------
-
-   --  The discriminants of a type are visible when analyzing the aspect
-   --  specifications of a type declaration or protected type declaration,
-   --  but not when analyzing those of a subtype declaration. The following
-   --  routines enforce this distinction.
-
    procedure Install_Discriminants (E : Entity_Id);
    --  Make visible the discriminants of type entity E
 
-   procedure Push_Scope_And_Install_Discriminants (E : Entity_Id);
-   --  Push scope E and makes visible the discriminants of type entity E if E
-   --  has discriminants and is not a subtype.
-
    procedure Uninstall_Discriminants (E : Entity_Id);
    --  Remove visibility to the discriminants of type entity E
-
-   procedure Uninstall_Discriminants_And_Pop_Scope (E : Entity_Id);
-   --  Remove visibility to the discriminants of type entity E and pop the
-   --  scope stack if E has discriminants and is not a subtype.
 
 end Sem_Ch13;

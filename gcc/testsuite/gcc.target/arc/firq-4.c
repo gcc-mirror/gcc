@@ -18,13 +18,13 @@ handler1 (void)
 		  "r25", "fp");
 }
 /* { dg-final { scan-assembler-times "r4,\\\[sp" 2 } } */
-/* { dg-final { scan-assembler-times "r6,\\\[sp,\[0-9\]+\\\]" 2 } } */
-/* { dg-final { scan-assembler-times "r8,\\\[sp,\[0-9\]+\\\]" 2 } } */
+/* { dg-final { scan-assembler-times "r6,\\\[sp" 2 } } */
+/* { dg-final { scan-assembler-times "r8,\\\[sp" 2 } } */
 
-/* { dg-final { scan-assembler-times "r16,\\\[sp,\[0-9\]+\\\]" 2 } } */
-/* { dg-final { scan-assembler-times "r18,\\\[sp,\[0-9\]+\\\]" 2 } } */
-/* { dg-final { scan-assembler-times "r20,\\\[sp,\[0-9\]+\\\]" 2 } } */
-/* { dg-final { scan-assembler-times "r24,\\\[sp,\[0-9\]+\\\]" 2 } } */
+/* { dg-final { scan-assembler-times "r16,\\\[sp" 2 } } */
+/* { dg-final { scan-assembler-times "r18,\\\[sp" 2 } } */
+/* { dg-final { scan-assembler-times "r20,\\\[sp" 2 } } */
+/* { dg-final { scan-assembler-times "r24,\\\[sp" 2 } } */
 
 /* { dg-final { scan-assembler-not "fp,\\\[sp" } } */
 /* { dg-final { scan-assembler-not "push.*fp" } } */

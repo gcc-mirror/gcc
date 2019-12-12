@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2016-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 2016-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -38,6 +38,7 @@ generic
    --  should have at least one more element at the low end than Index_Type.
 
    type Element_Type (<>) is private;
+   with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Functional_Vectors with SPARK_Mode is
 

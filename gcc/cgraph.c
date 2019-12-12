@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -57,11 +57,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "tree-dfa.h"
 #include "profile.h"
-#include "params.h"
 #include "context.h"
 #include "gimplify.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "selftest.h"
 
 /* FIXME: Only for PROP_loops, but cgraph shouldn't have to know about this.  */
 #include "tree-pass.h"
@@ -195,6 +195,9 @@ delete_function_version (cgraph_function_version_info *decl_v)
 {
   if (decl_v == NULL)
     return;
+
+  if (version_info_node == decl_v)
+    version_info_node = NULL;
 
   if (decl_v->prev != NULL)
     decl_v->prev->next = decl_v->next;
@@ -538,7 +541,7 @@ cgraph_node::get_create (tree decl)
 {
   cgraph_node *first_clone = cgraph_node::get (decl);
 
-  if (first_clone && !first_clone->global.inlined_to)
+  if (first_clone && !first_clone->inlined_to)
     return first_clone;
 
   cgraph_node *node = cgraph_node::create (decl);
@@ -546,6 +549,7 @@ cgraph_node::get_create (tree decl)
     {
       first_clone->clone_of = node;
       node->clones = first_clone;
+      node->order = first_clone->order;
       symtab->symtab_prevail_in_asm_name_hash (node);
       node->decl->decl_with_vis.symtab_node = node;
       if (dump_file)
@@ -617,6 +621,7 @@ cgraph_node *
 cgraph_node::create_thunk (tree alias, tree, bool this_adjusting,
 			   HOST_WIDE_INT fixed_offset,
 			   HOST_WIDE_INT virtual_value,
+			   HOST_WIDE_INT indirect_offset,
 			   tree virtual_offset,
 			   tree real_alias)
 {
@@ -635,6 +640,7 @@ cgraph_node::create_thunk (tree alias, tree, bool this_adjusting,
 
   node->thunk.fixed_offset = fixed_offset;
   node->thunk.virtual_value = virtual_value;
+  node->thunk.indirect_offset = indirect_offset;
   node->thunk.alias = real_alias;
   node->thunk.this_adjusting = this_adjusting;
   node->thunk.virtual_offset_p = virtual_offset != NULL;
@@ -656,7 +662,7 @@ cgraph_node::get_for_asmname (tree asmname)
        node = node->next_sharing_asm_name)
     {
       cgraph_node *cn = dyn_cast <cgraph_node *> (node);
-      if (cn && !cn->global.inlined_to)
+      if (cn && !cn->inlined_to)
 	return cn;
     }
   return NULL;
@@ -813,21 +819,21 @@ cgraph_edge::set_call_stmt (gcall *new_stmt, bool update_speculative)
       e = make_direct (new_callee);
     }
 
-  push_cfun (DECL_STRUCT_FUNCTION (e->caller->decl));
-  e->can_throw_external = stmt_can_throw_external (new_stmt);
-  pop_cfun ();
+  function *fun = DECL_STRUCT_FUNCTION (e->caller->decl);
+  e->can_throw_external = stmt_can_throw_external (fun, new_stmt);
   if (e->caller->call_site_hash)
     cgraph_add_edge_to_call_site_hash (e);
 }
 
 /* Allocate a cgraph_edge structure and fill it with data according to the
    parameters of which only CALLEE can be NULL (when creating an indirect call
-   edge).  */
+   edge).  CLONING_P should be set if properties that are copied from an
+   original edge should not be calculated.  */
 
 cgraph_edge *
 symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
 			   gcall *call_stmt, profile_count count,
-			   bool indir_unknown_callee)
+			   bool indir_unknown_callee, bool cloning_p)
 {
   cgraph_edge *edge;
 
@@ -844,14 +850,8 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
       gcc_assert (is_gimple_call (call_stmt));
     }
 
-  if (free_edges)
-    {
-      edge = free_edges;
-      free_edges = NEXT_FREE_EDGE (edge);
-    }
-  else
-    edge = ggc_alloc<cgraph_edge> ();
-
+  edge = ggc_alloc<cgraph_edge> ();
+  edge->m_summary_id = -1;
   edges_count++;
 
   gcc_assert (++edges_max_uid != 0);
@@ -866,30 +866,23 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
   edge->lto_stmt_uid = 0;
 
   edge->count = count;
-
   edge->call_stmt = call_stmt;
-  push_cfun (DECL_STRUCT_FUNCTION (caller->decl));
-  edge->can_throw_external
-    = call_stmt ? stmt_can_throw_external (call_stmt) : false;
-  pop_cfun ();
-  if (call_stmt
-      && callee && callee->decl
-      && !gimple_check_call_matching_types (call_stmt, callee->decl,
-					    false))
-    {
-      edge->inline_failed = CIF_MISMATCHED_ARGUMENTS;
-      edge->call_stmt_cannot_inline_p = true;
-    }
-  else
-    {
-      edge->inline_failed = CIF_FUNCTION_NOT_CONSIDERED;
-      edge->call_stmt_cannot_inline_p = false;
-    }
-
   edge->indirect_info = NULL;
   edge->indirect_inlining_edge = 0;
   edge->speculative = false;
   edge->indirect_unknown_callee = indir_unknown_callee;
+  if (call_stmt && caller->call_site_hash)
+    cgraph_add_edge_to_call_site_hash (edge);
+
+  if (cloning_p)
+    return edge;
+
+  edge->can_throw_external
+    = call_stmt ? stmt_can_throw_external (DECL_STRUCT_FUNCTION (caller->decl),
+					   call_stmt) : false;
+  edge->inline_failed = CIF_FUNCTION_NOT_CONSIDERED;
+  edge->call_stmt_cannot_inline_p = false;
+
   if (opt_for_fn (edge->caller->decl, flag_devirtualize)
       && call_stmt && DECL_STRUCT_FUNCTION (caller->decl))
     edge->in_polymorphic_cdtor
@@ -897,22 +890,23 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
 				      caller->decl);
   else
     edge->in_polymorphic_cdtor = caller->thunk.thunk_p;
-  if (call_stmt && caller->call_site_hash)
-    cgraph_add_edge_to_call_site_hash (edge);
 
   return edge;
 }
 
-/* Create edge from a given function to CALLEE in the cgraph.  */
+/* Create edge from a given function to CALLEE in the cgraph.  CLONING_P should
+   be set if properties that are copied from an original edge should not be
+   calculated.  */
 
 cgraph_edge *
 cgraph_node::create_edge (cgraph_node *callee,
-			  gcall *call_stmt, profile_count count)
+			  gcall *call_stmt, profile_count count, bool cloning_p)
 {
   cgraph_edge *edge = symtab->create_edge (this, callee, call_stmt, count,
-					   false);
+					   false, cloning_p);
 
-  initialize_inline_failed (edge);
+  if (!cloning_p)
+    initialize_inline_failed (edge);
 
   edge->next_caller = callee->callers;
   if (callee->callers)
@@ -940,25 +934,28 @@ cgraph_allocate_init_indirect_info (void)
 
 /* Create an indirect edge with a yet-undetermined callee where the call
    statement destination is a formal parameter of the caller with index
-   PARAM_INDEX. */
+   PARAM_INDEX. CLONING_P should be set if properties that are copied from an
+   original edge should not be calculated and indirect_info structure should
+   not be calculated.  */
 
 cgraph_edge *
 cgraph_node::create_indirect_edge (gcall *call_stmt, int ecf_flags,
 				   profile_count count,
-				   bool compute_indirect_info)
+				   bool cloning_p)
 {
-  cgraph_edge *edge = symtab->create_edge (this, NULL, call_stmt,
-							    count, true);
+  cgraph_edge *edge = symtab->create_edge (this, NULL, call_stmt, count, true,
+					   cloning_p);
   tree target;
 
-  initialize_inline_failed (edge);
+  if (!cloning_p)
+    initialize_inline_failed (edge);
 
   edge->indirect_info = cgraph_allocate_init_indirect_info ();
   edge->indirect_info->ecf_flags = ecf_flags;
   edge->indirect_info->vptr_changed = true;
 
   /* Record polymorphic call info.  */
-  if (compute_indirect_info
+  if (!cloning_p
       && call_stmt
       && (target = gimple_call_fn (call_stmt))
       && virtual_method_call_p (target))
@@ -1009,14 +1006,13 @@ cgraph_edge::remove_caller (void)
 void
 symbol_table::free_edge (cgraph_edge *e)
 {
+  edges_count--;
+  if (e->m_summary_id != -1)
+    edge_released_summary_ids.safe_push (e->m_summary_id);
+
   if (e->indirect_info)
     ggc_free (e->indirect_info);
-
-  /* Clear out the edge so we do not dangle pointers.  */
-  memset (e, 0, sizeof (*e));
-  NEXT_FREE_EDGE (e) = free_edges;
-  free_edges = e;
-  edges_count--;
+  ggc_free (e);
 }
 
 /* Remove the edge in the cgraph.  */
@@ -1051,8 +1047,8 @@ cgraph_edge::remove (void)
      call call_dest
 
    At this time the function just creates the direct call,
-   the referencd representing the if conditional and attaches
-   them all to the orginal indirect call statement.  
+   the reference representing the if conditional and attaches
+   them all to the original indirect call statement.  
 
    Return direct edge created.  */
 
@@ -1146,7 +1142,7 @@ cgraph_edge::speculative_call_info (cgraph_edge *&direct,
   gcc_assert (e && e2 && ref);
 }
 
-/* Speculative call edge turned out to be direct call to CALLE_DECL.
+/* Speculative call edge turned out to be direct call to CALLEE_DECL.
    Remove the speculative call sequence and return edge representing the call.
    It is up to caller to redirect the call as appropriate. */
 
@@ -1221,7 +1217,7 @@ cgraph_edge::make_direct (cgraph_node *callee)
       edge = edge->resolve_speculation (callee->decl);
 
       /* On successful speculation just return the pre existing direct edge.  */
-      if (!indirect_unknown_callee)
+      if (!edge->indirect_unknown_callee)
         return edge;
     }
 
@@ -1246,13 +1242,6 @@ cgraph_edge::make_direct (cgraph_node *callee)
 
   /* Insert to callers list of the new callee.  */
   edge->set_callee (callee);
-
-  if (call_stmt
-      && !gimple_check_call_matching_types (call_stmt, callee->decl, false))
-    {
-      call_stmt_cannot_inline_p = true;
-      inline_failed = CIF_MISMATCHED_ARGUMENTS;
-    }
 
   /* We need to re-determine the inlining status of the edge.  */
   initialize_inline_failed (edge);
@@ -1282,28 +1271,9 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	 substitution), forget about speculating.  */
       if (decl)
 	e = e->resolve_speculation (decl);
-      /* If types do not match, speculation was likely wrong. 
-         The direct edge was possibly redirected to the clone with a different
-	 signature.  We did not update the call statement yet, so compare it 
-	 with the reference that still points to the proper type.  */
-      else if (!gimple_check_call_matching_types (e->call_stmt,
-						  ref->referred->decl,
-						  true))
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "Not expanding speculative call of %s -> %s\n"
-		     "Type mismatch.\n",
-		     e->caller->dump_name (),
-		     e->callee->dump_name ());
-	  e = e->resolve_speculation ();
-	  /* We are producing the final function body and will throw away the
-	     callgraph edges really soon.  Reset the counts/frequencies to
-	     keep verifier happy in the case of roundoff errors.  */
-	  e->count = gimple_bb (e->call_stmt)->count;
-	}
-      /* Expand speculation into GIMPLE code.  */
       else
 	{
+	  /* Expand speculation into GIMPLE code.  */
 	  if (dump_file)
 	    {
 	      fprintf (dump_file,
@@ -1348,7 +1318,7 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
   if (flag_checking && decl)
     {
       cgraph_node *node = cgraph_node::get (decl);
-      gcc_assert (!node || !node->clone.combined_args_to_skip);
+      gcc_assert (!node || !node->clone.param_adjustments);
     }
 
   if (symtab->dump_file)
@@ -1356,25 +1326,36 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
       fprintf (symtab->dump_file, "updating call of %s -> %s: ",
 	       e->caller->dump_name (), e->callee->dump_name ());
       print_gimple_stmt (symtab->dump_file, e->call_stmt, 0, dump_flags);
-      if (e->callee->clone.combined_args_to_skip)
+      if (e->callee->clone.param_adjustments)
+	e->callee->clone.param_adjustments->dump (symtab->dump_file);
+      unsigned performed_len
+	= vec_safe_length (e->caller->clone.performed_splits);
+      if (performed_len > 0)
+	fprintf (symtab->dump_file, "Performed splits records:\n");
+      for (unsigned i = 0; i < performed_len; i++)
 	{
-	  fprintf (symtab->dump_file, " combined args to skip: ");
-	  dump_bitmap (symtab->dump_file,
-		       e->callee->clone.combined_args_to_skip);
+	  ipa_param_performed_split *sm
+	    = &(*e->caller->clone.performed_splits)[i];
+	  print_node_brief (symtab->dump_file, "  dummy_decl: ", sm->dummy_decl,
+			    TDF_UID);
+	  fprintf (symtab->dump_file, ", unit_offset: %u\n", sm->unit_offset);
 	}
     }
 
-  if (e->callee->clone.combined_args_to_skip)
+  if (ipa_param_adjustments *padjs = e->callee->clone.param_adjustments)
     {
-      int lp_nr;
+      /* We need to defer cleaning EH info on the new statement to
+         fixup-cfg.  We may not have dominator information at this point
+	 and thus would end up with unreachable blocks and have no way
+	 to communicate that we need to run CFG cleanup then.  */
+      int lp_nr = lookup_stmt_eh_lp (e->call_stmt);
+      if (lp_nr != 0)
+	remove_stmt_from_eh_lp (e->call_stmt);
 
-      new_stmt = e->call_stmt;
-      if (e->callee->clone.combined_args_to_skip)
-	new_stmt
-	  = gimple_call_copy_skip_args (new_stmt,
-					e->callee->clone.combined_args_to_skip);
       tree old_fntype = gimple_call_fntype (e->call_stmt);
-      gimple_call_set_fndecl (new_stmt, e->callee->decl);
+      new_stmt = padjs->modify_call (e->call_stmt,
+				     e->caller->clone.performed_splits,
+				     e->callee->decl, false);
       cgraph_node *origin = e->callee;
       while (origin->clone_of)
 	origin = origin->clone_of;
@@ -1385,92 +1366,12 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	gimple_call_set_fntype (new_stmt, TREE_TYPE (e->callee->decl));
       else
 	{
-	  bitmap skip = e->callee->clone.combined_args_to_skip;
-	  tree t = cgraph_build_function_type_skip_args (old_fntype, skip,
-							 false);
-	  gimple_call_set_fntype (new_stmt, t);
+	  tree new_fntype = padjs->build_new_function_type (old_fntype, true);
+	  gimple_call_set_fntype (new_stmt, new_fntype);
 	}
 
-      if (gimple_vdef (new_stmt)
-	  && TREE_CODE (gimple_vdef (new_stmt)) == SSA_NAME)
-	SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
-
-      gsi = gsi_for_stmt (e->call_stmt);
-
-      /* For optimized away parameters, add on the caller side
-	 before the call
-	 DEBUG D#X => parm_Y(D)
-	 stmts and associate D#X with parm in decl_debug_args_lookup
-	 vector to say for debug info that if parameter parm had been passed,
-	 it would have value parm_Y(D).  */
-      if (e->callee->clone.combined_args_to_skip && MAY_HAVE_DEBUG_BIND_STMTS)
-	{
-	  vec<tree, va_gc> **debug_args
-	    = decl_debug_args_lookup (e->callee->decl);
-	  tree old_decl = gimple_call_fndecl (e->call_stmt);
-	  if (debug_args && old_decl)
-	    {
-	      tree parm;
-	      unsigned i = 0, num;
-	      unsigned len = vec_safe_length (*debug_args);
-	      unsigned nargs = gimple_call_num_args (e->call_stmt);
-	      for (parm = DECL_ARGUMENTS (old_decl), num = 0;
-		   parm && num < nargs;
-		   parm = DECL_CHAIN (parm), num++)
-		if (bitmap_bit_p (e->callee->clone.combined_args_to_skip, num)
-		    && is_gimple_reg (parm))
-		  {
-		    unsigned last = i;
-
-		    while (i < len && (**debug_args)[i] != DECL_ORIGIN (parm))
-		      i += 2;
-		    if (i >= len)
-		      {
-			i = 0;
-			while (i < last
-			       && (**debug_args)[i] != DECL_ORIGIN (parm))
-			  i += 2;
-			if (i >= last)
-			  continue;
-		      }
-		    tree ddecl = (**debug_args)[i + 1];
-		    tree arg = gimple_call_arg (e->call_stmt, num);
-		    if (!useless_type_conversion_p (TREE_TYPE (ddecl),
-						    TREE_TYPE (arg)))
-		      {
-			tree rhs1;
-			if (!fold_convertible_p (TREE_TYPE (ddecl), arg))
-			  continue;
-			if (TREE_CODE (arg) == SSA_NAME
-			    && gimple_assign_cast_p (SSA_NAME_DEF_STMT (arg))
-			    && (rhs1
-				= gimple_assign_rhs1 (SSA_NAME_DEF_STMT (arg)))
-			    && useless_type_conversion_p (TREE_TYPE (ddecl),
-							  TREE_TYPE (rhs1)))
-			  arg = rhs1;
-			else
-			  arg = fold_convert (TREE_TYPE (ddecl), arg);
-		      }
-
-		    gimple *def_temp
-		      = gimple_build_debug_bind (ddecl, unshare_expr (arg),
-						 e->call_stmt);
-		    gsi_insert_before (&gsi, def_temp, GSI_SAME_STMT);
-		  }
-	    }
-	}
-
-      gsi_replace (&gsi, new_stmt, false);
-      /* We need to defer cleaning EH info on the new statement to
-         fixup-cfg.  We may not have dominator information at this point
-	 and thus would end up with unreachable blocks and have no way
-	 to communicate that we need to run CFG cleanup then.  */
-      lp_nr = lookup_stmt_eh_lp (e->call_stmt);
       if (lp_nr != 0)
-	{
-	  remove_stmt_from_eh_lp (e->call_stmt);
-	  add_stmt_to_eh_lp (new_stmt, lp_nr);
-	}
+	add_stmt_to_eh_lp (new_stmt, lp_nr);
     }
   else
     {
@@ -1559,8 +1460,7 @@ cgraph_update_edges_for_call_stmt_node (cgraph_node *node,
 	{
 	  /* Keep calls marked as dead dead.  */
 	  if (new_stmt && is_gimple_call (new_stmt) && e->callee
-	      && DECL_BUILT_IN_CLASS (e->callee->decl) == BUILT_IN_NORMAL
-	      && DECL_FUNCTION_CODE (e->callee->decl) == BUILT_IN_UNREACHABLE)
+	      && fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE))
 	    {
               node->get_edge (old_stmt)->set_call_stmt
 		 (as_a <gcall *> (new_stmt));
@@ -1774,8 +1674,6 @@ cgraph_node::release_body (bool keep_arguments)
 void
 cgraph_node::remove (void)
 {
-  cgraph_node *n;
-
   if (symtab->ipa_clones_dump_file && symtab->cloned_nodes.contains (this))
     fprintf (symtab->ipa_clones_dump_file,
 	     "Callgraph removal;%s;%d;%s;%d;%d\n", asm_name (), order,
@@ -1792,8 +1690,13 @@ cgraph_node::remove (void)
      */
   force_output = false;
   forced_by_abi = false;
-  for (n = nested; n; n = n->next_nested)
+  cgraph_node *next;
+  for (cgraph_node *n = nested; n; n = next)
+  {
+    next = n->next_nested;
     n->origin = NULL;
+    n->next_nested = NULL;
+  }
   nested = NULL;
   if (origin)
     {
@@ -1847,9 +1750,9 @@ cgraph_node::remove (void)
      */
   if (symtab->state != LTO_STREAMING)
     {
-      n = cgraph_node::get (decl);
+      cgraph_node *n = cgraph_node::get (decl);
       if (!n
-	  || (!n->clones && !n->clone_of && !n->global.inlined_to
+	  || (!n->clones && !n->clone_of && !n->inlined_to
 	      && ((symtab->global_info_ready || in_lto_p)
 		  && (TREE_ASM_WRITTEN (n->decl)
 		      || DECL_EXTERNAL (n->decl)
@@ -1880,7 +1783,7 @@ cgraph_node::mark_address_taken (void)
 {
   /* Indirect inlining can figure out that all uses of the address are
      inlined.  */
-  if (global.inlined_to)
+  if (inlined_to)
     {
       gcc_assert (cfun->after_inlining);
       gcc_assert (callers->indirect_inlining_edge);
@@ -1897,22 +1800,22 @@ cgraph_node::mark_address_taken (void)
   node->address_taken = 1;
 }
 
-/* Return local info for the compiled function.  */
+/* Return local info node for the compiled function.  */
 
-cgraph_local_info *
-cgraph_node::local_info (tree decl)
+cgraph_node *
+cgraph_node::local_info_node (tree decl)
 {
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
   cgraph_node *node = get (decl);
   if (!node)
     return NULL;
-  return &node->ultimate_alias_target ()->local;
+  return node->ultimate_alias_target ();
 }
 
-/* Return local info for the compiled function.  */
+/* Return RTL info for the compiled function.  */
 
 cgraph_rtl_info *
-cgraph_node::rtl_info (tree decl)
+cgraph_node::rtl_info (const_tree decl)
 {
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
   cgraph_node *node = get (decl);
@@ -1927,7 +1830,10 @@ cgraph_node::rtl_info (tree decl)
     return NULL;
   /* Allocate if it doesn't exist.  */
   if (node->rtl == NULL)
-    node->rtl = ggc_cleared_alloc<cgraph_rtl_info> ();
+    {
+      node->rtl = ggc_cleared_alloc<cgraph_rtl_info> ();
+      SET_HARD_REG_SET (node->rtl->function_used_regs);
+    }
   return node->rtl;
 }
 
@@ -2004,10 +1910,10 @@ cgraph_node::dump (FILE *f)
 
   dump_base (f);
 
-  if (global.inlined_to)
+  if (inlined_to)
     fprintf (f, "  Function %s is inline copy in %s\n",
 	     dump_name (),
-	     global.inlined_to->dump_name ());
+	     inlined_to->dump_name ());
   if (clone_of)
     fprintf (f, "  Clone of %s\n", clone_of->dump_asm_name ());
   if (symtab->function_flags_ready)
@@ -2017,7 +1923,6 @@ cgraph_node::dump (FILE *f)
   if (profile_id)
     fprintf (f, "  Profile id: %i\n",
 	     profile_id);
-  fprintf (f, "  First run: %i\n", tp_first_run);
   cgraph_function_version_info *vi = function_version ();
   if (vi != NULL)
     {
@@ -2041,18 +1946,20 @@ cgraph_node::dump (FILE *f)
   fprintf (f, "  Function flags:");
   if (count.initialized_p ())
     {
-      fprintf (f, " count: ");
+      fprintf (f, " count:");
       count.dump (f);
     }
+  if (tp_first_run > 0)
+    fprintf (f, " first_run:%i", tp_first_run);
   if (origin)
-    fprintf (f, " nested in: %s", origin->asm_name ());
+    fprintf (f, " nested in:%s", origin->asm_name ());
   if (gimple_has_body_p (decl))
     fprintf (f, " body");
   if (process)
     fprintf (f, " process");
-  if (local.local)
+  if (local)
     fprintf (f, " local");
-  if (local.redefined_extern_inline)
+  if (redefined_extern_inline)
     fprintf (f, " redefined_extern_inline");
   if (only_called_at_startup)
     fprintf (f, " only_called_at_startup");
@@ -2082,14 +1989,15 @@ cgraph_node::dump (FILE *f)
     fprintf (f, " unlikely_executed");
   if (frequency == NODE_FREQUENCY_EXECUTED_ONCE)
     fprintf (f, " executed_once");
-  if (only_called_at_startup)
-    fprintf (f, " only_called_at_startup");
-  if (only_called_at_exit)
-    fprintf (f, " only_called_at_exit");
   if (opt_for_fn (decl, optimize_size))
     fprintf (f, " optimize_size");
   if (parallelized_function)
     fprintf (f, " parallelized_function");
+  if (DECL_IS_OPERATOR_NEW_P (decl))
+    fprintf (f, " operator_new");
+  if (DECL_IS_OPERATOR_DELETE_P (decl))
+    fprintf (f, " operator_delete");
+
 
   fprintf (f, "\n");
 
@@ -2097,22 +2005,30 @@ cgraph_node::dump (FILE *f)
     {
       fprintf (f, "  Thunk");
       if (thunk.alias)
-        fprintf (f, "  of %s (asm: %s)",
+	fprintf (f, "  of %s (asm:%s)",
 		 lang_hooks.decl_printable_name (thunk.alias, 2),
 		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk.alias)));
-      fprintf (f, " fixed offset %i virtual value %i has "
-	       "virtual offset %i)\n",
+      fprintf (f, " fixed offset %i virtual value %i indirect_offset %i "
+		  "has virtual offset %i\n",
 	       (int)thunk.fixed_offset,
 	       (int)thunk.virtual_value,
+	       (int)thunk.indirect_offset,
 	       (int)thunk.virtual_offset_p);
     }
+  else if (former_thunk_p ())
+    fprintf (f, "  Former thunk fixed offset %i virtual value %i "
+	     "indirect_offset %i has virtual offset %i\n",
+	     (int)thunk.fixed_offset,
+	     (int)thunk.virtual_value,
+	     (int)thunk.indirect_offset,
+	     (int)thunk.virtual_offset_p);
   if (alias && thunk.alias
       && DECL_P (thunk.alias))
     {
       fprintf (f, "  Alias of %s",
 	       lang_hooks.decl_printable_name (thunk.alias, 2));
       if (DECL_ASSEMBLER_NAME_SET_P (thunk.alias))
-        fprintf (f, " (asm: %s)",
+	fprintf (f, " (asm:%s)",
 		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk.alias)));
       fprintf (f, "\n");
     }
@@ -2146,7 +2062,7 @@ cgraph_node::dump (FILE *f)
 	if (dyn_cast <cgraph_node *> (ref->referring)->count.initialized_p ())
 	  sum += dyn_cast <cgraph_node *> (ref->referring)->count.ipa ();
   
-      if (global.inlined_to
+      if (inlined_to
 	  || (symtab->state < EXPANSION
 	      && ultimate_alias_target () == this && only_called_directly_p ()))
 	ok = !count.ipa ().differs_from_p (sum);
@@ -2193,6 +2109,22 @@ cgraph_node::dump (FILE *f)
 	edge->indirect_info->context.dump (f);
     }
 }
+
+/* Dump call graph node to file F in graphviz format.  */
+
+void
+cgraph_node::dump_graphviz (FILE *f)
+{
+  cgraph_edge *edge;
+
+  for (edge = callees; edge; edge = edge->next_callee)
+    {
+      cgraph_node *callee = edge->callee;
+
+      fprintf (f, "\t\"%s\" -> \"%s\"\n", dump_name (), callee->dump_name ());
+    }
+}
+
 
 /* Dump call graph node NODE to stderr.  */
 
@@ -2246,14 +2178,14 @@ cgraph_node::get_availability (symtab_node *ref)
     {
       cgraph_node *cref = dyn_cast <cgraph_node *> (ref);
       if (cref)
-	ref = cref->global.inlined_to;
+	ref = cref->inlined_to;
     }
   enum availability avail;
   if (!analyzed)
     avail = AVAIL_NOT_AVAILABLE;
-  else if (local.local)
+  else if (local)
     avail = AVAIL_LOCAL;
-  else if (global.inlined_to)
+  else if (inlined_to)
     avail = AVAIL_AVAILABLE;
   else if (transparent_alias)
     ultimate_alias_target (&avail, ref);
@@ -2374,7 +2306,7 @@ cgraph_node::make_local (cgraph_node *node, void *)
       node->set_comdat_group (NULL);
       node->externally_visible = false;
       node->forced_by_abi = false;
-      node->local.local = true;
+      node->local = true;
       node->set_section (NULL);
       node->unique_name = ((node->resolution == LDPR_PREVAILING_DEF_IRONLY
 			   || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
@@ -2404,7 +2336,7 @@ set_nothrow_flag_1 (cgraph_node *node, bool nothrow, bool non_call,
   if (nothrow && !TREE_NOTHROW (node->decl))
     {
       /* With non-call exceptions we can't say for sure if other function body
-	 was not possibly optimized to stil throw.  */
+	 was not possibly optimized to still throw.  */
       if (!non_call || node->binds_to_current_def_p ())
 	{
 	  TREE_NOTHROW (node->decl) = true;
@@ -2612,7 +2544,7 @@ set_const_flag_1 (cgraph_node *node, bool set_const, bool looping,
    If SET_CONST if false, clear the flag.
 
    When setting the flag be careful about possible interposition and
-   do not set the flag for functions that can be interposet and set pure
+   do not set the flag for functions that can be interposed and set pure
    flag for functions that can bind to other definition. 
 
    Return true if any change was done. */
@@ -2704,13 +2636,11 @@ bool
 cgraph_node::set_pure_flag (bool pure, bool looping)
 {
   struct set_pure_flag_info info = {pure, looping, false};
-  if (!pure)
-    looping = false;
   call_for_symbol_thunks_and_aliases (set_pure_flag_1, &info, !pure, true);
   return info.changed;
 }
 
-/* Return true when cgraph_node can not return or throw and thus
+/* Return true when cgraph_node cannot return or throw and thus
    it is safe to ignore its side effects for IPA analysis.  */
 
 bool
@@ -2724,7 +2654,7 @@ cgraph_node::cannot_return_p (void)
 	     == (ECF_NORETURN | ECF_NOTHROW));
 }
 
-/* Return true when call of edge can not lead to return from caller
+/* Return true when call of edge cannot lead to return from caller
    and thus it is safe to ignore its side effects for IPA analysis
    when computing side effects of the caller.
    FIXME: We could actually mark all edges that have no reaching
@@ -2747,7 +2677,7 @@ cgraph_edge::cannot_lead_to_return_p (void)
     return callee->cannot_return_p ();
 }
 
-/* Return true if the call can be hot.  */
+/* Return true if the edge may be considered hot.  */
 
 bool
 cgraph_edge::maybe_hot_p (void)
@@ -2766,15 +2696,18 @@ cgraph_edge::maybe_hot_p (void)
     return false;
   if (caller->frequency == NODE_FREQUENCY_HOT)
     return true;
-  /* If profile is now known yet, be conservative.
-     FIXME: this predicate is used by early inliner and can do better there.  */
-  if (symtab->state < IPA_SSA)
+  if (!count.initialized_p ())
     return true;
-  if (caller->frequency == NODE_FREQUENCY_EXECUTED_ONCE
-      && sreal_frequency () * 2 < 3)
+  cgraph_node *where = caller->inlined_to ? caller->inlined_to : caller;
+  if (!where->count.initialized_p ())
     return false;
-  if (PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION) == 0
-      || sreal_frequency () * PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION) <= 1)
+  if (caller->frequency == NODE_FREQUENCY_EXECUTED_ONCE)
+    {
+      if (count.apply_scale (2, 1) < where->count.apply_scale (3, 1))
+	return false;
+    }
+  else if (count.apply_scale (param_hot_bb_frequency_fraction , 1)
+	   < where->count)
     return false;
   return true;
 }
@@ -2809,7 +2742,7 @@ cgraph_node::can_remove_if_no_direct_calls_p (bool will_inline)
   if (will_inline && address_taken)
     return false;
 
-  /* Otheriwse check if we can remove the symbol itself and then verify
+  /* Otherwise check if we can remove the symbol itself and then verify
      that only uses of the comdat groups are direct call to THIS
      or its aliases.   */
   if (!can_remove_if_no_direct_calls_and_refs_p ())
@@ -2865,7 +2798,7 @@ bool
 cgraph_node::will_be_removed_from_program_if_no_direct_calls_p
 	 (bool will_inline)
 {
-  gcc_assert (!global.inlined_to);
+  gcc_assert (!inlined_to);
   if (DECL_EXTERNAL (decl))
     return true;
 
@@ -2960,42 +2893,55 @@ cgraph_node::collect_callers (void)
   return redirect_callers;
 }
 
-/* Return TRUE if NODE2 a clone of NODE or is equivalent to it.  */
+
+/* Return TRUE if NODE2 a clone of NODE or is equivalent to it.  Return
+   optimistically true if this cannot be determined.  */
 
 static bool
 clone_of_p (cgraph_node *node, cgraph_node *node2)
 {
-  bool skipped_thunk = false;
   node = node->ultimate_alias_target ();
   node2 = node2->ultimate_alias_target ();
+
+  if (node2->clone_of == node
+      || node2->former_clone_of == node->decl)
+    return true;
+
+  if (!node->thunk.thunk_p && !node->former_thunk_p ())
+    {
+      while (node2 && node->decl != node2->decl)
+	node2 = node2->clone_of;
+      return node2 != NULL;
+    }
 
   /* There are no virtual clones of thunks so check former_clone_of or if we
      might have skipped thunks because this adjustments are no longer
      necessary.  */
-  while (node->thunk.thunk_p)
+  while (node->thunk.thunk_p || node->former_thunk_p ())
     {
-      if (node2->former_clone_of == node->decl)
-	return true;
       if (!node->thunk.this_adjusting)
 	return false;
+      /* In case of instrumented expanded thunks, which can have multiple calls
+	 in them, we do not know how to continue and just have to be
+	 optimistic.  */
+      if (node->callees->next_callee)
+	return true;
       node = node->callees->callee->ultimate_alias_target ();
-      skipped_thunk = true;
-    }
 
-  if (skipped_thunk)
-    {
-      if (!node2->clone.args_to_skip
-	  || !bitmap_bit_p (node2->clone.args_to_skip, 0))
+      if (!node2->clone.param_adjustments
+	  || node2->clone.param_adjustments->first_param_intact_p ())
 	return false;
       if (node2->former_clone_of == node->decl)
 	return true;
-      else if (!node2->clone_of)
-	return false;
+
+      cgraph_node *n2 = node2;
+      while (n2 && node->decl != n2->decl)
+	n2 = n2->clone_of;
+      if (n2)
+	return true;
     }
 
-  while (node != node2 && node2)
-    node2 = node2->clone_of;
-  return node2 != NULL;
+  return false;
 }
 
 /* Verify edge count and frequency.  */
@@ -3039,7 +2985,7 @@ cgraph_edge::verify_corresponds_to_fndecl (tree decl)
 {
   cgraph_node *node;
 
-  if (!decl || callee->global.inlined_to)
+  if (!decl || callee->inlined_to)
     return false;
   if (symtab->state == LTO_STREAMING)
     return false;
@@ -3060,8 +3006,8 @@ cgraph_edge::verify_corresponds_to_fndecl (tree decl)
 
   /* Optimizers can redirect unreachable calls or calls triggering undefined
      behavior to builtin_unreachable.  */
-  if (DECL_BUILT_IN_CLASS (callee->decl) == BUILT_IN_NORMAL
-      && DECL_FUNCTION_CODE (callee->decl) == BUILT_IN_UNREACHABLE)
+
+  if (fndecl_built_in_p (callee->decl, BUILT_IN_UNREACHABLE))
     return false;
 
   if (callee->former_clone_of != node->decl
@@ -3071,6 +3017,15 @@ cgraph_edge::verify_corresponds_to_fndecl (tree decl)
   else
     return false;
 }
+
+/* Disable warnings about missing quoting in GCC diagnostics for
+   the verification errors.  Their format strings don't follow GCC
+   diagnostic conventions and the calls are ultimately followed by
+   one to internal_error.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
 
 /* Verify cgraph nodes of given cgraph node.  */
 DEBUG_FUNCTION void
@@ -3100,27 +3055,27 @@ cgraph_node::verify_node (void)
       error ("cgraph count invalid");
       error_found = true;
     }
-  if (global.inlined_to && same_comdat_group)
+  if (inlined_to && same_comdat_group)
     {
       error ("inline clone in same comdat group list");
       error_found = true;
     }
-  if (!definition && !in_other_partition && local.local)
+  if (!definition && !in_other_partition && local)
     {
       error ("local symbols must be defined");
       error_found = true;
     }
-  if (global.inlined_to && externally_visible)
+  if (inlined_to && externally_visible)
     {
       error ("externally visible inline clone");
       error_found = true;
     }
-  if (global.inlined_to && address_taken)
+  if (inlined_to && address_taken)
     {
       error ("inline clone with address taken");
       error_found = true;
     }
-  if (global.inlined_to && force_output)
+  if (inlined_to && force_output)
     {
       error ("inline clone is forced to output");
       error_found = true;
@@ -3157,9 +3112,9 @@ cgraph_node::verify_node (void)
 	}
       if (!e->inline_failed)
 	{
-	  if (global.inlined_to
-	      != (e->caller->global.inlined_to
-		  ? e->caller->global.inlined_to : e->caller))
+	  if (inlined_to
+	      != (e->caller->inlined_to
+		  ? e->caller->inlined_to : e->caller))
 	    {
 	      error ("inlined_to pointer is wrong");
 	      error_found = true;
@@ -3171,7 +3126,7 @@ cgraph_node::verify_node (void)
 	    }
 	}
       else
-	if (global.inlined_to)
+	if (inlined_to)
 	  {
 	    error ("inlined_to pointer set for noninline callers");
 	    error_found = true;
@@ -3182,13 +3137,12 @@ cgraph_node::verify_node (void)
       if (e->verify_count ())
 	error_found = true;
       if (gimple_has_body_p (e->caller->decl)
-	  && !e->caller->global.inlined_to
+	  && !e->caller->inlined_to
 	  && !e->speculative
 	  /* Optimized out calls are redirected to __builtin_unreachable.  */
 	  && (e->count.nonzero_p ()
 	      || ! e->callee->decl
-	      || DECL_BUILT_IN_CLASS (e->callee->decl) != BUILT_IN_NORMAL
-	      || DECL_FUNCTION_CODE (e->callee->decl) != BUILT_IN_UNREACHABLE)
+	      || !fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE))
 	  && count
 	      == ENTRY_BLOCK_PTR_FOR_FN (DECL_STRUCT_FUNCTION (decl))->count
 	  && (!e->count.ipa_p ()
@@ -3208,7 +3162,7 @@ cgraph_node::verify_node (void)
       if (e->verify_count ())
 	error_found = true;
       if (gimple_has_body_p (e->caller->decl)
-	  && !e->caller->global.inlined_to
+	  && !e->caller->inlined_to
 	  && !e->speculative
 	  && e->count.ipa_p ()
 	  && count
@@ -3225,12 +3179,12 @@ cgraph_node::verify_node (void)
 	  error_found = true;
 	}
     }
-  if (!callers && global.inlined_to)
+  if (!callers && inlined_to)
     {
       error ("inlined_to pointer is set but no predecessors found");
       error_found = true;
     }
-  if (global.inlined_to == this)
+  if (inlined_to == this)
     {
       error ("inlined_to pointer refers to itself");
       error_found = true;
@@ -3238,14 +3192,14 @@ cgraph_node::verify_node (void)
 
   if (clone_of)
     {
-      cgraph_node *n;
-      for (n = clone_of->clones; n; n = n->next_sibling_clone)
-	if (n == this)
-	  break;
-      if (!n)
+      cgraph_node *first_clone = clone_of->clones;
+      if (first_clone != this)
 	{
-	  error ("cgraph_node has wrong clone_of");
-	  error_found = true;
+	  if (prev_sibling_clone->clone_of != clone_of)
+	    {
+	      error ("cgraph_node has wrong clone_of");
+	      error_found = true;
+	    }
 	}
     }
   if (clones)
@@ -3319,7 +3273,7 @@ cgraph_node::verify_node (void)
 	  error ("More than one edge out of thunk node");
           error_found = true;
 	}
-      if (gimple_has_body_p (decl) && !global.inlined_to)
+      if (gimple_has_body_p (decl) && !inlined_to)
         {
 	  error ("Thunk is not supposed to have body");
           error_found = true;
@@ -3327,7 +3281,7 @@ cgraph_node::verify_node (void)
     }
   else if (analyzed && gimple_has_body_p (decl)
 	   && !TREE_ASM_WRITTEN (decl)
-	   && (!DECL_EXTERNAL (decl) || global.inlined_to)
+	   && (!DECL_EXTERNAL (decl) || inlined_to)
 	   && !flag_wpa)
     {
       if (this_cfun->cfg)
@@ -3427,6 +3381,30 @@ cgraph_node::verify_node (void)
 	  e->aux = 0;
 	}
     }
+
+  if (nested != NULL)
+    {
+      for (cgraph_node *n = nested; n != NULL; n = n->next_nested)
+	{
+	  if (n->origin == NULL)
+	    {
+	      error ("missing origin for a node in a nested list");
+	      error_found = true;
+	    }
+	  else if (n->origin != this)
+	    {
+	      error ("origin points to a different parent");
+	      error_found = true;
+	      break;
+	    }
+	}
+    }
+  if (next_nested != NULL && origin == NULL)
+    {
+      error ("missing origin for a node in a nested list");
+      error_found = true;
+    }
+
   if (error_found)
     {
       dump (stderr);
@@ -3447,6 +3425,10 @@ cgraph_node::verify_cgraph_nodes (void)
   FOR_EACH_FUNCTION (node)
     node->verify ();
 }
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif
 
 /* Walk the alias chain to return the function cgraph_node is alias of.
    Walk through thunks, too.
@@ -3534,12 +3516,17 @@ cgraph_node::get_untransformed_body (void)
   struct lto_in_decl_state *decl_state
 	 = lto_get_function_in_decl_state (file_data, decl);
 
+  cgraph_node *origin = this;
+  while (origin->clone_of)
+    origin = origin->clone_of;
+
+  int stream_order = origin->order - file_data->order_base;
   data = lto_get_section_data (file_data, LTO_section_function_body,
-			       name, &len, decl_state->compressed);
+			       name, stream_order, &len,
+			       decl_state->compressed);
   if (!data)
-    fatal_error (input_location, "%s: section %s is missing",
-		 file_data->file_name,
-		 name);
+    fatal_error (input_location, "%s: section %s.%d is missing",
+		 file_data->file_name, name, stream_order);
 
   gcc_assert (DECL_STRUCT_FUNCTION (decl) == NULL);
 
@@ -3574,7 +3561,7 @@ cgraph_node::get_body (void)
      early.
      TODO: Materializing clones here will likely lead to smaller LTRANS
      footprint. */
-  gcc_assert (!global.inlined_to && !clone_of);
+  gcc_assert (!inlined_to && !clone_of);
   if (ipa_transforms_to_apply.exists ())
     {
       opt_pass *saved_current_pass = current_pass;
@@ -3585,7 +3572,7 @@ cgraph_node::get_body (void)
       set_dump_file (NULL);
 
       push_cfun (DECL_STRUCT_FUNCTION (decl));
-      execute_all_ipa_transforms ();
+      execute_all_ipa_transforms (true);
       cgraph_edge::rebuild_edges ();
       free_dominance_info (CDI_DOMINATORS);
       free_dominance_info (CDI_POST_DOMINATORS);
@@ -3603,9 +3590,9 @@ cgraph_node::get_body (void)
 /* Return the DECL_STRUCT_FUNCTION of the function.  */
 
 struct function *
-cgraph_node::get_fun (void)
+cgraph_node::get_fun () const
 {
-  cgraph_node *node = this;
+  const cgraph_node *node = this;
   struct function *fun = DECL_STRUCT_FUNCTION (node->decl);
 
   while (!fun && node->clone_of)
@@ -3615,102 +3602,6 @@ cgraph_node::get_fun (void)
     }
 
   return fun;
-}
-
-/* Verify if the type of the argument matches that of the function
-   declaration.  If we cannot verify this or there is a mismatch,
-   return false.  */
-
-static bool
-gimple_check_call_args (gimple *stmt, tree fndecl, bool args_count_match)
-{
-  tree parms, p;
-  unsigned int i, nargs;
-
-  /* Calls to internal functions always match their signature.  */
-  if (gimple_call_internal_p (stmt))
-    return true;
-
-  nargs = gimple_call_num_args (stmt);
-
-  /* Get argument types for verification.  */
-  if (fndecl)
-    parms = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
-  else
-    parms = TYPE_ARG_TYPES (gimple_call_fntype (stmt));
-
-  /* Verify if the type of the argument matches that of the function
-     declaration.  If we cannot verify this or there is a mismatch,
-     return false.  */
-  if (fndecl && DECL_ARGUMENTS (fndecl))
-    {
-      for (i = 0, p = DECL_ARGUMENTS (fndecl);
-	   i < nargs;
-	   i++, p = DECL_CHAIN (p))
-	{
-	  tree arg;
-	  /* We cannot distinguish a varargs function from the case
-	     of excess parameters, still deferring the inlining decision
-	     to the callee is possible.  */
-	  if (!p)
-	    break;
-	  arg = gimple_call_arg (stmt, i);
-	  if (p == error_mark_node
-	      || DECL_ARG_TYPE (p) == error_mark_node
-	      || arg == error_mark_node
-	      || (!types_compatible_p (DECL_ARG_TYPE (p), TREE_TYPE (arg))
-		  && !fold_convertible_p (DECL_ARG_TYPE (p), arg)))
-            return false;
-	}
-      if (args_count_match && p)
-	return false;
-    }
-  else if (parms)
-    {
-      for (i = 0, p = parms; i < nargs; i++, p = TREE_CHAIN (p))
-	{
-	  tree arg;
-	  /* If this is a varargs function defer inlining decision
-	     to callee.  */
-	  if (!p)
-	    break;
-	  arg = gimple_call_arg (stmt, i);
-	  if (TREE_VALUE (p) == error_mark_node
-	      || arg == error_mark_node
-	      || TREE_CODE (TREE_VALUE (p)) == VOID_TYPE
-	      || (!types_compatible_p (TREE_VALUE (p), TREE_TYPE (arg))
-		  && !fold_convertible_p (TREE_VALUE (p), arg)))
-            return false;
-	}
-    }
-  else
-    {
-      if (nargs != 0)
-        return false;
-    }
-  return true;
-}
-
-/* Verify if the type of the argument and lhs of CALL_STMT matches
-   that of the function declaration CALLEE. If ARGS_COUNT_MATCH is
-   true, the arg count needs to be the same.
-   If we cannot verify this or there is a mismatch, return false.  */
-
-bool
-gimple_check_call_matching_types (gimple *call_stmt, tree callee,
-				  bool args_count_match)
-{
-  tree lhs;
-
-  if ((DECL_RESULT (callee)
-       && !DECL_BY_REFERENCE (DECL_RESULT (callee))
-       && (lhs = gimple_call_lhs (call_stmt)) != NULL_TREE
-       && !useless_type_conversion_p (TREE_TYPE (DECL_RESULT (callee)),
-                                      TREE_TYPE (lhs))
-       && !fold_convertible_p (TREE_TYPE (DECL_RESULT (callee)), lhs))
-      || !gimple_check_call_args (call_stmt, callee, args_count_match))
-    return false;
-  return true;
 }
 
 /* Reset all state within cgraph.c so that we can rerun the compiler
@@ -3727,7 +3618,7 @@ cgraph_c_finalize (void)
   version_info_node = NULL;
 }
 
-/* A wroker for call_for_symbol_and_aliases.  */
+/* A worker for call_for_symbol_and_aliases.  */
 
 bool
 cgraph_node::call_for_symbol_and_aliases_1 (bool (*callback) (cgraph_node *,
@@ -3764,9 +3655,111 @@ cgraph_node::has_thunk_p (cgraph_node *node, void *)
 sreal
 cgraph_edge::sreal_frequency ()
 {
-  return count.to_sreal_scale (caller->global.inlined_to
-			       ? caller->global.inlined_to->count
+  return count.to_sreal_scale (caller->inlined_to
+			       ? caller->inlined_to->count
 			       : caller->count);
 }
+
+
+/* During LTO stream in this can be used to check whether call can possibly
+   be internal to the current translation unit.  */
+
+bool
+cgraph_edge::possibly_call_in_translation_unit_p (void)
+{
+  gcc_checking_assert (in_lto_p && caller->prevailing_p ());
+
+  /* While incremental linking we may end up getting function body later.  */
+  if (flag_incremental_link == INCREMENTAL_LINK_LTO)
+    return true;
+
+  /* We may be smarter here and avoid streaming in indirect calls we can't
+     track, but that would require arranging streaming the indirect call
+     summary first.  */
+  if (!callee)
+    return true;
+
+  /* If callee is local to the original translation unit, it will be
+     defined.  */
+  if (!TREE_PUBLIC (callee->decl) && !DECL_EXTERNAL (callee->decl))
+    return true;
+
+  /* Otherwise we need to lookup prevailing symbol (symbol table is not merged,
+     yet) and see if it is a definition.  In fact we may also resolve aliases,
+     but that is probably not too important.  */
+  symtab_node *node = callee;
+  for (int n = 10; node->previous_sharing_asm_name && n ; n--)
+    node = node->previous_sharing_asm_name;
+  if (node->previous_sharing_asm_name)
+    node = symtab_node::get_for_asmname (DECL_ASSEMBLER_NAME (callee->decl));
+  gcc_assert (TREE_PUBLIC (node->decl));
+  return node->get_availability () >= AVAIL_INTERPOSABLE;
+}
+
+/* A stashed copy of "symtab" for use by selftest::symbol_table_test.
+   This needs to be a global so that it can be a GC root, and thus
+   prevent the stashed copy from being garbage-collected if the GC runs
+   during a symbol_table_test.  */
+
+symbol_table *saved_symtab;
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* class selftest::symbol_table_test.  */
+
+/* Constructor.  Store the old value of symtab, and create a new one.  */
+
+symbol_table_test::symbol_table_test ()
+{
+  gcc_assert (saved_symtab == NULL);
+  saved_symtab = symtab;
+  symtab = new (ggc_alloc <symbol_table> ()) symbol_table ();
+}
+
+/* Destructor.  Restore the old value of symtab.  */
+
+symbol_table_test::~symbol_table_test ()
+{
+  gcc_assert (saved_symtab != NULL);
+  symtab = saved_symtab;
+  saved_symtab = NULL;
+}
+
+/* Verify that symbol_table_test works.  */
+
+static void
+test_symbol_table_test ()
+{
+  /* Simulate running two selftests involving symbol tables.  */
+  for (int i = 0; i < 2; i++)
+    {
+      symbol_table_test stt;
+      tree test_decl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL,
+				   get_identifier ("test_decl"),
+				   build_function_type_list (void_type_node,
+							     NULL_TREE));
+      cgraph_node *node = cgraph_node::get_create (test_decl);
+      gcc_assert (node);
+
+      /* Verify that the node has order 0 on both iterations,
+	 and thus that nodes have predictable dump names in selftests.  */
+      ASSERT_EQ (node->order, 0);
+      ASSERT_STREQ (node->dump_name (), "test_decl/0");
+    }
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+cgraph_c_tests ()
+{
+  test_symbol_table_test ();
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P */
 
 #include "gt-cgraph.h"

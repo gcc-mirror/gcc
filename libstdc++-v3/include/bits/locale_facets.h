@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997-2018 Free Software Foundation, Inc.
+// Copyright (C) 1997-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -59,10 +59,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 # define  _GLIBCXX_NUM_FACETS 14
 # define  _GLIBCXX_NUM_CXX11_FACETS 8
 #endif
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-# define _GLIBCXX_NUM_UNICODE_FACETS 2
+#ifdef _GLIBCXX_USE_CHAR8_T
+# define _GLIBCXX_NUM_UNICODE_FACETS 4
 #else
-# define _GLIBCXX_NUM_UNICODE_FACETS 0
+# define _GLIBCXX_NUM_UNICODE_FACETS 2
 #endif
 
   // Convert string to numeric value of type _Tp and store results.
@@ -900,7 +900,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if (_M_widen_ok == 1)
 	  {
-	    __builtin_memcpy(__to, __lo, __hi - __lo);
+	    if (__builtin_expect(__hi != __lo, true))
+	      __builtin_memcpy(__to, __lo, __hi - __lo);
 	    return __hi;
 	  }
 	if (!_M_widen_ok)
@@ -965,7 +966,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if (__builtin_expect(_M_narrow_ok == 1, true))
 	  {
-	    __builtin_memcpy(__to, __lo, __hi - __lo);
+	    if (__builtin_expect(__hi != __lo, true))
+	      __builtin_memcpy(__to, __lo, __hi - __lo);
 	    return __hi;
 	  }
 	if (!_M_narrow_ok)
@@ -1104,7 +1106,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       virtual const char*
       do_widen(const char* __lo, const char* __hi, char_type* __to) const
       {
-	__builtin_memcpy(__to, __lo, __hi - __lo);
+	if (__builtin_expect(__hi != __lo, true))
+	  __builtin_memcpy(__to, __lo, __hi - __lo);
 	return __hi;
       }
 
@@ -1157,7 +1160,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       do_narrow(const char_type* __lo, const char_type* __hi,
 		char __dfault __attribute__((__unused__)), char* __to) const
       {
-	__builtin_memcpy(__to, __lo, __hi - __lo);
+	if (__builtin_expect(__hi != __lo, true))
+	  __builtin_memcpy(__to, __lo, __hi - __lo);
 	return __hi;
       }
 

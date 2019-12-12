@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, FreeBSD/arm version.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Wasabi Systems, Inc.
 
    This file is part of GCC.
@@ -46,7 +46,7 @@
 
 #undef	LINK_SPEC
 #define LINK_SPEC "							\
-  %{p:%nconsider using `-pg' instead of `-p' with gprof (1) }		\
+  %{p:%nconsider using `-pg' instead of `-p' with gprof (1)}		\
   %{v:-V}								\
   %{assert*} %{R*} %{rpath*} %{defsym*}					\
   %{shared:-Bshareable %{h*} %{soname*}}				\

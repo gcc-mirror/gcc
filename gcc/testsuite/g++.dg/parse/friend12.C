@@ -2,5 +2,5 @@
 
 struct A
 {
-  friend int i = 0;  // { dg-error "cannot be declared friend" }
+  friend int i = 0;  // { dg-error "14:.i. is neither function nor member function; cannot be declared friend" }
 };

@@ -83,7 +83,7 @@ void test_keep (void)
   size_t uchar_max = (unsigned char)-1;
 
   KEEP ("1",     0, UR (1, uchar_max + 1), 1);
-  KEEP ("1\0\3", 1, UR (1, 2), 1);
+  KEEP ("1\0\3", 1, UR (1, 2), 2);
 }
 
 /* { dg-final { scan-tree-dump-times "call_in_true_branch_not_eliminated_" 0 "optimized" } }

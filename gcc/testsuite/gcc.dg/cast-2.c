@@ -24,8 +24,8 @@ f (void)
   (union u) l; /* { dg-error "cast to union type from type not present in union" } */
   (int) sv; /* { dg-error "aggregate value used where an integer was expected" } */
   (int) uv; /* { dg-error "aggregate value used where an integer was expected" } */
-  (float) sv; /* { dg-error "aggregate value used where a float was expected" } */
-  (float) uv; /* { dg-error "aggregate value used where a float was expected" } */
+  (float) sv; /* { dg-error "aggregate value used where a floating-point was expected" } */
+  (float) uv; /* { dg-error "aggregate value used where a floating-point was expected" } */
   (_Complex double) sv; /* { dg-error "aggregate value used where a complex was expected" } */
   (_Complex double) uv; /* { dg-error "aggregate value used where a complex was expected" } */
   (void *) sv; /* { dg-error "cannot convert to a pointer type" } */

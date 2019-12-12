@@ -1,6 +1,6 @@
 ; Options for the SPARC port of the compiler
 ;
-; Copyright (C) 2005-2018 Free Software Foundation, Inc.
+; Copyright (C) 2005-2019 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -138,94 +138,112 @@ Target Report InverseMask(SV_MODE)
 Do not generate code that can only run in supervisor mode (default).
 
 mcpu=
-Target RejectNegative Joined Var(sparc_cpu_and_features) Enum(sparc_processor_type) Init(PROCESSOR_V7)
-Use features of and schedule code for given CPU.
+Target RejectNegative Joined Var(sparc_cpu_and_features) Enum(sparc_processor) Init(PROCESSOR_V7)
+Use instructions of and schedule code for given CPU.
 
 mtune=
-Target RejectNegative Joined Var(sparc_cpu) Enum(sparc_processor_type) Init(PROCESSOR_V7)
+Target RejectNegative Joined Var(sparc_cpu) Enum(sparc_processor) Init(PROCESSOR_V7)
 Schedule code for given CPU.
 
 Enum
-Name(sparc_processor_type) Type(enum processor_type)
+Name(sparc_processor) Type(enum sparc_processor_type)
 
 EnumValue
-Enum(sparc_processor_type) String(native) Value(PROCESSOR_NATIVE) DriverOnly
+Enum(sparc_processor) String(native) Value(PROCESSOR_NATIVE) DriverOnly
 
 EnumValue
-Enum(sparc_processor_type) String(v7) Value(PROCESSOR_V7)
+Enum(sparc_processor) String(v7) Value(PROCESSOR_V7)
 
 EnumValue
-Enum(sparc_processor_type) String(cypress) Value(PROCESSOR_CYPRESS)
+Enum(sparc_processor) String(cypress) Value(PROCESSOR_CYPRESS)
 
 EnumValue
-Enum(sparc_processor_type) String(v8) Value(PROCESSOR_V8)
+Enum(sparc_processor) String(v8) Value(PROCESSOR_V8)
 
 EnumValue
-Enum(sparc_processor_type) String(supersparc) Value(PROCESSOR_SUPERSPARC)
+Enum(sparc_processor) String(supersparc) Value(PROCESSOR_SUPERSPARC)
 
 EnumValue
-Enum(sparc_processor_type) String(hypersparc) Value(PROCESSOR_HYPERSPARC)
+Enum(sparc_processor) String(hypersparc) Value(PROCESSOR_HYPERSPARC)
 
 EnumValue
-Enum(sparc_processor_type) String(leon) Value(PROCESSOR_LEON)
+Enum(sparc_processor) String(leon) Value(PROCESSOR_LEON)
 
 EnumValue
-Enum(sparc_processor_type) String(leon3) Value(PROCESSOR_LEON3)
+Enum(sparc_processor) String(leon3) Value(PROCESSOR_LEON3)
 
 EnumValue
-Enum(sparc_processor_type) String(leon3v7) Value(PROCESSOR_LEON3V7)
+Enum(sparc_processor) String(leon3v7) Value(PROCESSOR_LEON3V7)
 
 EnumValue
-Enum(sparc_processor_type) String(sparclite) Value(PROCESSOR_SPARCLITE)
+Enum(sparc_processor) String(sparclite) Value(PROCESSOR_SPARCLITE)
 
 EnumValue
-Enum(sparc_processor_type) String(f930) Value(PROCESSOR_F930)
+Enum(sparc_processor) String(f930) Value(PROCESSOR_F930)
 
 EnumValue
-Enum(sparc_processor_type) String(f934) Value(PROCESSOR_F934)
+Enum(sparc_processor) String(f934) Value(PROCESSOR_F934)
 
 EnumValue
-Enum(sparc_processor_type) String(sparclite86x) Value(PROCESSOR_SPARCLITE86X)
+Enum(sparc_processor) String(sparclite86x) Value(PROCESSOR_SPARCLITE86X)
 
 EnumValue
-Enum(sparc_processor_type) String(sparclet) Value(PROCESSOR_SPARCLET)
+Enum(sparc_processor) String(sparclet) Value(PROCESSOR_SPARCLET)
 
 EnumValue
-Enum(sparc_processor_type) String(tsc701) Value(PROCESSOR_TSC701)
+Enum(sparc_processor) String(tsc701) Value(PROCESSOR_TSC701)
 
 EnumValue
-Enum(sparc_processor_type) String(v9) Value(PROCESSOR_V9)
+Enum(sparc_processor) String(v9) Value(PROCESSOR_V9)
 
 EnumValue
-Enum(sparc_processor_type) String(ultrasparc) Value(PROCESSOR_ULTRASPARC)
+Enum(sparc_processor) String(ultrasparc) Value(PROCESSOR_ULTRASPARC)
 
 EnumValue
-Enum(sparc_processor_type) String(ultrasparc3) Value(PROCESSOR_ULTRASPARC3)
+Enum(sparc_processor) String(ultrasparc3) Value(PROCESSOR_ULTRASPARC3)
 
 EnumValue
-Enum(sparc_processor_type) String(niagara) Value(PROCESSOR_NIAGARA)
+Enum(sparc_processor) String(niagara) Value(PROCESSOR_NIAGARA)
 
 EnumValue
-Enum(sparc_processor_type) String(niagara2) Value(PROCESSOR_NIAGARA2)
+Enum(sparc_processor) String(niagara2) Value(PROCESSOR_NIAGARA2)
 
 EnumValue
-Enum(sparc_processor_type) String(niagara3) Value(PROCESSOR_NIAGARA3)
+Enum(sparc_processor) String(niagara3) Value(PROCESSOR_NIAGARA3)
 
 EnumValue
-Enum(sparc_processor_type) String(niagara4) Value(PROCESSOR_NIAGARA4)
+Enum(sparc_processor) String(niagara4) Value(PROCESSOR_NIAGARA4)
 
 EnumValue
-Enum(sparc_processor_type) String(niagara7) Value(PROCESSOR_NIAGARA7)
+Enum(sparc_processor) String(niagara7) Value(PROCESSOR_NIAGARA7)
 
 EnumValue
-Enum(sparc_processor_type) String(m8) Value(PROCESSOR_M8)
+Enum(sparc_processor) String(m8) Value(PROCESSOR_M8)
 
 mcmodel=
-Target RejectNegative Joined Var(sparc_cmodel_string)
+Target RejectNegative Joined Var(sparc_code_model) Enum(sparc_code_model) Init(CM_32)
 Use given SPARC-V9 code model.
 
+Enum
+Name(sparc_code_model) Type(enum sparc_code_model_type)
+
+EnumValue
+Enum(sparc_code_model) String(32) Value(CM_32)
+
+EnumValue
+Enum(sparc_code_model) String(medlow) Value(CM_MEDLOW)
+
+EnumValue
+Enum(sparc_code_model) String(medmid) Value(CM_MEDMID)
+
+EnumValue
+Enum(sparc_code_model) String(medany) Value(CM_MEDANY)
+
+EnumValue
+Enum(sparc_code_model) String(embmedany) Value(CM_EMBMEDANY)
+
 mdebug=
-Target RejectNegative Joined Var(sparc_debug_string)
+Target RejectNegative Joined Undocumented Var(sparc_debug_string)
 Enable debug output.
 
 mstd-struct-return

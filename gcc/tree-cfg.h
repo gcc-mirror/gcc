@@ -1,5 +1,5 @@
 /* Data and Control Flow Analysis for Trees.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -33,8 +33,7 @@ extern void init_empty_tree_cfg_for_function (struct function *);
 extern void init_empty_tree_cfg (void);
 extern void start_recording_case_labels (void);
 extern void end_recording_case_labels (void);
-extern basic_block label_to_block_fn (struct function *, tree);
-#define label_to_block(t) (label_to_block_fn (cfun, t))
+extern basic_block label_to_block (struct function *, tree);
 extern void cleanup_dead_labels (void);
 extern bool group_case_labels_stmt (gswitch *);
 extern bool group_case_labels (void);
@@ -84,12 +83,12 @@ extern void dump_function_to_file (tree, FILE *, dump_flags_t);
 extern void debug_function (tree, dump_flags_t);
 extern void print_loops_bb (FILE *, basic_block, int, int);
 extern void print_loops (FILE *, int);
-extern void debug (struct loop &ref);
-extern void debug (struct loop *ptr);
-extern void debug_verbose (struct loop &ref);
-extern void debug_verbose (struct loop *ptr);
+extern void debug (class loop &ref);
+extern void debug (class loop *ptr);
+extern void debug_verbose (class loop &ref);
+extern void debug_verbose (class loop *ptr);
 extern void debug_loops (int);
-extern void debug_loop (struct loop *, int);
+extern void debug_loop (class loop *, int);
 extern void debug_loop_num (unsigned, int);
 extern void remove_edge_and_dominated_blocks (edge);
 extern bool gimple_purge_dead_eh_edges (basic_block);
@@ -103,8 +102,10 @@ extern tree gimplify_build2 (gimple_stmt_iterator *, enum tree_code,
 extern tree gimplify_build1 (gimple_stmt_iterator *, enum tree_code,
 			     tree, tree);
 extern void extract_true_false_edges_from_block (basic_block, edge *, edge *);
+extern tree find_case_label_for_value (const gswitch *switch_stmt, tree val);
+extern edge find_taken_edge_switch_expr (const gswitch *switch_stmt, tree val);
 extern unsigned int execute_fixup_cfg (void);
-extern unsigned int split_critical_edges (void);
+extern unsigned int split_critical_edges (bool for_edge_insertion_p = false);
 extern basic_block insert_cond_bb (basic_block, gimple *, gimple *,
 				   profile_probability);
 extern bool gimple_find_sub_bbs (gimple_seq, gimple_stmt_iterator *);
@@ -112,6 +113,10 @@ extern bool extract_true_false_controlled_edges (basic_block, basic_block,
 						 edge *, edge *);
 extern void generate_range_test (basic_block bb, tree index, tree low,
 				 tree high, tree *lhs, tree *rhs);
+extern basic_block gimple_switch_label_bb (function *, gswitch *, unsigned);
+extern basic_block gimple_switch_default_bb (function *, gswitch *);
+extern edge gimple_switch_edge (function *, gswitch *, unsigned);
+extern edge gimple_switch_default_edge (function *, gswitch *);
 
 /* Return true if the LHS of a call should be removed.  */
 
@@ -121,6 +126,13 @@ should_remove_lhs_p (tree lhs)
   return (lhs
 	  && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (lhs))) == INTEGER_CST
 	  && !TREE_ADDRESSABLE (TREE_TYPE (lhs)));
+}
+
+
+inline unsigned int
+split_edges_for_insertion ()
+{
+  return split_critical_edges (/*for_edge_insertion_p=*/true);
 }
 
 #endif /* _TREE_CFG_H  */

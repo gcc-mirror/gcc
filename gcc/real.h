@@ -1,5 +1,5 @@
 /* Definitions of floating-point access for GNU compiler.
-   Copyright (C) 1989-2018 Free Software Foundation, Inc.
+   Copyright (C) 1989-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -41,11 +41,18 @@ struct GTY(()) real_value {
      sure they're packed together, otherwise REAL_VALUE_TYPE_SIZE will
      be miscomputed.  */
   unsigned int /* ENUM_BITFIELD (real_value_class) */ cl : 2;
+  /* 1 if number is decimal floating point.  */
   unsigned int decimal : 1;
+  /* 1 if number is negative.  */
   unsigned int sign : 1;
+  /* 1 if number is signalling.  */
   unsigned int signalling : 1;
+  /* 1 if number is canonical
+  All are generally used for handling cases in real.c.  */
   unsigned int canonical : 1;
+  /* unbiased exponent of the number.  */
   unsigned int uexp : EXP_BITS;
+  /* significand of the number.  */
   unsigned long sig[SIGSZ];
 };
 
@@ -216,6 +223,7 @@ public:
   operator const real_format *() const { return m_format; }
 
   bool decimal_p () const { return m_format && m_format->b == 10; }
+  bool can_represent_integral_type_p (tree type) const;
 
 private:
   const real_format *m_format;
@@ -499,6 +507,8 @@ extern void real_ceil (REAL_VALUE_TYPE *, format_helper,
 		       const REAL_VALUE_TYPE *);
 extern void real_round (REAL_VALUE_TYPE *, format_helper,
 			const REAL_VALUE_TYPE *);
+extern void real_roundeven (REAL_VALUE_TYPE *, format_helper,
+			    const REAL_VALUE_TYPE *);
 
 /* Set the sign of R to the sign of X.  */
 extern void real_copysign (REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *);
@@ -514,7 +524,7 @@ extern bool real_nextafter (REAL_VALUE_TYPE *, format_helper,
 /* Write into BUF the maximum representable finite floating-point
    number, (1 - b**-p) * b**emax for a given FP format FMT as a hex
    float string.  BUF must be large enough to contain the result.  */
-extern void get_max_float (const struct real_format *, char *, size_t);
+extern void get_max_float (const struct real_format *, char *, size_t, bool);
 
 #ifndef GENERATOR_FILE
 /* real related routines.  */
@@ -522,5 +532,9 @@ extern wide_int real_to_integer (const REAL_VALUE_TYPE *, bool *, int);
 extern void real_from_integer (REAL_VALUE_TYPE *, format_helper,
 			       const wide_int_ref &, signop);
 #endif
+
+/* Fills r with the largest value such that 1 + r*r won't overflow.
+   This is used in both sin (atan (x)) and cos (atan(x)) optimizations. */
+extern void build_sinatan_real (REAL_VALUE_TYPE *, tree); 
 
 #endif /* ! GCC_REAL_H */

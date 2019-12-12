@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2018 Free Software Foundation, Inc.
+// Copyright (C) 2006-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,8 +19,10 @@
 
 // { dg-do run }
 // { dg-options "-pthread"  }
+// { dg-add-options libatomic }
 // { dg-require-effective-target c++11 }
 // { dg-require-effective-target pthread }
+// { dg-require-cstdint "" }
 
 #include <memory>
 #include <random>

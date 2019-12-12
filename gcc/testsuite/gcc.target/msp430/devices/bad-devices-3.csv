@@ -1,0 +1,3 @@
+# Test warning for missing CPU_TYPE and MPY_TYPE headings
+# Device Name,FOO,BAR
+msp430_00,0,0

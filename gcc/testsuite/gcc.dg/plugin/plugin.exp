@@ -1,4 +1,4 @@
-#   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+#   Copyright (C) 2009-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -69,11 +69,17 @@ set plugin_test_list [list \
     { poly-int-05_plugin.c poly-int-test-1.c } \
     { poly-int-06_plugin.c poly-int-test-1.c } \
     { poly-int-07_plugin.c poly-int-test-1.c } \
+    { diagnostic_group_plugin.c \
+	  diagnostic-group-test-1.c } \
     { diagnostic_plugin_test_show_locus.c \
 	  diagnostic-test-show-locus-bw.c \
 	  diagnostic-test-show-locus-color.c \
+	  diagnostic-test-show-locus-no-labels.c \
+	  diagnostic-test-show-locus-bw-line-numbers.c \
+	  diagnostic-test-show-locus-bw-line-numbers-2.c \
+	  diagnostic-test-show-locus-color-line-numbers.c \
 	  diagnostic-test-show-locus-parseable-fixits.c \
-	  diagnostic-test-show-locus-generate-patch.c } \
+	  diagnostic-test-show-locus-generate-patch.c }\
     { diagnostic_plugin_test_tree_expression_range.c \
 	  diagnostic-test-expressions-1.c } \
     { diagnostic_plugin_show_trees.c \
@@ -90,12 +96,16 @@ set plugin_test_list [list \
 	  diagnostic-test-inlining-4.c } \
     { location_overflow_plugin.c \
 	  location-overflow-test-1.c \
-	  location-overflow-test-2.c } \
+	  location-overflow-test-2.c \
+	  location-overflow-test-pr83173.c } \
     { must_tail_call_plugin.c \
 	  must-tail-call-1.c \
 	  must-tail-call-2.c } \
     { expensive_selftests_plugin.c \
 	  expensive-selftests-1.c } \
+    { dump_plugin.c \
+	  dump-1.c \
+	  dump-2.c } \
 ]
 
 foreach plugin_test $plugin_test_list {

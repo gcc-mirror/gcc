@@ -1,5 +1,5 @@
 /* LTO symbol table.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -63,7 +63,7 @@ lto_cgraph_replace_node (struct cgraph_node *node,
     prevailing_node->forced_by_abi = true;
   if (node->address_taken)
     {
-      gcc_assert (!prevailing_node->global.inlined_to);
+      gcc_assert (!prevailing_node->inlined_to);
       prevailing_node->mark_address_taken ();
     }
   if (node->definition && prevailing_node->definition
@@ -240,7 +240,7 @@ warn_type_compatibility_p (tree prevailing_type, tree type,
   prevailing_type = TYPE_MAIN_VARIANT (prevailing_type);
   type = TYPE_MAIN_VARIANT (type);
 
-  /* We can not use types_compatible_p because we permit some changes
+  /* We cannot use types_compatible_p because we permit some changes
      across types.  For example unsigned size_t and "signed size_t" may be
      compatible when merging C and Fortran types.  */
   if (COMPLETE_TYPE_P (prevailing_type)
@@ -374,8 +374,9 @@ lto_symtab_merge (symtab_node *prevailing, symtab_node *entry)
 	 int a[]={1,2,3};
 	 here the first declaration is COMMON
 	 and sizeof(a) == sizeof (int).  */
-	else if (TREE_CODE (type) == ARRAY_TYPE)
-	  return (TYPE_SIZE (decl) == TYPE_SIZE (TREE_TYPE (type)));
+	else if (TREE_CODE (type) != ARRAY_TYPE
+		 || (TYPE_SIZE (type) != TYPE_SIZE (TREE_TYPE (type))))
+	  return false;
       }
 
   return true;
@@ -546,16 +547,17 @@ lto_symtab_merge_p (tree prevailing, tree decl)
   
   if (TREE_CODE (prevailing) == FUNCTION_DECL)
     {
-      if (DECL_BUILT_IN (prevailing) != DECL_BUILT_IN (decl))
+      if (fndecl_built_in_p (prevailing) != fndecl_built_in_p (decl))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "Not merging decls; "
 		     "DECL_BUILT_IN mismatch\n");
 	  return false;
 	}
-      if (DECL_BUILT_IN (prevailing)
+      if (fndecl_built_in_p (prevailing)
 	  && (DECL_BUILT_IN_CLASS (prevailing) != DECL_BUILT_IN_CLASS (decl)
-	      || DECL_FUNCTION_CODE (prevailing) != DECL_FUNCTION_CODE (decl)))
+	      || (DECL_UNCHECKED_FUNCTION_CODE (prevailing)
+		  != DECL_UNCHECKED_FUNCTION_CODE (decl))))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "Not merging decls; "
@@ -696,10 +698,21 @@ lto_symtab_merge_decls_2 (symtab_node *first, bool diagnosed_p)
 	{
 	  bool diag = false;
 	  if (level & 2)
-	    diag = warning_at (DECL_SOURCE_LOCATION (decl),
-			       OPT_Wodr,
-			       "%qD violates the C++ One Definition Rule ",
-			       decl);
+	    {
+	      /* Silence warning for method and variables which belong
+	         to types which already have ODR violation reported.  Complaining
+		 once is enough.  */
+	      if (TREE_CODE (decl) != FUNCTION_DECL
+		  || TREE_CODE (TREE_TYPE (decl)) != METHOD_TYPE
+		  || !TYPE_METHOD_BASETYPE (TREE_TYPE (decl))
+		  || !odr_type_p (TYPE_METHOD_BASETYPE (TREE_TYPE (decl)))
+		  || !odr_type_violation_reported_p 
+			(TYPE_METHOD_BASETYPE (TREE_TYPE (decl))))
+		diag = warning_at (DECL_SOURCE_LOCATION (decl),
+				   OPT_Wodr,
+				   "%qD violates the C++ One Definition Rule",
+				   decl);
+	    }
 	  if (!diag && (level & 1))
 	    diag = warning_at (DECL_SOURCE_LOCATION (decl),
 			       OPT_Wlto_type_mismatch,
@@ -738,7 +751,7 @@ lto_symtab_merge_decls_2 (symtab_node *first, bool diagnosed_p)
   if (tbaa_p)
     inform (DECL_SOURCE_LOCATION (prevailing->decl),
 	    "code may be misoptimized unless "
-	    "-fno-strict-aliasing is used");
+	    "%<-fno-strict-aliasing%> is used");
 
   mismatches.release ();
 }
@@ -797,7 +810,7 @@ lto_symtab_merge_decls_1 (symtab_node *first)
 	{
 	  for (e = first; e; e = e->next_sharing_asm_name)
 	    if (TREE_CODE (e->decl) == FUNCTION_DECL
-		&& !DECL_BUILT_IN (e->decl)
+		&& !fndecl_built_in_p (e->decl)
 		&& lto_symtab_symbol_p (e))
 	      {
 		prevailing = e;
@@ -894,10 +907,11 @@ lto_symtab_merge_symbols_1 (symtab_node *prevailing)
        e = next)
     {
       next = e->next_sharing_asm_name;
-
-      if (!lto_symtab_symbol_p (e))
-	continue;
       cgraph_node *ce = dyn_cast <cgraph_node *> (e);
+
+      if ((!TREE_PUBLIC (e->decl) && !DECL_EXTERNAL (e->decl))
+	  || (ce != NULL && ce->inlined_to))
+	continue;
       symtab_node *to = symtab_node::get (lto_symtab_prevailing_decl (e->decl));
 
       /* No matter how we are going to deal with resolution, we will ultimately
@@ -1030,7 +1044,7 @@ lto_symtab_merge_symbols (void)
 	      /* Builtins are not merged via decl merging.  It is however
 		 possible that tree merging unified the declaration.  We
 		 do not want duplicate entries in symbol table.  */
-	      if (cnode && DECL_BUILT_IN (node->decl)
+	      if (cnode && fndecl_built_in_p (node->decl)
 		  && (cnode2 = cgraph_node::get (node->decl))
 		  && cnode2 != cnode)
 		lto_cgraph_replace_node (cnode2, cnode);
@@ -1072,8 +1086,12 @@ lto_symtab_prevailing_virtual_decl (tree decl)
 {
   if (DECL_ABSTRACT_P (decl))
     return decl;
-  gcc_checking_assert (!type_in_anonymous_namespace_p (DECL_CONTEXT (decl))
-		       && DECL_ASSEMBLER_NAME_SET_P (decl));
+
+  if (type_in_anonymous_namespace_p (DECL_CONTEXT (decl)))
+    /* There can't be any other declarations.  */
+    return decl;
+
+  gcc_checking_assert (DECL_ASSEMBLER_NAME_SET_P (decl));
 
   symtab_node *n = symtab_node::get_for_asmname
 		     (DECL_ASSEMBLER_NAME (decl));

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build linux netbsd dragonfly nacl
+// +build hurd linux netbsd dragonfly nacl js,wasm
 
 package os
 
@@ -19,7 +19,7 @@ var executablePath, executablePathErr = func() (string, error) {
 	switch runtime.GOOS {
 	default:
 		return "", errors.New("Executable not implemented for " + runtime.GOOS)
-	case "linux", "android":
+	case "hurd", "linux", "android":
 		procfn = "/proc/self/exe"
 	case "netbsd":
 		procfn = "/proc/curproc/exe"

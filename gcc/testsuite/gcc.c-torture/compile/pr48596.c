@@ -1,4 +1,6 @@
 /* PR target/48596  */
+/* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
+
 enum { nrrdCenterUnknown, nrrdCenterNode, nrrdCenterCell, nrrdCenterLast };
 typedef struct { int size; int center; }  NrrdAxis;
 typedef struct { int dim; NrrdAxis axis[10]; } Nrrd;

@@ -1,6 +1,6 @@
 /* PR middle-end/40340 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wall -Wno-system-headers" } */
+/* { dg-options "-O2 -Wall -Wno-system-headers -fno-tree-dse" } */
 
 #include "pr40340.h"
 
@@ -20,5 +20,5 @@ main (void)
   return 0;
 }
 
-/* { dg-warning "writing" "" { target *-*-* } 10 } */
+/* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "" { target *-*-* } 10 } */
 /* { dg-message "file included" "In file included" { target *-*-* } 0 } */

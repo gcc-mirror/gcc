@@ -1,6 +1,6 @@
 /* Auxiliary functions for output asm template or expand rtl
    pattern of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -3163,16 +3163,30 @@ nds32_spilt_doubleword (rtx *operands, bool load_p)
       /* generate low_part and high_part memory format:
 	   low_part:  (post_modify ((reg) (plus (reg) (const 4)))
 	   high_part: (post_modify ((reg) (plus (reg) (const -12))) */
-      low_part[mem] = gen_frame_mem (SImode,
-				     gen_rtx_POST_MODIFY (Pmode, sub_mem,
-							  gen_rtx_PLUS (Pmode,
-							  sub_mem,
-							  GEN_INT (4))));
-      high_part[mem] = gen_frame_mem (SImode,
-				      gen_rtx_POST_MODIFY (Pmode, sub_mem,
-							   gen_rtx_PLUS (Pmode,
-							   sub_mem,
-							   GEN_INT (-12))));
+      low_part[mem] = gen_rtx_MEM (SImode,
+				   gen_rtx_POST_MODIFY (Pmode, sub_mem,
+							gen_rtx_PLUS (Pmode,
+							sub_mem,
+							GEN_INT (4))));
+      high_part[mem] = gen_rtx_MEM (SImode,
+				    gen_rtx_POST_MODIFY (Pmode, sub_mem,
+							 gen_rtx_PLUS (Pmode,
+							 sub_mem,
+							 GEN_INT (-12))));
+    }
+  else if (GET_CODE (sub_mem) == POST_INC)
+    {
+      /* memory format is (post_inc (reg)),
+	 so that extract (reg) from the (post_inc (reg)) pattern.  */
+      sub_mem = XEXP (sub_mem, 0);
+
+      /* generate low_part and high_part memory format:
+	   low_part:  (post_inc (reg))
+	   high_part: (post_inc (reg)) */
+      low_part[mem] = gen_rtx_MEM (SImode,
+				   gen_rtx_POST_INC (Pmode, sub_mem));
+      high_part[mem] = gen_rtx_MEM (SImode,
+				    gen_rtx_POST_INC (Pmode, sub_mem));
     }
   else if (GET_CODE (sub_mem) == POST_MODIFY)
     {
@@ -3189,14 +3203,14 @@ nds32_spilt_doubleword (rtx *operands, bool load_p)
       /* Generate low_part and high_part memory format:
 	   low_part:  (post_modify ((reg) (plus (reg) (const)))
 	   high_part: ((plus (reg) (const 4))) */
-      low_part[mem] = gen_frame_mem (SImode,
-				     gen_rtx_POST_MODIFY (Pmode, post_mem,
-							  gen_rtx_PLUS (Pmode,
-							  post_mem,
-							  post_val)));
-      high_part[mem] = gen_frame_mem (SImode, plus_constant (Pmode,
-							     post_mem,
-							     4));
+      low_part[mem] = gen_rtx_MEM (SImode,
+				   gen_rtx_POST_MODIFY (Pmode, post_mem,
+							gen_rtx_PLUS (Pmode,
+							post_mem,
+							post_val)));
+      high_part[mem] = gen_rtx_MEM (SImode, plus_constant (Pmode,
+							   post_mem,
+							   4));
     }
   else
     {
@@ -3290,15 +3304,22 @@ nds32_split_ashiftdi3 (rtx dst, rtx src, rtx shiftamount)
       ext_start = gen_reg_rtx (SImode);
 
       /*
-	 if (shiftamount < 32)
+	 # In fact, we want to check shift amonut is great than or equal 32,
+	 # but in some corner case, the shift amount might be very large value,
+	 # however we've defined SHIFT_COUNT_TRUNCATED, so GCC think we've
+	 # handle that correctly without any truncate.
+	 # so check the the condition of (shiftamount & 32) is most
+	 # safe way to do.
+	 if (shiftamount & 32)
+	   dst_low_part = 0
+	   dst_high_part = src_low_part << shiftamount & 0x1f
+	 else
 	   dst_low_part = src_low_part << shiftamout
 	   dst_high_part = wext (src, 32 - shiftamount)
 	   # wext can't handle wext (src, 32) since it's only take rb[0:4]
 	   # for extract.
 	   dst_high_part = shiftamount == 0 ? src_high_part : dst_high_part
-	 else
-	   dst_low_part = 0
-	   dst_high_part = src_low_part << shiftamount & 0x1f
+
       */
 
       emit_insn (gen_subsi3 (ext_start,
@@ -3317,11 +3338,11 @@ nds32_split_ashiftdi3 (rtx dst, rtx src, rtx shiftamount)
       emit_insn (gen_ashlsi3 (dst_high_part_g32, src_low_part,
 						 new_shift_amout));
 
-      emit_insn (gen_slt_compare (select_reg, shiftamount, GEN_INT (32)));
+      emit_insn (gen_andsi3 (select_reg, shiftamount, GEN_INT (32)));
 
-      emit_insn (gen_cmovnsi (dst_low_part, select_reg,
+      emit_insn (gen_cmovzsi (dst_low_part, select_reg,
 			      dst_low_part_l32, dst_low_part_g32));
-      emit_insn (gen_cmovnsi (dst_high_part, select_reg,
+      emit_insn (gen_cmovzsi (dst_high_part, select_reg,
 			      dst_high_part_l32, dst_high_part_g32));
     }
 }
@@ -3479,6 +3500,7 @@ nds32_legitimize_pic_address (rtx x)
   rtx addr = x;
   rtx reg = gen_reg_rtx (Pmode);
   rtx pat;
+  int relax_group_id = nds32_alloc_relax_group_id ();
 
   if (GET_CODE (x) == LABEL_REF
       || (GET_CODE (x) == SYMBOL_REF
@@ -3487,16 +3509,14 @@ nds32_legitimize_pic_address (rtx x)
     {
       addr = gen_rtx_UNSPEC (SImode, gen_rtvec (1, x), UNSPEC_GOTOFF);
       addr = gen_rtx_CONST (SImode, addr);
-      emit_insn (gen_sethi (reg, addr));
-      emit_insn (gen_lo_sum (reg, reg, addr));
+      emit_insn (gen_sym_got (reg, addr, GEN_INT (relax_group_id)));
       x = gen_rtx_PLUS (Pmode, reg, pic_offset_table_rtx);
     }
   else if (GET_CODE (x) == SYMBOL_REF)
     {
       addr = gen_rtx_UNSPEC (SImode, gen_rtvec (1, x), UNSPEC_GOT);
       addr = gen_rtx_CONST (SImode, addr);
-      emit_insn (gen_sethi (reg, addr));
-      emit_insn (gen_lo_sum (reg, reg, addr));
+      emit_insn (gen_sym_got (reg, addr, GEN_INT (relax_group_id)));
 
       x = gen_const_mem (SImode, gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
 					       reg));
@@ -3520,8 +3540,7 @@ nds32_legitimize_pic_address (rtx x)
 	  pat = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op0), UNSPEC_GOTOFF);
 	  pat = gen_rtx_PLUS (Pmode, pat, op1);
 	  pat = gen_rtx_CONST (Pmode, pat);
-	  emit_insn (gen_sethi (reg, pat));
-	  emit_insn (gen_lo_sum (reg, reg, pat));
+	  emit_insn (gen_sym_got (reg, pat, GEN_INT (relax_group_id)));
 	  x = gen_rtx_PLUS (Pmode, reg, pic_offset_table_rtx);
 	}
       else if (GET_CODE (op0) == SYMBOL_REF
@@ -3530,8 +3549,8 @@ nds32_legitimize_pic_address (rtx x)
 	  /* This is a constant offset from a @GOT symbol reference.  */
 	  addr = gen_rtx_UNSPEC (SImode, gen_rtvec (1, op0), UNSPEC_GOT);
 	  addr = gen_rtx_CONST (SImode, addr);
-	  emit_insn (gen_sethi (reg, addr));
-	  emit_insn (gen_lo_sum (reg, reg, addr));
+	  emit_insn (gen_sym_got (reg, addr, GEN_INT (relax_group_id)));
+
 	  addr = gen_const_mem (SImode, gen_rtx_PLUS (Pmode,
 						      pic_offset_table_rtx,
 						      reg));
@@ -3654,6 +3673,7 @@ nds32_legitimize_tls_address (rtx x)
   rtx tmp_reg;
   rtx tp_reg = gen_rtx_REG (Pmode, TP_REGNUM);
   rtx pat, insns, reg0;
+  int relax_group_id = nds32_alloc_relax_group_id ();
 
   if (GET_CODE (x) == SYMBOL_REF)
     switch (SYMBOL_REF_TLS_MODEL (x))
@@ -3671,7 +3691,7 @@ nds32_legitimize_tls_address (rtx x)
 	reg0 = gen_rtx_REG (Pmode, 0);
 	/* If we can confirm all clobber reigsters, it doesn't have to use call
 	   instruction.  */
-	insns = emit_call_insn (gen_tls_desc (pat, GEN_INT (0)));
+	insns = emit_call_insn (gen_tls_desc (pat, GEN_INT (relax_group_id)));
 	use_reg (&CALL_INSN_FUNCTION_USAGE (insns), pic_offset_table_rtx);
 	RTL_CONST_CALL_P (insns) = 1;
 	tmp_reg = gen_reg_rtx (SImode);
@@ -3683,7 +3703,7 @@ nds32_legitimize_tls_address (rtx x)
 	pat = gen_rtx_UNSPEC (SImode, gen_rtvec (1, x), UNSPEC_TLSIE);
 	tmp_reg  = gen_reg_rtx (SImode);
 	pat = gen_rtx_CONST (SImode, pat);
-	emit_insn (gen_tls_ie (tmp_reg, pat, GEN_INT (0)));
+	emit_insn (gen_tls_ie (tmp_reg, pat, GEN_INT (relax_group_id)));
 	if (flag_pic)
 	  emit_use (pic_offset_table_rtx);
 	x = gen_rtx_PLUS (Pmode, tmp_reg, tp_reg);
@@ -3697,8 +3717,7 @@ nds32_legitimize_tls_address (rtx x)
 	tmp_reg  = gen_reg_rtx (SImode);
 	pat = gen_rtx_UNSPEC (SImode, gen_rtvec (1, x), UNSPEC_TLSLE);
 	pat = gen_rtx_CONST (SImode, pat);
-	emit_insn (gen_sethi (tmp_reg, pat));
-	emit_insn (gen_lo_sum (tmp_reg, tmp_reg, pat));
+	emit_insn (gen_tls_le (tmp_reg, pat, GEN_INT (relax_group_id)));
 	x = gen_rtx_PLUS (Pmode, tmp_reg, tp_reg);
 	break;
 
@@ -3720,8 +3739,7 @@ nds32_legitimize_tls_address (rtx x)
 	  pat = gen_rtx_UNSPEC (SImode, gen_rtvec (1, base), UNSPEC_TLSLE);
 	  pat = gen_rtx_PLUS (SImode, pat, addend);
 	  pat = gen_rtx_CONST (SImode, pat);
-	  emit_insn (gen_sethi (tmp_reg, pat));
-	  emit_insn (gen_lo_sum (tmp_reg, tmp_reg, pat));
+	  emit_insn (gen_tls_le (tmp_reg, pat, GEN_INT (relax_group_id)));
 	  x = gen_rtx_PLUS (Pmode, tmp_reg, tp_reg);
 	}
     }
@@ -3897,6 +3915,24 @@ nds32_output_tls_ie (rtx *operands)
 		  "sethi %%0, hi20(%%1)\n\t"
 		  "lwi %%0, [%%0 + lo12(%%1)]");
     }
+  output_asm_insn (pattern, operands);
+  return "";
+}
+
+const char *
+nds32_output_symrel (rtx *operands)
+{
+  char pattern[1000];
+
+  if (TARGET_RELAX_HINT)
+    snprintf (pattern, sizeof (pattern),
+	      ".relax_hint %%2\n\tsethi %%0, hi20(%%1)\n\t"
+	      ".relax_hint %%2\n\tori %%0, %%0, lo12(%%1)");
+  else
+    snprintf (pattern, sizeof (pattern),
+	      "sethi %%0, hi20(%%1)\n\t"
+	      "ori %%0, %%0, lo12(%%1)");
+
   output_asm_insn (pattern, operands);
   return "";
 }

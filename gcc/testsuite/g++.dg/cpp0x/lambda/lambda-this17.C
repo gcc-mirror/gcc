@@ -7,7 +7,7 @@ struct Test {
 
 struct TestPickled : Test {  
   template<typename... Args> void triggerTest (Args&&... fargs) { 
-    [=](Args... as) {
+    [=](Args... as) { // { dg-warning "implicit capture" "" { target c++2a } }
       Test::triggerTest (as...);
     } ();		
   }

@@ -1,8 +1,7 @@
-// { dg-options "-std=gnu++17 -lstdc++fs" }
+// { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
-// { dg-require-filesystem-ts "" }
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,6 +20,7 @@
 
 #include <filesystem>
 #include <testsuite_fs.h>
+#include <testsuite_hooks.h>
 
 using std::filesystem::path;
 using __gnu_test::compare_paths;
@@ -48,9 +48,41 @@ test02()
   }
 }
 
+void
+test03()
+{
+  // self assignment should have no effect
+  const path orig = "foo/bar/baz";
+  path p = orig;
+  const auto ptr1 = p.c_str();
+  const auto ptr2 = p.begin()->c_str();
+  p = std::move(p);
+  __gnu_test::compare_paths(p, orig);
+  p = p;
+  __gnu_test::compare_paths(p, orig);
+  VERIFY( ptr1 == p.c_str() );
+  VERIFY( ptr2 == p.begin()->c_str() );
+}
+
+void
+test04()
+{
+  // PR libstdc++/90557
+  path p1 = "a/b/c";
+  const path p2 = "d/e";
+  const path p3 = p2;
+  p1.clear();
+  p1 = p2;
+  __gnu_test::compare_paths(p1, p2);
+  __gnu_test::compare_paths(p1, p3);
+  __gnu_test::compare_paths(p2, p3);
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
+  test04();
 }

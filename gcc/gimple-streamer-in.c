@@ -1,6 +1,6 @@
 /* Routines for reading GIMPLE from a file stream.
 
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
    the file being read.  IB is the input block to use for reading.  */
 
 static gphi *
-input_phi (struct lto_input_block *ib, basic_block bb, struct data_in *data_in,
+input_phi (class lto_input_block *ib, basic_block bb, class data_in *data_in,
 	   struct function *fn)
 {
   unsigned HOST_WIDE_INT ix;
@@ -83,7 +83,7 @@ input_phi (struct lto_input_block *ib, basic_block bb, struct data_in *data_in,
    descriptors in DATA_IN.  */
 
 static gimple *
-input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
+input_gimple_stmt (class lto_input_block *ib, class data_in *data_in,
 		   enum LTO_tags tag)
 {
   gimple *stmt;
@@ -249,8 +249,8 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
    FN is the function being processed.  */
 
 void
-input_bb (struct lto_input_block *ib, enum LTO_tags tag,
-	  struct data_in *data_in, struct function *fn,
+input_bb (class lto_input_block *ib, enum LTO_tags tag,
+	  class data_in *data_in, struct function *fn,
 	  int count_materialization_scale)
 {
   unsigned int index;
@@ -270,6 +270,7 @@ input_bb (struct lto_input_block *ib, enum LTO_tags tag,
     bb->count
       = bb->count.apply_scale (count_materialization_scale, REG_BR_PROB_BASE);
   bb->flags = streamer_read_hwi (ib);
+  bb->discriminator = streamer_read_hwi (ib);
 
   /* LTO_bb1 has statements.  LTO_bb0 does not.  */
   if (tag == LTO_bb0)

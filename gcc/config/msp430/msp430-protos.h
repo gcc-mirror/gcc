@@ -1,5 +1,5 @@
 /* Exported function prototypes from the TI MSP430 backend.
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -38,13 +38,17 @@ int	msp430_initial_elimination_offset (int, int);
 bool    msp430_is_interrupt_func (void);
 const char * msp430x_logical_shift_right (rtx);
 const char * msp430_mcu_name (void);
-void    msp430_output_aligned_decl_common (FILE *, const tree, const char *, unsigned HOST_WIDE_INT, unsigned);
+void    msp430_output_aligned_decl_common (FILE *, const tree, const char *,
+					   unsigned HOST_WIDE_INT, unsigned);
 void	msp430_output_labelref (FILE *, const char *);
 void	msp430_register_pragmas (void);
 rtx	msp430_return_addr_rtx (int);
 void	msp430_split_movsi (rtx *);
+int msp430_split_addsi (rtx *);
 void    msp430_start_function (FILE *, const char *, tree);
 rtx	msp430_subreg (machine_mode, rtx, machine_mode, int);
 bool    msp430_use_f5_series_hwmult (void);
+bool	msp430_has_hwmult (void);
+bool msp430_op_not_in_high_mem (rtx op);
 
 #endif /* GCC_MSP430_PROTOS_H */

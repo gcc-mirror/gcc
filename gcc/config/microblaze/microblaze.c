@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Xilinx MicroBlaze.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
 
    Contributed by Michael Eager <eager@eagercon.com>.
 
@@ -1180,7 +1180,7 @@ microblaze_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
       src = adjust_address (src, BLKmode, offset);
       dest = adjust_address (dest, BLKmode, offset);
       move_by_pieces (dest, src, length - offset,
-		      MIN (MEM_ALIGN (src), MEM_ALIGN (dest)), 0);
+		      MIN (MEM_ALIGN (src), MEM_ALIGN (dest)), RETURN_BEGIN);
     }
 }
 
@@ -1250,7 +1250,7 @@ microblaze_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length)
     microblaze_block_move_straight (dest, src, leftover);
 }
 
-/* Expand a movmemsi instruction.  */
+/* Expand a cpymemsi instruction.  */
 
 bool
 microblaze_expand_block_move (rtx dest, rtx src, rtx length, rtx align_rtx)
@@ -1258,8 +1258,8 @@ microblaze_expand_block_move (rtx dest, rtx src, rtx length, rtx align_rtx)
 
   if (GET_CODE (length) == CONST_INT)
     {
-      HOST_WIDE_INT bytes = INTVAL (length);
-      int align = INTVAL (align_rtx);
+      unsigned HOST_WIDE_INT bytes = UINTVAL (length);
+      unsigned int align = UINTVAL (align_rtx);
 
       if (align > UNITS_PER_WORD)
 	{
@@ -1267,23 +1267,23 @@ microblaze_expand_block_move (rtx dest, rtx src, rtx length, rtx align_rtx)
 	}
       else if (align < UNITS_PER_WORD)
 	{
-	  if (INTVAL (length) <= MAX_MOVE_BYTES)
+	  if (UINTVAL (length) <= MAX_MOVE_BYTES)
 	    {
-	      move_by_pieces (dest, src, bytes, align, 0);
+	      move_by_pieces (dest, src, bytes, align, RETURN_BEGIN);
 	      return true;
 	    }
 	  else
 	    return false;
 	}
 
-      if (INTVAL (length) <= 2 * MAX_MOVE_BYTES)
+      if (UINTVAL (length) <= 2 * MAX_MOVE_BYTES)
 	{
-	  microblaze_block_move_straight (dest, src, INTVAL (length));
+	  microblaze_block_move_straight (dest, src, UINTVAL (length));
 	  return true;
 	}
       else if (optimize)
 	{
-	  microblaze_block_move_loop (dest, src, INTVAL (length));
+	  microblaze_block_move_loop (dest, src, UINTVAL (length));
 	  return true;
 	}
     }
@@ -1543,29 +1543,28 @@ init_cumulative_args (CUMULATIVE_ARGS * cum, tree fntype,
 
 static void
 microblaze_function_arg_advance (cumulative_args_t cum_v,
-				 machine_mode mode,
-				 const_tree type, bool named ATTRIBUTE_UNUSED)
+				 const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
   cum->arg_number++;
-  switch (mode)
+  switch (arg.mode)
     {
     case E_VOIDmode:
       break;
 
     default:
-      gcc_assert (GET_MODE_CLASS (mode) == MODE_COMPLEX_INT
-	  || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT);
+      gcc_assert (GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_INT
+		  || GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_FLOAT);
 
       cum->gp_reg_found = 1;
-      cum->arg_words += ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1)
+      cum->arg_words += ((GET_MODE_SIZE (arg.mode) + UNITS_PER_WORD - 1)
 			 / UNITS_PER_WORD);
       break;
 
     case E_BLKmode:
       cum->gp_reg_found = 1;
-      cum->arg_words += ((int_size_in_bytes (type) + UNITS_PER_WORD - 1)
+      cum->arg_words += ((int_size_in_bytes (arg.type) + UNITS_PER_WORD - 1)
 			 / UNITS_PER_WORD);
       break;
 
@@ -1596,13 +1595,11 @@ microblaze_function_arg_advance (cumulative_args_t cum_v,
     }
 }
 
-/* Return an RTL expression containing the register for the given mode,
+/* Return an RTL expression containing the register for the given argument
    or 0 if the argument is to be passed on the stack.  */
 
 static rtx
-microblaze_function_arg (cumulative_args_t cum_v, machine_mode mode, 
-			 const_tree type ATTRIBUTE_UNUSED,
-			 bool named ATTRIBUTE_UNUSED)
+microblaze_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
@@ -1611,7 +1608,7 @@ microblaze_function_arg (cumulative_args_t cum_v, machine_mode mode,
   int *arg_words = &cum->arg_words;
 
   cum->last_arg_fp = 0;
-  switch (mode)
+  switch (arg.mode)
     {
     case E_SFmode:
     case E_DFmode:
@@ -1624,8 +1621,8 @@ microblaze_function_arg (cumulative_args_t cum_v, machine_mode mode,
       regbase = GP_ARG_FIRST;
       break;
     default:
-      gcc_assert (GET_MODE_CLASS (mode) == MODE_COMPLEX_INT
-	  || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT);
+      gcc_assert (GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_INT
+		  || GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_FLOAT);
       /* FALLTHRU */
     case E_BLKmode:
       regbase = GP_ARG_FIRST;
@@ -1638,10 +1635,10 @@ microblaze_function_arg (cumulative_args_t cum_v, machine_mode mode,
     {
       gcc_assert (regbase != -1);
 
-      ret = gen_rtx_REG (mode, regbase + *arg_words);
+      ret = gen_rtx_REG (arg.mode, regbase + *arg_words);
     }
 
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     {
       if (cum->num_adjusts > 0)
 	ret = gen_rtx_PARALLEL ((machine_mode) cum->fp_code,
@@ -1653,30 +1650,25 @@ microblaze_function_arg (cumulative_args_t cum_v, machine_mode mode,
 
 /* Return number of bytes of argument to put in registers. */
 static int
-function_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,	
-			    tree type, bool named ATTRIBUTE_UNUSED)	
+function_arg_partial_bytes (cumulative_args_t cum_v,
+			    const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  if ((mode == BLKmode
-       || GET_MODE_CLASS (mode) != MODE_COMPLEX_INT
-       || GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT)
+  if ((arg.mode == BLKmode
+       || GET_MODE_CLASS (arg.mode) != MODE_COMPLEX_INT
+       || GET_MODE_CLASS (arg.mode) != MODE_COMPLEX_FLOAT)
       && cum->arg_words < MAX_ARGS_IN_REGISTERS)
     {
-      int words;
-      if (mode == BLKmode)
-	words = ((int_size_in_bytes (type) + UNITS_PER_WORD - 1)
-		 / UNITS_PER_WORD);
-      else
-	words = (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
-
+      int words = ((arg.promoted_size_in_bytes () + UNITS_PER_WORD - 1)
+		   / UNITS_PER_WORD);
       if (words + cum->arg_words <= MAX_ARGS_IN_REGISTERS)
 	return 0;		/* structure fits in registers */
 
       return (MAX_ARGS_IN_REGISTERS - cum->arg_words) * UNITS_PER_WORD;
     }
 
-  else if (mode == DImode && cum->arg_words == MAX_ARGS_IN_REGISTERS - 1)
+  else if (arg.mode == DImode && cum->arg_words == MAX_ARGS_IN_REGISTERS - 1)
     return UNITS_PER_WORD;
 
   return 0;
@@ -1759,7 +1751,7 @@ microblaze_option_override (void)
       flag_pic = 2;
       if (!TARGET_SUPPORTS_PIC)
         {
-          error ("-fPIC/-fpic not supported for this target");
+	  error ("%<-fPIC%>/%<-fpic%> not supported for this target");
           /* Clear it to avoid further errors.  */
           flag_pic = 0;
         }
@@ -1771,7 +1763,7 @@ microblaze_option_override (void)
   ver = microblaze_version_to_int (microblaze_select_cpu);
   if (ver == -1)
     {
-      error ("%qs is an invalid argument to -mcpu=", microblaze_select_cpu);
+      error ("%qs is an invalid argument to %<-mcpu=%>", microblaze_select_cpu);
     }
 
   ver = MICROBLAZE_VERSION_COMPARE (microblaze_select_cpu, "v3.00.a");
@@ -1820,7 +1812,8 @@ microblaze_option_override (void)
     {
       if (TARGET_MULTIPLY_HIGH)
 	warning (0,
-		 "-mxl-multiply-high can be used only with -mcpu=v6.00.a or greater");
+		 "%<-mxl-multiply-high%> can be used only with "
+		 "%<-mcpu=v6.00.a%> or greater");
     }
 
   ver = MICROBLAZE_VERSION_COMPARE (microblaze_select_cpu, "v8.10.a");
@@ -1836,18 +1829,20 @@ microblaze_option_override (void)
   if (ver < 0)
     {
         if (TARGET_REORDER == 1)
-          warning (0, "-mxl-reorder can be used only with -mcpu=v8.30.a or greater");
+	  warning (0, "%<-mxl-reorder%> can be used only with "
+		   "%<-mcpu=v8.30.a%> or greater");
         TARGET_REORDER = 0;
     }
   else if ((ver == 0) && !TARGET_PATTERN_COMPARE)
     {
         if (TARGET_REORDER == 1)
-          warning (0, "-mxl-reorder requires -mxl-pattern-compare for -mcpu=v8.30.a");
+	  warning (0, "%<-mxl-reorder%> requires %<-mxl-pattern-compare%> for "
+		   "%<-mcpu=v8.30.a%>");
         TARGET_REORDER = 0;
     }
 
   if (TARGET_MULTIPLY_HIGH && TARGET_SOFT_MUL)
-    error ("-mxl-multiply-high requires -mno-xl-soft-mul");
+    error ("%<-mxl-multiply-high%> requires %<-mno-xl-soft-mul%>");
 
   /* Always use DFA scheduler.  */
   microblaze_sched_use_dfa = 1;
@@ -2017,7 +2012,7 @@ microblaze_must_save_register (int regno)
       (regno == MB_ABI_PIC_ADDR_REGNUM) && df_regs_ever_live_p (regno))
     return 1;
 
-  if (df_regs_ever_live_p (regno) && !call_used_regs[regno])
+  if (df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
     return 1;
 
   if (frame_pointer_needed && (regno == HARD_FRAME_POINTER_REGNUM))
@@ -2473,7 +2468,7 @@ print_operand (FILE * file, rtx op, int letter)
 	  unsigned long value_long;
 	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (op),
 				       value_long);
-	  fprintf (file, HOST_WIDE_INT_PRINT_HEX, value_long);
+	  fprintf (file, "0x%lx", value_long);
 	}
       else
 	{
@@ -2532,7 +2527,7 @@ print_operand (FILE * file, rtx op, int letter)
       print_operand_address (file, XEXP (op, 0));
     }
   else if (letter == 'm')
-    fprintf (file, HOST_WIDE_INT_PRINT_DEC, (1L << INTVAL (op)));
+    fprintf (file, "%ld", (1L << INTVAL (op)));
   else
     output_addr_const (file, op);
 }
@@ -2918,8 +2913,8 @@ microblaze_expand_prologue (void)
 	  passed_mode = Pmode;
 	}
 
-      entry_parm = targetm.calls.function_arg (args_so_far, passed_mode,
-					       passed_type, true);
+      function_arg_info arg (passed_type, passed_mode, /*named=*/true);
+      entry_parm = targetm.calls.function_arg (args_so_far, arg);
 
       if (entry_parm)
 	{
@@ -2939,8 +2934,7 @@ microblaze_expand_prologue (void)
 	  break;
 	}
 
-      targetm.calls.function_arg_advance (args_so_far, passed_mode,
-					  passed_type, true);
+      targetm.calls.function_arg_advance (args_so_far, arg);
 
       next_arg = TREE_CHAIN (cur_arg);
       if (next_arg == 0)
@@ -2954,8 +2948,8 @@ microblaze_expand_prologue (void)
 
   /* Split parallel insn into a sequence of insns.  */
 
-  next_arg_reg = targetm.calls.function_arg (args_so_far, VOIDmode,
-					     void_type_node, true);
+  next_arg_reg = targetm.calls.function_arg (args_so_far,
+					     function_arg_info::end_marker ());
   if (next_arg_reg != 0 && GET_CODE (next_arg_reg) == PARALLEL)
     {
       rtvec adjust = XVEC (next_arg_reg, 0);
@@ -3309,6 +3303,7 @@ microblaze_asm_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
         HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
         tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
   rtx this_rtx, funexp;
   rtx_insn *insn;
 
@@ -3364,9 +3359,11 @@ microblaze_asm_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
      "borrowed" from rs6000.c.  */
   insn = get_insns ();
   shorten_branches (insn);
+  assemble_start_function (thunk_fndecl, fnname);
   final_start_function (insn, file, 1);
   final (insn, file, 1);
   final_end_function ();
+  assemble_end_function (thunk_fndecl, fnname);
 
   reload_completed = 0;
   epilogue_completed = 0;

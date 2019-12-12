@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -325,6 +325,16 @@ package body Layout is
          then
             Init_Size (E, 2 * System_Address_Size);
 
+         --  If unnesting subprograms, subprogram access types contain the
+         --  address of both the subprogram and an activation record. But if we
+         --  set that, we'll get a warning on different unchecked conversion
+         --  sizes in the RTS. So leave unset in that case.
+
+         elsif Unnest_Subprogram_Mode
+           and then Is_Access_Subprogram_Type (E)
+         then
+            null;
+
          --  Normal case of thin pointer
 
          else
@@ -433,9 +443,12 @@ package body Layout is
             Set_RM_Size (E, Esize (E));
          end if;
 
-         --  For array base types, set component size if object size of the
+         --  For array base types, set the component size if object size of the
          --  component type is known and is a small power of 2 (8, 16, 32, 64),
-         --  since this is what will always be used.
+         --  since this is what will always be used, except if a very large
+         --  alignment was specified and so Adjust_Esize_For_Alignment gave up
+         --  because, in this case, the object size is not a multiple of the
+         --  alignment and, therefore, cannot be the component size.
 
          if Ekind (E) = E_Array_Type and then Unknown_Component_Size (E) then
             declare
@@ -448,6 +461,9 @@ package body Layout is
                if Present (CT)
                  and then Is_Scalar_Type (CT)
                  and then Known_Static_Esize (CT)
+                 and then not (Known_Alignment (CT)
+                                and then Alignment_In_Bits (CT) >
+                                           Standard_Long_Long_Integer_Size)
                then
                   declare
                      S : constant Uint := Esize (CT);

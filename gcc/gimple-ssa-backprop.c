@@ -1,5 +1,5 @@
 /* Back-propagation of usage information to definitions.
-   Copyright (C) 2015-2018 Free Software Foundation, Inc.
+   Copyright (C) 2015-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -107,8 +107,9 @@ along with GCC; see the file COPYING3.  If not see
 namespace {
 
 /* Information about a group of uses of an SSA name.  */
-struct usage_info
+class usage_info
 {
+public:
   usage_info () : flag_word (0) {}
   usage_info &operator &= (const usage_info &);
   usage_info operator & (const usage_info &) const;
@@ -496,10 +497,11 @@ bool
 backprop::intersect_uses (tree var, usage_info *info)
 {
   imm_use_iterator iter;
-  gimple *stmt;
+  use_operand_p use_p;
   *info = usage_info::intersection_identity ();
-  FOR_EACH_IMM_USE_STMT (stmt, iter, var)
+  FOR_EACH_IMM_USE_FAST (use_p, iter, var)
     {
+      gimple *stmt = USE_STMT (use_p);
       if (is_gimple_debug (stmt))
 	continue;
       gphi *phi = dyn_cast <gphi *> (stmt);
@@ -523,10 +525,7 @@ backprop::intersect_uses (tree var, usage_info *info)
 	  process_use (stmt, var, &subinfo);
 	  *info &= subinfo;
 	  if (!info->is_useful ())
-	    {
-	      BREAK_FROM_IMM_USE_STMT (iter);
-	      return false;
-	    }
+	    return false;
 	}
     }
   return true;

@@ -1,5 +1,5 @@
 # Tests for ms_abi to sysv_abi calls.
-# Copyright (C) 2016-2018 Free Software Foundation, Inc.
+# Copyright (C) 2016-2019 Free Software Foundation, Inc.
 # Contributed by Daniel Santos <daniel.santos@pobox.com>
 #
 # This file is part of GCC.
@@ -109,7 +109,7 @@ proc runtest_ms_sysv { cflags generator_args } {
 					   < [file mtime "$src"]) } {
 	# Temporarily switch to the environment for the host compiler.
 	restore_ld_library_path_env_vars
-	set cxx "$HOSTCXX $HOSTCXXFLAGS $TEST_ALWAYS_FLAGS $warn_flags -std=c++11"
+	set cxx "$HOSTCXX $HOSTCXXFLAGS $warn_flags -std=c++11"
 	set status [remote_exec host "$cxx -o $generator $src"]
 	set status [lindex $status 0]
 	set_ld_library_path_env_vars

@@ -1,0 +1,33 @@
+; OpenRISC command line options for newlib binaries
+
+; Copyright (C) 2010-2019 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+; See the GCC internals manual (options.texi) for a description of
+; this file's format.
+
+; Please try to keep this file in ASCII collating order.
+
+mboard=
+Target RejectNegative Joined
+Configure the newlib board specific runtime.  The default is or1ksim.
+
+mnewlib
+Target RejectNegative
+This option is ignored; it is provided for compatibility purposes only.  This
+used to select linker and preprocessor options for use with newlib.

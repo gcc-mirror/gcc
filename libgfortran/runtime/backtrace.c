@@ -1,4 +1,4 @@
-/* Copyright (C) 2006-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by François-Xavier Coudert
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -68,6 +68,7 @@ static void
 error_callback (void *data, const char *msg, int errnum)
 {
   struct mystate *state = (struct mystate *) data;
+  struct iovec iov[5];
 #define ERRHDR "\nCould not print backtrace: "
 
   if (errnum < 0)
@@ -77,21 +78,31 @@ error_callback (void *data, const char *msg, int errnum)
     }
   else if (errnum == 0)
     {
-      estr_write (ERRHDR);
-      estr_write (msg);
-      estr_write ("\n");
+      iov[0].iov_base = (char*) ERRHDR;
+      iov[0].iov_len = strlen (ERRHDR);
+      iov[1].iov_base = (char*) msg;
+      iov[1].iov_len = strlen (msg);
+      iov[2].iov_base = (char*) "\n";
+      iov[2].iov_len = 1;
+      estr_writev (iov, 3);
     }
   else
     {
       char errbuf[256];
       if (state->in_signal_handler)
 	{
-	  estr_write (ERRHDR);
-	  estr_write (msg);
-	  estr_write (", errno: ");
+	  iov[0].iov_base = (char*) ERRHDR;
+	  iov[0].iov_len = strlen (ERRHDR);
+	  iov[1].iov_base = (char*) msg;
+	  iov[1].iov_len = strlen (msg);
+	  iov[2].iov_base = (char*) ", errno: ";
+	  iov[2].iov_len = strlen (iov[2].iov_base);
 	  const char *p = gfc_itoa (errnum, errbuf, sizeof (errbuf));
-	  estr_write (p);
-	  estr_write ("\n");
+	  iov[3].iov_base = (char*) p;
+	  iov[3].iov_len = strlen (p);
+	  iov[4].iov_base = (char*) "\n";
+	  iov[4].iov_len = 1;
+	  estr_writev (iov, 5);
 	}
       else
 	st_printf (ERRHDR "%s: %s\n", msg,
@@ -135,14 +146,23 @@ full_callback (void *data, uintptr_t pc, const char *filename,
 void
 show_backtrace (bool in_signal_handler)
 {
+  /* Note that libbacktrace allows the state to be accessed from
+     multiple threads, so we don't need to use a TLS variable for the
+     state here.  */
+  static struct backtrace_state *lbstate_saved;
   struct backtrace_state *lbstate;
   struct mystate state = { 0, false, in_signal_handler };
- 
-  lbstate = backtrace_create_state (NULL, __gthread_active_p (),
-				    error_callback, NULL);
 
-  if (lbstate == NULL)
-    return;
+  lbstate = __atomic_load_n (&lbstate_saved, __ATOMIC_RELAXED);
+  if (!lbstate)
+    {
+      lbstate = backtrace_create_state (NULL, __gthread_active_p (),
+					error_callback, NULL);
+      if (lbstate)
+	__atomic_store_n (&lbstate_saved, lbstate, __ATOMIC_RELAXED);
+      else
+	return;
+    }
 
   if (!BACKTRACE_SUPPORTED || (in_signal_handler && BACKTRACE_USES_MALLOC))
     {

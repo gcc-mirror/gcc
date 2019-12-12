@@ -47,6 +47,6 @@ program simd_8f
 
   diff = pri - 8237.25
 
-  if (diff > EPS .or. -diff > EPS) STOP 1
+  if (diff > EPS .or. -diff > EPS) stop 1
 
 end program

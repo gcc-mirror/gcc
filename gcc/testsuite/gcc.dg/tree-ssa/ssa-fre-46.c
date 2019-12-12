@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-fre1-details" } */
+/* { dg-options "-O2 -fdump-tree-fre1-details" } */
 
 int x[1024];
 int foo (int a, int s, unsigned int k)

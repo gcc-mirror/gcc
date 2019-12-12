@@ -15,7 +15,7 @@ constexpr A1 a1 = A1();
 extern constexpr int i2; // { dg-error "definition" }
 
 // error: missing initializer
-constexpr A1 a2; // { dg-error "uninitialized const" }
+constexpr A1 a2; // { dg-error "uninitialized 'const" }
 
 const constexpr A1 a3 = A1();
 

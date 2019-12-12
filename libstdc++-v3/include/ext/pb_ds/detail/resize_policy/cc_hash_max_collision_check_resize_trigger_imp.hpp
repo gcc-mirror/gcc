@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,6 +37,8 @@
  * @file cc_hash_max_collision_check_resize_trigger_imp.hpp
  * Contains a resize trigger implementation.
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
@@ -209,3 +211,4 @@ set_load(float load)
   calc_resize_needed();
 }
 
+#endif

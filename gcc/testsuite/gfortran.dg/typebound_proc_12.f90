@@ -5,7 +5,7 @@
 ! Contributed by Joost VandeVondele <jv244@cam.ac.uk>
 !
   TYPE a
-    TYPE(b), DIMENSION(:), POINTER :: c  ! { dg-error "type that has not been declared" }
+    TYPE(b), DIMENSION(:), POINTER :: c  ! { dg-error "has not been declared" }
   END TYPE
   TYPE(a), POINTER :: d
   CALL X(d%c%e)         ! { dg-error "before it is defined" }

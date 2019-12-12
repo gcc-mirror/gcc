@@ -7,9 +7,9 @@ import (
 	"debug/elf"
 	"debug/macho"
 	"debug/pe"
-	"debug/xcoff"
 	"fmt"
 	"os"
+	"runtime"
 	"strings"
 )
 
@@ -61,6 +61,12 @@ func Function3(out *bytes.Buffer) {
 }
 
 func main() {
+	if runtime.GOOS == "aix" {
+		// Not supported on AIX until there is an externally
+		// visible version of internal/xcoff.
+		return
+	}
+
 	var b bytes.Buffer
 	Function1(&b)
 	Function2(&b)
@@ -94,10 +100,6 @@ func checkFile(f *os.File) {
 	} else if pf, err := pe.NewFile(f); err == nil {
 		for _, psym := range pf.Symbols {
 			syms = append(syms, psym.Name)
-		}
-	} else if xf, err := xcoff.NewFile(f); err == nil {
-		for _, xsym := range xf.Symbols {
-			syms = append(syms, xsym.Name)
 		}
 	} else {
 		fmt.Println("checksyms: could not parse executable")

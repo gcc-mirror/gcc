@@ -1,7 +1,8 @@
 //===-- sanitizer_allocator_checks.h ----------------------------*- C++ -*-===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -42,16 +43,18 @@ INLINE void *SetErrnoOnNull(void *ptr) {
 // of alignment.
 INLINE bool CheckAlignedAllocAlignmentAndSize(uptr alignment, uptr size) {
 #if SANITIZER_POSIX
-  return IsPowerOfTwo(alignment) && (size & (alignment - 1)) == 0;
+  return alignment != 0 && IsPowerOfTwo(alignment) &&
+         (size & (alignment - 1)) == 0;
 #else
-  return size % alignment == 0;
+  return alignment != 0 && size % alignment == 0;
 #endif
 }
 
 // Checks posix_memalign() parameters, verifies that alignment is a power of two
 // and a multiple of sizeof(void *).
 INLINE bool CheckPosixMemalignAlignment(uptr alignment) {
-  return IsPowerOfTwo(alignment) && (alignment % sizeof(void *)) == 0; // NOLINT
+  return alignment != 0 && IsPowerOfTwo(alignment) &&
+         (alignment % sizeof(void *)) == 0;
 }
 
 // Returns true if calloc(size, n) call overflows on size*n calculation.

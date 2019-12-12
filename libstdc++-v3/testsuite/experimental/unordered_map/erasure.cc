@@ -1,6 +1,6 @@
 // { dg-do run { target c++14 } }
 
-// Copyright (C) 2015-2018 Free Software Foundation, Inc.
+// Copyright (C) 2015-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,6 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <experimental/unordered_map>
+#include <string>
 #include <testsuite_hooks.h>
 
 auto is_odd_pair = [](const std::pair<const int, std::string>& p)

@@ -1,4 +1,4 @@
-#  Copyright (C) 2003-2018 Free Software Foundation, Inc.
+#  Copyright (C) 2003-2019 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -132,7 +132,7 @@ print "/* Structure to save/restore optimization and target specific options.  *
 print "struct GTY(()) cl_optimization";
 print "{";
 
-n_opt_char = 3;
+n_opt_char = 4;
 n_opt_short = 0;
 n_opt_int = 0;
 n_opt_enum = 0;
@@ -140,6 +140,7 @@ n_opt_other = 0;
 var_opt_char[0] = "unsigned char x_optimize";
 var_opt_char[1] = "unsigned char x_optimize_size";
 var_opt_char[2] = "unsigned char x_optimize_debug";
+var_opt_char[3] = "unsigned char x_optimize_fast";
 
 for (i = 0; i < n_opts; i++) {
 	if (flag_set_p("(Optimization|PerFunction)", flags[i])) {
@@ -302,6 +303,9 @@ print "";
 print "/* Compare two target option variables from a structure.  */";
 print "extern bool cl_target_option_eq (const struct cl_target_option *, const struct cl_target_option *);";
 print "";
+print "/* Free heap memory used by target option variables.  */";
+print "extern void cl_target_option_free (struct cl_target_option *);";
+print "";
 print "/* Hash option variables from a structure.  */";
 print "extern hashval_t cl_target_option_hash (const struct cl_target_option *);";
 print "";
@@ -310,6 +314,9 @@ print "extern hashval_t cl_optimization_hash (const struct cl_optimization *);";
 print "";
 print "/* Compare two optimization options.  */";
 print "extern bool cl_optimization_option_eq (cl_optimization const *ptr1, cl_optimization const *ptr2);"
+print "";
+print "/* Free heap memory used by optimization options.  */";
+print "extern void cl_optimization_option_free (cl_optimization *ptr1);"
 print "";
 print "/* Generator files may not have access to location_t, and don't need these.  */"
 print "#if defined(UNKNOWN_LOCATION)"
@@ -323,14 +330,15 @@ print "                           const struct cl_option_handlers *handlers, "
 print "                           diagnostic_context *dc);                   "
 for (i = 0; i < n_langs; i++) {
     lang_name = lang_sanitized_name(langs[i]);
-    print "bool                                                                  "
-    print lang_name "_handle_option_auto (struct gcc_options *opts,              "
-    print "                           struct gcc_options *opts_set,              "
-    print "                           size_t scode, const char *arg, int value,  "
-    print "                           unsigned int lang_mask, int kind,          "
-    print "                           location_t loc,                            "
-    print "                           const struct cl_option_handlers *handlers, "
-    print "                           diagnostic_context *dc);                   "
+    print "bool"
+    print lang_name "_handle_option_auto (struct gcc_options *opts,"
+    print "                           struct gcc_options *opts_set,"
+    print "                           size_t scode, const char *arg,"
+    print "                           HOST_WIDE_INT value,"
+    print "                           unsigned int lang_mask, int kind,"
+    print "                           location_t loc,"
+    print "                           const struct cl_option_handlers *handlers,"
+    print "                           diagnostic_context *dc);"
 }
 print "void cpp_handle_option_auto (const struct gcc_options * opts, size_t scode,"
 print "                             struct cpp_options * cpp_opts);"
@@ -492,6 +500,7 @@ for (i = 0; i < n_opts; i++) {
 print "  N_OPTS,"
 print "  OPT_SPECIAL_unknown,"
 print "  OPT_SPECIAL_ignore,"
+print "  OPT_SPECIAL_warn_removed,"
 print "  OPT_SPECIAL_program_name,"
 print "  OPT_SPECIAL_input_file"
 print "};"
@@ -501,8 +510,10 @@ print "/* Mapping from cpp message reasons to the options that enable them.  */"
 print "#include <cpplib.h>"
 print "struct cpp_reason_option_codes_t"
 print "{"
-print "  const int reason;		/* cpplib message reason.  */"
-print "  const int option_code;	/* gcc option that controls this message.  */"
+print "  /* cpplib message reason.  */"
+print "  const enum cpp_warning_reason reason;"
+print "  /* gcc option that controls this message.  */"
+print "  const int option_code;"
 print "};"
 print ""
 print "static const struct cpp_reason_option_codes_t cpp_reason_option_codes[] = {"

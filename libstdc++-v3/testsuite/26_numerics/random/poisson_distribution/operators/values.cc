@@ -1,8 +1,9 @@
+// { dg-options "-DSIMULATOR_TEST" { target simulator } }
 // { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 // { dg-require-cmath "" }
 //
-// Copyright (C) 2011-2018 Free Software Foundation, Inc.
+// Copyright (C) 2011-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,11 +44,14 @@ void test01()
   auto bpd3 = std::bind(pd3, eng);
   testDiscreteDist(bpd3, [](int n) { return poisson_pdf(n, 30.0); } );
 
+  // This can take extremely long on simulators, timing out the test.
+#ifndef SIMULATOR_TEST
   // libstdc++/83237
   std::poisson_distribution<> pd4(37.17);
   auto bpd4 = std::bind(pd4, eng);
   testDiscreteDist<100, 2000000>(bpd4, [](int n)
 				 { return poisson_pdf(n, 37.17); } );
+#endif
 }
 
 int main()

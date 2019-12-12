@@ -1,6 +1,6 @@
 // 2000-06-29 bkoz
 
-// Copyright (C) 2000-2018 Free Software Foundation, Inc.
+// Copyright (C) 2000-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,6 +21,8 @@
 // NB: ostream has a particular "seeks" category. Adopt this for istreams too.
 // @require@ %-*.tst %-*.txt
 // @diff@ %-*.tst %-*.txt
+
+// { dg-require-fileio "" }
 
 #include <istream>
 #include <sstream>

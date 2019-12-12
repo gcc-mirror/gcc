@@ -11,4 +11,5 @@ void __attribute__ ((interrupt ("IRQ"))) dm3730_IRQHandler(void)
 {
     prints("IRQ" );
 }
-/* { dg-final { scan-assembler "ldmfd\tsp!, {r0, r1, r2, r3, ip, pc}\\^" } } */
+/* { dg-final { scan-assembler "ldmfd\tsp!, {r0, r1, r2, r3, ip, pc}\\^" { target { ! arm*-*-uclinuxfdpiceabi } } } } */
+/* { dg-final { scan-assembler "ldmfd\tsp!, {r0, r1, r2, r3, r4, r9, ip, pc}\\^" { target arm*-*-uclinuxfdpiceabi } } } */

@@ -1,5 +1,5 @@
 /* Predicate aware uninitialized variable warning.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
    Contributed by Xinliang David Li <davidxl@google.com>
 
 This file is part of GCC.
@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "gimple-iterator.h"
 #include "tree-ssa.h"
-#include "params.h"
 #include "tree-cfg.h"
 #include "cfghooks.h"
 
@@ -178,6 +177,7 @@ warn_uninit (enum opt_code wc, tree t, tree expr, tree var,
   cfun_loc = DECL_SOURCE_LOCATION (cfun->decl);
   xloc = expand_location (location);
   floc = expand_location (cfun_loc);
+  auto_diagnostic_group d;
   if (warning_at (location, wc, gmsgid, expr))
     {
       TREE_NO_WARNING (expr) = 1;
@@ -544,7 +544,7 @@ compute_control_dep_chain (basic_block bb, basic_block dep_bb,
   bool found_cd_chain = false;
   size_t cur_chain_len = 0;
 
-  if (*num_calls > PARAM_VALUE (PARAM_UNINIT_CONTROL_DEP_ATTEMPTS))
+  if (*num_calls > param_uninit_control_dep_attempts)
     return false;
   ++*num_calls;
 
@@ -724,7 +724,7 @@ convert_control_dep_chain_into_preds (vec<edge> *dep_chains,
 	      for (idx = 0; idx < gimple_switch_num_labels (gs); ++idx)
 		{
 		  tree tl = gimple_switch_label (gs, idx);
-		  if (e->dest == label_to_block (CASE_LABEL (tl)))
+		  if (e->dest == label_to_block (cfun, CASE_LABEL (tl)))
 		    {
 		      if (!l)
 			l = tl;
@@ -1010,21 +1010,17 @@ get_cmp_code (enum tree_code orig_cmp_code, bool swap_cond, bool invert)
   return tc;
 }
 
-/* Returns true if VAL falls in the range defined by BOUNDARY and CMPC, i.e.
-   all values in the range satisfies (x CMPC BOUNDARY) == true.  */
+/* Returns whether VAL CMPC BOUNDARY is true.  */
 
 static bool
 is_value_included_in (tree val, tree boundary, enum tree_code cmpc)
 {
   bool inverted = false;
-  bool is_unsigned;
   bool result;
 
   /* Only handle integer constant here.  */
   if (TREE_CODE (val) != INTEGER_CST || TREE_CODE (boundary) != INTEGER_CST)
     return true;
-
-  is_unsigned = TYPE_UNSIGNED (TREE_TYPE (val));
 
   if (cmpc == GE_EXPR || cmpc == GT_EXPR || cmpc == NE_EXPR)
     {
@@ -1032,36 +1028,40 @@ is_value_included_in (tree val, tree boundary, enum tree_code cmpc)
       inverted = true;
     }
 
-  if (is_unsigned)
-    {
-      if (cmpc == EQ_EXPR)
-	result = tree_int_cst_equal (val, boundary);
-      else if (cmpc == LT_EXPR)
-	result = tree_int_cst_lt (val, boundary);
-      else
-	{
-	  gcc_assert (cmpc == LE_EXPR);
-	  result = tree_int_cst_le (val, boundary);
-	}
-    }
+  if (cmpc == EQ_EXPR)
+    result = tree_int_cst_equal (val, boundary);
+  else if (cmpc == LT_EXPR)
+    result = tree_int_cst_lt (val, boundary);
   else
     {
-      if (cmpc == EQ_EXPR)
-	result = tree_int_cst_equal (val, boundary);
-      else if (cmpc == LT_EXPR)
-	result = tree_int_cst_lt (val, boundary);
-      else
-	{
-	  gcc_assert (cmpc == LE_EXPR);
-	  result = (tree_int_cst_equal (val, boundary)
-		    || tree_int_cst_lt (val, boundary));
-	}
+      gcc_assert (cmpc == LE_EXPR);
+      result = tree_int_cst_le (val, boundary);
     }
 
   if (inverted)
     result ^= 1;
 
   return result;
+}
+
+/* Returns whether VAL satisfies (x CMPC BOUNDARY) predicate.  CMPC can be
+   either one of the range comparison codes ({GE,LT,EQ,NE}_EXPR and the like),
+   or BIT_AND_EXPR.  EXACT_P is only meaningful for the latter.  It modifies the
+   question from whether VAL & BOUNDARY != 0 to whether VAL & BOUNDARY == VAL.
+   For other values of CMPC, EXACT_P is ignored.  */
+
+static bool
+value_sat_pred_p (tree val, tree boundary, enum tree_code cmpc,
+		  bool exact_p = false)
+{
+  if (cmpc != BIT_AND_EXPR)
+    return is_value_included_in (val, boundary, cmpc);
+
+  wide_int andw = wi::to_wide (val) & wi::to_wide (boundary);
+  if (exact_p)
+    return andw == wi::to_wide (val);
+  else
+    return andw.to_uhwi ();
 }
 
 /* Returns true if PRED is common among all the predicate
@@ -1463,7 +1463,7 @@ pred_expr_equal_p (pred_info x1, tree x2)
 
 /* Returns true of the domain of single predicate expression
    EXPR1 is a subset of that of EXPR2.  Returns false if it
-   can not be proved.  */
+   cannot be proved.  */
 
 static bool
 is_pred_expr_subset_of (pred_info expr1, pred_info expr2)
@@ -1487,21 +1487,24 @@ is_pred_expr_subset_of (pred_info expr1, pred_info expr2)
   if (expr2.invert)
     code2 = invert_tree_comparison (code2, false);
 
-  if ((code1 == EQ_EXPR || code1 == BIT_AND_EXPR) && code2 == BIT_AND_EXPR)
-    return (wi::to_wide (expr1.pred_rhs)
-	    == (wi::to_wide (expr1.pred_rhs) & wi::to_wide (expr2.pred_rhs)));
-
-  if (code1 != code2 && code2 != NE_EXPR)
+  if (code2 == NE_EXPR && code1 == NE_EXPR)
     return false;
 
-  if (is_value_included_in (expr1.pred_rhs, expr2.pred_rhs, code2))
-    return true;
+  if (code2 == NE_EXPR)
+    return !value_sat_pred_p (expr2.pred_rhs, expr1.pred_rhs, code1);
+
+  if (code1 == EQ_EXPR)
+    return value_sat_pred_p (expr1.pred_rhs, expr2.pred_rhs, code2);
+
+  if (code1 == code2)
+    return value_sat_pred_p (expr1.pred_rhs, expr2.pred_rhs, code2,
+			     code1 == BIT_AND_EXPR);
 
   return false;
 }
 
 /* Returns true if the domain of PRED1 is a subset
-   of that of PRED2.  Returns false if it can not be proved so.  */
+   of that of PRED2.  Returns false if it cannot be proved so.  */
 
 static bool
 is_pred_chain_subset_of (pred_chain pred1, pred_chain pred2)
@@ -1563,8 +1566,8 @@ is_included_in (pred_chain one_pred, pred_chain_union preds)
    individual predicate chains (won't be a compile time problem
    as the chains are pretty short).  When the function returns
    false, it does not necessarily mean *PREDS1 is not a superset
-   of *PREDS2, but mean it may not be so since the analysis can
-   not prove it.  In such cases, false warnings may still be
+   of *PREDS2, but mean it may not be so since the analysis cannot
+   prove it.  In such cases, false warnings may still be
    emitted.  */
 
 static bool
@@ -1583,16 +1586,6 @@ is_superset_of (pred_chain_union preds1, pred_chain_union preds2)
     }
 
   return true;
-}
-
-/* Returns true if TC is AND or OR.  */
-
-static inline bool
-is_and_or_or_p (enum tree_code tc, tree type)
-{
-  return (tc == BIT_IOR_EXPR
-	  || (tc == BIT_AND_EXPR
-	      && (type == 0 || TREE_CODE (type) == BOOLEAN_TYPE)));
 }
 
 /* Returns true if X1 is the negate of X2.  */
@@ -2413,7 +2406,7 @@ uninit_uses_cannot_happen (gphi *phi, unsigned uninit_opnds,
    USE_STMT is guarded with a predicate set not overlapping with
    predicate sets of all runtime paths that do not have a definition.
 
-   Returns false if it is not or it can not be determined.  USE_BB is
+   Returns false if it is not or it cannot be determined.  USE_BB is
    the bb of the use (for phi operand use, the bb is not the bb of
    the phi stmt, but the src bb of the operand edge).
 
@@ -2744,7 +2737,7 @@ execute_early_warn_uninitialized (void)
 
   warn_uninitialized_vars (/*warn_possibly_uninitialized=*/!optimize);
 
-  /* Post-dominator information can not be reliably updated.  Free it
+  /* Post-dominator information cannot be reliably updated.  Free it
      after the use.  */
 
   free_dominance_info (CDI_POST_DOMINATORS);

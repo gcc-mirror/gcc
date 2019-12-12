@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,6 +50,7 @@ with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
+with Sem_Mech; use Sem_Mech;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
@@ -434,7 +435,7 @@ package body Checks is
 
       --  Fall through for cases where we do set the flag
 
-      Set_Do_Overflow_Check (N, True);
+      Set_Do_Overflow_Check (N);
       Possible_Local_Raise (N, Standard_Constraint_Error);
    end Activate_Overflow_Check;
 
@@ -444,7 +445,7 @@ package body Checks is
 
    procedure Activate_Range_Check (N : Node_Id) is
    begin
-      Set_Do_Range_Check (N, True);
+      Set_Do_Range_Check (N);
       Possible_Local_Raise (N, Standard_Constraint_Error);
    end Activate_Range_Check;
 
@@ -576,8 +577,10 @@ package body Checks is
       Typ         : Entity_Id;
       Insert_Node : Node_Id)
    is
-      Loc         : constant Source_Ptr := Sloc (N);
-      Param_Ent   : Entity_Id           := Param_Entity (N);
+      Loc : constant Source_Ptr := Sloc (N);
+
+      Check_Cond  : Node_Id;
+      Param_Ent   : Entity_Id := Param_Entity (N);
       Param_Level : Node_Id;
       Type_Level  : Node_Id;
 
@@ -616,21 +619,49 @@ package body Checks is
          Param_Level :=
            New_Occurrence_Of (Extra_Accessibility (Param_Ent), Loc);
 
-         Type_Level :=
-           Make_Integer_Literal (Loc, Deepest_Type_Access_Level (Typ));
+         --  Use the dynamic accessibility parameter for the function's result
+         --  when one has been created instead of statically referring to the
+         --  deepest type level so as to appropriatly handle the rules for
+         --  RM 3.10.2 (10.1/3).
+
+         if Ekind_In (Scope (Param_Ent), E_Function,
+                                         E_Operator,
+                                         E_Subprogram_Type)
+           and then Present (Extra_Accessibility_Of_Result (Scope (Param_Ent)))
+         then
+            Type_Level :=
+              New_Occurrence_Of
+                (Extra_Accessibility_Of_Result (Scope (Param_Ent)), Loc);
+         else
+            Type_Level :=
+              Make_Integer_Literal (Loc, Deepest_Type_Access_Level (Typ));
+         end if;
 
          --  Raise Program_Error if the accessibility level of the access
          --  parameter is deeper than the level of the target access type.
 
+         Check_Cond :=
+           Make_Op_Gt (Loc,
+             Left_Opnd  => Param_Level,
+             Right_Opnd => Type_Level);
+
          Insert_Action (Insert_Node,
            Make_Raise_Program_Error (Loc,
-             Condition =>
-               Make_Op_Gt (Loc,
-                 Left_Opnd  => Param_Level,
-                 Right_Opnd => Type_Level),
-             Reason => PE_Accessibility_Check_Failed));
+             Condition => Check_Cond,
+             Reason    => PE_Accessibility_Check_Failed));
 
          Analyze_And_Resolve (N);
+
+         --  If constant folding has happened on the condition for the
+         --  generated error, then warn about it being unconditional.
+
+         if Nkind (Check_Cond) = N_Identifier
+           and then Entity (Check_Cond) = Standard_True
+         then
+            Error_Msg_Warn := SPARK_Mode /= On;
+            Error_Msg_N ("accessibility check fails<<", N);
+            Error_Msg_N ("\Program_Error [<<", N);
+         end if;
       end if;
    end Apply_Accessibility_Check;
 
@@ -722,7 +753,7 @@ package body Checks is
       --  Generate a check to raise PE if alignment may be inappropriate
 
       else
-         --  If the original expression is a non-static constant, use the name
+         --  If the original expression is a nonstatic constant, use the name
          --  of the constant itself rather than duplicating its initialization
          --  expression, which was extracted above.
 
@@ -777,7 +808,21 @@ package body Checks is
 
             if Compile_Time_Known_Value (Expr) then
                Alignment_Warnings.Append
-                 ((E => E, A => Expr_Value (Expr), W => Warning_Msg));
+                 ((E => E,
+                   A => Expr_Value (Expr),
+                   P => Empty,
+                   W => Warning_Msg));
+
+            --  Likewise if the expression is of the form X'Address
+
+            elsif Nkind (Expr) = N_Attribute_Reference
+              and then Attribute_Name (Expr) = Name_Address
+            then
+               Alignment_Warnings.Append
+                 ((E => E,
+                   A => No_Uint,
+                   P => Prefix (Expr),
+                   W => Warning_Msg));
 
             --  Add explanation of the warning generated by the check
 
@@ -1873,40 +1918,36 @@ package body Checks is
       pragma Assert (Do_Division_Check (N));
 
       Loc   : constant Source_Ptr := Sloc (N);
-      Right : constant Node_Id    := Right_Opnd (N);
+      Right : constant Node_Id := Right_Opnd (N);
+      Opnd  : Node_Id;
 
    begin
       if Expander_Active
         and then not Backend_Divide_Checks_On_Target
         and then Check_Needed (Right, Division_Check)
+
+        --  See if division by zero possible, and if so generate test. This
+        --  part of the test is not controlled by the -gnato switch, since it
+        --  is a Division_Check and not an Overflow_Check.
+
+        and then Do_Division_Check (N)
       then
-         --  See if division by zero possible, and if so generate test. This
-         --  part of the test is not controlled by the -gnato switch, since
-         --  it is a Division_Check and not an Overflow_Check.
+         Set_Do_Division_Check (N, False);
 
-         if Do_Division_Check (N) then
-            Set_Do_Division_Check (N, False);
-
-            if (not ROK) or else (Rlo <= 0 and then 0 <= Rhi) then
-               if Is_Floating_Point_Type (Etype (N)) then
-                  Insert_Action (N,
-                    Make_Raise_Constraint_Error (Loc,
-                      Condition =>
-                        Make_Op_Eq (Loc,
-                          Left_Opnd  => Duplicate_Subexpr_Move_Checks (Right),
-                          Right_Opnd => Make_Real_Literal (Loc, Ureal_0)),
-                      Reason => CE_Divide_By_Zero));
-
-               else
-                  Insert_Action (N,
-                    Make_Raise_Constraint_Error (Loc,
-                      Condition =>
-                        Make_Op_Eq (Loc,
-                          Left_Opnd  => Duplicate_Subexpr_Move_Checks (Right),
-                          Right_Opnd => Make_Integer_Literal (Loc, 0)),
-                      Reason => CE_Divide_By_Zero));
-               end if;
+         if (not ROK) or else (Rlo <= 0 and then 0 <= Rhi) then
+            if Is_Floating_Point_Type (Etype (N)) then
+               Opnd := Make_Real_Literal (Loc, Ureal_0);
+            else
+               Opnd := Make_Integer_Literal (Loc, 0);
             end if;
+
+            Insert_Action (N,
+              Make_Raise_Constraint_Error (Loc,
+                Condition =>
+                  Make_Op_Eq (Loc,
+                    Left_Opnd  => Duplicate_Subexpr_Move_Checks (Right),
+                    Right_Opnd => Opnd),
+                Reason    => CE_Divide_By_Zero));
          end if;
       end if;
    end Apply_Division_Check;
@@ -2004,6 +2045,12 @@ package body Checks is
          return;
       end if;
 
+      --  Here we will generate an explicit range check, so we don't want to
+      --  set the Do_Range check flag, since the range check is taken care of
+      --  by the code we will generate.
+
+      Set_Do_Range_Check (Ck_Node, False);
+
       if not Compile_Time_Known_Value (LB)
           or not Compile_Time_Known_Value (HB)
       then
@@ -2052,7 +2099,6 @@ package body Checks is
       if Nkind (Ck_Node) = N_Real_Literal
         and then Etype (Ck_Node) = Universal_Real
         and then Is_Integer_Type (Target_Typ)
-        and then Nkind (Parent (Ck_Node)) = N_Type_Conversion
       then
          declare
             Int_Val : constant Uint := UR_To_Uint (Realval (Ck_Node));
@@ -2439,7 +2485,7 @@ package body Checks is
         (Formal     : Entity_Id;
          Prag_Nam   : Name_Id;
          For_Result : Boolean := False);
-      --  Add a single 'Valid[_Scalar] check which verifies the initialization
+      --  Add a single 'Valid[_Scalars] check which verifies the initialization
       --  of Formal. Prag_Nam denotes the pre or post condition pragma name.
       --  Set flag For_Result when to verify the result of a function.
 
@@ -2710,6 +2756,41 @@ package body Checks is
          --  Here for normal case of predicate active
 
          else
+            --  If the expression is an IN parameter, the predicate will have
+            --  been applied at the point of call. An additional check would
+            --  be redundant, or will lead to out-of-scope references if the
+            --  call appears within an aspect specification for a precondition.
+
+            --  However, if the reference is within the body of the subprogram
+            --  that declares the formal, the predicate can safely be applied,
+            --  which may be necessary for a nested call whose formal has a
+            --  different predicate.
+
+            if Is_Entity_Name (N)
+              and then Ekind (Entity (N)) = E_In_Parameter
+            then
+               declare
+                  In_Body : Boolean := False;
+                  P       : Node_Id := Parent (N);
+
+               begin
+                  while Present (P) loop
+                     if Nkind (P) = N_Subprogram_Body
+                       and then Corresponding_Spec (P) = Scope (Entity (N))
+                     then
+                        In_Body := True;
+                        exit;
+                     end if;
+
+                     P := Parent (P);
+                  end loop;
+
+                  if not In_Body then
+                     return;
+                  end if;
+               end;
+            end if;
+
             --  If the type has a static predicate and the expression is known
             --  at compile time, see if the expression satisfies the predicate.
 
@@ -3552,9 +3633,23 @@ package body Checks is
                  and then not GNATprove_Mode
                then
                   Apply_Float_Conversion_Check (Expr, Target_Type);
+
                else
-                  Apply_Scalar_Range_Check
-                    (Expr, Target_Type, Fixed_Int => Conv_OK);
+                  --  Conversions involving fixed-point types are expanded
+                  --  separately, and do not need a Range_Check flag, except
+                  --  in GNATprove_Mode, where the explicit constraint check
+                  --  will not be generated.
+
+                  if GNATprove_Mode
+                    or else (not Is_Fixed_Point_Type (Expr_Type)
+                              and then not Is_Fixed_Point_Type (Target_Type))
+                  then
+                     Apply_Scalar_Range_Check
+                       (Expr, Target_Type, Fixed_Int => Conv_OK);
+
+                  else
+                     Set_Do_Range_Check (Expr, False);
+                  end if;
 
                   --  If the target type has predicates, we need to indicate
                   --  the need for a check, even if Determine_Range finds that
@@ -4493,6 +4588,11 @@ package body Checks is
 
         or else not Is_Discrete_Type (Typ)
 
+        --  Don't deal with enumerated types with non-standard representation
+
+        or else (Is_Enumeration_Type (Typ)
+                   and then Present (Enum_Pos_To_Rep (Base_Type (Typ))))
+
         --  Ignore type for which an error has been posted, since range in
         --  this case may well be a bogosity deriving from the error. Also
         --  ignore if error posted on the reference node.
@@ -4549,7 +4649,17 @@ package body Checks is
         or else Assume_No_Invalid_Values
         or else Assume_Valid
       then
-         null;
+         --  If this is a known valid constant with a nonstatic value, it may
+         --  have inherited a narrower subtype from its initial value; use this
+         --  saved subtype (see sem_ch3.adb).
+
+         if Is_Entity_Name (N)
+           and then Ekind (Entity (N)) = E_Constant
+           and then Present (Actual_Subtype (Entity (N)))
+         then
+            Typ := Actual_Subtype (Entity (N));
+         end if;
+
       else
          Typ := Underlying_Type (Base_Type (Typ));
       end if;
@@ -6047,7 +6157,8 @@ package body Checks is
 
       --  An annoying special case. If this is an out parameter of a scalar
       --  type, then the value is not going to be accessed, therefore it is
-      --  inappropriate to do any validity check at the call site.
+      --  inappropriate to do any validity check at the call site. Likewise
+      --  if the parameter is passed by reference.
 
       else
          --  Only need to worry about scalar types
@@ -6073,25 +6184,20 @@ package body Checks is
                   P := Parent (N);
                end if;
 
-               --  Only need to worry if we are argument of a procedure call
-               --  since functions don't have out parameters. If this is an
-               --  indirect or dispatching call, get signature from the
-               --  subprogram type.
+               --  If this is an indirect or dispatching call, get signature
+               --  from the subprogram type.
 
-               if Nkind (P) = N_Procedure_Call_Statement then
+               if Nkind_In (P, N_Entry_Call_Statement,
+                               N_Function_Call,
+                               N_Procedure_Call_Statement)
+               then
+                  E := Get_Called_Entity (P);
                   L := Parameter_Associations (P);
 
-                  if Is_Entity_Name (Name (P)) then
-                     E := Entity (Name (P));
-                  else
-                     pragma Assert (Nkind (Name (P)) = N_Explicit_Dereference);
-                     E := Etype (Name (P));
-                  end if;
-
                   --  Only need to worry if there are indeed actuals, and if
-                  --  this could be a procedure call, otherwise we cannot get a
-                  --  match (either we are not an argument, or the mode of the
-                  --  formal is not OUT). This test also filters out the
+                  --  this could be a subprogram call, otherwise we cannot get
+                  --  a match (either we are not an argument, or the mode of
+                  --  the formal is not OUT). This test also filters out the
                   --  generic case.
 
                   if Is_Non_Empty_List (L) and then Is_Subprogram (E) then
@@ -6102,7 +6208,10 @@ package body Checks is
                      F := First_Formal (E);
                      A := First (L);
                      while Present (F) loop
-                        if Ekind (F) = E_Out_Parameter and then A = N then
+                        if A = N
+                          and then (Ekind (F) = E_Out_Parameter
+                                     or else Mechanism (F) = By_Reference)
+                        then
                            return;
                         end if;
 
@@ -6751,38 +6860,53 @@ package body Checks is
       Source_Base_Type : constant Entity_Id  := Base_Type (Source_Type);
       Target_Base_Type : constant Entity_Id  := Base_Type (Target_Type);
 
-      procedure Convert_And_Check_Range;
-      --  Convert the conversion operand to the target base type and save in
-      --  a temporary. Then check the converted value against the range of the
-      --  target subtype.
+      procedure Convert_And_Check_Range (Suppress : Check_Id);
+      --  Convert N to the target base type and save the result in a temporary.
+      --  The action is analyzed using the default checks as modified by the
+      --  given Suppress argument. Then check the converted value against the
+      --  range of the target subtype.
 
       -----------------------------
       -- Convert_And_Check_Range --
       -----------------------------
 
-      procedure Convert_And_Check_Range is
-         Tnn : constant Entity_Id := Make_Temporary (Loc, 'T', N);
+      procedure Convert_And_Check_Range (Suppress : Check_Id) is
+         Tnn    : constant Entity_Id := Make_Temporary (Loc, 'T', N);
+         Conv_N : Node_Id;
 
       begin
-         --  We make a temporary to hold the value of the converted value
-         --  (converted to the base type), and then do the test against this
-         --  temporary. The conversion itself is replaced by an occurrence of
-         --  Tnn and followed by the explicit range check. Note that checks
-         --  are suppressed for this code, since we don't want a recursive
-         --  range check popping up.
+         --  For enumeration types with non-standard representation this is a
+         --  direct conversion from the enumeration type to the target integer
+         --  type, which is treated by the back end as a normal integer type
+         --  conversion, treating the enumeration type as an integer, which is
+         --  exactly what we want. We set Conversion_OK to make sure that the
+         --  analyzer does not complain about what otherwise might be an
+         --  illegal conversion.
+
+         if Is_Enumeration_Type (Source_Base_Type)
+           and then Present (Enum_Pos_To_Rep (Source_Base_Type))
+           and then Is_Integer_Type (Target_Base_Type)
+         then
+            Conv_N := OK_Convert_To (Target_Base_Type, Duplicate_Subexpr (N));
+         else
+            Conv_N := Convert_To (Target_Base_Type, Duplicate_Subexpr (N));
+         end if;
+
+         --  We make a temporary to hold the value of the conversion to the
+         --  target base type, and then do the test against this temporary.
+         --  N itself is replaced by an occurrence of Tnn and followed by
+         --  the explicit range check.
 
          --     Tnn : constant Target_Base_Type := Target_Base_Type (N);
          --     [constraint_error when Tnn not in Target_Type]
+         --     Tnn
 
          Insert_Actions (N, New_List (
            Make_Object_Declaration (Loc,
              Defining_Identifier => Tnn,
              Object_Definition   => New_Occurrence_Of (Target_Base_Type, Loc),
              Constant_Present    => True,
-             Expression          =>
-               Make_Type_Conversion (Loc,
-                 Subtype_Mark => New_Occurrence_Of (Target_Base_Type, Loc),
-                 Expression   => Duplicate_Subexpr (N))),
+             Expression          => Conv_N),
 
            Make_Raise_Constraint_Error (Loc,
              Condition =>
@@ -6790,7 +6914,7 @@ package body Checks is
                  Left_Opnd  => New_Occurrence_Of (Tnn, Loc),
                  Right_Opnd => New_Occurrence_Of (Target_Type, Loc)),
              Reason => Reason)),
-           Suppress => All_Checks);
+           Suppress => Suppress);
 
          Rewrite (N, New_Occurrence_Of (Tnn, Loc));
 
@@ -6807,7 +6931,7 @@ package body Checks is
       --  First special case, if the source type is already within the range
       --  of the target type, then no check is needed (probably we should have
       --  stopped Do_Range_Check from being set in the first place, but better
-      --  late than never in preventing junk code and junk flag settings.
+      --  late than never in preventing junk code and junk flag settings).
 
       if In_Subrange_Of (Source_Type, Target_Type)
 
@@ -6831,7 +6955,7 @@ package body Checks is
       --  flag set, we do not want to generate the explicit range check code.
 
       if GNATprove_Mode or else not Expander_Active then
-         Set_Do_Range_Check (N, True);
+         Set_Do_Range_Check (N);
          return;
       end if;
 
@@ -6884,7 +7008,8 @@ package body Checks is
 
       --  Next test for the case where the target type is within the bounds
       --  of the base type of the source type, since in this case we can
-      --  simply convert these bounds to the base type of T to do the test.
+      --  simply convert the bounds of the target type to this base type
+      --  to do the test.
 
       --    [constraint_error when N not in
       --       Source_Base_Type (Target_Type'First)
@@ -6933,26 +7058,32 @@ package body Checks is
               Suppress => All_Checks);
 
          --  For conversions involving at least one type that is not discrete,
-         --  first convert to target type and then generate the range check.
-         --  This avoids problems with values that are close to a bound of the
-         --  target type that would fail a range check when done in a larger
-         --  source type before converting but would pass if converted with
+         --  first convert to the target base type and then generate the range
+         --  check. This avoids problems with values that are close to a bound
+         --  of the target type that would fail a range check when done in a
+         --  larger source type before converting but pass if converted with
          --  rounding and then checked (such as in float-to-float conversions).
 
+         --  Note that overflow checks are not suppressed for this code because
+         --  we do not know whether the source type is in range of the target
+         --  base type (unlike in the next case below).
+
          else
-            Convert_And_Check_Range;
+            Convert_And_Check_Range (Suppress => Range_Check);
          end if;
 
-      --  Note that at this stage we now that the Target_Base_Type is not in
+      --  Note that at this stage we know that the Target_Base_Type is not in
       --  the range of the Source_Base_Type (since even the Target_Type itself
       --  is not in this range). It could still be the case that Source_Type is
       --  in range of the target base type since we have not checked that case.
 
       --  If that is the case, we can freely convert the source to the target,
-      --  and then test the target result against the bounds.
+      --  and then test the target result against the bounds. Note that checks
+      --  are suppressed for this code, since we don't want a recursive range
+      --  check popping up.
 
       elsif In_Subrange_Of (Source_Type, Target_Base_Type) then
-         Convert_And_Check_Range;
+         Convert_And_Check_Range (Suppress => All_Checks);
 
       --  At this stage, we know that we have two scalar types, which are
       --  directly convertible, and where neither scalar type has a base
@@ -7381,6 +7512,19 @@ package body Checks is
          return;
       end if;
 
+      --  Entities declared in Lock_free protected types must be treated as
+      --  volatile, and we must inhibit validity checks to prevent improper
+      --  constant folding.
+
+      if Is_Entity_Name (Expr)
+        and then Is_Subprogram (Scope (Entity (Expr)))
+        and then Present (Protected_Subprogram (Scope (Entity (Expr))))
+        and then Uses_Lock_Free
+                   (Scope (Protected_Subprogram (Scope (Entity (Expr)))))
+      then
+         return;
+      end if;
+
       --  If we have a checked conversion, then validity check applies to
       --  the expression inside the conversion, not the result, since if
       --  the expression inside is valid, then so is the conversion result.
@@ -7458,15 +7602,18 @@ package body Checks is
               Suppress => Validity_Check);
 
             Set_Validated_Object (Var_Id, New_Copy_Tree (Exp));
+
             Rewrite (Exp, New_Occurrence_Of (Var_Id, Loc));
-            PV := New_Occurrence_Of (Var_Id, Loc);
 
-            --  Copy the Do_Range_Check flag over to the new Exp, so it doesn't
-            --  get lost. Floating point types are handled elsewhere.
+            --  Move the Do_Range_Check flag over to the new Exp so it doesn't
+            --  get lost and doesn't leak elsewhere.
 
-            if not Is_Floating_Point_Type (Typ) then
-               Set_Do_Range_Check (Exp, Do_Range_Check (Original_Node (Exp)));
+            if Do_Range_Check (Validated_Object (Var_Id)) then
+               Set_Do_Range_Check (Exp);
+               Set_Do_Range_Check (Validated_Object (Var_Id), False);
             end if;
+
+            PV := New_Occurrence_Of (Var_Id, Loc);
 
          --  Otherwise the expression does not denote a variable. Force its
          --  evaluation by capturing its value in a constant. Generate:
@@ -7729,6 +7876,13 @@ package body Checks is
    --  Start of processing for Install_Null_Excluding_Check
 
    begin
+      --  No need to add null-excluding checks when the tree may not be fully
+      --  decorated.
+
+      if Serious_Errors_Detected > 0 then
+         return;
+      end if;
+
       pragma Assert (Is_Access_Type (Typ));
 
       --  No check inside a generic, check will be emitted in instance
@@ -7824,6 +7978,12 @@ package body Checks is
          return;
       end if;
 
+      --  In GNATprove mode, we do not apply the check
+
+      if GNATprove_Mode then
+         return;
+      end if;
+
       --  Otherwise install access check
 
       Insert_Action (N,
@@ -7913,6 +8073,12 @@ package body Checks is
       --  Do not generate an elaboration check if such code is not desirable
 
       elsif Restriction_Active (No_Elaboration_Code) then
+         return;
+
+      --  Do not generate an elaboration check if exceptions cannot be used,
+      --  caught, or propagated.
+
+      elsif not Exceptions_OK then
          return;
 
       --  Do not consider subprograms which act as compilation units, because
@@ -9396,6 +9562,12 @@ package body Checks is
       --  Returns expression to compute:
       --    Typ'Length /= Expr'Length
 
+      function Length_Mismatch_Info_Message
+        (Left_Element_Count  : Uint;
+         Right_Element_Count : Uint) return String;
+      --  Returns a message indicating how many elements were expected
+      --  (Left_Element_Count) and how many were found (Right_Element_Count).
+
       ---------------
       -- Add_Check --
       ---------------
@@ -9582,6 +9754,36 @@ package body Checks is
              Left_Opnd  => Get_E_Length (Typ, Indx),
              Right_Opnd => Get_N_Length (Expr, Indx));
       end Length_N_Cond;
+
+      ----------------------------------
+      -- Length_Mismatch_Info_Message --
+      ----------------------------------
+
+      function Length_Mismatch_Info_Message
+        (Left_Element_Count  : Uint;
+         Right_Element_Count : Uint) return String
+      is
+
+         function Plural_Vs_Singular_Ending (Count : Uint) return String;
+         --  Returns an empty string if Count is 1; otherwise returns "s"
+
+         function Plural_Vs_Singular_Ending (Count : Uint) return String is
+         begin
+            if Count = 1 then
+               return "";
+            else
+               return "s";
+            end if;
+         end Plural_Vs_Singular_Ending;
+
+      begin
+         return "expected " & UI_Image (Left_Element_Count)
+                  & " element"
+                  & Plural_Vs_Singular_Ending (Left_Element_Count)
+                  & "; found " & UI_Image (Right_Element_Count)
+                  & " element"
+                  & Plural_Vs_Singular_Ending (Right_Element_Count);
+      end Length_Mismatch_Info_Message;
 
       -----------------
       -- Same_Bounds --
@@ -9777,12 +9979,16 @@ package body Checks is
                            if L_Length > R_Length then
                               Add_Check
                                 (Compile_Time_Constraint_Error
-                                  (Wnode, "too few elements for}??", T_Typ));
+                                  (Wnode, "too few elements for}??", T_Typ,
+                                   Extra_Msg => Length_Mismatch_Info_Message
+                                                  (L_Length, R_Length)));
 
                            elsif L_Length < R_Length then
                               Add_Check
                                 (Compile_Time_Constraint_Error
-                                  (Wnode, "too many elements for}??", T_Typ));
+                                  (Wnode, "too many elements for}??", T_Typ,
+                                   Extra_Msg => Length_Mismatch_Info_Message
+                                                  (L_Length, R_Length)));
                            end if;
 
                         --  The comparison for an individual index subtype
@@ -10733,7 +10939,12 @@ package body Checks is
                     renames Alignment_Warnings.Table (J);
          begin
             if Known_Alignment (AWR.E)
-              and then AWR.A mod Alignment (AWR.E) = 0
+              and then ((AWR.A /= No_Uint
+                          and then AWR.A mod Alignment (AWR.E) = 0)
+                        or else (Present (AWR.P)
+                                  and then Has_Compatible_Alignment
+                                             (AWR.E, AWR.P, True) =
+                                               Known_Compatible))
             then
                Delete_Warning_And_Continuations (AWR.W);
             end if;

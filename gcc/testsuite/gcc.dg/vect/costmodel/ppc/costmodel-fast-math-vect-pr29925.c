@@ -13,6 +13,8 @@ interp_pitch(float *exc, float *interp, int pitch, int len)
    for (i=0;i<len;i++)
    {
       float tmp = 0;
+      /* PR92127, disable unroll to avoid unexpected profit calculation.  */
+      #pragma GCC unroll 0
       for (k=0;k<7;k++)
       {
          tmp += exc[i-pitch+k+maxj-6];

@@ -1,5 +1,5 @@
 /* Loop optimizations over tree-ssa.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -157,7 +157,7 @@ gate_oacc_kernels (function *fn)
   if (!lookup_attribute ("oacc kernels", DECL_ATTRIBUTES (fn->decl)))
     return false;
 
-  struct loop *loop;
+  class loop *loop;
   FOR_EACH_LOOP (loop, 0)
     if (loop->in_oacc_kernels_region)
       return true;
@@ -330,7 +330,7 @@ const pass_data pass_data_tree_loop_init =
   PROP_cfg, /* properties_required */
   0, /* properties_provided */
   0, /* properties_destroyed */
-  0, /* todo_flags_start */
+  TODO_update_address_taken, /* todo_flags_start */
   0, /* todo_flags_finish */
 };
 
@@ -436,8 +436,7 @@ const pass_data pass_data_scev_cprop =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_cleanup_cfg
-    | TODO_update_ssa_only_virtuals ), /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_scev_cprop : public gimple_opt_pass
@@ -449,9 +448,23 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_tree_scev_cprop; }
-  virtual unsigned int execute (function *) { return scev_const_prop (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_scev_cprop
+
+unsigned
+pass_scev_cprop::execute (function *)
+{
+  class loop *loop;
+  bool any = false;
+
+  /* Perform final value replacement in loops, in case the replacement
+     expressions are cheap.  */
+  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+    any |= final_value_replacement_loop (loop);
+
+  return any ? TODO_cleanup_cfg | TODO_update_ssa_only_virtuals : 0;
+}
 
 } // anon namespace
 
@@ -755,15 +768,15 @@ get_lsm_tmp_name (tree ref, unsigned n, const char *suffix)
       ns[1] = 0;
       lsm_tmp_name_add (ns);
     }
-  return lsm_tmp_name;
   if (suffix != NULL)
     lsm_tmp_name_add (suffix);
+  return lsm_tmp_name;
 }
 
 /* Computes an estimated number of insns in LOOP, weighted by WEIGHTS.  */
 
 unsigned
-tree_num_loop_insns (struct loop *loop, eni_weights *weights)
+tree_num_loop_insns (class loop *loop, eni_weights *weights)
 {
   basic_block *body = get_loop_body (loop);
   gimple_stmt_iterator gsi;

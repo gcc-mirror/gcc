@@ -1,5 +1,5 @@
 /* Language-dependent hooks for C++.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -83,6 +83,9 @@ static tree cxx_enum_underlying_base_type (const_tree);
 #define LANG_HOOKS_RUN_LANG_SELFTESTS selftest::run_cp_tests
 #endif /* #if CHECKING_P */
 
+#undef LANG_HOOKS_GET_SUBSTRING_LOCATION
+#define LANG_HOOKS_GET_SUBSTRING_LOCATION c_get_substring_location
+
 /* Each front end provides its own lang hook initializer.  */
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
@@ -106,8 +109,7 @@ cxx_dwarf_name (tree t, int verbosity)
 {
   gcc_assert (DECL_P (t));
 
-  if (DECL_NAME (t)
-      && (anon_aggrname_p (DECL_NAME (t)) || LAMBDA_TYPE_P (t)))
+  if (DECL_NAME (t) && IDENTIFIER_ANON_P (DECL_NAME (t)))
     return NULL;
   if (verbosity >= 2)
     return decl_as_dwarf_string (t,

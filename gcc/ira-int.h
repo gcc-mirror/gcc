@@ -1,5 +1,5 @@
 /* Integrated Register Allocator (IRA) intercommunication header file.
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_IRA_INT_H
 
 #include "recog.h"
+#include "function-abi.h"
 
 /* To provide consistency in naming, all IRA external variables,
    functions, common typedefs start with prefix ira_.  */
@@ -82,7 +83,7 @@ struct ira_loop_tree_node
   /* The node represents basic block if children == NULL.  */
   basic_block bb;    /* NULL for loop.  */
   /* NULL for BB or for loop tree root if we did not build CFG loop tree.  */
-  struct loop *loop;
+  class loop *loop;
   /* NEXT/SUBLOOP_NEXT is the next node/loop-node of the same parent.
      SUBLOOP_NEXT is always NULL for BBs.  */
   ira_loop_tree_node_t subloop_next, next;
@@ -107,7 +108,7 @@ struct ira_loop_tree_node
 
   /* Allocnos in the loop corresponding to their regnos.  If it is
      NULL the loop does not form a separate register allocation region
-     (e.g. because it has abnormal enter/exit edges and we can not put
+     (e.g. because it has abnormal enter/exit edges and we cannot put
      code for register shuffling on the edges if a different
      allocation is used for a pseudo-register on different sides of
      the edges).  Caps are not in the map (remember we can have more
@@ -145,7 +146,7 @@ extern ira_loop_tree_node_t ira_loop_tree_root;
 extern int ira_loop_tree_height;
 
 /* All nodes representing basic blocks are referred through the
-   following array.  We can not use basic block member `aux' for this
+   following array.  We cannot use basic block member `aux' for this
    because it is used for insertion of insns on edges.  */
 extern ira_loop_tree_node_t ira_bb_nodes;
 
@@ -250,7 +251,7 @@ struct ira_object
      of other ira_objects that this one can conflict with.  */
   int min, max;
   /* Initial and accumulated hard registers conflicting with this
-     object and as a consequences can not be assigned to the allocno.
+     object and as a consequences cannot be assigned to the allocno.
      All non-allocatable hard regs and hard regs of register classes
      different from given allocno one are included in the sets.  */
   HARD_REG_SET conflict_hard_regs, total_conflict_hard_regs;
@@ -287,6 +288,9 @@ struct ira_allocno
   /* Register class which should be used for allocation for given
      allocno.  NO_REGS means that we should use memory.  */
   ENUM_BITFIELD (reg_class) aclass : 16;
+  /* A bitmask of the ABIs used by calls that occur while the allocno
+     is live.  */
+  unsigned int crossed_calls_abis : NUM_ABI_IDS;
   /* During the reload, value TRUE means that we should not reassign a
      hard register to the allocno got memory earlier.  It is set up
      when we removed memory-memory move insn before each iteration of
@@ -423,6 +427,7 @@ struct ira_allocno
 #define ALLOCNO_CALL_FREQ(A) ((A)->call_freq)
 #define ALLOCNO_CALLS_CROSSED_NUM(A) ((A)->calls_crossed_num)
 #define ALLOCNO_CHEAP_CALLS_CROSSED_NUM(A) ((A)->cheap_calls_crossed_num)
+#define ALLOCNO_CROSSED_CALLS_ABIS(A) ((A)->crossed_calls_abis)
 #define ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS(A) \
   ((A)->crossed_calls_clobbered_regs)
 #define ALLOCNO_MEM_OPTIMIZED_DEST(A) ((A)->mem_optimized_dest)
@@ -597,8 +602,9 @@ extern int ira_copies_num;
 
 /* The following structure describes a stack slot used for spilled
    pseudo-registers.  */
-struct ira_spilled_reg_stack_slot
+class ira_spilled_reg_stack_slot
 {
+public:
   /* pseudo-registers assigned to the stack slot.  */
   bitmap_head spilled_regs;
   /* RTL representation of the stack slot.  */
@@ -612,7 +618,7 @@ extern int ira_spilled_reg_stack_slots_num;
 
 /* The following array contains info about spilled pseudo-registers
    stack slots used in current function so far.  */
-extern struct ira_spilled_reg_stack_slot *ira_spilled_reg_stack_slots;
+extern class ira_spilled_reg_stack_slot *ira_spilled_reg_stack_slots;
 
 /* Correspondingly overall cost of the allocation, cost of the
    allocnos assigned to hard-registers, cost of the allocnos assigned
@@ -774,7 +780,8 @@ minmax_set_iter_next (minmax_set_iterator *i)
        minmax_set_iter_cond (&(ITER), &(N));			\
        minmax_set_iter_next (&(ITER)))
 
-struct target_ira_int {
+class target_ira_int {
+public:
   ~target_ira_int ();
 
   void free_ira_costs ();
@@ -795,7 +802,7 @@ struct target_ira_int {
   struct costs *x_op_costs[MAX_RECOG_OPERANDS];
   struct costs *x_this_op_costs[MAX_RECOG_OPERANDS];
 
-  /* Hard registers that can not be used for the register allocator for
+  /* Hard registers that cannot be used for the register allocator for
      all functions of the current compilation unit.  */
   HARD_REG_SET x_no_unit_alloc_regs;
 
@@ -907,9 +914,9 @@ struct target_ira_int {
   bool x_ira_prohibited_mode_move_regs_initialized_p;
 };
 
-extern struct target_ira_int default_target_ira_int;
+extern class target_ira_int default_target_ira_int;
 #if SWITCHABLE_TARGET
-extern struct target_ira_int *this_target_ira_int;
+extern class target_ira_int *this_target_ira_int;
 #else
 #define this_target_ira_int (&default_target_ira_int)
 #endif
@@ -963,8 +970,8 @@ extern void ira_print_disposition (FILE *);
 extern void ira_debug_disposition (void);
 extern void ira_debug_allocno_classes (void);
 extern void ira_init_register_move_cost (machine_mode);
-extern void ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts);
-extern int ira_get_dup_out_num (int op_num, HARD_REG_SET &alts);
+extern alternative_mask ira_setup_alts (rtx_insn *);
+extern int ira_get_dup_out_num (int, alternative_mask);
 
 /* ira-build.c */
 
@@ -996,7 +1003,7 @@ extern void ira_set_allocno_class (ira_allocno_t, enum reg_class);
 extern bool ira_conflict_vector_profitable_p (ira_object_t, int);
 extern void ira_allocate_conflict_vec (ira_object_t, int);
 extern void ira_allocate_object_conflicts (ira_object_t, int);
-extern void ior_hard_reg_conflicts (ira_allocno_t, HARD_REG_SET *);
+extern void ior_hard_reg_conflicts (ira_allocno_t, const_hard_reg_set);
 extern void ira_print_expanded_allocno (ira_allocno_t);
 extern void ira_add_live_range_to_object (ira_object_t, int, int);
 extern live_range_t ira_create_live_range (ira_object_t, int, int,
@@ -1507,5 +1514,29 @@ ira_allocate_and_set_or_copy_costs (int **vec, enum reg_class aclass,
 
 extern rtx ira_create_new_reg (rtx);
 extern int first_moveable_pseudo, last_moveable_pseudo;
+
+/* Return the set of registers that would need a caller save if allocno A
+   overlapped them.  */
+
+inline HARD_REG_SET
+ira_need_caller_save_regs (ira_allocno_t a)
+{
+  return call_clobbers_in_region (ALLOCNO_CROSSED_CALLS_ABIS (a),
+				  ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a),
+				  ALLOCNO_MODE (a));
+}
+
+/* Return true if we would need to save allocno A around a call if we
+   assigned hard register REGNO.  */
+
+inline bool
+ira_need_caller_save_p (ira_allocno_t a, unsigned int regno)
+{
+  if (ALLOCNO_CALLS_CROSSED_NUM (a) == 0)
+    return false;
+  return call_clobbered_in_region_p (ALLOCNO_CROSSED_CALLS_ABIS (a),
+				     ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a),
+				     ALLOCNO_MODE (a), regno);
+}
 
 #endif /* GCC_IRA_INT_H */

@@ -1,5 +1,5 @@
 /* Hash tables for the CPP library.
-   Copyright (C) 1986-2018 Free Software Foundation, Inc.
+   Copyright (C) 1986-2019 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -104,8 +104,8 @@ cpp_defined (cpp_reader *pfile, const unsigned char *str, int len)
 
   node = CPP_HASHNODE (ht_lookup (pfile->hash_table, str, len, HT_NO_INSERT));
 
-  /* If it's of type NT_MACRO, it cannot be poisoned.  */
-  return node && node->type == NT_MACRO;
+  /* If it's a macro, it cannot have been poisoned.  */
+  return node && cpp_macro_p (node);
 }
 
 /* We don't need a proxy since the hash table's identifier comes first

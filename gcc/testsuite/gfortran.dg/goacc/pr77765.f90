@@ -13,7 +13,6 @@ contains
 end module m
 
 ! { dg-error "Procedure 'f' at .1. is already defined" "" { target *-*-* } 8 }
-! { dg-error "Duplicate RECURSIVE attribute specified" "" { target *-*-* } 8 }
 ! { dg-error ".1." "" { target *-*-* } 10 }
-! { dg-error "Unexpected ..ACC ROUTINE" "" { target *-*-* } 11 }
+! { dg-error "Invalid NAME 'f' in \\!\\\$ACC ROUTINE \\( NAME \\)" "" { target *-*-* } 11 }
 ! { dg-error "Expecting END MODULE statement" "" { target *-*-* } 12 }

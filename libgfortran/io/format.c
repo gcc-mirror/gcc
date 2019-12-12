@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -925,7 +925,7 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
       tail->repeat = repeat;
 
       u = format_lex (fmt);
-      if (t == FMT_G && u == FMT_ZERO)
+      if (u == FMT_ZERO)
 	{
 	  *seen_dd = true;
 	  if (notification_std (GFC_STD_F2008) == NOTIFICATION_ERROR
@@ -944,10 +944,8 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 
 	  u = format_lex (fmt);
 	  if (u != FMT_POSINT)
-	    {
-	      fmt->error = posint_required;
-	      goto finished;
-	    }
+	    notify_std (&dtp->common, GFC_STD_F2003,
+			"Positive width required");
 	  tail->u.real.d = fmt->value;
 	  break;
 	}
@@ -956,12 +954,33 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 	  *seen_dd = true;
 	  if (u != FMT_POSINT && u != FMT_ZERO)
 	    {
+	      if (dtp->common.flags & IOPARM_DT_DEC_EXT)
+		{
+		  tail->u.real.w = DEFAULT_WIDTH;
+		  tail->u.real.d = 0;
+		  tail->u.real.e = -1;
+		  fmt->saved_token = u;
+		  break;
+		}
 	      fmt->error = nonneg_required;
 	      goto finished;
 	    }
 	}
+      else if (u == FMT_ZERO)
+	{
+	  fmt->error = posint_required;
+	  goto finished;
+	}
       else if (u != FMT_POSINT)
 	{
+	  if (dtp->common.flags & IOPARM_DT_DEC_EXT)
+	    {
+	      tail->u.real.w = DEFAULT_WIDTH;
+	      tail->u.real.d = 0;
+	      tail->u.real.e = -1;
+	      fmt->saved_token = u;
+	      break;
+	    }
 	  fmt->error = posint_required;
 	  goto finished;
 	}
@@ -1058,7 +1077,7 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 	    {
 	      /* We have parsed the complete vlist so initialize the
 	         array descriptor and save it in the format node.  */
-	      gfc_array_i4 *vp = tail->u.udf.vlist;
+	      gfc_full_array_i4 *vp = tail->u.udf.vlist;
 	      GFC_DESCRIPTOR_DATA(vp) = xmalloc (i * sizeof(GFC_INTEGER_4));
 	      GFC_DIMENSION_SET(vp->dim[0],1, i, 1);
 	      memcpy (GFC_DESCRIPTOR_DATA(vp), temp, i * sizeof(GFC_INTEGER_4));
@@ -1100,6 +1119,13 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 	{
 	  if (t != FMT_POSINT)
 	    {
+	      if (dtp->common.flags & IOPARM_DT_DEC_EXT)
+		{
+		  tail->u.integer.w = DEFAULT_WIDTH;
+		  tail->u.integer.m = -1;
+		  fmt->saved_token = t;
+		  break;
+		}
 	      fmt->error = posint_required;
 	      goto finished;
 	    }
@@ -1108,6 +1134,13 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 	{
 	  if (t != FMT_ZERO && t != FMT_POSINT)
 	    {
+	      if (dtp->common.flags & IOPARM_DT_DEC_EXT)
+		{
+		  tail->u.integer.w = DEFAULT_WIDTH;
+		  tail->u.integer.m = -1;
+		  fmt->saved_token = t;
+		  break;
+		}
 	      fmt->error = nonneg_required;
 	      goto finished;
 	    }

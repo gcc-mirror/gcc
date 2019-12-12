@@ -1,4 +1,4 @@
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 template <class T, T n> void f(T, int (&)[n]);
 template <class T, T n> void g(int (&)[n], T);

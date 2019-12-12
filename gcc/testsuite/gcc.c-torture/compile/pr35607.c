@@ -1,3 +1,5 @@
+/* { dg-require-effective-target indirect_calls } */
+
 extern void (*__fini_array_start []) (void);
 extern void (*__fini_array_end []) (void);
 void

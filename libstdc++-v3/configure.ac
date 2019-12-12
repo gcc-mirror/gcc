@@ -1,6 +1,5 @@
 # Process this file with autoreconf to produce a configure script.
 
-AC_PREREQ(2.64)
 AC_INIT(package-unused, version-unused,, libstdc++)
 AC_CONFIG_SRCDIR(src/shared/hashtable-aux.cc)
 AC_CONFIG_HEADER(config.h)
@@ -84,6 +83,8 @@ AC_PROG_CC
 AC_PROG_CXX
 CXXFLAGS="$save_CXXFLAGS"
 
+AC_SYS_LARGEFILE
+
 # Runs configure.host, and assorted other critical bits.  Sets
 # up critical shell variables.
 GLIBCXX_CONFIGURE
@@ -150,6 +151,7 @@ GLIBCXX_ENABLE_VERBOSE
 GLIBCXX_ENABLE_PCH($is_hosted)
 GLIBCXX_ENABLE_THREADS
 GLIBCXX_ENABLE_ATOMIC_BUILTINS
+GLIBCXX_ENABLE_LOCK_POLICY
 GLIBCXX_ENABLE_DECIMAL_FLOAT
 GLIBCXX_ENABLE_INT128_FLOAT128
 if test "$enable_float128" = yes; then
@@ -168,7 +170,7 @@ GLIBCXX_ENABLE_LONG_LONG([yes])
 GLIBCXX_ENABLE_WCHAR_T([yes])
 GLIBCXX_ENABLE_C99([yes])
 GLIBCXX_ENABLE_CONCEPT_CHECKS([no])
-GLIBCXX_ENABLE_DEBUG_FLAGS(["-gdwarf-4 -g3 -O0"])
+GLIBCXX_ENABLE_DEBUG_FLAGS(["-gdwarf-4 -g3 -O0 -D_GLIBCXX_ASSERTIONS"])
 GLIBCXX_ENABLE_DEBUG([no])
 GLIBCXX_ENABLE_PARALLEL([yes])
 GLIBCXX_ENABLE_CXX_FLAGS
@@ -220,6 +222,9 @@ GLIBCXX_ENABLE_LIBSTDCXX_TIME
 # Check for tmpnam which is obsolescent in POSIX.1-2008
 GLIBCXX_CHECK_TMPNAM
 
+# For pthread_cond_clockwait
+GLIBCXX_CHECK_PTHREAD_COND_CLOCKWAIT
+
 AC_LC_MESSAGES
 
 # For hardware_concurrency
@@ -255,8 +260,8 @@ if $GLIBCXX_IS_NATIVE; then
   GLIBCXX_CHECK_MATH_SUPPORT
   GLIBCXX_CHECK_STDLIB_SUPPORT
 
-  # For /dev/random and /dev/urandom for TR1.
-  GLIBCXX_CHECK_RANDOM_TR1
+  # For /dev/random and /dev/urandom for std::random_device.
+  GLIBCXX_CHECK_DEV_RANDOM
 
   # For TLS support.
   GCC_CHECK_TLS
@@ -264,6 +269,12 @@ if $GLIBCXX_IS_NATIVE; then
   AC_CHECK_FUNCS(__cxa_thread_atexit_impl __cxa_thread_atexit)
   AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
   AC_CHECK_FUNCS(_wfopen)
+
+  # C11 functions for C++17 library
+  AC_CHECK_FUNCS(timespec_get)
+
+  # For Networking TS.
+  AC_CHECK_FUNCS(sockatmark)
 
   # For iconv support.
   AM_ICONV
@@ -411,6 +422,8 @@ GCC_CHECK_ASSEMBLER_HWCAP
 
 # Check if assembler supports rdrand opcode.
 GLIBCXX_CHECK_X86_RDRAND
+# Check if assembler supports rdseed opcode.
+GLIBCXX_CHECK_X86_RDSEED
 
 # This depends on GLIBCXX_ENABLE_SYMVERS and GLIBCXX_IS_NATIVE.
 GLIBCXX_CONFIGURE_TESTSUITE
@@ -422,6 +435,9 @@ GLIBCXX_CHECK_GTHREADS
 AC_CHECK_HEADERS([fcntl.h dirent.h sys/statvfs.h utime.h])
 GLIBCXX_ENABLE_FILESYSTEM_TS
 GLIBCXX_CHECK_FILESYSTEM_DEPS
+
+# For Networking TS.
+AC_CHECK_HEADERS([fcntl.h sys/ioctl.h sys/socket.h sys/uio.h poll.h netdb.h arpa/inet.h netinet/in.h netinet/tcp.h])
 
 # For Transactional Memory TS
 GLIBCXX_CHECK_SIZE_T_MANGLING
@@ -443,6 +459,7 @@ AC_CHECK_PROG([DOXYGEN], doxygen, yes, no)
 AC_CHECK_PROG([DOT], dot, yes, no)
 
 # Check for docbook
+AC_CHECK_PROG([XMLCATALOG], xmlcatalog, yes, no)
 AC_CHECK_PROG([XSLTPROC], xsltproc, yes, no)
 AC_CHECK_PROG([XMLLINT], xmllint, yes, no)
 GLIBCXX_CONFIGURE_DOCBOOK
@@ -471,6 +488,10 @@ AM_CONDITIONAL(BUILD_MAN,
 AC_CHECK_PROG([DBLATEX], dblatex, yes, no)
 AC_CHECK_PROG([PDFLATEX], pdflatex, yes, no)
 AM_CONDITIONAL(BUILD_PDF,
+	       test $ac_cv_prog_DOXYGEN = "yes" &&
+	       test $ac_cv_prog_DOT = "yes" &&
+	       test $ac_cv_prog_XSLTPROC = "yes" &&
+	       test $ac_cv_prog_XMLLINT = "yes" &&
 	       test $ac_cv_prog_DBLATEX = "yes" &&
 	       test $ac_cv_prog_PDFLATEX = "yes")
 

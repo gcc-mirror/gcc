@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-require-visibility "" }
 !
 ! Tests the fix for PR68846 in which compiler generated temporaries were
 ! receiving the attributes of dummy arguments. This test is the original.

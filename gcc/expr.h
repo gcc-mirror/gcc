@@ -1,5 +1,5 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -114,7 +114,10 @@ extern rtx emit_block_move_hints (rtx, rtx, rtx, enum block_op_methods,
 			          unsigned int, HOST_WIDE_INT,
 				  unsigned HOST_WIDE_INT,
 				  unsigned HOST_WIDE_INT,
-				  unsigned HOST_WIDE_INT);
+				  unsigned HOST_WIDE_INT,
+				  bool bail_out_libcall = false,
+				  bool *is_move_done = NULL,
+				  bool might_overlap = false);
 extern rtx emit_block_cmp_hints (rtx, rtx, rtx, tree, rtx, bool,
 				 by_pieces_constfn, void *);
 extern bool emit_storent_insn (rtx to, rtx from);
@@ -219,7 +222,7 @@ extern int can_store_by_pieces (unsigned HOST_WIDE_INT,
    MEMSETP is true if this is a real memset/bzero, not a copy.
    Returns TO + LEN.  */
 extern rtx store_by_pieces (rtx, unsigned HOST_WIDE_INT, by_pieces_constfn,
-			    void *, unsigned int, bool, int);
+			    void *, unsigned int, bool, memop_ret);
 
 /* Emit insns to set X from Y.  */
 extern rtx_insn *emit_move_insn (rtx, rtx);
@@ -288,7 +291,9 @@ expand_normal (tree exp)
 
 /* Return the tree node and offset if a given argument corresponds to
    a string constant.  */
-extern tree string_constant (tree, tree *);
+extern tree string_constant (tree, tree *, tree *, tree *);
+
+extern enum tree_code maybe_optimize_mod_cmp (enum tree_code, tree *, tree *);
 
 /* Two different ways of generating switch statements.  */
 extern int try_casesi (tree, tree, tree, tree, rtx, rtx, rtx, profile_probability);
@@ -307,7 +312,8 @@ extern bool can_move_by_pieces (unsigned HOST_WIDE_INT, unsigned int);
 extern unsigned HOST_WIDE_INT highest_pow2_factor (const_tree);
 
 extern bool categorize_ctor_elements (const_tree, HOST_WIDE_INT *,
-				      HOST_WIDE_INT *, bool *);
+				      HOST_WIDE_INT *, HOST_WIDE_INT *,
+				      bool *);
 
 extern void expand_operands (tree, tree, rtx, rtx*, rtx*,
 			     enum expand_modifier);

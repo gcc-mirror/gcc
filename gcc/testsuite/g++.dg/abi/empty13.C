@@ -2,7 +2,7 @@
 // { dg-do run { target { { i?86-*-* x86_64-*-* } && { ! { ia32 } } } } }
 // { dg-options "-x c -fabi-version=11" }
 // { dg-additional-sources "empty13a.c" }
-// { dg-prune-output "command line option" }
+// { dg-prune-output "command-line option" }
 
 #include "empty13.h"
 extern "C" void fun(struct dummy, struct foo);

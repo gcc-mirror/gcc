@@ -1,5 +1,5 @@
 /* LTO declarations.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -68,5 +68,7 @@ struct lto_section_list
 {
   struct lto_section_slot *first, *last;
 };
+
+extern unsigned int lto_option_lang_mask (void);
 
 #endif /* LTO_H */

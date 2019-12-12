@@ -18,7 +18,7 @@ contains
     real :: diff
     do i = 1, N
       diff = p(i) - (i + 2.0) * (i - 3.0)
-      if (diff > EPS .or. -diff > EPS) STOP 1
+      if (diff > EPS .or. -diff > EPS) stop 1
     end do
   end subroutine
 

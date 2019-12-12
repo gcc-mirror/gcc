@@ -2,7 +2,7 @@
 
 // 2008-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2008-2018 Free Software Foundation, Inc.
+// Copyright (C) 2008-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,6 +34,9 @@ void test01()
   static_assert(test_category<is_integral, unsigned char>(true), "");
 #ifdef _GLIBCXX_USE_WCHAR_T
   static_assert(test_category<is_integral, wchar_t>(true), "");
+#endif
+#ifdef _GLIBCXX_USE_CHAR8_T
+  static_assert(test_category<is_integral, char8_t>(true), "");
 #endif
   static_assert(test_category<is_integral, char16_t>(true), "");
   static_assert(test_category<is_integral, char32_t>(true), "");

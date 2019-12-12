@@ -1,6 +1,6 @@
 // Definition of _Hash_bytes. -*- C++ -*-
 
-// Copyright (C) 2010-2018 Free Software Foundation, Inc.
+// Copyright (C) 2010-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -139,7 +139,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // Remove the bytes not divisible by the sizeof(size_t).  This
     // allows the main loop to process the data as 64-bit integers.
-    const int len_aligned = len & ~0x7;
+    const size_t len_aligned = len & ~(size_t)0x7;
     const char* const end = buf + len_aligned;
     size_t hash = seed ^ (len * mul);
     for (const char* p = buf; p != end; p += 8)

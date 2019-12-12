@@ -1,6 +1,6 @@
 // { dg-do run { target c++11 } }
 
-// Copyright (C) 2012-2018 Free Software Foundation, Inc.
+// Copyright (C) 2012-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,23 +18,46 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <unordered_map>
+
 #include <testsuite_hooks.h>
 
 void test01()
 {
-  const int N = 1000;
-
   typedef std::unordered_map<int, int> Map;
   Map m;
-  m.reserve(N);
 
-  std::size_t bkts = m.bucket_count();
-  for (int i = 0; i != N; ++i)
+  // Make sure max load factor is 1 so that reserved elements is directly
+  // the bucket count.
+  m.max_load_factor(1);
+
+  int i = -1;
+  for (;;)
     {
-      m.insert(std::make_pair(i, i));
-      // As long as we insert less than the reserved number of elements we
-      // shouldn't experiment any rehash.
+      m.reserve(m.bucket_count());
+
+      std::size_t bkts = m.bucket_count();
+
+      m.reserve(bkts);
       VERIFY( m.bucket_count() == bkts );
+
+      for (++i; i < bkts; ++i)
+	{
+	  m.insert(std::make_pair(i, i));
+
+	  // As long as we insert less than the reserved number of elements we
+	  // shouldn't experiment any rehash.
+	  VERIFY( m.bucket_count() == bkts );
+
+	  VERIFY( m.load_factor() <= m.max_load_factor() );
+	}
+
+      // One more element should rehash.
+      m.insert(std::make_pair(i, i));
+      VERIFY( m.bucket_count() != bkts );
+      VERIFY( m.load_factor() <= m.max_load_factor() );
+
+      if (i > 1024)
+	break;
     }
 }
 

@@ -5,16 +5,16 @@ namespace A
 {
   enum class E { V };
 
-  using E::V;        // { dg-error "not a namespace or unscoped enum" }
+  using E::V;        // { dg-error "name enumerator" }
 }
 
 void foo()
 {
-  using A::E::V;     // { dg-error "not a namespace or unscoped enum" }
+  using A::E::V;     // { dg-error "name enumerator" }
 }
 
-using A::E::V;       // { dg-error "not a namespace or unscoped enum" }
+using A::E::V;       // { dg-error "name enumerator" }
 
 enum class F { U };
 
-using F::U;          // { dg-error "not a namespace or unscoped enum" }
+using F::U;          // { dg-error "name enumerator" }

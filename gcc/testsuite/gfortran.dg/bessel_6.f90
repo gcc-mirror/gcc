@@ -1,11 +1,7 @@
-! { dg-do run { xfail spu-*-* } }
 ! { dg-add-options ieee }
 !
 ! PR fortran/36158
 ! PR fortran/33197
-!
-! XFAILed for SPU targets since we don't have an accurate library
-! implementation of the single-precision Bessel functions.
 !
 ! Run-time tests for transformations BESSEL_JN
 !

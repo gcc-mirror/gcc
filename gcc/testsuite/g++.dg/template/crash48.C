@@ -7,4 +7,4 @@ template<typename T> struct A
   typedef typename T::X X;
 };
 
-template<typename T> A<T>::X::X() {} // { dg-error "no type|invalid use|not a type|dependent" }
+template<typename T> A<T>::X::X() {} // { dg-error "expected|no type|invalid use|not a type|dependent" }

@@ -56,6 +56,10 @@ Wall
 Ada AdaWhy AdaSCIL
 Enable most warning messages.
 
+fdump-scos
+Ada RejectNegative Var(flag_dump_scos) Init(0)
+Dump Source Coverage Obligations.
+
 k8
 Driver
 Synonym of -gnatk8.
@@ -99,5 +103,9 @@ Ada AdaWhy AdaSCIL Driver Joined RejectNegative
 fbuiltin-printf
 Ada Undocumented
 Ignored.
+
+fopenacc
+Ada LTO
+; Documented in C but it should be: Enable OpenACC support
 
 ; This comment is to ensure we retain the blank line above.

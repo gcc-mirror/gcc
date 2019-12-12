@@ -14,6 +14,6 @@ public:
 void mydata::Set (float x)
 {
   /* We want to vectorize this either as loop or basic-block.  */
-  for (int i=0; i<upper(); i++) /* { dg-message "note: \[^\n\]* vectorized" } */
+  for (int i=0; i<upper(); i++) /* { dg-optimized "\[^\n\]* vectorized" } */
     data[i] = x;
 }

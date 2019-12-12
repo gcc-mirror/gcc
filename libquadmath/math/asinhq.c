@@ -1,4 +1,4 @@
-/* asinhq.c -- __float128 version of s_asinh.c.
+/* s_asinhl.c -- long double version of s_asinh.c.
  * Conversion to long double by Ulrich Drepper,
  * Cygnus Support, drepper@cygnus.com.
  */
@@ -14,21 +14,25 @@
  * ====================================================
  */
 
-/* asinhl(x)
+#if defined(LIBM_SCCS) && !defined(lint)
+static char rcsid[] = "$NetBSD: $";
+#endif
+
+/* asinhq(x)
  * Method :
  *      Based on
- *              asinhl(x) = signl(x) * logl [ |x| + sqrtl(x*x+1) ]
+ *              asinhq(x) = signl(x) * logq [ |x| + sqrtq(x*x+1) ]
  *      we have
- *      asinhl(x) := x  if  1+x*x=1,
- *                := signl(x)*(logl(x)+ln2)) for large |x|, else
- *                := signl(x)*logl(2|x|+1/(|x|+sqrtl(x*x+1))) if|x|>2, else
- *                := signl(x)*log1pl(|x| + x^2/(1 + sqrtl(1+x^2)))
+ *      asinhq(x) := x  if  1+x*x=1,
+ *                := signl(x)*(logq(x)+ln2)) for large |x|, else
+ *                := signl(x)*logq(2|x|+1/(|x|+sqrtq(x*x+1))) if|x|>2, else
+ *                := signl(x)*log1pq(|x| + x^2/(1 + sqrtq(1+x^2)))
  */
 
 #include "quadmath-imp.h"
 
 static const __float128
-  one = 1.0Q,
+  one = 1,
   ln2 = 6.931471805599453094172321214581765681e-1Q,
   huge = 1.0e+4900Q;
 

@@ -1,6 +1,6 @@
 /* For PR rtl-optimization/27735  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -funswitch-loops -fdump-tree-unswitch-details" } */
+/* { dg-options "-O2 -funswitch-loops -fdump-tree-unswitch-details -fno-finite-loops" } */
 
 void set_color(void);
 void xml_colorize_line(unsigned int *p, int state)

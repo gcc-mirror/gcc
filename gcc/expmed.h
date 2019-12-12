@@ -1,5 +1,5 @@
 /* Target-dependent costs for expmed.c.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -701,6 +701,8 @@ extern rtx emit_store_flag (rtx, enum rtx_code, rtx, rtx, machine_mode,
 /* Like emit_store_flag, but always succeeds.  */
 extern rtx emit_store_flag_force (rtx, enum rtx_code, rtx, rtx,
 				  machine_mode, int, int);
+
+extern void canonicalize_comparison (machine_mode, enum rtx_code *, rtx *);
 
 /* Choose a minimal N + 1 bit approximation to 1/D that can be used to
    replace division by D, and put the least significant N bits of the result

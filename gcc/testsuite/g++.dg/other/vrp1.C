@@ -9,4 +9,4 @@ long long mod (long long l, long long r)
     return 0LL;
   return l % r;
 }
-template long long mod<-0x8000000000000000LL> (long long, long long);
+template long long mod<-0x8000000000000000LL> (long long, long long); // { dg-error "template-id" "" { target { c++11 } } }

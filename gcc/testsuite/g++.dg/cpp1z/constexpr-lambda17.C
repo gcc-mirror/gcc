@@ -1,5 +1,5 @@
 // PR c++/78131
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 template <typename TF>
 constexpr auto f(TF)

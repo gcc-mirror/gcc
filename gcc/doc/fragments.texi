@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2018 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2019 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -63,7 +63,7 @@ in @code{EXTRA-PARTS}.
 @findex MULTILIB_OPTIONS
 @item MULTILIB_OPTIONS
 For some targets, invoking GCC in different ways produces objects
-that can not be linked together.  For example, for some targets GCC
+that cannot be linked together.  For example, for some targets GCC
 produces both big and little endian code.  For these targets, you must
 arrange for multiple versions of @file{libgcc.a} to be compiled, one for
 each set of incompatible options.  When GCC invokes the linker, it
@@ -212,7 +212,7 @@ the second it will not.
 For configurations that support both multilib and multiarch,
 @code{MULTILIB_OSDIRNAMES} also encodes the multiarch name, thus
 subsuming @code{MULTIARCH_DIRNAME}.  The multiarch name is appended to
-each directory name, separated by a colon (e.g.
+each directory name, separated by a colon (e.g.@:
 @samp{../lib32:i386-linux-gnu}).
 
 Each multiarch subdirectory will be searched before the corresponding OS

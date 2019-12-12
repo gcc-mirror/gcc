@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1998-2018, AdaCore                     --
+--                     Copyright (C) 1998-2019, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -129,9 +129,11 @@ package GNAT.Threads is
 
    procedure Get_Thread (Id : System.Address; Thread : System.Address);
    pragma Export (C, Get_Thread, "__gnat_get_thread");
+   procedure Get_Thread
+     (Id : Ada.Task_Identification.Task_Id; Thread : System.Address);
    --  This procedure is used to retrieve the thread id of a given task.
    --  The value Id is the value that was passed to the thread code procedure
-   --  at activation time.
+   --  at activation time or a Task_Id.
    --  Thread is a pointer to a thread id that will be updated by this
    --  procedure.
    --

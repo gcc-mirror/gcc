@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2018 Free Software Foundation, Inc.
+// Copyright (C) 2015-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,24 +37,26 @@ test01()
   canonical( p, ec );
   VERIFY( !ec );
 
+  const auto root = fs::absolute("/");
+
   p = "/";
   p = canonical( p, ec );
-  VERIFY( p == "/" );
+  VERIFY( p == root );
   VERIFY( !ec );
 
   p = "/.";
   p = canonical( p, ec );
-  VERIFY( p == "/" );
+  VERIFY( p == root );
   VERIFY( !ec );
 
   p = "/..";
   p = canonical( p, ec );
-  VERIFY( p == "/" );
+  VERIFY( p == root );
   VERIFY( !ec );
 
   p = "/../.././.";
   p = canonical( p, ec );
-  VERIFY( p == "/" );
+  VERIFY( p == root );
   VERIFY( !ec );
 }
 

@@ -14,10 +14,9 @@ import (
 //go:generate go run mkfastlog2table.go
 
 // For gccgo, while we still have C runtime code, use go:linkname to
-// rename some functions to themselves, so that the compiler will
-// export them.
+// export some functions.
 //
-//go:linkname tickspersecond runtime.tickspersecond
+//go:linkname tickspersecond
 
 var ticksLock mutex
 var ticksVal uint64

@@ -1,6 +1,6 @@
 ; SYSV4 options for PPC port.
 ;
-; Copyright (C) 2005-2018 Free Software Foundation, Inc.
+; Copyright (C) 2005-2019 Free Software Foundation, Inc.
 ; Contributed by Aldy Hernandez <aldy@quesejoda.com>.
 ;
 ; This file is part of GCC.
@@ -83,11 +83,11 @@ Produce big endian code.
 ;; FIXME: This does nothing.  What should be done?
 mno-toc
 Target RejectNegative
-no description yet.
+No description yet.
 
 mtoc
 Target RejectNegative
-no description yet.
+No description yet.
 
 mprototype
 Target Var(target_prototype) Save
@@ -96,7 +96,7 @@ Assume all variable arg functions are prototyped.
 ;; FIXME: Does nothing.
 mno-traceback
 Target RejectNegative
-no description yet.
+No description yet.
 
 meabi
 Target Report Mask(EABI) Var(rs6000_isa_flags)
@@ -138,7 +138,7 @@ Set the PPC_EMB bit in the ELF flags header.
 
 mshlib
 Target RejectNegative
-no description yet.
+No description yet.
 
 m64
 Target Report RejectNegative Negative(m32) Mask(64BIT) Var(rs6000_isa_flags)
@@ -150,7 +150,7 @@ Generate 32-bit code.
 
 mnewlib
 Target RejectNegative
-no description yet.
+No description yet.
 
 msecure-plt
 Target Report RejectNegative Var(secure_plt, 1) Save
@@ -159,6 +159,10 @@ Generate code to use a non-exec PLT and GOT.
 mbss-plt
 Target Report RejectNegative Var(secure_plt, 0) Save
 Generate code for old exec BSS PLT.
+
+mpltseq
+Target Report Var(rs6000_pltseq) Init(1) Save
+Use inline plt sequences to implement long calls and -fno-plt.
 
 mgnu-attribute
 Target Report Var(rs6000_gnu_attr) Init(1) Save

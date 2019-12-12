@@ -1,5 +1,5 @@
 /* Expand builtin functions.
-   Copyright (C) 1988-2018 Free Software Foundation, Inc.
+   Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -49,7 +49,6 @@ extern struct target_builtins *this_target_builtins;
 /* Non-zero if __builtin_constant_p should be folded right away.  */
 extern bool force_folding_builtin_constant_p;
 
-extern bool is_builtin_fn (tree);
 extern bool called_as_built_in (tree);
 extern bool get_object_alignment_1 (tree, unsigned int *,
 				    unsigned HOST_WIDE_INT *);
@@ -57,7 +56,54 @@ extern unsigned int get_object_alignment (tree);
 extern bool get_pointer_alignment_1 (tree, unsigned int *,
 				     unsigned HOST_WIDE_INT *);
 extern unsigned int get_pointer_alignment (tree);
-extern tree c_strlen (tree, int);
+extern unsigned string_length (const void*, unsigned, unsigned);
+
+struct c_strlen_data
+{
+  /* [MINLEN, MAXBOUND, MAXLEN] is a range describing the length of
+     one or more strings of possibly unknown length.  For a single
+     string of known length the range is a constant where
+     MINLEN == MAXBOUND == MAXLEN holds.
+     For other strings, MINLEN is the length of the shortest known
+     string.  MAXBOUND is the length of a string that could be stored
+     in the largest array referenced by the expression.  MAXLEN is
+     the length of the longest sequence of non-zero bytes
+     in an object referenced by the expression.  For such strings,
+     MINLEN <= MAXBOUND <= MAXLEN holds.  For example, given:
+       struct A { char a[7], b[]; };
+       extern struct A *p;
+       n = strlen (p->a);
+     the computed range will be [0, 6, ALL_ONES].
+     However, for a conditional expression involving a string
+     of known length and an array of unknown bound such as
+       n = strlen (i ? p->b : "123");
+     the range will be [3, 3, ALL_ONES].
+     MINLEN != 0 && MAXLEN == ALL_ONES indicates that MINLEN is
+     the length of the shortest known string and implies that
+     the shortest possible string referenced by the expression may
+     actually be the empty string.  This distinction is useful for
+     diagnostics.  get_range_strlen() return value distinguishes
+     between these two cases.
+     As the tighter (and more optimistic) bound, MAXBOUND is suitable
+     for diagnostics but not for optimization.
+     As the more conservative bound, MAXLEN is intended to be used
+     for optimization.  */
+  tree minlen;
+  tree maxlen;
+  tree maxbound;
+  /* When non-null, DECL refers to the declaration known to store
+     an unterminated constant character array, as in:
+     const char s[] = { 'a', 'b', 'c' };
+     It is used to diagnose uses of such arrays in functions such as
+     strlen() that expect a nul-terminated string as an argument.  */
+  tree decl;
+  /* Non-constant offset from the beginning of a string not accounted
+     for in the length range.  Used to improve diagnostics.  */
+  tree off;
+};
+
+extern tree c_strlen (tree, int, c_strlen_data * = NULL, unsigned = 1);
+extern rtx c_readstr (const char *, scalar_int_mode, bool = true);
 extern void expand_builtin_setjmp_setup (rtx, rtx);
 extern void expand_builtin_setjmp_receiver (rtx);
 extern void expand_builtin_update_setjmp_buf (rtx);
@@ -74,13 +120,11 @@ extern void expand_builtin_trap (void);
 extern void expand_ifn_atomic_bit_test_and (gcall *);
 extern void expand_ifn_atomic_compare_exchange (gcall *);
 extern rtx expand_builtin (tree, rtx, rtx, machine_mode, int);
-extern rtx expand_builtin_with_bounds (tree, rtx, rtx, machine_mode, int);
 extern enum built_in_function builtin_mathfn_code (const_tree);
-extern tree fold_builtin_expect (location_t, tree, tree, tree);
+extern tree fold_builtin_expect (location_t, tree, tree, tree, tree);
 extern bool avoid_folding_inline_builtin (tree);
 extern tree fold_call_expr (location_t, tree, bool);
 extern tree fold_builtin_call_array (location_t, tree, tree, int, tree *);
-extern tree fold_builtin_n (location_t, tree, tree *, int, bool);
 extern bool validate_gimple_arglist (const gcall *, ...);
 extern rtx default_expand_builtin (tree, rtx, rtx, machine_mode, int);
 extern bool fold_builtin_next_arg (tree, bool);
@@ -89,7 +133,7 @@ extern tree fold_call_stmt (gcall *, bool);
 extern void set_builtin_user_assembler_name (tree decl, const char *asmspec);
 extern bool is_simple_builtin (tree);
 extern bool is_inexpensive_builtin (tree);
-extern tree compute_objsize (tree, int);
+extern tree compute_objsize (tree, int, tree * = NULL);
 
 extern bool readonly_data_expr (tree exp);
 extern bool init_target_chars (void);
@@ -103,6 +147,11 @@ extern bool target_char_cst_p (tree t, char *p);
 extern internal_fn associated_internal_fn (tree);
 extern internal_fn replacement_internal_fn (gcall *);
 
-extern tree max_object_size ();
+bool check_nul_terminated_array (tree, tree, tree = NULL_TREE);
+extern void warn_string_no_nul (location_t, const char *, tree, tree);
+extern tree unterminated_array (tree, tree * = NULL, bool * = NULL);
+extern bool builtin_with_linkage_p (tree);
+extern bool check_access (tree, tree, tree, tree, tree, tree, tree);
+
 
 #endif /* GCC_BUILTINS_H */

@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-fdump-tree-original" }
+! { dg-options "-O0 -fdump-tree-original" }
 !
 ! Test the fix for PR66082. The original problem was with the first
 ! call foo_1d.
@@ -26,5 +26,5 @@ contains
   end function
 end
 ! { dg-final { scan-tree-dump-times "builtin_malloc" 3 "original" } }
-! { dg-final { scan-tree-dump-times "builtin_free" 4 "original" } }
+! { dg-final { scan-tree-dump-times "builtin_free" 3 "original" } }
 ! { dg-final { scan-tree-dump-times "while \\(1\\)" 4 "original" } }

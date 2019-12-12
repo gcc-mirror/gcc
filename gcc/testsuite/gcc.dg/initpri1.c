@@ -1,6 +1,6 @@
 /* { dg-do run { target init_priority } } */
 
-extern void abort ();
+extern void abort (void);
 
 int i;
 int j;

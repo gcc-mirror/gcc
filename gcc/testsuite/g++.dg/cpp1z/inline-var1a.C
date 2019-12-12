@@ -1,5 +1,5 @@
-// { dg-do compile }
-// { dg-options "-std=c++17 -Wno-deprecated -g" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-Wno-deprecated -g" }
 
 #include "inline-var1.h"
 

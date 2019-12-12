@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -38,6 +38,8 @@
  * Contains implementations of cc_ht_map_'s iterators related functions, e.g.,
  * begin().
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::iterator
@@ -81,3 +83,4 @@ PB_DS_CLASS_C_DEC::
 end() const
 { return s_const_end_it; }
 
+#endif

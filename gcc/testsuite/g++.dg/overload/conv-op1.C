@@ -10,7 +10,7 @@ struct A
 void f()
 {
   const int i = 42;
-  A()(i);			// { dg-message "<conversion>" }
+  A()(i);			// { dg-message "(conversion)" }
   // { dg-error "qualifiers" "" { target *-*-* } .-1 }
 }
 

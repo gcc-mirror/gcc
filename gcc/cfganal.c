@@ -1,5 +1,5 @@
 /* Control flow graph analysis code for GNU compiler.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -951,10 +951,10 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
 				   bool include_entry_exit)
 {
   int pre_order_num = 0;
-  int rev_post_order_num = n_basic_blocks_for_fn (cfun) - 1;
+  int rev_post_order_num = n_basic_blocks_for_fn (fn) - 1;
 
   /* Allocate stack for back-tracking up CFG.  */
-  auto_vec<edge_iterator, 20> stack (n_basic_blocks_for_fn (cfun) + 1);
+  auto_vec<edge_iterator, 20> stack (n_basic_blocks_for_fn (fn) + 1);
 
   if (include_entry_exit)
     {
@@ -968,7 +968,7 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
     rev_post_order_num -= NUM_FIXED_BLOCKS;
 
   /* Allocate bitmap to track nodes that have been visited.  */
-  auto_sbitmap visited (last_basic_block_for_fn (cfun));
+  auto_sbitmap visited (last_basic_block_for_fn (fn));
 
   /* None of the nodes in the CFG have been visited yet.  */
   bitmap_clear (visited);
@@ -1057,8 +1057,121 @@ pre_and_rev_post_order_compute (int *pre_order, int *rev_post_order,
   return pre_order_num;
 }
 
+/* Unlike pre_and_rev_post_order_compute we fill rev_post_order backwards
+   so iterating in RPO order needs to start with rev_post_order[n - 1]
+   going to rev_post_order[0].  If FOR_ITERATION is true then try to
+   make CFG cycles fit into small contiguous regions of the RPO order.
+   When FOR_ITERATION is true this requires up-to-date loop structures.  */
+
+int
+rev_post_order_and_mark_dfs_back_seme (struct function *fn, edge entry,
+				       bitmap exit_bbs, bool for_iteration,
+				       int *rev_post_order)
+{
+  int pre_order_num = 0;
+  int rev_post_order_num = 0;
+
+  /* Allocate stack for back-tracking up CFG.  Worst case we need
+     O(n^2) edges but the following should suffice in practice without
+     a need to re-allocate.  */
+  auto_vec<edge, 20> stack (2 * n_basic_blocks_for_fn (fn));
+
+  int *pre = XNEWVEC (int, 2 * last_basic_block_for_fn (fn));
+  int *post = pre + last_basic_block_for_fn (fn);
+
+  /* BB flag to track nodes that have been visited.  */
+  auto_bb_flag visited (fn);
+  /* BB flag to track which nodes have post[] assigned to avoid
+     zeroing post.  */
+  auto_bb_flag post_assigned (fn);
+
+  /* Push the first edge on to the stack.  */
+  stack.quick_push (entry);
+
+  while (!stack.is_empty ())
+    {
+      basic_block src;
+      basic_block dest;
+
+      /* Look at the edge on the top of the stack.  */
+      int idx = stack.length () - 1;
+      edge e = stack[idx];
+      src = e->src;
+      dest = e->dest;
+      e->flags &= ~EDGE_DFS_BACK;
+
+      /* Check if the edge destination has been visited yet.  */
+      if (! bitmap_bit_p (exit_bbs, dest->index)
+	  && ! (dest->flags & visited))
+	{
+	  /* Mark that we have visited the destination.  */
+	  dest->flags |= visited;
+
+	  pre[dest->index] = pre_order_num++;
+
+	  if (EDGE_COUNT (dest->succs) > 0)
+	    {
+	      /* Since the DEST node has been visited for the first
+		 time, check its successors.  */
+	      /* Push the edge vector in reverse to match previous behavior.  */
+	      stack.reserve (EDGE_COUNT (dest->succs));
+	      for (int i = EDGE_COUNT (dest->succs) - 1; i >= 0; --i)
+		stack.quick_push (EDGE_SUCC (dest, i));
+	      /* Generalize to handle more successors?  */
+	      if (for_iteration
+		  && EDGE_COUNT (dest->succs) == 2)
+		{
+		  edge &e1 = stack[stack.length () - 2];
+		  if (loop_exit_edge_p (e1->src->loop_father, e1))
+		    std::swap (e1, stack.last ());
+		}
+	    }
+	  else
+	    {
+	      /* There are no successors for the DEST node so assign
+		 its reverse completion number.  */
+	      post[dest->index] = rev_post_order_num;
+	      dest->flags |= post_assigned;
+	      rev_post_order[rev_post_order_num] = dest->index;
+	      rev_post_order_num++;
+	    }
+	}
+      else
+	{
+	  if (dest->flags & visited
+	      && src != entry->src
+	      && pre[src->index] >= pre[dest->index]
+	      && !(dest->flags & post_assigned))
+	    e->flags |= EDGE_DFS_BACK;
+
+	  if (idx != 0 && stack[idx - 1]->src != src)
+	    {
+	      /* There are no more successors for the SRC node
+		 so assign its reverse completion number.  */
+	      post[src->index] = rev_post_order_num;
+	      src->flags |= post_assigned;
+	      rev_post_order[rev_post_order_num] = src->index;
+	      rev_post_order_num++;
+	    }
+
+	  stack.pop ();
+	}
+    }
+
+  XDELETEVEC (pre);
+
+  /* Clear the temporarily allocated flags.  */
+  for (int i = 0; i < rev_post_order_num; ++i)
+    BASIC_BLOCK_FOR_FN (fn, rev_post_order[i])->flags
+      &= ~(post_assigned|visited);
+
+  return rev_post_order_num;
+}
+
+
+
 /* Compute the depth first search order on the _reverse_ graph and
-   store in the array DFS_ORDER, marking the nodes visited in VISITED.
+   store it in the array DFS_ORDER, marking the nodes visited in VISITED.
    Returns the number of nodes visited.
 
    The computation is split into three pieces:
@@ -1145,41 +1258,12 @@ dfs_enumerate_from (basic_block bb, int reverse,
 {
   basic_block *st, lbb;
   int sp = 0, tv = 0;
-  unsigned size;
 
-  /* A bitmap to keep track of visited blocks.  Allocating it each time
-     this function is called is not possible, since dfs_enumerate_from
-     is often used on small (almost) disjoint parts of cfg (bodies of
-     loops), and allocating a large sbitmap would lead to quadratic
-     behavior.  */
-  static sbitmap visited;
-  static unsigned v_size;
+  auto_bb_flag visited (cfun);
 
-#define MARK_VISITED(BB) (bitmap_set_bit (visited, (BB)->index))
-#define UNMARK_VISITED(BB) (bitmap_clear_bit (visited, (BB)->index))
-#define VISITED_P(BB) (bitmap_bit_p (visited, (BB)->index))
-
-  /* Resize the VISITED sbitmap if necessary.  */
-  size = last_basic_block_for_fn (cfun);
-  if (size < 10)
-    size = 10;
-
-  if (!visited)
-    {
-
-      visited = sbitmap_alloc (size);
-      bitmap_clear (visited);
-      v_size = size;
-    }
-  else if (v_size < size)
-    {
-      /* Ensure that we increase the size of the sbitmap exponentially.  */
-      if (2 * v_size > size)
-	size = 2 * v_size;
-
-      visited = sbitmap_resize (visited, size, 0);
-      v_size = size;
-    }
+#define MARK_VISITED(BB) ((BB)->flags |= visited)
+#define UNMARK_VISITED(BB) ((BB)->flags &= ~visited)
+#define VISITED_P(BB) (((BB)->flags & visited) != 0)
 
   st = XNEWVEC (basic_block, rslt_max);
   rslt[tv++] = st[sp++] = bb;
@@ -1242,10 +1326,11 @@ dfs_enumerate_from (basic_block bb, int reverse,
    of the dominance frontiers, no more, no less.
 */
 
-
-static void
-compute_dominance_frontiers_1 (bitmap_head *frontiers)
+void
+compute_dominance_frontiers (bitmap_head *frontiers)
 {
+  timevar_push (TV_DOM_FRONTIERS);
+
   edge p;
   edge_iterator ei;
   basic_block b;
@@ -1253,34 +1338,22 @@ compute_dominance_frontiers_1 (bitmap_head *frontiers)
     {
       if (EDGE_COUNT (b->preds) >= 2)
 	{
+	  basic_block domsb = get_immediate_dominator (CDI_DOMINATORS, b);
 	  FOR_EACH_EDGE (p, ei, b->preds)
 	    {
 	      basic_block runner = p->src;
-	      basic_block domsb;
 	      if (runner == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 		continue;
 
-	      domsb = get_immediate_dominator (CDI_DOMINATORS, b);
 	      while (runner != domsb)
 		{
-		  if (!bitmap_set_bit (&frontiers[runner->index],
-				       b->index))
+		  if (!bitmap_set_bit (&frontiers[runner->index], b->index))
 		    break;
-		  runner = get_immediate_dominator (CDI_DOMINATORS,
-						    runner);
+		  runner = get_immediate_dominator (CDI_DOMINATORS, runner);
 		}
 	    }
 	}
     }
-}
-
-
-void
-compute_dominance_frontiers (bitmap_head *frontiers)
-{
-  timevar_push (TV_DOM_FRONTIERS);
-
-  compute_dominance_frontiers_1 (frontiers);
 
   timevar_pop (TV_DOM_FRONTIERS);
 }
@@ -1301,25 +1374,26 @@ compute_idf (bitmap def_blocks, bitmap_head *dfs)
   unsigned bb_index, i;
   bitmap phi_insertion_points;
 
-  /* Each block can appear at most twice on the work-stack.  */
-  auto_vec<int> work_stack (2 * n_basic_blocks_for_fn (cfun));
   phi_insertion_points = BITMAP_ALLOC (NULL);
 
-  /* Seed the work list with all the blocks in DEF_BLOCKS.  We use
-     vec::quick_push here for speed.  This is safe because we know that
-     the number of definition blocks is no greater than the number of
-     basic blocks, which is the initial capacity of WORK_STACK.  */
-  EXECUTE_IF_SET_IN_BITMAP (def_blocks, 0, bb_index, bi)
-    work_stack.quick_push (bb_index);
+  /* Seed the work set with all the blocks in DEF_BLOCKS.  */
+  auto_bitmap work_set;
+  bitmap_copy (work_set, def_blocks);
+  bitmap_tree_view (work_set);
 
-  /* Pop a block off the worklist, add every block that appears in
+  /* Pop a block off the workset, add every block that appears in
      the original block's DF that we have not already processed to
-     the worklist.  Iterate until the worklist is empty.   Blocks
-     which are added to the worklist are potential sites for
+     the workset.  Iterate until the workset is empty.   Blocks
+     which are added to the workset are potential sites for
      PHI nodes.  */
-  while (work_stack.length () > 0)
+  while (!bitmap_empty_p (work_set))
     {
-      bb_index = work_stack.pop ();
+      /* The dominance frontier of a block is blocks after it so iterating
+         on earlier blocks first is better.
+	 ???  Basic blocks are by no means guaranteed to be ordered in
+	 optimal order for this iteration.  */
+      bb_index = bitmap_first_set_bit (work_set);
+      bitmap_clear_bit (work_set, bb_index);
 
       /* Since the registration of NEW -> OLD name mappings is done
 	 separately from the call to update_ssa, when updating the SSA
@@ -1332,7 +1406,7 @@ compute_idf (bitmap def_blocks, bitmap_head *dfs)
       EXECUTE_IF_AND_COMPL_IN_BITMAP (&dfs[bb_index], phi_insertion_points,
 	                              0, i, bi)
 	{
-	  work_stack.quick_push (i);
+	  bitmap_set_bit (work_set, i);
 	  bitmap_set_bit (phi_insertion_points, i);
 	}
     }

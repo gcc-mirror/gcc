@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -w" } */
+/* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
 
 /* This file was automatically reduced from tree-ssa-operands.c.  It
    contains many warnings, but it exposes a copy propagation bug that

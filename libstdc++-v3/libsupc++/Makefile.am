@@ -1,6 +1,6 @@
 ## Makefile for the GNU C++ Support library.
 ##
-## Copyright (C) 2000-2018 Free Software Foundation, Inc.
+## Copyright (C) 2000-2019 Free Software Foundation, Inc.
 ##
 ## Process this file with automake to produce Makefile.in.
 ##
@@ -31,7 +31,7 @@ toolexeclib_LTLIBRARIES = libsupc++.la
 noinst_LTLIBRARIES = libsupc++convenience.la
 
 std_HEADERS = \
-	cxxabi.h exception initializer_list new typeinfo
+	compare cxxabi.h exception initializer_list new typeinfo
 
 bits_HEADERS = \
 	atomic_lockfree_defines.h cxxabi_forced.h \

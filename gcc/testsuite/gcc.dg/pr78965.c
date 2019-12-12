@@ -1,7 +1,6 @@
 /* PR tree-optimization/78965 */
 /* { dg-do run { target c99_runtime } } */
 /* { dg-options "-O2" } */
-/* { dg-add-options c99_runtime } */
 
 int
 main ()

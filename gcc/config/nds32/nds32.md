@@ -1,5 +1,5 @@
 ;; Machine description of Andes NDS32 cpu for GNU compiler
-;; Copyright (C) 2012-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2019 Free Software Foundation, Inc.
 ;; Contributed by Andes Technology Corporation.
 ;;
 ;; This file is part of GCC.
@@ -1523,7 +1523,7 @@
 )
 
 (define_insn "call_internal"
-  [(parallel [(call (mem (match_operand:SI 0 "nds32_call_address_operand" "r, S"))
+  [(parallel [(call (mem:SI (match_operand:SI 0 "nds32_call_address_operand" "r, S"))
 		    (match_operand 1))
 	      (clobber (reg:SI LP_REGNUM))
 	      (clobber (reg:SI TA_REGNUM))])]
@@ -1611,7 +1611,7 @@
 
 (define_insn "call_value_internal"
   [(parallel [(set (match_operand 0)
-		   (call (mem (match_operand:SI 1 "nds32_call_address_operand" "r, S"))
+		   (call (mem:SI (match_operand:SI 1 "nds32_call_address_operand" "r, S"))
 		         (match_operand 2)))
 	      (clobber (reg:SI LP_REGNUM))
 	      (clobber (reg:SI TA_REGNUM))])]
@@ -1714,7 +1714,7 @@
 })
 
 (define_insn "sibcall_internal"
-  [(parallel [(call (mem (match_operand:SI 0 "nds32_call_address_operand" "r, S"))
+  [(parallel [(call (mem:SI (match_operand:SI 0 "nds32_call_address_operand" "r, S"))
 		    (match_operand 1))
 	      (clobber (reg:SI TA_REGNUM))
 	      (return)])]
@@ -1778,7 +1778,7 @@
 
 (define_insn "sibcall_value_internal"
   [(parallel [(set (match_operand 0)
-		   (call (mem (match_operand:SI 1 "nds32_call_address_operand" "r, S"))
+		   (call (mem:SI (match_operand:SI 1 "nds32_call_address_operand" "r, S"))
 			 (match_operand 2)))
 	      (clobber (reg:SI TA_REGNUM))
 	      (return)])]
@@ -1993,6 +1993,9 @@
   [(simple_return)]
   ""
 {
+  if (nds32_isr_function_critical_p (current_function_decl))
+    return "iret";
+
   if (TARGET_16_BIT)
     return "ret5";
   else
@@ -2001,9 +2004,11 @@
   [(set_attr "type" "branch")
    (set_attr "enabled" "yes")
    (set (attr "length")
-	(if_then_else (match_test "TARGET_16_BIT")
-		      (const_int 2)
-		      (const_int 4)))])
+	(if_then_else (match_test "nds32_isr_function_critical_p (current_function_decl)")
+		      (const_int 4)
+		      (if_then_else (match_test "TARGET_16_BIT")
+				    (const_int 2)
+				    (const_int 4))))])
 
 
 ;; ----------------------------------------------------------------------------
@@ -2311,6 +2316,14 @@
 
 ;; ----------------------------------------------------------------------------
 
+;; Patterns for __builtin_trap.
+(define_insn "trap"
+  [(trap_if (const_int 1) (const_int 0))]
+  ""
+  "trap\t0")
+
+;; ----------------------------------------------------------------------------
+
 ;; Patterns for TLS.
 ;; The following two tls patterns don't be expanded directly because the
 ;; intermediate value may be spilled into the stack.  As a result, it is
@@ -2352,6 +2365,20 @@
    (set_attr "type" "misc")]
 )
 
+;; There is a unspec operand to record RELAX_GROUP number because each
+;; emitted instruction need a relax_hint above it.
+(define_insn "tls_le"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "nds32_symbolic_operand" "i")] UNSPEC_TLS_IE))
+   (use (unspec [(match_operand:SI 2 "immediate_operand" "i")] UNSPEC_VOLATILE_RELAX_GROUP))]
+  ""
+  {
+    return nds32_output_symrel (operands);
+  }
+  [(set_attr "length" "8")
+   (set_attr "type"   "misc")]
+)
+
 ;; The pattern is for some relaxation groups that have to keep addsi3 in 32-bit mode.
 (define_insn "addsi3_32bit"
   [(set (match_operand:SI 0 "register_operand"             "=r")
@@ -2362,5 +2389,18 @@
   [(set_attr "type"    "alu")
    (set_attr "length"  "4")
    (set_attr "feature" "v1")])
+
+;; Patterns for PIC.
+(define_insn "sym_got"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "nds32_symbolic_operand" "i")] UNSPEC_GOT))
+   (use (unspec [(match_operand:SI 2 "immediate_operand" "i")] UNSPEC_VOLATILE_RELAX_GROUP))]
+  ""
+  {
+    return nds32_output_symrel (operands);
+  }
+  [(set_attr "length" "8")
+   (set_attr "type"   "misc")]
+)
 
 ;; ----------------------------------------------------------------------------

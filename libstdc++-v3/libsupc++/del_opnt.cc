@@ -1,6 +1,6 @@
 // Boilerplate support routines for -*- C++ -*- dynamic memory management.
 
-// Copyright (C) 1997-2018 Free Software Foundation, Inc.
+// Copyright (C) 1997-2019 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -41,7 +41,10 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #include "new"
 
 _GLIBCXX_WEAK_DEFINITION void
-operator delete (void *ptr, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
+operator delete (void *ptr, const std::nothrow_t&) noexcept
 {
-  std::free(ptr);
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 206. operator new(size_t, nothrow) may become unlinked to ordinary
+  // operator new if ordinary version replaced
+  ::operator delete (ptr);
 }

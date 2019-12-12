@@ -1,5 +1,5 @@
 /* Set up combined include path chain for the preprocessor.
-   Copyright (C) 1986-2018 Free Software Foundation, Inc.
+   Copyright (C) 1986-2019 Free Software Foundation, Inc.
 
    Broken out of cppinit.c and cppfiles.c and rewritten Mar 2003.
 

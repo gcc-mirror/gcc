@@ -1,5 +1,4 @@
-! { dg-do run { xfail spu-*-* } }
-! FAILs on SPU because of rounding error reading kinds.h
+! { dg-do run }
 program main
   ! Test scalar masks for different intrinsics.
   real, dimension(2,2) :: a

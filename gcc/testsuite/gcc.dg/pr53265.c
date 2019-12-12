@@ -38,7 +38,8 @@ fn3 (void)
   for (i = 0; i < (int) (sizeof (a) / sizeof (a[0])); i++)	/* { dg-message "note: within this loop" } */
     {
       c[i + 8] = b[i];	/* { dg-warning "8 invokes undefined behavior" } */
-      a[i + 8] = b[i + 8];
+	/* { dg-warning "out of the bounds" "" { target *-*-* } .-1 } */
+      a[i + 8] = b[i + 8]; /* { dg-warning "out of the bounds" } */
     }
   bar (a);
   bar (c);

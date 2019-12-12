@@ -1,5 +1,5 @@
 /* Configuration file for ARM GNU/Linux EABI targets.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC   
 
    This file is part of GCC.
@@ -29,6 +29,9 @@
       ANDROID_TARGET_OS_CPP_BUILTINS();		\
     }						\
   while (false)
+
+#define EXTRA_TARGET_D_OS_VERSIONS()		\
+  ANDROID_TARGET_D_OS_VERSIONS();
 
 /* We default to a soft-float ABI so that binaries can run on all
    target hardware.  If you override this to use the hard-float ABI then
@@ -86,7 +89,7 @@
 #define MUSL_DYNAMIC_LINKER_E "%{mbig-endian:eb}"
 #endif
 #define MUSL_DYNAMIC_LINKER \
-  "/lib/ld-musl-arm" MUSL_DYNAMIC_LINKER_E "%{mfloat-abi=hard:hf}.so.1"
+  "/lib/ld-musl-arm" MUSL_DYNAMIC_LINKER_E "%{mfloat-abi=hard:hf}%{mfdpic:-fdpic}.so.1"
 
 /* At this point, bpabi.h will have clobbered LINK_SPEC.  We want to
    use the GNU/Linux version, not the generic BPABI version.  */
@@ -98,9 +101,12 @@
 #undef  ASAN_CC1_SPEC
 #define ASAN_CC1_SPEC "%{%:sanitize(address):-funwind-tables}"
 
+#define FDPIC_CC1_SPEC ""
+
 #undef  CC1_SPEC
 #define CC1_SPEC							\
-  LINUX_OR_ANDROID_CC (GNU_USER_TARGET_CC1_SPEC " " ASAN_CC1_SPEC,	\
+  LINUX_OR_ANDROID_CC (GNU_USER_TARGET_CC1_SPEC " " ASAN_CC1_SPEC " "	\
+		       FDPIC_CC1_SPEC,					\
 		       GNU_USER_TARGET_CC1_SPEC " " ASAN_CC1_SPEC " "	\
 		       ANDROID_CC1_SPEC)
 

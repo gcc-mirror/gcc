@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for TILE-Gx.
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
    Contributed by Walter Lee (walt@tilera.com)
 
    This file is part of GCC.
@@ -114,15 +114,12 @@
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, \
   1, 1, 1, 1}
-#define CALL_USED_REGISTERS \
+#define CALL_REALLY_USED_REGISTERS \
  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
   1, 1, 1, 1}
-
-#define CALL_REALLY_USED_REGISTERS \
- CALL_USED_REGISTERS
 
 #define REG_ALLOC_ORDER {				\
       10, 11, 12, 13, 14, /* call used */		\

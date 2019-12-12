@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---         Copyright (C) 1998-2018, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2019, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -341,7 +341,8 @@ package body System.Tasking.Protected_Objects.Single_Entry is
       Uninterpreted_Data : System.Address)
    is
       Self_Id    : constant Task_Id := STPO.Self;
-      Entry_Call : Entry_Call_Record renames Self_Id.Entry_Calls (1);
+      Entry_Call : Entry_Call_Record renames
+        Self_Id.Entry_Calls (Self_Id.Entry_Calls'First);
    begin
       --  If pragma Detect_Blocking is active then Program_Error must be
       --  raised if this potentially blocking operation is called from a

@@ -41,6 +41,42 @@ f2 (void)
 }
 
 __attribute__((noinline, noclone)) void
+f2a (int x)
+{
+  long long a0, a1, a2, a3;
+  a0 = a[0];
+  a1 = a[1];
+  a2 = a[2];
+  a3 = a[3];
+  a0 = a0 << x;
+  a1 = a1 << 2;
+  a2 = a2 << 2;
+  a3 = a3 << 2;
+  a[0] = a0;
+  a[1] = a1;
+  a[2] = a2;
+  a[3] = a3;
+}
+
+__attribute__((noinline, noclone)) void
+f2b (int x)
+{
+  long long a0, a1, a2, a3;
+  a0 = a[0];
+  a1 = a[1];
+  a2 = a[2];
+  a3 = a[3];
+  a0 = a0 << 2;
+  a1 = a1 << 2;
+  a2 = a2 << x;
+  a3 = a3 << 2;
+  a[0] = a0;
+  a[1] = a1;
+  a[2] = a2;
+  a[3] = a3;
+}
+
+__attribute__((noinline, noclone)) void
 f3 (int x)
 {
   long long a0, a1, a2, a3;
@@ -76,6 +112,14 @@ main ()
   f3 (3);
   if (a[0] != (4LL << 7) || a[1] != (3LL << 8)
       || a[2] != (2LL << 9) || a[3] != (1LL << 10))
+    abort ();
+  f2a (3);
+  if (a[0] != (4LL << 10) || a[1] != (3LL << 10)
+      || a[2] != (2LL << 11) || a[3] != (1LL << 12))
+    abort ();
+  f2b (3);
+  if (a[0] != (4LL << 12) || a[1] != (3LL << 12)
+      || a[2] != (2LL << 14) || a[3] != (1LL << 14))
     abort ();
   return 0;
 }

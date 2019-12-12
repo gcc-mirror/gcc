@@ -11,4 +11,4 @@ void f (void)
     __builtin_abort ();
 }
 
-/* { dg-final { scan-tree-dump-not "__builtin_strlen" "strlen" } } */
+/* { dg-final { scan-tree-dump-not "__builtin_strlen" "strlen1" } } */

@@ -1,8 +1,7 @@
-// { dg-options "-std=gnu++17 -lstdc++fs" }
+// { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
-// { dg-require-filesystem-ts "" }
 
-// Copyright (C) 2018 Free Software Foundation, Inc.
+// Copyright (C) 2018-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -112,6 +111,56 @@ test04()
 #endif
 }
 
+void
+test05()
+{
+  std::basic_string_view<path::value_type> s;
+
+  path p = "0/1/2/3/4/5/6";
+  // The string_view aliases the path's internal string:
+  s = p.native();
+  path::string_type expected(s);
+  expected += path::preferred_separator;
+  expected += s;
+  // Append that string_view, which must work correctly even though the
+  // internal string will be reallocated during the operation:
+  p /= s;
+  compare_paths(p, expected);
+
+  // Same again with a trailing slash:
+  path p2 = "0/1/2/3/4/5/";
+  s = p2.native();
+  expected = s;
+  expected += s;
+  p2 /= s;
+  compare_paths(p2, expected);
+
+  // And aliasing one of the components of the path:
+  path p3 = "0/123456789/a";
+  path::iterator second = std::next(p3.begin());
+  s = second->native();
+  expected = p3.native() + path::preferred_separator;
+  expected += s;
+  p3 /= s;
+  compare_paths(p3, expected);
+}
+
+void
+test06()
+{
+  const std::string s0 = "a/b/c";
+  path p = s0;
+  std::string s;
+  for (int i = 0; i < 10; ++i)
+    s += "0/1/2/3/4/5/6/7/8/9/";
+  // append a long string with many components
+  test(p, s.c_str());
+
+  // Same again but with a trailing slash on the left operand:
+  path p2 = s0 + '/';
+  test(p2, s.c_str());
+}
+
 int
 main()
 {
@@ -119,4 +168,6 @@ main()
   test02();
   test03();
   test04();
+  test05();
+  test06();
 }

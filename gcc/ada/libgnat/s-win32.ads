@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2008-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,13 +57,16 @@ package System.Win32 is
    INVALID_HANDLE_VALUE : constant HANDLE := -1;
    INVALID_FILE_SIZE    : constant := 16#FFFFFFFF#;
 
-   type DWORD  is new Interfaces.C.unsigned_long;
-   type WORD   is new Interfaces.C.unsigned_short;
-   type BYTE   is new Interfaces.C.unsigned_char;
-   type LONG   is new Interfaces.C.long;
-   type CHAR   is new Interfaces.C.char;
+   type ULONG     is new Interfaces.C.unsigned_long;
+   type DWORD     is new Interfaces.C.unsigned_long;
+   type WORD      is new Interfaces.C.unsigned_short;
+   type BYTE      is new Interfaces.C.unsigned_char;
+   type LONG      is new Interfaces.C.long;
+   type CHAR      is new Interfaces.C.char;
+   type SIZE_T    is new Interfaces.C.size_t;
+   type DWORD_PTR is mod 2 ** Standard'Address_Size;
 
-   type BOOL   is new Interfaces.C.int;
+   type BOOL      is new Interfaces.C.int;
    for BOOL'Size use Interfaces.C.int'Size;
 
    type Bits1  is range 0 .. 2 ** 1 - 1;
@@ -157,18 +160,20 @@ package System.Win32 is
    GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS : constant := 16#00000004#;
 
    type OVERLAPPED is record
-      Internal     : DWORD;
-      InternalHigh : DWORD;
+      Internal     : access ULONG;
+      InternalHigh : access ULONG;
       Offset       : DWORD;
       OffsetHigh   : DWORD;
       hEvent       : HANDLE;
    end record;
+   pragma Convention (C_Pass_By_Copy, OVERLAPPED);
 
    type SECURITY_ATTRIBUTES is record
       nLength             : DWORD;
       pSecurityDescriptor : PVOID;
       bInheritHandle      : BOOL;
    end record;
+   pragma Convention (C_Pass_By_Copy, SECURITY_ATTRIBUTES);
 
    function CreateFileA
      (lpFileName            : Address;
@@ -235,7 +240,7 @@ package System.Win32 is
       dwDesiredAccess      : DWORD;
       dwFileOffsetHigh     : DWORD;
       dwFileOffsetLow      : DWORD;
-      dwNumberOfBytesToMap : DWORD) return System.Address;
+      dwNumberOfBytesToMap : SIZE_T) return System.Address;
    pragma Import (Stdcall, MapViewOfFile, "MapViewOfFile");
 
    function UnmapViewOfFile (lpBaseAddress : System.Address) return BOOL;
@@ -261,12 +266,13 @@ package System.Win32 is
       dwPageSize                  : DWORD;
       lpMinimumApplicationAddress : PVOID;
       lpMaximumApplicationAddress : PVOID;
-      dwActiveProcessorMask       : DWORD;
+      dwActiveProcessorMask       : DWORD_PTR;
       dwNumberOfProcessors        : DWORD;
       dwProcessorType             : DWORD;
       dwAllocationGranularity     : DWORD;
       dwReserved                  : DWORD;
    end record;
+   pragma Convention (C_Pass_By_Copy, SYSTEM_INFO);
 
    procedure GetSystemInfo (SI : access SYSTEM_INFO);
    pragma Import (Stdcall, GetSystemInfo, "GetSystemInfo");
@@ -285,6 +291,7 @@ package System.Win32 is
       wSecond       : WORD;
       wMilliseconds : WORD;
    end record;
+   pragma Convention (C_Pass_By_Copy, SYSTEMTIME);
 
    procedure GetSystemTime (pSystemTime : access SYSTEMTIME);
    pragma Import (Stdcall, GetSystemTime, "GetSystemTime");

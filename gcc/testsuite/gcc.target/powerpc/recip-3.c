@@ -1,7 +1,6 @@
 /* { dg-do compile { target { { powerpc*-*-* } && { ! powerpc*-apple-darwin* } } } } */
 /* { dg-require-effective-target powerpc_fprs } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
-/* { dg-options "-O2 -mrecip -ffast-math -mcpu=power7" } */
+/* { dg-options "-O2 -mrecip -ffast-math -mdejagnu-cpu=power7" } */
 /* { dg-final { scan-assembler-times "xsrsqrtedp\|frsqrte\ " 1 } } */
 /* { dg-final { scan-assembler-times "xsmuldp\|fmul\ " 2 } } */
 /* { dg-final { scan-assembler-times "xsnmsub.dp\|fnmsub\ " 2 } } */

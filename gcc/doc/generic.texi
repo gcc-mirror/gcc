@@ -1,4 +1,4 @@
-@c Copyright (C) 2004-2018 Free Software Foundation, Inc.
+@c Copyright (C) 2004-2019 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -43,7 +43,6 @@ seems inelegant.
 * Functions::           	Function bodies, linkage, and other aspects.
 * Language-dependent trees::    Topics and trees specific to language front ends.
 * C and C++ Trees::     	Trees specific to C and C++.
-* Java Trees:: 	                Trees specific to Java.
 @end menu
 
 @c ---------------------------------------------------------------------
@@ -1274,6 +1273,7 @@ the byte offset of the field, but should not be used directly; call
 @subsection Unary and Binary Expressions
 @tindex NEGATE_EXPR
 @tindex ABS_EXPR
+@tindex ABSU_EXPR
 @tindex BIT_NOT_EXPR
 @tindex TRUTH_NOT_EXPR
 @tindex PREDECREMENT_EXPR
@@ -1370,6 +1370,11 @@ or complex abs of a complex value, use the @code{BUILT_IN_CABS},
 @code{BUILT_IN_CABSF} or @code{BUILT_IN_CABSL} builtins, as used
 to implement the C99 @code{cabs}, @code{cabsf} and @code{cabsl}
 built-in functions.
+
+@item ABSU_EXPR
+These nodes represent the absolute value of the single operand in
+equivalent unsigned type such that @code{ABSU_EXPR} of @code{TYPE_MIN}
+is well defined.
 
 @item BIT_NOT_EXPR
 These nodes represent bitwise complement, and will always have integral
@@ -1559,21 +1564,23 @@ allows the backend to choose between the faster of @code{TRUNC_DIV_EXPR},
 @itemx LE_EXPR
 @itemx GT_EXPR
 @itemx GE_EXPR
+@itemx LTGT_EXPR
 @itemx EQ_EXPR
 @itemx NE_EXPR
-These nodes represent the less than, less than or equal to, greater
-than, greater than or equal to, equal, and not equal comparison
-operators.  The first and second operands will either be both of integral
-type, both of floating type or both of vector type.  The result type of
-these expressions will always be of integral, boolean or signed integral
-vector type.  These operations return the result type's zero value for
-false, the result type's one value for true, and a vector whose elements
-are zero (false) or minus one (true) for vectors.
+These nodes represent the less than, less than or equal to, greater than,
+greater than or equal to, less or greater than, equal, and not equal
+comparison operators.  The first and second operands will either be both
+of integral type, both of floating type or both of vector type, except for
+LTGT_EXPR where they will only be both of floating type.  The result type
+of these expressions will always be of integral, boolean or signed integral
+vector type.  These operations return the result type's zero value for false,
+the result type's one value for true, and a vector whose elements are zero
+(false) or minus one (true) for vectors.
 
 For floating point comparisons, if we honor IEEE NaNs and either operand
 is NaN, then @code{NE_EXPR} always returns true and the remaining operators
 always return false.  On some targets, comparisons against an IEEE NaN,
-other than equality and inequality, may generate a floating point exception.
+other than equality and inequality, may generate a floating-point exception.
 
 @item ORDERED_EXPR
 @itemx UNORDERED_EXPR
@@ -1591,15 +1598,13 @@ and the result type's one value for true.
 @itemx UNGT_EXPR
 @itemx UNGE_EXPR
 @itemx UNEQ_EXPR
-@itemx LTGT_EXPR
 These nodes represent the unordered comparison operators.
 These operations take two floating point operands and determine whether
 the operands are unordered or are less than, less than or equal to,
 greater than, greater than or equal to, or equal respectively.  For
 example, @code{UNLT_EXPR} returns true if either operand is an IEEE
-NaN or the first operand is less than the second.  With the possible
-exception of @code{LTGT_EXPR}, all of these operations are guaranteed
-not to generate a floating point exception.  The result
+NaN or the first operand is less than the second.  All these operations
+are guaranteed not to generate a floating point exception.  The result
 type of these expressions will always be of integral or boolean type.
 These operations return the result type's zero value for false,
 and the result type's one value for true.
@@ -2175,6 +2180,11 @@ After the second sequence is executed, if it completes normally by
 falling off the end, execution continues wherever the first sequence
 would have continued, by falling off the end, or doing a goto, etc.
 
+If the second sequence is an @code{EH_ELSE_EXPR} selector, then the
+sequence in its first operand is used when the first sequence completes
+normally, and that in its second operand is used for exceptional
+cleanups, i.e., when an exception propagates out of the first sequence.
+
 @code{TRY_FINALLY_EXPR} complicates the flow graph, since the cleanup
 needs to appear on every edge out of the controlled block; this
 reduces the freedom to move code across these edges.  Therefore, the
@@ -2198,7 +2208,7 @@ edge.  Rethrowing the exception is represented using @code{RESX_EXPR}.
 @tindex OMP_CLAUSE
 
 All the statements starting with @code{OMP_} represent directives and
-clauses used by the OpenMP API @w{@uref{http://www.openmp.org/}}.
+clauses used by the OpenMP API @w{@uref{https://www.openmp.org}}.
 
 @table @code
 @item OMP_PARALLEL
@@ -2378,6 +2388,7 @@ compilation.
 @tindex OACC_KERNELS
 @tindex OACC_LOOP
 @tindex OACC_PARALLEL
+@tindex OACC_SERIAL
 @tindex OACC_UPDATE
 
 All the statements starting with @code{OACC_} represent directives and
@@ -2421,6 +2432,10 @@ See the description of the @code{OMP_FOR} code.
 @item OACC_PARALLEL
 
 Represents @code{#pragma acc parallel [clause1 @dots{} clauseN]}.
+
+@item OACC_SERIAL
+
+Represents @code{#pragma acc serial [clause1 @dots{} clauseN]}.
 
 @item OACC_UPDATE
 
@@ -3538,7 +3553,3 @@ In either case, the expression is void.
 
 
 @end table
-
-
-@node Java Trees
-@section Java Trees

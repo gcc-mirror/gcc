@@ -61,7 +61,7 @@ end module declare_simd_1_mod
   do i = 1, 128
     b(i) = bar (a(i), 2 * i, b(i))
   end do
-  if (any (b.ne.d)) STOP 1
+  if (any (b.ne.d)) stop 1
   !$omp simd
   do i = 1, 128
     b(i) = i * 2.0
@@ -71,7 +71,7 @@ end module declare_simd_1_mod
     b(i) = baz (7.0_8, 2, b(i))
   end do
   do i = 1, 128
-    if (b(i).ne.(7.0 + 4.0 * i)) STOP 2
+    if (b(i).ne.(7.0 + 4.0 * i)) stop 2
   end do
 contains
   function baz (x, y, z)

@@ -34,6 +34,15 @@ gtfiles="\$(srcdir)/ada/gcc-interface/ada-tree.h \$(srcdir)/ada/gcc-interface/gi
 
 outputs="ada/gcc-interface/Makefile ada/Makefile"
 
+# gnattools native builds use both $(CC) and $(CXX), see PR81878.
+# This is not too onerous: C is always enabled anyway, and C++ is
+# always enabled for bootstrapping.  Use here the same logic used in
+# gnattools/configure to decide whether to use -native or -cross tools
+# for the build.
+if test "x$cross_compiling/$build/$host" = "xno/$host/$target" ; then
+  lang_requires="c c++"
+fi
+
 target_libs="target-libada"
 lang_dirs="gnattools"
 

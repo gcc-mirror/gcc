@@ -27,6 +27,10 @@ It is a comma-separated list of name=val pairs setting these named variables:
 	allocfreetrace: setting allocfreetrace=1 causes every allocation to be
 	profiled and a stack trace printed on each object's allocation and free.
 
+	clobberfree: setting clobberfree=1 causes the garbage collector to
+	clobber the memory content of an object with bad content when it frees
+	the object.
+
 	cgocheck: setting cgocheck=0 disables all checks for packages
 	using cgo to incorrectly pass Go pointers to non-Go code.
 	Setting cgocheck=1 (the default) enables relatively cheap
@@ -50,19 +54,13 @@ It is a comma-separated list of name=val pairs setting these named variables:
 	gcshrinkstackoff: setting gcshrinkstackoff=1 disables moving goroutines
 	onto smaller stacks. In this mode, a goroutine's stack can only grow.
 
-	gcrescanstacks: setting gcrescanstacks=1 enables stack
-	re-scanning during the STW mark termination phase. This is
-	helpful for debugging if objects are being prematurely
-	garbage collected.
-
 	gcstoptheworld: setting gcstoptheworld=1 disables concurrent garbage collection,
 	making every garbage collection a stop-the-world event. Setting gcstoptheworld=2
 	also disables concurrent sweeping after the garbage collection finishes.
 
 	gctrace: setting gctrace=1 causes the garbage collector to emit a single line to standard
 	error at each collection, summarizing the amount of memory collected and the
-	length of the pause. Setting gctrace=2 emits the same summary but also
-	repeats each collection. The format of this line is subject to change.
+	length of the pause. The format of this line is subject to change.
 	Currently, it is:
 		gc # @#s #%: #+#+# ms clock, #+#/#/#+# ms cpu, #->#-># MB, # MB goal, # P
 	where the fields are as follows:
@@ -95,6 +93,11 @@ It is a comma-separated list of name=val pairs setting these named variables:
 		released: #  MB released to the system
 		consumed: #  MB allocated from the system
 
+	madvdontneed: setting madvdontneed=1 will use MADV_DONTNEED
+	instead of MADV_FREE on Linux when returning memory to the
+	kernel. This is less efficient, but causes RSS numbers to drop
+	more quickly.
+
 	memprofilerate: setting memprofilerate=X will update the value of runtime.MemProfileRate.
 	When set to 0 memory profiling is disabled.  Refer to the description of
 	MemProfileRate for the default value.
@@ -116,7 +119,13 @@ It is a comma-separated list of name=val pairs setting these named variables:
 	schedtrace: setting schedtrace=X causes the scheduler to emit a single line to standard
 	error every X milliseconds, summarizing the scheduler state.
 
-The net and net/http packages also refer to debugging variables in GODEBUG.
+	tracebackancestors: setting tracebackancestors=N extends tracebacks with the stacks at
+	which goroutines were created, where N limits the number of ancestor goroutines to
+	report. This also extends the information returned by runtime.Stack. Ancestor's goroutine
+	IDs will refer to the ID of the goroutine at the time of creation; it's possible for this
+	ID to be reused for another goroutine. Setting N to 0 will report no ancestry information.
+
+The net, net/http, and crypto/tls packages also refer to debugging variables in GODEBUG.
 See the documentation for those packages for details.
 
 The GOMAXPROCS variable limits the number of operating system threads that
@@ -124,6 +133,9 @@ can execute user-level Go code simultaneously. There is no limit to the number o
 that can be blocked in system calls on behalf of Go code; those do not count against
 the GOMAXPROCS limit. This package's GOMAXPROCS function queries and changes
 the limit.
+
+The GORACE variable configures the race detector, for programs built using -race.
+See https://golang.org/doc/articles/race_detector.html for details.
 
 The GOTRACEBACK variable controls the amount of output generated when a Go
 program fails due to an unrecovered panic or an unexpected runtime condition.
@@ -200,6 +212,7 @@ func Version() string {
 
 // GOOS is the running program's operating system target:
 // one of darwin, freebsd, linux, and so on.
+// To view possible combinations of GOOS and GOARCH, run "go tool dist list".
 const GOOS string = sys.GOOS
 
 // GOARCH is the running program's architecture target:

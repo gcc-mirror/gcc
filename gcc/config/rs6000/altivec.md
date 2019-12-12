@@ -1,5 +1,5 @@
 ;; AltiVec patterns.
-;; Copyright (C) 2002-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2002-2019 Free Software Foundation, Inc.
 ;; Contributed by Aldy Hernandez (aldy@quesejoda.com)
 
 ;; This file is part of GCC.
@@ -80,9 +80,6 @@
    UNSPEC_VUPKHPX
    UNSPEC_VUPKLPX
    UNSPEC_CONVERT_4F32_8I16
-   UNSPEC_DARN
-   UNSPEC_DARN_32
-   UNSPEC_DARN_RAW
    UNSPEC_DST
    UNSPEC_DSTT
    UNSPEC_DSTST
@@ -161,9 +158,6 @@
    UNSPEC_BCDADD
    UNSPEC_BCDSUB
    UNSPEC_BCD_OVERFLOW
-   UNSPEC_CMPRB
-   UNSPEC_CMPRB2
-   UNSPEC_CMPEQB
    UNSPEC_VRLMI
    UNSPEC_VRLNM
 ])
@@ -245,23 +239,18 @@
   "VECTOR_MEM_ALTIVEC_P (<MODE>mode)
    && (register_operand (operands[0], <MODE>mode) 
        || register_operand (operands[1], <MODE>mode))"
-{
-  switch (which_alternative)
-    {
-    case 0: return "stvx %1,%y0";
-    case 1: return "lvx %0,%y1";
-    case 2: return "vor %0,%1,%1";
-    case 3: return "#";
-    case 4: return "#";
-    case 5: return "#";
-    case 6: return "vxor %0,%0,%0";
-    case 7: return output_vec_const_move (operands);
-    case 8: return "#";
-    default: gcc_unreachable ();
-    }
-}
+  "@
+   stvx %1,%y0
+   lvx %0,%y1
+   vor %0,%1,%1
+   #
+   #
+   #
+   vxor %0,%0,%0
+   * return output_vec_const_move (operands);
+   #"
   [(set_attr "type" "vecstore,vecload,veclogical,store,load,*,veclogical,*,*")
-   (set_attr "length" "4,4,4,20,20,20,4,8,32")])
+   (set_attr "length" "*,*,*,20,20,20,*,8,32")])
 
 ;; Unlike other altivec moves, allow the GPRs, since a normal use of TImode
 ;; is for unions.  However for plain data movement, slightly favor the vector
@@ -272,20 +261,15 @@
   "VECTOR_MEM_ALTIVEC_P (TImode)
    && (register_operand (operands[0], TImode) 
        || register_operand (operands[1], TImode))"
-{
-  switch (which_alternative)
-    {
-    case 0: return "stvx %1,%y0";
-    case 1: return "lvx %0,%y1";
-    case 2: return "vor %0,%1,%1";
-    case 3: return "#";
-    case 4: return "#";
-    case 5: return "#";
-    case 6: return "vxor %0,%0,%0";
-    case 7: return output_vec_const_move (operands);
-    default: gcc_unreachable ();
-    }
-}
+  "@
+   stvx %1,%y0
+   lvx %0,%y1
+   vor %0,%1,%1
+   #
+   #
+   #
+   vxor %0,%0,%0
+   * return output_vec_const_move (operands);"
   [(set_attr "type" "vecstore,vecload,veclogical,store,load,*,veclogical,*")])
 
 ;; Load up a vector with the most significant bit set by loading up -1 and
@@ -413,8 +397,7 @@
                    (use (match_operand:SI 1 "call_operand" "s"))])]
  "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN) && TARGET_32BIT"         
  "bl %z1"
-  [(set_attr "type" "branch")
-   (set_attr "length" "4")])
+  [(set_attr "type" "branch")])
 
 (define_insn "*restore_world"
  [(match_parallel 0 "restore_world_operation"
@@ -441,8 +424,7 @@
 	   (match_operand:V4SI 4 "altivec_register_operand" "v"))])]
   "TARGET_ALTIVEC"
   "bl %1"
-  [(set_attr "type" "branch")
-   (set_attr "length" "4")])
+  [(set_attr "type" "branch")])
 
 (define_insn "*save_vregs_<mode>_r12"
   [(match_parallel 0 "any_parallel_operand"
@@ -455,8 +437,7 @@
 	   (match_operand:V4SI 4 "altivec_register_operand" "v"))])]
   "TARGET_ALTIVEC"
   "bl %1"
-  [(set_attr "type" "branch")
-   (set_attr "length" "4")])
+  [(set_attr "type" "branch")])
 
 (define_insn "*restore_vregs_<mode>_r11"
   [(match_parallel 0 "any_parallel_operand"
@@ -469,8 +450,7 @@
 			     (match_operand:P 4 "short_cint_operand" "I"))))])]
   "TARGET_ALTIVEC"
   "bl %1"
-  [(set_attr "type" "branch")
-   (set_attr "length" "4")])
+  [(set_attr "type" "branch")])
 
 (define_insn "*restore_vregs_<mode>_r12"
   [(match_parallel 0 "any_parallel_operand"
@@ -483,8 +463,7 @@
 			     (match_operand:P 4 "short_cint_operand" "I"))))])]
   "TARGET_ALTIVEC"
   "bl %1"
-  [(set_attr "type" "branch")
-   (set_attr "length" "4")])
+  [(set_attr "type" "branch")])
 
 ;; Simple binary operations.
 
@@ -581,7 +560,7 @@
   [(set_attr "type" "vecsimple")])
 
 ;;
-(define_insn "altivec_vavgu<VI_char>"
+(define_insn "uavg<mode>3_ceil"
   [(set (match_operand:VI 0 "register_operand" "=v")
         (unspec:VI [(match_operand:VI 1 "register_operand" "v")
                     (match_operand:VI 2 "register_operand" "v")]
@@ -590,7 +569,7 @@
   "vavgu<VI_char> %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
-(define_insn "altivec_vavgs<VI_char>"
+(define_insn "avg<mode>3_ceil"
   [(set (match_operand:VI 0 "register_operand" "=v")
         (unspec:VI [(match_operand:VI 1 "register_operand" "v")
                     (match_operand:VI 2 "register_operand" "v")]
@@ -608,7 +587,7 @@
   "vcmpbfp %0,%1,%2"
   [(set_attr "type" "veccmp")])
 
-(define_insn "*altivec_eq<mode>"
+(define_insn "altivec_eq<mode>"
   [(set (match_operand:VI2 0 "altivec_register_operand" "=v")
 	(eq:VI2 (match_operand:VI2 1 "altivec_register_operand" "v")
 		(match_operand:VI2 2 "altivec_register_operand" "v")))]
@@ -1866,7 +1845,7 @@
 (define_expand "altivec_vspltb"
   [(use (match_operand:V16QI 0 "register_operand"))
    (use (match_operand:V16QI 1 "register_operand"))
-   (use (match_operand:QI 2 "u5bit_cint_operand"))]
+   (use (match_operand:QI 2 "const_0_to_15_operand"))]
   "TARGET_ALTIVEC"
 {
   rtvec v = gen_rtvec (1, operands[2]);
@@ -1882,7 +1861,7 @@
         (vec_duplicate:V16QI
 	 (vec_select:QI (match_operand:V16QI 1 "register_operand" "v")
 			(parallel
-			 [(match_operand:QI 2 "u5bit_cint_operand" "")]))))]
+			 [(match_operand:QI 2 "const_0_to_15_operand" "")]))))]
   "TARGET_ALTIVEC"
 {
   if (!BYTES_BIG_ENDIAN)
@@ -1895,7 +1874,7 @@
 (define_insn "altivec_vspltb_direct"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
         (unspec:V16QI [(match_operand:V16QI 1 "register_operand" "v")
-	               (match_operand:QI 2 "u5bit_cint_operand" "i")]
+	               (match_operand:QI 2 "const_0_to_15_operand" "i")]
                       UNSPEC_VSPLT_DIRECT))]
   "TARGET_ALTIVEC"
   "vspltb %0,%1,%2"
@@ -1904,7 +1883,7 @@
 (define_expand "altivec_vsplth"
   [(use (match_operand:V8HI 0 "register_operand"))
    (use (match_operand:V8HI 1 "register_operand"))
-   (use (match_operand:QI 2 "u5bit_cint_operand"))]
+   (use (match_operand:QI 2 "const_0_to_7_operand"))]
   "TARGET_ALTIVEC"
 {
   rtvec v = gen_rtvec (1, operands[2]);
@@ -1920,7 +1899,7 @@
 	(vec_duplicate:V8HI
 	 (vec_select:HI (match_operand:V8HI 1 "register_operand" "v")
 			(parallel
-			 [(match_operand:QI 2 "u5bit_cint_operand" "")]))))]
+			 [(match_operand:QI 2 "const_0_to_7_operand" "")]))))]
   "TARGET_ALTIVEC"
 {
   if (!BYTES_BIG_ENDIAN)
@@ -1933,7 +1912,7 @@
 (define_insn "altivec_vsplth_direct"
   [(set (match_operand:V8HI 0 "register_operand" "=v")
         (unspec:V8HI [(match_operand:V8HI 1 "register_operand" "v")
-                      (match_operand:QI 2 "u5bit_cint_operand" "i")]
+                      (match_operand:QI 2 "const_0_to_7_operand" "i")]
                      UNSPEC_VSPLT_DIRECT))]
   "TARGET_ALTIVEC"
   "vsplth %0,%1,%2"
@@ -1942,7 +1921,7 @@
 (define_expand "altivec_vspltw"
   [(use (match_operand:V4SI 0 "register_operand"))
    (use (match_operand:V4SI 1 "register_operand"))
-   (use (match_operand:QI 2 "u5bit_cint_operand"))]
+   (use (match_operand:QI 2 "const_0_to_3_operand"))]
   "TARGET_ALTIVEC"
 {
   rtvec v = gen_rtvec (1, operands[2]);
@@ -1958,7 +1937,7 @@
 	(vec_duplicate:V4SI
 	 (vec_select:SI (match_operand:V4SI 1 "register_operand" "v")
 			(parallel
-			 [(match_operand:QI 2 "u5bit_cint_operand" "i")]))))]
+			 [(match_operand:QI 2 "const_0_to_3_operand" "i")]))))]
   "TARGET_ALTIVEC"
 {
   if (!BYTES_BIG_ENDIAN)
@@ -1971,7 +1950,7 @@
 (define_insn "altivec_vspltw_direct"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
         (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "v")
-                      (match_operand:QI 2 "u5bit_cint_operand" "i")]
+                      (match_operand:QI 2 "const_0_to_3_operand" "i")]
                      UNSPEC_VSPLT_DIRECT))]
   "TARGET_ALTIVEC"
   "vspltw %0,%1,%2"
@@ -1980,7 +1959,7 @@
 (define_expand "altivec_vspltsf"
   [(use (match_operand:V4SF 0 "register_operand"))
    (use (match_operand:V4SF 1 "register_operand"))
-   (use (match_operand:QI 2 "u5bit_cint_operand"))]
+   (use (match_operand:QI 2 "const_0_to_3_operand"))]
   "TARGET_ALTIVEC"
 {
   rtvec v = gen_rtvec (1, operands[2]);
@@ -1996,7 +1975,7 @@
 	(vec_duplicate:V4SF
 	 (vec_select:SF (match_operand:V4SF 1 "register_operand" "v")
 			(parallel
-			 [(match_operand:QI 2 "u5bit_cint_operand" "i")]))))]
+			 [(match_operand:QI 2 "const_0_to_3_operand" "i")]))))]
   "VECTOR_UNIT_ALTIVEC_P (V4SFmode)"
 {
   if (!BYTES_BIG_ENDIAN)
@@ -2038,30 +2017,30 @@
 
 ;; Slightly prefer vperm, since the target does not overlap the source
 (define_insn "altivec_vperm_<mode>_direct"
-  [(set (match_operand:VM 0 "register_operand" "=v,?wo")
-	(unspec:VM [(match_operand:VM 1 "register_operand" "v,wo")
+  [(set (match_operand:VM 0 "register_operand" "=v,?wa")
+	(unspec:VM [(match_operand:VM 1 "register_operand" "v,wa")
 		    (match_operand:VM 2 "register_operand" "v,0")
-		    (match_operand:V16QI 3 "register_operand" "v,wo")]
+		    (match_operand:V16QI 3 "register_operand" "v,wa")]
 		   UNSPEC_VPERM))]
   "TARGET_ALTIVEC"
   "@
    vperm %0,%1,%2,%3
    xxperm %x0,%x1,%x3"
   [(set_attr "type" "vecperm")
-   (set_attr "length" "4")])
+   (set_attr "isa" "*,p9v")])
 
 (define_insn "altivec_vperm_v8hiv16qi"
-  [(set (match_operand:V16QI 0 "register_operand" "=v,?wo")
-	(unspec:V16QI [(match_operand:V8HI 1 "register_operand" "v,wo")
+  [(set (match_operand:V16QI 0 "register_operand" "=v,?wa")
+	(unspec:V16QI [(match_operand:V8HI 1 "register_operand" "v,wa")
    	               (match_operand:V8HI 2 "register_operand" "v,0")
-		       (match_operand:V16QI 3 "register_operand" "v,wo")]
+		       (match_operand:V16QI 3 "register_operand" "v,wa")]
 		   UNSPEC_VPERM))]
   "TARGET_ALTIVEC"
   "@
    vperm %0,%1,%2,%3
    xxperm %x0,%x1,%x3"
   [(set_attr "type" "vecperm")
-   (set_attr "length" "4")])
+   (set_attr "isa" "*,p9v")])
 
 (define_expand "altivec_vperm_<mode>_uns"
   [(set (match_operand:VM 0 "register_operand")
@@ -2079,17 +2058,17 @@
 })
 
 (define_insn "*altivec_vperm_<mode>_uns_internal"
-  [(set (match_operand:VM 0 "register_operand" "=v,?wo")
-	(unspec:VM [(match_operand:VM 1 "register_operand" "v,wo")
+  [(set (match_operand:VM 0 "register_operand" "=v,?wa")
+	(unspec:VM [(match_operand:VM 1 "register_operand" "v,wa")
 		    (match_operand:VM 2 "register_operand" "v,0")
-		    (match_operand:V16QI 3 "register_operand" "v,wo")]
+		    (match_operand:V16QI 3 "register_operand" "v,wa")]
 		   UNSPEC_VPERM_UNS))]
   "TARGET_ALTIVEC"
   "@
    vperm %0,%1,%2,%3
    xxperm %x0,%x1,%x3"
   [(set_attr "type" "vecperm")
-   (set_attr "length" "4")])
+   (set_attr "isa" "*,p9v")])
 
 (define_expand "vec_permv16qi"
   [(set (match_operand:V16QI 0 "register_operand")
@@ -2106,17 +2085,17 @@
 })
 
 (define_insn "*altivec_vpermr_<mode>_internal"
-  [(set (match_operand:VM 0 "register_operand" "=v,?wo")
-	(unspec:VM [(match_operand:VM 1 "register_operand" "v,wo")
+  [(set (match_operand:VM 0 "register_operand" "=v,?wa")
+	(unspec:VM [(match_operand:VM 1 "register_operand" "v,wa")
 		    (match_operand:VM 2 "register_operand" "v,0")
-		    (match_operand:V16QI 3 "register_operand" "v,wo")]
+		    (match_operand:V16QI 3 "register_operand" "v,wa")]
 		   UNSPEC_VPERMR))]
   "TARGET_P9_VECTOR"
   "@
    vpermr %0,%1,%2,%3
    xxpermr %x0,%x1,%x3"
   [(set_attr "type" "vecperm")
-   (set_attr "length" "4")])
+   (set_attr "isa" "*,p9v")])
 
 (define_insn "altivec_vrfip"		; ceil
   [(set (match_operand:V4SF 0 "register_operand" "=v")
@@ -2219,13 +2198,8 @@
   "VECTOR_UNIT_ALTIVEC_P (V4SFmode)"
 {
   rtx mask = gen_reg_rtx (V4SImode);
-  rtvec v = rtvec_alloc (4);
-  unsigned HOST_WIDE_INT mask_val = ((unsigned HOST_WIDE_INT)1) << 31;
-
-  RTVEC_ELT (v, 0) = GEN_INT (mask_val);
-  RTVEC_ELT (v, 1) = GEN_INT (mask_val);
-  RTVEC_ELT (v, 2) = GEN_INT (mask_val);
-  RTVEC_ELT (v, 3) = GEN_INT (mask_val);
+  rtx mask_val = gen_int_mode (HOST_WIDE_INT_1U << 31, SImode);
+  rtvec v = gen_rtvec (4, mask_val, mask_val, mask_val, mask_val);
 
   emit_insn (gen_vec_initv4sisi (mask, gen_rtx_PARALLEL (V4SImode, v)));
   emit_insn (gen_vector_select_v4sf (operands[0], operands[1], operands[2],
@@ -2313,7 +2287,7 @@
 
 ;; Compare vectors producing a vector result and a predicate, setting CR6 to
 ;; indicate a combined status
-(define_insn "*altivec_vcmpequ<VI_char>_p"
+(define_insn "altivec_vcmpequ<VI_char>_p"
   [(set (reg:CC CR6_REGNO)
 	(unspec:CC [(eq:CC (match_operand:VI2 1 "register_operand" "v")
 			   (match_operand:VI2 2 "register_operand" "v"))]
@@ -2542,7 +2516,7 @@
   rtx addr;
   rtx temp;
 
-  gcc_assert (GET_CODE (operands[1]) == MEM);
+  gcc_assert (MEM_P (operands[1]));
 
   addr = XEXP (operands[1], 0);
   temp = gen_reg_rtx (GET_MODE (addr));
@@ -3264,30 +3238,30 @@
   "")
 
 (define_insn "vperm_v8hiv4si"
-  [(set (match_operand:V4SI 0 "register_operand" "=v,?wo")
-        (unspec:V4SI [(match_operand:V8HI 1 "register_operand" "v,wo")
+  [(set (match_operand:V4SI 0 "register_operand" "=v,?wa")
+        (unspec:V4SI [(match_operand:V8HI 1 "register_operand" "v,wa")
 		      (match_operand:V4SI 2 "register_operand" "v,0")
-		      (match_operand:V16QI 3 "register_operand" "v,wo")]
+		      (match_operand:V16QI 3 "register_operand" "v,wa")]
                   UNSPEC_VPERMSI))]
   "TARGET_ALTIVEC"
   "@
    vperm %0,%1,%2,%3
    xxperm %x0,%x1,%x3"
   [(set_attr "type" "vecperm")
-   (set_attr "length" "4")])
+   (set_attr "isa" "*,p9v")])
 
 (define_insn "vperm_v16qiv8hi"
-  [(set (match_operand:V8HI 0 "register_operand" "=v,?wo")
-        (unspec:V8HI [(match_operand:V16QI 1 "register_operand" "v,wo")
+  [(set (match_operand:V8HI 0 "register_operand" "=v,?wa")
+        (unspec:V8HI [(match_operand:V16QI 1 "register_operand" "v,wa")
 		      (match_operand:V8HI 2 "register_operand" "v,0")
-		      (match_operand:V16QI 3 "register_operand" "v,wo")]
+		      (match_operand:V16QI 3 "register_operand" "v,wa")]
                   UNSPEC_VPERMHI))]
   "TARGET_ALTIVEC"
   "@
    vperm %0,%1,%2,%3
    xxperm %x0,%x1,%x3"
   [(set_attr "type" "vecperm")
-   (set_attr "length" "4")])
+   (set_attr "isa" "*,p9v")])
 
 
 (define_expand "vec_unpacku_hi_v16qi"
@@ -3862,8 +3836,7 @@
 	(clz:VI2 (match_operand:VI2 1 "register_operand" "v")))]
   "TARGET_P8_VECTOR"
   "vclz<wd> %0,%1"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 ;; Vector absolute difference unsigned
 (define_expand "vadu<mode>3"
@@ -3889,8 +3862,7 @@
 	(ctz:VI2 (match_operand:VI2 1 "register_operand" "v")))]
   "TARGET_P9_VECTOR"
   "vctz<wd> %0,%1"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 ;; Vector population count
 (define_insn "*p8v_popcount<mode>2"
@@ -3898,8 +3870,7 @@
         (popcount:VI2 (match_operand:VI2 1 "register_operand" "v")))]
   "TARGET_P8_VECTOR"
   "vpopcnt<wd> %0,%1"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 ;; Vector parity
 (define_insn "*p9v_parity<mode>2"
@@ -3907,8 +3878,7 @@
         (parity:VParity (match_operand:VParity 1 "register_operand" "v")))]
   "TARGET_P9_VECTOR"
   "vprtyb<wd> %0,%1"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 ;; Vector Gather Bits by Bytes by Doubleword
 (define_insn "p8v_vgbbd"
@@ -3917,8 +3887,7 @@
 		      UNSPEC_VGBBD))]
   "TARGET_P8_VECTOR"
   "vgbbd %0,%1"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 
 ;; 128-bit binary integer arithmetic
@@ -3932,8 +3901,7 @@
 		   (match_operand:V1TI 2 "register_operand" "v")))]
   "TARGET_VADDUQM"
   "vadduqm %0,%1,%2"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 (define_insn "altivec_vaddcuq"
   [(set (match_operand:V1TI 0 "register_operand" "=v")
@@ -3942,8 +3910,7 @@
 		     UNSPEC_VADDCUQ))]
   "TARGET_VADDUQM"
   "vaddcuq %0,%1,%2"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 (define_insn "altivec_vsubuqm"
   [(set (match_operand:V1TI 0 "register_operand" "=v")
@@ -3951,8 +3918,7 @@
 		    (match_operand:V1TI 2 "register_operand" "v")))]
   "TARGET_VADDUQM"
   "vsubuqm %0,%1,%2"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 (define_insn "altivec_vsubcuq"
   [(set (match_operand:V1TI 0 "register_operand" "=v")
@@ -3961,8 +3927,7 @@
 		     UNSPEC_VSUBCUQ))]
   "TARGET_VADDUQM"
   "vsubcuq %0,%1,%2"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 (define_insn "altivec_vaddeuqm"
   [(set (match_operand:V1TI 0 "register_operand" "=v")
@@ -3972,8 +3937,7 @@
 		     UNSPEC_VADDEUQM))]
   "TARGET_VADDUQM"
   "vaddeuqm %0,%1,%2,%3"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 (define_insn "altivec_vaddecuq"
   [(set (match_operand:V1TI 0 "register_operand" "=v")
@@ -3983,8 +3947,7 @@
 		     UNSPEC_VADDECUQ))]
   "TARGET_VADDUQM"
   "vaddecuq %0,%1,%2,%3"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 (define_insn "altivec_vsubeuqm"
   [(set (match_operand:V1TI 0 "register_operand" "=v")
@@ -3994,8 +3957,7 @@
 		   UNSPEC_VSUBEUQM))]
   "TARGET_VADDUQM"
   "vsubeuqm %0,%1,%2,%3"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 (define_insn "altivec_vsubecuq"
   [(set (match_operand:V1TI 0 "register_operand" "=v")
@@ -4005,8 +3967,7 @@
 		     UNSPEC_VSUBECUQ))]
   "TARGET_VADDUQM"
   "vsubecuq %0,%1,%2,%3"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 ;; We use V2DI as the output type to simplify converting the permute
 ;; bits into an integer
@@ -4098,8 +4059,7 @@
    (clobber (reg:CCFP CR6_REGNO))]
   "TARGET_P8_VECTOR"
   "bcd<bcd_add_sub>. %0,%1,%2,%3"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 ;; Use a floating point type (V2DFmode) for the compare to set CR6 so that we
 ;; can use the unordered test for BCD nans and add/subtracts that overflow.  An
@@ -4117,8 +4077,7 @@
    (clobber (match_scratch:V1TI 0 "=v"))]
   "TARGET_P8_VECTOR"
   "bcd<bcd_add_sub>. %0,%1,%2,%3"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 (define_insn "*bcd<bcd_add_sub>_test2"
   [(set (match_operand:V1TI 0 "register_operand" "=v")
@@ -4135,225 +4094,7 @@
 	 (match_operand:V2DF 4 "zero_constant" "j")))]
   "TARGET_P8_VECTOR"
   "bcd<bcd_add_sub>. %0,%1,%2,%3"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
-
-(define_insn "darn_32"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (unspec:SI [(const_int 0)] UNSPEC_DARN_32))]
-  "TARGET_P9_MISC"
-  "darn %0,0"
-  [(set_attr "type" "integer")])
-
-(define_insn "darn_raw"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-        (unspec:DI [(const_int 0)] UNSPEC_DARN_RAW))]
-  "TARGET_P9_MISC && TARGET_64BIT"
-  "darn %0,2"
-  [(set_attr "type" "integer")])
-
-(define_insn "darn"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-        (unspec:DI [(const_int 0)] UNSPEC_DARN))]
-  "TARGET_P9_MISC && TARGET_64BIT"
-  "darn %0,1"
-  [(set_attr "type" "integer")])
-
-;; Test byte within range.
-;;
-;; The bytes of operand 1 are organized as xx:xx:xx:vv, where xx
-;; represents a byte whose value is ignored in this context and
-;; vv, the least significant byte, holds the byte value that is to
-;; be tested for membership within the range specified by operand 2.
-;; The bytes of operand 2 are organized as xx:xx:hi:lo.
-;;
-;; Return in target register operand 0 a value of 1 if lo <= vv and
-;; vv <= hi.  Otherwise, set register operand 0 to 0.
-;;
-;; Though the instructions to which this expansion maps operate on
-;; 64-bit registers, the current implementation only operates on
-;; SI-mode operands as the high-order bits provide no information
-;; that is not already available in the low-order bits.  To avoid the
-;; costs of data widening operations, future enhancements might allow
-;; DI mode for operand 0 and/or might allow operand 1 to be QI mode.
-(define_expand "cmprb"
-  [(set (match_dup 3)
-	(unspec:CC [(match_operand:SI 1 "gpc_reg_operand" "r")
-		    (match_operand:SI 2 "gpc_reg_operand" "r")]
-	 UNSPEC_CMPRB))
-   (set (match_operand:SI 0 "gpc_reg_operand" "=r")
-	(if_then_else:SI (lt (match_dup 3)
-			     (const_int 0))
-			 (const_int -1)
-			 (if_then_else (gt (match_dup 3)
-					   (const_int 0))
-				       (const_int 1)
-				       (const_int 0))))]
-  "TARGET_P9_MISC"
-{
-  operands[3] = gen_reg_rtx (CCmode);
-})
-
-;; The bytes of operand 1 are organized as xx:xx:xx:vv, where xx
-;; represents a byte whose value is ignored in this context and
-;; vv, the least significant byte, holds the byte value that is to
-;; be tested for membership within the range specified by operand 2.
-;; The bytes of operand 2 are organized as xx:xx:hi:lo.
-;;
-;; Set bit 1 (the GT bit, 0x4) of CR register operand 0 to 1 if
-;; lo <= vv and vv <= hi.  Otherwise, set the GT bit to 0.  The other
-;; 3 bits of the target CR register are all set to 0.
-(define_insn "*cmprb_internal"
-  [(set (match_operand:CC 0 "cc_reg_operand" "=y")
-	(unspec:CC [(match_operand:SI 1 "gpc_reg_operand" "r")
-		    (match_operand:SI 2 "gpc_reg_operand" "r")]
-	 UNSPEC_CMPRB))]
-  "TARGET_P9_MISC"
-  "cmprb %0,0,%1,%2"
-  [(set_attr "type" "logical")])
-
-;; Set operand 0 register to -1 if the LT bit (0x8) of condition
-;; register operand 1 is on.  Otherwise, set operand 0 register to 1
-;; if the GT bit (0x4) of condition register operand 1 is on.
-;; Otherwise, set operand 0 to 0.  Note that the result stored into
-;; register operand 0 is non-zero iff either the LT or GT bits are on
-;; within condition register operand 1.
-(define_insn "setb_signed"
-   [(set (match_operand:SI 0 "gpc_reg_operand" "=r")
-	 (if_then_else:SI (lt (match_operand:CC 1 "cc_reg_operand" "y")
-			      (const_int 0))
-			  (const_int -1)
-			  (if_then_else (gt (match_dup 1)
-					    (const_int 0))
-					(const_int 1)
-					(const_int 0))))]
-  "TARGET_P9_MISC"
-  "setb %0,%1"
-  [(set_attr "type" "logical")])
-
-(define_insn "setb_unsigned"
-   [(set (match_operand:SI 0 "gpc_reg_operand" "=r")
-	 (if_then_else:SI (ltu (match_operand:CCUNS 1 "cc_reg_operand" "y")
-			      (const_int 0))
-			  (const_int -1)
-			  (if_then_else (gtu (match_dup 1)
-					    (const_int 0))
-					(const_int 1)
-					(const_int 0))))]
-  "TARGET_P9_MISC"
-  "setb %0,%1"
-  [(set_attr "type" "logical")])
-
-;; Test byte within two ranges.
-;;
-;; The bytes of operand 1 are organized as xx:xx:xx:vv, where xx
-;; represents a byte whose value is ignored in this context and
-;; vv, the least significant byte, holds the byte value that is to
-;; be tested for membership within the range specified by operand 2.
-;; The bytes of operand 2 are organized as hi_1:lo_1:hi_2:lo_2.
-;;
-;; Return in target register operand 0 a value of 1 if (lo_1 <= vv and
-;; vv <= hi_1) or if (lo_2 <= vv and vv <= hi_2).  Otherwise, set register
-;; operand 0 to 0.
-;;
-;; Though the instructions to which this expansion maps operate on
-;; 64-bit registers, the current implementation only operates on
-;; SI-mode operands as the high-order bits provide no information
-;; that is not already available in the low-order bits.  To avoid the
-;; costs of data widening operations, future enhancements might allow
-;; DI mode for operand 0 and/or might allow operand 1 to be QI mode.
-(define_expand "cmprb2"
-  [(set (match_dup 3)
-	(unspec:CC [(match_operand:SI 1 "gpc_reg_operand" "r")
-		    (match_operand:SI 2 "gpc_reg_operand" "r")]
-	 UNSPEC_CMPRB2))
-   (set (match_operand:SI 0 "gpc_reg_operand" "=r")
-	(if_then_else:SI (lt (match_dup 3)
-			     (const_int 0))
-			 (const_int -1)
-			 (if_then_else (gt (match_dup 3)
-					   (const_int 0))
-				       (const_int 1)
-				       (const_int 0))))]
-  "TARGET_P9_MISC"
-{
-  operands[3] = gen_reg_rtx (CCmode);
-})
-
-;; The bytes of operand 1 are organized as xx:xx:xx:vv, where xx
-;; represents a byte whose value is ignored in this context and
-;; vv, the least significant byte, holds the byte value that is to
-;; be tested for membership within the ranges specified by operand 2.
-;; The bytes of operand 2 are organized as hi_1:lo_1:hi_2:lo_2.
-;;
-;; Set bit 1 (the GT bit, 0x4) of CR register operand 0 to 1 if
-;; (lo_1 <= vv and vv <= hi_1) or if (lo_2 <= vv and vv <= hi_2).
-;; Otherwise, set the GT bit to 0.  The other 3 bits of the target
-;; CR register are all set to 0.
-(define_insn "*cmprb2_internal"
-  [(set (match_operand:CC 0 "cc_reg_operand" "=y")
-	(unspec:CC [(match_operand:SI 1 "gpc_reg_operand" "r")
-		    (match_operand:SI 2 "gpc_reg_operand" "r")]
-	 UNSPEC_CMPRB2))]
-  "TARGET_P9_MISC"
-  "cmprb %0,1,%1,%2"
-  [(set_attr "type" "logical")])
-
-;; Test byte membership within set of 8 bytes.
-;;
-;; The bytes of operand 1 are organized as xx:xx:xx:vv, where xx
-;; represents a byte whose value is ignored in this context and
-;; vv, the least significant byte, holds the byte value that is to
-;; be tested for membership within the set specified by operand 2.
-;; The bytes of operand 2 are organized as e0:e1:e2:e3:e4:e5:e6:e7.
-;;
-;; Return in target register operand 0 a value of 1 if vv equals one
-;; of the values e0, e1, e2, e3, e4, e5, e6, or e7.  Otherwise, set
-;; register operand 0 to 0.  Note that the 8 byte values held within
-;; operand 2 need not be unique.
-;;
-;; Though the instructions to which this expansion maps operate on
-;; 64-bit registers, the current implementation requires that operands
-;; 0 and 1 have mode SI as the high-order bits provide no information
-;; that is not already available in the low-order bits.  To avoid the
-;; costs of data widening operations, future enhancements might allow
-;; DI mode for operand 0 and/or might allow operand 1 to be QI mode.
-(define_expand "cmpeqb"
-  [(set (match_dup 3)
-	(unspec:CC [(match_operand:SI 1 "gpc_reg_operand" "r")
-		    (match_operand:DI 2 "gpc_reg_operand" "r")]
-	 UNSPEC_CMPEQB))
-   (set (match_operand:SI 0 "gpc_reg_operand" "=r")
-	(if_then_else:SI (lt (match_dup 3)
-			     (const_int 0))
-			 (const_int -1)
-			 (if_then_else (gt (match_dup 3)
-					   (const_int 0))
-				       (const_int 1)
-				       (const_int 0))))]
-  "TARGET_P9_MISC && TARGET_64BIT"
-{
-  operands[3] = gen_reg_rtx (CCmode);
-})
-
-;; The bytes of operand 1 are organized as xx:xx:xx:vv, where xx
-;; represents a byte whose value is ignored in this context and
-;; vv, the least significant byte, holds the byte value that is to
-;; be tested for membership within the set specified by operand 2.
-;; The bytes of operand 2 are organized as e0:e1:e2:e3:e4:e5:e6:e7.
-;;
-;; Set bit 1 (the GT bit, 0x4) of CR register operand 0 to 1 if vv
-;; equals one of the values e0, e1, e2, e3, e4, e5, e6, or e7.  Otherwise,
-;; set the GT bit to zero.  The other 3 bits of the target CR register
-;; are all set to 0.
-(define_insn "*cmpeqb_internal"
-  [(set (match_operand:CC 0 "cc_reg_operand" "=y")
-	 (unspec:CC [(match_operand:SI 1 "gpc_reg_operand" "r")
-		     (match_operand:DI 2 "gpc_reg_operand" "r")]
-	  UNSPEC_CMPEQB))]
-  "TARGET_P9_MISC && TARGET_64BIT"
-  "cmpeqb %0,%1,%2"
-  [(set_attr "type" "logical")])
+  [(set_attr "type" "vecsimple")])
 
 (define_expand "bcd<bcd_add_sub>_<code>"
   [(parallel [(set (reg:CCFP CR6_REGNO)

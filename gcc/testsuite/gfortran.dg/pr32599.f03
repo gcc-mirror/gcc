@@ -1,26 +1,30 @@
 ! { dg-do compile }
+! { dg-options "-std=f2008" }
+!
 ! PR fortran/32599
-! Verifies that character string arguments to a bind(c) procedure have length 
-! 1, or no len is specified.  
+! Verifies that character string arguments to a bind(c) procedure have length
+! 1, or no len is specified. Note that the C interop extensions in F2018 allow
+! string arguments of length greater than one to be passed to a C descriptor.
+!
 module pr32599
   interface
      subroutine destroy(path) BIND(C) ! { dg-error "must be length 1" }
        use iso_c_binding
        implicit none
-       character(len=*,kind=c_char), intent(IN) :: path 
+       character(len=*,kind=c_char), intent(IN) :: path
      end subroutine destroy
 
      subroutine create(path) BIND(C) ! { dg-error "must be length 1" }
        use iso_c_binding
        implicit none
-       character(len=5,kind=c_char), intent(IN) :: path 
+       character(len=5,kind=c_char), intent(IN) :: path
      end subroutine create
 
      ! This should be valid.
      subroutine create1(path) BIND(C)
        use iso_c_binding
        implicit none
-       character(len=1,kind=c_char), intent(IN) :: path 
+       character(len=1,kind=c_char), intent(IN) :: path
      end subroutine create1
 
      ! This should be valid.

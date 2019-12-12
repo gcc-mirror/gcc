@@ -1,6 +1,6 @@
 // Allocators -*- C++ -*-
 
-// Copyright (C) 2001-2018 Free Software Foundation, Inc.
+// Copyright (C) 2001-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -57,9 +57,6 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  using std::size_t;
-  using std::ptrdiff_t;
-
   /**
    *  @brief  Base class for __pool_alloc.
    *
@@ -77,6 +74,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
     class __pool_alloc_base
     {
+      typedef std::size_t size_t;
     protected:
 
       enum { _S_align = 8 };
@@ -129,8 +127,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _Atomic_word	    _S_force_new;
 
     public:
-      typedef size_t     size_type;
-      typedef ptrdiff_t  difference_type;
+      typedef std::size_t     size_type;
+      typedef std::ptrdiff_t  difference_type;
       typedef _Tp*       pointer;
       typedef const _Tp* const_pointer;
       typedef _Tp&       reference;
@@ -166,7 +164,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       size_type
       max_size() const _GLIBCXX_USE_NOEXCEPT 
-      { return size_t(-1) / sizeof(_Tp); }
+      { return std::size_t(-1) / sizeof(_Tp); }
 
 #if __cplusplus >= 201103L
       template<typename _Up, typename... _Args>
@@ -188,7 +186,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       destroy(pointer __p) { __p->~_Tp(); }
 #endif
 
-      pointer
+      _GLIBCXX_NODISCARD pointer
       allocate(size_type __n, const void* = 0);
 
       void
@@ -210,9 +208,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __pool_alloc<_Tp>::_S_force_new;
 
   template<typename _Tp>
-    _Tp*
+    _GLIBCXX_NODISCARD _Tp*
     __pool_alloc<_Tp>::allocate(size_type __n, const void*)
     {
+      using std::size_t;
       pointer __ret = 0;
       if (__builtin_expect(__n != 0, true))
 	{
@@ -266,6 +265,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     __pool_alloc<_Tp>::deallocate(pointer __p, size_type __n)
     {
+      using std::size_t;
       if (__builtin_expect(__n != 0 && __p != 0, true))
 	{
 #if __cpp_aligned_new

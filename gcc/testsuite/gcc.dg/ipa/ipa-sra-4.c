@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fipa-sra -fdump-tree-eipa_sra-details" } */
+/* { dg-options "-O2 -fipa-sra -fno-ipa-pure-const -fdump-ipa-sra" } */
 
 static int
 __attribute__((noinline))
@@ -61,7 +61,5 @@ void caller (void)
   return;
 }
 
-/* { dg-final { scan-tree-dump "About to replace expr \\*i_.*D. with ISRA" "eipa_sra"  } } */
-/* { dg-final { scan-tree-dump "About to replace expr \\*l_.*D. with ISRA" "eipa_sra"  } } */
-/* { dg-final { scan-tree-dump-times "About to replace expr \*j_.*D. with ISRA" 0 "eipa_sra"  } } */
-/* { dg-final { scan-tree-dump-times "About to replace expr \*k_.*D. with ISRA" 0 "eipa_sra"  } } */
+/* { dg-final { scan-ipa-dump-times "Will split parameter" 2 "sra"  } } */
+

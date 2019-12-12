@@ -1,6 +1,6 @@
 // thread -*- C++ -*-
 
-// Copyright (C) 2008-2018 Free Software Foundation, Inc.
+// Copyright (C) 2008-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,7 @@
 #include <cerrno>
 #include <cxxabi_forced.h>
 
-#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+#ifdef _GLIBCXX_HAS_GTHREADS
 
 #if defined(_GLIBCXX_USE_GET_NPROCS)
 # include <sys/sysinfo.h>
@@ -194,18 +194,35 @@ namespace this_thread
     while (::nanosleep(&__ts, &__ts) == -1 && errno == EINTR)
       { }
 #elif defined(_GLIBCXX_HAVE_SLEEP)
-# ifdef _GLIBCXX_HAVE_USLEEP
-    ::sleep(__s.count());
-    if (__ns.count() > 0)
+    const auto target = chrono::steady_clock::now() + __s + __ns;
+    while (true)
       {
-        long __us = __ns.count() / 1000;
-        if (__us == 0)
-          __us = 1;
-        ::usleep(__us);
-      }
+	unsigned secs = __s.count();
+	if (__ns.count() > 0)
+	  {
+# ifdef _GLIBCXX_HAVE_USLEEP
+	    long us = __ns.count() / 1000;
+	    if (us == 0)
+	      us = 1;
+	    ::usleep(us);
 # else
-    ::sleep(__s.count() + (__ns.count() >= 1000000));
+	    if (__ns.count() > 1000000 || secs == 0)
+	      ++secs; // No sub-second sleep function, so round up.
 # endif
+	  }
+
+	if (secs > 0)
+	  {
+	    // Sleep in a loop to handle interruption by signals:
+	    while ((secs = ::sleep(secs)))
+	      { }
+	  }
+	const auto now = chrono::steady_clock::now();
+	if (now >= target)
+	  break;
+	__s = chrono::duration_cast<chrono::seconds>(target - now);
+	__ns = chrono::duration_cast<chrono::nanoseconds>(target - (now + __s));
+    }
 #elif defined(_GLIBCXX_HAVE_WIN32_SLEEP)
     unsigned long ms = __ns.count() / 1000000;
     if (__ns.count() > 0 && ms == 0)
@@ -218,4 +235,4 @@ namespace this_thread
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-#endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
+#endif // _GLIBCXX_HAS_GTHREADS

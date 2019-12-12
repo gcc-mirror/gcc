@@ -1,5 +1,5 @@
 /* Target-specific code for C family languages.
-   Copyright (C) 2015-2018 Free Software Foundation, Inc.
+   Copyright (C) 2015-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -69,6 +69,8 @@ aarch64_define_unconditional_macros (cpp_reader *pfile)
   builtin_define ("__ARM_FEATURE_UNALIGNED");
   builtin_define ("__ARM_PCS_AAPCS64");
   builtin_define_with_int_value ("__ARM_SIZEOF_WCHAR_T", WCHAR_TYPE_SIZE / 8);
+
+  builtin_define ("__GCC_ASM_FLAG_OUTPUTS__");
 }
 
 /* Undefine/redefine macros that depend on the current backend state and may
@@ -109,6 +111,8 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 
   aarch64_def_or_undef (TARGET_CRC32, "__ARM_FEATURE_CRC32", pfile);
   aarch64_def_or_undef (TARGET_DOTPROD, "__ARM_FEATURE_DOTPROD", pfile);
+  aarch64_def_or_undef (TARGET_COMPLEX, "__ARM_FEATURE_COMPLEX", pfile);
+  aarch64_def_or_undef (TARGET_JSCVT, "__ARM_FEATURE_JCVT", pfile);
 
   cpp_undef (pfile, "__AARCH64_CMODEL_TINY__");
   cpp_undef (pfile, "__AARCH64_CMODEL_SMALL__");
@@ -145,7 +149,9 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 	bits = 0;
       builtin_define_with_int_value ("__ARM_FEATURE_SVE_BITS", bits);
     }
+  aarch64_def_or_undef (TARGET_SVE2, "__ARM_FEATURE_SVE2", pfile);
 
+  aarch64_def_or_undef (TARGET_LSE, "__ARM_FEATURE_ATOMICS", pfile);
   aarch64_def_or_undef (TARGET_AES, "__ARM_FEATURE_AES", pfile);
   aarch64_def_or_undef (TARGET_SHA2, "__ARM_FEATURE_SHA2", pfile);
   aarch64_def_or_undef (TARGET_SHA3, "__ARM_FEATURE_SHA3", pfile);
@@ -153,6 +159,11 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
   aarch64_def_or_undef (TARGET_SM4, "__ARM_FEATURE_SM3", pfile);
   aarch64_def_or_undef (TARGET_SM4, "__ARM_FEATURE_SM4", pfile);
   aarch64_def_or_undef (TARGET_F16FML, "__ARM_FEATURE_FP16_FML", pfile);
+
+  aarch64_def_or_undef (TARGET_FRINT, "__ARM_FEATURE_FRINT", pfile);
+  aarch64_def_or_undef (TARGET_TME, "__ARM_FEATURE_TME", pfile);
+  aarch64_def_or_undef (TARGET_RNG, "__ARM_FEATURE_RNG", pfile);
+  aarch64_def_or_undef (TARGET_MEMTAG, "__ARM_FEATURE_MEMORY_TAGGING", pfile);
 
   /* Not for ACLE, but required to keep "float.h" correct if we switch
      target between implementations that do or do not support ARMv8.2-A
@@ -235,6 +246,73 @@ aarch64_pragma_target_parse (tree args, tree pop_target)
   return true;
 }
 
+/* Implement "#pragma GCC aarch64".  */
+static void
+aarch64_pragma_aarch64 (cpp_reader *)
+{
+  tree x;
+  if (pragma_lex (&x) != CPP_STRING)
+    {
+      error ("%<#pragma GCC aarch64%> requires a string parameter");
+      return;
+    }
+
+  const char *name = TREE_STRING_POINTER (x);
+  if (strcmp (name, "arm_sve.h") == 0)
+    aarch64_sve::handle_arm_sve_h ();
+  else
+    error ("unknown %<#pragma GCC aarch64%> option %qs", name);
+}
+
+/* Implement TARGET_RESOLVE_OVERLOADED_BUILTIN.  */
+static tree
+aarch64_resolve_overloaded_builtin (unsigned int uncast_location,
+				    tree fndecl, void *uncast_arglist)
+{
+  vec<tree, va_gc> empty = {};
+  location_t location = (location_t) uncast_location;
+  vec<tree, va_gc> *arglist = (uncast_arglist
+			       ? (vec<tree, va_gc> *) uncast_arglist
+			       : &empty);
+  unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+  unsigned int subcode = code >> AARCH64_BUILTIN_SHIFT;
+  tree new_fndecl;
+  switch (code & AARCH64_BUILTIN_CLASS)
+    {
+    case AARCH64_BUILTIN_GENERAL:
+      return aarch64_resolve_overloaded_builtin_general (location, fndecl,
+							 uncast_arglist);
+    case AARCH64_BUILTIN_SVE:
+      new_fndecl = aarch64_sve::resolve_overloaded_builtin (location, subcode,
+							    arglist);
+      break;
+    }
+  if (new_fndecl == NULL_TREE || new_fndecl == error_mark_node)
+    return new_fndecl;
+  return build_function_call_vec (location, vNULL, new_fndecl, arglist,
+				  NULL, fndecl);
+}
+
+/* Implement TARGET_CHECK_BUILTIN_CALL.  */
+static bool
+aarch64_check_builtin_call (location_t loc, vec<location_t> arg_loc,
+			    tree fndecl, tree orig_fndecl,
+			    unsigned int nargs, tree *args)
+{
+  unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+  unsigned int subcode = code >> AARCH64_BUILTIN_SHIFT;
+  switch (code & AARCH64_BUILTIN_CLASS)
+    {
+    case AARCH64_BUILTIN_GENERAL:
+      return true;
+
+    case AARCH64_BUILTIN_SVE:
+      return aarch64_sve::check_builtin_call (loc, arg_loc, subcode,
+					      orig_fndecl, nargs, args);
+    }
+  gcc_unreachable ();
+}
+
 /* Implement REGISTER_TARGET_PRAGMAS.  */
 
 void
@@ -242,4 +320,9 @@ aarch64_register_pragmas (void)
 {
   /* Update pragma hook to allow parsing #pragma GCC target.  */
   targetm.target_option.pragma_parse = aarch64_pragma_target_parse;
+
+  targetm.resolve_overloaded_builtin = aarch64_resolve_overloaded_builtin;
+  targetm.check_builtin_call = aarch64_check_builtin_call;
+
+  c_register_pragma ("GCC", "aarch64", aarch64_pragma_aarch64);
 }

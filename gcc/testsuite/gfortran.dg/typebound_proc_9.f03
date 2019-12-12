@@ -20,7 +20,7 @@ MODULE testmod
   CONTAINS
     PROCEDURE, DEFERRED :: p2 ! { dg-error "Interface must be specified" }
     PROCEDURE(intf), NOPASS :: p3 ! { dg-error "should be declared DEFERRED" }
-    PROCEDURE(intf), DEFERRED, NON_OVERRIDABLE :: p4 ! { dg-error "can't both" }
+    PROCEDURE(intf), DEFERRED, NON_OVERRIDABLE :: p4 ! { dg-error "cannot both" }
     PROCEDURE(unknown), DEFERRED :: p5 ! { dg-error "has no IMPLICIT|must be explicit" }
     PROCEDURE(intf), DEFERRED, DEFERRED :: p6 ! { dg-error "Duplicate DEFERRED" }
     PROCEDURE(intf), DEFERRED :: p6 => proc ! { dg-error "is invalid for DEFERRED" }

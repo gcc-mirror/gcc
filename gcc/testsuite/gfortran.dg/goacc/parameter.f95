@@ -6,7 +6,7 @@ contains
     implicit none
     integer :: i
     integer, parameter :: a = 1
-    !$acc declare device_resident (a) ! { dg-error "PARAMETER" }
+    !$acc declare device_resident (a) ! { dg-error "is not a variable" }
     !$acc data copy (a) ! { dg-error "not a variable" }
     !$acc end data
     !$acc data deviceptr (a) ! { dg-error "not a variable" }

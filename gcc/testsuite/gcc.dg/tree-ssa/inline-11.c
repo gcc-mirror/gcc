@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-weak "" } */
-/* { dg-options "-O2 -fdump-tree-einline" } */
+/* { dg-options "-O2 -fdump-tree-einline-all" } */
 int w;
 int bar (void) __attribute__ ((weak));
 int bar (){

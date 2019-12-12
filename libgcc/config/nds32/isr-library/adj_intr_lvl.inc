@@ -1,5 +1,5 @@
 /* c-isr library stuff of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -26,13 +26,26 @@
 .macro ADJ_INTR_LVL
 #if defined(NDS32_NESTED) /* Nested handler.  */
 	mfsr	$r3, $PSW
+	/* By substracting 1 from $PSW, we can lower PSW.INTL
+	   and enable GIE simultaneously.  */
 	addi	$r3, $r3, #-0x1
+  #if __NDS32_EXT_ZOL__ || __NDS32_EXT_DSP__
+    ori   $r3, $r3, 0x2000  /* Set PSW.AEN(b'13) */
+  #endif
 	mtsr	$r3, $PSW
 #elif defined(NDS32_NESTED_READY) /* Nested ready handler.  */
 	/* Save ipc and ipsw and lower INT level.  */
 	mfsr	$r3, $PSW
 	addi	$r3, $r3, #-0x2
+  #if __NDS32_EXT_ZOL__ || __NDS32_EXT_DSP__
+    ori   $r3, $r3, 0x2000  /* Set PSW.AEN(b'13) */
+  #endif
 	mtsr	$r3, $PSW
 #else /* Not nested handler.  */
+  #if __NDS32_EXT_ZOL__ || __NDS32_EXT_DSP__
+    mfsr	$r3, $PSW
+    ori   $r3, $r3, 0x2000  /* Set PSW.AEN(b'13) */
+    mtsr	$r3, $PSW
+  #endif
 #endif
 .endm

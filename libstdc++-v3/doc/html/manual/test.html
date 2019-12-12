@@ -464,12 +464,15 @@ cat 27_io/objects/char/3_xin.in | a.out</pre></dd><dt><span class="term"><code c
     possible variations.
   </p><p>
     Similarly, tests which depend on a newer standard than the default
-    should use <code class="literal">dg-options</code> instead of an effective target,
-    so that they are not skipped by default.
+    must use <code class="literal">dg-options</code> instead of (or in addition to)
+    an effective target, so that they are not skipped by default.
     For example, tests for C++17 features should use
 </p><pre class="programlisting">    // { dg-options "-std=gnu++17" }</pre><p>
-    and not
-</p><pre class="programlisting">    // { dg-do run "c++1z" }</pre><p>
+    before any <code class="literal">dg-do</code> such as:
+</p><pre class="programlisting">    // { dg-do run "c++17" }</pre><p>
+    The <code class="literal">dg-options</code> directive must come first, so that
+    the <code class="literal">-std</code> flag has already been added to the options
+    before checking the <code class="literal">c++17</code> target.
   </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="tests.dg.examples"></a>Examples of Test Directives</h4></div></div></div><p>
 Example 1: Testing compilation only:
 </p><pre class="programlisting">
@@ -530,10 +533,7 @@ with specific options, and additional options for 32-bit x86:
 	(as determined by the <code class="literal">_GLIBCXX_DEBUG</code> macro).
       </p></dd><dt><span class="term"><code class="literal">dg-require-parallel-mode ""</code></span></dt><dd><p>Skip the test if the Parallel Mode is not active
 	(as determined by the <code class="literal">_GLIBCXX_PARALLEL</code> macro).
-      </p></dd><dt><span class="term"><code class="literal">dg-require-profile-mode ""</code></span></dt><dd><p>Skip the test if the Profile Mode is not active
-	(as determined by the <code class="literal">_GLIBCXX_PROFILE</code> macro).
-      </p></dd><dt><span class="term"><code class="literal">dg-require-normal-mode ""</code></span></dt><dd><p>Skip the test if any of Debug, Parallel or Profile
-	Mode is active.
+      </p></dd><dt><span class="term"><code class="literal">dg-require-normal-mode ""</code></span></dt><dd><p>Skip the test if Debug or Parallel Mode is active.
       </p></dd><dt><span class="term"><code class="literal">dg-require-atomic-builtins ""</code></span></dt><dd><p>Skip the test if atomic operations on <span class="type">bool</span>
       and <span class="type">int</span> are not lock-free.
       </p></dd><dt><span class="term"><code class="literal">dg-require-gthreads ""</code></span></dt><dd><p>Skip the test if the C++11 thread library is not

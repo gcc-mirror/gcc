@@ -1,5 +1,5 @@
 /* Tail call optimization on trees.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -37,10 +37,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-into-ssa.h"
 #include "tree-dfa.h"
 #include "except.h"
+#include "tree-eh.h"
 #include "dbgcnt.h"
 #include "cfgloop.h"
 #include "common/common-target.h"
 #include "ipa-utils.h"
+#include "tree-ssa-live.h"
 
 /* The file implements the tail recursion elimination.  It is also used to
    analyze the tail calls in general, passing the results to the rtl level
@@ -124,6 +126,11 @@ struct tailcall
    accumulator.  */
 static tree m_acc, a_acc;
 
+/* Bitmap with a bit for each function parameter which is set to true if we
+   have to copy the parameter for conversion of tail-recursive calls.  */
+
+static bitmap tailr_arg_needs_copy;
+
 static bool optimize_tail_call (struct tailcall *, bool);
 static void eliminate_tail_call (struct tailcall *);
 
@@ -138,6 +145,7 @@ suitable_for_tail_opt_p (void)
 
   return true;
 }
+
 /* Returns false when the function is not suitable for tail call optimization
    for some reason (e.g. if it takes variable number of arguments).
    This test must pass in addition to suitable_for_tail_opt_p in order to make
@@ -164,6 +172,11 @@ suitable_for_tail_call_opt_p (void)
      any called function.  ??? We really should represent this
      properly in the CFG so that this needn't be special cased.  */
   if (cfun->calls_setjmp)
+    return false;
+
+  /* Various targets don't handle tail calls correctly in functions
+     that call __builtin_eh_return.  */
+  if (cfun->calls_eh_return)
     return false;
 
   /* ??? It is OK if the argument of a function is taken in some cases,
@@ -391,6 +404,11 @@ propagate_through_phis (tree var, edge e)
   return var;
 }
 
+/* Argument for compute_live_vars/live_vars_at_stmt and what compute_live_vars
+   returns.  Computed lazily, but just once for the function.  */
+static live_vars_map *live_vars;
+static vec<bitmap_head> live_vars_vec;
+
 /* Finds tailcalls falling into basic block BB. The list of found tailcalls is
    added to the start of RET.  */
 
@@ -472,11 +490,46 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
       && !auto_var_in_fn_p (ass_var, cfun->decl))
     return;
 
+  /* If the call might throw an exception that wouldn't propagate out of
+     cfun, we can't transform to a tail or sibling call (82081).  */
+  if (stmt_could_throw_p (cfun, stmt)
+      && !stmt_can_throw_external (cfun, stmt))
+    return;
+
+  /* If the function returns a value, then at present, the tail call
+     must return the same type of value.  There is conceptually a copy
+     between the object returned by the tail call candidate and the
+     object returned by CFUN itself.
+
+     This means that if we have:
+
+	 lhs = f (&<retval>);    // f reads from <retval>
+				 // (lhs is usually also <retval>)
+
+     there is a copy between the temporary object returned by f and lhs,
+     meaning that any use of <retval> in f occurs before the assignment
+     to lhs begins.  Thus the <retval> that is live on entry to the call
+     to f is really an independent local variable V that happens to be
+     stored in the RESULT_DECL rather than a local VAR_DECL.
+
+     Turning this into a tail call would remove the copy and make the
+     lifetimes of the return value and V overlap.  The same applies to
+     tail recursion, since if f can read from <retval>, we have to assume
+     that CFUN might already have written to <retval> before the call.
+
+     The problem doesn't apply when <retval> is passed by value, but that
+     isn't a case we handle anyway.  */
+  tree result_decl = DECL_RESULT (cfun->decl);
+  if (result_decl
+      && may_be_aliased (result_decl)
+      && ref_maybe_used_by_stmt_p (call, result_decl))
+    return;
+
   /* We found the call, check whether it is suitable.  */
   tail_recursion = false;
   func = gimple_call_fndecl (call);
   if (func
-      && !DECL_BUILT_IN (func)
+      && !fndecl_built_in_p (func)
       && recursive_call_p (current_function_decl, func))
     {
       tree arg;
@@ -512,6 +565,29 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 	tail_recursion = true;
     }
 
+  /* Compute live vars if not computed yet.  */
+  if (live_vars == NULL)
+    {
+      unsigned int cnt = 0;
+      FOR_EACH_LOCAL_DECL (cfun, idx, var)
+	if (VAR_P (var)
+	    && auto_var_in_fn_p (var, cfun->decl)
+	    && may_be_aliased (var))
+	  {
+	    if (live_vars == NULL)
+	      live_vars = new live_vars_map;
+	    live_vars->put (DECL_UID (var), cnt++);
+	  }
+      if (live_vars)
+	live_vars_vec = compute_live_vars (cfun, live_vars);
+    }
+
+  /* Determine a bitmap of variables which are still in scope after the
+     call.  */
+  bitmap local_live_vars = NULL;
+  if (live_vars)
+    local_live_vars = live_vars_at_stmt (live_vars_vec, live_vars, call);
+
   /* Make sure the tail invocation of this function does not indirectly
      refer to local variables.  (Passing variables directly by value
      is OK.)  */
@@ -522,8 +598,27 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 	  && may_be_aliased (var)
 	  && (ref_maybe_used_by_stmt_p (call, var)
 	      || call_may_clobber_ref_p (call, var)))
-	return;
+	{
+	  if (!VAR_P (var))
+	    {
+	      if (local_live_vars)
+		BITMAP_FREE (local_live_vars);
+	      return;
+	    }
+	  else
+	    {
+	      unsigned int *v = live_vars->get (DECL_UID (var));
+	      if (bitmap_bit_p (local_live_vars, *v))
+		{
+		  BITMAP_FREE (local_live_vars);
+		  return;
+		}
+	    }
+	}
     }
+
+  if (local_live_vars)
+    BITMAP_FREE (local_live_vars);
 
   /* Now check the statements after the call.  None of them has virtual
      operands, so they may only depend on the call through its return
@@ -636,6 +731,18 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 	{
 	  gimple_stmt_iterator mgsi = gsi_for_stmt (stmt);
 	  gsi_move_before (&mgsi, &gsi);
+	}
+      if (!tailr_arg_needs_copy)
+	tailr_arg_needs_copy = BITMAP_ALLOC (NULL);
+      for (param = DECL_ARGUMENTS (current_function_decl), idx = 0;
+	   param;
+	   param = DECL_CHAIN (param), idx++)
+	{
+	  tree ddef, arg = gimple_call_arg (call, idx);
+	  if (is_gimple_reg (param)
+	      && (ddef = ssa_default_def (cfun, param))
+	      && (arg != ddef))
+	    bitmap_set_bit (tailr_arg_needs_copy, idx);
 	}
     }
 
@@ -815,25 +922,6 @@ decrease_profile (basic_block bb, profile_count count)
     }
 }
 
-/* Returns true if argument PARAM of the tail recursive call needs to be copied
-   when the call is eliminated.  */
-
-static bool
-arg_needs_copy_p (tree param)
-{
-  tree def;
-
-  if (!is_gimple_reg (param))
-    return false;
-
-  /* Parameters that are only defined but never used need not be copied.  */
-  def = ssa_default_def (cfun, param);
-  if (!def)
-    return false;
-
-  return true;
-}
-
 /* Eliminates tail call described by T.  TMP_VARS is a list of
    temporary variables used to copy the function arguments.  */
 
@@ -915,7 +1003,7 @@ eliminate_tail_call (struct tailcall *t)
        param;
        param = DECL_CHAIN (param), idx++)
     {
-      if (!arg_needs_copy_p (param))
+      if (!bitmap_bit_p (tailr_arg_needs_copy, idx))
 	continue;
 
       arg = gimple_call_arg (stmt, idx);
@@ -1025,6 +1113,13 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
 	find_tail_calls (e->src, &tailcalls);
     }
 
+  if (live_vars)
+    {
+      destroy_live_vars (live_vars_vec);
+      delete live_vars;
+      live_vars = NULL;
+    }
+
   /* Construct the phi nodes and accumulators if necessary.  */
   a_acc = m_acc = NULL_TREE;
   for (act = tailcalls; act; act = act->next)
@@ -1042,10 +1137,11 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
 	      split_edge (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 
 	  /* Copy the args if needed.  */
-	  for (param = DECL_ARGUMENTS (current_function_decl);
+	  unsigned idx;
+	  for (param = DECL_ARGUMENTS (current_function_decl), idx = 0;
 	       param;
-	       param = DECL_CHAIN (param))
-	    if (arg_needs_copy_p (param))
+	       param = DECL_CHAIN (param), idx++)
+	    if (bitmap_bit_p (tailr_arg_needs_copy, idx))
 	      {
 		tree name = ssa_default_def (cfun, param);
 		tree new_name = make_ssa_name (param, SSA_NAME_DEF_STMT (name));
@@ -1108,6 +1204,9 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
      by triggering the SSA renamer.  */
   if (phis_constructed)
     mark_virtual_operands_for_renaming (cfun);
+
+  if (tailr_arg_needs_copy)
+    BITMAP_FREE (tailr_arg_needs_copy);
 
   if (changed)
     return TODO_cleanup_cfg | TODO_update_ssa_only_virtuals;

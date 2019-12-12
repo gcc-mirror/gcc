@@ -1,4 +1,4 @@
-! { dg- do run }
+! { dg-do run }
 !
 ! Test the fix for PR78641 in which an ICE occured on assignment
 ! of a class array constructor to a derived type array.

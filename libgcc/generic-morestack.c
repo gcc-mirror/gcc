@@ -1,5 +1,5 @@
 /* Library support for -fsplit-stack.  */
-/* Copyright (C) 2009-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2019 Free Software Foundation, Inc.
    Contributed by Ian Lance Taylor <iant@google.com>.
 
 This file is part of GCC.
@@ -23,6 +23,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#pragma GCC optimize ("no-isolate-erroneous-paths-dereference")
+
 /* powerpc 32-bit not supported.  */
 #if !defined __powerpc__ || defined __powerpc64__
 
@@ -32,7 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "tm.h"
 #include "libgcc_tm.h"
 
-/* If inhibit_libc is defined, we can not compile this file.  The
+/* If inhibit_libc is defined, we cannot compile this file.  The
    effect is that people will not be able to use -fsplit-stack.  That
    is much better than failing the build particularly since people
    will want to define inhibit_libc while building a compiler which

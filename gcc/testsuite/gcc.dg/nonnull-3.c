@@ -9,11 +9,11 @@
 void
 foo (void *p, char *s)
 {
-  __builtin_bzero (NULL, 0);
-  __builtin_bcopy (NULL, p, 0);
-  __builtin_bcopy (p, NULL, 0);
-  __builtin_bcmp (NULL, p, 0);
-  __builtin_bcmp (p, NULL, 0);
+  __builtin_bzero (NULL, 0);  /* { dg-warning "null" "pr80936" } */
+  __builtin_bcopy (NULL, p, 0);  /* { dg-warning "null" "pr80936" } */
+  __builtin_bcopy (p, NULL, 0);  /* { dg-warning "null" "pr80936" } */
+  __builtin_bcmp (NULL, p, 0);  /* { dg-warning "null" "pr80936" } */
+  __builtin_bcmp (p, NULL, 0);  /* { dg-warning "null" "pr80936" } */
   __builtin_index (NULL, 16);  /* { dg-warning "null" "null pointer check" } */
   __builtin_rindex (NULL, 16);  /* { dg-warning "null" "null pointer check" } */
 
@@ -56,8 +56,8 @@ foo (void *p, char *s)
   __builtin_strspn (s, NULL);  /* { dg-warning "null" "null pointer check" } */
   __builtin_strchr (NULL, 16);  /* { dg-warning "null" "null pointer check" } */
   __builtin_strrchr (NULL, 16);  /* { dg-warning "null" "null pointer check" } */
-  __builtin_strdup (NULL);  /* { dg-warning "null" "null pointer check" } */
-  __builtin_strndup (NULL, 16);  /* { dg-warning "null" "null pointer check" } */
+  void *p1 = __builtin_strdup (NULL);  /* { dg-warning "null" "null pointer check" } */
+  void *p2 = __builtin_strndup (NULL, 16);  /* { dg-warning "null" "null pointer check" } */
 
   __builtin_nan (NULL);  /* { dg-warning "null" "null pointer check" } */
   __builtin_nanf (NULL);  /* { dg-warning "null" "null pointer check" } */

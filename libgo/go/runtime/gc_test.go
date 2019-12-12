@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"runtime"
 	"runtime/debug"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -20,6 +21,12 @@ func TestGcSys(t *testing.T) {
 	t.Skip("does not test anything; https://golang.org/issue/23343")
 	if os.Getenv("GOGC") == "off" {
 		t.Skip("skipping test; GOGC=off in environment")
+	}
+	if runtime.GOOS == "windows" {
+		t.Skip("skipping test; GOOS=windows http://golang.org/issue/27156")
+	}
+	if runtime.GOOS == "linux" && runtime.GOARCH == "arm64" {
+		t.Skip("skipping test; GOOS=linux GOARCH=arm64 https://github.com/golang/go/issues/27636")
 	}
 	got := runTestProg(t, "testprog", "GCSys")
 	want := "OK\n"
@@ -44,7 +51,7 @@ func TestGcDeepNesting(t *testing.T) {
 	}
 }
 
-func TestGcHashmapIndirection(t *testing.T) {
+func TestGcMapIndirection(t *testing.T) {
 	defer debug.SetGCPercent(debug.SetGCPercent(1))
 	runtime.GC()
 	type T struct {
@@ -157,6 +164,10 @@ func TestHugeGCInfo(t *testing.T) {
 
 /*
 func TestPeriodicGC(t *testing.T) {
+	if runtime.GOARCH == "wasm" {
+		t.Skip("no sysmon on wasm yet")
+	}
+
 	// Make sure we're not in the middle of a GC.
 	runtime.GC()
 
@@ -462,6 +473,25 @@ func TestReadMemStats(t *testing.T) {
 	}
 }
 
+func TestUnscavHugePages(t *testing.T) {
+	// Allocate 20 MiB and immediately free it a few times to increase
+	// the chance that unscavHugePages isn't zero and that some kind of
+	// accounting had to happen in the runtime.
+	for j := 0; j < 3; j++ {
+		var large [][]byte
+		for i := 0; i < 5; i++ {
+			large = append(large, make([]byte, runtime.PhysHugePageSize))
+		}
+		runtime.KeepAlive(large)
+		runtime.GC()
+	}
+	base, slow := runtime.UnscavHugePagesSlow()
+	if base != slow {
+		logDiff(t, "unscavHugePages", reflect.ValueOf(base), reflect.ValueOf(slow))
+		t.Fatal("unscavHugePages mismatch")
+	}
+}
+
 func logDiff(t *testing.T, prefix string, got, want reflect.Value) {
 	typ := got.Type()
 	switch typ.Kind() {
@@ -566,8 +596,8 @@ func BenchmarkWriteBarrier(b *testing.B) {
 		n := &node{mkTree(level - 1), mkTree(level - 1)}
 		if level == 10 {
 			// Seed GC with enough early pointers so it
-			// doesn't accidentally switch to mark 2 when
-			// it only has the top of the tree.
+			// doesn't start termination barriers when it
+			// only has the top of the tree.
 			wbRoots = append(wbRoots, n)
 		}
 		return n
@@ -641,4 +671,35 @@ func BenchmarkBulkWriteBarrier(b *testing.B) {
 	})
 
 	runtime.KeepAlive(ptrs)
+}
+
+func BenchmarkScanStackNoLocals(b *testing.B) {
+	var ready sync.WaitGroup
+	teardown := make(chan bool)
+	for j := 0; j < 10; j++ {
+		ready.Add(1)
+		go func() {
+			x := 100000
+			countpwg(&x, &ready, teardown)
+		}()
+	}
+	ready.Wait()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		b.StartTimer()
+		runtime.GC()
+		runtime.GC()
+		b.StopTimer()
+	}
+	close(teardown)
+}
+
+func countpwg(n *int, ready *sync.WaitGroup, teardown chan bool) {
+	if *n == 0 {
+		ready.Done()
+		<-teardown
+		return
+	}
+	*n--
+	countpwg(n, ready, teardown)
 }

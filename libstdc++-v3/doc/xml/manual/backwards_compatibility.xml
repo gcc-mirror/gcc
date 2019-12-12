@@ -761,8 +761,9 @@ No <code>stream::attach(int fd)</code>
 
 <para>
       An extension is available that implements this.
-      <filename class="headerfile">&lt;ext/stdio_filebuf.h&gt;</filename> contains a derived class called
-      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00074.html"><code>__gnu_cxx::stdio_filebuf</code></link>.
+      <filename class="headerfile">&lt;ext/stdio_filebuf.h&gt;</filename>
+      contains a derived class called
+      <classname>__gnu_cxx::stdio_filebuf</classname>.
       This class can be constructed from a C <code>FILE*</code> or a file
       descriptor, and provides the <code>fd()</code> function.
     </para>

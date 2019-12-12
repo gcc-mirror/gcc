@@ -1,6 +1,6 @@
 /* Routines for emitting trees to a file stream.
 
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -129,6 +129,11 @@ pack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
       bp_pack_value (bp, SSA_NAME_IS_DEFAULT_DEF (expr), 1);
       bp_pack_value (bp, 0, 8);
     }
+  else if (TREE_CODE (expr) == CALL_EXPR)
+    {
+      bp_pack_value (bp, CALL_EXPR_BY_DESCRIPTOR (expr), 1);
+      bp_pack_value (bp, 0, 8);
+    }
   else
     bp_pack_value (bp, 0, 9);
 }
@@ -207,7 +212,7 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       bp_pack_var_len_unsigned (bp, EH_LANDING_PAD_NR (expr));
     }
 
-  if (TREE_CODE (expr) == FIELD_DECL)
+  else if (TREE_CODE (expr) == FIELD_DECL)
     {
       bp_pack_value (bp, DECL_PACKED (expr), 1);
       bp_pack_value (bp, DECL_NONADDRESSABLE_P (expr), 1);
@@ -215,11 +220,14 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       bp_pack_value (bp, expr->decl_common.off_align, 8);
     }
 
-  if (VAR_P (expr))
+  else if (VAR_P (expr))
     {
       bp_pack_value (bp, DECL_HAS_DEBUG_EXPR_P (expr), 1);
       bp_pack_value (bp, DECL_NONLOCAL_FRAME (expr), 1);
     }
+
+  else if (TREE_CODE (expr) == PARM_DECL)
+    bp_pack_value (bp, DECL_HIDDEN_STRING_LENGTH (expr), 1);
 
   if (TREE_CODE (expr) == RESULT_DECL
       || TREE_CODE (expr) == PARM_DECL
@@ -287,7 +295,8 @@ pack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, DECL_IS_NOVOPS (expr), 1);
   bp_pack_value (bp, DECL_IS_RETURNS_TWICE (expr), 1);
   bp_pack_value (bp, DECL_IS_MALLOC (expr), 1);
-  bp_pack_value (bp, DECL_IS_OPERATOR_NEW (expr), 1);
+  bp_pack_value (bp, DECL_IS_OPERATOR_NEW_P (expr), 1);
+  bp_pack_value (bp, DECL_IS_OPERATOR_DELETE_P (expr), 1);
   bp_pack_value (bp, DECL_DECLARED_INLINE_P (expr), 1);
   bp_pack_value (bp, DECL_STATIC_CHAIN (expr), 1);
   bp_pack_value (bp, DECL_NO_INLINE_WARNING_P (expr), 1);
@@ -297,7 +306,7 @@ pack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, DECL_PURE_P (expr), 1);
   bp_pack_value (bp, DECL_LOOPING_CONST_OR_PURE_P (expr), 1);
   if (DECL_BUILT_IN_CLASS (expr) != NOT_BUILT_IN)
-    bp_pack_value (bp, DECL_FUNCTION_CODE (expr), 12);
+    bp_pack_value (bp, DECL_UNCHECKED_FUNCTION_CODE (expr), 32);
 }
 
 
@@ -311,14 +320,18 @@ pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
      not necessary valid in a global context.
      Use the raw value previously set by layout_type.  */
   bp_pack_machine_mode (bp, TYPE_MODE_RAW (expr));
-  bp_pack_value (bp, TYPE_STRING_FLAG (expr), 1);
   /* TYPE_NO_FORCE_BLK is private to stor-layout and need
      no streaming.  */
-  bp_pack_value (bp, TYPE_NEEDS_CONSTRUCTING (expr), 1);
   bp_pack_value (bp, TYPE_PACKED (expr), 1);
   bp_pack_value (bp, TYPE_RESTRICT (expr), 1);
   bp_pack_value (bp, TYPE_USER_ALIGN (expr), 1);
   bp_pack_value (bp, TYPE_READONLY (expr), 1);
+  unsigned vla_p;
+  if (in_lto_p)
+    vla_p = TYPE_LANG_FLAG_0 (TYPE_MAIN_VARIANT (expr));
+  else
+    vla_p = variably_modified_type_p (expr, NULL_TREE);
+  bp_pack_value (bp, vla_p, 1);
   /* We used to stream TYPE_ALIAS_SET == 0 information to let frontends mark
      types that are opaque for TBAA.  This however did not work as intended,
      because TYPE_ALIAS_SET == 0 was regularly lost in type merging.  */
@@ -326,9 +339,12 @@ pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
     {
       bp_pack_value (bp, TYPE_TRANSPARENT_AGGR (expr), 1);
       bp_pack_value (bp, TYPE_FINAL_P (expr), 1);
+      bp_pack_value (bp, TYPE_CXX_ODR_P (expr), 1);
     }
   else if (TREE_CODE (expr) == ARRAY_TYPE)
     bp_pack_value (bp, TYPE_NONALIASED_COMPONENT (expr), 1);
+  if (TREE_CODE (expr) == ARRAY_TYPE || TREE_CODE (expr) == INTEGER_TYPE)
+    bp_pack_value (bp, TYPE_STRING_FLAG (expr), 1);
   if (AGGREGATE_TYPE_P (expr))
     bp_pack_value (bp, TYPE_TYPELESS_STORAGE (expr), 1);
   bp_pack_value (bp, TYPE_EMPTY_P (expr), 1);
@@ -344,7 +360,6 @@ static void
 pack_ts_block_value_fields (struct output_block *ob,
 			    struct bitpack_d *bp, tree expr)
 {
-  bp_pack_value (bp, BLOCK_ABSTRACT (expr), 1);
   /* BLOCK_NUMBER is recomputed.  */
   /* Stream BLOCK_SOURCE_LOCATION for the limited cases we can handle - those
      that represent inlined function scopes.
@@ -397,6 +412,8 @@ pack_ts_omp_clause_value_fields (struct output_block *ob,
 		    OMP_CLAUSE_PROC_BIND_KIND (expr));
       break;
     case OMP_CLAUSE_REDUCTION:
+    case OMP_CLAUSE_TASK_REDUCTION:
+    case OMP_CLAUSE_IN_REDUCTION:
       bp_pack_enum (bp, tree_code, MAX_TREE_CODES,
 		    OMP_CLAUSE_REDUCTION_CODE (expr));
       break;
@@ -457,6 +474,8 @@ streamer_write_tree_bitfields (struct output_block *ob, tree expr)
 	  if (MR_DEPENDENCE_CLIQUE (expr) != 0)
 	    bp_pack_value (&bp, MR_DEPENDENCE_BASE (expr), sizeof (short) * 8);
 	}
+      else if (code == CALL_EXPR)
+	bp_pack_enum (&bp, internal_fn, IFN_LAST, CALL_EXPR_IFN (expr));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
@@ -569,7 +588,7 @@ write_ts_decl_minimal_tree_pointers (struct output_block *ob, tree expr,
   /* Drop names that were created for anonymous entities.  */
   if (DECL_NAME (expr)
       && TREE_CODE (DECL_NAME (expr)) == IDENTIFIER_NODE
-      && anon_aggrname_p (DECL_NAME (expr)))
+      && IDENTIFIER_ANON_P (DECL_NAME (expr)))
     stream_write_tree (ob, NULL_TREE, ref_p);
   else
     stream_write_tree (ob, DECL_NAME (expr), ref_p);
@@ -596,7 +615,16 @@ write_ts_decl_common_tree_pointers (struct output_block *ob, tree expr,
      special handling in LTO, it must be handled by streamer hooks.  */
 
   stream_write_tree (ob, DECL_ATTRIBUTES (expr), ref_p);
-  stream_write_tree (ob, DECL_ABSTRACT_ORIGIN (expr), ref_p);
+
+  /* On non-early-LTO enabled targets we claim we compiled with -g0
+     but dwarf2out still did its set_decl_origin_self game fooling
+     itself late.  Und that here since we won't have access to the
+     early generated abstract DIEs.  */
+  tree ao = DECL_ABSTRACT_ORIGIN (expr);
+  if (debug_info_level == DINFO_LEVEL_NONE
+      && ao == expr)
+    ao = NULL_TREE;
+  stream_write_tree (ob, ao, ref_p);
 
   if ((VAR_P (expr) || TREE_CODE (expr) == PARM_DECL)
       && DECL_HAS_VALUE_EXPR_P (expr))
@@ -657,7 +685,6 @@ static void
 write_ts_function_decl_tree_pointers (struct output_block *ob, tree expr,
 				      bool ref_p)
 {
-  stream_write_tree (ob, DECL_VINDEX (expr), ref_p);
   /* DECL_STRUCT_FUNCTION is handled by lto_output_function.  */
   stream_write_tree (ob, DECL_FUNCTION_PERSONALITY (expr), ref_p);
   /* Don't stream these when passing things to a different target.  */
@@ -687,7 +714,9 @@ write_ts_type_common_tree_pointers (struct output_block *ob, tree expr,
   stream_write_tree (ob, TYPE_CONTEXT (expr), ref_p);
   /* TYPE_CANONICAL is re-computed during type merging, so no need
      to stream it here.  */
-  stream_write_tree (ob, TYPE_STUB_DECL (expr), ref_p);
+  /* Do not stream TYPE_STUB_DECL; it is not needed by LTO but currently
+     it cannot be freed by free_lang_data without triggering ICEs in
+     langhooks.  */
 }
 
 /* Write all pointer fields in the TS_TYPE_NON_COMMON structure of EXPR
@@ -837,12 +866,18 @@ write_ts_omp_clause_tree_pointers (struct output_block *ob, tree expr,
   int i;
   for (i = 0; i < omp_clause_num_ops[OMP_CLAUSE_CODE (expr)]; i++)
     stream_write_tree (ob, OMP_CLAUSE_OPERAND (expr, i), ref_p);
-  if (OMP_CLAUSE_CODE (expr) == OMP_CLAUSE_REDUCTION)
+  switch (OMP_CLAUSE_CODE (expr))
     {
+    case OMP_CLAUSE_REDUCTION:
+    case OMP_CLAUSE_TASK_REDUCTION:
+    case OMP_CLAUSE_IN_REDUCTION:
       /* We don't stream these right now, handle it if streaming
 	 of them is needed.  */
       gcc_assert (OMP_CLAUSE_REDUCTION_GIMPLE_INIT (expr) == NULL);
       gcc_assert (OMP_CLAUSE_REDUCTION_GIMPLE_MERGE (expr) == NULL);
+      break;
+    default:
+      break;
     }
   stream_write_tree (ob, OMP_CLAUSE_CHAIN (expr), ref_p);
 }

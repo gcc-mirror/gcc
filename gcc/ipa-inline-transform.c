@@ -1,5 +1,5 @@
 /* Callgraph transformations to handle inlining
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "cfg.h"
 #include "basic-block.h"
+#include "ipa-utils.h"
 
 int ncalls_inlined;
 int nfunctions_inlined;
@@ -166,8 +167,8 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
   struct cgraph_node *inlining_into;
   struct cgraph_edge *next;
 
-  if (e->caller->global.inlined_to)
-    inlining_into = e->caller->global.inlined_to;
+  if (e->caller->inlined_to)
+    inlining_into = e->caller->inlined_to;
   else
     inlining_into = e->caller;
 
@@ -193,14 +194,14 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 
 	     For now we keep the ohter functions in the group in program until
 	     cgraph_remove_unreachable_functions gets rid of them.  */
-	  gcc_assert (!e->callee->global.inlined_to);
+	  gcc_assert (!e->callee->inlined_to);
 	  e->callee->remove_from_same_comdat_group ();
 	  if (e->callee->definition
 	      && inline_account_function_p (e->callee))
 	    {
 	      gcc_assert (!e->callee->alias);
 	      if (overall_size)
-		*overall_size -= ipa_fn_summaries->get (e->callee)->size;
+		*overall_size -= ipa_size_summaries->get (e->callee)->size;
 	      nfunctions_inlined++;
 	    }
 	  duplicate = false;
@@ -226,7 +227,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
   else
     e->callee->remove_from_same_comdat_group ();
 
-  e->callee->global.inlined_to = inlining_into;
+  e->callee->inlined_to = inlining_into;
 
   /* Recursively clone all bodies.  */
   for (e = e->callee->callees; e; e = next)
@@ -237,10 +238,13 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
     }
 }
 
-/* Check all speculations in N and resolve them if they seems useless. */
+/* Check all speculations in N and if any seem useless, resolve them.  When a
+   first edge is resolved, pop all edges from NEW_EDGES and insert them to
+   EDGE_SET.  Then remove each resolved edge from EDGE_SET, if it is there.  */
 
 static bool
-check_speculations (cgraph_node *n)
+check_speculations_1 (cgraph_node *n, vec<cgraph_edge *> *new_edges,
+		      hash_set <cgraph_edge *> *edge_set)
 {
   bool speculation_removed = false;
   cgraph_edge *next;
@@ -250,13 +254,44 @@ check_speculations (cgraph_node *n)
       next = e->next_callee;
       if (e->speculative && !speculation_useful_p (e, true))
 	{
+	  while (new_edges && !new_edges->is_empty ())
+	    edge_set->add (new_edges->pop ());
+	  edge_set->remove (e);
+
 	  e->resolve_speculation (NULL);
 	  speculation_removed = true;
 	}
       else if (!e->inline_failed)
-	speculation_removed |= check_speculations (e->callee);
+	speculation_removed |= check_speculations_1 (e->callee, new_edges,
+						     edge_set);
     }
   return speculation_removed;
+}
+
+/* Push E to NEW_EDGES.  Called from hash_set traverse method, which
+   unfortunately means this function has to have external linkage, otherwise
+   the code will not compile with gcc 4.8.  */
+
+bool
+push_all_edges_in_set_to_vec (cgraph_edge * const &e,
+			      vec<cgraph_edge *> *new_edges)
+{
+  new_edges->safe_push (e);
+  return true;
+}
+
+/* Check all speculations in N and if any seem useless, resolve them and remove
+   them from NEW_EDGES.  */
+
+static bool
+check_speculations (cgraph_node *n, vec<cgraph_edge *> *new_edges)
+{
+  hash_set <cgraph_edge *> edge_set;
+  bool res = check_speculations_1 (n, new_edges, &edge_set);
+  if (!edge_set.is_empty ())
+    edge_set.traverse <vec<cgraph_edge *> *,
+		       push_all_edges_in_set_to_vec> (new_edges);
+  return res;
 }
 
 /* Mark all call graph edges coming out of NODE and all nodes that have been
@@ -310,20 +345,24 @@ inline_call (struct cgraph_edge *e, bool update_original,
   /* Don't inline inlined edges.  */
   gcc_assert (e->inline_failed);
   /* Don't even think of inlining inline clone.  */
-  gcc_assert (!callee->global.inlined_to);
+  gcc_assert (!callee->inlined_to);
 
   to = e->caller;
-  if (to->global.inlined_to)
-    to = to->global.inlined_to;
+  if (to->inlined_to)
+    to = to->inlined_to;
   if (to->thunk.thunk_p)
     {
       struct cgraph_node *target = to->callees->callee;
+      thunk_expansion = true;
+      symtab->call_cgraph_removal_hooks (to);
       if (in_lto_p)
 	to->get_untransformed_body ();
       to->expand_thunk (false, true);
       /* When thunk is instrumented we may have multiple callees.  */
       for (e = to->callees; e && e->callee != target; e = e->next_callee)
 	;
+      symtab->call_cgraph_insertion_hooks (to);
+      thunk_expansion = false;
       gcc_assert (e);
     }
 
@@ -442,24 +481,24 @@ inline_call (struct cgraph_edge *e, bool update_original,
 
   clone_inlined_nodes (e, true, update_original, overall_size);
 
-  gcc_assert (curr->callee->global.inlined_to == to);
+  gcc_assert (curr->callee->inlined_to == to);
 
-  old_size = ipa_fn_summaries->get (to)->size;
+  old_size = ipa_size_summaries->get (to)->size;
   ipa_merge_fn_summary_after_inlining (e);
   if (e->in_polymorphic_cdtor)
     mark_all_inlined_calls_cdtor (e->callee);
   if (opt_for_fn (e->caller->decl, optimize))
     new_edges_found = ipa_propagate_indirect_call_infos (curr, new_edges);
-  check_speculations (e->callee);
+  bool removed_p = check_speculations (e->callee, new_edges);
   if (update_overall_summary)
-    ipa_update_overall_fn_summary (to);
+    ipa_update_overall_fn_summary (to, new_edges_found || removed_p);
   else
     /* Update self size by the estimate so overall function growth limits
        work for further inlining into this function.  Before inlining
        the function we inlined to again we expect the caller to update
        the overall summary.  */
-    ipa_fn_summaries->get (to)->size += estimated_growth;
-  new_size = ipa_fn_summaries->get (to)->size;
+    ipa_size_summaries->get (to)->size += estimated_growth;
+  new_size = ipa_size_summaries->get (to)->size;
 
   if (callee->calls_comdat_local)
     to->calls_comdat_local = true;
@@ -583,8 +622,7 @@ save_inline_function_body (struct cgraph_node *node)
 
   /* Copy the OLD_VERSION_NODE function tree to the new version.  */
   tree_function_versioning (node->decl, first_clone->decl,
-			    NULL, true, NULL, false,
-			    NULL, NULL);
+			    NULL, NULL, true, NULL, NULL);
 
   /* The function will be short lived and removed after we inline all the clones,
      but make it internal so we won't confuse ourself.  */
@@ -596,7 +634,7 @@ save_inline_function_body (struct cgraph_node *node)
   /* When doing recursive inlining, the clone may become unnecessary.
      This is possible i.e. in the case when the recursive function is proved to be
      non-throwing and the recursion happens only in the EH landing pad.
-     We can not remove the clone until we are done with saving the body.
+     We cannot remove the clone until we are done with saving the body.
      Remove it now.  */
   if (!first_clone->callers)
     {

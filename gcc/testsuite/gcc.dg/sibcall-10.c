@@ -5,7 +5,7 @@
    Copyright (C) 2002 Free Software Foundation Inc.
    Contributed by Hans-Peter Nilsson  <hp@bitrange.com>  */
 
-/* { dg-do run { xfail { { cris-*-* crisv32-*-* h8300-*-* hppa*64*-*-* m32r-*-* mcore-*-* mn10300-*-* msp430*-*-* nds32*-*-* xstormy16-*-* v850*-*-* vax-*-* xtensa*-*-* } || { arm*-*-* && { ! arm32 } } } } } */
+/* { dg-do run { xfail { { amdgcn*-*-* cris-*-* crisv32-*-* csky-*-* h8300-*-* hppa*64*-*-* m32r-*-* mcore-*-* mn10300-*-* msp430*-*-* nds32*-*-* xstormy16-*-* v850*-*-* vax-*-* xtensa*-*-* } || { arm*-*-* && { ! arm32 } } } } } */
 /* -mlongcall disables sibcall patterns.  */
 /* { dg-skip-if "" { powerpc*-*-* } { "-mlongcall" } { "" } } */
 /* -msave-restore disables sibcall patterns.  */
@@ -31,7 +31,7 @@ extern void exit (int);
 static ATTR void recurser_void1 (void);
 static ATTR void recurser_void2 (void);
 extern void track (void);
-volatile int v;
+static volatile int v;
 
 int n = 0;
 int main ()

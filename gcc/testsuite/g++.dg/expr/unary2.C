@@ -8,8 +8,8 @@ int n;
 
 void f(void)
 {
-  -n = 0;        // { dg-error "lvalue" }
-  +n = 0;        // { dg-error "lvalue" }
+  -n = 0;        // { dg-error "3:lvalue" }
+  +n = 0;        // { dg-error "3:lvalue" }
 }
 
 template <int>

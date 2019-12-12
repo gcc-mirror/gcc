@@ -1,5 +1,5 @@
 !    Implementation of the IEEE_FEATURES standard intrinsic module
-!    Copyright (C) 2013-2018 Free Software Foundation, Inc.
+!    Copyright (C) 2013-2019 Free Software Foundation, Inc.
 !    Contributed by Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
 ! 
 ! This file is part of the GNU Fortran runtime library (libgfortran).
@@ -36,6 +36,7 @@ module IEEE_FEATURES
   type(IEEE_FEATURES_TYPE), parameter, public :: &
     IEEE_DATATYPE       = IEEE_FEATURES_TYPE(0), &
     IEEE_DENORMAL       = IEEE_FEATURES_TYPE(1), &
+    IEEE_SUBNORMAL      = IEEE_FEATURES_TYPE(1), &
     IEEE_DIVIDE         = IEEE_FEATURES_TYPE(2), &
     IEEE_HALTING        = IEEE_FEATURES_TYPE(3), &
     IEEE_INEXACT_FLAG   = IEEE_FEATURES_TYPE(4), &

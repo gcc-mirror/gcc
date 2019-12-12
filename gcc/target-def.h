@@ -1,5 +1,5 @@
 /* Default initializers for a generic GCC target.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -47,6 +47,15 @@
 #define TARGET_ASM_UNALIGNED_TI_OP NULL
 #endif /* OBJECT_FORMAT_ELF */
 
+/* There is no standard way to handle P{S,D,T}Imode, targets must implement them
+   if required.  */
+#define TARGET_ASM_ALIGNED_PSI_OP NULL
+#define TARGET_ASM_UNALIGNED_PSI_OP NULL
+#define TARGET_ASM_ALIGNED_PDI_OP NULL
+#define TARGET_ASM_UNALIGNED_PDI_OP NULL
+#define TARGET_ASM_ALIGNED_PTI_OP NULL
+#define TARGET_ASM_UNALIGNED_PTI_OP NULL
+
 #if !defined(TARGET_ASM_CONSTRUCTOR) && !defined(USE_COLLECT2)
 # ifdef CTORS_SECTION_ASM_OP
 #  define TARGET_ASM_CONSTRUCTOR default_ctor_section_asm_out_constructor
@@ -89,14 +98,20 @@
 
 #define TARGET_ASM_ALIGNED_INT_OP				\
 		       {TARGET_ASM_ALIGNED_HI_OP,		\
+			TARGET_ASM_ALIGNED_PSI_OP,		\
 			TARGET_ASM_ALIGNED_SI_OP,		\
+			TARGET_ASM_ALIGNED_PDI_OP,		\
 			TARGET_ASM_ALIGNED_DI_OP,		\
+			TARGET_ASM_ALIGNED_PTI_OP,		\
 			TARGET_ASM_ALIGNED_TI_OP}
 
 #define TARGET_ASM_UNALIGNED_INT_OP				\
 		       {TARGET_ASM_UNALIGNED_HI_OP,		\
+			TARGET_ASM_UNALIGNED_PSI_OP,		\
 			TARGET_ASM_UNALIGNED_SI_OP,		\
+			TARGET_ASM_UNALIGNED_PDI_OP,		\
 			TARGET_ASM_UNALIGNED_DI_OP,		\
+			TARGET_ASM_UNALIGNED_PTI_OP,		\
 			TARGET_ASM_UNALIGNED_TI_OP}
 
 #if !defined (TARGET_FUNCTION_INCOMING_ARG)

@@ -41,7 +41,7 @@ main::main::he714a2e23ed7db2g
 # $XX$ substitutions should not contain just numbers.
 --format=auto
 _ZN4main4$99$17he714a2e23ed7db23E
-main::$99$::he714a2e23ed7db23
+main::$99$
 # _ at start of path should be removed.
 # ".." translates to "::" "$GT$" to ">" and "$LT$" to "<".
 --format=rust
@@ -159,3 +159,7 @@ _ZN68_$LT$core..nonzero..NonZero$LT$T$GT$$u20$as$u20$core..ops..Deref$GT$5deref1
 --format=rust
 _ZN63_$LT$core..ptr..Unique$LT$T$GT$$u20$as$u20$core..ops..Deref$GT$5deref17h19f2ad4920655e85E
 <core::ptr::Unique<T> as core::ops::Deref>::deref
+#
+--format=rust
+_ZN11issue_609253foo37Foo$LT$issue_60925..llv$u6d$..Foo$GT$3foo17h059a991a004536adE
+issue_60925::foo::Foo<issue_60925::llvm::Foo>::foo

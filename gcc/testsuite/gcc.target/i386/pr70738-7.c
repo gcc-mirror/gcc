@@ -1,4 +1,4 @@
-/* { dg-do compile { target ia32 } } */
+/* { dg-do compile { target { ia32 && { ! *-*-darwin* } } } } */
 /* { dg-options "-msse2 -mgeneral-regs-only" } */
 
 extern float a, b, c;

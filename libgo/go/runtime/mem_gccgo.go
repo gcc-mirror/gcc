@@ -7,22 +7,18 @@
 package runtime
 
 import (
-	"runtime/internal/sys"
 	"unsafe"
 )
 
 // Functions called by C code.
-//go:linkname sysAlloc runtime.sysAlloc
-//go:linkname sysFree runtime.sysFree
+//go:linkname sysAlloc
+//go:linkname sysFree
 
 //extern mmap
 func sysMmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off uintptr) unsafe.Pointer
 
 //extern munmap
 func munmap(addr unsafe.Pointer, length uintptr) int32
-
-//extern mincore
-func mincore(addr unsafe.Pointer, n uintptr, dst *byte) int32
 
 //extern madvise
 func madvise(addr unsafe.Pointer, n uintptr, flags int32) int32
@@ -47,54 +43,6 @@ func mmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off uintptr) (u
 		return nil, errno()
 	}
 	return p, 0
-}
-
-// NOTE: vec must be just 1 byte long here.
-// Mincore returns ENOMEM if any of the pages are unmapped,
-// but we want to know that all of the pages are unmapped.
-// To make these the same, we can only ask about one page
-// at a time. See golang.org/issue/7476.
-var addrspace_vec [1]byte
-
-func addrspace_free(v unsafe.Pointer, n uintptr) bool {
-	for off := uintptr(0); off < n; off += physPageSize {
-		// Use a length of 1 byte, which the kernel will round
-		// up to one physical page regardless of the true
-		// physical page size.
-		errval := 0
-		if mincore(unsafe.Pointer(uintptr(v)+off), 1, &addrspace_vec[0]) < 0 {
-			errval = errno()
-		}
-		if errval == _ENOSYS {
-			// mincore is not available on this system.
-			// Assume the address is available.
-			return true
-		}
-		if errval == _EINVAL {
-			// Address is not a multiple of the physical
-			// page size. Shouldn't happen, but just ignore it.
-			continue
-		}
-		// ENOMEM means unmapped, which is what we want.
-		// Anything else we assume means the pages are mapped.
-		if errval != _ENOMEM {
-			return false
-		}
-	}
-	return true
-}
-
-func mmap_fixed(v unsafe.Pointer, n uintptr, prot, flags, fd int32, offset uintptr) (unsafe.Pointer, int) {
-	p, err := mmap(v, n, prot, flags, fd, offset)
-	// On some systems, mmap ignores v without
-	// MAP_FIXED, so retry if the address space is free.
-	if p != v && addrspace_free(v, n) {
-		if err == 0 {
-			munmap(p, n)
-		}
-		p, err = mmap(v, n, prot, flags|_MAP_FIXED, fd, offset)
-	}
-	return p, err
 }
 
 // Don't split the stack as this method may be invoked without a valid G, which
@@ -143,37 +91,35 @@ func sysUnused(v unsafe.Pointer, n uintptr) {
 	// gets most of the benefit of huge pages while keeping the
 	// number of VMAs under control. With hugePageSize = 2MB, even
 	// a pessimal heap can reach 128GB before running out of VMAs.
-	if sys.HugePageSize != 0 && _MADV_NOHUGEPAGE != 0 {
-		var s uintptr = sys.HugePageSize // division by constant 0 is a compile-time error :(
-
+	if physHugePageSize != 0 && _MADV_NOHUGEPAGE != 0 {
 		// If it's a large allocation, we want to leave huge
 		// pages enabled. Hence, we only adjust the huge page
 		// flag on the huge pages containing v and v+n-1, and
 		// only if those aren't aligned.
 		var head, tail uintptr
-		if uintptr(v)%s != 0 {
+		if uintptr(v)%physHugePageSize != 0 {
 			// Compute huge page containing v.
-			head = uintptr(v) &^ (s - 1)
+			head = uintptr(v) &^ (physHugePageSize - 1)
 		}
-		if (uintptr(v)+n)%s != 0 {
+		if (uintptr(v)+n)%physHugePageSize != 0 {
 			// Compute huge page containing v+n-1.
-			tail = (uintptr(v) + n - 1) &^ (s - 1)
+			tail = (uintptr(v) + n - 1) &^ (physHugePageSize - 1)
 		}
 
 		// Note that madvise will return EINVAL if the flag is
 		// already set, which is quite likely. We ignore
 		// errors.
-		if head != 0 && head+sys.HugePageSize == tail {
+		if head != 0 && head+physHugePageSize == tail {
 			// head and tail are different but adjacent,
 			// so do this in one call.
-			madvise(unsafe.Pointer(head), 2*sys.HugePageSize, _MADV_NOHUGEPAGE)
+			madvise(unsafe.Pointer(head), 2*physHugePageSize, _MADV_NOHUGEPAGE)
 		} else {
 			// Advise the huge pages containing v and v+n-1.
 			if head != 0 {
-				madvise(unsafe.Pointer(head), sys.HugePageSize, _MADV_NOHUGEPAGE)
+				madvise(unsafe.Pointer(head), physHugePageSize, _MADV_NOHUGEPAGE)
 			}
 			if tail != 0 && tail != head {
-				madvise(unsafe.Pointer(tail), sys.HugePageSize, _MADV_NOHUGEPAGE)
+				madvise(unsafe.Pointer(tail), physHugePageSize, _MADV_NOHUGEPAGE)
 			}
 		}
 	}
@@ -193,21 +139,23 @@ func sysUnused(v unsafe.Pointer, n uintptr) {
 }
 
 func sysUsed(v unsafe.Pointer, n uintptr) {
-	if sys.HugePageSize != 0 && _MADV_HUGEPAGE != 0 {
-		// Partially undo the NOHUGEPAGE marks from sysUnused
-		// for whole huge pages between v and v+n. This may
-		// leave huge pages off at the end points v and v+n
-		// even though allocations may cover these entire huge
-		// pages. We could detect this and undo NOHUGEPAGE on
-		// the end points as well, but it's probably not worth
-		// the cost because when neighboring allocations are
-		// freed sysUnused will just set NOHUGEPAGE again.
-		var s uintptr = sys.HugePageSize
+	// Partially undo the NOHUGEPAGE marks from sysUnused
+	// for whole huge pages between v and v+n. This may
+	// leave huge pages off at the end points v and v+n
+	// even though allocations may cover these entire huge
+	// pages. We could detect this and undo NOHUGEPAGE on
+	// the end points as well, but it's probably not worth
+	// the cost because when neighboring allocations are
+	// freed sysUnused will just set NOHUGEPAGE again.
+	sysHugePage(v, n)
+}
 
+func sysHugePage(v unsafe.Pointer, n uintptr) {
+	if physHugePageSize != 0 && _MADV_HUGEPAGE != 0 {
 		// Round v up to a huge page boundary.
-		beg := (uintptr(v) + (s - 1)) &^ (s - 1)
+		beg := (uintptr(v) + (physHugePageSize - 1)) &^ (physHugePageSize - 1)
 		// Round v+n down to a huge page boundary.
-		end := (uintptr(v) + n) &^ (s - 1)
+		end := (uintptr(v) + n) &^ (physHugePageSize - 1)
 
 		if beg < end {
 			madvise(unsafe.Pointer(beg), end-beg, _MADV_HUGEPAGE)
@@ -227,56 +175,16 @@ func sysFault(v unsafe.Pointer, n uintptr) {
 	mmap(v, n, _PROT_NONE, _MAP_ANON|_MAP_PRIVATE|_MAP_FIXED, mmapFD, 0)
 }
 
-func sysReserve(v unsafe.Pointer, n uintptr, reserved *bool) unsafe.Pointer {
-	// On 64-bit, people with ulimit -v set complain if we reserve too
-	// much address space. Instead, assume that the reservation is okay
-	// if we can reserve at least 64K and check the assumption in SysMap.
-	// Only user-mode Linux (UML) rejects these requests.
-	if sys.PtrSize == 8 && uint64(n) > 1<<32 {
-		p, err := mmap_fixed(v, 64<<10, _PROT_NONE, _MAP_ANON|_MAP_PRIVATE, mmapFD, 0)
-		if p != v || err != 0 {
-			if err == 0 {
-				munmap(p, 64<<10)
-			}
-			return nil
-		}
-		munmap(p, 64<<10)
-		*reserved = false
-		return v
-	}
-
+func sysReserve(v unsafe.Pointer, n uintptr) unsafe.Pointer {
 	p, err := mmap(v, n, _PROT_NONE, _MAP_ANON|_MAP_PRIVATE, mmapFD, 0)
 	if err != 0 {
 		return nil
 	}
-	*reserved = true
 	return p
 }
 
-func sysMap(v unsafe.Pointer, n uintptr, reserved bool, sysStat *uint64) {
+func sysMap(v unsafe.Pointer, n uintptr, sysStat *uint64) {
 	mSysStatInc(sysStat, n)
-
-	// On 64-bit, we don't actually have v reserved, so tread carefully.
-	if !reserved {
-		flags := int32(_MAP_ANON | _MAP_PRIVATE)
-		if GOOS == "dragonfly" {
-			// TODO(jsing): For some reason DragonFly seems to return
-			// memory at a different address than we requested, even when
-			// there should be no reason for it to do so. This can be
-			// avoided by using MAP_FIXED, but I'm not sure we should need
-			// to do this - we do not on other platforms.
-			flags |= _MAP_FIXED
-		}
-		p, err := mmap_fixed(v, n, _PROT_READ|_PROT_WRITE, flags, mmapFD, 0)
-		if err == _ENOMEM {
-			throw("runtime: out of memory")
-		}
-		if p != v || err != 0 {
-			print("runtime: address space conflict: map(", v, ") = ", p, " (err ", err, ")\n")
-			throw("runtime: address space conflict")
-		}
-		return
-	}
 
 	if GOOS == "aix" {
 		// AIX does not allow mapping a range that is already mapped.

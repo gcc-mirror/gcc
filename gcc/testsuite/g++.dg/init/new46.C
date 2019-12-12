@@ -37,7 +37,7 @@ char* fn2_2_x () {
 
 template <size_t M, size_t N>
 char* fn2_2 () {
-    return new char [M][N];   // { dg-error "size of array is too large" }
+    return new char [M][N];   // { dg-error "size .\[0-9\]+. of array exceeds maximum object size" }
 }
 
 // Not instantiated (must not be diagnosed).
@@ -50,7 +50,7 @@ T* fn3_x () {
 template <class T>
 T* fn3 () {
     const size_t a = sizeof (T);
-    return new T [a];         // { dg-error "size of array is too large" }
+    return new T [a];         // { dg-error "size .\[0-9\]+. of array exceeds maximum object size" }
 }
 
 

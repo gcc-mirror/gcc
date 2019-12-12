@@ -1,0 +1,1308 @@
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="status.iso.2020" xreflabel="Status C++ 2020">
+<?dbhtml filename="status_iso_cxx2020.html"?>
+
+<info><title>C++ 202a</title>
+  <keywordset>
+    <keyword>ISO C++</keyword>
+    <keyword>2020</keyword>
+  </keywordset>
+</info>
+
+<para>
+In this implementation the <literal>-std=gnu++2a</literal> or
+<literal>-std=c++2a</literal> flag must be used to enable language
+and library
+features. See <link linkend="manual.intro.using.flags">dialect</link>
+options. The pre-defined symbol
+<constant>__cplusplus</constant> is used to check for the
+presence of the required flag.
+</para>
+
+<para>
+This section describes the C++20 and library TS support in mainline GCC SVN,
+not in any particular release.
+</para>
+
+<para>
+The following table lists new library features that have been accepted into
+the C++2a working draft. The "Proposal" column provides a link to the
+ISO C++ committee proposal that describes the feature, while the "Status"
+column indicates the first version of GCC that contains an implementation of
+this feature (if it has been implemented).
+The "SD-6 Feature Test" column shows the corresponding macro or header from
+<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations">SD-6:
+Feature-testing recommendations for C++</link>.
+</para>
+
+<table frame="all" xml:id="table.cxx20_status">
+<title>C++ 2020 Implementation Status</title>
+
+<tgroup cols="4" align="left" colsep="0" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+  <thead>
+    <row>
+      <entry>Library Feature</entry>
+      <entry>Proposal</entry>
+      <entry>Status</entry>
+      <entry>SD-6 Feature Test</entry>
+    </row>
+  </thead>
+
+  <tbody>
+
+    <row>
+      <entry>  Endian just Endian </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0463r1.html">
+	P0463R1
+	</link>
+      </entry>
+      <entry align="center"> 8.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Extending <code>make_shared</code> to Support Arrays </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0674r1.html">
+	P0674R1
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  Floating Point Atomic </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0020r6.html">
+	P0020R6
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  C++ Synchronized Buffered Ostream </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0053r7.pdf">
+	P0053R7
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  Add constexpr modifiers to functions in <code>&lt;algorithm&gt;</code> and <code>&lt;utility&gt;</code> Headers </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0202r3.html">
+	P0202R3
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_lib_constexpr_algorithms &gt;= 201703L</code> </entry>
+    </row>
+
+    <row>
+      <entry>  Constexpr for <code>std::complex</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0415r1.html">
+	P0415R1
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  Make <code>std::memory_order</code> a scoped enumeration </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0439r0.html">
+	P0439R0
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  String Prefix and Suffix Checking </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0457r2.html">
+	P0457R2
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  Transformation Trait <code>remove_cvref</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0550r2.pdf">
+	P0550R2
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  <code>nodiscard</code> in the Library </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0600r1.pdf">
+	P0600R1
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  de-pessimize legacy algorithms with <code>std::move</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0616r0.pdf">
+	P0616R0
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  Utility to convert a pointer to a raw pointer </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0653r2.html">
+	P0653R2
+	</link>
+      </entry>
+      <entry align="center"> 8.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Atomic <code>shared_ptr</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0718r2.html">
+	P0718R2
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Deprecate POD </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0767r1.html">
+	P0767R1
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Library Support for the Spaceship (Comparison) Operator </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0768r1.pdf">
+	P0768R1
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  Treating Unnecessary <code>decay</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0777r1.pdf">
+	P0777R1
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  <code>&lt;span&gt;</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0122r7.pdf">
+	P0122R7
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_lib_span &gt;= 201803L</code> </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Extending chrono to Calendars and Time Zones </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0355r7.html">
+	P0355R7
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Thou Shalt Not Specialize std Function Templates! </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0551r3.pdf">
+	P0551R3
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Manipulators for C++ Synchronized Buffered Ostream </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0753r2.pdf">
+	P0753R2
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  <code>&lt;version&gt;</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0754r2.pdf">
+	P0754R2
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Comparing Unordered Containers </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0809r0.pdf">
+	P0809R0
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  Constexpr iterator requirements </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0858r0.html">
+	P0858R0
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry> <code>__cpp_lib_string_view &gt;= 201803L</code>
+      and <code>__cpp_lib_array_constexpr &gt;= 201803L</code> </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Symmetry for spaceship </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0905r1.html">
+	P0905R1
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  <code>string::reserve</code> Should Not Shrink </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0966r1.html">
+	P0966R1
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  Atomic Ref </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0019r8.html">
+	P0019R8
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_lib_atomic_ref &gt;= 201806L</code> </entry>
+    </row>
+
+    <row>
+      <entry>  Checking for Existence of an Element in Associative Containers </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0458r2.html">
+	P0458R2
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  LWG 2511: guaranteed copy elision for piecewise construction </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0475r1.html">
+	P0475R1
+	</link>
+      </entry>
+      <entry align="center"> 7.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Bit-casting object representations </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0476r2.html">
+	P0476R2
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  The Curious Case of Padding Bits, Featuring Atomic Compare-and-Exchange </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0528r3.html">
+	P0528R3
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Support for contract based programming in C++ </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0542r5.html">
+	P0542R5
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  Integral power-of-2 operations </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0556r3.html">
+	P0556R3
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Reviewing Deprecated Facilities of C++17 for C++20 </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0619r4.html">
+	P0619R4
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  Improving the Return Value of Erase-Like Algorithms </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0646r1.pdf">
+	P0646R1
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry> <code>__cpp_lib_list_remove_return_type &gt;= 201806L</code> </entry>
+    </row>
+
+    <row>
+      <entry>  Efficient sized delete for variable sized classes </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0722r3.html">
+	P0722R3
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry> <code>__cpp_lib_destroying_delete &gt;= 201806L</code> </entry>
+    </row>
+
+    <row>
+      <entry>  Implicit conversion traits and utility functions </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0758r1.html">
+	P0758R1
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  <code>fpos</code> Requirements </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0759r1.html">
+	P0759R1
+	</link>
+      </entry>
+      <entry align="center"> Note 1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Add <code>shift</code> to <code>&lt;algorithm&gt;</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0769r2.pdf">
+	P0769R2
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Standard Library Specification in a Concepts and Contracts World </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0788r3.pdf">
+	P0788R3
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  Constexpr for <code>swap</code> and swap related functions </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0879r0.html">
+	P0879R0
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_lib_constexpr_algorithms &gt;= 201806L</code> </entry>
+    </row>
+
+    <row>
+      <entry>  The <code>identity</code> metafunction </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0887r1.pdf">
+	P0887R1
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  <code>explicit(bool)</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0892r2.html">
+	P0892R2
+	</link>
+      </entry>
+      <entry align="center"> Note 1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  Standard Library Concepts </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0898r3.pdf">
+	P0898R3
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_lib_concepts &gt;= 201806L</code> </entry>
+    </row>
+
+    <row>
+      <entry>  Eradicating unnecessarily explicit default constructors from the standard library </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0935r0.html">
+	P0935R0
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  Integrating feature-test macros into the C++ WD </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0941r2.html">
+	P0941R2
+	</link>
+      </entry>
+      <entry align="center"> 5.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  <code>constexpr</code> comparison operators for <code>std::array</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1023r0.pdf">
+	P1023R0
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Update The Reference To The Unicode Standard </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1025r1.html">
+	P1025R1
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Consistency improvements for <code>&lt;=&gt;</code> and other comparison operators </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1120r0.html">
+	P1120R0
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  <code>unwrap_ref_decay</code> and <code>unwrap_reference</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0318r1.pdf">
+	P0318R1
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  Simplified partial function application </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0356r5.html">
+	P0356R5
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry> <code>__cpp_lib_bind_front &gt;= 201811L</code> </entry>
+    </row>
+
+    <row>
+      <entry>  <code>reference_wrapper</code> for incomplete types </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0357r3.html">
+	P0357R3
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  <code>char8_t</code>: A type for UTF-8 characters and strings </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0482r6.html">
+	P0482R6
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry> <code>__cpp_lib_char8_t &gt;= 201811L</code> </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Fixing <code>operator&gt;&gt;(basic_istream&amp;, CharT*)</code> (LWG 2499) </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0487r1.html">
+	P0487R1
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  Utility functions to implement uses-allocator construction </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0591r4.pdf">
+	P0591R4
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry>
+        <code>std::scoped_allocator_adaptor</code> changes missing in 9.1.0
+      </entry>
+    </row>
+
+    <row>
+      <entry>  P0595R2 <code>std::is_constant_evaluated()</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0595r2.html">
+	P0595R2
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  <code>variant</code> and <code>optional</code> should propagate copy/move triviality </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0602r4.html">
+	P0602R4
+	</link>
+      </entry>
+      <entry align="center"> 8.3 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  A sane <code>variant</code> converting constructor </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0608r3.html">
+	P0608R3
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  <code>visit&lt;R&gt;</code>: Explicit Return Type for <code>visit</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0655r1.pdf">
+	P0655R1
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  <code>std::function</code> move constructor should be <code>noexcept</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0771r1.pdf">
+	P0771R1
+	</link>
+      </entry>
+      <entry align="center"> 7.2 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  The One Ranges Proposal </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0896r4.pdf">
+	P0896R4
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  P0899R1 - LWG 3016 is not a defect </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0899r1.html">
+	P0899R1
+	</link>
+      </entry>
+      <entry align="center"> 7.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Heterogeneous lookup for unordered containers </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0919r3.html">
+	P0919R3
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  <code>&lt;chrono&gt;</code> <code>zero()</code>, <code>min()</code>, and <code>max()</code> should be <code>noexcept</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0972r0.pdf">
+	P0972R0
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  Constexpr in <code>std::pointer_traits</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1006r1.pdf">
+	P1006R1
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  <code>std::assume_aligned</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1007r3.pdf">
+	P1007R3
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Smart pointer creation with default initialization </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1020r1.html">
+	P1020R1
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Misc constexpr bits </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1032r1.html">
+	P1032R1
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  Should Span be Regular? </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1085r2.md">
+	P1085R2
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_lib_span &gt;= 201902L</code> </entry>
+    </row>
+
+    <row>
+      <entry>  Editorial Guidance for merging P0019r8 and P0528r3 </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1123r0.html">
+	P1123R0
+	</link>
+      </entry>
+      <entry align="center"> Note 1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Cleaning up Clause 20 </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1148r0.pdf">
+	P1148R0
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  Make stateful allocator propagation more consistent for <code>operator+(basic_string)</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1165r1.html">
+	P1165R1
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  Adopt Consistent Container Erasure from Library Fundamentals 2 for C++20 </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1209r0.html">
+	P1209R0
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry> <code>__cpp_lib_erase_if &gt;= 201811L</code> </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Completing the Rebase of Library Fundamentals, Version 3, Working Draft </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1210r0.html">
+	P1210R0
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Alternative Wording for P0907R4 Signed Integers are Two's Complement </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1236r1.html">
+	P1236R1
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>  Remove CommonReference requirement from StrictWeakOrdering (a.k.a Fixing Relations) </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1248r1.html">
+	P1248R1
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
+      <entry>  Improving Completeness Requirements for Type Traits </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1285r0.pdf">
+	P1285R0
+	</link>
+      </entry>
+      <entry align="center"> Partial </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  Well-behaved interpolation for numbers and pointers </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0811r3.html">
+	P0811R3
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry> <code>__cpp_lib_interpolate &gt;= 201902L</code> </entry>
+    </row>
+
+    <row>
+      <entry>  Missing feature test macros </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1353r0.html">
+	P1353R0
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>
+        <classname>polymorphic_allocator&lt;&gt;</classname>
+        as a vocabulary type
+      </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0339r6.pdf">
+        P0339R6
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> Making std::underlying_type SFINAE-friendly </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0340r3.html">
+        P0340R3
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+        I Stream, You Stream, We All Stream for
+        <classname>istream_iterator</classname>
+      </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0738r2.html">
+        P0738R2
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>
+        Mandating the Standard Library:
+        Clause 16 - Language support library
+      </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1458r1.pdf">
+        P1458R1
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry> Note 1 </entry>
+    </row>
+
+    <row>
+      <entry>
+        Mandating the Standard Library:
+        Clause 18 - Diagnostics library
+      </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1458r1.pdf">
+        P1459R1
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry> Note 1 </entry>
+    </row>
+
+    <row>
+      <entry>
+        Mandating the Standard Library:
+        Clause 20 - Strings library
+      </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1462r1.html">
+        P1462R1
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry> Note 1 </entry>
+    </row>
+
+    <row>
+      <entry>
+        Mandating the Standard Library:
+        Clause 21 - Containers library
+      </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1463r1.pdf">
+        P1463R1
+	</link>
+      </entry>
+      <entry align="center"> 10 </entry>
+      <entry/>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+        Mandating the Standard Library:
+        Clause 22 - Iterators library
+      </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1464r1.pdf">
+        P1464R1
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> Make <code>create_directory()</code> Intuitive </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1164r1.pdf">
+        P1164R1
+	</link>
+      </entry>
+      <entry align="center"> 8.3 </entry>
+      <entry> Treated as a DR for C++17 </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+        Target Vectorization Policies from Parallelism V2 TS to C++20
+      </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1001r2.html">
+        P1001R2
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> Signed ssize() functions, unsigned size() functions </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1227r2.html">
+        P1227R2
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> Ranges Design Cleanup </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1252r2.pdf">
+        P1252R2
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>
+        Usability Enhancements for <classname>std::span</classname>
+      </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1024r3.pdf">
+        P1024R3
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_lib_span &gt;= 201902L</code> </entry>
+    </row>
+
+    <row>
+      <entry> Traits for [Un]bounded Arrays </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1357r1.pdf">
+        P1357R1
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry> <code>__cpp_lib_bounded_array_traits &gt;= 201902L</code> </entry>
+    </row>
+
+    <row>
+      <entry> std::to_array </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0325r4.html">
+	P0325R4
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_lib_to_array &gt;= 201907L</code> </entry>
+    </row>
+
+    <row>
+      <entry> Bit operations </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0553r4.html">
+	P0553R4
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_lib_bitops &gt;= 201907L</code> </entry>
+    </row>
+
+    <row>
+      <entry> Mathematical constants </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0631r8.pdf">
+	P0631R8
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_lib_math_constants &gt;= 201907L</code> </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> Layout-compatibility and pointer-interconvertibility traits </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0466r5.pdf">
+	P0466R5
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry>
+        <code>__cpp_lib_is_layout_compatible &gt;= 201907L</code>,
+        <code>__cpp_lib_is_layout_interconvertible &gt;= 201907L</code>,
+      </entry>
+    </row>
+
+    <row>
+      <entry> std::stop_token and std::jthread </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0660r10.pdf">
+	P0660R10
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_lib_jthread &gt;= 201907L</code> </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> Text formatting </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0645r10.html">
+	P0645R10
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry>
+        <code>__cpp_lib_format &gt;= 201907L</code>,
+      </entry>
+    </row>
+
+    <row>
+      <entry> constexpr std::invoke and related utilities </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1065r2.html">
+	P1065R2
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_lib_constexpr_invoke &gt;= 201907L</code> </entry>
+    </row>
+
+    <row>
+      <entry> constexpr std::allocator and related utilities </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0784r7.html">
+	P0784R7
+	</link>
+      </entry>
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_constexpr_dynamic_alloc &gt;= 201907L</code> </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> Atomic waiting and notifying, std::semaphore, std::latch and std::barrier </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1135r6.html">
+	P1135R6
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry>
+        <code>__cpp_lib_atomic_lock_free_type_aliases &gt;= 201907L</code> in &lt;atomic&gt;,
+        <code>__cpp_lib_atomic_flag_test &gt;= 201907L</code> in &lt;atomic&gt;,
+        <code>__cpp_lib_atomic_wait &gt;= 201907L</code> in &lt;atomic&gt;,
+        <code>__cpp_lib_semaphore &gt;= 201907L</code> in &lt;semaphore&gt;,
+        <code>__cpp_lib_latch &gt;= 201907L</code> in &lt;latch&gt;,
+        <code>__cpp_lib_barrier &gt;= 201907L</code> in &lt;barrier&gt;
+      </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> std::source_location </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1208r6.pdf">
+	P1208R6
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry>
+        <code>__cpp_lib_source_location &gt;= 201907L</code>,
+      </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> Adding &lt;=&gt; to the standard library </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1614r2.html">
+	P1614R2
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry>
+        <code>__cpp_lib_spaceship &gt;= 201907L</code>,
+      </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> Efficient access to std::basic_stringbuf's Buffer </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0408r7.pdf">
+	P0408R7
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+  </tbody>
+</tgroup>
+</table>
+
+<para>
+Note 1: The changes in the proposal either do not affect the code in libstdc++,
+or the changes are not required for conformance.
+</para>
+
+
+<section xml:id="iso.2020.specific" xreflabel="Implementation Specific"><info><title>Implementation Specific Behavior</title></info>
+
+   <para>For behaviour which is also specified by previous standards,
+      see <link linkend="iso.1998.specific">C++ 1998/2003 Implementation
+      Specific Behavior</link>, <link linkend="iso.2011.specific">C++
+      2011 Implementation Specific Behavior</link> and <link
+      linkend="iso.2017.specific">C++ 2017 Implementation Specific
+      Behavior</link>.
+      This section only documents behaviour which is new in the 202a draft.
+   </para>
+
+
+</section>
+
+</section>

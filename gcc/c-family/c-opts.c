@@ -1,5 +1,5 @@
 /* C/ObjC/C++ command line option handling.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
 This file is part of GCC.
@@ -117,6 +117,7 @@ static void set_std_c89 (int, int);
 static void set_std_c99 (int);
 static void set_std_c11 (int);
 static void set_std_c17 (int);
+static void set_std_c2x (int);
 static void check_deps_environment_vars (void);
 static void handle_deferred_opts (void);
 static void sanitize_cpp_opts (void);
@@ -164,13 +165,16 @@ c_common_option_lang_mask (void)
 /* Diagnostic finalizer for C/C++/Objective-C/Objective-C++.  */
 static void
 c_diagnostic_finalizer (diagnostic_context *context,
-			diagnostic_info *diagnostic)
+			diagnostic_info *diagnostic,
+			diagnostic_t)
 {
+  char *saved_prefix = pp_take_prefix (context->printer);
+  pp_set_prefix (context->printer, NULL);
   diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind);
   /* By default print macro expansion contexts in the diagnostic
      finalizer -- for tokens resulting from macro expansion.  */
   virt_loc_aware_diagnostic_finalizer (context, diagnostic);
-  pp_destroy_prefix (context->printer);
+  pp_set_prefix (context->printer, saved_prefix);
   pp_flush (context->printer);
 }
 
@@ -224,7 +228,7 @@ c_common_init_options (unsigned int decoded_options_count,
   parse_in = cpp_create_reader (c_dialect_cxx () ? CLK_GNUCXX: CLK_GNUC89,
 				ident_hash, line_table);
   cb = cpp_get_callbacks (parse_in);
-  cb->error = c_cpp_error;
+  cb->diagnostic = c_cpp_diagnostic;
 
   cpp_opts = cpp_get_options (parse_in);
   cpp_opts->dollars_in_ident = DOLLARS_IN_IDENTIFIERS;
@@ -262,7 +266,7 @@ c_common_init_options (unsigned int decoded_options_count,
    form of an -f or -W option was given.  Returns false if the switch was
    invalid, true if valid.  Use HANDLERS in recursive handle_option calls.  */
 bool
-c_common_handle_option (size_t scode, const char *arg, int value,
+c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 			int kind, location_t loc,
 			const struct cl_option_handlers *handlers)
 {
@@ -322,10 +326,11 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       else
 	{
 	  if (quote_chain_split)
-	    error ("-I- specified twice");
+	    error ("%<-I-%> specified twice");
 	  quote_chain_split = true;
 	  split_quote_chain ();
-	  inform (input_location, "obsolete option -I- used, please use -iquote instead");
+	  inform (input_location, "obsolete option %<-I-%> used, "
+		  "please use %<-iquote%> instead");
 	}
       break;
 
@@ -379,16 +384,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       /* ??? Don't add new options here. Use LangEnabledBy in c.opt.  */
 
       cpp_opts->warn_num_sign_change = value;
-      break;
-
-    case OPT_Walloca_larger_than_:
-      if (!value)
-	inform (loc, "-Walloca-larger-than=0 is meaningless");
-      break;
-
-    case OPT_Wvla_larger_than_:
-      if (!value)
-	inform (loc, "-Wvla-larger-than=0 is meaningless");
       break;
 
     case OPT_Wunknown_pragmas:
@@ -467,6 +462,10 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       cpp_opts->extended_identifiers = value;
       break;
 
+    case OPT_fmax_include_depth_:
+	cpp_opts->max_include_depth = value;
+      break;
+
     case OPT_foperator_names:
       cpp_opts->operator_names = value;
       break;
@@ -502,12 +501,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	cpp_opts->track_macro_expansion = value;
       else
 	cpp_opts->track_macro_expansion = 2;
-      break;
-
-    case OPT_frepo:
-      flag_use_repository = value;
-      if (value)
-	flag_implicit_templates = 0;
       break;
 
     case OPT_ftabstop_:
@@ -689,6 +682,16 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	set_std_c17 (false /* ISO */);
       break;
 
+    case OPT_std_c2x:
+      if (!preprocessing_asm_p)
+	set_std_c2x (true /* ISO */);
+      break;
+
+    case OPT_std_gnu2x:
+      if (!preprocessing_asm_p)
+	set_std_c2x (false /* ISO */);
+      break;
+
     case OPT_trigraphs:
       cpp_opts->trigraphs = 1;
       break;
@@ -793,14 +796,13 @@ c_common_post_options (const char **pfilename)
      support.  */
   if (c_dialect_cxx ())
     {
-      if (flag_excess_precision_cmdline == EXCESS_PRECISION_STANDARD)
-	sorry ("-fexcess-precision=standard for C++");
-      flag_excess_precision_cmdline = EXCESS_PRECISION_FAST;
+      if (flag_excess_precision == EXCESS_PRECISION_STANDARD)
+	sorry ("%<-fexcess-precision=standard%> for C++");
+      flag_excess_precision = EXCESS_PRECISION_FAST;
     }
-  else if (flag_excess_precision_cmdline == EXCESS_PRECISION_DEFAULT)
-    flag_excess_precision_cmdline = (flag_iso
-				     ? EXCESS_PRECISION_STANDARD
-				     : EXCESS_PRECISION_FAST);
+  else if (flag_excess_precision == EXCESS_PRECISION_DEFAULT)
+    flag_excess_precision = (flag_iso ? EXCESS_PRECISION_STANDARD
+				      : EXCESS_PRECISION_FAST);
 
   /* ISO C restricts floating-point expression contraction to within
      source-language expressions (-ffp-contract=on, currently an alias
@@ -824,12 +826,18 @@ c_common_post_options (const char **pfilename)
   else
     flag_permitted_flt_eval_methods = PERMITTED_FLT_EVAL_METHODS_C11;
 
+  /* C2X Annex F does not permit certain built-in functions to raise
+     "inexact".  */
+  if (flag_isoc2x)
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 flag_fp_int_builtin_inexact, 0);
+
   /* By default we use C99 inline semantics in GNU99 or C99 mode.  C99
      inline semantics are not supported in GNU89 or C89 mode.  */
   if (flag_gnu89_inline == -1)
     flag_gnu89_inline = !flag_isoc99;
   else if (!flag_gnu89_inline && !flag_isoc99)
-    error ("-fno-gnu89-inline is only supported in GNU99 or C99 mode");
+    error ("%<-fno-gnu89-inline%> is only supported in GNU99 or C99 mode");
 
   /* Default to ObjC sjlj exception handling if NeXT runtime.  */
   if (flag_objc_sjlj_exceptions < 0)
@@ -839,9 +847,9 @@ c_common_post_options (const char **pfilename)
 
   /* If -ffreestanding, -fno-hosted or -fno-builtin then disable
      pattern recognition.  */
-  if (!global_options_set.x_flag_tree_loop_distribute_patterns
-      && flag_no_builtin)
-    flag_tree_loop_distribute_patterns = 0;
+  if (flag_no_builtin)
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 flag_tree_loop_distribute_patterns, 0);
 
   /* -Woverlength-strings is off by default, but is enabled by -Wpedantic.
      It is never enabled in C++, as the minimum limit is not normative
@@ -875,17 +883,17 @@ c_common_post_options (const char **pfilename)
   if (!warn_format)
     {
       warning (OPT_Wformat_y2k,
-	       "-Wformat-y2k ignored without -Wformat");
+	       "%<-Wformat-y2k%> ignored without %<-Wformat%>");
       warning (OPT_Wformat_extra_args,
-	       "-Wformat-extra-args ignored without -Wformat");
+	       "%<-Wformat-extra-args%> ignored without %<-Wformat%>");
       warning (OPT_Wformat_zero_length,
-	       "-Wformat-zero-length ignored without -Wformat");
+	       "%<-Wformat-zero-length%> ignored without %<-Wformat%>");
       warning (OPT_Wformat_nonliteral,
-	       "-Wformat-nonliteral ignored without -Wformat");
+	       "%<-Wformat-nonliteral%> ignored without %<-Wformat%>");
       warning (OPT_Wformat_contains_nul,
-	       "-Wformat-contains-nul ignored without -Wformat");
+	       "%<-Wformat-contains-nul%> ignored without %<-Wformat%>");
       warning (OPT_Wformat_security,
-	       "-Wformat-security ignored without -Wformat");
+	       "%<-Wformat-security%> ignored without %<-Wformat%>");
     }
 
   /* -Wimplicit-function-declaration is enabled by default for C99.  */
@@ -895,6 +903,10 @@ c_common_post_options (const char **pfilename)
   /* -Wimplicit-int is enabled by default for C99.  */
   if (warn_implicit_int == -1)
     warn_implicit_int = flag_isoc99;
+
+  /* -Wold-style-definition is enabled by default for C2X.  */
+  if (warn_old_style_definition == -1)
+    warn_old_style_definition = flag_isoc2x;
 
   /* -Wshift-overflow is enabled by default in C99 and C++11 modes.  */
   if (warn_shift_overflow == -1)
@@ -906,8 +918,17 @@ c_common_post_options (const char **pfilename)
 				 && (cxx_dialect >= cxx11 || flag_isoc99));
 
   /* -Wregister is enabled by default in C++17.  */
-  if (!global_options_set.x_warn_register)
-    warn_register = cxx_dialect >= cxx17;
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set, warn_register,
+		       cxx_dialect >= cxx17);
+
+  /* -Wcomma-subscript is enabled by default in C++20.  */
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       warn_comma_subscript,
+		       cxx_dialect >= cxx2a && warn_deprecated);
+
+  /* -Wvolatile is enabled by default in C++20.  */
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set, warn_volatile,
+		       cxx_dialect >= cxx2a && warn_deprecated);
 
   /* Declone C++ 'structors if -Os.  */
   if (flag_declone_ctor_dtor == -1)
@@ -921,7 +942,7 @@ c_common_post_options (const char **pfilename)
 
   /* Change flag_abi_version to be the actual current ABI level, for the
      benefit of c_cpp_builtins, and to make comparison simpler.  */
-  const int latest_abi_version = 13;
+  const int latest_abi_version = 14;
   /* Generate compatibility aliases for ABI v11 (7.1) by default.  */
   const int abi_compat_default = 11;
 
@@ -941,12 +962,13 @@ c_common_post_options (const char **pfilename)
       warn_abi_version = latest_abi_version;
       if (flag_abi_version == latest_abi_version)
 	{
-	  if (warning (OPT_Wabi, "-Wabi won't warn about anything"))
+	  auto_diagnostic_group d;
+	  if (warning (OPT_Wabi, "%<-Wabi%> won%'t warn about anything"))
 	    {
-	      inform (input_location, "-Wabi warns about differences "
+	      inform (input_location, "%<-Wabi%> warns about differences "
 		      "from the most up-to-date ABI, which is also used "
 		      "by default");
-	      inform (input_location, "use e.g. -Wabi=11 to warn about "
+	      inform (input_location, "use e.g. %<-Wabi=11%> to warn about "
 		      "changes from GCC 7");
 	    }
 	  flag_abi_compat_version = abi_compat_default;
@@ -958,12 +980,13 @@ c_common_post_options (const char **pfilename)
   /* By default, enable the new inheriting constructor semantics along with ABI
      11.  New and old should coexist fine, but it is a change in what
      artificial symbols are generated.  */
-  if (!global_options_set.x_flag_new_inheriting_ctors)
-    flag_new_inheriting_ctors = abi_version_at_least (11);
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       flag_new_inheriting_ctors,
+		       abi_version_at_least (11));
 
   /* For GCC 7, only enable DR150 resolution by default if -std=c++17.  */
-  if (!global_options_set.x_flag_new_ttp)
-    flag_new_ttp = (cxx_dialect >= cxx17);
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set, flag_new_ttp,
+		       cxx_dialect >= cxx17);
 
   if (cxx_dialect >= cxx11)
     {
@@ -993,6 +1016,10 @@ c_common_post_options (const char **pfilename)
   if (flag_sized_deallocation == -1)
     flag_sized_deallocation = (cxx_dialect >= cxx14);
 
+  /* char8_t support is new in C++2A.  */
+  if (flag_char8_t == -1)
+    flag_char8_t = (cxx_dialect >= cxx2a);
+
   if (flag_extern_tls_init)
     {
       if (!TARGET_SUPPORTS_ALIASES || !SUPPORTS_WEAK)
@@ -1013,9 +1040,19 @@ c_common_post_options (const char **pfilename)
   if (warn_return_type == -1 && c_dialect_cxx ())
     warn_return_type = 1;
 
+  /* C++2a is the final version of concepts. We still use -fconcepts
+     to know when concepts are enabled. Note that -fconcepts-ts can
+     be used to include additional features, although modified to
+     work with the standard.  */
+  if (cxx_dialect >= cxx2a || flag_concepts_ts)
+    flag_concepts = 1;
+  else if (flag_concepts)
+    /* For -std=c++17 -fconcepts, imply -fconcepts-ts.  */
+    flag_concepts_ts = 1;
+
   if (num_in_fnames > 1)
-    error ("too many filenames given.  Type %s --help for usage",
-	   progname);
+    error ("too many filenames given; type %<%s %s%> for usage",
+	   progname, "--help");
 
   if (flag_preprocess_only)
     {
@@ -1049,7 +1086,7 @@ c_common_post_options (const char **pfilename)
 	     debug formats we warn here and refuse to load any PCH files.  */
 	  if (write_symbols != NO_DEBUG && write_symbols != DWARF2_DEBUG)
 	    warning (OPT_Wdeprecated,
-		     "the \"%s\" debug format cannot be used with "
+		     "the %qs debug format cannot be used with "
 		     "pre-compiled headers", debug_type_names[write_symbols]);
 	}
       else if (write_symbols != NO_DEBUG && write_symbols != DWARF2_DEBUG)
@@ -1269,18 +1306,15 @@ check_deps_environment_vars (void)
 static void
 handle_deferred_opts (void)
 {
-  size_t i;
-  struct deps *deps;
-
   /* Avoid allocating the deps buffer if we don't need it.
      (This flag may be true without there having been -MT or -MQ
      options, but we'll still need the deps buffer.)  */
   if (!deps_seen)
     return;
 
-  deps = cpp_get_deps (parse_in);
+  mkdeps *deps = cpp_get_deps (parse_in);
 
-  for (i = 0; i < deferred_count; i++)
+  for (size_t i = 0; i < deferred_count; i++)
     {
       struct deferred_opt *opt = &deferred_opts[i];
 
@@ -1297,7 +1331,8 @@ sanitize_cpp_opts (void)
   /* If we don't know what style of dependencies to output, complain
      if any other dependency switches have been given.  */
   if (deps_seen && cpp_opts->deps.style == DEPS_NONE)
-    error ("to generate dependencies you must specify either -M or -MM");
+    error ("to generate dependencies you must specify either %<-M%> "
+	   "or %<-MM%>");
 
   /* -dM and dependencies suppress normal output; do it here so that
      the last -d[MDN] switch overrides earlier ones.  */
@@ -1320,7 +1355,7 @@ sanitize_cpp_opts (void)
       flag_no_line_commands = 1;
     }
   else if (cpp_opts->deps.missing_files)
-    error ("-MG may only be used with -M or -MM");
+    error ("%<-MG%> may only be used with %<-M%> or %<-MM%>");
 
   cpp_opts->unsigned_char = !flag_signed_char;
   cpp_opts->stdc_0_in_system_headers = STDC_0_IN_SYSTEM_HEADERS;
@@ -1353,9 +1388,10 @@ sanitize_cpp_opts (void)
   if (cpp_opts->directives_only)
     {
       if (cpp_warn_unused_macros)
-	error ("-fdirectives-only is incompatible with -Wunused_macros");
+	error ("%<-fdirectives-only%> is incompatible "
+	       "with %<-Wunused-macros%>");
       if (cpp_opts->traditional)
-	error ("-fdirectives-only is incompatible with -traditional");
+	error ("%<-fdirectives-only%> is incompatible with %<-traditional%>");
     }
 }
 
@@ -1385,22 +1421,17 @@ c_finish_options (void)
 {
   if (!cpp_opts->preprocessed)
     {
-      size_t i;
+      const line_map_ordinary *bltin_map
+	= linemap_check_ordinary (linemap_add (line_table, LC_RENAME, 0,
+					       _("<built-in>"), 0));
+      cb_file_change (parse_in, bltin_map);
 
-      cb_file_change (parse_in,
-		      linemap_check_ordinary (linemap_add (line_table,
-							   LC_RENAME, 0,
-							   _("<built-in>"),
-							   0)));
       /* Make sure all of the builtins about to be declared have
-	 BUILTINS_LOCATION has their source_location.  */
-      source_location builtins_loc = BUILTINS_LOCATION;
-      cpp_force_token_locations (parse_in, &builtins_loc);
+	 BUILTINS_LOCATION has their location_t.  */
+      cpp_force_token_locations (parse_in, BUILTINS_LOCATION);
 
       cpp_init_builtins (parse_in, flag_hosted);
       c_cpp_builtins (parse_in);
-
-      cpp_stop_forcing_token_locations (parse_in);
 
       /* We're about to send user input to cpplib, so make it warn for
 	 things that we previously (when we sent it internal definitions)
@@ -1413,11 +1444,14 @@ c_finish_options (void)
 	 their acceptance on the -std= setting.  */
       cpp_opts->warn_dollars = (cpp_opts->cpp_pedantic && !cpp_opts->c99);
 
-      cb_file_change (parse_in,
-		      linemap_check_ordinary (linemap_add (line_table, LC_RENAME, 0,
-							   _("<command-line>"), 0)));
+      const line_map_ordinary *cmd_map
+	= linemap_check_ordinary (linemap_add (line_table, LC_RENAME, 0,
+					       _("<command-line>"), 0));
+      cb_file_change (parse_in, cmd_map);
 
-      for (i = 0; i < deferred_count; i++)
+      /* All command line defines must have the same location.  */
+      cpp_force_token_locations (parse_in, cmd_map->start_location);
+      for (size_t i = 0; i < deferred_count; i++)
 	{
 	  struct deferred_opt *opt = &deferred_opts[i];
 
@@ -1434,35 +1468,30 @@ c_finish_options (void)
 	    }
 	}
 
-      /* Start the main input file, if the debug writer wants it. */
-      if (debug_hooks->start_end_main_source_file
-	  && !flag_preprocess_only)
-	(*debug_hooks->start_source_file) (0, this_input_filename);
-
-      /* Handle -imacros after -D and -U.  */
-      for (i = 0; i < deferred_count; i++)
-	{
-	  struct deferred_opt *opt = &deferred_opts[i];
-
-	  if (opt->code == OPT_imacros
-	      && cpp_push_include (parse_in, opt->arg))
-	    {
-	      /* Disable push_command_line_include callback for now.  */
-	      include_cursor = deferred_count + 1;
-	      cpp_scan_nooutput (parse_in);
-	    }
-	}
+      cpp_stop_forcing_token_locations (parse_in);
     }
-  else
-    {
-      if (cpp_opts->directives_only)
-	cpp_init_special_builtins (parse_in);
+  else if (cpp_opts->directives_only)
+    cpp_init_special_builtins (parse_in);
 
-      /* Start the main input file, if the debug writer wants it. */
-      if (debug_hooks->start_end_main_source_file
-	  && !flag_preprocess_only)
-	(*debug_hooks->start_source_file) (0, this_input_filename);
-    }
+  /* Start the main input file, if the debug writer wants it. */
+  if (debug_hooks->start_end_main_source_file
+      && !flag_preprocess_only)
+    (*debug_hooks->start_source_file) (0, this_input_filename);
+
+  if (!cpp_opts->preprocessed)
+    /* Handle -imacros after -D and -U.  */
+    for (size_t i = 0; i < deferred_count; i++)
+      {
+	struct deferred_opt *opt = &deferred_opts[i];
+
+	if (opt->code == OPT_imacros
+	    && cpp_push_include (parse_in, opt->arg))
+	  {
+	    /* Disable push_command_line_include callback for now.  */
+	    include_cursor = deferred_count + 1;
+	    cpp_scan_nooutput (parse_in);
+	  }
+      }
 
   include_cursor = 0;
   push_command_line_include ();
@@ -1505,7 +1534,7 @@ push_command_line_include (void)
       include_cursor++;
       /* -Wunused-macros should only warn about macros defined hereafter.  */
       cpp_opts->warn_unused_macros = cpp_warn_unused_macros;
-      /* Restore the line map from <command line>.  */
+      /* Restore the line map back to the main file.  */
       if (!cpp_opts->preprocessed)
 	cpp_change_file (parse_in, LC_RENAME, this_input_filename);
 
@@ -1563,6 +1592,7 @@ set_std_c89 (int c94, int iso)
   flag_isoc94 = c94;
   flag_isoc99 = 0;
   flag_isoc11 = 0;
+  flag_isoc2x = 0;
   lang_hooks.name = "GNU C89";
 }
 
@@ -1574,6 +1604,7 @@ set_std_c99 (int iso)
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
+  flag_isoc2x = 0;
   flag_isoc11 = 0;
   flag_isoc99 = 1;
   flag_isoc94 = 1;
@@ -1588,6 +1619,7 @@ set_std_c11 (int iso)
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
+  flag_isoc2x = 0;
   flag_isoc11 = 1;
   flag_isoc99 = 1;
   flag_isoc94 = 1;
@@ -1602,10 +1634,26 @@ set_std_c17 (int iso)
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
+  flag_isoc2x = 0;
   flag_isoc11 = 1;
   flag_isoc99 = 1;
   flag_isoc94 = 1;
   lang_hooks.name = "GNU C17";
+}
+
+/* Set the C 2X standard (without GNU extensions if ISO).  */
+static void
+set_std_c2x (int iso)
+{
+  cpp_set_lang (parse_in, iso ? CLK_STDC2X: CLK_GNUC2X);
+  flag_no_asm = iso;
+  flag_no_nonansi_builtin = iso;
+  flag_iso = iso;
+  flag_isoc2x = 1;
+  flag_isoc11 = 1;
+  flag_isoc99 = 1;
+  flag_isoc94 = 1;
+  lang_hooks.name = "GNU C2X";
 }
 
 
@@ -1681,6 +1729,7 @@ set_std_cxx2a (int iso)
   flag_isoc94 = 1;
   flag_isoc99 = 1;
   flag_isoc11 = 1;
+  /* C++2a includes concepts. */
   cxx_dialect = cxx2a;
   lang_hooks.name = "GNU C++17"; /* Pretend C++17 until standardization.  */
 }

@@ -1,5 +1,6 @@
+// { dg-do compile { target c++17_only } }
+// { dg-options "-fconcepts" }
 // Conceptized version of template/ttp23.C
-// { dg-options "-std=c++17 -fconcepts" }
 
 template <class T> concept bool Foo = true;
 

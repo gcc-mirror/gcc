@@ -38,21 +38,27 @@ enum
      memory locations.  */
   NIL_DEREFERENCE = 6,
 
-  /* Slice length or capacity out of bounds in make: negative or
-     overflow or length greater than capacity.  */
-  MAKE_SLICE_OUT_OF_BOUNDS = 7,
+  /* Slice length out of bounds in make: negative or overflow or length
+     greater than capacity.  */
+  MAKE_SLICE_LEN_OUT_OF_BOUNDS = 7,
+
+  /* Slice capacity out of bounds in make: negative.  */
+  MAKE_SLICE_CAP_OUT_OF_BOUNDS = 8,
 
   /* Map capacity out of bounds in make: negative or overflow.  */
-  MAKE_MAP_OUT_OF_BOUNDS = 8,
+  MAKE_MAP_OUT_OF_BOUNDS = 9,
 
   /* Channel capacity out of bounds in make: negative or overflow.  */
-  MAKE_CHAN_OUT_OF_BOUNDS = 9,
+  MAKE_CHAN_OUT_OF_BOUNDS = 10,
 
   /* Integer division by zero.  */
-  DIVISION_BY_ZERO = 10,
+  DIVISION_BY_ZERO = 11,
 
   /* Go statement with nil function.  */
-  GO_NIL = 11
+  GO_NIL = 12,
+
+  /* Shift by negative value.  */
+  SHIFT_BY_NEGATIVE = 13
 };
 
 extern void __go_runtime_error (int32) __attribute__ ((noreturn));
@@ -60,23 +66,39 @@ extern void __go_runtime_error (int32) __attribute__ ((noreturn));
 void
 __go_runtime_error (int32 i)
 {
+  struct funcfileline_return fileline;
+  bool in_runtime;
+
+  fileline = runtime_funcfileline ((uintptr) runtime_getcallerpc()-1, 0);
+  in_runtime = (fileline.retfn.len > 0
+		&& (__builtin_strncmp ((const char *) fileline.retfn.str,
+				      "runtime.", 8)
+		    == 0));
+
   switch (i)
     {
     case SLICE_INDEX_OUT_OF_BOUNDS:
     case ARRAY_INDEX_OUT_OF_BOUNDS:
     case STRING_INDEX_OUT_OF_BOUNDS:
+      if (in_runtime)
+	runtime_throw ("index out of range");
       runtime_panicstring ("index out of range");
 
     case SLICE_SLICE_OUT_OF_BOUNDS:
     case ARRAY_SLICE_OUT_OF_BOUNDS:
     case STRING_SLICE_OUT_OF_BOUNDS:
+      if (in_runtime)
+	runtime_throw ("slice bounds out of range");
       runtime_panicstring ("slice bounds out of range");
 
     case NIL_DEREFERENCE:
       runtime_panicstring ("nil pointer dereference");
 
-    case MAKE_SLICE_OUT_OF_BOUNDS:
-      runtime_panicstring ("make slice len or cap out of range");
+    case MAKE_SLICE_LEN_OUT_OF_BOUNDS:
+      runtime_panicstring ("make slice len out of range");
+
+    case MAKE_SLICE_CAP_OUT_OF_BOUNDS:
+      runtime_panicstring ("make slice cap out of range");
 
     case MAKE_MAP_OUT_OF_BOUNDS:
       runtime_panicstring ("make map len out of range");
@@ -92,6 +114,9 @@ __go_runtime_error (int32 i)
 	 not dump full stacks.  */
       runtime_g()->m->throwing = -1;
       runtime_throw ("go of nil func value");
+
+    case SHIFT_BY_NEGATIVE:
+      runtime_panicstring ("negative shift amount");
 
     default:
       runtime_panicstring ("unknown runtime error");

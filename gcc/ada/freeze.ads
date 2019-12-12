@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -229,6 +229,17 @@ package Freeze is
    --  not really expressions, but they can appear within expressions and
    --  so need to be similarly treated. Freeze_Expression takes care of
    --  determining the proper insertion point for generated freeze actions.
+
+   procedure Freeze_Expr_Types
+     (Def_Id : Entity_Id;
+      Typ    : Entity_Id;
+      Expr   : Node_Id;
+      N      : Node_Id);
+   --  N is the body constructed for an expression function that is a
+   --  completion, and Def_Id is the function being completed.
+   --  This procedure freezes before N all the types referenced in Expr,
+   --  which is either the expression of the expression function, or
+   --  the expression in a pre/post aspect that applies to Def_Id;
 
    procedure Freeze_Fixed_Point_Type (Typ : Entity_Id);
    --  Freeze fixed point type. For fixed-point types, we have to defer

@@ -1,4 +1,4 @@
-@c Copyright (C) 2001-2018 Free Software Foundation, Inc.
+@c Copyright (C) 2001-2019 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -565,7 +565,7 @@ volatile int *src = @var{somevalue};
 @end smallexample
 
 According to the C standard, such an expression is an rvalue whose type
-is the unqualified version of its original type, i.e. @code{int}.  Whether
+is the unqualified version of its original type, i.e.@: @code{int}.  Whether
 GCC interprets this as a read of the volatile object being pointed to or
 only as a request to evaluate the expression for its side effects depends
 on this type.

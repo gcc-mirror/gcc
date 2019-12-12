@@ -12,7 +12,8 @@ struct A
 };
 
 template <typename T> 
-void func(A<T>::B* )	// { dg-error "variable|template|expression" }
+void func(A<T>::B* )	// { dg-error "6:variable or field .func. declared void" }
+// { dg-error "expected" "" { target *-*-* } .-1 }
 {
 }
 

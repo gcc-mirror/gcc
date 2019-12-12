@@ -4,4 +4,4 @@
 /* { dg-do compile } */
 /* { dg-options "-Wformat-security" } */
 
-/* { dg-warning "-Wformat-security ignored without -Wformat" "ignored" { target *-*-* } 0 } */
+/* { dg-warning "'-Wformat-security' ignored without '-Wformat'" "ignored" { target *-*-* } 0 } */

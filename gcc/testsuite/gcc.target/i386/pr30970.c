@@ -1,5 +1,5 @@
 /* { dg-do compile }
-/* { dg-options "-msse2 -O2 -ftree-vectorize -mtune=generic" } */
+/* { dg-options "-msse2 -O2 -fno-tree-loop-distribute-patterns -ftree-vectorize -mtune=generic" } */
 
 #define N 256
 int b[N];

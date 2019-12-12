@@ -13,7 +13,7 @@ void htm1(void)
 __attribute__ ((target("arch=z10")))
 void htm0(void)
 {
-  __builtin_tend(); /* { dg-error "is not supported without -mhtm" } */
+  __builtin_tend(); /* { dg-error "is not supported without '-mhtm'" } */
 }
 
 void htmd(void)

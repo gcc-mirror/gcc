@@ -1,4 +1,3 @@
-	.file	"snapshot.S"
 #ifdef __AVX__
 	.sse_check none
 #endif

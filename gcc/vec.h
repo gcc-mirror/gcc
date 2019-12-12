@@ -1,5 +1,5 @@
 /* Vector API for GNU compiler.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
    Contributed by Nathan Sidwell <nathan@codesourcery.com>
    Re-implemented in C++ by Diego Novillo <dnovillo@google.com>
 
@@ -195,7 +195,7 @@ struct vec_prefix
 
   /* Memory allocation support routines in vec.c.  */
   void register_overhead (void *, size_t, size_t CXX_MEM_STAT_INFO);
-  void release_overhead (void *, size_t, bool CXX_MEM_STAT_INFO);
+  void release_overhead (void *, size_t, size_t, bool CXX_MEM_STAT_INFO);
   static unsigned calculate_allocation (vec_prefix *, unsigned, bool);
   static unsigned calculate_allocation_1 (unsigned, unsigned);
 
@@ -276,12 +276,14 @@ inline void
 va_heap::reserve (vec<T, va_heap, vl_embed> *&v, unsigned reserve, bool exact
 		  MEM_STAT_DECL)
 {
+  size_t elt_size = sizeof (T);
   unsigned alloc
     = vec_prefix::calculate_allocation (v ? &v->m_vecpfx : 0, reserve, exact);
   gcc_checking_assert (alloc);
 
   if (GATHER_STATISTICS && v)
-    v->m_vecpfx.release_overhead (v, v->allocated (), false);
+    v->m_vecpfx.release_overhead (v, elt_size * v->allocated (),
+				  v->allocated (), false);
 
   size_t size = vec<T, va_heap, vl_embed>::embedded_size (alloc);
   unsigned nelem = v ? v->length () : 0;
@@ -289,9 +291,14 @@ va_heap::reserve (vec<T, va_heap, vl_embed> *&v, unsigned reserve, bool exact
   v->embedded_init (alloc, nelem);
 
   if (GATHER_STATISTICS)
-    v->m_vecpfx.register_overhead (v, alloc, nelem PASS_MEM_STAT);
+    v->m_vecpfx.register_overhead (v, alloc, elt_size PASS_MEM_STAT);
 }
 
+
+#if GCC_VERSION >= 4007
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfree-nonheap-object"
+#endif
 
 /* Free the heap space allocated for vector V.  */
 
@@ -299,15 +306,20 @@ template<typename T>
 void
 va_heap::release (vec<T, va_heap, vl_embed> *&v)
 {
+  size_t elt_size = sizeof (T);
   if (v == NULL)
     return;
 
   if (GATHER_STATISTICS)
-    v->m_vecpfx.release_overhead (v, v->allocated (), true);
+    v->m_vecpfx.release_overhead (v, elt_size * v->allocated (),
+				  v->allocated (), true);
   ::free (v);
   v = NULL;
 }
 
+#if GCC_VERSION >= 4007
+#pragma GCC diagnostic pop
+#endif
 
 /* Allocator type for GC vectors.  Notice that we need the structure
    declaration even if GC is not enabled.  */
@@ -589,7 +601,10 @@ public:
   void unordered_remove (unsigned);
   void block_remove (unsigned, unsigned);
   void qsort (int (*) (const void *, const void *));
+  void sort (int (*) (const void *, const void *, void *), void *);
   T *bsearch (const void *key, int (*compar)(const void *, const void *));
+  T *bsearch (const void *key,
+	      int (*compar)(const void *, const void *, void *), void *);
   unsigned lower_bound (T, bool (*)(const T &, const T &)) const;
   bool contains (const T &search) const;
   static size_t embedded_size (unsigned);
@@ -725,6 +740,17 @@ vec_safe_grow_cleared (vec<T, A, vl_embed> *&v, unsigned len CXX_MEM_STAT_INFO)
   unsigned oldlen = vec_safe_length (v);
   vec_safe_grow (v, len PASS_MEM_STAT);
   vec_default_construct (v->address () + oldlen, len - oldlen);
+}
+
+
+/* Assume V is not NULL.  */
+
+template<typename T>
+inline void
+vec_safe_grow_cleared (vec<T, va_heap, vl_ptr> *&v,
+		       unsigned len CXX_MEM_STAT_INFO)
+{
+  v->safe_grow_cleared (len PASS_MEM_STAT);
 }
 
 
@@ -1096,7 +1122,19 @@ inline void
 vec<T, A, vl_embed>::qsort (int (*cmp) (const void *, const void *))
 {
   if (length () > 1)
-    ::qsort (address (), length (), sizeof (T), cmp);
+    gcc_qsort (address (), length (), sizeof (T), cmp);
+}
+
+/* Sort the contents of this vector with qsort.  CMP is the comparison
+   function to pass to qsort.  */
+
+template<typename T, typename A>
+inline void
+vec<T, A, vl_embed>::sort (int (*cmp) (const void *, const void *, void *),
+			   void *data)
+{
+  if (length () > 1)
+    gcc_sort_r (address (), length (), sizeof (T), cmp, data);
 }
 
 
@@ -1123,6 +1161,41 @@ vec<T, A, vl_embed>::bsearch (const void *key,
       idx = (l + u) / 2;
       p = (const void *) (((const char *) base) + (idx * size));
       comparison = (*compar) (key, p);
+      if (comparison < 0)
+	u = idx;
+      else if (comparison > 0)
+	l = idx + 1;
+      else
+	return (T *)const_cast<void *>(p);
+    }
+
+  return NULL;
+}
+
+/* Search the contents of the sorted vector with a binary search.
+   CMP is the comparison function to pass to bsearch.  */
+
+template<typename T, typename A>
+inline T *
+vec<T, A, vl_embed>::bsearch (const void *key,
+			      int (*compar) (const void *, const void *,
+					     void *), void *data)
+{
+  const void *base = this->address ();
+  size_t nmemb = this->length ();
+  size_t size = sizeof (T);
+  /* The following is a copy of glibc stdlib-bsearch.h.  */
+  size_t l, u, idx;
+  const void *p;
+  int comparison;
+
+  l = 0;
+  u = nmemb;
+  while (l < u)
+    {
+      idx = (l + u) / 2;
+      p = (const void *) (((const char *) base) + (idx * size));
+      comparison = (*compar) (key, p, data);
       if (comparison < 0)
 	u = idx;
       else if (comparison > 0)
@@ -1386,7 +1459,10 @@ public:
   void unordered_remove (unsigned);
   void block_remove (unsigned, unsigned);
   void qsort (int (*) (const void *, const void *));
+  void sort (int (*) (const void *, const void *, void *), void *);
   T *bsearch (const void *key, int (*compar)(const void *, const void *));
+  T *bsearch (const void *key,
+	      int (*compar)(const void *, const void *, void *), void *);
   unsigned lower_bound (T, bool (*)(const T &, const T &)) const;
   bool contains (const T &search) const;
   void reverse (void);
@@ -1684,7 +1760,7 @@ template<typename T>
 inline void
 vec<T, va_heap, vl_ptr>::splice (const vec<T, va_heap, vl_ptr> &src)
 {
-  if (src.m_vec)
+  if (src.length ())
     m_vec->splice (*(src.m_vec));
 }
 
@@ -1883,6 +1959,18 @@ vec<T, va_heap, vl_ptr>::qsort (int (*cmp) (const void *, const void *))
     m_vec->qsort (cmp);
 }
 
+/* Sort the contents of this vector with qsort.  CMP is the comparison
+   function to pass to qsort.  */
+
+template<typename T>
+inline void
+vec<T, va_heap, vl_ptr>::sort (int (*cmp) (const void *, const void *,
+					   void *), void *data)
+{
+  if (m_vec)
+    m_vec->sort (cmp, data);
+}
+
 
 /* Search the contents of the sorted vector with a binary search.
    CMP is the comparison function to pass to bsearch.  */
@@ -1894,6 +1982,20 @@ vec<T, va_heap, vl_ptr>::bsearch (const void *key,
 {
   if (m_vec)
     return m_vec->bsearch (key, cmp);
+  return NULL;
+}
+
+/* Search the contents of the sorted vector with a binary search.
+   CMP is the comparison function to pass to bsearch.  */
+
+template<typename T>
+inline T *
+vec<T, va_heap, vl_ptr>::bsearch (const void *key,
+				  int (*cmp) (const void *, const void *,
+					      void *), void *data)
+{
+  if (m_vec)
+    return m_vec->bsearch (key, cmp, data);
   return NULL;
 }
 

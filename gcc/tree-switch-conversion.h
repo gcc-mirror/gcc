@@ -1,5 +1,5 @@
 /* Tree switch conversion for GNU compiler.
-   Copyright (C) 2017 Free Software Foundation, Inc.
+   Copyright (C) 2017-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -44,8 +44,9 @@ enum cluster_type
      |-jump_table_cluster (JUMP_TABLE)
      `-bit_test_cluster   (BIT_TEST).  */
 
-struct cluster
+class cluster
 {
+public:
   /* Constructor.  */
   cluster (tree case_label_expr, basic_block case_bb, profile_probability prob,
 	   profile_probability subtree_prob);
@@ -71,6 +72,13 @@ struct cluster
 
   /* Emit GIMPLE code to handle the cluster.  */
   virtual void emit (tree, tree, tree, basic_block) = 0;
+
+  /* Return true if a cluster handles only a single case value and the
+     value is not a range.  */
+  virtual bool is_single_value_p ()
+  {
+    return false;
+  }
 
   /* Return range of a cluster.  If value would overflow in type of LOW,
      then return 0.  */
@@ -110,8 +118,9 @@ cluster::cluster (tree case_label_expr, basic_block case_bb,
 /* Subclass of cluster representing a simple contiguous range
    from [low..high].  */
 
-struct simple_cluster: public cluster
+class simple_cluster: public cluster
 {
+public:
   /* Constructor.  */
   simple_cluster (tree low, tree high, tree case_label_expr,
 		  basic_block case_bb, profile_probability prob);
@@ -161,6 +170,11 @@ struct simple_cluster: public cluster
     gcc_unreachable ();
   }
 
+  bool is_single_value_p ()
+  {
+    return tree_int_cst_equal (get_low (), get_high ());
+  }
+
   /* Low value of the case.  */
   tree m_low;
 
@@ -184,8 +198,9 @@ simple_cluster::simple_cluster (tree low, tree high, tree case_label_expr,
 /* Abstract subclass of jump table and bit test cluster,
    handling a collection of simple_cluster instances.  */
 
-struct group_cluster: public cluster
+class group_cluster: public cluster
 {
+public:
   /* Constructor.  */
   group_cluster (vec<cluster *> &clusters, unsigned start, unsigned end);
 
@@ -221,8 +236,9 @@ struct group_cluster: public cluster
    The "emit" vfunc gernerates a nested switch statement which
    is later lowered to a jump table.  */
 
-struct jump_table_cluster: public group_cluster
+class jump_table_cluster: public group_cluster
 {
+public:
   /* Constructor.  */
   jump_table_cluster (vec<cluster *> &clusters, unsigned start, unsigned end)
   : group_cluster (clusters, start, end)
@@ -257,12 +273,6 @@ struct jump_table_cluster: public group_cluster
 
   /* Return whether jump table expansion is allowed.  */
   static bool is_enabled (void);
-
-  /* Max growth ratio for code that is optimized for size.  */
-  static const unsigned HOST_WIDE_INT max_ratio_for_size = 3;
-
-  /* Max growth ratio for code that is optimized for speed.  */
-  static const unsigned HOST_WIDE_INT max_ratio_for_speed = 8;
 };
 
 /* A GIMPLE switch statement can be expanded to a short sequence of bit-wise
@@ -326,11 +336,14 @@ This transformation was contributed by Roger Sayle, see this e-mail:
    http://gcc.gnu.org/ml/gcc-patches/2003-01/msg01950.html
 */
 
-struct bit_test_cluster: public group_cluster
+class bit_test_cluster: public group_cluster
 {
+public:
   /* Constructor.  */
-  bit_test_cluster (vec<cluster *> &clusters, unsigned start, unsigned end)
-  :group_cluster (clusters, start, end)
+  bit_test_cluster (vec<cluster *> &clusters, unsigned start, unsigned end,
+		    bool handles_entire_switch)
+  :group_cluster (clusters, start, end),
+  m_handles_entire_switch (handles_entire_switch)
   {}
 
   cluster_type
@@ -396,7 +409,11 @@ struct bit_test_cluster: public group_cluster
    Returns the newly created basic block.  */
   static basic_block hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
 						    tree cond,
-						    basic_block case_bb);
+						    basic_block case_bb,
+						    profile_probability prob);
+
+  /* True when the jump table handles an entire switch statement.  */
+  bool m_handles_entire_switch;
 
   /* Maximum number of different basic blocks that can be handled by
      a bit test.  */
@@ -405,8 +422,9 @@ struct bit_test_cluster: public group_cluster
 
 /* Helper struct to find minimal clusters.  */
 
-struct min_cluster_item
+class min_cluster_item
 {
+public:
   /* Constructor.  */
   min_cluster_item (unsigned count, unsigned start, unsigned non_jt_cases):
     m_count (count), m_start (start), m_non_jt_cases (non_jt_cases)
@@ -424,10 +442,17 @@ struct min_cluster_item
 
 /* Helper struct to represent switch decision tree.  */
 
-struct case_tree_node
+class case_tree_node
 {
+public:
   /* Empty Constructor.  */
   case_tree_node ();
+
+  /* Return true when it has a child.  */
+  bool has_child ()
+  {
+    return m_left != NULL || m_right != NULL;
+  }
 
   /* Left son in binary tree.  */
   case_tree_node *m_left;
@@ -451,7 +476,7 @@ case_tree_node::case_tree_node ():
 unsigned int
 jump_table_cluster::case_values_threshold (void)
 {
-  unsigned int threshold = PARAM_VALUE (PARAM_CASE_VALUES_THRESHOLD);
+  unsigned int threshold = param_case_values_threshold;
 
   if (threshold == 0)
     threshold = targetm.case_values_threshold ();
@@ -485,8 +510,9 @@ bool jump_table_cluster::is_enabled (void)
    is used to quickly identify all cases in this set without
    looking at label_to_block for every case label.  */
 
-struct case_bit_test
+class case_bit_test
 {
+public:
   wide_int mask;
   basic_block target_bb;
   tree label;
@@ -497,8 +523,9 @@ struct case_bit_test
   static int cmp (const void *p1, const void *p2);
 };
 
-struct switch_decision_tree
+class switch_decision_tree
 {
+public:
   /* Constructor.  */
   switch_decision_tree (gswitch *swtch): m_switch (swtch), m_phi_mapping (),
     m_case_bbs (), m_case_node_pool ("struct case_node pool"),
@@ -513,10 +540,6 @@ struct switch_decision_tree
   /* Attempt to expand CLUSTERS as a decision tree.  Return true when
      expanded.  */
   bool try_switch_expansion (vec<cluster *> &clusters);
-
-  /* Reset the aux field of all outgoing edges of switch basic block.  */
-  inline void reset_out_edges_aux ();
-
   /* Compute the number of case labels that correspond to each outgoing edge of
      switch statement.  Record this information in the aux field of the edge.
      */
@@ -546,7 +569,7 @@ struct switch_decision_tree
   basic_block emit_case_nodes (basic_block bb, tree index,
 			       case_tree_node *node,
 			       profile_probability default_prob,
-			       tree index_type);
+			       tree index_type, location_t);
 
   /* Take an ordered list of case nodes
      and transform them into a near optimal binary tree,
@@ -574,7 +597,18 @@ struct switch_decision_tree
   static basic_block emit_cmp_and_jump_insns (basic_block bb, tree op0,
 					      tree op1, tree_code comparison,
 					      basic_block label_bb,
-					      profile_probability prob);
+					      profile_probability prob,
+					      location_t);
+
+  /* Generate code to jump to LABEL if OP0 and OP1 are equal in mode MODE.
+     PROB is the probability of jumping to LABEL_BB.  */
+  static basic_block do_jump_if_equal (basic_block bb, tree op0, tree op1,
+				       basic_block label_bb,
+				       profile_probability prob,
+				       location_t);
+
+  /* Reset the aux field of all outgoing edges of switch basic block.  */
+  static inline void reset_out_edges_aux (gswitch *swtch);
 
   /* Switch statement.  */
   gswitch *m_switch;
@@ -649,15 +683,16 @@ is changed into:
 	b_b = PHI <b_6, b_7>
 
 There are further constraints.  Specifically, the range of values across all
-case labels must not be bigger than SWITCH_CONVERSION_BRANCH_RATIO (default
-eight) times the number of the actual switch branches.
+case labels must not be bigger than param_switch_conversion_branch_ratio
+(default eight) times the number of the actual switch branches.
 
 This transformation was contributed by Martin Jambor, see this e-mail:
    http://gcc.gnu.org/ml/gcc-patches/2008-07/msg00011.html  */
 
 /* The main structure of the pass.  */
-struct switch_conversion
+class switch_conversion
 {
+public:
   /* Constructor.  */
   switch_conversion ();
 
@@ -704,10 +739,12 @@ struct switch_conversion
      order of phi nodes.  */
   void build_constructors ();
 
-  /* If all values in the constructor vector are the same, return the value.
-     Otherwise return NULL_TREE.  Not supposed to be called for empty
-     vectors.  */
-  tree contains_same_values_p (vec<constructor_elt, va_gc> *vec);
+  /* If all values in the constructor vector are products of a linear function
+     a * x + b, then return true.  When true, COEFF_A and COEFF_B and
+     coefficients of the linear function.  Note that equal values are special
+     case of a linear function with a and b equal to zero.  */
+  bool contains_linear_function_p (vec<constructor_elt, va_gc> *vec,
+				   wide_int *coeff_a, wide_int *coeff_b);
 
   /* Return type which should be used for array elements, either TYPE's
      main variant or, for integral types, some smaller integral type
@@ -782,12 +819,6 @@ struct switch_conversion
   /* The probability of the default edge in the replaced switch.  */
   profile_probability m_default_prob;
 
-  /* The count of the default edge in the replaced switch.  */
-  profile_count m_default_count;
-
-  /* Combined count of all other (non-default) edges in the replaced switch.  */
-  profile_count m_other_count;
-
   /* Number of phi nodes in the final bb (that we'll be replacing).  */
   int m_phi_count;
 
@@ -838,9 +869,9 @@ struct switch_conversion
 };
 
 void
-switch_decision_tree::reset_out_edges_aux ()
+switch_decision_tree::reset_out_edges_aux (gswitch *swtch)
 {
-  basic_block bb = gimple_bb (m_switch);
+  basic_block bb = gimple_bb (swtch);
   edge e;
   edge_iterator ei;
   FOR_EACH_EDGE (e, ei, bb->succs)

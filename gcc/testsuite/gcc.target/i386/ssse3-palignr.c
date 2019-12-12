@@ -17,7 +17,6 @@
 #include <tmmintrin.h>
 #include <string.h>
 
-#ifndef __AVX__
 /* Test the 64-bit form */
 static void
 ssse3_test_palignr (int *i1, int *i2, unsigned int imm, int *r)
@@ -82,7 +81,6 @@ ssse3_test_palignr (int *i1, int *i2, unsigned int imm, int *r)
 
    _mm_empty();
 }
-#endif
 
 /* Test the 128-bit form */
 static void
@@ -214,7 +212,6 @@ compute_correct_result_128 (int *i1, int *i2, unsigned int imm, int *r)
       bout[i] = buf[imm + i];
 }
 
-#ifndef __AVX__
 static void
 compute_correct_result_64 (int *i1, int *i2, unsigned int imm, int *r)
 {
@@ -242,7 +239,6 @@ compute_correct_result_64 (int *i1, int *i2, unsigned int imm, int *r)
     else
       bout[i + 8] = buf[imm + i];
 }
-#endif
 
 static void
 TEST (void)
@@ -256,7 +252,6 @@ TEST (void)
   for (i = 0; i < 256; i += 8)
     for (imm = 0; imm < 100; imm++)
       {
-#ifndef __AVX__
 	/* Manually compute the result */
 	compute_correct_result_64 (&vals[i + 0], &vals[i + 4], imm, ck);
 
@@ -264,7 +259,6 @@ TEST (void)
 	ssse3_test_palignr (&vals[i + 0], &vals[i + 4], imm, &r[0]);
 	ssse3_test_palignr (&vals[i + 2], &vals[i + 6], imm, &r[2]);
 	fail += chk_128 (ck, r);
-#endif
 
 	/* Recompute the results for 128-bits */
 	compute_correct_result_128 (&vals[i + 0], &vals[i + 4], imm, ck);

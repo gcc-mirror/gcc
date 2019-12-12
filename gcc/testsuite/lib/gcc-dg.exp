@@ -1,4 +1,4 @@
-#   Copyright (C) 1997-2018 Free Software Foundation, Inc.
+#   Copyright (C) 1997-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -242,14 +242,6 @@ proc gcc-dg-test-1 { target_compile prog do_what extra_tool_flags } {
 
     set options [list]
 
-    # Tests should be able to use "dg-do repo".  However, the dg test
-    # driver checks the argument to dg-do against a list of acceptable
-    # options, and "repo" is not among them.  Therefore, we resort to
-    # this ugly approach.
-    if [string match "*-frepo*" $extra_tool_flags] then {
-	set do_what "repo"
-    }
-
     switch $do_what {
 	"preprocess" {
 	    set compile_type "preprocess"
@@ -299,9 +291,11 @@ proc gcc-dg-test-1 { target_compile prog do_what extra_tool_flags } {
     foreach x [split $finalcode "\n"] {
 	set finalcmd [lindex $x 0]
 	if { [info procs ${finalcmd}_required_options] != "" } {
-	    set req [${finalcmd}_required_options]
-	    if { $req != "" && [lsearch -exact $extra_tool_flags $req] == -1 } {
-		lappend extra_tool_flags $req
+	    foreach req [${finalcmd}_required_options] {
+		if { $req != ""
+		     && [lsearch -exact $extra_tool_flags $req] == -1 } {
+		    lappend extra_tool_flags $req
+		}
 	    }
 	}
     }
@@ -342,14 +336,24 @@ proc gcc-dg-test { prog do_what extra_tool_flags } {
 # Global: should blank lines be allowed in the output?
 # By default, they should not be.  (PR other/69006)
 # However, there are some ways for them to validly occur.
+# If this variable is 0, blank lines are not allowed in output,
+# if it is 1, they are allowed for a single testcase only and gcc-dg-prune
+# will clear it again after checking it, if it is 2, they are disabled
+# for all tests.
 set allow_blank_lines 0
+
+if { [check_effective_target_llvm_binutils] } {
+    set allow_blank_lines 2
+}
 
 # A command for use by testcases to mark themselves as expecting
 # blank lines in the output.
 
 proc dg-allow-blank-lines-in-output { args } {
     global allow_blank_lines
-    set allow_blank_lines 1
+    if { !$allow_blank_lines } {
+	set allow_blank_lines 1
+    }
 }
 
 proc gcc-dg-prune { system text } {
@@ -367,6 +371,8 @@ proc gcc-dg-prune { system text } {
 	    global testname_with_flags
 	    fail "$testname_with_flags $num_blank_lines blank line(s) in output"
 	}
+    }
+    if { $allow_blank_lines == 1 } {
 	set allow_blank_lines 0
     }
 
@@ -392,12 +398,23 @@ proc gcc-dg-prune { system text } {
         return "::unsupported::memory full"
     }
 
-    # Likewise, if we see ".text exceeds local store range" or
-    # similar.
-    if {[string match "spu-*" $system] && \
-	    [string match "*exceeds local store*" $text]} {
-	# The format here is important.  See dg.exp.
+    if [regexp "(^|\n)\[^\n\]* section.*will not fit in region" $text] {
 	return "::unsupported::memory full"
+    }
+
+    if [regexp "(^|\n)\[^\n\]* region.*overflowed by" $text] {
+	return "::unsupported::memory full"
+    }
+
+    if { [string match "*error: function pointers not supported*" $text]
+	  && ![check_effective_target_function_pointers] } {
+	# The format here is important.  See dg.exp.
+	return "::unsupported::funcptr"
+    }
+    if { [string match "*error: large return values not supported*" $text]
+    	  && ![check_effective_target_large_return_values] } {
+	# The format here is important.  See dg.exp.
+	return "::unsupported::large return values"
     }
 
     return $text
@@ -695,24 +712,6 @@ proc cleanup-coverage-files { } {
     if [info exists additional_sources_used] {
 	foreach srcfile $additional_sources_used {
 	    remove-build-file "[file rootname [file tail $srcfile]].gc??"
-	}
-    }
-}
-
-# Remove compiler-generated files from -repo for the current test.
-proc cleanup-repo-files { } {
-    global additional_sources_used
-    set testcase [testname-for-summary]
-    # The name might include a list of options; extract the file name.
-    set testcase [lindex $testcase 0]
-    remove-build-file "[file rootname [file tail $testcase]].o"
-    remove-build-file "[file rootname [file tail $testcase]].rpo"
-
-    # Clean up files for additional source files.
-    if [info exists additional_sources_used] {
-	foreach srcfile $additional_sources_used {
-	    remove-build-file "[file rootname [file tail $srcfile]].o"
-	    remove-build-file "[file rootname [file tail $srcfile]].rpo"
 	}
     }
 }
@@ -1155,7 +1154,7 @@ proc process-message { msgproc msgprefix dgargs } {
     set newentry [lreplace $newentry 2 2 $expmsg]
 
     set dg-messages [lreplace ${dg-messages} end end $newentry]
-    verbose "process-message:\n${dg-messages}" 2
+    verbose "process-message:\n${dg-messages}" 3
 }
 
 # Look for messages that don't have standard prefixes.
@@ -1189,7 +1188,27 @@ proc dg-locus { args } {
 
     set newentry [lreplace $newentry 2 2 $expmsg]
     set dg-messages [lreplace ${dg-messages} end end $newentry]
-    verbose "process-message:\n${dg-messages}" 2
+    verbose "process-message:\n${dg-messages}" 3
+}
+
+# Handle output from -fopt-info for MSG_OPTIMIZED_LOCATIONS:
+# a successful optimization.
+
+proc dg-optimized { args } {
+    # Make this variable available here and to the saved proc.
+    upvar dg-messages dg-messages
+
+    process-message saved-dg-error "optimized: " "$args"
+}
+
+# Handle output from -fopt-info for MSG_MISSED_OPTIMIZATION:
+# a missed optimization.
+
+proc dg-missed { args } {
+    # Make this variable available here and to the saved proc.
+    upvar dg-messages dg-messages
+
+    process-message saved-dg-error "missed: " "$args"
 }
 
 # Check the existence of a gdb in the path, and return true if there
@@ -1212,6 +1231,82 @@ proc gdb-exists { args } {
 	return 1;
     }
     return 0;
+}
+
+# Helper function for scan-symbol and scan-symbol-not. It scans a symbol in
+# the final executable and return 1 if present, otherwise fail.
+#
+# Argument 0 is the regexp to match.
+# Argument 1 handles expected failures and the like
+proc scan-symbol-common { scan_directive args } {
+    global nm
+    global base_dir
+
+    # Access variable from gcc-dg-test-1 or lto-execute.
+    upvar 3 output_file output_file
+
+    if { [llength $args] >= 2 } {
+	switch [dg-process-target [lindex $args 1]] {
+	    "S" { }
+	    "N" { return }
+	    "F" { setup_xfail "*-*-*" }
+	    "P" { }
+	}
+    }
+
+    # Find nm like we find g++ in g++.exp.
+    if ![info exists nm]  {
+	set nm [findfile $base_dir/../../../binutils/nm \
+		$base_dir/../../../binutils/nm \
+	        [findfile $base_dir/../../nm $base_dir/../../nm \
+		      [findfile $base_dir/nm $base_dir/nm \
+		       [transform nm]]]]
+	verbose -log "nm is $nm"
+    }
+
+    set output_file "[glob -nocomplain $output_file]"
+    if { $output_file == "" } {
+	fail "$scan_directive $args: output file does not exist"
+	return
+    }
+
+    set fd [open "| $nm $output_file" r]
+    set text [read $fd]
+    close $fd
+
+    if [regexp -- [lindex $args 0] $text] {
+	return 1
+    } else {
+	return 0
+    }
+}
+
+# Utility for scanning a symbol in the final executable, invoked via dg-final.
+# Call pass if pattern is present, otherwise fail.
+#
+# Argument 0 is the regexp to match.
+# Argument 1 handles expected failures and the like
+proc scan-symbol { args } {
+    set testcase [testname-for-summary]
+    if { [scan-symbol-common "scan-symbol" $args]} {
+	pass "$testcase   scan-symbol $args"
+    } else {
+	fail "$testcase   scan-symbol $args"
+    }
+}
+
+# Utility for scanning a symbol in the final executable, invoked via dg-final.
+# Call pass if pattern is absent, otherwise fail.
+#
+# Argument 0 is the regexp to match.
+# Argument 1 handles expected failures and the like
+proc scan-symbol-not { args } {
+    set testcase [testname-for-summary]
+    if { [scan-symbol-common "scan-symbol-not" $args]} {
+	fail "$testcase   scan-symbol-not $args"
+    } else {
+	pass "$testcase   scan-symbol-not $args"
+    }
 }
 
 set additional_prunes ""

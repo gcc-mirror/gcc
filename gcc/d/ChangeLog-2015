@@ -1,0 +1,771 @@
+2015-10-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (StructLiteralExp::toSymbol): Use letter prefix for
+	anonymous name.  Don't set TREE_READONLY.
+	(ClassReferenceExp::toSymbol): Likewise.
+
+2015-10-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_struct_literal): New function.
+	(layout_aggregate_members): Handle variables that are really tuples.
+	* d-elem.cc (StructLiteralExp::toElem): Handle slicing void arrays.
+	Use build_struct_literal to handle anonymous records.
+	* d-lang.h (d_unknown_type_node): Rename to unknown_type_node, update
+	in all files.
+
+2015-10-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_two_field_type): Use DECL_FIELD_CONTEXT to access
+	field context decl.
+	(build_frame_type): Likewise.
+	(lookup_anon_field): New function.
+	(component_ref): Use it.
+	(fixup_anonymous_offset): New function.
+	(layout_aggregate_members): New function.
+	(layout_aggregate_type): Move generation of fields into
+	layout_aggregate_members.
+	(insert_aggregate_field): Update signature, update all callers.
+	(finish_aggregate_type): Likewise.
+	* d-todt.cc (dt_container2): Use DECL_FIELD_CONTEXT to access field
+	context decl.
+	* types.cc (TypeVisitor::visit (TypeStruct)): Likewise.
+	(TypeVisitor::visit (TypeClass)): Likewise.
+	* d-tree.h (ANON_AGGR_TYPE_P): New type macro.
+
+2015-08-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (maybe_set_builtin_1): Remove va_list handling.
+	(d_init_builtins): Don't represent static array va_list as reference.
+	* d-codegen.cc (convert_for_argument): Handle va_list as a static array.
+	(declaration_type): Likewise.
+	(type_passed_as): Likewise.
+	(decl_reference_p): Renamed to declaration_type_kind, update to return
+	how type is represented internally, updated all callers.
+	(arg_reference_p): Renamed to argument_type_kind, update to return how
+	type is represented internally, updated all callers.
+	* d-codegen.h (type_kind): Declare.
+
+2015-08-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* toir.cc (IRVisitor::visit (TryCatchStatement)): Always emit call to
+	LIBCALL_BEGIN_CATCH at the start of the catch.
+	* d-elem.cc (AssertExp::toElem): Stabilize reference to class object
+	before passing it to _d_invariant.
+
+2015-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* toir.cc (IRVisitor::visit): Set input location in all visitors that
+	either throw an ICE or sorry message.
+
+2015-08-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in: Replace uses of $(target_alias) with
+	$(target_noncanonical).
+
+2015-08-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* types.cc (TypeVisitor::visit (TypeEnum)): Set ENUM_IS_SCOPED on all
+	enumeral types.
+	* d-lang.cc (d_init_options_struct): Remove setting
+	flag_evaluation_order.
+
+2015-08-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-elem.cc (HaltExp::toElem): Use __builtin_trap to halt execution,
+	rather than the library abort() call.
+
+2015-08-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_closure): Update signature, update all callers.
+	(build_vthis): Likewise.
+	(get_frame_for_symbol): Likewise.
+	(build_local_var): Likewise.
+	(get_decl_tree): Likewise.
+	(start_function): Likewise.
+	* d-irstate.h (IRState): Move func, mod, sthis, deferred,
+	statementList, and varsInScope fields to...
+	* d-tree.h (language_function): Here, updated all uses.
+	* d-irstate.h: Remove file.
+	(IRState): Remove all uses everywhere.
+
+2015-08-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (D_GLUE_OBJS): Remove d-irstate.o.
+	* d-tree.h (d_label_use_entry): New structure.
+	(d_label_entry): New structure.
+	(binding_level): Add level_kind field.
+	(language_function): Add hash table field for labels.
+	(D_LABEL_VARIABLE_CASE): New macro.
+	* d-codegen.cc (pop_binding_label): New function.
+	(pop_label): New function.
+	(push_binding_level): Update signature.
+	(pop_binding_level): Update signature.  Handle declared or used labels.
+	(build_array_set): Update for push/pop binding changes.
+	(check_goto): New function.
+	(check_previous_goto): New function.
+	(d_lookup_label): Remove function.
+	(lookup_label): New function.
+	(lookup_bc_label): New function.
+	(define_label): New function.
+	* d-objfile.cc (FuncDeclaration::toObjFile): Update for push/pop binding
+	changes.
+	* toir.cc (IRVisitor): Add break and continue label fields.
+	(IRVisitor::IRVisitor): Initialize here.
+	(IRVisitor::start_scope): Update signature.
+	(IRVisitor::end_scope): Return the finished scope, updated all callers.
+	(IRVisitor::push_break_label): New function.
+	(IRVisitor::pop_break_label): New function.
+	(IRVisitor::push_continue_label): New function.
+	(IRVisitor::pop_continue_label): New function.
+	(IRVisitor::start_condition): Remove function.
+	(IRVisitor::start_else): Remove function.
+	(IRVisitor::end_condition): Remove function.
+	(IRVisitor::start_catches): Remove function.
+	(IRVisitor::start_catch): Remove function.
+	(IRVisitor::end_catch): Remove function.
+	(IRVisitor::end_catches): Remove function.
+	(IRVisitor::start_finally): Remove function.
+	(IRVisitor::end_finally): Remove function.
+	(IRVisitor::start_case): Remove function.
+	(IRVisitor::end_case): Remove function.
+	* d-irstate.cc: Remove.
+
+2015-08-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-lang.in (gtfiles): Replace d-lang.h for d-tree.h
+	* d-lang.h: Move all GTY structures to d-tree.h, updated all source
+	header dependencies.
+	* d-tree.h: New file.
+
+2015-08-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* toir.cc (IRVisitor::start_condition): Don't cache condition.
+	(IRVisitor::start_else): Return the then body, updated all callers.
+	(IRVisitor::end_condition): Update signature.
+	(IRVisitor::start_catches): Return the try body, updated all callers.
+	(IRVisitor::start_catch): Don't cache catch type.
+	(IRVisitor::end_catch): Update signature.
+	(IRVisitor::end_catches): Update signature.
+	(IRVisitor::start_finally): Return the try body, updated all callers.
+	(IRVisitor::end_finally): Update signature.
+	(IRVisitor::start_case): Don't cache the condition.
+	(IRVisitor::end_case): Update signature.
+	* d-codegen.cc (convert_for_assignment): Use size_type_node for index.
+	* d-irstate.cc (IRState::beginFlow): Remove call to push_stmt_list.
+
+2015-08-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (push_stmt_list): New function.
+	(pop_stmt_list): New function.
+	(add_stmt): New function.
+	(start_function): New function.
+	(end_function): New function.
+	(expand_decl): Update to use new interface.
+	(build_closure): Likewise.
+	(push_binding_level): Moved from d-lang.cc.
+	(pop_binding_level): Likewise.
+	* d-lang.cc (d_init): Inline call to init_global_binding_level.
+	(alloc_binding_level): Remove function.
+	(push_binding_level): Remove function.
+	(pop_binding_level): Remove function.
+	(init_global_binding_level): Remove function.
+	(set_decl_binding_chain): Remove function.
+	* d-elem.cc (DeclarationExp::toElem): Likewise.
+	* d-objfile.cc (VarDeclaration::toObjFile): Likewise.
+	(FuncDeclaration::toObjFile): Likewise.
+	* toir.cc (IRVisitor::start_scope): Moved from d-irstate.cc, updated
+	all callers in IRVisitor.
+	(IRVisitor::end_scope): Likewise.
+	(IRVisitor::is_return_label): Likewise.
+	(IRVisitor::do_label): Likewise.
+	(IRVisitor::do_jump): Likewise.
+	(IRVisitor::start_condition): Likewise.
+	(IRVisitor::start_else): Likewise.
+	(IRVisitor::end_condition): Likewise.
+	(IRVisitor::start_catches): Likewise.
+	(IRVisitor::start_catch): Likewise.
+	(IRVisitor::end_catch): Likewise.
+	(IRVisitor::end_catches): Likewise.
+	(IRVisitor::start_finally): Likewise.
+	(IRVisitor::end_finally): Likewise.
+	(IRVisitor::end_loop): Likewise.
+	(IRVisitor::start_case): Likewise.
+	(IRVisitor::end_case): Likewise.
+	(build_ir): Update signature.
+
+2015-08-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (DMD_COMPILE): Declare as COMPILE with WARN_CXXFLAGS
+	replaced with DMD_WARN_CXXFLAGS.
+	(DMDGEN_COMPILE): Declare as DMD_COMPILE but with COMPILER replaced
+	with COMPILER_FOR_BUILD.
+	(d/idgen): Use LINKER_FOR_BUILD.
+	(d/impcvgen): Likewise.
+	(d/%.o): Use DMD_COMPILE and POSTCOMPILE.
+	(d/%.dmdgen.o): Use DMDGEN_COMPILE and POSTCOMPILE.
+
+2015-07-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (current_irstate): Remove.
+	(d_build_call): Check cfun before dereferencing.
+	* d-codegen.h (current_irstate): Redefine as macro.
+	* d-irstate.cc (IRState::IRState): Remove.
+	(IRState::startFunction): Initialize language-specific cfun field.
+	(IRState::endFunction): Free language-specific cfun field.
+	* d-lang.cc (d_parse_file): Don't initialize current_irstate.
+	* d-lang.h (language_function): Add irs field.
+	* d-objfile.cc (Dsymbol::toObjFile): Check cfun.
+	(FuncDeclaration::toObjFile): Adjust start and end calls.
+
+2015-07-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-irstate.cc (IRState::doArraySet): Remove function.
+	* d-codegen.cc (build_array_set): New function.
+	* d-elem.cc (AssignExp::toElem): Use build_array_set.
+	(StructLiteralExp::toElem): Likewise.
+
+	* d-codegen.cc (build_array_set): Don't set this_block, update call to
+	pop_binding_level.
+	* d-irstate.cc (IRState::endFunction): Update assert.
+	(IRState::startScope): Move IRState::startBindings here, clean-up.
+	(IRState::endScope): Move IRState::endBindings here, clean-up.
+	(IRState::startBindings): Remove function.
+	(IRState::endBindings): Likewise.
+	(IRState::currentScope): Likewise.
+	(IRState::scopes_): Remove.
+	* d-lang.cc (pop_binding_level): Update signature, clean-up.
+	(d_pushdecl): Don't set names_end.
+	(binding_level::names_end): Remove.
+	(binding_level::this_block): Remove.
+	(FuncDeclaration::toObjFile): Clean-up.
+
+2015-07-24  Sebastien Alaiwan  <sebastien.alaiwan@gmail.com>
+
+	* d-lang.cc (deps_write): Use StringTable instead of hash_set of string
+	pointers.
+
+2015-07-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-attribs.h: Adjust includes.
+	* d-builtins.cc: Likewise.
+	* d-codegen.cc: Likewise.
+	* d-convert.cc: Likewise.
+	* d-decls.cc: Likewise.
+	* d-elem.cc: Likewise.
+	* d-glue.cc: Likewise.
+	* d-incpath.cc: Likewise.
+	* d-irstate.cc: Likewise.
+	* d-lang.cc: Likewise.
+	* d-longdouble.cc: Likewise.
+	* d-objfile.cc: Likewise.
+	* d-port.cc: Likewise.
+	* d-target.cc: Likewise.
+	* d-todt.cc: Likewise.
+	* toir.cc: Likewise.
+	* types.cc: Likewise.
+
+2015-07-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (convert_expr): Warn about casts between imaginary
+	and non-imaginary types.
+	* d-convert (d_convert_basic): Rename to convert, handle conversions
+	between complex and imaginary types.
+	(convert): Remove.
+	(d_build_truthvalue_op): Update to call convert.
+	(d_truthvalue_conversion): Likewise.
+
+	* d-builtins.cc (d_init_builtins): Build imaginary types as distinct
+	floating point type nodes.
+	* d-codegen.cc (build_float_modulus): Update to handle imaginary types.
+	(d_array_type): Use the front-end equivalent of sizetype to represent
+	the index type of arrays.
+	(build_array_index): Likewise.
+	(build_offset_op): Likewise.
+	(expand_intrinsic): Only get the inner callee if it's an address.
+
+	* d-codegen.h (component_ref, modify_expr, vmodify_expr, build_vinit)
+	(build_nop, build_vconvert, build_boolop, compound_expr)
+	(vcompound_expr, real_part, imaginary_part): Move to d-codegen.cc,
+	use fold build functions for codegen.
+	* d-codeden.cc (build_address): Use build_fold_addr_expr_with_type,
+	remove special handling of taking an address of an indirect ref.
+	(return_expr): New function.
+	(complex_expr): New function.
+	(indirect_ref): Use fold build functions for codegen.
+	(build_deref): Likewise.
+	(build_array_index): Likewise.
+	(build_offset_op): Likewise.
+	(void_okay_p): Likewise.
+	(build_binary_op): Likewise.
+	(build_float_modulus): Likewise.
+	* d-objfile.cc (FuncDeclaration::toObjFile): Likewise.
+	* d-elem.cc (MinExp::toElem): Likewise.
+	(AddExp::toElem): Likewise.
+	(NotExp::toElem): Likewise.
+	(ComExp::toElem): Likwise.
+	(NegExp::toElem): Likewise.
+	* d-irstate.cc (IRState::doLabel): Likewise.
+	(IRState::doReturn): Likewise.
+	(IRState::doJump): Likewise.
+
+	* d-attribs.c: Adjust includes for flags.h changes.
+	* d-builtins.cc: Likewise.
+	* d-codegen.cc: Likewise.
+	* d-convert.cc: Likewise.
+	* d-elem.cc: Likewise.
+	* d-decls.cc: Likewise.
+	* d-glue.cc: Likewise.
+	* d-incpath.cc: Likewise.
+	* d-irstate.cc: Likewise.
+	* d-lang.cc: Likewise.
+	* d-longdouble.cc: Likewise.
+	* d-objfile.cc: Likewise.
+	* d-port.cc: Likewise.
+	* d-target.cc: Likewise.
+	* d-todt.cc: Likewise.
+	* toir.cc: Likewise.
+	* types.cc: Likewise.
+
+2015-07-20  Sebastien Alaiwan  <sebastien.alaiwan@gmail.com>
+
+	* d-lang.cc (is_system_module): Extract function.
+	(write_one_dep): Extract function.
+	(deps_write): Eliminate duplicated dependencies, include
+	indirect and private dependencies.
+
+2015-07-19  Sebastien Alaiwan  <sebastien.alaiwan@gmail.com>
+
+	* d-lang.cc (d_parse_file): Set ref flag on the module and make deps
+	file handle.
+
+2015-07-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (convert_for_assignment): Remove handling of zero
+	initialising a structure using memset.
+	(d_build_call): Removing handling of setting of return slot
+	optimisation on in call expression.
+	* d-elem.cc (AssignExp::toElem): Emit a memset to zero initialise
+	structures here.  Set return slot optimisation on construction of
+	static arrays and structs only.
+
+2015-07-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (expand_intrinsic_arith): Use build_deref to handle
+	ref parameters being used for the 'overflow' parameter.
+
+2015-07-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-elem.cc (StringExp::toElem): Zero-terminate all string literals
+	types, except for static arrays.
+	* d-objfile.cc (build_type_decl): Add TYPE_DECLs to global declarations,
+	don't call rest_of_decl_declaration.
+	(d_finish_compilation): Call rest_of_decl_declaration on TYPE_DECLs.
+	(Dsymbol::toObjFile): Don't try to handle tuples when emitting import
+	declarations to debug.
+	* d-builtins.cc (builtin_sym): Use StructDeclaration for decl field.
+	(build_dtype): Don't handle anonymous structs.  Create a stub parent
+	module for the declaration symbol.
+	(d_build_builtins_module): Always override the parent module of
+	converted struct declarations.
+	(maybe_set_builtin_1): Convert all static array parameters to ref
+	parameters, not just va_list.
+
+2015-07-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-attribs.c (d_handle_section_attribute): Use VAR_P throughout.
+	(d_handle_weak_attribute): Use VAR_OR_FUNCTION_DECL_P.
+	* d-codegen.cc (convert_for_assignment): Use VAR_P.
+	* d-lang.cc (pop_binding_level): Likewise.
+	(d_types_compatible_p): Likewise.
+	* d-objfile.cc (setup_symbol_storage): Likewise.
+	(mark_needed): Likewise.
+	(d_finish_compilation): Likewise.
+
+2015-06-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* intrinsics.def: Added ADDS, ADDSL, ADDU, ADDUL, SUBS, SUBSL, NEGS,
+	NEGSL, MULS, MULSL, MULU, and MULUL intrinsic definitions.
+	* d-codegen.cc (expand_intrinsic_arith): New function.
+	(expand_intrinsic): Add cases for core.checkedint functions adds, addu,
+	subs, subu, negs, muls, and mulu intrinsics.
+
+2015-06-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (D_DMD_H): Remove.
+	(D_TREE_H): Likewise.
+	(CFLAGS-d/d-spec.o): Declare extra CFLAGS for building driver.
+	(d-warn): Declare default warning flags for compiler.
+	(D_DMD_OBJS): Remove 'dmd' from the object file suffix.
+	(D_GLUE_OBJS): Remove 'cglue' and 'glue' from object file suffix.
+	(D_GENERATED_OBJS): Remove 'gen' from the object file suffix.
+	(D_BORROWED_C_OBJS): Remove.
+	(CFLAGS-d/id.o): Declare extra CFLAGS for building generated sources.
+	(CFLAGS-d/impcnvtab.o): Likewise.
+	* types.cc (TypeVisitor::visit (TypeClass)): Build a pointer type for
+	classes, not a reference type.
+	* types.cc (TypeVisitor::visit (TypeDelegate)): Don't build a
+	METHOD_TYPE for delegates, as that requires knowing the underlying
+	record type for the 'this' object parameter.
+	(TypeVisitor::visit (TypeEnum): Don't call rest_of_type_compilation.
+	(TypeVisitor::visit (TypeClass): Likewise.
+	(TypeVisitor::visit (TypeStruct): Likewise.
+	* d-decls.cc (TypeInfoDeclaration::toSymbol): Assert class is a pointer
+	type, not a reference type.
+	(FuncDeclaration::toSymbol): Don't convert nested functions into a
+	METHOD_TYPE to be strictly compatible with delegates.
+	* d-codegen.cc (convert_for_argument): Use correct accessors for array
+	.ptr and .length properties.
+	(expand_intrinsic_vaarg): Don't remove the va_list pointer reference,
+	as the backend now assumes this is what the front-end sets up.
+	(d_build_call): Remove assert as delegates and nested functions are no
+	longer represented as METHOD_TYPE.
+	(build_vthis_type): New function.
+	(d_decl_context): Don't set static/__gshared declaration context as
+	anything other than the enclosing module of the declaration.
+	* toir.cc (IRVisitor::visit (ExtAsmStatement)): Support named labels by
+	calling resolve_asm_operand_names.
+	* d-builtins.cc (d_backend_init): Remove.
+	(d_backend_term): Remove.
+	* d-lang.cc (d_write_global_declarations): Remove langhook.
+	(d_init): Move d_backend_init implementation here.
+	(d_parse_file): Move d_write_global_declarations implementation here.
+	(d_finish_compilation): Remove calls to finalize_compilation_unit,
+	check_global_declarations, and emit_debug_global_declarations.
+	(d-system.h): Remove file.  Move all includes into local sources.
+
+2015-06-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (d_build_call): Only apply CALL_EXPR_RETURN_SLOT_OPT to
+	calls returning an aggregate.
+	(expand_intrinsic): Use CALL_EXPR_FN and CALL_EXPR_ARG directly.
+	(layout_aggregate_type): Update signature.
+	(insert_aggregate_field): Likewise.
+	(finish_aggregate_type): Likewise.
+	* d-codegen.h (AggLayout): Remove helper class.
+	(AddrOfExpr): Remove helper class.
+	(CallExpr): Remove helper class.
+	* d-elem.cc (InExp::toElem): Use build_address directly.
+	(CatAssignExp::toElem): Likewise.
+	(IndexExp::toElem): Likewise.
+	(RemoveExp::toElem): Likewise.
+	* types.cc (TypeVisitor::visit (TypeFunction)): Only apply
+	TREE_ADDRESSABLE to function types returning an aggregate.
+	(TypeVisitor::visit (TypeStruct)): Update for layout_aggregate_type and
+	finish_aggregate_type changes.
+	(TypeVisitor::visit (TypeClass)): Likewise.
+
+2015-06-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-objfile.cc (setup_symbol_storage): Mark declarations as private or
+	protected for the benefit of debug code.
+	* d-elem.cc (ArrayLiteralExp::toElem): Only set a value at the given
+	index in the array constructor if it is non-zero.
+	(AssignExp::toElem): Use memset it assigning/initialising an array with
+	all zeroes.
+	(IndexExp::toElem): Simplify codegen to use a placeholder variable for
+	the dollar length.
+	(SliceExp::toElem): Likewise.
+	* d-codegen.cc (ArrayScope): Remove helper class.
+	* Make-lang.in (cc1d$(exeext)): Use link mutex.
+
+2015-05-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (D_GLUE_OBJS): Rename d-ctype.cc to types.cc.
+	(d-spec.o): Rename d-spec.cc to d-spec.c
+	* types.cc (build_ctype): New function.
+	(Type::toCtype): Convert toCtype methods to use Visitor interface.
+
+2015-04-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (D_GLUE_OBJS): Add d-attribs.o.  Remove d-gt.o.
+	* d-attribs.c: New file.
+	* d-builtins.cc: Move attribute handler functions to d-attribs.c
+	* d-lang.cc: Likewise.  Added include for gtype-d.h from d-gt.cc.
+	* d-gt.cc: Remove file.
+
+2015-04-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc, d-convert.cc, d-ctype.cc, d-decls.cc, d-elem.cc,
+	d-glue.cc, d-incpath.cc, d-irstate.cc, d-longdouble.cc, d-port.cc,
+	d-target.cc, d-typinf.cc, toir.cc: Re-order included headers.
+	* d-codegen.h, d-dmd-gcc.h, d-irstate.h, d-lang.h, d-objfile.cc,
+	d-system.h: Remove all includes from headers.
+	* d-codegen.cc: Re-order included headers.
+	(build_attributes): Use ctfeInterpret instead of optimize.
+	* d-lang.cc: Re-order included headers.
+	(d_init_options): Don't use tristate enum for flag_emit_templates.
+	(d_handle_option): Likewise.
+	* d-objfile.cc: Re-order included headers.
+	(output_declaration_p): Update check for flag_emit_templates.
+	(setup_symbol_storage): Likewise.
+	* d-todt.cc: Re-order included headers.
+	(ExpInitializer::toDt): Use ctfeInterpret instead of optimize.
+	(TypeInfoTupleDeclaration::toDt): Likewise.
+
+2015-04-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_exception_object): Remove.
+	* runtime.def (BEGIN_CATCH): Declare runtime function __gdc_begin_catch.
+	* toir.cc (IRVisitor::visit::TryCatchStatement): Use LIBCALL_BEGIN_CATCH
+	to get the correct exception object for handler.
+
+2015-04-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (d_build_call): Set CALL_EXPR_RETURN_SLOT_OPT on calls to
+	functions that return an aggregate or array that returns in memory.
+	(build_memref): New function.
+	(get_object_method): Use build_memref instead of building a
+	POINTER_PLUS_EXPR for vtable dereferences.
+	* d-objfile.cc (FuncDeclaration::toObjFile): Support NRVO on
+	ARRAY_TYPE's that may not return in registers.
+	* d-ctype.cc (TypeFunction::toCtype): Don't mark TREE_ADDRESSABLE when
+	returning non-POD types by reference.
+
+2015-04-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (EnumDeclaration::toDebug): Remove.
+	(ClassDeclaration::toDebug): Remove.
+	(StructDeclaration::toDebug): Remove.
+	* d-ctype.cc (TypeEnum::toCtype): Call rest_of_type_compilation here.
+	(TypeClass::toCtype): Likewise.
+	(TypeStruct::toCtype): Likewise.
+
+2015-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-objfile.cc (get_decl_tree): Check and generate correct code for when
+	a non-local 'this' is accessed through a closure pointer.
+	(FuncDeclaration::toObjFile): Remove check for _arguments.
+	* d-codegen.cc (build_local_var): Likewise.
+
+2015-04-11  Johannes Pfau  <johannespfau@gmail.com>
+
+	* d-objfile.cc (setup_symbol_storage): Mark functions without
+	body as DECL_EXTERNAL.
+
+2015-04-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (get_decl_tree): Get correct non-local 'this' decl by
+	constructing component reference through parent link of nested classes.
+	* d-builtins.cc (DEF_FUNCTION_TYPE_VAR_8): Remove.
+	(DEF_FUNCTION_TYPE_VAR_12): Likewise.
+	(DEF_FUNCTION_TYPE_VAR_7, DEF_FUNCTION_TYPE_VAR_11): New macros.
+
+2015-04-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-objfile.cc (output_declaration_p): Remove check for semanticRun.
+	(FuncDeclaration::toObjFile): Name bool parameter force_p, allow it to
+	override the initial output_declaration_p check.  Force run all
+	semantic passes for symbols that it routine is generating code for.
+	(d_finish_function): Don't mark TREE_STATIC on functions that are
+	really DECL_EXTERN.
+	(finish_thunk): Force thunks referencing external methods to be
+	expanded to gimple.
+	* d-decls.cc (FuncDeclaration::toThunkSymbol): Call toObjFile on all
+	thunk target functions.
+
+2015-04-05  Johannes Pfau  <johannespfau@gmail.com>
+
+	* d-lang.cc (d_handle_section_attribute): New function.
+	* d-builtins.cc (handle_alias_attribute): Move to d-lang.cc to
+	support attribute(alias) in user code.
+	* d-lang.cc (d_handle_alias_attribute): Ditto.
+	* d-lang.cc (d_handle_weak_attribute): New function.
+	* d-decls.cc (FuncDeclaration::toSymbol): Do not set
+	DECL_DECLARED_INLINE_P prematurely.
+
+2015-03-21  Johannes Pfau  <johannespfau@gmail.com>
+
+	* d-lang.cc (d_init): Add GNU_EMUTLS version.
+	* d-objfile.cc (build_emutls_function): New function.
+	* d-objfile.cc (VarDeclaration::toObjFile): Collect all TLS variables
+	in a module into tlsVars array.
+	* d-objfile.cc (genmoduleinfo): Add reference to __modtlsscan
+	function generated by build_emutls_function to moduleinfo.
+
+2015-02-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-lang.in: Remove lang_requires_boot_languages.
+	* d-incpath.cc (iprefix): Remove global variable.
+	(multilib_dir): Ditto.
+	(prefixed_path): Add iprefix parameter.
+	(add_import_paths): Add iprefix and imultilib parameter.
+	Use cpp_include_defaults to get list of import paths.
+	* d-lang.cc (iprefix_dir): New static variable to cache -iprefix switch.
+	(imultilib_dir): New static variable to cache -imultilib switch.
+	(d_init): Pass iprefix_dir and imultilib_dir to add_import_paths.
+	(d_handle_option): Use new static variables.
+
+2015-02-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc: Remove d-confdef.h header.
+	* d-incpath.cc: Ditto.
+	* d-spec.cc: Ditto.
+
+2015-01-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-incpath.cc (add_phobos_versyms): Remove function.
+	* d-lang.cc (d_init): Remove call to add_phobos_versyms.
+
+2015-01-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (DEF_FUNCTION_TYPE_VAR_8)
+	(DEF_FUNCTION_TYPE_VAR_12): New macros.
+
+2015-01-24  Johannes Pfau  <johannespfau@gmail.com>
+
+	* d-builtins.cc (d_build_builtins_module): Mark builtin functions
+	as @nogc.
+
+2015-01-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in: Update for D frontend changes.
+	* d-asmstmt.cc: Remove file.
+	* d-builtins.cc (build_dtype): No longer set struct handle.
+	(d_gcc_paint_type): Move to Target::paintAsType.
+	* d-codegen.cc (convert_expr): No longer call getImpl on associative
+	array conversions.  Add case for converting void pointers to delegates.
+	(unhandled_arrayop_p): Remove.
+	(build_two_field_type): Use layout_type instead of building
+	TYPE_STUB_DECL and calling rest_of_decl_compilation.
+	(build_binop_assignment): New function.
+	(libcall_ids): Remove static variable.
+	(get_libcall): New function.
+	(maybe_set_intrinsic): Remove druntime library call handling.
+	(expand_intrinsic_vaarg): Dereference ref va_list parameters.
+	(build_closure): New function.
+	(WrappedExp::WrappedExp): Move to frontend sources.
+	(WrappedExp::toCBuffer): Ditto.
+	* d-codegen.h (LibCallFlag): New enum.
+	(LibCall): Use runtime.def macro to define members.
+	* d-ctype.cc (Type::toCParamtype): Remove function.
+	(TypeTypedef::toCParamtype): Ditto.
+	(TypeClass::toSymbol): Ditto.
+	(TypeFunction::retStyle): Move to retStyle.
+	(TypeSArray::toCParamtype): Ditto.
+	(Type::toSymbol): Ditto.
+	(Type::totym): Ditto.
+	(TypeFunction::totym): Ditto.
+	* d-decls.cc (Dsymbol::toSymbolX): Update for frontend changes.
+	(Dsymbol::toImport): Ditto.
+	(VarDeclaration::toSymbol): Ditto.
+	(FuncDeclaration::toSymbol): Ditto.
+	(InterfaceDeclaration::toSymbol): Use TREE_READONLY instead of
+	(EnumDeclaration::toDebug): Only call rest_of_type_compilation on
+	ENUMERAL_TYPE types.
+	TREE_CONSTANT to declare that the symbol cannot be modified.
+	(ClassDeclaration::toVtblSymbol): Ditto.
+	(AggregateDeclaration::toInitializer): Ditto.
+	(EnumDeclaration::toInitializer): Ditto.
+	(TypedefDeclaration::toInitializer): Remove function.
+	(TypedefDeclaration::toDebug): Ditto.
+	(Dsymbol::cvMember): Remove stub function.
+	(EnumDeclaration::cvMember): Ditto.
+	(FuncDeclaration::cvMember): Ditto.
+	(VarDeclaration::cvMember): Ditto.
+	(TypedefDeclaration::cvMember): Ditto.
+	* d-elem.cc (XorExp::toElem): Remove call to unhandled_arrayop_p.
+	(OrExp::toElem): Ditto.
+	(AndExp::toElem): Ditto.
+	(UshrExp::toElem): Ditto.
+	(ShrExp::toElem): Ditto.
+	(ShlExp::toElem): Ditto.
+	(ModExp::toElem): Ditto.
+	(DivExp::toElem): Ditto.
+	(MulExp::toElem): Ditto.
+	(MinExp::toElem): Ditto.
+	(AddExp::toElem): Ditto.
+	(XorAssignExp::toElem): Ditto.
+	(OrAssignExp::toElem): Ditto.
+	(AndAssignExp::toElem): Ditto.
+	(UshrAssignExp::toElem): Ditto.
+	(ShrAssignExp::toElem): Ditto.
+	(ShlAssignExp::toElem): Ditto.
+	(ModAssignExp::toElem): Ditto.
+	(DivAssignExp::toElem): Ditto.
+	(MulAssignExp::toElem): Ditto.
+	(PowAssignExp::toElem): Ditto.
+	(MinAssignExp::toElem): Ditto.
+	(AddAssignExp::toElem): Ditto.
+	(BinExp::toElemBin): Move to build_binop_assignment.
+	(AssignExp::toElem): Update for frontend changes.
+	(DelegatePtrExp::toElem): New function.
+	(DelegateFuncptrExp::toElem): New function.
+	(DelegateExp::toElem): Update for frontend changes.
+	(FuncExp::toElem): Ditto.
+	(NewExp::toElem): Ditto.
+	(StringExp::toElem): Don't set TREE_READONLY on string literals.
+	(AssocArrayLiteralExp::toElem): Remove codegen rewrite for new
+	associative array implementation.
+	* d-glue.cc (Global::isSpeculativeGagging): Remove function.
+	(Dsymbol::ungagSpeculative): Ditto.
+	(Ungag::~Ungag): Ditto.
+	(Loc::toChars): Update for new column diagnostic support.
+	(Loc::Loc): Ditto.
+	(Loc::equals): Ditto.
+	(error): Ditto.
+	(binary): Remove function.
+	(asmSemantic): New function.
+	(retStyle): New function.
+	(FuncDeclaration::isBuiltin): Rename to isBuiltin.
+	* d-intrinsics.def: Rename to intrinsics.def.
+	* d-irstate.cc (IRState::addExp): Remove old warning to catch statements
+	with no side effects.  Now handled in frontend.
+	* d-lang.cc (d_init_options): Update for frontend changes.
+	(d_initialize_diagnostics): Remove function.
+	(d_add_builtin_version): Update for frontend changes.
+	(d_init): Ditto.
+	(d_handle_option): Ditto.
+	(d_post_options): Ditto.
+	(d_parse_file): Ditto.
+	* d-objfile.cc (Nspace::toObjFile): New function.
+	(StructDeclaration::toObjFile): Update for frontend changes.
+	(TypedefDeclaration::toObjFile): Remove function.
+	(TemplateInstance::toObjFile): Update for frontend changes.
+	(TemplateMixin::toObjFile): Ditto.
+	(unnest_function): New function.
+	(output_declaration_p): Update for frontend changes.
+	(FuncDeclaration::toObjFile): Ditto.
+	(FuncDeclaration::buildClosure): Move to buildClosure.
+	(get_linemap): Update for frontend changes.
+	(build_simple_function): Ditto.
+	(build_call_function): Ditto.
+	* d-target.cc (Target::va_listType): New function.
+	(Target::paintAsType): Ditto.
+	* d-todt.cc (dt_container2): Do not set TREE_READONLY on initialisers.
+	(dt_container): Ditto.
+	(ClassReferenceExp::toDt2): Update for C++ class support.
+	(ClassReferenceExp::toInstanceDt): Ditto.
+	(TypeTypedef::toDt): Remove function.
+	(TypeInfoTypedefDeclaration::toDt): Ditto.
+	(TypeInfoAssociativeArrayDeclaration::toDt): Update typeinfo size.
+	(TypeInfoAssociativeArrayDeclaration::toDt): Remove reference to impl
+	field in TypeInfo struct.
+	(TypeInfoStructDeclaration::toDt): Update for frontend changes.
+	* d-typinf.cc (Type::getTypeInfo): Update for frontend changes.
+	(TypeTypedef::getTypeInfoDeclaration): Remove function.
+	(createTypeInfoArray): Remove function.
+	* runtime.def: New file.
+	* toir.cc (IRVisitor::visit::DtorExpStatement): Remove function.
+	(IRVisitor::visit::ExtAsmStatement): Update for frontend changes.
+
+2015-01-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-elem.cc (UshrAssignExp::toElem): Remove integer promotion on left
+	hand side of unsigned right shift expression.
+
+2015-01-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-system.h: Include hash-set.h, machmode.h, vec.h, double-int.h,
+	input.h, alias.h, symtab.h and inchash.h due to flattening of tree.h.
+	* d-gt.cc: Ditto.
+
+2015-01-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.h (build_boolop): Don't eagerly fold comparison expressions.
+
+
+Copyright (C) 2015 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

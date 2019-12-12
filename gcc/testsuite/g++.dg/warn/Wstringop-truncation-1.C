@@ -1,7 +1,7 @@
 /* PR/tree-optimization/84480 - bogus -Wstringop-truncation despite
    assignment with an inlined string literal
    { dg-do compile }
-   { dg-options "-O2 -Wstringop-truncation" }  */
+   { dg-options "-O2 -Wstringop-truncation --param early-inlining-insns-O2=14" }  */
 
 #include <string.h>
 

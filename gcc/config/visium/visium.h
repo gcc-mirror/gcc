@@ -1,5 +1,5 @@
 /* Definitions of target machine for Visium.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by C.Nettleton, J.P.Parkes and P.Garbett.
 
    This file is part of GCC.
@@ -486,27 +486,6 @@
    0, 1,                   /* mdb, mdc */      \
    1, 0, 0, 0, 0, 0, 0, 0, /* f0 .. f7 */      \
    0, 0, 0, 0, 0, 0, 0, 0, /* f8 .. f15 */     \
-   1, 1, 1 }               /* flags, arg, frame */
-
-/* `CALL_USED_REGISTERS'
-
-   Like `FIXED_REGISTERS' but has 1 for each register that is
-   clobbered (in general) by function calls as well as for fixed
-   registers.  This macro therefore identifies the registers that are
-   not available for general allocation of values that must live
-   across function calls.
-
-   If a register has 0 in `CALL_USED_REGISTERS', the compiler
-   automatically saves it on function entry and restores it on
-   function exit, if the register is used within the function.  */
-#define CALL_USED_REGISTERS \
- { 1, 1, 1, 1, 1, 1, 1, 1, /* r0 .. r7 */      \
-   1, 1, 1, 0, 0, 0, 0, 0, /* r8 .. r15 */     \
-   0, 0, 0, 0, 1, 1, 0, 1, /* r16 .. r23 */    \
-   1, 1, 1, 1, 1, 1, 1, 1, /* r24 .. r31 */    \
-   1, 1,                   /* mdb, mdc */      \
-   1, 1, 1, 1, 1, 1, 1, 1, /* f0 .. f7 */      \
-   1, 0, 0, 0, 0, 0, 0, 0, /* f8 .. f15 */     \
    1, 1, 1 }               /* flags, arg, frame */
 
 /* Like `CALL_USED_REGISTERS' except this macro doesn't require that
@@ -1045,16 +1024,20 @@ struct visium_args
 
 	moviu	r9,%u FUNCTION
 	movil	r9,%l FUNCTION
+	[nop]
 	moviu	r20,%u STATIC
 	bra	tr,r9,r0
-	movil	r20,%l STATIC
+	 movil	r20,%l STATIC
 
     A difficulty is setting the correct instruction parity at run time.
 
 
     TRAMPOLINE_SIZE 
     A C expression for the size in bytes of the trampoline, as an integer. */
-#define TRAMPOLINE_SIZE 20
+#define TRAMPOLINE_SIZE (visium_cpu == PROCESSOR_GR6 ? 24 : 20)
+
+/* Alignment required for trampolines, in bits.  */
+#define TRAMPOLINE_ALIGNMENT (visium_cpu == PROCESSOR_GR6 ? 64 : 32)
 
 /* Implicit calls to library routines
 
@@ -1134,8 +1117,8 @@ do									\
    always make code faster, but eventually incurs high cost in
    increased code size.
 
-   Since we have a movmemsi pattern, the default MOVE_RATIO is 2, which
-   is too low given that movmemsi will invoke a libcall.  */
+   Since we have a cpymemsi pattern, the default MOVE_RATIO is 2, which
+   is too low given that cpymemsi will invoke a libcall.  */
 #define MOVE_RATIO(speed) ((speed) ? 9 : 3)
 
 /* `CLEAR_RATIO (SPEED)`

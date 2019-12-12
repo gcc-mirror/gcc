@@ -1,6 +1,5 @@
 /* { dg-do compile { target { powerpc64le-*-* } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-O2 -ftree-vectorize -mcpu=power8 -ffast-math -fvect-cost-model=unlimited" } */
+/* { dg-options "-O2 -ftree-vectorize -mdejagnu-cpu=power8 -ffast-math -fvect-cost-model=unlimited" } */
 
 /* This tests special handling for various uses of xxpermdi, other than
    to perform doubleword swaps.  */

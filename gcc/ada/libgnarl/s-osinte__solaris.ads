@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-2017, Florida State University            --
---          Copyright (C) 1995-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -258,6 +258,11 @@ package System.OS_Interface is
 
    function To_Timespec (D : Duration) return timespec;
    pragma Inline (To_Timespec);
+
+   function sysconf (name : int) return long;
+   pragma Import (C, sysconf);
+
+   SC_NPROCESSORS_ONLN : constant := 15;
 
    -------------
    -- Process --
@@ -536,17 +541,18 @@ private
    end record;
    pragma Convention (C, record_type_3);
 
+   type upad64_t is new Interfaces.Unsigned_64;
+
    type mutex_t is record
       flags : record_type_3;
-      lock  : String (1 .. 8);
-      data  : String (1 .. 8);
+      lock  : upad64_t;
+      data  : upad64_t;
    end record;
    pragma Convention (C, mutex_t);
 
    type cond_t is record
-      flag  : array_type_9;
-      Xtype : unsigned_long;
-      data  : String (1 .. 8);
+      flags : record_type_3;
+      data  : upad64_t;
    end record;
    pragma Convention (C, cond_t);
 

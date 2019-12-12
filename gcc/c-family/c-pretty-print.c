@@ -1,5 +1,5 @@
 /* Subroutines common to both C and C++ pretty-printers.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -192,7 +192,7 @@ pp_c_cv_qualifiers (c_pretty_printer *pp, int qualifiers, bool func_type)
 
 /* Pretty-print T using the type-cast notation '( type-name )'.  */
 
-static void
+void
 pp_c_type_cast (c_pretty_printer *pp, tree t)
 {
   pp_c_left_paren (pp);
@@ -470,6 +470,16 @@ pp_c_specifier_qualifier_list (c_pretty_printer *pp, tree t)
 			     ? "_Complex" : "__complex__"));
       else if (code == VECTOR_TYPE)
 	{
+	  /* The syntax we print for vector types isn't real C or C++ syntax,
+	     so it's better to print the type name if we have one.  */
+	  tree name = TYPE_NAME (t);
+	  if (!(pp->flags & pp_c_flag_gnu_v3)
+	      && name
+	      && TREE_CODE (name) == TYPE_DECL)
+	    {
+	      pp->id_expression (name);
+	      break;
+	    }
 	  pp_c_ws_string (pp, "__vector");
 	  pp_c_left_paren (pp);
 	  pp_wide_integer (pp, TYPE_VECTOR_SUBPARTS (t));
@@ -525,7 +535,7 @@ pp_c_parameter_type_list (c_pretty_printer *pp, tree t)
       if (!first && !parms)
 	{
 	  pp_separate_with (pp, ',');
-	  pp_c_ws_string (pp, "...");
+	  pp_string (pp, "...");
 	}
     }
   pp_c_right_paren (pp);
@@ -571,16 +581,20 @@ c_pretty_printer::direct_abstract_declarator (tree t)
 
     case ARRAY_TYPE:
       pp_c_left_bracket (this);
-      if (TYPE_DOMAIN (t) && TYPE_MAX_VALUE (TYPE_DOMAIN (t)))
+      if (tree dom = TYPE_DOMAIN (t))
 	{
-	  tree maxval = TYPE_MAX_VALUE (TYPE_DOMAIN (t));
-	  tree type = TREE_TYPE (maxval);
+	  if (tree maxval = TYPE_MAX_VALUE (dom))
+	    {
+	      tree type = TREE_TYPE (maxval);
 
-	  if (tree_fits_shwi_p (maxval))
-	    pp_wide_integer (this, tree_to_shwi (maxval) + 1);
+	      if (tree_fits_shwi_p (maxval))
+		pp_wide_integer (this, tree_to_shwi (maxval) + 1);
+	      else
+		expression (fold_build2 (PLUS_EXPR, type, maxval,
+					 build_int_cst (type, 1)));
+	    }
 	  else
-	    expression (fold_build2 (PLUS_EXPR, type, maxval,
-                                     build_int_cst (type, 1)));
+	    pp_string (this, "0");
 	}
       pp_c_right_bracket (this);
       direct_abstract_declarator (TREE_TYPE (t));
@@ -908,7 +922,7 @@ pp_c_void_constant (c_pretty_printer *pp)
 
 /* Pretty-print an INTEGER literal.  */
 
-static void
+void
 pp_c_integer_constant (c_pretty_printer *pp, tree i)
 {
   if (tree_fits_shwi_p (i))
@@ -968,23 +982,22 @@ pp_c_bool_constant (c_pretty_printer *pp, tree b)
     pp_unsupported_tree (pp, b);
 }
 
-/* Attempt to print out an ENUMERATOR.  Return true on success.  Else return
-   false; that means the value was obtained by a cast, in which case
-   print out the type-id part of the cast-expression -- the casted value
-   is then printed by pp_c_integer_literal.  */
+/* Given a value e of ENUMERAL_TYPE:
+   Print out the first ENUMERATOR id with value e, if one is found,
+   else print out the value as a C-style cast (type-id)value.  */
 
-static bool
+static void
 pp_c_enumeration_constant (c_pretty_printer *pp, tree e)
 {
-  bool value_is_named = true;
   tree type = TREE_TYPE (e);
-  tree value;
+  tree value = NULL_TREE;
 
   /* Find the name of this constant.  */
-  for (value = TYPE_VALUES (type);
-       value != NULL_TREE && !tree_int_cst_equal (TREE_VALUE (value), e);
-       value = TREE_CHAIN (value))
-    ;
+  if ((pp->flags & pp_c_flag_gnu_v3) == 0)
+    for (value = TYPE_VALUES (type); value != NULL_TREE;
+	 value = TREE_CHAIN (value))
+      if (tree_int_cst_equal (DECL_INITIAL (TREE_VALUE (value)), e))
+	break;
 
   if (value != NULL_TREE)
     pp->id_expression (TREE_PURPOSE (value));
@@ -992,10 +1005,8 @@ pp_c_enumeration_constant (c_pretty_printer *pp, tree e)
     {
       /* Value must have been cast.  */
       pp_c_type_cast (pp, type);
-      value_is_named = false;
+      pp_c_integer_constant (pp, e);
     }
-
-  return value_is_named;
 }
 
 /* Print out a REAL value as a decimal-floating-constant.  */
@@ -1140,9 +1151,8 @@ c_pretty_printer::constant (tree e)
 	  pp_c_bool_constant (this, e);
 	else if (type == char_type_node)
 	  pp_c_character_constant (this, e);
-	else if (TREE_CODE (type) == ENUMERAL_TYPE
-		 && pp_c_enumeration_constant (this, e))
-	  ;
+	else if (TREE_CODE (type) == ENUMERAL_TYPE)
+	  pp_c_enumeration_constant (this, e);
 	else
 	  pp_c_integer_constant (this, e);
       }
@@ -1264,9 +1274,14 @@ c_pretty_printer::primary_expression (tree e)
 
     default:
       /* FIXME:  Make sure we won't get into an infinite loop.  */
-      pp_c_left_paren (this);
-      expression (e);
-      pp_c_right_paren (this);
+      if (location_wrapper_p (e))
+	expression (e);
+      else
+	{
+	  pp_c_left_paren (this);
+	  expression (e);
+	  pp_c_right_paren (this);
+	}
       break;
     }
 }

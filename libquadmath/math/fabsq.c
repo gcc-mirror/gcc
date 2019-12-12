@@ -1,4 +1,4 @@
-/* fabsq.c -- __float128 version of s_fabs.c.
+/* s_fabsl.c -- long double version of s_fabs.c.
  * Conversion to IEEE quad long double by Jakub Jelinek, jj@ultra.linux.cz.
  */
 
@@ -13,13 +13,20 @@
  * ====================================================
  */
 
+#if defined(LIBM_SCCS) && !defined(lint)
+static char rcsid[] = "$NetBSD: $";
+#endif
+
+/*
+ * fabsq(x) returns the absolute value of x.
+ */
+
 #include "quadmath-imp.h"
 
-__float128
-fabsq (__float128 x)
+__float128 fabsq(__float128 x)
 {
-  uint64_t hx;
-  GET_FLT128_MSW64(hx,x);
-  SET_FLT128_MSW64(x,hx&0x7fffffffffffffffLL);
-  return x;
+	uint64_t hx;
+	GET_FLT128_MSW64(hx,x);
+	SET_FLT128_MSW64(x,hx&0x7fffffffffffffffLL);
+        return x;
 }

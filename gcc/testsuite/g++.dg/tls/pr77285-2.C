@@ -1,6 +1,6 @@
 // PR c++/77285
 // { dg-do compile { target c++11 } }
-// { dg-require-effective-target tls }
+// { dg-require-effective-target tls_native }
 // { dg-final { scan-assembler "_Z4var1B3tag" } }
 // { dg-final { scan-assembler "_Z4var2B3tag" } }
 // { dg-final { scan-assembler "_ZTH4var1B3tag" } }

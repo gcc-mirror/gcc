@@ -9,5 +9,6 @@ float cabsf(fc)
 {
   struct doublecomplex dc ;
   dc.real=fc.real; dc.imag=fc.imag;
-  return (float) cabs(dc);
+  return (float) cabs(dc);   /* { dg-warning "incompatible type for argument 1 of .cabs." } */
 }
+

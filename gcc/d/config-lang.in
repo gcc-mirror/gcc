@@ -1,0 +1,51 @@
+# config-lang.in -- Top level configure fragment for gcc D frontend.
+# Copyright (C) 2006-2019 Free Software Foundation, Inc.
+
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Configure looks for the existence of this file to auto-config each language.
+# We define several parameters used by configure:
+#
+# language	- name of language as it would appear in $(LANGUAGES)
+# compilers	- value to add to $(COMPILERS)
+
+language="d"
+
+compilers="d21\$(exeext)"
+
+phobos_target_deps="target-zlib target-libbacktrace"
+phobos_target_libs="target-libphobos $phobos_target_deps"
+
+case "${noconfigdirs}" in
+  # Check if phobos was disabled as unsupported
+  *target-libphobos*)
+    disabled_target_libs="$disabled_target_libs $phobos_target_deps"
+    ;;
+  *)
+    # The --disable-<component> handler in configure.ac is called after
+    # config-lang.in. So when using --disable-libphobos, it has not been
+    # added to noconfigdirs here yet
+    if test x${enable_libphobos} != xno; then
+      target_libs="$phobos_target_libs"
+    else
+      disabled_target_libs="$disabled_target_libs $phobos_target_libs"
+    fi
+    ;;
+esac
+
+gtfiles="\$(srcdir)/d/d-tree.h \$(srcdir)/d/d-builtins.cc \$(srcdir)/d/d-lang.cc \$(srcdir)/d/modules.cc \$(srcdir)/d/typeinfo.cc"
+
+# Do not build by default.
+build_by_default="no"

@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,7 +22,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 unsigned long
-udivmodsi4(unsigned long num, unsigned long den, int modwanted)
+__udivmodsi4(unsigned long num, unsigned long den, int modwanted)
 {
   unsigned long bit = 1;
   unsigned long res = 0;

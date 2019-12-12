@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2018 Free Software Foundation, Inc.
+// Copyright (C) 2013-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,11 +43,11 @@ bool operator<(const T& l, const T& r) { return l.i < r.i; }
 using __gnu_test::SimpleAllocator;
 
 template class std::unordered_multimap<T, T, hash, equal_to,
-				       SimpleAllocator<T>>;
+				       SimpleAllocator<std::pair<const T, T>>>;
 
 void test01()
 {
-  typedef SimpleAllocator<T> alloc_type;
+  typedef SimpleAllocator<std::pair<const T, T>> alloc_type;
   typedef std::allocator_traits<alloc_type> traits_type;
   typedef std::unordered_multimap<T, T, hash, equal_to, alloc_type> test_type;
   test_type v(alloc_type{});

@@ -1,6 +1,6 @@
 // { dg-do run { target c++14 } }
 
-// Copyright (C) 2013-2018 Free Software Foundation, Inc.
+// Copyright (C) 2013-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,7 @@ test01()
   using namespace std::experimental;
 
   wstring_view str0{L"olympus mons"};
-  wstring_view::pointer p = str0.data();
+  wstring_view::const_pointer p = str0.data();
   str0.remove_suffix(2);
   VERIFY( str0.data() == p);
   VERIFY( str0.length() == 10 );

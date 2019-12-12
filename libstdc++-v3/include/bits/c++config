@@ -1,6 +1,6 @@
 // Predefined symbols and macros -*- C++ -*-
 
-// Copyright (C) 1997-2018 Free Software Foundation, Inc.
+// Copyright (C) 1997-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -99,6 +99,14 @@
 # define _GLIBCXX_ABI_TAG_CXX11 __attribute ((__abi_tag__ ("cxx11")))
 #endif
 
+// Macro to warn about unused results.
+#if __cplusplus >= 201703L
+# define _GLIBCXX_NODISCARD [[__nodiscard__]]
+#else
+# define _GLIBCXX_NODISCARD
+#endif
+
+
 
 #if __cplusplus
 
@@ -149,12 +157,12 @@
 #ifndef _GLIBCXX_NOEXCEPT
 # if __cplusplus >= 201103L
 #  define _GLIBCXX_NOEXCEPT noexcept
-#  define _GLIBCXX_NOEXCEPT_IF(_COND) noexcept(_COND)
+#  define _GLIBCXX_NOEXCEPT_IF(...) noexcept(__VA_ARGS__)
 #  define _GLIBCXX_USE_NOEXCEPT noexcept
 #  define _GLIBCXX_THROW(_EXC)
 # else
 #  define _GLIBCXX_NOEXCEPT
-#  define _GLIBCXX_NOEXCEPT_IF(_COND)
+#  define _GLIBCXX_NOEXCEPT_IF(...)
 #  define _GLIBCXX_USE_NOEXCEPT throw()
 #  define _GLIBCXX_THROW(_EXC) throw(_EXC)
 # endif
@@ -199,7 +207,6 @@
   {
     namespace __debug { }
     namespace __parallel { }
-    namespace __profile { }
     namespace __cxx1998 { }
 
     namespace __detail {
@@ -317,9 +324,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
 # define _GLIBCXX_END_NAMESPACE_VERSION
 #endif
 
-// Inline namespaces for special modes: debug, parallel, profile.
-#if defined(_GLIBCXX_DEBUG) || defined(_GLIBCXX_PARALLEL) \
-    || defined(_GLIBCXX_PROFILE)
+// Inline namespaces for special modes: debug, parallel.
+#if defined(_GLIBCXX_DEBUG) || defined(_GLIBCXX_PARALLEL)
 namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -343,21 +349,10 @@ _GLIBCXX_END_NAMESPACE_VERSION
 # ifdef _GLIBCXX_PARALLEL
   inline namespace __parallel { }
 # endif
-
-  // Inline namespaces for profile mode
-# ifdef _GLIBCXX_PROFILE
-  inline namespace __profile { }
-# endif
 }
 
 // Check for invalid usage and unsupported mixed-mode use.
 # if defined(_GLIBCXX_DEBUG) && defined(_GLIBCXX_PARALLEL)
-#  error illegal use of multiple inlined namespaces
-# endif
-# if defined(_GLIBCXX_PROFILE) && defined(_GLIBCXX_DEBUG)
-#  error illegal use of multiple inlined namespaces
-# endif
-# if defined(_GLIBCXX_PROFILE) && defined(_GLIBCXX_PARALLEL)
 #  error illegal use of multiple inlined namespaces
 # endif
 
@@ -378,7 +373,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 // _GLIBCXX_END_NAMESPACE_ALGO
 // _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 // _GLIBCXX_END_NAMESPACE_CONTAINER
-#if defined(_GLIBCXX_DEBUG) || defined(_GLIBCXX_PROFILE)
+#if defined(_GLIBCXX_DEBUG)
 # define _GLIBCXX_STD_C __cxx1998
 # define _GLIBCXX_BEGIN_NAMESPACE_CONTAINER \
 	 namespace _GLIBCXX_STD_C {
@@ -617,9 +612,71 @@ namespace std
 # endif
 #endif
 
+// Unless explicitly specified, enable char8_t extensions only if the core
+// language char8_t feature macro is defined.
+#ifndef _GLIBCXX_USE_CHAR8_T
+# ifdef __cpp_char8_t
+#  define _GLIBCXX_USE_CHAR8_T 1
+# endif
+#endif
+#ifdef _GLIBCXX_USE_CHAR8_T
+# define __cpp_lib_char8_t 201811L
+#endif
+
 /* Define if __float128 is supported on this host. */
 #if defined(__FLOAT128__) || defined(__SIZEOF_FLOAT128__)
 #define _GLIBCXX_USE_FLOAT128
 #endif
 
+#if __GNUC__ >= 7
+// Assume these are available if the compiler claims to be a recent GCC:
+# define _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP 1
+# define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
+# define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
+# define _GLIBCXX_BUILTIN_IS_SAME_AS(T, U) __is_same_as(T, U)
+# if __GNUC__ >= 9
+#  define _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED 1
+# endif
+#elif defined(__is_identifier) && defined(__has_builtin)
+// For non-GNU compilers:
+# if ! __is_identifier(__has_unique_object_representations)
+#  define _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP 1
+# endif
+# if ! __is_identifier(__is_aggregate)
+#  define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
+# endif
+# if __has_builtin(__builtin_launder)
+#  define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
+# endif
+# if __has_builtin(__builtin_is_constant_evaluated)
+#  define _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED 1
+# endif
+# if ! __is_identifier(__is_same)
+#  define _GLIBCXX_BUILTIN_IS_SAME_AS(T, U) __is_same(T, U)
+# endif
+#endif // GCC
+
+// PSTL configuration
+
+#if __cplusplus >= 201703L
+// Preserved here so we have some idea which version of upstream we've pulled in
+// #define PSTL_VERSION 9000
+
+// For now this defaults to being based on the presence of Thread Building Blocks
+# ifndef _GLIBCXX_USE_TBB_PAR_BACKEND
+#  define _GLIBCXX_USE_TBB_PAR_BACKEND __has_include(<tbb/tbb.h>)
+# endif
+// This section will need some rework when a new (default) backend type is added
+# if _GLIBCXX_USE_TBB_PAR_BACKEND
+#  define _PSTL_PAR_BACKEND_TBB
+# else
+#  define _PSTL_PAR_BACKEND_SERIAL
+# endif
+
+# define _PSTL_ASSERT(_Condition) __glibcxx_assert(_Condition)
+# define _PSTL_ASSERT_MSG(_Condition, _Message) __glibcxx_assert(_Condition)
+
+#include <pstl/pstl_config.h>
+
+#endif
 // End of prewritten config; the settings discovered at configure time follow.

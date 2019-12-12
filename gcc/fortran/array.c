@@ -1,5 +1,5 @@
 /* Array things
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -66,6 +66,7 @@ match_subscript (gfc_array_ref *ar, int init, bool match_star)
   match m = MATCH_ERROR;
   bool star = false;
   int i;
+  bool saw_boz = false;
 
   i = ar->dimen + ar->codimen;
 
@@ -90,6 +91,12 @@ match_subscript (gfc_array_ref *ar, int init, bool match_star)
     m = gfc_match_init_expr (&ar->start[i]);
   else if (!star)
     m = gfc_match_expr (&ar->start[i]);
+
+  if (ar->start[i] && ar->start[i]->ts.type == BT_BOZ)
+    {
+      gfc_error ("Invalid BOZ literal constant used in subscript at %C");
+      saw_boz = true;
+    }
 
   if (m == MATCH_NO)
     gfc_error ("Expected array subscript at %C");
@@ -117,6 +124,12 @@ end_element:
   else
     m = gfc_match_expr (&ar->end[i]);
 
+  if (ar->end[i] && ar->end[i]->ts.type == BT_BOZ)
+    {
+      gfc_error ("Invalid BOZ literal constant used in subscript at %C");
+      saw_boz = true;
+    }
+
   if (m == MATCH_ERROR)
     return MATCH_ERROR;
 
@@ -132,6 +145,12 @@ end_element:
       m = init ? gfc_match_init_expr (&ar->stride[i])
 	       : gfc_match_expr (&ar->stride[i]);
 
+      if (ar->stride[i] && ar->stride[i]->ts.type == BT_BOZ)
+	{
+	  gfc_error ("Invalid BOZ literal constant used in subscript at %C");
+	  saw_boz = true;
+	}
+
       if (m == MATCH_NO)
 	gfc_error ("Expected array subscript stride at %C");
       if (m != MATCH_YES)
@@ -142,7 +161,7 @@ matched:
   if (star)
     ar->dimen_type[i] = DIMEN_STAR;
 
-  return MATCH_YES;
+  return (saw_boz ? MATCH_ERROR : MATCH_YES);
 }
 
 
@@ -324,10 +343,22 @@ gfc_free_array_spec (gfc_array_spec *as)
   if (as == NULL)
     return;
 
-  for (i = 0; i < as->rank + as->corank; i++)
+  if (as->corank == 0)
     {
-      gfc_free_expr (as->lower[i]);
-      gfc_free_expr (as->upper[i]);
+      for (i = 0; i < as->rank; i++)
+	{
+	  gfc_free_expr (as->lower[i]);
+	  gfc_free_expr (as->upper[i]);
+	}
+    }
+  else
+    {
+      int n = as->rank + as->corank - (as->cotype == AS_EXPLICIT ? 1 : 0);
+      for (i = 0; i < n; i++)
+	{
+	  gfc_free_expr (as->lower[i]);
+	  gfc_free_expr (as->upper[i]);
+	}
     }
 
   free (as);
@@ -379,6 +410,9 @@ gfc_resolve_array_spec (gfc_array_spec *as, int check_constant)
 
   for (i = 0; i < as->rank + as->corank; i++)
     {
+      if (i == GFC_MAX_DIMENSIONS)
+	return false;
+
       e = as->lower[i];
       if (!resolve_array_bound (e, check_constant))
 	return false;
@@ -831,6 +865,10 @@ gfc_set_array_spec (gfc_symbol *sym, gfc_array_spec *as, locus *error_loc)
 
       sym->as->cotype = as->cotype;
       sym->as->corank = as->corank;
+      /* Check F2018:C822.  */
+      if (sym->as->rank + sym->as->corank > GFC_MAX_DIMENSIONS)
+	goto too_many;
+
       for (i = 0; i < as->corank; i++)
 	{
 	  sym->as->lower[sym->as->rank + i] = as->lower[i];
@@ -849,6 +887,10 @@ gfc_set_array_spec (gfc_symbol *sym, gfc_array_spec *as, locus *error_loc)
       sym->as->cray_pointee = as->cray_pointee;
       sym->as->cp_was_assumed = as->cp_was_assumed;
 
+      /* Check F2018:C822.  */
+      if (sym->as->rank + sym->as->corank > GFC_MAX_DIMENSIONS)
+	goto too_many;
+
       for (i = 0; i < sym->as->corank; i++)
 	{
 	  sym->as->lower[as->rank + i] = sym->as->lower[i];
@@ -863,6 +905,12 @@ gfc_set_array_spec (gfc_symbol *sym, gfc_array_spec *as, locus *error_loc)
 
   free (as);
   return true;
+
+too_many:
+
+  gfc_error ("rank + corank of %qs exceeds %d at %C", sym->name,
+	     GFC_MAX_DIMENSIONS);
+  return false;
 }
 
 
@@ -1098,19 +1146,54 @@ match_array_cons_element (gfc_constructor_base *result)
   if (m != MATCH_YES)
     return m;
 
+  if (expr->ts.type == BT_BOZ)
+    {
+      gfc_error ("BOZ literal constant at %L cannot appear in an "
+		 "array constructor", &expr->where);
+      goto done;
+    }
+
   if (expr->expr_type == EXPR_FUNCTION
       && expr->ts.type == BT_UNKNOWN
       && strcmp(expr->symtree->name, "null") == 0)
-   {
+    {
       gfc_error ("NULL() at %C cannot appear in an array constructor");
-      gfc_free_expr (expr);
-      return MATCH_ERROR;
-   }
+      goto done;
+    }
 
   gfc_constructor_append_expr (result, expr, &gfc_current_locus);
   return MATCH_YES;
+
+done:
+  gfc_free_expr (expr);
+  return MATCH_ERROR;
 }
 
+
+/* Convert components of an array constructor to the type in ts.  */
+
+static match
+walk_array_constructor (gfc_typespec *ts, gfc_constructor_base head)
+{
+  gfc_constructor *c;
+  gfc_expr *e;
+  match m;
+
+  for (c = gfc_constructor_first (head); c; c = gfc_constructor_next (c))
+    {
+      e = c->expr;
+      if (e->expr_type == EXPR_ARRAY && e->ts.type == BT_UNKNOWN
+	  && !e->ref && e->value.constructor)
+	{
+	  m = walk_array_constructor (ts, e->value.constructor);
+	  if (m == MATCH_ERROR)
+	    return m;
+	}
+      else if (!gfc_convert_type (e, ts, 1) && e->ts.type != BT_UNKNOWN)
+	return MATCH_ERROR;
+  }
+  return MATCH_YES;
+}
 
 /* Match an array constructor.  */
 
@@ -1241,12 +1324,13 @@ done:
 	    }
 	}
 
-      /* Walk the constructor and ensure type conversion for numeric types.  */
+      /* Walk the constructor, and if possible, do type conversion for
+	 numeric types.  */
       if (gfc_numeric_ts (&ts))
 	{
-	  c = gfc_constructor_first (head);
-	  for (; c; c = gfc_constructor_next (c))
-	    gfc_convert_type (c->expr, &ts, 1);
+	  m = walk_array_constructor (&ts, head);
+	  if (m == MATCH_ERROR)
+	    return m;
 	}
     }
   else
@@ -1310,7 +1394,7 @@ check_element_type (gfc_expr *expr, bool convert)
 
   gfc_error ("Element in %s array constructor at %L is %s",
 	     gfc_typename (&constructor_ts), &expr->where,
-	     gfc_typename (&expr->ts));
+	     gfc_typename (expr));
 
   cons_state = CONS_BAD;
   return 1;
@@ -1715,6 +1799,7 @@ expand_constructor (gfc_constructor_base base)
 	  gfc_free_expr (e);
 	  return false;
 	}
+      e->from_constructor = 1;
       current_expand.offset = &c->offset;
       current_expand.repeat = &c->repeat;
       current_expand.component = c->n.component;
@@ -2161,6 +2246,9 @@ gfc_copy_iterator (gfc_iterator *src)
   dest->end = gfc_copy_expr (src->end);
   dest->step = gfc_copy_expr (src->step);
   dest->unroll = src->unroll;
+  dest->ivdep = src->ivdep;
+  dest->vector = src->vector;
+  dest->novector = src->novector;
 
   return dest;
 }
@@ -2186,7 +2274,11 @@ spec_dimen_size (gfc_array_spec *as, int dimen, mpz_t *result)
     gfc_internal_error ("spec_dimen_size(): Bad dimension");
 
   if (as->type != AS_EXPLICIT
-      || as->lower[dimen]->expr_type != EXPR_CONSTANT
+      || !as->lower[dimen]
+      || !as->upper[dimen])
+    return false;
+
+  if (as->lower[dimen]->expr_type != EXPR_CONSTANT
       || as->upper[dimen]->expr_type != EXPR_CONSTANT
       || as->lower[dimen]->ts.type != BT_INTEGER
       || as->upper[dimen]->ts.type != BT_INTEGER)

@@ -1,5 +1,5 @@
 /* Localize comdats.
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -18,7 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* This is very simple pass that looks for static symbols that are used
-   exlusively by symbol within one comdat group.  In this case it makes
+   exclusively by symbol within one comdat group.  In this case it makes
    sense to bring the symbol itself into the group to avoid dead code
    that would arrise when the comdat group from current unit is replaced
    by a different copy.  Consider for example:
@@ -82,7 +82,7 @@ propagate_comdat_group (struct symtab_node *symbol,
 	  continue;
 	}
 
-      /* One COMDAT group can not hold both variables and functions at
+      /* One COMDAT group cannot hold both variables and functions at
 	 a same time.  For now we just go to BOTTOM, in future we may
 	 invent special comdat groups for this case.  */
 
@@ -98,8 +98,8 @@ propagate_comdat_group (struct symtab_node *symbol,
 
       if (cgraph_node * cn = dyn_cast <cgraph_node *> (symbol2))
 	{
-	  if (cn->global.inlined_to)
-	    symbol2 = cn->global.inlined_to;
+	  if (cn->inlined_to)
+	    symbol2 = cn->inlined_to;
 	}
 
       /* The actual merge operation.  */
@@ -127,14 +127,14 @@ propagate_comdat_group (struct symtab_node *symbol,
 
 	if (cgraph_node * cn = dyn_cast <cgraph_node *> (symbol2))
 	  {
-	    /* Thunks can not call across section boundary.  */
+	    /* Thunks cannot call across section boundary.  */
 	    if (cn->thunk.thunk_p)
 	      newgroup = propagate_comdat_group (symbol2, newgroup, map);
 	    /* If we see inline clone, its comdat group actually
 	       corresponds to the comdat group of the function it
 	       is inlined to.  */
-	    if (cn->global.inlined_to)
-	      symbol2 = cn->global.inlined_to;
+	    if (cn->inlined_to)
+	      symbol2 = cn->inlined_to;
 	  }
 
         /* The actual merge operation.  */
@@ -257,7 +257,7 @@ ipa_comdats (void)
 	/* Mark the symbol so we won't waste time visiting it for dataflow.  */
 	symbol->aux = (symtab_node *) (void *) 1;
       }
-    /* See symbols that can not be privatized to comdats; that is externally
+    /* See symbols that cannot be privatized to comdats; that is externally
        visible symbols or otherwise used ones.  We also do not want to mangle
        user section names.  */
     else if (symbol->externally_visible

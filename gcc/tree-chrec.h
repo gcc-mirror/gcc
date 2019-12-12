@@ -1,5 +1,5 @@
 /* Chains of recurrences.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -23,11 +23,14 @@ along with GCC; see the file COPYING3.  If not see
 
 /* The following trees are unique elements.  Thus the comparison of another
    element to these elements should be done on the pointer to these trees,
-   and not on their value.  */
+   and not on their value.
 
-extern tree chrec_not_analyzed_yet;
-extern GTY(()) tree chrec_dont_know;
-extern GTY(()) tree chrec_known;
+   extern tree chrec_not_analyzed_yet;
+   extern tree chrec_dont_know;
+   extern tree chrec_known;
+
+   chrec_not_analyzed_yet is NULL_TREE and the others are defined
+   in global_trees[].  */
 
 /* After having added an automatically generated element, please
    include it in the following function.  */
@@ -74,18 +77,18 @@ extern tree hide_evolution_in_other_loops_than_loop (tree, unsigned);
 extern tree reset_evolution_in_loop (unsigned, tree, tree);
 extern tree chrec_merge (tree, tree);
 extern void for_each_scev_op (tree *, bool (*) (tree *, void *), void *);
-extern bool convert_affine_scev (struct loop *, tree, tree *, tree *, gimple *,
+extern bool convert_affine_scev (class loop *, tree, tree *, tree *, gimple *,
 				 bool, tree = NULL);
 
 /* Observers.  */
 extern bool eq_evolutions_p (const_tree, const_tree);
 extern bool is_multivariate_chrec (const_tree);
-extern bool chrec_contains_symbols (const_tree);
+extern bool chrec_contains_symbols (const_tree, class loop * = NULL);
 extern bool chrec_contains_symbols_defined_in_loop (const_tree, unsigned);
 extern bool chrec_contains_undetermined (const_tree);
 extern bool tree_contains_chrecs (const_tree, int *);
 extern bool evolution_function_is_affine_multivariate_p (const_tree, int);
-extern bool evolution_function_is_univariate_p (const_tree);
+extern bool evolution_function_is_univariate_p (const_tree, int = 0);
 extern unsigned nb_vars_in_chrec (tree);
 extern bool evolution_function_is_invariant_p (tree, int);
 extern bool scev_is_linear_expression (tree);

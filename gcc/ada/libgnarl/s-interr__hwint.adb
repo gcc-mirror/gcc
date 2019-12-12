@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2018, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2019, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -561,9 +561,12 @@ package body System.Interrupts is
    -------------------
 
    function Is_Registered (Handler : Parameterless_Handler) return Boolean is
+
+      type Acc_Proc is access procedure;
+
       type Fat_Ptr is record
          Object_Addr  : System.Address;
-         Handler_Addr : System.Address;
+         Handler_Addr : Acc_Proc;
       end record;
 
       function To_Fat_Ptr is new Ada.Unchecked_Conversion
@@ -581,7 +584,7 @@ package body System.Interrupts is
 
       Ptr := Registered_Handler_Head;
       while Ptr /= null loop
-         if Ptr.H = Fat.Handler_Addr then
+         if Ptr.H = Fat.Handler_Addr.all'Address then
             return True;
          end if;
 

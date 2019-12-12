@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // +build cgo,!netgo
-// +build aix darwin dragonfly freebsd linux netbsd openbsd solaris
+// +build aix darwin dragonfly freebsd hurd linux netbsd openbsd solaris
 
 package net
 
@@ -14,6 +14,11 @@ package net
 #include <netdb.h>
 #include <unistd.h>
 #include <string.h>
+
+// If nothing else defined EAI_OVERFLOW, make sure it has a value.
+#ifndef EAI_OVERFLOW
+#define EAI_OVERFLOW -12
+#endif
 */
 
 import (
@@ -68,7 +73,7 @@ type reverseLookupResult struct {
 }
 
 func cgoLookupHost(ctx context.Context, name string) (hosts []string, err error, completed bool) {
-	addrs, err, completed := cgoLookupIP(ctx, name)
+	addrs, err, completed := cgoLookupIP(ctx, "ip", name)
 	for _, addr := range addrs {
 		hosts = append(hosts, addr.String())
 	}
@@ -88,13 +93,11 @@ func cgoLookupPort(ctx context.Context, network, service string) (port int, err 
 	default:
 		return 0, &DNSError{Err: "unknown network", Name: network + "/" + service}, true
 	}
-	if len(network) >= 4 {
-		switch network[3] {
-		case '4':
-			hints.Ai_family = syscall.AF_INET
-		case '6':
-			hints.Ai_family = syscall.AF_INET6
-		}
+	switch ipVersion(network) {
+	case '4':
+		hints.Ai_family = syscall.AF_INET
+	case '6':
+		hints.Ai_family = syscall.AF_INET6
 	}
 	if ctx.Done() == nil {
 		port, err := cgoLookupServicePort(&hints, network, service)
@@ -127,6 +130,7 @@ func cgoLookupServicePort(hints *syscall.Addrinfo, network, service string) (por
 	gerrno := libc_getaddrinfo(nil, s, hints, &res)
 	syscall.Exitsyscall()
 	if gerrno != 0 {
+		isTemporary := false
 		switch gerrno {
 		case syscall.EAI_SYSTEM:
 			errno := syscall.GetErrno()
@@ -136,8 +140,9 @@ func cgoLookupServicePort(hints *syscall.Addrinfo, network, service string) (por
 			err = errno
 		default:
 			err = addrinfoErrno(gerrno)
+			isTemporary = addrinfoErrno(gerrno).Temporary()
 		}
-		return 0, &DNSError{Err: err.Error(), Name: network + "/" + service}
+		return 0, &DNSError{Err: err.Error(), Name: network + "/" + service, IsTemporary: isTemporary}
 	}
 	defer libc_freeaddrinfo(res)
 
@@ -161,13 +166,20 @@ func cgoPortLookup(result chan<- portLookupResult, hints *syscall.Addrinfo, netw
 	result <- portLookupResult{port, err}
 }
 
-func cgoLookupIPCNAME(name string) (addrs []IPAddr, cname string, err error) {
+func cgoLookupIPCNAME(network, name string) (addrs []IPAddr, cname string, err error) {
 	acquireThread()
 	defer releaseThread()
 
 	var hints syscall.Addrinfo
 	hints.Ai_flags = int32(cgoAddrInfoFlags)
 	hints.Ai_socktype = syscall.SOCK_STREAM
+	hints.Ai_family = syscall.AF_UNSPEC
+	switch ipVersion(network) {
+	case '4':
+		hints.Ai_family = syscall.AF_INET
+	case '6':
+		hints.Ai_family = syscall.AF_INET6
+	}
 
 	h := syscall.StringBytePtr(name)
 	var res *syscall.Addrinfo
@@ -175,6 +187,8 @@ func cgoLookupIPCNAME(name string) (addrs []IPAddr, cname string, err error) {
 	gerrno := libc_getaddrinfo(h, nil, &hints, &res)
 	syscall.Exitsyscall()
 	if gerrno != 0 {
+		isErrorNoSuchHost := false
+		isTemporary := false
 		switch gerrno {
 		case syscall.EAI_SYSTEM:
 			errno := syscall.GetErrno()
@@ -191,10 +205,13 @@ func cgoLookupIPCNAME(name string) (addrs []IPAddr, cname string, err error) {
 			err = errno
 		case syscall.EAI_NONAME:
 			err = errNoSuchHost
+			isErrorNoSuchHost = true
 		default:
 			err = addrinfoErrno(gerrno)
+			isTemporary = addrinfoErrno(gerrno).Temporary()
 		}
-		return nil, "", &DNSError{Err: err.Error(), Name: name}
+
+		return nil, "", &DNSError{Err: err.Error(), Name: name, IsNotFound: isErrorNoSuchHost, IsTemporary: isTemporary}
 	}
 	defer libc_freeaddrinfo(res)
 
@@ -226,18 +243,18 @@ func cgoLookupIPCNAME(name string) (addrs []IPAddr, cname string, err error) {
 	return addrs, cname, nil
 }
 
-func cgoIPLookup(result chan<- ipLookupResult, name string) {
-	addrs, cname, err := cgoLookupIPCNAME(name)
+func cgoIPLookup(result chan<- ipLookupResult, network, name string) {
+	addrs, cname, err := cgoLookupIPCNAME(network, name)
 	result <- ipLookupResult{addrs, cname, err}
 }
 
-func cgoLookupIP(ctx context.Context, name string) (addrs []IPAddr, err error, completed bool) {
+func cgoLookupIP(ctx context.Context, network, name string) (addrs []IPAddr, err error, completed bool) {
 	if ctx.Done() == nil {
-		addrs, _, err = cgoLookupIPCNAME(name)
+		addrs, _, err = cgoLookupIPCNAME(network, name)
 		return addrs, err, true
 	}
 	result := make(chan ipLookupResult, 1)
-	go cgoIPLookup(result, name)
+	go cgoIPLookup(result, network, name)
 	select {
 	case r := <-result:
 		return r.addrs, r.err, true
@@ -248,11 +265,11 @@ func cgoLookupIP(ctx context.Context, name string) (addrs []IPAddr, err error, c
 
 func cgoLookupCNAME(ctx context.Context, name string) (cname string, err error, completed bool) {
 	if ctx.Done() == nil {
-		_, cname, err = cgoLookupIPCNAME(name)
+		_, cname, err = cgoLookupIPCNAME("ip", name)
 		return cname, err, true
 	}
 	result := make(chan ipLookupResult, 1)
-	go cgoIPLookup(result, name)
+	go cgoIPLookup(result, "ip", name)
 	select {
 	case r := <-result:
 		return r.cname, r.err, true
@@ -278,7 +295,7 @@ func cgoLookupPTR(ctx context.Context, addr string) (names []string, err error, 
 	var zone string
 	ip := parseIPv4(addr)
 	if ip == nil {
-		ip, zone = parseIPv6(addr, true)
+		ip, zone = parseIPv6Zone(addr)
 	}
 	if ip == nil {
 		return nil, &DNSError{Err: "invalid address", Name: addr}, true
@@ -315,6 +332,7 @@ func cgoLookupAddrPTR(addr string, sa *syscall.RawSockaddr, salen syscall.Sockle
 		}
 	}
 	if gerrno != 0 {
+		isTemporary := false
 		switch gerrno {
 		case syscall.EAI_SYSTEM:
 			if err == nil { // see golang.org/issue/6232
@@ -322,8 +340,9 @@ func cgoLookupAddrPTR(addr string, sa *syscall.RawSockaddr, salen syscall.Sockle
 			}
 		default:
 			err = addrinfoErrno(gerrno)
+			isTemporary = addrinfoErrno(gerrno).Temporary()
 		}
-		return nil, &DNSError{Err: err.Error(), Name: addr}
+		return nil, &DNSError{Err: err.Error(), Name: addr, IsTemporary: isTemporary}
 	}
 	for i := 0; i < len(b); i++ {
 		if b[i] == 0 {

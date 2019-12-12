@@ -1,3 +1,57 @@
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+
+	* futex.m4: Handle *-uclinux*.
+	* tls.m4 (GCC_CHECK_TLS): Likewise.
+
+2019-09-06  Florian Weimer  <fweimer@redhat.com>
+
+	* futex.m4 (GCC_LINUX_FUTEX): Include <unistd.h> for the syscall
+	function.
+
+2019-07-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* bootstrap-Og.mk: New file.
+
+2019-06-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+            Andrew Stubbs  <ams@codesourcery.com>
+
+	* gthr.m4 (GCC_AC_THREAD_HEADER): Add case for gcn.
+
+2019-05-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* ax_count_cpus.m4: New file.
+
+2019-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/85574
+	* bootstrap-lto.mk (extra-compare): Set to gcc/lto1$(exeext).
+
+2019-04-16  Martin Liska  <mliska@suse.cz>
+
+	* bootstrap-lto-lean.mk: Filter out -flto in STAGEtrain_CFLAGS.
+
+2019-04-09  Martin Liska  <mliska@suse.cz>
+
+	* bootstrap-lto-lean.mk: New file.
+
+2019-03-02  Johannes Pfau  <johannespfau@gmail.com>
+
+	* mh-mingw: Also set __USE_MINGW_ACCESS flag for C++ code.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* math.m4, tls.m4: Use AC_LANG_SOURCE.
+
+	Merge from binutils-gdb:
+	2018-06-19  Simon Marchi  <simon.marchi@ericsson.com>
+
+	* override.m4 (_GCC_AUTOCONF_VERSION): Bump from 2.64 to 2.69.
+
+2018-10-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* multi.m4: Set GDC.
+
 2018-07-05  James Clarke  <jrtc27@jrtc27.com>
 
 	* dfp.m4 (enable_decimal_float): Enable for x86_64*-*-gnu* to
@@ -14,7 +68,7 @@
 
 2018-05-09  Joshua Watt <jpewhacker@gmail.com>
 
-        * ax_pthread.m4: Add file.
+	* ax_pthread.m4: Add file.
 
 2018-05-08  Richard Biener  <rguenther@suse.de>
 
@@ -451,7 +505,7 @@
 
 	* config/mh-interix: Remove as unneeded.
 	* config/picflag.m4 (i[[34567]]86-*-interix3*):
-        Change triplet to i[[34567]]86-*-interix[[3-9]]*.
+	Change triplet to i[[34567]]86-*-interix[[3-9]]*.
 
 2012-01-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 

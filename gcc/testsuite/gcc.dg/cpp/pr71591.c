@@ -2,4 +2,4 @@
 /* { dg-do preprocess } */
 /* { dg-options "-fself-test=fake-value" } */
 
-/* { dg-message "self-tests incompatible with -E" "" { target *-*-* } 0 } */
+/* { dg-message "self-tests incompatible with '-E'" "" { target *-*-* } 0 } */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -138,5 +138,8 @@ package System.Task_Info is
       return Task_Info_Type;
 
    Unspecified_Task_Info : constant Task_Info_Type := null;
+
+   function Number_Of_Processors return Positive;
+   --  Returns the number of processors on the running host
 
 end System.Task_Info;

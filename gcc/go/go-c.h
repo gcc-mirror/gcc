@@ -1,5 +1,5 @@
 /* go-c.h -- Header file for go frontend gcc C interface.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -49,6 +49,7 @@ struct go_create_gogo_args
   int debug_escape_level;
   const char* debug_escape_hash;
   int64_t nil_check_size_threshold;
+  bool debug_optimization;
 };
 
 extern void go_create_gogo (const struct go_create_gogo_args*);

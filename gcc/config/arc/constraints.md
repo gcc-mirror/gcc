@@ -1,5 +1,5 @@
 ;; Constraint definitions for Synopsys DesignWare ARC.
-;; Copyright (C) 2007-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2019 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -24,47 +24,34 @@
 ; result registers of ARC600.
 ; First, define a class for core registers that can be read cheaply.  This
 ; is most or all core registers for ARC600, but only r0-r31 for ARC700
-(define_register_constraint "c" "CHEAP_CORE_REGS"
-  "core register @code{r0}-@code{r31}, @code{ap},@code{pcl}")
+(define_register_constraint "c" "GENERAL_REGS"
+  "Legacy, core register @code{r0}-@code{r31}, @code{ap},@code{pcl}")
 
 ; All core regs - e.g. for when we must have a way to reload a register.
-(define_register_constraint "Rac" "ALL_CORE_REGS"
-  "core register @code{r0}-@code{r60}, @code{ap},@code{pcl}")
+(define_register_constraint "Rac" "GENERAL_REGS"
+  "Legacy, core register @code{r0}-@code{r60}, @code{ap},@code{pcl}")
 
 ; Some core registers (.e.g lp_count) aren't general registers because they
 ; can't be used as the destination of a multi-cycle operation like
 ; load and/or multiply, yet they are still writable in the sense that
 ; register-register moves and single-cycle arithmetic (e.g "add", "and",
 ; but not "mpy") can write to them.
-(define_register_constraint "w" "WRITABLE_CORE_REGS"
-  "writable core register: @code{r0}-@code{r31}, @code{r60}, nonfixed core register")
+(define_register_constraint "w" "GENERAL_REGS"
+  "Legacy, writable core register: @code{r0}-@code{r31}, @code{r60},
+   nonfixed core register")
 
-(define_register_constraint "W" "MPY_WRITABLE_CORE_REGS"
-  "writable core register except @code{LP_COUNT} (@code{r60}): @code{r0}-@code{r31}, nonfixed core register")
+(define_register_constraint "W" "GENERAL_REGS"
+  "Legacy, writable core register except @code{LP_COUNT} (@code{r60}):
+   @code{r0}-@code{r31}, nonfixed core register")
 
-(define_register_constraint "l" "LPCOUNT_REG"
+(define_constraint "l"
   "@internal
-   Loop count register @code{r60}")
+   Loop count register @code{r60}"
+  (and (match_code "reg")
+       (match_test "REGNO (op) == LP_COUNT")))
 
 (define_register_constraint "x" "R0_REGS"
   "@code{R0} register.")
-
-(define_register_constraint "Rgp" "GP_REG"
-  "@internal
-   Global Pointer register @code{r26}")
-
-(define_register_constraint "f" "FP_REG"
-  "@internal
-   Frame Pointer register @code{r27}")
-
-(define_register_constraint "b" "SP_REGS"
-  "@internal
-   Stack Pointer register @code{r28}")
-
-(define_register_constraint "k" "LINK_REGS"
-  "@internal
-   Link Registers @code{ilink1}:@code{r29}, @code{ilink2}:@code{r30},
-   @code{blink}:@code{r31},")
 
 (define_register_constraint "q" "TARGET_Q_CLASS ? ARCOMPACT16_REGS : NO_REGS"
   "Registers usable in ARCompact 16-bit instructions: @code{r0}-@code{r3},
@@ -77,10 +64,6 @@
  "Rrq" "TARGET_RRQ_CLASS ? ARCOMPACT16_REGS : NO_REGS"
   "Registers usable in NPS400 bitfield instructions: @code{r0}-@code{r3},
    @code{r12}-@code{r15}")
-
-(define_register_constraint "e" "AC16_BASE_REGS"
-  "Registers usable as base-regs of memory addresses in ARCompact 16-bit memory
-   instructions: @code{r0}-@code{r3}, @code{r12}-@code{r15}, @code{sp}")
 
 (define_register_constraint "D" "DOUBLE_REGS"
   "ARC FPX (dpfp) 64-bit registers. @code{D0}, @code{D1}")
@@ -218,7 +201,7 @@
  "@internal
   power of two"
   (and (match_code "const_int")
-       (match_test "IS_POWEROF2_P (ival)")))
+       (match_test "IS_POWEROF2_P (ival & 0xffffffff)")))
 
 (define_constraint "C1p"
  "@internal
@@ -292,12 +275,6 @@
   (and (match_code "const_int")
        (match_test "ival == 1 || ival == 2 || ival == 4 || ival == 8")))
 
-(define_constraint "Crr"
- "@internal
-  constant that can be loaded with ror b,u6"
-  (and (match_code "const_int")
-       (match_test "(ival & ~0x8000001f) == 0 && !arc_ccfsm_cond_exec_p ()")))
-
 (define_constraint "Cbi"
  "@internal
   constant that can be loaded with movbi.cl"
@@ -306,6 +283,20 @@
        (match_test "!ival
 		    || ((ival & 0xffffffffUL) >> exact_log2 (ival & -ival)
 			<= 0xff)")))
+
+(define_constraint "C0x"
+  "@internal
+  special const_int pattern used to split ior insns"
+  (and (match_code "const_int")
+       (match_test "optimize_size")
+       (match_test "arc_check_ior_const (ival)")))
+
+(define_constraint "Cax"
+  "@internal
+  special const_int pattern used to split mov insns"
+  (and (match_code "const_int")
+       (match_test "optimize_size")
+       (match_test "arc_check_mov_const (ival)")))
 
 ;; Floating-point constraints
 
@@ -320,6 +311,12 @@
    All const_double values (including 64-bit values)"
   (and (match_code "const_double")
        (match_test "1")))
+
+(define_constraint "CfZ"
+  "@internal
+   Match a floating-point zero"
+  (and (match_code "const_double")
+       (match_test "op == CONST0_RTX (SFmode)")))
 
 ;; Memory constraints
 (define_memory_constraint "T"
@@ -429,6 +426,12 @@
 	       && !arc_legitimate_pic_addr_p (op)
 	       && !satisfies_constraint_I (op)"))
 
+(define_constraint "Csz"
+  "a 32 bit constant avoided when compiling for size."
+  (match_test "immediate_operand (op, VOIDmode)
+	       && !arc_legitimate_pic_addr_p (op)
+	       && !(satisfies_constraint_I (op) && optimize_size)"))
+
 ; Note that the 'cryptic' register constraints will not make reload use the
 ; associated class to reload into, but this will not penalize reloading of any
 ; other operands, or using an alternate part of the same alternative.
@@ -460,7 +463,7 @@
        (match_test
 	"TARGET_Rcw
 	 && REGNO (op) < FIRST_PSEUDO_REGISTER
-	 && TEST_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS],
+	 && TEST_HARD_REG_BIT (reg_class_contents[GENERAL_REGS],
 			       REGNO (op))")))
 
 (define_constraint "Rcr"
@@ -484,16 +487,6 @@
    blink (usful for push_s / pop_s)"
   (and (match_code "reg")
        (match_test "REGNO (op) == 31")))
-
-(define_constraint "Rs5"
-  "@internal
-   sibcall register - only allow one of the five available 16 bit isnsn.
-   Registers usable in ARCompact 16-bit instructions: @code{r0}-@code{r3},
-   @code{r12}"
-  (and (match_code "reg")
-       (match_test "!arc_ccfsm_cond_exec_p ()")
-       (ior (match_test "(unsigned) REGNO (op) <= 3")
-	    (match_test "REGNO (op) == 12"))))
 
 (define_constraint "Rcc"
   "@internal

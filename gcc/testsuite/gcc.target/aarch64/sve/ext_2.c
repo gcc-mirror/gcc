@@ -14,5 +14,4 @@ foo (void)
   asm volatile ("" :: "w" (x));
 }
 
-/* { dg-final { scan-assembler {\tmov\tz0\.d, z1\.d\n} } } */
-/* { dg-final { scan-assembler {\text\tz0\.b, z0\.b, z[01]\.b, #4\n} } } */
+/* { dg-final { scan-assembler {\tmovprfx\tz0, z1\n\text\tz0\.b, z0\.b, z1\.b, #4\n} } } */

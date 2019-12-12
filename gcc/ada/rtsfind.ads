@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -220,6 +220,7 @@ package Rtsfind is
       System_Atomic_Primitives,
       System_Aux_DEC,
       System_Bignums,
+      System_Bitfields,
       System_Bit_Ops,
       System_Boolean_Array_Operations,
       System_Byte_Swapping,
@@ -808,6 +809,8 @@ package Rtsfind is
      RE_Bignum_In_LLI_Range,             -- System.Bignums
      RE_To_Bignum,                       -- System.Bignums
      RE_From_Bignum,                     -- System.Bignums
+
+     RE_Copy_Bitfield,                   -- System.Bitfields
 
      RE_Bit_And,                         -- System.Bit_Ops
      RE_Bit_Eq,                          -- System.Bit_Ops
@@ -2051,6 +2054,8 @@ package Rtsfind is
      RE_To_Bignum                        => System_Bignums,
      RE_From_Bignum                      => System_Bignums,
 
+     RE_Copy_Bitfield                    => System_Bitfields,
+
      RE_Bit_And                          => System_Bit_Ops,
      RE_Bit_Eq                           => System_Bit_Ops,
      RE_Bit_Not                          => System_Bit_Ops,
@@ -2755,23 +2760,23 @@ package Rtsfind is
      RE_W_WC                             => System_Stream_Attributes,
      RE_W_WWC                            => System_Stream_Attributes,
 
-     RE_Storage_Array_Input              =>  System_Strings_Stream_Ops,
-     RE_Storage_Array_Input_Blk_IO       =>  System_Strings_Stream_Ops,
-     RE_Storage_Array_Output             =>  System_Strings_Stream_Ops,
-     RE_Storage_Array_Output_Blk_IO      =>  System_Strings_Stream_Ops,
-     RE_Storage_Array_Read               =>  System_Strings_Stream_Ops,
-     RE_Storage_Array_Read_Blk_IO        =>  System_Strings_Stream_Ops,
-     RE_Storage_Array_Write              =>  System_Strings_Stream_Ops,
-     RE_Storage_Array_Write_Blk_IO       =>  System_Strings_Stream_Ops,
+     RE_Storage_Array_Input              => System_Strings_Stream_Ops,
+     RE_Storage_Array_Input_Blk_IO       => System_Strings_Stream_Ops,
+     RE_Storage_Array_Output             => System_Strings_Stream_Ops,
+     RE_Storage_Array_Output_Blk_IO      => System_Strings_Stream_Ops,
+     RE_Storage_Array_Read               => System_Strings_Stream_Ops,
+     RE_Storage_Array_Read_Blk_IO        => System_Strings_Stream_Ops,
+     RE_Storage_Array_Write              => System_Strings_Stream_Ops,
+     RE_Storage_Array_Write_Blk_IO       => System_Strings_Stream_Ops,
 
-     RE_Stream_Element_Array_Input          =>  System_Strings_Stream_Ops,
-     RE_Stream_Element_Array_Input_Blk_IO   =>  System_Strings_Stream_Ops,
-     RE_Stream_Element_Array_Output         =>  System_Strings_Stream_Ops,
-     RE_Stream_Element_Array_Output_Blk_IO  =>  System_Strings_Stream_Ops,
-     RE_Stream_Element_Array_Read           =>  System_Strings_Stream_Ops,
-     RE_Stream_Element_Array_Read_Blk_IO    =>  System_Strings_Stream_Ops,
-     RE_Stream_Element_Array_Write          =>  System_Strings_Stream_Ops,
-     RE_Stream_Element_Array_Write_Blk_IO   =>  System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Input          => System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Input_Blk_IO   => System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Output         => System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Output_Blk_IO  => System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Read           => System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Read_Blk_IO    => System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Write          => System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Write_Blk_IO   => System_Strings_Stream_Ops,
 
      RE_String_Input                     => System_Strings_Stream_Ops,
      RE_String_Input_Blk_IO              => System_Strings_Stream_Ops,
@@ -3155,7 +3160,7 @@ package Rtsfind is
    --  immediately, since obviously Ent cannot be the entity in question if the
    --  corresponding unit has not been loaded.
 
-   function Is_RTU (Ent : Entity_Id;  U : RTU_Id) return Boolean;
+   function Is_RTU (Ent : Entity_Id; U : RTU_Id) return Boolean;
    pragma Inline (Is_RTU);
    --  This function determines if the given entity corresponds to the entity
    --  for the unit referenced by U. If this unit has not been loaded, the
@@ -3198,6 +3203,23 @@ package Rtsfind is
    --  Returns true if a call to RTE will succeed without raising an exception
    --  and without generating an error message, i.e. if the call will obtain
    --  the desired entity without any problems.
+   --
+   --  If we call this and it returns True, we should generate a call to E.
+   --  In other words, the compiler should not call RTE_Available (E) until
+   --  it has decided it wants to generate a call to E. Otherwise we can get
+   --  spurious dependencies and elaboration orders.
+   --
+   --     if RTE_Available (E) -- WRONG!
+   --       and then <some condition>
+   --     then
+   --        generate call to E;
+   --
+   --  Should be:
+   --
+   --     if <some condition>
+   --       and then RTE_Available (E) -- Correct
+   --     then
+   --        generate call to E;
 
    function RTE_Record_Component (E : RE_Id) return Entity_Id;
    --  Given the entity defined in the above tables, as identified by the

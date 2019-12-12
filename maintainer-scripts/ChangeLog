@@ -1,3 +1,42 @@
+2019-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* gcc_release: Use https for gcc.gnu.org.
+
+2019-11-14  Richard Biener  <rguenther@suse.de>
+
+	* update_version_svn (IGNORE_BRANCHES): Add 7.
+
+2019-10-05  Richard Biener  <rguenther@suse.de>
+
+	* crontab: Disable snapshots from gcc-7-branch.
+
+2019-08-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* update_web_docs_svn: Proceed even if the invocation of
+	sphinx fails.
+
+2019-05-04  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* crontab: Snapshots from trunk are now GCC 10 related.
+	Add GCC 9 snapshots from the respective branch.
+
+2019-02-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* generate_libstdcxx_web_docs: Improve error output.
+
+2018-11-22  Martin Liska  <mliska@suse.cz>
+
+	* bugzilla-close-candidate.py: New file.
+
+2018-10-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* update_version_svn (IGNORE_BRANCHES): Add gcc-6-branch.
+	* crontab: Remove gcc-6-branch entry.
+
+	* gcc_release (error, inform): Use $@ instead of $1.
+	(build_sources): Check for ^[[:blank:]]*GCC in both index.html
+	and changes.html, rather than for GCC in one and ^GCC in another one.
+
 2018-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/85622

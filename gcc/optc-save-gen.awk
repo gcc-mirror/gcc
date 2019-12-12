@@ -1,4 +1,4 @@
-#  Copyright (C) 2003-2018 Free Software Foundation, Inc.
+#  Copyright (C) 2003-2019 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -81,7 +81,7 @@ print "void";
 print "cl_optimization_save (struct cl_optimization *ptr, struct gcc_options *opts)";
 print "{";
 
-n_opt_char = 3;
+n_opt_char = 4;
 n_opt_short = 0;
 n_opt_int = 0;
 n_opt_enum = 0;
@@ -90,9 +90,11 @@ n_opt_other = 0;
 var_opt_char[0] = "optimize";
 var_opt_char[1] = "optimize_size";
 var_opt_char[2] = "optimize_debug";
+var_opt_char[3] = "optimize_fast";
 var_opt_range["optimize"] = "0, 255";
 var_opt_range["optimize_size"] = "0, 1";
 var_opt_range["optimize_debug"] = "0, 1";
+var_opt_range["optimize_fast"] = "0, 1";
 
 # Sort by size to mimic how the structure is laid out to be friendlier to the
 # cache.
@@ -251,7 +253,7 @@ for (i = 0; i < n_opt_char; i++) {
 }
 
 for (i = 0; i < n_opt_string; i++) {
-	print "  if (ptr->x_" var_opt_char[i] ")";
+	print "  if (ptr->x_" var_opt_string[i] ")";
 	print "    fprintf (file, \"%*s%s (%s)\\n\",";
 	print "             indent_to, \"\",";
 	print "             \"" var_opt_string[i] "\",";
@@ -324,13 +326,13 @@ for (i = 0; i < n_opt_char; i++) {
 for (i = 0; i < n_opt_string; i++) {
 	name = var_opt_string[i]
 	print "  if (ptr1->x_" name " != ptr2->x_" name "";
-	print "      || (!ptr1->x_" name" || !ptr2->x_" name
+	print "      && (!ptr1->x_" name" || !ptr2->x_" name
 	print "          || strcmp (ptr1->x_" name", ptr2->x_" name ")))";
 	print "    fprintf (file, \"%*s%s (%s/%s)\\n\",";
 	print "             indent_to, \"\",";
 	print "             \"" name "\",";
-	print "             ptr1->x_" name ",";
-	print "             ptr2->x_" name ");";
+	print "             ptr1->x_" name " ? ptr1->x_" name " : \"(null)\",";
+	print "             ptr2->x_" name " ? ptr2->x_" name " : \"(null)\");";
 	print "";
 }
 
@@ -347,6 +349,7 @@ n_target_char = 0;
 n_target_short = 0;
 n_target_int = 0;
 n_target_enum = 0;
+n_target_string = 0;
 n_target_other = 0;
 
 if (have_save) {
@@ -379,6 +382,8 @@ if (have_save) {
 				if (otype == var_type(flags[i]))
 					var_target_range[name] = ""
 			}
+			else if (otype ~ "^const char \\**$")
+				var_target_string[n_target_string++] = name;
 			else
 				var_target_other[n_target_other++] = name;
 		}
@@ -427,6 +432,10 @@ for (i = 0; i < n_target_char; i++) {
 	print "  ptr->x_" var_target_char[i] " = opts->x_" var_target_char[i] ";";
 }
 
+for (i = 0; i < n_target_string; i++) {
+	print "  ptr->x_" var_target_string[i] " = opts->x_" var_target_string[i] ";";
+}
+
 print "}";
 
 print "";
@@ -459,6 +468,10 @@ for (i = 0; i < n_target_char; i++) {
 	print "  opts->x_" var_target_char[i] " = ptr->x_" var_target_char[i] ";";
 }
 
+for (i = 0; i < n_target_string; i++) {
+	print "  opts->x_" var_target_string[i] " = ptr->x_" var_target_string[i] ";";
+}
+
 # This must occur after the normal variables in case the code depends on those
 # variables.
 print "";
@@ -478,13 +491,14 @@ print "{";
 print "  fputs (\"\\n\", file);";
 for (i = 0; i < n_target_other; i++) {
 	print "  if (ptr->x_" var_target_other[i] ")";
-	if (host_wide_int[var_target_other[i]] == "yes")
+	hwi = host_wide_int[var_target_other[i]]
+	if (hwi == "yes")
 		print "    fprintf (file, \"%*s%s (%#\" HOST_WIDE_INT_PRINT \"x)\\n\",";
 	else
-		print "    fprintf (file, \"%*s%s (%#x)\\n\",";
+		print "    fprintf (file, \"%*s%s (%#lx)\\n\",";
 	print "             indent, \"\",";
 	print "             \"" var_target_other[i] "\",";
-	if (host_wide_int[var_target_other[i]] == "yes")
+	if (hwi == "yes")
 		print "             ptr->x_" var_target_other[i] ");";
 	else
 		print "             (unsigned long)ptr->x_" var_target_other[i] ");";
@@ -527,6 +541,15 @@ for (i = 0; i < n_target_char; i++) {
 	print "";
 }
 
+for (i = 0; i < n_target_string; i++) {
+	print "  if (ptr->x_" var_target_string[i] ")";
+	print "    fprintf (file, \"%*s%s (%s)\\n\",";
+	print "             indent, \"\",";
+	print "             \"" var_target_string[i] "\",";
+	print "             ptr->x_" var_target_string[i] ");";
+	print "";
+}
+
 print "";
 print "  if (targetm.target_option.print)";
 print "    targetm.target_option.print (file, indent, ptr);";
@@ -544,13 +567,14 @@ print "{";
 print "  fputs (\"\\n\", file);";
 for (i = 0; i < n_target_other; i++) {
 	print "  if (ptr1->x_" var_target_other[i] " != ptr2->x_" var_target_other[i] ")";
-	if (host_wide_int[var_target_other[i]] == "yes")
+	hwi = host_wide_int[var_target_other[i]]
+	if (hwi == "yes")
 		print "    fprintf (file, \"%*s%s (%#\" HOST_WIDE_INT_PRINT \"x/%#\" HOST_WIDE_INT_PRINT \"x)\\n\",";
 	else
-		print "    fprintf (file, \"%*s%s (%#x/%#x)\\n\",";
+		print "    fprintf (file, \"%*s%s (%#lx/%#lx)\\n\",";
 	print "             indent, \"\",";
 	print "             \"" var_target_other[i] "\",";
-	if (host_wide_int[var_target_other[i]] == "yes") {
+	if (hwi == "yes") {
 		print "             ptr1->x_" var_target_other[i] ",";
 		print "             ptr2->x_" var_target_other[i] ");";
 	}
@@ -598,6 +622,19 @@ for (i = 0; i < n_target_char; i++) {
 	print "             \"" var_target_char[i] "\",";
 	print "             ptr1->x_" var_target_char[i] ",";
 	print "             ptr2->x_" var_target_char[i] ");";
+	print "";
+}
+
+for (i = 0; i < n_target_string; i++) {
+	name = var_target_string[i]
+	print "  if (ptr1->x_" name " != ptr2->x_" name "";
+	print "      && (!ptr1->x_" name" || !ptr2->x_" name
+	print "          || strcmp (ptr1->x_" name", ptr2->x_" name ")))";
+	print "    fprintf (file, \"%*s%s (%s/%s)\\n\",";
+	print "             indent, \"\",";
+	print "             \"" name "\",";
+	print "             ptr1->x_" name " ? ptr1->x_" name " : \"(null)\",";
+	print "             ptr2->x_" name " ? ptr1->x_" name " : \"(null)\");";
 	print "";
 }
 
@@ -765,13 +802,30 @@ for (i = 0; i < n_target_val; i++) {
 
 print "}";
 
-n_opt_val = 3;
+print "/* free heap memory used by target options  */";
+print "void";
+print "cl_target_option_free (struct cl_target_option *ptr ATTRIBUTE_UNUSED)";
+print "{";
+for (i = 0; i < n_target_str; i++) {
+	name = var_target_str[i]
+	print "  if (ptr->" name")";
+	print "    free (const_cast <char *>(ptr->" name"));";
+}
+print "}";
+
+n_opt_val = 4;
 var_opt_val[0] = "x_optimize"
 var_opt_val_type[0] = "char "
+var_opt_hash[0] = 1;
 var_opt_val[1] = "x_optimize_size"
-var_opt_val[2] = "x_optimize_debug"
 var_opt_val_type[1] = "char "
+var_opt_hash[1] = 1;
+var_opt_val[2] = "x_optimize_debug"
 var_opt_val_type[2] = "char "
+var_opt_hash[2] = 1;
+var_opt_val[3] = "x_optimize_fast"
+var_opt_val_type[3] = "char "
+var_opt_hash[3] = 1;
 for (i = 0; i < n_opts; i++) {
 	if (flag_set_p("(Optimization|PerFunction)", flags[i])) {
 		name = var_name(flags[i])
@@ -785,8 +839,9 @@ for (i = 0; i < n_opts; i++) {
 
 		otype = var_type_struct(flags[i])
 		var_opt_val_type[n_opt_val] = otype;
-		var_opt_val[n_opt_val++] = "x_" name;
+		var_opt_val[n_opt_val] = "x_" name;
 		var_opt_hash[n_opt_val] = flag_set_p("Optimization", flags[i]);
+		n_opt_val++;
 	}
 }
 print "";
@@ -875,6 +930,20 @@ for (i = 0; i < n_opt_val; i++) {
 	}
 	else
 	      print "  ptr->" name" = (" var_opt_val_type[i] ") bp_unpack_value (bp, 64);";
+}
+print "}";
+print "/* Free heap memory used by optimization options  */";
+print "void";
+print "cl_optimization_option_free (struct cl_optimization *ptr ATTRIBUTE_UNUSED)";
+print "{";
+for (i = 0; i < n_opt_val; i++) {
+	name = var_opt_val[i]
+	otype = var_opt_val_type[i];
+	if (otype ~ "^const char \\**$")
+	{
+	      print "  if (ptr->" name")";
+	      print "    free (const_cast <char *>(ptr->" name"));";
+	}
 }
 print "}";
 }

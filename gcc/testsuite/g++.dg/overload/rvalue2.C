@@ -7,5 +7,5 @@ template <class T> void f(const T&);
 int main()
 {
   volatile int i = 0;
-  f(i++);
+  f(i++); // { dg-warning "deprecated" "" { target c++2a } }
 }

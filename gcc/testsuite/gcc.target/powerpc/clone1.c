@@ -1,6 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-linux* && lp64 } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-mcpu=power8 -O2" } */
+/* { dg-options "-mdejagnu-cpu=power8 -O2" } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
 /* { dg-require-effective-target ppc_cpu_supports_hw } */
 

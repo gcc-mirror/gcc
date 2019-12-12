@@ -1,5 +1,5 @@
 ;;- Predicate definitions for the pdp11 for GNU C compiler
-;; Copyright (C) 1994-2018 Free Software Foundation, Inc.
+;; Copyright (C) 1994-2019 Free Software Foundation, Inc.
 ;; Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 ;; This file is part of GCC.
@@ -29,6 +29,14 @@
 (define_predicate "expand_shift_operand"
   (and (match_code "const_int")
        (match_test "(unsigned) INTVAL (op) < 4")))
+
+;; Accept integer arguments +1 and -1, for which add and sub can be
+;; done as inc or dec instructions.  This matches the rule for the
+;; L and M constraints.
+(define_predicate "incdec_operand"
+  (and (match_code "const_int")
+       (ior (match_test "INTVAL (op) == -1")
+	    (match_test "INTVAL (op) == 1"))))
 
 ;; Accept anything general_operand accepts, except that registers must
 ;; be FPU registers.

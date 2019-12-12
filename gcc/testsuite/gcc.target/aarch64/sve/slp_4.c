@@ -35,10 +35,8 @@ vec_slp_##TYPE (TYPE *restrict a, int n)			\
 
 TEST_ALL (VEC_PERM)
 
-/* 1 for each 8-bit type, 4 for each 32-bit type and 8 for double.  */
-/* { dg-final { scan-assembler-times {\tld1rd\tz[0-9]+\.d, } 22 { target aarch64_little_endian } } } */
-/* { dg-final { scan-assembler-times {\tld1rqb\tz[0-9]+\.b, } 2 { target aarch64_big_endian } } } */
-/* { dg-final { scan-assembler-times {\tld1rd\tz[0-9]+\.d, } 20 { target aarch64_big_endian } } } */
+/* 1 for each 8-bit type, 4 for each 32-bit type and 4 for double.  */
+/* { dg-final { scan-assembler-times {\tld1rd\tz[0-9]+\.d, } 18 } } */
 /* 1 for each 16-bit type.  */
 /* { dg-final { scan-assembler-times {\tld1rqh\tz[0-9]\.h, } 3 } } */
 /* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.d, #99\n} 2 } } */
@@ -49,6 +47,8 @@ TEST_ALL (VEC_PERM)
 /* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.d, #37\n} 2 } } */
 /* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.d, #24\n} 2 } } */
 /* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.d, #81\n} 2 } } */
+/* 4 for double.  */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.d, x[0-9]+\n} 4 } } */
 /* The 32-bit types need:
 
       ZIP1 ZIP1 (2 ZIP2s optimized away)

@@ -1,5 +1,5 @@
 /* Get CPU type and Features for x86 processors.
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by Sriraman Tallam (tmsriram@google.com)
 
 This file is part of GCC.
@@ -75,6 +75,10 @@ enum processor_subtypes
   INTEL_COREI7_CANNONLAKE,
   INTEL_COREI7_ICELAKE_CLIENT,
   INTEL_COREI7_ICELAKE_SERVER,
+  AMDFAM17H_ZNVER2,
+  INTEL_COREI7_CASCADELAKE,
+  INTEL_COREI7_TIGERLAKE,
+  INTEL_COREI7_COOPERLAKE,
   CPU_SUBTYPE_MAX
 };
 
@@ -117,7 +121,8 @@ enum processor_features
   FEATURE_GFNI,
   FEATURE_VPCLMULQDQ,
   FEATURE_AVX512VNNI,
-  FEATURE_AVX512BITALG
+  FEATURE_AVX512BITALG,
+  FEATURE_AVX512BF16
 };
 
 extern struct __processor_model

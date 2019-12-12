@@ -11,10 +11,10 @@ proc dump_compare { src options } {
     foreach option $option_list {
 	file delete -force $tmpdir/dump1
 	file mkdir $tmpdir/dump1
-	c-torture-compile $src "$option $options -dumpbase dump1/$dumpbase -DMASK=1 -x c --param ggc-min-heapsize=1 -fdump-ipa-all -fdump-rtl-all -fdump-tree-all -fdump-noaddr"
+	c-torture-compile $src "$option $options -dumpbase dump1/$dumpbase -DMASK=1 -x c --param ggc-min-heapsize=1 -fdump-ipa-all -fdump-rtl-all -fdump-tree-all -fdump-noaddr -gno-record-gcc-switches"
 	file delete -force $tmpdir/dump2
 	file mkdir $tmpdir/dump2
-	c-torture-compile $src "$option $options -dumpbase dump2/$dumpbase -DMASK=2 -x c -fdump-ipa-all -fdump-rtl-all -fdump-tree-all -fdump-noaddr"
+	c-torture-compile $src "$option $options -dumpbase dump2/$dumpbase -DMASK=2 -x c -fdump-ipa-all -fdump-rtl-all -fdump-tree-all -fdump-noaddr -gno-record-gcc-switches"
 	foreach dump1 [lsort [glob -nocomplain $tmpdir/dump1/*]] {
 	    set dump2 "$tmpdir/dump2/[file tail $dump1]"
 	    set dumptail "gcc.c-torture/unsorted/[file tail $dump1]"

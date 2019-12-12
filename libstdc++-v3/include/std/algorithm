@@ -1,6 +1,6 @@
 // <algorithm> -*- C++ -*-
 
-// Copyright (C) 2001-2018 Free Software Foundation, Inc.
+// Copyright (C) 2001-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -60,6 +60,21 @@
 #include <utility> // UK-300.
 #include <bits/stl_algobase.h>
 #include <bits/stl_algo.h>
+
+#if __cplusplus > 201402L
+// Parallel STL algorithms
+# if _PSTL_EXECUTION_POLICIES_DEFINED
+// If <execution> has already been included, pull in implementations
+#  include <pstl/glue_algorithm_impl.h>
+#  else
+// Otherwise just pull in forward declarations
+#    include <pstl/glue_algorithm_defs.h>
+#    define _PSTL_ALGORITHM_FORWARD_DECLARED 1
+#  endif
+
+// Feature test macro for parallel algorithms
+# define __cpp_lib_parallel_algorithm 201603L
+#endif // C++17
 
 #ifdef _GLIBCXX_PARALLEL
 # include <parallel/algorithm>

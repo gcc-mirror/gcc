@@ -23,6 +23,9 @@ func TestFloatSqrt64(t *testing.T) {
 	}
 
 	for i := 0; i < 1e5; i++ {
+		if i == 1e2 && testing.Short() {
+			break
+		}
 		r := rand.Float64()
 
 		got := new(Float).SetPrec(53)

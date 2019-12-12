@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC for Motorola 680x0/ColdFire.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -866,9 +866,6 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
 ( fputs (".lcomm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
   fprintf ((FILE), ",%u\n", (int)(ROUNDED)))
-
-#define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS) \
-  m68k_final_prescan_insn (INSN, OPVEC, NOPERANDS)
 
 /* On the 68000, we use several CODE characters:
    '.' for dot needed in Motorola-style opcode names.

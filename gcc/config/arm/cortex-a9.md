@@ -1,5 +1,5 @@
 ;; ARM Cortex-A9 pipeline description
-;; Copyright (C) 2008-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2008-2019 Free Software Foundation, Inc.
 ;; Originally written by CodeSourcery for VFP.
 ;;
 ;; Rewritten by Ramana Radhakrishnan <ramana.radhakrishnan@arm.com>
@@ -87,7 +87,7 @@ cortex_a9_p1_e2 + cortex_a9_p0_e1 + cortex_a9_p1_e1")
                         shift_imm,shift_reg,\
                         mov_imm,mov_reg,mvn_imm,mvn_reg,\
                         mov_shift_reg,mov_shift,\
-                        mrs,multiple,no_insn"))
+                        mrs,multiple"))
   "cortex_a9_p0_default|cortex_a9_p1_default")
 
 ;; An instruction using the shifter will go down E1.

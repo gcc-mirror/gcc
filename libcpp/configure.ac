@@ -1,7 +1,6 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.64)
 AC_INIT(cpplib, [ ], gcc-bugs@gcc.gnu.org, cpplib)
 AC_CONFIG_SRCDIR(ucnid.h)
 AC_CONFIG_MACRO_DIR(../config)
@@ -42,7 +41,7 @@ ACX_PROG_CC_WARNINGS_ARE_ERRORS([manual])
 # Dependency checking.
 ZW_CREATE_DEPDIR
 AC_LANG_PUSH([C++])
-AC_COMPILE_IFELSE([[int i;]], [],
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([int i;])], [],
 		  [AC_MSG_ERROR([C++ compiler missing or inoperational])])
 AC_LANG_POP([C++])
 ZW_PROG_COMPILER_DEPENDENCIES([CXX])

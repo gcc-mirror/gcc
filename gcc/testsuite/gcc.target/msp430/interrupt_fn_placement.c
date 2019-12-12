@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "" { "*-*-*" } { "-mcpu=msp430" } { "" } } */
 /* { dg-options "-mlarge -mcode-region=either -ffunction-sections" } */
 /* { dg-final { scan-assembler-not "\\.either\\.lowtext" } } */
 

@@ -1,3 +1,5 @@
+/* { dg-require-effective-target indirect_calls } */
+
 typedef void (*entry_func) (void) __attribute__ ((noreturn));
 extern entry_func entry_addr;
 static void bsd_boot_entry (void)

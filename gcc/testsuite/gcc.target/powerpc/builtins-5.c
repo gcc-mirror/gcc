@@ -1,6 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-mcpu=power8 -O0 -mno-fold-gimple -dp" } */
+/* { dg-options "-mdejagnu-cpu=power8 -O0 -mno-fold-gimple -dp" } */
 /* { dg-prune-output "gimple folding of rs6000 builtins has been disabled." } */
 
 #include <altivec.h>

@@ -1,5 +1,5 @@
 /* Target Code for moxie
-   Copyright (C) 2008-2018 Free Software Foundation, Inc.
+   Copyright (C) 2008-2019 Free Software Foundation, Inc.
    Contributed by Anthony Green.
 
    This file is part of GCC.
@@ -264,7 +264,7 @@ moxie_compute_frame (void)
 
   /* Save callee-saved registers.  */
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if (df_regs_ever_live_p (regno) && (! call_used_regs[regno]))
+    if (df_regs_ever_live_p (regno) && (! call_used_or_fixed_reg_p (regno)))
       cfun->machine->callee_saved_reg_size += 4;
 
   cfun->machine->size_for_adjusting_sp = 
@@ -288,7 +288,8 @@ moxie_expand_prologue (void)
   /* Save callee-saved registers.  */
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     {
-      if (!fixed_regs[regno] && df_regs_ever_live_p (regno) && !call_used_regs[regno])
+      if (df_regs_ever_live_p (regno)
+	  && !call_used_or_fixed_reg_p (regno))
 	{
 	  insn = emit_insn (gen_movsi_push (gen_rtx_REG (Pmode, regno)));
 	  RTX_FRAME_RELATED_P (insn) = 1;
@@ -349,7 +350,7 @@ moxie_expand_epilogue (void)
 	  emit_insn (gen_addsi3 (reg, reg, hard_frame_pointer_rtx));
 	}
       for (regno = FIRST_PSEUDO_REGISTER; regno-- > 0; )
-	if (!fixed_regs[regno] && !call_used_regs[regno]
+	if (!call_used_or_fixed_reg_p (regno)
 	    && df_regs_ever_live_p (regno))
 	  {
 	    rtx preg = gen_rtx_REG (Pmode, regno);
@@ -385,8 +386,7 @@ moxie_initial_elimination_offset (int from, int to)
 
 static void
 moxie_setup_incoming_varargs (cumulative_args_t cum_v,
-			      machine_mode mode ATTRIBUTE_UNUSED,
-			      tree type ATTRIBUTE_UNUSED,
+			      const function_arg_info &,
 			      int *pretend_size, int no_rtl)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -424,14 +424,12 @@ moxie_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
    NULL_RTX if there's no more space.  */
 
 static rtx
-moxie_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		    const_tree type ATTRIBUTE_UNUSED,
-		    bool named ATTRIBUTE_UNUSED)
+moxie_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
   if (*cum < 8)
-    return gen_rtx_REG (mode, *cum);
+    return gen_rtx_REG (arg.mode, *cum);
   else 
     return NULL_RTX;
 }
@@ -441,35 +439,25 @@ moxie_function_arg (cumulative_args_t cum_v, machine_mode mode,
    : (unsigned) int_size_in_bytes (TYPE))
 
 static void
-moxie_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			    const_tree type, bool named ATTRIBUTE_UNUSED)
+moxie_function_arg_advance (cumulative_args_t cum_v,
+			    const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
   *cum = (*cum < MOXIE_R6
-	  ? *cum + ((3 + MOXIE_FUNCTION_ARG_SIZE (mode, type)) / 4)
+	  ? *cum + ((3 + MOXIE_FUNCTION_ARG_SIZE (arg.mode, arg.type)) / 4)
 	  : *cum);
 }
 
-/* Return non-zero if the function argument described by TYPE is to be
+/* Return non-zero if the function argument described by ARG is to be
    passed by reference.  */
 
 static bool
-moxie_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-			 machine_mode mode, const_tree type,
-			 bool named ATTRIBUTE_UNUSED)
+moxie_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  unsigned HOST_WIDE_INT size;
-
-  if (type)
-    {
-      if (AGGREGATE_TYPE_P (type))
-	return true;
-      size = int_size_in_bytes (type);
-    }
-  else
-    size = GET_MODE_SIZE (mode);
-
+  if (arg.aggregate_type_p ())
+    return true;
+  unsigned HOST_WIDE_INT size = arg.type_size_in_bytes ();
   return size > 4*6;
 }
 
@@ -478,9 +466,7 @@ moxie_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
    that fit in argument passing registers.  */
 
 static int
-moxie_arg_partial_bytes (cumulative_args_t cum_v,
-			 machine_mode mode,
-			 tree type, bool named)
+moxie_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int bytes_left, size;
@@ -488,16 +474,16 @@ moxie_arg_partial_bytes (cumulative_args_t cum_v,
   if (*cum >= 8)
     return 0;
 
-  if (moxie_pass_by_reference (cum_v, mode, type, named))
+  if (moxie_pass_by_reference (cum_v, arg))
     size = 4;
-  else if (type)
+  else if (arg.type)
     {
-      if (AGGREGATE_TYPE_P (type))
+      if (AGGREGATE_TYPE_P (arg.type))
 	return 0;
-      size = int_size_in_bytes (type);
+      size = int_size_in_bytes (arg.type);
     }
   else
-    size = GET_MODE_SIZE (mode);
+    size = GET_MODE_SIZE (arg.mode);
 
   bytes_left = (4 * 6) - ((*cum - 2) * 4);
 

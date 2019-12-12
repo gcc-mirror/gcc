@@ -1,5 +1,5 @@
 /* _Unwind_Frames_Extra with shadow stack for x86-64 and x86.
-   Copyright (C) 2017-2018 Free Software Foundation, Inc.
+   Copyright (C) 2017-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -49,8 +49,3 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	}					\
     }						\
     while (0)
-
-/* Increment frame count.  Skip signal frames.  */
-#undef _Unwind_Frames_Increment
-#define _Unwind_Frames_Increment(context, frames) \
-  if (!_Unwind_IsSignalFrame (context)) frames++

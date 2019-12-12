@@ -3,7 +3,7 @@
 
 // 2008-06-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
-// Copyright (C) 2008-2018 Free Software Foundation, Inc.
+// Copyright (C) 2008-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,7 +20,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 21.4 Numeric Conversions [string.conversions]
+// C++11 21.5 Numeric Conversions [string.conversions]
 
 #include <string>
 #include <testsuite_hooks.h>
@@ -28,7 +28,6 @@
 void
 test01()
 {
-  bool test = true;
   using namespace std;
   
   long long ll1 = -2;
@@ -59,5 +58,4 @@ test01()
 int main()
 {
   test01();
-  return 0;
 }

@@ -47,6 +47,4 @@ func PtraceSetRegs(pid int, regs *PtraceRegs) (err error) {
 	return ptrace(PTRACE_POKEUSR_AREA, pid, uintptr(unsafe.Pointer(&parea)), 0)
 }
 
-func rawVforkSyscall(trap, a1 uintptr) (r1 uintptr, err Errno) {
-	panic("not implemented")
-}
+func rawVforkSyscall(trap, a1 uintptr) (r1 uintptr, err Errno)

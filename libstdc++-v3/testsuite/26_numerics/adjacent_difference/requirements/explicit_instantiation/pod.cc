@@ -2,7 +2,7 @@
 
 // 2007-09-20 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2007-2018 Free Software Foundation, Inc.
+// Copyright (C) 2007-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,9 +28,10 @@ namespace std
   using __gnu_test::pod_int;
 
   typedef pod_int 		value_type;
-  typedef value_type* 		input_iterator;
-  typedef value_type* 		output_iterator;
+  typedef value_type* 		input_iterator_type;
+  typedef value_type* 		output_iterator_type;
 
-  template 
-  output_iterator adjacent_difference(input_iterator, input_iterator, output_iterator);
+  template output_iterator_type
+  adjacent_difference(input_iterator_type, input_iterator_type,
+		      output_iterator_type);
 } 

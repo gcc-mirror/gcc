@@ -1,5 +1,4 @@
 ! { dg-do compile }
-! { dg-options "-pedantic -fwhole-file" }
 !
 ! Tests the fix for PR25087, in which the following invalid code
 ! was not detected.

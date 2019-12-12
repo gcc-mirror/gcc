@@ -1,5 +1,5 @@
 /* Data references and dependences detectors.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "graphds.h"
 #include "tree-chrec.h"
+#include "opt-problem.h"
 
 /*
   innermost_loop_behavior describes the evolution of the address of the memory
@@ -137,7 +138,8 @@ struct dr_alias
    space. A vector space is a set that is closed under vector addition
    and scalar multiplication.  In this vector space, an element is a list of
    integers.  */
-typedef int *lambda_vector;
+typedef HOST_WIDE_INT lambda_int;
+typedef lambda_int *lambda_vector;
 
 /* An integer matrix.  A matrix consists of m vectors of length n (IE
    all vectors are the same length).  */
@@ -201,8 +203,9 @@ typedef struct data_reference *data_reference_p;
    including the data ref itself and the segment length for aliasing
    checks.  This is used to merge alias checks.  */
 
-struct dr_with_seg_len
+class dr_with_seg_len
 {
+public:
   dr_with_seg_len (data_reference_p d, tree len, unsigned HOST_WIDE_INT size,
 		   unsigned int a)
     : dr (d), seg_len (len), access_size (size), align (a) {}
@@ -219,18 +222,113 @@ struct dr_with_seg_len
   unsigned int align;
 };
 
+/* Flags that describe a potential alias between two dr_with_seg_lens.
+   In general, each pair of dr_with_seg_lens represents a composite of
+   multiple access pairs P, so testing flags like DR_IS_READ on the DRs
+   does not give meaningful information.
+
+   DR_ALIAS_RAW:
+	There is a pair in P for which the second reference is a read
+	and the first is a write.
+
+   DR_ALIAS_WAR:
+	There is a pair in P for which the second reference is a write
+	and the first is a read.
+
+   DR_ALIAS_WAW:
+	There is a pair in P for which both references are writes.
+
+   DR_ALIAS_ARBITRARY:
+	Either
+	(a) it isn't possible to classify one pair in P as RAW, WAW or WAR; or
+	(b) there is a pair in P that breaks the ordering assumption below.
+
+	This flag overrides the RAW, WAR and WAW flags above.
+
+   DR_ALIAS_UNSWAPPED:
+   DR_ALIAS_SWAPPED:
+	Temporary flags that indicate whether there is a pair P whose
+	DRs have or haven't been swapped around.
+
+   DR_ALIAS_MIXED_STEPS:
+	The DR_STEP for one of the data references in the pair does not
+	accurately describe that reference for all members of P.  (Note
+	that the flag does not say anything about whether the DR_STEPs
+	of the two references in the pair are the same.)
+
+   The ordering assumption mentioned above is that for every pair
+   (DR_A, DR_B) in P:
+
+   (1) The original code accesses n elements for DR_A and n elements for DR_B,
+       interleaved as follows:
+
+	 one access of size DR_A.access_size at DR_A.dr
+	 one access of size DR_B.access_size at DR_B.dr
+	 one access of size DR_A.access_size at DR_A.dr + STEP_A
+	 one access of size DR_B.access_size at DR_B.dr + STEP_B
+	 one access of size DR_A.access_size at DR_A.dr + STEP_A * 2
+	 one access of size DR_B.access_size at DR_B.dr + STEP_B * 2
+	 ...
+
+   (2) The new code accesses the same data in exactly two chunks:
+
+	 one group of accesses spanning |DR_A.seg_len| + DR_A.access_size
+	 one group of accesses spanning |DR_B.seg_len| + DR_B.access_size
+
+   A pair might break this assumption if the DR_A and DR_B accesses
+   in the original or the new code are mingled in some way.  For example,
+   if DR_A.access_size represents the effect of two individual writes
+   to nearby locations, the pair breaks the assumption if those writes
+   occur either side of the access for DR_B.
+
+   Note that DR_ALIAS_ARBITRARY describes whether the ordering assumption
+   fails to hold for any individual pair in P.  If the assumption *does*
+   hold for every pair in P, it doesn't matter whether it holds for the
+   composite pair or not.  In other words, P should represent the complete
+   set of pairs that the composite pair is testing, so only the ordering
+   of two accesses in the same member of P matters.  */
+const unsigned int DR_ALIAS_RAW = 1U << 0;
+const unsigned int DR_ALIAS_WAR = 1U << 1;
+const unsigned int DR_ALIAS_WAW = 1U << 2;
+const unsigned int DR_ALIAS_ARBITRARY = 1U << 3;
+const unsigned int DR_ALIAS_SWAPPED = 1U << 4;
+const unsigned int DR_ALIAS_UNSWAPPED = 1U << 5;
+const unsigned int DR_ALIAS_MIXED_STEPS = 1U << 6;
+
 /* This struct contains two dr_with_seg_len objects with aliasing data
    refs.  Two comparisons are generated from them.  */
 
-struct dr_with_seg_len_pair_t
+class dr_with_seg_len_pair_t
 {
-  dr_with_seg_len_pair_t (const dr_with_seg_len& d1,
-			       const dr_with_seg_len& d2)
-    : first (d1), second (d2) {}
+public:
+  /* WELL_ORDERED indicates that the ordering assumption described above
+     DR_ALIAS_ARBITRARY holds.  REORDERED indicates that it doesn't.  */
+  enum sequencing { WELL_ORDERED, REORDERED };
+
+  dr_with_seg_len_pair_t (const dr_with_seg_len &,
+			  const dr_with_seg_len &, sequencing);
 
   dr_with_seg_len first;
   dr_with_seg_len second;
+  unsigned int flags;
 };
+
+inline dr_with_seg_len_pair_t::
+dr_with_seg_len_pair_t (const dr_with_seg_len &d1, const dr_with_seg_len &d2,
+			sequencing seq)
+  : first (d1), second (d2), flags (0)
+{
+  if (DR_IS_READ (d1.dr) && DR_IS_WRITE (d2.dr))
+    flags |= DR_ALIAS_WAR;
+  else if (DR_IS_WRITE (d1.dr) && DR_IS_READ (d2.dr))
+    flags |= DR_ALIAS_RAW;
+  else if (DR_IS_WRITE (d1.dr) && DR_IS_WRITE (d2.dr))
+    flags |= DR_ALIAS_WAW;
+  else
+    gcc_unreachable ();
+  if (seq == REORDERED)
+    flags |= DR_ALIAS_ARBITRARY;
+}
 
 enum data_dependence_direction {
   dir_positive,
@@ -345,10 +443,6 @@ struct data_dependence_relation
   /* The classic distance vector.  */
   vec<lambda_vector> dist_vects;
 
-  /* An index in loop_nest for the innermost loop that varies for
-     this data dependence relation.  */
-  unsigned inner_loop;
-
   /* Is the dependence reversed with respect to the lexicographic order?  */
   bool reversed_p;
 
@@ -404,7 +498,6 @@ typedef struct data_dependence_relation *ddr_p;
 /* The size of the direction/distance vectors: the number of loops in
    the loop nest.  */
 #define DDR_NB_LOOPS(DDR) (DDR_LOOP_NEST (DDR).length ())
-#define DDR_INNER_LOOP(DDR) (DDR)->inner_loop
 #define DDR_SELF_REFERENCE(DDR) (DDR)->self_reference_p
 
 #define DDR_DIST_VECTS(DDR) ((DDR)->dist_vects)
@@ -421,8 +514,9 @@ typedef struct data_dependence_relation *ddr_p;
 #define DDR_COULD_BE_INDEPENDENT_P(DDR) (DDR)->could_be_independent_p
 
 
-bool dr_analyze_innermost (innermost_loop_behavior *, tree, struct loop *);
-extern bool compute_data_dependences_for_loop (struct loop *, bool,
+opt_result dr_analyze_innermost (innermost_loop_behavior *, tree,
+				 class loop *, const gimple *);
+extern bool compute_data_dependences_for_loop (class loop *, bool,
 					       vec<loop_p> *,
 					       vec<data_reference_p> *,
 					       vec<ddr_p> *);
@@ -443,15 +537,15 @@ extern void free_dependence_relation (struct data_dependence_relation *);
 extern void free_dependence_relations (vec<ddr_p> );
 extern void free_data_ref (data_reference_p);
 extern void free_data_refs (vec<data_reference_p> );
-extern bool find_data_references_in_stmt (struct loop *, gimple *,
-					  vec<data_reference_p> *);
+extern opt_result find_data_references_in_stmt (class loop *, gimple *,
+						vec<data_reference_p> *);
 extern bool graphite_find_data_references_in_stmt (edge, loop_p, gimple *,
 						   vec<data_reference_p> *);
-tree find_data_references_in_loop (struct loop *, vec<data_reference_p> *);
+tree find_data_references_in_loop (class loop *, vec<data_reference_p> *);
 bool loop_nest_has_data_refs (loop_p loop);
 struct data_reference *create_data_ref (edge, loop_p, tree, gimple *, bool,
 					bool);
-extern bool find_loop_nest (struct loop *, vec<loop_p> *);
+extern bool find_loop_nest (class loop *, vec<loop_p> *);
 extern struct data_dependence_relation *initialize_data_dependence_relation
      (struct data_reference *, struct data_reference *, vec<loop_p>);
 extern void compute_affine_dependence (struct data_dependence_relation *,
@@ -460,7 +554,7 @@ extern void compute_self_dependence (struct data_dependence_relation *);
 extern bool compute_all_dependences (vec<data_reference_p> ,
 				     vec<ddr_p> *,
 				     vec<loop_p>, bool);
-extern tree find_data_references_in_bb (struct loop *, basic_block,
+extern tree find_data_references_in_bb (class loop *, basic_block,
                                         vec<data_reference_p> *);
 extern unsigned int dr_alignment (innermost_loop_behavior *);
 extern tree get_base_for_alignment (tree, unsigned int *);
@@ -475,15 +569,15 @@ dr_alignment (data_reference *dr)
 }
 
 extern bool dr_may_alias_p (const struct data_reference *,
-			    const struct data_reference *, bool);
+			    const struct data_reference *, class loop *);
 extern bool dr_equal_offsets_p (struct data_reference *,
                                 struct data_reference *);
 
-extern bool runtime_alias_check_p (ddr_p, struct loop *, bool);
+extern opt_result runtime_alias_check_p (ddr_p, class loop *, bool);
 extern int data_ref_compare_tree (tree, tree);
 extern void prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *,
 					   poly_uint64);
-extern void create_runtime_alias_checks (struct loop *,
+extern void create_runtime_alias_checks (class loop *,
 					 vec<dr_with_seg_len_pair_t> *, tree*);
 extern tree dr_direction_indicator (struct data_reference *);
 extern tree dr_zero_step_indicator (struct data_reference *);
@@ -574,15 +668,14 @@ ddr_dependence_level (ddr_p ddr)
 static inline int
 index_in_loop_nest (int var, vec<loop_p> loop_nest)
 {
-  struct loop *loopi;
+  class loop *loopi;
   int var_index;
 
-  for (var_index = 0; loop_nest.iterate (var_index, &loopi);
-       var_index++)
+  for (var_index = 0; loop_nest.iterate (var_index, &loopi); var_index++)
     if (loopi->num == var)
-      break;
+      return var_index;
 
-  return var_index;
+  gcc_unreachable ();
 }
 
 /* Returns true when the data reference DR the form "A[i] = ..."
@@ -609,11 +702,11 @@ void split_constant_offset (tree , tree *, tree *);
 
 /* Compute the greatest common divisor of a VECTOR of SIZE numbers.  */
 
-static inline int
+static inline lambda_int
 lambda_vector_gcd (lambda_vector vector, int size)
 {
   int i;
-  int gcd1 = 0;
+  lambda_int gcd1 = 0;
 
   if (size > 0)
     {
@@ -630,7 +723,7 @@ static inline lambda_vector
 lambda_vector_new (int size)
 {
   /* ???  We shouldn't abuse the GC allocator here.  */
-  return ggc_cleared_vec_alloc<int> (size);
+  return ggc_cleared_vec_alloc<lambda_int> (size);
 }
 
 /* Clear out vector VEC1 of length SIZE.  */
@@ -684,7 +777,7 @@ lambda_matrix_new (int m, int n, struct obstack *lambda_obstack)
   mat = XOBNEWVEC (lambda_obstack, lambda_vector, m);
 
   for (i = 0; i < m; i++)
-    mat[i] = XOBNEWVEC (lambda_obstack, int, n);
+    mat[i] = XOBNEWVEC (lambda_obstack, lambda_int, n);
 
   return mat;
 }

@@ -1,6 +1,6 @@
 ; Options for the Motorola MCore port of the compiler.
 
-; Copyright (C) 2005-2018 Free Software Foundation, Inc.
+; Copyright (C) 2005-2019 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -20,11 +20,11 @@
 
 m210
 Target RejectNegative Report InverseMask(M340)
-Generate code for the M*Core M210
+Generate code for the M*Core M210.
 
 m340
 Target RejectNegative Report Mask(M340)
-Generate code for the M*Core M340
+Generate code for the M*Core M340.
 
 m4byte-functions
 Target Report Mask(OVERALIGN_FUNC)

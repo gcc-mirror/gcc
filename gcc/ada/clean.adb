@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -694,6 +694,7 @@ package body Clean is
             Arg : constant String := Argument (Index);
 
             procedure Bad_Argument;
+            pragma No_Return (Bad_Argument);
             --  Signal bad argument
 
             ------------------
@@ -853,7 +854,7 @@ package body Clean is
                               then
                                  Project_File_Name :=
                                    new String'
-                                     (Prj (Prj'First + 1 ..  Prj'Last));
+                                     (Prj (Prj'First + 1 .. Prj'Last));
                               else
                                  Project_File_Name := new String'(Prj);
                               end if;

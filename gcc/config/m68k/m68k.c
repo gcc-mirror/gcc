@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Motorola 68000 family.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -181,10 +181,9 @@ static void m68k_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 static void m68k_trampoline_init (rtx, tree, rtx);
 static poly_int64 m68k_return_pops_args (tree, tree, poly_int64);
 static rtx m68k_delegitimize_address (rtx);
-static void m68k_function_arg_advance (cumulative_args_t, machine_mode,
-				       const_tree, bool);
-static rtx m68k_function_arg (cumulative_args_t, machine_mode,
-			      const_tree, bool);
+static void m68k_function_arg_advance (cumulative_args_t,
+				       const function_arg_info &);
+static rtx m68k_function_arg (cumulative_args_t, const function_arg_info &);
 static bool m68k_cannot_force_const_mem (machine_mode mode, rtx x);
 static bool m68k_output_addr_const_extra (FILE *, rtx);
 static void m68k_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
@@ -352,6 +351,9 @@ static machine_mode m68k_promote_function_mode (const_tree, machine_mode,
 
 #undef TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE m68k_promote_function_mode
+
+#undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
 
 static const struct attribute_spec m68k_attribute_table[] =
 {
@@ -521,7 +523,7 @@ m68k_option_override (void)
       if (m68k_arch_entry
 	  && (m68k_arch_entry->microarch != m68k_cpu_entry->microarch
 	      || (m68k_arch_entry->flags & ~m68k_cpu_entry->flags) != 0))
-	warning (0, "-mcpu=%s conflicts with -march=%s",
+	warning (0, "%<-mcpu=%s%> conflicts with %<-march=%s%>",
 		 m68k_cpu_entry->name, m68k_arch_entry->name);
 
       entry = m68k_cpu_entry;
@@ -580,7 +582,7 @@ m68k_option_override (void)
    * both specified together.  Doing so simply doesn't make sense.
    */
   if (TARGET_SEP_DATA && TARGET_ID_SHARED_LIBRARY)
-    error ("cannot specify both -msep-data and -mid-shared-library");
+    error ("cannot specify both %<-msep-data%> and %<-mid-shared-library%>");
 
   /* If we're generating code for a separate A5 relative data segment,
    * we've got to enable -fPIC as well.  This might be relaxable to
@@ -592,7 +594,7 @@ m68k_option_override (void)
   /* -mpcrel -fPIC uses 32-bit pc-relative displacements.  Raise an
      error if the target does not support them.  */
   if (TARGET_PCREL && !TARGET_68020 && flag_pic == 2)
-    error ("-mpcrel -fPIC is not currently supported on selected cpu");
+    error ("%<-mpcrel%> %<-fPIC%> is not currently supported on selected cpu");
 
   /* ??? A historic way of turning on pic, or is this intended to
      be an embedded thing that doesn't have the same name binding
@@ -656,14 +658,14 @@ m68k_option_override (void)
   int label_alignment = align_labels.levels[0].get_value ();
   if (label_alignment > 2)
     {
-      warning (0, "-falign-labels=%d is not supported", label_alignment);
+      warning (0, "%<-falign-labels=%d%> is not supported", label_alignment);
       str_align_labels = "1";
     }
 
   int loop_alignment = align_loops.levels[0].get_value ();
   if (loop_alignment > 2)
     {
-      warning (0, "-falign-loops=%d is not supported", loop_alignment);
+      warning (0, "%<-falign-loops=%d%> is not supported", loop_alignment);
       str_align_loops = "1";
     }
 #endif
@@ -671,7 +673,7 @@ m68k_option_override (void)
   if ((opt_fstack_limit_symbol_arg != NULL || opt_fstack_limit_register_no >= 0)
       && !TARGET_68020)
     {
-      warning (0, "-fstack-limit- options are not supported on this cpu");
+      warning (0, "%<-fstack-limit-%> options are not supported on this cpu");
       opt_fstack_limit_symbol_arg = NULL;
       opt_fstack_limit_register_no = -1;
     }
@@ -942,7 +944,7 @@ m68k_save_reg (unsigned int regno, bool interrupt_handler)
       if (df_regs_ever_live_p (regno))
 	return true;
 
-      if (!crtl->is_leaf && call_used_regs[regno])
+      if (!crtl->is_leaf && call_used_or_fixed_reg_p (regno))
 	return true;
     }
 
@@ -951,7 +953,7 @@ m68k_save_reg (unsigned int regno, bool interrupt_handler)
     return false;
 
   /* Otherwise save everything that isn't call-clobbered.  */
-  return !call_used_regs[regno];
+  return !call_used_or_fixed_reg_p (regno);
 }
 
 /* Emit RTL for a MOVEM or FMOVEM instruction.  BASE + OFFSET represents
@@ -1461,23 +1463,18 @@ m68k_ok_for_sibcall_p (tree decl, tree exp)
 /* On the m68k all args are always pushed.  */
 
 static rtx
-m68k_function_arg (cumulative_args_t cum ATTRIBUTE_UNUSED,
-		   machine_mode mode ATTRIBUTE_UNUSED,
-		   const_tree type ATTRIBUTE_UNUSED,
-		   bool named ATTRIBUTE_UNUSED)
+m68k_function_arg (cumulative_args_t, const function_arg_info &)
 {
   return NULL_RTX;
 }
 
 static void
-m68k_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			   const_tree type, bool named ATTRIBUTE_UNUSED)
+m68k_function_arg_advance (cumulative_args_t cum_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  *cum += (mode != BLKmode
-	   ? (GET_MODE_SIZE (mode) + 3) & ~3
-	   : (int_size_in_bytes (type) + 3) & ~3);
+  *cum += (arg.promoted_size_in_bytes () + 3) & ~3;
 }
 
 /* Convert X to a legitimate function call memory reference and return the
@@ -2326,14 +2323,11 @@ m68k_unwrap_symbol (rtx orig, bool unwrap_reloc32_p)
   return m68k_unwrap_symbol_1 (orig, unwrap_reloc32_p, NULL);
 }
 
-/* Prescan insn before outputing assembler for it.  */
+/* Adjust decorated address operand before outputing assembler for it.  */
 
-void
-m68k_final_prescan_insn (rtx_insn *insn ATTRIBUTE_UNUSED,
-			 rtx *operands, int n_operands)
+static void
+m68k_adjust_decorated_operand (rtx op)
 {
-  int i;
-
   /* Combine and, possibly, other optimizations may do good job
      converting
        (const (unspec [(symbol)]))
@@ -2352,45 +2346,38 @@ m68k_final_prescan_insn (rtx_insn *insn ATTRIBUTE_UNUSED,
      to patch up anything outside of the operand.  */
 
   subrtx_var_iterator::array_type array;
-  for (i = 0; i < n_operands; ++i)
+  FOR_EACH_SUBRTX_VAR (iter, array, op, ALL)
     {
-      rtx op;
-
-      op = operands[i];
-
-      FOR_EACH_SUBRTX_VAR (iter, array, op, ALL)
+      rtx x = *iter;
+      if (m68k_unwrap_symbol (x, true) != x)
 	{
-	  rtx x = *iter;
-	  if (m68k_unwrap_symbol (x, true) != x)
+	  rtx plus;
+
+	  gcc_assert (GET_CODE (x) == CONST);
+	  plus = XEXP (x, 0);
+
+	  if (GET_CODE (plus) == PLUS || GET_CODE (plus) == MINUS)
 	    {
-	      rtx plus;
+	      rtx unspec;
+	      rtx addend;
 
-	      gcc_assert (GET_CODE (x) == CONST);
-	      plus = XEXP (x, 0);
+	      unspec = XEXP (plus, 0);
+	      gcc_assert (GET_CODE (unspec) == UNSPEC);
+	      addend = XEXP (plus, 1);
+	      gcc_assert (CONST_INT_P (addend));
 
-	      if (GET_CODE (plus) == PLUS || GET_CODE (plus) == MINUS)
-		{
-		  rtx unspec;
-		  rtx addend;
+	      /* We now have all the pieces, rearrange them.  */
 
-		  unspec = XEXP (plus, 0);
-		  gcc_assert (GET_CODE (unspec) == UNSPEC);
-		  addend = XEXP (plus, 1);
-		  gcc_assert (CONST_INT_P (addend));
+	      /* Move symbol to plus.  */
+	      XEXP (plus, 0) = XVECEXP (unspec, 0, 0);
 
-		  /* We now have all the pieces, rearrange them.  */
+	      /* Move plus inside unspec.  */
+	      XVECEXP (unspec, 0, 0) = plus;
 
-		  /* Move symbol to plus.  */
-		  XEXP (plus, 0) = XVECEXP (unspec, 0, 0);
-
-		  /* Move plus inside unspec.  */
-		  XVECEXP (unspec, 0, 0) = plus;
-
-		  /* Move unspec to top level of const.  */
-		  XEXP (x, 0) = unspec;
-		}
-	      iter.skip_subrtxes ();
+	      /* Move unspec to top level of const.  */
+	      XEXP (x, 0) = unspec;
 	    }
+	  iter.skip_subrtxes ();
 	}
     }
 }
@@ -2548,7 +2535,7 @@ m68k_call_tls_get_addr (rtx x, rtx eqv, enum m68k_reloc reloc)
      consider (plus (%a5) (const (unspec))) to be a good enough
      operand for push, so it forces it into a register.  The bad
      thing about this is that combiner, due to copy propagation and other
-     optimizations, sometimes can not later fix this.  As a consequence,
+     optimizations, sometimes cannot later fix this.  As a consequence,
      additional register may be allocated resulting in a spill.
      For reference, see args processing loops in
      calls.c:emit_library_call_value_1.
@@ -3493,7 +3480,6 @@ handle_move_double (rtx operands[2],
 
   /* Normal case: do the two words, low-numbered first.  */
 
-  m68k_final_prescan_insn (NULL, operands, 2);
   handle_movsi (operands);
 
   /* Do the middle one of the three words for long double */
@@ -3504,7 +3490,6 @@ handle_move_double (rtx operands[2],
       if (addreg1)
 	handle_reg_adjust (addreg1, 4);
 
-      m68k_final_prescan_insn (NULL, middlehalf, 2);
       handle_movsi (middlehalf);
     }
 
@@ -3515,7 +3500,6 @@ handle_move_double (rtx operands[2],
     handle_reg_adjust (addreg1, 4);
 
   /* Do that word.  */
-  m68k_final_prescan_insn (NULL, latehalf, 2);
   handle_movsi (latehalf);
 
   /* Undo the adds we just did.  */
@@ -4461,6 +4445,9 @@ floating_exact_log2 (rtx x)
 void
 print_operand (FILE *file, rtx op, int letter)
 {
+  if (op != NULL_RTX)
+    m68k_adjust_decorated_operand (op);
+
   if (letter == '.')
     {
       if (MOTOROLA)
@@ -4708,6 +4695,8 @@ void
 print_operand_address (FILE *file, rtx addr)
 {
   struct m68k_address address;
+
+  m68k_adjust_decorated_operand (addr);
 
   if (!m68k_decompose_address (QImode, addr, true, &address))
     gcc_unreachable ();
@@ -5076,6 +5065,7 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 		      HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 		      tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk));
   rtx this_slot, offset, addr, mem, tmp;
   rtx_insn *insn;
 
@@ -5152,9 +5142,11 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   /* Run just enough of rest_of_compilation.  */
   insn = get_insns ();
   split_all_insns_noflow ();
+  assemble_start_function (thunk, fnname);
   final_start_function (insn, file, 1);
   final (insn, file, 1);
   final_end_function ();
+  assemble_end_function (thunk, fnname);
 
   /* Clean up the vars set above.  */
   reload_completed = 0;
@@ -6563,7 +6555,7 @@ m68k_conditional_register_usage (void)
   HARD_REG_SET x;
   if (!TARGET_HARD_FLOAT)
     {
-      COPY_HARD_REG_SET (x, reg_class_contents[(int)FP_REGS]);
+      x = reg_class_contents[FP_REGS];
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
         if (TEST_HARD_REG_BIT (x, i))
 	  fixed_regs[i] = call_used_regs[i] = 1;

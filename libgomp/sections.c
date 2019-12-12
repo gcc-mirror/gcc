@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2019 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -26,7 +26,10 @@
 /* This file handles the SECTIONS construct.  */
 
 #include "libgomp.h"
+#include <string.h>
 
+
+ialias_redirect (GOMP_taskgroup_reduction_register)
 
 /* Initialize the given work share construct from the given arguments.  */
 
@@ -72,10 +75,84 @@ GOMP_sections_start (unsigned count)
   struct gomp_thread *thr = gomp_thread ();
   long s, e, ret;
 
-  if (gomp_work_share_start (false))
+  if (gomp_work_share_start (0))
     {
       gomp_sections_init (thr->ts.work_share, count);
       gomp_work_share_init_done ();
+    }
+
+#ifdef HAVE_SYNC_BUILTINS
+  if (gomp_iter_dynamic_next (&s, &e))
+    ret = s;
+  else
+    ret = 0;
+#else
+  gomp_mutex_lock (&thr->ts.work_share->lock);
+  if (gomp_iter_dynamic_next_locked (&s, &e))
+    ret = s;
+  else
+    ret = 0;
+  gomp_mutex_unlock (&thr->ts.work_share->lock);
+#endif
+
+  return ret;
+}
+
+unsigned
+GOMP_sections2_start (unsigned count, uintptr_t *reductions, void **mem)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  long s, e, ret;
+
+  if (reductions)
+    gomp_workshare_taskgroup_start ();
+  if (gomp_work_share_start (0))
+    {
+      gomp_sections_init (thr->ts.work_share, count);
+      if (reductions)
+	{
+	  GOMP_taskgroup_reduction_register (reductions);
+	  thr->task->taskgroup->workshare = true;
+	  thr->ts.work_share->task_reductions = reductions;
+	}
+      if (mem)
+	{
+	  uintptr_t size = (uintptr_t) *mem;
+#define INLINE_ORDERED_TEAM_IDS_OFF \
+  ((offsetof (struct gomp_work_share, inline_ordered_team_ids)		\
+    + __alignof__ (long long) - 1) & ~(__alignof__ (long long) - 1))
+	  if (size > (sizeof (struct gomp_work_share)
+		      - INLINE_ORDERED_TEAM_IDS_OFF))
+	    *mem
+	      = (void *) (thr->ts.work_share->ordered_team_ids
+			  = gomp_malloc_cleared (size));
+	  else
+	    *mem = memset (((char *) thr->ts.work_share)
+			   + INLINE_ORDERED_TEAM_IDS_OFF, '\0', size);
+	}
+      gomp_work_share_init_done ();
+    }
+  else
+    {
+      if (reductions)
+	{
+	  uintptr_t *first_reductions = thr->ts.work_share->task_reductions;
+	  gomp_workshare_task_reduction_register (reductions,
+						  first_reductions);
+	}
+      if (mem)
+	{
+	  if ((offsetof (struct gomp_work_share, inline_ordered_team_ids)
+	       & (__alignof__ (long long) - 1)) == 0)
+	    *mem = (void *) thr->ts.work_share->ordered_team_ids;
+	  else
+	    {
+	      uintptr_t p = (uintptr_t) thr->ts.work_share->ordered_team_ids;
+	      p += __alignof__ (long long) - 1;
+	      p &= ~(__alignof__ (long long) - 1);
+	      *mem = (void *) p;
+	    }
+	}
     }
 
 #ifdef HAVE_SYNC_BUILTINS
@@ -140,7 +217,7 @@ GOMP_parallel_sections_start (void (*fn) (void *), void *data,
   num_threads = gomp_resolve_num_threads (num_threads, count);
   team = gomp_new_team (num_threads);
   gomp_sections_init (&team->work_shares[0], count);
-  gomp_team_start (fn, data, num_threads, 0, team);
+  gomp_team_start (fn, data, num_threads, 0, team, NULL);
 }
 
 ialias_redirect (GOMP_parallel_end)
@@ -154,7 +231,7 @@ GOMP_parallel_sections (void (*fn) (void *), void *data,
   num_threads = gomp_resolve_num_threads (num_threads, count);
   team = gomp_new_team (num_threads);
   gomp_sections_init (&team->work_shares[0], count);
-  gomp_team_start (fn, data, num_threads, flags, team);
+  gomp_team_start (fn, data, num_threads, flags, team, NULL);
   fn (data);
   GOMP_parallel_end ();
 }

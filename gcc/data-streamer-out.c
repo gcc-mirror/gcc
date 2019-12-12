@@ -1,7 +1,7 @@
 /* Routines for saving various data types to a file stream.  This deals
    with various data types like strings, integers, enums, etc.
 
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -218,6 +218,15 @@ void
 streamer_write_hwi (struct output_block *ob, HOST_WIDE_INT work)
 {
   streamer_write_hwi_stream (ob->main_stream, work);
+}
+
+/* Write a poly_uint64 value WORK to OB->main_stream.  */
+
+void
+streamer_write_poly_uint64 (struct output_block *ob, poly_uint64 work)
+{
+  for (int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+    streamer_write_uhwi_stream (ob->main_stream, work.coeffs[i]);
 }
 
 /* Write a gcov counter value WORK to OB->main_stream.  */

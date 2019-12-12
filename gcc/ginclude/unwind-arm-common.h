@@ -1,5 +1,5 @@
 /* Header file for the ARM EABI and C6X unwinders
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
    This file is free software; you can redistribute it and/or modify it
@@ -91,7 +91,7 @@ extern "C" {
 	  _uw reserved2;  /* Personality routine address */
 	  _uw reserved3;  /* Saved callsite address */
 	  _uw reserved4;  /* Forced unwind stop arg */
-	  _uw reserved5;
+	  _uw reserved5;  /* Personality routine GOT value in FDPIC mode.  */
 	}
       unwinder_cache;
       /* Propagation barrier cache (valid after phase 1): */

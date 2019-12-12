@@ -1,5 +1,5 @@
 /* Producing binary form of HSA BRIG from our internal representation.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
    Contributed by Martin Jambor <mjambor@suse.cz> and
    Martin Liska <mliska@suse.cz>.
 
@@ -35,8 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "output.h"
 #include "basic-block.h"
-#include "cfg.h"
 #include "function.h"
+#include "cfg.h"
 #include "fold-const.h"
 #include "stringpool.h"
 #include "gimple-pretty-print.h"
@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "dumpfile.h"
 #include "print-tree.h"
+#include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "hsa-common.h"
 #include "gomp-constants.h"
@@ -150,9 +151,8 @@ struct hsa_brig_data_chunk
 
 /* Structure representing a BRIG section, holding and writing its data.  */
 
-class hsa_brig_section
+struct hsa_brig_section
 {
-public:
   /* Section name that will be output to the BRIG.  */
   const char *section_name;
   /* Size in bytes of all data stored in the section.  */
@@ -195,8 +195,9 @@ hash_table <hsa_internal_fn_hasher> *hsa_emitted_internal_decls;
 /* List of sbr instructions.  */
 static vec <hsa_insn_sbr *> *switch_instructions;
 
-struct function_linkage_pair
+class function_linkage_pair
 {
+public:
   function_linkage_pair (tree decl, unsigned int off)
     : function_decl (decl), offset (off) {}
 
@@ -578,7 +579,7 @@ static void emit_immediate_operand (hsa_op_immed *imm);
    Return the offset of the directive.  */
 
 static unsigned
-emit_directive_variable (struct hsa_symbol *symbol)
+emit_directive_variable (class hsa_symbol *symbol)
 {
   struct BrigDirectiveVariable dirvar;
   unsigned name_offset;

@@ -59,14 +59,14 @@ contains
 !$omp end parallel
 
     if (any (f .ne. (/100, 100, 100, 210, 210, 210, 310, 310, 337, 337/))) &
-&     STOP 1
-    if (any (g .ne. (/-1, -1, -1, 0, 0, 0, 0, 0, 0, 0/))) STOP 2
-    if (i .ne. 20) STOP 3
-!$  if (l .ne. 128 + m) STOP 4
-    if (any (d .ne. 1 .or. e .ne. 1)) STOP 5
-    if (any (b .ne. transpose (a))) STOP 6
-    if (any (c .ne. b)) STOP 7
+&     stop 1
+    if (any (g .ne. (/-1, -1, -1, 0, 0, 0, 0, 0, 0, 0/))) stop 2
+    if (i .ne. 20) stop 3
+!$  if (l .ne. 128 + m) stop 4
+    if (any (d .ne. 1 .or. e .ne. 1)) stop 5
+    if (any (b .ne. transpose (a))) stop 6
+    if (any (c .ne. b)) stop 7
     if (any (n .ne. (/1, 2, 6, 12, 5, 30, 42, 56, 9, 90, &
-&                     110, 132, 13, 182, 210, 240/))) STOP 8
+&                     110, 132, 13, 182, 210, 240/))) stop 8
   end subroutine test_workshare
 end

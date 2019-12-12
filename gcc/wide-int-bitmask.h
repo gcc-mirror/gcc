@@ -1,5 +1,5 @@
 /* Operation with 128 bit bitmask.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,8 +20,9 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_WIDE_INT_BITMASK_H
 #define GCC_WIDE_INT_BITMASK_H
 
-struct wide_int_bitmask
+class wide_int_bitmask
 {
+public:
   inline wide_int_bitmask ();
   inline wide_int_bitmask (uint64_t l);
   inline wide_int_bitmask (uint64_t l, uint64_t h);

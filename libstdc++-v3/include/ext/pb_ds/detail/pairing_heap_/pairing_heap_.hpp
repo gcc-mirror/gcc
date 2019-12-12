@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -80,7 +80,7 @@ namespace __gnu_pbds
       typedef PB_DS_P_HEAP_BASE				base_type;
       typedef typename base_type::node_pointer 		node_pointer;
 
-      typedef typename _Alloc::template rebind<Value_Type>::other __rebind_a;
+      typedef rebind_traits<_Alloc, Value_Type>		__rebind_a;
 
     public:
       typedef Value_Type 				value_type;

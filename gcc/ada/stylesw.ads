@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -112,6 +112,10 @@ package Stylesw is
    --  This can be set true by using the -gnatyd switch. If it is True, then
    --  the line terminator must be a single LF, without an associated CR (e.g.
    --  DOS line terminator sequence CR/LF not allowed).
+
+   Style_Check_Mixed_Case_Decls : Boolean := False;
+   --  This can be set True by using the -gnatyD switch. If it is True, then
+   --  declared identifiers must be in Mixed_Case.
 
    Style_Check_End_Labels : Boolean := False;
    --  This can be set True by using the -gnatye switch. If it is True, then

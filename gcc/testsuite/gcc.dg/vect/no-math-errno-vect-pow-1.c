@@ -10,4 +10,4 @@ void foo(void)
     x[i] = __builtin_pow (x[i], 0.5);
 }
 
-/* { dg-final { scan-tree-dump "pattern recognized" "vect" { xfail spu*-*-* } } } */
+/* { dg-final { scan-tree-dump "pattern recognized" "vect" } } */

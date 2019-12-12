@@ -6,6 +6,7 @@ package runtime
 
 import (
 	"runtime/internal/atomic"
+	"runtime/internal/sys"
 	"unsafe"
 )
 
@@ -21,6 +22,39 @@ func lwp_park(ts int32, rel int32, abstime *timespec, unpark int32, hint, unpark
 //extern lwp_unpark
 func lwp_unpark(lwp int32, hint unsafe.Pointer) int32
 
+//go:noescape
+//extern sysctl
+func sysctl(*uint32, uint32, *byte, *uintptr, *byte, uintptr) int32
+
+// From NetBSD's <sys/sysctl.h>
+const (
+	_CTL_HW      = 6
+	_HW_NCPU     = 3
+	_HW_PAGESIZE = 7
+)
+
+func getncpu() int32 {
+	mib := [2]uint32{_CTL_HW, _HW_NCPU}
+	out := uint32(0)
+	nout := unsafe.Sizeof(out)
+	ret := sysctl(&mib[0], 2, (*byte)(unsafe.Pointer(&out)), &nout, nil, 0)
+	if ret >= 0 {
+		return int32(out)
+	}
+	return 1
+}
+
+func getPageSize() uintptr {
+	mib := [2]uint32{_CTL_HW, _HW_PAGESIZE}
+	out := uint32(0)
+	nout := unsafe.Sizeof(out)
+	ret := sysctl(&mib[0], 2, (*byte)(unsafe.Pointer(&out)), &nout, nil, 0)
+	if ret >= 0 {
+		return uintptr(out)
+	}
+	return 0
+}
+
 //go:nosplit
 func semacreate(mp *m) {
 }
@@ -28,15 +62,9 @@ func semacreate(mp *m) {
 //go:nosplit
 func semasleep(ns int64) int32 {
 	_g_ := getg()
-
-	// Compute sleep deadline.
-	var tsp *timespec
-	var ts timespec
+	var deadline int64
 	if ns >= 0 {
-		var nsec int32
-		ts.set_sec(int64(timediv(ns, 1000000000, &nsec)))
-		ts.set_nsec(nsec)
-		tsp = &ts
+		deadline = nanotime() + ns
 	}
 
 	for {
@@ -49,18 +77,19 @@ func semasleep(ns int64) int32 {
 		}
 
 		// Sleep until unparked by semawakeup or timeout.
+		var tsp *timespec
+		var ts timespec
+		if ns >= 0 {
+			wait := deadline - nanotime()
+			if wait <= 0 {
+				return -1
+			}
+			ts.setNsec(wait)
+			tsp = &ts
+		}
 		ret := lwp_park(_CLOCK_MONOTONIC, _TIMER_RELTIME, tsp, 0, unsafe.Pointer(&_g_.m.waitsemacount), nil)
 		if ret == _ETIMEDOUT {
 			return -1
-		} else if ret == _EINTR && ns >= 0 {
-			// Avoid sleeping forever if we keep getting
-			// interrupted (for example by the profiling
-			// timer). It would be if tsp upon return had the
-			// remaining time to sleep, but this is good enough.
-			var nsec int32
-			ns /= 2
-			ts.set_sec(timediv(ns, 1000000000, &nsec))
-			ts.set_nsec(nsec)
 		}
 	}
 }
@@ -77,5 +106,12 @@ func semawakeup(mp *m) {
 		systemstack(func() {
 			print("thrwakeup addr=", &mp.mos.waitsemacount, " sem=", mp.mos.waitsemacount, " ret=", ret, "\n")
 		})
+	}
+}
+
+func osinit() {
+	ncpu = getncpu()
+	if physPageSize == 0 {
+		physPageSize = getPageSize()
 	}
 }

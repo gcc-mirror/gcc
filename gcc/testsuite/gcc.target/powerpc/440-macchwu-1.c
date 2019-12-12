@@ -2,8 +2,7 @@
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do compile } */
 /* { dg-require-effective-target ilp32 } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=440" } } */
-/* { dg-options "-O2 -mcpu=440" } */
+/* { dg-options "-O2 -mdejagnu-cpu=440" } */
 
 /* { dg-final { scan-assembler "macchwu " } } */
 

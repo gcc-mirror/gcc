@@ -1,5 +1,5 @@
 /* Parse C expressions for cpplib.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994.
 
 This program is free software; you can redistribute it and/or modify it
@@ -30,7 +30,7 @@ struct op
 {
   const cpp_token *token;	/* The token forming op (for diagnostics).  */
   cpp_num value;		/* The value logically "right" of op.  */
-  source_location loc;          /* The location of this value.         */
+  location_t loc;          /* The location of this value.         */
   enum cpp_ttype op;
 };
 
@@ -52,13 +52,13 @@ static cpp_num num_equality_op (cpp_reader *, cpp_num, cpp_num,
 				enum cpp_ttype);
 static cpp_num num_mul (cpp_reader *, cpp_num, cpp_num);
 static cpp_num num_div_op (cpp_reader *, cpp_num, cpp_num, enum cpp_ttype,
-			   source_location);
+			   location_t);
 static cpp_num num_lshift (cpp_num, size_t, size_t);
 static cpp_num num_rshift (cpp_num, size_t, size_t);
 
 static cpp_num append_digit (cpp_num, int, int, size_t);
 static cpp_num parse_defined (cpp_reader *);
-static cpp_num eval_token (cpp_reader *, const cpp_token *, source_location);
+static cpp_num eval_token (cpp_reader *, const cpp_token *, location_t);
 static struct op *reduce (cpp_reader *, struct op *, enum cpp_ttype);
 static unsigned int interpret_float_suffix (cpp_reader *, const uchar *, size_t);
 static unsigned int interpret_int_suffix (cpp_reader *, const uchar *, size_t);
@@ -98,8 +98,8 @@ interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
   flags = 0;
   f = d = l = w = q = i = fn = fnx = fn_bits = 0;
 
-  /* The following decimal float suffixes, from TR 24732:2009 and TS
-     18661-2:2015, are supported:
+  /* The following decimal float suffixes, from TR 24732:2009, TS
+     18661-2:2015 and C2X, are supported:
 
      df, DF - _Decimal32.
      dd, DD - _Decimal64.
@@ -505,7 +505,7 @@ cpp_get_userdef_suffix (const cpp_token *tok)
    VIRTUAL_LOCATION is the virtual location for TOKEN.  */
 unsigned int
 cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
-		     const char **ud_suffix, source_location virtual_location)
+		     const char **ud_suffix, location_t virtual_location)
 {
   const uchar *str = token->val.str.text;
   const uchar *limit;
@@ -744,9 +744,16 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 	cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
 			     "fixed-point constants are a GCC extension");
 
-      if ((result & CPP_N_DFLOAT) && CPP_PEDANTIC (pfile))
-	cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
-			     "decimal float constants are a GCC extension");
+      if (result & CPP_N_DFLOAT)
+	{
+	  if (CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, dfp_constants))
+	    cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
+				 "decimal float constants are a C2X feature");
+	  else if (CPP_OPTION (pfile, cpp_warn_c11_c2x_compat) > 0)
+	    cpp_warning_with_line (pfile, CPP_W_C11_C2X_COMPAT,
+				   virtual_location, 0,
+				   "decimal float constants are a C2X feature");
+	}
 
       result |= CPP_N_FLOATING;
     }
@@ -1065,23 +1072,7 @@ parse_defined (cpp_reader *pfile)
 		        "this use of \"defined\" may not be portable");
 
       _cpp_mark_macro_used (node);
-      if (!(node->flags & NODE_USED))
-	{
-	  node->flags |= NODE_USED;
-	  if (node->type == NT_MACRO)
-	    {
-	      if ((node->flags & NODE_BUILTIN)
-		  && pfile->cb.user_builtin_macro)
-		pfile->cb.user_builtin_macro (pfile, node);
-	      if (pfile->cb.used_define)
-		pfile->cb.used_define (pfile, pfile->directive_line, node);
-	    }
-	  else
-	    {
-	      if (pfile->cb.used_undef)
-		pfile->cb.used_undef (pfile, pfile->directive_line, node);
-	    }
-	}
+      _cpp_maybe_notify_macro_use (pfile, node);
 
       /* A possible controlling macro of the form #if !defined ().
 	 _cpp_parse_expr checks there was no other junk on the line.  */
@@ -1091,14 +1082,14 @@ parse_defined (cpp_reader *pfile)
   pfile->state.prevent_expansion--;
 
   /* Do not treat conditional macros as being defined.  This is due to the
-     powerpc and spu ports using conditional macros for 'vector', 'bool', and
-     'pixel' to act as conditional keywords.  This messes up tests like #ifndef
+     powerpc port using conditional macros for 'vector', 'bool', and 'pixel'
+     to act as conditional keywords.  This messes up tests like #ifndef
      bool.  */
   result.unsignedp = false;
   result.high = 0;
   result.overflow = false;
-  result.low = (node && node->type == NT_MACRO
-		&& (node->flags & NODE_CONDITIONAL) == 0);
+  result.low = (node && cpp_macro_p (node)
+		&& !(node->flags & NODE_CONDITIONAL));
   return result;
 }
 
@@ -1107,7 +1098,7 @@ parse_defined (cpp_reader *pfile)
    operators).  */
 static cpp_num
 eval_token (cpp_reader *pfile, const cpp_token *token,
-	    source_location virtual_location)
+	    location_t virtual_location)
 {
   cpp_num result;
   unsigned int temp;
@@ -1304,7 +1295,7 @@ _cpp_parse_expr (cpp_reader *pfile, bool is_if)
   struct op *top = pfile->op_stack;
   unsigned int lex_count;
   bool saw_leading_not, want_value = true;
-  source_location virtual_location = 0;
+  location_t virtual_location = 0;
 
   pfile->state.skip_eval = 0;
 
@@ -2102,7 +2093,7 @@ num_mul (cpp_reader *pfile, cpp_num lhs, cpp_num rhs)
 
 static cpp_num
 num_div_op (cpp_reader *pfile, cpp_num lhs, cpp_num rhs, enum cpp_ttype op,
-	    source_location location)
+	    location_t location)
 {
   cpp_num result, sub;
   cpp_num_part mask;
@@ -2254,7 +2245,7 @@ parse_has_include (cpp_reader *pfile, enum include_type type)
       XDELETEVEC (fname);
     }
 
-  if (paren && cpp_get_token (pfile)->type != CPP_CLOSE_PAREN)
+  if (paren && !SEEN_EOL () && cpp_get_token (pfile)->type != CPP_CLOSE_PAREN)
     cpp_error (pfile, CPP_DL_ERROR,
 	       "missing ')' after \"__has_include__\"");
 

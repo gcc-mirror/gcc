@@ -1,6 +1,6 @@
 /* Routines for reading trees from a file stream.
 
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -41,7 +41,7 @@ along with GCC; see the file COPYING3.  If not see
    block IB.  */
 
 tree
-streamer_read_string_cst (struct data_in *data_in, struct lto_input_block *ib)
+streamer_read_string_cst (class data_in *data_in, class lto_input_block *ib)
 {
   unsigned int len;
   const char * ptr;
@@ -57,7 +57,7 @@ streamer_read_string_cst (struct data_in *data_in, struct lto_input_block *ib)
    block IB.  */
 
 static tree
-input_identifier (struct data_in *data_in, struct lto_input_block *ib)
+input_identifier (class data_in *data_in, class lto_input_block *ib)
 {
   unsigned int len;
   const char *ptr;
@@ -73,7 +73,7 @@ input_identifier (struct data_in *data_in, struct lto_input_block *ib)
    tables and descriptors for the file being read.  */
 
 tree
-streamer_read_chain (struct lto_input_block *ib, struct data_in *data_in)
+streamer_read_chain (class lto_input_block *ib, class data_in *data_in)
 {
   tree first, prev, curr;
 
@@ -156,6 +156,11 @@ unpack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
   else if (TREE_CODE (expr) == SSA_NAME)
     {
       SSA_NAME_IS_DEFAULT_DEF (expr) = (unsigned) bp_unpack_value (bp, 1);
+      bp_unpack_value (bp, 8);
+    }
+  else if (TREE_CODE (expr) == CALL_EXPR)
+    {
+      CALL_EXPR_BY_DESCRIPTOR (expr) = (unsigned) bp_unpack_value (bp, 1);
       bp_unpack_value (bp, 8);
     }
   else
@@ -246,7 +251,7 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       LABEL_DECL_UID (expr) = -1;
     }
 
-  if (TREE_CODE (expr) == FIELD_DECL)
+  else if (TREE_CODE (expr) == FIELD_DECL)
     {
       DECL_PACKED (expr) = (unsigned) bp_unpack_value (bp, 1);
       DECL_NONADDRESSABLE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -254,11 +259,14 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       expr->decl_common.off_align = bp_unpack_value (bp, 8);
     }
 
-  if (VAR_P (expr))
+  else if (VAR_P (expr))
     {
       DECL_HAS_DEBUG_EXPR_P (expr) = (unsigned) bp_unpack_value (bp, 1);
       DECL_NONLOCAL_FRAME (expr) = (unsigned) bp_unpack_value (bp, 1);
     }
+
+  else if (TREE_CODE (expr) == PARM_DECL)
+    DECL_HIDDEN_STRING_LENGTH (expr) = (unsigned) bp_unpack_value (bp, 1);
 
   if (TREE_CODE (expr) == RESULT_DECL
       || TREE_CODE (expr) == PARM_DECL
@@ -316,8 +324,7 @@ unpack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
 static void
 unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
 {
-  DECL_BUILT_IN_CLASS (expr) = bp_unpack_enum (bp, built_in_class,
-					       BUILT_IN_LAST);
+  built_in_class cl = bp_unpack_enum (bp, built_in_class, BUILT_IN_LAST);
   DECL_STATIC_CONSTRUCTOR (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_STATIC_DESTRUCTOR (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_UNINLINABLE (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -325,7 +332,8 @@ unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
   DECL_IS_NOVOPS (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_IS_RETURNS_TWICE (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_IS_MALLOC (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_IS_OPERATOR_NEW (expr) = (unsigned) bp_unpack_value (bp, 1);
+  DECL_SET_IS_OPERATOR_NEW (expr, (unsigned) bp_unpack_value (bp, 1));
+  DECL_SET_IS_OPERATOR_DELETE (expr, (unsigned) bp_unpack_value (bp, 1));
   DECL_DECLARED_INLINE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_STATIC_CHAIN (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_NO_INLINE_WARNING_P (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -335,22 +343,22 @@ unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
   DECL_DISREGARD_INLINE_LIMITS (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_PURE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_LOOPING_CONST_OR_PURE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-  if (DECL_BUILT_IN_CLASS (expr) != NOT_BUILT_IN)
+  unsigned int fcode = 0;
+  if (cl != NOT_BUILT_IN)
     {
-      DECL_FUNCTION_CODE (expr) = (enum built_in_function) bp_unpack_value (bp,
-	                                                                    12);
-      if (DECL_BUILT_IN_CLASS (expr) == BUILT_IN_NORMAL
-	  && DECL_FUNCTION_CODE (expr) >= END_BUILTINS)
+      fcode = bp_unpack_value (bp, 32);
+      if (cl == BUILT_IN_NORMAL && fcode >= END_BUILTINS)
 	fatal_error (input_location,
 		     "machine independent builtin code out of range");
-      else if (DECL_BUILT_IN_CLASS (expr) == BUILT_IN_MD)
+      else if (cl == BUILT_IN_MD)
 	{
-          tree result = targetm.builtin_decl (DECL_FUNCTION_CODE (expr), true);
+          tree result = targetm.builtin_decl (fcode, true);
 	  if (!result || result == error_mark_node)
 	    fatal_error (input_location,
 			 "target specific builtin not available");
 	}
     }
+  set_decl_built_in_function (expr, cl, fcode);
 }
 
 
@@ -364,21 +372,23 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
 
   mode = bp_unpack_machine_mode (bp);
   SET_TYPE_MODE (expr, mode);
-  TYPE_STRING_FLAG (expr) = (unsigned) bp_unpack_value (bp, 1);
   /* TYPE_NO_FORCE_BLK is private to stor-layout and need
      no streaming.  */
-  TYPE_NEEDS_CONSTRUCTING (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_PACKED (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_RESTRICT (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_USER_ALIGN (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_READONLY (expr) = (unsigned) bp_unpack_value (bp, 1);
+  TYPE_LANG_FLAG_0 (expr) = (unsigned) bp_unpack_value (bp, 1);
   if (RECORD_OR_UNION_TYPE_P (expr))
     {
       TYPE_TRANSPARENT_AGGR (expr) = (unsigned) bp_unpack_value (bp, 1);
       TYPE_FINAL_P (expr) = (unsigned) bp_unpack_value (bp, 1);
+      TYPE_CXX_ODR_P (expr) = (unsigned) bp_unpack_value (bp, 1);
     }
   else if (TREE_CODE (expr) == ARRAY_TYPE)
     TYPE_NONALIASED_COMPONENT (expr) = (unsigned) bp_unpack_value (bp, 1);
+  if (TREE_CODE (expr) == ARRAY_TYPE || TREE_CODE (expr) == INTEGER_TYPE)
+    TYPE_STRING_FLAG (expr) = (unsigned) bp_unpack_value (bp, 1);
   if (AGGREGATE_TYPE_P (expr))
     TYPE_TYPELESS_STORAGE (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_EMPTY_P (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -395,10 +405,9 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
    of expression EXPR from bitpack BP.  */
 
 static void
-unpack_ts_block_value_fields (struct data_in *data_in,
+unpack_ts_block_value_fields (class data_in *data_in,
 			      struct bitpack_d *bp, tree expr)
 {
-  BLOCK_ABSTRACT (expr) = (unsigned) bp_unpack_value (bp, 1);
   /* BLOCK_NUMBER is recomputed.  */
   stream_input_location (&BLOCK_SOURCE_LOCATION (expr), bp, data_in);
 }
@@ -407,7 +416,7 @@ unpack_ts_block_value_fields (struct data_in *data_in,
    structure of expression EXPR from bitpack BP.  */
 
 static void
-unpack_ts_translation_unit_decl_value_fields (struct data_in *data_in,
+unpack_ts_translation_unit_decl_value_fields (class data_in *data_in,
 					      struct bitpack_d *bp, tree expr)
 {
   TRANSLATION_UNIT_LANGUAGE (expr) = xstrdup (bp_unpack_string (data_in, bp));
@@ -419,7 +428,7 @@ unpack_ts_translation_unit_decl_value_fields (struct data_in *data_in,
    structure of expression EXPR from bitpack BP.  */
 
 static void
-unpack_ts_omp_clause_value_fields (struct data_in *data_in,
+unpack_ts_omp_clause_value_fields (class data_in *data_in,
 				   struct bitpack_d *bp, tree expr)
 {
   stream_input_location (&OMP_CLAUSE_LOCATION (expr), bp, data_in);
@@ -449,6 +458,8 @@ unpack_ts_omp_clause_value_fields (struct data_in *data_in,
 			  OMP_CLAUSE_PROC_BIND_LAST);
       break;
     case OMP_CLAUSE_REDUCTION:
+    case OMP_CLAUSE_TASK_REDUCTION:
+    case OMP_CLAUSE_IN_REDUCTION:
       OMP_CLAUSE_REDUCTION_CODE (expr)
 	= bp_unpack_enum (bp, tree_code, MAX_TREE_CODES);
       break;
@@ -463,8 +474,8 @@ unpack_ts_omp_clause_value_fields (struct data_in *data_in,
    bitfield values that the writer may have written.  */
 
 void
-streamer_read_tree_bitfields (struct lto_input_block *ib,
-			      struct data_in *data_in, tree expr)
+streamer_read_tree_bitfields (class lto_input_block *ib,
+			      class data_in *data_in, tree expr)
 {
   enum tree_code code;
   struct bitpack_d bp;
@@ -521,6 +532,8 @@ streamer_read_tree_bitfields (struct lto_input_block *ib,
 	    MR_DEPENDENCE_BASE (expr)
 	      = (unsigned)bp_unpack_value (&bp, sizeof (short) * 8);
 	}
+      else if (code == CALL_EXPR)
+	CALL_EXPR_IFN (expr) = bp_unpack_enum (&bp, internal_fn, IFN_LAST);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
@@ -558,7 +571,7 @@ streamer_read_tree_bitfields (struct lto_input_block *ib,
    *IX_P the index into the reader cache where the new tree is stored.  */
 
 tree
-streamer_alloc_tree (struct lto_input_block *ib, struct data_in *data_in,
+streamer_alloc_tree (class lto_input_block *ib, class data_in *data_in,
 		     enum LTO_tags tag)
 {
   enum tree_code code;
@@ -628,8 +641,8 @@ streamer_alloc_tree (struct lto_input_block *ib, struct data_in *data_in,
 
 
 static void
-lto_input_ts_common_tree_pointers (struct lto_input_block *ib,
-				   struct data_in *data_in, tree expr)
+lto_input_ts_common_tree_pointers (class lto_input_block *ib,
+				   class data_in *data_in, tree expr)
 {
   if (TREE_CODE (expr) != IDENTIFIER_NODE)
     TREE_TYPE (expr) = stream_read_tree (ib, data_in);
@@ -641,8 +654,8 @@ lto_input_ts_common_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_vector_tree_pointers (struct lto_input_block *ib,
-				   struct data_in *data_in, tree expr)
+lto_input_ts_vector_tree_pointers (class lto_input_block *ib,
+				   class data_in *data_in, tree expr)
 {
   unsigned int count = vector_cst_encoded_nelts (expr);
   for (unsigned int i = 0; i < count; ++i)
@@ -655,8 +668,8 @@ lto_input_ts_vector_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_poly_tree_pointers (struct lto_input_block *ib,
-				 struct data_in *data_in, tree expr)
+lto_input_ts_poly_tree_pointers (class lto_input_block *ib,
+				 class data_in *data_in, tree expr)
 {
   for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
     POLY_INT_CST_COEFF (expr, i) = stream_read_tree (ib, data_in);
@@ -668,8 +681,8 @@ lto_input_ts_poly_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_complex_tree_pointers (struct lto_input_block *ib,
-				    struct data_in *data_in, tree expr)
+lto_input_ts_complex_tree_pointers (class lto_input_block *ib,
+				    class data_in *data_in, tree expr)
 {
   TREE_REALPART (expr) = stream_read_tree (ib, data_in);
   TREE_IMAGPART (expr) = stream_read_tree (ib, data_in);
@@ -681,8 +694,8 @@ lto_input_ts_complex_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_decl_minimal_tree_pointers (struct lto_input_block *ib,
-					 struct data_in *data_in, tree expr)
+lto_input_ts_decl_minimal_tree_pointers (class lto_input_block *ib,
+					 class data_in *data_in, tree expr)
 {
   DECL_NAME (expr) = stream_read_tree (ib, data_in);
   DECL_CONTEXT (expr) = stream_read_tree (ib, data_in);
@@ -694,8 +707,8 @@ lto_input_ts_decl_minimal_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_decl_common_tree_pointers (struct lto_input_block *ib,
-					struct data_in *data_in, tree expr)
+lto_input_ts_decl_common_tree_pointers (class lto_input_block *ib,
+					class data_in *data_in, tree expr)
 {
   DECL_SIZE (expr) = stream_read_tree (ib, data_in);
   DECL_SIZE_UNIT (expr) = stream_read_tree (ib, data_in);
@@ -721,8 +734,8 @@ lto_input_ts_decl_common_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_decl_non_common_tree_pointers (struct lto_input_block *,
-					    struct data_in *, tree)
+lto_input_ts_decl_non_common_tree_pointers (class lto_input_block *,
+					    class data_in *, tree)
 {
 }
 
@@ -732,8 +745,8 @@ lto_input_ts_decl_non_common_tree_pointers (struct lto_input_block *,
    file being read.  */
 
 static void
-lto_input_ts_decl_with_vis_tree_pointers (struct lto_input_block *ib,
-				          struct data_in *data_in, tree expr)
+lto_input_ts_decl_with_vis_tree_pointers (class lto_input_block *ib,
+				          class data_in *data_in, tree expr)
 {
   tree id;
 
@@ -751,8 +764,8 @@ lto_input_ts_decl_with_vis_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_field_decl_tree_pointers (struct lto_input_block *ib,
-				       struct data_in *data_in, tree expr)
+lto_input_ts_field_decl_tree_pointers (class lto_input_block *ib,
+				       class data_in *data_in, tree expr)
 {
   DECL_FIELD_OFFSET (expr) = stream_read_tree (ib, data_in);
   DECL_BIT_FIELD_TYPE (expr) = stream_read_tree (ib, data_in);
@@ -766,10 +779,9 @@ lto_input_ts_field_decl_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_function_decl_tree_pointers (struct lto_input_block *ib,
-					  struct data_in *data_in, tree expr)
+lto_input_ts_function_decl_tree_pointers (class lto_input_block *ib,
+					  class data_in *data_in, tree expr)
 {
-  DECL_VINDEX (expr) = stream_read_tree (ib, data_in);
   /* DECL_STRUCT_FUNCTION is loaded on demand by cgraph_get_body.  */
   DECL_FUNCTION_PERSONALITY (expr) = stream_read_tree (ib, data_in);
 #ifndef ACCEL_COMPILER
@@ -786,17 +798,10 @@ lto_input_ts_function_decl_tree_pointers (struct lto_input_block *ib,
 	cl_optimization_restore (&tmp, TREE_OPTIMIZATION (opts));
 	finish_options (&tmp, &global_options_set, UNKNOWN_LOCATION);
 	opts = build_optimization_node (&tmp);
-	finalize_options_struct (&tmp);
 	DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr) = opts;
       }
   }
 #endif
-
-  /* If the file contains a function with an EH personality set,
-     then it was compiled with -fexceptions.  In that case, initialize
-     the backend EH machinery.  */
-  if (DECL_FUNCTION_PERSONALITY (expr))
-    lto_init_eh ();
 }
 
 
@@ -805,8 +810,8 @@ lto_input_ts_function_decl_tree_pointers (struct lto_input_block *ib,
    being read.  */
 
 static void
-lto_input_ts_type_common_tree_pointers (struct lto_input_block *ib,
-					struct data_in *data_in, tree expr)
+lto_input_ts_type_common_tree_pointers (class lto_input_block *ib,
+					class data_in *data_in, tree expr)
 {
   TYPE_SIZE (expr) = stream_read_tree (ib, data_in);
   TYPE_SIZE_UNIT (expr) = stream_read_tree (ib, data_in);
@@ -820,7 +825,6 @@ lto_input_ts_type_common_tree_pointers (struct lto_input_block *ib,
   TYPE_CONTEXT (expr) = stream_read_tree (ib, data_in);
   /* TYPE_CANONICAL gets re-computed during type merging.  */
   TYPE_CANONICAL (expr) = NULL_TREE;
-  TYPE_STUB_DECL (expr) = stream_read_tree (ib, data_in);
 }
 
 /* Read all pointer fields in the TS_TYPE_NON_COMMON structure of EXPR
@@ -828,8 +832,8 @@ lto_input_ts_type_common_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_type_non_common_tree_pointers (struct lto_input_block *ib,
-					    struct data_in *data_in,
+lto_input_ts_type_non_common_tree_pointers (class lto_input_block *ib,
+					    class data_in *data_in,
 					    tree expr)
 {
   if (TREE_CODE (expr) == ENUMERAL_TYPE)
@@ -853,8 +857,8 @@ lto_input_ts_type_non_common_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_list_tree_pointers (struct lto_input_block *ib,
-				 struct data_in *data_in, tree expr)
+lto_input_ts_list_tree_pointers (class lto_input_block *ib,
+				 class data_in *data_in, tree expr)
 {
   TREE_PURPOSE (expr) = stream_read_tree (ib, data_in);
   TREE_VALUE (expr) = stream_read_tree (ib, data_in);
@@ -867,8 +871,8 @@ lto_input_ts_list_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_vec_tree_pointers (struct lto_input_block *ib,
-				struct data_in *data_in, tree expr)
+lto_input_ts_vec_tree_pointers (class lto_input_block *ib,
+				class data_in *data_in, tree expr)
 {
   int i;
 
@@ -885,8 +889,8 @@ lto_input_ts_vec_tree_pointers (struct lto_input_block *ib,
 
 
 static void
-lto_input_ts_exp_tree_pointers (struct lto_input_block *ib,
-			        struct data_in *data_in, tree expr)
+lto_input_ts_exp_tree_pointers (class lto_input_block *ib,
+			        class data_in *data_in, tree expr)
 {
   int i;
   tree block;
@@ -911,13 +915,19 @@ lto_input_ts_exp_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_block_tree_pointers (struct lto_input_block *ib,
-				  struct data_in *data_in, tree expr)
+lto_input_ts_block_tree_pointers (class lto_input_block *ib,
+				  class data_in *data_in, tree expr)
 {
   BLOCK_VARS (expr) = streamer_read_chain (ib, data_in);
 
   BLOCK_SUPERCONTEXT (expr) = stream_read_tree (ib, data_in);
   BLOCK_ABSTRACT_ORIGIN (expr) = stream_read_tree (ib, data_in);
+  /* We may end up prevailing a decl with DECL_ORIGIN (t) != t here
+     which breaks the invariant that BLOCK_ABSTRACT_ORIGIN is the
+     ultimate origin.  Fixup here.
+     ???  This should get fixed with moving to DIE references.  */
+  if (DECL_P (BLOCK_ORIGIN (expr)))
+    BLOCK_ABSTRACT_ORIGIN (expr) = DECL_ORIGIN (BLOCK_ABSTRACT_ORIGIN (expr));
   /* Do not stream BLOCK_NONLOCALIZED_VARS.  We cannot handle debug information
      for early inlined BLOCKs so drop it on the floor instead of ICEing in
      dwarf2out.c.  */
@@ -951,8 +961,8 @@ lto_input_ts_block_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_binfo_tree_pointers (struct lto_input_block *ib,
-				  struct data_in *data_in, tree expr)
+lto_input_ts_binfo_tree_pointers (class lto_input_block *ib,
+				  class data_in *data_in, tree expr)
 {
   tree t;
 
@@ -983,8 +993,8 @@ lto_input_ts_binfo_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_constructor_tree_pointers (struct lto_input_block *ib,
-				        struct data_in *data_in, tree expr)
+lto_input_ts_constructor_tree_pointers (class lto_input_block *ib,
+				        class data_in *data_in, tree expr)
 {
   unsigned i;
 
@@ -1003,8 +1013,8 @@ lto_input_ts_constructor_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_omp_clause_tree_pointers (struct lto_input_block *ib,
-				       struct data_in *data_in, tree expr)
+lto_input_ts_omp_clause_tree_pointers (class lto_input_block *ib,
+				       class data_in *data_in, tree expr)
 {
   int i;
 
@@ -1018,7 +1028,7 @@ lto_input_ts_omp_clause_tree_pointers (struct lto_input_block *ib,
    contains tables and descriptors for the file being read.  */
 
 void
-streamer_read_tree_body (struct lto_input_block *ib, struct data_in *data_in,
+streamer_read_tree_body (class lto_input_block *ib, class data_in *data_in,
 			 tree expr)
 {
   enum tree_code code;
@@ -1088,7 +1098,7 @@ streamer_read_tree_body (struct lto_input_block *ib, struct data_in *data_in,
    DATA_IN->FILE_DATA->GLOBALS_INDEX[IX].  */
 
 tree
-streamer_get_pickled_tree (struct lto_input_block *ib, struct data_in *data_in)
+streamer_get_pickled_tree (class lto_input_block *ib, class data_in *data_in)
 {
   unsigned HOST_WIDE_INT ix;
   tree result;

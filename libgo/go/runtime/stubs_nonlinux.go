@@ -10,3 +10,12 @@ package runtime
 func sbrk0() uintptr {
 	return 0
 }
+
+func gettid() _pid_t {
+	return 0
+}
+
+func tgkill(pid _pid_t, tid _pid_t, sig uint32) uint32 {
+	throw("tgkill not implemented")
+	return 0
+}

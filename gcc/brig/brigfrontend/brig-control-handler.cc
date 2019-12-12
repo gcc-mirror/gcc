@@ -1,5 +1,5 @@
 /* brig-control-handler.cc -- brig control directive handling
-   Copyright (C) 2016-2018 Free Software Foundation, Inc.
+   Copyright (C) 2016-2019 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -102,7 +102,7 @@ brig_directive_control_handler::operator () (const BrigBase *base)
       /* Unimplemented.  */
       break;
     default:
-      sorry ("Unsupported control directive %x.\n", inst->control);
+      sorry ("Unsupported control directive %x.", inst->control);
     }
   return base->byteCount;
 }

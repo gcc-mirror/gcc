@@ -1,5 +1,5 @@
 /* Declarations for rtx-reader support for gen* routines.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,7 +26,8 @@ struct obstack;
 extern struct obstack *rtl_obstack;
 
 /* Information about an .md define_* rtx.  */
-struct md_rtx_info {
+class md_rtx_info {
+public:
   /* The rtx itself.  */
   rtx def;
 

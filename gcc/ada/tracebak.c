@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *            Copyright (C) 2000-2018, Free Software Foundation, Inc.       *
+ *            Copyright (C) 2000-2019, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -50,14 +50,10 @@
 extern "C" {
 #endif
 
-#ifdef __alpha_vxworks
-#include "vxWorks.h"
-#endif
-
 #ifdef IN_RTS
 #define POSIX
-#include "tconfig.h"
-#include "tsystem.h"
+#include "runtime.h"
+#include <stddef.h>
 #else
 #include "config.h"
 #include "system.h"

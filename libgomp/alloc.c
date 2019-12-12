@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2019 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -27,6 +27,7 @@
    places in the OpenMP API do not make any provision for failure, so in
    general we cannot allow memory allocation to fail.  */
 
+#define _GNU_SOURCE
 #include "libgomp.h"
 #include <stdlib.h>
 
@@ -56,4 +57,51 @@ gomp_realloc (void *old, size_t size)
   if (ret == NULL)
     gomp_fatal ("Out of memory allocating %lu bytes", (unsigned long) size);
   return ret;
+}
+
+void *
+gomp_aligned_alloc (size_t al, size_t size)
+{
+  void *ret;
+  if (al < sizeof (void *))
+    al = sizeof (void *);
+#ifdef HAVE_ALIGNED_ALLOC
+  ret = aligned_alloc (al, size);
+#elif defined(HAVE__ALIGNED_MALLOC)
+  ret = _aligned_malloc (size, al);
+#elif defined(HAVE_POSIX_MEMALIGN)
+  if (posix_memalign (&ret, al, size) != 0)
+    ret = NULL;
+#elif defined(HAVE_MEMALIGN)
+  {
+    extern void *memalign (size_t, size_t);
+    ret = memalign (al, size);
+  }
+#else
+  ret = NULL;
+  if ((al & (al - 1)) == 0 && size)
+    {
+      void *p = malloc (size + al);
+      if (p)
+	{
+	  void *ap = (void *) (((uintptr_t) p + al) & -al);
+	  ((void **) ap)[-1] = p;
+	  ret = ap;
+	}
+    }
+#endif
+  if (ret == NULL)
+    gomp_fatal ("Out of memory allocating %lu bytes", (unsigned long) size);
+  return ret;
+}
+
+void
+gomp_aligned_free (void *ptr)
+{
+#ifdef GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC
+  free (ptr);
+#else
+  if (ptr)
+    free (((void **) ptr)[-1]);
+#endif
 }

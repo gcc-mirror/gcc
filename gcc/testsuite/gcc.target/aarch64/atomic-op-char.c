@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=armv8-a+nolse -O2" } */
+/* { dg-options "-march=armv8-a+nolse -O2 -mno-outline-atomics" } */
 
 #include "atomic-op-char.x"
 

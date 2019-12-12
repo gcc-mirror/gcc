@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,6 +37,8 @@
  * @file pat_trie_/insert_join_fn_imps.hpp
  * Contains an implementation class for pat_trie.
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 PB_DS_CLASS_T_DEC
 void
@@ -470,3 +472,4 @@ update_min_max_for_inserted_leaf(leaf_pointer p_new_lf)
       synth_access_traits::cmp_keys(PB_DS_V2F(static_cast<leaf_const_pointer>(m_p_head->m_p_max)->value()), PB_DS_V2F(p_new_lf->value())))
     m_p_head->m_p_max = p_new_lf;
 }
+#endif

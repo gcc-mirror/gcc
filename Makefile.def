@@ -4,7 +4,7 @@ AutoGen definitions Makefile.tpl;
 // Makefile.in is generated from Makefile.tpl by 'autogen Makefile.def'.
 // This file was originally written by Nathanael Nerode.
 //
-//   Copyright 2002-2013 Free Software Foundation
+//   Copyright 2002-2019 Free Software Foundation
 //
 // This file is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -112,6 +112,7 @@ host_modules= { module= texinfo; no_install= true; };
 host_modules= { module= zlib; no_install=true; no_check=true;
 		bootstrap=true;
 	        extra_configure_flags='@extra_host_zlib_configure_flags@';};
+host_modules= { module= gnulib; };
 host_modules= { module= gdb; };
 host_modules= { module= expect; };
 host_modules= { module= guile; };
@@ -128,6 +129,8 @@ host_modules= { module= lto-plugin; bootstrap=true;
 		extra_make_flags='@extra_linker_plugin_flags@'; };
 host_modules= { module= libcc1; extra_configure_flags=--enable-shared; };
 host_modules= { module= gotools; };
+host_modules= { module= libctf; no_install=true; no_check=true;
+		bootstrap=true; };
 
 target_modules = { module= libstdc++-v3;
 		   bootstrap=true;
@@ -153,6 +156,8 @@ target_modules = { module= libgfortran; };
 target_modules = { module= libobjc; };
 target_modules = { module= libgo; };
 target_modules = { module= libhsail-rt; };
+target_modules = { module= libphobos;
+		   lib_path=src/.libs; };
 target_modules = { module= libtermcap; no_check=true;
                    missing=mostlyclean;
                    missing=clean;
@@ -265,6 +270,8 @@ flags_to_pass = { flag= STAGE1_CHECKING ; };
 flags_to_pass = { flag= STAGE1_LANGUAGES ; };
 flags_to_pass = { flag= GNATBIND ; };
 flags_to_pass = { flag= GNATMAKE ; };
+flags_to_pass = { flag= GDC ; };
+flags_to_pass = { flag= GDCFLAGS ; };
 
 // Target tools
 flags_to_pass = { flag= AR_FOR_TARGET ; };
@@ -278,6 +285,8 @@ flags_to_pass = { flag= FLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= GFORTRAN_FOR_TARGET ; };
 flags_to_pass = { flag= GOC_FOR_TARGET ; };
 flags_to_pass = { flag= GOCFLAGS_FOR_TARGET ; };
+flags_to_pass = { flag= GDC_FOR_TARGET ; };
+flags_to_pass = { flag= GDCFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= LD_FOR_TARGET ; };
 flags_to_pass = { flag= LIPO_FOR_TARGET ; };
 flags_to_pass = { flag= LDFLAGS_FOR_TARGET ; };
@@ -384,11 +393,13 @@ dependencies = { module=all-intl; on=all-libiconv; };
 dependencies = { module=configure-gdb; on=all-intl; };
 dependencies = { module=configure-gdb; on=configure-sim; };
 dependencies = { module=configure-gdb; on=all-bfd; };
+dependencies = { module=configure-gdb; on=all-gnulib; };
 // Depend on all-libiconv so that configure checks for iconv
 // functions will work.
 dependencies = { module=configure-gdb; on=all-libiconv; };
 dependencies = { module=all-gdb; on=all-libiberty; };
 dependencies = { module=all-gdb; on=all-libiconv; };
+dependencies = { module=all-gdb; on=all-gnulib; };
 dependencies = { module=all-gdb; on=all-opcodes; };
 dependencies = { module=all-gdb; on=all-readline; };
 dependencies = { module=all-gdb; on=all-build-bison; };
@@ -422,6 +433,7 @@ dependencies = { module=all-binutils; on=all-build-flex; };
 dependencies = { module=all-binutils; on=all-build-bison; };
 dependencies = { module=all-binutils; on=all-intl; };
 dependencies = { module=all-binutils; on=all-gas; };
+dependencies = { module=all-binutils; on=all-libctf; };
 
 // We put install-opcodes before install-binutils because the installed
 // binutils might be on PATH, and they might need the shared opcodes
@@ -512,6 +524,14 @@ dependencies = { module=all-sim; on=configure-gdb; };
 dependencies = { module=all-fastjar; on=all-zlib; };
 dependencies = { module=all-fastjar; on=all-build-texinfo; };
 dependencies = { module=all-fastjar; on=all-libiberty; };
+dependencies = { module=all-libctf; on=all-libiberty; hard=true; };
+dependencies = { module=all-libctf; on=all-bfd; };
+dependencies = { module=all-libctf; on=all-zlib; };
+// So that checking for ELF support in BFD from libctf configure is possible.
+dependencies = { module=configure-libctf; on=all-bfd; };
+dependencies = { module=configure-libctf; on=all-intl; };
+dependencies = { module=configure-libctf; on=all-zlib; };
+dependencies = { module=configure-libctf; on=all-libiconv; };
 
 // Warning, these are not well tested.
 dependencies = { module=all-bison; on=all-intl; };
@@ -544,6 +564,11 @@ dependencies = { module=configure-target-libgo; on=all-target-libstdc++-v3; };
 dependencies = { module=all-target-libgo; on=all-target-libbacktrace; };
 dependencies = { module=all-target-libgo; on=all-target-libffi; };
 dependencies = { module=all-target-libgo; on=all-target-libatomic; };
+dependencies = { module=configure-target-libphobos; on=configure-target-libbacktrace; };
+dependencies = { module=configure-target-libphobos; on=configure-target-zlib; };
+dependencies = { module=all-target-libphobos; on=all-target-libbacktrace; };
+dependencies = { module=all-target-libphobos; on=all-target-zlib; };
+dependencies = { module=all-target-libphobos; on=all-target-libatomic; };
 dependencies = { module=configure-target-libstdc++-v3; on=configure-target-libgomp; };
 dependencies = { module=configure-target-liboffloadmic; on=configure-target-libgomp; };
 dependencies = { module=configure-target-libsanitizer; on=all-target-libstdc++-v3; };
@@ -557,6 +582,7 @@ dependencies = { module=all-target-liboffloadmic; on=all-target-libgomp; };
 dependencies = { module=install-target-libgo; on=install-target-libatomic; };
 dependencies = { module=install-target-libgfortran; on=install-target-libquadmath; };
 dependencies = { module=install-target-libgfortran; on=install-target-libgcc; };
+dependencies = { module=install-target-libphobos; on=install-target-libatomic; };
 dependencies = { module=install-target-libsanitizer; on=install-target-libstdc++-v3; };
 dependencies = { module=install-target-libsanitizer; on=install-target-libgcc; };
 dependencies = { module=install-target-libvtv; on=install-target-libstdc++-v3; };
@@ -598,6 +624,8 @@ languages = { language=go;	gcc-check-target=check-go;
 				lib-check-target=check-gotools; };
 languages = { language=brig;	gcc-check-target=check-brig;
 				lib-check-target=check-target-libhsail-rt; };
+languages = { language=d;	gcc-check-target=check-d;
+				lib-check-target=check-target-libphobos; };
 
 // Toplevel bootstrap
 bootstrap_stage = { id=1 ; };

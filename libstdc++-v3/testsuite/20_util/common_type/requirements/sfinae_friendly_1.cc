@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2012-2018 Free Software Foundation, Inc.
+// Copyright (C) 2012-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -159,7 +159,10 @@ namespace std {
   };
 }
 
+static_assert(is_type<std::common_type<int>, int>(), "");
+static_assert(is_type<std::common_type<const int>, int>(), "");
 static_assert(is_type<std::common_type<int, int>, int>(), "");
+static_assert(is_type<std::common_type<const int, int>, int>(), "");
 static_assert(is_type<std::common_type<ScEn, ScEn>, ScEn>(), "");
 static_assert(is_type<std::common_type<UnscEn, UnscEn>, UnscEn>(), "");
 static_assert(is_type<std::common_type<UnscEn, int>, int>(), "");
@@ -180,6 +183,8 @@ static_assert(is_type<std::common_type<int*, const volatile int*>,
 	      const volatile int*>(), "");
 static_assert(is_type<std::common_type<void*, const volatile int*>,
 	      const volatile void*>(), "");
+static_assert(is_type<std::common_type<void>, void>(), "");
+static_assert(is_type<std::common_type<const void>, void>(), "");
 static_assert(is_type<std::common_type<void, void>, void>(), "");
 static_assert(is_type<std::common_type<const void, const void>, void>(), "");
 static_assert(is_type<std::common_type<int&, int&&>, int>(), "");
@@ -209,6 +214,7 @@ static_assert(is_type<std::common_type<void(&&)(), void(&)()>,
 static_assert(is_type<std::common_type<void(&&)(), void(&&)()>,
 	      void(*)()>(), "");
 static_assert(is_type<std::common_type<ImplicitTo<int>, int>, int>(), "");
+static_assert(is_type<std::common_type<const ImplicitTo<int>, int>, int>(), "");
 static_assert(is_type<std::common_type<ImplicitTo<int>, ImplicitTo<int>>,
 	      ImplicitTo<int>>(), "");
 static_assert(is_type<std::common_type<ImplicitTo<int>, int,
@@ -255,19 +261,22 @@ static_assert(is_type<std::common_type<volatile Ukn&&, volatile Ukn&&>,
 	      Ukn>(), "");
 
 static_assert(is_type<std::common_type<X1, X2>, RX12>(), "");
+static_assert(is_type<std::common_type<const X1, X2>, RX12>(), "");
+static_assert(is_type<std::common_type<X1&, const X2>, RX12>(), "");
+static_assert(is_type<std::common_type<const X1&, const X2&>, RX12>(), "");
 static_assert(is_type<std::common_type<X2, X1>, RX21>(), "");
 
 static_assert(is_type<std::common_type<X1, X2, X1>, Y1>(), "");
 static_assert(is_type<std::common_type<X2, X1, X1>, Y3>(), "");
 
 static_assert(is_type<std::common_type<X1, X1, X2>, RX12>(), "");
+static_assert(is_type<std::common_type<X1&, const X1, const X2&&>, RX12>(), "");
 static_assert(is_type<std::common_type<X1, X1, X2, X1>, Y1>(), "");
 
 static_assert(!has_type<std::common_type<>>(), "");
 static_assert(!has_type<std::common_type<int, S>>(), "");
 static_assert(!has_type<std::common_type<U, S>>(), "");
 static_assert(!has_type<std::common_type<U, U2>>(), "");
-static_assert(!has_type<std::common_type<const ImplicitTo<int>, int>>(), "");
 static_assert(!has_type<std::common_type<PrivateImplicitTo<int>, int>>(), "");
 static_assert(!has_type<std::common_type<const PrivateImplicitTo<int>,
 	      int>>(), "");
@@ -315,6 +324,14 @@ static_assert(!has_type<std::common_type<U, S, Abstract, void, D,
 static_assert(!has_type<std::common_type<UConv1, Abstract&&>>(), "");
 static_assert(!has_type<std::common_type<std::initializer_list<int>,
 					 std::initializer_list<long>>>(), "");
+
+// PR libstdc++/89102
+static_assert(!has_type<std::common_type<int() &>>(), "");
+static_assert(!has_type<std::common_type<int() & noexcept>>(), "");
+static_assert(!has_type<std::common_type<int() const>>(), "");
+static_assert(!has_type<std::common_type<int(...) &>>(), "");
+static_assert(!has_type<std::common_type<int(...) & noexcept>>(), "");
+static_assert(!has_type<std::common_type<int(...) const>>(), "");
 
 void test(int i)
 {

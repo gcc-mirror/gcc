@@ -1,5 +1,5 @@
 /* The Blackfin code generation auxiliary output file.
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
    Contributed by Analog Devices.
 
    This file is part of GCC.
@@ -235,13 +235,13 @@ must_save_p (bool is_inthandler, unsigned regno)
       return (is_eh_return_reg
 	      || (df_regs_ever_live_p (regno)
 		  && !fixed_regs[regno]
-		  && (is_inthandler || !call_used_regs[regno])));
+		  && (is_inthandler || !call_used_or_fixed_reg_p (regno))));
     }
   else if (P_REGNO_P (regno))
     {
       return ((df_regs_ever_live_p (regno)
 	       && !fixed_regs[regno]
-	       && (is_inthandler || !call_used_regs[regno]))
+	       && (is_inthandler || !call_used_or_fixed_reg_p (regno)))
 	      || (is_inthandler
 		  && (ENABLE_WA_05000283 || ENABLE_WA_05000315)
 		  && regno == REG_P5)
@@ -251,9 +251,9 @@ must_save_p (bool is_inthandler, unsigned regno)
 		      || (TARGET_ID_SHARED_LIBRARY && !crtl->is_leaf))));
     }
   else
-    return ((is_inthandler || !call_used_regs[regno])
+    return ((is_inthandler || !call_used_or_fixed_reg_p (regno))
 	    && (df_regs_ever_live_p (regno)
-		|| (!leaf_function_p () && call_used_regs[regno])));
+		|| (!leaf_function_p () && call_used_or_fixed_reg_p (regno))));
 
 }
 
@@ -419,7 +419,7 @@ expand_prologue_reg_save (rtx spreg, int saveall, bool is_inthandler)
     if (saveall 
 	|| (is_inthandler
 	    && (df_regs_ever_live_p (i)
-		|| (!leaf_function_p () && call_used_regs[i]))))
+		|| (!leaf_function_p () && call_used_or_fixed_reg_p (i)))))
       {
 	rtx_insn *insn;
 	if (i == REG_A0 || i == REG_A1)
@@ -458,7 +458,7 @@ expand_epilogue_reg_restore (rtx spreg, bool saveall, bool is_inthandler)
     if (saveall
 	|| (is_inthandler
 	    && (df_regs_ever_live_p (i)
-		|| (!leaf_function_p () && call_used_regs[i]))))
+		|| (!leaf_function_p () && call_used_or_fixed_reg_p (i)))))
       {
 	if (i == REG_A0 || i == REG_A1)
 	  {
@@ -540,7 +540,7 @@ expand_epilogue_reg_restore (rtx spreg, bool saveall, bool is_inthandler)
 
    CUM is as above.
 
-   MODE and TYPE are the mode and type of the current parameter.
+   ARG is the last named argument.
 
    PRETEND_SIZE is a variable that should be set to the amount of stack
    that must be pushed by the prolog to pretend that our caller pushed
@@ -559,8 +559,7 @@ expand_epilogue_reg_restore (rtx spreg, bool saveall, bool is_inthandler)
 
 static void
 setup_incoming_varargs (cumulative_args_t cum,
-			machine_mode mode ATTRIBUTE_UNUSED,
-			tree type ATTRIBUTE_UNUSED, int *pretend_size,
+			const function_arg_info &, int *pretend_size,
 			int no_rtl)
 {
   rtx mem;
@@ -653,7 +652,7 @@ n_regs_saved_by_prologue (void)
     if (all
 	|| (fkind != SUBROUTINE
 	    && (df_regs_ever_live_p (i)
-		|| (!leaf_function_p () && call_used_regs[i]))))
+		|| (!leaf_function_p () && call_used_or_fixed_reg_p (i)))))
       n += i == REG_A0 || i == REG_A1 ? 2 : 1;
 
   return n;
@@ -754,7 +753,7 @@ add_to_reg (rtx reg, HOST_WIDE_INT value, int frame, int epilogue_p)
 	{
 	  int i;
 	  for (i = REG_P0; i <= REG_P5; i++)
-	    if ((df_regs_ever_live_p (i) && ! call_used_regs[i])
+	    if ((df_regs_ever_live_p (i) && ! call_used_or_fixed_reg_p (i))
 		|| (!TARGET_FDPIC
 		    && i == PIC_OFFSET_TABLE_REGNUM
 		    && (crtl->uses_pic_offset_table
@@ -1037,14 +1036,14 @@ expand_interrupt_handler_epilogue (rtx spreg, e_funkind fkind, bool all)
 static rtx
 bfin_load_pic_reg (rtx dest)
 {
-  struct cgraph_local_info *i = NULL;
   rtx addr;
- 
-  i = cgraph_node::local_info (current_function_decl);
- 
+
+  cgraph_node *local_info_node
+    = cgraph_node::local_info_node (current_function_decl);
+
   /* Functions local to the translation unit don't need to reload the
      pic reg, since the caller always passes a usable one.  */
-  if (i && i->local)
+  if (local_info_node && local_info_node->local)
     return pic_offset_table_rtx;
       
   if (global_options_set.x_bfin_library_id)
@@ -1648,18 +1647,16 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
   return;
 }
 
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
+/* Update the data in CUM to advance over argument ARG.  */
 
 static void
-bfin_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			   const_tree type, bool named ATTRIBUTE_UNUSED)
+bfin_function_arg_advance (cumulative_args_t cum_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int count, bytes, words;
 
-  bytes = (mode == BLKmode) ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
+  bytes = arg.promoted_size_in_bytes ();
   words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
   cum->words += words;
@@ -1683,24 +1680,17 @@ bfin_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
 
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).  */
+   ARG is a description of the argument.  */
 
 static rtx
-bfin_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		   const_tree type, bool named ATTRIBUTE_UNUSED)
+bfin_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  int bytes
-    = (mode == BLKmode) ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
+  int bytes = arg.promoted_size_in_bytes ();
 
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     /* Compute operand 2 of the call insn.  */
     return GEN_INT (cum->call_cookie);
 
@@ -1708,7 +1698,7 @@ bfin_function_arg (cumulative_args_t cum_v, machine_mode mode,
     return NULL_RTX;
 
   if (cum->nregs)
-    return gen_rtx_REG (mode, *(cum->arg_regs));
+    return gen_rtx_REG (arg.mode, *(cum->arg_regs));
 
   return NULL_RTX;
 }
@@ -1723,12 +1713,9 @@ bfin_function_arg (cumulative_args_t cum_v, machine_mode mode,
    stack.   */
 
 static int
-bfin_arg_partial_bytes (cumulative_args_t cum, machine_mode mode,
-			tree type ATTRIBUTE_UNUSED,
-			bool named ATTRIBUTE_UNUSED)
+bfin_arg_partial_bytes (cumulative_args_t cum, const function_arg_info &arg)
 {
-  int bytes
-    = (mode == BLKmode) ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
+  int bytes = arg.promoted_size_in_bytes ();
   int bytes_left = get_cumulative_args (cum)->nregs * UNITS_PER_WORD;
   
   if (bytes == -1)
@@ -1744,11 +1731,9 @@ bfin_arg_partial_bytes (cumulative_args_t cum, machine_mode mode,
 /* Variable sized types are passed by reference.  */
 
 static bool
-bfin_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-			machine_mode mode ATTRIBUTE_UNUSED,
-			const_tree type, bool named ATTRIBUTE_UNUSED)
+bfin_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  return type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST;
+  return arg.type && TREE_CODE (TYPE_SIZE (arg.type)) != INTEGER_CST;
 }
 
 /* Decide whether a type should be returned in memory (true)
@@ -1821,7 +1806,7 @@ static bool
 bfin_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
 			      tree exp ATTRIBUTE_UNUSED)
 {
-  struct cgraph_local_info *this_func, *called_func;
+  cgraph_node *this_func, *called_func;
   e_funkind fkind = funkind (TREE_TYPE (current_function_decl));
   if (fkind != SUBROUTINE)
     return false;
@@ -1836,9 +1821,9 @@ bfin_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
   if (!decl)
     /* Not enough information.  */
     return false;
- 
-  this_func = cgraph_node::local_info (current_function_decl);
-  called_func = cgraph_node::local_info (decl);
+
+  this_func = cgraph_node::local_info_node (current_function_decl);
+  called_func = cgraph_node::local_info_node (decl);
   if (!called_func)
     return false;
   return !called_func->local || this_func->local;
@@ -2379,16 +2364,19 @@ bfin_option_override (void)
 
 #ifdef SUBTARGET_FDPIC_NOT_SUPPORTED
   if (TARGET_FDPIC)
-    error ("-mfdpic is not supported, please use a bfin-linux-uclibc target");
+    error ("%<-mfdpic%> is not supported, please use a bfin-linux-uclibc "
+	   "target");
 #endif
 
   /* Library identification */
   if (global_options_set.x_bfin_library_id && ! TARGET_ID_SHARED_LIBRARY)
-    error ("-mshared-library-id= specified without -mid-shared-library");
+    error ("%<-mshared-library-id=%> specified without "
+	   "%<-mid-shared-library%>");
 
   if (stack_limit_rtx && TARGET_FDPIC)
     {
-      warning (0, "-fstack-limit- options are ignored with -mfdpic; use -mstack-check-l1");
+      warning (0, "%<-fstack-limit-%> options are ignored with %<-mfdpic%>; "
+	       "use %<-mstack-check-l1%>");
       stack_limit_rtx = NULL_RTX;
     }
 
@@ -2401,7 +2389,7 @@ bfin_option_override (void)
   /* Don't allow the user to specify -mid-shared-library and -msep-data
      together, as it makes little sense from a user's point of view...  */
   if (TARGET_SEP_DATA && TARGET_ID_SHARED_LIBRARY)
-    error ("cannot specify both -msep-data and -mid-shared-library");
+    error ("cannot specify both %<-msep-data%> and %<-mid-shared-library%>");
   /* ... internally, however, it's nearly the same.  */
   if (TARGET_SEP_DATA)
     target_flags |= MASK_ID_SHARED_LIBRARY | MASK_LEAF_ID_SHARED_LIBRARY;
@@ -2421,16 +2409,16 @@ bfin_option_override (void)
     flag_pic = 0;
 
   if (TARGET_MULTICORE && bfin_cpu_type != BFIN_CPU_BF561)
-    error ("-mmulticore can only be used with BF561");
+    error ("%<-mmulticore%> can only be used with BF561");
 
   if (TARGET_COREA && !TARGET_MULTICORE)
-    error ("-mcorea should be used with -mmulticore");
+    error ("%<-mcorea%> should be used with %<-mmulticore%>");
 
   if (TARGET_COREB && !TARGET_MULTICORE)
-    error ("-mcoreb should be used with -mmulticore");
+    error ("%<-mcoreb%> should be used with %<-mmulticore%>");
 
   if (TARGET_COREA && TARGET_COREB)
-    error ("-mcorea and -mcoreb can%'t be used together");
+    error ("%<-mcorea%> and %<-mcoreb%> can%'t be used together");
 
   flag_schedule_insns = 0;
 
@@ -3205,7 +3193,7 @@ output_pop_multiple (rtx insn, rtx *operands)
 /* Adjust DST and SRC by OFFSET bytes, and generate one move in mode MODE.  */
 
 static void
-single_move_for_movmem (rtx dst, rtx src, machine_mode mode, HOST_WIDE_INT offset)
+single_move_for_cpymem (rtx dst, rtx src, machine_mode mode, HOST_WIDE_INT offset)
 {
   rtx scratch = gen_reg_rtx (mode);
   rtx srcmem, dstmem;
@@ -3221,7 +3209,7 @@ single_move_for_movmem (rtx dst, rtx src, machine_mode mode, HOST_WIDE_INT offse
    back on a different method.  */
 
 bool
-bfin_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp)
+bfin_expand_cpymem (rtx dst, rtx src, rtx count_exp, rtx align_exp)
 {
   rtx srcreg, destreg, countreg;
   HOST_WIDE_INT align = 0;
@@ -3266,7 +3254,7 @@ bfin_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp)
 	{
 	  if ((count & ~3) == 4)
 	    {
-	      single_move_for_movmem (dst, src, SImode, offset);
+	      single_move_for_cpymem (dst, src, SImode, offset);
 	      offset = 4;
 	    }
 	  else if (count & ~3)
@@ -3279,7 +3267,7 @@ bfin_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp)
 	    }
 	  if (count & 2)
 	    {
-	      single_move_for_movmem (dst, src, HImode, offset);
+	      single_move_for_cpymem (dst, src, HImode, offset);
 	      offset += 2;
 	    }
 	}
@@ -3287,7 +3275,7 @@ bfin_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp)
 	{
 	  if ((count & ~1) == 2)
 	    {
-	      single_move_for_movmem (dst, src, HImode, offset);
+	      single_move_for_cpymem (dst, src, HImode, offset);
 	      offset = 2;
 	    }
 	  else if (count & ~1)
@@ -3301,7 +3289,7 @@ bfin_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp)
 	}
       if (count & 1)
 	{
-	  single_move_for_movmem (dst, src, QImode, offset);
+	  single_move_for_cpymem (dst, src, QImode, offset);
 	}
       return true;
     }
@@ -3494,7 +3482,7 @@ hwloop_optimize (hwloop_info loop)
       for (i = REG_P0; i <= REG_P5; i++)
 	if ((df_regs_ever_live_p (i)
 	     || (funkind (TREE_TYPE (current_function_decl)) == SUBROUTINE
-		 && call_used_regs[i]))
+		 && call_used_or_fixed_reg_p (i)))
 	    && !REGNO_REG_SET_P (df_get_live_out (bb_in), i))
 	  {
 	    scratchreg = gen_rtx_REG (SImode, i);
@@ -4431,7 +4419,7 @@ workaround_speculation (void)
 	     we found earlier.  */
 	  if (recog_memoized (insn) != CODE_FOR_compare_eq)
 	    {
-	      note_stores (PATTERN (insn), note_np_check_stores, NULL);
+	      note_stores (insn, note_np_check_stores, NULL);
 	      if (np_check_regno != -1)
 		{
 		  if (find_regno_note (insn, REG_INC, np_check_regno))
@@ -4973,10 +4961,12 @@ bfin_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
 		      tree thunk ATTRIBUTE_UNUSED, HOST_WIDE_INT delta,
 		      HOST_WIDE_INT vcall_offset, tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk));
   rtx xops[3];
   /* The this parameter is passed as the first argument.  */
   rtx this_rtx = gen_rtx_REG (Pmode, REG_R0);
 
+  assemble_start_function (thunk, fnname);
   /* Adjust the this parameter by a fixed constant.  */
   if (delta)
     {
@@ -5031,6 +5021,7 @@ bfin_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
   xops[0] = XEXP (DECL_RTL (function), 0);
   if (1 || !flag_pic || (*targetm.binds_local_p) (function))
     output_asm_insn ("jump.l\t%P0", xops);
+  assemble_end_function (thunk, fnname);
 }
 
 /* Codes for all the Blackfin builtins.  */
@@ -5492,7 +5483,7 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
   enum insn_code icode;
   const struct builtin_description *d;
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   tree arg0, arg1, arg2;
   rtx op0, op1, op2, accvec, pat, tmp1, tmp2, a0reg, a1reg;
   machine_mode tmode, mode0;

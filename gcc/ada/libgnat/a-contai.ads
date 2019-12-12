@@ -17,8 +17,12 @@ package Ada.Containers is
    pragma Pure;
 
    type Hash_Type is mod 2**32;
+   --  Represents the range of the result of a hash function
+
    type Count_Type is range 0 .. 2**31 - 1;
+   --  Represents the (potential or actual) number of elements of a container
 
    Capacity_Error : exception;
+   --  Raised when the capacity of a container is exceeded
 
 end Ada.Containers;

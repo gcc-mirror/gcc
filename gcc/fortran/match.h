@@ -1,5 +1,5 @@
 /* All matcher functions.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Steven Bosscher
 
 This file is part of GCC.
@@ -121,6 +121,8 @@ match gfc_match_select (void);
 match gfc_match_select_type (void);
 match gfc_match_type_is (void);
 match gfc_match_class_is (void);
+match gfc_match_select_rank (void);
+match gfc_match_rank_is (void);
 match gfc_match_where (gfc_statement *);
 match gfc_match_elsewhere (void);
 match gfc_match_forall (gfc_statement *);
@@ -144,12 +146,14 @@ match gfc_match_oacc_kernels (void);
 match gfc_match_oacc_kernels_loop (void);
 match gfc_match_oacc_parallel (void);
 match gfc_match_oacc_parallel_loop (void);
+match gfc_match_oacc_serial (void);
+match gfc_match_oacc_serial_loop (void);
 match gfc_match_oacc_enter_data (void);
 match gfc_match_oacc_exit_data (void);
 match gfc_match_oacc_routine (void);
 
 /* OpenMP directive matchers.  */
-match gfc_match_omp_eos (void);
+match gfc_match_omp_eos_error (void);
 match gfc_match_omp_atomic (void);
 match gfc_match_omp_barrier (void);
 match gfc_match_omp_cancel (void);
@@ -246,7 +250,11 @@ match gfc_match_contiguous (void);
 match gfc_match_dimension (void);
 match gfc_match_external (void);
 match gfc_match_gcc_attributes (void);
+match gfc_match_gcc_builtin (void);
+match gfc_match_gcc_ivdep (void);
+match gfc_match_gcc_novector (void);
 match gfc_match_gcc_unroll (void);
+match gfc_match_gcc_vector (void);
 match gfc_match_import (void);
 match gfc_match_intent (void);
 match gfc_match_intrinsic (void);

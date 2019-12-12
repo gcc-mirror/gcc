@@ -1,5 +1,5 @@
 /* Wrapper to call lto.  Used by collect2 and the linker plugin.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
 
    Factored out of collect2 by Rafael Espindola <espindola@google.com>
 
@@ -71,7 +71,8 @@ static char **output_names;
 static char **offload_names;
 static char *offload_objects_file_name;
 static char *makefile;
-static char *debug_obj;
+static unsigned int num_deb_objs;
+static const char **early_debug_object_names;
 
 const char tool_name[] = "lto-wrapper";
 
@@ -90,8 +91,10 @@ tool_cleanup (bool)
     maybe_unlink (offload_objects_file_name);
   if (makefile)
     maybe_unlink (makefile);
-  if (debug_obj)
-    maybe_unlink (debug_obj);
+  if (early_debug_object_names)
+    for (i = 0; i < num_deb_objs; ++i)
+      if (early_debug_object_names[i])
+	maybe_unlink (early_debug_object_names[i]);
   for (i = 0; i < nr; ++i)
     {
       maybe_unlink (input_names[i]);
@@ -125,12 +128,11 @@ maybe_unlink (const char *file)
 #define DUMPBASE_SUFFIX ".ltrans18446744073709551615"
 
 /* Create decoded options from the COLLECT_GCC and COLLECT_GCC_OPTIONS
-   environment according to LANG_MASK.  */
+   environment.  */
 
 static void
 get_options_from_collect_gcc_options (const char *collect_gcc,
 				      const char *collect_gcc_options,
-				      unsigned int lang_mask,
 				      struct cl_decoded_option **decoded_options,
 				      unsigned int *decoded_options_count)
 {
@@ -152,7 +154,8 @@ get_options_from_collect_gcc_options (const char *collect_gcc,
 	  do
 	    {
 	      if (argv_storage[j] == '\0')
-		fatal_error (input_location, "malformed COLLECT_GCC_OPTIONS");
+		fatal_error (input_location,
+			     "malformed %<COLLECT_GCC_OPTIONS%>");
 	      else if (strncmp (&argv_storage[j], "'\\''", 4) == 0)
 		{
 		  argv_storage[k++] = '\'';
@@ -172,8 +175,7 @@ get_options_from_collect_gcc_options (const char *collect_gcc,
   argc = obstack_object_size (&argv_obstack) / sizeof (void *) - 1;
   argv = XOBFINISH (&argv_obstack, const char **);
 
-  decode_cmdline_options_to_array (argc, (const char **)argv,
-				   lang_mask,
+  decode_cmdline_options_to_array (argc, (const char **)argv, CL_DRIVER,
 				   decoded_options, decoded_options_count);
   obstack_free (&argv_obstack, NULL);
 }
@@ -245,6 +247,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	{
 	case OPT_SPECIAL_unknown:
 	case OPT_SPECIAL_ignore:
+	case OPT_SPECIAL_warn_removed:
 	case OPT_SPECIAL_program_name:
 	case OPT_SPECIAL_input_file:
 	  break;
@@ -255,11 +258,14 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 
 	  /* Fallthru.  */
 	case OPT_fdiagnostics_show_caret:
+	case OPT_fdiagnostics_show_labels:
+	case OPT_fdiagnostics_show_line_numbers:
 	case OPT_fdiagnostics_show_option:
 	case OPT_fdiagnostics_show_location_:
 	case OPT_fshow_column:
 	case OPT_fcommon:
 	case OPT_fgnu_tm:
+	case OPT_g:
 	  /* Do what the old LTO code did - collect exactly one option
 	     setting per OPT code, we pick the first we encounter.
 	     ???  This doesn't make too much sense, but when it doesn't
@@ -283,7 +289,6 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 
 	case OPT_fopenmp:
 	case OPT_fopenacc:
-	case OPT_fcheck_pointer_bounds:
 	  /* For selected options we can merge conservatively.  */
 	  for (j = 0; j < *decoded_options_count; ++j)
 	    if ((*decoded_options)[j].opt_index == foption->opt_index)
@@ -291,8 +296,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	  if (j == *decoded_options_count)
 	    append_option (decoded_options, decoded_options_count, foption);
 	  /* -fopenmp > -fno-openmp,
-	     -fopenacc > -fno-openacc,
-	     -fcheck_pointer_bounds > -fcheck_pointer_bounds  */
+	     -fopenacc > -fno-openacc  */
 	  else if (foption->value > (*decoded_options)[j].value)
 	    (*decoded_options)[j] = *foption;
 	  break;
@@ -306,7 +310,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	    append_option (decoded_options, decoded_options_count, foption);
 	  else if (strcmp ((*decoded_options)[j].arg, foption->arg))
 	    fatal_error (input_location,
-			 "Option %s with different values",
+			 "option %s with different values",
 			 foption->orig_option_with_args_text);
 	  break;
 
@@ -390,7 +394,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	    append_option (decoded_options, decoded_options_count, foption);
 	  else if (foption->value != (*decoded_options)[j].value)
 	    fatal_error (input_location,
-			 "Option %s not used consistently in all LTO input"
+			 "option %s not used consistently in all LTO input"
 			 " files", foption->orig_option_with_args_text);
 	  break;
 
@@ -408,6 +412,11 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
      It is a common mistake to mix few -fPIC compiled objects into otherwise
      non-PIC code.  We do not want to build everything with PIC then.
 
+     Similarly we merge PIE options, however in addition we keep
+      -fPIC + -fPIE = -fPIE
+      -fpic + -fPIE = -fpie
+      -fPIC/-fpic + -fpie = -fpie
+
      It would be good to warn on mismatches, but it is bit hard to do as
      we do not know what nothing translates to.  */
     
@@ -415,11 +424,38 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
     if ((*decoded_options)[j].opt_index == OPT_fPIC
         || (*decoded_options)[j].opt_index == OPT_fpic)
       {
-	if (!pic_option
-	    || (pic_option->value > 0) != ((*decoded_options)[j].value > 0))
-	  remove_option (decoded_options, j, decoded_options_count);
-	else if (pic_option->opt_index == OPT_fPIC
-		 && (*decoded_options)[j].opt_index == OPT_fpic)
+	/* -fno-pic in one unit implies -fno-pic everywhere.  */
+	if ((*decoded_options)[j].value == 0)
+	  j++;
+	/* If we have no pic option or merge in -fno-pic, we still may turn
+	   existing pic/PIC mode into pie/PIE if -fpie/-fPIE is present.  */
+	else if ((pic_option && pic_option->value == 0)
+		 || !pic_option)
+	  {
+	    if (pie_option)
+	      {
+		bool big = (*decoded_options)[j].opt_index == OPT_fPIC
+			   && pie_option->opt_index == OPT_fPIE;
+	        (*decoded_options)[j].opt_index = big ? OPT_fPIE : OPT_fpie;
+		if (pie_option->value)
+	          (*decoded_options)[j].canonical_option[0] = big ? "-fPIE" : "-fpie";
+		else
+	          (*decoded_options)[j].canonical_option[0] = big ? "-fno-pie" : "-fno-pie";
+		(*decoded_options)[j].value = pie_option->value;
+	        j++;
+	      }
+	    else if (pic_option)
+	      {
+	        (*decoded_options)[j] = *pic_option;
+	        j++;
+	      }
+	    /* We do not know if target defaults to pic or not, so just remove
+	       option if it is missing in one unit but enabled in other.  */
+	    else
+	      remove_option (decoded_options, j, decoded_options_count);
+	  }
+	else if (pic_option->opt_index == OPT_fpic
+		 && (*decoded_options)[j].opt_index == OPT_fPIC)
 	  {
 	    (*decoded_options)[j] = *pic_option;
 	    j++;
@@ -430,11 +466,42 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
    else if ((*decoded_options)[j].opt_index == OPT_fPIE
             || (*decoded_options)[j].opt_index == OPT_fpie)
       {
-	if (!pie_option
-	    || pie_option->value != (*decoded_options)[j].value)
-	  remove_option (decoded_options, j, decoded_options_count);
-	else if (pie_option->opt_index == OPT_fPIE
-		 && (*decoded_options)[j].opt_index == OPT_fpie)
+	/* -fno-pie in one unit implies -fno-pie everywhere.  */
+	if ((*decoded_options)[j].value == 0)
+	  j++;
+	/* If we have no pie option or merge in -fno-pie, we still preserve
+	   PIE/pie if pic/PIC is present.  */
+	else if ((pie_option && pie_option->value == 0)
+		 || !pie_option)
+	  {
+	    /* If -fPIC/-fpic is given, merge it with -fPIE/-fpie.  */
+	    if (pic_option)
+	      {
+		if (pic_option->opt_index == OPT_fpic
+		    && (*decoded_options)[j].opt_index == OPT_fPIE)
+		  {
+	            (*decoded_options)[j].opt_index = OPT_fpie;
+	            (*decoded_options)[j].canonical_option[0]
+			 = pic_option->value ? "-fpie" : "-fno-pie";
+		  }
+		else if (!pic_option->value)
+		  (*decoded_options)[j].canonical_option[0] = "-fno-pie";
+		(*decoded_options)[j].value = pic_option->value;
+		j++;
+	      }
+	    else if (pie_option)
+	      {
+	        (*decoded_options)[j] = *pie_option;
+		j++;
+	      }
+	    /* Because we always append pic/PIE options this code path should
+	       not happen unless the LTO object was built by old lto1 which
+	       did not contain that logic yet.  */
+	    else
+	      remove_option (decoded_options, j, decoded_options_count);
+	  }
+	else if (pie_option->opt_index == OPT_fpie
+		 && (*decoded_options)[j].opt_index == OPT_fPIE)
 	  {
 	    (*decoded_options)[j] = *pie_option;
 	    j++;
@@ -536,6 +603,8 @@ append_compiler_options (obstack *argv_obstack, struct cl_decoded_option *opts,
       switch (option->opt_index)
 	{
 	case OPT_fdiagnostics_show_caret:
+	case OPT_fdiagnostics_show_labels:
+	case OPT_fdiagnostics_show_line_numbers:
 	case OPT_fdiagnostics_show_option:
 	case OPT_fdiagnostics_show_location_:
 	case OPT_fshow_column:
@@ -549,11 +618,11 @@ append_compiler_options (obstack *argv_obstack, struct cl_decoded_option *opts,
 	case OPT_fopenacc:
 	case OPT_fopenacc_dim_:
 	case OPT_foffload_abi_:
+	case OPT_g:
 	case OPT_O:
 	case OPT_Ofast:
 	case OPT_Og:
 	case OPT_Os:
-	case OPT_fcheck_pointer_bounds:
 	  break;
 
 	default:
@@ -581,7 +650,10 @@ append_diag_options (obstack *argv_obstack, struct cl_decoded_option *opts,
       switch (option->opt_index)
 	{
 	case OPT_fdiagnostics_color_:
+	case OPT_fdiagnostics_format_:
 	case OPT_fdiagnostics_show_caret:
+	case OPT_fdiagnostics_show_labels:
+	case OPT_fdiagnostics_show_line_numbers:
 	case OPT_fdiagnostics_show_option:
 	case OPT_fdiagnostics_show_location_:
 	case OPT_fshow_column:
@@ -751,8 +823,8 @@ compile_offload_image (const char *target, const char *compiler_path,
 
   if (!compiler)
     fatal_error (input_location,
-		 "could not find %s in %s (consider using '-B')\n", suffix + 1,
-		 compiler_path);
+		 "could not find %s in %s (consider using %<-B%>)",
+		 suffix + 1, compiler_path);
 
   /* Generate temporary output file name.  */
   filename = make_temp_file (".target.o");
@@ -832,7 +904,7 @@ compile_images_for_offload_targets (unsigned in_argc, char *in_argv[],
 				 linker_opts, linker_opt_count);
       if (!offload_names[next_name_entry])
 	fatal_error (input_location,
-		     "problem with building target image for %s\n", names[i]);
+		     "problem with building target image for %s", names[i]);
       next_name_entry++;
     }
 
@@ -889,7 +961,7 @@ find_crtoffloadtable (void)
       }
   if (i == n_paths)
     fatal_error (input_location,
-		 "installation error, can't find crtoffloadtable.o");
+		 "installation error, cannot find %<crtoffloadtable.o%>");
 
   free_array_of_ptrs ((void **) paths, n_paths);
 }
@@ -937,8 +1009,7 @@ find_and_merge_options (int fd, off_t file_offset, const char *prefix,
     {
       struct cl_decoded_option *f2decoded_options;
       unsigned int f2decoded_options_count;
-      get_options_from_collect_gcc_options (collect_gcc,
-					    fopts, CL_LANG_ALL,
+      get_options_from_collect_gcc_options (collect_gcc, fopts,
 					    &f2decoded_options,
 					    &f2decoded_options_count);
       if (!fdecoded_options)
@@ -968,11 +1039,12 @@ find_and_merge_options (int fd, off_t file_offset, const char *prefix,
 const char *
 debug_objcopy (const char *infile, bool rename)
 {
-  const char *outfile;
+  char *outfile;
   const char *errmsg;
   int err;
 
   const char *p;
+  const char *orig_infile = infile;
   off_t inoff = 0;
   long loffset;
   int consumed;
@@ -1000,19 +1072,27 @@ debug_objcopy (const char *infile, bool rename)
 				  &off, &len, &errmsg, &err) != 1)
     {
       if (errmsg)
-	fatal_error (0, "%s: %s\n", errmsg, xstrerror (err));
+	fatal_error (0, "%s: %s", errmsg, xstrerror (err));
 
       simple_object_release_read (inobj);
       close (infd);
       return NULL;
     }
 
-  outfile = make_temp_file ("debugobjtem");
+  if (save_temps)
+    {
+      outfile = (char *) xmalloc (strlen (orig_infile)
+				  + sizeof (".debug.temp.o") + 1);
+      strcpy (outfile, orig_infile);
+      strcat (outfile, ".debug.temp.o");
+    }
+  else
+    outfile = make_temp_file (".debug.temp.o");
   errmsg = simple_object_copy_lto_debug_sections (inobj, outfile, &err, rename);
   if (errmsg)
     {
       unlink_if_ordinary (outfile);
-      fatal_error (0, "%s: %s\n", errmsg, xstrerror (err));
+      fatal_error (0, "%s: %s", errmsg, xstrerror (err));
     }
 
   simple_object_release_read (inobj);
@@ -1029,6 +1109,136 @@ cmp_priority (const void *a, const void *b)
   return *((const int *)b)-*((const int *)a);
 }
 
+/* Number of CPUs that can be used for parallel LTRANS phase.  */
+
+static unsigned long nthreads_var = 0;
+
+#ifdef HAVE_PTHREAD_AFFINITY_NP
+unsigned long cpuset_size;
+static unsigned long get_cpuset_size;
+cpu_set_t *cpusetp;
+
+unsigned long
+static cpuset_popcount (unsigned long cpusetsize, cpu_set_t *cpusetp)
+{
+#ifdef CPU_COUNT_S
+  /* glibc 2.7 and above provide a macro for this.  */
+  return CPU_COUNT_S (cpusetsize, cpusetp);
+#else
+#ifdef CPU_COUNT
+  if (cpusetsize == sizeof (cpu_set_t))
+    /* glibc 2.6 and above provide a macro for this.  */
+    return CPU_COUNT (cpusetp);
+#endif
+  size_t i;
+  unsigned long ret = 0;
+  STATIC_ASSERT (sizeof (cpusetp->__bits[0]) == sizeof (unsigned long int));
+  for (i = 0; i < cpusetsize / sizeof (cpusetp->__bits[0]); i++)
+    {
+      unsigned long int mask = cpusetp->__bits[i];
+      if (mask == 0)
+	continue;
+      ret += __builtin_popcountl (mask);
+    }
+  return ret;
+#endif
+}
+#endif
+
+/* At startup, determine the default number of threads.  It would seem
+   this should be related to the number of cpus online.  */
+
+static void
+init_num_threads (void)
+{
+#ifdef HAVE_PTHREAD_AFFINITY_NP
+#if defined (_SC_NPROCESSORS_CONF) && defined (CPU_ALLOC_SIZE)
+  cpuset_size = sysconf (_SC_NPROCESSORS_CONF);
+  cpuset_size = CPU_ALLOC_SIZE (cpuset_size);
+#else
+  cpuset_size = sizeof (cpu_set_t);
+#endif
+
+  cpusetp = (cpu_set_t *) xmalloc (gomp_cpuset_size);
+  do
+    {
+      int ret = pthread_getaffinity_np (pthread_self (), gomp_cpuset_size,
+					cpusetp);
+      if (ret == 0)
+	{
+	  /* Count only the CPUs this process can use.  */
+	  nthreads_var = cpuset_popcount (cpuset_size, cpusetp);
+	  if (nthreads_var == 0)
+	    break;
+	  get_cpuset_size = cpuset_size;
+#ifdef CPU_ALLOC_SIZE
+	  unsigned long i;
+	  for (i = cpuset_size * 8; i; i--)
+	    if (CPU_ISSET_S (i - 1, cpuset_size, cpusetp))
+	      break;
+	  cpuset_size = CPU_ALLOC_SIZE (i);
+#endif
+	  return;
+	}
+      if (ret != EINVAL)
+	break;
+#ifdef CPU_ALLOC_SIZE
+      if (cpuset_size < sizeof (cpu_set_t))
+	cpuset_size = sizeof (cpu_set_t);
+      else
+	cpuset_size = cpuset_size * 2;
+      if (cpuset_size < 8 * sizeof (cpu_set_t))
+	cpusetp
+	  = (cpu_set_t *) realloc (cpusetp, cpuset_size);
+      else
+	{
+	  /* Avoid fatal if too large memory allocation would be
+	     requested, e.g. kernel returning EINVAL all the time.  */
+	  void *p = realloc (cpusetp, cpuset_size);
+	  if (p == NULL)
+	    break;
+	  cpusetp = (cpu_set_t *) p;
+	}
+#else
+      break;
+#endif
+    }
+  while (1);
+  cpuset_size = 0;
+  nthreads_var = 1;
+  free (cpusetp);
+  cpusetp = NULL;
+#endif
+#ifdef _SC_NPROCESSORS_ONLN
+  nthreads_var = sysconf (_SC_NPROCESSORS_ONLN);
+#endif
+}
+
+/* FIXME: once using -std=c11, we can use std::thread::hardware_concurrency.  */
+
+/* Return true when a jobserver is running and can accept a job.  */
+
+static bool
+jobserver_active_p (void)
+{
+  const char *makeflags = getenv ("MAKEFLAGS");
+  if (makeflags == NULL)
+    return false;
+
+  const char *needle = "--jobserver-auth=";
+  const char *n = strstr (makeflags, needle);
+  if (n == NULL)
+    return false;
+
+  int rfd = -1;
+  int wfd = -1;
+
+  return (sscanf (n + strlen (needle), "%d,%d", &rfd, &wfd) == 2
+	  && rfd > 0
+	  && wfd > 0
+	  && is_valid_fd (rfd)
+	  && is_valid_fd (wfd));
+}
 
 /* Execute gcc. ARGC is the number of arguments. ARGV contains the arguments. */
 
@@ -1043,6 +1253,7 @@ run_gcc (unsigned argc, char *argv[])
   const char *collect_gcc, *collect_gcc_options;
   int parallel = 0;
   int jobserver = 0;
+  int auto_parallel = 0;
   bool no_partition = false;
   struct cl_decoded_option *fdecoded_options = NULL;
   struct cl_decoded_option *offload_fdecoded_options = NULL;
@@ -1064,13 +1275,12 @@ run_gcc (unsigned argc, char *argv[])
   collect_gcc = getenv ("COLLECT_GCC");
   if (!collect_gcc)
     fatal_error (input_location,
-		 "environment variable COLLECT_GCC must be set");
+		 "environment variable %<COLLECT_GCC%> must be set");
   collect_gcc_options = getenv ("COLLECT_GCC_OPTIONS");
   if (!collect_gcc_options)
     fatal_error (input_location,
-		 "environment variable COLLECT_GCC_OPTIONS must be set");
+		 "environment variable %<COLLECT_GCC_OPTIONS%> must be set");
   get_options_from_collect_gcc_options (collect_gcc, collect_gcc_options,
-					CL_LANG_ALL,
 					&decoded_options,
 					&decoded_options_count);
 
@@ -1167,8 +1377,13 @@ run_gcc (unsigned argc, char *argv[])
 	case OPT_flto_:
 	  if (strcmp (option->arg, "jobserver") == 0)
 	    {
-	      jobserver = 1;
 	      parallel = 1;
+	      jobserver = 1;
+	    }
+	  else if (strcmp (option->arg, "auto") == 0)
+	    {
+	      parallel = 1;
+	      auto_parallel = 1;
 	    }
 	  else
 	    {
@@ -1186,6 +1401,10 @@ run_gcc (unsigned argc, char *argv[])
 	  linker_output_rel = !strcmp (option->arg, "rel");
 	  break;
 
+	case OPT_g:
+	  /* Recognize -g0.  */
+	  skip_debug = option->arg && !strcmp (option->arg, "0");
+	  break;
 
 	default:
 	  break;
@@ -1210,7 +1429,13 @@ run_gcc (unsigned argc, char *argv[])
     {
       lto_mode = LTO_MODE_LTO;
       jobserver = 0;
+      auto_parallel = 0;
       parallel = 0;
+    }
+  else if (!jobserver && jobserver_active_p ())
+    {
+      parallel = 1;
+      jobserver = 1;
     }
 
   if (linker_output)
@@ -1344,9 +1569,16 @@ cont1:
 
   if (lto_mode == LTO_MODE_LTO)
     {
-      flto_out = make_temp_file (".lto.o");
       if (linker_output)
-	obstack_ptr_grow (&argv_obstack, linker_output);
+	{
+	  obstack_ptr_grow (&argv_obstack, linker_output);
+	  flto_out = (char *) xmalloc (strlen (linker_output)
+				       + sizeof (".lto.o") + 1);
+	  strcpy (flto_out, linker_output);
+	  strcat (flto_out, ".lto.o");
+	}
+      else
+	flto_out = make_temp_file (".lto.o");
       obstack_ptr_grow (&argv_obstack, "-o");
       obstack_ptr_grow (&argv_obstack, flto_out);
     }
@@ -1373,7 +1605,19 @@ cont1:
 	  strcat (ltrans_output_file, ".ltrans.out");
 	}
       else
-	ltrans_output_file = make_temp_file (".ltrans.out");
+	{
+	  char *prefix = NULL;
+	  if (linker_output)
+	    {
+	      prefix = (char *) xmalloc (strlen (linker_output) + 2);
+	      strcpy (prefix, linker_output);
+	      strcat (prefix, ".");
+	    }
+
+	  ltrans_output_file = make_temp_file_with_prefix (prefix,
+							   ".ltrans.out");
+	  free (prefix);
+	}
       list_option_full = (char *) xmalloc (sizeof (char) *
 		         (strlen (ltrans_output_file) + list_option_len + 1));
       tmp = list_option_full;
@@ -1384,7 +1628,21 @@ cont1:
       strcpy (tmp, ltrans_output_file);
 
       if (jobserver)
-	obstack_ptr_grow (&argv_obstack, xstrdup ("-fwpa=jobserver"));
+	{
+	  if (verbose)
+	    fprintf (stderr, "Using make jobserver\n");
+	  obstack_ptr_grow (&argv_obstack, xstrdup ("-fwpa=jobserver"));
+	}
+      else if (auto_parallel)
+	{
+	  char buf[256];
+	  init_num_threads ();
+	  if (verbose)
+	    fprintf (stderr, "LTO parallelism level set to %ld\n",
+		     nthreads_var);
+	  sprintf (buf, "-fwpa=%ld", nthreads_var);
+	  obstack_ptr_grow (&argv_obstack, xstrdup (buf));
+	}
       else if (parallel > 1)
 	{
 	  char buf[256];
@@ -1407,82 +1665,23 @@ cont1:
   argv_ptr = &new_argv[new_head_argc];
   fork_execute (new_argv[0], CONST_CAST (char **, new_argv), true);
 
-  /* Handle early generated debug information.  At compile-time
-     we output early DWARF debug info into .gnu.debuglto_ prefixed
-     sections.  LTRANS object DWARF debug info refers to that.
-     So we need to transfer the .gnu.debuglto_ sections to the final
-     link.  Ideally the linker plugin interface would allow us to
-     not claim those sections and instruct the linker to keep
-     them, renaming them in the process.  For now we extract and
-     rename those sections via a simple-object interface to produce
-     regular objects containing only the early debug info.  We
-     then partially link those to a single early debug info object
-     and pass that as additional output back to the linker plugin.  */
-
-  /* Prepare the partial link to gather the compile-time generated
-     debug-info into a single input for the final link.  */
-  debug_obj = make_temp_file ("debugobj");
-  obstack_ptr_grow (&argv_obstack, collect_gcc);
-  for (i = 1; i < decoded_options_count; ++i)
-    {
-      /* Retain linker choice and -B.  */
-      if (decoded_options[i].opt_index == OPT_B
-	  || decoded_options[i].opt_index == OPT_fuse_ld_bfd
-	  || decoded_options[i].opt_index == OPT_fuse_ld_gold)
-	append_linker_options (&argv_obstack, &decoded_options[i-1], 2);
-      /* Retain all target options, this preserves -m32 for example.  */
-      if (cl_options[decoded_options[i].opt_index].flags & CL_TARGET)
-	append_linker_options (&argv_obstack, &decoded_options[i-1], 2);
-      /* Recognize -g0.  */
-      if (decoded_options[i].opt_index == OPT_g
-	  && strcmp (decoded_options[i].arg, "0") == 0)
-	skip_debug = true;
-    }
-  obstack_ptr_grow (&argv_obstack, "-r");
-  obstack_ptr_grow (&argv_obstack, "-nostdlib");
-  obstack_ptr_grow (&argv_obstack, "-o");
-  obstack_ptr_grow (&argv_obstack, debug_obj);
-
   /* Copy the early generated debug info from the objects to temporary
      files and append those to the partial link commandline.  */
   n_debugobj = 0;
+  early_debug_object_names = NULL;
   if (! skip_debug)
-    for (i = 0; i < ltoobj_argc; ++i)
-      {
-	const char *tem;
-	if ((tem = debug_objcopy (ltoobj_argv[i], !linker_output_rel)))
-	  {
-	    obstack_ptr_grow (&argv_obstack, tem);
-	    n_debugobj++;
-	  }
-      }
-
-  /* Link them all into a single object.  Ideally this would reduce
-     disk space usage mainly due to .debug_str merging but unfortunately
-     GNU ld doesn't perform this with -r.  */
-  if (n_debugobj)
     {
-      obstack_ptr_grow (&argv_obstack, NULL);
-      const char **debug_link_argv = XOBFINISH (&argv_obstack, const char **);
-      fork_execute (debug_link_argv[0],
-		    CONST_CAST (char **, debug_link_argv), false);
-
-      /* And dispose the temporaries.  */
-      for (i = 0; debug_link_argv[i]; ++i)
-	;
-      for (--i; i > 0; --i)
+      early_debug_object_names = XCNEWVEC (const char *, ltoobj_argc+ 1);
+      num_deb_objs = ltoobj_argc;
+      for (i = 0; i < ltoobj_argc; ++i)
 	{
-	  if (strcmp (debug_link_argv[i], debug_obj) == 0)
-	    break;
-	  maybe_unlink (debug_link_argv[i]);
+	  const char *tem;
+	  if ((tem = debug_objcopy (ltoobj_argv[i], !linker_output_rel)))
+	    {
+	      early_debug_object_names[i] = tem;
+	      n_debugobj++;
+	    }
 	}
-    }
-  else
-    {
-      unlink_if_ordinary (debug_obj);
-      free (debug_obj);
-      debug_obj = NULL;
-      skip_debug = true;
     }
 
   if (lto_mode == LTO_MODE_LTO)
@@ -1490,12 +1689,15 @@ cont1:
       printf ("%s\n", flto_out);
       if (!skip_debug)
 	{
-	  printf ("%s\n", debug_obj);
-	  free (debug_obj);
-	  debug_obj = NULL;
+	  for (i = 0; i < ltoobj_argc; ++i)
+	    if (early_debug_object_names[i] != NULL)
+	      printf ("%s\n", early_debug_object_names[i]);	      
 	}
+      /* These now belong to collect2.  */
       free (flto_out);
       flto_out = NULL;
+      free (early_debug_object_names);
+      early_debug_object_names = NULL;
     }
   else
     {
@@ -1505,7 +1707,7 @@ cont1:
       int priority;
 
       if (!stream)
-	fatal_error (input_location, "fopen: %s: %m", ltrans_output_file);
+	fatal_error (input_location, "%<fopen%>: %s: %m", ltrans_output_file);
 
       /* Parse the list of LTRANS inputs from the WPA stage.  */
       obstack_init (&env_obstack);
@@ -1522,7 +1724,7 @@ cont1:
 	    {
 	      if (!feof (stream))
 	        fatal_error (input_location,
-		             "Corrupted ltrans output file %s",
+		             "corrupted ltrans output file %s",
 			     ltrans_output_file);
 	      break;
 	    }
@@ -1623,7 +1825,9 @@ cont:
 	  struct pex_obj *pex;
 	  char jobs[32];
 
-	  fprintf (mstream, "all:");
+	  fprintf (mstream,
+		   ".PHONY: all\n"
+		   "all:");
 	  for (i = 0; i < nr; ++i)
 	    {
 	      int j = ltrans_priorities[i*2 + 1];
@@ -1646,7 +1850,8 @@ cont:
 	  i = 3;
 	  if (!jobserver)
 	    {
-	      snprintf (jobs, 31, "-j%d", parallel);
+	      snprintf (jobs, 31, "-j%ld",
+			auto_parallel ? nthreads_var : parallel);
 	      new_argv[i++] = jobs;
 	    }
 	  new_argv[i++] = "all";
@@ -1659,21 +1864,24 @@ cont:
 	  for (i = 0; i < nr; ++i)
 	    maybe_unlink (input_names[i]);
 	}
-      if (!skip_debug)
-	{
-	  printf ("%s\n", debug_obj);
-	  free (debug_obj);
-	  debug_obj = NULL;
-	}
       for (i = 0; i < nr; ++i)
 	{
 	  fputs (output_names[i], stdout);
 	  putc ('\n', stdout);
 	  free (input_names[i]);
 	}
+      if (!skip_debug)
+	{
+	  for (i = 0; i < ltoobj_argc; ++i)
+	    if (early_debug_object_names[i] != NULL)
+	      printf ("%s\n", early_debug_object_names[i]);	      
+	}
       nr = 0;
       free (ltrans_priorities);
       free (output_names);
+      output_names = NULL;
+      free (early_debug_object_names);
+      early_debug_object_names = NULL;
       free (input_names);
       free (list_option_full);
       obstack_free (&env_obstack, NULL);
@@ -1706,7 +1914,7 @@ main (int argc, char *argv[])
   diagnostic_initialize (global_dc, 0);
 
   if (atexit (lto_wrapper_cleanup) != 0)
-    fatal_error (input_location, "atexit failed");
+    fatal_error (input_location, "%<atexit%> failed");
 
   if (signal (SIGINT, SIG_IGN) != SIG_IGN)
     signal (SIGINT, fatal_signal);

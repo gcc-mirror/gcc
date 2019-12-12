@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -275,7 +275,6 @@ package Sem is
    --  flag is False to disable any code expansion (see package Expander). Only
    --  the generic processing can modify the status of this flag, any other
    --  client should regard it as read-only.
-   --  Probably should be called Inside_A_Generic_Template ???
 
    Inside_Freezing_Actions : Nat := 0;
    --  Flag indicating whether we are within a call to Expand_N_Freeze_Actions.
@@ -285,6 +284,11 @@ package Sem is
    --  indications from entities in the current scope. Only the expansion of
    --  freezing nodes can modify the status of this flag, any other client
    --  should regard it as read-only.
+
+   Inside_Preanalysis_Without_Freezing : Nat := 0;
+   --  Flag indicating whether we are preanalyzing an expression performing no
+   --  freezing. Non-zero means we are inside (it is actually a level counter
+   --  to deal with nested calls).
 
    Unloaded_Subunits : Boolean := False;
    --  This flag is set True if we have subunits that are not loaded. This

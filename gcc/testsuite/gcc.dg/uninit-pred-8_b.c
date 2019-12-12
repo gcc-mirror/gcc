@@ -1,6 +1,7 @@
-
 /* { dg-do compile } */
-/* { dg-options "-Wuninitialized -O2" } */
+/* ???  Jump threading makes a mess of the logical-op-non-short-circuit=0 case
+   so force it our way.  */
+/* { dg-options "-Wuninitialized -O2 --param logical-op-non-short-circuit=1" } */
 
 int g;
 void bar();

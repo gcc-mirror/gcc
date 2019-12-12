@@ -1,5 +1,5 @@
 /* jit.c -- Dummy "frontend" for use during JIT-compilation.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -110,7 +110,8 @@ jit_begin_diagnostic (diagnostic_context */*context*/,
 
 static void
 jit_end_diagnostic (diagnostic_context *context,
-		    diagnostic_info *diagnostic)
+		    diagnostic_info *diagnostic,
+		    diagnostic_t)
 {
   gcc_assert (gcc::jit::active_playback_ctxt);
   JIT_LOG_SCOPE (gcc::jit::active_playback_ctxt->get_logger ());

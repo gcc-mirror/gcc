@@ -1,5 +1,5 @@
 /* Search an insn for pseudo regs that must be in hard regs and are not.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -105,7 +105,7 @@ a register with any other reload.  */
 #include "rtl-error.h"
 #include "reload.h"
 #include "addresses.h"
-#include "params.h"
+#include "function-abi.h"
 
 /* True if X is a constant that can be forced into the constant pool.
    MODE is the mode of the operand, or VOIDmode if not known.  */
@@ -408,7 +408,7 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
 
      The convention is that secondary input reloads are valid only if the
      secondary_class is different from class.  If you have such a case, you
-     can not use secondary reloads, you must work around the problem some
+     cannot use secondary reloads, you must work around the problem some
      other way.
 
      Allow this when a reload_in/out pattern is being used.  I.e. assume
@@ -6528,7 +6528,7 @@ reg_overlap_mentioned_for_reload_p (rtx x, rtx in)
       || GET_RTX_CLASS (GET_CODE (x)) == RTX_AUTOINC)
     x = XEXP (x, 0);
 
-  /* If either argument is a constant, then modifying X can not affect IN.  */
+  /* If either argument is a constant, then modifying X cannot affect IN.  */
   if (CONSTANT_P (x) || CONSTANT_P (in))
     return 0;
   else if (GET_CODE (x) == SUBREG && MEM_P (SUBREG_REG (x)))
@@ -6716,7 +6716,7 @@ find_equiv_reg (rtx goal, rtx_insn *insn, enum reg_class rclass, int other,
 	continue;
       num++;
       if (p == 0 || LABEL_P (p)
-	  || num > PARAM_VALUE (PARAM_MAX_RELOAD_SEARCH_INSNS))
+	  || num > param_max_reload_search_insns)
 	return 0;
 
       /* Don't reuse register contents from before a setjmp-type
@@ -6904,23 +6904,19 @@ find_equiv_reg (rtx goal, rtx_insn *insn, enum reg_class rclass, int other,
 	 if either of the two is in a call-clobbered register, or memory.  */
       if (CALL_P (p))
 	{
-	  int i;
-
 	  if (goal_mem || need_stable_sp)
 	    return 0;
 
-	  if (regno >= 0 && regno < FIRST_PSEUDO_REGISTER)
-	    for (i = 0; i < nregs; ++i)
-	      if (call_used_regs[regno + i]
-		  || targetm.hard_regno_call_part_clobbered (regno + i, mode))
-		return 0;
+	  function_abi callee_abi = insn_callee_abi (p);
+	  if (regno >= 0
+	      && regno < FIRST_PSEUDO_REGISTER
+	      && callee_abi.clobbers_reg_p (mode, regno))
+	    return 0;
 
-	  if (valueno >= 0 && valueno < FIRST_PSEUDO_REGISTER)
-	    for (i = 0; i < valuenregs; ++i)
-	      if (call_used_regs[valueno + i]
-		  || targetm.hard_regno_call_part_clobbered (valueno + i,
-							     mode))
-		return 0;
+	  if (valueno >= 0
+	      && valueno < FIRST_PSEUDO_REGISTER
+	      && callee_abi.clobbers_reg_p (mode, valueno))
+	    return 0;
 	}
 
       if (INSN_P (p))

@@ -2,7 +2,6 @@
    should be expanded even when spurious "inexact" not allowed.  */
 /* { dg-do compile } */
 /* { dg-options "-O2 -mfancy-math-387 -mfpmath=387 -fno-fp-int-builtin-inexact" } */
-/* { dg-add-options c99_runtime } */
 
 #define TEST(FN, TYPE)				\
   do						\

@@ -1,5 +1,5 @@
 /* ANSI and traditional C compatability macros
-   Copyright (C) 1991-2018 Free Software Foundation, Inc.
+   Copyright (C) 1991-2019 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
 This program is free software; you can redistribute it and/or modify
@@ -289,6 +289,40 @@ So instead we use the macro below and test it against specific values.  */
 #  define ATTRIBUTE_NONSTRING __attribute__ ((__nonstring__))
 # else
 #  define ATTRIBUTE_NONSTRING
+# endif
+#endif
+
+/* Attribute `alloc_size' was valid as of gcc 4.3.  */
+#ifndef ATTRIBUTE_RESULT_SIZE_1
+# if (GCC_VERSION >= 4003)
+#  define ATTRIBUTE_RESULT_SIZE_1 __attribute__ ((alloc_size (1)))
+# else
+#  define ATTRIBUTE_RESULT_SIZE_1
+#endif
+#endif
+
+#ifndef ATTRIBUTE_RESULT_SIZE_2
+# if (GCC_VERSION >= 4003)
+#  define ATTRIBUTE_RESULT_SIZE_2 __attribute__ ((alloc_size (2)))
+# else
+#  define ATTRIBUTE_RESULT_SIZE_2
+#endif
+#endif
+
+#ifndef ATTRIBUTE_RESULT_SIZE_1_2
+# if (GCC_VERSION >= 4003)
+#  define ATTRIBUTE_RESULT_SIZE_1_2 __attribute__ ((alloc_size (1, 2)))
+# else
+#  define ATTRIBUTE_RESULT_SIZE_1_2
+#endif
+#endif
+
+/* Attribute `warn_unused_result' was valid as of gcc 3.3.  */
+#ifndef ATTRIBUTE_WARN_UNUSED_RESULT
+# if GCC_VERSION >= 3003
+#  define ATTRIBUTE_WARN_UNUSED_RESULT __attribute__ ((warn_unused_result))
+# else
+#  define ATTRIBUTE_WARN_UNUSED_RESULT
 # endif
 #endif
 

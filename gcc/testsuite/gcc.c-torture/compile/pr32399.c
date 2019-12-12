@@ -1,3 +1,5 @@
+/* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
+
 void f(unsigned char *src, unsigned char *dst, int num, unsigned char *pos, unsigned char *diffuse, int hasdiffuse, unsigned char *specular, int hasspecular) {
     int i;
 

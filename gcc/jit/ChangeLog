@@ -1,3 +1,110 @@
+2019-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/92483
+	* jit-playback.c (gcc::jit::playback::context::make_fake_args):
+	Update GCC_JIT_BOOL_OPTION_SELFCHECK_GC for new --param syntax.
+
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/91421
+	* jit-playback.c (new_function): Use set_decl_built_in_function.
+
+2019-07-22  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* jit-recording.c (unary_op_reproducer_strings): Make it extern.
+	(binary_op_reproducer_strings): Likewise.
+	* jit-recording.h (unary_op_reproducer_strings): Likewise.
+	(binary_op_reproducer_strings): Likewise.
+	* libgccjit.c (gcc_jit_context_new_unary_op): Check result_type to be a
+	numeric type.
+	* libgccjit.c (gcc_jit_context_new_binary_op): Improve error message.
+
+2019-07-04  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* libgccjit.c (gcc_jit_context_new_binary_op): Check result_type to be a
+	numeric type.
+
+2019-07-04  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_12): New ABI tag.
+	* docs/topics/types.rst: Add gcc_jit_context_new_bitfield.
+	* jit-common.h (namespace recording): Add class bitfield.
+	* jit-playback.c:
+	(DECL_C_BIT_FIELD, SET_DECL_C_BIT_FIELD): Add macros.
+	(playback::context::new_bitfield): New method.
+	(playback::compound_type::set_fields): Add bitfield support.
+	(playback::lvalue::mark_addressable): Was jit_mark_addressable make this
+	a method of lvalue plus return a bool to communicate success.
+	(playback::lvalue::get_address): Check for jit_mark_addressable return
+	value.
+	* jit-playback.h (new_bitfield): New method.
+	(class bitfield): New class.
+	(class lvalue): Add jit_mark_addressable method.
+	* jit-recording.c (recording::context::new_bitfield): New method.
+	(recording::bitfield::replay_into): New method.
+	(recording::bitfield::write_to_dump): Likewise.
+	(recording::bitfield::make_debug_string): Likewise.
+	(recording::bitfield::write_reproducer): Likewise.
+	* jit-recording.h (class context): Add new_bitfield method.
+	(class field): Make it derivable by class bitfield.
+	(class bitfield): Add new class.
+	* libgccjit++.h (class context): Add new_bitfield method.
+	* libgccjit.c (struct gcc_jit_bitfield): New structure.
+	(gcc_jit_context_new_bitfield): New function.
+	* libgccjit.h
+	(LIBGCCJIT_HAVE_gcc_jit_context_new_bitfield) New macro.
+	(gcc_jit_context_new_bitfield): New function.
+	* libgccjit.map (LIBGCCJIT_ABI_12) New ABI tag.
+
+2019-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* jit-recording.c (reproducer::m_set_identifiers): Use false as Lazy
+	in hash_set template param.
+
+2019-02-05  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_11): New ABI tag.
+	* docs/topics/contexts.rst (Additional driver options): New
+	section.
+	* jit-playback.c (invoke_driver): Add call to append_driver_options.
+	* jit-recording.c: Within namespace gcc::jit...
+	(recording::context::~context): Free the optnames within
+	m_driver_options.
+	(recording::context::add_driver_option): New method.
+	(recording::context::append_driver_options): New method.
+	(recording::context::dump_reproducer_to_file): Add driver
+	options.
+	* jit-recording.h: Within namespace gcc::jit...
+	(recording::context::add_driver_option): New method.
+	(recording::context::append_driver_options): New method.
+	(recording::context::m_driver_options): New field.
+	* libgccjit++.h (gccjit::context::add_driver_option): New
+	method.
+	* libgccjit.c (gcc_jit_context_add_driver_option): New API
+	entrypoint.
+	* libgccjit.h (gcc_jit_context_add_driver_option): New API
+	entrypoint.
+	(LIBGCCJIT_HAVE_gcc_jit_context_add_driver_option): New
+	macro.
+	* libgccjit.map (LIBGCCJIT_ABI_11): New ABI tag.
+
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2018-11-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/19165
+	* dummy-frontend.c (jit_begin_diagnostic): Add diagnostic_t param.
+
+2018-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.c: Replace "source_location" with "location_t".
+
+2018-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (selftest-jit): New.
+
 2018-06-28  Martin Liska  <mliska@suse.cz>
 
 	* jit-playback.c: Include opt-suggestions.h.
@@ -2158,7 +2265,7 @@
 
 2014-12-09  David Malcolm  <dmalcolm@redhat.com>
 
-        PR jit/64206
+	PR jit/64206
 	* Make-lang.in (jit_OBJS): Add jit/jit-tempdir.o.
 	* jit-common.h (gcc::jit::tempdir): New forward decl.
 	* jit-playback.c: Include jit-tempdir.h.
@@ -2602,7 +2709,7 @@
 
 	* Initial creation
 
-Copyright (C) 2013-2018 Free Software Foundation, Inc.
+Copyright (C) 2013-2019 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

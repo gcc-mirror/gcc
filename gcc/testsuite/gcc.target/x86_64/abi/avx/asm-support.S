@@ -1,4 +1,3 @@
-	.file	"snapshot.S"
 	.text
 	.p2align 4,,15
 .globl snapshot

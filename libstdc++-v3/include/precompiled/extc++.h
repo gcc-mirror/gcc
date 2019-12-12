@@ -1,6 +1,6 @@
 // C++ includes used for precompiling extensions -*- C++ -*-
 
-// Copyright (C) 2006-2018 Free Software Foundation, Inc.
+// Copyright (C) 2006-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,7 +37,6 @@
 # include <ext/aligned_buffer.h>
 #endif
 #include <ext/alloc_traits.h>
-#include <ext/array_allocator.h>
 #include <ext/atomicity.h>
 #include <ext/bitmap_allocator.h>
 #include <ext/cast.h>

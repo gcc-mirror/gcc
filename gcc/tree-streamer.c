@@ -1,7 +1,7 @@
 /* Miscellaneous utilities for tree streaming.  Things that are used
    in both input and output are here.
 
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -377,6 +377,9 @@ preload_common_nodes (struct streamer_tree_cache_d *cache)
 	&& i != TI_TARGET_OPTION_CURRENT
 	&& i != TI_CURRENT_TARGET_PRAGMA
 	&& i != TI_CURRENT_OPTIMIZE_PRAGMA
+	/* SCEV state shouldn't reach the IL.  */
+	&& i != TI_CHREC_DONT_KNOW
+	&& i != TI_CHREC_KNOWN
 	/* Skip va_list* related nodes if offloading.  For native LTO
 	   we want them to be merged for the stdarg pass, for offloading
 	   they might not be identical between host and offloading target.  */

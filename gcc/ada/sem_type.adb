@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2849,7 +2849,7 @@ package body Sem_Type is
          return False;
 
       else
-         return In_Generic_Actual (Parent (Par));
+         return In_Generic_Actual (Par);
       end if;
    end In_Generic_Actual;
 
@@ -3608,8 +3608,10 @@ package body Sem_Type is
       Print_Node_Briefly (N);
 
       if not Is_Overloaded (N) then
-         Write_Line ("Non-overloaded entity ");
-         Write_Entity_Info (Entity (N), " ");
+         if Is_Entity_Name (N) then
+            Write_Line ("Non-overloaded entity ");
+            Write_Entity_Info (Entity (N), " ");
+         end if;
 
       elsif Nkind (N) not in N_Has_Entity then
          Get_First_Interp (N, I, It);

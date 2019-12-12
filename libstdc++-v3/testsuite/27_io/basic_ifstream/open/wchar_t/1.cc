@@ -1,4 +1,4 @@
-// Copyright (C) 2018 Free Software Foundation, Inc.
+// Copyright (C) 2018-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,6 +18,7 @@
 // 30.9.3.1 basic_ifstream constructors [ifstream.cons]
 
 // { dg-do run { target *-*-mingw* } }
+// { dg-require-fileio "" }
 
 #include <fstream>
 #include <testsuite_hooks.h>

@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2018, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2019, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -110,6 +110,9 @@ do {							 \
 /* Nonzero in an arithmetic subtype if this is a subtype not known to the
    front-end.  */
 #define TYPE_EXTRA_SUBTYPE_P(NODE) TYPE_LANG_FLAG_2 (INTEGER_TYPE_CHECK (NODE))
+
+#define TYPE_IS_EXTRA_SUBTYPE_P(NODE) \
+  (TREE_CODE (NODE) == INTEGER_TYPE && TYPE_EXTRA_SUBTYPE_P (NODE))
 
 /* Nonzero for an aggregate type if this is a by-reference type.  We also
    set this on an ENUMERAL_TYPE that is dummy.  */
@@ -479,6 +482,9 @@ do {						   \
    value of a function call or 'reference to a function call.  */
 #define DECL_RETURN_VALUE_P(NODE) DECL_LANG_FLAG_5 (VAR_DECL_CHECK (NODE))
 
+/* Nonzero in a PARM_DECL if its mechanism was forced to by-reference.  */
+#define DECL_FORCED_BY_REF_P(NODE) DECL_LANG_FLAG_5 (PARM_DECL_CHECK (NODE))
+
 /* In a FIELD_DECL corresponding to a discriminant, contains the
    discriminant number.  */
 #define DECL_DISCRIMINANT_NUMBER(NODE) DECL_INITIAL (FIELD_DECL_CHECK (NODE))
@@ -579,3 +585,8 @@ do {						   \
 
 #define EXIT_STMT_COND(NODE)     TREE_OPERAND_CHECK_CODE (NODE, EXIT_STMT, 0)
 #define EXIT_STMT_LABEL(NODE)    TREE_OPERAND_CHECK_CODE (NODE, EXIT_STMT, 1)
+
+/* Small kludge to be able to define Ada built-in functions locally.
+   We overload them on top of the HSAIL/BRIG builtin functions.  */
+#define BUILT_IN_LIKELY   BUILT_IN_HSAIL_WORKITEMABSID
+#define BUILT_IN_UNLIKELY BUILT_IN_HSAIL_GRIDSIZE

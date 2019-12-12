@@ -1,5 +1,5 @@
 /* ARM EABI compliant unwinding routines
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
    Contributed by Paul Brook
  
    This file is free software; you can redistribute it and/or modify it
@@ -21,6 +21,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#pragma GCC target ("general-regs-only")
 #include "unwind.h"
 
 /* We add a prototype for abort here to avoid creating a dependency on

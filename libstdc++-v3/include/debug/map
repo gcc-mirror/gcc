@@ -1,6 +1,6 @@
 // Debugging map/multimap implementation -*- C++ -*-
 
-// Copyright (C) 2003-2018 Free Software Foundation, Inc.
+// Copyright (C) 2003-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,6 +30,14 @@
 #define _GLIBCXX_DEBUG_MAP 1
 
 #pragma GCC system_header
+
+#include <bits/c++config.h>
+namespace std _GLIBCXX_VISIBILITY(default) { namespace __debug {
+  template<typename _Key, typename _Tp, typename _Cmp, typename _Allocator>
+    class map;
+  template<typename _Key, typename _Tp, typename _Cmp, typename _Allocator>
+    class multimap;
+} } // namespace std::__debug
 
 #include <map>
 #include <debug/map.h>

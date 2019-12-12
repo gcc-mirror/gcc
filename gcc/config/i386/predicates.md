@@ -1,5 +1,5 @@
 ;; Predicate definitions for IA-32 and x86-64.
-;; Copyright (C) 2004-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2004-2019 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -49,6 +49,13 @@
   (and (match_code "reg")
        (match_test "MMX_REGNO_P (REGNO (op))")))
 
+;; Match register operands, but include memory operands for
+;; !TARGET_MMX_WITH_SSE.
+(define_predicate "register_mmxmem_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (not (match_test "TARGET_MMX_WITH_SSE"))
+	    (match_operand 0 "memory_operand"))))
+
 ;; True if the operand is an SSE register.
 (define_predicate "sse_reg_operand"
   (and (match_code "reg")
@@ -92,6 +99,15 @@
 		 (match_test "GET_MODE (op) == DImode"))
 	    (match_test "GET_MODE (op) == SImode")
 	    (match_test "GET_MODE (op) == HImode"))))
+
+;; Match a DI, SI, HI or QImode nonimmediate_operand.
+(define_special_predicate "int_nonimmediate_operand"
+  (and (match_operand 0 "nonimmediate_operand")
+       (ior (and (match_test "TARGET_64BIT")
+		 (match_test "GET_MODE (op) == DImode"))
+	    (match_test "GET_MODE (op) == SImode")
+	    (match_test "GET_MODE (op) == HImode")
+	    (match_test "GET_MODE (op) == QImode"))))
 
 ;; Match register operands, but include memory operands for TARGET_SSE_MATH.
 (define_predicate "register_ssemem_operand"
@@ -182,7 +198,7 @@
 	  rtx op1 = XEXP (XEXP (op, 0), 0);
 	  rtx op2 = XEXP (XEXP (op, 0), 1);
 
-	  if (ix86_cmodel == CM_LARGE)
+	  if (ix86_cmodel == CM_LARGE && GET_CODE (op1) != UNSPEC)
 	    return false;
 	  if (!CONST_INT_P (op2))
 	    return false;
@@ -683,7 +699,7 @@
   if (GET_CODE (op) == PLUS && REG_P (XEXP (op, 0)))
     {
       int regno = REGNO (XEXP (op, 0));
-      if (!HARD_REGISTER_NUM_P (regno) || call_used_regs[regno])
+      if (!HARD_REGISTER_NUM_P (regno) || call_used_or_fixed_reg_p (regno))
 	{
 	  op = XEXP (op, 1);
 	  if (GOT32_symbol_operand (op, VOIDmode))
@@ -1042,11 +1058,6 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "vector_memory_operand")))
 
-; Return true when OP is operand acceptable for standard SSE move.
-(define_predicate "vector_move_operand"
-  (ior (match_operand 0 "nonimmediate_operand")
-       (match_operand 0 "const0_operand")))
-
 ;; Return true when OP is either nonimmediate operand, or any
 ;; CONST_VECTOR.
 (define_predicate "nonimmediate_or_const_vector_operand"
@@ -1061,6 +1072,11 @@
 ;; Return true if OP is a register or a zero.
 (define_predicate "reg_or_0_operand"
   (ior (match_operand 0 "register_operand")
+       (match_operand 0 "const0_operand")))
+
+; Return true when OP is a nonimmediate or zero.
+(define_predicate "nonimm_or_0_operand"
+  (ior (match_operand 0 "nonimmediate_operand")
        (match_operand 0 "const0_operand")))
 
 (define_predicate "norex_memory_operand"
@@ -1133,9 +1149,6 @@
 })
 
 (define_predicate "vsib_mem_operator"
-  (match_code "mem"))
-
-(define_predicate "bnd_mem_operator"
   (match_code "mem"))
 
 ;; Return true if the rtx is known to be at least 32 bits aligned.
@@ -1400,44 +1413,11 @@
 (define_predicate "compare_operator"
   (match_code "compare"))
 
-(define_predicate "absneg_operator"
-  (match_code "abs,neg"))
-
 ;; Return true if OP is a memory operand, aligned to
 ;; less than its natural alignment.
 (define_predicate "misaligned_operand"
   (and (match_code "mem")
        (match_test "MEM_ALIGN (op) < GET_MODE_BITSIZE (mode)")))
-
-;; Return true if OP is a emms operation, known to be a PARALLEL.
-(define_predicate "emms_operation"
-  (match_code "parallel")
-{
-  unsigned i;
-
-  if (XVECLEN (op, 0) != 17)
-    return false;
-
-  for (i = 0; i < 8; i++)
-    {
-      rtx elt = XVECEXP (op, 0, i+1);
-
-      if (GET_CODE (elt) != CLOBBER
-	  || GET_CODE (SET_DEST (elt)) != REG
-	  || GET_MODE (SET_DEST (elt)) != XFmode
-	  || REGNO (SET_DEST (elt)) != FIRST_STACK_REG + i)
-        return false;
-
-      elt = XVECEXP (op, 0, i+9);
-
-      if (GET_CODE (elt) != CLOBBER
-	  || GET_CODE (SET_DEST (elt)) != REG
-	  || GET_MODE (SET_DEST (elt)) != DImode
-	  || REGNO (SET_DEST (elt)) != FIRST_MMX_REG + i)
-	return false;
-    }
-  return true;
-})
 
 ;; Return true if OP is a vzeroall operation, known to be a PARALLEL.
 (define_predicate "vzeroall_operation"
@@ -1455,17 +1435,24 @@
       if (GET_CODE (elt) != SET
 	  || GET_CODE (SET_DEST (elt)) != REG
 	  || GET_MODE (SET_DEST (elt)) != V8SImode
-	  || REGNO (SET_DEST (elt)) != SSE_REGNO (i)
+	  || REGNO (SET_DEST (elt)) != GET_SSE_REGNO (i)
 	  || SET_SRC (elt) != CONST0_RTX (V8SImode))
 	return false;
     }
   return true;
 })
 
-;; return true if OP is a vzeroupper operation.
-(define_predicate "vzeroupper_operation"
-  (and (match_code "unspec_volatile")
-       (match_test "XINT (op, 1) == UNSPECV_VZEROUPPER")))
+;; return true if OP is a vzeroall pattern.
+(define_predicate "vzeroall_pattern"
+  (and (match_code "parallel")
+       (match_code "unspec_volatile" "a")
+       (match_test "XINT (XVECEXP (op, 0, 0), 1) == UNSPECV_VZEROALL")))
+
+;; return true if OP is a vzeroupper pattern.
+(define_predicate "vzeroupper_pattern"
+  (and (match_code "parallel")
+       (match_code "unspec_volatile" "a")
+       (match_test "XINT (XVECEXP (op, 0, 0), 1) == UNSPECV_VZEROUPPER")))
 
 ;; Return true if OP is an addsub vec_merge operation
 (define_predicate "addsub_vm_operator"

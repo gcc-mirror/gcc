@@ -12,7 +12,7 @@ typedef struct {
 
 void switch_to_stack (my_stack *stack){
     asm (  /* { dg-error "impossible constraint" } */
-/* { dg-warning "asm operand 1" "asm operand 1" { target *-*-* } .-1 } */
+/* { dg-warning "'asm' operand 1" "asm operand 1" { target *-*-* } .-1 } */
         "\n"
         : "+r" (stack->regs)
     );

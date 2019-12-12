@@ -4,7 +4,7 @@
 struct X {
   int x;
   X (int i = 0) : x (i) {}
-  operator X& (void) const {
+  operator X& (void) const { // { dg-warning "will never use" }
     return *(new X);
   }
 };

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-ch2-details" } */
+/* { dg-options "-O2 -fno-tree-vrp -fdump-tree-ch2-details" } */
 
 int is_sorted(int *a, int n)
 {

@@ -4,5 +4,5 @@
 template<int> struct A
 {
   static const int i;
-  template<int N> const int A<N>::i = []{ return 0; }(); // { dg-error "invalid use" }
+  template<int N> const int A<N>::i = []{ return 0; }(); // { dg-error "29:invalid use" }
 };

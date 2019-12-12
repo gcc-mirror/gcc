@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2015-2018, Free Software Foundation, Inc.        --
+--           Copyright (C) 2015-2019, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,7 @@ package body Ada.Containers.Helpers is
       procedure Adjust (Control : in out Reference_Control_Type) is
       begin
          if Control.T_Counts /= null then
-            Lock (Control.T_Counts.all);
+            Busy (Control.T_Counts.all);
          end if;
       end Adjust;
 
@@ -60,7 +60,7 @@ package body Ada.Containers.Helpers is
       procedure Finalize (Control : in out Reference_Control_Type) is
       begin
          if Control.T_Counts /= null then
-            Unlock (Control.T_Counts.all);
+            Unbusy (Control.T_Counts.all);
             Control.T_Counts := null;
          end if;
       end Finalize;

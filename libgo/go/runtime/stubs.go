@@ -69,8 +69,13 @@ func systemstack(fn func()) {
 	}
 }
 
+var badsystemstackMsg = "fatal: systemstack called from unexpected goroutine"
+
+//go:nosplit
+//go:nowritebarrierrec
 func badsystemstack() {
-	throw("systemstack called from unexpected goroutine")
+	sp := stringStructOf(&badsystemstackMsg)
+	write(2, sp.str, int32(sp.len))
 }
 
 // memclrNoHeapPointers clears n bytes starting at ptr.
@@ -79,12 +84,12 @@ func badsystemstack() {
 // used only when the caller knows that *ptr contains no heap pointers
 // because either:
 //
-// 1. *ptr is initialized memory and its type is pointer-free.
+// *ptr is initialized memory and its type is pointer-free, or
 //
-// 2. *ptr is uninitialized memory (e.g., memory that's being reused
-//    for a new allocation) and hence contains only "junk".
+// *ptr is uninitialized memory (e.g., memory that's being reused
+// for a new allocation) and hence contains only "junk".
 //
-// in memclr_*.s
+// The (CPU-specific) implementations of this function are in memclr_*.s.
 //go:noescape
 func memclrNoHeapPointers(ptr unsafe.Pointer, n uintptr)
 
@@ -95,6 +100,7 @@ func reflect_memclrNoHeapPointers(ptr unsafe.Pointer, n uintptr) {
 
 // memmove copies n bytes from "from" to "to".
 //go:noescape
+//extern __builtin_memmove
 func memmove(to, from unsafe.Pointer, n uintptr)
 
 //go:linkname reflect_memmove reflect.memmove
@@ -127,7 +133,7 @@ func fastrand() uint32 {
 //go:nosplit
 func fastrandn(n uint32) uint32 {
 	// This is similar to fastrand() % n, but faster.
-	// See http://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
+	// See https://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
 	return uint32(uint64(fastrand()) * uint64(n) >> 32)
 }
 
@@ -159,7 +165,6 @@ func breakpoint()
 
 func asminit() {}
 
-//go:linkname reflectcall reflect.call
 //go:noescape
 func reflectcall(fntype *functype, fn *funcval, isInterface, isMethod bool, params, results *unsafe.Pointer)
 
@@ -198,27 +203,21 @@ func publicationBarrier()
 
 // getcallerpc returns the program counter (PC) of its caller's caller.
 // getcallersp returns the stack pointer (SP) of its caller's caller.
-// argp must be a pointer to the caller's first function argument.
-// The implementation may or may not use argp, depending on
-// the architecture. The implementation may be a compiler
-// intrinsic; there is not necessarily code implementing this
-// on every platform.
+// The implementation may be a compiler intrinsic; there is not
+// necessarily code implementing this on every platform.
 //
 // For example:
 //
 //	func f(arg1, arg2, arg3 int) {
 //		pc := getcallerpc()
-//		sp := getcallersp(unsafe.Pointer(&arg1))
+//		sp := getcallersp()
 //	}
 //
 // These two lines find the PC and SP immediately following
 // the call to f (where f will return).
 //
 // The call to getcallerpc and getcallersp must be done in the
-// frame being asked about. It would not be correct for f to pass &arg1
-// to another function g and let g call getcallerpc/getcallersp.
-// The call inside g might return information about g's caller or
-// information about f's caller or complete garbage.
+// frame being asked about.
 //
 // The result of getcallersp is correct at the time of the return,
 // but it may be invalidated by any subsequent call to a function
@@ -230,33 +229,15 @@ func publicationBarrier()
 func getcallerpc() uintptr
 
 //go:noescape
-func getcallersp(argp unsafe.Pointer) uintptr
+func getcallersp() uintptr // implemented as an intrinsic on all platforms
+
+// getsp returns the stack pointer (SP) of the caller of getsp.
+//go:noinline
+func getsp() uintptr { return getcallersp() }
 
 func asmcgocall(fn, arg unsafe.Pointer) int32 {
 	throw("asmcgocall")
 	return 0
-}
-
-// argp used in Defer structs when there is no argp.
-const _NoArgs = ^uintptr(0)
-
-//extern __builtin_prefetch
-func prefetch(addr unsafe.Pointer, rw int32, locality int32)
-
-func prefetcht0(addr uintptr) {
-	prefetch(unsafe.Pointer(addr), 0, 3)
-}
-
-func prefetcht1(addr uintptr) {
-	prefetch(unsafe.Pointer(addr), 0, 2)
-}
-
-func prefetcht2(addr uintptr) {
-	prefetch(unsafe.Pointer(addr), 0, 1)
-}
-
-func prefetchnta(addr uintptr) {
-	prefetch(unsafe.Pointer(addr), 0, 0)
 }
 
 // round n up to a multiple of a.  a must be a power of 2.
@@ -269,39 +250,20 @@ func checkASM() bool {
 	return true
 }
 
-func eqstring(x, y string) bool {
-	a := stringStructOf(&x)
-	b := stringStructOf(&y)
-	if a.len != b.len {
-		return false
-	}
-	if a.str == b.str {
-		return true
-	}
-	return memequal(a.str, b.str, uintptr(a.len))
-}
-
 // For gccgo this is in the C code.
 func osyield()
 
-// For gccgo this can be called directly.
-//extern syscall
+//extern __go_syscall6
 func syscall(trap uintptr, a1, a2, a3, a4, a5, a6 uintptr) uintptr
 
 // For gccgo, to communicate from the C code to the Go code.
-//go:linkname setIsCgo runtime.setIsCgo
+//go:linkname setIsCgo
 func setIsCgo() {
 	iscgo = true
 }
 
 // For gccgo, to communicate from the C code to the Go code.
-//go:linkname setCpuidECX runtime.setCpuidECX
-func setCpuidECX(v uint32) {
-	cpuid_ecx = v
-}
-
-// For gccgo, to communicate from the C code to the Go code.
-//go:linkname setSupportAES runtime.setSupportAES
+//go:linkname setSupportAES
 func setSupportAES(v bool) {
 	support_aes = v
 }
@@ -309,16 +271,9 @@ func setSupportAES(v bool) {
 // Here for gccgo.
 func errno() int
 
-// Temporary for gccgo until we port proc.go.
-func entersyscall(int32)
-func entersyscallblock(int32)
-
-// For gccgo to call from C code, so that the C code and the Go code
-// can share the memstats variable for now.
-//go:linkname getMstats runtime.getMstats
-func getMstats() *mstats {
-	return &memstats
-}
+// For gccgo these are written in C.
+func entersyscall()
+func entersyscallblock()
 
 // Get signal trampoline, written in C.
 func getSigtramp() uintptr
@@ -338,46 +293,13 @@ func getSiginfo(*_siginfo_t, unsafe.Pointer) (sigaddr uintptr, sigpc uintptr)
 // Implemented in C for gccgo.
 func dumpregs(*_siginfo_t, unsafe.Pointer)
 
-// Temporary for gccgo until we port proc.go.
-//go:linkname getsched runtime.getsched
-func getsched() *schedt {
-	return &sched
-}
+// Implemented in C for gccgo.
+func setRandomNumber(uint32)
 
-// Temporary for gccgo until we port proc.go.
-//go:linkname getCgoHasExtraM runtime.getCgoHasExtraM
-func getCgoHasExtraM() *bool {
-	return &cgoHasExtraM
-}
-
-// Temporary for gccgo until we port proc.go.
-//go:linkname getAllP runtime.getAllP
-func getAllP() **p {
-	return &allp[0]
-}
-
-// Temporary for gccgo until we port proc.go.
-//go:linkname allocg runtime.allocg
+// Called by gccgo's proc.c.
+//go:linkname allocg
 func allocg() *g {
 	return new(g)
-}
-
-// Temporary for gccgo until we port the garbage collector.
-//go:linkname getallglen runtime.getallglen
-func getallglen() uintptr {
-	return allglen
-}
-
-// Temporary for gccgo until we port the garbage collector.
-//go:linkname getallg runtime.getallg
-func getallg(i int) *g {
-	return allgs[i]
-}
-
-// Temporary for gccgo until we port the garbage collector.
-//go:linkname getallm runtime.getallm
-func getallm() *m {
-	return allm
 }
 
 // Throw and rethrow an exception.
@@ -388,44 +310,20 @@ func rethrowException()
 // used by the stack unwinder.
 func unwindExceptionSize() uintptr
 
-// Temporary for gccgo until C code no longer needs it.
-//go:nosplit
-//go:linkname getPanicking runtime.getPanicking
-func getPanicking() uint32 {
-	return panicking
-}
-
-// Called by C code to set the number of CPUs.
-//go:linkname setncpu runtime.setncpu
-func setncpu(n int32) {
-	ncpu = n
-}
-
-// Called by C code to set the page size.
-//go:linkname setpagesize runtime.setpagesize
-func setpagesize(s uintptr) {
-	if physPageSize == 0 {
-		physPageSize = s
-	}
-}
-
-// Called by C code during library initialization.
-//go:linkname runtime_m0 runtime.runtime_m0
-func runtime_m0() *m {
-	return &m0
-}
-
-// Temporary for gccgo until we port mgc.go.
-//go:linkname runtime_g0 runtime.runtime_g0
-func runtime_g0() *g {
-	return &g0
-}
-
 const uintptrMask = 1<<(8*sys.PtrSize) - 1
 
 type bitvector struct {
 	n        int32 // # of bits
 	bytedata *uint8
+}
+
+// ptrbit returns the i'th bit in bv.
+// ptrbit is less efficient than iterating directly over bitvector bits,
+// and should only be used in non-performance-critical code.
+// See adjustpointers for an example of a high-efficiency walk of a bitvector.
+func (bv *bitvector) ptrbit(i uintptr) uint8 {
+	b := *(addb(bv.bytedata, i/8))
+	return (b >> (i % 8)) & 1
 }
 
 // bool2int returns 0 if x is false or 1 if x is true.
@@ -434,4 +332,29 @@ func bool2int(x bool) int {
 		return 1
 	}
 	return 0
+}
+
+// abort crashes the runtime in situations where even throw might not
+// work. In general it should do something a debugger will recognize
+// (e.g., an INT3 on x86). A crash in abort is recognized by the
+// signal handler, which will attempt to tear down the runtime
+// immediately.
+func abort()
+
+// usestackmaps is true if stack map (precise stack scan) is enabled.
+var usestackmaps bool
+
+// probestackmaps detects whether there are stack maps.
+func probestackmaps() bool
+
+// For the math/bits packages for gccgo.
+//go:linkname getDivideError
+func getDivideError() error {
+	return divideError
+}
+
+// For the math/bits packages for gccgo.
+//go:linkname getOverflowError
+func getOverflowError() error {
+	return overflowError
 }

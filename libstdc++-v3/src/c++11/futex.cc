@@ -1,6 +1,6 @@
 // futex -*- C++ -*-
 
-// Copyright (C) 2015-2018 Free Software Foundation, Inc.
+// Copyright (C) 2015-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,7 +23,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <bits/atomic_futex.h>
-#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+#ifdef _GLIBCXX_HAS_GTHREADS
 #if defined(_GLIBCXX_HAVE_LINUX_FUTEX) && ATOMIC_INT_LOCK_FREE > 1
 #include <chrono>
 #include <climits>
@@ -53,7 +53,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// here on errors is abort.
 	int ret __attribute__((unused));
 	ret = syscall (SYS_futex, __addr, futex_wait_op, __val, nullptr);
-	_GLIBCXX_DEBUG_ASSERT(ret == 0 || errno == EINTR || errno == EAGAIN);
+	__glibcxx_assert(ret == 0 || errno == EINTR || errno == EAGAIN);
 	return true;
       }
     else
@@ -75,8 +75,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	if (syscall (SYS_futex, __addr, futex_wait_op, __val, &rt) == -1)
 	  {
-	    _GLIBCXX_DEBUG_ASSERT(errno == EINTR || errno == EAGAIN
-				  || errno == ETIMEDOUT);
+	    __glibcxx_assert(errno == EINTR || errno == EAGAIN
+			     || errno == ETIMEDOUT);
 	    if (errno == ETIMEDOUT)
 	      return false;
 	  }
@@ -95,5 +95,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 }
-#endif
-#endif
+#endif // defined(_GLIBCXX_HAVE_LINUX_FUTEX) && ATOMIC_INT_LOCK_FREE > 1
+#endif // _GLIBCXX_HAS_GTHREADS

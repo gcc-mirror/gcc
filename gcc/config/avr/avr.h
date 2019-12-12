@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for ATMEL AVR at90s8515, ATmega103/103L, ATmega603/603L microcontrollers.
-   Copyright (C) 1998-2018 Free Software Foundation, Inc.
+   Copyright (C) 1998-2019 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
 This file is part of GCC.
@@ -140,8 +140,9 @@ FIXME: DRIVER_SELF_SPECS has changed.
 #define LONG_TYPE_SIZE (INT_TYPE_SIZE == 8 ? 16 : 32)
 #define LONG_LONG_TYPE_SIZE (INT_TYPE_SIZE == 8 ? 32 : 64)
 #define FLOAT_TYPE_SIZE 32
-#define DOUBLE_TYPE_SIZE 32
-#define LONG_DOUBLE_TYPE_SIZE 32
+#define DOUBLE_TYPE_SIZE (avr_double)
+#define LONG_DOUBLE_TYPE_SIZE (avr_long_double)
+
 #define LONG_LONG_ACCUM_TYPE_SIZE 64
 
 #define DEFAULT_SIGNED_CHAR 1
@@ -507,8 +508,10 @@ typedef struct avr_args
     (LENGTH = avr_adjust_insn_length (INSN, LENGTH))
 
 extern const char *avr_devicespecs_file (int, const char**);
+extern const char *avr_double_lib (int, const char**);
 
-#define EXTRA_SPEC_FUNCTIONS                                   \
+#define EXTRA_SPEC_FUNCTIONS                            \
+  { "double-lib", avr_double_lib },                     \
   { "device-specs-file", avr_devicespecs_file },
 
 /* Driver self specs has lmited functionality w.r.t. '%s' for dynamic specs.
@@ -516,7 +519,8 @@ extern const char *avr_devicespecs_file (int, const char**);
    is used to diagnose problems with reading the specs file.  */
 
 #undef  DRIVER_SELF_SPECS
-#define DRIVER_SELF_SPECS                       \
+#define DRIVER_SELF_SPECS                               \
+  " %:double-lib(%{m*:m%*})"                            \
   " %:device-specs-file(device-specs%s %{mmcu=*:%*})"
 
 /* No libstdc++ for now.  Empty string doesn't work.  */

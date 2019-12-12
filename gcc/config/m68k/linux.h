@@ -1,6 +1,6 @@
 /* Definitions for Motorola 68k running Linux-based GNU systems with
    ELF format.
-   Copyright (C) 1995-2018 Free Software Foundation, Inc.
+   Copyright (C) 1995-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -72,6 +72,9 @@ along with GCC; see the file COPYING3.  If not see
    done.  */
 
 #define GLIBC_DYNAMIC_LINKER "/lib/ld.so.1"
+
+#undef MUSL_DYNAMIC_LINKER
+#define MUSL_DYNAMIC_LINKER "/lib/ld-musl-m68k.so.1"
 
 #undef LINK_SPEC
 #define LINK_SPEC "-m m68kelf %{shared} \

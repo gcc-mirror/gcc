@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -36,9 +36,13 @@
 /**
  * @file point_iterator.hpp
  * Contains an iterator class returned by the tables' find and insert
- *     methods.
+ * methods.
+ *
+ * This file is intended to be included inside a class definition, with
+ * PB_DS_CLASS_C_DEC defined to the name of the enclosing class.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
 /// Find type iterator.
 class point_iterator_
 {
@@ -124,3 +128,4 @@ protected:
 protected:
   pointer m_p_value;
 };
+#endif

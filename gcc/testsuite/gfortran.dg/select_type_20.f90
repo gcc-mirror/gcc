@@ -15,21 +15,21 @@ module gfcbug111
 
 contains
 
-  function my_dot_v_v (this,a,b) ! { dg-error "has no IMPLICIT type" }
+  function my_dot_v_v (this,a,b)       ! { dg-error "has no IMPLICIT type" }
     class(trivial_inner_product_type), intent(in) :: this
     class(vector_class),               intent(in) :: a,b ! { dg-error "Derived type" }
     real :: my_dot_v_v
 
-    select type (a)
-    class is (trivial_vector_type) ! { dg-error "Syntax error in CLASS IS" }
-       select type (b) ! { dg-error "Expected TYPE IS" }
-       class is (trivial_vector_type) ! { dg-error "Syntax error in CLASS IS" }
+    select type (a)                    ! { dg-error "Selector shall be polymorphic" }
+    class is (trivial_vector_type)     ! { dg-error "Syntax error in CLASS IS" }
+       select type (b)                 ! { dg-error "Expected TYPE IS" }
+       class is (trivial_vector_type)  ! { dg-error "Syntax error in CLASS IS" }
        class default
        end select
-    class default ! { dg-error "Unclassifiable statement" }
+    class default 
     end select ! { dg-error "Expecting END FUNCTION" }
   end function my_dot_v_v
 end module gfcbug111
 
 select type (a)
-! { dg-excess-errors "Unexpected end of file" }
+! { dg-prune-output "Unexpected end of file" }

@@ -4,19 +4,20 @@
 
 # This script merges libsanitizer sources from upstream.
 
+VCS=${1:-svn}
+
 get_upstream() {
   rm -rf upstream
-  #cp -rf orig upstream
-  svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk upstream
+  git clone https://github.com/llvm/llvm-project.git upstream
 }
 
 get_current_rev() {
   cd upstream
-  svn info | grep Revision | grep -o '[0-9]*'
+  git rev-parse HEAD
 }
 
 list_files() {
-  (cd $1; ls *.{cc,h,inc,S} 2> /dev/null)
+  (cd $1; ls *.{cc,cpp,h,inc,S} 2> /dev/null)
 
 }
 
@@ -46,10 +47,10 @@ merge() {
     elif [ -f $upstream_path/$f ]; then
       echo "FOUND IN UPSTREAM :" $f
       cp -v $upstream_path/$f $local_path
-      svn add $local_path/$f
+      $VCS add $local_path/$f
     elif [ -f $local_path/$f ]; then
       echo "FOUND IN LOCAL    :" $f
-      svn remove $local_path/$f
+      $VCS rm $local_path/$f
     fi
   done
 
@@ -83,6 +84,6 @@ rm -rf upstream
 cat << EOF > MERGE
 $CUR_REV
 
-The first line of this file holds the svn revision number of the
+The first line of this file holds the git revision number of the
 last merge done from the master library sources.
 EOF

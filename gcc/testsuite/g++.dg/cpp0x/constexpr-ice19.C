@@ -9,5 +9,6 @@ struct A
 
 struct B
 {
-  static constexpr A a {};  // { dg-error "not literal|in-class initialization" }
+  static constexpr A a {};  // { dg-error "22:the type .const A. of .constexpr. variable .B::a. is not literal" }
+// { dg-error "in-class initialization" "" { target c++11 } .-1 }
 };

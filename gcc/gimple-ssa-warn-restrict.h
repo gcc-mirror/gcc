@@ -1,5 +1,5 @@
 /* Warn on violations of the restrict qualifier.
-   Copyright (C) 2017-2018 Free Software Foundation, Inc.
+   Copyright (C) 2017-2019 Free Software Foundation, Inc.
    Contributed by Martin Sebor <msebor@redhat.com>.
 
    This file is part of GCC.
@@ -20,7 +20,7 @@
 
 #ifndef GIMPLE_SSA_WARN_RESTRICT_H
 
-extern bool check_bounds_or_overlap (gcall *, tree, tree, tree, tree,
-				     bool = false);
+extern int check_bounds_or_overlap (gimple *, tree, tree, tree, tree,
+				    bool = false, bool = true);
 
 #endif /* GIMPLE_SSA_WARN_RESTRICT_H */

@@ -1,4 +1,5 @@
-// { dg-options "-std=c++17 -fconcepts" }
+// { dg-do compile { target c++17_only } }
+// { dg-options "-fconcepts" }
 
 template<typename T>
   concept bool C() { return __is_class(T); }
@@ -10,9 +11,9 @@ template<typename T>
 // Non-dependent args are checked even in dependent scope.
 template<typename T>
   void h(T x) {
-    f(0); // { dg-error "cannot call" }
+    f(0); // { dg-error "" }
   }
 
 int main() {
-  f(0); // { dg-error "cannot call" }
+  f(0); // { dg-error "" }
 }

@@ -1,7 +1,6 @@
 // { dg-do compile { target c++11 } }
-// { dg-require-cstdint "" }
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,6 +26,9 @@ using namespace std;
 using wchar_signed = make_signed<wchar_t>::type;
 using wchar_unsigned = make_unsigned<wchar_t>::type;
 static_assert( !is_same<wchar_signed, wchar_unsigned>::value, "wchar_t" );
+#endif
+#ifdef _GLIBCXX_USE_CHAR8_T
+static_assert( is_signed<make_signed<char8_t>::type>::value, "char8_t");
 #endif
 static_assert( is_signed<make_signed<char16_t>::type>::value, "char16_t");
 static_assert( is_signed<make_signed<char32_t>::type>::value, "char32_t");

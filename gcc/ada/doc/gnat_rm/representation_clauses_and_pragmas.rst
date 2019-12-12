@@ -30,9 +30,11 @@ Alignment Clauses
 
 .. index:: Alignment Clause
 
-GNAT requires that all alignment clauses specify a power of 2, and all
-default alignments are always a power of 2.  The default alignment
-values are as follows:
+GNAT requires that all alignment clauses specify 0 or a power of 2, and
+all default alignments are always a power of 2. Specifying 0 is the
+same as specifying 1.
+
+The default alignment values are as follows:
 
 * *Elementary Types*.
 
@@ -610,14 +612,23 @@ alignment of the type (this is true for all types). In some cases the
      end record;
 
 
-On a typical 32-bit architecture, the X component will be four bytes, and
-require four-byte alignment, and the Y component will be one byte. In this
-case ``R'Value_Size`` will be 40 (bits) since this is the minimum size
-required to store a value of this type, and for example, it is permissible
-to have a component of type R in an outer array whose component size is
-specified to be 48 bits. However, ``R'Object_Size`` will be 64 (bits),
-since it must be rounded up so that this value is a multiple of the
-alignment (4 bytes = 32 bits).
+On a typical 32-bit architecture, the X component will occupy four bytes
+and the Y component will occupy one byte, for a total of 5 bytes. As a
+result ``R'Value_Size`` will be 40 (bits) since this is the minimum size
+required to store a value of this type. For example, it is permissible
+to have a component of type R in an array whose component size is
+specified to be 40 bits.
+
+However, ``R'Object_Size`` will be 64 (bits). The difference is due to
+the alignment requirement for objects of the record type. The X
+component will require four-byte alignment because that is what type
+Integer requires, whereas the Y component, a Character, will only
+require 1-byte alignment. Since the alignment required for X is the
+greatest of all the components' alignments, that is the alignment
+required for the enclosing record type, i.e., 4 bytes or 32 bits. As
+indicated above, the actual object size must be rounded up so that it is
+a multiple of the alignment value. Therefore, 40 bits rounded up to the
+next multiple of 32 yields 64 bits.
 
 For all other types, the ``Object_Size``
 and ``Value_Size`` are the same (and equivalent to the RM attribute ``Size``).

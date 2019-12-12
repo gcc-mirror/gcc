@@ -1,7 +1,8 @@
 //===-- tsan_interface_atomic.h ---------------------------------*- C++ -*-===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -16,10 +17,10 @@
 extern "C" {
 #endif
 
-typedef char     __tsan_atomic8;
-typedef short    __tsan_atomic16;  // NOLINT
-typedef int      __tsan_atomic32;
-typedef long     __tsan_atomic64;  // NOLINT
+typedef char __tsan_atomic8;
+typedef short __tsan_atomic16;
+typedef int __tsan_atomic32;
+typedef long __tsan_atomic64;
 #if defined(__SIZEOF_INT128__) \
     || (__clang_major__ * 100 + __clang_minor__ >= 302)
 __extension__ typedef __int128 __tsan_atomic128;
@@ -29,7 +30,7 @@ __extension__ typedef __int128 __tsan_atomic128;
 #endif
 
 // Part of ABI, do not change.
-// http://llvm.org/viewvc/llvm-project/libcxx/trunk/include/atomic?view=markup
+// https://github.com/llvm/llvm-project/blob/master/libcxx/include/atomic
 typedef enum {
   __tsan_memory_order_relaxed,
   __tsan_memory_order_consume,

@@ -1,6 +1,6 @@
 // Namespace declarations for Library Fundamentals TS -*- C++ -*-
 
-// Copyright (C) 2016-2018 Free Software Foundation, Inc.
+// Copyright (C) 2016-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,6 +29,16 @@
 
 #if __cplusplus >= 201402L
 #include <bits/c++config.h>
+
+  /** @defgroup libfund-ts Library Fundamentals TS
+   *  @ingroup experimental
+   *
+   * Components defined by the _C++ Extensions for Library Fundamentals_
+   * Technical Specification, versions 1 and 2.
+   *
+   * - ISO/IEC TS 19568:2015 C++ Extensions for Library Fundamentals
+   * - ISO/IEC TS 19568:2017 C++ Extensions for Library Fundamentals, Version 2
+   */
 
 #if _GLIBCXX_INLINE_VERSION
 namespace std _GLIBCXX_VISIBILITY(default)

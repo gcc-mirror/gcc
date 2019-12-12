@@ -73,7 +73,7 @@ AC_DEFUN([AM_ICONV_LINK],
     if test "$am_cv_func_iconv" != yes; then
       am_save_CPPFLAGS="$CPPFLAGS"
       am_save_LIBS="$LIBS"
-      CPPFLAGS="$LIBS $INCICONV"
+      CPPFLAGS="$CPPFLAGS $INCICONV"
       LIBS="$LIBS $LIBICONV"
       AC_TRY_LINK([#include <stdlib.h>
 #include <iconv.h>],

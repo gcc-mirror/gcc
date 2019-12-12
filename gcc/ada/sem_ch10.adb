@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,6 @@ with Elists;    use Elists;
 with Fname;     use Fname;
 with Fname.UF;  use Fname.UF;
 with Freeze;    use Freeze;
-with Ghost;     use Ghost;
 with Impunit;   use Impunit;
 with Inline;    use Inline;
 with Lib;       use Lib;
@@ -1204,8 +1203,6 @@ package body Sem_Ch10 is
             --  binder generated code of all the units involved in a partition
             --  when control-flow preservation is requested.
 
-            --  Case of units which do not require an elaboration entity
-
             if not Opt.Suppress_Control_Flow_Optimizations
               and then
               ( --  Pure units do not need checks
@@ -1233,16 +1230,16 @@ package body Sem_Ch10 is
                 or else Acts_As_Spec (N)
               )
             then
-               --  This is a case where we only need the entity for
-               --  checking to prevent multiple elaboration checks.
+               --  This is a case where we only need the entity for checking to
+               --  prevent multiple elaboration checks.
 
                Set_Elaboration_Entity_Required (Spec_Id, False);
 
-            --  Case of elaboration entity is required for access before
-            --  elaboration checking (so certainly we must build it).
+            --  Otherwise the unit requires an elaboration entity because it
+            --  carries a body.
 
             else
-               Set_Elaboration_Entity_Required (Spec_Id, True);
+               Set_Elaboration_Entity_Required (Spec_Id);
             end if;
 
             Build_Elaboration_Entity (N, Spec_Id);
@@ -2355,7 +2352,9 @@ package body Sem_Ch10 is
                Remove_Scope;
             end if;
 
-            if Nkind (Unit (Lib_Spec)) = N_Package_Body then
+            if Nkind_In (Unit (Lib_Spec), N_Package_Body,
+                                          N_Subprogram_Body)
+            then
                Remove_Context (Library_Unit (Lib_Spec));
             end if;
          end if;
@@ -2912,8 +2911,6 @@ package body Sem_Ch10 is
                Set_Fatal_Error (Current_Sem_Unit, Error_Ignored);
             end if;
       end case;
-
-      Mark_Ghost_Clause (N);
    end Analyze_With_Clause;
 
    ------------------------------
@@ -4358,7 +4355,7 @@ package body Sem_Ch10 is
                   end;
                end if;
 
-            --  The With_Clause may be on a grand-child or one of its further
+            --  The With_Clause may be on a grandchild or one of its further
             --  descendants, which makes a child immediately visible. Examine
             --  ancestry to determine whether such a child exists. For example,
             --  if current unit is A.C, and with_clause is on A.X.Y.Z, then X
@@ -4397,7 +4394,7 @@ package body Sem_Ch10 is
                   --  Scan context of current unit, to check whether there is
                   --  a with_clause on the same unit as a private with-clause
                   --  on a parent, in which case child unit is visible. If the
-                  --  unit is a grand-child, the same applies to its parent.
+                  --  unit is a grandchild, the same applies to its parent.
 
                   ----------------
                   -- In_Context --
@@ -6382,22 +6379,38 @@ package body Sem_Ch10 is
 
    begin
       --  Ada 2005 (AI-50217): We remove the context clauses in two phases:
-      --  limited-views first and regular-views later (to maintain the
-      --  stack model).
+      --  limited-views first and regular-views later (to maintain the stack
+      --  model).
 
       --  First Phase: Remove limited_with context clauses
 
       Item := First (Context_Items (N));
       while Present (Item) loop
 
-         --  We are interested only in with clauses which got installed
-         --  on entry.
+         --  We are interested only in with clauses that got installed on entry
 
          if Nkind (Item) = N_With_Clause
            and then Limited_Present (Item)
-           and then Limited_View_Installed (Item)
          then
-            Remove_Limited_With_Clause (Item);
+            if Limited_View_Installed (Item) then
+               Remove_Limited_With_Clause (Item);
+
+            --  An unusual case: If the library unit of the Main_Unit has a
+            --  limited with_clause on some unit P and the context somewhere
+            --  includes a with_clause on P, P has been analyzed. The entity
+            --  for P is still visible, which in general is harmless because
+            --  this is the end of the compilation, but it can affect pending
+            --  instantiations that may have been generated elsewhere, so it
+            --  it is necessary to remove U from visibility so that inlining
+            --  and the analysis of instance bodies can proceed cleanly.
+
+            elsif Current_Sem_Unit = Main_Unit
+              and then Serious_Errors_Detected = 0
+              and then not Implicit_With (Item)
+            then
+               Set_Is_Immediately_Visible
+                 (Defining_Entity (Unit (Library_Unit (Item))), False);
+            end if;
          end if;
 
          Next (Item);

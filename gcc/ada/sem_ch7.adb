@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -259,11 +259,12 @@ package body Sem_Ch7 is
 
       procedure Hide_Public_Entities (Decls : List_Id) is
          function Has_Referencer
-           (Decls     : List_Id;
-            Top_Level : Boolean := False) return Boolean;
+           (Decls                                   : List_Id;
+            In_Nested_Instance                      : Boolean;
+            Has_Outer_Referencer_Of_Non_Subprograms : Boolean) return Boolean;
          --  A "referencer" is a construct which may reference a previous
          --  declaration. Examine all declarations in list Decls in reverse
-         --  and determine whether once such referencer exists. All entities
+         --  and determine whether one such referencer exists. All entities
          --  in the range Last (Decls) .. Referencer are hidden from external
          --  visibility.
 
@@ -286,14 +287,16 @@ package body Sem_Ch7 is
          --------------------
 
          function Has_Referencer
-           (Decls     : List_Id;
-            Top_Level : Boolean := False) return Boolean
+           (Decls                                   : List_Id;
+            In_Nested_Instance                      : Boolean;
+            Has_Outer_Referencer_Of_Non_Subprograms : Boolean) return Boolean
          is
             Decl    : Node_Id;
             Decl_Id : Entity_Id;
             Spec    : Node_Id;
 
-            Has_Non_Subprograms_Referencer : Boolean := False;
+            Has_Referencer_Of_Non_Subprograms : Boolean :=
+                                       Has_Outer_Referencer_Of_Non_Subprograms;
             --  Set if an inlined subprogram body was detected as a referencer.
             --  In this case, we do not return True immediately but keep hiding
             --  subprograms from external visibility.
@@ -319,13 +322,23 @@ package body Sem_Ch7 is
 
                elsif Nkind (Decl) = N_Package_Declaration then
                   Spec := Specification (Decl);
+                  Decl_Id := Defining_Entity (Spec);
 
                   --  Inspect the declarations of a non-generic package to try
                   --  and hide more entities from external visibility.
 
-                  if not Is_Generic_Unit (Defining_Entity (Spec)) then
-                     if Has_Referencer (Private_Declarations (Spec))
-                       or else Has_Referencer (Visible_Declarations (Spec))
+                  if not Is_Generic_Unit (Decl_Id) then
+                     if Has_Referencer (Private_Declarations (Spec),
+                                        In_Nested_Instance
+                                          or else
+                                        Is_Generic_Instance (Decl_Id),
+                                        Has_Referencer_Of_Non_Subprograms)
+                       or else
+                        Has_Referencer (Visible_Declarations (Spec),
+                                        In_Nested_Instance
+                                          or else
+                                        Is_Generic_Instance (Decl_Id),
+                                        Has_Referencer_Of_Non_Subprograms)
                      then
                         return True;
                      end if;
@@ -354,7 +367,12 @@ package body Sem_Ch7 is
                   --  Inspect the declarations of a non-generic package body to
                   --  try and hide more entities from external visibility.
 
-                  elsif Has_Referencer (Declarations (Decl)) then
+                  elsif Has_Referencer (Declarations (Decl),
+                                        In_Nested_Instance
+                                          or else
+                                        Is_Generic_Instance (Decl_Id),
+                                        Has_Referencer_Of_Non_Subprograms)
+                  then
                      return True;
                   end if;
 
@@ -371,6 +389,8 @@ package body Sem_Ch7 is
                      end if;
 
                      --  An inlined subprogram body acts as a referencer
+                     --  unless we generate C code since inlining is then
+                     --  handled by the C compiler.
 
                      --  Note that we test Has_Pragma_Inline here in addition
                      --  to Is_Inlined. We are doing this for a client, since
@@ -379,10 +399,11 @@ package body Sem_Ch7 is
                      --  should occur, so we need to catch all cases where the
                      --  subprogram may be inlined by the client.
 
-                     if Is_Inlined (Decl_Id)
-                       or else Has_Pragma_Inline (Decl_Id)
+                     if not Generate_C_Code
+                       and then (Is_Inlined (Decl_Id)
+                                  or else Has_Pragma_Inline (Decl_Id))
                      then
-                        Has_Non_Subprograms_Referencer := True;
+                        Has_Referencer_Of_Non_Subprograms := True;
 
                         --  Inspect the statements of the subprogram body
                         --  to determine whether the body references other
@@ -397,11 +418,14 @@ package body Sem_Ch7 is
                      Decl_Id := Defining_Entity (Decl);
 
                      --  An inlined subprogram body acts as a referencer
+                     --  unless we generate C code since inlining is then
+                     --  handled by the C compiler.
 
-                     if Is_Inlined (Decl_Id)
-                       or else Has_Pragma_Inline (Decl_Id)
+                     if not Generate_C_Code
+                       and then (Is_Inlined (Decl_Id)
+                                  or else Has_Pragma_Inline (Decl_Id))
                      then
-                        Has_Non_Subprograms_Referencer := True;
+                        Has_Referencer_Of_Non_Subprograms := True;
 
                         --  Inspect the statements of the subprogram body
                         --  to determine whether the body references other
@@ -423,17 +447,28 @@ package body Sem_Ch7 is
                      Discard : Boolean;
                      pragma Unreferenced (Discard);
                   begin
-                     --  Inspect the actions to find references to subprograms
+                     --  Inspect the actions to find references to subprograms.
+                     --  We assume that the actions do not contain other kinds
+                     --  of references and, therefore, we do not stop the scan
+                     --  or set Has_Referencer_Of_Non_Subprograms here. Doing
+                     --  it would pessimize common cases for which the actions
+                     --  contain the declaration of an init procedure, since
+                     --  such a procedure is automatically marked inline.
 
-                     Discard := Has_Referencer (Actions (Decl));
+                     Discard :=
+                       Has_Referencer (Actions (Decl),
+                                       In_Nested_Instance,
+                                       Has_Referencer_Of_Non_Subprograms);
                   end;
 
                --  Exceptions, objects and renamings do not need to be public
                --  if they are not followed by a construct which can reference
-               --  and export them. The Is_Public flag is reset on top level
-               --  entities only as anything nested is local to its context.
-               --  Likewise for subprograms, but we work harder for them.
-
+               --  and export them. Likewise for subprograms but we work harder
+               --  for them to see whether they are referenced on an individual
+               --  basis by looking into the table of referenced subprograms.
+               --  But we cannot say anything for entities declared in nested
+               --  instances because instantiations are not done yet so the
+               --  bodies are not visible and could contain references to them.
                elsif Nkind_In (Decl, N_Exception_Declaration,
                                      N_Object_Declaration,
                                      N_Object_Renaming_Declaration,
@@ -442,12 +477,13 @@ package body Sem_Ch7 is
                then
                   Decl_Id := Defining_Entity (Decl);
 
-                  if Top_Level
+                  if not In_Nested_Instance
                     and then not Is_Imported (Decl_Id)
                     and then not Is_Exported (Decl_Id)
                     and then No (Interface_Name (Decl_Id))
                     and then
-                      (not Has_Non_Subprograms_Referencer
+                      ((Nkind (Decl) /= N_Subprogram_Declaration
+                         and then not Has_Referencer_Of_Non_Subprograms)
                         or else (Nkind (Decl) = N_Subprogram_Declaration
                                   and then not Subprogram_Table.Get (Decl_Id)))
                   then
@@ -475,7 +511,7 @@ package body Sem_Ch7 is
                Prev (Decl);
             end loop;
 
-            return Has_Non_Subprograms_Referencer;
+            return Has_Referencer_Of_Non_Subprograms;
          end Has_Referencer;
 
          -------------------------
@@ -609,7 +645,7 @@ package body Sem_Ch7 is
 
          Traversed_Table.Reset;
          Subprogram_Table.Reset;
-         Discard := Has_Referencer (Decls, Top_Level => True);
+         Discard := Has_Referencer (Decls, False, False);
       end Hide_Public_Entities;
 
       ----------------------------------
@@ -639,6 +675,7 @@ package body Sem_Ch7 is
 
       Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
       Saved_IGR  : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_EA   : constant Boolean         := Expander_Active;
       Saved_ISMP : constant Boolean         :=
                      Ignore_SPARK_Mode_Pragmas_In_Instance;
       --  Save the Ghost and SPARK mode-related data to restore on exit
@@ -749,6 +786,18 @@ package body Sem_Ch7 is
       --  expansion are properly flagged as ignored Ghost.
 
       Mark_And_Set_Ghost_Body (N, Spec_Id);
+
+      --  Deactivate expansion inside the body of ignored Ghost entities,
+      --  as this code will ultimately be ignored. This avoids requiring the
+      --  presence of run-time units which are not needed. Only do this for
+      --  user entities, as internally generated entities might still need
+      --  to be expanded (e.g. those generated for types).
+
+      if Present (Ignored_Ghost_Region)
+        and then Comes_From_Source (Body_Id)
+      then
+         Expander_Active := False;
+      end if;
 
       --  If the body completes the initial declaration of a compilation unit
       --  which is subject to pragma Elaboration_Checks, set the model of the
@@ -1014,7 +1063,7 @@ package body Sem_Ch7 is
       --  to the linker as their Is_Public flag is set to True. This proactive
       --  approach is necessary because an inlined or a generic body for which
       --  code is generated in other units may need to see these entities. Cut
-      --  down the number of global symbols that do not neet public visibility
+      --  down the number of global symbols that do not need public visibility
       --  as this has two beneficial effects:
       --    (1) It makes the compilation process more efficient.
       --    (2) It gives the code generator more leeway to optimize within each
@@ -1043,6 +1092,10 @@ package body Sem_Ch7 is
          then
             Qualify_Entity_Names (N);
          end if;
+      end if;
+
+      if Present (Ignored_Ghost_Region) then
+         Expander_Active := Saved_EA;
       end if;
 
       Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
@@ -1218,7 +1271,7 @@ package body Sem_Ch7 is
 
       procedure Generate_Parent_References;
       --  For a child unit, generate references to parent units, for
-      --  GPS navigation purposes.
+      --  GNAT Studio navigation purposes.
 
       function Is_Public_Child (Child, Unit : Entity_Id) return Boolean;
       --  Child and Unit are entities of compilation units. True if Child
@@ -1455,9 +1508,21 @@ package body Sem_Ch7 is
                   Inst_Par := Renamed_Entity (Inst_Par);
                end if;
 
-               Gen_Par :=
-                 Generic_Parent
-                   (Specification (Unit_Declaration_Node (Inst_Par)));
+               --  The instance may appear in a sibling generic unit, in
+               --  which case the prefix must include the common (generic)
+               --  ancestor, which is treated as a current instance.
+
+               if Inside_A_Generic
+                 and then Ekind (Inst_Par) = E_Generic_Package
+               then
+                  Gen_Par := Inst_Par;
+                  pragma Assert (In_Open_Scopes (Gen_Par));
+
+               else
+                  Gen_Par :=
+                    Generic_Parent
+                      (Specification (Unit_Declaration_Node (Inst_Par)));
+               end if;
 
                --  Install the private declarations and private use clauses
                --  of a parent instance of the child instance, unless the
@@ -1704,7 +1769,7 @@ package body Sem_Ch7 is
          end if;
 
       --  There may be inherited private subprograms that need to be declared,
-      --  even in the absence of an explicit private part.  If there are any
+      --  even in the absence of an explicit private part. If there are any
       --  public declarations in the package and the package is a public child
       --  unit, then an implicit private part is assumed.
 
@@ -1830,7 +1895,7 @@ package body Sem_Ch7 is
       end if;
 
       --  Nested package specs that do not require bodies are not checked for
-      --  ineffective use clauses due to the possbility of subunits. This is
+      --  ineffective use clauses due to the possibility of subunits. This is
       --  because at this stage it is impossible to tell whether there will be
       --  a separate body.
 
@@ -2208,13 +2273,14 @@ package body Sem_Ch7 is
       procedure Swap_Private_Dependents (Priv_Deps : Elist_Id);
       --  When the full view of a private type is made available, we do the
       --  same for its private dependents under proper visibility conditions.
-      --  When compiling a grand-chid unit this needs to be done recursively.
+      --  When compiling a child unit this needs to be done recursively.
 
       -----------------------------
       -- Swap_Private_Dependents --
       -----------------------------
 
       procedure Swap_Private_Dependents (Priv_Deps : Elist_Id) is
+         Cunit     : Entity_Id;
          Deps      : Elist_Id;
          Priv      : Entity_Id;
          Priv_Elmt : Elmt_Id;
@@ -2232,6 +2298,7 @@ package body Sem_Ch7 is
             if Present (Full_View (Priv)) and then Is_Visible_Dependent (Priv)
             then
                if Is_Private_Type (Priv) then
+                  Cunit := Cunit_Entity (Current_Sem_Unit);
                   Deps := Private_Dependents (Priv);
                   Is_Priv := True;
                else
@@ -2259,11 +2326,14 @@ package body Sem_Ch7 is
                Set_Is_Potentially_Use_Visible
                  (Priv, Is_Potentially_Use_Visible (Node (Priv_Elmt)));
 
-               --  Within a child unit, recurse, except in generic child unit,
-               --  which (unfortunately) handle private_dependents separately.
+               --  Recurse for child units, except in generic child units,
+               --  which unfortunately handle private_dependents separately.
+               --  Note that the current unit may not have been analyzed,
+               --  for example a package body, so we cannot rely solely on
+               --  the Is_Child_Unit flag, but that's only an optimization.
 
                if Is_Priv
-                 and then Is_Child_Unit (Cunit_Entity (Current_Sem_Unit))
+                 and then (No (Etype (Cunit)) or else Is_Child_Unit (Cunit))
                  and then not Is_Empty_Elmt_List (Deps)
                  and then not Inside_A_Generic
                then
@@ -2648,12 +2718,15 @@ package body Sem_Ch7 is
       Decl      : constant Node_Id := Unit_Declaration_Node (P);
       Id        : Entity_Id;
       Full      : Entity_Id;
-      Priv_Elmt : Elmt_Id;
-      Priv_Sub  : Entity_Id;
 
       procedure Preserve_Full_Attributes (Priv : Entity_Id; Full : Entity_Id);
       --  Copy to the private declaration the attributes of the full view that
       --  need to be available for the partial view also.
+
+      procedure Swap_Private_Dependents (Priv_Deps : Elist_Id);
+      --  When the full view of a private type is made unavailable, we do the
+      --  same for its private dependents under proper visibility conditions.
+      --  When compiling a child unit this needs to be done recursively.
 
       function Type_In_Use (T : Entity_Id) return Boolean;
       --  Check whether type or base type appear in an active use_type clause
@@ -2702,6 +2775,16 @@ package body Sem_Ch7 is
 
             Propagate_Concurrent_Flags (Priv, Base_Type (Full));
          end if;
+
+         --  As explained in Freeze_Entity, private types are required to point
+         --  to the same freeze node as their corresponding full view, if any.
+         --  But we ought not to overwrite a node already inserted in the tree.
+
+         pragma Assert
+           (Serious_Errors_Detected /= 0
+             or else No (Freeze_Node (Priv))
+             or else No (Parent (Freeze_Node (Priv)))
+             or else Freeze_Node (Priv) = Freeze_Node (Full));
 
          Set_Freeze_Node (Priv, Freeze_Node (Full));
 
@@ -2763,6 +2846,66 @@ package body Sem_Ch7 is
          end if;
       end Preserve_Full_Attributes;
 
+      -----------------------------
+      -- Swap_Private_Dependents --
+      -----------------------------
+
+      procedure Swap_Private_Dependents (Priv_Deps : Elist_Id) is
+         Cunit     : Entity_Id;
+         Deps      : Elist_Id;
+         Priv      : Entity_Id;
+         Priv_Elmt : Elmt_Id;
+         Is_Priv   : Boolean;
+
+      begin
+         Priv_Elmt := First_Elmt (Priv_Deps);
+         while Present (Priv_Elmt) loop
+            Priv := Node (Priv_Elmt);
+
+            --  Before we do the swap, we verify the presence of the Full_View
+            --  field, which may be empty due to a swap by a previous call to
+            --  End_Package_Scope (e.g. from the freezing mechanism).
+
+            if Present (Full_View (Priv)) then
+               if Is_Private_Type (Priv) then
+                  Cunit := Cunit_Entity (Current_Sem_Unit);
+                  Deps := Private_Dependents (Priv);
+                  Is_Priv := True;
+               else
+                  Is_Priv := False;
+               end if;
+
+               if Scope (Priv) = P
+                 or else not In_Open_Scopes (Scope (Priv))
+               then
+                  Set_Is_Immediately_Visible (Priv, False);
+               end if;
+
+               if Is_Visible_Dependent (Priv) then
+                  Preserve_Full_Attributes (Priv, Full_View (Priv));
+                  Replace_Elmt (Priv_Elmt, Full_View (Priv));
+                  Exchange_Declarations (Priv);
+
+                  --  Recurse for child units, except in generic child units,
+                  --  which unfortunately handle private_dependents separately.
+                  --  Note that the current unit may not have been analyzed,
+                  --  for example a package body, so we cannot rely solely on
+                  --  the Is_Child_Unit flag, but that's only an optimization.
+
+                  if Is_Priv
+                    and then (No (Etype (Cunit)) or else Is_Child_Unit (Cunit))
+                    and then not Is_Empty_Elmt_List (Deps)
+                    and then not Inside_A_Generic
+                  then
+                     Swap_Private_Dependents (Deps);
+                  end if;
+               end if;
+            end if;
+
+            Next_Elmt (Priv_Elmt);
+         end loop;
+      end Swap_Private_Dependents;
+
       -----------------
       -- Type_In_Use --
       -----------------
@@ -2790,8 +2933,9 @@ package body Sem_Ch7 is
          --  a) If the entity is an operator, it may be a primitive operator of
          --  a type for which there is a visible use-type clause.
 
-         --  b) for other entities, their use-visibility is determined by a
-         --  visible use clause for the package itself. For a generic instance,
+         --  b) For other entities, their use-visibility is determined by a
+         --  visible use clause for the package itself or a use-all-type clause
+         --  applied directly to the entity's type. For a generic instance,
          --  the instantiation of the formals appears in the visible part,
          --  but the formals are private and remain so.
 
@@ -2823,6 +2967,16 @@ package body Sem_Ch7 is
                else
                   Set_Is_Potentially_Use_Visible (Id);
                end if;
+
+            --  We need to avoid incorrectly marking enumeration literals as
+            --  non-visible when a visible use-all-type clause is in effect.
+
+            elsif Type_In_Use (Etype (Id))
+              and then Nkind (Current_Use_Clause (Etype (Id))) =
+                         N_Use_Type_Clause
+              and then All_Present (Current_Use_Clause (Etype (Id)))
+            then
+               null;
 
             else
                Set_Is_Potentially_Use_Visible (Id, False);
@@ -3003,31 +3157,7 @@ package body Sem_Ch7 is
             --  were compiled in this scope, or installed previously
             --  by Install_Private_Declarations.
 
-            --  Before we do the swap, we verify the presence of the Full_View
-            --  field which may be empty due to a swap by a previous call to
-            --  End_Package_Scope (e.g. from the freezing mechanism).
-
-            Priv_Elmt := First_Elmt (Private_Dependents (Id));
-            while Present (Priv_Elmt) loop
-               Priv_Sub := Node (Priv_Elmt);
-
-               if Present (Full_View (Priv_Sub)) then
-                  if Scope (Priv_Sub) = P
-                     or else not In_Open_Scopes (Scope (Priv_Sub))
-                  then
-                     Set_Is_Immediately_Visible (Priv_Sub, False);
-                  end if;
-
-                  if Is_Visible_Dependent (Priv_Sub) then
-                     Preserve_Full_Attributes
-                       (Priv_Sub, Full_View (Priv_Sub));
-                     Replace_Elmt (Priv_Elmt, Full_View (Priv_Sub));
-                     Exchange_Declarations (Priv_Sub);
-                  end if;
-               end if;
-
-               Next_Elmt (Priv_Elmt);
-            end loop;
+            Swap_Private_Dependents (Private_Dependents (Id));
 
             --  Now restore the type itself to its private view
 
@@ -3122,7 +3252,7 @@ package body Sem_Ch7 is
       E : Entity_Id;
 
       Requires_Body : Boolean := False;
-      --  Flag set when the unit has at least one construct that requries
+      --  Flag set when the unit has at least one construct that requires
       --  completion in a body.
 
    begin
@@ -3185,7 +3315,7 @@ package body Sem_Ch7 is
 
       --  A [generic] package that defines at least one non-null abstract state
       --  requires a completion only when at least one other construct requires
-      --  a completion in a body (SPARK RM 7.1.4(4) and (6)). This check is not
+      --  a completion in a body (SPARK RM 7.1.4(4) and (5)). This check is not
       --  performed if the caller requests this behavior.
 
       if Do_Abstract_States

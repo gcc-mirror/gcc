@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2018 Free Software Foundation, Inc.
+// Copyright (C) 2015-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,14 +16,13 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++11 } }
-// { dg-require-cstdint "" }
 
 #include <locale>
 #include <iterator>
 #include <string>
 #include <testsuite_hooks.h>
 
-const char expected[] = u8"£¥€";
+const auto expected = (const char*)u8"£¥€";
 const std::size_t expected_len = std::char_traits<char>::length(expected);
 
 template<typename C>

@@ -1,6 +1,7 @@
 /* PR c/77490 */
 /* { dg-do compile } */
 /* { dg-options "-Wall -Wno-psabi" } */
+/* { dg-additional-options "-Wno-volatile" { target c++ } } */
 
 #ifndef __cplusplus
 # define bool _Bool
@@ -15,18 +16,18 @@ fn (bool b, bool b2, T b3, int n, v4si v)
 {
   int r = 0;
 
-  r += ~b; /* { dg-warning "on an expression of type bool|on a boolean expression" } */
-  r += n + ~b; /* { dg-warning "on an expression of type bool|on a boolean expression" } */
-  r += ~(n == 1); /* { dg-warning "on an expression of type bool|on a boolean expression" } */
-  r += ~(n || 1); /* { dg-warning "on an expression of type bool|on a boolean expression" } */
-  r += ~b == 1; /* { dg-warning "on an expression of type bool|on a boolean expression" } */
-  r += ~(++n, n == 1); /* { dg-warning "on an expression of type bool|on a boolean expression" } */
-  r += ~(++n, n > 1); /* { dg-warning "on an expression of type bool|on a boolean expression" } */
-  r += ~(++n, n && 1); /* { dg-warning "on an expression of type bool|on a boolean expression" } */
-  r += (++n, ~b); /* { dg-warning "on an expression of type bool|on a boolean expression" } */
-  r += ~b3; /* { dg-warning "on an expression of type bool|on a boolean expression" } */
-  r += ~foo (); /* { dg-warning "on an expression of type bool|on a boolean expression" } */
-  r += ~(bool) !1; /* { dg-warning "on an expression of type bool|on a boolean expression" } */
+  r += ~b; /* { dg-warning "on an expression of type 'bool'|on a boolean expression" } */
+  r += n + ~b; /* { dg-warning "on an expression of type 'bool'|on a boolean expression" } */
+  r += ~(n == 1); /* { dg-warning "on an expression of type 'bool'|on a boolean expression" } */
+  r += ~(n || 1); /* { dg-warning "on an expression of type 'bool'|on a boolean expression" } */
+  r += ~b == 1; /* { dg-warning "on an expression of type 'bool'|on a boolean expression" } */
+  r += ~(++n, n == 1); /* { dg-warning "on an expression of type 'bool'|on a boolean expression" } */
+  r += ~(++n, n > 1); /* { dg-warning "on an expression of type 'bool'|on a boolean expression" } */
+  r += ~(++n, n && 1); /* { dg-warning "on an expression of type 'bool'|on a boolean expression" } */
+  r += (++n, ~b); /* { dg-warning "on an expression of type 'bool'|on a boolean expression" } */
+  r += ~b3; /* { dg-warning "on an expression of type 'bool'|on a boolean expression" } */
+  r += ~foo (); /* { dg-warning "on an expression of type 'bool'|on a boolean expression" } */
+  r += ~(bool) !1; /* { dg-warning "on an expression of type 'bool'|on a boolean expression" } */
 
   v = ~v;
   r += ~(int) b;

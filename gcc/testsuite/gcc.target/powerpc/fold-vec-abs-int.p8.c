@@ -3,8 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
-/* { dg-options "-maltivec -O2 -mcpu=power8" } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
+/* { dg-options "-maltivec -O2 -mdejagnu-cpu=power8" } */
 
 #include <altivec.h>
 

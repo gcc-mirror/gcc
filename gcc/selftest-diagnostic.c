@@ -1,5 +1,5 @@
 /* Selftest support for diagnostics.
-   Copyright (C) 2016-2018 Free Software Foundation, Inc.
+   Copyright (C) 2016-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -37,8 +37,10 @@ test_diagnostic_context::test_diagnostic_context ()
 {
   diagnostic_initialize (this, 0);
   show_caret = true;
+  show_labels_p = true;
   show_column = true;
   start_span = start_span_cb;
+  min_margin_width = 6;
 }
 
 test_diagnostic_context::~test_diagnostic_context ()

@@ -1,6 +1,6 @@
 /* PR target/51957 */
 /* { dg-do link } */
-/* { dg-options "-O2 -g -fprofile-use" } */
+/* { dg-options "-O2 -g -fprofile-use -Wno-missing-profile" } */
 /* { dg-additional-sources "pr51957-2.c" } */
 
 int v[128];

@@ -31,8 +31,8 @@ MODULE m
     GENERIC :: OPERATOR(.UNARY.) => onearg_alt
     GENERIC, PRIVATE :: OPERATOR(.UNARY.) => onearg_alt2 ! { dg-error "must have the same access" }
 
-    GENERIC :: OPERATOR(.UNARYPRIME.) => nopassed ! { dg-error "can't be NOPASS" }
-    GENERIC :: OPERATOR(-) => nopassed ! { dg-error "can't be NOPASS" }
+    GENERIC :: OPERATOR(.UNARYPRIME.) => nopassed ! { dg-error "cannot be NOPASS" }
+    GENERIC :: OPERATOR(-) => nopassed ! { dg-error "cannot be NOPASS" }
   END TYPE t
 
 CONTAINS

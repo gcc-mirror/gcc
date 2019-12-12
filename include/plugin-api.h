@@ -1,6 +1,6 @@
 /* plugin-api.h -- External linker plugin API.  */
 
-/* Copyright (C) 2009-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2019 Free Software Foundation, Inc.
    Written by Cary Coutant <ccoutant@google.com>.
 
    This file is part of binutils.
@@ -34,7 +34,7 @@
 #include <sys/types.h>
 #if !defined(HAVE_STDINT_H) && !defined(HAVE_INTTYPES_H) && \
     !defined(UINT64_MAX) && !defined(uint64_t)
-#error can not find uint64_t type
+#error cannot find uint64_t type
 #endif
 
 #ifdef __cplusplus

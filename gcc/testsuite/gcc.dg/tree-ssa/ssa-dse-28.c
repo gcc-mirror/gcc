@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-dse-details -fexceptions -fnon-call-exceptions -fno-isolate-erroneous-paths-dereference" } */
+/* { dg-require-effective-target exceptions } */
 
 
 int foo (int *p, int b)

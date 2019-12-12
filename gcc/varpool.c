@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -204,7 +204,7 @@ varpool_node::remove_initializer (void)
       && debug_info_level == DINFO_LEVEL_NONE
       /* When doing declaration merging we have duplicate
 	 entries for given decl.  Do not attempt to remove
-	 the boides, or we will end up remiving
+	 the bodies, or we will end up removing
 	 wrong one.  */
       && symtab->state != LTO_STREAMING)
     DECL_INITIAL (decl) = error_mark_node;
@@ -226,8 +226,6 @@ varpool_node::dump (FILE *f)
     fprintf (f, " output");
   if (used_by_single_function)
     fprintf (f, " used-by-single-function");
-  if (need_bounds_init)
-    fprintf (f, " need-bounds-init");
   if (TREE_READONLY (decl))
     fprintf (f, " read-only");
   if (ctor_useable_for_folding_p ())
@@ -301,11 +299,12 @@ varpool_node::get_constructor (void)
 	 = lto_get_function_in_decl_state (file_data, decl);
 
   data = lto_get_section_data (file_data, LTO_section_function_body,
-			       name, &len, decl_state->compressed);
+			       name, order - file_data->order_base,
+			       &len, decl_state->compressed);
   if (!data)
-    fatal_error (input_location, "%s: section %s is missing",
+    fatal_error (input_location, "%s: section %s.%d is missing",
 		 file_data->file_name,
-		 name);
+		 name, order - file_data->order_base);
 
   if (!quiet_flag)
     fprintf (stderr, " in:%s", IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
@@ -335,14 +334,14 @@ varpool_node::ctor_useable_for_folding_p (void)
   if (TREE_THIS_VOLATILE (decl))
     return false;
 
+  /* Avoid attempts to load constructors that was not streamed.  */
+  if (in_lto_p && DECL_INITIAL (real_node->decl) == error_mark_node
+      && real_node->body_removed)
+    return false;
+
   /* If we do not have a constructor, we can't use it.  */
   if (DECL_INITIAL (real_node->decl) == error_mark_node
       && !real_node->lto_file_data)
-    return false;
-
-  /* Avoid attempts to load constructors that was not streamed.  */
-  if (flag_ltrans && DECL_INITIAL (real_node->decl) == error_mark_node
-      && real_node->body_removed)
     return false;
 
   /* Vtables are defined by their types and must match no matter of interposition
@@ -366,7 +365,7 @@ varpool_node::ctor_useable_for_folding_p (void)
      overridden at link or run time.
 
      It is actually requirement for C++ compiler to optimize const variables
-     consistently. As a GNU extension, do not enfore this rule for user defined
+     consistently. As a GNU extension, do not enforce this rule for user defined
      weak variables, so we support interposition on:
      static const int dummy = 0;
      extern const int foo __attribute__((__weak__, __alias__("dummy"))); 
@@ -410,7 +409,7 @@ ctor_for_folding (tree decl)
     return error_mark_node;
 
   /* Do not care about automatic variables.  Those are never initialized
-     anyway, because gimplifier exapnds the code.  */
+     anyway, because gimplifier expands the code.  */
   if (!TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
     {
       gcc_assert (!TREE_PUBLIC (decl));
@@ -553,7 +552,7 @@ varpool_node::assemble_aliases (void)
 bool
 varpool_node::assemble_decl (void)
 {
-  /* Aliases are outout when their target is produced or by
+  /* Aliases are output when their target is produced or by
      output_weakrefs.  */
   if (alias)
     return false;
@@ -791,8 +790,8 @@ varpool_node::create_extra_name_alias (tree alias, tree decl)
   alias_node = varpool_node::create_alias (alias, decl);
   alias_node->cpp_implicit_alias = true;
 
-  /* Extra name alias mechanizm creates aliases really late
-     via DECL_ASSEMBLER_NAME mechanizm.
+  /* Extra name alias mechanism creates aliases really late
+     via DECL_ASSEMBLER_NAME mechanism.
      This is unfortunate because they are not going through the
      standard channels.  Ensure they get output.  */
   if (symtab->cpp_implicit_aliases_done)

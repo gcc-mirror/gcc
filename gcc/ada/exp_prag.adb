@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1636,10 +1636,16 @@ package body Exp_Prag is
       Expr := Get_Pragma_Arg (First (Pragma_Argument_Associations (IC_Prag)));
       Loc  := Sloc (IC_Prag);
 
+      --  Nothing to do when the pragma is ignored because its semantics are
+      --  suppressed.
+
+      if Is_Ignored (IC_Prag) then
+         return;
+
       --  Nothing to do when the pragma or its argument are illegal because
       --  there is no valid expression to check.
 
-      if Error_Posted (IC_Prag) or else Error_Posted (Expr) then
+      elsif Error_Posted (IC_Prag) or else Error_Posted (Expr) then
          return;
       end if;
 
@@ -1688,7 +1694,7 @@ package body Exp_Prag is
       --  condition is subject to Source Coverage Obligations.
 
       if Generate_SCO then
-         Set_Needs_Debug_Info (Proc_Id);
+         Set_Debug_Info_Needed (Proc_Id);
       end if;
 
       --  Generate:
@@ -1722,7 +1728,7 @@ package body Exp_Prag is
       Proc_Body_Id := Defining_Entity (Proc_Body);
 
       if Generate_SCO then
-         Set_Needs_Debug_Info (Proc_Body_Id);
+         Set_Debug_Info_Needed (Proc_Body_Id);
       end if;
 
       --  The location of the initial condition procedure call must be as close

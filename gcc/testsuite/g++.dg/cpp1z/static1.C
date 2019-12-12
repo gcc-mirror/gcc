@@ -1,5 +1,5 @@
 // PR c++/84582
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 class C {
   static inline const long b = 0;

@@ -1,6 +1,6 @@
 // { dg-do compile { target c++14 } }
 
-// Copyright (C) 2016-2018 Free Software Foundation, Inc.
+// Copyright (C) 2016-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,3 +43,5 @@ test01()
   p1.reset(new constA[5]);      // { dg-error "no matching function" }
   p1.reset(new constA[5], D()); // { dg-error "no matching function" }
 }
+
+// { dg-prune-output "enable_if" }

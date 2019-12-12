@@ -1,5 +1,5 @@
 ; Machine description for AArch64 architecture.
-; Copyright (C) 2009-2018 Free Software Foundation, Inc.
+; Copyright (C) 2009-2019 Free Software Foundation, Inc.
 ; Contributed by ARM Ltd.
 ;
 ; This file is part of GCC.
@@ -31,7 +31,10 @@ TargetSave
 const char *x_aarch64_override_tune_string
 
 TargetVariable
-unsigned long aarch64_isa_flags = 0
+uint64_t aarch64_isa_flags = 0
+
+TargetVariable
+unsigned aarch64_enable_bti = 2
 
 ; The TLS dialect names to use with -mtls-dialect.
 
@@ -116,24 +119,24 @@ EnumValue
 Enum(aarch64_tls_size) String(48) Value(48)
 
 march=
-Target RejectNegative ToLower Joined Var(aarch64_arch_string)
--march=ARCH	Use features of architecture ARCH.
+Target RejectNegative Negative(march=) ToLower Joined Var(aarch64_arch_string)
+Use features of architecture ARCH.
 
 mcpu=
-Target RejectNegative ToLower Joined Var(aarch64_cpu_string)
--mcpu=CPU	Use features of and optimize for CPU.
+Target RejectNegative Negative(mcpu=) ToLower Joined Var(aarch64_cpu_string)
+Use features of and optimize for CPU.
 
 mtune=
-Target RejectNegative ToLower Joined Var(aarch64_tune_string)
--mtune=CPU	Optimize for CPU.
+Target RejectNegative Negative(mtune=) ToLower Joined Var(aarch64_tune_string)
+Optimize for CPU.
 
 mabi=
 Target RejectNegative Joined Enum(aarch64_abi) Var(aarch64_abi) Init(AARCH64_ABI_DEFAULT)
--mabi=ABI	Generate code that conforms to the specified ABI.
+Generate code that conforms to the specified ABI.
 
 moverride=
 Target RejectNegative ToLower Joined Var(aarch64_override_tune_string)
--moverride=STRING	Power users only! Override CPU optimization parameters.
+-moverride=<string>	Power users only! Override CPU optimization parameters.
 
 Enum
 Name(aarch64_abi) Type(int)
@@ -149,8 +152,12 @@ mpc-relative-literal-loads
 Target Report Save Var(pcrelative_literal_loads) Init(2) Save
 PC relative literal loads.
 
+mbranch-protection=
+Target RejectNegative Joined Var(aarch64_branch_protection_string) Save
+Use branch-protection features.
+
 msign-return-address=
-Target RejectNegative Report Joined Enum(aarch64_ra_sign_scope_t) Var(aarch64_ra_sign_scope) Init(AARCH64_FUNCTION_NONE) Save
+Target WarnRemoved RejectNegative Joined Enum(aarch64_ra_sign_scope_t) Var(aarch64_ra_sign_scope) Init(AARCH64_FUNCTION_NONE) Save
 Select return address signing scope.
 
 Enum
@@ -167,20 +174,20 @@ EnumValue
 Enum(aarch64_ra_sign_scope_t) String(all) Value(AARCH64_FUNCTION_ALL)
 
 mlow-precision-recip-sqrt
-Common Var(flag_mrecip_low_precision_sqrt) Optimization
+Target Var(flag_mrecip_low_precision_sqrt) Optimization
 Enable the reciprocal square root approximation.  Enabling this reduces
 precision of reciprocal square root results to about 16 bits for
 single precision and to 32 bits for double precision.
 
 mlow-precision-sqrt
-Common Var(flag_mlow_precision_sqrt) Optimization
+Target Var(flag_mlow_precision_sqrt) Optimization
 Enable the square root approximation.  Enabling this reduces
 precision of square root results to about 16 bits for
 single precision and to 32 bits for double precision.
 If enabled, it implies -mlow-precision-recip-sqrt.
 
 mlow-precision-div
-Common Var(flag_mlow_precision_div) Optimization
+Target Var(flag_mlow_precision_div) Optimization
 Enable the division approximation.  Enabling this reduces
 precision of division results to about 16 bits for
 single precision and to 32 bits for double precision.
@@ -209,8 +216,49 @@ Enum(sve_vector_bits) String(2048) Value(SVE_2048)
 
 msve-vector-bits=
 Target RejectNegative Joined Enum(sve_vector_bits) Var(aarch64_sve_vector_bits) Init(SVE_SCALABLE)
--msve-vector-bits=N	Set the number of bits in an SVE vector register to N.
+-msve-vector-bits=<number>	Set the number of bits in an SVE vector register.
 
 mverbose-cost-dump
-Common Undocumented Var(flag_aarch64_verbose_cost)
+Target Undocumented Var(flag_aarch64_verbose_cost)
 Enables verbose cost model dumping in the debug dump files.
+
+mtrack-speculation
+Target Var(aarch64_track_speculation)
+Generate code to track when the CPU might be speculating incorrectly.
+
+mstack-protector-guard=
+Target RejectNegative Joined Enum(stack_protector_guard) Var(aarch64_stack_protector_guard) Init(SSP_GLOBAL)
+Use given stack-protector guard.
+
+Enum
+Name(stack_protector_guard) Type(enum stack_protector_guard)
+Valid arguments to -mstack-protector-guard=:
+
+EnumValue
+Enum(stack_protector_guard) String(sysreg) Value(SSP_SYSREG)
+
+EnumValue
+Enum(stack_protector_guard) String(global) Value(SSP_GLOBAL)
+
+mstack-protector-guard-reg=
+Target Joined RejectNegative String Var(aarch64_stack_protector_guard_reg_str)
+Use the system register specified on the command line as the stack protector
+guard register. This option is for use with fstack-protector-strong and
+not for use in user-land code.
+
+mstack-protector-guard-offset=
+Target Joined RejectNegative String Var(aarch64_stack_protector_guard_offset_str)
+Use an immediate to offset from the stack protector guard register, sp_el0.
+This option is for use with fstack-protector-strong and not for use in
+user-land code.
+
+TargetVariable
+long aarch64_stack_protector_guard_offset = 0
+
+moutline-atomics
+Target Report Mask(OUTLINE_ATOMICS) Save
+Generate local calls to out-of-line atomic operations.
+
+-param=aarch64-sve-compare-costs=
+Target Joined UInteger Var(aarch64_sve_compare_costs) Init(1) IntegerRange(0, 1) Param
+When vectorizing for SVE, consider using unpacked vectors for smaller elements and use the cost model to pick the cheapest approach.  Also use the cost model to choose between SVE and Advanced SIMD vectorization.

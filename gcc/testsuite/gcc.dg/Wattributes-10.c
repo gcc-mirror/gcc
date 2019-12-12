@@ -1,7 +1,8 @@
 /* PR middle-end/86453 - error: type variant differs by TYPE_PACKED in
    free_lang_data since r255469
    { dg-do compile }
-   { dg-options "-Wall -ftrack-macro-expansion=0" } */
+   { dg-options "-Wall -ftrack-macro-expansion=0" }
+   { dg-additional-options "-fno-common" { target hppa*-*-hpux* } } */
 
 #define A(expr) do { int a[1 - 2 * !(expr)]; (void)&a; } while (0)
 
@@ -12,7 +13,8 @@ struct S
 
   int* __attribute__ ((aligned (16), packed)) qaligned;   /* { dg-warning "ignoring attribute .packed. because it conflicts with attribute .aligned." } */
   int* __attribute__ ((packed, aligned (16))) qpacked;    /* { dg-warning ".packed. attribute ignored for type .int \\\*." } */
-} s;
+} s;    /* { dg-error "alignment of 's' is greater" "" { target pdp11*-*-* } } */
+
 
 void test (void)
 {

@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-fgimple -fdump-tree-optimized -ffast-math" } */
 
-double __GIMPLE (startwith("loop"))
+double __GIMPLE (ssa, startwith("loop"))
 neg_xi (double *x)
 {
   int i;
@@ -13,13 +13,13 @@ neg_xi (double *x)
   double res;
   unsigned int ivtmp;
 
- bb_1:
-  goto bb_2;
+ __BB(5):
+  goto __BB2;
 
- bb_2:
-  res_1 = __PHI (bb_1: 0.0, bb_3: res_2);
-  i_4 = __PHI (bb_1: 0, bb_3: i_5);
-  ivtmp_6 = __PHI (bb_1: 100U, bb_3: ivtmp_7);
+ __BB(2):
+  res_1 = __PHI (__BB5: 0.0, __BB3: res_2);
+  i_4 = __PHI (__BB5: 0, __BB3: i_5);
+  ivtmp_6 = __PHI (__BB5: 100U, __BB3: ivtmp_7);
   index = (long unsigned int) i_4;
   offset = index * 8UL;
   xi_ptr = x_8(D) + offset;
@@ -29,15 +29,15 @@ neg_xi (double *x)
   i_5 = i_4 + 1;
   ivtmp_7 = ivtmp_6 - 1U;
   if (ivtmp_7 != 0U)
-    goto bb_3;
+    goto __BB3;
   else
-    goto bb_4;
+    goto __BB4;
 
- bb_3:
-  goto bb_2;
+ __BB(3):
+  goto __BB2;
 
- bb_4:
-  res_3 = __PHI (bb_2: res_2);
+ __BB(4):
+  res_3 = __PHI (__BB2: res_2);
   return res_3;
 }
 

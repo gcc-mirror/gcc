@@ -31,10 +31,10 @@ f (void)
   (struct s) d128; /* { dg-error "conversion to non-scalar type requested" } */
   (union u) d128; /* { dg-error "cast to union type from type not present in union" } */
 		
-  (_Decimal32) sv; /* { dg-error "aggregate value used where a float was expected" } */
-  (_Decimal32) uv; /* { dg-error "aggregate value used where a float was expected" } */
-  (_Decimal64) sv; /* { dg-error "aggregate value used where a float was expected" } */
-  (_Decimal64) uv; /* { dg-error "aggregate value used where a float was expected" } */
-  (_Decimal128) sv; /* { dg-error "aggregate value used where a float was expected" } */
-  (_Decimal128) uv; /* { dg-error "aggregate value used where a float was expected" } */
+  (_Decimal32) sv; /* { dg-error "aggregate value used where a floating-point was expected" } */
+  (_Decimal32) uv; /* { dg-error "aggregate value used where a floating-point was expected" } */
+  (_Decimal64) sv; /* { dg-error "aggregate value used where a floating-point was expected" } */
+  (_Decimal64) uv; /* { dg-error "aggregate value used where a floating-point was expected" } */
+  (_Decimal128) sv; /* { dg-error "aggregate value used where a floating-point was expected" } */
+  (_Decimal128) uv; /* { dg-error "aggregate value used where a floating-point was expected" } */
 }

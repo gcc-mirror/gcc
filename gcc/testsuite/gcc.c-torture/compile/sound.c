@@ -1,3 +1,4 @@
+/* { dg-require-stack-size "8192+4" } */
 
 main ()
 {

@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for recording calls made to the JIT API.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -29,6 +29,9 @@ class timer;
 namespace gcc {
 
 namespace jit {
+
+extern const char * const unary_op_reproducer_strings[];
+extern const char * const binary_op_reproducer_strings[];
 
 class result;
 class dump;
@@ -94,6 +97,12 @@ public:
   new_field (location *loc,
 	     type *type,
 	     const char *name);
+
+  field *
+  new_bitfield (location *loc,
+                type *type,
+                int width,
+                const char *name);
 
   struct_ *
   new_struct_type (location *loc,
@@ -218,6 +227,12 @@ public:
   append_command_line_options (vec <char *> *argvec);
 
   void
+  add_driver_option (const char *optname);
+
+  void
+  append_driver_options (auto_string_vec *argvec);
+
+  void
   enable_dump (const char *dumpname,
 	       char **out_ptr);
 
@@ -317,6 +332,7 @@ private:
   bool m_bool_options[GCC_JIT_NUM_BOOL_OPTIONS];
   bool m_inner_bool_options[NUM_INNER_BOOL_OPTIONS];
   auto_vec <char *> m_command_line_options;
+  auto_vec <char *> m_driver_options;
 
   /* Dumpfiles that were requested via gcc_jit_context_enable_dump.  */
   auto_vec<requested_dump> m_requested_dumps;
@@ -815,9 +831,9 @@ public:
   compound_type * get_container () const { return m_container; }
   void set_container (compound_type *c) { m_container = c; }
 
-  void replay_into (replayer *) FINAL OVERRIDE;
+  void replay_into (replayer *) OVERRIDE;
 
-  void write_to_dump (dump &d) FINAL OVERRIDE;
+  void write_to_dump (dump &d) OVERRIDE;
 
   playback::field *
   playback_field () const
@@ -826,14 +842,39 @@ public:
   }
 
 private:
-  string * make_debug_string () FINAL OVERRIDE;
-  void write_reproducer (reproducer &r) FINAL OVERRIDE;
+  string * make_debug_string () OVERRIDE;
+  void write_reproducer (reproducer &r) OVERRIDE;
 
-private:
+protected:
   location *m_loc;
   type *m_type;
   string *m_name;
   compound_type *m_container;
+};
+
+
+class bitfield : public field
+{
+public:
+  bitfield (context *ctxt,
+	    location *loc,
+	    type *type,
+	    int width,
+	    string *name)
+    : field (ctxt, loc, type, name),
+      m_width (width)
+  {}
+
+  void replay_into (replayer *) FINAL OVERRIDE;
+
+  void write_to_dump (dump &d) FINAL OVERRIDE;
+
+private:
+  string * make_debug_string () FINAL OVERRIDE;
+  void write_reproducer (reproducer &r) FINAL OVERRIDE;
+
+private:
+  int m_width;
 };
 
 /* Base class for struct_ and union_ */

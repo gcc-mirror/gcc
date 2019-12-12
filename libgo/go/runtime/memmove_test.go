@@ -15,6 +15,9 @@ import (
 )
 
 func TestMemmove(t *testing.T) {
+	if *flagQuick {
+		t.Skip("-quick")
+	}
 	t.Parallel()
 	size := 256
 	if testing.Short() {
@@ -54,6 +57,9 @@ func TestMemmove(t *testing.T) {
 }
 
 func TestMemmoveAlias(t *testing.T) {
+	if *flagQuick {
+		t.Skip("-quick")
+	}
 	t.Parallel()
 	size := 256
 	if testing.Short() {
@@ -445,6 +451,13 @@ func BenchmarkCopyFat256(b *testing.B) {
 }
 func BenchmarkCopyFat512(b *testing.B) {
 	var x [512 / 4]uint32
+	for i := 0; i < b.N; i++ {
+		y := x
+		_ = y
+	}
+}
+func BenchmarkCopyFat520(b *testing.B) {
+	var x [520 / 4]uint32
 	for i := 0; i < b.N; i++ {
 		y := x
 		_ = y

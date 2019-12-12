@@ -1,7 +1,8 @@
 //===-- ubsan_handlers.h ----------------------------------------*- C++ -*-===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -36,6 +37,17 @@ struct TypeMismatchData {
 /// pointer, a null pointer, or a pointer to insufficient storage for the
 /// type.
 RECOVERABLE(type_mismatch_v1, TypeMismatchData *Data, ValueHandle Pointer)
+
+struct AlignmentAssumptionData {
+  SourceLocation Loc;
+  SourceLocation AssumptionLoc;
+  const TypeDescriptor &Type;
+};
+
+/// \brief Handle a runtime alignment assumption check failure,
+/// caused by a misaligned pointer.
+RECOVERABLE(alignment_assumption, AlignmentAssumptionData *Data,
+            ValueHandle Pointer, ValueHandle Alignment, ValueHandle Offset)
 
 struct OverflowData {
   SourceLocation Loc;
@@ -120,6 +132,27 @@ struct InvalidValueData {
 /// \brief Handle a load of an invalid value for the type.
 RECOVERABLE(load_invalid_value, InvalidValueData *Data, ValueHandle Val)
 
+/// Known implicit conversion check kinds.
+/// Keep in sync with the enum of the same name in CGExprScalar.cpp
+enum ImplicitConversionCheckKind : unsigned char {
+  ICCK_IntegerTruncation = 0, // Legacy, was only used by clang 7.
+  ICCK_UnsignedIntegerTruncation = 1,
+  ICCK_SignedIntegerTruncation = 2,
+  ICCK_IntegerSignChange = 3,
+  ICCK_SignedIntegerTruncationOrSignChange = 4,
+};
+
+struct ImplicitConversionData {
+  SourceLocation Loc;
+  const TypeDescriptor &FromType;
+  const TypeDescriptor &ToType;
+  /* ImplicitConversionCheckKind */ unsigned char Kind;
+};
+
+/// \brief Implict conversion that changed the value.
+RECOVERABLE(implicit_conversion, ImplicitConversionData *Data, ValueHandle Src,
+            ValueHandle Dst)
+
 /// Known builtin check kinds.
 /// Keep in sync with the enum of the same name in CodeGenFunction.h
 enum BuiltinCheckKind : unsigned char {
@@ -134,15 +167,6 @@ struct InvalidBuiltinData {
 
 /// Handle a builtin called in an invalid way.
 RECOVERABLE(invalid_builtin, InvalidBuiltinData *Data)
-
-struct FunctionTypeMismatchData {
-  SourceLocation Loc;
-  const TypeDescriptor &Type;
-};
-
-RECOVERABLE(function_type_mismatch,
-            FunctionTypeMismatchData *Data,
-            ValueHandle Val)
 
 struct NonNullReturnData {
   SourceLocation AttrLoc;
@@ -179,6 +203,13 @@ enum CFITypeCheckKind : unsigned char {
   CFITCK_DerivedCast,
   CFITCK_UnrelatedCast,
   CFITCK_ICall,
+  CFITCK_NVMFCall,
+  CFITCK_VMFCall,
+};
+
+struct CFIBadIcallData {
+  SourceLocation Loc;
+  const TypeDescriptor &Type;
 };
 
 struct CFICheckFailData {
@@ -186,6 +217,9 @@ struct CFICheckFailData {
   SourceLocation Loc;
   const TypeDescriptor &Type;
 };
+
+/// \brief Handle control flow integrity failure for indirect function calls.
+RECOVERABLE(cfi_bad_icall, CFIBadIcallData *Data, ValueHandle Function)
 
 /// \brief Handle control flow integrity failures.
 RECOVERABLE(cfi_check_fail, CFICheckFailData *Data, ValueHandle Function,

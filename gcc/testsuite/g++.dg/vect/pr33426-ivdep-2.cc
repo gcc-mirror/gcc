@@ -30,6 +30,7 @@ void bar(int n, int *a, int *b, int *c) {
 
 /* { dg-message "loop vectorized" "" { target *-*-* } 0 } */
 /* { dg-bogus " version\[^\n\r]* alias" "" { target *-*-* } 0 } */
+/* { dg-prune-output " version\[^\n\r]* alignment" } */
 
 /* { dg-final { scan-tree-dump-times "ANNOTATE_EXPR " 2 "original" } } */
 /* { dg-final { scan-tree-dump-times "ANNOTATE " 2 "gimple" } } */

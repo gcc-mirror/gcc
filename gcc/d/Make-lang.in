@@ -1,0 +1,340 @@
+# Make-lang.in -- Top level -*- makefile -*- fragment for the D frontend.
+# Copyright (C) 2006-2019 Free Software Foundation, Inc.
+
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This file provides the language dependent support in the main Makefile.
+
+# Installation name.
+
+D_INSTALL_NAME = $(shell echo gdc|sed '$(program_transform_name)')
+D_TARGET_INSTALL_NAME = $(target_noncanonical)-$(shell echo gdc|sed '$(program_transform_name)')
+
+# Name of phobos library
+D_LIBPHOBOS = -DLIBPHOBOS=\"gphobos\"
+
+# The name for selecting d in LANGUAGES.
+d: d21$(exeext)
+
+# Tell GNU make to ignore these if they exist.
+.PHONY: d
+
+# Create the compiler driver for D.
+CFLAGS-d/d-spec.o += $(DRIVER_DEFINES) $(D_LIBPHOBOS)
+
+GDC_OBJS = $(GCC_OBJS) d/d-spec.o
+gdc$(exeext): $(GDC_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	  $(GDC_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a \
+	  $(EXTRA_GCC_LIBS) $(LIBS)
+
+# Create a version of the gdc driver which calls the cross-compiler.
+gdc-cross$(exeext): gdc$(exeext)
+	-rm -f gdc-cross$(exeext)
+	cp gdc$(exeext) gdc-cross$(exeext)
+
+# Filter out pedantic and virtual overload warnings.
+d-warn = $(filter-out -pedantic -Woverloaded-virtual, $(STRICT_WARN))
+
+# Also filter out warnings for missing format attributes in the D Frontend.
+DMD_WARN_CXXFLAGS = $(filter-out -Wmissing-format-attribute, $(WARN_CXXFLAGS))
+DMD_COMPILE = $(subst $(WARN_CXXFLAGS), $(DMD_WARN_CXXFLAGS), $(COMPILE))
+DMDGEN_COMPILE = $(subst $(COMPILER), $(COMPILER_FOR_BUILD), $(DMD_COMPILE))
+
+# D Frontend object files.
+D_FRONTEND_OBJS = \
+	d/aav.o \
+	d/access.o \
+	d/aliasthis.o \
+	d/apply.o \
+	d/argtypes.o \
+	d/arrayop.o \
+	d/attrib.o \
+	d/blockexit.o \
+	d/canthrow.o \
+	d/checkedint.o \
+	d/clone.o \
+	d/cond.o \
+	d/constfold.o \
+	d/cppmangle.o \
+	d/ctfeexpr.o \
+	d/dcast.o \
+	d/dclass.o \
+	d/declaration.o \
+	d/delegatize.o \
+	d/denum.o \
+	d/dimport.o \
+	d/dinterpret.o \
+	d/dmacro.o \
+	d/dmangle.o \
+	d/dmodule.o \
+	d/doc.o \
+	d/dscope.o \
+	d/dstruct.o \
+	d/dsymbol.o \
+	d/dtemplate.o \
+	d/dversion.o \
+	d/entity.o \
+	d/escape.o \
+	d/expression.o \
+	d/expressionsem.o \
+	d/file.o \
+	d/filename.o \
+	d/func.o \
+	d/hdrgen.o \
+	d/iasm.o \
+	d/iasmgcc.o \
+	d/identifier.o \
+	d/imphint.o \
+	d/init.o \
+	d/initsem.o \
+	d/intrange.o \
+	d/json.o \
+	d/lexer.o \
+	d/mtype.o \
+	d/nogc.o \
+	d/nspace.o \
+	d/objc.o \
+	d/opover.o \
+	d/optimize.o \
+	d/outbuffer.o \
+	d/parse.o \
+	d/rmem.o \
+	d/rootobject.o \
+	d/safe.o \
+	d/sapply.o \
+	d/sideeffect.o \
+	d/speller.o \
+	d/statement.o \
+	d/statementsem.o \
+	d/staticassert.o \
+	d/staticcond.o \
+	d/stringtable.o \
+	d/tokens.o \
+	d/traits.o \
+	d/typesem.o \
+	d/utf.o \
+	d/utils.o
+
+# D Frontend generated files.
+D_GENERATED_SRCS = d/id.c d/id.h d/impcnvtab.c
+D_GENERATED_OBJS = d/id.o d/impcnvtab.o
+
+# Language-specific object files for D.
+D_OBJS = \
+	d/d-attribs.o d/d-builtins.o d/d-codegen.o d/d-convert.o \
+	d/d-diagnostic.o d/d-frontend.o d/d-incpath.o d/d-lang.o \
+	d/d-longdouble.o d/d-target.o d/decl.o d/expr.o d/imports.o \
+	d/intrinsics.o d/modules.o d/runtime.o d/toir.o d/typeinfo.o d/types.o
+
+# All language-specific object files for D.
+D_ALL_OBJS = $(D_FRONTEND_OBJS) $(D_GENERATED_OBJS) $(D_OBJS) $(D_TARGET_OBJS)
+
+d_OBJS = $(D_ALL_OBJS) d/d-spec.o
+
+d21$(exeext): $(D_ALL_OBJS) attribs.o $(BACKEND) $(LIBDEPS)
+	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+		$(D_ALL_OBJS) attribs.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
+
+# Documentation.
+
+D_TEXI_FILES = \
+	d/gdc.texi \
+	$(gcc_docdir)/include/fdl.texi \
+	$(gcc_docdir)/include/gpl_v3.texi \
+	$(gcc_docdir)/include/gcc-common.texi \
+	gcc-vers.texi
+
+doc/gdc.info: $(D_TEXI_FILES)
+	if test "x$(BUILD_INFO)" = xinfo; then \
+	  rm -f doc/gdc.info*; \
+	  $(MAKEINFO) $(MAKEINFOFLAGS) -I $(gcc_docdir) \
+		-I $(gcc_docdir)/include -o $@ $<; \
+	else true; fi
+
+doc/gdc.dvi: $(D_TEXI_FILES)
+	$(TEXI2DVI) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
+
+doc/gdc.pdf: $(D_TEXI_FILES)
+	$(TEXI2PDF) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
+
+$(build_htmldir)/d/index.html: $(D_TEXI_FILES)
+	$(mkinstalldirs) $(@D)
+	rm -f $(@D)/*
+	$(TEXI2HTML) -I $(gcc_docdir) -I $(gcc_docdir)/include \
+		-I $(srcdir)/d -o $(@D) $<
+
+.INTERMEDIATE: gdc.pod
+
+gdc.pod: d/gdc.texi
+	-$(TEXI2POD) -D gdc < $< > $@
+
+# Build hooks.
+
+d.all.cross: gdc-cross$(exeext)
+d.start.encap: gdc$(exeext)
+d.rest.encap:
+d.info: doc/gdc.info
+d.dvi: doc/gdc.dvi
+d.pdf: doc/gdc.pdf
+d.html: $(build_htmldir)/d/index.html
+d.srcinfo: doc/gdc.info
+	-cp -p $^ $(srcdir)/doc
+d.srcextra:
+
+d.tags: force
+	cd $(srcdir)/d; \
+	etags -o TAGS.sub *.c *.cc *.h dmd/*.c dmd/*.h dmd/root/*.h dmd/root/*.c; \
+	etags --include TAGS.sub --include ../TAGS.sub
+
+d.man: doc/gdc.1
+d.srcman: doc/gdc.1
+	-cp -p $^ $(srcdir)/doc
+
+# 'make check' in gcc/ looks for check-d, as do all toplevel D-related
+# check targets.  However, our DejaGNU framework requires 'check-gdc' as its
+# entry point.  We feed the former to the latter here.
+check-d: check-gdc
+lang_checks += check-gdc
+lang_checks_parallelized += check-gdc
+check_gdc_parallelize = 10
+
+# No D-specific selftests.
+selftest-d:
+
+# Install hooks.
+
+d.install-common: installdirs
+	-rm -f $(DESTDIR)$(bindir)/$(D_INSTALL_NAME)$(exeext)
+	$(INSTALL_PROGRAM) gdc$(exeext) $(DESTDIR)$(bindir)/$(D_INSTALL_NAME)$(exeext)
+	-if test -f d21$(exeext); then \
+	  if test -f gdc-cross$(exeext); then \
+	    :; \
+	  else \
+	    rm -f $(DESTDIR)$(bindir)/$(D_TARGET_INSTALL_NAME)$(exeext); \
+	    ( cd $(DESTDIR)$(bindir) && \
+	      $(LN) $(D_INSTALL_NAME)$(exeext) $(D_TARGET_INSTALL_NAME)$(exeext) ); \
+	  fi; \
+	fi
+
+d.install-plugin:
+
+d.install-info: $(DESTDIR)$(infodir)/gdc.info
+
+d.install-pdf: doc/gdc.pdf
+	@$(NORMAL_INSTALL)
+	test -z "$(pdfdir)" || $(mkinstalldirs) "$(DESTDIR)$(pdfdir)/gcc"
+	@for p in doc/gdc.pdf; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(pdf__strip_dir) \
+	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(pdfdir)/gcc/$$f'"; \
+	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/gcc/$$f"; \
+	done
+
+d.install-html: $(build_htmldir)/d
+	@$(NORMAL_INSTALL)
+	test -z "$(htmldir)" || $(mkinstalldirs) "$(DESTDIR)$(htmldir)"
+	@for p in $(build_htmldir)/d; do \
+	  if test -f "$$p" || test -d "$$p"; then d=""; else d="$(srcdir)/"; fi; \
+	  f=$(html__strip_dir) \
+	  if test -d "$$d$$p"; then \
+	    echo " $(mkinstalldirs) '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(mkinstalldirs) "$(DESTDIR)$(htmldir)/$$f" || exit 1; \
+	    echo " $(INSTALL_DATA) '$$d$$p'/* '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(INSTALL_DATA) "$$d$$p"/* "$(DESTDIR)$(htmldir)/$$f"; \
+	  else \
+	    echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(htmldir)/$$f"; \
+	  fi; \
+	done
+
+d.install-man: $(DESTDIR)$(man1dir)/$(D_INSTALL_NAME)$(man1ext)
+
+$(DESTDIR)$(man1dir)/$(D_INSTALL_NAME)$(man1ext): doc/gdc.1 installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
+
+d.uninstall:
+	-rm -rf $(DESTDIR)$(bindir)/$(D_INSTALL_NAME)$(exeext)
+	-rm -rf $(DESTDIR)$(man1dir)/$(D_INSTALL_NAME)$(man1ext)
+	-rm -rf $(DESTDIR)$(bindir)/$(D_TARGET_INSTALL_NAME)$(exeext)
+	-rm -rf $(DESTDIR)$(infodir)/gdc.info*
+
+# Clean hooks.
+
+d.mostlyclean:
+	-rm -f d/*$(objext)
+	-rm -f d/*$(coverageexts)
+	-rm -f $(D_GENERATED_SRCS)
+	-rm -f d/idgen$(build_exeext) d/impcnvgen$(build_exeext)
+	-rm -f gdc$(exeext) gdc-cross$(exeext) d21$(exeext)
+d.clean:
+d.distclean:
+d.maintainer-clean:
+	-rm -f $(docobjdir)/gdc.1
+
+# Stage hooks.
+
+d.stage1: stage1-start
+	-mv d/*$(objext) stage1/d
+d.stage2: stage2-start
+	-mv d/*$(objext) stage2/d
+d.stage3: stage3-start
+	-mv d/*$(objext) stage3/d
+d.stage4: stage4-start
+	-mv d/*$(objext) stage4/d
+d.stageprofile: stageprofile-start
+	-mv d/*$(objext) stageprofile/d
+d.stagefeedback: stagefeedback-start
+	-mv d/*$(objext) stagefeedback/d
+
+# Include the dfrontend and build directories for headers.
+D_INCLUDES = -I$(srcdir)/d -I$(srcdir)/d/dmd -Id
+
+CFLAGS-d/id.o += $(D_INCLUDES)
+CFLAGS-d/impcnvtab.o += $(D_INCLUDES)
+
+# Override build rules for D frontend.
+d/%.o: d/dmd/%.c $(D_GENERATED_SRCS)
+	$(DMD_COMPILE) $(D_INCLUDES) $<
+	$(POSTCOMPILE)
+
+d/%.o: d/dmd/root/%.c $(D_GENERATED_SRCS)
+	$(DMD_COMPILE) $(D_INCLUDES) $<
+	$(POSTCOMPILE)
+
+# Generated programs.
+d/idgen$(build_exeext): d/idgen.dmdgen.o $(BUILD_LIBDEPS)
+	+$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ \
+	    $(filter-out $(BUILD_LIBDEPS), $^) $(BUILD_LIBS)
+
+d/impcnvgen$(build_exeext): d/impcnvgen.dmdgen.o $(BUILD_LIBDEPS)
+	+$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ \
+	    $(filter-out $(BUILD_LIBDEPS), $^) $(BUILD_LIBS)
+
+# Generated sources.
+d/id.c: d/idgen$(build_exeext)
+	cd d && ./idgen$(build_exeext)
+
+# idgen also generates id.h; just verify it exists.
+d/id.h: d/id.c
+
+d/impcnvtab.c: d/impcnvgen$(build_exeext)
+	cd d && ./impcnvgen$(build_exeext)
+
+d/%.dmdgen.o: $(srcdir)/d/dmd/%.c
+	$(DMDGEN_COMPILE) $(D_INCLUDES) $<
+	$(POSTCOMPILE)

@@ -1,6 +1,6 @@
-## Makefile for the C++03 sources of the GNU C++ Standard library.
+## Makefile for the C++11 sources of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997-2018 Free Software Foundation, Inc.
+## Copyright (C) 1997-2019 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -125,6 +125,16 @@ hashtable_c++0x.lo: hashtable_c++0x.cc
 	$(LTCXXCOMPILE) -fimplicit-templates -c $<
 hashtable_c++0x.o: hashtable_c++0x.cc
 	$(CXXCOMPILE) -fimplicit-templates -c $<
+
+# Use special rules for source files that require -fchar8_t.
+codecvt.lo: codecvt.cc
+	$(LTCXXCOMPILE) -fchar8_t -c $<
+codecvt.o: codecvt.cc
+	$(CXXCOMPILE) -fchar8_t -c $<
+limits.lo: limits.cc
+	$(LTCXXCOMPILE) -fchar8_t -c $<
+limits.o: limits.cc
+	$(CXXCOMPILE) -fchar8_t -c $<
 
 if ENABLE_DUAL_ABI
 # Rewrite the type info for __ios_failure.

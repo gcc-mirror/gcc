@@ -14,6 +14,6 @@ struct S { int a; char b[L]; };	/* { dg-error "type .struct S. is too large" } *
 void
 foo (void)
 {
-  struct S s;
+  struct S s;   /* { dg-warning "size of .s. \[0-9\]+ bytes exceeds maximum object size \[0-9\]+" } */
   asm volatile ("" : : "r" (&s));
 }

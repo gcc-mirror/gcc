@@ -1,4 +1,4 @@
-// Copyright (C) 2018 Free Software Foundation, Inc.
+// Copyright (C) 2018-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,6 +17,7 @@
 
 // { dg-do run { target c++11 } }
 // { dg-additional-options "-ffloat-store" { target { m68*-*-* || ia32 } } }
+// { dg-require-cstdint "" }
 
 #include <random>
 #include <testsuite_hooks.h>

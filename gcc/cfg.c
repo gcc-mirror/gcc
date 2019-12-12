@@ -1,5 +1,5 @@
 /* Control flow graph manipulation code for GNU compiler.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -79,6 +79,8 @@ init_flow (struct function *the_fun)
     = EXIT_BLOCK_PTR_FOR_FN (the_fun);
   EXIT_BLOCK_PTR_FOR_FN (the_fun)->prev_bb
     = ENTRY_BLOCK_PTR_FOR_FN (the_fun);
+  the_fun->cfg->edge_flags_allocated = EDGE_ALL_FLAGS;
+  the_fun->cfg->bb_flags_allocated = BB_ALL_FLAGS;
 }
 
 /* Helper function for remove_edge and clear_edges.  Frees edge structure
@@ -544,9 +546,10 @@ dump_edge_info (FILE *file, edge e, dump_flags_t flags, int do_succ)
 DEBUG_FUNCTION void
 debug (edge_def &ref)
 {
-  /* FIXME (crowl): Is this desireable?  */
-  dump_edge_info (stderr, &ref, TDF_NONE, false);
-  dump_edge_info (stderr, &ref, TDF_NONE, true);
+  fprintf (stderr, "<edge (%d -> %d)>\n",
+	   ref.src->index, ref.dest->index);
+  dump_edge_info (stderr, &ref, TDF_DETAILS, false);
+  fprintf (stderr, "\n");
 }
 
 DEBUG_FUNCTION void
@@ -1142,7 +1145,7 @@ get_bb_copy (basic_block bb)
    initialized so passes not needing this don't need to care.  */
 
 void
-set_loop_copy (struct loop *loop, struct loop *copy)
+set_loop_copy (class loop *loop, class loop *copy)
 {
   if (!copy)
     copy_original_table_clear (loop_copy, loop->num);
@@ -1152,8 +1155,8 @@ set_loop_copy (struct loop *loop, struct loop *copy)
 
 /* Get the copy of LOOP.  */
 
-struct loop *
-get_loop_copy (struct loop *loop)
+class loop *
+get_loop_copy (class loop *loop)
 {
   struct htab_bb_copy_original_entry *entry;
   struct htab_bb_copy_original_entry key;

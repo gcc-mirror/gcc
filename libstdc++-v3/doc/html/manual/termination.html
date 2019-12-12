@@ -3,7 +3,9 @@
   Support
   
 </th><td width="20%" align="right"> <a accesskey="n" href="diagnostics.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="std.support.termination"></a>Termination</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="support.termination.handlers"></a>Termination Handlers</h3></div></div></div><p>
-      Not many changes here to <code class="filename">cstdlib</code>.  You should note that the
+      Not many changes here to
+      <code class="filename">&lt;cstdlib&gt;</code>.
+      You should note that the
       <code class="function">abort()</code> function does not call the
       destructors of automatic nor static objects, so if you're
       depending on those to do cleanup, it isn't going to happen.
@@ -24,8 +26,8 @@
 	The previous two actions are <span class="quote">“<span class="quote">interleaved,</span>”</span> that is,
 	given this pseudocode:
 	</p><pre class="programlisting">
-  extern "C or C++" void  f1 (void);
-  extern "C or C++" void  f2 (void);
+  extern "C or C++" void f1 ();
+  extern "C or C++" void f2 ();
 
   static Thing obj1;
   atexit(f1);
@@ -43,11 +45,20 @@
       Note also that <code class="function">atexit()</code> is only required to store 32
       functions, and the compiler/library might already be using some of
       those slots.  If you think you may run out, we recommend using
-      the <code class="function">xatexit</code>/<code class="function">xexit</code> combination from <code class="literal">libiberty</code>, which has no such limit.
+      the <code class="function">xatexit</code>/<code class="function">xexit</code> combination
+      from <code class="literal">libiberty</code>, which has no such limit.
     </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="support.termination.verbose"></a>Verbose Terminate Handler</h3></div></div></div><p>
       If you are having difficulty with uncaught exceptions and want a
       little bit of help debugging the causes of the core dumps, you can
       make use of a GNU extension, the verbose terminate handler.
+    </p><p>
+      The verbose terminate handler is only available for hosted environments
+      (see <a class="xref" href="configure.html" title="Configure">Configuring</a>) and will be used
+      by default unless the library is built with
+      <code class="option">--disable-libstdcxx-verbose</code>
+      or with exceptions disabled.
+      If you need to enable it explicitly you can do so by calling the
+      <code class="function">std::set_terminate</code> function.
     </p><pre class="programlisting">
 #include &lt;exception&gt;
 
@@ -61,12 +72,13 @@ int main()
 </pre><p>
      The <code class="function">__verbose_terminate_handler</code> function
      obtains the name of the current exception, attempts to demangle
-     it, and prints it to stderr.  If the exception is derived from
-     <code class="classname">exception</code> then the output from
+     it, and prints it to <code class="literal">stderr</code>.
+     If the exception is derived from
+     <code class="classname">std::exception</code> then the output from
      <code class="function">what()</code> will be included.
    </p><p>
      Any replacement termination function is required to kill the
-     program without returning; this one calls abort.
+     program without returning; this one calls <code class="function">std::abort</code>.
    </p><p>
      For example:
    </p><pre class="programlisting">
@@ -99,13 +111,14 @@ int main(int argc)
    Aborted
    </code>
    </pre><p>
-     The 'Aborted' line comes from the call to
-     <code class="function">abort()</code>, of course.
+     The 'Aborted' line is printed by the shell after the process exits
+     by calling <code class="function">abort()</code>.
    </p><p>
-     This is the default termination handler; nothing need be done to
+     As this is the default termination handler, nothing need be done to
      use it.  To go back to the previous <span class="quote">“<span class="quote">silent death</span>”</span>
-     method, simply include <code class="filename">exception</code> and
-     <code class="filename">cstdlib</code>, and call
+     method, simply include
+     <code class="filename">&lt;exception&gt;</code> and
+     <code class="filename">&lt;cstdlib&gt;</code>, and call
    </p><pre class="programlisting">
      std::set_terminate(std::abort);
    </pre><p>
@@ -113,8 +126,8 @@ int main(int argc)
      <code class="function">abort</code> as the terminate handler.
    </p><p>
      Note: the verbose terminate handler will attempt to write to
-     stderr.  If your application closes stderr or redirects it to an
-     inappropriate location,
+     <code class="literal">stderr</code>.  If your application closes
+     <code class="literal">stderr</code> or redirects it to an inappropriate location,
      <code class="function">__verbose_terminate_handler</code> will behave in
      an unspecified manner.
    </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="dynamic_memory.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="support.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="diagnostics.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Dynamic Memory </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 5. 

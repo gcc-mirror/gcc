@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-if-conversion" } */
+/* { dg-options "-O2" } */
 
 #include <stdbool.h>
 
@@ -36,4 +36,3 @@ bool my_neg_overflow (short a, short *res)
 /* { dg-final { scan-assembler-times "add.w" 2 } } */
 /* { dg-final { scan-assembler-times "sub.w" 4 } } */
 /* { dg-final { scan-assembler-not "cmp.w" } } */
-/* { dg-final { scan-assembler-not "mov.w" } } */

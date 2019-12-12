@@ -13,12 +13,12 @@ contains
       r = associated (f) .or. associated (g)
       r = r .or. associated (j) .or. associated (k)
     !$omp end target
-    if (r) STOP 1
+    if (r) stop 1
     !$omp target
       r = associated (f) .or. associated (g)
       r = r .or. associated (j) .or. associated (k)
     !$omp end target
-    if (r) STOP 2
+    if (r) stop 2
   end subroutine foo
 end module target3
   use target3, only : foo

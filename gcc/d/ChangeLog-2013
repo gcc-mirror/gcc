@@ -1,0 +1,1221 @@
+2013-12-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_two_field_type): Declare builtin types as
+	toplevel declarations.
+	* d-ctype.cc (EnumDeclaration::toDebug): Build type decl in debug code.
+	* d-lang.cc (nametype): Rename to d_nametype.
+
+2013-12-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (EnumDeclaration::toDebug): Don't send array types to
+	rest_of_type_compilation.
+
+2013-12-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-spec.cc (lang_specific_driver): Require linking in library for all
+	files except D interface files.
+	* d-lang.cc (d_write_global_declarations): Call d_finish_compilation.
+	* d-objfile.cc (mark_needed): Mark static.
+	(d_finish_symbol): Don't call mark_needed.
+	(d_finish_function): Likewise.
+	(d_finish_compilation): New function to wrapup all global
+	declarations, mark templates/comdats as needed if required, and start
+	the final compilation.
+
+2013-12-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-ctype.cc (TypeVector::toCtype): Treat void vectors as ubyte.
+	* d-objfile.cc (VarDeclaration::toObjFile): Gag all errors compiling
+	manifest constants.
+	* d-todt.cc (TypeVector::toDt): New function to generate correct static
+	data for vector initialisers.
+
+2013-12-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (d_init_options_struct): Don't define strict aliasing.
+	(d_get_alias_set): New function to return language-specific alias set.
+	* d-convert.cc (d_convert_basic): Always zero extend pointer to integer
+	conversions.
+
+2013-12-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (maybe_set_builtin_frontend): Assert that all runtime
+	library functions have been set-up correctly.
+	(libcall_ids): Remove unhandled library functions.
+	(get_libcall): Likewise.
+	* d-codegen.h (LibCall): Likewise.
+	* d-objfile.cc (output_symbol_p): Remove.
+
+2013-12-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (d_init_options): Update for frontend changes.
+	(d_handle_option): Set frontend allInst option if -femit-templates.
+	* d-objfile.cc (output_template_p): Want to emit all instantiated
+	templates if -femit-templates or -fdebug was passed to the compiler.
+	* d-objfile.h (TemplateEmission): Define TEallinst.
+	* d-todt.cc (StructDeclaration::toDt): Update for frontend changes.
+	* d-spec.cc (THREAD_LIBRARY): Define default thread library to link if
+	one is not already specified in the configuration process.
+	(TIME_LIBRARY): Define default real time library to link if one is not
+	already specified in the configuration process.
+	(LIBSTDCXX): Define C++ library to link if compiling C++ and D sources.
+	(lang_specific_driver): Update implementation to use new macros.
+
+2013-12-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-elem.cc (CatAssignExp::toElem): Don't call postblit after element
+	append to array.
+	(NewExp::toElem): Handle calling 'new' on opaque types.
+	(ArrayLiteralExp::toElem): Ensure array literal elements have no side
+	effects by making temporaries as necessary.
+	* d-todt.cc (StructLiteralExp::toDt): Update for frontend changes.
+	* d-codegen.cc (build_frame_type): Check for scoped variables if
+	building a closure.
+	* d-objfile.cc (d_finish_symbol): Relax toDt checking rule.
+
+2013-12-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-asmstmt.cc (ExtAsmStatement::ExtAsmStatement): Remove labels
+	member from class.
+	* d-codegen.cc (d_gcc_force_templates): Remove.
+	(convert_expr): Update for frontend changes.
+	(convert_for_assignment): Likewise.
+	(maybe_set_builtin_frontend): Update for changes to libdruntime
+	core.bitops signatures.
+	* d-ctype.cc (TypeFunction::toCtype): Update for frontend changes.
+	* d-decls.cc (Dsymbol::toSymbolX): Likewise.
+	(VarDeclaration::toSymbol): Likewise.
+	(FuncDeclaration::toSymbol): Don't defer nested functions here.
+	* d-elem.cc (PowAssignExp::toElem): Update for frontend changes.
+	(DeleteExp::toElem): Likewise.
+	(AssertExp::toElem): Don't call invariant on an extern C++ class.
+	* d-glue.cc (Global::init): Initialise new stdmsg member.
+	* d-lang.cc (d_handle_option): Handle -fdeps switch.  Remove TEprivate
+	for -femit-templates switch.
+	(genCmain): Update for frontend changes.
+	(d_parse_file): Likewise.
+	* d-longdouble.cc (longdouble::dump): Likewise.
+	* d-objfile.cc (ClassDeclaration::toObjFile): Update for frontend
+	changes.
+	(InterfaceDeclaration::toObjFile): Likewise.
+	(EnumDeclaration::toObjFile): Likewise.
+	(Symbol::Symbol): Remove outputSymbol member.
+	(output_symbol_p): Mark static.
+	(output_declaration_p): Determine symbol codegen status from
+	semanticRun.
+	(output_template_p): New function to determine whether an instantiated
+	template is to be written to object file.
+	(FuncDeclaration::toObjFile): Use semanticRun to update codegen status
+	of function.
+	(FuncDeclaration::buildClosure): Error if putting a scoped variable in
+	a closure.
+	(Module::genobjfile): Update for frontend changes.
+	(d_comdat_linkage): Don't determine linkage from TE setting.  Mark all
+	comdat symbols as DECL_COMDAT.
+	(setup_symbol_storage): Use output_template_p to determine whether the
+	symbol is being written to object file.
+	(mark_needed): New function to mark decls that must be emitted.
+	(d_finish_symbol): Mark finished symbols as needed.
+	(d_finish_function): Mark finished functions as needed.
+	(build_simple_function): Set semanticRun for glue changes.
+	* d-objfile.h (OutputStage): Remove enum.
+	* d-todt.cc (build_vptr_monitor): Update for frontend changes.
+	(StructInitializer::toDt): Likewise.
+	(StructDeclaration::toDt): Likewise.
+	(TypeInfoEnumDeclaration::toDt): Likewise.
+	(TypeInfoStructDeclaration::toDt): Likewise.
+	(Type::getTypeInfo): Likewise.
+
+2013-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (genCmain): Implement code generation of __entrypoint
+	module to provide the target C main function.
+	(deps_write): Ignore the module __entrypoint when writing make deps.
+	(d_parse_file): Handle writing __entrypoint module to object file.
+	* d-objfile.cc (d_finish_symbol): Remove special handling of _tlsstart
+	symbol, but ensure _tlsend gets written to the thread common section.
+	(d_finish_function): Remove call to build_tlssections.
+	(build_tlssections): Remove.
+
+2013-11-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (ClassDeclaration::toVtblSymbol): Use TypeSArray::makeType
+	to generate frontend static array type.
+	* d-glue.cc (Dsymbol::ungagSpeculative): Define.
+	* d-lang.cc (genCmain): Define as empty.
+	(d_parse_file): Update for frontend changes.
+	* d-objfile.cc (StructDeclaration::toObjFile): Likewise.
+	* d-typinf.cc (TypeBasic::builtinTypeInfo): Likewise.
+	* d-longdouble.cc (longdouble::isIdenticalTo): Remove.
+	* d-port.cc (Port::fequal): Define.
+
+2013-11-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (gcc_type_to_d_type): Use TypeSArray::makeType to
+	generate frontend static array types.
+	* d-codegen.cc (build_attributes): Use optimize as don't want the
+	ctfeInterpret of TypeExp expressions.
+	(get_object_method): Update for frontend changes.
+	(get_libcall): Update to use Type::dtypeinfo.
+	* d-elem.cc (IndexExp::toElem): Don't generate bounds checking codegen
+	if frontend explictly requests it.
+	(ArrayLiteralExp::toElem): Use TypeSArray::makeType to generate
+	frontend static array type.
+	(StructLiteralExp::toElem): Update for frontend changes.
+	* d-glue.cc (Global::increaseErrorCount): Define.
+	* d-objfile.cc (Module::genmoduleinfo): Remove moduleinfo 'New'
+	implementation for libdruntime changes.
+	* d-todt.cc (StructLiteralExp::toDt): Literal initialisers override
+	default initialisers.
+	(TypeInfoDeclaration::toDt): Update to use Type::dtypeinfo.
+	(TypeInfoStructDeclaration::toDt): Update for frontend changes.
+	* d-typinf.c (Type::getInternalTypeInfo): Update to use
+	Type::dtypeinfo.
+
+2013-11-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-asmstmt.cc (ExtAsmStatement::comeFromImpl): Define for frontend
+	implementation changes.
+	* d-codegen.cc (get_libcall): Update to use Type::typeinfoclass.
+	* d-codegen.cc (WrappedExp): Define as class.
+	* d-convert.cc (d_convert_basic): Fix format warnings.
+	* d-decls.cc (ModuleInfoDeclaration::toSymbol): Remove.
+	(FuncDeclaration::toSymbol): Use mangleExact to get decl mangle.
+	* d-elem.cc (ClassReferenceExp::toElem): Return reference to class.
+	* d-glue.cc (verror): Fix format warnings.
+	(verrorSupplemental): Likewise.
+	(vwarning): Likewise.
+	(vdeprecation): Likewise.
+	(escapePath): Define for frontend implementation changes.
+	* d-irstate.cc (IRState::getLoopForLabel): Implement breaking on named
+	scope labels in for/while loops.
+	* d-lang.cc (d_handle_option): Add handler for new -fdeps and
+	-fmake-deps options.
+	(d_parse_file): Handle new -fdeps and fmake-deps options.
+	* d-objfile.cc (Dsymbol::toObjFile): Update to use RootObject.
+	(Type::typeinfoclass): Update to use Type::typeinfoclass.
+	(InterfaceDeclaration::toObjFile): Likewise.
+	* d-objfile.h (Symbol): Remove inheritance from Object.
+	* d-todt.cc (TypeInfoStructDeclaration::toDt): Update to use
+	Type::immutableOf.
+
+2013-11-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.c (gcc_type_to_d_type): Use TREE_INT_CST_LOW macro instead
+	of tree_low_cst.
+	(eval_builtin): Likewise.
+	(gcc_cst_to_d_expr): Use tree_cst_hwi.
+	* d-codegen.cc (tree_to_hwi): Remove call to deleted host_integerp.
+	(maybe_expand_builtin): Use TREE_INT_CST_LOW macro.
+	* d-lang.cc (d_parse_file): Update debug_hooks call for middle-end
+	changes.
+	* d-system.h: Update includes for middle-end changes.
+
+2013-11-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-objfile.cc (finish_thunk): Update for conversion of symtab types to
+	a true class hierarchy.
+
+	* d-ctype.cc (TypeClass::toCtype): Fix ABI to emit correct vtable and
+	monitor field names.
+
+	* d-ctype.cc (TypeClass:toCtype): Set TYPE_LANG_SPECIFIC on record as
+	well as reference type.
+	* d-lang.cc (d_classify_record): New langhook to return appropriate
+	class/interface/struct type to the debugger.
+
+2013-10-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-elem.cc (ArrayLiteralExp::toElem): Build empty constructor for zero
+	sized arrays.
+
+2013-10-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-elem.cc (AssignExp::toElem): Optimise assigning array literal to a
+	static array.
+	(ArrayLiteralExp::toElem): Do not allocate static or const array
+	literals on the heap using the GC.
+
+2013-10-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.c (DEF_FUNCTION_TYPE_8): Define.
+
+2013-10-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.c (gcc_cst_to_d_expr): Add support for VECTOR_CST to
+	Expression conversion.
+	(d_gcc_paint_type): Add support for painting to/from array literals.
+
+2013-10-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-objfile.cc (cvtLocToloc_t): Rename to get_linemap.
+	* d-glue.cc: New source to provide interface for defined globals and
+	error handling called from the front-end.
+
+2013-09-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (IRState::call): Rename to d_build_call.
+	(IRState::emitLocalVar): Rename to build_local_var.
+	(IRState::buildAssignOp): Move to BinExp::toElemBin.
+	(IRState::IRState): Remove IRState class.
+	* d-irstate.cc (IRBase::IRBase): Rename to IRState, remove inheritance
+	from Object class.
+	* d-decls.cc (VarDeclaration::toSymbol): Remove redundant CONST_DECL
+	code as VarDeclaration::toObjFile does not emit manifest constants.
+	* d-ctype.cc (TypeEnum::toCtype): Generate CONST_DECLs for enumeration
+	members for correct debugging.
+	* d-objfile.cc (build_type_decl): Use fully qualified type name in
+	debugging code.
+	(VarDeclaration::toObjFile): Emit manifest constant values in debug
+	code generation.
+
+2013-09-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-elem.cc (SliceExp::toElem): Don't build D array for slices that
+	return a static array.
+
+2013-09-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (IRState::buildOp): Rename to build_binary_op.
+
+2013-09-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (binfo_for): Rename to build_class_binfo.
+	(intfc_binfo_for): Rename to build_interface_binfo.
+	(ClassDeclaration::toDebug): Move binfo generation into toCtype.
+	* d-lang.cc (pushlevel): Rename to push_binding_level.
+	(poplevel): Rename to pop_binding_level.
+	(global_bindings_p): Rename to d_global_bindings_p, add langhook.
+	(pushdecl): Rename to d_pushdecl, add langhook.
+	(getdecls): Rename to d_getdecls, add langhook.
+	(set_block): Remove function.
+	(insert_block): Remove function.
+	* d-irstate.cc (IRBase::startBindings): Inline set_block here.
+	(IRBase::endBindings): Inline insert_block here.
+
+2013-08-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-spec.c (lang_specific_spec_functions): Remove.
+
+2013-08-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (IRState::doArraySet): Rename to IRBase::doArraySet.
+	(IRState::arraySetExpr): Remove function.
+	(IRState::expandDecl): Rename to expand_decl.
+	(IRState::typeinfoReference): Rename to build_typeinfo.
+	(IRState::buildChain): Merge into FuncDeclaration::buildClosure.
+	(IRState::getVThis): Rename to build_vthis.
+	(IRState::maybeExpandSpecialCall): Rename to maybe_expand_builtin.
+	(IRState::toDArray): Rename to d_array_convert.
+
+2013-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (convert_expr): Check that the class type the codegen is
+	casting from is a base class of the class type the codegen is casting
+	to, not the other way round.
+
+2013-08-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-elem.cc (ArrayLiteralExp::toElem): Return null for zero length
+	array literals.
+
+2013-08-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-objfile.cc (finish_thunk): Don't emit thunks to external symbols as
+	weakref declarations.
+	* d-codegen.cc (IRState::maybeExpandSpecialCall): Remove intrinsic yl2x
+	and yl2xp1 builtins.
+	(maybe_set_builtin_frontend): Likewise.
+
+2013-07-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.c (d_gcc_magic_builtins_module): Set builtins solely
+	provided by the compiler as @safe, pure and nothrow.
+	* d-codegen.cc (IRState::getVThis): Don't set outer 'this' of structs
+	to be parent function chain if no frame has been created.
+
+2013-07-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-elem.cc (Expression::toElemDtor): Wrap temp variables destructor
+	calls in a try/finally expression.
+
+2013-07-05  Johannes Pfau  <johannespfau@gmail.com>
+
+	* patch-versym-os-4.8.x: Set versions on powerpc and alpha.
+	Remove SysV4 support and therefore fix macro redefinition warnings.
+	* patch-versym-os-4.9.x: Likewise.
+
+2013-07-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-longdouble.cc (longdouble::set): Intepret set values at higher
+	precision for min/max properties.
+	* d-codegen.cc (maybe_set_builtin_frontend): Add yl2x and yl2xp1
+	math intrinsics.
+	(IRState::maybeExpandSpecialCall): Likewise.
+
+2013-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-objfile.cc (Module::genobjfile): Don't free current_module_info.
+	* d-codegen.cc (IRState::buildAssignOp): Don't create a SAVE_EXPR
+	around comma expressions used as lvalues.
+	* d-todt.cc (TypeSArray::toDtElem): Get underlying vector basetype when
+	layouting out data in a static array.
+
+2013-06-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* complex_t.h: Move into dfrontend.
+	* d-builtins.c (gcc_cst_to_d_expr): Explicitly create longdouble.
+	* d-longdouble.cc (longdouble::parse): Remove function.
+	(longdouble::longdouble): Remove constructors from longdouble.
+	Replaced with operator= template and longdouble::set.
+	(longdouble::rv): Update for new class layout.
+	(longdouble::from_shwi): New function to create a longdouble value
+	from a HOST_WIDE_INT.
+	(longdouble::from_uhwi): Likewise, but from an unsigned HOST_WIDE_INT.
+	(longdouble::to_shwi): New function to return a HOST_WIDE_INT value
+	from a longdouble.
+	(longdouble::to_uhwi): Likewise, but from an unsigedn HOST_WIDE_INT.
+	(longdouble::set): New function to explicitly set longdouble value.
+	(longdouble::toInt): Remove function.
+	(longdouble::isZero): Remove function.
+	(longdouble::isNegative): Remove function.
+	* d-port.cc (Port::nan): Rename to Port::ldbl_nan.
+	(Port::infinity): Rename to Port::ldbl_infinity.
+	(Port::ldbl_max): New static field.
+	(Port::init): Set ldbl_max to be maximimum value for long double type.
+	(Port::strtof): New function to convert string to longdouble.
+	(Port::strtod): Likewise.
+	(Port::strtold): Likewise.
+
+2013-06-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-objfile.cc (make_alias_for_thunk): Do not set
+	TREE_SYMBOL_REFERENCED.
+
+2013-06-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_struct_memcmp): New function.
+	* d-elem.cc (IdentityExp::toElem): Use build_struct_memcmp for field
+	comparisons of small structs.
+
+2013-06-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (make_temp): New function.
+	* d-decls.cc (StructLiteralExp::toSymbol): Implement correctly to
+	generate an anonymous symbol to reference to in the codegen.
+	(ClassReferenceExp::toSymbol): Likewise, but also use an anonymous
+	type as size is not determined until the data has been layed out.
+	* d-elem.cc (EqualExp::toElem): Optimise comparisons of arrays of basic
+	types, also ensure left-to-right evaluation.
+	(SliceExp::toElem): Handle returing slice as a static array type.
+	(AddrExp::toElem): Handle taking the address of StructLiteralExp and
+	ClassReferenceExp symbols.
+	(FuncExp::toElem): Relax type checking to allow returning function
+	addresses as generic pointer types.
+	(ArrayLiteralExp::toElem): Implicitly convert static arrays of void to
+	static arrays of ubyte.
+	(StructLiteralExp::toElem): Remove code generation of postblit calls,
+	now taken care of in the front end.
+	* d-objfile.cc (Module::genmoduleinfo): Emit module name as a null
+	terminated static array.
+	* d-ctype.cc (TypeAArray::toCtype): Pass AA types around like pointers.
+
+2013-06-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dfrontend: Update to D front-end version 2.063.
+
+	* d-builtins.c (gcc_type_to_d_type): Use Loc for unknown locations.
+	(d_gcc_magic_builtins_module): Likewise.
+	(gcc_cst_to_d_expr): Likewise.
+	* d-codegen.cc (get_libcall): Use FuncDeclaration::genCfunc to build
+	D runtime library functions.
+	* d-decl.cc (SymbolDeclaration::SymbolDeclaration): Remove function.
+	(StructLiteralExp::toSymbol): New function.
+	(ClassReferenceExp::toSymbol): New function.
+	* d-elem.cc (AssertExp::toElem): Call struct/class invariants only if
+	compiler is generating invariant code.
+	(TupleExp::toElem): Update for new front-end.
+	(ClassReferenceExp::toElem): New function.
+	* d-lang.cc (d_init_options): Set compiler.vendor front-end parameter.
+	(d_init): Call Expression::init.
+	* d-objfile.cc (InterfaceDeclaration::toObjFile): Correctly set the
+	xgetRTInfo field in the record layout.
+	* d-todt.cc (CastExp::toDt): New function.
+	(AddrExp::toDt): New function.
+	(ClassReferenceExp::toDt): New function.
+	(ClassReferenceExp::toDtI): New function.
+	(ClassReferenceExp::toInstanceDt): New function.
+	(ClassReferenceExp::toDt2): New function.
+
+2013-06-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-objfile.cc (FuncDeclaration::toObjFile): Set 'this' parameter as
+	implicitly read-only.
+	* d-codegen.cc (declaration_type): Set 'this' declaration type as
+	implicitly const.
+	(build_frame_type): Set frame or closure type as implicitly const.
+
+2013-06-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.c (d_init_builtins): Make d_unknown_type_node a
+	RECORD_TYPE.
+	* d-lang.cc (d_build_eh_type_type): Cast the returned typeinfo decl to
+	void pointer type.
+
+2013-06-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (IRState::var): Rename to get_decl_tree.
+	(IRState::convertForArgument): Rename to convert_for_argument.
+	(IRState::floatMod): Rename to build_float_modulus.
+	(IRState::findThis): Rename to find_this_tree.
+	(IRState::emitLocalVar): Update signature.
+	(IRState::arrayElemRef): Remove function.
+	* d-elem.cc (IndexExp::toElem): Move implementation of
+	IRState::arrayElemRef here.
+
+2013-06-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (cmodule): Rename to current_module_decl.
+	(object_file): Remove variable.
+	* d-objfile.cc (ObjectFile::moduleInfo): Rename to current_module_info.
+	(ObjectFile::modules): Rename to output_modules.
+	(ObjectFile::staticCtorList): Rename to static_ctor_list.
+	(ObjectFile::staticDtorList): Rename to static_dtor_list.
+	(ObjectFile::emitTemplates): Rename to flag_emit_templates.
+	(ObjectFile::beginModule): Remove function.
+	(ObjectFile::endModule): Remove function.
+	(ObjectFile::finish): Rename to d_finish_module.
+	(ObjectFile::doLineNote): Remove function.
+	(ObjectFile::setLoc): Rename to set_input_location.
+	(ObjectFile::setDeclLoc): Rename to set_decl_location.
+	(ObjectFile::setCfunEndLoc): Rename to set_function_end_locus.
+	(ObjectFile::giveDeclUniqueName): Rename to get_unique_name.
+	(ObjectFile::setupSymbolStorage): Rename to setup_symbol_storage.
+	(ObjectFile::setupStaticStorage): Remove function.
+	(ObjectFile::makeDeclOneOnly): Rename to d_comdat_linkage.
+	(ObjectFile::outputStaticSymbol): Rename to d_finish_symbol.
+	(ObjectFile::outputFunction): Rename to d_finish_function.
+	(ObjectFile::addAggMethod): Remove function.
+	(ObjectFile::initTypeDecl): Rename to build_type_decl.
+	(ObjectFile::declareType): Remove function.
+	(ObjectFile::shouldEmit): Rename to output_declaration_p.
+	(ObjectFile::shouldEmit): Rename variant to output_symbol_p.
+	(ObjectFile::doThunk): Rename to use_thunk.
+	(ObjectFile::stripVarDecl): Remove function.
+	(ObjectFile::doSimpleFunction): Rename to build_simple_function.
+	(ObjectFile::doFunctionToCallFunctions): Rename to
+	build_call_function.
+	(ObjectFile::doCtorFunction): Rename to build_ctor_function.
+	(ObjectFile::doDtorFunction): Rename to build_dtor_function.
+	(ObjectFile::doUnittestFunction): Rename to build_unittest_function.
+	(ObjectFile::hasModule): Rename to output_module_p.
+	(ObjectFile::outputThunk): Rename to finish_thunk.
+	(write_deferred_thunks): New function to emit deferred thunks.
+
+2013-06-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (VarDeclaration::toSymbol): Don't set default tls model.
+	* d-objfile.cc (ObjectFile::setupSymbolStorage): Set default tls
+	model for var decls before determining whether symbol is public.
+	(build_tlssections): Likewise for TLS symbols.
+
+2013-06-01  Johannes Pfau  <johannespfau@gmail.com>
+
+	* d-codegen.cc (maybe_set_builtin_frontend): Check parameter and
+	return types of intrinsics.
+
+2013-06-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (IRState::var): Handle variables used for NRVO.
+	* d-ir.cc (ReturnStatement::toIR): Return result decl directly if NRVO.
+	* d-objfile.cc (Symbol::SnamedResult): New member to hold the named
+	RESULT_DECL of the function.
+	(FuncDeclaration::toObjFile): Set-up function for NRVO.
+	(build_tlssections): Align _tlsstart and _tlsend symbols to target
+	address size.
+	* d-ctype.cc (TypeFunction::toSymbol): Mark functions returning non-POD
+	structs as TREE_ADDRESSABLE to force return in memory.
+	* d-decls.cc (FuncDeclaration::toSymbol): Propagate TREE_ADDRESSABLE
+	from the original function type.
+
+2013-05-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-target.cc: New source file to handle Target structure.
+
+	* d-builtins.c (d_bi_init): Remove function.
+	(d_gcc_type_align): Move to Target::alignsize.
+	(d_gcc_field_align): Move to Target::fieldalign.
+	(d_init_builtins): Build va_list type for D frontend.
+	* d-lang.cc (d_init): Use isLP64 to determine LP64 targets.
+	(d_add_builtin_version): Set is64bit if target is X86_64.
+	* d-codegen.cc (convert_for_assignment): Use memset to implement front
+	end code (struct = 0) here, rather than build an empty constructor.
+	* d-elem.cc (AssignExp::toElem): Remove handling of (struct = 0) and
+	call convert_for_assignment.
+
+2013-05-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-gcc-complex_t.h: Rename to complex_t.h.
+	* d-gcc-real.cc: Rename to d-longdouble.cc.
+	* d-gcc-real.h: Rename to longdouble.h
+	* d-port.cc: New source file to handle Port structure.
+	* gdc_alloca.h: Remove source.
+
+	* d-longdouble.cc (real_t): Rename to longdouble.
+	(longdouble::getnan): Move to Port::nan.
+	(longdouble::getsnan): Move to Port::snan.
+	(longdouble::getinfinity): Move to Port::infinity.
+	(longdouble::isInf): Move to Port::isInfinite.
+	(longdouble::isNan): Move to Port::isNan.
+	(longdouble::isSignallingNan): Move to Port::isSignallingNan.
+	* d-builtins.c (gcc_d_backend_init): Rename to d_backend_init.
+	(gcc_d_backend_term): Rename to d_backend_term.
+	(gcc_type_to_d_type): Don't map 128bit integers to D front end.
+
+	* d-elem.cc (AssignExp::toElem): Remove handling of fillHoles, use
+	memset to implement (struct = 0).
+	(StructLiteralExp::toElem): Handle fillHoles here, creating a
+	temporary var that is zero init'd with memset and returned.
+
+2013-05-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (IRState::localVar): Rename to build_local_var.
+	(IRState::exprVar): Rename to create_temporary_var.
+	(IRState::maybeExprvar): Rename to maybe_temporary_var.
+	(IRState::pointerIntSum): Rename to build_array_index.
+	* d-lang.cc (d_handle_target_attribute): New function to handle D
+	target attributes.
+
+2013-05-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-incpath.cc (prefixed_path): Add cpp_GCC_INCLUDE_DIR back in as
+	second method for relocation.
+	* d-elem.cc (IndexExp::toElem): Fix call to _aaGetX as from
+	IRState::toElemLvalue.
+	* d-codegen.cc (IRState::toElemLvalue): Remove function.
+	(IRState::convertForAssignment): Rename to convert_for_assignment.
+	(IRState::convertForCondition): Rename to convert_for_condition.
+	(IRState::checkedIndex): Rename to d_checked_index.
+	(IRState::boundsCond): Rename to d_bounds_condition.
+	(IRState::arrayBoundsCheck): Rename to array_bounds_check.
+	(IRState::assertCall): Rename to d_assert_call.
+	(IRState::doLineNote): Move to irstate.h.
+	* d-irstate.cc (IRBase::getLocalContext): Remove function.
+	* d-decls.cc (VarDeclaration::toSymbol): Build decl lang specific for
+	decl to point back to D front end type.
+	(FuncDeclaration::toSymbol): Likewise.
+
+2013-05-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (AggLayout::finish): Unset TYPE_SIZE before
+	re-calculating.
+	* d-ctype.cc (TypeStruct::toCtype): Don't call decl_attribute on the
+	type twice.
+
+2013-05-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (d_gcc_dump_source): Remove function.
+	(d_post_options): Set flag_excess_precision_cmd as standard.
+	* d-gcc-real.cc (real_t::convert): Remove function.
+	(real_t::floatCompare): Remove function.
+	(real_t::operator): Always perform floating point compilation at the
+	precision of the target real mode.
+	* d-todt.cc (dt_last): Remove function.
+	(dtlist_to_tree): Rename to dtvector_to_tree.
+	(dt_cons): Replace TREE_CHAIN implementation for use of CONSTRUCTOR.
+	(dt_chainon): Likewise.
+	(dt_container): Likewise.
+	(dt_container2): Likewise.
+	(StructInitializer::toDt): Likewise.
+	(StructLiteralExp::toDt): Likewise.
+
+2013-05-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (IRState::convertTo): Replace with d_convert and
+	convert_expr.
+	(IRState::declContext): Replace with d_decl_context.
+	(IRState::functionNeedsChain): Replace with needs_static_chain.
+	(IRState::label): Replace with d_build_label.
+	(IRState::emitTemplates): Move to ObjectFile.
+	(functionDegenerateClosure): Replace with is_degenerate_closure.
+	(get_object_method): Assert that function is a method.
+	(IRState::startCond): Move to IRBase.
+	(IRState::startElse): Likewise.
+	(IRState::endCond): Likewise.
+	(IRState::startLoop): Likewise.
+	(IRState::continueHere): Likewise.
+	(IRState::setContinueLabel): Likewise.
+	(IRState::exitIfFalse): Likewise.
+	(IRState::endLoop): Likewise.
+	(IRState::startCase): Likewise.
+	(IRState::doCase): Likewise.
+	(IRState::endCase): Likewise.
+	(IRState::continueLoop): Likewise.
+	(IRState::exitLoop): Likewise.
+	(IRState::startTry): Likewise.
+	(IRState::startCatches): Likewise.
+	(IRState::startCatch): Likewise.
+	(IRState::endCatch): Likewise.
+	(IRState::endCatches): Likewise.
+	(IRState::startFinally): Likewise.
+	(IRState::endFinally): Likewise.
+	(IRState::doReturn): Likewise.
+	(IRState::doJump): Likewise.
+	(IRState::pushLabel): Likewise.
+	(IRState::checkSwitchCase): Likewise.
+	(IRState::checkGoto): Likewise.
+	(IRState::checkPreviousGoto): Likewise.
+
+	* d-elem.cc (CatAssignExp::toElem): Call postblit on appending array of
+	structs if required.
+
+2013-05-16  Johannes Pfau  <johannespfau@gmail.com>
+
+	* d-incpath.cc (prefixed_path): use cpp_PREFIX instead of
+	cpp_GCC_INCLUDE_DIR for relocation.
+
+2013-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (IRState::convertForAssignment): Remove use of
+	CtorEltMaker wrapper for vec<constructor_elt, va_gc>.
+	(d_array_value): Likewise.
+	(build_delegate_cst): Likewise.
+	(extract_from_method_call): Likewise.
+	* d-elem.cc (NewExp::toElem): Likewise.
+	(ArrayLiteralExp::toElem): Likewise.
+	(AssocArrayLiteralExp::toElem): Likewise.
+	(StructLiteralExp::toElem): Likewise.
+	(NullExp::toElem): Likewise.
+	(VectorExp::toElem): Likewise.
+	* d-objfile.cc (build_moduleinfo): Likewise.
+	* d-todt.cc (dt_container): Likewise.
+	(dt_container2): Likewise.
+
+	* d-asmstmt.cc (ExtAsmStatement::toIR): Remove use of ListMaker
+	wrapper for tree chaining.
+	* d-builtins.c (d_bi_builtin_func): Likewise.
+	(d_bi_builtin_type): Likewise.
+	(d_gcc_magic_builtins_module): Likewise.
+	(d_gcc_magic_libbuiltins_module): Likewise.
+	* d-codegen.cc (build_attributes): Likewise.
+	(IRState::call): Likewise.
+	(IRState::buildFrameForFunction): Likewise.
+	(AggLayout::doFields): Likewise.
+	(AggLayout::addField): Likewise.
+	* d-ctype.cc (TypeEnum::toCtype): Likewise.
+	(TypeFunction::toCtype): Likewise.
+	* d-todt.cc (dt_container2): Likewise.
+
+	* d-codegen.cc (IRState::getFrameInfo): Replace with get_frameinfo.
+	(IRState::buildFrameForFunction): Replace with build_frame_type.
+	(IRState::isClassNestedInFunction): Replace with d_nested_class.
+	(IRState::isStructNestedInFunction): Replace with d_nested_struct.
+	(IRState::getFrameForFunction): Fold into IRState::getFrameForSymbol.
+	(IRState::getFrameForNestedClass): Likewise.
+	(IRState::getFrameForNestedStruct): Likewise.
+
+2013-05-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (IRState::buildFrameForFunction): Also copy the
+	parameters of functions with 'in' contracts to a local frame decl.
+	* d-lang.cc (d_handle_flatten_attribute): New function to handle D
+	flatten attributes.
+
+2013-05-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (IRState::chainLink): Remove function.
+	(IRState::chainFunc): Remove function.
+	(IRState::sthis): New member which holds the chain of function.
+	(IRState::buildChain): Update to use new static chain decl.
+	(IRState::getFrameInfo): Likewise.
+	* d-objfile.cc (FuncDeclaration::buildClosure): Likewise.
+	(FuncDeclaration::toObjFile): Default the function static chain decl
+	to null unless vthis is given for the function.
+
+2013-05-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (d_handle_noinline_attribute): New function to handle D
+	noinline attributes.
+	(d_handle_forceinline_attribute): New function to handle D forceinline
+	attributes.
+	* d-elem.cc (StructLiteralExp::toElem): Return the struct initialiser
+	symbol directly if the tree has already been built.
+	* d-decls.cc (Dsymbol::toSymbolX): Constify the mangling name to use.
+
+2013-05-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-typinf.cc: New file containing type info routines originally in
+	the D Front End.
+
+	* d-todt.cc (dt_last): New helper function to retrieve last node in a
+	dt_t tree list.
+	(dt_cons): New helper function to append nodes to the end of a list.
+	(dt_chainon): New helper function to concatenate two lists together.
+	(dt_container): New helper function to build a ctor from a list.
+	(build_vptr_monitor): New helper function to generate the class
+	vtable, and put out __vptr and __monitor.
+	symbol default values in a class declaration.
+	(dtlist_to_tree): New helper function to convert a dt_t list into a
+	constructor tree.
+	(Type::toDt): Implement routines for new dt_t format.
+	(TypeInfoDeclaration::toDt): Likewise.
+	(Initializer::toDt): Likewise.
+	(Expression::toDt): Likewise.
+	(Declaration::toDt): Likewise.
+
+	* d-objfile.cc (Dsymbol::toObjFile): Update for new dt_t format.
+	(Module::genmoduleinfo): Likewise.
+	(Symbol::Symbol): Moved from symbol.cc
+	(Obj::objmod): Remove abstraction layer.
+	(Obj::moduleinfo): Renamed to build_moduleinfo.
+	(obj_tlssections): Renamed to build_tlssections.
+	(outdata): Renamed to d_finish_symbol.
+	(check_static_sym): Moved into d_finish_symbol.
+
+	* d-codegen.cc (d_gcc_emit_local_variable): Remove.
+
+	* d-decls.cc (Dsymbol::toSymbolX): Update to not call symbol_calloc.
+	(FuncDeclaration::toThunkSymbol): Likewise.
+	(ClassDeclaration::toSymbol): Build type as d_unknown_type_node.
+	(InterfaceDeclaration::toSymbol): Likewise.
+	(Module::toSymbol): Likewise.
+	(ClassDeclaration::toVtblSymbol): Update call to toSymbolX.
+	(AggregateDeclaration::toInitializer): Likewise.
+	(TypedefDeclaration::toInitializer): Likewise.
+	(EnumDeclaration::toInitializer): Likewise.
+
+	* d-ir.cc (CaseStatement::toIR): Don't call static_sym.
+
+	* d-lang.cc (rtlsym): Remove symbol.
+	(D_DECL_READONLY_STATIC): Remove macro.
+	(d_unknown_type_node): New LANG_TYPE node for marking TypeInfo_Class,
+	Interface, and ModuleInfo types that are of a variable size determined
+	at compile time.
+
+	* d-elem.cc (StringExp::toElem): Clean up for new dt_t format.
+
+	* symbol.cc: Remove file.
+
+2013-05-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (IRState::getFrameInfo): Don't create a frame/closure
+	for member functions, only required for nested.
+	* d-elem.cc (Expression::toElemDtor): Call dtors in the correct order.
+	(DeclarationExp::toElem): Don't call dtor on static, manifest, or
+	extern symbols upon declaration.
+	(AssignExp::toElem): Only call postblit on lvalues in assignment.
+	(ArrayLiteralExp::toElem): Always generate literals on heap.
+
+2013-05-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-elem.cc (StructLiteralExp::toElem): Return the default initialiser
+	symbol if one exists.
+	* d-builtins.c (d_gcc_magic_libbuiltins_check): Override the function
+	type with the correct built-in function type as defined in backend.
+
+2013-04-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-elem.cc (IdentityExp::toElem): Remove special handling of class,
+	reference and array types.
+
+2013-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (maybe_make_temp): Save call expressions so aren't
+	evaluated more than once.
+	(d_has_side_effects): Remove check for exceptional class types.
+
+2013-04-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (FuncDeclaration::toSymbol): Harden logic for marking
+	functions pure as in 'has no side effects'.
+
+2013-04-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (FuncDeclaration::toSymbol): Push deferred functions to
+	FuncDeclaration::deferred.
+	* d-elem.cc (DelegateExp::toElem): Likewise.
+	(FuncExp::toElem): Likewise.
+	* d-objfile.cc (ObjectFile::shouldEmit): Likewise.
+	(FuncDeclaration::toObjFile): Process all deferred functions in
+	FuncDeclaration::deferred.
+	* symbol.cc (Symbol::deferredNestedFuncs): Remove.
+
+2013-04-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-elem.cc (FuncExp::toElem): Defer function literals and lambdas
+	until parent function has finished processing.
+
+2013-04-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (IRState::buildChain): Use __frame decl directly when
+	setting up the function frame.
+	(maybe_set_builtin_frontend): Exit early if symbol has no parent.
+	* d-decls.cc (FuncDeclaration::toSymbol): Defer all nested functions,
+	not just templated instances.
+	* d-objfile.cc (FuncDeclaration::toObjFile): Delay processed deferred
+	nested functions until function has finished being generated.
+	(ObjectFile::shouldEmit): Don't emit nested functions if the parent
+	function hasn't finished processing.
+
+2013-04-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (maybe_set_builtin_frontend): Merged from
+	maybe_set_builtin and maybe_set_libcall.
+	* d-decls.cc (FuncDeclaration::toSymbol): Use
+	maybe_set_builtin_frontend.
+
+2013-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (d_init_options): Default module info emission to on.
+	(d_handle_option): New femit-moduleinfo switch.
+	* d-objfile.cc (Module::genobjfile): Don't emit module if disabled
+	explicitly.
+	* d-builtins.cc (is_intrinsic_module_p): New function to test whether
+	module is core.bitops.
+	(is_math_module_p): New function to test whether module is std.math or
+	core.stdc.math.
+	(is_builtin_va_arg_p): New function to test whether symbol is
+	specially handled va_arg template.
+	(is_builtin_va_start_p): New function to test whether symbol is
+	specially handled va_start template.
+	* d-codegen.cc (IRState::binding): Replace with bind_expr.
+	(IRState::mathModule): Replace with std_math_module.
+	(IRState::mathCoreModule): Replace with core_math_module.
+	(IRState::intrinsicModule): Replace with std_intrinsic_module.
+	(IRState::cstdargTemplateDecl): Replace with va_arg_template.
+	(IRState::stdargTemplateDecl): Replace with va_arg2_template.
+	(IRState::cstdargStartTemplateDecl): Replace with va_start_template.
+	(IRState::getLibCallDecl): Replace with get_libcall.
+	(IRState::maybeSetLibCallDecl): Replace with maybe_set_libcall.
+	(IRState::libCall): Replace with build_libcall.
+	(IRState::maybeSetUpBuiltin): Replace with maybe_set_builtin.
+	(IRState::Intrinsic): Move enum out of IRState.
+
+2013-03-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (IRState::darrayPtrRef): Replace with d_array_ptr.
+	(IRState::darrayLenRef): Replace with d_array_length.
+	(IRState::darrayVal): Replace with d_array_value.
+	(IRState::darrayString): Replace with d_array_string.
+	(IRState::arrayLength): Replace with get_array_length.
+	(get_object_method): Remove dependancy on irs parameter.
+	* d-lang.cc (d_init): Use static bool std_inc to determine whether to
+	include standard module paths.
+	(d_post_options): Canonicalize the input filename.
+	(d_parse_file): Correctly catch cases where input file is stdin.
+
+2013-03-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (IRState::getFrameInfo) Create a custom static chain for
+	all nested functions.
+	* d-gcc-includes.h: Rename to d-system.h
+
+2013-03-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.c (d_bi_init): Set REALPAD to be TYPE_PRECISION of
+	long_double_type_node.
+	* d-codegen.cc (IRState::twoFieldType): Replace with
+	build_two_field_type.
+	(IRState::arrayOpNotImplemented): Replace with unhandled_arrayop_p.
+	(IRState::delegateMethodRef): Replace with delegate_method.
+	(IRState::delegateObjectRef): Replace with delegate_object.
+	(IRState::delegateVal): Replace with build_delegate_cst.
+	(IRState::methodCallExpr): Replace with build_method_call.
+	(IRState::extractMethodCallExpr): Replace with
+	extract_from_method_call.
+	(IRState::objectInstanceMethod): Replace with get_object_method.
+	(IRState::twoFieldCtor): Remove.
+	(IRState::call): Assert that if calling a normal FUNCTION_TYPE,
+	'object' is not set.
+	* d-ctype.cc (TypeDelegate::toCtype): Build a METHOD_TYPE for the .func
+	field type in delegates.
+	* d-lang.h (D_IS_METHOD_CALL_EXPR): Rename to D_METHOD_CALL_EXPR.
+	* d-objfile.cc (FuncDeclaration::toObjFile): Remove assert for chain
+	function.
+
+2013-03-20  Johannes Pfau  <johannespfau@gmail.com>
+
+	* d-codegen.cc (IRState::objectInstanceMethod): Recursively check
+	for TOKsuper / TOKdottype. Do not ignore CastExp.
+	* d-elem.cc (IdentityExp::toElem): Ignore padding in bitwise floating
+	point comparisons.
+	* testsuite: Cleanup. Remove invalid tests, adjust tests, etc. 
+
+2013-03-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (IRState::objectInstanceMethod): Get function pointer
+	off function TREE_TYPE.
+	(build_deref): Handle cases where expression to dereference is an
+	address expression.
+	(modify_expr): New function overload to set return type directly.
+	* d-elem.cc (CatAssignExp::toElem): Use new modify_expr.
+	(AssignExp::toElem): Likewise.
+	* d-decls.cc (FuncDeclaration::toSymbol): Don't build a method type for
+	nested functions / delegates.  Just add on the hidden 'this' pointer
+	containing the custom static chain/closure object.
+
+	* d-codegen.cc (GlobalValues): Replace with current_module,
+	current_irs, object_file.
+	(IRState::getFuncType): Replace with get_function_type.
+	(IRState::isCallByAlias): Replace with call_by_alias_p.
+	(IRState::isFuncType): Replace with function_type_p.
+	(IRState::doExp): Remove.
+
+	* d-asmstmt.cc (ExtAsmStatement::syntaxCopy): Use arraySyntaxCopy to
+	copy front end expressions.
+
+	* d-codegen.cc (AssignExp::toElem): Call _d_arrayassign / _d_arrayctor
+	when assigning arrays of structs.
+
+2013-03-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (IRState::realPart): Replace with real_part.
+	(IRState::imagPart): Replace with imaginary_part.
+	(IRState::integerConstant): Replace with build_integer_cst.
+	(IRState::floatConstant): Replace with build_float_cst.
+	(IRState::hwi2toli): Replace with cst_to_hwi.
+	(IRState::addressOf): Replace with build_address.
+	(IRState::markAddressable): Replace with d_mark_addressable.
+	(IRState::markUsed): Replace with d_mark_used.
+	(IRState::markRead): Replace with d_mark_read.
+	(IRState::indirect): Replace with indirect_ref.
+	(IRState::pvoidOkay): Replace with void_okay_p.
+	(IRState::maybeCompound): Replace with maybe_compound_expr.
+	(IRState::maybeVoidCompound): Replace with maybe_vcompound_expr.
+	(IRState::isErrorMark): Replace with error_mark_p.
+	(IRState::getTargetSizeConst): Replace with tree_to_hwi.
+	(IRState::modify): Replace with modify_expr.
+	(IRState::vmodify): Replace with vmodify_expr.
+	(IRState::vinit): Replace with build_vinit.
+	(IRState::nop): Replace with build_nop.
+	(IRState::vconvert): Replace with build_vconvert.
+	(IRState::boolOp): Replace with build_boolop.
+	(IRState::compound): Replace with compound_expr.
+	(IRState::voidCompound): Replace with vcompound_expr.
+	(IRState::component): Replace with component_ref.
+	(IRState::errorMark): Replace with error_mark.
+	(IRState::typesSame): Replace with d_types_same.
+	(IRState::typesCompatible): Replace with d_types_compatible.
+	(IRState::getDType): Replace with build_dtype.
+	(IRState::getObjectType): Replace with build_object_type.
+	(IRState::isDeclarationReferenceType): Replace with decl_reference_p.
+	(IRState::trueDeclarationType): Replace with declaration_type.
+	(IRState::isArgumentReferenceType): Replace with arg_reference_p.
+	(IRState::trueArgumentType): Replace with type_passed_as.
+	(IRState::arrayType): Replace with d_array_type.
+	(IRState::addTypeAttribute): Replace with insert_type_attributes.
+	(IRState::addDeclAttribute): Replace with insert_decl_attributes.
+	(IRState::attributes): Replace with build_attributes.
+	(IRState::addTypeModifiers): Replace with insert_type_modifiers.
+	(IRState::maybeMakeTemp): Replace with maybe_make_temp.
+	(IRState::isFreeOfSideEffects): Replace with d_has_side_effects.
+	(IRState::pointerOffsetOp): Replace with build_offset_op.
+	(IRState::pointerOffset): Replace with build_offset.
+	(IRState::buildCall): Replace with d_build_call.
+	(IRState::exceptionObject): Replace with build_exception_object.
+
+2013-03-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-asmstmt.cc (d_build_asm_stmt): Remove.
+	(ExtAsmStatement::ExtAsmStatement): Update to match renamed members.
+	(ExtAsmStatement::syntaxCopy): Likewise.
+	(ExtAsmStatement::semantic): Likewise.
+	(ExtAsmStatement::toCBuffer): Likewise.
+	(ExtAsmStatement::comeFrom): New.
+	(ExtAsmStatement::blockExit): Don't error if must not throw.
+	(naturalString): Remove.
+	(ExtAsmStatement::toIR): Inline IRState::doAsm implementation.
+	* d-codegen.cc (IRState::doAsm): Remove.
+	* d-decls.cc (FuncDeclaration::toSymbol): Don't generate 'naked'
+	attribute.
+	(binfo_for): Move into d-decls.cc.
+	(intfc_binfo_for): Likewise.
+	(ClassDeclaration::toDebug): Likewise.
+	(EnumDeclaration::toDebug): Likewise.
+	(TypedefDeclaration::toDebug): Likewise.
+	(StructDeclaration::toDebug): Likewise.
+	* d-objfile.cc (FuncDeclaration::toObjFile): Move into d-objfile.cc.
+	(FuncDeclaration::buildClosure): Likewise.
+	(Module::genobjfile): Likewise.
+	* d-glue.cc: Remove file.
+
+2013-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-ir.cc (SynchronizedStatement::toIR): Remove implementation as is
+	now handled by the frontend.
+
+2013-03-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (IRState::maybeExpandSpecialCall): Handle ref argptr
+	arguments.
+
+2013-03-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.c (handle_alias_attribute): New function to handle
+	internal 'alias' attribute.
+	(handle_weakref_attribute): New function to handle internal 'weakref'
+	attribute.
+	* d-objfile.cc (ObjectFile::outputThunk): Define thunks to external
+	symbols as weakref, alias
+
+2013-03-12  Johannes Pfau  <johannespfau@gmail.com>
+
+	* patch-versym-os-4.8.x (mingw32.h): Fix typo
+	* patch-versym-cpu-4.8.x (mips.h): Fix typo
+	Update version symbols to latest dlang specification.
+
+2013-03-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (FuncDeclaration::toSymbol): Delay setting TREE_TYPE as
+	function type could be hidden in a nested function not yet built.
+	* d-codegen.cc (IRState::findThis): Don't get 'this' from outer
+	function if it's a closure type.  This has already been handled by
+	IRState::getFrameForSymbol.
+	(IRState::buildChain): Give frame decl debug name '__frame'.
+	Always set '__chain' link field.
+	(IRState::getFrameInfo): Don't build a frame for all nested functions.
+	Search through nested aggregates for static chain in outer functions.
+	* d-codegen.h (IRState::useParentChain): Remove.
+	* d-glue.cc (FuncDeclaration::toObjFile): Don't call useParentChain.
+	Don't create a local var for the chain link for a function.
+	(FuncDeclaration::buildClosure): Always set '__chain' link field.
+
+2013-03-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (d_gcc_force_templates): Only check for emitting
+	templates as private.
+	* d-lang.cc (d_handle_option): Remove -femit-templates= option.
+	* d-objfile.cc (ObjectFile::makeDeclOneOnly): Fix code logic so
+	fallback method could be reached.
+	* d-objfile.h (TEall, TEauto): Remove.
+
+2013-03-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-ir.cc (ReturnStatement::toIR): Don't call postblit on return.
+	* d-codegen.cc (IRState::trueDeclarationType): Don't set
+	D_TYPE_ADDRESSABLE.
+	(IRState::makeTemp): Remove.
+	(IRState::maybeMakeTemp): Copy makeTemp into function.
+	* d-glue.cc (d_genericize): Remove D_TYPE_ADDRESSABLE handling.
+	* d-lang.h (D_TYPE_ADDRESSABLE): Remove macro.
+
+2013-03-04  Johannes Pfau  <johannespfau@gmail.com>
+
+	* d-ctype.cc (Type::toCtype): Always call gen.addTypeModifiers to
+	make sure TYPE_MAIN_VARIANT is set. Reuse tree from unqualified
+	variant for that. Also cache the resulting qualified tree.
+	(TypeTypedef::toCtype): Likewise.
+	(TypeEnum::toCtype): Likewise.
+	(TypeStruct::toCtype): Likewise.
+	(TypeFunction::toCtype): Likewise.
+	(TypeVector::toCtype): Likewise.
+	(TypeSArray::toCtype): Likewise.
+	(TypeDArray::toCtype): Likewise.
+	(TypeAArray::toCtype): Likewise.
+	(TypeDelegate::toCtype): Likewise.
+	(TypeClass::toCtype): Likewise.
+	* d-objfile.cc (ObjectFile::giveDeclUniqueName): Make sure DECL_NAME is set
+
+2013-03-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-decls.cc (VarDeclaration::toSymbol): Remove use of c_ident.
+	(FuncDeclaration::toSymbol): Likewise.
+	* d-builtins.c (handle_noreturn_attribute): Assert that this is only
+	used for internal purposes.
+	(handle_const_attribute): Likewise.
+	(handle_malloc_attribute): Likewise.
+	(handle_pure_attribute): Likewise.
+	(handle_nonnull_attribute): Likewise.
+	(handle_nothrow_attribute): Likewise.
+	(handle_sentinel_attribute): Likewise.
+	(handle_transaction_pure_attribute): Likewise.
+	(handle_returns_twice_attribute): Likewise.
+	* d-glue.cc (FuncDeclaration::toObjFile): Result variables have no
+	default initialiser.
+	* d-codegen.cc (IRState::emitLocalVar): Add in assert that the local
+	variable has no initialiser if called with no_init = true.
+	(IRState::getLibCallDecl): Mark exceptional library functions as
+	noreturn.
+	(IRState::attributes): Gracefully handle @attribute, and
+	@attribute(null).
+
+2013-02-28  Jernej Krempus  <jkrempus@gmail.com>
+
+	* d-builtins.c (d_attribute_table): Renamed it to
+	d_builtins_attribute_table.
+	* d-lang.cc (d_attribute_table): Added an empty table
+	* d-lang.cc (LANG_HOOKS_COMMON_ATTRIBUTE_TABLE): Defined it as
+	d_builtins_attribute_table.
+	* d-lang.h (d_builtins_attribute_table): Added a declaration.
+	* d-codegen.cc (IRState::attributes): Changed it so it goes through
+	in_attrs and looks for any @gcc.attribute.attribute("attr_name").
+	* d-objfile.cc (ObjectFile::setupSymbolStorage): Pass userAttributes
+	instead of attributes in all calls to IRState::attributes.
+	* d-ctype.cc (TypeTypedef::toCtype): Likewise.
+	(TypeEnum::toCtype): Likewise.
+	(TypeStruct::toCtype): Likewise.
+	(TypeClass::toCtype): Likewise.
+	* libphobos/libdruntime/gcc/attribute.d: New file.
+
+2013-02-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (d_handle_option): Remove OPT_fdeprecated and
+	OPT_Wsign_compare, add handling for OPT_Wdeprecated.
+	(d_post_options): Handle Wdeprecated and Werror switch combination.
+
+2013-02-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (ArrayScope::ArrayScope): Don't setup length var if its
+	value is known at compile time.
+	(ArrayScope::setArrayExp): Likewise.
+	* d-decls.cc (uniqueName): Remove function.
+	(VarDeclaration::toSymbol): Set decl assembler name directly.
+	(FuncDeclaration::toSymbol): Likewise.
+
+2013-02-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (GDC_EXTENDED_ASM_SYNTAX): Remove macro.
+
+2013-02-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.h (D_DECL_IS_CONTRACT): Remove macro.
+	* d-decls.cc (FuncDeclaration::toSymbol): Likewise.
+
+2013-02-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (d_gcc_is_target_win32): Remove.
+	(d_add_builtin_version): New function to handle define_builtin
+	callback from backend.
+	* d-codegen.cc (IRState::maybeExpandSpecialCall): Remove intrinsic bt.
+
+	* d-builtins.c: Merge with d-builtins2.cc.
+	* d-builtins2.cc: Remove.
+
+2013-02-07  Johannes Pfau  <johannespfau@gmail.com>
+
+	* d-lang.cc (d_init): Use gcc's config system for predefined OS versions.
+	* setup-gcc.sh: Likewise.
+	* target-ver-syms.sh: Likewise.
+
+2013-02-05  Iain Buclaw  <ibuclaw@ubuntu.com>
+
+	* d-builtins2.cc (gcc_type_to_d_type): Remove STRUCTTHISREF condition.
+	* d-decls.cc (FuncDeclaration::toSymbol): Likewise.
+	* d-elem.cc (ThisExp::toElem): Likewise.
+	* d-ctype.cc (TypeSArray::toCtype): Remove SARRAYVALUE condition.
+	* d-codegen.cc (IRState::isDeclarationReferenceType): Likewise.
+	(IRState::isArgumentReferenceType): Likewise.
+
+2013-02-01  Johannes Pfau  <johannespfau@gmail.com>
+
+	* d-lang.cc (d_init): Use gcc's config system for predefined CPU versions.
+	(d_init): Fix definition of D_LP64 version.
+	* setup-gcc.sh: Likewise.
+	* target-ver-syms.sh: Likewise.
+
+
+Copyright (C) 2013 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

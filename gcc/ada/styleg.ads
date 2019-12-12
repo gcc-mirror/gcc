@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -90,6 +90,11 @@ package Styleg is
    procedure Check_Comment;
    --  Called with Scan_Ptr pointing to the first minus sign of a comment.
    --  Intended for checking any specific rules for comment placement/format.
+
+   procedure Check_Defining_Identifier_Casing;
+   --  The current token is an identifier that will be a defining
+   --  identifier. Check that it is mixed case, if the appropriate
+   --  switch is set.
 
    procedure Check_Dot_Dot;
    --  Called after scanning out dot dot to check spacing

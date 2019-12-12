@@ -1,5 +1,5 @@
 /* phsa.h -- interfacing between the gcc BRIG FE and the phsa runtime
-   Copyright (C) 2016-2018 Free Software Foundation, Inc.
+   Copyright (C) 2016-2019 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 

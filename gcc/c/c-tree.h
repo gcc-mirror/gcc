@@ -1,5 +1,5 @@
 /* Definitions for C parsing and type checking.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -96,13 +96,17 @@ along with GCC; see the file COPYING3.  If not see
    #pragma omp threadprivate.  */
 #define C_DECL_THREADPRIVATE_P(DECL) DECL_LANG_FLAG_3 (VAR_DECL_CHECK (DECL))
 
+/* Set on VAR_DECLs for compound literals.  */
+#define C_DECL_COMPOUND_LITERAL_P(DECL) \
+  DECL_LANG_FLAG_5 (VAR_DECL_CHECK (DECL))
+
 /* Nonzero for a decl which either doesn't exist or isn't a prototype.
    N.B. Could be simplified if all built-in decls had complete prototypes
    (but this is presently difficult because some of them need FILE*).  */
 #define C_DECL_ISNT_PROTOTYPE(EXP)			\
        (EXP == 0					\
 	|| (!prototype_p (TREE_TYPE (EXP))	\
-	    && !DECL_BUILT_IN (EXP)))
+	    && !fndecl_built_in_p (EXP)))
 
 /* For FUNCTION_TYPE, a hidden list of types of arguments.  The same as
    TYPE_ARG_TYPES for functions with prototypes, but created for functions
@@ -182,9 +186,13 @@ enum c_typespec_kind {
      kind of tag, in which case this is only valid if shadowing that
      tag in an inner scope.  */
   ctsk_tagref,
+  /* Likewise, with standard attributes present in the reference.  */
+  ctsk_tagref_attrs,
   /* A reference to a tag, not previously declared in a visible
      scope.  */
   ctsk_tagfirstref,
+  /* Likewise, with standard attributes present in the reference.  */
+  ctsk_tagfirstref_attrs,
   /* A definition of a tag such as "struct foo { int a; }".  */
   ctsk_tagdef,
   /* A typedef name.  */
@@ -284,11 +292,19 @@ enum c_declspec_word {
 			    enumerator.  */
 };
 
+enum c_declspec_il {
+  cdil_none,
+  cdil_gimple,		/* __GIMPLE  */
+  cdil_gimple_cfg,	/* __GIMPLE(cfg)  */
+  cdil_gimple_ssa,	/* __GIMPLE(ssa)  */
+  cdil_rtl		/* __RTL  */
+};
+
 /* A sequence of declaration specifiers in C.  When a new declaration
    specifier is added, please update the enum c_declspec_word above
    accordingly.  */
 struct c_declspecs {
-  source_location locations[cdw_number_of_elements];
+  location_t locations[cdw_number_of_elements];
   /* The type specified, if a single type specifier such as a struct,
      union or enum specifier, typedef name or typeof specifies the
      whole type, or NULL_TREE if none or a keyword such as "void" or
@@ -299,12 +315,19 @@ struct c_declspecs {
   tree expr;
   /* The attributes from a typedef decl.  */
   tree decl_attr;
-  /* When parsing, the attributes.  Outside the parser, this will be
-     NULL; attributes (possibly from multiple lists) will be passed
-     separately.  */
+  /* When parsing, the GNU attributes and prefix standard attributes.
+     Outside the parser, this will be NULL; attributes (possibly from
+     multiple lists) will be passed separately.  */
   tree attrs;
+  /* When parsing, postfix standard attributes (which appertain to the
+     type specified by the preceding declaration specifiers, unlike
+     prefix standard attributes which appertain to the declaration or
+     declarations as a whole).  */
+  tree postfix_attrs;
   /* The pass to start compiling a __GIMPLE or __RTL function with.  */
   char *gimple_or_rtl_pass;
+  /* ENTRY BB count.  */
+  profile_count entry_bb_count;
   /* The base-2 log of the greatest alignment required by an _Alignas
      specifier, in bytes, or -1 if no such specifiers with nonzero
      alignment.  */
@@ -321,12 +344,17 @@ struct c_declspecs {
   ENUM_BITFIELD (c_typespec_keyword) typespec_word : 8;
   /* The kind of type specifier if one has been seen, ctsk_none
      otherwise.  */
-  ENUM_BITFIELD (c_typespec_kind) typespec_kind : 3;
+  ENUM_BITFIELD (c_typespec_kind) typespec_kind : 4;
+  ENUM_BITFIELD (c_declspec_il) declspec_il : 3;
   /* Whether any expressions in typeof specifiers may appear in
      constant expressions.  */
   BOOL_BITFIELD expr_const_operands : 1;
   /* Whether any declaration specifiers have been seen at all.  */
   BOOL_BITFIELD declspecs_seen_p : 1;
+  /* Whether any declaration specifiers other than standard attributes
+     have been seen at all.  If only standard attributes have been
+     seen, this is an attribute-declaration.  */
+  BOOL_BITFIELD non_std_attrs_seen_p : 1;
   /* Whether something other than a storage class specifier or
      attribute has been seen.  This is used to warn for the
      obsolescent usage of storage class specifiers other than at the
@@ -377,10 +405,6 @@ struct c_declspecs {
   /* Whether any alignment specifier (even with zero alignment) was
      specified.  */
   BOOL_BITFIELD alignas_p : 1;
-  /* Whether any __GIMPLE specifier was specified.  */
-  BOOL_BITFIELD gimple_p : 1;
-  /* Whether any __RTL specifier was specified.  */
-  BOOL_BITFIELD rtl_p : 1;
   /* The address space that the declaration belongs to.  */
   addr_space_t address_space;
 };
@@ -514,7 +538,7 @@ extern void gen_aux_info_record (tree, int, int, int);
 
 /* in c-decl.c */
 struct c_spot_bindings;
-struct c_struct_parse_info;
+class c_struct_parse_info;
 extern struct obstack parser_obstack;
 extern tree c_break_label;
 extern tree c_cont_label;
@@ -551,7 +575,9 @@ extern void finish_decl (tree, location_t, tree, tree, tree);
 extern tree finish_enum (tree, tree, tree);
 extern void finish_function (void);
 extern tree finish_struct (location_t, tree, tree, tree,
-			   struct c_struct_parse_info *);
+			   class c_struct_parse_info *);
+extern tree c_simulate_enum_decl (location_t, const char *,
+				  vec<string_int_pair>);
 extern struct c_arg_info *build_arg_info (void);
 extern struct c_arg_info *get_parm_info (bool, tree);
 extern tree grokfield (location_t, struct c_declarator *,
@@ -568,6 +594,9 @@ extern struct c_declarator *set_array_declarator_inner (struct c_declarator *,
 							struct c_declarator *);
 extern tree c_builtin_function (tree);
 extern tree c_builtin_function_ext_scope (tree);
+extern tree c_simulate_builtin_function_decl (tree);
+extern void c_warn_unused_attributes (tree);
+extern tree c_warn_type_attributes (tree);
 extern void shadow_tag (const struct c_declspecs *);
 extern void shadow_tag_warned (const struct c_declspecs *, int);
 extern tree start_enum (location_t, struct c_enum_contents *, tree);
@@ -575,13 +604,14 @@ extern bool start_function (struct c_declspecs *, struct c_declarator *, tree);
 extern tree start_decl (struct c_declarator *, struct c_declspecs *, bool,
 			tree);
 extern tree start_struct (location_t, enum tree_code, tree,
-			  struct c_struct_parse_info **);
+			  class c_struct_parse_info **);
 extern void store_parm_decls (void);
 extern void store_parm_decls_from (struct c_arg_info *);
 extern void temp_store_parm_decls (tree, tree);
 extern void temp_pop_parm_decls (void);
 extern tree xref_tag (enum tree_code, tree);
-extern struct c_typespec parser_xref_tag (location_t, enum tree_code, tree);
+extern struct c_typespec parser_xref_tag (location_t, enum tree_code, tree,
+					  bool, tree);
 extern struct c_parm *build_c_parm (struct c_declspecs *, tree,
 				    struct c_declarator *, location_t);
 extern struct c_declarator *build_attrs_declarator (tree,
@@ -592,19 +622,19 @@ extern struct c_declarator *build_id_declarator (tree);
 extern struct c_declarator *make_pointer_declarator (struct c_declspecs *,
 						     struct c_declarator *);
 extern struct c_declspecs *build_null_declspecs (void);
-extern struct c_declspecs *declspecs_add_qual (source_location,
+extern struct c_declspecs *declspecs_add_qual (location_t,
 					       struct c_declspecs *, tree);
 extern struct c_declspecs *declspecs_add_type (location_t,
 					       struct c_declspecs *,
 					       struct c_typespec);
-extern struct c_declspecs *declspecs_add_scspec (source_location,
+extern struct c_declspecs *declspecs_add_scspec (location_t,
 						 struct c_declspecs *, tree);
-extern struct c_declspecs *declspecs_add_attrs (source_location,
+extern struct c_declspecs *declspecs_add_attrs (location_t,
 						struct c_declspecs *, tree);
-extern struct c_declspecs *declspecs_add_addrspace (source_location,
+extern struct c_declspecs *declspecs_add_addrspace (location_t,
 						    struct c_declspecs *,
 						    addr_space_t);
-extern struct c_declspecs *declspecs_add_alignas (source_location,
+extern struct c_declspecs *declspecs_add_alignas (location_t,
 						  struct c_declspecs *, tree);
 extern struct c_declspecs *finish_declspecs (struct c_declspecs *);
 
@@ -614,6 +644,7 @@ extern bool c_missing_noreturn_ok_p (tree);
 extern bool c_warn_unused_global_decl (const_tree);
 extern void c_initialize_diagnostics (diagnostic_context *);
 extern bool c_vla_unspec_p (tree x, tree fn);
+extern alias_set_type c_get_alias_set (tree);
 
 /* in c-typeck.c */
 extern int in_alignof;
@@ -677,13 +708,15 @@ extern tree build_compound_literal (location_t, tree, tree, bool,
 extern void check_compound_literal_type (location_t, struct c_type_name *);
 extern tree c_start_case (location_t, location_t, tree, bool);
 extern void c_finish_case (tree, tree);
-extern tree build_asm_expr (location_t, tree, tree, tree, tree, tree, bool);
-extern tree build_asm_stmt (tree, tree);
+extern tree build_asm_expr (location_t, tree, tree, tree, tree, tree, bool,
+			    bool);
+extern tree build_asm_stmt (bool, tree);
 extern int c_types_compatible_p (tree, tree);
 extern tree c_begin_compound_stmt (bool);
 extern tree c_end_compound_stmt (location_t, tree, bool);
 extern void c_finish_if_stmt (location_t, tree, tree, tree);
-extern void c_finish_loop (location_t, tree, tree, tree, tree, tree, bool);
+extern void c_finish_loop (location_t, location_t, tree, location_t, tree,
+			   tree, tree, tree, bool);
 extern tree c_begin_stmt_expr (void);
 extern tree c_finish_stmt_expr (location_t, tree);
 extern tree c_process_expr_stmt (location_t, tree);
@@ -761,6 +794,8 @@ extern bool tag_exists_p (enum tree_code, tree);
 extern bool pedwarn_c90 (location_t, int opt, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
 extern bool pedwarn_c99 (location_t, int opt, const char *, ...)
+    ATTRIBUTE_GCC_DIAG(3,4);
+extern bool pedwarn_c11 (location_t, int opt, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
 
 extern void

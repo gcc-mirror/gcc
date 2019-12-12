@@ -9,5 +9,5 @@ char *foo ()
 {
   return str;
 }
-
-/* { dg-final { scan-assembler "movabs" } } */
+/* See PR90698 re. Darwin xfail.  */
+/* { dg-final { scan-assembler "movabs" { xfail { *-*-darwin* } } } } */

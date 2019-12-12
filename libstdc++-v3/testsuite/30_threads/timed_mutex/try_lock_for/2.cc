@@ -4,7 +4,7 @@
 // { dg-require-effective-target pthread }
 // { dg-require-cstdint "" }
 
-// Copyright (C) 2008-2018 Free Software Foundation, Inc.
+// Copyright (C) 2008-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,13 +24,14 @@
 
 #include <mutex>
 #include <chrono>
+#include <cstdint>
 #include <system_error>
 #include <testsuite_hooks.h>
 
 int main()
 {
   typedef std::timed_mutex mutex_type;
-  typedef std::chrono::duration<int64_t, std::pico> picoseconds;
+  typedef std::chrono::duration<std::int64_t, std::pico> picoseconds;
 
   try 
     {

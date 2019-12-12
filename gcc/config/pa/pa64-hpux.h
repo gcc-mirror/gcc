@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for HPs running
    HPUX using the 64bit runtime model.
-   Copyright (C) 1999-2018 Free Software Foundation, Inc.
+   Copyright (C) 1999-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -106,7 +106,7 @@ along with GCC; see the file COPYING3.  If not see
 /* The libgcc_stub.a and milli.a libraries need to come last.  */
 #undef LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC "\
-  %G %L %G %{!nostdlib:%{!nodefaultlibs:%{!shared:-lgcc_stub}\
+  %G %{!nolibc:%L} %G %{!nostdlib:%{!nodefaultlibs:%{!shared:-lgcc_stub}\
   milli.a%s}}"
 
 /* Under hpux11, the normal location of the `ld' and `as' programs is the

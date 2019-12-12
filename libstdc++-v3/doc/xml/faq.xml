@@ -1001,21 +1001,31 @@
 <qandaentry xml:id="faq.memory_leaks">
   <question xml:id="q-memory_leaks">
     <para>
-      <quote>Memory leaks</quote> in containers
+      <quote>Memory leaks</quote> in libstdc++
     </para>
   </question>
   <answer xml:id="a-memory_leaks">
-    <note>
-      <para>This answer is old and probably no longer be relevant.</para>
-    </note>
     <para>
-    A few people have reported that the standard containers appear
+    Since GCC 5.1.0, libstdc++ automatically allocates a pool
+    of a few dozen kilobytes on startup. This pool is used to ensure it's
+    possible to throw exceptions (such as <classname>bad_alloc</classname>)
+    even when <code>malloc</code> is unable to allocate any more memory.
+    With some versions of <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://valgrind.org/"><command>valgrind</command></link>
+    this pool will be shown as "still reachable" when the process exits, e.g.
+    <code>still reachable: 72,704 bytes in 1 blocks</code>.
+    This memory is not a leak, because it's still in use by libstdc++,
+    and the memory will be returned to the OS when the process exits.
+    Later versions of <command>valgrind</command> know how to free this
+    pool as the process exits, and so won't show any "still reachable" memory.
+    </para>
+    <para>
+    In the past, a few people reported that the standard containers appear
     to leak memory when tested with memory checkers such as
     <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://valgrind.org/"><command>valgrind</command></link>.
     Under some (non-default) configurations the library's allocators keep
     free memory in a
-    pool for later reuse, rather than returning it to the OS.  Although
-    this memory is always reachable by the library and is never
+    pool for later reuse, rather than deallocating it with <code>delete</code>
+    Although this memory is always reachable by the library and is never
     lost, memory debugging tools can report it as a leak.  If you
     want to test the library for memory leaks please read
     <link linkend="debug.memory">Tips for memory leak hunting</link>

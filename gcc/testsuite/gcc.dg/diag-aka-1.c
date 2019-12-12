@@ -2,7 +2,7 @@
 /* { dg-options "-Wc++-compat" } */
 
 typedef struct A { int i; } B;
-typedef struct T { int i; } T;
+typedef struct T { int i; } *T; /* { dg-warning "using 'T' as both a typedef and a tag is invalid" } */
 typedef const float TFA;
 typedef TFA TFB;
 typedef TFB TFC;
@@ -24,6 +24,6 @@ bar (B *b, int *i)
 int
 foo (void *a)
 {
-  T *t = a; /* { dg-warning "request for implicit conversion from 'void \\*' to 'T \\*' {aka 'struct T \\*'} not" } */
+  T t = a; /* { dg-warning "request for implicit conversion from 'void \\*' to 'T' {aka 'struct T \\*'} not" } */
   return t->i;
 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2018 Free Software Foundation, Inc.
+// Copyright (C) 2018-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -51,5 +51,5 @@ test02()
 
   // error: no member 'type' because the conditional
   // expression is ill-formed
-  using t = std::common_type_t<std::reference_wrapper<int>, int>;
+  using t = typename std::common_type<std::reference_wrapper<int>, int>::type;
 }

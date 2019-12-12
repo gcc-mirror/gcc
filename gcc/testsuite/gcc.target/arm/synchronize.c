@@ -1,4 +1,4 @@
-/* { dg-final { scan-assembler "__sync_synchronize|dmb|mcr" { target arm*-*-linux-* } } } */
+/* { dg-final { scan-assembler "__sync_synchronize|dmb|mcr" { target arm*-*-linux-* arm*-*-uclinux* } } } */
 
 void *foo (void)
 {

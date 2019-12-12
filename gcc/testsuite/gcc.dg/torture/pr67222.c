@@ -1,4 +1,4 @@
-/* PR middle-end/67222 */
+/* PR middle-end/67222 - ICE in gimple_call_arg with bogus posix_memalign */
 /* { dg-do compile } */
 
 void
@@ -17,3 +17,9 @@ foo (void **p)
   posix_memalign (p, "qui", 3);
   posix_memalign (p, 1, 2);
 }
+
+/* Prune warnings:
+  { dg-prune-output "call to built-in function declared without prototype" }
+  { dg-prune-output "too few arguments to built-in function" }
+  { dg-prune-output "incompatible pointer type" }
+  { dg-prune-output "\\\[-Wint-conversion]" }  */

@@ -15,7 +15,7 @@ foo (int n)
     {
       unsigned char uc = (unsigned char)i;
       a[i] = i;
-      b[uc] = 0;
+      b[uc] = 1;
     }
 
   bar (a);

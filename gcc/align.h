@@ -1,5 +1,5 @@
 /* Alignment-related classes.
-   Copyright (C) 2018 Free Software Foundation, Inc.
+   Copyright (C) 2018-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -45,13 +45,16 @@ struct align_flags_tuple
 /* Alignment flags is structure used as value of -align-* options.
    It's used in target-dependant code.  */
 
-struct align_flags
+class align_flags
 {
+public:
   /* Default constructor.  */
   align_flags (int log0 = 0, int maxskip0 = 0, int log1 = 0, int maxskip1 = 0)
   {
-    levels[0] = {log0, maxskip0};
-    levels[1] = {log1, maxskip1};
+    levels[0].log = log0;
+    levels[0].maxskip = maxskip0;
+    levels[1].log = log1;
+    levels[1].maxskip = maxskip1;
     normalize ();
   }
 

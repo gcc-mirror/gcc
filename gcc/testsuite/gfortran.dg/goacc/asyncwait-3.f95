@@ -33,9 +33,9 @@ program asyncwait
 
   !$acc wait (1.0) ! { dg-error "WAIT clause at \\\(1\\\) requires a scalar INTEGER expression" }
 
-  !$acc wait 1 ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc wait 1 ! { dg-error "Failed to match clause" }
 
-  !$acc wait N ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc wait N ! { dg-error "Failed to match clause" }
 
   !$acc wait (1)
 end program asyncwait

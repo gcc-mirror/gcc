@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2018 Free Software Foundation, Inc.
+// Copyright (C) 2015-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -53,10 +53,19 @@ test02()
     sleeping = true;
     std::this_thread::sleep_for(time);
     result = std::chrono::system_clock::now() >= (start + time);
+    sleeping = false;
   });
-  while (!sleeping) { }
-  std::this_thread::sleep_for(std::chrono::milliseconds(500));
-  pthread_kill(t.native_handle(), SIGUSR1);
+  while (!sleeping)
+  {
+    // Wait for the thread to start sleeping.
+  }
+  while (sleeping)
+  {
+    // The sleeping thread should finish eventually,
+    // even if continually interrupted after less than a second:
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    pthread_kill(t.native_handle(), SIGUSR1);
+  }
   t.join();
   VERIFY( result );
 }

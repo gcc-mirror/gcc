@@ -36,4 +36,4 @@ woof ()
   func (xx.raw);
 }
 
-/* { dg-final { scan-assembler "movh\.cl r\[0-9\]+,0xc0000000>>16" } } */
+/* { dg-final { scan-assembler "movh\.cl\\s+r\[0-9\]+,0xc0000000>>16" } } */

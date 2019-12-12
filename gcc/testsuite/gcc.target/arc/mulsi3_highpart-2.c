@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-skip-if "ARC700 always has mpy option on" { arc700 } } */
 /* { dg-skip-if "ARC600 doesn't have mpy instruction" { arc6xx } } */
-/* { dg-options "-O2 -mmpy-option=0 -w" } */
+/* { dg-options "-O2 -mmpy-option=0 -w -save-temps" } */
 
 #include <stdlib.h>
 
@@ -28,5 +28,4 @@ main (void)
 }
 
 /* { dg-final { scan-assembler-not "mpyhu\[ \t\]" } } */
-/* { dg-final { scan-assembler-not "@__muldi3" } } */
-/* { dg-final { scan-assembler "@__umulsi3_highpart" } } */
+/* { dg-final { scan-assembler "@__muldi3" } } */

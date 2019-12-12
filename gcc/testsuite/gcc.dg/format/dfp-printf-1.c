@@ -17,6 +17,8 @@ foo (_Decimal32 x, _Decimal64 y, _Decimal128 z, int i, unsigned int j,
 
   /* Check lack of warnings for valid usage.  */
 
+  printf ("%Ha\n", x);
+  printf ("%HA\n", x);
   printf ("%Hf\n", x);
   printf ("%HF\n", x);
   printf ("%He\n", x);
@@ -24,6 +26,8 @@ foo (_Decimal32 x, _Decimal64 y, _Decimal128 z, int i, unsigned int j,
   printf ("%Hg\n", x);
   printf ("%HG\n", x);
 
+  printf ("%Da\n", y);
+  printf ("%DA\n", y);
   printf ("%Df\n", y);
   printf ("%DF\n", y);
   printf ("%De\n", y);
@@ -31,6 +35,8 @@ foo (_Decimal32 x, _Decimal64 y, _Decimal128 z, int i, unsigned int j,
   printf ("%Dg\n", y);
   printf ("%DG\n", y);
 
+  printf ("%DDa\n", z);
+  printf ("%DDA\n", z);
   printf ("%DDf\n", z);
   printf ("%DDF\n", z);
   printf ("%DDe\n", z);
@@ -43,12 +49,16 @@ foo (_Decimal32 x, _Decimal64 y, _Decimal128 z, int i, unsigned int j,
 
   /* Check warnings for type mismatches.  */
 
+  printf ("%Ha\n", y);	/* { dg-warning "expects argument" "bad use of %H" } */
+  printf ("%HA\n", y);	/* { dg-warning "expects argument" "bad use of %H" } */
   printf ("%Hf\n", y);	/* { dg-warning "expects argument" "bad use of %H" } */
   printf ("%HF\n", y);	/* { dg-warning "expects argument" "bad use of %H" } */
   printf ("%He\n", y);	/* { dg-warning "expects argument" "bad use of %H" } */
   printf ("%HE\n", y);	/* { dg-warning "expects argument" "bad use of %H" } */
   printf ("%Hg\n", y);	/* { dg-warning "expects argument" "bad use of %H" } */
   printf ("%HG\n", y);	/* { dg-warning "expects argument" "bad use of %H" } */
+  printf ("%Ha\n", z);	/* { dg-warning "expects argument" "bad use of %H" } */
+  printf ("%HA\n", z);	/* { dg-warning "expects argument" "bad use of %H" } */
   printf ("%Hf\n", z);	/* { dg-warning "expects argument" "bad use of %H" } */
   printf ("%HF\n", z);	/* { dg-warning "expects argument" "bad use of %H" } */
   printf ("%He\n", z);	/* { dg-warning "expects argument" "bad use of %H" } */
@@ -56,12 +66,16 @@ foo (_Decimal32 x, _Decimal64 y, _Decimal128 z, int i, unsigned int j,
   printf ("%Hg\n", z);	/* { dg-warning "expects argument" "bad use of %H" } */
   printf ("%HG\n", z);	/* { dg-warning "expects argument" "bad use of %H" } */
 
+  printf ("%Da\n", x);	/* { dg-warning "expects argument" "bad use of %D" } */
+  printf ("%DA\n", x);	/* { dg-warning "expects argument" "bad use of %D" } */
   printf ("%Df\n", x);	/* { dg-warning "expects argument" "bad use of %D" } */
   printf ("%DF\n", x);	/* { dg-warning "expects argument" "bad use of %D" } */
   printf ("%De\n", x);	/* { dg-warning "expects argument" "bad use of %D" } */
   printf ("%DE\n", x);	/* { dg-warning "expects argument" "bad use of %D" } */
   printf ("%Dg\n", x);	/* { dg-warning "expects argument" "bad use of %D" } */
   printf ("%DG\n", x);	/* { dg-warning "expects argument" "bad use of %D" } */
+  printf ("%Da\n", z);	/* { dg-warning "expects argument" "bad use of %D" } */
+  printf ("%DA\n", z);	/* { dg-warning "expects argument" "bad use of %D" } */
   printf ("%Df\n", z);	/* { dg-warning "expects argument" "bad use of %D" } */
   printf ("%DF\n", z);	/* { dg-warning "expects argument" "bad use of %D" } */
   printf ("%De\n", z);	/* { dg-warning "expects argument" "bad use of %D" } */
@@ -69,12 +83,16 @@ foo (_Decimal32 x, _Decimal64 y, _Decimal128 z, int i, unsigned int j,
   printf ("%Dg\n", z);	/* { dg-warning "expects argument" "bad use of %D" } */
   printf ("%DG\n", z);	/* { dg-warning "expects argument" "bad use of %D" } */
 
+  printf ("%DDa\n", x);	/* { dg-warning "expects argument" "bad use of %DD" } */
+  printf ("%DDA\n", x);	/* { dg-warning "expects argument" "bad use of %DD" } */
   printf ("%DDf\n", x);	/* { dg-warning "expects argument" "bad use of %DD" } */
   printf ("%DDF\n", x);	/* { dg-warning "expects argument" "bad use of %DD" } */
   printf ("%DDe\n", x);	/* { dg-warning "expects argument" "bad use of %DD" } */
   printf ("%DDE\n", x);	/* { dg-warning "expects argument" "bad use of %DD" } */
   printf ("%DDg\n", x);	/* { dg-warning "expects argument" "bad use of %DD" } */
   printf ("%DDG\n", x);	/* { dg-warning "expects argument" "bad use of %DD" } */
+  printf ("%DDa\n", y);	/* { dg-warning "expects argument" "bad use of %DD" } */
+  printf ("%DDA\n", y);	/* { dg-warning "expects argument" "bad use of %DD" } */
   printf ("%DDf\n", y);	/* { dg-warning "expects argument" "bad use of %DD" } */
   printf ("%DDF\n", y);	/* { dg-warning "expects argument" "bad use of %DD" } */
   printf ("%DDe\n", y);	/* { dg-warning "expects argument" "bad use of %DD" } */
@@ -90,8 +108,8 @@ foo (_Decimal32 x, _Decimal64 y, _Decimal128 z, int i, unsigned int j,
   printf ("%Hu\n", j);	/* { dg-warning "length" "bad use of %H" } */
   printf ("%Hx\n", j);	/* { dg-warning "length" "bad use of %H" } */
   printf ("%HX\n", j);	/* { dg-warning "length" "bad use of %H" } */
-  printf ("%Ha\n", d);	/* { dg-warning "length" "bad use of %H" } */
-  printf ("%HA\n", d);	/* { dg-warning "length" "bad use of %H" } */
+  printf ("%Ha\n", d);	/* { dg-warning "expects argument" "bad use of %H" } */
+  printf ("%HA\n", d);	/* { dg-warning "expects argument" "bad use of %H" } */
   printf ("%Hc\n", i);	/* { dg-warning "length" "bad use of %H" } */
   printf ("%Hs\n", p);	/* { dg-warning "length" "bad use of %H" } */
   printf ("%Hp\n", p);	/* { dg-warning "length" "bad use of %H" } */
@@ -100,6 +118,8 @@ foo (_Decimal32 x, _Decimal64 y, _Decimal128 z, int i, unsigned int j,
   /* Sanity checks for flags, field width, and precision in formats for
      DFP types.  */
 
+  printf ("%-Ha\n", x);
+  printf ("%+HA\n", x);
   printf ("%-Hf\n", x);
   printf ("%+HF\n", x);
   printf ("% He\n", x);
@@ -107,6 +127,8 @@ foo (_Decimal32 x, _Decimal64 y, _Decimal128 z, int i, unsigned int j,
   printf ("%0Hg\n", x);
   printf ("%#0HG\n", x);
 
+  printf ("%0#Da\n", y);
+  printf ("%0DA\n", y);
   printf ("%0#Df\n", y);
   printf ("%0DF\n", y);
   printf ("%#De\n", y);
@@ -114,6 +136,8 @@ foo (_Decimal32 x, _Decimal64 y, _Decimal128 z, int i, unsigned int j,
   printf ("%-#0Dg\n", y);  /* { dg-warning "flag ignored" "ignore flag" } */
   printf ("%0+ DG\n", y);  /* { dg-warning "flag ignored" "ignore flag" } */
 
+  printf ("%DDa\n", z);
+  printf ("%0DDA\n", z);
   printf ("%DDf\n", z);
   printf ("%0DDF\n", z);
   printf ("%#0DDe\n", z);

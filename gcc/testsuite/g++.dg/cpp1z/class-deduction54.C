@@ -1,5 +1,5 @@
 // PR c++/82152
-// { dg-additional-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 struct Base {};
 

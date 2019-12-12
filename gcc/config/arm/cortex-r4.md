@@ -1,5 +1,5 @@
 ;; ARM Cortex-R4 scheduling description.
-;; Copyright (C) 2007-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2019 Free Software Foundation, Inc.
 ;; Contributed by CodeSourcery.
 
 ;; This file is part of GCC.
@@ -102,7 +102,7 @@
        (eq_attr "type" "alu_shift_reg,alus_shift_reg,\
                        logic_shift_reg,logics_shift_reg,\
                        mov_shift_reg,mvn_shift_reg,\
-                       mrs,multiple,no_insn"))
+                       mrs,multiple"))
   "cortex_r4_alu_shift_reg")
 
 ;; An ALU instruction followed by an ALU instruction with no early dep.

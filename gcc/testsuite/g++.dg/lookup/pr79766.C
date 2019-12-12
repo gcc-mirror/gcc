@@ -24,6 +24,6 @@ void ::R () // OK -> Z::R
 
 void S ();
 
-void ::S () // { dg-error "explicit qualification" }
+void ::S () // { dg-error "6:explicit qualification" }
 {
 }

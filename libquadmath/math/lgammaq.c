@@ -6,7 +6,7 @@
  *
  * SYNOPSIS:
  *
- * __float128 x, y, lgammal();
+ * long double x, y, lgammal();
  * extern int sgngam;
  *
  * y = lgammal(x);
@@ -18,7 +18,7 @@
  * Returns the base e (2.718...) logarithm of the absolute
  * value of the gamma function of the argument.
  * The sign (+1 or -1) of the gamma function is returned in a
- * global (extern) variable named signgam.
+ * global (extern) variable named sgngam.
  *
  * The positive domain is partitioned into numerous segments for approximation.
  * For x > 10,
@@ -65,20 +65,26 @@
     Lesser General Public License for more details.
 
     You should have received a copy of the GNU Lesser General Public
-    License along with this library; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA */
+    License along with this library; if not, see
+    <http://www.gnu.org/licenses/>.  */
 
 #include "quadmath-imp.h"
-
 #ifdef HAVE_MATH_H_SIGNGAM
-#include <math.h>  /* For POSIX's extern int signgam.  */
+# include <math.h>
 #endif
+__float128
+lgammaq (__float128 x)
+{
+#ifndef HAVE_MATH_H_SIGNGAM
+  int signgam;
+#endif
+  return __quadmath_lgammaq_r (x, &signgam);
+}
 
-static const __float128 PIQ = 3.1415926535897932384626433832795028841972E0Q;
+static const __float128 PIL = 3.1415926535897932384626433832795028841972E0Q;
 static const __float128 MAXLGM = 1.0485738685148938358098967157129705071571E4928Q;
-static const __float128 one = 1.0Q;
-static const __float128 zero = 0.0Q;
-static const __float128 huge = 1.0e4000Q;
+static const __float128 one = 1;
+static const __float128 huge = FLT128_MAX;
 
 /* log gamma(x) = ( x - 0.5 ) * log(x) - x + LS2PI + 1/x P(1/x^2)
    1/x <= 0.0741 (x >= 13.495...)
@@ -131,7 +137,7 @@ static const __float128 RD13[NRD13 + 1] =
   1.178186288833066430952276702931512870676E7Q,
   1.519928623743264797939103740132278337476E5Q,
   7.989298844938119228411117593338850892311E2Q
- /* 1.0E0Q */
+ /* 1.0E0L */
 };
 
 
@@ -163,7 +169,7 @@ static const __float128 RD12[NRD12 + 1] =
   9.236680081763754597872713592701048455890E6Q,
   1.292246897881650919242713651166596478850E5Q,
   7.366532445427159272584194816076600211171E2Q
- /* 1.0E0Q */
+ /* 1.0E0L */
 };
 
 
@@ -195,7 +201,7 @@ static const __float128 RD11[NRD11 + 1] =
   7.089478198662651683977290023829391596481E6Q,
   1.083246385105903533237139380509590158658E5Q,
   6.744420991491385145885727942219463243597E2Q
- /* 1.0E0Q */
+ /* 1.0E0L */
 };
 
 
@@ -228,7 +234,7 @@ static const __float128 RD10[NRD10 + 1] =
   -1.632090155573373286153427982504851867131E8Q,
   -1.483575879240631280658077826889223634921E6Q,
   -4.002806669713232271615885826373550502510E3Q
- /* 1.0E0Q */
+ /* 1.0E0L */
 };
 
 
@@ -261,7 +267,7 @@ static const __float128 RD9[NRD9 + 1] =
   -1.164573656694603024184768200787835094317E8Q,
   -1.177343939483908678474886454113163527909E6Q,
   -3.529391059783109732159524500029157638736E3Q
-  /* 1.0E0Q */
+  /* 1.0E0L */
 };
 
 
@@ -295,7 +301,7 @@ static const __float128 RD8[NRD8 + 1] =
   5.790862854275238129848491555068073485086E6Q,
   9.305213264307921522842678835618803553589E4Q,
   6.216974105861848386918949336819572333622E2Q
-  /* 1.0E0Q */
+  /* 1.0E0L */
 };
 
 
@@ -329,7 +335,7 @@ static const __float128 RD7[NRD7 + 1] =
   3.845638971184305248268608902030718674691E6Q,
   7.081730675423444975703917836972720495507E4Q,
   5.423122582741398226693137276201344096370E2Q
-  /* 1.0E0Q */
+  /* 1.0E0L */
 };
 
 
@@ -364,7 +370,7 @@ static const __float128 RD6[NRD6 + 1] =
   -6.564058379709759600836745035871373240904E7Q,
   -7.861511116647120540275354855221373571536E5Q,
   -2.821943442729620524365661338459579270561E3Q
-  /* 1.0E0Q */
+  /* 1.0E0L */
 };
 
 
@@ -400,7 +406,7 @@ static const __float128 RD5[NRD5 + 1] =
   2.698552646016599923609773122139463150403E6Q,
   5.526516251532464176412113632726150253215E4Q,
   4.772343321713697385780533022595450486932E2Q
-  /* 1.0E0Q */
+  /* 1.0E0L */
 };
 
 
@@ -437,7 +443,7 @@ static const __float128 RD4[NRD4 + 1] =
   -3.416703082301143192939774401370222822430E7Q,
   -4.981791914177103793218433195857635265295E5Q,
   -2.192507743896742751483055798411231453733E3Q
-  /* 1.0E0Q */
+  /* 1.0E0L */
 };
 
 
@@ -475,7 +481,7 @@ static const __float128 RD3[NRD3 + 1] =
   -1.505316381525727713026364396635522516989E7Q,
   -2.856327162923716881454613540575964890347E5Q,
   -1.622140448015769906847567212766206894547E3Q
-  /* 1.0E0Q */
+  /* 1.0E0L */
 };
 
 
@@ -509,7 +515,7 @@ static const __float128 RD2r5[NRD2r5 + 1] =
   -4.101991193844953082400035444146067511725E6Q,
   -1.174082735875715802334430481065526664020E5Q,
   -9.932840389994157592102947657277692978511E2Q
-  /* 1.0E0Q */
+  /* 1.0E0L */
 };
 
 
@@ -579,7 +585,7 @@ static const __float128 RD1r75[NRD1r75 + 1] =
   -1.201296501404876774861190604303728810836E6Q,
   -5.007966406976106636109459072523610273928E4Q,
   -6.155817990560743422008969155276229018209E2Q
-  /* 1.0E0Q */
+  /* 1.0E0L */
 };
 
 
@@ -616,7 +622,7 @@ static const __float128 RD1r5[NRD1r5 + 1] =
   5.741463295366557346748361781768833633256E4Q,
   4.226404539738182992856094681115746692030E3Q,
   1.316980975410327975566999780608618774469E2Q,
-  /* 1.0E0Q */
+  /* 1.0E0L */
 };
 
 
@@ -652,7 +658,7 @@ static const __float128 RD1r25[NRD1r25 + 1] =
   3.822267399625696880571810137601310855419E4Q,
   3.228463206479133236028576845538387620856E3Q,
   1.152133170470059555646301189220117965514E2Q
-  /* 1.0E0Q */
+  /* 1.0E0L */
 };
 
 
@@ -758,60 +764,61 @@ deval (__float128 x, const __float128 *p, int n)
 
 
 __float128
-lgammaq (__float128 x)
+__quadmath_lgammaq_r (__float128 x, int *signgamp)
 {
   __float128 p, q, w, z, nx;
   int i, nn;
-#ifndef HAVE_MATH_H_SIGNGAM
-  int signgam;
-#endif
 
-  signgam = 1;
+  *signgamp = 1;
 
   if (! finiteq (x))
     return x * x;
 
-  if (x == 0.0Q)
+  if (x == 0)
     {
       if (signbitq (x))
-	signgam = -1;
+	*signgamp = -1;
     }
 
-  if (x < 0.0Q)
+  if (x < 0)
     {
+      if (x < -2 && x > -50)
+	return __quadmath_lgamma_negq (x, signgamp);
       q = -x;
       p = floorq (q);
       if (p == q)
-	return (one / (p - p));
-      i = p;
-      if ((i & 1) == 0)
-	signgam = -1;
+	return (one / fabsq (p - p));
+      __float128 halfp = p * 0.5Q;
+      if (halfp == floorq (halfp))
+	*signgamp = -1;
       else
-	signgam = 1;
+	*signgamp = 1;
+      if (q < 0x1p-120Q)
+	return -logq (q);
       z = q - p;
       if (z > 0.5Q)
 	{
-	  p += 1.0Q;
+	  p += 1;
 	  z = p - q;
 	}
-      z = q * sinq (PIQ * z);
-      if (z == 0.0Q)
-	return (signgam * huge * huge);
-      w = lgammaq (q);
-      z = logq (PIQ / z) - w;
+      z = q * sinq (PIL * z);
+      w = __quadmath_lgammaq_r (q, &i);
+      z = logq (PIL / z) - w;
       return (z);
     }
 
   if (x < 13.5Q)
     {
-      p = 0.0Q;
+      p = 0;
       nx = floorq (x + 0.5Q);
       nn = nx;
       switch (nn)
 	{
 	case 0:
 	  /* log gamma (x + 1) = log(x) + log gamma(x) */
-	  if (x <= 0.125)
+	  if (x < 0x1p-120Q)
+	    return -logq (x);
+	  else if (x <= 0.125)
 	    {
 	      p = x * neval (x, RN1, NRN1) / deval (x, RD1, NRD1);
 	    }
@@ -824,7 +831,7 @@ lgammaq (__float128 x)
 	    }
 	  else if (x <= 0.625)
 	    {
-	      z = x + (1.0Q - x0a);
+	      z = x + (1 - x0a);
 	      z = z - x0b;
 	      p = neval (z, RN1r5, NRN1r5) / deval (z, RD1r5, NRD1r5);
 	      p = p * z * z;
@@ -840,7 +847,7 @@ lgammaq (__float128 x)
 	    }
 	  else
 	    {
-	      z = x - 1.0Q;
+	      z = x - 1;
 	      p = z * neval (z, RN2, NRN2) / deval (z, RD2, NRD2);
 	    }
 	  p = p - logq (x);
@@ -851,7 +858,7 @@ lgammaq (__float128 x)
 	    {
 	      if (x <= 0.625)
 		{
-		  z = x + (1.0Q - x0a);
+		  z = x + (1 - x0a);
 		  z = z - x0b;
 		  p = neval (z, RN1r5, NRN1r5) / deval (z, RD1r5, NRD1r5);
 		  p = p * z * z;
@@ -868,21 +875,21 @@ lgammaq (__float128 x)
 		}
 	      else
 		{
-		  z = x - 1.0Q;
+		  z = x - 1;
 		  p = z * neval (z, RN2, NRN2) / deval (z, RD2, NRD2);
 		}
 	      p = p - logq (x);
 	    }
-	  else if (x < 1.0Q)
+	  else if (x < 1)
 	    {
-	      z = x - 1.0Q;
+	      z = x - 1;
 	      p = z * neval (z, RNr9, NRNr9) / deval (z, RDr9, NRDr9);
 	    }
-	  else if (x == 1.0Q)
-	    p = 0.0Q;
+	  else if (x == 1)
+	    p = 0;
 	  else if (x <= 1.125Q)
 	    {
-	      z = x - 1.0Q;
+	      z = x - 1;
 	      p = z * neval (z, RN1, NRN1) / deval (z, RD1, NRD1);
 	    }
 	  else if (x <= 1.375)
@@ -921,11 +928,11 @@ lgammaq (__float128 x)
 	      p += lgam1r75b;
 	      p += lgam1r75a;
 	    }
-	  else if (x == 2.0Q)
-	    p = 0.0Q;
+	  else if (x == 2)
+	    p = 0;
 	  else if (x < 2.375Q)
 	    {
-	      z = x - 2.0Q;
+	      z = x - 2;
 	      p = z * neval (z, RN2, NRN2) / deval (z, RD2, NRD2);
 	    }
 	  else
@@ -947,7 +954,7 @@ lgammaq (__float128 x)
 	    }
 	  else
 	    {
-	      z = x - 3.0Q;
+	      z = x - 3;
 	      p = z * neval (z, RN3, NRN3) / deval (z, RD3, NRD3);
 	      p += lgam3b;
 	      p += lgam3a;
@@ -955,70 +962,70 @@ lgammaq (__float128 x)
 	  break;
 
 	case 4:
-	  z = x - 4.0Q;
+	  z = x - 4;
 	  p = z * neval (z, RN4, NRN4) / deval (z, RD4, NRD4);
 	  p += lgam4b;
 	  p += lgam4a;
 	  break;
 
 	case 5:
-	  z = x - 5.0Q;
+	  z = x - 5;
 	  p = z * neval (z, RN5, NRN5) / deval (z, RD5, NRD5);
 	  p += lgam5b;
 	  p += lgam5a;
 	  break;
 
 	case 6:
-	  z = x - 6.0Q;
+	  z = x - 6;
 	  p = z * neval (z, RN6, NRN6) / deval (z, RD6, NRD6);
 	  p += lgam6b;
 	  p += lgam6a;
 	  break;
 
 	case 7:
-	  z = x - 7.0Q;
+	  z = x - 7;
 	  p = z * neval (z, RN7, NRN7) / deval (z, RD7, NRD7);
 	  p += lgam7b;
 	  p += lgam7a;
 	  break;
 
 	case 8:
-	  z = x - 8.0Q;
+	  z = x - 8;
 	  p = z * neval (z, RN8, NRN8) / deval (z, RD8, NRD8);
 	  p += lgam8b;
 	  p += lgam8a;
 	  break;
 
 	case 9:
-	  z = x - 9.0Q;
+	  z = x - 9;
 	  p = z * neval (z, RN9, NRN9) / deval (z, RD9, NRD9);
 	  p += lgam9b;
 	  p += lgam9a;
 	  break;
 
 	case 10:
-	  z = x - 10.0Q;
+	  z = x - 10;
 	  p = z * neval (z, RN10, NRN10) / deval (z, RD10, NRD10);
 	  p += lgam10b;
 	  p += lgam10a;
 	  break;
 
 	case 11:
-	  z = x - 11.0Q;
+	  z = x - 11;
 	  p = z * neval (z, RN11, NRN11) / deval (z, RD11, NRD11);
 	  p += lgam11b;
 	  p += lgam11a;
 	  break;
 
 	case 12:
-	  z = x - 12.0Q;
+	  z = x - 12;
 	  p = z * neval (z, RN12, NRN12) / deval (z, RD12, NRD12);
 	  p += lgam12b;
 	  p += lgam12a;
 	  break;
 
 	case 13:
-	  z = x - 13.0Q;
+	  z = x - 13;
 	  p = z * neval (z, RN13, NRN13) / deval (z, RD13, NRD13);
 	  p += lgam13b;
 	  p += lgam13a;
@@ -1028,14 +1035,16 @@ lgammaq (__float128 x)
     }
 
   if (x > MAXLGM)
-    return (signgam * huge * huge);
+    return (*signgamp * huge * huge);
 
+  if (x > 0x1p120Q)
+    return x * (logq (x) - 1);
   q = ls2pi - x;
   q = (x - 0.5Q) * logq (x) + q;
   if (x > 1.0e18Q)
     return (q);
 
-  p = 1.0Q / (x * x);
+  p = 1 / (x * x);
   q += neval (p, RASY, NRASY) / x;
   return (q);
 }

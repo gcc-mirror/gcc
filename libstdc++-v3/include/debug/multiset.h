@@ -1,6 +1,6 @@
 // Debugging multiset implementation -*- C++ -*-
 
-// Copyright (C) 2003-2018 Free Software Foundation, Inc.
+// Copyright (C) 2003-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -54,6 +54,9 @@ namespace __debug
       typedef typename _Base::const_iterator	_Base_const_iterator;
       typedef typename _Base::iterator		_Base_iterator;
       typedef __gnu_debug::_Equal_to<_Base_const_iterator> _Equal;
+
+      template<typename _ItT, typename _SeqT, typename _CatT>
+	friend class ::__gnu_debug::_Safe_iterator;
 
     public:
       // types:
@@ -225,19 +228,18 @@ namespace __debug
       template<typename... _Args>
 	iterator
 	emplace(_Args&&... __args)
-	{
-	  return iterator(_Base::emplace(std::forward<_Args>(__args)...),
-			  this);
-	}
+	{ return { _Base::emplace(std::forward<_Args>(__args)...), this }; }
 
       template<typename... _Args>
 	iterator
 	emplace_hint(const_iterator __pos, _Args&&... __args)
 	{
 	  __glibcxx_check_insert(__pos);
-	  return iterator(_Base::emplace_hint(__pos.base(),
-					      std::forward<_Args>(__args)...),
-			  this);
+	  return
+	    {
+	      _Base::emplace_hint(__pos.base(), std::forward<_Args>(__args)...),
+	      this
+	    };
 	}
 #endif
 
@@ -248,7 +250,7 @@ namespace __debug
 #if __cplusplus >= 201103L
       iterator
       insert(value_type&& __x)
-      { return iterator(_Base::insert(std::move(__x)), this); }
+      { return { _Base::insert(std::move(__x)), this }; }
 #endif
 
       iterator
@@ -263,8 +265,7 @@ namespace __debug
       insert(const_iterator __position, value_type&& __x)
       {
 	__glibcxx_check_insert(__position);
-	return iterator(_Base::insert(__position.base(), std::move(__x)),
-			this);
+	return { _Base::insert(__position.base(), std::move(__x)), this };
       }
 #endif
 
@@ -310,25 +311,26 @@ namespace __debug
 
       iterator
       insert(node_type&& __nh)
-      { return iterator(_Base::insert(std::move(__nh)), this); }
+      { return { _Base::insert(std::move(__nh)), this }; }
 
       iterator
       insert(const_iterator __hint, node_type&& __nh)
       {
 	__glibcxx_check_insert(__hint);
-	return iterator(_Base::insert(__hint.base(), std::move(__nh)), this);
+	return { _Base::insert(__hint.base(), std::move(__nh)), this };
       }
 
       using _Base::merge;
 #endif // C++17
 
 #if __cplusplus >= 201103L
+      _GLIBCXX_ABI_TAG_CXX11
       iterator
       erase(const_iterator __position)
       {
 	__glibcxx_check_erase(__position);
 	this->_M_invalidate_if(_Equal(__position.base()));
-	return iterator(_Base::erase(__position.base()), this);
+	return { _Base::erase(__position.base()), this };
       }
 #else
       void
@@ -357,6 +359,7 @@ namespace __debug
       }
 
 #if __cplusplus >= 201103L
+      _GLIBCXX_ABI_TAG_CXX11
       iterator
       erase(const_iterator __first, const_iterator __last)
       {
@@ -366,13 +369,14 @@ namespace __debug
 	for (_Base_const_iterator __victim = __first.base();
 	     __victim != __last.base(); ++__victim)
 	  {
-	    _GLIBCXX_DEBUG_VERIFY(__victim != _Base::end(),
+	    _GLIBCXX_DEBUG_VERIFY(__victim != _Base::cend(),
 				  _M_message(__gnu_debug::__msg_valid_range)
 				  ._M_iterator(__first, "first")
 				  ._M_iterator(__last, "last"));
 	    this->_M_invalidate_if(_Equal(__victim));
 	  }
-	return iterator(_Base::erase(__first.base(), __last.base()), this);
+
+	return { _Base::erase(__first.base(), __last.base()), this };
       }
 #else
       void
@@ -551,32 +555,34 @@ namespace __debug
 	   typename _Allocator =
 	     allocator<typename iterator_traits<_InputIterator>::value_type>,
 	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireNotAllocator<_Compare>,
 	   typename = _RequireAllocator<_Allocator>>
-   multiset(_InputIterator, _InputIterator,
-	    _Compare = _Compare(), _Allocator = _Allocator())
-   -> multiset<typename iterator_traits<_InputIterator>::value_type,
-	       _Compare, _Allocator>;
+    multiset(_InputIterator, _InputIterator,
+	     _Compare = _Compare(), _Allocator = _Allocator())
+    -> multiset<typename iterator_traits<_InputIterator>::value_type,
+		_Compare, _Allocator>;
 
- template<typename _Key,
-	  typename _Compare = less<_Key>,
-	  typename _Allocator = allocator<_Key>,
-	  typename = _RequireAllocator<_Allocator>>
-   multiset(initializer_list<_Key>,
-	    _Compare = _Compare(), _Allocator = _Allocator())
-   -> multiset<_Key, _Compare, _Allocator>;
+  template<typename _Key,
+	   typename _Compare = less<_Key>,
+	   typename _Allocator = allocator<_Key>,
+	   typename = _RequireNotAllocator<_Compare>,
+	   typename = _RequireAllocator<_Allocator>>
+    multiset(initializer_list<_Key>,
+	     _Compare = _Compare(), _Allocator = _Allocator())
+    -> multiset<_Key, _Compare, _Allocator>;
 
- template<typename _InputIterator, typename _Allocator,
-	  typename = _RequireInputIter<_InputIterator>,
-	  typename = _RequireAllocator<_Allocator>>
-   multiset(_InputIterator, _InputIterator, _Allocator)
-   -> multiset<typename iterator_traits<_InputIterator>::value_type,
-	       less<typename iterator_traits<_InputIterator>::value_type>,
-	       _Allocator>;
+  template<typename _InputIterator, typename _Allocator,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    multiset(_InputIterator, _InputIterator, _Allocator)
+    -> multiset<typename iterator_traits<_InputIterator>::value_type,
+		less<typename iterator_traits<_InputIterator>::value_type>,
+		_Allocator>;
 
- template<typename _Key, typename _Allocator,
-	  typename = _RequireAllocator<_Allocator>>
-   multiset(initializer_list<_Key>, _Allocator)
-   -> multiset<_Key, less<_Key>, _Allocator>;
+  template<typename _Key, typename _Allocator,
+	   typename = _RequireAllocator<_Allocator>>
+    multiset(initializer_list<_Key>, _Allocator)
+    -> multiset<_Key, less<_Key>, _Allocator>;
 
 #endif
 
@@ -624,6 +630,19 @@ namespace __debug
     { return __x.swap(__y); }
 
 } // namespace __debug
+
+#if __cplusplus > 201703L
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+namespace ranges::__detail
+{
+  template<typename _Tp> extern inline const bool __enable_view_impl;
+  template<typename _Key, typename _Compare, typename _Alloc>
+    inline constexpr bool
+      __enable_view_impl<std::__debug::multiset<_Key, _Compare, _Alloc>>
+	= false;
+} // namespace ranges::__detail
+_GLIBCXX_END_NAMESPACE_VERSION
+#endif // C++20
 } // namespace std
 
 #endif

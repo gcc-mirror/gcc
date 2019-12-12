@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3" } */
+/* { dg-options "-O3 -maltivec -mvsx" } */
 /* { dg-require-effective-target lp64 } */
 
 #define NO_WARN_X86_INTRINSICS 1

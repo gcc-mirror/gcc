@@ -3,7 +3,7 @@
 
 template < class T = int > void f (T)
 {
-  auto g = [&a = f] () {};  // { dg-error "invalid initialization" }
+  auto g = [&a = f] () {};  // { dg-error "auto" }
 }
 
 int main ()

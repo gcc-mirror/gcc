@@ -1,6 +1,6 @@
 // Boilerplate support routines for -*- C++ -*- dynamic memory management.
 
-// Copyright (C) 1997-2018 Free Software Foundation, Inc.
+// Copyright (C) 1997-2019 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -29,7 +29,7 @@
 
 _GLIBCXX_WEAK_DEFINITION void*
 operator new(std::size_t sz, std::align_val_t al, const std::nothrow_t&)
-  _GLIBCXX_USE_NOEXCEPT
+  noexcept
 {
   __try
     {
@@ -37,6 +37,6 @@ operator new(std::size_t sz, std::align_val_t al, const std::nothrow_t&)
     }
   __catch(...)
     {
-      return 0;
+      return nullptr;
     }
 }

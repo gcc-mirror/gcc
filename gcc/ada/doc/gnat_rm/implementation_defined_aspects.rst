@@ -370,6 +370,12 @@ Aspect Max_Queue_Length
 
 This aspect is equivalent to :ref:`pragma Max_Queue_Length<Pragma-Max_Queue_Length>`.
 
+Aspect No_Caching
+=================
+.. index:: No_Caching
+
+This boolean aspect is equivalent to :ref:`pragma No_Caching<Pragma-No_Caching>`.
+
 Aspect No_Elaboration_Code_All
 ==============================
 .. index:: No_Elaboration_Code_All

@@ -1,5 +1,5 @@
 /* Header file for modules that link with gcc.c
-   Copyright (C) 1999-2018 Free Software Foundation, Inc.
+   Copyright (C) 1999-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -51,6 +51,7 @@ class driver
   void do_spec_on_infiles () const;
   void maybe_run_linker (const char *argv0) const;
   void final_actions () const;
+  void detect_jobserver () const;
   int get_exit_code () const;
 
  private:
@@ -71,7 +72,6 @@ struct spec_function
 /* These are exported by gcc.c.  */
 extern int do_spec (const char *);
 extern void record_temp_file (const char *, int, int);
-extern void pfatal_with_name (const char *) ATTRIBUTE_NORETURN;
 extern void set_input (const char *);
 
 /* Spec files linked with gcc.c must provide definitions for these.  */

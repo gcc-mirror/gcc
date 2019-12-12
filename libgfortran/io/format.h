@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2019 Free Software Foundation, Inc.
    Contributed by Janne Blomqvist
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -26,22 +26,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define GFOR_FORMAT_H
 
 #include "io.h"
-
-
-/* Format tokens.  Only about half of these can be stored in the
-   format nodes.  */
-
-typedef enum
-{
-  FMT_NONE = 0, FMT_UNKNOWN, FMT_SIGNED_INT, FMT_ZERO, FMT_POSINT, FMT_PERIOD,
-  FMT_COMMA, FMT_COLON, FMT_SLASH, FMT_DOLLAR, FMT_T, FMT_TR, FMT_TL,
-  FMT_LPAREN, FMT_RPAREN, FMT_X, FMT_S, FMT_SS, FMT_SP, FMT_STRING,
-  FMT_BADSTRING, FMT_P, FMT_I, FMT_B, FMT_BN, FMT_BZ, FMT_O, FMT_Z, FMT_F,
-  FMT_E, FMT_EN, FMT_ES, FMT_G, FMT_L, FMT_A, FMT_D, FMT_H, FMT_END, FMT_DC,
-  FMT_DP, FMT_STAR, FMT_RC, FMT_RD, FMT_RN, FMT_RP, FMT_RU, FMT_RZ, FMT_DT
-}
-format_token;
-
 
 /* Format nodes.  A format string is converted into a tree of these
    structures, which is traversed as part of a data transfer statement.  */
@@ -78,7 +62,7 @@ struct fnode
     {
       char *string;
       int string_len;
-      gfc_array_i4 *vlist;
+      gfc_full_array_i4 *vlist;
     }
     udf;  /* User Defined Format.  */
 

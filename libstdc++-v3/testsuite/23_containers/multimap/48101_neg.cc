@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2018 Free Software Foundation, Inc.
+// Copyright (C) 2017-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,8 +23,14 @@
 void
 test01()
 {
-  std::multimap<int, int, std::less<int*>> c;      // { dg-error "here" }
-  std::multimap<int, int, std::allocator<int>> c2; // { dg-error "here" }
+  std::multimap<int, int, std::less<int*>> c;
+  c.find(1);  // { dg-error "here" }
+  std::multimap<int, int, std::allocator<int>> c2;
+  c2.find(2); // { dg-error "here" }
 }
 
+// { dg-error "_Compare = std::less<int.>" "" { target *-*-* } 0 }
+// { dg-error "_Compare = std::allocator<int>" "" { target *-*-* } 0 }
 // { dg-error "comparison object must be invocable" "" { target *-*-* } 0 }
+// { dg-prune-output "no match for call" }
+// { dg-prune-output "invalid conversion" }

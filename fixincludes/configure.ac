@@ -1,4 +1,3 @@
-AC_PREREQ(2.64)
 
 AC_INIT(fixincludes, [ ])
 AC_CONFIG_SRCDIR(inclhack.def)

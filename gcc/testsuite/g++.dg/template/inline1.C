@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-fno-default-inline -O0" }
+// { dg-options "-O0" }
 // { dg-final { scan-assembler-not "\n_?_ZN1X3FooIiEEvT_\[: \t\n\]" } }
 
 // Copyright (C) 2003 Free Software Foundation, Inc.

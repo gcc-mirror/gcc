@@ -4,7 +4,7 @@
 // 2009-08-14  Edward M. Smith-Rowland  <3dw4rd@verizon.net>
 // 2013-03-02  Ulrich Drepper  <drepper@gmail.com>
 //
-// Copyright (C) 2013-2018 Free Software Foundation, Inc.
+// Copyright (C) 2013-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,6 +23,7 @@
 
 #include <ext/random>
 #include <sstream>
+#include <testsuite_hooks.h>
 
 void
 test01()
@@ -35,6 +36,7 @@ test01()
   str << u;
 
   str >> v;
+  VERIFY( u == v );
 }
 
 int main()

@@ -1,6 +1,6 @@
 // Class experimental::filesystem::path -*- C++ -*-
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -340,6 +340,28 @@ path::_M_split_cmpts()
   if (_M_pathname.empty())
     return;
 
+  {
+    // Approximate count of components, to reserve space in _M_cmpts vector:
+    int count = 1;
+    bool saw_sep_last = _S_is_dir_sep(_M_pathname[0]);
+    bool saw_non_sep = !saw_sep_last;
+    for (value_type c : _M_pathname)
+      {
+       if (_S_is_dir_sep(c))
+         saw_sep_last = true;
+       else if (saw_sep_last)
+         {
+           ++count;
+           saw_sep_last = false;
+           saw_non_sep = true;
+         }
+      }
+    if (saw_non_sep && saw_sep_last)
+      ++count; // empty filename after trailing slash
+    if (count > 1)
+      _M_cmpts.reserve(count);
+  }
+
   size_t pos = 0;
   const size_t len = _M_pathname.size();
 
@@ -362,9 +384,13 @@ path::_M_split_cmpts()
 	      pos = 3;
 	      while (pos < len && !_S_is_dir_sep(_M_pathname[pos]))
 		++pos;
+	      if (pos == len)
+		{
+		  _M_type = _Type::_Root_name;
+		  return;
+		}
 	      _M_add_root_name(pos);
-	      if (pos < len) // also got root directory
-		_M_add_root_dir(pos);
+	      _M_add_root_dir(pos);
 	    }
 	  else
 	    {
@@ -372,6 +398,11 @@ path::_M_split_cmpts()
 	      // composed of multiple redundant directory separators
 	      _M_add_root_dir(0);
 	    }
+	}
+      else if (len == 1) // got root directory only
+	{
+	  _M_type = _Type::_Root_dir;
+	  return;
 	}
       else // got root directory
 	_M_add_root_dir(0);
@@ -381,12 +412,28 @@ path::_M_split_cmpts()
   else if (len > 1 && _M_pathname[1] == L':')
     {
       // got disk designator
+      if (len == 2)
+	{
+	  _M_type = _Type::_Root_name;
+	  return;
+	}
       _M_add_root_name(2);
       if (len > 2 && _S_is_dir_sep(_M_pathname[2]))
 	_M_add_root_dir(2);
       pos = 2;
     }
 #endif
+  else
+    {
+      size_t n = 1;
+      for (; n < _M_pathname.size() && !_S_is_dir_sep(_M_pathname[n]); ++n)
+	{ }
+      if (n == _M_pathname.size())
+	{
+	  _M_type = _Type::_Filename;
+	  return;
+	}
+    }
 
   size_t back = pos;
   while (pos < len)
@@ -453,7 +500,7 @@ path::_S_convert_loc(const char* __first, const char* __last,
 #if _GLIBCXX_USE_WCHAR_T
   auto& __cvt = std::use_facet<codecvt<wchar_t, char, mbstate_t>>(__loc);
   basic_string<wchar_t> __ws;
-  if (!__str_codecvt_in(__first, __last, __ws, __cvt))
+  if (!__str_codecvt_in_all(__first, __last, __ws, __cvt))
     _GLIBCXX_THROW_OR_ABORT(filesystem_error(
 	  "Cannot convert character sequence",
 	  std::make_error_code(errc::illegal_byte_sequence)));
@@ -485,28 +532,34 @@ fs::hash_value(const path& p) noexcept
   return seed;
 }
 
-namespace std
+#include <experimental/string_view>
+
+std::string
+fs::filesystem_error::_M_gen_what()
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-namespace filesystem
-{
-  extern string
-  fs_err_concat(const string& __what, const string& __path1,
-		const string& __path2);
-} // namespace filesystem
-
-namespace experimental::filesystem::v1 {
-_GLIBCXX_BEGIN_NAMESPACE_CXX11
-
-  std::string filesystem_error::_M_gen_what()
-  {
-    using std::filesystem::fs_err_concat;
-    return fs_err_concat(system_error::what(), _M_path1.u8string(),
-			 _M_path2.u8string());
-  }
-
-_GLIBCXX_END_NAMESPACE_CXX11
-} // namespace experimental::filesystem::v1
-
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace std
+  const std::string pstr1 = _M_path1.u8string();
+  const std::string pstr2 = _M_path2.u8string();
+  experimental::string_view s = this->system_error::what();
+  const size_t len = 18 + s.length()
+    + (pstr1.length() || pstr2.length() ? pstr1.length() + 3 : 0)
+    + (pstr2.length() ? pstr2.length() + 3 : 0);
+  std::string w;
+  w.reserve(len);
+  w = "filesystem error: ";
+  w.append(s.data(), s.length());
+  if (!pstr1.empty())
+    {
+      w += " [";
+      w += pstr1;
+      w += ']';
+    }
+  if (!pstr2.empty())
+    {
+      if (pstr1.empty())
+	w += " []";
+      w += " [";
+      w += pstr2;
+      w += ']';
+    }
+  return w;
+}

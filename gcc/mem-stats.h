@@ -1,5 +1,5 @@
 /* A memory statistics tracking infrastructure.
-   Copyright (C) 2015-2018 Free Software Foundation, Inc.
+   Copyright (C) 2015-2019 Free Software Foundation, Inc.
    Contributed by Martin Liska  <mliska@suse.cz>
 
 This file is part of GCC.
@@ -31,8 +31,9 @@ class hash_map;
 #define LOCATION_LINE_WIDTH	  48
 
 /* Memory allocation location.  */
-struct mem_location
+class mem_location
 {
+public:
   /* Default constructor.  */
   inline
   mem_location () {}
@@ -123,8 +124,9 @@ struct mem_location
 };
 
 /* Memory usage register to a memory location.  */
-struct mem_usage
+class mem_usage
 {
+public:
   /* Default constructor.  */
   mem_usage (): m_allocated (0), m_times (0), m_peak (0), m_instances (1) {}
 
@@ -169,7 +171,7 @@ struct mem_usage
   {
     return (m_allocated == second.m_allocated
 	    && m_peak == second.m_peak
-	    && m_allocated == second.m_allocated);
+	    && m_times == second.m_times);
   }
 
   /* Comparison operator.  */
@@ -205,11 +207,11 @@ struct mem_usage
   {
     char *location_string = loc->to_string ();
 
-    fprintf (stderr, "%-48s %10" PRIu64 ":%5.1f%%"
-	     "%10" PRIu64 "%10" PRIu64 ":%5.1f%%%10s\n",
-	     location_string, (uint64_t)m_allocated,
+    fprintf (stderr, "%-48s " PRsa (9) ":%5.1f%%"
+	     PRsa (9) PRsa (9) ":%5.1f%%%10s\n",
+	     location_string, SIZE_AMOUNT (m_allocated),
 	     get_percent (m_allocated, total.m_allocated),
-	     (uint64_t)m_peak, (uint64_t)m_times,
+	     SIZE_AMOUNT (m_peak), SIZE_AMOUNT (m_times),
 	     get_percent (m_times, total.m_times), loc->m_ggc ? "ggc" : "heap");
 
     free (location_string);
@@ -219,10 +221,8 @@ struct mem_usage
   inline void
   dump_footer () const
   {
-    print_dash_line ();
-    fprintf (stderr, "%s%54" PRIu64 "%27" PRIu64 "\n", "Total",
-	     (uint64_t)m_allocated, (uint64_t)m_times);
-    print_dash_line ();
+    fprintf (stderr, "%s" PRsa (53) PRsa (26) "\n", "Total",
+	     SIZE_AMOUNT (m_allocated), SIZE_AMOUNT (m_times));
   }
 
   /* Return fraction of NOMINATOR and DENOMINATOR in percent.  */
@@ -247,7 +247,6 @@ struct mem_usage
   {
     fprintf (stderr, "%-48s %11s%16s%10s%17s\n", name, "Leak", "Peak",
 	     "Times", "Type");
-    print_dash_line ();
   }
 
   /* Current number of allocated bytes.  */
@@ -263,8 +262,9 @@ struct mem_usage
 /* Memory usage pair that connectes memory usage and number
    of allocated bytes.  */
 template <class T>
-struct mem_usage_pair
+class mem_usage_pair
 {
+public:
   mem_usage_pair (T *usage_, size_t allocated_): usage (usage_),
   allocated (allocated_) {}
 
@@ -282,21 +282,21 @@ public:
     static hashval_t
     hash (value_type l)
     {
-	inchash::hash hstate;
+      inchash::hash hstate;
 
-	hstate.add_ptr ((const void *)l->m_filename);
-	hstate.add_ptr (l->m_function);
-	hstate.add_int (l->m_line);
+      hstate.add_ptr ((const void *)l->m_filename);
+      hstate.add_ptr (l->m_function);
+      hstate.add_int (l->m_line);
 
-	return hstate.end ();
+      return hstate.end ();
     }
 
     static bool
     equal (value_type l1, value_type l2)
     {
-      return l1->m_filename == l2->m_filename
-	&& l1->m_function == l2->m_function
-	&& l1->m_line == l2->m_line;
+      return (l1->m_filename == l2->m_filename
+	      && l1->m_function == l2->m_function
+	      && l1->m_line == l2->m_line);
     }
   };
 
@@ -313,64 +313,59 @@ public:
   ~mem_alloc_description ();
 
   /* Returns true if instance PTR is registered by the memory description.  */
-  bool
-  contains_descriptor_for_instance (const void *ptr);
+  bool contains_descriptor_for_instance (const void *ptr);
 
   /* Return descriptor for instance PTR.  */
-  T *
-  get_descriptor_for_instance (const void *ptr);
+  T *get_descriptor_for_instance (const void *ptr);
 
   /* Register memory allocation descriptor for container PTR which is
      described by a memory LOCATION.  */
-  T *
-  register_descriptor (const void *ptr, mem_location *location);
+  T *register_descriptor (const void *ptr, mem_location *location);
 
   /* Register memory allocation descriptor for container PTR.  ORIGIN identifies
      type of container and GGC identifes if the allocation is handled in GGC
      memory.  Each location is identified by file NAME, LINE in source code and
      FUNCTION name.  */
-  T *
-  register_descriptor (const void *ptr, mem_alloc_origin origin,
+  T *register_descriptor (const void *ptr, mem_alloc_origin origin,
 			  bool ggc, const char *name, int line,
 			  const char *function);
 
   /* Register instance overhead identified by PTR pointer. Allocation takes
      SIZE bytes.  */
-  T *
-  register_instance_overhead (size_t size, const void *ptr);
+  T *register_instance_overhead (size_t size, const void *ptr);
 
   /* For containers (and GGC) where we want to track every instance object,
      we register allocation of SIZE bytes, identified by PTR pointer, belonging
      to USAGE descriptor.  */
-  void
-  register_object_overhead (T *usage, size_t size, const void *ptr);
+  void register_object_overhead (T *usage, size_t size, const void *ptr);
 
   /* Release PTR pointer of SIZE bytes. If REMOVE_FROM_MAP is set to true,
-     remove the instance from reverse map.  */
-  void
-  release_instance_overhead (void *ptr, size_t size,
-				  bool remove_from_map = false);
+     remove the instance from reverse map.  Return memory usage that belongs
+     to this memory description.  */
+  T *release_instance_overhead (void *ptr, size_t size,
+				bool remove_from_map = false);
 
-  /* Release intance object identified by PTR pointer.  */
-  void
-  release_object_overhead (void *ptr);
+  /* Release instance object identified by PTR pointer.  */
+  void release_object_overhead (void *ptr);
+
+  /* Unregister a memory allocation descriptor registered with
+     register_descriptor (remove from reverse map), unless it is
+     unregistered through release_instance_overhead with
+     REMOVE_FROM_MAP = true.  */
+  void unregister_descriptor (void *ptr);
 
   /* Get sum value for ORIGIN type of allocation for the descriptor.  */
-  T
-  get_sum (mem_alloc_origin origin);
+  T get_sum (mem_alloc_origin origin);
 
   /* Get all tracked instances registered by the description. Items
      are filtered by ORIGIN type, LENGTH is return value where we register
      the number of elements in the list. If we want to process custom order,
      CMP comparator can be provided.  */
-  mem_list_t *
-  get_list (mem_alloc_origin origin, unsigned *length,
-	    int (*cmp) (const void *first, const void *second) = NULL);
+  mem_list_t *get_list (mem_alloc_origin origin, unsigned *length);
 
   /* Dump all tracked instances of type ORIGIN. If we want to process custom
      order, CMP comparator can be provided.  */
-  void dump (mem_alloc_origin origin,
-	     int (*cmp) (const void *first, const void *second) = NULL);
+  void dump (mem_alloc_origin origin);
 
   /* Reverse object map used for every object allocation mapping.  */
   reverse_object_map_t *m_reverse_object_map;
@@ -391,7 +386,6 @@ private:
   reverse_mem_map_t *m_reverse_map;
 };
 
-
 /* Returns true if instance PTR is registered by the memory description.  */
 
 template <class T>
@@ -410,9 +404,9 @@ mem_alloc_description<T>::get_descriptor_for_instance (const void *ptr)
   return m_reverse_map->get (ptr) ? (*m_reverse_map->get (ptr)).usage : NULL;
 }
 
+/* Register memory allocation descriptor for container PTR which is
+   described by a memory LOCATION.  */
 
-  /* Register memory allocation descriptor for container PTR which is
-     described by a memory LOCATION.  */
 template <class T>
 inline T*
 mem_alloc_description<T>::register_descriptor (const void *ptr,
@@ -513,7 +507,7 @@ mem_alloc_description<T>::register_overhead (size_t size,
 /* Release PTR pointer of SIZE bytes.  */
 
 template <class T>
-inline void
+inline T *
 mem_alloc_description<T>::release_instance_overhead (void *ptr, size_t size,
 						     bool remove_from_map)
 {
@@ -522,28 +516,38 @@ mem_alloc_description<T>::release_instance_overhead (void *ptr, size_t size,
   if (!slot)
     {
       /* Due to PCH, it can really happen.  */
-      return;
+      return NULL;
     }
 
-  mem_usage_pair<T> usage_pair = *slot;
-  usage_pair.usage->release_overhead (size);
+  T *usage = (*slot).usage;
+  usage->release_overhead (size);
 
   if (remove_from_map)
     m_reverse_map->remove (ptr);
+
+  return usage;
 }
 
-/* Release intance object identified by PTR pointer.  */
+/* Release instance object identified by PTR pointer.  */
 
 template <class T>
 inline void
 mem_alloc_description<T>::release_object_overhead (void *ptr)
 {
   std::pair <T *, size_t> *entry = m_reverse_object_map->get (ptr);
-  if (entry)
-    {
-      entry->first->release_overhead (entry->second);
-      m_reverse_object_map->remove (ptr);
-    }
+  entry->first->release_overhead (entry->second);
+  m_reverse_object_map->remove (ptr);
+}
+
+/* Unregister a memory allocation descriptor registered with
+   register_descriptor (remove from reverse map), unless it is
+   unregistered through release_instance_overhead with
+   REMOVE_FROM_MAP = true.  */
+template <class T>
+inline void
+mem_alloc_description<T>::unregister_descriptor (void *ptr)
+{
+  m_reverse_map->remove (ptr);
 }
 
 /* Default contructor.  */
@@ -552,9 +556,9 @@ template <class T>
 inline
 mem_alloc_description<T>::mem_alloc_description ()
 {
-  m_map = new mem_map_t (13, false, false);
-  m_reverse_map = new reverse_mem_map_t (13, false, false);
-  m_reverse_object_map = new reverse_object_map_t (13, false, false);
+  m_map = new mem_map_t (13, false, false, false);
+  m_reverse_map = new reverse_mem_map_t (13, false, false, false);
+  m_reverse_object_map = new reverse_object_map_t (13, false, false, false);
 }
 
 /* Default destructor.  */
@@ -583,8 +587,7 @@ mem_alloc_description<T>::~mem_alloc_description ()
 template <class T>
 inline
 typename mem_alloc_description<T>::mem_list_t *
-mem_alloc_description<T>::get_list (mem_alloc_origin origin, unsigned *length,
-			int (*cmp) (const void *first, const void *second))
+mem_alloc_description<T>::get_list (mem_alloc_origin origin, unsigned *length)
 {
   /* vec data structure is not used because all vectors generate memory
      allocation info a it would create a cycle.  */
@@ -597,7 +600,7 @@ mem_alloc_description<T>::get_list (mem_alloc_origin origin, unsigned *length,
     if ((*it).first->m_origin == origin)
       list[i++] = std::pair<mem_location*, T*> (*it);
 
-  qsort (list, i, element_size, cmp == NULL ? T::compare : cmp);
+  qsort (list, i, element_size, T::compare);
   *length = i;
 
   return list;
@@ -626,22 +629,26 @@ mem_alloc_description<T>::get_sum (mem_alloc_origin origin)
 
 template <class T>
 inline void
-mem_alloc_description<T>::dump (mem_alloc_origin origin,
-				int (*cmp) (const void *first,
-					    const void *second))
+mem_alloc_description<T>::dump (mem_alloc_origin origin)
 {
   unsigned length;
 
   fprintf (stderr, "\n");
 
-  mem_list_t *list = get_list (origin, &length, cmp);
+  mem_list_t *list = get_list (origin, &length);
   T total = get_sum (origin);
 
+  T::print_dash_line ();
   T::dump_header (mem_location::get_origin_name (origin));
+  T::print_dash_line ();
   for (int i = length - 1; i >= 0; i--)
     list[i].second->dump (list[i].first, total);
+  T::print_dash_line ();
 
+  T::dump_header (mem_location::get_origin_name (origin));
+  T::print_dash_line ();
   total.dump_footer ();
+  T::print_dash_line ();
 
   XDELETEVEC (list);
 

@@ -1,5 +1,5 @@
 /* gfortran backend interface
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Paul Brook.
 
 This file is part of GCC.
@@ -91,7 +91,7 @@ static const struct attribute_spec gfc_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
-  { "omp declare target", 0, 0, true,  false, false, false,
+  { "omp declare target", 0, -1, true,  false, false, false,
     gfc_handle_omp_declare_target_attribute, NULL },
   { "omp declare target link", 0, 0, true,  false, false, false,
     gfc_handle_omp_declare_target_attribute, NULL },
@@ -113,6 +113,9 @@ static const struct attribute_spec gfc_attribute_table[] =
 #undef LANG_HOOKS_TYPE_FOR_MODE
 #undef LANG_HOOKS_TYPE_FOR_SIZE
 #undef LANG_HOOKS_INIT_TS
+#undef LANG_HOOKS_OMP_ARRAY_DATA
+#undef LANG_HOOKS_OMP_IS_ALLOCATABLE_OR_PTR
+#undef LANG_HOOKS_OMP_CHECK_OPTIONAL_ARGUMENT
 #undef LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE
 #undef LANG_HOOKS_OMP_PREDETERMINED_SHARING
 #undef LANG_HOOKS_OMP_REPORT_DECL
@@ -145,6 +148,9 @@ static const struct attribute_spec gfc_attribute_table[] =
 #define LANG_HOOKS_TYPE_FOR_MODE	gfc_type_for_mode
 #define LANG_HOOKS_TYPE_FOR_SIZE	gfc_type_for_size
 #define LANG_HOOKS_INIT_TS		gfc_init_ts
+#define LANG_HOOKS_OMP_ARRAY_DATA		gfc_omp_array_data
+#define LANG_HOOKS_OMP_IS_ALLOCATABLE_OR_PTR	gfc_omp_is_allocatable_or_ptr
+#define LANG_HOOKS_OMP_CHECK_OPTIONAL_ARGUMENT	gfc_omp_check_optional_argument
 #define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE	gfc_omp_privatize_by_reference
 #define LANG_HOOKS_OMP_PREDETERMINED_SHARING	gfc_omp_predetermined_sharing
 #define LANG_HOOKS_OMP_REPORT_DECL		gfc_omp_report_decl
@@ -248,7 +254,7 @@ gfc_init (void)
   gfc_init_1 ();
 
   if (!gfc_new_file ())
-    fatal_error (input_location, "can't open input file: %s", gfc_source_file);
+    fatal_error (input_location, "cannot open input file: %s", gfc_source_file);
 
   if (flag_preprocess_only)
     return false;

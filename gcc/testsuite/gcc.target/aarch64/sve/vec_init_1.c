@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize" } */
+/* { dg-options "-O2 -ftree-vectorize -fno-tree-loop-distribute-patterns" } */
 
 #include <stdint.h>
 

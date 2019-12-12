@@ -30,7 +30,7 @@ contains
       b = b + 1
     end do
 !$omp end simd
-    if (a /= 21 .or. b /= 12) STOP 1
+    if (a /= 21 .or. b /= 12) stop 1
 !$omp simd aligned(f : c_sizeof (e(1)))
     do b = 1, 64
       g(b) = f
@@ -44,8 +44,8 @@ contains
     d(2:2,4:5) = d(2:2,4:5) + 1
 !$omp end task
 !$omp task depend(in : a, d(2:2,4:5))
-    if (a /= 22) STOP 2
-    if (any (d(2:2,4:5) /= 5)) STOP 3
+    if (a /= 22) stop 2
+    if (any (d(2:2,4:5) /= 5)) stop 3
 !$omp end task
 !$omp end taskgroup
 !$omp end single
@@ -64,8 +64,8 @@ contains
     d(2:3,4:4) = 9
 !$omp end target
 !$omp target update from (a, q, d(2:3,4:4), l)
-    if (a /= 6 .or. l .or. b /= 11 .or. any (q /= 8)) STOP 4
-    if (any (d(2:3,4:4) /= 9) .or. d(2,5) /= 5 .or. d(3,5) /= 4) STOP 5
+    if (a /= 6 .or. l .or. b /= 11 .or. any (q /= 8)) stop 4
+    if (any (d(2:3,4:4) /= 9) .or. d(2,5) /= 5 .or. d(3,5) /= 4) stop 5
     a = 12
     b = 13
     q = 14
@@ -82,7 +82,7 @@ contains
     m = 0
     n = 64
     o = 16
-    if (l) STOP 6
+    if (l) stop 6
 !$omp target teams distribute parallel do simd if (.not.l) device(a) &
 !$omp & num_teams(b) dist_schedule(static, c) num_threads (h) &
 !$omp & reduction (+: m) safelen (n) schedule(static, o) &
@@ -91,7 +91,7 @@ contains
       m = m + 1
     end do
 !$omp end target teams distribute parallel do simd
-    if (m /= 64) STOP 7
+    if (m /= 64) stop 7
 !$omp end target data
   end subroutine foo
 end subroutine bar

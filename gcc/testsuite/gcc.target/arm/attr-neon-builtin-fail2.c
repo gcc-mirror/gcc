@@ -1,7 +1,8 @@
 /* Check that calling a neon builtin from a function compiled with vfp fails.  */
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_vfp_ok } */
-/* { dg-options "-O2 -mfloat-abi=softfp" } */
+/* { dg-options "-O2" } */
+/* { dg-add-options arm_vfp } */
 
 extern __simd64_int8_t a, b;
 

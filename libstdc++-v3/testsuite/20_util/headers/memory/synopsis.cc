@@ -1,7 +1,7 @@
 // { dg-do compile }
 // { dg-require-normal-namespace "" }
 
-// Copyright (C) 2007-2018 Free Software Foundation, Inc.
+// Copyright (C) 2007-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,8 +25,14 @@ namespace std {
   template <class T> class allocator;
   template <> class allocator<void>;
   template <class T, class U>
+#if __cplusplus > 201703L
+  constexpr
+#endif
   bool operator==(const allocator<T>&, const allocator<U>&) throw();
   template <class T, class U>
+#if __cplusplus > 201703L
+  constexpr
+#endif
   bool operator!=(const allocator<T>&, const allocator<U>&) throw();
 
   //  lib.storage.iterator, raw storage iterator:

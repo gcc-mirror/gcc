@@ -3,6 +3,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 /* { dg-options "-O2 -frename-registers -fomit-frame-pointer -fPIC -mtune=i686" { target { { i?86-*-* x86_64-*-* } && { ia32 && fpic } } } } */
+/* { dg-skip-if "exceeds eBPF stack limit" { bpf-*-* } } */
 
 extern void exit (int);
 

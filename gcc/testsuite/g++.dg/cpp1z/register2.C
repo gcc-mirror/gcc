@@ -11,7 +11,7 @@
 register int a __asm (REG1);	// { dg-bogus "ISO C\\+\\+17 does not allow 'register' storage class specifier" "" { target c++17 } }
 #endif
 register int b;			// { dg-bogus "ISO C\\+\\+17 does not allow 'register' storage class specifier" "" { target c++17 } }
-register int c ();		// { dg-error "storage class 'register' invalid for function" }
+register int c ();		// { dg-error "1:storage class 'register' invalid for function" }
 int foo (register int d)	// { dg-bogus "ISO C\\+\\+17 does not allow 'register' storage class specifier" "" { target c++17 } }
 {
   return d;

@@ -1,7 +1,6 @@
 # Process this file with autoconf to produce a configure script, like so:
 # aclocal -I ../config && autoconf && autoheader && automake
 
-AC_PREREQ(2.64)
 AC_INIT([GNU Offloading and Multi Processing Runtime Library], 1.0,,[libgomp])
 AC_CONFIG_HEADER(config.h)
 
@@ -172,14 +171,12 @@ AC_HEADER_TIME
 ACX_HEADER_STRING
 AC_CHECK_HEADERS(pthread.h unistd.h semaphore.h sys/loadavg.h sys/sysctl.h sys/time.h)
 
-GCC_HEADER_STDINT(gstdint.h)
-
 XPCFLAGS=""
 case "$host" in
   *-*-rtems*)
     # RTEMS supports Pthreads, but the library is not available at GCC build time.
     ;;
-  nvptx*-*-*)
+  nvptx*-*-* | amdgcn*-*-*)
     # NVPTX does not support Pthreads, has its own code replacement.
     libgomp_use_pthreads=no
     # NVPTX is an accelerator-only target
@@ -219,6 +216,7 @@ m4_include([plugin/configfrag.ac])
 
 # Check for functions needed.
 AC_CHECK_FUNCS(getloadavg clock_gettime strtoull)
+AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
 
 # Check for broken semaphore implementation on darwin.
 # sem_init returns: sem_init error: Function not implemented.
@@ -266,6 +264,41 @@ if test $ac_cv_func_clock_gettime = no; then
 	       [Define to 1 if you have the `clock_gettime' function.])])
 fi
 
+# Check for uname.
+AC_COMPILE_IFELSE(
+ [AC_LANG_PROGRAM(
+  [#include <string.h>
+   #include <stdlib.h>
+   #include <sys/utsname.h>],
+  [struct utsname buf;
+   volatile size_t len = 0;
+   if (!uname (buf))
+     len = strlen (buf.nodename);])],
+  AC_DEFINE(HAVE_UNAME, 1,
+[	Define if uname is supported and struct utsname has nodename field.]))
+
+# Check for gethostname.
+AC_COMPILE_IFELSE(
+ [AC_LANG_PROGRAM(
+  [#include <unistd.h>],
+  [
+changequote(,)dnl
+   char buf[256];
+   if (gethostname (buf, sizeof (buf) - 1) == 0)
+     buf[255] = '\0';
+changequote([,])dnl
+  ])],
+  AC_DEFINE(HAVE_GETHOSTNAME, 1,
+[	Define if gethostname is supported.]))
+
+# Check for getpid.
+AC_COMPILE_IFELSE(
+ [AC_LANG_PROGRAM(
+  [#include <unistd.h>],
+  [int pid = getpid ();])],
+  AC_DEFINE(HAVE_GETPID, 1,
+[	Define if getpid is supported.]))
+
 # See if we support thread-local storage.
 GCC_CHECK_TLS
 
@@ -282,6 +315,10 @@ if test $enable_symvers = gnu; then
   AC_DEFINE(LIBGOMP_GNU_SYMBOL_VERSIONING, 1,
 	    [Define to 1 if GNU symbol versioning is used for libgomp.])
 fi
+
+# Determine cpu count to limit testsuite parallelism.
+AX_COUNT_CPUS
+AC_SUBST(CPU_COUNT)
 
 # Get target configury.
 . ${srcdir}/configure.tgt

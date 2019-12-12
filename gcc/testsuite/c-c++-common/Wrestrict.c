@@ -53,8 +53,11 @@ void test_memcpy_cst (void *d, const void *s)
 
   T (a, a, 0);
 
-  /* This isn't detected because memcpy calls with small power-of-2 sizes
-     are intentionally folded into safe copies equivalent to memmove.
+  /* This isn't detected because memcpy calls with size of 1 are
+     intentionally folded into safe copies equivalent to memmove,
+     regardless of the target (larger power-of-2 copies may or
+     may not be folded depending on the target -- see non_strict_align
+     below, for example).
      It's marked xfail only because there is value in detecting such
      invalid calls for portability, and as a reminder of why it isn't
      diagnosed.  */
@@ -192,19 +195,19 @@ void test_memcpy_range (char *d, size_t sz)
   T (a + ir, a, 2);
   T (a + ir, a, 3);
   /* The following fails because the size is a small power of 2.  */
-  T (a + ir, a, 4);               /* { dg-warning "accessing 4 bytes at offsets \\\[2, 3] and 0 overlaps between 1 and 2 bytes at offset \\\[3, 2]" "memcpy" { xfail *-*-*} } */
+  T (a + ir, a, 4);               /* { dg-warning "accessing 4 bytes at offsets \\\[2, 3] and 0 overlaps between 1 and 2 bytes at offset \(\\\[3, 2]|\\\[2, 3]\)" "pr79220" { xfail non_strict_align } } */
   T (a + ir, a, 5);               /* { dg-warning "accessing 5 bytes at offsets \\\[2, 3] and 0 overlaps between 2 and 3 bytes at offset \\\[2, 3]" "memcpy" } */
 
   T (d + ir, d, 0);
   T (d + ir, d, 1);
   T (d + ir, d, 2);
   T (d + ir, d, 3);
-  T (d + ir, d, 4);               /* { dg-warning "accessing 4 bytes at offsets \\\[2, 3] and 0 overlaps 1 byte at offset 3" "bug 79220" { xfail *-*-* } } */
+  T (d + ir, d, 4);               /* { dg-warning "accessing 4 bytes at offsets \\\[2, 3] and 0 overlaps between 1 and 2 bytes at offset \\\[2, 3]" "pr79220" { xfail non_strict_align } } */
   T (d + ir, d, 5);               /* { dg-warning "accessing 5 bytes at offsets \\\[2, 3] and 0 overlaps between 2 and 3 bytes at offset \\\[2, 3]" "memcpy" } */
 
   /* Because the size is constant and a power of 2 the following is
      folded too early to detect the overlap.  */
-  T (d + ir, d, 4);               /* { dg-warning "accessing 4 bytes at offsets \\\[2, 3] and 0 overlaps 2 byte at offset 2" "memcpy" { xfail *-*-* } } */
+  T (d + ir, d, 4);               /* { dg-warning "accessing 4 bytes at offsets \\\[2, 3] and 0 overlaps between 1 and 2 bytes at offset \\\[2, 3]" "pr79220" { xfail non_strict_align } } */
   T (d + ir, d, 5);               /* { dg-warning "accessing 5 bytes at offsets \\\[2, 3] and 0 overlaps between 2 and 3 bytes at offset \\\[2, 3]" "memcpy" } */
 
   /* Exercise the full range of size_t.  */
@@ -262,8 +265,13 @@ void test_memcpy_range (char *d, size_t sz)
   {
     /* Create an offset in the range [0, -1].  */
     size_t o = sz << 1;
+#if __SIZEOF_SIZE_T__ < 4
+    T (d, d + o, 1234);
+    T (d + o, d, 2345);
+#else
     T (d, d + o, 12345);
     T (d + o, d, 23456);
+#endif
   }
 
   /* Exercise memcpy with both destination and source pointer offsets
@@ -631,7 +639,7 @@ void test_strcpy_cst (ptrdiff_t i)
   T ("012", a, a + 3);
   /* The following doesn't overlap but it should trigger -Wstringop-overflow
      for reading past the end.  */
-  T ("012", a, a + sizeof a);
+  T ("012", a, a + sizeof a);     /* { dg-warning "\\\[-Wstringop-overflow" "pr81437" { xfail *-*-* } } */
 
   /* The terminating nul written to d[2] overwrites s[0].  */
   T ("0123", a, a + 2);           /* { dg-warning "accessing 3 bytes at offsets 0 and 2 overlaps 1 byte at offset 2" } */
@@ -646,9 +654,9 @@ void test_strcpy_cst (ptrdiff_t i)
   T ("012", a + 2, a);            /* { dg-warning "accessing 4 bytes at offsets 2 and 0 overlaps 2 bytes at offset 2" "strcpy" } */
   T ("012", a + 3, a);            /* { dg-warning "accessing 4 bytes at offsets 3 and 0 overlaps 1 byte at offset 3" "strcpy" } */
   T ("012", a + 4, a);
-  /* The following doesn't overlap but it should trigger -Wstrinop-ovewrflow
+  /* The following doesn't overlap but it triggers -Wstringop-overflow
      for writing past the end.  */
-  T ("012", a + sizeof a, a);
+  T ("012", a + sizeof a, a);     /* { dg-warning "\\\[-Wstringop-overflow" } */
 }
 
 /* Exercise strcpy with constant or known arguments offset by a range.

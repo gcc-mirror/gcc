@@ -1,5 +1,5 @@
 /* Test strncmp builtin expansion for compilation and proper execution.  */
-/* { dg-do run { target *-*-linux* *-*-gnu* } } */
+/* { dg-do run { target *-*-linux* *-*-gnu* *-*-uclinux* } } */
 /* { dg-options "-O2" } */
 /* { dg-require-effective-target ptr32plus } */
 

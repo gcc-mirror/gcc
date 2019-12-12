@@ -116,7 +116,7 @@ typedef enum COIRESULT
     ///< the user that requested an engine.
     ///< Only reported if daemon is set up for
     ///< authorization. Is also reported in
-    ///< Windows if host can not find user.
+    ///< Windows if host cannot find user.
     COI_COMM_NOT_INITIALIZED,         ///< The function was called before the
     ///< comm was initialized.
     COI_INCORRECT_FORMAT,             ///< Format of data is incorrect

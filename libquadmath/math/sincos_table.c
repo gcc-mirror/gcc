@@ -1,5 +1,5 @@
 /* Quad-precision floating point sine and cosine tables.
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Jakub Jelinek <jj@ultra.linux.cz>
 
@@ -14,9 +14,8 @@
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
 
 /* For 0.1484375 + n/128.0, n=0..82 this table contains
    first 113 bits of cosine, then at least 113 additional
@@ -26,11 +25,13 @@
    Computed using gmp.
  */
 
+/* Include to grab typedefs and wrappers for __float128 and such.  */
+
 #include "quadmath-imp.h"
 
 const __float128 __sincosq_table[] = {
 
-/* x =  1.48437500000000000000000000000000000e-01Q 3ffc3000000000000000000000000000 */
+/* x =  1.48437500000000000000000000000000000e-01L 3ffc3000000000000000000000000000 */
 /* cos(x) = 0.fd2f5320e1b790209b4dda2f98f79caaa7b873aff1014b0fbc5243766d03cb006bc837c4358 */
  9.89003367927322909016887196069562069e-01Q, /* 3ffefa5ea641c36f2041369bb45f31ef */
  2.15663692029265697782289400027743703e-35Q, /* 3f8bcaaa7b873aff1014b0fbc5243767 */

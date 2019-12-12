@@ -2,7 +2,7 @@
    inputs produce the right code.  */
 
 /* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-mvsx -O2 -mcpu=power8" } */
+/* { dg-options "-mvsx -O2 -mdejagnu-cpu=power8" } */
 
 #include <altivec.h>
 

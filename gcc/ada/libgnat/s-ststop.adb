@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2008-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,8 +31,8 @@
 
 pragma Compiler_Unit_Warning;
 
+with Ada.IO_Exceptions;        use Ada.IO_Exceptions;
 with Ada.Streams;              use Ada.Streams;
-with Ada.Streams.Stream_IO;    use Ada.Streams.Stream_IO;
 with Ada.Unchecked_Conversion;
 
 with System;                   use System;

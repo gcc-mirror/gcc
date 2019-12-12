@@ -1,5 +1,5 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 1998-2018 Free Software Foundation, Inc.
+   Copyright (C) 1998-2019 Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
 This file is part of GCC.
@@ -108,8 +108,9 @@ static struct machine_function * cris_init_machine_status (void);
 
 static rtx cris_struct_value_rtx (tree, int);
 
-static void cris_setup_incoming_varargs (cumulative_args_t, machine_mode,
-					 tree type, int *, int);
+static void cris_setup_incoming_varargs (cumulative_args_t,
+					 const function_arg_info &,
+					 int *, int);
 
 static int cris_initial_frame_pointer_offset (void);
 
@@ -139,16 +140,15 @@ static int cris_register_move_cost (machine_mode, reg_class_t, reg_class_t);
 static int cris_memory_move_cost (machine_mode, reg_class_t, bool);
 static bool cris_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 static int cris_address_cost (rtx, machine_mode, addr_space_t, bool);
-static bool cris_pass_by_reference (cumulative_args_t, machine_mode,
-				    const_tree, bool);
-static int cris_arg_partial_bytes (cumulative_args_t, machine_mode,
-				   tree, bool);
-static rtx cris_function_arg (cumulative_args_t, machine_mode,
-			      const_tree, bool);
+static bool cris_pass_by_reference (cumulative_args_t,
+				    const function_arg_info &);
+static int cris_arg_partial_bytes (cumulative_args_t,
+				   const function_arg_info &);
+static rtx cris_function_arg (cumulative_args_t, const function_arg_info &);
 static rtx cris_function_incoming_arg (cumulative_args_t,
-				       machine_mode, const_tree, bool);
-static void cris_function_arg_advance (cumulative_args_t, machine_mode,
-				       const_tree, bool);
+				       const function_arg_info &);
+static void cris_function_arg_advance (cumulative_args_t,
+				       const function_arg_info &);
 static rtx_insn *cris_md_asm_adjust (vec<rtx> &, vec<rtx> &,
 				     vec<const char *> &,
 				     vec<rtx> &, HARD_REG_SET &);
@@ -247,6 +247,9 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 
 #undef TARGET_ATOMIC_ALIGN_FOR_MODE
 #define TARGET_ATOMIC_ALIGN_FOR_MODE cris_atomic_align_for_mode
+
+#undef TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
 
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX cris_struct_value_rtx
@@ -713,13 +716,13 @@ cris_reg_saved_in_regsave_area (unsigned int regno, bool got_really_used)
 {
   return
     (((df_regs_ever_live_p (regno)
-       && !call_used_regs[regno])
+       && !call_used_or_fixed_reg_p (regno))
       || (regno == PIC_OFFSET_TABLE_REGNUM
 	  && (got_really_used
 	      /* It is saved anyway, if there would be a gap.  */
 	      || (flag_pic
 		  && df_regs_ever_live_p (regno + 1)
-		  && !call_used_regs[regno + 1]))))
+		  && !call_used_or_fixed_reg_p (regno + 1)))))
      && (regno != FRAME_POINTER_REGNUM || !frame_pointer_needed)
      && regno != CRIS_SRP_REGNUM)
     || (crtl->calls_eh_return
@@ -900,7 +903,7 @@ cris_print_operand (FILE *file, rtx x, int code)
     case ':':
       /* The PIC register.  */
       if (! flag_pic)
-	internal_error ("invalid use of ':' modifier");
+	internal_error ("invalid use of %<:%> modifier");
       fprintf (file, "$%s", reg_names [PIC_OFFSET_TABLE_REGNUM]);
       return;
 
@@ -2648,7 +2651,8 @@ cris_option_override (void)
 
       /* Do some sanity checking.  */
       if (cris_max_stackframe < 0 || cris_max_stackframe > 0x20000000)
-	internal_error ("-max-stackframe=%d is not usable, not between 0 and %d",
+	internal_error ("%<-max-stackframe=%d%> is not usable, "
+			"not between 0 and %d",
 			cris_max_stackframe, 0x20000000);
     }
 
@@ -2676,8 +2680,8 @@ cris_option_override (void)
 	cris_cpu_version = 10;
 
       if (cris_cpu_version < 0 || cris_cpu_version > 32)
-	error ("unknown CRIS version specification in -march= or -mcpu= : %s",
-	       cris_cpu_str);
+	error ("unknown CRIS version specification in %<-march=%> or "
+	       "%<-mcpu=%> : %s", cris_cpu_str);
 
       /* Set the target flags.  */
       if (cris_cpu_version >= CRIS_CPU_ETRAX4)
@@ -2712,7 +2716,7 @@ cris_option_override (void)
 	cris_tune = 10;
 
       if (cris_tune < 0 || cris_tune > 32)
-	error ("unknown CRIS cpu version specification in -mtune= : %s",
+	error ("unknown CRIS cpu version specification in %<-mtune=%> : %s",
 	       cris_tune_str);
 
       if (cris_tune >= CRIS_CPU_SVINTO)
@@ -2733,7 +2737,8 @@ cris_option_override (void)
 	 further errors.  */
       if (! TARGET_LINUX)
 	{
-	  error ("-fPIC and -fpic are not supported in this configuration");
+	  error ("%<-fPIC%> and %<-fpic%> are not supported "
+		 "in this configuration");
 	  flag_pic = 0;
 	}
 
@@ -2759,6 +2764,9 @@ cris_asm_output_mi_thunk (FILE *stream,
 			  HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED,
 			  tree funcdecl)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunkdecl));
+
+  assemble_start_function (thunkdecl, fnname);
   /* Make sure unwind info is emitted for the thunk if needed.  */
   final_start_function (emit_barrier (), stream, 1);
 
@@ -2801,6 +2809,7 @@ cris_asm_output_mi_thunk (FILE *stream,
     }
 
   final_end_function ();
+  assemble_end_function (thunkdecl, fnname);
 }
 
 /* Boilerplate emitted at start of file.
@@ -4012,8 +4021,7 @@ cris_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 
 static void
 cris_setup_incoming_varargs (cumulative_args_t ca_v,
-			     machine_mode mode ATTRIBUTE_UNUSED,
-			     tree type ATTRIBUTE_UNUSED,
+			     const function_arg_info &,
 			     int *pretend_arg_size,
 			     int second_time)
 {
@@ -4032,16 +4040,14 @@ cris_setup_incoming_varargs (cumulative_args_t ca_v,
 	     ca->regs, *pretend_arg_size, second_time);
 }
 
-/* Return true if TYPE must be passed by invisible reference.
+/* Return true if ARG must be passed by invisible reference.
    For cris, we pass <= 8 bytes by value, others by reference.  */
 
 static bool
-cris_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			machine_mode mode, const_tree type,
-			bool named ATTRIBUTE_UNUSED)
+cris_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  return (targetm.calls.must_pass_in_stack (mode, type)
-	  || CRIS_FUNCTION_ARG_SIZE (mode, type) > 8);
+  return (targetm.calls.must_pass_in_stack (arg)
+	  || CRIS_FUNCTION_ARG_SIZE (arg.mode, arg.type) > 8);
 }
 
 /* A combination of defining TARGET_PROMOTE_FUNCTION_MODE, promoting arguments
@@ -4102,28 +4108,25 @@ cris_function_value_regno_p (const unsigned int regno)
 }
 
 static int
-cris_arg_partial_bytes (cumulative_args_t ca, machine_mode mode,
-			tree type, bool named ATTRIBUTE_UNUSED)
+cris_arg_partial_bytes (cumulative_args_t ca, const function_arg_info &arg)
 {
   if (get_cumulative_args (ca)->regs == CRIS_MAX_ARGS_IN_REGS - 1
-      && !targetm.calls.must_pass_in_stack (mode, type)
-      && CRIS_FUNCTION_ARG_SIZE (mode, type) > 4
-      && CRIS_FUNCTION_ARG_SIZE (mode, type) <= 8)
+      && !targetm.calls.must_pass_in_stack (arg)
+      && CRIS_FUNCTION_ARG_SIZE (arg.mode, arg.type) > 4
+      && CRIS_FUNCTION_ARG_SIZE (arg.mode, arg.type) <= 8)
     return UNITS_PER_WORD;
   else
     return 0;
 }
 
 static rtx
-cris_function_arg_1 (cumulative_args_t ca_v,
-		     machine_mode mode ATTRIBUTE_UNUSED,
-		     const_tree type ATTRIBUTE_UNUSED,
-		     bool named, bool incoming)
+cris_function_arg_1 (cumulative_args_t ca_v, const function_arg_info &arg,
+		     bool incoming)
 {
   const CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);
 
-  if ((!incoming || named) && ca->regs < CRIS_MAX_ARGS_IN_REGS)
-    return gen_rtx_REG (mode, CRIS_FIRST_ARG_REG + ca->regs);
+  if ((!incoming || arg.named) && ca->regs < CRIS_MAX_ARGS_IN_REGS)
+    return gen_rtx_REG (arg.mode, CRIS_FIRST_ARG_REG + ca->regs);
   else
     return NULL_RTX;
 }
@@ -4132,10 +4135,9 @@ cris_function_arg_1 (cumulative_args_t ca_v,
    The void_type_node is sent as a "closing" call.  */
 
 static rtx
-cris_function_arg (cumulative_args_t ca, machine_mode mode,
-		   const_tree type, bool named)
+cris_function_arg (cumulative_args_t ca, const function_arg_info &arg)
 {
-  return cris_function_arg_1 (ca, mode, type, named, false);
+  return cris_function_arg_1 (ca, arg, false);
 }
 
 /* Worker function for TARGET_FUNCTION_INCOMING_ARG.
@@ -4143,24 +4145,23 @@ cris_function_arg (cumulative_args_t ca, machine_mode mode,
    The differences between this and the previous, is that this one checks
    that an argument is named, since incoming stdarg/varargs arguments are
    pushed onto the stack, and we don't have to check against the "closing"
-   void_type_node TYPE parameter.  */
+   function_arg_info::end_marker parameter.  */
 
 static rtx
-cris_function_incoming_arg (cumulative_args_t ca, machine_mode mode,
-			    const_tree type, bool named)
+cris_function_incoming_arg (cumulative_args_t ca, const function_arg_info &arg)
 {
-  return cris_function_arg_1 (ca, mode, type, named, true);
+  return cris_function_arg_1 (ca, arg, true);
 }
 
 /* Worker function for TARGET_FUNCTION_ARG_ADVANCE.  */
 
 static void
-cris_function_arg_advance (cumulative_args_t ca_v, machine_mode mode,
-			   const_tree type, bool named ATTRIBUTE_UNUSED)
+cris_function_arg_advance (cumulative_args_t ca_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);
 
-  ca->regs += (3 + CRIS_FUNCTION_ARG_SIZE (mode, type)) / 4;
+  ca->regs += (3 + CRIS_FUNCTION_ARG_SIZE (arg.mode, arg.type)) / 4;
 }
 
 /* Worker function for TARGET_MD_ASM_ADJUST.  */
@@ -4337,7 +4338,7 @@ cris_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 /* Return the preferred minimum alignment for a static object.  */
 
 static HOST_WIDE_INT
-cris_preferred_mininum_alignment (void)
+cris_preferred_minimum_alignment (void)
 {
   if (!TARGET_CONST_ALIGN)
     return 8;
@@ -4351,7 +4352,7 @@ cris_preferred_mininum_alignment (void)
 static HOST_WIDE_INT
 cris_static_rtx_alignment (machine_mode mode)
 {
-  return MAX (cris_preferred_mininum_alignment (), GET_MODE_ALIGNMENT (mode));
+  return MAX (cris_preferred_minimum_alignment (), GET_MODE_ALIGNMENT (mode));
 }
 
 /* Implement TARGET_CONSTANT_ALIGNMENT.  Note that this hook has the
@@ -4364,7 +4365,7 @@ cris_static_rtx_alignment (machine_mode mode)
 static HOST_WIDE_INT
 cris_constant_alignment (const_tree, HOST_WIDE_INT basic_align)
 {
-  return MAX (cris_preferred_mininum_alignment (), basic_align);
+  return MAX (cris_preferred_minimum_alignment (), basic_align);
 }
 
 #if 0

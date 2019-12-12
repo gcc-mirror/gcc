@@ -1,5 +1,5 @@
 /* VMS specific, C compiler specific functions.
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
    Contributed by Tristan Gingold (gingold@adacore.com).
 
 This file is part of GCC.
@@ -77,7 +77,8 @@ vms_pragma_member_alignment (cpp_reader *pfile ATTRIBUTE_UNUSED)
     }
   if (tok != CPP_NAME)
     {
-      warning (OPT_Wpragmas, "malformed '#pragma member_alignment', ignoring");
+      warning (OPT_Wpragmas,
+	       "malformed %<#pragma member_alignment%>, ignoring");
       return;
     }
 
@@ -92,12 +93,12 @@ vms_pragma_member_alignment (cpp_reader *pfile ATTRIBUTE_UNUSED)
     maximum_field_alignment = saved_member_alignment;
   else
     {
-      error ("unknown '#pragma member_alignment' name %s", arg);
+      error ("unknown %<#pragma member_alignment%> name %s", arg);
       return;
     }
   if (pragma_lex (&x) != CPP_EOF)
     {
-      error ("malformed '#pragma member_alignment'");
+      error ("malformed %<#pragma member_alignment%>");
       return;
     }
 }
@@ -131,7 +132,7 @@ vms_pragma_nomember_alignment (cpp_reader *pfile ATTRIBUTE_UNUSED)
         maximum_field_alignment = 16 * BITS_PER_UNIT;
       else
         {
-          error ("unhandled alignment for '#pragma nomember_alignment'");
+	  error ("unhandled alignment for %<#pragma nomember_alignment%>");
         }
 
       tok = pragma_lex (&x);
@@ -144,7 +145,7 @@ vms_pragma_nomember_alignment (cpp_reader *pfile ATTRIBUTE_UNUSED)
 
   if (tok != CPP_EOF)
     {
-      error ("garbage at end of '#pragma nomember_alignment'");
+      error ("garbage at end of %<#pragma nomember_alignment%>");
       return;
     }
 }
@@ -199,7 +200,7 @@ vms_pragma_extern_model (cpp_reader *pfile ATTRIBUTE_UNUSED)
 
   if (tok != CPP_NAME)
     {
-      warning (OPT_Wpragmas, "malformed '#pragma extern_model', ignoring");
+      warning (OPT_Wpragmas, "malformed %<#pragma extern_model%>, ignoring");
       return;
     }
 
@@ -225,7 +226,7 @@ vms_pragma_extern_model (cpp_reader *pfile ATTRIBUTE_UNUSED)
     }
   else
     {
-      error ("unknown '#pragma extern_model' model '%s'", arg);
+      error ("unknown %<#pragma extern_model%> model %qs", arg);
       return;
     }
 #if 0

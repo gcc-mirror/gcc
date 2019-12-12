@@ -1,6 +1,6 @@
 /* Provide suggestions to handle misspelled options, and implement the
    --complete option for auto-completing options from a prefix.
-   Copyright (C) 2016-2018 Free Software Foundation, Inc.
+   Copyright (C) 2016-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -58,13 +58,10 @@ public:
 private:
   /* Helper function for option_proposer::suggest_option.  Populate
      m_option_suggestions with candidate strings for misspelled options.
-     The strings will be freed by the option_proposer's dtor.  */
-  void build_option_suggestions ();
-
-  /* Find parameter completions for --param format with SEPARATOR.
-     Again, save the completions into results.  */
-  void find_param_completions (const char separator, const char *param_prefix,
-			       auto_string_vec &results);
+     The strings will be freed by the option_proposer's dtor.
+     PREFIX is used for bash completion suggestions, otherwise
+     it's set to NULL.  */
+  void build_option_suggestions (const char *prefix);
 
 private:
   /* Cache with all suggestions.  */

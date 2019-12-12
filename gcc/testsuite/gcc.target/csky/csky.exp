@@ -1,0 +1,79 @@
+# GCC testsuite for C-SKY targets.
+# Copyright (C) 2012-2019 Free Software Foundation, Inc.
+# Contributed by C-SKY Microsystems and Mentor Graphics.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Exit immediately if this isn't a C-SKY target.
+if ![istarget csky*-*-*] then {
+  return
+}
+
+# Load support procs.
+load_lib gcc-dg.exp
+
+# Like dg-options, but treats certain C-SKY-specific options specially:
+#
+#    -mcpu=*
+#	Select the target cpu. Skip the test if the multilib flags force
+#	a different cpu.
+proc dg-csky-options {args} {
+    upvar dg-extra-tool-flags extra_tool_flags
+    upvar dg-do-what do_what
+
+    set multilib_cpu ""
+    set multilib_hf ""
+    set cpu ""
+
+    foreach flag [target_info multilib_flags] {
+	regexp "^-mcpu=(.*)" $flag dummy multilib_cpu
+        regexp "^-mhard-float" $flag multilib_hf
+    }
+
+    set flags [lindex $args 1]
+
+    foreach flag $flags {
+	regexp "^-mcpu=(.*)" $flag dummy cpu
+    }
+
+    if {$cpu == ""} then {
+      set extra_tool_flags $flags
+    } elseif {$multilib_cpu == "" || $multilib_cpu == $cpu} then {
+        if { ($cpu == "ck801" || $cpu == "ck802") 
+	     && $multilib_hf != "" } then {
+	    set do_what [list [lindex $do_what 0] "N" "P"]
+	} else {
+	    set extra_tool_flags $flags
+	}
+    } else {
+	set do_what [list [lindex $do_what 0] "N" "P"]
+    }
+}
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_CFLAGS
+if ![info exists DEFAULT_CFLAGS] then {
+    set DEFAULT_CFLAGS " -ansi -pedantic-errors"
+}
+
+# Initialize `dg'.
+dg-init
+
+# Main loop.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cCS\]]] \
+	"" $DEFAULT_CFLAGS
+
+# All done.
+dg-finish

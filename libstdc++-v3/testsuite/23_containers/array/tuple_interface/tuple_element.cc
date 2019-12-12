@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 //
-// Copyright (C) 2011-2018 Free Software Foundation, Inc.
+// Copyright (C) 2011-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,7 @@ test01()
   // This relies on the fact that <utility> includes <type_traits>:
   using std::is_same;
 
-  const size_t len = 3;
+  const std::size_t len = 3;
   typedef array<int, len> array_type;
 
   static_assert(is_same<tuple_element<0, array_type>::type, int>::value, "" );

@@ -2,11 +2,10 @@
 // { dg-options "-pthread"  }
 // { dg-require-effective-target c++11 }
 // { dg-require-effective-target pthread }
-// { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 // { dg-require-sleep "" }
 
-// Copyright (C) 2012-2018 Free Software Foundation, Inc.
+// Copyright (C) 2012-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,5 +45,5 @@ struct Task
 
 int main()
 {
-  std::async(std::launch::async, Task());
+  (void) std::async(std::launch::async, Task());
 }

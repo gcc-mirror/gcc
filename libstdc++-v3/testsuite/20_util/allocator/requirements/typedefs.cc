@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2012-2018 Free Software Foundation, Inc.
+// Copyright (C) 2012-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,6 +30,7 @@ static_assert( is_same<allocator<int>::size_type, std::size_t>::value,
                "size_type" );
 static_assert( is_same<allocator<int>::difference_type, std::ptrdiff_t>::value,
                "difference_type" );
+#if __cplusplus <= 201703L
 static_assert( is_same<allocator<int>::pointer, int*>::value,
                "pointer" );
 static_assert( is_same<allocator<int>::const_pointer, const int*>::value,
@@ -38,12 +39,15 @@ static_assert( is_same<allocator<int>::reference, int&>::value,
                "reference" );
 static_assert( is_same<allocator<int>::const_reference, const int&>::value,
                "const_reference" );
+#endif
 static_assert( is_same<allocator<int>::value_type, int>::value,
                "value_type" );
 
+#if __cplusplus <= 201703L
 static_assert( is_same<allocator<int>::rebind<char>::other,
                        allocator<char>>::value,
                "rebind::other" );
+#endif
 
 static_assert( is_same<allocator<int>::propagate_on_container_move_assignment,
                        std::true_type>::value,

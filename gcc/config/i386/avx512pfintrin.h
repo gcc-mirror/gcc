@@ -1,4 +1,4 @@
-/* Copyright (C) 2013-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2013-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -174,16 +174,16 @@ _mm512_prefetch_i64scatter_ps (void *__addr, __m512i __index, int __scale,
 
 extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_prefetch_i64scatter_pd (void *__addr, __mmask16 __mask,
+_mm512_mask_prefetch_i64scatter_pd (void *__addr, __mmask8 __mask,
 				    __m512i __index, int __scale, int __hint)
 {
   __builtin_ia32_scatterpfqpd (__mask, (__v8di) __index, __addr, __scale,
-			      __hint);
+			       __hint);
 }
 
 extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_prefetch_i64scatter_ps (void *__addr, __mmask16 __mask,
+_mm512_mask_prefetch_i64scatter_ps (void *__addr, __mmask8 __mask,
 				    __m512i __index, int __scale, int __hint)
 {
   __builtin_ia32_scatterpfqps (__mask, (__v8di) __index, __addr, __scale,

@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-tree-optimized -fdump-ipa-profile" } */
+/* { dg-options "-O2 -fdump-tree-optimized -fdump-ipa-profile-optimized" } */
 unsigned int a[1000];
 unsigned int b = 257;
 unsigned int c = 1023;
@@ -25,7 +25,7 @@ main ()
   return 0;
 }
 /* autofdo does not do value profiling so far */
-/* { dg-final-use-not-autofdo { scan-ipa-dump "Mod subtract transformation on insn" "profile" } } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump "Transformation done: mod subtract" "profile" } } */
 /* This is part of code checking that n is greater than the divisor so we are sure that it
    didn't get optimized out.  */
 /* { dg-final-use-not-autofdo { scan-tree-dump "if \\(_\[0-9\]* \\< n_\[0-9\]*" "optimized"} } */

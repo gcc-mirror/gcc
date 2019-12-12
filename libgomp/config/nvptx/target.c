@@ -1,4 +1,4 @@
-/* Copyright (C) 2013-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2013-2019 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -47,3 +47,21 @@ GOMP_teams (unsigned int num_teams, unsigned int thread_limit)
     }
   gomp_num_teams_var = num_teams - 1;
 }
+
+int
+omp_pause_resource (omp_pause_resource_t kind, int device_num)
+{
+  (void) kind;
+  (void) device_num;
+  return -1;
+}
+
+int
+omp_pause_resource_all (omp_pause_resource_t kind)
+{
+  (void) kind;
+  return -1;
+}
+
+ialias (omp_pause_resource)
+ialias (omp_pause_resource_all)

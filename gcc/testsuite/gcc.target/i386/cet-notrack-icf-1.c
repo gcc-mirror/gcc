@@ -3,8 +3,8 @@
 /* { dg-options "-O2 -fcf-protection=none" } */
 /* { dg-final { scan-assembler-not "endbr" } } */
 /* { dg-final { scan-assembler-not "fn3:" } } */
-/* { dg-final { scan-assembler "set\[ \t]+fn2,fn1" } } */
-/* { dg-final { scan-assembler "set\[ \t]+fn3,fn1" } } */
+/* { dg-final { scan-assembler "set\[ \t]+fn2,fn1" { target { ! *-*-darwin* } } } } */
+/* { dg-final { scan-assembler "set\[ \t]+fn3,fn1" { target { ! *-*-darwin* } } } } */
 
 static __attribute__((noinline)) int
 fn1 (int x)
@@ -20,7 +20,7 @@ fn2 (int x)
 
 static __attribute__((noinline, nocf_check)) int
 fn3 (int x)
-{ /* { dg-warning "'nocf_check' attribute ignored. Use -fcf-protection option to enable it" } */
+{ /* { dg-warning "'nocf_check' attribute ignored. Use '-fcf-protection' option to enable it" } */
   return x + 12;
 }
 

@@ -6,4 +6,4 @@
 __fp16 xx = -2.0;
 
 /* { dg-final { scan-assembler "\t.size\txx, 2" } } */
-/* { dg-final { scan-assembler "\t.short\t49152" } } */
+/* { dg-final { scan-assembler "\t.short\t-16384" } } */

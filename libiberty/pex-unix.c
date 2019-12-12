@@ -1,7 +1,7 @@
 /* Utilities to execute a program in a subprocess (possibly linked by pipes
    with other subprocesses), and wait for it.  Generic Unix version
    (also used for UWIN and VMS).
-   Copyright (C) 1996-2018 Free Software Foundation, Inc.
+   Copyright (C) 1996-2019 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -298,8 +298,6 @@ pex_wait (struct pex_obj *obj, pid_t pid, int *status, struct pex_time *time)
 #endif /* ! defined (HAVE_WAITPID) */
 #endif /* ! defined (HAVE_WAIT4) */
 
-static void pex_child_error (struct pex_obj *, const char *, const char *, int)
-     ATTRIBUTE_NORETURN;
 static int pex_unix_open_read (struct pex_obj *, const char *, int);
 static int pex_unix_open_write (struct pex_obj *, const char *, int, int);
 static pid_t pex_unix_exec_child (struct pex_obj *, int, const char *,
@@ -364,28 +362,6 @@ static int
 pex_unix_close (struct pex_obj *obj ATTRIBUTE_UNUSED, int fd)
 {
   return close (fd);
-}
-
-/* Report an error from a child process.  We don't use stdio routines,
-   because we might be here due to a vfork call.  */
-
-static void
-pex_child_error (struct pex_obj *obj, const char *executable,
-		 const char *errmsg, int err)
-{
-  int retval = 0;
-#define writeerr(s) retval |= (write (STDERR_FILE_NO, s, strlen (s)) < 0)
-  writeerr (obj->pname);
-  writeerr (": error trying to exec '");
-  writeerr (executable);
-  writeerr ("': ");
-  writeerr (errmsg);
-  writeerr (": ");
-  writeerr (xstrerror (err));
-  writeerr ("\n");
-#undef writeerr
-  /* Exit with -2 if the error output failed, too.  */
-  _exit (retval == 0 ? -1 : -2);
 }
 
 /* Execute a child.  */
@@ -592,21 +568,53 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
                      int in, int out, int errdes,
 		     int toclose, const char **errmsg, int *err)
 {
-  pid_t pid;
+  pid_t pid = -1;
+  /* Tuple to communicate error from child to parent.  We can safely
+     transfer string literal pointers as both run with identical
+     address mappings.  */
+  struct fn_err 
+  {
+    const char *fn;
+    int err;
+  };
+  volatile int do_pipe = 0;
+  volatile int pipes[2]; /* [0]:reader,[1]:writer.  */
+#ifdef O_CLOEXEC
+  do_pipe = 1;
+#endif
+  if (do_pipe)
+    {
+#ifdef HAVE_PIPE2
+      if (pipe2 ((int *)pipes, O_CLOEXEC))
+	do_pipe = 0;
+#else
+      if (pipe ((int *)pipes))
+	do_pipe = 0;
+      else
+	{
+	  if (fcntl (pipes[1], F_SETFD, FD_CLOEXEC) == -1)
+	    {
+	      close (pipes[0]);
+	      close (pipes[1]);
+	      do_pipe = 0;
+	    }
+	}
+#endif
+    }
 
   /* We declare these to be volatile to avoid warnings from gcc about
      them being clobbered by vfork.  */
-  volatile int sleep_interval;
+  volatile int sleep_interval = 1;
   volatile int retries;
 
   /* We vfork and then set environ in the child before calling execvp.
      This clobbers the parent's environ so we need to restore it.
      It would be nice to use one of the exec* functions that takes an
-     environment as a parameter, but that may have portability issues.  */
-  char **save_environ = environ;
+     environment as a parameter, but that may have portability
+     issues.  It is marked volatile so the child doesn't consider it a
+     dead variable and therefore clobber where ever it is stored.  */
+  char **volatile save_environ = environ;
 
-  sleep_interval = 1;
-  pid = -1;
   for (retries = 0; retries < 4; ++retries)
     {
       pid = vfork ();
@@ -619,104 +627,138 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
   switch (pid)
     {
     case -1:
+      if (do_pipe)
+	{
+	  close (pipes[0]);
+	  close (pipes[1]);
+	}
       *err = errno;
       *errmsg = VFORK_STRING;
       return (pid_t) -1;
 
     case 0:
       /* Child process.  */
-      if (in != STDIN_FILE_NO)
-	{
-	  if (dup2 (in, STDIN_FILE_NO) < 0)
-	    pex_child_error (obj, executable, "dup2", errno);
-	  if (close (in) < 0)
-	    pex_child_error (obj, executable, "close", errno);
-	}
-      if (out != STDOUT_FILE_NO)
-	{
-	  if (dup2 (out, STDOUT_FILE_NO) < 0)
-	    pex_child_error (obj, executable, "dup2", errno);
-	  if (close (out) < 0)
-	    pex_child_error (obj, executable, "close", errno);
-	}
-      if (errdes != STDERR_FILE_NO)
-	{
-	  if (dup2 (errdes, STDERR_FILE_NO) < 0)
-	    pex_child_error (obj, executable, "dup2", errno);
-	  if (close (errdes) < 0)
-	    pex_child_error (obj, executable, "close", errno);
-	}
-      if (toclose >= 0)
-	{
-	  if (close (toclose) < 0)
-	    pex_child_error (obj, executable, "close", errno);
-	}
-      if ((flags & PEX_STDERR_TO_STDOUT) != 0)
-	{
-	  if (dup2 (STDOUT_FILE_NO, STDERR_FILE_NO) < 0)
-	    pex_child_error (obj, executable, "dup2", errno);
-	}
+      {
+	struct fn_err failed;
+	failed.fn = NULL;
 
-      if (env)
-	{
-	  /* NOTE: In a standard vfork implementation this clobbers the
-	     parent's copy of environ "too" (in reality there's only one copy).
-	     This is ok as we restore it below.  */
-	  environ = (char**) env;
-	}
+	if (do_pipe)
+	  close (pipes[0]);
+	if (!failed.fn && in != STDIN_FILE_NO)
+	  {
+	    if (dup2 (in, STDIN_FILE_NO) < 0)
+	      failed.fn = "dup2", failed.err = errno;
+	    else if (close (in) < 0)
+	      failed.fn = "close", failed.err = errno;
+	  }
+	if (!failed.fn && out != STDOUT_FILE_NO)
+	  {
+	    if (dup2 (out, STDOUT_FILE_NO) < 0)
+	      failed.fn = "dup2", failed.err = errno;
+	    else if (close (out) < 0)
+	      failed.fn = "close", failed.err = errno;
+	  }
+	if (!failed.fn && errdes != STDERR_FILE_NO)
+	  {
+	    if (dup2 (errdes, STDERR_FILE_NO) < 0)
+	      failed.fn = "dup2", failed.err = errno;
+	    else if (close (errdes) < 0)
+	      failed.fn = "close", failed.err = errno;
+	  }
+	if (!failed.fn && toclose >= 0)
+	  {
+	    if (close (toclose) < 0)
+	      failed.fn = "close", failed.err = errno;
+	  }
+	if (!failed.fn && (flags & PEX_STDERR_TO_STDOUT) != 0)
+	  {
+	    if (dup2 (STDOUT_FILE_NO, STDERR_FILE_NO) < 0)
+	      failed.fn = "dup2", failed.err = errno;
+	  }
+	if (!failed.fn)
+	  {
+	    if (env)
+	      /* NOTE: In a standard vfork implementation this clobbers
+		 the parent's copy of environ "too" (in reality there's
+		 only one copy).  This is ok as we restore it below.  */
+	      environ = (char**) env;
+	    if ((flags & PEX_SEARCH) != 0)
+	      {
+		execvp (executable, to_ptr32 (argv));
+		failed.fn = "execvp", failed.err = errno;
+	      }
+	    else
+	      {
+		execv (executable, to_ptr32 (argv));
+		failed.fn = "execv", failed.err = errno;
+	      }
+	  }
 
-      if ((flags & PEX_SEARCH) != 0)
-	{
-	  execvp (executable, to_ptr32 (argv));
-	  pex_child_error (obj, executable, "execvp", errno);
-	}
-      else
-	{
-	  execv (executable, to_ptr32 (argv));
-	  pex_child_error (obj, executable, "execv", errno);
-	}
+	/* Something failed, report an error.  We don't use stdio
+	   routines, because we might be here due to a vfork call.  */
+	ssize_t retval = 0;
 
+	if (!do_pipe
+	    || write (pipes[1], &failed, sizeof (failed)) != sizeof (failed))
+	  {
+	    /* The parent will not see our scream above, so write to
+	       stdout.  */
+#define writeerr(s) (retval |= write (STDERR_FILE_NO, s, strlen (s)))
+	    writeerr (obj->pname);
+	    writeerr (": error trying to exec '");
+	    writeerr (executable);
+	    writeerr ("': ");
+	    writeerr (failed.fn);
+	    writeerr (": ");
+	    writeerr (xstrerror (failed.err));
+	    writeerr ("\n");
+#undef writeerr
+	  }
+
+	/* Exit with -2 if the error output failed, too.  */
+	_exit (retval < 0 ? -2 : -1);
+      }
       /* NOTREACHED */
       return (pid_t) -1;
 
     default:
       /* Parent process.  */
+      {
+	/* Restore environ.  Note that the parent either doesn't run
+	   until the child execs/exits (standard vfork behaviour), or
+	   if it does run then vfork is behaving more like fork.  In
+	   either case we needn't worry about clobbering the child's
+	   copy of environ.  */
+	environ = save_environ;
 
-      /* Restore environ.
-	 Note that the parent either doesn't run until the child execs/exits
-	 (standard vfork behaviour), or if it does run then vfork is behaving
-	 more like fork.  In either case we needn't worry about clobbering
-	 the child's copy of environ.  */
-      environ = save_environ;
+	struct fn_err failed;
+	failed.fn = NULL;
+	if (do_pipe)
+	  {
+	    close (pipes[1]);
+	    ssize_t len = read (pipes[0], &failed, sizeof (failed));
+	    if (len < 0)
+	      failed.fn = NULL;
+	    close (pipes[0]);
+	  }
 
-      if (in != STDIN_FILE_NO)
-	{
+	if (!failed.fn && in != STDIN_FILE_NO)
 	  if (close (in) < 0)
-	    {
-	      *err = errno;
-	      *errmsg = "close";
-	      return (pid_t) -1;
-	    }
-	}
-      if (out != STDOUT_FILE_NO)
-	{
+	    failed.fn = "close", failed.err = errno;
+	if (!failed.fn && out != STDOUT_FILE_NO)
 	  if (close (out) < 0)
-	    {
-	      *err = errno;
-	      *errmsg = "close";
-	      return (pid_t) -1;
-	    }
-	}
-      if (errdes != STDERR_FILE_NO)
-	{
+	    failed.fn = "close", failed.err = errno;
+	if (!failed.fn && errdes != STDERR_FILE_NO)
 	  if (close (errdes) < 0)
-	    {
-	      *err = errno;
-	      *errmsg = "close";
-	      return (pid_t) -1;
-	    }
-	}
+	    failed.fn = "close", failed.err = errno;
 
+	if (failed.fn)
+	  {
+	    *err = failed.err;
+	    *errmsg = failed.fn;
+	    return (pid_t) -1;
+	  }
+      }
       return pid;
     }
 }

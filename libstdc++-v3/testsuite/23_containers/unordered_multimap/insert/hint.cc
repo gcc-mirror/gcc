@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2018 Free Software Foundation, Inc.
+// Copyright (C) 2013-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,6 +29,7 @@ void test01()
   typedef typename Map::value_type Pair;
 
   Map m;
+  m.reserve(3);
 
   auto it1 = m.insert(Pair(0, 0));
   VERIFY( it1 != m.end() );
@@ -58,6 +59,7 @@ void test02()
   typedef typename Map::value_type Pair;
 
   Map m;
+  m.reserve(5);
 
   auto it1 = m.insert(Pair(0, 0));
   auto it2 = m.insert(it1, Pair(1, 0));
@@ -89,6 +91,7 @@ void test03()
   typedef typename Map::value_type Pair;
 
   Map m;
+  m.reserve(3);
 
   auto it1 = m.insert(Pair(0, 0));
   VERIFY( it1 != m.end() );

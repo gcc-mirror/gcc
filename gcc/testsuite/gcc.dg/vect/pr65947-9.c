@@ -48,5 +48,5 @@ main ()
 /* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" { target { ! vect_fold_extract_last } } } } */
 /* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 1 "vect" { target vect_fold_extract_last } } } */
 /* { dg-final { scan-tree-dump "loop size is greater than data size" "vect" { target { ! vect_fold_extract_last } } } } */
-/* { dg-final { scan-tree-dump-times "optimizing condition reduction with FOLD_EXTRACT_LAST" 2 "vect" { target vect_fold_extract_last } } } */
+/* { dg-final { scan-tree-dump-times "optimizing condition reduction with FOLD_EXTRACT_LAST" 1 "vect" { target vect_fold_extract_last } } } */
 /* { dg-final { scan-tree-dump-not "condition expression based on integer induction." "vect" } } */

@@ -38,7 +38,7 @@ CONTAINS
     REAL :: resArr(3), resSmall(2)
 
     res = sys%solve1 () ! { dg-error "Incompatible rank" }
-    res = sys%solve2 () ! { dg-error "Can't convert" }
+    res = sys%solve2 () ! { dg-error "Cannot convert" }
     resSmall = sys%solve1 () ! { dg-error "Different shape" }
 
     res = sys%solve3 ()

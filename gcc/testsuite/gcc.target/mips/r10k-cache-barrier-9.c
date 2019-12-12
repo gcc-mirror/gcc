@@ -1,4 +1,4 @@
-/* { dg-options "-mr10k-cache-barrier=store -G8" } */
+/* { dg-options "-mr10k-cache-barrier=store -G8 -w" } */
 
 /* Test that out-of-range stores to components of static objects
    are protected by a cache barrier.  */

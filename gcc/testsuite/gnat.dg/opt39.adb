@@ -27,4 +27,5 @@ begin
   end if;
 end;
 
--- { dg-final { scan-tree-dump-times "MEM" 1 "optimized" } }
+-- { dg-final { scan-tree-dump-not "MEM" "optimized" } }
+-- { dg-final { scan-tree-dump-not "tmp" "optimized" } }

@@ -114,7 +114,7 @@ i32 f9 (i64 v_x, i32 v_y)
 i32 f10 (i64 v_x, i32 v_y)
 {
   /* { dg-final { scan-assembler "f10:\n\tsrlg\t%r2,%r2,48\n\trosbg\t%r2,%r3,32,39,0" { target { lp64 } } } } */
-  /* { dg-final { scan-assembler "f10:\n\tnilf\t%r4,4278190080\n\trosbg\t%r4,%r2,32\\\+16,63,64-16" { target { ! lp64 } } } } */
+  /* { dg-final { scan-assembler "f10:\n\tnilf\t%r4,4278190080\n\trosbg\t%r4,%r2,48,63,48" { target { ! lp64 } } } } */
   i64 v_shr6 = ((ui64)v_x) >> 48;
   i32 v_conv = (ui32)v_shr6;
   i32 v_and1 = v_y & -16777216;

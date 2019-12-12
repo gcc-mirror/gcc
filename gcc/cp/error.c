@@ -1,6 +1,6 @@
 /* Call-backs for C++ error reporting.
    This code is non-reentrant.
-   Copyright (C) 1993-2018 Free Software Foundation, Inc.
+   Copyright (C) 1993-2019 Free Software Foundation, Inc.
    This file is part of GCC.
 
 GCC is free software; you can redistribute it and/or modify
@@ -18,6 +18,8 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+/* For use with name_hint.  */
+#define INCLUDE_UNIQUE_PTR
 #include "system.h"
 #include "coretypes.h"
 #include "cp-tree.h"
@@ -31,6 +33,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-objc.h"
 #include "ubsan.h"
 #include "internal-fn.h"
+#include "gcc-rich-location.h"
+#include "cp-name-hint.h"
 
 #define pp_separate_with_comma(PP) pp_cxx_separate_with (PP, ',')
 #define pp_separate_with_semicolon(PP) pp_cxx_separate_with (PP, ';')
@@ -53,7 +57,6 @@ static const char *args_to_string (tree, int);
 static const char *code_to_string (enum tree_code);
 static const char *cv_to_string (tree, int);
 static const char *decl_to_string (tree, int);
-static const char *expr_to_string (tree);
 static const char *fndecl_to_string (tree, int);
 static const char *op_to_string	(bool, enum tree_code);
 static const char *parm_to_string (int);
@@ -95,6 +98,7 @@ static void print_instantiation_full_context (diagnostic_context *);
 static void print_instantiation_partial_context (diagnostic_context *,
 						 struct tinst_level *,
 						 location_t);
+static void maybe_print_constraint_context (diagnostic_context *);
 static void cp_diagnostic_starter (diagnostic_context *, diagnostic_info *);
 static void cp_print_error_function (diagnostic_context *, diagnostic_info *);
 
@@ -104,8 +108,9 @@ static bool cp_printer (pretty_printer *, text_info *, const char *,
 /* Struct for handling %H or %I, which require delaying printing the
    type until a postprocessing stage.  */
 
-struct deferred_printed_type
+class deferred_printed_type
 {
+public:
   deferred_printed_type ()
   : m_tree (NULL_TREE), m_buffer_ptr (NULL), m_verbose (false), m_quote (false)
   {}
@@ -179,6 +184,12 @@ dump_scope (cxx_pretty_printer *pp, tree scope, int flags)
   if (scope == NULL_TREE)
     return;
 
+  /* Enum values within an unscoped enum will be CONST_DECL with an
+     ENUMERAL_TYPE as their "scope".  Use CP_TYPE_CONTEXT of the
+     ENUMERAL_TYPE, so as to print any enclosing namespace.  */
+  if (UNSCOPED_ENUM_P (scope))
+    scope = CP_TYPE_CONTEXT (scope);
+
   if (TREE_CODE (scope) == NAMESPACE_DECL)
     {
       if (scope != global_namespace)
@@ -187,7 +198,8 @@ dump_scope (cxx_pretty_printer *pp, tree scope, int flags)
 	  pp_cxx_colon_colon (pp);
 	}
     }
-  else if (AGGREGATE_TYPE_P (scope))
+  else if (AGGREGATE_TYPE_P (scope)
+	   || SCOPED_ENUM_P (scope))
     {
       dump_type (pp, scope, f);
       pp_cxx_colon_colon (pp);
@@ -398,7 +410,7 @@ dump_template_bindings (cxx_pretty_printer *pp, tree parms, tree args,
       pop_deferring_access_checks ();
       /* Strip typedefs.  We can't just use TFF_CHASE_TYPEDEF because
 	 pp_simple_type_specifier doesn't know about it.  */
-      t = strip_typedefs (t);
+      t = strip_typedefs (t, NULL, STF_USER_VISIBLE);
       dump_type (pp, t, TFF_PLAIN_IDENTIFIER);
     }
 }
@@ -437,7 +449,11 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
 	       || DECL_SELF_REFERENCE_P (decl)
 	       || (!flag_pretty_templates
 		   && DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl)))
-	t = strip_typedefs (t);
+	{
+	  unsigned int stf_flags = (!(pp->flags & pp_c_flag_gnu_v3)
+				    ? STF_USER_VISIBLE : 0);
+	  t = strip_typedefs (t, NULL, stf_flags);
+	}
       else if (alias_template_specialization_p (t))
 	{
 	  dump_alias_template_specialization (pp, t, flags);
@@ -534,13 +550,20 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
 
     case TEMPLATE_TYPE_PARM:
       pp_cxx_cv_qualifier_seq (pp, t);
-      if (tree c = PLACEHOLDER_TYPE_CONSTRAINTS (t))
-	pp_cxx_constrained_type_spec (pp, c);
+      if (template_placeholder_p (t))
+	{
+	  t = TREE_TYPE (CLASS_PLACEHOLDER_TEMPLATE (t));
+	  pp_cxx_tree_identifier (pp, TYPE_IDENTIFIER (t));
+	  pp_string (pp, "<...auto...>");
+	}
       else if (TYPE_IDENTIFIER (t))
 	pp_cxx_tree_identifier (pp, TYPE_IDENTIFIER (t));
       else
 	pp_cxx_canonical_template_parameter
 	  (pp, TEMPLATE_TYPE_PARM_INDEX (t));
+      /* If this is a constrained placeholder, add the requirements.  */
+      if (tree c = PLACEHOLDER_TYPE_CONSTRAINTS (t))
+        pp_cxx_constrained_type_spec (pp, c);
       break;
 
       /* This is not always necessary for pointers and such, but doing this
@@ -722,14 +745,7 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
       name = DECL_NAME (name);
     }
 
-  if (name == 0 || anon_aggrname_p (name))
-    {
-      if (flags & TFF_CLASS_KEY_OR_ENUM)
-	pp_string (pp, M_("<unnamed>"));
-      else
-	pp_printf (pp, M_("<unnamed %s>"), variety);
-    }
-  else if (LAMBDA_TYPE_P (t))
+  if (LAMBDA_TYPE_P (t))
     {
       /* A lambda's "type" is essentially its signature.  */
       pp_string (pp, M_("<lambda"));
@@ -739,8 +755,16 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
 			 flags);
       pp_greater (pp);
     }
+  else if (!name || IDENTIFIER_ANON_P (name))
+    {
+      if (flags & TFF_CLASS_KEY_OR_ENUM)
+	pp_string (pp, M_("<unnamed>"));
+      else
+	pp_printf (pp, M_("<unnamed %s>"), variety);
+    }
   else
     pp_cxx_tree_identifier (pp, name);
+
   if (tmplate)
     dump_template_parms (pp, TYPE_TEMPLATE_INFO (t),
 			 !CLASSTYPE_USE_TEMPLATE (t),
@@ -1003,6 +1027,9 @@ dump_global_iord (cxx_pretty_printer *pp, tree t)
 static void
 dump_simple_decl (cxx_pretty_printer *pp, tree t, tree type, int flags)
 {
+  if (template_parm_object_p (t))
+    return dump_expr (pp, DECL_INITIAL (t), flags);
+
   if (flags & TFF_DECL_SPECIFIERS)
     {
       if (VAR_P (t) && DECL_DECLARED_CONSTEXPR_P (t))
@@ -1263,6 +1290,15 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
       dump_template_decl (pp, t, flags);
       break;
 
+    case CONCEPT_DECL:
+      pp_cxx_ws_string (pp, "concept");
+      dump_decl_name (pp, DECL_NAME (t), flags);
+      break;
+
+    case WILDCARD_DECL:
+      pp_string (pp, "<wildcard>");
+      break;
+
     case TEMPLATE_ID_EXPR:
       {
 	tree name = TREE_OPERAND (t, 0);
@@ -1427,7 +1463,9 @@ dump_template_decl (cxx_pretty_printer *pp, tree t, int flags)
   else if (DECL_TEMPLATE_RESULT (t)
            && (VAR_P (DECL_TEMPLATE_RESULT (t))
 	       /* Alias template.  */
-	       || DECL_TYPE_TEMPLATE_P (t)))
+	       || DECL_TYPE_TEMPLATE_P (t)
+               /* Concept definition.  &*/
+               || TREE_CODE (DECL_TEMPLATE_RESULT (t)) == CONCEPT_DECL))
     dump_decl (pp, DECL_TEMPLATE_RESULT (t), flags | TFF_TEMPLATE_NAME);
   else
     {
@@ -1614,7 +1652,9 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
         {
           if (DECL_DECLARED_CONCEPT_P (t))
             pp_cxx_ws_string (pp, "concept");
-          else
+	  else if (DECL_IMMEDIATE_FUNCTION_P (t))
+	    pp_cxx_ws_string (pp, "consteval");
+	  else
 	    pp_cxx_ws_string (pp, "constexpr");
 	}
     }
@@ -2061,6 +2101,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
     case TEMPLATE_DECL:
     case NAMESPACE_DECL:
     case LABEL_DECL:
+    case WILDCARD_DECL:
     case OVERLOAD:
     case TYPE_DECL:
     case IDENTIFIER_NODE:
@@ -2245,6 +2286,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
     case GE_EXPR:
     case EQ_EXPR:
     case NE_EXPR:
+    case SPACESHIP_EXPR:
     case EXACT_DIV_EXPR:
       dump_binary_op (pp, OVL_OP_INFO (false, TREE_CODE (t))->name, t, flags);
       break;
@@ -2641,7 +2683,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       dump_expr (pp, TREE_OPERAND (t, 0), flags);
       break;
 
-    case DEFAULT_ARG:
+    case DEFERRED_PARSE:
       pp_string (pp, M_("<unparsed>"));
       break;
 
@@ -2827,18 +2869,14 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       pp_cxx_nested_requirement (cxx_pp, t);
       break;
 
-    case PRED_CONSTR:
+    case ATOMIC_CONSTR:
     case CHECK_CONSTR:
-    case EXPR_CONSTR:
-    case TYPE_CONSTR:
-    case ICONV_CONSTR:
-    case DEDUCT_CONSTR:
-    case EXCEPT_CONSTR:
-    case PARM_CONSTR:
     case CONJ_CONSTR:
     case DISJ_CONSTR:
-      pp_cxx_constraint (cxx_pp, t);
-      break;
+      {
+        pp_cxx_constraint (cxx_pp, t);
+        break;
+      }
 
     case PLACEHOLDER_EXPR:
       pp_string (pp, M_("*this"));
@@ -3030,9 +3068,9 @@ location_of (tree t)
 
   if (DECL_P (t))
     return DECL_SOURCE_LOCATION (t);
-  if (TREE_CODE (t) == DEFAULT_ARG)
-    return defarg_location (t);
-  return cp_expr_loc_or_loc (t, input_location);
+  if (TREE_CODE (t) == DEFERRED_PARSE)
+    return defparse_location (t);
+  return cp_expr_loc_or_input_loc (t);
 }
 
 /* Now the interfaces from error et al to dump_type et al. Each takes an
@@ -3058,7 +3096,7 @@ decl_to_string (tree decl, int verbose)
   return pp_ggc_formatted_text (cxx_pp);
 }
 
-static const char *
+const char *
 expr_to_string (tree decl)
 {
   reinit_cxx_pp ();
@@ -3174,7 +3212,7 @@ type_to_string (tree typ, int verbose, bool postprocessed, bool *quote,
       && !uses_template_parms (typ))
     {
       int aka_start, aka_len; char *p;
-      tree aka = strip_typedefs (typ);
+      tree aka = strip_typedefs (typ, NULL, STF_USER_VISIBLE);
       if (quote && *quote)
 	pp_end_quote (cxx_pp, show_color);
       pp_string (cxx_pp, " {aka");
@@ -3287,8 +3325,13 @@ void
 cxx_print_error_function (diagnostic_context *context, const char *file,
 			  diagnostic_info *diagnostic)
 {
+  char *prefix;
+  if (file)
+    prefix = xstrdup (file);
+  else
+    prefix = NULL;
   lhd_print_error_function (context, file, diagnostic);
-  pp_set_prefix (context->printer, file);
+  pp_set_prefix (context->printer, prefix);
   maybe_print_instantiation_context (context);
 }
 
@@ -3300,6 +3343,7 @@ cp_diagnostic_starter (diagnostic_context *context,
   cp_print_error_function (context, diagnostic);
   maybe_print_instantiation_context (context);
   maybe_print_constexpr_context (context);
+  maybe_print_constraint_context (context);
   pp_set_prefix (context->printer, diagnostic_build_prefix (context,
 								 diagnostic));
 }
@@ -3316,7 +3360,7 @@ cp_print_error_function (diagnostic_context *context,
     return;
   if (diagnostic_last_function_changed (context, diagnostic))
     {
-      const char *old_prefix = context->printer->prefix;
+      char *old_prefix = pp_take_prefix (context->printer);
       const char *file = LOCATION_FILE (diagnostic_location (diagnostic));
       tree abstract_origin = diagnostic_abstract_origin (diagnostic);
       char *new_prefix = (file && abstract_origin == NULL)
@@ -3333,10 +3377,6 @@ cp_print_error_function (diagnostic_context *context,
 	  if (abstract_origin)
 	    {
 	      ao = BLOCK_ABSTRACT_ORIGIN (abstract_origin);
-	      while (TREE_CODE (ao) == BLOCK
-		     && BLOCK_ABSTRACT_ORIGIN (ao)
-		     && BLOCK_ABSTRACT_ORIGIN (ao) != ao)
-		ao = BLOCK_ABSTRACT_ORIGIN (ao);
 	      gcc_assert (TREE_CODE (ao) == FUNCTION_DECL);
 	      fndecl = ao;
 	    }
@@ -3358,12 +3398,6 @@ cp_print_error_function (diagnostic_context *context,
 		     && BLOCK_ABSTRACT_ORIGIN (block))
 		{
 		  ao = BLOCK_ABSTRACT_ORIGIN (block);
-
-		  while (TREE_CODE (ao) == BLOCK
-			 && BLOCK_ABSTRACT_ORIGIN (ao)
-			 && BLOCK_ABSTRACT_ORIGIN (ao) != ao)
-		    ao = BLOCK_ABSTRACT_ORIGIN (ao);
-
 		  if (TREE_CODE (ao) == FUNCTION_DECL)
 		    {
 		      fndecl = ao;
@@ -3633,6 +3667,171 @@ maybe_print_constexpr_context (diagnostic_context *context)
     }
 }
 
+
+static void
+print_location (diagnostic_context *context, location_t loc)
+{
+  expanded_location xloc = expand_location (loc);
+  if (context->show_column)
+    pp_verbatim (context->printer, _("%r%s:%d:%d:%R   "),
+                 "locus", xloc.file, xloc.line, xloc.column);
+  else
+    pp_verbatim (context->printer, _("%r%s:%d:%R   "),
+                 "locus", xloc.file, xloc.line);
+}
+
+/* Instantiate the concept check for the purpose of diagnosing an error.  */
+
+static tree
+rebuild_concept_check (tree expr, tree map, tree args)
+{
+  /* Instantiate the parameter mapping for the template-id.  */
+  map = tsubst_parameter_mapping (map, args, tf_none, NULL_TREE);
+  if (map == error_mark_node)
+    return error_mark_node;
+  args = get_mapped_args (map);
+
+  /* Rebuild the template id using substituted arguments. Substituting
+     directly through the expression will trigger recursive satisfaction,
+     so don't do that.  */
+  tree id = unpack_concept_check (expr);
+  args = tsubst_template_args (TREE_OPERAND (id, 1), args, tf_none, NULL_TREE);
+  if (args == error_mark_node)
+    return error_mark_node;
+  return build_nt (TEMPLATE_ID_EXPR, TREE_OPERAND (id, 0), args);
+}
+
+static void
+print_constrained_decl_info (diagnostic_context *context, tree decl)
+{
+  print_location (context, DECL_SOURCE_LOCATION (decl));
+  pp_verbatim (context->printer, "required by the constraints of %q#D\n", decl);
+}
+
+static void
+print_concept_check_info (diagnostic_context *context, tree expr, tree map, tree args)
+{
+  gcc_assert (concept_check_p (expr));
+
+  tree id = unpack_concept_check (expr);
+  tree tmpl = TREE_OPERAND (id, 0);
+  if (OVL_P (tmpl))
+    tmpl = OVL_FIRST (tmpl);
+  tree check = rebuild_concept_check (expr, map, args);
+  if (check == error_mark_node)
+    check = expr;
+
+  print_location (context, DECL_SOURCE_LOCATION (tmpl));
+  pp_verbatim (context->printer, "required for the satisfaction of %qE\n", check);
+}
+
+/* Diagnose the entry point into the satisfaction error. Returns the next
+   context, if any.  */
+
+static tree
+print_constraint_context_head (diagnostic_context *context, tree cxt, tree args)
+{
+  tree src = TREE_VALUE (cxt);
+  if (!src)
+    {
+      print_location (context, input_location);
+      pp_verbatim (context->printer, "required for constraint satisfaction\n");
+      return NULL_TREE;
+    }
+  if (DECL_P (src))
+    {
+      print_constrained_decl_info (context, src);
+      return NULL_TREE;
+    }
+  else
+    {
+      print_concept_check_info (context, src, TREE_PURPOSE (cxt), args);
+      return TREE_CHAIN (cxt);
+    }
+}
+
+static void
+print_requires_expression_info (diagnostic_context *context, tree constr, tree args)
+{
+
+  tree expr = ATOMIC_CONSTR_EXPR (constr);
+  tree map = ATOMIC_CONSTR_MAP (constr);
+  map = tsubst_parameter_mapping (map, args, tf_none, NULL_TREE);
+  if (map == error_mark_node)
+    return;
+  args = get_mapped_args (map);
+
+  print_location (context, cp_expr_loc_or_input_loc (expr));
+  pp_verbatim (context->printer, "in requirements ");
+
+  tree parms = TREE_OPERAND (expr, 0);
+  if (parms)
+    pp_verbatim (context->printer, "with ");
+  while (parms)
+    {
+      tree next = TREE_CHAIN (parms);
+
+      TREE_CHAIN (parms) = NULL_TREE;
+      cp_unevaluated u;
+      tree p = tsubst (parms, args, tf_none, NULL_TREE);
+      pp_verbatim (context->printer, "%q#D", p);
+      TREE_CHAIN (parms) = next;
+
+      if (next)
+        pp_separate_with_comma ((cxx_pretty_printer *)context->printer);
+
+      parms = next;
+    }
+
+  pp_verbatim (context->printer, "\n");
+}
+
+void
+maybe_print_single_constraint_context (diagnostic_context *context, tree failed)
+{
+  if (!failed)
+    return;
+
+  tree constr = TREE_VALUE (failed);
+  if (!constr || constr == error_mark_node)
+    return;
+  tree cxt = CONSTR_CONTEXT (constr);
+  if (!cxt)
+    return;
+  tree args = TREE_PURPOSE (failed);
+
+  /* Print the stack of requirements.  */
+  cxt = print_constraint_context_head (context, cxt, args);
+  while (cxt && !DECL_P (TREE_VALUE (cxt)))
+    {
+      tree expr = TREE_VALUE (cxt);
+      tree map = TREE_PURPOSE (cxt);
+      print_concept_check_info (context, expr, map, args);
+      cxt = TREE_CHAIN (cxt);
+    }
+
+  /* For certain constraints, we can provide additional context.  */
+  if (TREE_CODE (constr) == ATOMIC_CONSTR
+      && TREE_CODE (ATOMIC_CONSTR_EXPR (constr)) == REQUIRES_EXPR)
+    print_requires_expression_info (context, constr, args);
+}
+
+void
+maybe_print_constraint_context (diagnostic_context *context)
+{
+  if (!current_failed_constraint)
+    return;
+
+  tree cur = current_failed_constraint;
+
+  /* Recursively print nested contexts.  */
+  current_failed_constraint = TREE_CHAIN (current_failed_constraint);
+  if (current_failed_constraint)
+    maybe_print_constraint_context (context);
+
+  /* Print this context.  */
+  maybe_print_single_constraint_context (context, cur);
+}
 
 /* Return true iff TYPE_A and TYPE_B are template types that are
    meaningful to compare.  */
@@ -4025,6 +4224,10 @@ defer_phase_2_of_type_diff (deferred_printed_type *deferred,
    %D   declaration.
    %E   expression.
    %F   function declaration.
+   %G   gcall *
+   %H   type difference (from).
+   %I   type difference (to).
+   %K   tree
    %L	language as used in extern "lang".
    %O	binary operator.
    %P   function parameter whose position is indicated by an integer.
@@ -4032,9 +4235,7 @@ defer_phase_2_of_type_diff (deferred_printed_type *deferred,
    %S   substitution (template + args)
    %T   type.
    %V   cv-qualifier.
-   %X   exception-specification.
-   %H   type difference (from)
-   %I   type difference (to).  */
+   %X   exception-specification.  */
 static bool
 cp_printer (pretty_printer *pp, text_info *text, const char *spec,
 	    int precision, bool wide, bool set_locus, bool verbose,
@@ -4076,6 +4277,21 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
       break;
     case 'E': result = expr_to_string (next_tree);		break;
     case 'F': result = fndecl_to_string (next_tree, verbose);	break;
+    case 'G':
+      percent_G_format (text);
+      return true;
+    case 'H':
+      defer_phase_2_of_type_diff (&postprocessor->m_type_a, next_tree,
+				  buffer_ptr, verbose, *quoted);
+      return true;
+    case 'I':
+      defer_phase_2_of_type_diff (&postprocessor->m_type_b, next_tree,
+				  buffer_ptr, verbose, *quoted);
+      return true;
+    case 'K':
+      t = va_arg (*text->args_ptr, tree);
+      percent_K_format (text, EXPR_LOCATION (t), TREE_BLOCK (t));
+      return true;
     case 'L': result = language_to_string (next_lang);		break;
     case 'O': result = op_to_string (false, next_tcode);	break;
     case 'P': result = parm_to_string (next_int);		break;
@@ -4090,36 +4306,13 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
     case 'V': result = cv_to_string (next_tree, verbose);	break;
     case 'X': result = eh_spec_to_string (next_tree, verbose);  break;
 
-    case 'G':
-      percent_G_format (text);
-      return true;
-
-    case 'K':
-      t = va_arg (*text->args_ptr, tree);
-      percent_K_format (text, t);
-      return true;
-
-    case 'H':
-      {
-	defer_phase_2_of_type_diff (&postprocessor->m_type_a, next_tree,
-				    buffer_ptr, verbose, *quoted);
-	return true;
-      }
-
-    case 'I':
-      {
-	defer_phase_2_of_type_diff (&postprocessor->m_type_b, next_tree,
-				    buffer_ptr, verbose, *quoted);
-	return true;
-      }
-
     default:
       return false;
     }
 
   pp_string (pp, result);
   if (set_locus && t != NULL)
-    text->set_location (0, location_of (t), true);
+    text->set_location (0, location_of (t), SHOW_RANGE_WITH_CARET);
   return true;
 #undef next_tree
 #undef next_tcode
@@ -4131,84 +4324,83 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
 void
 maybe_warn_cpp0x (cpp0x_warn_str str)
 {
-  if ((cxx_dialect == cxx98) && !in_system_header_at (input_location))
-    /* We really want to suppress this warning in system headers,
-       because libstdc++ uses variadic templates even when we aren't
-       in C++0x mode. */
+  if (cxx_dialect == cxx98)
     switch (str)
       {
       case CPP0X_INITIALIZER_LISTS:
 	pedwarn (input_location, 0, 
 		 "extended initializer lists "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
 	break;
       case CPP0X_EXPLICIT_CONVERSION:
 	pedwarn (input_location, 0,
 		 "explicit conversion operators "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
 	break;
       case CPP0X_VARIADIC_TEMPLATES:
 	pedwarn (input_location, 0,
 		 "variadic templates "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
 	break;
       case CPP0X_LAMBDA_EXPR:
 	pedwarn (input_location, 0,
 		 "lambda expressions "
-		  "only available with -std=c++11 or -std=gnu++11");
+		  "only available with %<-std=c++11%> or %<-std=gnu++11%>");
 	break;
       case CPP0X_AUTO:
 	pedwarn (input_location, 0,
-		 "C++11 auto only available with -std=c++11 or -std=gnu++11");
+		 "C++11 auto only available with %<-std=c++11%> or "
+		 "%<-std=gnu++11%>");
 	break;
       case CPP0X_SCOPED_ENUMS:
 	pedwarn (input_location, 0,
-		 "scoped enums only available with -std=c++11 or -std=gnu++11");
+		 "scoped enums only available with %<-std=c++11%> or "
+		 "%<-std=gnu++11%>");
 	break;
       case CPP0X_DEFAULTED_DELETED:
 	pedwarn (input_location, 0,
 		 "defaulted and deleted functions "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
 	break;
       case CPP0X_INLINE_NAMESPACES:
 	pedwarn (input_location, OPT_Wpedantic,
 		 "inline namespaces "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
 	break;
       case CPP0X_OVERRIDE_CONTROLS:
 	pedwarn (input_location, 0,
 		 "override controls (override/final) "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
         break;
       case CPP0X_NSDMI:
 	pedwarn (input_location, 0,
 		 "non-static data member initializers "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
         break;
       case CPP0X_USER_DEFINED_LITERALS:
 	pedwarn (input_location, 0,
 		 "user-defined literals "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
 	break;
       case CPP0X_DELEGATING_CTORS:
 	pedwarn (input_location, 0,
 		 "delegating constructors "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
         break;
       case CPP0X_INHERITING_CTORS:
 	pedwarn (input_location, 0,
 		 "inheriting constructors "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
         break;
       case CPP0X_ATTRIBUTES:
 	pedwarn (input_location, 0,
 		 "c++11 attributes "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
 	break;
       case CPP0X_REF_QUALIFIER:
 	pedwarn (input_location, 0,
 		 "ref-qualifiers "
-		 "only available with -std=c++11 or -std=gnu++11");
+		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
 	break;
       default:
 	gcc_unreachable ();
@@ -4266,17 +4458,87 @@ qualified_name_lookup_error (tree scope, tree name,
 	  print_candidates (decl);
 	}
       else
-	error_at (location, "%qD is not a member of %qT", name, scope);
+	{
+	  name_hint hint;
+	  if (SCOPED_ENUM_P (scope) && TREE_CODE (name) == IDENTIFIER_NODE)
+	    hint = suggest_alternative_in_scoped_enum (name, scope);
+	  if (const char *suggestion = hint.suggestion ())
+	    {
+	      gcc_rich_location richloc (location);
+	      richloc.add_fixit_replace (suggestion);
+	      error_at (&richloc,
+			"%qD is not a member of %qT; did you mean %qs?",
+			name, scope, suggestion);
+	    }
+	  else
+	    error_at (location, "%qD is not a member of %qT", name, scope);
+	}
     }
   else if (scope != global_namespace)
     {
-      error_at (location, "%qD is not a member of %qD", name, scope);
-      if (!suggest_alternative_in_explicit_scope (location, name, scope))
-	suggest_alternatives_for (location, name, false);
+      auto_diagnostic_group d;
+      bool emit_fixit = true;
+      name_hint hint
+	= suggest_alternative_in_explicit_scope (location, name, scope);
+      if (!hint)
+	{
+	  hint = suggest_alternatives_in_other_namespaces (location, name);
+	  /* "location" is just the location of the name, not of the explicit
+	     scope, and it's not easy to get at the latter, so we can't issue
+	     fix-it hints for the suggestion.  */
+	  emit_fixit = false;
+	}
+      if (const char *suggestion = hint.suggestion ())
+	{
+	  gcc_rich_location richloc (location);
+	  if (emit_fixit)
+	    richloc.add_fixit_replace (suggestion);
+	  error_at (&richloc, "%qD is not a member of %qD; did you mean %qs?",
+		    name, scope, suggestion);
+	}
+      else
+	error_at (location, "%qD is not a member of %qD", name, scope);
     }
   else
     {
-      error_at (location, "%<::%D%> has not been declared", name);
-      suggest_alternatives_for (location, name, true);
+      auto_diagnostic_group d;
+      name_hint hint = suggest_alternatives_for (location, name, true);
+      if (const char *suggestion = hint.suggestion ())
+	{
+	  gcc_rich_location richloc (location);
+	  richloc.add_fixit_replace (suggestion);
+	  error_at (&richloc,
+		    "%<::%D%> has not been declared; did you mean %qs?",
+		    name, suggestion);
+	}
+      else
+	error_at (location, "%<::%D%> has not been declared", name);
     }
+}
+
+/* C++-specific implementation of range_label::get_text () vfunc for
+   range_label_for_type_mismatch.
+
+   Compare with print_template_differences above.  */
+
+label_text
+range_label_for_type_mismatch::get_text (unsigned /*range_idx*/) const
+{
+  if (m_labelled_type == NULL_TREE)
+    return label_text (NULL, false);
+
+  const bool verbose = false;
+  const bool show_color = false;
+
+  const char *result;
+  if (m_other_type
+      && comparable_template_types_p (m_labelled_type, m_other_type))
+    result = type_to_string_with_compare (m_labelled_type, m_other_type,
+					  verbose, show_color);
+  else
+    result = type_to_string (m_labelled_type, verbose, true, NULL, show_color);
+
+  /* Both of the above return GC-allocated buffers, so the caller mustn't
+     free them.  */
+  return label_text (const_cast <char *> (result), false);
 }

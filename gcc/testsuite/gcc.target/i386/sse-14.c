@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma -mrtm -mrdseed -mprfchw -madx -mfxsr -mxsaveopt -mavx512f -mavx512er -mavx512cd -mavx512pf -msha -mprefetchwt1 -mxsavec -mxsaves -mclflushopt -mavx512dq -mavx512bw -mavx512vl -mavx512ifma -mavx512vbmi -mavx5124fmaps -mavx5124vnniw -mavx512vpopcntdq -mclwb -mmwaitx -mclzero -mpku -msgx -mrdpid -mgfni -mpconfig -mwbnoinvd" } */
+/* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma -mrtm -mrdseed -mprfchw -madx -mfxsr -mxsaveopt -mavx512f -mavx512er -mavx512cd -mavx512pf -msha -mprefetchwt1 -mxsavec -mxsaves -mclflushopt -mavx512dq -mavx512bw -mavx512vl -mavx512ifma -mavx512vbmi -mavx5124fmaps -mavx5124vnniw -mavx512vpopcntdq -mclwb -mmwaitx -mclzero -mpku -msgx -mrdpid -mgfni -mpconfig -mwbnoinvd -mavx512vl -mavx512bf16 -menqcmd -mavx512vp2intersect" } */
 /* { dg-add-options bind_pic_locally } */
 
 #include <mm_malloc.h>
@@ -534,6 +534,30 @@ test_4 (_mm512_maskz_fnmsub_round_pd, __m512d, __mmask8, __m512d, __m512d, __m51
 test_4 (_mm512_maskz_fnmsub_round_ps, __m512, __mmask16, __m512, __m512, __m512, 9)
 test_4 (_mm512_maskz_ternarylogic_epi32, __m512i, __mmask16, __m512i, __m512i, __m512i, 1)
 test_4 (_mm512_maskz_ternarylogic_epi64, __m512i, __mmask8, __m512i, __m512i, __m512i, 1)
+test_4 (_mm_mask_fmadd_round_sd, __m128d, __m128d, __mmask8, __m128d, __m128d, 9)
+test_4 (_mm_mask_fmadd_round_ss, __m128, __m128, __mmask8, __m128, __m128, 9)
+test_4 (_mm_mask3_fmadd_round_sd, __m128d, __m128d, __m128d, __m128d, __mmask8, 9)
+test_4 (_mm_mask3_fmadd_round_ss, __m128, __m128, __m128, __m128, __mmask8, 9)
+test_4 (_mm_maskz_fmadd_round_sd, __m128d, __mmask8, __m128d, __m128d, __m128d, 9)
+test_4 (_mm_maskz_fmadd_round_ss, __m128, __mmask8, __m128, __m128, __m128, 9)
+test_4 (_mm_mask_fmsub_round_sd, __m128d, __m128d, __mmask8, __m128d, __m128d, 9)
+test_4 (_mm_mask_fmsub_round_ss, __m128, __m128, __mmask8, __m128, __m128, 9)
+test_4 (_mm_mask3_fmsub_round_sd, __m128d, __m128d, __m128d, __m128d, __mmask8, 9)
+test_4 (_mm_mask3_fmsub_round_ss, __m128, __m128, __m128, __m128, __mmask8, 9)
+test_4 (_mm_maskz_fmsub_round_sd, __m128d, __mmask8, __m128d, __m128d, __m128d, 9)
+test_4 (_mm_maskz_fmsub_round_ss, __m128, __mmask8, __m128, __m128, __m128, 9)
+test_4 (_mm_mask_fnmadd_round_sd, __m128d, __m128d, __mmask8, __m128d, __m128d, 9)
+test_4 (_mm_mask_fnmadd_round_ss, __m128, __m128, __mmask8, __m128, __m128, 9)
+test_4 (_mm_mask3_fnmadd_round_sd, __m128d, __m128d, __m128d, __m128d, __mmask8, 9)
+test_4 (_mm_mask3_fnmadd_round_ss, __m128, __m128, __m128, __m128, __mmask8, 9)
+test_4 (_mm_maskz_fnmadd_round_sd, __m128d, __mmask8, __m128d, __m128d, __m128d, 9)
+test_4 (_mm_maskz_fnmadd_round_ss, __m128, __mmask8, __m128, __m128, __m128, 9)
+test_4 (_mm_mask_fnmsub_round_sd, __m128d, __m128d, __mmask8, __m128d, __m128d, 9)
+test_4 (_mm_mask_fnmsub_round_ss, __m128, __m128, __mmask8, __m128, __m128, 9)
+test_4 (_mm_mask3_fnmsub_round_sd, __m128d, __m128d, __m128d, __m128d, __mmask8, 9)
+test_4 (_mm_mask3_fnmsub_round_ss, __m128, __m128, __m128, __m128, __mmask8, 9)
+test_4 (_mm_maskz_fnmsub_round_sd, __m128d, __mmask8, __m128d, __m128d, __m128d, 9)
+test_4 (_mm_maskz_fnmsub_round_ss, __m128, __mmask8, __m128, __m128, __m128, 9)
 test_4v (_mm512_mask_i32scatter_epi32, void *, __mmask16, __m512i, __m512i, 1)
 test_4v (_mm512_mask_i32scatter_epi64, void *, __mmask8, __m256i, __m512i, 1)
 test_4v (_mm512_mask_i32scatter_pd, void *, __mmask8, __m256i, __m512d, 1)

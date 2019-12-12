@@ -8,6 +8,12 @@ inline namespace my_string_literals
   operator"" s(const char* str, std::size_t len)
   { return std::string{str, len}; }
 
+#if __cpp_lib_char8_t
+  std::u8string
+  operator"" s(const char8_t* str, std::size_t len)
+  { return std::u8string{str, len}; }
+#endif
+
   std::wstring
   operator"" s(const wchar_t* str, std::size_t len)
   { return std::wstring{str, len}; }

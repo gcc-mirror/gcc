@@ -1,5 +1,5 @@
 /* Darwin support needed only by C/C++ frontends.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -79,7 +79,7 @@ pop_field_alignment (void)
       free (entry);
     }
   else
-    error ("too many #pragma options align=reset");
+    error ("too many %<#pragma options%> align=reset");
 }
 
 /* Handlers for Darwin-specific pragmas.  */
@@ -99,17 +99,17 @@ darwin_pragma_options (cpp_reader *pfile ATTRIBUTE_UNUSED)
   tree t, x;
 
   if (pragma_lex (&t) != CPP_NAME)
-    BAD ("malformed '#pragma options', ignoring");
+    BAD ("malformed %<#pragma options%>, ignoring");
   arg = IDENTIFIER_POINTER (t);
   if (strcmp (arg, "align"))
-    BAD ("malformed '#pragma options', ignoring");
+    BAD ("malformed %<#pragma options%>, ignoring");
   if (pragma_lex (&t) != CPP_EQ)
-    BAD ("malformed '#pragma options', ignoring");
+    BAD ("malformed %<#pragma options%>, ignoring");
   if (pragma_lex (&t) != CPP_NAME)
-    BAD ("malformed '#pragma options', ignoring");
+    BAD ("malformed %<#pragma options%>, ignoring");
 
   if (pragma_lex (&x) != CPP_EOF)
-    warning (OPT_Wpragmas, "junk at end of '#pragma options'");
+    warning (OPT_Wpragmas, "junk at end of %<#pragma options%>");
 
   arg = IDENTIFIER_POINTER (t);
   if (!strcmp (arg, "mac68k"))
@@ -119,7 +119,7 @@ darwin_pragma_options (cpp_reader *pfile ATTRIBUTE_UNUSED)
   else if (!strcmp (arg, "reset"))
     pop_field_alignment ();
   else
-    BAD ("malformed '#pragma options align={mac68k|power|reset}', ignoring");
+    BAD ("malformed %<#pragma options align={mac68k|power|reset}%>, ignoring");
 }
 
 /* #pragma unused ([var {, var}*]) */
@@ -131,7 +131,7 @@ darwin_pragma_unused (cpp_reader *pfile ATTRIBUTE_UNUSED)
   int tok;
 
   if (pragma_lex (&x) != CPP_OPEN_PAREN)
-    BAD ("missing '(' after '#pragma unused', ignoring");
+    BAD ("missing %<(%> after %<#pragma unused%>, ignoring");
 
   while (1)
     {
@@ -152,10 +152,10 @@ darwin_pragma_unused (cpp_reader *pfile ATTRIBUTE_UNUSED)
     }
 
   if (tok != CPP_CLOSE_PAREN)
-    BAD ("missing ')' after '#pragma unused', ignoring");
+    BAD ("missing %<)%> after %<#pragma unused%>, ignoring");
 
   if (pragma_lex (&x) != CPP_EOF)
-    BAD ("junk at end of '#pragma unused'");
+    BAD ("junk at end of %<#pragma unused%>");
 }
 
 /* Parse the ms_struct pragma.  */
@@ -166,7 +166,7 @@ darwin_pragma_ms_struct (cpp_reader *pfile ATTRIBUTE_UNUSED)
   tree t;
 
   if (pragma_lex (&t) != CPP_NAME)
-    BAD ("malformed '#pragma ms_struct', ignoring");
+    BAD ("malformed %<#pragma ms_struct%>, ignoring");
   arg = IDENTIFIER_POINTER (t);
 
   if (!strcmp (arg, "on"))
@@ -174,10 +174,10 @@ darwin_pragma_ms_struct (cpp_reader *pfile ATTRIBUTE_UNUSED)
   else if (!strcmp (arg, "off") || !strcmp (arg, "reset"))
     darwin_ms_struct = false;
   else
-    BAD ("malformed '#pragma ms_struct {on|off|reset}', ignoring");
+    BAD ("malformed %<#pragma ms_struct {on|off|reset}%>, ignoring");
 
   if (pragma_lex (&t) != CPP_EOF)
-    BAD ("junk at end of '#pragma ms_struct'");
+    BAD ("junk at end of %<#pragma ms_struct%>");
 }
 
 static struct frameworks_in_use {
@@ -463,41 +463,32 @@ static const char *framework_defaults [] =
 /* Register the GNU objective-C runtime include path if STDINC.  */
 
 void
-darwin_register_objc_includes (const char *sysroot, const char *iprefix,
-			       int stdinc)
+darwin_register_objc_includes (const char *sysroot ATTRIBUTE_UNUSED,
+			       const char *iprefix, int stdinc)
 {
-  const char *fname;
-  size_t len;
-  /* We do not do anything if we do not want the standard includes. */
-  if (!stdinc)
-    return;
+  /* If we want standard includes;  Register the GNU OBJC runtime include
+     path if we are compiling OBJC with GNU-runtime.
+     This path is compiler-relative, we don't want to prepend the sysroot
+     since it's not expected to find the headers there.  */
 
-  fname = GCC_INCLUDE_DIR "-gnu-runtime";
-
-  /* Register the GNU OBJC runtime include path if we are compiling  OBJC
-    with GNU-runtime.  */
-
-  if (c_dialect_objc () && !flag_next_runtime)
+  if (stdinc && c_dialect_objc () && !flag_next_runtime)
     {
+      const char *fname = GCC_INCLUDE_DIR "-gnu-runtime";
       char *str;
-      /* See if our directory starts with the standard prefix.
+      size_t len;
+
+     /* See if our directory starts with the standard prefix.
 	 "Translate" them, i.e. replace /usr/local/lib/gcc... with
 	 IPREFIX and search them first.  */
-      if (iprefix && (len = cpp_GCC_INCLUDE_DIR_len) != 0 && !sysroot
+      if (iprefix && (len = cpp_GCC_INCLUDE_DIR_len) != 0
 	  && !strncmp (fname, cpp_GCC_INCLUDE_DIR, len))
 	{
 	  str = concat (iprefix, fname + len, NULL);
-          /* FIXME: wrap the headers for C++awareness.  */
-	  add_path (str, INC_SYSTEM, /*c++aware=*/false, false);
+	  add_path (str, INC_SYSTEM, /*c++aware=*/true, false);
 	}
 
-      /* Should this directory start with the sysroot?  */
-      if (sysroot)
-	str = concat (sysroot, fname, NULL);
-      else
-	str = update_path (fname, "");
-
-      add_path (str, INC_SYSTEM, /*c++aware=*/false, false);
+      str = update_path (fname, "");
+      add_path (str, INC_SYSTEM, /*c++aware=*/true, false);
     }
 }
 
@@ -715,7 +706,7 @@ macosx_version_as_macro (void)
   return version_macro;
 
  fail:
-  error ("unknown value %qs of -mmacosx-version-min",
+  error ("unknown value %qs of %<-mmacosx-version-min%>",
          darwin_macosx_version_min);
   return "1000";
 }

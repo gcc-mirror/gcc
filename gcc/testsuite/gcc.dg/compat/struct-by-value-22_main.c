@@ -1,4 +1,6 @@
 /* { dg-require-effective-target alloca } */
+/* { dg-skip-if "limited code space" { pdp11-*-* } } */
+
 /* Test variable sized function argument passing.
    GCC 3.2 and earlier is incompatible with GCC 3.3+ on x86-64,
    the latter passes variable sized arguments by reference while

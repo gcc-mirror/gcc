@@ -1,3 +1,5 @@
+/* { dg-skip-if "no string.h in eBPF" { bpf-*-* } } */
+
 #define __USE_STRING_INLINES
 #include <string.h>
 

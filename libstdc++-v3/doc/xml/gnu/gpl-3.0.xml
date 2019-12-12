@@ -9,7 +9,7 @@
   </para>
   <para>
     Copyright © 2007 Free Software Foundation, Inc.
-    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.fsf.org/">http://www.fsf.org/</link>
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.fsf.org">https://www.fsf.org</link>
   </para>
   <para>
     Everyone is permitted to copy and distribute verbatim copies of this license
@@ -829,6 +829,6 @@ under certain conditions; type ‘<literal>show c</literal>’ for details.
     subroutine library, you may consider it more useful to permit linking
     proprietary applications with the library.  If this is what you want to do,
     use the <acronym>GNU</acronym> Lesser General Public License instead of this
-    License.  But first, please read <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/philosophy/why-not-lgpl.html">http://www.gnu.org/philosophy/why-not-lgpl.html</link>.
+    License.  But first, please read <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.gnu.org/licenses/why-not-lgpl.html">https://www.gnu.org/licenses/why-not-lgpl.html</link>.
   </para>
 </appendix>

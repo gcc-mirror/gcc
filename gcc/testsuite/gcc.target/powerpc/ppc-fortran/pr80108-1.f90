@@ -1,8 +1,7 @@
 ! Originally contributed by Tobias Burnas.
 ! { dg-do compile { target { powerpc*-*-* } } }
-! { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=405" } }
 ! { dg-require-effective-target powerpc_p9vector_ok }
-! { dg-options "-mcpu=405 -mpower9-minmax -mfloat128-type" }
+! { dg-options "-mdejagnu-cpu=405 -mpower9-minmax -mfloat128-type" }
 ! { dg-excess-errors "expect error due to conflicting target options" }
 ! Since the error message is not associated with a particular line
 ! number, we cannot use the dg-error directive and cannot specify a

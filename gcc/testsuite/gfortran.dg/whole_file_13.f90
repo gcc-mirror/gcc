@@ -1,5 +1,4 @@
 ! { dg-do run }
-! { dg-options "-fwhole-file -O3" }
 ! Check that the TYPE_CANONICAL is being correctly set
 ! for the derived types, when whole file compiling.
 ! (based on import.f90)

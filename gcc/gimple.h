@@ -1,6 +1,6 @@
 /* Gimple IR definitions.
 
-   Copyright (C) 2007-2018 Free Software Foundation, Inc.
+   Copyright (C) 2007-2019 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -137,6 +137,7 @@ enum gimple_rhs_class
 enum gf_mask {
     GF_ASM_INPUT		= 1 << 0,
     GF_ASM_VOLATILE		= 1 << 1,
+    GF_ASM_INLINE		= 1 << 2,
     GF_CALL_FROM_THUNK		= 1 << 0,
     GF_CALL_RETURN_SLOT_OPT	= 1 << 1,
     GF_CALL_TAILCALL		= 1 << 2,
@@ -151,24 +152,23 @@ enum gf_mask {
     GF_OMP_PARALLEL_COMBINED	= 1 << 0,
     GF_OMP_PARALLEL_GRID_PHONY = 1 << 1,
     GF_OMP_TASK_TASKLOOP	= 1 << 0,
-    GF_OMP_FOR_KIND_MASK	= (1 << 4) - 1,
+    GF_OMP_TASK_TASKWAIT	= 1 << 1,
+    GF_OMP_FOR_KIND_MASK	= (1 << 3) - 1,
     GF_OMP_FOR_KIND_FOR		= 0,
     GF_OMP_FOR_KIND_DISTRIBUTE	= 1,
     GF_OMP_FOR_KIND_TASKLOOP	= 2,
     GF_OMP_FOR_KIND_OACC_LOOP	= 4,
-    GF_OMP_FOR_KIND_GRID_LOOP = 5,
-    /* Flag for SIMD variants of OMP_FOR kinds.  */
-    GF_OMP_FOR_SIMD		= 1 << 3,
-    GF_OMP_FOR_KIND_SIMD	= GF_OMP_FOR_SIMD | 0,
-    GF_OMP_FOR_COMBINED		= 1 << 4,
-    GF_OMP_FOR_COMBINED_INTO	= 1 << 5,
+    GF_OMP_FOR_KIND_GRID_LOOP	= 5,
+    GF_OMP_FOR_KIND_SIMD	= 6,
+    GF_OMP_FOR_COMBINED		= 1 << 3,
+    GF_OMP_FOR_COMBINED_INTO	= 1 << 4,
     /* The following flag must not be used on GF_OMP_FOR_KIND_GRID_LOOP loop
        statements.  */
-    GF_OMP_FOR_GRID_PHONY	= 1 << 6,
+    GF_OMP_FOR_GRID_PHONY	= 1 << 5,
     /* The following two flags should only be set on GF_OMP_FOR_KIND_GRID_LOOP
        loop statements.  */
-    GF_OMP_FOR_GRID_INTRA_GROUP	= 1 << 6,
-    GF_OMP_FOR_GRID_GROUP_ITER  = 1 << 7,
+    GF_OMP_FOR_GRID_INTRA_GROUP	= 1 << 5,
+    GF_OMP_FOR_GRID_GROUP_ITER  = 1 << 6,
     GF_OMP_TARGET_KIND_MASK	= (1 << 4) - 1,
     GF_OMP_TARGET_KIND_REGION	= 0,
     GF_OMP_TARGET_KIND_DATA	= 1,
@@ -177,12 +177,14 @@ enum gf_mask {
     GF_OMP_TARGET_KIND_EXIT_DATA = 4,
     GF_OMP_TARGET_KIND_OACC_PARALLEL = 5,
     GF_OMP_TARGET_KIND_OACC_KERNELS = 6,
-    GF_OMP_TARGET_KIND_OACC_DATA = 7,
-    GF_OMP_TARGET_KIND_OACC_UPDATE = 8,
-    GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA = 9,
-    GF_OMP_TARGET_KIND_OACC_DECLARE = 10,
-    GF_OMP_TARGET_KIND_OACC_HOST_DATA = 11,
+    GF_OMP_TARGET_KIND_OACC_SERIAL = 7,
+    GF_OMP_TARGET_KIND_OACC_DATA = 8,
+    GF_OMP_TARGET_KIND_OACC_UPDATE = 9,
+    GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA = 10,
+    GF_OMP_TARGET_KIND_OACC_DECLARE = 11,
+    GF_OMP_TARGET_KIND_OACC_HOST_DATA = 12,
     GF_OMP_TEAMS_GRID_PHONY	= 1 << 0,
+    GF_OMP_TEAMS_HOST		= 1 << 1,
 
     /* True on an GIMPLE_OMP_RETURN statement if the return does not require
        a thread synchronization via some sort of barrier.  The exact barrier
@@ -191,8 +193,8 @@ enum gf_mask {
     GF_OMP_RETURN_NOWAIT	= 1 << 0,
 
     GF_OMP_SECTION_LAST		= 1 << 0,
-    GF_OMP_ATOMIC_NEED_VALUE	= 1 << 0,
-    GF_OMP_ATOMIC_SEQ_CST	= 1 << 1,
+    GF_OMP_ATOMIC_MEMORY_ORDER  = (1 << 3) - 1,
+    GF_OMP_ATOMIC_NEED_VALUE	= 1 << 3,
     GF_PREDICT_TAKEN		= 1 << 15
 };
 
@@ -637,7 +639,7 @@ struct GTY((tag("GSS_OMP_FOR")))
 };
 
 
-/* GIMPLE_OMP_PARALLEL, GIMPLE_OMP_TARGET, GIMPLE_OMP_TASK */
+/* GIMPLE_OMP_PARALLEL, GIMPLE_OMP_TARGET, GIMPLE_OMP_TASK, GIMPLE_OMP_TEAMS */
 
 struct GTY((tag("GSS_OMP_PARALLEL_LAYOUT")))
   gimple_statement_omp_parallel_layout : public gimple_statement_omp
@@ -663,7 +665,8 @@ struct GTY((tag("GSS_OMP_PARALLEL_LAYOUT")))
 {
     /* No extra fields; adds invariant:
          stmt->code == GIMPLE_OMP_PARALLEL
-	 || stmt->code == GIMPLE_OMP_TASK.  */
+	 || stmt->code == GIMPLE_OMP_TASK
+	 || stmt->code == GIMPLE_OMP_TEAMS.  */
 };
 
 /* GIMPLE_OMP_PARALLEL */
@@ -737,7 +740,8 @@ struct GTY((tag("GSS_OMP_CONTINUE")))
   tree control_use;
 };
 
-/* GIMPLE_OMP_SINGLE, GIMPLE_OMP_TEAMS, GIMPLE_OMP_ORDERED */
+/* GIMPLE_OMP_SINGLE, GIMPLE_OMP_ORDERED, GIMPLE_OMP_TASKGROUP,
+   GIMPLE_OMP_SCAN.  */
 
 struct GTY((tag("GSS_OMP_SINGLE_LAYOUT")))
   gimple_statement_omp_single_layout : public gimple_statement_omp
@@ -755,8 +759,8 @@ struct GTY((tag("GSS_OMP_SINGLE_LAYOUT")))
          stmt->code == GIMPLE_OMP_SINGLE.  */
 };
 
-struct GTY((tag("GSS_OMP_SINGLE_LAYOUT")))
-  gomp_teams : public gimple_statement_omp_single_layout
+struct GTY((tag("GSS_OMP_PARALLEL_LAYOUT")))
+  gomp_teams : public gimple_statement_omp_taskreg
 {
     /* No extra fields; adds invariant:
          stmt->code == GIMPLE_OMP_TEAMS.  */
@@ -767,6 +771,13 @@ struct GTY((tag("GSS_OMP_SINGLE_LAYOUT")))
 {
     /* No extra fields; adds invariant:
 	 stmt->code == GIMPLE_OMP_ORDERED.  */
+};
+
+struct GTY((tag("GSS_OMP_SINGLE_LAYOUT")))
+  gomp_scan : public gimple_statement_omp_single_layout
+{
+    /* No extra fields; adds invariant:
+	 stmt->code == GIMPLE_OMP_SCAN.  */
 };
 
 
@@ -1111,6 +1122,14 @@ is_a_helper <gomp_ordered *>::test (gimple *gs)
 template <>
 template <>
 inline bool
+is_a_helper <gomp_scan *>::test (gimple *gs)
+{
+  return gs->code == GIMPLE_OMP_SCAN;
+}
+
+template <>
+template <>
+inline bool
 is_a_helper <gomp_for *>::test (gimple *gs)
 {
   return gs->code == GIMPLE_OMP_FOR;
@@ -1121,7 +1140,9 @@ template <>
 inline bool
 is_a_helper <gimple_statement_omp_taskreg *>::test (gimple *gs)
 {
-  return gs->code == GIMPLE_OMP_PARALLEL || gs->code == GIMPLE_OMP_TASK;
+  return (gs->code == GIMPLE_OMP_PARALLEL
+	  || gs->code == GIMPLE_OMP_TASK
+	  || gs->code == GIMPLE_OMP_TEAMS);
 }
 
 template <>
@@ -1327,6 +1348,14 @@ is_a_helper <const gomp_ordered *>::test (const gimple *gs)
 template <>
 template <>
 inline bool
+is_a_helper <const gomp_scan *>::test (const gimple *gs)
+{
+  return gs->code == GIMPLE_OMP_SCAN;
+}
+
+template <>
+template <>
+inline bool
 is_a_helper <const gomp_for *>::test (const gimple *gs)
 {
   return gs->code == GIMPLE_OMP_FOR;
@@ -1337,7 +1366,9 @@ template <>
 inline bool
 is_a_helper <const gimple_statement_omp_taskreg *>::test (const gimple *gs)
 {
-  return gs->code == GIMPLE_OMP_PARALLEL || gs->code == GIMPLE_OMP_TASK;
+  return (gs->code == GIMPLE_OMP_PARALLEL
+	  || gs->code == GIMPLE_OMP_TASK
+	  || gs->code == GIMPLE_OMP_TEAMS);
 }
 
 template <>
@@ -1415,6 +1446,8 @@ extern enum gimple_statement_structure_enum const gss_for_code_[];
    of comminucating the profile info to the builtin expanders.  */
 extern gimple *currently_expanding_gimple_stmt;
 
+size_t gimple_size (enum gimple_code code, unsigned num_ops = 0);
+void gimple_init (gimple *g, enum gimple_code code, unsigned num_ops);
 gimple *gimple_alloc (enum gimple_code, unsigned CXX_MEM_STAT_INFO);
 greturn *gimple_build_return (tree);
 void gimple_call_reset_alias_info (gcall *);
@@ -1463,17 +1496,19 @@ gomp_task *gimple_build_omp_task (gimple_seq, tree, tree, tree, tree,
 gimple *gimple_build_omp_section (gimple_seq);
 gimple *gimple_build_omp_master (gimple_seq);
 gimple *gimple_build_omp_grid_body (gimple_seq);
-gimple *gimple_build_omp_taskgroup (gimple_seq);
+gimple *gimple_build_omp_taskgroup (gimple_seq, tree);
 gomp_continue *gimple_build_omp_continue (tree, tree);
 gomp_ordered *gimple_build_omp_ordered (gimple_seq, tree);
 gimple *gimple_build_omp_return (bool);
+gomp_scan *gimple_build_omp_scan (gimple_seq, tree);
 gomp_sections *gimple_build_omp_sections (gimple_seq, tree);
 gimple *gimple_build_omp_sections_switch (void);
 gomp_single *gimple_build_omp_single (gimple_seq, tree);
 gomp_target *gimple_build_omp_target (gimple_seq, int, tree);
 gomp_teams *gimple_build_omp_teams (gimple_seq, tree);
-gomp_atomic_load *gimple_build_omp_atomic_load (tree, tree);
-gomp_atomic_store *gimple_build_omp_atomic_store (tree);
+gomp_atomic_load *gimple_build_omp_atomic_load (tree, tree,
+						enum omp_memory_order);
+gomp_atomic_store *gimple_build_omp_atomic_store (tree, enum omp_memory_order);
 gtransaction *gimple_build_transaction (gimple_seq);
 extern void gimple_seq_add_stmt (gimple_seq *, gimple *);
 extern void gimple_seq_add_stmt_without_update (gimple_seq *, gimple *);
@@ -1500,6 +1535,7 @@ void gimple_assign_set_rhs_with_ops (gimple_stmt_iterator *, enum tree_code,
 tree gimple_get_lhs (const gimple *);
 void gimple_set_lhs (gimple *, tree);
 gimple *gimple_copy (gimple *);
+void gimple_move_vops (gimple *, gimple *);
 bool gimple_has_side_effects (const gimple *);
 bool gimple_could_trap_p_1 (gimple *, bool, bool);
 bool gimple_could_trap_p (gimple *);
@@ -1515,6 +1551,7 @@ extern alias_set_type gimple_get_alias_set (tree);
 extern bool gimple_ior_addresses_taken (bitmap, gimple *);
 extern bool gimple_builtin_call_types_compatible_p (const gimple *, tree);
 extern combined_fn gimple_call_combined_fn (const gimple *);
+extern bool gimple_call_operator_delete_p (const gcall *);
 extern bool gimple_call_builtin_p (const gimple *);
 extern bool gimple_call_builtin_p (const gimple *, enum built_in_class);
 extern bool gimple_call_builtin_p (const gimple *, enum built_in_function);
@@ -2193,7 +2230,7 @@ static inline unsigned
 gimple_omp_subcode (const gimple *s)
 {
   gcc_gimple_checking_assert (gimple_code (s) >= GIMPLE_OMP_ATOMIC_LOAD
-	      && gimple_code (s) <= GIMPLE_OMP_TEAMS);
+			      && gimple_code (s) <= GIMPLE_OMP_TEAMS);
   return s->subcode;
 }
 
@@ -2331,26 +2368,27 @@ gimple_omp_atomic_set_need_value (gimple *g)
 }
 
 
-/* Return true if OMP atomic load/store statement G has the
-   GF_OMP_ATOMIC_SEQ_CST flag set.  */
+/* Return the memory order of the OMP atomic load/store statement G.  */
 
-static inline bool
-gimple_omp_atomic_seq_cst_p (const gimple *g)
+static inline enum omp_memory_order
+gimple_omp_atomic_memory_order (const gimple *g)
 {
   if (gimple_code (g) != GIMPLE_OMP_ATOMIC_LOAD)
     GIMPLE_CHECK (g, GIMPLE_OMP_ATOMIC_STORE);
-  return (gimple_omp_subcode (g) & GF_OMP_ATOMIC_SEQ_CST) != 0;
+  return (enum omp_memory_order)
+	 (gimple_omp_subcode (g) & GF_OMP_ATOMIC_MEMORY_ORDER);
 }
 
 
-/* Set the GF_OMP_ATOMIC_SEQ_CST flag on G.  */
+/* Set the memory order on G.  */
 
 static inline void
-gimple_omp_atomic_set_seq_cst (gimple *g)
+gimple_omp_atomic_set_memory_order (gimple *g, enum omp_memory_order mo)
 {
   if (gimple_code (g) != GIMPLE_OMP_ATOMIC_LOAD)
     GIMPLE_CHECK (g, GIMPLE_OMP_ATOMIC_STORE);
-  g->subcode |= GF_OMP_ATOMIC_SEQ_CST;
+  g->subcode = ((g->subcode & ~GF_OMP_ATOMIC_MEMORY_ORDER)
+		| (mo & GF_OMP_ATOMIC_MEMORY_ORDER));
 }
 
 
@@ -3902,7 +3940,7 @@ gimple_asm_string (const gasm *asm_stmt)
 }
 
 
-/* Return true ASM_STMT ASM_STMT is an asm statement marked volatile.  */
+/* Return true if ASM_STMT is marked volatile.  */
 
 static inline bool
 gimple_asm_volatile_p (const gasm *asm_stmt)
@@ -3911,7 +3949,7 @@ gimple_asm_volatile_p (const gasm *asm_stmt)
 }
 
 
-/* If VOLATLE_P is true, mark asm statement ASM_STMT as volatile.  */
+/* If VOLATILE_P is true, mark asm statement ASM_STMT as volatile.  */
 
 static inline void
 gimple_asm_set_volatile (gasm *asm_stmt, bool volatile_p)
@@ -3920,6 +3958,27 @@ gimple_asm_set_volatile (gasm *asm_stmt, bool volatile_p)
     asm_stmt->subcode |= GF_ASM_VOLATILE;
   else
     asm_stmt->subcode &= ~GF_ASM_VOLATILE;
+}
+
+
+/* Return true if ASM_STMT is marked inline.  */
+
+static inline bool
+gimple_asm_inline_p (const gasm *asm_stmt)
+{
+  return (asm_stmt->subcode & GF_ASM_INLINE) != 0;
+}
+
+
+/* If INLINE_P is true, mark asm statement ASM_STMT as inline.  */
+
+static inline void
+gimple_asm_set_inline (gasm *asm_stmt, bool inline_p)
+{
+  if (inline_p)
+    asm_stmt->subcode |= GF_ASM_INLINE;
+  else
+    asm_stmt->subcode &= ~GF_ASM_INLINE;
 }
 
 
@@ -4417,7 +4476,7 @@ gimple_phi_arg_edge (gphi *phi, size_t i)
 
 /* Return the source location of gimple argument I of phi node PHI.  */
 
-static inline source_location
+static inline location_t
 gimple_phi_arg_location (gphi *phi, size_t i)
 {
   return gimple_phi_arg (phi, i)->locus;
@@ -4425,7 +4484,7 @@ gimple_phi_arg_location (gphi *phi, size_t i)
 
 /* Return the source location of the argument on edge E of phi node PHI.  */
 
-static inline source_location
+static inline location_t
 gimple_phi_arg_location_from_edge (gphi *phi, edge e)
 {
   return gimple_phi_arg (phi, e->dest_idx)->locus;
@@ -4434,7 +4493,7 @@ gimple_phi_arg_location_from_edge (gphi *phi, edge e)
 /* Set the source location of gimple argument I of phi node PHI to LOC.  */
 
 static inline void
-gimple_phi_arg_set_location (gphi *phi, size_t i, source_location loc)
+gimple_phi_arg_set_location (gphi *phi, size_t i, location_t loc)
 {
   gimple_phi_arg (phi, i)->locus = loc;
 }
@@ -4912,6 +4971,69 @@ static inline void
 gimple_omp_ordered_set_clauses (gomp_ordered *ord_stmt, tree clauses)
 {
   ord_stmt->clauses = clauses;
+}
+
+
+/* Return the clauses associated with OMP_SCAN statement SCAN_STMT.  */
+
+static inline tree
+gimple_omp_scan_clauses (const gomp_scan *scan_stmt)
+{
+  return scan_stmt->clauses;
+}
+
+
+/* Return a pointer to the clauses associated with OMP scan statement
+   ORD_STMT.  */
+
+static inline tree *
+gimple_omp_scan_clauses_ptr (gomp_scan *scan_stmt)
+{
+  return &scan_stmt->clauses;
+}
+
+
+/* Set CLAUSES to be the clauses associated with OMP scan statement
+   ORD_STMT.  */
+
+static inline void
+gimple_omp_scan_set_clauses (gomp_scan *scan_stmt, tree clauses)
+{
+  scan_stmt->clauses = clauses;
+}
+
+
+/* Return the clauses associated with OMP_TASKGROUP statement GS.  */
+
+static inline tree
+gimple_omp_taskgroup_clauses (const gimple *gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TASKGROUP);
+  return
+    static_cast <const gimple_statement_omp_single_layout *> (gs)->clauses;
+}
+
+
+/* Return a pointer to the clauses associated with OMP taskgroup statement
+   GS.  */
+
+static inline tree *
+gimple_omp_taskgroup_clauses_ptr (gimple *gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TASKGROUP);
+  return &static_cast <gimple_statement_omp_single_layout *> (gs)->clauses;
+}
+
+
+/* Set CLAUSES to be the clauses associated with OMP taskgroup statement
+   GS.  */
+
+static inline void
+gimple_omp_taskgroup_set_clauses (gimple *gs, tree clauses)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TASKGROUP);
+  static_cast <gimple_statement_omp_single_layout *> (gs)->clauses
+    = clauses;
 }
 
 
@@ -5441,6 +5563,31 @@ gimple_omp_task_set_taskloop_p (gimple *g, bool taskloop_p)
 }
 
 
+/* Return true if OMP task statement G has the
+   GF_OMP_TASK_TASKWAIT flag set.  */
+
+static inline bool
+gimple_omp_task_taskwait_p (const gimple *g)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_TASK);
+  return (gimple_omp_subcode (g) & GF_OMP_TASK_TASKWAIT) != 0;
+}
+
+
+/* Set the GF_OMP_TASK_TASKWAIT field in G depending on the boolean
+   value of TASKWAIT_P.  */
+
+static inline void
+gimple_omp_task_set_taskwait_p (gimple *g, bool taskwait_p)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_TASK);
+  if (taskwait_p)
+    g->subcode |= GF_OMP_TASK_TASKWAIT;
+  else
+    g->subcode &= ~GF_OMP_TASK_TASKWAIT;
+}
+
+
 /* Return the child function used to hold the body of OMP_TASK GS.  */
 
 static inline tree
@@ -5857,6 +6004,60 @@ gimple_omp_teams_set_clauses (gomp_teams *omp_teams_stmt, tree clauses)
   omp_teams_stmt->clauses = clauses;
 }
 
+/* Return the child function used to hold the body of OMP_TEAMS_STMT.  */
+
+static inline tree
+gimple_omp_teams_child_fn (const gomp_teams *omp_teams_stmt)
+{
+  return omp_teams_stmt->child_fn;
+}
+
+/* Return a pointer to the child function used to hold the body of
+   OMP_TEAMS_STMT.  */
+
+static inline tree *
+gimple_omp_teams_child_fn_ptr (gomp_teams *omp_teams_stmt)
+{
+  return &omp_teams_stmt->child_fn;
+}
+
+
+/* Set CHILD_FN to be the child function for OMP_TEAMS_STMT.  */
+
+static inline void
+gimple_omp_teams_set_child_fn (gomp_teams *omp_teams_stmt, tree child_fn)
+{
+  omp_teams_stmt->child_fn = child_fn;
+}
+
+
+/* Return the artificial argument used to send variables and values
+   from the parent to the children threads in OMP_TEAMS_STMT.  */
+
+static inline tree
+gimple_omp_teams_data_arg (const gomp_teams *omp_teams_stmt)
+{
+  return omp_teams_stmt->data_arg;
+}
+
+
+/* Return a pointer to the data argument for OMP_TEAMS_STMT.  */
+
+static inline tree *
+gimple_omp_teams_data_arg_ptr (gomp_teams *omp_teams_stmt)
+{
+  return &omp_teams_stmt->data_arg;
+}
+
+
+/* Set DATA_ARG to be the data argument for OMP_TEAMS_STMT.  */
+
+static inline void
+gimple_omp_teams_set_data_arg (gomp_teams *omp_teams_stmt, tree data_arg)
+{
+  omp_teams_stmt->data_arg = data_arg;
+}
+
 /* Return the kernel_phony flag of an OMP_TEAMS_STMT.  */
 
 static inline bool
@@ -5874,6 +6075,25 @@ gimple_omp_teams_set_grid_phony (gomp_teams *omp_teams_stmt, bool value)
     omp_teams_stmt->subcode |= GF_OMP_TEAMS_GRID_PHONY;
   else
     omp_teams_stmt->subcode &= ~GF_OMP_TEAMS_GRID_PHONY;
+}
+
+/* Return the host flag of an OMP_TEAMS_STMT.  */
+
+static inline bool
+gimple_omp_teams_host (const gomp_teams *omp_teams_stmt)
+{
+  return (gimple_omp_subcode (omp_teams_stmt) & GF_OMP_TEAMS_HOST) != 0;
+}
+
+/* Set host flag of an OMP_TEAMS_STMT to VALUE.  */
+
+static inline void
+gimple_omp_teams_set_host (gomp_teams *omp_teams_stmt, bool value)
+{
+  if (value)
+    omp_teams_stmt->subcode |= GF_OMP_TEAMS_HOST;
+  else
+    omp_teams_stmt->subcode &= ~GF_OMP_TEAMS_HOST;
 }
 
 /* Return the clauses associated with OMP_SECTIONS GS.  */
@@ -6216,6 +6436,7 @@ gimple_return_set_retval (greturn *gs, tree retval)
     case GIMPLE_OMP_TASKGROUP:			\
     case GIMPLE_OMP_ORDERED:			\
     case GIMPLE_OMP_CRITICAL:			\
+    case GIMPLE_OMP_SCAN:			\
     case GIMPLE_OMP_RETURN:			\
     case GIMPLE_OMP_ATOMIC_LOAD:		\
     case GIMPLE_OMP_ATOMIC_STORE:		\
@@ -6256,6 +6477,7 @@ is_gimple_omp_oacc (const gimple *stmt)
 	{
 	case GF_OMP_TARGET_KIND_OACC_PARALLEL:
 	case GF_OMP_TARGET_KIND_OACC_KERNELS:
+	case GF_OMP_TARGET_KIND_OACC_SERIAL:
 	case GF_OMP_TARGET_KIND_OACC_DATA:
 	case GF_OMP_TARGET_KIND_OACC_UPDATE:
 	case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
@@ -6285,6 +6507,7 @@ is_gimple_omp_offloaded (const gimple *stmt)
 	case GF_OMP_TARGET_KIND_REGION:
 	case GF_OMP_TARGET_KIND_OACC_PARALLEL:
 	case GF_OMP_TARGET_KIND_OACC_KERNELS:
+	case GF_OMP_TARGET_KIND_OACC_SERIAL:
 	  return true;
 	default:
 	  return false;
@@ -6403,15 +6626,5 @@ gimple_set_do_not_emit_location (gimple *g)
      so no need to initialize it anywhere.  */
   gimple_set_plf (g, GF_PLF_1, true);
 }
-
-
-/* Macros for showing usage statistics.  */
-#define SCALE(x) ((unsigned long) ((x) < 1024*10	\
-		  ? (x)					\
-		  : ((x) < 1024*1024*10			\
-		     ? (x) / 1024			\
-		     : (x) / (1024*1024))))
-
-#define LABEL(x) ((x) < 1024*10 ? 'b' : ((x) < 1024*1024*10 ? 'k' : 'M'))
 
 #endif  /* GCC_GIMPLE_H */

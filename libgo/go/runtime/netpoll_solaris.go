@@ -166,9 +166,9 @@ func netpollarm(pd *pollDesc, mode int) {
 
 // polls for ready network connections
 // returns list of goroutines that become runnable
-func netpoll(block bool) *g {
+func netpoll(block bool) gList {
 	if portfd == -1 {
-		return nil
+		return gList{}
 	}
 
 	var wait *timespec
@@ -188,7 +188,7 @@ retry:
 		goto retry
 	}
 
-	var gp guintptr
+	var toRun gList
 	for i := 0; i < int(n); i++ {
 		ev := &events[i]
 
@@ -219,12 +219,17 @@ retry:
 		}
 
 		if mode != 0 {
-			netpollready(&gp, pd, mode)
+			// TODO(mikio): Consider implementing event
+			// scanning error reporting once we are sure
+			// about the event port on SmartOS.
+			//
+			// See golang.org/x/issue/30840.
+			netpollready(&toRun, pd, mode)
 		}
 	}
 
-	if block && gp == 0 {
+	if block && toRun.empty() {
 		goto retry
 	}
-	return gp.ptr()
+	return toRun
 }

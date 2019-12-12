@@ -1,5 +1,5 @@
 // go-gcc-diagnostics.cc -- GCC implementation of go diagnostics interface.
-// Copyright (C) 2016-2018 Free Software Foundation, Inc.
+// Copyright (C) 2016-2019 Free Software Foundation, Inc.
 // Contributed by Than McIntosh, Google.
 
 // This file is part of GCC.
@@ -24,7 +24,7 @@
 void
 go_be_error_at(const Location location, const std::string& errmsg)
 {
-  source_location gcc_loc = location.gcc_location();
+  location_t gcc_loc = location.gcc_location();
   error_at(gcc_loc, "%s", errmsg.c_str());
 }
 
@@ -33,7 +33,7 @@ void
 go_be_warning_at(const Location location,
                  int opt, const std::string& warningmsg)
 {
-  source_location gcc_loc = location.gcc_location();
+  location_t gcc_loc = location.gcc_location();
   warning_at(gcc_loc, opt, "%s", warningmsg.c_str());
 }
 
@@ -41,7 +41,7 @@ void
 go_be_fatal_error(const Location location,
                   const std::string& fatalmsg)
 {
-  source_location gcc_loc = location.gcc_location();
+  location_t gcc_loc = location.gcc_location();
   fatal_error(gcc_loc, "%s", fatalmsg.c_str());
 }
 
@@ -49,7 +49,7 @@ void
 go_be_inform(const Location location,
              const std::string& infomsg)
 {
-  source_location gcc_loc = location.gcc_location();
+  location_t gcc_loc = location.gcc_location();
   inform(gcc_loc, "%s", infomsg.c_str());
 }
 

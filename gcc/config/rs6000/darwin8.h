@@ -1,5 +1,5 @@
 /* Target definitions for Darwin 8.0 and above (Mac OS X) systems.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,15 +17,5 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* Machine dependent libraries.  Include libmx when compiling on
-   Darwin 7.0 and above, but before libSystem, since the functions are
-   actually in libSystem but for 7.x compatibility we want them to be
-   looked for in libmx first---but only do this if 7.x compatibility
-   is a concern, which it's not in 64-bit mode.  Include
-   libSystemStubs when compiling on (not necessarily for) 8.0 and
-   above and not 64-bit long double.  */
-
-#undef	LIB_SPEC
-#define LIB_SPEC "%{!static:\
-  %{!mlong-double-64:%{pg:-lSystemStubs_profile;:-lSystemStubs}} \
-  %{!m64:%:version-compare(>< 10.3 10.4 mmacosx-version-min= -lmx)} -lSystem}"
+#undef DEF_MIN_OSX_VERSION
+#define DEF_MIN_OSX_VERSION "10.4"

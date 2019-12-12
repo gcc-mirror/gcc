@@ -1,5 +1,6 @@
 /* { dg-lto-do link } */
 /* { dg-require-effective-target fpic } */
+/* { dg-require-effective-target lto_incremental } */
 /* { dg-lto-options {{-fPIC -r -nostdlib -flto -O2 -g -Wno-return-type}} } */
 
 void frexp (int, int *);

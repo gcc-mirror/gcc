@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build !js
+
 package net
 
 import (
@@ -142,7 +144,7 @@ func TestDialError(t *testing.T) {
 
 	origTestHookLookupIP := testHookLookupIP
 	defer func() { testHookLookupIP = origTestHookLookupIP }()
-	testHookLookupIP = func(ctx context.Context, fn func(context.Context, string) ([]IPAddr, error), host string) ([]IPAddr, error) {
+	testHookLookupIP = func(ctx context.Context, fn func(context.Context, string, string) ([]IPAddr, error), network, host string) ([]IPAddr, error) {
 		return nil, &DNSError{Err: "dial error test", Name: "name", Server: "server", IsTimeout: true}
 	}
 	sw.Set(socktest.FilterConnect, func(so *socktest.Status) (socktest.AfterFilter, error) {
@@ -183,7 +185,7 @@ func TestDialError(t *testing.T) {
 
 func TestProtocolDialError(t *testing.T) {
 	switch runtime.GOOS {
-	case "nacl", "solaris":
+	case "nacl", "solaris", "illumos":
 		t.Skipf("not supported on %s", runtime.GOOS)
 	}
 
@@ -291,7 +293,7 @@ func TestListenError(t *testing.T) {
 
 	origTestHookLookupIP := testHookLookupIP
 	defer func() { testHookLookupIP = origTestHookLookupIP }()
-	testHookLookupIP = func(_ context.Context, fn func(context.Context, string) ([]IPAddr, error), host string) ([]IPAddr, error) {
+	testHookLookupIP = func(_ context.Context, fn func(context.Context, string, string) ([]IPAddr, error), network, host string) ([]IPAddr, error) {
 		return nil, &DNSError{Err: "listen error test", Name: "name", Server: "server", IsTimeout: true}
 	}
 	sw.Set(socktest.FilterListen, func(so *socktest.Status) (socktest.AfterFilter, error) {
@@ -351,7 +353,7 @@ func TestListenPacketError(t *testing.T) {
 
 	origTestHookLookupIP := testHookLookupIP
 	defer func() { testHookLookupIP = origTestHookLookupIP }()
-	testHookLookupIP = func(_ context.Context, fn func(context.Context, string) ([]IPAddr, error), host string) ([]IPAddr, error) {
+	testHookLookupIP = func(_ context.Context, fn func(context.Context, string, string) ([]IPAddr, error), network, host string) ([]IPAddr, error) {
 		return nil, &DNSError{Err: "listen error test", Name: "name", Server: "server", IsTimeout: true}
 	}
 
@@ -434,7 +436,7 @@ second:
 		goto third
 	}
 	switch nestedErr {
-	case poll.ErrNetClosing, poll.ErrTimeout:
+	case poll.ErrNetClosing, poll.ErrTimeout, poll.ErrNotPollable:
 		return nil
 	}
 	return fmt.Errorf("unexpected type on 2nd nested level: %T", nestedErr)
@@ -625,7 +627,7 @@ second:
 		goto third
 	}
 	switch nestedErr {
-	case poll.ErrNetClosing, poll.ErrTimeout:
+	case poll.ErrNetClosing, poll.ErrTimeout, poll.ErrNotPollable:
 		return nil
 	}
 	return fmt.Errorf("unexpected type on 2nd nested level: %T", nestedErr)

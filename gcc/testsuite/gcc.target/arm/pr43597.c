@@ -24,4 +24,4 @@ foo4 ()
 
 /* { dg-final { scan-assembler-times "sub" 1 } } */
 /* { dg-final { scan-assembler-times "cmp" 0 } } */
-/* { dg-final { object-size text <= 30 } } */
+/* { dg-final { object-size text <= 30 { target { ! arm*-*-uclinuxfdpiceabi } } } } */

@@ -1,5 +1,5 @@
 /* { dg-do compile { target *-*-linux* } } */
-/* { dg-options "-O2 -mno-indirect-branch-register -mfunction-return=keep -fno-pic -fplt -mindirect-branch=thunk-extern -fcf-protection" } */
+/* { dg-options "-O2 -mno-indirect-branch-register -mfunction-return=keep -fno-pic -fplt -mindirect-branch=thunk-extern -fcf-protection=branch" } */
 
 extern void (*bar) (void);
 

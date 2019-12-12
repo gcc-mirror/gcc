@@ -1,4 +1,5 @@
 /* { dg-additional-options "-O2" } */
+/* { dg-additional-options "-fopt-info-optimized-omp" } */
 /* { dg-additional-options "-fdump-tree-parloops1-all" } */
 /* { dg-additional-options "-fdump-tree-optimized" } */
 
@@ -14,7 +15,7 @@ foo (void)
   int i, j;
   unsigned int sum = 1;
 
-#pragma acc kernels copyin (a[0:N]) copy (sum)
+#pragma acc kernels copyin (a[0:N]) copy (sum) /* { dg-message "optimized: assigned OpenACC gang loop parallelism" } */
   {
     for (i = 0; i < N; ++i)
       for (j = 0; j < N; ++j)

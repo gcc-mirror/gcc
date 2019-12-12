@@ -1,7 +1,7 @@
 /* Write and read the cgraph to the memory mapped representation of a
    .o file.
 
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -48,9 +48,6 @@ static void input_cgraph_opt_summary (vec<symtab_node *>  nodes);
 
 /* Number of LDPR values known to GCC.  */
 #define LDPR_NUM_KNOWN (LDPR_PREVAILING_DEF_IRONLY_EXP + 1)
-
-/* All node orders are ofsetted by ORDER_BASE.  */
-static int order_base;
 
 /* Cgraph streaming is organized as set of record whose type
    is indicated by a tag.  */
@@ -329,7 +326,7 @@ reachable_from_other_partition_p (struct cgraph_node *node, lto_symtab_encoder_t
   struct cgraph_edge *e;
   if (!node->definition)
     return false;
-  if (node->global.inlined_to)
+  if (node->inlined_to)
     return false;
   for (e = node->callers; e; e = e->next_caller)
     {
@@ -399,7 +396,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   boundary_p = !lto_symtab_encoder_in_partition_p (encoder, node);
 
   if (node->analyzed && (!boundary_p || node->alias
-			 || (node->thunk.thunk_p && !node->global.inlined_to)))
+			 || (node->thunk.thunk_p && !node->inlined_to)))
     tag = LTO_symtab_analyzed_node;
   else
     tag = LTO_symtab_unavail_node;
@@ -421,8 +418,8 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   if (boundary_p && node->analyzed
       && node->get_partitioning_class () == SYMBOL_PARTITION)
     {
-      /* Inline clones can not be part of boundary.  
-         gcc_assert (!node->global.inlined_to);  
+      /* Inline clones cannot be part of boundary.  
+	 gcc_assert (!node->inlined_to);
 
 	 FIXME: At the moment they can be, when partition contains an inline
 	 clone that is clone of inline clone from outside partition.  We can
@@ -468,9 +465,9 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 
   if (tag == LTO_symtab_analyzed_node)
     {
-      if (node->global.inlined_to)
+      if (node->inlined_to)
 	{
-	  ref = lto_symtab_encoder_lookup (encoder, node->global.inlined_to);
+	  ref = lto_symtab_encoder_lookup (encoder, node->inlined_to);
 	  gcc_assert (ref != LCC_NOT_FOUND);
 	}
       else
@@ -507,13 +504,13 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   streamer_write_hwi_stream (ob->main_stream, node->tp_first_run);
 
   bp = bitpack_create (ob->main_stream);
-  bp_pack_value (&bp, node->local.local, 1);
+  bp_pack_value (&bp, node->local, 1);
   bp_pack_value (&bp, node->externally_visible, 1);
   bp_pack_value (&bp, node->no_reorder, 1);
   bp_pack_value (&bp, node->definition, 1);
-  bp_pack_value (&bp, node->local.versionable, 1);
-  bp_pack_value (&bp, node->local.can_change_signature, 1);
-  bp_pack_value (&bp, node->local.redefined_extern_inline, 1);
+  bp_pack_value (&bp, node->versionable, 1);
+  bp_pack_value (&bp, node->can_change_signature, 1);
+  bp_pack_value (&bp, node->redefined_extern_inline, 1);
   bp_pack_value (&bp, node->force_output, 1);
   bp_pack_value (&bp, node->forced_by_abi, 1);
   bp_pack_value (&bp, node->unique_name, 1);
@@ -547,15 +544,19 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   streamer_write_bitpack (&bp);
   streamer_write_data_stream (ob->main_stream, section, strlen (section) + 1);
 
-  if (node->thunk.thunk_p)
+  /* Stream thunk info always because we use it in
+     ipa_polymorphic_call_context::ipa_polymorphic_call_context
+     to properly interpret THIS pointers for thunks that has been converted
+     to Gimple.  */
+  if (node->definition)
     {
       streamer_write_uhwi_stream
 	 (ob->main_stream,
 	  1 + (node->thunk.this_adjusting != 0) * 2
-	  + (node->thunk.virtual_offset_p != 0) * 4
-	  + (node->thunk.add_pointer_bounds_args != 0) * 8);
+	  + (node->thunk.virtual_offset_p != 0) * 4);
       streamer_write_uhwi_stream (ob->main_stream, node->thunk.fixed_offset);
       streamer_write_uhwi_stream (ob->main_stream, node->thunk.virtual_value);
+      streamer_write_uhwi_stream (ob->main_stream, node->thunk.indirect_offset);
     }
   streamer_write_hwi_stream (ob->main_stream, node->profile_id);
   if (DECL_STATIC_CONSTRUCTOR (node->decl))
@@ -626,7 +627,6 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
   bp_pack_value (&bp, node->tls_model, 3);
   bp_pack_value (&bp, node->used_by_single_function, 1);
   bp_pack_value (&bp, node->dynamically_initialized, 1);
-  bp_pack_value (&bp, node->need_bounds_init, 1);
   streamer_write_bitpack (&bp);
 
   group = node->get_comdat_group ();
@@ -693,39 +693,14 @@ lto_output_ref (struct lto_simple_output_block *ob, struct ipa_ref *ref,
 static void
 output_profile_summary (struct lto_simple_output_block *ob)
 {
-  unsigned h_ix;
-  struct bitpack_d bp;
-
   if (profile_info)
     {
       /* We do not output num and run_max, they are not used by
          GCC profile feedback and they are difficult to merge from multiple
          units.  */
-      gcc_assert (profile_info->runs);
-      streamer_write_uhwi_stream (ob->main_stream, profile_info->runs);
-      streamer_write_gcov_count_stream (ob->main_stream, profile_info->sum_max);
+      unsigned runs = (profile_info->runs);
+      streamer_write_uhwi_stream (ob->main_stream, runs);
 
-      /* sum_all is needed for computing the working set with the
-         histogram.  */
-      streamer_write_gcov_count_stream (ob->main_stream, profile_info->sum_all);
-
-      /* Create and output a bitpack of non-zero histogram entries indices.  */
-      bp = bitpack_create (ob->main_stream);
-      for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
-        bp_pack_value (&bp, profile_info->histogram[h_ix].num_counters > 0, 1);
-      streamer_write_bitpack (&bp);
-      /* Now stream out only those non-zero entries.  */
-      for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
-        {
-          if (!profile_info->histogram[h_ix].num_counters)
-            continue;
-          streamer_write_gcov_count_stream (ob->main_stream,
-                                      profile_info->histogram[h_ix].num_counters);
-          streamer_write_gcov_count_stream (ob->main_stream,
-                                      profile_info->histogram[h_ix].min_value);
-          streamer_write_gcov_count_stream (ob->main_stream,
-                                      profile_info->histogram[h_ix].cum_value);
-         }
       /* IPA-profile computes hot bb threshold based on cumulated
 	 whole program profile.  We need to stream it down to ltrans.  */
        if (flag_wpa)
@@ -906,7 +881,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 	  if (!lto_symtab_encoder_in_partition_p (encoder, callee))
 	    {
 	      /* We should have moved all the inlines.  */
-	      gcc_assert (!callee->global.inlined_to);
+	      gcc_assert (!callee->inlined_to);
 	      add_node_to (encoder, callee, false);
 	    }
 	}
@@ -933,7 +908,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 			  && !lto_symtab_encoder_in_partition_p
 			       (encoder, callee))
 			{
-			  gcc_assert (!callee->global.inlined_to);
+			  gcc_assert (!callee->inlined_to);
 			  add_node_to (encoder, callee, false);
 			}
 		    }
@@ -950,7 +925,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
       if (node->alias && node->analyzed)
 	create_references (encoder, node);
       if (cnode
-	  && cnode->thunk.thunk_p && !cnode->global.inlined_to)
+	  && cnode->thunk.thunk_p && !cnode->inlined_to)
 	add_node_to (encoder, cnode->callees->callee, false);
       while (node->transparent_alias && node->analyzed)
 	{
@@ -1006,7 +981,7 @@ output_symtab (void)
     {
       node = dyn_cast <cgraph_node *> (lto_symtab_encoder_deref (encoder, i));
       if (node
-	  && ((node->thunk.thunk_p && !node->global.inlined_to)
+	  && ((node->thunk.thunk_p && !node->inlined_to)
 	      || lto_symtab_encoder_in_partition_p (encoder, node)))
 	{
 	  output_outgoing_cgraph_edges (node->callees, ob, encoder);
@@ -1034,7 +1009,7 @@ output_symtab (void)
 /* Return identifier encoded in IB as a plain string.  */
 
 static tree
-read_identifier (struct lto_input_block *ib)
+read_identifier (class lto_input_block *ib)
 {
   unsigned int len = strnlen (ib->data + ib->p, ib->len - ib->p - 1);
   tree id;
@@ -1054,7 +1029,7 @@ read_identifier (struct lto_input_block *ib)
 /* Return string encoded in IB, NULL if string is empty.  */
 
 static const char *
-read_string (struct lto_input_block *ib)
+read_string (class lto_input_block *ib)
 {
   unsigned int len = strnlen (ib->data + ib->p, ib->len - ib->p - 1);
   const char *str;
@@ -1115,6 +1090,36 @@ output_offload_tables (void)
     }
 }
 
+/* Verify the partitioning of NODE.  */
+
+static inline void
+verify_node_partition (symtab_node *node)
+{
+  if (flag_ltrans)
+    return;
+
+#ifdef ACCEL_COMPILER
+  if (node->in_other_partition)
+    {
+      if (TREE_CODE (node->decl) == FUNCTION_DECL)
+	error_at (DECL_SOURCE_LOCATION (node->decl),
+		  "function %qs has been referenced in offloaded code but"
+		  " hasn%'t been marked to be included in the offloaded code",
+		  node->name ());
+      else if (VAR_P (node->decl))
+	error_at (DECL_SOURCE_LOCATION (node->decl),
+		  "variable %qs has been referenced in offloaded code but"
+		  " hasn%'t been marked to be included in the offloaded code",
+		  node->name ());
+      else
+	gcc_unreachable ();
+    }
+#else
+  gcc_assert (!node->in_other_partition
+	      && !node->used_from_other_partition);
+#endif
+}
+
 /* Overwrite the information in NODE based on FILE_DATA, TAG, FLAGS,
    STACK_SIZE, SELF_TIME and SELF_SIZE.  This is called either to initialize
    NODE or to replace the values in it, for instance because the first
@@ -1131,13 +1136,13 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->aux = (void *) tag;
   node->lto_file_data = file_data;
 
-  node->local.local = bp_unpack_value (bp, 1);
+  node->local = bp_unpack_value (bp, 1);
   node->externally_visible = bp_unpack_value (bp, 1);
   node->no_reorder = bp_unpack_value (bp, 1);
   node->definition = bp_unpack_value (bp, 1);
-  node->local.versionable = bp_unpack_value (bp, 1);
-  node->local.can_change_signature = bp_unpack_value (bp, 1);
-  node->local.redefined_extern_inline = bp_unpack_value (bp, 1);
+  node->versionable = bp_unpack_value (bp, 1);
+  node->can_change_signature = bp_unpack_value (bp, 1);
+  node->redefined_extern_inline = bp_unpack_value (bp, 1);
   node->force_output = bp_unpack_value (bp, 1);
   node->forced_by_abi = bp_unpack_value (bp, 1);
   node->unique_name = bp_unpack_value (bp, 1);
@@ -1177,9 +1182,7 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->resolution = bp_unpack_enum (bp, ld_plugin_symbol_resolution,
 				     LDPR_NUM_KNOWN);
   node->split_part = bp_unpack_value (bp, 1);
-  gcc_assert (flag_ltrans
-	      || (!node->in_other_partition
-		  && !node->used_from_other_partition));
+  verify_node_partition (node);
 }
 
 /* Return string alias is alias of.  */
@@ -1197,7 +1200,7 @@ get_alias_symbol (tree decl)
 
 static struct cgraph_node *
 input_node (struct lto_file_decl_data *file_data,
-	    struct lto_input_block *ib,
+	    class lto_input_block *ib,
 	    enum LTO_symtab_tags tag,
 	    vec<symtab_node *> nodes)
 {
@@ -1212,7 +1215,7 @@ input_node (struct lto_file_decl_data *file_data,
   int i, count;
   tree group;
   const char *section;
-  order = streamer_read_hwi (ib) + order_base;
+  order = streamer_read_hwi (ib) + file_data->order_base;
   clone_ref = streamer_read_hwi (ib);
 
   decl_index = streamer_read_uhwi (ib);
@@ -1266,7 +1269,7 @@ input_node (struct lto_file_decl_data *file_data,
      have already been read will have their tag stored in the 'aux'
      field.  Since built-in functions can be referenced in multiple
      functions, they are expected to be read more than once.  */
-  if (node->aux && !DECL_BUILT_IN (node->decl))
+  if (node->aux && !fndecl_built_in_p (node->decl))
     internal_error ("bytecode stream: found multiple instances of cgraph "
 		    "node with uid %d", node->get_uid ());
 
@@ -1277,7 +1280,7 @@ input_node (struct lto_file_decl_data *file_data,
   input_overwrite_node (file_data, node, tag, &bp);
 
   /* Store a reference for now, and fix up later to be a pointer.  */
-  node->global.inlined_to = (cgraph_node *) (intptr_t) ref;
+  node->inlined_to = (cgraph_node *) (intptr_t) ref;
 
   if (group)
     {
@@ -1291,17 +1294,18 @@ input_node (struct lto_file_decl_data *file_data,
   if (section)
     node->set_section_for_node (section);
 
-  if (node->thunk.thunk_p)
+  if (node->definition)
     {
       int type = streamer_read_uhwi (ib);
       HOST_WIDE_INT fixed_offset = streamer_read_uhwi (ib);
       HOST_WIDE_INT virtual_value = streamer_read_uhwi (ib);
+      HOST_WIDE_INT indirect_offset = streamer_read_uhwi (ib);
 
       node->thunk.fixed_offset = fixed_offset;
-      node->thunk.this_adjusting = (type & 2);
       node->thunk.virtual_value = virtual_value;
+      node->thunk.indirect_offset = indirect_offset;
+      node->thunk.this_adjusting = (type & 2);
       node->thunk.virtual_offset_p = (type & 4);
-      node->thunk.add_pointer_bounds_args = (type & 8);
     }
   if (node->alias && !node->analyzed && node->weakref)
     node->alias_target = get_alias_symbol (node->decl);
@@ -1319,7 +1323,7 @@ input_node (struct lto_file_decl_data *file_data,
 
 static varpool_node *
 input_varpool_node (struct lto_file_decl_data *file_data,
-		    struct lto_input_block *ib)
+		    class lto_input_block *ib)
 {
   int decl_index;
   tree var_decl;
@@ -1330,7 +1334,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   tree group;
   const char *section;
 
-  order = streamer_read_hwi (ib) + order_base;
+  order = streamer_read_hwi (ib) + file_data->order_base;
   decl_index = streamer_read_uhwi (ib);
   var_decl = lto_file_decl_data_get_var_decl (file_data, decl_index);
 
@@ -1372,7 +1376,6 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   node->tls_model = (enum tls_model)bp_unpack_value (&bp, 3);
   node->used_by_single_function = (enum tls_model)bp_unpack_value (&bp, 1);
   node->dynamically_initialized = bp_unpack_value (&bp, 1);
-  node->need_bounds_init = bp_unpack_value (&bp, 1);
   group = read_identifier (ib);
   if (group)
     {
@@ -1388,10 +1391,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
     node->set_section_for_node (section);
   node->resolution = streamer_read_enum (ib, ld_plugin_symbol_resolution,
 					        LDPR_NUM_KNOWN);
-  gcc_assert (flag_ltrans
-	      || (!node->in_other_partition
-		  && !node->used_from_other_partition));
-
+  verify_node_partition (node);
   return node;
 }
 
@@ -1399,7 +1399,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
    Return the node read or overwriten.  */
 
 static void
-input_ref (struct lto_input_block *ib,
+input_ref (class lto_input_block *ib,
 	   symtab_node *referring_node,
 	   vec<symtab_node *> nodes)
 {
@@ -1425,7 +1425,7 @@ input_ref (struct lto_input_block *ib,
    indirect_unknown_callee set).  */
 
 static void
-input_edge (struct lto_input_block *ib, vec<symtab_node *> nodes,
+input_edge (class lto_input_block *ib, vec<symtab_node *> nodes,
 	    bool indirect)
 {
   struct cgraph_node *caller, *callee;
@@ -1493,7 +1493,7 @@ input_edge (struct lto_input_block *ib, vec<symtab_node *> nodes,
 
 static vec<symtab_node *> 
 input_cgraph_1 (struct lto_file_decl_data *file_data,
-		struct lto_input_block *ib)
+		class lto_input_block *ib)
 {
   enum LTO_symtab_tags tag;
   vec<symtab_node *> nodes = vNULL;
@@ -1501,7 +1501,7 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
   unsigned i;
 
   tag = streamer_read_enum (ib, LTO_symtab_tags, LTO_symtab_last_tag);
-  order_base = symtab->order;
+  file_data->order_base = symtab->order;
   while (tag)
     {
       if (tag == LTO_symtab_edge)
@@ -1526,7 +1526,7 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
       tag = streamer_read_enum (ib, LTO_symtab_tags, LTO_symtab_last_tag);
     }
 
-  lto_input_toplevel_asms (file_data, order_base);
+  lto_input_toplevel_asms (file_data, file_data->order_base);
 
   /* AUX pointers should be all non-zero for function nodes read from the stream.  */
   if (flag_checking)
@@ -1539,7 +1539,7 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
       int ref;
       if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
 	{
-	  ref = (int) (intptr_t) cnode->global.inlined_to;
+	  ref = (int) (intptr_t) cnode->inlined_to;
 
 	  /* We share declaration of builtins, so we may read same node twice.  */
 	  if (!node->aux)
@@ -1548,10 +1548,10 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
 
 	  /* Fixup inlined_to from reference to pointer.  */
 	  if (ref != LCC_NOT_FOUND)
-	    dyn_cast<cgraph_node *> (node)->global.inlined_to
+	    dyn_cast<cgraph_node *> (node)->inlined_to
 	      = dyn_cast<cgraph_node *> (nodes[ref]);
 	  else
-	    cnode->global.inlined_to = NULL;
+	    cnode->inlined_to = NULL;
 	}
 
       ref = (int) (intptr_t) node->same_comdat_group;
@@ -1570,7 +1570,7 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
 /* Input ipa_refs.  */
 
 static void
-input_refs (struct lto_input_block *ib,
+input_refs (class lto_input_block *ib,
 	    vec<symtab_node *> nodes)
 {
   int count;
@@ -1591,46 +1591,16 @@ input_refs (struct lto_input_block *ib,
     }
 }
 	    
-
-static gcov_summary lto_gcov_summary;
-
 /* Input profile_info from IB.  */
 static void
-input_profile_summary (struct lto_input_block *ib,
+input_profile_summary (class lto_input_block *ib,
 		       struct lto_file_decl_data *file_data)
 {
-  unsigned h_ix;
-  struct bitpack_d bp;
   unsigned int runs = streamer_read_uhwi (ib);
   if (runs)
     {
       file_data->profile_info.runs = runs;
-      file_data->profile_info.sum_max = streamer_read_gcov_count (ib);
-      file_data->profile_info.sum_all = streamer_read_gcov_count (ib);
 
-      memset (file_data->profile_info.histogram, 0,
-              sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
-      /* Input the bitpack of non-zero histogram indices.  */
-      bp = streamer_read_bitpack (ib);
-      /* Read in and unpack the full bitpack, flagging non-zero
-         histogram entries by setting the num_counters non-zero.  */
-      for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
-        {
-          file_data->profile_info.histogram[h_ix].num_counters
-              = bp_unpack_value (&bp, 1);
-        }
-      for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
-        {
-          if (!file_data->profile_info.histogram[h_ix].num_counters)
-            continue;
-
-          file_data->profile_info.histogram[h_ix].num_counters
-              = streamer_read_gcov_count (ib);
-          file_data->profile_info.histogram[h_ix].min_value
-              = streamer_read_gcov_count (ib);
-          file_data->profile_info.histogram[h_ix].cum_value
-              = streamer_read_gcov_count (ib);
-        }
       /* IPA-profile computes hot bb threshold based on cumulated
 	 whole program profile.  We need to stream it down to ltrans.  */
       if (flag_ltrans)
@@ -1645,13 +1615,10 @@ static void
 merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
 {
   struct lto_file_decl_data *file_data;
-  unsigned int j, h_ix;
+  unsigned int j;
   gcov_unsigned_t max_runs = 0;
   struct cgraph_node *node;
   struct cgraph_edge *edge;
-  gcov_type saved_sum_all = 0;
-  gcov_summary *saved_profile_info = 0;
-  int saved_scale = 0;
 
   /* Find unit with maximal number of runs.  If we ever get serious about
      roundoff errors, we might also consider computing smallest common
@@ -1672,70 +1639,8 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
       return;
     }
 
-  profile_info = &lto_gcov_summary;
-  lto_gcov_summary.runs = max_runs;
-  lto_gcov_summary.sum_max = 0;
-  memset (lto_gcov_summary.histogram, 0,
-          sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
-
-  /* Rescale all units to the maximal number of runs.
-     sum_max can not be easily merged, as we have no idea what files come from
-     the same run.  We do not use the info anyway, so leave it 0.  */
-  for (j = 0; (file_data = file_data_vec[j]) != NULL; j++)
-    if (file_data->profile_info.runs)
-      {
-	int scale = GCOV_COMPUTE_SCALE (max_runs,
-                                        file_data->profile_info.runs);
-	lto_gcov_summary.sum_max
-            = MAX (lto_gcov_summary.sum_max,
-                   apply_scale (file_data->profile_info.sum_max, scale));
-	lto_gcov_summary.sum_all
-            = MAX (lto_gcov_summary.sum_all,
-                   apply_scale (file_data->profile_info.sum_all, scale));
-        /* Save a pointer to the profile_info with the largest
-           scaled sum_all and the scale for use in merging the
-           histogram.  */
-        if (!saved_profile_info
-            || lto_gcov_summary.sum_all > saved_sum_all)
-          {
-            saved_profile_info = &file_data->profile_info;
-            saved_sum_all = lto_gcov_summary.sum_all;
-            saved_scale = scale;
-          }
-      }
-
-  gcc_assert (saved_profile_info);
-
-  /* Scale up the histogram from the profile that had the largest
-     scaled sum_all above.  */
-  for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
-    {
-      /* Scale up the min value as we did the corresponding sum_all
-         above. Use that to find the new histogram index.  */
-      gcov_type scaled_min
-          = apply_scale (saved_profile_info->histogram[h_ix].min_value,
-                         saved_scale);
-      /* The new index may be shared with another scaled histogram entry,
-         so we need to account for a non-zero histogram entry at new_ix.  */
-      unsigned new_ix = gcov_histo_index (scaled_min);
-      lto_gcov_summary.histogram[new_ix].min_value
-          = (lto_gcov_summary.histogram[new_ix].num_counters
-             ? MIN (lto_gcov_summary.histogram[new_ix].min_value, scaled_min)
-             : scaled_min);
-      /* Some of the scaled counter values would ostensibly need to be placed
-         into different (larger) histogram buckets, but we keep things simple
-         here and place the scaled cumulative counter value in the bucket
-         corresponding to the scaled minimum counter value.  */
-      lto_gcov_summary.histogram[new_ix].cum_value
-          += apply_scale (saved_profile_info->histogram[h_ix].cum_value,
-                          saved_scale);
-      lto_gcov_summary.histogram[new_ix].num_counters
-          += saved_profile_info->histogram[h_ix].num_counters;
-    }
-
-  /* Watch roundoff errors.  */
-  if (lto_gcov_summary.sum_max < max_runs)
-    lto_gcov_summary.sum_max = max_runs;
+  profile_info = XCNEW (gcov_summary);
+  profile_info->runs = max_runs;
 
   /* If merging already happent at WPA time, we are done.  */
   if (flag_ltrans)
@@ -1785,7 +1690,7 @@ input_symtab (void)
     {
       const char *data;
       size_t len;
-      struct lto_input_block *ib;
+      class lto_input_block *ib;
       vec<symtab_node *> nodes;
 
       ib = lto_create_simple_input_block (file_data, LTO_section_symtab_nodes,
@@ -1813,10 +1718,6 @@ input_symtab (void)
     }
 
   merge_profile_summaries (file_data_vec);
-
-  if (!flag_auto_profile)
-    get_working_sets ();
-
 
   /* Clear out the aux field that was used to store enough state to
      tell which nodes should be overwritten.  */
@@ -1846,7 +1747,7 @@ input_offload_tables (bool do_force_output)
     {
       const char *data;
       size_t len;
-      struct lto_input_block *ib
+      class lto_input_block *ib
 	= lto_create_simple_input_block (file_data, LTO_section_offload_table,
 					 &data, &len);
       if (!ib)
@@ -1900,8 +1801,7 @@ output_cgraph_opt_summary_p (struct cgraph_node *node)
 {
   return ((node->clone_of || node->former_clone_of)
 	  && (node->clone.tree_map
-	      || node->clone.args_to_skip
-	      || node->clone.combined_args_to_skip));
+	      || node->clone.param_adjustments));
 }
 
 /* Output optimization summary for EDGE to OB.  */
@@ -1918,42 +1818,53 @@ output_node_opt_summary (struct output_block *ob,
 			 struct cgraph_node *node,
 			 lto_symtab_encoder_t encoder)
 {
-  unsigned int index;
-  bitmap_iterator bi;
   struct ipa_replace_map *map;
-  struct bitpack_d bp;
   int i;
   struct cgraph_edge *e;
 
-  if (node->clone.args_to_skip)
+  /* TODO: Should this code be moved to ipa-param-manipulation?  */
+  struct bitpack_d bp;
+  bp = bitpack_create (ob->main_stream);
+  bp_pack_value (&bp, (node->clone.param_adjustments != NULL), 1);
+  streamer_write_bitpack (&bp);
+  if (ipa_param_adjustments *adjustments = node->clone.param_adjustments)
     {
-      streamer_write_uhwi (ob, bitmap_count_bits (node->clone.args_to_skip));
-      EXECUTE_IF_SET_IN_BITMAP (node->clone.args_to_skip, 0, index, bi)
-	streamer_write_uhwi (ob, index);
+      streamer_write_uhwi (ob, vec_safe_length (adjustments->m_adj_params));
+      ipa_adjusted_param *adj;
+      FOR_EACH_VEC_SAFE_ELT (adjustments->m_adj_params, i, adj)
+	{
+	  bp = bitpack_create (ob->main_stream);
+	  bp_pack_value (&bp, adj->base_index, IPA_PARAM_MAX_INDEX_BITS);
+	  bp_pack_value (&bp, adj->prev_clone_index, IPA_PARAM_MAX_INDEX_BITS);
+	  bp_pack_value (&bp, adj->op, 2);
+	  bp_pack_value (&bp, adj->param_prefix_index, 2);
+	  bp_pack_value (&bp, adj->prev_clone_adjustment, 1);
+	  bp_pack_value (&bp, adj->reverse, 1);
+	  bp_pack_value (&bp, adj->user_flag, 1);
+	  streamer_write_bitpack (&bp);
+	  if (adj->op == IPA_PARAM_OP_SPLIT
+	      || adj->op == IPA_PARAM_OP_NEW)
+	    {
+	      stream_write_tree (ob, adj->type, true);
+	      if (adj->op == IPA_PARAM_OP_SPLIT)
+		{
+		  stream_write_tree (ob, adj->alias_ptr_type, true);
+		  streamer_write_uhwi (ob, adj->unit_offset);
+		}
+	    }
+	}
+      streamer_write_hwi (ob, adjustments->m_always_copy_start);
+      bp = bitpack_create (ob->main_stream);
+      bp_pack_value (&bp, node->clone.param_adjustments->m_skip_return, 1);
+      streamer_write_bitpack (&bp);
     }
-  else
-    streamer_write_uhwi (ob, 0);
-  if (node->clone.combined_args_to_skip)
-    {
-      streamer_write_uhwi (ob, bitmap_count_bits (node->clone.combined_args_to_skip));
-      EXECUTE_IF_SET_IN_BITMAP (node->clone.combined_args_to_skip, 0, index, bi)
-	streamer_write_uhwi (ob, index);
-    }
-  else
-    streamer_write_uhwi (ob, 0);
+
   streamer_write_uhwi (ob, vec_safe_length (node->clone.tree_map));
   FOR_EACH_VEC_SAFE_ELT (node->clone.tree_map, i, map)
     {
-      /* At the moment we assume all old trees to be PARM_DECLs, because we have no
-         mechanism to store function local declarations into summaries.  */
-      gcc_assert (!map->old_tree);
       streamer_write_uhwi (ob, map->parm_num);
       gcc_assert (EXPR_LOCATION (map->new_tree) == UNKNOWN_LOCATION);
       stream_write_tree (ob, map->new_tree, true);
-      bp = bitpack_create (ob->main_stream);
-      bp_pack_value (&bp, map->replace_p, 1);
-      bp_pack_value (&bp, map->ref_p, 1);
-      streamer_write_bitpack (&bp);
     }
 
   if (lto_symtab_encoder_in_partition_p (encoder, node))
@@ -2005,7 +1916,7 @@ output_cgraph_opt_summary (void)
 
 static void
 input_edge_opt_summary (struct cgraph_edge *edge ATTRIBUTE_UNUSED,
-			struct lto_input_block *ib_main ATTRIBUTE_UNUSED)
+			class lto_input_block *ib_main ATTRIBUTE_UNUSED)
 {
 }
 
@@ -2013,31 +1924,54 @@ input_edge_opt_summary (struct cgraph_edge *edge ATTRIBUTE_UNUSED,
 
 static void
 input_node_opt_summary (struct cgraph_node *node,
-			struct lto_input_block *ib_main,
-			struct data_in *data_in)
+			class lto_input_block *ib_main,
+			class data_in *data_in)
 {
   int i;
   int count;
-  int bit;
-  struct bitpack_d bp;
   struct cgraph_edge *e;
 
-  count = streamer_read_uhwi (ib_main);
-  if (count)
-    node->clone.args_to_skip = BITMAP_GGC_ALLOC ();
-  for (i = 0; i < count; i++)
+  /* TODO: Should this code be moved to ipa-param-manipulation?  */
+  struct bitpack_d bp;
+  bp = streamer_read_bitpack (ib_main);
+  bool have_adjustments = bp_unpack_value (&bp, 1);
+  if (have_adjustments)
     {
-      bit = streamer_read_uhwi (ib_main);
-      bitmap_set_bit (node->clone.args_to_skip, bit);
+      count = streamer_read_uhwi (ib_main);
+      vec<ipa_adjusted_param, va_gc> *new_params = NULL;
+      for (i = 0; i < count; i++)
+	{
+	  ipa_adjusted_param adj;
+	  memset (&adj, 0, sizeof (adj));
+	  bp = streamer_read_bitpack (ib_main);
+	  adj.base_index = bp_unpack_value (&bp, IPA_PARAM_MAX_INDEX_BITS);
+	  adj.prev_clone_index
+	    = bp_unpack_value (&bp, IPA_PARAM_MAX_INDEX_BITS);
+	  adj.op = (enum ipa_parm_op) bp_unpack_value (&bp, 2);
+	  adj.param_prefix_index = bp_unpack_value (&bp, 2);
+	  adj.prev_clone_adjustment = bp_unpack_value (&bp, 1);
+	  adj.reverse = bp_unpack_value (&bp, 1);
+	  adj.user_flag = bp_unpack_value (&bp, 1);
+	  if (adj.op == IPA_PARAM_OP_SPLIT
+	      || adj.op == IPA_PARAM_OP_NEW)
+	    {
+	      adj.type = stream_read_tree (ib_main, data_in);
+	      if (adj.op == IPA_PARAM_OP_SPLIT)
+		{
+		  adj.alias_ptr_type = stream_read_tree (ib_main, data_in);
+		  adj.unit_offset = streamer_read_uhwi (ib_main);
+		}
+	    }
+	  vec_safe_push (new_params, adj);
+	}
+      int always_copy_start = streamer_read_hwi (ib_main);
+      bp = streamer_read_bitpack (ib_main);
+      bool skip_return = bp_unpack_value (&bp, 1);
+      node->clone.param_adjustments
+	= (new (ggc_alloc <ipa_param_adjustments> ())
+	   ipa_param_adjustments (new_params, always_copy_start, skip_return));
     }
-  count = streamer_read_uhwi (ib_main);
-  if (count)
-    node->clone.combined_args_to_skip = BITMAP_GGC_ALLOC ();
-  for (i = 0; i < count; i++)
-    {
-      bit = streamer_read_uhwi (ib_main);
-      bitmap_set_bit (node->clone.combined_args_to_skip, bit);
-    }
+
   count = streamer_read_uhwi (ib_main);
   for (i = 0; i < count; i++)
     {
@@ -2045,11 +1979,7 @@ input_node_opt_summary (struct cgraph_node *node,
 
       vec_safe_push (node->clone.tree_map, map);
       map->parm_num = streamer_read_uhwi (ib_main);
-      map->old_tree = NULL;
       map->new_tree = stream_read_tree (ib_main, data_in);
-      bp = streamer_read_bitpack (ib_main);
-      map->replace_p = bp_unpack_value (&bp, 1);
-      map->ref_p = bp_unpack_value (&bp, 1);
     }
   for (e = node->callees; e; e = e->next_callee)
     input_edge_opt_summary (e, ib_main);
@@ -2069,7 +1999,7 @@ input_cgraph_opt_section (struct lto_file_decl_data *file_data,
   const int cfg_offset = sizeof (struct lto_function_header);
   const int main_offset = cfg_offset + header->cfg_size;
   const int string_offset = main_offset + header->main_size;
-  struct data_in *data_in;
+  class data_in *data_in;
   unsigned int i;
   unsigned int count;
 
@@ -2104,10 +2034,9 @@ input_cgraph_opt_summary (vec<symtab_node *> nodes)
   while ((file_data = file_data_vec[j++]))
     {
       size_t len;
-      const char *data =
-	lto_get_section_data (file_data, LTO_section_cgraph_opt_sum, NULL,
-			      &len);
-
+      const char *data
+	= lto_get_summary_section_data (file_data, LTO_section_cgraph_opt_sum,
+					&len);
       if (data)
 	input_cgraph_opt_section (file_data, data, len, nodes);
     }

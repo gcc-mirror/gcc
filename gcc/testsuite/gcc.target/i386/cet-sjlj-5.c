@@ -3,7 +3,7 @@
 /* { dg-final { scan-assembler-times "endbr32" 2 { target ia32 } } } */
 /* { dg-final { scan-assembler-times "endbr64" 2 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "call	_?setjmp" 1 } } */
-/* { dg-final { scan-assembler-times "call	longjmp" 1 } } */
+/* { dg-final { scan-assembler-times "call	_?longjmp" 1 } } */
 
 #include <stdio.h>
 #include <setjmp.h>

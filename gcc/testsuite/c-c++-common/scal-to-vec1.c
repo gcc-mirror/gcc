@@ -35,9 +35,9 @@ int main (int argc, char *argv[]) {
     f1 = ((int)998769576) + f0; /* { dg-error "conversion of scalar \[^\\n\]* to vector" "scalar to vector" { target { ! int16 } } } */
 
     /* convert.c should take care of this.  */
-    i1 = sfl + i0;      /* { dg-error "can't convert value to a vector|invalid operands" } */
-    i1 = 1.5 + i0;      /* { dg-error "can't convert value to a vector|invalid operands" } */
-    v1 = d + v0;        /* { dg-error "can't convert value to a vector|invalid operands" } */
+    i1 = sfl + i0;      /* { dg-error "cannot convert value to a vector|invalid operands" } */
+    i1 = 1.5 + i0;      /* { dg-error "cannot convert value to a vector|invalid operands" } */
+    v1 = d + v0;        /* { dg-error "cannot convert value to a vector|invalid operands" } */
 
     return 0;
 }

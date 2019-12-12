@@ -1,7 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-linux* && lp64 } } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-O2 -mcpu=power8 -mfloat128" } */
+/* { dg-options "-O2 -mdejagnu-cpu=power8 -mfloat128" } */
 
 #ifndef TYPE
 #define TYPE __float128
@@ -13,7 +12,7 @@ void foo (TYPE *p, TYPE *q)
 #ifndef NO_ASM
   __asm__ (" # %0" : "+r" (r));
 #endif
-  *p = r + r;
+  *p = -r;
 }
 
 /* { dg-final { scan-assembler       "mfvsrd"    } } */

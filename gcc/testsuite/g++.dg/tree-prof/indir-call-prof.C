@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-tree-optimized -fdump-ipa-profile -fdump-ipa-afdo" } */
+/* { dg-options "-O2 -fdump-tree-optimized -fdump-ipa-profile-optimized -fdump-ipa-afdo" } */
 
 struct A {
   A () {}

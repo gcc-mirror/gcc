@@ -1,0 +1,108 @@
+# Copyright (C) 2017-2019 Free Software Foundation, Inc.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+load_lib libphobos-dg.exp
+
+# Immediately exit if target doesn't support shared.
+if { ![is-effective-target shared] } {
+    return
+}
+
+# If a testcase doesn't have special options, use these.
+if ![info exists DEFAULT_CFLAGS] then {
+    set DEFAULT_CFLAGS "-g"
+}
+
+#
+# Build all shared libraries, used as dependencies for other tests.
+#
+
+proc shared_library { source destfile options } {
+    global DEFAULT_DFLAGS
+    global all_libraries
+
+    # Compiling with -fno-gnu-unique as tests call dlopen/dlclose multiple times on the same library.
+    lappend options "additional_flags=$DEFAULT_DFLAGS -fno-gnu-unique -fpic -shared -shared-libphobos"
+
+    set comp_output [libphobos_target_compile "$source" "$destfile" "executable" $options]
+    if ![ string match "" $comp_output ] {
+	fail "libphobos.shared/[file tail $source]"
+	verbose -log $comp_output
+	return 1
+    }
+
+    lappend all_libraries $destfile
+}
+
+# lib.so
+shared_library "$srcdir/$subdir/lib.d" "lib.so" ""
+
+# liblinkdep.so
+shared_library "$srcdir/$subdir/liblinkdep.d" "liblinkdep.so" \
+	[list "additional_flags=-I$srcdir/$subdir lib.so"]
+
+# libloaddep.so
+shared_library "$srcdir/$subdir/libloaddep.d" "libloaddep.so" ""
+
+# lib_13414.so
+shared_library "$srcdir/$subdir/lib_13414.d" "lib_13414.so" ""
+
+# plugin.so
+shared_library "$srcdir/$subdir/plugin.d" "plugin1.so" ""
+shared_library "$srcdir/$subdir/plugin.d" "plugin2.so" ""
+
+# Initialize dg.
+dg-init
+
+# Main loop.
+dg-runtest "$srcdir/$subdir/link.d" "-I$srcdir/$subdir lib.so -shared-libphobos" \
+	"$DEFAULT_DFLAGS"
+
+dg-runtest "$srcdir/$subdir/link_linkdep.d" \
+	"-I$srcdir/$subdir liblinkdep.so lib.so -shared-libphobos" \
+	"$DEFAULT_DFLAGS"
+
+dg-runtest "$srcdir/$subdir/link_loaddep.d" \
+	"-I$srcdir/$subdir libloaddep.so -shared-libphobos" "$DEFAULT_DFLAGS"
+
+# dlopen() tests.
+if [is-effective-target dlopen] {
+    dg-runtest "$srcdir/$subdir/load.d" "-shared-libphobos -ldl" "$DEFAULT_DFLAGS"
+    dg-runtest "$srcdir/$subdir/load_linkdep.d" "-shared-libphobos -ldl" "$DEFAULT_DFLAGS"
+    dg-runtest "$srcdir/$subdir/load_loaddep.d" "-shared-libphobos -ldl" "$DEFAULT_DFLAGS"
+    dg-runtest "$srcdir/$subdir/load_13414.d" "-shared-libphobos -ldl" "$DEFAULT_DFLAGS"
+    dg-runtest "$srcdir/$subdir/finalize.d" "-shared-libphobos -ldl" "$DEFAULT_DFLAGS"
+}
+
+# C program link tests.
+if { [is-effective-target dlopen] && [is-effective-target pthread] } {
+    dg-runtest "$srcdir/$subdir/linkD.c" "lib.so -ldl -pthread" "$DEFAULT_CFLAGS"
+    dg-runtest "$srcdir/$subdir/linkDR.c" "-shared-libphobos -ldl -pthread" "$DEFAULT_CFLAGS"
+    dg-runtest "$srcdir/$subdir/host.c" "-ldl -pthread" "$DEFAULT_CFLAGS"
+
+    # Test requires a command line argument to be passed to the program.
+    set libphobos_run_args "${blddir}/src/.libs/libgphobos.${shlib_ext}"
+    dg-runtest "$srcdir/$subdir/loadDR.c" "-ldl -pthread -g" "$DEFAULT_CFLAGS"
+    set libphobos_run_args ""
+}
+
+# All done.
+dg-finish
+
+# Remove all libraries built before running tests.
+foreach lib $all_libraries {
+    catch "file delete -force -- $lib"
+}

@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-skip-if "Cannot access arbitrary stack frames." { arm*-*-* hppa*-*-* ia64-*-* } }
+// { dg-skip-if "Cannot access arbitrary stack frames." { arm*-*-* hppa*-*-* ia64-*-* csky*-*-* } }
 // { dg-options "-Werror" }
 // { dg-additional-options "-mbackchain" { target s390*-*-* } }
 

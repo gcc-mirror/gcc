@@ -1,5 +1,5 @@
 ;; Machine description for ARM processor synchronization primitives.
-;; Copyright (C) 2010-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2019 Free Software Foundation, Inc.
 ;; Written by Marcus Shawcroft (marcus.shawcroft@arm.com)
 ;; 64bit Atomics by Dave Gilbert (david.gilbert@linaro.org)
 ;;
@@ -70,20 +70,19 @@
       VUNSPEC_LDA))]
   "TARGET_HAVE_LDACQ"
   {
-    enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
-    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_release (model))
+    if (aarch_mm_needs_acquire (operands[2]))
       {
 	if (TARGET_THUMB1)
-	  return \"ldr<sync_sfx>\\t%0, %1\";
+	  return "lda<sync_sfx>\t%0, %1";
 	else
-	  return \"ldr<sync_sfx>%?\\t%0, %1\";
+	  return "lda<sync_sfx>%?\t%0, %1";
       }
     else
       {
 	if (TARGET_THUMB1)
-	  return \"lda<sync_sfx>\\t%0, %1\";
+	  return "ldr<sync_sfx>\t%0, %1";
 	else
-	  return \"lda<sync_sfx>%?\\t%0, %1\";
+	  return "ldr<sync_sfx>%?\t%0, %1";
       }
   }
   [(set_attr "arch" "32,v8mb,any")
@@ -97,20 +96,19 @@
       VUNSPEC_STL))]
   "TARGET_HAVE_LDACQ"
   {
-    enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
-    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_acquire (model))
+    if (aarch_mm_needs_release (operands[2]))
       {
 	if (TARGET_THUMB1)
-	  return \"str<sync_sfx>\t%1, %0\";
+	  return "stl<sync_sfx>\t%1, %0";
 	else
-	  return \"str<sync_sfx>%?\t%1, %0\";
+	  return "stl<sync_sfx>%?\t%1, %0";
       }
     else
       {
 	if (TARGET_THUMB1)
-	  return \"stl<sync_sfx>\t%1, %0\";
+	  return "str<sync_sfx>\t%1, %0";
 	else
-	  return \"stl<sync_sfx>%?\t%1, %0\";
+	  return "str<sync_sfx>%?\t%1, %0";
       }
   }
   [(set_attr "arch" "32,v8mb,any")
@@ -172,11 +170,11 @@
 })
 
 (define_expand "atomic_compare_and_swap<mode>"
-  [(match_operand:SI 0 "s_register_operand" "")		;; bool out
-   (match_operand:QHSD 1 "s_register_operand" "")	;; val out
-   (match_operand:QHSD 2 "mem_noofs_operand" "")	;; memory
-   (match_operand:QHSD 3 "general_operand" "")		;; expected
-   (match_operand:QHSD 4 "s_register_operand" "")	;; desired
+  [(match_operand:SI 0 "s_register_operand")		;; bool out
+   (match_operand:QHSD 1 "s_register_operand")		;; val out
+   (match_operand:QHSD 2 "mem_noofs_operand")		;; memory
+   (match_operand:QHSD 3 "general_operand")		;; expected
+   (match_operand:QHSD 4 "s_register_operand")		;; desired
    (match_operand:SI 5 "const_int_operand")		;; is_weak
    (match_operand:SI 6 "const_int_operand")		;; mod_s
    (match_operand:SI 7 "const_int_operand")]		;; mod_f
@@ -188,7 +186,7 @@
 
 ;; Constraints of this pattern must be at least as strict as those of the
 ;; cbranchsi operations in thumb1.md and aim to be as permissive.
-(define_insn_and_split "atomic_compare_and_swap<CCSI:arch><NARROW:mode>_1"
+(define_insn_and_split "@atomic_compare_and_swap<CCSI:arch><NARROW:mode>_1"
   [(set (match_operand:CCSI 0 "cc_register_operand" "=&c,&l,&l,&l")	;; bool out
 	(unspec_volatile:CCSI [(const_int 0)] VUNSPEC_ATOMIC_CAS))
    (set (match_operand:SI 1 "s_register_operand" "=&r,&l,&0,&l*h")	;; val out
@@ -203,7 +201,7 @@
 	   (match_operand:SI 7 "const_int_operand")]		;; mod_f
 	  VUNSPEC_ATOMIC_CAS))
    (clobber (match_scratch:SI 8 "=&r,X,X,X"))]
-  "<sync_predtab>"
+  "<NARROW:sync_predtab>"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -220,21 +218,21 @@
 
 ;; Constraints of this pattern must be at least as strict as those of the
 ;; cbranchsi operations in thumb1.md and aim to be as permissive.
-(define_insn_and_split "atomic_compare_and_swap<CCSI:arch><SIDI:mode>_1"
+(define_insn_and_split "@atomic_compare_and_swap<CCSI:arch><SIDI:mode>_1"
   [(set (match_operand:CCSI 0 "cc_register_operand" "=&c,&l,&l,&l")	;; bool out
 	(unspec_volatile:CCSI [(const_int 0)] VUNSPEC_ATOMIC_CAS))
    (set (match_operand:SIDI 1 "s_register_operand" "=&r,&l,&0,&l*h")	;; val out
 	(match_operand:SIDI 2 "mem_noofs_operand" "+Ua,Ua,Ua,Ua"))	;; memory
    (set (match_dup 2)
 	(unspec_volatile:SIDI
-	  [(match_operand:SIDI 3 "<cas_cmp_operand>" "<cas_cmp_str>,lIL*h,J,*r") ;; expect
+	  [(match_operand:SIDI 3 "<SIDI:cas_cmp_operand>" "<SIDI:cas_cmp_str>,lIL*h,J,*r") ;; expect
 	   (match_operand:SIDI 4 "s_register_operand" "r,r,r,r")	;; desired
 	   (match_operand:SI 5 "const_int_operand")		;; is_weak
 	   (match_operand:SI 6 "const_int_operand")		;; mod_s
 	   (match_operand:SI 7 "const_int_operand")]		;; mod_f
 	  VUNSPEC_ATOMIC_CAS))
    (clobber (match_scratch:SI 8 "=&r,X,X,X"))]
-  "<sync_predtab>"
+  "<SIDI:sync_predtab>"
   "#"
   "&& reload_completed"
   [(const_int 0)]

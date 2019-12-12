@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                      Copyright (C) 1999-2018, AdaCore                    --
+--                      Copyright (C) 1999-2019, AdaCore                    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,6 +45,18 @@ package body GNAT.Traceback is
    is
    begin
       System.Traceback.Call_Chain (Traceback, Traceback'Length, Len);
+   end Call_Chain;
+
+   function Call_Chain
+     (Max_Len     : Positive;
+      Skip_Frames : Natural := 1) return Tracebacks_Array
+   is
+      Traceback : Tracebacks_Array (1 .. Max_Len);
+      Len       : Natural;
+   begin
+      System.Traceback.Call_Chain
+        (Traceback, Max_Len, Len, Skip_Frames => Skip_Frames + 1);
+      return Traceback (1 .. Len);
    end Call_Chain;
 
 end GNAT.Traceback;

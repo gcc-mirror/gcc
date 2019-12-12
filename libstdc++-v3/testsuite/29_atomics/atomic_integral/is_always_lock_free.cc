@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2018 Free Software Foundation, Inc.
+// Copyright (C) 2016-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,5 +39,8 @@ static_assert( check<unsigned long>(ATOMIC_LONG_LOCK_FREE) );
 static_assert( check<long long>(ATOMIC_LLONG_LOCK_FREE) );
 static_assert( check<unsigned long long>(ATOMIC_LLONG_LOCK_FREE) );
 static_assert( check<wchar_t>(ATOMIC_WCHAR_T_LOCK_FREE) );
+#ifdef _GLIBCXX_USE_CHAR8_T
+static_assert( check<char8_t>(ATOMIC_CHAR8_T_LOCK_FREE) );
+#endif
 static_assert( check<char16_t>(ATOMIC_CHAR16_T_LOCK_FREE) );
 static_assert( check<char32_t>(ATOMIC_CHAR32_T_LOCK_FREE) );

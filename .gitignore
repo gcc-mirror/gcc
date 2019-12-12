@@ -36,6 +36,8 @@ TAGS.sub
 .lvimrc
 
 .clang-format
+.clangd
+compile_commands.json
 
 .gdbinit
 .gdb_history

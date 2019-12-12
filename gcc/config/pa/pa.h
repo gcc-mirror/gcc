@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the HP Spectrum.
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) of Cygnus Support
    and Tim Moore (moore@defmacro.cs.utah.edu) of the Center for
    Software Science at the University of Utah.
@@ -666,7 +666,6 @@ struct hppa_args {int words, nargs_prototype, incoming, indirect; };
   (*targetm.asm_out.internal_label) (FILE, FUNC_BEGIN_PROLOG_LABEL, LABEL)
 
 #define PROFILE_HOOK(label_no) hppa_profile_hook (label_no)
-void hppa_profile_hook (int label_no);
 
 /* The profile counter if emitted must come before the prologue.  */
 #define PROFILE_BEFORE_PROLOGUE 1
@@ -689,7 +688,7 @@ extern int may_call_alloca;
 
 /* Length in units of the trampoline for entering a nested function.  */
 
-#define TRAMPOLINE_SIZE (TARGET_64BIT ? 72 : 52)
+#define TRAMPOLINE_SIZE (TARGET_64BIT ? 72 : 64)
 
 /* Alignment required by the trampoline.  */
 
@@ -1143,21 +1142,23 @@ do {									     \
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)  \
   pa_output_ascii ((FILE), (P), (SIZE))
 
-/* Jump tables are always placed in the text section.  Technically, it
-   is possible to put them in the readonly data section.  This has the
-   benefit of getting the table out of .text and reducing branch lengths
-   as a result.
+/* Jump tables are always placed in the text section.  We have to do
+   this for the HP-UX SOM target as we can't switch sections in the
+   middle of a function.
 
-   The downside is that an additional insn (addil) is needed to access
+   On ELF targets, it is possible to put them in the readonly-data section.
+   This would get the table out of .text and reduce branch lengths.
+
+   A downside is that an additional insn (addil) is needed to access
    the table when generating PIC code.  The address difference table
-   also has to use 32-bit pc-relative relocations.  Currently, GAS does
-   not support these relocations, although it is easily modified to do
-   this operation.
+   also has to use 32-bit pc-relative relocations.
 
    The table entries need to look like "$L1+(.+8-$L0)-$PIC_pcrel$0"
    when using ELF GAS.  A simple difference can be used when using
-   SOM GAS or the HP assembler.  The final downside is GDB complains
-   about the nesting of the label for the table when debugging.  */
+   the HP assembler.
+
+   The final downside is GDB complains about the nesting of the label
+   for the table.  */
 
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
@@ -1291,12 +1292,17 @@ do {									     \
 #endif
 
 /* The maximum offset in bytes for a PA 1.X pc-relative call to the
-   head of the preceding stub table.  The selected offsets have been
-   chosen so that approximately one call stub is allocated for every
-   86.7 instructions.  A long branch stub is two instructions when
-   not generating PIC code.  For HP-UX and ELF targets, PIC stubs are
-   seven and four instructions, respectively.  */  
-#define MAX_PCREL17F_OFFSET \
-  (flag_pic ? (TARGET_HPUX ? 198164 : 221312) : 240000)
+   head of the preceding stub table.  A long branch stub is two or three
+   instructions for non-PIC and PIC, respectively.  Import stubs are
+   seven and five instructions for HP-UX and ELF targets, respectively.
+   The default stub group size for ELF targets is 217856 bytes.
+   FIXME: We need an option to set the maximum offset.  */  
+#define MAX_PCREL17F_OFFSET (TARGET_HPUX ? 198164 : 217856)
 
 #define NEED_INDICATE_EXEC_STACK 0
+
+/* Target CPU versions for D.  */
+#define TARGET_D_CPU_VERSIONS pa_d_target_versions
+
+/* Output default function prologue for hpux.  */
+#define TARGET_ASM_FUNCTION_PROLOGUE pa_output_function_prologue

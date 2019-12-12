@@ -1,5 +1,6 @@
 /* PR inline-asm/84941 */
 /* { dg-do compile } */
+/* { dg-skip-if "asm operand has impossible constraints" { hppa*-*-* } } */
 /* { dg-options "-O2" } */
 
 void

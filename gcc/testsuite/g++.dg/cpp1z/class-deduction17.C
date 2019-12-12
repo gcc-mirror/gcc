@@ -1,4 +1,4 @@
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 #include <initializer_list>
 template <class T>

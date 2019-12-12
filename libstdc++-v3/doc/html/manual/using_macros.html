@@ -103,9 +103,6 @@
       <code class="code">_GLIBCXX_ASSERTIONS</code> has a non-zero value, otherwise to zero.
       When defined to a non-zero value, it enables extra error checking and
       assertions in the parallel mode.
-      </p></dd><dt><span class="term"><code class="code">_GLIBCXX_PROFILE</code></span></dt><dd><p>Undefined by default. When defined, compiles user code
-	using the <a class="link" href="profile_mode.html" title="Chapter 19. Profile Mode">profile
-	mode</a>.
       </p></dd><dt><span class="term"><code class="code">__STDCPP_WANT_MATH_SPEC_FUNCS__</code></span></dt><dd><p>Undefined by default. When defined to a non-zero integer constant,
 	enables support for ISO/IEC 29124 Special Math Functions.
       </p></dd><dt><span class="term"><code class="code">_GLIBCXX_SANITIZE_VECTOR</code></span></dt><dd><p>
@@ -116,7 +113,8 @@
         enabled for
         <code class="classname">std::vector&lt;T, std::allocator&lt;T&gt;&gt;</code>
         and only when <code class="classname">std::allocator</code> is derived from
-        <a class="xref" href="memory.html#allocator.impl" title="Implementation">the section called “Implementation”</a>. The annotations
+        <a class="link" href="memory.html#allocator.ext" title="Extension Allocators"><code class="classname">new_allocator</code>
+        or <code class="classname">malloc_allocator</code></a>. The annotations
         must be present on all vector operations or none, so this macro must
         be defined to the same value for all translation units that create,
         destroy or modify vectors.

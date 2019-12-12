@@ -12,7 +12,7 @@ procedure(), pointer :: bar
 integer, pointer :: bari
 call c_f_procpointer(fptr,bar) ! { dg-error "Argument CPTR at .1. to C_F_PROCPOINTER shall have the type TYPE.C_FUNPTR." }
 call c_f_pointer(fun,bari) ! { dg-error "Argument CPTR at .1. to C_F_POINTER shall have the type TYPE.C_PTR." }
-fun = fptr ! { dg-error "Can't convert TYPE.c_ptr. to TYPE.c_funptr." }
+fun = fptr ! { dg-error "Cannot convert TYPE.c_ptr. to TYPE.c_funptr." }
 end
 
 subroutine test()

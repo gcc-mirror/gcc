@@ -1,3 +1,72 @@
+2019-08-18  C.G. Dogan <gcc+cgdogan.00@gmail.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/83531
+	* inclhack.def (darwin_api_availability): New, strip leading
+	underscores from API_XXXX defines.
+	* fixincl.x: Regenerate.
+	* tests/base/os/availability.h: New file.
+
+2019-06-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* inclhack.def: Replace the complex test using __STRICT_ANSI__ and
+	__STDC_VERSION__ with a test using __DARWIN_NO_LONG_LONG.
+	Ensure that the top level math.h uses <> to wrap included headers
+	rather than "".
+	* fixincl.x: Regenerated.
+	* tests/base/architecture/ppc/math.h: Update test to include the
+	__DARWIN_NO_LONG_LONG case.
+
+2019-06-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* inclhack.def: Guard __has_attribute and __has_extension in
+	os/base.h.
+	Guard Apple blocks syntax in dispatch/object.h.
+	* fixincl.x: Regenerate.
+	* tests/base/dispatch/object.h: New file.
+	* tests/base/os/base.h: New file.
+
+2019-05-11  Iain Sandoe  <iain@sandoe.co.uk>
+	PR target/90379
+	PR bootstrap/89864
+	* inclhack.def (darwin_ucred__Atomic): Do not supply test_text
+	for wrap fixes.
+	* fixincl.x: Regenerated.
+
+2019-04-18  Erik Schnetter  <schnetter@gmail.com>
+	  Jakub Jelinek  <jakub@redhat.com>
+	  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR bootstrap/89864
+	* inclhack.def (darwin_ucred__Atomic): New, work around _Atomic keyword
+	use in headers included by C++.
+	* fixincl.x: Regenerated.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* configure.ac: Remove AC_PREREQ.
+	* aclocal.m4, configure: Regenerate.
+
+2018-10-16  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* inclhack.def (AAB_vxworks_regs_vxtypes): Add unconditional
+	include of vxCpu.h, guard include of vxTypesOld.h by
+	!_ASMLANGUAGE.
+	* fixincl.x: Regenerate.
+
+2018-09-03  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* inclhack.def (vxworks_ioctl_macro): Remove parentheses from
+	expansion of ioctl macro.
+	* fixincl.x: Regenerate.
+
+2018-07-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* inclhack.def (aix_unistd): New.
+	* fixincl.x: Regenerate.
+	* tests/base/unistd.h [AIX_UNISTD_CHECK]: New test.
+
 2018-06-27  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
 
 	* tests/base/ioLib.h [VXWORKS_IOLIB_INCLUDE_UNISTD_CHECK]: Add
@@ -1250,7 +1319,7 @@
 	* tests/base/math.h: Update.
 
 2007-01-05  Bruce Korb <bkorb@gnu.org>, 
-            Daniel Franke <franke.daniel@gmail.com>
+	    Daniel Franke <franke.daniel@gmail.com>
 
 	PR target/30008
 	* fixincl.tpl (List): separate file name patterns with a NUL byte instead
@@ -1466,7 +1535,7 @@
 	* fixincl.c: Don't include <sys/wait.h> if SEPARATE_FIX_PROC.
 
 2005-05-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Joseph S. Myers  <joseph@codesourcery.com>
+	    Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR target/19933
 	PR target/21315

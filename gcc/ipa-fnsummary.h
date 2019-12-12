@@ -1,5 +1,5 @@
 /* IPA function body analysis.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-predicate.h"
 
 
-/* Hints are reasons why IPA heuristics should preffer specializing given
+/* Hints are reasons why IPA heuristics should prefer specializing given
    function.  They are represtented as bitmap of the following values.  */
 enum ipa_hints_vals {
   /* When specialization turns indirect call into a direct call,
@@ -48,11 +48,8 @@ enum ipa_hints_vals {
      if functions are in different modules, inlining may not be so important. 
      Set by simple_edge_hints in ipa-inline-analysis.c.   */
   INLINE_HINT_cross_module = 64,
-  /* If array indexes of loads/stores become known there may be room for
-     further optimization.  */
-  INLINE_HINT_array_index = 128,
   /* We know that the callee is hot by profile.  */
-  INLINE_HINT_known_hot = 256
+  INLINE_HINT_known_hot = 128
 };
 
 typedef int ipa_hints;
@@ -72,8 +69,9 @@ struct agg_position_info
 /* Representation of function body size and time depending on the call
    context.  We keep simple array of record, every containing of predicate
    and time/size to account.  */
-struct GTY(()) size_time_entry
+class GTY(()) size_time_entry
 {
+public:
   /* Predicate for code to be executed.  */
   predicate exec_predicate;
   /* Predicate for value to be constant and optimized out in a specialized copy.
@@ -84,32 +82,56 @@ struct GTY(()) size_time_entry
   sreal GTY((skip)) time;
 };
 
-/* Function inlining information.  */
-struct GTY(()) ipa_fn_summary
+/* Summary about function and stack frame sizes.  We keep this info 
+   for inline clones and also for WPA streaming. For this reason this is not
+   part of ipa_fn_summary which exists only for offline functions.  */
+class ipa_size_summary
 {
+public:
+  /* Estimated stack frame consumption by the function.  */
+  HOST_WIDE_INT estimated_self_stack_size;
+  /* Size of the function body.  */
+  int self_size;
+  /* Estimated size of the function after inlining.  */
+  int size;
+
+  ipa_size_summary ()
+  : estimated_self_stack_size (0), self_size (0), size (0)
+  {
+  }
+  /* Copy constructor.  */
+  ipa_size_summary (const ipa_size_summary &s)
+  : estimated_self_stack_size (0), self_size (s.self_size), size (s.size)
+  {
+  }
+};
+
+/* Function inlining information.  */
+class GTY(()) ipa_fn_summary
+{
+public:
   /* Keep all field empty so summary dumping works during its computation.
      This is useful for debugging.  */
   ipa_fn_summary ()
-    : estimated_self_stack_size (0), self_size (0), min_size (0),
+    : min_size (0),
       inlinable (false), single_caller (false),
       fp_expressions (false), estimated_stack_size (false),
-      stack_frame_offset (false), time (0), size (0), conds (NULL),
-      size_time_table (NULL), loop_iterations (NULL), loop_stride (NULL),
-      array_index (NULL), growth (0), scc_no (0)
+      time (0), conds (NULL),
+      size_time_table (NULL), call_size_time_table (NULL), loop_iterations (NULL),
+      loop_stride (NULL), growth (0), scc_no (0)
   {
   }
 
   /* Copy constructor.  */
   ipa_fn_summary (const ipa_fn_summary &s)
-    : estimated_self_stack_size (s.estimated_self_stack_size),
-    self_size (s.self_size), min_size (s.min_size),
+    : min_size (s.min_size),
     inlinable (s.inlinable), single_caller (s.single_caller),
     fp_expressions (s.fp_expressions),
     estimated_stack_size (s.estimated_stack_size),
-    stack_frame_offset (s.stack_frame_offset), time (s.time), size (s.size),
-    conds (s.conds), size_time_table (s.size_time_table),
+    time (s.time), conds (s.conds), size_time_table (s.size_time_table),
+    call_size_time_table (NULL),
     loop_iterations (s.loop_iterations), loop_stride (s.loop_stride),
-    array_index (s.array_index), growth (s.growth), scc_no (s.scc_no)
+    growth (s.growth), scc_no (s.scc_no)
   {}
 
   /* Default constructor.  */
@@ -117,10 +139,6 @@ struct GTY(()) ipa_fn_summary
 
   /* Information about the function body itself.  */
 
-  /* Estimated stack frame consumption by the function.  */
-  HOST_WIDE_INT estimated_self_stack_size;
-  /* Size of the function body.  */
-  int self_size;
   /* Minimal size increase after inlining.  */
   int min_size;
 
@@ -138,16 +156,18 @@ struct GTY(()) ipa_fn_summary
 
   /* Estimated stack frame consumption by the function.  */
   HOST_WIDE_INT estimated_stack_size;
-  /* Expected offset of the stack frame of function.  */
-  HOST_WIDE_INT stack_frame_offset;
-  /* Estimated size of the function after inlining.  */
+  /* Estimated runtime of function after inlining.  */
   sreal GTY((skip)) time;
-  int size;
 
   /* Conditional size/time information.  The summaries are being
      merged during inlining.  */
   conditions conds;
+  /* Normal code is acocunted in size_time_table, while calls are
+     accounted in call_size_time_table.  This is because calls
+     are often adjusted by IPA optimizations and thus this summary
+     is generated from call summary information when needed.  */
   vec<size_time_entry, va_gc> *size_time_table;
+  vec<size_time_entry, va_gc> *call_size_time_table;
 
   /* Predicate on when some loop in the function becomes to have known
      bounds.   */
@@ -155,8 +175,6 @@ struct GTY(()) ipa_fn_summary
   /* Predicate on when some loop in the function becomes to have known
      stride.   */
   predicate * GTY((skip)) loop_stride;
-  /* Predicate on when some array indexes become constants.  */
-  predicate * GTY((skip)) array_index;
   /* Estimated growth for inlining all copies of the function before start
      of small functions inlining.
      This value will get out of date as the callers are duplicated, but
@@ -167,22 +185,26 @@ struct GTY(()) ipa_fn_summary
   int scc_no;
 
   /* Record time and size under given predicates.  */
-  void account_size_time (int, sreal, const predicate &, const predicate &);
+  void account_size_time (int, sreal, const predicate &, const predicate &,
+		  	  bool call = false);
 
   /* We keep values scaled up, so fractional sizes can be accounted.  */
   static const int size_scale = 2;
+  /* Maximal size of size_time_table before we start to be conservative.  */
+  static const int max_size_time_table_size = 256;
 };
 
-class GTY((user)) ipa_fn_summary_t: public function_summary <ipa_fn_summary *>
+class GTY((user)) ipa_fn_summary_t:
+  public fast_function_summary <ipa_fn_summary *, va_gc>
 {
 public:
-  ipa_fn_summary_t (symbol_table *symtab, bool ggc):
-    function_summary <ipa_fn_summary *> (symtab, ggc) {}
+  ipa_fn_summary_t (symbol_table *symtab):
+    fast_function_summary <ipa_fn_summary *, va_gc> (symtab) {}
 
   static ipa_fn_summary_t *create_ggc (symbol_table *symtab)
   {
-    struct ipa_fn_summary_t *summary = new (ggc_alloc <ipa_fn_summary_t> ())
-      ipa_fn_summary_t(symtab, true);
+    class ipa_fn_summary_t *summary
+      = new (ggc_alloc_no_dtor<ipa_fn_summary_t> ()) ipa_fn_summary_t (symtab);
     summary->disable_insertion_hook ();
     return summary;
   }
@@ -200,11 +222,31 @@ public:
 			  ipa_fn_summary *src_data, ipa_fn_summary *dst_data);
 };
 
-extern GTY(()) function_summary <ipa_fn_summary *> *ipa_fn_summaries;
+extern GTY(()) fast_function_summary <ipa_fn_summary *, va_gc>
+  *ipa_fn_summaries;
+
+class ipa_size_summary_t:
+  public fast_function_summary <ipa_size_summary *, va_gc>
+{
+public:
+  ipa_size_summary_t (symbol_table *symtab):
+    fast_function_summary <ipa_size_summary *, va_gc> (symtab) {}
+
+  static ipa_size_summary_t *create_ggc (symbol_table *symtab)
+  {
+    class ipa_size_summary_t *summary = new (ggc_alloc <ipa_size_summary_t> ())
+      ipa_size_summary_t (symtab);
+    summary->disable_insertion_hook ();
+    return summary;
+  }
+};
+extern fast_function_summary <ipa_size_summary *, va_heap>
+  *ipa_size_summaries;
 
 /* Information kept about callgraph edges.  */
-struct ipa_call_summary
+class ipa_call_summary
 {
+public:
   /* Keep all field empty so summary dumping works during its computation.
      This is useful for debugging.  */
   ipa_call_summary ()
@@ -236,11 +278,11 @@ struct ipa_call_summary
   bool is_return_callee_uncaptured;
 };
 
-class ipa_call_summary_t: public call_summary <ipa_call_summary *>
+class ipa_call_summary_t: public fast_call_summary <ipa_call_summary *, va_heap>
 {
 public:
-  ipa_call_summary_t (symbol_table *symtab, bool ggc):
-    call_summary <ipa_call_summary *> (symtab, ggc) {}
+  ipa_call_summary_t (symbol_table *symtab):
+    fast_call_summary <ipa_call_summary *, va_heap> (symtab) {}
 
   /* Hook that is called by summary when an edge is duplicated.  */
   virtual void duplicate (cgraph_edge *src, cgraph_edge *dst,
@@ -248,7 +290,58 @@ public:
 			  ipa_call_summary *dst_data);
 };
 
-extern call_summary <ipa_call_summary *> *ipa_call_summaries;
+/* This object describe a context of call.  That is a summary of known
+   information about its parameters.  Main purpose of this context is
+   to give more realistic esitmations of function runtime, size and
+   inline hints.  */
+class ipa_call_context
+{
+public:
+  ipa_call_context (cgraph_node *node,
+      		    clause_t possible_truths,
+		    clause_t nonspec_possible_truths,
+		    vec<tree> known_vals,
+		    vec<ipa_polymorphic_call_context> known_contexts,
+		    vec<ipa_agg_value_set> known_aggs,
+		    vec<inline_param_summary> m_inline_param_summary);
+  ipa_call_context ()
+  : m_node(NULL)
+  {
+  }
+  void estimate_size_and_time (int *ret_size, int *ret_min_size,
+			       sreal *ret_time,
+			       sreal *ret_nonspecialized_time,
+			       ipa_hints *ret_hints);
+  void duplicate_from (const ipa_call_context &ctx);
+  void release (bool all = false);
+  bool equal_to (const ipa_call_context &);
+  bool exists_p ()
+  {
+    return m_node != NULL;
+  }
+private:
+  /* Called function.  */
+  cgraph_node *m_node;
+  /* Clause describing what predicate conditionals can be satisfied
+     in this context if function is inlined/specialised.  */
+  clause_t m_possible_truths;
+  /* Clause describing what predicate conditionals can be satisfied
+     in this context if function is kept offline.  */
+  clause_t m_nonspec_possible_truths;
+  /* Inline summary maintains info about change probabilities.  */
+  vec<inline_param_summary> m_inline_param_summary;
+
+  /* The following is used only to resolve indirect calls.  */
+
+  /* Vector describing known values of parameters.  */
+  vec<tree> m_known_vals;
+  /* Vector describing known polymorphic call contexts.  */
+  vec<ipa_polymorphic_call_context> m_known_contexts;
+  /* Vector describing known aggregate values.  */
+  vec<ipa_agg_value_set> m_known_aggs;
+};
+
+extern fast_call_summary <ipa_call_summary *, va_heap> *ipa_call_summaries;
 
 /* In ipa-fnsummary.c  */
 void ipa_debug_fn_summary (struct cgraph_node *);
@@ -256,38 +349,30 @@ void ipa_dump_fn_summaries (FILE *f);
 void ipa_dump_fn_summary (FILE *f, struct cgraph_node *node);
 void ipa_dump_hints (FILE *f, ipa_hints);
 void ipa_free_fn_summary (void);
+void ipa_free_size_summary (void);
 void inline_analyze_function (struct cgraph_node *node);
 void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
 					vec<tree>,
 					vec<ipa_polymorphic_call_context>,
-					vec<ipa_agg_jump_function_p>,
+					vec<ipa_agg_value_set>,
 					int *, sreal *, sreal *,
 				        ipa_hints *);
 void ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge);
-void ipa_update_overall_fn_summary (struct cgraph_node *node);
+void ipa_update_overall_fn_summary (struct cgraph_node *node, bool reset = true);
 void compute_fn_summary (struct cgraph_node *, bool);
 
 
-void evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
+void evaluate_properties_for_edge (struct cgraph_edge *e,
+	       		           bool inline_p,
 				   clause_t *clause_ptr,
 				   clause_t *nonspec_clause_ptr,
 				   vec<tree> *known_vals_ptr,
 				   vec<ipa_polymorphic_call_context>
 				   *known_contexts_ptr,
-				   vec<ipa_agg_jump_function_p> *);
-void estimate_node_size_and_time (struct cgraph_node *node,
-				  clause_t possible_truths,
-				  clause_t nonspec_possible_truths,
-				  vec<tree> known_vals,
-				  vec<ipa_polymorphic_call_context>,
-				  vec<ipa_agg_jump_function_p> known_aggs,
-				  int *ret_size, int *ret_min_size,
-				  sreal *ret_time,
-				  sreal *ret_nonspecialized_time,
-				  ipa_hints *ret_hints,
-				  vec<inline_param_summary>
-				  inline_param_summary);
+				   vec<ipa_agg_value_set> *);
 
 void ipa_fnsummary_c_finalize (void);
+HOST_WIDE_INT ipa_get_stack_frame_offset (struct cgraph_node *node);
+void ipa_remove_from_growth_caches (struct cgraph_edge *edge);
 
 #endif /* GCC_IPA_FNSUMMARY_H */

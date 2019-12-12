@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,6 +37,8 @@
  * @file hash_prime_size_policy_imp.hpp
  * Contains a resize size policy implementation.
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 #pragma GCC system_header
 
@@ -159,3 +161,4 @@ get_nearest_smaller_size(size_type n) const
     return m_start_size;
   return *p_lower;
 }
+#endif

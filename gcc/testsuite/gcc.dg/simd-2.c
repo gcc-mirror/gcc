@@ -33,10 +33,10 @@ hanneke ()
   foo = a; /* { dg-error "incompatible types when assigning" } */
 
   /* Casted assignment between scalar and SIMD of same size.  */
-  foo = (typeof (foo)) foo2; /* { dg-error "aggregate value used where a float was expected" } */
+  foo = (typeof (foo)) foo2; /* { dg-error "aggregate value used where a floating-point was expected" } */
 
   /* Casted assignment between scalar and SIMD of different size.  */
-  foo1 = (typeof (foo1)) foo2; /* { dg-error "aggregate value used where a float was expected" } */
+  foo1 = (typeof (foo1)) foo2; /* { dg-error "aggregate value used where a floating-point was expected" } */
 
   /* Operators on compatible SIMD types.  */
   a += b + b;

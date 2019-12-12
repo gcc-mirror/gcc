@@ -1,5 +1,5 @@
 /* Output routines for graphical representation.
-   Copyright (C) 1998-2018 Free Software Foundation, Inc.
+   Copyright (C) 1998-2019 Free Software Foundation, Inc.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1998.
    Rewritten for DOT output by Steven Bosscher, 2012.
 
@@ -52,10 +52,17 @@ open_graph_file (const char *base, const char *mode)
 
   fp = fopen (buf, mode);
   if (fp == NULL)
-    fatal_error (input_location, "can%'t open %s: %m", buf);
+    fatal_error (input_location, "cannot open %s: %m", buf);
 
   return fp;
 }
+
+/* Disable warnings about quoting issues in the pp_xxx calls below
+   that (intentionally) don't follow GCC diagnostic conventions.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
 
 /* Draw a basic block BB belonging to the function with FUNCDEF_NO
    as its unique number.  */
@@ -190,7 +197,7 @@ draw_cfg_nodes_no_loops (pretty_printer *pp, struct function *fun)
 
 static void
 draw_cfg_nodes_for_loop (pretty_printer *pp, int funcdef_no,
-			 struct loop *loop)
+			 class loop *loop)
 {
   basic_block *body;
   unsigned int i;
@@ -210,7 +217,7 @@ draw_cfg_nodes_for_loop (pretty_printer *pp, int funcdef_no,
 	       fillcolors[(loop_depth (loop) - 1) % 3],
 	       loop->num);
 
-  for (struct loop *inner = loop->inner; inner; inner = inner->next)
+  for (class loop *inner = loop->inner; inner; inner = inner->next)
     draw_cfg_nodes_for_loop (pp, funcdef_no, inner);
 
   if (loop->header == NULL)
@@ -381,3 +388,7 @@ finish_graph_dump_file (const char *base)
   end_graph_dump (fp);
   fclose (fp);
 }
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif

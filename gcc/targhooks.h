@@ -1,5 +1,5 @@
 /* Default target hook functions.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -40,7 +40,9 @@ extern machine_mode default_cc_modes_compatible (machine_mode,
 extern bool default_return_in_memory (const_tree, const_tree);
 
 extern rtx default_expand_builtin_saveregs (void);
-extern void default_setup_incoming_varargs (cumulative_args_t, machine_mode, tree, int *, int);
+extern void default_setup_incoming_varargs (cumulative_args_t,
+					    const function_arg_info &,
+					    int *, int);
 extern rtx default_builtin_setjmp_frame_value (void);
 extern bool default_pretend_outgoing_varargs_named (cumulative_args_t);
 
@@ -63,9 +65,9 @@ extern tree default_cxx_guard_type (void);
 extern tree default_cxx_get_cookie_size (tree);
 
 extern bool hook_pass_by_reference_must_pass_in_stack
-  (cumulative_args_t, machine_mode mode, const_tree, bool);
+  (cumulative_args_t, const function_arg_info &);
 extern bool hook_callee_copies_named
-  (cumulative_args_t ca, machine_mode, const_tree, bool);
+  (cumulative_args_t ca, const function_arg_info &);
 
 extern void default_print_operand (FILE *, rtx, int);
 extern void default_print_operand_address (FILE *, machine_mode, rtx);
@@ -85,6 +87,7 @@ extern bool default_fixed_point_supported_p (void);
 
 extern bool default_has_ifunc_p (void);
 
+extern bool default_predict_doloop_p (class loop *);
 extern const char * default_invalid_within_doloop (const rtx_insn *);
 
 extern tree default_builtin_vectorized_function (unsigned int, tree, tree);
@@ -102,7 +105,7 @@ extern HOST_WIDE_INT constant_alignment_word_strings (const_tree,
 						      HOST_WIDE_INT);
 extern HOST_WIDE_INT default_vector_alignment (const_tree);
 
-extern HOST_WIDE_INT default_preferred_vector_alignment (const_tree);
+extern poly_uint64 default_preferred_vector_alignment (const_tree);
 extern bool default_builtin_vector_alignment_reachable (const_tree, bool);
 extern bool
 default_builtin_support_vector_misalignment (machine_mode mode,
@@ -110,18 +113,21 @@ default_builtin_support_vector_misalignment (machine_mode mode,
 					     int, bool);
 extern machine_mode default_preferred_simd_mode (scalar_mode mode);
 extern machine_mode default_split_reduction (machine_mode);
-extern void default_autovectorize_vector_sizes (vector_sizes *);
-extern opt_machine_mode default_get_mask_mode (poly_uint64, poly_uint64);
+extern unsigned int default_autovectorize_vector_modes (vector_modes *, bool);
+extern opt_machine_mode default_vectorize_related_mode (machine_mode,
+							scalar_mode,
+							poly_uint64);
+extern opt_machine_mode default_get_mask_mode (machine_mode);
 extern bool default_empty_mask_is_expensive (unsigned);
-extern void *default_init_cost (struct loop *);
+extern void *default_init_cost (class loop *);
 extern unsigned default_add_stmt_cost (void *, int, enum vect_cost_for_stmt,
-				       struct _stmt_vec_info *, int,
+				       class _stmt_vec_info *, int,
 				       enum vect_cost_model_location);
 extern void default_finish_cost (void *, unsigned *, unsigned *, unsigned *);
 extern void default_destroy_cost_data (void *);
 
 /* OpenACC hooks.  */
-extern bool default_goacc_validate_dims (tree, int [], int);
+extern bool default_goacc_validate_dims (tree, int [], int, unsigned);
 extern int default_goacc_dim_limit (int);
 extern bool default_goacc_fork_join (gcall *, const int [], bool);
 extern void default_goacc_reduction (gcall *);
@@ -132,24 +138,23 @@ extern void default_goacc_reduction (gcall *);
 extern bool hook_bool_CUMULATIVE_ARGS_false (cumulative_args_t);
 extern bool hook_bool_CUMULATIVE_ARGS_true (cumulative_args_t);
 
-extern bool hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false
-  (cumulative_args_t, machine_mode, const_tree, bool);
-extern bool hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
-  (cumulative_args_t, machine_mode, const_tree, bool);
-extern int hook_int_CUMULATIVE_ARGS_mode_tree_bool_0
-  (cumulative_args_t, machine_mode, tree, bool);
+extern bool hook_bool_CUMULATIVE_ARGS_arg_info_false
+  (cumulative_args_t, const function_arg_info &);
+extern bool hook_bool_CUMULATIVE_ARGS_arg_info_true
+  (cumulative_args_t, const function_arg_info &);
+extern int hook_int_CUMULATIVE_ARGS_arg_info_0
+  (cumulative_args_t, const function_arg_info &);
 extern void hook_void_CUMULATIVE_ARGS_tree
   (cumulative_args_t, tree);
 extern const char *hook_invalid_arg_for_unprototyped_fn
   (const_tree, const_tree, const_tree);
 extern void default_function_arg_advance
-  (cumulative_args_t, machine_mode, const_tree, bool);
+  (cumulative_args_t, const function_arg_info &);
 extern HOST_WIDE_INT default_function_arg_offset (machine_mode, const_tree);
 extern pad_direction default_function_arg_padding (machine_mode, const_tree);
-extern rtx default_function_arg
-  (cumulative_args_t, machine_mode, const_tree, bool);
-extern rtx default_function_incoming_arg
-  (cumulative_args_t, machine_mode, const_tree, bool);
+extern rtx default_function_arg (cumulative_args_t, const function_arg_info &);
+extern rtx default_function_incoming_arg (cumulative_args_t,
+					  const function_arg_info &);
 extern unsigned int default_function_arg_boundary (machine_mode,
 						   const_tree);
 extern unsigned int default_function_arg_round_boundary (machine_mode,
@@ -162,7 +167,6 @@ extern rtx default_internal_arg_pointer (void);
 extern rtx default_static_chain (const_tree, bool);
 extern void default_trampoline_init (rtx, tree, rtx);
 extern poly_int64 default_return_pops_args (tree, tree, poly_int64);
-extern reg_class_t default_branch_target_register_class (void);
 extern reg_class_t default_ira_change_pseudo_allocno_class (int, reg_class_t,
 							    reg_class_t);
 extern bool default_lra_p (void);
@@ -187,7 +191,7 @@ extern bool default_target_option_valid_attribute_p (tree, tree, tree, int);
 extern bool default_target_option_pragma_parse (tree, tree);
 extern bool default_target_can_inline_p (tree, tree);
 extern bool default_valid_pointer_mode (scalar_int_mode);
-extern bool default_ref_may_alias_errno (struct ao_ref *);
+extern bool default_ref_may_alias_errno (class ao_ref *);
 extern scalar_int_mode default_addr_space_pointer_mode (addr_space_t);
 extern scalar_int_mode default_addr_space_address_mode (addr_space_t);
 extern bool default_addr_space_valid_pointer_mode (scalar_int_mode,
@@ -205,6 +209,7 @@ extern unsigned int default_case_values_threshold (void);
 extern bool default_have_conditional_execution (void);
 
 extern bool default_libc_has_function (enum function_class);
+extern bool default_libc_has_fast_function (int fcode);
 extern bool no_c99_libc_has_function (enum function_class);
 extern bool gnu_libc_has_function (enum function_class);
 
@@ -263,11 +268,6 @@ extern rtx default_load_bounds_for_arg (rtx, rtx, rtx);
 extern void default_store_bounds_for_arg (rtx, rtx, rtx, rtx);
 extern rtx default_load_returned_bounds (rtx);
 extern void default_store_returned_bounds (rtx,rtx);
-extern void default_setup_incoming_vararg_bounds (cumulative_args_t ca ATTRIBUTE_UNUSED,
-						  machine_mode mode ATTRIBUTE_UNUSED,
-						  tree type ATTRIBUTE_UNUSED,
-						  int *pretend_arg_size ATTRIBUTE_UNUSED,
-						  int second_time ATTRIBUTE_UNUSED);
 extern bool default_optab_supported_p (int, machine_mode, machine_mode,
 				       optimization_type);
 extern unsigned int default_max_noce_ifcvt_seq_cost (edge);
@@ -277,8 +277,12 @@ extern unsigned int default_min_arithmetic_precision (void);
 
 extern enum flt_eval_method
 default_excess_precision (enum excess_precision_type ATTRIBUTE_UNUSED);
-extern bool default_stack_clash_protection_final_dynamic_probe (rtx);
+extern HOST_WIDE_INT default_stack_clash_protection_alloca_probe_range (void);
 extern void default_select_early_remat_modes (sbitmap);
 extern tree default_preferred_else_value (unsigned, tree, unsigned, tree *);
+
+extern bool default_have_speculation_safe_value (bool);
+extern bool speculation_safe_value_not_needed (bool);
+extern rtx default_speculation_safe_value (machine_mode, rtx, rtx, rtx);
 
 #endif /* GCC_TARGHOOKS_H */

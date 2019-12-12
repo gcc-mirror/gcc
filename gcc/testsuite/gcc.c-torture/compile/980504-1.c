@@ -1,3 +1,5 @@
+/* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
+
 typedef struct _geom_elem {
   double        coeffs[6];
 } pGeomDefRec, *pGeomDefPtr;

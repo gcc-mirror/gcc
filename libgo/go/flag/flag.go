@@ -5,7 +5,7 @@
 /*
 	Package flag implements command-line flag parsing.
 
-	Usage:
+	Usage
 
 	Define flags using flag.String(), Bool(), Int(), etc.
 
@@ -35,7 +35,10 @@
 	slice flag.Args() or individually as flag.Arg(i).
 	The arguments are indexed from 0 through flag.NArg()-1.
 
-	Command line flag syntax:
+	Command line flag syntax
+
+	The following forms are permitted:
+
 		-flag
 		-flag=x
 		-flag x  // non-boolean flags only
@@ -80,6 +83,28 @@ import (
 // but no such flag is defined.
 var ErrHelp = errors.New("flag: help requested")
 
+// errParse is returned by Set if a flag's value fails to parse, such as with an invalid integer for Int.
+// It then gets wrapped through failf to provide more information.
+var errParse = errors.New("parse error")
+
+// errRange is returned by Set if a flag's value is out of range.
+// It then gets wrapped through failf to provide more information.
+var errRange = errors.New("value out of range")
+
+func numError(err error) error {
+	ne, ok := err.(*strconv.NumError)
+	if !ok {
+		return err
+	}
+	if ne.Err == strconv.ErrSyntax {
+		return errParse
+	}
+	if ne.Err == strconv.ErrRange {
+		return errRange
+	}
+	return err
+}
+
 // -- bool Value
 type boolValue bool
 
@@ -90,6 +115,9 @@ func newBoolValue(val bool, p *bool) *boolValue {
 
 func (b *boolValue) Set(s string) error {
 	v, err := strconv.ParseBool(s)
+	if err != nil {
+		err = errParse
+	}
 	*b = boolValue(v)
 	return err
 }
@@ -117,6 +145,9 @@ func newIntValue(val int, p *int) *intValue {
 
 func (i *intValue) Set(s string) error {
 	v, err := strconv.ParseInt(s, 0, strconv.IntSize)
+	if err != nil {
+		err = numError(err)
+	}
 	*i = intValue(v)
 	return err
 }
@@ -135,6 +166,9 @@ func newInt64Value(val int64, p *int64) *int64Value {
 
 func (i *int64Value) Set(s string) error {
 	v, err := strconv.ParseInt(s, 0, 64)
+	if err != nil {
+		err = numError(err)
+	}
 	*i = int64Value(v)
 	return err
 }
@@ -153,6 +187,9 @@ func newUintValue(val uint, p *uint) *uintValue {
 
 func (i *uintValue) Set(s string) error {
 	v, err := strconv.ParseUint(s, 0, strconv.IntSize)
+	if err != nil {
+		err = numError(err)
+	}
 	*i = uintValue(v)
 	return err
 }
@@ -171,6 +208,9 @@ func newUint64Value(val uint64, p *uint64) *uint64Value {
 
 func (i *uint64Value) Set(s string) error {
 	v, err := strconv.ParseUint(s, 0, 64)
+	if err != nil {
+		err = numError(err)
+	}
 	*i = uint64Value(v)
 	return err
 }
@@ -206,6 +246,9 @@ func newFloat64Value(val float64, p *float64) *float64Value {
 
 func (f *float64Value) Set(s string) error {
 	v, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		err = numError(err)
+	}
 	*f = float64Value(v)
 	return err
 }
@@ -224,6 +267,9 @@ func newDurationValue(val time.Duration, p *time.Duration) *durationValue {
 
 func (d *durationValue) Set(s string) error {
 	v, err := time.ParseDuration(s)
+	if err != nil {
+		err = errParse
+	}
 	*d = durationValue(v)
 	return err
 }
@@ -295,17 +341,15 @@ type Flag struct {
 
 // sortFlags returns the flags as a slice in lexicographical sorted order.
 func sortFlags(flags map[string]*Flag) []*Flag {
-	list := make(sort.StringSlice, len(flags))
+	result := make([]*Flag, len(flags))
 	i := 0
 	for _, f := range flags {
-		list[i] = f.Name
+		result[i] = f
 		i++
 	}
-	list.Sort()
-	result := make([]*Flag, len(list))
-	for i, name := range list {
-		result[i] = flags[name]
-	}
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Name < result[j].Name
+	})
 	return result
 }
 
@@ -395,8 +439,8 @@ func Set(name, value string) error {
 	return CommandLine.Set(name, value)
 }
 
-// isZeroValue guesses whether the string represents the zero
-// value for a flag. It is not accurate but in practice works OK.
+// isZeroValue determines whether the string represents the zero
+// value for a flag.
 func isZeroValue(flag *Flag, value string) bool {
 	// Build a zero value of the flag's Value type, and see if the
 	// result of calling its String method equals the value passed in.
@@ -408,15 +452,7 @@ func isZeroValue(flag *Flag, value string) bool {
 	} else {
 		z = reflect.Zero(typ)
 	}
-	if value == z.Interface().(Value).String() {
-		return true
-	}
-
-	switch value {
-	case "false", "", "0":
-		return true
-	}
-	return false
+	return value == z.Interface().(Value).String()
 }
 
 // UnquoteUsage extracts a back-quoted name from the usage
@@ -477,7 +513,7 @@ func (f *FlagSet) PrintDefaults() {
 			// for both 4- and 8-space tab stops.
 			s += "\n    \t"
 		}
-		s += strings.Replace(usage, "\n", "\n    \t", -1)
+		s += strings.ReplaceAll(usage, "\n", "\n    \t")
 
 		if !isZeroValue(flag, flag.DefValue) {
 			if _, ok := flag.Value.(*stringValue); ok {
@@ -510,6 +546,8 @@ func (f *FlagSet) PrintDefaults() {
 // the output will be
 //	-I directory
 //		search directory for include files.
+//
+// To change the destination for flag messages, call CommandLine.SetOutput.
 func PrintDefaults() {
 	CommandLine.PrintDefaults()
 }
@@ -981,7 +1019,8 @@ func commandLineUsage() {
 }
 
 // NewFlagSet returns a new, empty flag set with the specified name and
-// error handling property.
+// error handling property. If the name is not empty, it will be printed
+// in the default usage message and in error messages.
 func NewFlagSet(name string, errorHandling ErrorHandling) *FlagSet {
 	f := &FlagSet{
 		name:          name,

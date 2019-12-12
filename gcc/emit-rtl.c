@@ -1,5 +1,5 @@
 /* Emit RTL for the GCC expander.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -54,13 +54,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-eh.h"
 #include "explow.h"
 #include "expr.h"
-#include "params.h"
 #include "builtins.h"
 #include "rtl-iter.h"
 #include "stor-layout.h"
 #include "opts.h"
 #include "predict.h"
 #include "rtx-vector-builder.h"
+#include "gimple.h"
+#include "gimple-ssa.h"
+#include "gimplify.h"
 
 struct target_rtl default_target_rtl;
 #if SWITCHABLE_TARGET
@@ -348,7 +350,7 @@ const_fixed_hasher::equal (rtx x, rtx y)
 /* Return true if the given memory attributes are equal.  */
 
 bool
-mem_attrs_eq_p (const struct mem_attrs *p, const struct mem_attrs *q)
+mem_attrs_eq_p (const class mem_attrs *p, const class mem_attrs *q)
 {
   if (p == q)
     return true;
@@ -463,6 +465,17 @@ set_mode_and_regno (rtx x, machine_mode mode, unsigned int regno)
   set_regno_raw (x, regno, nregs);
 }
 
+/* Initialize a fresh REG rtx with mode MODE and register REGNO.  */
+
+rtx
+init_raw_REG (rtx x, machine_mode mode, unsigned int regno)
+{
+  set_mode_and_regno (x, mode, regno);
+  REG_ATTRS (x) = NULL;
+  ORIGINAL_REGNO (x) = regno;
+  return x;
+}
+
 /* Generate a new REG rtx.  Make sure ORIGINAL_REGNO is set properly, and
    don't attempt to share with the various global pieces of rtl (such as
    frame_pointer_rtx).  */
@@ -471,9 +484,7 @@ rtx
 gen_raw_REG (machine_mode mode, unsigned int regno)
 {
   rtx x = rtx_alloc (REG MEM_STAT_INFO);
-  set_mode_and_regno (x, mode, regno);
-  REG_ATTRS (x) = NULL;
-  ORIGINAL_REGNO (x) = regno;
+  init_raw_REG (x, mode, regno);
   return x;
 }
 
@@ -1781,7 +1792,7 @@ operand_subword_force (rtx op, poly_uint64 offset, machine_mode mode)
 
   if (mode != BLKmode && mode != VOIDmode)
     {
-      /* If this is a register which can not be accessed by words, copy it
+      /* If this is a register which cannot be accessed by words, copy it
 	 to a pseudo register.  */
       if (REG_P (op))
 	op = copy_to_reg (op);
@@ -1921,7 +1932,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 {
   poly_int64 apply_bitpos = 0;
   tree type;
-  struct mem_attrs attrs, *defattrs, *refattrs;
+  class mem_attrs attrs, *defattrs, *refattrs;
   addr_space_t as;
 
   /* It can happen that type_for_mode was given a mode for which there
@@ -2128,6 +2139,27 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	  apply_bitpos = bitpos;
 	}
 
+      /* If this is a reference based on a partitioned decl replace the
+	 base with a MEM_REF of the pointer representative we created
+	 during stack slot partitioning.  */
+      if (attrs.expr
+	  && VAR_P (base)
+	  && ! is_global_var (base)
+	  && cfun->gimple_df->decls_to_pointers != NULL)
+	{
+	  tree *namep = cfun->gimple_df->decls_to_pointers->get (base);
+	  if (namep)
+	    {
+	      attrs.expr = unshare_expr (attrs.expr);
+	      tree *orig_base = &attrs.expr;
+	      while (handled_component_p (*orig_base))
+		orig_base = &TREE_OPERAND (*orig_base, 0);
+	      tree aptrt = reference_alias_ptr_type (*orig_base);
+	      *orig_base = build2 (MEM_REF, TREE_TYPE (*orig_base), *namep,
+				   build_int_cst (aptrt, 0));
+	    }
+	}
+
       /* Compute the alignment.  */
       unsigned int obj_align;
       unsigned HOST_WIDE_INT obj_bitpos;
@@ -2310,7 +2342,7 @@ change_address (rtx memref, machine_mode mode, rtx addr)
 {
   rtx new_rtx = change_address_1 (memref, mode, addr, 1, false);
   machine_mode mmode = GET_MODE (new_rtx);
-  struct mem_attrs *defattrs;
+  class mem_attrs *defattrs;
 
   mem_attrs attrs (*get_mem_attrs (memref));
   defattrs = mode_mem_attrs[(int) mmode];
@@ -2354,7 +2386,7 @@ adjust_address_1 (rtx memref, machine_mode mode, poly_int64 offset,
   rtx addr = XEXP (memref, 0);
   rtx new_rtx;
   scalar_int_mode address_mode;
-  struct mem_attrs attrs (*get_mem_attrs (memref)), *defattrs;
+  class mem_attrs attrs (*get_mem_attrs (memref)), *defattrs;
   unsigned HOST_WIDE_INT max_align;
 #ifdef POINTERS_EXTEND_UNSIGNED
   scalar_int_mode pointer_mode
@@ -2500,7 +2532,7 @@ offset_address (rtx memref, rtx offset, unsigned HOST_WIDE_INT pow2)
 {
   rtx new_rtx, addr = XEXP (memref, 0);
   machine_mode address_mode;
-  struct mem_attrs *defattrs;
+  class mem_attrs *defattrs;
 
   mem_attrs attrs (*get_mem_attrs (memref));
   address_mode = get_address_mode (memref);
@@ -2729,15 +2761,15 @@ set_new_first_and_last_insn (rtx_insn *first, rtx_insn *last)
   set_last_insn (last);
   cur_insn_uid = 0;
 
-  if (MIN_NONDEBUG_INSN_UID || MAY_HAVE_DEBUG_INSNS)
+  if (param_min_nondebug_insn_uid || MAY_HAVE_DEBUG_INSNS)
     {
       int debug_count = 0;
 
-      cur_insn_uid = MIN_NONDEBUG_INSN_UID - 1;
+      cur_insn_uid = param_min_nondebug_insn_uid - 1;
       cur_debug_insn_uid = 0;
 
       for (insn = first; insn; insn = NEXT_INSN (insn))
-	if (INSN_UID (insn) < MIN_NONDEBUG_INSN_UID)
+	if (INSN_UID (insn) < param_min_nondebug_insn_uid)
 	  cur_debug_insn_uid = MAX (cur_debug_insn_uid, INSN_UID (insn));
 	else
 	  {
@@ -2747,7 +2779,7 @@ set_new_first_and_last_insn (rtx_insn *first, rtx_insn *last)
 	  }
 
       if (debug_count)
-	cur_debug_insn_uid = MIN_NONDEBUG_INSN_UID + debug_count;
+	cur_debug_insn_uid = param_min_nondebug_insn_uid + debug_count;
       else
 	cur_debug_insn_uid++;
     }
@@ -3412,10 +3444,10 @@ get_max_insn_count (void)
      differences due to debug insns, and not be affected by
      -fmin-insn-uid, to avoid excessive table size and to simplify
      debugging of -fcompare-debug failures.  */
-  if (cur_debug_insn_uid > MIN_NONDEBUG_INSN_UID)
+  if (cur_debug_insn_uid > param_min_nondebug_insn_uid)
     n -= cur_debug_insn_uid;
   else
-    n -= MIN_NONDEBUG_INSN_UID;
+    n -= param_min_nondebug_insn_uid;
 
   return n;
 }
@@ -3938,6 +3970,7 @@ try_split (rtx pat, rtx_insn *trial, int last)
 	  break;
 
 	case REG_NON_LOCAL_GOTO:
+	case REG_LABEL_TARGET:
 	  for (insn = insn_last; insn != NULL_RTX; insn = PREV_INSN (insn))
 	    {
 	      if (JUMP_P (insn))
@@ -3990,7 +4023,7 @@ try_split (rtx pat, rtx_insn *trial, int last)
   before = PREV_INSN (trial);
   after = NEXT_INSN (trial);
 
-  tem = emit_insn_after_setloc (seq, trial, INSN_LOCATION (trial));
+  emit_insn_after_setloc (seq, trial, INSN_LOCATION (trial));
 
   delete_insn (trial);
 
@@ -4051,7 +4084,7 @@ make_debug_insn_raw (rtx pattern)
 
   insn = as_a <rtx_debug_insn *> (rtx_alloc (DEBUG_INSN));
   INSN_UID (insn) = cur_debug_insn_uid++;
-  if (cur_debug_insn_uid > MIN_NONDEBUG_INSN_UID)
+  if (cur_debug_insn_uid > param_min_nondebug_insn_uid)
     INSN_UID (insn) = cur_insn_uid++;
 
   PATTERN (insn) = pattern;
@@ -5826,8 +5859,8 @@ init_emit (void)
 {
   set_first_insn (NULL);
   set_last_insn (NULL);
-  if (MIN_NONDEBUG_INSN_UID)
-    cur_insn_uid = MIN_NONDEBUG_INSN_UID;
+  if (param_min_nondebug_insn_uid)
+    cur_insn_uid = param_min_nondebug_insn_uid;
   else
     cur_insn_uid = 1;
   cur_debug_insn_uid = 1;
@@ -6407,13 +6440,6 @@ init_emit_once (void)
     if (GET_MODE_CLASS ((machine_mode) i) == MODE_CC)
       const_tiny_rtx[0][i] = const0_rtx;
 
-  FOR_EACH_MODE_IN_CLASS (smode_iter, MODE_POINTER_BOUNDS)
-    {
-      scalar_mode smode = smode_iter.require ();
-      wide_int wi_zero = wi::zero (GET_MODE_PRECISION (smode));
-      const_tiny_rtx[0][smode] = immed_wide_int_const (wi_zero, smode);
-    }
-
   pc_rtx = gen_rtx_fmt_ (PC, VOIDmode);
   ret_rtx = gen_rtx_fmt_ (RETURN, VOIDmode);
   simple_return_rtx = gen_rtx_fmt_ (SIMPLE_RETURN, VOIDmode);
@@ -6544,6 +6570,18 @@ location_t
 curr_insn_location (void)
 {
   return curr_location;
+}
+
+/* Set the location of the insn chain starting at INSN to LOC.  */
+void
+set_insn_locations (rtx_insn *insn, location_t loc)
+{
+  while (insn)
+    {
+      if (INSN_P (insn))
+	INSN_LOCATION (insn) = loc;
+      insn = NEXT_INSN (insn);
+    }
 }
 
 /* Return lexical scope block insn belongs to.  */

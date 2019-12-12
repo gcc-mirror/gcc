@@ -12,7 +12,6 @@ end
 program p
    type t(a                  ! { dg-error "Expected parameter list" }
       integer, kind :: a
-      real(a) :: x
    end type
    type u(a, a)              ! { dg-error "Duplicate name" }
       integer, kind :: a     ! { dg-error "already declared" }

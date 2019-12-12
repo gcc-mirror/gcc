@@ -1,5 +1,5 @@
 /* Header file for gimple decl, type and expressions.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -41,6 +41,7 @@ extern void gimple_cond_get_ops_from_tree (tree, enum tree_code *, tree *,
 					   tree *);
 extern bool is_gimple_lvalue (tree);
 extern bool is_gimple_condexpr (tree);
+extern bool is_gimple_condexpr_for_cond (tree);
 extern bool is_gimple_address (const_tree);
 extern bool is_gimple_invariant_address (const_tree);
 extern bool is_gimple_ip_invariant_address (const_tree);

@@ -1,6 +1,6 @@
 // Filesystem operational functions -*- C++ -*-
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,9 +40,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 namespace filesystem
 {
-  /**
-   * @ingroup filesystem
-   * @{
+  /** @addtogroup filesystem
+   *  @{
    */
 
   path absolute(const path& __p);

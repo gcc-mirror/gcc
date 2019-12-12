@@ -1,5 +1,5 @@
 /* Definitions for the Blackfin port.
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
    Contributed by Analog Devices.
 
    This file is part of GCC.
@@ -204,7 +204,7 @@
 #endif
 
 #define LINK_GCC_C_SEQUENCE_SPEC "\
-  %{mfast-fp:-lbffastfp} %G %L %{mfast-fp:-lbffastfp} %G \
+  %{mfast-fp:-lbffastfp} %G %{!nolibc:%L} %{mfast-fp:-lbffastfp} %G \
 "
 
 #undef  ASM_SPEC
@@ -793,7 +793,7 @@ typedef struct {
 #define MOVE_MAX UNITS_PER_WORD
 
 /* If a memory-to-memory move would take MOVE_RATIO or more simple
-   move-instruction pairs, we will do a movmem or libcall instead.  */
+   move-instruction pairs, we will do a cpymem or libcall instead.  */
 
 #define MOVE_RATIO(speed) 5
 

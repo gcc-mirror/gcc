@@ -1,4 +1,4 @@
-# Copyright (C) 2003-2018 Free Software Foundation, Inc.
+# Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,8 +43,6 @@ proc get-fortran-torture-options { } {
 	 && [is-effective-target powerpc_altivec_ok]
 	 && [check_vmx_hw_available] } {
 	lappend vectorizer_options "-maltivec"
-	set test_tree_vectorize 1
-    } elseif { [istarget spu-*-*] } {
 	set test_tree_vectorize 1
     } elseif { ( [istarget i?86-*-*] || [istarget x86_64-*-*] )
 	       && [check_effective_target_sse2]

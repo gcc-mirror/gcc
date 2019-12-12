@@ -1,5 +1,5 @@
 /* Not worth spending time optimizing this.  */
-/* { dg-options "-O" } */
+/* { dg-options "-O0" } */
 
 #include "config.h"
 #include "gcc-plugin.h"

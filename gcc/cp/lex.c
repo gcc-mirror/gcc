@@ -1,5 +1,5 @@
 /* Separate lexical analyzer for GNU C++.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -22,12 +22,16 @@ along with GCC; see the file COPYING3.  If not see
 /* This file is the lexical analyzer for GNU C++.  */
 
 #include "config.h"
+/* For use with name_hint.  */
+#define INCLUDE_UNIQUE_PTR
 #include "system.h"
 #include "coretypes.h"
 #include "cp-tree.h"
 #include "stringpool.h"
 #include "c-family/c-pragma.h"
 #include "c-family/c-objc.h"
+#include "gcc-rich-location.h"
+#include "cp-name-hint.h"
 
 static int interface_strcmp (const char *);
 static void init_cp_pragma (void);
@@ -225,10 +229,14 @@ init_reswords (void)
 
   if (cxx_dialect < cxx11)
     mask |= D_CXX11;
+  if (cxx_dialect < cxx2a)
+    mask |= D_CXX20;
   if (!flag_concepts)
     mask |= D_CXX_CONCEPTS;
   if (!flag_tm)
     mask |= D_TRANSMEM;
+  if (!flag_char8_t)
+    mask |= D_CXX_CHAR8_T;
   if (flag_no_asm)
     mask |= D_ASM | D_EXT;
   if (flag_no_gnu_keywords)
@@ -253,6 +261,11 @@ init_reswords (void)
     {
       char name[50];
       sprintf (name, "__int%d", int_n_data[i].bitsize);
+      id = get_identifier (name);
+      C_SET_RID_CODE (id, RID_FIRST_INT_N + i);
+      set_identifier_kind (id, cik_keyword);
+
+      sprintf (name, "__int%d__", int_n_data[i].bitsize);
       id = get_identifier (name);
       C_SET_RID_CODE (id, RID_FIRST_INT_N + i);
       set_identifier_kind (id, cik_keyword);
@@ -289,7 +302,7 @@ cxx_init (void)
    IF_STMT,		CLEANUP_STMT,	FOR_STMT,
    RANGE_FOR_STMT,	WHILE_STMT,	DO_STMT,
    BREAK_STMT,		CONTINUE_STMT,	SWITCH_STMT,
-   EXPR_STMT
+   EXPR_STMT,		OMP_DEPOBJ
   };
 
   memset (&statement_code_p, 0, sizeof (statement_code_p));
@@ -318,8 +331,6 @@ cxx_init (void)
     }
 
   init_cp_pragma ();
-
-  init_repo ();
 
   input_location = saved_loc;
   return true;
@@ -379,14 +390,14 @@ parse_strconst_pragma (const char* name, int opt)
   if (t == CPP_STRING)
     {
       if (pragma_lex (&x) != CPP_EOF)
-	warning (0, "junk at end of #pragma %s", name);
+	warning (0, "junk at end of %<#pragma %s%>", name);
       return result;
     }
 
   if (t == CPP_EOF && opt)
     return NULL_TREE;
 
-  error ("invalid #pragma %s", name);
+  error ("invalid %<#pragma %s%>", name);
   return error_mark_node;
 }
 
@@ -394,7 +405,7 @@ static void
 handle_pragma_vtable (cpp_reader* /*dfile*/)
 {
   parse_strconst_pragma ("vtable", 0);
-  sorry ("#pragma vtable no longer supported");
+  sorry ("%<#pragma vtable%> no longer supported");
 }
 
 static void
@@ -466,7 +477,7 @@ handle_pragma_implementation (cpp_reader* /*dfile*/)
     {
       filename = TREE_STRING_POINTER (fname);
       if (cpp_included_before (parse_in, filename, input_location))
-	warning (0, "#pragma implementation for %qs appears after "
+	warning (0, "%<#pragma implementation%> for %qs appears after "
 		 "file is included", filename);
     }
 
@@ -491,7 +502,7 @@ tree
 unqualified_name_lookup_error (tree name, location_t loc)
 {
   if (loc == UNKNOWN_LOCATION)
-    loc = cp_expr_loc_or_loc (name, input_location);
+    loc = cp_expr_loc_or_input_loc (name);
 
   if (IDENTIFIER_ANY_OP_P (name))
     error_at (loc, "%qD not defined", name);
@@ -499,8 +510,18 @@ unqualified_name_lookup_error (tree name, location_t loc)
     {
       if (!objc_diagnose_private_ivar (name))
 	{
-	  error_at (loc, "%qD was not declared in this scope", name);
-	  suggest_alternatives_for (loc, name, true);
+	  auto_diagnostic_group d;
+	  name_hint hint = suggest_alternatives_for (loc, name, true);
+	  if (const char *suggestion = hint.suggestion ())
+	    {
+	      gcc_rich_location richloc (loc);
+	      richloc.add_fixit_replace (suggestion);
+	      error_at (&richloc,
+			"%qD was not declared in this scope; did you mean %qs?",
+			name, suggestion);
+	    }
+	  else
+	    error_at (loc, "%qD was not declared in this scope", name);
 	}
       /* Prevent repeated error messages by creating a VAR_DECL with
 	 this NAME in the innermost block scope.  */
@@ -527,6 +548,9 @@ unqualified_fn_lookup_error (cp_expr name_expr)
   if (loc == UNKNOWN_LOCATION)
     loc = input_location;
 
+  if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
+    name = TREE_OPERAND (name, 0);
+
   if (processing_template_decl)
     {
       /* In a template, it is invalid to write "f()" or "f(3)" if no
@@ -549,8 +573,8 @@ unqualified_fn_lookup_error (cp_expr name_expr)
 	  if (!hint)
 	    {
 	      inform (loc, "(if you use %<-fpermissive%>, G++ will accept your "
-		     "code, but allowing the use of an undeclared name is "
-		     "deprecated)");
+		      "code, but allowing the use of an undeclared name is "
+		      "deprecated)");
 	      hint = true;
 	    }
 	}
@@ -864,6 +888,9 @@ cxx_make_type (enum tree_code code MEM_STAT_DECL)
       SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, finfo->interface_unknown);
       CLASSTYPE_INTERFACE_ONLY (t) = finfo->interface_only;
     }
+
+  if (code == RECORD_TYPE || code == UNION_TYPE)
+    TYPE_CXX_ODR_P (t) = 1;
 
   return t;
 }

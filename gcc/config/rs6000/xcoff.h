@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for some generic XCOFF file format
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -75,13 +75,13 @@
 
 #define ASM_OUTPUT_SPECIAL_POOL_ENTRY_P(X, MODE)			\
   (TARGET_TOC								\
-   && (GET_CODE (X) == SYMBOL_REF					\
+   && (SYMBOL_REF_P (X)							\
        || (GET_CODE (X) == CONST && GET_CODE (XEXP (X, 0)) == PLUS	\
-	   && GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF)		\
+	   && SYMBOL_REF_P (XEXP (XEXP (X, 0), 0)))			\
        || GET_CODE (X) == LABEL_REF					\
-       || (GET_CODE (X) == CONST_INT 					\
+       || (CONST_INT_P (X)						\
 	   && GET_MODE_BITSIZE (MODE) <= GET_MODE_BITSIZE (Pmode))	\
-       || (GET_CODE (X) == CONST_DOUBLE					\
+       || (CONST_DOUBLE_P (X)						\
 	   && (TARGET_MINIMAL_TOC					\
 	       || (SCALAR_FLOAT_MODE_P (GET_MODE (X))			\
 		   && ! TARGET_NO_FP_IN_TOC)))))

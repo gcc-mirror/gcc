@@ -1,5 +1,5 @@
-//  { dg-do compile }
-// { dg-options "-O2 -std=c++17 -fdump-tree-eipa_sra" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-O2 -fdump-ipa-sra" }
 
 
 #include <type_traits>
@@ -37,4 +37,4 @@ int main() {
     f(n2);
 }
 
-// { dg-final { scan-tree-dump-times "Adjusting call" 2 "eipa_sra" } }
+// { dg-final { scan-ipa-dump "Will split parameter 0" "sra" } }

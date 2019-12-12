@@ -1,6 +1,7 @@
 /* { dg-do assemble } */
 /* { dg-require-effective-target ptr32plus } */
 /* { dg-xfail-if "The array too big" { "h8300-*-*" } { "-mno-h" "-mn" } { "" } } */
+/* { dg-require-stack-size "2048*4*4" } */
 
 /* PR c/6957
    This testcase ICEd at -O2 on IA-32, because

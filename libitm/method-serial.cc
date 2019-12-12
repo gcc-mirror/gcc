@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2019 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -306,7 +306,7 @@ GTM::gtm_thread::serialirr_mode ()
       // We're already serial, so we don't need to ensure privatization safety
       // for other transactions here.
       gtm_word priv_time = 0;
-      bool ok = disp->trycommit (priv_time);
+      bool ok __attribute__((unused)) = disp->trycommit (priv_time);
       // Given that we're already serial, the trycommit better work.
       assert (ok);
     }

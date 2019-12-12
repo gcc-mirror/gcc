@@ -18,6 +18,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"cmd/go/internal/renameio"
 )
 
 // An ActionID is a cache action key, the hash of a complete description of a
@@ -31,7 +33,6 @@ type OutputID [HashSize]byte
 // A Cache is a package cache, backed by a file system directory tree.
 type Cache struct {
 	dir string
-	log *os.File
 	now func() time.Time
 }
 
@@ -61,13 +62,8 @@ func Open(dir string) (*Cache, error) {
 			return nil, err
 		}
 	}
-	f, err := os.OpenFile(filepath.Join(dir, "log.txt"), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
-	if err != nil {
-		return nil, err
-	}
 	c := &Cache{
 		dir: dir,
-		log: f,
 		now: time.Now,
 	}
 	return c, nil
@@ -139,7 +135,6 @@ type Entry struct {
 // get is Get but does not respect verify mode, so that Put can use it.
 func (c *Cache) get(id ActionID) (Entry, error) {
 	missing := func() (Entry, error) {
-		fmt.Fprintf(c.log, "%d miss %x\n", c.now().Unix(), id)
 		return Entry{}, errMissing
 	}
 	f, err := os.Open(c.fileName(id, "a"))
@@ -178,15 +173,28 @@ func (c *Cache) get(id ActionID) (Entry, error) {
 		i++
 	}
 	tm, err := strconv.ParseInt(string(etime[i:]), 10, 64)
-	if err != nil || size < 0 {
+	if err != nil || tm < 0 {
 		return missing()
 	}
-
-	fmt.Fprintf(c.log, "%d get %x\n", c.now().Unix(), id)
 
 	c.used(c.fileName(id, "a"))
 
 	return Entry{buf, size, time.Unix(0, tm)}, nil
+}
+
+// GetFile looks up the action ID in the cache and returns
+// the name of the corresponding data file.
+func (c *Cache) GetFile(id ActionID) (file string, entry Entry, err error) {
+	entry, err = c.Get(id)
+	if err != nil {
+		return "", Entry{}, err
+	}
+	file = c.OutputFile(entry.OutputID)
+	info, err := os.Stat(file)
+	if err != nil || info.Size() != entry.Size {
+		return "", Entry{}, errMissing
+	}
+	return file, entry, nil
 }
 
 // GetBytes looks up the action ID in the cache and returns
@@ -253,7 +261,7 @@ func (c *Cache) Trim() {
 	// We maintain in dir/trim.txt the time of the last completed cache trim.
 	// If the cache has been trimmed recently enough, do nothing.
 	// This is the common case.
-	data, _ := ioutil.ReadFile(filepath.Join(c.dir, "trim.txt"))
+	data, _ := renameio.ReadFile(filepath.Join(c.dir, "trim.txt"))
 	t, err := strconv.ParseInt(strings.TrimSpace(string(data)), 10, 64)
 	if err == nil && now.Sub(time.Unix(t, 0)) < trimInterval {
 		return
@@ -268,7 +276,9 @@ func (c *Cache) Trim() {
 		c.trimSubdir(subdir, cutoff)
 	}
 
-	ioutil.WriteFile(filepath.Join(c.dir, "trim.txt"), []byte(fmt.Sprintf("%d", now.Unix())), 0666)
+	// Ignore errors from here: if we don't write the complete timestamp, the
+	// cache will appear older than it is, and we'll trim it again next time.
+	renameio.WriteFile(filepath.Join(c.dir, "trim.txt"), []byte(fmt.Sprintf("%d", now.Unix())), 0666)
 }
 
 // trimSubdir trims a single cache subdirectory.
@@ -312,7 +322,7 @@ func (c *Cache) putIndexEntry(id ActionID, out OutputID, size int64, allowVerify
 	// in verify mode we are double-checking that the cache entries
 	// are entirely reproducible. As just noted, this may be unrealistic
 	// in some cases but the check is also useful for shaking out real bugs.
-	entry := []byte(fmt.Sprintf("v1 %x %x %20d %20d\n", id, out, size, time.Now().UnixNano()))
+	entry := fmt.Sprintf("v1 %x %x %20d %20d\n", id, out, size, time.Now().UnixNano())
 	if verify && allowVerify {
 		old, err := c.get(id)
 		if err == nil && (old.OutputID != out || old.Size != size) {
@@ -322,13 +332,35 @@ func (c *Cache) putIndexEntry(id ActionID, out OutputID, size int64, allowVerify
 		}
 	}
 	file := c.fileName(id, "a")
-	if err := ioutil.WriteFile(file, entry, 0666); err != nil {
+
+	// Copy file to cache directory.
+	mode := os.O_WRONLY | os.O_CREATE
+	f, err := os.OpenFile(file, mode, 0666)
+	if err != nil {
+		return err
+	}
+	_, err = f.WriteString(entry)
+	if err == nil {
+		// Truncate the file only *after* writing it.
+		// (This should be a no-op, but truncate just in case of previous corruption.)
+		//
+		// This differs from ioutil.WriteFile, which truncates to 0 *before* writing
+		// via os.O_TRUNC. Truncating only after writing ensures that a second write
+		// of the same content to the same file is idempotent, and does not — even
+		// temporarily! — undo the effect of the first write.
+		err = f.Truncate(int64(len(entry)))
+	}
+	if closeErr := f.Close(); err == nil {
+		err = closeErr
+	}
+	if err != nil {
+		// TODO(bcmills): This Remove potentially races with another go command writing to file.
+		// Can we eliminate it?
 		os.Remove(file)
 		return err
 	}
 	os.Chtimes(file, c.now(), c.now()) // mainly for tests
 
-	fmt.Fprintf(c.log, "%d put %x %x %d\n", c.now().Unix(), id, out, size)
 	return nil
 }
 

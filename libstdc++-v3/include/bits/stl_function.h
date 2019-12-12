@@ -1,6 +1,6 @@
 // Functor implementations -*- C++ -*-
 
-// Copyright (C) 2001-2018 Free Software Foundation, Inc.
+// Copyright (C) 2001-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -413,8 +413,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX14_CONSTEXPR bool
       operator()(_Tp* __x, _Tp* __y) const _GLIBCXX_NOTHROW
       {
-	if (__builtin_constant_p (__x > __y))
+#if __cplusplus >= 201402L
+#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+	if (__builtin_is_constant_evaluated())
+#else
+	if (__builtin_constant_p(__x > __y))
+#endif
 	  return __x > __y;
+#endif
 	return (__UINTPTR_TYPE__)__x > (__UINTPTR_TYPE__)__y;
       }
     };
@@ -426,8 +432,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX14_CONSTEXPR bool
       operator()(_Tp* __x, _Tp* __y) const _GLIBCXX_NOTHROW
       {
-	if (__builtin_constant_p (__x < __y))
+#if __cplusplus >= 201402L
+#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+	if (__builtin_is_constant_evaluated())
+#else
+	if (__builtin_constant_p(__x < __y))
+#endif
 	  return __x < __y;
+#endif
 	return (__UINTPTR_TYPE__)__x < (__UINTPTR_TYPE__)__y;
       }
     };
@@ -439,8 +451,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX14_CONSTEXPR bool
       operator()(_Tp* __x, _Tp* __y) const _GLIBCXX_NOTHROW
       {
-	if (__builtin_constant_p (__x >= __y))
+#if __cplusplus >= 201402L
+#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+	if (__builtin_is_constant_evaluated())
+#else
+	if (__builtin_constant_p(__x >= __y))
+#endif
 	  return __x >= __y;
+#endif
 	return (__UINTPTR_TYPE__)__x >= (__UINTPTR_TYPE__)__y;
       }
     };
@@ -452,8 +470,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX14_CONSTEXPR bool
       operator()(_Tp* __x, _Tp* __y) const _GLIBCXX_NOTHROW
       {
-	if (__builtin_constant_p (__x <= __y))
+#if __cplusplus >= 201402L
+#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+	if (__builtin_is_constant_evaluated())
+#else
+	if (__builtin_constant_p(__x <= __y))
+#endif
 	  return __x <= __y;
+#endif
 	return (__UINTPTR_TYPE__)__x <= (__UINTPTR_TYPE__)__y;
       }
     };

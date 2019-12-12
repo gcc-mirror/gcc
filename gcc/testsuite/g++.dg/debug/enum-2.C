@@ -1,5 +1,6 @@
 /* Verify that used enums are output.  */
 /* { dg-do compile } */
+/* { dg-options "-fno-eliminate-unused-debug-symbols" } */
 /* { dg-final { scan-assembler "JTI_MAX" } } */
 
 int var;

@@ -1,5 +1,5 @@
 /* Declarations for interface to insn recognizer and insn-output.c.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
    a type that has at least MAX_RECOG_ALTERNATIVES + 1 bits, with the extra
    bit giving an invalid value that can be used to mean "uninitialized".  */
 #define MAX_RECOG_ALTERNATIVES 35
-typedef uint64_t alternative_mask;
+typedef uint64_t alternative_mask;  /* Keep in sync with genattrtab.c.  */
 
 /* A mask of all alternatives.  */
 #define ALL_ALTERNATIVES ((alternative_mask) -1)
@@ -142,7 +142,7 @@ extern void preprocess_constraints (rtx_insn *);
 extern rtx_insn *peep2_next_insn (int);
 extern int peep2_regno_dead_p (int, int);
 extern int peep2_reg_dead_p (int, rtx);
-#ifdef CLEAR_HARD_REG_SET
+#ifdef HARD_CONST
 extern rtx peep2_find_free_register (int, int, const char *,
 				     machine_mode, HARD_REG_SET *);
 #endif
@@ -185,6 +185,23 @@ skip_alternative (const char *p)
 
 /* Nonzero means volatile operands are recognized.  */
 extern int volatile_ok;
+
+/* RAII class for temporarily setting volatile_ok.  */
+
+class temporary_volatile_ok
+{
+public:
+  temporary_volatile_ok (int value) : save_volatile_ok (volatile_ok)
+  {
+    volatile_ok = value;
+  }
+
+  ~temporary_volatile_ok () { volatile_ok = save_volatile_ok; }
+
+private:
+  temporary_volatile_ok (const temporary_volatile_ok &);
+  int save_volatile_ok;
+};
 
 /* Set by constrain_operands to the number of the alternative that
    matched.  */

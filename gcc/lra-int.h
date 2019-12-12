@@ -1,5 +1,5 @@
 /* Local Register Allocator (LRA) intercommunication header file.
-   Copyright (C) 2010-2018 Free Software Foundation, Inc.
+   Copyright (C) 2010-2019 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -64,18 +64,15 @@ struct lra_copy
 };
 
 /* Common info about a register (pseudo or hard register).  */
-struct lra_reg
+class lra_reg
 {
+public:
   /* Bitmap of UIDs of insns (including debug insns) referring the
      reg.  */
   bitmap_head insn_bitmap;
   /* The following fields are defined only for pseudos.	 */
   /* Hard registers with which the pseudo conflicts.  */
   HARD_REG_SET conflict_hard_regs;
-  /* Call used registers with which the pseudo conflicts, taking into account
-     the registers used by functions called from calls which cross the
-     pseudo.  */
-  HARD_REG_SET actual_call_used_reg_set;
   /* We assign hard registers to reload pseudos which can occur in few
      places.  So two hard register preferences are enough for them.
      The following fields define the preferred hard registers.	If
@@ -91,10 +88,6 @@ struct lra_reg
   /* True if the pseudo should not be assigned to a stack register.  */
   bool no_stack_p;
 #endif
-  /* True if the pseudo crosses a call.	 It is setup in lra-lives.c
-     and used to check that the pseudo crossing a call did not get a
-     call used hard register.  */
-  bool call_p;
   /* Number of references and execution frequencies of the register in
      *non-debug* insns.	 */
   int nrefs, freq;
@@ -120,7 +113,7 @@ struct lra_reg
 };
 
 /* References to the common info about each register.  */
-extern struct lra_reg *lra_reg_info;
+extern class lra_reg *lra_reg_info;
 
 extern HARD_REG_SET hard_regs_spilled_into;
 
@@ -143,10 +136,6 @@ struct lra_operand_data
   unsigned int strict_low : 1;
   /* True if the operand is an operator.  */
   unsigned int is_operator : 1;
-  /* True if there is an early clobber alternative for this operand.
-     This field is set up every time when corresponding
-     operand_alternative in lra_static_insn_data is set up.  */
-  unsigned int early_clobber : 1;
   /* True if the operand is an address.  */
   unsigned int is_address : 1;
 };
@@ -165,9 +154,6 @@ struct lra_insn_reg
   /* True if the reg is accessed through a subreg and the subreg is
      just a part of the register.  */
   unsigned int subreg_p : 1;
-  /* True if there is an early clobber alternative for this
-     operand.  */
-  unsigned int early_clobber : 1;
   /* The corresponding regno of the register.  */
   int regno;
   /* Next reg info of the same insn.  */
@@ -210,8 +196,9 @@ struct lra_static_insn_data
 
 /* LRA internal info about an insn (LRA internal insn
    representation).  */
-struct lra_insn_recog_data
+class lra_insn_recog_data
 {
+public:
   /* The insn code.  */
   int icode;
   /* The alternative should be used for the insn, LRA_UNKNOWN_ALT if
@@ -242,7 +229,7 @@ struct lra_insn_recog_data
   struct lra_insn_reg *regs;
 };
 
-typedef struct lra_insn_recog_data *lra_insn_recog_data_t;
+typedef class lra_insn_recog_data *lra_insn_recog_data_t;
 
 /* Whether the clobber is used temporary in LRA.  */
 #define LRA_TEMP_CLOBBER_P(x) \
@@ -286,6 +273,7 @@ typedef struct lra_insn_recog_data *lra_insn_recog_data_t;
 
 extern FILE *lra_dump_file;
 
+extern bool lra_asm_error_p;
 extern bool lra_reg_spill_p;
 
 extern HARD_REG_SET lra_no_alloc_regs;
@@ -333,7 +321,7 @@ extern void lra_create_copy (int, int, int);
 extern lra_copy_t lra_get_copy (int);
 extern bool lra_former_scratch_p (int);
 extern bool lra_former_scratch_operand_p (rtx_insn *, int);
-extern void lra_register_new_scratch_op (rtx_insn *, int);
+extern void lra_register_new_scratch_op (rtx_insn *, int, int);
 
 extern int lra_new_regno_start;
 extern int lra_constraint_new_regno_start;
@@ -400,6 +388,7 @@ extern bool lra_coalesce (void);
 
 /* lra-spills.c:  */
 
+extern bool lra_need_for_scratch_reg_p (void);
 extern bool lra_need_for_spills_p (void);
 extern void lra_spill (void);
 extern void lra_final_code_change (void);

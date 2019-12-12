@@ -16,7 +16,7 @@ template <int *PI>
 void dep6(bar<PI+1> *); // { dg-error "" "integral or enumeration" }
 
 template <int I>
-void dep7(bar<I+1> *);		// { dg-error "" }
+void dep7(bar<I+1> *);		// { dg-error "16:could not convert template argument" }
 
 template <int *PI>
 void dep8(foo< *PI > *); // { dg-error "" "integral or enumeration" }

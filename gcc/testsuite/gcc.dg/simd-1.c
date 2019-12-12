@@ -32,7 +32,7 @@ hanneke ()
   e = (typeof (e)) a;
 
   /* Different signed SIMD assignment.  */
-  f = a; /* { dg-message "note: use -flax-vector-conversions to permit conversions between vectors with differing element types or numbers of subparts" } */
+  f = a; /* { dg-message "note: use .-flax-vector-conversions. to permit conversions between vectors with differing element types or numbers of subparts" } */
   /* { dg-error "incompatible types when assigning" "" { target *-*-* } .-1 } */
 
   /* Casted different signed SIMD assignment.  */
@@ -45,7 +45,7 @@ hanneke ()
   foo = (typeof (foo)) foo2;
 
   /* Casted assignment between scalar and SIMD of different size.  */
-  foo1 = (typeof (foo1)) foo2; /* { dg-error "can't convert a vector of type" } */
+  foo1 = (typeof (foo1)) foo2; /* { dg-error "cannot convert a vector of type" } */
 
   /* Operators on compatible SIMD types.  */
   a += b + b;

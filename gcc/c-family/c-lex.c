@@ -1,5 +1,5 @@
 /* Mainly the interface between cpplib and the C front ends.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -81,6 +81,7 @@ init_c_lex (void)
   cb->valid_pch = c_common_valid_pch;
   cb->read_pch = c_common_read_pch;
   cb->has_attribute = c_common_has_attribute;
+  cb->has_builtin = c_common_has_builtin;
   cb->get_source_date_epoch = cb_get_source_date_epoch;
   cb->get_suggestion = cb_get_suggestion;
   cb->remap_filename = remap_macro_filename;
@@ -199,7 +200,7 @@ fe_file_change (const line_map_ordinary *new_map)
 	 we already did in compile_file.  */
       if (!MAIN_FILE_P (new_map))
 	{
-	  unsigned int included_at = LAST_SOURCE_LINE_LOCATION (new_map - 1);
+	  location_t included_at = linemap_included_from (new_map);
 	  int line = 0;
 	  if (included_at > BUILTINS_LOCATION)
 	    line = SOURCE_LINE (new_map - 1, included_at);
@@ -237,7 +238,7 @@ fe_file_change (const line_map_ordinary *new_map)
 }
 
 static void
-cb_def_pragma (cpp_reader *pfile, source_location loc)
+cb_def_pragma (cpp_reader *pfile, location_t loc)
 {
   /* Issue a warning message if we have been asked to do so.  Ignore
      unknown pragmas in system headers unless an explicit
@@ -258,14 +259,14 @@ cb_def_pragma (cpp_reader *pfile, source_location loc)
 	    name = cpp_token_as_text (pfile, s);
 	}
 
-      warning_at (fe_loc, OPT_Wunknown_pragmas, "ignoring #pragma %s %s",
+      warning_at (fe_loc, OPT_Wunknown_pragmas, "ignoring %<#pragma %s %s%>",
 		  space, name);
     }
 }
 
 /* #define callback for DWARF and DWARF2 debug info.  */
 static void
-cb_define (cpp_reader *pfile, source_location loc, cpp_hashnode *node)
+cb_define (cpp_reader *pfile, location_t loc, cpp_hashnode *node)
 {
   const struct line_map *map = linemap_lookup (line_table, loc);
   (*debug_hooks->define) (SOURCE_LINE (linemap_check_ordinary (map), loc),
@@ -274,7 +275,7 @@ cb_define (cpp_reader *pfile, source_location loc, cpp_hashnode *node)
 
 /* #undef callback for DWARF and DWARF2 debug info.  */
 static void
-cb_undef (cpp_reader * ARG_UNUSED (pfile), source_location loc,
+cb_undef (cpp_reader * ARG_UNUSED (pfile), location_t loc,
 	  cpp_hashnode *node)
 {
   const struct line_map *map = linemap_lookup (line_table, loc);
@@ -353,9 +354,14 @@ c_common_has_attribute (cpp_reader *pfile)
 	      else if (is_attribute_p ("deprecated", attr_name))
 		result = 201309;
 	      else if (is_attribute_p ("maybe_unused", attr_name)
-		       || is_attribute_p ("nodiscard", attr_name)
 		       || is_attribute_p ("fallthrough", attr_name))
 		result = 201603;
+	      else if (is_attribute_p ("no_unique_address", attr_name)
+		       || is_attribute_p ("likely", attr_name)
+		       || is_attribute_p ("unlikely", attr_name))
+		result = 201803;
+	      else if (is_attribute_p ("nodiscard", attr_name))
+		result = 201907;
 	      if (result)
 		attr_name = NULL_TREE;
 	    }
@@ -381,6 +387,58 @@ c_common_has_attribute (cpp_reader *pfile)
 
   return result;
 }
+
+/* Callback for has_builtin.  */
+
+int
+c_common_has_builtin (cpp_reader *pfile)
+{
+  const cpp_token *token = get_token_no_padding (pfile);
+  if (token->type != CPP_OPEN_PAREN)
+    {
+      cpp_error (pfile, CPP_DL_ERROR,
+		 "missing '(' after \"__has_builtin\"");
+      return 0;
+    }
+
+  const char *name = "";
+  token = get_token_no_padding (pfile);
+  if (token->type == CPP_NAME)
+    {
+      name = (const char *) cpp_token_as_text (pfile, token);
+      token = get_token_no_padding (pfile);
+      if (token->type != CPP_CLOSE_PAREN)
+	{
+	  cpp_error (pfile, CPP_DL_ERROR,
+		     "expected ')' after \"%s\"", name);
+	  name = "";
+	}
+    }
+  else
+    {
+      cpp_error (pfile, CPP_DL_ERROR,
+		 "macro \"__has_builtin\" requires an identifier");
+      if (token->type == CPP_CLOSE_PAREN)
+	return 0;
+    }
+
+  /* Consume tokens up to the closing parenthesis, including any nested
+     pairs of parentheses, to avoid confusing redundant errors.  */
+  for (unsigned nparen = 1; ; token = get_token_no_padding (pfile))
+    {
+      if (token->type == CPP_OPEN_PAREN)
+	++nparen;
+      else if (token->type == CPP_CLOSE_PAREN)
+	--nparen;
+      else if (token->type == CPP_EOF)
+	break;
+      if (!nparen)
+	break;
+    }
+
+  return names_builtin_p (name);
+}
+
 
 /* Read a token and return its type.  Fill *VALUE with its value, if
    applicable.  Fill *CPP_FLAGS with the token's flags, if it is
@@ -390,7 +448,6 @@ enum cpp_ttype
 c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 		  int lex_flags)
 {
-  static bool no_more_pch;
   const cpp_token *tok;
   enum cpp_ttype type;
   unsigned char add_flags = 0;
@@ -624,12 +681,6 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
   if (cpp_flags)
     *cpp_flags = tok->flags | add_flags;
 
-  if (!no_more_pch)
-    {
-      no_more_pch = true;
-      c_common_no_more_pch ();
-    }
-
   timevar_pop (TV_CPP);
 
   return type;
@@ -814,7 +865,7 @@ interpret_float (const cpp_token *token, unsigned int flags,
       if (((flags & CPP_N_HEX) == 0) && ((flags & CPP_N_IMAGINARY) == 0))
 	{
 	  warning (OPT_Wunsuffixed_float_constants,
-		   "unsuffixed float constant");
+		   "unsuffixed floating constant");
 	  if (float_const_decimal64_p ())
 	    flags |= CPP_N_DFLOAT;
 	}
@@ -1277,8 +1328,13 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string, bool translate)
     {
     default:
     case CPP_STRING:
-    case CPP_UTF8STRING:
       TREE_TYPE (value) = char_array_type_node;
+      break;
+    case CPP_UTF8STRING:
+      if (flag_char8_t)
+        TREE_TYPE (value) = char8_array_type_node;
+      else
+        TREE_TYPE (value) = char_array_type_node;
       break;
     case CPP_STRING16:
       TREE_TYPE (value) = char16_array_type_node;
@@ -1319,7 +1375,14 @@ lex_charconst (const cpp_token *token)
   else if (token->type == CPP_CHAR16)
     type = char16_type_node;
   else if (token->type == CPP_UTF8CHAR)
-    type = char_type_node;
+    {
+      if (!c_dialect_cxx ())
+	type = unsigned_char_type_node;
+      else if (flag_char8_t)
+        type = char8_type_node;
+      else
+        type = char_type_node;
+    }
   /* In C, a character constant has type 'int'.
      In C++ 'char', but multi-char charconsts have type 'int'.  */
   else if (!c_dialect_cxx () || chars_seen > 1)

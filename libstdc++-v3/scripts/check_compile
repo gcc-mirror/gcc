@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-# Script to do performance testing.
+# Script to do compilation-only testing.
 
 # Invocation 
-# check_performance SRC_DIR BUILD_DIR
+# check_compile SRC_DIR BUILD_DIR
 
 # 1: variables
 #
@@ -17,7 +17,7 @@ shift
 # This has been true all along.  Found out about it the hard way...
 case $BASH_VERSION in
     1*)  
-	echo 'You need bash 2.x to run check_performance.  Exiting.'; 
+	echo 'You need bash 2.x to run check_compile.  Exiting.';
 	exit 1 ;;
     *)   ;;  
 esac

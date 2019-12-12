@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,18 @@ with Ada.Unchecked_Deallocation;
 pragma Elaborate_All (System.File_IO);
 --  Needed because of calls to Chain_File in package body elaboration
 
-package body Ada.Text_IO is
+package body Ada.Text_IO with
+  Refined_State => (File_System => (Standard_In,
+                                    Standard_Out,
+                                    Standard_Err,
+                                    Current_In,
+                                    Current_Out,
+                                    Current_Err,
+                                    In_Name,
+                                    Out_Name,
+                                    Err_Name,
+                                    WC_Encoding))
+is
 
    package FIO renames System.File_IO;
 

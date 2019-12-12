@@ -1,6 +1,9 @@
 /* { dg-do compile } */
 /* Check that the foo interrupt vectors aren't actually removed.  */
 /* { dg-final { scan-assembler-times "__interrupt_vector_foo" 2 } } */
+/* Check that the out-of-range interrupt vectors aren't actually removed.  */
+/* { dg-final { scan-assembler "__interrupt_vector_65" } } */
+/* { dg-final { scan-assembler "__interrupt_vector_100" } } */
 
 /* Check that warnings are emitted when attributes are used incorrectly and
    that attributes are interpreted correctly whether leading and trailing
@@ -8,62 +11,62 @@
 
 void __attribute__((__naked__,__reentrant__))
 fn1(void)
-{ /* { dg-warning "naked functions cannot be reentrant" } */
+{ /* { dg-warning "ignoring attribute 'reentrant' because it conflicts with attribute 'naked'" } */
 }
 
 void __attribute__((naked,reentrant))
 fn2(void)
-{ /* { dg-warning "naked functions cannot be reentrant" } */
+{ /* { dg-warning "ignoring attribute 'reentrant' because it conflicts with attribute 'naked'" } */
 }
 
 void __attribute__((__reentrant__,__naked__))
 fn3(void)
-{ /* { dg-warning "reentrant functions cannot be naked" } */
+{ /* { dg-warning "ignoring attribute 'naked' because it conflicts with attribute 'reentrant'" } */
 }
 
 void __attribute__((reentrant,naked))
 fn4(void)
-{ /* { dg-warning "reentrant functions cannot be naked" } */
+{ /* { dg-warning "ignoring attribute 'naked' because it conflicts with attribute 'reentrant'" } */
 }
 
 void __attribute__((__critical__,__reentrant__))
 fn5(void)
-{ /* { dg-warning "critical functions cannot be reentrant" } */
+{ /* { dg-warning "ignoring attribute 'reentrant' because it conflicts with attribute 'critical'" } */
 }
 
 void __attribute__((critical,reentrant))
 fn6(void)
-{ /* { dg-warning "critical functions cannot be reentrant" } */
+{ /* { dg-warning "ignoring attribute 'reentrant' because it conflicts with attribute 'critical'" } */
 }
 
 void __attribute__((__reentrant__,__critical__))
 fn7(void)
-{ /* { dg-warning "reentrant functions cannot be critical" } */
+{ /* { dg-warning "ignoring attribute 'critical' because it conflicts with attribute 'reentrant'" } */
 }
 
 void __attribute__((reentrant,critical))
 fn8(void)
-{ /* { dg-warning "reentrant functions cannot be critical" } */
+{ /* { dg-warning "ignoring attribute 'critical' because it conflicts with attribute 'reentrant'" } */
 }
 
 void __attribute__((__critical__,__naked__))
 fn9(void)
-{ /* { dg-warning "critical functions cannot be naked" } */
+{ /* { dg-warning "ignoring attribute 'naked' because it conflicts with attribute 'critical'" } */
 }
 
 void __attribute__((critical,naked))
 fn10(void)
-{ /* { dg-warning "critical functions cannot be naked" } */
+{ /* { dg-warning "ignoring attribute 'naked' because it conflicts with attribute 'critical'" } */
 }
 
 void __attribute__((__naked__,__critical__))
 fn11(void)
-{ /* { dg-warning "naked functions cannot be critical" } */
+{ /* { dg-warning "ignoring attribute 'critical' because it conflicts with attribute 'naked'" } */
 }
 
 void __attribute__((naked,critical))
 fn12(void)
-{ /* { dg-warning "naked functions cannot be critical" } */
+{ /* { dg-warning "ignoring attribute 'critical' because it conflicts with attribute 'naked'" } */
 }
 
 int __attribute__((interrupt))

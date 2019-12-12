@@ -1,7 +1,8 @@
 //===-- tsan_interface.h ----------------------------------------*- C++ -*-===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -89,9 +90,14 @@ SANITIZER_INTERFACE_ATTRIBUTE
 void __tsan_external_write(void *addr, void *caller_pc, void *tag);
 
 SANITIZER_INTERFACE_ATTRIBUTE
-void __tsan_read_range(void *addr, unsigned long size);  // NOLINT
+void __tsan_read_range(void *addr, unsigned long size);
 SANITIZER_INTERFACE_ATTRIBUTE
-void __tsan_write_range(void *addr, unsigned long size);  // NOLINT
+void __tsan_write_range(void *addr, unsigned long size);
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void __tsan_read_range_pc(void *addr, unsigned long size, void *pc);  // NOLINT
+SANITIZER_INTERFACE_ATTRIBUTE
+void __tsan_write_range_pc(void *addr, unsigned long size, void *pc);  // NOLINT
 
 // User may provide function that would be called right when TSan detects
 // an error. The argument 'report' is an opaque pointer that can be used to
@@ -114,6 +120,19 @@ int __tsan_get_report_data(void *report, const char **description, int *count,
                            int *mutex_count, int *thread_count,
                            int *unique_tid_count, void **sleep_trace,
                            uptr trace_size);
+
+/// Retrieves the "tag" from a report (for external-race report types). External
+/// races can be associated with a tag which give them more meaning. For example
+/// tag value '1' means "Swift access race". Tag value '0' indicated a plain
+/// external race.
+///
+/// \param report opaque pointer to the current report (obtained as argument in
+///               __tsan_on_report, or from __tsan_get_current_report)
+/// \param [out] tag points to storage that will be filled with the tag value
+///
+/// \returns non-zero value on success, zero on failure
+SANITIZER_INTERFACE_ATTRIBUTE
+int __tsan_get_report_tag(void *report, uptr *tag);
 
 // Returns information about stack traces included in the report.
 SANITIZER_INTERFACE_ATTRIBUTE
@@ -173,9 +192,9 @@ namespace __tsan {
 
 // These should match declarations from public tsan_interface_atomic.h header.
 typedef unsigned char      a8;
-typedef unsigned short     a16;  // NOLINT
+typedef unsigned short a16;
 typedef unsigned int       a32;
-typedef unsigned long long a64;  // NOLINT
+typedef unsigned long long a64;
 #if !SANITIZER_GO && (defined(__SIZEOF_INT128__) \
     || (__clang_major__ * 100 + __clang_minor__ >= 302)) && !defined(__mips64)
 __extension__ typedef __int128 a128;
@@ -185,7 +204,7 @@ __extension__ typedef __int128 a128;
 #endif
 
 // Part of ABI, do not change.
-// http://llvm.org/viewvc/llvm-project/libcxx/trunk/include/atomic?view=markup
+// https://github.com/llvm/llvm-project/blob/master/libcxx/include/atomic
 typedef enum {
   mo_relaxed,
   mo_consume,

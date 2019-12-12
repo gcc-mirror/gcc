@@ -2,7 +2,6 @@
    when spurious "inexact" not allowed.  */
 /* { dg-do compile } */
 /* { dg-options "-O2 -msse4.1 -mfpmath=sse -fno-fp-int-builtin-inexact" } */
-/* { dg-add-options c99_runtime } */
 /* { dg-require-effective-target sse4 } */
 
 #define TEST(FN, TYPE)				\

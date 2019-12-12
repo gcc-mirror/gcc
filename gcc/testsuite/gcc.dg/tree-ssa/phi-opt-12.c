@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-phiopt1" } */
+/* { dg-options "-O -fdump-tree-phiopt2" } */
 
 int f(int a, int b, int c) {
   if (c > 5) return c;
@@ -19,4 +19,4 @@ unsigned m(unsigned a, unsigned b) {
     return a & b;
 }
 
-/* { dg-final { scan-tree-dump-times "goto" 2 "phiopt1" } } */
+/* { dg-final { scan-tree-dump-times "goto" 2 "phiopt2" } } */

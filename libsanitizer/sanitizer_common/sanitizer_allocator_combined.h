@@ -1,7 +1,8 @@
 //===-- sanitizer_allocator_combined.h --------------------------*- C++ -*-===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -18,30 +19,38 @@
 //  When allocating 2^x bytes it should return 2^x aligned chunk.
 // PrimaryAllocator is used via a local AllocatorCache.
 // SecondaryAllocator can allocate anything, but is not efficient.
-template <class PrimaryAllocator, class AllocatorCache,
-          class SecondaryAllocator>  // NOLINT
+template <class PrimaryAllocator,
+          class LargeMmapAllocatorPtrArray = DefaultLargeMmapAllocatorPtrArray>
 class CombinedAllocator {
  public:
-  typedef typename SecondaryAllocator::FailureHandler FailureHandler;
+  using AllocatorCache = typename PrimaryAllocator::AllocatorCache;
+  using SecondaryAllocator =
+      LargeMmapAllocator<typename PrimaryAllocator::MapUnmapCallback,
+                         LargeMmapAllocatorPtrArray,
+                         typename PrimaryAllocator::AddressSpaceView>;
 
   void InitLinkerInitialized(s32 release_to_os_interval_ms) {
+    stats_.InitLinkerInitialized();
     primary_.Init(release_to_os_interval_ms);
     secondary_.InitLinkerInitialized();
-    stats_.InitLinkerInitialized();
   }
 
   void Init(s32 release_to_os_interval_ms) {
+    stats_.Init();
     primary_.Init(release_to_os_interval_ms);
     secondary_.Init();
-    stats_.Init();
   }
 
   void *Allocate(AllocatorCache *cache, uptr size, uptr alignment) {
     // Returning 0 on malloc(0) may break a lot of code.
     if (size == 0)
       size = 1;
-    if (size + alignment < size)
-      return FailureHandler::OnBadRequest();
+    if (size + alignment < size) {
+      Report("WARNING: %s: CombinedAllocator allocation overflow: "
+             "0x%zx bytes with 0x%zx alignment requested\n",
+             SanitizerToolName, size, alignment);
+      return nullptr;
+    }
     uptr original_size = size;
     // If alignment requirements are to be fulfilled by the frontend allocator
     // rather than by the primary or secondary, passing an alignment lower than
@@ -60,8 +69,6 @@ class CombinedAllocator {
       res = cache->Allocate(&primary_, primary_.ClassID(size));
     else
       res = secondary_.Allocate(&stats_, original_size, alignment);
-    if (!res)
-      return FailureHandler::OnOOM();
     if (alignment > 8)
       CHECK_EQ(reinterpret_cast<uptr>(res) & (alignment - 1), 0);
     return res;
@@ -73,6 +80,10 @@ class CombinedAllocator {
 
   void SetReleaseToOSIntervalMs(s32 release_to_os_interval_ms) {
     primary_.SetReleaseToOSIntervalMs(release_to_os_interval_ms);
+  }
+
+  void ForceReleaseToOS() {
+    primary_.ForceReleaseToOS();
   }
 
   void Deallocate(AllocatorCache *cache, void *p) {

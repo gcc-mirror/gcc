@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2016-2018 Free Software Foundation, Inc.
+   Copyright (C) 2016-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,49 +20,77 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_VRP_H
 #define GCC_TREE_VRP_H
 
-/* Type of value ranges.  See value_range below for a
-   description of these types.  */
-enum value_range_type { VR_UNDEFINED, VR_RANGE,
-			VR_ANTI_RANGE, VR_VARYING, VR_LAST };
+#include "value-range.h"
 
-/* Range of values that can be associated with an SSA_NAME after VRP
-   has executed.  */
-struct GTY((for_user)) value_range
+/* Note value_range_equiv cannot currently be used with GC memory,
+   only value_range is fully set up for this.  */
+class GTY((user)) value_range_equiv : public value_range
 {
-  /* Lattice value represented by this range.  */
-  enum value_range_type type;
+ public:
+  value_range_equiv ();
+  value_range_equiv (const value_range &);
+  /* Deep-copies equiv bitmap argument.  */
+  value_range_equiv (tree, tree, bitmap = NULL, value_range_kind = VR_RANGE);
 
-  /* Minimum and maximum values represented by this range.  These
-     values should be interpreted as follows:
+  /* Shallow-copies equiv bitmap.  */
+  value_range_equiv (const value_range_equiv &) /* = delete */;
+  /* Shallow-copies equiv bitmap.  */
+  value_range_equiv& operator=(const value_range_equiv &) /* = delete */;
 
-	- If TYPE is VR_UNDEFINED or VR_VARYING then MIN and MAX must
-	  be NULL.
+  /* Move equiv bitmap from source range.  */
+  void move (value_range_equiv *);
 
-	- If TYPE == VR_RANGE then MIN holds the minimum value and
-	  MAX holds the maximum value of the range [MIN, MAX].
+  /* Leaves equiv bitmap alone.  */
+  void update (tree, tree, value_range_kind = VR_RANGE);
+  /* Deep-copies equiv bitmap argument.  */
+  void set (tree, tree, bitmap = NULL, value_range_kind = VR_RANGE);
+  void set (tree);
 
-	- If TYPE == ANTI_RANGE the variable is known to NOT
-	  take any values in the range [MIN, MAX].  */
-  tree min;
-  tree max;
+  bool operator== (const value_range_equiv &) const /* = delete */;
+  bool operator!= (const value_range_equiv &) const /* = delete */;
+  void intersect (const value_range_equiv *);
+  void union_ (const value_range_equiv *);
+  bool equal_p (const value_range_equiv &, bool ignore_equivs) const;
+
+  /* Types of value ranges.  */
+  void set_undefined ();
+  void set_varying (tree);
+
+  /* Equivalence bitmap methods.  */
+  bitmap equiv () const;
+  void equiv_clear ();
+  void equiv_add (const_tree, const value_range_equiv *,
+		  bitmap_obstack * = NULL);
+
+  /* Misc methods.  */
+  void deep_copy (const value_range_equiv *);
+  void dump (FILE *) const;
+  void dump () const;
+
+ private:
+  /* Deep-copies bitmap argument.  */
+  void set_equiv (bitmap);
+  void check ();
 
   /* Set of SSA names whose value ranges are equivalent to this one.
      This set is only valid when TYPE is VR_RANGE or VR_ANTI_RANGE.  */
-  bitmap equiv;
+  bitmap m_equiv;
 };
 
-extern void vrp_intersect_ranges (value_range *vr0, value_range *vr1);
-extern void vrp_meet (value_range *vr0, const value_range *vr1);
-extern void dump_value_range (FILE *, const value_range *);
-extern void extract_range_from_unary_expr (value_range *vr,
-					   enum tree_code code,
-					   tree type,
-					   value_range *vr0_,
-					   tree op0_type);
+inline
+value_range_equiv::value_range_equiv ()
+  : value_range ()
+{
+  m_equiv = NULL;
+}
 
-extern bool vrp_operand_equal_p (const_tree, const_tree);
-extern enum value_range_type intersect_range_with_nonzero_bits
-  (enum value_range_type, wide_int *, wide_int *, const wide_int &, signop);
+inline bitmap
+value_range_equiv::equiv () const
+{
+  return m_equiv;
+}
+
+extern void dump_value_range (FILE *, const value_range_equiv *);
 
 struct assert_info
 {
@@ -82,57 +110,27 @@ struct assert_info
 extern void register_edge_assert_for (tree, edge, enum tree_code,
 				      tree, tree, vec<assert_info> &);
 extern bool stmt_interesting_for_vrp (gimple *);
-extern void set_value_range_to_varying (value_range *);
-extern int range_includes_zero_p (tree, tree);
 extern bool infer_value_range (gimple *, tree, tree_code *, tree *);
 
-extern void set_value_range_to_nonnull (value_range *, tree);
-extern void set_value_range (value_range *, enum value_range_type, tree,
-			     tree, bitmap);
-extern void set_and_canonicalize_value_range (value_range *,
-					      enum value_range_type,
-					      tree, tree, bitmap);
-extern bool vrp_bitmap_equal_p (const_bitmap, const_bitmap);
-extern bool range_is_nonnull (value_range *);
-extern tree value_range_constant_singleton (value_range *);
-extern bool symbolic_range_p (value_range *);
+extern bool range_int_cst_p (const value_range *);
+
 extern int compare_values (tree, tree);
 extern int compare_values_warnv (tree, tree, bool *);
-extern bool vrp_val_is_min (const_tree);
-extern bool vrp_val_is_max (const_tree);
-extern void copy_value_range (value_range *, value_range *);
-extern void set_value_range_to_value (value_range *, tree, bitmap);
-extern void extract_range_from_binary_expr_1 (value_range *, enum tree_code,
-					      tree, value_range *,
-					      value_range *);
-extern tree vrp_val_min (const_tree);
-extern tree vrp_val_max (const_tree);
-extern void set_value_range_to_null (value_range *, tree);
-extern bool range_int_cst_p (value_range *);
 extern int operand_less_p (tree, tree);
+
+void range_fold_unary_expr (value_range *, enum tree_code, tree type,
+			    const value_range *, tree op0_type);
+void range_fold_binary_expr (value_range *, enum tree_code, tree type,
+			     const value_range *, const value_range *);
+
+extern enum value_range_kind intersect_range_with_nonzero_bits
+  (enum value_range_kind, wide_int *, wide_int *, const wide_int &, signop);
+
 extern bool find_case_label_range (gswitch *, tree, tree, size_t *, size_t *);
 extern bool find_case_label_index (gswitch *, size_t, tree, size_t *);
-extern void zero_nonzero_bits_from_bounds (signop, const wide_int&,
-					   const wide_int&, wide_int *,
-					   wide_int *);
-extern bool zero_nonzero_bits_from_vr (const tree, value_range *,
-				       wide_int *, wide_int *);
-extern bool range_easy_mask_min_max (tree_code,
-				     const wide_int &lb, const wide_int &ub,
-				     const wide_int &mask);
 extern bool overflow_comparison_p (tree_code, tree, tree, bool, tree *);
-extern bool range_int_cst_singleton_p (value_range *);
-extern int value_inside_range (tree, tree, tree);
 extern tree get_single_symbol (tree, bool *, tree *);
 extern void maybe_set_nonzero_bits (edge, tree);
-extern value_range_type determine_value_range (tree, wide_int *, wide_int *);
-
-struct switch_update {
-  gswitch *stmt;
-  tree vec;
-};
-
-extern vec<edge> to_remove_edges;
-extern vec<switch_update> to_update_switch_stmts;
+extern value_range_kind determine_value_range (tree, wide_int *, wide_int *);
 
 #endif /* GCC_TREE_VRP_H */

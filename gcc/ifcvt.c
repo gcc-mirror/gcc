@@ -1,5 +1,5 @@
 /* If-conversion support.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -45,7 +45,6 @@
 #include "shrink-wrap.h"
 #include "rtl-iter.h"
 #include "ifcvt.h"
-#include "params.h"
 
 #ifndef MAX_CONDITIONAL_EXECUTE
 #define MAX_CONDITIONAL_EXECUTE \
@@ -503,7 +502,7 @@ cond_exec_process_if_block (ce_if_block * ce_info,
     return FALSE;
 
   /* If the conditional jump is more than just a conditional jump,
-     then we can not do conditional execution conversion on this block.  */
+     then we cannot do conditional execution conversion on this block.  */
   if (! onlyjump_p (BB_END (test_bb)))
     return FALSE;
 
@@ -652,7 +651,7 @@ cond_exec_process_if_block (ce_if_block * ce_info,
 	    goto fail;
 
 	  /* If the conditional jump is more than just a conditional jump, then
-	     we can not do conditional execution conversion on this block.  */
+	     we cannot do conditional execution conversion on this block.  */
 	  if (! onlyjump_p (BB_END (bb)))
 	    goto fail;
 
@@ -3311,7 +3310,7 @@ bb_ok_for_noce_convert_multiple_sets (basic_block test_bb)
 {
   rtx_insn *insn;
   unsigned count = 0;
-  unsigned param = PARAM_VALUE (PARAM_MAX_RTL_IF_CONVERSION_INSNS);
+  unsigned param = param_max_rtl_if_conversion_insns;
 
   FOR_BB_INSNS (test_bb, insn)
     {
@@ -3356,6 +3355,16 @@ bb_ok_for_noce_convert_multiple_sets (basic_block test_bb)
      that are emitted, they set this through PARAM, we need to respect
      that.  */
   return count > 1 && count <= param;
+}
+
+/* Compute average of two given costs weighted by relative probabilities
+   of respective basic blocks in an IF-THEN-ELSE.  E is the IF-THEN edge.
+   With P as the probability to take the IF-THEN branch, return
+   P * THEN_COST + (1 - P) * ELSE_COST.  */
+static unsigned
+average_cost (unsigned then_cost, unsigned else_cost, edge e)
+{
+  return else_cost + e->probability.apply ((signed) (then_cost - else_cost));
 }
 
 /* Given a simple IF-THEN-JOIN or IF-THEN-ELSE-JOIN block, attempt to convert
@@ -3413,10 +3422,9 @@ noce_process_if_block (struct noce_if_info *if_info)
 				       &if_info->else_simple))
     return false;
 
-  if (else_bb == NULL)
-    if_info->original_cost += then_cost;
-  else if (speed_p)
-    if_info->original_cost += MIN (then_cost, else_cost);
+  if (speed_p)
+    if_info->original_cost += average_cost (then_cost, else_cost,
+					    find_edge (test_bb, then_bb));
   else
     if_info->original_cost += then_cost + else_cost;
 
@@ -3829,7 +3837,7 @@ cond_move_process_if_block (struct noce_if_info *if_info)
   vec<rtx> else_regs = vNULL;
   unsigned int i;
   int success_p = FALSE;
-  int limit = PARAM_VALUE (PARAM_MAX_RTL_IF_CONVERSION_INSNS);
+  int limit = param_max_rtl_if_conversion_insns;
 
   /* Build a mapping for each block to the value used for each
      register.  */
@@ -4022,7 +4030,7 @@ noce_find_if_block (basic_block test_bb, edge then_edge, edge else_edge,
     }
 
   /* If the conditional jump is more than just a conditional
-     jump, then we can not do if-conversion on this block.  */
+     jump, then we cannot do if-conversion on this block.  */
   jump = BB_END (test_bb);
   if (! onlyjump_p (jump))
     return FALSE;
@@ -4642,7 +4650,7 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
     return FALSE;
 
   /* If the conditional jump is more than just a conditional jump, then
-     we can not do if-conversion on this block.  Give up for returnjump_p,
+     we cannot do if-conversion on this block.  Give up for returnjump_p,
      changing a conditional return followed by unconditional trap for
      conditional trap followed by unconditional return is likely not
      beneficial and harder to handle.  */
@@ -5457,6 +5465,8 @@ if_convert (bool after_combine)
 static unsigned int
 rest_of_handle_if_conversion (void)
 {
+  int flags = 0;
+
   if (flag_if_conversion)
     {
       if (dump_file)
@@ -5466,9 +5476,12 @@ rest_of_handle_if_conversion (void)
 	}
       cleanup_cfg (CLEANUP_EXPENSIVE);
       if_convert (false);
+      if (num_updated_if_blocks)
+	/* Get rid of any dead CC-related instructions.  */
+	flags |= CLEANUP_FORCE_FAST_DCE;
     }
 
-  cleanup_cfg (0);
+  cleanup_cfg (flags);
   return 0;
 }
 

@@ -44,9 +44,13 @@ void test_memcpy_bounds_memarray_range (void)
   TM (ma.a5, ma.a5 + j, ma.a5, 1);
   TM (ma.a5, ma.a5 + j, ma.a5, 3);
   TM (ma.a5, ma.a5 + j, ma.a5, 5);
-  TM (ma.a5, ma.a5 + j, ma.a5, 7);        /* { dg-warning "offset \\\[6, 8] from the object at .ma. is out of the bounds of referenced subobject .\(MA::\)?a5. with type .char ?\\\[5]. at offset 0" } */
-  TM (ma.a5, ma.a5 + j, ma.a5, 9);        /* { dg-warning "offset \\\[6, 10] from the object at .ma. is out of the bounds of referenced subobject .\(MA::\)?a5. with type .char ?\\\[5]. at offset 0" } */
+  TM (ma.a5, ma.a5 + j, ma.a5, 7);        /* { dg-warning "offset \\\[5, 7] from the object at .ma. is out of the bounds of referenced subobject .\(MA::\)?a5. with type .char ?\\\[5]. at offset 0" } */
+  TM (ma.a5, ma.a5 + j, ma.a5, 9);        /* { dg-warning "offset \\\[5, 9] from the object at .ma. is out of the bounds of referenced subobject .\(MA::\)?a5. with type .char ?\\\[5]. at offset 0" } */
 }
+
+#if __i386__ || __x86_64__
+
+/* Disabled for non-x86 targets due to bug 83543.  */
 
 void test_strcpy_bounds_memarray_range (void)
 {
@@ -63,11 +67,8 @@ void test_strcpy_bounds_memarray_range (void)
   TM ("0", "",     ma.a5 + i, ma.a5);
   TM ("01", "",    ma.a5 + i, ma.a5);
   TM ("012", "",   ma.a5 + i, ma.a5);
-  TM ("0123", "",  ma.a5 + i, ma.a5);     /* { dg-warning "offset 6 from the object at .ma. is out of the bounds of referenced subobject .a5. with type .char\\\[5]. at offset 0" "strcpy" { xfail *-*-* } } */
+  TM ("0123", "",  ma.a5 + i, ma.a5);     /* { dg-warning "offset 5 from the object at .ma. is out of the bounds of referenced subobject .\(MA::\)?a5. with type .char *\\\[5]. at offset 0" "pr83543" { xfail { ! { i?86-*-* x86_64-*-* } } } } */
 
-#if __i386__ || __x86_64__
-  /* Disabled for non-x86 targets due to bug 83462.  */
-  TM ("", "012345", ma.a7 + i, ma.a7);    /* { dg-warning "offset 13 from the object at .ma. is out of the bounds of referenced subobject .\(MA::\)?a7. with type .char ?\\\[7]. at offset 5" "strcpy" { xfail { ! { i?86-*-* x86_64-*-* } } } } */
-#endif
-
+  TM ("", "012345", ma.a7 + i, ma.a7);    /* { dg-warning "offset 12 from the object at .ma. is out of the bounds of referenced subobject .\(MA::\)?a7. with type .char ?\\\[7]. at offset 5" "pr83543" { xfail { ! { i?86-*-* x86_64-*-* } } } } */
 }
+#endif

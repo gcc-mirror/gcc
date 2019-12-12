@@ -1,5 +1,5 @@
 ;; Predicate description for RISC-V target.
-;; Copyright (C) 2011-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2019 Free Software Foundation, Inc.
 ;; Contributed by Andrew Waterman (andrew@sifive.com).
 ;; Based on MIPS target for GNU compiler.
 ;;
@@ -26,6 +26,14 @@
 (define_predicate "arith_operand"
   (ior (match_operand 0 "const_arith_operand")
        (match_operand 0 "register_operand")))
+
+(define_predicate "lui_operand"
+  (and (match_code "const_int")
+       (match_test "LUI_OPERAND (INTVAL (op))")))
+
+(define_predicate "sfb_alu_operand"
+  (ior (match_operand 0 "arith_operand")
+       (match_operand 0 "lui_operand")))
 
 (define_predicate "const_csr_operand"
   (and (match_code "const_int")

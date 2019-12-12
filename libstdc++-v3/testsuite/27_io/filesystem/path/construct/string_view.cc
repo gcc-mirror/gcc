@@ -1,8 +1,7 @@
-// { dg-options "-lstdc++fs -std=gnu++17" }
+// { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
-// { dg-require-filesystem-ts "" }
 
-// Copyright (C) 2016-2018 Free Software Foundation, Inc.
+// Copyright (C) 2016-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,6 +24,7 @@
 #include <string_view>
 #include <string>
 #include <testsuite_fs.h>
+#include <testsuite_hooks.h>
 
 using std::filesystem::path;
 using __gnu_test::compare_paths;
@@ -49,8 +49,31 @@ test01()
   }
 }
 
+void
+test02()
+{
+  std::string s;
+  for (int i = 0; i < 10; ++i)
+    s += "0/1/2/3/4/5/6/7/8/9/";
+  // Construct a path with a large number of components:
+  path p = s;
+  auto iter = p.begin();
+  for (int i = 0; i < 100; ++i)
+  {
+    char c = '0' + i % 10;
+    std::string_view sv(&c, 1);
+    VERIFY( iter != p.end() );
+    compare_paths( *iter, sv );
+    ++iter;
+  }
+  VERIFY( iter != p.end() );
+  VERIFY( iter->native().empty() );
+  VERIFY( ++iter == p.end() );
+}
+
 int
 main()
 {
   test01();
+  test02();
 }

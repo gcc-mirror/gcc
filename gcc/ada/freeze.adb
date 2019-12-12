@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,6 +49,7 @@ with Rtsfind;   use Rtsfind;
 with Sem;       use Sem;
 with Sem_Aux;   use Sem_Aux;
 with Sem_Cat;   use Sem_Cat;
+with Sem_Ch3;   use Sem_Ch3;
 with Sem_Ch6;   use Sem_Ch6;
 with Sem_Ch7;   use Sem_Ch7;
 with Sem_Ch8;   use Sem_Ch8;
@@ -61,6 +62,7 @@ with Sem_Util;  use Sem_Util;
 with Sinfo;     use Sinfo;
 with Snames;    use Snames;
 with Stand;     use Stand;
+with Stringt;   use Stringt;
 with Targparm;  use Targparm;
 with Tbuild;    use Tbuild;
 with Ttypes;    use Ttypes;
@@ -406,11 +408,14 @@ package body Freeze is
       --  calls to the renamed entity. The body must be generated in any case
       --  for calls that may appear elsewhere. This is not done in the case
       --  where the subprogram is an instantiation because the actual proper
-      --  body has not been built yet.
+      --  body has not been built yet. This is also not done in GNATprove mode
+      --  as we need to check other conditions for creating a body to inline
+      --  in that case, which are controlled in Analyze_Subprogram_Body_Helper.
 
       if Ekind_In (Old_S, E_Function, E_Procedure)
         and then Nkind (Decl) = N_Subprogram_Declaration
         and then not Is_Generic_Instance (Old_S)
+        and then not GNATprove_Mode
       then
          Set_Body_To_Inline (Decl, Old_S);
       end if;
@@ -781,9 +786,7 @@ package body Freeze is
          elsif Has_Size_Clause (T) then
             if RM_Size (T) < S then
                Error_Msg_Uint_1 := S;
-               Error_Msg_NE
-                 ("size for& too small, minimum allowed is ^",
-                  Size_Clause (T), T);
+               Error_Msg_NE (Size_Too_Small_Message, Size_Clause (T), T);
             end if;
 
          --  Set size if not set already
@@ -1521,11 +1524,11 @@ package body Freeze is
       --  so that LSP can be verified/enforced.
 
       Op_Node := First_Elmt (Prim_Ops);
-      Needs_Wrapper := False;
 
       while Present (Op_Node) loop
-         Decls := Empty_List;
-         Prim  := Node (Op_Node);
+         Decls         := Empty_List;
+         Prim          := Node (Op_Node);
+         Needs_Wrapper := False;
 
          if not Comes_From_Source (Prim) and then Present (Alias (Prim)) then
             Par_Prim := Alias (Prim);
@@ -1596,8 +1599,6 @@ package body Freeze is
                     (Par_R, New_List (New_Decl, New_Body));
                end if;
             end;
-
-            Needs_Wrapper := False;
          end if;
 
          Next_Elmt (Op_Node);
@@ -1770,6 +1771,7 @@ package body Freeze is
       New_N :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Temp,
+          Constant_Present    => True,
           Object_Definition   => New_Occurrence_Of (Typ, Loc),
           Expression          => Relocate_Node (N));
       Insert_Before (Par, New_N);
@@ -1937,12 +1939,6 @@ package body Freeze is
             --  for a description of how we handle aspect visibility).
 
             elsif Has_Delayed_Aspects (E) then
-
-               --  Retrieve the visibility to the discriminants in order to
-               --  analyze properly the aspects.
-
-               Push_Scope_And_Install_Discriminants (E);
-
                declare
                   Ritem : Node_Id;
 
@@ -1959,8 +1955,6 @@ package body Freeze is
                      Ritem := Next_Rep_Item (Ritem);
                   end loop;
                end;
-
-               Uninstall_Discriminants_And_Pop_Scope (E);
             end if;
 
             --  If an incomplete type is still not frozen, this may be a
@@ -2177,9 +2171,6 @@ package body Freeze is
       Formal : Entity_Id;
       Indx   : Node_Id;
 
-      Has_Default_Initialization : Boolean := False;
-      --  This flag gets set to true for a variable with default initialization
-
       Result : List_Id := No_List;
       --  List of freezing actions, left at No_List if none
 
@@ -2251,23 +2242,7 @@ package body Freeze is
 
       procedure Add_To_Result (Fnod : Node_Id) is
       begin
-         --  The Ghost mode of the enclosing context is ignored, while the
-         --  entity being frozen is living. Insert the freezing action prior
-         --  to the start of the enclosing ignored Ghost region. As a result
-         --  the freezeing action will be preserved when the ignored Ghost
-         --  context is eliminated.
-
-         if Saved_GM = Ignore
-           and then Ghost_Mode /= Ignore
-           and then Present (Ignored_Ghost_Region)
-         then
-            Insert_Action (Ignored_Ghost_Region, Fnod);
-
-         --  Otherwise add the freezing action to the result list
-
-         else
-            Append_New_To (Result, Fnod);
-         end if;
+         Append_New_To (Result, Fnod);
       end Add_To_Result;
 
       ----------------------------
@@ -3212,6 +3187,15 @@ package body Freeze is
          --  wrap-around arithmetic might yield a meaningless value for the
          --  length of the array, or its corresponding attribute.
 
+         procedure Check_Pragma_Thread_Local_Storage (Var_Id : Entity_Id);
+         --  Ensure that the initialization state of variable Var_Id subject
+         --  to pragma Thread_Local_Storage agrees with the semantics of the
+         --  pragma.
+
+         function Has_Default_Initialization
+           (Obj_Id : Entity_Id) return Boolean;
+         --  Determine whether object Obj_Id default initialized
+
          -------------------------------
          -- Check_Large_Modular_Array --
          -------------------------------
@@ -3290,6 +3274,122 @@ package body Freeze is
                    Reason    => SE_Object_Too_Large));
             end if;
          end Check_Large_Modular_Array;
+
+         ---------------------------------------
+         -- Check_Pragma_Thread_Local_Storage --
+         ---------------------------------------
+
+         procedure Check_Pragma_Thread_Local_Storage (Var_Id : Entity_Id) is
+            function Has_Incompatible_Initialization
+              (Var_Decl : Node_Id) return Boolean;
+            --  Determine whether variable Var_Id with declaration Var_Decl is
+            --  initialized with a value that violates the semantics of pragma
+            --  Thread_Local_Storage.
+
+            -------------------------------------
+            -- Has_Incompatible_Initialization --
+            -------------------------------------
+
+            function Has_Incompatible_Initialization
+              (Var_Decl : Node_Id) return Boolean
+            is
+               Init_Expr : constant Node_Id := Expression (Var_Decl);
+
+            begin
+               --  The variable is default-initialized. This directly violates
+               --  the semantics of the pragma.
+
+               if Has_Default_Initialization (Var_Id) then
+                  return True;
+
+               --  The variable has explicit initialization. In this case only
+               --  a handful of values satisfy the semantics of the pragma.
+
+               elsif Has_Init_Expression (Var_Decl)
+                 and then Present (Init_Expr)
+               then
+                  --  "null" is a legal form of initialization
+
+                  if Nkind (Init_Expr) = N_Null then
+                     return False;
+
+                  --  A static expression is a legal form of initialization
+
+                  elsif Is_Static_Expression (Init_Expr) then
+                     return False;
+
+                  --  A static aggregate is a legal form of initialization
+
+                  elsif Nkind (Init_Expr) = N_Aggregate
+                    and then Compile_Time_Known_Aggregate (Init_Expr)
+                  then
+                     return False;
+
+                  --  All other initialization expressions violate the semantic
+                  --  of the pragma.
+
+                  else
+                     return True;
+                  end if;
+
+               --  The variable lacks any kind of initialization, which agrees
+               --  with the semantics of the pragma.
+
+               else
+                  return False;
+               end if;
+            end Has_Incompatible_Initialization;
+
+            --  Local declarations
+
+            Var_Decl : constant Node_Id := Declaration_Node (Var_Id);
+
+         --  Start of processing for Check_Pragma_Thread_Local_Storage
+
+         begin
+            --  A variable whose initialization is suppressed lacks any kind of
+            --  initialization.
+
+            if Suppress_Initialization (Var_Id) then
+               null;
+
+            --  The variable has default initialization, or is explicitly
+            --  initialized to a value other than null, static expression,
+            --  or a static aggregate.
+
+            elsif Has_Incompatible_Initialization (Var_Decl) then
+               Error_Msg_NE
+                 ("Thread_Local_Storage variable& is improperly initialized",
+                  Var_Decl, Var_Id);
+               Error_Msg_NE
+                 ("\only allowed initialization is explicit NULL, static "
+                  & "expression or static aggregate", Var_Decl, Var_Id);
+            end if;
+         end Check_Pragma_Thread_Local_Storage;
+
+         --------------------------------
+         -- Has_Default_Initialization --
+         --------------------------------
+
+         function Has_Default_Initialization
+           (Obj_Id : Entity_Id) return Boolean
+         is
+            Obj_Decl : constant Node_Id   := Declaration_Node (Obj_Id);
+            Obj_Typ  : constant Entity_Id := Etype (Obj_Id);
+
+         begin
+            return
+              Comes_From_Source (Obj_Id)
+                and then not Is_Imported (Obj_Id)
+                and then not Has_Init_Expression (Obj_Decl)
+                and then
+                  ((Has_Non_Null_Base_Init_Proc (Obj_Typ)
+                     and then not No_Initialization (Obj_Decl)
+                     and then not Initialization_Suppressed (Obj_Typ))
+                   or else
+                     (Needs_Simple_Initialization (Obj_Typ)
+                       and then not Is_Internal (Obj_Id)));
+         end Has_Default_Initialization;
 
          --  Local variables
 
@@ -3408,53 +3508,20 @@ package body Freeze is
          if Ekind (E) = E_Constant and then Present (Full_View (E)) then
             null;
 
-         elsif Comes_From_Source (E)
-           and then not Is_Imported (E)
-           and then not Has_Init_Expression (Declaration_Node (E))
-           and then
-             ((Has_Non_Null_Base_Init_Proc (Typ)
-                and then not No_Initialization (Declaration_Node (E))
-                and then not Initialization_Suppressed (Typ))
-              or else
-                (Needs_Simple_Initialization (Typ)
-                  and then not Is_Internal (E)))
-         then
-            Has_Default_Initialization := True;
+         elsif Has_Default_Initialization (E) then
             Check_Restriction
               (No_Default_Initialization, Declaration_Node (E));
          end if;
 
-         --  Check that a Thread_Local_Storage variable does not have default
-         --  initialization, and any explicit initialization must either be the
-         --  null constant or a static constant.
+         --  Ensure that a variable subject to pragma Thread_Local_Storage
+         --
+         --    * Lacks default initialization, or
+         --
+         --    * The initialization expression is either "null", a static
+         --      constant, or a compile-time known aggregate.
 
          if Has_Pragma_Thread_Local_Storage (E) then
-            declare
-               Decl : constant Node_Id := Declaration_Node (E);
-            begin
-               if Has_Default_Initialization
-                 or else
-                   (Has_Init_Expression (Decl)
-                     and then
-                      (No (Expression (Decl))
-                        or else not
-                          (Is_OK_Static_Expression (Expression (Decl))
-                            or else Nkind (Expression (Decl)) = N_Null)))
-               then
-                  if Nkind (Expression (Decl)) = N_Aggregate
-                    and then Compile_Time_Known_Aggregate (Expression (Decl))
-                  then
-                     null;
-                  else
-                     Error_Msg_NE
-                       ("Thread_Local_Storage variable& is improperly "
-                        & "initialized", Decl, E);
-                     Error_Msg_NE
-                       ("\only allowed initialization is explicit NULL, "
-                        & "static expression or static aggregate", Decl, E);
-                  end if;
-               end if;
-            end;
+            Check_Pragma_Thread_Local_Storage (E);
          end if;
 
          --  For imported objects, set Is_Public unless there is also an
@@ -3502,7 +3569,8 @@ package body Freeze is
             Error_Msg_N ("\??use explicit size clause to set size", E);
          end if;
 
-         if Is_Array_Type (Typ) then
+         --  Declaring a too-big array in disabled ghost code is OK
+         if Is_Array_Type (Typ) and then not Is_Ignored_Ghost_Entity (E) then
             Check_Large_Modular_Array (Typ);
          end if;
       end Freeze_Object_Declaration;
@@ -3611,10 +3679,14 @@ package body Freeze is
 
                Error_Msg_Qual_Level := 1;
 
-               --  Check suspicious use of fat C pointer
+               --  Check suspicious use of fat C pointer, but do not emit
+               --  a warning on an access to subprogram when unnesting is
+               --  active.
 
                if Is_Access_Type (F_Type)
                  and then Esize (F_Type) > Ttypes.System_Address_Size
+                 and then (not Unnest_Subprogram_Mode
+                            or else not Is_Access_Subprogram_Type (F_Type))
                then
                   Error_Msg_N
                     ("?x?type of & does not correspond to C pointer!", Formal);
@@ -5268,6 +5340,7 @@ package body Freeze is
 
       if Is_Itype (E) and then Is_Record_Type (Scope (E)) then
          Test_E := Scope (E);
+
       elsif Is_Itype (E) and then Present (Underlying_Type (Scope (E)))
         and then Is_Record_Type (Underlying_Type (Scope (E)))
       then
@@ -5277,6 +5350,12 @@ package body Freeze is
       --  Do not freeze if already frozen since we only need one freeze node
 
       if Is_Frozen (E) then
+         Result := No_List;
+         goto Leave;
+
+      --  Do not freeze if we are preanalyzing without freezing
+
+      elsif Inside_Preanalysis_Without_Freezing > 0 then
          Result := No_List;
          goto Leave;
 
@@ -5543,8 +5622,8 @@ package body Freeze is
          --  Here for other than a subprogram or type
 
          else
-            --  If entity has a type, and it is not a generic unit, then
-            --  freeze it first (RM 13.14(10)).
+            --  If entity has a type, and it is not a generic unit, then freeze
+            --  it first (RM 13.14(10)).
 
             if Present (Etype (E))
               and then Ekind (E) /= E_Generic_Function
@@ -5564,7 +5643,7 @@ package body Freeze is
                  and then Has_Delayed_Aspects (E)
                then
                   Set_Has_Delayed_Aspects (E, False);
-                  Set_Has_Delayed_Freeze (E, False);
+                  Set_Has_Delayed_Freeze  (E, False);
                   Set_Freeze_Node (E, Empty);
                end if;
             end if;
@@ -5866,16 +5945,28 @@ package body Freeze is
             Inherit_Aspects_At_Freeze_Point (E);
          end if;
 
-         --  Check for incompatible size and alignment for record type
+         --  Case of array type
+
+         if Is_Array_Type (E) then
+            Freeze_Array_Type (E);
+         end if;
+
+         --  Check for incompatible size and alignment for array/record type
 
          if Warn_On_Size_Alignment
-           and then Is_Record_Type (E)
-           and then Has_Size_Clause (E) and then Has_Alignment_Clause (E)
+           and then (Is_Array_Type (E) or else Is_Record_Type (E))
+           and then Has_Size_Clause (E)
+           and then Has_Alignment_Clause (E)
 
            --  If explicit Object_Size clause given assume that the programmer
            --  knows what he is doing, and expects the compiler behavior.
 
            and then not Has_Object_Size_Clause (E)
+
+           --  It does not really make sense to warn for the minimum alignment
+           --  since the programmer could not get rid of the warning.
+
+           and then Alignment (E) > 1
 
            --  Check for size not a multiple of alignment
 
@@ -5917,15 +6008,10 @@ package body Freeze is
             end;
          end if;
 
-         --  Array type
-
-         if Is_Array_Type (E) then
-            Freeze_Array_Type (E);
-
          --  For a class-wide type, the corresponding specific type is
          --  frozen as well (RM 13.14(15))
 
-         elsif Is_Class_Wide_Type (E) then
+         if Is_Class_Wide_Type (E) then
             Freeze_And_Append (Root_Type (E), N, Result);
 
             --  If the base type of the class-wide type is still incomplete,
@@ -6198,13 +6284,34 @@ package body Freeze is
 
                goto Leave;
 
-            --  Case of no full view present. If entity is derived or subtype,
+            --  Case of no full view present. If entity is subtype or derived,
             --  it is safe to freeze, correctness depends on the frozen status
             --  of parent. Otherwise it is either premature usage, or a Taft
             --  amendment type, so diagnosis is at the point of use and the
             --  type might be frozen later.
 
-            elsif E /= Base_Type (E) or else Is_Derived_Type (E) then
+            elsif E /= Base_Type (E) then
+               declare
+                  Btyp : constant Entity_Id := Base_Type (E);
+
+               begin
+                  --  However, if the base type is itself private and has no
+                  --  (underlying) full view either, wait until the full type
+                  --  declaration is seen and all the full views are created.
+
+                  if Is_Private_Type (Btyp)
+                    and then No (Full_View (Btyp))
+                    and then No (Underlying_Full_View (Btyp))
+                    and then Has_Delayed_Freeze (Btyp)
+                    and then No (Freeze_Node (Btyp))
+                  then
+                     Set_Is_Frozen (E, False);
+                     Result := No_List;
+                     goto Leave;
+                  end if;
+               end;
+
+            elsif Is_Derived_Type (E) then
                null;
 
             else
@@ -6694,7 +6801,7 @@ package body Freeze is
          --  Do not allow a size clause for a type which does not have a size
          --  that is known at compile time
 
-         if Has_Size_Clause (E)
+         if (Has_Size_Clause (E) or else Has_Object_Size_Clause (E))
            and then not Size_Known_At_Compile_Time (E)
          then
             --  Suppress this message if errors posted on E, even if we are
@@ -6856,18 +6963,35 @@ package body Freeze is
 
       Check_Debug_Info_Needed (E);
 
-      --  Special handling for subprograms
+      --  If subprogram has address clause then reset Is_Public flag, since we
+      --  do not want the backend to generate external references.
 
-      if Is_Subprogram (E) then
+      if Is_Subprogram (E)
+        and then Present (Address_Clause (E))
+        and then not Is_Library_Level_Entity (E)
+      then
+         Set_Is_Public (E, False);
+      end if;
 
-         --  If subprogram has address clause then reset Is_Public flag, since
-         --  we do not want the backend to generate external references.
+      --  The Ghost mode of the enclosing context is ignored, while the
+      --  entity being frozen is living. Insert the freezing action prior
+      --  to the start of the enclosing ignored Ghost region. As a result
+      --  the freezeing action will be preserved when the ignored Ghost
+      --  context is eliminated. The insertion must take place even when
+      --  the context is a spec expression, otherwise "Handling of Default
+      --  and Per-Object Expressions" will suppress the insertion, and the
+      --  freeze node will be dropped on the floor.
 
-         if Present (Address_Clause (E))
-           and then not Is_Library_Level_Entity (E)
-         then
-            Set_Is_Public (E, False);
-         end if;
+      if Saved_GM = Ignore
+        and then Ghost_Mode /= Ignore
+        and then Present (Ignored_Ghost_Region)
+      then
+         Insert_Actions
+           (Assoc_Node   => Ignored_Ghost_Region,
+            Ins_Actions  => Result,
+            Spec_Expr_OK => True);
+
+         Result := No_List;
       end if;
 
    <<Leave>>
@@ -7550,9 +7674,8 @@ package body Freeze is
         or else Ekind (Current_Scope) = E_Void
       then
          declare
-            N            : constant Node_Id := Current_Scope;
-            Freeze_Nodes : List_Id          := No_List;
-            Pos          : Int              := Scope_Stack.Last;
+            Freeze_Nodes : List_Id := No_List;
+            Pos          : Int     := Scope_Stack.Last;
 
          begin
             if Present (Desig_Typ) then
@@ -7585,7 +7708,19 @@ package body Freeze is
             end if;
 
             if Is_Non_Empty_List (Freeze_Nodes) then
-               if No (Scope_Stack.Table (Pos).Pending_Freeze_Actions) then
+
+               --  When the current scope is transient, insert the freeze nodes
+               --  prior to the expression that produced them. Transient scopes
+               --  may create additional declarations when finalizing objects
+               --  or managing the secondary stack. Inserting the freeze nodes
+               --  of those constructs prior to the scope would result in a
+               --  freeze-before-declaration, therefore the freeze node must
+               --  remain interleaved with their constructs.
+
+               if Scope_Is_Transient then
+                  Insert_Actions (N, Freeze_Nodes);
+
+               elsif No (Scope_Stack.Table (Pos).Pending_Freeze_Actions) then
                   Scope_Stack.Table (Pos).Pending_Freeze_Actions :=
                     Freeze_Nodes;
                else
@@ -7633,6 +7768,217 @@ package body Freeze is
       In_Spec_Expression := In_Spec_Exp;
    end Freeze_Expression;
 
+   -----------------------
+   -- Freeze_Expr_Types --
+   -----------------------
+
+   procedure Freeze_Expr_Types
+     (Def_Id : Entity_Id;
+      Typ    : Entity_Id;
+      Expr   : Node_Id;
+      N      : Node_Id)
+   is
+      function Cloned_Expression return Node_Id;
+      --  Build a duplicate of the expression of the return statement that has
+      --  no defining entities shared with the original expression.
+
+      function Freeze_Type_Refs (Node : Node_Id) return Traverse_Result;
+      --  Freeze all types referenced in the subtree rooted at Node
+
+      -----------------------
+      -- Cloned_Expression --
+      -----------------------
+
+      function Cloned_Expression return Node_Id is
+         function Clone_Id (Node : Node_Id) return Traverse_Result;
+         --  Tree traversal routine that clones the defining identifier of
+         --  iterator and loop parameter specification nodes.
+
+         --------------
+         -- Clone_Id --
+         --------------
+
+         function Clone_Id (Node : Node_Id) return Traverse_Result is
+         begin
+            if Nkind_In (Node, N_Iterator_Specification,
+                               N_Loop_Parameter_Specification)
+            then
+               Set_Defining_Identifier
+                 (Node, New_Copy (Defining_Identifier (Node)));
+            end if;
+
+            return OK;
+         end Clone_Id;
+
+         procedure Clone_Def_Ids is new Traverse_Proc (Clone_Id);
+
+         --  Local variable
+
+         Dup_Expr : constant Node_Id := New_Copy_Tree (Expr);
+
+      --  Start of processing for Cloned_Expression
+
+      begin
+         --  We must duplicate the expression with semantic information to
+         --  inherit the decoration of global entities in generic instances.
+         --  Set the parent of the new node to be the parent of the original
+         --  to get the proper context, which is needed for complete error
+         --  reporting and for semantic analysis.
+
+         Set_Parent (Dup_Expr, Parent (Expr));
+
+         --  Replace the defining identifier of iterators and loop param
+         --  specifications by a clone to ensure that the cloned expression
+         --  and the original expression don't have shared identifiers;
+         --  otherwise, as part of the preanalysis of the expression, these
+         --  shared identifiers may be left decorated with itypes which
+         --  will not be available in the tree passed to the backend.
+
+         Clone_Def_Ids (Dup_Expr);
+
+         return Dup_Expr;
+      end Cloned_Expression;
+
+      ----------------------
+      -- Freeze_Type_Refs --
+      ----------------------
+
+      function Freeze_Type_Refs (Node : Node_Id) return Traverse_Result is
+         procedure Check_And_Freeze_Type (Typ : Entity_Id);
+         --  Check that Typ is fully declared and freeze it if so
+
+         ---------------------------
+         -- Check_And_Freeze_Type --
+         ---------------------------
+
+         procedure Check_And_Freeze_Type (Typ : Entity_Id) is
+         begin
+            --  Skip Itypes created by the preanalysis, and itypes whose
+            --  scope is another type (i.e. component subtypes that depend
+            --  on a discriminant),
+
+            if Is_Itype (Typ)
+              and then (Scope_Within_Or_Same (Scope (Typ), Def_Id)
+                         or else Is_Type (Scope (Typ)))
+            then
+               return;
+            end if;
+
+            --  This provides a better error message than generating primitives
+            --  whose compilation fails much later. Refine the error message if
+            --  possible.
+
+            Check_Fully_Declared (Typ, Node);
+
+            if Error_Posted (Node) then
+               if Has_Private_Component (Typ)
+                 and then not Is_Private_Type (Typ)
+               then
+                  Error_Msg_NE ("\type& has private component", Node, Typ);
+               end if;
+
+            else
+               Freeze_Before (N, Typ);
+            end if;
+         end Check_And_Freeze_Type;
+
+      --  Start of processing for Freeze_Type_Refs
+
+      begin
+         --  Check that a type referenced by an entity can be frozen
+
+         if Is_Entity_Name (Node) and then Present (Entity (Node)) then
+            Check_And_Freeze_Type (Etype (Entity (Node)));
+
+            --  Check that the enclosing record type can be frozen
+
+            if Ekind_In (Entity (Node), E_Component, E_Discriminant) then
+               Check_And_Freeze_Type (Scope (Entity (Node)));
+            end if;
+
+         --  Freezing an access type does not freeze the designated type, but
+         --  freezing conversions between access to interfaces requires that
+         --  the interface types themselves be frozen, so that dispatch table
+         --  entities are properly created.
+
+         --  Unclear whether a more general rule is needed ???
+
+         elsif Nkind (Node) = N_Type_Conversion
+           and then Is_Access_Type (Etype (Node))
+           and then Is_Interface (Designated_Type (Etype (Node)))
+         then
+            Check_And_Freeze_Type (Designated_Type (Etype (Node)));
+         end if;
+
+         --  An implicit dereference freezes the designated type. In the case
+         --  of a dispatching call whose controlling argument is an access
+         --  type, the dereference is not made explicit, so we must check for
+         --  such a call and freeze the designated type.
+
+         if Nkind (Node) in N_Has_Etype
+           and then Present (Etype (Node))
+           and then Is_Access_Type (Etype (Node))
+           and then Nkind (Parent (Node)) = N_Function_Call
+           and then Node = Controlling_Argument (Parent (Node))
+         then
+            Check_And_Freeze_Type (Designated_Type (Etype (Node)));
+         end if;
+
+         --  No point in posting several errors on the same expression
+
+         if Serious_Errors_Detected > 0 then
+            return Abandon;
+         else
+            return OK;
+         end if;
+      end Freeze_Type_Refs;
+
+      procedure Freeze_References is new Traverse_Proc (Freeze_Type_Refs);
+
+      --  Local variables
+
+      Saved_First_Entity : constant Entity_Id := First_Entity (Def_Id);
+      Saved_Last_Entity  : constant Entity_Id := Last_Entity  (Def_Id);
+      Dup_Expr           : constant Node_Id   := Cloned_Expression;
+
+   --  Start of processing for Freeze_Expr_Types
+
+   begin
+      --  Preanalyze a duplicate of the expression to have available the
+      --  minimum decoration needed to locate referenced unfrozen types
+      --  without adding any decoration to the function expression.
+
+      --  This routine is also applied to expressions in the contract for
+      --  the subprogram. If that happens when expanding the code for
+      --  pre/postconditions during expansion of the subprogram body, the
+      --  subprogram is already installed.
+
+      if Def_Id /= Current_Scope then
+         Push_Scope (Def_Id);
+         Install_Formals (Def_Id);
+
+         Preanalyze_Spec_Expression (Dup_Expr, Typ);
+         End_Scope;
+      else
+         Preanalyze_Spec_Expression (Dup_Expr, Typ);
+      end if;
+
+      --  Restore certain attributes of Def_Id since the preanalysis may
+      --  have introduced itypes to this scope, thus modifying attributes
+      --  First_Entity and Last_Entity.
+
+      Set_First_Entity (Def_Id, Saved_First_Entity);
+      Set_Last_Entity  (Def_Id, Saved_Last_Entity);
+
+      if Present (Last_Entity (Def_Id)) then
+         Set_Next_Entity (Last_Entity (Def_Id), Empty);
+      end if;
+
+      --  Freeze all types referenced in the expression
+
+      Freeze_References (Dup_Expr);
+   end Freeze_Expr_Types;
+
    -----------------------------
    -- Freeze_Fixed_Point_Type --
    -----------------------------
@@ -7655,6 +8001,7 @@ package body Freeze is
       Brng  : constant Node_Id    := Scalar_Range (Btyp);
       BLo   : constant Node_Id    := Low_Bound (Brng);
       BHi   : constant Node_Id    := High_Bound (Brng);
+      Par   : constant Entity_Id  := First_Subtype (Typ);
       Small : constant Ureal      := Small_Value (Typ);
       Loval : Ureal;
       Hival : Ureal;
@@ -7705,6 +8052,16 @@ package body Freeze is
          else
             Set_Esize (Typ, Esize (Base_Type (Typ)));
          end if;
+      end if;
+
+      --  The 'small attribute may have been specified with an aspect,
+      --  in which case it is processed after a subtype declaration, so
+      --  inherit now the specified value.
+
+      if Typ /= Par
+        and then Present (Find_Aspect (Par, Aspect_Small))
+      then
+         Set_Small_Value (Typ, Small_Value (Par));
       end if;
 
       --  Immediate return if the range is already analyzed. This means that
@@ -7786,15 +8143,16 @@ package body Freeze is
                Set_Realval (Lo, Loval);
             end if;
 
-            --  Compute the fudged bounds. If the number is a model number,
-            --  then we do nothing to include it, but we are allowed to backoff
-            --  to the next adjacent model number when we exclude it. If it is
-            --  not a model number then we straddle the two values with the
-            --  model numbers on either side.
+            --  Compute the fudged bounds. If the bound is a model number, (or
+            --  greater if given low bound, smaller if high bound) then we do
+            --  nothing to include it, but we are allowed to backoff to the
+            --  next adjacent model number when we exclude it. If it is not a
+            --  model number then we straddle the two values with the model
+            --  numbers on either side.
 
             Model_Num := UR_Trunc (Loval / Small) * Small;
 
-            if Loval = Model_Num then
+            if UR_Ge (Loval, Model_Num) then
                Loval_Incl_EP := Model_Num;
             else
                Loval_Incl_EP := Model_Num - Small;
@@ -7828,7 +8186,7 @@ package body Freeze is
 
             Model_Num := UR_Trunc (Hival / Small) * Small;
 
-            if Hival = Model_Num then
+            if UR_Le (Hival, Model_Num) then
                Hival_Incl_EP := Model_Num;
             else
                Hival_Incl_EP := Model_Num + Small;
@@ -8416,6 +8774,21 @@ package body Freeze is
         and then not Is_Intrinsic_Subprogram (E)
       then
          Set_Is_Pure (E, False);
+      end if;
+
+      --  For C++ constructors check that their external name has been given
+      --  (either in pragma CPP_Constructor or in a pragma import).
+
+      if Is_Constructor (E)
+        and then Convention (E) = Convention_CPP
+        and then
+           (No (Interface_Name (E))
+              or else String_Equal
+                        (L => Strval (Interface_Name (E)),
+                         R => Strval (Get_Default_External_Name (E))))
+      then
+         Error_Msg_N
+           ("'C++ constructor must have external name or link name", E);
       end if;
 
       --  We also reset the Pure indication on a subprogram with an Address

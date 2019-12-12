@@ -1,7 +1,7 @@
 /* ieee754-sf.S single-precision floating point support for ARM
 
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
-   Contributed by Nicolas Pitre (nico@cam.org)
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
+   Contributed by Nicolas Pitre (nico@fluxnic.net)
 
    This file is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -168,10 +168,11 @@ LSYM(Lad_e):
 LSYM(Lad_a):
 	movs	r1, r1, lsl #1
 	adc	r0, r0, r0
-	tst	r0, #0x00800000
-	sub	r2, r2, #1
-	bne	LSYM(Lad_e)
-	
+	subs	r2, r2, #1
+	do_it	hs
+	cmphs	r0, #0x00800000
+	bhs	LSYM(Lad_e)
+
 	@ No rounding necessary since r1 will always be 0 at this point.
 LSYM(Lad_l):
 
@@ -427,7 +428,18 @@ ARM_FUNC_ALIAS aeabi_l2f floatdisf
 
 #endif /* L_addsubsf3 */
 
-#ifdef L_arm_muldivsf3
+#if defined(L_arm_mulsf3) || defined(L_arm_muldivsf3)
+
+@ Define multiplication as weak in _arm_mulsf3.o so that it can be overriden
+@ by the global definition in _arm_muldivsf3.o.  This allows a program only
+@ using multiplication to take the weak definition which does not contain the
+@ division code. Programs using only division or both division and
+@ multiplication will pull _arm_muldivsf3.o from which both the multiplication
+@ and division are taken thanks to the override.
+#ifdef L_arm_mulsf3
+WEAK mulsf3
+WEAK aeabi_fmul
+#endif
 
 ARM_FUNC_START mulsf3
 ARM_FUNC_ALIAS aeabi_fmul mulsf3
@@ -461,7 +473,7 @@ LSYM(Lml_x):
 	orr	r1, r3, r1, lsr #5
 
 	@ The actual multiplication.
-	@ This code works on architecture versions > 4
+	@ This code works on architecture versions >= 4
 	umull	r3, r1, r0, r1
 
 	@ Put final sign in r0.
@@ -612,6 +624,8 @@ LSYM(Lml_n):
 	FUNC_END aeabi_fmul
 	FUNC_END mulsf3
 
+#ifdef L_arm_muldivsf3
+
 ARM_FUNC_START divsf3
 ARM_FUNC_ALIAS aeabi_fdiv divsf3
 	CFI_START_FUNCTION
@@ -755,6 +769,7 @@ LSYM(Ldv_s):
 	FUNC_END divsf3
 
 #endif /* L_muldivsf3 */
+#endif /* L_arm_mulsf3 || L_arm_muldivsf3 */
 
 #ifdef L_arm_cmpsf2
 

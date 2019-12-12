@@ -1,5 +1,5 @@
-! { dg-do run }
-! { dg-options "-fdump-tree-original" }
+! { dg-do compile }
+! { dg-options "-O0 -fdump-tree-original" }
 !
 ! Test the fix for PR41113 and PR41117, in which unnecessary calls
 ! to internal_pack and internal_unpack were being generated.

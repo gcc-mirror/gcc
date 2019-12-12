@@ -1,5 +1,5 @@
 /* Thread edges through blocks and update the control flow and SSA graphs.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -235,6 +235,12 @@ struct ssa_local_info_t
      and sharing a template for that block is considerably more difficult.  */
   basic_block template_block;
 
+  /* If we append debug stmts to the template block after creating it,
+     this iterator won't be the last one in the block, and further
+     copies of the template block shouldn't get debug stmts after
+     it.  */
+  gimple_stmt_iterator template_last_to_copy;
+
   /* Blocks duplicated for the thread.  */
   bitmap duplicate_blocks;
 
@@ -336,7 +342,17 @@ create_block_for_threading (basic_block bb,
   rd->dup_blocks[count] = duplicate_block (bb, NULL, NULL);
 
   FOR_EACH_EDGE (e, ei, rd->dup_blocks[count]->succs)
-    e->aux = NULL;
+    {
+      e->aux = NULL;
+
+      /* If we duplicate a block with an outgoing edge marked as
+	 EDGE_IGNORE, we must clear EDGE_IGNORE so that it doesn't
+	 leak out of the current pass.
+
+	 It would be better to simplify switch statements and remove
+	 the edges before we get here, but the sequencing is nontrivial.  */
+      e->flags &= ~EDGE_IGNORE;
+    }
 
   /* Zero out the profile, since the block is unreachable for now.  */
   rd->dup_blocks[count]->count = profile_count::uninitialized ();
@@ -431,7 +447,7 @@ copy_phi_arg_into_existing_phi (edge src_e, edge tgt_e)
       gphi *src_phi = gsi.phi ();
       gphi *dest_phi = gsi2.phi ();
       tree val = gimple_phi_arg_def (src_phi, src_idx);
-      source_location locus = gimple_phi_arg_location (src_phi, src_idx);
+      location_t locus = gimple_phi_arg_location (src_phi, src_idx);
 
       SET_PHI_ARG_DEF (dest_phi, tgt_idx, val);
       gimple_phi_arg_set_location (dest_phi, tgt_idx, locus);
@@ -445,7 +461,7 @@ copy_phi_arg_into_existing_phi (edge src_e, edge tgt_e)
 
 static tree
 get_value_locus_in_path (tree def, vec<jump_thread_edge *> *path,
-			 basic_block bb, int idx, source_location *locus)
+			 basic_block bb, int idx, location_t *locus)
 {
   tree arg;
   gphi *def_phi;
@@ -499,7 +515,7 @@ copy_phi_args (basic_block bb, edge src_e, edge tgt_e,
     {
       gphi *phi = gsi.phi ();
       tree def = gimple_phi_arg_def (phi, src_indx);
-      source_location locus = gimple_phi_arg_location (phi, src_indx);
+      location_t locus = gimple_phi_arg_location (phi, src_indx);
 
       if (TREE_CODE (def) == SSA_NAME
 	  && !virtual_operand_p (gimple_phi_result (phi)))
@@ -1114,6 +1130,8 @@ ssa_create_duplicates (struct redirection_data **slot,
       create_block_for_threading ((*path)[1]->e->src, rd, 0,
 				  &local_info->duplicate_blocks);
       local_info->template_block = rd->dup_blocks[0];
+      local_info->template_last_to_copy
+	= gsi_last_bb (local_info->template_block);
 
       /* We do not create any outgoing edges for the template.  We will
 	 take care of that in a later traversal.  That way we do not
@@ -1121,12 +1139,85 @@ ssa_create_duplicates (struct redirection_data **slot,
     }
   else
     {
+      gimple_seq seq = NULL;
+      if (gsi_stmt (local_info->template_last_to_copy)
+	  != gsi_stmt (gsi_last_bb (local_info->template_block)))
+	{
+	  if (gsi_end_p (local_info->template_last_to_copy))
+	    {
+	      seq = bb_seq (local_info->template_block);
+	      set_bb_seq (local_info->template_block, NULL);
+	    }
+	  else
+	    seq = gsi_split_seq_after (local_info->template_last_to_copy);
+	}
       create_block_for_threading (local_info->template_block, rd, 0,
 				  &local_info->duplicate_blocks);
+      if (seq)
+	{
+	  if (gsi_end_p (local_info->template_last_to_copy))
+	    set_bb_seq (local_info->template_block, seq);
+	  else
+	    gsi_insert_seq_after (&local_info->template_last_to_copy,
+				  seq, GSI_SAME_STMT);
+	}
 
       /* Go ahead and wire up outgoing edges and update PHIs for the duplicate
 	 block.   */
       ssa_fix_duplicate_block_edges (rd, local_info);
+    }
+
+  if (MAY_HAVE_DEBUG_STMTS)
+    {
+      /* Copy debug stmts from each NO_COPY src block to the block
+	 that would have been its predecessor, if we can append to it
+	 (we can't add stmts after a block-ending stmt), or prepending
+	 to the duplicate of the successor, if there is one.  If
+	 there's no duplicate successor, we'll mostly drop the blocks
+	 on the floor; propagate_threaded_block_debug_into, called
+	 elsewhere, will consolidate and preserve the effects of the
+	 binds, but none of the markers.  */
+      gimple_stmt_iterator copy_to = gsi_last_bb (rd->dup_blocks[0]);
+      if (!gsi_end_p (copy_to))
+	{
+	  if (stmt_ends_bb_p (gsi_stmt (copy_to)))
+	    {
+	      if (rd->dup_blocks[1])
+		copy_to = gsi_after_labels (rd->dup_blocks[1]);
+	      else
+		copy_to = gsi_none ();
+	    }
+	  else
+	    gsi_next (&copy_to);
+	}
+      for (unsigned int i = 2, j = 0; i < path->length (); i++)
+	if ((*path)[i]->type == EDGE_NO_COPY_SRC_BLOCK
+	    && gsi_bb (copy_to))
+	  {
+	    for (gimple_stmt_iterator gsi = gsi_start_bb ((*path)[i]->e->src);
+		 !gsi_end_p (gsi); gsi_next (&gsi))
+	      {
+		if (!is_gimple_debug (gsi_stmt (gsi)))
+		  continue;
+		gimple *stmt = gsi_stmt (gsi);
+		gimple *copy = gimple_copy (stmt);
+		gsi_insert_before (&copy_to, copy, GSI_SAME_STMT);
+	      }
+	  }
+	else if ((*path)[i]->type == EDGE_COPY_SRC_BLOCK
+		 || (*path)[i]->type == EDGE_COPY_SRC_JOINER_BLOCK)
+	  {
+	    j++;
+	    gcc_assert (j < 2);
+	    copy_to = gsi_last_bb (rd->dup_blocks[j]);
+	    if (!gsi_end_p (copy_to))
+	      {
+		if (stmt_ends_bb_p (gsi_stmt (copy_to)))
+		  copy_to = gsi_none ();
+		else
+		  gsi_next (&copy_to);
+	      }
+	  }
     }
 
   /* Keep walking the hash table.  */
@@ -1465,7 +1556,7 @@ dbds_continue_enumeration_p (const_basic_block bb, const void *stop)
    returns the state.  */
 
 enum bb_dom_status
-determine_bb_domination_status (struct loop *loop, basic_block bb)
+determine_bb_domination_status (class loop *loop, basic_block bb)
 {
   basic_block *bblocks;
   unsigned nblocks, i;
@@ -1523,7 +1614,7 @@ determine_bb_domination_status (struct loop *loop, basic_block bb)
    to the inside of the loop.  */
 
 static bool
-thread_through_loop_header (struct loop *loop, bool may_peel_loop_headers)
+thread_through_loop_header (class loop *loop, bool may_peel_loop_headers)
 {
   basic_block header = loop->header;
   edge e, tgt_edge, latch = loop_latch_edge (loop);
@@ -2226,7 +2317,7 @@ duplicate_thread_path (edge entry, edge exit, basic_block *region,
 		       unsigned n_region, unsigned current_path_no)
 {
   unsigned i;
-  struct loop *loop = entry->dest->loop_father;
+  class loop *loop = entry->dest->loop_father;
   edge exit_copy;
   edge redirected;
   profile_count curr_count;
@@ -2426,7 +2517,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
 {
   bool retval = false;
   unsigned int i;
-  struct loop *loop;
+  class loop *loop;
   auto_bitmap threaded_blocks;
   hash_set<edge> visited_starting_edges;
 
@@ -2540,7 +2631,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
      Consider if we have two jump threading paths A and B.  If the
      target edge of A is the starting edge of B and we thread path A
      first, then we create an additional incoming edge into B->dest that
-     we can not discover as a jump threading path on this iteration.
+     we cannot discover as a jump threading path on this iteration.
 
      If we instead thread B first, then the edge into B->dest will have
      already been redirected before we process path A and path A will

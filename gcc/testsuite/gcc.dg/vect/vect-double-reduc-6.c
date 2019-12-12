@@ -19,6 +19,7 @@ foo ()
     {
       sum = 1;
       for (j = 0; j < K; j++) 
+#pragma GCC unroll 0
         for (i = 0; i < K; i++)
           sum *= in[i+k][j];
       out[k] = sum;

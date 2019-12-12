@@ -8,7 +8,7 @@
 template <class T> 
 struct S {
   template <class U> void f(U);
-  template <> void f<int>(int); // { dg-error "" } invalid specialization
+  template <> void f<int>(int); // { dg-error "20:template-id .f<int>. in declaration|explicit specialization" }
 
   template <class V> struct I {};      // { dg-error "template" }
   template <class V> struct I<V*> {};  // { dg-error "template" }

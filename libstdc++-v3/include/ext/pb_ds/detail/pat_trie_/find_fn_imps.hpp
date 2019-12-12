@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,6 +37,8 @@
  * @file pat_trie_/find_fn_imps.hpp
  * Contains an implementation class for pat_trie.
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::point_iterator
@@ -267,3 +269,4 @@ rightmost_descendant(node_pointer p_nd)
   return static_cast<inode_pointer>(p_nd)->rightmost_descendant();
 }
 
+#endif

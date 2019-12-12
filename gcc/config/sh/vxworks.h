@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC,
    for SuperH with targeting the VXWorks run time environment. 
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
    
 This file is part of GCC.
@@ -40,7 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 	 appear in shared libraries, so relaxation is OK	\
 	 for RTP PIC.  */					\
       if (TARGET_RELAX && !(TARGET_VXWORKS_RTP && flag_pic))	\
-	error ("-mrelax is only supported for RTP PIC");	\
+	error ("%<-mrelax%> is only supported for RTP PIC");	\
     }								\
   while (0)
 

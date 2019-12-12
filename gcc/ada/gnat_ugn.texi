@@ -21,11 +21,11 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Jul 13, 2018
+GNAT User's Guide for Native Platforms , Oct 09, 2019
 
 AdaCore
 
-Copyright @copyright{} 2008-2018, Free Software Foundation
+Copyright @copyright{} 2008-2019, Free Software Foundation
 @end quotation
 
 @end copying
@@ -463,6 +463,7 @@ Microsoft Windows Topics
 * CONSOLE and WINDOWS subsystems:: 
 * Temporary Files:: 
 * Disabling Command Line Argument Expansion:: 
+* Windows Socket Timeouts:: 
 * Mixed-Language Programming on Windows:: 
 * Windows Specific Add-Ons:: 
 
@@ -532,15 +533,11 @@ Elaboration Order Handling in GNAT
 * Checking the Elaboration Order:: 
 * Controlling the Elaboration Order in Ada:: 
 * Controlling the Elaboration Order in GNAT:: 
-* Common Elaboration-model Traits:: 
-* Dynamic Elaboration Model in GNAT:: 
-* Static Elaboration Model in GNAT:: 
-* SPARK Elaboration Model in GNAT:: 
-* Legacy Elaboration Model in GNAT:: 
 * Mixing Elaboration Models:: 
+* ABE Diagnostics:: 
+* SPARK Diagnostics:: 
 * Elaboration Circularities:: 
 * Resolving Elaboration Circularities:: 
-* Resolving Task Issues:: 
 * Elaboration-related Compiler Switches:: 
 * Summary of Procedures for Elaboration Control:: 
 * Inspecting the Chosen Elaboration Order:: 
@@ -685,12 +682,12 @@ material for the several revisions of the Ada language standard.
 implementation of Ada.
 
 @item 
-@cite{Using the GNAT Programming Studio}, which describes the GPS
+@cite{Using GNAT Studio}, which describes the GNAT Studio
 Integrated Development Environment.
 
 @item 
-@cite{GNAT Programming Studio Tutorial}, which introduces the
-main GPS features through examples.
+@cite{GNAT Studio Tutorial}, which introduces the
+main GNAT Studio features through examples.
 
 @item 
 @cite{Debugging with GDB},
@@ -900,11 +897,11 @@ the '\' character should be used instead.
 This chapter describes how to use GNAT's command line interface to build
 executable Ada programs.
 On most platforms a visually oriented Integrated Development Environment
-is also available, the GNAT Programming Studio (GPS).
-GPS offers a graphical "look and feel", support for development in
+is also available, the GNAT Programming Studio (GNAT Studio).
+GNAT Studio offers a graphical "look and feel", support for development in
 other programming languages, comprehensive browsing features, and
 many other capabilities.
-For information on GPS please refer to
+For information on GNAT Studio please refer to
 @cite{Using the GNAT Programming Studio}.
 
 @menu
@@ -6645,8 +6642,9 @@ identifiers with identical name (except casing) will generate compilation
 errors (e.g. @code{shm_get} vs @code{SHM_GET}).
 @end itemize
 
-The code generated is using the Ada 2005 syntax, which makes it
-easier to interface with other languages than previous versions of Ada.
+The code is generated using Ada 2012 syntax, which makes it easier to interface
+with other languages. In most cases you can still use the generated binding
+even if your code is compiled using earlier versions of Ada (e.g. @code{-gnat95}).
 
 @menu
 * Running the Binding Generator:: 
@@ -6667,7 +6665,7 @@ header files needed by these files transitively. For example:
 
 @example
 $ g++ -c -fdump-ada-spec -C /usr/include/time.h
-$ gcc -c -gnat05 *.ads
+$ gcc -c *.ads
 @end example
 
 will generate, under GNU/Linux, the following files: @code{time_h.ads},
@@ -8809,6 +8807,17 @@ in the compiler sources for details in files @code{scos.ads} and
 @code{scos.adb}.
 @end table
 
+@geindex -fgnat-encodings (gcc)
+
+
+@table @asis
+
+@item @code{-fgnat-encodings=[all|gdb|minimal]}
+
+This switch controls the balance between GNAT encodings and standard DWARF
+emitted in the debug information.
+@end table
+
 @geindex -flto (gcc)
 
 
@@ -9429,13 +9438,41 @@ Long_Size                  : Pos; -- Standard.Long_Integer'Size
 Maximum_Alignment          : Pos; -- Maximum permitted alignment
 Max_Unaligned_Field        : Pos; -- Maximum size for unaligned bit field
 Pointer_Size               : Pos; -- System.Address'Size
-Short_Enums                : Nat; -- Short foreign convention enums?
+Short_Enums                : Nat; -- Foreign enums use short size?
 Short_Size                 : Pos; -- Standard.Short_Integer'Size
 Strict_Alignment           : Nat; -- Strict alignment?
 System_Allocator_Alignment : Nat; -- Alignment for malloc calls
 Wchar_T_Size               : Pos; -- Interfaces.C.wchar_t'Size
 Words_BE                   : Nat; -- Words stored big-endian?
 @end example
+
+@code{Bits_Per_Unit} is the number of bits in a storage unit, the equivalent of
+GCC macro @code{BITS_PER_UNIT} documented as follows: @cite{Define this macro to be the number of bits in an addressable storage unit (byte); normally 8.}
+
+@code{Bits_Per_Word} is the number of bits in a machine word, the equivalent of
+GCC macro @code{BITS_PER_WORD} documented as follows: @cite{Number of bits in a word; normally 32.}
+
+@code{Double_Float_Alignment}, if not zero, is the maximum alignment that the
+compiler can choose by default for a 64-bit floating-point type or object.
+
+@code{Double_Scalar_Alignment}, if not zero, is the maximum alignment that the
+compiler can choose by default for a 64-bit or larger scalar type or object.
+
+@code{Maximum_Alignment} is the maximum alignment that the compiler can choose
+by default for a type or object, which is also the maximum alignment that can
+be specified in GNAT. It is computed for GCC backends as @code{BIGGEST_ALIGNMENT
+/ BITS_PER_UNIT} where GCC macro @code{BIGGEST_ALIGNMENT} is documented as
+follows: @cite{Biggest alignment that any data type can require on this machine@comma{} in bits.}
+
+@code{Max_Unaligned_Field} is the maximum size for unaligned bit field, which is
+64 for the majority of GCC targets (but can be different on some targets like
+AAMP).
+
+@code{Strict_Alignment} is the equivalent of GCC macro @code{STRICT_ALIGNMENT}
+documented as follows: @cite{Define this macro to be the value 1 if instructions will fail to work if given data not on the nominal alignment. If instructions will merely go slower in that case@comma{} define this macro as 0.}
+
+@code{System_Allocator_Alignment} is the guaranteed alignment of data returned
+by calls to @code{malloc}.
 
 The format of the input file is as follows. First come the values of
 the variables defined above, with one line per value:
@@ -9546,7 +9583,8 @@ checking options to be controlled from the command line.
 
 @item @code{-gnatE}
 
-Full dynamic elaboration checks.
+Dynamic elaboration checking mode enabled. For further details see
+@ref{f,,Elaboration Order Handling in GNAT}.
 @end table
 
 @geindex -gnatf (gcc)
@@ -9612,8 +9650,9 @@ Output usage information. The output is written to @code{stdout}.
 
 @item @code{-gnatH}
 
-Legacy elaboration-checking mode enabled. When this switch is in effect, the
-pre-18.x access-before-elaboration model becomes the de facto model.
+Legacy elaboration-checking mode enabled. When this switch is in effect,
+the pre-18.x access-before-elaboration model becomes the de facto model.
+For further details see @ref{f,,Elaboration Order Handling in GNAT}.
 @end table
 
 @geindex -gnati (gcc)
@@ -9710,7 +9749,8 @@ Select statements
 Synchronous task suspension
 @end itemize
 
-and does not emit compile-time diagnostics or run-time checks.
+and does not emit compile-time diagnostics or run-time checks. For further
+details see @ref{f,,Elaboration Order Handling in GNAT}.
 @end table
 
 @geindex -gnatk (gcc)
@@ -9951,7 +9991,7 @@ Treat pragma Restrictions as Restriction_Warnings.
 
 @table @asis
 
-@item @code{-gnatR[0|1|2|3][e][j][m][s]}
+@item @code{-gnatR[0|1|2|3|4][e][j][m][s]}
 
 Output representation information for declared types, objects and
 subprograms. Note that this switch is not allowed if a previous
@@ -10406,7 +10446,7 @@ e.adb:4:20: ";" should be "is"
 
 The first integer after the file name is the line number in the file,
 and the second integer is the column number within the line.
-@code{GPS} can parse the error messages
+@code{GNAT Studio} can parse the error messages
 and point to the referenced character.
 The following switches provide control over the error message
 format:
@@ -10885,7 +10925,7 @@ of the pragma in the @cite{GNAT_Reference_manual}).
 
 @emph{Activate most optional warnings.}
 
-This switch activates most optional warning messages.  See the remaining list
+This switch activates most optional warning messages. See the remaining list
 in this section for details on optional warning messages that can be
 individually controlled.  The warnings that are not turned on by this
 switch are:
@@ -10928,6 +10968,9 @@ switch are:
 
 @item 
 @code{-gnatw.q} (questionable layout of record types)
+
+@item 
+@code{-gnatw_r} (out-of-order record representation clauses)
 
 @item 
 @code{-gnatw.s} (overridden size clause)
@@ -11000,6 +11043,37 @@ generated.
 
 This switch suppresses warnings for assertions where the compiler can tell at
 compile time that the assertion will fail.
+@end table
+
+@geindex -gnatw_a
+
+
+@table @asis
+
+@item @code{-gnatw_a}
+
+@emph{Activate warnings on anonymous allocators.}
+
+@geindex Anonymous allocators
+
+This switch activates warnings for allocators of anonymous access types,
+which can involve run-time accessibility checks and lead to unexpected
+accessibility violations. For more details on the rules involved, see
+RM 3.10.2 (14).
+@end table
+
+@geindex -gnatw_A
+
+
+@table @asis
+
+@item @code{-gnatw_A}
+
+@emph{Supress warnings on anonymous allocators.}
+
+@geindex Anonymous allocators
+
+This switch suppresses warnings for anonymous access type allocators.
 @end table
 
 @geindex -gnatwb (gcc)
@@ -11137,7 +11211,7 @@ majority, but not all, of the components. A warning is given for each
 component for which no component clause is present.
 @end table
 
-@geindex -gnatwC (gcc)
+@geindex -gnatw.C (gcc)
 
 
 @table @asis
@@ -11148,6 +11222,39 @@ component for which no component clause is present.
 
 This switch suppresses warnings for record components that are
 missing a component clause in the situation described above.
+@end table
+
+@geindex -gnatw_c (gcc)
+
+
+@table @asis
+
+@item @code{-gnatw_c}
+
+@emph{Activate warnings on unknown condition in Compile_Time_Warning.}
+
+@geindex Compile_Time_Warning
+
+@geindex Compile_Time_Error
+
+This switch activates warnings on a pragma Compile_Time_Warning
+or Compile_Time_Error whose condition has a value that is not
+known at compile time.
+The default is that such warnings are generated.
+@end table
+
+@geindex -gnatw_C (gcc)
+
+
+@table @asis
+
+@item @code{-gnatw_C}
+
+@emph{Suppress warnings on missing component clauses.}
+
+This switch supresses warnings on a pragma Compile_Time_Warning
+or Compile_Time_Error whose condition has a value that is not
+known at compile time.
 @end table
 
 @geindex -gnatwd (gcc)
@@ -12121,7 +12228,7 @@ opposed to renaming the function itself).  The default is that these
 warnings are given.
 @end table
 
-@geindex -gnatwT (gcc)
+@geindex -gnatw.R (gcc)
 
 
 @table @asis
@@ -12131,6 +12238,31 @@ warnings are given.
 @emph{Suppress warnings for object renaming function.}
 
 This switch suppresses warnings for object renaming function.
+@end table
+
+@geindex -gnatw_r (gcc)
+
+
+@table @asis
+
+@item @code{-gnatw_r}
+
+@emph{Activate warnings for out-of-order record representation clauses.}
+
+This switch activates warnings for record representation clauses,
+if the order of component declarations, component clauses,
+and bit-level layout do not all agree.
+The default is that these warnings are not given.
+@end table
+
+@geindex -gnatw_R (gcc)
+
+
+@table @asis
+
+@item @code{-gnatw_R}
+
+@emph{Suppress warnings for out-of-order record representation clauses.}
 @end table
 
 @geindex -gnatws (gcc)
@@ -12646,8 +12778,8 @@ sizes or conventions.
 
 @emph{Activate warnings for size not a multiple of alignment.}
 
-This switch activates warnings for cases of record types with
-specified @code{Size} and @code{Alignment} attributes where the
+This switch activates warnings for cases of array and record types
+with specified @code{Size} and @code{Alignment} attributes where the
 size is not a multiple of the alignment, resulting in an object
 size that is greater than the specified size. The default
 is that such warnings are generated.
@@ -12664,12 +12796,11 @@ is that such warnings are generated.
 
 @emph{Suppress warnings for size not a multiple of alignment.}
 
-This switch suppresses warnings for cases of record types with
-specified @code{Size} and @code{Alignment} attributes where the
+This switch suppresses warnings for cases of array and record types
+with specified @code{Size} and @code{Alignment} attributes where the
 size is not a multiple of the alignment, resulting in an object
-size that is greater than the specified size.
-The warning can also be
-suppressed by giving an explicit @code{Object_Size} value.
+size that is greater than the specified size. The warning can also
+be suppressed by giving an explicit @code{Object_Size} value.
 @end table
 
 @geindex -Wunused (gcc)
@@ -13479,6 +13610,20 @@ character (in particular the DOS line terminator sequence CR/LF is not
 allowed).
 @end table
 
+@geindex -gnatyD (gcc)
+
+
+@table @asis
+
+@item @code{-gnatyD}
+
+@emph{Check declared identifiers in mixed case.}
+
+Declared identifiers must be in mixed case, as in
+This_Is_An_Identifier. Use -gnatyr in addition to ensure
+that references match declarations.
+@end table
+
 @geindex -gnatye (gcc)
 
 
@@ -13516,7 +13661,7 @@ in the source text.
 
 The set of style check switches is set to match that used by the GNAT sources.
 This may be useful when developing code that is eventually intended to be
-incorporated into GNAT. Currently this is equivalent to @code{-gnatwydISux})
+incorporated into GNAT. Currently this is equivalent to @code{-gnatyydISux})
 but additional style switches may be added to this set in the future without
 advance notice.
 @end table
@@ -13965,7 +14110,7 @@ if any.
 
 @c end of switch description (leave this comment to ease automatic parsing for
 
-@c GPS
+@c GNAT Studio
 
 In the above rules, appearing in column one is always permitted, that is,
 counts as meeting either a requirement for a required preceding space,
@@ -14233,7 +14378,7 @@ $ gcc -c -gnats x.adb
 
 compiles file @code{x.adb} in syntax-check-only mode. You can check a
 series of files in a single command
-, and can use wild cards to specify such a group of files.
+, and can use wildcards to specify such a group of files.
 Note that you must specify the @code{-c} (compile
 only) flag in addition to the @code{-gnats} flag.
 
@@ -15066,7 +15211,7 @@ restriction warnings rather than restrictions.
 
 @table @asis
 
-@item @code{-gnatR[0|1|2|3][e][j][m][s]}
+@item @code{-gnatR[0|1|2|3|4][e][j][m][s]}
 
 This switch controls output from the compiler of a listing showing
 representation information for declared types, objects and subprograms.
@@ -15074,6 +15219,7 @@ For @code{-gnatR0}, no information is output (equivalent to omitting
 the @code{-gnatR} switch). For @code{-gnatR1} (which is the default,
 so @code{-gnatR} with no parameter has the same effect), size and
 alignment information is listed for declared array and record types.
+
 For @code{-gnatR2}, size and alignment information is listed for all
 declared types and objects. The @code{Linker_Section} is also listed for any
 entity for which the @code{Linker_Section} is set explicitly or implicitly (the
@@ -15086,9 +15232,13 @@ a mostly obvious format with #n being used to represent the value of the
 n'th discriminant. See source files @code{repinfo.ads/adb} in the
 GNAT sources for full details on the format of @code{-gnatR3} output.
 
+For @code{-gnatR4}, information for relevant compiler-generated types
+is also listed, i.e. when they are structurally part of other declared
+types and objects.
+
 If the switch is followed by an @code{e} (e.g. @code{-gnatR2e}), then
 extended representation information for record sub-components of records
-are included.
+is included.
 
 If the switch is followed by an @code{m} (e.g. @code{-gnatRm}), then
 subprogram conventions and parameter passing mechanisms for all the
@@ -15101,8 +15251,8 @@ available in the specification of the Repinfo unit present in the
 compiler sources.
 
 If the switch is followed by an @code{s} (e.g., @code{-gnatR3s}), then
-the output is to a file with the name @code{file.rep} where file is
-the name of the corresponding source file, except if @cite{j`} is also
+the output is to a file with the name @code{file.rep} where @code{file} is
+the name of the corresponding source file, except if @code{j} is also
 specified, in which case the file name is @code{file.json}.
 
 Note that it is possible for record components to have zero size. In
@@ -15141,6 +15291,48 @@ the @code{ALI} file. This information is used by a number of tools,
 including @code{gnatfind} and @code{gnatxref}. The @code{-gnatx} switch
 suppresses this information. This saves some space and may slightly
 speed up compilation, but means that these tools cannot be used.
+@end table
+
+@geindex -fgnat-encodings (gcc)
+
+
+@table @asis
+
+@item @code{-fgnat-encodings=[all|gdb|minimal]}
+
+This switch controls the balance between GNAT encodings and standard DWARF
+emitted in the debug information.
+
+Historically, old debug formats like stabs were not powerful enough to
+express some Ada types (for instance, variant records or fixed-point types).
+To work around this, GNAT introduced proprietary encodings that embed the
+missing information ("GNAT encodings").
+
+Recent versions of the DWARF debug information format are now able to
+correctly describe most of these Ada constructs ("standard DWARF"). As
+third-party tools started to use this format, GNAT has been enhanced to
+generate it. However, most tools (including GDB) are still relying on GNAT
+encodings.
+
+To support all tools, GNAT needs to be versatile about the balance between
+generation of GNAT encodings and standard DWARF. This is what
+@code{-fgnat-encodings} is about.
+
+
+@itemize *
+
+@item 
+@code{=all}: Emit all GNAT encodings, and then emit as much standard DWARF as
+possible so it does not conflict with GNAT encodings.
+
+@item 
+@code{=gdb}: Emit as much standard DWARF as possible as long as the current
+GDB handles it. Emit GNAT encodings for the rest.
+
+@item 
+@code{=minimal}: Emit as much standard DWARF as possible and emit GNAT
+encodings for the rest.
+@end itemize
 @end table
 
 @node Exception Handling Control,Units to Sources Mapping Files,Debugging Control,Compiler Switches
@@ -15648,7 +15840,8 @@ Currently the same as @code{-Ea}.
 
 @item @code{-f@emph{elab-order}}
 
-Force elaboration order.
+Force elaboration order. For further details see @ref{120,,Elaboration Control}
+and @ref{f,,Elaboration Order Handling in GNAT}.
 @end table
 
 @geindex -F (gnatbind)
@@ -15675,22 +15868,41 @@ flag checks are generated.
 @item @code{-h}
 
 Output usage (help) information.
+@end table
+
+@geindex -H (gnatbind)
+
+
+@table @asis
+
+@item @code{-H}
+
+Legacy elaboration order model enabled. For further details see
+@ref{f,,Elaboration Order Handling in GNAT}.
+@end table
 
 @geindex -H32 (gnatbind)
+
+
+@table @asis
 
 @item @code{-H32}
 
 Use 32-bit allocations for @code{__gnat_malloc} (and thus for access types).
-For further details see @ref{120,,Dynamic Allocation Control}.
+For further details see @ref{121,,Dynamic Allocation Control}.
+@end table
 
 @geindex -H64 (gnatbind)
 
 @geindex __gnat_malloc
 
+
+@table @asis
+
 @item @code{-H64}
 
 Use 64-bit allocations for @code{__gnat_malloc} (and thus for access types).
-For further details see @ref{120,,Dynamic Allocation Control}.
+For further details see @ref{121,,Dynamic Allocation Control}.
 
 @geindex -I (gnatbind)
 
@@ -15742,6 +15954,25 @@ continues in this case. If the number of errors reaches this
 limit, then a message is output and the bind is abandoned.
 A value of zero means that no limit is enforced. The equal
 sign is optional.
+
+@geindex -minimal (gnatbind)
+
+@item @code{-minimal}
+
+Generate a binder file suitable for space-constrained applications. When
+active, binder-generated objects not required for program operation are no
+longer generated. @strong{Warning:} this option comes with the following
+limitations:
+
+
+@itemize *
+
+@item 
+Debugging will not work;
+
+@item 
+Programs using GNAT.Compiler_Version will not link.
+@end itemize
 
 @geindex -n (gnatbind)
 
@@ -15920,7 +16151,7 @@ Enable dynamic stack usage, with @code{n} results stored and displayed
 at program termination. A result is generated when a task
 terminates. Results that can't be stored are displayed on the fly, at
 task termination. This option is currently not supported on Itanium
-platforms. (See @ref{121,,Dynamic Stack Usage Analysis} for details.)
+platforms. (See @ref{122,,Dynamic Stack Usage Analysis} for details.)
 
 @geindex -v (gnatbind)
 
@@ -15989,7 +16220,7 @@ no arguments.
 @end menu
 
 @node Consistency-Checking Modes,Binder Error Message Control,,Switches for gnatbind
-@anchor{gnat_ugn/building_executable_programs_with_gnat consistency-checking-modes}@anchor{122}@anchor{gnat_ugn/building_executable_programs_with_gnat id35}@anchor{123}
+@anchor{gnat_ugn/building_executable_programs_with_gnat consistency-checking-modes}@anchor{123}@anchor{gnat_ugn/building_executable_programs_with_gnat id35}@anchor{124}
 @subsubsection Consistency-Checking Modes
 
 
@@ -16043,7 +16274,7 @@ case the checking against sources has already been performed by
 @end table
 
 @node Binder Error Message Control,Elaboration Control,Consistency-Checking Modes,Switches for gnatbind
-@anchor{gnat_ugn/building_executable_programs_with_gnat id36}@anchor{124}@anchor{gnat_ugn/building_executable_programs_with_gnat binder-error-message-control}@anchor{125}
+@anchor{gnat_ugn/building_executable_programs_with_gnat id36}@anchor{125}@anchor{gnat_ugn/building_executable_programs_with_gnat binder-error-message-control}@anchor{126}
 @subsubsection Binder Error Message Control
 
 
@@ -16153,12 +16384,12 @@ with extreme care.
 @end table
 
 @node Elaboration Control,Output Control,Binder Error Message Control,Switches for gnatbind
-@anchor{gnat_ugn/building_executable_programs_with_gnat id37}@anchor{126}@anchor{gnat_ugn/building_executable_programs_with_gnat elaboration-control}@anchor{127}
+@anchor{gnat_ugn/building_executable_programs_with_gnat id37}@anchor{127}@anchor{gnat_ugn/building_executable_programs_with_gnat elaboration-control}@anchor{120}
 @subsubsection Elaboration Control
 
 
 The following switches provide additional control over the elaboration
-order. For full details see @ref{f,,Elaboration Order Handling in GNAT}.
+order. For further details see @ref{f,,Elaboration Order Handling in GNAT}.
 
 @geindex -f (gnatbind)
 
@@ -16203,30 +16434,38 @@ above forced elaboration order file.
 Blank lines and Ada-style comments are ignored. Unit names that do not exist
 in the program are ignored. Units in the GNAT predefined library are also
 ignored.
+@end table
 
 @geindex -p (gnatbind)
 
+
+@table @asis
+
 @item @code{-p}
 
-Normally the binder attempts to choose an elaboration order that is
-likely to minimize the likelihood of an elaboration order error resulting
-in raising a @code{Program_Error} exception. This switch reverses the
-action of the binder, and requests that it deliberately choose an order
-that is likely to maximize the likelihood of an elaboration error.
-This is useful in ensuring portability and avoiding dependence on
-accidental fortuitous elaboration ordering.
+Pessimistic elaboration order
 
-Normally it only makes sense to use the @code{-p}
-switch if dynamic
+This switch is only applicable to the pre-20.x legacy elaboration models.
+The post-20.x elaboration model uses a more informed approach of ordering
+the units.
+
+Normally the binder attempts to choose an elaboration order that is likely to
+minimize the likelihood of an elaboration order error resulting in raising a
+@code{Program_Error} exception. This switch reverses the action of the binder,
+and requests that it deliberately choose an order that is likely to maximize
+the likelihood of an elaboration error. This is useful in ensuring
+portability and avoiding dependence on accidental fortuitous elaboration
+ordering.
+
+Normally it only makes sense to use the @code{-p} switch if dynamic
 elaboration checking is used (@code{-gnatE} switch used for compilation).
 This is because in the default static elaboration mode, all necessary
 @code{Elaborate} and @code{Elaborate_All} pragmas are implicitly inserted.
-These implicit pragmas are still respected by the binder in
-@code{-p} mode, so a
-safe elaboration order is assured.
+These implicit pragmas are still respected by the binder in @code{-p}
+mode, so a safe elaboration order is assured.
 
-Note that @code{-p} is not intended for
-production use; it is more for debugging/experimental use.
+Note that @code{-p} is not intended for production use; it is more for
+debugging/experimental use.
 @end table
 
 @node Output Control,Dynamic Allocation Control,Elaboration Control,Switches for gnatbind
@@ -16311,7 +16550,7 @@ be used to improve code generation in some cases.
 @end table
 
 @node Dynamic Allocation Control,Binding with Non-Ada Main Programs,Output Control,Switches for gnatbind
-@anchor{gnat_ugn/building_executable_programs_with_gnat dynamic-allocation-control}@anchor{120}@anchor{gnat_ugn/building_executable_programs_with_gnat id39}@anchor{12a}
+@anchor{gnat_ugn/building_executable_programs_with_gnat dynamic-allocation-control}@anchor{121}@anchor{gnat_ugn/building_executable_programs_with_gnat id39}@anchor{12a}
 @subsubsection Dynamic Allocation Control
 
 
@@ -17300,7 +17539,7 @@ normal mode is listed, but no file is actually deleted.
 
 @item @code{--version}
 
-Display Copyright and version, then exit disregarding all other options.
+Display copyright and version, then exit disregarding all other options.
 @end table
 
 @geindex --help (gnatclean)
@@ -17603,7 +17842,7 @@ version of the same source that has been modified.
 
 @item @code{--version}
 
-Display Copyright and version, then exit disregarding all other options.
+Display copyright and version, then exit disregarding all other options.
 @end table
 
 @geindex --help (gnatls)
@@ -17936,7 +18175,7 @@ The following switches are available for @code{gnatxref}:
 
 @item @code{--version}
 
-Display Copyright and version, then exit disregarding all other options.
+Display copyright and version, then exit disregarding all other options.
 @end table
 
 @geindex --help (gnatxref)
@@ -18194,7 +18433,7 @@ The following switches are available:
 
 @item @code{--version}
 
-Display Copyright and version, then exit disregarding all other options.
+Display copyright and version, then exit disregarding all other options.
 @end table
 
 @geindex --help (gnatfind)
@@ -18867,7 +19106,7 @@ If you do not specify an extension, it will default to @code{htm}.
 @item @code{f}
 
 By default, gnathtml will generate html links only for global entities
-('with'ed units, global variables and types,...).  If you specify
+('with'ed units, global variables and types,...). If you specify
 @code{-f} on the command line, then links will be generated for local
 entities too.
 @end table
@@ -19155,9 +19394,9 @@ variables, and more generally to report on the state of execution.
 
 This section describes how to initiate the debugger.
 
-The debugger can be launched from a @code{GPS} menu or
+The debugger can be launched from a @code{GNAT Studio} menu or
 directly from the command line. The description below covers the latter use.
-All the commands shown can be used in the @code{GPS} debug console window,
+All the commands shown can be used in the @code{GNAT Studio} debug console window,
 but there are usually more GUI-based ways to achieve the same effect.
 
 The command to run @code{GDB} is
@@ -20741,7 +20980,6 @@ This section presents several topics related to program performance.
 It first describes some of the tradeoffs that need to be considered
 and some of the techniques for making your program run faster.
 
-
 It then documents the unused subprogram/data elimination feature,
 which can reduce the size of program executables.
 
@@ -22096,9 +22334,8 @@ appropriate options.
 
 @geindex Checks (overflow)
 
-
 @node Overflow Check Handling in GNAT,Performing Dimensionality Analysis in GNAT,Improving Performance,GNAT and Program Execution
-@anchor{gnat_ugn/gnat_and_program_execution id50}@anchor{169}@anchor{gnat_ugn/gnat_and_program_execution overflow-check-handling-in-gnat}@anchor{27}
+@anchor{gnat_ugn/gnat_and_program_execution id45}@anchor{169}@anchor{gnat_ugn/gnat_and_program_execution overflow-check-handling-in-gnat}@anchor{27}
 @section Overflow Check Handling in GNAT
 
 
@@ -22114,7 +22351,7 @@ This section explains how to control the handling of overflow checks.
 @end menu
 
 @node Background,Management of Overflows in GNAT,,Overflow Check Handling in GNAT
-@anchor{gnat_ugn/gnat_and_program_execution id51}@anchor{1bb}@anchor{gnat_ugn/gnat_and_program_execution background}@anchor{1bc}
+@anchor{gnat_ugn/gnat_and_program_execution id46}@anchor{1bb}@anchor{gnat_ugn/gnat_and_program_execution background}@anchor{1bc}
 @subsection Background
 
 
@@ -22240,7 +22477,7 @@ exception raised because of the intermediate overflow (and we really
 would prefer this precondition to be considered True at run time).
 
 @node Management of Overflows in GNAT,Specifying the Desired Mode,Background,Overflow Check Handling in GNAT
-@anchor{gnat_ugn/gnat_and_program_execution management-of-overflows-in-gnat}@anchor{1bd}@anchor{gnat_ugn/gnat_and_program_execution id52}@anchor{1be}
+@anchor{gnat_ugn/gnat_and_program_execution id47}@anchor{1bd}@anchor{gnat_ugn/gnat_and_program_execution management-of-overflows-in-gnat}@anchor{1be}
 @subsection Management of Overflows in GNAT
 
 
@@ -22354,7 +22591,7 @@ out in the normal manner (with infinite values always failing all
 range checks).
 
 @node Specifying the Desired Mode,Default Settings,Management of Overflows in GNAT,Overflow Check Handling in GNAT
-@anchor{gnat_ugn/gnat_and_program_execution specifying-the-desired-mode}@anchor{f8}@anchor{gnat_ugn/gnat_and_program_execution id53}@anchor{1bf}
+@anchor{gnat_ugn/gnat_and_program_execution specifying-the-desired-mode}@anchor{f8}@anchor{gnat_ugn/gnat_and_program_execution id48}@anchor{1bf}
 @subsection Specifying the Desired Mode
 
 
@@ -22478,7 +22715,7 @@ causing all intermediate operations to be computed using the base
 type (@code{STRICT} mode).
 
 @node Default Settings,Implementation Notes,Specifying the Desired Mode,Overflow Check Handling in GNAT
-@anchor{gnat_ugn/gnat_and_program_execution id54}@anchor{1c0}@anchor{gnat_ugn/gnat_and_program_execution default-settings}@anchor{1c1}
+@anchor{gnat_ugn/gnat_and_program_execution id49}@anchor{1c0}@anchor{gnat_ugn/gnat_and_program_execution default-settings}@anchor{1c1}
 @subsection Default Settings
 
 
@@ -22525,7 +22762,7 @@ checking, but it has no effect on the method used for computing
 intermediate results.
 
 @node Implementation Notes,,Default Settings,Overflow Check Handling in GNAT
-@anchor{gnat_ugn/gnat_and_program_execution id55}@anchor{1c2}@anchor{gnat_ugn/gnat_and_program_execution implementation-notes}@anchor{1c3}
+@anchor{gnat_ugn/gnat_and_program_execution implementation-notes}@anchor{1c2}@anchor{gnat_ugn/gnat_and_program_execution id50}@anchor{1c3}
 @subsection Implementation Notes
 
 
@@ -22573,7 +22810,7 @@ platforms for which @code{Long_Long_Integer} is 64-bits (nearly all GNAT
 platforms).
 
 @node Performing Dimensionality Analysis in GNAT,Stack Related Facilities,Overflow Check Handling in GNAT,GNAT and Program Execution
-@anchor{gnat_ugn/gnat_and_program_execution id56}@anchor{16a}@anchor{gnat_ugn/gnat_and_program_execution performing-dimensionality-analysis-in-gnat}@anchor{28}
+@anchor{gnat_ugn/gnat_and_program_execution performing-dimensionality-analysis-in-gnat}@anchor{28}@anchor{gnat_ugn/gnat_and_program_execution id51}@anchor{16a}
 @section Performing Dimensionality Analysis in GNAT
 
 
@@ -22606,20 +22843,19 @@ to use the proper subtypes in object declarations.
 @geindex MKS_Type type
 
 The simplest way to impose dimensionality checking on a computation is to make
-use of the package @code{System.Dim.Mks},
-which is part of the GNAT library. This
-package defines a floating-point type @code{MKS_Type},
-for which a sequence of
-dimension names are specified, together with their conventional abbreviations.
-The following should be read together with the full specification of the
-package, in file @code{s-dimmks.ads}.
+use of one of the instantiations of the package @code{System.Dim.Generic_Mks}, which
+are part of the GNAT library. This generic package defines a floating-point
+type @code{MKS_Type}, for which a sequence of dimension names are specified,
+together with their conventional abbreviations.  The following should be read
+together with the full specification of the package, in file
+@code{s-digemk.ads}.
 
 @quotation
 
-@geindex s-dimmks.ads file
+@geindex s-digemk.ads file
 
 @example
-type Mks_Type is new Long_Long_Float
+type Mks_Type is new Float_Type
   with
    Dimension_System => (
      (Unit_Name => Meter,    Unit_Symbol => 'm',   Dim_Symbol => 'L'),
@@ -22674,10 +22910,25 @@ as well as useful multiples of these units:
 @end example
 @end quotation
 
-Using this package, you can then define a derived unit by
-providing the aspect that
-specifies its dimensions within the MKS system, as well as the string to
-be used for output of a value of that unit:
+There are three instantiations of @code{System.Dim.Generic_Mks} defined in the
+GNAT library:
+
+
+@itemize *
+
+@item 
+@code{System.Dim.Float_Mks} based on @code{Float} defined in @code{s-diflmk.ads}.
+
+@item 
+@code{System.Dim.Long_Mks} based on @code{Long_Float} defined in @code{s-dilomk.ads}.
+
+@item 
+@code{System.Dim.Mks} based on @code{Long_Long_Float} defined in @code{s-dimmks.ads}.
+@end itemize
+
+Using one of these packages, you can then define a derived unit by providing
+the aspect that specifies its dimensions within the MKS system, as well as the
+string to be used for output of a value of that unit:
 
 @quotation
 
@@ -22946,7 +23197,7 @@ passing (the dimension vector for the actual parameter must be equal to the
 dimension vector for the formal parameter).
 
 @node Stack Related Facilities,Memory Management Issues,Performing Dimensionality Analysis in GNAT,GNAT and Program Execution
-@anchor{gnat_ugn/gnat_and_program_execution id57}@anchor{16b}@anchor{gnat_ugn/gnat_and_program_execution stack-related-facilities}@anchor{29}
+@anchor{gnat_ugn/gnat_and_program_execution stack-related-facilities}@anchor{29}@anchor{gnat_ugn/gnat_and_program_execution id52}@anchor{16b}
 @section Stack Related Facilities
 
 
@@ -22962,7 +23213,7 @@ particular, it deals with dynamic and static stack usage measurements.
 @end menu
 
 @node Stack Overflow Checking,Static Stack Usage Analysis,,Stack Related Facilities
-@anchor{gnat_ugn/gnat_and_program_execution id58}@anchor{1c4}@anchor{gnat_ugn/gnat_and_program_execution stack-overflow-checking}@anchor{f4}
+@anchor{gnat_ugn/gnat_and_program_execution id53}@anchor{1c4}@anchor{gnat_ugn/gnat_and_program_execution stack-overflow-checking}@anchor{f4}
 @subsection Stack Overflow Checking
 
 
@@ -23007,7 +23258,7 @@ Consequently, to modify the size of the environment task please refer to your
 operating system documentation.
 
 @node Static Stack Usage Analysis,Dynamic Stack Usage Analysis,Stack Overflow Checking,Stack Related Facilities
-@anchor{gnat_ugn/gnat_and_program_execution static-stack-usage-analysis}@anchor{f5}@anchor{gnat_ugn/gnat_and_program_execution id59}@anchor{1c5}
+@anchor{gnat_ugn/gnat_and_program_execution id54}@anchor{1c5}@anchor{gnat_ugn/gnat_and_program_execution static-stack-usage-analysis}@anchor{f5}
 @subsection Static Stack Usage Analysis
 
 
@@ -23056,7 +23307,7 @@ subprogram whose stack usage might be larger than the specified amount of
 bytes.  The wording is in keeping with the qualifier documented above.
 
 @node Dynamic Stack Usage Analysis,,Static Stack Usage Analysis,Stack Related Facilities
-@anchor{gnat_ugn/gnat_and_program_execution dynamic-stack-usage-analysis}@anchor{121}@anchor{gnat_ugn/gnat_and_program_execution id60}@anchor{1c6}
+@anchor{gnat_ugn/gnat_and_program_execution id55}@anchor{1c6}@anchor{gnat_ugn/gnat_and_program_execution dynamic-stack-usage-analysis}@anchor{122}
 @subsection Dynamic Stack Usage Analysis
 
 
@@ -23070,8 +23321,11 @@ $ gnatbind -u0 file
 @end example
 @end quotation
 
-With this option, at each task termination, its stack usage is  output on
+With this option, at each task termination, its stack usage is output on
 @code{stderr}.
+Note that this switch is not compatible with tools like
+Valgrind and DrMemory; they will report errors.
+
 It is not always convenient to output the stack usage when the program
 is still running. Hence, it is possible to delay this output until program
 termination. for a given number of tasks specified as the argument of the
@@ -23135,7 +23389,7 @@ The package @code{GNAT.Task_Stack_Usage} provides facilities to get
 stack-usage reports at run time. See its body for the details.
 
 @node Memory Management Issues,,Stack Related Facilities,GNAT and Program Execution
-@anchor{gnat_ugn/gnat_and_program_execution id61}@anchor{16c}@anchor{gnat_ugn/gnat_and_program_execution memory-management-issues}@anchor{2a}
+@anchor{gnat_ugn/gnat_and_program_execution id56}@anchor{16c}@anchor{gnat_ugn/gnat_and_program_execution memory-management-issues}@anchor{2a}
 @section Memory Management Issues
 
 
@@ -23151,7 +23405,7 @@ incorrect uses of access values (including 'dangling references').
 @end menu
 
 @node Some Useful Memory Pools,The GNAT Debug Pool Facility,,Memory Management Issues
-@anchor{gnat_ugn/gnat_and_program_execution id62}@anchor{1c7}@anchor{gnat_ugn/gnat_and_program_execution some-useful-memory-pools}@anchor{1c8}
+@anchor{gnat_ugn/gnat_and_program_execution id57}@anchor{1c7}@anchor{gnat_ugn/gnat_and_program_execution some-useful-memory-pools}@anchor{1c8}
 @subsection Some Useful Memory Pools
 
 
@@ -23232,7 +23486,7 @@ for T1'Storage_Size use 10_000;
 @end quotation
 
 @node The GNAT Debug Pool Facility,,Some Useful Memory Pools,Memory Management Issues
-@anchor{gnat_ugn/gnat_and_program_execution id63}@anchor{1c9}@anchor{gnat_ugn/gnat_and_program_execution the-gnat-debug-pool-facility}@anchor{1ca}
+@anchor{gnat_ugn/gnat_and_program_execution id58}@anchor{1c9}@anchor{gnat_ugn/gnat_and_program_execution the-gnat-debug-pool-facility}@anchor{1ca}
 @subsection The GNAT Debug Pool Facility
 
 
@@ -23458,15 +23712,15 @@ the set of handlers
 Most programs should experience a substantial speed improvement by
 being compiled with a ZCX run-time.
 This is especially true for
-tasking applications or applications with many exception handlers.@}
+tasking applications or applications with many exception handlers.
+Note however that the ZCX run-time does not support asynchronous abort
+of tasks (@code{abort} and @code{select-then-abort} constructs) and will instead
+implement abort by polling points in the runtime. You can also add additional
+polling points explicitly if needed in your application via @code{pragma
+Abort_Defer}.
 
 This section summarizes which combinations of threads and exception support
 are supplied on various GNAT platforms.
-It then shows how to select a particular library either
-permanently or temporarily,
-explains the properties of (and tradeoffs among) the various threads
-libraries, and provides some additional
-information about several specific platforms.
 
 @menu
 * Summary of Run-Time Configurations:: 
@@ -23789,15 +24043,13 @@ This section describes topics that are specific to the Microsoft Windows
 platforms.
 
 
-
-
-
 @menu
 * Using GNAT on Windows:: 
 * Using a network installation of GNAT:: 
 * CONSOLE and WINDOWS subsystems:: 
 * Temporary Files:: 
 * Disabling Command Line Argument Expansion:: 
+* Windows Socket Timeouts:: 
 * Mixed-Language Programming on Windows:: 
 * Windows Specific Add-Ons:: 
 
@@ -23971,7 +24223,7 @@ file will be created. This is particularly useful in networked
 environments where you may not have write access to some
 directories.
 
-@node Disabling Command Line Argument Expansion,Mixed-Language Programming on Windows,Temporary Files,Microsoft Windows Topics
+@node Disabling Command Line Argument Expansion,Windows Socket Timeouts,Temporary Files,Microsoft Windows Topics
 @anchor{gnat_ugn/platform_specific_information disabling-command-line-argument-expansion}@anchor{1e1}
 @subsection Disabling Command Line Argument Expansion
 
@@ -24042,8 +24294,54 @@ and:
 Ada.Command_Line.Argument (1) -> "'*.txt'"
 @end example
 
-@node Mixed-Language Programming on Windows,Windows Specific Add-Ons,Disabling Command Line Argument Expansion,Microsoft Windows Topics
-@anchor{gnat_ugn/platform_specific_information id13}@anchor{1e2}@anchor{gnat_ugn/platform_specific_information mixed-language-programming-on-windows}@anchor{1e3}
+@node Windows Socket Timeouts,Mixed-Language Programming on Windows,Disabling Command Line Argument Expansion,Microsoft Windows Topics
+@anchor{gnat_ugn/platform_specific_information windows-socket-timeouts}@anchor{1e2}
+@subsection Windows Socket Timeouts
+
+
+Microsoft Windows desktops older than @code{8.0} and Microsoft Windows Servers
+older than @code{2019} set a socket timeout 500 milliseconds longer than the value
+set by setsockopt with @code{SO_RCVTIMEO} and @code{SO_SNDTIMEO} options. The GNAT
+runtime makes a correction for the difference in the corresponding Windows
+versions. For Windows Server starting with version @code{2019}, the user must
+provide a manifest file for the GNAT runtime to be able to recognize that
+the Windows version does not need the timeout correction. The manifest file
+should be located in the same directory as the executable file, and its file
+name must match the executable name suffixed by @code{.manifest}. For example,
+if the executable name is @code{sock_wto.exe}, then the manifest file name
+has to be @code{sock_wto.exe.manifest}. The manifest file must contain at
+least the following data:
+
+@example
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+<compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+<application>
+   <!-- Windows Vista -->
+   <supportedOS Id="@{e2011457-1546-43c5-a5fe-008deee3d3f0@}"/>
+   <!-- Windows 7 -->
+   <supportedOS Id="@{35138b9a-5d96-4fbd-8e2d-a2440225f93a@}"/>
+   <!-- Windows 8 -->
+   <supportedOS Id="@{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38@}"/>
+   <!-- Windows 8.1 -->
+   <supportedOS Id="@{1f676c76-80e1-4239-95bb-83d0f6d0da78@}"/>
+   <!-- Windows 10 -->
+   <supportedOS Id="@{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a@}"/>
+</application>
+</compatibility>
+</assembly>
+@end example
+
+Without the manifest file, the socket timeout is going to be overcorrected on
+these Windows Server versions and the actual time is going to be 500
+milliseconds shorter than what was set with GNAT.Sockets.Set_Socket_Option.
+Note that on Microsoft Windows versions where correction is necessary, there
+is no way to set a socket timeout shorter than 500 ms. If a socket timeout
+shorter than 500 ms is needed on these Windows versions, a call to
+Check_Selector should be added before any socket read or write operations.
+
+@node Mixed-Language Programming on Windows,Windows Specific Add-Ons,Windows Socket Timeouts,Microsoft Windows Topics
+@anchor{gnat_ugn/platform_specific_information id13}@anchor{1e3}@anchor{gnat_ugn/platform_specific_information mixed-language-programming-on-windows}@anchor{1e4}
 @subsection Mixed-Language Programming on Windows
 
 
@@ -24065,12 +24363,12 @@ to use the Microsoft tools for your C++ code, you have two choices:
 Encapsulate your C++ code in a DLL to be linked with your Ada
 application. In this case, use the Microsoft or whatever environment to
 build the DLL and use GNAT to build your executable
-(@ref{1e4,,Using DLLs with GNAT}).
+(@ref{1e5,,Using DLLs with GNAT}).
 
 @item 
 Or you can encapsulate your Ada code in a DLL to be linked with the
 other part of your application. In this case, use GNAT to build the DLL
-(@ref{1e5,,Building DLLs with GNAT Project files}) and use the Microsoft
+(@ref{1e6,,Building DLLs with GNAT Project files}) and use the Microsoft
 or whatever environment to build your executable.
 @end itemize
 
@@ -24127,7 +24425,7 @@ native SEH support is used.
 @end menu
 
 @node Windows Calling Conventions,Introduction to Dynamic Link Libraries DLLs,,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information windows-calling-conventions}@anchor{1e6}@anchor{gnat_ugn/platform_specific_information id14}@anchor{1e7}
+@anchor{gnat_ugn/platform_specific_information windows-calling-conventions}@anchor{1e7}@anchor{gnat_ugn/platform_specific_information id14}@anchor{1e8}
 @subsubsection Windows Calling Conventions
 
 
@@ -24172,7 +24470,7 @@ are available for Windows:
 @end menu
 
 @node C Calling Convention,Stdcall Calling Convention,,Windows Calling Conventions
-@anchor{gnat_ugn/platform_specific_information c-calling-convention}@anchor{1e8}@anchor{gnat_ugn/platform_specific_information id15}@anchor{1e9}
+@anchor{gnat_ugn/platform_specific_information c-calling-convention}@anchor{1e9}@anchor{gnat_ugn/platform_specific_information id15}@anchor{1ea}
 @subsubsection @code{C} Calling Convention
 
 
@@ -24214,10 +24512,10 @@ is missing, as in the above example, this parameter is set to be the
 When importing a variable defined in C, you should always use the @code{C}
 calling convention unless the object containing the variable is part of a
 DLL (in which case you should use the @code{Stdcall} calling
-convention, @ref{1ea,,Stdcall Calling Convention}).
+convention, @ref{1eb,,Stdcall Calling Convention}).
 
 @node Stdcall Calling Convention,Win32 Calling Convention,C Calling Convention,Windows Calling Conventions
-@anchor{gnat_ugn/platform_specific_information stdcall-calling-convention}@anchor{1ea}@anchor{gnat_ugn/platform_specific_information id16}@anchor{1eb}
+@anchor{gnat_ugn/platform_specific_information stdcall-calling-convention}@anchor{1eb}@anchor{gnat_ugn/platform_specific_information id16}@anchor{1ec}
 @subsubsection @code{Stdcall} Calling Convention
 
 
@@ -24314,7 +24612,7 @@ Note that to ease building cross-platform bindings this convention
 will be handled as a @code{C} calling convention on non-Windows platforms.
 
 @node Win32 Calling Convention,DLL Calling Convention,Stdcall Calling Convention,Windows Calling Conventions
-@anchor{gnat_ugn/platform_specific_information win32-calling-convention}@anchor{1ec}@anchor{gnat_ugn/platform_specific_information id17}@anchor{1ed}
+@anchor{gnat_ugn/platform_specific_information win32-calling-convention}@anchor{1ed}@anchor{gnat_ugn/platform_specific_information id17}@anchor{1ee}
 @subsubsection @code{Win32} Calling Convention
 
 
@@ -24322,7 +24620,7 @@ This convention, which is GNAT-specific is fully equivalent to the
 @code{Stdcall} calling convention described above.
 
 @node DLL Calling Convention,,Win32 Calling Convention,Windows Calling Conventions
-@anchor{gnat_ugn/platform_specific_information id18}@anchor{1ee}@anchor{gnat_ugn/platform_specific_information dll-calling-convention}@anchor{1ef}
+@anchor{gnat_ugn/platform_specific_information id18}@anchor{1ef}@anchor{gnat_ugn/platform_specific_information dll-calling-convention}@anchor{1f0}
 @subsubsection @code{DLL} Calling Convention
 
 
@@ -24330,7 +24628,7 @@ This convention, which is GNAT-specific is fully equivalent to the
 @code{Stdcall} calling convention described above.
 
 @node Introduction to Dynamic Link Libraries DLLs,Using DLLs with GNAT,Windows Calling Conventions,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information id19}@anchor{1f0}@anchor{gnat_ugn/platform_specific_information introduction-to-dynamic-link-libraries-dlls}@anchor{1f1}
+@anchor{gnat_ugn/platform_specific_information id19}@anchor{1f1}@anchor{gnat_ugn/platform_specific_information introduction-to-dynamic-link-libraries-dlls}@anchor{1f2}
 @subsubsection Introduction to Dynamic Link Libraries (DLLs)
 
 
@@ -24414,10 +24712,10 @@ As a side note, an interesting difference between Microsoft DLLs and
 Unix shared libraries, is the fact that on most Unix systems all public
 routines are exported by default in a Unix shared library, while under
 Windows it is possible (but not required) to list exported routines in
-a definition file (see @ref{1f2,,The Definition File}).
+a definition file (see @ref{1f3,,The Definition File}).
 
 @node Using DLLs with GNAT,Building DLLs with GNAT Project files,Introduction to Dynamic Link Libraries DLLs,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information id20}@anchor{1f3}@anchor{gnat_ugn/platform_specific_information using-dlls-with-gnat}@anchor{1e4}
+@anchor{gnat_ugn/platform_specific_information id20}@anchor{1f4}@anchor{gnat_ugn/platform_specific_information using-dlls-with-gnat}@anchor{1e5}
 @subsubsection Using DLLs with GNAT
 
 
@@ -24508,7 +24806,7 @@ example a fictitious DLL called @code{API.dll}.
 @end menu
 
 @node Creating an Ada Spec for the DLL Services,Creating an Import Library,,Using DLLs with GNAT
-@anchor{gnat_ugn/platform_specific_information id21}@anchor{1f4}@anchor{gnat_ugn/platform_specific_information creating-an-ada-spec-for-the-dll-services}@anchor{1f5}
+@anchor{gnat_ugn/platform_specific_information id21}@anchor{1f5}@anchor{gnat_ugn/platform_specific_information creating-an-ada-spec-for-the-dll-services}@anchor{1f6}
 @subsubsection Creating an Ada Spec for the DLL Services
 
 
@@ -24548,7 +24846,7 @@ end API;
 @end quotation
 
 @node Creating an Import Library,,Creating an Ada Spec for the DLL Services,Using DLLs with GNAT
-@anchor{gnat_ugn/platform_specific_information id22}@anchor{1f6}@anchor{gnat_ugn/platform_specific_information creating-an-import-library}@anchor{1f7}
+@anchor{gnat_ugn/platform_specific_information id22}@anchor{1f7}@anchor{gnat_ugn/platform_specific_information creating-an-import-library}@anchor{1f8}
 @subsubsection Creating an Import Library
 
 
@@ -24562,7 +24860,7 @@ as in this case it is possible to link directly against the
 DLL. Otherwise read on.
 
 @geindex Definition file
-@anchor{gnat_ugn/platform_specific_information the-definition-file}@anchor{1f2}
+@anchor{gnat_ugn/platform_specific_information the-definition-file}@anchor{1f3}
 @subsubheading The Definition File
 
 
@@ -24610,17 +24908,17 @@ EXPORTS
 @end table
 
 Note that you must specify the correct suffix (@code{@@@emph{nn}})
-(see @ref{1e6,,Windows Calling Conventions}) for a Stdcall
+(see @ref{1e7,,Windows Calling Conventions}) for a Stdcall
 calling convention function in the exported symbols list.
 
 There can actually be other sections in a definition file, but these
 sections are not relevant to the discussion at hand.
-@anchor{gnat_ugn/platform_specific_information create-def-file-automatically}@anchor{1f8}
+@anchor{gnat_ugn/platform_specific_information create-def-file-automatically}@anchor{1f9}
 @subsubheading Creating a Definition File Automatically
 
 
 You can automatically create the definition file @code{API.def}
-(see @ref{1f2,,The Definition File}) from a DLL.
+(see @ref{1f3,,The Definition File}) from a DLL.
 For that use the @code{dlltool} program as follows:
 
 @quotation
@@ -24630,7 +24928,7 @@ $ dlltool API.dll -z API.def --export-all-symbols
 @end example
 
 Note that if some routines in the DLL have the @code{Stdcall} convention
-(@ref{1e6,,Windows Calling Conventions}) with stripped @code{@@@emph{nn}}
+(@ref{1e7,,Windows Calling Conventions}) with stripped @code{@@@emph{nn}}
 suffix then you'll have to edit @code{api.def} to add it, and specify
 @code{-k} to @code{gnatdll} when creating the import library.
 
@@ -24654,13 +24952,13 @@ tells you what symbol is expected. You just have to go back to the
 definition file and add the right suffix.
 @end itemize
 @end quotation
-@anchor{gnat_ugn/platform_specific_information gnat-style-import-library}@anchor{1f9}
+@anchor{gnat_ugn/platform_specific_information gnat-style-import-library}@anchor{1fa}
 @subsubheading GNAT-Style Import Library
 
 
 To create a static import library from @code{API.dll} with the GNAT tools
 you should create the .def file, then use @code{gnatdll} tool
-(see @ref{1fa,,Using gnatdll}) as follows:
+(see @ref{1fb,,Using gnatdll}) as follows:
 
 @quotation
 
@@ -24676,15 +24974,15 @@ definition file name is @code{xyz.def}, the import library name will
 be @code{libxyz.a}. Note that in the previous example option
 @code{-e} could have been removed because the name of the definition
 file (before the @code{.def} suffix) is the same as the name of the
-DLL (@ref{1fa,,Using gnatdll} for more information about @code{gnatdll}).
+DLL (@ref{1fb,,Using gnatdll} for more information about @code{gnatdll}).
 @end quotation
-@anchor{gnat_ugn/platform_specific_information msvs-style-import-library}@anchor{1fb}
+@anchor{gnat_ugn/platform_specific_information msvs-style-import-library}@anchor{1fc}
 @subsubheading Microsoft-Style Import Library
 
 
 A Microsoft import library is needed only if you plan to make an
 Ada DLL available to applications developed with Microsoft
-tools (@ref{1e3,,Mixed-Language Programming on Windows}).
+tools (@ref{1e4,,Mixed-Language Programming on Windows}).
 
 To create a Microsoft-style import library for @code{API.dll} you
 should create the .def file, then build the actual import library using
@@ -24708,7 +25006,7 @@ See the Microsoft documentation for further details about the usage of
 @end quotation
 
 @node Building DLLs with GNAT Project files,Building DLLs with GNAT,Using DLLs with GNAT,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information id23}@anchor{1fc}@anchor{gnat_ugn/platform_specific_information building-dlls-with-gnat-project-files}@anchor{1e5}
+@anchor{gnat_ugn/platform_specific_information id23}@anchor{1fd}@anchor{gnat_ugn/platform_specific_information building-dlls-with-gnat-project-files}@anchor{1e6}
 @subsubsection Building DLLs with GNAT Project files
 
 
@@ -24724,7 +25022,7 @@ when inside the @code{DllMain} routine which is used for auto-initialization
 of shared libraries, so it is not possible to have library level tasks in SALs.
 
 @node Building DLLs with GNAT,Building DLLs with gnatdll,Building DLLs with GNAT Project files,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information building-dlls-with-gnat}@anchor{1fd}@anchor{gnat_ugn/platform_specific_information id24}@anchor{1fe}
+@anchor{gnat_ugn/platform_specific_information building-dlls-with-gnat}@anchor{1fe}@anchor{gnat_ugn/platform_specific_information id24}@anchor{1ff}
 @subsubsection Building DLLs with GNAT
 
 
@@ -24755,7 +25053,7 @@ $ gcc -shared -shared-libgcc -o api.dll obj1.o obj2.o ...
 It is important to note that in this case all symbols found in the
 object files are automatically exported. It is possible to restrict
 the set of symbols to export by passing to @code{gcc} a definition
-file (see @ref{1f2,,The Definition File}).
+file (see @ref{1f3,,The Definition File}).
 For example:
 
 @example
@@ -24793,7 +25091,7 @@ $ gnatmake main -Iapilib -bargs -shared -largs -Lapilib -lAPI
 @end quotation
 
 @node Building DLLs with gnatdll,Ada DLLs and Finalization,Building DLLs with GNAT,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information building-dlls-with-gnatdll}@anchor{1ff}@anchor{gnat_ugn/platform_specific_information id25}@anchor{200}
+@anchor{gnat_ugn/platform_specific_information building-dlls-with-gnatdll}@anchor{200}@anchor{gnat_ugn/platform_specific_information id25}@anchor{201}
 @subsubsection Building DLLs with gnatdll
 
 
@@ -24801,8 +25099,8 @@ $ gnatmake main -Iapilib -bargs -shared -largs -Lapilib -lAPI
 @geindex building
 
 Note that it is preferred to use GNAT Project files
-(@ref{1e5,,Building DLLs with GNAT Project files}) or the built-in GNAT
-DLL support (@ref{1fd,,Building DLLs with GNAT}) or to build DLLs.
+(@ref{1e6,,Building DLLs with GNAT Project files}) or the built-in GNAT
+DLL support (@ref{1fe,,Building DLLs with GNAT}) or to build DLLs.
 
 This section explains how to build DLLs containing Ada code using
 @code{gnatdll}. These DLLs will be referred to as Ada DLLs in the
@@ -24818,20 +25116,20 @@ non-Ada applications are as follows:
 You need to mark each Ada entity exported by the DLL with a @code{C} or
 @code{Stdcall} calling convention to avoid any Ada name mangling for the
 entities exported by the DLL
-(see @ref{201,,Exporting Ada Entities}). You can
+(see @ref{202,,Exporting Ada Entities}). You can
 skip this step if you plan to use the Ada DLL only from Ada applications.
 
 @item 
 Your Ada code must export an initialization routine which calls the routine
 @code{adainit} generated by @code{gnatbind} to perform the elaboration of
-the Ada code in the DLL (@ref{202,,Ada DLLs and Elaboration}). The initialization
+the Ada code in the DLL (@ref{203,,Ada DLLs and Elaboration}). The initialization
 routine exported by the Ada DLL must be invoked by the clients of the DLL
 to initialize the DLL.
 
 @item 
 When useful, the DLL should also export a finalization routine which calls
 routine @code{adafinal} generated by @code{gnatbind} to perform the
-finalization of the Ada code in the DLL (@ref{203,,Ada DLLs and Finalization}).
+finalization of the Ada code in the DLL (@ref{204,,Ada DLLs and Finalization}).
 The finalization routine exported by the Ada DLL must be invoked by the
 clients of the DLL when the DLL services are no further needed.
 
@@ -24841,11 +25139,11 @@ of the programming languages to which you plan to make the DLL available.
 
 @item 
 You must provide a definition file listing the exported entities
-(@ref{1f2,,The Definition File}).
+(@ref{1f3,,The Definition File}).
 
 @item 
 Finally you must use @code{gnatdll} to produce the DLL and the import
-library (@ref{1fa,,Using gnatdll}).
+library (@ref{1fb,,Using gnatdll}).
 @end itemize
 
 Note that a relocatable DLL stripped using the @code{strip}
@@ -24865,7 +25163,7 @@ chapter of the @emph{GPRbuild User's Guide}.
 @end menu
 
 @node Limitations When Using Ada DLLs from Ada,Exporting Ada Entities,,Building DLLs with gnatdll
-@anchor{gnat_ugn/platform_specific_information limitations-when-using-ada-dlls-from-ada}@anchor{204}
+@anchor{gnat_ugn/platform_specific_information limitations-when-using-ada-dlls-from-ada}@anchor{205}
 @subsubsection Limitations When Using Ada DLLs from Ada
 
 
@@ -24886,7 +25184,7 @@ It is completely safe to exchange plain elementary, array or record types,
 Windows object handles, etc.
 
 @node Exporting Ada Entities,Ada DLLs and Elaboration,Limitations When Using Ada DLLs from Ada,Building DLLs with gnatdll
-@anchor{gnat_ugn/platform_specific_information exporting-ada-entities}@anchor{201}@anchor{gnat_ugn/platform_specific_information id26}@anchor{205}
+@anchor{gnat_ugn/platform_specific_information exporting-ada-entities}@anchor{202}@anchor{gnat_ugn/platform_specific_information id26}@anchor{206}
 @subsubsection Exporting Ada Entities
 
 
@@ -24986,10 +25284,10 @@ end API;
 Note that if you do not export the Ada entities with a @code{C} or
 @code{Stdcall} convention you will have to provide the mangled Ada names
 in the definition file of the Ada DLL
-(@ref{206,,Creating the Definition File}).
+(@ref{207,,Creating the Definition File}).
 
 @node Ada DLLs and Elaboration,,Exporting Ada Entities,Building DLLs with gnatdll
-@anchor{gnat_ugn/platform_specific_information ada-dlls-and-elaboration}@anchor{202}@anchor{gnat_ugn/platform_specific_information id27}@anchor{207}
+@anchor{gnat_ugn/platform_specific_information ada-dlls-and-elaboration}@anchor{203}@anchor{gnat_ugn/platform_specific_information id27}@anchor{208}
 @subsubsection Ada DLLs and Elaboration
 
 
@@ -25007,7 +25305,7 @@ the Ada elaboration routine @code{adainit} generated by the GNAT binder
 (@ref{b4,,Binding with Non-Ada Main Programs}). See the body of
 @code{Initialize_Api} for an example. Note that the GNAT binder is
 automatically invoked during the DLL build process by the @code{gnatdll}
-tool (@ref{1fa,,Using gnatdll}).
+tool (@ref{1fb,,Using gnatdll}).
 
 When a DLL is loaded, Windows systematically invokes a routine called
 @code{DllMain}. It would therefore be possible to call @code{adainit}
@@ -25020,7 +25318,7 @@ time), which means that the GNAT run-time will deadlock waiting for the
 newly created task to complete its initialization.
 
 @node Ada DLLs and Finalization,Creating a Spec for Ada DLLs,Building DLLs with gnatdll,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information id28}@anchor{208}@anchor{gnat_ugn/platform_specific_information ada-dlls-and-finalization}@anchor{203}
+@anchor{gnat_ugn/platform_specific_information id28}@anchor{209}@anchor{gnat_ugn/platform_specific_information ada-dlls-and-finalization}@anchor{204}
 @subsubsection Ada DLLs and Finalization
 
 
@@ -25035,10 +25333,10 @@ routine @code{adafinal} generated by the GNAT binder
 See the body of @code{Finalize_Api} for an
 example. As already pointed out the GNAT binder is automatically invoked
 during the DLL build process by the @code{gnatdll} tool
-(@ref{1fa,,Using gnatdll}).
+(@ref{1fb,,Using gnatdll}).
 
 @node Creating a Spec for Ada DLLs,GNAT and Windows Resources,Ada DLLs and Finalization,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information id29}@anchor{209}@anchor{gnat_ugn/platform_specific_information creating-a-spec-for-ada-dlls}@anchor{20a}
+@anchor{gnat_ugn/platform_specific_information id29}@anchor{20a}@anchor{gnat_ugn/platform_specific_information creating-a-spec-for-ada-dlls}@anchor{20b}
 @subsubsection Creating a Spec for Ada DLLs
 
 
@@ -25096,7 +25394,7 @@ end API;
 @end menu
 
 @node Creating the Definition File,Using gnatdll,,Creating a Spec for Ada DLLs
-@anchor{gnat_ugn/platform_specific_information creating-the-definition-file}@anchor{206}@anchor{gnat_ugn/platform_specific_information id30}@anchor{20b}
+@anchor{gnat_ugn/platform_specific_information creating-the-definition-file}@anchor{207}@anchor{gnat_ugn/platform_specific_information id30}@anchor{20c}
 @subsubsection Creating the Definition File
 
 
@@ -25132,7 +25430,7 @@ EXPORTS
 @end quotation
 
 @node Using gnatdll,,Creating the Definition File,Creating a Spec for Ada DLLs
-@anchor{gnat_ugn/platform_specific_information using-gnatdll}@anchor{1fa}@anchor{gnat_ugn/platform_specific_information id31}@anchor{20c}
+@anchor{gnat_ugn/platform_specific_information using-gnatdll}@anchor{1fb}@anchor{gnat_ugn/platform_specific_information id31}@anchor{20d}
 @subsubsection Using @code{gnatdll}
 
 
@@ -25343,7 +25641,7 @@ asks @code{gnatlink} to generate the routines @code{DllMain} and
 is loaded into memory.
 
 @item 
-@code{gnatdll} uses @code{dlltool} (see @ref{20d,,Using dlltool}) to build the
+@code{gnatdll} uses @code{dlltool} (see @ref{20e,,Using dlltool}) to build the
 export table (@code{api.exp}). The export table contains the relocation
 information in a form which can be used during the final link to ensure
 that the Windows loader is able to place the DLL anywhere in memory.
@@ -25382,7 +25680,7 @@ $ gnatbind -n api
 $ gnatlink api api.exp -o api.dll -mdll
 @end example
 @end itemize
-@anchor{gnat_ugn/platform_specific_information using-dlltool}@anchor{20d}
+@anchor{gnat_ugn/platform_specific_information using-dlltool}@anchor{20e}
 @subsubheading Using @code{dlltool}
 
 
@@ -25441,7 +25739,7 @@ DLL in the static import library generated by @code{dlltool} with switch
 @item @code{-k}
 
 Kill @code{@@@emph{nn}} from exported names
-(@ref{1e6,,Windows Calling Conventions}
+(@ref{1e7,,Windows Calling Conventions}
 for a discussion about @code{Stdcall}-style symbols.
 @end table
 
@@ -25497,7 +25795,7 @@ Use @code{assembler-name} as the assembler. The default is @code{as}.
 @end table
 
 @node GNAT and Windows Resources,Using GNAT DLLs from Microsoft Visual Studio Applications,Creating a Spec for Ada DLLs,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information gnat-and-windows-resources}@anchor{20e}@anchor{gnat_ugn/platform_specific_information id32}@anchor{20f}
+@anchor{gnat_ugn/platform_specific_information gnat-and-windows-resources}@anchor{20f}@anchor{gnat_ugn/platform_specific_information id32}@anchor{210}
 @subsubsection GNAT and Windows Resources
 
 
@@ -25592,7 +25890,7 @@ the corresponding Microsoft documentation.
 @end menu
 
 @node Building Resources,Compiling Resources,,GNAT and Windows Resources
-@anchor{gnat_ugn/platform_specific_information building-resources}@anchor{210}@anchor{gnat_ugn/platform_specific_information id33}@anchor{211}
+@anchor{gnat_ugn/platform_specific_information building-resources}@anchor{211}@anchor{gnat_ugn/platform_specific_information id33}@anchor{212}
 @subsubsection Building Resources
 
 
@@ -25612,7 +25910,7 @@ complete description of the resource script language can be found in the
 Microsoft documentation.
 
 @node Compiling Resources,Using Resources,Building Resources,GNAT and Windows Resources
-@anchor{gnat_ugn/platform_specific_information compiling-resources}@anchor{212}@anchor{gnat_ugn/platform_specific_information id34}@anchor{213}
+@anchor{gnat_ugn/platform_specific_information compiling-resources}@anchor{213}@anchor{gnat_ugn/platform_specific_information id34}@anchor{214}
 @subsubsection Compiling Resources
 
 
@@ -25654,7 +25952,7 @@ $ windres -i myres.res -o myres.o
 @end quotation
 
 @node Using Resources,,Compiling Resources,GNAT and Windows Resources
-@anchor{gnat_ugn/platform_specific_information using-resources}@anchor{214}@anchor{gnat_ugn/platform_specific_information id35}@anchor{215}
+@anchor{gnat_ugn/platform_specific_information using-resources}@anchor{215}@anchor{gnat_ugn/platform_specific_information id35}@anchor{216}
 @subsubsection Using Resources
 
 
@@ -25674,7 +25972,7 @@ $ gnatmake myprog -largs myres.o
 @end quotation
 
 @node Using GNAT DLLs from Microsoft Visual Studio Applications,Debugging a DLL,GNAT and Windows Resources,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information using-gnat-dll-from-msvs}@anchor{216}@anchor{gnat_ugn/platform_specific_information using-gnat-dlls-from-microsoft-visual-studio-applications}@anchor{217}
+@anchor{gnat_ugn/platform_specific_information using-gnat-dll-from-msvs}@anchor{217}@anchor{gnat_ugn/platform_specific_information using-gnat-dlls-from-microsoft-visual-studio-applications}@anchor{218}
 @subsubsection Using GNAT DLLs from Microsoft Visual Studio Applications
 
 
@@ -25708,7 +26006,7 @@ $ gprbuild -p mylib.gpr
 @item 
 Produce a .def file for the symbols you need to interface with, either by
 hand or automatically with possibly some manual adjustments
-(see @ref{1f8,,Creating Definition File Automatically}):
+(see @ref{1f9,,Creating Definition File Automatically}):
 @end enumerate
 
 @quotation
@@ -25725,7 +26023,7 @@ $ dlltool libmylib.dll -z libmylib.def --export-all-symbols
 Make sure that MSVS command-line tools are accessible on the path.
 
 @item 
-Create the Microsoft-style import library (see @ref{1fb,,MSVS-Style Import Library}):
+Create the Microsoft-style import library (see @ref{1fc,,MSVS-Style Import Library}):
 @end enumerate
 
 @quotation
@@ -25767,7 +26065,7 @@ or copy the DLL into into the directory containing the .exe.
 @end enumerate
 
 @node Debugging a DLL,Setting Stack Size from gnatlink,Using GNAT DLLs from Microsoft Visual Studio Applications,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information id36}@anchor{218}@anchor{gnat_ugn/platform_specific_information debugging-a-dll}@anchor{219}
+@anchor{gnat_ugn/platform_specific_information id36}@anchor{219}@anchor{gnat_ugn/platform_specific_information debugging-a-dll}@anchor{21a}
 @subsubsection Debugging a DLL
 
 
@@ -25805,7 +26103,7 @@ tools suite used to build the DLL.
 @end menu
 
 @node Program and DLL Both Built with GCC/GNAT,Program Built with Foreign Tools and DLL Built with GCC/GNAT,,Debugging a DLL
-@anchor{gnat_ugn/platform_specific_information id37}@anchor{21a}@anchor{gnat_ugn/platform_specific_information program-and-dll-both-built-with-gcc-gnat}@anchor{21b}
+@anchor{gnat_ugn/platform_specific_information id37}@anchor{21b}@anchor{gnat_ugn/platform_specific_information program-and-dll-both-built-with-gcc-gnat}@anchor{21c}
 @subsubsection Program and DLL Both Built with GCC/GNAT
 
 
@@ -25815,7 +26113,7 @@ the process. Let's suppose here that the main procedure is named
 @code{ada_main} and that in the DLL there is an entry point named
 @code{ada_dll}.
 
-The DLL (@ref{1f1,,Introduction to Dynamic Link Libraries (DLLs)}) and
+The DLL (@ref{1f2,,Introduction to Dynamic Link Libraries (DLLs)}) and
 program must have been built with the debugging information (see GNAT -g
 switch). Here are the step-by-step instructions for debugging it:
 
@@ -25855,7 +26153,7 @@ you can use the standard approach to debug the whole program
 (@ref{24,,Running and Debugging Ada Programs}).
 
 @node Program Built with Foreign Tools and DLL Built with GCC/GNAT,,Program and DLL Both Built with GCC/GNAT,Debugging a DLL
-@anchor{gnat_ugn/platform_specific_information program-built-with-foreign-tools-and-dll-built-with-gcc-gnat}@anchor{21c}@anchor{gnat_ugn/platform_specific_information id38}@anchor{21d}
+@anchor{gnat_ugn/platform_specific_information program-built-with-foreign-tools-and-dll-built-with-gcc-gnat}@anchor{21d}@anchor{gnat_ugn/platform_specific_information id38}@anchor{21e}
 @subsubsection Program Built with Foreign Tools and DLL Built with GCC/GNAT
 
 
@@ -25872,7 +26170,7 @@ example some C code built with Microsoft Visual C) and that there is a
 DLL named @code{test.dll} containing an Ada entry point named
 @code{ada_dll}.
 
-The DLL (see @ref{1f1,,Introduction to Dynamic Link Libraries (DLLs)}) must have
+The DLL (see @ref{1f2,,Introduction to Dynamic Link Libraries (DLLs)}) must have
 been built with debugging information (see the GNAT @code{-g} option).
 
 @subsubheading Debugging the DLL Directly
@@ -26011,7 +26309,7 @@ approach to debug a program as described in
 @ref{24,,Running and Debugging Ada Programs}.
 
 @node Setting Stack Size from gnatlink,Setting Heap Size from gnatlink,Debugging a DLL,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information setting-stack-size-from-gnatlink}@anchor{136}@anchor{gnat_ugn/platform_specific_information id39}@anchor{21e}
+@anchor{gnat_ugn/platform_specific_information setting-stack-size-from-gnatlink}@anchor{136}@anchor{gnat_ugn/platform_specific_information id39}@anchor{21f}
 @subsubsection Setting Stack Size from @code{gnatlink}
 
 
@@ -26054,7 +26352,7 @@ because the comma is a separator for this option.
 @end itemize
 
 @node Setting Heap Size from gnatlink,,Setting Stack Size from gnatlink,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information setting-heap-size-from-gnatlink}@anchor{137}@anchor{gnat_ugn/platform_specific_information id40}@anchor{21f}
+@anchor{gnat_ugn/platform_specific_information setting-heap-size-from-gnatlink}@anchor{137}@anchor{gnat_ugn/platform_specific_information id40}@anchor{220}
 @subsubsection Setting Heap Size from @code{gnatlink}
 
 
@@ -26087,7 +26385,7 @@ because the comma is a separator for this option.
 @end itemize
 
 @node Windows Specific Add-Ons,,Mixed-Language Programming on Windows,Microsoft Windows Topics
-@anchor{gnat_ugn/platform_specific_information windows-specific-add-ons}@anchor{220}@anchor{gnat_ugn/platform_specific_information win32-specific-addons}@anchor{221}
+@anchor{gnat_ugn/platform_specific_information windows-specific-add-ons}@anchor{221}@anchor{gnat_ugn/platform_specific_information win32-specific-addons}@anchor{222}
 @subsection Windows Specific Add-Ons
 
 
@@ -26100,7 +26398,7 @@ This section describes the Windows specific add-ons.
 @end menu
 
 @node Win32Ada,wPOSIX,,Windows Specific Add-Ons
-@anchor{gnat_ugn/platform_specific_information win32ada}@anchor{222}@anchor{gnat_ugn/platform_specific_information id41}@anchor{223}
+@anchor{gnat_ugn/platform_specific_information win32ada}@anchor{223}@anchor{gnat_ugn/platform_specific_information id41}@anchor{224}
 @subsubsection Win32Ada
 
 
@@ -26131,7 +26429,7 @@ gprbuild p.gpr
 @end quotation
 
 @node wPOSIX,,Win32Ada,Windows Specific Add-Ons
-@anchor{gnat_ugn/platform_specific_information id42}@anchor{224}@anchor{gnat_ugn/platform_specific_information wposix}@anchor{225}
+@anchor{gnat_ugn/platform_specific_information id42}@anchor{225}@anchor{gnat_ugn/platform_specific_information wposix}@anchor{226}
 @subsubsection wPOSIX
 
 
@@ -26164,7 +26462,7 @@ gprbuild p.gpr
 @end quotation
 
 @node Mac OS Topics,,Microsoft Windows Topics,Platform-Specific Information
-@anchor{gnat_ugn/platform_specific_information mac-os-topics}@anchor{2d}@anchor{gnat_ugn/platform_specific_information id43}@anchor{226}
+@anchor{gnat_ugn/platform_specific_information mac-os-topics}@anchor{2d}@anchor{gnat_ugn/platform_specific_information id43}@anchor{227}
 @section Mac OS Topics
 
 
@@ -26179,7 +26477,7 @@ platform.
 @end menu
 
 @node Codesigning the Debugger,,,Mac OS Topics
-@anchor{gnat_ugn/platform_specific_information codesigning-the-debugger}@anchor{227}
+@anchor{gnat_ugn/platform_specific_information codesigning-the-debugger}@anchor{228}
 @subsection Codesigning the Debugger
 
 
@@ -26260,7 +26558,7 @@ the location where you installed GNAT.  Also, be sure that users are
 in the Unix group @code{_developer}.
 
 @node Example of Binder Output File,Elaboration Order Handling in GNAT,Platform-Specific Information,Top
-@anchor{gnat_ugn/example_of_binder_output example-of-binder-output-file}@anchor{e}@anchor{gnat_ugn/example_of_binder_output doc}@anchor{228}@anchor{gnat_ugn/example_of_binder_output id1}@anchor{229}
+@anchor{gnat_ugn/example_of_binder_output example-of-binder-output-file}@anchor{e}@anchor{gnat_ugn/example_of_binder_output doc}@anchor{229}@anchor{gnat_ugn/example_of_binder_output id1}@anchor{22a}
 @chapter Example of Binder Output File
 
 
@@ -27012,7 +27310,7 @@ elaboration code in your own application).
 @c -- Example: A |withing| unit has a |with| clause, it |withs| a |withed| unit
 
 @node Elaboration Order Handling in GNAT,Inline Assembler,Example of Binder Output File,Top
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-order-handling-in-gnat}@anchor{f}@anchor{gnat_ugn/elaboration_order_handling_in_gnat doc}@anchor{22a}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id1}@anchor{22b}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-order-handling-in-gnat}@anchor{f}@anchor{gnat_ugn/elaboration_order_handling_in_gnat doc}@anchor{22b}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id1}@anchor{22c}
 @chapter Elaboration Order Handling in GNAT
 
 
@@ -27030,15 +27328,11 @@ GNAT, either automatically or with explicit programming features.
 * Checking the Elaboration Order:: 
 * Controlling the Elaboration Order in Ada:: 
 * Controlling the Elaboration Order in GNAT:: 
-* Common Elaboration-model Traits:: 
-* Dynamic Elaboration Model in GNAT:: 
-* Static Elaboration Model in GNAT:: 
-* SPARK Elaboration Model in GNAT:: 
-* Legacy Elaboration Model in GNAT:: 
 * Mixing Elaboration Models:: 
+* ABE Diagnostics:: 
+* SPARK Diagnostics:: 
 * Elaboration Circularities:: 
 * Resolving Elaboration Circularities:: 
-* Resolving Task Issues:: 
 * Elaboration-related Compiler Switches:: 
 * Summary of Procedures for Elaboration Control:: 
 * Inspecting the Chosen Elaboration Order:: 
@@ -27046,7 +27340,7 @@ GNAT, either automatically or with explicit programming features.
 @end menu
 
 @node Elaboration Code,Elaboration Order,,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-code}@anchor{22c}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id2}@anchor{22d}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-code}@anchor{22d}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id2}@anchor{22e}
 @section Elaboration Code
 
 
@@ -27086,9 +27380,15 @@ In addition to the Ada terminology, this appendix defines the following terms:
 @itemize *
 
 @item 
+@emph{Invocation}
+
+The act of calling a subprogram, instantiating a generic, or activating a
+task.
+
+@item 
 @emph{Scenario}
 
-A construct that is elaborated or executed by elaboration code is referred to
+A construct that is elaborated or invoked by elaboration code is referred to
 as an @emph{elaboration scenario} or simply a @strong{scenario}. GNAT recognizes the
 following scenarios:
 
@@ -27160,7 +27460,7 @@ end Client;
 In the example above, the call to @code{Server.Func} is an elaboration scenario
 because it appears at the library level of package @code{Client}. Note that the
 declaration of package @code{Nested} is ignored according to the definition
-given above. As a result, the call to @code{Server.Func} will be executed when
+given above. As a result, the call to @code{Server.Func} will be invoked when
 the spec of unit @code{Client} is elaborated.
 
 @item 
@@ -27183,12 +27483,12 @@ end Client;
 
 In the example above, the call to @code{Proc} is an elaboration scenario because
 it appears within the statement sequence of package body @code{Client}. As a
-result, the call to @code{Proc} will be executed when the body of @code{Client} is
+result, the call to @code{Proc} will be invoked when the body of @code{Client} is
 elaborated.
 @end itemize
 
 @node Elaboration Order,Checking the Elaboration Order,Elaboration Code,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-order}@anchor{22e}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id3}@anchor{22f}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-order}@anchor{22f}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id3}@anchor{230}
 @section Elaboration Order
 
 
@@ -27196,6 +27496,8 @@ The sequence by which the elaboration code of all units within a partition is
 executed is referred to as @strong{elaboration order}.
 
 Within a single unit, elaboration code is executed in sequential order.
+
+@quotation
 
 @example
 package body Client is
@@ -27210,6 +27512,7 @@ begin
    Proc;
 end Client;
 @end example
+@end quotation
 
 In the example above, the elaboration order within package body @code{Client} is
 as follows:
@@ -27257,16 +27560,24 @@ factors:
 @emph{with}ed units
 
 @item 
+parent units
+
+@item 
 purity of units
 
 @item 
 preelaborability of units
 
 @item 
-presence of elaboration control pragmas
+presence of elaboration-control pragmas
+
+@item 
+invocations performed in elaboration code
 @end itemize
 
 A program may have several elaboration orders depending on its structure.
+
+@quotation
 
 @example
 package Server is
@@ -27296,9 +27607,12 @@ end Client;
 with Client;
 procedure Main is begin null; end Main;
 @end example
+@end quotation
 
 The following elaboration order exhibits a fundamental problem referred to as
 @emph{access-before-elaboration} or simply @strong{ABE}.
+
+@quotation
 
 @example
 spec of Server
@@ -27306,6 +27620,7 @@ spec of Client
 body of Server
 body of Main
 @end example
+@end quotation
 
 The elaboration of @code{Server}'s spec materializes function @code{Func}, making it
 callable. The elaboration of @code{Client}'s spec elaborates the declaration of
@@ -27323,26 +27638,30 @@ vein as index or null exclusion checks. A failed ABE check raises exception
 The following elaboration order avoids the ABE problem and the program can be
 successfully elaborated.
 
+@quotation
+
 @example
 spec of Server
 body of Server
 spec of Client
 body of Main
 @end example
+@end quotation
 
 Ada states that a total elaboration order must exist, but it does not define
 what this order is. A compiler is thus tasked with choosing a suitable
 elaboration order which satisfies the dependencies imposed by @emph{with} clauses,
-unit categorization, and elaboration control pragmas. Ideally an order which
-avoids ABE problems should be chosen, however a compiler may not always find
-such an order due to complications with respect to control and data flow.
+unit categorization, elaboration-control pragmas, and invocations performed in
+elaboration code. Ideally an order that avoids ABE problems should be chosen,
+however a compiler may not always find such an order due to complications with
+respect to control and data flow.
 
 @node Checking the Elaboration Order,Controlling the Elaboration Order in Ada,Elaboration Order,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat id4}@anchor{230}@anchor{gnat_ugn/elaboration_order_handling_in_gnat checking-the-elaboration-order}@anchor{231}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat id4}@anchor{231}@anchor{gnat_ugn/elaboration_order_handling_in_gnat checking-the-elaboration-order}@anchor{232}
 @section Checking the Elaboration Order
 
 
-To avoid placing the entire elaboration order burden on the programmer, Ada
+To avoid placing the entire elaboration-order burden on the programmer, Ada
 provides three lines of defense:
 
 
@@ -27360,7 +27679,7 @@ always elaborated prior to Client. The same principle applies to child units
 @emph{Dynamic semantics}
 
 Dynamic checks are performed at run time, to ensure that a target is
-elaborated prior to a scenario that executes it, thus avoiding ABE problems.
+elaborated prior to a scenario that invokes it, thus avoiding ABE problems.
 A failed run-time check raises exception @code{Program_Error}. The following
 restrictions apply:
 
@@ -27389,8 +27708,7 @@ associated task type has been elaborated.
 The restrictions above can be summarized by the following rule:
 
 @emph{If a target has a body, then this body must be elaborated prior to the
-execution of the scenario that invokes, instantiates, or activates the
-target.}
+scenario that invokes the target.}
 
 @item 
 @emph{Elaboration control}
@@ -27400,7 +27718,7 @@ order.
 @end itemize
 
 @node Controlling the Elaboration Order in Ada,Controlling the Elaboration Order in GNAT,Checking the Elaboration Order,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat controlling-the-elaboration-order-in-ada}@anchor{232}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id5}@anchor{233}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat controlling-the-elaboration-order-in-ada}@anchor{233}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id5}@anchor{234}
 @section Controlling the Elaboration Order in Ada
 
 
@@ -27466,7 +27784,7 @@ but still strong enough to prevent ABE problems within a unit.
 
 Pragma @code{Elaborate_Body} requires that the body of a unit is elaborated
 immediately after its spec. This restriction guarantees that no client
-scenario can execute a server target before the target body has been
+scenario can invoke a server target before the target body has been
 elaborated because the spec and body are effectively "glued" together.
 
 @example
@@ -27666,7 +27984,7 @@ Note that there are several allowable suborders for the specs and bodies of
 be elaborated prior to @code{Client}.
 
 Removing pragma @code{Elaborate_All} could result in the following incorrect
-elaboration order
+elaboration order:
 
 @example
 spec of Math
@@ -27727,8 +28045,8 @@ Note that one additional advantage of using @code{Elaborate} and @code{Elaborate
 is that the program continues to stay in the last state (one or more correct
 orders exist) even if maintenance changes the bodies of targets.
 
-@node Controlling the Elaboration Order in GNAT,Common Elaboration-model Traits,Controlling the Elaboration Order in Ada,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat id6}@anchor{234}@anchor{gnat_ugn/elaboration_order_handling_in_gnat controlling-the-elaboration-order-in-gnat}@anchor{235}
+@node Controlling the Elaboration Order in GNAT,Mixing Elaboration Models,Controlling the Elaboration Order in Ada,Elaboration Order Handling in GNAT
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat id6}@anchor{235}@anchor{gnat_ugn/elaboration_order_handling_in_gnat controlling-the-elaboration-order-in-gnat}@anchor{236}
 @section Controlling the Elaboration Order in GNAT
 
 
@@ -27744,12 +28062,34 @@ elaboration order and to diagnose elaboration problems.
 @item 
 @emph{Dynamic elaboration model}
 
-This is the most permissive of the three elaboration models. When the
-dynamic model is in effect, GNAT assumes that all code within all units in
-a partition is elaboration code. GNAT performs very few diagnostics and
-generates run-time checks to verify the elaboration order of a program. This
-behavior is identical to that specified by the Ada Reference Manual. The
-dynamic model is enabled with compiler switch @code{-gnatE}.
+This is the most permissive of the three elaboration models and emulates the
+behavior specified by the Ada Reference Manual. When the dynamic model is in
+effect, GNAT makes the following assumptions:
+
+
+@itemize -
+
+@item 
+All code within all units in a partition is considered to be elaboration
+code.
+
+@item 
+Some of the invocations in elaboration code may not take place at run time
+due to conditional execution.
+@end itemize
+
+GNAT performs extensive diagnostics on a unit-by-unit basis for all scenarios
+that invoke internal targets. In addition, GNAT generates run-time checks for
+all external targets and for all scenarios that may exhibit ABE problems.
+
+The elaboration order is obtained by honoring all @emph{with} clauses, purity and
+preelaborability of units, and elaboration-control pragmas. The dynamic model
+attempts to take all invocations in elaboration code into account. If an
+invocation leads to a circularity, GNAT ignores the invocation based on the
+assumptions stated above. An order obtained using the dynamic model may fail
+an ABE check at run time when GNAT ignored an invocation.
+
+The dynamic model is enabled with compiler switch @code{-gnatE}.
 @end itemize
 
 @geindex Static elaboration model
@@ -27761,12 +28101,31 @@ dynamic model is enabled with compiler switch @code{-gnatE}.
 @emph{Static elaboration model}
 
 This is the middle ground of the three models. When the static model is in
-effect, GNAT performs extensive diagnostics on a unit-by-unit basis for all
-scenarios that elaborate or execute internal targets. GNAT also generates
-run-time checks for all external targets and for all scenarios that may
-exhibit ABE problems. Finally, GNAT installs implicit @code{Elaborate} and
-@code{Elaborate_All} pragmas for server units based on the dependencies of
-client units. The static model is the default model in GNAT.
+effect, GNAT makes the following assumptions:
+
+
+@itemize -
+
+@item 
+Only code at the library level and in package body statements within all
+units in a partition is considered to be elaboration code.
+
+@item 
+All invocations in elaboration will take place at run time, regardless of
+conditional execution.
+@end itemize
+
+GNAT performs extensive diagnostics on a unit-by-unit basis for all scenarios
+that invoke internal targets. In addition, GNAT generates run-time checks for
+all external targets and for all scenarios that may exhibit ABE problems.
+
+The elaboration order is obtained by honoring all @emph{with} clauses, purity and
+preelaborability of units, presence of elaboration-control pragmas, and all
+invocations in elaboration code. An order obtained using the static model is
+guaranteed to be ABE problem-free, excluding dispatching calls and
+access-to-subprogram types.
+
+The static model is the default model in GNAT.
 @end itemize
 
 @geindex SPARK elaboration model
@@ -27780,21 +28139,34 @@ client units. The static model is the default model in GNAT.
 This is the most conservative of the three models and enforces the SPARK
 rules of elaboration as defined in the SPARK Reference Manual, section 7.7.
 The SPARK model is in effect only when a scenario and a target reside in a
-region subject to SPARK_Mode On, otherwise the dynamic or static model is in
-effect.
+region subject to @code{SPARK_Mode On}, otherwise the dynamic or static model
+is in effect.
+
+The SPARK model is enabled with compiler switch @code{-gnatd.v}.
 @end itemize
 
-@geindex Legacy elaboration model
+@geindex Legacy elaboration models
 
 
 @itemize *
 
 @item 
-@emph{Legacy elaboration model}
+@emph{Legacy elaboration models}
 
 In addition to the three elaboration models outlined above, GNAT provides the
-elaboration model of pre-18.x versions referred to as @cite{legacy elaboration model}. The legacy elaboration model is enabled with compiler switch
-@code{-gnatH}.
+following legacy models:
+
+
+@itemize -
+
+@item 
+@cite{Legacy elaboration-checking model} available in pre-18.x versions of GNAT.
+This model is enabled with compiler switch @code{-gnatH}.
+
+@item 
+@cite{Legacy elaboration-order model} available in pre-20.x versions of GNAT.
+This model is enabled with binder switch @code{-H}.
+@end itemize
 @end itemize
 
 @geindex Relaxed elaboration mode
@@ -27803,311 +28175,8 @@ The dynamic, legacy, and static models can be relaxed using compiler switch
 @code{-gnatJ}, making them more permissive. Note that in this mode, GNAT
 may not diagnose certain elaboration issues or install run-time checks.
 
-@node Common Elaboration-model Traits,Dynamic Elaboration Model in GNAT,Controlling the Elaboration Order in GNAT,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat common-elaboration-model-traits}@anchor{236}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id7}@anchor{237}
-@section Common Elaboration-model Traits
-
-
-All three GNAT models are able to detect elaboration problems related to
-dispatching calls and a particular kind of ABE referred to as @emph{guaranteed ABE}.
-
-
-@itemize *
-
-@item 
-@emph{Dispatching calls}
-
-GNAT installs run-time checks for each primitive subprogram of each tagged
-type defined in a partition on the assumption that a dispatching call
-invoked at elaboration time will execute one of these primitives. As a
-result, a dispatching call that executes a primitive whose body has not
-been elaborated yet will raise exception @code{Program_Error} at run time. The
-checks can be suppressed using pragma @code{Suppress (Elaboration_Check)}.
-
-@item 
-@emph{Guaranteed ABE}
-
-A guaranteed ABE arises when the body of a target is not elaborated early
-enough, and causes all scenarios that directly execute the target to fail.
-
-@example
-package body Guaranteed_ABE is
-   function ABE return Integer;
-
-   Val : constant Integer := ABE;
-
-   function ABE return Integer is
-   begin
-      ...
-   end ABE;
-end Guaranteed_ABE;
-@end example
-
-In the example above, the elaboration of @code{Guaranteed_ABE}'s body elaborates
-the declaration of @code{Val}. This invokes function @code{ABE}, however the body
-of @code{ABE} has not been elaborated yet. GNAT emits similar diagnostics in all
-three models:
-
-@example
-1. package body Guaranteed_ABE is
-2.    function ABE return Integer;
-3.
-4.    Val : constant Integer := ABE;
-                                |
-   >>> warning: cannot call "ABE" before body seen
-   >>> warning: Program_Error will be raised at run time
-
-5.
-6.    function ABE return Integer is
-7.    begin
-8.       ...
-9.    end ABE;
-10. end Guaranteed_ABE;
-@end example
-@end itemize
-
-Note that GNAT emits warnings rather than hard errors whenever it encounters an
-elaboration problem. This is because the elaboration model in effect may be too
-conservative, or a particular scenario may not be elaborated or executed due to
-data and control flow. The warnings can be suppressed selectively with @code{pragma
-Warnigns (Off)} or globally with compiler switch @code{-gnatwL}.
-
-@node Dynamic Elaboration Model in GNAT,Static Elaboration Model in GNAT,Common Elaboration-model Traits,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat dynamic-elaboration-model-in-gnat}@anchor{238}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id8}@anchor{239}
-@section Dynamic Elaboration Model in GNAT
-
-
-The dynamic model assumes that all code within all units in a partition is
-elaboration code. As a result, run-time checks are installed for each scenario
-regardless of whether the target is internal or external. The checks can be
-suppressed using pragma @code{Suppress (Elaboration_Check)}. This behavior is
-identical to that specified by the Ada Reference Manual. The following example
-showcases run-time checks installed by GNAT to verify the elaboration state of
-package @code{Dynamic_Model}.
-
-@example
-with Server;
-package body Dynamic_Model is
-   procedure API is
-   begin
-      ...
-   end API;
-
-   <check that the body of Server.Gen is elaborated>
-   package Inst is new Server.Gen;
-
-   T : Server.Task_Type;
-
-begin
-   <check that the body of Server.Task_Type is elaborated>
-
-   <check that the body of Server.Proc is elaborated>
-   Server.Proc;
-end Dynamic_Model;
-@end example
-
-The checks verify that the body of a target has been successfully elaborated
-before a scenario activates, calls, or instantiates a target.
-
-Note that no scenario within package @code{Dynamic_Model} calls procedure @code{API}.
-In fact, procedure @code{API} may not be invoked by elaboration code within the
-partition, however the dynamic model assumes that this can happen.
-
-The dynamic model emits very few diagnostics, but can make suggestions on
-missing @code{Elaborate} and @code{Elaborate_All} pragmas for library-level
-scenarios. This information is available when compiler switch @code{-gnatel}
-is in effect.
-
-@example
-1. with Server;
-2. package body Dynamic_Model is
-3.    Val : constant Integer := Server.Func;
-                                      |
-   >>> info: call to "Func" during elaboration
-   >>> info: missing pragma "Elaborate_All" for unit "Server"
-
-4. end Dynamic_Model;
-@end example
-
-@node Static Elaboration Model in GNAT,SPARK Elaboration Model in GNAT,Dynamic Elaboration Model in GNAT,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat static-elaboration-model-in-gnat}@anchor{23a}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id9}@anchor{23b}
-@section Static Elaboration Model in GNAT
-
-
-In contrast to the dynamic model, the static model is more precise in its
-analysis of elaboration code. The model makes a clear distinction between
-internal and external targets, and resorts to different diagnostics and
-run-time checks based on the nature of the target.
-
-
-@itemize *
-
-@item 
-@emph{Internal targets}
-
-The static model performs extensive diagnostics on scenarios which elaborate
-or execute internal targets. The warnings resulting from these diagnostics
-are enabled by default, but can be suppressed selectively with @code{pragma
-Warnings (Off)} or globally with compiler switch @code{-gnatwL}.
-
-@example
- 1. package body Static_Model is
- 2.    generic
- 3.       with function Func return Integer;
- 4.    package Gen is
- 5.       Val : constant Integer := Func;
- 6.    end Gen;
- 7.
- 8.    function ABE return Integer;
- 9.
-10.    function Cause_ABE return Boolean is
-11.       package Inst is new Gen (ABE);
-          |
-    >>> warning: in instantiation at line 5
-    >>> warning: cannot call "ABE" before body seen
-    >>> warning: Program_Error may be raised at run time
-    >>> warning:   body of unit "Static_Model" elaborated
-    >>> warning:   function "Cause_ABE" called at line 16
-    >>> warning:   function "ABE" called at line 5, instance at line 11
-
-12.    begin
-13.       ...
-14.    end Cause_ABE;
-15.
-16.    Val : constant Boolean := Cause_ABE;
-17.
-18.    function ABE return Integer is
-19.    begin
-20.       ...
-21.    end ABE;
-22. end Static_Model;
-@end example
-
-The example above illustrates an ABE problem within package @code{Static_Model},
-which is hidden by several layers of indirection. The elaboration of package
-body @code{Static_Model} elaborates the declaration of @code{Val}. This invokes
-function @code{Cause_ABE}, which instantiates generic unit @code{Gen} as @code{Inst}.
-The elaboration of @code{Inst} invokes function @code{ABE}, however the body of
-@code{ABE} has not been elaborated yet.
-
-@item 
-@emph{External targets}
-
-The static model installs run-time checks to verify the elaboration status
-of server targets only when the scenario that elaborates or executes that
-target is part of the elaboration code of the client unit. The checks can be
-suppressed using pragma @code{Suppress (Elaboration_Check)}.
-
-@example
-with Server;
-package body Static_Model is
-   generic
-      with function Func return Integer;
-   package Gen is
-      Val : constant Integer := Func;
-   end Gen;
-
-   function Call_Func return Boolean is
-      <check that the body of Server.Func is elaborated>
-      package Inst is new Gen (Server.Func);
-   begin
-      ...
-   end Call_Func;
-
-   Val : constant Boolean := Call_Func;
-end Static_Model;
-@end example
-
-In the example above, the elaboration of package body @code{Static_Model}
-elaborates the declaration of @code{Val}. This invokes function @code{Call_Func},
-which instantiates generic unit @code{Gen} as @code{Inst}. The elaboration of
-@code{Inst} invokes function @code{Server.Func}. Since @code{Server.Func} is an
-external target, GNAT installs a run-time check to verify that its body has
-been elaborated.
-
-In addition to checks, the static model installs implicit @code{Elaborate} and
-@code{Elaborate_All} pragmas to guarantee safe elaboration use of server units.
-This information is available when compiler switch @code{-gnatel} is in
-effect.
-
-@example
- 1. with Server;
- 2. package body Static_Model is
- 3.    generic
- 4.       with function Func return Integer;
- 5.    package Gen is
- 6.       Val : constant Integer := Func;
- 7.    end Gen;
- 8.
- 9.    function Call_Func return Boolean is
-10.       package Inst is new Gen (Server.Func);
-          |
-    >>> info: instantiation of "Gen" during elaboration
-    >>> info: in instantiation at line 6
-    >>> info: call to "Func" during elaboration
-    >>> info: in instantiation at line 6
-    >>> info: implicit pragma "Elaborate_All" generated for unit "Server"
-    >>> info:   body of unit "Static_Model" elaborated
-    >>> info:   function "Call_Func" called at line 15
-    >>> info:   function "Func" called at line 6, instance at line 10
-
-11.    begin
-12.       ...
-13.    end Call_Func;
-14.
-15.    Val : constant Boolean := Call_Func;
-                                 |
-    >>> info: call to "Call_Func" during elaboration
-
-16. end Static_Model;
-@end example
-
-In the example above, the elaboration of package body @code{Static_Model}
-elaborates the declaration of @code{Val}. This invokes function @code{Call_Func},
-which instantiates generic unit @code{Gen} as @code{Inst}. The elaboration of
-@code{Inst} invokes function @code{Server.Func}. Since @code{Server.Func} is an
-external target, GNAT installs an implicit @code{Elaborate_All} pragma for unit
-@code{Server}. The pragma guarantees that both the spec and body of @code{Server},
-along with any additional dependencies that @code{Server} may require, are
-elaborated prior to the body of @code{Static_Model}.
-@end itemize
-
-@node SPARK Elaboration Model in GNAT,Legacy Elaboration Model in GNAT,Static Elaboration Model in GNAT,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat id10}@anchor{23c}@anchor{gnat_ugn/elaboration_order_handling_in_gnat spark-elaboration-model-in-gnat}@anchor{23d}
-@section SPARK Elaboration Model in GNAT
-
-
-The SPARK model is identical to the static model in its handling of internal
-targets. The SPARK model, however, requires explicit @code{Elaborate} or
-@code{Elaborate_All} pragmas to be present in the program when a target is
-external, and compiler switch @code{-gnatd.v} is in effect.
-
-@example
-1. with Server;
-2. package body SPARK_Model with SPARK_Mode is
-3.    Val : constant Integer := Server.Func;
-                                      |
-   >>> call to "Func" during elaboration in SPARK
-   >>> unit "SPARK_Model" requires pragma "Elaborate_All" for "Server"
-   >>>   body of unit "SPARK_Model" elaborated
-   >>>   function "Func" called at line 3
-
-4. end SPARK_Model;
-@end example
-
-@node Legacy Elaboration Model in GNAT,Mixing Elaboration Models,SPARK Elaboration Model in GNAT,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat legacy-elaboration-model-in-gnat}@anchor{23e}
-@section Legacy Elaboration Model in GNAT
-
-
-The legacy elaboration model is provided for compatibility with code bases
-developed with pre-18.x versions of GNAT. It is similar in functionality to
-the dynamic and static models of post-18.x version of GNAT, but may differ
-in terms of diagnostics and run-time checks. The legacy elaboration model is
-enabled with compiler switch @code{-gnatH}.
-
-@node Mixing Elaboration Models,Elaboration Circularities,Legacy Elaboration Model in GNAT,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat mixing-elaboration-models}@anchor{23f}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id11}@anchor{240}
+@node Mixing Elaboration Models,ABE Diagnostics,Controlling the Elaboration Order in GNAT,Elaboration Order Handling in GNAT
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat mixing-elaboration-models}@anchor{237}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id7}@anchor{238}
 @section Mixing Elaboration Models
 
 
@@ -28128,8 +28197,8 @@ that meets at least one of the following criteria:
 The server unit is compiled with the dynamic model.
 
 @item 
-The server unit is a GNAT implementation unit from the Ada, GNAT,
-Interfaces, or System hierarchies.
+The server unit is a GNAT implementation unit from the @code{Ada}, @code{GNAT},
+@code{Interfaces}, or @code{System} hierarchies.
 
 @item 
 The server unit has pragma @code{Pure} or @code{Preelaborate}.
@@ -28143,538 +28212,522 @@ unit.
 These rules ensure that elaboration checks are not omitted. If the rules are
 violated, the binder emits a warning:
 
+@quotation
+
 @example
 warning: "x.ads" has dynamic elaboration checks and with's
 warning:   "y.ads" which has static elaboration checks
 @end example
+@end quotation
 
 The warnings can be suppressed by binder switch @code{-ws}.
 
-@node Elaboration Circularities,Resolving Elaboration Circularities,Mixing Elaboration Models,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat id12}@anchor{241}@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-circularities}@anchor{242}
+@node ABE Diagnostics,SPARK Diagnostics,Mixing Elaboration Models,Elaboration Order Handling in GNAT
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat abe-diagnostics}@anchor{239}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id8}@anchor{23a}
+@section ABE Diagnostics
+
+
+GNAT performs extensive diagnostics on a unit-by-unit basis for all scenarios
+that invoke internal targets, regardless of whether the dynamic, SPARK, or
+static model is in effect.
+
+Note that GNAT emits warnings rather than hard errors whenever it encounters an
+elaboration problem. This is because the elaboration model in effect may be too
+conservative, or a particular scenario may not be invoked due conditional
+execution. The warnings can be suppressed selectively with @code{pragma Warnings
+(Off)} or globally with compiler switch @code{-gnatwL}.
+
+A @emph{guaranteed ABE} arises when the body of a target is not elaborated early
+enough, and causes @emph{all} scenarios that directly invoke the target to fail.
+
+@quotation
+
+@example
+package body Guaranteed_ABE is
+   function ABE return Integer;
+
+   Val : constant Integer := ABE;
+
+   function ABE return Integer is
+   begin
+     ...
+   end ABE;
+end Guaranteed_ABE;
+@end example
+@end quotation
+
+In the example above, the elaboration of @code{Guaranteed_ABE}'s body elaborates
+the declaration of @code{Val}. This invokes function @code{ABE}, however the body of
+@code{ABE} has not been elaborated yet. GNAT emits the following diagnostic:
+
+@quotation
+
+@example
+4.    Val : constant Integer := ABE;
+                                |
+   >>> warning: cannot call "ABE" before body seen
+   >>> warning: Program_Error will be raised at run time
+@end example
+@end quotation
+
+A @emph{conditional ABE} arises when the body of a target is not elaborated early
+enough, and causes @emph{some} scenarios that directly invoke the target to fail.
+
+@quotation
+
+@example
+ 1. package body Conditional_ABE is
+ 2.    procedure Force_Body is null;
+ 3.
+ 4.    generic
+ 5.       with function Func return Integer;
+ 6.    package Gen is
+ 7.       Val : constant Integer := Func;
+ 8.    end Gen;
+ 9.
+10.    function ABE return Integer;
+11.
+12.    function Cause_ABE return Boolean is
+13.       package Inst is new Gen (ABE);
+14.    begin
+15.       ...
+16.    end Cause_ABE;
+17.
+18.    Val : constant Boolean := Cause_ABE;
+19.
+20.    function ABE return Integer is
+21.    begin
+22.       ...
+23.    end ABE;
+24.
+25.    Safe : constant Boolean := Cause_ABE;
+26. end Conditional_ABE;
+@end example
+@end quotation
+
+In the example above, the elaboration of package body @code{Conditional_ABE}
+elaborates the declaration of @code{Val}. This invokes function @code{Cause_ABE},
+which instantiates generic unit @code{Gen} as @code{Inst}. The elaboration of
+@code{Inst} invokes function @code{ABE}, however the body of @code{ABE} has not been
+elaborated yet. GNAT emits the following diagnostic:
+
+@quotation
+
+@example
+13.       package Inst is new Gen (ABE);
+          |
+    >>> warning: in instantiation at line 7
+    >>> warning: cannot call "ABE" before body seen
+    >>> warning: Program_Error may be raised at run time
+    >>> warning:   body of unit "Conditional_ABE" elaborated
+    >>> warning:   function "Cause_ABE" called at line 18
+    >>> warning:   function "ABE" called at line 7, instance at line 13
+@end example
+@end quotation
+
+Note that the same ABE problem does not occur with the elaboration of
+declaration @code{Safe} because the body of function @code{ABE} has already been
+elaborated at that point.
+
+@node SPARK Diagnostics,Elaboration Circularities,ABE Diagnostics,Elaboration Order Handling in GNAT
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat spark-diagnostics}@anchor{23b}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id9}@anchor{23c}
+@section SPARK Diagnostics
+
+
+GNAT enforces the SPARK rules of elaboration as defined in the SPARK Reference
+Manual section 7.7 when compiler switch @code{-gnatd.v} is in effect. Note
+that GNAT emits hard errors whenever it encounters a violation of the SPARK
+rules.
+
+@quotation
+
+@example
+1. with Server;
+2. package body SPARK_Diagnostics with SPARK_Mode is
+3.    Val : constant Integer := Server.Func;
+                                      |
+   >>> call to "Func" during elaboration in SPARK
+   >>> unit "SPARK_Diagnostics" requires pragma "Elaborate_All" for "Server"
+   >>>   body of unit "SPARK_Model" elaborated
+   >>>   function "Func" called at line 3
+
+4. end SPARK_Diagnostics;
+@end example
+@end quotation
+
+@node Elaboration Circularities,Resolving Elaboration Circularities,SPARK Diagnostics,Elaboration Order Handling in GNAT
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat id10}@anchor{23d}@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-circularities}@anchor{23e}
 @section Elaboration Circularities
 
 
-If the binder cannot find an acceptable elaboration order, it outputs detailed
-diagnostics describing an @strong{elaboration circularity}.
+An @strong{elaboration circularity} occurs whenever the elaboration of a set of
+units enters a deadlocked state, where each unit is waiting for another unit
+to be elaborated. This situation may be the result of improper use of @emph{with}
+clauses, elaboration-control pragmas, or invocations in elaboration code.
+
+The following example exhibits an elaboration circularity.
+
+@quotation
 
 @example
-package Server is
-   function Func return Integer;
-end Server;
+with B; pragma Elaborate (B);
+package A is
+end A;
 @end example
 
 @example
-with Client;
-package body Server is
+package B is
+   procedure Force_Body;
+end B;
+@end example
+
+@example
+with C;
+package body B is
+   procedure Force_Body is null;
+
+   Elab : constant Integer := C.Func;
+end B;
+@end example
+
+@example
+package C is
+   function Func return Integer;
+end C;
+@end example
+
+@example
+with A;
+package body C is
    function Func return Integer is
    begin
       ...
    end Func;
-end Server;
+end C;
 @end example
+@end quotation
+
+The binder emits the following diagnostic:
+
+@quotation
 
 @example
-with Server;
-package Client is
-   Val : constant Integer := Server.Func;
-end Client;
+error: Elaboration circularity detected
+info:
+info:    Reason:
+info:
+info:      unit "a (spec)" depends on its own elaboration
+info:
+info:    Circularity:
+info:
+info:      unit "a (spec)" has with clause and pragma Elaborate for unit "b (spec)"
+info:      unit "b (body)" is in the closure of pragma Elaborate
+info:      unit "b (body)" invokes a construct of unit "c (body)" at elaboration time
+info:      unit "c (body)" has with clause for unit "a (spec)"
+info:
+info:    Suggestions:
+info:
+info:      remove pragma Elaborate for unit "b (body)" in unit "a (spec)"
+info:      use the dynamic elaboration model (compiler switch -gnatE)
 @end example
+@end quotation
 
-@example
-with Client;
-procedure Main is begin null; end Main;
-@end example
+The diagnostic consist of the following sections:
 
-@example
-error: elaboration circularity detected
-info:    "server (body)" must be elaborated before "client (spec)"
-info:       reason: implicit Elaborate_All in unit "client (spec)"
-info:       recompile "client (spec)" with -gnatel for full details
-info:          "server (body)"
-info:             must be elaborated along with its spec:
-info:          "server (spec)"
-info:             which is withed by:
-info:          "client (spec)"
-info:    "client (spec)" must be elaborated before "server (body)"
-info:       reason: with clause
-@end example
 
-In the example above, @code{Client} must be elaborated prior to @code{Main} by virtue
-of a @emph{with} clause. The elaboration of @code{Client} invokes @code{Server.Func}, and
-static model generates an implicit @code{Elaborate_All} pragma for @code{Server}. The
-pragma implies that both the spec and body of @code{Server}, along with any units
-they @emph{with}, must be elaborated prior to @code{Client}. However, @code{Server}'s body
-@emph{with}s @code{Client}, implying that @code{Client} must be elaborated prior to
-@code{Server}. The end result is that @code{Client} must be elaborated prior to
-@code{Client}, and this leads to a circularity.
+@itemize *
 
-@node Resolving Elaboration Circularities,Resolving Task Issues,Elaboration Circularities,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat id13}@anchor{243}@anchor{gnat_ugn/elaboration_order_handling_in_gnat resolving-elaboration-circularities}@anchor{244}
+@item 
+Reason
+
+This section provides a short explanation describing why the set of units
+could not be ordered.
+
+@item 
+Circularity
+
+This section enumerates the units comprising the deadlocked set, along with
+their interdependencies.
+
+@item 
+Suggestions
+
+This section enumerates various tactics for eliminating the circularity.
+@end itemize
+
+@node Resolving Elaboration Circularities,Elaboration-related Compiler Switches,Elaboration Circularities,Elaboration Order Handling in GNAT
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat id11}@anchor{23f}@anchor{gnat_ugn/elaboration_order_handling_in_gnat resolving-elaboration-circularities}@anchor{240}
 @section Resolving Elaboration Circularities
 
 
-When faced with an elaboration circularity, a programmer has several options
-available.
+The most desirable option from the point of view of long-term maintenance is to
+rearrange the program so that the elaboration problems are avoided. One useful
+technique is to place the elaboration code into separate child packages.
+Another is to move some of the initialization code to explicitly invoked
+subprograms, where the program controls the order of initialization explicitly.
+Although this is the most desirable option, it may be impractical and involve
+too much modification, especially in the case of complex legacy code.
+
+When faced with an elaboration circularity, the programmer should also consider
+the tactics given in the suggestions section of the circularity diagnostic.
+Depending on the units involved in the circularity, their @emph{with} clauses,
+purity, preelaborability, presence of elaboration-control pragmas and
+invocations at elaboration time, the binder may suggest one or more of the
+following tactics to eliminate the circularity:
 
 
 @itemize *
 
 @item 
-@emph{Fix the program}
+Pragma Elaborate elimination
 
-The most desirable option from the point of view of long-term maintenance
-is to rearrange the program so that the elaboration problems are avoided.
-One useful technique is to place the elaboration code into separate child
-packages. Another is to move some of the initialization code to explicitly
-invoked subprograms, where the program controls the order of initialization
-explicitly. Although this is the most desirable option, it may be impractical
-and involve too much modification, especially in the case of complex legacy
-code.
+@example
+remove pragma Elaborate for unit "..." in unit "..."
+@end example
 
-@item 
-@emph{Switch to more permissive elaboration model}
-
-If the compilation was performed using the static model, enable the dynamic
-model with compiler switch @code{-gnatE}. GNAT will no longer generate
-implicit @code{Elaborate} and @code{Elaborate_All} pragmas, resulting in a behavior
-identical to that specified by the Ada Reference Manual. The binder will
-generate an executable program that may or may not raise @code{Program_Error},
-and it is the programmer's responsibility to ensure that it does not raise
-@code{Program_Error}.
-
-If the compilation was performed using a post-18.x version of GNAT, consider
-using the legacy elaboration model, in the following order:
+This tactic is suggested when the binder has determined that pragma
+@code{Elaborate}:
 
 
 @itemize -
 
 @item 
-Use the legacy static elaboration model, with compiler switch
-@code{-gnatH}.
+Prevents a set of units from being elaborated.
 
 @item 
-Use the legacy dynamic elaboration model, with compiler switches
-@code{-gnatH} @code{-gnatE}.
+The removal of the pragma will not eliminate the semantic effects of the
+pragma. In other words, the argument of the pragma will still be elaborated
+prior to the unit containing the pragma.
 
 @item 
-Use the relaxed legacy static elaboration model, with compiler switches
-@code{-gnatH} @code{-gnatJ}.
-
-@item 
-Use the relaxed legacy dynamic elaboration model, with compiler switches
-@code{-gnatH} @code{-gnatJ} @code{-gnatE}.
+The removal of the pragma will enable the successful ordering of the units.
 @end itemize
 
-@item 
-@emph{Suppress all elaboration checks}
-
-The drawback of run-time checks is that they generate overhead at run time,
-both in space and time. If the programmer is absolutely sure that a program
-will not raise an elaboration-related @code{Program_Error}, then using the
-pragma @code{Suppress (Elaboration_Check)} globally (as a configuration pragma)
-will eliminate all run-time checks.
+The programmer should remove the pragma as advised, and rebuild the program.
 
 @item 
-@emph{Suppress elaboration checks selectively}
+Pragma Elaborate_All elimination
 
-If a scenario cannot possibly lead to an elaboration @code{Program_Error},
-and the binder nevertheless complains about implicit @code{Elaborate} and
-@code{Elaborate_All} pragmas that lead to elaboration circularities, it
-is possible to suppress the generation of implicit @code{Elaborate} and
-@code{Elaborate_All} pragmas, as well as run-time checks. Clearly this can
-be unsafe, and it is the responsibility of the programmer to make sure
-that the resulting program has no elaboration anomalies. Pragma
-@code{Suppress (Elaboration_Check)} can be used with different levels of
-granularity to achieve these effects.
+@example
+remove pragma Elaborate_All for unit "..." in unit "..."
+@end example
+
+This tactic is suggested when the binder has determined that pragma
+@code{Elaborate_All}:
 
 
 @itemize -
 
 @item 
-@emph{Target suppression}
-
-When the pragma is placed in a declarative part, without a second argument
-naming an entity, it will suppress implicit @code{Elaborate} and
-@code{Elaborate_All} pragma generation, as well as run-time checks, on all
-targets within the region.
-
-@example
-package Range_Suppress is
-   pragma Suppress (Elaboration_Check);
-
-   function Func return Integer;
-
-   generic
-   procedure Gen;
-
-   pragma Unsuppress (Elaboration_Check);
-
-   task type Tsk;
-end Range_Suppress;
-@end example
-
-In the example above, a pair of Suppress/Unsuppress pragmas define a region
-of suppression within package @code{Range_Suppress}. As a result, no implicit
-@code{Elaborate} and @code{Elaborate_All} pragmas, nor any run-time checks, will
-be generated by callers of @code{Func} and instantiators of @code{Gen}. Note that
-task type @code{Tsk} is not within this region.
-
-An alternative to the region-based suppression is to use multiple
-@code{Suppress} pragmas with arguments naming specific entities for which
-elaboration checks should be suppressed:
-
-@example
-package Range_Suppress is
-   function Func return Integer;
-   pragma Suppress (Elaboration_Check, Func);
-
-   generic
-   procedure Gen;
-   pragma Suppress (Elaboration_Check, Gen);
-
-   task type Tsk;
-end Range_Suppress;
-@end example
+Prevents a set of units from being elaborated.
 
 @item 
-@emph{Scenario suppression}
+The removal of the pragma will not eliminate the semantic effects of the
+pragma. In other words, the argument of the pragma along with its @emph{with}
+closure will still be elaborated prior to the unit containing the pragma.
 
-When the pragma @code{Suppress} is placed in a declarative or statement
-part, without an entity argument, it will suppress implicit @code{Elaborate}
-and @code{Elaborate_All} pragma generation, as well as run-time checks, on
-all scenarios within the region.
+@item 
+The removal of the pragma will enable the successful ordering of the units.
+@end itemize
+
+The programmer should remove the pragma as advised, and rebuild the program.
+
+@item 
+Pragma Elaborate_All downgrade
 
 @example
-with Server;
-package body Range_Suppress is
-   pragma Suppress (Elaboration_Check);
-
-   function Func return Integer is
-   begin
-      return Server.Func;
-   end Func;
-
-   procedure Gen is
-   begin
-      Server.Proc;
-   end Gen;
-
-   pragma Unsuppress (Elaboration_Check);
-
-   task body Tsk is
-   begin
-      Server.Proc;
-   end Tsk;
-end Range_Suppress;
+change pragma Elaborate_All for unit "..." to Elaborate in unit "..."
 @end example
 
-In the example above, a pair of Suppress/Unsuppress pragmas define a region
-of suppression within package body @code{Range_Suppress}. As a result, the
-calls to @code{Server.Func} in @code{Func} and @code{Server.Proc} in @code{Gen} will
-not generate any implicit @code{Elaborate} and @code{Elaborate_All} pragmas or
-run-time checks.
+This tactic is always suggested with the pragma @code{Elaborate_All} elimination
+tactic. It offers a different alernative of guaranteeing that the argument of
+the pragma will still be elaborated prior to the unit containing the pragma.
+
+The programmer should update the pragma as advised, and rebuild the program.
+
+@item 
+Pragma Elaborate_Body elimination
+
+@example
+remove pragma Elaborate_Body in unit "..."
+@end example
+
+This tactic is suggested when the binder has determined that pragma
+@code{Elaborate_Body}:
+
+
+@itemize -
+
+@item 
+Prevents a set of units from being elaborated.
+
+@item 
+The removal of the pragma will enable the successful ordering of the units.
 @end itemize
+
+Note that the binder cannot determine whether the pragma is required for
+other purposes, such as guaranteeing the initialization of a variable
+declared in the spec by elaboration code in the body.
+
+The programmer should remove the pragma as advised, and rebuild the program.
+
+@item 
+Use of pragma Restrictions
+
+@example
+use pragma Restrictions (No_Entry_Calls_In_Elaboration_Code)
+@end example
+
+This tactic is suggested when the binder has determined that a task
+activation at elaboration time:
+
+
+@itemize -
+
+@item 
+Prevents a set of units from being elaborated.
 @end itemize
 
-@node Resolving Task Issues,Elaboration-related Compiler Switches,Resolving Elaboration Circularities,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat id14}@anchor{245}@anchor{gnat_ugn/elaboration_order_handling_in_gnat resolving-task-issues}@anchor{246}
-@section Resolving Task Issues
+Note that the binder cannot determine with certainty whether the task will
+block at elaboration time.
+
+The programmer should create a configuration file, place the pragma within,
+update the general compilation arguments, and rebuild the program.
+
+@item 
+Use of dynamic elaboration model
+
+@example
+use the dynamic elaboration model (compiler switch -gnatE)
+@end example
+
+This tactic is suggested when the binder has determined that an invocation at
+elaboration time:
 
 
-The model of execution in Ada dictates that elaboration must first take place,
-and only then can the main program be started. Tasks which are activated during
-elaboration violate this model and may lead to serious concurrent problems at
-elaboration time.
+@itemize -
 
-A task can be activated in two different ways:
+@item 
+Prevents a set of units from being elaborated.
+
+@item 
+The use of the dynamic model will enable the successful ordering of the
+units.
+@end itemize
+
+The programmer has two options:
+
+
+@itemize -
+
+@item 
+Determine the units involved in the invocation using the detailed
+invocation information, and add compiler switch @code{-gnatE} to the
+compilation arguments of selected files only. This approach will yield
+safer elaboration orders compared to the other option because it will
+minimize the opportunities presented to the dynamic model for ignoring
+invocations.
+
+@item 
+Add compiler switch @code{-gnatE} to the general compilation arguments.
+@end itemize
+
+@item 
+Use of detailed invocation information
+
+@example
+use detailed invocation information (compiler switch -gnatd_F)
+@end example
+
+This tactic is always suggested with the use of the dynamic model tactic. It
+causes the circularity section of the circularity diagnostic to describe the
+flow of elaboration code from a unit to a unit, enumerating all such paths in
+the process.
+
+The programmer should analyze this information to determine which units
+should be compiled with the dynamic model.
+
+@item 
+Forced-dependency elimination
+
+@example
+remove the dependency of unit "..." on unit "..." from the argument of switch -f
+@end example
+
+This tactic is suggested when the binder has determined that a dependency
+present in the forced-elaboration-order file indicated by binder switch
+@code{-f}:
+
+
+@itemize -
+
+@item 
+Prevents a set of units from being elaborated.
+
+@item 
+The removal of the dependency will enable the successful ordering of the
+units.
+@end itemize
+
+The programmer should edit the forced-elaboration-order file, remove the
+dependency, and rebind the program.
+
+@item 
+All forced-dependency elimination
+
+@example
+remove switch -f
+@end example
+
+This tactic is suggested in case editing the forced-elaboration-order file is
+not an option.
+
+The programmer should remove binder switch @code{-f} from the binder
+arguments, and rebind.
+
+@item 
+Multiple-circularities diagnostic
+
+@example
+diagnose all circularities (binder switch -d_C)
+@end example
+
+By default, the binder will diagnose only the highest-precedence circularity.
+If the program contains multiple circularities, the binder will suggest the
+use of binder switch @code{-d_C} in order to obtain the diagnostics of all
+circularities.
+
+The programmer should add binder switch @code{-d_C} to the binder
+arguments, and rebind.
+@end itemize
+
+If none of the tactics suggested by the binder eliminate the elaboration
+circularity, the programmer should consider using one of the legacy elaboration
+models, in the following order:
 
 
 @itemize *
 
 @item 
-The task is created by an allocator in which case it is activated immediately
-after the allocator is evaluated.
+Use the pre-20.x legacy elaboration-order model, with binder switch
+@code{-H}.
 
 @item 
-The task is declared at the library level or within some nested master in
-which case it is activated before starting execution of the statement
-sequence of the master defining the task.
+Use both pre-18.x and pre-20.x legacy elaboration models, with compiler
+switch @code{-gnatH} and binder switch @code{-H}.
+
+@item 
+Use the relaxed static-elaboration model, with compiler switches
+@code{-gnatH} @code{-gnatJ} and binder switch @code{-H}.
+
+@item 
+Use the relaxed dynamic-elaboration model, with compiler switches
+@code{-gnatH} @code{-gnatJ} @code{-gnatE} and binder switch
+@code{-H}.
 @end itemize
 
-Since the elaboration of a partition is performed by the environment task
-servicing that partition, any tasks activated during elaboration may be in
-a race with the environment task, and lead to unpredictable state and behavior.
-The static model seeks to avoid such interactions by assuming that all code in
-the task body is executed at elaboration time, if the task was activated by
-elaboration code.
-
-@example
-package Decls is
-   task Lib_Task is
-      entry Start;
-   end Lib_Task;
-
-   type My_Int is new Integer;
-
-   function Ident (M : My_Int) return My_Int;
-end Decls;
-@end example
-
-@example
-with Utils;
-package body Decls is
-   task body Lib_Task is
-   begin
-      accept Start;
-      Utils.Put_Val (2);
-   end Lib_Task;
-
-   function Ident (M : My_Int) return My_Int is
-   begin
-      return M;
-   end Ident;
-end Decls;
-@end example
-
-@example
-with Decls;
-package Utils is
-   procedure Put_Val (Arg : Decls.My_Int);
-end Utils;
-@end example
-
-@example
-with Ada.Text_IO; use Ada.Text_IO;
-package body Utils is
-   procedure Put_Val (Arg : Decls.My_Int) is
-   begin
-      Put_Line (Arg'Img);
-   end Put_Val;
-end Utils;
-@end example
-
-@example
-with Decls;
-procedure Main is
-begin
-   Decls.Lib_Task.Start;
-end Main;
-@end example
-
-When the above example is compiled with the static model, an elaboration
-circularity arises:
-
-@example
-error: elaboration circularity detected
-info:    "decls (body)" must be elaborated before "decls (body)"
-info:       reason: implicit Elaborate_All in unit "decls (body)"
-info:       recompile "decls (body)" with -gnatel for full details
-info:          "decls (body)"
-info:             must be elaborated along with its spec:
-info:          "decls (spec)"
-info:             which is withed by:
-info:          "utils (spec)"
-info:             which is withed by:
-info:          "decls (body)"
-@end example
-
-In the above example, @code{Decls} must be elaborated prior to @code{Main} by virtue
-of a with clause. The elaboration of @code{Decls} activates task @code{Lib_Task}. The
-static model conservatibely assumes that all code within the body of
-@code{Lib_Task} is executed, and generates an implicit @code{Elaborate_All} pragma
-for @code{Units} due to the call to @code{Utils.Put_Val}. The pragma implies that
-both the spec and body of @code{Utils}, along with any units they @emph{with},
-must be elaborated prior to @code{Decls}. However, @code{Utils}'s spec @emph{with}s
-@code{Decls}, implying that @code{Decls} must be elaborated before @code{Utils}. The end
-result is that @code{Utils} must be elaborated prior to @code{Utils}, and this
-leads to a circularity.
-
-In reality, the example above will not exhibit an ABE problem at run time.
-When the body of task @code{Lib_Task} is activated, execution will wait for entry
-@code{Start} to be accepted, and the call to @code{Utils.Put_Val} will not take place
-at elaboration time. Task @code{Lib_Task} will resume its execution after the main
-program is executed because @code{Main} performs a rendezvous with
-@code{Lib_Task.Start}, and at that point all units have already been elaborated.
-As a result, the static model may seem overly conservative, partly because it
-does not take control and data flow into account.
-
-When faced with a task elaboration circularity, a programmer has several
-options available:
-
-
-@itemize *
-
-@item 
-@emph{Use the dynamic model}
-
-The dynamic model does not generate implicit @code{Elaborate} and
-@code{Elaborate_All} pragmas. Instead, it will install checks prior to every
-call in the example above, thus verifying the successful elaboration of
-@code{Utils.Put_Val} in case the call to it takes place at elaboration time.
-The dynamic model is enabled with compiler switch @code{-gnatE}.
-
-@item 
-@emph{Isolate the tasks}
-
-Relocating tasks in their own separate package could decouple them from
-dependencies that would otherwise cause an elaboration circularity. The
-example above can be rewritten as follows:
-
-@example
-package Decls1 is                --  new
-   task Lib_Task is
-      entry Start;
-   end Lib_Task;
-end Decls1;
-@end example
-
-@example
-with Utils;
-package body Decls1 is           --  new
-   task body Lib_Task is
-   begin
-      accept Start;
-      Utils.Put_Val (2);
-   end Lib_Task;
-end Decls1;
-@end example
-
-@example
-package Decls2 is                --  new
-   type My_Int is new Integer;
-   function Ident (M : My_Int) return My_Int;
-end Decls2;
-@end example
-
-@example
-with Utils;
-package body Decls2 is           --  new
-   function Ident (M : My_Int) return My_Int is
-   begin
-      return M;
-   end Ident;
-end Decls2;
-@end example
-
-@example
-with Decls2;
-package Utils is
-   procedure Put_Val (Arg : Decls2.My_Int);
-end Utils;
-@end example
-
-@example
-with Ada.Text_IO; use Ada.Text_IO;
-package body Utils is
-   procedure Put_Val (Arg : Decls2.My_Int) is
-   begin
-      Put_Line (Arg'Img);
-   end Put_Val;
-end Utils;
-@end example
-
-@example
-with Decls1;
-procedure Main is
-begin
-   Decls1.Lib_Task.Start;
-end Main;
-@end example
-
-@item 
-@emph{Declare the tasks}
-
-The original example uses a single task declaration for @code{Lib_Task}. An
-explicit task type declaration and a properly placed task object could avoid
-the dependencies that would otherwise cause an elaboration circularity. The
-example can be rewritten as follows:
-
-@example
-package Decls is
-   task type Lib_Task is         --  new
-      entry Start;
-   end Lib_Task;
-
-   type My_Int is new Integer;
-
-   function Ident (M : My_Int) return My_Int;
-end Decls;
-@end example
-
-@example
-with Utils;
-package body Decls is
-   task body Lib_Task is
-   begin
-      accept Start;
-      Utils.Put_Val (2);
-   end Lib_Task;
-
-   function Ident (M : My_Int) return My_Int is
-   begin
-      return M;
-   end Ident;
-end Decls;
-@end example
-
-@example
-with Decls;
-package Utils is
-   procedure Put_Val (Arg : Decls.My_Int);
-end Utils;
-@end example
-
-@example
-with Ada.Text_IO; use Ada.Text_IO;
-package body Utils is
-   procedure Put_Val (Arg : Decls.My_Int) is
-   begin
-      Put_Line (Arg'Img);
-   end Put_Val;
-end Utils;
-@end example
-
-@example
-with Decls;
-package Obj_Decls is             --  new
-   Task_Obj : Decls.Lib_Task;
-end Obj_Decls;
-@end example
-
-@example
-with Obj_Decls;
-procedure Main is
-begin
-   Obj_Decls.Task_Obj.Start;     --  new
-end Main;
-@end example
-
-@item 
-@emph{Use restriction No_Entry_Calls_In_Elaboration_Code}
-
-The issue exhibited in the original example under this section revolves
-around the body of @code{Lib_Task} blocking on an accept statement. There is
-no rule to prevent elaboration code from performing entry calls, however in
-practice this is highly unusual. In addition, the pattern of starting tasks
-at elaboration time and then immediately blocking on accept or select
-statements is quite common.
-
-If a programmer knows that elaboration code will not perform any entry
-calls, then the programmer can indicate that the static model should not
-process the remainder of a task body once an accept or select statement has
-been encountered. This behavior can be specified by a configuration pragma:
-
-@example
-pragma Restrictions (No_Entry_Calls_In_Elaboration_Code);
-@end example
-
-In addition to the change in behavior with respect to task bodies, the
-static model will verify that no entry calls take place at elaboration time.
-@end itemize
-
-@node Elaboration-related Compiler Switches,Summary of Procedures for Elaboration Control,Resolving Task Issues,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-related-compiler-switches}@anchor{247}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id15}@anchor{248}
+@node Elaboration-related Compiler Switches,Summary of Procedures for Elaboration Control,Resolving Elaboration Circularities,Elaboration Order Handling in GNAT
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat id12}@anchor{241}@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-related-compiler-switches}@anchor{242}
 @section Elaboration-related Compiler Switches
 
 
@@ -28690,7 +28743,7 @@ the elaboration order chosen by the binder.
 
 Dynamic elaboration checking mode enabled
 
-When this switch is in effect, GNAT activates the dynamic elaboration model.
+When this switch is in effect, GNAT activates the dynamic model.
 @end table
 
 @geindex -gnatel (gnat)
@@ -28701,6 +28754,10 @@ When this switch is in effect, GNAT activates the dynamic elaboration model.
 @item @code{-gnatel}
 
 Turn on info messages on generated Elaborate[_All] pragmas
+
+This switch is only applicable to the pre-20.x legacy elaboration models.
+The post-20.x elaboration model no longer relies on implicitly generated
+@code{Elaborate} and @code{Elaborate_All} pragmas to order units.
 
 When this switch is in effect, GNAT will emit the following supplementary
 information depending on the elaboration model in effect.
@@ -28717,7 +28774,7 @@ all library-level scenarios within the partition.
 @item 
 @emph{Static model}
 
-GNAT will indicate all scenarios executed during elaboration. In addition,
+GNAT will indicate all scenarios invoked during elaboration. In addition,
 it will provide detailed traceback when an implicit @code{Elaborate} or
 @code{Elaborate_All} pragma is generated.
 
@@ -28851,7 +28908,7 @@ checks. The example above will still fail at run time with an ABE.
 @end table
 
 @node Summary of Procedures for Elaboration Control,Inspecting the Chosen Elaboration Order,Elaboration-related Compiler Switches,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat summary-of-procedures-for-elaboration-control}@anchor{249}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id16}@anchor{24a}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat id13}@anchor{243}@anchor{gnat_ugn/elaboration_order_handling_in_gnat summary-of-procedures-for-elaboration-control}@anchor{244}
 @section Summary of Procedures for Elaboration Control
 
 
@@ -28879,13 +28936,8 @@ as their origins. Elaboration warnings are enabled with compiler switch
 @code{-gnatwl}.
 
 @item 
-Use switch @code{-gnatel} to obtain messages on generated implicit
-@code{Elaborate} and @code{Elaborate_All} pragmas. The trace information could
-indicate why a server unit must be elaborated prior to a client unit.
-
-@item 
-If the warnings produced by the static model indicate that a task is
-involved, consider the options in section @ref{245,,Resolving Task Issues}.
+Cosider the tactics given in the suggestions section of the circularity
+diagnostic.
 
 @item 
 If none of the steps outlined above resolve the circularity, use a more
@@ -28895,28 +28947,26 @@ permissive elaboration model, in the following order:
 @itemize -
 
 @item 
-Use the dynamic elaboration model, with compiler switch @code{-gnatE}.
+Use the pre-20.x legacy elaboration-order model, with binder switch
+@code{-H}.
 
 @item 
-Use the legacy static elaboration model, with compiler switch
-@code{-gnatH}.
+Use both pre-18.x and pre-20.x legacy elaboration models, with compiler
+switch @code{-gnatH} and binder switch @code{-H}.
 
 @item 
-Use the legacy dynamic elaboration model, with compiler switches
-@code{-gnatH} @code{-gnatE}.
+Use the relaxed static elaboration model, with compiler switches
+@code{-gnatH} @code{-gnatJ} and binder switch @code{-H}.
 
 @item 
-Use the relaxed legacy static elaboration model, with compiler switches
-@code{-gnatH} @code{-gnatJ}.
-
-@item 
-Use the relaxed legacy dynamic elaboration model, with compiler switches
-@code{-gnatH} @code{-gnatJ} @code{-gnatE}.
+Use the relaxed dynamic elaboration model, with compiler switches
+@code{-gnatH} @code{-gnatJ} @code{-gnatE} and binder switch
+@code{-H}.
 @end itemize
 @end itemize
 
 @node Inspecting the Chosen Elaboration Order,,Summary of Procedures for Elaboration Control,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat inspecting-the-chosen-elaboration-order}@anchor{24b}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id17}@anchor{24c}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat id14}@anchor{245}@anchor{gnat_ugn/elaboration_order_handling_in_gnat inspecting-the-chosen-elaboration-order}@anchor{246}
 @section Inspecting the Chosen Elaboration Order
 
 
@@ -28925,6 +28975,8 @@ To see the elaboration order chosen by the binder, inspect the contents of file
 elaboration order appears as a sequence of calls to @code{Elab_Body} and
 @code{Elab_Spec}, interspersed with assignments to @cite{Exxx} which indicates that a
 particular unit is elaborated. For example:
+
+@quotation
 
 @example
 System.Soft_Links'Elab_Body;
@@ -28961,9 +29013,12 @@ Ada.Text_Io'Elab_Spec;
 Ada.Text_Io'Elab_Body;
 E07 := True;
 @end example
+@end quotation
 
 Note also binder switch @code{-l}, which outputs the chosen elaboration
 order and provides a more readable form of the above:
+
+@quotation
 
 @example
 ada (spec)
@@ -29051,9 +29106,10 @@ ada.text_io (body)
 text_io (spec)
 gdbstr (body)
 @end example
+@end quotation
 
 @node Inline Assembler,GNU Free Documentation License,Elaboration Order Handling in GNAT,Top
-@anchor{gnat_ugn/inline_assembler inline-assembler}@anchor{10}@anchor{gnat_ugn/inline_assembler doc}@anchor{24d}@anchor{gnat_ugn/inline_assembler id1}@anchor{24e}
+@anchor{gnat_ugn/inline_assembler inline-assembler}@anchor{10}@anchor{gnat_ugn/inline_assembler doc}@anchor{247}@anchor{gnat_ugn/inline_assembler id1}@anchor{248}
 @chapter Inline Assembler
 
 
@@ -29112,7 +29168,7 @@ and with assembly language programming.
 @end menu
 
 @node Basic Assembler Syntax,A Simple Example of Inline Assembler,,Inline Assembler
-@anchor{gnat_ugn/inline_assembler id2}@anchor{24f}@anchor{gnat_ugn/inline_assembler basic-assembler-syntax}@anchor{250}
+@anchor{gnat_ugn/inline_assembler id2}@anchor{249}@anchor{gnat_ugn/inline_assembler basic-assembler-syntax}@anchor{24a}
 @section Basic Assembler Syntax
 
 
@@ -29228,7 +29284,7 @@ Intel: Destination first; for example @code{mov eax, 4}@w{ }
 
 
 @node A Simple Example of Inline Assembler,Output Variables in Inline Assembler,Basic Assembler Syntax,Inline Assembler
-@anchor{gnat_ugn/inline_assembler a-simple-example-of-inline-assembler}@anchor{251}@anchor{gnat_ugn/inline_assembler id3}@anchor{252}
+@anchor{gnat_ugn/inline_assembler a-simple-example-of-inline-assembler}@anchor{24b}@anchor{gnat_ugn/inline_assembler id3}@anchor{24c}
 @section A Simple Example of Inline Assembler
 
 
@@ -29377,7 +29433,7 @@ If there are no errors, @code{as} will generate an object file
 @code{nothing.out}.
 
 @node Output Variables in Inline Assembler,Input Variables in Inline Assembler,A Simple Example of Inline Assembler,Inline Assembler
-@anchor{gnat_ugn/inline_assembler id4}@anchor{253}@anchor{gnat_ugn/inline_assembler output-variables-in-inline-assembler}@anchor{254}
+@anchor{gnat_ugn/inline_assembler id4}@anchor{24d}@anchor{gnat_ugn/inline_assembler output-variables-in-inline-assembler}@anchor{24e}
 @section Output Variables in Inline Assembler
 
 
@@ -29744,7 +29800,7 @@ end Get_Flags_3;
 @end quotation
 
 @node Input Variables in Inline Assembler,Inlining Inline Assembler Code,Output Variables in Inline Assembler,Inline Assembler
-@anchor{gnat_ugn/inline_assembler id5}@anchor{255}@anchor{gnat_ugn/inline_assembler input-variables-in-inline-assembler}@anchor{256}
+@anchor{gnat_ugn/inline_assembler id5}@anchor{24f}@anchor{gnat_ugn/inline_assembler input-variables-in-inline-assembler}@anchor{250}
 @section Input Variables in Inline Assembler
 
 
@@ -29833,7 +29889,7 @@ _increment__incr.1:
 @end quotation
 
 @node Inlining Inline Assembler Code,Other Asm Functionality,Input Variables in Inline Assembler,Inline Assembler
-@anchor{gnat_ugn/inline_assembler id6}@anchor{257}@anchor{gnat_ugn/inline_assembler inlining-inline-assembler-code}@anchor{258}
+@anchor{gnat_ugn/inline_assembler id6}@anchor{251}@anchor{gnat_ugn/inline_assembler inlining-inline-assembler-code}@anchor{252}
 @section Inlining Inline Assembler Code
 
 
@@ -29904,7 +29960,7 @@ movl %esi,%eax
 thus saving the overhead of stack frame setup and an out-of-line call.
 
 @node Other Asm Functionality,,Inlining Inline Assembler Code,Inline Assembler
-@anchor{gnat_ugn/inline_assembler other-asm-functionality}@anchor{259}@anchor{gnat_ugn/inline_assembler id7}@anchor{25a}
+@anchor{gnat_ugn/inline_assembler other-asm-functionality}@anchor{253}@anchor{gnat_ugn/inline_assembler id7}@anchor{254}
 @section Other @code{Asm} Functionality
 
 
@@ -29919,7 +29975,7 @@ and @code{Volatile}, which inhibits unwanted optimizations.
 @end menu
 
 @node The Clobber Parameter,The Volatile Parameter,,Other Asm Functionality
-@anchor{gnat_ugn/inline_assembler the-clobber-parameter}@anchor{25b}@anchor{gnat_ugn/inline_assembler id8}@anchor{25c}
+@anchor{gnat_ugn/inline_assembler the-clobber-parameter}@anchor{255}@anchor{gnat_ugn/inline_assembler id8}@anchor{256}
 @subsection The @code{Clobber} Parameter
 
 
@@ -29983,7 +30039,7 @@ Use 'register' name @code{memory} if you changed a memory location
 @end itemize
 
 @node The Volatile Parameter,,The Clobber Parameter,Other Asm Functionality
-@anchor{gnat_ugn/inline_assembler the-volatile-parameter}@anchor{25d}@anchor{gnat_ugn/inline_assembler id9}@anchor{25e}
+@anchor{gnat_ugn/inline_assembler the-volatile-parameter}@anchor{257}@anchor{gnat_ugn/inline_assembler id9}@anchor{258}
 @subsection The @code{Volatile} Parameter
 
 
@@ -30019,7 +30075,7 @@ to @code{True} only if the compiler's optimizations have created
 problems.
 
 @node GNU Free Documentation License,Index,Inline Assembler,Top
-@anchor{share/gnu_free_documentation_license gnu-fdl}@anchor{1}@anchor{share/gnu_free_documentation_license doc}@anchor{25f}@anchor{share/gnu_free_documentation_license gnu-free-documentation-license}@anchor{260}
+@anchor{share/gnu_free_documentation_license gnu-fdl}@anchor{1}@anchor{share/gnu_free_documentation_license doc}@anchor{259}@anchor{share/gnu_free_documentation_license gnu-free-documentation-license}@anchor{25a}
 @chapter GNU Free Documentation License
 
 

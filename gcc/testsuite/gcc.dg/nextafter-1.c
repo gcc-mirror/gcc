@@ -2,6 +2,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -fno-math-errno -fno-trapping-math -fdump-tree-optimized" } */
 /* { dg-add-options ieee } */
+/* { dg-skip-if "not IEEE float" { "pdp11-*-*" } } */
 /* { dg-final { scan-tree-dump-not "nextafter" "optimized" } } */
 /* { dg-final { scan-tree-dump-not "nexttoward" "optimized" } } */
 

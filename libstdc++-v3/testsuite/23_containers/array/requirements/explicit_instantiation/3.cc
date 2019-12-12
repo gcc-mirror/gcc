@@ -1,8 +1,9 @@
 // { dg-do compile { target c++11 } }
+// { dg-skip-if "no extensions in strict dialects" { *-*-* } { "-std=c++*" } }
 
 // 2010-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2010-2018 Free Software Foundation, Inc.
+// Copyright (C) 2010-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,6 +21,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // This file tests explicit instantiation of library containers
+// with an allocator for a different value_type (which is a GNU extension).
 
 #include <array>
 #include <testsuite_hooks.h>

@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Utilities for testing threads for the C++ library testsuite.
 //
-// Copyright (C) 2009-2018 Free Software Foundation, Inc.
+// Copyright (C) 2009-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,6 +25,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <type_traits>
+#include <thread>
 
 // C++11 only.
 namespace __gnu_test
@@ -39,7 +40,12 @@ namespace __gnu_test
 
       // Remove possible pointer type.
       typedef typename test_type::native_handle_type native_handle;
-      typedef typename std::remove_pointer<native_handle>::type native_type;
+      // For std::thread native_handle_type is the type of its data member,
+      // for other types it's a pointer to the type of the data member.
+      typedef typename std::conditional<
+	std::is_same<test_type, std::thread>::value,
+	native_handle,
+	typename std::remove_pointer<native_handle>::type>::type native_type;
 
       int st = sizeof(test_type);
       int snt = sizeof(native_type);

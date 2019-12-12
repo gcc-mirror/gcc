@@ -1,5 +1,5 @@
 /* Internal functions.
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -103,11 +103,11 @@ init_internal_fns ()
 #define mask_load_direct { -1, 2, false }
 #define load_lanes_direct { -1, -1, false }
 #define mask_load_lanes_direct { -1, -1, false }
-#define gather_load_direct { -1, -1, false }
+#define gather_load_direct { 3, 1, false }
 #define mask_store_direct { 3, 2, false }
 #define store_lanes_direct { 0, 0, false }
 #define mask_store_lanes_direct { 0, 0, false }
-#define scatter_store_direct { 3, 3, false }
+#define scatter_store_direct { 3, 1, false }
 #define unary_direct { 0, 0, true }
 #define binary_direct { 0, 0, true }
 #define ternary_direct { 0, 0, true }
@@ -117,6 +117,8 @@ init_internal_fns ()
 #define while_direct { 0, 2, false }
 #define fold_extract_direct { 2, 2, false }
 #define fold_left_direct { 1, 1, false }
+#define mask_fold_left_direct { 1, 1, false }
+#define check_ptrs_direct { 0, 0, false }
 
 const direct_internal_fn_info direct_internal_fn_array[IFN_LAST + 1] = {
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) not_direct,
@@ -148,7 +150,7 @@ get_multi_vector_move (tree array_type, convert_optab optab)
 static void
 expand_load_lanes_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
-  struct expand_operand ops[2];
+  class expand_operand ops[2];
   tree type, lhs, rhs;
   rtx target, mem;
 
@@ -172,7 +174,7 @@ expand_load_lanes_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 static void
 expand_store_lanes_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
-  struct expand_operand ops[2];
+  class expand_operand ops[2];
   tree type, lhs, rhs;
   rtx target, reg;
 
@@ -226,7 +228,7 @@ expand_GOMP_SIMT_ENTER_ALLOC (internal_fn, gcall *stmt)
     target = gen_reg_rtx (Pmode);
   rtx size = expand_normal (gimple_call_arg (stmt, 0));
   rtx align = expand_normal (gimple_call_arg (stmt, 1));
-  struct expand_operand ops[3];
+  class expand_operand ops[3];
   create_output_operand (&ops[0], target, Pmode);
   create_input_operand (&ops[1], size, Pmode);
   create_input_operand (&ops[2], align, Pmode);
@@ -241,7 +243,7 @@ expand_GOMP_SIMT_EXIT (internal_fn, gcall *stmt)
 {
   gcc_checking_assert (!gimple_call_lhs (stmt));
   rtx arg = expand_normal (gimple_call_arg (stmt, 0));
-  struct expand_operand ops[1];
+  class expand_operand ops[1];
   create_input_operand (&ops[0], arg, Pmode);
   gcc_assert (targetm.have_omp_simt_exit ());
   expand_insn (targetm.code_for_omp_simt_exit, 1, ops);
@@ -284,7 +286,7 @@ expand_GOMP_SIMT_LAST_LANE (internal_fn, gcall *stmt)
   rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
   rtx cond = expand_normal (gimple_call_arg (stmt, 0));
   machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
-  struct expand_operand ops[2];
+  class expand_operand ops[2];
   create_output_operand (&ops[0], target, mode);
   create_input_operand (&ops[1], cond, mode);
   gcc_assert (targetm.have_omp_simt_last_lane ());
@@ -303,7 +305,7 @@ expand_GOMP_SIMT_ORDERED_PRED (internal_fn, gcall *stmt)
   rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
   rtx ctr = expand_normal (gimple_call_arg (stmt, 0));
   machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
-  struct expand_operand ops[2];
+  class expand_operand ops[2];
   create_output_operand (&ops[0], target, mode);
   create_input_operand (&ops[1], ctr, mode);
   gcc_assert (targetm.have_omp_simt_ordered ());
@@ -323,7 +325,7 @@ expand_GOMP_SIMT_VOTE_ANY (internal_fn, gcall *stmt)
   rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
   rtx cond = expand_normal (gimple_call_arg (stmt, 0));
   machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
-  struct expand_operand ops[2];
+  class expand_operand ops[2];
   create_output_operand (&ops[0], target, mode);
   create_input_operand (&ops[1], cond, mode);
   gcc_assert (targetm.have_omp_simt_vote_any ());
@@ -344,7 +346,7 @@ expand_GOMP_SIMT_XCHG_BFLY (internal_fn, gcall *stmt)
   rtx src = expand_normal (gimple_call_arg (stmt, 0));
   rtx idx = expand_normal (gimple_call_arg (stmt, 1));
   machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
-  struct expand_operand ops[3];
+  class expand_operand ops[3];
   create_output_operand (&ops[0], target, mode);
   create_input_operand (&ops[1], src, mode);
   create_input_operand (&ops[2], idx, SImode);
@@ -365,7 +367,7 @@ expand_GOMP_SIMT_XCHG_IDX (internal_fn, gcall *stmt)
   rtx src = expand_normal (gimple_call_arg (stmt, 0));
   rtx idx = expand_normal (gimple_call_arg (stmt, 1));
   machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
-  struct expand_operand ops[3];
+  class expand_operand ops[3];
   create_output_operand (&ops[0], target, mode);
   create_input_operand (&ops[1], src, mode);
   create_input_operand (&ops[2], idx, SImode);
@@ -773,7 +775,7 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
                                        : usubv4_optab, mode);
       if (icode != CODE_FOR_nothing)
 	{
-	  struct expand_operand ops[4];
+	  class expand_operand ops[4];
 	  rtx_insn *last = get_last_insn ();
 
 	  res = gen_reg_rtx (mode);
@@ -994,7 +996,7 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
 				     : subv4_optab, mode);
     if (icode != CODE_FOR_nothing)
       {
-	struct expand_operand ops[4];
+	class expand_operand ops[4];
 	rtx_insn *last = get_last_insn ();
 
 	res = gen_reg_rtx (mode);
@@ -1145,7 +1147,7 @@ expand_neg_overflow (location_t loc, tree lhs, tree arg1, bool is_ubsan,
   enum insn_code icode = optab_handler (negv3_optab, mode);
   if (icode != CODE_FOR_nothing)
     {
-      struct expand_operand ops[3];
+      class expand_operand ops[3];
       rtx_insn *last = get_last_insn ();
 
       res = gen_reg_rtx (mode);
@@ -1407,7 +1409,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
   /* s1 * s2 -> ur  */
   if (!uns0_p && !uns1_p && unsr_p)
     {
-      rtx tem, tem2;
+      rtx tem;
       switch (pos_neg0 | pos_neg1)
 	{
 	case 1: /* Both operands known to be non-negative.  */
@@ -1437,10 +1439,8 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	      ops.op2 = NULL_TREE;
 	      ops.location = loc;
 	      res = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
-	      tem = expand_binop (mode, and_optab, op0, op1, NULL_RTX, false,
-				  OPTAB_LIB_WIDEN);
-	      do_compare_rtx_and_jump (tem, const0_rtx, EQ, true, mode,
-				       NULL_RTX, NULL, done_label,
+	      do_compare_rtx_and_jump (pos_neg0 == 1 ? op0 : op1, const0_rtx, EQ,
+				       true, mode, NULL_RTX, NULL, done_label,
 				       profile_probability::very_likely ());
 	      goto do_error_label;
 	    }
@@ -1471,16 +1471,23 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	  arg1 = error_mark_node;
 	  emit_jump (do_main_label);
 	  emit_label (after_negate_label);
-	  tem2 = expand_binop (mode, xor_optab, op0, op1, NULL_RTX, false,
-			       OPTAB_LIB_WIDEN);
-	  do_compare_rtx_and_jump (tem2, const0_rtx, GE, false, mode, NULL_RTX,
-				   NULL, do_main_label, profile_probability::very_likely ());
+	  tem = expand_binop (mode, xor_optab, op0, op1, NULL_RTX, false,
+			      OPTAB_LIB_WIDEN);
+	  do_compare_rtx_and_jump (tem, const0_rtx, GE, false, mode, NULL_RTX,
+				   NULL, do_main_label,
+				   profile_probability::very_likely ());
 	  /* One argument is negative here, the other positive.  This
 	     overflows always, unless one of the arguments is 0.  But
 	     if e.g. s2 is 0, (U) s1 * 0 doesn't overflow, whatever s1
 	     is, thus we can keep do_main code oring in overflow as is.  */
-	  do_compare_rtx_and_jump (tem, const0_rtx, EQ, true, mode, NULL_RTX,
-				   NULL, do_main_label, profile_probability::very_likely ());
+	  if (pos_neg0 != 2)
+	    do_compare_rtx_and_jump (op0, const0_rtx, EQ, true, mode, NULL_RTX,
+				     NULL, do_main_label,
+				     profile_probability::very_unlikely ());
+	  if (pos_neg1 != 2)
+	    do_compare_rtx_and_jump (op1, const0_rtx, EQ, true, mode, NULL_RTX,
+				     NULL, do_main_label,
+				     profile_probability::very_unlikely ());
 	  expand_arith_set_overflow (lhs, target);
 	  emit_label (do_main_label);
 	  goto do_main;
@@ -1538,7 +1545,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
     }
   if (icode != CODE_FOR_nothing)
     {
-      struct expand_operand ops[4];
+      class expand_operand ops[4];
       rtx_insn *last = get_last_insn ();
 
       res = gen_reg_rtx (mode);
@@ -1753,22 +1760,9 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	  /* If both op0 and op1 are sign (!uns) or zero (uns) extended from
 	     hmode to mode, the multiplication will never overflow.  We can
 	     do just one hmode x hmode => mode widening multiplication.  */
-	  rtx lopart0s = lopart0, lopart1s = lopart1;
-	  if (GET_CODE (lopart0) == SUBREG)
-	    {
-	      lopart0s = shallow_copy_rtx (lopart0);
-	      SUBREG_PROMOTED_VAR_P (lopart0s) = 1;
-	      SUBREG_PROMOTED_SET (lopart0s, uns ? SRP_UNSIGNED : SRP_SIGNED);
-	    }
-	  if (GET_CODE (lopart1) == SUBREG)
-	    {
-	      lopart1s = shallow_copy_rtx (lopart1);
-	      SUBREG_PROMOTED_VAR_P (lopart1s) = 1;
-	      SUBREG_PROMOTED_SET (lopart1s, uns ? SRP_UNSIGNED : SRP_SIGNED);
-	    }
 	  tree halfstype = build_nonstandard_integer_type (hprec, uns);
-	  ops.op0 = make_tree (halfstype, lopart0s);
-	  ops.op1 = make_tree (halfstype, lopart1s);
+	  ops.op0 = make_tree (halfstype, lopart0);
+	  ops.op1 = make_tree (halfstype, lopart1);
 	  ops.code = WIDEN_MULT_EXPR;
 	  ops.type = type;
 	  rtx thisres
@@ -2487,7 +2481,7 @@ expand_call_mem_ref (tree type, gcall *stmt, int index)
 static void
 expand_mask_load_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
-  struct expand_operand ops[3];
+  class expand_operand ops[3];
   tree type, lhs, rhs, maskt;
   rtx mem, target, mask;
   insn_code icode;
@@ -2522,7 +2516,7 @@ expand_mask_load_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 static void
 expand_mask_store_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
-  struct expand_operand ops[3];
+  class expand_operand ops[3];
   tree type, lhs, rhs, maskt;
   rtx mem, reg, mask;
   insn_code icode;
@@ -2577,6 +2571,15 @@ expand_BUILTIN_EXPECT (internal_fn, gcall *stmt)
 
 static void
 expand_VA_ARG (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
+/* IFN_VEC_CONVERT is supposed to be expanded at pass_lower_vector.  So this
+   dummy function should never be called.  */
+
+static void
+expand_VEC_CONVERT (internal_fn, gcall *)
 {
   gcc_unreachable ();
 }
@@ -2774,7 +2777,7 @@ expand_scatter_store_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
   HOST_WIDE_INT scale_int = tree_to_shwi (scale);
   rtx rhs_rtx = expand_normal (rhs);
 
-  struct expand_operand ops[6];
+  class expand_operand ops[6];
   int i = 0;
   create_address_operand (&ops[i++], base_rtx);
   create_input_operand (&ops[i++], offset_rtx, TYPE_MODE (TREE_TYPE (offset)));
@@ -2788,7 +2791,8 @@ expand_scatter_store_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
       create_input_operand (&ops[i++], mask_rtx, TYPE_MODE (TREE_TYPE (mask)));
     }
 
-  insn_code icode = direct_optab_handler (optab, TYPE_MODE (TREE_TYPE (rhs)));
+  insn_code icode = convert_optab_handler (optab, TYPE_MODE (TREE_TYPE (rhs)),
+					   TYPE_MODE (TREE_TYPE (offset)));
   expand_insn (icode, i, ops);
 }
 
@@ -2808,7 +2812,7 @@ expand_gather_load_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
   HOST_WIDE_INT scale_int = tree_to_shwi (scale);
 
   int i = 0;
-  struct expand_operand ops[6];
+  class expand_operand ops[6];
   create_output_operand (&ops[i++], lhs_rtx, TYPE_MODE (TREE_TYPE (lhs)));
   create_address_operand (&ops[i++], base_rtx);
   create_input_operand (&ops[i++], offset_rtx, TYPE_MODE (TREE_TYPE (offset)));
@@ -2816,11 +2820,12 @@ expand_gather_load_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
   create_integer_operand (&ops[i++], scale_int);
   if (optab == mask_gather_load_optab)
     {
-      tree mask = gimple_call_arg (stmt, 3);
+      tree mask = gimple_call_arg (stmt, 4);
       rtx mask_rtx = expand_normal (mask);
       create_input_operand (&ops[i++], mask_rtx, TYPE_MODE (TREE_TYPE (mask)));
     }
-  insn_code icode = direct_optab_handler (optab, TYPE_MODE (TREE_TYPE (lhs)));
+  insn_code icode = convert_optab_handler (optab, TYPE_MODE (TREE_TYPE (lhs)),
+					   TYPE_MODE (TREE_TYPE (offset)));
   expand_insn (icode, i, ops);
 }
 
@@ -2890,6 +2895,7 @@ expand_direct_optab_fn (internal_fn fn, gcall *stmt, direct_optab optab,
 
   tree_pair types = direct_internal_fn_types (fn, stmt);
   insn_code icode = direct_optab_handler (optab, TYPE_MODE (types.first));
+  gcc_assert (icode != CODE_FOR_nothing);
 
   tree lhs = gimple_call_lhs (stmt);
   rtx lhs_rtx = NULL_RTX;
@@ -3003,6 +3009,12 @@ expand_while_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 #define expand_fold_left_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 2)
 
+#define expand_mask_fold_left_optab_fn(FN, STMT, OPTAB) \
+  expand_direct_optab_fn (FN, STMT, OPTAB, 3)
+
+#define expand_check_ptrs_optab_fn(FN, STMT, OPTAB) \
+  expand_direct_optab_fn (FN, STMT, OPTAB, 4)
+
 /* RETURN_TYPE and ARGS are a return type and argument list that are
    in principle compatible with FN (which satisfies direct_internal_fn_p).
    Return the types that should be used to determine whether the
@@ -3083,14 +3095,16 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_mask_load_optab_supported_p direct_optab_supported_p
 #define direct_load_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_load_lanes_optab_supported_p multi_vector_optab_supported_p
-#define direct_gather_load_optab_supported_p direct_optab_supported_p
+#define direct_gather_load_optab_supported_p convert_optab_supported_p
 #define direct_mask_store_optab_supported_p direct_optab_supported_p
 #define direct_store_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_store_lanes_optab_supported_p multi_vector_optab_supported_p
-#define direct_scatter_store_optab_supported_p direct_optab_supported_p
+#define direct_scatter_store_optab_supported_p convert_optab_supported_p
 #define direct_while_optab_supported_p convert_optab_supported_p
 #define direct_fold_extract_optab_supported_p direct_optab_supported_p
 #define direct_fold_left_optab_supported_p direct_optab_supported_p
+#define direct_mask_fold_left_optab_supported_p direct_optab_supported_p
+#define direct_check_ptrs_optab_supported_p direct_optab_supported_p
 
 /* Return the optab used by internal function FN.  */
 
@@ -3183,6 +3197,55 @@ direct_internal_fn_supported_p (internal_fn fn, tree type,
   return direct_internal_fn_supported_p (fn, tree_pair (type, type), opt_type);
 }
 
+/* Return true if the STMT is supported when the optimization type is OPT_TYPE,
+   given that STMT is a call to a direct internal function.  */
+
+bool
+direct_internal_fn_supported_p (gcall *stmt, optimization_type opt_type)
+{
+  internal_fn fn = gimple_call_internal_fn (stmt);
+  tree_pair types = direct_internal_fn_types (fn, stmt);
+  return direct_internal_fn_supported_p (fn, types, opt_type);
+}
+
+/* If FN is commutative in two consecutive arguments, return the
+   index of the first, otherwise return -1.  */
+
+int
+first_commutative_argument (internal_fn fn)
+{
+  switch (fn)
+    {
+    case IFN_FMA:
+    case IFN_FMS:
+    case IFN_FNMA:
+    case IFN_FNMS:
+    case IFN_AVG_FLOOR:
+    case IFN_AVG_CEIL:
+    case IFN_MULHS:
+    case IFN_MULHRS:
+    case IFN_FMIN:
+    case IFN_FMAX:
+      return 0;
+
+    case IFN_COND_ADD:
+    case IFN_COND_MUL:
+    case IFN_COND_MIN:
+    case IFN_COND_MAX:
+    case IFN_COND_AND:
+    case IFN_COND_IOR:
+    case IFN_COND_XOR:
+    case IFN_COND_FMA:
+    case IFN_COND_FMS:
+    case IFN_COND_FNMA:
+    case IFN_COND_FNMS:
+      return 1;
+
+    default:
+      return -1;
+    }
+}
+
 /* Return true if IFN_SET_EDOM is supported.  */
 
 bool
@@ -3237,7 +3300,9 @@ static void (*const internal_fn_expanders[]) (internal_fn, gcall *) = {
   T (MAX_EXPR, IFN_COND_MAX) \
   T (BIT_AND_EXPR, IFN_COND_AND) \
   T (BIT_IOR_EXPR, IFN_COND_IOR) \
-  T (BIT_XOR_EXPR, IFN_COND_XOR)
+  T (BIT_XOR_EXPR, IFN_COND_XOR) \
+  T (LSHIFT_EXPR, IFN_COND_SHL) \
+  T (RSHIFT_EXPR, IFN_COND_SHR)
 
 /* Return a function that only performs CODE when a certain condition is met
    and that uses a given fallback value otherwise.  For example, if CODE is
@@ -3460,8 +3525,6 @@ internal_fn_mask_index (internal_fn fn)
       return 2;
 
     case IFN_MASK_GATHER_LOAD:
-      return 3;
-
     case IFN_MASK_SCATTER_STORE:
       return 4;
 
@@ -3493,27 +3556,48 @@ internal_fn_stored_value_index (internal_fn fn)
    IFN.  For loads, VECTOR_TYPE is the vector type of the load result,
    while for stores it is the vector type of the stored data argument.
    MEMORY_ELEMENT_TYPE is the type of the memory elements being loaded
-   or stored.  OFFSET_SIGN is the sign of the offset argument, which is
-   only relevant when the offset is narrower than an address.  SCALE is
-   the amount by which the offset should be multiplied *after* it has
-   been extended to address width.  */
+   or stored.  OFFSET_VECTOR_TYPE is the vector type that holds the
+   offset from the shared base address of each loaded or stored element.
+   SCALE is the amount by which these offsets should be multiplied
+   *after* they have been extended to address width.  */
 
 bool
 internal_gather_scatter_fn_supported_p (internal_fn ifn, tree vector_type,
 					tree memory_element_type,
-					signop offset_sign, int scale)
+					tree offset_vector_type, int scale)
 {
   if (!tree_int_cst_equal (TYPE_SIZE (TREE_TYPE (vector_type)),
 			   TYPE_SIZE (memory_element_type)))
     return false;
+  if (maybe_ne (TYPE_VECTOR_SUBPARTS (vector_type),
+		TYPE_VECTOR_SUBPARTS (offset_vector_type)))
+    return false;
   optab optab = direct_internal_fn_optab (ifn);
-  insn_code icode = direct_optab_handler (optab, TYPE_MODE (vector_type));
+  insn_code icode = convert_optab_handler (optab, TYPE_MODE (vector_type),
+					   TYPE_MODE (offset_vector_type));
   int output_ops = internal_load_fn_p (ifn) ? 1 : 0;
+  bool unsigned_p = TYPE_UNSIGNED (TREE_TYPE (offset_vector_type));
   return (icode != CODE_FOR_nothing
-	  && insn_operand_matches (icode, 2 + output_ops,
-				   GEN_INT (offset_sign == UNSIGNED))
-	  && insn_operand_matches (icode, 3 + output_ops,
-				   GEN_INT (scale)));
+	  && insn_operand_matches (icode, 2 + output_ops, GEN_INT (unsigned_p))
+	  && insn_operand_matches (icode, 3 + output_ops, GEN_INT (scale)));
+}
+
+/* Return true if the target supports IFN_CHECK_{RAW,WAR}_PTRS function IFN
+   for pointers of type TYPE when the accesses have LENGTH bytes and their
+   common byte alignment is ALIGN.  */
+
+bool
+internal_check_ptrs_fn_supported_p (internal_fn ifn, tree type,
+				    poly_uint64 length, unsigned int align)
+{
+  machine_mode mode = TYPE_MODE (type);
+  optab optab = direct_internal_fn_optab (ifn);
+  insn_code icode = direct_optab_handler (optab, mode);
+  if (icode == CODE_FOR_nothing)
+    return false;
+  rtx length_rtx = immed_wide_int_const (length, mode);
+  return (insn_operand_matches (icode, 3, length_rtx)
+	  && insn_operand_matches (icode, 4, GEN_INT (align)));
 }
 
 /* Expand STMT as though it were a call to internal function FN.  */

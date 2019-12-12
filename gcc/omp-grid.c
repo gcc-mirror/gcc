@@ -1,6 +1,6 @@
 /* Lowering and expansion of OpenMP directives for HSA GPU agents.
 
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -83,8 +83,9 @@ omp_grid_lastprivate_predicate (struct omp_for_data *fd)
 /* Structure describing the basic properties of the loop we ara analyzing
    whether it can be gridified and when it is gridified.  */
 
-struct grid_prop
+class grid_prop
 {
+public:
   /* True when we are doing tiling gridification, i.e. when there is a distinct
      distribute loop over groups and a loop construct over work-items.  False
      when distribute and parallel for loops form a combined construct.  */
@@ -745,9 +746,10 @@ grid_target_follows_gridifiable_pattern (gomp_target *target, grid_prop *grid)
   tree group_size = NULL;
   if (!teams)
     {
-      dump_printf_loc (MSG_MISSED_OPTIMIZATION, tloc,
-		       GRID_MISSED_MSG_PREFIX "it does not have a sole teams "
-		       "construct in it.\n");
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, tloc,
+			 GRID_MISSED_MSG_PREFIX "it does not have a sole "
+			 "teams construct in it.\n");
       return false;
     }
 
@@ -788,9 +790,10 @@ grid_target_follows_gridifiable_pattern (gomp_target *target, grid_prop *grid)
   gomp_for *dist = dyn_cast <gomp_for *> (stmt);
   if (!dist)
     {
-      dump_printf_loc (MSG_MISSED_OPTIMIZATION, tloc,
-		       GRID_MISSED_MSG_PREFIX "the teams construct does not "
-		       "have a single distribute construct in it.\n");
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, tloc,
+			 GRID_MISSED_MSG_PREFIX "the teams construct does not "
+			 "have a single distribute construct in it.\n");
       return false;
     }
 
@@ -932,6 +935,8 @@ grid_mark_variable_segment (tree var, enum grid_var_segment segment)
   if (!TREE_STATIC (var))
     {
       TREE_STATIC (var) = 1;
+      const char *prefix = IDENTIFIER_POINTER (DECL_NAME (var));
+      SET_DECL_ASSEMBLER_NAME (var, create_tmp_var_name (prefix));
       varpool_node::finalize_decl (var);
     }
 
@@ -997,7 +1002,7 @@ grid_process_grid_body (gimple_stmt_iterator *gsi, bool *handled_ops_p,
   *handled_ops_p = false;
   gimple *stmt = gsi_stmt (*gsi);
   if (gimple_code (stmt) == GIMPLE_OMP_FOR
-      && (gimple_omp_for_kind (stmt) & GF_OMP_FOR_SIMD))
+      && gimple_omp_for_kind (stmt) == GF_OMP_FOR_KIND_SIMD)
   {
     gomp_for *loop = as_a <gomp_for *> (stmt);
     tree clauses = gimple_omp_for_clauses (loop);
@@ -1025,14 +1030,14 @@ grid_eliminate_combined_simd_part (gomp_for *parloop)
 
   memset (&wi, 0, sizeof (wi));
   wi.val_only = true;
-  enum gf_mask msk = GF_OMP_FOR_SIMD;
+  enum gf_mask msk = GF_OMP_FOR_KIND_SIMD;
   wi.info = (void *) &msk;
   walk_gimple_seq (gimple_omp_body (parloop), omp_find_combined_for, NULL, &wi);
   gimple *stmt = (gimple *) wi.info;
   /* We expect that the SIMD id the only statement in the parallel loop.  */
   gcc_assert (stmt
 	      && gimple_code (stmt) == GIMPLE_OMP_FOR
-	      && (gimple_omp_for_kind (stmt) == GF_OMP_FOR_SIMD)
+	      && (gimple_omp_for_kind (stmt) == GF_OMP_FOR_KIND_SIMD)
 	      && gimple_omp_for_combined_into_p (stmt)
 	      && !gimple_omp_for_combined_p (stmt));
   gomp_for *simd = as_a <gomp_for *> (stmt);
@@ -1053,8 +1058,8 @@ grid_eliminate_combined_simd_part (gomp_for *parloop)
   while (*tgt)
     tgt = &OMP_CLAUSE_CHAIN (*tgt);
 
-  /* Copy over all clauses, except for linaer clauses, which are turned into
-     private clauses, and all other simd-specificl clauses, which are
+  /* Copy over all clauses, except for linear clauses, which are turned into
+     private clauses, and all other simd-specific clauses, which are
      ignored.  */
   tree *pc = gimple_omp_for_clauses_ptr (simd);
   while (*pc)
@@ -1083,7 +1088,7 @@ grid_eliminate_combined_simd_part (gomp_for *parloop)
 	  *pc = OMP_CLAUSE_CHAIN (c);
 	  OMP_CLAUSE_CHAIN (c) = NULL;
 	  *tgt = c;
-	  tgt = &OMP_CLAUSE_CHAIN(c);
+	  tgt = &OMP_CLAUSE_CHAIN (c);
 	  break;
 	}
     }
@@ -1299,7 +1304,8 @@ grid_attempt_target_gridification (gomp_target *target,
   push_gimplify_context ();
   for (size_t i = 0; i < grid.collapse; i++)
     {
-      tree itype, type = TREE_TYPE (gimple_omp_for_index (inner_loop, i));
+      tree index_var = gimple_omp_for_index (inner_loop, i);
+      tree itype, type = TREE_TYPE (index_var);
       if (POINTER_TYPE_P (type))
 	itype = signed_type_for (type);
       else
@@ -1310,13 +1316,13 @@ grid_attempt_target_gridification (gomp_target *target,
       walk_tree (&n1, grid_remap_prebody_decls, &wi, NULL);
       tree n2 = unshare_expr (gimple_omp_for_final (inner_loop, i));
       walk_tree (&n2, grid_remap_prebody_decls, &wi, NULL);
-      omp_adjust_for_condition (loc, &cond_code, &n2);
+      tree step
+	= omp_get_for_step_from_incr (loc, gimple_omp_for_incr (inner_loop, i));
+      omp_adjust_for_condition (loc, &cond_code, &n2, index_var, step);
       n1 = fold_convert (itype, n1);
       n2 = fold_convert (itype, n2);
 
       tree cond = fold_build2 (cond_code, boolean_type_node, n1, n2);
-      tree step
-	= omp_get_for_step_from_incr (loc, gimple_omp_for_incr (inner_loop, i));
 
       tree t = build_int_cst (itype, (cond_code == LT_EXPR ? -1 : 1));
       t = fold_build2 (PLUS_EXPR, itype, step, t);

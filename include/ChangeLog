@@ -1,3 +1,123 @@
+2019-11-16  Tim Ruehsen  <tim.ruehsen@gmx.de>
+
+	* demangle.h (struct demangle_component): Add member
+	d_counting.
+
+2019-11-16  Eduard-Mihai Burtescu  <eddyb@lyken.rs>
+
+	* demangle.h (rust_demangle_callback): Add.
+
+2019-11-13  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	* gomp-constants.h (GOMP_DEVICE_GCN): Define.
+	(GOMP_VERSION_GCN): Define.
+
+2019-08-08  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/91352
+	* libiberty.h (is_valid_fd): New function.
+
+2019-07-18  Eduard-Mihai Burtescu  <eddyb@lyken.rs>
+
+	* demangle.h (rust_is_mangled): Move to libiberty/rust-demangle.h.
+	(rust_demangle_sym): Move to libiberty/rust-demangle.h.
+
+2019-06-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gomp-constants.h (enum gomp_map_kind): Fix description of
+	'GOMP_MAP_FIRSTPRIVATE'.
+
+2019-06-10  Martin Liska  <mliska@suse.cz>
+
+	* ansidecl.h (ATTRIBUTE_WARN_UNUSED_RESULT): New macro.
+	* libiberty.h (xmalloc): Use it.
+	(xrealloc): Likewise.
+	(xcalloc): Likewise.
+	(xstrdup): Likewise.
+	(xstrndup): Likewise.
+	(xmemdup): Likewise.
+
+2019-06-10  Martin Liska  <mliska@suse.cz>
+
+	* ansidecl.h:
+	(ATTRIBUTE_RESULT_SIZE_1): Define new macro.
+	(ATTRIBUTE_RESULT_SIZE_2): Likewise.
+	(ATTRIBUTE_RESULT_SIZE_1_2): Likewise.
+	* libiberty.h (xmalloc): Add RESULT_SIZE attribute.
+	(xrealloc): Likewise.
+	(xcalloc): Likewise.
+
+2019-04-26  Michael Forney  <mforney@mforney.org>
+
+	* libiberty.h (vasprintf): Don't declare if HAVE_DECL_VASPRINTF
+	is not defined.
+
+2019-04-03  Vineet Gupta  <vgupta@synopsys.com>
+
+	PR89877
+	* longlong.h [__arc__] (add_ssaaaa): Add cc clobber.
+	(sub_ddmmss): Likewise.
+
+2019-02-11  Philippe Waroquiers  <philippe.waroquiers@skynet.be>
+
+	* splay-tree.h (splay_tree_delete_key_fn): Update comment.
+	(splay_tree_delete_value_fn): Likewise.
+
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
+	* libiberty.h: Mechanically replace "can not" with "cannot".
+	* plugin-api.h: Likewise.
+
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2018-12-28  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gomp-constants.h (GOACC_FLAG_HOST_FALLBACK)
+	(GOACC_FLAGS_MARSHAL_OP, GOACC_FLAGS_UNMARSHAL): Define.
+
+2018-12-22  Jason Merrill  <jason@redhat.com>
+
+	* demangle.h: Remove support for ancient GNU (pre-3.0), Lucid,
+	ARM, HP, and EDG demangling styles.
+
+2018-12-11  Nick Clifton  <nickc@redhat.com>
+
+	PR 88409
+	* demangle.h (DEMANGLE_RECURSION_LIMIT): Increase to 2048.
+
+2018-12-07  Nick Clifton  <nickc@redhat.com>
+
+	* demangle.h (DMGL_NO_RECURSE_LIMIT): Define.
+        (DEMANGLE_RECURSION_LIMIT): Define
+
+2018-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* gomp-constants.h (GOMP_TASK_FLAG_REDUCTION,
+	GOMP_DEPEND_IN, GOMP_DEPEND_OUT, GOMP_DEPEND_INOUT,
+	GOMP_DEPEND_MUTEXINOUTSET): Define.
+
+2018-10-19  Jason Merrill  <jason@redhat.com>
+
+	* demangle.h (enum demangle_component_type): Add
+	DEMANGLE_COMPONENT_TPARM_OBJ.
+
+2018-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* unique-ptr.h (gnu::move): Generalize so it applies to all
+	lvalue references, rather than just to unique_ptr values.
+
+2018-07-26  Martin Liska  <mliska@suse.cz>
+
+	PR lto/86548
+	* libiberty.h (make_temp_file_with_prefix): New function.
+
 2018-05-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* simple-object.h (simple_object_copy_lto_debug_sections): Add rename
@@ -435,8 +555,8 @@
 	* libiberty.h (xasprintf): Declare.
 
 2014-12-11  Uros Bizjak  <ubizjak@gmail.com>
-            Ben Elliston  <bje@au.ibm.com>
-            Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+	    Ben Elliston  <bje@au.ibm.com>
+	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* libiberty.h (xvasprintf): Declare.
 
@@ -626,7 +746,7 @@
 	DEMANGLE_COMPONENT_TAGGED_NAME.
 
 2012-10-29  Sterling Augustine  <saugustine@google.com>
-            Cary Coutant  <ccoutant@google.com>
+	    Cary Coutant  <ccoutant@google.com>
 
 	* dwarf2.h (dwarf_location_list_entry_type): New enum with fields
 	DW_LLE_GNU_end_of_list_entry, DW_LLE_GNU_base_address_selection_entry,
@@ -1263,7 +1383,7 @@
 
 	* splay-tree.h (libi_uhostptr_t, libi_shostptr_t): New types,
 	needed for WIN64 when a long is not wide enough for a pointer.
-        (splay_tree_key, splay_tree_value): Use the new types.
+	(splay_tree_key, splay_tree_value): Use the new types.
 
 2007-05-07  Nathan Froyd  <froydnj@codesourcery.com>
 
@@ -1303,7 +1423,7 @@
 	* ansidecl.h (ATTRIBUTE_PACKED): Define.
 
 2006-11-30  Andrew Stubbs  <andrew.stubbs@st.com>
-            J"orn Rennecke <joern.rennecke@st.com>
+	    J"orn Rennecke <joern.rennecke@st.com>
 
 	PR driver/29931
 	* libiberty.h (make_relative_prefix_ignore_links): Declare.

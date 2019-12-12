@@ -1,5 +1,5 @@
 /* Header file for SSA dominator optimizations.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "tree-dfa.h"
 #include "options.h"
-#include "params.h"
 
 static bool hashable_expr_equal_p (const struct hashable_expr *,
 				   const struct hashable_expr *);
@@ -100,18 +99,11 @@ avail_exprs_stack::record_expr (class expr_hash_elt *elt1,
    the desired memory state.  */
 
 static void *
-vuse_eq (ao_ref *, tree vuse1, unsigned int cnt, void *data)
+vuse_eq (ao_ref *, tree vuse1, void *data)
 {
   tree vuse2 = (tree) data;
   if (vuse1 == vuse2)
     return data;
-
-  /* This bounds the stmt walks we perform on reference lookups
-     to O(1) instead of O(N) where N is the number of dominating
-     stores leading to a candidate.  We re-use the SCCVN param
-     for this as it is basically the same complexity.  */
-  if (cnt > (unsigned) PARAM_VALUE (PARAM_SCCVN_MAX_ALIAS_QUERIES_PER_ACCESS))
-    return (void *)-1;
 
   return NULL;
 }
@@ -299,13 +291,14 @@ avail_exprs_stack::lookup_avail_expr (gimple *stmt, bool insert, bool tbaa_p)
 	 up the virtual use-def chain using walk_non_aliased_vuses.
 	 But don't do this when removing expressions from the hash.  */
       ao_ref ref;
+      unsigned limit = param_sccvn_max_alias_queries_per_access;
       if (!(vuse1 && vuse2
 	    && gimple_assign_single_p (stmt)
 	    && TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME
 	    && (ao_ref_init (&ref, gimple_assign_rhs1 (stmt)),
 		ref.base_alias_set = ref.ref_alias_set = tbaa_p ? -1 : 0, true)
-	    && walk_non_aliased_vuses (&ref, vuse2,
-				       vuse_eq, NULL, NULL, vuse1) != NULL))
+	    && walk_non_aliased_vuses (&ref, vuse2, true, vuse_eq, NULL, NULL,
+				       limit, vuse1) != NULL))
 	{
 	  if (insert)
 	    {
@@ -500,7 +493,9 @@ avail_expr_hash (class expr_hash_elt *p)
 	    {
 	      enum tree_code code = MEM_REF;
 	      hstate.add_object (code);
-	      inchash::add_expr (base, hstate);
+	      inchash::add_expr (base, hstate,
+				 TREE_CODE (base) == MEM_REF 
+				 ? OEP_ADDRESS_OF : 0);
 	      hstate.add_object (offset);
 	      hstate.add_object (size);
 	      return hstate.end ();
@@ -543,13 +538,15 @@ equal_mem_array_ref_p (tree t0, tree t1)
       || maybe_ne (sz1, max1))
     return false;
 
-  if (rev0 != rev1)
+  if (rev0 != rev1 || maybe_ne (sz0, sz1) || maybe_ne (off0, off1))
     return false;
 
-  /* Types were compatible, so this is a sanity check.  */
-  gcc_assert (known_eq (sz0, sz1));
-
-  return known_eq (off0, off1) && operand_equal_p (base0, base1, 0);
+  return operand_equal_p (base0, base1,
+			  (TREE_CODE (base0) == MEM_REF
+			   || TREE_CODE (base0) == TARGET_MEM_REF)
+			  && (TREE_CODE (base1) == MEM_REF
+			      || TREE_CODE (base1) == TARGET_MEM_REF)
+			  ? OEP_ADDRESS_OF : 0);
 }
 
 /* Compare two hashable_expr structures for equivalence.  They are
@@ -666,7 +663,7 @@ hashable_expr_equal_p (const struct hashable_expr *expr0,
                                  expr1->ops.call.args[i], 0))
             return false;
 
-	if (stmt_could_throw_p (expr0->ops.call.fn_from))
+	if (stmt_could_throw_p (cfun, expr0->ops.call.fn_from))
 	  {
 	    int lp0 = lookup_stmt_eh_lp (expr0->ops.call.fn_from);
 	    int lp1 = lookup_stmt_eh_lp (expr1->ops.call.fn_from);
@@ -1030,9 +1027,9 @@ bool
 expr_elt_hasher::equal (const value_type &p1, const compare_type &p2)
 {
   const struct hashable_expr *expr1 = p1->expr ();
-  const struct expr_hash_elt *stamp1 = p1->stamp ();
+  const class expr_hash_elt *stamp1 = p1->stamp ();
   const struct hashable_expr *expr2 = p2->expr ();
-  const struct expr_hash_elt *stamp2 = p2->stamp ();
+  const class expr_hash_elt *stamp2 = p2->stamp ();
 
   /* This case should apply only when removing entries from the table.  */
   if (stamp1 == stamp2)

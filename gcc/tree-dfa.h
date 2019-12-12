@@ -1,5 +1,5 @@
 /* Header file for tree data flow functions.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_DFA_H
 #define GCC_TREE_DFA_H
 
-extern void renumber_gimple_stmt_uids (void);
+extern void renumber_gimple_stmt_uids (struct function *);
 extern void renumber_gimple_stmt_uids_in_blocks (basic_block *, int);
 extern void dump_variable (FILE *, tree);
 extern void debug_variable (tree);

@@ -1,5 +1,5 @@
 /* Register renaming for the GNU compiler.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -33,6 +33,7 @@
 #include "addresses.h"
 #include "cfganal.h"
 #include "tree-pass.h"
+#include "function-abi.h"
 #include "regrename.h"
 
 /* This file implements the RTL register renaming pass of the compiler.  It is
@@ -116,7 +117,7 @@ static unsigned current_id;
 static vec<du_head_p> id_to_chain;
 
 /* List of currently open chains.  */
-static struct du_head *open_chains;
+static class du_head *open_chains;
 
 /* Bitmap of open chains.  The bits set always match the list found in
    open_chains.  */
@@ -135,7 +136,7 @@ static HARD_REG_SET live_hard_regs;
 static operand_rr_info *cur_operand;
 
 /* Set while scanning RTL if a register dies.  Used to tie chains.  */
-static struct du_head *terminated_this_insn;
+static class du_head *terminated_this_insn;
 
 /* Return the chain corresponding to id number ID.  Take into account that
    chains may have been merged.  */
@@ -192,7 +193,7 @@ free_chain_data (void)
    another chain whose id is ID.  */
 
 static void
-mark_conflict (struct du_head *chains, unsigned id)
+mark_conflict (class du_head *chains, unsigned id)
 {
   while (chains)
     {
@@ -205,7 +206,7 @@ mark_conflict (struct du_head *chains, unsigned id)
    use THIS_DU which is part of the chain HEAD.  */
 
 static void
-record_operand_use (struct du_head *head, struct du_chain *this_du)
+record_operand_use (class du_head *head, struct du_chain *this_du)
 {
   if (cur_operand == NULL || cur_operand->failed)
     return;
@@ -227,11 +228,11 @@ static du_head_p
 create_new_chain (unsigned this_regno, unsigned this_nregs, rtx *loc,
 		  rtx_insn *insn, enum reg_class cl)
 {
-  struct du_head *head = XOBNEW (&rename_obstack, struct du_head);
+  class du_head *head = XOBNEW (&rename_obstack, class du_head);
   struct du_chain *this_du;
   int nregs;
 
-  memset (head, 0, sizeof *head);
+  memset ((void *)head, 0, sizeof *head);
   head->next_chain = open_chains;
   head->regno = this_regno;
   head->nregs = this_nregs;
@@ -253,7 +254,7 @@ create_new_chain (unsigned this_regno, unsigned this_nregs, rtx *loc,
       CLEAR_HARD_REG_BIT (live_hard_regs, head->regno + nregs);
     }
 
-  COPY_HARD_REG_SET (head->hard_conflicts, live_hard_regs);
+  head->hard_conflicts = live_hard_regs;
   bitmap_set_bit (&open_chains_set, head->id);
 
   open_chains = head;
@@ -288,11 +289,11 @@ create_new_chain (unsigned this_regno, unsigned this_nregs, rtx *loc,
    set the corresponding bits in *PSET.  */
 
 static void
-merge_overlapping_regs (HARD_REG_SET *pset, struct du_head *head)
+merge_overlapping_regs (HARD_REG_SET *pset, class du_head *head)
 {
   bitmap_iterator bi;
   unsigned i;
-  IOR_HARD_REG_SET (*pset, head->hard_conflicts);
+  *pset |= head->hard_conflicts;
   EXECUTE_IF_SET_IN_BITMAP (&head->conflicts, 0, i, bi)
     {
       du_head_p other = regrename_chain_from_id (i);
@@ -303,13 +304,25 @@ merge_overlapping_regs (HARD_REG_SET *pset, struct du_head *head)
     }
 }
 
+/* Return true if (reg:MODE REGNO) would be clobbered by a call covered
+   by THIS_HEAD.  */
+
+static bool
+call_clobbered_in_chain_p (du_head *this_head, machine_mode mode,
+			   unsigned int regno)
+{
+  return call_clobbered_in_region_p (this_head->call_abis,
+				     this_head->call_clobber_mask,
+				     mode, regno);
+}
+
 /* Check if NEW_REG can be the candidate register to rename for
    REG in THIS_HEAD chain.  THIS_UNAVAILABLE is a set of unavailable hard
    registers.  */
 
 static bool
 check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
-		 struct du_head *this_head, HARD_REG_SET this_unavailable)
+		 class du_head *this_head, HARD_REG_SET this_unavailable)
 {
   machine_mode mode = GET_MODE (*this_head->first->loc);
   int nregs = hard_regno_nregs (new_reg, mode);
@@ -322,7 +335,7 @@ check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
 	|| global_regs[new_reg + i]
 	/* Can't use regs which aren't saved by the prologue.  */
 	|| (! df_regs_ever_live_p (new_reg + i)
-	    && ! call_used_regs[new_reg + i])
+	    && ! crtl->abi->clobbers_full_reg_p (new_reg + i))
 #ifdef LEAF_REGISTERS
 	/* We can't use a non-leaf register if we're in a
 	   leaf function.  */
@@ -337,11 +350,8 @@ check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
   for (tmp = this_head->first; tmp; tmp = tmp->next_use)
     if ((!targetm.hard_regno_mode_ok (new_reg, GET_MODE (*tmp->loc))
 	 && ! DEBUG_INSN_P (tmp->insn))
-	|| (this_head->need_caller_save_reg
-	    && ! (targetm.hard_regno_call_part_clobbered
-		  (reg, GET_MODE (*tmp->loc)))
-	    && (targetm.hard_regno_call_part_clobbered
-		(new_reg, GET_MODE (*tmp->loc)))))
+	|| call_clobbered_in_chain_p (this_head, GET_MODE (*tmp->loc),
+				      new_reg))
       return false;
 
   return true;
@@ -362,12 +372,6 @@ find_rename_reg (du_head_p this_head, enum reg_class super_class,
   enum reg_class preferred_class;
   int pass;
   int best_new_reg = old_reg;
-
-  /* Further narrow the set of registers we can use for renaming.
-     If the chain needs a call-saved register, mark the call-used
-     registers as unavailable.  */
-  if (this_head->need_caller_save_reg)
-    IOR_HARD_REG_SET (*unavailable, call_used_reg_set);
 
   /* Mark registers that overlap this chain's lifetime as unavailable.  */
   merge_overlapping_regs (unavailable, this_head);
@@ -441,8 +445,7 @@ regrename_find_superclass (du_head_p head, int *pn_uses,
       if (DEBUG_INSN_P (tmp->insn))
 	continue;
       n_uses++;
-      IOR_COMPL_HARD_REG_SET (*punavailable,
-			      reg_class_contents[tmp->cl]);
+      *punavailable |= ~reg_class_contents[tmp->cl];
       super_class
 	= reg_class_superunion[(int) super_class][(int) tmp->cl];
     }
@@ -486,7 +489,7 @@ rename_chains (void)
 	      && reg == FRAME_POINTER_REGNUM))
 	continue;
 
-      COPY_HARD_REG_SET (this_unavailable, unavailable);
+      this_unavailable = unavailable;
 
       reg_class super_class = regrename_find_superclass (this_head, &n_uses,
 							 &this_unavailable);
@@ -500,7 +503,7 @@ rename_chains (void)
 	{
 	  fprintf (dump_file, "Register %s in insn %d",
 		   reg_names[reg], INSN_UID (this_head->first->insn));
-	  if (this_head->need_caller_save_reg)
+	  if (this_head->call_abis)
 	    fprintf (dump_file, " crosses a call");
 	}
 
@@ -547,8 +550,9 @@ struct incoming_reg_info {
    A pointer to such a structure is stored in each basic block's aux field
    during regrename_analyze, except for blocks we know can't be optimized
    (such as entry and exit blocks).  */
-struct bb_rename_info
+class bb_rename_info
 {
+public:
   /* The basic block corresponding to this structure.  */
   basic_block bb;
   /* Copies of the global information.  */
@@ -560,7 +564,7 @@ struct bb_rename_info
 /* Initialize a rename_info structure P for basic block BB, which starts a new
    scan.  */
 static void
-init_rename_info (struct bb_rename_info *p, basic_block bb)
+init_rename_info (class bb_rename_info *p, basic_block bb)
 {
   int i;
   df_ref def;
@@ -615,7 +619,7 @@ init_rename_info (struct bb_rename_info *p, basic_block bb)
 /* Record in RI that the block corresponding to it has an incoming
    live value, described by CHAIN.  */
 static void
-set_incoming_from_chain (struct bb_rename_info *ri, du_head_p chain)
+set_incoming_from_chain (class bb_rename_info *ri, du_head_p chain)
 {
   int i;
   int incoming_nregs = ri->incoming[chain->regno].nregs;
@@ -677,10 +681,11 @@ merge_chains (du_head_p c1, du_head_p c2)
   c2->first = c2->last = NULL;
   c2->id = c1->id;
 
-  IOR_HARD_REG_SET (c1->hard_conflicts, c2->hard_conflicts);
+  c1->hard_conflicts |= c2->hard_conflicts;
   bitmap_ior_into (&c1->conflicts, &c2->conflicts);
 
-  c1->need_caller_save_reg |= c2->need_caller_save_reg;
+  c1->call_clobber_mask |= c2->call_clobber_mask;
+  c1->call_abis |= c2->call_abis;
   c1->cannot_rename |= c2->cannot_rename;
 }
 
@@ -689,7 +694,7 @@ merge_chains (du_head_p c1, du_head_p c2)
 void
 regrename_analyze (bitmap bb_mask)
 {
-  struct bb_rename_info *rename_info;
+  class bb_rename_info *rename_info;
   int i;
   basic_block bb;
   int n_bbs;
@@ -699,11 +704,11 @@ regrename_analyze (bitmap bb_mask)
   n_bbs = pre_and_rev_post_order_compute (NULL, inverse_postorder, false);
 
   /* Gather some information about the blocks in this function.  */
-  rename_info = XCNEWVEC (struct bb_rename_info, n_basic_blocks_for_fn (cfun));
+  rename_info = XCNEWVEC (class bb_rename_info, n_basic_blocks_for_fn (cfun));
   i = 0;
   FOR_EACH_BB_FN (bb, cfun)
     {
-      struct bb_rename_info *ri = rename_info + i;
+      class bb_rename_info *ri = rename_info + i;
       ri->bb = bb;
       if (bb_mask != NULL && !bitmap_bit_p (bb_mask, bb->index))
 	bb->aux = NULL;
@@ -724,13 +729,13 @@ regrename_analyze (bitmap bb_mask)
   for (i = 0; i < n_bbs; i++)
     {
       basic_block bb1 = BASIC_BLOCK_FOR_FN (cfun, inverse_postorder[i]);
-      struct bb_rename_info *this_info;
+      class bb_rename_info *this_info;
       bool success;
       edge e;
       edge_iterator ei;
       int old_length = id_to_chain.length ();
 
-      this_info = (struct bb_rename_info *) bb1->aux;
+      this_info = (class bb_rename_info *) bb1->aux;
       if (this_info == NULL)
 	continue;
 
@@ -770,15 +775,15 @@ regrename_analyze (bitmap bb_mask)
 	 will be used to pre-open chains when processing the successors.  */
       FOR_EACH_EDGE (e, ei, bb1->succs)
 	{
-	  struct bb_rename_info *dest_ri;
-	  struct du_head *chain;
+	  class bb_rename_info *dest_ri;
+	  class du_head *chain;
 
 	  if (dump_file)
 	    fprintf (dump_file, "successor block %d\n", e->dest->index);
 
 	  if (e->flags & (EDGE_EH | EDGE_ABNORMAL))
 	    continue;
-	  dest_ri = (struct bb_rename_info *)e->dest->aux;
+	  dest_ri = (class bb_rename_info *)e->dest->aux;
 	  if (dest_ri == NULL)
 	    continue;
 	  for (chain = open_chains; chain; chain = chain->next_chain)
@@ -807,7 +812,7 @@ regrename_analyze (bitmap bb_mask)
      edges).  */
   FOR_EACH_BB_FN (bb, cfun)
     {
-      struct bb_rename_info *bb_ri = (struct bb_rename_info *) bb->aux;
+      class bb_rename_info *bb_ri = (class bb_rename_info *) bb->aux;
       unsigned j;
       bitmap_iterator bi;
 
@@ -821,12 +826,12 @@ regrename_analyze (bitmap bb_mask)
 	{
 	  edge e;
 	  edge_iterator ei;
-	  struct du_head *chain = regrename_chain_from_id (j);
+	  class du_head *chain = regrename_chain_from_id (j);
 	  int n_preds_used = 0, n_preds_joined = 0;
 
 	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    {
-	      struct bb_rename_info *src_ri;
+	      class bb_rename_info *src_ri;
 	      unsigned k;
 	      bitmap_iterator bi2;
 	      HARD_REG_SET live;
@@ -841,14 +846,14 @@ regrename_analyze (bitmap bb_mask)
 	      if (e->flags & (EDGE_EH | EDGE_ABNORMAL))
 		continue;
 
-	      src_ri = (struct bb_rename_info *)e->src->aux;
+	      src_ri = (class bb_rename_info *)e->src->aux;
 	      if (src_ri == NULL)
 		continue;
 
 	      EXECUTE_IF_SET_IN_BITMAP (&src_ri->open_chains_set,
 					0, k, bi2)
 		{
-		  struct du_head *outgoing_chain = regrename_chain_from_id (k);
+		  class du_head *outgoing_chain = regrename_chain_from_id (k);
 
 		  if (outgoing_chain->regno == chain->regno
 		      && outgoing_chain->nregs == chain->nregs)
@@ -872,7 +877,7 @@ regrename_analyze (bitmap bb_mask)
     }
   FOR_EACH_BB_FN (bb, cfun)
     {
-      struct bb_rename_info *bb_ri = (struct bb_rename_info *) bb->aux;
+      class bb_rename_info *bb_ri = (class bb_rename_info *) bb->aux;
       unsigned j;
       bitmap_iterator bi;
 
@@ -886,13 +891,13 @@ regrename_analyze (bitmap bb_mask)
 	{
 	  edge e;
 	  edge_iterator ei;
-	  struct du_head *chain = regrename_chain_from_id (j);
+	  class du_head *chain = regrename_chain_from_id (j);
 	  int n_succs_used = 0, n_succs_joined = 0;
 
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    {
 	      bool printed = false;
-	      struct bb_rename_info *dest_ri;
+	      class bb_rename_info *dest_ri;
 	      unsigned k;
 	      bitmap_iterator bi2;
 	      HARD_REG_SET live;
@@ -904,14 +909,14 @@ regrename_analyze (bitmap bb_mask)
 	      
 	      n_succs_used++;
 
-	      dest_ri = (struct bb_rename_info *)e->dest->aux;
+	      dest_ri = (class bb_rename_info *)e->dest->aux;
 	      if (dest_ri == NULL)
 		continue;
 
 	      EXECUTE_IF_SET_IN_BITMAP (&dest_ri->incoming_open_chains_set,
 					0, k, bi2)
 		{
-		  struct du_head *incoming_chain = regrename_chain_from_id (k);
+		  class du_head *incoming_chain = regrename_chain_from_id (k);
 
 		  if (incoming_chain->regno == chain->regno
 		      && incoming_chain->nregs == chain->nregs)
@@ -958,7 +963,7 @@ regrename_analyze (bitmap bb_mask)
    numbering in its subpatterns.  */
 
 bool
-regrename_do_replace (struct du_head *head, int reg)
+regrename_do_replace (class du_head *head, int reg)
 {
   struct du_chain *chain;
   unsigned int base_regno = head->regno;
@@ -968,7 +973,7 @@ regrename_do_replace (struct du_head *head, int reg)
   for (chain = head->first; chain; chain = chain->next_use)
     {
       unsigned int regno = ORIGINAL_REGNO (*chain->loc);
-      struct reg_attrs *attr = REG_ATTRS (*chain->loc);
+      class reg_attrs *attr = REG_ATTRS (*chain->loc);
       int reg_ptr = REG_POINTER (*chain->loc);
 
       if (DEBUG_INSN_P (chain->insn) && REGNO (*chain->loc) != base_regno)
@@ -1052,7 +1057,7 @@ static void
 note_sets_clobbers (rtx x, const_rtx set, void *data)
 {
   enum rtx_code code = *(enum rtx_code *)data;
-  struct du_head *chain;
+  class du_head *chain;
 
   if (GET_CODE (x) == SUBREG)
     x = SUBREG_REG (x);
@@ -1069,7 +1074,7 @@ static void
 scan_rtx_reg (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions action,
 	      enum op_type type)
 {
-  struct du_head **p;
+  class du_head **p;
   rtx x = *loc;
   unsigned this_regno = REGNO (x);
   int this_nregs = REG_NREGS (x);
@@ -1115,8 +1120,8 @@ scan_rtx_reg (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions act
 
   for (p = &open_chains; *p;)
     {
-      struct du_head *head = *p;
-      struct du_head *next = head->next_chain;
+      class du_head *head = *p;
+      class du_head *next = head->next_chain;
       int exact_match = (head->regno == this_regno
 			 && head->nregs == this_nregs);
       int superset = (this_regno <= head->regno
@@ -1426,10 +1431,9 @@ scan_rtx (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions action,
 {
   const char *fmt;
   rtx x = *loc;
-  enum rtx_code code = GET_CODE (x);
   int i, j;
 
-  code = GET_CODE (x);
+  enum rtx_code code = GET_CODE (x);
   switch (code)
     {
     case CONST:
@@ -1513,7 +1517,7 @@ scan_rtx (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions action,
 }
 
 /* Hide operands of the current insn (of which there are N_OPS) by
-   substituting cc0 for them.
+   substituting pc for them.
    Previous values are stored in the OLD_OPERANDS and OLD_DUPS.
    For every bit set in DO_NOT_HIDE, we leave the operand alone.
    If INOUT_AND_EC_ONLY is set, we only do this for OP_INOUT type operands
@@ -1537,7 +1541,7 @@ hide_operands (int n_ops, rtx *old_operands, rtx *old_dups,
 	continue;
       if (!inout_and_ec_only || recog_data.operand_type[i] == OP_INOUT
 	  || op_alt[i].earlyclobber)
-	*recog_data.operand_loc[i] = cc0_rtx;
+	*recog_data.operand_loc[i] = pc_rtx;
     }
   for (i = 0; i < recog_data.n_dups; i++)
     {
@@ -1547,7 +1551,7 @@ hide_operands (int n_ops, rtx *old_operands, rtx *old_dups,
 	continue;
       if (!inout_and_ec_only || recog_data.operand_type[opn] == OP_INOUT
 	  || op_alt[opn].earlyclobber)
-	*recog_data.dup_loc[i] = cc0_rtx;
+	*recog_data.dup_loc[i] = pc_rtx;
     }
 }
 
@@ -1588,7 +1592,7 @@ record_out_operands (rtx_insn *insn, bool earlyclobber, insn_rr_info *insn_info)
       rtx op = *loc;
       enum reg_class cl = alternative_class (op_alt, opn);
 
-      struct du_head *prev_open;
+      class du_head *prev_open;
 
       if (recog_data.operand_type[opn] != OP_OUT
 	  || op_alt[opn].earlyclobber != earlyclobber)
@@ -1741,7 +1745,7 @@ build_def_use (basic_block bb)
 	     outside an operand, as live.  */
 	  hide_operands (n_ops, old_operands, old_dups, untracked_operands,
 			 false);
-	  note_stores (PATTERN (insn), note_sets_clobbers, &clobber_code);
+	  note_stores (insn, note_sets_clobbers, &clobber_code);
 	  restore_operands (insn, n_ops, old_operands, old_dups);
 
 	  /* Step 1b: Begin new chains for earlyclobbered writes inside
@@ -1750,7 +1754,7 @@ build_def_use (basic_block bb)
 
 	  /* Step 2: Mark chains for which we have reads outside operands
 	     as unrenamable.
-	     We do this by munging all operands into CC0, and closing
+	     We do this by munging all operands into PC, and closing
 	     everything remaining.  */
 
 	  hide_operands (n_ops, old_operands, old_dups, untracked_operands,
@@ -1835,9 +1839,15 @@ build_def_use (basic_block bb)
 	     requires a caller-saved reg.  */
 	  if (CALL_P (insn))
 	    {
-	      struct du_head *p;
+	      function_abi callee_abi = insn_callee_abi (insn);
+	      class du_head *p;
 	      for (p = open_chains; p; p = p->next_chain)
-		p->need_caller_save_reg = 1;
+		{
+		  p->call_abis |= (1 << callee_abi.id ());
+		  p->call_clobber_mask
+		    |= callee_abi.full_and_partial_reg_clobbers ();
+		  p->hard_conflicts |= callee_abi.full_reg_clobbers ();
+		}
 	    }
 
 	  /* Step 5: Close open chains that overlap writes.  Similar to
@@ -1857,7 +1867,7 @@ build_def_use (basic_block bb)
 	     outside an operand, as live.  */
 	  hide_operands (n_ops, old_operands, old_dups, untracked_operands,
 			 false);
-	  note_stores (PATTERN (insn), note_sets_clobbers, &set_code);
+	  note_stores (insn, note_sets_clobbers, &set_code);
 	  restore_operands (insn, n_ops, old_operands, old_dups);
 
 	  /* Step 6b: Begin new chains for writes inside operands.  */

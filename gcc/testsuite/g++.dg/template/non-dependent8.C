@@ -17,5 +17,6 @@ struct X
 template <class T>
 struct Foo
 {
-  X<&S::i> x;	// { dg-error "convert|no type" }
+  X<&S::i> x;	// { dg-error "5:could not convert" "" { target c++17 } }
+  // { dg-error "could not convert" "" { target c++14_down } .-1 }
 };

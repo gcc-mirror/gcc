@@ -1,4 +1,4 @@
-/* { dg-skip-if "too big" { avr-*-* nvptx-*-* pdp11-*-* } } */
+/* { dg-skip-if "too big" { nvptx-*-* } } */
 /* PR middle-end/46534 */
 
 extern int printf (const char *, ...);
@@ -14,5 +14,5 @@ extern int printf (const char *, ...);
 void
 foo (void)
 {
-  printf (S7 "\n");
+  printf (S7 "\n");  /* { dg-error "size of string literal is too large" "" { target { ! size32plus } } } */
 }

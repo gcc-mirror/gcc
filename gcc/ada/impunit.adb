@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2000-2018, Free Software Foundation, Inc.        --
+--           Copyright (C) 2000-2019, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,8 +32,8 @@ with Namet;    use Namet;
 with Opt;      use Opt;
 with Uname;    use Uname;
 
---  Note: this package body is used by GPS and GNATBench to supply a list of
---  entries for help on available library routines.
+--  Note: this package body is used by GNAT Studio and GNATBench to supply a
+--  list of entries for help on available library routines.
 
 package body Impunit is
 
@@ -241,6 +241,7 @@ package body Impunit is
     ("g-binenv", F),  -- GNAT.Bind_Environment
     ("g-boubuf", F),  -- GNAT.Bounded_Buffers
     ("g-boumai", F),  -- GNAT.Bounded_Mailboxes
+    ("g-brapre", F),  -- GNAT.Branch_Prediction
     ("g-bubsor", F),  -- GNAT.Bubble_Sort
     ("g-busora", F),  -- GNAT.Bubble_Sort_A
     ("g-busorg", F),  -- GNAT.Bubble_Sort_G
@@ -275,12 +276,14 @@ package body Impunit is
     ("g-exptty", F),  -- GNAT.Expect.TTY
     ("g-flocon", F),  -- GNAT.Float_Control
     ("g-forstr", F),  -- GNAT.Formatted_String
+    ("g-graphs", F),  -- GNAT.Graphs
     ("g-heasor", F),  -- GNAT.Heap_Sort
     ("g-hesora", F),  -- GNAT.Heap_Sort_A
     ("g-hesorg", F),  -- GNAT.Heap_Sort_G
     ("g-htable", F),  -- GNAT.Htable
     ("g-io    ", F),  -- GNAT.IO
     ("g-io_aux", F),  -- GNAT.IO_Aux
+    ("g-lists ", F),  -- GNAT.Lists
     ("g-locfil", F),  -- GNAT.Lock_Files
     ("g-mbdira", F),  -- GNAT.MBBS_Discrete_Random
     ("g-mbflra", F),  -- GNAT.MBBS_Float_Random
@@ -297,6 +300,7 @@ package body Impunit is
     ("g-semaph", F),  -- GNAT.Semaphores
     ("g-sercom", F),  -- GNAT.Serial_Communications
     ("g-sestin", F),  -- GNAT.Secondary_Stack_Info
+    ("g-sets  ", F),  -- GNAT.Sets
     ("g-sha1  ", F),  -- GNAT.SHA1
     ("g-sha224", F),  -- GNAT.SHA224
     ("g-sha256", F),  -- GNAT.SHA256
@@ -372,10 +376,18 @@ package body Impunit is
     ("s-addima", F),  -- System.Address_Image
     ("s-atocou", F),  -- System.Atomic_Counters
     ("s-assert", F),  -- System.Assertions
+    ("s-dfmkio", F),  -- System.Dim.Float_Mks_IO
+    ("s-dfmopr", F),  -- System.Dim.Float_Mks.Other_Prefixes
+    ("s-dgmgop", F),  -- System.Dim.Generic_Mks.Generic_Other_Prefixes
+    ("s-dlmopr", F),  -- System.Dim.Long_Mks.Other_Prefixes
     ("s-diflio", F),  -- System.Dim.Float_IO
+    ("s-diflmk", F),  -- System.Dim.Float_Mks
+    ("s-digemk", F),  -- System.Dim.Generic_Mks
     ("s-diinio", F),  -- System.Dim.Integer_IO
+    ("s-dilomk", F),  -- System.Dim.Long_Mks
     ("s-dimkio", F),  -- System.Dim.Mks_IO
     ("s-dimmks", F),  -- System.Dim.Mks
+    ("s-dlmkio", F),  -- System.Dim.Long_Mks_IO
     ("s-dmotpr", F),  -- System.Dim.Mks.Other_Prefixes
     ("s-memory", F),  -- System.Memory
     ("s-parint", F),  -- System.Partition_Interface
@@ -680,19 +692,10 @@ package body Impunit is
          return Not_Predefined_Unit;
       end if;
 
-      --  To be considered predefined, the file name must end in .ads or .adb.
-      --  File names with other extensions (coming from the use of non-standard
-      --  file naming schemes) can never be predefined.
+      --  Not predefined if file name does not end in .ads. This can happen
+      --  when non-standard file names are being used.
 
-      --  Note that in the context of a compiler, the .adb case will never
-      --  arise. However it can arise for other tools, e.g. gnatprove uses
-      --  this routine to detect when a construct comes from an instance of
-      --  a generic defined in a predefined unit.
-
-      if File (File'Last - 3 .. File'Last) /= ".ads"
-           and then
-         File (File'Last - 3 .. File'Last) /= ".adb"
-      then
+      if Name_Buffer (Name_Len - 3 .. Name_Len) /= ".ads" then
          return Not_Predefined_Unit;
       end if;
 

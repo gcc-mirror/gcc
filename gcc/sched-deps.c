@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.  This file computes dependencies between
    instructions.
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -36,8 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "cfgbuild.h"
 #include "sched-int.h"
-#include "params.h"
 #include "cselib.h"
+#include "function-abi.h"
 
 #ifdef INSN_SCHEDULING
 
@@ -461,11 +461,11 @@ static HARD_REG_SET implicit_reg_pending_uses;
    has enough entries to represent a dependency on any other insn in
    the insn chain.  All bitmap for true dependencies cache is
    allocated then the rest two ones are also allocated.  */
-static bitmap_head *true_dependency_cache = NULL;
-static bitmap_head *output_dependency_cache = NULL;
-static bitmap_head *anti_dependency_cache = NULL;
-static bitmap_head *control_dependency_cache = NULL;
-static bitmap_head *spec_dependency_cache = NULL;
+static bitmap true_dependency_cache = NULL;
+static bitmap output_dependency_cache = NULL;
+static bitmap anti_dependency_cache = NULL;
+static bitmap control_dependency_cache = NULL;
+static bitmap spec_dependency_cache = NULL;
 static int cache_size;
 
 /* True if we should mark added dependencies as a non-register deps.  */
@@ -475,16 +475,16 @@ static int deps_may_trap_p (const_rtx);
 static void add_dependence_1 (rtx_insn *, rtx_insn *, enum reg_note);
 static void add_dependence_list (rtx_insn *, rtx_insn_list *, int,
 				 enum reg_note, bool);
-static void add_dependence_list_and_free (struct deps_desc *, rtx_insn *,
+static void add_dependence_list_and_free (class deps_desc *, rtx_insn *,
 					  rtx_insn_list **, int, enum reg_note,
 					  bool);
 static void delete_all_dependences (rtx_insn *);
 static void chain_to_prev_insn (rtx_insn *);
 
-static void flush_pending_lists (struct deps_desc *, rtx_insn *, int, int);
-static void sched_analyze_1 (struct deps_desc *, rtx, rtx_insn *);
-static void sched_analyze_2 (struct deps_desc *, rtx, rtx_insn *);
-static void sched_analyze_insn (struct deps_desc *, rtx, rtx_insn *);
+static void flush_pending_lists (class deps_desc *, rtx_insn *, int, int);
+static void sched_analyze_1 (class deps_desc *, rtx, rtx_insn *);
+static void sched_analyze_2 (class deps_desc *, rtx, rtx_insn *);
+static void sched_analyze_insn (class deps_desc *, rtx, rtx_insn *);
 
 static bool sched_has_condition_p (const rtx_insn *);
 static int conditions_mutex_p (const_rtx, const_rtx, bool, bool);
@@ -1574,7 +1574,7 @@ add_dependence_list (rtx_insn *insn, rtx_insn_list *list, int uncond,
    newly created dependencies.  */
 
 static void
-add_dependence_list_and_free (struct deps_desc *deps, rtx_insn *insn,
+add_dependence_list_and_free (class deps_desc *deps, rtx_insn *insn,
 			      rtx_insn_list **listp,
                               int uncond, enum reg_note dep_type, bool hard)
 {
@@ -1708,7 +1708,7 @@ chain_to_prev_insn (rtx_insn *insn)
    so that we can do memory aliasing on it.  */
 
 static void
-add_insn_mem_dependence (struct deps_desc *deps, bool read_p,
+add_insn_mem_dependence (class deps_desc *deps, bool read_p,
 			 rtx_insn *insn, rtx mem)
 {
   rtx_insn_list **insn_list;
@@ -1749,7 +1749,7 @@ add_insn_mem_dependence (struct deps_desc *deps, bool read_p,
    dependencies for a read operation, similarly with FOR_WRITE.  */
 
 static void
-flush_pending_lists (struct deps_desc *deps, rtx_insn *insn, int for_read,
+flush_pending_lists (class deps_desc *deps, rtx_insn *insn, int for_read,
 		     int for_write)
 {
   if (for_write)
@@ -1953,7 +1953,7 @@ create_insn_reg_set (int regno, rtx insn)
 
 /* Set up insn register uses for INSN and dependency context DEPS.  */
 static void
-setup_insn_reg_uses (struct deps_desc *deps, rtx_insn *insn)
+setup_insn_reg_uses (class deps_desc *deps, rtx_insn *insn)
 {
   unsigned i;
   reg_set_iterator rsi;
@@ -2203,9 +2203,9 @@ init_insn_reg_pressure_info (rtx_insn *insn)
       reg_pressure_info[cl].change = 0;
     }
 
-  note_stores (PATTERN (insn), mark_insn_reg_clobber, insn);
+  note_stores (insn, mark_insn_reg_clobber, insn);
 
-  note_stores (PATTERN (insn), mark_insn_reg_store, insn);
+  note_stores (insn, mark_insn_reg_store, insn);
 
   if (AUTO_INC_DEC)
     for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
@@ -2245,7 +2245,7 @@ static bool can_start_lhs_rhs_p;
 /* Extend reg info for the deps context DEPS given that
    we have just generated a register numbered REGNO.  */
 static void
-extend_deps_reg_info (struct deps_desc *deps, int regno)
+extend_deps_reg_info (class deps_desc *deps, int regno)
 {
   int max_regno = regno + 1;
 
@@ -2294,7 +2294,7 @@ maybe_extend_reg_info_p (void)
    CLOBBER, PRE_DEC, POST_DEC, PRE_INC, POST_INC or USE.  */
 
 static void
-sched_analyze_reg (struct deps_desc *deps, int regno, machine_mode mode,
+sched_analyze_reg (class deps_desc *deps, int regno, machine_mode mode,
 		   enum rtx_code ref, rtx_insn *insn)
 {
   /* We could emit new pseudos in renaming.  Extend the reg structures.  */
@@ -2373,7 +2373,7 @@ sched_analyze_reg (struct deps_desc *deps, int regno, machine_mode mode,
    destination of X, and reads of everything mentioned.  */
 
 static void
-sched_analyze_1 (struct deps_desc *deps, rtx x, rtx_insn *insn)
+sched_analyze_1 (class deps_desc *deps, rtx x, rtx_insn *insn)
 {
   rtx dest = XEXP (x, 0);
   enum rtx_code code = GET_CODE (x);
@@ -2479,7 +2479,7 @@ sched_analyze_1 (struct deps_desc *deps, rtx x, rtx_insn *insn)
       /* Pending lists can't get larger with a readonly context.  */
       if (!deps->readonly
           && ((deps->pending_read_list_length + deps->pending_write_list_length)
-              >= MAX_PENDING_LIST_LENGTH))
+	      >= param_max_pending_list_length))
 	{
 	  /* Flush all pending reads and writes to prevent the pending lists
 	     from getting any larger.  Insn scheduling runs too slowly when
@@ -2547,7 +2547,7 @@ sched_analyze_1 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 
 /* Analyze the uses of memory and registers in rtx X in INSN.  */
 static void
-sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
+sched_analyze_2 (class deps_desc *deps, rtx x, rtx_insn *insn)
 {
   int i;
   int j;
@@ -2696,7 +2696,7 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	  {
 	    if ((deps->pending_read_list_length
 		 + deps->pending_write_list_length)
-		>= MAX_PENDING_LIST_LENGTH
+		>= param_max_pending_list_length
 		&& !DEBUG_INSN_P (insn))
 	      flush_pending_lists (deps, insn, true, true);
 	    add_insn_mem_dependence (deps, true, insn, x);
@@ -2761,7 +2761,7 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	  reg_pending_barrier = TRUE_BARRIER;
 
 	/* For all ASM_OPERANDS, we must traverse the vector of input operands.
-	   We can not just fall through here since then we would be confused
+	   We cannot just fall through here since then we would be confused
 	   by the ASM_INPUT rtx inside ASM_OPERANDS, which do not indicate
 	   traditional asms unlike their normal usage.  */
 
@@ -2848,14 +2848,16 @@ sched_macro_fuse_insns (rtx_insn *insn)
     {
       unsigned int condreg1, condreg2;
       rtx cc_reg_1;
-      targetm.fixed_condition_code_regs (&condreg1, &condreg2);
-      cc_reg_1 = gen_rtx_REG (CCmode, condreg1);
-      if (reg_referenced_p (cc_reg_1, PATTERN (insn))
-	  && modified_in_p (cc_reg_1, prev))
+      if (targetm.fixed_condition_code_regs (&condreg1, &condreg2))
 	{
-	  if (targetm.sched.macro_fusion_pair_p (prev, insn))
-	    SCHED_GROUP_P (insn) = 1;
-	  return;
+	  cc_reg_1 = gen_rtx_REG (CCmode, condreg1);
+	  if (reg_referenced_p (cc_reg_1, PATTERN (insn))
+	      && modified_in_p (cc_reg_1, prev))
+	    {
+	      if (targetm.sched.macro_fusion_pair_p (prev, insn))
+		SCHED_GROUP_P (insn) = 1;
+	      return;
+	    }
 	}
     }
 
@@ -2874,12 +2876,12 @@ get_implicit_reg_pending_clobbers (HARD_REG_SET *temp, rtx_insn *insn)
   preprocess_constraints (insn);
   alternative_mask preferred = get_preferred_alternatives (insn);
   ira_implicitly_set_insn_hard_regs (temp, preferred);
-  AND_COMPL_HARD_REG_SET (*temp, ira_no_alloc_regs);
+  *temp &= ~ira_no_alloc_regs;
 }
 
 /* Analyze an INSN with pattern X to find all dependencies.  */
 static void
-sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
+sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
 {
   RTX_CODE code = GET_CODE (x);
   rtx link;
@@ -2890,7 +2892,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
     {
       HARD_REG_SET temp;
       get_implicit_reg_pending_clobbers (&temp, insn);
-      IOR_HARD_REG_SET (implicit_reg_pending_clobbers, temp);
+      implicit_reg_pending_clobbers |= temp;
     }
 
   can_start_lhs_rhs_p = (NONJUMP_INSN_P (insn)
@@ -2962,7 +2964,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	      sub = COND_EXEC_CODE (sub);
 	      code = GET_CODE (sub);
 	    }
-	  if (code == SET || code == CLOBBER)
+	  else if (code == SET || code == CLOBBER)
 	    sched_analyze_1 (deps, sub, insn);
 	  else
 	    sched_analyze_2 (deps, sub, insn);
@@ -2992,6 +2994,11 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
   if (JUMP_P (insn))
     {
       rtx_insn *next = next_nonnote_nondebug_insn (insn);
+      /* ??? For tablejumps, the barrier may appear not immediately after
+         the jump, but after a label and a jump_table_data insn.  */
+      if (next && LABEL_P (next) && NEXT_INSN (next)
+	  && JUMP_TABLE_DATA_P (NEXT_INSN (next)))
+	next = NEXT_INSN (NEXT_INSN (next));
       if (next && BARRIER_P (next))
 	reg_pending_barrier = MOVE_BARRIER;
       else
@@ -3214,8 +3221,8 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_clobbers, 0, i, rsi)
 	    {
 	      struct deps_reg *reg_last = &deps->reg_last[i];
-	      if (reg_last->uses_length >= MAX_PENDING_LIST_LENGTH
-		  || reg_last->clobbers_length >= MAX_PENDING_LIST_LENGTH)
+	      if (reg_last->uses_length >= param_max_pending_list_length
+		  || reg_last->clobbers_length >= param_max_pending_list_length)
 		{
 		  add_dependence_list_and_free (deps, insn, &reg_last->sets, 0,
 						REG_DEP_OUTPUT, false);
@@ -3312,10 +3319,9 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
       IOR_REG_SET (&deps->reg_last_in_use, reg_pending_uses);
       IOR_REG_SET (&deps->reg_last_in_use, reg_pending_clobbers);
       IOR_REG_SET (&deps->reg_last_in_use, reg_pending_sets);
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (TEST_HARD_REG_BIT (implicit_reg_pending_uses, i)
-	    || TEST_HARD_REG_BIT (implicit_reg_pending_clobbers, i))
-	  SET_REGNO_REG_SET (&deps->reg_last_in_use, i);
+      IOR_REG_SET_HRS (&deps->reg_last_in_use,
+		       implicit_reg_pending_uses
+		       | implicit_reg_pending_clobbers);
 
       /* Set up the pending barrier found.  */
       deps->last_reg_pending_barrier = reg_pending_barrier;
@@ -3628,7 +3634,7 @@ chain_to_prev_insn_p (rtx_insn *insn)
 
 /* Analyze INSN with DEPS as a context.  */
 void
-deps_analyze_insn (struct deps_desc *deps, rtx_insn *insn)
+deps_analyze_insn (class deps_desc *deps, rtx_insn *insn)
 {
   if (sched_deps_info->start_insn)
     sched_deps_info->start_insn (insn);
@@ -3672,8 +3678,8 @@ deps_analyze_insn (struct deps_desc *deps, rtx_insn *insn)
                && sel_insn_is_speculation_check (insn)))
         {
           /* Keep the list a reasonable size.  */
-          if (deps->pending_flush_length++ >= MAX_PENDING_LIST_LENGTH)
-            flush_pending_lists (deps, insn, true, true);
+	  if (deps->pending_flush_length++ >= param_max_pending_list_length)
+	    flush_pending_lists (deps, insn, true, true);
           else
 	    deps->pending_jump_insns
               = alloc_INSN_LIST (insn, deps->pending_jump_insns);
@@ -3704,6 +3710,7 @@ deps_analyze_insn (struct deps_desc *deps, rtx_insn *insn)
         }
       else
         {
+	  function_abi callee_abi = insn_callee_abi (insn);
           for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
             /* A call may read and modify global register variables.  */
             if (global_regs[i])
@@ -3715,9 +3722,7 @@ deps_analyze_insn (struct deps_desc *deps, rtx_insn *insn)
              Since we only have a choice between 'might be clobbered'
              and 'definitely not clobbered', we must include all
              partly call-clobbered registers here.  */
-	    else if (targetm.hard_regno_call_part_clobbered (i,
-							     reg_raw_mode[i])
-                     || TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
+	    else if (callee_abi.clobbers_at_least_part_of_reg_p (i))
               SET_REGNO_REG_SET (reg_pending_clobbers, i);
           /* We don't know what set of fixed registers might be used
              by the function, but it is certain that the stack pointer
@@ -3795,7 +3800,7 @@ deps_analyze_insn (struct deps_desc *deps, rtx_insn *insn)
 
 /* Initialize DEPS for the new block beginning with HEAD.  */
 void
-deps_start_bb (struct deps_desc *deps, rtx_insn *head)
+deps_start_bb (class deps_desc *deps, rtx_insn *head)
 {
   gcc_assert (!deps->readonly);
 
@@ -3814,7 +3819,7 @@ deps_start_bb (struct deps_desc *deps, rtx_insn *head)
 /* Analyze every insn between HEAD and TAIL inclusive, creating backward
    dependencies for each insn.  */
 void
-sched_analyze (struct deps_desc *deps, rtx_insn *head, rtx_insn *tail)
+sched_analyze (class deps_desc *deps, rtx_insn *head, rtx_insn *tail)
 {
   rtx_insn *insn;
 
@@ -3908,10 +3913,10 @@ sched_free_deps (rtx_insn *head, rtx_insn *tail, bool resolved_p)
 
 /* Initialize variables for region data dependence analysis.
    When LAZY_REG_LAST is true, do not allocate reg_last array
-   of struct deps_desc immediately.  */
+   of class deps_desc immediately.  */
 
 void
-init_deps (struct deps_desc *deps, bool lazy_reg_last)
+init_deps (class deps_desc *deps, bool lazy_reg_last)
 {
   int max_reg = (reload_completed ? FIRST_PSEUDO_REGISTER : max_reg_num ());
 
@@ -3948,7 +3953,7 @@ init_deps (struct deps_desc *deps, bool lazy_reg_last)
 /* Init only reg_last field of DEPS, which was not allocated before as
    we inited DEPS lazily.  */
 void
-init_deps_reg_last (struct deps_desc *deps)
+init_deps_reg_last (class deps_desc *deps)
 {
   gcc_assert (deps && deps->max_reg > 0);
   gcc_assert (deps->reg_last == NULL);
@@ -3960,7 +3965,7 @@ init_deps_reg_last (struct deps_desc *deps)
 /* Free insn lists found in DEPS.  */
 
 void
-free_deps (struct deps_desc *deps)
+free_deps (class deps_desc *deps)
 {
   unsigned i;
   reg_set_iterator rsi;
@@ -4008,7 +4013,7 @@ free_deps (struct deps_desc *deps)
 
 /* Remove INSN from dependence contexts DEPS.  */
 void
-remove_from_deps (struct deps_desc *deps, rtx_insn *insn)
+remove_from_deps (class deps_desc *deps, rtx_insn *insn)
 {
   int removed;
   unsigned i;
@@ -4589,7 +4594,7 @@ check_dep (dep_t dep, bool relaxed_p)
 		&& (ds & DEP_CONTROL)
 		&& !(ds & (DEP_OUTPUT | DEP_ANTI | DEP_TRUE)));
 
-  /* HARD_DEP can not appear in dep_status of a link.  */
+  /* HARD_DEP cannot appear in dep_status of a link.  */
   gcc_assert (!(ds & HARD_DEP));
 
   /* Check that dependence status is set correctly when speculation is not

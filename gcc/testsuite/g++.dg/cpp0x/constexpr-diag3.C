@@ -24,7 +24,7 @@ private:
   double im;
 };
 
-constexpr complex co1(0, 1);	   // { dg-error "not literal" }
+constexpr complex co1(0, 1);	   // { dg-error "19:the type .const complex. of .constexpr. variable .co1. is not literal" }
 constexpr double dd2 = co1.real(); // { dg-error "|in .constexpr. expansion of " }
 
 // --------------------

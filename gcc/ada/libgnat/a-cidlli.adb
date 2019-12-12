@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -280,7 +280,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
            (Element => Position.Node.Element,
             Control => (Controlled with TC))
          do
-            Lock (TC.all);
+            Busy (TC.all);
          end return;
       end;
    end Constant_Reference;
@@ -1263,7 +1263,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       TC : constant Tamper_Counts_Access := Container.TC'Unrestricted_Access;
    begin
       return R : constant Reference_Control_Type := (Controlled with TC) do
-         Lock (TC.all);
+         Busy (TC.all);
       end return;
    end Pseudo_Reference;
 
@@ -1405,7 +1405,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
            (Element => Position.Node.Element,
             Control => (Controlled with TC))
          do
-            Lock (TC.all);
+            Busy (TC.all);
          end return;
       end;
    end Reference;

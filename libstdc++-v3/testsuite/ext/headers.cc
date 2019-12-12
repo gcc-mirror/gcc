@@ -1,7 +1,7 @@
 // { dg-do compile }
 // 1999-06-23 bkoz 
 
-// Copyright (C) 1999-2018 Free Software Foundation, Inc.
+// Copyright (C) 1999-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,7 +24,6 @@
 // subdirectory that are meant to be directly included.
 
 #include <ext/algorithm>
-#include <ext/array_allocator.h>
 #include <ext/atomicity.h>
 #include <ext/bitmap_allocator.h>
 #if _GLIBCXX_HAVE_ICONV

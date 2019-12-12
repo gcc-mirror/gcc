@@ -12,7 +12,7 @@
     c = c + b - (7 + 2 * i)
     b = b + 2
   end do
-  if (c /= 0 .or. i /= 64 .or. b /= 7 + 64 * 2) STOP 1
+  if (c /= 0 .or. i /= 64 .or. b /= 7 + 64 * 2) stop 1
   i = 4
   j = 4
   b = 7
@@ -21,7 +21,7 @@
     c = c + b - (7 + i / 4 * 3)
     b = b + 3
   end do
-  if (c /= 0 .or. i /= 64 .or. b /= 7 + 16 * 3) STOP 2
+  if (c /= 0 .or. i /= 64 .or. b /= 7 + 16 * 3) stop 2
   i = 4
   j = 4
   b = 7
@@ -30,7 +30,7 @@
     c = c + b - (7 + 2 * i)
     b = b + 2
   end do
-  if (c /= 0 .or. i /= 64 .or. b /= 7 + 64 * 2) STOP 3
+  if (c /= 0 .or. i /= 64 .or. b /= 7 + 64 * 2) stop 3
   i = 4
   j = 4
   b = 7
@@ -39,7 +39,7 @@
     c = c + b - (7 + i / 4 * 3)
     b = b + 3
   end do
-  if (c /= 0 .or. i /= 64 .or. b /= 7 + 16 * 3) STOP 4
+  if (c /= 0 .or. i /= 64 .or. b /= 7 + 16 * 3) stop 4
   i = 4
   j = 4
   b = 7
@@ -50,7 +50,7 @@
       b = b + 2
     end do
   end do
-  if (c /= 0 .or. i /= 8 .or. j /= 8 .or. b /= 7 + 64 * 2) STOP 5
+  if (c /= 0 .or. i /= 8 .or. j /= 8 .or. b /= 7 + 64 * 2) stop 5
   i = 4
   j = 4
   b = 7
@@ -61,7 +61,7 @@
       b = b + 2
     end do
   end do
-  if (c /= 0 .or. i /= 8 .or. j /= 8 .or. b /= 7 + 64 * 2) STOP 6
+  if (c /= 0 .or. i /= 8 .or. j /= 8 .or. b /= 7 + 64 * 2) stop 6
   i = 4
   j = 4
   b = 7
@@ -70,7 +70,7 @@
     c = c + b - (7 + 2 * i)
     b = b + 2
   end do
-  if (c /= 0 .or. i /= 64 .or. b /= 7 + 64 * 2) STOP 7
+  if (c /= 0 .or. i /= 64 .or. b /= 7 + 64 * 2) stop 7
   i = 4
   j = 4
   b = 7
@@ -79,7 +79,7 @@
     c = c + b - (7 + i / 4 * 3)
     b = b + 3
   end do
-  if (c /= 0 .or. i /= 64 .or. b /= 7 + 16 * 3) STOP 8
+  if (c /= 0 .or. i /= 64 .or. b /= 7 + 16 * 3) stop 8
   i = 4
   j = 4
   b = 7
@@ -88,7 +88,7 @@
     c = c + b - (7 + 2 * i)
     b = b + 2
   end do
-  if (c /= 0 .or. i /= 64 .or. b /= 7 + 64 * 2) STOP 9
+  if (c /= 0 .or. i /= 64 .or. b /= 7 + 64 * 2) stop 9
   i = 4
   j = 4
   b = 7
@@ -97,7 +97,7 @@
     c = c + b - (7 + i / 4 * 3)
     b = b + 3
   end do
-  if (c /= 0 .or. i /= 64 .or. b /= 7 + 16 * 3) STOP 10
+  if (c /= 0 .or. i /= 64 .or. b /= 7 + 16 * 3) stop 10
   i = 4
   j = 4
   b = 7
@@ -108,7 +108,7 @@
       b = b + 2
     end do
   end do
-  if (c /= 0 .or. i /= 8 .or. j /= 8 .or. b /= 7 + 64 * 2) STOP 11
+  if (c /= 0 .or. i /= 8 .or. j /= 8 .or. b /= 7 + 64 * 2) stop 11
   i = 4
   j = 4
   b = 7
@@ -120,5 +120,5 @@
       b = b + 2
     end do
   end do
-  if (c /= 0 .or. i /= 8 .or. j /= 8 .or. b /= 7 + 64 * 2) STOP 12
+  if (c /= 0 .or. i /= 8 .or. j /= 8 .or. b /= 7 + 64 * 2) stop 12
 end

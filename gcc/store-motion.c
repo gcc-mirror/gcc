@@ -1,5 +1,5 @@
 /* Store motion via Lazy Code Motion on the reverse CFG.
-   Copyright (C) 1997-2018 Free Software Foundation, Inc.
+   Copyright (C) 1997-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -912,8 +912,7 @@ replace_store_insn (rtx reg, rtx_insn *del, basic_block bb,
   rtx_insn *insn;
   rtx mem, note, set;
 
-  mem = smexpr->pattern;
-  insn = gen_move_insn (reg, SET_SRC (single_set (del)));
+  insn = prepare_copy_insn (reg, SET_SRC (single_set (del)));
 
   unsigned int i;
   rtx_insn *temp;
@@ -946,6 +945,7 @@ replace_store_insn (rtx reg, rtx_insn *del, basic_block bb,
   /* Now we must handle REG_EQUAL notes whose contents is equal to the mem;
      they are no longer accurate provided that they are reached by this
      definition, so drop them.  */
+  mem = smexpr->pattern;
   for (; insn != NEXT_INSN (BB_END (bb)); insn = NEXT_INSN (insn))
     if (NONDEBUG_INSN_P (insn))
       {

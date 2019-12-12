@@ -69,7 +69,7 @@ using std::C3; using other::C3;
   long C3 (long) throw ();
 
 int main () {
-  malloc (0);
+  void *p = malloc (0);
   exit (0);
 
   _exit (0); // { dg-error "ambiguous" }

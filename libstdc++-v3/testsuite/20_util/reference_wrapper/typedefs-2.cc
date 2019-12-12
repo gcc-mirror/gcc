@@ -1,8 +1,9 @@
 // { dg-do compile { target c++11 } }
+// { dg-skip-if "argument_type removed for C++20" { c++2a } }
 
 // 2010-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
-// Copyright (C) 2010-2018 Free Software Foundation, Inc.
+// Copyright (C) 2010-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

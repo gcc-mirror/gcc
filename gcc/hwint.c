@@ -1,5 +1,5 @@
 /* Operations on HOST_WIDE_INT.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -60,12 +60,12 @@ floor_log2 (unsigned HOST_WIDE_INT x)
   return t;
 }
 
-/* Given X, an unsigned number, return the largest Y such that 2**Y >= X.  */
+/* Given X, an unsigned number, return the least Y such that 2**Y >= X.  */
 
 int
 ceil_log2 (unsigned HOST_WIDE_INT x)
 {
-  return floor_log2 (x - 1) + 1;
+  return x == 0 ? 0 : floor_log2 (x - 1) + 1;
 }
 
 /* Return the logarithm of X, base 2, considering X unsigned,

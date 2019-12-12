@@ -4,7 +4,7 @@
    targets, if a frame header is required, it is allocated by the callee.
 
 
-   Copyright (C) 2015-2018 Free Software Foundation, Inc.
+   Copyright (C) 2015-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,13 +29,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "context.h"
 #include "coretypes.h"
+#include "backend.h"
 #include "tree.h"
 #include "tree-core.h"
 #include "tree-pass.h"
 #include "target.h"
 #include "target-globals.h"
 #include "profile-count.h"
-#include "cfg.h"
 #include "cgraph.h"
 #include "function.h"
 #include "basic-block.h"

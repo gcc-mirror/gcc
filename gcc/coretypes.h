@@ -1,5 +1,5 @@
 /* GCC core type declarations.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -46,9 +46,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 typedef int64_t gcov_type;
 typedef uint64_t gcov_type_unsigned;
 
-struct bitmap_head;
-typedef struct bitmap_head *bitmap;
-typedef const struct bitmap_head *const_bitmap;
+struct bitmap_obstack;
+class bitmap_head;
+typedef class bitmap_head *bitmap;
+typedef const class bitmap_head *const_bitmap;
 struct simple_bitmap_def;
 typedef struct simple_bitmap_def *sbitmap;
 typedef const struct simple_bitmap_def *const_sbitmap;
@@ -64,7 +65,7 @@ template<typename> class opt_mode;
 typedef opt_mode<scalar_mode> opt_scalar_mode;
 typedef opt_mode<scalar_int_mode> opt_scalar_int_mode;
 typedef opt_mode<scalar_float_mode> opt_scalar_float_mode;
-template<typename> class pod_mode;
+template<typename> struct pod_mode;
 typedef pod_mode<scalar_mode> scalar_mode_pod;
 typedef pod_mode<scalar_int_mode> scalar_int_mode_pod;
 typedef pod_mode<fixed_size_mode> fixed_size_mode_pod;
@@ -72,19 +73,19 @@ typedef pod_mode<fixed_size_mode> fixed_size_mode_pod;
 /* Subclasses of rtx_def, using indentation to show the class
    hierarchy, along with the relevant invariant.
    Where possible, keep this list in the same order as in rtl.def.  */
-class rtx_def;
-  class rtx_expr_list;           /* GET_CODE (X) == EXPR_LIST */
-  class rtx_insn_list;           /* GET_CODE (X) == INSN_LIST */
-  class rtx_sequence;            /* GET_CODE (X) == SEQUENCE */
-  class rtx_insn;
-    class rtx_debug_insn;      /* DEBUG_INSN_P (X) */
-    class rtx_nonjump_insn;    /* NONJUMP_INSN_P (X) */
-    class rtx_jump_insn;       /* JUMP_P (X) */
-    class rtx_call_insn;       /* CALL_P (X) */
-    class rtx_jump_table_data; /* JUMP_TABLE_DATA_P (X) */
-    class rtx_barrier;         /* BARRIER_P (X) */
-    class rtx_code_label;      /* LABEL_P (X) */
-    class rtx_note;            /* NOTE_P (X) */
+struct rtx_def;
+  struct rtx_expr_list;           /* GET_CODE (X) == EXPR_LIST */
+  struct rtx_insn_list;           /* GET_CODE (X) == INSN_LIST */
+  struct rtx_sequence;            /* GET_CODE (X) == SEQUENCE */
+  struct rtx_insn;
+    struct rtx_debug_insn;      /* DEBUG_INSN_P (X) */
+    struct rtx_nonjump_insn;    /* NONJUMP_INSN_P (X) */
+    struct rtx_jump_insn;       /* JUMP_P (X) */
+    struct rtx_call_insn;       /* CALL_P (X) */
+    struct rtx_jump_table_data; /* JUMP_TABLE_DATA_P (X) */
+    struct rtx_barrier;         /* BARRIER_P (X) */
+    struct rtx_code_label;      /* LABEL_P (X) */
+    struct rtx_note;            /* NOTE_P (X) */
 
 struct rtvec_def;
 typedef struct rtvec_def *rtvec;
@@ -134,6 +135,14 @@ struct gomp_single;
 struct gomp_target;
 struct gomp_teams;
 
+/* Subclasses of symtab_node, using indentation to show the class
+   hierarchy.  */
+
+struct symtab_node;
+  struct cgraph_node;
+  struct varpool_node;
+struct cgraph_edge;
+
 union section;
 typedef union section section;
 struct gcc_options;
@@ -143,7 +152,15 @@ struct cl_option;
 struct cl_decoded_option;
 struct cl_option_handlers;
 struct diagnostic_context;
-struct pretty_printer;
+class pretty_printer;
+
+template<typename T> struct array_traits;
+
+/* Provides a read-only bitmap view of a single integer bitmask or an
+   array of integer bitmasks, or of a wrapper around such bitmasks.  */
+template<typename T, typename Traits = array_traits<T>,
+	 bool has_constant_size = Traits::has_constant_size>
+class bitmap_view;
 
 /* Address space number for named address space support.  */
 typedef unsigned char addr_space_t;
@@ -290,9 +307,9 @@ enum warn_strict_overflow_code
    set yet).  */
 typedef int alias_set_type;
 
-struct edge_def;
-typedef struct edge_def *edge;
-typedef const struct edge_def *const_edge;
+class edge_def;
+typedef class edge_def *edge;
+typedef const class edge_def *const_edge;
 struct basic_block_def;
 typedef struct basic_block_def *basic_block;
 typedef const struct basic_block_def *const_basic_block;
@@ -324,6 +341,15 @@ namespace gcc {
 }
 
 typedef std::pair <tree, tree> tree_pair;
+typedef std::pair <const char *, int> string_int_pair;
+
+/* Define a name->value mapping.  */
+template <typename ValueType>
+struct kv_pair
+{
+  const char *const name;	/* the name of the value */
+  const ValueType value;	/* the value of the name */
+};
 
 #else
 
@@ -353,7 +379,8 @@ enum function_class {
   function_c99_misc,
   function_c99_math_complex,
   function_sincos,
-  function_c11_misc
+  function_c11_misc,
+  function_c2x_misc
 };
 
 /* Enumerate visibility settings.  This is deliberately ordered from most

@@ -195,6 +195,33 @@ fix = {
 };
 
 /*
+ *  SDKs for 10.13 and 10.14 omit the definitions for API_AVAILABLE where
+ *  __attribute__((availability)) is not supported.
+ */
+fix = {
+    hackname  = darwin_api_availability;
+    mach      = "*-*-darwin*";
+    files     = os/availability.h;
+    bypass    = "__IPHONE_OS_VERSION_MIN_REQUIRED";
+    select    =
+    " *#define __API_AVAILABLE.*\n"
+    " *#define __API_DEPRECATED.*\n"
+    " *#define __API_DEPRECATED_WITH_REPLACEMENT.*\n"
+    " *#define __API_UNAVAILABLE.*\n";
+    c_fix     = format;
+    c_fix_arg =
+    "    #define API_AVAILABLE(...)\n"
+    "    #define API_DEPRECATED(...)\n"
+    "    #define API_DEPRECATED_WITH_REPLACEMENT(...)\n"
+    "    #define API_UNAVAILABLE(...)\n";
+    test_text =
+    "#define __API_AVAILABLE(...)\n"
+    "#define __API_DEPRECATED(...)\n"
+    "#define __API_DEPRECATED_WITH_REPLACEMENT(...)\n"
+    "#define __API_UNAVAILABLE(...)\n";
+};
+
+/*
  *  This fixes __FD_ZERO bug for linux 2.x.y (x <= 2 && y <= some n)
  */
 fix = {
@@ -426,7 +453,17 @@ fix = {
     replace     = <<- _EndOfHeader_
 	#ifndef _REGS_H
 	#define _REGS_H
+	/* regs.h depends on CPU_FAMILY being properly defined, which
+	   is done by vxCpu.h.  */
+	#include <types/vxCpu.h>
+	/* regs.h includes a CPU_FAMILY-specific header that requires
+	   vxTypesOld.h to already have been included.  Those headers
+	   contain proper _ASMLANGUAGE guards around their typedefs,
+	   but vxTypesOld.h itself does not. So we avoid including
+	   vxTypesOld.h from assembly.  */
+	#ifndef _ASMLANGUAGE
 	#include <types/vxTypesOld.h>
+	#endif
 	#include_next <arch/../regs.h>
 	#endif
 	_EndOfHeader_;
@@ -924,6 +961,20 @@ fix = {
 };
 
 /*
+ *  AIX unistd.h defines a static function with an empty parameter list.
+ */
+fix = {
+    hackname  = aix_unistd;
+    mach      = "*-*-aix*";
+    files     = unistd.h;
+
+    select    = "[ \t]+static[ \t]+int[ \t]+getdtablesize\\(\\)";
+    c_fix     = format;
+    c_fix_arg = "\tstatic int\t\tgetdtablesize(void)";
+    test_text = "	static int		getdtablesize()";
+};
+
+/*
  *  Fix __assert declaration in assert.h on Alpha OSF/1.
  */
 fix = {
@@ -1274,12 +1325,12 @@ fix = {
 };
 
 /*
- *  For the AAB_darwin7_9_long_double_funcs fix to be useful,
- *  you have to not use "" includes.
+ *  For the AAB_darwin7_9_long_double_funcs fix (and later fixes for long long)
+ *  to be useful, the main math.h must use <> and not "" includes.
  */
 fix = {
     hackname  = darwin_9_long_double_funcs_2;
-    mach      = "*-*-darwin7.9*";
+    mach      = "*-*-darwin*";
     files     = math.h;
     select    = '#include[ \t]+\"';
     c_fix     = format;
@@ -1287,7 +1338,7 @@ fix = {
   
     c_fix_arg = '([ \t]*#[ \t]*include[ \t]+)"([a-z0-9/]+)\.h"';
   
-    test_text = '#include "architecture/ppc/math.h"';
+    test_text = '#include <architecture/ppc/math.h>';
 };
 
 /*
@@ -1328,6 +1379,22 @@ fix = {
   c_fix_arg = "((__GNUC__ >= 4) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1))";
   test_text = "#if defined(__GNUC__) && (__GNUC__ >= 3) && "
   	      "(__GNUC_MINOR__ >= 1)\n";
+};
+
+/*
+ * math.h hides the long long functions that are available on the system for
+ * 10.5 and 10.6 SDKs, we expect to use them in G++ without specifying a value
+ * for __STDC_VERSION__, or switching __STRICT_ANSI__ off.
+ */
+fix = {
+  hackname  = darwin_ll_funcs_avail;
+  mach      = "*-*-darwin*";
+  files     = architecture/ppc/math.h, architecture/i386/math.h;
+  select    = "#if[^_]*__STDC_VERSION__[^_]*__STDC_VERSION__[^1]*199901L[^_]*"
+	      "__STRICT_ANSI__[^_]*__GNUC__[^\)]*";
+  sed       = "s/#if[^_]*__STDC_VERSION__[^_]*__STDC_VERSION__[^_]*199901L[^_]*"
+	      "__STRICT_ANSI__[^_]*__GNUC__[^\\)]*\)/#if\ !\(__DARWIN_NO_LONG_LONG\)/";
+  test_text = "#if\ !(__DARWIN_NO_LONG_LONG)";
 };
 
 /*
@@ -1399,6 +1466,49 @@ fix = {
 	void
 	_os_trace_internal(void *dso, uint8_t type, const char *format, const uint8_t *buf, size_t buf_size, os_trace_payload_t payload);
 	_EOText_;
+};
+
+/*
+ *  In macOS 10.10 <os/base.h>, doesn't have __has_extension guarded.
+ */
+fix = {
+  hackname  = darwin_os_base_1;
+  mach      = "*-*-darwin*";
+  files     = os/base.h;
+  select    = <<- OS_BASE_1_SEL
+#define __has_attribute.*
+#endif
+OS_BASE_1_SEL;
+  c_fix     = format;
+  c_fix_arg = <<- OS_BASE_1_FIX
+%0
+#ifndef __has_extension
+#define __has_extension(x) 0
+#endif
+OS_BASE_1_FIX;
+  test_text = <<- OS_BASE_1_TEST
+#define __has_attribute(x) 0
+#endif
+
+#if __GNUC__
+OS_BASE_1_TEST;
+};
+
+/*
+ *  In macOS 10.10 <dispatch/object.h>, has unguarded block syntax.
+ */
+fix = {
+  hackname  = darwin_dispatch_object_1;
+  mach      = "*-*-darwin*";
+  files     = dispatch/object.h;
+  select    = "typedef void.*\\^dispatch_block_t.*";
+  c_fix     = format;
+  c_fix_arg = "#if __BLOCKS__\n%0\n#endif";
+  test_text = <<- DISPATCH_OBJECT_1_TEST
+typedef void (^dispatch_block_t)(void);
+
+__BEGIN_DECLS
+DISPATCH_OBJECT_1_TEST;
 };
 
 /*
@@ -1596,6 +1706,25 @@ fix = {
 		"#define UINTMAX_C\\(v\\)[ \t]+\\(v ## ULL\\)";
     test_text = "#define INTMAX_C(v)  (v ## LL)\n"
 		"#define UINTMAX_C(v) (v ## ULL)";
+};
+
+/*  The SDK included with XCode 10.2 has the file <sys/ucred.h> that uses the
+    C11 _Atomic keyword (exposing it to C++ code).  The work-around here follows
+    the header in declaring the entity volatile when _Atomic is not available.
+*/
+fix = {
+    hackname  = darwin_ucred__Atomic;
+    mach      = "*-*-darwin*";
+    files     = sys/ucred.h;
+    select    = "_Atomic";
+    c_fix     = wrap;
+    c_fix_arg = "#if (__STDC_VERSION__ < 201112L) || defined(__cplusplus)\n"
+		"# define _Atomic volatile\n"
+		"#endif\n";
+    c_fix_arg = "#if (__STDC_VERSION__ < 201112L) || defined(__cplusplus)\n"
+		"# undef _Atomic\n"
+		"#endif\n";
+    test_text = ""; /* Don't provide this for wrap fixes.  */
 };
 
 /*
@@ -4902,7 +5031,7 @@ fix = {
 
     c_fix       = format;
     c_fix_arg   = "%0\n"
-        "#define ioctl(fd, func, arg) (ioctl)(fd, func, (int)(arg))\n";
+        "#define ioctl(fd, func, arg) ioctl(fd, func, (int)(arg))\n";
     c_fix_arg   = "extern[\t ]+int[\t ]+ioctl[\t ]*\\([\t ,[:alnum:]]*\\);";
         
     test_text   = "extern int ioctl ( int asdf1234, int jkl , int qwerty ) ;";

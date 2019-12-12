@@ -4,7 +4,7 @@
 
 void f(char*);
 
-void mkcatdefs(char *fname) /* { dg-error "too large" "stack frame too large" } */
+void mkcatdefs(char *fname) /* { dg-error "too large|exceeds" "stack frame too large" } */
 {
   char line [2147483647];
   f(line);

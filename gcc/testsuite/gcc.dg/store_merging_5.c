@@ -26,5 +26,7 @@ foo1 (struct bar *p, char tmp)
 }
 
 
-/* { dg-final { scan-tree-dump-times "Merging successful" 1 "store-merging" } } */
-/* { dg-final { scan-tree-dump-times "MEM\\\[.*\\\]" 1 "store-merging" } } */
+/* { dg-final { scan-tree-dump-times "Merging successful" 1 "store-merging" } }
+   { dg-final { scan-tree-dump-times "MEM\\\[.*\\\]" 1 "store-merging" { target { ! store_merge } } } }
+   { dg-final { scan-tree-dump-times "MEM <unsigned int> \\\[.*\\\]" 1 "store-merging" { target { store_merge && ilp32 } } } }
+   { dg-final { scan-tree-dump-times "MEM <unsigned long> \\\[.*\\\]" 1 "store-merging" { target { store_merge && lp64 } } } } */

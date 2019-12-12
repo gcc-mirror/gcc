@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-lim2-details --param allow-store-data-races=1" } */
+/* { dg-options "-O1 -fdump-tree-lim2-details -fallow-store-data-races" } */
 
 float a[100];
 

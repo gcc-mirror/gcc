@@ -1,5 +1,5 @@
 // PR c++/80449
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 template<class S> struct C;
 template<> struct C<int> { C(int, int) {} };

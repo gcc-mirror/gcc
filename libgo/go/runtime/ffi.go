@@ -37,7 +37,7 @@ func ffi_type_void() *__ffi_type
 func ffi_prep_cif(*_ffi_cif, _ffi_abi, uint32, *__ffi_type, **__ffi_type) _ffi_status
 
 // ffiFuncToCIF is called from C code.
-//go:linkname ffiFuncToCIF runtime.ffiFuncToCIF
+//go:linkname ffiFuncToCIF
 
 // ffiFuncToCIF builds an _ffi_cif struct for function described by ft.
 func ffiFuncToCIF(ft *functype, isInterface bool, isMethod bool, cif *_ffi_cif) {
@@ -224,9 +224,13 @@ func structToFFI(typ *structtype) *__ffi_type {
 	if c == 0 {
 		return emptyStructToFFI()
 	}
+	if typ.typ.kind&kindDirectIface != 0 {
+		return ffi_type_pointer()
+	}
 
 	fields := make([]*__ffi_type, 0, c+1)
 	checkPad := false
+	lastzero := false
 	for i, v := range typ.fields {
 		// Skip zero-sized fields; they confuse libffi,
 		// and there is no value to pass in any case.
@@ -235,8 +239,10 @@ func structToFFI(typ *structtype) *__ffi_type {
 		// next field.
 		if v.typ.size == 0 {
 			checkPad = true
+			lastzero = true
 			continue
 		}
+		lastzero = false
 
 		if checkPad {
 			off := uintptr(0)
@@ -255,6 +261,13 @@ func structToFFI(typ *structtype) *__ffi_type {
 		}
 
 		fields = append(fields, typeToFFI(v.typ))
+	}
+
+	if lastzero {
+		// The compiler adds one byte padding to non-empty struct ending
+		// with a zero-sized field (types.cc:get_backend_struct_fields).
+		// Add this padding to the FFI type.
+		fields = append(fields, ffi_type_uint8())
 	}
 
 	fields = append(fields, nil)
@@ -296,6 +309,9 @@ func complexToFFI(ffiFloatType *__ffi_type) *__ffi_type {
 func arrayToFFI(typ *arraytype) *__ffi_type {
 	if typ.len == 0 {
 		return emptyStructToFFI()
+	}
+	if typ.typ.kind&kindDirectIface != 0 {
+		return ffi_type_pointer()
 	}
 	elements := make([]*__ffi_type, typ.len+1)
 	et := typeToFFI(typ.elem)

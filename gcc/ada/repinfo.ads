@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -193,7 +193,7 @@ package Repinfo is
    --  following description, the terminology is that of the JSON syntax
    --  from the ECMA document and of the JSON grammar from www.json.org.
 
-   --  The output is a concatenation of entities
+   --  The output is an array of entities
 
    --  An entity is an object whose members are pairs taken from:
 

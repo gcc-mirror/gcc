@@ -5,8 +5,7 @@
 /* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-require-effective-target int128 } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-mpower8-vector -mcpu=power8 -O2" } */
+/* { dg-options "-mpower8-vector -mdejagnu-cpu=power8 -O2" } */
 /* { dg-additional-options "-maix64" { target powerpc-ibm-aix* } } */
 
 #include "altivec.h"

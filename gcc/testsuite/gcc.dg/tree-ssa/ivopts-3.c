@@ -10,4 +10,6 @@ int main (void)
     f2 ();
 }
 
-/* { dg-final { scan-tree-dump-times "!= 0" 5 "ivopts" } }  */
+/* { dg-final { scan-tree-dump-times "!= 0" 5 "ivopts" { target { ! powerpc*-*-* } } } } */
+/* More debug information emitted for doloop on powerpc.  */
+/* { dg-final { scan-tree-dump-times "!= 0" 6 "ivopts" { target { powerpc*-*-* } } } } */

@@ -1,6 +1,6 @@
-! Test various aspects of clauses specifying compatible levels of
-! parallelism with the OpenACC routine directive.  The Fortran counterpart is
-! c-c++-common/goacc/routine-level-of-parallelism-2.c
+! Test various aspects of clauses specifying compatible levels of parallelism
+! with the OpenACC routine directive.  The C/C++ counterpart is
+! '../../c-c++-common/goacc/routine-level-of-parallelism-2.c'.
 
 subroutine g_1
   !$acc routine gang

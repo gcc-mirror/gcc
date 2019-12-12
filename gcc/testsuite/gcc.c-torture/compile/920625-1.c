@@ -1,3 +1,5 @@
+/* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
+
 typedef unsigned long int unsigned_word;
 typedef signed long int signed_word;
 typedef unsigned_word word;

@@ -15,8 +15,7 @@ int test_2 ()
   int sum = 0;
   for (const auto v: arr) {
     sum += v;
-    // TODO: should we issue an error for the following assignment?
-    __for_begin = __for_end;
+    __for_begin = __for_end;	// { dg-error "was not declared in this scope" }
   }
   return sum;
 }

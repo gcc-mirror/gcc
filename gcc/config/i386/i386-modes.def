@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC for IA-32.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -98,11 +98,14 @@ VECTOR_MODE (INT, QI, 14);    /*                  V14QI */
 VECTOR_MODE (INT, HI, 6);     /*                   V6HI */
 VECTOR_MODE (INT, SI, 64);    /* 		  V64SI */
 
-POINTER_BOUNDS_MODE (BND32, 8);
-POINTER_BOUNDS_MODE (BND64, 16);
-
 INT_MODE (OI, 32);
 INT_MODE (XI, 64);
+
+/* Modes needs a consecutive register pair.
+   Note that Using PARTIAL_INT_MODE but not INT_MODE is to avoid mode promotion
+   issues.  */
+PARTIAL_INT_MODE (HI, 16, P2QI);
+PARTIAL_INT_MODE (SI, 32, P2HI);
 
 /* Keep the OI and XI modes from confusing the compiler into thinking
    that these modes could actually be used for computation.  They are

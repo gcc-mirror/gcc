@@ -1,7 +1,7 @@
 /* Configuration common to all targets running the GNU system.  */
 
 /*
-Copyright (C) 1994-2018 Free Software Foundation, Inc.
+Copyright (C) 1994-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,4 +30,10 @@ along with GCC.  If not, see <http://www.gnu.org/licenses/>.
 	builtin_assert ("system=mach");		\
 	builtin_assert ("system=unix");		\
 	builtin_assert ("system=posix");	\
+    } while (0)
+
+#define GNU_USER_TARGET_D_OS_VERSIONS()		\
+    do {					\
+	builtin_version ("Hurd");		\
+	builtin_version ("CRuntime_Glibc");	\
     } while (0)

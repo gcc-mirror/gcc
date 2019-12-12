@@ -1,6 +1,6 @@
 // File based streams -*- C++ -*-
 
-// Copyright (C) 1997-2018 Free Software Foundation, Inc.
+// Copyright (C) 1997-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,6 +38,7 @@
 
 #include <bits/cxxabi_forced.h>
 #include <bits/move.h>   // for swap
+#include <cerrno>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -471,7 +472,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				"invalid byte sequence in file"));
 	  else
 	    __throw_ios_failure(__N("basic_filebuf::underflow "
-				"error reading the file"));
+				"error reading the file"), errno);
 	}
       return __ret;
     }
@@ -717,7 +718,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __len = _M_file.xsgetn(reinterpret_cast<char*>(__s), __n);
 	      if (__len == -1)
 		__throw_ios_failure(__N("basic_filebuf::xsgetn "
-					"error reading the file"));
+					"error reading the file"), errno);
 	      if (__len == 0)
 		break;
  

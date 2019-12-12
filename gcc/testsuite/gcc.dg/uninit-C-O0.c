@@ -3,7 +3,7 @@
 /* { dg-options "-Wuninitialized" } */
 
 /* Not all platforms support TImode integers.  */
-#if (defined(__LP64__) && !defined(__hppa__)) || defined(__SPU__)
+#if defined(__LP64__) && !defined(__hppa__)
 typedef int TItype __attribute__ ((mode (TI)));
 #else
 typedef long TItype;

@@ -1,5 +1,5 @@
 ;; Faraday FA726TE Pipeline Description
-;; Copyright (C) 2010-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2019 Free Software Foundation, Inc.
 ;; Written by I-Jui Sung, based on ARM926EJ-S Pipeline Description.
 ;;
 ;; This file is part of GCC.
@@ -91,7 +91,7 @@
                        adc_imm,adcs_imm,adc_reg,adcs_reg,\
                        adr,bfm,rev,\
                        shift_imm,shift_reg,\
-                       mrs,multiple,no_insn"))
+                       mrs,multiple"))
   "fa726te_issue+(fa726te_alu0_pipe|fa726te_alu1_pipe)")
 
 ;; ALU operations with a shift-by-register operand.

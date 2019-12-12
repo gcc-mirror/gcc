@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -39,6 +39,8 @@
  *    and related functions.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
@@ -51,3 +53,4 @@ constructor_insert_new_imp(mapped_const_reference r_val, size_type pos,
   p_e->m_stat = valid_entry_status;
   _GLIBCXX_DEBUG_ONLY(debug_base::insert_new(p_e->m_value.first);)
 }
+#endif

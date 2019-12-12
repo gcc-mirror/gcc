@@ -1,5 +1,5 @@
 /* Native CPU detection for aarch64.
-   Copyright (C) 2015-2018 Free Software Foundation, Inc.
+   Copyright (C) 2015-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -32,11 +32,12 @@ std::string aarch64_get_extension_string_for_isa_flags (unsigned long,
 struct aarch64_arch_extension
 {
   const char *ext;
-  unsigned int flag;
+  uint64_t flag;
   const char *feat_string;
 };
 
-#define AARCH64_OPT_EXTENSION(EXT_NAME, FLAG_CANONICAL, FLAGS_ON, FLAGS_OFF, FEATURE_STRING) \
+#define AARCH64_OPT_EXTENSION(EXT_NAME, FLAG_CANONICAL, FLAGS_ON, FLAGS_OFF, \
+			      SYNTHETIC, FEATURE_STRING) \
   { EXT_NAME, FLAG_CANONICAL, FEATURE_STRING },
 static struct aarch64_arch_extension aarch64_extensions[] =
 {
@@ -51,7 +52,7 @@ struct aarch64_core_data
   unsigned char implementer_id; /* Exactly 8 bits */
   unsigned int part_no; /* 12 bits + 12 bits */
   unsigned variant;
-  const unsigned long flags;
+  const uint64_t flags;
 };
 
 #define AARCH64_BIG_LITTLE(BIG, LITTLE) \
@@ -74,7 +75,7 @@ struct aarch64_arch_driver_info
 {
   const char* id;
   const char* name;
-  const unsigned long flags;
+  const uint64_t flags;
 };
 
 #define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, ARCH_REV, FLAGS) \
@@ -178,9 +179,8 @@ host_detect_local_cpu (int argc, const char **argv)
   unsigned int variants[2] = { ALL_VARIANTS, ALL_VARIANTS };
   unsigned int n_variants = 0;
   bool processed_exts = false;
-  const char *ext_string = "";
-  unsigned long extension_flags = 0;
-  unsigned long default_flags = 0;
+  uint64_t extension_flags = 0;
+  uint64_t default_flags = 0;
 
   gcc_assert (argc);
 
@@ -249,27 +249,35 @@ host_detect_local_cpu (int argc, const char **argv)
 	{
 	  for (i = 0; i < num_exts; i++)
 	    {
-	      char *p = NULL;
-	      char *feat_string
-		= concat (aarch64_extensions[i].feat_string, NULL);
+	      const char *p = aarch64_extensions[i].feat_string;
+
+	      /* If the feature contains no HWCAPS string then ignore it for the
+		 auto detection.  */
+	      if (*p == '\0')
+		continue;
+
 	      bool enabled = true;
 
 	      /* This may be a multi-token feature string.  We need
-		 to match all parts, which could be in any order.
-		 If this isn't a multi-token feature string, strtok is
-		 just going to return a pointer to feat_string.  */
-	      p = strtok (feat_string, " ");
-	      while (p != NULL)
+		 to match all parts, which could be in any order.  */
+	      size_t len = strlen (buf);
+	      do
 		{
-		  if (strstr (buf, p) == NULL)
+		  const char *end = strchr (p, ' ');
+		  if (end == NULL)
+		    end = strchr (p, '\0');
+		  if (memmem (buf, len, p, end - p) == NULL)
 		    {
 		      /* Failed to match this token.  Turn off the
 			 features we'd otherwise enable.  */
 		      enabled = false;
 		      break;
 		    }
-		  p = strtok (NULL, " ");
+		  if (*end == '\0')
+		    break;
+		  p = end + 1;
 		}
+	      while (1);
 
 	      if (enabled)
 		extension_flags |= aarch64_extensions[i].flag;
@@ -348,23 +356,24 @@ host_detect_local_cpu (int argc, const char **argv)
   if (tune)
     return res;
 
-  ext_string
-    = aarch64_get_extension_string_for_isa_flags (extension_flags,
-						  default_flags).c_str ();
-
-  res = concat (res, ext_string, NULL);
+  {
+    std::string extension
+      = aarch64_get_extension_string_for_isa_flags (extension_flags,
+						    default_flags);
+    res = concat (res, extension.c_str (), NULL);
+  }
 
   return res;
 
 not_found:
   {
    /* If detection fails we ignore the option.
-      Clean up and return empty string.  */
+      Clean up and return NULL.  */
 
     if (f)
       fclose (f);
 
-    return "";
+    return NULL;
   }
 }
 

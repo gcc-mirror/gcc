@@ -1,8 +1,7 @@
 /* { dg-do compile { target { le } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-mcpu=power8 -O2" } */
+/* { dg-options "-mdejagnu-cpu=power8 -O2" } */
 
 /* Verify fix for problem where vec_xl and vec_xst are not recognized
    for the vector char and vector short cases on P8 only.
@@ -59,6 +58,5 @@ bartle (vector unsigned short x, unsigned short * address)
   vec_xst (x, 0, address);
 }
 
-/* { dg-final { scan-assembler-times "lvx" 4 } } */
-/* { dg-final { scan-assembler-times "stvx"  4 } } */
-/* { dg-final { scan-assembler-times "xxpermdi" 0 } } */
+/* { dg-final { scan-assembler-times {\mlxvd2x\M} 4 } } */
+/* { dg-final { scan-assembler-times {\mstxvd2x\M} 4 } } */

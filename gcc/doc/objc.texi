@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2018 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2019 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -1165,7 +1165,7 @@ in dynamically registering the method.
 To configure the hook, you set the global variable
 @code{__objc_msg_forward2} to a function with the same argument and
 return types of @code{objc_msg_lookup()}.  When
-@code{objc_msg_lookup()} can not find a method implementation, it
+@code{objc_msg_lookup()} cannot find a method implementation, it
 invokes the hook function you provided to get a method implementation
 to return.  So, in practice @code{__objc_msg_forward2} allows you to
 extend @code{objc_msg_lookup()} by adding some custom code that is

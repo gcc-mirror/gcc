@@ -1,3 +1,5 @@
+/* { dg-require-effective-target indirect_calls } */
+
 int a;
 int (*b)(), (*c)();
 int fn1(int p1) {

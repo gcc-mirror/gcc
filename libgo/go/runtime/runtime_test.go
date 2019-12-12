@@ -70,6 +70,18 @@ func BenchmarkEfaceCmpDiff(b *testing.B) {
 	}
 }
 
+func BenchmarkEfaceCmpDiffIndirect(b *testing.B) {
+	efaceCmp1 = [2]int{1, 2}
+	efaceCmp2 = [2]int{1, 2}
+	for i := 0; i < b.N; i++ {
+		for j := 0; j < 100; j++ {
+			if efaceCmp1 != efaceCmp2 {
+				b.Fatal("bad comparison")
+			}
+		}
+	}
+}
+
 func BenchmarkDefer(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		defer1()
@@ -166,8 +178,14 @@ func TestSetPanicOnFault(t *testing.T) {
 }
 
 func testSetPanicOnFault(t *testing.T, addr uintptr, nfault *int) {
+	if strings.Contains(Version(), "llvm") {
+		t.Skip("LLVM doesn't support non-call exception")
+	}
 	if GOOS == "nacl" {
 		t.Skip("nacl doesn't seem to fault on high addresses")
+	}
+	if GOOS == "js" {
+		t.Skip("js does not support catching faults")
 	}
 
 	defer func() {
@@ -266,7 +284,7 @@ func TestTrailingZero(t *testing.T) {
 */
 
 func TestBadOpen(t *testing.T) {
-	if GOOS == "windows" || GOOS == "nacl" {
+	if GOOS == "windows" || GOOS == "nacl" || GOOS == "js" {
 		t.Skip("skipping OS that doesn't have open/read/write/close")
 	}
 	// make sure we get the correct error code if open fails. Same for

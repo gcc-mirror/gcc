@@ -1,5 +1,5 @@
 /* Builtin functions for rs6000/powerpc.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
    Contributed by Michael Meissner (meissner@linux.vnet.ibm.com)
 
    This file is part of GCC.
@@ -1002,12 +1002,12 @@ BU_ALTIVEC_2 (VADDUWS,	      "vadduws",	CONST,	altivec_vadduws)
 BU_ALTIVEC_2 (VADDSWS,	      "vaddsws",	CONST,	altivec_vaddsws)
 BU_ALTIVEC_2 (VAND,	      "vand",		CONST,	andv4si3)
 BU_ALTIVEC_2 (VANDC,	      "vandc",		CONST,	andcv4si3)
-BU_ALTIVEC_2 (VAVGUB,	      "vavgub",		CONST,	altivec_vavgub)
-BU_ALTIVEC_2 (VAVGSB,	      "vavgsb",		CONST,	altivec_vavgsb)
-BU_ALTIVEC_2 (VAVGUH,	      "vavguh",		CONST,	altivec_vavguh)
-BU_ALTIVEC_2 (VAVGSH,	      "vavgsh",		CONST,	altivec_vavgsh)
-BU_ALTIVEC_2 (VAVGUW,	      "vavguw",		CONST,	altivec_vavguw)
-BU_ALTIVEC_2 (VAVGSW,	      "vavgsw",		CONST,	altivec_vavgsw)
+BU_ALTIVEC_2 (VAVGUB,	      "vavgub",		CONST,	uavgv16qi3_ceil)
+BU_ALTIVEC_2 (VAVGSB,	      "vavgsb",		CONST,	avgv16qi3_ceil)
+BU_ALTIVEC_2 (VAVGUH,	      "vavguh",		CONST,	uavgv8hi3_ceil)
+BU_ALTIVEC_2 (VAVGSH,	      "vavgsh",		CONST,	avgv8hi3_ceil)
+BU_ALTIVEC_2 (VAVGUW,	      "vavguw",		CONST,	uavgv4si3_ceil)
+BU_ALTIVEC_2 (VAVGSW,	      "vavgsw",		CONST,	avgv4si3_ceil)
 BU_ALTIVEC_2 (VCFUX,	      "vcfux",		CONST,	altivec_vcfux)
 BU_ALTIVEC_2 (VCFSX,	      "vcfsx",		CONST,	altivec_vcfsx)
 BU_ALTIVEC_2 (VCMPBFP,	      "vcmpbfp",	CONST,	altivec_vcmpbfp)
@@ -1177,26 +1177,26 @@ BU_ALTIVEC_X (MTVSCR,		"mtvscr",	    MISC)
 BU_ALTIVEC_X (MFVSCR,		"mfvscr",	    MISC)
 BU_ALTIVEC_X (DSSALL,		"dssall",	    MISC)
 BU_ALTIVEC_X (DSS,		"dss",		    MISC)
-BU_ALTIVEC_X (LVSL,		"lvsl",		    MEM)
-BU_ALTIVEC_X (LVSR,		"lvsr",		    MEM)
-BU_ALTIVEC_X (LVEBX,		"lvebx",	    MEM)
-BU_ALTIVEC_X (LVEHX,		"lvehx",	    MEM)
-BU_ALTIVEC_X (LVEWX,		"lvewx",	    MEM)
-BU_ALTIVEC_X (LVXL,		"lvxl",		    MEM)
-BU_ALTIVEC_X (LVXL_V2DF,	"lvxl_v2df",	    MEM)
-BU_ALTIVEC_X (LVXL_V2DI,	"lvxl_v2di",	    MEM)
-BU_ALTIVEC_X (LVXL_V4SF,	"lvxl_v4sf",	    MEM)
-BU_ALTIVEC_X (LVXL_V4SI,	"lvxl_v4si",	    MEM)
-BU_ALTIVEC_X (LVXL_V8HI,	"lvxl_v8hi",	    MEM)
-BU_ALTIVEC_X (LVXL_V16QI,	"lvxl_v16qi",	    MEM)
-BU_ALTIVEC_X (LVX,		"lvx",		    MEM)
-BU_ALTIVEC_X (LVX_V1TI,		"lvx_v1ti",	    MEM)
-BU_ALTIVEC_X (LVX_V2DF,		"lvx_v2df",	    MEM)
-BU_ALTIVEC_X (LVX_V2DI,		"lvx_v2di",	    MEM)
-BU_ALTIVEC_X (LVX_V4SF,		"lvx_v4sf",	    MEM)
-BU_ALTIVEC_X (LVX_V4SI,		"lvx_v4si",	    MEM)
-BU_ALTIVEC_X (LVX_V8HI,		"lvx_v8hi",	    MEM)
-BU_ALTIVEC_X (LVX_V16QI,	"lvx_v16qi",	    MEM)
+BU_ALTIVEC_X (LVSL,		"lvsl",		    PURE)
+BU_ALTIVEC_X (LVSR,		"lvsr",		    PURE)
+BU_ALTIVEC_X (LVEBX,		"lvebx",	    PURE)
+BU_ALTIVEC_X (LVEHX,		"lvehx",	    PURE)
+BU_ALTIVEC_X (LVEWX,		"lvewx",	    PURE)
+BU_ALTIVEC_X (LVXL,		"lvxl",		    PURE)
+BU_ALTIVEC_X (LVXL_V2DF,	"lvxl_v2df",	    PURE)
+BU_ALTIVEC_X (LVXL_V2DI,	"lvxl_v2di",	    PURE)
+BU_ALTIVEC_X (LVXL_V4SF,	"lvxl_v4sf",	    PURE)
+BU_ALTIVEC_X (LVXL_V4SI,	"lvxl_v4si",	    PURE)
+BU_ALTIVEC_X (LVXL_V8HI,	"lvxl_v8hi",	    PURE)
+BU_ALTIVEC_X (LVXL_V16QI,	"lvxl_v16qi",	    PURE)
+BU_ALTIVEC_X (LVX,		"lvx",		    PURE)
+BU_ALTIVEC_X (LVX_V1TI,		"lvx_v1ti",	    PURE)
+BU_ALTIVEC_X (LVX_V2DF,		"lvx_v2df",	    PURE)
+BU_ALTIVEC_X (LVX_V2DI,		"lvx_v2di",	    PURE)
+BU_ALTIVEC_X (LVX_V4SF,		"lvx_v4sf",	    PURE)
+BU_ALTIVEC_X (LVX_V4SI,		"lvx_v4si",	    PURE)
+BU_ALTIVEC_X (LVX_V8HI,		"lvx_v8hi",	    PURE)
+BU_ALTIVEC_X (LVX_V16QI,	"lvx_v16qi",	    PURE)
 BU_ALTIVEC_X (STVX,		"stvx",		    MEM)
 BU_ALTIVEC_X (STVX_V2DF,	"stvx_v2df",	    MEM)
 BU_ALTIVEC_X (STVX_V2DI,	"stvx_v2di",	    MEM)
@@ -1204,10 +1204,10 @@ BU_ALTIVEC_X (STVX_V4SF,	"stvx_v4sf",	    MEM)
 BU_ALTIVEC_X (STVX_V4SI,	"stvx_v4si",	    MEM)
 BU_ALTIVEC_X (STVX_V8HI,	"stvx_v8hi",	    MEM)
 BU_ALTIVEC_X (STVX_V16QI,	"stvx_v16qi",	    MEM)
-BU_ALTIVEC_C (LVLX,		"lvlx",		    MEM)
-BU_ALTIVEC_C (LVLXL,		"lvlxl",	    MEM)
-BU_ALTIVEC_C (LVRX,		"lvrx",		    MEM)
-BU_ALTIVEC_C (LVRXL,		"lvrxl",	    MEM)
+BU_ALTIVEC_C (LVLX,		"lvlx",		    PURE)
+BU_ALTIVEC_C (LVLXL,		"lvlxl",	    PURE)
+BU_ALTIVEC_C (LVRX,		"lvrx",		    PURE)
+BU_ALTIVEC_C (LVRXL,		"lvrxl",	    PURE)
 BU_ALTIVEC_X (STVEBX,		"stvebx",	    MEM)
 BU_ALTIVEC_X (STVEHX,		"stvehx",	    MEM)
 BU_ALTIVEC_X (STVEWX,		"stvewx",	    MEM)
@@ -1718,15 +1718,15 @@ BU_VSX_P (XVCMPGEDP_P,	      "xvcmpgedp_p",	CONST,	vector_ge_v2df_p)
 BU_VSX_P (XVCMPGTDP_P,	      "xvcmpgtdp_p",	CONST,	vector_gt_v2df_p)
 
 /* VSX builtins that are handled as special cases.  */
-BU_VSX_X (LXSDX,	      "lxsdx",		MEM)
-BU_VSX_X (LXVD2X_V1TI,	      "lxvd2x_v1ti",	MEM)
-BU_VSX_X (LXVD2X_V2DF,	      "lxvd2x_v2df",	MEM)
-BU_VSX_X (LXVD2X_V2DI,	      "lxvd2x_v2di",	MEM)
-BU_VSX_X (LXVDSX,	      "lxvdsx",		MEM)
-BU_VSX_X (LXVW4X_V4SF,	      "lxvw4x_v4sf",	MEM)
-BU_VSX_X (LXVW4X_V4SI,        "lxvw4x_v4si",	MEM)
-BU_VSX_X (LXVW4X_V8HI,        "lxvw4x_v8hi",	MEM)
-BU_VSX_X (LXVW4X_V16QI,	      "lxvw4x_v16qi",	MEM)
+BU_VSX_X (LXSDX,	      "lxsdx",		PURE)
+BU_VSX_X (LXVD2X_V1TI,	      "lxvd2x_v1ti",	PURE)
+BU_VSX_X (LXVD2X_V2DF,	      "lxvd2x_v2df",	PURE)
+BU_VSX_X (LXVD2X_V2DI,	      "lxvd2x_v2di",	PURE)
+BU_VSX_X (LXVDSX,	      "lxvdsx",		PURE)
+BU_VSX_X (LXVW4X_V4SF,	      "lxvw4x_v4sf",	PURE)
+BU_VSX_X (LXVW4X_V4SI,	      "lxvw4x_v4si",	PURE)
+BU_VSX_X (LXVW4X_V8HI,	      "lxvw4x_v8hi",	PURE)
+BU_VSX_X (LXVW4X_V16QI,	      "lxvw4x_v16qi",	PURE)
 BU_VSX_X (STXSDX,	      "stxsdx",		MEM)
 BU_VSX_X (STXVD2X_V1TI,	      "stxvd2x_v1ti",	MEM)
 BU_VSX_X (STXVD2X_V2DF,	      "stxvd2x_v2df",	MEM)
@@ -1735,13 +1735,13 @@ BU_VSX_X (STXVW4X_V4SF,	      "stxvw4x_v4sf",	MEM)
 BU_VSX_X (STXVW4X_V4SI,	      "stxvw4x_v4si",	MEM)
 BU_VSX_X (STXVW4X_V8HI,	      "stxvw4x_v8hi",	MEM)
 BU_VSX_X (STXVW4X_V16QI,      "stxvw4x_v16qi",	MEM)
-BU_VSX_X (LD_ELEMREV_V1TI,    "ld_elemrev_v1ti",  MEM)
-BU_VSX_X (LD_ELEMREV_V2DF,    "ld_elemrev_v2df",  MEM)
-BU_VSX_X (LD_ELEMREV_V2DI,    "ld_elemrev_v2di",  MEM)
-BU_VSX_X (LD_ELEMREV_V4SF,    "ld_elemrev_v4sf",  MEM)
-BU_VSX_X (LD_ELEMREV_V4SI,    "ld_elemrev_v4si",  MEM)
-BU_VSX_X (LD_ELEMREV_V8HI,    "ld_elemrev_v8hi",  MEM)
-BU_VSX_X (LD_ELEMREV_V16QI,   "ld_elemrev_v16qi", MEM)
+BU_VSX_X (LD_ELEMREV_V1TI,    "ld_elemrev_v1ti",  PURE)
+BU_VSX_X (LD_ELEMREV_V2DF,    "ld_elemrev_v2df",  PURE)
+BU_VSX_X (LD_ELEMREV_V2DI,    "ld_elemrev_v2di",  PURE)
+BU_VSX_X (LD_ELEMREV_V4SF,    "ld_elemrev_v4sf",  PURE)
+BU_VSX_X (LD_ELEMREV_V4SI,    "ld_elemrev_v4si",  PURE)
+BU_VSX_X (LD_ELEMREV_V8HI,    "ld_elemrev_v8hi",  PURE)
+BU_VSX_X (LD_ELEMREV_V16QI,   "ld_elemrev_v16qi", PURE)
 BU_VSX_X (ST_ELEMREV_V1TI,    "st_elemrev_v1ti",  MEM)
 BU_VSX_X (ST_ELEMREV_V2DF,    "st_elemrev_v2df",  MEM)
 BU_VSX_X (ST_ELEMREV_V2DI,    "st_elemrev_v2di",  MEM)
@@ -2117,6 +2117,11 @@ BU_P9V_VSX_2 (VSCEDPLT,	"scalar_cmp_exp_dp_lt",	CONST,	xscmpexpdp_lt)
 BU_P9V_VSX_2 (VSCEDPEQ,	"scalar_cmp_exp_dp_eq",	CONST,	xscmpexpdp_eq)
 BU_P9V_VSX_2 (VSCEDPUO,	"scalar_cmp_exp_dp_unordered",	CONST,	xscmpexpdp_unordered)
 
+BU_P9V_VSX_2 (VSCEQPGT,	"scalar_cmp_exp_qp_gt",	CONST,	xscmpexpqp_gt_kf)
+BU_P9V_VSX_2 (VSCEQPLT,	"scalar_cmp_exp_qp_lt",	CONST,	xscmpexpqp_lt_kf)
+BU_P9V_VSX_2 (VSCEQPEQ,	"scalar_cmp_exp_qp_eq",	CONST,	xscmpexpqp_eq_kf)
+BU_P9V_VSX_2 (VSCEQPUO,	"scalar_cmp_exp_qp_unordered",	CONST,	xscmpexpqp_unordered_kf)
+
 BU_FLOAT128_HW_VSX_2 (VSTDCQP, "scalar_test_data_class_qp",	CONST,	xststdcqp_kf)
 BU_P9V_VSX_2 (VSTDCDP,	"scalar_test_data_class_dp",	CONST,	xststdcdp)
 BU_P9V_VSX_2 (VSTDCSP,	"scalar_test_data_class_sp",	CONST,	xststdcsp)
@@ -2146,10 +2151,18 @@ BU_P9V_OVERLOAD_2 (VSTDCQP,	"scalar_test_data_class_qp")
 BU_P9V_OVERLOAD_2 (VSTDCDP,	"scalar_test_data_class_dp")
 BU_P9V_OVERLOAD_2 (VSTDCSP,	"scalar_test_data_class_sp")
 
-BU_P9V_OVERLOAD_2 (VSCEDPGT,	"scalar_cmp_exp_gt")
-BU_P9V_OVERLOAD_2 (VSCEDPLT,	"scalar_cmp_exp_lt")
-BU_P9V_OVERLOAD_2 (VSCEDPEQ,	"scalar_cmp_exp_eq")
-BU_P9V_OVERLOAD_2 (VSCEDPUO,	"scalar_cmp_exp_unordered")
+BU_P9V_OVERLOAD_2 (VSCEGT,	"scalar_cmp_exp_gt")
+BU_P9V_OVERLOAD_2 (VSCEDPGT,	"scalar_cmp_exp_dp_gt")
+BU_P9V_OVERLOAD_2 (VSCEQPGT,	"scalar_cmp_exp_qp_gt")
+BU_P9V_OVERLOAD_2 (VSCELT,	"scalar_cmp_exp_lt")
+BU_P9V_OVERLOAD_2 (VSCEDPLT,	"scalar_cmp_exp_dp_lt")
+BU_P9V_OVERLOAD_2 (VSCEQPLT,	"scalar_cmp_exp_qp_lt")
+BU_P9V_OVERLOAD_2 (VSCEEQ,	"scalar_cmp_exp_eq")
+BU_P9V_OVERLOAD_2 (VSCEDPEQ,	"scalar_cmp_exp_dp_eq")
+BU_P9V_OVERLOAD_2 (VSCEQPEQ,	"scalar_cmp_exp_qp_eq")
+BU_P9V_OVERLOAD_2 (VSCEUO,	"scalar_cmp_exp_unordered")
+BU_P9V_OVERLOAD_2 (VSCEDPUO,	"scalar_cmp_exp_dp_unordered")
+BU_P9V_OVERLOAD_2 (VSCEQPUO,	"scalar_cmp_exp_qp_unordered")
 
 /* 1 argument vsx vector functions added in ISA 3.0 (power9).  */
 BU_P9V_VSX_1 (VEEDP, "extract_exp_dp", CONST, xvxexpdp)
@@ -2405,13 +2418,22 @@ BU_P9_OVERLOAD_2 (CMPRB2,	"byte_in_either_range")
 BU_P9_OVERLOAD_2 (CMPEQB,	"byte_in_set")
 
 /* 1 argument crypto functions.  */
-BU_CRYPTO_1 (VSBOX,		"vsbox",	  CONST, crypto_vsbox)
+BU_CRYPTO_1 (VSBOX,		"vsbox",	  CONST, crypto_vsbox_v2di)
+BU_CRYPTO_1 (VSBOX_BE,		"vsbox_be",	  CONST, crypto_vsbox_v16qi)
 
 /* 2 argument crypto functions.  */
-BU_CRYPTO_2 (VCIPHER,		"vcipher",	  CONST, crypto_vcipher)
-BU_CRYPTO_2 (VCIPHERLAST,	"vcipherlast",	  CONST, crypto_vcipherlast)
-BU_CRYPTO_2 (VNCIPHER,		"vncipher",	  CONST, crypto_vncipher)
-BU_CRYPTO_2 (VNCIPHERLAST,	"vncipherlast",	  CONST, crypto_vncipherlast)
+BU_CRYPTO_2 (VCIPHER,		"vcipher",	  CONST, crypto_vcipher_v2di)
+BU_CRYPTO_2 (VCIPHER_BE,	"vcipher_be",	  CONST, crypto_vcipher_v16qi)
+BU_CRYPTO_2 (VCIPHERLAST,	"vcipherlast",
+	     CONST, crypto_vcipherlast_v2di)
+BU_CRYPTO_2 (VCIPHERLAST_BE,	"vcipherlast_be",
+	     CONST, crypto_vcipherlast_v16qi)
+BU_CRYPTO_2 (VNCIPHER,		"vncipher",	  CONST, crypto_vncipher_v2di)
+BU_CRYPTO_2 (VNCIPHER_BE,	"vncipher_be",	  CONST, crypto_vncipher_v16qi)
+BU_CRYPTO_2 (VNCIPHERLAST,	"vncipherlast",
+	     CONST, crypto_vncipherlast_v2di)
+BU_CRYPTO_2 (VNCIPHERLAST_BE,	"vncipherlast_be",
+	     CONST, crypto_vncipherlast_v16qi)
 BU_CRYPTO_2A (VPMSUMB,		"vpmsumb",	  CONST, crypto_vpmsumb)
 BU_CRYPTO_2A (VPMSUMH,		"vpmsumh",	  CONST, crypto_vpmsumh)
 BU_CRYPTO_2A (VPMSUMW,		"vpmsumw",	  CONST, crypto_vpmsumw)
@@ -2486,10 +2508,34 @@ BU_SPECIAL_X (RS6000_BUILTIN_MFTB, "__builtin_ppc_mftb",
 BU_SPECIAL_X (RS6000_BUILTIN_MFFS, "__builtin_mffs",
 	      RS6000_BTM_ALWAYS, RS6000_BTC_MISC)
 
+BU_SPECIAL_X (RS6000_BUILTIN_MFFSL, "__builtin_mffsl",
+	      RS6000_BTM_ALWAYS, RS6000_BTC_MISC)
+
 RS6000_BUILTIN_X (RS6000_BUILTIN_MTFSF, "__builtin_mtfsf",
 	          RS6000_BTM_ALWAYS,
 	          RS6000_BTC_MISC | RS6000_BTC_UNARY | RS6000_BTC_VOID,
 		  CODE_FOR_rs6000_mtfsf)
+
+RS6000_BUILTIN_X (RS6000_BUILTIN_MTFSB0, "__builtin_mtfsb0",
+		  RS6000_BTM_ALWAYS,
+		  RS6000_BTC_MISC | RS6000_BTC_UNARY | RS6000_BTC_VOID,
+		  CODE_FOR_rs6000_mtfsb0)
+
+RS6000_BUILTIN_X (RS6000_BUILTIN_MTFSB1, "__builtin_mtfsb1",
+		  RS6000_BTM_ALWAYS,
+		  RS6000_BTC_MISC | RS6000_BTC_UNARY | RS6000_BTC_VOID,
+		  CODE_FOR_rs6000_mtfsb1)
+
+RS6000_BUILTIN_X (RS6000_BUILTIN_SET_FPSCR_RN, "__builtin_set_fpscr_rn",
+		  RS6000_BTM_ALWAYS,
+		  RS6000_BTC_MISC | RS6000_BTC_UNARY| RS6000_BTC_VOID,
+		  CODE_FOR_rs6000_set_fpscr_rn)
+
+RS6000_BUILTIN_X (RS6000_BUILTIN_SET_FPSCR_DRN, "__builtin_set_fpscr_drn",
+		  RS6000_BTM_DFP,
+		  RS6000_BTC_MISC | RS6000_BTM_64BIT | RS6000_BTC_UNARY
+		  | RS6000_BTC_VOID,
+		  CODE_FOR_rs6000_set_fpscr_drn)
 
 BU_SPECIAL_X (RS6000_BUILTIN_CPU_INIT, "__builtin_cpu_init",
 	      RS6000_BTM_ALWAYS, RS6000_BTC_MISC)

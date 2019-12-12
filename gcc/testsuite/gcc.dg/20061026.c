@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O1" } */
+/* { dg-skip-if "exceeds eBPF stack limit" { bpf-*-* } } */
 
 /* This testcase failed on s390.  The frame size for function f will be
    exactly 32768 bytes.  The back end has to recognize that this is to

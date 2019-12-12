@@ -1,5 +1,5 @@
 /* Common subexpression elimination library for GNU compiler.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "emit-rtl.h"
 #include "dumpfile.h"
 #include "cselib.h"
-#include "params.h"
+#include "function-abi.h"
 
 /* A list of cselib_val structures.  */
 struct elt_list
@@ -2296,7 +2296,7 @@ cselib_invalidate_mem (rtx mem_rtx)
 	      p = &(*p)->next;
 	      continue;
 	    }
-	  if (num_mems < PARAM_VALUE (PARAM_MAX_CSELIB_MEMORY_LOCATIONS)
+	  if (num_mems < param_max_cselib_memory_locations
 	      && ! canon_anti_dependence (x, false, mem_rtx,
 					  GET_MODE (mem_rtx), mem_addr))
 	    {
@@ -2352,7 +2352,7 @@ cselib_invalidate_mem (rtx mem_rtx)
   *vp = &dummy_val;
 }
 
-/* Invalidate DEST, which is being assigned to or clobbered.  */
+/* Invalidate DEST.  */
 
 void
 cselib_invalidate_rtx (rtx dest)
@@ -2371,7 +2371,7 @@ cselib_invalidate_rtx (rtx dest)
 /* A wrapper for cselib_invalidate_rtx to be called via note_stores.  */
 
 static void
-cselib_invalidate_rtx_note_stores (rtx dest, const_rtx ignore ATTRIBUTE_UNUSED,
+cselib_invalidate_rtx_note_stores (rtx dest, const_rtx,
 				   void *data ATTRIBUTE_UNUSED)
 {
   cselib_invalidate_rtx (dest);
@@ -2499,13 +2499,12 @@ cselib_record_sets (rtx_insn *insn)
   int n_sets = 0;
   int i;
   struct cselib_set sets[MAX_SETS];
-  rtx body = PATTERN (insn);
   rtx cond = 0;
   int n_sets_before_autoinc;
   int n_strict_low_parts = 0;
   struct cselib_record_autoinc_data data;
 
-  body = PATTERN (insn);
+  rtx body = PATTERN (insn);
   if (GET_CODE (body) == COND_EXEC)
     {
       cond = COND_EXEC_TEST (body);
@@ -2600,6 +2599,7 @@ cselib_record_sets (rtx_insn *insn)
 	  && cselib_record_sets_hook
 	  && REG_P (dest)
 	  && HARD_REGISTER_P (dest)
+	  && sets[i].src_elt
 	  && is_a <scalar_int_mode> (GET_MODE (dest), &mode)
 	  && n_sets + n_strict_low_parts < MAX_SETS)
 	{
@@ -2640,7 +2640,7 @@ cselib_record_sets (rtx_insn *insn)
   /* Invalidate all locations written by this insn.  Note that the elts we
      looked up in the previous loop aren't affected, just some of their
      locations may go away.  */
-  note_stores (body, cselib_invalidate_rtx_note_stores, NULL);
+  note_pattern_stores (body, cselib_invalidate_rtx_note_stores, NULL);
 
   for (i = n_sets_before_autoinc; i < n_sets; i++)
     cselib_invalidate_rtx (sets[i].dest);
@@ -2746,12 +2746,26 @@ cselib_process_insn (rtx_insn *insn)
      memory.  */
   if (CALL_P (insn))
     {
+      function_abi callee_abi = insn_callee_abi (insn);
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (call_used_regs[i]
-	    || (REG_VALUES (i) && REG_VALUES (i)->elt
-		&& (targetm.hard_regno_call_part_clobbered
-		    (i, GET_MODE (REG_VALUES (i)->elt->val_rtx)))))
-	  cselib_invalidate_regno (i, reg_raw_mode[i]);
+	if (elt_list *values = REG_VALUES (i))
+	  {
+	    /* If we know what mode the value was set in, check whether
+	       it is still available after the call in that mode.  If we
+	       don't know the mode, we have to check for the worst-case
+	       scenario instead.  */
+	    if (values->elt)
+	      {
+		machine_mode mode = GET_MODE (values->elt->val_rtx);
+		if (callee_abi.clobbers_reg_p (mode, i))
+		  cselib_invalidate_regno (i, mode);
+	      }
+	    else
+	      {
+		if (callee_abi.clobbers_at_least_part_of_reg_p (i))
+		  cselib_invalidate_regno (i, reg_raw_mode[i]);
+	      }
+	  }
 
       /* Since it is not clear how cselib is going to be used, be
 	 conservative here and treat looping pure or const functions
@@ -2777,7 +2791,8 @@ cselib_process_insn (rtx_insn *insn)
       for (x = CALL_INSN_FUNCTION_USAGE (insn); x; x = XEXP (x, 1))
 	if (GET_CODE (XEXP (x, 0)) == CLOBBER)
 	  cselib_invalidate_rtx (XEXP (XEXP (x, 0), 0));
-      /* Flush evertything on setjmp.  */
+
+      /* Flush everything on setjmp.  */
       if (cselib_preserve_constants
 	  && find_reg_note (insn, REG_SETJMP, NULL))
 	{
@@ -2835,9 +2850,14 @@ cselib_init (int record_what)
     }
   used_regs = XNEWVEC (unsigned int, cselib_nregs);
   n_used_regs = 0;
-  cselib_hash_table = new hash_table<cselib_hasher> (31);
+  /* FIXME: enable sanitization (PR87845) */
+  cselib_hash_table
+    = new hash_table<cselib_hasher> (31, /* ggc */ false,
+				     /* sanitize_eq_and_hash */ false);
   if (cselib_preserve_constants)
-    cselib_preserved_hash_table = new hash_table<cselib_hasher> (31);
+    cselib_preserved_hash_table
+      = new hash_table<cselib_hasher> (31, /* ggc */ false,
+				       /* sanitize_eq_and_hash */ false);
   next_uid = 1;
 }
 

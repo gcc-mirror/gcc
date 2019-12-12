@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,13 +51,7 @@ package Sem_Eval is
 
    --    Is_Static_Expression
 
-   --      This flag is set on any expression that is static according to the
-   --      rules in (RM 4.9(3-32)). This flag should be tested during testing
-   --      of legality of parts of a larger static expression. For all other
-   --      contexts that require static expressions, use the separate predicate
-   --      Is_OK_Static_Expression, since an expression that meets the RM 4.9
-   --      requirements, but raises a constraint error when evaluated in a non-
-   --      static context does not meet the legality requirements.
+   --      True for static expressions, as defined in RM-4.9.
 
    --    Raises_Constraint_Error
 
@@ -68,30 +62,27 @@ package Sem_Eval is
    --      (i.e. the flag is accurate for static expressions, and conservative
    --      for non-static expressions.
 
-   --  If a static expression does not raise constraint error, then it will
-   --  have the flag Raises_Constraint_Error flag False, and the expression
-   --  must be computed at compile time, which means that it has the form of
-   --  either a literal, or a constant that is itself (recursively) either a
-   --  literal or a constant.
+   --  See also Is_OK_Static_Expression, which is True for static
+   --  expressions that do not raise Constraint_Error. This is used in most
+   --  legality checks, because static expressions that raise Constraint_Error
+   --  are usually illegal.
 
-   --  The above rules must be followed exactly in order for legality checks to
-   --  be accurate. For subexpressions that are not static according to the RM
-   --  definition, they are sometimes folded anyway, but of course in this case
-   --  Is_Static_Expression is not set.
+   --  See also Compile_Time_Known_Value, which is True for an expression whose
+   --  value is known at compile time. In this case, the expression is folded
+   --  to a literal or to a constant that is itself (recursively) either a
+   --  literal or a constant
+
+   --  Is_[OK_]Static_Expression are used for legality checks, whereas
+   --  Compile_Time_Known_Value is used for optimization purposes.
 
    --  When we are analyzing and evaluating static expressions, we propagate
-   --  both flags accurately. Usually if a subexpression raises a constraint
-   --  error, then so will its parent expression, and Raise_Constraint_Error
-   --  will be propagated to this parent. The exception is conditional cases
-   --  like (True or else 1/0 = 0) which results in an expresion that has the
+   --  both flags. Usually if a subexpression raises a Constraint_Error, then
+   --  so will its parent expression, and Raise_Constraint_Error will be
+   --  propagated to this parent. The exception is conditional cases like
+   --  (True or else 1/0 = 0), which results in an expression that has the
    --  Is_Static_Expression flag True, and Raises_Constraint_Error False. Even
    --  though 1/0 would raise an exception, the right operand is never actually
    --  executed, so the expression as a whole does not raise CE.
-
-   --  For constructs in the language where static expressions are part of the
-   --  required semantics, we need an expression that meets the 4.9 rules and
-   --  does not raise CE. So nearly everywhere, callers should call function
-   --  Is_OK_Static_Expression rather than Is_Static_Expression.
 
    --  Finally, the case of static predicates. These are applied only to entire
    --  expressions, not to subexpressions, so we do not have the case of having

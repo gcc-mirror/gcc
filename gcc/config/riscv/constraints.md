@@ -1,5 +1,5 @@
 ;; Constraint definitions for RISC-V target.
-;; Copyright (C) 2011-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2019 Free Software Foundation, Inc.
 ;; Contributed by Andrew Waterman (andrew@sifive.com).
 ;; Based on MIPS target for GNU compiler.
 ;;
@@ -48,6 +48,11 @@
   "A 5-bit unsigned immediate for CSR access instructions."
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, 0, 31)")))
+
+(define_constraint "L"
+  "A U-type 20-bit signed immediate."
+  (and (match_code "const_int")
+       (match_test "LUI_OPERAND (ival)")))
 
 ;; Floating-point constant +0.0, used for FCVT-based moves when FMV is
 ;; not available in RV32.

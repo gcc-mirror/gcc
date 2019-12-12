@@ -13,5 +13,5 @@ program pr81304
      a = min (a, c)
      b = max (b, c)
    end do
-   if (any (a /= (/ 1, -4, 6 /)) .or. any (b /= (/ 16, 11, 21 /))) STOP 1
+   if (any (a /= (/ 1, -4, 6 /)) .or. any (b /= (/ 16, 11, 21 /))) stop 1
 end

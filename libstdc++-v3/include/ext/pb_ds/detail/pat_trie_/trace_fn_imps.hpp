@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,6 +37,8 @@
  * @file pat_trie_/trace_fn_imps.hpp
  * Contains an implementation class for pat_trie_.
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 #ifdef PB_DS_PAT_TRIE_TRACE_
 
@@ -109,3 +111,4 @@ trace_node_metadata(node_const_pointer, type_to_type<null_type>)
 
 #endif 
 
+#endif

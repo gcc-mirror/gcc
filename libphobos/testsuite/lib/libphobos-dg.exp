@@ -1,0 +1,52 @@
+# Copyright (C) 2017-2019 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+load_gcc_lib multiline.exp
+load_gcc_lib prune.exp
+load_gcc_lib scandump.exp
+load_gcc_lib scanltranstree.exp
+load_gcc_lib scanwpaipa.exp
+load_gcc_lib file-format.exp
+load_gcc_lib scanasm.exp
+load_gcc_lib scanlang.exp
+load_gcc_lib scanrtl.exp
+load_gcc_lib scantree.exp
+load_gcc_lib scanipa.exp
+load_gcc_lib torture-options.exp
+load_gcc_lib timeout-dg.exp
+load_gcc_lib fortran-modules.exp
+load_gcc_lib gcc-dg.exp
+
+# Utility routines.
+
+#
+# libphobos_load -- wrapper around default libphobos_load to handle tests that
+# require program arguments passed to them.
+#
+
+if { [info procs libphobos_load] != [list] \
+      && [info procs prev_libphobos_load] == [list] } {
+    rename libphobos_load prev_libphobos_load
+
+    proc libphobos_load { program args } {
+	global libphobos_run_args
+	if { $libphobos_run_args != "" } {
+	    set args [concat "{$libphobos_run_args}"]
+	}
+	set result [eval [list prev_libphobos_load $program] $args ]
+	return $result
+    }
+}

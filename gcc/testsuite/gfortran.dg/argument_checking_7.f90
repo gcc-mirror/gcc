@@ -12,7 +12,7 @@ module cyclic
       character(len(y)-1) ouch ! { dg-error "used before it is typed" }
       integer i
       do i = 1, len(ouch)
-        ouch(i:i) = achar(ieor(iachar(x(i:i)),iachar(y(i:i)))) ! { dg-error "Unclassifiable statement" }
+        ouch(i:i) = achar(ieor(iachar(x(i:i)),iachar(y(i:i))))
       end do
       end function ouch
 end module cyclic

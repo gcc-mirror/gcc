@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997-2018 Free Software Foundation, Inc.
+// Copyright (C) 1997-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,7 +44,7 @@
 #include <initializer_list>
 #endif
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
 # include <string_view>
 #endif
 
@@ -100,7 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       ///  Value returned by various member functions when they fail.
       static const size_type	npos = static_cast<size_type>(-1);
 
-    private:
+    protected:
       // type used for positions in insert, erase etc.
 #if __cplusplus < 201103L
       typedef iterator __const_iterator;
@@ -108,7 +108,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       typedef const_iterator __const_iterator;
 #endif
 
-#if __cplusplus > 201402L
+    private:
+#if __cplusplus >= 201703L
       // A helper type for avoiding boiler-plate.
       typedef basic_string_view<_CharT, _Traits> __sv_type;
 
@@ -133,6 +134,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	explicit __sv_wrapper(__sv_type __sv) noexcept : _M_sv(__sv) { }
 	__sv_type _M_sv;
       };
+
+      /**
+       *  @brief  Only internally used: Construct string from a string view
+       *          wrapper.
+       *  @param  __svw  string view wrapper.
+       *  @param  __a  Allocator to use.
+       */
+      explicit
+      basic_string(__sv_wrapper __svw, const _Alloc& __a)
+      : basic_string(__svw._M_sv.data(), __svw._M_sv.size(), __a) { }
 #endif
 
       // Use empty-base optimization: http://www.cantrip.org/emptyopt.html
@@ -616,7 +627,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	: _M_dataplus(_M_local_data(), __a)
 	{ _M_construct(__beg, __end); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Construct string from a substring of a string_view.
        *  @param  __t   Source object convertible to string view.
@@ -638,16 +649,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	explicit
 	basic_string(const _Tp& __t, const _Alloc& __a = _Alloc())
 	: basic_string(__sv_wrapper(_S_to_string_view(__t)), __a) { }
-
-      /**
-       *  @brief  Only internally used: Construct string from a string view
-       *          wrapper.
-       *  @param  __svw  string view wrapper.
-       *  @param  __a  Allocator to use.
-       */
-      explicit
-      basic_string(__sv_wrapper __svw, const _Alloc& __a)
-      : basic_string(__svw._M_sv.data(), __svw._M_sv.size(), __a) { }
 #endif // C++17
 
       /**
@@ -663,35 +664,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_string&
       operator=(const basic_string& __str)
       {
-#if __cplusplus >= 201103L
-	if (_Alloc_traits::_S_propagate_on_copy_assign())
-	  {
-	    if (!_Alloc_traits::_S_always_equal() && !_M_is_local()
-		&& _M_get_allocator() != __str._M_get_allocator())
-	      {
-		// Propagating allocator cannot free existing storage so must
-		// deallocate it before replacing current allocator.
-		if (__str.size() <= _S_local_capacity)
-		  {
-		    _M_destroy(_M_allocated_capacity);
-		    _M_data(_M_local_data());
-		    _M_set_length(0);
-		  }
-		else
-		  {
-		    const auto __len = __str.size();
-		    auto __alloc = __str._M_get_allocator();
-		    // If this allocation throws there are no effects:
-		    auto __ptr = _Alloc_traits::allocate(__alloc, __len + 1);
-		    _M_destroy(_M_allocated_capacity);
-		    _M_data(__ptr);
-		    _M_capacity(__len);
-		    _M_set_length(__len);
-		  }
-	      }
-	    std::__alloc_on_copy(_M_get_allocator(), __str._M_get_allocator());
-	  }
-#endif
 	return this->assign(__str);
       }
 
@@ -743,20 +715,29 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	// Replace allocator if POCMA is true.
 	std::__alloc_on_move(_M_get_allocator(), __str._M_get_allocator());
 
-	if (!__str._M_is_local()
-	    && (_Alloc_traits::_S_propagate_on_move_assign()
-	      || _Alloc_traits::_S_always_equal()))
+	if (__str._M_is_local())
 	  {
+	    // We've always got room for a short string, just copy it.
+	    if (__str.size())
+	      this->_S_copy(_M_data(), __str._M_data(), __str.size());
+	    _M_set_length(__str.size());
+	  }
+	else if (_Alloc_traits::_S_propagate_on_move_assign()
+	    || _Alloc_traits::_S_always_equal()
+	    || _M_get_allocator() == __str._M_get_allocator())
+	  {
+	    // Just move the allocated pointer, our allocator can free it.
 	    pointer __data = nullptr;
 	    size_type __capacity;
 	    if (!_M_is_local())
 	      {
 		if (_Alloc_traits::_S_always_equal())
 		  {
+		    // __str can reuse our existing storage.
 		    __data = _M_data();
 		    __capacity = _M_allocated_capacity;
 		  }
-		else
+		else // __str can't use it, so free it.
 		  _M_destroy(_M_allocated_capacity);
 	      }
 
@@ -771,8 +752,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	    else
 	      __str._M_data(__str._M_local_buf);
 	  }
-	else
-	    assign(__str);
+	else // Need to do a deep copy
+	  assign(__str);
 	__str.clear();
 	return *this;
       }
@@ -789,7 +770,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       }
 #endif // C++11
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Set value to string constructed from a string_view.
        *  @param  __svt  An object convertible to string_view.
@@ -1017,7 +998,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  Returns true if the %string is empty.  Equivalent to 
        *  <code>*this == ""</code>.
        */
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const _GLIBCXX_NOEXCEPT
       { return this->size() == 0; }
 
@@ -1190,7 +1171,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { return this->append(__l.begin(), __l.size()); }
 #endif // C++11
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Append a string_view.
        *  @param __svt  An object convertible to string_view to be appended.
@@ -1299,7 +1280,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
         append(_InputIterator __first, _InputIterator __last)
         { return this->replace(end(), end(), __first, __last); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Append a string_view.
        *  @param __svt  An object convertible to string_view to be appended.
@@ -1326,8 +1307,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	{
 	  __sv_type __sv = __svt;
 	  return _M_append(__sv.data()
-			   + __sv._M_check(__pos, "basic_string::append"),
-			   __sv._M_limit(__pos, __n));
+	      + std::__sv_check(__sv.size(), __pos, "basic_string::append"),
+	      std::__sv_limit(__sv.size(), __pos, __n));
 	}
 #endif // C++17
 
@@ -1353,6 +1334,35 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_string&
       assign(const basic_string& __str)
       {
+#if __cplusplus >= 201103L
+	if (_Alloc_traits::_S_propagate_on_copy_assign())
+	  {
+	    if (!_Alloc_traits::_S_always_equal() && !_M_is_local()
+		&& _M_get_allocator() != __str._M_get_allocator())
+	      {
+		// Propagating allocator cannot free existing storage so must
+		// deallocate it before replacing current allocator.
+		if (__str.size() <= _S_local_capacity)
+		  {
+		    _M_destroy(_M_allocated_capacity);
+		    _M_data(_M_local_data());
+		    _M_set_length(0);
+		  }
+		else
+		  {
+		    const auto __len = __str.size();
+		    auto __alloc = __str._M_get_allocator();
+		    // If this allocation throws there are no effects:
+		    auto __ptr = _Alloc_traits::allocate(__alloc, __len + 1);
+		    _M_destroy(_M_allocated_capacity);
+		    _M_data(__ptr);
+		    _M_capacity(__len);
+		    _M_set_length(__len);
+		  }
+	      }
+	    std::__alloc_on_copy(_M_get_allocator(), __str._M_get_allocator());
+	  }
+#endif
 	this->_M_assign(__str);
 	return *this;
       }
@@ -1471,7 +1481,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { return this->assign(__l.begin(), __l.size()); }
 #endif // C++11
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Set value from a string_view.
        *  @param __svt  The source object convertible to string_view.
@@ -1497,9 +1507,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	assign(const _Tp& __svt, size_type __pos, size_type __n = npos)
 	{
 	  __sv_type __sv = __svt;
-	  return _M_replace(size_type(0), this->size(), __sv.data()
-			    + __sv._M_check(__pos, "basic_string::assign"),
-			    __sv._M_limit(__pos, __n));
+	  return _M_replace(size_type(0), this->size(),
+	      __sv.data()
+	      + std::__sv_check(__sv.size(), __pos, "basic_string::assign"),
+	      std::__sv_limit(__sv.size(), __pos, __n));
 	}
 #endif // C++17
 
@@ -1614,7 +1625,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert value of a string.
-       *  @param __pos1  Iterator referencing location in string to insert at.
+       *  @param __pos1 Position in string to insert at.
        *  @param __str  The string to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
@@ -1631,8 +1642,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a substring.
-       *  @param __pos1  Iterator referencing location in string to insert at.
-       *  @param __str  The string to insert.
+       *  @param __pos1  Position in string to insert at.
+       *  @param __str   The string to insert.
        *  @param __pos2  Start of characters in str to insert.
        *  @param __n  Number of characters to insert.
        *  @return  Reference to this string.
@@ -1656,7 +1667,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a C substring.
-       *  @param __pos  Iterator referencing location in string to insert at.
+       *  @param __pos  Position in string to insert at.
        *  @param __s  The C string to insert.
        *  @param __n  The number of characters to insert.
        *  @return  Reference to this string.
@@ -1676,7 +1687,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a C string.
-       *  @param __pos  Iterator referencing location in string to insert at.
+       *  @param __pos  Position in string to insert at.
        *  @param __s  The C string to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
@@ -1740,10 +1751,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	return iterator(_M_data() + __pos);
       }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Insert a string_view.
-       *  @param __pos  Iterator referencing position in string to insert at.
+       *  @param __pos  Position in string to insert at.
        *  @param __svt  The object convertible to string_view to insert.
        *  @return  Reference to this string.
       */
@@ -1757,10 +1768,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a string_view.
-       *  @param __pos  Iterator referencing position in string to insert at.
-       *  @param __svt  The object convertible to string_view to insert from.
-       *  @param __pos  Iterator referencing position in string_view to insert
-       *  from.
+       *  @param __pos1  Position in string to insert at.
+       *  @param __svt   The object convertible to string_view to insert from.
+       *  @param __pos2  Start of characters in str to insert.
        *  @param __n    The number of characters to insert.
        *  @return  Reference to this string.
       */
@@ -1770,9 +1780,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	       size_type __pos2, size_type __n = npos)
 	{
 	  __sv_type __sv = __svt;
-	  return this->replace(__pos1, size_type(0), __sv.data()
-			       + __sv._M_check(__pos2, "basic_string::insert"),
-			       __sv._M_limit(__pos2, __n));
+	  return this->replace(__pos1, size_type(0),
+	      __sv.data()
+	      + std::__sv_check(__sv.size(), __pos2, "basic_string::insert"),
+	      std::__sv_limit(__sv.size(), __pos2, __n));
 	}
 #endif // C++17
 
@@ -2171,7 +2182,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { return this->replace(__i1, __i2, __l.begin(), __l.size()); }
 #endif // C++11
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Replace range of characters with string_view.
        *  @param __pos  The position to replace at.
@@ -2202,9 +2213,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 		size_type __pos2, size_type __n2 = npos)
 	{
 	  __sv_type __sv = __svt;
-	  return this->replace(__pos1, __n1, __sv.data()
-			       + __sv._M_check(__pos2, "basic_string::replace"),
-			       __sv._M_limit(__pos2, __n2));
+	  return this->replace(__pos1, __n1,
+	      __sv.data()
+	      + std::__sv_check(__sv.size(), __pos2, "basic_string::replace"),
+	      std::__sv_limit(__sv.size(), __pos2, __n2));
 	}
 
       /**
@@ -2299,7 +2311,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       data() const _GLIBCXX_NOEXCEPT
       { return _M_data(); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Return non-const pointer to contents.
        *
@@ -2349,7 +2361,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NOEXCEPT
       { return this->find(__str.data(), __pos, __str.size()); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find position of a string_view.
        *  @param __svt  The object convertible to string_view to locate.
@@ -2411,7 +2423,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NOEXCEPT
       { return this->rfind(__str.data(), __pos, __str.size()); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find last position of a string_view.
        *  @param __svt  The object convertible to string_view to locate.
@@ -2490,7 +2502,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NOEXCEPT
       { return this->find_first_of(__str.data(), __pos, __str.size()); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find position of a character of a string_view.
        *  @param __svt  An object convertible to string_view containing
@@ -2574,7 +2586,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NOEXCEPT
       { return this->find_last_of(__str.data(), __pos, __str.size()); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find last position of a character of string.
        *  @param __svt  An object convertible to string_view containing
@@ -2657,7 +2669,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NOEXCEPT
       { return this->find_first_not_of(__str.data(), __pos, __str.size()); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find position of a character not in a string_view.
        *  @param __svt  A object convertible to string_view containing
@@ -2739,7 +2751,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NOEXCEPT
       { return this->find_last_not_of(__str.data(), __pos, __str.size()); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find last position of a character not in a string_view.
        *  @param __svt  An object convertible to string_view containing
@@ -2849,7 +2861,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	return __r;
       }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Compare to a string_view.
        *  @param __svt An object convertible to string_view to compare against.
@@ -3028,6 +3040,32 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       compare(size_type __pos, size_type __n1, const _CharT* __s,
 	      size_type __n2) const;
 
+#if __cplusplus > 201703L
+      bool
+      starts_with(basic_string_view<_CharT, _Traits> __x) const noexcept
+      { return __sv_type(this->data(), this->size()).starts_with(__x); }
+
+      bool
+      starts_with(_CharT __x) const noexcept
+      { return __sv_type(this->data(), this->size()).starts_with(__x); }
+
+      bool
+      starts_with(const _CharT* __x) const noexcept
+      { return __sv_type(this->data(), this->size()).starts_with(__x); }
+
+      bool
+      ends_with(basic_string_view<_CharT, _Traits> __x) const noexcept
+      { return __sv_type(this->data(), this->size()).ends_with(__x); }
+
+      bool
+      ends_with(_CharT __x) const noexcept
+      { return __sv_type(this->data(), this->size()).ends_with(__x); }
+
+      bool
+      ends_with(const _CharT* __x) const noexcept
+      { return __sv_type(this->data(), this->size()).ends_with(__x); }
+#endif // C++20
+
       // Allow basic_stringbuf::__xfer_bufptrs to call _M_length:
       template<typename, typename, typename> friend class basic_stringbuf;
     };
@@ -3100,7 +3138,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
   template<typename _CharT, typename _Traits, typename _Alloc>
     class basic_string
     {
-      typedef typename _Alloc::template rebind<_CharT>::other _CharT_alloc_type;
+      typedef typename __gnu_cxx::__alloc_traits<_Alloc>::template
+	rebind<_CharT>::other _CharT_alloc_type;
+      typedef __gnu_cxx::__alloc_traits<_CharT_alloc_type> _CharT_alloc_traits;
 
       // Types:
     public:
@@ -3109,15 +3149,24 @@ _GLIBCXX_END_NAMESPACE_CXX11
       typedef _Alloc					    allocator_type;
       typedef typename _CharT_alloc_type::size_type	    size_type;
       typedef typename _CharT_alloc_type::difference_type   difference_type;
+#if __cplusplus < 201103L
       typedef typename _CharT_alloc_type::reference	    reference;
       typedef typename _CharT_alloc_type::const_reference   const_reference;
-      typedef typename _CharT_alloc_type::pointer	    pointer;
-      typedef typename _CharT_alloc_type::const_pointer	    const_pointer;
+#else
+      typedef value_type&				    reference;
+      typedef const value_type&				    const_reference;
+#endif
+      typedef typename _CharT_alloc_traits::pointer	    pointer;
+      typedef typename _CharT_alloc_traits::const_pointer   const_pointer;
       typedef __gnu_cxx::__normal_iterator<pointer, basic_string>  iterator;
       typedef __gnu_cxx::__normal_iterator<const_pointer, basic_string>
                                                             const_iterator;
       typedef std::reverse_iterator<const_iterator>	const_reverse_iterator;
       typedef std::reverse_iterator<iterator>		    reverse_iterator;
+
+    protected:
+      // type used for positions in insert, erase etc.
+      typedef iterator __const_iterator;
 
     private:
       // _Rep: string representation
@@ -3144,7 +3193,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
       struct _Rep : _Rep_base
       {
 	// Types:
-	typedef typename _Alloc::template rebind<char>::other _Raw_bytes_alloc;
+	typedef typename __gnu_cxx::__alloc_traits<_Alloc>::template
+	  rebind<char>::other _Raw_bytes_alloc;
 
 	// (Public) Data members:
 
@@ -3448,7 +3498,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       _S_empty_rep() _GLIBCXX_NOEXCEPT
       { return _Rep::_S_empty_rep(); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       // A helper type for avoiding boiler-plate.
       typedef basic_string_view<_CharT, _Traits> __sv_type;
 
@@ -3473,6 +3523,16 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	explicit __sv_wrapper(__sv_type __sv) noexcept : _M_sv(__sv) { }
 	__sv_type _M_sv;
       };
+
+      /**
+       *  @brief  Only internally used: Construct string from a string view
+       *          wrapper.
+       *  @param  __svw  string view wrapper.
+       *  @param  __a  Allocator to use.
+       */
+      explicit
+      basic_string(__sv_wrapper __svw, const _Alloc& __a)
+      : basic_string(__svw._M_sv.data(), __svw._M_sv.size(), __a) { }
 #endif
 
     public:
@@ -3486,10 +3546,11 @@ _GLIBCXX_END_NAMESPACE_CXX11
       basic_string()
 #if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
       _GLIBCXX_NOEXCEPT
-      : _M_dataplus(_S_empty_rep()._M_refdata(), _Alloc()) { }
+      : _M_dataplus(_S_empty_rep()._M_refdata(), _Alloc())
 #else
-      : _M_dataplus(_S_construct(size_type(), _CharT(), _Alloc()), _Alloc()){ }
+      : _M_dataplus(_S_construct(size_type(), _CharT(), _Alloc()), _Alloc())
 #endif
+      { }
 
       /**
        *  @brief  Construct an empty string using allocator @a a.
@@ -3570,7 +3631,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
       noexcept // FIXME C++11: should always be noexcept.
 #endif
-      : _M_dataplus(__str._M_dataplus)
+      : _M_dataplus(std::move(__str._M_dataplus))
       {
 #if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
 	__str._M_data(_S_empty_rep()._M_refdata());
@@ -3585,6 +3646,25 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  @param  __a  Allocator to use (default is default allocator).
        */
       basic_string(initializer_list<_CharT> __l, const _Alloc& __a = _Alloc());
+
+      basic_string(const basic_string& __str, const _Alloc& __a)
+      : _M_dataplus(__str._M_rep()->_M_grab(__a, __str.get_allocator()), __a)
+      { }
+
+      basic_string(basic_string&& __str, const _Alloc& __a)
+      : _M_dataplus(__str._M_data(), __a)
+      {
+	if (__a == __str.get_allocator())
+	  {
+#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
+	    __str._M_data(_S_empty_rep()._M_refdata());
+#else
+	    __str._M_data(_S_construct(size_type(), _CharT(), __a));
+#endif
+	  }
+	else
+	  _M_dataplus._M_p = _S_construct(__str.begin(), __str.end(), __a);
+      }
 #endif // C++11
 
       /**
@@ -3597,7 +3677,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
         basic_string(_InputIterator __beg, _InputIterator __end,
 		     const _Alloc& __a = _Alloc());
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Construct string from a substring of a string_view.
        *  @param  __t   Source object convertible to string view.
@@ -3619,16 +3699,6 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	explicit
 	basic_string(const _Tp& __t, const _Alloc& __a = _Alloc())
 	: basic_string(__sv_wrapper(_S_to_string_view(__t)), __a) { }
-
-      /**
-       *  @brief  Only internally used: Construct string from a string view
-       *          wrapper.
-       *  @param  __svw  string view wrapper.
-       *  @param  __a  Allocator to use.
-       */
-      explicit
-      basic_string(__sv_wrapper __svw, const _Alloc& __a)
-      : basic_string(__svw._M_sv.data(), __svw._M_sv.size(), __a) { }
 #endif // C++17
 
       /**
@@ -3696,7 +3766,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       }
 #endif // C++11
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Set value to string constructed from a string_view.
        *  @param  __svt An object convertible to  string_view.
@@ -3942,7 +4012,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  Returns true if the %string is empty.  Equivalent to 
        *  <code>*this == ""</code>.
        */
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const _GLIBCXX_NOEXCEPT
       { return this->size() == 0; }
 
@@ -4118,7 +4188,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       { return this->append(__l.begin(), __l.size()); }
 #endif // C++11
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Append a string_view.
        *  @param __svt The object convertible to string_view to be appended.
@@ -4210,7 +4280,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
         append(_InputIterator __first, _InputIterator __last)
         { return this->replace(_M_iend(), _M_iend(), __first, __last); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Append a string_view.
        *  @param __svt The object convertible to string_view to be appended.
@@ -4238,8 +4308,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	{
 	  __sv_type __sv = __svt;
 	  return append(__sv.data()
-			+ __sv._M_check(__pos, "basic_string::append"),
-			__sv._M_limit(__pos, __n));
+	      + std::__sv_check(__sv.size(), __pos, "basic_string::append"),
+	      std::__sv_limit(__sv.size(), __pos, __n));
 	}
 #endif // C++17
 
@@ -4368,7 +4438,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       { return this->assign(__l.begin(), __l.size()); }
 #endif // C++11
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Set value from a string_view.
        *  @param __svt The source object convertible to string_view.
@@ -4395,8 +4465,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	{
 	  __sv_type __sv = __svt;
 	  return assign(__sv.data()
-			+ __sv._M_check(__pos, "basic_string::assign"),
-			__sv._M_limit(__pos, __n));
+	      + std::__sv_check(__sv.size(), __pos, "basic_string::assign"),
+	      std::__sv_limit(__sv.size(), __pos, __n));
 	}
 #endif // C++17
 
@@ -4451,7 +4521,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert value of a string.
-       *  @param __pos1  Iterator referencing location in string to insert at.
+       *  @param __pos1  Position in string to insert at.
        *  @param __str  The string to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
@@ -4467,7 +4537,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a substring.
-       *  @param __pos1  Iterator referencing location in string to insert at.
+       *  @param __pos1  Position in string to insert at.
        *  @param __str  The string to insert.
        *  @param __pos2  Start of characters in str to insert.
        *  @param __n  Number of characters to insert.
@@ -4492,7 +4562,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a C substring.
-       *  @param __pos  Iterator referencing location in string to insert at.
+       *  @param __pos  Position in string to insert at.
        *  @param __s  The C string to insert.
        *  @param __n  The number of characters to insert.
        *  @return  Reference to this string.
@@ -4511,7 +4581,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a C string.
-       *  @param __pos  Iterator referencing location in string to insert at.
+       *  @param __pos  Position in string to insert at.
        *  @param __s  The C string to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
@@ -4575,10 +4645,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	return iterator(_M_data() + __pos);
       }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Insert a string_view.
-       *  @param __pos  Iterator referencing position in string to insert at.
+       *  @param __pos  Position in string to insert at.
        *  @param __svt  The object convertible to string_view to insert.
        *  @return  Reference to this string.
       */
@@ -4592,9 +4662,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a string_view.
-       *  @param __pos  Iterator referencing position in string to insert at.
+       *  @param __pos  Position in string to insert at.
        *  @param __svt  The object convertible to string_view to insert from.
-       *  @param __pos  Iterator referencing position in string_view to insert
+       *  @param __pos  Position in string_view to insert
        *  from.
        *  @param __n    The number of characters to insert.
        *  @return  Reference to this string.
@@ -4606,8 +4676,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	{
 	  __sv_type __sv = __svt;
 	  return this->replace(__pos1, size_type(0), __sv.data()
-			       + __sv._M_check(__pos2, "basic_string::insert"),
-			       __sv._M_limit(__pos2, __n));
+	      + std::__sv_check(__sv.size(), __pos2, "basic_string::insert"),
+	      std::__sv_limit(__sv.size(), __pos2, __n));
 	}
 #endif // C++17
 
@@ -4965,7 +5035,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       { return this->replace(__i1, __i2, __l.begin(), __l.end()); }
 #endif // C++11
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Replace range of characters with string_view.
        *  @param __pos  The position to replace at.
@@ -4997,8 +5067,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	{
 	  __sv_type __sv = __svt;
 	  return this->replace(__pos1, __n1,
-	      __sv.data() + __sv._M_check(__pos2, "basic_string::replace"),
-	      __sv._M_limit(__pos2, __n2));
+	      __sv.data()
+	      + std::__sv_check(__sv.size(), __pos2, "basic_string::replace"),
+	      std::__sv_limit(__sv.size(), __pos2, __n2));
 	}
 
       /**
@@ -5138,7 +5209,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       data() const _GLIBCXX_NOEXCEPT
       { return _M_data(); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Return non-const pointer to contents.
        *
@@ -5221,7 +5292,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       size_type
       find(_CharT __c, size_type __pos = 0) const _GLIBCXX_NOEXCEPT;
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find position of a string_view.
        *  @param __svt  The object convertible to string_view to locate.
@@ -5299,7 +5370,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       size_type
       rfind(_CharT __c, size_type __pos = npos) const _GLIBCXX_NOEXCEPT;
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find last position of a string_view.
        *  @param __svt  The object convertible to string_view to locate.
@@ -5382,7 +5453,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       find_first_of(_CharT __c, size_type __pos = 0) const _GLIBCXX_NOEXCEPT
       { return this->find(__c, __pos); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find position of a character of a string_view.
        *  @param __svt  An object convertible to string_view containing
@@ -5466,7 +5537,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       find_last_of(_CharT __c, size_type __pos = npos) const _GLIBCXX_NOEXCEPT
       { return this->rfind(__c, __pos); }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find last position of a character of string.
        *  @param __svt  An object convertible to string_view containing
@@ -5547,7 +5618,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       find_first_not_of(_CharT __c, size_type __pos = 0) const
       _GLIBCXX_NOEXCEPT;
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find position of a character not in a string_view.
        *  @param __svt  An object convertible to string_view containing
@@ -5629,7 +5700,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       find_last_not_of(_CharT __c, size_type __pos = npos) const
       _GLIBCXX_NOEXCEPT;
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Find last position of a character not in a string_view.
        *  @param __svt  An object convertible to string_view containing
@@ -5691,7 +5762,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	return __r;
       }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
       /**
        *  @brief  Compare to a string_view.
        *  @param __svt An object convertible to string_view to compare against.
@@ -5870,6 +5941,32 @@ _GLIBCXX_END_NAMESPACE_CXX11
       compare(size_type __pos, size_type __n1, const _CharT* __s,
 	      size_type __n2) const;
 
+#if __cplusplus > 201703L
+      bool
+      starts_with(basic_string_view<_CharT, _Traits> __x) const noexcept
+      { return __sv_type(this->data(), this->size()).starts_with(__x); }
+
+      bool
+      starts_with(_CharT __x) const noexcept
+      { return __sv_type(this->data(), this->size()).starts_with(__x); }
+
+      bool
+      starts_with(const _CharT* __x) const noexcept
+      { return __sv_type(this->data(), this->size()).starts_with(__x); }
+
+      bool
+      ends_with(basic_string_view<_CharT, _Traits> __x) const noexcept
+      { return __sv_type(this->data(), this->size()).ends_with(__x); }
+
+      bool
+      ends_with(_CharT __x) const noexcept
+      { return __sv_type(this->data(), this->size()).ends_with(__x); }
+
+      bool
+      ends_with(const _CharT* __x) const noexcept
+      { return __sv_type(this->data(), this->size()).ends_with(__x); }
+#endif // C++20
+
 # ifdef _GLIBCXX_TM_TS_INTERNAL
       friend void
       ::_txnal_cow_string_C1_for_exceptions(void* that, const char* s,
@@ -6002,11 +6099,21 @@ _GLIBCXX_END_NAMESPACE_CXX11
     operator+(basic_string<_CharT, _Traits, _Alloc>&& __lhs,
 	      basic_string<_CharT, _Traits, _Alloc>&& __rhs)
     {
-      const auto __size = __lhs.size() + __rhs.size();
-      const bool __cond = (__size > __lhs.capacity()
-			   && __size <= __rhs.capacity());
-      return __cond ? std::move(__rhs.insert(0, __lhs))
-	            : std::move(__lhs.append(__rhs));
+#if _GLIBCXX_USE_CXX11_ABI
+      using _Alloc_traits = allocator_traits<_Alloc>;
+      bool __use_rhs = false;
+      if _GLIBCXX17_CONSTEXPR (typename _Alloc_traits::is_always_equal{})
+	__use_rhs = true;
+      else if (__lhs.get_allocator() == __rhs.get_allocator())
+	__use_rhs = true;
+      if (__use_rhs)
+#endif
+	{
+	  const auto __size = __lhs.size() + __rhs.size();
+	  if (__size > __lhs.capacity() && __size <= __rhs.capacity())
+	    return std::move(__rhs.insert(0, __lhs));
+	}
+      return std::move(__lhs.append(__rhs));
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -6396,6 +6503,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
 
 #include <ext/string_conversions.h>
+#include <bits/charconv.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -6443,43 +6551,68 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   { return __gnu_cxx::__stoa(&std::strtold, "stold", __str.c_str(), __idx); }
 #endif // _GLIBCXX_USE_C99_STDLIB
 
-#if _GLIBCXX_USE_C99_STDIO
-  // NB: (v)snprintf vs sprintf.
+  // DR 1261. Insufficent overloads for to_string / to_wstring
 
-  // DR 1261.
   inline string
   to_string(int __val)
-  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf, 4 * sizeof(int),
-					   "%d", __val); }
+  {
+    const bool __neg = __val < 0;
+    const unsigned __uval = __neg ? (unsigned)~__val + 1u : __val;
+    const auto __len = __detail::__to_chars_len(__uval);
+    string __str(__neg + __len, '-');
+    __detail::__to_chars_10_impl(&__str[__neg], __len, __uval);
+    return __str;
+  }
 
   inline string
   to_string(unsigned __val)
-  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf,
-					   4 * sizeof(unsigned),
-					   "%u", __val); }
+  {
+    string __str(__detail::__to_chars_len(__val), '\0');
+    __detail::__to_chars_10_impl(&__str[0], __str.size(), __val);
+    return __str;
+  }
 
   inline string
   to_string(long __val)
-  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf, 4 * sizeof(long),
-					   "%ld", __val); }
+  {
+    const bool __neg = __val < 0;
+    const unsigned long __uval = __neg ? (unsigned long)~__val + 1ul : __val;
+    const auto __len = __detail::__to_chars_len(__uval);
+    string __str(__neg + __len, '-');
+    __detail::__to_chars_10_impl(&__str[__neg], __len, __uval);
+    return __str;
+  }
 
   inline string
   to_string(unsigned long __val)
-  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf,
-					   4 * sizeof(unsigned long),
-					   "%lu", __val); }
+  {
+    string __str(__detail::__to_chars_len(__val), '\0');
+    __detail::__to_chars_10_impl(&__str[0], __str.size(), __val);
+    return __str;
+  }
 
   inline string
   to_string(long long __val)
-  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf,
-					   4 * sizeof(long long),
-					   "%lld", __val); }
+  {
+    const bool __neg = __val < 0;
+    const unsigned long long __uval
+      = __neg ? (unsigned long long)~__val + 1ull : __val;
+    const auto __len = __detail::__to_chars_len(__uval);
+    string __str(__neg + __len, '-');
+    __detail::__to_chars_10_impl(&__str[__neg], __len, __uval);
+    return __str;
+  }
 
   inline string
   to_string(unsigned long long __val)
-  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf,
-					   4 * sizeof(unsigned long long),
-					   "%llu", __val); }
+  {
+    string __str(__detail::__to_chars_len(__val), '\0');
+    __detail::__to_chars_10_impl(&__str[0], __str.size(), __val);
+    return __str;
+  }
+
+#if _GLIBCXX_USE_C99_STDIO
+  // NB: (v)snprintf vs sprintf.
 
   inline string
   to_string(float __val)
@@ -6662,7 +6795,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif /* _GLIBCXX_COMPATIBILITY_CXX0X */
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+#ifdef _GLIBCXX_USE_CHAR8_T
+  /// std::hash specialization for u8string.
+  template<>
+    struct hash<u8string>
+    : public __hash_base<size_t, u8string>
+    {
+      size_t
+      operator()(const u8string& __s) const noexcept
+      { return std::_Hash_impl::hash(__s.data(),
+                                     __s.length() * sizeof(char8_t)); }
+    };
+
+  template<>
+    struct __is_fast_hash<hash<u8string>> : std::false_type
+    { };
+#endif
+
   /// std::hash specialization for u16string.
   template<>
     struct hash<u16string>
@@ -6692,9 +6841,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __is_fast_hash<hash<u32string>> : std::false_type
     { };
-#endif
 
-#if __cplusplus > 201103L
+#if __cplusplus >= 201402L
 
 #define __cpp_lib_string_udls 201304
 
@@ -6716,7 +6864,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return basic_string<wchar_t>{__str, __len}; }
 #endif
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+#ifdef _GLIBCXX_USE_CHAR8_T
+    _GLIBCXX_DEFAULT_ABI_TAG
+    inline basic_string<char8_t>
+    operator""s(const char8_t* __str, size_t __len)
+    { return basic_string<char8_t>{__str, __len}; }
+#endif
+
     _GLIBCXX_DEFAULT_ABI_TAG
     inline basic_string<char16_t>
     operator""s(const char16_t* __str, size_t __len)
@@ -6726,13 +6880,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline basic_string<char32_t>
     operator""s(const char32_t* __str, size_t __len)
     { return basic_string<char32_t>{__str, __len}; }
-#endif
 
 #pragma GCC diagnostic pop
   } // inline namespace string_literals
   } // inline namespace literals
 
-#endif // __cplusplus > 201103L
+#if __cplusplus >= 201703L
+  namespace __detail::__variant
+  {
+    template<typename> struct _Never_valueless_alt; // see <variant>
+
+    // Provide the strong exception-safety guarantee when emplacing a
+    // basic_string into a variant, but only if moving the string cannot throw.
+    template<typename _Tp, typename _Traits, typename _Alloc>
+      struct _Never_valueless_alt<std::basic_string<_Tp, _Traits, _Alloc>>
+      : __and_<
+	is_nothrow_move_constructible<std::basic_string<_Tp, _Traits, _Alloc>>,
+	is_nothrow_move_assignable<std::basic_string<_Tp, _Traits, _Alloc>>
+	>::type
+      { };
+  }  // namespace __detail::__variant
+#endif // C++17
+#endif // C++14
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-ipa-icf"  } */
+/* { dg-options "-O2 -fdump-ipa-icf-optimized"  } */
+
 static int a;
 static int b;
 static const int c = 2;
@@ -28,6 +29,7 @@ int t(int tt)
     case 11: return k[0];
   }
 }
+
 /* { dg-final { scan-ipa-dump "Equal symbols: 5" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Semantic equality hit:a->b" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Semantic equality hit:c->d" "icf"  } } */

@@ -2,6 +2,7 @@
 /* { dg-options "-O2" } */
 /* { dg-options "-O2 -msse2" { target { i?86-*-* x86_64-*-* } } } */
 /* { dg-options "-O2 -maltivec" { target { powerpc*-*-linux* && powerpc_altivec_ok } } } */
+/* { dg-skip-if "no vector type for PSImode" { msp430-*-* } { "-mlarge" } { "" } } */
 
 typedef __UINTPTR_TYPE__ uintptr_t;
 

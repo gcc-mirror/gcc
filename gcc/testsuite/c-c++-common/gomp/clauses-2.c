@@ -1,3 +1,4 @@
+/* { dg-skip-if "PR 68733" { hppa*-*-hpux* && { ! lp64 } } } */
 struct S { int r; int *s; int t[10]; };
 void bar (int *);
 

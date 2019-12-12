@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2018 Free Software Foundation, Inc.
+// Copyright (C) 2017-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,9 +23,13 @@ void
 test01()
 {
   std::multiset<const int> c;		   // { dg-error "here" }
-  std::multiset<int, std::less<long*>> c2; // { dg-error "here" }
+  std::multiset<int, std::less<long*>> c2;
+  c2.find(2);				   // { dg-error "here" }
 }
 
 // { dg-error "non-const, non-volatile value_type" "" { target *-*-* } 0 }
 // { dg-error "comparison object must be invocable" "" { target *-*-* } 0 }
 // { dg-prune-output "std::allocator<.* has no member named " }
+// { dg-prune-output "must have the same value_type as its allocator" }
+// { dg-prune-output "no match for call" }
+// { dg-prune-output "invalid conversion" }

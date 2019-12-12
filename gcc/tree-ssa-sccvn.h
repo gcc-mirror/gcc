@@ -1,5 +1,5 @@
 /* Tree SCC value numbering
-   Copyright (C) 2007-2018 Free Software Foundation, Inc.
+   Copyright (C) 2007-2019 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>
 
    This file is part of GCC.
@@ -28,6 +28,18 @@ bool expressions_equal_p (tree, tree);
 /* TOP of the VN lattice.  */
 extern tree VN_TOP;
 
+/* A predicated value.  */
+struct vn_pval
+{
+  vn_pval *next;
+  /* The value of the expression this is attached to is RESULT in
+     case the expression is computed dominated by one of the blocks
+     in valid_dominated_by_p.  */
+  tree result;
+  unsigned n;
+  int valid_dominated_by_p[1];
+};
+
 /* N-ary operations in the hashtable consist of length operands, an
    opcode, and a type.  Result is the value number of the operation,
    and hashcode is stored to avoid having to calculate it
@@ -35,12 +47,20 @@ extern tree VN_TOP;
 
 typedef struct vn_nary_op_s
 {
+  vn_nary_op_s *next;
+  vn_nary_op_s *unwind_to;
   /* Unique identify that all expressions with the same value have. */
   unsigned int value_id;
   ENUM_BITFIELD(tree_code) opcode : 16;
   unsigned length : 16;
   hashval_t hashcode;
-  tree result;
+  unsigned predicated_values : 1;
+  union {
+      /* If ! predicated_values this is the value of the expression.  */
+      tree result;
+      /* If predicated_values this is a list of values of the expression.  */
+      vn_pval *values;
+  } u;
   tree type;
   tree op[1];
 } *vn_nary_op_t;
@@ -62,16 +82,18 @@ sizeof_vn_nary_op (unsigned int length)
 
 typedef struct vn_phi_s
 {
+  vn_phi_s *next;
   /* Unique identifier that all expressions with the same value have. */
   unsigned int value_id;
   hashval_t hashcode;
-  vec<tree> phiargs;
   basic_block block;
   /* Controlling condition lhs/rhs.  */
   tree cclhs;
   tree ccrhs;
   tree type;
   tree result;
+  /* The number of args is determined by EDGE_COUT (block->preds).  */
+  tree phiargs[1];
 } *vn_phi_t;
 typedef const struct vn_phi_s *const_vn_phi_t;
 
@@ -115,6 +137,7 @@ vn_ref_op_align_unit (vn_reference_op_t op)
 
 typedef struct vn_reference_s
 {
+  vn_reference_s *next;
   /* Unique identifier that all expressions with the same value have. */
   unsigned int value_id;
   hashval_t hashcode;
@@ -170,38 +193,48 @@ vn_constant_eq_with_type (tree c1, tree c2)
 	  && types_compatible_p (TREE_TYPE (c1), TREE_TYPE (c2)));
 }
 
+/* Instead of having a local availability lattice for each basic-block
+   and availability at X defined as union of the local availabilities
+   at X and its dominators we're turning this upside down and track
+   availability per value given values are usually made available at very
+   few points.
+   So we have a chain of LOCATION, LEADER entries where LOCATION is
+   specifying the basic-block LEADER is made available for VALUE.
+   We prepend to this chain in RPO order thus for iteration we can simply
+   remove the last entries.
+   LOCATION is the basic-block index and LEADER is its SSA name version.  */
+struct vn_avail
+{
+  vn_avail *next;
+  /* The basic-block LEADER is made available.  */
+  int location;
+  /* The LEADER for the value we are chained on.  */
+  int leader;
+};
+
 typedef struct vn_ssa_aux
 {
+  /* SSA name this vn_ssa_aux is associated with in the lattice.  */
+  tree name;
   /* Value number. This may be an SSA name or a constant.  */
   tree valnum;
   /* Statements to insert if needs_insertion is true.  */
   gimple_seq expr;
 
-  /* Saved SSA name info.  */
-  tree_ssa_name::ssa_name_info_type info;
+  /* AVAIL entries, last in RPO order is first.  This is only tracked
+     for SSA names also serving as values (NAME == VALNUM).  */
+  vn_avail *avail;
 
   /* Unique identifier that all expressions with the same value have. */
   unsigned int value_id;
 
-  /* SCC information.  */
-  unsigned int dfsnum;
-  unsigned int low;
+  /* Whether the SSA_NAME has been processed at least once.  */
   unsigned visited : 1;
-  unsigned on_sccstack : 1;
-
-  /* Whether the SSA_NAME has been value numbered already.  This is
-     only saying whether visit_use has been called on it at least
-     once.  It cannot be used to avoid visitation for SSA_NAME's
-     involved in non-singleton SCC's.  */
-  unsigned use_processed : 1;
 
   /* Whether the SSA_NAME has no defining statement and thus an
      insertion of such with EXPR as definition is required before
      a use can be created of it.  */
   unsigned needs_insertion : 1;
-
-  /* Whether range-info is anti-range.  */
-  unsigned range_info_anti_range_p : 1;
 } *vn_ssa_aux_t;
 
 enum vn_lookup_kind { VN_NOWALK, VN_WALK, VN_WALKREWRITE };
@@ -209,17 +242,11 @@ enum vn_lookup_kind { VN_NOWALK, VN_WALK, VN_WALKREWRITE };
 /* Return the value numbering info for an SSA_NAME.  */
 bool has_VN_INFO (tree);
 extern vn_ssa_aux_t VN_INFO (tree);
-extern vn_ssa_aux_t VN_INFO_GET (tree);
 tree vn_get_expr_for (tree);
-void run_scc_vn (vn_lookup_kind);
-unsigned int vn_eliminate (bitmap);
-void free_scc_vn (void);
 void scc_vn_restore_ssa_info (void);
-tree vn_nary_op_lookup (tree, vn_nary_op_t *);
 tree vn_nary_op_lookup_stmt (gimple *, vn_nary_op_t *);
 tree vn_nary_op_lookup_pieces (unsigned int, enum tree_code,
 			       tree, tree *, vn_nary_op_t *);
-vn_nary_op_t vn_nary_op_insert (tree, tree);
 vn_nary_op_t vn_nary_op_insert_pieces (unsigned int, enum tree_code,
 				       tree, tree *, tree, unsigned int);
 bool ao_ref_init_from_vn_reference (ao_ref *, alias_set_type, tree,
@@ -228,7 +255,8 @@ vec<vn_reference_op_s> vn_reference_operands_for_lookup (tree);
 tree vn_reference_lookup_pieces (tree, alias_set_type, tree,
 				 vec<vn_reference_op_s> ,
 				 vn_reference_t *, vn_lookup_kind);
-tree vn_reference_lookup (tree, tree, vn_lookup_kind, vn_reference_t *, bool);
+tree vn_reference_lookup (tree, tree, vn_lookup_kind, vn_reference_t *, bool,
+			  tree * = NULL);
 void vn_reference_lookup_call (gcall *, vn_reference_t *, vn_reference_t);
 vn_reference_t vn_reference_insert_pieces (tree, alias_set_type, tree,
 					   vec<vn_reference_op_s> ,
@@ -237,6 +265,7 @@ vn_reference_t vn_reference_insert_pieces (tree, alias_set_type, tree,
 bool vn_nary_op_eq (const_vn_nary_op_t const vno1,
 		    const_vn_nary_op_t const vno2);
 bool vn_nary_may_trap (vn_nary_op_t);
+bool vn_reference_may_trap (vn_reference_t);
 bool vn_reference_eq (const_vn_reference_t const, const_vn_reference_t const);
 unsigned int get_max_value_id (void);
 unsigned int get_next_value_id (void);
@@ -246,55 +275,17 @@ bool value_id_constant_p (unsigned int);
 tree fully_constant_vn_reference_p (vn_reference_t);
 tree vn_nary_simplify (vn_nary_op_t);
 
-/* Valueize NAME if it is an SSA name, otherwise just return it.  */
+unsigned do_rpo_vn (function *, edge, bitmap);
+void run_rpo_vn (vn_lookup_kind);
+unsigned eliminate_with_rpo_vn (bitmap);
+void free_rpo_vn (void);
 
-static inline tree
-vn_valueize (tree name)
-{
-  if (TREE_CODE (name) == SSA_NAME)
-    {
-      tree tem = VN_INFO (name)->valnum;
-      return tem == VN_TOP ? name : tem;
-    }
-  return name;
-}
+/* Valueize NAME if it is an SSA name, otherwise just return it.  This hook
+   is initialized by run_scc_vn.  */
+extern tree (*vn_valueize) (tree);
 
-/* Get at the original range info for NAME.  */
+/* Context that valueization should operate on.  */
+extern basic_block vn_context_bb;
 
-inline range_info_def *
-VN_INFO_RANGE_INFO (tree name)
-{
-  return (VN_INFO (name)->info.range_info
-	  ? VN_INFO (name)->info.range_info
-	  : SSA_NAME_RANGE_INFO (name));
-}
-
-/* Whether the original range info of NAME is an anti-range.  */
-
-inline bool
-VN_INFO_ANTI_RANGE_P (tree name)
-{
-  return (VN_INFO (name)->info.range_info
-	  ? VN_INFO (name)->range_info_anti_range_p
-	  : SSA_NAME_ANTI_RANGE_P (name));
-}
-
-/* Get at the original range info kind for NAME.  */
-
-inline value_range_type
-VN_INFO_RANGE_TYPE (tree name)
-{
-  return VN_INFO_ANTI_RANGE_P (name) ? VR_ANTI_RANGE : VR_RANGE;
-}
-
-/* Get at the original pointer info for NAME.  */
-
-inline ptr_info_def *
-VN_INFO_PTR_INFO (tree name)
-{
-  return (VN_INFO (name)->info.ptr_info
-	  ? VN_INFO (name)->info.ptr_info
-	  : SSA_NAME_PTR_INFO (name));
-}
 
 #endif /* TREE_SSA_SCCVN_H  */

@@ -16,5 +16,5 @@ main ()
 }
 
 /* { dg-output "ERROR: AddressSanitizer: stack-buffer-overflow.*(\n|\r\n|\r)" } */
-/* { dg-output "    #0 0x\[0-9a-f\]+ +(in _*(interceptor_|wrap_|)memcmp|\[(\])\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "    #1 0x\[0-9a-f\]+ +(in _*main|\[(\])\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "    #\[1-9\] 0x\[0-9a-f\]+ +(in _*(interceptor_|wrap_|)memcmp|\[(\])\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "    #\[2-9\] 0x\[0-9a-f\]+ +(in _*main|\[(\])\[^\n\r]*(\n|\r\n|\r)" } */

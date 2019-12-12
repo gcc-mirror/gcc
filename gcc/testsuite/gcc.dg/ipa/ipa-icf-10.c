@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-ipa-icf"  } */
+/* { dg-options "-O2 -fdump-ipa-icf-optimized"  } */
 
 int ferda(int x, int y) __attribute__ ((pure));
 int funkce(int a, int b) __attribute__ ((pure));

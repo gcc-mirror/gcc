@@ -1,5 +1,5 @@
 /* Interprocedural semantic function equality pass
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
 
    Contributed by Jan Hubicka <hubicka@ucw.cz> and Martin Liska <mliska@suse.cz>
 
@@ -36,34 +36,22 @@ along with GCC; see the file COPYING3.  If not see
 #define FPRINTF_SPACES(file, space_count, format, ...) \
   fprintf (file, "%*s" format, space_count, " ", ##__VA_ARGS__);
 
-/* Prints a MESSAGE to dump_file if exists. FUNC is name of function and
-   LINE is location in the source file.  */
-
-static inline void
-dump_message_1 (const char *message, const char *func, unsigned int line)
-{
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "  debug message: %s (%s:%u)\n", message, func, line);
-}
-
-/* Prints a MESSAGE to dump_file if exists.  */
-#define dump_message(message) dump_message_1 (message, __func__, __LINE__)
-
 /* Logs a MESSAGE to dump_file if exists and returns false. FUNC is name
    of function and LINE is location in the source file.  */
 
 static inline bool
-return_false_with_message_1 (const char *message, const char *func,
-			     unsigned int line)
+return_false_with_message_1 (const char *message, const char *filename,
+			     const char *func, unsigned int line)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "  false returned: '%s' (%s:%u)\n", message, func, line);
+    fprintf (dump_file, "  false returned: '%s' in %s at %s:%u\n", message, func,
+	     filename, line);
   return false;
 }
 
 /* Logs a MESSAGE to dump_file if exists and returns false.  */
 #define return_false_with_msg(message) \
-  return_false_with_message_1 (message, __func__, __LINE__)
+  return_false_with_message_1 (message, __FILE__, __func__, __LINE__)
 
 /* Return false and log that false value is returned.  */
 #define return_false() return_false_with_msg ("")
@@ -72,16 +60,19 @@ return_false_with_message_1 (const char *message, const char *func,
    is location in the source file.  */
 
 static inline bool
-return_with_result (bool result, const char *func, unsigned int line)
+return_with_result (bool result, const char *filename,
+		    const char *func, unsigned int line)
 {
   if (!result && dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "  false returned: (%s:%u)\n", func, line);
+    fprintf (dump_file, "  false returned: '' in %s at %s:%u\n", func,
+	     filename, line);
 
   return result;
 }
 
 /* Logs return value if RESULT is false.  */
-#define return_with_debug(result) return_with_result (result, __func__, __LINE__)
+#define return_with_debug(result) return_with_result \
+  (result, __FILE__, __func__, __LINE__)
 
 /* Verbose logging function logging statements S1 and S2 of a CODE.
    FUNC is name of function and LINE is location in the source file.  */
@@ -127,9 +118,19 @@ public:
 
 /* A class aggregating all connections and semantic equivalents
    for a given pair of semantic function candidates.  */
-class func_checker
+class func_checker : operand_compare
 {
 public:
+  /* Default constructor.  */
+  func_checker ():
+    m_source_func_decl (NULL_TREE), m_target_func_decl (NULL_TREE),
+    m_ignored_source_nodes (NULL), m_ignored_target_nodes (NULL),
+    m_ignore_labels (false)
+  {
+    m_source_ssa_names.create (0);
+    m_target_ssa_names.create (0);
+  }
+
   /* Initialize internal structures for a given SOURCE_FUNC_DECL and
      TARGET_FUNC_DECL. Strict polymorphic comparison is processed if
      an option COMPARE_POLYMORPHIC is true. For special cases, one can
@@ -137,13 +138,12 @@ public:
      Similarly, IGNORE_SOURCE_DECLS and IGNORE_TARGET_DECLS are sets
      of declarations that can be skipped.  */
   func_checker (tree source_func_decl, tree target_func_decl,
-		bool compare_polymorphic,
 		bool ignore_labels = false,
 		hash_set<symtab_node *> *ignored_source_nodes = NULL,
 		hash_set<symtab_node *> *ignored_target_nodes = NULL);
 
   /* Memory release routine.  */
-  ~func_checker();
+  virtual ~func_checker ();
 
   /* Function visits all gimple labels and creates corresponding
      mapping between basic blocks and labels.  */
@@ -154,7 +154,7 @@ public:
   bool compare_bb (sem_bb *bb1, sem_bb *bb2);
 
   /* Verifies that trees T1 and T2 are equivalent from perspective of ICF.  */
-  bool compare_ssa_name (tree t1, tree t2);
+  bool compare_ssa_name (const_tree t1, const_tree t2);
 
   /* Verification function for edges E1 and E2.  */
   bool compare_edge (edge e1, edge e2);
@@ -198,17 +198,7 @@ public:
   bool compare_gimple_asm (const gasm *s1, const gasm *s2);
 
   /* Verification function for declaration trees T1 and T2.  */
-  bool compare_decl (tree t1, tree t2);
-
-  /* Verifies that tree labels T1 and T2 correspond.  */
-  bool compare_tree_ssa_label (tree t1, tree t2);
-
-  /* Function compare for equality given memory operands T1 and T2.  */
-  bool compare_memory_operand (tree t1, tree t2);
-
-  /* Function compare for equality given trees T1 and T2 which
-     can be either a constant or a declaration type.  */
-  bool compare_cst_or_decl (tree t1, tree t2);
+  bool compare_decl (const_tree t1, const_tree t2);
 
   /* Function responsible for comparison of various operands T1 and T2.
      If these components, from functions FUNC1 and FUNC2, are equal, true
@@ -224,7 +214,10 @@ public:
   bool compare_function_decl (tree t1, tree t2);
 
   /* Verifies that trees T1 and T2 do correspond.  */
-  bool compare_variable_decl (tree t1, tree t2);
+  bool compare_variable_decl (const_tree t1, const_tree t2);
+
+  /* Compare loop information for basic blocks BB1 and BB2.  */
+  bool compare_loops (basic_block bb1, basic_block bb2);
 
   /* Return true if types are compatible for polymorphic call analysis.
      COMPARE_PTR indicates if polymorphic type comparsion should be
@@ -263,16 +256,22 @@ private:
   hash_map <edge, edge> m_edge_map;
 
   /* Source to target declaration map.  */
-  hash_map <tree, tree> m_decl_map;
+  hash_map <const_tree, const_tree> m_decl_map;
 
   /* Label to basic block index mapping.  */
-  hash_map <tree, int> m_label_bb_map;
-
-  /* Flag if polymorphic comparison should be executed.  */
-  bool m_compare_polymorphic;
+  hash_map <const_tree, int> m_label_bb_map;
 
   /* Flag if ignore labels in comparison.  */
   bool m_ignore_labels;
+
+public:
+  /* Return true if two operands are equal.  The flags fields can be used
+     to specify OEP flags described above.  */
+  virtual bool operand_equal_p (const_tree, const_tree, unsigned int flags);
+
+  /* Generate a hash value for an expression.  This can be used iteratively
+     by passing a previous result as the HSTATE argument.  */
+  virtual void hash_operand (const_tree, inchash::hash &, unsigned flags);
 };
 
 } // ipa_icf_gimple namespace

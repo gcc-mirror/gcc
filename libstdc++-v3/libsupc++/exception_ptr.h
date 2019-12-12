@@ -1,6 +1,6 @@
 // Exception Handling support header (exception_ptr class) for -*- C++ -*-
 
-// Copyright (C) 2008-2018 Free Software Foundation, Inc.
+// Copyright (C) 2008-2019 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -49,6 +49,7 @@ namespace std
    * @addtogroup exceptions
    * @{
    */
+
   namespace __exception_ptr
   {
     class exception_ptr;
@@ -154,6 +155,8 @@ namespace std
 	__attribute__ ((__pure__));
     };
 
+    /// @relates exception_ptr @{
+
     bool 
     operator==(const exception_ptr&, const exception_ptr&)
       _GLIBCXX_USE_NOEXCEPT __attribute__ ((__pure__));
@@ -166,10 +169,14 @@ namespace std
     swap(exception_ptr& __lhs, exception_ptr& __rhs)
     { __lhs.swap(__rhs); }
 
+    // @}
+
+    /// @cond undocumented
     template<typename _Ex>
       inline void
       __dest_thunk(void* __x)
       { static_cast<_Ex*>(__x)->~_Ex(); }
+    /// @endcond
 
   } // namespace __exception_ptr
 

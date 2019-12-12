@@ -1,4 +1,4 @@
-# Copyright (C) 1988-2018 Free Software Foundation, Inc.
+# Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ if { [isnative] && ![is_remote host] } then {
 		set native_cflags "-xarch=v9"
 	    }
 	}
-	if  {[istarget "i?86*-*-solaris2*"] || [istarget "x86_64-*-solaris2.1\[0-9\]*"]} {
+	if  {[istarget "i?86*-*-solaris2*"] || [istarget "x86_64-*-solaris2*"]} {
 	    set file_string [exec file "linkage-x.o"]
 	    if [ string match "*64*" $file_string ] {
 		set native_cflags "-xarch=amd64"

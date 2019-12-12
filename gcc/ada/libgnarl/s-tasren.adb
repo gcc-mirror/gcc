@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1992-2018, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2019, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -163,7 +163,7 @@ package body System.Tasking.Rendezvous is
       STPO.Write_Lock (Self_Id);
 
       if not Self_Id.Callable then
-         pragma Assert (Self_Id.Pending_ATC_Level = 0);
+         pragma Assert (Self_Id.Pending_ATC_Level = Level_Completed_Task);
 
          pragma Assert (Self_Id.Pending_Action);
 
@@ -205,6 +205,9 @@ package body System.Tasking.Rendezvous is
 
          if Self_Id.Common.Call /= null then
             Caller := Self_Id.Common.Call.Self;
+
+            pragma Assert (Caller.ATC_Nesting_Level > Level_No_ATC_Occurring);
+
             Uninterpreted_Data :=
               Caller.Entry_Calls (Caller.ATC_Nesting_Level).Uninterpreted_Data;
          else
@@ -247,7 +250,7 @@ package body System.Tasking.Rendezvous is
       STPO.Write_Lock (Self_Id);
 
       if not Self_Id.Callable then
-         pragma Assert (Self_Id.Pending_ATC_Level = 0);
+         pragma Assert (Self_Id.Pending_ATC_Level = Level_Completed_Task);
 
          pragma Assert (Self_Id.Pending_Action);
 
@@ -738,7 +741,7 @@ package body System.Tasking.Rendezvous is
       STPO.Write_Lock (Self_Id);
 
       if not Self_Id.Callable then
-         pragma Assert (Self_Id.Pending_ATC_Level = 0);
+         pragma Assert (Self_Id.Pending_ATC_Level = Level_Completed_Task);
 
          pragma Assert (Self_Id.Pending_Action);
 
@@ -893,7 +896,8 @@ package body System.Tasking.Rendezvous is
                --  we do not need to cancel the terminate alternative. The
                --  cleanup will be done in Complete_Master.
 
-               pragma Assert (Self_Id.Pending_ATC_Level = 0);
+               pragma Assert
+                  (Self_Id.Pending_ATC_Level = Level_Completed_Task);
                pragma Assert (Self_Id.Awake_Count = 0);
 
                STPO.Unlock (Self_Id);
@@ -1395,7 +1399,7 @@ package body System.Tasking.Rendezvous is
       STPO.Write_Lock (Self_Id);
 
       if not Self_Id.Callable then
-         pragma Assert (Self_Id.Pending_ATC_Level = 0);
+         pragma Assert (Self_Id.Pending_ATC_Level = Level_Completed_Task);
 
          pragma Assert (Self_Id.Pending_Action);
 

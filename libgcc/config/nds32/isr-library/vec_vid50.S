@@ -1,5 +1,5 @@
 /* c-isr library stuff of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -24,8 +24,15 @@
    <http://www.gnu.org/licenses/>.  */
 
 	.section	.nds32_vector.50, "ax"
+#if __NDS32_ISR_VECTOR_SIZE_4__
+	/* The vector size is default 4-byte for v3 architecture.  */
+	.vec_size	4
+	.align	2
+#else
+	/* The vector size is default 16-byte for other architectures.  */
 	.vec_size	16
 	.align	4
+#endif
 	.weak	_nds32_vector_50
 	.type	_nds32_vector_50, @function
 _nds32_vector_50:

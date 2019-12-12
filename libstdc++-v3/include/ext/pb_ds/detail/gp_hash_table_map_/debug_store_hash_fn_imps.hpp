@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,6 +37,8 @@
  * @file gp_hash_table_map_/debug_store_hash_fn_imps.hpp
  * Contains implementations of gp_ht_map_'s debug-mode functions.
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 #ifdef _GLIBCXX_DEBUG
 
@@ -76,3 +78,4 @@ assert_entry_array_valid(const entry_array a_entries, true_type,
 }
 
 #endif 
+#endif

@@ -1,4 +1,4 @@
-# Copyright (C) 2000-2018 Free Software Foundation, Inc.
+# Copyright (C) 2000-2019 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
+
+HAVE_DOUBLE_MULTILIB = $(findstring HAVE_DOUBLE_MULTILIB, $(tm_defines))
+HAVE_LONG_DOUBLE_MULTILIB = $(findstring HAVE_LONG_DOUBLE_MULTILIB, $(tm_defines))
 
 PASSES_EXTRA += $(srcdir)/config/avr/avr-passes.def
 
@@ -56,8 +59,7 @@ AVR_MCUS = $(srcdir)/config/avr/avr-mcus.def
 
 .PHONY: avr-mcus
 
-avr-mcus: $(srcdir)/config/avr/t-multilib \
-	  $(srcdir)/doc/avr-mmcu.texi ; @true
+avr-mcus: $(srcdir)/doc/avr-mmcu.texi ; @true
 
 # Make sure that native -mmcu= support is in sync with -mmcu= documentation.
 gen-avr-mmcu-texi$(build_exeext): $(srcdir)/config/avr/gen-avr-mmcu-texi.c \
@@ -93,9 +95,14 @@ install-device-specs: s-device-specs installdirs
 # MULTILIB_OPTIONS
 # MULTILIB_DIRNAMES
 # MULTILIB_REQUIRED
+# MULTILIB_REUSE
 
-s-mlib: $(srcdir)/config/avr/t-multilib
+multilib.h Makefile s-mlib: t-multilib-avr
 
-$(srcdir)/config/avr/t-multilib: $(srcdir)/config/avr/genmultilib.awk \
+t-multilib-avr: $(srcdir)/config/avr/genmultilib.awk \
 				 $(AVR_MCUS)
-	$(AWK) -f $< $< $(AVR_MCUS) > $@
+	$(AWK)	-v HAVE_DOUBLE_MULTILIB=$(HAVE_DOUBLE_MULTILIB) \
+		-v HAVE_LONG_DOUBLE_MULTILIB=$(HAVE_LONG_DOUBLE_MULTILIB) \
+		-f $< $< $(AVR_MCUS) > $@
+
+include t-multilib-avr

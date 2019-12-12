@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-O -fexceptions" } */
+/* { dg-require-effective-target exceptions } */
 
 typedef __attribute__ ((const)) int (*bart) (void);
 

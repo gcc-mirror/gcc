@@ -1,5 +1,5 @@
 /* PowerPC AltiVec include file.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez (aldyh@redhat.com).
    Rewritten by Paolo Bonzini (bonzini@gnu.org).
 
@@ -37,10 +37,12 @@
 /* If __APPLE_ALTIVEC__ is defined, the compiler supports 'vector',
    'pixel' and 'bool' as context-sensitive AltiVec keywords (in 
    non-AltiVec contexts, they revert to their original meanings,
-   if any), so we do not need to define them as macros.  */
+   if any), so we do not need to define them as macros.  Also,
+   avoid defining them as macros for C++ with strict ANSI, as
+   this is not compatible.  */
 
-#if !defined(__APPLE_ALTIVEC__)
-/* You are allowed to undef these for C++ compatibility.  */
+#if !defined(__APPLE_ALTIVEC__) \
+    && (!defined(__STRICT_ANSI__) || !defined(__cplusplus))
 #define vector __vector
 #define pixel __pixel
 #define bool __bool
@@ -418,6 +420,11 @@
 #define vec_vupkhsw __builtin_vec_vupkhsw
 #define vec_vupklsw __builtin_vec_vupklsw
 #define vec_revb __builtin_vec_revb
+#define vec_sbox_be __builtin_crypto_vsbox_be
+#define vec_cipher_be __builtin_crypto_vcipher_be
+#define vec_cipherlast_be __builtin_crypto_vcipherlast_be
+#define vec_ncipher_be __builtin_crypto_vncipher_be
+#define vec_ncipherlast_be __builtin_crypto_vncipherlast_be
 #endif
 
 #ifdef __POWER9_VECTOR__

@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2018 Free Software Foundation, Inc.
+// Copyright (C) 2015-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++17 -lstdc++fs" }
+// { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
 // { dg-require-filesystem-ts "" }
 
@@ -75,7 +75,7 @@ test02()
 {
   clean_env();
 
-  if (!set_env("TMPDIR", __gnu_test::nonexistent_path().string()))
+  if (!set_env("TMP", __gnu_test::nonexistent_path().string()))
     return; // just give up
 
   std::error_code ec;
@@ -95,6 +95,13 @@ test02()
 void
 test03()
 {
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  // No permissions support
+  return;
+#endif
+
+  clean_env();
+
   auto p = __gnu_test::nonexistent_path();
   create_directories(p/"tmp");
   permissions(p, fs::perms::none);
@@ -119,8 +126,10 @@ test03()
 void
 test04()
 {
+  clean_env();
+
   __gnu_test::scoped_file f;
-  set_env("TMPDIR", f.path.string());
+  set_env("TMP", f.path.string());
   std::error_code ec;
   auto r = fs::temp_directory_path(ec);
   VERIFY( ec == std::make_error_code(std::errc::not_a_directory) );

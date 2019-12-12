@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2019 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -284,7 +284,7 @@ extern void _ITM_deregisterTMCloneTable (void *);
 
 extern void *_ITM_cxa_allocate_exception (size_t);
 extern void _ITM_cxa_free_exception (void *exc_ptr);
-extern void _ITM_cxa_throw (void *obj, void *tinfo, void *dest);
+extern void _ITM_cxa_throw (void *obj, void *tinfo, void (*dest) (void *));
 extern void *_ITM_cxa_begin_catch (void *exc_ptr);
 extern void _ITM_cxa_end_catch (void);
 extern void _ITM_commitTransactionEH(void *exc_ptr) ITM_REGPARM;

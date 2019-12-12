@@ -1,5 +1,5 @@
 // -*- C++ -*- The GNU C++ exception personality routine.
-// Copyright (C) 2001-2018 Free Software Foundation, Inc.
+// Copyright (C) 2001-2019 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -93,7 +93,15 @@ get_ttype_entry (lsda_header_info *info, _uleb128_t i)
   _Unwind_Ptr ptr;
 
   i *= size_of_encoded_value (info->ttype_encoding);
-  read_encoded_value_with_base (info->ttype_encoding, info->ttype_base,
+  read_encoded_value_with_base (
+#if __FDPIC__
+				/* Force these flags to nake sure to
+				   take the GOT into account.  */
+				(DW_EH_PE_pcrel | DW_EH_PE_indirect),
+#else
+				info->ttype_encoding,
+#endif
+				info->ttype_base,
 				info->TType - i, &ptr);
 
   return reinterpret_cast<const std::type_info *>(ptr);
@@ -343,6 +351,7 @@ extern "C"
 #endif
 _Unwind_Reason_Code
 #ifdef __ARM_EABI_UNWINDER__
+__attribute__((target ("general-regs-only")))
 PERSONALITY_FUNCTION (_Unwind_State state,
 		      struct _Unwind_Exception* ue_header,
 		      struct _Unwind_Context* context)

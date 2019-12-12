@@ -3,7 +3,6 @@
 /* { dg-require-effective-target c99_runtime } */
 /* { dg-options "-O2 -fno-builtin" } */
 /* { dg-add-options ieee } */
-/* { dg-add-options c99_runtime } */
 
 #include <stdlib.h>
 

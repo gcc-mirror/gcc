@@ -14,5 +14,5 @@ program pr49792
   real(kind=8) :: b(16)
   b(:) = a(16:1:-1)
   call reverse (16,a)
-  if (any (a.ne.b)) STOP 1
+  if (any (a.ne.b)) stop 1
 end program pr49792

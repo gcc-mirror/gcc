@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O3 -fwhole-file" }
+! { dg-options "-O3" }
 
       SUBROUTINE ZLARFG( ALPHA )
         COMPLEX*16 ZLADIV

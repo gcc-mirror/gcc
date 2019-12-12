@@ -1,6 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=cell" } } */
-/* { dg-options "-O2 -mcpu=cell" } */
+/* { dg-options "-O2 -mdejagnu-cpu=cell" } */
 /* { dg-require-effective-target lp64 } */
 /* { dg-require-effective-target powerpc_ppu_ok } */
 /* { dg-final { scan-assembler "ldbrx" } } */

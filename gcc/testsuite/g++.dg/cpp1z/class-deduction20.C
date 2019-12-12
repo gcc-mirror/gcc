@@ -1,5 +1,5 @@
 // PR c++/77890
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 template<class F> struct S{S(F&&f){}}; 
 void f()

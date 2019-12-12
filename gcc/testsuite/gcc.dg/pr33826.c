@@ -1,8 +1,7 @@
 /* Regression test for PR middle-end/33826 */
 /* Verify that recursive functions cannot be pure or const.  */
 
-/* { dg-do compile } */
-/* { dg-require-effective-target nonpic } */
+/* { dg-do compile { target { nonpic || pie_enabled } } } */
 /* { dg-options "-O1 -fdump-tree-local-pure-const1 -fdump-ipa-pure-const" } */
 
 int recurse1 (int);

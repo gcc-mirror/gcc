@@ -50,6 +50,10 @@ func (t *Template) Name() string {
 // New allocates a new, undefined template associated with the given one and with the same
 // delimiters. The association, which is transitive, allows one template to
 // invoke another with a {{template}} action.
+//
+// Because associated templates share underlying data, template construction
+// cannot be done safely in parallel. Once the templates are constructed, they
+// can be executed in parallel.
 func (t *Template) New(name string) *Template {
 	t.init()
 	nt := &Template{
@@ -125,9 +129,7 @@ func (t *Template) AddParseTree(name string, tree *parse.Tree) (*Template, error
 		nt = t.New(name)
 	}
 	// Even if nt == t, we need to install it in the common.tmpl map.
-	if replace, err := t.associate(nt, tree); err != nil {
-		return nil, err
-	} else if replace || nt.Tree == nil {
+	if t.associate(nt, tree) || nt.Tree == nil {
 		nt.Tree = tree
 	}
 	return nt, nil
@@ -212,15 +214,15 @@ func (t *Template) Parse(text string) (*Template, error) {
 // associate installs the new template into the group of templates associated
 // with t. The two are already known to share the common structure.
 // The boolean return value reports whether to store this tree as t.Tree.
-func (t *Template) associate(new *Template, tree *parse.Tree) (bool, error) {
+func (t *Template) associate(new *Template, tree *parse.Tree) bool {
 	if new.common != t.common {
 		panic("internal error: associate not common")
 	}
 	if old := t.tmpl[new.name]; old != nil && parse.IsEmptyTree(tree.Root) && old.Tree != nil {
 		// If a template by that name exists,
 		// don't replace it with an empty template.
-		return false, nil
+		return false
 	}
 	t.tmpl[new.name] = new
-	return true, nil
+	return true
 }

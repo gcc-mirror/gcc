@@ -1,8 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-mcpu=power8 -O2" } */
+/* { dg-options "-mdejagnu-cpu=power8 -O2" } */
 
 /* Make sure that STXSSPX is generated for float scalars in Altivec registers
    on power7 instead of moving the value to a FPR register and doing a X-FORM

@@ -1,5 +1,5 @@
 /* Default target hook functions.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -79,10 +79,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "gimplify.h"
 #include "predict.h"
-#include "params.h"
 #include "real.h"
 #include "langhooks.h"
 #include "sbitmap.h"
+#include "function-abi.h"
 
 bool
 default_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
@@ -188,16 +188,13 @@ default_const_not_ok_for_debug_p (rtx x)
 rtx
 default_expand_builtin_saveregs (void)
 {
-  error ("__builtin_saveregs not supported by this target");
+  error ("%<__builtin_saveregs%> not supported by this target");
   return const0_rtx;
 }
 
 void
-default_setup_incoming_varargs (cumulative_args_t ca ATTRIBUTE_UNUSED,
-				machine_mode mode ATTRIBUTE_UNUSED,
-				tree type ATTRIBUTE_UNUSED,
-				int *pretend_arg_size ATTRIBUTE_UNUSED,
-				int second_time ATTRIBUTE_UNUSED)
+default_setup_incoming_varargs (cumulative_args_t,
+				const function_arg_info &, int *, int)
 {
 }
 
@@ -323,22 +320,19 @@ default_cxx_get_cookie_size (tree type)
    of the TARGET_PASS_BY_REFERENCE hook uses just MUST_PASS_IN_STACK.  */
 
 bool
-hook_pass_by_reference_must_pass_in_stack (cumulative_args_t c ATTRIBUTE_UNUSED,
-	machine_mode mode ATTRIBUTE_UNUSED, const_tree type ATTRIBUTE_UNUSED,
-	bool named_arg ATTRIBUTE_UNUSED)
+hook_pass_by_reference_must_pass_in_stack (cumulative_args_t,
+					   const function_arg_info &arg)
 {
-  return targetm.calls.must_pass_in_stack (mode, type);
+  return targetm.calls.must_pass_in_stack (arg);
 }
 
 /* Return true if a parameter follows callee copies conventions.  This
    version of the hook is true for all named arguments.  */
 
 bool
-hook_callee_copies_named (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			  machine_mode mode ATTRIBUTE_UNUSED,
-			  const_tree type ATTRIBUTE_UNUSED, bool named)
+hook_callee_copies_named (cumulative_args_t, const function_arg_info &arg)
 {
-  return named;
+  return arg.named;
 }
 
 /* Emit to STREAM the assembler syntax for insn operand X.  */
@@ -643,6 +637,19 @@ default_has_ifunc_p (void)
   return HAVE_GNU_INDIRECT_FUNCTION;
 }
 
+/* Return true if we predict the loop LOOP will be transformed to a
+   low-overhead loop, otherwise return false.
+
+   By default, false is returned, as this hook's applicability should be
+   verified for each target.  Target maintainers should re-define the hook
+   if the target can take advantage of it.  */
+
+bool
+default_predict_doloop_p (class loop *loop ATTRIBUTE_UNUSED)
+{
+  return false;
+}
+
 /* NULL if INSN insn is valid within a low-overhead loop, otherwise returns
    an error message.
 
@@ -737,28 +744,22 @@ default_builtin_reciprocal (tree)
 }
 
 bool
-hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false (
-	cumulative_args_t ca ATTRIBUTE_UNUSED,
-	machine_mode mode ATTRIBUTE_UNUSED,
-	const_tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
+hook_bool_CUMULATIVE_ARGS_arg_info_false (cumulative_args_t,
+					  const function_arg_info &)
 {
   return false;
 }
 
 bool
-hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true (
-	cumulative_args_t ca ATTRIBUTE_UNUSED,
-	machine_mode mode ATTRIBUTE_UNUSED,
-	const_tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
+hook_bool_CUMULATIVE_ARGS_arg_info_true (cumulative_args_t,
+					 const function_arg_info &)
 {
   return true;
 }
 
 int
-hook_int_CUMULATIVE_ARGS_mode_tree_bool_0 (
-	cumulative_args_t ca ATTRIBUTE_UNUSED,
-	machine_mode mode ATTRIBUTE_UNUSED,
-	tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
+hook_int_CUMULATIVE_ARGS_arg_info_0 (cumulative_args_t,
+				     const function_arg_info &)
 {
   return 0;
 }
@@ -770,10 +771,7 @@ hook_void_CUMULATIVE_ARGS_tree (cumulative_args_t ca ATTRIBUTE_UNUSED,
 }
 
 void
-default_function_arg_advance (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			      machine_mode mode ATTRIBUTE_UNUSED,
-			      const_tree type ATTRIBUTE_UNUSED,
-			      bool named ATTRIBUTE_UNUSED)
+default_function_arg_advance (cumulative_args_t, const function_arg_info &)
 {
   gcc_unreachable ();
 }
@@ -814,19 +812,13 @@ default_function_arg_padding (machine_mode mode, const_tree type)
 }
 
 rtx
-default_function_arg (cumulative_args_t ca ATTRIBUTE_UNUSED,
-		      machine_mode mode ATTRIBUTE_UNUSED,
-		      const_tree type ATTRIBUTE_UNUSED,
-		      bool named ATTRIBUTE_UNUSED)
+default_function_arg (cumulative_args_t, const function_arg_info &)
 {
   gcc_unreachable ();
 }
 
 rtx
-default_function_incoming_arg (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			       machine_mode mode ATTRIBUTE_UNUSED,
-			       const_tree type ATTRIBUTE_UNUSED,
-			       bool named ATTRIBUTE_UNUSED)
+default_function_incoming_arg (cumulative_args_t, const function_arg_info &)
 {
   gcc_unreachable ();
 }
@@ -1062,12 +1054,6 @@ default_return_pops_args (tree, tree, poly_int64)
 }
 
 reg_class_t
-default_branch_target_register_class (void)
-{
-  return NO_REGS;
-}
-
-reg_class_t
 default_ira_change_pseudo_allocno_class (int regno ATTRIBUTE_UNUSED,
 					 reg_class_t cl,
 					 reg_class_t best_cl ATTRIBUTE_UNUSED)
@@ -1247,20 +1233,24 @@ constant_alignment_word_strings (const_tree exp, HOST_WIDE_INT align)
   return align;
 }
 
-/* Default to natural alignment for vector types.  */
+/* Default to natural alignment for vector types, bounded by
+   MAX_OFILE_ALIGNMENT.  */
+
 HOST_WIDE_INT
 default_vector_alignment (const_tree type)
 {
-  HOST_WIDE_INT align = tree_to_shwi (TYPE_SIZE (type));
-  if (align > MAX_OFILE_ALIGNMENT)
-    align = MAX_OFILE_ALIGNMENT;
-  return align;
+  unsigned HOST_WIDE_INT align = MAX_OFILE_ALIGNMENT;
+  tree size = TYPE_SIZE (type);
+  if (tree_fits_uhwi_p (size))
+    align = tree_to_uhwi (size);
+
+  return align < MAX_OFILE_ALIGNMENT ? align : MAX_OFILE_ALIGNMENT;
 }
 
 /* The default implementation of
    TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT.  */
 
-HOST_WIDE_INT
+poly_uint64
 default_preferred_vector_alignment (const_tree type)
 {
   return TYPE_ALIGN (type);
@@ -1308,32 +1298,39 @@ default_split_reduction (machine_mode mode)
   return mode;
 }
 
-/* By default only the size derived from the preferred vector mode
-   is tried.  */
+/* By default only the preferred vector mode is tried.  */
 
-void
-default_autovectorize_vector_sizes (vector_sizes *)
+unsigned int
+default_autovectorize_vector_modes (vector_modes *, bool)
 {
+  return 0;
+}
+
+/* The default implementation of TARGET_VECTORIZE_RELATED_MODE.  */
+
+opt_machine_mode
+default_vectorize_related_mode (machine_mode vector_mode,
+				scalar_mode element_mode,
+				poly_uint64 nunits)
+{
+  machine_mode result_mode;
+  if ((maybe_ne (nunits, 0U)
+       || multiple_p (GET_MODE_SIZE (vector_mode),
+		      GET_MODE_SIZE (element_mode), &nunits))
+      && mode_for_vector (element_mode, nunits).exists (&result_mode)
+      && VECTOR_MODE_P (result_mode)
+      && targetm.vector_mode_supported_p (result_mode))
+    return result_mode;
+
+  return opt_machine_mode ();
 }
 
 /* By default a vector of integers is used as a mask.  */
 
 opt_machine_mode
-default_get_mask_mode (poly_uint64 nunits, poly_uint64 vector_size)
+default_get_mask_mode (machine_mode mode)
 {
-  unsigned int elem_size = vector_element_size (vector_size, nunits);
-  scalar_int_mode elem_mode
-    = smallest_int_mode_for_size (elem_size * BITS_PER_UNIT);
-  machine_mode vector_mode;
-
-  gcc_assert (known_eq (elem_size * nunits, vector_size));
-
-  if (mode_for_vector (elem_mode, nunits).exists (&vector_mode)
-      && VECTOR_MODE_P (vector_mode)
-      && targetm.vector_mode_supported_p (vector_mode))
-    return vector_mode;
-
-  return opt_machine_mode ();
+  return related_int_vector_mode (mode);
 }
 
 /* By default consider masked stores to be expensive.  */
@@ -1349,7 +1346,7 @@ default_empty_mask_is_expensive (unsigned ifn)
    array of three unsigned ints, set it to zero, and return its address.  */
 
 void *
-default_init_cost (struct loop *loop_info ATTRIBUTE_UNUSED)
+default_init_cost (class loop *loop_info ATTRIBUTE_UNUSED)
 {
   unsigned *cost = XNEWVEC (unsigned, 3);
   cost[vect_prologue] = cost[vect_body] = cost[vect_epilogue] = 0;
@@ -1362,7 +1359,7 @@ default_init_cost (struct loop *loop_info ATTRIBUTE_UNUSED)
 
 unsigned
 default_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
-		       struct _stmt_vec_info *stmt_info, int misalign,
+		       class _stmt_vec_info *stmt_info, int misalign,
 		       enum vect_cost_model_location where)
 {
   unsigned *cost = (unsigned *) data;
@@ -1424,9 +1421,11 @@ default_ref_may_alias_errno (ao_ref *ref)
   if (TYPE_UNSIGNED (TREE_TYPE (base))
       || TYPE_MODE (TREE_TYPE (base)) != TYPE_MODE (integer_type_node))
     return false;
-  /* The default implementation assumes an errno location
-     declaration is never defined in the current compilation unit.  */
+  /* The default implementation assumes an errno location declaration
+     is never defined in the current compilation unit and may not be
+     aliased by a local variable.  */
   if (DECL_P (base)
+      && DECL_EXTERNAL (base)
       && !TREE_STATIC (base))
     return true;
   else if (TREE_CODE (base) == MEM_REF
@@ -1596,7 +1595,7 @@ default_target_option_pragma_parse (tree ARG_UNUSED (args),
      do not have the "target" pragma.  */
   if (args)
     warning (OPT_Wpragmas,
-	     "#pragma GCC target is not supported for this machine");
+	     "%<#pragma GCC target%> is not supported for this machine");
 
   return false;
 }
@@ -1644,6 +1643,14 @@ default_libc_has_function (enum function_class fn_class)
       || fn_class == function_c99_math_complex)
     return true;
 
+  return false;
+}
+
+/* By default assume that libc has not a fast implementation.  */
+
+bool
+default_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)
+{
   return false;
 }
 
@@ -1721,9 +1728,9 @@ get_move_ratio (bool speed_p ATTRIBUTE_UNUSED)
 #ifdef MOVE_RATIO
   move_ratio = (unsigned int) MOVE_RATIO (speed_p);
 #else
-#if defined (HAVE_movmemqi) || defined (HAVE_movmemhi) || defined (HAVE_movmemsi) || defined (HAVE_movmemdi) || defined (HAVE_movmemti)
+#if defined (HAVE_cpymemqi) || defined (HAVE_cpymemhi) || defined (HAVE_cpymemsi) || defined (HAVE_cpymemdi) || defined (HAVE_cpymemti)
   move_ratio = 2;
-#else /* No movmem patterns, pick a default.  */
+#else /* No cpymem patterns, pick a default.  */
   move_ratio = ((speed_p) ? 15 : 3);
 #endif
 #endif
@@ -1731,7 +1738,7 @@ get_move_ratio (bool speed_p ATTRIBUTE_UNUSED)
 }
 
 /* Return TRUE if the move_by_pieces/set_by_pieces infrastructure should be
-   used; return FALSE if the movmem/setmem optab should be expanded, or
+   used; return FALSE if the cpymem/setmem optab should be expanded, or
    a call to memcpy emitted.  */
 
 bool
@@ -1807,13 +1814,15 @@ default_print_patchable_function_entry (FILE *file,
       char buf[256];
       static int patch_area_number;
       section *previous_section = in_section;
+      const char *asm_op = integer_asm_op (POINTER_SIZE_UNITS, false);
 
+      gcc_assert (asm_op != NULL);
       patch_area_number++;
       ASM_GENERATE_INTERNAL_LABEL (buf, "LPFE", patch_area_number);
 
       switch_to_section (get_section ("__patchable_function_entries",
-				      0, NULL));
-      fputs (integer_asm_op (POINTER_SIZE_UNITS, false), file);
+				      SECTION_WRITE | SECTION_RELRO, NULL));
+      fputs (asm_op, file);
       assemble_name_raw (file, buf);
       fputc ('\n', file);
 
@@ -1928,8 +1937,9 @@ default_dwarf_frame_reg_mode (int regno)
 {
   machine_mode save_mode = reg_raw_mode[regno];
 
-  if (targetm.hard_regno_call_part_clobbered (regno, save_mode))
-    save_mode = choose_hard_reg_mode (regno, 1, true);
+  if (targetm.hard_regno_call_part_clobbered (eh_edge_abi.id (),
+					      regno, save_mode))
+    save_mode = choose_hard_reg_mode (regno, 1, &eh_edge_abi);
   return save_mode;
 }
 
@@ -2029,9 +2039,9 @@ default_pch_valid_p (const void *data_p, size_t len)
 
   /* -fpic and -fpie also usually make a PCH invalid.  */
   if (data[0] != flag_pic)
-    return _("created and used with different settings of -fpic");
+    return _("created and used with different settings of %<-fpic%>");
   if (data[1] != flag_pie)
-    return _("created and used with different settings of -fpie");
+    return _("created and used with different settings of %<-fpie%>");
   data += 2;
 
   /* Check target_flags.  */
@@ -2150,9 +2160,26 @@ std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   if (ARGS_GROW_DOWNWARD)
     gcc_unreachable ();
 
-  indirect = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  indirect = pass_va_arg_by_reference (type);
   if (indirect)
     type = build_pointer_type (type);
+
+  if (targetm.calls.split_complex_arg
+      && TREE_CODE (type) == COMPLEX_TYPE
+      && targetm.calls.split_complex_arg (type))
+    {
+      tree real_part, imag_part;
+
+      real_part = std_gimplify_va_arg_expr (valist,
+					    TREE_TYPE (type), pre_p, NULL);
+      real_part = get_initialized_tmp_var (real_part, pre_p);
+
+      imag_part = std_gimplify_va_arg_expr (unshare_expr (valist),
+					    TREE_TYPE (type), pre_p, NULL);
+      imag_part = get_initialized_tmp_var (imag_part, pre_p);
+
+      return build2 (COMPLEX_EXPR, type, real_part, imag_part);
+   }
 
   align = PARM_BOUNDARY / BITS_PER_UNIT;
   boundary = targetm.calls.function_arg_boundary (TYPE_MODE (type), type);
@@ -2167,7 +2194,7 @@ std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   boundary /= BITS_PER_UNIT;
 
   /* Hoist the valist value into a temporary for the moment.  */
-  valist_tmp = get_initialized_tmp_var (valist, pre_p, NULL);
+  valist_tmp = get_initialized_tmp_var (valist, pre_p);
 
   /* va_list pointer is aligned to PARM_BOUNDARY.  If argument actually
      requires greater alignment, we must perform dynamic alignment.  */
@@ -2230,15 +2257,6 @@ std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   return build_va_arg_indirect_ref (addr);
 }
 
-void
-default_setup_incoming_vararg_bounds (cumulative_args_t ca ATTRIBUTE_UNUSED,
-				      machine_mode mode ATTRIBUTE_UNUSED,
-				      tree type ATTRIBUTE_UNUSED,
-				      int *pretend_arg_size ATTRIBUTE_UNUSED,
-				      int second_time ATTRIBUTE_UNUSED)
-{
-}
-
 /* An implementation of TARGET_CAN_USE_DOLOOP_P for targets that do
    not support nested low-overhead loops.  */
 
@@ -2264,17 +2282,18 @@ default_max_noce_ifcvt_seq_cost (edge e)
 {
   bool predictable_p = predictable_edge_p (e);
 
-  enum compiler_param param
-    = (predictable_p
-       ? PARAM_MAX_RTL_IF_CONVERSION_PREDICTABLE_COST
-       : PARAM_MAX_RTL_IF_CONVERSION_UNPREDICTABLE_COST);
-
-  /* If we have a parameter set, use that, otherwise take a guess using
-     BRANCH_COST.  */
-  if (global_options_set.x_param_values[param])
-    return PARAM_VALUE (param);
+  if (predictable_p)
+    {
+      if (global_options_set.x_param_max_rtl_if_conversion_predictable_cost)
+	return param_max_rtl_if_conversion_predictable_cost;
+    }
   else
-    return BRANCH_COST (true, predictable_p) * COSTS_N_INSNS (3);
+    {
+      if (global_options_set.x_param_max_rtl_if_conversion_unpredictable_cost)
+	return param_max_rtl_if_conversion_unpredictable_cost;
+    }
+
+  return BRANCH_COST (true, predictable_p) * COSTS_N_INSNS (3);
 }
 
 /* Default implementation of TARGET_MIN_ARITHMETIC_PRECISION.  */
@@ -2293,8 +2312,10 @@ default_excess_precision (enum excess_precision_type ATTRIBUTE_UNUSED)
   return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
 }
 
-bool
-default_stack_clash_protection_final_dynamic_probe (rtx residual ATTRIBUTE_UNUSED)
+/* Default implementation for
+  TARGET_STACK_CLASH_PROTECTION_ALLOCA_PROBE_RANGE.  */
+HOST_WIDE_INT
+default_stack_clash_protection_alloca_probe_range (void)
 {
   return 0;
 }
@@ -2312,6 +2333,45 @@ tree
 default_preferred_else_value (unsigned, tree type, unsigned, tree *)
 {
   return build_zero_cst (type);
+}
+
+/* Default implementation of TARGET_HAVE_SPECULATION_SAFE_VALUE.  */
+bool
+default_have_speculation_safe_value (bool active ATTRIBUTE_UNUSED)
+{
+#ifdef HAVE_speculation_barrier
+  return active ? HAVE_speculation_barrier : true;
+#else
+  return false;
+#endif
+}
+/* Alternative implementation of TARGET_HAVE_SPECULATION_SAFE_VALUE
+   that can be used on targets that never have speculative execution.  */
+bool
+speculation_safe_value_not_needed (bool active)
+{
+  return !active;
+}
+
+/* Default implementation of the speculation-safe-load builtin.  This
+   implementation simply copies val to result and generates a
+   speculation_barrier insn, if such a pattern is defined.  */
+rtx
+default_speculation_safe_value (machine_mode mode ATTRIBUTE_UNUSED,
+				rtx result, rtx val,
+				rtx failval ATTRIBUTE_UNUSED)
+{
+  emit_move_insn (result, val);
+
+#ifdef HAVE_speculation_barrier
+  /* Assume the target knows what it is doing: if it defines a
+     speculation barrier, but it is not enabled, then assume that one
+     isn't needed.  */
+  if (HAVE_speculation_barrier)
+    emit_insn (gen_speculation_barrier ());
+#endif
+
+  return result;
 }
 
 #include "gt-targhooks.h"

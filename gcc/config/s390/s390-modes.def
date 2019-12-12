@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM S/390
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com).
 
@@ -31,6 +31,8 @@ FLOAT_MODE (TF, 16, ieee_quad_format);
 
 Condition Codes
 
+      CC0         CC1          CC2         CC3
+
 Check for zero
 
 CCZ:  EQ          NE           NE          NE
@@ -50,12 +52,18 @@ CCS:  EQ          LT           GT          UNORDERED  (LTGFR, LTGR, LTR, ICM/Y,
                                                        ADB/R, AEB/R, SDB/R, SEB/R,
                                                        SRAG, SRA, SRDA)
 CCSR: EQ          GT           LT          UNORDERED  (CGF/R, CH/Y)
+CCSFPS: EQ        LT           GT          UNORDERED  (KEB/R, KDB/R, KXBR, KDTR,
+						       KXTR, WFK)
 
 Condition codes resulting from add with overflow
 
 CCA:  EQ          LT           GT          Overflow
 CCAP: EQ          LT           GT          LT         (AGHI, AHI)
 CCAN: EQ          LT           GT          GT         (AGHI, AHI)
+
+Condition codes for overflow checking resulting from signed adds/subs/mults
+
+CCO:  EQ          EQ           EQ          NE         (AGR, AGHI, SGR, MSC, ...)
 
 Condition codes of unsigned adds and subs
 
@@ -98,6 +106,13 @@ If you know whether the used constant is positive or negative you can predict
 the sign of the result even in case of an overflow.
 
 
+CCO
+
+This mode is used to check whether there was an overflow condition in
+a signed add, sub, or mul operation.  See (addv<mode>4, subv<mode>4,
+mulv<mode>4 patterns).
+
+
 CCT, CCT1, CCT2, CCT3
 
 If bits of an integer masked with an AND instruction are checked, the test under
@@ -125,6 +140,11 @@ The problem is that in the RTL (to be canonical) the zero/sign extended operand
 has to be the first one but the machine instructions like it the other way
 around. The following both modes can be considered as CCS and CCU modes with
 exchanged operands.
+
+
+CCSFPS
+
+This mode is used for signaling rtxes: LT, LE, GT, GE and LTGT.
 
 
 CCL1, CCL2
@@ -204,6 +224,7 @@ CC_MODE (CCZ1);
 CC_MODE (CCA);
 CC_MODE (CCAP);
 CC_MODE (CCAN);
+CC_MODE (CCO);
 CC_MODE (CCL);
 CC_MODE (CCL1);
 CC_MODE (CCL2);
@@ -212,6 +233,7 @@ CC_MODE (CCU);
 CC_MODE (CCUR);
 CC_MODE (CCS);
 CC_MODE (CCSR);
+CC_MODE (CCSFPS);
 CC_MODE (CCT);
 CC_MODE (CCT1);
 CC_MODE (CCT2);

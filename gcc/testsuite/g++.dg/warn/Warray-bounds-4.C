@@ -1,5 +1,6 @@
 // { dg-do compile }
 // { dg-options "-O2 -Warray-bounds" }
+// { dg-skip-if "" { *-*-aix* } }
 
 class String
 {
@@ -22,7 +23,7 @@ public:
   virtual void set(unsigned long index, char value) { contents[index] = value; }
   virtual char& operator[] (unsigned long index) { return contents[index]; }
 
-  FixedString() { contents[0] = '\0'; } // { dg-warning "above array bounds" }
+  FixedString() { contents[0] = '\0'; } // { dg-warning "\\\[-Warray-bounds" }
 };
 
 void print_length (const String& string);

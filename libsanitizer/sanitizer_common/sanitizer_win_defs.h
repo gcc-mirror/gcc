@@ -1,7 +1,8 @@
 //===-- sanitizer_win_defs.h ------------------------------------*- C++ -*-===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -15,22 +16,34 @@
 #if SANITIZER_WINDOWS
 
 #ifndef WINAPI
-#ifdef _M_IX86
+#if defined(_M_IX86) || defined(__i386__)
 #define WINAPI __stdcall
 #else
 #define WINAPI
 #endif
 #endif
 
-#if defined(_WIN64)
-#define WIN_SYM_PREFIX
-#else
+#if defined(_M_IX86) || defined(__i386__)
 #define WIN_SYM_PREFIX "_"
+#else
+#define WIN_SYM_PREFIX
+#endif
+
+// For MinGW, the /export: directives contain undecorated symbols, contrary to
+// link/lld-link. The GNU linker doesn't support /alternatename and /include
+// though, thus lld-link in MinGW mode interprets them in the same way as
+// in the default mode.
+#ifdef __MINGW32__
+#define WIN_EXPORT_PREFIX
+#else
+#define WIN_EXPORT_PREFIX WIN_SYM_PREFIX
 #endif
 
 // Intermediate macro to ensure the parameter is expanded before stringified.
 #define STRINGIFY_(A) #A
 #define STRINGIFY(A) STRINGIFY_(A)
+
+#if !SANITIZER_GO
 
 // ----------------- A workaround for the absence of weak symbols --------------
 // We don't have a direct equivalent of weak symbols when using MSVC, but we can
@@ -60,8 +73,8 @@
   __pragma(comment(linker, "/include:" WIN_SYM_PREFIX STRINGIFY(Name)))
 
 #define WIN_EXPORT(ExportedName, Name)                                         \
-  __pragma(comment(linker, "/export:" WIN_SYM_PREFIX STRINGIFY(ExportedName)   \
-                                  "=" WIN_SYM_PREFIX STRINGIFY(Name)))
+  __pragma(comment(linker, "/export:" WIN_EXPORT_PREFIX STRINGIFY(ExportedName)\
+                                  "=" WIN_EXPORT_PREFIX STRINGIFY(Name)))
 
 // We cannot define weak functions on Windows, but we can use WIN_WEAK_ALIAS()
 // which defines an alias to a default implementation, and only works when
@@ -147,5 +160,15 @@
 //     return a >= b;
 //   }
 //
+
+#else // SANITIZER_GO
+
+// Go neither needs nor wants weak references.
+// The shenanigans above don't work for gcc.
+# define WIN_WEAK_EXPORT_DEF(ReturnType, Name, ...)                            \
+  extern "C" ReturnType Name(__VA_ARGS__)
+
+#endif // SANITIZER_GO
+
 #endif // SANITIZER_WINDOWS
 #endif // SANITIZER_WIN_DEFS_H

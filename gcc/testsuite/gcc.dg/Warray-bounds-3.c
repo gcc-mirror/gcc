@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -Warray-bounds" } */
+/* { dg-skip-if "exceeds eBPF stack limit" { bpf-*-* } } */
 /* based on PR 31227 */
 
 typedef __SIZE_TYPE__ size_t;

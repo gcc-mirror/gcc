@@ -1,6 +1,6 @@
 /* Verify that virtual calls are inlined (ithout early inlining) even
    when their caller is itself indirectly inlined.  */
-/* { dg-do run { target nonpic } } */
+/* { dg-do run { target { nonpic || pie_enabled } } } */
 /* { dg-options "-O3 -fdump-ipa-inline -fno-early-inlining -fno-ipa-cp"  } */
 
 extern "C" void abort (void);

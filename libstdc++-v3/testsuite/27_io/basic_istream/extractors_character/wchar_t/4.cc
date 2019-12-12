@@ -1,6 +1,6 @@
 // 2005-07-22  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,6 +20,7 @@
 // 27.6.1.2.3 basic_istream::operator>>
 
 // { dg-options "-DMAX_SIZE=466" { target simulator } }
+// { dg-require-fileio "" }
 
 #ifndef MAX_SIZE
 #define MAX_SIZE 666

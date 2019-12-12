@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -mavx512vl" } */
+/* { dg-options "-O2 -mavx512vl -Wno-address-of-packed-member" } */
 /* { dg-require-effective-target avx512vl } */
 
 #define AVX512VL

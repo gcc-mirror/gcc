@@ -1,5 +1,5 @@
 /* Compilation switch flag type definitions for GCC.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -123,6 +123,14 @@ enum stack_reuse_level
   SR_ALL
 };
 
+/* The live patching level.  */
+enum live_patching_level
+{
+  LIVE_PATCHING_NONE = 0,
+  LIVE_PATCHING_INLINE_ONLY_STATIC,
+  LIVE_PATCHING_INLINE_CLONE
+};
+
 /* The algorithm used for basic block reordering.  */
 enum reorder_blocks_algorithm
 {
@@ -190,6 +198,22 @@ enum stack_check_type
   /* Check the stack and entirely rely on the target configuration
      files, i.e. do not use the generic mechanism at all.  */
   FULL_BUILTIN_STACK_CHECK
+};
+
+/* Type of callgraph information.  */
+enum callgraph_info_type
+{
+  /* No information.  */
+  NO_CALLGRAPH_INFO = 0,
+
+  /* Naked callgraph.  */
+  CALLGRAPH_INFO_NAKED = 1,
+
+  /* Callgraph decorated with stack usage information.  */
+  CALLGRAPH_INFO_STACK_USAGE = 2,
+
+  /* Callgraph decoration with dynamic allocation information.  */
+  CALLGRAPH_INFO_DYNAMIC_ALLOC = 4
 };
 
 /* Floating-point contraction mode.  */
@@ -346,4 +370,15 @@ enum cf_protection_level
   CF_FULL = CF_BRANCH | CF_RETURN,
   CF_SET = 1 << 2
 };
+
+/* Parloops schedule type.  */
+enum parloops_schedule_type
+{
+  PARLOOPS_SCHEDULE_STATIC = 0,
+  PARLOOPS_SCHEDULE_DYNAMIC,
+  PARLOOPS_SCHEDULE_GUIDED,
+  PARLOOPS_SCHEDULE_AUTO,
+  PARLOOPS_SCHEDULE_RUNTIME
+};
+
 #endif /* ! GCC_FLAG_TYPES_H */

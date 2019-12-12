@@ -1,5 +1,5 @@
 /* Prototypes of target machine for GNU compiler.  MIPS version.
-   Copyright (C) 1989-2018 Free Software Foundation, Inc.
+   Copyright (C) 1989-2019 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
    64-bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
@@ -214,7 +214,7 @@ extern bool mips_legitimize_move (machine_mode, rtx, rtx);
 
 extern rtx mips_subword (rtx, bool);
 extern bool mips_split_move_p (rtx, rtx, enum mips_split_type);
-extern void mips_split_move (rtx, rtx, enum mips_split_type);
+extern void mips_split_move (rtx, rtx, enum mips_split_type, rtx);
 extern bool mips_split_move_insn_p (rtx, rtx, rtx);
 extern void mips_split_move_insn (rtx, rtx, rtx);
 extern void mips_split_128bit_move (rtx, rtx);
@@ -323,6 +323,7 @@ extern bool mips_linked_madd_p (rtx_insn *, rtx_insn *);
 extern bool mips_store_data_bypass_p (rtx_insn *, rtx_insn *);
 extern int mips_dspalu_bypass_p (rtx, rtx);
 extern rtx mips_prefetch_cookie (rtx, rtx);
+extern rtx mips_loongson_ext2_prefetch_cookie (rtx, rtx);
 
 extern const char *current_section_name (void);
 extern unsigned int current_section_flags (void);
@@ -384,5 +385,8 @@ extern mulsidi3_gen_fn mips_mulsidi3_gen_fn (enum rtx_code);
 
 extern void mips_register_frame_header_opt (void);
 extern void mips_expand_vec_cond_expr (machine_mode, machine_mode, rtx *);
+
+/* Routines implemented in mips-d.c  */
+extern void mips_d_target_versions (void);
 
 #endif /* ! GCC_MIPS_PROTOS_H */

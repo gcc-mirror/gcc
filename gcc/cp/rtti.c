@@ -1,5 +1,5 @@
 /* RunTime Type Identification
-   Copyright (C) 1995-2018 Free Software Foundation, Inc.
+   Copyright (C) 1995-2019 Free Software Foundation, Inc.
    Mostly written by Jason Merrill (jason@cygnus.com).
 
 This file is part of GCC.
@@ -168,10 +168,10 @@ init_rtti_processing (void)
 {
   tree type_info_type;
 
-  push_namespace (std_identifier);
+  push_nested_namespace (std_node);
   type_info_type = xref_tag (class_type, get_identifier ("type_info"),
 			     /*tag_scope=*/ts_current, false);
-  pop_namespace ();
+  pop_nested_namespace (std_node);
   const_type_info_type_node
     = cp_build_qualified_type (type_info_type, TYPE_QUAL_CONST);
   type_info_ptr_type = build_pointer_type (const_type_info_type_node);
@@ -209,8 +209,8 @@ build_headof (tree exp)
   offset = build_vtbl_ref (cp_build_fold_indirect_ref (exp),
                            index);
 
-  type = cp_build_qualified_type (ptr_type_node,
-				  cp_type_quals (TREE_TYPE (exp)));
+  cp_build_qualified_type (ptr_type_node,
+			   cp_type_quals (TREE_TYPE (exp)));
   return fold_build_pointer_plus (exp, offset);
 }
 
@@ -272,11 +272,11 @@ get_tinfo_decl_dynamic (tree exp, tsubst_flags_t complain)
 
   exp = resolve_nondeduced_context (exp, complain);
 
-  /* peel back references, so they match.  */
-  type = non_reference (TREE_TYPE (exp));
+  /* Peel back references, so they match.  */
+  type = non_reference (unlowered_expr_type (exp));
 
   /* Peel off cv qualifiers.  */
-  type = TYPE_MAIN_VARIANT (type);
+  type = cv_unqualified (type);
 
   /* For UNKNOWN_TYPEs call complete_type_or_else to get diagnostics.  */
   if (CLASS_TYPE_P (type) || type == unknown_type_node
@@ -300,7 +300,7 @@ get_tinfo_decl_dynamic (tree exp, tsubst_flags_t complain)
     }
   else
     /* Otherwise return the type_info for the static type of the expr.  */
-    t = get_tinfo_ptr (TYPE_MAIN_VARIANT (type));
+    t = get_tinfo_ptr (type);
 
   return cp_build_fold_indirect_ref (t);
 }
@@ -310,14 +310,14 @@ typeid_ok_p (void)
 {
   if (! flag_rtti)
     {
-      error ("cannot use %<typeid%> with -fno-rtti");
+      error ("cannot use %<typeid%> with %<-fno-rtti%>");
       return false;
     }
 
   if (!COMPLETE_TYPE_P (const_type_info_type_node))
     {
       gcc_rich_location richloc (input_location);
-      maybe_add_include_fixit (&richloc, "<typeinfo>");
+      maybe_add_include_fixit (&richloc, "<typeinfo>", false);
       error_at (&richloc,
 		"must %<#include <typeinfo>%> before using"
 		" %<typeid%>");
@@ -512,13 +512,13 @@ get_typeid (tree type, tsubst_flags_t complain)
 	  || type_memfn_rqual (type) != REF_QUAL_NONE))
     {
       if (complain & tf_error)
-	error ("typeid of qualified function type %qT", type);
+	error ("%<typeid%> of qualified function type %qT", type);
       return error_mark_node;
     }
 
   /* The top-level cv-qualifiers of the lvalue expression or the type-id
      that is the operand of typeid are always ignored.  */
-  type = TYPE_MAIN_VARIANT (type);
+  type = cv_unqualified (type);
 
   /* For UNKNOWN_TYPEs call complete_type_or_else to get diagnostics.  */
   if (CLASS_TYPE_P (type) || type == unknown_type_node
@@ -693,8 +693,8 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 		{
 		  tree expr = throw_bad_cast ();
                   if (complain & tf_warning)
-                    warning (0, "dynamic_cast of %q#D to %q#T can never succeed",
-                             old_expr, type);
+	            warning (0, "%<dynamic_cast<%#T>(%#D)%> can never succeed",
+	                     type, old_expr);
 		  /* Bash it to the expected type.  */
 		  TREE_TYPE (expr) = type;
 		  return expr;
@@ -708,8 +708,8 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 		  && TREE_CODE (TREE_TYPE (op)) == RECORD_TYPE)
 		{
                   if (complain & tf_warning)
-                    warning (0, "dynamic_cast of %q#D to %q#T can never succeed",
-                             op, type);
+	            warning (0, "%<dynamic_cast<%#T>(%#D)%> can never succeed",
+	                     type, op);
 		  retval = build_int_cst (type, 0);
 		  return retval;
 		}
@@ -719,7 +719,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 	  if (!flag_rtti)
 	    {
               if (complain & tf_error)
-                error ("%<dynamic_cast%> not permitted with -fno-rtti");
+		error ("%<dynamic_cast%> not permitted with %<-fno-rtti%>");
 	      return error_mark_node;
 	    }
 
@@ -782,7 +782,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 	      tree neq;
 
 	      result = save_expr (result);
-	      neq = cp_truthvalue_conversion (result);
+	      neq = cp_truthvalue_conversion (result, complain);
 	      return cp_convert (type,
 				 build3 (COND_EXPR, TREE_TYPE (result),
 					 neq, result, bad), complain);
@@ -798,7 +798,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 
  fail:
   if (complain & tf_error)
-    error ("cannot dynamic_cast %qE (of type %q#T) to type %q#T (%s)",
+    error ("cannot %<dynamic_cast%> %qE (of type %q#T) to type %q#T (%s)",
            old_expr, TREE_TYPE (old_expr), type, errstr);
   return error_mark_node;
 }
@@ -1015,8 +1015,7 @@ ptr_initializer (tinfo_s *ti, tree target)
       to = tx_unsafe_fn_variant (to);
     }
   if (flag_noexcept_type
-      && (TREE_CODE (to) == FUNCTION_TYPE
-	  || TREE_CODE (to) == METHOD_TYPE)
+      && FUNC_OR_METHOD_TYPE_P (to)
       && TYPE_NOTHROW_P (to))
     {
       flags |= 0x40;
@@ -1539,7 +1538,7 @@ emit_support_tinfos (void)
   {
     &void_type_node,
     &boolean_type_node,
-    &wchar_type_node, &char16_type_node, &char32_type_node,
+    &wchar_type_node, &char8_type_node, &char16_type_node, &char32_type_node,
     &char_type_node, &signed_char_type_node, &unsigned_char_type_node,
     &short_integer_type_node, &short_unsigned_type_node,
     &integer_type_node, &unsigned_type_node,
@@ -1554,7 +1553,7 @@ emit_support_tinfos (void)
 
   /* Look for a defined class.  */
   tree bltn_type = lookup_qualified_name
-    (abi_node, get_identifier ("__fundamental_type_info"), true, false, false);
+    (abi_node, "__fundamental_type_info", true, false);
   if (TREE_CODE (bltn_type) != TYPE_DECL)
     return;
 

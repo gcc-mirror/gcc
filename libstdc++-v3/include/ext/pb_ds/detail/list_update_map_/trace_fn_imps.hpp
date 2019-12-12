@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -38,6 +38,8 @@
  * Contains implementations of lu_map_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 #ifdef PB_DS_LU_MAP_TRACE_
 
 PB_DS_CLASS_T_DEC
@@ -57,3 +59,4 @@ trace() const
 
 #endif 
 
+#endif

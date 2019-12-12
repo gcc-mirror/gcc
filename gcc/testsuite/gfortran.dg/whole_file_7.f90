@@ -1,5 +1,4 @@
 ! { dg-do compile }
-! { dg-options "-fwhole-file" }
 ! Test the fixes for the first two problems in PR40011
 !
 ! Contributed by Dominique d'Humieres <dominiq@lps.ens.fr>

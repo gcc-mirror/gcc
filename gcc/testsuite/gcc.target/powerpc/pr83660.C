@@ -1,7 +1,6 @@
 /* PR target/83660 */
 /* { dg-do compile } */
-/* { dg-options "-mcpu=power7" } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
+/* { dg-options "-mdejagnu-cpu=power7" } */
 
 #include <altivec.h>
 

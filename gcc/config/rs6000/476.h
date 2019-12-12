@@ -1,5 +1,5 @@
 /* Enable IBM PowerPC 476 support.
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
    Contributed by Peter Bergner (bergner@vnet.ibm.com)
    This file is part of GCC.
 

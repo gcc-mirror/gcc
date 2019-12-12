@@ -41,14 +41,8 @@ main ()
   k = 0x8234508000000001ULL;
   x = s (k);
   k = (unsigned long long) x;
-#ifdef __SPU__
-  /* SPU float rounds towards zero.  */
-  if (k != 0x8234500000000000ULL)
-    abort ();
-#else
   if (k != 0x8234510000000000ULL)
     abort ();
-#endif
 
   exit (0);
 }

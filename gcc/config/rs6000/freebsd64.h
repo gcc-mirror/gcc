@@ -1,5 +1,5 @@
 /* Definitions for 64-bit PowerPC running FreeBSD using the ELF format
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -16,6 +16,10 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+/* Undef gnu-user.h macros we don't want.  */
+#undef CPLUSPLUS_CPP_SPEC
+#undef LINK_GCC_C_SEQUENCE_SPEC
 
 /* Override the defaults, which exist to force the proper definition.  */
 
@@ -95,7 +99,7 @@ extern int dot_symbols;
 	    {							\
 	      rs6000_current_abi = ABI_ELFv2;			\
 	      if (dot_symbols)					\
-		error ("-mcall-aixdesc incompatible with -mabi=elfv2"); \
+		error ("%<-mcall-aixdesc%> incompatible with %<-mabi=elfv2%>"); \
 	    }							\
 	  if (rs6000_isa_flags & OPTION_MASK_EABI)		\
 	    {							\
@@ -110,14 +114,14 @@ extern int dot_symbols;
 	  if ((rs6000_isa_flags & OPTION_MASK_POWERPC64) == 0)	\
 	    {							\
 	      rs6000_isa_flags |= OPTION_MASK_POWERPC64;	\
-	      error ("-m64 requires a PowerPC64 cpu");		\
+	      error ("%<-m64%> requires a PowerPC64 cpu");		\
 	    }							\
 	   if ((rs6000_isa_flags_explicit			\
 		& OPTION_MASK_MINIMAL_TOC) != 0)		\
 	    {							\
 	      if (global_options_set.x_rs6000_current_cmodel	\
 		  && rs6000_current_cmodel != CMODEL_SMALL)	\
-		error ("-mcmodel incompatible with other toc options"); \
+		error ("%<-mcmodel%> incompatible with other toc options"); \
 	      SET_CMODEL (CMODEL_SMALL);			\
 	    }							\
 	  else							\
@@ -134,11 +138,9 @@ extern int dot_symbols;
     }								\
   while (0)
 
-#undef	ASM_DEFAULT_SPEC
 #undef	ASM_SPEC
 #undef	LINK_OS_FREEBSD_SPEC
 
-#define	ASM_DEFAULT_SPEC "-mppc%{!m32:64}"
 #define	ASM_SPEC	 "%{m32:%(asm_spec32)}%{!m32:%(asm_spec64)} %(asm_spec_common)"
 #define	LINK_OS_FREEBSD_SPEC "%{m32:%(link_os_freebsd_spec32)}%{!m32:%(link_os_freebsd_spec64)}"
 
@@ -306,15 +308,6 @@ extern int dot_symbols;
 #undef  WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 
-
-/* Override rs6000.h definition.  */
-#undef  ASM_APP_ON
-#define ASM_APP_ON "#APP\n"
-
-/* Override rs6000.h definition.  */
-#undef  ASM_APP_OFF
-#define ASM_APP_OFF "#NO_APP\n"
-
 /* Function profiling bits */
 #undef  RS6000_MCOUNT
 #define RS6000_MCOUNT "_mcount"
@@ -409,13 +402,13 @@ extern int dot_symbols;
 #undef  ASM_OUTPUT_SPECIAL_POOL_ENTRY_P
 #define ASM_OUTPUT_SPECIAL_POOL_ENTRY_P(X, MODE)                        \
   (TARGET_TOC                                                           \
-   && (GET_CODE (X) == SYMBOL_REF                                       \
+   && (SYMBOL_REF_P (X)							\
        || (GET_CODE (X) == CONST && GET_CODE (XEXP (X, 0)) == PLUS      \
-           && GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF)           \
+           && SYMBOL_REF_P (XEXP (XEXP (X, 0), 0)))			\
        || GET_CODE (X) == LABEL_REF                                     \
-       || (GET_CODE (X) == CONST_INT                                    \
+       || (CONST_INT_P (X)						\
            && GET_MODE_BITSIZE (MODE) <= GET_MODE_BITSIZE (Pmode))      \
-       || (GET_CODE (X) == CONST_DOUBLE                                 \
+       || (CONST_DOUBLE_P (X)						\
            && ((TARGET_64BIT                                            \
                 && (TARGET_MINIMAL_TOC                                  \
                     || (SCALAR_FLOAT_MODE_P (GET_MODE (X))              \

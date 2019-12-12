@@ -2,4 +2,4 @@
 /* { dg-do compile } */
 /* { dg-options "-fstack-limit" } */
 
-/* { dg-error "unrecognized command line option" "" { target *-*-* } 0 } */
+/* { dg-error "unrecognized command-line option" "" { target *-*-* } 0 } */

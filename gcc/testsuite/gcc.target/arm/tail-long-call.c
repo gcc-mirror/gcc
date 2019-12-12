@@ -1,4 +1,5 @@
 /* { dg-skip-if "need at least armv5te" { *-*-* } { "-march=armv[234]*" "-mthumb" } { "" } } */
+/* { dg-skip-if "FDPIC does not support tailcall optimization" { arm*-*-uclinuxfdpiceabi } "*" "" } */
 /* { dg-options "-O2 -march=armv5te -marm" } */
 /* { dg-final { scan-assembler "bx" } } */
 /* { dg-final { scan-assembler-not "blx" } } */

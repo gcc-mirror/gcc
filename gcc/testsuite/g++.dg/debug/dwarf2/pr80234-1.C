@@ -1,6 +1,6 @@
 // PR debug/80234
-// { dg-do compile }
-// { dg-options "-gdwarf-4 -std=c++17" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-gdwarf-4" }
 
 struct S
 {

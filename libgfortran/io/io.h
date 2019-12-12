@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -32,6 +32,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <gthr.h>
 
+#define gcc_unreachable() __builtin_unreachable ()
 
 /* POSIX 2008 specifies that the extended locale stuff is found in
    locale.h, but some systems have them in xlocale.h.  */
@@ -100,7 +101,8 @@ array_loop_spec;
 
 /* Subroutine formatted_dtio (struct, unit, iotype, v_list, iostat,
 			      iomsg, (_iotype), (_iomsg))  */
-typedef void (*formatted_dtio)(void *, GFC_INTEGER_4 *, char *, gfc_array_i4 *,
+typedef void (*formatted_dtio)(void *, GFC_INTEGER_4 *, char *,
+			       gfc_full_array_i4 *,
 			       GFC_INTEGER_4 *, char *,
 			       gfc_charlen_type, gfc_charlen_type);
 
@@ -129,6 +131,20 @@ typedef struct format_hash_entry
   struct format_data *hashed_fmt;
 }
 format_hash_entry;
+
+/* Format tokens.  Only about half of these can be stored in the
+   format nodes.  */
+
+typedef enum
+{
+  FMT_NONE = 0, FMT_UNKNOWN, FMT_SIGNED_INT, FMT_ZERO, FMT_POSINT, FMT_PERIOD,
+  FMT_COMMA, FMT_COLON, FMT_SLASH, FMT_DOLLAR, FMT_T, FMT_TR, FMT_TL,
+  FMT_LPAREN, FMT_RPAREN, FMT_X, FMT_S, FMT_SS, FMT_SP, FMT_STRING,
+  FMT_BADSTRING, FMT_P, FMT_I, FMT_B, FMT_BN, FMT_BZ, FMT_O, FMT_Z, FMT_F,
+  FMT_E, FMT_EN, FMT_ES, FMT_G, FMT_L, FMT_A, FMT_D, FMT_H, FMT_END, FMT_DC,
+  FMT_DP, FMT_STAR, FMT_RC, FMT_RD, FMT_RN, FMT_RP, FMT_RU, FMT_RZ, FMT_DT
+}
+format_token;
 
 /* Representation of a namelist object in libgfortran
 
@@ -531,7 +547,9 @@ typedef struct st_parameter_dt
 	  /* A flag used to identify when a non-standard expanded namelist read
 	     has occurred.  */
 	  unsigned expanded_read : 1;
-	  /* 13 unused bits.  */
+	  /* Flag to indicate if the statement has async="YES". */
+	  unsigned async : 1;
+	  /* 12 unused bits.  */
 
 	  int child_saved_iostat;
 	  int nml_delim;
@@ -590,7 +608,7 @@ extern char check_st_parameter_dt[sizeof (((st_parameter_dt *) 0)->u.pad)
 typedef struct
 {
   st_parameter_common common;
-  CHARACTER1 (id);
+  GFC_INTEGER_4 *id;
 }
 st_parameter_wait;
 
@@ -658,6 +676,9 @@ typedef struct gfc_unit
   /* Set to 1 if we have read a subrecord.  */
 
   int continued;
+
+  /* Contains the pointer to the async unit.  */
+  struct async_unit *au;
 
   __gthread_mutex_t lock;
   /* Number of threads waiting to acquire this unit's lock.
@@ -815,10 +836,17 @@ extern void next_record (st_parameter_dt *, int);
 internal_proto(next_record);
 
 extern void st_wait (st_parameter_wait *);
-export_proto(st_wait);
+export_proto (st_wait);
+
+extern void st_wait_async (st_parameter_wait *);
+export_proto (st_wait_async);
 
 extern void hit_eof (st_parameter_dt *);
 internal_proto(hit_eof);
+
+extern void transfer_array_inner (st_parameter_dt *, gfc_array_char *, int,
+				  gfc_charlen_type);
+internal_proto (transfer_array_inner);
 
 /* read.c */
 
@@ -914,8 +942,8 @@ internal_proto(write_o);
 extern void write_real (st_parameter_dt *, const char *, int);
 internal_proto(write_real);
 
-extern void write_real_g0 (st_parameter_dt *, const char *, int, int);
-internal_proto(write_real_g0);
+extern void write_real_w0 (st_parameter_dt *, const char *, int, format_token, int);
+internal_proto(write_real_w0);
 
 extern void write_x (st_parameter_dt *, int, int);
 internal_proto(write_x);
@@ -948,8 +976,8 @@ internal_proto(free_ionml);
 static inline void
 inc_waiting_locked (gfc_unit *u)
 {
-#ifdef HAVE_SYNC_FETCH_AND_ADD
-  (void) __sync_fetch_and_add (&u->waiting, 1);
+#ifdef HAVE_ATOMIC_FETCH_ADD
+  (void) __atomic_fetch_add (&u->waiting, 1, __ATOMIC_RELAXED);
 #else
   u->waiting++;
 #endif
@@ -958,8 +986,20 @@ inc_waiting_locked (gfc_unit *u)
 static inline int
 predec_waiting_locked (gfc_unit *u)
 {
-#ifdef HAVE_SYNC_FETCH_AND_ADD
-  return __sync_add_and_fetch (&u->waiting, -1);
+#ifdef HAVE_ATOMIC_FETCH_ADD
+  /* Note that the pattern
+
+     if (predec_waiting_locked (u) == 0)
+         // destroy u
+	 
+     could be further optimized by making this be an __ATOMIC_RELEASE,
+     and then inserting a
+
+     __atomic_thread_fence (__ATOMIC_ACQUIRE);
+
+     inside the branch before destroying.  But for now, lets keep it
+     simple.  */
+  return __atomic_add_fetch (&u->waiting, -1, __ATOMIC_ACQ_REL);
 #else
   return --u->waiting;
 #endif
@@ -968,8 +1008,8 @@ predec_waiting_locked (gfc_unit *u)
 static inline void
 dec_waiting_unlocked (gfc_unit *u)
 {
-#ifdef HAVE_SYNC_FETCH_AND_ADD
-  (void) __sync_fetch_and_add (&u->waiting, -1);
+#ifdef HAVE_ATOMIC_FETCH_ADD
+  (void) __atomic_fetch_add (&u->waiting, -1, __ATOMIC_RELAXED);
 #else
   __gthread_mutex_lock (&unit_lock);
   u->waiting--;
@@ -986,5 +1026,66 @@ memset4 (gfc_char4_t *p, gfc_char4_t c, int k)
     *p++ = c;
 }
 
+/* Used in width fields to indicate that the default should be used */
+#define DEFAULT_WIDTH -1
+
+/* Defaults for certain format field descriptors. These are decided based on
+ * the type of the value being formatted.
+ *
+ * The behaviour here is modelled on the Oracle Fortran compiler. At the time
+ * of writing, the details were available at this URL:
+ *
+ *   https://docs.oracle.com/cd/E19957-01/805-4939/6j4m0vnc3/index.html#z4000743746d
+ */
+
+static inline int
+default_width_for_integer (int kind)
+{
+  switch (kind)
+    {
+    case 1:
+    case 2:  return  7;
+    case 4:  return 12;
+    case 8:  return 23;
+    case 16: return 44;
+    default: return  0;
+    }
+}
+
+static inline int
+default_width_for_float (int kind)
+{
+  switch (kind)
+    {
+    case 4:  return 15;
+    case 8:  return 25;
+    case 16: return 42;
+    default: return  0;
+    }
+}
+
+static inline int
+default_precision_for_float (int kind)
+{
+  switch (kind)
+    {
+    case 4:  return 7;
+    case 8:  return 16;
+    case 16: return 33;
+    default: return 0;
+    }
+}
+
 #endif
 
+extern void
+st_write_done_worker (st_parameter_dt *);
+internal_proto (st_write_done_worker);
+
+extern void
+st_read_done_worker (st_parameter_dt *);
+internal_proto (st_read_done_worker);
+
+extern void
+data_transfer_init_worker (st_parameter_dt *, int);
+internal_proto (data_transfer_init_worker);

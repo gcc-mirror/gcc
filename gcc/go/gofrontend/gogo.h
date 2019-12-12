@@ -12,9 +12,7 @@
 class Traverse;
 class Statement_inserter;
 class Type;
-class Type_hash_identical;
 class Type_equal;
-class Type_identical;
 class Typed_identifier;
 class Typed_identifier_list;
 class Function_type;
@@ -43,7 +41,9 @@ class Label;
 class Translate_context;
 class Backend;
 class Export;
+class Export_function_body;
 class Import;
+class Import_function_body;
 class Bexpression;
 class Btype;
 class Bstatement;
@@ -102,6 +102,11 @@ class Import_init
   const std::set<std::string>&
   precursors() const
   { return this->precursor_functions_; }
+
+  // Whether this is a dummy init, which is used only to record transitive import.
+  bool
+  is_dummy() const
+  { return this->init_name_[0] == '~'; }
 
  private:
   // The name of the package being imported.
@@ -201,26 +206,10 @@ class Gogo
     return name.substr(1, name.rfind('.') - 1);
   }
 
-  // Given a name which may or may not have been hidden, return the
-  // name to use within a mangled symbol name.
-  static std::string
-  mangle_possibly_hidden_name(const std::string& name)
-  { 
-    // FIXME: This adds in pkgpath twice for hidden symbols, which is
-    // less than ideal.
-    std::string n;
-    if (!Gogo::is_hidden_name(name))
-      n = name;
-    else
-      {
-        n = ".";
-        std::string pkgpath = Gogo::hidden_name_pkgpath(name);
-        n.append(Gogo::pkgpath_for_symbol(pkgpath));
-        n.append(1, '.');
-        n.append(Gogo::unpack_hidden_name(name));
-      }
-    return n;
-  }
+  // Given a name which may or may not have been hidden, append the
+  // appropriate version of the name to the result string.
+  static void
+  append_possibly_hidden_name(std::string *result, const std::string& name);
 
   // Given a name which may or may not have been hidden, return the
   // name to use in an error message.
@@ -233,12 +222,28 @@ class Gogo
   {
     return (name[0] == '.'
 	    && name[name.length() - 1] == '_'
-	    && name[name.length() - 2] == '.');
+	    && name[name.length() - 2] == '.')
+        || (name[0] == '_'
+            && name.length() == 1);
   }
+
+  // Helper used when adding parameters (including receiver param) to the
+  // bindings of a function. If the specified parameter name is empty or
+  // corresponds to the sink name, param name is replaced with a new unique
+  // name. PNAME is the address of a string containing the parameter variable
+  // name to be checked/updated; TAG is a descriptive tag to be used in
+  // manufacturing the new unique name, and COUNT is the address of a counter
+  // holding the number of params renamed so far with the tag in question.
+  static void
+  rename_if_empty(std::string* pname, const char* tag, unsigned* count);
 
   // Convert a pkgpath into a string suitable for a symbol
   static std::string
   pkgpath_for_symbol(const std::string& pkgpath);
+
+  // Compute a hash code for a string, given a seed.
+  static unsigned int
+  hash_string(const std::string&, unsigned int);
 
   // Return the package path to use for reflect.Type.PkgPath.
   const std::string&
@@ -327,6 +332,19 @@ class Gogo
   void
   set_debug_escape_hash(const std::string& s)
   { this->debug_escape_hash_ = s; }
+
+  // Return whether to output optimization diagnostics.
+  bool
+  debug_optimization() const
+  { return this->debug_optimization_; }
+
+  // Set the option to output optimization diagnostics.
+  void
+  set_debug_optimization(bool b)
+  { this->debug_optimization_ = b; }
+
+  // Dump to stderr for debugging
+  void debug_dump();
 
   // Return the size threshold used to determine whether to issue
   // a nil-check for a given pointer dereference. A threshold of -1
@@ -437,6 +455,17 @@ class Gogo
   Named_object*
   declare_package_function(const std::string&, Function_type*, Location);
 
+  // Add a function declaration to the list of functions we may want
+  // to inline.
+  void
+  add_imported_inlinable_function(Named_object*);
+
+  // Add a function to the list of functions that we do want to
+  // inline.
+  void
+  add_imported_inline_function(Named_object* no)
+  { this->imported_inline_functions_.push_back(no); }
+
   // Add a label.
   Label*
   add_label_definition(const std::string&, Location);
@@ -520,7 +549,9 @@ class Gogo
   { this->file_block_names_[name] = location; }
 
   // Add a linkname, from the go:linkname compiler directive.  This
-  // changes the externally visible name of go_name to be ext_name.
+  // changes the externally visible name of GO_NAME to be EXT_NAME.
+  // If EXT_NAME is the empty string, GO_NAME is unchanged, but the
+  // symbol is made publicly visible.
   void
   add_linkname(const std::string& go_name, bool is_exported,
 	       const std::string& ext_name, Location location);
@@ -598,6 +629,11 @@ class Gogo
     this->gc_roots_.push_back(expr);
   }
 
+  // Add a type to the descriptor list.
+  void
+  add_type_descriptor(Type* type)
+  { this->type_descriptors_.push_back(type); }
+
   // Traverse the tree.  See the Traverse class.
   void
   traverse(Traverse*);
@@ -642,6 +678,10 @@ class Gogo
   void
   finalize_methods();
 
+  // Finalize the method list for one type.
+  void
+  finalize_methods_for_type(Type*);
+
   // Work out the types to use for unspecified variables and
   // constants.
   void
@@ -659,6 +699,18 @@ class Gogo
   // Check for return statements.
   void
   check_return_statements();
+
+  // Remove deadcode.
+  void
+  remove_deadcode();
+
+  // Make implicit type conversions explicit.
+  void
+  add_conversions();
+
+  // Make implicit type conversions explicit in a block.
+  void
+  add_conversions_in_block(Block*);
 
   // Analyze the program flow for escape information.
   void
@@ -678,7 +730,7 @@ class Gogo
   propagate_escape(Escape_context*, Node*);
 
   // Add notes about the escape level of a function's input and output
-  // parameters for exporting and importing top level functions. 
+  // parameters for exporting and importing top level functions.
   void
   tag_function(Escape_context*, Named_object*);
 
@@ -704,9 +756,17 @@ class Gogo
   void
   remove_shortcuts();
 
+  // Turn short-cut operators into explicit if statements in a block.
+  void
+  remove_shortcuts_in_block(Block*);
+
   // Use temporary variables to force order of evaluation.
   void
   order_evaluations();
+
+  // Order evaluations in a block.
+  void
+  order_block(Block*);
 
   // Add write barriers as needed.
   void
@@ -715,7 +775,14 @@ class Gogo
   // Return whether an assignment that sets LHS to RHS needs a write
   // barrier.
   bool
-  assign_needs_write_barrier(Expression* lhs);
+  assign_needs_write_barrier(Expression* lhs,
+                             Unordered_set(const Named_object*)*);
+
+  // Return whether EXPR is the address of a variable that can be set
+  // without a write barrier.  That is, if this returns true, then an
+  // assignment to *EXPR does not require a write barrier.
+  bool
+  is_nonwb_pointer(Expression* expr, Unordered_set(const Named_object*)*);
 
   // Return an assignment that sets LHS to RHS using a write barrier.
   // This returns an if statement that checks whether write barriers
@@ -725,6 +792,12 @@ class Gogo
   assign_with_write_barrier(Function*, Block*, Statement_inserter*,
 			    Expression* lhs, Expression* rhs, Location);
 
+  // Return a statement that tests whether write barriers are enabled
+  // and executes either the efficient code (WITHOUT) or the write
+  // barrier function call (WITH), depending.
+  Statement*
+  check_write_barrier(Block*, Statement* without, Statement* with);
+
   // Flatten parse tree.
   void
   flatten();
@@ -733,17 +806,12 @@ class Gogo
   void
   build_recover_thunks();
 
-  // Return a declaration for __builtin_return_address or
-  // __builtin_frame_address.
-  static Named_object*
-  declare_builtin_rf_address(const char* name);
-
   // Simplify statements which might use thunks: go and defer
   // statements.
   void
   simplify_thunk_statements();
 
-  // Dump AST if -fgo-dump-ast is set 
+  // Dump AST if -fgo-dump-ast is set.
   void
   dump_ast(const char* basename);
 
@@ -871,9 +939,27 @@ class Gogo
   const std::string&
   get_init_fn_name();
 
+  // Return the name for a dummy init function, which is not a real
+  // function but only for tracking transitive import.
+  std::string
+  dummy_init_fn_name();
+
+  // Return the package path symbol from an init function name, which
+  // can be a real init function or a dummy one.
+  std::string
+  pkgpath_from_init_fn_name(std::string);
+
   // Return the name for a type descriptor symbol.
   std::string
-  type_descriptor_name(Type*, Named_type*);
+  type_descriptor_name(const Type*, Named_type*);
+
+  // Return the name of the type descriptor list symbol of a package.
+  std::string
+  type_descriptor_list_symbol(std::string);
+
+  // Return the name of the list of all type descriptor lists.
+  std::string
+  typelists_symbol();
 
   // Return the assembler name for the GC symbol for a type.
   std::string
@@ -941,11 +1027,20 @@ class Gogo
                    std::vector<Bstatement*>&,
                    Bfunction* init_bfunction);
 
+  // Build the list of type descriptors.
+  void
+  build_type_descriptor_list();
+
+  // Register the type descriptors with the runtime.
+  void
+  register_type_descriptors(std::vector<Bstatement*>&,
+                            Bfunction* init_bfunction);
+
+  void
+  propagate_writebarrierrec();
+
   Named_object*
   write_barrier_variable();
-
-  Statement*
-  check_write_barrier(Block*, Statement*, Statement*);
 
   // Type used to map import names to packages.
   typedef std::map<std::string, Package*> Imports;
@@ -1059,6 +1154,9 @@ class Gogo
   // -fgo-debug-escape-hash option. The analysis is run only on
   // functions with names that hash to the matching value.
   std::string debug_escape_hash_;
+  // Whether to output optimization diagnostics, from the
+  // -fgo-debug-optimization option.
+  bool debug_optimization_;
   // Nil-check size threshhold.
   int64_t nil_check_size_threshold_;
   // A list of types to verify.
@@ -1076,6 +1174,14 @@ class Gogo
   std::vector<Analysis_set> analysis_sets_;
   // A list of objects to add to the GC roots.
   std::vector<Expression*> gc_roots_;
+  // A list of type descriptors that we need to register.
+  std::vector<Type*> type_descriptors_;
+  // A list of function declarations with imported bodies that we may
+  // want to inline.
+  std::vector<Named_object*> imported_inlinable_functions_;
+  // A list of functions that we want to inline.  These will be sent
+  // to the backend.
+  std::vector<Named_object*> imported_inline_functions_;
 };
 
 // A block of statements.
@@ -1153,6 +1259,14 @@ class Block
   // next block.
   bool
   may_fall_through() const;
+
+  // Write the export data for the block's statements to the string.
+  void
+  export_block(Export_function_body*);
+
+  // Turn exported block data into a block.
+  static bool
+  import_block(Block*, Import_function_body*, Location);
 
   // Convert the block to the backend representation.
   Bblock*
@@ -1248,6 +1362,11 @@ class Function
   void
   set_asm_name(const std::string& asm_name)
   { this->asm_name_ = asm_name; }
+
+  // Mark this symbol as exported by a linkname directive.
+  void
+  set_is_exported_by_linkname()
+  { this->is_exported_by_linkname_ = true; }
 
   // Return the pragmas for this function.
   unsigned int
@@ -1419,6 +1538,37 @@ class Function
   set_in_unique_section()
   { this->in_unique_section_ = true; }
 
+  // Return whether this function should be exported for inlining.
+  bool
+  export_for_inlining() const
+  { return this->export_for_inlining_; }
+
+  // Mark the function to be exported for inlining.
+  void
+  set_export_for_inlining()
+  { this->export_for_inlining_ = true; }
+
+  // Return whether this function is inline only.
+  bool
+  is_inline_only() const
+  { return this->is_inline_only_; }
+
+  // Mark the function as inline only: the body should not be emitted
+  // if it is not inlined.
+  void
+  set_is_inline_only()
+  { this->is_inline_only_ = true; }
+
+  // Report whether the function is referenced by an inline body.
+  bool
+  is_referenced_by_inline() const
+  { return this->is_referenced_by_inline_; }
+
+  // Mark the function as referenced by an inline body.
+  void
+  set_is_referenced_by_inline()
+  { this->is_referenced_by_inline_ = true; }
+
   // Swap with another function.  Used only for the thunk which calls
   // recover.
   void
@@ -1471,19 +1621,21 @@ class Function
 
   // Export the function.
   void
-  export_func(Export*, const std::string& name) const;
+  export_func(Export*, const Named_object*) const;
 
   // Export a function with a type.
   static void
-  export_func_with_type(Export*, const std::string& name,
-			const Function_type*, bool nointerface);
+  export_func_with_type(Export*, const Named_object*,
+			const Function_type*, Results*, bool nointerface,
+			const std::string& asm_name, Block* block, Location);
 
-  // Import a function.
-  static void
-  import_func(Import*, std::string* pname, Typed_identifier** receiver,
+  // Import a function.  Reports whether the import succeeded.
+  static bool
+  import_func(Import*, std::string* pname, Package** pkg,
+	      bool* is_exported, Typed_identifier** receiver,
 	      Typed_identifier_list** pparameters,
 	      Typed_identifier_list** presults, bool* is_varargs,
-	      bool* nointerface);
+	      bool* nointerface, std::string* asm_name, std::string* body);
 
  private:
   // Type for mapping from label names to Label objects.
@@ -1554,6 +1706,18 @@ class Function
   // True if this function should be put in a unique section.  This is
   // turned on for field tracking.
   bool in_unique_section_ : 1;
+  // True if we should export the body of this function for
+  // cross-package inlining.
+  bool export_for_inlining_ : 1;
+  // True if this function is inline only: if it should not be emitted
+  // if it is not inlined.
+  bool is_inline_only_ : 1;
+  // True if this function is referenced from an inlined body that
+  // will be put into the export data.
+  bool is_referenced_by_inline_ : 1;
+  // True if we should make this function visible to other packages
+  // because of a go:linkname directive.
+  bool is_exported_by_linkname_ : 1;
 };
 
 // A snapshot of the current binding state.
@@ -1597,7 +1761,8 @@ class Function_declaration
  public:
   Function_declaration(Function_type* fntype, Location location)
     : fntype_(fntype), location_(location), asm_name_(), descriptor_(NULL),
-      fndecl_(NULL), pragmas_(0)
+      fndecl_(NULL), pragmas_(0), imported_body_(),
+      is_on_inlinable_list_(false)
   { }
 
   Function_type*
@@ -1643,6 +1808,33 @@ class Function_declaration
   void
   set_nointerface();
 
+  // Whether we have an imported function body.
+  bool
+  has_imported_body() const
+  { return !this->imported_body_.empty(); }
+
+  // Record the imported body of this function.
+  void
+  set_imported_body(Import* imp, const std::string& imported_body)
+  {
+    this->imp_ = imp;
+    this->imported_body_ = imported_body;
+  }
+
+  // Whether this declaration is on the list of inlinable functions.
+  bool
+  is_on_inlinable_list() const
+  { return this->is_on_inlinable_list_; }
+
+  // Set that this function is on the list of inlinable functions.
+  void
+  set_is_on_inlinable_list()
+  { this->is_on_inlinable_list_ = true; }
+
+  // Import the function body, creating a function.
+  void
+  import_function_body(Gogo*, Named_object*);
+
   // Return an expression for the function descriptor, given the named
   // object for this function.  This may only be called for functions
   // without a closure.  This will be an immutable struct with one
@@ -1666,10 +1858,11 @@ class Function_declaration
 
   // Export a function declaration.
   void
-  export_func(Export* exp, const std::string& name) const
+  export_func(Export* exp, const Named_object* no) const
   {
-    Function::export_func_with_type(exp, name, this->fntype_,
-				    this->is_method() && this->nointerface());
+    Function::export_func_with_type(exp, no, this->fntype_, NULL,
+				    this->is_method() && this->nointerface(),
+				    this->asm_name_, NULL, this->location_);
   }
 
   // Check that the types used in this declaration's signature are defined.
@@ -1690,6 +1883,12 @@ class Function_declaration
   Bfunction* fndecl_;
   // Pragmas for this function.  This is a set of GOPRAGMA bits.
   unsigned int pragmas_;
+  // Importer for function body if imported from a different package.
+  Import* imp_;
+  // Export data for function body if imported from a different package.
+  std::string imported_body_;
+  // Whether this declaration is already on the list of inlinable functions.
+  bool is_on_inlinable_list_;
 };
 
 // A variable.
@@ -1784,11 +1983,7 @@ class Variable
   // Whether this variable should live in the heap.
   bool
   is_in_heap() const
-  {
-    return this->is_address_taken_ 
-      && this->escapes_
-      && !this->is_global_;
-  }
+  { return this->is_address_taken_ && !this->is_global_; }
 
   // Note that something takes the address of this variable.
   void
@@ -1805,16 +2000,6 @@ class Variable
   void
   set_non_escaping_address_taken()
   { this->is_non_escaping_address_taken_ = true; }
-
-  // Return whether this variable escapes the function it is declared in.
-  bool
-  escapes()
-  { return this->escapes_; }
-
-  // Note that this variable does not escape the function it is declared in.
-  void
-  set_does_not_escape()
-  { this->escapes_ = false; }
 
   // Get the source location of the variable's declaration.
   Location
@@ -1927,6 +2112,14 @@ class Variable
     this->in_unique_section_ = true;
   }
 
+  // Mark the variable as referenced by an inline body.
+  void
+  set_is_referenced_by_inline()
+  {
+    go_assert(this->is_global_);
+    this->is_referenced_by_inline_ = true;
+  }
+
   // Return the top-level declaration for this variable.
   Statement*
   toplevel_decl()
@@ -1967,11 +2160,12 @@ class Variable
 
   // Export the variable.
   void
-  export_var(Export*, const std::string& name) const;
+  export_var(Export*, const Named_object*) const;
 
-  // Import a variable.
-  static void
-  import_var(Import*, std::string* pname, Type** ptype);
+  // Import a variable.  Reports whether the import succeeded.
+  static bool
+  import_var(Import*, std::string* pname, Package** pkg, bool* is_exported,
+	     Type** ptype);
 
  private:
   // The type of a tuple.
@@ -2038,9 +2232,9 @@ class Variable
   // True if this variable should be put in a unique section.  This is
   // used for field tracking.
   bool in_unique_section_ : 1;
-  // Whether this variable escapes the function it is created in.  This is
-  // true until shown otherwise.
-  bool escapes_ : 1;
+  // True if this variable is referenced from an inlined body that
+  // will be put into the export data.
+  bool is_referenced_by_inline_ : 1;
   // The top-level declaration for this variable. Only used for local
   // variables. Must be a Temporary_statement if not NULL.
   Statement* toplevel_decl_;
@@ -2056,7 +2250,7 @@ class Result_variable
 		  Location location)
     : type_(type), function_(function), index_(index), location_(location),
       backend_(NULL), is_address_taken_(false),
-      is_non_escaping_address_taken_(false), escapes_(true)
+      is_non_escaping_address_taken_(false)
   { }
 
   // Get the type of the result variable.
@@ -2099,24 +2293,11 @@ class Result_variable
   void
   set_non_escaping_address_taken()
   { this->is_non_escaping_address_taken_ = true; }
-  
-  // Return whether this variable escapes the function it is declared in.
-  bool
-  escapes()
-  { return this->escapes_; }
-
-  // Note that this variable does not escape the function it is declared in.
-  void
-  set_does_not_escape()
-  { this->escapes_ = false; }
 
   // Whether this variable should live in the heap.
   bool
   is_in_heap() const
-  {
-    return this->is_address_taken_
-      && this->escapes_;
-  }
+  { return this->is_address_taken_; }
 
   // Set the function.  This is used when cloning functions which call
   // recover.
@@ -2144,9 +2325,6 @@ class Result_variable
   // Whether something takes the address of this variable such that
   // the address does not escape the function.
   bool is_non_escaping_address_taken_;
-  // Whether this variable escapes the function it is created in.  This is
-  // true until shown otherwise.
-  bool escapes_;
 };
 
 // The value we keep for a named constant.  This lets us hold a type
@@ -2917,6 +3095,9 @@ class Bindings
   first_declaration()
   { return this->bindings_.empty() ? NULL : this->bindings_.begin()->second; }
 
+  // Dump to stderr for debugging
+  void debug_dump();
+
  private:
   Named_object*
   add_named_object_to_contour(Contour*, Named_object*);
@@ -3196,7 +3377,7 @@ class Package
 
   // Return the bindings.
   Bindings*
-  bindings()
+  bindings() const
   { return this->bindings_; }
 
   // Type used to map import names to package aliases.
@@ -3413,6 +3594,24 @@ class Traverse
   Expressions_seen* expressions_seen_;
 };
 
+// This class looks for interface types to finalize methods of inherited
+// interfaces.
+
+class Finalize_methods : public Traverse
+{
+ public:
+  Finalize_methods(Gogo* gogo)
+    : Traverse(traverse_types),
+      gogo_(gogo)
+  { }
+
+  int
+  type(Type*);
+
+ private:
+  Gogo* gogo_;
+};
+
 // A class which makes it easier to insert new statements before the
 // current statement during a traversal.
 
@@ -3551,21 +3750,27 @@ static const int RUNTIME_ERROR_STRING_SLICE_OUT_OF_BOUNDS = 5;
 // locations.
 static const int RUNTIME_ERROR_NIL_DEREFERENCE = 6;
 
-// Slice length or capacity out of bounds in make: negative or
-// overflow or length greater than capacity.
-static const int RUNTIME_ERROR_MAKE_SLICE_OUT_OF_BOUNDS = 7;
+// Slice length out of bounds in make: negative or overflow
+// or length greater than capacity.
+static const int RUNTIME_ERROR_MAKE_SLICE_LEN_OUT_OF_BOUNDS = 7;
+
+// Slice capacity out of bounds in make: negative.
+static const int RUNTIME_ERROR_MAKE_SLICE_CAP_OUT_OF_BOUNDS = 8;
 
 // Map capacity out of bounds in make: negative or overflow.
-static const int RUNTIME_ERROR_MAKE_MAP_OUT_OF_BOUNDS = 8;
+static const int RUNTIME_ERROR_MAKE_MAP_OUT_OF_BOUNDS = 9;
 
 // Channel capacity out of bounds in make: negative or overflow.
-static const int RUNTIME_ERROR_MAKE_CHAN_OUT_OF_BOUNDS = 9;
+static const int RUNTIME_ERROR_MAKE_CHAN_OUT_OF_BOUNDS = 10;
 
 // Division by zero.
-static const int RUNTIME_ERROR_DIVISION_BY_ZERO = 10;
+static const int RUNTIME_ERROR_DIVISION_BY_ZERO = 11;
 
 // Go statement with nil function.
-static const int RUNTIME_ERROR_GO_NIL = 11;
+static const int RUNTIME_ERROR_GO_NIL = 12;
+
+// Shift by negative value.
+static const int RUNTIME_ERROR_SHIFT_BY_NEGATIVE = 13;
 
 // This is used by some of the langhooks.
 extern Gogo* go_get_gogo();
@@ -3573,5 +3778,11 @@ extern Gogo* go_get_gogo();
 // Whether we have seen any errors.  FIXME: Replace with a backend
 // interface.
 extern bool saw_errors();
+
+// For use in the debugger
+extern void debug_go_gogo(Gogo*);
+extern void debug_go_named_object(Named_object*);
+extern void debug_go_bindings(Bindings*);
+
 
 #endif // !defined(GO_GOGO_H)

@@ -1,5 +1,5 @@
 /* Common hooks for Blackfin.
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -301,7 +301,7 @@ bfin_handle_option (struct gcc_options *opts,
     {
     case OPT_mshared_library_id_:
       if (value > MAX_LIBRARY_ID)
-	error_at (loc, "-mshared-library-id=%s is not between 0 and %d",
+	error_at (loc, "%<-mshared-library-id=%s%> is not between 0 and %d",
 		  arg, MAX_LIBRARY_ID);
       return true;
 
@@ -320,7 +320,7 @@ bfin_handle_option (struct gcc_options *opts,
 
 	if (p == NULL)
 	  {
-	    error_at (loc, "-mcpu=%s is not valid", arg);
+	    error_at (loc, "%<-mcpu=%s%> is not valid", arg);
 	    return false;
 	  }
 
@@ -356,7 +356,8 @@ bfin_handle_option (struct gcc_options *opts,
 		|| si_major > 0xff || si_minor > 0xff)
 	      {
 	      invalid_silicon_revision:
-		error_at (loc, "-mcpu=%s has invalid silicon revision", arg);
+		error_at (loc, "%<-mcpu=%s%> has invalid silicon revision",
+			  arg);
 		return false;
 	      }
 

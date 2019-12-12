@@ -1,6 +1,6 @@
 /* Core target definitions for GNU compiler
    for PowerPC targeted systems with AltiVec support.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez (aldyh@redhat.com).
 
    This file is part of GCC.
@@ -22,6 +22,9 @@
 /* Add -meabi and -maltivec to target flags.  */
 #undef  TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_EABI | MASK_ALTIVEC)
+
+#undef	ASM_DEFAULT_EXTRA
+#define	ASM_DEFAULT_EXTRA " %{!mvsx:%{!maltivec:%{!no-maltivec:-maltivec}}}"
 
 #undef  SUBSUBTARGET_OVERRIDE_OPTIONS
 #define SUBSUBTARGET_OVERRIDE_OPTIONS	rs6000_altivec_abi = 1

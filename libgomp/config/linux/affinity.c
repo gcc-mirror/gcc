@@ -1,4 +1,4 @@
-/* Copyright (C) 2006-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -394,6 +394,56 @@ gomp_get_place_proc_ids_8 (int place_num, int64_t *ids)
   for (i = 0; i < max; i++)
     if (CPU_ISSET_S (i, gomp_cpuset_size, cpusetp))
       *ids++ = i;
+}
+
+void
+gomp_display_affinity_place (char *buffer, size_t size, size_t *ret,
+			     int place)
+{
+  cpu_set_t *cpusetp;
+  char buf[sizeof (long) * 3 + 4];
+  if (place >= 0 && place < gomp_places_list_len)
+    cpusetp = (cpu_set_t *) gomp_places_list[place];
+  else if (gomp_cpusetp)
+    cpusetp = gomp_cpusetp;
+  else
+    {
+      if (gomp_available_cpus > 1)
+	sprintf (buf, "0-%lu", gomp_available_cpus - 1);
+      else
+	strcpy (buf, "0");
+      gomp_display_string (buffer, size, ret, buf, strlen (buf));
+      return;
+    }
+
+  unsigned long i, max = 8 * gomp_cpuset_size, start;
+  bool prev_set = false;
+  start = max;
+  for (i = 0; i <= max; i++)
+    {
+      bool this_set;
+      if (i == max)
+	this_set = false;
+      else
+	this_set = CPU_ISSET_S (i, gomp_cpuset_size, cpusetp);
+      if (this_set != prev_set)
+	{
+	  prev_set = this_set;
+	  if (this_set)
+	    {
+	      char *p = buf;
+	      if (start != max)
+		*p++ = ',';
+	      sprintf (p, "%lu", i);
+	      start = i;
+	    }
+	  else if (i == start + 1)
+	    continue;
+	  else
+	    sprintf (buf, "-%lu", i - 1);
+	  gomp_display_string (buffer, size, ret, buf, strlen (buf));
+	}
+    }
 }
 
 ialias(omp_get_place_num_procs)

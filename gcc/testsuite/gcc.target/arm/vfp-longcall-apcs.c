@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-skip-if "FDPIC does not support sibcall optimization" { arm*-*-uclinuxfdpiceabi } "*" "" } */
 /* { dg-options "-mapcs-frame -O -foptimize-sibling-calls -ffunction-sections" } */
 
 extern void abort (void);

@@ -1,5 +1,5 @@
 /* Implementation of the IANY intrinsic
-   Copyright (C) 2010-2018 Free Software Foundation, Inc.
+   Copyright (C) 2010-2019 Free Software Foundation, Inc.
    Contributed by Tobias Burnus <burnus@net-b.de>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -220,6 +220,16 @@ miany_i1 (gfc_array_i1 * const restrict retarray,
   index_type mdelta;
   int mask_kind;
 
+  if (mask == NULL)
+    {
+#ifdef HAVE_BACK_ARG
+      iany_i1 (retarray, array, pdim, back);
+#else
+      iany_i1 (retarray, array, pdim);
+#endif
+      return;
+    }
+
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
@@ -399,7 +409,7 @@ siany_i1 (gfc_array_i1 * const restrict retarray,
   index_type dim;
 
 
-  if (*mask)
+  if (mask == NULL || *mask)
     {
 #ifdef HAVE_BACK_ARG
       iany_i1 (retarray, array, pdim, back);

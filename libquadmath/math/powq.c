@@ -11,9 +11,9 @@
 
 /* Expansions and modifications for 128-bit long double are
    Copyright (C) 2001 Stephen L. Moshier <moshier@na-net.ornl.gov>
-   and are incorporated herein by permission of the author.  The author 
+   and are incorporated herein by permission of the author.  The author
    reserves the right to distribute this material elsewhere under different
-   copying permissions.  These modifications are distributed here under 
+   copying permissions.  These modifications are distributed here under
    the following terms:
 
     This library is free software; you can redistribute it and/or
@@ -27,8 +27,8 @@
     Lesser General Public License for more details.
 
     You should have received a copy of the GNU Lesser General Public
-    License along with this library; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA */
+    License along with this library; if not, see
+    <http://www.gnu.org/licenses/>.  */
 
 /* powq(x,y) return x**y
  *
@@ -67,7 +67,7 @@
 #include "quadmath-imp.h"
 
 static const __float128 bp[] = {
-  1.0Q,
+  1,
   1.5Q,
 };
 
@@ -83,9 +83,9 @@ static const __float128 dp_l[] = {
   1.0579781240112554492329533686862998106046E-16Q
 };
 
-static const __float128 zero = 0.0Q,
-  one = 1.0Q,
-  two = 2.0Q,
+static const __float128 zero = 0,
+  one = 1,
+  two = 2,
   two113 = 1.0384593717069655257060992658440192E34Q,
   huge = 1.0e3000Q,
   tiny = 1.0e-3000Q;
@@ -164,13 +164,14 @@ powq (__float128 x, __float128 y)
 
 
   /* y==zero: x**0 = 1 */
-  if ((iy | q.words32.w1 | q.words32.w2 | q.words32.w3) == 0)
+  if ((iy | q.words32.w1 | q.words32.w2 | q.words32.w3) == 0
+      && !issignalingq (x))
     return one;
 
   /* 1.0**y = 1; -1.0**+-Inf = 1 */
-  if (x == one)
+  if (x == one && !issignalingq (y))
     return one;
-  if (x == -1.0Q && iy == 0x7fff0000
+  if (x == -1 && iy == 0x7fff0000
       && (q.words32.w1 | q.words32.w2 | q.words32.w3) == 0)
     return one;
 
@@ -264,7 +265,7 @@ powq (__float128 x, __float128 y)
   /* sgn (sign of result -ve**odd) = -1 else = 1 */
   sgn = one;
   if (((((uint32_t) hx >> 31) - 1) | (yisint - 1)) == 0)
-    sgn = -one;				/* (-ve)**(odd int) */
+    sgn = -one;			/* (-ve)**(odd int) */
 
   /* |y| is huge.
      2^-16495 = 1/2 of smallest representable value.

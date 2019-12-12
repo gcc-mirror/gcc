@@ -2682,18 +2682,62 @@ particular release.
 
    <para>
       <emphasis> 26.5.6 [rand.device] </emphasis>
-      The default <code>token</code> argument to the
-      <classname>random_device</classname> constructor is
-      <literal>"default"</literal>. Other valid arguments are
-      <literal>"/dev/random"</literal> and <literal>"/dev/urandom"</literal>,
-      which determine the character special file to read random bytes from.
-      The <literal>"default"</literal> token will read bytes from a hardware
-      RNG if available (currently this only supports the IA-32 RDRAND
-      instruction) otherwise it is equivalent to
-      <literal>"/dev/urandom"</literal>.
+      The <code>token</code> parameter of the
+      <classname>random_device</classname> constructor can be used to select
+      a specific source of random bytes. The valid token values are shown
+      in the list below.
+      The default constructor uses the token <literal>"default"</literal>.
+      <variablelist>
+      <varlistentry>
+        <term><literal>"default"</literal></term>
+        <listitem>
+          Select the first available source from the other entries below.
+          This is the only token that is always valid.
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><literal>"rand_s"</literal></term>
+        <listitem>
+          Use the MSVCRT <function>rand_s</function> function.
+          This token is only valid for mingw-w64 targets.
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><literal>"rdseed"</literal></term>
+        <term><literal>"rdrand"</literal> or <literal>"rdrnd"</literal></term>
+        <listitem>
+          Use the IA-32 <literal>RDSEED</literal> or <literal>RDRAND</literal>
+          instruction to read from an on-chip hardware random number generator.
+          These tokens are only valid for x86 and x86_64 targets when both
+          the assembler and CPU support the corresponding instruction.
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><literal>"/dev/urandom"</literal></term>
+        <term><literal>"/dev/random"</literal></term>
+        <listitem>
+          Use the named character special file to read random bytes from.
+          These tokens are only valid when the device files are present
+          and readable by the current user.
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><literal>"mt19937"</literal></term>
+        <term>seed value</term>
+        <listitem>
+          When no source of nondeterministic random numbers is available a
+          <classname>mersenne_twister_engine</classname> will be used.
+          An integer seed value can be used as the token and will be converted
+          to an <code>unsigned long</code> using <function>strtoul</function>.
+          These tokens are only valid when no other source of random bytes
+          is available.
+        </listitem>
+      </varlistentry>
+      </variablelist>
       An exception of type <classname>runtime_error</classname> will be
-      thrown if a <classname>random_device</classname> object cannot open
-      or read from the source of random bytes.
+      thrown if a <classname>random_device</classname> object is constructed
+      with an invalid token, or if it cannot open or read from the source
+      of random bytes.
    </para>
 
    <para>
@@ -2749,31 +2793,44 @@ particular release.
       is subject to change at any time. Any use of
       <classname>native_handle</classname> is inherently non-portable and
       not guaranteed to work between major releases of GCC.
-      <itemizedlist>
-         <listitem><para><classname>thread</classname>: The native handle type is
-            a typedef for <code>__gthread_t</code> i.e. <code>pthread_t</code>
-            when GCC is configured with the <literal>posix</literal> thread
-            model. The value of the native handle is undefined for a thread
+      <variablelist>
+      <varlistentry>
+         <term><classname>thread</classname></term>
+         <listitem>
+            The native handle type is a typedef for <code>__gthread_t</code>
+            i.e. <code>pthread_t</code> when GCC is configured with the
+            <literal>posix</literal> thread model.
+            The value of the native handle is undefined for a thread
             which is not joinable.
-         </para></listitem>
-         <listitem><para><classname>mutex</classname> and
-            <classname>timed_mutex</classname>:
+         </listitem>
+      </varlistentry>
+      <varlistentry>
+         <term><classname>mutex</classname></term>
+         <term><classname>timed_mutex</classname></term>
+         <listitem>
             The native handle type is <code>__gthread_mutex_t*</code> i.e.
             <code>pthread_mutex_t*</code> for the <literal>posix</literal>
             thread model.
-         </para></listitem>
-         <listitem><para><classname>recursive_mutex</classname> and
-         <classname>recursive_timed_mutex</classname>:
+         </listitem>
+      </varlistentry>
+      <varlistentry>
+         <term><classname>recursive_mutex</classname></term>
+         <term><classname>recursive_timed_mutex</classname></term>
+         <listitem>
             The native handle type is <code>__gthread_recursive_mutex_t*</code>
             i.e. <code>pthread_mutex_t*</code> for the <literal>posix</literal>
             thread model.
-         </para></listitem>
-         <listitem><para><classname>condition_variable</classname>: The native
-            handle type is <code>__gthread_cond_t*</code> i.e.
+         </listitem>
+      </varlistentry>
+      <varlistentry>
+         <term><classname>condition_variable</classname></term>
+         <listitem>
+            The native handle type is <code>__gthread_cond_t*</code> i.e.
             <code>pthread_cond_t*</code> for the <literal>posix</literal>
             thread model.
-         </para></listitem>
-      </itemizedlist>
+         </listitem>
+      </varlistentry>
+      </variablelist>
    </para>
 
    <para>

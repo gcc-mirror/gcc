@@ -1,7 +1,7 @@
 /* Language-independent diagnostic subroutines for the GNU Compiler
    Collection that are only for use in the compilers proper and not
    the driver or other programs.
-   Copyright (C) 1999-2018 Free Software Foundation, Inc.
+   Copyright (C) 1999-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -56,7 +56,7 @@ default_tree_diagnostic_starter (diagnostic_context *context,
 struct loc_map_pair
 {
   const line_map_macro *map;
-  source_location where;
+  location_t where;
 };
 
 
@@ -99,7 +99,7 @@ struct loc_map_pair
 static void
 maybe_unwind_expanded_macro_loc (diagnostic_context *context,
                                  const diagnostic_info *diagnostic,
-                                 source_location where)
+                                 location_t where)
 {
   const struct line_map *map;
   auto_vec<loc_map_pair> loc_vec;
@@ -178,14 +178,14 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
 
         /* Resolve the location iter->where into the locus 1/ of the
            comment above.  */
-        source_location resolved_def_loc =
+        location_t resolved_def_loc =
           linemap_resolve_location (line_table, iter->where,
                                     LRK_MACRO_DEFINITION_LOCATION, NULL);
 
 	/* Don't print trace for locations that are reserved or from
 	   within a system header.  */
         const line_map_ordinary *m = NULL;
-        source_location l = 
+        location_t l = 
           linemap_resolve_location (line_table, resolved_def_loc,
                                     LRK_SPELLING_LOCATION,  &m);
         if (l < RESERVED_LOCATION_COUNT || LINEMAP_SYSP (m))
@@ -210,7 +210,7 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
         /* Resolve the location of the expansion point of the macro
            which expansion gave the token represented by def_loc.
            This is the locus 2/ of the earlier comment.  */
-        source_location resolved_exp_loc =
+        location_t resolved_exp_loc =
           linemap_resolve_location (line_table,
                                     MACRO_MAP_EXPANSION_POINT_LOCATION (iter->map),
                                     LRK_MACRO_DEFINITION_LOCATION, NULL);
@@ -282,7 +282,7 @@ default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 
     case 'K':
       t = va_arg (*text->args_ptr, tree);
-      percent_K_format (text, t);
+      percent_K_format (text, EXPR_LOCATION (t), TREE_BLOCK (t));
       return true;
 
     default:
@@ -290,7 +290,7 @@ default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
     }
 
   if (set_locus)
-    text->set_location (0, DECL_SOURCE_LOCATION (t), true);
+    text->set_location (0, DECL_SOURCE_LOCATION (t), SHOW_RANGE_WITH_CARET);
 
   if (DECL_P (t))
     {

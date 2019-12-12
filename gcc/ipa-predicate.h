@@ -1,5 +1,5 @@
 /* IPA predicates.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -22,16 +22,36 @@ along with GCC; see the file COPYING3.  If not see
    inlined into (i.e. known constant values of function parameters.
 
    Conditions that are interesting for function body are collected into CONDS
-   vector.  They are of simple for  function_param OP VAL, where VAL is
-   IPA invariant.  The conditions are then referred by predicates.  */
+   vector.  They are of simple as kind of a mathematical transformation on
+   function parameter, T(function_param), in which the parameter occurs only
+   once, and other operands are IPA invariant.  The conditions are then
+   referred by predicates.  */
+
+
+/* A simplified representation of tree node, for unary, binary and ternary
+   operation.  Computations on parameter are decomposed to a series of this
+   kind of structure.  */
+struct GTY(()) expr_eval_op
+{
+  /* Result type of expression.  */
+  tree type;
+  /* Constant operands in expression, there are at most two.  */
+  tree val[2];
+  /* Index of parameter operand in expression.  */
+  unsigned index : 2;
+  /* Operation code of expression.  */
+  ENUM_BITFIELD(tree_code) code : 16;
+};
+
+typedef vec<expr_eval_op, va_gc> *expr_eval_ops;
 
 struct GTY(()) condition
 {
   /* If agg_contents is set, this is the offset from which the used data was
      loaded.  */
   HOST_WIDE_INT offset;
-  /* Size of the access reading the data (or the PARM_DECL SSA_NAME).  */
-  HOST_WIDE_INT size;
+  /* Type of the access reading the data (or the PARM_DECL SSA_NAME).  */
+  tree type;
   tree val;
   int operand_num;
   ENUM_BITFIELD(tree_code) code : 16;
@@ -41,6 +61,9 @@ struct GTY(()) condition
   /* If agg_contents is set, this differentiates between loads from data
      passed by reference and by value.  */
   unsigned by_ref : 1;
+  /* A set of sequential operations on the parameter, which can be seen as
+     a mathmatical function on the parameter.  */
+  expr_eval_ops param_ops;
 };
 
 /* Information kept about parameter of call site.  */
@@ -54,6 +77,14 @@ struct inline_param_summary
 
      Value 0 is reserved for compile time invariants. */
   int change_prob;
+  bool equal_to (const inline_param_summary &other) const
+  {
+    return change_prob == other.change_prob;
+  }
+  bool useless_p (void) const
+  {
+    return change_prob == REG_BR_PROB_BASE;
+  }
 };
 
 typedef vec<condition, va_gc> *conditions;
@@ -205,11 +236,12 @@ public:
   predicate remap_after_duplication (clause_t);
 
   /* Return predicate equal to THIS after inlining.  */
-  predicate remap_after_inlining (struct ipa_fn_summary *,
-			          struct ipa_fn_summary *,
+  predicate remap_after_inlining (class ipa_fn_summary *,
+		  		  class ipa_node_params *params_summary,
+			          class ipa_fn_summary *,
 			          vec<int>, vec<int>, clause_t, const predicate &);
 
-  void stream_in (struct lto_input_block *);
+  void stream_in (class lto_input_block *);
   void stream_out (struct output_block *);
 
 private:
@@ -227,6 +259,9 @@ private:
 };
 
 void dump_condition (FILE *f, conditions conditions, int cond);
-predicate add_condition (struct ipa_fn_summary *summary, int operand_num,
-			 HOST_WIDE_INT size, struct agg_position_info *aggpos,
-			 enum tree_code code, tree val);
+predicate add_condition (class ipa_fn_summary *summary,
+			 class ipa_node_params *params_summary,
+	       		 int operand_num,
+			 tree type, struct agg_position_info *aggpos,
+			 enum tree_code code, tree val,
+			 expr_eval_ops param_ops = NULL);

@@ -2,6 +2,10 @@ msim
 Target
 Use simulator runtime.
 
+mtiny-printf
+Target Report Mask(TINY_PRINTF)
+Use a lightweight configuration of printf and puts to reduce code size. For single-threaded applications, not requiring reentrant I/O only. Requires Newlib Nano IO.
+
 masm-hex
 Target Mask(ASM_HEX)
 Force assembly output to always use hex constants.
@@ -13,6 +17,10 @@ Specify the MCU to build for.
 mwarn-mcu
 Target Report Var(msp430_warn_mcu) Init(1)
 Warn if an MCU name is unrecognized or conflicts with other options (default: on).
+
+mwarn-devices-csv
+Target Report Var(msp430_warn_devices_csv) Init(1)
+Warn if devices.csv is not found or there are problem parsing it (default: on).
 
 mcpu=
 Target Report Joined RejectNegative Var(target_cpu)
@@ -63,12 +71,16 @@ EnumValue
 Enum(msp430_hwmult_types) String(f5series) Value(MSP430_HWMULT_F5SERIES)
 
 mcode-region=
-Target Joined RejectNegative Report ToLower Var(msp430_code_region) Enum(msp430_regions) Init(MSP430_REGION_ANY)
-Specify whether functions should be placed into low or high memory.
+Target Joined RejectNegative Report ToLower Var(msp430_code_region) Enum(msp430_regions) Init(MSP430_REGION_LOWER)
+Specify whether functions should be placed into the lower or upper memory regions, or if they should be shuffled between the regions (either) for best fit (default: lower).
 
 mdata-region=
-Target Joined RejectNegative Report ToLower Var(msp430_data_region) Enum(msp430_regions) Init(MSP430_REGION_ANY)
-Specify whether variables should be placed into low or high memory.
+Target Joined RejectNegative Report ToLower Var(msp430_data_region) Enum(msp430_regions) Init(MSP430_REGION_LOWER)
+Specify whether variables should be placed into the lower or upper memory regions, or if they should be shuffled between the regions (either) for best fit (default: lower).
+
+muse-lower-region-prefix
+Target Mask(USE_LOWER_REGION_PREFIX) Report
+Add the .lower prefix to section names when compiling with -m{code,data}-region=lower (disabled by default).
 
 Enum
 Name(msp430_regions) Type(enum msp430_regions)
@@ -92,3 +104,8 @@ Passes on a request to the assembler to enable fixes for various silicon errata.
 msilicon-errata-warn=
 Target Joined RejectNegative Report ToLower
 Passes on a request to the assembler to warn about various silicon errata.
+
+mdevices-csv-loc=
+Target Joined Var(msp430_devices_csv_loc) RejectNegative Report
+The path to devices.csv.  The GCC driver can normally locate devices.csv itself
+and pass this option to the compiler, so the user shouldn't need to pass this.

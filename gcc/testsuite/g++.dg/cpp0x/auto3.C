@@ -10,7 +10,7 @@ auto x;				// { dg-error "auto" }
 auto i = 42, j = 42.0;		// { dg-error "auto" }
 
 // New CWG issue
-auto a[2] = { 1, 2 };		// { dg-error "auto|initializer_list" }
+auto a[2] = { 1, 2 };		// { dg-error "6:.a. declared as array of .auto" }
 
 template<class T>
 struct A { };

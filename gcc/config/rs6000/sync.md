@@ -1,5 +1,5 @@
 ;; Machine description for PowerPC synchronization instructions.
-;; Copyright (C) 2005-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2019 Free Software Foundation, Inc.
 ;; Contributed by Geoffrey Keating.
 
 ;; This file is part of GCC.
@@ -91,13 +91,10 @@
 	(unspec:BLK [(match_dup 0)] UNSPEC_LWSYNC))]
   ""
 {
-  /* Some AIX assemblers don't accept lwsync, so we use a .long.  */
   if (TARGET_NO_LWSYNC)
     return "sync";
-  else if (TARGET_LWSYNC_INSTRUCTION)
-    return "lwsync";
   else
-    return ".long 0x7c2004ac";
+    return "lwsync";
 }
   [(set_attr "type" "sync")])
 
@@ -132,8 +129,7 @@
   "TARGET_SYNC_TI
    && !reg_mentioned_p (operands[0], operands[1])"
   "lq %0,%1"
-  [(set_attr "type" "load")
-   (set_attr "length" "4")])
+  [(set_attr "type" "load")])
 
 (define_expand "atomic_load<mode>"
   [(set (match_operand:AINT 0 "register_operand")		;; output
@@ -196,8 +192,7 @@
 	 [(match_operand:PTI 1 "quad_int_reg_operand" "r")] UNSPEC_LSQ))]
   "TARGET_SYNC_TI"
   "stq %1,%0"
-  [(set_attr "type" "store")
-   (set_attr "length" "4")])
+  [(set_attr "type" "store")])
 
 (define_expand "atomic_store<mode>"
   [(set (match_operand:AINT 0 "memory_operand")		;; memory

@@ -1,4 +1,4 @@
-# Copyright (C) 2009-2018 Free Software Foundation, Inc.
+# Copyright (C) 2009-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,8 +35,12 @@ if ![info exists TORTURE_OPTIONS] {
 	{ -O2 -fbounds-check } \
 	{ -O3 -g } \
 	{ -Os }]
-}
 
+    if [check_effective_target_lto] {
+	set TORTURE_OPTIONS \
+	    [concat $TORTURE_OPTIONS [list {-flto}]]
+    }
+}
 
 #
 # go-torture-compile -- compile a go.go-torture testcase.

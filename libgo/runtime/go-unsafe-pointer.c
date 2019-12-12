@@ -7,14 +7,13 @@
 #include <stddef.h>
 
 #include "runtime.h"
-#include "go-type.h"
 
 /* This file provides the type descriptor for the unsafe.Pointer type.
    The unsafe package is defined by the compiler itself, which means
    that there is no package to compile to define the type
    descriptor.  */
 
-extern const struct __go_type_descriptor unsafe_Pointer
+extern const struct _type unsafe_Pointer
   __asm__ (GOSYM_PREFIX "unsafe.Pointer..d");
 
 extern const byte unsafe_Pointer_gc[]
@@ -42,31 +41,33 @@ extern const FuncVal runtime_pointerhash_descriptor
 extern const FuncVal runtime_pointerequal_descriptor
   __asm__ (GOSYM_PREFIX "runtime.pointerequal..f");
 
-const struct __go_type_descriptor unsafe_Pointer =
+const struct _type unsafe_Pointer =
 {
-  /* __size */
+  /* size */
   sizeof (void *),
-  /* __ptrdata */
+  /* ptrdata */
   sizeof (void *),
-  /* __hash */
+  /* hash */
   78501163U,
-  /* __code */
-  GO_UNSAFE_POINTER | GO_DIRECT_IFACE,
-  /* __align */
+  /* kind */
+  kindUnsafePointer | kindDirectIface,
+  /* align */
   __alignof (void *),
-  /* __field_align */
+  /* fieldAlign */
   offsetof (struct field_align, p) - 1,
-  /* __hashfn */
+  /* _ */
+  0,
+  /* hashfn */
   &runtime_pointerhash_descriptor,
-  /* __equalfn */
+  /* equalfn */
   &runtime_pointerequal_descriptor,
-  /* __gcdata */
+  /* gcdata */
   unsafe_Pointer_gc,
-  /* __reflection */
+  /* _string */
   &reflection_string,
-  /* __uncommon */
+  /* uncommontype */
   NULL,
-  /* __pointer_to_this */
+  /* ptrToThis */
   NULL
 };
 
@@ -74,7 +75,7 @@ const struct __go_type_descriptor unsafe_Pointer =
    since any package which refers to that type descriptor will expect
    it to be defined elsewhere.  */
 
-extern const struct __go_ptr_type pointer_unsafe_Pointer
+extern const struct ptrtype pointer_unsafe_Pointer
   __asm__ (GOSYM_PREFIX "type...1unsafe.Pointer");
 
 /* The reflection string.  */
@@ -90,35 +91,37 @@ extern const byte pointer_unsafe_Pointer_gc[]
 
 const byte pointer_unsafe_Pointer_gc[] = { 1 };
 
-const struct __go_ptr_type pointer_unsafe_Pointer =
+const struct ptrtype pointer_unsafe_Pointer =
 {
-  /* __common */
+  /* type */
   {
-    /* __size */
+    /* size */
     sizeof (void *),
-    /* __ptrdata */
+    /* ptrdata */
     sizeof (void *),
-    /* __hash */
+    /* hash */
     1256018616U,
-    /* __code */
-    GO_PTR | GO_DIRECT_IFACE,
-    /* __align */
+    /* kind */
+    kindPtr | kindDirectIface,
+    /* align */
     __alignof (void *),
-    /* __field_align */
+    /* fieldAlign */
     offsetof (struct field_align, p) - 1,
-    /* __hashfn */
+    /* _ */
+    0,
+    /*_hashfn */
     &runtime_pointerhash_descriptor,
-    /* __equalfn */
+    /* equalfn */
     &runtime_pointerequal_descriptor,
-    /* __gcdata */
+    /* gcdata */
     pointer_unsafe_Pointer_gc,
-    /* __reflection */
+    /* _string */
     &preflection_string,
-    /* __uncommon */
+    /* uncommontype */
     NULL,
-    /* __pointer_to_this */
+    /* ptrToThis */
     NULL
   },
-  /* __element_type */
+  /* elem */
   &unsafe_Pointer
 };

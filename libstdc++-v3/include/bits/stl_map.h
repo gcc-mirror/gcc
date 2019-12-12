@@ -1,6 +1,6 @@
 // Map implementation -*- C++ -*-
 
-// Copyright (C) 2001-2018 Free Software Foundation, Inc.
+// Copyright (C) 2001-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -118,9 +118,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       __glibcxx_class_requires2(value_type, _Alloc_value_type, _SameTypeConcept)
 #endif
 
-#if __cplusplus >= 201103L && defined(__STRICT_ANSI__)
+#if __cplusplus >= 201103L
+#if __cplusplus > 201703L || defined __STRICT_ANSI__
       static_assert(is_same<typename _Alloc::value_type, value_type>::value,
 	  "std::map must have the same value_type as its allocator");
+#endif
 #endif
 
     public:
@@ -227,7 +229,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  const _Compare& __comp = _Compare(),
 	  const allocator_type& __a = allocator_type())
       : _M_t(__comp, _Pair_alloc_type(__a))
-      { _M_t._M_insert_unique(__l.begin(), __l.end()); }
+      { _M_t._M_insert_range_unique(__l.begin(), __l.end()); }
 
       /// Allocator-extended default constructor.
       explicit
@@ -247,14 +249,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /// Allocator-extended initialier-list constructor.
       map(initializer_list<value_type> __l, const allocator_type& __a)
       : _M_t(_Pair_alloc_type(__a))
-      { _M_t._M_insert_unique(__l.begin(), __l.end()); }
+      { _M_t._M_insert_range_unique(__l.begin(), __l.end()); }
 
       /// Allocator-extended range constructor.
       template<typename _InputIterator>
 	map(_InputIterator __first, _InputIterator __last,
 	    const allocator_type& __a)
 	: _M_t(_Pair_alloc_type(__a))
-	{ _M_t._M_insert_unique(__first, __last); }
+	{ _M_t._M_insert_range_unique(__first, __last); }
 #endif
 
       /**
@@ -270,7 +272,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _InputIterator>
 	map(_InputIterator __first, _InputIterator __last)
 	: _M_t()
-	{ _M_t._M_insert_unique(__first, __last); }
+	{ _M_t._M_insert_range_unique(__first, __last); }
 
       /**
        *  @brief  Builds a %map from a range.
@@ -289,7 +291,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    const _Compare& __comp,
 	    const allocator_type& __a = allocator_type())
 	: _M_t(__comp, _Pair_alloc_type(__a))
-	{ _M_t._M_insert_unique(__first, __last); }
+	{ _M_t._M_insert_range_unique(__first, __last); }
 
 #if __cplusplus >= 201103L
       /**
@@ -459,7 +461,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /** Returns true if the %map is empty.  (Thus begin() would equal
        *  end().)
       */
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const _GLIBCXX_NOEXCEPT
       { return _M_t.empty(); }
 
@@ -808,12 +810,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       insert(value_type&& __x)
       { return _M_t._M_insert_unique(std::move(__x)); }
 
-      template<typename _Pair, typename = typename
-	       std::enable_if<std::is_constructible<value_type,
-						    _Pair&&>::value>::type>
-	std::pair<iterator, bool>
+      template<typename _Pair>
+	__enable_if_t<is_constructible<value_type, _Pair>::value,
+		      pair<iterator, bool>>
 	insert(_Pair&& __x)
-	{ return _M_t._M_insert_unique(std::forward<_Pair>(__x)); }
+	{ return _M_t._M_emplace_unique(std::forward<_Pair>(__x)); }
 #endif
       // @}
 
@@ -869,13 +870,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       insert(const_iterator __position, value_type&& __x)
       { return _M_t._M_insert_unique_(__position, std::move(__x)); }
 
-      template<typename _Pair, typename = typename
-	       std::enable_if<std::is_constructible<value_type,
-						    _Pair&&>::value>::type>
-	iterator
+      template<typename _Pair>
+	__enable_if_t<is_constructible<value_type, _Pair>::value, iterator>
 	insert(const_iterator __position, _Pair&& __x)
-	{ return _M_t._M_insert_unique_(__position,
-					std::forward<_Pair>(__x)); }
+	{
+	  return _M_t._M_emplace_hint_unique(__position,
+					     std::forward<_Pair>(__x));
+	}
 #endif
       // @}
 
@@ -890,7 +891,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _InputIterator>
 	void
 	insert(_InputIterator __first, _InputIterator __last)
-	{ _M_t._M_insert_unique(__first, __last); }
+	{ _M_t._M_insert_range_unique(__first, __last); }
 
 #if __cplusplus > 201402L
 #define __cpp_lib_map_insertion 201411
@@ -1412,6 +1413,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   typename _Compare = less<__iter_key_t<_InputIterator>>,
 	   typename _Allocator = allocator<__iter_to_alloc_t<_InputIterator>>,
 	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireNotAllocator<_Compare>,
 	   typename = _RequireAllocator<_Allocator>>
     map(_InputIterator, _InputIterator,
 	_Compare = _Compare(), _Allocator = _Allocator())
@@ -1420,6 +1422,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Key, typename _Tp, typename _Compare = less<_Key>,
 	   typename _Allocator = allocator<pair<const _Key, _Tp>>,
+	   typename = _RequireNotAllocator<_Compare>,
 	   typename = _RequireAllocator<_Allocator>>
     map(initializer_list<pair<_Key, _Tp>>,
 	_Compare = _Compare(), _Allocator = _Allocator())

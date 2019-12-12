@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Renesas H8/300.
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -326,7 +326,7 @@ h8300_option_override (void)
 #ifndef OBJECT_FORMAT_ELF
   if (TARGET_H8300SX)
     {
-      error ("-msx is not supported in coff");
+      error ("%<-msx%> is not supported in coff");
       target_flags |= MASK_H8300S;
     }
 #endif
@@ -348,44 +348,44 @@ h8300_option_override (void)
 
   if (!TARGET_H8300S && TARGET_MAC)
     {
-      error ("-ms2600 is used without -ms");
+      error ("%<-ms2600%> is used without %<-ms%>");
       target_flags |= MASK_H8300S_1;
     }
 
   if (TARGET_H8300 && TARGET_NORMAL_MODE)
     {
-      error ("-mn is used without -mh or -ms or -msx");
+      error ("%<-mn%> is used without %<-mh%> or %<-ms%> or %<-msx%>");
       target_flags ^= MASK_NORMAL_MODE;
     }
 
   if (! TARGET_H8300S &&  TARGET_EXR)
     {
-      error ("-mexr is used without -ms");
+      error ("%<-mexr%> is used without %<-ms%>");
       target_flags |= MASK_H8300S_1;
     }
 
   if (TARGET_H8300 && TARGET_INT32)
    {
-      error ("-mint32 is not supported for H8300 and H8300L targets");
+      error ("%<-mint32%> is not supported for H8300 and H8300L targets");
       target_flags ^= MASK_INT32;
    }
 
  if ((!TARGET_H8300S  &&  TARGET_EXR) && (!TARGET_H8300SX && TARGET_EXR))
    {
-      error ("-mexr is used without -ms or -msx");
+      error ("%<-mexr%> is used without %<-ms%> or %<-msx%>");
       target_flags |= MASK_H8300S_1;
    }
 
  if ((!TARGET_H8300S  &&  TARGET_NEXR) && (!TARGET_H8300SX && TARGET_NEXR))
    {
-      warning (OPT_mno_exr, "-mno-exr valid only with -ms or -msx    \
-               - Option ignored!");
+      warning (OPT_mno_exr, "%<-mno-exr%> valid only with %<-ms%> or "
+	       "%<-msx%> - Option ignored!");
    }
 
 #ifdef H8300_LINUX 
  if ((TARGET_NORMAL_MODE))
    {
-      error ("-mn is not supported for linux targets");
+      error ("%<-mn%> is not supported for linux targets");
       target_flags ^= MASK_NORMAL_MODE;
    }
 #endif
@@ -485,7 +485,8 @@ byte_reg (rtx x, int b)
    && ! TREE_THIS_VOLATILE (current_function_decl)			\
    && (h8300_saveall_function_p (current_function_decl)			\
        /* Save any call saved register that was used.  */		\
-       || (df_regs_ever_live_p (regno) && !call_used_regs[regno])	\
+       || (df_regs_ever_live_p (regno)					\
+	   && !call_used_or_fixed_reg_p (regno))			\
        /* Save the frame pointer if it was used.  */			\
        || (regno == HARD_FRAME_POINTER_REGNUM && df_regs_ever_live_p (regno)) \
        /* Save any register used in an interrupt handler.  */		\
@@ -494,7 +495,7 @@ byte_reg (rtx x, int b)
        /* Save call clobbered registers in non-leaf interrupt		\
 	  handlers.  */							\
        || (h8300_current_function_interrupt_function_p ()		\
-	   && call_used_regs[regno]					\
+	   && call_used_or_fixed_reg_p (regno)				\
 	   && !crtl->is_leaf)))
 
 /* We use this to wrap all emitted insns in the prologue.  */
@@ -865,15 +866,15 @@ h8300_expand_prologue (void)
 	  if (TARGET_H8300S)
 	    {
 	      /* See how many registers we can push at the same time.  */
-	      if ((!TARGET_H8300SX || (regno & 3) == 0)
+	      if ((TARGET_H8300SX || (regno & 3) == 0)
 		  && ((saved_regs >> regno) & 0x0f) == 0x0f)
 		n_regs = 4;
 
-	      else if ((!TARGET_H8300SX || (regno & 3) == 0)
+	      else if ((TARGET_H8300SX || (regno & 3) == 0)
 		       && ((saved_regs >> regno) & 0x07) == 0x07)
 		n_regs = 3;
 
-	      else if ((!TARGET_H8300SX || (regno & 1) == 0)
+	      else if ((TARGET_H8300SX || (regno & 1) == 0)
 		       && ((saved_regs >> regno) & 0x03) == 0x03)
 		n_regs = 2;
 	    }
@@ -1081,17 +1082,16 @@ h8300_pr_saveall (struct cpp_reader *pfile ATTRIBUTE_UNUSED)
   pragma_saveall = 1;
 }
 
-/* If the next function argument with MODE and TYPE is to be passed in
-   a register, return a reg RTX for the hard register in which to pass
-   the argument.  CUM represents the state after the last argument.
-   If the argument is to be pushed, NULL_RTX is returned.
+/* If the next function argument ARG is to be passed in a register, return
+   a reg RTX for the hard register in which to pass the argument.  CUM
+   represents the state after the last argument.  If the argument is to
+   be pushed, NULL_RTX is returned.
 
    On the H8/300 all normal args are pushed, unless -mquickcall in which
    case the first 3 arguments are passed in registers.  */
 
 static rtx
-h8300_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		    const_tree type, bool named)
+h8300_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
@@ -1119,7 +1119,7 @@ h8300_function_arg (cumulative_args_t cum_v, machine_mode mode,
   int regpass = 0;
 
   /* Never pass unnamed arguments in registers.  */
-  if (!named)
+  if (!arg.named)
     return NULL_RTX;
 
   /* Pass 3 regs worth of data in regs when user asked on the command line.  */
@@ -1143,34 +1143,25 @@ h8300_function_arg (cumulative_args_t cum_v, machine_mode mode,
 
   if (regpass)
     {
-      int size;
-
-      if (mode == BLKmode)
-	size = int_size_in_bytes (type);
-      else
-	size = GET_MODE_SIZE (mode);
-
+      int size = arg.promoted_size_in_bytes ();
       if (size + cum->nbytes <= regpass * UNITS_PER_WORD
 	  && cum->nbytes / UNITS_PER_WORD <= 3)
-	result = gen_rtx_REG (mode, cum->nbytes / UNITS_PER_WORD);
+	result = gen_rtx_REG (arg.mode, cum->nbytes / UNITS_PER_WORD);
     }
 
   return result;
 }
 
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
+/* Update the data in CUM to advance over argument ARG.  */
 
 static void
-h8300_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			    const_tree type, bool named ATTRIBUTE_UNUSED)
+h8300_function_arg_advance (cumulative_args_t cum_v,
+			    const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  cum->nbytes += (mode != BLKmode
-		  ? (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) & -UNITS_PER_WORD
-		  : (int_size_in_bytes (type) + UNITS_PER_WORD - 1) & -UNITS_PER_WORD);
+  cum->nbytes += ((arg.promoted_size_in_bytes () + UNITS_PER_WORD - 1)
+		  & -UNITS_PER_WORD);
 }
 
 
@@ -6147,5 +6138,8 @@ h8300_push_rounding (poly_int64 bytes)
 
 #undef TARGET_MODE_DEPENDENT_ADDRESS_P
 #define TARGET_MODE_DEPENDENT_ADDRESS_P h8300_mode_dependent_address_p
+
+#undef TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
 
 struct gcc_target targetm = TARGET_INITIALIZER;

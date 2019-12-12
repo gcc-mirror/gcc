@@ -1,5 +1,5 @@
 // PR c++/61982
-// { dg-additional-options "-O2 -fdump-tree-optimized" }
+// { dg-additional-options "-O2 -fdump-tree-optimized -fdelete-null-pointer-checks" }
 // { dg-final { scan-tree-dump-not "= 0" "optimized" } }
 
 struct X { 

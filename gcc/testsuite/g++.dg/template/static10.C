@@ -19,6 +19,6 @@ namespace __gnu_debug_def
 namespace std
 {
   template<> void
-  vector<int, allocator<int> >::swap(vector<int, allocator<int> >&) { } // { dg-error "" }
-  // { dg-message "suggested alternative" "suggested alternative" { target *-*-* } .-1 }
+  vector<int, allocator<int> >::swap(vector<int, allocator<int> >&) { } // { dg-error "did you mean 'std::allocator'" }
+  // { dg-error "" "" { target *-*-*} .-1 }
 }

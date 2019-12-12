@@ -18,7 +18,7 @@ import (
 
 var CmdTool = &base.Command{
 	Run:       runTool,
-	UsageLine: "tool [-n] command [args...]",
+	UsageLine: "go tool [-n] command [args...]",
 	Short:     "run specified go tool",
 	Long: `
 Tool runs the go tool command identified by the arguments.
@@ -83,8 +83,6 @@ func runTool(cmd *base.Command, args []string) {
 		Stdin:  os.Stdin,
 		Stdout: os.Stdout,
 		Stderr: os.Stderr,
-		// Set $GOROOT, mainly for go tool dist.
-		Env: base.MergeEnvLists([]string{"GOROOT=" + cfg.GOROOT}, os.Environ()),
 	}
 	err := toolCmd.Run()
 	if err != nil {

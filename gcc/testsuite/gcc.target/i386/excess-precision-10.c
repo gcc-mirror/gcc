@@ -1,0 +1,52 @@
+/* Excess precision tests.  Test implicit conversions in comparisons:
+   excess precision in C11 mode.  */
+/* { dg-do run } */
+/* { dg-options "-std=c11 -mfpmath=387 -fexcess-precision=standard" } */
+
+extern void abort (void);
+extern void exit (int);
+
+int
+main (void)
+{
+  float f = 0x1p63f;
+  unsigned long long int u = (1ULL << 63) + 1;
+
+  if ((f == u) != 0)
+    abort ();
+
+  if ((u == f) != 0)
+    abort ();
+
+  if ((f != u) != 1)
+    abort ();
+
+  if ((u != f) != 1)
+    abort ();
+
+  if ((f < u) != 1)
+    abort ();
+
+  if ((u < f) != 0)
+    abort ();
+
+  if ((f <= u) != 1)
+    abort ();
+
+  if ((u <= f) != 0)
+    abort ();
+
+  if ((f > u) != 0)
+    abort ();
+
+  if ((u > f) != 1)
+    abort ();
+
+  if ((f >= u) != 0)
+    abort ();
+
+  if ((u >= f) != 1)
+    abort ();
+
+  exit (0);
+}

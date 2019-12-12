@@ -1,5 +1,5 @@
 /* Basic IPA optimizations based on profile.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,13 +24,6 @@ along with GCC; see the file COPYING3.  If not see
      time is spent executing statements with a given execution count read
      from profile feedback. This histogram is complete only with LTO,
      otherwise it contains information only about the current unit.
-
-     Similar histogram is also estimated by coverage runtime.  This histogram
-     is not dependent on LTO, but it suffers from various defects; first
-     gcov runtime is not weighting individual basic block by estimated execution
-     time and second the merging of multiple runs makes assumption that the
-     histogram distribution did not change.  Consequentely histogram constructed
-     here may be more precise.
 
      The information is used to set hot/cold thresholds.
    - Next speculative indirect call resolution is performed:  the local
@@ -58,7 +51,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "ipa-utils.h"
 #include "profile.h"
-#include "params.h"
 #include "value-prof.h"
 #include "tree-inline.h"
 #include "symbol-summary.h"
@@ -198,17 +190,17 @@ ipa_profile_generate_summary (void)
 		     takes away bad histograms.  */
 		  if (h)
 		    {
-		      /* counter 0 is target, counter 1 is number of execution we called target,
-			 counter 2 is total number of executions.  */
-		      if (h->hvalue.counters[2])
+		      gcov_type val, count, all;
+		      if (get_nth_most_common_value (NULL, "indirect call", h,
+						     &val, &count, &all))
 			{
 			  struct cgraph_edge * e = node->get_edge (stmt);
 			  if (e && !e->indirect_unknown_callee)
 			    continue;
-			  e->indirect_info->common_target_id
-			    = h->hvalue.counters [0];
+
+			  e->indirect_info->common_target_id = val;
 			  e->indirect_info->common_target_probability
-			    = GCOV_COMPUTE_SCALE (h->hvalue.counters [1], h->hvalue.counters [2]);
+			    = GCOV_COMPUTE_SCALE (count, all);
 			  if (e->indirect_info->common_target_probability > REG_BR_PROB_BASE)
 			    {
 			      if (dump_file)
@@ -265,7 +257,7 @@ ipa_profile_read_summary (void)
     {
       const char *data;
       size_t len;
-      struct lto_input_block *ib
+      class lto_input_block *ib
 	= lto_create_simple_input_block (file_data,
 					 LTO_section_ipa_profile,
 					 &data, &len);
@@ -333,8 +325,8 @@ ipa_propagate_frequency_1 (struct cgraph_node *node, void *data)
       if (profile_info
 	  && !(edge->callee->count.ipa () == profile_count::zero ())
 	  && (edge->caller->frequency != NODE_FREQUENCY_UNLIKELY_EXECUTED
-	      || (edge->caller->global.inlined_to
-		  && edge->caller->global.inlined_to->frequency
+	      || (edge->caller->inlined_to
+		  && edge->caller->inlined_to->frequency
 		     != NODE_FREQUENCY_UNLIKELY_EXECUTED)))
 	  d->maybe_unlikely_executed = false;
       if (edge->count.ipa ().initialized_p ()
@@ -398,9 +390,9 @@ ipa_propagate_frequency (struct cgraph_node *node)
   struct ipa_propagate_frequency_data d = {node, true, true, true, true};
   bool changed = false;
 
-  /* We can not propagate anything useful about externally visible functions
+  /* We cannot propagate anything useful about externally visible functions
      nor about virtuals.  */
-  if (!node->local.local
+  if (!node->local
       || node->alias
       || (opt_for_fn (node->decl, flag_devirtualize)
 	  && DECL_VIRTUAL_P (node->decl)))
@@ -484,6 +476,27 @@ ipa_propagate_frequency (struct cgraph_node *node)
   return changed;
 }
 
+/* Check that number of arguments of N agrees with E.
+   Be conservative when summaries are not present.  */
+
+static bool
+check_argument_count (struct cgraph_node *n, struct cgraph_edge *e)
+{
+  if (!ipa_node_params_sum || !ipa_edge_args_sum)
+    return true;
+  class ipa_node_params *info = IPA_NODE_REF (n->function_symbol ());
+  if (!info)
+    return true;
+  ipa_edge_args *e_info = IPA_EDGE_REF (e);
+  if (!e_info)
+    return true;
+  if (ipa_get_param_count (info) != ipa_get_cs_argument_count (e_info)
+      && (ipa_get_param_count (info) >= ipa_get_cs_argument_count (e_info)
+	  || !stdarg_p (TREE_TYPE (n->decl))))
+    return false;
+  return true;
+}
+
 /* Simple ipa profile pass propagating frequencies across the callgraph.  */
 
 static unsigned int
@@ -512,26 +525,8 @@ ipa_profile (void)
       gcov_type threshold;
 
       gcc_assert (overall_size);
-      if (dump_file)
-	{
-	  gcov_type min, cumulated_time = 0, cumulated_size = 0;
 
-	  fprintf (dump_file, "Overall time: %" PRId64"\n",
-		   (int64_t)overall_time);
-	  min = get_hot_bb_threshold ();
-          for (i = 0; i < (int)histogram.length () && histogram[i]->count >= min;
-	       i++)
-	    {
-	      cumulated_time += histogram[i]->count * histogram[i]->time;
-	      cumulated_size += histogram[i]->size;
-	    }
-	  fprintf (dump_file, "GCOV min count: %" PRId64
-		   " Time:%3.2f%% Size:%3.2f%%\n", 
-		   (int64_t)min,
-		   cumulated_time * 100.0 / overall_time,
-		   cumulated_size * 100.0 / overall_size);
-	}
-      cutoff = (overall_time * PARAM_VALUE (HOT_BB_COUNT_WS_PERMILLE) + 500) / 1000;
+      cutoff = (overall_time * param_hot_bb_count_ws_permille + 500) / 1000;
       threshold = 0;
       for (i = 0; cumulated < cutoff; i++)
 	{
@@ -557,18 +552,18 @@ ipa_profile (void)
 		   cumulated_time * 100.0 / overall_time,
 		   cumulated_size * 100.0 / overall_size);
 	}
-      if (threshold > get_hot_bb_threshold ()
-	  || in_lto_p)
+
+      if (in_lto_p)
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "Threshold updated.\n");
+	    fprintf (dump_file, "Setting hotness threshold in LTO mode.\n");
           set_hot_bb_threshold (threshold);
 	}
     }
   histogram.release ();
   histogram_pool.release ();
 
-  /* Produce speculative calls: we saved common traget from porfiling into
+  /* Produce speculative calls: we saved common target from porfiling into
      e->common_target_id.  Now, at link time, we can look up corresponding
      function node and produce speculative call.  */
 
@@ -625,20 +620,13 @@ ipa_profile (void)
 				 "Not speculating: target is overwritable "
 				 "and can be discarded.\n");
 		    }
-		  else if (ipa_node_params_sum && ipa_edge_args_sum
-			   && (!vec_safe_is_empty
-			       (IPA_NODE_REF (n2)->descriptors))
-			   && ipa_get_param_count (IPA_NODE_REF (n2))
-			      != ipa_get_cs_argument_count (IPA_EDGE_REF (e))
-			    && (ipa_get_param_count (IPA_NODE_REF (n2))
-				>= ipa_get_cs_argument_count (IPA_EDGE_REF (e))
-				|| !stdarg_p (TREE_TYPE (n2->decl))))
+		  else if (!check_argument_count (n2, e))
 		    {
 		      nmismatch++;
 		      if (dump_file)
 			fprintf (dump_file,
 				 "Not speculating: "
-				 "parameter count mistmatch\n");
+				 "parameter count mismatch\n");
 		    }
 		  else if (e->indirect_info->polymorphic
 			   && !opt_for_fn (n->decl, flag_devirtualize)
@@ -707,12 +695,12 @@ ipa_profile (void)
   order_pos = ipa_reverse_postorder (order);
   for (i = order_pos - 1; i >= 0; i--)
     {
-      if (order[i]->local.local
+      if (order[i]->local
 	  && opt_for_fn (order[i]->decl, flag_ipa_profile)
 	  && ipa_propagate_frequency (order[i]))
 	{
 	  for (e = order[i]->callees; e; e = e->next_callee)
-	    if (e->callee->local.local && !e->callee->aux)
+	    if (e->callee->local && !e->callee->aux)
 	      {
 	        something_changed = true;
 	        e->callee->aux = (void *)1;
@@ -731,7 +719,7 @@ ipa_profile (void)
 	      && ipa_propagate_frequency (order[i]))
 	    {
 	      for (e = order[i]->callees; e; e = e->next_callee)
-		if (e->callee->local.local && !e->callee->aux)
+		if (e->callee->local && !e->callee->aux)
 		  {
 		    something_changed = true;
 		    e->callee->aux = (void *)1;

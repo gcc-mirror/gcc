@@ -4,6 +4,8 @@
 
 package syscall
 
+import "internal/oserror"
+
 // An Errno is an unsigned number describing an error condition.
 // It implements the error interface.  The zero Errno is by convention
 // a non-error, so code to convert from Errno to error should use:
@@ -17,8 +19,20 @@ func (e Errno) Error() string {
 	return Errstr(int(e))
 }
 
+func (e Errno) Is(target error) bool {
+	switch target {
+	case oserror.ErrPermission:
+		return e == EACCES || e == EPERM
+	case oserror.ErrExist:
+		return e == EEXIST || e == ENOTEMPTY
+	case oserror.ErrNotExist:
+		return e == ENOENT
+	}
+	return false
+}
+
 func (e Errno) Temporary() bool {
-	return e == EINTR || e == EMFILE || e == ECONNRESET || e == ECONNABORTED || e.Timeout()
+	return e == EINTR || e == EMFILE || e.Timeout()
 }
 
 func (e Errno) Timeout() bool {

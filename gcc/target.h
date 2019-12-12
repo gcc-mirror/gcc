@@ -1,5 +1,5 @@
 /* Data structure definitions for a generic GCC target.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -138,28 +138,37 @@ struct _dep;
 struct ddg;
 
 /* This is defined in cfgloop.h .  */
-struct loop;
+class loop;
 
 /* This is defined in ifcvt.h.  */
 struct noce_if_info;
 
 /* This is defined in tree-ssa-alias.h.  */
-struct ao_ref;
+class ao_ref;
 
 /* This is defined in tree-vectorizer.h.  */
-struct _stmt_vec_info;
+class _stmt_vec_info;
+
+/* This is defined in calls.h.  */
+class function_arg_info;
+
+/* This is defined in function-abi.h.  */
+class predefined_function_abi;
 
 /* These are defined in tree-vect-stmts.c.  */
-extern tree stmt_vectype (struct _stmt_vec_info *);
-extern bool stmt_in_inner_loop_p (struct _stmt_vec_info *);
+extern tree stmt_vectype (class _stmt_vec_info *);
+extern bool stmt_in_inner_loop_p (class _stmt_vec_info *);
 
 /* Assembler instructions for creating various kinds of integer object.  */
 
 struct asm_int_op
 {
   const char *hi;
+  const char *psi;
   const char *si;
+  const char *pdi;
   const char *di;
+  const char *pti;
   const char *ti;
 };
 
@@ -196,11 +205,26 @@ enum vect_cost_model_location {
 class vec_perm_indices;
 
 /* The type to use for lists of vector sizes.  */
-typedef vec<poly_uint64> vector_sizes;
+typedef vec<machine_mode> vector_modes;
 
 /* Same, but can be used to construct local lists that are
    automatically freed.  */
-typedef auto_vec<poly_uint64, 8> auto_vector_sizes;
+typedef auto_vec<machine_mode, 8> auto_vector_modes;
+
+/* First argument of targetm.omp.device_kind_arch_isa.  */
+enum omp_device_kind_arch_isa {
+  omp_device_kind,
+  omp_device_arch,
+  omp_device_isa
+};
+
+/* Flags returned by TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES:
+
+   VECT_COMPARE_COSTS
+       Tells the loop vectorizer to try all the provided modes and
+       pick the one with the lowest cost.  By default the vectorizer
+       will choose the first mode that works.  */
+const unsigned int VECT_COMPARE_COSTS = 1U << 0;
 
 /* The target structure.  This holds all the backend hooks.  */
 #define DEFHOOKPOD(NAME, DOC, TYPE, INIT) TYPE NAME;

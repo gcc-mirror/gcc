@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,6 +26,7 @@
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
+with Exp_Attr;
 with Exp_Ch4;
 with Exp_Ch5;  use Exp_Ch5;
 with Exp_Dbug; use Exp_Dbug;
@@ -58,9 +59,6 @@ package body Exp_SPARK is
    procedure Expand_SPARK_N_Freeze_Type (E : Entity_Id);
    --  Build the DIC procedure of a type when needed, if not already done
 
-   procedure Expand_SPARK_N_Indexed_Component (N : Node_Id);
-   --  Insert explicit dereference if required
-
    procedure Expand_SPARK_N_Loop_Statement (N : Node_Id);
    --  Perform loop statement-specific expansion
 
@@ -74,6 +72,9 @@ package body Exp_SPARK is
    --  Rewrite operator /= based on operator = when defined explicitly
 
    procedure Expand_SPARK_N_Selected_Component (N : Node_Id);
+   --  Insert explicit dereference if required
+
+   procedure Expand_SPARK_N_Slice_Or_Indexed_Component (N : Node_Id);
    --  Insert explicit dereference if required
 
    ------------------
@@ -137,8 +138,10 @@ package body Exp_SPARK is
                Expand_SPARK_N_Freeze_Type (Entity (N));
             end if;
 
-         when N_Indexed_Component =>
-            Expand_SPARK_N_Indexed_Component (N);
+         when N_Indexed_Component
+            | N_Slice
+         =>
+            Expand_SPARK_N_Slice_Or_Indexed_Component (N);
 
          when N_Selected_Component =>
             Expand_SPARK_N_Selected_Component (N);
@@ -173,6 +176,7 @@ package body Exp_SPARK is
       Aname   : constant Name_Id      := Attribute_Name (N);
       Attr_Id : constant Attribute_Id := Get_Attribute_Id (Aname);
       Loc     : constant Source_Ptr   := Sloc (N);
+      Pref    : constant Node_Id      := Prefix (N);
       Typ     : constant Entity_Id    := Etype (N);
       Expr    : Node_Id;
 
@@ -196,6 +200,43 @@ package body Exp_SPARK is
              Parameter_Associations => New_List (Expr)));
          Analyze_And_Resolve (N, Typ);
 
+      --  Whenever possible, replace a prefix which is an enumeration literal
+      --  by the corresponding literal value.
+
+      elsif Attr_Id = Attribute_Enum_Rep then
+         declare
+            Exprs : constant List_Id := Expressions (N);
+         begin
+            if Is_Non_Empty_List (Exprs) then
+               Expr := First (Exprs);
+            else
+               Expr := Prefix (N);
+            end if;
+
+            --  If the argument is a literal, expand it
+
+            if Nkind (Expr) in N_Has_Entity
+              and then
+                (Ekind (Entity (Expr)) = E_Enumeration_Literal
+                 or else
+                   (Nkind (Expr) in N_Has_Entity
+                    and then Ekind (Entity (Expr)) = E_Constant
+                    and then Present (Renamed_Object (Entity (Expr)))
+                    and then Is_Entity_Name (Renamed_Object (Entity (Expr)))
+                    and then Ekind (Entity (Renamed_Object (Entity (Expr)))) =
+                      E_Enumeration_Literal))
+            then
+               Exp_Attr.Expand_N_Attribute_Reference (N);
+            end if;
+         end;
+
+      elsif Attr_Id = Attribute_Object_Size
+        or else Attr_Id = Attribute_Size
+        or else Attr_Id = Attribute_Value_Size
+        or else Attr_Id = Attribute_VADS_Size
+      then
+         Exp_Attr.Expand_Size_Attribute (N);
+
       --  For attributes which return Universal_Integer, introduce a conversion
       --  to the expected type with the appropriate check flags set.
 
@@ -210,10 +251,6 @@ package body Exp_SPARK is
         or else Attr_Id = Attribute_Pos
         or else Attr_Id = Attribute_Position
         or else Attr_Id = Attribute_Range_Length
-        or else Attr_Id = Attribute_Object_Size
-        or else Attr_Id = Attribute_Size
-        or else Attr_Id = Attribute_Value_Size
-        or else Attr_Id = Attribute_VADS_Size
         or else Attr_Id = Attribute_Aft
         or else Attr_Id = Attribute_Max_Alignment_For_Allocation
       then
@@ -266,6 +303,20 @@ package body Exp_SPARK is
                Set_Do_Overflow_Check (N);
             end if;
          end;
+
+      elsif Attr_Id = Attribute_Constrained then
+
+         --  If the prefix is an access to object, the attribute applies to
+         --  the designated object, so rewrite with an explicit dereference.
+
+         if Is_Access_Type (Etype (Pref))
+           and then
+             (not Is_Entity_Name (Pref) or else Is_Object (Entity (Pref)))
+         then
+            Rewrite (Pref,
+                     Make_Explicit_Dereference (Loc, Relocate_Node (Pref)));
+            Analyze_And_Resolve (N, Standard_Boolean);
+         end if;
       end if;
    end Expand_SPARK_N_Attribute_Reference;
 
@@ -291,21 +342,6 @@ package body Exp_SPARK is
          Expand_Iterator_Loop_Over_Array (N);
       end if;
    end Expand_SPARK_N_Loop_Statement;
-
-   --------------------------------------
-   -- Expand_SPARK_N_Indexed_Component --
-   --------------------------------------
-
-   procedure Expand_SPARK_N_Indexed_Component (N : Node_Id) is
-      Pref : constant Node_Id    := Prefix (N);
-      Typ  : constant Entity_Id  := Etype (Pref);
-
-   begin
-      if Is_Access_Type (Typ) then
-         Insert_Explicit_Dereference (Pref);
-         Analyze_And_Resolve (Pref, Designated_Type (Typ));
-      end if;
-   end Expand_SPARK_N_Indexed_Component;
 
    ---------------------------------------
    -- Expand_SPARK_N_Object_Declaration --
@@ -515,13 +551,22 @@ package body Exp_SPARK is
 
          Insert_Explicit_Dereference (Pref);
          Analyze_And_Resolve (Pref, Designated_Type (Typ));
-
-         if Ekind (Etype (Pref)) = E_Private_Subtype
-           and then Is_For_Access_Subtype (Etype (Pref))
-         then
-            Set_Etype (Pref, Base_Type (Etype (Pref)));
-         end if;
       end if;
    end Expand_SPARK_N_Selected_Component;
+
+   -----------------------------------------------
+   -- Expand_SPARK_N_Slice_Or_Indexed_Component --
+   -----------------------------------------------
+
+   procedure Expand_SPARK_N_Slice_Or_Indexed_Component (N : Node_Id) is
+      Pref : constant Node_Id   := Prefix (N);
+      Typ  : constant Entity_Id := Etype (Pref);
+
+   begin
+      if Is_Access_Type (Typ) then
+         Insert_Explicit_Dereference (Pref);
+         Analyze_And_Resolve (Pref, Designated_Type (Typ));
+      end if;
+   end Expand_SPARK_N_Slice_Or_Indexed_Component;
 
 end Exp_SPARK;

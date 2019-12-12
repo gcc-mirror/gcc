@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,6 +55,9 @@ package Osint is
    Output_FD : File_Descriptor;
    --  File descriptor for current library info, list, tree, C, H, or binder
    --  output. Only one of these is open at a time, so we need only one FD.
+
+   On_Windows : constant Boolean := Directory_Separator = '\';
+   --  True when on Windows
 
    procedure Initialize;
    --  Initialize internal tables
@@ -507,6 +510,12 @@ package Osint is
    --  Read_Source_File, except those that come from the run-time library
    --  (i.e. Include_Dir_Default_Prefix). The text is sent to whatever Output
    --  is currently using (e.g. standard output or standard error).
+
+   procedure Dump_Command_Line_Source_File_Names;
+   --  Prints out the names of all source files on the command-line
+
+   function Get_First_Main_File_Name return String;
+   --  Return the file name of the first main file
 
    -------------------------------------------
    -- Representation of Library Information --

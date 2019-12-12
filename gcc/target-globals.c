@@ -1,5 +1,5 @@
 /* Target-dependent globals.
-   Copyright (C) 2010-2018 Free Software Foundation, Inc.
+   Copyright (C) 2010-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -40,14 +40,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcse.h"
 #include "bb-reorder.h"
 #include "lower-subreg.h"
+#include "function-abi.h"
 
 #if SWITCHABLE_TARGET
-struct target_globals default_target_globals = {
+class target_globals default_target_globals = {
   &default_target_flag_state,
   &default_target_regs,
   &default_target_rtl,
   &default_target_recog,
   &default_target_hard_regs,
+  &default_target_function_abi_info,
   &default_target_reload,
   &default_target_expmed,
   &default_target_optabs,
@@ -61,22 +63,23 @@ struct target_globals default_target_globals = {
   &default_target_lower_subreg
 };
 
-struct target_globals *
+class target_globals *
 save_target_globals (void)
 {
-  struct target_globals *g = ggc_cleared_alloc <target_globals> ();
-  g->flag_state = XCNEW (struct target_flag_state);
+  class target_globals *g = ggc_cleared_alloc <target_globals> ();
+  g->flag_state = XCNEW (class target_flag_state);
   g->regs = XCNEW (struct target_regs);
   g->rtl = ggc_cleared_alloc<target_rtl> ();
   g->recog = XCNEW (struct target_recog);
   g->hard_regs = XCNEW (struct target_hard_regs);
+  g->function_abi_info = XCNEW (struct target_function_abi_info);
   g->reload = XCNEW (struct target_reload);
   g->expmed = XCNEW (struct target_expmed);
   g->optabs = XCNEW (struct target_optabs);
   g->libfuncs = ggc_cleared_alloc<target_libfuncs> ();
   g->cfgloop = XCNEW (struct target_cfgloop);
   g->ira = XCNEW (struct target_ira);
-  g->ira_int = XCNEW (struct target_ira_int);
+  g->ira_int = XCNEW (class target_ira_int);
   g->builtins = XCNEW (struct target_builtins);
   g->gcse = XCNEW (struct target_gcse);
   g->bb_reorder = XCNEW (struct target_bb_reorder);
@@ -91,10 +94,10 @@ save_target_globals (void)
    correctly when a previous function has changed
    *this_target_optabs.  */
 
-struct target_globals *
+class target_globals *
 save_target_globals_default_opts ()
 {
-  struct target_globals *globals;
+  class target_globals *globals;
 
   if (optimization_current_node != optimization_default_node)
     {
@@ -127,6 +130,7 @@ target_globals::~target_globals ()
       XDELETE (regs);
       XDELETE (recog);
       XDELETE (hard_regs);
+      XDELETE (function_abi_info);
       XDELETE (reload);
       XDELETE (expmed);
       XDELETE (optabs);

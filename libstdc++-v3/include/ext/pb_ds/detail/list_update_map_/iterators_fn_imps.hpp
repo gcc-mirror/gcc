@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,6 +37,8 @@
  * @file list_update_map_/iterators_fn_imps.hpp
  * Contains implementations of lu_map_.
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::iterator
@@ -78,3 +80,4 @@ end() const
   return const_iterator(0, 0, const_cast<PB_DS_CLASS_C_DEC*>(this));
 }
 
+#endif

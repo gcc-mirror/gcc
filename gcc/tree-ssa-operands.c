@@ -1,5 +1,5 @@
 /* SSA operands management for trees.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -515,7 +515,9 @@ add_stmt_operand (struct function *fn, tree *var_p, gimple *stmt, int flags)
 {
   tree var = *var_p;
 
-  gcc_assert (SSA_VAR_P (*var_p));
+  gcc_assert (SSA_VAR_P (*var_p)
+	      || TREE_CODE (*var_p) == STRING_CST
+	      || TREE_CODE (*var_p) == CONST_DECL);
 
   if (is_gimple_reg (var))
     {
@@ -740,6 +742,8 @@ get_expr_operands (struct function *fn, gimple *stmt, tree *expr_p, int flags)
     case VAR_DECL:
     case PARM_DECL:
     case RESULT_DECL:
+    case STRING_CST:
+    case CONST_DECL:
       if (!(flags & opf_address_taken))
 	add_stmt_operand (fn, expr_p, stmt, flags);
       return;
@@ -858,7 +862,6 @@ get_expr_operands (struct function *fn, gimple *stmt, tree *expr_p, int flags)
 
     case FUNCTION_DECL:
     case LABEL_DECL:
-    case CONST_DECL:
     case CASE_LABEL_EXPR:
       /* Expressions that make no memory references.  */
       return;
@@ -971,14 +974,14 @@ verify_ssa_operands (struct function *fn, gimple *stmt)
     def = SSA_NAME_VAR (def);
   if (build_vdef != def)
     {
-      error ("virtual definition of statement not up-to-date");
+      error ("virtual definition of statement not up to date");
       return true;
     }
   if (gimple_vdef (stmt)
       && ((def_p = gimple_vdef_op (stmt)) == NULL_DEF_OPERAND_P
 	  || DEF_FROM_PTR (def_p) != gimple_vdef (stmt)))
     {
-      error ("virtual def operand missing for stmt");
+      error ("virtual def operand missing for statement");
       return true;
     }
 
@@ -988,14 +991,14 @@ verify_ssa_operands (struct function *fn, gimple *stmt)
     use = SSA_NAME_VAR (use);
   if (build_vuse != use)
     {
-      error ("virtual use of statement not up-to-date");
+      error ("virtual use of statement not up to date");
       return true;
     }
   if (gimple_vuse (stmt)
       && ((use_p = gimple_vuse_op (stmt)) == NULL_USE_OPERAND_P
 	  || USE_FROM_PTR (use_p) != gimple_vuse (stmt)))
     {
-      error ("virtual use operand missing for stmt");
+      error ("virtual use operand missing for statement");
       return true;
     }
 
@@ -1012,7 +1015,7 @@ verify_ssa_operands (struct function *fn, gimple *stmt)
 	}
       if (i == build_uses.length ())
 	{
-	  error ("excess use operand for stmt");
+	  error ("excess use operand for statement");
 	  debug_generic_expr (USE_FROM_PTR (use_p));
 	  return true;
 	}
@@ -1022,14 +1025,14 @@ verify_ssa_operands (struct function *fn, gimple *stmt)
   FOR_EACH_VEC_ELT (build_uses, i, op)
     if (op != NULL)
       {
-	error ("use operand missing for stmt");
+	error ("use operand missing for statement");
 	debug_generic_expr (*op);
 	return true;
       }
 
   if (gimple_has_volatile_ops (stmt) != volatile_p)
     {
-      error ("stmt volatile flag not up-to-date");
+      error ("statement volatile flag not up to date");
       return true;
     }
 

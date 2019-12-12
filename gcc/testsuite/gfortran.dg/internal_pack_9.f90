@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-fdump-tree-original" }
+! { dg-options "-O0 -fdump-tree-original" }
 !
 ! During the discussion of the fix for PR43072, in which unnecessary
 ! calls to internal PACK/UNPACK were being generated, the following,
@@ -10,9 +10,9 @@
 ! Case 1: Substring encompassing the whole string
 subroutine foo2
   implicit none
-  external foo
+  external foo_char
   character(len=20) :: str(2) = '1234567890'
-  call foo(str(:)(1:20)) ! This is still not fixed.
+  call foo_char (str(:)(1:20)) ! This is still not fixed.
 end
 
 ! Case 2: Contiguous array section

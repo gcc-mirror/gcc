@@ -3,7 +3,7 @@
 
 struct A {};
 
-typedef void (A::T)(); /* { dg-error "typedef name may not be a nested-name-specifier" } */
+typedef void (A::T)(); /* { dg-error "15:typedef name may not be a nested-name-specifier" } */
 
 void foo()
 {

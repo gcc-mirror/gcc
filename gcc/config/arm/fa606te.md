@@ -1,5 +1,5 @@
 ;; Faraday FA606TE Pipeline Description
-;; Copyright (C) 2010-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2019 Free Software Foundation, Inc.
 ;; Written by Mingfeng Wu, based on ARM926EJ-S Pipeline Description.
 ;;
 ;; This file is part of GCC.
@@ -73,7 +73,7 @@
                        logic_shift_reg,logics_shift_reg,\
                        mov_imm,mov_reg,mov_shift,mov_shift_reg,\
                        mvn_imm,mvn_reg,mvn_shift,mvn_shift_reg,\
-                       mrs,multiple,no_insn"))
+                       mrs,multiple"))
  "fa606te_core")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

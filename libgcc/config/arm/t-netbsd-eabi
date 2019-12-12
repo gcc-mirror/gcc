@@ -1,0 +1,18 @@
+# This list is from t-elf, but with lots removed.
+LIB1ASMFUNCS += _dvmd_tls _bb_init_func _call_via_rX _interwork_call_via_rX \
+        _clzsi2 _clzdi2 _ctzsi2
+
+# Derived from t-bpabi
+# Add the BPABI C functions.
+LIB2ADD +=    $(srcdir)/config/arm/unaligned-funcs.c
+
+# Not using libgcc for EH.
+LIB2ADDEH =
+
+# Add the BPABI names.
+SHLIB_MAPFILES += $(srcdir)/config/arm/libgcc-bpabi.ver
+
+# On ARM, specifying -fnon-call-exceptions will needlessly pull in
+# the unwinder in simple programs which use 64-bit division.  Omitting
+# the option is safe.
+LIB2_DIVMOD_EXCEPTION_FLAGS := -fexceptions

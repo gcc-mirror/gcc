@@ -1,0 +1,194 @@
+/* Kernel helpers database.
+   Copyright (C) 2019 Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+/* This file contains the definition of the kernel helpers that are
+   available to eBPF programs.
+
+   The primary source for information on kernel helpers is the
+   linux/include/uapi/linux/bpf.h file in the Linux source tree.
+   Please keep this database in sync.
+
+   The first column is the first kernel version featuring the helper
+   function.  This should be an enumerate from bpf_kernel_version,
+   defined in bpf-opts.h.  Note that the backend assumes that helpers
+   never get deprecated in the kernel.  If that eventually happens,
+   then we will need to use a bitmask here instead of an enumerate.
+
+   The second column is the constant-name for the helper.
+   The third column is the program-name of the helper.
+
+   The fourth column is a list of names describing the types of the
+   values returned and accepted by the helper, in one of these forms:
+
+     TYPES (type1, type2, ..., 0)
+     VTYPES (type1, type2, ..., 0)
+
+   VTYPES should be used should the helper accept a variable number of
+   arguments, TYPES otherwise.  The valid type names are:
+
+     `vt' for void.
+     `it' for signed int.
+     `ut' for unsigned int.
+     `pt' for void*.
+     `cpt' for const void*.
+     `st' for short int.
+     `ust' for unsigned short int.
+     `cst' for const char *.
+     `ullt' for unsigned long long.
+     `llt' for long long.
+     `u32t' for uint32.
+     `u64t' for uint64.
+  
+   In types descriptions, the firt entry corresponds to the value
+   returned by the helper.  Subsequent names correspond to the helper
+   arguments.  Finally, a 0 should close the list.
+
+   VERY IMPORTANT: the helper entries should be listed in the same
+   order than in the definition of __BPF_FUNC_MAPPER in
+   linux/include/uapi/linux/bpf.h!  */
+
+DEF_HELPER (LINUX_V4_0, MAP_LOOKUP_ELEM, map_lookup_elem, TYPES (pt, pt, pt, 0))
+DEF_HELPER (LINUX_V4_0, MAP_UPDATE_ELEM, map_update_elem, TYPES (it, pt, pt, pt, ullt, 0))
+DEF_HELPER (LINUX_V4_0, MAP_DELETE_ELEM, map_delete_elem, TYPES (it, pt, pt, 0))
+DEF_HELPER (LINUX_V4_1, PROBE_READ, probe_read, TYPES (it, pt, ut, cpt, 0))
+DEF_HELPER (LINUX_V4_1, KTIME_GET_NS, ktime_get_ns, TYPES (ullt, 0))
+DEF_HELPER (LINUX_V4_1, TRACE_PRINTK, trace_printk, VTYPES (it, cst, it, 0))
+DEF_HELPER (LINUX_V4_1, GET_PRANDOM_U32, get_prandom_u32, TYPES (ullt, 0))
+DEF_HELPER (LINUX_V4_1, GET_SMP_PROCESSOR_ID, get_smp_processor_id, TYPES (ullt, 0))
+DEF_HELPER (LINUX_V4_1, SKB_STORE_BYTES, skb_store_bytes, TYPES (it, pt, it, pt, it, it, 0))
+DEF_HELPER (LINUX_V4_1, L3_CSUM_REPLACE, l3_csum_replace, TYPES (it, pt, it, it ,it ,it, 0))
+DEF_HELPER (LINUX_V4_1, L4_CSUM_REPLACE, l4_csum_replace, TYPES (it, pt, it, it, it, it, 0))
+DEF_HELPER (LINUX_V4_2, TAIL_CALL, tail_call, TYPES (vt, pt, pt, it, 0))
+DEF_HELPER (LINUX_V4_2, CLONE_REDIRECT, clone_redirect, TYPES (it, pt, it, it, 0))
+DEF_HELPER (LINUX_V4_2, GET_CURRENT_PID_TGID, get_current_pid_tgid, TYPES (ullt, 0))
+DEF_HELPER (LINUX_V4_2, GET_CURRENT_UID_GID, get_current_uid_gid, TYPES (ullt, 0))
+DEF_HELPER (LINUX_V4_2, GET_CURRENT_COMM, get_current_comm, TYPES (it, pt, it, 0))
+DEF_HELPER (LINUX_V4_3, GET_CGROUP_CLASSID, get_cgroup_classid, TYPES (it, pt, 0))
+DEF_HELPER (LINUX_V4_3, SKB_VLAN_PUSH, skb_vlan_push, TYPES (it, pt, st, ust, 0))
+DEF_HELPER (LINUX_V4_3, SKB_VLAN_POP, skb_vlan_pop, TYPES (it, pt, 0))
+DEF_HELPER (LINUX_V4_3, SKB_GET_TUNNEL_KEY, skb_get_tunnel_key, TYPES (it, pt, pt, it, it, 0))
+DEF_HELPER (LINUX_V4_3, SKB_SET_TUNNEL_KEY, skb_set_tunnel_key, TYPES (it, pt, pt, it, it, 0))
+DEF_HELPER (LINUX_V4_3, PERF_EVENT_READ, perf_event_read, TYPES (ullt, pt, ullt, 0))
+DEF_HELPER (LINUX_V4_4, REDIRECT, redirect, TYPES (it, it, it, 0))
+DEF_HELPER (LINUX_V4_4, GET_ROUTE_REALM, get_route_realm, TYPES (ut, pt, 0))
+DEF_HELPER (LINUX_V4_4, PERF_EVENT_OUTPUT, perf_event_output, \
+	    TYPES (it, pt, pt, ullt, pt, it, 0))
+DEF_HELPER (LINUX_V4_5, SKB_LOAD_BYTES, skb_load_bytes, TYPES (it, pt, it, pt, it, 0))
+DEF_HELPER (LINUX_V4_6, GET_STACKID, get_stackid, TYPES (it, pt, pt, it, 0))
+DEF_HELPER (LINUX_V4_6, CSUM_DIFF, csum_diff, TYPES (it, pt, it, pt, it, it, 0))
+DEF_HELPER (LINUX_V4_6, SKB_GET_TUNNEL_OPT, skb_get_tunnel_opt, TYPES (it, pt, pt, it, 0))
+DEF_HELPER (LINUX_V4_6, SKB_SET_TUNNEL_OPT, skb_set_tunnel_opt, TYPES (it, pt, pt, it, 0))
+DEF_HELPER (LINUX_V4_8, SKB_CHANGE_PROTO, skb_change_proto, TYPES (it, pt, st, u64t, 0))
+DEF_HELPER (LINUX_V4_8, SKB_CHANGE_TYPE, skb_change_type, TYPES (it, pt, u32t, 0))
+DEF_HELPER (LINUX_V4_8, SKB_UNDER_CGROUP, skb_under_cgroup, TYPES (it, pt, pt, it, 0))
+DEF_HELPER (LINUX_V4_8, GET_HASH_RECALC, get_hash_recalc, TYPES (ut, pt, 0))
+DEF_HELPER (LINUX_V4_8, GET_CURRENT_TASK, get_current_task, TYPES (ullt, 0))
+DEF_HELPER (LINUX_V4_8, PROBE_WRITE_USER, probe_write_user, TYPES (it, pt, cpt, ut, 0))
+DEF_HELPER (LINUX_V4_9, CURRENT_TASK_UNDER_CGROUP, current_task_under_cgroup, \
+	    TYPES (it, pt, it, 0))
+DEF_HELPER (LINUX_V4_9, SKB_CHANGE_TAIL, skb_change_tail, TYPES (it, pt, ut, u64t, 0))
+DEF_HELPER (LINUX_V4_9, SKB_PULL_DATA, skb_pull_data, TYPES (it, pt, it, 0))
+DEF_HELPER (LINUX_V4_9, CSUM_UPDATE, csum_update, TYPES (llt, pt, u32t, 0))
+DEF_HELPER (LINUX_V4_9, SET_HASH_INVALID, set_hash_invalid, TYPES (vt, pt, 0))
+DEF_HELPER (LINUX_V4_10, GET_NUMA_NODE_ID, get_numa_node_id, TYPES (it, 0))
+DEF_HELPER (LINUX_V4_10, SKB_CHANGE_HEAD, skb_change_head, TYPES (it, pt, it, it, 0))
+DEF_HELPER (LINUX_V4_10, XDP_ADJUST_HEAD, xdp_adjust_head, TYPES (it, pt, it, 0))
+DEF_HELPER (LINUX_V4_11, PROBE_READ_STR, probe_read_str, TYPES (it, pt, u32t, cpt, 0))
+DEF_HELPER (LINUX_V4_12, GET_SOCKET_COOKIE, get_socket_cookie, TYPES (it, pt, 0))
+DEF_HELPER (LINUX_V4_12, GET_SOCKET_UID, get_socket_uid, TYPES (ut, pt, 0))
+DEF_HELPER (LINUX_V4_13, SET_HASH, set_hash, TYPES (ut, pt, u32t, 0))
+DEF_HELPER (LINUX_V4_13, SETSOCKOPT, setsockopt, TYPES (it, pt, it, it, pt, it, 0))
+DEF_HELPER (LINUX_V4_13, SKB_ADJUST_ROOM, skb_adjust_room, TYPES (it, pt, st, u32t, ullt, 0))
+DEF_HELPER (LINUX_V4_14, REDIRECT_MAP, redirect_map, TYPES (it, pt, it, it, 0))
+DEF_HELPER (LINUX_V4_14, SK_REDIRECT_MAP, sk_redirect_map, TYPES (it, pt, pt, it, it, 0))
+DEF_HELPER (LINUX_V4_14, SOCK_MAP_UPDATE, sock_map_update, TYPES (it, pt, pt, pt, ullt, 0))
+DEF_HELPER (LINUX_V4_15, XDP_ADJUST_META, xdp_adjust_meta, TYPES (it, pt, it, 0))
+DEF_HELPER (LINUX_V4_15, PERF_EVENT_READ_VALUE, perf_event_read_value,
+	    TYPES (it, pt, ullt, pt, ut, 0))
+DEF_HELPER (LINUX_V4_15, PERF_PROG_READ_VALUE, perf_prog_read_value,
+	    TYPES (it, pt, pt, ut, 0))
+DEF_HELPER (LINUX_V4_15, GETSOCKOPT, getsockopt, TYPES (it, pt, it, it, pt, it, 0))
+
+DEF_HELPER (LINUX_V4_16, OVERRIDE_RETURN, override_return, TYPES (it, pt, ult, 0))
+DEF_HELPER (LINUX_V4_16, SOCK_OPS_CB_FLAGS_SET, sock_ops_cb_flags_set, TYPES (it, pt, it, 0))
+DEF_HELPER (LINUX_V4_17, MSG_REDIRECT_MAP, msg_redirect_map, TYPES (it, pt, pt, it, it, 0))
+DEF_HELPER (LINUX_V4_17, MSG_APPLY_BYTES, msg_apply_bytes, TYPES (it, pt, it, 0))
+DEF_HELPER (LINUX_V4_17, MSG_CORK_BYTES, msg_cork_bytes, TYPES (it, pt, it, 0))
+DEF_HELPER (LINUX_V4_17, MSG_PULL_DATA, msg_pull_data, TYPES (it, pt, it, it, it, 0))
+DEF_HELPER (LINUX_V4_17, BIND, bind, TYPES (it, pt, pt, it, 0))
+DEF_HELPER (LINUX_V4_18, XDP_ADJUST_TAIL, xdp_adjust_tail, TYPES (it, pt, it, 0))
+DEF_HELPER (LINUX_V4_18, SKB_GET_XFRM_STATE,
+	    skb_get_xfrm_state, TYPES (it, pt, it, pt, it, it, 0))
+DEF_HELPER (LINUX_V4_18, GET_STACK, get_stack, TYPES (it, pt, pt, it, it, 0))
+DEF_HELPER (LINUX_V4_18, SKB_LOAD_BYTES_RELATIVE, skb_load_bytes_relative,
+	    TYPES (it, pt, it, pt, it, ut, 0))
+DEF_HELPER (LINUX_V4_18, FIB_LOOKUP, fib_lookup, TYPES (it, pt, pt, it, ut, 0))
+DEF_HELPER (LINUX_V4_18, SOCK_HASH_UPDATE, sock_hash_update, TYPES (it, pt, pt, pt, ullt, 0))
+DEF_HELPER (LINUX_V4_18, MSG_REDIRECT_HASH, msg_redirect_hash, TYPES (it, pt, pt, pt, it, 0))
+DEF_HELPER (LINUX_V4_18, SK_REDIRECT_HASH, sk_redirect_hash, TYPES (it, pt, pt, pt, it, 0))
+DEF_HELPER (LINUX_V4_18, LWT_PUSH_ENCAP, lwt_push_encap, TYPES (it, pt, ut, pt, ut, 0))
+DEF_HELPER (LINUX_V4_18, LWT_SEG6_STORE_BYTES, lwt_seg6_store_bytes,
+	    TYPES (it, pt, ut, pt, ut, 0))
+DEF_HELPER (LINUX_V4_18, LWT_SEG6_ADJUST_SRH, lwt_seg6_adjust_srh, TYPES (it, pt, ut, ut, 0))
+DEF_HELPER (LINUX_V4_18, LWT_SEG6_ACTION, lwt_seg6_action, TYPES (it, pt, ut, pt, ut, 0))
+DEF_HELPER (LINUX_V4_18, RC_REPEAT, rc_repeat, TYPES (it, pt, 0))
+DEF_HELPER (LINUX_V4_18, RC_KEYDOWN, rc_keydown, TYPES (it, pt, ut, ullt, ut, 0))
+DEF_HELPER (LINUX_V4_18, SKB_CGROUP_ID, skb_cgroup_id, TYPES (ullt, pt, 0))
+DEF_HELPER (LINUX_V4_18, GET_CURRENT_CGROUP_ID, get_current_cgroup_id, TYPES (ullt, 0))
+DEF_HELPER (LINUX_V4_19, GET_LOCAL_STORAGE, get_local_storage, TYPES (pt, pt, ullt, 0))
+DEF_HELPER (LINUX_V4_19, SK_SELECT_REUSEPORT, sk_select_reuseport,
+	    TYPES (it, pt, pt, pt, ut, 0))
+DEF_HELPER (LINUX_V4_19, SKB_ANCESTOR_CGROUP_ID, skb_ancestor_cgroup_id,
+	    TYPES (ullt, pt, it, 0))
+DEF_HELPER (LINUX_V4_20, SK_LOOKUP_TCP, sk_lookup_tcp, TYPES (pt, pt, pt, it, ullt, ullt, 0))
+DEF_HELPER (LINUX_V4_20, SK_LOOKUP_UDP, sk_lookup_udp, TYPES (pt, pt, pt, it, ullt, ullt, 0))
+DEF_HELPER (LINUX_V4_20, SK_RELEASE, sk_release, TYPES (it, pt, 0))
+DEF_HELPER (LINUX_V4_20, MAP_PUSH_ELEM, map_push_elem, TYPES (it, pt, pt, ullt, 0))
+DEF_HELPER (LINUX_V4_20, MAP_POP_ELEM, map_pop_elem, TYPES (it, pt, pt, 0))
+DEF_HELPER (LINUX_V4_20, MAP_PEEK_ELEM, map_peek_elem, TYPES (it, pt, pt, 0))
+DEF_HELPER (LINUX_V4_20, MSG_PUSH_DATA, msg_push_data, TYPES (it, pt, it, it, it, 0))
+DEF_HELPER (LINUX_V5_0, MSG_POP_DATA, msg_pop_data, TYPES (it, pt, it, it, it, 0))
+DEF_HELPER (LINUX_V5_0, RC_POINTER_REL, rc_pointer_rel, TYPES (it, pt, it, it, 0))
+DEF_HELPER (LINUX_V5_1, SPIN_LOCK, spin_lock, TYPES (vt, pt, 0))
+DEF_HELPER (LINUX_V5_1, SPIN_UNLOCK, spin_unlock, TYPES (vt, pt, 0))
+DEF_HELPER (LINUX_V5_1, SK_FULLSOCK, sk_fullsock, TYPES (pt, pt, 0))
+DEF_HELPER (LINUX_V5_1, TCP_SOCK, tcp_sock, TYPES (pt, pt, 0))
+DEF_HELPER (LINUX_V5_1, SKB_ECN_SET_CE, skb_ecn_set_ce, TYPES (it, pt, 0))
+DEF_HELPER (LINUX_V5_1, GET_LISTENER_SOCK, get_listener_sock, TYPES (pt, pt, 0))
+DEF_HELPER (LINUX_V5_2, SKC_LOOKUP_TCP, skc_lookup_tcp,
+	    TYPES (pt, pt, pt, u32t, u64t, u64t, 0))
+DEF_HELPER (LINUX_V5_2, TCP_CHECK_SYNCOOKIE, tcp_check_syncookie,
+	    TYPES (it, pt, pt, u32t, pt, u32t, 0))
+DEF_HELPER (LINUX_V5_2, SYSCTL_GET_NAME, sysctl_get_name, TYPES (it, pt, pt, ullt, u64t, 0))
+DEF_HELPER (LINUX_V5_2, SYSCTL_GET_CURRENT_VALUE, sysctl_get_current_value,
+	    TYPES (it, pt, pt, ullt, 0))
+DEF_HELPER (LINUX_V5_2, SYSCTL_GET_NEW_VALUE, sysctl_get_new_value,
+	    TYPES (it, pt, pt, ullt, 0))
+DEF_HELPER (LINUX_V5_2, SYSCTL_SET_NEW_VALUE, sysctl_set_new_value,
+	    TYPES (it, pt, pt, ullt, 0))
+DEF_HELPER (LINUX_V5_2, STRTOL, strtol, TYPES (it, cst, ullt, u64t, pt, 0))
+DEF_HELPER (LINUX_V5_2, STRTOUL, strtoul, TYPES (it, pt, ullt, u64t, pt, 0))
+DEF_HELPER (LINUX_V5_2, SK_STORAGE_GET, sk_storage_get, TYPES (pt, pt, pt, pt, u64t, 0))
+DEF_HELPER (LINUX_V5_2, SK_STORAGE_DELETE, sk_storage_delete, TYPES (it, pt, pt, 0))
+
+/*
+Local variables:
+mode:c
+End:
+*/

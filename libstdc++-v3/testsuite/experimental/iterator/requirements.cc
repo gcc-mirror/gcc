@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2018 Free Software Foundation, Inc.
+// Copyright (C) 2015-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -64,4 +64,6 @@ std::move_iterator<int*> mi;
 std::istream_iterator<int> isi;
 std::ostream_iterator<int> osi(os());
 std::istreambuf_iterator<char> isbi;
+
+#include <ostream>
 std::ostreambuf_iterator<char> osbi(os());

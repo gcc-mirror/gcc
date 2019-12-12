@@ -1,4 +1,4 @@
-/* { dg-do compile { target *-*-linux* } } */
+/* { dg-do compile { target *-*-linux* arm*-*-uclinuxfdpiceabi } } */
 /* { dg-options "-O2 -fpic" } */
 
 __attribute__((visibility("protected")))

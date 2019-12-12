@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *           Copyright (C) 2001-2018, Free Software Foundation, Inc.        *
+ *           Copyright (C) 2001-2019, Free Software Foundation, Inc.        *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -29,15 +29,7 @@
  *                                                                          *
  ****************************************************************************/
 
-
-#if defined(IN_RTS)
-#include "tconfig.h"
-#include "tsystem.h"
-#elif defined(IN_GCC)
-#include "config.h"
-#include "system.h"
-#endif
-
+#include "runtime.h"
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>

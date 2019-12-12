@@ -1,5 +1,5 @@
 /* Process source files and output type information.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -203,8 +203,8 @@ options_p create_nested_option (options_p next, const char* name,
 				struct nested_ptr_data* info);
 
 /* Create a nested pointer option.  */
-options_p create_nested_ptr_option (options_p, type_p t,
-			 	     const char *from, const char *to);
+options_p create_nested_ptr_option (options_p next, type_p t,
+				    const char *to, const char *from);
 
 /* A name and a type.  */
 struct pair {

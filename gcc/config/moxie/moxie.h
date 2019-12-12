@@ -1,5 +1,5 @@
 /* Target Definitions for moxie.
-   Copyright (C) 2008-2018 Free Software Foundation, Inc.
+   Copyright (C) 2008-2019 Free Software Foundation, Inc.
    Contributed by Anthony Green.
 
    This file is part of GCC.

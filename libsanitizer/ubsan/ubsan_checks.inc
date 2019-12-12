@@ -1,7 +1,8 @@
 //===-- ubsan_checks.inc ----------------------------------------*- C++ -*-===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -17,8 +18,14 @@
 
 UBSAN_CHECK(GenericUB, "undefined-behavior", "undefined")
 UBSAN_CHECK(NullPointerUse, "null-pointer-use", "null")
+UBSAN_CHECK(NullptrWithOffset, "nullptr-with-offset", "pointer-overflow")
+UBSAN_CHECK(NullptrWithNonZeroOffset, "nullptr-with-nonzero-offset",
+            "pointer-overflow")
+UBSAN_CHECK(NullptrAfterNonZeroOffset, "nullptr-after-nonzero-offset",
+            "pointer-overflow")
 UBSAN_CHECK(PointerOverflow, "pointer-overflow", "pointer-overflow")
 UBSAN_CHECK(MisalignedPointerUse, "misaligned-pointer-use", "alignment")
+UBSAN_CHECK(AlignmentAssumption, "alignment-assumption", "alignment")
 UBSAN_CHECK(InsufficientObjectSize, "insufficient-object-size", "object-size")
 UBSAN_CHECK(SignedIntegerOverflow, "signed-integer-overflow",
             "signed-integer-overflow")
@@ -28,6 +35,18 @@ UBSAN_CHECK(IntegerDivideByZero, "integer-divide-by-zero",
             "integer-divide-by-zero")
 UBSAN_CHECK(FloatDivideByZero, "float-divide-by-zero", "float-divide-by-zero")
 UBSAN_CHECK(InvalidBuiltin, "invalid-builtin-use", "invalid-builtin-use")
+UBSAN_CHECK(ImplicitUnsignedIntegerTruncation,
+            "implicit-unsigned-integer-truncation",
+            "implicit-unsigned-integer-truncation")
+UBSAN_CHECK(ImplicitSignedIntegerTruncation,
+            "implicit-signed-integer-truncation",
+            "implicit-signed-integer-truncation")
+UBSAN_CHECK(ImplicitIntegerSignChange,
+            "implicit-integer-sign-change",
+            "implicit-integer-sign-change")
+UBSAN_CHECK(ImplicitSignedIntegerTruncationOrSignChange,
+            "implicit-signed-integer-truncation-or-sign-change",
+            "implicit-signed-integer-truncation,implicit-integer-sign-change")
 UBSAN_CHECK(InvalidShiftBase, "invalid-shift-base", "shift-base")
 UBSAN_CHECK(InvalidShiftExponent, "invalid-shift-exponent", "shift-exponent")
 UBSAN_CHECK(OutOfBoundsIndex, "out-of-bounds-index", "bounds")

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2002-2018, AdaCore                     --
+--                     Copyright (C) 2002-2019, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -177,6 +177,17 @@ package GNAT.Sockets.Thin is
      (Domain   : C.int;
       Typ      : C.int;
       Protocol : C.int) return C.int;
+
+   Default_Socket_Pair_Family : constant := SOSC.AF_INET;
+   --  VxWorks has not socketpair system call, and C_Socketpair below is
+   --  implemented on loopback connected network sockets.
+
+   function C_Socketpair
+     (Domain   : C.int;
+      Typ      : C.int;
+      Protocol : C.int;
+      Fds      : not null access Fd_Pair) return C.int;
+   --  Creates pair of connected sockets
 
    function C_System
      (Command : System.Address) return C.int;

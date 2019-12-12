@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fexceptions -fnon-call-exceptions" } */
+/* { dg-require-effective-target exceptions } */
 
 extern void f2 () __attribute__ ((noreturn));
 void

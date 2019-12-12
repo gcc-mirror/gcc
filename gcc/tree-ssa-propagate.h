@@ -1,6 +1,6 @@
 /* Data structures and function declarations for the SSA value propagation
    engine.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -94,21 +94,25 @@ class ssa_propagation_engine
  private:
   /* Internal implementation details.  */
   void simulate_stmt (gimple *stmt);
-  void process_ssa_edge_worklist (void);
   void simulate_block (basic_block);
-
 };
 
 class substitute_and_fold_engine
 {
  public:
+  substitute_and_fold_engine (bool fold_all_stmts = false)
+    : fold_all_stmts (fold_all_stmts) { }
   virtual ~substitute_and_fold_engine (void) { }
   virtual bool fold_stmt (gimple_stmt_iterator *) { return false; }
   virtual tree get_value (tree) { return NULL_TREE; }
 
-  bool substitute_and_fold (void);
+  bool substitute_and_fold (basic_block = NULL);
   bool replace_uses_in (gimple *);
   bool replace_phi_args_in (gphi *);
+
+  /* Users like VRP can set this when they want to perform
+     folding for every propagation.  */
+  bool fold_all_stmts;
 };
 
 #endif /* _TREE_SSA_PROPAGATE_H  */

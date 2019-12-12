@@ -1,5 +1,5 @@
 ;; Samsung Exynos M1 pipeline description
-;; Copyright (C) 2014-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2019 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -417,7 +417,7 @@
 
 (define_insn_reservation "exynos_m1_mlal" 4
   (and (eq_attr "tune" "exynosm1")
-       (eq_attr "mul64" "yes"))
+       (eq_attr "widen_mul64" "yes"))
   "em1_alu, em1_c")
 
 ;; Integer divide
@@ -949,11 +949,6 @@
 (define_bypass 5 "exynos_m1_crypto_complex"
 		 "exynos_m1_crypto_simple, exynos_m1_crypto_complex,\
 		  exynos_m1_crypto_poly*")
-
-;; AES{D,E}/AESMC pairs can feed each other instantly.
-(define_bypass 0 "exynos_m1_crypto_simple"
-		 "exynos_m1_crypto_simple"
-		 "aarch_crypto_can_dual_issue")
 
 ;; Predicted branches take no time, but mispredicted ones take forever anyway.
 (define_bypass 1 "exynos_m1_*"

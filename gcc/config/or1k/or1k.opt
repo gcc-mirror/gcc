@@ -1,0 +1,97 @@
+; OpenRISC command line options
+
+; Copyright (C) 2010-2019 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+; See the GCC internals manual (options.texi) for a description of
+; this file's format.
+
+mhard-div
+Target RejectNegative InverseMask(SOFT_DIV)
+Enable generation of hardware divide (l.div, l.divu) instructions.  This is the
+default; use -msoft-div to override.
+
+msoft-div
+Target RejectNegative Mask(SOFT_DIV)
+Enable generation of binaries which use functions from libgcc to perform divide
+operations.  The default is -mhard-div.
+
+mhard-mul
+Target RejectNegative InverseMask(SOFT_MUL).
+Enable generation of hardware multiply instructions (l.mul, l.muli) instructions.
+This is the default; use -msoft-mul to override.
+
+msoft-mul
+Target RejectNegative Mask(SOFT_MUL).
+Enable generation of binaries which use functions from libgcc to perform
+multiply operations. The default is -mhard-mul.
+
+msoft-float
+Target RejectNegative InverseMask(HARD_FLOAT)
+Enable generation of binaries which use functions from libgcc to perform
+floating point operations.  This is the default; use -mhard-float to override.
+
+mhard-float
+Target RejectNegative Mask(HARD_FLOAT)
+Enable generation of hardware floating point instructions. The default is
+-msoft-float.
+
+mdouble-float
+Target Mask(DOUBLE_FLOAT)
+When -mhard-float is selected, enables generation of double-precision floating
+point instructions.  By default functions from libgcc are used to perform
+double-precision floating point operations.
+
+munordered-float
+Target RejectNegative Mask(FP_UNORDERED)
+When -mhard-float is selected, enables generation of unordered floating point
+compare and set flag (lf.sfun*) instructions.  By default functions from libgcc
+are used to perform unordered floating point compare and set flag operations.
+
+mcmov
+Target RejectNegative Mask(CMOV)
+Enable generation of conditional move (l.cmov) instructions.  By default the
+equivalent will be generated using using set and branch.
+
+mror
+Target RejectNegative Mask(ROR)
+Enable generation of rotate right (l.ror) instructions.  By default functions
+from libgcc are used to perform rotate right operations.
+
+mrori
+Target RejectNegative Mask(RORI)
+Enable generation of rotate right with immediate (l.rori) instructions.  By
+default functions from libgcc are used to perform rotate right with immediate
+operations.
+
+msext
+Target RejectNegative Mask(SEXT)
+Enable generation of sign extension (l.ext*) instructions.  By default memory
+loads are used to perform sign extension.
+
+msfimm
+Target RejectNegative Mask(SFIMM)
+Enable generation of compare and set flag with immediate (l.sf*i) instructions.
+By default extra instructions will be generated to store the immediate to a
+register first.
+
+mshftimm
+Target RejectNegative Mask(SHFTIMM)
+Enable generation of shift with immediate (l.srai, l.srli, l.slli) instructions.
+By default extra instructions will be generated to store the immediate to a
+register first.

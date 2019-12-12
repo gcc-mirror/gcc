@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,6 +37,8 @@
  * @file tree_policy/order_statistics_imp.hpp
  * Contains forward declarations for order_statistics_key
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::iterator
@@ -119,3 +121,4 @@ PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 ~tree_order_statistics_node_update()
 { }
+#endif

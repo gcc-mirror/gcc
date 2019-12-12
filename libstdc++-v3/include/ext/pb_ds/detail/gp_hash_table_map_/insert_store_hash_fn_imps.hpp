@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -38,6 +38,8 @@
  * Contains implementations of gp_ht_map_'s find related functions,
  * when the hash value is stored.
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::comp_hash
@@ -116,3 +118,4 @@ insert_imp(const_reference r_val, true_type)
   return std::make_pair(insert_new_imp(r_val, pos_hash_pair), true);
 }
 
+#endif

@@ -22,6 +22,7 @@ int main1 (int x, int y) {
   p = (struct extraction *) malloc (sizeof (struct extraction));
 
   /* Not vectorizable: different unknown offset.  */
+#pragma GCC unroll 0
   for (i = 0; i < N; i++)
     {
       *((int *)p + x + i) = a[i];

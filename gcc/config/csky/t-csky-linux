@@ -1,0 +1,52 @@
+# Multilib configuration for csky*-linux-*.
+#
+# Copyright (C) 2018-2019 Free Software Foundation, Inc.
+# Contributed by C-SKY Microsystems and Mentor Graphics.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+
+# Endiannesses.
+MULTILIB_OPTIONS     = mlittle-endian/mbig-endian
+MULTILIB_DIRNAMES    = little big
+MULTILIB_MATCHES     = mlittle-endian=EL
+MULTILIB_MATCHES     = mbig-endian=EB
+
+MULTILIB_EXCEPTIONS  =
+CSKY_MULTILIB_OSDIRNAMES = mbig-endian=/big mlittle-endian=/. mhard-float=/hard-fp msoft-float=/. mcpu.ck810f=/. mcpu.ck807f=/ck807
+
+# Arch variants.
+MULTILIB_OPTIONS     += mcpu=ck810f/mcpu=ck807f
+MULTILIB_DIRNAMES    += ck810 ck807
+
+# For ck807.
+MULTILIB_MATCHES     += mcpu?ck807f=march?ck807
+MULTILIB_MATCHES     += mcpu?ck807f=mcpu?ck807
+
+# For arch ck810.
+MULTILIB_MATCHES     += mcpu?ck810f=march?ck810
+MULTILIB_MATCHES     += mcpu?ck810f=mcpu?ck810
+MULTILIB_MATCHES     += mcpu?ck810f=mcpu?ck810v
+MULTILIB_MATCHES     += mcpu?ck810f=mcpu?ck810t
+MULTILIB_MATCHES     += mcpu?ck810f=mcpu?ck810vt
+MULTILIB_MATCHES     += mcpu?ck810f=mcpu?ck810vf
+MULTILIB_MATCHES     += mcpu?ck810f=mcpu?ck810ft
+MULTILIB_MATCHES     += mcpu?ck810f=mcpu?ck810vft
+
+# For option -msoft-float/-mhard-float.
+MULTILIB_OPTIONS    += msoft-float/mhard-float
+MULTILIB_DIRNAMES   += soft-fp hard-fp

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -115,6 +115,9 @@ package Alloc is
 
    Rep_Table_Initial                : constant := 1000;       -- Repinfo
    Rep_Table_Increment              : constant := 200;
+
+   Rep_JSON_Table_Initial           : constant := 10;          -- Repinfo
+   Rep_JSON_Table_Increment         : constant := 200;
 
    Scope_Stack_Initial              : constant := 10;         -- Sem
    Scope_Stack_Increment            : constant := 200;

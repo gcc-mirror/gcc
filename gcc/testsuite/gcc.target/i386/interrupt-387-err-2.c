@@ -4,5 +4,5 @@
 void
 __attribute__((no_caller_saved_registers))
 fn1 (void)
-{ /* { dg-message "80387 instructions aren't allowed in function with no_caller_saved_registers attribute" } */
+{ /* { dg-message "80387 instructions aren't allowed in a function with the 'no_caller_saved_registers' attribute" } */
 }

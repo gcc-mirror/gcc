@@ -1,5 +1,5 @@
 /* Definitions of target machine of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -226,7 +226,7 @@ enum nds32_16bit_address_type
    As long as the register satisfies both criteria above,
    it is required to be saved.  */
 #define NDS32_REQUIRED_CALLEE_SAVED_P(regno)                  \
-  ((!call_used_regs[regno]) && (df_regs_ever_live_p (regno)))
+  (!call_used_or_fixed_reg_p (regno) && df_regs_ever_live_p (regno))
 
 /* This macro is to check if the push25/pop25 are available to be used
    for code generation.  Because pop25 also performs return behavior,
@@ -367,7 +367,8 @@ enum nds32_isr_nested_type
 {
   NDS32_NESTED,
   NDS32_NOT_NESTED,
-  NDS32_NESTED_READY
+  NDS32_NESTED_READY,
+  NDS32_CRITICAL
 };
 
 /* Define structure to record isr information.
@@ -394,6 +395,13 @@ struct nds32_isr_info
      It should be set to NDS32_NOT_NESTED by default
      unless user specifies attribute to change it.  */
   enum nds32_isr_nested_type nested_type;
+
+  /* Secure isr level.
+     Currently we have 0-3 security level.
+     It should be set to 0 by default.
+     For security processors, this is determined by secure
+     attribute or compiler options.  */
+  unsigned int security_level;
 
   /* Total vectors.
      The total vectors = interrupt + exception numbers + reset.
@@ -849,8 +857,10 @@ enum nds32_builtins
 
 /* ------------------------------------------------------------------------ */
 
-#define TARGET_ISA_V2   (nds32_arch_option == ARCH_V2)
+#define TARGET_ISR_VECTOR_SIZE_4_BYTE \
+  (nds32_isr_vector_size == 4)
 
+#define TARGET_ISA_V2   (nds32_arch_option == ARCH_V2)
 #define TARGET_ISA_V3 \
   (nds32_arch_option == ARCH_V3 \
    || nds32_arch_option == ARCH_V3J \

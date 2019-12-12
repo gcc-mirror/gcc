@@ -1,5 +1,5 @@
 /* Analyze RTL for GNU compiler.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "addresses.h"
 #include "rtl-iter.h"
 #include "hard-reg-set.h"
+#include "function-abi.h"
 
 /* Forward declarations */
 static void set_of_1 (rtx, const_rtx, void *);
@@ -359,10 +360,10 @@ get_initial_register_offset (int from, int to)
   if (to == from)
     return 0;
 
-  /* It is not safe to call INITIAL_ELIMINATION_OFFSET
-     before the reload pass.  We need to give at least
-     an estimation for the resulting frame size.  */
-  if (! reload_completed)
+  /* It is not safe to call INITIAL_ELIMINATION_OFFSET before the epilogue
+     is completed, but we need to give at least an estimate for the stack
+     pointer based on the frame size.  */
+  if (!epilogue_completed)
     {
       offset1 = crtl->outgoing_args_size + get_frame_size ();
 #if !STACK_GROWS_DOWNWARD
@@ -521,7 +522,7 @@ rtx_addr_can_trap_p_1 (const_rtx x, poly_int64 offset, poly_int64 size,
 
 	  return (!known_size_p (decl_size) || known_eq (decl_size, 0)
 		  ? maybe_ne (offset, 0)
-		  : maybe_gt (offset + size, decl_size));
+		  : !known_subrange_p (offset, size, 0, decl_size));
         }
 
       return 0;
@@ -811,10 +812,9 @@ rtx_addr_varies_p (const_rtx x, bool for_alias)
 /* Return the CALL in X if there is one.  */
 
 rtx
-get_call_rtx_from (rtx x)
+get_call_rtx_from (const rtx_insn *insn)
 {
-  if (INSN_P (x))
-    x = PATTERN (x);
+  rtx x = PATTERN (insn);
   if (GET_CODE (x) == PARALLEL)
     x = XVECEXP (x, 0, 0);
   if (GET_CODE (x) == SET)
@@ -822,6 +822,24 @@ get_call_rtx_from (rtx x)
   if (GET_CODE (x) == CALL && MEM_P (XEXP (x, 0)))
     return x;
   return NULL_RTX;
+}
+
+/* Get the declaration of the function called by INSN.  */
+
+tree
+get_call_fndecl (const rtx_insn *insn)
+{
+  rtx note, datum;
+
+  note = find_reg_note (insn, REG_CALL_DECL, NULL_RTX);
+  if (note == NULL_RTX)
+    return NULL_TREE;
+
+  datum = XEXP (note, 0);
+  if (datum != NULL_RTX)
+    return SYMBOL_REF_DECL (datum);
+
+  return NULL_TREE;
 }
 
 /* Return the value of the integer term in X, if one is apparent;
@@ -1249,8 +1267,8 @@ reg_set_p (const_rtx reg, const_rtx insn)
 	  || (CALL_P (insn)
 	      && ((REG_P (reg)
 		   && REGNO (reg) < FIRST_PSEUDO_REGISTER
-		   && overlaps_hard_reg_set_p (regs_invalidated_by_call,
-					       GET_MODE (reg), REGNO (reg)))
+		   && (insn_callee_abi (as_a<const rtx_insn *> (insn))
+		       .clobbers_reg_p (GET_MODE (reg), REGNO (reg))))
 		  || MEM_P (reg)
 		  || find_reg_fusage (insn, CLOBBER, reg)))))
     return true;
@@ -1432,7 +1450,7 @@ set_of (const_rtx pat, const_rtx insn)
   struct set_of_data data;
   data.found = NULL_RTX;
   data.pat = pat;
-  note_stores (INSN_P (insn) ? PATTERN (insn) : insn, set_of_1, &data);
+  note_pattern_stores (INSN_P (insn) ? PATTERN (insn) : insn, set_of_1, &data);
   return data.found;
 }
 
@@ -1461,22 +1479,20 @@ record_hard_reg_sets (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
 }
 
 /* Examine INSN, and compute the set of hard registers written by it.
-   Store it in *PSET.  Should only be called after reload.  */
+   Store it in *PSET.  Should only be called after reload.
+
+   IMPLICIT is true if we should include registers that are fully-clobbered
+   by calls.  This should be used with caution, since it doesn't include
+   partially-clobbered registers.  */
 void
 find_all_hard_reg_sets (const rtx_insn *insn, HARD_REG_SET *pset, bool implicit)
 {
   rtx link;
 
   CLEAR_HARD_REG_SET (*pset);
-  note_stores (PATTERN (insn), record_hard_reg_sets, pset);
-  if (CALL_P (insn))
-    {
-      if (implicit)
-	IOR_HARD_REG_SET (*pset, call_used_reg_set);
-
-      for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
-	record_hard_reg_sets (XEXP (link, 0), NULL, pset);
-    }
+  note_stores (insn, record_hard_reg_sets, pset);
+  if (CALL_P (insn) && implicit)
+    *pset |= insn_callee_abi (insn).full_reg_clobbers ();
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
     if (REG_NOTE_KIND (link) == REG_INC)
       record_hard_reg_sets (XEXP (link, 0), NULL, pset);
@@ -1662,8 +1678,7 @@ noop_move_p (const rtx_insn *insn)
 	{
 	  rtx tem = XVECEXP (pat, 0, i);
 
-	  if (GET_CODE (tem) == USE
-	      || GET_CODE (tem) == CLOBBER)
+	  if (GET_CODE (tem) == USE || GET_CODE (tem) == CLOBBER)
 	    continue;
 
 	  if (GET_CODE (tem) != SET || ! set_noop_p (tem))
@@ -1796,7 +1811,7 @@ reg_overlap_mentioned_p (const_rtx x, const_rtx in)
 {
   unsigned int regno, endregno;
 
-  /* If either argument is a constant, then modifying X can not
+  /* If either argument is a constant, then modifying X cannot
      affect IN.  Here we look at IN, we can profitably combine
      CONSTANT_P (x) with the switch statement below.  */
   if (CONSTANT_P (in))
@@ -1805,6 +1820,7 @@ reg_overlap_mentioned_p (const_rtx x, const_rtx in)
  recurse:
   switch (GET_CODE (x))
     {
+    case CLOBBER:
     case STRICT_LOW_PART:
     case ZERO_EXTRACT:
     case SIGN_EXTRACT:
@@ -1888,7 +1904,8 @@ reg_overlap_mentioned_p (const_rtx x, const_rtx in)
   the SUBREG will be passed.  */
 
 void
-note_stores (const_rtx x, void (*fun) (rtx, const_rtx, void *), void *data)
+note_pattern_stores (const_rtx x,
+		     void (*fun) (rtx, const_rtx, void *), void *data)
 {
   int i;
 
@@ -1920,7 +1937,22 @@ note_stores (const_rtx x, void (*fun) (rtx, const_rtx, void *), void *data)
 
   else if (GET_CODE (x) == PARALLEL)
     for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
-      note_stores (XVECEXP (x, 0, i), fun, data);
+      note_pattern_stores (XVECEXP (x, 0, i), fun, data);
+}
+
+/* Same, but for an instruction.  If the instruction is a call, include
+   any CLOBBERs in its CALL_INSN_FUNCTION_USAGE.  */
+
+void
+note_stores (const rtx_insn *insn,
+	     void (*fun) (rtx, const_rtx, void *), void *data)
+{
+  if (CALL_P (insn))
+    for (rtx link = CALL_INSN_FUNCTION_USAGE (insn);
+	 link; link = XEXP (link, 1))
+      if (GET_CODE (XEXP (link, 0)) == CLOBBER)
+	note_pattern_stores (XEXP (link, 0), fun, data);
+  note_pattern_stores (PATTERN (insn), fun, data);
 }
 
 /* Like notes_stores, but call FUN for each expression that is being
@@ -2833,10 +2865,28 @@ may_trap_p_1 (const_rtx x, unsigned flags)
     case UMOD:
       if (HONOR_SNANS (x))
 	return 1;
-      if (SCALAR_FLOAT_MODE_P (GET_MODE (x)))
+      if (FLOAT_MODE_P (GET_MODE (x)))
 	return flag_trapping_math;
       if (!CONSTANT_P (XEXP (x, 1)) || (XEXP (x, 1) == const0_rtx))
 	return 1;
+      if (GET_CODE (XEXP (x, 1)) == CONST_VECTOR)
+	{
+	  /* For CONST_VECTOR, return 1 if any element is or might be zero.  */
+	  unsigned int n_elts;
+	  rtx op = XEXP (x, 1);
+	  if (!GET_MODE_NUNITS (GET_MODE (op)).is_constant (&n_elts))
+	    {
+	      if (!CONST_VECTOR_DUPLICATE_P (op))
+		return 1;
+	      for (unsigned i = 0; i < (unsigned int) XVECLEN (op, 0); i++)
+		if (CONST_VECTOR_ENCODED_ELT (op, i) == const0_rtx)
+		  return 1;
+	    }
+	  else
+	    for (unsigned i = 0; i < n_elts; i++)
+	      if (CONST_VECTOR_ELT (op, i) == const0_rtx)
+		return 1;
+	}
       break;
 
     case EXPR_LIST:
@@ -2885,12 +2935,16 @@ may_trap_p_1 (const_rtx x, unsigned flags)
     case NEG:
     case ABS:
     case SUBREG:
+    case VEC_MERGE:
+    case VEC_SELECT:
+    case VEC_CONCAT:
+    case VEC_DUPLICATE:
       /* These operations don't trap even with floating point.  */
       break;
 
     default:
       /* Any floating arithmetic may trap.  */
-      if (SCALAR_FLOAT_MODE_P (GET_MODE (x)) && flag_trapping_math)
+      if (FLOAT_MODE_P (GET_MODE (x)) && flag_trapping_math)
 	return 1;
     }
 
@@ -3237,6 +3291,23 @@ tablejump_p (const rtx_insn *insn, rtx_insn **labelp,
   return true;
 }
 
+/* For INSN known to satisfy tablejump_p, determine if it actually is a
+   CASESI.  Return the insn pattern if so, NULL_RTX otherwise.  */
+
+rtx
+tablejump_casesi_pattern (const rtx_insn *insn)
+{
+  rtx tmp;
+
+  if ((tmp = single_set (insn)) != NULL
+      && SET_DEST (tmp) == pc_rtx
+      && GET_CODE (SET_SRC (tmp)) == IF_THEN_ELSE
+      && GET_CODE (XEXP (SET_SRC (tmp), 2)) == LABEL_REF)
+    return tmp;
+
+  return NULL_RTX;
+}
+
 /* A subroutine of computed_jump_p, return 1 if X contains a REG or MEM or
    constant that is not in the constant pool and not in the condition
    of an IF_THEN_ELSE.  */
@@ -3576,23 +3647,31 @@ loc_mentioned_in_p (rtx *loc, const_rtx in)
   return 0;
 }
 
-/* Helper function for subreg_lsb.  Given a subreg's OUTER_MODE, INNER_MODE,
-   and SUBREG_BYTE, return the bit offset where the subreg begins
-   (counting from the least significant bit of the operand).  */
+/* Reinterpret a subreg as a bit extraction from an integer and return
+   the position of the least significant bit of the extracted value.
+   In other words, if the extraction were performed as a shift right
+   and mask, return the number of bits to shift right.
+
+   The outer value of the subreg has OUTER_BYTES bytes and starts at
+   byte offset SUBREG_BYTE within an inner value of INNER_BYTES bytes.  */
 
 poly_uint64
-subreg_lsb_1 (machine_mode outer_mode,
-	      machine_mode inner_mode,
-	      poly_uint64 subreg_byte)
+subreg_size_lsb (poly_uint64 outer_bytes,
+		 poly_uint64 inner_bytes,
+		 poly_uint64 subreg_byte)
 {
   poly_uint64 subreg_end, trailing_bytes, byte_pos;
 
   /* A paradoxical subreg begins at bit position 0.  */
-  if (paradoxical_subreg_p (outer_mode, inner_mode))
-    return 0;
+  gcc_checking_assert (ordered_p (outer_bytes, inner_bytes));
+  if (maybe_gt (outer_bytes, inner_bytes))
+    {
+      gcc_checking_assert (known_eq (subreg_byte, 0U));
+      return 0;
+    }
 
-  subreg_end = subreg_byte + GET_MODE_SIZE (outer_mode);
-  trailing_bytes = GET_MODE_SIZE (inner_mode) - subreg_end;
+  subreg_end = subreg_byte + outer_bytes;
+  trailing_bytes = inner_bytes - subreg_end;
   if (WORDS_BIG_ENDIAN && BYTES_BIG_ENDIAN)
     byte_pos = trailing_bytes;
   else if (!WORDS_BIG_ENDIAN && !BYTES_BIG_ENDIAN)
@@ -4088,7 +4167,7 @@ find_first_parameter_load (rtx_insn *call_insn, rtx_insn *boundary)
       if (INSN_P (before))
 	{
 	  int nregs_old = parm.nregs;
-	  note_stores (PATTERN (before), parms_set, &parm);
+	  note_stores (before, parms_set, &parm);
 	  /* If we found something that did not set a parameter reg,
 	     we're done.  Do not keep going, as that might result
 	     in hoisting an insn before the setting of a pseudo
@@ -4472,12 +4551,12 @@ nonzero_bits1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
      might be nonzero in its own mode, taking into account the fact that, on
      CISC machines, accessing an object in a wider mode generally causes the
      high-order bits to become undefined, so they are not known to be zero.
-     We extend this reasoning to RISC machines for rotate operations since the
-     semantics of the operations in the larger mode is not well defined.  */
+     We extend this reasoning to RISC machines for operations that might not
+     operate on the full registers.  */
   if (mode_width > xmode_width
       && xmode_width <= BITS_PER_WORD
       && xmode_width <= HOST_BITS_PER_WIDE_INT
-      && (!WORD_REGISTER_OPERATIONS || code == ROTATE || code == ROTATERT))
+      && !(WORD_REGISTER_OPERATIONS && word_register_operation_p (x)))
     {
       nonzero &= cached_nonzero_bits (x, xmode,
 				      known_x, known_mode, known_ret);
@@ -4745,17 +4824,20 @@ nonzero_bits1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
 	  nonzero &= cached_nonzero_bits (SUBREG_REG (x), mode,
 					  known_x, known_mode, known_ret);
 
-          /* On many CISC machines, accessing an object in a wider mode
+          /* On a typical CISC machine, accessing an object in a wider mode
 	     causes the high-order bits to become undefined.  So they are
-	     not known to be zero.  */
+	     not known to be zero.
+
+	     On a typical RISC machine, we only have to worry about the way
+	     loads are extended.  Otherwise, if we get a reload for the inner
+	     part, it may be loaded from the stack, and then we may lose all
+	     the zero bits that existed before the store to the stack.  */
 	  rtx_code extend_op;
 	  if ((!WORD_REGISTER_OPERATIONS
-	       /* If this is a typical RISC machine, we only have to worry
-		  about the way loads are extended.  */
 	       || ((extend_op = load_extend_op (inner_mode)) == SIGN_EXTEND
 		   ? val_signbit_known_set_p (inner_mode, nonzero)
 		   : extend_op != ZERO_EXTEND)
-	       || (!MEM_P (SUBREG_REG (x)) && !REG_P (SUBREG_REG (x))))
+	       || !MEM_P (SUBREG_REG (x)))
 	      && xmode_width > inner_width)
 	    nonzero
 	      |= (GET_MODE_MASK (GET_MODE (x)) & ~GET_MODE_MASK (inner_mode));
@@ -5012,10 +5094,9 @@ num_sign_bit_copies1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
     {
       /* If this machine does not do all register operations on the entire
 	 register and MODE is wider than the mode of X, we can say nothing
-	 at all about the high-order bits.  We extend this reasoning to every
-	 machine for rotate operations since the semantics of the operations
-	 in the larger mode is not well defined.  */
-      if (!WORD_REGISTER_OPERATIONS || code == ROTATE || code == ROTATERT)
+	 at all about the high-order bits.  We extend this reasoning to RISC
+	 machines for operations that might not operate on full registers.  */
+      if (!(WORD_REGISTER_OPERATIONS && word_register_operation_p (x)))
 	return 1;
 
       /* Likewise on machines that do, if the mode of the object is smaller
@@ -5094,13 +5175,12 @@ num_sign_bit_copies1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
 	  /* For paradoxical SUBREGs on machines where all register operations
 	     affect the entire register, just look inside.  Note that we are
 	     passing MODE to the recursive call, so the number of sign bit
-	     copies will remain relative to that mode, not the inner mode.  */
+	     copies will remain relative to that mode, not the inner mode.
 
-	  /* This works only if loads sign extend.  Otherwise, if we get a
+	     This works only if loads sign extend.  Otherwise, if we get a
 	     reload for the inner part, it may be loaded from the stack, and
 	     then we lose all sign bit copies that existed before the store
 	     to the stack.  */
-
 	  if (WORD_REGISTER_OPERATIONS
 	      && load_extend_op (inner_mode) == SIGN_EXTEND
 	      && paradoxical_subreg_p (x)
@@ -6536,6 +6616,20 @@ contains_symbolic_reference_p (const_rtx x)
 
   return false;
 }
+
+/* Return true if RTL X contains a constant pool address.  */
+
+bool
+contains_constant_pool_address_p (const_rtx x)
+{
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, ALL)
+    if (SYMBOL_REF_P (*iter) && CONSTANT_POOL_ADDRESS_P (*iter))
+      return true;
+
+  return false;
+}
+
 
 /* Return true if X contains a thread-local symbol.  */
 

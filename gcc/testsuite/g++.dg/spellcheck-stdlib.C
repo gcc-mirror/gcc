@@ -77,6 +77,11 @@ int test_INT_MAX (void)
   // { dg-message "'INT_MAX' is defined in header '<climits>'; did you forget to '#include <climits>'?" "" { target *-*-* } INT_MAX_line }
 }
 
+/* Missing <cfloat>.  */
+float test_FLT_MAX = FLT_MAX; // { dg-line FLT_MAX_line }
+// { dg-error "'FLT_MAX' was not declared" "" { target *-*-* } FLT_MAX_line }
+// { dg-message "'FLT_MAX' is defined in header '<cfloat>'; did you forget to '#include <cfloat>'?" "" { target *-*-* } FLT_MAX_line }
+
 /* Missing <cstring>.  */
 
 void test_cstring (char *dest, char *src)

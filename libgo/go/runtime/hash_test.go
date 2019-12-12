@@ -161,6 +161,9 @@ func TestSmhasherZeros(t *testing.T) {
 
 // Strings with up to two nonzero bytes all have distinct hashes.
 func TestSmhasherTwoNonzero(t *testing.T) {
+	if GOARCH == "wasm" {
+		t.Skip("Too slow on wasm")
+	}
 	if testing.Short() {
 		t.Skip("Skipping in short mode")
 	}
@@ -174,13 +177,13 @@ func twoNonZero(h *HashSet, n int) {
 	b := make([]byte, n)
 
 	// all zero
-	h.addB(b[:])
+	h.addB(b)
 
 	// one non-zero byte
 	for i := 0; i < n; i++ {
 		for x := 1; x < 256; x++ {
 			b[i] = byte(x)
-			h.addB(b[:])
+			h.addB(b)
 			b[i] = 0
 		}
 	}
@@ -192,7 +195,7 @@ func twoNonZero(h *HashSet, n int) {
 			for j := i + 1; j < n; j++ {
 				for y := 1; y < 256; y++ {
 					b[j] = byte(y)
-					h.addB(b[:])
+					h.addB(b)
 					b[j] = 0
 				}
 			}
@@ -229,6 +232,9 @@ func TestSmhasherCyclic(t *testing.T) {
 
 // Test strings with only a few bits set
 func TestSmhasherSparse(t *testing.T) {
+	if GOARCH == "wasm" {
+		t.Skip("Too slow on wasm")
+	}
 	if testing.Short() {
 		t.Skip("Skipping in short mode")
 	}
@@ -264,6 +270,9 @@ func setbits(h *HashSet, b []byte, i int, k int) {
 // Test all possible combinations of n blocks from the set s.
 // "permutation" is a bad name here, but it is what Smhasher uses.
 func TestSmhasherPermutation(t *testing.T) {
+	if GOARCH == "wasm" {
+		t.Skip("Too slow on wasm")
+	}
 	if testing.Short() {
 		t.Skip("Skipping in short mode")
 	}
@@ -433,6 +442,9 @@ func (k *IfaceKey) name() string {
 
 // Flipping a single bit of a key should flip each output bit with 50% probability.
 func TestSmhasherAvalanche(t *testing.T) {
+	if GOARCH == "wasm" {
+		t.Skip("Too slow on wasm")
+	}
 	if testing.Short() {
 		t.Skip("Skipping in short mode")
 	}
@@ -508,6 +520,9 @@ func TestSmhasherWindowed(t *testing.T) {
 	windowed(t, &BytesKey{make([]byte, 128)})
 }
 func windowed(t *testing.T, k Key) {
+	if GOARCH == "wasm" {
+		t.Skip("Too slow on wasm")
+	}
 	if testing.Short() {
 		t.Skip("Skipping in short mode")
 	}

@@ -345,7 +345,7 @@ not in any particular release.
 	</link>
       </entry>
       <entry>Polymorphic memory resources</entry>
-      <entry>Partial</entry>
+      <entry>Partial (missing pool resource and buffer resource classes)</entry>
       <entry>Library Fundamentals TS</entry>
     </row>
 

@@ -1,5 +1,5 @@
 /* Subroutines for manipulating rtx's in semantically interesting ways.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -38,9 +38,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "dojump.h"
 #include "explow.h"
 #include "expr.h"
+#include "stringpool.h"
 #include "common/common-target.h"
 #include "output.h"
-#include "params.h"
 
 static rtx break_out_memory_refs (rtx);
 static void anti_adjust_stack_and_probe_stack_clash (rtx);
@@ -56,8 +56,7 @@ trunc_int_for_mode (HOST_WIDE_INT c, machine_mode mode)
   int width = GET_MODE_PRECISION (smode);
 
   /* You want to truncate to a _what_?  */
-  gcc_assert (SCALAR_INT_MODE_P (mode)
-	      || POINTER_BOUNDS_MODE_P (mode));
+  gcc_assert (SCALAR_INT_MODE_P (mode));
 
   /* Canonicalize BImode to 0 and STORE_FLAG_VALUE.  */
   if (smode == BImode)
@@ -893,16 +892,7 @@ promote_ssa_mode (const_tree name, int *punsignedp)
 
   tree type = TREE_TYPE (name);
   int unsignedp = TYPE_UNSIGNED (type);
-  machine_mode mode = TYPE_MODE (type);
-
-  /* Bypass TYPE_MODE when it maps vector modes to BLKmode.  */
-  if (mode == BLKmode)
-    {
-      gcc_assert (VECTOR_TYPE_P (type));
-      mode = type->type_common.mode;
-    }
-
-  machine_mode pmode = promote_mode (type, mode, &unsignedp);
+  machine_mode pmode = promote_mode (type, TYPE_MODE (type), &unsignedp);
   if (punsignedp)
     *punsignedp = unsignedp;
 
@@ -1177,9 +1167,10 @@ record_new_stack_level (void)
   if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
     update_sjlj_context ();
 }
-
+
 /* Return an rtx doing runtime alignment to REQUIRED_ALIGN on TARGET.  */
-static rtx
+
+rtx
 align_dynamic_address (rtx target, unsigned required_align)
 {
   /* CEIL_DIV_EXPR needs to worry about the addition overflowing,
@@ -1498,7 +1489,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
      stack pointer, such as acquiring the space by calling malloc().  */
   if (targetm.have_allocate_stack ())
     {
-      struct expand_operand ops[2];
+      class expand_operand ops[2];
       /* We don't have to check against the predicate for operand 0 since
 	 TARGET is known to be a pseudo of the proper mode, which must
 	 be valid for the operand.  */
@@ -1620,6 +1611,10 @@ set_stack_check_libfunc (const char *libfunc_name)
 {
   gcc_assert (stack_check_libfunc == NULL_RTX);
   stack_check_libfunc = gen_rtx_SYMBOL_REF (Pmode, libfunc_name);
+  tree decl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL,
+			  get_identifier (libfunc_name), void_type_node);
+  DECL_EXTERNAL (decl) = 1;
+  SET_SYMBOL_REF_DECL (stack_check_libfunc, decl);
 }
 
 /* Emit one stack probe at ADDRESS, an address within the stack.  */
@@ -1629,7 +1624,7 @@ emit_stack_probe (rtx address)
 {
   if (targetm.have_probe_stack_address ())
     {
-      struct expand_operand ops[1];
+      class expand_operand ops[1];
       insn_code icode = targetm.code_for_probe_stack_address;
       create_address_operand (ops, address);
       maybe_legitimize_operands (icode, 0, 1, ops);
@@ -1689,7 +1684,7 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
   /* Next see if we have an insn to check the stack.  */
   else if (targetm.have_check_stack ())
     {
-      struct expand_operand ops[1];
+      class expand_operand ops[1];
       rtx addr = memory_address (Pmode,
 				 gen_rtx_fmt_ee (STACK_GROW_OP, Pmode,
 					         stack_pointer_rtx,
@@ -1841,7 +1836,7 @@ compute_stack_clash_protection_loop_data (rtx *rounded_size, rtx *last_addr,
 {
   /* Round SIZE down to STACK_CLASH_PROTECTION_PROBE_INTERVAL */
   *probe_interval
-    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL);
+    = 1 << param_stack_clash_protection_probe_interval;
   *rounded_size = simplify_gen_binary (AND, Pmode, size,
 				        GEN_INT (-*probe_interval));
 
@@ -1959,9 +1954,20 @@ anti_adjust_stack_and_probe_stack_clash (rtx size)
 
   /* We can get here with a constant size on some targets.  */
   rtx rounded_size, last_addr, residual;
-  HOST_WIDE_INT probe_interval;
+  HOST_WIDE_INT probe_interval, probe_range;
+  bool target_probe_range_p = false;
   compute_stack_clash_protection_loop_data (&rounded_size, &last_addr,
 					    &residual, &probe_interval, size);
+
+  /* Get the back-end specific probe ranges.  */
+  probe_range = targetm.stack_clash_protection_alloca_probe_range ();
+  target_probe_range_p = probe_range != 0;
+  gcc_assert (probe_range >= 0);
+
+  /* If no back-end specific range defined, default to the top of the newly
+     allocated range.  */
+  if (probe_range == 0)
+    probe_range = probe_interval - GET_MODE_SIZE (word_mode);
 
   if (rounded_size != CONST0_RTX (Pmode))
     {
@@ -1973,13 +1979,12 @@ anti_adjust_stack_and_probe_stack_clash (rtx size)
 	       i += probe_interval)
 	    {
 	      anti_adjust_stack (GEN_INT (probe_interval));
-
 	      /* The prologue does not probe residuals.  Thus the offset
 		 here to probe just beyond what the prologue had already
 		 allocated.  */
 	      emit_stack_probe (plus_constant (Pmode, stack_pointer_rtx,
-					       (probe_interval
-						- GET_MODE_SIZE (word_mode))));
+					       probe_range));
+
 	      emit_insn (gen_blockage ());
 	    }
 	}
@@ -1993,10 +1998,10 @@ anti_adjust_stack_and_probe_stack_clash (rtx size)
 	  anti_adjust_stack (GEN_INT (probe_interval));
 
 	  /* The prologue does not probe residuals.  Thus the offset here
-	     to probe just beyond what the prologue had already allocated.  */
+	     to probe just beyond what the prologue had already
+	     allocated.  */
 	  emit_stack_probe (plus_constant (Pmode, stack_pointer_rtx,
-					   (probe_interval
-					    - GET_MODE_SIZE (word_mode))));
+					   probe_range));
 
 	  emit_stack_clash_protection_probe_loop_end (loop_lab, end_loop,
 						      last_addr, rotate_loop);
@@ -2011,48 +2016,55 @@ anti_adjust_stack_and_probe_stack_clash (rtx size)
 	 hold live data.  Furthermore, we do not want to probe into the
 	 red zone.
 
-	 Go ahead and just guard the probe at *sp on RESIDUAL != 0 at
-	 runtime if RESIDUAL is not a compile time constant.  */
-      if (!CONST_INT_P (residual))
-	{
-	  label = gen_label_rtx ();
-	  emit_cmp_and_jump_insns (residual, CONST0_RTX (GET_MODE (residual)),
-				   EQ, NULL_RTX, Pmode, 1, label);
-	}
+	 If TARGET_PROBE_RANGE_P then the target has promised it's safe to
+	 probe at offset 0.  In which case we no longer have to check for
+	 RESIDUAL == 0.  However we still need to probe at the right offset
+	 when RESIDUAL > PROBE_RANGE, in which case we probe at PROBE_RANGE.
 
-      rtx x = force_reg (Pmode, plus_constant (Pmode, residual,
-					       -GET_MODE_SIZE (word_mode)));
+	 If !TARGET_PROBE_RANGE_P then go ahead and just guard the probe at *sp
+	 on RESIDUAL != 0 at runtime if RESIDUAL is not a compile time constant.
+	 */
       anti_adjust_stack (residual);
-      emit_stack_probe (gen_rtx_PLUS (Pmode, stack_pointer_rtx, x));
-      emit_insn (gen_blockage ());
+
       if (!CONST_INT_P (residual))
-	emit_label (label);
-    }
-
-  /* Some targets make optimistic assumptions in their prologues about
-     how the caller may have probed the stack.  Make sure we honor
-     those assumptions when needed.  */
-  if (size != CONST0_RTX (Pmode)
-      && targetm.stack_clash_protection_final_dynamic_probe (residual))
-    {
-      /* SIZE could be zero at runtime and in that case *sp could hold
-	 live data.  Furthermore, we don't want to probe into the red
-	 zone.
-
-	 Go ahead and just guard the probe at *sp on SIZE != 0 at runtime
-	 if SIZE is not a compile time constant.  */
-      rtx label = NULL_RTX;
-      if (!CONST_INT_P (size))
 	{
 	  label = gen_label_rtx ();
-	  emit_cmp_and_jump_insns (size, CONST0_RTX (GET_MODE (size)),
-				   EQ, NULL_RTX, Pmode, 1, label);
+	  rtx_code op = target_probe_range_p ? LT : EQ;
+	  rtx probe_cmp_value = target_probe_range_p
+	    ? gen_rtx_CONST_INT (GET_MODE (residual), probe_range)
+	    : CONST0_RTX (GET_MODE (residual));
+
+	  if (target_probe_range_p)
+	    emit_stack_probe (stack_pointer_rtx);
+
+	  emit_cmp_and_jump_insns (residual, probe_cmp_value,
+				   op, NULL_RTX, Pmode, 1, label);
 	}
 
-      emit_stack_probe (stack_pointer_rtx);
+      rtx x = NULL_RTX;
+
+      /* If RESIDUAL isn't a constant and TARGET_PROBE_RANGE_P then we probe up
+	 by the ABI defined safe value.  */
+      if (!CONST_INT_P (residual) && target_probe_range_p)
+	x = GEN_INT (probe_range);
+      /* If RESIDUAL is a constant but smaller than the ABI defined safe value,
+	 we still want to probe up, but the safest amount if a word.  */
+      else if (target_probe_range_p)
+	{
+	  if (INTVAL (residual) <= probe_range)
+	    x = GEN_INT (GET_MODE_SIZE (word_mode));
+	  else
+	    x = GEN_INT (probe_range);
+	}
+      else
+      /* If nothing else, probe at the top of the new allocation.  */
+	x = plus_constant (Pmode, residual, -GET_MODE_SIZE (word_mode));
+
+      emit_stack_probe (gen_rtx_PLUS (Pmode, stack_pointer_rtx, x));
+
       emit_insn (gen_blockage ());
-      if (!CONST_INT_P (size))
-	emit_label (label);
+      if (!CONST_INT_P (residual))
+	  emit_label (label);
     }
 }
 

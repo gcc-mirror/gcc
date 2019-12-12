@@ -1,6 +1,6 @@
 // Streambuf iterators
 
-// Copyright (C) 1997-2018 Free Software Foundation, Inc.
+// Copyright (C) 1997-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -61,6 +61,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Types:
       //@{
       /// Public typedefs
+#if __cplusplus > 201703L
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3188. istreambuf_iterator::pointer should not be unspecified
+      using pointer = void;
+#endif
       typedef _CharT					char_type;
       typedef _Traits					traits_type;
       typedef typename _Traits::int_type		int_type;
@@ -79,6 +84,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					       _CharT2*>::__type
 	__copy_move_a2(istreambuf_iterator<_CharT2>,
 		       istreambuf_iterator<_CharT2>, _CharT2*);
+
+#if __cplusplus >= 201103L
+      template<typename _CharT2, typename _Size>
+	friend __enable_if_t<__is_char<_CharT2>::__value, _CharT2*>
+	__copy_n_a(istreambuf_iterator<_CharT2>, _Size, _CharT2*);
+#endif
 
       template<typename _CharT2>
 	friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value,
@@ -224,6 +235,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Types:
       //@{
       /// Public typedefs
+#if __cplusplus > 201703L
+      using difference_type = ptrdiff_t;
+#endif
       typedef _CharT			       char_type;
       typedef _Traits			       traits_type;
       typedef basic_streambuf<_CharT, _Traits> streambuf_type;
@@ -241,6 +255,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool		_M_failed;
 
     public:
+
+#if __cplusplus > 201703L
+      constexpr
+      ostreambuf_iterator() noexcept
+      : _M_sbuf(nullptr), _M_failed(true) { }
+#endif
+
       ///  Construct output iterator from ostream.
       ostreambuf_iterator(ostream_type& __s) _GLIBCXX_USE_NOEXCEPT
       : _M_sbuf(__s.rdbuf()), _M_failed(!_M_sbuf) { }
@@ -366,6 +387,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       return __result;
     }
+
+#if __cplusplus >= 201103L
+  template<typename _CharT, typename _Size>
+    __enable_if_t<__is_char<_CharT>::__value, _CharT*>
+    __copy_n_a(istreambuf_iterator<_CharT> __it, _Size __n, _CharT* __result)
+    {
+      if (__n == 0)
+	return __result;
+
+      __glibcxx_requires_cond(__it._M_sbuf,
+			      _M_message(__gnu_debug::__msg_inc_istreambuf)
+			      ._M_iterator(__it));
+      _CharT* __beg = __result;
+      __result += __it._M_sbuf->sgetn(__beg, __n);
+      __glibcxx_requires_cond(__result - __beg == __n,
+			      _M_message(__gnu_debug::__msg_inc_istreambuf)
+			      ._M_iterator(__it));
+      return __result;
+    }
+#endif // C++11
 
   template<typename _CharT>
     typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value,

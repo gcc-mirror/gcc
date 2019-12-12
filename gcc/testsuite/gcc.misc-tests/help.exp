@@ -1,4 +1,4 @@
-# Copyright (C) 2005-2018 Free Software Foundation, Inc.
+# Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -63,6 +63,8 @@ check_for_options c "-v --help" "" {are likely to\n  -std} ""
 # Try various --help= classes and qualifiers.
 check_for_options c "--help=optimizers" "-O" "  -g  " ""
 check_for_options c "--help=params" "maximum number of" "-Wunsafe-loop-optimizations" ""
+check_for_options_with_filter c "--help=params" \
+    "^The following options control parameters:$" "" {[^.]$} ""
 check_for_options c "--help=C" "-ansi" "-gnatO" ""
 check_for_options c {--help=C++} {-std=c\+\+} "-gnatO" ""
 check_for_options c "--help=common" "-dumpbase" "-gnatO" ""
@@ -89,6 +91,34 @@ maximum number of
 -O
 } "" ""
 
+# Verify that a C++/Objective C++ only option is indicated as such
+# by the C compiler.
+check_for_options c "-Q --help=warnings" {
+-Wclass-memaccess[ \t]+\[available in C\+\+, ObjC\+\+\]
+} "" ""
+
+# Do the same for a C/Objective C only option and the C++ compiler.
+check_for_options c++ "-Q --help=warnings" {
+-Wabsolute-value[ \t]+\[available in C, ObjC\]
+} "" ""
+
+# Verify that an option that's an alias for another option is shown
+# with the other option as the value.
+check_for_options c "-Q --help=warnings" {
+--all-warnings[ \t]+\-Wall
+-W[ \t]+-Wextra
+-Wmissing-format-attribute[ \t]+-Wsuggest-attribute=format
+-Wno-alloc-size-larger-than[ \t]+-Walloc-size-larger-than=[1-9][0-9]+
+-Wno-vla-larger-than[ \t]+-Wvla-larger-than=[1-9][0-9]+
+} "" ""
+
+# Verify that an option that expects a byte-size argument is shown with
+# a meaningful byte-size argument as the value.
+check_for_options c "-Q --help=warnings" {
+-Walloc-size-larger-than=[ \t]+[1-9][0-9]+ bytes
+-Wlarger-than=[^\n\r]+[1-9][0-9]+ bytes
+} "" ""
+
 # Ensure PR 37805 is fixed.
 # Specify patterns (arguments 3 and later) that match option names
 # at the beginning of the line and not when they are referenced by
@@ -103,8 +133,6 @@ check_for_options c "--help=warnings,^joined" \
     "^ +-Wtrigraphs" "^ +-Wformat=" ""
 check_for_options c "--help=joined,separate" \
     "^ +-I" "" ""
-check_for_options c "--help=^joined,separate" \
-    "^ +--param " "" ""
 check_for_options c "--help=joined,^separate" \
     "^ +--help=" "" ""
 check_for_options c "--help=joined,undocumented" "" "" ""
@@ -115,9 +143,8 @@ check_for_options c "--help=joined,undocumented" "" "" ""
 # subsystem.  Do this one help class at a time to make it easier to
 # find the source a failure.
 
-foreach cls { "ada" "c" "c++" "fortran" "go" \
-		    "optimizers" "param" "target" "warnings" } {
-
+foreach cls { "ada" "c" "c++" "d" "fortran" "go" \
+		"common" "optimizers" "param" "target" "warnings" } {
     check_for_options c "--help=$cls" "" "^ +-.*\[^:.\]$" ""
 }
 

@@ -12,7 +12,7 @@ struct container
 
   struct incomplete {
     int x;
-    elem array[];  // { dg-warning "forbids flexible array member" }
+    elem array[];  // { dg-warning "10:ISO C\\+\\+ forbids flexible array member" }
   };
 };
 
@@ -27,7 +27,7 @@ struct D: container<T>
 {
   struct S {
     int x;
-    typename container<T>::elem array[];  // { dg-warning "forbids flexible array member" }
+    typename container<T>::elem array[];  // { dg-warning "33:ISO C\\+\\+ forbids flexible array member" }
   };
 };
 

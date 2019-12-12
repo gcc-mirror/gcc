@@ -1,10 +1,10 @@
-@c Copyright (C) 2017-2018 Free Software Foundation, Inc.
+@c Copyright (C) 2017-2019 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
 @ignore
 @c man begin COPYRIGHT
-Copyright @copyright{} 2017-2018 Free Software Foundation, Inc.
+Copyright @copyright{} 2017-2019 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -61,7 +61,7 @@ gcov-dump [@option{-v}|@option{--version}]
      [@option{-h}|@option{--help}]
      [@option{-l}|@option{--long}]
      [@option{-p}|@option{--positions}]
-     [@option{-w}|@option{--working-sets}] @var{gcovfiles}
+     @var{gcovfiles}
 @c man end
 @end ignore
 
@@ -84,10 +84,6 @@ Dump positions of records.
 @itemx --version
 Display the @command{gcov-dump} version number (on the standard output),
 and exit without doing any further processing.
-
-@item -w
-@itemx --working-sets
-Dump working set computed from summary.
 @end table
 
 @c man end

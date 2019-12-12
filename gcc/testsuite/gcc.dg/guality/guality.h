@@ -23,6 +23,9 @@ along with GCC; see the file COPYING3.  If not see
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
+#ifdef __linux
+#include <sys/prctl.h>
+#endif
 
 /* This is a first cut at checking that debug information matches
    run-time.  The idea is to annotate programs with GUALCHK* macros
@@ -213,6 +216,10 @@ main (int argc, char *argv[])
 {
   int i;
   char *argv0 = argv[0];
+
+#if defined(PR_SET_PTRACER_ANY)
+  prctl (PR_SET_PTRACER, PR_SET_PTRACER_ANY, 0, 0, 0);
+#endif
 
   guality_gdb_command = getenv ("GUALITY_GDB");
   if (!guality_gdb_command)

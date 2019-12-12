@@ -2,6 +2,7 @@
    Verify that unaligned_access is correctly with attribute target.  */
 /* { dg-do compile } */
 /* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-march=*" } { "-march=armv6" } } */
+/* { dg-require-effective-target arm_arch_v6_ok } */
 /* { dg-options "-Os -mfloat-abi=softfp -mtp=soft" } */
 /* { dg-add-options arm_arch_v6 } */
 

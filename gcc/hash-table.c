@@ -1,5 +1,5 @@
 /* A type-safe hash table template.
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by Lawrence Crowl <crowl@google.com>
 
 This file is part of GCC.
@@ -74,8 +74,11 @@ struct prime_ent const prime_tab[] = {
   { 0xfffffffb, 0x00000006, 0x00000008, 31 }
 };
 
+/* Limit number of comparisons when calling hash_table<>::verify.  */
+unsigned int hash_table_sanitize_eq_limit;
+
 /* The following function returns an index into the above table of the
-   nearest prime number which is greater than N, and near a power of two. */
+   nearest prime number which is at least N, and near a power of two. */
 
 unsigned int
 hash_table_higher_prime_index (unsigned long n)
@@ -98,7 +101,16 @@ hash_table_higher_prime_index (unsigned long n)
   return low;
 }
 
-mem_alloc_description<mem_usage> hash_table_usage;
+/* Return a reference to the lazily initialized hash-table usage description.
+   This needs to be a function rather than a simple global variable so that it
+   is reliably initialized before hash table variables in other files such as
+   sem_item::m_type_hash_cache.  */
+mem_alloc_description<mem_usage>&
+hash_table_usage ()
+{
+  static mem_alloc_description<mem_usage> usage;
+  return usage;
+}
 
 /* Support function for statistics.  */
 void dump_hash_table_loc_statistics (void)
@@ -109,7 +121,18 @@ void dump_hash_table_loc_statistics (void)
   for (unsigned i = HASH_TABLE_ORIGIN; i <= HASH_SET_ORIGIN; i++)
     {
       mem_alloc_origin origin = (mem_alloc_origin) i;
-      hash_table_usage.dump (origin);
+      hash_table_usage ().dump (origin);
     }
 }
 
+/* Report a hash table checking error.  */
+
+ATTRIBUTE_NORETURN ATTRIBUTE_COLD
+void
+hashtab_chk_error ()
+{
+  fprintf (stderr, "hash table checking failed: "
+	   "equal operator returns true for a pair "
+	   "of values with a different hash value\n");
+  gcc_unreachable ();
+}

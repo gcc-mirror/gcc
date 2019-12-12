@@ -5,7 +5,6 @@
    license that can be found in the LICENSE file.  */
 
 #include "runtime.h"
-#include "go-type.h"
 
 /* The compiler will track fields that have the tag go:"track".  Any
    function that refers to such a field will call this function with a
@@ -26,23 +25,7 @@ __go_fieldtrack (byte *p __attribute__ ((unused)))
 /* A runtime function to add all the tracked fields to a
    map[string]bool.  */
 
-extern const char _etext[] __attribute__ ((weak));
-extern const char _edata[] __attribute__ ((weak));
-#ifdef _AIX
-// Following symbols do not exist on AIX
-const char *__etext = NULL;
-const char *__data_start = NULL;
-const char *__edata = NULL;
-const char *__bss_start = NULL;
-#else
-extern const char __etext[] __attribute__ ((weak));
-extern const char __data_start[] __attribute__ ((weak));
-extern const char __edata[] __attribute__ ((weak));
-extern const char __bss_start[] __attribute__ ((weak));
-#endif
-
-extern void *mapassign (const struct __go_map_type *, void *hmap,
-			const void *key)
+extern void *mapassign (const struct maptype *, void *hmap, const void *key)
   __asm__ (GOSYM_PREFIX "runtime.mapassign");
 
 // The type descriptor for map[string] bool.  */

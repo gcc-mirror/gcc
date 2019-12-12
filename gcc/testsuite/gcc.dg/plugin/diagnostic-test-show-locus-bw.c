@@ -44,6 +44,8 @@ void test_multiline (void)
         ~~~~~~~~~~~~~~~~~
         + second_function ());
         ^ ~~~~~~~~~~~~~~~~~~
+        |
+        label
    { dg-end-multiline-output "" } */
 #endif
 }
@@ -66,6 +68,8 @@ void test_many_lines (void)
 /* { dg-begin-multiline-output "" }
    x = (first_function_with_a_very_long_name (lorem, ipsum, dolor, sit, amet,
         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        |
+        label 1
                                              consectetur, adipiscing, elit,
                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                              sed, eiusmod, tempor,
@@ -76,6 +80,9 @@ void test_many_lines (void)
                                              ~~~~~~~~~~~~~~~~~~~~~~
         + second_function_with_a_very_long_name (lorem, ipsum, dolor, sit,
         ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        | |
+        | label 2
+        label 0
                                                  amet, consectetur,
                                                  ~~~~~~~~~~~~~~~~~~
                                                  adipiscing, elit, sed,
@@ -115,13 +122,32 @@ void test_caret_within_proper_range (void)
 void test_very_wide_line (void)
 {
 #if 0
-                                                                                float f = foo * bar; /* { dg-warning "95: test" } */
+                             float x                                                    = foo * bar; /* { dg-warning "95: test" } */
 /* { dg-begin-multiline-output "" }
      0         0         0         0         0         0         1     
      4         5         6         7         8         9         0     
  6789012345678901234567890123456789012345678901234567890123456789012345
-                                              float f = foo * bar;
+ x                                                    = foo * bar;
+ ~                                                      ~~~~^~~~~
+ |                                                          |
+ label 1                                                    label 0
+                                                        bar * foo
+   { dg-end-multiline-output "" } */
+#endif
+}
+
+void test_very_wide_line_2 (void)
+{
+#if 0
+                            float x                                                     = foo * bar; /* { dg-warning "95: test" } */
+/* { dg-begin-multiline-output "" }
+     0         0         0         0         0         0         1     
+     4         5         6         7         8         9         0     
+ 6789012345678901234567890123456789012345678901234567890123456789012345
+                                                      = foo * bar;
                                                         ~~~~^~~~~
+                                                            |
+                                                            label 0
                                                         bar * foo
    { dg-end-multiline-output "" } */
 #endif
@@ -226,27 +252,69 @@ void test_many_nested_locations (void)
    ^
      Lorem ipsum dolor sit amet, consectetur adipiscing elit,
      ^~~~~ ^~~~~ ^~~~~ ^~~ ^~~~  ^~~~~~~~~~~ ^~~~~~~~~~ ^~~~
+     |     |     |     |   |     |           |          |
+     |     |     |     |   label label       label      label
+     label label label label
      LOREM IPSUM DOLOR SIT AMET  CONSECTETUR ADIPISCING ELIT
      sed do eiusmod tempor incididunt ut labore et dolore magna
      ^~~ ^~ ^~~~~~~ ^~~~~~ ^~~~~~~~~~ ^~ ^~~~~~ ^~ ^~~~~~ ^~~~~
+     |   |  |       |      |          |  |      |  |      |
+     |   |  |       |      |          |  |      |  label  label
+     |   |  |       |      |          |  label  label
+     |   |  label   label  label      label
+     |   label
+     label
      SED DO EIUSMOD TEMPOR INCIDIDUNT UT LABORE ET DOLORE MAGNA
      aliqua. Ut enim ad minim veniam, quis nostrud exercitation
      ^~~~~~  ^~ ^~~~ ^~ ^~~~~ ^~~~~~  ^~~~ ^~~~~~~ ^~~~~~~~~~~~
+     |       |  |    |  |     |       |    |       |
+     |       |  |    |  |     |       |    label   label
+     |       |  |    |  label label   label
+     |       |  |    label
+     |       |  label
+     label   label
      ALIQUA  UT ENIM AD MINIM VENIAM  QUIS NOSTRUD EXERCITATION
      ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis
      ^~~~~~~ ^~~~~~~ ^~~~ ^~ ^~~~~~~ ^~ ^~ ^~~~~~~ ^~~~~~~~~  ^~~~
+     |       |       |    |  |       |  |  |       |          |
+     |       |       |    |  |       |  |  label   label      label
+     |       |       |    |  |       |  label
+     |       |       |    |  label   label
+     |       |       |    label
+     label   label   label
      ULLAMCO LABORIS NISI UT ALIQUIP EX EA COMMODO CONSEQUAT  DUIS
      aute irure dolor in reprehenderit in voluptate velit esse cillum
      ^~~~ ^~~~~ ^~~~~ ^~ ^~~~~~~~~~~~~ ^~ ^~~~~~~~~ ^~~~~ ^~~~ ^~~~~~
+     |    |     |     |  |             |  |         |     |    |
+     |    |     |     |  |             |  |         |     |    label
+     |    |     |     |  |             |  label     label label
+     |    |     |     |  label         label
+     |    label label label
+     label
      AUTE IRURE DOLOR IN REPREHENDERIT IN VOLUPTATE VELIT ESSE CILLUM
      dolore eu fugiat nulla pariatur. Excepteur sint occaecat
      ^~~~~~ ^~ ^~~~~~ ^~~~~ ^~~~~~~~  ^~~~~~~~~ ^~~~ ^~~~~~~~
+     |      |  |      |     |         |         |    |
+     |      |  |      |     |         |         |    label
+     |      |  label  label label     label     label
+     label  label
      DOLORE EU FUGIAT NULLA PARIATUR  EXCEPTEUR SINT OCCAECAT
      cupidatat non proident, sunt in culpa qui officia deserunt
      ^~~~~~~~~ ^~~ ^~~~~~~~  ^~~~ ^~ ^~~~~ ^~~ ^~~~~~~ ^~~~~~~~
+     |         |   |         |    |  |     |   |       |
+     |         |   |         |    |  |     |   label   label
+     |         |   |         |    |  label label
+     |         |   |         |    label
+     |         |   label     label
+     label     label
      CUPIDATAT NON PROIDENT  SUNT IN CULPA QUI OFFICIA DESERUNT
      mollit anim id est laborum.
      ^~~~~~ ^~~~ ^~ ^~~ ^~~~~~~
+     |      |    |  |   |
+     |      |    |  |   label
+     |      |    |  label
+     |      |    label
+     label  label
      MOLLIT ANIM ID EST LABORUM
    { dg-end-multiline-output "" } */
 }
@@ -264,6 +332,7 @@ void test_fixit_insert_newline (void)
       x = b;
     }
 /* { dg-begin-multiline-output "" }
+       x = a;
 +      break;
      case 'b':
      ^~~~~~~~

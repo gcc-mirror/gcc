@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -38,6 +38,8 @@
  * Contains an implementation class for left_child_next_sibling_heap_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 #ifdef PB_DS_THIN_HEAP_TRACE_
 
 PB_DS_CLASS_T_DEC
@@ -51,3 +53,4 @@ trace() const
 }
 
 #endif // #ifdef PB_DS_THIN_HEAP_TRACE_
+#endif

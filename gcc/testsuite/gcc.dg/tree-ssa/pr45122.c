@@ -2,7 +2,7 @@
 /* PR tree-optimization/45122 */
 
 /* { dg-do run } */
-/* { dg-options "-O2 -funsafe-loop-optimizations" } */
+/* { dg-options "-O2" } */
 
 extern void abort (void);
 

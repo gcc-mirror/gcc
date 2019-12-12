@@ -1,5 +1,5 @@
 /* Header file for fp-bit.c.  */
-/* Copyright (C) 2000-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -126,10 +126,6 @@ typedef unsigned int UTItype __attribute__ ((mode (TI)));
 
 #ifdef FLOAT_ONLY
 #define NO_DI_MODE
-#endif
-
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#define FLOAT_BIT_ORDER_MISMATCH
 #endif
 
 #if __BYTE_ORDER__ != __FLOAT_WORD_ORDER__
@@ -352,16 +348,6 @@ typedef union
 # else
   halffractype words[2];
 # endif
-#endif
-
-#ifdef FLOAT_BIT_ORDER_MISMATCH
-  struct
-    {
-      fractype fraction:FRACBITS __attribute__ ((packed));
-      unsigned int exp:EXPBITS __attribute__ ((packed));
-      unsigned int sign:1 __attribute__ ((packed));
-    }
-  bits;
 #endif
 
 #ifdef _DEBUG_BITFLOAT

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,8 +48,8 @@ package Sprint is
 
    --    Allocator                           new xxx [storage_pool = xxx]
    --    Cleanup action                      at end procedure name;
-   --    Conversion wi Float_Truncate        target^(source)
    --    Convert wi Conversion_OK            target?(source)
+   --    Convert wi Float_Truncate           target^(source)
    --    Convert wi Rounded_Result           target@(source)
    --    Divide wi Treat_Fixed_As_Integer    x #/ y
    --    Divide wi Rounded_Result            x @/ y
@@ -70,7 +70,7 @@ package Sprint is
    --    Multiple concatenation              expr && expr && expr ... && expr
    --    Multiply wi Treat_Fixed_As_Integer  x #* y
    --    Multiply wi Rounded_Result          x @* y
-   --    Operator with range check           {operator} (e.g. {+})
+   --    Operator with overflow check        {operator} (e.g. {+})
    --    Others choice for cleanup           when all others
    --    Pop exception label                 %pop_xxx_exception_label
    --    Push exception label                %push_xxx_exception_label (label)

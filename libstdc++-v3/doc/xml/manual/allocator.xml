@@ -138,7 +138,6 @@
 
 
   <section xml:id="allocator.interface"><info><title>Interface Design</title></info>
-    
 
    <para>
      The only allocator interface that
@@ -162,7 +161,6 @@
   </section>
 
   <section xml:id="allocator.default"><info><title>Selecting Default Allocation Policy</title></info>
-    
 
    <para>
      It's difficult to pick an allocation strategy that will provide
@@ -228,7 +226,6 @@
   </section>
 
   <section xml:id="allocator.caching"><info><title>Disabling Memory Caching</title></info>
-    
 
     <para>
       In use, <classname>allocator</classname> may allocate and
@@ -328,8 +325,8 @@
     names have changed, but in all cases, functionality is
     equivalent. Starting with gcc-3.4, all extension allocators are
     standard style. Before this point, SGI style was the norm. Because of
-    this, the number of template arguments also changed. Here's a simple
-    chart to track the changes.
+    this, the number of template arguments also changed.
+    <xref linkend="table.extension_allocators"/> tracks the changes.
   </para>
 
   <para>
@@ -355,23 +352,6 @@
 	 out-of-memory handler (for
 	 <function>new</function>/<function>delete</function> this is
 	 taken care of elsewhere).
-       </para>
-     </listitem>
-     <listitem>
-       <para>
-       <classname>array_allocator</classname>
-       </para>
-       <para>
-	 Allows allocations of known and fixed sizes using existing
-	 global or external storage allocated via construction of
-	 <classname>std::tr1::array</classname> objects. By using this
-	 allocator, fixed size containers (including
-	 <classname>std::string</classname>) can be used without
-	 instances calling <function>::operator new</function> and
-	 <function>::operator delete</function>. This capability
-	 allows the use of STL abstractions without runtime
-	 complications or overhead, even in situations such as program
-	 startup. For usage examples, please consult the testsuite.
        </para>
      </listitem>
      <listitem>
@@ -468,7 +448,7 @@
        <para>
 	 A high-performance fixed-size allocator with
 	 exponentially-increasing allocations. It has its own
-	 <link linkend="manual.ext.allocator.mt">chapter</link> 
+	 <link linkend="manual.ext.allocator.mt">chapter</link>
          in the documentation.
        </para>
      </listitem>
@@ -502,12 +482,12 @@
   </biblioentry>
 
   <biblioentry>
-      <title>
-	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://www.drdobbs.com/the-standard-librarian-what-are-allocato/184403759">
+    <title>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink"
+	    xlink:href="https://web.archive.org/web/20190622154249/http://www.drdobbs.com/the-standard-librarian-what-are-allocato/184403759">
       The Standard Librarian: What Are Allocators Good For?
-	</link>
-      </title>
+      </link>
+    </title>
 
     <author><personname><firstname>Matt</firstname><surname>Austern</surname></personname></author>
     <publisher>
@@ -515,12 +495,13 @@
 	C/C++ Users Journal
       </publishername>
     </publisher>
+    <pubdate>2000-12</pubdate>
   </biblioentry>
 
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="https://www.hoard.org">
+	      xlink:href="http://hoard.org">
       The Hoard Memory Allocator
 	</link>
       </title>
@@ -531,7 +512,7 @@
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://people.cs.umass.edu/~emery/pubs/berger-oopsla2002.pdf">
+	      xlink:href="https://people.cs.umass.edu/~emery/pubs/berger-oopsla2002.pdf">
       Reconsidering Custom Memory Allocation
 	</link>
       </title>

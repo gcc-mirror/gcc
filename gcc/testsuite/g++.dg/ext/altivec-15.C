@@ -5,7 +5,7 @@
 /* This test was added for an internal compiler error.  The number and
    content of error messages is irrelevant.  */
 
-struct SubData
+struct SubData  // { dg-error "" }
 {
     inline const Float Clamp(Float f, Float f0, Float f1) // { dg-error "" }
     }

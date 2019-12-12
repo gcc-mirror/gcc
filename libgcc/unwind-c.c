@@ -1,5 +1,5 @@
 /* Supporting functions for C exception handling.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldy@quesejoda.com>.
    Shamelessly stolen from the Java front end.
 
@@ -106,6 +106,7 @@ PERSONALITY_FUNCTION (_Unwind_State, struct _Unwind_Exception *,
 		      struct _Unwind_Context *);
 
 _Unwind_Reason_Code
+__attribute__((target ("general-regs-only")))
 PERSONALITY_FUNCTION (_Unwind_State state,
 		      struct _Unwind_Exception * ue_header,
 		      struct _Unwind_Context * context)

@@ -1,4 +1,4 @@
-.. Copyright (C) 2017-2018 Free Software Foundation, Inc.
+.. Copyright (C) 2017-2019 Free Software Foundation, Inc.
    Originally contributed by David Malcolm <dmalcolm@redhat.com>
 
    This is free software: you can redistribute it and/or modify it

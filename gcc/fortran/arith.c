@@ -1,5 +1,5 @@
 /* Compiler arithmetic
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 void
 gfc_mpfr_to_mpz (mpz_t z, mpfr_t x, locus *where)
 {
-  mp_exp_t e;
+  mpfr_exp_t e;
 
   if (mpfr_inf_p (x) || mpfr_nan_p (x))
     {
@@ -113,6 +113,11 @@ gfc_arith_error (arith code)
       p =
 	_("Integer outside symmetric range implied by Standard Fortran at %L");
       break;
+    case ARITH_WRONGCONCAT:
+      p =
+	_("Illegal type in character concatenation at %L");
+      break;
+
     default:
       gfc_internal_error ("gfc_arith_error(): Bad error code");
     }
@@ -371,7 +376,7 @@ gfc_check_real_range (mpfr_t p, int kind)
     }
   else if (mpfr_cmp (q, gfc_real_kinds[i].tiny) < 0)
     {
-      mp_exp_t emin, emax;
+      mpfr_exp_t emin, emax;
       int en;
 
       /* Save current values of emin and emax.  */
@@ -391,9 +396,9 @@ gfc_check_real_range (mpfr_t p, int kind)
 
       /* Copy sign if needed.  */
       if (mpfr_sgn (p) < 0)
-	mpfr_neg (p, q, GMP_RNDN);
+	mpfr_neg (p, q, MPFR_RNDN);
       else
-	mpfr_set (p, q, GMP_RNDN);
+	mpfr_set (p, q, MPFR_RNDN);
     }
 
   mpfr_clear (q);
@@ -843,8 +848,6 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 	    {
 	    case BT_INTEGER:
 	      {
-		int power;
-
 		/* First, we simplify the cases of op1 == 1, 0 or -1.  */
 		if (mpz_cmp_si (op1->value.integer, 1) == 0)
 		  {
@@ -879,29 +882,36 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 				       "exponent of integer has zero "
 				       "result at %L", &result->where);
 		  }
-		else if (gfc_extract_int (op2, &power))
-		  {
-		    /* If op2 doesn't fit in an int, the exponentiation will
-		       overflow, because op2 > 0 and abs(op1) > 1.  */
-		    mpz_t max;
-		    int i;
-		    i = gfc_validate_kind (BT_INTEGER, result->ts.kind, false);
-
-		    if (flag_range_check)
-		      rc = ARITH_OVERFLOW;
-
-		    /* Still, we want to give the same value as the
-		       processor.  */
-		    mpz_init (max);
-		    mpz_add_ui (max, gfc_integer_kinds[i].huge, 1);
-		    mpz_mul_ui (max, max, 2);
-		    mpz_powm (result->value.integer, op1->value.integer,
-			      op2->value.integer, max);
-		    mpz_clear (max);
-		  }
 		else
-		  mpz_pow_ui (result->value.integer, op1->value.integer,
-			      power);
+		  {
+		    /* We have abs(op1) > 1 and op2 > 1.
+		       If op2 > bit_size(op1), we'll have an out-of-range
+		       result.  */
+		    int k, power;
+
+		    k = gfc_validate_kind (BT_INTEGER, op1->ts.kind, false);
+		    power = gfc_integer_kinds[k].bit_size;
+		    if (mpz_cmp_si (op2->value.integer, power) < 0)
+		      {
+			gfc_extract_int (op2, &power);
+			mpz_pow_ui (result->value.integer, op1->value.integer,
+				    power);
+			rc = gfc_range_check (result);
+			if (rc == ARITH_OVERFLOW)
+			  gfc_error_now ("Result of exponentiation at %L "
+					 "exceeds the range of %s", &op1->where,
+					 gfc_typename (&(op1->ts)));
+		      }
+		    else
+		      {
+			/* Provide a nonsense value to propagate up. */
+			mpz_set (result->value.integer,
+				 gfc_integer_kinds[k].huge);
+			mpz_add_ui (result->value.integer,
+				    result->value.integer, 1);
+			rc = ARITH_OVERFLOW;
+		      }
+		  }
 	      }
 	      break;
 
@@ -982,7 +992,12 @@ gfc_arith_concat (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
   gfc_expr *result;
   size_t len;
 
-  gcc_assert (op1->ts.kind == op2->ts.kind);
+  /* By cleverly playing around with constructors, is is possible
+     to get mismaching types here.  */
+  if (op1->ts.type != BT_CHARACTER || op2->ts.type != BT_CHARACTER
+      || op1->ts.kind != op2->ts.kind)
+    return ARITH_WRONGCONCAT;
+
   result = gfc_get_constant_expr (BT_CHARACTER, op1->ts.kind,
 				  &op1->where);
 
@@ -1877,56 +1892,6 @@ gfc_le (gfc_expr *op1, gfc_expr *op2, gfc_intrinsic_op op)
 }
 
 
-/* Convert an integer string to an expression node.  */
-
-gfc_expr *
-gfc_convert_integer (const char *buffer, int kind, int radix, locus *where)
-{
-  gfc_expr *e;
-  const char *t;
-
-  e = gfc_get_constant_expr (BT_INTEGER, kind, where);
-  /* A leading plus is allowed, but not by mpz_set_str.  */
-  if (buffer[0] == '+')
-    t = buffer + 1;
-  else
-    t = buffer;
-  mpz_set_str (e->value.integer, t, radix);
-
-  return e;
-}
-
-
-/* Convert a real string to an expression node.  */
-
-gfc_expr *
-gfc_convert_real (const char *buffer, int kind, locus *where)
-{
-  gfc_expr *e;
-
-  e = gfc_get_constant_expr (BT_REAL, kind, where);
-  mpfr_set_str (e->value.real, buffer, 10, GFC_RND_MODE);
-
-  return e;
-}
-
-
-/* Convert a pair of real, constant expression nodes to a single
-   complex expression node.  */
-
-gfc_expr *
-gfc_convert_complex (gfc_expr *real, gfc_expr *imag, int kind)
-{
-  gfc_expr *e;
-
-  e = gfc_get_constant_expr (BT_COMPLEX, kind, &real->where);
-  mpc_set_fr_fr (e->value.complex, real->value.real, imag->value.real,
-		 GFC_MPC_RND_MODE);
-
-  return e;
-}
-
-
 /******* Simplification of intrinsic functions with constant arguments *****/
 
 
@@ -2051,7 +2016,7 @@ gfc_int2int (gfc_expr *src, int kind)
       gfc_convert_mpz_to_signed (result->value.integer,
 				 gfc_integer_kinds[k].bit_size);
 
-      if (warn_conversion && kind < src->ts.kind)
+      if (warn_conversion && !src->do_not_warn && kind < src->ts.kind)
 	gfc_warning_now (OPT_Wconversion, "Conversion from %qs to %qs at %L",
 			 gfc_typename (&src->ts), gfc_typename (&result->ts),
 			 &src->where);
@@ -2462,7 +2427,7 @@ gfc_complex2complex (gfc_expr *src, int kind)
       int w = warn_conversion ? OPT_Wconversion : OPT_Wconversion_extra;
 
       gfc_warning_now (w, "Change of value in conversion from "
-		       " %qs to %qs at %L",
+		       "%qs to %qs at %L",
 		       gfc_typename (&src->ts), gfc_typename (&result->ts),
 		       &src->where);
       did_warn = true;
@@ -2538,16 +2503,16 @@ gfc_character2character (gfc_expr *src, int kind)
 static void
 hollerith2representation (gfc_expr *result, gfc_expr *src)
 {
-  int src_len, result_len;
+  size_t src_len, result_len;
 
   src_len = src->representation.length - src->ts.u.pad;
-  result_len = gfc_target_expr_size (result);
+  gfc_target_expr_size (result, &result_len);
 
   if (src_len > result_len)
     {
-      gfc_warning (0,
-		   "The Hollerith constant at %L is too long to convert to %qs",
-		   &src->where, gfc_typename(&result->ts));
+      gfc_warning (OPT_Wcharacter_truncation, "The Hollerith constant at %L "
+		   "is truncated in conversion to %qs", &src->where,
+		   gfc_typename(&result->ts));
     }
 
   result->representation.string = XCNEWVEC (char, result_len + 1);
@@ -2561,6 +2526,35 @@ hollerith2representation (gfc_expr *result, gfc_expr *src)
   result->representation.length = result_len;
 }
 
+
+/* Helper function to set the representation in a character conversion.
+   This assumes that the ts.type and ts.kind of the result have already
+   been set.  */
+
+static void
+character2representation (gfc_expr *result, gfc_expr *src)
+{
+  size_t src_len, result_len, i;
+  src_len = src->value.character.length;
+  gfc_target_expr_size (result, &result_len);
+
+  if (src_len > result_len)
+    gfc_warning (OPT_Wcharacter_truncation, "The character constant at %L is "
+		 "truncated in conversion to %s", &src->where,
+		 gfc_typename(&result->ts));
+
+  result->representation.string = XCNEWVEC (char, result_len + 1);
+
+  for (i = 0; i < MIN (result_len, src_len); i++)
+    result->representation.string[i] = (char) src->value.character.string[i];
+
+  if (src_len < result_len)
+    memset (&result->representation.string[src_len], ' ',
+	    result_len - src_len);
+
+  result->representation.string[result_len] = '\0'; /* For debugger.  */
+  result->representation.length = result_len;
+}
 
 /* Convert Hollerith to integer. The constant will be padded or truncated.  */
 
@@ -2577,8 +2571,21 @@ gfc_hollerith2int (gfc_expr *src, int kind)
   return result;
 }
 
+/* Convert character to integer.  The constant will be padded or truncated.  */
 
-/* Convert Hollerith to real. The constant will be padded or truncated.  */
+gfc_expr *
+gfc_character2int (gfc_expr *src, int kind)
+{
+  gfc_expr *result;
+  result = gfc_get_constant_expr (BT_INTEGER, kind, &src->where);
+
+  character2representation (result, src);
+  gfc_interpret_integer (kind, (unsigned char *) result->representation.string,
+			 result->representation.length, result->value.integer);
+  return result;
+}
+
+/* Convert Hollerith to real.  The constant will be padded or truncated.  */
 
 gfc_expr *
 gfc_hollerith2real (gfc_expr *src, int kind)
@@ -2587,6 +2594,21 @@ gfc_hollerith2real (gfc_expr *src, int kind)
   result = gfc_get_constant_expr (BT_REAL, kind, &src->where);
 
   hollerith2representation (result, src);
+  gfc_interpret_float (kind, (unsigned char *) result->representation.string,
+		       result->representation.length, result->value.real);
+
+  return result;
+}
+
+/* Convert character to real.  The constant will be padded or truncated.  */
+
+gfc_expr *
+gfc_character2real (gfc_expr *src, int kind)
+{
+  gfc_expr *result;
+  result = gfc_get_constant_expr (BT_REAL, kind, &src->where);
+
+  character2representation (result, src);
   gfc_interpret_float (kind, (unsigned char *) result->representation.string,
 		       result->representation.length, result->value.real);
 
@@ -2603,6 +2625,21 @@ gfc_hollerith2complex (gfc_expr *src, int kind)
   result = gfc_get_constant_expr (BT_COMPLEX, kind, &src->where);
 
   hollerith2representation (result, src);
+  gfc_interpret_complex (kind, (unsigned char *) result->representation.string,
+			 result->representation.length, result->value.complex);
+
+  return result;
+}
+
+/* Convert character to complex. The constant will be padded or truncated.  */
+
+gfc_expr *
+gfc_character2complex (gfc_expr *src, int kind)
+{
+  gfc_expr *result;
+  result = gfc_get_constant_expr (BT_COMPLEX, kind, &src->where);
+
+  character2representation (result, src);
   gfc_interpret_complex (kind, (unsigned char *) result->representation.string,
 			 result->representation.length, result->value.complex);
 
@@ -2639,6 +2676,21 @@ gfc_hollerith2logical (gfc_expr *src, int kind)
   result = gfc_get_constant_expr (BT_LOGICAL, kind, &src->where);
 
   hollerith2representation (result, src);
+  gfc_interpret_logical (kind, (unsigned char *) result->representation.string,
+			 result->representation.length, &result->value.logical);
+
+  return result;
+}
+
+/* Convert character to logical. The constant will be padded or truncated.  */
+
+gfc_expr *
+gfc_character2logical (gfc_expr *src, int kind)
+{
+  gfc_expr *result;
+  result = gfc_get_constant_expr (BT_LOGICAL, kind, &src->where);
+
+  character2representation (result, src);
   gfc_interpret_logical (kind, (unsigned char *) result->representation.string,
 			 result->representation.length, &result->value.logical);
 

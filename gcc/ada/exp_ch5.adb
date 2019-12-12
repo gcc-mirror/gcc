@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -113,6 +113,28 @@ package body Exp_Ch5 is
    --  (Rev = True). The value returned is the constructed loop statement.
    --  Auxiliary declarations are inserted before node N using the standard
    --  Insert_Actions mechanism.
+
+   function Expand_Assign_Array_Bitfield
+     (N      : Node_Id;
+      Larray : Entity_Id;
+      Rarray : Entity_Id;
+      L_Type : Entity_Id;
+      R_Type : Entity_Id;
+      Rev    : Boolean) return Node_Id;
+   --  Alternative to Expand_Assign_Array_Loop for packed bitfields. Generates
+   --  a call to the System.Bitfields.Copy_Bitfield, which is more efficient
+   --  than copying component-by-component.
+
+   function Expand_Assign_Array_Loop_Or_Bitfield
+     (N      : Node_Id;
+      Larray : Entity_Id;
+      Rarray : Entity_Id;
+      L_Type : Entity_Id;
+      R_Type : Entity_Id;
+      Ndim   : Pos;
+      Rev    : Boolean) return Node_Id;
+   --  Calls either Expand_Assign_Array_Loop or Expand_Assign_Array_Bitfield as
+   --  appropriate.
 
    procedure Expand_Assign_Record (N : Node_Id);
    --  N is an assignment of an untagged record value. This routine handles
@@ -313,6 +335,10 @@ package body Exp_Ch5 is
       R_Slice : constant Boolean := Nkind (Act_Rhs) = N_Slice;
 
       Crep : constant Boolean := Change_Of_Representation (N);
+
+      pragma Assert
+        (Crep
+          or else Is_Bit_Packed_Array (L_Type) = Is_Bit_Packed_Array (R_Type));
 
       Larray  : Node_Id;
       Rarray  : Node_Id;
@@ -939,7 +965,7 @@ package body Exp_Ch5 is
 
             else
                Rewrite (N,
-                 Expand_Assign_Array_Loop
+                 Expand_Assign_Array_Loop_Or_Bitfield
                    (N, Larray, Rarray, L_Type, R_Type, Ndim,
                     Rev => not Forwards_OK (N)));
             end if;
@@ -1092,12 +1118,12 @@ package body Exp_Ch5 is
                    Condition => Condition,
 
                    Then_Statements => New_List (
-                     Expand_Assign_Array_Loop
+                     Expand_Assign_Array_Loop_Or_Bitfield
                       (N, Larray, Rarray, L_Type, R_Type, Ndim,
                        Rev => False)),
 
                    Else_Statements => New_List (
-                     Expand_Assign_Array_Loop
+                     Expand_Assign_Array_Loop_Or_Bitfield
                       (N, Larray, Rarray, L_Type, R_Type, Ndim,
                        Rev => True))));
             end if;
@@ -1320,6 +1346,158 @@ package body Exp_Ch5 is
       return Assign;
    end Expand_Assign_Array_Loop;
 
+   ----------------------------------
+   -- Expand_Assign_Array_Bitfield --
+   ----------------------------------
+
+   function Expand_Assign_Array_Bitfield
+     (N      : Node_Id;
+      Larray : Entity_Id;
+      Rarray : Entity_Id;
+      L_Type : Entity_Id;
+      R_Type : Entity_Id;
+      Rev    : Boolean) return Node_Id
+   is
+      pragma Assert (not Rev);
+      --  Reverse copying is not yet supported by Copy_Bitfield.
+
+      pragma Assert (not Change_Of_Representation (N));
+      --  This won't work, for example, to copy a packed array to an unpacked
+      --  array.
+
+      Loc  : constant Source_Ptr := Sloc (N);
+
+      L_Index_Typ : constant Node_Id := Etype (First_Index (L_Type));
+      R_Index_Typ : constant Node_Id := Etype (First_Index (R_Type));
+      Left_Lo  : constant Node_Id := Type_Low_Bound  (L_Index_Typ);
+      Right_Lo : constant Node_Id := Type_Low_Bound  (R_Index_Typ);
+
+      L_Addr : constant Node_Id :=
+        Make_Attribute_Reference (Loc,
+          Prefix =>
+            Make_Indexed_Component (Loc,
+              Prefix =>
+                Duplicate_Subexpr (Larray, True),
+              Expressions => New_List (New_Copy_Tree (Left_Lo))),
+          Attribute_Name => Name_Address);
+
+      L_Bit : constant Node_Id :=
+        Make_Attribute_Reference (Loc,
+          Prefix =>
+            Make_Indexed_Component (Loc,
+              Prefix =>
+                Duplicate_Subexpr (Larray, True),
+              Expressions => New_List (New_Copy_Tree (Left_Lo))),
+          Attribute_Name => Name_Bit);
+
+      R_Addr : constant Node_Id :=
+        Make_Attribute_Reference (Loc,
+          Prefix =>
+            Make_Indexed_Component (Loc,
+              Prefix =>
+                Duplicate_Subexpr (Rarray, True),
+              Expressions => New_List (New_Copy_Tree (Right_Lo))),
+          Attribute_Name => Name_Address);
+
+      R_Bit : constant Node_Id :=
+        Make_Attribute_Reference (Loc,
+          Prefix =>
+            Make_Indexed_Component (Loc,
+              Prefix =>
+                Duplicate_Subexpr (Rarray, True),
+              Expressions => New_List (New_Copy_Tree (Right_Lo))),
+          Attribute_Name => Name_Bit);
+
+      --  Compute the Size of the bitfield
+
+      --  Note that the length check has already been done, so we can use the
+      --  size of either L or R; they are equal. We can't use 'Size here,
+      --  because sometimes bit fields get copied into a temp, and the 'Size
+      --  ends up being the size of the temp (e.g. an 8-bit temp containing
+      --  a 4-bit bit field).
+
+      Size : constant Node_Id :=
+        Make_Op_Multiply (Loc,
+          Make_Attribute_Reference (Loc,
+            Prefix =>
+              Duplicate_Subexpr (Name (N), True),
+            Attribute_Name => Name_Length),
+          Make_Attribute_Reference (Loc,
+            Prefix =>
+              Duplicate_Subexpr (Name (N), True),
+            Attribute_Name => Name_Component_Size));
+
+   begin
+      return Make_Procedure_Call_Statement (Loc,
+        Name => New_Occurrence_Of (RTE (RE_Copy_Bitfield), Loc),
+        Parameter_Associations => New_List (
+          R_Addr, R_Bit, L_Addr, L_Bit, Size));
+   end Expand_Assign_Array_Bitfield;
+
+   ------------------------------------------
+   -- Expand_Assign_Array_Loop_Or_Bitfield --
+   ------------------------------------------
+
+   function Expand_Assign_Array_Loop_Or_Bitfield
+     (N      : Node_Id;
+      Larray : Entity_Id;
+      Rarray : Entity_Id;
+      L_Type : Entity_Id;
+      R_Type : Entity_Id;
+      Ndim   : Pos;
+      Rev    : Boolean) return Node_Id
+   is
+      Slices : constant Boolean :=
+        Nkind (Name (N)) = N_Slice or else Nkind (Expression (N)) = N_Slice;
+      L_Prefix_Comp : constant Boolean :=
+        --  True if the left-hand side is a slice of a component or slice
+        Nkind (Name (N)) = N_Slice
+        and then Nkind_In (Prefix (Name (N)),
+                           N_Selected_Component,
+                           N_Indexed_Component,
+                           N_Slice);
+      R_Prefix_Comp : constant Boolean :=
+        --  Likewise for the right-hand side
+        Nkind (Expression (N)) = N_Slice
+        and then Nkind_In (Prefix (Expression (N)),
+                           N_Selected_Component,
+                           N_Indexed_Component,
+                           N_Slice);
+   begin
+      --  Determine whether Copy_Bitfield is appropriate (will work, and will
+      --  be more efficient than component-by-component copy). Copy_Bitfield
+      --  doesn't work for reversed storage orders. It is efficient for slices
+      --  of bit-packed arrays. Copy_Bitfield can read and write bits that are
+      --  not part of the objects being copied, so we don't want to use it if
+      --  there are volatile or independent components. If the Prefix of the
+      --  slice is a component or slice, then it might be a part of an object
+      --  with some other volatile or independent components, so we disable the
+      --  optimization in that case as well.  We could complicate this code by
+      --  actually looking for such volatile and independent components.
+
+      if Is_Bit_Packed_Array (L_Type)
+        and then Is_Bit_Packed_Array (R_Type)
+        and then not Reverse_Storage_Order (L_Type)
+        and then not Reverse_Storage_Order (R_Type)
+        and then Ndim = 1
+        and then not Rev
+        and then Slices
+        and then not Has_Volatile_Component (L_Type)
+        and then not Has_Volatile_Component (R_Type)
+        and then not Has_Independent_Components (L_Type)
+        and then not Has_Independent_Components (R_Type)
+        and then not L_Prefix_Comp
+        and then not R_Prefix_Comp
+        and then RTE_Available (RE_Copy_Bitfield)
+      then
+         return Expand_Assign_Array_Bitfield
+           (N, Larray, Rarray, L_Type, R_Type, Rev);
+      else
+         return Expand_Assign_Array_Loop
+           (N, Larray, Rarray, L_Type, R_Type, Ndim, Rev);
+      end if;
+   end Expand_Assign_Array_Loop_Or_Bitfield;
+
    --------------------------
    -- Expand_Assign_Record --
    --------------------------
@@ -1531,11 +1709,22 @@ package body Exp_Ch5 is
                    Selector_Name => New_Occurrence_Of (Disc, Loc));
             end if;
 
+            --  Generate the assignment statement. When the left-hand side
+            --  is an object with an address clause present, force generated
+            --  temporaries to be renamings so as to correctly assign to any
+            --  overlaid objects.
+
             A :=
               Make_Assignment_Statement (Loc,
-                Name =>
+                Name       =>
                   Make_Selected_Component (Loc,
-                    Prefix        => Duplicate_Subexpr (Lhs),
+                    Prefix        =>
+                      Duplicate_Subexpr
+                        (Exp          => Lhs,
+                         Name_Req     => False,
+                         Renaming_Req =>
+                           Is_Entity_Name (Lhs)
+                             and then Present (Address_Clause (Entity (Lhs)))),
                     Selector_Name =>
                       New_Occurrence_Of (Find_Component (L_Typ, C), Loc)),
                 Expression => Expr);
@@ -2010,15 +2199,21 @@ package body Exp_Ch5 is
 
       if not Suppress_Assignment_Checks (N) then
 
-         --  First deal with generation of range check if required
+         --  First deal with generation of range check if required,
+         --  and then predicate checks if the type carries a predicate.
+         --  If the Rhs is an expression these tests may have been applied
+         --  already. This is the case if the RHS is a type conversion.
+         --  Other such redundant checks could be removed ???
 
-         if Do_Range_Check (Rhs) then
-            Generate_Range_Check (Rhs, Typ, CE_Range_Check_Failed);
+         if Nkind (Rhs) /= N_Type_Conversion
+           or else Entity (Subtype_Mark (Rhs)) /= Typ
+         then
+            if Do_Range_Check (Rhs) then
+               Generate_Range_Check (Rhs, Typ, CE_Range_Check_Failed);
+            end if;
+
+            Apply_Predicate_Check (Rhs, Typ);
          end if;
-
-         --  Then generate predicate check if required
-
-         Apply_Predicate_Check (Rhs, Typ);
       end if;
 
       --  Check for a special case where a high level transformation is
@@ -2839,13 +3034,14 @@ package body Exp_Ch5 is
    -----------------------------
 
    procedure Expand_N_Case_Statement (N : Node_Id) is
-      Loc    : constant Source_Ptr := Sloc (N);
-      Expr   : constant Node_Id    := Expression (N);
-      Alt    : Node_Id;
-      Len    : Nat;
-      Cond   : Node_Id;
-      Choice : Node_Id;
-      Chlist : List_Id;
+      Loc            : constant Source_Ptr := Sloc (N);
+      Expr           : constant Node_Id    := Expression (N);
+      From_Cond_Expr : constant Boolean    := From_Conditional_Expression (N);
+      Alt            : Node_Id;
+      Len            : Nat;
+      Cond           : Node_Id;
+      Choice         : Node_Id;
+      Chlist         : List_Id;
 
    begin
       --  Check for the situation where we know at compile time which branch
@@ -3056,7 +3252,15 @@ package body Exp_Ch5 is
                    Condition => Cond,
                    Then_Statements => Then_Stms,
                    Else_Statements => Else_Stms));
+
+               --  The rewritten if statement needs to inherit whether the
+               --  case statement was expanded from a conditional expression,
+               --  for proper handling of nested controlled objects.
+
+               Set_From_Conditional_Expression (N, From_Cond_Expr);
+
                Analyze (N);
+
                return;
             end if;
          end if;
@@ -3293,7 +3497,7 @@ package body Exp_Ch5 is
                 Declarations => New_List (Elmt_Decl),
                 Handled_Statement_Sequence =>
                   Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements =>  Stats))));
+                    Statements => Stats))));
 
       else
          Elmt_Ref :=
@@ -3319,7 +3523,7 @@ package body Exp_Ch5 is
              Declarations               => New_List (Elmt_Decl),
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements =>  New_List (New_Loop)));
+                 Statements => New_List (New_Loop)));
       end if;
 
       --  The element is only modified in expanded code, so it appears as
@@ -3908,7 +4112,7 @@ package body Exp_Ch5 is
    --      --  Default_Iterator aspect of Vector. This increments Lock,
    --      --  disallowing tampering with cursors. Unfortunately, it does not
    --      --  increment Busy. The result of Iterate is Limited_Controlled;
-   --      --  finalization will decrement Lock.  This is a build-in-place
+   --      --  finalization will decrement Lock. This is a build-in-place
    --      --  dispatching call to Iterate.
 
    --      Cur : Cursor := First (Iter); -- or Last

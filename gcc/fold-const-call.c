@@ -1,5 +1,5 @@
 /* Constant folding for calls to built-in and internal functions.
-   Copyright (C) 1988-2018 Free Software Foundation, Inc.
+   Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h" /* For C[LT]Z_DEFINED_AT_ZERO.  */
 #include "builtins.h"
 #include "gimple-expr.h"
+#include "tree-vector-builder.h"
 
 /* Functions that test for certain constant types, abstracting away the
    decision about whether to check for overflow.  */
@@ -645,6 +646,79 @@ fold_const_reduction (tree type, tree arg, tree_code code)
   return res;
 }
 
+/* Fold a call to IFN_VEC_CONVERT (ARG) returning TYPE.  */
+
+static tree
+fold_const_vec_convert (tree ret_type, tree arg)
+{
+  enum tree_code code = NOP_EXPR;
+  tree arg_type = TREE_TYPE (arg);
+  if (TREE_CODE (arg) != VECTOR_CST)
+    return NULL_TREE;
+
+  gcc_checking_assert (VECTOR_TYPE_P (ret_type) && VECTOR_TYPE_P (arg_type));
+
+  if (INTEGRAL_TYPE_P (TREE_TYPE (ret_type))
+      && SCALAR_FLOAT_TYPE_P (TREE_TYPE (arg_type)))
+    code = FIX_TRUNC_EXPR;
+  else if (INTEGRAL_TYPE_P (TREE_TYPE (arg_type))
+	   && SCALAR_FLOAT_TYPE_P (TREE_TYPE (ret_type)))
+    code = FLOAT_EXPR;
+
+  /* We can't handle steps directly when extending, since the
+     values need to wrap at the original precision first.  */
+  bool step_ok_p
+    = (INTEGRAL_TYPE_P (TREE_TYPE (ret_type))
+       && INTEGRAL_TYPE_P (TREE_TYPE (arg_type))
+       && (TYPE_PRECISION (TREE_TYPE (ret_type))
+	   <= TYPE_PRECISION (TREE_TYPE (arg_type))));
+  tree_vector_builder elts;
+  if (!elts.new_unary_operation (ret_type, arg, step_ok_p))
+    return NULL_TREE;
+
+  unsigned int count = elts.encoded_nelts ();
+  for (unsigned int i = 0; i < count; ++i)
+    {
+      tree elt = fold_unary (code, TREE_TYPE (ret_type),
+			     VECTOR_CST_ELT (arg, i));
+      if (elt == NULL_TREE || !CONSTANT_CLASS_P (elt))
+	return NULL_TREE;
+      elts.quick_push (elt);
+    }
+
+  return elts.build ();
+}
+
+/* Try to evaluate:
+
+      IFN_WHILE_ULT (ARG0, ARG1, (TYPE) { ... })
+
+   Return the value on success and null on failure.  */
+
+static tree
+fold_while_ult (tree type, poly_uint64 arg0, poly_uint64 arg1)
+{
+  if (known_ge (arg0, arg1))
+    return build_zero_cst (type);
+
+  if (maybe_ge (arg0, arg1))
+    return NULL_TREE;
+
+  poly_uint64 diff = arg1 - arg0;
+  poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (type);
+  if (known_ge (diff, nelts))
+    return build_all_ones_cst (type);
+
+  unsigned HOST_WIDE_INT const_diff;
+  if (known_le (diff, nelts) && diff.is_constant (&const_diff))
+    {
+      tree minus_one = build_minus_one_cst (TREE_TYPE (type));
+      tree zero = build_zero_cst (TREE_TYPE (type));
+      return build_vector_a_then_b (type, const_diff, minus_one, zero);
+    }
+  return NULL_TREE;
+}
+
 /* Try to evaluate:
 
       *RESULT = FN (*ARG)
@@ -762,7 +836,7 @@ fold_const_call_ss (real_value *result, combined_fn fn,
 
     CASE_CFN_FLOOR:
     CASE_CFN_FLOOR_FN:
-      if (!REAL_VALUE_ISNAN (*arg) || !flag_errno_math)
+      if (!REAL_VALUE_ISSIGNALING_NAN (*arg))
 	{
 	  real_floor (result, format, arg);
 	  return true;
@@ -771,7 +845,7 @@ fold_const_call_ss (real_value *result, combined_fn fn,
 
     CASE_CFN_CEIL:
     CASE_CFN_CEIL_FN:
-      if (!REAL_VALUE_ISNAN (*arg) || !flag_errno_math)
+      if (!REAL_VALUE_ISSIGNALING_NAN (*arg))
 	{
 	  real_ceil (result, format, arg);
 	  return true;
@@ -780,14 +854,27 @@ fold_const_call_ss (real_value *result, combined_fn fn,
 
     CASE_CFN_TRUNC:
     CASE_CFN_TRUNC_FN:
-      real_trunc (result, format, arg);
-      return true;
+      if (!REAL_VALUE_ISSIGNALING_NAN (*arg))
+	{
+	  real_trunc (result, format, arg);
+	  return true;
+	}
+      return false;
 
     CASE_CFN_ROUND:
     CASE_CFN_ROUND_FN:
-      if (!REAL_VALUE_ISNAN (*arg) || !flag_errno_math)
+      if (!REAL_VALUE_ISSIGNALING_NAN (*arg))
 	{
 	  real_round (result, format, arg);
+	  return true;
+	}
+      return false;
+
+    CASE_CFN_ROUNDEVEN:
+    CASE_CFN_ROUNDEVEN_FN:
+      if (!REAL_VALUE_ISSIGNALING_NAN (*arg))
+	{
+	  real_roundeven (result, format, arg);
 	  return true;
 	}
       return false;
@@ -1231,6 +1318,9 @@ fold_const_call (combined_fn fn, tree type, tree arg)
 
     case CFN_REDUC_XOR:
       return fold_const_reduction (type, arg, BIT_XOR_EXPR);
+
+    case CFN_VEC_CONVERT:
+      return fold_const_vec_convert (type, arg);
 
     default:
       return fold_const_call_1 (fn, type, arg);
@@ -1734,6 +1824,14 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
 			       fold_build_pointer_plus_hwi (arg0, r - p0));
 	}
       return NULL_TREE;
+
+    case CFN_WHILE_ULT:
+      {
+	poly_uint64 parg0, parg1;
+	if (poly_int_tree_p (arg0, &parg0) && poly_int_tree_p (arg1, &parg1))
+	  return fold_while_ult (type, parg0, parg1);
+	return NULL_TREE;
+      }
 
     default:
       return fold_const_call_1 (fn, type, arg0, arg1, arg2);

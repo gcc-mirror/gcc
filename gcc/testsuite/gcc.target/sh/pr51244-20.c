@@ -1,7 +1,7 @@
 /* Check that the SH specific sh_treg_combine RTL optimization pass works as
    expected.  */
 /* { dg-do compile }  */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fno-tree-dominator-opts -fno-tree-vrp" } */
 
 /* { dg-final { scan-assembler-not "not\t" } } */
 /* { dg-final { scan-assembler-times "cmp/eq" 2 } } */

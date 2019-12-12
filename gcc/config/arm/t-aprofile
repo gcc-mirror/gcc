@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2018 Free Software Foundation, Inc.
+# Copyright (C) 2012-2019 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -49,13 +49,25 @@ MULTILIB_REQUIRED	+= mthumb/march=armv8-a+simd/mfloat-abi=softfp
 # Matches
 
 # Arch Matches
+# Map all basic v7-a arch extensions to v7-a
+MULTILIB_MATCHES	+= $(foreach ARCH, $(v7_a_arch_variants), \
+			     march?armv7-a=march?armv7-a$(ARCH))
+
 # Map all v7-a FP variants to vfpv3-d16 (+fp)
 MULTILIB_MATCHES	+= $(foreach ARCH, $(filter-out +fp, $(v7_a_nosimd_variants)), \
 			     march?armv7-a+fp=march?armv7-a$(ARCH))
 
+MULTILIB_MATCHES	+= $(foreach ARCHVAR, $(v7_a_arch_variants), \
+			     $(foreach ARCH, $(v7_a_nosimd_variants), \
+			       march?armv7-a+fp=march?armv7-a$(ARCHVAR)$(ARCH)))
+
 # Map all v7-a SIMD variants to neon-vfpv3 (+simd)
 MULTILIB_MATCHES	+= $(foreach ARCH, $(filter-out +simd, $(v7_a_simd_variants)), \
 			     march?armv7-a+simd=march?armv7-a$(ARCH))
+
+MULTILIB_MATCHES	+= $(foreach ARCHVAR, $(v7_a_arch_variants), \
+			     $(foreach ARCH, $(v7_a_simd_variants), \
+			       march?armv7-a+simd=march?armv7-a$(ARCHVAR)$(ARCH)))
 
 # Neither FP nor SIMD: map v7ve to v7-a
 MULTILIB_MATCHES	+= march?armv7-a=march?armv7ve
@@ -102,6 +114,13 @@ MULTILIB_MATCHES	+= march?armv8-a=march?armv8.4-a
 # Map all v8.4-a SIMD variants to v8-a+simd
 MULTILIB_MATCHES	+= $(foreach ARCH, $(v8_4_a_simd_variants), \
 			     march?armv8-a+simd=march?armv8.4-a$(ARCH))
+
+# Baseline v8.5-a: map down to baseline v8-a
+MULTILIB_MATCHES	+= march?armv8-a=march?armv8.5-a
+
+# Map all v8.5-a SIMD variants to v8-a+simd
+MULTILIB_MATCHES	+= $(foreach ARCH, $(v8_5_a_simd_variants), \
+			     march?armv8-a+simd=march?armv8.5-a$(ARCH))
 
 # Use Thumb libraries for everything.
 

@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997-2018 Free Software Foundation, Inc.
+// Copyright (C) 1997-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -381,7 +381,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			  _InputIterator __k1, _InputIterator __k2,
 			  std::__false_type)
       {
-	const basic_string __s(__k1, __k2);
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 2788. unintentionally require a default constructible allocator
+	const basic_string __s(__k1, __k2, this->get_allocator());
 	const size_type __n1 = __i2 - __i1;
 	return _M_replace(__i1 - begin(), __n1, __s._M_data(),
 			  __s.size());
@@ -1161,8 +1163,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_requires_string(__lhs);
       typedef basic_string<_CharT, _Traits, _Alloc> __string_type;
       typedef typename __string_type::size_type	  __size_type;
+      typedef typename __gnu_cxx::__alloc_traits<_Alloc>::template
+	rebind<_CharT>::other _Char_alloc_type;
+      typedef __gnu_cxx::__alloc_traits<_Char_alloc_type> _Alloc_traits;
       const __size_type __len = _Traits::length(__lhs);
-      __string_type __str;
+      __string_type __str(_Alloc_traits::_S_select_on_copy(
+          __rhs.get_allocator()));
       __str.reserve(__len + __rhs.size());
       __str.append(__lhs, __len);
       __str.append(__rhs);
@@ -1175,7 +1181,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typedef basic_string<_CharT, _Traits, _Alloc> __string_type;
       typedef typename __string_type::size_type	  __size_type;
-      __string_type __str;
+      typedef typename __gnu_cxx::__alloc_traits<_Alloc>::template
+	rebind<_CharT>::other _Char_alloc_type;
+      typedef __gnu_cxx::__alloc_traits<_Char_alloc_type> _Alloc_traits;
+      __string_type __str(_Alloc_traits::_S_select_on_copy(
+          __rhs.get_allocator()));
       const __size_type __len = __rhs.size();
       __str.reserve(__len + 1);
       __str.append(__size_type(1), __lhs);
@@ -1604,7 +1614,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Until those definitions are compiled as C++17 suppress the declaration,
   // so C++17 code will implicitly instantiate std::string and std::wstring
   // as needed.
-# if __cplusplus <= 201402L && _GLIBCXX_EXTERN_TEMPLATE > 0
+# if __cplusplus <= 201703L && _GLIBCXX_EXTERN_TEMPLATE > 0
   extern template class basic_string<char>;
 # elif ! _GLIBCXX_USE_CXX11_ABI
   // Still need to prevent implicit instantiation of the COW empty rep,
@@ -1627,7 +1637,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     getline(basic_istream<char>&, string&);
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-# if __cplusplus <= 201402L && _GLIBCXX_EXTERN_TEMPLATE > 0
+# if __cplusplus <= 201703L && _GLIBCXX_EXTERN_TEMPLATE > 0
   extern template class basic_string<wchar_t>;
 # elif ! _GLIBCXX_USE_CXX11_ABI
   extern template basic_string<wchar_t>::size_type

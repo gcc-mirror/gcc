@@ -10,11 +10,11 @@
  */
 
 /*
-  __float128 expansions are
+  Long double expansions are
   Copyright (C) 2001 Stephen L. Moshier <moshier@na-net.ornl.gov>
-  and are incorporated herein by permission of the author.  The author 
-  reserves the right to distribute this material elsewhere under different 
-  copying permissions.  These modifications are distributed here under the 
+  and are incorporated herein by permission of the author.  The author
+  reserves the right to distribute this material elsewhere under different
+  copying permissions.  These modifications are distributed here under the
   following terms:
 
     This library is free software; you can redistribute it and/or
@@ -28,10 +28,10 @@
     Lesser General Public License for more details.
 
     You should have received a copy of the GNU Lesser General Public
-    License along with this library; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA */
+    License along with this library; if not, see
+    <http://www.gnu.org/licenses/>.  */
 
-/* asinq(x)
+/* __ieee754_asin(x)
  * Method :
  *	Since  asin(x) = x + x^3/6 + x^5*3/40 + x^7*15/336 + ...
  *	we approximate asin(x) on [0,0.5] by
@@ -58,11 +58,10 @@
  *
  */
 
-
 #include "quadmath-imp.h"
 
 static const __float128
-  one = 1.0Q,
+  one = 1,
   huge = 1.0e+4932Q,
   pio2_hi = 1.5707963267948966192313216916397514420986Q,
   pio2_lo = 4.3359050650618905123985220130216759843812E-35Q,
@@ -129,8 +128,7 @@ static const __float128
 __float128
 asinq (__float128 x)
 {
-  __float128 t = 0;
-  __float128 w, p, q, c, r, s;
+  __float128 t, w, p, q, c, r, s;
   int32_t ix, sign, flag;
   ieee854_float128 u;
 

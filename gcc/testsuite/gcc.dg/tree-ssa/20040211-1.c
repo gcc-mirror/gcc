@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-cddce2" } */
+/* { dg-options "-O2 -fdump-tree-cddce2 -fno-finite-loops" } */
 
 struct rtx_def;
 typedef struct rtx_def *rtx;

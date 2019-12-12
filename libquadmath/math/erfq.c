@@ -27,11 +27,11 @@
     Lesser General Public License for more details.
 
     You should have received a copy of the GNU Lesser General Public
-    License along with this library; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA */
+    License along with this library; if not, see
+    <http://www.gnu.org/licenses/>.  */
 
-/* __float128 erfq(__float128 x)
- * __float128 erfcq(__float128 x)
+/* double erf(double x)
+ * double erfc(double x)
  *			     x
  *		      2      |\
  *     erf(x)  =  ---------  | exp(-t*t)dt
@@ -96,13 +96,7 @@
  *		erfc/erf(NaN) is NaN
  */
 
-#include <errno.h>
 #include "quadmath-imp.h"
-
-
-
-__float128 erfcq (__float128);
-
 
 /* Evaluate P[n] x^n  +  P[n-1] x^(n-1)  +  ...  +  P[0] */
 
@@ -143,8 +137,8 @@ deval (__float128 x, const __float128 *p, int n)
 
 static const __float128
 tiny = 1e-4931Q,
-  one = 1.0Q,
-  two = 2.0Q,
+  one = 1,
+  two = 2,
   /* 2/sqrt(pi) - 1 */
   efx = 1.2837916709551257389615890312154517168810E-1Q;
 
@@ -810,7 +804,7 @@ erfq (__float128 x)
 __float128
 erfcq (__float128 x)
 {
-  __float128 y = 0.0Q, z, p, r;
+  __float128 y, z, p, r;
   int32_t i, ix, sign;
   ieee854_float128 u;
 
@@ -868,7 +862,7 @@ erfcq (__float128 x)
 	  y += C18a;
 	  break;
 	case 8:
-	  z = x - 1.0Q;
+	  z = x - 1;
 	  y = C19b + z * neval (z, RNr19, NRNr19) / deval (z, RDr19, NRDr19);
 	  y += C19a;
 	  break;
@@ -879,7 +873,7 @@ erfcq (__float128 x)
 	  break;
 	}
       if (sign & 0x80000000)
-	y = 2.0Q - y;
+	y = 2 - y;
       return y;
     }
   /* 1.25 < |x| < 107 */
@@ -924,7 +918,8 @@ erfcq (__float128 x)
       u.words32.w3 = 0;
       u.words32.w2 &= 0xfe000000;
       z = u.value;
-      r = expq (-z * z - 0.5625) * expq ((z - x) * (z + x) + p);
+      r = expq (-z * z - 0.5625) *
+	expq ((z - x) * (z + x) + p);
       if ((sign & 0x80000000) == 0)
 	{
 	  __float128 ret = r / x;

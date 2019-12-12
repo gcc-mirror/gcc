@@ -1,6 +1,6 @@
 // Wrapper for underlying C-language localization -*- C++ -*-
 
-// Copyright (C) 2001-2018 Free Software Foundation, Inc.
+// Copyright (C) 2001-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -70,7 +70,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __builtin_va_list __args;
     __builtin_va_start(__args, __fmt);
 
-#if _GLIBCXX_USE_C99_STDIO
+#if _GLIBCXX_USE_C99_STDIO && !_GLIBCXX_HAVE_BROKEN_VSNPRINTF
     const int __ret = __builtin_vsnprintf(__out, __size, __fmt, __args);
 #else
     const int __ret = __builtin_vsprintf(__out, __fmt, __args);

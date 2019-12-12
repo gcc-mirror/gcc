@@ -43,3 +43,17 @@ static_assert( __is_final (Ff<int>), "Ff<int> is final" );
 static_assert( __is_final (Ff<A>),   "Ff<A> is final" );
 static_assert( __is_final (Ff<Af>),  "Ff<Af> is final" );
 
+// PR 85254
+
+template <class T> struct final_trait_wrap{ typedef T type; };
+
+template <class T> struct my_is_final
+{
+  static const bool value = __is_final(typename final_trait_wrap<T>::type);
+};
+
+struct final1 final {};
+template <typename T> struct final2 final {};
+
+static_assert( my_is_final<final1>::value, "final1 is final" );
+static_assert( my_is_final<final2<int>>::value, "final2<int> is final" );

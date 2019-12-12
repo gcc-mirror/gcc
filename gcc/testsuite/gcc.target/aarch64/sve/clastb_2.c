@@ -1,5 +1,5 @@
 /* { dg-do assemble { target aarch64_asm_sve_ok } } */
-/* { dg-options "-O2 -ftree-vectorize --save-temps" } */
+/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-details --save-temps" } */
 
 #include <stdint.h>
 
@@ -23,4 +23,5 @@ condition_reduction (TYPE *a, TYPE min_v)
   return last;
 }
 
-/* { dg-final { scan-assembler {\tclastb\tw[0-9]+, p[0-7]+, w[0-9]+, z[0-9]+\.s} } } */
+/* { dg-final { scan-tree-dump "using a fully-masked loop." "vect" } } */
+/* { dg-final { scan-assembler {\tclastb\ts[0-9]+, p[0-7], s[0-9]+, z[0-9]+\.s} } } */

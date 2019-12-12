@@ -1,5 +1,5 @@
 /* Definitions for AMD x86-64 using GNU userspace.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
    Contributed by Jan Hubicka <jh@suse.cz>, based on linux.h.
 
 This file is part of GCC.
@@ -50,7 +50,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define ASM_SPEC "%{" SPEC_32 ":--32} \
  %{" SPEC_64 ":--64} \
  %{" SPEC_X32 ":--x32} \
- %{!mno-sse2avx:%{mavx:-msse2avx}} %{msse2avx:%{!mavx:-msse2avx}}"
+ %{msse2avx:%{!mavx:-msse2avx}}"
 
 #define GNU_USER_TARGET_LINK_SPEC				   \
                   "%{" SPEC_64 ":-m " GNU_USER_LINK_EMULATION64 "} \

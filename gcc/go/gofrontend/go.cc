@@ -44,6 +44,8 @@ go_create_gogo(const struct go_create_gogo_args* args)
   if (args->debug_escape_hash != NULL)
     ::gogo->set_debug_escape_hash(args->debug_escape_hash);
   ::gogo->set_nil_check_size_threshold(args->nil_check_size_threshold);
+  if (args->debug_optimization)
+    ::gogo->set_debug_optimization(args->debug_optimization);
 }
 
 // Parse the input files.
@@ -90,14 +92,12 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
 		   p != linknames->end();
 		   ++p)
 		go_error_at(p->second.loc,
-			    ("//go:linkname only allowed in Go files that "
+			    ("%<//go:linkname%> only allowed in Go files that "
 			     "import \"unsafe\""));
 	    }
 	  all_linknames.insert(linknames->begin(), linknames->end());
 	}
     }
-
-  ::gogo->linemap()->stop();
 
   ::gogo->clear_file_scope();
 
@@ -122,6 +122,10 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
   // form which is easier to use.
   ::gogo->lower_parse_tree();
 
+  // At this point we have handled all inline functions, so we no
+  // longer need the linemap.
+  ::gogo->linemap()->stop();
+
   // Create function descriptors as needed.
   ::gogo->create_function_descriptors();
 
@@ -138,16 +142,23 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
   if (only_check_syntax)
     return;
 
+  // Do simple deadcode elimination.
+  ::gogo->remove_deadcode();
+
+  // Make implicit type conversions explicit.
+  ::gogo->add_conversions();
+
+  // Analyze the program flow for escape information.
   ::gogo->analyze_escape();
 
   // Export global identifiers as appropriate.
   ::gogo->do_exports();
 
-  // Turn short-cut operators (&&, ||) into explicit if statements.
-  ::gogo->remove_shortcuts();
-
   // Use temporary variables to force order of evaluation.
   ::gogo->order_evaluations();
+
+  // Turn short-cut operators (&&, ||) into explicit if statements.
+  ::gogo->remove_shortcuts();
 
   // Convert named types to backend representation.
   ::gogo->convert_named_types();

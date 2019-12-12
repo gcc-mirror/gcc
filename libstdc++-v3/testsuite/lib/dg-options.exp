@@ -1,6 +1,6 @@
 # Handlers for additional dg-xxx keywords in tests.
 
-# Copyright (C) 2004-2018 Free Software Foundation, Inc.
+# Copyright (C) 2004-2019 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -244,6 +244,26 @@ proc dg-require-filesystem-ts { args } {
 proc add_options_for_no_pch { flags } {
     # This forces any generated and possibly included PCH to be invalid.
     return "-D__GLIBCXX__=99999999"
+}
+
+# Add to FLAGS all the target-specific flags needed for networking.
+
+proc add_options_for_net_ts { flags } {
+    # Before they were integrated into libc in Solaris 11.4, Solaris needs
+    # libsocket and libnsl for networking applications.
+    if { [istarget *-*-solaris2*] } {
+	return "$flags -lsocket -lnsl"
+    }
+    return $flags
+}
+
+# Add to FLAGS all the target-specific flags to link to libatomic, if required.
+
+proc add_options_for_libatomic { flags } {
+    if { [istarget hppa*-*-hpux*] || [istarget riscv*-*-*] } {
+	return "$flags -L../../libatomic/.libs -latomic"
+    }
+    return $flags
 }
 
 # Like dg-options, but adds to the default options rather than replacing them.

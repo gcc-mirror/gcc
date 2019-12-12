@@ -4,5 +4,5 @@
 program p
    type t
    end type
-   print *, rank(t)  ! { dg-error "must be a data object" }
+   print *, rank(t)  ! { dg-error "used as an actual argument" }
 end

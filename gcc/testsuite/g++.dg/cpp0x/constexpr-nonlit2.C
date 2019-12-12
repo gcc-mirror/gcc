@@ -16,4 +16,4 @@ template <class T>
 constexpr W<T> make_w(T& w) { return W<T>(w); }
 
 A a;
-constexpr auto w = make_w(a);	// { dg-error "" }
+constexpr auto w = make_w(a);	// { dg-error "16:the type .const W<A>. of .constexpr. variable .w. is not literal" }

@@ -235,8 +235,10 @@ __quadmath_printf_fphex (struct __quadmath_printf_file *fp,
 
       assert (sizeof (long double) == 16);
 
-      num0 = fpnum.ieee.mant_high;
-      num1 = fpnum.ieee.mant_low;
+      num0 = (((unsigned long long int) fpnum.ieee.mantissa0) << 32
+	      | fpnum.ieee.mantissa1);
+      num1 = (((unsigned long long int) fpnum.ieee.mantissa2) << 32
+	      | fpnum.ieee.mantissa3);
 
       zero_mantissa = (num0|num1) == 0;
 

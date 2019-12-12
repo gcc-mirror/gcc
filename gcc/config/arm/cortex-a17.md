@@ -1,5 +1,5 @@
 ;; ARM Cortex-A17 pipeline description
-;; Copyright (C) 2014-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2019 Free Software Foundation, Inc.
 ;;
 ;; Contributed by ARM Ltd.
 ;;
@@ -42,7 +42,7 @@
                         adc_imm,adcs_imm,adc_reg,adcs_reg,\
                         adr, mov_imm,mov_reg,\
                         mvn_imm,mvn_reg,extend,\
-                        mrs,multiple,no_insn"))
+                        mrs,multiple"))
   "ca17_alu")
 
 (define_insn_reservation "cortex_a17_alu_shiftimm" 2

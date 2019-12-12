@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2018, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2019, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -96,6 +96,7 @@ package body System.Tasking.Async_Delays is
    --  for an async. select statement with delay statement as trigger. The
    --  effect should be to remove the delay from the timer queue, and exit one
    --  ATC nesting level.
+
    --  The usage and logic are similar to Cancel_Protected_Entry_Call, but
    --  simplified because this is not a true entry call.
 
@@ -104,18 +105,17 @@ package body System.Tasking.Async_Delays is
       Dsucc : Delay_Block_Access;
 
    begin
-      --  Note that we mark the delay as being cancelled
-      --  using a level value that is reserved.
+      --  A delay block level of Level_No_Pending_Abort indicates the delay
+      --  has been canceled. If the delay has already been canceled, there is
+      --  nothing more to be done.
 
-      --  make this operation idempotent
-
-      if D.Level = ATC_Level_Infinity then
+      if D.Level = Level_No_Pending_Abort then
          return;
       end if;
 
-      D.Level := ATC_Level_Infinity;
+      D.Level := Level_No_Pending_Abort;
 
-      --  remove self from timer queue
+      --  Remove self from timer queue
 
       STI.Defer_Abort_Nestable (D.Self_Id);
 
@@ -181,8 +181,8 @@ package body System.Tasking.Async_Delays is
 
    --  Allocate a queue element for the wakeup time T and put it in the
    --  queue in wakeup time order.  Assume we are on an asynchronous
-   --  select statement with delay trigger.  Put the calling task to
-   --  sleep until either the delay expires or is cancelled.
+   --  select statement with delay trigger. Put the calling task to
+   --  sleep until either the delay expires or is canceled.
 
    --  We use one entry call record for this delay, since we have
    --  to increment the ATC nesting level, but since it is not a

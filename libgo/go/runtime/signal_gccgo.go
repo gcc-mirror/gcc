@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build aix darwin dragonfly freebsd linux netbsd openbsd solaris
+// +build aix darwin dragonfly freebsd hurd linux netbsd openbsd solaris
 
 package runtime
 
@@ -60,11 +60,6 @@ type sigctxt struct {
 }
 
 func (c *sigctxt) sigcode() uint64 {
-	if c.info == nil {
-		// This can happen on Solaris 10.  We don't know the
-		// code, just avoid a misleading value.
-		return _SI_USER + 1
-	}
 	return uint64(c.info.si_code)
 }
 

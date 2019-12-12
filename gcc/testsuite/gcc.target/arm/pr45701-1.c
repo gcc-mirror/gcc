@@ -1,8 +1,8 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { ! { arm_thumb1_ok || arm_thumb2_ok } } } */
 /* { dg-options "-mthumb -Os" }  */
-/* { dg-final { scan-assembler "push\t\{r3" } } */
-/* { dg-final { scan-assembler-not "\[^\-\]r8" } } */
+/* { dg-final { scan-assembler "push\t\{r3" { target { ! arm*-*-uclinuxfdpiceabi } } } } */
+/* { dg-final { scan-assembler-not "\[^\-\]r8" { target { ! arm*-*-uclinuxfdpiceabi } } } } */
 
 extern int hist_verify;
 extern int a1;

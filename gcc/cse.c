@@ -1,5 +1,5 @@
 /* Common subexpression elimination for GNU compiler.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -37,11 +37,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgcleanup.h"
 #include "alias.h"
 #include "toplev.h"
-#include "params.h"
 #include "rtlhooks-def.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
 #include "rtl-iter.h"
+#include "regs.h"
+#include "function-abi.h"
 
 /* The basic idea of common subexpression elimination is to go
    through the code, keeping a record of expressions that would
@@ -565,7 +566,6 @@ static void remove_invalid_subreg_refs (unsigned int, poly_uint64,
 					machine_mode);
 static void rehash_using_reg (rtx);
 static void invalidate_memory (void);
-static void invalidate_for_call (void);
 static rtx use_related_value (rtx, struct table_elt *);
 
 static inline unsigned canon_hash (rtx, machine_mode);
@@ -1818,7 +1818,72 @@ check_dependence (const_rtx x, rtx exp, machine_mode mode, rtx addr)
     }
   return false;
 }
-
+
+/* Remove from the hash table, or mark as invalid, all expressions whose
+   values could be altered by storing in register X.  */
+
+static void
+invalidate_reg (rtx x)
+{
+  gcc_assert (GET_CODE (x) == REG);
+
+  /* If X is a register, dependencies on its contents are recorded
+     through the qty number mechanism.  Just change the qty number of
+     the register, mark it as invalid for expressions that refer to it,
+     and remove it itself.  */
+  unsigned int regno = REGNO (x);
+  unsigned int hash = HASH (x, GET_MODE (x));
+
+  /* Remove REGNO from any quantity list it might be on and indicate
+     that its value might have changed.  If it is a pseudo, remove its
+     entry from the hash table.
+
+     For a hard register, we do the first two actions above for any
+     additional hard registers corresponding to X.  Then, if any of these
+     registers are in the table, we must remove any REG entries that
+     overlap these registers.  */
+
+  delete_reg_equiv (regno);
+  REG_TICK (regno)++;
+  SUBREG_TICKED (regno) = -1;
+
+  if (regno >= FIRST_PSEUDO_REGISTER)
+    remove_pseudo_from_table (x, hash);
+  else
+    {
+      HOST_WIDE_INT in_table = TEST_HARD_REG_BIT (hard_regs_in_table, regno);
+      unsigned int endregno = END_REGNO (x);
+      unsigned int rn;
+      struct table_elt *p, *next;
+
+      CLEAR_HARD_REG_BIT (hard_regs_in_table, regno);
+
+      for (rn = regno + 1; rn < endregno; rn++)
+	{
+	  in_table |= TEST_HARD_REG_BIT (hard_regs_in_table, rn);
+	  CLEAR_HARD_REG_BIT (hard_regs_in_table, rn);
+	  delete_reg_equiv (rn);
+	  REG_TICK (rn)++;
+	  SUBREG_TICKED (rn) = -1;
+	}
+
+      if (in_table)
+	for (hash = 0; hash < HASH_SIZE; hash++)
+	  for (p = table[hash]; p; p = next)
+	    {
+	      next = p->next_same_hash;
+
+	      if (!REG_P (p->exp) || REGNO (p->exp) >= FIRST_PSEUDO_REGISTER)
+		continue;
+
+	      unsigned int tregno = REGNO (p->exp);
+	      unsigned int tendregno = END_REGNO (p->exp);
+	      if (tendregno > regno && tregno < endregno)
+		remove_from_table (p, hash);
+	    }
+    }
+}
+
 /* Remove from the hash table, or mark as invalid, all expressions whose
    values could be altered by storing in X.  X is a register, a subreg, or
    a memory reference with nonvarying address (because, when a memory
@@ -1841,65 +1906,7 @@ invalidate (rtx x, machine_mode full_mode)
   switch (GET_CODE (x))
     {
     case REG:
-      {
-	/* If X is a register, dependencies on its contents are recorded
-	   through the qty number mechanism.  Just change the qty number of
-	   the register, mark it as invalid for expressions that refer to it,
-	   and remove it itself.  */
-	unsigned int regno = REGNO (x);
-	unsigned int hash = HASH (x, GET_MODE (x));
-
-	/* Remove REGNO from any quantity list it might be on and indicate
-	   that its value might have changed.  If it is a pseudo, remove its
-	   entry from the hash table.
-
-	   For a hard register, we do the first two actions above for any
-	   additional hard registers corresponding to X.  Then, if any of these
-	   registers are in the table, we must remove any REG entries that
-	   overlap these registers.  */
-
-	delete_reg_equiv (regno);
-	REG_TICK (regno)++;
-	SUBREG_TICKED (regno) = -1;
-
-	if (regno >= FIRST_PSEUDO_REGISTER)
-	  remove_pseudo_from_table (x, hash);
-	else
-	  {
-	    HOST_WIDE_INT in_table
-	      = TEST_HARD_REG_BIT (hard_regs_in_table, regno);
-	    unsigned int endregno = END_REGNO (x);
-	    unsigned int tregno, tendregno, rn;
-	    struct table_elt *p, *next;
-
-	    CLEAR_HARD_REG_BIT (hard_regs_in_table, regno);
-
-	    for (rn = regno + 1; rn < endregno; rn++)
-	      {
-		in_table |= TEST_HARD_REG_BIT (hard_regs_in_table, rn);
-		CLEAR_HARD_REG_BIT (hard_regs_in_table, rn);
-		delete_reg_equiv (rn);
-		REG_TICK (rn)++;
-		SUBREG_TICKED (rn) = -1;
-	      }
-
-	    if (in_table)
-	      for (hash = 0; hash < HASH_SIZE; hash++)
-		for (p = table[hash]; p; p = next)
-		  {
-		    next = p->next_same_hash;
-
-		    if (!REG_P (p->exp)
-			|| REGNO (p->exp) >= FIRST_PSEUDO_REGISTER)
-		      continue;
-
-		    tregno = REGNO (p->exp);
-		    tendregno = END_REGNO (p->exp);
-		    if (tendregno > regno && tregno < endregno)
-		      remove_from_table (p, hash);
-		  }
-	  }
-      }
+      invalidate_reg (x);
       return;
 
     case SUBREG:
@@ -2070,23 +2077,31 @@ rehash_using_reg (rtx x)
 }
 
 /* Remove from the hash table any expression that is a call-clobbered
-   register.  Also update their TICK values.  */
+   register in INSN.  Also update their TICK values.  */
 
 static void
-invalidate_for_call (void)
+invalidate_for_call (rtx_insn *insn)
 {
-  unsigned int regno, endregno;
-  unsigned int i;
+  unsigned int regno;
   unsigned hash;
   struct table_elt *p, *next;
   int in_table = 0;
   hard_reg_set_iterator hrsi;
 
-  /* Go through all the hard registers.  For each that is clobbered in
-     a CALL_INSN, remove the register from quantity chains and update
+  /* Go through all the hard registers.  For each that might be clobbered
+     in call insn INSN, remove the register from quantity chains and update
      reg_tick if defined.  Also see if any of these registers is currently
-     in the table.  */
-  EXECUTE_IF_SET_IN_HARD_REG_SET (regs_invalidated_by_call, 0, regno, hrsi)
+     in the table.
+
+     ??? We could be more precise for partially-clobbered registers,
+     and only invalidate values that actually occupy the clobbered part
+     of the registers.  It doesn't seem worth the effort though, since
+     we shouldn't see this situation much before RA.  Whatever choice
+     we make here has to be consistent with the table walk below,
+     so any change to this test will require a change there too.  */
+  HARD_REG_SET callee_clobbers
+    = insn_callee_abi (insn).full_and_partial_reg_clobbers ();
+  EXECUTE_IF_SET_IN_HARD_REG_SET (callee_clobbers, 0, regno, hrsi)
     {
       delete_reg_equiv (regno);
       if (REG_TICK (regno) >= 0)
@@ -2111,15 +2126,11 @@ invalidate_for_call (void)
 	      || REGNO (p->exp) >= FIRST_PSEUDO_REGISTER)
 	    continue;
 
-	  regno = REGNO (p->exp);
-	  endregno = END_REGNO (p->exp);
-
-	  for (i = regno; i < endregno; i++)
-	    if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
-	      {
-		remove_from_table (p, hash);
-		break;
-	      }
+	  /* This must use the same test as above rather than the
+	     more accurate clobbers_reg_p.  */
+	  if (overlaps_hard_reg_set_p (callee_clobbers, GET_MODE (p->exp),
+				       REGNO (p->exp)))
+	    remove_from_table (p, hash);
 	}
 }
 
@@ -5213,23 +5224,6 @@ cse_insn (rtx_insn *insn)
 	      src_elt_cost = MAX_COST;
 	    }
 
-	  /* Avoid creation of overlapping memory moves.  */
-	  if (MEM_P (trial) && MEM_P (dest) && !rtx_equal_p (trial, dest))
-	    {
-	      rtx src, dest;
-
-	      /* BLKmode moves are not handled by cse anyway.  */
-	      if (GET_MODE (trial) == BLKmode)
-		break;
-
-	      src = canon_rtx (trial);
-	      dest = canon_rtx (SET_DEST (sets[i].rtl));
-
-	      if (!MEM_P (src) || !MEM_P (dest)
-		  || !nonoverlapping_memrefs_p (src, dest, false))
-		break;
-	    }
-
 	  /* Try to optimize
 	     (set (reg:M N) (const_int A))
 	     (set (reg:M2 O) (const_int B))
@@ -5357,6 +5351,12 @@ cse_insn (rtx_insn *insn)
 		       || (GET_CODE (XEXP (trial, 0)) == MINUS
 			   && GET_CODE (XEXP (XEXP (trial, 0), 0)) == LABEL_REF
 			   && GET_CODE (XEXP (XEXP (trial, 0), 1)) == LABEL_REF)))
+	    /* Do nothing for this case.  */
+	    ;
+
+	  /* Do not replace anything with a MEM, except the replacement
+	     is a no-op.  This allows this loop to terminate.  */
+	  else if (MEM_P (trial) && !rtx_equal_p (trial, SET_SRC(sets[i].rtl)))
 	    /* Do nothing for this case.  */
 	    ;
 
@@ -5809,7 +5809,7 @@ cse_insn (rtx_insn *insn)
 	  if (GET_CODE (XEXP (tem, 0)) == USE
 	      && MEM_P (XEXP (XEXP (tem, 0), 0)))
 	    invalidate (XEXP (XEXP (tem, 0), 0), VOIDmode);
-      invalidate_for_call ();
+      invalidate_for_call (insn);
     }
 
   /* Now invalidate everything set by this instruction.
@@ -6163,8 +6163,11 @@ invalidate_from_sets_and_clobbers (rtx_insn *insn)
   if (CALL_P (insn))
     {
       for (tem = CALL_INSN_FUNCTION_USAGE (insn); tem; tem = XEXP (tem, 1))
-	if (GET_CODE (XEXP (tem, 0)) == CLOBBER)
-	  invalidate (SET_DEST (XEXP (tem, 0)), VOIDmode);
+	{
+	  rtx temx = XEXP (tem, 0);
+	  if (GET_CODE (temx) == CLOBBER)
+	    invalidate (SET_DEST (temx), VOIDmode);
+	}
     }
 
   /* Ensure we invalidate the destination register of a CALL insn.
@@ -6410,7 +6413,7 @@ cse_find_path (basic_block first_bb, struct cse_basic_block_data *data,
   if (follow_jumps)
     {
       bb = data->path[path_size - 1].bb;
-      while (bb && path_size < PARAM_VALUE (PARAM_MAX_CSE_PATH_LENGTH))
+      while (bb && path_size < param_max_cse_path_length)
 	{
 	  if (single_succ_p (bb))
 	    e = single_succ_edge (bb);
@@ -6460,7 +6463,7 @@ cse_dump_path (struct cse_basic_block_data *data, int nsets, FILE *f)
   fprintf (f, ";; Following path with %d sets: ", nsets);
   for (path_entry = 0; path_entry < data->path_size; path_entry++)
     fprintf (f, "%d ", (data->path[path_entry].bb)->index);
-  fputc ('\n', dump_file);
+  fputc ('\n', f);
   fflush (f);
 }
 
@@ -6588,7 +6591,7 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 	     FIXME: This is a real kludge and needs to be done some other
 		    way.  */
 	  if (NONDEBUG_INSN_P (insn)
-	      && num_insns++ > PARAM_VALUE (PARAM_MAX_CSE_INSNS))
+	      && num_insns++ > param_max_cse_insns)
 	    {
 	      flush_hash_table ();
 	      num_insns = 0;
@@ -6732,7 +6735,7 @@ cse_main (rtx_insn *f ATTRIBUTE_UNUSED, int nregs)
   init_cse_reg_info (nregs);
 
   ebb_data.path = XNEWVEC (struct branch_path,
-			   PARAM_VALUE (PARAM_MAX_CSE_PATH_LENGTH));
+			   param_max_cse_path_length);
 
   cse_cfg_altered = false;
   cse_jumps_altered = false;
@@ -7099,7 +7102,7 @@ delete_trivially_dead_insns (rtx_insn *insns, int nreg)
 	else if (INSN_P (insn))
 	  {
 	    count_reg_usage (insn, counts, NULL_RTX, 1);
-	    note_stores (PATTERN (insn), count_stores, counts + nreg * 2);
+	    note_stores (insn, count_stores, counts + nreg * 2);
 	  }
       /* If there can be debug insns, COUNTS are 3 consecutive arrays.
 	 First one counts how many times each pseudo is used outside

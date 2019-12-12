@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2019 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -259,7 +259,8 @@ GOMP_ordered_end (void)
 #define MAX_COLLAPSED_BITS (__SIZEOF_LONG__ * __CHAR_BIT__)
 
 void
-gomp_doacross_init (unsigned ncounts, long *counts, long chunk_size)
+gomp_doacross_init (unsigned ncounts, long *counts, long chunk_size,
+		    size_t extra)
 {
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr->ts.team;
@@ -269,13 +270,24 @@ gomp_doacross_init (unsigned ncounts, long *counts, long chunk_size)
   struct gomp_doacross_work_share *doacross;
 
   if (team == NULL || team->nthreads == 1)
-    return;
+    {
+    empty:
+      if (!extra)
+	ws->doacross = NULL;
+      else
+	{
+	  doacross = gomp_malloc_cleared (sizeof (*doacross) + extra);
+	  doacross->extra = (void *) (doacross + 1);
+	  ws->doacross = doacross;
+	}
+      return;
+    }
 
   for (i = 0; i < ncounts; i++)
     {
       /* If any count is 0, GOMP_doacross_{post,wait} can't be called.  */
       if (counts[i] == 0)
-	return;
+	goto empty;
 
       if (num_bits <= MAX_COLLAPSED_BITS)
 	{
@@ -314,7 +326,7 @@ gomp_doacross_init (unsigned ncounts, long *counts, long chunk_size)
   elt_sz = (elt_sz + 63) & ~63UL;
 
   doacross = gomp_malloc (sizeof (*doacross) + 63 + num_ents * elt_sz
-			  + shift_sz);
+			  + shift_sz + extra);
   doacross->chunk_size = chunk_size;
   doacross->elt_sz = elt_sz;
   doacross->ncounts = ncounts;
@@ -322,6 +334,13 @@ gomp_doacross_init (unsigned ncounts, long *counts, long chunk_size)
   doacross->array = (unsigned char *)
 		    ((((uintptr_t) (doacross + 1)) + 63 + shift_sz)
 		     & ~(uintptr_t) 63);
+  if (extra)
+    {
+      doacross->extra = doacross->array + num_ents * elt_sz;
+      memset (doacross->extra, '\0', extra);
+    }
+  else
+    doacross->extra = NULL;
   if (num_bits <= MAX_COLLAPSED_BITS)
     {
       unsigned int shift_count = 0;
@@ -360,7 +379,8 @@ GOMP_doacross_post (long *counts)
   unsigned long ent;
   unsigned int i;
 
-  if (__builtin_expect (doacross == NULL, 0))
+  if (__builtin_expect (doacross == NULL, 0)
+      || __builtin_expect (doacross->array == NULL, 0))
     {
       __sync_synchronize ();
       return;
@@ -411,7 +431,8 @@ GOMP_doacross_wait (long first, ...)
   unsigned long ent;
   unsigned int i;
 
-  if (__builtin_expect (doacross == NULL, 0))
+  if (__builtin_expect (doacross == NULL, 0)
+      || __builtin_expect (doacross->array == NULL, 0))
     {
       __sync_synchronize ();
       return;
@@ -488,7 +509,8 @@ GOMP_doacross_wait (long first, ...)
 typedef unsigned long long gomp_ull;
 
 void
-gomp_doacross_ull_init (unsigned ncounts, gomp_ull *counts, gomp_ull chunk_size)
+gomp_doacross_ull_init (unsigned ncounts, gomp_ull *counts,
+			gomp_ull chunk_size, size_t extra)
 {
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr->ts.team;
@@ -498,13 +520,24 @@ gomp_doacross_ull_init (unsigned ncounts, gomp_ull *counts, gomp_ull chunk_size)
   struct gomp_doacross_work_share *doacross;
 
   if (team == NULL || team->nthreads == 1)
-    return;
+    {
+    empty:
+      if (!extra)
+	ws->doacross = NULL;
+      else
+	{
+	  doacross = gomp_malloc_cleared (sizeof (*doacross) + extra);
+	  doacross->extra = (void *) (doacross + 1);
+	  ws->doacross = doacross;
+	}
+      return;
+    }
 
   for (i = 0; i < ncounts; i++)
     {
       /* If any count is 0, GOMP_doacross_{post,wait} can't be called.  */
       if (counts[i] == 0)
-	return;
+	goto empty;
 
       if (num_bits <= MAX_COLLAPSED_BITS)
 	{
@@ -557,6 +590,13 @@ gomp_doacross_ull_init (unsigned ncounts, gomp_ull *counts, gomp_ull chunk_size)
   doacross->array = (unsigned char *)
 		    ((((uintptr_t) (doacross + 1)) + 63 + shift_sz)
 		     & ~(uintptr_t) 63);
+  if (extra)
+    {
+      doacross->extra = doacross->array + num_ents * elt_sz;
+      memset (doacross->extra, '\0', extra);
+    }
+  else
+    doacross->extra = NULL;
   if (num_bits <= MAX_COLLAPSED_BITS)
     {
       unsigned int shift_count = 0;
@@ -595,7 +635,8 @@ GOMP_doacross_ull_post (gomp_ull *counts)
   unsigned long ent;
   unsigned int i;
 
-  if (__builtin_expect (doacross == NULL, 0))
+  if (__builtin_expect (doacross == NULL, 0)
+      || __builtin_expect (doacross->array == NULL, 0))
     {
       __sync_synchronize ();
       return;
@@ -667,7 +708,8 @@ GOMP_doacross_ull_wait (gomp_ull first, ...)
   unsigned long ent;
   unsigned int i;
 
-  if (__builtin_expect (doacross == NULL, 0))
+  if (__builtin_expect (doacross == NULL, 0)
+      || __builtin_expect (doacross->array == NULL, 0))
     {
       __sync_synchronize ();
       return;

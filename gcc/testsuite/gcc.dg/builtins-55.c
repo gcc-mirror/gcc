@@ -1,6 +1,5 @@
 /* { dg-do link } */
 /* { dg-options "-O2 -ffast-math" } */
-/* { dg-add-options c99_runtime } */
 
 #include "builtins-config.h"
 

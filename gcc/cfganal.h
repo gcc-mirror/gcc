@@ -1,5 +1,5 @@
 /* Control flow graph analysis header file.
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -67,11 +67,13 @@ extern void inverted_post_order_compute (vec<int> *postorder, sbitmap *start_poi
 extern int pre_and_rev_post_order_compute_fn (struct function *,
 					      int *, int *, bool);
 extern int pre_and_rev_post_order_compute (int *, int *, bool);
+extern int rev_post_order_and_mark_dfs_back_seme (struct function *, edge,
+						  bitmap, bool, int *);
 extern int dfs_enumerate_from (basic_block, int,
 			       bool (*)(const_basic_block, const void *),
 			       basic_block *, int, const void *);
-extern void compute_dominance_frontiers (struct bitmap_head *);
-extern bitmap compute_idf (bitmap, struct bitmap_head *);
+extern void compute_dominance_frontiers (class bitmap_head *);
+extern bitmap compute_idf (bitmap, class bitmap_head *);
 extern void bitmap_intersection_of_succs (sbitmap, sbitmap *, basic_block);
 extern void bitmap_intersection_of_preds (sbitmap, sbitmap *, basic_block);
 extern void bitmap_union_of_succs (sbitmap, sbitmap *, basic_block);

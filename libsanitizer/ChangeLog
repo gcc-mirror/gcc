@@ -1,3 +1,377 @@
+2019-11-20  Martin Liska  <mliska@suse.cz>
+
+	* libtool-version: Remove.
+	* lsan/libtool-version: Upate comment to not mention libmudflap.
+	* tsan/libtool-version: Likewise.
+	* ubsan/libtool-version: Likewise.
+
+2019-11-13  Andreas Schwab  <schwab@suse.de>
+
+	* configure.tgt (riscv64-*-linux*): Enable build.
+
+2019-11-07  Martin Liska  <mliska@suse.cz>
+
+	* all source files: Reapply all revisions mentioned in LOCAL_PATCHES.
+
+2019-11-07  Martin Liska  <mliska@suse.cz>
+
+	* merge.sh: Update to use llvm-project git repository.
+	* all source files: Merge from upstream
+	82588e05cc32bb30807e480abd4e689b0dee132a.
+
+2019-11-05  Martin Liska  <mliska@suse.cz>
+
+	* ubsan/ubsan_flags.cpp (InitializeFlags): Trunk decided to print
+	summary for all sanitizers, but we want to have UBSAN without it.
+
+2019-11-05  Martin Liska  <mliska@suse.cz>
+
+	* asan/asan_globals.cpp (CheckODRViolationViaIndicator): Reapply from
+	LOCAL_PATCHES.
+	(CheckODRViolationViaPoisoning): Likewise.
+	(RegisterGlobal): Likewise.
+	* asan/asan_interceptors.h (ASAN_INTERCEPT___CXA_RETHROW_PRIMARY_EXCEPTION): Likewise.
+	(defined): Likewise.
+	* asan/asan_mapping.h: Likewise.
+	* sanitizer_common/sanitizer_linux_libcdep.cpp (defined): Likewise.
+	* sanitizer_common/sanitizer_mac.cpp (defined): Likewise.
+	* sanitizer_common/sanitizer_platform_limits_linux.cpp (defined): Likewise.
+	* sanitizer_common/sanitizer_platform_limits_posix.h: Likewise.
+	* sanitizer_common/sanitizer_stacktrace.cpp (GetCanonicFrame): Likewise.
+	* tsan/tsan_rtl_ppc64.S: Likewise.
+	* ubsan/ubsan_handlers.cpp (__ubsan::__ubsan_handle_cfi_bad_icall): Likewise.
+	(__ubsan::__ubsan_handle_cfi_bad_icall_abort): Likewise.
+	* ubsan/ubsan_handlers.h (struct CFIBadIcallData): Likewise.
+	(struct CFICheckFailData): Likewise.
+	(RECOVERABLE): Likewise.
+	* ubsan/ubsan_platform.h: Likewise.
+
+2019-11-05  Martin Liska  <mliska@suse.cz>
+
+	* tsan/Makefile.am: Rename tsan_interceptors.cpp to
+	tsan_interceptors_posix.
+	* tsan/Makefile.in: Regenerate.
+
+2019-11-05  Martin Liska  <mliska@suse.cz>
+
+	* all source files: Merge from upstream r375507.
+
+2019-10-22  Tamar Christina  <tamar.christina@arm.com>
+
+	PR sanitizer/92154
+	* sanitizer_common/sanitizer_platform_limits_posix.cpp:
+	Cherry-pick compiler-rt revision r375220.
+
+2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure: Regenerate.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+	Mickaël Guêné <mickael.guene@st.com>
+
+	* configure.tgt (arm*-*-*fdpiceabi): Sanitizers are
+	unsupported in this configuration.
+
+2019-08-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* LOCAL_PATCHES: Add r274585.
+
+2019-08-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* asan/asan_interceptors.h: Reapply r272406.
+
+2019-08-15  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Add r274540
+
+2019-08-15  Martin Liska  <mliska@suse.cz>
+
+	* tsan/tsan_rtl_ppc64.S: Reapply.
+
+2019-08-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR bootstrap/91455
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Likewise.
+	* asan/Makefile.in: Likewise.
+	* configure: Likewise.
+	* interception/Makefile.in: Likewise.
+	* libbacktrace/Makefile.in: Likewise.
+	* lsan/Makefile.in: Likewise.
+	* sanitizer_common/Makefile.am: Include top_srcdir unconditionally.
+	* sanitizer_common/Makefile.in: Regenerated.
+	* tsan/Makefile.in: Likewise.
+	* ubsan/Makefile.in: Likewise.
+
+2019-08-14  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Refresh based on what was committed.
+
+2019-08-14  Martin Liska  <mliska@suse.cz>
+
+	* asan/asan_globals.cpp (CheckODRViolationViaIndicator): Reapply
+	patch from trunk.
+	(CheckODRViolationViaPoisoning): Likewise.
+	(RegisterGlobal): Likewise.
+	* asan/asan_mapping.h: Likewise.
+	* sanitizer_common/sanitizer_linux_libcdep.cpp (defined): Likewise.
+	* sanitizer_common/sanitizer_mac.cpp (defined): Likewise.
+	* sanitizer_common/sanitizer_platform_limits_linux.cpp (defined): Likewise.
+	* sanitizer_common/sanitizer_platform_limits_posix.h (defined): Likewise.
+	* sanitizer_common/sanitizer_stacktrace.cpp (GetCanonicFrame): Likewise.
+	* ubsan/ubsan_handlers.cpp (__ubsan::__ubsan_handle_cfi_bad_icall): Likewise.
+	(__ubsan::__ubsan_handle_cfi_bad_icall_abort): Likewise.
+	* ubsan/ubsan_handlers.h (struct CFIBadIcallData): Likewise.
+	(struct CFICheckFailData): Likewise.
+	(RECOVERABLE): Likewise.
+	* ubsan/ubsan_platform.h: Likewise.
+
+2019-08-14  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/89832
+	PR sanitizer/91325
+	* All source files: Merge from upstream 368656.
+
+2019-06-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* sanitizer_common/sanitizer_posix_libcdep.cc: Cherry-pick
+	compiler-rt revision 363778.
+
+2019-06-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR libsanitizer/87880
+	* asan/asan_interceptors.h:
+	(ASAN_INTERCEPT___CXA_RETHROW_PRIMARY_EXCEPTION): New.
+	* asan/Makefile.am (DEFS): Add 
+	ASAN_HAS_CXA_RETHROW_PRIMARY_EXCEPTION, defined to 0.
+	* asan/Makefile.in: Regenerated.
+	* asan/libtool-version: Bump version.
+
+2019-05-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/90639
+	* tsan/tsan_rtl_ppc64.S: Add ".machine altivec".
+
+2019-05-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (have_dl_iterate_phdr): Remove *-*-solaris2.10*
+	handling.
+	* configure: Regenerate.
+
+2019-04-08  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Add revision.
+
+2019-04-08  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/89941
+	* sanitizer_common/sanitizer_platform_limits_linux.cc (defined):
+	Reapply patch from r259664.
+	* sanitizer_common/sanitizer_platform_limits_posix.h (defined):
+	Likewise.
+
+2019-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR sanitizer/80953
+	Merge from LLVM revision 355980
+	* asan/asan_allocator.h (kAllocatorSpace): Define for SPARC.
+	(kAllocatorSize): Likewise.
+	(DefaultSizeClassMap): Likewise.
+	* asan/asan_mapping.h (kSPARC64_ShadowOffset64): Define.
+	(SHADOW_OFFSET): Define for SPARC.
+	Include asan_mapping_sparc64.h for SPARC 64-bit.
+	* asan/asan_mapping_sparc64.h: New file.
+
+2019-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR sanitizer/80953
+	Merge from LLVM revision 355979
+	* asan/asan_globals.c (GetGlobalsForAddress): Use internal_memcpy to
+	copy Global objects for SPARC with GCC.
+
+2019-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR sanitizer/80953
+	Merge from LLVM revision 355978
+	* sanitizer_common/sanitizer_allocator_primary32.h
+	(class SizeClassAllocator32): Assert that kSpaceSize is power of 2 if
+	SANITIZER_SIGN_EXTENDED_ADDRESSES is set.
+	(PointerIsMine): Deal with SANITIZER_SIGN_EXTENDED_ADDRESSES.
+	(ComputeRegionId): Likewise.
+	* sanitizer_common/sanitizer_linux.cc (GetMaxVirtualAddress): Return
+	appropriate value for SPARC 64-bit.
+	* sanitizer_common/sanitizer_platform.h (SANITIZER_MMAP_RANGE_SIZE):
+	Define for SPARC.
+	(SANITIZER_SIGN_EXTENDED_ADDRESSES): Define to 1 for SPARC 64-bit.
+
+2019-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR sanitizer/80953
+	Merge from LLVM revision 355965
+	* sanitizer_common/sanitizer_linux.cc (GetWriteFlag): Implement for
+	SPARC/Linux.
+	(GetPcSpBp): Likewise.
+	* sanitizer_common/sanitizer_stacktrace.cc (GetNextInstructionPc):
+	Adjust for SPARC.
+	* sanitizer_common/sanitizer_stacktrace.h (SANITIZER_CAN_FAST_UNWIND):
+	Define to 1 for SPARC.
+	* sanitizer_common/sanitizer_stacktrace_sparc.cc: Rewrite.
+	* sanitizer_common/sanitizer_unwind_linux_libcdep.cc (SlowUnwindStack):
+	Adjust the PC address for SPARC with GCC.
+
+2019-03-06  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/88684
+	* sanitizer_common/sanitizer_platform.h (defined): Cherry pick.
+	(SANITIZER_NON_UNIQUE_TYPEINFO): Likewise.
+	* ubsan/ubsan_type_hash_itanium.cc (isDerivedFromAtOffset):
+	Likewise.
+
+2019-02-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR sanitizer/89409
+	* sanitizer_common/sanitizer_linux.cc (internal_readlink):
+	Cherry-pick compiler-rt r354451.
+
+2019-01-23  Jonny Grant  <jg@jguk.org>
+
+	PR sanitizer/89010
+	* libsanitizer/README.gcc: Update to current https URLs.
+
+2018-12-27  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/86229
+	* asan/asan_errors.cc (ErrorAllocTypeMismatch::Print): Cherry
+	pick rL350085.
+	* asan/asan_errors.h (struct ErrorAllocTypeMismatch): Likewise.
+
+2018-11-09  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Include one local patch.
+
+2018-11-09  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/87892
+	* sanitizer_common/sanitizer_linux_libcdep.cc (defined): Return
+	1 when CPU_COUNT macro is not defined.
+
+2018-11-08  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	* libsanitizer/sanitizer_common/sanitizer_linux.cc (CheckASLR):
+	Disable ASLR for powerpc64 when using sanitizers.
+
+2018-11-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/80953
+	* configure.tgt (sparc*-*-solaris2.11*): Enable.
+	(x86_64-*-solaris2.11* | i?86-*-solaris2.11*): Enable.
+
+2018-11-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/80953
+	* sanitizer_common/sanitizer_internal_defs.h,
+	sanitizer_common/sanitizer_platform_limits_solaris.h,
+	sanitizer_common/sanitizer_procmaps_solaris.cc,
+	sanitizer_common/sanitizer_solaris.cc: Cherry-pick compiler-rt
+	revision 346153.
+	* sanitizer_common/sanitizer_stacktrace.h,
+	sanitizer_common/sanitizer_stacktrace_sparc.cc: Cherry-pick
+	compiler-rt revision 346155.
+
+2018-11-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* LOCAL_PATCHES: Add r258525.
+	* sanitizer_common/sanitizer_stacktrace.cc
+	(BufferedStackTrace::FastUnwindStack): Use the correct frame offset
+	for PowerPC SYSV ABI.
+
+2018-11-05  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/87860
+	* sanitizer_common/sanitizer_linux.cc:  Cherry-pick upstream
+	r346129.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* Makefile.am: Include multilib.am.
+	* configure.ac: Remove AC_PREREQ.  Use AC_LANG_SOURCE.
+	* Makefile.in, aclocal.m4, asan/Makefile.in, configure,
+	interception/Makefile.in, libbacktrace/Makefile.in,
+	lsan/Makefile.in, sanitizer_common/Makefile.in, tsan/Makefile.in,
+	ubsan/Makefile.in: Regenerate.
+
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Update to installed revisions.
+
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
+	* ubsan/ubsan_platform.h: Add ifndef as we define it with
+	-DCAN_SANITIZE_UB CFLAGS.
+
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
+	* asan/asan_mapping.h: Revert shadow memory offset to 1 << 41.
+
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Update patch list.
+	* asan/asan_globals.cc (CheckODRViolationViaIndicator): Apply
+	patches from GCC's trunk.
+	(CheckODRViolationViaPoisoning): Likewise.
+	(RegisterGlobal): Likewise.
+	* sanitizer_common/sanitizer_mac.cc (defined): Likewise.
+	* sanitizer_common/sanitizer_stacktrace.cc (GetCanonicFrame): Likewise.
+	* ubsan/ubsan_handlers.cc (__ubsan::__ubsan_handle_cfi_bad_icall): Likewise.
+	(__ubsan::__ubsan_handle_cfi_bad_icall_abort): Likewise.
+	* ubsan/ubsan_handlers.h (struct CFIBadIcallData): Likewise.
+	(struct CFICheckFailData): Likewise.
+	(RECOVERABLE): Likewise.
+
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+	* sanitizer_common/Makefile.am: Include new files, remove old
+	files.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* ubsan/Makefile.am: Include new files, remove old
+	files.
+	* ubsan/Makefile.in: Likewise.
+	* asan/Makefile.am: Include new files.
+	* asan/Makefile.in: Regenerate.
+
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
+	* All source files: Merge from upstream 345033.
+
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
+	* HOWTO_MERGE: Enhance documentation.
+	* merge.sh: Add support for git as well.
+
+2018-08-02  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/86022
+	* sanitizer_common/sanitizer_linux_libcdep.cc (ThreadDescriptorSize):
+	Cherry-pick compiler-rt revision 338606.
+
+2018-08-01  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/86759
+	* tsan/tsan_platform.h: Cherry-pick compiler-rt revision 318044.
+	* tsan/tsan_platform_linux.cc: Cherry-pick compiler-rt revision
+	319180.
+
+2018-07-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/86560
+	* asan/asan_interceptors.cc (swapcontext) Cherry-pick
+	compiler-rt revision 337603.
+	* sanitizer_common/sanitizer_internal_defs.h (__has_attribute):
+	Likewise.
+
 2018-07-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Revert
@@ -25,9 +399,9 @@
 
 2018-06-13  Denis Khalikov  <d.khalikov@partner.samsung.com>
 
-        PR sanitizer/86090
-        * configure.ac: Check for lstat and readlink.
-        * configure, config.h.in: Rebuild.
+	PR sanitizer/86090
+	* configure.ac: Check for lstat and readlink.
+	* configure, config.h.in: Rebuild.
 
 2018-05-31  Matthias Klose  <doko@ubuntu.com>
 
@@ -178,26 +552,26 @@
 2017-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* All source files: Merge from upstream 315899.
-        * asan/Makefile.am (nodist_saninclude_HEADERS): Add
+	* asan/Makefile.am (nodist_saninclude_HEADERS): Add
 	include/sanitizer/tsan_interface.h.
-        * asan/libtool-version: Bump the libasan SONAME.
+	* asan/libtool-version: Bump the libasan SONAME.
 	* lsan/Makefile.am (sanitizer_lsan_files): Add lsan_common_mac.cc.
 	(lsan_files): Add lsan_linux.cc, lsan_mac.cc and lsan_malloc_mac.cc.
-        * sanitizer_common/Makefile.am (sanitizer_common_files): Add
+	* sanitizer_common/Makefile.am (sanitizer_common_files): Add
 	sancov_flags.cc, sanitizer_allocator_checks.cc,
 	sanitizer_coverage_libcdep_new.cc, sanitizer_errno.cc,
 	sanitizer_file.cc, sanitizer_mac_libcdep.cc and
 	sanitizer_stoptheworld_mac.cc.  Remove sanitizer_coverage_libcdep.cc
 	and sanitizer_coverage_mapping_libcdep.cc.
-        * tsan/Makefile.am (tsan_files): Add tsan_external.cc.
+	* tsan/Makefile.am (tsan_files): Add tsan_external.cc.
 	* ubsan/Makefile.am (DEFS): Add -DUBSAN_CAN_USE_CXXABI=1.
 	(ubsan_files): Add ubsan_init_standalone.cc and
 	ubsan_signals_standalone.cc.
 	* ubsan/libtool-version: Bump the libubsan SONAME.
-        * asan/Makefile.in: Regenerate.
-        * lsan/Makefile.in: Regenerate.
-        * sanitizer_common/Makefile.in: Regenerate.
-        * tsan/Makefile.in: Regenerate.
+	* asan/Makefile.in: Regenerate.
+	* lsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* tsan/Makefile.in: Regenerate.
 	* ubsan/Makefile.in: Regenerate.
 
 2017-10-05  H.J. Lu  <hongjiu.lu@intel.com>
@@ -1008,7 +1382,7 @@
 
 2013-12-19  Kostya Serebryany  <kcc@google.com>
 
-        * sanitizer_common/sanitizer_platform_limits_posix.cc:
+	* sanitizer_common/sanitizer_platform_limits_posix.cc:
 	workaround for missing definition of EOWNERDEAD, backport
 	from upstream r196779.
 
@@ -1111,10 +1485,10 @@
 2013-11-15  Kostya Serebryany  <kcc@google.com>
 
 	PR sanitizer/58994
-        Backport from upstream revision 194573
-        * asan/asan_interceptors.cc (COMMON_INTERCEPTOR_ENTER): Fall
-        back to the original functions in the common libsanitizer
-        interceptors and the __cxa_atexit() interceptor on Darwin.
+	Backport from upstream revision 194573
+	* asan/asan_interceptors.cc (COMMON_INTERCEPTOR_ENTER): Fall
+	back to the original functions in the common libsanitizer
+	interceptors and the __cxa_atexit() interceptor on Darwin.
 
 2013-11-13  Peter Bergner  <bergner@vnet.ibm.com>
 

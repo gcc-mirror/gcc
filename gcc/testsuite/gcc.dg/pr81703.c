@@ -9,4 +9,4 @@ unsigned g (void)
   return __builtin_strlen (d);
 }
 
-/* { dg-final { scan-tree-dump-not "__builtin_strlen" "strlen" } } */
+/* { dg-final { scan-tree-dump-not "__builtin_strlen" "strlen1" } } */

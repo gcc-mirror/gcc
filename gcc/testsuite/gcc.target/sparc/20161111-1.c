@@ -14,4 +14,4 @@ unsigned char ee_isdigit2(unsigned int i)
   return retval;
 }
 
-/* { dg-final { scan-assembler-not "and\t%" } } */
+/* { dg-final { scan-assembler-not "and\t%" { xfail *-*-* } } } */

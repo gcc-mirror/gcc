@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -65,6 +65,9 @@ is
    function Month   (Date : Time) return Month_Number;
    function Day     (Date : Time) return Day_Number;
    function Seconds (Date : Time) return Day_Duration;
+   --  SPARK Note: These routines, just like Split and Time_Of below, might use
+   --  the OS-specific timezone database that is typically stored in a file.
+   --  This side effect needs to be modeled, so there is no Global => null.
 
    procedure Split
      (Date    : Time;
@@ -97,19 +100,27 @@ is
    --  Seconds may be 14340.0 (3:59:00) instead of 10740.0 (2:59:00 being
    --  a time that not exist).
 
-   function "+" (Left : Time;     Right : Duration) return Time;
-   function "+" (Left : Duration; Right : Time)     return Time;
-   function "-" (Left : Time;     Right : Duration) return Time;
-   function "-" (Left : Time;     Right : Time)     return Duration;
+   function "+" (Left : Time;     Right : Duration) return Time
+   with
+     Global => null;
+   function "+" (Left : Duration; Right : Time)     return Time
+   with
+     Global => null;
+   function "-" (Left : Time;     Right : Duration) return Time
+   with
+     Global => null;
+   function "-" (Left : Time;     Right : Time)     return Duration
+   with
+     Global => null;
    --  The first three functions will raise Time_Error if the resulting time
    --  value is less than the start of Ada time in UTC or greater than the
    --  end of Ada time in UTC. The last function will raise Time_Error if the
    --  resulting difference cannot fit into a duration value.
 
-   function "<"  (Left, Right : Time) return Boolean;
-   function "<=" (Left, Right : Time) return Boolean;
-   function ">"  (Left, Right : Time) return Boolean;
-   function ">=" (Left, Right : Time) return Boolean;
+   function "<"  (Left, Right : Time) return Boolean with Global => null;
+   function "<=" (Left, Right : Time) return Boolean with Global => null;
+   function ">"  (Left, Right : Time) return Boolean with Global => null;
+   function ">=" (Left, Right : Time) return Boolean with Global => null;
 
    Time_Error : exception;
 

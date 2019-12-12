@@ -1,6 +1,7 @@
 /* PR c/29955 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fopenmp -fexceptions" } */
+/* { dg-require-effective-target exceptions } */
 
 extern void bar (int);
 

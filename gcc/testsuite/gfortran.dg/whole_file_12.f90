@@ -1,5 +1,4 @@
 ! { dg-do compile }
-! { dg-options "-fwhole-file" }
 !
 ! Tests the fix PR40011 comment 17 in which the explicit interface was
 ! being ignored and the missing argument was not correctly handled, which

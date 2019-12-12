@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -228,8 +228,12 @@ package body Ch3 is
          raise Error_Resync;
       end if;
 
+      if Style_Check then
+         Style.Check_Defining_Identifier_Casing;
+      end if;
+
       Ident_Node := Token_Node;
-      Scan; -- past the reserved identifier
+      Scan; -- past the identifier
 
       --  If we already have a defining identifier, clean it out and make
       --  a new clean identifier. This situation arises in some error cases

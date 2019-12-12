@@ -64,16 +64,16 @@ void f()
   if (!p)
     ;
 
-  if (pmf == 0)         // { dg-warning "zero as null pointer" }
+  if (pmf == 0)         // { dg-warning "14: zero as null pointer" }
     ;
   
-  if (pdm == 0)         // { dg-warning "zero as null pointer" }
+  if (pdm == 0)         // { dg-warning "14: zero as null pointer" }
     ;
 
-  if (pf == 0)          // { dg-warning "zero as null pointer" }
+  if (pf == 0)          // { dg-warning "13: zero as null pointer" }
     ;
 
-  if (p == 0)           // { dg-warning "zero as null pointer" }
+  if (p == 0)           // { dg-warning "12: zero as null pointer" }
     ;
 
   if (0 == pmf)         // { dg-warning "zero as null pointer" }

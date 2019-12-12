@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! { *-*-darwin* hppa*-*-* } } } } */
+/* { dg-do compile { target { ! { *-*-darwin* hppa*-*-* amdgcn*-*-* } } } } */
 /* { dg-require-effective-target fpic } */
 /* { dg-options "-fpic" } */
 

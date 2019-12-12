@@ -1,6 +1,6 @@
 /* PR middle-end/66142 */
 /* { dg-do compile } */
-/* { dg-additional-options "-ffast-math -fopenmp-simd" } */
+/* { dg-additional-options "-ffast-math -fopenmp-simd --param early-inlining-insns-O2=14" } */
 /* { dg-additional-options "-mavx" { target avx_runtime } } */
 
 struct A { float x, y; };

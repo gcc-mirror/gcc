@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -333,6 +333,11 @@ package body Sem_Warn is
 
             elsif Has_Warnings_Off (Entity (Name (N))) then
                return;
+
+            --  Forget it if the parameter is not In
+
+            elsif Has_Out_Or_In_Out_Parameter (Entity (Name (N))) then
+               return;
             end if;
 
             --  OK, see if we have one argument
@@ -632,9 +637,16 @@ package body Sem_Warn is
 
                Expression := Condition (Iter);
 
-            --  For iteration, do not process, since loop will always terminate
+            --  For Loop_Parameter_Specification, do not process, since loop
+            --  will always terminate. For Iterator_Specification, also do not
+            --  process. Either it will always terminate (e.g. "for X of
+            --  Some_Array ..."), or we can't tell if it's going to terminate
+            --  without looking at the iterator, so any warning here would be
+            --  noise.
 
-            elsif Present (Loop_Parameter_Specification (Iter)) then
+            elsif Present (Loop_Parameter_Specification (Iter))
+              or else Present (Iterator_Specification (Iter))
+            then
                return;
             end if;
          end if;
@@ -806,6 +818,14 @@ package body Sem_Warn is
       --  For an entry formal entity from an entry declaration, find the
       --  corresponding body formal from the given accept statement.
 
+      function Generic_Body_Formal (E : Entity_Id) return Entity_Id;
+      --  Warnings on unused formals of subprograms are placed on the entity
+      --  in the subprogram body, which seems preferable because it suggests
+      --  a better codefix for GNAT Studio. The analysis of generic subprogram
+      --  bodies uses a different circuitry, so the choice for the proper
+      --  placement of the warning in the generic case takes place here, by
+      --  finding the body entity that corresponds to a formal in a spec.
+
       procedure May_Need_Initialized_Actual (Ent : Entity_Id);
       --  If an entity of a generic type has default initialization, then the
       --  corresponding actual type should be fully initialized, or else there
@@ -863,6 +883,35 @@ package body Sem_Warn is
 
          raise Program_Error;
       end Body_Formal;
+
+      -------------------------
+      -- Generic_Body_Formal --
+      -------------------------
+
+      function Generic_Body_Formal (E : Entity_Id) return Entity_Id is
+         Gen_Decl : constant Node_Id   := Unit_Declaration_Node (Scope (E));
+         Gen_Body : constant Entity_Id := Corresponding_Body (Gen_Decl);
+         Form     : Entity_Id;
+
+      begin
+         if No (Gen_Body) then
+            return E;
+
+         else
+            Form := First_Entity (Gen_Body);
+            while Present (Form) loop
+               if Chars (Form) = Chars (E) then
+                  return Form;
+               end if;
+
+               Next_Entity (Form);
+            end loop;
+         end if;
+
+         --  Should never fall through, should always find a match
+
+         raise Program_Error;
+      end Generic_Body_Formal;
 
       ---------------------------------
       -- May_Need_Initialized_Actual --
@@ -1401,9 +1450,13 @@ package body Sem_Warn is
                   goto Continue;
                end if;
 
-               --  Check for unset reference
+               --  Check for unset reference. If type of object has
+               --  preelaborable initialization, warning is misleading.
 
-               if Warn_On_No_Value_Assigned and then Present (UR) then
+               if Warn_On_No_Value_Assigned
+                 and then Present (UR)
+                 and then not Known_To_Have_Preelab_Init (Etype (E1))
+               then
 
                   --  For other than access type, go back to original node to
                   --  deal with case where original unset reference has been
@@ -1672,7 +1725,15 @@ package body Sem_Warn is
                   elsif not Warnings_Off_E1
                     and then not Has_Junk_Name (E1)
                   then
-                     Unreferenced_Entities.Append (E1);
+                     if Is_Formal (E1)
+                       and then Nkind (Unit_Declaration_Node (Scope (E1)))
+                         = N_Generic_Subprogram_Declaration
+                     then
+                        Unreferenced_Entities.Append
+                          (Generic_Body_Formal (E1));
+                     else
+                        Unreferenced_Entities.Append (E1);
+                     end if;
                   end if;
                end if;
 
@@ -2691,7 +2752,7 @@ package body Sem_Warn is
 
       --  Flag any unused with clauses. For a subunit, check only the units
       --  in its context, not those of the parent, which may be needed by other
-      --  subunits.  We will get the full warnings when we compile the parent,
+      --  subunits. We will get the full warnings when we compile the parent,
       --  but the following is helpful when compiling a subunit by itself.
 
       if Nkind (Unit (Cunit (Main_Unit))) = N_Subunit then
@@ -4346,11 +4407,31 @@ package body Sem_Warn is
                         E := Body_E;
                      end if;
 
-                     if not Is_Trivial_Subprogram (Scope (E)) then
-                        Error_Msg_NE -- CODEFIX
-                          ("?u?formal parameter & is not referenced!",
-                           E, Spec_E);
-                     end if;
+                     declare
+                        B : constant Node_Id := Parent (Parent (Scope (E)));
+                        S : Entity_Id := Empty;
+                     begin
+                        if Nkind_In (B,
+                                     N_Expression_Function,
+                                     N_Subprogram_Body,
+                                     N_Subprogram_Renaming_Declaration)
+                        then
+                           S := Corresponding_Spec (B);
+                        end if;
+
+                        --  Do not warn for dispatching operations, because
+                        --  that causes too much noise. Also do not warn for
+                        --  trivial subprograms.
+
+                        if (not Present (S)
+                            or else not Is_Dispatching_Operation (S))
+                          and then not Is_Trivial_Subprogram (Scope (E))
+                        then
+                           Error_Msg_NE -- CODEFIX
+                             ("?u?formal parameter & is not referenced!",
+                              E, Spec_E);
+                        end if;
+                     end;
                   end if;
                end if;
 
@@ -4465,9 +4546,15 @@ package body Sem_Warn is
       --  to capture the value. We are not going to capture any value, but
       --  the warning message depends on the same kind of conditions.
 
+      --  If the assignment appears as an out-parameter in a call within an
+      --  expression function it may be detected twice: once when expression
+      --  itself is analyzed, and once when the constructed body is analyzed.
+      --  We don't want to emit a spurious warning in this case.
+
       if Is_Assignable (Ent)
         and then not Is_Return_Object (Ent)
         and then Present (Last_Assignment (Ent))
+        and then Last_Assignment (Ent) /= N
         and then not Is_Imported (Ent)
         and then not Is_Exported (Ent)
         and then Safe_To_Capture_Value (N, Ent)

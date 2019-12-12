@@ -13,16 +13,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# clang-format 3.8+ (Mon Nov 16) is required
+# clang-format 7.0.1 is required
 #
 # To utilize the tool to lines just touched by a patch, use
-# clang-format-diff.py script, which can be downloaded here:
-# https://llvm.org/svn/llvm-project/cfe/trunk/tools/clang-format/clang-format-diff.py
+# clang-format-diff script that is usually also packaged with clang-format.
+#
+# Example of usage:
+# git diff -U0 --no-color | clang-format-diff -p1
+# (here the tool will generate a patch)
+# git diff -U0 --no-color | clang-format-diff -p1 -i
+# (modifications are applied)
 
 ---
 Language: Cpp
 AccessModifierOffset: -2
-AlwaysBreakAfterDefinitionReturnType: All
+AlwaysBreakAfterReturnType: TopLevel
 BinPackArguments: true
 BinPackParameters: true
 BraceWrapping:
@@ -37,6 +42,7 @@ BraceWrapping:
   BeforeCatch: true
   BeforeElse: true
   IndentBraces: true
+  SplitEmptyFunction: false
 BreakBeforeBinaryOperators: All
 BreakBeforeBraces: Custom
 BreakBeforeTernaryOperators: true
@@ -136,3 +142,9 @@ SpaceAfterCStyleCast: true
 SpaceBeforeParens: Always
 SpacesBeforeTrailingComments: 1
 UseTab: Always
+AlignEscapedNewlines: Right
+AlignTrailingComments: true
+AllowShortFunctionsOnASingleLine: All
+AlwaysBreakTemplateDeclarations: MultiLine
+KeepEmptyLinesAtTheStartOfBlocks: false
+Standard: Cpp03

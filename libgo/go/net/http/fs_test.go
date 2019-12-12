@@ -583,16 +583,23 @@ func TestFileServerZeroByte(t *testing.T) {
 	ts := httptest.NewServer(FileServer(Dir(".")))
 	defer ts.Close()
 
-	res, err := Get(ts.URL + "/..\x00")
+	c, err := net.Dial("tcp", ts.Listener.Addr().String())
 	if err != nil {
 		t.Fatal(err)
 	}
-	b, err := ioutil.ReadAll(res.Body)
+	defer c.Close()
+	_, err = fmt.Fprintf(c, "GET /..\x00 HTTP/1.0\r\n\r\n")
 	if err != nil {
-		t.Fatal("reading Body:", err)
+		t.Fatal(err)
+	}
+	var got bytes.Buffer
+	bufr := bufio.NewReader(io.TeeReader(c, &got))
+	res, err := ReadResponse(bufr, nil)
+	if err != nil {
+		t.Fatal("ReadResponse: ", err)
 	}
 	if res.StatusCode == 200 {
-		t.Errorf("got status 200; want an error. Body is:\n%s", string(b))
+		t.Errorf("got status 200; want an error. Body is:\n%s", got.Bytes())
 	}
 }
 
@@ -993,7 +1000,7 @@ func TestServeContent(t *testing.T) {
 		for _, method := range []string{"GET", "HEAD"} {
 			//restore content in case it is consumed by previous method
 			if content, ok := content.(*strings.Reader); ok {
-				content.Seek(io.SeekStart, 0)
+				content.Seek(0, io.SeekStart)
 			}
 
 			servec <- serveParam{

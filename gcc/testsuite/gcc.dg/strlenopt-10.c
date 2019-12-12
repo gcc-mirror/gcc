@@ -69,14 +69,14 @@ main ()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "strlen \\(" 2 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "strlen \\(" 2 "strlen1" } } */
 /* avr has BIGGEST_ALIGNMENT 8, allowing fold_builtin_memory_op
    to expand the memcpy call at the end of fn2.  */
-/* { dg-final { scan-tree-dump-times "memcpy \\(" 8 "strlen" { target { ! avr-*-* } } } } */
-/* { dg-final { scan-tree-dump-times "memcpy \\(" 7 "strlen" { target { avr-*-* } } } } */
-/* { dg-final { scan-tree-dump-times "strcpy \\(" 0 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "strcat \\(" 0 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "strchr \\(" 0 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "stpcpy \\(" 0 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "\\*q_\[0-9\]* = 32;" 1 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "memcpy \\(\[^\n\r\]*, 1\\)" 1 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "memcpy \\(" 8 "strlen1" { target { ! avr-*-* } } } } */
+/* { dg-final { scan-tree-dump-times "memcpy \\(" 7 "strlen1" { target { avr-*-* } } } } */
+/* { dg-final { scan-tree-dump-times "strcpy \\(" 0 "strlen1" } } */
+/* { dg-final { scan-tree-dump-times "strcat \\(" 0 "strlen1" } } */
+/* { dg-final { scan-tree-dump-times "strchr \\(" 0 "strlen1" } } */
+/* { dg-final { scan-tree-dump-times "stpcpy \\(" 0 "strlen1" } } */
+/* { dg-final { scan-tree-dump-times "\\*q_\[0-9\]* = 32;" 1 "strlen1" } } */
+/* { dg-final { scan-tree-dump-times "memcpy \\(\[^\n\r\]*, 1\\)" 1 "strlen1" } } */

@@ -1,4 +1,4 @@
-// Copyright (C) 2018 Free Software Foundation, Inc.
+// Copyright (C) 2018-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,7 @@ void test01()
 
   std::vector<int> v;
 
-  int array[] { 0, 1, 2 };
+  int array[] = { 0, 1, 2 };
   input_iterator_seq seq(array, array + 3);
 
   v.assign(seq.begin(), seq.end());

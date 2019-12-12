@@ -1,6 +1,6 @@
 ! { dg-do compile }
 ! { dg-require-effective-target vect_double }
-! { dg-additional-options "-finline-matmul-limit=0" }
+! { dg-additional-options "-fno-tree-loop-distribute-patterns -finline-matmul-limit=0" }
 
 module lfk_prec
  integer, parameter :: dp=kind(1.d0)
@@ -247,7 +247,7 @@ nl1= 1
 nl2= 2
 fw= 2.000D0
   DO ky= 2,n
-DO kx= 2,3
+DO kx= 2,4
     du1ky= u1(kx,ky+1,nl1)-u1(kx,ky-1,nl1)
     du2ky= u2(kx,ky+1,nl1)-u2(kx,ky-1,nl1)
     du3ky= u3(kx,ky+1,nl1)-u3(kx,ky-1,nl1)
@@ -704,5 +704,6 @@ CALL track('KERNEL  ')
 RETURN
 END SUBROUTINE kernel
 
-! { dg-final { scan-tree-dump-times "vectorized 22 loops" 1 "vect" { target vect_intdouble_cvt } } }
-! { dg-final { scan-tree-dump-times "vectorized 17 loops" 1 "vect" { target { ! vect_intdouble_cvt } } } }
+! { dg-final { scan-tree-dump-times "vectorized 23 loops" 1 "vect" { target aarch64*-*-* } } }
+! { dg-final { scan-tree-dump-times "vectorized 22 loops" 1 "vect" { target { vect_intdouble_cvt && { ! aarch64*-*-* } } } } }
+! { dg-final { scan-tree-dump-times "vectorized 17 loops" 1 "vect" { target { { ! vect_intdouble_cvt } && { ! aarch64*-*-* } } } } }

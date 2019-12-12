@@ -1,7 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-linux* } } } */
 /* { dg-require-effective-target hard_dfp } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
-/* { dg-options "-mcpu=power7 -O2" } */
+/* { dg-options "-mdejagnu-cpu=power7 -O2" } */
 /* { dg-final { scan-assembler-times "ddedpd " 4    } } */
 /* { dg-final { scan-assembler-times "denbcd " 2    } } */
 /* { dg-final { scan-assembler-times "dxex "   1    } } */

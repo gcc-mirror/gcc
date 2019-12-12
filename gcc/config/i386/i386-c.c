@@ -1,5 +1,5 @@
 /* Subroutines used for macro/preprocessor support on the ia-32.
-   Copyright (C) 2008-2018 Free Software Foundation, Inc.
+   Copyright (C) 2008-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -124,6 +124,10 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__znver1");
       def_or_undef (parse_in, "__znver1__");
       break;
+    case PROCESSOR_ZNVER2:
+      def_or_undef (parse_in, "__znver2");
+      def_or_undef (parse_in, "__znver2__");
+      break;
     case PROCESSOR_BTVER1:
       def_or_undef (parse_in, "__btver1");
       def_or_undef (parse_in, "__btver1__");
@@ -214,6 +218,17 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__icelake_server");
       def_or_undef (parse_in, "__icelake_server__");
       break;
+    case PROCESSOR_CASCADELAKE:
+      def_or_undef (parse_in, "__cascadelake");
+      def_or_undef (parse_in, "__cascadelake__");
+      break;
+    case PROCESSOR_TIGERLAKE:
+      def_or_undef (parse_in, "__tigerlake");
+      def_or_undef (parse_in, "__tigerlake__");
+      break;
+    case PROCESSOR_COOPERLAKE:
+      def_or_undef (parse_in, "__cooperlake");
+      def_or_undef (parse_in, "__cooperlake__");
     /* use PROCESSOR_max to not set/unset the arch macro.  */
     case PROCESSOR_max:
       break;
@@ -288,6 +303,9 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     case PROCESSOR_ZNVER1:
       def_or_undef (parse_in, "__tune_znver1__");
       break;
+    case PROCESSOR_ZNVER2:
+      def_or_undef (parse_in, "__tune_znver2__");
+      break;
     case PROCESSOR_BTVER1:
       def_or_undef (parse_in, "__tune_btver1__");
       break;
@@ -356,6 +374,15 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     case PROCESSOR_LAKEMONT:
       def_or_undef (parse_in, "__tune_lakemont__");
       break;
+    case PROCESSOR_CASCADELAKE:
+      def_or_undef (parse_in, "__tune_cascadelake__");
+      break;
+    case PROCESSOR_TIGERLAKE:
+      def_or_undef (parse_in, "__tune_tigerlake__");
+      break;
+    case PROCESSOR_COOPERLAKE:
+      def_or_undef (parse_in, "__tune_cooperlake__");
+      break;
     case PROCESSOR_INTEL:
     case PROCESSOR_GENERIC:
       break;
@@ -390,6 +417,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
 
   if (isa_flag2 & OPTION_MASK_ISA_WBNOINVD)
     def_or_undef (parse_in, "__WBNOINVD__");
+  if (isa_flag2 & OPTION_MASK_ISA_AVX512VP2INTERSECT)
+    def_or_undef (parse_in, "__AVX512VP2INTERSECT__");
   if (isa_flag & OPTION_MASK_ISA_MMX)
     def_or_undef (parse_in, "__MMX__");
   if (isa_flag & OPTION_MASK_ISA_3DNOW)
@@ -532,6 +561,14 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__WAITPKG__");
   if (isa_flag2 & OPTION_MASK_ISA_CLDEMOTE)
     def_or_undef (parse_in, "__CLDEMOTE__");
+  if (isa_flag2 & OPTION_MASK_ISA_PTWRITE)
+    def_or_undef (parse_in, "__PTWRITE__");
+  if (isa_flag2 & OPTION_MASK_ISA_AVX512BF16)
+    def_or_undef (parse_in, "__AVX512BF16__");
+  if (TARGET_MMX_WITH_SSE)
+    def_or_undef (parse_in, "__MMX_WITH_SSE__");
+  if (isa_flag2 & OPTION_MASK_ISA_ENQCMD)
+    def_or_undef (parse_in, "__ENQCMD__");
   if (TARGET_IAMCU)
     {
       def_or_undef (parse_in, "__iamcu");
@@ -570,8 +607,9 @@ ix86_pragma_target_parse (tree args, tree pop_target)
     }
   else
     {
-      cur_tree = ix86_valid_target_attribute_tree (args, &global_options,
-						   &global_options_set);
+      cur_tree = ix86_valid_target_attribute_tree (NULL_TREE, args,
+						   &global_options,
+						   &global_options_set, 0);
       if (!cur_tree || cur_tree == error_mark_node)
        {
          cl_target_option_restore (&global_options,

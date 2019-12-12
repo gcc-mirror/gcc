@@ -1,6 +1,6 @@
 // Filesystem declarations -*- C++ -*-
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -59,6 +59,7 @@ inline namespace __cxx11 __attribute__((__abi_tag__ ("cxx11"))) { }
    * Utilities for performing operations on file systems and their components,
    * such as paths, regular files, and directories.
    *
+   * ISO/IEC TS 18822:2015	C++ File System Technical Specification
    * @{
    */
 

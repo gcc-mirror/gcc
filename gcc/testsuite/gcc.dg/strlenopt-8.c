@@ -43,14 +43,8 @@ main ()
   return 0;
 }
 
-/* On non-strict-align targets we inline the memcpy that strcat is turned
-   into and end up with a short typed load / store which strlenopt is not
-   able to analyze.  */
-
-/* { dg-final { scan-tree-dump-times "strlen \\(" 0 "strlen" { xfail non_strict_align } } } */
-/* { dg-final { scan-tree-dump-times "memcpy \\(" 2 "strlen" { target { non_strict_align } } } } */
-/* { dg-final { scan-tree-dump-times "memcpy \\(" 4 "strlen" { target { ! non_strict_align } } } }  */
-/* { dg-final { scan-tree-dump-times "strcpy \\(" 0 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "strcat \\(" 0 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "strchr \\(" 0 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "stpcpy \\(" 0 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "strlen \\(" 0 "strlen1" } } */
+/* { dg-final { scan-tree-dump-times "strcpy \\(" 0 "strlen1" } } */
+/* { dg-final { scan-tree-dump-times "strcat \\(" 0 "strlen1" } } */
+/* { dg-final { scan-tree-dump-times "strchr \\(" 0 "strlen1" } } */
+/* { dg-final { scan-tree-dump-times "stpcpy \\(" 0 "strlen1" } } */

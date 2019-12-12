@@ -1,5 +1,5 @@
 /* Natural loop analysis code for GNU compiler.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,8 +30,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "explow.h"
 #include "expr.h"
 #include "graphds.h"
-#include "params.h"
 #include "sreal.h"
+#include "regs.h"
+#include "function-abi.h"
 
 struct target_cfgloop default_target_cfgloop;
 #if SWITCHABLE_TARGET
@@ -41,7 +42,7 @@ struct target_cfgloop *this_target_cfgloop = &default_target_cfgloop;
 /* Checks whether BB is executed exactly once in each LOOP iteration.  */
 
 bool
-just_once_each_iteration_p (const struct loop *loop, const_basic_block bb)
+just_once_each_iteration_p (const class loop *loop, const_basic_block bb)
 {
   /* It must be executed at least once each iteration.  */
   if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb))
@@ -81,7 +82,7 @@ mark_irreducible_loops (void)
   unsigned depth;
   struct graph *g;
   int num = number_of_loops (cfun);
-  struct loop *cloop;
+  class loop *cloop;
   bool irred_loop_found = false;
   int i;
 
@@ -173,7 +174,7 @@ mark_irreducible_loops (void)
 
 /* Counts number of insns inside LOOP.  */
 int
-num_loop_insns (const struct loop *loop)
+num_loop_insns (const class loop *loop)
 {
   basic_block *bbs, bb;
   unsigned i, ninsns = 0;
@@ -197,7 +198,7 @@ num_loop_insns (const struct loop *loop)
 
 /* Counts number of insns executed on average per iteration LOOP.  */
 int
-average_num_loop_insns (const struct loop *loop)
+average_num_loop_insns (const class loop *loop)
 {
   basic_block *bbs, bb;
   unsigned i, binsns;
@@ -238,7 +239,7 @@ average_num_loop_insns (const struct loop *loop)
    return -1 in those scenarios.  */
 
 gcov_type
-expected_loop_iterations_unbounded (const struct loop *loop,
+expected_loop_iterations_unbounded (const class loop *loop,
 				    bool *read_profile_p,
 				    bool by_profile_only)
 {
@@ -254,7 +255,7 @@ expected_loop_iterations_unbounded (const struct loop *loop,
     {
       if (by_profile_only)
 	return -1;
-      expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
+      expected = param_avg_loop_niter;
     }
   else if (loop->latch && (loop->latch->count.initialized_p ()
 			   || loop->header->count.initialized_p ()))
@@ -272,7 +273,7 @@ expected_loop_iterations_unbounded (const struct loop *loop,
 	{
           if (by_profile_only)
 	    return -1;
-	  expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
+	  expected = param_avg_loop_niter;
 	}
       else if (!count_in.nonzero_p ())
 	{
@@ -293,7 +294,7 @@ expected_loop_iterations_unbounded (const struct loop *loop,
     {
       if (by_profile_only)
 	return -1;
-      expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
+      expected = param_avg_loop_niter;
     }
 
   if (!by_profile_only)
@@ -310,7 +311,7 @@ expected_loop_iterations_unbounded (const struct loop *loop,
    by REG_BR_PROB_BASE.  */
 
 unsigned
-expected_loop_iterations (struct loop *loop)
+expected_loop_iterations (class loop *loop)
 {
   gcov_type expected = expected_loop_iterations_unbounded (loop);
   return (expected > REG_BR_PROB_BASE ? REG_BR_PROB_BASE : expected);
@@ -319,9 +320,9 @@ expected_loop_iterations (struct loop *loop)
 /* Returns the maximum level of nesting of subloops of LOOP.  */
 
 unsigned
-get_loop_level (const struct loop *loop)
+get_loop_level (const class loop *loop)
 {
-  const struct loop *ploop;
+  const class loop *ploop;
   unsigned mx = 0, l;
 
   for (ploop = loop->inner; ploop; ploop = ploop->next)
@@ -353,7 +354,10 @@ init_set_costs (void)
 	&& !fixed_regs[i])
       {
 	target_avail_regs++;
-	if (call_used_regs[i])
+	/* ??? This is only a rough heuristic.  It doesn't cope well
+	   with alternative ABIs, but that's an optimization rather than
+	   correctness issue.  */
+	if (default_function_abi.clobbers_full_reg_p (i))
 	  target_clobbered_regs++;
       }
 
@@ -422,7 +426,7 @@ estimate_reg_pressure_cost (unsigned n_new, unsigned n_old, bool speed,
 
   if (optimize && (flag_ira_region == IRA_REGION_ALL
 		   || flag_ira_region == IRA_REGION_MIXED)
-      && number_of_loops (cfun) <= (unsigned) IRA_MAX_LOOPS_NUM)
+      && number_of_loops (cfun) <= (unsigned) param_ira_max_loops_num)
     /* IRA regional allocation deals with high register pressure
        better.  So decrease the cost (to do more accurate the cost
        calculation for IRA, we need to know how many registers lives
@@ -463,7 +467,7 @@ mark_loop_exit_edges (void)
    to noreturn call.  */
 
 edge
-single_likely_exit (struct loop *loop)
+single_likely_exit (class loop *loop)
 {
   edge found = single_exit (loop);
   vec<edge> exits;
@@ -500,7 +504,7 @@ single_likely_exit (struct loop *loop)
    header != latch, latch is the 1-st block.  */
 
 vec<basic_block>
-get_loop_hot_path (const struct loop *loop)
+get_loop_hot_path (const class loop *loop)
 {
   basic_block bb = loop->header;
   vec<basic_block> path = vNULL;

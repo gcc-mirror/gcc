@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -falign-functions=64:8" } */
+/* { dg-skip-if "SUBALIGN_LOG not set for Darwin" { *-*-darwin* } } */
 
 void
 a (void)

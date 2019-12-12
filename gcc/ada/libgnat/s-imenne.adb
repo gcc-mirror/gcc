@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2000-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,7 +49,8 @@ package body System.Img_Enum_New is
       pragma Assert (S'First = 1);
 
       type Natural_8 is range 0 .. 2 ** 7 - 1;
-      type Index_Table is array (Natural) of Natural_8;
+      subtype Index is Natural range Natural'First .. Names'Length;
+      type Index_Table is array (Index) of Natural_8;
       type Index_Table_Ptr is access Index_Table;
 
       function To_Index_Table_Ptr is
@@ -79,7 +80,8 @@ package body System.Img_Enum_New is
       pragma Assert (S'First = 1);
 
       type Natural_16 is range 0 .. 2 ** 15 - 1;
-      type Index_Table is array (Natural) of Natural_16;
+      subtype Index is Natural range Natural'First .. Names'Length;
+      type Index_Table is array (Index) of Natural_16;
       type Index_Table_Ptr is access Index_Table;
 
       function To_Index_Table_Ptr is
@@ -109,7 +111,8 @@ package body System.Img_Enum_New is
       pragma Assert (S'First = 1);
 
       type Natural_32 is range 0 .. 2 ** 31 - 1;
-      type Index_Table is array (Natural) of Natural_32;
+      subtype Index is Natural range Natural'First .. Names'Length;
+      type Index_Table is array (Index) of Natural_32;
       type Index_Table_Ptr is access Index_Table;
 
       function To_Index_Table_Ptr is

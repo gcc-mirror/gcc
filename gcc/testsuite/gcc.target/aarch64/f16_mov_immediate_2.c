@@ -40,6 +40,4 @@ float16_t f3(void)
 /* { dg-final { scan-assembler-times "movi\tv\[0-9\]+\\\.4h, 0x5c, lsl 8" 1 } } */
 /* { dg-final { scan-assembler-times "movi\tv\[0-9\]+\\\.4h, 0x7c, lsl 8" 1 } } */
 
-/* { dg-final { scan-assembler-times "mov\tw\[0-9\]+, 19520"              1 } } */
-/* { dg-final { scan-assembler-times "fmov\th\[0-9\], w\[0-9\]+"          1 } } */
-
+/* { dg-final { scan-assembler-times {fmov\th[0-9]+, #?1.7e\+1}           1 } } */

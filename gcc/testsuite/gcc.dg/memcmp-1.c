@@ -2,14 +2,20 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 /* { dg-require-effective-target ptr32plus } */
+/* { dg-timeout-factor 2 } */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
 
-int lib_memcmp(const void *a, const void *b, size_t n) asm("memcmp");
-int lib_strncmp(const char *a, const char *b, size_t n) asm("strncmp");
+#define STR1(X) #X
+#define STR2(X) STR1(X)
+
+int lib_memcmp(const void *a, const void *b, size_t n)
+ asm(STR2(__USER_LABEL_PREFIX__) "memcmp");
+int lib_strncmp(const char *a, const char *b, size_t n)
+ asm(STR2(__USER_LABEL_PREFIX__) "strncmp");
 
 #ifndef NRAND
 #ifdef TEST_ALL

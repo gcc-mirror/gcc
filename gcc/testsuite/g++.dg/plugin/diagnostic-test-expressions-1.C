@@ -63,6 +63,13 @@ void test_integer_constants (void)
    __emit_expression_range (0, 0);
                                ^
    { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0, -273); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, -273);
+                               ^~~~
+   { dg-end-multiline-output "" } */
+
 }
 
 void test_character_constants (void)
@@ -111,6 +118,13 @@ void test_floating_constants (void)
    __emit_expression_range (0, 6.022140857e23l );
                                ^~~~~~~~~~~~~~~
    { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0, -273.15f); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, -273.15f);
+                               ^~~~~~~~
+   { dg-end-multiline-output "" } */
+
 }
 
 enum test_enum {

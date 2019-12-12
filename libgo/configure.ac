@@ -6,12 +6,11 @@
 
 # Process this file with autoreconf to produce configure.
 
-AC_PREREQ(2.64)
 AC_INIT(package-unused, version-unused,, libgo)
 AC_CONFIG_SRCDIR(Makefile.am)
 AC_CONFIG_HEADER(config.h)
 
-libtool_VERSION=13:0:0
+libtool_VERSION=15:0:0
 AC_SUBST(libtool_VERSION)
 
 AM_ENABLE_MULTILIB(, ..)
@@ -19,7 +18,7 @@ AM_ENABLE_MULTILIB(, ..)
 AC_CANONICAL_SYSTEM
 target_alias=${target_alias-$host_alias}
 
-AM_INIT_AUTOMAKE([1.9.3 no-define foreign no-dist -Wall -Wno-portability])
+AM_INIT_AUTOMAKE([1.9.3 no-define foreign no-dist subdir-objects -Wall -Wno-portability -Wno-override])
 AH_TEMPLATE(PACKAGE, [Name of package])
 AH_TEMPLATE(VERSION, [Version number of package])
 
@@ -27,6 +26,7 @@ m4_rename([_AC_ARG_VAR_PRECIOUS],[glibgo_PRECIOUS])
 m4_define([_AC_ARG_VAR_PRECIOUS],[])
 AC_PROG_CC
 AC_PROG_GO
+AM_PROG_AS
 m4_rename_force([glibgo_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
 
 AC_SUBST(CFLAGS)
@@ -129,7 +129,7 @@ if test "$with_libffi" != no; then
 fi
 AC_SUBST(LIBFFI)
 AC_SUBST(LIBFFIINCS)
-AM_CONDITIONAL(USE_LIBFFI, test "$with_liffi" != "no")
+AM_CONDITIONAL(USE_LIBFFI, test "$with_libffi" != "no")
 
 # See if the user wants to configure without libatomic. This is useful if we are
 # on an architecture for which libgo does not need an atomic support library and
@@ -154,7 +154,7 @@ AC_SUBST(go_include)
 # All known GOOS values.  This is the union of all operating systems
 # supported by the gofrontend and all operating systems supported by
 # the gc toolchain.
-ALLGOOS="aix android darwin dragonfly freebsd irix linux netbsd openbsd plan9 rtems solaris windows"
+ALLGOOS="aix android darwin dragonfly freebsd hurd illumos irix js linux netbsd openbsd plan9 rtems solaris windows"
 
 is_darwin=no
 is_freebsd=no
@@ -166,6 +166,7 @@ is_dragonfly=no
 is_rtems=no
 is_solaris=no
 is_aix=no
+is_hurd=no
 GOOS=unknown
 case ${host} in
   *-*-darwin*)   is_darwin=yes;  GOOS=darwin ;;
@@ -178,6 +179,7 @@ case ${host} in
   *-*-rtems*)    is_rtems=yes;   GOOS=rtems ;;
   *-*-solaris2*) is_solaris=yes; GOOS=solaris ;;
   *-*-aix*)      is_aix=yes;     GOOS=aix ;;
+  *-*-gnu*)      is_hurd=yes;    GOOS=hurd ;;
 esac
 AM_CONDITIONAL(LIBGO_IS_DARWIN, test $is_darwin = yes)
 AM_CONDITIONAL(LIBGO_IS_FREEBSD, test $is_freebsd = yes)
@@ -189,6 +191,7 @@ AM_CONDITIONAL(LIBGO_IS_DRAGONFLY, test $is_dragonfly = yes)
 AM_CONDITIONAL(LIBGO_IS_RTEMS, test $is_rtems = yes)
 AM_CONDITIONAL(LIBGO_IS_SOLARIS, test $is_solaris = yes)
 AM_CONDITIONAL(LIBGO_IS_AIX, test $is_aix = yes)
+AM_CONDITIONAL(LIBGO_IS_HURD, test $is_hurd = yes)
 AM_CONDITIONAL(LIBGO_IS_BSD, test $is_darwin = yes -o $is_dragonfly = yes -o $is_freebsd = yes -o $is_netbsd = yes -o $is_openbsd = yes)
 AC_SUBST(GOOS)
 AC_SUBST(ALLGOOS)
@@ -248,12 +251,19 @@ case ${host} in
 changequote(,)dnl
   i[34567]86-*-* | x86_64-*-*)
 changequote([,])dnl
-    AC_COMPILE_IFELSE([
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 #ifdef __x86_64__
 #error 64-bit
-#endif],
-[GOARCH=386],
-[GOARCH=amd64])
+#endif
+])],
+	[GOARCH=386],
+	AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+#ifdef __ILP32__
+#error x32
+#endif
+])],
+	[GOARCH=amd64],
+	[GOARCH=amd64p32]))
     ;;
   ia64-*-*)
     GOARCH=ia64
@@ -262,20 +272,23 @@ changequote([,])dnl
     GOARCH=m68k
     ;;
   mips*-*-*)
-    AC_COMPILE_IFELSE([
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 #if _MIPS_SIM != _ABIO32
 #error not o32
-#endif],
+#endif
+])],
 [mips_abi="o32"],
-	[AC_COMPILE_IFELSE([
+	[AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 #if _MIPS_SIM != _ABIN32
 #error not n32
-#endif],
+#endif
+])],
 [mips_abi="n32"],
-	[AC_COMPILE_IFELSE([
+	[AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 #if _MIPS_SIM != _ABI64
 #error not n64
-#endif],
+#endif
+])],
 [mips_abi="n64"],
 	[AC_MSG_ERROR([unknown MIPS ABI])
 [mips_abi="n32"]])])])
@@ -294,16 +307,18 @@ changequote([,])dnl
     GOARCH=nios2
     ;;
   rs6000*-*-* | powerpc*-*-*)
-    AC_COMPILE_IFELSE([
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 #ifdef _ARCH_PPC64
 #error 64-bit
-#endif],
+#endif
+])],
 [GOARCH=ppc],
     [
-AC_COMPILE_IFELSE([
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 #if defined(_BIG_ENDIAN) || defined(__BIG_ENDIAN__)
 #error 64be
-#endif],
+#endif
+])],
 [GOARCH=ppc64le],
 [GOARCH=ppc64])])
     ;;
@@ -311,10 +326,11 @@ AC_COMPILE_IFELSE([
     GOARCH=riscv64
     ;;
   s390*-*-*)
-    AC_COMPILE_IFELSE([
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 #if defined(__s390x__)
 #error 64-bit
-#endif],
+#endif
+])],
 [GOARCH=s390],
 [GOARCH=s390x])
     ;;
@@ -325,10 +341,11 @@ AC_COMPILE_IFELSE([
     GOARCH=sh
     ;;
   sparc*-*-*)
-    AC_COMPILE_IFELSE([
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 #if defined(__sparcv9) || defined(__arch64__)
 #error 64-bit
-#endif],
+#endif
+])],
 [GOARCH=sparc],
 [GOARCH=sparc64])
     ;;
@@ -336,6 +353,22 @@ esac
 AC_SUBST(GOARCH)
 AC_SUBST(ALLGOARCH)
 AC_SUBST(ALLGOARCHFAMILY)
+
+AM_CONDITIONAL(LIBGO_IS_X86, test "$GOARCH" = "386" -o "$GOARCH" = "amd64" -o "$GOARCH" = "amd64p32")
+
+FUNCTION_DESCRIPTORS=false
+case ${host} in
+  rs6000*-*-* | powerpc*-*-*)
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+#if _CALL_ELF == 1
+#error descriptors
+#endif
+])],
+	[FUNCTION_DESCRIPTORS=false],
+	[FUNCTION_DESCRIPTORS=true])
+    ;;
+esac
+AC_SUBST(FUNCTION_DESCRIPTORS)
 
 dnl Some files are only present when needed for specific architectures.
 GO_LIBCALL_OS_FILE=
@@ -367,7 +400,7 @@ case "$target" in
 	# msghdr in <sys/socket.h>.
 	OSCFLAGS="$OSCFLAGS -D_XOPEN_SOURCE=500"
 	;;
-    *-*-solaris2.1[[01]])
+    *-*-solaris2.*)
 	# Solaris 10+ needs this so struct msghdr gets the msg_control
 	# etc. fields in <sys/socket.h> (_XPG4_2).  _XOPEN_SOURCE=600 as
 	# above doesn't work with C99.
@@ -384,7 +417,7 @@ AC_CACHE_CHECK([whether -fsplit-stack is supported],
 [libgo_cv_c_split_stack_supported],
 [CFLAGS_hold=$CFLAGS
 CFLAGS="$CFLAGS -fsplit-stack"
-AC_COMPILE_IFELSE([[int i;]],
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([int i;])],
 [libgo_cv_c_split_stack_supported=yes],
 [libgo_cv_c_split_stack_supported=no])
 CFLAGS=$CFLAGS_hold])
@@ -500,7 +533,7 @@ AC_CACHE_CHECK([whether -pthread is supported],
 [libgo_cv_lib_pthread],
 [CFLAGS_hold=$CFLAGS
 CFLAGS="$CFLAGS -pthread -L../libatomic/.libs"
-AC_COMPILE_IFELSE([[int i;]],
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([int i;])],
 [libgo_cv_lib_pthread=yes],
 [libgo_cv_lib_pthread=no])
 CFLAGS=$CFLAGS_hold])
@@ -539,7 +572,7 @@ AC_CHECK_HEADERS([linux/filter.h linux/if_addr.h linux/if_ether.h linux/if_tun.h
 
 AM_CONDITIONAL(HAVE_SYS_MMAN_H, test "$ac_cv_header_sys_mman_h" = yes)
 
-AC_CHECK_FUNCS(strerror_r strsignal wait4 mincore setenv unsetenv dl_iterate_phdr)
+AC_CHECK_FUNCS(strerror_r strsignal wait4 mincore setenv unsetenv dl_iterate_phdr memmem)
 AM_CONDITIONAL(HAVE_STRERROR_R, test "$ac_cv_func_strerror_r" = yes)
 AM_CONDITIONAL(HAVE_WAIT4, test "$ac_cv_func_wait4" = yes)
 
@@ -565,69 +598,13 @@ LIBS="$LIBS $MATH_LIBS"
 AC_CHECK_FUNCS(matherr)
 LIBS="$LIBS_hold"
 
-AC_CACHE_CHECK([for __sync_bool_compare_and_swap_4],
-[libgo_cv_func___sync_bool_compare_and_swap_4],
-[AC_LINK_IFELSE([
-typedef unsigned int uint32  __attribute__ ((mode (SI)));
-uint32 i;
-int main() { return __sync_bool_compare_and_swap (&i, 0, 1); }
-],
-[libgo_cv_func___sync_bool_compare_and_swap_4=yes],
-[libgo_cv_func___sync_bool_compare_and_swap_4=no])])
-if test "$libgo_cv_func___sync_bool_compare_and_swap_4" = "yes"; then
-  AC_DEFINE(HAVE_SYNC_BOOL_COMPARE_AND_SWAP_4, 1,
-    [Define to 1 if the compiler provides the __sync_bool_compare_and_swap function for uint32])
-fi
-
-AC_CACHE_CHECK([for __sync_bool_compare_and_swap_8],
-[libgo_cv_func___sync_bool_compare_and_swap_8],
-[AC_LINK_IFELSE([
-typedef unsigned int uint64  __attribute__ ((mode (DI)));
-uint64 i;
-int main() { return __sync_bool_compare_and_swap (&i, 0, 1); }
-],
-[libgo_cv_func___sync_bool_compare_and_swap_8=yes],
-[libgo_cv_func___sync_bool_compare_and_swap_8=no])])
-if test "$libgo_cv_func___sync_bool_compare_and_swap_8" = "yes"; then
-  AC_DEFINE(HAVE_SYNC_BOOL_COMPARE_AND_SWAP_8, 1,
-    [Define to 1 if the compiler provides the __sync_bool_compare_and_swap function for uint64])
-fi
-
-AC_CACHE_CHECK([for __sync_fetch_and_add_4],
-[libgo_cv_func___sync_fetch_and_add_4],
-[AC_LINK_IFELSE([
-typedef unsigned int uint32  __attribute__ ((mode (SI)));
-uint32 i;
-int main() { return __sync_fetch_and_add (&i, 1); }
-],
-[libgo_cv_func___sync_fetch_and_add_4=yes],
-[libgo_cv_func___sync_fetch_and_add_4=no])])
-if test "$libgo_cv_func___sync_fetch_and_add_4" = "yes"; then
-  AC_DEFINE(HAVE_SYNC_FETCH_AND_ADD_4, 1,
-    [Define to 1 if the compiler provides the __sync_fetch_and_add function for uint32])
-fi
-
-AC_CACHE_CHECK([for __sync_add_and_fetch_8],
-[libgo_cv_func___sync_add_and_fetch_8],
-[AC_LINK_IFELSE([
-typedef unsigned int uint64  __attribute__ ((mode (DI)));
-uint64 i;
-int main() { return __sync_add_and_fetch (&i, 1); }
-],
-[libgo_cv_func___sync_add_and_fetch_8=yes],
-[libgo_cv_func___sync_add_and_fetch_8=no])])
-if test "$libgo_cv_func___sync_add_and_fetch_8" = "yes"; then
-  AC_DEFINE(HAVE_SYNC_ADD_AND_FETCH_8, 1,
-    [Define to 1 if the compiler provides the __sync_add_and_fetch function for uint64])
-fi
-
 dnl For x86 we want to use the -minline-all-stringops option to avoid
 dnl forcing a stack split when calling memcpy and friends.
 AC_CACHE_CHECK([whether compiler supports -minline-all-stringops],
 [libgo_cv_c_stringops],
 [CFLAGS_hold=$CFLAGS
 CFLAGS="$CFLAGS -minline-all-stringops"
-AC_COMPILE_IFELSE([int i;],
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([int i;])],
 [libgo_cv_c_stringops=yes],
 [libgo_cv_c_stringops=no])
 CFLAGS=$CFLAGS_hold])
@@ -643,7 +620,7 @@ AC_CACHE_CHECK([whether compiler supports -mfancy-math-387],
 [libgo_cv_c_fancymath],
 [CFLAGS_hold=$CFLAGS
 CFLAGS="$CFLAGS -mfancy-math-387"
-AC_COMPILE_IFELSE([int i;],
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([int i;])],
 [libgo_cv_c_fancymath=yes],
 [libgo_cv_c_fancymath=no])
 CFLAGS=$CFLAGS_hold])
@@ -814,7 +791,7 @@ AC_CACHE_CHECK([if compiler supports -Qunused-arguments],
 [libgo_cv_c_unused_arguments],
 [CFLAGS_hold=$CFLAGS
 CFLAGS="$CFLAGS -Qunused-arguments"
-AC_COMPILE_IFELSE([[int i;]],
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([int i;])],
 [libgo_cv_c_unused_arguments=yes],
 [libgo_cv_c_unused_arguments=no])
 CFLAGS=$CFLAGS_hold])
@@ -900,7 +877,7 @@ else
   multilib_arg=
 fi
 
-AC_CONFIG_FILES(Makefile testsuite/Makefile)
+AC_CONFIG_FILES(Makefile testsuite/Makefile testsuite/libgo-test-support.exp)
 
 AC_CONFIG_COMMANDS([default],
 [if test -n "$CONFIG_FILES"; then

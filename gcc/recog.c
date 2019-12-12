@@ -1,5 +1,5 @@
 /* Subroutines used by or related to instruction recognition.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgcleanup.h"
 #include "reload.h"
 #include "tree-pass.h"
+#include "function-abi.h"
 
 #ifndef STACK_POP_CODE
 #if STACK_GROWS_DOWNWARD
@@ -1070,6 +1071,11 @@ general_operand (rtx op, machine_mode mode)
 int
 address_operand (rtx op, machine_mode mode)
 {
+  /* Wrong mode for an address expr.  */
+  if (GET_MODE (op) != VOIDmode
+      && ! SCALAR_INT_MODE_P (GET_MODE (op)))
+    return false;
+
   return memory_address_p (mode, op);
 }
 
@@ -1600,6 +1606,7 @@ decode_asm_operands (rtx body, rtx *operands, rtx **operand_locs,
 	      {
 		if (GET_CODE (XVECEXP (body, 0, i)) == CLOBBER)
 		  break;		/* Past last SET */
+		gcc_assert (GET_CODE (XVECEXP (body, 0, i)) == SET);
 		if (operands)
 		  operands[i] = SET_DEST (XVECEXP (body, 0, i));
 		if (operand_locs)
@@ -2695,10 +2702,13 @@ constrain_operands (int strict, alternative_mask alternatives)
 		/* p is used for address_operands.  When we are called by
 		   gen_reload, no one will have checked that the address is
 		   strictly valid, i.e., that all pseudos requiring hard regs
-		   have gotten them.  */
-		if (strict <= 0
-		    || (strict_memory_address_p (recog_data.operand_mode[opno],
-						 op)))
+		   have gotten them.  We also want to make sure we have a
+		   valid mode.  */
+		if ((GET_MODE (op) == VOIDmode
+		     || SCALAR_INT_MODE_P (GET_MODE (op)))
+		    && (strict <= 0
+			|| (strict_memory_address_p
+			     (recog_data.operand_mode[opno], op))))
 		  win = 1;
 		break;
 
@@ -2966,7 +2976,7 @@ split_all_insns (void)
 
 	     If that happens and INSN was the last reference to the
 	     given EH region, then the EH region will become unreachable.
-	     We can not leave the unreachable blocks in the CFG as that
+	     We cannot leave the unreachable blocks in the CFG as that
 	     will trigger a checking failure.
 
 	     So track if INSN has a REG_EH_REGION note.  If so and we
@@ -3218,7 +3228,8 @@ peep2_find_free_register (int from, int to, const char *class_str,
 	      break;
 	    }
 	  /* And that we don't create an extra save/restore.  */
-	  if (! call_used_regs[regno + j] && ! df_regs_ever_live_p (regno + j))
+	  if (! crtl->abi->clobbers_full_reg_p (regno + j)
+	      && ! df_regs_ever_live_p (regno + j))
 	    {
 	      success = 0;
 	      break;

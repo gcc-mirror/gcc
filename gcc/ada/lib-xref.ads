@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -632,6 +632,11 @@ package Lib.Xref is
       --  Return the closest enclosing subprogram or library-level package.
       --  This ensures that GNATprove can distinguish local variables from
       --  global variables.
+      --
+      --  ??? This routine should only be used for processing related to
+      --  cross-references, where it might return wrong result but must avoid
+      --  crashes on ill-formed source code. It is wrong to use it where exact
+      --  result is needed.
 
       procedure Generate_Dereference
         (N   : Node_Id;

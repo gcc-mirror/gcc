@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2018, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2019, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -615,7 +615,7 @@ package body System.Tasking.Entry_Calls is
       Call    : Entry_Call_Link)
    is
    begin
-      pragma Assert (Self_ID.ATC_Nesting_Level > 0);
+      pragma Assert (Self_ID.ATC_Nesting_Level > Level_No_ATC_Occurring);
       pragma Assert (Call.Mode = Asynchronous_Call);
 
       STPO.Write_Lock (Self_ID);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2007-2018, AdaCore                     --
+--                     Copyright (C) 2007-2019, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -102,6 +102,15 @@ package body GNAT.Serial_Communications is
    begin
       Unimplemented;
    end Read;
+
+   ------------
+   -- To_Ada --
+   ------------
+
+   procedure To_Ada (Port : out Serial_Port; Fd : Serial_Port_Descriptor) is
+   begin
+      Unimplemented;
+   end To_Ada;
 
    -----------
    -- Write --

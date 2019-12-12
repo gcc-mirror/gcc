@@ -1,4 +1,4 @@
-@c Copyright (C) 2008-2018 Free Software Foundation, Inc.
+@c Copyright (C) 2008-2019 Free Software Foundation, Inc.
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -793,7 +793,7 @@ the address of a function local variable).
 
 @deftypefn {GIMPLE function} bool is_gimple_ip_invariant (tree t)
 Return true if t is an interprocedural invariant.  This means that t
-is a valid invariant in all functions (e.g. it can be an address of a
+is a valid invariant in all functions (e.g.@: it can be an address of a
 global variable but not of a local one).
 @end deftypefn
 
@@ -1627,7 +1627,7 @@ Build a @code{GIMPLE_DEBUG} statement with
 statement is to tell debug information generation machinery that the
 user statement at the given @code{location} and @code{block} starts at
 the point at which the statement is inserted.  The intent is that side
-effects (e.g. variable bindings) of all prior user statements are
+effects (e.g.@: variable bindings) of all prior user statements are
 observable, and that none of the side effects of subsequent user
 statements are.
 @end deftypefn

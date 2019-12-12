@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2013-2018 Free Software Foundation, Inc.
+// Copyright (C) 2013-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,8 +31,14 @@ void test01()
   static_assert(is_same<add_pointer<const int>::type, const int*>::value, "");
   static_assert(is_same<add_pointer<int&>::type, int*>::value, "");
   static_assert(is_same<add_pointer<ClassType*>::type,
-		ClassType**>::value, "");
+			ClassType**>::value, "");
   static_assert(is_same<add_pointer<ClassType>::type, ClassType*>::value, "");
+  static_assert(is_same<add_pointer<void>::type, void*>::value, "");
+  static_assert(is_same<add_pointer<const void>::type, const void*>::value, "");
+  static_assert(is_same<add_pointer<volatile void>::type,
+			volatile void*>::value, "");
+  static_assert(is_same<add_pointer<const volatile void>::type,
+			const volatile void*>::value, "");
 }
 
 void test02()

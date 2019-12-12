@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -76,8 +76,8 @@ namespace __gnu_pbds
   public:
     typedef typename _Alloc::size_type			  size_type;
     typedef String 					  key_type;
-    typedef typename _Alloc::template rebind<key_type>	  __rebind_k;
-    typedef typename __rebind_k::other::const_reference   key_const_reference;
+    typedef typename detail::rebind_traits<_Alloc, key_type>::const_reference
+      key_const_reference;
 
     enum
       {
@@ -315,7 +315,7 @@ namespace __gnu_pbds
     typedef typename __rebind_ma::reference 		metadata_reference;
 
     /// Returns true if the container is empty.
-    virtual bool
+    _GLIBCXX_NODISCARD virtual bool
     empty() const = 0;
 
     /// Returns the iterator associated with the trie's first element.

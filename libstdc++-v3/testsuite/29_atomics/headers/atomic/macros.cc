@@ -1,6 +1,6 @@
 // { dg-do preprocess { target c++11 } }
 
-// Copyright (C) 2008-2018 Free Software Foundation, Inc.
+// Copyright (C) 2008-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,9 +31,18 @@
 # error "ATOMIC_CHAR_LOCK_FREE must be 1 or 2"
 #endif
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+# ifndef ATOMIC_CHAR8_T_LOCK_FREE
+#  error "ATOMIC_CHAR8_T_LOCK_FREE must be a macro"
+# elif ATOMIC_CHAR8_T_LOCK_FREE != 1 && ATOMIC_CHAR8_T_LOCK_FREE != 2
+#  error "ATOMIC_CHAR8_T_LOCK_FREE must be 1 or 2"
+# endif
+#endif
+
 #ifndef ATOMIC_CHAR16_T_LOCK_FREE 
 # error "ATOMIC_CHAR16_T_LOCK_FREE must be a macro"
 #elif ATOMIC_CHAR16_T_LOCK_FREE != 1 && ATOMIC_CHAR16_T_LOCK_FREE != 2
+# error "ATOMIC_CHAR16_T_LOCK_FREE must be 1 or 2"
 #endif
 
 #ifndef ATOMIC_CHAR32_T_LOCK_FREE 

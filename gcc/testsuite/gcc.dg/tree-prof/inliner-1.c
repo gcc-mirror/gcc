@@ -28,15 +28,15 @@ main ()
   for (i = 0; i < 1000000; i++)
     {
       if (a)
-        cold_function ();
+        cold_function ();   /* Should not be inlined.  */
       else
-        hot_function ();
+        hot_function ();    /* Should be inlined.  */
     }
   return 0;
 }
 
-/* cold function should be inlined, while hot function should not.  
-   Look for "cold_function () [tail call];" call statement not for the
-   declaration or other appearances of the string in dump.  */
+/* The call to hot_function should be inlined, while cold_function should
+   not be.  Look for the "cold_function ();" call statement and not for
+   its declaration or other occurrences of the string in the dump.  */
 /* { dg-final-use { scan-tree-dump "cold_function ..;" "optimized"} } */
 /* { dg-final-use { scan-tree-dump-not "hot_function ..;" "optimized"} } */

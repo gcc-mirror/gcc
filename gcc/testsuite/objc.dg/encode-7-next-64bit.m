@@ -9,10 +9,11 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
-#include <Foundation/NSObject.h>
+#include <stdio.h>
+#include "../objc-obj-c++-shared/F-NSObject.h"
+#include "../objc-obj-c++-shared/CF-CFString.h"
 #include "../objc-obj-c++-shared/runtime.h"
 
-extern int printf(char *,...);
 void CHECK_IF(const char *s1, const char *s2)
 {
  if (strcmp(s1,s2) != 0) {

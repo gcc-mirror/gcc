@@ -1,5 +1,5 @@
 /* Description of target passes for IA-32 
-   Copyright (C) 2016-2018 Free Software Foundation, Inc.
+   Copyright (C) 2016-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,3 +31,5 @@ along with GCC; see the file COPYING3.  If not see
   INSERT_PASS_BEFORE (pass_cse2, 1, pass_stv, true /* timode_p */);
 
   INSERT_PASS_BEFORE (pass_shorten_branches, 1, pass_insert_endbranch);
+
+  INSERT_PASS_AFTER (pass_combine, 1, pass_remove_partial_avx_dependency);

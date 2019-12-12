@@ -3,11 +3,11 @@
 
 #include "loop_add_4.c"
 
-/* { dg-final { scan-assembler-times {\tindex\tz[0-9]+\.b, w[0-9]+, #-16\n} 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tindex\tz[0-9]+\.b, w[0-9]+, #-15\n} 1 { xfail *-*-* }  } } */
+/* { dg-final { scan-assembler-times {\tindex\tz[0-9]+\.b, w[0-9]+, #-16\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tindex\tz[0-9]+\.b, w[0-9]+, #-15\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tindex\tz[0-9]+\.b, w[0-9]+, #1\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tindex\tz[0-9]+\.b, w[0-9]+, #15\n} 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tindex\tz[0-9]+\.b, w[0-9]+, w[0-9]+\n} 3 { xfail *-*-* }  } } */
+/* { dg-final { scan-assembler-times {\tindex\tz[0-9]+\.b, w[0-9]+, #15\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tindex\tz[0-9]+\.b, w[0-9]+, w[0-9]+\n} 3 } } */
 /* { dg-final { scan-assembler-times {\tld1b\tz[0-9]+\.b, p[0-7]+/z, \[x[0-9]+, x[0-9]+\]} 8 } } */
 /* { dg-final { scan-assembler-times {\tst1b\tz[0-9]+\.b, p[0-7]+, \[x[0-9]+, x[0-9]+\]} 8 } } */
 
@@ -16,11 +16,11 @@
 /* { dg-final { scan-assembler-times {\tadd\tz[0-9]+\.b, z[0-9]+\.b, #} 6 } } */
 /* { dg-final { scan-assembler-times {\tadd\tz[0-9]+\.b, z[0-9]+\.b, z[0-9]+\.b\n} 8 } } */
 
-/* { dg-final { scan-assembler-times {\tindex\tz[0-9]+\.h, w[0-9]+, #-16\n} 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tindex\tz[0-9]+\.h, w[0-9]+, #-15\n} 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {\tindex\tz[0-9]+\.h, w[0-9]+, #-16\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tindex\tz[0-9]+\.h, w[0-9]+, #-15\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tindex\tz[0-9]+\.h, w[0-9]+, #1\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tindex\tz[0-9]+\.h, w[0-9]+, #15\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tindex\tz[0-9]+\.h, w[0-9]+, w[0-9]+\n} 3 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {\tindex\tz[0-9]+\.h, w[0-9]+, w[0-9]+\n} 3 } } */
 /* { dg-final { scan-assembler-times {\tld1h\tz[0-9]+\.h, p[0-7]+/z, \[x[0-9]+, x[0-9]+, lsl 1\]} 8 } } */
 /* { dg-final { scan-assembler-times {\tst1h\tz[0-9]+\.h, p[0-7]+, \[x[0-9]+, x[0-9]+, lsl 1\]} 8 } } */
 

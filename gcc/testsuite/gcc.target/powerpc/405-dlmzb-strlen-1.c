@@ -3,7 +3,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { powerpc*-*-aix* } } */
 /* { dg-require-effective-target ilp32 } */
-/* { dg-options "-O2 -mcpu=405" } */
+/* { dg-options "-O2 -mdejagnu-cpu=405" } */
 /* { dg-skip-if "other options override -mcpu=405" { ! powerpc_405_nocache } } */
 
 /* { dg-final { scan-assembler "dlmzb\\. " } } */

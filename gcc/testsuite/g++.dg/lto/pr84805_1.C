@@ -3,7 +3,7 @@ public:
   virtual ~XclRoot();
 };
 class XclImpRoot : XclRoot {};
-struct RootData { // { dg-lto-warning "8: type 'struct RootData' violates the C\\+\\+ One Definition Rule" }
+struct RootData {
   XclImpRoot pIR;
 };
 class ExcRoot {

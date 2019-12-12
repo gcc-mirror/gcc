@@ -1,5 +1,5 @@
-/* { dg-do run } */
-/* { dg-options "-O2 -fipa-sra -fdump-tree-eipa_sra-details"  } */
+/* { dg-do compile } */
+/* { dg-options "-O2 -fipa-sra -fdump-ipa-sra-details"  } */
 
 struct bovid
 {
@@ -36,4 +36,4 @@ main (int argc, char *argv[])
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-not "About to replace expr" "eipa_sra" } } */
+/* { dg-final { scan-ipa-dump-not "Will split parameter" "sra" } } */

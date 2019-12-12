@@ -23,12 +23,10 @@
      of third, second and first.  */
 /* { dg-final { scan-assembler-times "\\(DIE \\(\[^\n\]*\\) DW_TAG_inlined_subroutine" 6 } } */
 
-/* Likewise we should have 6 DW_TAG_lexical_block DIEs:
-   - One for each subroutine inlined into main, so that's 3.
-   - One for each subroutine inlined in the out of line instances
-     of third, second and first, that's 3.
-*/
-/* { dg-final { scan-assembler-times "\\(DIE \\(\[^\n\]*\\) DW_TAG_lexical_block" 6 } } */
+/* We should have no DW_TAG_lexical_block DIEs, all inline instances
+   should have the first subblock elided to match the abstract instance
+   layout.  */
+/* { dg-final { scan-assembler-times "\\(DIE \\(\[^\n\]*\\) DW_TAG_lexical_block" 0 } } */
 
 
 /* There are 3 DW_AT_inline attributes: one per abstract inline instance.

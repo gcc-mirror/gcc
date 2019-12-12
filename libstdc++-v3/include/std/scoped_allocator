@@ -1,6 +1,6 @@
 // <scoped_allocator> -*- C++ -*-
 
-// Copyright (C) 2011-2018 Free Software Foundation, Inc.
+// Copyright (C) 2011-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,6 +24,7 @@
 
 /** @file include/scoped_allocator
  *  This is a Standard C++ Library header.
+ *  @ingroup allocators
  */
 
 #ifndef _SCOPED_ALLOCATOR
@@ -35,6 +36,7 @@
 # include <bits/c++0x_warning.h>
 #else
 
+#include <memory>
 #include <utility>
 #include <tuple>
 #include <bits/alloc_traits.h>
@@ -47,6 +49,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @addtogroup allocators
    * @{
    */
+
+  /// @cond undocumented
 
   template<typename _Alloc>
     using __outer_allocator_t
@@ -74,6 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __base::_S_outermost(__a.outer_allocator()); }
     };
 
+  /// Implementation of the OUTERMOST pseudofunction
   template<typename _Alloc>
     inline typename __outermost_type<_Alloc>::type&
     __outermost(_Alloc& __a)
@@ -163,7 +168,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __type _M_inner;
     };
 
-  /// Primary class template.
+  /// @endcond
+
+  /// An adaptor to recursively pass an allocator to the objects it constructs
   template<typename _OuterAlloc, typename... _InnerAllocs>
     class scoped_allocator_adaptor
     : public _OuterAlloc
@@ -187,6 +194,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	using __outermost_alloc_traits
 	  = allocator_traits<typename __outermost_type<_Alloc>::type>;
 
+#if __cplusplus <= 201703
       template<typename _Tp, typename... _Args>
         void
         _M_construct(__uses_alloc0, _Tp* __p, _Args&&... __args)
@@ -218,6 +226,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			       std::forward<_Args>(__args)...,
 			       inner_allocator());
         }
+#endif // C++17
 
       template<typename _Alloc>
         static _Alloc
@@ -343,10 +352,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const outer_allocator_type& outer_allocator() const noexcept
       { return static_cast<const _OuterAlloc&>(*this); }
 
-      pointer allocate(size_type __n)
+      _GLIBCXX_NODISCARD pointer allocate(size_type __n)
       { return __traits::allocate(outer_allocator(), __n); }
 
-      pointer allocate(size_type __n, const_void_pointer __hint)
+      _GLIBCXX_NODISCARD pointer allocate(size_type __n, const_void_pointer __hint)
       { return __traits::allocate(outer_allocator(), __n, __hint); }
 
       void deallocate(pointer __p, size_type __n)
@@ -355,13 +364,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_type max_size() const
       { return __traits::max_size(outer_allocator()); }
 
+#if __cplusplus <= 201703
       template<typename _Tp, typename... _Args>
 	typename __not_pair<_Tp>::type
 	construct(_Tp* __p, _Args&&... __args)
 	{
 	  auto& __inner = inner_allocator();
 	  auto __use_tag
-	    = __use_alloc<_Tp, inner_allocator_type, _Args...>(__inner);
+	    = std::__use_alloc<_Tp, inner_allocator_type, _Args...>(__inner);
 	  _M_construct(__use_tag, __p, std::forward<_Args>(__args)...);
 	}
 
@@ -375,9 +385,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // 2203.  wrong argument types for piecewise construction
 	  auto& __inner = inner_allocator();
 	  auto __x_use_tag
-	    = __use_alloc<_T1, inner_allocator_type, _Args1...>(__inner);
+	    = std::__use_alloc<_T1, inner_allocator_type, _Args1...>(__inner);
 	  auto __y_use_tag
-	    = __use_alloc<_T2, inner_allocator_type, _Args2...>(__inner);
+	    = std::__use_alloc<_T2, inner_allocator_type, _Args2...>(__inner);
 	  typename _Build_index_tuple<sizeof...(_Args1)>::__type __x_indices;
 	  typename _Build_index_tuple<sizeof...(_Args2)>::__type __y_indices;
 	  typedef __outermost_alloc_traits<scoped_allocator_adaptor> _O_traits;
@@ -417,6 +427,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    std::forward_as_tuple(std::forward<_Up>(__x.first)),
 		    std::forward_as_tuple(std::forward<_Vp>(__x.second)));
 	}
+#else // C++2a
+      template<typename _Tp, typename... _Args>
+	__attribute__((__nonnull__))
+	void
+	construct(_Tp* __p, _Args&&... __args)
+	{
+	  typedef __outermost_alloc_traits<scoped_allocator_adaptor> _O_traits;
+	  std::apply([__p, this](auto&&... __newargs) {
+	      _O_traits::construct(__outermost(*this), __p,
+		  std::forward<decltype(__newargs)>(__newargs)...);
+	  },
+	  uses_allocator_construction_args<_Tp>(inner_allocator(),
+	    std::forward<_Args>(__args)...));
+	}
+#endif // C++2a
 
       template<typename _Tp>
         void destroy(_Tp* __p)
@@ -439,6 +464,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                  const scoped_allocator_adaptor<_OutA2, _InA...>& __b) noexcept;
 
     private:
+#if __cplusplus <= 201703L
       template<typename _Ind, typename... _Args>
 	tuple<_Args&&...>
 	_M_construct_p(__uses_alloc0, _Ind, tuple<_Args...>& __t)
@@ -461,8 +487,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  return { std::get<_Ind>(std::move(__t))..., inner_allocator() };
 	}
+#endif // C++17
     };
 
+  /// @related std::scoped_allocator_adaptor
   template <typename _OutA1, typename _OutA2, typename... _InA>
     inline bool
     operator==(const scoped_allocator_adaptor<_OutA1, _InA...>& __a,
@@ -472,6 +500,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
           && __a._M_inner == __b._M_inner;
     }
 
+  /// @related std::scoped_allocator_adaptor
   template <typename _OutA1, typename _OutA2, typename... _InA>
     inline bool
     operator!=(const scoped_allocator_adaptor<_OutA1, _InA...>& __a,

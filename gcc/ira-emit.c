@@ -1,5 +1,5 @@
 /* Integrated Register Allocator.  Changing code and generating moves.
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -997,23 +997,30 @@ emit_moves (void)
   basic_block bb;
   edge_iterator ei;
   edge e;
-  rtx_insn *insns, *tmp;
+  rtx_insn *insns, *tmp, *next;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
       if (at_bb_start[bb->index] != NULL)
 	{
 	  at_bb_start[bb->index] = modify_move_list (at_bb_start[bb->index]);
-	  insns = emit_move_list (at_bb_start[bb->index],
-				  REG_FREQ_FROM_BB (bb));
+	  insns
+	    = emit_move_list (at_bb_start[bb->index], REG_FREQ_FROM_BB (bb));
 	  tmp = BB_HEAD (bb);
 	  if (LABEL_P (tmp))
 	    tmp = NEXT_INSN (tmp);
 	  if (NOTE_INSN_BASIC_BLOCK_P (tmp))
 	    tmp = NEXT_INSN (tmp);
+	  /* Make sure to put the location of TMP or a subsequent instruction
+	     to avoid inheriting the location of the previous instruction.  */
+	  next = tmp;
+	  while (next && !NONDEBUG_INSN_P (next))
+	    next = NEXT_INSN (next);
+	  if (next)
+	    set_insn_locations (insns, INSN_LOCATION (next));
 	  if (tmp == BB_HEAD (bb))
 	    emit_insn_before (insns, tmp);
-	  else if (tmp != NULL_RTX)
+	  else if (tmp)
 	    emit_insn_after (insns, PREV_INSN (tmp));
 	  else
 	    emit_insn_after (insns, get_last_insn ());
@@ -1115,8 +1122,8 @@ add_range_and_copies_from_move_list (move_t list, ira_loop_tree_node_t node,
 	      ira_allocate_object_conflicts (to_obj, n);
 	    }
 	}
-      ior_hard_reg_conflicts (from, &hard_regs_live);
-      ior_hard_reg_conflicts (to, &hard_regs_live);
+      ior_hard_reg_conflicts (from, hard_regs_live);
+      ior_hard_reg_conflicts (to, hard_regs_live);
 
       update_costs (from, true, freq);
       update_costs (to, false, freq);

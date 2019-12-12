@@ -25,5 +25,5 @@ bi_windup(unsigned int *outbuf, unsigned int bi_buf)
 /* We should eliminate one load of outcnt, which will in turn let us eliminate
    one multiply of outcnt which will in turn let us eliminate
    one add involving outcnt and outbuf.  */
-/* { dg-final { scan-tree-dump-times "Eliminated: 3" 1 "pre" {target { ! avr-*-* } } } } */
-/* { dg-final { scan-tree-dump-times "Eliminated: 4" 1 "pre" {target {   avr-*-* } } } } */
+/* { dg-final { scan-tree-dump-times "Eliminated: 3" 1 "pre" { target { ! { avr-*-* msp430-*-* } } } } } */
+/* { dg-final { scan-tree-dump-times "Eliminated: 4" 1 "pre" { target avr-*-* msp430-*-* } } } */

@@ -1,0 +1,42 @@
+/* PR c/89521 */
+/* { dg-do compile } */
+/* { dg-options "-Ofast -w" } */
+
+#define A(name) __typeof (__builtin_##name (0)) name (); \
+  float name##1 () { return name (1); } \
+  double name##2 () { return name (1); }
+#define B(name) A(name) A(name##l)
+B (cosh)
+B (exp)
+B (exp10)
+B (exp2)
+B (expm1)
+B (gamma)
+B (j0)
+B (j1)
+B (lgamma)
+B (pow10)
+B (sinh)
+B (tgamma)
+B (y0)
+B (y1)
+B (acos)
+B (acosh)
+B (asin)
+B (asinh)
+B (atan)
+B (atanh)
+B (cbrt)
+B (cos)
+B (erf)
+B (erfc)
+B (log)
+B (log10)
+B (log2)
+B (log1p)
+B (sin)
+B (tan)
+B (tanh)
+B (sqrt)
+B (fabs)
+B (logb)

@@ -124,7 +124,7 @@ swap(_Tp&, _Tp&)
   ;
 typedef lexertl::basic_state_machine<char32_t> lexstate;
 lexstate m_state_machine;
-GenerateLexer()
+void GenerateLexer()
 {
   m_state_machine.minimise();
 }

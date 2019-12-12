@@ -1,5 +1,5 @@
 /* Single entry single exit control flow regions.
-   Copyright (C) 2008-2018 Free Software Foundation, Inc.
+   Copyright (C) 2008-2019 Free Software Foundation, Inc.
    Contributed by Jan Sjodin <jan.sjodin@amd.com> and
    Sebastian Pop <sebastian.pop@amd.com>.
 
@@ -149,7 +149,7 @@ sese_build_liveouts (sese_info_p region)
 sese_info_p
 new_sese_info (edge entry, edge exit)
 {
-  sese_info_p region = XNEW (struct sese_info_t);
+  sese_info_p region = XNEW (class sese_info_t);
 
   region->region.entry = entry;
   region->region.exit = exit;
@@ -217,10 +217,10 @@ sese_insert_phis_for_liveouts (sese_info_p region, basic_block bb,
 
 /* Returns the outermost loop in SCOP that contains BB.  */
 
-struct loop *
+class loop *
 outermost_loop_in_sese_1 (sese_l &region, basic_block bb)
 {
-  struct loop *nest;
+  class loop *nest;
 
   nest = bb->loop_father;
   while (loop_outer (nest)

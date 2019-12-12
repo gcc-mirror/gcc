@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2018, AdaCore                     --
+--                     Copyright (C) 2002-2019, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -418,6 +418,16 @@ package body GNAT.Sockets.Thin is
 
       return R;
    end C_Socket;
+
+   ------------------
+   -- C_Socketpair --
+   ------------------
+
+   function C_Socketpair
+     (Domain   : C.int;
+      Typ      : C.int;
+      Protocol : C.int;
+      Fds      : not null access Fd_Pair) return C.int is separate;
 
    --------------
    -- Finalize --

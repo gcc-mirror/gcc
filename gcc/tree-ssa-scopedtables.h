@@ -1,5 +1,5 @@
 /* Header file for SSA dominator optimizations.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -96,7 +96,7 @@ class expr_hash_elt
 
   /* A unique stamp, typically the address of the hash
      element itself, used in removing entries from the table.  */
-  struct expr_hash_elt *m_stamp;
+  class expr_hash_elt *m_stamp;
 
   /* We should never be making assignments between objects in this class.
      Though it might allow us to exploit C++11 move semantics if we

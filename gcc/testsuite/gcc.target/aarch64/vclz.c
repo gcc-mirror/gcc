@@ -75,7 +75,7 @@ extern void abort (void);
     if (a [i] != b [i])							\
       return 1;
 
-int
+int __attribute__ ((noinline))
 test_vclz_s8 ()
 {
   int i;
@@ -107,7 +107,7 @@ test_vclz_s8 ()
 /* Double scan-assembler-times to take account of unsigned functions.  */
 /* { dg-final { scan-assembler-times "clz\\tv\[0-9\]+\.8b, v\[0-9\]+\.8b" 4 } } */
 
-int
+int __attribute__ ((noinline))
 test_vclz_s16 ()
 {
   int i;
@@ -138,7 +138,7 @@ test_vclz_s16 ()
 /* Double scan-assembler-times to take account of unsigned functions.  */
 /* { dg-final { scan-assembler-times "clz\\tv\[0-9\]+\.4h, v\[0-9\]+\.4h" 10} } */
 
-int
+int __attribute__ ((noinline))
 test_vclz_s32 ()
 {
   int i;
@@ -205,7 +205,7 @@ test_vclz_s32 ()
 /* Double scan-assembler-times to take account of unsigned functions.  */
 /* { dg-final { scan-assembler-times "clz\\tv\[0-9\]+\.2s, v\[0-9\]+\.2s" 34 } } */
 
-int
+int __attribute__ ((noinline))
 test_vclzq_s8 ()
 {
   int i;
@@ -226,7 +226,7 @@ test_vclzq_s8 ()
 /* Double scan-assembler-times to take account of unsigned functions.  */
 /* { dg-final { scan-assembler-times "clz\\tv\[0-9\]+\.16b, v\[0-9\]+\.16b" 2 } } */
 
-int
+int __attribute__ ((noinline))
 test_vclzq_s16 ()
 {
   int i;
@@ -262,7 +262,7 @@ test_vclzq_s16 ()
 /* Double scan-assembler-times to take account of unsigned functions.  */
 /* { dg-final { scan-assembler-times "clz\\tv\[0-9\]+\.8h, v\[0-9\]+\.8h" 6 } } */
 
-int
+int __attribute__ ((noinline))
 test_vclzq_s32 ()
 {
   int i;
@@ -303,7 +303,7 @@ test_vclzq_s32 ()
 
 /* Unsigned versions.  */
 
-int
+int __attribute__ ((noinline))
 test_vclz_u8 ()
 {
   int i;
@@ -331,7 +331,7 @@ test_vclz_u8 ()
 
 /* ASM scan near test for signed version.  */
 
-int
+int __attribute__ ((noinline))
 test_vclz_u16 ()
 {
   int i;
@@ -361,7 +361,7 @@ test_vclz_u16 ()
 
 /* ASM scan near test for signed version.  */
 
-int
+int __attribute__ ((noinline))
 test_vclz_u32 ()
 {
   int i;
@@ -427,7 +427,7 @@ test_vclz_u32 ()
 
 /* ASM scan near test for signed version.  */
 
-int
+int __attribute__ ((noinline))
 test_vclzq_u8 ()
 {
   int i;
@@ -448,7 +448,7 @@ test_vclzq_u8 ()
 
 /* ASM scan near test for signed version.  */
 
-int
+int __attribute__ ((noinline))
 test_vclzq_u16 ()
 {
   int i;
@@ -485,7 +485,7 @@ test_vclzq_u16 ()
 
 /* ASM scan near test for signed version.  */
 
-int
+int __attribute__ ((noinline))
 test_vclzq_u32 ()
 {
   int i;

@@ -14,6 +14,7 @@ compute_integral (double w_1[18])
 
   for (int ip_1 = 0; ip_1 < 2; ++ip_1)
     {
+#pragma GCC unroll 0
       for (int i_0 = 0; i_0 < 6; ++i_0)
 	t33[ip_1][i_0] = ((w_1[i_0*3] * t32[ip_1][0])
 			  + (w_1[i_0*3+2] * t32[ip_1][2]));

@@ -1,5 +1,5 @@
 /* Simple garbage collection for the GNU compiler.
-   Copyright (C) 1999-2018 Free Software Foundation, Inc.
+   Copyright (C) 1999-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,14 +21,15 @@ along with GCC; see the file COPYING3.  If not see
    any particular GC implementation.  */
 
 #include "config.h"
+#define INCLUDE_MALLOC_H
 #include "system.h"
 #include "coretypes.h"
 #include "timevar.h"
 #include "diagnostic-core.h"
 #include "ggc-internal.h"
-#include "params.h"
 #include "hosthooks.h"
 #include "plugin.h"
+#include "options.h"
 
 /* When set, ggc_collect will do collection.  */
 bool ggc_force_collect;
@@ -194,14 +195,6 @@ ggc_splay_dont_free (void * x ATTRIBUTE_UNUSED, void *nl)
 {
   gcc_assert (!nl);
 }
-
-/* Print statistics that are independent of the collector in use.  */
-#define SCALE(x) ((unsigned long) ((x) < 1024*10 \
-		  ? (x) \
-		  : ((x) < 1024*1024*10 \
-		     ? (x) / 1024 \
-		     : (x) / (1024*1024))))
-#define LABEL(x) ((x) < 1024*10 ? ' ' : ((x) < 1024*1024*10 ? 'k' : 'M'))
 
 void
 ggc_print_common_statistics (FILE *stream ATTRIBUTE_UNUSED,
@@ -390,7 +383,7 @@ write_pch_globals (const struct ggc_root_tab * const *tab,
 	    {
 	      if (fwrite (&ptr, sizeof (void *), 1, state->f)
 		  != 1)
-		fatal_error (input_location, "can%'t write PCH file: %m");
+		fatal_error (input_location, "cannot write PCH file: %m");
 	    }
 	  else
 	    {
@@ -398,7 +391,7 @@ write_pch_globals (const struct ggc_root_tab * const *tab,
 		saving_htab->find_with_hash (ptr, POINTER_HASH (ptr));
 	      if (fwrite (&new_ptr->new_addr, sizeof (void *), 1, state->f)
 		  != 1)
-		fatal_error (input_location, "can%'t write PCH file: %m");
+		fatal_error (input_location, "cannot write PCH file: %m");
 	    }
 	}
 }
@@ -467,7 +460,7 @@ gt_pch_save (FILE *f)
   for (rt = gt_pch_scalar_rtab; *rt; rt++)
     for (rti = *rt; rti->base != NULL; rti++)
       if (fwrite (rti->base, rti->stride, 1, f) != 1)
-	fatal_error (input_location, "can%'t write PCH file: %m");
+	fatal_error (input_location, "cannot write PCH file: %m");
 
   /* Write out all the global pointers, after translation.  */
   write_pch_globals (gt_ggc_rtab, &state);
@@ -478,17 +471,17 @@ gt_pch_save (FILE *f)
     long o;
     o = ftell (state.f) + sizeof (mmi);
     if (o == -1)
-      fatal_error (input_location, "can%'t get position in PCH file: %m");
+      fatal_error (input_location, "cannot get position in PCH file: %m");
     mmi.offset = mmap_offset_alignment - o % mmap_offset_alignment;
     if (mmi.offset == mmap_offset_alignment)
       mmi.offset = 0;
     mmi.offset += o;
   }
   if (fwrite (&mmi, sizeof (mmi), 1, state.f) != 1)
-    fatal_error (input_location, "can%'t write PCH file: %m");
+    fatal_error (input_location, "cannot write PCH file: %m");
   if (mmi.offset != 0
       && fseek (state.f, mmi.offset, SEEK_SET) != 0)
-    fatal_error (input_location, "can%'t write padding to PCH file: %m");
+    fatal_error (input_location, "cannot write padding to PCH file: %m");
 
   ggc_pch_prepare_write (state.d, state.f);
 
@@ -610,7 +603,7 @@ gt_pch_restore (FILE *f)
   for (rt = gt_pch_scalar_rtab; *rt; rt++)
     for (rti = *rt; rti->base != NULL; rti++)
       if (fread (rti->base, rti->stride, 1, f) != 1)
-	fatal_error (input_location, "can%'t read PCH file: %m");
+	fatal_error (input_location, "cannot read PCH file: %m");
 
   /* Read in all the global pointers, in 6 easy loops.  */
   for (rt = gt_ggc_rtab; *rt; rt++)
@@ -618,10 +611,10 @@ gt_pch_restore (FILE *f)
       for (i = 0; i < rti->nelt; i++)
 	if (fread ((char *)rti->base + rti->stride * i,
 		   sizeof (void *), 1, f) != 1)
-	  fatal_error (input_location, "can%'t read PCH file: %m");
+	  fatal_error (input_location, "cannot read PCH file: %m");
 
   if (fread (&mmi, sizeof (mmi), 1, f) != 1)
-    fatal_error (input_location, "can%'t read PCH file: %m");
+    fatal_error (input_location, "cannot read PCH file: %m");
 
   result = host_hooks.gt_pch_use_address (mmi.preferred_base, mmi.size,
 					  fileno (f), mmi.offset);
@@ -631,10 +624,10 @@ gt_pch_restore (FILE *f)
     {
       if (fseek (f, mmi.offset, SEEK_SET) != 0
 	  || fread (mmi.preferred_base, mmi.size, 1, f) != 1)
-	fatal_error (input_location, "can%'t read PCH file: %m");
+	fatal_error (input_location, "cannot read PCH file: %m");
     }
   else if (fseek (f, mmi.offset + mmi.size, SEEK_SET) != 0)
-    fatal_error (input_location, "can%'t read PCH file: %m");
+    fatal_error (input_location, "cannot read PCH file: %m");
 
   ggc_pch_read (f, mmi.preferred_base);
 
@@ -820,14 +813,15 @@ void
 init_ggc_heuristics (void)
 {
 #if !defined ENABLE_GC_CHECKING && !defined ENABLE_GC_ALWAYS_COLLECT
-  set_default_param_value (GGC_MIN_EXPAND, ggc_min_expand_heuristic ());
-  set_default_param_value (GGC_MIN_HEAPSIZE, ggc_min_heapsize_heuristic ());
+  param_ggc_min_expand = ggc_min_expand_heuristic ();
+  param_ggc_min_heapsize = ggc_min_heapsize_heuristic ();
 #endif
 }
 
 /* GGC memory usage.  */
-struct ggc_usage: public mem_usage
+class ggc_usage: public mem_usage
 {
+public:
   /* Default constructor.  */
   ggc_usage (): m_freed (0), m_collected (0), m_overhead (0) {}
   /* Constructor.  */
@@ -890,16 +884,18 @@ struct ggc_usage: public mem_usage
   inline void
   dump (const char *prefix, ggc_usage &total) const
   {
-    long balance = get_balance ();
+    size_t balance = get_balance ();
     fprintf (stderr,
-	     "%-48s %10li:%5.1f%%%10li:%5.1f%%"
-	     "%10li:%5.1f%%%10li:%5.1f%%%10li\n",
-	     prefix, (long)m_collected,
+	     "%-48s " PRsa (9) ":%5.1f%%" PRsa (9) ":%5.1f%%"
+	     PRsa (9) ":%5.1f%%" PRsa (9) ":%5.1f%%" PRsa (9) "\n",
+	     prefix,
+	     SIZE_AMOUNT (balance), get_percent (balance, total.get_balance ()),
+	     SIZE_AMOUNT (m_collected),
 	     get_percent (m_collected, total.m_collected),
-	     (long)m_freed, get_percent (m_freed, total.m_freed),
-	     (long)balance, get_percent (balance, total.get_balance ()),
-	     (long)m_overhead, get_percent (m_overhead, total.m_overhead),
-	     (long)m_times);
+	     SIZE_AMOUNT (m_freed), get_percent (m_freed, total.m_freed),
+	     SIZE_AMOUNT (m_overhead),
+	     get_percent (m_overhead, total.m_overhead),
+	     SIZE_AMOUNT (m_times));
   }
 
   /* Dump usage coupled to LOC location, where TOTAL is sum of all rows.  */
@@ -917,13 +913,11 @@ struct ggc_usage: public mem_usage
   inline void
   dump_footer ()
   {
-    print_dash_line ();
     dump ("Total", *this);
-    print_dash_line ();
   }
 
   /* Get balance which is GGC allocation leak.  */
-  inline long
+  inline size_t
   get_balance () const
   {
     return m_allocated + m_overhead - m_collected - m_freed;
@@ -935,37 +929,21 @@ struct ggc_usage: public mem_usage
   static int
   compare (const void *first, const void *second)
   {
-    const mem_pair_t f = *(const mem_pair_t *)first;
-    const mem_pair_t s = *(const mem_pair_t *)second;
+    const mem_pair_t mem1 = *(const mem_pair_t *) first;
+    const mem_pair_t mem2 = *(const mem_pair_t *) second;
 
-    if (*f.second == *s.second)
-      return 0;
+    size_t balance1 = mem1.second->get_balance ();
+    size_t balance2 = mem2.second->get_balance ();
 
-    return *f.second < *s.second ? 1 : -1;
-  }
-
-  /* Compare rows in final GGC summary dump.  */
-  static int
-  compare_final (const void *first, const void *second)
-  {
-    typedef std::pair<mem_location *, ggc_usage *> mem_pair_t;
-
-    const ggc_usage *f = ((const mem_pair_t *)first)->second;
-    const ggc_usage *s = ((const mem_pair_t *)second)->second;
-
-    size_t a = f->m_allocated + f->m_overhead - f->m_freed;
-    size_t b = s->m_allocated + s->m_overhead - s->m_freed;
-
-    return a == b ? 0 : (a < b ? 1 : -1);
+    return balance1 == balance2 ? 0 : (balance1 < balance2 ? 1 : -1);
   }
 
   /* Dump header with NAME.  */
   static inline void
   dump_header (const char *name)
   {
-    fprintf (stderr, "%-48s %11s%17s%17s%16s%17s\n", name, "Garbage", "Freed",
-	     "Leak", "Overhead", "Times");
-    print_dash_line ();
+    fprintf (stderr, "%-48s %11s%17s%17s%16s%17s\n", name, "Leak", "Garbage",
+	     "Freed", "Overhead", "Times");
   }
 
   /* Freed memory in bytes.  */
@@ -982,7 +960,7 @@ static mem_alloc_description<ggc_usage> ggc_mem_desc;
 /* Dump per-site memory statistics.  */
 
 void
-dump_ggc_loc_statistics (bool final)
+dump_ggc_loc_statistics ()
 {
   if (! GATHER_STATISTICS)
     return;
@@ -990,7 +968,7 @@ dump_ggc_loc_statistics (bool final)
   ggc_force_collect = true;
   ggc_collect ();
 
-  ggc_mem_desc.dump (GGC_ORIGIN, final ? ggc_usage::compare_final : NULL);
+  ggc_mem_desc.dump (GGC_ORIGIN);
 
   ggc_force_collect = false;
 }
@@ -1024,8 +1002,19 @@ ggc_prune_overhead_list (void)
 
   for (; it != ggc_mem_desc.m_reverse_object_map->end (); ++it)
     if (!ggc_marked_p ((*it).first))
-      (*it).second.first->m_collected += (*it).second.second;
+      {
+        (*it).second.first->m_collected += (*it).second.second;
+	ggc_mem_desc.m_reverse_object_map->remove ((*it).first);
+      }
+}
 
-  delete ggc_mem_desc.m_reverse_object_map;
-  ggc_mem_desc.m_reverse_object_map = new map_t (13, false, false);
+/* Return memory used by heap in kb, 0 if this info is not available.  */
+
+void
+report_heap_memory_use ()
+{
+#ifdef HAVE_MALLINFO
+  if (!quiet_flag)
+    fprintf (stderr," {heap %luk}", (unsigned long)(mallinfo().arena / 1024));
+#endif
 }

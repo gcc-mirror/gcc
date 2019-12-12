@@ -1,6 +1,6 @@
 // Test for Container using non-standard pointer types.
 
-// Copyright (C) 2008-2018 Free Software Foundation, Inc.
+// Copyright (C) 2008-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,11 +17,15 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// This file tests explicit instantiation of library containers
+// with an allocator for a different value_type (which is a GNU extension).
 
 #include <vector>
 #include <ext/extptr_allocator.h>
 
 // { dg-do compile }
+// The extension that implicitly rebinds allocators is in gnu++98/11/14/17 only
+// { dg-skip-if "" { *-*-* } { "-std=c++*" "-std=gnu++2*" } }
 
 // libstdc++/21770
 template class std::vector<int, __gnu_cxx::_ExtPtr_allocator<char> >;

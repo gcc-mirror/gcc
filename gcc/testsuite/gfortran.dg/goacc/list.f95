@@ -24,7 +24,7 @@ program test
   !$acc parallel private (i) private (j)
   !$acc end parallel
 
-  !$acc parallel private ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc parallel private ! { dg-error "Failed to match clause" }
 
   !$acc parallel private() ! { dg-error "Syntax error" }
 
@@ -56,7 +56,7 @@ program test
   !$acc parallel firstprivate (i) firstprivate (j)
   !$acc end parallel
 
-  !$acc parallel firstprivate ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc parallel firstprivate ! { dg-error "Failed to match clause" }
 
   !$acc parallel firstprivate() ! { dg-error "Syntax error" }
 
@@ -91,7 +91,7 @@ program test
   !$acc host_data use_device (i) use_device (j) ! { dg-error "neither a POINTER nor an array" }
   !$acc end host_data
 
-  !$acc host_data use_device ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc host_data use_device ! { dg-error "Failed to match clause" }
 
   !$acc host_data use_device() ! { dg-error "Syntax error" }
 

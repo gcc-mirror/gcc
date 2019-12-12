@@ -1,3 +1,5 @@
+! { dg-do run }
+!
 program map
   integer, parameter     :: n = 20, c = 10
   integer                :: i, a(n), b(n)

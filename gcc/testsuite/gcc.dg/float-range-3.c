@@ -1,7 +1,6 @@
 /* PR 23572 : warnings for out of range floating-point constants.  */
 /* { dg-do compile } */
 /* { dg-options "-std=c99" } */
-/* { dg-skip-if "No Inf support" { spu-*-* } } */
 #include <math.h>
 
 #ifndef INFINITY

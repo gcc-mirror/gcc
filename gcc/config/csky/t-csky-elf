@@ -1,0 +1,107 @@
+# Multilib configuration for csky*-elf.
+#
+# Copyright (C) 2018-2019 Free Software Foundation, Inc.
+# Contributed by C-SKY Microsystems and Mentor Graphics.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Endiannesses.
+MULTILIB_OPTIONS      = mlittle-endian/mbig-endian
+MULTILIB_DIRNAMES     = little big
+MULTILIB_MATCHES      = mlittle-endian=EL
+MULTILIB_MATCHES      = mbig-endian=EB
+MULTILIB_EXCEPTIONS   =
+
+# Arch variants.
+MULTILIB_OPTIONS     += mcpu=ck802/mcpu=ck801/mcpu=ck803f/mcpu=ck807f/mcpu=ck810f
+MULTILIB_DIRNAMES    += ck802 ck801 ck803 ck807 ck810
+
+# For arch ck802.
+MULTILIB_MATCHES     += mcpu?ck802=march?ck802
+MULTILIB_MATCHES     += mcpu?ck802=mcpu?ck802t
+MULTILIB_MATCHES     += mcpu?ck802=mcpu?ck802j
+
+# For arch ck801.
+MULTILIB_MATCHES     += mcpu?ck801=march?ck801
+MULTILIB_MATCHES     += mcpu?ck801=mcpu?ck801t
+
+# For arch ck803.
+MULTILIB_MATCHES     += mcpu?ck803f=march?ck803
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803fh
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803h
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803t
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803ht
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803e
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803eh
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803et
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803eht
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803ef
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803efh
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803ft
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803eft
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803efht
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803r1
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803fr1
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803fhr1
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803hr1
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803tr1
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803htr1
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803er1
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803ehr1
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803etr1
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803ehtr1
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803efr1
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803efhr1
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803ftr1
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803eftr1
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803efhtr1
+
+# For arch ck803s.
+MULTILIB_MATCHES     += mcpu?ck803f=march?ck803s
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803s
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803st
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803se
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803sf
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803sef
+MULTILIB_MATCHES     += mcpu?ck803f=mcpu?ck803seft
+
+# For arch ck810.
+MULTILIB_MATCHES     += mcpu?ck810f=mcpu?ck810e
+MULTILIB_MATCHES     += mcpu?ck810f=mcpu?ck810et
+MULTILIB_MATCHES     += mcpu?ck810f=mcpu?ck810ef
+MULTILIB_MATCHES     += mcpu?ck810f=mcpu?ck810eft
+MULTILIB_MATCHES     += mcpu?ck810f=march?ck810
+MULTILIB_MATCHES     += mcpu?ck810f=mcpu?ck810
+MULTILIB_MATCHES     += mcpu?ck810f=mcpu?ck810v
+MULTILIB_MATCHES     += mcpu?ck810f=mcpu?ck810t
+MULTILIB_MATCHES     += mcpu?ck810f=mcpu?ck810vf
+MULTILIB_MATCHES     += mcpu?ck810f=mcpu?ck810tv
+MULTILIB_MATCHES     += mcpu?ck810f=mcpu?ck810ft
+MULTILIB_MATCHES     += mcpu?ck810f=mcpu?ck810ftv
+
+# For arch ck807.
+MULTILIB_MATCHES     += mcpu?ck807f=march?ck807e
+MULTILIB_MATCHES     += mcpu?ck807f=march?ck807ef
+MULTILIB_MATCHES     += mcpu?ck807f=march?ck807
+MULTILIB_MATCHES     += mcpu?ck807f=mcpu?ck807
+
+# For option -msoft-float/-mhard-float.
+MULTILIB_OPTIONS     += msoft-float/mhard-float
+MULTILIB_DIRNAMES    += soft-fp hard-fp
+MULTILIB_EXCEPTIONS  += *mcpu=ck801/*mhard-float*
+MULTILIB_EXCEPTIONS  += *mcpu=ck802/*mhard-float*

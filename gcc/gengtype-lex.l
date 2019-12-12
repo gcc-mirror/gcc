@@ -1,6 +1,6 @@
 /* -*- indented-text -*- */
 /* Process source files and output type information.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -58,7 +58,7 @@ ITYPE	{IWORD}({WS}{IWORD})*
     /* Include '::' in identifiers to capture C++ scope qualifiers.  */
 ID	{CID}({HWS}::{HWS}{CID})*
 EOID	[^[:alnum:]_]
-CXX_KEYWORD inline|public:|private:|protected:|template|operator|friend|static
+CXX_KEYWORD inline|public:|private:|protected:|template|operator|friend|static|mutable
 
 %x in_struct in_struct_comment in_comment
 %option warn noyywrap nounput nodefault perf-report

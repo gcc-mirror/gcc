@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -120,7 +120,8 @@ package Ada.Containers.Bounded_Hashed_Sets is
    --  Equivalent to Length (Container) = 0
 
    procedure Clear (Container : in out Set);
-   --  Removes all of the items from the set
+   --  Removes all of the items from the set. This will deallocate all memory
+   --  associated with this set.
 
    function Element (Position : Cursor) return Element_Type;
    --  Returns the element of the node designated by the cursor

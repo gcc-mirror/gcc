@@ -128,7 +128,7 @@ echo ${rev} > VERSION
 (cd ${NEWDIR}/src && find . -name '*.go' -print) | while read f; do
   skip=false
   case "$f" in
-  ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/internal/browser/* | ./cmd/internal/objabi/* | ./cmd/internal/buildid/*)
+  ./cmd/buildid/* | ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/testjson/* | ./cmd/vet/* | ./cmd/internal/browser/* | ./cmd/internal/buildid/* | ./cmd/internal/edit/* | ./cmd/internal/objabi/* | ./cmd/internal/testj2on/* | ./cmd/internal/sys/* | ./cmd/vendor/golang.org/x/tools/* )
     ;;
   ./cmd/*)
     skip=true
@@ -143,14 +143,14 @@ echo ${rev} > VERSION
 
   oldfile=${OLDDIR}/src/$f
   newfile=${NEWDIR}/src/$f
-  libgofile=go/`echo $f | sed -e 's|/vendor/|/|'`
+  libgofile=go/`echo $f | sed -e 's|cmd/vendor/|/|' | sed -e 's|/vendor/|/|'`
   merge $f ${oldfile} ${newfile} ${libgofile}
 done
 
 (cd ${NEWDIR}/src && find . -name testdata -print) | while read d; do
   skip=false
   case "$d" in
-  ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/internal/browser/*)
+  ./cmd/buildid/* | ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/testjson/* | ./cmd/vet/* | ./cmd/internal/browser/* | ./cmd/internal/buildid/* | ./cmd/internal/edit/* | ./cmd/internal/objabi/* | ./cmd/internal/testj2on/* | ./cmd/internal/sys/* | ./cmd/vendor/golang.org/x/tools/* )
     ;;
   ./cmd/*)
     skip=true
@@ -165,7 +165,7 @@ done
 
   oldtd=${OLDDIR}/src/$d
   newtd=${NEWDIR}/src/$d
-  libgotd=go/$d
+  libgofile=go/`echo $d | sed -e 's|cmd/vendor/|/|' | sed -e 's|/vendor/|/|'`
   if ! test -d ${oldtd}; then
     echo "merge.sh: $d: NEWDIR"
     continue

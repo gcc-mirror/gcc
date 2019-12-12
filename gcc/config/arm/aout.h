@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM with a.out
-   Copyright (C) 1995-2018 Free Software Foundation, Inc.
+   Copyright (C) 1995-2019 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@armltd.co.uk).
    
    This file is part of GCC.
@@ -72,7 +72,7 @@
   "wr8",   "wr9",   "wr10",  "wr11",				\
   "wr12",  "wr13",  "wr14",  "wr15",				\
   "wcgr0", "wcgr1", "wcgr2", "wcgr3",				\
-  "cc", "vfpcc", "sfp", "afp"					\
+  "cc", "vfpcc", "sfp", "afp", "apsrq", "apsrge"		\
 }
 #endif
 

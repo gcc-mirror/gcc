@@ -7,5 +7,5 @@ real  x
 namelist /mynml/ x
 printf, "check" ! { dg-error "Unclassifiable" }
 x = 1
-printmynml ! { dg-error "" }
+printmynml
 end

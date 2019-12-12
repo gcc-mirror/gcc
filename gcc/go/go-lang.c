@@ -1,5 +1,5 @@
 /* go-lang.c -- Go frontend gcc interface.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -118,6 +118,7 @@ go_langhook_init (void)
   args.debug_escape_level = go_debug_escape_level;
   args.debug_escape_hash = go_debug_escape_hash;
   args.nil_check_size_threshold = TARGET_AIX ? -1 : 4096;
+  args.debug_optimization = go_debug_optimization;
   args.linemap = go_get_linemap();
   args.backend = go_get_backend();
   go_create_gogo (&args);
@@ -194,7 +195,7 @@ static bool
 go_langhook_handle_option (
     size_t scode,
     const char *arg,
-    int value,
+    HOST_WIDE_INT value,
     int kind ATTRIBUTE_UNUSED,
     location_t loc ATTRIBUTE_UNUSED,
     const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
@@ -292,12 +293,17 @@ go_langhook_post_options (const char **pfilename ATTRIBUTE_UNUSED)
     go_add_search_path (dir);
   go_search_dirs.release ();
 
-  if (flag_excess_precision_cmdline == EXCESS_PRECISION_DEFAULT)
-    flag_excess_precision_cmdline = EXCESS_PRECISION_STANDARD;
+  if (flag_excess_precision == EXCESS_PRECISION_DEFAULT)
+    flag_excess_precision = EXCESS_PRECISION_STANDARD;
 
   /* Tail call optimizations can confuse uses of runtime.Callers.  */
-  if (!global_options_set.x_flag_optimize_sibling_calls)
-    global_options.x_flag_optimize_sibling_calls = 0;
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       flag_optimize_sibling_calls, 0);
+
+  /* Partial inlining can confuses uses of runtime.Callers.
+     See https://gcc.gnu.org/PR91663.  */
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       flag_partial_inlining, 0);
 
   /* If the debug info level is still 1, as set in init_options, make
      sure that some debugging type is selected.  */
@@ -306,18 +312,18 @@ go_langhook_post_options (const char **pfilename ATTRIBUTE_UNUSED)
     global_options.x_write_symbols = PREFERRED_DEBUGGING_TYPE;
 
   /* We turn on stack splitting if we can.  */
-  if (!global_options_set.x_flag_split_stack
-      && targetm_common.supports_split_stack (false, &global_options))
-    global_options.x_flag_split_stack = 1;
+  if (targetm_common.supports_split_stack (false, &global_options))
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 flag_split_stack, 1);
 
   /* If stack splitting is turned on, and the user did not explicitly
      request function partitioning, turn off partitioning, as it
      confuses the linker when trying to handle partitioned split-stack
      code that calls a non-split-stack function.  */
   if (global_options.x_flag_split_stack
-      && global_options.x_flag_reorder_blocks_and_partition
-      && !global_options_set.x_flag_reorder_blocks_and_partition)
-    global_options.x_flag_reorder_blocks_and_partition = 0;
+      && global_options.x_flag_reorder_blocks_and_partition)
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 flag_reorder_blocks_and_partition, 0);
 
   /* Returning false means that the backend should be used.  */
   return false;

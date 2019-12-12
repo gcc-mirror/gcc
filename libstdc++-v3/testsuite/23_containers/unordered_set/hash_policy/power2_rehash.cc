@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2018 Free Software Foundation, Inc.
+// Copyright (C) 2016-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,9 +26,10 @@ void test01()
 {
   std::__detail::_Power2_rehash_policy policy;
   VERIFY( policy._M_next_bkt(1) == 2 );
-  VERIFY( policy._M_next_bkt(2) == 4 );
+  VERIFY( policy._M_next_bkt(2) == 2 );
   VERIFY( policy._M_next_bkt(3) == 4 );
   VERIFY( policy._M_next_bkt(5) == 8 );
+  VERIFY( policy._M_next_bkt(16) == 16 );
   VERIFY( policy._M_next_bkt(33) == 64 );
   VERIFY( policy._M_next_bkt((std::size_t(1) << (sizeof(std::size_t) * 8 - 2)) + 1)
 	  == (std::size_t(1) << (sizeof(std::size_t) * 8 - 1)) );
@@ -38,20 +39,20 @@ void test02()
 {
   std::__detail::_Power2_rehash_policy policy;
 
-  for (std::size_t i = 1;;)
+  for (std::size_t i = 3;;)
     {
       auto nxt = policy._M_next_bkt(i);
 
-      if (nxt == i)
+      if (nxt <= i)
 	{
-	  // Equals only when reaching max.
+	  // Lower or equal only when reaching max.
 	  constexpr auto mx = std::numeric_limits<std::size_t>::max();
 	  VERIFY( nxt == policy._M_next_bkt(mx) );
 	  break;
 	}
 
-      VERIFY( nxt > i );
-      i = nxt;
+      VERIFY( nxt >= i );
+      i = nxt + 1;
     }
 }
 

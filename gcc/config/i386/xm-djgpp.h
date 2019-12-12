@@ -1,5 +1,5 @@
 /* Configuration for GCC for Intel 80386 running DJGPP.
-   Copyright (C) 1988-2018 Free Software Foundation, Inc.
+   Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -84,10 +84,10 @@ along with GCC; see the file COPYING3.  If not see
         if (djgpp == NULL) \
           fatal_error (UNKNOWN_LOCATION, "environment variable DJGPP not defined"); \
         else if (access (djgpp, R_OK) == 0) \
-          fatal_error (UNKNOWN_LOCATION, "environment variable DJGPP points to missing file '%s'", \
+          fatal_error (UNKNOWN_LOCATION, "environment variable DJGPP points to missing file %qs", \
                  djgpp); \
         else \
-          fatal_error (UNKNOWN_LOCATION, "environment variable DJGPP points to corrupt file '%s'", \
+          fatal_error (UNKNOWN_LOCATION, "environment variable DJGPP points to corrupt file %qs", \
                   djgpp); \
       } \
   } while (0)

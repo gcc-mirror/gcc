@@ -8,4 +8,5 @@ struct A
 
 constexpr A a = A();
 
-int ar[a]; // { dg-error "has non-integral type" }
+int ar[a]; // { dg-error "could not convert" }
+// { dg-error "8:size of array .ar. has non-integral" "" { target c++11 } .-1 }

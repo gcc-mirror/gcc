@@ -7,9 +7,9 @@ type complex ! { dg-error "cannot be the same as an intrinsic type" }
 type character ! { dg-error "cannot be the same as an intrinsic type" }
 type logical ! { dg-error "cannot be the same as an intrinsic type" }
 type complex ! { dg-error "cannot be the same as an intrinsic type" }
-type double precision ! { dg-error "Unclassifiable statement" }
+type double precision
 type doubleprecision ! { dg-error "cannot be the same as an intrinsic type" }
-type double complex ! { dg-error "Unclassifiable statement" }
+type double complex
 type doublecomplex ! { dg-error "cannot be the same as an intrinsic type" }
 
 type x

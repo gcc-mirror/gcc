@@ -1,6 +1,6 @@
 // { dg-do run { target c++11 } }
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,6 +20,7 @@
 // 20.6.6.2 Template class shared_ptr [util.smartptr.shared]
 
 #include <memory>
+#include <string>
 #include <testsuite_hooks.h>
 
 struct A { };

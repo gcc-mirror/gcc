@@ -1,0 +1,7 @@
+# Extra libgcc2 modules used by gthr-vxworks.h functions. We don't
+# support the C++ threads on vx653.
+
+LIB2ADDEH += $(srcdir)/config/gthr-vxworks.c\
+	     $(srcdir)/config/gthr-vxworks-cond.c\
+	     $(srcdir)/config/gthr-vxworks-tls.c
+

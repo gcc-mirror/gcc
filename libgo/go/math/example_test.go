@@ -89,3 +89,87 @@ func ExampleSqrt() {
 	fmt.Printf("%.1f", c)
 	// Output: 5.0
 }
+
+func ExampleCeil() {
+	c := math.Ceil(1.49)
+	fmt.Printf("%.1f", c)
+	// Output: 2.0
+}
+
+func ExampleFloor() {
+	c := math.Floor(1.51)
+	fmt.Printf("%.1f", c)
+	// Output: 1.0
+}
+
+func ExamplePow() {
+	c := math.Pow(2, 3)
+	fmt.Printf("%.1f", c)
+	// Output: 8.0
+}
+
+func ExamplePow10() {
+	c := math.Pow10(2)
+	fmt.Printf("%.1f", c)
+	// Output: 100.0
+}
+
+func ExampleRound() {
+	p := math.Round(10.5)
+	fmt.Printf("%.1f\n", p)
+
+	n := math.Round(-10.5)
+	fmt.Printf("%.1f\n", n)
+	// Output:
+	// 11.0
+	// -11.0
+}
+
+func ExampleRoundToEven() {
+	u := math.RoundToEven(11.5)
+	fmt.Printf("%.1f\n", u)
+
+	d := math.RoundToEven(12.5)
+	fmt.Printf("%.1f\n", d)
+	// Output:
+	// 12.0
+	// 12.0
+}
+
+func ExampleLog() {
+	x := math.Log(1)
+	fmt.Printf("%.1f\n", x)
+
+	y := math.Log(2.7183)
+	fmt.Printf("%.1f\n", y)
+	// Output:
+	// 0.0
+	// 1.0
+}
+
+func ExampleLog2() {
+	fmt.Printf("%.1f", math.Log2(256))
+	// Output: 8.0
+}
+
+func ExampleLog10() {
+	fmt.Printf("%.1f", math.Log10(100))
+	// Output: 2.0
+}
+
+func ExampleMod() {
+	c := math.Mod(7, 4)
+	fmt.Printf("%.1f", c)
+	// Output: 3.0
+}
+
+func ExampleAbs() {
+	x := math.Abs(-2)
+	fmt.Printf("%.1f\n", x)
+
+	y := math.Abs(2)
+	fmt.Printf("%.1f\n", y)
+	// Output:
+	// 2.0
+	// 2.0
+}

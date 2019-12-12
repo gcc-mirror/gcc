@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,6 +37,8 @@
  * @file rb_tree_map_/insert_fn_imps.hpp
  * Contains an implementation for rb_tree_.
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 PB_DS_CLASS_T_DEC
 inline std::pair<typename PB_DS_CLASS_C_DEC::point_iterator, bool>
@@ -113,3 +115,4 @@ insert_fixup(node_pointer p_nd)
   base_type::update_to_top(p_nd, (node_update* )this);
   base_type::m_p_head->m_p_parent->m_red = false;
 }
+#endif

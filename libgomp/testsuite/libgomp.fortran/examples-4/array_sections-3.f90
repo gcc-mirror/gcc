@@ -12,6 +12,6 @@ contains
         p(9) = 777
       !$omp end target
     !$omp end target data
-    if (A(3) /= 777 .or. A(9) /= 777) STOP 1
+    if (A(3) /= 777 .or. A(9) /= 777) stop 1
   end subroutine
 end

@@ -2513,7 +2513,7 @@
 
 
 	  <para>This test inserts a number of values with keys from an arbitrary
-	  text ([ wickland96thirty ]) into a container
+	  text ([wickland96thirty]) into a container
 	  using <function>insert</function> . It measures the average time
 	  for <function>insert</function> as a function of the number of
 	  values inserted.</para>
@@ -3156,7 +3156,7 @@
 
 
 	  <para>This test inserts a number of values with keys from an
-	  arbitrary text ([ wickland96thirty ]) into
+	  arbitrary text ([wickland96thirty]) into
 	  a container, then performs a series of finds using
 	  <function>find</function>. It is different than Tree-Based and
 	  Trie-Based Text <function>find</function> Find Timing Test in the
@@ -3846,7 +3846,7 @@
 
 	  <para>This test inserts a number of pairs into a container. The
 	  first item of each pair is a string from an arbitrary text
-	  [wickland96thirty], and
+	  ([wickland96thirty]), and
 	  the second is a uniform i.i.d.integer. The container is a
 	  "multimap" - it considers the first member of each pair as a
 	  primary key, and the second member of each pair as a secondary
@@ -4310,7 +4310,7 @@
 
 	  <para>This test inserts a number of pairs into a container. The
 	  first item of each pair is a string from an arbitrary text
-	  [wickland96thirty], and
+	  ([wickland96thirty]), and
 	  the second is a uniform integer. The container is a
 	  "multimap" - it considers the first member of each pair as a
 	  primary key, and the second member of each pair as a secondary
@@ -4775,7 +4775,7 @@
 
 	  <para>This test inserts a number of pairs into a container. The
 	  first item of each pair is a string from an arbitrary text
-	  [wickland96thirty], and
+	  ([wickland96thirty]), and
 	  the second is a uniform integer. The container is a
 	  "multimap" - it considers the first member of each pair as a
 	  primary key, and the second member of each pair as a secondary
@@ -5242,7 +5242,7 @@
 
 	  <para>This test inserts a number of pairs into a container. The
 	  first item of each pair is a string from an arbitrary text
-	  [wickland96thirty], and
+	  ([wickland96thirty]), and
 	  the second is a uniform integer. The container is a
 	  "multimap" - it considers the first member of each pair as a
 	  primary key, and the second member of each pair as a secondary
@@ -5708,7 +5708,7 @@
 	  </title></info>
 	  <para>This test inserts a number of pairs into a container. The
 	  first item of each pair is a string from an arbitrary text
-	  [wickland96thirty], and
+	  ([wickland96thirty]), and
 	  the second is a uniform integer. The container is a
 	  "multimap" - it considers the first member of each pair as a
 	  primary key, and the second member of each pair as a secondary
@@ -6168,7 +6168,7 @@
 	  </title></info>
 	  <para>This test inserts a number of pairs into a container. The
 	  first item of each pair is a string from an arbitrary text
-	  [wickland96thirty], and
+	  ([wickland96thirty]), and
 	  the second is a uniform integer. The container is a
 	  "multimap" - it considers the first member of each pair as a
 	  primary key, and the second member of each pair as a secondary

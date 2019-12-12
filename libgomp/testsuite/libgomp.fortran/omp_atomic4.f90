@@ -28,10 +28,10 @@
     d = d / 2.0
     d2 = d
 !$omp end atomic
-    if (a2 .ne. 1 .or. b2 .ne. -16 .or. c2 .ne. 3 .or. d2 .ne. 2) STOP 1
+    if (a2 .ne. 1 .or. b2 .ne. -16 .or. c2 .ne. 3 .or. d2 .ne. 2) stop 1
 !$omp atomic read
     a2 = a
 !$omp atomic read
     c2 = c
-    if (a2 .ne. 5 .or. b2 .ne. -16 .or. c2 .ne. 6 .or. d2 .ne. 2) STOP 2
+    if (a2 .ne. 5 .or. b2 .ne. -16 .or. c2 .ne. 6 .or. d2 .ne. 2) stop 2
 end

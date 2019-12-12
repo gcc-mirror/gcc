@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,7 +75,7 @@ package body Xref_Lib is
 
    procedure Open
      (Name         : String;
-      File         : out ALI_File;
+      File         : in out ALI_File;
       Dependencies : Boolean := False);
    --  Open a new ALI file. If Dependencies is True, the insert every library
    --  file 'with'ed in the files database (used for gnatxref)
@@ -688,7 +688,7 @@ package body Xref_Lib is
 
    procedure Open
      (Name         : String;
-      File         : out ALI_File;
+      File         : in out ALI_File;
       Dependencies : Boolean := False)
    is
       Ali : String_Access renames File.Buffer;
@@ -723,6 +723,8 @@ package body Xref_Lib is
    is
    begin
       loop
+         pragma Assert (Source (Ptr) /= EOF);
+
          --  Skip to end of line
 
          while Source (Ptr) /= ASCII.CR and then Source (Ptr) /= ASCII.LF
@@ -737,11 +739,9 @@ package body Xref_Lib is
             Ptr := Ptr + 1;
          end if;
 
-         --  Skip past CR/LF or LF/CR combination
+         --  Skip past CR/LF
 
-         if (Source (Ptr) = ASCII.CR or else Source (Ptr) = ASCII.LF)
-           and then Source (Ptr) /= Source (Ptr - 1)
-         then
+         if Source (Ptr - 1) = ASCII.CR and then Source (Ptr) = ASCII.LF then
             Ptr := Ptr + 1;
          end if;
 
@@ -783,6 +783,7 @@ package body Xref_Lib is
       --  line and column in the dependent unit number Eun. For this we need
       --  to parse the ali file again because the parent entity is not in
       --  the declaration table if it did not match the search pattern.
+      --  If the symbol is not found, we return "???".
 
       procedure Skip_To_Matching_Closing_Bracket;
       --  When Ptr points to an opening square bracket, moves it to the
@@ -803,6 +804,10 @@ package body Xref_Lib is
          --  Look for the X lines corresponding to unit Eun
 
          loop
+            if Ali (Ptr) = EOF then
+               return "???";
+            end if;
+
             if Ali (Ptr) = 'X' then
                Ptr := Ptr + 1;
                Parse_Number (Ali, Ptr, E_Eun);
@@ -831,10 +836,6 @@ package body Xref_Lib is
             Parse_EOL (Ali, Ptr, Skip_Continuation_Line => True);
             exit when Ali (Ptr) = EOF;
          end loop;
-
-         --  We were not able to find the symbol, this should not happen but
-         --  since we don't want to stop here we return a string of three
-         --  question marks as the symbol name.
 
          return "???";
       end Get_Symbol_Name;
@@ -1876,7 +1877,7 @@ package body Xref_Lib is
             end if;
 
          exception
-            when No_Xref_Information =>  null;
+            when No_Xref_Information => null;
          end;
       end loop;
    end Search_Xref;

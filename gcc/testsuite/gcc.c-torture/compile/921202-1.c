@@ -1,3 +1,5 @@
+/* { dg-require-stack-size "2055*3*8" } */
+
 f ()
 {
   long dx[2055];

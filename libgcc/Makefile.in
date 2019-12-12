@@ -1,6 +1,6 @@
 # Makefile.in
 
-# Copyright (C) 2005-2018 Free Software Foundation, Inc.
+# Copyright (C) 2005-2019 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -44,6 +44,7 @@ enable_vtable_verify = @enable_vtable_verify@
 enable_decimal_float = @enable_decimal_float@
 fixed_point = @fixed_point@
 with_aix_soname = @with_aix_soname@
+solaris_ld_v2_maps = @solaris_ld_v2_maps@
 enable_execute_stack = @enable_execute_stack@
 unwind_header = @unwind_header@
 md_unwind_header = @md_unwind_header@
@@ -258,6 +259,8 @@ PICFLAG = @PICFLAG@
 
 CET_FLAGS = @CET_FLAGS@
 
+USE_TM_CLONE_REGISTRY = @use_tm_clone_registry@
+
 # Defined in libgcc2.c, included only in the static library.
 LIB2FUNCS_ST = _eprintf __gcc_bcmp
 
@@ -298,7 +301,7 @@ CRTSTUFF_CFLAGS = -O2 $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
   $(NO_PIE_CFLAGS) -finhibit-size-directive -fno-inline -fno-exceptions \
   -fno-zero-initialized-in-bss -fno-toplevel-reorder -fno-tree-vectorize \
   -fbuilding-libgcc -fno-stack-protector $(FORCE_EXPLICIT_EH_REGISTRY) \
-  $(INHIBIT_LIBC_CFLAGS)
+  $(INHIBIT_LIBC_CFLAGS) $(USE_TM_CLONE_REGISTRY)
 
 # Extra flags to use when compiling crt{begin,end}.o.
 CRTSTUFF_T_CFLAGS =
@@ -470,6 +473,8 @@ LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _divmoddi4 \
 lib2funcs := $(filter-out $(LIB2FUNCS_EXCLUDE) $(LIB1ASMFUNCS),$(lib2funcs))
 LIB2_DIVMOD_FUNCS := $(filter-out $(LIB2FUNCS_EXCLUDE) $(LIB1ASMFUNCS), \
 		       $(LIB2_DIVMOD_FUNCS))
+
+LIB2FUNCS_ST := $(filter-out $(LIB2FUNCS_EXCLUDE),$(LIB2FUNCS_ST))
 
 # Build "libgcc1" (assembly) components.
 
@@ -884,21 +889,20 @@ include $(iterator)
 
 # Build libgcov components.
 
-LIBGCOV_MERGE = _gcov_merge_add _gcov_merge_single			\
-	_gcov_merge_ior _gcov_merge_time_profile _gcov_merge_icall_topn
+LIBGCOV_MERGE = _gcov_merge_add _gcov_merge_topn			\
+	_gcov_merge_ior _gcov_merge_time_profile
 LIBGCOV_PROFILER = _gcov_interval_profiler				\
 	_gcov_interval_profiler_atomic					\
 	_gcov_pow2_profiler						\
 	_gcov_pow2_profiler_atomic					\
-	_gcov_one_value_profiler					\
-	_gcov_one_value_profiler_atomic					\
+	_gcov_topn_values_profiler					\
+	_gcov_topn_values_profiler_atomic					\
 	_gcov_average_profiler						\
 	_gcov_average_profiler_atomic					\
 	_gcov_ior_profiler						\
 	_gcov_ior_profiler_atomic					\
-	_gcov_indirect_call_profiler_v2					\
-	_gcov_time_profiler						\
-	_gcov_indirect_call_topn_profiler
+	_gcov_indirect_call_profiler_v4					\
+	_gcov_time_profiler
 LIBGCOV_INTERFACE = _gcov_dump _gcov_flush _gcov_fork			\
 	_gcov_execl _gcov_execlp					\
 	_gcov_execle _gcov_execv _gcov_execvp _gcov_execve _gcov_reset

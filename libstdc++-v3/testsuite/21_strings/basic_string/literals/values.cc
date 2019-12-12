@@ -1,6 +1,6 @@
 // { dg-do run { target c++14 } }
 
-// Copyright (C) 2013-2018 Free Software Foundation, Inc.
+// Copyright (C) 2013-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,6 +20,12 @@
 #include <string>
 #include <testsuite_hooks.h>
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+using std::u8string;
+#else
+using u8string = std::string;
+#endif
+
 void
 test01()
 {
@@ -29,7 +35,7 @@ test01()
 #ifdef _GLIBCXX_USE_WCHAR_T
   std::wstring wplanet = L"Venus"s;
 #endif
-  std::string u8planet = u8"Mars"s;
+  u8string u8planet = u8"Mars"s;
   std::u16string u16planet = u"Jupiter"s;
   std::u32string u32planet = U"Saturn"s;
 
@@ -37,7 +43,7 @@ test01()
 #ifdef _GLIBCXX_USE_WCHAR_T
   VERIFY( wplanet == std::wstring(L"Venus") );
 #endif
-  VERIFY( u8planet == std::string(u8"Mars") );
+  VERIFY( u8planet == u8string(u8"Mars") );
   VERIFY( u16planet == std::u16string(u"Jupiter") );
   VERIFY( u32planet == std::u32string(U"Saturn") );
 }

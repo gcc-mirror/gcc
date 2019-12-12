@@ -1,6 +1,6 @@
 ; Options for the rs6000 port of the compiler
 ;
-; Copyright (C) 2005-2018 Free Software Foundation, Inc.
+; Copyright (C) 2005-2019 Free Software Foundation, Inc.
 ; Contributed by Aldy Hernandez <aldy@quesejoda.com>.
 ;
 ; This file is part of GCC.
@@ -144,9 +144,12 @@ mcmpb
 Target Report Mask(CMPB) Var(rs6000_isa_flags)
 Use PowerPC V2.05 compare bytes instruction.
 
+;; This option existed in the past, but now is always off.
+mno-mfpgpr
+Target RejectNegative Undocumented Ignore
+
 mmfpgpr
-Target Report Mask(MFPGPR) Var(rs6000_isa_flags)
-Use extended PowerPC V2.05 move floating point to/from GPR instructions.
+Target RejectNegative Undocumented WarnRemoved
 
 maltivec
 Target Report Mask(ALTIVEC) Var(rs6000_isa_flags)
@@ -177,7 +180,7 @@ mno-string
 Target RejectNegative Undocumented Ignore
 
 mstring
-Target RejectNegative Undocumented Warn(%<-mstring%> is deprecated)
+Target RejectNegative Undocumented WarnRemoved
 
 msoft-float
 Target Report RejectNegative Mask(SOFT_FLOAT) Var(rs6000_isa_flags)
@@ -242,10 +245,6 @@ Do not load the PIC register in function prologues.
 mavoid-indexed-addresses
 Target Report Var(TARGET_AVOID_XFORM) Init(-1) Save
 Avoid generation of indexed load/store instructions when possible.
-
-mtls-markers
-Target Report Var(tls_markers) Init(1) Save
-Mark __tls_get_addr calls with argument info.
 
 msched-epilog
 Target Undocumented Var(TARGET_SCHED_PROLOG) Init(1) Save
@@ -326,7 +325,7 @@ Target Report Var(rs6000_block_move_inline_limit) Init(0) RejectNegative Joined 
 Max number of bytes to move inline.
 
 mblock-compare-inline-limit=
-Target Report Var(rs6000_block_compare_inline_limit) Init(31) RejectNegative Joined UInteger Save
+Target Report Var(rs6000_block_compare_inline_limit) Init(63) RejectNegative Joined UInteger Save
 Max number of bytes to compare without loops.
 
 mblock-compare-inline-loop-limit=
@@ -334,20 +333,12 @@ Target Report Var(rs6000_block_compare_inline_loop_limit) Init(-1) RejectNegativ
 Max number of bytes to compare with loops.
 
 mstring-compare-inline-limit=
-Target Report Var(rs6000_string_compare_inline_limit) Init(8) RejectNegative Joined UInteger Save
-Max number of pairs of load insns for compare.
+Target Report Var(rs6000_string_compare_inline_limit) Init(64) RejectNegative Joined UInteger Save
+Max number of bytes to compare.
 
 misel
 Target Report Mask(ISEL) Var(rs6000_isa_flags)
 Generate isel instructions.
-
-misel=no
-Target RejectNegative Alias(misel) NegativeAlias Warn(%<-misel=no%> is deprecated; use %<-mno-isel%> instead)
-Deprecated option.  Use -mno-isel instead.
-
-misel=yes
-Target RejectNegative Alias(misel) Warn(%<-misel=yes%> is deprecated; use %<-misel%> instead)
-Deprecated option.  Use -misel instead.
 
 mdebug=
 Target RejectNegative Joined
@@ -484,7 +475,7 @@ Target Report Mask(CRYPTO) Var(rs6000_isa_flags)
 Use ISA 2.07 Category:Vector.AES and Category:Vector.SHA2 instructions.
 
 mdirect-move
-Target Undocumented Mask(DIRECT_MOVE) Var(rs6000_isa_flags) Ignore Warn(%qs is deprecated)
+Target Undocumented Mask(DIRECT_MOVE) Var(rs6000_isa_flags) WarnRemoved
 
 mhtm
 Target Report Mask(HTM) Var(rs6000_isa_flags)
@@ -506,9 +497,9 @@ moptimize-swaps
 Target Undocumented Var(rs6000_optimize_swaps) Init(1) Save
 Analyze and remove doubleword swaps from VSX computations.
 
-mpower9-fusion
-Target Undocumented Report Mask(P9_FUSION) Var(rs6000_isa_flags)
-Fuse certain operations together for better performance on power9.
+munroll-only-small-loops
+Target Undocumented Var(unroll_only_small_loops) Init(0) Save
+; Use conservative small loop unrolling.
 
 mpower9-misc
 Target Undocumented Report Mask(P9_MISC) Var(rs6000_isa_flags)
@@ -574,3 +565,15 @@ long rs6000_stack_protector_guard_offset = 0
 ;; branches via the CTR.
 mspeculate-indirect-jumps
 Target Undocumented Var(rs6000_speculate_indirect_jumps) Init(1) Save
+
+mfuture
+Target Report Mask(FUTURE) Var(rs6000_isa_flags)
+Use instructions for a future architecture.
+
+mprefixed-addr
+Target Undocumented Mask(PREFIXED_ADDR) Var(rs6000_isa_flags)
+Generate (do not generate) prefixed memory instructions.
+
+mpcrel
+Target Report Mask(PCREL) Var(rs6000_isa_flags)
+Generate (do not generate) pc-relative memory addressing.

@@ -16,9 +16,9 @@
        integer n
        real*4 r(size)
        integer i
-       m(1) = Z'11111111'
-       m(2) = Z'22222222'
-       n    = Z'33333333'
+       m(1) = int(Z'11111111')
+       m(2) = int(Z'22222222')
+       n    = int(Z'33333333')
        do i = 1,size
          r(i) = i
        end do
@@ -39,7 +39,7 @@
        read(9)r
 !
 ! check results
-       if (m(1).ne.Z'11111111') then
+       if (m(1).ne. int(Z'11111111')) then
          if (debug) then
             print '(A,Z8)','m(1) incorrect.  m(1) = ',m(1)
          else
@@ -47,7 +47,7 @@
          endif
        endif
 
-       if (m(2).ne.Z'22222222') then
+       if (m(2).ne. int(Z'22222222')) then
          if (debug) then
             print '(A,Z8)','m(2) incorrect.  m(2) = ',m(2)
          else
@@ -55,7 +55,7 @@
          endif
        endif
 
-       if (n.ne.Z'33333333') then
+       if (n.ne. int(Z'33333333')) then
          if (debug) then
             print '(A,Z8)','n incorrect.  n = ',n
          else

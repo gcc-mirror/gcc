@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in nvptx.c.
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
    This file is part of GCC.
@@ -56,5 +56,6 @@ extern const char *nvptx_output_return (void);
 extern const char *nvptx_output_set_softstack (unsigned);
 extern const char *nvptx_output_simt_enter (rtx, rtx, rtx);
 extern const char *nvptx_output_simt_exit (rtx);
+extern const char *nvptx_output_red_partition (rtx, rtx);
 #endif
 #endif

@@ -1,7 +1,8 @@
-/* scalbnq.c -- __float128 version of s_scalbn.c.
+/* s_scalbnl.c -- long double version of s_scalbn.c.
  * Conversion to IEEE quad long double by Jakub Jelinek, jj@ultra.linux.cz.
  */
 
+/* @(#)s_scalbn.c 5.1 93/09/24 */
 /*
  * ====================================================
  * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
@@ -13,9 +14,12 @@
  * ====================================================
  */
 
+#if defined(LIBM_SCCS) && !defined(lint)
+static char rcsid[] = "$NetBSD: $";
+#endif
 
 /*
- * scalbnq (__float128 x, int n)
+ * scalbnq (long double x, int n)
  * scalbnq(x,n) returns x* 2**n  computed by  exponent
  * manipulation rather than by actually performing an
  * exponentiation or a multiplication.
@@ -29,8 +33,7 @@ twom114 = 4.8148248609680896326399448564623183E-35Q, /* 0x3F8D000000000000, 0 */
 huge   = 1.0E+4900Q,
 tiny   = 1.0E-4900Q;
 
-__float128
-scalbnq (__float128 x, int n)
+__float128 scalbnq (__float128 x, int n)
 {
 	int64_t k,hx,lx;
 	GET_FLT128_WORDS64(hx,lx,x);

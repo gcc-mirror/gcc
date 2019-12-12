@@ -1,5 +1,5 @@
 /* Output routines for Visium.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by C.Nettleton, J.P.Parkes and P.Garbett.
 
    This file is part of GCC.
@@ -53,10 +53,10 @@
 #include "langhooks.h"
 #include "reload.h"
 #include "tm-constrs.h"
-#include "params.h"
 #include "tree-pass.h"
 #include "context.h"
 #include "builtins.h"
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -158,14 +158,13 @@ static struct machine_function *visium_init_machine_status (void);
 
 /* Target hooks and TARGET_INITIALIZER  */
 
-static bool visium_pass_by_reference (cumulative_args_t, machine_mode,
-				      const_tree, bool);
+static bool visium_pass_by_reference (cumulative_args_t,
+				      const function_arg_info &);
 
-static rtx visium_function_arg (cumulative_args_t, machine_mode,
-				const_tree, bool);
+static rtx visium_function_arg (cumulative_args_t, const function_arg_info &);
 
-static void visium_function_arg_advance (cumulative_args_t, machine_mode,
-					 const_tree, bool);
+static void visium_function_arg_advance (cumulative_args_t,
+					 const function_arg_info &);
 
 static bool visium_return_in_memory (const_tree, const_tree fntype);
 
@@ -175,8 +174,8 @@ static rtx visium_function_value (const_tree, const_tree fn_decl_or_type,
 static rtx visium_libcall_value (machine_mode, const_rtx);
 
 static void visium_setup_incoming_varargs (cumulative_args_t,
-					   machine_mode,
-					   tree, int *, int);
+					   const function_arg_info &,
+					   int *, int);
 
 static void visium_va_start (tree valist, rtx nextarg);
 
@@ -280,17 +279,19 @@ static HOST_WIDE_INT visium_constant_alignment (const_tree, HOST_WIDE_INT);
 #undef  TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P visium_legitimate_constant_p
 
-#undef TARGET_LRA_P
+#undef  TARGET_LRA_P
 #define TARGET_LRA_P hook_bool_void_false
 
 #undef  TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P visium_legitimate_address_p
 
-#undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#undef  TARGET_PRINT_OPERAND_PUNCT_VALID_P
 #define TARGET_PRINT_OPERAND_PUNCT_VALID_P visium_print_operand_punct_valid_p
-#undef TARGET_PRINT_OPERAND
+
+#undef  TARGET_PRINT_OPERAND
 #define TARGET_PRINT_OPERAND visium_print_operand
-#undef TARGET_PRINT_OPERAND_ADDRESS
+
+#undef  TARGET_PRINT_OPERAND_ADDRESS
 #define TARGET_PRINT_OPERAND_ADDRESS visium_print_operand_address
 
 #undef  TARGET_ATTRIBUTE_TABLE
@@ -347,26 +348,29 @@ static HOST_WIDE_INT visium_constant_alignment (const_tree, HOST_WIDE_INT);
 #undef  TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT visium_trampoline_init
 
-#undef TARGET_MD_ASM_ADJUST
+#undef  TARGET_MD_ASM_ADJUST
 #define TARGET_MD_ASM_ADJUST visium_md_asm_adjust
 
-#undef TARGET_FLAGS_REGNUM
+#undef  TARGET_FLAGS_REGNUM
 #define TARGET_FLAGS_REGNUM FLAGS_REGNUM
 
-#undef TARGET_HARD_REGNO_NREGS
+#undef  TARGET_HARD_REGNO_NREGS
 #define TARGET_HARD_REGNO_NREGS visium_hard_regno_nregs
 
-#undef TARGET_HARD_REGNO_MODE_OK
+#undef  TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK visium_hard_regno_mode_ok
 
-#undef TARGET_MODES_TIEABLE_P
+#undef  TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P visium_modes_tieable_p
 
-#undef TARGET_CAN_CHANGE_MODE_CLASS
+#undef  TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS visium_can_change_mode_class
 
-#undef TARGET_CONSTANT_ALIGNMENT
+#undef  TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT visium_constant_alignment
+
+#undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -414,9 +418,9 @@ static void
 visium_option_override (void)
 {
   if (flag_pic == 1)
-    warning (OPT_fpic, "-fpic is not supported");
+    warning (OPT_fpic, "%<-fpic%> is not supported");
   if (flag_pic == 2)
-    warning (OPT_fPIC, "-fPIC is not supported");
+    warning (OPT_fPIC, "%<-fPIC%> is not supported");
 
   /* MCM is the default in the GR5/GR6 era.  */
   target_flags |= MASK_MCM;
@@ -453,9 +457,8 @@ visium_option_override (void)
       /* Allow the size of compilation units to double because of inlining.
 	 In practice the global size of the object code is hardly affected
 	 because the additional instructions will take up the padding.  */
-      maybe_set_param_value (PARAM_INLINE_UNIT_GROWTH, 100,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_inline_unit_growth, 100);
     }
 
   /* Likewise for loops.  */
@@ -479,20 +482,6 @@ visium_option_override (void)
       else
 	str_align_jumps = "8";
     }
-
-  /* We register a machine-specific pass.  This pass must be scheduled as
-     late as possible so that we have the (essentially) final form of the
-     insn stream to work on.  Registering the pass must be done at start up.
-     It's convenient to do it here.  */
-  opt_pass *visium_reorg_pass = make_pass_visium_reorg (g);
-  struct register_pass_info insert_pass_visium_reorg =
-    {
-      visium_reorg_pass,		/* pass */
-      "dbr",				/* reference_pass_name */
-      1,				/* ref_pass_instance_number */
-      PASS_POS_INSERT_AFTER		/* po_op */
-    };
-  register_pass (&insert_pass_visium_reorg);
 }
 
 /* Register the Visium-specific libfuncs with the middle-end.  */
@@ -737,7 +726,7 @@ visium_handle_interrupt_attr (tree *node, tree name,
     }
   else if (!TARGET_SV_MODE)
     {
-      error ("an interrupt handler cannot be compiled with -muser-mode");
+      error ("an interrupt handler cannot be compiled with %<-muser-mode%>");
       *no_add_attrs = true;
     }
 
@@ -764,20 +753,20 @@ visium_conditional_register_usage (void)
     {
       if (visium_cpu_and_features == PROCESSOR_GR5)
 	{
-	  fixed_regs[24] = call_used_regs[24] = 1;
-	  fixed_regs[25] = call_used_regs[25] = 1;
-	  fixed_regs[26] = call_used_regs[26] = 1;
-	  fixed_regs[27] = call_used_regs[27] = 1;
-	  fixed_regs[28] = call_used_regs[28] = 1;
-	  call_really_used_regs[24] = 0;
-	  call_really_used_regs[25] = 0;
-	  call_really_used_regs[26] = 0;
-	  call_really_used_regs[27] = 0;
-	  call_really_used_regs[28] = 0;
+	  fixed_regs[24] = 1;
+	  fixed_regs[25] = 1;
+	  fixed_regs[26] = 1;
+	  fixed_regs[27] = 1;
+	  fixed_regs[28] = 1;
+	  call_used_regs[24] = 0;
+	  call_used_regs[25] = 0;
+	  call_used_regs[26] = 0;
+	  call_used_regs[27] = 0;
+	  call_used_regs[28] = 0;
 	}
 
-      fixed_regs[31] = call_used_regs[31] = 1;
-      call_really_used_regs[31] = 0;
+      fixed_regs[31] = 1;
+      call_used_regs[31] = 0;
 
       /* We also need to change the long-branch register.  */
       if (visium_cpu_and_features == PROCESSOR_GR5)
@@ -791,8 +780,8 @@ visium_conditional_register_usage (void)
     {
       for (int i = FP_FIRST_REGNUM; i <= FP_LAST_REGNUM; i++)
 	{
-	  fixed_regs[i] = call_used_regs[i] = 1;
-	  call_really_used_regs[i] = 0;
+	  fixed_regs[i] = 1;
+	  call_used_regs[i] = 0;
 	}
     }
 }
@@ -1319,11 +1308,9 @@ visium_reorg (void)
 /* Return true if an argument must be passed by indirect reference.  */
 
 static bool
-visium_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			  machine_mode mode ATTRIBUTE_UNUSED,
-			  const_tree type,
-			  bool named ATTRIBUTE_UNUSED)
+visium_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
+  tree type = arg.type;
   return type && (AGGREGATE_TYPE_P (type) || TREE_CODE (type) == VECTOR_TYPE);
 }
 
@@ -1341,59 +1328,54 @@ visium_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
    in general registers.  */
 
 static rtx
-visium_function_arg (cumulative_args_t pcum_v, machine_mode mode,
-		     const_tree type ATTRIBUTE_UNUSED,
-		     bool named ATTRIBUTE_UNUSED)
+visium_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 {
   int size;
   CUMULATIVE_ARGS *ca = get_cumulative_args (pcum_v);
 
-  size = (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
-  if (mode == VOIDmode)
+  size = (GET_MODE_SIZE (arg.mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  if (arg.end_marker_p ())
     return GEN_INT (0);
 
   /* Scalar or complex single precision floating point arguments are returned
      in floating registers.  */
   if (TARGET_FPU
-      && ((GET_MODE_CLASS (mode) == MODE_FLOAT
-	   && GET_MODE_SIZE (mode) <= UNITS_PER_HWFPVALUE)
-	  || (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
-	      && GET_MODE_SIZE (mode) <= UNITS_PER_HWFPVALUE * 2)))
+      && ((GET_MODE_CLASS (arg.mode) == MODE_FLOAT
+	   && GET_MODE_SIZE (arg.mode) <= UNITS_PER_HWFPVALUE)
+	  || (GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_FLOAT
+	      && GET_MODE_SIZE (arg.mode) <= UNITS_PER_HWFPVALUE * 2)))
     {
       if (ca->frcount + size <= MAX_ARGS_IN_FP_REGISTERS)
-	return gen_rtx_REG (mode, FP_ARG_FIRST + ca->frcount);
+	return gen_rtx_REG (arg.mode, FP_ARG_FIRST + ca->frcount);
       else
 	return NULL_RTX;
     }
 
   if (ca->grcount + size <= MAX_ARGS_IN_GP_REGISTERS)
-    return gen_rtx_REG (mode, ca->grcount + GP_ARG_FIRST);
+    return gen_rtx_REG (arg.mode, ca->grcount + GP_ARG_FIRST);
 
   return NULL_RTX;
 }
 
-/* Update the summarizer variable pointed to by PCUM_V to advance past an
-   argument in the argument list.  The values MODE, TYPE and NAMED describe
-   that argument.  Once this is done, the variable CUM is suitable for
+/* Update the summarizer variable pointed to by PCUM_V to advance past
+   argument ARG.  Once this is done, the variable CUM is suitable for
    analyzing the _following_ argument with visium_function_arg.  */
 
 static void
 visium_function_arg_advance (cumulative_args_t pcum_v,
-			     machine_mode mode,
-			     const_tree type ATTRIBUTE_UNUSED,
-			     bool named)
+			     const function_arg_info &arg)
 {
-  int size = (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  int size = (GET_MODE_SIZE (arg.mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
   int stack_size = 0;
   CUMULATIVE_ARGS *ca = get_cumulative_args (pcum_v);
 
   /* Scalar or complex single precision floating point arguments are returned
      in floating registers.  */
   if (TARGET_FPU
-      && ((GET_MODE_CLASS (mode) == MODE_FLOAT
-	   && GET_MODE_SIZE (mode) <= UNITS_PER_HWFPVALUE)
-	  || (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
-	      && GET_MODE_SIZE (mode) <= UNITS_PER_HWFPVALUE * 2)))
+      && ((GET_MODE_CLASS (arg.mode) == MODE_FLOAT
+	   && GET_MODE_SIZE (arg.mode) <= UNITS_PER_HWFPVALUE)
+	  || (GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_FLOAT
+	      && GET_MODE_SIZE (arg.mode) <= UNITS_PER_HWFPVALUE * 2)))
     {
       if (ca->frcount + size <= MAX_ARGS_IN_FP_REGISTERS)
 	ca->frcount += size;
@@ -1416,7 +1398,7 @@ visium_function_arg_advance (cumulative_args_t pcum_v,
 	}
     }
 
-  if (named)
+  if (arg.named)
     ca->stack_words += stack_size;
 }
 
@@ -1471,8 +1453,7 @@ visium_libcall_value (machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
 
 static void
 visium_setup_incoming_varargs (cumulative_args_t pcum_v,
-			       machine_mode mode,
-			       tree type,
+			       const function_arg_info &arg,
 			       int *pretend_size ATTRIBUTE_UNUSED,
 			       int no_rtl)
 {
@@ -1498,7 +1479,7 @@ visium_setup_incoming_varargs (cumulative_args_t pcum_v,
   /* The caller has advanced ARGS_SO_FAR up to, but not beyond, the last named
      argument.  Advance a local copy of ARGS_SO_FAR past the last "real" named
      argument, to find out how many registers are left over.  */
-  TARGET_FUNCTION_ARG_ADVANCE (local_args_so_far, mode, type, 1);
+  TARGET_FUNCTION_ARG_ADVANCE (local_args_so_far, arg);
 
   /* Find how many registers we need to save.  */
   locargs = get_cumulative_args (local_args_so_far);
@@ -1646,8 +1627,7 @@ visium_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   tree f_ovfl, f_gbase, f_fbase, f_gbytes, f_fbytes;
   tree ovfl, base, bytes;
   HOST_WIDE_INT size, rsize;
-  const bool by_reference_p
-    = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  const bool by_reference_p = pass_va_arg_by_reference (type);
   const bool float_reg_arg_p
     = (TARGET_FPU && !by_reference_p
        && ((GET_MODE_CLASS (TYPE_MODE (type)) == MODE_FLOAT
@@ -2720,6 +2700,7 @@ visium_trampoline_init (rtx m_tramp, tree fndecl, rtx static_chain)
 
 	moviu   r9,%u FUNCTION
 	movil   r9,%l FUNCTION
+	[nop]
 	moviu   r20,%u STATIC
 	bra     tr,r9,r9
 	 movil   r20,%l STATIC
@@ -2739,6 +2720,14 @@ visium_trampoline_init (rtx m_tramp, tree fndecl, rtx static_chain)
 				 expand_and (SImode, fnaddr, GEN_INT (0xffff),
 					     NULL_RTX),
 				 0x04890000));
+
+  if (visium_cpu == PROCESSOR_GR6)
+    {
+      /* For the GR6, the BRA insn must be aligned on a 64-bit boundary.  */
+      gcc_assert (TRAMPOLINE_ALIGNMENT >= 64);
+      emit_move_insn (gen_rtx_MEM (SImode, plus_constant (Pmode, addr, 12)),
+		      gen_int_mode (0, SImode));
+    }
 
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant (Pmode, addr, 8)),
 		  plus_constant (SImode,
@@ -3054,9 +3043,9 @@ output_branch (rtx label, const char *cond, rtx_insn *insn)
   gcc_assert (cond);
   operands[0] = label;
 
-  /* If the length of the instruction is greater than 8, then this is a
+  /* If the length of the instruction is greater than 12, then this is a
      long branch and we need to work harder to emit it properly.  */
-  if (get_attr_length (insn) > 8)
+  if (get_attr_length (insn) > 12)
     {
       bool spilled;
 
@@ -3599,7 +3588,7 @@ visium_save_reg_p (int interrupt, int regno)
 	  if (df_regs_ever_live_p (regno))
 	    return 1;
 	}
-      else if (call_used_regs[regno])
+      else if (call_used_or_fixed_reg_p (regno))
 	return 1;
 
       /* To save mdb requires two temporary registers.  To save mdc or
@@ -3626,7 +3615,7 @@ visium_save_reg_p (int interrupt, int regno)
 	}
     }
 
-  return df_regs_ever_live_p (regno) && !call_used_regs[regno];
+  return df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno);
 }
 
 /* Compute the frame size required by the function.  This function is called

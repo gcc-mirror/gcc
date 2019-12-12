@@ -1,5 +1,5 @@
 /* IRA processing allocno lives to build allocno live ranges.
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ira.h"
 #include "ira-int.h"
 #include "sparseset.h"
+#include "function-abi.h"
 
 /* The code in this file is similar to one in global but the code
    works on the allocno basis and creates live ranges instead of
@@ -80,47 +81,51 @@ static int last_call_num;
 /* The number of last call at which given allocno was saved.  */
 static int *allocno_saved_at_call;
 
-/* The value of get_preferred_alternatives for the current instruction,
-   supplemental to recog_data.  */
+/* The value returned by ira_setup_alts for the current instruction;
+   i.e. the set of alternatives that we should consider to be likely
+   candidates during reloading.  */
 static alternative_mask preferred_alternatives;
 
-/* Record the birth of hard register REGNO, updating hard_regs_live and
-   hard reg conflict information for living allocnos.  */
+/* If non-NULL, the source operand of a register to register copy for which
+   we should not add a conflict with the copy's destination operand.  */
+static rtx ignore_reg_for_conflicts;
+
+/* Record hard register REGNO as now being live.  */
 static void
-make_hard_regno_born (int regno)
+make_hard_regno_live (int regno)
+{
+  SET_HARD_REG_BIT (hard_regs_live, regno);
+}
+
+/* Process the definition of hard register REGNO.  This updates
+   hard_regs_live and hard reg conflict information for living allocnos.  */
+static void
+make_hard_regno_dead (int regno)
 {
   unsigned int i;
-
-  SET_HARD_REG_BIT (hard_regs_live, regno);
   EXECUTE_IF_SET_IN_SPARSESET (objects_live, i)
     {
       ira_object_t obj = ira_object_id_map[i];
 
+      if (ignore_reg_for_conflicts != NULL_RTX
+	  && REGNO (ignore_reg_for_conflicts)
+	     == (unsigned int) ALLOCNO_REGNO (OBJECT_ALLOCNO (obj)))
+	continue;
+
       SET_HARD_REG_BIT (OBJECT_CONFLICT_HARD_REGS (obj), regno);
       SET_HARD_REG_BIT (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj), regno);
     }
-}
-
-/* Process the death of hard register REGNO.  This updates
-   hard_regs_live.  */
-static void
-make_hard_regno_dead (int regno)
-{
   CLEAR_HARD_REG_BIT (hard_regs_live, regno);
 }
 
-/* Record the birth of object OBJ.  Set a bit for it in objects_live,
-   start a new live range for it if necessary and update hard register
-   conflicts.  */
+/* Record object OBJ as now being live.  Set a bit for it in objects_live,
+   and start a new live range for it if necessary.  */
 static void
-make_object_born (ira_object_t obj)
+make_object_live (ira_object_t obj)
 {
-  live_range_t lr = OBJECT_LIVE_RANGES (obj);
-
   sparseset_set_bit (objects_live, OBJECT_CONFLICT_ID (obj));
-  IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj), hard_regs_live);
-  IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj), hard_regs_live);
 
+  live_range_t lr = OBJECT_LIVE_RANGES (obj);
   if (lr == NULL
       || (lr->finish != curr_point && lr->finish + 1 != curr_point))
     ira_add_live_range_to_object (obj, curr_point, -1);
@@ -154,14 +159,46 @@ update_allocno_pressure_excess_length (ira_object_t obj)
     }
 }
 
-/* Process the death of object OBJ, which is associated with allocno
-   A.  This finishes the current live range for it.  */
+/* Process the definition of object OBJ, which is associated with allocno A.
+   This finishes the current live range for it.  */
 static void
 make_object_dead (ira_object_t obj)
 {
   live_range_t lr;
+  int regno;
+  int ignore_regno = -1;
+  int ignore_total_regno = -1;
+  int end_regno = -1;
 
   sparseset_clear_bit (objects_live, OBJECT_CONFLICT_ID (obj));
+
+  /* Check whether any part of IGNORE_REG_FOR_CONFLICTS already conflicts
+     with OBJ.  */
+  if (ignore_reg_for_conflicts != NULL_RTX
+      && REGNO (ignore_reg_for_conflicts) < FIRST_PSEUDO_REGISTER)
+    {
+      end_regno = END_REGNO (ignore_reg_for_conflicts);
+      ignore_regno = ignore_total_regno = REGNO (ignore_reg_for_conflicts);
+
+      for (regno = ignore_regno; regno < end_regno; regno++)
+	{
+	  if (TEST_HARD_REG_BIT (OBJECT_CONFLICT_HARD_REGS (obj), regno))
+	    ignore_regno = end_regno;
+	  if (TEST_HARD_REG_BIT (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj), regno))
+	    ignore_total_regno = end_regno;
+	}
+    }
+
+  OBJECT_CONFLICT_HARD_REGS (obj) |= hard_regs_live;
+  OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= hard_regs_live;
+
+  /* If IGNORE_REG_FOR_CONFLICTS did not already conflict with OBJ, make
+     sure it still doesn't.  */
+  for (regno = ignore_regno; regno < end_regno; regno++)
+    CLEAR_HARD_REG_BIT (OBJECT_CONFLICT_HARD_REGS (obj), regno);
+  for (regno = ignore_total_regno; regno < end_regno; regno++)
+    CLEAR_HARD_REG_BIT (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj), regno);
+
   lr = OBJECT_LIVE_RANGES (obj);
   ira_assert (lr != NULL);
   lr->finish = curr_point;
@@ -290,7 +327,7 @@ mark_pseudo_regno_live (int regno)
 	continue;
 
       inc_register_pressure (pclass, nregs);
-      make_object_born (obj);
+      make_object_live (obj);
     }
 }
 
@@ -327,7 +364,7 @@ mark_pseudo_regno_subword_live (int regno, int subword)
     return;
 
   inc_register_pressure (pclass, 1);
-  make_object_born (obj);
+  make_object_live (obj);
 }
 
 /* Mark the register REG as live.  Store a 1 in hard_regs_live for
@@ -351,7 +388,7 @@ mark_hard_reg_live (rtx reg)
 	      aclass = ira_hard_regno_allocno_class[regno];
 	      pclass = ira_pressure_class_translate[aclass];
 	      inc_register_pressure (pclass, 1);
-	      make_hard_regno_born (regno);
+	      make_hard_regno_live (regno);
 	    }
 	  regno++;
 	}
@@ -457,8 +494,8 @@ mark_pseudo_regno_subword_dead (int regno, int subword)
   make_object_dead (obj);
 }
 
-/* Mark the hard register REG as dead.  Store a 0 in hard_regs_live for the
-   register.  */
+/* Process the definition of hard register REG.  This updates hard_regs_live
+   and hard reg conflict information for living allocnos.  */
 static void
 mark_hard_reg_dead (rtx reg)
 {
@@ -596,9 +633,28 @@ check_and_make_def_use_conflict (rtx dreg, rtx orig_dreg,
 
 /* Check and make if necessary conflicts for definition DEF of class
    DEF_CL of the current insn with input operands.  Process only
-   constraints of alternative ALT.  */
+   constraints of alternative ALT.
+
+   One of three things is true when this function is called:
+
+   (1) DEF is an earlyclobber for alternative ALT.  Input operands then
+       conflict with DEF in ALT unless they explicitly match DEF via 0-9
+       constraints.
+
+   (2) DEF matches (via 0-9 constraints) an operand that is an
+       earlyclobber for alternative ALT.  Other input operands then
+       conflict with DEF in ALT.
+
+   (3) [FOR_TIE_P] Some input operand X matches DEF for alternative ALT.
+       Input operands with a different value from X then conflict with
+       DEF in ALT.
+
+   However, there's still a judgement call to make when deciding
+   whether a conflict in ALT is important enough to be reflected
+   in the pan-alternative allocno conflict set.  */
 static void
-check_and_make_def_conflict (int alt, int def, enum reg_class def_cl)
+check_and_make_def_conflict (int alt, int def, enum reg_class def_cl,
+			     bool for_tie_p)
 {
   int use, use_match;
   ira_allocno_t a;
@@ -632,14 +688,40 @@ check_and_make_def_conflict (int alt, int def, enum reg_class def_cl)
       if (use == def || recog_data.operand_type[use] == OP_OUT)
 	continue;
 
+      /* An earlyclobber on DEF doesn't apply to an input operand X if X
+	 explicitly matches DEF, but it applies to other input operands
+	 even if they happen to be the same value as X.
+
+	 In contrast, if an input operand X is tied to a non-earlyclobber
+	 DEF, there's no conflict with other input operands that have the
+	 same value as X.  */
+      if (op_alt[use].matches == def
+	  || (for_tie_p
+	      && rtx_equal_p (recog_data.operand[use],
+			      recog_data.operand[op_alt[def].matched])))
+	continue;
+
       if (op_alt[use].anything_ok)
 	use_cl = ALL_REGS;
       else
 	use_cl = op_alt[use].cl;
+      if (use_cl == NO_REGS)
+	continue;
+
+      /* If DEF is simply a tied operand, ignore cases in which this
+	 alternative requires USE to have a likely-spilled class.
+	 Adding a conflict would just constrain USE further if DEF
+	 happens to be allocated first.  */
+      if (for_tie_p && targetm.class_likely_spilled_p (use_cl))
+	continue;
 
       /* If there's any alternative that allows USE to match DEF, do not
 	 record a conflict.  If that causes us to create an invalid
-	 instruction due to the earlyclobber, reload must fix it up.  */
+	 instruction due to the earlyclobber, reload must fix it up.
+
+	 Likewise, if we're treating a tied DEF like a partial earlyclobber,
+	 do not record a conflict if there's another alternative in which
+	 DEF is neither tied nor earlyclobber.  */
       for (alt1 = 0; alt1 < recog_data.n_alternatives; alt1++)
 	{
 	  if (!TEST_BIT (preferred_alternatives, alt1))
@@ -654,6 +736,12 @@ check_and_make_def_conflict (int alt, int def, enum reg_class def_cl)
 		  && recog_data.constraints[use - 1][0] == '%'
 		  && op_alt1[use - 1].matches == def))
 	    break;
+	  if (for_tie_p
+	      && !op_alt1[def].earlyclobber
+	      && op_alt1[def].matched < 0
+	      && alternative_class (op_alt1, def) != NO_REGS
+	      && alternative_class (op_alt1, use) != NO_REGS)
+	    break;
 	}
 
       if (alt1 < recog_data.n_alternatives)
@@ -664,8 +752,7 @@ check_and_make_def_conflict (int alt, int def, enum reg_class def_cl)
 
       if ((use_match = op_alt[use].matches) >= 0)
 	{
-	  if (use_match == def)
-	    continue;
+	  gcc_checking_assert (use_match != def);
 
 	  if (op_alt[use_match].anything_ok)
 	    use_cl = ALL_REGS;
@@ -680,7 +767,11 @@ check_and_make_def_conflict (int alt, int def, enum reg_class def_cl)
 /* Make conflicts of early clobber pseudo registers of the current
    insn with its inputs.  Avoid introducing unnecessary conflicts by
    checking classes of the constraints and pseudos because otherwise
-   significant code degradation is possible for some targets.  */
+   significant code degradation is possible for some targets.
+
+   For these purposes, tying an input to an output makes that output act
+   like an earlyclobber for inputs with a different value, since the output
+   register then has a predetermined purpose on input to the instruction.  */
 static void
 make_early_clobber_and_input_conflicts (void)
 {
@@ -695,15 +786,19 @@ make_early_clobber_and_input_conflicts (void)
     if (TEST_BIT (preferred_alternatives, alt))
       for (def = 0; def < n_operands; def++)
 	{
-	  def_cl = NO_REGS;
-	  if (op_alt[def].earlyclobber)
+	  if (op_alt[def].anything_ok)
+	    def_cl = ALL_REGS;
+	  else
+	    def_cl = op_alt[def].cl;
+	  if (def_cl != NO_REGS)
 	    {
-	      if (op_alt[def].anything_ok)
-		def_cl = ALL_REGS;
-	      else
-		def_cl = op_alt[def].cl;
-	      check_and_make_def_conflict (alt, def, def_cl);
+	      if (op_alt[def].earlyclobber)
+		check_and_make_def_conflict (alt, def, def_cl, false);
+	      else if (op_alt[def].matched >= 0
+		       && !targetm.class_likely_spilled_p (def_cl))
+		check_and_make_def_conflict (alt, def, def_cl, true);
 	    }
+
 	  if ((def_match = op_alt[def].matches) >= 0
 	      && (op_alt[def_match].earlyclobber
 		  || op_alt[def].earlyclobber))
@@ -712,7 +807,7 @@ make_early_clobber_and_input_conflicts (void)
 		def_cl = ALL_REGS;
 	      else
 		def_cl = op_alt[def_match].cl;
-	      check_and_make_def_conflict (alt, def, def_cl);
+	      check_and_make_def_conflict (alt, def, def_cl, false);
 	    }
 	}
 }
@@ -954,10 +1049,8 @@ process_single_reg_class_operands (bool in_p, int freq)
 	      /* We could increase costs of A instead of making it
 		 conflicting with the hard register.  But it works worse
 		 because it will be spilled in reload in anyway.  */
-	      IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
-				reg_class_contents[cl]);
-	      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
-				reg_class_contents[cl]);
+	      OBJECT_CONFLICT_HARD_REGS (obj) |= reg_class_contents[cl];
+	      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= reg_class_contents[cl];
 	    }
 	}
     }
@@ -1024,6 +1117,49 @@ find_call_crossed_cheap_reg (rtx_insn *insn)
   return cheap_reg;
 }  
 
+/* Determine whether INSN is a register to register copy of the type where
+   we do not need to make the source and destiniation registers conflict.
+   If this is a copy instruction, then return the source reg.  Otherwise,
+   return NULL_RTX.  */
+rtx
+non_conflicting_reg_copy_p (rtx_insn *insn)
+{
+  /* Reload has issues with overlapping pseudos being assigned to the
+     same hard register, so don't allow it.  See PR87600 for details.  */
+  if (!targetm.lra_p ())
+    return NULL_RTX;
+
+  rtx set = single_set (insn);
+
+  /* Disallow anything other than a simple register to register copy
+     that has no side effects.  */
+  if (set == NULL_RTX
+      || !REG_P (SET_DEST (set))
+      || !REG_P (SET_SRC (set))
+      || side_effects_p (set))
+    return NULL_RTX;
+
+  int dst_regno = REGNO (SET_DEST (set));
+  int src_regno = REGNO (SET_SRC (set));
+  machine_mode mode = GET_MODE (SET_DEST (set));
+
+  /* By definition, a register does not conflict with itself, therefore we
+     do not have to handle it specially.  Returning NULL_RTX now, helps
+     simplify the callers of this function.  */
+  if (dst_regno == src_regno)
+    return NULL_RTX;
+
+  /* Computing conflicts for register pairs is difficult to get right, so
+     for now, disallow it.  */
+  if ((HARD_REGISTER_NUM_P (dst_regno)
+       && hard_regno_nregs (dst_regno, mode) != 1)
+      || (HARD_REGISTER_NUM_P (src_regno)
+	  && hard_regno_nregs (src_regno, mode) != 1))
+    return NULL_RTX;
+
+  return SET_SRC (set);
+}
+
 /* Process insns of the basic block given by its LOOP_TREE_NODE to
    update allocno live ranges, allocno hard register conflicts,
    intersected calls, and register pressure info for allocnos for the
@@ -1052,8 +1188,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
       reg_live_out = df_get_live_out (bb);
       sparseset_clear (objects_live);
       REG_SET_TO_HARD_REG_SET (hard_regs_live, reg_live_out);
-      AND_COMPL_HARD_REG_SET (hard_regs_live, eliminable_regset);
-      AND_COMPL_HARD_REG_SET (hard_regs_live, ira_no_alloc_regs);
+      hard_regs_live &= ~(eliminable_regset | ira_no_alloc_regs);
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (TEST_HARD_REG_BIT (hard_regs_live, i))
 	  {
@@ -1109,22 +1244,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		     curr_point);
 
 	  call_p = CALL_P (insn);
-#ifdef REAL_PIC_OFFSET_TABLE_REGNUM
-	  int regno;
-	  bool clear_pic_use_conflict_p = false;
-	  /* Processing insn usage in call insn can create conflict
-	     with pic pseudo and pic hard reg and that is wrong.
-	     Check this situation and fix it at the end of the insn
-	     processing.  */
-	  if (call_p && pic_offset_table_rtx != NULL_RTX
-	      && (regno = REGNO (pic_offset_table_rtx)) >= FIRST_PSEUDO_REGISTER
-	      && (a = ira_curr_regno_allocno_map[regno]) != NULL)
-	    clear_pic_use_conflict_p
-		= (find_regno_fusage (insn, USE, REAL_PIC_OFFSET_TABLE_REGNUM)
-		   && ! TEST_HARD_REG_BIT (OBJECT_CONFLICT_HARD_REGS
-					   (ALLOCNO_OBJECT (a, 0)),
-					   REAL_PIC_OFFSET_TABLE_REGNUM));
-#endif
+	  ignore_reg_for_conflicts = non_conflicting_reg_copy_p (insn);
 
 	  /* Mark each defined value as live.  We need to do this for
 	     unused values because they still conflict with quantities
@@ -1173,15 +1293,8 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		  }
 	      }
 
-	  extract_insn (insn);
-	  preferred_alternatives = get_preferred_alternatives (insn);
-	  preprocess_constraints (insn);
+	  preferred_alternatives = ira_setup_alts (insn);
 	  process_single_reg_class_operands (false, freq);
-
-	  /* See which defined values die here.  */
-	  FOR_EACH_INSN_DEF (def, insn)
-	    if (!call_p || !DF_REF_FLAGS_IS_SET (def, DF_REF_MAY_CLOBBER))
-	      mark_ref_dead (def);
 
 	  if (call_p)
 	    {
@@ -1200,27 +1313,25 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		  ira_object_t obj = ira_object_id_map[i];
 		  a = OBJECT_ALLOCNO (obj);
 		  int num = ALLOCNO_NUM (a);
-		  HARD_REG_SET this_call_used_reg_set;
-
-		  get_call_reg_set_usage (insn, &this_call_used_reg_set,
-					  call_used_reg_set);
+		  function_abi callee_abi = insn_callee_abi (insn);
 
 		  /* Don't allocate allocnos that cross setjmps or any
 		     call, if this function receives a nonlocal
 		     goto.  */
 		  if (cfun->has_nonlocal_label
-		      || find_reg_note (insn, REG_SETJMP,
-					NULL_RTX) != NULL_RTX)
+		      || (!targetm.setjmp_preserves_nonvolatile_regs_p ()
+			  && (find_reg_note (insn, REG_SETJMP, NULL_RTX)
+			      != NULL_RTX)))
 		    {
 		      SET_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj));
 		      SET_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj));
 		    }
 		  if (can_throw_internal (insn))
 		    {
-		      IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
-					this_call_used_reg_set);
-		      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
-					this_call_used_reg_set);
+		      OBJECT_CONFLICT_HARD_REGS (obj)
+			|= callee_abi.mode_clobbers (ALLOCNO_MODE (a));
+		      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj)
+			|= callee_abi.mode_clobbers (ALLOCNO_MODE (a));
 		    }
 
 		  if (sparseset_bit_p (allocnos_processed, num))
@@ -1237,13 +1348,25 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		  /* Mark it as saved at the next call.  */
 		  allocno_saved_at_call[num] = last_call_num + 1;
 		  ALLOCNO_CALLS_CROSSED_NUM (a)++;
-		  IOR_HARD_REG_SET (ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a),
-				    this_call_used_reg_set);
+		  ALLOCNO_CROSSED_CALLS_ABIS (a) |= 1 << callee_abi.id ();
+		  ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a)
+		    |= callee_abi.full_and_partial_reg_clobbers ();
 		  if (cheap_reg != NULL_RTX
 		      && ALLOCNO_REGNO (a) == (int) REGNO (cheap_reg))
 		    ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a)++;
 		}
 	    }
+
+	  /* See which defined values die here.  Note that we include
+	     the call insn in the lifetimes of these values, so we don't
+	     mistakenly consider, for e.g. an addressing mode with a
+	     side-effect like a post-increment fetching the address,
+	     that the use happens before the call, and the def to happen
+	     after the call: we believe both to happen before the actual
+	     call.  (We don't handle return-values here.)  */
+	  FOR_EACH_INSN_DEF (def, insn)
+	    if (!call_p || !DF_REF_FLAGS_IS_SET (def, DF_REF_MAY_CLOBBER))
+	      mark_ref_dead (def);
 
 	  make_early_clobber_and_input_conflicts ();
 
@@ -1277,20 +1400,9 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		}
 	    }
 
-#ifdef REAL_PIC_OFFSET_TABLE_REGNUM
-	  if (clear_pic_use_conflict_p)
-	    {
-	      regno = REGNO (pic_offset_table_rtx);
-	      a = ira_curr_regno_allocno_map[regno];
-	      CLEAR_HARD_REG_BIT (OBJECT_CONFLICT_HARD_REGS (ALLOCNO_OBJECT (a, 0)),
-				  REAL_PIC_OFFSET_TABLE_REGNUM);
-	      CLEAR_HARD_REG_BIT (OBJECT_TOTAL_CONFLICT_HARD_REGS
-				  (ALLOCNO_OBJECT (a, 0)),
-				  REAL_PIC_OFFSET_TABLE_REGNUM);
-	    }
-#endif
 	  curr_point++;
 	}
+      ignore_reg_for_conflicts = NULL_RTX;
 
       if (bb_has_eh_pred (bb))
 	for (j = 0; ; ++j)
@@ -1298,14 +1410,15 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	    unsigned int regno = EH_RETURN_DATA_REGNO (j);
 	    if (regno == INVALID_REGNUM)
 	      break;
-	    make_hard_regno_born (regno);
+	    make_hard_regno_live (regno);
 	  }
 
       /* Allocnos can't go in stack regs at the start of a basic block
-	 that is reached by an abnormal edge. Likewise for call
-	 clobbered regs, because caller-save, fixup_abnormal_edges and
-	 possibly the table driven EH machinery are not quite ready to
-	 handle such allocnos live across such edges.  */
+	 that is reached by an abnormal edge. Likewise for registers
+	 that are at least partly call clobbered, because caller-save,
+	 fixup_abnormal_edges and possibly the table driven EH machinery
+	 are not quite ready to handle such allocnos live across such
+	 edges.  */
       if (bb_has_abnormal_pred (bb))
 	{
 #ifdef STACK_REGS
@@ -1317,7 +1430,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	      ALLOCNO_TOTAL_NO_STACK_REG_P (a) = true;
 	    }
 	  for (px = FIRST_STACK_REG; px <= LAST_STACK_REG; px++)
-	    make_hard_regno_born (px);
+	    make_hard_regno_live (px);
 #endif
 	  /* No need to record conflicts for call clobbered regs if we
 	     have nonlocal labels around, as we don't ever try to
@@ -1325,12 +1438,12 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	  if (!cfun->has_nonlocal_label
 	      && has_abnormal_call_or_eh_pred_edge_p (bb))
 	    for (px = 0; px < FIRST_PSEUDO_REGISTER; px++)
-	      if (call_used_regs[px]
+	      if (eh_edge_abi.clobbers_at_least_part_of_reg_p (px)
 #ifdef REAL_PIC_OFFSET_TABLE_REGNUM
 		  /* We should create a conflict of PIC pseudo with
 		     PIC hard reg as PIC hard reg can have a wrong
 		     value after jump described by the abnormal edge.
-		     In this case we can not allocate PIC hard reg to
+		     In this case we cannot allocate PIC hard reg to
 		     PIC pseudo as PIC pseudo will also have a wrong
 		     value.  This code is not critical as LRA can fix
 		     it but it is better to have the right allocation
@@ -1340,7 +1453,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		      && REGNO (pic_offset_table_rtx) >= FIRST_PSEUDO_REGISTER)
 #endif
 		  )
-		make_hard_regno_born (px);
+		make_hard_regno_live (px);
 	}
 
       EXECUTE_IF_SET_IN_SPARSESET (objects_live, i)

@@ -1,5 +1,5 @@
 ;; ARM Cortex-R4F VFP pipeline description
-;; Copyright (C) 2007-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2019 Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;
 ;; This file is part of GCC.
@@ -115,7 +115,7 @@
 		  "cortex_r4_fmacs"
 		  "arm_no_early_mul_dep")
 
-;; Double precision operations.  These can not dual issue.
+;; Double precision operations.  These cannot dual issue.
 
 (define_insn_reservation "cortex_r4_fmacd" 20
  (and (eq_attr "tune_cortexr4" "yes")

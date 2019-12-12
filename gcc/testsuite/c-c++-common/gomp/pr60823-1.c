@@ -17,3 +17,4 @@ foo (const double c1, const double c2)
     }
   return res;
 }
+/* { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-13 } */

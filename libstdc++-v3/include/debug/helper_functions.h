@@ -1,6 +1,6 @@
 // Debugging support implementation -*- C++ -*-
 
-// Copyright (C) 2003-2018 Free Software Foundation, Inc.
+// Copyright (C) 2003-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,18 +37,24 @@
 
 namespace __gnu_debug
 {
-  template<typename _Iterator, typename _Sequence>
+  template<typename _Iterator, typename _Sequence, typename _Category>
     class _Safe_iterator;
+
+#if __cplusplus >= 201103L
+  template<typename _Iterator, typename _Sequence>
+    class _Safe_local_iterator;
+#endif
 
   /** The precision to which we can calculate the distance between
    *  two iterators.
    */
   enum _Distance_precision
     {
-      __dp_none,	// Not even an iterator type
-      __dp_equality,	//< Can compare iterator equality, only
-      __dp_sign,	//< Can determine equality and ordering
-      __dp_exact	//< Can determine distance precisely
+      __dp_none,		// Not even an iterator type
+      __dp_equality,		//< Can compare iterator equality, only
+      __dp_sign,		//< Can determine equality and ordering
+      __dp_sign_max_size,	//< __dp_sign and gives max range size
+      __dp_exact		//< Can determine distance precisely
     };
 
   template<typename _Iterator,
@@ -82,14 +88,16 @@ namespace __gnu_debug
    *	precision.
   */
   template<typename _Iterator>
+    _GLIBCXX_CONSTEXPR
     inline typename _Distance_traits<_Iterator>::__type
-    __get_distance(const _Iterator& __lhs, const _Iterator& __rhs,
+    __get_distance(_Iterator __lhs, _Iterator __rhs,
 		   std::random_access_iterator_tag)
     { return std::make_pair(__rhs - __lhs, __dp_exact); }
 
   template<typename _Iterator>
+    _GLIBCXX_CONSTEXPR
     inline typename _Distance_traits<_Iterator>::__type
-    __get_distance(const _Iterator& __lhs, const _Iterator& __rhs,
+    __get_distance(_Iterator __lhs, _Iterator __rhs,
 		   std::input_iterator_tag)
     {
       if (__lhs == __rhs)
@@ -99,8 +107,9 @@ namespace __gnu_debug
     }
 
   template<typename _Iterator>
+    _GLIBCXX_CONSTEXPR
     inline typename _Distance_traits<_Iterator>::__type
-    __get_distance(const _Iterator& __lhs, const _Iterator& __rhs)
+    __get_distance(_Iterator __lhs, _Iterator __rhs)
     { return __get_distance(__lhs, __rhs, std::__iterator_category(__lhs)); }
 
   /** We say that integral types for a valid range, and defer to other
@@ -108,8 +117,15 @@ namespace __gnu_debug
    *  iterators.
   */
   template<typename _Integral>
+    _GLIBCXX_CONSTEXPR
     inline bool
-    __valid_range_aux(const _Integral&, const _Integral&,
+    __valid_range_aux(_Integral, _Integral, std::__true_type)
+    { return true; }
+
+  template<typename _Integral>
+    _GLIBCXX20_CONSTEXPR
+    inline bool
+    __valid_range_aux(_Integral, _Integral,
 		      typename _Distance_traits<_Integral>::__type& __dist,
 		      std::__true_type)
     {
@@ -117,13 +133,37 @@ namespace __gnu_debug
       return true;
     }
 
-  /** We have iterators, so figure out what kind of iterators that are
+  template<typename _InputIterator>
+    _GLIBCXX_CONSTEXPR
+    inline bool
+    __valid_range_aux(_InputIterator __first, _InputIterator __last,
+		      std::input_iterator_tag)
+    { return true; }
+
+  template<typename _InputIterator>
+    _GLIBCXX_CONSTEXPR
+    inline bool
+    __valid_range_aux(_InputIterator __first, _InputIterator __last,
+		      std::random_access_iterator_tag)
+    { return __first <= __last; }
+
+  /** We have iterators, so figure out what kind of iterators they are
    *  to see if we can check the range ahead of time.
   */
   template<typename _InputIterator>
+    _GLIBCXX_CONSTEXPR
     inline bool
-    __valid_range_aux(const _InputIterator& __first,
-		      const _InputIterator& __last,
+    __valid_range_aux(_InputIterator __first, _InputIterator __last,
+		      std::__false_type)
+    {
+      return __valid_range_aux(__first, __last,
+			       std::__iterator_category(__first));
+    }
+
+  template<typename _InputIterator>
+    _GLIBCXX20_CONSTEXPR
+    inline bool
+    __valid_range_aux(_InputIterator __first, _InputIterator __last,
 		      typename _Distance_traits<_InputIterator>::__type& __dist,
 		      std::__false_type)
     {
@@ -137,6 +177,7 @@ namespace __gnu_debug
 	    return true;
 	  break;
 	case __dp_sign:
+	case __dp_sign_max_size:
 	case __dp_exact:
 	  return __dist.first >= 0;
 	}
@@ -151,62 +192,84 @@ namespace __gnu_debug
    *  otherwise.
   */
   template<typename _InputIterator>
+    _GLIBCXX20_CONSTEXPR
     inline bool
-    __valid_range(const _InputIterator& __first, const _InputIterator& __last,
+    __valid_range(_InputIterator __first, _InputIterator __last,
 		  typename _Distance_traits<_InputIterator>::__type& __dist)
     {
+#ifdef __cpp_lib_is_constant_evaluated
+      if (std::is_constant_evaluated())
+	// Detected by the compiler directly.
+	return true;
+#endif
       typedef typename std::__is_integer<_InputIterator>::__type _Integral;
       return __valid_range_aux(__first, __last, __dist, _Integral());
     }
 
+  template<typename _Iterator, typename _Sequence, typename _Category>
+    bool
+    __valid_range(const _Safe_iterator<_Iterator, _Sequence, _Category>&,
+		  const _Safe_iterator<_Iterator, _Sequence, _Category>&,
+		  typename _Distance_traits<_Iterator>::__type&);
+
+#if __cplusplus >= 201103L
+  template<typename _Iterator,typename _Sequence>
+    bool
+    __valid_range(const _Safe_local_iterator<_Iterator, _Sequence>&,
+		  const _Safe_local_iterator<_Iterator, _Sequence>&,
+		  typename _Distance_traits<_Iterator>::__type&);
+#endif
+
   template<typename _InputIterator>
+    _GLIBCXX14_CONSTEXPR
     inline bool
-    __valid_range(const _InputIterator& __first, const _InputIterator& __last)
+    __valid_range(_InputIterator __first, _InputIterator __last)
     {
-      typename _Distance_traits<_InputIterator>::__type __dist;
-      return __valid_range(__first, __last, __dist);
+#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+      if (__builtin_is_constant_evaluated())
+	// Detected by the compiler directly.
+	return true;
+#endif
+      typedef typename std::__is_integer<_InputIterator>::__type _Integral;
+      return __valid_range_aux(__first, __last, _Integral());
     }
+
+  template<typename _Iterator, typename _Sequence, typename _Category>
+    bool
+    __valid_range(const _Safe_iterator<_Iterator, _Sequence, _Category>&,
+		  const _Safe_iterator<_Iterator, _Sequence, _Category>&);
+
+#if __cplusplus >= 201103L
+  template<typename _Iterator, typename _Sequence>
+    bool
+    __valid_range(const _Safe_local_iterator<_Iterator, _Sequence>&,
+		  const _Safe_local_iterator<_Iterator, _Sequence>&);
+#endif
 
   // Fallback method, always ok.
   template<typename _InputIterator, typename _Size>
+    _GLIBCXX_CONSTEXPR
     inline bool
     __can_advance(_InputIterator, _Size)
     { return true; }
 
-  template<typename _Iterator, typename _Sequence, typename _Size>
+  template<typename _Iterator, typename _Sequence, typename _Category,
+	   typename _Size>
     bool
-    __can_advance(const _Safe_iterator<_Iterator, _Sequence>&, _Size);
-
-#if __cplusplus < 201103L
-  // Helper struct to detect random access safe iterators.
-  template<typename _Iterator>
-    struct __is_safe_random_iterator
-    {
-      enum { __value = 0 };
-      typedef std::__false_type __type;
-    };
-
-  template<typename _Iterator>
-    struct _Siter_base
-    : std::_Iter_base<_Iterator, __is_safe_random_iterator<_Iterator>::__value>
-    { };
+    __can_advance(const _Safe_iterator<_Iterator, _Sequence, _Category>&,
+		  _Size);
 
   /** Helper function to extract base iterator of random access safe iterator
-      in order to reduce performance impact of debug mode.  Limited to random
-      access iterator because it is the only category for which it is possible
-      to check for correct iterators order in the __valid_range function
-      thanks to the < operator.
-  */
+   *  in order to reduce performance impact of debug mode.  Limited to random
+   *  access iterator because it is the only category for which it is possible
+   *  to check for correct iterators order in the __valid_range function
+   *  thanks to the < operator.
+   */
   template<typename _Iterator>
-    inline typename _Siter_base<_Iterator>::iterator_type
-    __base(_Iterator __it)
-    { return _Siter_base<_Iterator>::_S_base(__it); }
-#else
-  template<typename _Iterator>
+    _GLIBCXX_CONSTEXPR
     inline _Iterator
     __base(_Iterator __it)
     { return __it; }
-#endif
 
 #if __cplusplus < 201103L
   template<typename _Iterator>

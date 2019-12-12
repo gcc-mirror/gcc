@@ -105,4 +105,4 @@ list_49,
 };
 
 
-/* { dg-final { scan-ipa-dump "unique hash values: 51" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Congruence classes: 51" "icf"  } } */

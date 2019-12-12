@@ -1,5 +1,5 @@
 /* 128-bit long double support routines for Darwin.
-   Copyright (C) 1993-2018 Free Software Foundation, Inc.
+   Copyright (C) 1993-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -46,7 +46,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    the lower numbered register or lower addressed memory.  */
 
 #if (defined (__MACH__) || defined (__powerpc__) || defined (_AIX)) \
-    && !defined (__rtems__)
+  && !defined (__rtems__) \
+  && (defined (__LONG_DOUBLE_128__) || defined (__FLOAT128_TYPE__))
 
 #define fabs(x) __builtin_fabs(x)
 #define isless(x, y) __builtin_isless (x, y)
@@ -406,7 +407,7 @@ fmsub (double a, double b, double c)
     FP_UNPACK_RAW_D (C, c);
 
     /* Extend double to quad.  */
-#if (2 * _FP_W_TYPE_SIZE) < _FP_FRACBITS_Q
+#if _FP_W_TYPE_SIZE < 64
     FP_EXTEND(Q,D,4,2,X,A);
     FP_EXTEND(Q,D,4,2,Y,B);
     FP_EXTEND(Q,D,4,2,Z,C);
@@ -435,7 +436,7 @@ fmsub (double a, double b, double c)
     FP_SUB_Q(V,U,Z);
 
     /* Truncate quad to double.  */
-#if (2 * _FP_W_TYPE_SIZE) < _FP_FRACBITS_Q
+#if _FP_W_TYPE_SIZE < 64
     V_f[3] &= 0x0007ffff;
     FP_TRUNC(D,Q,2,4,R,V);
 #else

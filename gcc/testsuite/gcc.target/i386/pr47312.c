@@ -4,7 +4,6 @@
 /* { dg-require-effective-target xop } */
 /* { dg-require-effective-target c99_runtime } */
 /* { dg-options "-O -flto -mno-sse3 -mxop" } */
-/* { dg-add-options c99_runtime } */
 
 extern double fma (double, double, double);
 extern float fmaf (float, float, float);

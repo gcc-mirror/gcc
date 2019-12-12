@@ -1,0 +1,45 @@
+## Common rules for D source compilation used in all Makefile.am's.
+## Copyright (C) 2016-2019 Free Software Foundation, Inc.
+##
+## GCC is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; either version 3, or (at your option)
+## any later version.
+##
+## GCC is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with GCC; see the file COPYING3.  If not see
+## <http://www.gnu.org/licenses/>.
+
+# If there are no sources with known extension (i.e. only D sources)
+# automake forgets to set this
+CCLD = $(CC)
+
+toolexecdir = $(libphobos_toolexecdir)
+toolexeclibdir = $(libphobos_toolexeclibdir)
+
+# Compile D into normal object files
+.d.o:
+	$(GDC) $(GDCFLAGS) $(MULTIFLAGS) $(D_EXTRA_DFLAGS) -c -o $@ $<
+
+# Compile D sources with libtool
+.d.lo:
+	$(LTDCOMPILE) $(GDCFLAGS) $(MULTIFLAGS) $(D_EXTRA_DFLAGS) -c -o $@ $<
+
+LTDCOMPILE = $(LIBTOOL) --tag=D $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=compile $(GDC) $(AM_DFLAGS)
+
+# Also override library link commands: This is not strictly
+# required, but we want to record additional dependencies such
+# as pthread in the library
+libgdruntime_la_LINK = $(LIBTOOL) --tag=D $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(GDC) $(AM_CFLAGS) $(CFLAGS) \
+	$(libgdruntime_la_LDFLAGS) $(LDFLAGS) -o $@
+
+libgphobos_la_LINK = $(LIBTOOL) --tag=D $(libgphobos_la_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(GDC) $(AM_CFLAGS) $(CFLAGS) \
+	$(libgphobos_la_LDFLAGS) $(LDFLAGS) -o $@

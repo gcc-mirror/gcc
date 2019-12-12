@@ -6,10 +6,29 @@
    source of the excessive array bound is in a different function than
    the call.
    { dg-do compile }
-   { dg-options "-O2 -Warray-bounds -Wno-stringop-overflow" } */
+   { dg-options "-O2 -Warray-bounds -Wno-stringop-overflow -fno-tree-vrp" } */
 
-#include <stddef.h>
-#include <string.h>
+#if __has_include (<stddef.h>)
+#  include <stddef.h>
+#else
+/* For cross-compilers.  */
+typedef __PTRDIFF_TYPE__   ptrdiff_t;
+typedef __SIZE_TYPE__      size_t;
+#endif
+
+#if __has_include (<string.h>)
+#  include <string.h>
+#  undef memcpy
+#  undef strcat
+#  undef strcpy
+#  undef strncpy
+#else
+extern void* memcpy (void*, const void*, size_t);
+extern char* strcat (char*, const char*);
+extern char* strcpy (char*, const char*);
+extern char* strncpy (char*, const char*, size_t);
+#endif
+
 
 #define MAX  (__SIZE_MAX__ / 2)
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build aix darwin dragonfly freebsd linux nacl netbsd openbsd solaris
+// +build aix darwin dragonfly freebsd hurd linux nacl netbsd openbsd solaris
 
 package runtime
 
@@ -13,6 +13,11 @@ import (
 // crashing is the number of m's we have waited for when implementing
 // GOTRACEBACK=crash when a signal is received.
 var crashing int32
+
+// testSigtrap is used by the runtime tests. If non-nil, it is called
+// on SIGTRAP. If it returns true, the normal behavior on SIGTRAP is
+// suppressed.
+var testSigtrap func(info *_siginfo_t, ctxt *sigctxt, gp *g) bool
 
 // sighandler is invoked when a signal occurs. The global g will be
 // set to a gsignal goroutine and we will be running on the alternate
@@ -27,12 +32,38 @@ var crashing int32
 //go:nowritebarrierrec
 func sighandler(sig uint32, info *_siginfo_t, ctxt unsafe.Pointer, gp *g) {
 	_g_ := getg()
-	c := sigctxt{info, ctxt}
+	c := &sigctxt{info, ctxt}
 
 	sigfault, sigpc := getSiginfo(info, ctxt)
 
+	if sig == _SIGURG && usestackmaps {
+		// We may be signaled to do a stack scan.
+		// The signal delivery races with enter/exitsyscall.
+		// We may be on g0 stack now. gp.m.curg is the g we
+		// want to scan.
+		// If we're not on g stack, give up. The sender will
+		// try again later.
+		// If we're not stopped at a safepoint (doscanstack will
+		// return false), also give up.
+		if s := readgstatus(gp.m.curg); s == _Gscansyscall {
+			if gp == gp.m.curg {
+				if doscanstack(gp, (*gcWork)(unsafe.Pointer(gp.scangcw))) {
+					gp.gcscanvalid = true
+					gp.gcscandone = true
+				}
+			}
+			gp.m.curg.scangcw = 0
+			notewakeup(&gp.m.scannote)
+			return
+		}
+	}
+
 	if sig == _SIGPROF {
 		sigprof(sigpc, gp, _g_.m)
+		return
+	}
+
+	if sig == _SIGTRAP && testSigtrap != nil && testSigtrap(info, (*sigctxt)(noescape(unsafe.Pointer(c))), gp) {
 		return
 	}
 
@@ -44,6 +75,11 @@ func sighandler(sig uint32, info *_siginfo_t, ctxt unsafe.Pointer, gp *g) {
 		// We can't safely sigpanic because it may grow the
 		// stack. Abort in the signal handler instead.
 		flags = (flags &^ _SigPanic) | _SigThrow
+	}
+	if isAbortPC(sigpc) {
+		// On many architectures, the abort function just
+		// causes a memory fault. Don't turn that into a panic.
+		flags = _SigThrow
 	}
 	if c.sigcode() != _SI_USER && flags&_SigPanic != 0 {
 		// Emulate gc by passing arguments out of band,
@@ -87,7 +123,7 @@ func sighandler(sig uint32, info *_siginfo_t, ctxt unsafe.Pointer, gp *g) {
 	_g_.m.caughtsig.set(gp)
 
 	if crashing == 0 {
-		startpanic()
+		startpanic_m()
 	}
 
 	if sig < uint32(len(sigtable)) {
@@ -133,6 +169,8 @@ func sighandler(sig uint32, info *_siginfo_t, ctxt unsafe.Pointer, gp *g) {
 		}
 		crash()
 	}
+
+	printDebugLog()
 
 	exit(2)
 }

@@ -1,5 +1,5 @@
 # -*- shell-script -*-
-#   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+#   Copyright (C) 2011-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -127,7 +127,7 @@ config_path="$ARCH posix generic"
 
 # Other system configury
 case "${target}" in
-  *-*-linux*)
+  *-*-linux* | *-*-uclinux*)
 	if test "$enable_linux_futex" = yes; then
 	  config_path="linux/$ARCH linux $config_path"
 	fi

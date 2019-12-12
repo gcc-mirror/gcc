@@ -1,3 +1,5 @@
+/* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
+
 extern unsigned int __invalid_size_argument_for_IOC;
 typedef unsigned int __u32;
 struct video_window

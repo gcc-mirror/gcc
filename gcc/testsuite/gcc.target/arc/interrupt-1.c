@@ -6,5 +6,5 @@ void __attribute__ ((interrupt("ilink1")))
 handler1 (void)
 {
 }
-/* { dg-final { scan-assembler-times "j.*\[ilink1\]" 1 { target { arc700 || arc6xx } } } } */
-/* { dg-final { scan-assembler-times "rtie" 1 { target { arcem || archs } } } } */
+/* { dg-final { scan-assembler-times "j.*\[ilink1\]" 1 { target { arc6xx } } } } */
+/* { dg-final { scan-assembler-times "rtie" 1 { target { ! { arc6xx } } } } } */

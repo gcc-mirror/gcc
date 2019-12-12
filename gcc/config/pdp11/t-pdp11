@@ -1,4 +1,4 @@
-# Copyright (C) 1995-2018 Free Software Foundation, Inc.
+# Copyright (C) 1995-2019 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -17,6 +17,10 @@
 # <http://www.gnu.org/licenses/>.
 
 MULTILIB_OPTIONS = msoft-float
+
+# Optimize for space
+LIBGCC2_CFLAGS = -Os
+CRTSTUFF_T_CFLAGS = -Os
 
 # Because the pdp11 POINTER_SIZE is only 16, in dwarf2out.c,
 # DWARF_ARANGES_PAD_SIZE is 0, thus a loop in output_aranges that checks

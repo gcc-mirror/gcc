@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -32,6 +32,12 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+
+--  Preconditions in this unit are meant for analysis only, not for run-time
+--  checking, so that the expected exceptions are raised.
+--  This is enforced by setting the corresponding assertion policy to Ignore.
+
+pragma Assertion_Policy (Pre => Ignore);
 
 with System;
 with System.Tasking;
@@ -67,17 +73,20 @@ is
    pragma Inline (Environment_Task);
 
    procedure Abort_Task (T : Task_Id) with
+     Pre    => T /= Null_Task_Id,
      Global => null;
    pragma Inline (Abort_Task);
    --  Note: parameter is mode IN, not IN OUT, per AI-00101
 
    function Is_Terminated (T : Task_Id) return Boolean with
      Volatile_Function,
+     Pre    => T /= Null_Task_Id,
      Global => Tasking_State;
    pragma Inline (Is_Terminated);
 
    function Is_Callable (T : Task_Id) return Boolean with
      Volatile_Function,
+     Pre    => T /= Null_Task_Id,
      Global => Tasking_State;
    pragma Inline (Is_Callable);
 

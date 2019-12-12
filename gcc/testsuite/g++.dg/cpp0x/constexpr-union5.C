@@ -23,16 +23,16 @@ SA((a.i == 42));
 
 struct B
 {
-  struct {
+  struct {		        // { dg-warning "10:ISO C\\+\\+ prohibits anonymous struct" }
     int h;
-    struct {
+    struct {			// { dg-warning "12:ISO C\\+\\+ prohibits anonymous struct" }
       union {
 	unsigned char i;
 	int j;
       };
       int k;
-    };				// { dg-warning "anonymous struct" }
-  };				// { dg-warning "anonymous struct" }
+    };
+  };
   int l;
 
   constexpr B(): h(1), i(2), k(3), l(4) {}

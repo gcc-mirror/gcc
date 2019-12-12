@@ -37,9 +37,9 @@ contains
  subroutine test
    integer :: i
    type(grid) :: g
-   g = new_field()%mesh              ! { dg-error "can not be a function reference" }
+   g = new_field()%mesh              ! { dg-error "cannot be a function reference" }
    call new_field()%mesh%new_grid()  ! { dg-error "Syntax error" }
-   i = new_field() % mesh%new_int()  ! { dg-error "can not be a function reference" }
+   i = new_field() % mesh%new_int()  ! { dg-error "cannot be a function reference" }
  end subroutine
 
 end module

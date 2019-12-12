@@ -7,7 +7,6 @@
 package httptest
 
 import (
-	"bytes"
 	"crypto/tls"
 	"crypto/x509"
 	"flag"
@@ -17,6 +16,7 @@ import (
 	"net/http"
 	"net/http/internal"
 	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -53,10 +53,10 @@ type Server struct {
 }
 
 func newLocalListener() net.Listener {
-	if *serve != "" {
-		l, err := net.Listen("tcp", *serve)
+	if serveFlag != "" {
+		l, err := net.Listen("tcp", serveFlag)
 		if err != nil {
-			panic(fmt.Sprintf("httptest: failed to listen on %v: %v", *serve, err))
+			panic(fmt.Sprintf("httptest: failed to listen on %v: %v", serveFlag, err))
 		}
 		return l
 	}
@@ -73,7 +73,25 @@ func newLocalListener() net.Listener {
 // this flag lets you run
 //	go test -run=BrokenTest -httptest.serve=127.0.0.1:8000
 // to start the broken server so you can interact with it manually.
-var serve = flag.String("httptest.serve", "", "if non-empty, httptest.NewServer serves on this address and blocks")
+// We only register this flag if it looks like the caller knows about it
+// and is trying to use it as we don't want to pollute flags and this
+// isn't really part of our API. Don't depend on this.
+var serveFlag string
+
+func init() {
+	if strSliceContainsPrefix(os.Args, "-httptest.serve=") || strSliceContainsPrefix(os.Args, "--httptest.serve=") {
+		flag.StringVar(&serveFlag, "httptest.serve", "", "if non-empty, httptest.NewServer serves on this address and blocks.")
+	}
+}
+
+func strSliceContainsPrefix(v []string, pre string) bool {
+	for _, s := range v {
+		if strings.HasPrefix(s, pre) {
+			return true
+		}
+	}
+	return false
+}
 
 // NewServer starts and returns a new Server.
 // The caller should call Close when finished, to shut it down.
@@ -107,7 +125,7 @@ func (s *Server) Start() {
 	s.URL = "http://" + s.Listener.Addr().String()
 	s.wrap()
 	s.goServe()
-	if *serve != "" {
+	if serveFlag != "" {
 		fmt.Fprintln(os.Stderr, "httptest: serving on", s.URL)
 		select {}
 	}
@@ -224,7 +242,7 @@ func (s *Server) Close() {
 func (s *Server) logCloseHangDebugInfo() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	var buf bytes.Buffer
+	var buf strings.Builder
 	buf.WriteString("httptest.Server blocked in Close after 5 seconds, waiting for connections:\n")
 	for c, st := range s.conns {
 		fmt.Fprintf(&buf, "  %T %p %v in state %v\n", c, c, c.RemoteAddr(), st)

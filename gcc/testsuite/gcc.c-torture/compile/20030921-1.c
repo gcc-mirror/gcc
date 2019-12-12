@@ -2,6 +2,7 @@
    f is not being emitted. TREE_SYMBOL_REFERENCED was being set
    instead of calling mark_referenced.  */
 
+/* { dg-require-effective-target indirect_calls } */
 
 static void f(void);
 void g(void (*x) (void)){x();}

@@ -1,5 +1,6 @@
 /* PR target/61948 */
 /* { dg-do compile } */
+/* { dg-skip-if "r9 is reserved in FDPIC" { arm*-*-uclinuxfdpiceabi } "*" "" } */
 /* { dg-require-effective-target arm_neon_ok } */
 /* { dg-require-effective-target arm_thumb2_ok } */
 /* { dg-options "-O2 -mthumb" } */

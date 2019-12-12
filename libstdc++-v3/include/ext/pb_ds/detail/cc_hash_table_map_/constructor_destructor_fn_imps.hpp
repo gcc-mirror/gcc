@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -38,6 +38,8 @@
  * Contains implementations of cc_ht_map_'s constructors, destructor,
  * and related functions.
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::entry_allocator
@@ -189,3 +191,4 @@ initialize()
   Resize_Policy::notify_cleared();
   ranged_hash_fn_base::notify_resized(m_num_e);
 }
+#endif

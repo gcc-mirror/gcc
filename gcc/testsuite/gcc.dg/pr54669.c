@@ -3,6 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O2 -fexceptions -fnon-call-exceptions" } */
+/* { dg-require-effective-target exceptions } */
 
 int a[10];
 

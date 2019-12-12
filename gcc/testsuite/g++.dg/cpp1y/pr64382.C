@@ -9,7 +9,7 @@ struct my_queue
   }
   void ice()
   {
-    auto L = [=](auto &&v) {
+    auto L = [=](auto &&v) { // { dg-warning "implicit capture" "" { target c++2a } }
       push(v);
     };
     trav(L);

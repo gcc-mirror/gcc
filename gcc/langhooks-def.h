@@ -1,5 +1,5 @@
 /* Default macros to initialize the lang_hooks data structure.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -70,8 +70,8 @@ extern void lhd_initialize_diagnostics (diagnostic_context *);
 extern void lhd_init_options (unsigned int,
 			      struct cl_decoded_option *);
 extern bool lhd_complain_wrong_lang_p (const struct cl_option *);
-extern bool lhd_handle_option (size_t, const char *, int, int, location_t,
-			       const struct cl_option_handlers *);
+extern bool lhd_handle_option (size_t, const char *, HOST_WIDE_INT, int,
+			       location_t, const struct cl_option_handlers *);
 
 
 /* Declarations for tree gimplification hooks.  */
@@ -122,6 +122,7 @@ extern int lhd_type_dwarf_attribute (const_tree, int);
 #define LANG_HOOKS_TYPES_COMPATIBLE_P	lhd_types_compatible_p
 #define LANG_HOOKS_BUILTIN_FUNCTION	lhd_builtin_function
 #define LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE	LANG_HOOKS_BUILTIN_FUNCTION
+#define LANG_HOOKS_SIMULATE_BUILTIN_FUNCTION_DECL LANG_HOOKS_BUILTIN_FUNCTION
 #define LANG_HOOKS_EXPR_TO_DECL		lhd_expr_to_decl
 #define LANG_HOOKS_TO_TARGET_CHARSET	lhd_to_target_charset
 #define LANG_HOOKS_INIT_TS		lhd_do_nothing
@@ -170,6 +171,7 @@ extern tree lhd_make_node (enum tree_code);
 extern tree lhd_unit_size_without_reusable_padding (tree);
 
 #define LANG_HOOKS_MAKE_TYPE lhd_make_node
+#define LANG_HOOKS_SIMULATE_ENUM_DECL	NULL
 #define LANG_HOOKS_CLASSIFY_RECORD	NULL
 #define LANG_HOOKS_TYPE_FOR_SIZE	lhd_type_for_size
 #define LANG_HOOKS_INCOMPLETE_TYPE_ERROR lhd_incomplete_type_error
@@ -203,6 +205,7 @@ extern tree lhd_unit_size_without_reusable_padding (tree);
 
 #define LANG_HOOKS_FOR_TYPES_INITIALIZER { \
   LANG_HOOKS_MAKE_TYPE, \
+  LANG_HOOKS_SIMULATE_ENUM_DECL, \
   LANG_HOOKS_CLASSIFY_RECORD, \
   LANG_HOOKS_TYPE_FOR_MODE, \
   LANG_HOOKS_TYPE_FOR_SIZE, \
@@ -236,6 +239,9 @@ extern tree lhd_unit_size_without_reusable_padding (tree);
 #define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL lhd_warn_unused_global_decl
 #define LANG_HOOKS_POST_COMPILATION_PARSING_CLEANUPS NULL
 #define LANG_HOOKS_DECL_OK_FOR_SIBCALL	lhd_decl_ok_for_sibcall
+#define LANG_HOOKS_OMP_ARRAY_DATA	hook_tree_tree_bool_null
+#define LANG_HOOKS_OMP_IS_ALLOCATABLE_OR_PTR hook_bool_const_tree_false
+#define LANG_HOOKS_OMP_CHECK_OPTIONAL_ARGUMENT hook_tree_tree_bool_null
 #define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE hook_bool_const_tree_false
 #define LANG_HOOKS_OMP_PREDETERMINED_SHARING lhd_omp_predetermined_sharing
 #define LANG_HOOKS_OMP_REPORT_DECL lhd_pass_through_t
@@ -261,6 +267,9 @@ extern tree lhd_unit_size_without_reusable_padding (tree);
   LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL, \
   LANG_HOOKS_POST_COMPILATION_PARSING_CLEANUPS, \
   LANG_HOOKS_DECL_OK_FOR_SIBCALL, \
+  LANG_HOOKS_OMP_ARRAY_DATA, \
+  LANG_HOOKS_OMP_IS_ALLOCATABLE_OR_PTR, \
+  LANG_HOOKS_OMP_CHECK_OPTIONAL_ARGUMENT, \
   LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE, \
   LANG_HOOKS_OMP_PREDETERMINED_SHARING, \
   LANG_HOOKS_OMP_REPORT_DECL, \
@@ -338,6 +347,7 @@ extern void lhd_end_section (void);
   LANG_HOOKS_GIMPLIFY_EXPR, \
   LANG_HOOKS_BUILTIN_FUNCTION, \
   LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE, \
+  LANG_HOOKS_SIMULATE_BUILTIN_FUNCTION_DECL, \
   LANG_HOOKS_INIT_TS,          \
   LANG_HOOKS_EXPR_TO_DECL, \
   LANG_HOOKS_EH_PERSONALITY, \

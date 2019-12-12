@@ -1,7 +1,8 @@
 //===-- sanitizer_linux.h ---------------------------------------*- C++ -*-===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -12,11 +13,15 @@
 #define SANITIZER_LINUX_H
 
 #include "sanitizer_platform.h"
-#if SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD
+#if SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD ||                \
+    SANITIZER_OPENBSD || SANITIZER_SOLARIS
 #include "sanitizer_common.h"
 #include "sanitizer_internal_defs.h"
+#include "sanitizer_platform_limits_freebsd.h"
 #include "sanitizer_platform_limits_netbsd.h"
+#include "sanitizer_platform_limits_openbsd.h"
 #include "sanitizer_platform_limits_posix.h"
+#include "sanitizer_platform_limits_solaris.h"
 #include "sanitizer_posix.h"
 
 struct link_map;  // Opaque type returned by dlopen().
@@ -44,6 +49,7 @@ uptr internal_getdents(fd_t fd, struct linux_dirent *dirp, unsigned int count);
 uptr internal_sigaltstack(const void* ss, void* oss);
 uptr internal_sigprocmask(int how, __sanitizer_sigset_t *set,
     __sanitizer_sigset_t *oldset);
+uptr internal_clock_gettime(__sanitizer_clockid_t clk_id, void *tp);
 
 // Linux-only syscalls.
 #if SANITIZER_LINUX
@@ -52,10 +58,6 @@ uptr internal_prctl(int option, uptr arg2, uptr arg3, uptr arg4, uptr arg5);
 // (like the process-wide error reporting SEGV handler) must use
 // internal_sigaction instead.
 int internal_sigaction_norestorer(int signum, const void *act, void *oldact);
-#if (defined(__x86_64__) || SANITIZER_MIPS64) && !SANITIZER_GO
-// Uses a raw system call to avoid interceptors.
-int internal_sigaction_syscall(int signum, const void *act, void *oldact);
-#endif
 void internal_sigdelset(__sanitizer_sigset_t *set, int signum);
 #if defined(__x86_64__) || defined(__mips__) || defined(__aarch64__) \
   || defined(__powerpc64__) || defined(__s390__) || defined(__i386__) \
@@ -63,28 +65,31 @@ void internal_sigdelset(__sanitizer_sigset_t *set, int signum);
 uptr internal_clone(int (*fn)(void *), void *child_stack, int flags, void *arg,
                     int *parent_tidptr, void *newtls, int *child_tidptr);
 #endif
+#elif SANITIZER_FREEBSD
+void internal_sigdelset(__sanitizer_sigset_t *set, int signum);
+#elif SANITIZER_NETBSD
+void internal_sigdelset(__sanitizer_sigset_t *set, int signum);
+uptr internal_clone(int (*fn)(void *), void *child_stack, int flags, void *arg);
 #endif  // SANITIZER_LINUX
 
 // This class reads thread IDs from /proc/<pid>/task using only syscalls.
 class ThreadLister {
  public:
-  explicit ThreadLister(int pid);
+  explicit ThreadLister(pid_t pid);
   ~ThreadLister();
-  // GetNextTID returns -1 if the list of threads is exhausted, or if there has
-  // been an error.
-  int GetNextTID();
-  void Reset();
-  bool error();
+  enum Result {
+    Error,
+    Incomplete,
+    Ok,
+  };
+  Result ListThreads(InternalMmapVector<tid_t> *threads);
 
  private:
-  bool GetDirectoryEntries();
+  bool IsAlive(int tid);
 
-  int pid_;
-  int descriptor_;
-  InternalScopedBuffer<char> buffer_;
-  bool error_;
-  struct linux_dirent* entry_;
-  int bytes_read_;
+  pid_t pid_;
+  int descriptor_ = -1;
+  InternalMmapVector<char> buffer_;
 };
 
 // Exposed for testing.
@@ -98,6 +103,17 @@ bool LibraryNameIs(const char *full_name, const char *base_name);
 
 // Call cb for each region mapped by map.
 void ForEachMappedRegion(link_map *map, void (*cb)(const void *, uptr));
+
+// Releases memory pages entirely within the [beg, end] address range.
+// The pages no longer count toward RSS; reads are guaranteed to return 0.
+// Requires (but does not verify!) that pages are MAP_PRIVATE.
+INLINE void ReleaseMemoryPagesToOSAndZeroFill(uptr beg, uptr end) {
+  // man madvise on Linux promises zero-fill for anonymous private pages.
+  // Testing shows the same behaviour for private (but not anonymous) mappings
+  // of shm_open() files, as long as the underlying file is untouched.
+  CHECK(SANITIZER_LINUX);
+  ReleaseMemoryPagesToOS(beg, end);
+}
 
 #if SANITIZER_ANDROID
 
@@ -127,18 +143,18 @@ void ForEachMappedRegion(link_map *map, void (*cb)(const void *, uptr));
 #error "Unsupported architecture."
 #endif
 
-// The Android Bionic team has allocated a TLS slot for TSan starting with N,
-// given that Android currently doesn't support ELF TLS. It is used to store
-// Sanitizers thread specific data.
-static const int TLS_SLOT_TSAN = 8;
+// The Android Bionic team has allocated a TLS slot for sanitizers starting
+// with Q, given that Android currently doesn't support ELF TLS. It is used to
+// store sanitizer thread specific data.
+static const int TLS_SLOT_SANITIZER = 6;
 
 ALWAYS_INLINE uptr *get_android_tls_ptr() {
-  return reinterpret_cast<uptr *>(&__get_tls()[TLS_SLOT_TSAN]);
+  return reinterpret_cast<uptr *>(&__get_tls()[TLS_SLOT_SANITIZER]);
 }
 
 #endif  // SANITIZER_ANDROID
 
 }  // namespace __sanitizer
 
-#endif  // SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD
+#endif
 #endif  // SANITIZER_LINUX_H

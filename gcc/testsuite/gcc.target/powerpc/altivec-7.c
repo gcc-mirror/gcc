@@ -85,8 +85,10 @@ int main ()
 /* { dg-final { scan-assembler-times "vpkpx" 2 } } */
 /* { dg-final { scan-assembler-times "vmulesb" 1 } } */
 /* { dg-final { scan-assembler-times "vmulosb" 1 } } */
-/* { dg-final { scan-assembler-times {\mlvx\M} 0 { target { powerpc*-*-linux* } } } } */
-/* { dg-final { scan-assembler-times {\mlvx\M} 42 { target { powerpc*-*-aix* } } } } */
+/* { dg-final { scan-assembler-times {\mlvx\M} 42 { target { ! powerpc_vsx } } } } */
+/* { dg-final { scan-assembler-times {\mlxv} 0 { target { ! powerpc_vsx } } } } */
+/* { dg-final { scan-assembler-times {\mlvx\M} 0 { target powerpc_vsx } } } */
+/* { dg-final { scan-assembler-times {\mlxv} 42 { target powerpc_vsx } } } */
 /* { dg-final { scan-assembler-times "lvewx" 2 } } */
 /* { dg-final { scan-assembler-times "lvxl" 1 } } */
 /* { dg-final { scan-assembler-times "vupklsh" 2 } } */

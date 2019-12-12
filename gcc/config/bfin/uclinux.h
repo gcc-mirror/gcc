@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,7 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #undef LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC "\
-  %{mfast-fp:-lbffastfp} %G %L %{mfast-fp:-lbffastfp} %G \
+  %{mfast-fp:-lbffastfp} %G %{!nolibc:%L} %{mfast-fp:-lbffastfp} %G \
 "
 
 #undef TARGET_SUPPORTS_SYNC_CALLS

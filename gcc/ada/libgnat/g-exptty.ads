@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                    Copyright (C) 2000-2018, AdaCore                      --
+--                    Copyright (C) 2000-2019, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -92,6 +92,11 @@ package GNAT.Expect.TTY is
       Columns    : Natural);
    --  Sets up the size of the terminal as reported to the spawned process
 
+   function Is_Process_Running
+      (Descriptor : in out TTY_Process_Descriptor)
+      return Boolean;
+   --  Return True is the process is still alive
+
 private
 
    --  All declarations in the private part must be fully commented ???
@@ -129,9 +134,16 @@ private
       Cmd   : String;
       Args  : System.Address);
 
+   procedure Close_Input (Descriptor : in out TTY_Process_Descriptor);
+
+   Still_Active : constant Integer := -1;
+
    type TTY_Process_Descriptor is new Process_Descriptor with record
-      Process   : System.Address;  --  Underlying structure used in C
-      Use_Pipes : Boolean := True;
+      Process     : System.Address := System.Null_Address;
+      --  Underlying structure used in C
+      Exit_Status : Integer := Still_Active;
+      --  Hold the exit status of the process.
+      Use_Pipes   : Boolean := True;
    end record;
 
 end GNAT.Expect.TTY;

@@ -13,8 +13,10 @@ int main()
 
   b++; // { dg-warning "deprecated" "" { target { ! c++17 } } }
   // { dg-error "forbidden" "" { target c++17 } .-1 }
+  // { dg-warning ".volatile.-qualified type is deprecated" "" { target c++2a } .-2 }
   b++; // { dg-warning "deprecated" "" { target { ! c++17 } } }
   // { dg-error "forbidden" "" { target c++17 } .-1 }
+  // { dg-warning ".volatile.-qualified type is deprecated" "" { target c++2a } .-2 }
   i = b;
   if (i != 1)
     abort ();

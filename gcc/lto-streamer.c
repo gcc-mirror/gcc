@@ -1,7 +1,7 @@
 /* Miscellaneous utilities for GIMPLE streaming.  Things that are used
    in both input and output are here.
 
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
    Contributed by Doug Kwan <dougkwan@google.com>
 
 This file is part of GCC.
@@ -34,11 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Statistics gathered during LTO, WPA and LTRANS.  */
 struct lto_stats_d lto_stats;
-
-/* LTO uses bitmaps with different life-times.  So use a separate
-   obstack for all LTO bitmaps.  */
-static bitmap_obstack lto_obstack;
-static bool lto_obstack_initialized;
 
 const char *section_name_prefix = LTO_SECTION_NAME_PREFIX;
 /* Set when streaming LTO for offloading compiler.  */
@@ -113,35 +108,14 @@ lto_tag_name (enum LTO_tags tag)
 }
 
 
-/* Allocate a bitmap from heap.  Initializes the LTO obstack if necessary.  */
-
-bitmap
-lto_bitmap_alloc (void)
-{
-  if (!lto_obstack_initialized)
-    {
-      bitmap_obstack_initialize (&lto_obstack);
-      lto_obstack_initialized = true;
-    }
-  return BITMAP_ALLOC (&lto_obstack);
-}
-
-/* Free bitmap B.  */
-
-void
-lto_bitmap_free (bitmap b)
-{
-  BITMAP_FREE (b);
-}
-
-
 /* Get a section name for a particular type or name.  The NAME field
    is only used if SECTION_TYPE is LTO_section_function_body. For all
    others it is ignored.  The callee of this function is responsible
    to free the returned name.  */
 
 char *
-lto_get_section_name (int section_type, const char *name, struct lto_file_decl_data *f)
+lto_get_section_name (int section_type, const char *name,
+		      int node_order, struct lto_file_decl_data *f)
 {
   const char *add;
   char post[32];
@@ -152,7 +126,11 @@ lto_get_section_name (int section_type, const char *name, struct lto_file_decl_d
       gcc_assert (name != NULL);
       if (name[0] == '*')
 	name++;
-      add = name;
+
+      char *buffer = (char *)xmalloc (strlen (name) + 32);
+      sprintf (buffer, "%s.%d", name, node_order);
+
+      add = buffer;
       sep = "";
     }
   else if (section_type < LTO_N_SECTION_TYPES)

@@ -1,0 +1,230 @@
+; -*- buffer-read-only: t -*-
+; Generated automatically by csky_genopt.sh from csky_cores.def.
+
+; Copyright (C) 2018-2019 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+Enum
+Name(csky_processor_type) Type(enum csky_processor_type)
+Known CSKY CPUs (for use with the -mcpu= options):
+
+EnumValue
+Enum(csky_processor_type) String(ck801) Value( TARGET_CPU_ck801)
+
+EnumValue
+Enum(csky_processor_type) String(ck801t) Value( TARGET_CPU_ck801t)
+
+EnumValue
+Enum(csky_processor_type) String(ck802) Value( TARGET_CPU_ck802)
+
+EnumValue
+Enum(csky_processor_type) String(ck802t) Value( TARGET_CPU_ck802t)
+
+EnumValue
+Enum(csky_processor_type) String(ck802j) Value( TARGET_CPU_ck802j)
+
+EnumValue
+Enum(csky_processor_type) String(ck803) Value( TARGET_CPU_ck803)
+
+EnumValue
+Enum(csky_processor_type) String(ck803h) Value( TARGET_CPU_ck803h)
+
+EnumValue
+Enum(csky_processor_type) String(ck803t) Value( TARGET_CPU_ck803t)
+
+EnumValue
+Enum(csky_processor_type) String(ck803ht) Value( TARGET_CPU_ck803ht)
+
+EnumValue
+Enum(csky_processor_type) String(ck803f) Value( TARGET_CPU_ck803f)
+
+EnumValue
+Enum(csky_processor_type) String(ck803fh) Value( TARGET_CPU_ck803fh)
+
+EnumValue
+Enum(csky_processor_type) String(ck803e) Value( TARGET_CPU_ck803e)
+
+EnumValue
+Enum(csky_processor_type) String(ck803eh) Value( TARGET_CPU_ck803eh)
+
+EnumValue
+Enum(csky_processor_type) String(ck803et) Value( TARGET_CPU_ck803et)
+
+EnumValue
+Enum(csky_processor_type) String(ck803eht) Value( TARGET_CPU_ck803eht)
+
+EnumValue
+Enum(csky_processor_type) String(ck803ef) Value( TARGET_CPU_ck803ef)
+
+EnumValue
+Enum(csky_processor_type) String(ck803efh) Value( TARGET_CPU_ck803efh)
+
+EnumValue
+Enum(csky_processor_type) String(ck803ft) Value( TARGET_CPU_ck803ft)
+
+EnumValue
+Enum(csky_processor_type) String(ck803eft) Value( TARGET_CPU_ck803eft)
+
+EnumValue
+Enum(csky_processor_type) String(ck803efht) Value( TARGET_CPU_ck803efht)
+
+EnumValue
+Enum(csky_processor_type) String(ck803r1) Value( TARGET_CPU_ck803r1)
+
+EnumValue
+Enum(csky_processor_type) String(ck803hr1) Value( TARGET_CPU_ck803hr1)
+
+EnumValue
+Enum(csky_processor_type) String(ck803tr1) Value( TARGET_CPU_ck803tr1)
+
+EnumValue
+Enum(csky_processor_type) String(ck803htr1) Value( TARGET_CPU_ck803htr1)
+
+EnumValue
+Enum(csky_processor_type) String(ck803fr1) Value( TARGET_CPU_ck803fr1)
+
+EnumValue
+Enum(csky_processor_type) String(ck803fhr1) Value( TARGET_CPU_ck803fhr1)
+
+EnumValue
+Enum(csky_processor_type) String(ck803er1) Value( TARGET_CPU_ck803er1)
+
+EnumValue
+Enum(csky_processor_type) String(ck803ehr1) Value( TARGET_CPU_ck803ehr1)
+
+EnumValue
+Enum(csky_processor_type) String(ck803etr1) Value( TARGET_CPU_ck803etr1)
+
+EnumValue
+Enum(csky_processor_type) String(ck803ehtr1) Value( TARGET_CPU_ck803ehtr1)
+
+EnumValue
+Enum(csky_processor_type) String(ck803efr1) Value( TARGET_CPU_ck803efr1)
+
+EnumValue
+Enum(csky_processor_type) String(ck803efhr1) Value( TARGET_CPU_ck803efhr1)
+
+EnumValue
+Enum(csky_processor_type) String(ck803ftr1) Value( TARGET_CPU_ck803ftr1)
+
+EnumValue
+Enum(csky_processor_type) String(ck803eftr1) Value( TARGET_CPU_ck803eftr1)
+
+EnumValue
+Enum(csky_processor_type) String(ck803efhtr1) Value( TARGET_CPU_ck803efhtr1)
+
+EnumValue
+Enum(csky_processor_type) String(ck803s) Value( TARGET_CPU_ck803s)
+
+EnumValue
+Enum(csky_processor_type) String(ck803st) Value( TARGET_CPU_ck803st)
+
+EnumValue
+Enum(csky_processor_type) String(ck803se) Value( TARGET_CPU_ck803se)
+
+EnumValue
+Enum(csky_processor_type) String(ck803sf) Value( TARGET_CPU_ck803sf)
+
+EnumValue
+Enum(csky_processor_type) String(ck803sef) Value( TARGET_CPU_ck803sef)
+
+EnumValue
+Enum(csky_processor_type) String(ck803seft) Value( TARGET_CPU_ck803seft)
+
+EnumValue
+Enum(csky_processor_type) String(ck807e) Value( TARGET_CPU_ck807e)
+
+EnumValue
+Enum(csky_processor_type) String(ck807ef) Value( TARGET_CPU_ck807ef)
+
+EnumValue
+Enum(csky_processor_type) String(ck807) Value( TARGET_CPU_ck807)
+
+EnumValue
+Enum(csky_processor_type) String(ck807f) Value( TARGET_CPU_ck807f)
+
+EnumValue
+Enum(csky_processor_type) String(ck810e) Value( TARGET_CPU_ck810e)
+
+EnumValue
+Enum(csky_processor_type) String(ck810et) Value( TARGET_CPU_ck810et)
+
+EnumValue
+Enum(csky_processor_type) String(ck810ef) Value( TARGET_CPU_ck810ef)
+
+EnumValue
+Enum(csky_processor_type) String(ck810eft) Value( TARGET_CPU_ck810eft)
+
+EnumValue
+Enum(csky_processor_type) String(ck810) Value( TARGET_CPU_ck810)
+
+EnumValue
+Enum(csky_processor_type) String(ck810v) Value( TARGET_CPU_ck810v)
+
+EnumValue
+Enum(csky_processor_type) String(ck810f) Value( TARGET_CPU_ck810f)
+
+EnumValue
+Enum(csky_processor_type) String(ck810t) Value( TARGET_CPU_ck810t)
+
+EnumValue
+Enum(csky_processor_type) String(ck810fv) Value( TARGET_CPU_ck810fv)
+
+EnumValue
+Enum(csky_processor_type) String(ck810tv) Value( TARGET_CPU_ck810tv)
+
+EnumValue
+Enum(csky_processor_type) String(ck810ft) Value( TARGET_CPU_ck810ff)
+
+EnumValue
+Enum(csky_processor_type) String(ck810ftv) Value( TARGET_CPU_ck810ftv)
+
+Enum
+Name(csky_arch) Type(int)
+Known CSKY architectures (for use with the -march= option):
+
+EnumValue
+Enum(csky_arch) String(ck801) Value(0)
+
+EnumValue
+Enum(csky_arch) String(ck802) Value(1)
+
+EnumValue
+Enum(csky_arch) String(ck803) Value(2)
+
+EnumValue
+Enum(csky_arch) String(ck807) Value(3)
+
+EnumValue
+Enum(csky_arch) String(ck810) Value(4)
+
+Enum
+Name(csky_fpu) Type(enum csky_fpu_type)
+Known CSKY FPUs (for use with the -mfpu= option):
+
+EnumValue
+Enum(csky_fpu) String(fpv2_sf) Value(TARGET_FPU_fpv2_sf)
+
+EnumValue
+Enum(csky_fpu) String(fpv2) Value(TARGET_FPU_fpv2)
+
+EnumValue
+Enum(csky_fpu) String(fpv2_divd) Value(TARGET_FPU_fpv2_divd)
+
+EnumValue
+Enum(csky_fpu) String(auto) Value(TARGET_FPU_auto)

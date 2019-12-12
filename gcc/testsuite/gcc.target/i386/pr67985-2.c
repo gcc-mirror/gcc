@@ -10,4 +10,4 @@ foo (float x, float y)
 
 /* { dg-final { scan-assembler-not "mulss" } } */
 /* { dg-final { scan-assembler-not "movl\[ \t\].*, %eax" } } */
-/* { dg-final { scan-assembler "call\[ \t\]__mulsf3" } } */
+/* { dg-final { scan-assembler "call\[ \t\]_?__mulsf3" } } */

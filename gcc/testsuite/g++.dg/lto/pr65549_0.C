@@ -1,4 +1,5 @@
 // { dg-lto-do link }
+// { dg-require-effective-target lto_incremental }
 // { dg-lto-options { { -std=gnu++14 -flto -g -Wno-return-type } { -std=gnu++14 -flto -g -O2 -fno-inline -flto-partition=max -Wno-return-type } } }
 // { dg-extra-ld-options "-r -nostdlib" }
 

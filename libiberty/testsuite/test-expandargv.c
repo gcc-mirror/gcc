@@ -1,5 +1,5 @@
 /* expandargv test program,
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Written by Carlos O'Donell <carlos@codesourcery.com>
 
    This file is part of the libiberty library, which is part of GCC.

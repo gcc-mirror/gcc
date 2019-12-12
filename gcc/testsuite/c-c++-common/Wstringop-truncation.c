@@ -329,9 +329,8 @@ void test_strncpy_array (Dest *pd, int i, const char* s)
      of the array to NUL is not diagnosed.  */
   {
     /* This might be better written using memcpy() but it's safe so
-       it probably shouldn't be diagnosed.  It currently triggers
-       a warning because of bug 81704.  */
-    strncpy (dst7, "0123456", sizeof dst7);   /* { dg-bogus "\\\[-Wstringop-truncation]" "bug 81704" { xfail *-*-* } } */
+       it shouldn't be diagnosed.  */
+    strncpy (dst7, "0123456", sizeof dst7);   /* { dg-bogus "\\\[-Wstringop-truncation]" } */
     dst7[sizeof dst7 - 1] = '\0';
     sink (dst7);
   }
@@ -350,7 +349,7 @@ void test_strncpy_array (Dest *pd, int i, const char* s)
   }
 
   {
-    strncpy (pd->a5, "01234", sizeof pd->a5);   /* { dg-bogus "\\\[-Wstringop-truncation]" "bug 81704" { xfail *-*-* } } */
+    strncpy (pd->a5, "01234", sizeof pd->a5);   /* { dg-bogus "\\\[-Wstringop-truncation]" } */
     pd->a5[sizeof pd->a5 - 1] = '\0';
     sink (pd);
   }

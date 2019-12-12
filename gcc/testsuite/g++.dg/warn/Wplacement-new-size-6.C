@@ -15,7 +15,7 @@ struct BAx { int i; Ax ax; };
 
 void fBx1 ()
 {
-  BAx bax1 = { 1, /* Ax = */ { 2, /* a[] = */ { 3 } } };	// { dg-error "initialization of flexible array member in a nested context" }
+  static BAx bax1 = { 1, /* Ax = */ { 2, /* a[] = */ { 3 } } }; // { dg-error "initialization of flexible array member in a nested context" }
 
   new (bax1.ax.a) char;     // { dg-warning "placement" }
   new (bax1.ax.a) char[2];  // { dg-warning "placement" }
@@ -25,7 +25,7 @@ void fBx1 ()
 
 void fBx2 ()
 {
-  BAx bax2 = { 1, /* Ax = */ { 2, /* a[] = */ { 3, 4 } } };	// { dg-error "initialization of flexible array member in a nested context" }
+  static BAx bax2 = { 1, /* Ax = */ { 2, /* a[] = */ { 3, 4 } } }; // { dg-error "initialization of flexible array member in a nested context" }
 
   new (bax2.ax.a) char;       // { dg-warning "placement" }
   new (bax2.ax.a) char[2];    // { dg-warning "placement" }
@@ -37,7 +37,7 @@ void fBx2 ()
 
 void fBx3 ()
 {
-  BAx bax2 = { 1, /* Ax = */ { 3, /* a[] = */ { 4, 5, 6 } } };	// { dg-error "initialization of flexible array member in a nested context" }
+  static BAx bax2 = { 1, /* Ax = */ { 3, /* a[] = */ { 4, 5, 6 } } }; // { dg-error "initialization of flexible array member in a nested context" }
 
   new (bax2.ax.a) char;       // { dg-warning "placement" }
   new (bax2.ax.a) char[2];    // { dg-warning "placement" }

@@ -1,7 +1,7 @@
 /* pr39500: autopar fails to parallel */
 /* origin: nemokingdom@gmail.com(LiFeng) */
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-parallelize-loops=4 -fdump-tree-parloops2-details" } */
+/* { dg-options "-O2 -fno-tree-loop-distribute-patterns -ftree-parallelize-loops=4 -fdump-tree-parloops2-details" } */
 
 void abort (void);
 

@@ -25,7 +25,7 @@ protected:
   double stuff;
 
 public:
-  explicit MinimalVector ( int length ) {
+  __attribute__((noinline)) explicit MinimalVector ( int length ) {
     _pData = new double[length];
     for (int i = 0; i < length; ++i) _pData[i] = 0.;
   }

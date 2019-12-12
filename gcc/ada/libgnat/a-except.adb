@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1624,6 +1624,7 @@ package body Ada.Exceptions is
       Target.Machine_Occurrence := System.Null_Address;
       Target.Msg_Length         := Source.Msg_Length;
       Target.Num_Tracebacks     := Source.Num_Tracebacks;
+      Target.Exception_Raised   := Source.Exception_Raised;
       Target.Pid                := Source.Pid;
 
       Target.Msg (1 .. Target.Msg_Length) :=

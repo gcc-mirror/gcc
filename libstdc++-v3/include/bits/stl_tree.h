@@ -1,6 +1,6 @@
 // RB tree implementation -*- C++ -*-
 
-// Copyright (C) 2001-2018 Free Software Foundation, Inc.
+// Copyright (C) 2001-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -260,11 +260,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Tp* pointer;
 
       typedef bidirectional_iterator_tag iterator_category;
-      typedef ptrdiff_t		  difference_type;
+      typedef ptrdiff_t			 difference_type;
 
-      typedef _Rb_tree_iterator<_Tp>	_Self;
-      typedef _Rb_tree_node_base::_Base_ptr _Base_ptr;
-      typedef _Rb_tree_node<_Tp>*	   _Link_type;
+      typedef _Rb_tree_iterator<_Tp>		_Self;
+      typedef _Rb_tree_node_base::_Base_ptr	_Base_ptr;
+      typedef _Rb_tree_node<_Tp>*		_Link_type;
 
       _Rb_tree_iterator() _GLIBCXX_NOEXCEPT
       : _M_node() { }
@@ -311,13 +311,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __tmp;
       }
 
-      bool
-      operator==(const _Self& __x) const _GLIBCXX_NOEXCEPT
-      { return _M_node == __x._M_node; }
+      friend bool
+      operator==(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      { return __x._M_node == __y._M_node; }
 
-      bool
-      operator!=(const _Self& __x) const _GLIBCXX_NOEXCEPT
-      { return _M_node != __x._M_node; }
+      friend bool
+      operator!=(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      { return __x._M_node != __y._M_node; }
 
       _Base_ptr _M_node;
   };
@@ -390,28 +390,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __tmp;
       }
 
-      bool
-      operator==(const _Self& __x) const _GLIBCXX_NOEXCEPT
-      { return _M_node == __x._M_node; }
+      friend bool
+      operator==(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      { return __x._M_node == __y._M_node; }
 
-      bool
-      operator!=(const _Self& __x) const _GLIBCXX_NOEXCEPT
-      { return _M_node != __x._M_node; }
+      friend bool
+      operator!=(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      { return __x._M_node != __y._M_node; }
 
       _Base_ptr _M_node;
     };
-
-  template<typename _Val>
-    inline bool
-    operator==(const _Rb_tree_iterator<_Val>& __x,
-	       const _Rb_tree_const_iterator<_Val>& __y) _GLIBCXX_NOEXCEPT
-    { return __x._M_node == __y._M_node; }
-
-  template<typename _Val>
-    inline bool
-    operator!=(const _Rb_tree_iterator<_Val>& __x,
-	       const _Rb_tree_const_iterator<_Val>& __y) _GLIBCXX_NOEXCEPT
-    { return __x._M_node != __y._M_node; }
 
   void
   _Rb_tree_insert_and_rebalance(const bool __insert_left,
@@ -451,17 +439,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	rebind<_Rb_tree_node<_Val> >::other _Node_allocator;
 
       typedef __gnu_cxx::__alloc_traits<_Node_allocator> _Alloc_traits;
-
-#if __cplusplus >= 201103L
-      static_assert(__is_invocable<_Compare&, const _Key&, const _Key&>{},
-	  "comparison object must be invocable with two arguments of key type");
-# if __cplusplus >= 201703L
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 2542. Missing const requirements for associative containers
-      static_assert(is_invocable_v<const _Compare&, const _Key&, const _Key&>,
-	  "comparison object must be invocable as const");
-# endif // C++17
-#endif // C++11
 
     protected:
       typedef _Rb_tree_node_base* 		_Base_ptr;
@@ -626,10 +603,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_construct_node(__tmp, __x);
 	return __tmp;
       }
-
-      void
-      _M_destroy_node(_Link_type __p)
-      { get_allocator().destroy(__p->_M_valptr()); }
 #else
       template<typename... _Args>
 	void
@@ -658,14 +631,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_construct_node(__tmp, std::forward<_Args>(__args)...);
 	  return __tmp;
 	}
+#endif
 
       void
-      _M_destroy_node(_Link_type __p) noexcept
+      _M_destroy_node(_Link_type __p) _GLIBCXX_NOEXCEPT
       {
+#if __cplusplus < 201103L
+	get_allocator().destroy(__p->_M_valptr());
+#else
 	_Alloc_traits::destroy(_M_get_Node_allocator(), __p->_M_valptr());
 	__p->~_Rb_tree_node<_Val>();
-      }
 #endif
+      }
 
       void
       _M_drop_node(_Link_type __p) _GLIBCXX_NOEXCEPT
@@ -782,13 +759,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_end() const _GLIBCXX_NOEXCEPT
       { return &this->_M_impl._M_header; }
 
-      static const_reference
-      _S_value(_Const_Link_type __x)
-      { return *__x->_M_valptr(); }
-
       static const _Key&
       _S_key(_Const_Link_type __x)
-      { return _KeyOfValue()(_S_value(__x)); }
+      {
+#if __cplusplus >= 201103L
+	// If we're asking for the key we're presumably using the comparison
+	// object, and so this is a good place to sanity check it.
+	static_assert(__is_invocable<_Compare&, const _Key&, const _Key&>{},
+		      "comparison object must be invocable "
+		      "with two arguments of key type");
+# if __cplusplus >= 201703L
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 2542. Missing const requirements for associative containers
+	if constexpr (__is_invocable<_Compare&, const _Key&, const _Key&>{})
+	  static_assert(
+	      is_invocable_v<const _Compare&, const _Key&, const _Key&>,
+	      "comparison object must be invocable as const");
+# endif // C++17
+#endif // C++11
+
+	return _KeyOfValue()(*__x->_M_valptr());
+      }
 
       static _Link_type
       _S_left(_Base_ptr __x) _GLIBCXX_NOEXCEPT
@@ -806,13 +797,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_right(_Const_Base_ptr __x) _GLIBCXX_NOEXCEPT
       { return static_cast<_Const_Link_type>(__x->_M_right); }
 
-      static const_reference
-      _S_value(_Const_Base_ptr __x)
-      { return *static_cast<_Const_Link_type>(__x)->_M_valptr(); }
-
       static const _Key&
       _S_key(_Const_Base_ptr __x)
-      { return _KeyOfValue()(_S_value(__x)); }
+      { return _S_key(static_cast<_Const_Link_type>(__x)); }
 
       static _Base_ptr
       _S_minimum(_Base_ptr __x) _GLIBCXX_NOEXCEPT
@@ -1039,7 +1026,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       rend() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(begin()); }
 
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const _GLIBCXX_NOEXCEPT
       { return _M_impl._M_node_count == 0; }
 
@@ -1104,6 +1091,45 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename... _Args>
 	iterator
 	_M_emplace_hint_equal(const_iterator __pos, _Args&&... __args);
+
+      template<typename _Iter>
+	using __same_value_type
+	  = is_same<value_type, typename iterator_traits<_Iter>::value_type>;
+
+      template<typename _InputIterator>
+	__enable_if_t<__same_value_type<_InputIterator>::value>
+	_M_insert_range_unique(_InputIterator __first, _InputIterator __last)
+	{
+	  _Alloc_node __an(*this);
+	  for (; __first != __last; ++__first)
+	    _M_insert_unique_(end(), *__first, __an);
+	}
+
+      template<typename _InputIterator>
+	__enable_if_t<!__same_value_type<_InputIterator>::value>
+	_M_insert_range_unique(_InputIterator __first, _InputIterator __last)
+	{
+	  for (; __first != __last; ++__first)
+	    _M_emplace_unique(*__first);
+	}
+
+      template<typename _InputIterator>
+	__enable_if_t<__same_value_type<_InputIterator>::value>
+	_M_insert_range_equal(_InputIterator __first, _InputIterator __last)
+	{
+	  _Alloc_node __an(*this);
+	  for (; __first != __last; ++__first)
+	    _M_insert_equal_(end(), *__first, __an);
+	}
+
+      template<typename _InputIterator>
+	__enable_if_t<!__same_value_type<_InputIterator>::value>
+	_M_insert_range_equal(_InputIterator __first, _InputIterator __last)
+	{
+	  _Alloc_node __an(*this);
+	  for (; __first != __last; ++__first)
+	    _M_emplace_equal(*__first);
+	}
 #else
       pair<iterator, bool>
       _M_insert_unique(const value_type& __x);
@@ -1133,15 +1159,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Alloc_node __an(*this);
 	return _M_insert_equal_(__pos, __x, __an);
       }
+
+      template<typename _InputIterator>
+	void
+	_M_insert_range_unique(_InputIterator __first, _InputIterator __last)
+	{
+	  _Alloc_node __an(*this);
+	  for (; __first != __last; ++__first)
+	    _M_insert_unique_(end(), *__first, __an);
+	}
+
+      template<typename _InputIterator>
+	void
+	_M_insert_range_equal(_InputIterator __first, _InputIterator __last)
+	{
+	  _Alloc_node __an(*this);
+	  for (; __first != __last; ++__first)
+	    _M_insert_equal_(end(), *__first, __an);
+	}
 #endif
-
-      template<typename _InputIterator>
-	void
-	_M_insert_unique(_InputIterator __first, _InputIterator __last);
-
-      template<typename _InputIterator>
-	void
-	_M_insert_equal(_InputIterator __first, _InputIterator __last);
 
     private:
       void
@@ -1191,6 +1227,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_erase_aux(__position);
       }
 #endif
+
       size_type
       erase(const key_type& __x);
 
@@ -1213,8 +1250,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       erase(const_iterator __first, const_iterator __last)
       { _M_erase_aux(__first, __last); }
 #endif
-      void
-      erase(const key_type* __first, const key_type* __last);
 
       void
       clear() _GLIBCXX_NOEXCEPT
@@ -1567,55 +1602,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	}
 #endif // C++17
+
+      friend bool
+      operator==(const _Rb_tree& __x, const _Rb_tree& __y)
+      {
+	return __x.size() == __y.size()
+	  && std::equal(__x.begin(), __x.end(), __y.begin());
+      }
+
+      friend bool
+      operator<(const _Rb_tree& __x, const _Rb_tree& __y)
+      {
+	return std::lexicographical_compare(__x.begin(), __x.end(),
+					    __y.begin(), __y.end());
+      }
+
+      friend bool _GLIBCXX_DEPRECATED
+      operator!=(const _Rb_tree& __x, const _Rb_tree& __y)
+      { return !(__x == __y); }
+
+      friend bool _GLIBCXX_DEPRECATED
+      operator>(const _Rb_tree& __x, const _Rb_tree& __y)
+      { return __y < __x; }
+
+      friend bool _GLIBCXX_DEPRECATED
+      operator<=(const _Rb_tree& __x, const _Rb_tree& __y)
+      { return !(__y < __x); }
+
+      friend bool _GLIBCXX_DEPRECATED
+      operator>=(const _Rb_tree& __x, const _Rb_tree& __y)
+      { return !(__x < __y); }
     };
-
-  template<typename _Key, typename _Val, typename _KeyOfValue,
-	   typename _Compare, typename _Alloc>
-    inline bool
-    operator==(const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __x,
-	       const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __y)
-    {
-      return __x.size() == __y.size()
-	     && std::equal(__x.begin(), __x.end(), __y.begin());
-    }
-
-  template<typename _Key, typename _Val, typename _KeyOfValue,
-	   typename _Compare, typename _Alloc>
-    inline bool
-    operator<(const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __x,
-	      const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __y)
-    {
-      return std::lexicographical_compare(__x.begin(), __x.end(), 
-					  __y.begin(), __y.end());
-    }
-
-  template<typename _Key, typename _Val, typename _KeyOfValue,
-	   typename _Compare, typename _Alloc>
-    inline bool
-    operator!=(const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __x,
-	       const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __y)
-    { return !(__x == __y); }
-
-  template<typename _Key, typename _Val, typename _KeyOfValue,
-	   typename _Compare, typename _Alloc>
-    inline bool
-    operator>(const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __x,
-	      const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __y)
-    { return __y < __x; }
-
-  template<typename _Key, typename _Val, typename _KeyOfValue,
-	   typename _Compare, typename _Alloc>
-    inline bool
-    operator<=(const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __x,
-	       const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __y)
-    { return !(__y < __x); }
-
-  template<typename _Key, typename _Val, typename _KeyOfValue,
-	   typename _Compare, typename _Alloc>
-    inline bool
-    operator>=(const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __x,
-	       const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __y)
-    { return !(__x < __y); }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
 	   typename _Compare, typename _Alloc>
@@ -2471,29 +2488,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 #endif
 
-  template<typename _Key, typename _Val, typename _KoV,
-	   typename _Cmp, typename _Alloc>
-    template<class _II>
-      void
-      _Rb_tree<_Key, _Val, _KoV, _Cmp, _Alloc>::
-      _M_insert_unique(_II __first, _II __last)
-      {
-	_Alloc_node __an(*this);
-	for (; __first != __last; ++__first)
-	  _M_insert_unique_(end(), *__first, __an);
-      }
-
-  template<typename _Key, typename _Val, typename _KoV,
-	   typename _Cmp, typename _Alloc>
-    template<class _II>
-      void
-      _Rb_tree<_Key, _Val, _KoV, _Cmp, _Alloc>::
-      _M_insert_equal(_II __first, _II __last)
-      {
-	_Alloc_node __an(*this);
-	for (; __first != __last; ++__first)
-	  _M_insert_equal_(end(), *__first, __an);
-      }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
 	   typename _Compare, typename _Alloc>
@@ -2532,16 +2526,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const size_type __old_size = size();
       _M_erase_aux(__p.first, __p.second);
       return __old_size - size();
-    }
-
-  template<typename _Key, typename _Val, typename _KeyOfValue,
-	   typename _Compare, typename _Alloc>
-    void
-    _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
-    erase(const _Key* __first, const _Key* __last)
-    {
-      while (__first != __last)
-	erase(*__first++);
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,

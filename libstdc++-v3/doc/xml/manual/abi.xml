@@ -268,6 +268,9 @@ compatible.
     <listitem><para>GCC 7.1.0: libstdc++.so.6.0.23</para></listitem>
     <listitem><para>GCC 7.2.0: libstdc++.so.6.0.24</para></listitem>
     <listitem><para>GCC 8.0.0: libstdc++.so.6.0.25</para></listitem>
+    <listitem><para>GCC 9.1.0: libstdc++.so.6.0.26</para></listitem>
+    <listitem><para>GCC 9.2.0: libstdc++.so.6.0.27</para></listitem>
+    <listitem><para>GCC 9.3.0: libstdc++.so.6.0.28</para></listitem>
     </itemizedlist>
     <para>
       Note 1: Error should be libstdc++.so.3.0.3.
@@ -338,6 +341,7 @@ compatible.
     <listitem><para>GCC 7.1.0: GLIBCXX_3.4.23, CXXABI_1.3.11</para></listitem>
     <listitem><para>GCC 7.2.0: GLIBCXX_3.4.24, CXXABI_1.3.11</para></listitem>
     <listitem><para>GCC 8.0.0: GLIBCXX_3.4.25, CXXABI_1.3.11</para></listitem>
+    <listitem><para>GCC 9.0.0: GLIBCXX_3.4.26, CXXABI_1.3.11</para></listitem>
     </itemizedlist>
     </listitem>
 
@@ -423,7 +427,7 @@ compatible.
     <literal>20160603</literal> which is greater than the
     <literal>20160427</literal> value of the macro in the 6.1.0 release,
     but there are features supported in the 6.1.0 release that are not
-    supported in 5.4.0 release.
+    supported in the 5.4.0 release.
     You also can't test for the exact values listed below to try and
     identify a release, because a snapshot taken from the gcc-5-branch on
     2016-04-27 would have the same value for the macro as the 6.1.0 release

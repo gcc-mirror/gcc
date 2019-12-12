@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    additional tree codes used in the GNU C++ compiler (see tree.def
    for the standard codes).
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -207,10 +207,11 @@ DEFTREECODE (USING_DECL, "using_decl", tcc_declaration, 0)
 /* A using directive. The operand is USING_STMT_NAMESPACE.  */
 DEFTREECODE (USING_STMT, "using_stmt", tcc_statement, 1)
 
-/* An un-parsed default argument.  Holds a vector of input tokens and
+/* An un-parsed operand.  Holds a vector of input tokens and
    a vector of places where the argument was instantiated before
-   parsing had occurred.  */
-DEFTREECODE (DEFAULT_ARG, "default_arg", tcc_exceptional, 0)
+   parsing had occurred.  This is used for default arguments, delayed
+   NSDMIs, and noexcept-specifier parsing.  */
+DEFTREECODE (DEFERRED_PARSE, "deferred_parse", tcc_exceptional, 0)
 
 /* An uninstantiated/unevaluated noexcept-specification.  For the
    uninstantiated case, DEFERRED_NOEXCEPT_PATTERN is the pattern from the
@@ -254,6 +255,7 @@ DEFTREECODE (IMPLICIT_CONV_EXPR, "implicit_conv_expr", tcc_unary, 1)
 DEFTREECODE (DOTSTAR_EXPR, "dotstar_expr", tcc_expression, 2)
 DEFTREECODE (TYPEID_EXPR, "typeid_expr", tcc_expression, 1)
 DEFTREECODE (NOEXCEPT_EXPR, "noexcept_expr", tcc_unary, 1)
+DEFTREECODE (SPACESHIP_EXPR, "spaceship_expr", tcc_expression, 2)
 
 /* A placeholder for an expression that is not type-dependent, but
    does occur in a template.  When an expression that is not
@@ -301,9 +303,10 @@ DEFTREECODE (IF_STMT, "if_stmt", tcc_statement, 4)
 DEFTREECODE (FOR_STMT, "for_stmt", tcc_statement, 5)
 
 /* Used to represent a range-based `for' statement. The operands are
-   RANGE_FOR_DECL, RANGE_FOR_EXPR, RANGE_FOR_BODY, and RANGE_FOR_SCOPE,
-   RANGE_FOR_UNROLL respectively.  Only used in templates.  */
-DEFTREECODE (RANGE_FOR_STMT, "range_for_stmt", tcc_statement, 5)
+   RANGE_FOR_DECL, RANGE_FOR_EXPR, RANGE_FOR_BODY, RANGE_FOR_SCOPE,
+   RANGE_FOR_UNROLL, and RANGE_FOR_INIT_STMT, respectively.  Only used in
+   templates.  */
+DEFTREECODE (RANGE_FOR_STMT, "range_for_stmt", tcc_statement, 6)
 
 /* Used to represent a 'while' statement. The operands are WHILE_COND
    and WHILE_BODY, respectively.  */
@@ -498,7 +501,17 @@ DEFTREECODE (BASES, "bases", tcc_type, 0)
    instantiation time.  */
 DEFTREECODE (TEMPLATE_INFO, "template_info", tcc_exceptional, 0)
 
+/* OpenMP - #pragma omp depobj
+   Operand 0: OMP_DEPOBJ_DEPOBJ: Depobj expression
+   Operand 1: OMP_DEPOBJ_CLAUSES: List of clauses.  */
+DEFTREECODE (OMP_DEPOBJ, "omp_depobj", tcc_statement, 2)
+
 /* Extensions for Concepts. */
+
+/* Concept definition. This is not entirely different than a VAR_DECL
+   except that a) it must be a template, and b) doesn't have the wide
+   range of value and linkage options available to variables.  */
+DEFTREECODE (CONCEPT_DECL, "concept_decl", tcc_declaration, 0)
 
 /* Used to represent information associated with constrained declarations. */
 DEFTREECODE (CONSTRAINT_INFO, "constraint_info", tcc_exceptional, 0)
@@ -534,10 +547,24 @@ DEFTREECODE (NESTED_REQ, "nested_req", tcc_expression, 1)
    The operands of a constraint can be either types or expressions.
    Unlike expressions, constraints do not have a type. */
 
-/* A predicate constraint evaluates an expression E.
+/* An atomic constraint evaluates an expression E. The operand of the
+   constraint is its parameter mapping. The actual expression is stored
+   in the context.
 
-   PRED_CONSTR_EXPR has the expression to be evaluated. */
-DEFTREECODE (PRED_CONSTR, "pred_constr", tcc_expression, 1)
+   ATOMIC_CONSTR_INFO provides source info to support diagnostics.
+   ATOMIC_CONSTR_EXPR has the expression to be evaluated.
+   ATOMIC_CONSTR_PARMS is the parameter mapping for the atomic constraint
+   and is stored in the type field.  */
+DEFTREECODE (ATOMIC_CONSTR, "atomic_constr", tcc_expression, 1)
+
+/* The conjunction and disjunction of two constraints, respectively.
+   Operands are accessed using TREE_OPERAND. The third operand provides
+   source info for diagnostics.
+
+   CONJ_CONSTR_INFO and DISJ_CONSTR_INFO provide access to the source
+   information of constraints, which is stored in the TREE_TYPE.  */
+DEFTREECODE (CONJ_CONSTR, "conj_constr", tcc_expression, 2)
+DEFTREECODE (DISJ_CONSTR, "disj_constr", tcc_expression, 2)
 
 /* A check constraint represents the checking of a concept
    C. It has two operands: the template defining the concept
@@ -546,53 +573,6 @@ DEFTREECODE (PRED_CONSTR, "pred_constr", tcc_expression, 1)
    CHECK_CONSTR_CONCEPT has the concept definition
    CHECK_CONSTR_ARGUMENTS are the template arguments */
 DEFTREECODE (CHECK_CONSTR, "check_constr", tcc_expression, 2)
-
-/* An expression constraint determines the validity of a expression E.
-
-   EXPR_CONST_EXPR has the expression being validated. */
-DEFTREECODE (EXPR_CONSTR, "expr_constr", tcc_expression, 1)
-
-/* A type constraint determines the validity of a type T. Note that
-
-   TYPE_CONST_TYPE has the type being validated */
-DEFTREECODE (TYPE_CONSTR, "type_constr", tcc_expression, 1)
-
-/* An implicit conversion constraint determines if an expression
-   E is implicitly convertible to a type T. Note that T may
-   be dependent but does not contain any placeholders.
-
-   ICONV_CONSTR_EXPR has the expression E.
-   ICONV_CONSTR_TYPE has the type T.
-   */
-DEFTREECODE (ICONV_CONSTR, "iconv_constr", tcc_expression, 2)
-
-/* An argument deduction constraint determines if the type of an
-   expression E can be deduced from a type pattern T. Note that
-   T must contain at least one place holder.
-
-   DEDUCT_CONSTR_EXPR has the expression E
-   DEDUCT_CONSTR_PATTERN has the type pattern T.
-   DEDUCT_CONSTR_PLACEHOLDERS has the list of placeholder nodes in T. */
-DEFTREECODE (DEDUCT_CONSTR, "deduct_constr", tcc_expression, 3)
-
-/* An exception constraint determines if, for an expression E,
-   noexcept(E) is true.
-
-   EXCEPT_CONSTR_EXPR has the expression E. */
-DEFTREECODE (EXCEPT_CONSTR, "except_constr", tcc_expression, 1)
-
-/* A parameterized constraint declares constraint variables, which
-   are used in expression, type, and exception constraints.
-
-   PARM_CONSTR_PARMS has a TREE_LIST of parameter declarations.
-   PARM_CONSTR_OPERAND has the nested constraint. */
-DEFTREECODE (PARM_CONSTR, "parm_constr", tcc_expression, 2)
-
-/* The conjunction and disjunction of two constraints, respectively.
-   Operands are accessed using TREE_OPERAND. */
-DEFTREECODE (CONJ_CONSTR, "conj_constr", tcc_expression, 2)
-DEFTREECODE (DISJ_CONSTR, "disj_constr", tcc_expression, 2)
-
 
 /*
 Local variables:

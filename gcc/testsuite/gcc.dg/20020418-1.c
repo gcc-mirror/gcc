@@ -2,6 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 /* { dg-options "-O2 -msse -ffast-math" { target i?86-*-* x86_64-*-* } } */
+/* { dg-skip-if "exceeds eBPF stack limit" { bpf-*-* } } */
 
 void bar (float *a, float *b);
 

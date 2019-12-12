@@ -1,5 +1,5 @@
 /* Main parser.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -426,6 +426,7 @@ decode_statement (void)
   match (NULL, gfc_match_critical, ST_CRITICAL);
   match (NULL, gfc_match_select, ST_SELECT_CASE);
   match (NULL, gfc_match_select_type, ST_SELECT_TYPE);
+  match (NULL, gfc_match_select_rank, ST_SELECT_RANK);
 
   /* General statement matching: Instead of testing every possible
      statement, we eliminate most possibilities by peeking at the
@@ -546,6 +547,7 @@ decode_statement (void)
       break;
 
     case 'r':
+      match ("rank", gfc_match_rank_is, ST_RANK);
       match ("read", gfc_match_read, ST_READ);
       match ("return", gfc_match_return, ST_RETURN);
       match ("rewind", gfc_match_rewind, ST_REWIND);
@@ -587,10 +589,16 @@ decode_statement (void)
     }
 
   /* All else has failed, so give up.  See if any of the matchers has
-     stored an error message of some sort.  */
-
+     stored an error message of some sort.  Suppress the "Unclassifiable
+     statement" if a previous error message was emitted, e.g., by
+     gfc_error_now ().  */
   if (!gfc_error_check ())
-    gfc_error_now ("Unclassifiable statement at %C");
+    {
+      int ecnt;
+      gfc_get_errors (NULL, &ecnt);
+      if (ecnt <= 0)
+        gfc_error_now ("Unclassifiable statement at %C");
+    }
 
   reject_statement ();
 
@@ -601,13 +609,18 @@ decode_statement (void)
 
 /* Like match and if spec_only, goto do_spec_only without actually
    matching.  */
+/* If the directive matched but the clauses failed, do not start
+   matching the next directive in the same switch statement. */
 #define matcha(keyword, subr, st)				\
     do {							\
+      match m2;							\
       if (spec_only && gfc_match (keyword) == MATCH_YES)	\
 	goto do_spec_only;					\
-      else if (match_word (keyword, subr, &old_locus)		\
+      else if ((m2 = match_word (keyword, subr, &old_locus))	\
 	       == MATCH_YES)					\
 	return st;						\
+      else if (m2 == MATCH_ERROR)				\
+	goto error_handling;					\
       else							\
 	undo_new_statement ();				  	\
     } while (0)
@@ -661,15 +674,18 @@ decode_oacc_directive (void)
       match ("declare", gfc_match_oacc_declare, ST_OACC_DECLARE);
       break;
     case 'e':
-      matcha ("end atomic", gfc_match_omp_eos, ST_OACC_END_ATOMIC);
-      matcha ("end data", gfc_match_omp_eos, ST_OACC_END_DATA);
-      matcha ("end host_data", gfc_match_omp_eos, ST_OACC_END_HOST_DATA);
-      matcha ("end kernels loop", gfc_match_omp_eos, ST_OACC_END_KERNELS_LOOP);
-      matcha ("end kernels", gfc_match_omp_eos, ST_OACC_END_KERNELS);
-      matcha ("end loop", gfc_match_omp_eos, ST_OACC_END_LOOP);
-      matcha ("end parallel loop", gfc_match_omp_eos,
+      matcha ("end atomic", gfc_match_omp_eos_error, ST_OACC_END_ATOMIC);
+      matcha ("end data", gfc_match_omp_eos_error, ST_OACC_END_DATA);
+      matcha ("end host_data", gfc_match_omp_eos_error, ST_OACC_END_HOST_DATA);
+      matcha ("end kernels loop", gfc_match_omp_eos_error, ST_OACC_END_KERNELS_LOOP);
+      matcha ("end kernels", gfc_match_omp_eos_error, ST_OACC_END_KERNELS);
+      matcha ("end loop", gfc_match_omp_eos_error, ST_OACC_END_LOOP);
+      matcha ("end parallel loop", gfc_match_omp_eos_error,
 	      ST_OACC_END_PARALLEL_LOOP);
-      matcha ("end parallel", gfc_match_omp_eos, ST_OACC_END_PARALLEL);
+      matcha ("end parallel", gfc_match_omp_eos_error, ST_OACC_END_PARALLEL);
+      matcha ("end serial loop", gfc_match_omp_eos_error,
+	      ST_OACC_END_SERIAL_LOOP);
+      matcha ("end serial", gfc_match_omp_eos_error, ST_OACC_END_SERIAL);
       matcha ("enter data", gfc_match_oacc_enter_data, ST_OACC_ENTER_DATA);
       matcha ("exit data", gfc_match_oacc_exit_data, ST_OACC_EXIT_DATA);
       break;
@@ -692,6 +708,10 @@ decode_oacc_directive (void)
     case 'r':
       match ("routine", gfc_match_oacc_routine, ST_OACC_ROUTINE);
       break;
+    case 's':
+      matcha ("serial loop", gfc_match_oacc_serial_loop, ST_OACC_SERIAL_LOOP);
+      matcha ("serial", gfc_match_oacc_serial, ST_OACC_SERIAL);
+      break;
     case 'u':
       matcha ("update", gfc_match_oacc_update, ST_OACC_UPDATE);
       break;
@@ -703,6 +723,7 @@ decode_oacc_directive (void)
   /* Directive not found or stored an error message.
      Check and give up.  */
 
+ error_handling:
   if (gfc_error_check () == 0)
     gfc_error_now ("Unclassifiable OpenACC directive at %C");
 
@@ -724,32 +745,40 @@ decode_oacc_directive (void)
    and if spec_only, goto do_spec_only without actually matching.  */
 #define matchs(keyword, subr, st)				\
     do {							\
+      match m2;							\
       if (spec_only && gfc_match (keyword) == MATCH_YES)	\
 	goto do_spec_only;					\
-      if (match_word_omp_simd (keyword, subr, &old_locus,	\
-			       &simd_matched) == MATCH_YES)	\
+      if ((m2 = match_word_omp_simd (keyword, subr, &old_locus,	\
+			       &simd_matched)) == MATCH_YES)	\
 	{							\
 	  ret = st;						\
 	  goto finish;						\
 	}							\
+      else if (m2 == MATCH_ERROR)				\
+	goto error_handling;					\
       else							\
 	undo_new_statement ();				  	\
     } while (0)
 
 /* Like match, but don't match anything if not -fopenmp
    and if spec_only, goto do_spec_only without actually matching.  */
+/* If the directive matched but the clauses failed, do not start
+   matching the next directive in the same switch statement. */
 #define matcho(keyword, subr, st)				\
     do {							\
+      match m2;							\
       if (!flag_openmp)						\
 	;							\
       else if (spec_only && gfc_match (keyword) == MATCH_YES)	\
 	goto do_spec_only;					\
-      else if (match_word (keyword, subr, &old_locus)		\
+      else if ((m2 = match_word (keyword, subr, &old_locus))	\
 	       == MATCH_YES)					\
 	{							\
 	  ret = st;						\
 	  goto finish;						\
 	}							\
+      else if (m2 == MATCH_ERROR)				\
+	goto error_handling;					\
       else							\
 	undo_new_statement ();				  	\
     } while (0)
@@ -757,12 +786,15 @@ decode_oacc_directive (void)
 /* Like match, but set a flag simd_matched if keyword matched.  */
 #define matchds(keyword, subr, st)				\
     do {							\
-      if (match_word_omp_simd (keyword, subr, &old_locus,	\
-			       &simd_matched) == MATCH_YES)	\
+      match m2;							\
+      if ((m2 = match_word_omp_simd (keyword, subr, &old_locus,	\
+			       &simd_matched)) == MATCH_YES)	\
 	{							\
 	  ret = st;						\
 	  goto finish;						\
 	}							\
+      else if (m2 == MATCH_ERROR)				\
+	goto error_handling;					\
       else							\
 	undo_new_statement ();				  	\
     } while (0)
@@ -770,14 +802,17 @@ decode_oacc_directive (void)
 /* Like match, but don't match anything if not -fopenmp.  */
 #define matchdo(keyword, subr, st)				\
     do {							\
+      match m2;							\
       if (!flag_openmp)						\
 	;							\
-      else if (match_word (keyword, subr, &old_locus)		\
+      else if ((m2 = match_word (keyword, subr, &old_locus))	\
 	       == MATCH_YES)					\
 	{							\
 	  ret = st;						\
 	  goto finish;						\
 	}							\
+      else if (m2 == MATCH_ERROR)				\
+	goto error_handling;					\
       else							\
 	undo_new_statement ();				  	\
     } while (0)
@@ -870,63 +905,63 @@ decode_omp_directive (void)
       matcho ("do", gfc_match_omp_do, ST_OMP_DO);
       break;
     case 'e':
-      matcho ("end atomic", gfc_match_omp_eos, ST_OMP_END_ATOMIC);
+      matcho ("end atomic", gfc_match_omp_eos_error, ST_OMP_END_ATOMIC);
       matcho ("end critical", gfc_match_omp_end_critical, ST_OMP_END_CRITICAL);
-      matchs ("end distribute parallel do simd", gfc_match_omp_eos,
+      matchs ("end distribute parallel do simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_DISTRIBUTE_PARALLEL_DO_SIMD);
-      matcho ("end distribute parallel do", gfc_match_omp_eos,
+      matcho ("end distribute parallel do", gfc_match_omp_eos_error,
 	      ST_OMP_END_DISTRIBUTE_PARALLEL_DO);
-      matchs ("end distribute simd", gfc_match_omp_eos,
+      matchs ("end distribute simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_DISTRIBUTE_SIMD);
-      matcho ("end distribute", gfc_match_omp_eos, ST_OMP_END_DISTRIBUTE);
+      matcho ("end distribute", gfc_match_omp_eos_error, ST_OMP_END_DISTRIBUTE);
       matchs ("end do simd", gfc_match_omp_end_nowait, ST_OMP_END_DO_SIMD);
       matcho ("end do", gfc_match_omp_end_nowait, ST_OMP_END_DO);
-      matchs ("end simd", gfc_match_omp_eos, ST_OMP_END_SIMD);
-      matcho ("end master", gfc_match_omp_eos, ST_OMP_END_MASTER);
-      matchs ("end ordered", gfc_match_omp_eos, ST_OMP_END_ORDERED);
-      matchs ("end parallel do simd", gfc_match_omp_eos,
+      matchs ("end simd", gfc_match_omp_eos_error, ST_OMP_END_SIMD);
+      matcho ("end master", gfc_match_omp_eos_error, ST_OMP_END_MASTER);
+      matchs ("end ordered", gfc_match_omp_eos_error, ST_OMP_END_ORDERED);
+      matchs ("end parallel do simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_PARALLEL_DO_SIMD);
-      matcho ("end parallel do", gfc_match_omp_eos, ST_OMP_END_PARALLEL_DO);
-      matcho ("end parallel sections", gfc_match_omp_eos,
+      matcho ("end parallel do", gfc_match_omp_eos_error, ST_OMP_END_PARALLEL_DO);
+      matcho ("end parallel sections", gfc_match_omp_eos_error,
 	      ST_OMP_END_PARALLEL_SECTIONS);
-      matcho ("end parallel workshare", gfc_match_omp_eos,
+      matcho ("end parallel workshare", gfc_match_omp_eos_error,
 	      ST_OMP_END_PARALLEL_WORKSHARE);
-      matcho ("end parallel", gfc_match_omp_eos, ST_OMP_END_PARALLEL);
+      matcho ("end parallel", gfc_match_omp_eos_error, ST_OMP_END_PARALLEL);
       matcho ("end sections", gfc_match_omp_end_nowait, ST_OMP_END_SECTIONS);
       matcho ("end single", gfc_match_omp_end_single, ST_OMP_END_SINGLE);
-      matcho ("end target data", gfc_match_omp_eos, ST_OMP_END_TARGET_DATA);
-      matchs ("end target parallel do simd", gfc_match_omp_eos,
+      matcho ("end target data", gfc_match_omp_eos_error, ST_OMP_END_TARGET_DATA);
+      matchs ("end target parallel do simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_TARGET_PARALLEL_DO_SIMD);
-      matcho ("end target parallel do", gfc_match_omp_eos,
+      matcho ("end target parallel do", gfc_match_omp_eos_error,
 	      ST_OMP_END_TARGET_PARALLEL_DO);
-      matcho ("end target parallel", gfc_match_omp_eos,
+      matcho ("end target parallel", gfc_match_omp_eos_error,
 	      ST_OMP_END_TARGET_PARALLEL);
-      matchs ("end target simd", gfc_match_omp_eos, ST_OMP_END_TARGET_SIMD);
+      matchs ("end target simd", gfc_match_omp_eos_error, ST_OMP_END_TARGET_SIMD);
       matchs ("end target teams distribute parallel do simd",
-	      gfc_match_omp_eos,
+	      gfc_match_omp_eos_error,
 	      ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD);
-      matcho ("end target teams distribute parallel do", gfc_match_omp_eos,
+      matcho ("end target teams distribute parallel do", gfc_match_omp_eos_error,
 	      ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO);
-      matchs ("end target teams distribute simd", gfc_match_omp_eos,
+      matchs ("end target teams distribute simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_SIMD);
-      matcho ("end target teams distribute", gfc_match_omp_eos,
+      matcho ("end target teams distribute", gfc_match_omp_eos_error,
 	      ST_OMP_END_TARGET_TEAMS_DISTRIBUTE);
-      matcho ("end target teams", gfc_match_omp_eos, ST_OMP_END_TARGET_TEAMS);
-      matcho ("end target", gfc_match_omp_eos, ST_OMP_END_TARGET);
-      matcho ("end taskgroup", gfc_match_omp_eos, ST_OMP_END_TASKGROUP);
-      matchs ("end taskloop simd", gfc_match_omp_eos,
+      matcho ("end target teams", gfc_match_omp_eos_error, ST_OMP_END_TARGET_TEAMS);
+      matcho ("end target", gfc_match_omp_eos_error, ST_OMP_END_TARGET);
+      matcho ("end taskgroup", gfc_match_omp_eos_error, ST_OMP_END_TASKGROUP);
+      matchs ("end taskloop simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_TASKLOOP_SIMD);
-      matcho ("end taskloop", gfc_match_omp_eos, ST_OMP_END_TASKLOOP);
-      matcho ("end task", gfc_match_omp_eos, ST_OMP_END_TASK);
-      matchs ("end teams distribute parallel do simd", gfc_match_omp_eos,
+      matcho ("end taskloop", gfc_match_omp_eos_error, ST_OMP_END_TASKLOOP);
+      matcho ("end task", gfc_match_omp_eos_error, ST_OMP_END_TASK);
+      matchs ("end teams distribute parallel do simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD);
-      matcho ("end teams distribute parallel do", gfc_match_omp_eos,
+      matcho ("end teams distribute parallel do", gfc_match_omp_eos_error,
 	      ST_OMP_END_TEAMS_DISTRIBUTE_PARALLEL_DO);
-      matchs ("end teams distribute simd", gfc_match_omp_eos,
+      matchs ("end teams distribute simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_TEAMS_DISTRIBUTE_SIMD);
-      matcho ("end teams distribute", gfc_match_omp_eos,
+      matcho ("end teams distribute", gfc_match_omp_eos_error,
 	      ST_OMP_END_TEAMS_DISTRIBUTE);
-      matcho ("end teams", gfc_match_omp_eos, ST_OMP_END_TEAMS);
+      matcho ("end teams", gfc_match_omp_eos_error, ST_OMP_END_TEAMS);
       matcho ("end workshare", gfc_match_omp_end_nowait,
 	      ST_OMP_END_WORKSHARE);
       break;
@@ -960,7 +995,7 @@ decode_omp_directive (void)
       break;
     case 's':
       matcho ("sections", gfc_match_omp_sections, ST_OMP_SECTIONS);
-      matcho ("section", gfc_match_omp_eos, ST_OMP_SECTION);
+      matcho ("section", gfc_match_omp_eos_error, ST_OMP_SECTION);
       matcho ("single", gfc_match_omp_single, ST_OMP_SINGLE);
       break;
     case 't':
@@ -1022,6 +1057,7 @@ decode_omp_directive (void)
      not -fopenmp and simd_matched is false, i.e. if a directive other
      than one marked with match has been seen.  */
 
+ error_handling:
   if (flag_openmp || simd_matched)
     {
       if (!gfc_error_check ())
@@ -1072,12 +1108,21 @@ decode_gcc_attribute (void)
 
   match ("attributes", gfc_match_gcc_attributes, ST_ATTR_DECL);
   match ("unroll", gfc_match_gcc_unroll, ST_NONE);
+  match ("builtin", gfc_match_gcc_builtin, ST_NONE);
+  match ("ivdep", gfc_match_gcc_ivdep, ST_NONE);
+  match ("vector", gfc_match_gcc_vector, ST_NONE);
+  match ("novector", gfc_match_gcc_novector, ST_NONE);
 
   /* All else has failed, so give up.  See if any of the matchers has
      stored an error message of some sort.  */
 
   if (!gfc_error_check ())
-    gfc_error_now ("Unclassifiable GCC directive at %C");
+    {
+      if (pedantic)
+	gfc_error_now ("Unclassifiable GCC directive at %C");
+      else
+	gfc_warning_now (0, "Unclassifiable GCC directive at %C, ignored");
+    }
 
   reject_statement ();
 
@@ -1522,7 +1567,7 @@ next_statement (void)
 #define case_exec_markers case ST_DO: case ST_FORALL_BLOCK: \
   case ST_IF_BLOCK: case ST_BLOCK: case ST_ASSOCIATE: \
   case ST_WHERE_BLOCK: case ST_SELECT_CASE: case ST_SELECT_TYPE: \
-  case ST_OMP_PARALLEL: \
+  case ST_SELECT_RANK: case ST_OMP_PARALLEL: \
   case ST_OMP_PARALLEL_SECTIONS: case ST_OMP_SECTIONS: case ST_OMP_ORDERED: \
   case ST_OMP_CRITICAL: case ST_OMP_MASTER: case ST_OMP_SINGLE: \
   case ST_OMP_DO: case ST_OMP_PARALLEL_DO: case ST_OMP_ATOMIC: \
@@ -1545,7 +1590,8 @@ next_statement (void)
   case ST_CRITICAL: \
   case ST_OACC_PARALLEL_LOOP: case ST_OACC_PARALLEL: case ST_OACC_KERNELS: \
   case ST_OACC_DATA: case ST_OACC_HOST_DATA: case ST_OACC_LOOP: \
-  case ST_OACC_KERNELS_LOOP: case ST_OACC_ATOMIC
+  case ST_OACC_KERNELS_LOOP: case ST_OACC_SERIAL_LOOP: case ST_OACC_SERIAL: \
+  case ST_OACC_ATOMIC
 
 /* Declaration statements */
 
@@ -2062,11 +2108,17 @@ gfc_ascii_statement (gfc_statement st)
     case ST_SELECT_TYPE:
       p = "SELECT TYPE";
       break;
+    case ST_SELECT_RANK:
+      p = "SELECT RANK";
+      break;
     case ST_TYPE_IS:
       p = "TYPE IS";
       break;
     case ST_CLASS_IS:
       p = "CLASS IS";
+      break;
+    case ST_RANK:
+      p = "RANK";
       break;
     case ST_SEQUENCE:
       p = "SEQUENCE";
@@ -2112,6 +2164,18 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OACC_END_KERNELS_LOOP:
       p = "!$ACC END KERNELS LOOP";
+      break;
+    case ST_OACC_SERIAL_LOOP:
+      p = "!$ACC SERIAL LOOP";
+      break;
+    case ST_OACC_END_SERIAL_LOOP:
+      p = "!$ACC END SERIAL LOOP";
+      break;
+    case ST_OACC_SERIAL:
+      p = "!$ACC SERIAL";
+      break;
+    case ST_OACC_END_SERIAL:
+      p = "!$ACC END SERIAL";
       break;
     case ST_OACC_DATA:
       p = "!$ACC DATA";
@@ -3739,7 +3803,7 @@ loop:
 	  break;
       }
 
-  /* If we find a statement that can not be followed by an IMPLICIT statement
+  /* If we find a statement that cannot be followed by an IMPLICIT statement
      (and thus we can expect to see none any further), type the function result
      if it has not yet been typed.  Be careful not to give the END statement
      to verify_st_order!  */
@@ -4164,7 +4228,7 @@ parse_select_block (void)
       reject_statement ();
     }
 
-  /* At this point, we're got a nonempty select block.  */
+  /* At this point, we've got a nonempty select block.  */
   cp = new_level (cp);
   *cp = new_st;
 
@@ -4248,7 +4312,7 @@ parse_select_type_block (void)
       reject_statement ();
     }
 
-  /* At this point, we're got a nonempty select block.  */
+  /* At this point, we've got a nonempty select block.  */
   cp = new_level (cp);
   *cp = new_st;
 
@@ -4264,6 +4328,81 @@ parse_select_type_block (void)
 
 	case ST_TYPE_IS:
 	case ST_CLASS_IS:
+	  cp = new_level (gfc_state_stack->head);
+	  *cp = new_st;
+	  gfc_clear_new_st ();
+
+	  accept_statement (st);
+	  /* Fall through */
+
+	case ST_END_SELECT:
+	  break;
+
+	/* Can't have an executable statement because of
+	   parse_executable().  */
+	default:
+	  unexpected_statement (st);
+	  break;
+	}
+    }
+  while (st != ST_END_SELECT);
+
+done:
+  pop_state ();
+  accept_statement (st);
+  gfc_current_ns = gfc_current_ns->parent;
+  select_type_pop ();
+}
+
+
+/* Parse a SELECT RANK construct.  */
+
+static void
+parse_select_rank_block (void)
+{
+  gfc_statement st;
+  gfc_code *cp;
+  gfc_state_data s;
+
+  gfc_current_ns = new_st.ext.block.ns;
+  accept_statement (ST_SELECT_RANK);
+
+  cp = gfc_state_stack->tail;
+  push_state (&s, COMP_SELECT_RANK, gfc_new_block);
+
+  /* Make sure that the next statement is a RANK IS or RANK DEFAULT.  */
+  for (;;)
+    {
+      st = next_statement ();
+      if (st == ST_NONE)
+	unexpected_eof ();
+      if (st == ST_END_SELECT)
+	/* Empty SELECT CASE is OK.  */
+	goto done;
+      if (st == ST_RANK)
+	break;
+
+      gfc_error ("Expected RANK or RANK DEFAULT "
+		 "following SELECT RANK at %C");
+
+      reject_statement ();
+    }
+
+  /* At this point, we've got a nonempty select block.  */
+  cp = new_level (cp);
+  *cp = new_st;
+
+  accept_statement (st);
+
+  do
+    {
+      st = parse_executable (ST_NONE);
+      switch (st)
+	{
+	case ST_NONE:
+	  unexpected_eof ();
+
+	case ST_RANK:
 	  cp = new_level (gfc_state_stack->head);
 	  *cp = new_st;
 	  gfc_clear_new_st ();
@@ -4536,7 +4675,7 @@ parse_associate (void)
 	 in case of association to a derived-type.  */
       sym->ts = a->target->ts;
 
-      /* Check if the target expression is array valued.  This can not always
+      /* Check if the target expression is array valued.  This cannot always
 	 be done by looking at target.rank, because that might not have been
 	 set yet.  Therefore traverse the chain of refs, looking for the last
 	 array ref and evaluate that.  */
@@ -4562,7 +4701,7 @@ parse_associate (void)
 	  else
 	    rank = a->target->rank;
 	  /* When the rank is greater than zero then sym will be an array.  */
-	  if (sym->ts.type == BT_CLASS)
+	  if (sym->ts.type == BT_CLASS && CLASS_DATA (sym))
 	    {
 	      if ((!CLASS_DATA (sym)->as && rank != 0)
 		  || (CLASS_DATA (sym)->as
@@ -4664,6 +4803,21 @@ parse_do_block (void)
 	{
 	  new_st.ext.iterator->unroll = directive_unroll;
 	  directive_unroll = -1;
+	}
+      if (directive_ivdep)
+	{
+	  new_st.ext.iterator->ivdep = directive_ivdep;
+	  directive_ivdep = false;
+	}
+      if (directive_vector)
+	{
+	  new_st.ext.iterator->vector = directive_vector;
+	  directive_vector = false;
+	}
+      if (directive_novector)
+	{
+	  new_st.ext.iterator->novector = directive_novector;
+	  directive_novector = false;
 	}
     }
   else
@@ -4931,6 +5085,9 @@ parse_oacc_structured_block (gfc_statement acc_st)
     case ST_OACC_KERNELS:
       acc_end_st = ST_OACC_END_KERNELS;
       break;
+    case ST_OACC_SERIAL:
+      acc_end_st = ST_OACC_END_SERIAL;
+      break;
     case ST_OACC_DATA:
       acc_end_st = ST_OACC_END_DATA;
       break;
@@ -4962,7 +5119,7 @@ parse_oacc_structured_block (gfc_statement acc_st)
   pop_state ();
 }
 
-/* Parse the statements of OpenACC loop/parallel loop/kernels loop.  */
+/* Parse the statements of OpenACC 'loop', or combined compute 'loop'.  */
 
 static gfc_statement
 parse_oacc_loop (gfc_statement acc_st)
@@ -5015,6 +5172,7 @@ parse_oacc_loop (gfc_statement acc_st)
     gfc_warning (0, "Redundant !$ACC END LOOP at %C");
   if ((acc_st == ST_OACC_PARALLEL_LOOP && st == ST_OACC_END_PARALLEL_LOOP) ||
       (acc_st == ST_OACC_KERNELS_LOOP && st == ST_OACC_END_KERNELS_LOOP) ||
+      (acc_st == ST_OACC_SERIAL_LOOP && st == ST_OACC_END_SERIAL_LOOP) ||
       (acc_st == ST_OACC_LOOP && st == ST_OACC_END_LOOP))
     {
       gcc_assert (new_st.op == EXEC_NOP);
@@ -5330,6 +5488,10 @@ parse_executable (gfc_statement st)
 	  parse_select_type_block ();
 	  break;
 
+	case ST_SELECT_RANK:
+	  parse_select_rank_block ();
+	  break;
+
 	case ST_DO:
 	  parse_do_block ();
 	  if (check_do_closure () == 1)
@@ -5350,6 +5512,7 @@ parse_executable (gfc_statement st)
 
 	case ST_OACC_PARALLEL_LOOP:
 	case ST_OACC_KERNELS_LOOP:
+	case ST_OACC_SERIAL_LOOP:
 	case ST_OACC_LOOP:
 	  st = parse_oacc_loop (st);
 	  if (st == ST_IMPLIED_ENDDO)
@@ -5358,6 +5521,7 @@ parse_executable (gfc_statement st)
 
 	case ST_OACC_PARALLEL:
 	case ST_OACC_KERNELS:
+	case ST_OACC_SERIAL:
 	case ST_OACC_DATA:
 	case ST_OACC_HOST_DATA:
 	  parse_oacc_structured_block (st);
@@ -5396,6 +5560,7 @@ parse_executable (gfc_statement st)
 	case ST_OMP_SIMD:
 	case ST_OMP_TARGET_PARALLEL_DO:
 	case ST_OMP_TARGET_PARALLEL_DO_SIMD:
+	case ST_OMP_TARGET_SIMD:
 	case ST_OMP_TARGET_TEAMS_DISTRIBUTE:
 	case ST_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
 	case ST_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
@@ -5424,7 +5589,17 @@ parse_executable (gfc_statement st)
 	}
 
       if (directive_unroll != -1)
-	gfc_error ("%<GCC unroll%> directive does not commence a loop at %C");
+	gfc_error ("%<GCC unroll%> directive not at the start of a loop at %C");
+
+      if (directive_ivdep)
+	gfc_error ("%<GCC ivdep%> directive not at the start of a loop at %C");
+
+      if (directive_vector)
+	gfc_error ("%<GCC vector%> directive not at the start of a loop at %C");
+
+      if (directive_novector)
+	gfc_error ("%<GCC novector%> "
+		   "directive not at the start of a loop at %C");
 
       st = next_statement ();
     }
@@ -5663,6 +5838,8 @@ parse_progunit (gfc_statement st)
   gfc_state_data *p;
   int n;
 
+  gfc_adjust_builtins ();
+
   if (gfc_new_block
       && gfc_new_block->abr_modproc_decl
       && gfc_new_block->attr.function)
@@ -5830,7 +6007,7 @@ parse_block_data (void)
     }
   else
     {
-      s = gfc_get_gsymbol (gfc_new_block->name);
+      s = gfc_get_gsymbol (gfc_new_block->name, false);
       if (s->defined
 	  || (s->type != GSYM_UNKNOWN && s->type != GSYM_BLOCK_DATA))
        gfc_global_used (s, &gfc_new_block->declared_at);
@@ -5912,7 +6089,7 @@ parse_module (void)
   gfc_gsymbol *s;
   bool error;
 
-  s = gfc_get_gsymbol (gfc_new_block->name);
+  s = gfc_get_gsymbol (gfc_new_block->name, false);
   if (s->defined || (s->type != GSYM_UNKNOWN && s->type != GSYM_MODULE))
     gfc_global_used (s, &gfc_new_block->declared_at);
   else
@@ -5976,7 +6153,7 @@ add_global_procedure (bool sub)
      name is a global identifier.  */
   if (!gfc_new_block->binding_label || gfc_notification_std (GFC_STD_F2008))
     {
-      s = gfc_get_gsymbol (gfc_new_block->name);
+      s = gfc_get_gsymbol (gfc_new_block->name, false);
 
       if (s->defined
 	  || (s->type != GSYM_UNKNOWN
@@ -6001,7 +6178,7 @@ add_global_procedure (bool sub)
       && (!gfc_notification_std (GFC_STD_F2008)
           || strcmp (gfc_new_block->name, gfc_new_block->binding_label) != 0))
     {
-      s = gfc_get_gsymbol (gfc_new_block->binding_label);
+      s = gfc_get_gsymbol (gfc_new_block->binding_label, true);
 
       if (s->defined
 	  || (s->type != GSYM_UNKNOWN
@@ -6033,7 +6210,7 @@ add_global_program (void)
 
   if (gfc_new_block == NULL)
     return;
-  s = gfc_get_gsymbol (gfc_new_block->name);
+  s = gfc_get_gsymbol (gfc_new_block->name, false);
 
   if (s->defined || (s->type != GSYM_UNKNOWN && s->type != GSYM_PROGRAM))
     gfc_global_used (s, &gfc_new_block->declared_at);
@@ -6051,7 +6228,7 @@ add_global_program (void)
 static void
 resolve_all_program_units (gfc_namespace *gfc_global_ns_list)
 {
-  gfc_free_dt_list ();
+  gfc_derived_types = NULL;
   gfc_current_ns = gfc_global_ns_list;
   for (; gfc_current_ns; gfc_current_ns = gfc_current_ns->sibling)
     {
@@ -6269,9 +6446,6 @@ loop:
   if (flag_dump_fortran_original)
     gfc_dump_parse_tree (gfc_current_ns, stdout);
 
-  if (flag_c_prototypes)
-    gfc_dump_c_prototypes (gfc_current_ns, stdout);
-
   gfc_get_errors (NULL, &errors);
   if (s.state == COMP_MODULE || s.state == COMP_SUBMODULE)
     {
@@ -6313,6 +6487,12 @@ done:
   /* Do the resolution.  */
   resolve_all_program_units (gfc_global_ns_list);
 
+
+  /* Fixup for external procedures.  */
+  for (gfc_current_ns = gfc_global_ns_list; gfc_current_ns;
+       gfc_current_ns = gfc_current_ns->sibling)
+    gfc_check_externals (gfc_current_ns);
+
   /* Do the parse tree dump.  */
   gfc_current_ns = flag_dump_fortran_original ? gfc_global_ns_list : NULL;
 
@@ -6324,8 +6504,48 @@ done:
 	fputs ("------------------------------------------\n\n", stdout);
       }
 
+  /* Dump C prototypes.  */
+  if (flag_c_prototypes || flag_c_prototypes_external)
+    {
+      fprintf (stdout,
+	       "#include <stddef.h>\n"
+	       "#ifdef __cplusplus\n"
+	       "#include <complex>\n"
+	       "#define __GFORTRAN_FLOAT_COMPLEX std::complex<float>\n"
+	       "#define __GFORTRAN_DOUBLE_COMPLEX std::complex<double>\n"
+	       "#define __GFORTRAN_LONG_DOUBLE_COMPLEX std::complex<long double>\n"
+	       "extern \"C\" {\n"
+	       "#else\n"
+	       "#define __GFORTRAN_FLOAT_COMPLEX float _Complex\n"
+	       "#define __GFORTRAN_DOUBLE_COMPLEX double _Complex\n"
+	       "#define __GFORTRAN_LONG_DOUBLE_COMPLEX long double _Complex\n"
+	       "#endif\n\n");
+    }
+
+  /* First dump BIND(C) prototypes.  */
+  if (flag_c_prototypes)
+    {
+      for (gfc_current_ns = gfc_global_ns_list; gfc_current_ns;
+	   gfc_current_ns = gfc_current_ns->sibling)
+	gfc_dump_c_prototypes (gfc_current_ns, stdout);
+    }
+
+  /* Dump external prototypes.  */
+  if (flag_c_prototypes_external)
+    gfc_dump_external_c_prototypes (stdout);
+
+  if (flag_c_prototypes || flag_c_prototypes_external)
+    fprintf (stdout, "\n#ifdef __cplusplus\n}\n#endif\n");
+
   /* Do the translation.  */
   translate_all_program_units (gfc_global_ns_list);
+
+  /* Dump the global symbol ist.  We only do this here because part
+     of it is generated after mangling the identifiers in
+     trans-decl.c.  */
+
+  if (flag_dump_fortran_global)
+    gfc_dump_global_symbols (stdout);
 
   gfc_end_source_files ();
   return true;
@@ -6350,6 +6570,8 @@ is_oacc (gfc_state_data *sd)
     case EXEC_OACC_PARALLEL:
     case EXEC_OACC_KERNELS_LOOP:
     case EXEC_OACC_KERNELS:
+    case EXEC_OACC_SERIAL_LOOP:
+    case EXEC_OACC_SERIAL:
     case EXEC_OACC_DATA:
     case EXEC_OACC_HOST_DATA:
     case EXEC_OACC_LOOP:

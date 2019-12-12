@@ -7,6 +7,6 @@ void foo (char *__restrict, char *__restrict = __null);
 void
 bar (char *p)
 {
-  foo (p, p);	// { dg-warning "to restrict-qualified parameter aliases with" }
+  foo (p, p);	// { dg-warning "to 'restrict'-qualified parameter aliases with" }
   foo (p);
 }

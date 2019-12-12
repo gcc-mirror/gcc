@@ -3,6 +3,6 @@
 
 struct A
 {
-  friend void A::foo();  // { dg-error "implicitly friends" }
-  friend A::~A();        // { dg-error "implicitly friends" }
+  friend void A::foo();  // { dg-error "3:member functions are implicitly friends" }
+  friend A::~A();        // { dg-error "3:member functions are implicitly friends" }
 };

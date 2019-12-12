@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -79,7 +79,7 @@ procedure Labl is
       --  then we have an error.
 
       --  Note that in the worst case, this is quadratic in the number
-      --  of labels.  However, labels are not all that common, and this
+      --  of labels. However, labels are not all that common, and this
       --  is only called for explicit labels.
 
       --  ???Nonetheless, the efficiency could be improved. For example,

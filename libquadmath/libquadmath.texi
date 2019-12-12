@@ -6,7 +6,7 @@
 @c %**end of header
 
 @copying
-Copyright @copyright{} 2010-2018 Free Software Foundation, Inc.
+Copyright @copyright{} 2010-2019 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -157,6 +157,7 @@ The following mathematical functions are available:
 @item @code{cosq}: cosine function
 @item @code{erfq}: error function
 @item @code{erfcq}: complementary error function
+@item @code{exp2q}: base 2 exponential function
 @item @code{expq}: exponential function
 @item @code{expm1q}: exponential minus 1 function
 @need 800
@@ -173,6 +174,7 @@ The following mathematical functions are available:
 @item @code{ilogbq}: get exponent of the value
 @item @code{isinfq}: check for infinity
 @item @code{isnanq}: check for not a number
+@item @code{issignalingq}: check for signaling not a number
 @item @code{j0q}: Bessel function of the first kind, first order
 @item @code{j1q}: Bessel function of the first kind, second order
 @item @code{jnq}: Bessel function of the first kind, @var{n}-th order

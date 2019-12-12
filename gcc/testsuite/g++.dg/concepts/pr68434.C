@@ -1,4 +1,5 @@
-// { dg-options "-std=c++17 -fconcepts" }
+// { dg-do compile { target c++17_only } }
+// { dg-options "-fconcepts" }
 
 template <class>
 concept bool C1 () {

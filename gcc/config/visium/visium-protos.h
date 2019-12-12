@@ -1,5 +1,5 @@
 /* Prototypes of target machine for Visium.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by C.Nettleton,J.P.Parkes and P.Garbett.
 
    This file is part of GCC.
@@ -60,5 +60,7 @@ extern int visium_expand_block_move (rtx *);
 extern int visium_expand_block_set (rtx *);
 extern unsigned int reg_or_subreg_regno (rtx);
 #endif /* RTX_CODE */
+
+extern rtl_opt_pass * make_pass_visium_reorg (gcc::context *);
 
 #endif

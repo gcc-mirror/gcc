@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1991-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1991-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -159,5 +159,8 @@ package Ada.Interrupts.Names is
 
    SIGPWR : constant Interrupt_ID :=
      System.OS_Interface.SIGPWR;        --  Power failure
+
+   SIGSYS : constant Interrupt_ID :=
+     System.OS_Interface.SIGSYS;       --  bad system call
 
 end Ada.Interrupts.Names;

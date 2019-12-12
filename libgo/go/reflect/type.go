@@ -53,6 +53,9 @@ type Type interface {
 	//
 	// For an interface type, the returned Method's Type field gives the
 	// method signature, without a receiver, and the Func field is nil.
+	//
+	// Only exported methods are accessible and they are sorted in
+	// lexicographic order.
 	Method(int) Method
 
 	// MethodByName returns the method with that name in the type's
@@ -68,14 +71,15 @@ type Type interface {
 	// NumMethod returns the number of exported methods in the type's method set.
 	NumMethod() int
 
-	// Name returns the type's name within its package.
-	// It returns an empty string for unnamed types.
+	// Name returns the type's name within its package for a defined type.
+	// For other (non-defined) types it returns the empty string.
 	Name() string
 
-	// PkgPath returns a named type's package path, that is, the import path
+	// PkgPath returns a defined type's package path, that is, the import path
 	// that uniquely identifies the package, such as "encoding/base64".
-	// If the type was predeclared (string, error) or unnamed (*T, struct{}, []int),
-	// the package path will be the empty string.
+	// If the type was predeclared (string, error) or not defined (*T, struct{},
+	// []int, or A where A is an alias for a non-defined type), the package path
+	// will be the empty string.
 	PkgPath() string
 
 	// Size returns the number of bytes needed to store
@@ -166,13 +170,13 @@ type Type interface {
 	// the field was found.
 	//
 	// FieldByNameFunc considers the fields in the struct itself
-	// and then the fields in any anonymous structs, in breadth first order,
+	// and then the fields in any embedded structs, in breadth first order,
 	// stopping at the shallowest nesting depth containing one or more
 	// fields satisfying the match function. If multiple fields at that depth
 	// satisfy the match function, they cancel each other
 	// and FieldByNameFunc returns no match.
 	// This behavior mirrors Go's handling of name lookup in
-	// structs containing anonymous fields.
+	// structs containing embedded fields.
 	FieldByNameFunc(match func(string) bool) (StructField, bool)
 
 	// In returns the type of a function type's i'th input parameter.
@@ -258,9 +262,7 @@ const (
 )
 
 // rtype is the common implementation of most values.
-// It is embedded in other, public struct types, but always
-// with a unique tag like `reflect:"array"` or `reflect:"ptr"`
-// so that code cannot convert from, say, *arrayType to *ptrType.
+// It is embedded in other struct types.
 //
 // rtype must be kept in sync with ../runtime/type.go:/^type._type.
 type rtype struct {
@@ -290,10 +292,10 @@ type method struct {
 	tfn     unsafe.Pointer // fn used for normal method call
 }
 
-// uncommonType is present only for types with names or methods
-// (if T is a named type, the uncommonTypes for T and *T have methods).
+// uncommonType is present only for defined types or types with methods
+// (if T is a defined type, the uncommonTypes for T and *T have methods).
 // Using a pointer to this struct reduces the overall size required
-// to describe an unnamed type with no methods.
+// to describe a non-defined type with no methods.
 type uncommonType struct {
 	name    *string  // name of type
 	pkgPath *string  // import path; nil for built-in types like int, string
@@ -311,7 +313,7 @@ const (
 
 // arrayType represents a fixed array type.
 type arrayType struct {
-	rtype `reflect:"array"`
+	rtype
 	elem  *rtype // array element type
 	slice *rtype // slice type
 	len   uintptr
@@ -319,14 +321,14 @@ type arrayType struct {
 
 // chanType represents a channel type.
 type chanType struct {
-	rtype `reflect:"chan"`
-	elem  *rtype  // channel element type
-	dir   uintptr // channel direction (ChanDir)
+	rtype
+	elem *rtype  // channel element type
+	dir  uintptr // channel direction (ChanDir)
 }
 
 // funcType represents a function type.
 type funcType struct {
-	rtype     `reflect:"func"`
+	rtype
 	dotdotdot bool     // last input parameter is ...
 	in        []*rtype // input parameter types
 	out       []*rtype // output parameter types
@@ -341,58 +343,54 @@ type imethod struct {
 
 // interfaceType represents an interface type.
 type interfaceType struct {
-	rtype   `reflect:"interface"`
+	rtype
 	methods []imethod // sorted by hash
 }
 
 // mapType represents a map type.
 type mapType struct {
-	rtype         `reflect:"map"`
-	key           *rtype // map key type
-	elem          *rtype // map element (value) type
-	bucket        *rtype // internal bucket structure
-	hmap          *rtype // internal map header
-	keysize       uint8  // size of key slot
-	indirectkey   uint8  // store ptr to key instead of key itself
-	valuesize     uint8  // size of value slot
-	indirectvalue uint8  // store ptr to value instead of value itself
-	bucketsize    uint16 // size of bucket
-	reflexivekey  bool   // true if k==k for all keys
-	needkeyupdate bool   // true if we need to update key on an overwrite
+	rtype
+	key        *rtype // map key type
+	elem       *rtype // map element (value) type
+	bucket     *rtype // internal bucket structure
+	keysize    uint8  // size of key slot
+	valuesize  uint8  // size of value slot
+	bucketsize uint16 // size of bucket
+	flags      uint32
 }
 
 // ptrType represents a pointer type.
 type ptrType struct {
-	rtype `reflect:"ptr"`
-	elem  *rtype // pointer element (pointed at) type
+	rtype
+	elem *rtype // pointer element (pointed at) type
 }
 
 // sliceType represents a slice type.
 type sliceType struct {
-	rtype `reflect:"slice"`
-	elem  *rtype // slice element type
+	rtype
+	elem *rtype // slice element type
 }
 
 // Struct field
 type structField struct {
-	name       *string // name is always non-empty
-	pkgPath    *string // nil for exported Names; otherwise import path
-	typ        *rtype  // type of field
-	tag        *string // nil if no tag
-	offsetAnon uintptr // byte offset of field<<1 | isAnonymous
+	name        *string // name is always non-empty
+	pkgPath     *string // nil for exported Names; otherwise import path
+	typ         *rtype  // type of field
+	tag         *string // nil if no tag
+	offsetEmbed uintptr // byte offset of field<<1 | isAnonymous
 }
 
 func (f *structField) offset() uintptr {
-	return f.offsetAnon >> 1
+	return f.offsetEmbed >> 1
 }
 
-func (f *structField) anon() bool {
-	return f.offsetAnon&1 != 0
+func (f *structField) embedded() bool {
+	return f.offsetEmbed&1 != 0
 }
 
 // structType represents a struct type.
 type structType struct {
-	rtype  `reflect:"struct"`
+	rtype
 	fields []structField // sorted by offset
 }
 
@@ -420,10 +418,10 @@ type Method struct {
 const (
 	kindDirectIface = 1 << 5
 	kindGCProg      = 1 << 6 // Type.gc points to GC program
-	kindNoPointers  = 1 << 7
 	kindMask        = (1 << 5) - 1
 )
 
+// String returns the name of k.
 func (k Kind) String() string {
 	if int(k) < len(kindNames) {
 		return kindNames[k]
@@ -479,6 +477,39 @@ func (t *uncommonType) Name() string {
 	return *t.name
 }
 
+var methodCache sync.Map // map[*uncommonType][]method
+
+func (t *uncommonType) exportedMethods() []method {
+	methodsi, found := methodCache.Load(t)
+	if found {
+		return methodsi.([]method)
+	}
+
+	allm := t.methods
+	allExported := true
+	for _, m := range allm {
+		if m.pkgPath != nil {
+			allExported = false
+			break
+		}
+	}
+	var methods []method
+	if allExported {
+		methods = allm
+	} else {
+		methods = make([]method, 0, len(allm))
+		for _, m := range allm {
+			if m.pkgPath == nil {
+				methods = append(methods, m)
+			}
+		}
+		methods = methods[:len(methods):len(methods)]
+	}
+
+	methodsi, _ = methodCache.LoadOrStore(t, methods)
+	return methodsi.([]method)
+}
+
 func (t *rtype) rawString() string { return *t.string }
 
 func (t *rtype) String() string {
@@ -517,54 +548,22 @@ func (t *rtype) FieldAlign() int { return int(t.fieldAlign) }
 
 func (t *rtype) Kind() Kind { return Kind(t.kind & kindMask) }
 
-func (t *rtype) pointers() bool { return t.kind&kindNoPointers == 0 }
+func (t *rtype) pointers() bool { return t.ptrdata != 0 }
 
 func (t *rtype) common() *rtype { return t }
 
-var methodCache sync.Map // map[*rtype][]method
-
 func (t *rtype) exportedMethods() []method {
-	methodsi, found := methodCache.Load(t)
-	if found {
-		return methodsi.([]method)
-	}
-
 	ut := t.uncommon()
 	if ut == nil {
 		return nil
 	}
-	allm := ut.methods
-	allExported := true
-	for _, m := range allm {
-		if m.pkgPath != nil {
-			allExported = false
-			break
-		}
-	}
-	var methods []method
-	if allExported {
-		methods = allm
-	} else {
-		methods = make([]method, 0, len(allm))
-		for _, m := range allm {
-			if m.pkgPath == nil {
-				methods = append(methods, m)
-			}
-		}
-		methods = methods[:len(methods):len(methods)]
-	}
-
-	methodsi, _ = methodCache.LoadOrStore(t, methods)
-	return methodsi.([]method)
+	return ut.exportedMethods()
 }
 
 func (t *rtype) NumMethod() int {
 	if t.Kind() == Interface {
 		tt := (*interfaceType)(unsafe.Pointer(t))
 		return tt.NumMethod()
-	}
-	if t.uncommonType == nil {
-		return 0 // avoid methodCache synchronization
 	}
 	return len(t.exportedMethods())
 }
@@ -908,7 +907,7 @@ func (t *structType) Field(i int) (f StructField) {
 	p := &t.fields[i]
 	f.Type = toType(p.typ)
 	f.Name = *p.name
-	f.Anonymous = p.anon()
+	f.Anonymous = p.embedded()
 	if p.pkgPath != nil {
 		f.PkgPath = *p.pkgPath
 	}
@@ -1002,11 +1001,11 @@ func (t *structType) FieldByNameFunc(match func(string) bool) (result StructFiel
 			visited[t] = true
 			for i := range t.fields {
 				f := &t.fields[i]
-				// Find name and (for anonymous field) type for field f.
+				// Find name and (for embedded field) type for field f.
 				fname := *f.name
 				var ntyp *rtype
-				if f.anon() {
-					// Anonymous field of type T or *T.
+				if f.embedded() {
+					// Embedded field of type T or *T.
 					ntyp = f.typ
 					if ntyp.Kind() == Ptr {
 						ntyp = ntyp.Elem().common()
@@ -1063,20 +1062,20 @@ func (t *structType) FieldByNameFunc(match func(string) bool) (result StructFiel
 // FieldByName returns the struct field with the given name
 // and a boolean to indicate if the field was found.
 func (t *structType) FieldByName(name string) (f StructField, present bool) {
-	// Quick check for top-level name, or struct without anonymous fields.
-	hasAnon := false
+	// Quick check for top-level name, or struct without embedded fields.
+	hasEmbeds := false
 	if name != "" {
 		for i := range t.fields {
 			tf := &t.fields[i]
 			if *tf.name == name {
 				return t.Field(i), true
 			}
-			if tf.anon() {
-				hasAnon = true
+			if tf.embedded() {
+				hasEmbeds = true
 			}
 		}
 	}
-	if !hasAnon {
+	if !hasEmbeds {
 		return
 	}
 	return t.FieldByNameFunc(func(s string) bool { return s == name })
@@ -1108,15 +1107,14 @@ func (t *rtype) ptrTo() *rtype {
 		return &pi.(*ptrType).rtype
 	}
 
+	// Look in known types.
 	s := "*" + *t.string
-
-	canonicalTypeLock.RLock()
-	r, ok := canonicalType[s]
-	canonicalTypeLock.RUnlock()
-	if ok {
-		p := (*ptrType)(unsafe.Pointer(r.(*rtype)))
-		pi, _ := ptrMap.LoadOrStore(t, p)
-		return &pi.(*ptrType).rtype
+	if tt := lookupType(s); tt != nil {
+		p := (*ptrType)(unsafe.Pointer(tt))
+		if p.elem == t {
+			pi, _ := ptrMap.LoadOrStore(t, p)
+			return &pi.(*ptrType).rtype
+		}
 	}
 
 	// Create a new ptrType starting with the description
@@ -1141,10 +1139,7 @@ func (t *rtype) ptrTo() *rtype {
 	pp.ptrToThis = nil
 	pp.elem = t
 
-	q := canonicalize(&pp.rtype)
-	p := (*ptrType)(unsafe.Pointer(q.(*rtype)))
-
-	pi, _ := ptrMap.LoadOrStore(t, p)
+	pi, _ := ptrMap.LoadOrStore(t, &pp)
 	return &pi.(*ptrType).rtype
 }
 
@@ -1275,7 +1270,7 @@ func directlyAssignable(T, V *rtype) bool {
 		return true
 	}
 
-	// Otherwise at least one of T and V must be unnamed
+	// Otherwise at least one of T and V must not be defined
 	// and they must have the same kind.
 	if T.Name() != "" && V.Name() != "" || T.Kind() != V.Kind() {
 		return false
@@ -1384,7 +1379,7 @@ func haveIdenticalUnderlyingType(T, V *rtype, cmpTags bool) bool {
 			if cmpTags && tf.tag != vf.tag && (tf.tag == nil || vf.tag == nil || *tf.tag != *vf.tag) {
 				return false
 			}
-			if tf.offsetAnon != vf.offsetAnon {
+			if tf.offsetEmbed != vf.offsetEmbed {
 				return false
 			}
 		}
@@ -1450,6 +1445,13 @@ func ChanOf(dir ChanDir, t Type) Type {
 	case BothDir:
 		s = "chan " + *typ.string
 	}
+	if tt := lookupType(s); tt != nil {
+		ch := (*chanType)(unsafe.Pointer(tt))
+		if ch.elem == typ && ch.dir == uintptr(dir) {
+			ti, _ := lookupCache.LoadOrStore(ckey, tt)
+			return ti.(Type)
+		}
+	}
 
 	// Make a channel type.
 	var ichan interface{} = (chan unsafe.Pointer)(nil)
@@ -1475,10 +1477,8 @@ func ChanOf(dir ChanDir, t Type) Type {
 	ch.uncommonType = nil
 	ch.ptrToThis = nil
 
-	// Canonicalize before storing in lookupCache
-	ti := toType(&ch.rtype)
-	lookupCache.Store(ckey, ti.(*rtype))
-	return ti
+	ti, _ := lookupCache.LoadOrStore(ckey, &ch.rtype)
+	return ti.(Type)
 }
 
 func ismapkey(*rtype) bool // implemented in runtime
@@ -1505,8 +1505,17 @@ func MapOf(key, elem Type) Type {
 
 	// Look in known types.
 	s := "map[" + *ktyp.string + "]" + *etyp.string
+	if tt := lookupType(s); tt != nil {
+		mt := (*mapType)(unsafe.Pointer(tt))
+		if mt.key == ktyp && mt.elem == etyp {
+			ti, _ := lookupCache.LoadOrStore(ckey, tt)
+			return ti.(Type)
+		}
+	}
 
 	// Make a map type.
+	// Note: flag values must match those used in the TMAP case
+	// in ../cmd/compile/internal/gc/reflect.go:dtypesym.
 	var imap interface{} = (map[unsafe.Pointer]unsafe.Pointer)(nil)
 	mt := **(**mapType)(unsafe.Pointer(&imap))
 	mt.string = &s
@@ -1521,28 +1530,32 @@ func MapOf(key, elem Type) Type {
 	mt.ptrToThis = nil
 
 	mt.bucket = bucketOf(ktyp, etyp)
+	mt.flags = 0
 	if ktyp.size > maxKeySize {
 		mt.keysize = uint8(ptrSize)
-		mt.indirectkey = 1
+		mt.flags |= 1 // indirect key
 	} else {
 		mt.keysize = uint8(ktyp.size)
-		mt.indirectkey = 0
 	}
 	if etyp.size > maxValSize {
 		mt.valuesize = uint8(ptrSize)
-		mt.indirectvalue = 1
+		mt.flags |= 2 // indirect value
 	} else {
 		mt.valuesize = uint8(etyp.size)
-		mt.indirectvalue = 0
 	}
 	mt.bucketsize = uint16(mt.bucket.size)
-	mt.reflexivekey = isReflexive(ktyp)
-	mt.needkeyupdate = needKeyUpdate(ktyp)
+	if isReflexive(ktyp) {
+		mt.flags |= 4
+	}
+	if needKeyUpdate(ktyp) {
+		mt.flags |= 8
+	}
+	if hashMightPanic(ktyp) {
+		mt.flags |= 16
+	}
 
-	// Canonicalize before storing in lookupCache
-	ti := toType(&mt.rtype)
-	lookupCache.Store(ckey, ti.(*rtype))
-	return ti
+	ti, _ := lookupCache.LoadOrStore(ckey, &mt.rtype)
+	return ti.(Type)
 }
 
 // FuncOf returns the function type with the given argument and result types.
@@ -1620,15 +1633,17 @@ func FuncOf(in, out []Type, variadic bool) Type {
 	}
 
 	str := funcStr(ft)
+	if tt := lookupType(str); tt != nil {
+		if haveIdenticalUnderlyingType(&ft.rtype, tt, true) {
+			return addToCache(tt)
+		}
+	}
 
 	// Populate the remaining fields of ft and store in cache.
 	ft.string = &str
 	ft.uncommonType = nil
 	ft.ptrToThis = nil
-
-	// Canonicalize before storing in funcLookupCache
-	tc := toType(&ft.rtype)
-	return addToCache(tc.(*rtype))
+	return addToCache(&ft.rtype)
 }
 
 // funcStr builds a string representation of a funcType.
@@ -1716,7 +1731,28 @@ func needKeyUpdate(t *rtype) bool {
 	}
 }
 
-// Make sure these routines stay in sync with ../../runtime/hashmap.go!
+// hashMightPanic reports whether the hash of a map key of type t might panic.
+func hashMightPanic(t *rtype) bool {
+	switch t.Kind() {
+	case Interface:
+		return true
+	case Array:
+		tt := (*arrayType)(unsafe.Pointer(t))
+		return hashMightPanic(tt.elem)
+	case Struct:
+		tt := (*structType)(unsafe.Pointer(t))
+		for _, f := range tt.fields {
+			if hashMightPanic(f.typ) {
+				return true
+			}
+		}
+		return false
+	default:
+		return false
+	}
+}
+
+// Make sure these routines stay in sync with ../../runtime/map.go!
 // These types exist only for GC, so we only fill out GC relevant info.
 // Currently, that's just size and the GC program. We also fill in string
 // for possible debugging use.
@@ -1727,13 +1763,6 @@ const (
 )
 
 func bucketOf(ktyp, etyp *rtype) *rtype {
-	// See comment on hmap.overflow in ../runtime/hashmap.go.
-	var kind uint8
-	if ktyp.kind&kindNoPointers != 0 && etyp.kind&kindNoPointers != 0 &&
-		ktyp.size <= maxKeySize && etyp.size <= maxValSize {
-		kind = kindNoPointers
-	}
-
 	if ktyp.size > maxKeySize {
 		ktyp = PtrTo(ktyp).(*rtype)
 	}
@@ -1770,14 +1799,14 @@ func bucketOf(ktyp, etyp *rtype) *rtype {
 	ovoff := size
 	size += ptrSize
 
-	if kind != kindNoPointers {
+	if ktyp.ptrdata != 0 || etyp.ptrdata != 0 {
 		nptr := size / ptrSize
 		mask := make([]byte, (nptr+7)/8)
 		psize := bucketSize
 		psize = align(psize, uintptr(ktyp.fieldAlign))
 		base := psize / ptrSize
 
-		if ktyp.kind&kindNoPointers == 0 {
+		if ktyp.ptrdata != 0 {
 			if ktyp.kind&kindGCProg != 0 {
 				panic("reflect: unexpected GC program in MapOf")
 			}
@@ -1795,7 +1824,7 @@ func bucketOf(ktyp, etyp *rtype) *rtype {
 		psize = align(psize, uintptr(etyp.fieldAlign))
 		base = psize / ptrSize
 
-		if etyp.kind&kindNoPointers == 0 {
+		if etyp.ptrdata != 0 {
 			if etyp.kind&kindGCProg != 0 {
 				panic("reflect: unexpected GC program in MapOf")
 			}
@@ -1825,7 +1854,7 @@ func bucketOf(ktyp, etyp *rtype) *rtype {
 		align:      int8(maxAlign),
 		fieldAlign: uint8(maxAlign),
 		size:       size,
-		kind:       kind,
+		kind:       uint8(Struct),
 		ptrdata:    ptrdata,
 		gcdata:     gcdata,
 	}
@@ -1847,6 +1876,13 @@ func SliceOf(t Type) Type {
 
 	// Look in known types.
 	s := "[]" + *typ.string
+	if tt := lookupType(s); tt != nil {
+		slice := (*sliceType)(unsafe.Pointer(tt))
+		if slice.elem == typ {
+			ti, _ := lookupCache.LoadOrStore(ckey, tt)
+			return ti.(Type)
+		}
+	}
 
 	// Make a slice type.
 	var islice interface{} = ([]unsafe.Pointer)(nil)
@@ -1862,10 +1898,8 @@ func SliceOf(t Type) Type {
 	slice.uncommonType = nil
 	slice.ptrToThis = nil
 
-	// Canonicalize before storing in lookupCache
-	ti := toType(&slice.rtype)
-	lookupCache.Store(ckey, ti.(*rtype))
-	return ti
+	ti, _ := lookupCache.LoadOrStore(ckey, &slice.rtype)
+	return ti.(Type)
 }
 
 // The structLookupCache caches StructOf lookups.
@@ -1879,7 +1913,7 @@ var structLookupCache struct {
 	m sync.Map
 }
 
-// isLetter returns true if a given 'rune' is classified as a Letter.
+// isLetter reports whether a given 'rune' is classified as a Letter.
 func isLetter(ch rune) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_' || ch >= utf8.RuneSelf && unicode.IsLetter(ch)
 }
@@ -1908,8 +1942,9 @@ func isValidFieldName(fieldName string) bool {
 // The Offset and Index fields are ignored and computed as they would be
 // by the compiler.
 //
-// StructOf currently does not generate wrapper methods for embedded fields.
-// This limitation may be lifted in a future version.
+// StructOf currently does not generate wrapper methods for embedded
+// fields and panics if passed unexported StructFields.
+// These limitations may be lifted in a future version.
 func StructOf(fields []StructField) Type {
 	var (
 		hash       = uint32(12)
@@ -1922,7 +1957,6 @@ func StructOf(fields []StructField) Type {
 		repr = make([]byte, 0, 64)
 		fset = map[string]struct{}{} // fields' names
 
-		hasPtr    = false // records whether at least one struct-field is a pointer
 		hasGCProg = false // records whether a struct-field type has a GCProg
 	)
 
@@ -1943,14 +1977,11 @@ func StructOf(fields []StructField) Type {
 		if ft.kind&kindGCProg != 0 {
 			hasGCProg = true
 		}
-		if ft.pointers() {
-			hasPtr = true
-		}
 
 		// Update string and hash
 		name := *f.name
 		hash = (hash << 1) + ft.hash
-		if !f.anon() {
+		if !f.embedded() {
 			repr = append(repr, (" " + name)...)
 		} else {
 			// Embedded field
@@ -1959,7 +1990,7 @@ func StructOf(fields []StructField) Type {
 				// Embedded ** and *interface{} are illegal
 				elem := ft.Elem()
 				if k := elem.Kind(); k == Ptr || k == Interface {
-					panic("reflect.StructOf: illegal anonymous field type " + ft.String())
+					panic("reflect.StructOf: illegal embedded field type " + ft.String())
 				}
 				name = elem.String()
 			} else {
@@ -2013,7 +2044,7 @@ func StructOf(fields []StructField) Type {
 			typalign = int8(ft.fieldAlign)
 		}
 		size = offset + ft.size
-		f.offsetAnon |= offset << 1
+		f.offsetEmbed |= offset << 1
 
 		if ft.size == 0 {
 			lastzero = size
@@ -2079,16 +2110,19 @@ func StructOf(fields []StructField) Type {
 		return t
 	}
 
+	// Look in known types.
+	if tt := lookupType(str); tt != nil {
+		if haveIdenticalUnderlyingType(&typ.rtype, tt, true) {
+			return addToCache(tt)
+		}
+	}
+
 	typ.string = &str
 	typ.hash = hash
 	typ.size = size
+	typ.ptrdata = typeptrdata(typ.common())
 	typ.align = typalign
 	typ.fieldAlign = uint8(typalign)
-	if !hasPtr {
-		typ.kind |= kindNoPointers
-	} else {
-		typ.kind &^= kindNoPointers
-	}
 
 	if hasGCProg {
 		lastPtrField := 0
@@ -2098,44 +2132,50 @@ func StructOf(fields []StructField) Type {
 			}
 		}
 		prog := []byte{0, 0, 0, 0} // will be length of prog
+		var off uintptr
 		for i, ft := range fs {
 			if i > lastPtrField {
 				// gcprog should not include anything for any field after
 				// the last field that contains pointer data
 				break
 			}
-			// FIXME(sbinet) handle padding, fields smaller than a word
+			if !ft.typ.pointers() {
+				// Ignore pointerless fields.
+				continue
+			}
+			// Pad to start of this field with zeros.
+			if ft.offset() > off {
+				n := (ft.offset() - off) / ptrSize
+				prog = append(prog, 0x01, 0x00) // emit a 0 bit
+				if n > 1 {
+					prog = append(prog, 0x81)      // repeat previous bit
+					prog = appendVarint(prog, n-1) // n-1 times
+				}
+				off = ft.offset()
+			}
+
 			elemGC := (*[1 << 30]byte)(unsafe.Pointer(ft.typ.gcdata))[:]
 			elemPtrs := ft.typ.ptrdata / ptrSize
-			switch {
-			case ft.typ.kind&kindGCProg == 0 && ft.typ.ptrdata != 0:
+			if ft.typ.kind&kindGCProg == 0 {
 				// Element is small with pointer mask; use as literal bits.
 				mask := elemGC
 				// Emit 120-bit chunks of full bytes (max is 127 but we avoid using partial bytes).
 				var n uintptr
-				for n := elemPtrs; n > 120; n -= 120 {
+				for n = elemPtrs; n > 120; n -= 120 {
 					prog = append(prog, 120)
 					prog = append(prog, mask[:15]...)
 					mask = mask[15:]
 				}
 				prog = append(prog, byte(n))
 				prog = append(prog, mask[:(n+7)/8]...)
-			case ft.typ.kind&kindGCProg != 0:
+			} else {
 				// Element has GC program; emit one element.
 				elemProg := elemGC[4 : 4+*(*uint32)(unsafe.Pointer(&elemGC[0]))-1]
 				prog = append(prog, elemProg...)
 			}
-			// Pad from ptrdata to size.
-			elemWords := ft.typ.size / ptrSize
-			if elemPtrs < elemWords {
-				// Emit literal 0 bit, then repeat as needed.
-				prog = append(prog, 0x01, 0x00)
-				if elemPtrs+1 < elemWords {
-					prog = append(prog, 0x81)
-					prog = appendVarint(prog, elemWords-elemPtrs-1)
-				}
-			}
+			off += ft.typ.ptrdata
 		}
+		prog = append(prog, 0)
 		*(*uint32)(unsafe.Pointer(&prog[0])) = uint32(len(prog) - 4)
 		typ.kind |= kindGCProg
 		typ.gcdata = &prog[0]
@@ -2177,13 +2217,17 @@ func StructOf(fields []StructField) Type {
 		typ.equalfn = nil
 	}
 
-	typ.kind &^= kindDirectIface
+	switch {
+	case len(fs) == 1 && !ifaceIndir(fs[0].typ):
+		// structs of 1 direct iface type can be direct
+		typ.kind |= kindDirectIface
+	default:
+		typ.kind &^= kindDirectIface
+	}
+
 	typ.uncommonType = nil
 	typ.ptrToThis = nil
-
-	// Canonicalize before storing in structLookupCache
-	ti := toType(&typ.rtype)
-	return addToCache(ti.(*rtype))
+	return addToCache(&typ.rtype)
 }
 
 func runtimeStructField(field StructField) structField {
@@ -2198,9 +2242,9 @@ func runtimeStructField(field StructField) structField {
 		panic("reflect.StructOf: field \"" + field.Name + "\" is unexported but missing PkgPath")
 	}
 
-	offsetAnon := uintptr(0)
+	offsetEmbed := uintptr(0)
 	if field.Anonymous {
-		offsetAnon |= 1
+		offsetEmbed |= 1
 	}
 
 	s := field.Name
@@ -2213,11 +2257,11 @@ func runtimeStructField(field StructField) structField {
 	}
 
 	return structField{
-		name:       name,
-		pkgPath:    nil,
-		typ:        field.Type.common(),
-		tag:        tag,
-		offsetAnon: offsetAnon,
+		name:        name,
+		pkgPath:     nil,
+		typ:         field.Type.common(),
+		tag:         tag,
+		offsetEmbed: offsetEmbed,
 	}
 }
 
@@ -2225,19 +2269,19 @@ func runtimeStructField(field StructField) structField {
 // containing pointer data. Anything after this offset is scalar data.
 // keep in sync with ../cmd/compile/internal/gc/reflect.go
 func typeptrdata(t *rtype) uintptr {
-	if !t.pointers() {
-		return 0
-	}
 	switch t.Kind() {
 	case Struct:
 		st := (*structType)(unsafe.Pointer(t))
 		// find the last field that has pointers.
-		field := 0
+		field := -1
 		for i := range st.fields {
 			ft := st.fields[i].typ
 			if ft.pointers() {
 				field = i
 			}
+		}
+		if field == -1 {
+			return 0
 		}
 		f := st.fields[field]
 		return f.offset() + f.typ.ptrdata
@@ -2266,6 +2310,13 @@ func ArrayOf(count int, elem Type) Type {
 
 	// Look in known types.
 	s := "[" + strconv.Itoa(count) + "]" + *typ.string
+	if tt := lookupType(s); tt != nil {
+		array := (*arrayType)(unsafe.Pointer(tt))
+		if array.elem == typ {
+			ti, _ := lookupCache.LoadOrStore(ckey, tt)
+			return ti.(Type)
+		}
+	}
 
 	// Make an array type.
 	var iarray interface{} = [1]unsafe.Pointer{}
@@ -2299,11 +2350,9 @@ func ArrayOf(count int, elem Type) Type {
 	array.len = uintptr(count)
 	array.slice = SliceOf(elem).(*rtype)
 
-	array.kind &^= kindNoPointers
 	switch {
-	case typ.kind&kindNoPointers != 0 || array.size == 0:
+	case typ.ptrdata == 0 || array.size == 0:
 		// No pointers.
-		array.kind |= kindNoPointers
 		array.gcdata = nil
 		array.ptrdata = 0
 
@@ -2378,7 +2427,13 @@ func ArrayOf(count int, elem Type) Type {
 		array.ptrdata = array.size // overestimate but ok; must match program
 	}
 
-	array.kind &^= kindDirectIface
+	switch {
+	case count == 1 && !ifaceIndir(typ):
+		// array of 1 direct iface type can be direct
+		array.kind |= kindDirectIface
+	default:
+		array.kind &^= kindDirectIface
+	}
 
 	esize := typ.size
 
@@ -2411,10 +2466,8 @@ func ArrayOf(count int, elem Type) Type {
 		}
 	}
 
-	// Canonicalize before storing in lookupCache
-	ti := toType(&array.rtype)
-	lookupCache.Store(ckey, ti.(*rtype))
-	return ti
+	ti, _ := lookupCache.LoadOrStore(ckey, &array.rtype)
+	return ti.(Type)
 }
 
 func appendVarint(x []byte, v uintptr) []byte {
@@ -2426,41 +2479,18 @@ func appendVarint(x []byte, v uintptr) []byte {
 }
 
 // toType converts from a *rtype to a Type that can be returned
-// to the client of package reflect. In gc, the only concern is that
-// a nil *rtype must be replaced by a nil Type, but in gccgo this
-// function takes care of ensuring that multiple *rtype for the same
-// type are coalesced into a single Type.
-var canonicalType = make(map[string]Type)
-
-var canonicalTypeLock sync.RWMutex
-
-func canonicalize(t Type) Type {
-	if t == nil {
-		return nil
-	}
-	s := t.rawString()
-	canonicalTypeLock.RLock()
-	if r, ok := canonicalType[s]; ok {
-		canonicalTypeLock.RUnlock()
-		return r
-	}
-	canonicalTypeLock.RUnlock()
-	canonicalTypeLock.Lock()
-	if r, ok := canonicalType[s]; ok {
-		canonicalTypeLock.Unlock()
-		return r
-	}
-	canonicalType[s] = t
-	canonicalTypeLock.Unlock()
-	return t
-}
-
+// to the client of package reflect. The only concern is that
+// a nil *rtype must be replaced by a nil Type.
 func toType(p *rtype) Type {
 	if p == nil {
 		return nil
 	}
-	return canonicalize(p)
+	return p
 }
+
+// Look up a compiler-generated type descriptor.
+// Implemented in runtime.
+func lookupType(s string) *rtype
 
 // ifaceIndir reports whether t is stored indirectly in an interface value.
 func ifaceIndir(t *rtype) bool {
@@ -2483,7 +2513,7 @@ func (bv *bitVector) append(bit uint8) {
 }
 
 func addTypeBits(bv *bitVector, offset uintptr, t *rtype) {
-	if t.kind&kindNoPointers != 0 {
+	if t.ptrdata == 0 {
 		return
 	}
 

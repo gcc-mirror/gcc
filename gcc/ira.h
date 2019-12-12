@@ -1,6 +1,6 @@
 /* Communication between the Integrated Register Allocator (IRA) and
    the rest of the compiler.
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -109,7 +109,7 @@ struct target_ira
      index [CL][M] gives the number of that register, otherwise it is -1.  */
   short x_ira_class_singleton[N_REG_CLASSES][MAX_MACHINE_MODE];
 
-  /* Function specific hard registers can not be used for the register
+  /* Function specific hard registers cannot be used for the register
      allocation.  */
   HARD_REG_SET x_ira_no_alloc_regs;
 
@@ -209,6 +209,9 @@ extern void ira_adjust_equiv_reg_cost (unsigned, int);
 
 /* ira-costs.c */
 extern void ira_costs_c_finalize (void);
+
+/* ira-lives.c */
+extern rtx non_conflicting_reg_copy_p (rtx_insn *);
 
 /* Spilling static chain pseudo may result in generation of wrong
    non-local goto code using frame-pointer to address saved stack

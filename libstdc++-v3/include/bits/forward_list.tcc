@@ -1,6 +1,6 @@
 // <forward_list.tcc> -*- C++ -*-
 
-// Copyright (C) 2008-2018 Free Software Foundation, Inc.
+// Copyright (C) 2008-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -399,7 +399,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       auto __iy = __ly.cbegin();
       while (__ix != __lx.cend() && __iy != __ly.cend())
 	{
-	  if (*__ix != *__iy)
+	  if (!(*__ix == *__iy))
 	    return false;
 	  ++__ix;
 	  ++__iy;
@@ -469,9 +469,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 			__p = static_cast<_Node*>(__p->_M_next);
 			--__psize;
 		      }
-		    else if (__comp(*__p->_M_valptr(), *__q->_M_valptr()))
+		    else if (!__comp(*__q->_M_valptr(), *__p->_M_valptr()))
 		      {
-			// First node of p is lower; e must come from p.
+			// First node of q is not lower; e must come from p.
 			__e = __p;
 			__p = static_cast<_Node*>(__p->_M_next);
 			--__psize;

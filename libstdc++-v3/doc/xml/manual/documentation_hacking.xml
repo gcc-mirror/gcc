@@ -261,7 +261,7 @@
 
       <para>
 	Prerequisite tools are Bash 2.0 or later,
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.doxygen.org">Doxygen</link>, and
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.doxygen.nl">Doxygen</link>, and
 	the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/software/coreutils/">GNU
 	coreutils</link>. (GNU versions of find, xargs, and possibly
 	sed and grep are used, just because the GNU versions make
@@ -445,9 +445,10 @@
 
       <para>
 	Adding Doxygen markup to a file (informally called
-	<quote>doxygenating</quote>) is very simple. The Doxygen manual can be
-	found
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.stack.nl/~dimitri/doxygen/download.html#latestman">here</link>.
+	<quote>doxygenating</quote>) is very simple. See the
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" 
+         xlink:href="http://www.doxygen.nl/download.html#latestman">Doxygen
+         manual</link> for details.
 	We try to use a very-recent version of Doxygen.
       </para>
 
@@ -463,7 +464,8 @@
 
       <para>
 	Some commentary to accompany
-	the first list in the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.stack.nl/~dimitri/doxygen/manual/docblocks.html">Special
+	the first list in the <link xmlns:xlink="http://www.w3.org/1999/xlink"
+        xlink:href="http://www.doxygen.nl/manual/docblocks.html">Special
 	Documentation Blocks</link> section of the Doxygen manual:
       </para>
 
@@ -777,7 +779,7 @@
       </para>
 
       <para>
-	For epub output, the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://sourceforge.net/projects/docbook/files/epub3/">stylesheets</link> for EPUB3 are required. These stylesheets are still in development. To validate the created file, <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://github.com/IDPF/epubcheck">epubcheck</link> is necessary.
+	For epub output, the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://sourceforge.net/projects/docbook/files/epub3/">stylesheets</link> for EPUB3 are required. These stylesheets are still in development. To validate the created file, <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://github.com/w3c/epubcheck">epubcheck</link> is necessary.
       </para>
     </section>
 
@@ -805,11 +807,18 @@
       </para>
 
       <para>
-	Generated files are output into separate sub directores of
+	Generated files are output into separate sub-directores of
 	<filename class="directory">doc/docbook/</filename> in the
 	build directory, based on the output format. For instance, the
 	HTML docs will be in <filename
 	class="directory">doc/docbook/html</filename>.
+      </para>
+
+      <para>
+	The <screen>doc-html-docbook-regenerate</screen> target will generate
+	the HTML files and copy them back to the libstdc++ source tree.
+	This can be used to update the HTML files that are checked in to
+	version control.
       </para>
 
       <para>

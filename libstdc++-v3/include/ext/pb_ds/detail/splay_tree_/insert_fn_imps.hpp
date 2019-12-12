@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,6 +37,8 @@
  * @file splay_tree_/insert_fn_imps.hpp
  * Contains an implementation class for splay_tree_.
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 PB_DS_CLASS_T_DEC
 inline std::pair<typename PB_DS_CLASS_C_DEC::point_iterator, bool>
@@ -92,3 +94,4 @@ insert_leaf_imp(const_reference r_value)
 
   return std::make_pair(this->insert_leaf_new(r_value, p_nd, false), true);
 }
+#endif

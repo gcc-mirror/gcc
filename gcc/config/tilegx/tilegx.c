@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Tilera TILE-Gx.
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
    Contributed by Walter Lee (walt@tilera.com)
 
    This file is part of GCC.
@@ -159,12 +159,11 @@ tilegx_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 /* Implement TARGET_PASS_BY_REFERENCE.  Variable sized types are
    passed by reference.  */
 static bool
-tilegx_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-			  machine_mode mode ATTRIBUTE_UNUSED,
-			  const_tree type, bool named ATTRIBUTE_UNUSED)
+tilegx_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  return (type && TYPE_SIZE (type)
-	  && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST);
+  return (arg.type
+	  && TYPE_SIZE (arg.type)
+	  && TREE_CODE (TYPE_SIZE (arg.type)) != INTEGER_CST);
 }
 
 
@@ -217,13 +216,10 @@ tilegx_function_arg_boundary (machine_mode mode, const_tree type)
 
 /* Implement TARGET_FUNCTION_ARG.  */
 static rtx
-tilegx_function_arg (cumulative_args_t cum_v,
-		     machine_mode mode,
-		     const_tree type, bool named ATTRIBUTE_UNUSED)
+tilegx_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS cum = *get_cumulative_args (cum_v);
-  int byte_size = ((mode == BLKmode)
-		   ? int_size_in_bytes (type) : GET_MODE_SIZE (mode));
+  int byte_size = arg.promoted_size_in_bytes ();
   bool doubleword_aligned_p;
 
   if (cum >= TILEGX_NUM_ARG_REGS)
@@ -231,7 +227,7 @@ tilegx_function_arg (cumulative_args_t cum_v,
 
   /* See whether the argument has doubleword alignment.  */
   doubleword_aligned_p =
-    tilegx_function_arg_boundary (mode, type) > BITS_PER_WORD;
+    tilegx_function_arg_boundary (arg.mode, arg.type) > BITS_PER_WORD;
 
   if (doubleword_aligned_p)
     cum += cum & 1;
@@ -242,26 +238,24 @@ tilegx_function_arg (cumulative_args_t cum_v,
       > TILEGX_NUM_ARG_REGS)
     return NULL_RTX;
 
-  return gen_rtx_REG (mode, cum);
+  return gen_rtx_REG (arg.mode, cum);
 }
 
 
 /* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
 static void
 tilegx_function_arg_advance (cumulative_args_t cum_v,
-			     machine_mode mode,
-			     const_tree type, bool named ATTRIBUTE_UNUSED)
+			     const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  int byte_size = ((mode == BLKmode)
-		   ? int_size_in_bytes (type) : GET_MODE_SIZE (mode));
+  int byte_size = arg.promoted_size_in_bytes ();
   int word_size = (byte_size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
   bool doubleword_aligned_p;
 
   /* See whether the argument has doubleword alignment.  */
   doubleword_aligned_p =
-    tilegx_function_arg_boundary (mode, type) > BITS_PER_WORD;
+    tilegx_function_arg_boundary (arg.mode, arg.type) > BITS_PER_WORD;
 
   if (doubleword_aligned_p)
     *cum += *cum & 1;
@@ -391,8 +385,8 @@ tilegx_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 /* Implement TARGET_SETUP_INCOMING_VARARGS.  */
 static void
 tilegx_setup_incoming_varargs (cumulative_args_t cum,
-			       machine_mode mode,
-			       tree type, int *pretend_args, int no_rtl)
+			       const function_arg_info &arg,
+			       int *pretend_args, int no_rtl)
 {
   CUMULATIVE_ARGS local_cum = *get_cumulative_args (cum);
   int first_reg;
@@ -400,8 +394,7 @@ tilegx_setup_incoming_varargs (cumulative_args_t cum,
   /* The caller has advanced CUM up to, but not beyond, the last named
      argument.  Advance a local copy of CUM past the last "real" named
      argument, to find out how many registers are left over.  */
-  targetm.calls.function_arg_advance (pack_cumulative_args (&local_cum),
-				      mode, type, true);
+  targetm.calls.function_arg_advance (pack_cumulative_args (&local_cum), arg);
   first_reg = local_cum;
 
   if (local_cum < TILEGX_NUM_ARG_REGS)
@@ -471,8 +464,7 @@ tilegx_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 
   /* If an object is dynamically sized, a pointer to it is passed
      instead of the object itself.  */
-  pass_by_reference_p = pass_by_reference (NULL, TYPE_MODE (type), type,
-					   false);
+  pass_by_reference_p = pass_va_arg_by_reference (type);
 
   if (pass_by_reference_p)
     type = build_pointer_type (type);
@@ -3531,7 +3523,7 @@ tilegx_expand_builtin (tree exp,
 #define MAX_BUILTIN_ARGS 4
 
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   tree arg;
   call_expr_arg_iterator iter;
   enum insn_code icode;
@@ -3668,7 +3660,7 @@ tilegx_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
 static bool
 need_to_save_reg (unsigned int regno)
 {
-  if (!fixed_regs[regno] && !call_used_regs[regno]
+  if (!call_used_or_fixed_reg_p (regno)
       && df_regs_ever_live_p (regno))
     return true;
 
@@ -4349,20 +4341,11 @@ static void
 tilegx_conditional_register_usage (void)
 {
   global_regs[TILEGX_NETORDER_REGNUM] = 1;
-  /* TILEGX_PIC_TEXT_LABEL_REGNUM is conditionally used.  It is a
-     member of fixed_regs, and therefore must be member of
-     call_used_regs, but it is not a member of call_really_used_regs[]
-     because it is not clobbered by a call.  */
+  /* TILEGX_PIC_TEXT_LABEL_REGNUM is conditionally used.  */
   if (TILEGX_PIC_TEXT_LABEL_REGNUM != INVALID_REGNUM)
-    {
-      fixed_regs[TILEGX_PIC_TEXT_LABEL_REGNUM] = 1;
-      call_used_regs[TILEGX_PIC_TEXT_LABEL_REGNUM] = 1;
-    }
+    fixed_regs[TILEGX_PIC_TEXT_LABEL_REGNUM] = 1;
   if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)
-    {
-      fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
-      call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
-    }
+    fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
 }
 
 
@@ -4920,6 +4903,7 @@ tilegx_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 			HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 			tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
   rtx this_rtx, funexp, addend;
   rtx_insn *insn;
 
@@ -4992,17 +4976,18 @@ tilegx_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   /* Run just enough of rest_of_compilation to get the insns emitted.
      There's not really enough bulk here to make other passes such as
-     instruction scheduling worth while.  Note that use_thunk calls
-     assemble_start_function and assemble_end_function.
+     instruction scheduling worth while.
 
      We don't currently bundle, but the instruciton sequence is all
      serial except for the tail call, so we're only wasting one cycle.
    */
   insn = get_insns ();
   shorten_branches (insn);
+  assemble_start_function (thunk_fndecl, fnname);
   final_start_function (insn, file, 1);
   final (insn, file, 1);
   final_end_function ();
+  assemble_end_function (thunk_fndecl, fnname);
 
   /* Stop pretending to be a post-reload pass.  */
   reload_completed = 0;

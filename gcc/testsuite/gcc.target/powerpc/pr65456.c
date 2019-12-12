@@ -1,6 +1,5 @@
 /* { dg-do compile { target { powerpc64le-*-* } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc64le-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-mcpu=power8 -O3" } */
+/* { dg-options "-mdejagnu-cpu=power8 -O3" } */
 
 /* Verify that swap optimization properly removes swaps for unaligned
    vector stores.  See PR65456.  */

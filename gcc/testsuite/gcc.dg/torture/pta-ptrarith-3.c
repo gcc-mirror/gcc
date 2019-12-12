@@ -33,4 +33,4 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "q_. = { i j k }" "alias" } } */
+/* { dg-final { scan-tree-dump "q_\[0-9\]* = { i j k }" "alias" } } */

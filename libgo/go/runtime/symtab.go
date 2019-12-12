@@ -7,7 +7,7 @@ package runtime
 // Frames may be used to get function/file/line information for a
 // slice of PC values returned by Callers.
 type Frames struct {
-	// callers is a slice of PCs that have not yet been expanded.
+	// callers is a slice of PCs that have not yet been expanded to frames.
 	callers []uintptr
 
 	// The last PC we saw.
@@ -79,10 +79,15 @@ func (ci *Frames) Next() (frame Frame, more bool) {
 
 	// Subtract 1 from PC to undo the 1 we added in callback in
 	// go-callers.c.
-	function, file, line := funcfileline(pc-1, int32(i))
+	function, file, line, _ := funcfileline(pc-1, int32(i))
 	if function == "" && file == "" {
 		return Frame{}, more
 	}
+
+	// Demangle function name if needed.
+	function = demangleSymbol(function)
+
+	// Create entry.
 	entry := funcentry(pc - 1)
 	f := &Func{name: function, entry: entry}
 
@@ -115,42 +120,14 @@ type Func struct {
 	entry uintptr
 }
 
-// A FuncID identifies particular functions that need to be treated
-// specially by the runtime.
-// Note that in some situations involving plugins, there may be multiple
-// copies of a particular special runtime function.
-// Note: this list must match the list in cmd/internal/objabi/funcid.go.
-type funcID uint32
-
-const (
-	funcID_normal funcID = iota // not a special function
-	funcID_goexit
-	funcID_jmpdefer
-	funcID_mcall
-	funcID_morestack
-	funcID_mstart
-	funcID_rt0_go
-	funcID_asmcgocall
-	funcID_sigpanic
-	funcID_runfinq
-	funcID_bgsweep
-	funcID_forcegchelper
-	funcID_timerproc
-	funcID_gcBgMarkWorker
-	funcID_systemstack_switch
-	funcID_systemstack
-	funcID_cgocallback_gofunc
-	funcID_gogo
-	funcID_externalthreadhandler
-)
-
 // FuncForPC returns a *Func describing the function that contains the
 // given program counter address, or else nil.
 //
 // If pc represents multiple functions because of inlining, it returns
-// the *Func describing the outermost function.
+// the a *Func describing the innermost function, but with an entry
+// of the outermost function.
 func FuncForPC(pc uintptr) *Func {
-	name, _, _ := funcfileline(pc, -1)
+	name, _, _, _ := funcfileline(pc, -1)
 	if name == "" {
 		return nil
 	}
@@ -179,10 +156,79 @@ func (f *Func) Entry() uintptr {
 // The result will not be accurate if pc is not a program
 // counter within f.
 func (f *Func) FileLine(pc uintptr) (file string, line int) {
-	_, file, line = funcfileline(pc, -1)
+	_, file, line, _ = funcfileline(pc, -1)
 	return file, line
 }
 
+func hexval(b byte) uint {
+	if b >= '0' && b <= '9' {
+		return uint(b - '0')
+	}
+	if b >= 'a' && b <= 'f' {
+		return uint(b-'a') + 10
+	}
+	return 0
+}
+
+func hexDigitsToRune(digits []byte, ndig int) rune {
+	result := uint(0)
+	for i := 0; i < ndig; i++ {
+		result <<= uint(4)
+		result |= hexval(digits[i])
+	}
+	return rune(result)
+}
+
+// Perform an in-place decoding on the input byte slice. This looks
+// for "..z<hex 2 >", "..u<hex x 4>" and "..U<hex x 8>" and overwrites
+// with the encoded bytes corresponding to the unicode in question.
+// Return value is the number of bytes taken by the result.
+
+func decodeIdentifier(bsl []byte) int {
+	j := 0
+	for i := 0; i < len(bsl); i++ {
+		b := bsl[i]
+
+		if i+1 < len(bsl) && bsl[i] == '.' && bsl[i+1] == '.' {
+			if i+4 < len(bsl) && bsl[i+2] == 'z' {
+				digits := bsl[i+3:]
+				r := hexDigitsToRune(digits, 2)
+				nc := encoderune(bsl[j:], r)
+				j += nc
+				i += 4
+				continue
+			} else if i+6 < len(bsl) && bsl[i+2] == 'u' {
+				digits := bsl[i+3:]
+				r := hexDigitsToRune(digits, 4)
+				nc := encoderune(bsl[j:], r)
+				j += nc
+				i += 6
+				continue
+			} else if i+10 < len(bsl) && bsl[i+2] == 'U' {
+				digits := bsl[i+3:]
+				r := hexDigitsToRune(digits, 8)
+				nc := encoderune(bsl[j:], r)
+				j += nc
+				i += 10
+				continue
+			}
+		}
+		bsl[j] = b
+		j += 1
+	}
+	return j
+}
+
+// Demangle a function symbol. Applies the reverse of go_encode_id()
+// as used in the compiler.
+
+func demangleSymbol(s string) string {
+	bsl := []byte(s)
+	nchars := decodeIdentifier(bsl)
+	bsl = bsl[:nchars]
+	return string(bsl)
+}
+
 // implemented in go-caller.c
-func funcfileline(uintptr, int32) (string, string, int)
+func funcfileline(uintptr, int32) (string, string, int, int)
 func funcentry(uintptr) uintptr

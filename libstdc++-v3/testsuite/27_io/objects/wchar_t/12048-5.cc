@@ -1,4 +1,4 @@
-// Copyright (C) 2003-2018 Free Software Foundation, Inc.
+// Copyright (C) 2003-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,6 +20,7 @@
 // only returns characters that were read with cin.rdbuf()->sbumpc()
 
 // { dg-do run { xfail *-*-* } }
+// { dg-require-fileio "" }
 
 #include <iostream>
 #include <cstdio>

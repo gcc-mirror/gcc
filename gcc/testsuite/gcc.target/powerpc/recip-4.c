@@ -1,7 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-require-effective-target powerpc_fprs } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
-/* { dg-options "-O3 -ftree-vectorize -mrecip -ffast-math -mcpu=power7 -fno-unroll-loops" } */
+/* { dg-options "-O3 -ftree-vectorize -mrecip -ffast-math -mdejagnu-cpu=power7 -fno-unroll-loops" } */
 /* { dg-final { scan-assembler-times "xvrsqrtedp" 1 } } */
 /* { dg-final { scan-assembler-times "xvmuldp" 2 } } */
 /* { dg-final { scan-assembler-times "xvnmsub.dp" 2 } } */

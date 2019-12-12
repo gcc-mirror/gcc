@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-march=*" } { "-march=armv6z" } } */
 /* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-mthumb" } { "" } } */
+/* { dg-require-effective-target arm_arch_v6z_arm_ok } */
 /* { dg-options "-marm" } */
 /* { dg-add-options arm_arch_v6z } */
 

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2001-2018, AdaCore                     *
+ *                     Copyright (C) 2001-2019, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -29,14 +29,11 @@
  *                                                                          *
  ****************************************************************************/
 
-#ifdef __alpha_vxworks
-#include "vxWorks.h"
-#endif
-
 #ifdef IN_RTS
 #define POSIX
-#include "tconfig.h"
-#include "tsystem.h"
+#include "runtime.h"
+#include <unistd.h>
+
 #else
 #include "config.h"
 #include "system.h"

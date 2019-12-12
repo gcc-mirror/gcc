@@ -1,5 +1,5 @@
 /* Pipeline hazard description translator.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
    Written by Vladimir Makarov <vmakarov@redhat.com>
 
@@ -5539,9 +5539,9 @@ form_reservs_matter (automaton_t automaton)
       if (units_array [unit]->automaton_decl
 	  == automaton->corresponding_automaton_decl
 	  && (cycle >= units_array [unit]->min_occ_cycle_num
-	      /* We can not remove queried unit from reservations.  */
+	      /* We cannot remove queried unit from reservations.  */
 	      || units_array [unit]->query_p
-	      /* We can not remove units which are used
+	      /* We cannot remove units which are used
 		 `exclusion_set', `presence_set',
 		 `final_presence_set', `absence_set', and
 		 `final_absence_set'.  */
@@ -9207,7 +9207,7 @@ generate (void)
 #define STANDARD_OUTPUT_DESCRIPTION_FILE_SUFFIX ".dfa"
 
 /* The function returns suffix of given file name.  The returned
-   string can not be changed.  */
+   string cannot be changed.  */
 static const char *
 file_name_suffix (const char *file_name)
 {
@@ -9222,7 +9222,7 @@ file_name_suffix (const char *file_name)
 /* The function returns base name of given file name, i.e. pointer to
    first char after last `/' (or `\' for WIN32) in given file name,
    given file name itself if the directory name is absent.  The
-   returned string can not be changed.  */
+   returned string cannot be changed.  */
 static const char *
 base_file_name (const char *file_name)
 {

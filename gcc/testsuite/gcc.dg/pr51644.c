@@ -1,6 +1,7 @@
 /* PR middle-end/51644 */
 /* { dg-do compile } */
 /* { dg-options "-Wall -fexceptions" } */
+/* { dg-require-effective-target exceptions } */
 
 #include <stdarg.h>
 

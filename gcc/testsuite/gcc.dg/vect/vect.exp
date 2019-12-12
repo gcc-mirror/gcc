@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2018 Free Software Foundation, Inc.
+# Copyright (C) 1997-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ if ![check_vect_support_and_set_flags] {
 }
 
 # These flags are used for all targets.
-lappend DEFAULT_VECTCFLAGS "-ftree-vectorize" "-fno-vect-cost-model" "-fno-common"
+lappend DEFAULT_VECTCFLAGS "-ftree-vectorize" "-fno-tree-loop-distribute-patterns" "-fno-vect-cost-model" "-fno-common"
 
 # Initialize `dg'.
 dg-init
@@ -262,20 +262,10 @@ et-dg-runtest dg-runtest [lsort \
 	[glob -nocomplain $srcdir/$subdir/ggc-*.\[cS\]]] \
 	"" $DEFAULT_VECTCFLAGS
 
-# -ftree-loop-if-convert-stores
-set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
-lappend DEFAULT_VECTCFLAGS "-ftree-loop-if-convert-stores"
-et-dg-runtest dg-runtest [lsort \
-	[glob -nocomplain $srcdir/$subdir/if-cvt-stores-vect-*.\[cS\]]] \
-	"" $DEFAULT_VECTCFLAGS
-
 # With -O3.
 # Don't allow IPA cloning, because it throws our counts out of whack.
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "-O3" "-fno-ipa-cp-clone"
-if  [istarget "spu-*-*"] {
-  lappend DEFAULT_VECTCFLAGS "-funroll-loops"
-}
 
 et-dg-runtest dg-runtest [lsort \
 	[glob -nocomplain $srcdir/$subdir/O3-*.\[cS\]]] \

@@ -2,7 +2,7 @@
 
 // 2010-02-10  Paolo Carlini  <paolo.carlini@oracle.com> 
 //
-// Copyright (C) 2010-2018 Free Software Foundation, Inc.
+// Copyright (C) 2010-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,7 +32,8 @@ void test01()
   typedef Mmap::value_type     value_type;
 
   Mmap mm1;
-  
+  mm1.reserve(3);
+
   iterator it1 = mm1.insert(mm1.begin(),
 			    value_type("all the love in the world", 1));
   VERIFY( mm1.size() == 1 );

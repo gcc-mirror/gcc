@@ -6,6 +6,7 @@ package http
 
 import (
 	"bytes"
+	"internal/race"
 	"runtime"
 	"testing"
 	"time"
@@ -175,6 +176,14 @@ func TestHasToken(t *testing.T) {
 	}
 }
 
+func TestNilHeaderClone(t *testing.T) {
+	t1 := Header(nil)
+	t2 := t1.Clone()
+	if t2 != nil {
+		t.Errorf("cloned header does not match original: got: %+v; want: %+v", t2, nil)
+	}
+}
+
 var testHeader = Header{
 	"Content-Length": {"123"},
 	"Content-Type":   {"text/plain"},
@@ -196,7 +205,7 @@ func TestHeaderWriteSubsetAllocs(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping alloc test in short mode")
 	}
-	if raceEnabled {
+	if race.Enabled {
 		t.Skip("skipping test under race detector")
 	}
 	t.Skip("Skipping alloc count test on gccgo")

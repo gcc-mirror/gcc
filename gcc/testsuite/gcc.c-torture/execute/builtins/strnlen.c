@@ -1,8 +1,5 @@
 /* PR tree-optimization/81384 - built-in form of strnlen missing
-   Test to verify that strnlen built-in expansion works correctly
-   in the absence of tree strlen optimization.
-   { dg-do run }
-   { do-options "-O2 -fno-tree-strlen" }  */
+   Test to verify that strnlen built-in expansion works correctly.  */
 
 #define PTRDIFF_MAX __PTRDIFF_MAX__
 #define SIZE_MAX    __SIZE_MAX__

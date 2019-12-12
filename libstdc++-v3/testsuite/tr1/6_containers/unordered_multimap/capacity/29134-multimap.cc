@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2018 Free Software Foundation, Inc.
+// Copyright (C) 2006-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,14 +19,16 @@
 
 #include <tr1/unordered_map>
 #include <testsuite_hooks.h>
+#include <testsuite_allocator.h>
 
 // libstdc++/29134
 void test01()
 {
   std::tr1::unordered_multimap<int, int> umm;
 
-  VERIFY( (umm.max_size() == std::allocator<std::tr1::__detail::_Hash_node<
- 	   std::pair<const int, int>, false> >().max_size()) );
+  std::allocator<std::tr1::__detail::_Hash_node<std::pair<const int, int>,
+						false> > a;
+  VERIFY( umm.max_size() == __gnu_test::max_size(a) );
 }
 
 int main()

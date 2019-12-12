@@ -1421,8 +1421,7 @@ func encFuzzDec(rng *rand.Rand, in interface{}) error {
 // This does some "fuzz testing" by attempting to decode a sequence of random bytes.
 func TestFuzz(t *testing.T) {
 	if !*doFuzzTests {
-		t.Logf("disabled; run with -gob.fuzz to enable")
-		return
+		t.Skipf("disabled; run with -gob.fuzz to enable")
 	}
 
 	// all possible inputs
@@ -1441,8 +1440,7 @@ func TestFuzz(t *testing.T) {
 
 func TestFuzzRegressions(t *testing.T) {
 	if !*doFuzzTests {
-		t.Logf("disabled; run with -gob.fuzz to enable")
-		return
+		t.Skipf("disabled; run with -gob.fuzz to enable")
 	}
 
 	// An instance triggering a type name of length ~102 GB.
@@ -1465,6 +1463,10 @@ func testFuzz(t *testing.T, seed int64, n int, input ...interface{}) {
 // TestFuzzOneByte tries to decode corrupted input sequences
 // and checks that no panic occurs.
 func TestFuzzOneByte(t *testing.T) {
+	if !*doFuzzTests {
+		t.Skipf("disabled; run with -gob.fuzz to enable")
+	}
+
 	buf := new(bytes.Buffer)
 	Register(OnTheFly{})
 	dt := newDT()
@@ -1477,6 +1479,10 @@ func TestFuzzOneByte(t *testing.T) {
 	for i := 0; i < len(s); i++ {
 		switch i {
 		case 14, 167, 231, 265: // a slice length, corruptions are not handled yet.
+			continue
+		case 248:
+			// Large map size, which currently causes an out of memory panic.
+			// See golang.org/issue/24308 and golang.org/issue/20221.
 			continue
 		}
 		indices = append(indices, i)

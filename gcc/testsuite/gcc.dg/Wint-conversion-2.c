@@ -1,8 +1,9 @@
-/* PR middle-end/86202 */
+/* PR middle-end/86202 - ICE in get_range_info calling an invalid memcpy()
+   declaration */
 /* { dg-do compile } */
 /* { dg-options "-Wint-conversion" } */
 
-void *memcpy (void *, void *, __SIZE_TYPE__ *);
+void *memcpy (void *, void *, __SIZE_TYPE__ *);   /* { dg-warning "conflicting types for built-in function .memcpy." } */
 void *a, *b;
 void f (void)
 {

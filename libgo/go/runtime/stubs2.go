@@ -5,6 +5,7 @@
 // +build !plan9
 // +build !windows
 // +build !nacl
+// +build !js
 
 package runtime
 
@@ -16,7 +17,6 @@ func closefd(fd int32) int32
 
 //extern exit
 func exit(code int32)
-func nanotime() int64
 func usleep(usec uint32)
 
 //go:noescape
@@ -31,3 +31,6 @@ func exitThread(wait *uint32) {
 	// This is never used by gccgo.
 	throw("exitThread")
 }
+
+// So that the C initialization code can call osinit.
+//go:linkname osinit runtime.osinit

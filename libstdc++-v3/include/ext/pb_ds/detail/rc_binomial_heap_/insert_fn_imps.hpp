@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,6 +37,8 @@
  * @file rc_binomial_heap_/insert_fn_imps.hpp
  * Contains an implementation for rc_binomial_heap_.
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::point_iterator
@@ -152,3 +154,4 @@ make_0_exposed()
   if (p_res->m_p_next_sibling != 0&&  p_res->m_metadata == p_res->m_p_next_sibling->m_metadata)
     m_rc.push(p_res);
 }
+#endif

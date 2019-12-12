@@ -1,6 +1,6 @@
 /* Declarations of tree-ssa-strlen API.
 
-   Copyright (C) 2018 Free Software Foundation, Inc.
+   Copyright (C) 2018-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -23,5 +23,13 @@
 
 extern bool is_strlen_related_p (tree, tree);
 extern bool maybe_diag_stxncpy_trunc (gimple_stmt_iterator, tree, tree);
+extern tree set_strlen_range (tree, wide_int, wide_int, tree = NULL_TREE);
+
+struct c_strlen_data;
+class vr_values;
+extern void get_range_strlen_dynamic (tree , c_strlen_data *, const vr_values *);
+
+/* APIs internal to strlen pass.  Defined in in gimple-ssa-sprintf.c.  */
+extern bool handle_printf_call (gimple_stmt_iterator *,  const vr_values *);
 
 #endif   // GCC_TREE_SSA_STRLEN_H

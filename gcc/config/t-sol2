@@ -1,4 +1,4 @@
-# Copyright (C) 2004-2018 Free Software Foundation, Inc.
+# Copyright (C) 2004-2019 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -16,13 +16,18 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# Solaris-specific format checking and pragmas
+# Solaris-specific format checking and pragmas.
 sol2-c.o: $(srcdir)/config/sol2-c.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
 # Solaris-specific C++ mangling.
 sol2-cxx.o: $(srcdir)/config/sol2-cxx.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+# Solaris-specific D support.
+sol2-d.o: $(srcdir)/config/sol2-d.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 

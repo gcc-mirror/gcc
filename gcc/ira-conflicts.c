@@ -1,5 +1,5 @@
 /* IRA conflict builder.
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "ira.h"
 #include "ira-int.h"
-#include "params.h"
 #include "sparseset.h"
 #include "addresses.h"
 
@@ -113,13 +112,13 @@ build_conflict_bit_table (void)
 	     / IRA_INT_BITS);
 	allocated_words_num += conflict_bit_vec_words_num;
 	if ((uint64_t) allocated_words_num * sizeof (IRA_INT_TYPE)
-	    > (uint64_t) IRA_MAX_CONFLICT_TABLE_SIZE * 1024 * 1024)
+	    > (uint64_t) param_ira_max_conflict_table_size * 1024 * 1024)
 	  {
 	    if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL)
 	      fprintf
 		(ira_dump_file,
 		 "+++Conflict table will be too big(>%dMB) -- don't use it\n",
-		 IRA_MAX_CONFLICT_TABLE_SIZE);
+		 param_ira_max_conflict_table_size);
 	    return false;
 	  }
       }
@@ -289,7 +288,7 @@ process_regs_for_copy (rtx reg1, rtx reg2, bool constraint_p,
 
   if (! IN_RANGE (allocno_preferenced_hard_regno,
 		  0, FIRST_PSEUDO_REGISTER - 1))
-    /* Can not be tied.  */
+    /* Cannot be tied.  */
     return false;
   rclass = REGNO_REG_CLASS (allocno_preferenced_hard_regno);
   mode = ALLOCNO_MODE (a);
@@ -300,7 +299,7 @@ process_regs_for_copy (rtx reg1, rtx reg2, bool constraint_p,
     return false;
   index = ira_class_hard_reg_index[aclass][allocno_preferenced_hard_regno];
   if (index < 0)
-    /* Can not be tied.  It is not in the allocno class.  */
+    /* Cannot be tied.  It is not in the allocno class.  */
     return false;
   ira_init_register_move_cost_if_necessary (mode);
   if (HARD_REGISTER_P (reg1))
@@ -325,12 +324,37 @@ process_regs_for_copy (rtx reg1, rtx reg2, bool constraint_p,
   return true;
 }
 
-/* Process all of the output registers of the current insn which are
-   not bound (BOUND_P) and the input register REG (its operand number
+/* Return true if output operand OUTPUT and input operand INPUT of
+   INSN can use the same register class for at least one alternative.
+   INSN is already described in recog_data and recog_op_alt.  */
+static bool
+can_use_same_reg_p (rtx_insn *insn, int output, int input)
+{
+  alternative_mask preferred = get_preferred_alternatives (insn);
+  for (int nalt = 0; nalt < recog_data.n_alternatives; nalt++)
+    {
+      if (!TEST_BIT (preferred, nalt))
+	continue;
+
+      const operand_alternative *op_alt
+	= &recog_op_alt[nalt * recog_data.n_operands];
+      if (op_alt[input].matches == output)
+	return true;
+
+      if (ira_reg_class_intersect[op_alt[input].cl][op_alt[output].cl]
+	  != NO_REGS)
+	return true;
+    }
+  return false;
+}
+
+/* Process all of the output registers of the current insn (INSN) which
+   are not bound (BOUND_P) and the input register REG (its operand number
    OP_NUM) which dies in the insn as if there were a move insn between
    them with frequency FREQ.  */
 static void
-process_reg_shuffles (rtx reg, int op_num, int freq, bool *bound_p)
+process_reg_shuffles (rtx_insn *insn, rtx reg, int op_num, int freq,
+		      bool *bound_p)
 {
   int i;
   rtx another_reg;
@@ -342,7 +366,13 @@ process_reg_shuffles (rtx reg, int op_num, int freq, bool *bound_p)
 
       if (!REG_SUBREG_P (another_reg) || op_num == i
 	  || recog_data.operand_type[i] != OP_OUT
-	  || bound_p[i])
+	  || bound_p[i]
+	  || (!can_use_same_reg_p (insn, i, op_num)
+	      && (recog_data.constraints[op_num][0] != '%'
+		  || !can_use_same_reg_p (insn, i, op_num + 1))
+	      && (op_num == 0
+		  || recog_data.constraints[op_num - 1][0] != '%'
+		  || !can_use_same_reg_p (insn, i, op_num - 1))))
 	continue;
 
       process_regs_for_copy (reg, another_reg, false, NULL, freq);
@@ -358,7 +388,7 @@ add_insn_allocno_copies (rtx_insn *insn)
   rtx set, operand, dup;
   bool bound_p[MAX_RECOG_OPERANDS];
   int i, n, freq;
-  HARD_REG_SET alts;
+  alternative_mask alts;
 
   freq = REG_FREQ_FROM_BB (BLOCK_FOR_INSN (insn));
   if (freq == 0)
@@ -379,7 +409,7 @@ add_insn_allocno_copies (rtx_insn *insn)
      there are no dead registers, there will be no such copies.  */
   if (! find_reg_note (insn, REG_DEAD, NULL_RTX))
     return;
-  ira_setup_alts (insn, alts);
+  alts = ira_setup_alts (insn);
   for (i = 0; i < recog_data.n_operands; i++)
     bound_p[i] = false;
   for (i = 0; i < recog_data.n_operands; i++)
@@ -412,7 +442,8 @@ add_insn_allocno_copies (rtx_insn *insn)
 	   the corresponding allocno copies.  The cost will not
 	   correspond to a real move insn cost, so make the frequency
 	   smaller.  */
-	process_reg_shuffles (operand, i, freq < 8 ? 1 : freq / 8, bound_p);
+	process_reg_shuffles (insn, operand, i, freq < 8 ? 1 : freq / 8,
+			      bound_p);
     }
 }
 
@@ -633,7 +664,12 @@ print_allocno_conflicts (FILE * file, bool reg_p, ira_allocno_t a)
       ira_object_conflict_iterator oci;
 
       if (OBJECT_CONFLICT_ARRAY (obj) == NULL)
-	continue;
+	{
+	  fprintf (file, "\n;;     total conflict hard regs:\n");
+	  fprintf (file, ";;     conflict hard regs:\n\n");
+	  continue;
+	}
+
       if (n > 1)
 	fprintf (file, "\n;;   subobject %d:", i);
       FOR_EACH_OBJECT_CONFLICT (obj, conflict_obj, oci)
@@ -655,17 +691,15 @@ print_allocno_conflicts (FILE * file, bool reg_p, ira_allocno_t a)
 	      putc (')', file);
 	    }
 	}
-      COPY_HARD_REG_SET (conflicting_hard_regs, OBJECT_TOTAL_CONFLICT_HARD_REGS (obj));
-      AND_COMPL_HARD_REG_SET (conflicting_hard_regs, ira_no_alloc_regs);
-      AND_HARD_REG_SET (conflicting_hard_regs,
-			reg_class_contents[ALLOCNO_CLASS (a)]);
+      conflicting_hard_regs = (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj)
+			       & ~ira_no_alloc_regs
+			       & reg_class_contents[ALLOCNO_CLASS (a)]);
       print_hard_reg_set (file, "\n;;     total conflict hard regs:",
 			  conflicting_hard_regs);
 
-      COPY_HARD_REG_SET (conflicting_hard_regs, OBJECT_CONFLICT_HARD_REGS (obj));
-      AND_COMPL_HARD_REG_SET (conflicting_hard_regs, ira_no_alloc_regs);
-      AND_HARD_REG_SET (conflicting_hard_regs,
-			reg_class_contents[ALLOCNO_CLASS (a)]);
+      conflicting_hard_regs = (OBJECT_CONFLICT_HARD_REGS (obj)
+			       & ~ira_no_alloc_regs
+			       & reg_class_contents[ALLOCNO_CLASS (a)]);
       print_hard_reg_set (file, ";;     conflict hard regs:",
 			  conflicting_hard_regs);
       putc ('\n', file);
@@ -683,6 +717,7 @@ print_conflicts (FILE *file, bool reg_p)
 
   FOR_EACH_ALLOCNO (a, ai)
     print_allocno_conflicts (file, reg_p, a);
+  putc ('\n', file);
 }
 
 /* Print information about allocno or only regno (if REG_P) conflicts
@@ -734,11 +769,7 @@ ira_build_conflicts (void)
   if (! targetm.class_likely_spilled_p (base))
     CLEAR_HARD_REG_SET (temp_hard_reg_set);
   else
-    {
-      COPY_HARD_REG_SET (temp_hard_reg_set, reg_class_contents[base]);
-      AND_COMPL_HARD_REG_SET (temp_hard_reg_set, ira_no_alloc_regs);
-      AND_HARD_REG_SET (temp_hard_reg_set, call_used_reg_set);
-    }
+    temp_hard_reg_set = reg_class_contents[base] & ~ira_no_alloc_regs;
   FOR_EACH_ALLOCNO (a, ai)
     {
       int i, n = ALLOCNO_NUM_OBJECTS (a);
@@ -746,33 +777,28 @@ ira_build_conflicts (void)
       for (i = 0; i < n; i++)
 	{
 	  ira_object_t obj = ALLOCNO_OBJECT (a, i);
-	  machine_mode obj_mode = obj->allocno->mode;
 	  rtx allocno_reg = regno_reg_rtx [ALLOCNO_REGNO (a)];
 
-	  if ((! flag_caller_saves && ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
-	      /* For debugging purposes don't put user defined variables in
-		 callee-clobbered registers.  However, do allow parameters
-		 in callee-clobbered registers to improve debugging.  This
-		 is a bit of a fragile hack.  */
-	      || (optimize == 0
-		  && REG_USERVAR_P (allocno_reg)
-		  && ! reg_is_parm_p (allocno_reg)))
+	  /* For debugging purposes don't put user defined variables in
+	     callee-clobbered registers.  However, do allow parameters
+	     in callee-clobbered registers to improve debugging.  This
+	     is a bit of a fragile hack.  */
+	  if (optimize == 0
+	      && REG_USERVAR_P (allocno_reg)
+	      && ! reg_is_parm_p (allocno_reg))
 	    {
-	      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
-				call_used_reg_set);
-	      IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
-				call_used_reg_set);
+	      HARD_REG_SET new_conflict_regs = crtl->abi->full_reg_clobbers ();
+	      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= new_conflict_regs;
+	      OBJECT_CONFLICT_HARD_REGS (obj) |= new_conflict_regs;
 	    }
-	  else if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
+
+	  if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
 	    {
-	      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
-				no_caller_save_reg_set);
-	      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
-				temp_hard_reg_set);
-	      IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
-				no_caller_save_reg_set);
-	      IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
-				temp_hard_reg_set);
+	      HARD_REG_SET new_conflict_regs = ira_need_caller_save_regs (a);
+	      if (flag_caller_saves)
+		new_conflict_regs &= (~savable_regs | temp_hard_reg_set);
+	      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= new_conflict_regs;
+	      OBJECT_CONFLICT_HARD_REGS (obj) |= new_conflict_regs;
 	    }
 
 	  /* Now we deal with paradoxical subreg cases where certain registers
@@ -798,23 +824,6 @@ ira_build_conflicts (void)
 					 inner_regno);
 		     }
 		}
-	    }
-
-	  if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
-	    {
-	      int regno;
-
-	      /* Allocnos bigger than the saved part of call saved
-		 regs must conflict with them.  */
-	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-		if (!TEST_HARD_REG_BIT (call_used_reg_set, regno)
-		    && targetm.hard_regno_call_part_clobbered (regno,
-							       obj_mode))
-		  {
-		    SET_HARD_REG_BIT (OBJECT_CONFLICT_HARD_REGS (obj), regno);
-		    SET_HARD_REG_BIT (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
-				      regno);
-		  }
 	    }
 	}
     }

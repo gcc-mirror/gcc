@@ -1,6 +1,6 @@
 // 2005-01-26 Douglas Gregor <doug.gregor -at- gmail.com>
 //
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,6 +16,8 @@
 // You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
+
+// { dg-additional-options "-Wno-volatile" { target c++2a } }
 
 // 3.4 function return types
 #include <tr1/functional>

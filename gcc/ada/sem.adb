@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1360,7 +1360,8 @@ package body Sem is
          --  unconditionally, and has no restore mechanism, because it is
          --  intended as a lowest-level Pure package.
 
-         Saved_ML : constant Int := Style_Max_Line_Length;
+         Saved_ML  : constant Int     := Style_Max_Line_Length;
+         Saved_CML : constant Boolean := Style_Check_Max_Line_Length;
 
          List : Elist_Id;
 
@@ -1395,6 +1396,7 @@ package body Sem is
          Restore_Scope_Stack  (List);
          Restore_Ghost_Region (Saved_GM, Saved_IGR);
          Style_Max_Line_Length := Saved_ML;
+         Style_Check_Max_Line_Length := Saved_CML;
       end Do_Analyze;
 
       --  Local variables
@@ -1447,9 +1449,18 @@ package body Sem is
       --  unit. All with'ed units are analyzed with config restrictions reset
       --  and we need to restore these saved values at the end.
 
+      Save_Preanalysis_Counter : constant Nat :=
+                                   Inside_Preanalysis_Without_Freezing;
+      --  Saves the preanalysis nesting-level counter; required since we may
+      --  need to analyze a unit as a consequence of the preanalysis of an
+      --  expression without freezing (and the loaded unit must be fully
+      --  analyzed).
+
    --  Start of processing for Semantics
 
    begin
+      Inside_Preanalysis_Without_Freezing := 0;
+
       if Debug_Unit_Walk then
          if Already_Analyzed then
             Write_Str ("(done)");
@@ -1570,7 +1581,7 @@ package body Sem is
            and then Nkind (Unit (Comp_Unit)) in N_Proper_Body
            and then (Nkind (Unit (Comp_Unit)) /= N_Subprogram_Body
                        or else not Acts_As_Spec (Comp_Unit))
-           and then not In_Extended_Main_Source_Unit (Comp_Unit)
+           and then not Ext_Main_Source_Unit
          then
             null;
 
@@ -1622,6 +1633,8 @@ package body Sem is
             Unit (Comp_Unit),
             Prefix => "<-- ");
       end if;
+
+      Inside_Preanalysis_Without_Freezing := Save_Preanalysis_Counter;
    end Semantics;
 
    --------
@@ -1717,15 +1730,13 @@ package body Sem is
          MCU : constant Node_Id := Unit (Main_CU);
 
       begin
-         CL := First (Context_Items (CU));
-
          --  Problem does not arise with main subprograms
 
-         if
-           not Nkind_In (MCU, N_Package_Body, N_Package_Declaration)
-         then
+         if not Nkind_In (MCU, N_Package_Body, N_Package_Declaration) then
             return False;
          end if;
+
+         CL := First (Context_Items (CU));
 
          while Present (CL) loop
             if Nkind (CL) = N_With_Clause

@@ -1,5 +1,5 @@
 /* Print RTL for GCC.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -36,11 +36,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 #include "tree.h"
 #include "basic-block.h"
-#include "cfg.h"
 #include "print-tree.h"
 #include "flags.h"
 #include "predict.h"
 #include "function.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "diagnostic.h"
 #include "tree-pretty-print.h"
@@ -53,6 +53,13 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "print-rtl.h"
 #include "rtl-iter.h"
+
+/* Disable warnings about quoting issues in the pp_xxx calls below
+   that (intentionally) don't follow GCC diagnostic conventions.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
 
 /* String printed at beginning of each RTL when it is dumped.
    This string is set to ASM_COMMENT_START when the RTL is dumped in
@@ -370,7 +377,20 @@ rtx_writer::print_rtx_operand_codes_E_and_V (const_rtx in_rtx, int idx)
 	m_sawclose = 1;
 
       for (int j = 0; j < XVECLEN (in_rtx, idx); j++)
-	print_rtx (XVECEXP (in_rtx, idx, j));
+	{
+	  int j1;
+
+	  print_rtx (XVECEXP (in_rtx, idx, j));
+	  for (j1 = j + 1; j1 < XVECLEN (in_rtx, idx); j1++)
+	    if (XVECEXP (in_rtx, idx, j) != XVECEXP (in_rtx, idx, j1))
+	      break;
+
+	  if (j1 != j + 1)
+	    {
+	      fprintf (m_outfile, " repeated x%i", j1 - j);
+	      j = j1 - 1;
+	    }
+	}
 
       m_indent -= 2;
     }
@@ -398,7 +418,8 @@ rtx_writer::print_rtx_operand_code_i (const_rtx in_rtx, int idx)
       if (INSN_HAS_LOCATION (in_insn))
 	{
 	  expanded_location xloc = insn_location (in_insn);
-	  fprintf (m_outfile, " \"%s\":%i", xloc.file, xloc.line);
+	  fprintf (m_outfile, " \"%s\":%i:%i", xloc.file, xloc.line,
+		   xloc.column);
 	}
 #endif
     }
@@ -1793,7 +1814,7 @@ print_pattern (pretty_printer *pp, const_rtx x, int verbose)
 	    gcc_assert (strlen (print_rtx_head) < sizeof (indented_print_rtx_head) - 4);
 	    snprintf (indented_print_rtx_head,
 		      sizeof (indented_print_rtx_head),
-		      "%s     ", print_rtx_head);
+		      "%s    ", print_rtx_head);
 	    print_rtx_head = indented_print_rtx_head;
 	    for (int i = 0; i < seq->len (); i++)
 	      print_insn_with_notes (pp, seq->insn (i));
@@ -2126,4 +2147,8 @@ debug_bb_n_slim (int n)
   debug_bb_slim (bb);
 }
 
+#endif
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
 #endif

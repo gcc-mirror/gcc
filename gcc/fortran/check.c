@@ -1,5 +1,5 @@
 /* Check functions
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -33,6 +33,432 @@ along with GCC; see the file COPYING3.  If not see
 #include "intrinsic.h"
 #include "constructor.h"
 #include "target-memory.h"
+
+
+/* Reset a BOZ to a zero value.  This is used to prevent run-on errors
+   from resolve.c(resolve_function).  */
+
+static void
+reset_boz (gfc_expr *x)
+{
+  /* Clear boz info.  */
+  x->boz.rdx = 0;
+  x->boz.len = 0;
+  free (x->boz.str);
+
+  x->ts.type = BT_INTEGER;
+  x->ts.kind = gfc_default_integer_kind;
+  mpz_init (x->value.integer);
+  mpz_set_ui (x->value.integer, 0);
+}
+
+/* A BOZ literal constant can appear in a limited number of contexts.
+   gfc_invalid_boz() is a helper function to simplify error/warning
+   generation.  gfortran accepts the nonstandard 'X' for 'Z', and gfortran
+   allows the BOZ indicator to appear as a suffix.  If -fallow-invalid-boz
+   is used, then issue a warning; otherwise issue an error.  */
+
+bool
+gfc_invalid_boz (const char *msg, locus *loc)
+{
+  if (flag_allow_invalid_boz)
+    {
+      gfc_warning (0, msg, loc);
+      return false;
+    }
+
+  gfc_error (msg, loc);
+  return true;
+}
+
+
+/* Issue an error for an illegal BOZ argument.  */
+
+static bool
+illegal_boz_arg (gfc_expr *x)
+{
+  if (x->ts.type == BT_BOZ)
+    {
+      gfc_error ("BOZ literal constant at %L cannot be an actual argument "
+		 "to %qs", &x->where, gfc_current_intrinsic);
+      reset_boz (x);
+      return true;
+    }
+
+  return false;
+}
+
+/* Some precedures take two arguments such that both cannot be BOZ.  */
+
+static bool
+boz_args_check(gfc_expr *i, gfc_expr *j)
+{
+  if (i->ts.type == BT_BOZ && j->ts.type == BT_BOZ)
+    {
+      gfc_error ("Arguments of %qs at %L and %L cannot both be BOZ "
+		 "literal constants", gfc_current_intrinsic, &i->where,
+		 &j->where);
+      reset_boz (i);
+      reset_boz (j);
+      return false;
+
+    }
+
+  return true;
+}
+
+
+/* Check that a BOZ is a constant.  */
+
+static bool
+is_boz_constant (gfc_expr *a)
+{
+  if (a->expr_type != EXPR_CONSTANT)
+    {
+      gfc_error ("Invalid use of BOZ literal constant at %L", &a->where);
+      return false;
+    }
+
+  return true;
+}
+
+
+/* Convert a octal string into a binary string.  This is used in the
+   fallback conversion of an octal string to a REAL.  */
+
+static char *
+oct2bin(int nbits, char *oct)
+{
+  const char bits[8][5] = {
+    "000", "001", "010", "011", "100", "101", "110", "111"};
+
+  char *buf, *bufp;
+  int i, j, n;
+
+  j = nbits + 1;
+  if (nbits == 64) j++;
+
+  bufp = buf = XCNEWVEC (char, j + 1);
+  memset (bufp, 0, j + 1);
+
+  n = strlen (oct);
+  for (i = 0; i < n; i++, oct++)
+    {
+      j = *oct - 48;
+      strcpy (bufp, &bits[j][0]);
+      bufp += 3;
+    }
+
+  bufp = XCNEWVEC (char, nbits + 1);
+  if (nbits == 64)
+    strcpy (bufp, buf + 2);
+  else
+    strcpy (bufp, buf + 1);
+
+  free (buf);
+
+  return bufp;
+}
+
+
+/* Convert a hexidecimal string into a binary string.  This is used in the
+   fallback conversion of a hexidecimal string to a REAL.  */
+
+static char *
+hex2bin(int nbits, char *hex)
+{
+  const char bits[16][5] = {
+    "0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111",
+    "1000", "1001", "1010", "1011", "1100", "1101", "1110", "1111"};
+
+  char *buf, *bufp;
+  int i, j, n;
+
+  bufp = buf = XCNEWVEC (char, nbits + 1);
+  memset (bufp, 0, nbits + 1);
+
+  n = strlen (hex);
+  for (i = 0; i < n; i++, hex++)
+    {
+      j = *hex;
+      if (j > 47 && j < 58)
+         j -= 48;
+      else if (j > 64 && j < 71)
+         j -= 55;
+      else if (j > 96 && j < 103)
+         j -= 87;
+      else
+         gcc_unreachable ();
+
+      strcpy (bufp, &bits[j][0]);
+      bufp += 4;
+   }
+
+   return buf;
+}
+
+
+/* Fallback conversion of a BOZ string to REAL.  */
+
+static void
+bin2real (gfc_expr *x, int kind)
+{
+  char buf[114], *sp;
+  int b, i, ie, t, w;
+  bool sgn;
+  mpz_t em;
+
+  i = gfc_validate_kind (BT_REAL, kind, false);
+  t = gfc_real_kinds[i].digits - 1;
+
+  /* Number of bits in the exponent.  */
+  if (gfc_real_kinds[i].max_exponent == 16384)
+    w = 15;
+  else if (gfc_real_kinds[i].max_exponent == 1024)
+    w = 11;
+  else
+    w = 8;
+
+  if (x->boz.rdx == 16)
+    sp = hex2bin (gfc_real_kinds[i].mode_precision, x->boz.str);
+  else if (x->boz.rdx == 8)
+    sp = oct2bin (gfc_real_kinds[i].mode_precision, x->boz.str);
+  else
+    sp = x->boz.str;
+
+  /* Extract sign bit. */
+  sgn = *sp != '0';
+
+  /* Extract biased exponent. */
+  memset (buf, 0, 114);
+  strncpy (buf, ++sp, w);
+  mpz_init (em);
+  mpz_set_str (em, buf, 2);
+  ie = mpz_get_si (em);
+
+  mpfr_init2 (x->value.real, t + 1);
+  x->ts.type = BT_REAL;
+  x->ts.kind = kind;
+
+  sp += w;		/* Set to first digit in significand. */
+  b = (1 << w) - 1;
+  if ((i == 0 && ie == b) || (i == 1 && ie == b)
+      || ((i == 2 || i == 3) && ie == b))
+    {
+      bool zeros = true;
+      if (i == 2) sp++;
+      for (; *sp; sp++)
+	{
+	  if (*sp != '0')
+	    {
+	      zeros = false;
+	      break;
+	    }
+	}
+
+      if (zeros)
+	mpfr_set_inf (x->value.real, 1);
+      else
+	mpfr_set_nan (x->value.real);
+    }
+  else
+    {
+      if (i == 2)
+	strncpy (buf, sp, t + 1);
+      else
+	{
+	  /* Significand with hidden bit. */
+ 	  buf[0] = '1';
+	  strncpy (&buf[1], sp, t);
+	}
+
+      /* Convert to significand to integer. */
+      mpz_set_str (em, buf, 2);
+      ie -= ((1 << (w - 1)) - 1);	/* Unbiased exponent. */
+      mpfr_set_z_2exp (x->value.real, em, ie - t, GFC_RND_MODE);
+    }
+
+   if (sgn) mpfr_neg (x->value.real, x->value.real, GFC_RND_MODE);
+
+   mpz_clear (em);
+}
+
+
+/* Fortran 2018 treats a BOZ as simply a string of bits.  gfc_boz2real () 
+   converts the string into a REAL of the appropriate kind.  The treatment
+   of the sign bit is processor dependent.  */
+
+bool
+gfc_boz2real (gfc_expr *x, int kind)
+{
+  extern int gfc_max_integer_kind;
+  gfc_typespec ts;
+  int len;
+  char *buf, *str;
+
+  if (!is_boz_constant (x))
+    return false;
+
+  /* Determine the length of the required string.  */
+  len = 8 * kind;
+  if (x->boz.rdx == 16) len /= 4;
+  if (x->boz.rdx == 8) len = len / 3 + 1;
+  buf = (char *) alloca (len + 1);		/* +1 for NULL terminator.  */
+
+  if (x->boz.len >= len)			/* Truncate if necessary.  */
+    {
+      str = x->boz.str + (x->boz.len - len);
+      strcpy(buf, str);
+    }
+  else						/* Copy and pad. */
+    {
+      memset (buf, 48, len);
+      str = buf + (len - x->boz.len);
+      strcpy (str, x->boz.str);
+    }
+
+  /* Need to adjust leading bits in an octal string.  */
+  if (x->boz.rdx == 8)
+    {
+      /* Clear first bit.  */
+      if (kind == 4 || kind == 10 || kind == 16)
+	{
+	  if (buf[0] == '4')
+	    buf[0] = '0';
+	  else if (buf[0] == '5')
+	    buf[0] = '1';
+	  else if (buf[0] == '6')
+	    buf[0] = '2';
+	  else if (buf[0] == '7')
+	    buf[0] = '3';
+	}
+      /* Clear first two bits.  */
+      else
+	{
+	  if (buf[0] == '4' || buf[0] == '6')
+	    buf[0] = '0';
+	  else if (buf[0] == '5' || buf[0] == '7')
+	    buf[0] = '1';
+	}
+    }
+
+  /* Reset BOZ string to the truncated or padded version.  */
+  free (x->boz.str);
+  x->boz.len = len;
+  x->boz.str = XCNEWVEC (char, len + 1);
+  strncpy (x->boz.str, buf, len);
+
+  /* For some targets, the largest INTEGER in terms of bits is smaller than
+     the bits needed to hold the REAL.  Fortunately, the kind type parameter
+     indicates the number of bytes required to an INTEGER and a REAL.  */
+  if (gfc_max_integer_kind < kind)
+    {
+      bin2real (x, kind);
+    }
+  else
+    {
+      /* Convert to widest possible integer.  */
+      gfc_boz2int (x, gfc_max_integer_kind);
+      ts.type = BT_REAL;
+      ts.kind = kind;
+      if (!gfc_convert_boz (x, &ts))
+	{
+	  gfc_error ("Failure in conversion of BOZ to REAL at %L", &x->where);
+	  return false;
+	}
+    }
+
+  return true;
+}
+
+
+/* Fortran 2018 treats a BOZ as simply a string of bits.  gfc_boz2int () 
+   converts the string into an INTEGER of the appropriate kind.  The
+   treatment of the sign bit is processor dependent.  If the  converted
+   value exceeds the range of the type, then wrap-around semantics are
+   applied.  */
+ 
+bool
+gfc_boz2int (gfc_expr *x, int kind)
+{
+  int i, len;
+  char *buf, *str;
+  mpz_t tmp1;
+
+  if (!is_boz_constant (x))
+    return false;
+
+  i = gfc_validate_kind (BT_INTEGER, kind, false);
+  len = gfc_integer_kinds[i].bit_size;
+  if (x->boz.rdx == 16) len /= 4;
+  if (x->boz.rdx == 8) len = len / 3 + 1;
+  buf = (char *) alloca (len + 1);		/* +1 for NULL terminator.  */
+
+  if (x->boz.len >= len)			/* Truncate if necessary.  */
+    {
+      str = x->boz.str + (x->boz.len - len);
+      strcpy(buf, str);
+    }
+  else						/* Copy and pad. */
+    {
+      memset (buf, 48, len);
+      str = buf + (len - x->boz.len);
+      strcpy (str, x->boz.str);
+    }
+
+  /* Need to adjust leading bits in an octal string.  */
+  if (x->boz.rdx == 8)
+    {
+      /* Clear first bit.  */
+      if (kind == 1 || kind == 4 || kind == 16)
+	{
+	  if (buf[0] == '4')
+	    buf[0] = '0';
+	  else if (buf[0] == '5')
+	    buf[0] = '1';
+	  else if (buf[0] == '6')
+	    buf[0] = '2';
+	  else if (buf[0] == '7')
+	    buf[0] = '3';
+	}
+      /* Clear first two bits.  */
+      else
+	{
+	  if (buf[0] == '4' || buf[0] == '6')
+	    buf[0] = '0';
+	  else if (buf[0] == '5' || buf[0] == '7')
+	    buf[0] = '1';
+	}
+    }
+
+  /* Convert as-if unsigned integer.  */
+  mpz_init (tmp1);
+  mpz_set_str (tmp1, buf, x->boz.rdx);
+
+  /* Check for wrap-around.  */
+  if (mpz_cmp (tmp1, gfc_integer_kinds[i].huge) > 0)
+    {
+      mpz_t tmp2;
+      mpz_init (tmp2);
+      mpz_add_ui (tmp2, gfc_integer_kinds[i].huge, 1);
+      mpz_mod (tmp1, tmp1, tmp2);
+      mpz_sub (tmp1, tmp1, tmp2);
+      mpz_clear (tmp2);
+    }
+
+  /* Clear boz info.  */
+  x->boz.rdx = 0;
+  x->boz.len = 0;
+  free (x->boz.str);
+
+  mpz_init (x->value.integer);
+  mpz_set (x->value.integer, tmp1);
+  x->ts.type = BT_INTEGER;
+  x->ts.kind = kind;
+  mpz_clear (tmp1);
+
+  return true;
+}
 
 
 /* Make sure an expression is a scalar.  */
@@ -148,6 +574,21 @@ int_or_real_or_char_check_f2003 (gfc_expr *e, int n)
   return true;
 }
 
+/* Check that an expression is an intrinsic type.  */
+static bool
+intrinsic_type_check (gfc_expr *e, int n)
+{
+  if (e->ts.type != BT_INTEGER && e->ts.type != BT_REAL
+      && e->ts.type != BT_COMPLEX && e->ts.type != BT_CHARACTER
+      && e->ts.type != BT_LOGICAL)
+    {
+      gfc_error ("%qs argument of %qs intrinsic at %L must be of intrinsic type",
+		 gfc_current_intrinsic_arg[n]->name,
+		 gfc_current_intrinsic, &e->where);
+      return false;
+    }
+  return true;
+}
 
 /* Check that an expression is real or complex.  */
 
@@ -865,8 +1306,19 @@ gfc_check_abs (gfc_expr *a)
 bool
 gfc_check_achar (gfc_expr *a, gfc_expr *kind)
 {
+  if (a->ts.type == BT_BOZ)
+    {
+      if (gfc_invalid_boz ("BOZ literal constant at %L cannot appear in "
+			   "ACHAR intrinsic subprogram", &a->where))
+	return false;
+
+      if (!gfc_boz2int (a, gfc_default_integer_kind))
+	return false;
+    }
+
   if (!type_check (a, 0, BT_INTEGER))
     return false;
+
   if (!kind_check (kind, 1, BT_CHARACTER))
     return false;
 
@@ -908,6 +1360,10 @@ gfc_check_all_any (gfc_expr *mask, gfc_expr *dim)
   return true;
 }
 
+
+/* Limited checking for ALLOCATED intrinsic.  Additional checking
+   is performed in intrinsic.c(sort_actual), because ALLOCATED
+   has two mutually exclusive non-optional arguments.  */
 
 bool
 gfc_check_allocated (gfc_expr *array)
@@ -1456,6 +1912,27 @@ gfc_check_bessel_n2 (gfc_expr *n1, gfc_expr *n2, gfc_expr *x)
 bool
 gfc_check_bge_bgt_ble_blt (gfc_expr *i, gfc_expr *j)
 {
+  extern int gfc_max_integer_kind;
+
+  /* If i and j are both BOZ, convert to widest INTEGER.  */
+  if (i->ts.type == BT_BOZ && j->ts.type == BT_BOZ)
+    {
+      if (!gfc_boz2int (i, gfc_max_integer_kind))
+	return false;
+      if (!gfc_boz2int (j, gfc_max_integer_kind))
+	return false;
+    }
+
+  /* If i is BOZ and j is integer, convert i to type of j.  */
+  if (i->ts.type == BT_BOZ && j->ts.type == BT_INTEGER
+      && !gfc_boz2int (i, j->ts.kind))
+    return false;
+
+  /* If j is BOZ and i is integer, convert j to type of i.  */
+  if (j->ts.type == BT_BOZ && i->ts.type == BT_INTEGER
+      && !gfc_boz2int (j, i->ts.kind))
+    return false;
+
   if (!type_check (i, 0, BT_INTEGER))
     return false;
 
@@ -1488,8 +1965,19 @@ gfc_check_bitfcn (gfc_expr *i, gfc_expr *pos)
 bool
 gfc_check_char (gfc_expr *i, gfc_expr *kind)
 {
+  if (i->ts.type == BT_BOZ)
+    {
+      if (gfc_invalid_boz ("BOZ literal constant at %L cannot appear in "
+			   "CHAR intrinsic subprogram", &i->where))
+	return false;
+
+      if (!gfc_boz2int (i, gfc_default_integer_kind))
+	return false;
+    }
+
   if (!type_check (i, 0, BT_INTEGER))
     return false;
+
   if (!kind_check (kind, 1, BT_CHARACTER))
     return false;
 
@@ -1575,11 +2063,29 @@ gfc_check_chmod_sub (gfc_expr *name, gfc_expr *mode, gfc_expr *status)
 bool
 gfc_check_cmplx (gfc_expr *x, gfc_expr *y, gfc_expr *kind)
 {
+  int k;
+
+  /* Check kind first, because it may be needed in conversion of a BOZ.  */
+  if (kind)
+    {
+      if (!kind_check (kind, 2, BT_COMPLEX))
+	return false;
+      gfc_extract_int (kind, &k);
+    }
+  else
+    k = gfc_default_complex_kind;
+
+  if (x->ts.type == BT_BOZ && !gfc_boz2real (x, k))
+    return false;
+
   if (!numeric_check (x, 0))
     return false;
 
   if (y != NULL)
     {
+      if (y->ts.type == BT_BOZ && !gfc_boz2real (y, k))
+	return false;
+
       if (!numeric_check (y, 1))
 	return false;
 
@@ -1600,11 +2106,7 @@ gfc_check_cmplx (gfc_expr *x, gfc_expr *y, gfc_expr *kind)
 		     &y->where);
 	  return false;
 	}
-
     }
-
-  if (!kind_check (kind, 2, BT_COMPLEX))
-    return false;
 
   if (!kind && warn_conversion
       && x->ts.type == BT_REAL && x->ts.kind > gfc_default_real_kind)
@@ -1785,7 +2287,7 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
     {
       gfc_error ("The A argument at %L has type %s but the function passed as "
 		 "OPERATOR at %L returns %s",
-		 &a->where, gfc_typename (&a->ts), &op->where,
+		 &a->where, gfc_typename (a), &op->where,
 		 gfc_typename (&sym->result->ts));
       return false;
     }
@@ -1795,7 +2297,7 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
       gfc_error ("The function passed as OPERATOR at %L has arguments of type "
 		 "%s and %s but shall have type %s", &op->where,
 		 gfc_typename (&formal->sym->ts),
-		 gfc_typename (&formal->next->sym->ts), gfc_typename (&a->ts));
+		 gfc_typename (&formal->next->sym->ts), gfc_typename (a));
       return false;
     }
   if (op->rank || attr.allocatable || attr.pointer || formal->sym->as
@@ -1911,6 +2413,37 @@ gfc_check_co_sum (gfc_expr *a, gfc_expr *result_image, gfc_expr *stat,
 bool
 gfc_check_complex (gfc_expr *x, gfc_expr *y)
 {
+  if (!boz_args_check (x, y))
+    return false;
+
+  if (x->ts.type == BT_BOZ)
+    {
+      if (gfc_invalid_boz ("BOZ constant at %L cannot appear in the COMPLEX "
+			   "intrinsic subprogram", &x->where))
+	{
+	  reset_boz (x);
+	  return false;
+        }
+      if (y->ts.type == BT_INTEGER && !gfc_boz2int (x, y->ts.kind))
+	return false;
+      if (y->ts.type == BT_REAL && !gfc_boz2real (x, y->ts.kind))
+    	return false;
+    }
+
+  if (y->ts.type == BT_BOZ)
+    {
+      if (gfc_invalid_boz ("BOZ constant at %L cannot appear in the COMPLEX "
+			   "intrinsic subprogram", &y->where))
+	{
+	  reset_boz (y);
+	  return false;
+	}
+      if (x->ts.type == BT_INTEGER && !gfc_boz2int (y, x->ts.kind))
+	return false;
+      if (x->ts.type == BT_REAL && !gfc_boz2real (y, x->ts.kind))
+	return false;
+    }
+
   if (!int_or_real_check (x, 0))
     return false;
   if (!scalar_check (x, 0))
@@ -2032,11 +2565,17 @@ bool gfc_check_datan2 (gfc_expr *y, gfc_expr *x)
 bool
 gfc_check_dcmplx (gfc_expr *x, gfc_expr *y)
 {
+  if (x->ts.type == BT_BOZ && !gfc_boz2real (x, gfc_default_double_kind))
+    return false;
+
   if (!numeric_check (x, 0))
     return false;
 
   if (y != NULL)
     {
+      if (y->ts.type == BT_BOZ && !gfc_boz2real (y, gfc_default_double_kind))
+	return false;
+
       if (!numeric_check (y, 1))
 	return false;
 
@@ -2066,6 +2605,9 @@ gfc_check_dcmplx (gfc_expr *x, gfc_expr *y)
 bool
 gfc_check_dble (gfc_expr *x)
 {
+  if (x->ts.type == BT_BOZ && !gfc_boz2real (x, gfc_default_double_kind))
+    return false;
+
   if (!numeric_check (x, 0))
     return false;
 
@@ -2152,24 +2694,42 @@ gfc_check_dprod (gfc_expr *x, gfc_expr *y)
   return true;
 }
 
-
 bool
 gfc_check_dshift (gfc_expr *i, gfc_expr *j, gfc_expr *shift)
 {
-  if (!type_check (i, 0, BT_INTEGER))
+  /* i and j cannot both be BOZ literal constants.  */
+  if (!boz_args_check (i, j))
     return false;
 
-  if (!type_check (j, 1, BT_INTEGER))
-    return false;
-
-  if (i->is_boz && j->is_boz)
+  /* If i is BOZ and j is integer, convert i to type of j.  If j is not
+     an integer, clear the BOZ; otherwise, check that i is an integer.  */
+  if (i->ts.type == BT_BOZ)
     {
-      gfc_error ("%<I%> at %L and %<J%>' at %L cannot both be BOZ literal "
-		   "constants", &i->where, &j->where);
+      if (j->ts.type != BT_INTEGER)
+        reset_boz (i);
+      else if (!gfc_boz2int (i, j->ts.kind))
+	return false;
+    }
+  else if (!type_check (i, 0, BT_INTEGER))
+    {
+      if (j->ts.type == BT_BOZ)
+	reset_boz (j);
       return false;
     }
 
-  if (!i->is_boz && !j->is_boz && !same_type_check (i, 0, j, 1))
+  /* If j is BOZ and i is integer, convert j to type of i.  If i is not
+     an integer, clear the BOZ; otherwise, check that i is an integer.  */
+  if (j->ts.type == BT_BOZ)
+    {
+      if (i->ts.type != BT_INTEGER)
+        reset_boz (j);
+      else if (!gfc_boz2int (j, i->ts.kind))
+	return false;
+    }
+  else if (!type_check (j, 1, BT_INTEGER))
+    return false;
+
+  if (!same_type_check (i, 0, j, 1))
     return false;
 
   if (!type_check (shift, 2, BT_INTEGER))
@@ -2178,18 +2738,8 @@ gfc_check_dshift (gfc_expr *i, gfc_expr *j, gfc_expr *shift)
   if (!nonnegative_check ("SHIFT", shift))
     return false;
 
-  if (i->is_boz)
-    {
-      if (!less_than_bitsize1 ("J", j, "SHIFT", shift, true))
-    	return false;
-      i->ts.kind = j->ts.kind;
-    }
-  else
-    {
-      if (!less_than_bitsize1 ("I", i, "SHIFT", shift, true))
-    	return false;
-      j->ts.kind = i->ts.kind;
-    }
+  if (!less_than_bitsize1 ("I", i, "SHIFT", shift, true))
+    return false;
 
   return true;
 }
@@ -2333,7 +2883,7 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
 		     "of type %qs", gfc_current_intrinsic_arg[2]->name,
 		     gfc_current_intrinsic, &array->where,
 		     gfc_current_intrinsic_arg[0]->name,
-		     gfc_typename (&array->ts));
+		     gfc_typename (array));
 	  return false;
 	}
     }
@@ -2341,9 +2891,22 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
   return true;
 }
 
+
 bool
 gfc_check_float (gfc_expr *a)
 {
+  if (a->ts.type == BT_BOZ)
+    {
+      if (gfc_invalid_boz ("BOZ literal constant at %L cannot appear in the "
+			   "FLOAT intrinsic subprogram", &a->where))
+	{
+	  reset_boz (a);
+	  return false;
+	}
+      if (!gfc_boz2int (a, gfc_default_integer_kind))
+	return false;
+    }
+
   if (!type_check (a, 0, BT_INTEGER))
     return false;
 
@@ -2467,8 +3030,22 @@ gfc_check_i (gfc_expr *i)
 
 
 bool
-gfc_check_iand (gfc_expr *i, gfc_expr *j)
+gfc_check_iand_ieor_ior (gfc_expr *i, gfc_expr *j)
 {
+  /* i and j cannot both be BOZ literal constants.  */
+  if (!boz_args_check (i, j))
+    return false;
+
+  /* If i is BOZ and j is integer, convert i to type of j.  */
+  if (i->ts.type == BT_BOZ && j->ts.type == BT_INTEGER
+      && !gfc_boz2int (i, j->ts.kind))
+    return false;
+
+  /* If j is BOZ and i is integer, convert j to type of i.  */
+  if (j->ts.type == BT_BOZ && i->ts.type == BT_INTEGER
+      && !gfc_boz2int (j, i->ts.kind))
+    return false;
+
   if (!type_check (i, 0, BT_INTEGER))
     return false;
 
@@ -2477,8 +3054,8 @@ gfc_check_iand (gfc_expr *i, gfc_expr *j)
 
   if (i->ts.kind != j->ts.kind)
     {
-      if (!gfc_notify_std (GFC_STD_GNU, "Different type kinds at %L",
-			   &i->where))
+      gfc_error ("Arguments of %qs have different kind type parameters "
+		 "at %L", gfc_current_intrinsic, &i->where);
 	return false;
     }
 
@@ -2593,26 +3170,6 @@ gfc_check_idnint (gfc_expr *a)
 
 
 bool
-gfc_check_ieor (gfc_expr *i, gfc_expr *j)
-{
-  if (!type_check (i, 0, BT_INTEGER))
-    return false;
-
-  if (!type_check (j, 1, BT_INTEGER))
-    return false;
-
-  if (i->ts.kind != j->ts.kind)
-    {
-      if (!gfc_notify_std (GFC_STD_GNU, "Different type kinds at %L",
-			   &i->where))
-	return false;
-    }
-
-  return true;
-}
-
-
-bool
 gfc_check_index (gfc_expr *string, gfc_expr *substring, gfc_expr *back,
 		 gfc_expr *kind)
 {
@@ -2646,6 +3203,10 @@ gfc_check_index (gfc_expr *string, gfc_expr *substring, gfc_expr *back,
 bool
 gfc_check_int (gfc_expr *x, gfc_expr *kind)
 {
+  /* BOZ is dealt within simplify_int*.  */
+  if (x->ts.type == BT_BOZ)
+    return true;
+
   if (!numeric_check (x, 0))
     return false;
 
@@ -2659,32 +3220,24 @@ gfc_check_int (gfc_expr *x, gfc_expr *kind)
 bool
 gfc_check_intconv (gfc_expr *x)
 {
+  if (strcmp (gfc_current_intrinsic, "short") == 0
+      || strcmp (gfc_current_intrinsic, "long") == 0)
+    {
+      gfc_error ("%qs intrinsic subprogram at %L has been deprecated.  "
+		 "Use INT intrinsic subprogram.", gfc_current_intrinsic, 
+		 &x->where);
+      return false;
+    }
+
+  /* BOZ is dealt within simplify_int*.  */
+  if (x->ts.type == BT_BOZ)
+    return true;
+
   if (!numeric_check (x, 0))
     return false;
 
   return true;
 }
-
-
-bool
-gfc_check_ior (gfc_expr *i, gfc_expr *j)
-{
-  if (!type_check (i, 0, BT_INTEGER))
-    return false;
-
-  if (!type_check (j, 1, BT_INTEGER))
-    return false;
-
-  if (i->ts.kind != j->ts.kind)
-    {
-      if (!gfc_notify_std (GFC_STD_GNU, "Different type kinds at %L",
-			   &i->where))
-	return false;
-    }
-
-  return true;
-}
-
 
 bool
 gfc_check_ishft (gfc_expr *i, gfc_expr *shift)
@@ -2790,6 +3343,22 @@ gfc_check_kill_sub (gfc_expr *pid, gfc_expr *sig, gfc_expr *status)
 
       if (!scalar_check (status, 2))
 	return false;
+
+      if (status->expr_type != EXPR_VARIABLE)
+	{
+	  gfc_error ("STATUS at %L shall be an INTENT(OUT) variable",
+		     &status->where);
+	  return false;
+	}
+
+      if (status->expr_type == EXPR_VARIABLE
+	  && status->symtree && status->symtree->n.sym
+	  && status->symtree->n.sym->attr.intent == INTENT_IN)
+	{
+	  gfc_error ("%qs at %L shall be an INTENT(OUT) variable",
+		     status->symtree->name, &status->where);
+	  return false;
+	}
     }
 
   return true;
@@ -3345,6 +3914,91 @@ gfc_check_minloc_maxloc (gfc_actual_arglist *ap)
   return true;
 }
 
+/* Check function for findloc.  Mostly like gfc_check_minloc_maxloc
+   above, with the additional "value" argument.  */
+
+bool
+gfc_check_findloc (gfc_actual_arglist *ap)
+{
+  gfc_expr *a, *v, *m, *d, *k, *b;
+  bool a1, v1;
+
+  a = ap->expr;
+  if (!intrinsic_type_check (a, 0) || !array_check (a, 0))
+    return false;
+
+  v = ap->next->expr;
+  if (!intrinsic_type_check (v, 1) || !scalar_check (v,1))
+    return false;
+
+  /* Check if the type are both logical.  */
+  a1 = a->ts.type == BT_LOGICAL;
+  v1 = v->ts.type == BT_LOGICAL;
+  if ((a1 && !v1) || (!a1 && v1))
+    goto incompat;
+
+  /* Check if the type are both character.  */
+  a1 = a->ts.type == BT_CHARACTER;
+  v1 = v->ts.type == BT_CHARACTER;
+  if ((a1 && !v1) || (!a1 && v1))
+    goto incompat;
+	 
+  d = ap->next->next->expr;
+  m = ap->next->next->next->expr;
+  k = ap->next->next->next->next->expr;
+  b = ap->next->next->next->next->next->expr;
+
+  if (b)
+    {
+      if (!type_check (b, 5, BT_LOGICAL) || !scalar_check (b,4))
+	return false;
+    }
+  else
+    {
+      b = gfc_get_logical_expr (gfc_logical_4_kind, NULL, 0);
+      ap->next->next->next->next->next->expr = b;
+    }
+
+  if (m == NULL && d != NULL && d->ts.type == BT_LOGICAL
+      && ap->next->name == NULL)
+    {
+      m = d;
+      d = NULL;
+      ap->next->next->expr = NULL;
+      ap->next->next->next->expr = m;
+    }
+
+  if (!dim_check (d, 2, false))
+    return false;
+
+  if (!dim_rank_check (d, a, 0))
+    return false;
+
+  if (m != NULL && !type_check (m, 3, BT_LOGICAL))
+    return false;
+
+  if (m != NULL
+      && !gfc_check_conformance (a, m,
+				 "arguments '%s' and '%s' for intrinsic %s",
+				 gfc_current_intrinsic_arg[0]->name,
+				 gfc_current_intrinsic_arg[3]->name,
+				 gfc_current_intrinsic))
+    return false;
+
+  if (!kind_check (k, 1, BT_INTEGER))
+    return false;
+
+  return true;
+
+incompat:
+  gfc_error ("Argument %qs of %qs intrinsic at %L must be in type "
+	     "conformance to argument %qs at %L",
+	     gfc_current_intrinsic_arg[0]->name,
+	     gfc_current_intrinsic, &a->where,
+	     gfc_current_intrinsic_arg[1]->name, &v->where);
+  return false;
+}
+
 
 /* Similar to minloc/maxloc, the argument list might need to be
    reordered for the MINVAL, MAXVAL, PRODUCT, and SUM intrinsics.  The
@@ -3487,16 +4141,33 @@ gfc_check_merge (gfc_expr *tsource, gfc_expr *fsource, gfc_expr *mask)
 bool
 gfc_check_merge_bits (gfc_expr *i, gfc_expr *j, gfc_expr *mask)
 {
+  /* i and j cannot both be BOZ literal constants.  */
+  if (!boz_args_check (i, j))
+    return false;
+
+  /* If i is BOZ and j is integer, convert i to type of j.  */
+  if (i->ts.type == BT_BOZ && j->ts.type == BT_INTEGER
+      && !gfc_boz2int (i, j->ts.kind))
+    return false;
+
+  /* If j is BOZ and i is integer, convert j to type of i.  */
+  if (j->ts.type == BT_BOZ && i->ts.type == BT_INTEGER
+      && !gfc_boz2int (j, i->ts.kind))
+    return false;
+
   if (!type_check (i, 0, BT_INTEGER))
     return false;
 
   if (!type_check (j, 1, BT_INTEGER))
     return false;
 
-  if (!type_check (mask, 2, BT_INTEGER))
+  if (!same_type_check (i, 0, j, 1))
     return false;
 
-  if (!same_type_check (i, 0, j, 1))
+  if (mask->ts.type == BT_BOZ && !gfc_boz2int(mask, i->ts.kind))
+    return false;
+
+  if (!type_check (mask, 2, BT_INTEGER))
     return false;
 
   if (!same_type_check (i, 0, mask, 2))
@@ -3902,14 +4573,17 @@ gfc_check_rank (gfc_expr *a)
 }
 
 
-/* real, float, sngl.  */
 bool
 gfc_check_real (gfc_expr *a, gfc_expr *kind)
 {
-  if (!numeric_check (a, 0))
+  if (!kind_check (kind, 1, BT_REAL))
     return false;
 
-  if (!kind_check (kind, 1, BT_REAL))
+  /* BOZ is dealt with in gfc_simplify_real.  */
+  if (a->ts.type == BT_BOZ)
+    return true;
+
+  if (!numeric_check (a, 0))
     return false;
 
   return true;
@@ -4185,7 +4859,7 @@ gfc_check_same_type_as (gfc_expr *a, gfc_expr *b)
 		   "cannot be of type %s",
 		   gfc_current_intrinsic_arg[0]->name,
 		   gfc_current_intrinsic,
-		   &a->where, gfc_typename (&a->ts));
+		   &a->where, gfc_typename (a));
         return false;
     }
 
@@ -4204,7 +4878,7 @@ gfc_check_same_type_as (gfc_expr *a, gfc_expr *b)
 		   "cannot be of type %s",
 		   gfc_current_intrinsic_arg[0]->name,
 		   gfc_current_intrinsic,
-		   &b->where, gfc_typename (&b->ts));
+		   &b->where, gfc_typename (b));
       return false;
     }
 
@@ -4809,17 +5483,13 @@ gfc_check_c_funloc (gfc_expr *x)
 
   if (attr.function && !attr.proc_pointer && x->expr_type == EXPR_VARIABLE
       && x->symtree->n.sym == x->symtree->n.sym->result)
-    {
-      gfc_namespace *ns = gfc_current_ns;
-
-      for (ns = gfc_current_ns; ns; ns = ns->parent)
-	if (x->symtree->n.sym == ns->proc_name)
-	  {
-	    gfc_error ("Function result %qs at %L is invalid as X argument "
-		       "to C_FUNLOC", x->symtree->n.sym->name, &x->where);
-	    return false;
-	  }
-    }
+    for (gfc_namespace *ns = gfc_current_ns; ns; ns = ns->parent)
+      if (x->symtree->n.sym == ns->proc_name)
+	{
+	  gfc_error ("Function result %qs at %L is invalid as X argument "
+		     "to C_FUNLOC", x->symtree->n.sym->name, &x->where);
+	  return false;
+	}
 
   if (attr.flavor != FL_PROCEDURE)
     {
@@ -5405,16 +6075,41 @@ gfc_calculate_transfer_sizes (gfc_expr *source, gfc_expr *mold, gfc_expr *size,
     return false;
 
   /* Calculate the size of the source.  */
-  *source_size = gfc_target_expr_size (source);
-  if (*source_size == 0)
+  if (!gfc_target_expr_size (source, source_size))
     return false;
 
   /* Determine the size of the element.  */
-  result_elt_size = gfc_element_size (mold);
-  if (result_elt_size == 0)
+  if (!gfc_element_size (mold, &result_elt_size))
     return false;
 
-  if (mold->expr_type == EXPR_ARRAY || mold->rank || size)
+  /* If the storage size of SOURCE is greater than zero and MOLD is an array,
+   * a scalar with the type and type parameters of MOLD shall not have a
+   * storage size equal to zero.
+   * If MOLD is a scalar and SIZE is absent, the result is a scalar.
+   * If MOLD is an array and SIZE is absent, the result is an array and of
+   * rank one. Its size is as small as possible such that its physical
+   * representation is not shorter than that of SOURCE.
+   * If SIZE is present, the result is an array of rank one and size SIZE.
+   */
+  if (result_elt_size == 0 && *source_size > 0 && !size
+      && mold->expr_type == EXPR_ARRAY)
+    {
+      gfc_error ("%<MOLD%> argument of %<TRANSFER%> intrinsic at %L is an "
+		 "array and shall not have storage size 0 when %<SOURCE%> "
+		 "argument has size greater than 0", &mold->where);
+      return false;
+    }
+
+  if (result_elt_size == 0 && *source_size == 0 && !size)
+    {
+      *result_size = 0;
+      if (result_length_p)
+	*result_length_p = 0;
+      return true;
+    }
+
+  if ((result_elt_size > 0 && (mold->expr_type == EXPR_ARRAY || mold->rank))
+      || size)
     {
       int result_length;
 
@@ -5444,6 +6139,32 @@ gfc_check_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
   size_t source_size;
   size_t result_size;
 
+  /* SOURCE shall be a scalar or array of any type.  */
+  if (source->ts.type == BT_PROCEDURE
+      && source->symtree->n.sym->attr.subroutine == 1)
+    {
+      gfc_error ("%<SOURCE%> argument of %<TRANSFER%> intrinsic at %L "
+                 "must not be a %s", &source->where,
+		 gfc_basic_typename (source->ts.type));
+      return false;
+    }
+
+  if (source->ts.type == BT_BOZ && illegal_boz_arg (source))
+    return false;
+
+  if (mold->ts.type == BT_BOZ && illegal_boz_arg (mold))
+    return false;
+
+  /* MOLD shall be a scalar or array of any type.  */
+  if (mold->ts.type == BT_PROCEDURE
+      && mold->symtree->n.sym->attr.subroutine == 1)
+    {
+      gfc_error ("%<MOLD%> argument of %<TRANSFER%> intrinsic at %L "
+                 "must not be a %s", &mold->where,
+		 gfc_basic_typename (mold->ts.type));
+      return false;
+    }
+
   if (mold->ts.type == BT_HOLLERITH)
     {
       gfc_error ("%<MOLD%> argument of %<TRANSFER%> intrinsic at %L must not be"
@@ -5451,10 +6172,16 @@ gfc_check_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
       return false;
     }
 
+  /* SIZE (optional) shall be an integer scalar.  The corresponding actual
+     argument shall not be an optional dummy argument.  */
   if (size != NULL)
     {
       if (!type_check (size, 2, BT_INTEGER))
-	return false;
+	{
+	  if (size->ts.type == BT_BOZ)
+	    reset_boz (size);
+	  return false;
+	}
 
       if (!scalar_check (size, 2))
 	return false;
@@ -5828,9 +6555,8 @@ gfc_check_random_seed (gfc_expr *size, gfc_expr *put, gfc_expr *get)
   mpz_t put_size, get_size;
 
   /* Keep the number of bytes in sync with master_state in
-     libgfortran/intrinsics/random.c. +1 due to the integer p which is
-     part of the state too.  */
-  seed_size = 128 / gfc_default_integer_kind + 1;
+     libgfortran/intrinsics/random.c.  */
+  seed_size = 32 / gfc_default_integer_kind;
 
   if (size != NULL)
     {
@@ -6425,6 +7151,24 @@ gfc_check_ttynam_sub (gfc_expr *unit, gfc_expr *name)
 
 
 bool
+gfc_check_is_contiguous (gfc_expr *array)
+{
+  if (array->expr_type == EXPR_NULL
+      && array->symtree->n.sym->attr.pointer == 1)
+    {
+      gfc_error ("Actual argument at %L of %qs intrinsic shall be an "
+		 "associated pointer", &array->where, gfc_current_intrinsic);
+      return false;
+    }
+
+  if (!array_check (array, 0))
+    return false;
+
+  return true;
+}
+
+
+bool
 gfc_check_isatty (gfc_expr *unit)
 {
   if (unit == NULL)
@@ -6597,30 +7341,64 @@ gfc_check_system_sub (gfc_expr *cmd, gfc_expr *status)
 bool
 gfc_check_and (gfc_expr *i, gfc_expr *j)
 {
-  if (i->ts.type != BT_INTEGER && i->ts.type != BT_LOGICAL)
+  if (i->ts.type != BT_INTEGER
+      && i->ts.type != BT_LOGICAL
+      && i->ts.type != BT_BOZ)
     {
-      gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER "
-		 "or LOGICAL", gfc_current_intrinsic_arg[0]->name,
-		 gfc_current_intrinsic, &i->where);
+      gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER, "
+                 "LOGICAL, or a BOZ literal constant",
+		 gfc_current_intrinsic_arg[0]->name,
+                 gfc_current_intrinsic, &i->where);
       return false;
     }
 
-  if (j->ts.type != BT_INTEGER && j->ts.type != BT_LOGICAL)
+  if (j->ts.type != BT_INTEGER
+      && j->ts.type != BT_LOGICAL
+      && j->ts.type != BT_BOZ)
     {
-      gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER "
-		 "or LOGICAL", gfc_current_intrinsic_arg[1]->name,
-		 gfc_current_intrinsic, &j->where);
+      gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER, "
+                 "LOGICAL, or a BOZ literal constant",
+		 gfc_current_intrinsic_arg[1]->name,
+                 gfc_current_intrinsic, &j->where);
       return false;
     }
 
-  if (i->ts.type != j->ts.type)
+  /* i and j cannot both be BOZ literal constants.  */
+  if (!boz_args_check (i, j))
+    return false;
+
+  /* If i is BOZ and j is integer, convert i to type of j.  */
+  if (i->ts.type == BT_BOZ)
     {
-      gfc_error ("%qs and %qs arguments of %qs intrinsic at %L must "
-		 "have the same type", gfc_current_intrinsic_arg[0]->name,
-		 gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
-		 &j->where);
-      return false;
+      if (j->ts.type != BT_INTEGER)
+	{
+	  gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER",
+		     gfc_current_intrinsic_arg[1]->name,
+		     gfc_current_intrinsic, &j->where);
+	  reset_boz (i);
+	  return false;
+	}
+      if (!gfc_boz2int (i, j->ts.kind))
+	return false;
     }
+
+  /* If j is BOZ and i is integer, convert j to type of i.  */
+  if (j->ts.type == BT_BOZ)
+    {
+      if (i->ts.type != BT_INTEGER)
+	{
+	  gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER",
+		     gfc_current_intrinsic_arg[0]->name,
+		     gfc_current_intrinsic, &j->where);
+	  reset_boz (j);
+	  return false;
+	}
+      if (!gfc_boz2int (j, i->ts.kind))
+	return false;
+    }
+
+  if (!same_type_check (i, 0, j, 1, false))
+    return false;
 
   if (!scalar_check (i, 0))
     return false;
@@ -6659,6 +7437,9 @@ gfc_check_storage_size (gfc_expr *a, gfc_expr *kind)
 		 gfc_current_intrinsic, &a->where);
       return false;
     }
+
+  if (a->ts.type == BT_BOZ && illegal_boz_arg (a))
+    return false;
 
   if (kind == NULL)
     return true;

@@ -1,9 +1,10 @@
+! { dg-do run }
 subroutine f1
   integer a(20:50,70:90)
 !$omp parallel workshare
   a(:,:) = 17
 !$omp end parallel workshare
-  if (any (a.ne.17)) STOP 1
+  if (any (a.ne.17)) stop 1
 end subroutine f1
 subroutine f2
   integer a(20:50,70:90),d(15),e(15),f(15)
@@ -20,14 +21,14 @@ subroutine f2
   f = 7
   where (e.ge.5) f = f + 1
 !$omp end parallel workshare
-  if (any (a.ne.17)) STOP 2
-  if (c.ne.5.or.b.ne.4) STOP 3
-  if (any(d.ne.0)) STOP 4
+  if (any (a.ne.17)) stop 2
+  if (c.ne.5.or.b.ne.4) stop 3
+  if (any(d.ne.0)) stop 4
   do i = 1, 15
     if (e(i).ge.5) then
-      if (f(i).ne.8) STOP 5
+      if (f(i).ne.8) stop 5
     else
-      if (f(i).ne.7) STOP 6
+      if (f(i).ne.7) stop 6
     end if
   end do
 end subroutine f2

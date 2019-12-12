@@ -1,5 +1,5 @@
 /* Lower complex number operations to scalar operations.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -79,6 +79,9 @@ static vec<tree> complex_ssa_name_components;
    imag PHIs if real and/or imag PHIs contain temporarily
    non-SSA_NAME/non-invariant args that need to be replaced by SSA_NAMEs.  */
 static vec<gphi *> phis_to_revisit;
+
+/* BBs that need EH cleanup.  */
+static bitmap need_eh_cleanup;
 
 /* Lookup UID in the complex_variable_components hashtable and return the
    associated tree.  */
@@ -695,13 +698,12 @@ update_complex_components_on_edge (edge e, tree lhs, tree r, tree i)
 static void
 update_complex_assignment (gimple_stmt_iterator *gsi, tree r, tree i)
 {
-  gimple *stmt;
-
+  gimple *old_stmt = gsi_stmt (*gsi);
   gimple_assign_set_rhs_with_ops (gsi, COMPLEX_EXPR, r, i);
-  stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi);
   update_stmt (stmt);
-  if (maybe_clean_eh_stmt (stmt))
-    gimple_purge_dead_eh_edges (gimple_bb (stmt));
+  if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))
+    bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
 
   update_complex_components (gsi, gsi_stmt (*gsi), r, i);
 }
@@ -1010,13 +1012,13 @@ expand_complex_libcall (gimple_stmt_iterator *gsi, tree type, tree ar, tree ai,
   if (inplace_p)
     {
       gimple *old_stmt = gsi_stmt (*gsi);
-      gimple_call_set_nothrow (stmt, !stmt_could_throw_p (old_stmt));
+      gimple_call_set_nothrow (stmt, !stmt_could_throw_p (cfun, old_stmt));
       lhs = gimple_assign_lhs (old_stmt);
       gimple_call_set_lhs (stmt, lhs);
       gsi_replace (gsi, stmt, true);
 
       type = TREE_TYPE (type);
-      if (stmt_can_throw_internal (stmt))
+      if (stmt_can_throw_internal (cfun, stmt))
 	{
 	  edge_iterator ei;
 	  edge e;
@@ -1134,12 +1136,22 @@ expand_complex_multiplication (gimple_stmt_iterator *gsi, tree type,
 	  /* If optimizing for size or not at all just do a libcall.
 	     Same if there are exception-handling edges or signaling NaNs.  */
 	  if (optimize == 0 || optimize_bb_for_size_p (gsi_bb (*gsi))
-	     || stmt_can_throw_internal (gsi_stmt (*gsi))
+	     || stmt_can_throw_internal (cfun, gsi_stmt (*gsi))
 	     || flag_signaling_nans)
 	    {
 	      expand_complex_libcall (gsi, type, ar, ai, br, bi,
 				      MULT_EXPR, true);
 	      return;
+	    }
+
+	  if (!HONOR_NANS (inner_type))
+	    {
+	      /* If we are not worrying about NaNs expand to
+		 (ar*br - ai*bi) + i(ar*bi + br*ai) directly.  */
+	      expand_complex_multiplication_components (gsi, inner_type,
+							ar, ai, br, bi,
+							&rr, &ri);
+	      break;
 	    }
 
 	  /* Else, expand x = a * b into
@@ -1149,7 +1161,7 @@ expand_complex_multiplication (gimple_stmt_iterator *gsi, tree type,
 
 	  tree tmpr, tmpi;
 	  expand_complex_multiplication_components (gsi, inner_type, ar, ai,
-						     br, bi, &tmpr, &tmpi);
+						    br, bi, &tmpr, &tmpi);
 
 	  gimple *check
 	    = gimple_build_cond (UNORDERED_EXPR, tmpr, tmpi,
@@ -1165,13 +1177,12 @@ expand_complex_multiplication (gimple_stmt_iterator *gsi, tree type,
 	    = insert_cond_bb (gsi_bb (*gsi), gsi_stmt (*gsi), check,
 			      profile_probability::very_unlikely ());
 
-
 	  gimple_stmt_iterator cond_bb_gsi = gsi_last_bb (cond_bb);
 	  gsi_insert_after (&cond_bb_gsi, gimple_build_nop (), GSI_NEW_STMT);
 
 	  tree libcall_res
 	    = expand_complex_libcall (&cond_bb_gsi, type, ar, ai, br,
-				       bi, MULT_EXPR, false);
+				      bi, MULT_EXPR, false);
 	  tree cond_real = gimplify_build1 (&cond_bb_gsi, REALPART_EXPR,
 					    inner_type, libcall_res);
 	  tree cond_imag = gimplify_build1 (&cond_bb_gsi, IMAGPART_EXPR,
@@ -1188,20 +1199,18 @@ expand_complex_multiplication (gimple_stmt_iterator *gsi, tree type,
 	  edge orig_to_join = find_edge (orig_bb, join_bb);
 
 	  gphi *real_phi = create_phi_node (rr, gsi_bb (*gsi));
-	  add_phi_arg (real_phi, cond_real, cond_to_join,
-			UNKNOWN_LOCATION);
+	  add_phi_arg (real_phi, cond_real, cond_to_join, UNKNOWN_LOCATION);
 	  add_phi_arg (real_phi, tmpr, orig_to_join, UNKNOWN_LOCATION);
 
 	  gphi *imag_phi = create_phi_node (ri, gsi_bb (*gsi));
-	  add_phi_arg (imag_phi, cond_imag, cond_to_join,
-			UNKNOWN_LOCATION);
+	  add_phi_arg (imag_phi, cond_imag, cond_to_join, UNKNOWN_LOCATION);
 	  add_phi_arg (imag_phi, tmpi, orig_to_join, UNKNOWN_LOCATION);
 	}
       else
 	/* If we are not worrying about NaNs expand to
 	  (ar*br - ai*bi) + i(ar*bi + br*ai) directly.  */
 	expand_complex_multiplication_components (gsi, inner_type, ar, ai,
-						      br, bi, &rr, &ri);
+						  br, bi, &rr, &ri);
       break;
 
     default:
@@ -1558,6 +1567,8 @@ expand_complex_comparison (gimple_stmt_iterator *gsi, tree ar, tree ai,
     }
 
   update_stmt (stmt);
+  if (maybe_clean_eh_stmt (stmt))
+    bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
 }
 
 /* Expand inline asm that sets some complex SSA_NAMEs.  */
@@ -1678,7 +1689,7 @@ expand_complex_operations_1 (gimple_stmt_iterator *gsi)
       ac = gimple_assign_rhs1 (stmt);
       bc = (gimple_num_ops (stmt) > 2) ? gimple_assign_rhs2 (stmt) : NULL;
     }
-  /* GIMPLE_CALL can not get here.  */
+  /* GIMPLE_CALL cannot get here.  */
   else
     {
       ac = gimple_cond_lhs (stmt);
@@ -1771,6 +1782,8 @@ tree_lower_complex (void)
   class complex_propagate complex_propagate;
   complex_propagate.ssa_propagate ();
 
+  need_eh_cleanup = BITMAP_ALLOC (NULL);
+
   complex_variable_components = new int_tree_htab_type (10);
 
   complex_ssa_name_components.create (2 * num_ssa_names);
@@ -1816,11 +1829,15 @@ tree_lower_complex (void)
 
   gsi_commit_edge_inserts ();
 
+  unsigned todo
+    = gimple_purge_all_dead_eh_edges (need_eh_cleanup) ? TODO_cleanup_cfg : 0;
+  BITMAP_FREE (need_eh_cleanup);
+
   delete complex_variable_components;
   complex_variable_components = NULL;
   complex_ssa_name_components.release ();
   complex_lattice_values.release ();
-  return 0;
+  return todo;
 }
 
 namespace {

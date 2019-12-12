@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -105,7 +105,7 @@ package Fname.UF is
       Dot : String_Ptr;
       Cas : Casing_Type);
    --  This is called to process a Source_File_Name pragma whose first
-   --  argument is a file name pattern string.  Pat is this pattern string,
+   --  argument is a file name pattern string. Pat is this pattern string,
    --  which contains an asterisk to correspond to the unit. Typ is one of
    --  'b'/'s'/'u' for body/spec/subunit, Dot is the separator string
    --  for child/subunit names, and Cas is one of Lower/Upper/Mixed

@@ -4,7 +4,7 @@
   integer :: i
   logical :: l
   l = .false.
-  if (allocated (a)) STOP 1
+  if (allocated (a)) stop 1
 !$omp parallel private (a) reduction (.or.:l)
   allocate (a (-7:-5))
   l = l.or..not.allocated (a)
@@ -18,4 +18,5 @@
   l = l.or.any (a.ne.0)
   deallocate (a)
 !$omp end parallel
+  if (l.or.allocated (a)) stop 2
 end

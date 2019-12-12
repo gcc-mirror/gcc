@@ -5,4 +5,4 @@ procedure() :: foo   ! { dg-error "(1)" }
   contains
     subroutine foo() ! { dg-error "clashes with procedure" }
     end
-end
+end ! { dg-error "Two main PROGRAMs" }

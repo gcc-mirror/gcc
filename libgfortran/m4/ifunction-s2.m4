@@ -225,6 +225,12 @@ void
   index_type mdelta;
   int mask_kind;
 
+  if (mask == NULL)
+    {
+      name`'rtype_qual`_'atype_code (retarray, xlen, array, pdim, string_len);
+      return;
+    }
+
   assert (xlen == string_len);
 
   dim = (*pdim) - 1;
@@ -408,7 +414,7 @@ void
   index_type dim;
 
 
-  if (*mask)
+  if (mask == NULL || *mask)
     {
       name`'rtype_qual`_'atype_code (retarray, xlen, array, pdim, string_len);
       return;

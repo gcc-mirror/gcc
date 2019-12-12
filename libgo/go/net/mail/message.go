@@ -19,7 +19,6 @@ package mail
 
 import (
 	"bufio"
-	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -27,6 +26,7 @@ import (
 	"mime"
 	"net/textproto"
 	"strings"
+	"sync"
 	"time"
 	"unicode/utf8"
 )
@@ -66,9 +66,12 @@ func ReadMessage(r io.Reader) (msg *Message, err error) {
 
 // Layouts suitable for passing to time.Parse.
 // These are tried in order.
-var dateLayouts []string
+var (
+	dateLayoutsBuildOnce sync.Once
+	dateLayouts          []string
+)
 
-func init() {
+func buildDateLayouts() {
 	// Generate layouts based on RFC 5322, section 3.3.
 
 	dows := [...]string{"", "Mon, "}   // day-of-week
@@ -94,6 +97,7 @@ func init() {
 
 // ParseDate parses an RFC 5322 date string.
 func ParseDate(date string) (time.Time, error) {
+	dateLayoutsBuildOnce.Do(buildDateLayouts)
 	for _, layout := range dateLayouts {
 		t, err := time.Parse(layout, date)
 		if err == nil {
@@ -144,7 +148,7 @@ type Address struct {
 	Address string // user@domain
 }
 
-// Parses a single RFC 5322 address, e.g. "Barry Gibbs <bg@example.com>"
+// ParseAddress parses a single RFC 5322 address, e.g. "Barry Gibbs <bg@example.com>"
 func ParseAddress(address string) (*Address, error) {
 	return (&addrParser{s: address}).parseSingleAddress()
 }
@@ -338,6 +342,21 @@ func (p *addrParser) parseAddress(handleGroup bool) ([]*Address, error) {
 	}
 	// angle-addr = "<" addr-spec ">"
 	if !p.consume('<') {
+		atext := true
+		for _, r := range displayName {
+			if !isAtext(r, true, false) {
+				atext = false
+				break
+			}
+		}
+		if atext {
+			// The input is like "foo.bar"; it's possible the input
+			// meant to be "foo.bar@domain", or "foo.bar <...>".
+			return nil, errors.New("mail: missing '@' or angle-addr")
+		}
+		// The input is like "Full Name", which couldn't possibly be a
+		// valid email address if followed by "@domain"; the input
+		// likely meant to be "Full Name <...>".
 		return nil, errors.New("mail: no angle-addr")
 	}
 	spec, err = p.consumeAddrSpec()
@@ -735,7 +754,7 @@ func isQtext(r rune) bool {
 
 // quoteString renders a string as an RFC 5322 quoted-string.
 func quoteString(s string) string {
-	var buf bytes.Buffer
+	var buf strings.Builder
 	buf.WriteByte('"')
 	for _, r := range s {
 		if isQtext(r) || isWSP(r) {

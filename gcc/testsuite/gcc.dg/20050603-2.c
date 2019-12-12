@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
+/* { dg-skip-if "no stdlib.h in eBPF" { bpf-*-* } } */
 #include <stdlib.h>
 struct s {
   unsigned short f: 16;

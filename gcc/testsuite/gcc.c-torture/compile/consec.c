@@ -1,4 +1,6 @@
 /* { dg-require-effective-target untyped_assembly } */
+/* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
+
 int glob;
 
 conseq (a, b, c, d)

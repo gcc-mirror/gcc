@@ -13,7 +13,7 @@ PROGRAM main
 
   ASSOCIATE (a => 1) 5 ! { dg-error "Junk after ASSOCIATE" }
 
-  ASSOCIATE (x =>) ! { dg-error "Expected association" }
+  ASSOCIATE (x =>) ! { dg-error "Invalid association target" }
 
   ASSOCIATE (=> 5) ! { dg-error "Expected association" }
 

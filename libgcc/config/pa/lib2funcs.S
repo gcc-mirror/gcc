@@ -1,6 +1,6 @@
 ;  Subroutines for calling unbound dynamic functions from within GDB for HPPA.
 ;  Subroutines for out of line prologues and epilogues on for the HPPA
-;  Copyright (C) 1994-2018 Free Software Foundation, Inc.
+;  Copyright (C) 1994-2019 Free Software Foundation, Inc.
 
 ;  This file is part of GCC.
 
@@ -55,13 +55,13 @@ __gcc_plt_call
 	; An inline version of dyncall so we don't have to worry
 	; about long calls to millicode, PIC and other complexities.
 	bb,>=,n %r22,30,L$foo
-        depi 0,31,2,%r22
-        ldw 4(%r22),%r19
-        ldw 0(%r22),%r22
+	depi 0,31,2,%r22
+	ldw 0(%r22),%r21
+	ldw 4(%r22),%r19
 L$foo
-        ldsid (%r22),%r1
-        mtsp %r1,%sr0
-        ble 0(%sr0,%r22)
+	ldsid (%r21),%r1
+	mtsp %r1,%sr0
+	ble 0(%sr0,%r21)
 	copy %r31,%r2
 	ldw -8(%r30),%r2
 

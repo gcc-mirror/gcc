@@ -2,8 +2,8 @@
 // { dg-do compile }
 // { dg-options "-Wpedantic" }
 
-struct S { const char *a; char b[]; };	// { dg-warning "forbids flexible array member" }
-struct T { int a; int b[]; };	// { dg-warning "forbids flexible array member" }
+struct S { const char *a; char b[]; };	// { dg-warning "32:ISO C\\+\\+ forbids flexible array member" }
+struct T { int a; int b[]; };	// { dg-warning "23:ISO C\\+\\+ forbids flexible array member" }
 #if __cplusplus >= 201103L
 S c[] { "", "" };		// { dg-error "initialization of flexible array member in a nested context" "" { target c++11 } }
 				// { dg-warning "initialization of a flexible array member" "" { target c++11 } .-1 }

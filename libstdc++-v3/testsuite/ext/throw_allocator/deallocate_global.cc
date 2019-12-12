@@ -1,7 +1,7 @@
 // { dg-require-cxa-atexit "" }
 
 //
-// Copyright (C) 2007-2018 Free Software Foundation, Inc.
+// Copyright (C) 2007-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,6 +19,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-require-time "" }
+// { dg-require-cstdint "" }
 
 #include <string>
 #include <stdexcept>
@@ -30,9 +31,7 @@ typedef std::char_traits<char_t> traits_t;
 typedef __gnu_cxx::throw_allocator_random<char_t> allocator_t;
 typedef std::basic_string<char_t, traits_t, allocator_t> string_t;  
 
-#ifndef _GLIBCXX_PROFILE
 string_t s("bayou bend");
-#endif
 
 int main()
 {

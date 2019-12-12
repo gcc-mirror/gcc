@@ -1,5 +1,5 @@
 /* RTL utility routines.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -106,12 +106,23 @@ const enum rtx_class rtx_class[NUM_RTX_CODE] = {
 #undef DEF_RTL_EXPR
 };
 
+/* Whether rtxs with the given code code store data in the hwint field.  */
+
+#define RTX_CODE_HWINT_P_1(ENUM)					\
+    ((ENUM) == CONST_INT || (ENUM) == CONST_DOUBLE			\
+     || (ENUM) == CONST_FIXED || (ENUM) == CONST_WIDE_INT)
+#ifdef GENERATOR_FILE
+#define RTX_CODE_HWINT_P(ENUM)						\
+    (RTX_CODE_HWINT_P_1 (ENUM) || (ENUM) == EQ_ATTR_ALT)
+#else
+#define RTX_CODE_HWINT_P RTX_CODE_HWINT_P_1
+#endif
+
 /* Indexed by rtx code, gives the size of the rtx in bytes.  */
 
 const unsigned char rtx_code_size[NUM_RTX_CODE] = {
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)				\
-  (((ENUM) == CONST_INT || (ENUM) == CONST_DOUBLE			\
-    || (ENUM) == CONST_FIXED || (ENUM) == CONST_WIDE_INT)		\
+  (RTX_CODE_HWINT_P (ENUM)						\
    ? RTX_HDR_SIZE + (sizeof FORMAT - 1) * sizeof (HOST_WIDE_INT)	\
    : (ENUM) == REG							\
    ? RTX_HDR_SIZE + sizeof (reg_info)					\
@@ -137,10 +148,10 @@ const char * const reg_note_name[REG_NOTE_MAX] =
 #undef DEF_REG_NOTE
 };
 
-static int rtx_alloc_counts[(int) LAST_AND_UNUSED_RTX_CODE];
-static int rtx_alloc_sizes[(int) LAST_AND_UNUSED_RTX_CODE];
-static int rtvec_alloc_counts;
-static int rtvec_alloc_sizes;
+static size_t rtx_alloc_counts[(int) LAST_AND_UNUSED_RTX_CODE];
+static size_t rtx_alloc_sizes[(int) LAST_AND_UNUSED_RTX_CODE];
+static size_t rtvec_alloc_counts;
+static size_t rtvec_alloc_sizes;
 
 
 /* Allocate an rtx vector of N elements.
@@ -208,12 +219,7 @@ rtx_alloc_stat_v (RTX_CODE code MEM_STAT_DECL, int extra)
   rtx rt = ggc_alloc_rtx_def_stat (RTX_CODE_SIZE (code) + extra
 				   PASS_MEM_STAT);
 
-  /* We want to clear everything up to the FLD array.  Normally, this
-     is one int, but we don't want to assume that and it isn't very
-     portable anyway; this is.  */
-
-  memset (rt, 0, RTX_HDR_SIZE);
-  PUT_CODE (rt, code);
+  rtx_init (rt, code);
 
   if (GATHER_STATISTICS)
     {
@@ -731,6 +737,8 @@ classify_insn (rtx x)
     return CALL_INSN;
   if (ANY_RETURN_P (x))
     return JUMP_INSN;
+  if (GET_CODE (x) == ASM_OPERANDS && ASM_OPERANDS_LABEL_VEC (x))
+    return JUMP_INSN;
   if (GET_CODE (x) == SET)
     {
       if (GET_CODE (SET_DEST (x)) == PC)
@@ -757,6 +765,9 @@ classify_insn (rtx x)
 	  return CALL_INSN;
       if (has_return_p)
 	return JUMP_INSN;
+      if (GET_CODE (XVECEXP (x, 0, 0)) == ASM_OPERANDS
+	  && ASM_OPERANDS_LABEL_VEC (XVECEXP (x, 0, 0)))
+	return JUMP_INSN;
     }
 #ifdef GENERATOR_FILE
   if (GET_CODE (x) == MATCH_OPERAND
@@ -770,10 +781,20 @@ classify_insn (rtx x)
   return INSN;
 }
 
+/* Comparator of indices based on rtx_alloc_counts.  */
+
+static int
+rtx_count_cmp (const void *p1, const void *p2)
+{
+  const unsigned *n1 = (const unsigned *)p1;
+  const unsigned *n2 = (const unsigned *)p2;
+
+  return rtx_alloc_counts[*n1] - rtx_alloc_counts[*n2];
+}
+
 void
 dump_rtx_statistics (void)
 {
-  int i;
   int total_counts = 0;
   int total_sizes = 0;
 
@@ -783,27 +804,41 @@ dump_rtx_statistics (void)
       return;
     }
 
-  fprintf (stderr, "\nRTX Kind               Count      Bytes\n");
-  fprintf (stderr, "---------------------------------------\n");
-  for (i = 0; i < LAST_AND_UNUSED_RTX_CODE; i++)
-    if (rtx_alloc_counts[i])
-      {
-        fprintf (stderr, "%-20s %7d %10d\n", GET_RTX_NAME (i),
-                 rtx_alloc_counts[i], rtx_alloc_sizes[i]);
-        total_counts += rtx_alloc_counts[i];
-        total_sizes += rtx_alloc_sizes[i];
-      }
+  fprintf (stderr, "\nRTX Kind                   Count     Bytes\n");
+  fprintf (stderr, "-------------------------------------------\n");
+
+  auto_vec<unsigned> indices (LAST_AND_UNUSED_RTX_CODE);
+  for (unsigned i = 0; i < LAST_AND_UNUSED_RTX_CODE; i++)
+    indices.quick_push (i);
+  indices.qsort (rtx_count_cmp);
+
+  for (unsigned i = 0; i < LAST_AND_UNUSED_RTX_CODE; i++)
+    {
+      unsigned j = indices[i];
+      if (rtx_alloc_counts[j])
+	{
+	  fprintf (stderr, "%-24s " PRsa (6) " " PRsa (9) "\n",
+		   GET_RTX_NAME (j),
+		   SIZE_AMOUNT (rtx_alloc_counts[j]),
+		   SIZE_AMOUNT (rtx_alloc_sizes[j]));
+	  total_counts += rtx_alloc_counts[j];
+	  total_sizes += rtx_alloc_sizes[j];
+	}
+    }
+
   if (rtvec_alloc_counts)
     {
-      fprintf (stderr, "%-20s %7d %10d\n", "rtvec",
-               rtvec_alloc_counts, rtvec_alloc_sizes);
+      fprintf (stderr, "%-24s " PRsa (6) " " PRsa (9) "\n", "rtvec",
+	       SIZE_AMOUNT (rtvec_alloc_counts),
+	       SIZE_AMOUNT (rtvec_alloc_sizes));
       total_counts += rtvec_alloc_counts;
       total_sizes += rtvec_alloc_sizes;
     }
-  fprintf (stderr, "---------------------------------------\n");
-  fprintf (stderr, "%-20s %7d %10d\n",
-           "Total", total_counts, total_sizes);
-  fprintf (stderr, "---------------------------------------\n");
+  fprintf (stderr, "-----------------------------------------------\n");
+  fprintf (stderr, "%-24s " PRsa (6) " " PRsa (9) "\n",
+	   "Total", SIZE_AMOUNT (total_counts),
+	   SIZE_AMOUNT (total_sizes));
+  fprintf (stderr, "-----------------------------------------------\n");
 }
 
 #if defined ENABLE_RTL_CHECKING && (GCC_VERSION >= 2007)
@@ -854,6 +889,17 @@ rtl_check_failed_code2 (const_rtx r, enum rtx_code code1, enum rtx_code code2,
     ("RTL check: expected code '%s' or '%s', have '%s' in %s, at %s:%d",
      GET_RTX_NAME (code1), GET_RTX_NAME (code2), GET_RTX_NAME (GET_CODE (r)),
      func, trim_filename (file), line);
+}
+
+void
+rtl_check_failed_code3 (const_rtx r, enum rtx_code code1, enum rtx_code code2,
+			enum rtx_code code3, const char *file, int line,
+			const char *func)
+{
+  internal_error
+    ("RTL check: expected code '%s', '%s' or '%s', have '%s' in %s, at %s:%d",
+     GET_RTX_NAME (code1), GET_RTX_NAME (code2), GET_RTX_NAME (code3),
+     GET_RTX_NAME (GET_CODE (r)), func, trim_filename (file), line);
 }
 
 void

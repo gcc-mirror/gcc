@@ -1,5 +1,5 @@
 /* Generic routines for manipulating SSA_NAME expressions
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -112,8 +112,10 @@ fini_ssanames (struct function *fn)
 void
 ssanames_print_statistics (void)
 {
-  fprintf (stderr, "SSA_NAME nodes allocated: %u\n", ssa_name_nodes_created);
-  fprintf (stderr, "SSA_NAME nodes reused: %u\n", ssa_name_nodes_reused);
+  fprintf (stderr, "%-32s" PRsa (11) "\n", "SSA_NAME nodes allocated:",
+	   SIZE_AMOUNT (ssa_name_nodes_created));
+  fprintf (stderr, "%-32s" PRsa (11) "\n", "SSA_NAME nodes reused:",
+	   SIZE_AMOUNT (ssa_name_nodes_reused));
 }
 
 /* Verify the state of the SSA_NAME lists.
@@ -250,6 +252,19 @@ flush_ssaname_freelist (void)
   vec_safe_truncate (FREE_SSANAMES_QUEUE (cfun), 0);
 }
 
+/* Initialize SSA_NAME_IMM_USE_NODE of a SSA NAME.  */
+
+void
+init_ssa_name_imm_use (tree name)
+{
+  use_operand_p imm;
+  imm = &(SSA_NAME_IMM_USE_NODE (name));
+  imm->use = NULL;
+  imm->prev = imm;
+  imm->next = imm;
+  imm->loc.ssa_name = name;
+}
+
 /* Return an SSA_NAME node for variable VAR defined in statement STMT
    in function FN.  STMT may be an empty statement for artificial
    references (e.g., default definitions created when a variable is
@@ -261,8 +276,6 @@ make_ssa_name_fn (struct function *fn, tree var, gimple *stmt,
 		  unsigned int version)
 {
   tree t;
-  use_operand_p imm;
-
   gcc_assert (VAR_P (var)
 	      || TREE_CODE (var) == PARM_DECL
 	      || TREE_CODE (var) == RESULT_DECL
@@ -316,11 +329,7 @@ make_ssa_name_fn (struct function *fn, tree var, gimple *stmt,
 
   SSA_NAME_IN_FREE_LIST (t) = 0;
   SSA_NAME_IS_DEFAULT_DEF (t) = 0;
-  imm = &(SSA_NAME_IMM_USE_NODE (t));
-  imm->use = NULL;
-  imm->prev = imm;
-  imm->next = imm;
-  imm->loc.ssa_name = t;
+  init_ssa_name_imm_use (t);
 
   return t;
 }
@@ -331,7 +340,7 @@ make_ssa_name_fn (struct function *fn, tree var, gimple *stmt,
    NAME.  */
 
 void
-set_range_info_raw (tree name, enum value_range_type range_type,
+set_range_info_raw (tree name, enum value_range_kind range_type,
 		    const wide_int_ref &min, const wide_int_ref &max)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
@@ -372,7 +381,7 @@ set_range_info_raw (tree name, enum value_range_type range_type,
    NAME while making sure we don't store useless range info.  */
 
 void
-set_range_info (tree name, enum value_range_type range_type,
+set_range_info (tree name, enum value_range_kind range_type,
 		const wide_int_ref &min, const wide_int_ref &max)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
@@ -396,12 +405,21 @@ set_range_info (tree name, enum value_range_type range_type,
   set_range_info_raw (name, range_type, min, max);
 }
 
+/* Store range information for NAME from a value_range.  */
 
-/* Gets range information MIN, MAX and returns enum value_range_type
-   corresponding to tree ssa_name NAME.  enum value_range_type returned
+void
+set_range_info (tree name, const value_range &vr)
+{
+  wide_int min = wi::to_wide (vr.min ());
+  wide_int max = wi::to_wide (vr.max ());
+  set_range_info (name, vr.kind (), min, max);
+}
+
+/* Gets range information MIN, MAX and returns enum value_range_kind
+   corresponding to tree ssa_name NAME.  enum value_range_kind returned
    is used to determine if MIN and MAX are valid values.  */
 
-enum value_range_type
+enum value_range_kind
 get_range_info (const_tree name, wide_int *min, wide_int *max)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
@@ -417,6 +435,29 @@ get_range_info (const_tree name, wide_int *min, wide_int *max)
   *min = ri->get_min ();
   *max = ri->get_max ();
   return SSA_NAME_RANGE_TYPE (name);
+}
+
+/* Gets range information corresponding to ssa_name NAME and stores it
+   in a value_range VR.  Returns the value_range_kind.  */
+
+enum value_range_kind
+get_range_info (const_tree name, value_range &vr)
+{
+  tree min, max;
+  wide_int wmin, wmax;
+  enum value_range_kind kind = get_range_info (name, &wmin, &wmax);
+
+  if (kind == VR_VARYING)
+    vr.set_varying (TREE_TYPE (name));
+  else if (kind == VR_UNDEFINED)
+    vr.set_undefined ();
+  else
+    {
+      min = wide_int_to_tree (TREE_TYPE (name), wmin);
+      max = wide_int_to_tree (TREE_TYPE (name), wmax);
+      vr.set (min, max, kind);
+    }
+  return kind;
 }
 
 /* Set nonnull attribute to pointer NAME.  */
@@ -559,11 +600,10 @@ release_ssa_name_fn (struct function *fn, tree var)
      keep a status bit in the SSA_NAME node itself to indicate it has
      been put on the free list.
 
-     Note that once on the freelist you can not reference the SSA_NAME's
+     Note that once on the freelist you cannot reference the SSA_NAME's
      defining statement.  */
   if (! SSA_NAME_IN_FREE_LIST (var))
     {
-      tree saved_ssa_name_var = SSA_NAME_VAR (var);
       int saved_ssa_name_version = SSA_NAME_VERSION (var);
       use_operand_p imm = &(SSA_NAME_IMM_USE_NODE (var));
 
@@ -589,12 +629,13 @@ release_ssa_name_fn (struct function *fn, tree var)
       /* Restore the version number.  */
       SSA_NAME_VERSION (var) = saved_ssa_name_version;
 
-      /* Hopefully this can go away once we have the new incremental
-         SSA updating code installed.  */
-      SET_SSA_NAME_VAR_OR_IDENTIFIER (var, saved_ssa_name_var);
-
       /* Note this SSA_NAME is now in the first list.  */
       SSA_NAME_IN_FREE_LIST (var) = 1;
+
+      /* Put in a non-NULL TREE_TYPE so dumping code will not ICE
+         if it happens to come along a released SSA name and tries
+	 to inspect its type.  */
+      TREE_TYPE (var) = error_mark_node;
 
       /* And finally queue it so that it will be put on the free list.  */
       vec_safe_push (FREE_SSANAMES_QUEUE (fn), var);
@@ -727,7 +768,7 @@ duplicate_ssa_name_ptr_info (tree name, struct ptr_info_def *ptr_info)
 /* Creates a duplicate of the range_info_def at RANGE_INFO of type
    RANGE_TYPE for use by the SSA name NAME.  */
 void
-duplicate_ssa_name_range_info (tree name, enum value_range_type range_type,
+duplicate_ssa_name_range_info (tree name, enum value_range_kind range_type,
 			       struct range_info_def *range_info)
 {
   struct range_info_def *new_range_info;
@@ -788,7 +829,12 @@ reset_flow_sensitive_info (tree name)
     {
       /* points-to info is not flow-sensitive.  */
       if (SSA_NAME_PTR_INFO (name))
-	mark_ptr_info_alignment_unknown (SSA_NAME_PTR_INFO (name));
+	{
+	  /* [E]VRP can derive context sensitive alignment info and
+	     non-nullness properties.  We must reset both.  */
+	  mark_ptr_info_alignment_unknown (SSA_NAME_PTR_INFO (name));
+	  SSA_NAME_PTR_INFO (name)->pt.null = 1;
+	}
     }
   else
     SSA_NAME_RANGE_INFO (name) = NULL;

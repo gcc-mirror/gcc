@@ -48,7 +48,7 @@
 	  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.ansi.org">ANSI</link>.
 	  (And if you've already registered with them you can <link
 	  xmlns:xlink="http://www.w3.org/1999/xlink"
-	  xlink:href="https://webstore.ansi.org/RecordDetail.aspx?sku=ISO%2fIEC+14882%3a2014">buy
+	  xlink:href="https://webstore.ansi.org/Standards/ISO/ISOIEC148822014">buy
 	  the standard on-line</link>.)
 	</para>
       </listitem>
@@ -292,11 +292,9 @@ It has subdirectories:
     <term>
       <filename class="directory">include/debug</filename>,
       <filename class="directory">include/parallel</filename>, and
-      <filename class="directory">include/profile</filename>
     </term>
     <listitem>
-      Headers that implement the Debug Mode, Parallel Mode, and Profile Mode
-      extensions.
+      Headers that implement the Debug Mode and Parallel Mode extensions.
     </listitem>
     </varlistentry>
     </variablelist>
@@ -464,9 +462,6 @@ indicate a place that may require attention for multi-thread safety.
       _res
       _res_ext
       __tg_*
-
-      SPU adds:
-      __ea
 
       For GCC:
 

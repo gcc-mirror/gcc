@@ -1,6 +1,6 @@
 /* Get common system includes and various definitions and declarations based
    on autoconf macros.
-   Copyright (C) 1998-2018 Free Software Foundation, Inc.
+   Copyright (C) 1998-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -730,6 +730,12 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 # include "unique-ptr.h"
 #endif
 
+#ifdef INCLUDE_MALLOC_H
+#ifdef HAVE_MALLINFO
+#include <malloc.h>
+#endif
+#endif
+
 /* Redefine abort to report an internal error w/o coredump, and
    reporting the location of the error in the source file.  */
 extern void fancy_abort (const char *, int, const char *)
@@ -1197,17 +1203,45 @@ helper_const_non_const_cast (const char *p)
 /* Get definitions of HOST_WIDE_INT.  */
 #include "hwint.h"
 
-/* qsort comparator consistency checking: except in release-checking compilers,
-   redirect 4-argument qsort calls to qsort_chk; keep 1-argument invocations
-   corresponding to vec::qsort (cmp): they use C qsort internally anyway.  */
-void qsort_chk (void *, size_t, size_t, int (*)(const void *, const void *));
+typedef int sort_r_cmp_fn (const void *, const void *, void *);
+void qsort_chk (void *, size_t, size_t, sort_r_cmp_fn *, void *);
+void gcc_sort_r (void *, size_t, size_t, sort_r_cmp_fn *, void *);
 void gcc_qsort (void *, size_t, size_t, int (*)(const void *, const void *));
+void gcc_stablesort (void *, size_t, size_t,
+		     int (*)(const void *, const void *));
+/* Redirect four-argument qsort calls to gcc_qsort; one-argument invocations
+   correspond to vec::qsort, and use C qsort internally.  */
 #define PP_5th(a1, a2, a3, a4, a5, ...) a5
 #undef qsort
-#if CHECKING_P
-#define qsort(...) PP_5th (__VA_ARGS__, qsort_chk, 3, 2, qsort, 0) (__VA_ARGS__)
-#else
 #define qsort(...) PP_5th (__VA_ARGS__, gcc_qsort, 3, 2, qsort, 0) (__VA_ARGS__)
-#endif
+
+#define ONE_K 1024
+#define ONE_M (ONE_K * ONE_K)
+
+/* Display a number as an integer multiple of either:
+   - 1024, if said integer is >= to 10 K (in base 2)
+   - 1024 * 1024, if said integer is >= 10 M in (base 2)
+ */
+#define SIZE_SCALE(x) (((x) < 10 * ONE_K \
+			? (x) \
+			: ((x) < 10 * ONE_M \
+			   ? (x) / ONE_K \
+			   : (x) / ONE_M)))
+
+/* For a given integer, display either:
+   - the character 'k', if the number is higher than 10 K (in base 2)
+     but strictly lower than 10 M (in base 2)
+   - the character 'M' if the number is higher than 10 M (in base2)
+   - the charcter ' ' if the number is strictly lower  than 10 K  */
+#define SIZE_LABEL(x) ((x) < 10 * ONE_K ? ' ' : ((x) < 10 * ONE_M ? 'k' : 'M'))
+
+/* Display an integer amount as multiple of 1K or 1M (in base 2).
+   Display the correct unit (either k, M, or ' ') after the amount, as
+   well.  */
+#define SIZE_AMOUNT(size) (uint64_t)SIZE_SCALE (size), SIZE_LABEL (size)
+
+/* Format string particle for printing a SIZE_AMOUNT with N being the width
+   of the number.  */
+#define PRsa(n) "%" #n PRIu64 "%c"
 
 #endif /* ! GCC_SYSTEM_H */

@@ -26,6 +26,7 @@
     <year>2016</year>
     <year>2017</year>
     <year>2018</year>
+    <year>2019</year>
     <holder>
       <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.fsf.org">FSF</link>
     </holder>
@@ -122,12 +123,6 @@
   <author><personname><firstname>Stefan</firstname><surname>Olsson</surname></personname><personblurb>
       <para>
 	mt_allocator
-      </para>
-    </personblurb></author>
-
-  <author><personname><firstname>Silvius</firstname><surname>Rus</surname></personname><personblurb>
-      <para>
-	Profile mode
       </para>
     </personblurb></author>
 

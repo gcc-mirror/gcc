@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -492,7 +492,9 @@ begin
 
    --  Qualify all entity names in inner packages, package bodies, etc
 
-   Exp_Dbug.Qualify_All_Entity_Names;
+   if not GNATprove_Mode then
+      Exp_Dbug.Qualify_All_Entity_Names;
+   end if;
 
    --  SCIL backend requirement. Check that SCIL nodes associated with
    --  dispatching calls reference subprogram calls.

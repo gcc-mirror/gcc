@@ -1,4 +1,4 @@
-# Copyright (C) 2005-2018 Free Software Foundation, Inc.
+# Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -65,7 +65,8 @@ proc check_for_all_options {language gcc_options compiler_pattern as_pattern ld_
 	fail "$test (assembler options)"
 	return
     }
-    if {![regexp -- "/collect2(\\.exe)? .*$ld_pattern" $gcc_output]} {
+    # Match /collect2, /ld, or *-ld.
+    if {![regexp -- "(/collect2|\[-/\]ld)(\\.exe)? .*$ld_pattern" $gcc_output]} {
 	fail "$test (linker options)"
 	return
     }

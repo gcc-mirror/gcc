@@ -1,6 +1,6 @@
 // The -*- C++ -*- dynamic memory management header.
 
-// Copyright (C) 1994-2018 Free Software Foundation, Inc.
+// Copyright (C) 1994-2019 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 //
@@ -28,7 +28,8 @@
  *
  *  The header @c new defines several functions to manage dynamic memory and
  *  handling memory allocation errors; see
- *  http://gcc.gnu.org/onlinedocs/libstdc++/18_support/howto.html#4 for more.
+ *  https://gcc.gnu.org/onlinedocs/libstdc++/manual/dynamic_memory.html
+ *  for more.
  */
 
 #ifndef _NEW
@@ -122,9 +123,9 @@ namespace std
  *  Placement new and delete signatures (take a memory address argument,
  *  does nothing) may not be replaced by a user's program.
 */
-void* operator new(std::size_t) _GLIBCXX_THROW (std::bad_alloc)
+_GLIBCXX_NODISCARD void* operator new(std::size_t) _GLIBCXX_THROW (std::bad_alloc)
   __attribute__((__externally_visible__));
-void* operator new[](std::size_t) _GLIBCXX_THROW (std::bad_alloc)
+_GLIBCXX_NODISCARD void* operator new[](std::size_t) _GLIBCXX_THROW (std::bad_alloc)
   __attribute__((__externally_visible__));
 void operator delete(void*) _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
@@ -136,27 +137,27 @@ void operator delete(void*, std::size_t) _GLIBCXX_USE_NOEXCEPT
 void operator delete[](void*, std::size_t) _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
 #endif
-void* operator new(std::size_t, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
-  __attribute__((__externally_visible__));
-void* operator new[](std::size_t, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
-  __attribute__((__externally_visible__));
+_GLIBCXX_NODISCARD void* operator new(std::size_t, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
+  __attribute__((__externally_visible__, __malloc__));
+_GLIBCXX_NODISCARD void* operator new[](std::size_t, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
+  __attribute__((__externally_visible__, __malloc__));
 void operator delete(void*, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
 void operator delete[](void*, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
 #if __cpp_aligned_new
-void* operator new(std::size_t, std::align_val_t)
+_GLIBCXX_NODISCARD void* operator new(std::size_t, std::align_val_t)
   __attribute__((__externally_visible__));
-void* operator new(std::size_t, std::align_val_t, const std::nothrow_t&)
-  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
+_GLIBCXX_NODISCARD void* operator new(std::size_t, std::align_val_t, const std::nothrow_t&)
+  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__, __malloc__));
 void operator delete(void*, std::align_val_t)
   _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
 void operator delete(void*, std::align_val_t, const std::nothrow_t&)
   _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
-void* operator new[](std::size_t, std::align_val_t)
+_GLIBCXX_NODISCARD void* operator new[](std::size_t, std::align_val_t)
   __attribute__((__externally_visible__));
-void* operator new[](std::size_t, std::align_val_t, const std::nothrow_t&)
-  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
+_GLIBCXX_NODISCARD void* operator new[](std::size_t, std::align_val_t, const std::nothrow_t&)
+  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__, __malloc__));
 void operator delete[](void*, std::align_val_t)
   _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
 void operator delete[](void*, std::align_val_t, const std::nothrow_t&)
@@ -170,9 +171,9 @@ void operator delete[](void*, std::size_t, std::align_val_t)
 #endif // __cpp_aligned_new
 
 // Default placement versions of operator new.
-inline void* operator new(std::size_t, void* __p) _GLIBCXX_USE_NOEXCEPT
+_GLIBCXX_NODISCARD inline void* operator new(std::size_t, void* __p) _GLIBCXX_USE_NOEXCEPT
 { return __p; }
-inline void* operator new[](std::size_t, void* __p) _GLIBCXX_USE_NOEXCEPT
+_GLIBCXX_NODISCARD inline void* operator new[](std::size_t, void* __p) _GLIBCXX_USE_NOEXCEPT
 { return __p; }
 
 // Default placement versions of operator delete.
@@ -182,15 +183,6 @@ inline void operator delete[](void*, void*) _GLIBCXX_USE_NOEXCEPT { }
 } // extern "C++"
 
 #if __cplusplus >= 201703L
-#if __GNUC__ >= 7
-#  define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
-#elif defined __has_builtin
-// For non-GNU compilers:
-# if __has_builtin(__builtin_launder)
-#  define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
-# endif
-#endif
-
 #ifdef _GLIBCXX_HAVE_BUILTIN_LAUNDER
 namespace std
 {
@@ -215,8 +207,25 @@ namespace std
   void launder(const volatile void*) = delete;
 }
 #endif // _GLIBCXX_HAVE_BUILTIN_LAUNDER
-#undef _GLIBCXX_HAVE_BUILTIN_LAUNDER
 #endif // C++17
+
+#if __cplusplus > 201703L
+namespace std
+{
+  /// Tag type used to declare a class-specific operator delete that can
+  /// invoke the destructor before deallocating the memory.
+  struct destroying_delete_t
+  {
+    explicit destroying_delete_t() = default;
+  };
+  /// Tag variable of type destroying_delete_t.
+  inline constexpr destroying_delete_t destroying_delete{};
+}
+// Only define the feature test macro if the compiler supports the feature:
+#if __cpp_impl_destroying_delete
+# define __cpp_lib_destroying_delete 201806L
+#endif
+#endif // C++20
 
 #pragma GCC visibility pop
 

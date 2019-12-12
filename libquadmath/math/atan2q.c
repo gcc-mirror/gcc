@@ -1,4 +1,4 @@
-/* atan2q.c -- __float128 version of e_atan2.c.
+/* e_atan2l.c -- long double version of e_atan2.c.
  * Conversion to long double by Jakub Jelinek, jj@ultra.linux.cz.
  */
 
@@ -15,9 +15,9 @@
 
 /* atan2q(y,x)
  * Method :
- *	1. Reduce y to positive by atan2q(y,x)=-atan2q(-y,x).
+ *	1. Reduce y to positive by atan2l(y,x)=-atan2l(-y,x).
  *	2. Reduce x to positive by (if x and y are unexceptional):
- *		ARG (x+iy) = arctan(y/x)   	   ... if x > 0,
+ *		ARG (x+iy) = arctan(y/x)	   ... if x > 0,
  *		ARG (x+iy) = pi - arctan[y/(-x)]   ... if x < 0,
  *
  * Special cases:
@@ -51,7 +51,7 @@ pi      = 3.14159265358979323846264338327950280e+00Q, /* 4000921fb54442d18469898
 pi_lo   = 8.67181013012378102479704402604335225e-35Q; /* 3f8dcd129024e088a67cc74020bbea64 */
 
 __float128
-atan2q (__float128 y, __float128 x)
+atan2q(__float128 y, __float128 x)
 {
 	__float128 z;
 	int64_t k,m,hx,hy,ix,iy;
@@ -64,14 +64,14 @@ atan2q (__float128 y, __float128 x)
 	if(((ix|((lx|-lx)>>63))>0x7fff000000000000LL)||
 	   ((iy|((ly|-ly)>>63))>0x7fff000000000000LL))	/* x or y is NaN */
 	   return x+y;
-	if(((hx-0x3fff000000000000LL)|lx)==0) return atanq(y);   /* x=1.0Q */
+	if(((hx-0x3fff000000000000LL)|lx)==0) return atanq(y);   /* x=1.0L */
 	m = ((hy>>63)&1)|((hx>>62)&2);	/* 2*sign(x)+sign(y) */
 
     /* when y = 0 */
 	if((iy|ly)==0) {
 	    switch(m) {
 		case 0:
-		case 1: return y; 	/* atan(+-0,+anything)=+-0 */
+		case 1: return y;	/* atan(+-0,+anything)=+-0 */
 		case 2: return  pi+tiny;/* atan(+0,-anything) = pi */
 		case 3: return -pi-tiny;/* atan(-0,-anything) =-pi */
 	    }
@@ -85,8 +85,8 @@ atan2q (__float128 y, __float128 x)
 		switch(m) {
 		    case 0: return  pi_o_4+tiny;/* atan(+INF,+INF) */
 		    case 1: return -pi_o_4-tiny;/* atan(-INF,+INF) */
-		    case 2: return  3.0Q*pi_o_4+tiny;/*atan(+INF,-INF)*/
-		    case 3: return -3.0Q*pi_o_4-tiny;/*atan(-INF,-INF)*/
+		    case 2: return  3*pi_o_4+tiny;/*atan(+INF,-INF)*/
+		    case 3: return -3*pi_o_4-tiny;/*atan(-INF,-INF)*/
 		}
 	    } else {
 		switch(m) {
@@ -102,19 +102,19 @@ atan2q (__float128 y, __float128 x)
 
     /* compute y/x */
 	k = (iy-ix)>>48;
-	if(k > 120) z=pi_o_2+0.5Q*pi_lo; 	/* |y/x| >  2**120 */
-	else if(hx<0&&k<-120) z=0.0Q; 		/* |y|/x < -2**120 */
+	if(k > 120) z=pi_o_2+0.5Q*pi_lo;	/* |y/x| >  2**120 */
+	else if(hx<0&&k<-120) z=0;		/* |y|/x < -2**120 */
 	else z=atanq(fabsq(y/x));		/* safe to do y/x */
 	switch (m) {
 	    case 0: return       z  ;	/* atan(+,+) */
 	    case 1: {
-	    	      uint64_t zh;
+		      uint64_t zh;
 		      GET_FLT128_MSW64(zh,z);
 		      SET_FLT128_MSW64(z,zh ^ 0x8000000000000000ULL);
 		    }
 		    return       z  ;	/* atan(-,+) */
 	    case 2: return  pi-(z-pi_lo);/* atan(+,-) */
 	    default: /* case 3 */
-	    	    return  (z-pi_lo)-pi;/* atan(-,-) */
+		    return  (z-pi_lo)-pi;/* atan(-,-) */
 	}
 }

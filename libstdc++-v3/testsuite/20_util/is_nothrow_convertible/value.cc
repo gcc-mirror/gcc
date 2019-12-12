@@ -1,4 +1,4 @@
-// Copyright (C) 2018 Free Software Foundation, Inc.
+// Copyright (C) 2018-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,9 +21,12 @@
 #include <type_traits>
 #include <testsuite_tr1.h>
 
+#ifndef IS_NT_CONVERTIBLE_DEFINED
+using std::is_nothrow_convertible;
+#endif
+
 void test01()
 {
-  using std::is_nothrow_convertible;
   using namespace __gnu_test;
 
   // Positive conversion tests.
@@ -174,4 +177,17 @@ void test01()
   static_assert(test_relationship<is_nothrow_convertible,
 				  NoexceptMoveConsClass&,
 				  NoexceptMoveConsClass>(false));
+}
+
+void test02()
+{
+  struct X { };
+
+  struct Y
+  {
+    explicit Y(X) noexcept; // not viable for implicit conversions
+    Y(...);
+  };
+
+  static_assert(!is_nothrow_convertible<X, Y>::value, "");
 }

@@ -1,5 +1,5 @@
 /* Structure for saving state for a nested function.
-   Copyright (C) 1989-2018 Free Software Foundation, Inc.
+   Copyright (C) 1989-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -183,16 +183,32 @@ struct GTY(()) function_subsections {
 /* Describe an empty area of space in the stack frame.  These can be chained
    into a list; this is used to keep track of space wasted for alignment
    reasons.  */
-struct GTY(()) frame_space
+class GTY(()) frame_space
 {
-  struct frame_space *next;
+public:
+  class frame_space *next;
 
   poly_int64 start;
   poly_int64 length;
 };
 
-struct GTY(()) stack_usage
+/* Describe emitted calls for -fcallgraph-info.  */
+struct GTY(()) callinfo_callee
 {
+  location_t location;
+  tree decl;
+};
+
+/* Describe dynamic allocation for -fcallgraph-info=da.  */
+struct GTY(()) callinfo_dalloc
+{
+  location_t location;
+  char const *name;
+};
+
+class GTY(()) stack_usage
+{
+public:
   /* # of bytes of static stack space allocated by the function.  */
   HOST_WIDE_INT static_stack_size;
 
@@ -208,6 +224,13 @@ struct GTY(()) stack_usage
   /* Nonzero if the amount of stack space allocated dynamically cannot
      be bounded at compile-time.  */
   unsigned int has_unbounded_dynamic_stack_size : 1;
+
+  /* Functions called within the function, if callgraph is enabled.  */
+  vec<callinfo_callee, va_gc> *callees;
+
+  /* Dynamic allocations encountered within the function, if callgraph
+     da is enabled.  */
+  vec<callinfo_dalloc, va_gc> *dallocs;
 };
 
 #define current_function_static_stack_size (cfun->su->static_stack_size)
@@ -241,7 +264,7 @@ struct GTY(()) function {
   char *pass_startwith;
 
   /* The stack usage of this function.  */
-  struct stack_usage *su;
+  class stack_usage *su;
 
   /* Value histograms attached to particular statements.  */
   htab_t GTY((skip)) value_histograms;
@@ -327,6 +350,9 @@ struct GTY(()) function {
      either as a subroutine or builtin.  */
   unsigned int calls_alloca : 1;
 
+  /* Nonzero if function being compiled can call __builtin_eh_return.  */
+  unsigned int calls_eh_return : 1;
+
   /* Nonzero if function being compiled receives nonlocal gotos
      from nested functions.  */
   unsigned int has_nonlocal_label : 1;
@@ -400,6 +426,12 @@ void add_local_decl (struct function *fun, tree d);
 
 #define FOR_EACH_LOCAL_DECL(FUN, I, D)		\
   FOR_EACH_VEC_SAFE_ELT_REVERSE ((FUN)->local_decls, I, D)
+
+/* Record a final call to CALLEE at LOCATION.  */
+void record_final_call (tree callee, location_t location);
+
+/* Record a dynamic allocation made for DECL_OR_EXP.  */
+void record_dynamic_alloc (tree decl_or_exp);
 
 /* If va_list_[gf]pr_size is set to this, it means we don't know how
    many units need to be saved.  */

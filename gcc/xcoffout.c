@@ -1,5 +1,5 @@
 /* Output xcoff-format symbol table information from GNU compiler.
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -64,6 +64,7 @@ static const char *xcoff_current_function_file;
 
 char *xcoff_bss_section_name;
 char *xcoff_private_data_section_name;
+char *xcoff_private_rodata_section_name;
 char *xcoff_tls_data_section_name;
 char *xcoff_tbss_section_name;
 char *xcoff_read_only_section_name;
@@ -345,7 +346,7 @@ xcoffout_source_line (unsigned int line, unsigned int column ATTRIBUTE_UNUSED,
    This function works by walking the tree structure of blocks,
    counting blocks until it finds the desired block.  */
 
-static int do_block = 0;
+static unsigned int do_block = 0;
 
 static void
 xcoffout_block (tree block, int depth, tree args)

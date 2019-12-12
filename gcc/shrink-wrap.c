@@ -1,5 +1,5 @@
 /* Shrink-wrapping related optimizations.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -37,13 +37,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "cfgrtl.h"
 #include "cfgbuild.h"
-#include "params.h"
 #include "bb-reorder.h"
 #include "shrink-wrap.h"
 #include "regcprop.h"
 #include "rtl-iter.h"
 #include "valtrack.h"
-
+#include "function-abi.h"
 
 /* Return true if INSN requires the stack frame to be set up.
    PROLOGUE_USED contains the hard registers used in the function
@@ -76,7 +75,7 @@ requires_stack_frame_p (rtx_insn *insn, HARD_REG_SET prologue_used,
     }
   if (hard_reg_set_intersect_p (hardregs, prologue_used))
     return true;
-  AND_COMPL_HARD_REG_SET (hardregs, call_used_reg_set);
+  hardregs &= ~crtl->abi->full_reg_clobbers ();
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if (TEST_HARD_REG_BIT (hardregs, regno)
 	&& df_regs_ever_live_p (regno))
@@ -151,8 +150,8 @@ live_edge_for_reg (basic_block bb, int regno, int end_regno)
 
 static bool
 move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
-			   const HARD_REG_SET uses,
-			   const HARD_REG_SET defs,
+			   const_hard_reg_set uses,
+			   const_hard_reg_set defs,
 			   bool *split_p,
 			   struct dead_debug_local *debug)
 {
@@ -414,7 +413,12 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
       dead_debug_insert_temp (debug, DF_REF_REGNO (def), insn,
 			      DEBUG_TEMP_BEFORE_WITH_VALUE);
 
-  emit_insn_after (PATTERN (insn), bb_note (bb));
+  rtx_insn *insn_copy = emit_insn_after (PATTERN (insn), bb_note (bb));
+  /* Update the LABEL_NUSES count on any referenced labels. The ideal
+     solution here would be to actually move the instruction instead
+     of copying/deleting it as this loses some notations on the
+     insn.  */
+  mark_jump_label (PATTERN (insn), insn_copy, 0);
   delete_insn (insn);
   return true;
 }
@@ -477,10 +481,10 @@ prepare_shrink_wrap (basic_block entry_block)
   dead_debug_local_finish (&debug, NULL);
 }
 
-/* Return whether basic block PRO can get the prologue.  It can not if it
+/* Return whether basic block PRO can get the prologue.  It cannot if it
    has incoming complex edges that need a prologue inserted (we make a new
    block for the prologue, so those edges would need to be redirected, which
-   does not work).  It also can not if there exist registers live on entry
+   does not work).  It also cannot if there exist registers live on entry
    to PRO that are clobbered by the prologue.  */
 
 static bool
@@ -682,9 +686,9 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
 	HARD_REG_SET this_used;
 	CLEAR_HARD_REG_SET (this_used);
 	note_uses (&PATTERN (insn), record_hard_reg_uses, &this_used);
-	AND_COMPL_HARD_REG_SET (this_used, prologue_clobbered);
-	IOR_HARD_REG_SET (prologue_used, this_used);
-	note_stores (PATTERN (insn), record_hard_reg_sets, &prologue_clobbered);
+	this_used &= ~prologue_clobbered;
+	prologue_used |= this_used;
+	note_stores (insn, record_hard_reg_sets, &prologue_clobbered);
       }
   CLEAR_HARD_REG_BIT (prologue_clobbered, STACK_POINTER_REGNUM);
   if (frame_pointer_needed)
@@ -770,7 +774,7 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
   vec.quick_push (pro);
 
   unsigned max_grow_size = get_uncond_jump_length ();
-  max_grow_size *= PARAM_VALUE (PARAM_MAX_GROW_COPY_BB_INSNS);
+  max_grow_size *= param_max_grow_copy_bb_insns;
 
   while (!vec.is_empty () && pro != entry)
     {

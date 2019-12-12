@@ -1,4 +1,4 @@
-.. Copyright (C) 2014-2018 Free Software Foundation, Inc.
+.. Copyright (C) 2014-2019 Free Software Foundation, Inc.
    Originally contributed by David Malcolm <dmalcolm@redhat.com>
 
    This is free software: you can redistribute it and/or modify it
@@ -546,3 +546,36 @@ Additional command-line options
    .. code-block:: c
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_context_add_command_line_option
+
+.. function:: void gcc_jit_context_add_driver_option (gcc_jit_context *ctxt,\
+						      const char *optname)
+
+   Add an arbitrary gcc driver option to the context, for use by
+   :func:`gcc_jit_context_compile` and
+   :func:`gcc_jit_context_compile_to_file`.
+
+   The parameter ``optname`` must be non-NULL.  The underlying buffer is
+   copied, so that it does not need to outlive the call.
+
+   Extra options added by `gcc_jit_context_add_driver_option` are
+   applied *after* all other options potentially overriding them.
+   Options from parent contexts are inherited by child contexts; options
+   from the parent are applied *before* those from the child.
+
+   For example:
+
+   .. code-block:: c
+
+      gcc_jit_context_add_driver_option (ctxt, "-lm");
+      gcc_jit_context_add_driver_option (ctxt, "-fuse-linker-plugin");
+
+   Note that only some options are likely to be meaningful; there is no
+   "frontend" within libgccjit, so typically only those affecting
+   assembler and linker are likely to be useful.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_11`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_context_add_driver_option

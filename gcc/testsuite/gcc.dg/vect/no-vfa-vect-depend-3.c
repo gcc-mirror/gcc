@@ -183,7 +183,4 @@ int main ()
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 4 "vect" {xfail { vect_no_align && { ! vect_hw_misalign } } } } } */
-/* f4 requires reverse for SVE, which is implemented by a later patch.
-   Until then we report it twice, once for SVE and once for 128-bit
-   Advanced SIMD.  */
-/* { dg-final { scan-tree-dump-times "dependence distance negative" 4 "vect" { xfail { aarch64_sve && vect_variable_length } } } } */
+/* { dg-final { scan-tree-dump-times "dependence distance negative" 4 "vect" } } */

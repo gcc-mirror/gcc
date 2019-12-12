@@ -6,4 +6,4 @@ struct A {
  A() = delete;
 };
 
-A a = {1};
+A a = {1};	// { dg-error "could not convert" "" { target c++2a } }

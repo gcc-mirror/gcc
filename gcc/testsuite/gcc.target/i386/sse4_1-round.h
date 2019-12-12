@@ -1,5 +1,5 @@
 #include <smmintrin.h>
-#include <math.h>
+#include "math_m_pi.h"
 
 #define NUM 64
 

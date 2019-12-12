@@ -1,7 +1,6 @@
 /* { dg-do run { target { powerpc64*-*-* && { p8vector_hw } } } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-mcpu=power8 -mpower8-vector -O3" } */
+/* { dg-options "-mdejagnu-cpu=power8 -mpower8-vector -O3" } */
 
 /* Test that the vec_cmpne builtin works as expected for long long
    and double vectors.  */

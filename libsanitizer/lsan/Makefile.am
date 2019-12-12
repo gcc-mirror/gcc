@@ -17,19 +17,19 @@ nodist_toolexeclib_HEADERS = liblsan_preinit.o
 endif
 
 sanitizer_lsan_files = \
-	lsan_common.cc \
-	lsan_common_linux.cc \
-	lsan_common_mac.cc
+	lsan_common.cpp \
+	lsan_common_linux.cpp \
+	lsan_common_mac.cpp
 
 lsan_files = \
 	$(sanitizer_lsan_files) \
-	lsan.cc \
-	lsan_linux.cc \
-	lsan_mac.cc \
-	lsan_malloc_mac.cc \
-	lsan_allocator.cc \
-	lsan_interceptors.cc \
-	lsan_thread.cc
+	lsan.cpp \
+	lsan_linux.cpp \
+	lsan_mac.cpp \
+	lsan_malloc_mac.cpp \
+	lsan_allocator.cpp \
+	lsan_interceptors.cpp \
+	lsan_thread.cpp
 
 libsanitizer_lsan_la_SOURCES = $(sanitizer_lsan_files)
 

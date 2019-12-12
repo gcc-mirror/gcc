@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1 -fdelete-null-pointer-checks" } */
+/* { dg-options "-O2 -fdump-tree-vrp1 -fdelete-null-pointer-checks -fdisable-tree-evrp" } */
 
 struct A
 {

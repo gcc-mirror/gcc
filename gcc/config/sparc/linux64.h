@@ -1,5 +1,5 @@
 /* Definitions for 64-bit SPARC running Linux-based GNU systems with ELF.
-   Copyright (C) 1996-2018 Free Software Foundation, Inc.
+   Copyright (C) 1996-2019 Free Software Foundation, Inc.
    Contributed by David S. Miller (davem@caip.rutgers.edu)
 
 This file is part of GCC.
@@ -143,24 +143,35 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define DRIVER_SELF_SPECS MCPU_MTUNE_NATIVE_SPECS
 
-#undef	CC1_SPEC
+/* -fsanitize=address is currently only supported for 32-bit.  */
+#define ASAN_REJECT_SPEC \
+  "%{!%:sanitize(thread):%e-fsanitize=address is not supported in this configuration}"
+
+#undef  ASAN_CC1_SPEC
 #if DEFAULT_ARCH32_P
-#define CC1_SPEC "%{profile:-p} \
-%{m32:%{m64:%emay not use both -m32 and -m64}} \
+#define ASAN_CC1_SPEC \
+  "%{%:sanitize(address):-funwind-tables %{m64:" ASAN_REJECT_SPEC "}}"
+#else
+#define ASAN_CC1_SPEC \
+  "%{%:sanitize(address):-funwind-tables %{!m32:" ASAN_REJECT_SPEC "}}"
+#endif
+
+#undef  CC1_SPEC
+#if DEFAULT_ARCH32_P
+#define CC1_SPEC GNU_USER_TARGET_CC1_SPEC ASAN_CC1_SPEC \
+"%{m32:%{m64:%emay not use both -m32 and -m64}} \
 %{m64:-mptr64 -mstack-bias -mlong-double-128 \
   %{!mcpu*:-mcpu=ultrasparc} \
-  %{!mno-vis:%{!mcpu=v9:-mvis}}} \
-"
+  %{!mno-vis:%{!mcpu=v9:-mvis}}}"
 #else
-#define CC1_SPEC "%{profile:-p} \
-%{m32:%{m64:%emay not use both -m32 and -m64}} \
+#define CC1_SPEC GNU_USER_TARGET_CC1_SPEC ASAN_CC1_SPEC \
+"%{m32:%{m64:%emay not use both -m32 and -m64}} \
 %{m32:-mptr32 -mno-stack-bias %{!mlong-double-128:-mlong-double-64} \
   %{!mcpu*:-mcpu=cypress}} \
 %{mv8plus:-mptr32 -mno-stack-bias %{!mlong-double-128:-mlong-double-64} \
   %{!mcpu*:-mcpu=v9}} \
 %{!m32:%{!mcpu*:-mcpu=ultrasparc}} \
-%{!mno-vis:%{!m32:%{!mcpu=v9:-mvis}}} \
-"
+%{!mno-vis:%{!m32:%{!mcpu=v9:-mvis}}}"
 #endif
 
 /* Support for a compile-time default CPU, et cetera.  The rules are:

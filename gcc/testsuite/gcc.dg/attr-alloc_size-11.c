@@ -11,7 +11,7 @@
 
 #define SHRT_MAX  __SHRT_MAX__
 #define SHRT_MIN  (-SHRT_MAX - 1)
-#define USHRT_MAX (SHRT_MAX * 2 + 1)
+#define USHRT_MAX (SHRT_MAX * 2U + 1)
 
 #define INT_MAX   __INT_MAX__
 #define INT_MIN   (-INT_MAX - 1)
@@ -47,8 +47,8 @@ typedef __SIZE_TYPE__    size_t;
 
 /* The following tests fail because of missing range information.  The xfail
    exclusions are PR79356.  */
-TEST (signed char, SCHAR_MIN + 2, ALLOC_MAX);   /* { dg-warning "argument 1 range \\\[13, \[0-9\]+\\\] exceeds maximum object size 12" "missing range info for signed char" { xfail { ! { aarch64*-*-* arm*-*-* avr-*-* alpha*-*-* ia64-*-* mips*-*-* powerpc*-*-* sparc*-*-* s390*-*-* visium-*-* } } } } */
-TEST (short, SHRT_MIN + 2, ALLOC_MAX); /* { dg-warning "argument 1 range \\\[13, \[0-9\]+\\\] exceeds maximum object size 12" "missing range info for short" { xfail { ! { aarch64*-*-* arm*-*-* alpha*-*-* avr-*-* ia64-*-* mips*-*-* powerpc*-*-* sparc*-*-* s390x-*-* visium-*-* } } } } */
+TEST (signed char, SCHAR_MIN + 2, ALLOC_MAX);   /* { dg-warning "argument 1 range \\\[13, \[0-9\]+\\\] exceeds maximum object size 12" "missing range info for signed char" { xfail { ! { aarch64*-*-* arm*-*-* avr-*-* alpha*-*-* ia64-*-* mips*-*-* or1k*-*-* pdp11*-*-* powerpc*-*-* sparc*-*-* s390*-*-* visium-*-* msp430-*-* } } } } */
+TEST (short, SHRT_MIN + 2, ALLOC_MAX); /* { dg-warning "argument 1 range \\\[13, \[0-9\]+\\\] exceeds maximum object size 12" "missing range info for short" { xfail { ! { aarch64*-*-* arm*-*-* alpha*-*-* avr-*-* ia64-*-* mips*-*-* or1k*-*-* pdp11*-*-* powerpc*-*-* sparc*-*-* s390x-*-* visium-*-* msp430-*-* } } } } */
 TEST (int, INT_MIN + 2, ALLOC_MAX);    /* { dg-warning "argument 1 range \\\[13, \[0-9\]+\\\] exceeds maximum object size 12" } */
 TEST (int, -3, ALLOC_MAX);             /* { dg-warning "argument 1 range \\\[13, \[0-9\]+\\\] exceeds maximum object size 12" } */
 TEST (int, -2, ALLOC_MAX);             /* { dg-warning "argument 1 range \\\[13, \[0-9\]+\\\] exceeds maximum object size 12" } */

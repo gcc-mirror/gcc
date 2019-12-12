@@ -1,7 +1,7 @@
 // Derived from libstdc++/12048 by LJR <ljrittle@acm.org> with
 // reminder from Petur Runolfsson <peturr02@ru.is>.
 
-// Copyright (C) 2003-2018 Free Software Foundation, Inc.
+// Copyright (C) 2003-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,6 +17,8 @@
 // You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
+
+// { dg-require-fileio "" }
 
 #include <iostream>
 #include <cstdio>

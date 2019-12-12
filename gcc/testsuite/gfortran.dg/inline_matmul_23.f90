@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-Og -fcheck=bounds -fdump-tree-optimized" }
+! { dg-options "-Og -ffrontend-optimize -fcheck=bounds -fdump-tree-optimized" }
 ! Check that bounds checking is done only before the matrix
 ! multiplication.
 

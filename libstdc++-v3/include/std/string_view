@@ -1,6 +1,6 @@
 // Components for manipulating non-owning sequences of characters -*- C++ -*-
 
-// Copyright (C) 2013-2018 Free Software Foundation, Inc.
+// Copyright (C) 2013-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,7 +47,26 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#define __cpp_lib_string_view 201603
+#define __cpp_lib_string_view 201803
+
+  // Helper for basic_string and basic_string_view members.
+  constexpr size_t
+  __sv_check(size_t __size, size_t __pos, const char* __s)
+  {
+    if (__pos > __size)
+      __throw_out_of_range_fmt(__N("%s: __pos (which is %zu) > __size "
+				   "(which is %zu)"), __s, __pos, __size);
+    return __pos;
+  }
+
+  // Helper for basic_string members.
+  // NB: __sv_limit doesn't check for a bad __pos value.
+  constexpr size_t
+  __sv_limit(size_t __size, size_t __pos, size_t __off) noexcept
+  {
+   const bool __testoff =  __off < __size - __pos;
+   return __testoff ? __off : __size - __pos;
+  }
 
   /**
    *  @class basic_string_view <string_view>
@@ -70,24 +89,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits = std::char_traits<_CharT>>
     class basic_string_view
     {
+      static_assert(!is_array_v<_CharT>);
+      static_assert(is_trivial_v<_CharT> && is_standard_layout_v<_CharT>);
+      static_assert(is_same_v<_CharT, typename _Traits::char_type>);
+
     public:
 
       // types
-      using traits_type = _Traits;
-      using value_type = _CharT;
-      using pointer = const _CharT*;
-      using const_pointer = const _CharT*;
-      using reference = const _CharT&;
-      using const_reference = const _CharT&;
-      using const_iterator = const _CharT*;
-      using iterator = const_iterator;
+      using traits_type		= _Traits;
+      using value_type		= _CharT;
+      using pointer		= value_type*;
+      using const_pointer	= const value_type*;
+      using reference		= value_type&;
+      using const_reference	= const value_type&;
+      using const_iterator	= const value_type*;
+      using iterator		= const_iterator;
       using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-      using reverse_iterator = const_reverse_iterator;
-      using size_type = size_t;
-      using difference_type = ptrdiff_t;
+      using reverse_iterator	= const_reverse_iterator;
+      using size_type		= size_t;
+      using difference_type	= ptrdiff_t;
       static constexpr size_type npos = size_type(-1);
 
-      // [string.view.cons], construct/copy
+      // [string.view.cons], construction and assignment
 
       constexpr
       basic_string_view() noexcept
@@ -107,10 +130,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_len{__len}, _M_str{__str}
       { }
 
+#if __cplusplus > 201703L && __cpp_lib_concepts
+      template<contiguous_iterator _It, sized_sentinel_for<_It> _End>
+	requires same_as<iter_value_t<_It>, _CharT>
+	  && (!convertible_to<_End, size_type>)
+	constexpr
+	basic_string_view(_It __first, _End __last)
+	: _M_len(__last - __first), _M_str(std::to_address(__first))
+	{ }
+#endif
+
       constexpr basic_string_view&
       operator=(const basic_string_view&) noexcept = default;
 
-      // [string.view.iterators], iterators
+      // [string.view.iterators], iterator support
 
       constexpr const_iterator
       begin() const noexcept
@@ -167,7 +200,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // [string.view.access], element access
 
-      constexpr const _CharT&
+      constexpr const_reference
       operator[](size_type __pos) const noexcept
       {
 	// TODO: Assert to restore in a way compatible with the constexpr.
@@ -175,7 +208,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *(this->_M_str + __pos);
       }
 
-      constexpr const _CharT&
+      constexpr const_reference
       at(size_type __pos) const
       {
 	if (__pos >= _M_len)
@@ -185,7 +218,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *(this->_M_str + __pos);
       }
 
-      constexpr const _CharT&
+      constexpr const_reference
       front() const noexcept
       {
 	// TODO: Assert to restore in a way compatible with the constexpr.
@@ -193,7 +226,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this->_M_str;
       }
 
-      constexpr const _CharT&
+      constexpr const_reference
       back() const noexcept
       {
 	// TODO: Assert to restore in a way compatible with the constexpr.
@@ -201,7 +234,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *(this->_M_str + this->_M_len - 1);
       }
 
-      constexpr const _CharT*
+      constexpr const_pointer
       data() const noexcept
       { return this->_M_str; }
 
@@ -227,25 +260,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__sv = __tmp;
       }
 
-
       // [string.view.ops], string operations:
 
       size_type
       copy(_CharT* __str, size_type __n, size_type __pos = 0) const
       {
 	__glibcxx_requires_string_len(__str, __n);
-	__pos = _M_check(__pos, "basic_string_view::copy");
+	__pos = std::__sv_check(size(), __pos, "basic_string_view::copy");
 	const size_type __rlen = std::min(__n, _M_len - __pos);
-	for (auto __begin = this->_M_str + __pos,
-	     __end = __begin + __rlen; __begin != __end;)
-	  *__str++ = *__begin++;
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 2777. basic_string_view::copy should use char_traits::copy
+	traits_type::copy(__str, data() + __pos, __rlen);
 	return __rlen;
       }
 
       constexpr basic_string_view
-      substr(size_type __pos, size_type __n = npos) const noexcept(false)
+      substr(size_type __pos = 0, size_type __n = npos) const noexcept(false)
       {
-	__pos = _M_check(__pos, "basic_string_view::substr");
+	__pos = std::__sv_check(size(), __pos, "basic_string_view::substr");
 	const size_type __rlen = std::min(__n, _M_len - __pos);
 	return basic_string_view{_M_str + __pos, __rlen};
       }
@@ -286,6 +318,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return this->substr(__pos1, __n1)
 		   .compare(basic_string_view(__str, __n2));
       }
+
+#if __cplusplus > 201703L
+      constexpr bool
+      starts_with(basic_string_view __x) const noexcept
+      { return this->substr(0, __x.size()) == __x; }
+
+      constexpr bool
+      starts_with(_CharT __x) const noexcept
+      { return !this->empty() && traits_type::eq(this->front(), __x); }
+
+      constexpr bool
+      starts_with(const _CharT* __x) const noexcept
+      { return this->starts_with(basic_string_view(__x)); }
+
+      constexpr bool
+      ends_with(basic_string_view __x) const noexcept
+      {
+	return this->size() >= __x.size()
+	    && this->compare(this->size() - __x.size(), npos, __x) == 0;
+      }
+
+      constexpr bool
+      ends_with(_CharT __x) const noexcept
+      { return !this->empty() && traits_type::eq(this->back(), __x); }
+
+      constexpr bool
+      ends_with(const _CharT* __x) const noexcept
+      { return this->ends_with(basic_string_view(__x)); }
+#endif // C++20
+
+      // [string.view.find], searching
 
       constexpr size_type
       find(basic_string_view __str, size_type __pos = 0) const noexcept
@@ -387,24 +450,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				      traits_type::length(__str));
       }
 
-      constexpr size_type
-      _M_check(size_type __pos, const char* __s) const noexcept(false)
-      {
-	if (__pos > this->size())
-	  __throw_out_of_range_fmt(__N("%s: __pos (which is %zu) > "
-				       "this->size() (which is %zu)"),
-				   __s, __pos, this->size());
-	return __pos;
-      }
-
-      // NB: _M_limit doesn't check for a bad __pos value.
-      constexpr size_type
-      _M_limit(size_type __pos, size_type __off) const noexcept
-      {
-	const bool __testoff =  __off < this->size() - __pos;
-	return __testoff ? __off : this->size() - __pos;
-      }
-      
     private:
 
       static constexpr int
@@ -422,16 +467,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const _CharT* _M_str;
     };
 
+#if __cplusplus > 201703L && __cpp_lib_concepts && __cpp_deduction_guides
+  template<contiguous_iterator _It, sized_sentinel_for<_It> _End>
+    basic_string_view(_It, _End) -> basic_string_view<iter_value_t<_It>>;
+#endif
+
   // [string.view.comparison], non-member basic_string_view comparison function
 
-  namespace __detail
-  {
-    // Identity transform to create a non-deduced context, so that only one
-    // argument participates in template argument deduction and the other
-    // argument gets implicitly converted to the deduced type. See n3766.html.
-    template<typename _Tp>
-      using __idt = common_type_t<_Tp>;
-  }
+  // Several of these functions use type_identity_t to create a non-deduced
+  // context, so that only one argument participates in template argument
+  // deduction and the other argument gets implicitly converted to the deduced
+  // type (see N3766).
 
   template<typename _CharT, typename _Traits>
     constexpr bool
@@ -442,12 +488,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits>
     constexpr bool
     operator==(basic_string_view<_CharT, _Traits> __x,
-               __detail::__idt<basic_string_view<_CharT, _Traits>> __y) noexcept
+               __type_identity_t<basic_string_view<_CharT, _Traits>> __y)
+    noexcept
     { return __x.size() == __y.size() && __x.compare(__y) == 0; }
 
   template<typename _CharT, typename _Traits>
     constexpr bool
-    operator==(__detail::__idt<basic_string_view<_CharT, _Traits>> __x,
+    operator==(__type_identity_t<basic_string_view<_CharT, _Traits>> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return __x.size() == __y.size() && __x.compare(__y) == 0; }
 
@@ -460,12 +507,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits>
     constexpr bool
     operator!=(basic_string_view<_CharT, _Traits> __x,
-               __detail::__idt<basic_string_view<_CharT, _Traits>> __y) noexcept
+               __type_identity_t<basic_string_view<_CharT, _Traits>> __y)
+    noexcept
     { return !(__x == __y); }
 
   template<typename _CharT, typename _Traits>
     constexpr bool
-    operator!=(__detail::__idt<basic_string_view<_CharT, _Traits>> __x,
+    operator!=(__type_identity_t<basic_string_view<_CharT, _Traits>> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return !(__x == __y); }
 
@@ -478,12 +526,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits>
     constexpr bool
     operator< (basic_string_view<_CharT, _Traits> __x,
-               __detail::__idt<basic_string_view<_CharT, _Traits>> __y) noexcept
+               __type_identity_t<basic_string_view<_CharT, _Traits>> __y)
+    noexcept
     { return __x.compare(__y) < 0; }
 
   template<typename _CharT, typename _Traits>
     constexpr bool
-    operator< (__detail::__idt<basic_string_view<_CharT, _Traits>> __x,
+    operator< (__type_identity_t<basic_string_view<_CharT, _Traits>> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return __x.compare(__y) < 0; }
 
@@ -496,12 +545,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits>
     constexpr bool
     operator> (basic_string_view<_CharT, _Traits> __x,
-               __detail::__idt<basic_string_view<_CharT, _Traits>> __y) noexcept
+               __type_identity_t<basic_string_view<_CharT, _Traits>> __y)
+    noexcept
     { return __x.compare(__y) > 0; }
 
   template<typename _CharT, typename _Traits>
     constexpr bool
-    operator> (__detail::__idt<basic_string_view<_CharT, _Traits>> __x,
+    operator> (__type_identity_t<basic_string_view<_CharT, _Traits>> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return __x.compare(__y) > 0; }
 
@@ -514,12 +564,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits>
     constexpr bool
     operator<=(basic_string_view<_CharT, _Traits> __x,
-               __detail::__idt<basic_string_view<_CharT, _Traits>> __y) noexcept
+               __type_identity_t<basic_string_view<_CharT, _Traits>> __y)
+    noexcept
     { return __x.compare(__y) <= 0; }
 
   template<typename _CharT, typename _Traits>
     constexpr bool
-    operator<=(__detail::__idt<basic_string_view<_CharT, _Traits>> __x,
+    operator<=(__type_identity_t<basic_string_view<_CharT, _Traits>> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return __x.compare(__y) <= 0; }
 
@@ -532,12 +583,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits>
     constexpr bool
     operator>=(basic_string_view<_CharT, _Traits> __x,
-               __detail::__idt<basic_string_view<_CharT, _Traits>> __y) noexcept
+               __type_identity_t<basic_string_view<_CharT, _Traits>> __y)
+    noexcept
     { return __x.compare(__y) >= 0; }
 
   template<typename _CharT, typename _Traits>
     constexpr bool
-    operator>=(__detail::__idt<basic_string_view<_CharT, _Traits>> __x,
+    operator>=(__type_identity_t<basic_string_view<_CharT, _Traits>> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return __x.compare(__y) >= 0; }
 
@@ -555,10 +607,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_USE_WCHAR_T
   using wstring_view = basic_string_view<wchar_t>;
 #endif
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+#ifdef _GLIBCXX_USE_CHAR8_T
+  using u8string_view = basic_string_view<char8_t>;
+#endif
   using u16string_view = basic_string_view<char16_t>;
   using u32string_view = basic_string_view<char32_t>;
-#endif
 
   // [string.view.hash], hash support:
 
@@ -581,7 +634,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_USE_WCHAR_T
   template<>
     struct hash<wstring_view>
-    : public __hash_base<size_t, wstring>
+    : public __hash_base<size_t, wstring_view>
     {
       size_t
       operator()(const wstring_view& __s) const noexcept
@@ -594,7 +647,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 #endif
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<>
+    struct hash<u8string_view>
+    : public __hash_base<size_t, u8string_view>
+    {
+      size_t
+      operator()(const u8string_view& __str) const noexcept
+      { return std::_Hash_impl::hash(__str.data(), __str.length()); }
+    };
+
+  template<>
+    struct __is_fast_hash<hash<u8string_view>> : std::false_type
+    { };
+#endif
+
   template<>
     struct hash<u16string_view>
     : public __hash_base<size_t, u16string_view>
@@ -622,7 +689,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __is_fast_hash<hash<u32string_view>> : std::false_type
     { };
-#endif
 
   inline namespace literals
   {
@@ -640,7 +706,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return basic_string_view<wchar_t>{__str, __len}; }
 #endif
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+#ifdef _GLIBCXX_USE_CHAR8_T
+    inline constexpr basic_string_view<char8_t>
+    operator""sv(const char8_t* __str, size_t __len) noexcept
+    { return basic_string_view<char8_t>{__str, __len}; }
+#endif
+
     inline constexpr basic_string_view<char16_t>
     operator""sv(const char16_t* __str, size_t __len) noexcept
     { return basic_string_view<char16_t>{__str, __len}; }
@@ -648,7 +719,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline constexpr basic_string_view<char32_t>
     operator""sv(const char32_t* __str, size_t __len) noexcept
     { return basic_string_view<char32_t>{__str, __len}; }
-#endif
+
 #pragma GCC diagnostic pop
   } // namespace string_literals
   } // namespace literals

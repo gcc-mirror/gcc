@@ -1,5 +1,5 @@
 /* Read and write coverage files, and associated functionality.
-   Copyright (C) 1990-2018 Free Software Foundation, Inc.
+   Copyright (C) 1990-2019 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -47,8 +47,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "pass_manager.h"
 #include "intl.h"
-#include "params.h"
 #include "auto-profile.h"
+#include "profile.h"
 
 #include "gcov-io.c"
 
@@ -73,7 +73,7 @@ struct counts_entry : pointer_hash <counts_entry>
   unsigned lineno_checksum;
   unsigned cfg_checksum;
   gcov_type *counts;
-  gcov_summary summary;
+  unsigned n_counts;
 
   /* hash_table support.  */
   static inline hashval_t hash (const counts_entry *);
@@ -185,8 +185,6 @@ static void
 read_counts_file (void)
 {
   gcov_unsigned_t fn_ident = 0;
-  gcov_summary summary;
-  unsigned new_summary = 1;
   gcov_unsigned_t tag;
   int is_error = 0;
   unsigned lineno_checksum = 0;
@@ -236,27 +234,12 @@ read_counts_file (void)
 	    }
 	  else
 	    fn_ident = lineno_checksum = cfg_checksum = 0;
-	  new_summary = 1;
 	}
-      else if (tag == GCOV_TAG_PROGRAM_SUMMARY)
+      else if (tag == GCOV_TAG_OBJECT_SUMMARY)
 	{
-	  struct gcov_summary sum;
-
-	  if (new_summary)
-	    memset (&summary, 0, sizeof (summary));
-
-	  gcov_read_summary (&sum);
-	  summary.runs += sum.runs;
-	  summary.sum_all += sum.sum_all;
-	  if (summary.run_max < sum.run_max)
-	    summary.run_max = sum.run_max;
-	  summary.sum_max += sum.sum_max;
-          if (new_summary)
-	    memcpy (summary.histogram, sum.histogram,
-		sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
-          else
-	    gcov_histogram_merge (summary.histogram, sum.histogram);
-	  new_summary = 0;
+	  profile_info = XCNEW (gcov_summary);
+	  profile_info->runs = gcov_read_unsigned ();
+	  profile_info->sum_max = gcov_read_unsigned ();
 	}
       else if (GCOV_TAG_IS_COUNTER (tag) && fn_ident)
 	{
@@ -276,10 +259,8 @@ read_counts_file (void)
 	      entry->ctr = elt.ctr;
 	      entry->lineno_checksum = lineno_checksum;
 	      entry->cfg_checksum = cfg_checksum;
-	      if (elt.ctr == GCOV_COUNTER_ARCS)
-		entry->summary = summary;
-              entry->summary.num = n_counts;
 	      entry->counts = XCNEWVEC (gcov_type, n_counts);
+	      entry->n_counts = n_counts;
 	    }
 	  else if (entry->lineno_checksum != lineno_checksum
 		   || entry->cfg_checksum != cfg_checksum)
@@ -291,22 +272,6 @@ read_counts_file (void)
 	      delete counts_hash;
 	      counts_hash = NULL;
 	      break;
-	    }
-	  else if (entry->summary.num != n_counts)
-	    {
-	      error ("Profile data for function %u is corrupted", fn_ident);
-	      error ("number of counters is %d instead of %d", entry->summary.num, n_counts);
-	      delete counts_hash;
-	      counts_hash = NULL;
-	      break;
-	    }
-	  else
-	    {
-	      entry->summary.runs += summary.runs;
-	      entry->summary.sum_all += summary.sum_all;
-	      if (entry->summary.run_max < summary.run_max)
-		entry->summary.run_max = summary.run_max;
-	      entry->summary.sum_max += summary.sum_max;
 	    }
 	  for (ix = 0; ix != n_counts; ix++)
 	    entry->counts[ix] += gcov_read_counter ();
@@ -330,9 +295,8 @@ read_counts_file (void)
 /* Returns the counters for a particular tag.  */
 
 gcov_type *
-get_coverage_counts (unsigned counter, unsigned expected,
-                     unsigned cfg_checksum, unsigned lineno_checksum,
-		     const gcov_summary **summary)
+get_coverage_counts (unsigned counter, unsigned cfg_checksum,
+		     unsigned lineno_checksum, unsigned int n_counts)
 {
   counts_entry *entry, elt;
 
@@ -341,50 +305,72 @@ get_coverage_counts (unsigned counter, unsigned expected,
     {
       static int warned = 0;
 
-      if (!warned++ && dump_enabled_p ())
+      if (!warned++)
 	{
-	  dump_user_location_t loc
-	    = dump_user_location_t::from_location_t (input_location);
-	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
-			   (flag_guess_branch_prob
-			    ? "file %s not found, execution counts estimated\n"
-			    : "file %s not found, execution counts assumed to "
-			    "be zero\n"),
-			   da_file_name);
+	  warning (OPT_Wmissing_profile,
+		   "%qs profile count data file not found",
+		   da_file_name);
+	  if (dump_enabled_p ())
+	    {
+	      dump_user_location_t loc
+		= dump_user_location_t::from_location_t (input_location);
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			       "file %s not found, %s\n", da_file_name,
+			       (flag_guess_branch_prob
+				? "execution counts estimated"
+				: "execution counts assumed to be zero"));
+	    }
 	}
       return NULL;
     }
-  if (PARAM_VALUE (PARAM_PROFILE_FUNC_INTERNAL_ID))
+  if (param_profile_func_internal_id)
     elt.ident = current_function_funcdef_no + 1;
   else
     {
       gcc_assert (coverage_node_map_initialized_p ());
-      elt.ident = cgraph_node::get (cfun->decl)->profile_id;
+      elt.ident = cgraph_node::get (current_function_decl)->profile_id;
     }
   elt.ctr = counter;
   entry = counts_hash->find (&elt);
-  if (!entry || !entry->summary.num)
-    /* The function was not emitted, or is weak and not chosen in the
-       final executable.  Silently fail, because there's nothing we
-       can do about it.  */
-    return NULL;
+  if (!entry)
+    {
+      if (counter == GCOV_COUNTER_ARCS)
+	warning_at (DECL_SOURCE_LOCATION (current_function_decl),
+		    OPT_Wmissing_profile,
+		    "profile for function %qD not found in profile data",
+		    current_function_decl);
+      /* The function was not emitted, or is weak and not chosen in the
+	 final executable.  Silently fail, because there's nothing we
+	 can do about it.  */
+      return NULL;
+    }
   
-  if (entry->cfg_checksum != cfg_checksum
-      || entry->summary.num != expected)
+  if (entry->cfg_checksum != cfg_checksum || entry->n_counts != n_counts)
     {
       static int warned = 0;
       bool warning_printed = false;
-      tree id = DECL_ASSEMBLER_NAME (current_function_decl);
 
-      warning_printed =
-	warning_at (input_location, OPT_Wcoverage_mismatch,
-		    "the control flow of function %qE does not match "
-		    "its profile data (counter %qs)", id, ctr_names[counter]);
+      if (entry->n_counts != n_counts)
+	warning_printed =
+	  warning_at (DECL_SOURCE_LOCATION (current_function_decl),
+		      OPT_Wcoverage_mismatch,
+		      "number of counters in profile data for function %qD "
+		      "does not match "
+		      "its profile data (counter %qs, expected %i and have %i)",
+		      current_function_decl,
+		      ctr_names[counter], entry->n_counts, n_counts);
+      else
+	warning_printed =
+	  warning_at (DECL_SOURCE_LOCATION (current_function_decl),
+		      OPT_Wcoverage_mismatch,
+		      "the control flow of function %qD does not match "
+		      "its profile data (counter %qs)", current_function_decl,
+		      ctr_names[counter]);
       if (warning_printed && dump_enabled_p ())
 	{
 	  dump_user_location_t loc
-	    = dump_user_location_t::from_location_t (input_location);
-          dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+	    = dump_user_location_t::from_function_decl (current_function_decl);
+          dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
                            "use -Wno-error=coverage-mismatch to tolerate "
                            "the mismatch but performance may drop if the "
                            "function is hot\n");
@@ -392,14 +378,14 @@ get_coverage_counts (unsigned counter, unsigned expected,
 	  if (!seen_error ()
 	      && !warned++)
 	    {
-	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
                                "coverage mismatch ignored\n");
-	      dump_printf (MSG_OPTIMIZED_LOCATIONS,
+	      dump_printf (MSG_MISSED_OPTIMIZATION,
                            flag_guess_branch_prob
                            ? G_("execution counts estimated\n")
                            : G_("execution counts assumed to be zero\n"));
 	      if (!flag_guess_branch_prob)
-		dump_printf (MSG_OPTIMIZED_LOCATIONS,
+		dump_printf (MSG_MISSED_OPTIMIZATION,
                              "this can result in poorly optimized code\n");
 	    }
 	}
@@ -408,14 +394,12 @@ get_coverage_counts (unsigned counter, unsigned expected,
     }
   else if (entry->lineno_checksum != lineno_checksum)
     {
-      warning (OPT_Wcoverage_mismatch,
-               "source locations for function %qE have changed,"
-	       " the profile data may be out of date",
-	       DECL_ASSEMBLER_NAME (current_function_decl));
+      warning_at (DECL_SOURCE_LOCATION (current_function_decl),
+		  OPT_Wcoverage_mismatch,
+		  "source locations for function %qD have changed,"
+		  " the profile data may be out of date",
+		  current_function_decl);
     }
-
-  if (summary)
-    *summary = &entry->summary;
 
   return entry->counts;
 }
@@ -575,7 +559,7 @@ coverage_compute_profile_id (struct cgraph_node *n)
     {
       expanded_location xloc
 	= expand_location (DECL_SOURCE_LOCATION (n->decl));
-      bool use_name_only = (PARAM_VALUE (PARAM_PROFILE_FUNC_INTERNAL_ID) == 0);
+      bool use_name_only = (param_profile_func_internal_id == 0);
 
       chksum = (use_name_only ? 0 : xloc.line);
       if (xloc.file)
@@ -643,7 +627,7 @@ coverage_begin_function (unsigned lineno_checksum, unsigned cfg_checksum)
 
   /* Announce function */
   offset = gcov_write_tag (GCOV_TAG_FUNCTION);
-  if (PARAM_VALUE (PARAM_PROFILE_FUNC_INTERNAL_ID))
+  if (param_profile_func_internal_id)
     gcov_write_unsigned (current_function_funcdef_no + 1);
   else
     {
@@ -656,7 +640,9 @@ coverage_begin_function (unsigned lineno_checksum, unsigned cfg_checksum)
   gcov_write_unsigned (cfg_checksum);
   gcov_write_string (IDENTIFIER_POINTER
 		     (DECL_ASSEMBLER_NAME (current_function_decl)));
-  gcov_write_unsigned (DECL_ARTIFICIAL (current_function_decl));
+  gcov_write_unsigned (DECL_ARTIFICIAL (current_function_decl)
+		       && !DECL_FUNCTION_VERSIONED (current_function_decl)
+		       && !DECL_LAMBDA_FUNCTION_P (current_function_decl));
   gcov_write_filename (xloc.file);
   gcov_write_unsigned (xloc.line);
   gcov_write_unsigned (xloc.column);
@@ -664,7 +650,11 @@ coverage_begin_function (unsigned lineno_checksum, unsigned cfg_checksum)
   expanded_location endloc = expand_location (cfun->function_end_locus);
 
   /* Function can start in a single file and end in another one.  */
-  gcov_write_unsigned (endloc.file == xloc.file ? endloc.line : xloc.line);
+  int end_line = endloc.file == xloc.file ? endloc.line : xloc.line;
+  int end_column = endloc.file == xloc.file ? endloc.column: xloc.column;
+  gcc_assert (xloc.line <= end_line);
+  gcov_write_unsigned (end_line);
+  gcov_write_unsigned (end_column);
   gcov_write_length (offset);
 
   return !gcov_is_error ();
@@ -691,7 +681,7 @@ coverage_end_function (unsigned lineno_checksum, unsigned cfg_checksum)
 
       item = ggc_alloc<coverage_data> ();
 
-      if (PARAM_VALUE (PARAM_PROFILE_FUNC_INTERNAL_ID))
+      if (param_profile_func_internal_id)
 	item->ident = current_function_funcdef_no + 1;
       else
 	{
@@ -1238,6 +1228,14 @@ coverage_init (const char *filename)
       else
 	profile_data_prefix = getpwd ();
     }
+  else
+    {
+      /* when filename is a absolute path, we also need to mangle the full
+      path of filename to prevent the profiling data being stored into a
+      different path than that specified by profile_data_prefix.  */
+      filename = mangle_path (filename);
+      len = strlen (filename);
+    }
 
   if (profile_data_prefix)
     prefix_len = strlen (profile_data_prefix);
@@ -1264,9 +1262,14 @@ coverage_init (const char *filename)
   /* Name of bbg file.  */
   if (flag_test_coverage && !flag_compare_debug)
     {
-      bbg_file_name = XNEWVEC (char, len + strlen (GCOV_NOTE_SUFFIX) + 1);
-      memcpy (bbg_file_name, filename, len);
-      strcpy (bbg_file_name + len, GCOV_NOTE_SUFFIX);
+      if (profile_note_location)
+	bbg_file_name = xstrdup (profile_note_location);
+      else
+	{
+	  bbg_file_name = XNEWVEC (char, len + strlen (GCOV_NOTE_SUFFIX) + 1);
+	  memcpy (bbg_file_name, filename, len);
+	  strcpy (bbg_file_name + len, GCOV_NOTE_SUFFIX);
+	}
 
       if (!gcov_open (bbg_file_name, -1))
 	{

@@ -4,4 +4,4 @@
 /* { dg-do compile } */
 /* { dg-options "-Wformat-y2k" } */
 
-/* { dg-warning "-Wformat-y2k ignored without -Wformat" "ignored" { target *-*-* } 0 } */
+/* { dg-warning "'-Wformat-y2k' ignored without '-Wformat'" "ignored" { target *-*-* } 0 } */

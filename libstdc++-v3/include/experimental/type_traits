@@ -1,6 +1,6 @@
 // Variable Templates For Type Traits -*- C++ -*-
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,6 +24,7 @@
 
 /** @file experimental/type_traits
  *  This is a TS C++ Library header.
+ *  @ingroup libfund-ts
  */
 
 //
@@ -50,7 +51,7 @@ inline namespace fundamentals_v1
 {
 #define __cpp_lib_experimental_type_trait_variable_templates 201402
 
-// See C++14 §20.10.4.1, primary type categories
+// See C++14 20.10.4.1, primary type categories
 template <typename _Tp>
   constexpr bool is_void_v = is_void<_Tp>::value;
 template <typename _Tp>
@@ -82,7 +83,7 @@ template <typename _Tp>
 template <typename _Tp>
   constexpr bool is_function_v = is_function<_Tp>::value;
 
-// See C++14 §20.10.4.2, composite type categories
+// See C++14 20.10.4.2, composite type categories
 template <typename _Tp>
   constexpr bool is_reference_v = is_reference<_Tp>::value;
 template <typename _Tp>
@@ -98,7 +99,7 @@ template <typename _Tp>
 template <typename _Tp>
  constexpr bool is_member_pointer_v = is_member_pointer<_Tp>::value;
 
-// See C++14 §20.10.4.3, type properties
+// See C++14 20.10.4.3, type properties
 template <typename _Tp>
   constexpr bool is_const_v = is_const<_Tp>::value;
 template <typename _Tp>
@@ -194,7 +195,7 @@ template <typename _Tp>
   constexpr bool has_virtual_destructor_v =
     has_virtual_destructor<_Tp>::value;
 
-// See C++14 §20.10.5, type property queries
+// See C++14 20.10.5, type property queries
 template <typename _Tp>
   constexpr size_t alignment_of_v = alignment_of<_Tp>::value;
 template <typename _Tp>
@@ -202,7 +203,7 @@ template <typename _Tp>
 template <typename _Tp, unsigned _Idx = 0>
   constexpr size_t extent_v = extent<_Tp, _Idx>::value;
 
-// See C++14 §20.10.6, type relations
+// See C++14 20.10.6, type relations
 template <typename _Tp, typename _Up>
   constexpr bool is_same_v = is_same<_Tp, _Up>::value;
 template <typename _Base, typename _Derived>
@@ -226,13 +227,16 @@ inline namespace fundamentals_v2
 
 template<typename...> using void_t = void;
 
-struct nonesuch
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
+struct __nonesuchbase {};
+struct nonesuch : private __nonesuchbase
 {
-  nonesuch() = delete;
   ~nonesuch() = delete;
   nonesuch(nonesuch const&) = delete;
   void operator=(nonesuch const&) = delete;
 };
+#pragma GCC diagnostic pop
 
 template<template<typename...> class _Op, typename... _Args>
   using is_detected
@@ -251,12 +255,12 @@ template<typename _Default, template<typename...> class _Op, typename... _Args>
 template<typename _Default, template<typename...> class _Op, typename... _Args>
   using detected_or_t = typename detected_or<_Default, _Op, _Args...>::type;
 
-template<typename Expected, template<typename...> class _Op, typename... _Args>
-  using is_detected_exact = is_same<Expected, detected_t<_Op, _Args...>>;
+template<typename _Expected, template<typename...> class _Op, typename... _Args>
+  using is_detected_exact = is_same<_Expected, detected_t<_Op, _Args...>>;
 
-template<typename Expected, template<typename...> class _Op, typename... _Args>
+template<typename _Expected, template<typename...> class _Op, typename... _Args>
   constexpr bool is_detected_exact_v
-    = is_detected_exact<Expected, _Op, _Args...>::value;
+    = is_detected_exact<_Expected, _Op, _Args...>::value;
 
 template<typename _To, template<typename...> class _Op, typename... _Args>
   using is_detected_convertible

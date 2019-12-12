@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-ccp -fdisable-tree-evrp -fdump-tree-vrp1" } */
+/* { dg-options "-O2 -fno-tree-ccp -fdisable-tree-evrp -fdump-tree-vrp1-details" } */
 
 void h (void);
 
@@ -17,4 +17,4 @@ int g (int i, int j)
     return 1;
 }
 
-/* { dg-final { scan-tree-dump-times "Folding predicate.*to 1" 1 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "gimple_simplified" 1 "vrp1" } } */

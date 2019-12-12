@@ -1,5 +1,5 @@
 /* Hash tables.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -304,34 +304,43 @@ ht_dump_statistics (cpp_hash_table *table)
   while (++p < limit);
 
   nelts = table->nelements;
-  overhead = obstack_memory_used (&table->stack) - total_bytes;
   headers = table->nslots * sizeof (hashnode);
 
-  fprintf (stderr, "\nString pool\nentries\t\t%lu\n",
+  fprintf (stderr, "\nString pool\n%-32s%lu\n", "entries:",
 	   (unsigned long) nelts);
-  fprintf (stderr, "identifiers\t%lu (%.2f%%)\n",
+  fprintf (stderr, "%-32s%lu (%.2f%%)\n", "identifiers:",
 	   (unsigned long) nids, nids * 100.0 / nelts);
-  fprintf (stderr, "slots\t\t%lu\n",
+  fprintf (stderr, "%-32s%lu\n", "slots:",
 	   (unsigned long) table->nslots);
-  fprintf (stderr, "deleted\t\t%lu\n",
+  fprintf (stderr, "%-32s%lu\n", "deleted:",
 	   (unsigned long) deleted);
-  fprintf (stderr, "bytes\t\t%lu%c (%lu%c overhead)\n",
-	   SCALE (total_bytes), LABEL (total_bytes),
-	   SCALE (overhead), LABEL (overhead));
-  fprintf (stderr, "table size\t%lu%c\n",
+
+  if (table->alloc_subobject)
+    fprintf (stderr, "%-32s%lu%c\n", "GGC bytes:",
+	     SCALE (total_bytes), LABEL (total_bytes));
+  else
+    {
+      overhead = obstack_memory_used (&table->stack) - total_bytes;
+      fprintf (stderr, "%-32s%lu%c (%lu%c overhead)\n",
+	       "obstack bytes:",
+	       SCALE (total_bytes), LABEL (total_bytes),
+	       SCALE (overhead), LABEL (overhead));
+    }
+  fprintf (stderr, "%-32s%lu%c\n", "table size:",
 	   SCALE (headers), LABEL (headers));
 
   exp_len = (double)total_bytes / (double)nelts;
   exp2_len = exp_len * exp_len;
   exp_len2 = (double) sum_of_squares / (double) nelts;
 
-  fprintf (stderr, "coll/search\t%.4f\n",
+  fprintf (stderr, "%-32s%.4f\n", "coll/search:",
 	   (double) table->collisions / (double) table->searches);
-  fprintf (stderr, "ins/search\t%.4f\n",
+  fprintf (stderr, "%-32s%.4f\n", "ins/search:",
 	   (double) nelts / (double) table->searches);
-  fprintf (stderr, "avg. entry\t%.2f bytes (+/- %.2f)\n",
+  fprintf (stderr, "%-32s%.2f bytes (+/- %.2f)\n",
+	   "avg. entry:",
 	   exp_len, approx_sqrt (exp_len2 - exp2_len));
-  fprintf (stderr, "longest entry\t%lu\n",
+  fprintf (stderr, "%-32s%lu\n", "longest entry:",
 	   (unsigned long) longest);
 #undef SCALE
 #undef LABEL

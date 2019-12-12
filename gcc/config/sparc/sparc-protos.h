@@ -1,5 +1,5 @@
 /* Prototypes of target machine for SPARC.
-   Copyright (C) 1999-2018 Free Software Foundation, Inc.
+   Copyright (C) 1999-2019 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -43,6 +43,7 @@ extern void sparc_override_options (void);
 extern void sparc_output_scratch_registers (FILE *);
 extern void sparc_target_macros (void);
 extern void sparc_emit_membar_for_model (enum memmodel, int, int);
+extern int sparc_branch_cost (bool, bool);
 
 #ifdef RTX_CODE
 extern machine_mode select_cc_mode (enum rtx_code, rtx, rtx);
@@ -68,6 +69,7 @@ extern void sparc_split_reg_mem (rtx, rtx, machine_mode);
 extern void sparc_split_mem_reg (rtx, rtx, machine_mode);
 extern int sparc_split_reg_reg_legitimate (rtx, rtx);
 extern void sparc_split_reg_reg (rtx, rtx, machine_mode);
+extern const char *output_load_pcrel_sym (rtx *);
 extern const char *output_ubranch (rtx, rtx_insn *);
 extern const char *output_cbranch (rtx, rtx, int, int, int, rtx_insn *);
 extern const char *output_return (rtx_insn *);
@@ -109,5 +111,8 @@ unsigned int sparc_regmode_natural_size (machine_mode);
 #endif /* RTX_CODE */
 
 extern rtl_opt_pass *make_pass_work_around_errata (gcc::context *);
+
+/* Routines implemented in sparc-d.c  */
+extern void sparc_d_target_versions (void);
 
 #endif /* __SPARC_PROTOS_H__ */

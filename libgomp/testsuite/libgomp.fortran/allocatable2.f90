@@ -7,7 +7,7 @@
   integer :: n
   logical :: l
 !$omp threadprivate (a)
-  if (allocated (a)) STOP 1
+  if (allocated (a)) stop 1
   call omp_set_dynamic (.false.)
   l = .false.
 !$omp parallel num_threads (4) reduction(.or.:l)
@@ -16,7 +16,7 @@
   l = l.or..not.allocated (a)
   l = l.or.size(a).ne.12.or.size(a,1).ne.3.or.size(a,2).ne.4
 !$omp end parallel
-  if (l.or.any(a.ne.6)) STOP 1
+  if (l.or.any(a.ne.6)) stop 2
 !$omp parallel num_threads (4) copyin (a) reduction(.or.:l) private (b)
   l = l.or.allocated (b)
   l = l.or..not.allocated (a)
@@ -37,11 +37,11 @@
   deallocate (b)
   l = l.or.allocated (b)
 !$omp end parallel
-  if (n.lt.0 .or. n.ge.4) STOP 2
-  if (l.or.any(a.ne.(n + 36))) STOP 3
+  if (n.lt.0 .or. n.ge.4) stop 3
+  if (l.or.any(a.ne.(n + 36))) stop 4
 !$omp parallel num_threads (4) reduction(.or.:l)
   deallocate (a)
   l = l.or.allocated (a)
 !$omp end parallel
-  if (l.or.allocated (a)) STOP 4
+  if (l.or.allocated (a)) stop 5
 end

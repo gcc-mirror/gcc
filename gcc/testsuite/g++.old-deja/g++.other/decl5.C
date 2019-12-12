@@ -8,11 +8,10 @@
 
 
 struct A {
-  int A::fn();        // { dg-error "extra qualification" } 
-  int A::m;           // { dg-error "extra qualification" } 
+  int A::fn();        // { dg-error "7:extra qualification" } 
+  int A::m;           // { dg-error "7:extra qualification" } 
   struct e;
-  struct A::e {int i;}; // { dg-error "extra qualification" "qual" } 
-  // { dg-error "anonymous struct" "anon" { target *-*-* } .-1 }
+  struct A::e {int i;}; // { dg-error "10:extra qualification" "qual" } 
   struct A::expand {  // { dg-error "qualified name" } 
   int m;
   };
@@ -35,7 +34,7 @@ struct B {
   struct ::Q {        // { dg-error "global qual" } ::Q not a member of B
     int m;
   };
-  int A::fn() {       // { dg-error "cannot define member" } A::fn not a member of B
+  int A::fn() {       // { dg-error "7:cannot define member" } A::fn not a member of B
     return 0;
   }
   void fn(struct ::Q &);

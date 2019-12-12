@@ -1,7 +1,6 @@
 /* { dg-do run { target { powerpc*-*-linux* && { lp64 && p9vector_hw } } } } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
-/* { dg-options "-O3 -mcpu=power9" } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
+/* { dg-options "-O3 -mdejagnu-cpu=power9" } */
 
 /* Verify that we get correct code when we vectorize this SAD loop using
    vabsdub. */

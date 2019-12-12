@@ -2,12 +2,16 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 
+/* We need this type to be as wide as the register chosen below, so
+   that, when we preserve it across main, we preserve all of it.  */
+typedef int __attribute__ ((mode (__word__))) reg_type;
+
 #if !__PIC__
-register int k asm("%ebx");
+register reg_type k asm("%ebx");
 #elif __amd64
-register int k asm("%r12");
+register reg_type k asm("%r12");
 #else
-register int k asm("%esi");
+register reg_type k asm("%esi");
 #endif
 
 void __attribute__((noinline))
@@ -18,7 +22,7 @@ foo()
 
 void test()
 {
-  int i;
+  reg_type i;
   for (i = 0; i < 10; i += k)
     {
       k = 0;
@@ -28,7 +32,7 @@ void test()
 
 int main()
 {
-  int old = k;
+  reg_type old = k;
   test();
   k = old;
   return 0;

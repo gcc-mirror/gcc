@@ -20,4 +20,4 @@ main (void)
   foo ();
 }
 
-/* { dg-output "execution reached a __builtin_unreachable\\(\\) call" } */
+/* { dg-output "execution reached an unreachable program point" } */

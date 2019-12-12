@@ -1,6 +1,6 @@
 // TR1 hashtable.h header -*- C++ -*-
 
-// Copyright (C) 2007-2018 Free Software Foundation, Inc.
+// Copyright (C) 2007-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,6 +34,7 @@
 #pragma GCC system_header
 
 #include <tr1/hashtable_policy.h>
+#include <ext/alloc_traits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -125,6 +126,8 @@ namespace tr1
 					    __constant_iterators,
 					    __unique_keys> >
     {
+      typedef __gnu_cxx::__alloc_traits<_Allocator> _Alloc_traits;
+
     public:
       typedef _Allocator                                  allocator_type;
       typedef _Value                                      value_type;
@@ -134,10 +137,10 @@ namespace tr1
       // hasher, if present, comes from _Hash_code_base.
       typedef typename _Allocator::difference_type        difference_type;
       typedef typename _Allocator::size_type              size_type;
-      typedef typename _Allocator::pointer                pointer;
-      typedef typename _Allocator::const_pointer          const_pointer;
-      typedef typename _Allocator::reference              reference;
-      typedef typename _Allocator::const_reference        const_reference;
+      typedef typename _Alloc_traits::pointer             pointer;
+      typedef typename _Alloc_traits::const_pointer       const_pointer;
+      typedef typename _Alloc_traits::reference           reference;
+      typedef typename _Alloc_traits::const_reference     const_reference;
 
       typedef __detail::_Node_iterator<value_type, __constant_iterators,
 				       __cache_hash_code>
@@ -161,13 +164,13 @@ namespace tr1
 
     private:
       typedef __detail::_Hash_node<_Value, __cache_hash_code> _Node;
-      typedef typename _Allocator::template rebind<_Node>::other
-							_Node_allocator_type;
-      typedef typename _Allocator::template rebind<_Node*>::other
-							_Bucket_allocator_type;
+      typedef typename _Alloc_traits::template rebind<_Node>::other
+						      _Node_allocator_type;
+      typedef typename _Alloc_traits::template rebind<_Node*>::other
+						      _Bucket_allocator_type;
 
-      typedef typename _Allocator::template rebind<_Value>::other
-							_Value_allocator_type;
+      typedef typename _Alloc_traits::template rebind<_Value>::other
+						      _Value_allocator_type;
 
       _Node_allocator_type   _M_node_allocator;
       _Node**                _M_buckets;
@@ -244,7 +247,7 @@ namespace tr1
       size() const
       { return _M_element_count; }
 
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const
       { return size() == 0; }
 
@@ -258,7 +261,10 @@ namespace tr1
 
       size_type
       max_size() const
-      { return _M_node_allocator.max_size(); }
+      {
+	typedef __gnu_cxx::__alloc_traits<_Node_allocator_type> _Traits;
+	return _Traits::max_size(_M_node_allocator);
+      }
 
       // Observers
       key_equal
@@ -429,7 +435,9 @@ namespace tr1
       _Node* __n = _M_node_allocator.allocate(1);
       __try
 	{
-	  _M_get_Value_allocator().construct(&__n->_M_v, __v);
+	  _Value_allocator_type __a = _M_get_Value_allocator();
+	  typedef __gnu_cxx::__alloc_traits<_Value_allocator_type> _Traits;
+	  _Traits::construct(__a, &__n->_M_v, __v);
 	  __n->_M_next = 0;
 	  return __n;
 	}
@@ -449,7 +457,9 @@ namespace tr1
 	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
     _M_deallocate_node(_Node* __n)
     {
-      _M_get_Value_allocator().destroy(&__n->_M_v);
+      _Value_allocator_type __a = _M_get_Value_allocator();
+      typedef __gnu_cxx::__alloc_traits<_Value_allocator_type> _Traits;
+      _Traits::destroy(__a, &__n->_M_v);
       _M_node_allocator.deallocate(__n, 1);
     }
 

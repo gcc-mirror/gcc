@@ -1,6 +1,6 @@
 // { dg-do compile { target c++14 } }
 
-// Copyright (C) 2013-2018 Free Software Foundation, Inc.
+// Copyright (C) 2013-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,3 +43,16 @@ __gnu_test::basic_types<std::experimental::wstring_view> t2b;
 __gnu_test::reversible_types<std::experimental::wstring_view> t2r;
 typedef typename std::experimental::wstring_view::traits_type traits_type2;
 #endif
+
+static_assert(
+    std::is_same<std::experimental::string_view::pointer, char*>(),
+    "pointer should be value_type*");
+static_assert(
+    std::is_same<std::experimental::string_view::const_pointer, const char*>(),
+    "const_pointer should be const value_type*");
+static_assert(
+    std::is_same<std::experimental::string_view::reference, char&>(),
+    "reference should be value_type&");
+static_assert(
+    std::is_same<std::experimental::string_view::const_reference, const char&>(),
+    "const_reference should be const value_type&");

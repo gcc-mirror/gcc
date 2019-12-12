@@ -11,7 +11,7 @@ volatile int r;
 
 void set_eax(int val)
 {
-  __asm__ __volatile__ ("mov %0, %%eax" : : "m" (val));
+  __asm__ __volatile__ ("mov %0, %%eax" : : "m" (val) : "eax");
 }
 
 void foo(int val)

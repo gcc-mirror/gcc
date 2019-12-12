@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2013-2018 Free Software Foundation, Inc.
+// Copyright (C) 2013-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,6 +27,7 @@ void test01()
 
   // Positive tests.
   static_assert(test_category<is_class, ClassType>(true), "");
+  static_assert(test_category<is_class, IncompleteClass>(true), "");
   static_assert(test_category<is_class, DerivedType>(true), "");
   static_assert(test_category<is_class, ConvType>(true), "");
   static_assert(test_category<is_class, AbstractClass>(true), "");
@@ -47,4 +48,5 @@ void test01()
   static_assert(test_category<is_class, int (ClassType::*) (int)>(false), "");
   static_assert(test_category<is_class, int (int)>(false), "");
   static_assert(test_category<is_class, EnumType>(false), "");
+  static_assert(test_category<is_class, IncompleteUnion>(false), "");
 }

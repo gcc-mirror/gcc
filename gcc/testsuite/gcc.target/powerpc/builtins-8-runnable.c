@@ -1,6 +1,5 @@
 /* { dg-do run { target { powerpc*-*-* && { p8vector_hw } } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-mcpu=power8 -O2" } */
+/* { dg-options "-mdejagnu-cpu=power8 -O2" } */
 
 #include <stdint.h>
 #include <stdio.h>

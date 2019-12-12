@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,6 +37,8 @@
  * @file hash_load_check_resize_trigger_imp.hpp
  * Contains a resize trigger implementation.
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 #define PB_DS_ASSERT_VALID(X)						\
   _GLIBCXX_DEBUG_ONLY(X.assert_valid(__FILE__, __LINE__);)
@@ -291,3 +293,4 @@ assert_valid(const char* __file, int __line) const
 # undef PB_DS_DEBUG_VERIFY
 #endif
 #undef PB_DS_ASSERT_VALID
+#endif

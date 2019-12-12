@@ -1,5 +1,5 @@
 /* Encoding of types for Objective C.
-   Copyright (C) 1993-2018 Free Software Foundation, Inc.
+   Copyright (C) 1993-2019 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
    Bitfield support by Ovidiu Predescu
 
@@ -81,6 +81,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DECL_MODE(TYPE) *(TYPE)
 #define TYPE_MODE(TYPE) *(TYPE)
 
+#undef  DFmode
 #define DFmode          _C_DBL
 
 #define strip_array_types(TYPE)      ({const char *_field = (TYPE); \

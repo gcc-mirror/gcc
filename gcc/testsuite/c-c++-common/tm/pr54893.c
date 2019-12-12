@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fgnu-tm -fdump-ipa-tmipa" } */
+/* { dg-additional-options "-Wno-volatile" { target c++ } } */
 
 /* Test that volatiles are allowed inside relaxed transactions.  */
 

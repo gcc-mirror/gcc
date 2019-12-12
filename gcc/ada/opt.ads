@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -190,6 +190,11 @@ package Opt is
    Address_Is_Private : Boolean := False;
    --  GNAT, GNATBIND
    --  Set True if package System has the line "type Address is private;"
+
+   Aggregate_Individually_Assign : Boolean := False;
+   --  GNAT
+   --  Set True if record aggregates are to be always converted into assignment
+   --  statements. Set through the corresponding pragma.
 
    All_Errors_Mode : Boolean := False;
    --  GNAT
@@ -496,12 +501,13 @@ package Opt is
    Display_Compilation_Progress : Boolean := False;
    --  GNATMAKE, GPRBUILD
    --  Set True (-d switch) to display information on progress while compiling
-   --  files. Internal flag to be used in conjunction with an IDE (e.g GPS).
+   --  files. Internal flag to be used in conjunction with an IDE
+   --  (e.g GNAT Studio).
 
    type Distribution_Stub_Mode_Type is
    --  GNAT
      (No_Stubs,
-      --  Normal mode, no generation/compilation of distribution stubs
+      --  Normal mode, no generation of distribution stubs
 
       Generate_Receiver_Stub_Body,
       --  The unit being compiled is the RCI body, and the compiler will
@@ -513,8 +519,8 @@ package Opt is
 
    Distribution_Stub_Mode : Distribution_Stub_Mode_Type := No_Stubs;
    --  GNAT
-   --  This enumeration variable indicates the five states of distribution
-   --  annex stub generation/compilation.
+   --  This enumeration variable indicates the three states of distribution
+   --  annex stub generation.
 
    Do_Not_Execute : Boolean := False;
    --  GNATMAKE
@@ -746,9 +752,9 @@ package Opt is
    --  file name with extension stripped.
 
    Generate_C_Code : Boolean := False;
-   --  GNAT
+   --  GNAT, GNATBIND
    --  If True, the Cprint circuitry to generate C code output is activated.
-   --  Set True by use of -gnateg or -gnatd.V.
+   --  Set True by use of -gnateg or -gnatd.V for GNAT, and -G for GNATBIND.
 
    Generate_CodePeer_Messages : Boolean := False;
    --  GNAT
@@ -947,6 +953,11 @@ package Opt is
    --  Set to True when the pre-18.x access-before-elaboration model is to be
    --  used. Modified by use of -gnatH.
 
+   Legacy_Elaboration_Order : Boolean := False;
+   --  GNATBIND
+   --  Set to True when the pre-20.x elaboration-order model is to be used.
+   --  Modified by use of -H.
+
    Link_Only : Boolean := False;
    --  GNATMAKE, GPRBUILD
    --  Set to True to skip compile and bind steps (except when Bind_Only is
@@ -986,26 +997,27 @@ package Opt is
    --  the list of object dependencies (-M switch). Output depends if -a switch
    --  is used or not. This list can be used directly in a Makefile.
 
-   List_Representation_Info : Int range 0 .. 3 := 0;
+   List_Representation_Info : Int range 0 .. 4 := 0;
    --  GNAT
    --  Set non-zero by -gnatR switch to list representation information.
    --  The settings are as follows:
    --
    --    0 = no listing of representation information (default as above)
-   --    1 = list rep info for user defined record and array types
-   --    2 = list rep info for all user defined types and objects
+   --    1 = list rep info for user-defined record and array types
+   --    2 = list rep info for all user-defined types and objects
    --    3 = like 2, but variable fields are decoded symbolically
+   --    4 = like 3, but list rep info for relevant compiler-generated types
 
    List_Representation_Info_To_File : Boolean := False;
    --  GNAT
-   --  Set true by -gnatRs switch. Causes information from -gnatR/1/2/3/m to be
+   --  Set true by -gnatRs switch. Causes information from -gnatR[1-4]m to be
    --  written to file.rep (where file is the name of the source file) instead
    --  of stdout. For example, if file x.adb is compiled using -gnatR2s then
    --  representation info is written to x.adb.ref.
 
    List_Representation_Info_To_JSON : Boolean := False;
    --  GNAT
-   --  Set true by -gnatRj switch. Causes information from -gnatR/1/2/3/m to be
+   --  Set true by -gnatRj switch. Causes information from -gnatR[1-4]m to be
    --  output in the JSON data interchange format.
 
    List_Representation_Info_Mechanisms : Boolean := False;
@@ -1114,6 +1126,12 @@ package Opt is
    --  Maximum number of processes that should be spawned to carry out
    --  compilations.
 
+   Minimal_Binder : Boolean := False;
+   --  GNATBIND
+   --  Set to True to suppress the generation of objects by the binder that
+   --  are not strictly required for a program to run. Intended for ZFP
+   --  applications that have tight memory constraints.
+
    Minimal_Recompilation : Boolean := False;
    --  GNATMAKE
    --  Set to True if minimal recompilation mode requested
@@ -1215,6 +1233,11 @@ package Opt is
    --  Set to True with switch --single-compile-per-obj-dir. When True, there
    --  cannot be simultaneous compilations with the object files in the same
    --  object directory, if project files are used.
+
+   OpenAcc_Enabled : Boolean := False;
+   --  GNAT
+   --  Indicates whether OpenAcc pragmas should be taken into account. Set to
+   --  True by the use of -fopenacc.
 
    type Operating_Mode_Type is (Check_Syntax, Check_Semantics, Generate_Code);
    pragma Ordered (Operating_Mode_Type);
@@ -1927,10 +1950,6 @@ package Opt is
    --  which requires pragma Warnings to be stored for the formal verification
    --  backend.
 
-   Warnings_As_Errors_Count : Natural;
-   --  GNAT
-   --  Number of entries stored in Warnings_As_Errors table
-
    Wide_Character_Encoding_Method : WC_Encoding_Method := WCEM_Brackets;
    --  GNAT, GNATBIND
    --  Method used for encoding wide characters in the source program. See
@@ -1973,7 +1992,7 @@ package Opt is
    --  set by the command line switches -gnat83/95/2005/2012, and possibly
    --  modified by the use of configuration pragmas Ada_*. This switch is used
    --  to set the initial value for Ada_Version mode at the start of analysis
-   --  of a unit.  Note however that the setting of this flag is ignored for
+   --  of a unit. Note however that the setting of this flag is ignored for
    --  internal and predefined units (which are always compiled in the most up
    --  to date version of Ada).
 
@@ -2141,10 +2160,6 @@ package Opt is
    --  is ignored for internal and predefined units (which are always compiled
    --  with the standard Size semantics).
 
-   Warnings_As_Errors_Count_Config : Natural;
-   --  GNAT
-   --  Count of pattern strings stored from Warning_As_Error pragmas
-
    type Config_Switches_Type is private;
    --  Type used to save values of the switches set from Config values
 
@@ -2251,16 +2266,24 @@ package Opt is
    ---------------------------
 
    --  The following array would more reasonably be located in Err_Vars or
-   --  Errour, but we put them here to deal with licensing issues (we need
+   --  Errout, but we put them here to deal with licensing issues (we need
    --  this to have the GPL exception licensing, since these variables and
    --  subprograms are accessed from units with this licensing).
 
    Warnings_As_Errors : array (1 .. 10_000) of String_Ptr;
-   --  Table for recording Warning_As_Error pragmas as they are processed.
-   --  It would be nicer to use Table, but there are circular elaboration
-   --  problems if we try to do this, and an attempt to find some other
-   --  appropriately licensed unit to declare this as a Table failed with
-   --  various elaboration circularities. Memory is getting cheap these days!
+   --  Table for recording Warning_As_Error pragmas as they are processed. It
+   --  would be nicer to use Table, but there are circular elaboration problems
+   --  if we try to do this, and an attempt to find some other appropriately
+   --  licensed unit to declare this as a Table failed with various elaboration
+   --  circularities.
+
+   Warnings_As_Errors_Count : Natural;
+   --  GNAT
+   --  Number of entries stored in Warnings_As_Errors table
+
+   Warnings_As_Errors_Count_Config : Natural;
+   --  GNAT
+   --  Count of pattern strings stored from Warning_As_Error pragmas
 
    ---------------
    -- GNAT_Mode --
@@ -2340,7 +2363,6 @@ package Opt is
    --------------------------
 
 private
-
    --  The following type is used to save and restore settings of switches in
    --  Opt that represent the configuration (i.e. result of config pragmas).
 

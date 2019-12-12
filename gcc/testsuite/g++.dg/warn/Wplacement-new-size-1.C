@@ -28,7 +28,7 @@ void fAx (Ax *px, Ax &rx)
 
 void fAx2 ()
 {
-  Ax ax2 = { 1, { 2, 3 } };
+  static Ax ax2 = { 1, { 2, 3 } };
 
   new (ax2.a) Int16;
   new (ax2.a) Int32;    // { dg-warning "placement" }
@@ -82,7 +82,7 @@ void fBx (BAx *pbx, BAx &rbx)
 
 void fBx1 ()
 {
-  BAx bax1 = { 1, /* Ax = */ { 2, /* a[] = */ {} } };
+  static BAx bax1 = { 1, /* Ax = */ { 2, /* a[] = */ {} } };
 
   new (bax1.ax.a) char;	    // { dg-warning "placement" }
   new (bax1.ax.a) char[2];  // { dg-warning "placement" }

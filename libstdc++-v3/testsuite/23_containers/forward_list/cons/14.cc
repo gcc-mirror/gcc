@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2012-2018 Free Software Foundation, Inc.
+// Copyright (C) 2012-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,9 +26,9 @@ void test01()
 {
   using namespace std;
   using list = forward_list<int>;
-  forward_list<list, scoped_allocator_adaptor<list::allocator_type>> l;
+  using alloc_type = allocator<list>;
+  forward_list<list, scoped_allocator_adaptor<alloc_type>> l;
 
   // Check for forward_list(size_type, const allocator_type&)
   l.emplace_front(1u);
 }
-

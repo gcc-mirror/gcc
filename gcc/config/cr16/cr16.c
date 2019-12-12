@@ -1,5 +1,5 @@
 /* Output routines for CR16 processor.
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by KPIT Cummins Infosystems Limited.
   
    This file is part of GCC.
@@ -306,7 +306,8 @@ cr16_override_options (void)
 	    error ("data-model=far not valid for cr16c architecture");
 	}
       else
-	error ("invalid data model option -mdata-model=%s", cr16_data_model);
+	error ("invalid data model option %<-mdata-model=%s%>",
+	       cr16_data_model);
     }
   else
     data_model = DM_DEFAULT;
@@ -366,7 +367,7 @@ cr16_compute_save_regs (void)
       /* If this reg is used and not call-used (except RA), save it.  */
       if (cr16_interrupt_function_p ())
 	{
-	  if (!crtl->is_leaf && call_used_regs[regno])
+	  if (!crtl->is_leaf && call_used_or_fixed_reg_p (regno))
 	    /* This is a volatile reg in a non-leaf interrupt routine - save 
 	       it for the sake of its sons.  */
 	    current_frame_info.save_regs[regno] = 1;
@@ -381,7 +382,8 @@ cr16_compute_save_regs (void)
 	{
 	  /* If this reg is used and not call-used (except RA), save it.  */
 	  if (df_regs_ever_live_p (regno)
-	      && (!call_used_regs[regno] || regno == RETURN_ADDRESS_REGNUM))
+	      && (!call_used_or_fixed_reg_p (regno)
+		  || regno == RETURN_ADDRESS_REGNUM))
 	    current_frame_info.save_regs[regno] = 1;
 	  else
 	    current_frame_info.save_regs[regno] = 0;
@@ -591,10 +593,9 @@ enough_regs_for_param (CUMULATIVE_ARGS * cum, const_tree type,
   return 0;
 }
 
-/* Implements the macro FUNCTION_ARG defined in cr16.h.  */
+/* Implement TARGET_FUNCTION_ARG.  */
 static rtx
-cr16_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		   const_tree type, bool named ATTRIBUTE_UNUSED)
+cr16_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   cum->last_parm_in_reg = 0;
@@ -603,20 +604,20 @@ cr16_function_arg (cumulative_args_t cum_v, machine_mode mode,
      had their registers assigned. The rtx that function_arg returns from 
      this type is supposed to pass to 'gen_call' but currently it is not 
      implemented.  */
-  if (type == void_type_node)
+  if (arg.end_marker_p ())
     return NULL_RTX;
 
-  if (targetm.calls.must_pass_in_stack (mode, type) || (cum->ints < 0))
+  if (targetm.calls.must_pass_in_stack (arg) || (cum->ints < 0))
     return NULL_RTX;
 
-  if (mode == BLKmode)
+  if (arg.mode == BLKmode)
     {
       /* Enable structures that need padding bytes at the end to pass to a
          function in registers.  */
-      if (enough_regs_for_param (cum, type, mode) != 0)
+      if (enough_regs_for_param (cum, arg.type, arg.mode) != 0)
 	{
 	  cum->last_parm_in_reg = 1;
-	  return gen_rtx_REG (mode, MIN_REG_FOR_PASSING_ARGS + cum->ints);
+	  return gen_rtx_REG (arg.mode, MIN_REG_FOR_PASSING_ARGS + cum->ints);
 	}
     }
 
@@ -624,10 +625,10 @@ cr16_function_arg (cumulative_args_t cum_v, machine_mode mode,
     return NULL_RTX;
   else
     {
-      if (enough_regs_for_param (cum, type, mode) != 0)
+      if (enough_regs_for_param (cum, arg.type, arg.mode) != 0)
 	{
 	  cum->last_parm_in_reg = 1;
-	  return gen_rtx_REG (mode, MIN_REG_FOR_PASSING_ARGS + cum->ints);
+	  return gen_rtx_REG (arg.mode, MIN_REG_FOR_PASSING_ARGS + cum->ints);
 	}
     }
 
@@ -660,34 +661,34 @@ cr16_init_cumulative_args (CUMULATIVE_ARGS * cum, tree fntype,
 
 /* Implements the macro FUNCTION_ARG_ADVANCE defined in cr16.h.  */
 static void
-cr16_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			   const_tree type, bool named ATTRIBUTE_UNUSED)
+cr16_function_arg_advance (cumulative_args_t cum_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS * cum = get_cumulative_args (cum_v);
 
   /* l holds the number of registers required.  */
-  int l = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
+  int l = GET_MODE_BITSIZE (arg.mode) / BITS_PER_WORD;
 
   /* If the parameter isn't passed on a register don't advance cum.  */
   if (!cum->last_parm_in_reg)
     return;
 
-  if (targetm.calls.must_pass_in_stack (mode, type) || (cum->ints < 0))
+  if (targetm.calls.must_pass_in_stack (arg) || (cum->ints < 0))
     return;
 
-  if ((mode == SImode) || (mode == HImode)
-      || (mode == QImode) || (mode == DImode))
+  if ((arg.mode == SImode) || (arg.mode == HImode)
+      || (arg.mode == QImode) || (arg.mode == DImode))
     {
       if (l <= 1)
 	cum->ints += 1;
       else
 	cum->ints += l;
     }
-  else if ((mode == SFmode) || (mode == DFmode))
+  else if ((arg.mode == SFmode) || (arg.mode == DFmode))
     cum->ints += l;
-  else if ((mode) == BLKmode)
+  else if (arg.mode == BLKmode)
     {
-      if ((l = enough_regs_for_param (cum, type, mode)) != 0)
+      if ((l = enough_regs_for_param (cum, arg.type, arg.mode)) != 0)
 	cum->ints += l;
     }
   return;

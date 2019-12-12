@@ -1,5 +1,5 @@
 /* Language hooks common to C and ObjC front ends.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef LANG_HOOKS_POST_OPTIONS
 #define LANG_HOOKS_POST_OPTIONS c_common_post_options
 #undef LANG_HOOKS_GET_ALIAS_SET
-#define LANG_HOOKS_GET_ALIAS_SET c_common_get_alias_set
+#define LANG_HOOKS_GET_ALIAS_SET c_get_alias_set
 #undef LANG_HOOKS_PARSE_FILE
 #define LANG_HOOKS_PARSE_FILE c_common_parse_file
 #undef LANG_HOOKS_FINISH_INCOMPLETE_DECL
@@ -60,6 +60,9 @@ along with GCC; see the file COPYING3.  If not see
 #define LANG_HOOKS_BUILTIN_FUNCTION c_builtin_function
 #undef  LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE
 #define LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE c_builtin_function_ext_scope
+#undef  LANG_HOOKS_SIMULATE_BUILTIN_FUNCTION_DECL
+#define LANG_HOOKS_SIMULATE_BUILTIN_FUNCTION_DECL \
+  c_simulate_builtin_function_decl
 #undef LANG_HOOKS_EMITS_BEGIN_STMT
 #define LANG_HOOKS_EMITS_BEGIN_STMT true
 
@@ -72,6 +75,8 @@ along with GCC; see the file COPYING3.  If not see
 #undef LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN
 #define LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN c_dump_tree
 
+#undef LANG_HOOKS_SIMULATE_ENUM_DECL
+#define LANG_HOOKS_SIMULATE_ENUM_DECL c_simulate_enum_decl
 #undef LANG_HOOKS_TYPE_FOR_MODE
 #define LANG_HOOKS_TYPE_FOR_MODE c_common_type_for_mode
 #undef LANG_HOOKS_TYPE_FOR_SIZE

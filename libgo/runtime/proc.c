@@ -18,7 +18,6 @@
 #include "runtime.h"
 #include "arch.h"
 #include "defs.h"
-#include "go-type.h"
 
 #ifdef USING_SPLIT_STACK
 
@@ -59,11 +58,13 @@ uintptr runtime_stacks_sys;
 void gtraceback(G*)
   __asm__(GOSYM_PREFIX "runtime.gtraceback");
 
+static void gscanstack(G*);
+
 #ifdef __rtems__
 #define __thread
 #endif
 
-static __thread G *g;
+__thread G *g __asm__(GOSYM_PREFIX "runtime.g");
 
 #ifndef SETCONTEXT_CLOBBERS_TLS
 
@@ -73,7 +74,7 @@ initcontext(void)
 }
 
 static inline void
-fixcontext(ucontext_t *c __attribute__ ((unused)))
+fixcontext(__go_context_t *c __attribute__ ((unused)))
 {
 }
 
@@ -180,18 +181,18 @@ fixcontext(ucontext_t* c)
 // Go, and Go has no simple way to align a field to such a boundary.
 // So we make the field larger in runtime2.go and pick an appropriate
 // offset within the field here.
-static ucontext_t*
+static __go_context_t*
 ucontext_arg(uintptr_t* go_ucontext)
 {
 	uintptr_t p = (uintptr_t)go_ucontext;
-	size_t align = __alignof__(ucontext_t);
+	size_t align = __alignof__(__go_context_t);
 	if(align > 16) {
 		// We only ensured space for up to a 16 byte alignment
 		// in libgo/go/runtime/runtime2.go.
-		runtime_throw("required alignment of ucontext_t too large");
+		runtime_throw("required alignment of __go_context_t too large");
 	}
 	p = (p + align - 1) &~ (uintptr_t)(align - 1);
-	return (ucontext_t*)p;
+	return (__go_context_t*)p;
 }
 
 // We can not always refer to the TLS variables directly.  The
@@ -287,7 +288,7 @@ runtime_gogo(G* newg)
 	g = newg;
 	newg->fromgogo = true;
 	fixcontext(ucontext_arg(&newg->context[0]));
-	setcontext(ucontext_arg(&newg->context[0]));
+	__go_setcontext(ucontext_arg(&newg->context[0]));
 	runtime_throw("gogo setcontext returned");
 }
 
@@ -318,7 +319,7 @@ runtime_mcall(FuncVal *fv)
 	if(gp != nil) {
 
 #ifdef USING_SPLIT_STACK
-		__splitstack_getcontext((void*)(&g->stackcontext[0]));
+		__splitstack_getcontext((void*)(&gp->stackcontext[0]));
 #else
 		// We have to point to an address on the stack that is
 		// below the saved registers.
@@ -326,7 +327,7 @@ runtime_mcall(FuncVal *fv)
 		gp->gcnextsp2 = (uintptr)(secondary_stack_pointer());
 #endif
 		gp->fromgogo = false;
-		getcontext(ucontext_arg(&gp->context[0]));
+		__go_getcontext(ucontext_arg(&gp->context[0]));
 
 		// When we return from getcontext, we may be running
 		// in a new thread.  That means that g may have
@@ -338,8 +339,10 @@ runtime_mcall(FuncVal *fv)
 		gp = runtime_g();
 		mp = gp->m;
 
-		if(gp->traceback != nil)
+		if(gp->traceback != 0)
 			gtraceback(gp);
+		if(gp->scang != 0)
+			gscanstack(gp);
 	}
 	if (gp == nil || !gp->fromgogo) {
 #ifdef USING_SPLIT_STACK
@@ -354,7 +357,7 @@ runtime_mcall(FuncVal *fv)
 		g = mp->g0;
 
 		fixcontext(ucontext_arg(&mp->g0->context[0]));
-		setcontext(ucontext_arg(&mp->g0->context[0]));
+		__go_setcontext(ucontext_arg(&mp->g0->context[0]));
 		runtime_throw("runtime: mcall function returned");
 	}
 }
@@ -374,15 +377,13 @@ runtime_mcall(FuncVal *fv)
 extern G* allocg(void)
   __asm__ (GOSYM_PREFIX "runtime.allocg");
 
-Sched*	runtime_sched;
-
 bool	runtime_isarchive;
 
 extern void kickoff(void)
   __asm__(GOSYM_PREFIX "runtime.kickoff");
 extern void minit(void)
   __asm__(GOSYM_PREFIX "runtime.minit");
-extern void mstart1(int32)
+extern void mstart1()
   __asm__(GOSYM_PREFIX "runtime.mstart1");
 extern void stopm(void)
   __asm__(GOSYM_PREFIX "runtime.stopm");
@@ -438,14 +439,21 @@ void getTraceback(G*, G*) __asm__(GOSYM_PREFIX "runtime.getTraceback");
 // goroutine stored in the traceback field, which is me.
 void getTraceback(G* me, G* gp)
 {
+	M* holdm;
+
+	holdm = gp->m;
+	gp->m = me->m;
+
 #ifdef USING_SPLIT_STACK
 	__splitstack_getcontext((void*)(&me->stackcontext[0]));
 #endif
-	getcontext(ucontext_arg(&me->context[0]));
+	__go_getcontext(ucontext_arg(&me->context[0]));
 
-	if (gp->traceback != nil) {
+	if (gp->traceback != 0) {
 		runtime_gogo(gp);
 	}
+
+	gp->m = holdm;
 }
 
 // Do a stack trace of gp, and then restore the context to
@@ -455,18 +463,73 @@ void
 gtraceback(G* gp)
 {
 	Traceback* traceback;
-	M* holdm;
 
-	traceback = gp->traceback;
-	gp->traceback = nil;
-	holdm = gp->m;
-	if(holdm != nil && holdm != g->m)
-		runtime_throw("gtraceback: m is not nil");
-	gp->m = traceback->gp->m;
+	traceback = (Traceback*)gp->traceback;
+	gp->traceback = 0;
 	traceback->c = runtime_callers(1, traceback->locbuf,
 		sizeof traceback->locbuf / sizeof traceback->locbuf[0], false);
-	gp->m = holdm;
 	runtime_gogo(traceback->gp);
+}
+
+void doscanstackswitch(G*, G*) __asm__(GOSYM_PREFIX "runtime.doscanstackswitch");
+
+// Switch to gp and let it scan its stack.
+// The first time gp->scang is set (to me). The second time here
+// gp is done scanning, and has unset gp->scang, so we just return.
+void
+doscanstackswitch(G* me, G* gp)
+{
+	M* holdm;
+
+	__go_assert(me->entry == nil);
+	me->fromgogo = false;
+
+	holdm = gp->m;
+	gp->m = me->m;
+
+#ifdef USING_SPLIT_STACK
+	__splitstack_getcontext((void*)(&me->stackcontext[0]));
+#endif
+	__go_getcontext(ucontext_arg(&me->context[0]));
+
+	if(me->entry != nil) {
+		// Got here from mcall.
+		// The stack scanning code may call systemstack, which calls
+		// mcall, which calls setcontext.
+		// Run the function, which at the end will switch back to gp.
+		FuncVal *fv = me->entry;
+		void (*pfn)(G*) = (void (*)(G*))fv->fn;
+		G* gp1 = (G*)me->param;
+		__go_assert(gp1 == gp);
+		me->entry = nil;
+		me->param = nil;
+		__builtin_call_with_static_chain(pfn(gp1), fv);
+		abort();
+	}
+
+	if (gp->scang != 0)
+		runtime_gogo(gp);
+
+	gp->m = holdm;
+}
+
+// Do a stack scan, then switch back to the g that triggers this scan.
+// We come here from doscanstackswitch.
+static void
+gscanstack(G *gp)
+{
+	G *oldg, *oldcurg;
+
+	oldg = (G*)gp->scang;
+	oldcurg = oldg->m->curg;
+	oldg->m->curg = gp;
+	gp->scang = 0;
+
+	doscanstack(gp, (void*)gp->scangcw);
+
+	gp->scangcw = 0;
+	oldg->m->curg = oldcurg;
+	runtime_gogo(oldg);
 }
 
 // Called by pthread_create to start an M.
@@ -508,14 +571,17 @@ runtime_mstart(void *arg)
 
 	// Save the currently active context.  This will return
 	// multiple times via the setcontext call in mcall.
-	getcontext(ucontext_arg(&gp->context[0]));
+	__go_getcontext(ucontext_arg(&gp->context[0]));
 
-	if(gp->traceback != nil) {
+	if(gp->traceback != 0) {
 		// Got here from getTraceback.
 		// I'm not sure this ever actually happens--getTraceback
 		// may always go to the getcontext call in mcall.
 		gtraceback(gp);
 	}
+	if(gp->scang != 0)
+		// Got here from doscanswitch. Should not happen.
+		runtime_throw("mstart with scang");
 
 	if(gp->entry != nil) {
 		// Got here from mcall.
@@ -542,7 +608,7 @@ runtime_mstart(void *arg)
 	}
 #endif
 
-	mstart1(0);
+	mstart1();
 
 	// mstart1 does not return, but we need a return statement
 	// here to avoid a compiler warning.
@@ -583,7 +649,7 @@ setGContext(void)
 	gp->gcinitialsp2 = secondary_stack_pointer();
 	gp->gcnextsp2 = (uintptr)(gp->gcinitialsp2);
 #endif
-	getcontext(ucontext_arg(&gp->context[0]));
+	__go_getcontext(ucontext_arg(&gp->context[0]));
 
 	if(gp->entry != nil) {
 		// Got here from mcall.
@@ -603,13 +669,11 @@ void makeGContext(G*, byte*, uintptr)
 // makeGContext makes a new context for a g.
 void
 makeGContext(G* gp, byte* sp, uintptr spsize) {
-	ucontext_t *uc;
+	__go_context_t *uc;
 
 	uc = ucontext_arg(&gp->context[0]);
-	getcontext(uc);
-	uc->uc_stack.ss_sp = sp;
-	uc->uc_stack.ss_size = (size_t)spsize;
-	makecontext(uc, kickoff, 0);
+	__go_getcontext(uc);
+	__go_makecontext(uc, kickoff, sp, (size_t)spsize);
 }
 
 // The goroutine g is about to enter a system call.
@@ -621,16 +685,17 @@ makeGContext(G* gp, byte* sp, uintptr spsize) {
 // make g->sched refer to the caller's stack segment, because
 // entersyscall is going to return immediately after.
 
-void runtime_entersyscall(int32) __attribute__ ((no_split_stack));
+void runtime_entersyscall() __attribute__ ((no_split_stack));
 static void doentersyscall(uintptr, uintptr)
   __attribute__ ((no_split_stack, noinline));
 
 void
-runtime_entersyscall(int32 dummy __attribute__ ((unused)))
+runtime_entersyscall()
 {
 	// Save the registers in the g structure so that any pointers
 	// held in registers will be seen by the garbage collector.
-	getcontext(ucontext_arg(&g->gcregs[0]));
+	if (!runtime_usestackmaps)
+		__go_getcontext(ucontext_arg(&g->gcregs[0]));
 
 	// Note that if this function does save any registers itself,
 	// we might store the wrong value in the call to getcontext.
@@ -638,8 +703,8 @@ runtime_entersyscall(int32 dummy __attribute__ ((unused)))
 	// callee-saved registers to access the TLS variable g.  We
 	// don't want to put the ucontext_t on the stack because it is
 	// large and we can not split the stack here.
-	doentersyscall((uintptr)runtime_getcallerpc(&dummy),
-		       (uintptr)runtime_getcallersp(&dummy));
+	doentersyscall((uintptr)runtime_getcallerpc(),
+		       (uintptr)runtime_getcallersp());
 }
 
 static void
@@ -672,15 +737,16 @@ static void doentersyscallblock(uintptr, uintptr)
 
 // The same as runtime_entersyscall(), but with a hint that the syscall is blocking.
 void
-runtime_entersyscallblock(int32 dummy __attribute__ ((unused)))
+runtime_entersyscallblock()
 {
 	// Save the registers in the g structure so that any pointers
 	// held in registers will be seen by the garbage collector.
-	getcontext(ucontext_arg(&g->gcregs[0]));
+	if (!runtime_usestackmaps)
+		__go_getcontext(ucontext_arg(&g->gcregs[0]));
 
 	// See comment in runtime_entersyscall.
-	doentersyscallblock((uintptr)runtime_getcallerpc(&dummy),
-			    (uintptr)runtime_getcallersp(&dummy));
+	doentersyscallblock((uintptr)runtime_getcallerpc(),
+			    (uintptr)runtime_getcallersp());
 }
 
 static void
@@ -818,12 +884,4 @@ resetNewG(G *newg, void **sp, uintptr *spsize)
   newg->gcnextsp = (uintptr)(*sp);
   newg->gcnextsp2 = (uintptr)(newg->gcinitialsp2);
 #endif
-}
-
-// Return whether we are waiting for a GC.  This gc toolchain uses
-// preemption instead.
-bool
-runtime_gcwaiting(void)
-{
-	return runtime_sched->gcwaiting;
 }

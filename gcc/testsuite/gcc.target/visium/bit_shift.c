@@ -10,4 +10,4 @@ int bit_shift (long int x)
   return n;
 }
 
-/* { dg-final { scan-assembler-not "cmp" } } */
+/* { dg-final { scan-assembler-not "cmp" { xfail *-*-* } } } */

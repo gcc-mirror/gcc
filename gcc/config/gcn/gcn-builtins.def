@@ -1,0 +1,116 @@
+/* Copyright (C) 2016-2019 Free Software Foundation, Inc.
+
+   This file is free software; you can redistribute it and/or modify it under
+   the terms of the GNU General Public License as published by the Free
+   Software Foundation; either version 3 of the License, or (at your option)
+   any later version.
+
+   This file is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* The first argument to these macros is the return type of the builtin,
+   the rest are arguments of the builtin.  */
+#define _A1(a)	       {a, GCN_BTI_END_OF_PARAMS}
+#define _A2(a,b)       {a, b, GCN_BTI_END_OF_PARAMS}
+#define _A3(a,b,c)     {a, b, c, GCN_BTI_END_OF_PARAMS}
+#define _A4(a,b,c,d)   {a, b, c, d, GCN_BTI_END_OF_PARAMS}
+#define _A5(a,b,c,d,e) {a, b, c, d, e, GCN_BTI_END_OF_PARAMS}
+
+DEF_BUILTIN (FLAT_LOAD_INT32, 1 /*CODE_FOR_flat_load_v64si*/,
+	     "flat_load_int32", B_INSN,
+	     _A3 (GCN_BTI_V64SI, GCN_BTI_EXEC, GCN_BTI_V64SI),
+	     gcn_expand_builtin_1)
+
+DEF_BUILTIN (FLAT_LOAD_PTR_INT32, 2 /*CODE_FOR_flat_load_ptr_v64si */,
+	     "flat_load_ptr_int32", B_INSN,
+	     _A4 (GCN_BTI_V64SI, GCN_BTI_EXEC, GCN_BTI_SIPTR, GCN_BTI_V64SI),
+	     gcn_expand_builtin_1)
+
+DEF_BUILTIN (FLAT_STORE_PTR_INT32, 3 /*CODE_FOR_flat_store_ptr_v64si */,
+	     "flat_store_ptr_int32", B_INSN,
+	     _A5 (GCN_BTI_VOID, GCN_BTI_EXEC, GCN_BTI_SIPTR, GCN_BTI_V64SI,
+		  GCN_BTI_V64SI),
+	     gcn_expand_builtin_1)
+
+DEF_BUILTIN (FLAT_LOAD_PTR_FLOAT, 2 /*CODE_FOR_flat_load_ptr_v64sf */,
+	     "flat_load_ptr_float", B_INSN,
+	     _A4 (GCN_BTI_V64SF, GCN_BTI_EXEC, GCN_BTI_SFPTR, GCN_BTI_V64SI),
+	     gcn_expand_builtin_1)
+
+DEF_BUILTIN (FLAT_STORE_PTR_FLOAT, 3 /*CODE_FOR_flat_store_ptr_v64sf */,
+	     "flat_store_ptr_float", B_INSN,
+	     _A5 (GCN_BTI_VOID, GCN_BTI_EXEC, GCN_BTI_SFPTR, GCN_BTI_V64SI,
+		  GCN_BTI_V64SF),
+	     gcn_expand_builtin_1)
+
+DEF_BUILTIN (SQRTVF, 3 /*CODE_FOR_sqrtvf */,
+	     "sqrtvf", B_INSN,
+	     _A2 (GCN_BTI_V64SF, GCN_BTI_V64SF),
+	     gcn_expand_builtin_1)
+
+DEF_BUILTIN (SQRTF, 3 /*CODE_FOR_sqrtf */,
+	     "sqrtf", B_INSN,
+	     _A2 (GCN_BTI_SF, GCN_BTI_SF),
+	     gcn_expand_builtin_1)
+
+DEF_BUILTIN (CMP_SWAP, -1,
+	    "cmp_swap", B_INSN,
+	    _A4 (GCN_BTI_UINT, GCN_BTI_VOIDPTR, GCN_BTI_UINT, GCN_BTI_UINT),
+	     gcn_expand_builtin_1)
+
+DEF_BUILTIN (CMP_SWAPLL, -1,
+	    "cmp_swapll", B_INSN,
+	    _A4 (GCN_BTI_LLUINT,
+		 GCN_BTI_VOIDPTR, GCN_BTI_LLUINT, GCN_BTI_LLUINT),
+	    gcn_expand_builtin_1)
+
+/* DEF_BUILTIN_BINOP_INT_FP creates many variants of a builtin function for a
+   given operation.  The first argument will give base to the identifier of a
+   particular builtin, the second will be used to form the name of the patter
+   used to expand it to and the third will be used to create the user-visible
+   builtin identifier.  */
+
+DEF_BUILTIN_BINOP_INT_FP (ADD, add, "add")
+DEF_BUILTIN_BINOP_INT_FP (SUB, sub, "sub")
+
+DEF_BUILTIN_BINOP_INT_FP (AND, and, "and")
+DEF_BUILTIN_BINOP_INT_FP (IOR, ior, "or")
+DEF_BUILTIN_BINOP_INT_FP (XOR, xor, "xor")
+
+/* OpenMP.  */
+
+DEF_BUILTIN (OMP_DIM_SIZE, CODE_FOR_oacc_dim_size,
+	     "dim_size", B_INSN,
+	     _A2 (GCN_BTI_INT, GCN_BTI_INT),
+	     gcn_expand_builtin_1)
+DEF_BUILTIN (OMP_DIM_POS, CODE_FOR_oacc_dim_pos,
+	     "dim_pos", B_INSN,
+	     _A2 (GCN_BTI_INT, GCN_BTI_INT),
+	     gcn_expand_builtin_1)
+
+/* OpenACC.  */
+
+DEF_BUILTIN (ACC_SINGLE_START, -1, "single_start", B_INSN, _A1 (GCN_BTI_BOOL),
+	     gcn_expand_builtin_1)
+
+DEF_BUILTIN (ACC_SINGLE_COPY_START, -1, "single_copy_start", B_INSN,
+	     _A1 (GCN_BTI_LDS_VOIDPTR), gcn_expand_builtin_1)
+
+DEF_BUILTIN (ACC_SINGLE_COPY_END, -1, "single_copy_end", B_INSN,
+	     _A2 (GCN_BTI_VOID, GCN_BTI_LDS_VOIDPTR), gcn_expand_builtin_1)
+
+DEF_BUILTIN (ACC_BARRIER, -1, "acc_barrier", B_INSN, _A1 (GCN_BTI_VOID),
+	     gcn_expand_builtin_1)
+
+
+#undef _A1
+#undef _A2
+#undef _A3
+#undef _A4
+#undef _A5

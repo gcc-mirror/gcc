@@ -3,8 +3,7 @@
 // { dg-do compile }
 
 namespace N { int i; }		// { dg-message "N::i" }
-void foo() { i; }   // { dg-error "not declared" }
-  // { dg-message "suggested alternative" "suggested alternative" { target *-*-* } .-1 }
+void foo() { i; }   // { dg-error "'i' was not declared in this scope; did you mean 'N::i'\\?" }
 
 using namespace N;
 void bar() { i; }

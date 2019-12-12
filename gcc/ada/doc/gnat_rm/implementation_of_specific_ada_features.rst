@@ -410,9 +410,6 @@ is created in the shared memory directory.
 This is used to provide the required locking
 semantics for proper protected object synchronization.
 
-GNAT supports shared passive packages on all platforms
-except for OpenVMS.
-
 .. _Code_Generation_for_Array_Aggregates:
 
 Code Generation for Array Aggregates

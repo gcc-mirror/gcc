@@ -1,3 +1,5 @@
+/* { dg-require-stack-size "1024+16" } */
+
 extern int nc;
 void f(void)
 {

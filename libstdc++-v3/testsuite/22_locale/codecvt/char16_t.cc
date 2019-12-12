@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2018 Free Software Foundation, Inc.
+// Copyright (C) 2015-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,7 +16,6 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++11 } }
-// { dg-require-cstdint "" }
 
 // [locale.codecvt], C++11 22.4.1.4.  specialization.
 
@@ -37,11 +36,15 @@ test01()
   VERIFY(cvt->max_length() == 4);
   VERIFY(cvt->encoding() == 0);
 
-  const char u8dat[] = u8"H\U000000E4ll\U000000F6 \U0001F63F \U000056FD "
+#ifndef _GLIBCXX_USE_CHAR8_T
+  using char8_t = char;
+#endif
+  const char8_t u8dat_[] = u8"H\U000000E4ll\U000000F6 \U0001F63F \U000056FD "
     u8"\U0000222B f(\U000003BA) exp(-2\U000003C0\U000003C9) d\U000003BA "
     u8"\U0001F6BF \U0001F6BF \U0001F648 \U00000413\U00000435\U0000043E"
     u8"\U00000433\U00000440\U00000430\U00000444\U00000438\U0000044F \U0000FB05";
-  const char* const u8dat_end = std::end(u8dat);
+  const char* const u8dat = (const char*)u8dat_;
+  const char* const u8dat_end = (const char*)std::end(u8dat_);
 
   const char16_t u16dat[] = u"H\U000000E4ll\U000000F6 \U0001F63F \U000056FD "
     u"\U0000222B f(\U000003BA) exp(-2\U000003C0\U000003C9) d\U000003BA "
@@ -84,7 +87,7 @@ test01()
 
     VERIFY(res == codecvt_base::ok);
     VERIFY(from_next == u16dat_end);
-    VERIFY(std::memcmp((void*)buffer, (void*)u8dat, sizeof(u8dat)) == 0);
+    VERIFY(std::memcmp((void*)buffer, (void*)u8dat_, sizeof(u8dat_)) == 0);
 
     delete[] buffer;
   }

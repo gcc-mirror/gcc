@@ -1,8 +1,7 @@
 /* { dg-do run { target { powerpc*-*-* } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
 /* { dg-require-effective-target lp64 } */
 /* { dg-require-effective-target p9vector_hw } */
-/* { dg-options "-mcpu=power9" } */
+/* { dg-options "-mdejagnu-cpu=power9" } */
 
 /* This test should succeed only on 64-bit configurations.  */
 #include <altivec.h>

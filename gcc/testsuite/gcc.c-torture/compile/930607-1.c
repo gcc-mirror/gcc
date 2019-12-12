@@ -1,3 +1,5 @@
+/* { dg-require-effective-target indirect_calls } */
+
 typedef void f ();
 typedef f *pf;
 long long i;

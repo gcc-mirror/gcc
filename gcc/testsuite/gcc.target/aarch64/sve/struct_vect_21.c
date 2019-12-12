@@ -46,4 +46,4 @@ TEST (test)
 /* Each function should have three branches: one directly to the exit
    (n <= 0), one to the single scalar epilogue iteration (n == 1),
    and one branch-back for the vectorized loop.  */
-/* { dg-final { scan-assembler-times {\tb[a-z]+\t} 12 } } */
+/* { dg-final { scan-assembler-times {\tb[.a-z]+\t} 12 } } */

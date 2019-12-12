@@ -8,5 +8,5 @@ struct hold {
 
 int main()
 {
-  hold<bool&&>{42}();
+  hold<bool&&>{static_cast<bool>(42)}();
 }

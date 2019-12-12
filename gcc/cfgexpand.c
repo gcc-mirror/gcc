@@ -1,5 +1,5 @@
 /* A pass for lowering trees to RTL.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -61,7 +61,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "toplev.h"
 #include "debug.h"
-#include "params.h"
 #include "tree-inline.h"
 #include "value-prof.h"
 #include "tree-ssa-live.h"
@@ -104,38 +103,38 @@ tree
 gimple_assign_rhs_to_tree (gimple *stmt)
 {
   tree t;
-  enum gimple_rhs_class grhs_class;
-
-  grhs_class = get_gimple_rhs_class (gimple_expr_code (stmt));
-
-  if (grhs_class == GIMPLE_TERNARY_RHS)
-    t = build3 (gimple_assign_rhs_code (stmt),
-		TREE_TYPE (gimple_assign_lhs (stmt)),
-		gimple_assign_rhs1 (stmt),
-		gimple_assign_rhs2 (stmt),
-		gimple_assign_rhs3 (stmt));
-  else if (grhs_class == GIMPLE_BINARY_RHS)
-    t = build2 (gimple_assign_rhs_code (stmt),
-		TREE_TYPE (gimple_assign_lhs (stmt)),
-		gimple_assign_rhs1 (stmt),
-		gimple_assign_rhs2 (stmt));
-  else if (grhs_class == GIMPLE_UNARY_RHS)
-    t = build1 (gimple_assign_rhs_code (stmt),
-		TREE_TYPE (gimple_assign_lhs (stmt)),
-		gimple_assign_rhs1 (stmt));
-  else if (grhs_class == GIMPLE_SINGLE_RHS)
+  switch (get_gimple_rhs_class (gimple_expr_code (stmt)))
     {
-      t = gimple_assign_rhs1 (stmt);
-      /* Avoid modifying this tree in place below.  */
-      if ((gimple_has_location (stmt) && CAN_HAVE_LOCATION_P (t)
-	   && gimple_location (stmt) != EXPR_LOCATION (t))
-	  || (gimple_block (stmt)
-	      && currently_expanding_to_rtl
-	      && EXPR_P (t)))
-	t = copy_node (t);
+    case GIMPLE_TERNARY_RHS:
+      t = build3 (gimple_assign_rhs_code (stmt),
+		  TREE_TYPE (gimple_assign_lhs (stmt)),
+		  gimple_assign_rhs1 (stmt), gimple_assign_rhs2 (stmt),
+		  gimple_assign_rhs3 (stmt));
+      break;
+    case GIMPLE_BINARY_RHS:
+      t = build2 (gimple_assign_rhs_code (stmt),
+		  TREE_TYPE (gimple_assign_lhs (stmt)),
+		  gimple_assign_rhs1 (stmt), gimple_assign_rhs2 (stmt));
+      break;
+    case GIMPLE_UNARY_RHS:
+      t = build1 (gimple_assign_rhs_code (stmt),
+		  TREE_TYPE (gimple_assign_lhs (stmt)),
+		  gimple_assign_rhs1 (stmt));
+      break;
+    case GIMPLE_SINGLE_RHS:
+      {
+	t = gimple_assign_rhs1 (stmt);
+	/* Avoid modifying this tree in place below.  */
+	if ((gimple_has_location (stmt) && CAN_HAVE_LOCATION_P (t)
+	     && gimple_location (stmt) != EXPR_LOCATION (t))
+	    || (gimple_block (stmt) && currently_expanding_to_rtl
+		&& EXPR_P (t)))
+	  t = copy_node (t);
+	break;
+      }
+    default:
+      gcc_unreachable ();
     }
-  else
-    gcc_unreachable ();
 
   if (gimple_has_location (stmt) && CAN_HAVE_LOCATION_P (t))
     SET_EXPR_LOCATION (t, gimple_location (stmt));
@@ -305,8 +304,9 @@ set_rtl (tree t, rtx x)
 
 /* This structure holds data relevant to one variable that will be
    placed in a stack slot.  */
-struct stack_var
+class stack_var
 {
+public:
   /* The Variable.  */
   tree decl;
 
@@ -331,7 +331,7 @@ struct stack_var
 #define EOC  ((size_t)-1)
 
 /* We have an array of such objects while deciding allocation.  */
-static struct stack_var *stack_vars;
+static class stack_var *stack_vars;
 static size_t stack_vars_alloc;
 static size_t stack_vars_num;
 static hash_map<tree, size_t> *decl_to_stack_part;
@@ -361,7 +361,7 @@ static bool has_short_buffer;
    we can't do with expected alignment of the stack boundary.  */
 
 static unsigned int
-align_local_variable (tree decl)
+align_local_variable (tree decl, bool really_expand)
 {
   unsigned int align;
 
@@ -370,7 +370,12 @@ align_local_variable (tree decl)
   else
     {
       align = LOCAL_DECL_ALIGNMENT (decl);
-      SET_DECL_ALIGN (decl, align);
+      /* Don't change DECL_ALIGN when called from estimated_stack_frame_size.
+	 That is done before IPA and could bump alignment based on host
+	 backend even for offloaded code which wants different
+	 LOCAL_DECL_ALIGNMENT.  */
+      if (really_expand)
+	SET_DECL_ALIGN (decl, align);
     }
   return align / BITS_PER_UNIT;
 }
@@ -418,9 +423,9 @@ alloc_stack_frame_space (poly_int64 size, unsigned HOST_WIDE_INT align)
 /* Accumulate DECL into STACK_VARS.  */
 
 static void
-add_stack_var (tree decl)
+add_stack_var (tree decl, bool really_expand)
 {
-  struct stack_var *v;
+  class stack_var *v;
 
   if (stack_vars_num >= stack_vars_alloc)
     {
@@ -429,7 +434,7 @@ add_stack_var (tree decl)
       else
 	stack_vars_alloc = 32;
       stack_vars
-	= XRESIZEVEC (struct stack_var, stack_vars, stack_vars_alloc);
+	= XRESIZEVEC (class stack_var, stack_vars, stack_vars_alloc);
     }
   if (!decl_to_stack_part)
     decl_to_stack_part = new hash_map<tree, size_t>;
@@ -446,7 +451,7 @@ add_stack_var (tree decl)
      variables that are simultaneously live.  */
   if (known_eq (v->size, 0U))
     v->size = 1;
-  v->alignb = align_local_variable (decl);
+  v->alignb = align_local_variable (decl, really_expand);
   /* An alignment of zero can mightily confuse us later.  */
   gcc_assert (v->alignb != 0);
 
@@ -468,8 +473,10 @@ add_stack_var (tree decl)
 static void
 add_stack_var_conflict (size_t x, size_t y)
 {
-  struct stack_var *a = &stack_vars[x];
-  struct stack_var *b = &stack_vars[y];
+  class stack_var *a = &stack_vars[x];
+  class stack_var *b = &stack_vars[y];
+  if (x == y)
+    return;
   if (!a->conflicts)
     a->conflicts = BITMAP_ALLOC (&stack_var_bitmap_obstack);
   if (!b->conflicts)
@@ -483,8 +490,8 @@ add_stack_var_conflict (size_t x, size_t y)
 static bool
 stack_var_conflict_p (size_t x, size_t y)
 {
-  struct stack_var *a = &stack_vars[x];
-  struct stack_var *b = &stack_vars[y];
+  class stack_var *a = &stack_vars[x];
+  class stack_var *b = &stack_vars[y];
   if (x == y)
     return false;
   /* Partitions containing an SSA name result from gimple registers
@@ -599,7 +606,7 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
 	      unsigned i;
 	      EXECUTE_IF_SET_IN_BITMAP (work, 0, i, bi)
 		{
-		  struct stack_var *a = &stack_vars[i];
+		  class stack_var *a = &stack_vars[i];
 		  if (!a->conflicts)
 		    a->conflicts = BITMAP_ALLOC (&stack_var_bitmap_obstack);
 		  bitmap_ior_into (a->conflicts, work);
@@ -845,7 +852,7 @@ update_alias_info_with_stack_vars (void)
 static void
 union_stack_vars (size_t a, size_t b)
 {
-  struct stack_var *vb = &stack_vars[b];
+  class stack_var *vb = &stack_vars[b];
   bitmap_iterator bi;
   unsigned u;
 
@@ -1014,8 +1021,9 @@ expand_one_stack_var_at (tree decl, rtx base, unsigned base_align,
   set_rtl (decl, x);
 }
 
-struct stack_vars_data
+class stack_vars_data
 {
+public:
   /* Vector of offset pairs, always end of some padding followed
      by start of the padding that needs Address Sanitizer protection.
      The vector is in reversed, highest offset pairs come first.  */
@@ -1036,7 +1044,7 @@ struct stack_vars_data
    with that location.  */
 
 static void
-expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
+expand_stack_vars (bool (*pred) (size_t), class stack_vars_data *data)
 {
   size_t si, i, j, n = stack_vars_num;
   poly_uint64 large_size = 0, large_alloc = 0;
@@ -1124,14 +1132,23 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 	      && frame_offset.is_constant (&prev_offset)
 	      && stack_vars[i].size.is_constant ())
 	    {
+	      if (data->asan_vec.is_empty ())
+		{
+		  alloc_stack_frame_space (0, ASAN_RED_ZONE_SIZE);
+		  prev_offset = frame_offset.to_constant ();
+		}
 	      prev_offset = align_base (prev_offset,
-					MAX (alignb, ASAN_RED_ZONE_SIZE),
+					ASAN_MIN_RED_ZONE_SIZE,
 					!FRAME_GROWS_DOWNWARD);
 	      tree repr_decl = NULL_TREE;
-	      offset
-		= alloc_stack_frame_space (stack_vars[i].size
-					   + ASAN_RED_ZONE_SIZE,
-					   MAX (alignb, ASAN_RED_ZONE_SIZE));
+	      unsigned HOST_WIDE_INT size
+		= asan_var_and_redzone_size (stack_vars[i].size.to_constant ());
+	      if (data->asan_vec.is_empty ())
+		size = MAX (size, ASAN_RED_ZONE_SIZE);
+
+	      unsigned HOST_WIDE_INT alignment = MAX (alignb,
+						      ASAN_MIN_RED_ZONE_SIZE);
+	      offset = alloc_stack_frame_space (size, alignment);
 
 	      data->asan_vec.safe_push (prev_offset);
 	      /* Allocating a constant amount of space from a constant
@@ -1155,6 +1172,20 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 	      if (repr_decl == NULL_TREE)
 		repr_decl = stack_vars[i].decl;
 	      data->asan_decl_vec.safe_push (repr_decl);
+
+	      /* Make sure a representative is unpoison if another
+		 variable in the partition is handled by
+		 use-after-scope sanitization.  */
+	      if (asan_handled_variables != NULL
+		  && !asan_handled_variables->contains (repr_decl))
+		{
+		  for (j = i; j != EOC; j = stack_vars[j].next)
+		    if (asan_handled_variables->contains (stack_vars[j].decl))
+		      break;
+		  if (j != EOC)
+		    asan_handled_variables->add (repr_decl);
+		}
+
 	      data->asan_alignb = MAX (data->asan_alignb, alignb);
 	      if (data->asan_base == NULL)
 		data->asan_base = gen_reg_rtx (Pmode);
@@ -1257,10 +1288,10 @@ set_parm_rtl (tree parm, rtx x)
 	 allocate it, which means that in-frame portion is just a
 	 pointer.  ??? We've got a pseudo for sure here, do we
 	 actually dynamically allocate its spilling area if needed?
-	 ??? Isn't it a problem when POINTER_SIZE also exceeds
-	 MAX_SUPPORTED_STACK_ALIGNMENT, as on cris and lm32?  */
+	 ??? Isn't it a problem when Pmode alignment also exceeds
+	 MAX_SUPPORTED_STACK_ALIGNMENT, as can happen on cris and lm32?  */
       if (align > MAX_SUPPORTED_STACK_ALIGNMENT)
-	align = POINTER_SIZE;
+	align = GET_MODE_ALIGNMENT (Pmode);
 
       record_alignment_for_reg_var (align);
     }
@@ -1298,7 +1329,7 @@ expand_one_stack_var_1 (tree var)
   else
     {
       size = tree_to_poly_uint64 (DECL_SIZE_UNIT (var));
-      byte_align = align_local_variable (var);
+      byte_align = align_local_variable (var, true);
     }
 
   /* We handle highly aligned variables in expand_stack_vars.  */
@@ -1381,14 +1412,14 @@ expand_one_ssa_partition (tree var)
   /* If the variable alignment is very large we'll dynamicaly allocate
      it, which means that in-frame portion is just a pointer.  */
   if (align > MAX_SUPPORTED_STACK_ALIGNMENT)
-    align = POINTER_SIZE;
+    align = GET_MODE_ALIGNMENT (Pmode);
 
   record_alignment_for_reg_var (align);
 
   if (!use_register_for_decl (var))
     {
       if (defer_stack_allocation (var, true))
-	add_stack_var (var);
+	add_stack_var (var, true);
       else
 	expand_one_stack_var_1 (var);
       return;
@@ -1516,7 +1547,7 @@ defer_stack_allocation (tree var, bool toplevel)
   bool smallish
     = (poly_int_tree_p (size_unit, &size)
        && (estimated_poly_value (size)
-	   < PARAM_VALUE (PARAM_MIN_SIZE_FOR_STACK_SHARING)));
+	   < param_min_size_for_stack_sharing));
 
   /* If stack protection is enabled, *all* stack variables must be deferred,
      so that we can re-order the strings to the top of the frame.
@@ -1608,7 +1639,7 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
       /* If the variable alignment is very large we'll dynamicaly allocate
 	 it, which means that in-frame portion is just a pointer.  */
       if (align > MAX_SUPPORTED_STACK_ALIGNMENT)
-	align = POINTER_SIZE;
+	align = GET_MODE_ALIGNMENT (Pmode);
     }
 
   record_alignment_for_reg_var (align);
@@ -1660,19 +1691,24 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
       /* Reject variables which cover more than half of the address-space.  */
       if (really_expand)
 	{
-	  error ("size of variable %q+D is too large", var);
+	  if (DECL_NONLOCAL_FRAME (var))
+	    error_at (DECL_SOURCE_LOCATION (current_function_decl),
+		      "total size of local objects is too large");
+	  else
+	    error_at (DECL_SOURCE_LOCATION (var),
+		      "size of variable %q+D is too large", var);
 	  expand_one_error_var (var);
 	}
     }
   else if (defer_stack_allocation (var, toplevel))
-    add_stack_var (origvar);
+    add_stack_var (origvar, really_expand);
   else
     {
       if (really_expand)
         {
           if (lookup_attribute ("naked",
                                 DECL_ATTRIBUTES (current_function_decl)))
-            error ("cannot allocate stack for variable %q+D, naked function.",
+	    error ("cannot allocate stack for variable %q+D, naked function",
                    var);
 
           expand_one_stack_var (origvar);
@@ -1751,7 +1787,7 @@ stack_protect_classify_type (tree type)
 	  || t == signed_char_type_node
 	  || t == unsigned_char_type_node)
 	{
-	  unsigned HOST_WIDE_INT max = PARAM_VALUE (PARAM_SSP_BUFFER_SIZE);
+	  unsigned HOST_WIDE_INT max = param_ssp_buffer_size;
 	  unsigned HOST_WIDE_INT len;
 
 	  if (!TYPE_SIZE_UNIT (type)
@@ -2195,7 +2231,7 @@ expand_used_vars (void)
   /* Assign rtl to each variable based on these partitions.  */
   if (stack_vars_num > 0)
     {
-      struct stack_vars_data data;
+      class stack_vars_data data;
 
       data.asan_base = NULL_RTX;
       data.asan_alignb = 0;
@@ -2477,6 +2513,13 @@ expand_gimple_cond (basic_block bb, gcond *stmt)
 	}
     }
 
+  /* Optimize (x % C1) == C2 or (x % C1) != C2 if it is beneficial
+     into (x - C2) * C3 < C4.  */
+  if ((code == EQ_EXPR || code == NE_EXPR)
+      && TREE_CODE (op0) == SSA_NAME
+      && TREE_CODE (op1) == INTEGER_CST)
+    code = maybe_optimize_mod_cmp (code, &op0, &op1);
+
   last2 = last = get_last_insn ();
 
   extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
@@ -2616,7 +2659,7 @@ expand_call_stmt (gcall *stmt)
   exp = build_vl_exp (CALL_EXPR, gimple_call_num_args (stmt) + 3);
 
   CALL_EXPR_FN (exp) = gimple_call_fn (stmt);
-  builtin_p = decl && DECL_BUILT_IN (decl);
+  builtin_p = decl && fndecl_built_in_p (decl);
 
   /* If this is not a builtin function, the function type through which the
      call is made may be different from the type of the function.  */
@@ -2655,7 +2698,7 @@ expand_call_stmt (gcall *stmt)
   CALL_EXPR_MUST_TAIL_CALL (exp) = gimple_call_must_tail_p (stmt);
   CALL_EXPR_RETURN_SLOT_OPT (exp) = gimple_call_return_slot_opt_p (stmt);
   if (decl
-      && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
+      && fndecl_built_in_p (decl, BUILT_IN_NORMAL)
       && ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (decl)))
     CALL_ALLOCA_FOR_VAR_P (exp) = gimple_call_alloca_for_var_p (stmt);
   else
@@ -2803,7 +2846,8 @@ tree_conflicts_with_clobbers_p (tree t, HARD_REG_SET *clobbered_regs)
 
   if (overlap)
     {
-      error ("asm-specifier for variable %qE conflicts with asm clobber list",
+      error ("%<asm%> specifier for variable %qE conflicts with "
+	     "%<asm%> clobber list",
 	     DECL_NAME (overlap));
 
       /* Reset registerness to stop multiple errors emitted for a single
@@ -2813,6 +2857,51 @@ tree_conflicts_with_clobbers_p (tree t, HARD_REG_SET *clobbered_regs)
     }
 
   return false;
+}
+
+/* Check that the given REGNO spanning NREGS is a valid
+   asm clobber operand.  Some HW registers cannot be
+   saved/restored, hence they should not be clobbered by
+   asm statements.  */
+static bool
+asm_clobber_reg_is_valid (int regno, int nregs, const char *regname)
+{
+  bool is_valid = true;
+  HARD_REG_SET regset;
+
+  CLEAR_HARD_REG_SET (regset);
+
+  add_range_to_hard_reg_set (&regset, regno, nregs);
+
+  /* Clobbering the PIC register is an error.  */
+  if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM
+      && overlaps_hard_reg_set_p (regset, Pmode, PIC_OFFSET_TABLE_REGNUM))
+    {
+      /* ??? Diagnose during gimplification?  */
+      error ("PIC register clobbered by %qs in %<asm%>", regname);
+      is_valid = false;
+    }
+  else if (!in_hard_reg_set_p
+	   (accessible_reg_set, reg_raw_mode[regno], regno))
+    {
+      /* ??? Diagnose during gimplification?  */
+      error ("the register %qs cannot be clobbered in %<asm%>"
+	     " for the current target", regname);
+      is_valid = false;
+    }
+
+  /* Clobbering the stack pointer register is deprecated.  GCC expects
+     the value of the stack pointer after an asm statement to be the same
+     as it was before, so no asm can validly clobber the stack pointer in
+     the usual sense.  Adding the stack pointer to the clobber list has
+     traditionally had some undocumented and somewhat obscure side-effects.  */
+  if (overlaps_hard_reg_set_p (regset, Pmode, STACK_POINTER_REGNUM)
+      && warning (OPT_Wdeprecated, "listing the stack pointer register"
+		  " %qs in a clobber list is deprecated", regname))
+    inform (input_location, "the value of the stack pointer after an %<asm%>"
+	    " statement must be the same as it was before the statement");
+
+  return is_valid;
 }
 
 /* Generate RTL for an asm statement with arguments.
@@ -2947,14 +3036,8 @@ expand_asm_stmt (gasm *stmt)
 	  else
 	    for (int reg = j; reg < j + nregs; reg++)
 	      {
-		/* Clobbering the PIC register is an error.  */
-		if (reg == (int) PIC_OFFSET_TABLE_REGNUM)
-		  {
-		    /* ??? Diagnose during gimplification?  */
-		    error ("PIC register clobbered by %qs in %<asm%>",
-			   regname);
-		    return;
-		  }
+		if (!asm_clobber_reg_is_valid (reg, nregs, regname))
+		  return;
 
 	        SET_HARD_REG_BIT (clobbered_regs, reg);
 	        rtx x = gen_rtx_REG (reg_raw_mode[reg], reg);
@@ -2962,7 +3045,6 @@ expand_asm_stmt (gasm *stmt)
 	      }
 	}
     }
-  unsigned nclobbers = clobber_rvec.length();
 
   /* First pass over inputs and outputs checks validity and sets
      mark_addressable if needed.  */
@@ -2983,6 +3065,55 @@ expand_asm_stmt (gasm *stmt)
       if (!parse_output_constraint (&constraint, i, ninputs, noutputs,
 				    &allows_mem, &allows_reg, &is_inout))
 	return;
+
+      /* If the output is a hard register, verify it doesn't conflict with
+	 any other operand's possible hard register use.  */
+      if (DECL_P (val)
+	  && REG_P (DECL_RTL (val))
+	  && HARD_REGISTER_P (DECL_RTL (val)))
+	{
+	  unsigned j, output_hregno = REGNO (DECL_RTL (val));
+	  bool early_clobber_p = strchr (constraints[i], '&') != NULL;
+	  unsigned long match;
+
+	  /* Verify the other outputs do not use the same hard register.  */
+	  for (j = i + 1; j < noutputs; ++j)
+	    if (DECL_P (output_tvec[j])
+		&& REG_P (DECL_RTL (output_tvec[j]))
+		&& HARD_REGISTER_P (DECL_RTL (output_tvec[j]))
+		&& output_hregno == REGNO (DECL_RTL (output_tvec[j])))
+	      error ("invalid hard register usage between output operands");
+
+	  /* Verify matching constraint operands use the same hard register
+	     and that the non-matching constraint operands do not use the same
+	     hard register if the output is an early clobber operand.  */
+	  for (j = 0; j < ninputs; ++j)
+	    if (DECL_P (input_tvec[j])
+		&& REG_P (DECL_RTL (input_tvec[j]))
+		&& HARD_REGISTER_P (DECL_RTL (input_tvec[j])))
+	      {
+		unsigned input_hregno = REGNO (DECL_RTL (input_tvec[j]));
+		switch (*constraints[j + noutputs])
+		  {
+		  case '0':  case '1':  case '2':  case '3':  case '4':
+		  case '5':  case '6':  case '7':  case '8':  case '9':
+		    match = strtoul (constraints[j + noutputs], NULL, 10);
+		    break;
+		  default:
+		    match = ULONG_MAX;
+		    break;
+		  }
+		if (i == match
+		    && output_hregno != input_hregno)
+		  error ("invalid hard register usage between output operand "
+			 "and matching constraint operand");
+		else if (early_clobber_p
+			 && i != match
+			 && output_hregno == input_hregno)
+		  error ("invalid hard register usage between earlyclobber "
+			 "operand and input operand");
+	      }
+	}
 
       if (! allows_reg
 	  && (allows_mem
@@ -3137,7 +3268,8 @@ expand_asm_stmt (gasm *stmt)
 	  if (allows_reg && TYPE_MODE (type) != BLKmode)
 	    op = force_reg (TYPE_MODE (type), op);
 	  else if (!allows_mem)
-	    warning (0, "asm operand %d probably doesn%'t match constraints",
+	    warning (0, "%<asm%> operand %d probably does not match "
+		     "constraints",
 		     i + noutputs);
 	  else if (MEM_P (op))
 	    {
@@ -3185,7 +3317,7 @@ expand_asm_stmt (gasm *stmt)
   gcc_assert (constraints.length() == noutputs + ninputs);
 
   /* But it certainly can adjust the clobbers.  */
-  nclobbers = clobber_rvec.length();
+  unsigned nclobbers = clobber_rvec.length ();
 
   /* Third pass checks for easy conflicts.  */
   /* ??? Why are we doing this on trees instead of rtx.  */
@@ -3239,7 +3371,7 @@ expand_asm_stmt (gasm *stmt)
 	     may insert further instructions into the same basic block after
 	     asm goto and if we don't do this, insertion of instructions on
 	     the fallthru edge might misbehave.  See PR58670.  */
-	  if (fallthru_bb && label_to_block_fn (cfun, label) == fallthru_bb)
+	  if (fallthru_bb && label_to_block (cfun, label) == fallthru_bb)
 	    {
 	      if (fallthru_label == NULL_RTX)
 	        fallthru_label = gen_label_rtx ();
@@ -3320,11 +3452,13 @@ expand_asm_stmt (gasm *stmt)
 		 tripping over the under-construction body.  */
 	      for (unsigned k = 0; k < noutputs; ++k)
 		if (reg_overlap_mentioned_p (clobbered_reg, output_rvec[k]))
-		  internal_error ("asm clobber conflict with output operand");
+		  internal_error ("%<asm%> clobber conflict with "
+				  "output operand");
 
 	      for (unsigned k = 0; k < ninputs - ninout; ++k)
 		if (reg_overlap_mentioned_p (clobbered_reg, input_rvec[k]))
-		  internal_error ("asm clobber conflict with input operand");
+		  internal_error ("%<asm%> clobber conflict with "
+				  "input operand");
 	    }
 
 	  XVECEXP (body, 0, i++) = gen_rtx_CLOBBER (VOIDmode, clobbered_reg);
@@ -3578,6 +3712,12 @@ expand_gimple_stmt_1 (gimple *stmt)
     case GIMPLE_RETURN:
       {
 	op0 = gimple_return_retval (as_a <greturn *> (stmt));
+
+	/* If a return doesn't have a location, it very likely represents
+	   multiple user returns so we cannot let it inherit the location
+	   of the last statement of the previous basic block in RTL.  */
+	if (!gimple_has_location (stmt))
+	  set_curr_insn_location (cfun->function_end_locus);
 
 	if (op0 && op0 != error_mark_node)
 	  {
@@ -4252,7 +4392,11 @@ expand_debug_expr (tree exp)
       op0 = DECL_RTL_IF_SET (exp);
 
       /* This decl was probably optimized away.  */
-      if (!op0)
+      if (!op0
+	  /* At least label RTXen are sometimes replaced by
+	     NOTE_INSN_DELETED_LABEL.  Any notes here are not
+	     handled by copy_rtx.  */
+	  || NOTE_P (op0))
 	{
 	  if (!VAR_P (exp)
 	      || DECL_EXTERNAL (exp)
@@ -5809,6 +5953,8 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
     last = PREV_INSN (last);
   if (JUMP_TABLE_DATA_P (last))
     last = PREV_INSN (PREV_INSN (last));
+  if (BARRIER_P (last))
+    last = PREV_INSN (last);
   BB_END (bb) = last;
 
   update_bb_for_insn (bb);
@@ -5856,11 +6002,11 @@ construct_init_block (void)
     {
       first_block = e->dest;
       redirect_edge_succ (e, init_block);
-      e = make_single_succ_edge (init_block, first_block, flags);
+      make_single_succ_edge (init_block, first_block, flags);
     }
   else
-    e = make_single_succ_edge (init_block, EXIT_BLOCK_PTR_FOR_FN (cfun),
-			       EDGE_FALLTHRU);
+    make_single_succ_edge (init_block, EXIT_BLOCK_PTR_FOR_FN (cfun),
+			   EDGE_FALLTHRU);
 
   update_bb_for_insn (init_block);
   return init_block;
@@ -6007,7 +6153,24 @@ discover_nonconstant_array_refs (void)
       {
 	gimple *stmt = gsi_stmt (gsi);
 	if (!is_gimple_debug (stmt))
-	  walk_gimple_op (stmt, discover_nonconstant_array_refs_r, NULL);
+	  {
+	    walk_gimple_op (stmt, discover_nonconstant_array_refs_r, NULL);
+	    gcall *call = dyn_cast <gcall *> (stmt);
+	    if (call && gimple_call_internal_p (call))
+	      switch (gimple_call_internal_fn (call))
+		{
+		case IFN_LOAD_LANES:
+		  /* The source must be a MEM.  */
+		  mark_addressable (gimple_call_arg (call, 0));
+		  break;
+		case IFN_STORE_LANES:
+		  /* The destination must be a MEM.  */
+		  mark_addressable (gimple_call_lhs (call));
+		  break;
+		default:
+		  break;
+		}
+	  }
       }
 }
 
@@ -6106,7 +6269,25 @@ stack_protect_prologue (void)
   tree guard_decl = targetm.stack_protect_guard ();
   rtx x, y;
 
+  crtl->stack_protect_guard_decl = guard_decl;
   x = expand_normal (crtl->stack_protect_guard);
+
+  if (targetm.have_stack_protect_combined_set () && guard_decl)
+    {
+      gcc_assert (DECL_P (guard_decl));
+      y = DECL_RTL (guard_decl);
+
+      /* Allow the target to compute address of Y and copy it to X without
+	 leaking Y into a register.  This combined address + copy pattern
+	 allows the target to prevent spilling of any intermediate results by
+	 splitting it after register allocator.  */
+      if (rtx_insn *insn = targetm.gen_stack_protect_combined_set (x, y))
+	{
+	  emit_insn (insn);
+	  return;
+	}
+    }
+
   if (guard_decl)
     y = expand_normal (guard_decl);
   else
@@ -6187,6 +6368,9 @@ pass_expand::execute (function *fun)
 	    avoid_deep_ter_for_debug (gsi_stmt (gsi), 0);
     }
 
+  /* Mark arrays indexed with non-constant indices with TREE_ADDRESSABLE.  */
+  discover_nonconstant_array_refs ();
+
   /* Make sure all values used by the optimization passes have sane
      defaults.  */
   reg_renumber = 0;
@@ -6221,9 +6405,6 @@ pass_expand::execute (function *fun)
      Also, final expects a note to appear there.  */
   emit_note (NOTE_INSN_DELETED);
 
-  /* Mark arrays indexed with non-constant indices with TREE_ADDRESSABLE.  */
-  discover_nonconstant_array_refs ();
-
   targetm.expand_to_rtl_hook ();
   crtl->init_stack_alignment ();
   fun->cfg->max_jumptable_ents = 0;
@@ -6253,7 +6434,7 @@ pass_expand::execute (function *fun)
 	warning (OPT_Wstack_protector,
 		 "stack protector not protecting function: "
 		 "all local arrays are less than %d bytes long",
-		 (int) PARAM_VALUE (PARAM_SSP_BUFFER_SIZE));
+		 (int) param_ssp_buffer_size);
     }
 
   /* Set up parameters and prepare for return, for the function.  */
@@ -6363,7 +6544,7 @@ pass_expand::execute (function *fun)
 
   /* If the function has too many markers, drop them while expanding.  */
   if (cfun->debug_marker_count
-      >= PARAM_VALUE (PARAM_MAX_DEBUG_MARKER_COUNT))
+      >= param_max_debug_marker_count)
     cfun->debug_nonbind_markers = false;
 
   lab_rtx_for_bb = new hash_map<basic_block, rtx_code_label *>;
@@ -6418,36 +6599,26 @@ pass_expand::execute (function *fun)
      split edges which edge insertions might do.  */
   rebuild_jump_labels (get_insns ());
 
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (fun),
-		  EXIT_BLOCK_PTR_FOR_FN (fun), next_bb)
+  /* If we have a single successor to the entry block, put the pending insns
+     after parm birth, but before NOTE_INSNS_FUNCTION_BEG.  */
+  if (single_succ_p (ENTRY_BLOCK_PTR_FOR_FN (fun)))
     {
-      edge e;
-      edge_iterator ei;
-      for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
+      edge e = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (fun));
+      if (e->insns.r)
 	{
-	  if (e->insns.r)
-	    {
-	      rebuild_jump_labels_chain (e->insns.r);
-	      /* Put insns after parm birth, but before
-		 NOTE_INSNS_FUNCTION_BEG.  */
-	      if (e->src == ENTRY_BLOCK_PTR_FOR_FN (fun)
-		  && single_succ_p (ENTRY_BLOCK_PTR_FOR_FN (fun)))
-		{
-		  rtx_insn *insns = e->insns.r;
-		  e->insns.r = NULL;
-		  if (NOTE_P (parm_birth_insn)
-		      && NOTE_KIND (parm_birth_insn) == NOTE_INSN_FUNCTION_BEG)
-		    emit_insn_before_noloc (insns, parm_birth_insn, e->dest);
-		  else
-		    emit_insn_after_noloc (insns, parm_birth_insn, e->dest);
-		}
-	      else
-		commit_one_edge_insertion (e);
-	    }
+	  rtx_insn *insns = e->insns.r;
+	  e->insns.r = NULL;
+	  rebuild_jump_labels_chain (insns);
+	  if (NOTE_P (parm_birth_insn)
+	      && NOTE_KIND (parm_birth_insn) == NOTE_INSN_FUNCTION_BEG)
+	    emit_insn_before_noloc (insns, parm_birth_insn, e->dest);
 	  else
-	    ei_next (&ei);
+	    emit_insn_after_noloc (insns, parm_birth_insn, e->dest);
 	}
     }
+
+  /* Otherwise, as well as for other edges, take the usual way.  */
+  commit_edge_insertions ();
 
   /* We're done expanding trees to RTL.  */
   currently_expanding_to_rtl = 0;
@@ -6481,18 +6652,20 @@ pass_expand::execute (function *fun)
   find_many_sub_basic_blocks (blocks);
   purge_all_dead_edges ();
 
+  /* After initial rtl generation, call back to finish generating
+     exception support code.  We need to do this before cleaning up
+     the CFG as the code does not expect dead landing pads.  */
+  if (fun->eh->region_tree != NULL)
+    finish_eh_generation ();
+
+  /* Call expand_stack_alignment after finishing all
+     updates to crtl->preferred_stack_boundary.  */
   expand_stack_alignment ();
 
   /* Fixup REG_EQUIV notes in the prologue if there are tailcalls in this
      function.  */
   if (crtl->tail_call_emit)
     fixup_tail_calls ();
-
-  /* After initial rtl generation, call back to finish generating
-     exception support code.  We need to do this before cleaning up
-     the CFG as the code does not expect dead landing pads.  */
-  if (fun->eh->region_tree != NULL)
-    finish_eh_generation ();
 
   /* BB subdivision may have created basic blocks that are are only reachable
      from unlikely bbs but not marked as such in the profile.  */

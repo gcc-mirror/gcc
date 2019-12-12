@@ -1,5 +1,5 @@
 /* Tail merging for gimple.
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
    Contributed by Tom de Vries (tom@codesourcery.com)
 
 This file is part of GCC.
@@ -201,7 +201,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-into-ssa.h"
-#include "params.h"
 #include "tree-ssa-sccvn.h"
 #include "cfgloop.h"
 #include "tree-eh.h"
@@ -285,6 +284,21 @@ struct aux_bb_info
 #define BB_CLUSTER(bb) (((struct aux_bb_info *)bb->aux)->cluster)
 #define BB_VOP_AT_EXIT(bb) (((struct aux_bb_info *)bb->aux)->vop_at_exit)
 #define BB_DEP_BB(bb) (((struct aux_bb_info *)bb->aux)->dep_bb)
+
+/* Valueization helper querying the VN lattice.  */
+
+static tree
+tail_merge_valueize (tree name)
+{
+  if (TREE_CODE (name) == SSA_NAME
+      && has_VN_INFO (name))
+    {
+      tree tem = VN_INFO (name)->valnum;
+      if (tem != VN_TOP)
+	return tem;
+    }
+  return name;
+}
 
 /* Returns true if the only effect a statement STMT has, is to define locally
    used SSA_NAMEs.  */
@@ -371,7 +385,7 @@ gvn_uses_equal (tree val1, tree val2)
   if (val1 == val2)
     return true;
 
-  if (vn_valueize (val1) != vn_valueize (val2))
+  if (tail_merge_valueize (val1) != tail_merge_valueize (val2))
     return false;
 
   return ((TREE_CODE (val1) == SSA_NAME || CONSTANT_CLASS_P (val1))
@@ -481,7 +495,7 @@ same_succ_hash (const same_succ *e)
       for (i = 0; i < gimple_call_num_args (stmt); i++)
 	{
 	  arg = gimple_call_arg (stmt, i);
-	  arg = vn_valueize (arg);
+	  arg = tail_merge_valueize (arg);
 	  inchash::add_expr (arg, hstate);
 	}
     }
@@ -1147,7 +1161,7 @@ gimple_equal_p (same_succ *same_succ, gimple *s1, gimple *s2)
       if (lhs1 == NULL_TREE || lhs2 == NULL_TREE)
 	return false;
       if (TREE_CODE (lhs1) == SSA_NAME && TREE_CODE (lhs2) == SSA_NAME)
-	return vn_valueize (lhs1) == vn_valueize (lhs2);
+	return tail_merge_valueize (lhs1) == tail_merge_valueize (lhs2);
       return operand_equal_p (lhs1, lhs2, 0);
 
     case GIMPLE_ASSIGN:
@@ -1454,7 +1468,7 @@ find_clusters_1 (same_succ *same_succ)
   unsigned int i, j;
   bitmap_iterator bi, bj;
   int nr_comparisons;
-  int max_comparisons = PARAM_VALUE (PARAM_MAX_TAIL_MERGE_COMPARISONS);
+  int max_comparisons = param_max_tail_merge_comparisons;
 
   EXECUTE_IF_SET_IN_BITMAP (same_succ->bbs, 0, i, bi)
     {
@@ -1716,7 +1730,7 @@ tail_merge_optimize (unsigned int todo)
   int nr_bbs_removed;
   bool loop_entered = false;
   int iteration_nr = 0;
-  int max_iterations = PARAM_VALUE (PARAM_MAX_TAIL_MERGE_ITERATIONS);
+  int max_iterations = param_max_tail_merge_iterations;
 
   if (!flag_tree_tail_merge
       || max_iterations == 0)
@@ -1731,7 +1745,7 @@ tail_merge_optimize (unsigned int todo)
     {
       cleanup_tree_cfg ();
       todo &= ~TODO_cleanup_cfg;
-      split_critical_edges ();
+      split_edges_for_insertion ();
     }
 
   if (!dom_info_available_p (CDI_DOMINATORS))

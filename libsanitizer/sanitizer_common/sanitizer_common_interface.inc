@@ -1,17 +1,20 @@
 //===-- sanitizer_common_interface.inc ------------------------------------===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 // Sanitizer Common interface list.
 //===----------------------------------------------------------------------===//
+INTERFACE_FUNCTION(__sanitizer_acquire_crash_state)
 INTERFACE_FUNCTION(__sanitizer_annotate_contiguous_container)
 INTERFACE_FUNCTION(__sanitizer_contiguous_container_find_bad_address)
 INTERFACE_FUNCTION(__sanitizer_set_death_callback)
 INTERFACE_FUNCTION(__sanitizer_set_report_path)
 INTERFACE_FUNCTION(__sanitizer_set_report_fd)
 INTERFACE_FUNCTION(__sanitizer_verify_contiguous_container)
+INTERFACE_WEAK_FUNCTION(__sanitizer_on_print)
 INTERFACE_WEAK_FUNCTION(__sanitizer_report_error_summary)
 INTERFACE_WEAK_FUNCTION(__sanitizer_sandbox_on_notify)
 // Sanitizer weak hooks
@@ -32,6 +35,7 @@ INTERFACE_FUNCTION(__sanitizer_get_heap_size)
 INTERFACE_FUNCTION(__sanitizer_get_ownership)
 INTERFACE_FUNCTION(__sanitizer_get_unmapped_bytes)
 INTERFACE_FUNCTION(__sanitizer_install_malloc_and_free_hooks)
+INTERFACE_FUNCTION(__sanitizer_purge_allocator)
 INTERFACE_FUNCTION(__sanitizer_print_memory_profile)
 INTERFACE_WEAK_FUNCTION(__sanitizer_free_hook)
 INTERFACE_WEAK_FUNCTION(__sanitizer_malloc_hook)

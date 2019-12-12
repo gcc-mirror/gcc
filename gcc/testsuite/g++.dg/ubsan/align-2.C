@@ -1,6 +1,6 @@
 // Limit this to known non-strict alignment targets.
 // { dg-do run { target { i?86-*-linux* x86_64-*-linux* } } }
-// { dg-options "-fsanitize=alignment -Wall -Wno-unused-variable -std=c++11" }
+// { dg-options "-fsanitize=alignment -Wall -Wno-unused-variable -Wno-address-of-packed-member -std=c++11" }
 
 typedef const long int L;
 struct S { long int l; char buf[1 + sizeof (int) + sizeof (L)]; } s;

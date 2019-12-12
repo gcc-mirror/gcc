@@ -1,5 +1,5 @@
 /* Part of CPP library.  (Precompiled header reading/writing.)
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -50,50 +50,47 @@ static int
 write_macdef (cpp_reader *pfile, cpp_hashnode *hn, void *file_p)
 {
   FILE *f = (FILE *) file_p;
+  bool is_void = false;
   switch (hn->type)
     {
     case NT_VOID:
       if (! (hn->flags & NODE_POISONED))
 	return 1;
-      /* XXX Really fallthru?  */
-      /* FALLTHRU */
+      is_void = true;
+      goto poisoned;
 
-    case NT_MACRO:
-      if ((hn->flags & NODE_BUILTIN)
-	  && (!pfile->cb.user_builtin_macro
-	      || !pfile->cb.user_builtin_macro (pfile, hn)))
-	return 1;
-
-      {
-	struct macrodef_struct s;
-	const unsigned char *defn;
-
-	s.name_length = NODE_LEN (hn);
-	s.flags = hn->flags & NODE_POISONED;
-
-	if (hn->type == NT_MACRO)
-	  {
-	    defn = cpp_macro_definition (pfile, hn);
-	    s.definition_length = ustrlen (defn);
-	  }
-	else
-	  {
-	    defn = NODE_NAME (hn);
-	    s.definition_length = s.name_length;
-	  }
-
-	if (fwrite (&s, sizeof (s), 1, f) != 1
-	    || fwrite (defn, 1, s.definition_length, f) != s.definition_length)
-	  {
-	    cpp_errno (pfile, CPP_DL_ERROR,
-		       "while writing precompiled header");
-	    return 0;
-	  }
-      }
+    case NT_BUILTIN_MACRO:
       return 1;
 
-    case NT_ASSERTION:
-      /* Not currently implemented.  */
+    case NT_USER_MACRO:
+      if (hn->value.macro->kind != cmk_assert)
+	{
+	poisoned:
+	  struct macrodef_struct s;
+	  const unsigned char *defn;
+
+	  s.name_length = NODE_LEN (hn);
+	  s.flags = hn->flags & NODE_POISONED;
+
+	  if (is_void)
+	    {
+	      defn = NODE_NAME (hn);
+	      s.definition_length = s.name_length;
+	    }
+	  else
+	    {
+	      defn = cpp_macro_definition (pfile, hn);
+	      s.definition_length = ustrlen (defn);
+	    }
+
+	  if (fwrite (&s, sizeof (s), 1, f) != 1
+	      || fwrite (defn, 1, s.definition_length, f) != s.definition_length)
+	    {
+	      cpp_errno (pfile, CPP_DL_ERROR,
+			 "while writing precompiled header");
+	      return 0;
+	    }
+	}
       return 1;
 
     default:
@@ -228,8 +225,11 @@ count_defs (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *hn, void *ss_p)
 
   switch (hn->type)
     {
-    case NT_MACRO:
-      if (hn->flags & NODE_BUILTIN)
+    case NT_BUILTIN_MACRO:
+      return 1;
+
+    case NT_USER_MACRO:
+      if (hn->value.macro->kind == cmk_assert)
 	return 1;
 
       /* fall through.  */
@@ -250,10 +250,6 @@ count_defs (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *hn, void *ss_p)
       }
       return 1;
 
-    case NT_ASSERTION:
-      /* Not currently implemented.  */
-      return 1;
-
     default:
       abort ();
     }
@@ -267,8 +263,11 @@ write_defs (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *hn, void *ss_p)
 
   switch (hn->type)
     {
-    case NT_MACRO:
-      if (hn->flags & NODE_BUILTIN)
+    case NT_BUILTIN_MACRO:
+      return 1;
+
+    case NT_USER_MACRO:
+      if (hn->value.macro->kind == cmk_assert)
 	return 1;
 
       /* fall through.  */
@@ -287,10 +286,6 @@ write_defs (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *hn, void *ss_p)
 	    ss->n_defs += 1;
 	  }
       }
-      return 1;
-
-    case NT_ASSERTION:
-      /* Not currently implemented.  */
       return 1;
 
     default:
@@ -442,7 +437,7 @@ _cpp_restore_pushed_macros (cpp_reader *r, FILE *f)
 	    return 0;
 
 	  p->definition = defn;
-	  if (fread (&(p->line), sizeof (source_location), 1, f) != 1)
+	  if (fread (&(p->line), sizeof (location_t), 1, f) != 1)
 	    return 0;
 	  defnlen = 0;
 	  if (fread (&defnlen, sizeof (defnlen), 1, f) != 1)
@@ -506,7 +501,7 @@ _cpp_save_pushed_macros (cpp_reader *r, FILE *f)
 	  if (fwrite (&defnlen, sizeof (size_t), 1, f) != 1
 	      || fwrite (pp[i]->definition, defnlen, 1, f) != 1)
 	    return 0;
-	  if (fwrite (&(pp[i]->line), sizeof (source_location), 1, f) != 1)
+	  if (fwrite (&(pp[i]->line), sizeof (location_t), 1, f) != 1)
 	    return 0;
 	  defnlen = 0;
 	  defnlen |= (pp[i]->syshdr != 0 ? 1 : 0);
@@ -623,7 +618,7 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
 	  goto fail;
 	}
 
-      if (h->type != NT_MACRO)
+      if (h->type == NT_VOID)
 	{
 	  /* It's ok if __GCC_HAVE_DWARF2_CFI_ASM becomes undefined,
 	     as in, when the PCH file is created with -g and we're
@@ -760,13 +755,7 @@ save_macros (cpp_reader *r, cpp_hashnode *h, void *data_p)
 {
   struct save_macro_data *data = (struct save_macro_data *)data_p;
 
-  if ((h->flags & NODE_BUILTIN)
-      && h->type == NT_MACRO
-      && r->cb.user_builtin_macro)
-    r->cb.user_builtin_macro (r, h);
-
-  if (h->type != NT_VOID
-      && (h->flags & NODE_BUILTIN) == 0)
+  if (cpp_user_macro_p (h))
     {
       if (data->count == data->array_size)
 	{
@@ -774,28 +763,14 @@ save_macros (cpp_reader *r, cpp_hashnode *h, void *data_p)
 	  data->defns = XRESIZEVEC (uchar *, data->defns, (data->array_size));
 	}
 
-      switch (h->type)
-	{
-	case NT_ASSERTION:
-	  /* Not currently implemented.  */
-	  return 1;
+      const uchar * defn = cpp_macro_definition (r, h);
+      size_t defnlen = ustrlen (defn);
 
-	case NT_MACRO:
-	  {
-	    const uchar * defn = cpp_macro_definition (r, h);
-	    size_t defnlen = ustrlen (defn);
-
-	    data->defns[data->count] = (uchar *) xmemdup (defn, defnlen,
-                                                          defnlen + 2);
-	    data->defns[data->count][defnlen] = '\n';
-	  }
-	  break;
-
-	default:
-	  abort ();
-	}
+      data->defns[data->count] = (uchar *) xmemdup (defn, defnlen, defnlen + 2);
+      data->defns[data->count][defnlen] = '\n';
       data->count++;
     }
+
   return 1;
 }
 

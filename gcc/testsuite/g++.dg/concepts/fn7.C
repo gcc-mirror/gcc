@@ -1,7 +1,5 @@
-// { dg-do link }
-// { dg-options "-std=c++17 -fconcepts" }
-
-// FIXME: What is this actually testing?
+// { dg-do link { target c++14 } }
+// { dg-options "-fconcepts-ts" }
 
 void f() requires true { }
 

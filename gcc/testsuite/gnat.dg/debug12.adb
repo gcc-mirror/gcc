@@ -1,4 +1,5 @@
 --  { dg-do compile }
+--  { dg-skip-if "No Dwarf" { { hppa*-*-hpux* } && { ! lp64 } } }
 --  { dg-options "-cargs -gdwarf-4 -fdebug-types-section -dA -margs" }
 --  { dg-final { scan-assembler-times "DW_AT_location" 4 } }
 

@@ -13,7 +13,7 @@ f (m)
   i = m;
   do
     {
-      g (i * INT_MAX / 2);
+      g ((int)((unsigned)i * INT_MAX) / 2);
     }
   while (--i > 0);
 }

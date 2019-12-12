@@ -1,6 +1,6 @@
 /* Specialized bits of code needed to support construction and
    destruction of file-scope objects in C++ code.
-   Copyright (C) 1991-2018 Free Software Foundation, Inc.
+   Copyright (C) 1991-2019 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GCC.
@@ -153,6 +153,8 @@ call_ ## FUNC (void)					\
 
 #if !defined(USE_TM_CLONE_REGISTRY) && defined(OBJECT_FORMAT_ELF)
 # define USE_TM_CLONE_REGISTRY 1
+#elif !defined(USE_TM_CLONE_REGISTRY)
+# define USE_TM_CLONE_REGISTRY 0
 #endif
 
 /* We do not want to add the weak attribute to the declarations of these
@@ -233,11 +235,11 @@ CTOR_LIST_BEGIN;
 static func_ptr force_to_data[1] __attribute__ ((__used__)) = { };
 asm (__LIBGCC_CTORS_SECTION_ASM_OP__);
 STATIC func_ptr __CTOR_LIST__[1]
-  __attribute__ ((__used__, aligned(sizeof(func_ptr))))
+  __attribute__ ((__used__, aligned(__alignof__(func_ptr))))
   = { (func_ptr) (-1) };
 #else
 STATIC func_ptr __CTOR_LIST__[1]
-  __attribute__ ((__used__, section(".ctors"), aligned(sizeof(func_ptr))))
+  __attribute__ ((__used__, section(".ctors"), aligned(__alignof__(func_ptr))))
   = { (func_ptr) (-1) };
 #endif /* __CTOR_LIST__ alternatives */
 
@@ -246,11 +248,11 @@ DTOR_LIST_BEGIN;
 #elif defined(__LIBGCC_DTORS_SECTION_ASM_OP__)
 asm (__LIBGCC_DTORS_SECTION_ASM_OP__);
 STATIC func_ptr __DTOR_LIST__[1]
-  __attribute__ ((aligned(sizeof(func_ptr))))
+  __attribute__ ((aligned(__alignof__(func_ptr))))
   = { (func_ptr) (-1) };
 #else
 STATIC func_ptr __DTOR_LIST__[1]
-  __attribute__((section(".dtors"), aligned(sizeof(func_ptr))))
+  __attribute__((section(".dtors"), aligned(__alignof__(func_ptr))))
   = { (func_ptr) (-1) };
 #endif /* __DTOR_LIST__ alternatives */
 #endif /* USE_INITFINI_ARRAY */
@@ -265,7 +267,7 @@ STATIC EH_FRAME_SECTION_CONST char __EH_FRAME_BEGIN__[]
 
 #if USE_TM_CLONE_REGISTRY
 STATIC func_ptr __TMC_LIST__[]
-  __attribute__((used, section(".tm_clone_table"), aligned(sizeof(void*))))
+  __attribute__((used, section(".tm_clone_table"), aligned(__alignof__(void*))))
   = { };
 # ifdef HAVE_GAS_HIDDEN
 extern func_ptr __TMC_END__[] __attribute__((__visibility__ ("hidden")));
@@ -429,9 +431,17 @@ __do_global_dtors_aux (void)
 #ifdef FINI_SECTION_ASM_OP
 CRT_CALL_STATIC_FUNCTION (FINI_SECTION_ASM_OP, __do_global_dtors_aux)
 #elif defined (FINI_ARRAY_SECTION_ASM_OP)
+#if defined(__FDPIC__)
+__asm__("\t.equ\t__do_global_dtors_aux_alias, __do_global_dtors_aux\n");
+extern char __do_global_dtors_aux_alias;
+static void *__do_global_dtors_aux_fini_array_entry[]
+__attribute__ ((__used__, section(".fini_array"), aligned(sizeof(void *))))
+     = { &__do_global_dtors_aux_alias };
+#else /* defined(__FDPIC__) */
 static func_ptr __do_global_dtors_aux_fini_array_entry[]
-  __attribute__ ((__used__, section(".fini_array"), aligned(sizeof(func_ptr))))
-  = { __do_global_dtors_aux };
+  __attribute__ ((__used__, section(".fini_array"),
+		  aligned(__alignof__(func_ptr)))) = { __do_global_dtors_aux };
+#endif /* defined(__FDPIC__) */
 #else /* !FINI_SECTION_ASM_OP && !FINI_ARRAY_SECTION_ASM_OP */
 static void __attribute__((used))
 __do_global_dtors_aux_1 (void)
@@ -442,8 +452,7 @@ CRT_CALL_STATIC_FUNCTION (__LIBGCC_INIT_SECTION_ASM_OP__,
 			  __do_global_dtors_aux_1)
 #endif
 
-#if defined(USE_EH_FRAME_REGISTRY) \
-    || defined(USE_TM_CLONE_REGISTRY)
+#if defined(USE_EH_FRAME_REGISTRY) || USE_TM_CLONE_REGISTRY
 /* Stick a call to __register_frame_info into the .init section.  For some
    reason calls with no arguments work more reliably in .init, so stick the
    call in another function.  */
@@ -473,9 +482,17 @@ frame_dummy (void)
 #ifdef __LIBGCC_INIT_SECTION_ASM_OP__
 CRT_CALL_STATIC_FUNCTION (__LIBGCC_INIT_SECTION_ASM_OP__, frame_dummy)
 #else /* defined(__LIBGCC_INIT_SECTION_ASM_OP__) */
+#if defined(__FDPIC__)
+__asm__("\t.equ\t__frame_dummy_alias, frame_dummy\n");
+extern char __frame_dummy_alias;
+static void *__frame_dummy_init_array_entry[]
+__attribute__ ((__used__, section(".init_array"), aligned(sizeof(void *))))
+     = { &__frame_dummy_alias };
+#else /* defined(__FDPIC__) */
 static func_ptr __frame_dummy_init_array_entry[]
-  __attribute__ ((__used__, section(".init_array"), aligned(sizeof(func_ptr))))
-  = { frame_dummy };
+  __attribute__ ((__used__, section(".init_array"),
+		  aligned(__alignof__(func_ptr)))) = { frame_dummy };
+#endif /* defined(__FDPIC__) */
 #endif /* !defined(__LIBGCC_INIT_SECTION_ASM_OP__) */
 #endif /* USE_EH_FRAME_REGISTRY || USE_TM_CLONE_REGISTRY */
 
@@ -544,8 +561,7 @@ __do_global_dtors (void)
 #endif
 }
 
-#if defined(USE_EH_FRAME_REGISTRY) \
-    || defined(USE_TM_CLONE_REGISTRY)
+#if defined(USE_EH_FRAME_REGISTRY) || USE_TM_CLONE_REGISTRY
 /* A helper function for __do_global_ctors, which is in crtend.o.  Here
    in crtbegin.o, we can reference a couple of symbols not visible there.
    Plus, since we're before libgcc.a, we have no problems referencing
@@ -588,11 +604,11 @@ CTOR_LIST_END;
 static func_ptr force_to_data[1] __attribute__ ((__used__)) = { };
 asm (__LIBGCC_CTORS_SECTION_ASM_OP__);
 STATIC func_ptr __CTOR_END__[1]
-  __attribute__((aligned(sizeof(func_ptr))))
+  __attribute__((aligned(__alignof__(func_ptr))))
   = { (func_ptr) 0 };
 #else
 STATIC func_ptr __CTOR_END__[1]
-  __attribute__((section(".ctors"), aligned(sizeof(func_ptr))))
+  __attribute__((section(".ctors"), aligned(__alignof__(func_ptr))))
   = { (func_ptr) 0 };
 #endif
 
@@ -607,16 +623,16 @@ func_ptr __DTOR_END__[1]
 #ifndef __LIBGCC_DTORS_SECTION_ASM_OP__
 		  section(".dtors"),
 #endif
-		  aligned(sizeof(func_ptr)), visibility ("hidden")))
+		  aligned(__alignof__(func_ptr)), visibility ("hidden")))
   = { (func_ptr) 0 };
 #elif defined(__LIBGCC_DTORS_SECTION_ASM_OP__)
 asm (__LIBGCC_DTORS_SECTION_ASM_OP__);
 STATIC func_ptr __DTOR_END__[1]
-  __attribute__ ((used, aligned(sizeof(func_ptr))))
+  __attribute__ ((used, aligned(__alignof__(func_ptr))))
   = { (func_ptr) 0 };
 #else
 STATIC func_ptr __DTOR_END__[1]
-  __attribute__((used, section(".dtors"), aligned(sizeof(func_ptr))))
+  __attribute__((used, section(".dtors"), aligned(__alignof__(func_ptr))))
   = { (func_ptr) 0 };
 #endif
 #endif /* USE_INITFINI_ARRAY */
@@ -635,7 +651,7 @@ typedef short int32;
 # endif
 STATIC EH_FRAME_SECTION_CONST int32 __FRAME_END__[]
      __attribute__ ((used, section(__LIBGCC_EH_FRAME_SECTION_NAME__),
-		     aligned(sizeof(int32))))
+		     aligned(__alignof__(int32))))
      = { 0 };
 #endif /* __LIBGCC_EH_FRAME_SECTION_NAME__ */
 
@@ -644,7 +660,8 @@ STATIC EH_FRAME_SECTION_CONST int32 __FRAME_END__[]
 static
 # endif
 func_ptr __TMC_END__[]
-  __attribute__((used, section(".tm_clone_table"), aligned(sizeof(void *))))
+  __attribute__((used, section(".tm_clone_table"),
+		 aligned(__alignof__(void *))))
 # ifdef HAVE_GAS_HIDDEN
   __attribute__((__visibility__ ("hidden"))) = { };
 # else
@@ -716,8 +733,7 @@ void
 __do_global_ctors (void)
 {
   func_ptr *p;
-#if defined(USE_EH_FRAME_REGISTRY) \
-    || defined(USE_TM_CLONE_REGISTRY)
+#if defined(USE_EH_FRAME_REGISTRY) || USE_TM_CLONE_REGISTRY
   __do_global_ctors_1();
 #endif
   for (p = __CTOR_END__ - 1; *p != (func_ptr) -1; p--)

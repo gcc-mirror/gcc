@@ -7,12 +7,12 @@
 __attribute__((noinline, noclone)) static void bar (int);
 volatile int v;
 void (*fn) ();
-struct S { S () { v++; } ~S () { v++; } };
+struct S { S () { v++; } ~S () { v++; } }; // { dg-warning "deprecated" "" { target c++2a } }
 
 __attribute__((noinline, noclone)) static void
 foo (int x)
 {
-  v++;
+  v++; // { dg-warning "deprecated" "" { target c++2a } }
   if (x == 5)
     bar (x);
 }
@@ -20,7 +20,7 @@ foo (int x)
 __attribute__((noinline, noclone)) static void
 bar (int x)
 {
-  v++;
+  v++; // { dg-warning "deprecated" "" { target c++2a } }
   if (x == 6)
     foo (x);
   else if (x == 5)

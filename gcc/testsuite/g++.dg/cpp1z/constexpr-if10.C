@@ -1,5 +1,5 @@
 // PR c++/78948
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 template <int T>
 void sizeof_mismatch()

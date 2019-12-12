@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fipa-sra -fdump-tree-eipa_sra-details" } */
+/* { dg-options "-O2 -fno-ipa-cp -fipa-sra -fdump-ipa-sra" } */
 
 struct bovid
 {
@@ -34,5 +34,6 @@ void caller (void)
   return;
 }
 
-/* { dg-final { scan-tree-dump "base: z, remove_param" "eipa_sra"  } } */
-/* { dg-final { scan-tree-dump "base: calf, remove_param" "eipa_sra"  } } */
+/* { dg-final { scan-ipa-dump "Will split parameter 0" "sra"  } } */
+/* { dg-final { scan-ipa-dump "Will remove parameter 1" "sra" } } */
+/* { dg-final { scan-ipa-dump "Will remove parameter 2" "sra" } } */

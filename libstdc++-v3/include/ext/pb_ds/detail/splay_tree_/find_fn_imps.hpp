@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,6 +37,8 @@
  * @file splay_tree_/find_fn_imps.hpp
  * Contains an implementation class for splay_tree_.
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::point_iterator
@@ -98,3 +100,4 @@ find_imp(key_const_reference r_key) const
       p_nd = p_nd->m_p_right;
   return base_type::m_p_head;
 }
+#endif

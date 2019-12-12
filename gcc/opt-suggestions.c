@@ -1,6 +1,6 @@
 /* Provide option suggestion for --complete option and a misspelled
    used by a user.
-   Copyright (C) 2016-2018 Free Software Foundation, Inc.
+   Copyright (C) 2016-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,9 +23,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "opts.h"
-#include "params.h"
 #include "spellcheck.h"
 #include "opt-suggestions.h"
+#include "common/common-target.h"
 #include "selftest.h"
 
 option_proposer::~option_proposer ()
@@ -38,7 +38,7 @@ option_proposer::suggest_option (const char *bad_opt)
 {
   /* Lazily populate m_option_suggestions.  */
   if (!m_option_suggestions)
-    build_option_suggestions ();
+    build_option_suggestions (NULL);
   gcc_assert (m_option_suggestions);
 
   /* "m_option_suggestions" is now populated.  Use it.  */
@@ -64,32 +64,17 @@ option_proposer::get_completions (const char *option_prefix,
 
   size_t length = strlen (option_prefix);
 
-  /* Handle OPTION_PREFIX starting with "-param".  */
-  const char *prefix = "-param";
-  if (length >= strlen (prefix)
-      && strstr (option_prefix, prefix) == option_prefix)
-    {
-      /* We support both '-param-xyz=123' and '-param xyz=123' */
-      option_prefix += strlen (prefix);
-      char separator = option_prefix[0];
-      option_prefix++;
-      if (separator == ' ' || separator == '=')
-	find_param_completions (separator, option_prefix, results);
-    }
-  else
-    {
-      /* Lazily populate m_option_suggestions.  */
-      if (!m_option_suggestions)
-	build_option_suggestions ();
-      gcc_assert (m_option_suggestions);
+  /* Lazily populate m_option_suggestions.  */
+  if (!m_option_suggestions)
+    build_option_suggestions (option_prefix);
+  gcc_assert (m_option_suggestions);
 
-      for (unsigned i = 0; i < m_option_suggestions->length (); i++)
-	{
-	  char *candidate = (*m_option_suggestions)[i];
-	  if (strlen (candidate) >= length
-	      && strstr (candidate, option_prefix) == candidate)
-	    results.safe_push (concat ("-", candidate, NULL));
-	}
+  for (unsigned i = 0; i < m_option_suggestions->length (); i++)
+    {
+      char *candidate = (*m_option_suggestions)[i];
+      if (strlen (candidate) >= length
+	  && strstr (candidate, option_prefix) == candidate)
+	results.safe_push (concat ("-", candidate, NULL));
     }
 }
 
@@ -108,7 +93,7 @@ option_proposer::suggest_completion (const char *option_prefix)
 }
 
 void
-option_proposer::build_option_suggestions (void)
+option_proposer::build_option_suggestions (const char *prefix)
 {
   gcc_assert (m_option_suggestions == NULL);
   m_option_suggestions = new auto_string_vec ();
@@ -133,10 +118,37 @@ option_proposer::build_option_suggestions (void)
 					      with_arg);
 		  free (with_arg);
 		}
+
+	      /* Add also variant without an option argument.  */
+	      add_misspelling_candidates (m_option_suggestions, option,
+					  opt_text);
 	    }
 	  else
-	    add_misspelling_candidates (m_option_suggestions, option,
-					opt_text);
+	    {
+	      bool option_added = false;
+	      if (option->flags & CL_TARGET)
+		{
+		  vec<const char *> option_values
+		    = targetm_common.get_valid_option_values (i, prefix);
+		  if (!option_values.is_empty ())
+		    {
+		      option_added = true;
+		      for (unsigned j = 0; j < option_values.length (); j++)
+			{
+			  char *with_arg = concat (opt_text, option_values[j],
+						   NULL);
+			  add_misspelling_candidates (m_option_suggestions, option,
+						      with_arg);
+			  free (with_arg);
+			}
+		    }
+		  option_values.release ();
+		}
+
+	      if (!option_added)
+		add_misspelling_candidates (m_option_suggestions, option,
+					    opt_text);
+	    }
 	  break;
 
 	case OPT_fsanitize_:
@@ -151,6 +163,10 @@ option_proposer::build_option_suggestions (void)
 	       "-fsanitize=address"
 	     rather than to "-Wframe-address" (PR driver/69265).  */
 	  {
+	    /* Add also variant without an option argument.  */
+	    add_misspelling_candidates (m_option_suggestions, option,
+					opt_text);
+
 	    for (int j = 0; sanitizer_opts[j].name != NULL; ++j)
 	      {
 		struct cl_option optb;
@@ -178,25 +194,6 @@ option_proposer::build_option_suggestions (void)
 	  }
 	  break;
 	}
-    }
-}
-
-/* Find parameter completions for --param format with SEPARATOR.
-   Again, save the completions into results.  */
-
-void
-option_proposer::find_param_completions (const char separator,
-					 const char *param_prefix,
-					 auto_string_vec &results)
-{
-  char separator_str[] = {separator, '\0'};
-  size_t length = strlen (param_prefix);
-  for (unsigned i = 0; i < get_num_compiler_params (); ++i)
-    {
-      const char *candidate = compiler_params[i].option;
-      if (strlen (candidate) >= length
-	  && strstr (candidate, param_prefix) == candidate)
-	results.safe_push (concat ("--param", separator_str, candidate, NULL));
     }
 }
 
@@ -275,7 +272,6 @@ test_completion_valid_options (option_proposer &proposer)
     "-Wassign-intercept",
     "-Wno-format-security",
     "-fno-sched-stalled-insns",
-    "-fbtr-bb-exclusive",
     "-fno-tree-tail-merge",
     "-Wlong-long",
     "-Wno-unused-but-set-parameter",
@@ -370,9 +366,9 @@ test_completion_partial_match (option_proposer &proposer)
   ASSERT_TRUE (in_completion_p (proposer, "-fipa-icf", "-fipa-icf-functions"));
   ASSERT_TRUE (in_completion_p (proposer, "-fipa-icf", "-fipa-icf"));
   ASSERT_TRUE (in_completion_p (proposer, "--param=",
-				"--param=max-vartrack-reverse-op-size"));
+				"--param=max-vartrack-reverse-op-size="));
   ASSERT_TRUE (in_completion_p (proposer, "--param ",
-				"--param max-vartrack-reverse-op-size"));
+				"--param max-vartrack-reverse-op-size="));
 
   ASSERT_FALSE (in_completion_p (proposer, "-fipa-icf", "-fipa"));
   ASSERT_FALSE (in_completion_p (proposer, "-fipa-icf-functions", "-fipa-icf"));

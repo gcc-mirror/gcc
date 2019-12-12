@@ -13,4 +13,4 @@ program main
   allocate(ret(3))
   ret = matmul(a,b)  ! This should throw an error.
 end program main
-! { dg-output "Fortran runtime error: Incorrect extent in return array in MATMUL intrinsic: is 3, should be 2" }
+! { dg-output "Fortran runtime error: Array bound mismatch for dimension 1 of array" }

@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target popcountl } */
 /* { dg-options "-O2 -fno-tree-ch -fdump-tree-optimized" } */
 
 int

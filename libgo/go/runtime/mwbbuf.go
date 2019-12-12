@@ -5,6 +5,9 @@
 // This implements the write barrier buffer. The write barrier itself
 // is gcWriteBarrier and is implemented in assembly.
 //
+// See mbarrier.go for algorithmic details on the write barrier. This
+// file deals only with the buffer.
+//
 // The write barrier has a fast path and a slow path. The fast path
 // simply enqueues to a per-P write barrier buffer. It's written in
 // assembly and doesn't clobber any general purpose registers, so it
@@ -20,6 +23,7 @@
 package runtime
 
 import (
+	"runtime/internal/atomic"
 	"runtime/internal/sys"
 	"unsafe"
 )
@@ -53,6 +57,12 @@ type wbBuf struct {
 	// on. This must be a multiple of wbBufEntryPointers because
 	// the write barrier only checks for overflow once per entry.
 	buf [wbBufEntryPointers * wbBufEntries]uintptr
+
+	// debugGen causes the write barrier buffer to flush after
+	// every write barrier if equal to gcWorkPauseGen. This is for
+	// debugging #27993. This is only set if debugCachedWork is
+	// set.
+	debugGen uint32
 }
 
 const (
@@ -76,7 +86,7 @@ const (
 func (b *wbBuf) reset() {
 	start := uintptr(unsafe.Pointer(&b.buf[0]))
 	b.next = start
-	if gcBlackenPromptly || writeBarrier.cgo {
+	if writeBarrier.cgo || (debugCachedWork && (throwOnGCWork || b.debugGen == atomic.Load(&gcWorkPauseGen))) {
 		// Effectively disable the buffer by forcing a flush
 		// on every barrier.
 		b.end = uintptr(unsafe.Pointer(&b.buf[wbBufEntryPointers]))
@@ -104,6 +114,11 @@ func (b *wbBuf) discard() {
 	b.next = uintptr(unsafe.Pointer(&b.buf[0]))
 }
 
+// empty reports whether b contains no pointers.
+func (b *wbBuf) empty() bool {
+	return b.next == uintptr(unsafe.Pointer(&b.buf[0]))
+}
+
 // putFast adds old and new to the write barrier buffer and returns
 // false if a flush is necessary. Callers should use this as:
 //
@@ -111,16 +126,21 @@ func (b *wbBuf) discard() {
 //     if !buf.putFast(old, new) {
 //         wbBufFlush(...)
 //     }
+//     ... actual memory write ...
 //
 // The arguments to wbBufFlush depend on whether the caller is doing
 // its own cgo pointer checks. If it is, then this can be
 // wbBufFlush(nil, 0). Otherwise, it must pass the slot address and
 // new.
 //
-// Since buf is a per-P resource, the caller must ensure there are no
-// preemption points while buf is in use.
+// The caller must ensure there are no preemption points during the
+// above sequence. There must be no preemption points while buf is in
+// use because it is a per-P resource. There must be no preemption
+// points between the buffer put and the write to memory because this
+// could allow a GC phase change, which could result in missed write
+// barriers.
 //
-// It must be nowritebarrierrec to because write barriers here would
+// putFast must be nowritebarrierrec to because write barriers here would
 // corrupt the write barrier buffer. It (and everything it calls, if
 // it called anything) has to be nosplit to avoid scheduling on to a
 // different P and a different buffer.
@@ -155,6 +175,13 @@ func wbBufFlush(dst *uintptr, src uintptr) {
 	// Note: Every possible return from this function must reset
 	// the buffer's next pointer to prevent buffer overflow.
 
+	// This *must not* modify its arguments because this
+	// function's argument slots do double duty in gcWriteBarrier
+	// as register spill slots. Currently, not modifying the
+	// arguments is sufficient to keep the spill slots unmodified
+	// (which seems unlikely to change since it costs little and
+	// helps with debugging).
+
 	if getg().m.dying > 0 {
 		// We're going down. Not much point in write barriers
 		// and this way we can allow write barriers in the
@@ -177,8 +204,30 @@ func wbBufFlush(dst *uintptr, src uintptr) {
 	// Switch to the system stack so we don't have to worry about
 	// the untyped stack slots or safe points.
 	systemstack(func() {
-		wbBufFlush1(getg().m.p.ptr())
+		if debugCachedWork {
+			// For debugging, include the old value of the
+			// slot and some other data in the traceback.
+			wbBuf := &getg().m.p.ptr().wbBuf
+			var old uintptr
+			if dst != nil {
+				// dst may be nil in direct calls to wbBufFlush.
+				old = *dst
+			}
+			wbBufFlush1Debug(old, wbBuf.buf[0], wbBuf.buf[1], &wbBuf.buf[0], wbBuf.next)
+		} else {
+			wbBufFlush1(getg().m.p.ptr())
+		}
 	})
+}
+
+// wbBufFlush1Debug is a temporary function for debugging issue
+// #27993. It exists solely to add some context to the traceback.
+//
+//go:nowritebarrierrec
+//go:systemstack
+//go:noinline
+func wbBufFlush1Debug(old, buf1, buf2 uintptr, start *uintptr, next uintptr) {
+	wbBufFlush1(getg().m.p.ptr())
 }
 
 // wbBufFlush1 flushes p's write barrier buffer to the GC work queue.
@@ -197,14 +246,16 @@ func wbBufFlush1(_p_ *p) {
 	n := (_p_.wbBuf.next - start) / unsafe.Sizeof(_p_.wbBuf.buf[0])
 	ptrs := _p_.wbBuf.buf[:n]
 
-	// Reset the buffer.
-	_p_.wbBuf.reset()
+	// Poison the buffer to make extra sure nothing is enqueued
+	// while we're processing the buffer.
+	_p_.wbBuf.next = 0
 
 	if useCheckmark {
 		// Slow path for checkmark mode.
 		for _, ptr := range ptrs {
 			shade(ptr)
 		}
+		_p_.wbBuf.reset()
 		return
 	}
 
@@ -214,11 +265,18 @@ func wbBufFlush1(_p_ *p) {
 	//
 	// TODO: Should scanobject/scanblock just stuff pointers into
 	// the wbBuf? Then this would become the sole greying path.
+	//
+	// TODO: We could avoid shading any of the "new" pointers in
+	// the buffer if the stack has been shaded, or even avoid
+	// putting them in the buffer at all (which would double its
+	// capacity). This is slightly complicated with the buffer; we
+	// could track whether any un-shaded goroutine has used the
+	// buffer, or just track globally whether there are any
+	// un-shaded stacks and flush after each stack scan.
 	gcw := &_p_.gcw
 	pos := 0
-	arenaStart := mheap_.arena_start
 	for _, ptr := range ptrs {
-		if ptr < arenaStart {
+		if ptr < minLegalPointer {
 			// nil pointers are very common, especially
 			// for the "old" values. Filter out these and
 			// other "obvious" non-heap pointers ASAP.
@@ -227,12 +285,15 @@ func wbBufFlush1(_p_ *p) {
 			// path to reduce the rate of flushes?
 			continue
 		}
-		// TODO: This doesn't use hbits, so calling
-		// heapBitsForObject seems a little silly. We could
-		// easily separate this out since heapBitsForObject
-		// just calls heapBitsForAddr(obj) to get hbits.
-		obj, _, span, objIndex := heapBitsForObject(ptr, 0, 0, false)
+		obj, span, objIndex := findObject(ptr, 0, 0, !usestackmaps)
 		if obj == 0 {
+			continue
+		}
+		if span.isFree(objIndex) {
+			// For gccgo, it is possible that we have a write barrier
+			// writing to unintialized stack memory. So we could see
+			// a bad pointer in the write barrier buffer. Don't mark
+			// it in this case.
 			continue
 		}
 		// TODO: Consider making two passes where the first
@@ -252,9 +313,6 @@ func wbBufFlush1(_p_ *p) {
 
 	// Enqueue the greyed objects.
 	gcw.putBatch(ptrs[:pos])
-	if gcphase == _GCmarktermination || gcBlackenPromptly {
-		// Ps aren't allowed to cache work during mark
-		// termination.
-		gcw.dispose()
-	}
+
+	_p_.wbBuf.reset()
 }

@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for VAX.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -54,12 +54,10 @@ static void vax_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 static int vax_address_cost_1 (rtx);
 static int vax_address_cost (rtx, machine_mode, addr_space_t, bool);
 static bool vax_rtx_costs (rtx, machine_mode, int, int, int *, bool);
-static rtx vax_function_arg (cumulative_args_t, machine_mode,
-			     const_tree, bool);
-static void vax_function_arg_advance (cumulative_args_t, machine_mode,
-				      const_tree, bool);
+static rtx vax_function_arg (cumulative_args_t, const function_arg_info &);
+static void vax_function_arg_advance (cumulative_args_t,
+				      const function_arg_info &);
 static rtx vax_struct_value_rtx (tree, int);
-static rtx vax_builtin_setjmp_frame_value (void);
 static void vax_asm_trampoline_template (FILE *);
 static void vax_trampoline_init (rtx, tree, rtx);
 static poly_int64 vax_return_pops_args (tree, tree, poly_int64);
@@ -99,9 +97,6 @@ static HOST_WIDE_INT vax_starting_frame_offset (void);
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX vax_struct_value_rtx
 
-#undef TARGET_BUILTIN_SETJMP_FRAME_VALUE
-#define TARGET_BUILTIN_SETJMP_FRAME_VALUE vax_builtin_setjmp_frame_value
-
 #undef TARGET_LRA_P
 #define TARGET_LRA_P hook_bool_void_false
 
@@ -125,6 +120,9 @@ static HOST_WIDE_INT vax_starting_frame_offset (void);
 
 #undef TARGET_STARTING_FRAME_OFFSET
 #define TARGET_STARTING_FRAME_OFFSET vax_starting_frame_offset
+
+#undef TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -171,7 +169,7 @@ vax_expand_prologue (void)
   rtx insn;
 
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if (df_regs_ever_live_p (regno) && !call_used_regs[regno])
+    if (df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
       mask |= 1 << regno;
 
   insn = emit_insn (gen_procedure_entry_mask (GEN_INT (mask)));
@@ -1049,11 +1047,15 @@ vax_output_mi_thunk (FILE * file,
 		     HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED,
 		     tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk));
+
+  assemble_start_function (thunk, fnname);
   fprintf (file, "\t.word 0x0ffc\n\taddl2 $" HOST_WIDE_INT_PRINT_DEC, delta);
   asm_fprintf (file, ",4(%Rap)\n");
   fprintf (file, "\tjmp ");
   assemble_name (file,  XSTR (XEXP (DECL_RTL (function), 0), 0));
   fprintf (file, "+2\n");
+  assemble_end_function (thunk, fnname);
 }
 
 static rtx
@@ -1061,12 +1063,6 @@ vax_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 		      int incoming ATTRIBUTE_UNUSED)
 {
   return gen_rtx_REG (Pmode, VAX_STRUCT_VALUE_REGNUM);
-}
-
-static rtx
-vax_builtin_setjmp_frame_value (void)
-{
-  return hard_frame_pointer_rtx;
 }
 
 /* Worker function for NOTICE_UPDATE_CC.  */
@@ -2147,43 +2143,23 @@ vax_return_pops_args (tree fundecl ATTRIBUTE_UNUSED,
   return size > 255 * 4 ? 0 : (HOST_WIDE_INT) size;
 }
 
-/* Define where to put the arguments to a function.
-   Value is zero to push the argument on the stack,
-   or a hard register in which to store the argument.
-
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
-   CUM is a variable of type CUMULATIVE_ARGS which gives info about
-    the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).  */
-
-/* On the VAX all args are pushed.  */
+/* Implement TARGET_FUNCTION_ARG.  On the VAX all args are pushed.  */
 
 static rtx
-vax_function_arg (cumulative_args_t cum ATTRIBUTE_UNUSED,
-		  machine_mode mode ATTRIBUTE_UNUSED,
-		  const_tree type ATTRIBUTE_UNUSED,
-		  bool named ATTRIBUTE_UNUSED)
+vax_function_arg (cumulative_args_t, const function_arg_info &)
 {
   return NULL_RTX;
 }
 
-/* Update the data in CUM to advance over an argument of mode MODE and
-   data type TYPE.  (TYPE is null for libcalls where that information
-   may not be available.)  */
+/* Update the data in CUM to advance over argument ARG.  */
 
 static void
-vax_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			  const_tree type, bool named ATTRIBUTE_UNUSED)
+vax_function_arg_advance (cumulative_args_t cum_v,
+			  const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  *cum += (mode != BLKmode
-	   ? (GET_MODE_SIZE (mode) + 3) & ~3
-	   : (int_size_in_bytes (type) + 3) & ~3);
+  *cum += (arg.promoted_size_in_bytes () + 3) & ~3;
 }
 
 static HOST_WIDE_INT

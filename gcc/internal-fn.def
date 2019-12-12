@@ -1,5 +1,5 @@
 /* Internal functions.
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
    - cond_ternary: a conditional ternary optab, such as cond_fma_rev<mode>
 
    - fold_left: for scalar = FN (scalar, vector), keyed off the vector mode
+   - check_ptrs: used for check_{raw,war}_ptrs
 
    DEF_INTERNAL_SIGNED_OPTAB_FN defines an internal function that
    maps to one of two optabs, depending on the signedness of an input.
@@ -136,9 +137,15 @@ DEF_INTERNAL_OPTAB_FN (MASK_STORE_LANES, 0,
 		       vec_mask_store_lanes, mask_store_lanes)
 
 DEF_INTERNAL_OPTAB_FN (WHILE_ULT, ECF_CONST | ECF_NOTHROW, while_ult, while)
+DEF_INTERNAL_OPTAB_FN (CHECK_RAW_PTRS, ECF_CONST | ECF_NOTHROW,
+		       check_raw_ptrs, check_ptrs)
+DEF_INTERNAL_OPTAB_FN (CHECK_WAR_PTRS, ECF_CONST | ECF_NOTHROW,
+		       check_war_ptrs, check_ptrs)
 
 DEF_INTERNAL_OPTAB_FN (VEC_SHL_INSERT, ECF_CONST | ECF_NOTHROW,
 		       vec_shl_insert, binary)
+
+DEF_INTERNAL_OPTAB_FN (DIV_POW2, ECF_CONST | ECF_NOTHROW, sdiv_pow2, binary)
 
 DEF_INTERNAL_OPTAB_FN (FMS, ECF_CONST, fms, ternary)
 DEF_INTERNAL_OPTAB_FN (FNMA, ECF_CONST, fnma, ternary)
@@ -148,6 +155,11 @@ DEF_INTERNAL_SIGNED_OPTAB_FN (AVG_FLOOR, ECF_CONST | ECF_NOTHROW, first,
 			      savg_floor, uavg_floor, binary)
 DEF_INTERNAL_SIGNED_OPTAB_FN (AVG_CEIL, ECF_CONST | ECF_NOTHROW, first,
 			      savg_ceil, uavg_ceil, binary)
+
+DEF_INTERNAL_SIGNED_OPTAB_FN (MULHS, ECF_CONST | ECF_NOTHROW, first,
+			      smulhs, umulhs, binary)
+DEF_INTERNAL_SIGNED_OPTAB_FN (MULHRS, ECF_CONST | ECF_NOTHROW, first,
+			      smulhrs, umulhrs, binary)
 
 DEF_INTERNAL_OPTAB_FN (COND_ADD, ECF_CONST, cond_add, cond_binary)
 DEF_INTERNAL_OPTAB_FN (COND_SUB, ECF_CONST, cond_sub, cond_binary)
@@ -167,6 +179,10 @@ DEF_INTERNAL_OPTAB_FN (COND_IOR, ECF_CONST | ECF_NOTHROW,
 		       cond_ior, cond_binary)
 DEF_INTERNAL_OPTAB_FN (COND_XOR, ECF_CONST | ECF_NOTHROW,
 		       cond_xor, cond_binary)
+DEF_INTERNAL_OPTAB_FN (COND_SHL, ECF_CONST | ECF_NOTHROW,
+		       cond_ashl, cond_binary)
+DEF_INTERNAL_SIGNED_OPTAB_FN (COND_SHR, ECF_CONST | ECF_NOTHROW, first,
+			      cond_ashr, cond_lshr, cond_binary)
 
 DEF_INTERNAL_OPTAB_FN (COND_FMA, ECF_CONST, cond_fma, cond_ternary)
 DEF_INTERNAL_OPTAB_FN (COND_FMS, ECF_CONST, cond_fms, cond_ternary)
@@ -199,11 +215,18 @@ DEF_INTERNAL_OPTAB_FN (FOLD_EXTRACT_LAST, ECF_CONST | ECF_NOTHROW,
 DEF_INTERNAL_OPTAB_FN (FOLD_LEFT_PLUS, ECF_CONST | ECF_NOTHROW,
 		       fold_left_plus, fold_left)
 
+DEF_INTERNAL_OPTAB_FN (MASK_FOLD_LEFT_PLUS, ECF_CONST | ECF_NOTHROW,
+		       mask_fold_left_plus, mask_fold_left)
+
 /* Unary math functions.  */
 DEF_INTERNAL_FLT_FN (ACOS, ECF_CONST, acos, unary)
+DEF_INTERNAL_FLT_FN (ACOSH, ECF_CONST, acosh, unary)
 DEF_INTERNAL_FLT_FN (ASIN, ECF_CONST, asin, unary)
+DEF_INTERNAL_FLT_FN (ASINH, ECF_CONST, asinh, unary)
 DEF_INTERNAL_FLT_FN (ATAN, ECF_CONST, atan, unary)
+DEF_INTERNAL_FLT_FN (ATANH, ECF_CONST, atanh, unary)
 DEF_INTERNAL_FLT_FN (COS, ECF_CONST, cos, unary)
+DEF_INTERNAL_FLT_FN (COSH, ECF_CONST, cosh, unary)
 DEF_INTERNAL_FLT_FN (EXP, ECF_CONST, exp, unary)
 DEF_INTERNAL_FLT_FN (EXP10, ECF_CONST, exp10, unary)
 DEF_INTERNAL_FLT_FN (EXP2, ECF_CONST, exp2, unary)
@@ -213,10 +236,13 @@ DEF_INTERNAL_FLT_FN (LOG10, ECF_CONST, log10, unary)
 DEF_INTERNAL_FLT_FN (LOG1P, ECF_CONST, log1p, unary)
 DEF_INTERNAL_FLT_FN (LOG2, ECF_CONST, log2, unary)
 DEF_INTERNAL_FLT_FN (LOGB, ECF_CONST, logb, unary)
+DEF_INTERNAL_FLT_FN (SIGNBIT, ECF_CONST, signbit, unary)
 DEF_INTERNAL_FLT_FN (SIGNIFICAND, ECF_CONST, significand, unary)
 DEF_INTERNAL_FLT_FN (SIN, ECF_CONST, sin, unary)
+DEF_INTERNAL_FLT_FN (SINH, ECF_CONST, sinh, unary)
 DEF_INTERNAL_FLT_FLOATN_FN (SQRT, ECF_CONST, sqrt, unary)
 DEF_INTERNAL_FLT_FN (TAN, ECF_CONST, tan, unary)
+DEF_INTERNAL_FLT_FN (TANH, ECF_CONST, tanh, unary)
 
 /* FP rounding.  */
 DEF_INTERNAL_FLT_FLOATN_FN (CEIL, ECF_CONST, ceil, unary)
@@ -224,12 +250,14 @@ DEF_INTERNAL_FLT_FLOATN_FN (FLOOR, ECF_CONST, floor, unary)
 DEF_INTERNAL_FLT_FLOATN_FN (NEARBYINT, ECF_CONST, nearbyint, unary)
 DEF_INTERNAL_FLT_FLOATN_FN (RINT, ECF_CONST, rint, unary)
 DEF_INTERNAL_FLT_FLOATN_FN (ROUND, ECF_CONST, round, unary)
+DEF_INTERNAL_FLT_FLOATN_FN (ROUNDEVEN, ECF_CONST, roundeven, unary)
 DEF_INTERNAL_FLT_FLOATN_FN (TRUNC, ECF_CONST, btrunc, unary)
 
 /* Binary math functions.  */
 DEF_INTERNAL_FLT_FN (ATAN2, ECF_CONST, atan2, binary)
 DEF_INTERNAL_FLT_FLOATN_FN (COPYSIGN, ECF_CONST, copysign, binary)
 DEF_INTERNAL_FLT_FN (FMOD, ECF_CONST, fmod, binary)
+DEF_INTERNAL_FLT_FN (HYPOT, ECF_CONST, hypot, binary)
 DEF_INTERNAL_FLT_FN (POW, ECF_CONST, pow, binary)
 DEF_INTERNAL_FLT_FN (REMAINDER, ECF_CONST, remainder, binary)
 DEF_INTERNAL_FLT_FN (SCALB, ECF_CONST, scalb, binary)
@@ -289,6 +317,7 @@ DEF_INTERNAL_FN (SUB_OVERFLOW, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (MUL_OVERFLOW, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (TSAN_FUNC_EXIT, ECF_NOVOPS | ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (VA_ARG, ECF_NOTHROW | ECF_LEAF, NULL)
+DEF_INTERNAL_FN (VEC_CONVERT, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
 
 /* An unduplicable, uncombinable function.  Generally used to preserve
    a CFG property in the face of jump threading, tail merging or

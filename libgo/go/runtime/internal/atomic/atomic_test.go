@@ -29,14 +29,18 @@ func runParallel(N, iter int, f func()) {
 }
 
 func TestXadduintptr(t *testing.T) {
-	const N = 20
-	const iter = 100000
+	N := 20
+	iter := 100000
+	if testing.Short() {
+		N = 10
+		iter = 10000
+	}
 	inc := uintptr(100)
 	total := uintptr(0)
 	runParallel(N, iter, func() {
 		atomic.Xadduintptr(&total, inc)
 	})
-	if want := uintptr(N * iter * inc); want != total {
+	if want := uintptr(N*iter) * inc; want != total {
 		t.Fatalf("xadduintpr error, want %d, got %d", want, total)
 	}
 	total = 0
@@ -93,8 +97,10 @@ func TestUnaligned64(t *testing.T) {
 	}
 
 	x := make([]uint32, 4)
-	up64 := (*uint64)(unsafe.Pointer(&x[1])) // misaligned
-	p64 := (*int64)(unsafe.Pointer(&x[1]))   // misaligned
+	u := unsafe.Pointer(uintptr(unsafe.Pointer(&x[0])) | 4) // force alignment to 4
+
+	up64 := (*uint64)(u) // misaligned
+	p64 := (*int64)(u)   // misaligned
 
 	shouldPanic(t, "Load64", func() { atomic.Load64(up64) })
 	shouldPanic(t, "Loadint64", func() { atomic.Loadint64(p64) })

@@ -1,5 +1,5 @@
 /* RTL-based forward propagation pass for GNU compiler.
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
    Contributed by Paolo Bonzini and Steven Bosscher.
 
 This file is part of GCC.
@@ -224,8 +224,8 @@ edge
 single_def_use_dom_walker::before_dom_children (basic_block bb)
 {
   int bb_index = bb->index;
-  struct df_md_bb_info *md_bb_info = df_md_get_bb_info (bb_index);
-  struct df_lr_bb_info *lr_bb_info = df_lr_get_bb_info (bb_index);
+  class df_md_bb_info *md_bb_info = df_md_get_bb_info (bb_index);
+  class df_lr_bb_info *lr_bb_info = df_lr_get_bb_info (bb_index);
   rtx_insn *insn;
 
   bitmap_copy (local_md, &md_bb_info->in);
@@ -448,6 +448,18 @@ enum {
   PR_OPTIMIZE_FOR_SPEED = 4
 };
 
+/* Check that X has a single def.  */
+
+static bool
+reg_single_def_p (rtx x)
+{
+  if (!REG_P (x))
+    return false;
+
+  int regno = REGNO (x);
+  return (DF_REG_DEF_COUNT (regno) == 1
+	  && !bitmap_bit_p (DF_LR_OUT (ENTRY_BLOCK_PTR_FOR_FN (cfun)), regno));
+}
 
 /* Replace all occurrences of OLD in *PX with NEW and try to simplify the
    resulting expression.  Replace *PX with a new RTL expression if an
@@ -547,6 +559,54 @@ propagate_rtx_1 (rtx *px, rtx old_rtx, rtx new_rtx, int flags)
 	  tem = simplify_gen_subreg (mode, op0, GET_MODE (SUBREG_REG (x)),
 				     SUBREG_BYTE (x));
 	}
+
+      else
+	{
+	  rtvec vec;
+	  rtvec newvec;
+	  const char *fmt = GET_RTX_FORMAT (code);
+	  rtx op;
+
+	  for (int i = 0; fmt[i]; i++)
+	    switch (fmt[i])
+	      {
+	      case 'E':
+		vec = XVEC (x, i);
+		newvec = vec;
+		for (int j = 0; j < GET_NUM_ELEM (vec); j++)
+		  {
+		    op = RTVEC_ELT (vec, j);
+		    valid_ops &= propagate_rtx_1 (&op, old_rtx, new_rtx, flags);
+		    if (op != RTVEC_ELT (vec, j))
+		      {
+			if (newvec == vec)
+			  {
+			    newvec = shallow_copy_rtvec (vec);
+			    if (!tem)
+			      tem = shallow_copy_rtx (x);
+			    XVEC (tem, i) = newvec;
+			  }
+			RTVEC_ELT (newvec, j) = op;
+		      }
+		  }
+	        break;
+
+	      case 'e':
+		if (XEXP (x, i))
+		  {
+		    op = XEXP (x, i);
+		    valid_ops &= propagate_rtx_1 (&op, old_rtx, new_rtx, flags);
+		    if (op != XEXP (x, i))
+		      {
+			if (!tem)
+			  tem = shallow_copy_rtx (x);
+			XEXP (tem, i) = op;
+		      }
+		  }
+	        break;
+	      }
+	}
+
       break;
 
     case RTX_OBJ:
@@ -680,7 +740,7 @@ propagate_rtx (rtx x, machine_mode mode, rtx old_rtx, rtx new_rtx,
       || CONSTANT_P (new_rtx)
       || (GET_CODE (new_rtx) == SUBREG
 	  && REG_P (SUBREG_REG (new_rtx))
-	  && !paradoxical_subreg_p (mode, GET_MODE (SUBREG_REG (new_rtx)))))
+	  && !paradoxical_subreg_p (new_rtx)))
     flags |= PR_CAN_APPEAR;
   if (!varying_mem_p (new_rtx))
     flags |= PR_HANDLE_MEM;
@@ -731,14 +791,15 @@ local_ref_killed_between_p (df_ref ref, rtx_insn *from, rtx_insn *to)
 }
 
 
-/* Check if the given DEF is available in INSN.  This would require full
-   computation of available expressions; we check only restricted conditions:
-   - if DEF is the sole definition of its register, go ahead;
-   - in the same basic block, we check for no definitions killing the
-     definition of DEF_INSN;
-   - if USE's basic block has DEF's basic block as the sole predecessor,
-     we check if the definition is killed after DEF_INSN or before
+/* Check if USE is killed between DEF_INSN and TARGET_INSN.  This would
+   require full computation of available expressions; we check only a few
+   restricted conditions:
+   - if the reg in USE has only one definition, go ahead;
+   - in the same basic block, we check for no definitions killing the use;
+   - if TARGET_INSN's basic block has DEF_INSN's basic block as its sole
+     predecessor, we check if the use is killed after DEF_INSN or before
      TARGET_INSN insn, in their respective basic blocks.  */
+
 static bool
 use_killed_between (df_ref use, rtx_insn *def_insn, rtx_insn *target_insn)
 {
@@ -762,12 +823,17 @@ use_killed_between (df_ref use, rtx_insn *def_insn, rtx_insn *target_insn)
      know that this definition reaches use, or we wouldn't be here.
      However, this is invalid for hard registers because if they are
      live at the beginning of the function it does not mean that we
-     have an uninitialized access.  */
+     have an uninitialized access.  And we have to check for the case
+     where a register may be used uninitialized in a loop as above.  */
   regno = DF_REF_REGNO (use);
   def = DF_REG_DEF_CHAIN (regno);
   if (def
       && DF_REF_NEXT_REG (def) == NULL
-      && regno >= FIRST_PSEUDO_REGISTER)
+      && regno >= FIRST_PSEUDO_REGISTER
+      && (BLOCK_FOR_INSN (DF_REF_INSN (def)) == def_bb
+	  ? DF_INSN_LUID (DF_REF_INSN (def)) < DF_INSN_LUID (def_insn)
+	  : dominated_by_p (CDI_DOMINATORS,
+			    def_bb, BLOCK_FOR_INSN (DF_REF_INSN (def)))))
     return false;
 
   /* Check locally if we are in the same basic block.  */
@@ -1364,10 +1430,11 @@ forward_propagate_and_simplify (df_ref use, rtx_insn *def_insn, rtx def_set)
 
 /* Given a use USE of an insn, if it has a single reaching
    definition, try to forward propagate it into that insn.
-   Return true if cfg cleanup will be needed.  */
+   Return true if cfg cleanup will be needed.
+   REG_PROP_ONLY is true if we should only propagate register copies.  */
 
 static bool
-forward_propagate_into (df_ref use)
+forward_propagate_into (df_ref use, bool reg_prop_only = false)
 {
   df_ref def;
   rtx_insn *def_insn, *use_insn;
@@ -1388,10 +1455,6 @@ forward_propagate_into (df_ref use)
   if (DF_REF_IS_ARTIFICIAL (def))
     return false;
 
-  /* Do not propagate loop invariant definitions inside the loop.  */
-  if (DF_REF_BB (def)->loop_father != DF_REF_BB (use)->loop_father)
-    return false;
-
   /* Check if the use is still present in the insn!  */
   use_insn = DF_REF_INSN (use);
   if (DF_REF_FLAGS (use) & DF_REF_IN_NOTE)
@@ -1407,6 +1470,19 @@ forward_propagate_into (df_ref use)
     return false;
   def_set = single_set (def_insn);
   if (!def_set)
+    return false;
+
+  if (reg_prop_only
+      && (!reg_single_def_p (SET_SRC (def_set))
+	  || !reg_single_def_p (SET_DEST (def_set))))
+    return false;
+
+  /* Allow propagations into a loop only for reg-to-reg copies, since
+     replacing one register by another shouldn't increase the cost.  */
+
+  if (DF_REF_BB (def)->loop_father != DF_REF_BB (use)->loop_father
+      && (!reg_single_def_p (SET_SRC (def_set))
+	  || !reg_single_def_p (SET_DEST (def_set))))
     return false;
 
   /* Only try one kind of propagation.  If two are possible, we'll
@@ -1477,7 +1553,7 @@ gate_fwprop (void)
 }
 
 static unsigned int
-fwprop (void)
+fwprop (bool fwprop_addr_p)
 {
   unsigned i;
 
@@ -1496,11 +1572,16 @@ fwprop (void)
 
       df_ref use = DF_USES_GET (i);
       if (use)
-	if (DF_REF_TYPE (use) == DF_REF_REG_USE
-	    || DF_REF_BB (use)->loop_father == NULL
-	    /* The outer most loop is not really a loop.  */
-	    || loop_outer (DF_REF_BB (use)->loop_father) == NULL)
-	  forward_propagate_into (use);
+	{
+	  if (DF_REF_TYPE (use) == DF_REF_REG_USE
+	      || DF_REF_BB (use)->loop_father == NULL
+	      /* The outer most loop is not really a loop.  */
+	      || loop_outer (DF_REF_BB (use)->loop_father) == NULL)
+	    forward_propagate_into (use, fwprop_addr_p);
+
+	  else if (fwprop_addr_p)
+	    forward_propagate_into (use, false);
+	}
     }
 
   fwprop_done ();
@@ -1531,7 +1612,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return gate_fwprop (); }
-  virtual unsigned int execute (function *) { return fwprop (); }
+  virtual unsigned int execute (function *) { return fwprop (false); }
 
 }; // class pass_rtl_fwprop
 
@@ -1541,33 +1622,6 @@ rtl_opt_pass *
 make_pass_rtl_fwprop (gcc::context *ctxt)
 {
   return new pass_rtl_fwprop (ctxt);
-}
-
-static unsigned int
-fwprop_addr (void)
-{
-  unsigned i;
-
-  fwprop_init ();
-
-  /* Go through all the uses.  df_uses_create will create new ones at the
-     end, and we'll go through them as well.  */
-  for (i = 0; i < DF_USES_TABLE_SIZE (); i++)
-    {
-      if (!propagations_left)
-	break;
-
-      df_ref use = DF_USES_GET (i);
-      if (use)
-	if (DF_REF_TYPE (use) != DF_REF_REG_USE
-	    && DF_REF_BB (use)->loop_father != NULL
-	    /* The outer most loop is not really a loop.  */
-	    && loop_outer (DF_REF_BB (use)->loop_father) != NULL)
-	  forward_propagate_into (use);
-    }
-
-  fwprop_done ();
-  return 0;
 }
 
 namespace {
@@ -1594,7 +1648,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return gate_fwprop (); }
-  virtual unsigned int execute (function *) { return fwprop_addr (); }
+  virtual unsigned int execute (function *) { return fwprop (true); }
 
 }; // class pass_rtl_fwprop_addr
 

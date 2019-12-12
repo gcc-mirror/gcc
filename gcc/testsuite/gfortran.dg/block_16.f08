@@ -1,4 +1,4 @@
-! { dg-do compile )
+! { dg-do compile }
 ! PR82009  [F08] ICE with block construct
 MODULE sparse_matrix_csx_benchmark_utils
   IMPLICIT NONE

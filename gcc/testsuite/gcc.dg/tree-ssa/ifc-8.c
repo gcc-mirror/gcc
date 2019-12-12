@@ -1,6 +1,6 @@
 
 /* { dg-do compile } */
-/* { dg-options "-Ofast -fdump-tree-ifcvt-details-blocks -ftree-loop-if-convert-stores" } */
+/* { dg-options "-Ofast -fdump-tree-ifcvt-details-blocks" } */
 /* { dg-require-visibility "" } */
 
 #define LEN 4096

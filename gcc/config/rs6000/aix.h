@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -32,8 +32,7 @@
 #define TARGET_AIX_OS 1
 
 /* AIX always has a TOC.  */
-#define TARGET_NO_TOC 0
-#define TARGET_TOC 1
+#define TARGET_HAS_TOC 1
 #define FIXED_R2 1
 
 /* AIX allows r13 to be used in 32-bit mode.  */

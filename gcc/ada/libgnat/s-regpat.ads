@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---                     Copyright (C) 1996-2018, AdaCore                     --
+--                     Copyright (C) 1996-2019, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -347,7 +347,7 @@ package System.Regpat is
    --  N'th parenthesized subexpressions; Matches (0) is for the whole
    --  expression.
    --
-   --  Non-capturing parenthesis (introduced with (?:...)) can not be
+   --  Non-capturing parenthesis (introduced with (?:...)) cannot be
    --  retrieved and do not count in the match array index.
    --
    --  For instance, if your regular expression is: "a((b*)c+)(d+)", then

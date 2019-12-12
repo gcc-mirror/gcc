@@ -16,4 +16,4 @@ END
 ! support unaligned loads).
 
 ! { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" } }
-! { dg-final { scan-tree-dump-times "Alignment of access forced using versioning." 3 "vect" {target { { vect_no_align && { ! vect_hw_misalign } } || { { ! vector_alignment_reachable  } && { ! vect_hw_misalign } } } } } }
+! { dg-final { scan-tree-dump-times "Alignment of access forced using versioning." 3 "vect" { target { { vect_no_align && { ! vect_hw_misalign } } || { { ! vector_alignment_reachable  } && { ! vect_hw_misalign } } } } } }

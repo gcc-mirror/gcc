@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -59,6 +59,7 @@ generic
    with function Equivalent_Keys
      (Left  : Key_Type;
       Right : Key_Type) return Boolean is "=";
+   with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Formal_Hashed_Maps with
   SPARK_Mode

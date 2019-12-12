@@ -1,5 +1,5 @@
-// { dg-do run }
-// { dg-options "-std=c++17 -fconcepts" }
+// { dg-do link { target c++17_only } }
+// { dg-options "-fconcepts" }
 
 
 // template<typename T>
@@ -21,9 +21,9 @@ int main() {
 
 void f1(C, C) { }
 
-template<C T>
-void f2(T, T) { }
+template<C T1, C T2>
+void f2(T1, T2) { }
 
-template<typename T>
-  requires C<T>
-void f3(T, T) { }
+template<typename T, typename U>
+  requires C<T> && C<U>
+void f3(T, U) { }

@@ -1,4 +1,4 @@
-/* { dg-do compile { target *-*-linux* *-*-gnu* } } */
+/* { dg-do compile { target *-*-linux* *-*-gnu* *-*-uclinux* } } */
 /* { dg-options "-O2 -fdump-ipa-comdats"  } */
 #include <stdio.h>
 __attribute__ ((noinline))

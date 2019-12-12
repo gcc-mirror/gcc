@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the EPIPHANY cpu.
-   Copyright (C) 1994-2018 Free Software Foundation, Inc.
+   Copyright (C) 1994-2019 Free Software Foundation, Inc.
    Contributed by Embecosm on behalf of Adapteva, Inc.
 
 This file is part of GCC.
@@ -71,8 +71,8 @@ static int get_epiphany_condition_code (rtx);
 static tree epiphany_handle_interrupt_attribute (tree *, tree, tree, int, bool *);
 static tree epiphany_handle_forwarder_attribute (tree *, tree, tree, int,
 						 bool *);
-static bool epiphany_pass_by_reference (cumulative_args_t, machine_mode,
-					const_tree, bool);
+static bool epiphany_pass_by_reference (cumulative_args_t,
+					const function_arg_info &);
 static rtx_insn *frame_insn (rtx);
 
 /* defines for the initialization of the GCC target structure.  */
@@ -90,7 +90,7 @@ static rtx_insn *frame_insn (rtx);
 
 #define TARGET_RETURN_IN_MEMORY epiphany_return_in_memory
 #define TARGET_PASS_BY_REFERENCE epiphany_pass_by_reference
-#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
+#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_arg_info_true
 #define TARGET_FUNCTION_VALUE epiphany_function_value
 #define TARGET_LIBCALL_VALUE epiphany_libcall_value
 #define TARGET_FUNCTION_VALUE_REGNO_P epiphany_function_value_regno_p
@@ -434,7 +434,7 @@ epiphany_init_reg_tables (void)
 	epiphany_regno_reg_class[i] = LR_REGS;
       else if (i <= 7 && TARGET_PREFER_SHORT_INSN_REGS)
 	epiphany_regno_reg_class[i] = SHORT_INSN_REGS;
-      else if (call_used_regs[i]
+      else if (call_used_or_fixed_reg_p (i)
 	       && TEST_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], i))
 	epiphany_regno_reg_class[i] = SIBCALL_REGS;
       else if (i >= CORE_CONTROL_FIRST && i <= CORE_CONTROL_LAST)
@@ -711,24 +711,25 @@ epiphany_function_arg_boundary (machine_mode mode, const_tree type)
 /* Do any needed setup for a variadic function.  For the EPIPHANY, we
    actually emit the code in epiphany_expand_prologue.
 
-   CUM has not been updated for the last named argument which has type TYPE
-   and mode MODE, and we rely on this fact.  */
+   CUM has not been updated for the last named argument (which is given
+   by ARG), and we rely on this fact.  */
 
 
 static void
-epiphany_setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
-				 tree type, int *pretend_size, int no_rtl)
+epiphany_setup_incoming_varargs (cumulative_args_t cum,
+				 const function_arg_info &arg,
+				 int *pretend_size, int no_rtl)
 {
   int first_anon_arg;
   CUMULATIVE_ARGS next_cum;
   machine_function_t *mf = MACHINE_FUNCTION (cfun);
 
   /* All BLKmode values are passed by reference.  */
-  gcc_assert (mode != BLKmode);
+  gcc_assert (arg.mode != BLKmode);
 
   next_cum = *get_cumulative_args (cum);
-  next_cum
-    = ROUND_ADVANCE_CUM (next_cum, mode, type) + ROUND_ADVANCE_ARG (mode, type);
+  next_cum = (ROUND_ADVANCE_CUM (next_cum, arg.mode, arg.type)
+	      + ROUND_ADVANCE_ARG (arg.mode, arg.type));
   first_anon_arg = next_cum;
 
   if (first_anon_arg < MAX_EPIPHANY_PARM_REGS && !no_rtl)
@@ -744,18 +745,19 @@ epiphany_setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
 }
 
 static int
-epiphany_arg_partial_bytes (cumulative_args_t cum, machine_mode mode,
-			    tree type, bool named ATTRIBUTE_UNUSED)
+epiphany_arg_partial_bytes (cumulative_args_t cum,
+			    const function_arg_info &arg)
 {
   int words = 0, rounded_cum;
 
-  gcc_assert (!epiphany_pass_by_reference (cum, mode, type, /* named */ true));
+  gcc_assert (!epiphany_pass_by_reference (cum, arg));
 
-  rounded_cum = ROUND_ADVANCE_CUM (*get_cumulative_args (cum), mode, type);
+  rounded_cum = ROUND_ADVANCE_CUM (*get_cumulative_args (cum),
+				   arg.mode, arg.type);
   if (rounded_cum < MAX_EPIPHANY_PARM_REGS)
     {
       words = MAX_EPIPHANY_PARM_REGS - rounded_cum;
-      if (words >= ROUND_ADVANCE_ARG (mode, type))
+      if (words >= ROUND_ADVANCE_ARG (arg.mode, arg.type))
 	words = 0;
     }
   return words * UNITS_PER_WORD;
@@ -1064,8 +1066,8 @@ epiphany_compute_function_type (tree decl)
 #define MUST_SAVE_REGISTER(regno, interrupt_p) \
   ((df_regs_ever_live_p (regno) \
     || (interrupt_p && !crtl->is_leaf \
-	&& call_used_regs[regno] && !fixed_regs[regno])) \
-   && (!call_used_regs[regno] || regno == GPR_LR \
+	&& call_used_or_fixed_reg_p (regno) && !fixed_regs[regno])) \
+   && (!call_used_or_fixed_reg_p (regno) || regno == GPR_LR \
        || (interrupt_p && regno != GPR_SP)))
 
 #define MUST_SAVE_RETURN_ADDR 0
@@ -1246,7 +1248,7 @@ epiphany_compute_frame_size (int size /* # of var. bytes allocated.  */)
   current_frame_info.var_size     = var_size;
   current_frame_info.args_size    = args_size;
   current_frame_info.reg_size	  = reg_size;
-  COPY_HARD_REG_SET (current_frame_info.gmask, gmask);
+  current_frame_info.gmask	  = gmask;
   current_frame_info.first_slot		= first_slot;
   current_frame_info.last_slot		= last_slot;
   current_frame_info.first_slot_offset	= first_slot_offset;
@@ -1485,14 +1487,12 @@ epiphany_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
    passed by reference.  */
 
 static bool
-epiphany_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
-		       machine_mode mode, const_tree type,
-		       bool named ATTRIBUTE_UNUSED)
+epiphany_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  if (type)
+  if (tree type = arg.type)
     {
       if (AGGREGATE_TYPE_P (type)
-	  && (mode == BLKmode || TYPE_NEEDS_CONSTRUCTING (type)))
+	  && (arg.mode == BLKmode || TYPE_NEEDS_CONSTRUCTING (type)))
 	return true;
     }
   return false;
@@ -2240,10 +2240,9 @@ epiphany_conditional_register_usage (void)
     }
   if (!TARGET_PREFER_SHORT_INSN_REGS)
     CLEAR_HARD_REG_SET (reg_class_contents[SHORT_INSN_REGS]);
-  COPY_HARD_REG_SET (reg_class_contents[SIBCALL_REGS],
-		     reg_class_contents[GENERAL_REGS]);
+  reg_class_contents[SIBCALL_REGS] = reg_class_contents[GENERAL_REGS];
   /* It would be simpler and quicker if we could just use
-     AND_COMPL_HARD_REG_SET, alas, call_used_reg_set is yet uninitialized;
+     &~, alas, call_used_or_fixed_regs is yet uninitialized;
      it is set up later by our caller.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (!call_used_regs[i])
@@ -2254,37 +2253,30 @@ epiphany_conditional_register_usage (void)
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
 
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).  */
+   ARG is a description of the argument.  */
 /* On the EPIPHANY the first MAX_EPIPHANY_PARM_REGS args are normally in
    registers and the rest are pushed.  */
 static rtx
-epiphany_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		       const_tree type, bool named ATTRIBUTE_UNUSED)
+epiphany_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS cum = *get_cumulative_args (cum_v);
 
-  if (PASS_IN_REG_P (cum, mode, type))
-    return gen_rtx_REG (mode, ROUND_ADVANCE_CUM (cum, mode, type));
+  if (PASS_IN_REG_P (cum, arg.mode, arg.type))
+    return gen_rtx_REG (arg.mode, ROUND_ADVANCE_CUM (cum, arg.mode, arg.type));
   return 0;
 }
 
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
+/* Update the data in CUM to advance over argument ARG.  */
 static void
-epiphany_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			       const_tree type, bool named ATTRIBUTE_UNUSED)
+epiphany_function_arg_advance (cumulative_args_t cum_v,
+			       const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  *cum = ROUND_ADVANCE_CUM (*cum, mode, type) + ROUND_ADVANCE_ARG (mode, type);
+  *cum = (ROUND_ADVANCE_CUM (*cum, arg.mode, arg.type)
+	  + ROUND_ADVANCE_ARG (arg.mode, arg.type));
 }
 
 /* Nested function support.
@@ -2892,14 +2884,16 @@ epiphany_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 			  HOST_WIDE_INT vcall_offset,
 			  tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk));
   int this_regno
     = aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function) ? 1 : 0;
   const char *this_name = reg_names[this_regno];
   const char *fname;
 
+  assemble_start_function (thunk, fnname);
   /* We use IP and R16 as a scratch registers.  */
-  gcc_assert (call_used_regs [GPR_IP]);
-  gcc_assert (call_used_regs [GPR_16]);
+  gcc_assert (call_used_or_fixed_reg_p (GPR_IP));
+  gcc_assert (call_used_or_fixed_reg_p (GPR_16));
 
   /* Add DELTA.  When possible use a plain add, otherwise load it into
      a register first. */
@@ -2954,6 +2948,7 @@ epiphany_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
       assemble_name (file, fname);
       fputc ('\n', file);
     }
+  assemble_end_function (thunk, fnname);
 }
 
 void
@@ -3004,7 +2999,7 @@ epiphany_start_function (FILE *file, const char *name, tree decl)
 	    fputs ("\tstrd r0,[sp,-1]\n", file);
 	  else
 	    tmp = GPR_16;
-	  gcc_assert (call_used_regs[tmp]);
+	  gcc_assert (call_used_or_fixed_reg_p (tmp));
 	  fprintf (file, "\tmov r%d,%%low(", tmp);
 	  assemble_name (file, dst_name);
 	  fprintf (file, ")\n"

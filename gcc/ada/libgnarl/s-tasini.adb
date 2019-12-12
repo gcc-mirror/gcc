@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2018, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2019, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -426,7 +426,7 @@ package body System.Tasking.Initialization is
    procedure Locked_Abort_To_Level
      (Self_ID : Task_Id;
       T       : Task_Id;
-      L       : ATC_Level)
+      L       : ATC_Level_Base)
    is
    begin
       if not T.Aborting and then T /= Self_ID then
@@ -440,11 +440,13 @@ package body System.Tasking.Initialization is
             when Activating
                | Runnable
             =>
-               --  This is needed to cancel an asynchronous protected entry
-               --  call during a requeue with abort.
+               if T.ATC_Nesting_Level > Level_No_ATC_Occurring then
+                  --  This scenario occurs when an asynchronous protected entry
+                  --  call is canceled during a requeue with abort.
 
-               T.Entry_Calls
-                 (T.ATC_Nesting_Level).Cancellation_Attempted := True;
+                  T.Entry_Calls
+                    (T.ATC_Nesting_Level).Cancellation_Attempted := True;
+               end if;
 
             when Interrupt_Server_Blocked_On_Event_Flag =>
                null;
@@ -465,6 +467,8 @@ package body System.Tasking.Initialization is
                Wakeup (T, T.Common.State);
 
             when Entry_Caller_Sleep  =>
+               pragma Assert (T.ATC_Nesting_Level > Level_No_ATC_Occurring);
+
                T.Entry_Calls
                  (T.ATC_Nesting_Level).Cancellation_Attempted := True;
                Wakeup (T, T.Common.State);
@@ -482,7 +486,7 @@ package body System.Tasking.Initialization is
          T.Pending_ATC_Level := L;
          T.Pending_Action := True;
 
-         if L = 0 then
+         if L = Level_Completed_Task then
             T.Callable := False;
          end if;
 

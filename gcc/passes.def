@@ -1,5 +1,5 @@
 /* Description of pass structure
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -42,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_build_cfg);
   NEXT_PASS (pass_warn_function_return);
   NEXT_PASS (pass_expand_omp);
-  NEXT_PASS (pass_sprintf_length, false);
+  NEXT_PASS (pass_warn_printf);
   NEXT_PASS (pass_walloca, /*strict_mode_p=*/true);
   NEXT_PASS (pass_build_cgraph_edges);
   TERMINATE_PASS_LIST (all_lowering_passes)
@@ -56,8 +56,8 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_fixup_cfg);
       NEXT_PASS (pass_build_ssa);
       NEXT_PASS (pass_warn_nonnull_compare);
-      NEXT_PASS (pass_ubsan);
       NEXT_PASS (pass_early_warn_uninitialized);
+      NEXT_PASS (pass_ubsan);
       NEXT_PASS (pass_nothrow);
       NEXT_PASS (pass_rebuild_cgraph_edges);
   POP_INSERT_PASSES ()
@@ -83,12 +83,12 @@ along with GCC; see the file COPYING3.  If not see
 	  /* pass_build_ealias is a dummy pass that ensures that we
 	     execute TODO_rebuild_alias at this point.  */
 	  NEXT_PASS (pass_build_ealias);
-	  NEXT_PASS (pass_fre);
+	  NEXT_PASS (pass_fre, true /* may_iterate */);
 	  NEXT_PASS (pass_early_vrp);
 	  NEXT_PASS (pass_merge_phi);
           NEXT_PASS (pass_dse);
 	  NEXT_PASS (pass_cd_dce);
-	  NEXT_PASS (pass_early_ipa_sra);
+	  NEXT_PASS (pass_phiopt, true /* early_p */);
 	  NEXT_PASS (pass_tail_recursion);
 	  NEXT_PASS (pass_convert_switch);
 	  NEXT_PASS (pass_cleanup_eh);
@@ -98,13 +98,14 @@ along with GCC; see the file COPYING3.  If not see
 	     early optimizations again.  It is thus good idea to do this
 	      late.  */
 	  NEXT_PASS (pass_split_functions);
-	  NEXT_PASS (pass_strip_predict_hints);
+	  NEXT_PASS (pass_strip_predict_hints, true /* early_p */);
       POP_INSERT_PASSES ()
       NEXT_PASS (pass_release_ssa_names);
       NEXT_PASS (pass_rebuild_cgraph_edges);
       NEXT_PASS (pass_local_fn_summary);
   POP_INSERT_PASSES ()
 
+  NEXT_PASS (pass_ipa_remove_symbols);
   NEXT_PASS (pass_ipa_oacc);
   PUSH_INSERT_PASSES_WITHIN (pass_ipa_oacc)
       NEXT_PASS (pass_ipa_pta);
@@ -115,7 +116,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_oacc_kernels);
 	  PUSH_INSERT_PASSES_WITHIN (pass_oacc_kernels)
 	      NEXT_PASS (pass_ch);
-	      NEXT_PASS (pass_fre);
+	      NEXT_PASS (pass_fre, true /* may_iterate */);
 	      /* We use pass_lim to rewrite in-memory iteration and reduction
 		 variable accesses in loops into local variables accesses.  */
 	      NEXT_PASS (pass_lim);
@@ -146,6 +147,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_ipa_icf);
   NEXT_PASS (pass_ipa_devirt);
   NEXT_PASS (pass_ipa_cp);
+  NEXT_PASS (pass_ipa_sra);
   NEXT_PASS (pass_ipa_cdtor_merge);
   NEXT_PASS (pass_ipa_hsa);
   NEXT_PASS (pass_ipa_fn_summary);
@@ -183,7 +185,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_remove_cgraph_callee_edges);
       /* Initial scalar cleanups before alias computation.
 	 They ensure memory accesses are not indirect wherever possible.  */
-      NEXT_PASS (pass_strip_predict_hints);
+      NEXT_PASS (pass_strip_predict_hints, false /* early_p */);
       NEXT_PASS (pass_ccp, true /* nonzero_p */);
       NEXT_PASS (pass_post_ipa_warn);
       /* After CCP we rewrite no longer addressed locals into SSA
@@ -197,7 +199,7 @@ along with GCC; see the file COPYING3.  If not see
 	 execute TODO_rebuild_alias at this point.  */
       NEXT_PASS (pass_build_alias);
       NEXT_PASS (pass_return_slot);
-      NEXT_PASS (pass_fre);
+      NEXT_PASS (pass_fre, true /* may_iterate */);
       NEXT_PASS (pass_merge_phi);
       NEXT_PASS (pass_thread_jumps);
       NEXT_PASS (pass_vrp, true /* warn_array_bounds_p */);
@@ -208,7 +210,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_copy_prop);
       NEXT_PASS (pass_tree_ifcombine);
       NEXT_PASS (pass_merge_phi);
-      NEXT_PASS (pass_phiopt);
+      NEXT_PASS (pass_phiopt, false /* early_p */);
       NEXT_PASS (pass_tail_recursion);
       NEXT_PASS (pass_ch);
       NEXT_PASS (pass_lower_complex);
@@ -220,24 +222,18 @@ along with GCC; see the file COPYING3.  If not see
 	 trying to move or duplicate pass_dominator somewhere earlier.  */
       NEXT_PASS (pass_thread_jumps);
       NEXT_PASS (pass_dominator, true /* may_peel_loop_headers_p */);
-      /* At this point the majority of const/copy propagations
-	 are exposed.  Go ahead and identify paths that should never
-	 be executed in a conforming program and isolate those paths.
-
-	 This will expose more degenerate PHIs in the main path and
-	 expose more PRE/DOM optimization opportunities.  */
+      /* Threading can leave many const/copy propagations in the IL.
+	 Clean them up.  Failure to do so well can lead to false
+	 positives from warnings for erroneous code.  */
+      NEXT_PASS (pass_copy_prop);
+      /* Identify paths that should never be executed in a conforming
+	 program and isolate those paths.  */
       NEXT_PASS (pass_isolate_erroneous_paths);
-      /* The only const/copy propagation opportunities left after
-	 DOM and erroneous path isolation should be due to degenerate PHI nodes.
-	 So rather than run the full propagators, run a specialized pass which
-	 only examines PHIs to discover const/copy propagation
-	 opportunities.  */
-      NEXT_PASS (pass_phi_only_cprop);
       NEXT_PASS (pass_dse);
       NEXT_PASS (pass_reassoc, true /* insert_powi_p */);
       NEXT_PASS (pass_dce);
       NEXT_PASS (pass_forwprop);
-      NEXT_PASS (pass_phiopt);
+      NEXT_PASS (pass_phiopt, false /* early_p */);
       NEXT_PASS (pass_ccp, true /* nonzero_p */);
       /* After CCP we rewrite no longer addressed locals into SSA
 	 form if possible.  */
@@ -259,10 +255,13 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_fix_loops);
       NEXT_PASS (pass_tree_loop);
       PUSH_INSERT_PASSES_WITHIN (pass_tree_loop)
+          /* Before loop_init we rewrite no longer addressed locals into SSA
+	     form if possible.  */
 	  NEXT_PASS (pass_tree_loop_init);
 	  NEXT_PASS (pass_tree_unswitch);
 	  NEXT_PASS (pass_scev_cprop);
 	  NEXT_PASS (pass_loop_split);
+	  NEXT_PASS (pass_loop_versioning);
 	  NEXT_PASS (pass_loop_jam);
 	  /* All unswitching, final value replacement and splitting can expose
 	     empty loops.  Remove them now.  */
@@ -308,27 +307,26 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_lower_vector_ssa);
       NEXT_PASS (pass_lower_switch);
       NEXT_PASS (pass_cse_reciprocals);
-      NEXT_PASS (pass_sprintf_length, true);
       NEXT_PASS (pass_reassoc, false /* insert_powi_p */);
       NEXT_PASS (pass_strength_reduction);
       NEXT_PASS (pass_split_paths);
       NEXT_PASS (pass_tracer);
+      NEXT_PASS (pass_fre, false /* may_iterate */);
+      /* After late FRE we rewrite no longer addressed locals into SSA
+         form if possible.  */
       NEXT_PASS (pass_thread_jumps);
       NEXT_PASS (pass_dominator, false /* may_peel_loop_headers_p */);
       NEXT_PASS (pass_strlen);
       NEXT_PASS (pass_thread_jumps);
       NEXT_PASS (pass_vrp, false /* warn_array_bounds_p */);
-      /* The only const/copy propagation opportunities left after
-	 DOM and VRP should be due to degenerate PHI nodes.  So rather than
-	 run the full propagators, run a specialized pass which
-	 only examines PHIs to discover const/copy propagation
-	 opportunities.  */
+      /* Threading can leave many const/copy propagations in the IL.
+	 Clean them up.  */
+      NEXT_PASS (pass_copy_prop);
       NEXT_PASS (pass_warn_restrict);
-      NEXT_PASS (pass_phi_only_cprop);
       NEXT_PASS (pass_dse);
       NEXT_PASS (pass_cd_dce);
       NEXT_PASS (pass_forwprop);
-      NEXT_PASS (pass_phiopt);
+      NEXT_PASS (pass_phiopt, false /* early_p */);
       NEXT_PASS (pass_fold_builtins);
       NEXT_PASS (pass_optimize_widening_mul);
       NEXT_PASS (pass_store_merging);
@@ -348,7 +346,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_all_optimizations_g);
   PUSH_INSERT_PASSES_WITHIN (pass_all_optimizations_g)
       NEXT_PASS (pass_remove_cgraph_callee_edges);
-      NEXT_PASS (pass_strip_predict_hints);
+      NEXT_PASS (pass_strip_predict_hints, false /* early_p */);
       /* Lower remaining pieces of GIMPLE.  */
       NEXT_PASS (pass_lower_complex);
       NEXT_PASS (pass_lower_vector_ssa);
@@ -359,7 +357,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_object_sizes);
       /* Fold remaining builtins.  */
       NEXT_PASS (pass_fold_builtins);
-      NEXT_PASS (pass_sprintf_length, true);
+      NEXT_PASS (pass_strlen);
       /* Copy propagation also copy-propagates constants, this is necessary
          to forward object-size and builtin folding results properly.  */
       NEXT_PASS (pass_copy_prop);
@@ -430,6 +428,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_rtl_doloop);
 	  NEXT_PASS (pass_rtl_loop_done);
       POP_INSERT_PASSES ()
+      NEXT_PASS (pass_lower_subreg2);
       NEXT_PASS (pass_web);
       NEXT_PASS (pass_rtl_cprop);
       NEXT_PASS (pass_cse2);
@@ -440,10 +439,11 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_ud_rtl_dce);
       NEXT_PASS (pass_combine);
       NEXT_PASS (pass_if_after_combine);
+      NEXT_PASS (pass_jump_after_combine);
       NEXT_PASS (pass_partition_blocks);
       NEXT_PASS (pass_outof_cfg_layout_mode);
       NEXT_PASS (pass_split_all_insns);
-      NEXT_PASS (pass_lower_subreg2);
+      NEXT_PASS (pass_lower_subreg3);
       NEXT_PASS (pass_df_initialize_no_opt);
       NEXT_PASS (pass_stack_ptr_mod);
       NEXT_PASS (pass_mode_switching);
@@ -461,7 +461,6 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_split_after_reload);
 	  NEXT_PASS (pass_ree);
 	  NEXT_PASS (pass_compare_elim_after_reload);
-	  NEXT_PASS (pass_branch_target_load_optimize1);
 	  NEXT_PASS (pass_thread_prologue_and_epilogue);
 	  NEXT_PASS (pass_rtl_dse2);
 	  NEXT_PASS (pass_stack_adjustments);
@@ -474,7 +473,6 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_cprop_hardreg);
 	  NEXT_PASS (pass_fast_rtl_dce);
 	  NEXT_PASS (pass_reorder_blocks);
-	  NEXT_PASS (pass_branch_target_load_optimize2);
 	  NEXT_PASS (pass_leaf_regs);
 	  NEXT_PASS (pass_split_before_sched2);
 	  NEXT_PASS (pass_sched2);

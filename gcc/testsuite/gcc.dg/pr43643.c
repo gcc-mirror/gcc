@@ -10,9 +10,9 @@ extern char *strdup (const char *);
 void
 func(char *a, char *b, char *c)
 {
-  strdup(a);
-  strdup(b);
-  strdup(c);
+  void *p = strdup(a);
+  p = strdup(b);
+  p = strdup(c);
 }
 
 int

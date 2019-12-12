@@ -1,7 +1,8 @@
 //===-- sanitizer/coverage_interface.h --------------------------*- C++ -*-===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -18,10 +19,10 @@ extern "C" {
 #endif
 
   // Record and dump coverage info.
-  void __sanitizer_cov_dump();
+  void __sanitizer_cov_dump(void);
 
   // Clear collected coverage info.
-  void __sanitizer_cov_reset();
+  void __sanitizer_cov_reset(void);
 
   // Dump collected coverage info. Sorts pcs by module into individual .sancov
   // files.

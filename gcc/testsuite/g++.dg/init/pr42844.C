@@ -22,22 +22,22 @@ struct G { T t; }; // { dg-message "user-provided default constructor" }
 
 void f ()
 {
-  B const b;    // { dg-error "uninitialized const" }
+  B const b;    // { dg-error "uninitialized 'const" }
   extern B const bext;
 
-  C const c[ 1 ]; // { dg-error "uninitialized const" }
+  C const c[ 1 ]; // { dg-error "uninitialized 'const" }
   extern C const cext[ 1 ];
 
   D const d;
   extern D const dext;
 
-  E const e;	// { dg-error "uninitialized const" }
+  E const e;	// { dg-error "uninitialized 'const" }
   extern E const eext;
 
-  F<int> const f; // { dg-error "uninitialized const" }
+  F<int> const f; // { dg-error "uninitialized 'const" }
   extern F<int> const fext;
 
-  G<int> const g; // { dg-error "uninitialized const" }
+  G<int> const g; // { dg-error "uninitialized 'const" }
   extern G<int> const gext;
 }
 
@@ -48,7 +48,7 @@ struct I : A { int i; }; // { dg-message "user-provided default constructor" }
 template <class T>
 void g ()
 {
-  T const t; // { dg-error "uninitialized const" }
+  T const t; // { dg-error "uninitialized 'const" }
   extern T const text;
 }
 

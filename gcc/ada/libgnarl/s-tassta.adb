@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2018, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2019, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -588,7 +588,7 @@ package body System.Tasking.Stages is
       --  give up on creating this task, and simply return.
 
       if not Self_ID.Callable then
-         pragma Assert (Self_ID.Pending_ATC_Level = 0);
+         pragma Assert (Self_ID.Pending_ATC_Level = Level_Completed_Task);
          pragma Assert (Self_ID.Pending_Action);
          pragma Assert
            (Chain.T_ID = null or else Chain.T_ID.Common.State = Unactivated);
@@ -1553,7 +1553,9 @@ package body System.Tasking.Stages is
       --  for the task completion is an abort, we do not raise an exception.
       --  See RM 9.2(5).
 
-      if not Self_ID.Callable and then Self_ID.Pending_ATC_Level /= 0 then
+      if not Self_ID.Callable
+        and then Self_ID.Pending_ATC_Level /= Level_Completed_Task
+      then
          Activator.Common.Activation_Failed := True;
       end if;
 
@@ -1980,7 +1982,7 @@ package body System.Tasking.Stages is
            Self_ID.Master_Of_Task .. Self_ID.Master_Of_Task + 3);
       pragma Assert (Self_ID.Common.Wait_Count = 0);
       pragma Assert (Self_ID.Open_Accepts = null);
-      pragma Assert (Self_ID.ATC_Nesting_Level = 1);
+      pragma Assert (Self_ID.ATC_Nesting_Level = Level_No_ATC_Occurring);
 
       pragma Debug (Debug.Trace (Self_ID, "V_Complete_Task", 'C'));
 

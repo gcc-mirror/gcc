@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for Alpha Linux.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -53,7 +53,10 @@ alpha_fallback_frame_state (struct _Unwind_Context *context,
 	siginfo_t info;
 	ucontext_t uc;
       } *rt_ = context->cfa;
-      sc = &rt_->uc.uc_mcontext;
+      /* The void * cast is necessary to avoid an aliasing warning.
+         The aliasing warning is correct, but should not be a problem
+         because it does not alias anything.  */
+      sc = (struct sigcontext *) (void *) &rt_->uc.uc_mcontext;
     }
   else
     return _URC_END_OF_STACK;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -88,6 +88,10 @@ package body Osint is
    function OS_Time_To_GNAT_Time (T : OS_Time) return Time_Stamp_Type;
    --  Convert OS format time to GNAT format time stamp. If T is Invalid_Time,
    --  then returns Empty_Time_Stamp.
+   --  Round to even seconds on Windows before conversion.
+   --  Windows ALI files had timestamps rounded to even seconds historically.
+   --  The rounding was originally done in GM_Split. Now that GM_Split no
+   --  longer does it, we are rounding it here only for ALI files.
 
    function Executable_Prefix return String_Ptr;
    --  Returns the name of the root directory where the executable is stored.
@@ -787,6 +791,17 @@ package body Osint is
       end if;
    end Dir_In_Src_Search_Path;
 
+   -----------------------------------------
+   -- Dump_Command_Line_Source_File_Names --
+   -----------------------------------------
+
+   procedure Dump_Command_Line_Source_File_Names is
+   begin
+      for J in 1 .. Number_Of_Files loop
+         Write_Str (File_Names (J).all & " ");
+      end loop;
+   end Dump_Command_Line_Source_File_Names;
+
    ----------------------------
    -- Dump_Source_File_Names --
    ----------------------------
@@ -1410,6 +1425,15 @@ package body Osint is
       Name_Buffer (1 .. Name_Len) := Hostparm.Normalized_CWD;
       return Name_Find;
    end Get_Directory;
+
+   ------------------------------
+   -- Get_First_Main_File_Name --
+   ------------------------------
+
+   function Get_First_Main_File_Name return String is
+   begin
+      return File_Names (1).all;
+   end Get_First_Main_File_Name;
 
    --------------------------
    -- Get_Next_Dir_In_Path --
@@ -2159,6 +2183,19 @@ package body Osint is
    function OS_Time_To_GNAT_Time (T : OS_Time) return Time_Stamp_Type is
       GNAT_Time : Time_Stamp_Type;
 
+      type Underlying_OS_Time is
+        range -(2 ** (Standard'Address_Size - Integer'(1))) ..
+              +(2 ** (Standard'Address_Size - Integer'(1)) - 1);
+      --  Underlying_OS_Time is a redeclaration of OS_Time to allow integer
+      --  manipulation. Remove this in favor of To_Ada/To_C once newer
+      --  GNAT releases are available with these functions.
+
+      function To_Int is
+        new Unchecked_Conversion (OS_Time, Underlying_OS_Time);
+      function From_Int is
+        new Unchecked_Conversion (Underlying_OS_Time, OS_Time);
+
+      TI : Underlying_OS_Time := To_Int (T);
       Y  : Year_Type;
       Mo : Month_Type;
       D  : Day_Type;
@@ -2171,7 +2208,17 @@ package body Osint is
          return Empty_Time_Stamp;
       end if;
 
-      GM_Split (T, Y, Mo, D, H, Mn, S);
+      if On_Windows and then TI mod 2 > 0 then
+         --  Windows ALI files had timestamps rounded to even seconds
+         --  historically. The rounding was originally done in GM_Split.
+         --  Now that GM_Split no longer does it, we are rounding it here
+         --  only for ALI files.
+
+         TI := TI + 1;
+      end if;
+
+      GM_Split (From_Int (TI), Y, Mo, D, H, Mn, S);
+
       Make_Time_Stamp
         (Year    => Nat (Y),
          Month   => Nat (Mo),

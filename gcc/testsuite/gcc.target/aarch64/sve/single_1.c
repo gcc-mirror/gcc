@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -fopenmp-simd -msve-vector-bits=256" } */
+/* { dg-options "-O2 -ftree-vectorize -fopenmp-simd -msve-vector-bits=256 -fno-tree-loop-distribute-patterns" } */
 
 #ifndef N
 #define N 32
@@ -36,14 +36,11 @@ TEST_LOOP (double, 3.0)
 /* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.s, #6\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.d, #7\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.d, #8\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.h, #15360\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tfmov\tz[0-9]+\.h, #1\.0e\+0\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tfmov\tz[0-9]+\.s, #2\.0e\+0\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tfmov\tz[0-9]+\.d, #3\.0e\+0\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tptrue\tp[0-7]\.b, vl32\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tptrue\tp[0-7]\.h, vl16\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tptrue\tp[0-7]\.s, vl8\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tptrue\tp[0-7]\.d, vl4\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tptrue\tp[0-7]\.b, vl32\n} 11 } } */
 
 /* { dg-final { scan-assembler-times {\tst1b\tz[0-9]+\.b,} 2 } } */
 /* { dg-final { scan-assembler-times {\tst1h\tz[0-9]+\.h,} 3 } } */

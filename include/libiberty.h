@@ -1,6 +1,6 @@
 /* Function declarations for libiberty.
 
-   Copyright (C) 1997-2018 Free Software Foundation, Inc.
+   Copyright (C) 1997-2019 Free Software Foundation, Inc.
    
    Note - certain prototypes declared in this header file are for
    functions whoes implementation copyright does not belong to the
@@ -137,6 +137,10 @@ extern const char *unix_lbasename (const char *) ATTRIBUTE_RETURNS_NONNULL ATTRI
 
 extern char *lrealpath (const char *);
 
+/* Return true when FD file descriptor exists.  */
+
+extern int is_valid_fd (int fd);
+
 /* Concatenate an arbitrary number of strings.  You must pass NULL as
    the last argument of this function, to terminate the list of
    strings.  Allocates memory using xmalloc.  */
@@ -239,6 +243,11 @@ extern char *choose_temp_base (void) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL;
 
 extern char *make_temp_file (const char *) ATTRIBUTE_MALLOC;
 
+/* Return a temporary file name with given PREFIX and SUFFIX
+   or NULL if unable to create one.  */
+
+extern char *make_temp_file_with_prefix (const char *, const char *) ATTRIBUTE_MALLOC;
+
 /* Remove a link to a file unless it is special. */
 
 extern int unlink_if_ordinary (const char *);
@@ -305,30 +314,30 @@ extern void xmalloc_failed (size_t) ATTRIBUTE_NORETURN;
    message to stderr (using the name set by xmalloc_set_program_name,
    if any) and then call xexit.  */
 
-extern void *xmalloc (size_t) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL;
+extern void *xmalloc (size_t) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL ATTRIBUTE_RESULT_SIZE_1 ATTRIBUTE_WARN_UNUSED_RESULT;
 
 /* Reallocate memory without fail.  This works like xmalloc.  Note,
    realloc type functions are not suitable for attribute malloc since
    they may return the same address across multiple calls. */
 
-extern void *xrealloc (void *, size_t) ATTRIBUTE_RETURNS_NONNULL;
+extern void *xrealloc (void *, size_t) ATTRIBUTE_RETURNS_NONNULL ATTRIBUTE_RESULT_SIZE_2 ATTRIBUTE_WARN_UNUSED_RESULT;
 
 /* Allocate memory without fail and set it to zero.  This works like
    xmalloc.  */
 
-extern void *xcalloc (size_t, size_t) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL;
+extern void *xcalloc (size_t, size_t) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL ATTRIBUTE_RESULT_SIZE_1_2 ATTRIBUTE_WARN_UNUSED_RESULT;
 
 /* Copy a string into a memory buffer without fail.  */
 
-extern char *xstrdup (const char *) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL;
+extern char *xstrdup (const char *) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL ATTRIBUTE_WARN_UNUSED_RESULT;
 
 /* Copy at most N characters from string into a buffer without fail.  */
 
-extern char *xstrndup (const char *, size_t) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL;
+extern char *xstrndup (const char *, size_t) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL ATTRIBUTE_WARN_UNUSED_RESULT;
 
 /* Copy an existing memory buffer to a new memory buffer without fail.  */
 
-extern void *xmemdup (const void *, size_t, size_t) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL;
+extern void *xmemdup (const void *, size_t, size_t) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL ATTRIBUTE_WARN_UNUSED_RESULT;
 
 /* Physical memory routines.  Return values are in BYTES.  */
 extern double physmem_total (void);
@@ -553,7 +562,7 @@ extern FILE *pex_input_file (struct pex_obj *obj, int flags,
 extern FILE *pex_input_pipe (struct pex_obj *obj, int binary);
 
 /* Read the standard output of the last program to be executed.
-   pex_run can not be called after this.  BINARY should be non-zero if
+   pex_run cannot be called after this.  BINARY should be non-zero if
    the file should be opened in binary mode; this is ignored on Unix.
    Returns NULL on error.  Don't call fclose on the returned FILE; it
    will be closed by pex_free.  */
@@ -561,7 +570,7 @@ extern FILE *pex_input_pipe (struct pex_obj *obj, int binary);
 extern FILE *pex_read_output (struct pex_obj *, int binary);
 
 /* Read the standard error of the last program to be executed.
-   pex_run can not be called after this.  BINARY should be non-zero if
+   pex_run cannot be called after this.  BINARY should be non-zero if
    the file should be opened in binary mode; this is ignored on Unix.
    Returns NULL on error.  Don't call fclose on the returned FILE; it
    will be closed by pex_free.  */
@@ -644,7 +653,7 @@ extern int asprintf (char **, const char *, ...) ATTRIBUTE_PRINTF_2;
 
 extern char *xasprintf (const char *, ...) ATTRIBUTE_MALLOC ATTRIBUTE_PRINTF_1;
 
-#if !HAVE_DECL_VASPRINTF
+#if defined(HAVE_DECL_VASPRINTF) && !HAVE_DECL_VASPRINTF
 /* Like vsprintf but provides a pointer to malloc'd storage, which
    must be freed by the caller.  */
 

@@ -4,6 +4,7 @@
 /* { dg-skip-if "Test is specific to the Xscale" { arm*-*-* } { "-march=*" } { "-march=xscale" } } */
 /* { dg-skip-if "Test is specific to the Xscale" { arm*-*-* } { "-mcpu=*" } { "-mcpu=xscale" } } */
 /* { dg-skip-if "Test is specific to ARM mode" { arm*-*-* } { "-mthumb" } { "" } } */
+/* { dg-require-effective-target arm_arch_v5te_arm_ok } */
 /* { dg-require-effective-target arm32 } */
 
 /* Brett Gaines' test case. */

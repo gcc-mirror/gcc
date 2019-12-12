@@ -37,7 +37,7 @@ func TestVendorImports(t *testing.T) {
 		vend/x/vendor/p/p [notfound]
 		vend/x/vendor/r []
 	`
-	want = strings.Replace(want+"\t", "\n\t\t", "\n", -1)
+	want = strings.ReplaceAll(want+"\t", "\n\t\t", "\n")
 	want = strings.TrimPrefix(want, "\n")
 
 	have := tg.stdout.String()
@@ -181,6 +181,7 @@ func TestVendorGet(t *testing.T) {
 
 func TestVendorGetUpdate(t *testing.T) {
 	testenv.MustHaveExternalNetwork(t)
+	testenv.MustHaveExecPath(t, "git")
 
 	tg := testgo(t)
 	defer tg.cleanup()
@@ -192,6 +193,7 @@ func TestVendorGetUpdate(t *testing.T) {
 
 func TestVendorGetU(t *testing.T) {
 	testenv.MustHaveExternalNetwork(t)
+	testenv.MustHaveExecPath(t, "git")
 
 	tg := testgo(t)
 	defer tg.cleanup()
@@ -202,6 +204,7 @@ func TestVendorGetU(t *testing.T) {
 
 func TestVendorGetTU(t *testing.T) {
 	testenv.MustHaveExternalNetwork(t)
+	testenv.MustHaveExecPath(t, "git")
 
 	tg := testgo(t)
 	defer tg.cleanup()
@@ -212,6 +215,7 @@ func TestVendorGetTU(t *testing.T) {
 
 func TestVendorGetBadVendor(t *testing.T) {
 	testenv.MustHaveExternalNetwork(t)
+	testenv.MustHaveExecPath(t, "git")
 
 	for _, suffix := range []string{"bad/imp", "bad/imp2", "bad/imp3", "..."} {
 		t.Run(suffix, func(t *testing.T) {
@@ -228,6 +232,7 @@ func TestVendorGetBadVendor(t *testing.T) {
 
 func TestGetSubmodules(t *testing.T) {
 	testenv.MustHaveExternalNetwork(t)
+	testenv.MustHaveExecPath(t, "git")
 
 	tg := testgo(t)
 	defer tg.cleanup()
@@ -248,6 +253,7 @@ func TestVendorCache(t *testing.T) {
 
 func TestVendorTest2(t *testing.T) {
 	testenv.MustHaveExternalNetwork(t)
+	testenv.MustHaveExecPath(t, "git")
 
 	tg := testgo(t)
 	defer tg.cleanup()
@@ -273,6 +279,7 @@ func TestVendorTest2(t *testing.T) {
 
 func TestVendorTest3(t *testing.T) {
 	testenv.MustHaveExternalNetwork(t)
+	testenv.MustHaveExecPath(t, "git")
 
 	tg := testgo(t)
 	defer tg.cleanup()
@@ -299,6 +306,7 @@ func TestVendorTest3(t *testing.T) {
 
 func TestVendorList(t *testing.T) {
 	testenv.MustHaveExternalNetwork(t)
+	testenv.MustHaveExecPath(t, "git")
 
 	tg := testgo(t)
 	defer tg.cleanup()
@@ -332,7 +340,7 @@ func TestVendor12156(t *testing.T) {
 
 // Module legacy support does path rewriting very similar to vendoring.
 
-func TestModLegacy(t *testing.T) {
+func TestLegacyMod(t *testing.T) {
 	tg := testgo(t)
 	defer tg.cleanup()
 	tg.setenv("GOPATH", filepath.Join(tg.pwd(), "testdata/modlegacy"))
@@ -347,8 +355,9 @@ func TestModLegacy(t *testing.T) {
 	tg.run("build", "old/p1", "new/p1")
 }
 
-func TestModLegacyGet(t *testing.T) {
+func TestLegacyModGet(t *testing.T) {
 	testenv.MustHaveExternalNetwork(t)
+	testenv.MustHaveExecPath(t, "git")
 
 	tg := testgo(t)
 	defer tg.cleanup()

@@ -1,5 +1,5 @@
 /* NEON builtin definitions for ARM.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -351,3 +351,25 @@ VAR2 (TERNOP, sdot, v8qi, v16qi)
 VAR2 (UTERNOP, udot, v8qi, v16qi)
 VAR2 (MAC_LANE, sdot_lane, v8qi, v16qi)
 VAR2 (UMAC_LANE, udot_lane, v8qi, v16qi)
+
+VAR4 (BINOP, vcadd90, v4hf, v2sf, v8hf, v4sf)
+VAR4 (BINOP, vcadd270, v4hf, v2sf, v8hf, v4sf)
+VAR4 (TERNOP, vcmla0, v2sf, v4sf, v4hf, v8hf)
+VAR4 (TERNOP, vcmla90, v2sf, v4sf, v4hf, v8hf)
+VAR4 (TERNOP, vcmla180, v2sf, v4sf, v4hf, v8hf)
+VAR4 (TERNOP, vcmla270, v2sf, v4sf, v4hf, v8hf)
+
+VAR4 (MAC_LANE_PAIR, vcmla_lane0, v2sf, v4hf, v8hf, v4sf)
+VAR4 (MAC_LANE_PAIR, vcmla_lane90, v2sf, v4hf, v8hf, v4sf)
+VAR4 (MAC_LANE_PAIR, vcmla_lane180, v2sf, v4hf, v8hf, v4sf)
+VAR4 (MAC_LANE_PAIR, vcmla_lane270, v2sf, v4hf, v8hf, v4sf)
+
+VAR2 (MAC_LANE_PAIR, vcmla_laneq0, v2sf, v4hf)
+VAR2 (MAC_LANE_PAIR, vcmla_laneq90, v2sf, v4hf)
+VAR2 (MAC_LANE_PAIR, vcmla_laneq180, v2sf, v4hf)
+VAR2 (MAC_LANE_PAIR, vcmla_laneq270, v2sf, v4hf)
+
+VAR2 (MAC_LANE_PAIR, vcmlaq_lane0, v4sf, v8hf)
+VAR2 (MAC_LANE_PAIR, vcmlaq_lane90, v4sf, v8hf)
+VAR2 (MAC_LANE_PAIR, vcmlaq_lane180, v4sf, v8hf)
+VAR2 (MAC_LANE_PAIR, vcmlaq_lane270, v4sf, v8hf)

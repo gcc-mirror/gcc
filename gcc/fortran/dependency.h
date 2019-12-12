@@ -1,5 +1,5 @@
 /* Header for dependency analysis
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -37,7 +37,8 @@ int gfc_check_fncall_dependency (gfc_expr *, sym_intent, gfc_symbol *,
 int gfc_check_dependency (gfc_expr *, gfc_expr *, bool);
 int gfc_expr_is_one (gfc_expr *, int);
 
-int gfc_dep_resolver(gfc_ref *, gfc_ref *, gfc_reverse *);
+int gfc_dep_resolver (gfc_ref *, gfc_ref *, gfc_reverse *,
+		      bool identical = false);
 int gfc_are_equivalenced_arrays (gfc_expr *, gfc_expr *);
 
 gfc_expr * gfc_discard_nops (gfc_expr *);

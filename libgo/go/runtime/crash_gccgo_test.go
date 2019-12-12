@@ -38,8 +38,8 @@ func TestGccgoCrashTracebackNodebug(t *testing.T) {
 	}
 
 	cc := strings.Fields(os.Getenv("CC"))
-	cc = append(cc, "-x", "c++", "-")
-	out, _ := exec.Command(cc[0], cc[1:]...).CombinedOutput()
+	cc = append(cc, "-o", os.DevNull, "-x", "c++", "-")
+	out, _ := testenv.CleanCmdEnv(exec.Command(cc[0], cc[1:]...)).CombinedOutput()
 	if bytes.Contains(out, []byte("error trying to exec 'cc1plus'")) {
 		t.Skip("no C++ compiler")
 	}

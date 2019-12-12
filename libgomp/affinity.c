@@ -1,4 +1,4 @@
-/* Copyright (C) 2006-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -26,6 +26,8 @@
 /* This is a generic stub implementation of a CPU affinity setting.  */
 
 #include "libgomp.h"
+#include <string.h>
+#include <stdio.h>
 
 void
 gomp_init_affinity (void)
@@ -136,6 +138,18 @@ gomp_get_place_proc_ids_8 (int place_num, int64_t *ids)
 {
   (void) place_num;
   (void) ids;
+}
+
+void
+gomp_display_affinity_place (char *buffer, size_t size, size_t *ret,
+			     int place)
+{
+  char buf[sizeof (long) * 3 + 4];
+  if (gomp_available_cpus > 1)
+    sprintf (buf, "0-%lu", gomp_available_cpus - 1);
+  else
+    strcpy (buf, "0");
+  gomp_display_string (buffer, size, ret, buf, strlen (buf));
 }
 
 ialias(omp_get_place_num_procs)

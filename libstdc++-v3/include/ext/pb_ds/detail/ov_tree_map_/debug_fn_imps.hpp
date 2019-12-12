@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,6 +37,8 @@
  * @file ov_tree_map_/debug_fn_imps.hpp
  * Contains an implementation class for ov_tree_.
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 #ifdef _GLIBCXX_DEBUG
 
@@ -76,4 +78,5 @@ assert_iterators(const char* __file, int __line) const
   PB_DS_DEBUG_VERIFY(iterated_num == m_size);
 }
 
+#endif
 #endif

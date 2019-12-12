@@ -41,10 +41,10 @@ extern void fe1 (const char *, ...) __attribute__((format(nosuch, 1, 2))); /* { 
 /* Both the numbers must be integer constant expressions.  */
 extern void ff0 (const char *, ...) __attribute__((format(gnu_attr_printf, 3-2, (long long)(10/5))));
 int foo;
-extern void ff1 (const char *, ...) __attribute__((format(gnu_attr_printf, foo, 10/5))); /* { dg-error "invalid operand" "bad number" } */
-extern void ff2 (const char *, ...) __attribute__((format(gnu_attr_printf, 3-2, foo))); /* { dg-error "invalid operand" "bad number" } */
+extern void ff1 (const char *, ...) __attribute__((format(gnu_attr_printf, foo, 10/5))); /* { dg-warning ".format. attribute argument 2 value .foo. is not an integer constant" "bad number" } */
+extern void ff2 (const char *, ...) __attribute__((format(gnu_attr_printf, 3-2, foo))); /* { dg-warning ".format. attribute argument 3 value .foo. is not an integer constant" "bad number" } */
 extern char *ff3 (const char *) __attribute__((format_arg(3-2)));
-extern char *ff4 (const char *) __attribute__((format_arg(foo))); /* { dg-error "invalid operand" "bad format_arg number" } */
+extern char *ff4 (const char *) __attribute__((format_arg(foo))); /* { dg-warning ".format_arg. attribute argument value .foo. is not an integer constant" "bad format_arg number" } */
 
 /* The format string argument must precede the arguments to be formatted.
    This includes if no parameter types are specified (which is not valid ISO
@@ -56,16 +56,16 @@ extern void fg3 () __attribute__((format(gnu_attr_printf, 2, 1))); /* { dg-error
 
 /* The format string argument must be a string type, and the arguments to
    be formatted must be the "...".  */
-extern void fh0 (int, ...) __attribute__((format(gnu_attr_printf, 1, 2))); /* { dg-error "not a string" "format int string" } */
-extern void fh1 (signed char *, ...) __attribute__((format(gnu_attr_printf, 1, 2))); /* { dg-error "not a string" "signed char string" } */
-extern void fh2 (unsigned char *, ...) __attribute__((format(gnu_attr_printf, 1, 2))); /* { dg-error "not a string" "unsigned char string" } */
+extern void fh0 (int, ...) __attribute__((format(gnu_attr_printf, 1, 2))); /* { dg-error ".format. attribute argument 2 value .1. refers to parameter type .int." "format int string" } */
+extern void fh1 (signed char *, ...) __attribute__((format(gnu_attr_printf, 1, 2))); /* { dg-error ".format. attribute argument 2 value .1. refers to parameter type .signed char \\\*." "signed char string" } */
+extern void fh2 (unsigned char *, ...) __attribute__((format(gnu_attr_printf, 1, 2))); /* { dg-error ".format. attribute argument 2 value .1. refers to parameter type .unsigned char \\\*." "unsigned char string" } */
 extern void fh3 (const char *, ...) __attribute__((format(gnu_attr_printf, 1, 3))); /* { dg-error "is not" "not ..." } */
-extern void fh4 (const char *, int, ...) __attribute__((format(gnu_attr_printf, 1, 2))); /* { dg-error "is not" "not ..." } */
+extern void fh4 (const char *, int, ...) __attribute__((format(gnu_attr_printf, 1, 2))); /* { dg-error ".format. attribute argument 3 value .2. does not refer to a variable argument list" "not ..." } */
 
 /* format_arg formats must take and return a string.  */
-extern char *fi0 (int) __attribute__((format_arg(1))); /* { dg-error "not a string" "format_arg int string" } */
-extern char *fi1 (signed char *) __attribute__((format_arg(1))); /* { dg-error "not a string" "format_arg signed char string" } */
-extern char *fi2 (unsigned char *) __attribute__((format_arg(1))); /* { dg-error "not a string" "format_arg unsigned char string" } */
+extern char *fi0 (int) __attribute__((format_arg(1))); /* { dg-error ".format_arg. attribute argument value .1. refers to parameter type .int." } */
+extern char *fi1 (signed char *) __attribute__((format_arg(1))); /* { dg-error ".format_arg. attribute argument value .1. refers to parameter type .signed char \\\*." "format_arg signed char string" } */
+extern char *fi2 (unsigned char *) __attribute__((format_arg(1))); /* { dg-error ".format_arg. attribute argument value .1. refers to parameter type .unsigned char \\\*." "format_arg unsigned char string" } */
 extern int fi3 (const char *) __attribute__((format_arg(1))); /* { dg-error "not return string" "format_arg ret int string" } */
 extern signed char *fi4 (const char *) __attribute__((format_arg(1))); /* { dg-error "not return string" "format_arg ret signed char string" } */
 extern unsigned char *fi5 (const char *) __attribute__((format_arg(1))); /* { dg-error "not return string" "format_arg ret unsigned char string" } */

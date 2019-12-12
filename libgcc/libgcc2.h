@@ -1,5 +1,5 @@
 /* Header file for libgcc2.c.  */
-/* Copyright (C) 2000-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2000-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,7 +30,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 extern int __gcc_bcmp (const unsigned char *, const unsigned char *, size_t);
-extern void __clear_cache (char *, char *);
+extern void __clear_cache (void *, void *);
 extern void __eprintf (const char *, const char *, unsigned int, const char *)
   __attribute__ ((__noreturn__));
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1496,6 +1496,33 @@ package body Namet is
    begin
       return N1 = N2 or else Get_Name_String (N1) = Get_Name_String (N2);
    end Name_Equals;
+
+   -------------
+   -- Present --
+   -------------
+
+   function Present (Nam : File_Name_Type) return Boolean is
+   begin
+      return Nam /= No_File;
+   end Present;
+
+   -------------
+   -- Present --
+   -------------
+
+   function Present (Nam : Name_Id) return Boolean is
+   begin
+      return Nam /= No_Name;
+   end Present;
+
+   -------------
+   -- Present --
+   -------------
+
+   function Present (Nam : Unit_Name_Type) return Boolean is
+   begin
+      return Nam /= No_Unit_Name;
+   end Present;
 
    ------------------
    -- Reinitialize --

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fipa-sra -fdump-tree-eipa_sra-details" } */
+/* { dg-options "-O2 -fipa-sra -fdump-ipa-sra" } */
 
 static int *
 __attribute__((noinline,used))
@@ -16,4 +16,4 @@ int *caller (void)
 
   return ox (&a, &b);
 }
-/* { dg-final { scan-tree-dump-times "base: j, remove_param" 0 "eipa_sra"  } } */
+/* { dg-final { scan-ipa-dump-times "Will split parameter" 0 "sra"  } } */

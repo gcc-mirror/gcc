@@ -1,4 +1,4 @@
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 template <class R, class... A, bool B>
 void f(R (*)(A...) noexcept(B)) { }

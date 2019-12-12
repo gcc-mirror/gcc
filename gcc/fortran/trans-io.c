@@ -1,5 +1,5 @@
 /* IO Code translation/library interface
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -438,10 +438,9 @@ gfc_build_io_library_fndecls (void)
 	get_identifier (PREFIX("st_iolength")), ".w",
 	void_type_node, 1, dt_parm_type);
 
-  /* TODO: Change when asynchronous I/O is implemented.  */
   parm_type = build_pointer_type (st_parameter[IOPARM_ptype_wait].type);
   iocall[IOCALL_WAIT] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("st_wait")), ".X",
+	get_identifier (PREFIX("st_wait_async")), ".w",
 	void_type_node, 1, parm_type);
 
   parm_type = build_pointer_type (st_parameter[IOPARM_ptype_filepos].type);
@@ -1527,7 +1526,7 @@ gfc_trans_wait (gfc_code * code)
     mask |= IOPARM_common_err;
 
   if (p->id)
-    mask |= set_parameter_value (&block, var, IOPARM_wait_id, p->id);
+    mask |= set_parameter_ref (&block, &post_block, var, IOPARM_wait_id, p->id);
 
   set_parameter_const (&block, var, IOPARM_common_flags, mask);
 
@@ -2408,8 +2407,6 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr,
 
     case_bt_struct:
     case BT_CLASS:
-      if (ts->u.derived->components == NULL)
-	return;
       if (gfc_bt_struct (ts->type) || ts->type == BT_CLASS)
 	{
 	  gfc_symbol *derived;

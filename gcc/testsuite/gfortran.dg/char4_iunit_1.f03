@@ -1,6 +1,5 @@
 ! { dg-do run }
 ! { dg-add-options ieee }
-! { dg-skip-if "NaN not supported" { spu-*-* } }
 ! PR37077 Implement Internal Unit I/O for character KIND=4
 ! Test case prepared by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 program char4_iunit_1

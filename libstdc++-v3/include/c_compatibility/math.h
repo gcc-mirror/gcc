@@ -1,6 +1,6 @@
 // -*- C++ -*- compatibility header.
 
-// Copyright (C) 2002-2018 Free Software Foundation, Inc.
+// Copyright (C) 2002-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -111,7 +111,9 @@ using std::tgamma;
 using std::trunc;
 #endif // C++11 && _GLIBCXX_USE_C99_MATH_TR1
 
-#if _GLIBCXX_USE_STD_SPEC_FUNCS
+// The mathematical special functions are only added to the global namespace
+// by IS 29124, but not by C++17.
+#if __cplusplus >= 201103L && __STDCPP_WANT_MATH_SPEC_FUNCS__ != 0
 using std::assoc_laguerref;
 using std::assoc_laguerrel;
 using std::assoc_laguerre;
@@ -176,6 +178,10 @@ using std::sph_neumannf;
 using std::sph_neumannl;
 using std::sph_neumann;
 #endif // _GLIBCXX_USE_STD_SPEC_FUNCS
+
+#if __cplusplus > 201703L
+using std::lerp;
+#endif // C++20
 
 #endif // _GLIBCXX_MATH_H
 #endif // __cplusplus

@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                           (VxWorks 7 ARM RTP)                            --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -119,9 +119,6 @@ package System is
    Default_Priority : constant Priority := 122;
 
 private
-
-   pragma Linker_Options ("--specs=vxworks7-rtp-base-link.spec");
-   --  Define the symbol wrs_rtp_base
 
    type Address is mod Memory_Size;
    Null_Address : constant Address := 0;

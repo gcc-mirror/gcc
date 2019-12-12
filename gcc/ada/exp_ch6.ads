@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -243,6 +243,9 @@ package Exp_Ch6 is
    --  Func_Id might need finalization actions. This includes build-in-place
    --  functions with tagged result types, since they can be invoked via
    --  dispatching calls, and descendant types may require finalization.
+
+   function Needs_BIP_Task_Actuals (Func_Id : Entity_Id) return Boolean;
+   --  Return True if the function returns an object of a type that has tasks.
 
    function Needs_Result_Accessibility_Level
      (Func_Id : Entity_Id) return Boolean;

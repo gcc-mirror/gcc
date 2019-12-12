@@ -1,7 +1,6 @@
 /* { dg-require-effective-target stdint_types } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power5" } } */
-/* { dg-options "-O2 -mcpu=power5" } */
+/* { dg-options "-O2 -mdejagnu-cpu=power5" } */
 
 /* This is a clone of gcc-dg/optimize-bswapdi-1.c, redone to use load and stores
    to test whether lwbrx/stwbrx is generated for normal power systems.  */

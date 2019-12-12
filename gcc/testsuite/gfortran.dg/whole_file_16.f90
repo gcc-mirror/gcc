@@ -1,5 +1,4 @@
 ! { dg-do compile }
-! { dg-options "-fwhole-file" }
 !
 ! PR fortran/31346
 !

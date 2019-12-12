@@ -1,5 +1,6 @@
 // PR c++/82218
 // { dg-do compile { target c++14 } }
+// { dg-options "-fdelete-null-pointer-checks" }
 
 template<typename _Tp>
 struct identity

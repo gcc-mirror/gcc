@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-einline --param max-early-inliner-iterations=2" } */
+/* { dg-options "-O2 -fdump-tree-einline-optimized --param max-early-inliner-iterations=2" } */
 /* { dg-add-options bind_pic_locally } */
 
 extern void inlined ();
@@ -27,5 +27,5 @@ inline_me_too (void)
 {
   inlined();
 }
-/* { dg-final { scan-tree-dump-times "Inlining inline_me " 1 "einline"} } */
-/* { dg-final { scan-tree-dump-times "Inlining inline_me_too " 1 "einline"} } */
+/* { dg-final { scan-tree-dump-times "Inlining inline_me/\[0-9\]* " 1 "einline"} } */
+/* { dg-final { scan-tree-dump-times "Inlining inline_me_too/\[0-9\]* " 1 "einline"} } */

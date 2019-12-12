@@ -1,5 +1,5 @@
 /* Target Prototypes for R8C/M16C/M32C
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -43,7 +43,7 @@ void m32c_emit_eh_epilogue (rtx);
 int  m32c_expand_cmpstr (rtx *);
 int  m32c_expand_insv (rtx *);
 int  m32c_expand_movcc (rtx *);
-int  m32c_expand_movmemhi (rtx *);
+int  m32c_expand_cpymemhi (rtx *);
 int  m32c_expand_movstr (rtx *);
 void m32c_expand_neg_mulpsi3 (rtx *);
 int  m32c_expand_setmemhi (rtx *);

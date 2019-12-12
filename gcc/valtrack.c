@@ -1,6 +1,6 @@
 /* Infrastructure for tracking user variable locations and values
    throughout compilation.
-   Copyright (C) 2010-2018 Free Software Foundation, Inc.
+   Copyright (C) 2010-2019 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>.
 
 This file is part of GCC.
@@ -56,8 +56,6 @@ static rtx
 cleanup_auto_inc_dec (rtx src, machine_mode mem_mode ATTRIBUTE_UNUSED)
 {
   rtx x = src;
-  if (!AUTO_INC_DEC)
-    return copy_rtx (x);
 
   const RTX_CODE code = GET_CODE (x);
   int i;
@@ -659,22 +657,12 @@ dead_debug_insert_temp (struct dead_debug_local *debug, unsigned int uregno,
 	{
 	  dest = SET_DEST (set);
 	  src = SET_SRC (set);
-	  /* Lose if the REG-setting insn is a CALL.  */
-	  if (GET_CODE (src) == CALL)
-	    {
-	      while (uses)
-		{
-		  cur = uses->next;
-		  XDELETE (uses);
-		  uses = cur;
-		}
-	      return 0;
-	    }
-	  /* Asm in DEBUG_INSN is never useful, we can't emit debug info for
-	     that.  And for volatile_insn_p, it is actually harmful
-	     - DEBUG_INSNs shouldn't have any side-effects.  */
-	  else if (GET_CODE (src) == ASM_OPERANDS
-		   || volatile_insn_p (src))
+	  /* Reset uses if the REG-setting insn is a CALL.  Asm in
+	     DEBUG_INSN is never useful, we can't emit debug info for
+	     that.  And for volatile_insn_p, it is actually harmful -
+	     DEBUG_INSNs shouldn't have any side-effects.  */
+	  if (GET_CODE (src) == CALL || GET_CODE (src) == ASM_OPERANDS
+	      || volatile_insn_p (src))
 	    set = NULL_RTX;
 	}
 

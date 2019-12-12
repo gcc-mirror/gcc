@@ -1,5 +1,5 @@
 /* Discovery of auto-inc and auto-dec instructions.
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "dbgcnt.h"
 #include "print-rtl.h"
+#include "valtrack.h"
 
 /* This pass was originally removed from flow.c. However there is
    almost nothing that remains of that code.
@@ -53,6 +54,21 @@ along with GCC; see the file COPYING3.  If not see
            ...
            *(a += c) pre
 
+        or, alternately,
+
+           a <- b + c
+           ...
+           *b
+
+        becomes
+
+           a <- b
+           ...
+           *(a += c) post
+
+        This uses a post-add, but it's handled as FORM_PRE_ADD because
+        the "increment" insn appears before the memory access.
+
 
       (2) FORM_PRE_INC
            a += c
@@ -61,6 +77,7 @@ along with GCC; see the file COPYING3.  If not see
 
         becomes
 
+           ...
            *(a += c) pre
 
 
@@ -75,8 +92,8 @@ along with GCC; see the file COPYING3.  If not see
         becomes
 
            b <- a
-           ...
            *(b += c) post
+           ...
 
 
       (4) FORM_POST_INC
@@ -87,6 +104,8 @@ along with GCC; see the file COPYING3.  If not see
         becomes
 
            *(a += c) post
+           ...
+
 
   There are three types of values of c.
 
@@ -393,6 +412,7 @@ dump_mem_insn (FILE *file)
    must be compared with the current block.
 */
 
+static rtx_insn **reg_next_debug_use = NULL;
 static rtx_insn **reg_next_use = NULL;
 static rtx_insn **reg_next_inc_use = NULL;
 static rtx_insn **reg_next_def = NULL;
@@ -451,6 +471,7 @@ attempt_change (rtx new_addr, rtx inc_reg)
   int regno;
   rtx mem = *mem_insn.mem_loc;
   machine_mode mode = GET_MODE (mem);
+  int align = MEM_ALIGN (mem);
   rtx new_mem;
   int old_cost = 0;
   int new_cost = 0;
@@ -458,6 +479,7 @@ attempt_change (rtx new_addr, rtx inc_reg)
 
   PUT_MODE (mem_tmp, mode);
   XEXP (mem_tmp, 0) = new_addr;
+  set_mem_align (mem_tmp, align);
 
   old_cost = (set_src_cost (mem, mode, speed)
 	      + set_rtx_cost (PATTERN (inc_insn.insn), speed));
@@ -509,27 +531,83 @@ attempt_change (rtx new_addr, rtx inc_reg)
       gcc_assert (mov_insn);
       emit_insn_before (mov_insn, inc_insn.insn);
       regno = REGNO (inc_insn.reg0);
+      /* ??? Could REGNO possibly be used in MEM_INSN other than in
+	 the MEM address, and still die there, so that move_dead_notes
+	 would incorrectly move the note?  */
       if (reg_next_use[regno] == mem_insn.insn)
 	move_dead_notes (mov_insn, mem_insn.insn, inc_insn.reg0);
       else
 	move_dead_notes (mov_insn, inc_insn.insn, inc_insn.reg0);
 
       regno = REGNO (inc_insn.reg_res);
+      if (reg_next_debug_use && reg_next_debug_use[regno]
+	  && BLOCK_FOR_INSN (reg_next_debug_use[regno]) == bb)
+	{
+	  rtx adjres = gen_rtx_PLUS (GET_MODE (inc_insn.reg_res),
+				     inc_insn.reg_res, inc_insn.reg1);
+	  if (dump_file)
+	    fprintf (dump_file, "adjusting debug insns\n");
+	  propagate_for_debug (PREV_INSN (reg_next_debug_use[regno]),
+			       mem_insn.insn,
+			       inc_insn.reg_res, adjres, bb);
+	  reg_next_debug_use[regno] = NULL;
+	}
       reg_next_def[regno] = mov_insn;
       reg_next_use[regno] = NULL;
+
       regno = REGNO (inc_insn.reg0);
+      if (reg_next_debug_use && reg_next_debug_use[regno]
+	  && BLOCK_FOR_INSN (reg_next_debug_use[regno]) == bb
+	  && find_reg_note (mov_insn, REG_DEAD, inc_insn.reg0))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "remapping debug insns\n");
+	  propagate_for_debug (PREV_INSN (reg_next_debug_use[regno]),
+			       mem_insn.insn,
+			       inc_insn.reg0, inc_insn.reg_res, bb);
+	  reg_next_debug_use[regno] = NULL;
+	}
       reg_next_use[regno] = mov_insn;
       df_recompute_luids (bb);
       break;
 
     case FORM_POST_INC:
       regno = REGNO (inc_insn.reg_res);
+      if (reg_next_debug_use && reg_next_debug_use[regno]
+	  && BLOCK_FOR_INSN (reg_next_debug_use[regno]) == bb)
+	{
+	  rtx adjres = gen_rtx_MINUS (GET_MODE (inc_insn.reg_res),
+				      inc_insn.reg_res, inc_insn.reg1);
+	  if (dump_file)
+	    fprintf (dump_file, "adjusting debug insns\n");
+	  propagate_for_debug (PREV_INSN (reg_next_debug_use[regno]),
+			       inc_insn.insn,
+			       inc_insn.reg_res, adjres, bb);
+	  reg_next_debug_use[regno] = NULL;
+	}
       if (reg_next_use[regno] == reg_next_inc_use[regno])
 	reg_next_inc_use[regno] = NULL;
 
       /* Fallthru.  */
     case FORM_PRE_INC:
       regno = REGNO (inc_insn.reg_res);
+      /* Despite the fall-through, we won't run this twice: we'll have
+	 already cleared reg_next_debug_use[regno] before falling
+	 through.  */
+      if (reg_next_debug_use && reg_next_debug_use[regno]
+	  && BLOCK_FOR_INSN (reg_next_debug_use[regno]) == bb)
+	{
+	  rtx adjres = gen_rtx_PLUS (GET_MODE (inc_insn.reg_res),
+				     inc_insn.reg_res, inc_insn.reg1);
+	  if (dump_file)
+	    fprintf (dump_file, "adjusting debug insns\n");
+	  propagate_for_debug (PREV_INSN (reg_next_debug_use[regno]),
+			       mem_insn.insn,
+			       inc_insn.reg_res, adjres, bb);
+	  if (DF_INSN_LUID (mem_insn.insn)
+	      < DF_INSN_LUID (reg_next_debug_use[regno]))
+	    reg_next_debug_use[regno] = NULL;
+	}
       reg_next_def[regno] = mem_insn.insn;
       reg_next_use[regno] = NULL;
 
@@ -544,10 +622,26 @@ attempt_change (rtx new_addr, rtx inc_reg)
 	 pointer for the main iteration has not yet hit that.  It is
 	 still pointing to the mem insn. */
       regno = REGNO (inc_insn.reg_res);
+      /* The pseudo is now set earlier, so it must have been dead in
+	 that range, and dead registers cannot be referenced in debug
+	 insns.  */
+      gcc_assert (!(reg_next_debug_use && reg_next_debug_use[regno]
+		    && BLOCK_FOR_INSN (reg_next_debug_use[regno]) == bb));
       reg_next_def[regno] = mem_insn.insn;
       reg_next_use[regno] = NULL;
 
       regno = REGNO (inc_insn.reg0);
+      if (reg_next_debug_use && reg_next_debug_use[regno]
+	  && BLOCK_FOR_INSN (reg_next_debug_use[regno]) == bb
+	  && find_reg_note (mov_insn, REG_DEAD, inc_insn.reg0))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "remapping debug insns\n");
+	  propagate_for_debug (PREV_INSN (reg_next_debug_use[regno]),
+			       inc_insn.insn,
+			       inc_insn.reg0, inc_insn.reg_res, bb);
+	  reg_next_debug_use[regno] = NULL;
+	}
       reg_next_use[regno] = mem_insn.insn;
       if ((reg_next_use[regno] == reg_next_inc_use[regno])
 	  || (reg_next_inc_use[regno] == inc_insn.insn))
@@ -1332,7 +1426,20 @@ merge_in_block (int max_reg, basic_block bb)
       bool insn_is_add_or_inc = true;
 
       if (!NONDEBUG_INSN_P (insn))
-	continue;
+	{
+	  if (DEBUG_BIND_INSN_P (insn))
+	    {
+	      df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+	      df_ref use;
+
+	      if (dump_file)
+		dump_insn_slim (dump_file, insn);
+
+	      FOR_EACH_INSN_INFO_USE (use, insn_info)
+		reg_next_debug_use[DF_REF_REGNO (use)] = insn;
+	    }
+	  continue;
+	}
 
       /* This continue is deliberate.  We do not want the uses of the
 	 jump put into reg_next_use because it is not considered safe to
@@ -1410,7 +1517,7 @@ merge_in_block (int max_reg, basic_block bb)
 
 		     where reg1 is a constant (*).
 
-		     The next use of reg_res was not idenfied by
+		     The next use of reg_res was not identified by
 		     find_address as a mem_insn that we could turn
 		     into auto-inc, so see if we find a suitable
 		     MEM in the next use of reg0, as long as it's
@@ -1510,6 +1617,8 @@ merge_in_block (int max_reg, basic_block bb)
 	  /* Need to update next use.  */
 	  FOR_EACH_INSN_INFO_DEF (def, insn_info)
 	    {
+	      if (reg_next_debug_use)
+		reg_next_debug_use[DF_REF_REGNO (def)] = NULL;
 	      reg_next_use[DF_REF_REGNO (def)] = NULL;
 	      reg_next_inc_use[DF_REF_REGNO (def)] = NULL;
 	      reg_next_def[DF_REF_REGNO (def)] = insn;
@@ -1517,6 +1626,13 @@ merge_in_block (int max_reg, basic_block bb)
 
 	  FOR_EACH_INSN_INFO_USE (use, insn_info)
 	    {
+	      if (reg_next_debug_use)
+		/* This may seem surprising, but we know we may only
+		   modify the value of a REG between an insn and the
+		   next nondebug use thereof.  Any debug uses after
+		   the next nondebug use can be left alone, the REG
+		   will hold the expected value there.  */
+		reg_next_debug_use[DF_REF_REGNO (use)] = NULL;
 	      reg_next_use[DF_REF_REGNO (use)] = insn;
 	      if (insn_is_add_or_inc)
 		reg_next_inc_use[DF_REF_REGNO (use)] = insn;
@@ -1536,6 +1652,8 @@ merge_in_block (int max_reg, basic_block bb)
     {
       /* In this case, we must clear these vectors since the trick of
 	 testing if the stale insn in the block will not work.  */
+      if (reg_next_debug_use)
+	memset (reg_next_debug_use, 0, max_reg * sizeof (rtx));
       memset (reg_next_use, 0, max_reg * sizeof (rtx));
       memset (reg_next_inc_use, 0, max_reg * sizeof (rtx));
       memset (reg_next_def, 0, max_reg * sizeof (rtx));
@@ -1599,12 +1717,18 @@ pass_inc_dec::execute (function *fun ATTRIBUTE_UNUSED)
   df_note_add_problem ();
   df_analyze ();
 
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
+    reg_next_debug_use = XCNEWVEC (rtx_insn *, max_reg);
+  else
+    /* An earlier function may have had debug binds.  */
+    reg_next_debug_use = NULL;
   reg_next_use = XCNEWVEC (rtx_insn *, max_reg);
   reg_next_inc_use = XCNEWVEC (rtx_insn *, max_reg);
   reg_next_def = XCNEWVEC (rtx_insn *, max_reg);
   FOR_EACH_BB_FN (bb, fun)
     merge_in_block (max_reg, bb);
 
+  free (reg_next_debug_use);
   free (reg_next_use);
   free (reg_next_inc_use);
   free (reg_next_def);

@@ -1,5 +1,5 @@
 /* Target Definitions for NVPTX.
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
    This file is part of GCC.
@@ -21,9 +21,15 @@
 #ifndef GCC_NVPTX_H
 #define GCC_NVPTX_H
 
+#ifndef NVPTX_OPTS_H
+#include "config/nvptx/nvptx-opts.h"
+#endif
+
 /* Run-time Target.  */
 
 #define STARTFILE_SPEC "%{mmainkernel:crt0.o}"
+
+#define ASM_SPEC "%{misa=*:-m %*}"
 
 #define TARGET_CPU_CPP_BUILTINS()		\
   do						\
@@ -86,6 +92,8 @@
 #define POINTER_SIZE (TARGET_ABI64 ? 64 : 32)
 #define Pmode (TARGET_ABI64 ? DImode : SImode)
 #define STACK_SIZE_MODE Pmode
+
+#define TARGET_SM35 (ptx_isa_option >= PTX_ISA_SM35)
 
 /* Registers.  Since ptx is a virtual target, we just define a few
    hard registers for special purposes and leave pseudos unallocated.
@@ -210,6 +218,15 @@ struct GTY(()) machine_function
   int return_mode; /* Return mode of current fn.
 		      (machine_mode not defined yet.) */
   rtx axis_predicate[2]; /* Neutering predicates.  */
+  int axis_dim[2]; /* Maximum number of threads on each axis, dim[0] is
+		      vector_length, dim[1] is num_workers.  */
+  bool axis_dim_init_p;
+  rtx bcast_partition; /* Register containing the size of each
+			  vector's partition of share-memory used to
+			  broadcast state.  */
+  rtx red_partition; /* Similar to bcast_partition, except for vector
+			reductions.  */
+  rtx sync_bar; /* Synchronization barrier ID for vectors.  */
   rtx unisimt_master; /* 'Master lane index' for -muniform-simt.  */
   rtx unisimt_predicate; /* Predicate for -muniform-simt.  */
   rtx unisimt_location; /* Mask location for -muniform-simt.  */

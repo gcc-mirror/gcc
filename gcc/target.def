@@ -1,5 +1,5 @@
 /* Target hook definitions.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -45,12 +45,18 @@ DEFHOOKPODX (close_paren, const char *, ")")
 DEFHOOKPOD
 (byte_op,
  "@deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_HI_OP\n\
+@deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_PSI_OP\n\
 @deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_SI_OP\n\
+@deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_PDI_OP\n\
 @deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_DI_OP\n\
+@deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_PTI_OP\n\
 @deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_TI_OP\n\
 @deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_HI_OP\n\
+@deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_PSI_OP\n\
 @deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_SI_OP\n\
+@deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_PDI_OP\n\
 @deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_DI_OP\n\
+@deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_PTI_OP\n\
 @deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_TI_OP\n\
 These hooks specify assembly directives for creating certain kinds\n\
 of integer object.  The @code{TARGET_ASM_BYTE_OP} directive creates a\n\
@@ -86,6 +92,18 @@ when the relevant string is @code{NULL}.",
     NULL.  */
  bool, (rtx x, unsigned int size, int aligned_p),
  default_assemble_integer)
+
+/* Assembly strings required after the .cfi_startproc label.  */
+DEFHOOK
+(post_cfi_startproc,
+  "This target hook is used to emit assembly strings required by the target\n\
+after the .cfi_startproc directive.  The first argument is the file stream to\n\
+write the strings to and the second argument is the function\'s declaration.  The\n\
+expected use is to add more .cfi_* directives.\n\
+\n\
+The default is to not output any assembly strings.",
+  void, (FILE *, tree),
+  hook_void_FILEptr_tree)
 
 /* Notify the backend that we have completed emitting the data for a
    decl.  */
@@ -1651,6 +1669,21 @@ int, (void), NULL)
 
 HOOK_VECTOR_END (simt)
 
+/* Functions relating to OpenMP.  */
+#undef HOOK_PREFIX
+#define HOOK_PREFIX "TARGET_OMP_"
+HOOK_VECTOR (TARGET_OMP, omp)
+
+DEFHOOK
+(device_kind_arch_isa,
+"Return 1 if @var{trait} @var{name} is present in the OpenMP context's\n\
+device trait set, return 0 if not present in any OpenMP context in the\n\
+whole translation unit, or -1 if not present in the current OpenMP context\n\
+but might be present in another OpenMP context in the same TU.",
+int, (enum omp_device_kind_arch_isa trait, const char *name), NULL)
+
+HOOK_VECTOR_END (omp)
+
 /* Functions relating to openacc.  */
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_GOACC_"
@@ -1668,7 +1701,7 @@ are being validated and unspecified defaults should be filled in.\n\
 Diagnostics should be issued as appropriate.  Return\n\
 true, if changes have been made.  You must override this hook to\n\
 provide dimensions larger than 1.",
-bool, (tree decl, int *dims, int fn_level),
+bool, (tree decl, int *dims, int fn_level, unsigned used),
 default_goacc_validate_dims)
 
 DEFHOOK
@@ -1802,7 +1835,7 @@ for alignment.\n\
 \n\
 The default hook returns @code{TYPE_ALIGN (@var{type})}, which is\n\
 correct for most targets.",
- HOST_WIDE_INT, (const_tree type),
+ poly_uint64, (const_tree type),
  default_preferred_vector_alignment)
 
 /* Return true if vector alignment is reachable (by peeling N
@@ -1876,33 +1909,80 @@ reached.  The default is @var{mode} which means no splitting.",
 /* Returns a mask of vector sizes to iterate over when auto-vectorizing
    after processing the preferred one derived from preferred_simd_mode.  */
 DEFHOOK
-(autovectorize_vector_sizes,
- "If the mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is not\n\
-the only one that is worth considering, this hook should add all suitable\n\
-vector sizes to @var{sizes}, in order of decreasing preference.  The first\n\
-one should be the size of @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.\n\
+(autovectorize_vector_modes,
+ "If using the mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}\n\
+is not the only approach worth considering, this hook should add one mode to\n\
+@var{modes} for each useful alternative approach.  These modes are then\n\
+passed to @code{TARGET_VECTORIZE_RELATED_MODE} to obtain the vector mode\n\
+for a given element mode.\n\
+\n\
+The modes returned in @var{modes} should use the smallest element mode\n\
+possible for the vectorization approach that they represent, preferring\n\
+integer modes over floating-poing modes in the event of a tie.  The first\n\
+mode should be the @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} for its\n\
+element mode.\n\
+\n\
+If @var{all} is true, add suitable vector modes even when they are generally\n\
+not expected to be worthwhile.\n\
+\n\
+The hook returns a bitmask of flags that control how the modes in\n\
+@var{modes} are used.  The flags are:\n\
+@table @code\n\
+@item VECT_COMPARE_COSTS\n\
+Tells the loop vectorizer to try all the provided modes and pick the one\n\
+with the lowest cost.  By default the vectorizer will choose the first\n\
+mode that works.\n\
+@end table\n\
 \n\
 The hook does not need to do anything if the vector returned by\n\
 @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is the only one relevant\n\
-for autovectorization.  The default implementation does nothing.",
- void,
- (vector_sizes *sizes),
- default_autovectorize_vector_sizes)
+for autovectorization.  The default implementation adds no modes and\n\
+returns 0.",
+ unsigned int,
+ (vector_modes *modes, bool all),
+ default_autovectorize_vector_modes)
+
+DEFHOOK
+(related_mode,
+ "If a piece of code is using vector mode @var{vector_mode} and also wants\n\
+to operate on elements of mode @var{element_mode}, return the vector mode\n\
+it should use for those elements.  If @var{nunits} is nonzero, ensure that\n\
+the mode has exactly @var{nunits} elements, otherwise pick whichever vector\n\
+size pairs the most naturally with @var{vector_mode}.  Return an empty\n\
+@code{opt_machine_mode} if there is no supported vector mode with the\n\
+required properties.\n\
+\n\
+There is no prescribed way of handling the case in which @var{nunits}\n\
+is zero.  One common choice is to pick a vector mode with the same size\n\
+as @var{vector_mode}; this is the natural choice if the target has a\n\
+fixed vector size.  Another option is to choose a vector mode with the\n\
+same number of elements as @var{vector_mode}; this is the natural choice\n\
+if the target has a fixed number of elements.  Alternatively, the hook\n\
+might choose a middle ground, such as trying to keep the number of\n\
+elements as similar as possible while applying maximum and minimum\n\
+vector sizes.\n\
+\n\
+The default implementation uses @code{mode_for_vector} to find the\n\
+requested mode, returning a mode with the same size as @var{vector_mode}\n\
+when @var{nunits} is zero.  This is the correct behavior for most targets.",
+ opt_machine_mode,
+ (machine_mode vector_mode, scalar_mode element_mode, poly_uint64 nunits),
+ default_vectorize_related_mode)
 
 /* Function to get a target mode for a vector mask.  */
 DEFHOOK
 (get_mask_mode,
- "A vector mask is a value that holds one boolean result for every element\n\
-in a vector.  This hook returns the machine mode that should be used to\n\
-represent such a mask when the vector in question is @var{length} bytes\n\
-long and contains @var{nunits} elements.  The hook returns an empty\n\
-@code{opt_machine_mode} if no such mode exists.\n\
+ "Return the mode to use for a vector mask that holds one boolean\n\
+result for each element of vector mode @var{mode}.  The returned mask mode\n\
+can be a vector of integers (class @code{MODE_VECTOR_INT}), a vector of\n\
+booleans (class @code{MODE_VECTOR_BOOL}) or a scalar integer (class\n\
+@code{MODE_INT}).  Return an empty @code{opt_machine_mode} if no such\n\
+mask mode exists.\n\
 \n\
-The default implementation returns the mode of an integer vector that\n\
-is @var{length} bytes long and that contains @var{nunits} elements,\n\
-if such a mode exists.",
+The default implementation returns a @code{MODE_VECTOR_INT} with the\n\
+same size and number of elements as @var{mode}, if such a mode exists.",
  opt_machine_mode,
- (poly_uint64 nunits, poly_uint64 length),
+ (machine_mode mode),
  default_get_mask_mode)
 
 /* Function to say whether a masked operation is expensive when the
@@ -1950,7 +2030,7 @@ DEFHOOK
  "non-NULL, it identifies the loop being vectorized; otherwise a single block "
  "is being vectorized.",
  void *,
- (struct loop *loop_info),
+ (class loop *loop_info),
  default_init_cost)
 
 /* Target function to record N statements of the given kind using the
@@ -1967,7 +2047,7 @@ DEFHOOK
  "revised.",
  unsigned,
  (void *data, int count, enum vect_cost_for_stmt kind,
-  struct _stmt_vec_info *stmt_info, int misalign,
+  class _stmt_vec_info *stmt_info, int misalign,
   enum vect_cost_model_location where),
  default_add_stmt_cost)
 
@@ -2188,6 +2268,17 @@ needed.",
  void, (tree node, tree *attr_ptr),
  hook_void_tree_treeptr)
 
+/* Perform additional target-specific processing of generic attributes.  */
+DEFHOOK
+(handle_generic_attribute,
+ "Define this target hook if you want to be able to perform additional\n\
+target-specific processing of an attribute which is handled generically\n\
+by a front end.  The arguments are the same as those which are passed to\n\
+attribute handlers.  So far this only affects the @var{noinit} and\n\
+@var{section} attribute.",
+ tree, (tree *node, tree name, tree args, int flags, bool *no_add_attrs),
+ hook_tree_treeptr_tree_tree_int_boolptr_null)
+
 /* Return true if FNDECL (which has at least one machine attribute)
    can be inlined despite its machine attributes, false otherwise.  */
 DEFHOOK
@@ -2366,6 +2457,24 @@ another @code{CALL_EXPR}.\n\
 @var{arglist} really has type @samp{VEC(tree,gc)*}",
  tree, (unsigned int /*location_t*/ loc, tree fndecl, void *arglist), NULL)
 
+DEFHOOK
+(check_builtin_call,
+ "Perform semantic checking on a call to a machine-specific built-in\n\
+function after its arguments have been constrained to the function\n\
+signature.  Return true if the call is valid, otherwise report an error\n\
+and return false.\n\
+\n\
+This hook is called after @code{TARGET_RESOLVE_OVERLOADED_BUILTIN}.\n\
+The call was originally to built-in function @var{orig_fndecl},\n\
+but after the optional @code{TARGET_RESOLVE_OVERLOADED_BUILTIN}\n\
+step is now to built-in function @var{fndecl}.  @var{loc} is the\n\
+location of the call and @var{args} is an array of function arguments,\n\
+of which there are @var{nargs}.  @var{arg_loc} specifies the location\n\
+of each argument.",
+ bool, (location_t loc, vec<location_t> arg_loc, tree fndecl,
+	tree orig_fndecl, unsigned int nargs, tree *args),
+ NULL)
+
 /* Fold a target-specific builtin to a tree valid for both GIMPLE
    and GENERIC.  */
 DEFHOOK
@@ -2525,9 +2634,16 @@ set via @code{__attribute__}.",
 DEFHOOK
 (libc_has_function,
  "This hook determines whether a function from a class of functions\n\
-@var{fn_class} is present at the runtime.",
+@var{fn_class} is present in the target C library.",
  bool, (enum function_class fn_class),
  default_libc_has_function)
+
+DEFHOOK
+(libc_has_fast_function,
+ "This hook determines whether a function from a class of functions\n\
+@code{(enum function_class)}@var{fcode} has a fast implementation.",
+ bool, (int fcode),
+ default_libc_has_fast_function)
 
 /* True if new jumps cannot be created, to replace existing ones or
    not, at the current point in the compilation.  */
@@ -2558,38 +2674,6 @@ DEFHOOK
   follow through a hot/cold partitioning.",
  bool, (const rtx_insn *follower, const rtx_insn *followee),
  hook_bool_const_rtx_insn_const_rtx_insn_true)
-
-/* Return a register class for which branch target register
-   optimizations should be applied.  */
-DEFHOOK
-(branch_target_register_class,
- "This target hook returns a register class for which branch target register\n\
-optimizations should be applied.  All registers in this class should be\n\
-usable interchangeably.  After reload, registers in this class will be\n\
-re-allocated and loads will be hoisted out of loops and be subjected\n\
-to inter-block scheduling.",
- reg_class_t, (void),
- default_branch_target_register_class)
-
-/* Return true if branch target register optimizations should include
-   callee-saved registers that are not already live during the current
-   function.  AFTER_PE_GEN is true if prologues and epilogues have
-   already been generated.  */
-DEFHOOK
-(branch_target_register_callee_saved,
- "Branch target register optimization will by default exclude callee-saved\n\
-registers\n\
-that are not already live during the current function; if this target hook\n\
-returns true, they will be included.  The target code must than make sure\n\
-that all target registers in the class returned by\n\
-@samp{TARGET_BRANCH_TARGET_REGISTER_CLASS} that might need saving are\n\
-saved.  @var{after_prologue_epilogue_gen} indicates if prologues and\n\
-epilogues have already been generated.  Note, even if you only return\n\
-true when @var{after_prologue_epilogue_gen} is false, you still are likely\n\
-to have to make special provisions in @code{INITIAL_ELIMINATION_OFFSET}\n\
-to reserve space for caller-saved target registers.",
- bool, (bool after_prologue_epilogue_gen),
- hook_bool_bool_false)
 
 /* Return true if the target supports conditional execution.  */
 DEFHOOK
@@ -2638,7 +2722,7 @@ the loop is to be unrolled. The parameter @var{loop} is a pointer to\n\
 the loop, which is going to be checked for unrolling. This target hook\n\
 is required only when the target has special constraints like maximum\n\
 number of memory accesses.",
- unsigned, (unsigned nunroll, struct loop *loop),
+ unsigned, (unsigned nunroll, class loop *loop),
  NULL)
 
 /* True if X is a legitimate MODE-mode immediate operand.  */
@@ -2893,7 +2977,7 @@ or @code{NULL} if this is an indirect call.\n\
 It is not uncommon for limitations of calling conventions to prevent\n\
 tail calls to functions outside the current unit of translation, or\n\
 during PIC compilation.  The hook is used to enforce these restrictions,\n\
-as the @code{sibcall} md pattern can not fail, or fall over to a\n\
+as the @code{sibcall} md pattern cannot fail, or fall over to a\n\
 ``normal'' call.  The criteria for successful sibling call optimization\n\
 may vary greatly between different architectures.",
  bool, (tree decl, tree exp),
@@ -3123,6 +3207,21 @@ In order to enforce the representation of @code{mode},\n\
  int, (scalar_int_mode mode, scalar_int_mode rep_mode),
  default_mode_rep_extended)
 
+ DEFHOOK
+(setjmp_preserves_nonvolatile_regs_p,
+ "On some targets, it is assumed that the compiler will spill all pseudos\n\
+  that are live across a call to @code{setjmp}, while other targets treat\n\
+  @code{setjmp} calls as normal function calls.\n\
+  \n\
+  This hook returns false if @code{setjmp} calls do not preserve all\n\
+  non-volatile registers so that gcc that must spill all pseudos that are\n\
+  live across @code{setjmp} calls.  Define this to return true if the\n\
+  target does not need to spill all pseudos live across @code{setjmp} calls.\n\
+  The default implementation conservatively assumes all pseudos must be\n\
+  spilled across @code{setjmp} calls.",
+ bool, (void),
+ hook_bool_void_false)
+
 /* True if MODE is valid for a pointer in __attribute__((mode("MODE"))).  */
 DEFHOOK
 (valid_pointer_mode,
@@ -3140,7 +3239,7 @@ DEFHOOK
   version of this hook assumes the system C library errno location\
   is either a declaration of type int or accessed by dereferencing\
   a pointer to int.",
- bool, (struct ao_ref *ref),
+ bool, (ao_ref *ref),
  default_ref_may_alias_errno)
 
 /* Support for named address spaces.  */
@@ -3489,7 +3588,7 @@ two areas of memory, or to set, clear or store to memory, for example\n\
 when copying a @code{struct}. The @code{by_pieces} infrastructure\n\
 implements such memory operations as a sequence of load, store or move\n\
 insns.  Alternate strategies are to expand the\n\
-@code{movmem} or @code{setmem} optabs, to emit a library call, or to emit\n\
+@code{cpymem} or @code{setmem} optabs, to emit a library call, or to emit\n\
 unit-by-unit, loop-based operations.\n\
 \n\
 This target hook should return true if, for a memory operation with a\n\
@@ -3508,7 +3607,7 @@ optimized for speed rather than size.\n\
 \n\
 Returning true for higher values of @var{size} can improve code generation\n\
 for speed if the target does not provide an implementation of the\n\
-@code{movmem} or @code{setmem} standard names, if the @code{movmem} or\n\
+@code{cpymem} or @code{setmem} standard names, if the @code{cpymem} or\n\
 @code{setmem} implementation would be more expensive than a sequence of\n\
 insns, or if the overhead of a library call would dominate that of\n\
 the body of the memory operation.\n\
@@ -3537,7 +3636,7 @@ DEFHOOK
  "This hook returns true if memory accesses described by the\n\
 @var{mode} and @var{alignment} parameters have a cost many times greater\n\
 than aligned accesses, for example if they are emulated in a trap handler.\n\
-This hook is invoked only for unaligned accesses, i.e. when\n\
+This hook is invoked only for unaligned accesses, i.e.@: when\n\
 @code{@var{alignment} < GET_MODE_ALIGNMENT (@var{mode})}.\n\
 \n\
 When this hook returns true, the compiler will act as if\n\
@@ -4156,6 +4255,88 @@ DEFHOOK
  hook_bool_void_true)
 
 DEFHOOK
+(have_speculation_safe_value,
+"This hook is used to determine the level of target support for\n\
+ @code{__builtin_speculation_safe_value}.  If called with an argument\n\
+ of false, it returns true if the target has been modified to support\n\
+ this builtin.  If called with an argument of true, it returns true\n\
+ if the target requires active mitigation execution might be speculative.\n\
+ \n\
+ The default implementation returns false if the target does not define\n\
+ a pattern named @code{speculation_barrier}.  Else it returns true\n\
+ for the first case and whether the pattern is enabled for the current\n\
+ compilation for the second case.\n\
+ \n\
+ For targets that have no processors that can execute instructions\n\
+ speculatively an alternative implemenation of this hook is available:\n\
+ simply redefine this hook to @code{speculation_safe_value_not_needed}\n\
+ along with your other target hooks.",
+bool, (bool active), default_have_speculation_safe_value)
+
+DEFHOOK
+(speculation_safe_value,
+"This target hook can be used to generate a target-specific code\n\
+ sequence that implements the @code{__builtin_speculation_safe_value}\n\
+ built-in function.  The function must always return @var{val} in\n\
+ @var{result} in mode @var{mode} when the cpu is not executing\n\
+ speculatively, but must never return that when speculating until it\n\
+ is known that the speculation will not be unwound.  The hook supports\n\
+ two primary mechanisms for implementing the requirements.  The first\n\
+ is to emit a speculation barrier which forces the processor to wait\n\
+ until all prior speculative operations have been resolved; the second\n\
+ is to use a target-specific mechanism that can track the speculation\n\
+ state and to return @var{failval} if it can determine that\n\
+ speculation must be unwound at a later time.\n\
+ \n\
+ The default implementation simply copies @var{val} to @var{result} and\n\
+ emits a @code{speculation_barrier} instruction if that is defined.",
+rtx, (machine_mode mode, rtx result, rtx val, rtx failval),
+ default_speculation_safe_value)
+ 
+DEFHOOK
+(predict_doloop_p,
+ "Return true if we can predict it is possible to use a low-overhead loop\n\
+for a particular loop.  The parameter @var{loop} is a pointer to the loop.\n\
+This target hook is required only when the target supports low-overhead\n\
+loops, and will help ivopts to make some decisions.\n\
+The default version of this hook returns false.",
+ bool, (class loop *loop),
+ default_predict_doloop_p)
+
+DEFHOOKPOD
+(have_count_reg_decr_p,
+ "Return true if the target supports hardware count register for decrement\n\
+and branch.\n\
+The default value is false.",
+ bool, false)
+
+DEFHOOKPOD
+(doloop_cost_for_generic,
+ "One IV candidate dedicated for doloop is introduced in IVOPTs, we can\n\
+calculate the computation cost of adopting it to any generic IV use by\n\
+function get_computation_cost as before.  But for targets which have\n\
+hardware count register support for decrement and branch, it may have to\n\
+move IV value from hardware count register to general purpose register\n\
+while doloop IV candidate is used for generic IV uses.  It probably takes\n\
+expensive penalty.  This hook allows target owners to define the cost for\n\
+this especially for generic IV uses.\n\
+The default value is zero.",
+ int64_t, 0)
+
+DEFHOOKPOD
+(doloop_cost_for_address,
+ "One IV candidate dedicated for doloop is introduced in IVOPTs, we can\n\
+calculate the computation cost of adopting it to any address IV use by\n\
+function get_computation_cost as before.  But for targets which have\n\
+hardware count register support for decrement and branch, it may have to\n\
+move IV value from hardware count register to general purpose register\n\
+while doloop IV candidate is used for address IV uses.  It probably takes\n\
+expensive penalty.  This hook allows target owners to define the cost for\n\
+this escpecially for address IV uses.\n\
+The default value is zero.",
+ int64_t, 0)
+
+DEFHOOK
 (can_use_doloop_p,
  "Return true if it is possible to use low-overhead loops (@code{doloop_end}\n\
 and @code{doloop_begin}) for a particular loop.  @var{iterations} gives the\n\
@@ -4359,18 +4540,18 @@ or 3-byte structure is returned at the most significant end of a\n\
    from __builtin_va_arg.  */
 DEFHOOK
 (pass_by_reference,
- "This target hook should return @code{true} if an argument at the\n\
+ "This target hook should return @code{true} if argument @var{arg} at the\n\
 position indicated by @var{cum} should be passed by reference.  This\n\
 predicate is queried after target independent reasons for being\n\
-passed by reference, such as @code{TREE_ADDRESSABLE (type)}.\n\
+passed by reference, such as @code{TREE_ADDRESSABLE (@var{arg}.type)}.\n\
 \n\
 If the hook returns true, a copy of that argument is made in memory and a\n\
 pointer to the argument is passed instead of the argument itself.\n\
 The pointer is passed in whatever way is appropriate for passing a pointer\n\
 to that type.",
  bool,
- (cumulative_args_t cum, machine_mode mode, const_tree type, bool named),
- hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false)
+ (cumulative_args_t cum, const function_arg_info &arg),
+ hook_bool_CUMULATIVE_ARGS_arg_info_false)
 
 DEFHOOK
 (expand_builtin_saveregs,
@@ -4395,8 +4576,8 @@ pass all their arguments on the stack.\n\
 \n\
 The argument @var{args_so_far} points to the @code{CUMULATIVE_ARGS} data\n\
 structure, containing the values that are obtained after processing the\n\
-named arguments.  The arguments @var{mode} and @var{type} describe the\n\
-last named argument---its machine mode and its data type as a tree node.\n\
+named arguments.  The argument @var{arg} describes the last of these named\n\
+arguments.\n\
 \n\
 The target hook should do two things: first, push onto the stack all the\n\
 argument registers @emph{not} used for the named arguments, and second,\n\
@@ -4416,7 +4597,7 @@ arguments of the function are being analyzed for the second time.  This\n\
 happens for an inline function, which is not actually compiled until the\n\
 end of the source file.  The hook @code{TARGET_SETUP_INCOMING_VARARGS} should\n\
 not generate any instructions in this case.",
- void, (cumulative_args_t args_so_far, machine_mode mode, tree type,
+ void, (cumulative_args_t args_so_far, const function_arg_info &arg,
 	int *pretend_args_size, int second_time),
  default_setup_incoming_varargs)
 
@@ -4458,15 +4639,6 @@ DEFHOOK
 returned by function call into @var{slot}.",
  void, (rtx slot, rtx bounds),
  default_store_returned_bounds)
-
-DEFHOOK
-(setup_incoming_vararg_bounds,
- "Use it to store bounds for anonymous register arguments stored\n\
-into the stack.  Arguments meaning is similar to\n\
-@code{TARGET_SETUP_INCOMING_VARARGS}.",
- void, (cumulative_args_t args_so_far, machine_mode mode, tree type,
-	int *pretend_args_size, int second_time),
- default_setup_incoming_vararg_bounds)
 
 DEFHOOK
 (call_args,
@@ -4548,11 +4720,11 @@ false.",
    Need audit to verify that this is the case.  */
 DEFHOOK
 (must_pass_in_stack,
- "This target hook should return @code{true} if we should not pass @var{type}\n\
+ "This target hook should return @code{true} if we should not pass @var{arg}\n\
 solely in registers.  The file @file{expr.h} defines a\n\
 definition that is usually appropriate, refer to @file{expr.h} for additional\n\
 documentation.",
- bool, (machine_mode mode, const_tree type),
+ bool, (const function_arg_info &arg),
  must_pass_in_stack_var_size_or_pad)
 
 /* Return true if type TYPE, mode MODE, which is passed by reference,
@@ -4571,8 +4743,8 @@ not be generated.\n\
 \n\
 The default version of this hook always returns false.",
  bool,
- (cumulative_args_t cum, machine_mode mode, const_tree type, bool named),
- hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false)
+ (cumulative_args_t cum, const function_arg_info &arg),
+ hook_bool_CUMULATIVE_ARGS_arg_info_false)
 
 /* Return zero for arguments passed entirely on the stack or entirely
    in registers.  If passed in both, return the number of bytes passed
@@ -4595,8 +4767,8 @@ compiler when this occurs, and how many bytes should go in registers.\n\
 @code{TARGET_FUNCTION_ARG} for these arguments should return the first\n\
 register to be used by the caller for this argument; likewise\n\
 @code{TARGET_FUNCTION_INCOMING_ARG}, for the called function.",
- int, (cumulative_args_t cum, machine_mode mode, tree type, bool named),
- hook_int_CUMULATIVE_ARGS_mode_tree_bool_0)
+ int, (cumulative_args_t cum, const function_arg_info &arg),
+ hook_int_CUMULATIVE_ARGS_arg_info_0)
 
 /* Update the state in CA to advance past an argument in the
    argument list.  The values MODE, TYPE, and NAMED describe that
@@ -4604,8 +4776,7 @@ register to be used by the caller for this argument; likewise\n\
 DEFHOOK
 (function_arg_advance,
  "This hook updates the summarizer variable pointed to by @var{ca} to\n\
-advance past an argument in the argument list.  The values @var{mode},\n\
-@var{type} and @var{named} describe that argument.  Once this is done,\n\
+advance past argument @var{arg} in the argument list.  Once this is done,\n\
 the variable @var{cum} is suitable for analyzing the @emph{following}\n\
 argument with @code{TARGET_FUNCTION_ARG}, etc.\n\
 \n\
@@ -4613,7 +4784,7 @@ This hook need not do anything if the argument in question was passed\n\
 on the stack.  The compiler knows how to track the amount of stack space\n\
 used for arguments without any special help.",
  void,
- (cumulative_args_t ca, machine_mode mode, const_tree type, bool named),
+ (cumulative_args_t ca, const function_arg_info &arg),
  default_function_arg_advance)
 
 DEFHOOK
@@ -4650,17 +4821,9 @@ constant size shorter than an @code{int}, and upward otherwise.",
    argument.  */
 DEFHOOK
 (function_arg,
- "Return an RTX indicating whether a function argument is passed in a\n\
-register and if so, which register.\n\
-\n\
-The arguments are @var{ca}, which summarizes all the previous\n\
-arguments; @var{mode}, the machine mode of the argument; @var{type},\n\
-the data type of the argument as a tree node or 0 if that is not known\n\
-(which happens for C support library functions); and @var{named},\n\
-which is @code{true} for an ordinary argument and @code{false} for\n\
-nameless arguments that correspond to @samp{@dots{}} in the called\n\
-function's prototype.  @var{type} can be an incomplete type if a\n\
-syntax error has previously occurred.\n\
+ "Return an RTX indicating whether function argument @var{arg} is passed\n\
+in a register and if so, which register.  Argument @var{ca} summarizes all\n\
+the previous arguments.\n\
 \n\
 The return value is usually either a @code{reg} RTX for the hard\n\
 register in which to pass the argument, or zero to pass the argument\n\
@@ -4706,8 +4869,7 @@ is not defined and @code{TARGET_FUNCTION_ARG} returns nonzero for such an\n\
 argument, the compiler will abort.  If @code{REG_PARM_STACK_SPACE} is\n\
 defined, the argument will be computed in the stack and then loaded into\n\
 a register.",
- rtx, (cumulative_args_t ca, machine_mode mode, const_tree type,
-       bool named),
+ rtx, (cumulative_args_t ca, const function_arg_info &arg),
  default_function_arg)
 
 DEFHOOK
@@ -4729,8 +4891,7 @@ so that it can be used to pass special arguments.\n\
 \n\
 If @code{TARGET_FUNCTION_INCOMING_ARG} is not defined,\n\
 @code{TARGET_FUNCTION_ARG} serves both purposes.",
- rtx, (cumulative_args_t ca, machine_mode mode, const_tree type,
-       bool named),
+ rtx, (cumulative_args_t ca, const function_arg_info &arg),
  default_function_incoming_arg)
 
 DEFHOOK
@@ -4842,6 +5003,28 @@ If this hook is not defined, then FUNCTION_VALUE_REGNO_P will be used.",
  bool, (const unsigned int regno),
  default_function_value_regno_p)
 
+DEFHOOK
+(fntype_abi,
+ "Return the ABI used by a function with type @var{type}; see the\n\
+definition of @code{predefined_function_abi} for details of the ABI\n\
+descriptor.  Targets only need to define this hook if they support\n\
+interoperability between several ABIs in the same translation unit.",
+ const predefined_function_abi &, (const_tree type),
+ NULL)
+
+DEFHOOK
+(insn_callee_abi,
+ "This hook returns a description of the ABI used by the target of\n\
+call instruction @var{insn}; see the definition of\n\
+@code{predefined_function_abi} for details of the ABI descriptor.\n\
+Only the global function @code{insn_callee_abi} should call this hook\n\
+directly.\n\
+\n\
+Targets only need to define this hook if they support\n\
+interoperability between several ABIs in the same translation unit.",
+ const predefined_function_abi &, (const rtx_insn *insn),
+ NULL)
+
 /* ??? Documenting this hook requires a GFDL license grant.  */
 DEFHOOK_UNDOC
 (internal_arg_pointer,
@@ -4945,21 +5128,22 @@ If this hook is not defined, @var{addr} will be used for function calls.",
 
 DEFHOOKPOD
 (custom_function_descriptors,
- "This hook should be defined to a power of 2 if the target will benefit\n\
-from the use of custom descriptors for nested functions instead of the\n\
-standard trampolines.  Such descriptors are created at run time on the\n\
-stack and made up of data only, but they are non-standard so the generated\n\
-code must be prepared to deal with them.  This hook should be defined to 0\n\
-if the target uses function descriptors for its standard calling sequence,\n\
-like for example HP-PA or IA-64.  Using descriptors for nested functions\n\
-eliminates the need for trampolines that reside on the stack and require\n\
-it to be made executable.\n\
+ "If the target can use GCC's generic descriptor mechanism for nested\n\
+functions, define this hook to a power of 2 representing an unused bit\n\
+in function pointers which can be used to differentiate descriptors at\n\
+run time.  This value gives the number of bytes by which descriptor\n\
+pointers are misaligned compared to function pointers.  For example, on\n\
+targets that require functions to be aligned to a 4-byte boundary, a\n\
+value of either 1 or 2 is appropriate unless the architecture already\n\
+reserves the bit for another purpose, such as on ARM.\n\
 \n\
-The value of the macro is used to parameterize the run-time identification\n\
-scheme implemented to distinguish descriptors from function addresses: it\n\
-gives the number of bytes by which their address is misaligned compared\n\
-with function addresses.  The value of 1 will generally work, unless it is\n\
-already reserved by the target for another purpose, like for example on ARM.",\
+Define this hook to 0 if the target implements ABI support for\n\
+function descriptors in its standard calling sequence, like for example\n\
+HPPA or IA-64.\n\
+\n\
+Using descriptors for nested functions\n\
+eliminates the need for trampolines that reside on the stack and require\n\
+it to be made executable.",\
  int, -1)
 
 /* Return the number of bytes of its own arguments that a function
@@ -5690,16 +5874,33 @@ The default version of this hook always returns @code{true}.",
 
 DEFHOOK
 (hard_regno_call_part_clobbered,
- "This hook should return true if @var{regno} is partly call-saved and\n\
-partly call-clobbered, and if a value of mode @var{mode} would be partly\n\
-clobbered by a call.  For example, if the low 32 bits of @var{regno} are\n\
-preserved across a call but higher bits are clobbered, this hook should\n\
-return true for a 64-bit mode but false for a 32-bit mode.\n\
+ "ABIs usually specify that calls must preserve the full contents\n\
+of a particular register, or that calls can alter any part of a\n\
+particular register.  This information is captured by the target macro\n\
+@code{CALL_REALLY_USED_REGISTERS}.  However, some ABIs specify that calls\n\
+must preserve certain bits of a particular register but can alter others.\n\
+This hook should return true if this applies to at least one of the\n\
+registers in @samp{(reg:@var{mode} @var{regno})}, and if as a result the\n\
+call would alter part of the @var{mode} value.  For example, if a call\n\
+preserves the low 32 bits of a 64-bit hard register @var{regno} but can\n\
+clobber the upper 32 bits, this hook should return true for a 64-bit mode\n\
+but false for a 32-bit mode.\n\
+\n\
+The value of @var{abi_id} comes from the @code{predefined_function_abi}\n\
+structure that describes the ABI of the call; see the definition of the\n\
+structure for more details.  If (as is usual) the target uses the same ABI\n\
+for all functions in a translation unit, @var{abi_id} is always 0.\n\
 \n\
 The default implementation returns false, which is correct\n\
 for targets that don't have partly call-clobbered registers.",
- bool, (unsigned int regno, machine_mode mode),
- hook_bool_uint_mode_false)
+ bool, (unsigned int abi_id, unsigned int regno, machine_mode mode),
+ hook_bool_uint_uint_mode_false)
+
+DEFHOOK
+(get_multilib_abi_name,
+ "This hook returns name of multilib ABI name.",
+ const char *, (void),
+ hook_constcharptr_void_null)
 
 /* Return the smallest number of different values for which it is best to
    use a jump-table instead of a tree of conditional branches.  */
@@ -5813,10 +6014,17 @@ these registers when the target switches are opposed to them.)",
  hook_void_void)
 
 DEFHOOK
-(stack_clash_protection_final_dynamic_probe,
- "Some targets make optimistic assumptions about the state of stack probing when they emit their prologues.  On such targets a probe into the end of any dynamically allocated space is likely required for safety against stack clash style attacks.  Define this variable to return nonzero if such a probe is required or zero otherwise.  You need not define this macro if it would always have the value zero.",
- bool, (rtx residual),
- default_stack_clash_protection_final_dynamic_probe)
+(stack_clash_protection_alloca_probe_range,
+ "Some targets have an ABI defined interval for which no probing needs to be done.\n\
+When a probe does need to be done this same interval is used as the probe distance \
+up when doing stack clash protection for alloca.\n\
+On such targets this value can be set to override the default probing up interval.\n\
+Define this variable to return nonzero if such a probe range is required or zero otherwise.  \
+Defining this hook also requires your functions which make use of alloca to have at least 8 byes\
+of outgoing arguments.  If this is not the case the stack will be corrupted.\n\
+You need not define this macro if it would always have the value zero.",
+ HOST_WIDE_INT, (void),
+ default_stack_clash_protection_alloca_probe_range)
 
 
 /* Functions specific to the C family of frontends.  */
@@ -6240,7 +6448,7 @@ DEFHOOKPOD
  "Set to true if each call that binds to a local definition explicitly\n\
 clobbers or sets all non-fixed registers modified by performing the call.\n\
 That is, by the call pattern itself, or by code that might be inserted by the\n\
-linker (e.g. stubs, veneers, branch islands), but not including those\n\
+linker (e.g.@: stubs, veneers, branch islands), but not including those\n\
 modifiable by the callee.  The affected registers may be mentioned explicitly\n\
 in the call pattern, or included as clobbers in CALL_INSN_FUNCTION_USAGE.\n\
 The default version of this hook is set to false.  The purpose of this hook\n\
@@ -6402,7 +6610,7 @@ defined to 1.",
 DEFHOOKPOD
 (atomic_test_and_set_trueval,
  "This value should be set if the result written by\
- @code{atomic_test_and_set} is not exactly 1, i.e. the\
+ @code{atomic_test_and_set} is not exactly 1, i.e.@: the\
  @code{bool} @code{true}.",
  unsigned char, 1)
 

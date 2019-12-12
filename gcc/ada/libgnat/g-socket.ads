@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2018, AdaCore                     --
+--                     Copyright (C) 2001-2019, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,6 +45,7 @@
 
 with Ada.Exceptions;
 with Ada.Streams;
+with Ada.Strings.Unbounded;
 with Ada.Unchecked_Deallocation;
 
 with Interfaces.C;
@@ -433,8 +434,13 @@ package GNAT.Sockets is
    Immediate : constant Duration := 0.0;
 
    Forever : constant Duration :=
-               Duration'Min (Duration'Last, 1.0 * SOSC.MAX_tv_sec);
-   --  Largest possible Duration that is also a valid value for struct timeval
+               Duration'Min
+                 (Duration'Last,
+                  (if SOSC."=" (SOSC.Target_OS, SOSC.Windows)
+                   then Duration (2 ** 32 / 1000)
+                   else 1.0 * SOSC.MAX_tv_sec));
+   --  Largest possible Duration that is also a valid value for the OS type
+   --  used for socket timeout.
 
    subtype Timeval_Duration is Duration range Immediate .. Forever;
 
@@ -464,18 +470,25 @@ package GNAT.Sockets is
    --  Return a file descriptor to be used by external subprograms. This is
    --  useful for C functions that are not yet interfaced in this package.
 
-   type Family_Type is (Family_Inet, Family_Inet6);
+   type Family_Type is (Family_Inet, Family_Inet6, Family_Unix, Family_Unspec);
    --  Address family (or protocol family) identifies the communication domain
    --  and groups protocols with similar address formats.
+   --  The order of the enumeration elements should not be changed unilaterally
+   --  because the IPv6_TCP_Preferred routine rely on it.
 
-   type Mode_Type is (Socket_Stream, Socket_Datagram);
+   subtype Family_Inet_4_6 is Family_Type range Family_Inet .. Family_Inet6;
+
+   type Mode_Type is (Socket_Stream, Socket_Datagram, Socket_Raw);
    --  Stream sockets provide connection-oriented byte streams. Datagram
-   --  sockets support unreliable connectionless message based communication.
+   --  sockets support unreliable connectionless message-based communication.
+   --  Raw sockets provide raw network-protocol access.
+   --  The order of the enumeration elements should not be changed unilaterally
+   --  because the IPv6_TCP_Preferred routine relies on it.
 
    type Shutmode_Type is (Shut_Read, Shut_Write, Shut_Read_Write);
    --  When a process closes a socket, the policy is to retain any data queued
    --  until either a delivery or a timeout expiration (in this case, the data
-   --  are discarded). A finer control is available through shutdown. With
+   --  are discarded). Finer control is available through shutdown. With
    --  Shut_Read, no more data can be received from the socket. With_Write, no
    --  more data can be transmitted. Neither transmission nor reception can be
    --  performed with Shut_Read_Write.
@@ -492,7 +505,7 @@ package GNAT.Sockets is
    type Inet_Addr_Comp_Type is mod 2 ** 8;
    --  Octet for Internet address
 
-   Inet_Addr_Bytes_Length : constant array (Family_Type) of Positive :=
+   Inet_Addr_Bytes_Length : constant array (Family_Inet_4_6) of Natural :=
      (Family_Inet => 4, Family_Inet6 => 16);
 
    type Inet_Addr_Bytes is array (Natural range <>) of Inet_Addr_Comp_Type;
@@ -505,36 +518,66 @@ package GNAT.Sockets is
    subtype Inet_Addr_VN_Type is Inet_Addr_Bytes;
    --  For backwards compatibility
 
-   type Inet_Addr_Type (Family : Family_Type := Family_Inet) is record
+   type Inet_Addr_Type (Family : Family_Inet_4_6 := Family_Inet) is record
       case Family is
          when Family_Inet =>
             Sin_V4 : Inet_Addr_V4_Type := (others => 0);
 
          when Family_Inet6 =>
             Sin_V6 : Inet_Addr_V6_Type := (others => 0);
+
       end case;
    end record;
 
    --  An Internet address depends on an address family (IPv4 contains 4 octets
-   --  and IPv6 contains 16 octets). Any_Inet_Addr is a special value treated
-   --  like a wildcard enabling all addresses. No_Inet_Addr provides a special
-   --  value to denote uninitialized inet addresses.
+   --  and IPv6 contains 16 octets).
 
    Any_Inet_Addr       : constant Inet_Addr_Type;
+   --  Wildcard enabling all addresses to use with bind
+
+   Any_Inet6_Addr      : constant Inet_Addr_Type;
+   --  Idem for IPV6 socket
+
    No_Inet_Addr        : constant Inet_Addr_Type;
+   --  Uninitialized inet address
+
    Broadcast_Inet_Addr : constant Inet_Addr_Type;
+   --  Broadcast destination address in the current network
+
    Loopback_Inet_Addr  : constant Inet_Addr_Type;
+   --  Loopback address to the local host
 
-   --  Useful constants for IPv4 multicast addresses
+   Loopback_Inet6_Addr : constant Inet_Addr_Type;
+   --  IPv6 Loopback address to the local host
 
-   Unspecified_Group_Inet_Addr : constant Inet_Addr_Type;
-   All_Hosts_Group_Inet_Addr   : constant Inet_Addr_Type;
-   All_Routers_Group_Inet_Addr : constant Inet_Addr_Type;
+   --  Useful constants for multicast addresses
+
+   Unspecified_Group_Inet_Addr  : constant Inet_Addr_Type;
+   --  IPv4 multicast mask with prefix length 4
+
+   Unspecified_Group_Inet6_Addr : constant Inet_Addr_Type;
+   --  IPv6 multicast mask with prefix length 16
+
+   All_Hosts_Group_Inet_Addr    : constant Inet_Addr_Type;
+   --  Multicast group addresses all hosts on the same network segment
+
+   All_Hosts_Group_Inet6_Addr   : constant Inet_Addr_Type;
+   --  Idem for IPv6 protocol
+
+   All_Routers_Group_Inet_Addr  : constant Inet_Addr_Type;
+   --  Multicast group addresses all routers on the same network segment
+
+   All_Routers_Group_Inet6_Addr : constant Inet_Addr_Type;
+   --  Idem for IPv6 protocol
+
+   IPv4_To_IPv6_Prefix : constant Inet_Addr_Bytes :=
+     (1 .. 10 => 0, 11 .. 12 => 255);
+   --  Prefix for IPv4 mapped to IPv6 addresses
 
    --  Functions to handle masks and prefixes
 
    function Mask
-     (Family : Family_Type;
+     (Family : Family_Inet_4_6;
       Length : Natural;
       Host   : Boolean := False) return Inet_Addr_Type;
    --  Return an address mask of the given family with the given prefix length.
@@ -549,8 +592,15 @@ package GNAT.Sockets is
    --  same address family).
 
    type Sock_Addr_Type (Family : Family_Type := Family_Inet) is record
-      Addr : Inet_Addr_Type (Family);
-      Port : Port_Type;
+      case Family is
+         when Family_Unix =>
+            Name : Ada.Strings.Unbounded.Unbounded_String;
+         when Family_Inet_4_6 =>
+            Addr : Inet_Addr_Type (Family);
+            Port : Port_Type;
+         when Family_Unspec =>
+            null;
+      end case;
    end record;
    pragma No_Component_Reordering (Sock_Addr_Type);
    --  Socket addresses fully define a socket connection with protocol family,
@@ -558,19 +608,33 @@ package GNAT.Sockets is
    --  for uninitialized socket addresses.
 
    No_Sock_Addr : constant Sock_Addr_Type;
+   --  Uninitialized socket address
+
+   function Is_IPv4_Address (Name : String) return Boolean;
+   --  Return true when Name is an IPv4 address in dotted quad notation
+
+   function Is_IPv6_Address (Name : String) return Boolean;
+   --  Return true when Name is an IPv6 address in numeric format
 
    function Image (Value : Inet_Addr_Type) return String;
    --  Return an image of an Internet address. IPv4 notation consists in 4
    --  octets in decimal format separated by dots. IPv6 notation consists in
-   --  16 octets in hexadecimal format separated by colons (and possibly
-   --  dots).
+   --  8 hextets in hexadecimal format separated by colons.
 
    function Image (Value : Sock_Addr_Type) return String;
-   --  Return inet address image and port image separated by a colon
+   --  Return socket address image. Network socket address image will be with
+   --  a port image separated by a colon.
 
    function Inet_Addr (Image : String) return Inet_Addr_Type;
-   --  Convert address image from numbers-and-dots notation into an
+   --  Convert address image from numbers-dots-and-colons notation into an
    --  inet address.
+
+   function Unix_Socket_Address (Addr : String) return Sock_Addr_Type;
+   --  Convert unix local socket name to Sock_Addr_Type
+
+   function Network_Socket_Address
+     (Addr : Inet_Addr_Type; Port : Port_Type) return Sock_Addr_Type;
+   --  Create network socket address
 
    --  Host entries provide complete information on a given host: the official
    --  name, an array of alternative names or aliases and array of network
@@ -718,34 +782,128 @@ package GNAT.Sockets is
    type Level_Type is
      (Socket_Level,
       IP_Protocol_For_IP_Level,
+      IP_Protocol_For_IPv6_Level,
       IP_Protocol_For_UDP_Level,
-      IP_Protocol_For_TCP_Level);
+      IP_Protocol_For_TCP_Level,
+      IP_Protocol_For_ICMP_Level,
+      IP_Protocol_For_IGMP_Level,
+      IP_Protocol_For_RAW_Level);
 
    --  There are several options available to manipulate sockets. Each option
-   --  has a name and several values available. Most of the time, the value is
-   --  a boolean to enable or disable this option.
+   --  has a name and several values available. Most of the time, the value
+   --  is a boolean to enable or disable this option. Each socket option is
+   --  provided with an appropriate C name taken from the sockets API comments.
+   --  The C name can be used to find a detailed description in the OS-specific
+   --  documentation. The options are grouped by main Level_Type value, which
+   --  can be used together with this option in calls to the Set_Socket_Option
+   --  and Get_Socket_Option routines. Note that some options can be used with
+   --  more than one level.
 
    type Option_Name is
      (Generic_Option,
-      Keep_Alive,          -- Enable sending of keep-alive messages
-      Reuse_Address,       -- Allow bind to reuse local address
-      Broadcast,           -- Enable datagram sockets to recv/send broadcasts
-      Send_Buffer,         -- Set/get the maximum socket send buffer in bytes
-      Receive_Buffer,      -- Set/get the maximum socket recv buffer in bytes
-      Linger,              -- Shutdown wait for msg to be sent or timeout occur
-      Error,               -- Get and clear the pending socket error
-      No_Delay,            -- Do not delay send to coalesce data (TCP_NODELAY)
-      Add_Membership,      -- Join a multicast group
-      Drop_Membership,     -- Leave a multicast group
-      Multicast_If,        -- Set default out interface for multicast packets
-      Multicast_TTL,       -- Set the time-to-live of sent multicast packets
-      Multicast_Loop,      -- Sent multicast packets are looped to local socket
-      Receive_Packet_Info, -- Receive low level packet info as ancillary data
-      Send_Timeout,        -- Set timeout value for output
-      Receive_Timeout,     -- Set timeout value for input
-      Busy_Polling);       -- Set busy polling mode
+      --  Can be used to set/get any socket option via an OS-specific option
+      --  code with an integer value.
+
+      ------------------
+      -- Socket_Level --
+      ------------------
+
+      Keep_Alive,      -- SO_KEEPALIVE
+      --  Enable sending of keep-alive messages on connection-oriented sockets
+
+      Reuse_Address,   -- SO_REUSEADDR
+      --  Enable binding to an address and port already in use
+
+      Broadcast,       -- SO_BROADCAST
+      --  Enable sending broadcast datagrams on the socket
+
+      Send_Buffer,     -- SO_SNDBUF
+      --  Set/get the maximum socket send buffer in bytes
+
+      Receive_Buffer,  -- SO_RCVBUF
+      --  Set/get the maximum socket receive buffer in bytes
+
+      Linger,          -- SO_LINGER
+      --  When enabled, a Close_Socket or Shutdown_Socket will wait until all
+      --  queued messages for the socket have been successfully sent or the
+      --  linger timeout has been reached.
+
+      Error,           -- SO_ERROR
+      --  Get and clear the pending socket error integer code
+
+      Send_Timeout,    -- SO_SNDTIMEO
+      --  Specify sending timeout until reporting an error
+
+      Receive_Timeout, -- SO_RCVTIMEO
+      --  Specify receiving timeout until reporting an error
+
+      Busy_Polling,    -- SO_BUSY_POLL
+      --  Sets the approximate time in microseconds to busy poll on a blocking
+      --  receive when there is no data.
+
+      -------------------------------
+      -- IP_Protocol_For_TCP_Level --
+      -------------------------------
+
+      No_Delay, -- TCP_NODELAY
+      --  Disable the Nagle algorithm. This means that output buffer content
+      --  is always sent as soon as possible, even if there is only a small
+      --  amount of data.
+
+      ------------------------------
+      -- IP_Protocol_For_IP_Level --
+      ------------------------------
+
+      Add_Membership_V4,   -- IP_ADD_MEMBERSHIP
+      --  Join a multicast group
+
+      Drop_Membership_V4,  -- IP_DROP_MEMBERSHIP
+      --  Leave a multicast group
+
+      Multicast_If_V4,     -- IP_MULTICAST_IF
+      --  Set/Get outgoing interface for sending multicast packets
+
+      Multicast_Loop_V4,   -- IP_MULTICAST_LOOP
+      --  This boolean option determines whether sent multicast packets should
+      --  be looped back to the local sockets.
+
+      Multicast_TTL,       -- IP_MULTICAST_TTL
+      --  Set/Get the time-to-live of sent multicast packets
+
+      Receive_Packet_Info, -- IP_PKTINFO
+      --  Receive low-level packet info as ancillary data
+
+      --------------------------------
+      -- IP_Protocol_For_IPv6_Level --
+      --------------------------------
+
+      Add_Membership_V6,   -- IPV6_ADD_MEMBERSHIP
+      --  Join IPv6 multicast group
+
+      Drop_Membership_V6,  -- IPV6_DROP_MEMBERSHIP
+      --  Leave IPv6 multicast group
+
+      Multicast_If_V6,     -- IPV6_MULTICAST_IF
+      --  Set/Get outgoing interface index for sending multicast packets
+
+      Multicast_Loop_V6,   -- IPV6_MULTICAST_LOOP
+      --  This boolean option determines whether sent multicast IPv6 packets
+      --  should be looped back to the local sockets.
+
+      IPv6_Only,           -- IPV6_V6ONLY
+      --  Restricted to IPv6 communications only
+
+      Multicast_Hops       -- IPV6_MULTICAST_HOPS
+      --  Set the multicast hop limit for the IPv6 socket
+     );
+
    subtype Specific_Option_Name is
      Option_Name range Keep_Alive .. Option_Name'Last;
+
+   Add_Membership  : Option_Name renames Add_Membership_V4;
+   Drop_Membership : Option_Name renames Drop_Membership_V4;
+   Multicast_If    : Option_Name renames Multicast_If_V4;
+   Multicast_Loop  : Option_Name renames Multicast_Loop_V4;
 
    type Option_Type (Name : Option_Name := Keep_Alive) is record
       case Name is
@@ -759,7 +917,9 @@ package GNAT.Sockets is
               Linger              |
               No_Delay            |
               Receive_Packet_Info |
-              Multicast_Loop      =>
+              IPv6_Only           |
+              Multicast_Loop_V4   |
+              Multicast_Loop_V6   =>
             Enabled : Boolean;
 
             case Name is
@@ -779,16 +939,30 @@ package GNAT.Sockets is
          when Error           =>
             Error : Error_Type;
 
-         when Add_Membership  |
-              Drop_Membership =>
+         when Add_Membership_V4  |
+              Add_Membership_V6  |
+              Drop_Membership_V4 |
+              Drop_Membership_V6 =>
             Multicast_Address : Inet_Addr_Type;
-            Local_Interface   : Inet_Addr_Type;
+            case Name is
+               when Add_Membership_V4  |
+                    Drop_Membership_V4 =>
+                  Local_Interface : Inet_Addr_Type;
+               when others =>
+                  Interface_Index : Natural;
+            end case;
 
-         when Multicast_If    =>
+         when Multicast_If_V4 =>
             Outgoing_If : Inet_Addr_Type;
 
-         when Multicast_TTL   =>
+         when Multicast_If_V6 =>
+            Outgoing_If_Index : Natural;
+
+         when Multicast_TTL  =>
             Time_To_Live : Natural;
+
+         when Multicast_Hops =>
+            Hop_Limit : Integer range -1 .. 255;
 
          when Send_Timeout |
               Receive_Timeout =>
@@ -860,11 +1034,87 @@ package GNAT.Sockets is
 
    type Vector_Type is array (Integer range <>) of Vector_Element;
 
+   type Address_Info is record
+      Addr  : Sock_Addr_Type;
+      Mode  : Mode_Type  := Socket_Stream;
+      Level : Level_Type := IP_Protocol_For_IP_Level;
+   end record;
+
+   type Address_Info_Array is array (Positive range <>) of Address_Info;
+
+   function Get_Address_Info
+     (Host         : String;
+      Service      : String;
+      Family       : Family_Type := Family_Unspec;
+      Mode         : Mode_Type   := Socket_Stream;
+      Level        : Level_Type  := IP_Protocol_For_IP_Level;
+      Numeric_Host : Boolean     := False;
+      Passive      : Boolean     := False;
+      Unknown      : access procedure
+        (Family, Mode, Level, Length : Integer) := null)
+      return Address_Info_Array;
+   --  Returns available addresses for the Host and Service names.
+   --  If Family is Family_Unspec, all available protocol families returned.
+   --  Service is the name of service as defined in /etc/services or port
+   --  number in string representation.
+   --  If Unknown procedure access specified it will be called in case of
+   --  unknown family found.
+   --  Numeric_Host flag suppresses any potentially lengthy network host
+   --  address lookups, and Host have to represent numerical network address in
+   --  this case.
+   --  If Passive is True and Host is empty then the returned socket addresses
+   --  will be suitable for binding a socket that will accept connections.
+   --  The returned socket address will contain  the  "wildcard  address".
+   --  The wildcard address is used by applications (typically servers) that
+   --  intend to accept connections on any of the hosts's network addresses.
+   --  If Host is not empty, then the Passive flag is ignored.
+   --  If Passive is False, then the returned socket addresses will be suitable
+   --  for use with connect, sendto, or sendmsg.  If Host is empty, then the
+   --  network address will be set  to  the  loopback  interface  address;
+   --  this is used by applications that intend to communicate with peers
+   --  running on the same host.
+
+   procedure Sort
+     (Addr_Info : in out Address_Info_Array;
+      Compare   : access function (Left, Right : Address_Info) return Boolean);
+   --  Sort address info array in order defined by compare function
+
+   function IPv6_TCP_Preferred (Left, Right : Address_Info) return Boolean;
+   --  To use with Sort to order where IPv6 and TCP addresses first
+
+   type Host_Service (Host_Length, Service_Length : Natural) is record
+      Host    : String (1 .. Host_Length);
+      Service : String (1 .. Service_Length);
+   end record;
+
+   function Get_Name_Info
+     (Addr         : Sock_Addr_Type;
+      Numeric_Host : Boolean := False;
+      Numeric_Serv : Boolean := False) return Host_Service;
+   --  Returns host and service names by the address and port.
+   --  If Numeric_Host is True, then the numeric form of the hostname is
+   --  returned. When Numeric_Host is False, this will still happen in case the
+   --  host name cannot be determined.
+   --  If Numenric_Serv is True, then the numeric form of the service address
+   --  (port number) is returned.  When Numenric_Serv is False, this will still
+   --  happen in case the service's name cannot be determined.
+
    procedure Create_Socket
      (Socket : out Socket_Type;
       Family : Family_Type := Family_Inet;
-      Mode   : Mode_Type   := Socket_Stream);
-   --  Create an endpoint for communication. Raises Socket_Error on error
+      Mode   : Mode_Type   := Socket_Stream;
+      Level  : Level_Type  := IP_Protocol_For_IP_Level);
+   --  Create an endpoint for communication. Raises Socket_Error on error.
+
+   procedure Create_Socket_Pair
+     (Left   : out Socket_Type;
+      Right  : out Socket_Type;
+      Family : Family_Type := Family_Unspec;
+      Mode   : Mode_Type   := Socket_Stream;
+      Level  : Level_Type  := IP_Protocol_For_IP_Level);
+   --  Create two connected sockets. Raises Socket_Error on error.
+   --  If Family is unspecified, it creates Family_Unix sockets on UNIX and
+   --  Family_Inet sockets on non UNIX platforms.
 
    procedure Accept_Socket
      (Server  : Socket_Type;
@@ -938,7 +1188,7 @@ package GNAT.Sockets is
 
    function Get_Socket_Option
      (Socket  : Socket_Type;
-      Level   : Level_Type := Socket_Level;
+      Level   : Level_Type;
       Name    : Option_Name;
       Optname : Interfaces.C.int := -1) return Option_Type;
    --  Get the options associated with a socket. Raises Socket_Error on error.
@@ -1053,7 +1303,7 @@ package GNAT.Sockets is
 
    procedure Set_Socket_Option
      (Socket : Socket_Type;
-      Level  : Level_Type := Socket_Level;
+      Level  : Level_Type;
       Option : Option_Type);
    --  Manipulate socket options. Raises Socket_Error on error
 
@@ -1210,6 +1460,8 @@ package GNAT.Sockets is
 
 private
 
+   package ASU renames Ada.Strings.Unbounded;
+
    type Socket_Type is new Integer;
    No_Socket : constant Socket_Type := -1;
 
@@ -1260,12 +1512,17 @@ private
 
    Any_Inet_Addr       : constant Inet_Addr_Type :=
                            (Family_Inet, (others => 0));
+   Any_Inet6_Addr      : constant Inet_Addr_Type :=
+                           (Family_Inet6, (others => 0));
    No_Inet_Addr        : constant Inet_Addr_Type :=
                            (Family_Inet, (others => 0));
    Broadcast_Inet_Addr : constant Inet_Addr_Type :=
                            (Family_Inet, (others => 255));
    Loopback_Inet_Addr  : constant Inet_Addr_Type :=
                            (Family_Inet, (127, 0, 0, 1));
+   Loopback_Inet6_Addr : constant Inet_Addr_Type :=
+                           (Family_Inet6,
+                            (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1));
 
    Unspecified_Group_Inet_Addr : constant Inet_Addr_Type :=
                                    (Family_Inet, (224, 0, 0, 0));
@@ -1273,6 +1530,13 @@ private
                                    (Family_Inet, (224, 0, 0, 1));
    All_Routers_Group_Inet_Addr : constant Inet_Addr_Type :=
                                    (Family_Inet, (224, 0, 0, 2));
+
+   Unspecified_Group_Inet6_Addr : constant Inet_Addr_Type :=
+     (Family_Inet6, (255, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+   All_Hosts_Group_Inet6_Addr   : constant Inet_Addr_Type :=
+     (Family_Inet6, (255, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1));
+   All_Routers_Group_Inet6_Addr : constant Inet_Addr_Type :=
+     (Family_Inet6, (255, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2));
 
    No_Sock_Addr : constant Sock_Addr_Type := (Family_Inet, No_Inet_Addr, 0);
 
@@ -1286,8 +1550,8 @@ private
    end record;
    --  We need fixed strings to avoid access types in host entry type
 
-   type Name_Array is array (Natural range <>) of Name_Type;
-   type Inet_Addr_Array is array (Natural range <>) of Inet_Addr_Type;
+   type Name_Array is array (Positive range <>) of Name_Type;
+   type Inet_Addr_Array is array (Positive range <>) of Inet_Addr_Type;
 
    type Host_Entry_Type (Aliases_Length, Addresses_Length : Natural) is record
       Official  : Name_Type;

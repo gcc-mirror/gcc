@@ -11,5 +11,5 @@ A& bar();
 
 void baz()
 {
-  dynamic_cast<A&>( bar().foo );  // { dg-error "cannot dynamic_cast" }
+  dynamic_cast<A&>( bar().foo );  // { dg-error "cannot 'dynamic_cast'" }
 }

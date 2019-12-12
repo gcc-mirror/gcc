@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-march=*" } { "-march=armv4" } } */
 /* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-mthumb" } { "" } } */
+/* { dg-require-effective-target arm_arch_v4_ok } */
 /* { dg-options "-marm" } */
 /* { dg-add-options arm_arch_v4 } */
 

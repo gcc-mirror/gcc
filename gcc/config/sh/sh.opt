@@ -1,6 +1,6 @@
 ; Options for the SH port of the compiler.
 
-; Copyright (C) 2005-2018 Free Software Foundation, Inc.
+; Copyright (C) 2005-2019 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -236,7 +236,7 @@ Increase the IEEE compliance for floating-point comparisons.
 
 minline-ic_invalidate
 Target Report Var(TARGET_INLINE_IC_INVALIDATE)
-inline code to invalidate instruction cache entries after setting up nested function trampolines.
+Inline code to invalidate instruction cache entries after setting up nested function trampolines.
 
 misize
 Target Report RejectNegative Mask(DUMPISIZE)

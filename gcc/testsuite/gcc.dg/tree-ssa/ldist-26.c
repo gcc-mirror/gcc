@@ -31,6 +31,8 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "distributed: split to 2 loops and 0 library calls" "ldist" } } */
-/* { dg-final { scan-tree-dump "distributed: split to 1 loops and 1 library calls" "ldist" } } */
-/* { dg-final { scan-tree-dump "generated memset zero" "ldist" } } */
+/* Loop splitting splits the iteration space so we end up with two
+   loops entering loop distribution.  Both should have the b[i] = 0
+   part split out as memset.  */
+/* { dg-final { scan-tree-dump-times "distributed: split to 1 loops and 1 library calls" 2 "ldist" } } */
+/* { dg-final { scan-tree-dump-times "generated memset zero" 2 "ldist" } } */

@@ -3,7 +3,7 @@
 
 extern int a;
 #pragma omp declare target
-#pragma omp declare target to (a)		/* { dg-error "with clauses in between" } */
+#pragma omp declare target to (a)
 #pragma omp end declare target
 int b;
 #pragma omp declare target to (b) link (b)	/* { dg-error "appears more than once on the same .declare target. directive" } */

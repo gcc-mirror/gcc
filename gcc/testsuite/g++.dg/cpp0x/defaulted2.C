@@ -21,7 +21,7 @@ struct B // { dg-message "user-provided default constructor" }
   B() = default;		// { dg-message "not user-provided" }
 };
 
-const B b;			// { dg-error "uninitialized const" }
+const B b;			// { dg-error "uninitialized 'const" }
 
 struct C
 {

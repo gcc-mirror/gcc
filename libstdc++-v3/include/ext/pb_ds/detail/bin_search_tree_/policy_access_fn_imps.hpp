@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -38,6 +38,8 @@
  * Contains an implementation class for bin_search_tree_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 Cmp_Fn& 
 PB_DS_CLASS_C_DEC::
@@ -50,3 +52,4 @@ PB_DS_CLASS_C_DEC::
 get_cmp_fn() const
 { return (*this); }
 
+#endif

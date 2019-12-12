@@ -1,0 +1,737 @@
+\input texinfo @c -*-texinfo-*-
+@setfilename gdc.info
+@settitle The GNU D Compiler
+
+@c Merge the standard indexes into a single one.
+@syncodeindex fn cp
+@syncodeindex vr cp
+@syncodeindex ky cp
+@syncodeindex pg cp
+@syncodeindex tp cp
+
+@include gcc-common.texi
+
+@c Copyright years for this manual.
+@set copyrights-d 2006-2019
+
+@copying
+@c man begin COPYRIGHT
+Copyright @copyright{} @value{copyrights-d} Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+A copy of the license is included in the
+@c man end
+section entitled ``GNU Free Documentation License''.
+@ignore
+@c man begin COPYRIGHT
+man page gfdl(7).
+@c man end
+@end ignore
+@end copying
+
+@ifinfo
+@format
+@dircategory Software development
+@direntry
+* gdc: (gdc).               A GCC-based compiler for the D language
+@end direntry
+@end format
+
+@insertcopying
+@end ifinfo
+
+@titlepage
+@title The GNU D Compiler
+@versionsubtitle
+@author David Friedman, Iain Buclaw
+
+@page
+@vskip 0pt plus 1filll
+Published by the Free Software Foundation @*
+51 Franklin Street, Fifth Floor@*
+Boston, MA 02110-1301, USA@*
+@sp 1
+@insertcopying
+@end titlepage
+@contents
+@page
+
+@node Top
+@top Introduction
+
+This manual describes how to use @command{gdc}, the GNU compiler for
+the D programming language.  This manual is specifically about
+@command{gdc}.  For more information about the D programming
+language in general, including language specifications and standard
+package documentation, see @uref{http://dlang.org/}.
+
+@menu
+* Copying::                     The GNU General Public License.
+* GNU Free Documentation License::
+                                How you can share and copy this manual.
+* Invoking gdc::                How to run gdc.
+* Index::                       Index.
+@end menu
+
+
+@include gpl_v3.texi
+
+@include fdl.texi
+
+
+@node Invoking gdc
+@chapter Invoking gdc
+
+@c man title gdc A GCC-based compiler for the D language
+
+@ignore
+@c man begin SYNOPSIS gdc
+gdc [@option{-c}|@option{-S}] [@option{-g}] [@option{-pg}]
+    [@option{-O}@var{level}] [@option{-W}@var{warn}@dots{}]
+    [@option{-I}@var{dir}@dots{}] [@option{-L}@var{dir}@dots{}]
+    [@option{-f}@var{option}@dots{}] [@option{-m}@var{machine-option}@dots{}]
+    [@option{-o} @var{outfile}] [@@@var{file}] @var{infile}@dots{}
+
+Only the most useful options are listed here; see below for the
+remainder.
+@c man end
+@c man begin SEEALSO
+gpl(7), gfdl(7), fsf-funding(7), gcc(1)
+and the Info entries for @file{gdc} and @file{gcc}.
+@c man end
+@end ignore
+
+@c man begin DESCRIPTION gdc
+
+The @command{gdc} command is the GNU compiler for the D language and
+supports many of the same options as @command{gcc}.  @xref{Option Summary, ,
+Option Summary, gcc, Using the GNU Compiler Collection (GCC)}.
+This manual only documents the options specific to @command{gdc}.
+
+@c man end
+
+@menu
+* Input and Output files::  Controlling the kind of output:
+                            an executable, object files, assembler files,
+* Runtime Options::         Options controlling runtime behavior
+* Directory Options::       Where to find module files
+* Code Generation::         Options controlling the output of gdc
+* Warnings::                Options controlling warnings specific to gdc
+* Linking::                 Options influencing the linking step
+* Developer Options::       Options useful for developers of gdc
+@end menu
+
+@c man begin OPTIONS
+
+@node Input and Output files
+@section Input and Output files
+@cindex suffixes for D source
+@cindex D source file suffixes
+
+For any given input file, the file name suffix determines what kind of
+compilation is done.  The following kinds of input file names are supported:
+
+@table @gcctabopt
+@item @var{file}.d
+D source files.
+@item @var{file}.dd
+Ddoc source files.
+@item @var{file}.di
+D interface files.
+@end table
+
+You can specify more than one input file on the @command{gdc} command line,
+each being compiled separately in the compilation process.  If you specify a
+@code{-o @var{file}} option, all the input files are compiled together,
+producing a single output file, named @var{file}.  This is allowed even
+when using @code{-S} or @code{-c}.
+
+@cindex D interface files.
+A D interface file contains only what an import of the module needs,
+rather than the whole implementation of that module.  They can be created
+by @command{gdc} from a D source file by using the @code{-H} option.
+When the compiler resolves an import declaration, it searches for matching
+@file{.di} files first, then for @file{.d}.
+
+@cindex Ddoc source files.
+A Ddoc source file contains code in the D macro processor language.  It is
+primarily designed for use in producing user documentation from embedded
+comments, with a slight affinity towards HTML generation.  If a @file{.d}
+source file starts with the string @code{Ddoc} then it is treated as general
+purpose documentation, not as a D source file.
+
+@node Runtime Options
+@section Runtime Options
+@cindex options, runtime
+
+These options affect the runtime behavior of programs compiled with
+@command{gdc}.
+
+@table @gcctabopt
+
+@item -fall-instantiations
+@cindex @option{-fall-instantiations}
+@cindex @option{-fno-all-instantiations}
+Generate code for all template instantiations.  The default template emission
+strategy is to not generate code for declarations that were either
+instantiated speculatively, such as from @code{__traits(compiles, ...)}, or
+that come from an imported module not being compiled.
+
+@item -fno-assert
+@cindex @option{-fassert}
+@cindex @option{-fno-assert}
+Turn off code generation for @code{assert} contracts.
+
+@item -fno-bounds-check
+@cindex @option{-fbounds-check}
+@cindex @option{-fno-bounds-check}
+Turns off array bounds checking for all functions, which can improve
+performance for code that uses arrays extensively.  Note that this
+can result in unpredictable behavior if the code in question actually
+does violate array bounds constraints.  It is safe to use this option
+if you are sure that your code never throws a @code{RangeError}.
+
+@item -fbounds-check=@var{value}
+@cindex @option{-fbounds-check=}
+An alternative to @option{-fbounds-check} that allows more control
+as to where bounds checking is turned on or off.  The following values
+are supported:
+
+@table @samp
+@item on
+Turns on array bounds checking for all functions.
+@item safeonly
+Turns on array bounds checking only for @code{@@safe} functions.
+@item off
+Turns off array bounds checking completely.
+@end table
+
+@item -fno-builtin
+@cindex @option{-fbuiltin}
+@cindex @option{-fno-builtin}
+Don't recognize built-in functions unless they begin with the prefix
+@samp{__builtin_}.  By default, the compiler will recognize when a
+function in the @code{core.stdc} package is a built-in function.
+
+@item -fdebug
+@item -fdebug=@var{value}
+@cindex @option{-fdebug}
+@cindex @option{-fno-debug}
+Turn on compilation of conditional @code{debug} code into the program.
+The @option{-fdebug} option itself sets the debug level to @code{1},
+while @option{-fdebug=} enables @code{debug} code that are identified
+by any of the following values:
+
+@table @samp
+@item level
+Sets the debug level to @var{level}, any @code{debug} code <= @var{level}
+is compiled into the program.
+@item ident
+Turns on compilation of any @code{debug} code identified by @var{ident}.
+@end table
+
+@item -fno-druntime
+@cindex @option{-fdruntime}
+@cindex @option{-fno-druntime}
+Implements @uref{https://dlang.org/spec/betterc.html}.  Assumes that
+compilation targets an environment without a D runtime library.
+
+This is equivalent to compiling with the following options:
+
+@example
+gdc -nophoboslib -fno-exceptions -fno-moduleinfo -fno-rtti
+@end example
+
+@item -fno-invariants
+@cindex @option{-finvariants}
+@cindex @option{-fno-invariants}
+Turns off code generation for class @code{invariant} contracts.
+
+@item -fno-moduleinfo
+@cindex @option{-fmoduleinfo}
+@cindex @option{-fno-moduleinfo}
+Turns off generation of the @code{ModuleInfo} and related functions
+that would become unreferenced without it, which may allow linking
+to programs not written in D.  Functions that are not be generated
+include module constructors and destructors (@code{static this} and
+@code{static ~this}), @code{unittest} code, and @code{DSO} registry
+functions for dynamically linked code.
+
+@item -fonly=@var{filename}
+@cindex @option{-fonly}
+Tells the compiler to parse and run semantic analysis on all modules
+on the command line, but only generate code for the module specified
+by @var{filename}.
+
+@item -fno-postconditions
+@cindex @option{-fpostconditions}
+@cindex @option{-fno-postconditions}
+Turns off code generation for postcondition @code{out} contracts.
+
+@item -fno-preconditions
+@cindex @option{-fpreconditions}
+@cindex @option{-fno-preconditions}
+Turns off code generation for precondition @code{in} contracts.
+
+@item -frelease
+@cindex @option{-frelease}
+@cindex @option{-fno-release}
+Turns on compiling in release mode, which means not emitting runtime
+checks for contracts and asserts.  Array bounds checking is not done
+for @code{@@system} and @code{@@trusted} functions, and assertion
+failures are undefined behavior.
+
+This is equivalent to compiling with the following options:
+
+@example
+gdc -fno-assert -fbounds-check=safe -fno-invariants \
+    -fno-postconditions -fno-preconditions -fno-switch-errors
+@end example
+
+@item -fno-rtti
+@cindex @option{-frtti}
+@cindex @option{-fno-rtti}
+Turns off generation of run-time type information for all user defined types.
+Any code that uses features of the language that require access to this
+information will result in an error.
+
+@item -fno-switch-errors
+@cindex @option{-fswitch-errors}
+@cindex @option{-fno-switch-errors}
+This option controls what code is generated when no case is matched
+in a @code{final switch} statement.  The default run time behavior
+is to throw a @code{SwitchError}.  Turning off @option{-fswitch-errors}
+means that instead the execution of the program is immediately halted.
+
+@item -funittest
+@cindex @option{-funittest}
+@cindex @option{-fno-unittest}
+Turns on compilation of @code{unittest} code, and turns on the
+@code{version(unittest)} identifier.  This implies @option{-fassert}.
+
+@item -fversion=@var{value}
+@cindex @option{-fversion}
+Turns on compilation of conditional @code{version} code into the program
+identified by any of the following values:
+
+@table @samp
+@item level
+Sets the version level to @var{level}, any @code{version} code >= @var{level}
+is compiled into the program.
+@item ident
+Turns on compilation of @code{version} code identified by @var{ident}.
+@end table
+
+@item -fno-weak
+@cindex @option{-fweak}
+@cindex @option{-fno-weak}
+Turns off emission of instantiated declarations that can be defined in multiple
+objects as weak or one-only symbols.  The default is to emit all public symbols
+as weak, unless the target lacks support for weak symbols.  Disabling this
+option means that common symbols are instead put in COMDAT or become private.
+
+@end table
+
+@node Directory Options
+@section Options for Directory Search
+@cindex directory options
+@cindex options, directory search
+@cindex search path
+
+These options specify directories to search for files, libraries, and
+other parts of the compiler:
+
+@table @gcctabopt
+
+@item -I@var{dir}
+@cindex @option{-I}
+Specify a directory to use when searching for imported modules at
+compile time.  Multiple @option{-I} options can be used, and the
+paths are searched in the same order.
+
+@item -J@var{dir}
+@cindex @option{-J}
+Specify a directory to use when searching for files in string imports
+at compile time.  This switch is required in order to use
+@code{import(file)} expressions.  Multiple @option{-J} options can be
+used, and the paths are searched in the same order.
+
+@item -L@var{dir}
+@cindex @option{-L}
+When linking, specify a library search directory, as with @command{gcc}.
+
+@item -B@var{dir}
+@cindex @option{-B}
+This option specifies where to find the executables, libraries,
+source files, and data files of the compiler itself, as with @command{gcc}.
+
+@item -fmodule-file=@var{module}=@var{spec}
+@cindex @option{-fmodule-file}
+This option manipulates file paths of imported modules, such that if an
+imported module matches all or the leftmost part of @var{module}, the file
+path in @var{spec} is used as the location to search for D sources.
+This is used when the source file path and names are not the same as the
+package and module hierarchy.  Consider the following examples:
+
+@example
+gdc test.d -fmodule-file=A.B=foo.d -fmodule-file=C=bar
+@end example
+
+This will tell the compiler to search in all import paths for the source
+file @var{foo.d} when importing @var{A.B}, and the directory @var{bar/}
+when importing @var{C}, as annotated in the following D code:
+
+@example
+module test;
+import A.B;     // Matches A.B, searches for foo.d
+import C.D.E;   // Matches C, searches for bar/D/E.d
+import A.B.C;   // No match, searches for A/B/C.d
+@end example
+
+@item -imultilib @var{dir}
+@cindex @option{-imultilib}
+Use @var{dir} as a subdirectory of the gcc directory containing
+target-specific D sources and interfaces.
+
+@item -iprefix @var{prefix}
+@cindex @option{-iprefix}
+Specify @var{prefix} as the prefix for the gcc directory containing
+target-specific D sources and interfaces.  If the @var{prefix} represents
+a directory, you should include the final @code{'/'}.
+
+@item -nostdinc
+@cindex @option{-nostdinc}
+Do not search the standard system directories for D source and interface
+files.  Only the directories that have been specified with @option{-I} options
+(and the directory of the current file, if appropriate) are searched.
+
+@end table
+
+@node Code Generation
+@section Code Generation
+@cindex options, code generation
+
+In addition to the many @command{gcc} options controlling code generation,
+@command{gdc} has several options specific to itself.
+
+@table @gcctabopt
+
+@item -H
+@cindex @option{-H}
+Generates D interface files for all modules being compiled.  The compiler
+determines the output file based on the name of the input file, removes
+any directory components and suffix, and applies the @file{.di} suffix.
+
+@item -Hd @var{dir}
+@cindex @option{-Hd}
+Same as @option{-H}, but writes interface files to directory @var{dir}.
+This option can be used with @option{-Hf @var{file}} to independently set the
+output file and directory path.
+
+@item -Hf @var{file}
+@cindex @option{-Hf}
+Same as @option{-H} but writes interface files to @var{file}.  This option can
+be used with @option{-Hd @var{dir}} to independently set the output file and
+directory path.
+
+@item -M
+@cindex @option{-M}
+Output the module dependencies of all source files being compiled in a
+format suitable for @command{make}.  The compiler outputs one
+@command{make} rule containing the object file name for that source file,
+a colon, and the names of all imported files.
+
+@item -MM
+@cindex @option{-MM}
+Like @option{-M} but does not mention imported modules from the D standard
+library package directories.
+
+@item -MF @var{file}
+@cindex @option{-MF}
+When used with @option{-M} or @option{-MM}, specifies a @var{file} to write
+the dependencies to.  When used with the driver options @option{-MD} or
+@option{-MMD}, @option{-MF} overrides the default dependency output file.
+
+@item -MG
+@cindex @option{-MG}
+This option is for compatibility with @command{gcc}, and is ignored by the
+compiler.
+
+@item -MP
+@cindex @option{-MP}
+Outputs a phony target for each dependency other than the modules being
+compiled, causing each to depend on nothing.
+
+@item -MT @var{target}
+@cindex @option{-MT}
+Change the @var{target} of the rule emitted by dependency generation
+to be exactly the string you specify.  If you want multiple targets,
+you can specify them as a single argument to @option{-MT}, or use
+multiple @option{-MT} options.
+
+@item -MQ @var{target}
+@cindex @option{-MQ}
+Same as @option{-MT}, but it quotes any characters which are special to
+@command{make}.
+
+@item -MD
+@cindex @option{-MD}
+This option is equivalent to @option{-M -MF @var{file}}.  The driver
+determines @var{file} by removing any directory components and suffix
+from the input file, and then adding a @file{.deps} suffix.
+
+@item -MMD
+@cindex @option{-MMD}
+Like @option{-MD} but does not mention imported modules from the D standard
+library package directories.
+
+@item -X
+@cindex @option{-X}
+Output information describing the contents of all source files being
+compiled in JSON format to a file.  The driver determines @var{file} by
+removing any directory components and suffix from the input file, and then
+adding a @file{.json} suffix.
+
+@item -Xf @var{file}
+@cindex @option{-Xf}
+Same as @option{-X}, but writes all JSON contents to the specified
+@var{file}.
+
+@item -fdoc
+@cindex @option{-fdoc}
+Generates @code{Ddoc} documentation and writes it to a file.  The compiler
+determines @var{file} by removing any directory components and suffix
+from the input file, and then adding a @file{.html} suffix.
+
+@item -fdoc-dir=@var{dir}
+@cindex @option{-fdoc-dir}
+Same as @option{-fdoc}, but writes documentation to directory @var{dir}.
+This option can be used with @option{-fdoc-file=@var{file}} to
+independently set the output file and directory path.
+
+@item -fdoc-file=@var{file}
+@cindex @option{-fdoc-file}
+Same as @option{-fdoc}, but writes documentation to @var{file}.  This
+option can be used with @option{-fdoc-dir=@var{dir}} to independently
+set the output file and directory path.
+
+@item -fdoc-inc=@var{file}
+@cindex @option{-fdoc-inc}
+Specify @var{file} as a @var{Ddoc} macro file to be read.  Multiple
+@option{-fdoc-inc} options can be used, and files are read and processed
+in the same order.
+
+@end table
+
+@node Warnings
+@section Warnings
+@cindex options to control warnings
+@cindex warning messages
+@cindex messages, warning
+@cindex suppressing warnings
+
+Warnings are diagnostic messages that report constructions that
+are not inherently erroneous but that are risky or suggest there
+is likely to be a bug in the program.  Unless @option{-Werror} is
+specified, they do not prevent compilation of the program.
+
+@table @gcctabopt
+
+@item -Wall
+@cindex @option{-Wall}
+@cindex @option{-Wno-all}
+Turns on all warnings messages.  Warnings are not a defined part of
+the D language, and all constructs for which this may generate a
+warning message are valid code.
+
+@item -Walloca
+@cindex @option{-Walloca}
+This option warns on all uses of "alloca" in the source.
+
+@item -Walloca-larger-than=@var{n}
+@cindex @option{-Walloca-larger-than}
+@cindex @option{-Wno-alloca-larger-than}
+Warn on unbounded uses of alloca, and on bounded uses of alloca
+whose bound can be larger than @var{n} bytes.
+@option{-Wno-alloca-larger-than} disables
+@option{-Walloca-larger-than} warning and is equivalent to
+@option{-Walloca-larger-than=@var{SIZE_MAX}} or larger.
+
+@item -Wcast-result
+@cindex @option{-Wcast-result}
+@cindex @option{-Wno-cast-result}
+Warn about casts that will produce a null or zero result.  Currently
+this is only done for casting between an imaginary and non-imaginary
+data type, or casting between a D and C++ class.
+
+@item -Wno-deprecated
+@cindex @option{-Wdeprecated}
+@cindex @option{-Wno-deprecated}
+Do not warn about usage of deprecated features and symbols with
+@code{deprecated} attributes.
+
+@item -Werror
+@cindex @option{-Werror}
+@cindex @option{-Wno-error}
+Turns all warnings into errors.
+
+@item -Wspeculative
+@cindex @option{-Wspeculative}
+@cindex @option{-Wno-speculative}
+List all error messages from speculative compiles, such as
+@code{__traits(compiles, ...)}.  This option does not report
+messages as warnings, and these messages therefore never become
+errors when the @option{-Werror} option is also used.
+
+@item -Wtemplates
+@cindex @option{-Wtemplates}
+@cindex @option{-Wno-templates}
+Warn when a template instantiation is encountered.  Some coding
+rules disallow templates, and this may be used to enforce that rule.
+
+@item -Wunknown-pragmas
+@cindex @option{-Wunknown-pragmas}
+@cindex @option{-Wno-unknown-pragmas}
+Warn when a @code{pragma()} is encountered that is not understood by
+@command{gdc}.  This differs from @option{-fignore-unknown-pragmas}
+where a pragma that is part of the D language, but not implemented by
+the compiler, won't get reported.
+
+@item -fignore-unknown-pragmas
+@cindex @option{-fignore-unknown-pragmas}
+@cindex @option{-fno-ignore-unknown-pragmas}
+Turns off errors for unsupported pragmas.
+
+@item -fmax-errors=@var{n}
+@cindex @option{-fmax-errors}
+Limits the maximum number of error messages to @var{n}, at which point
+@command{gdc} bails out rather than attempting to continue processing the
+source code.  If @var{n} is 0 (the default), there is no limit on the
+number of error messages produced.
+
+@item -fsyntax-only
+@cindex @option{-fsyntax-only}
+@cindex @option{-fno-syntax-only}
+Check the code for syntax errors, but do not actually compile it.  This
+can be used in conjunction with @option{-fdoc} or @option{-H} to generate
+files for each module present on the command-line, but no other output
+file.
+
+@item -ftransition=@var{id}
+@cindex @option{-ftransition}
+Report additional information about D language changes identified by
+@var{id}.  The following values are supported:
+
+@table @samp
+@item all
+List information on all language changes.
+@item checkimports
+Give deprecation messages about @option{-ftransition=import} anomalies.
+@item complex
+List all usages of complex or imaginary types.
+@item dip1000
+Implements @uref{http://wiki.dlang.org/DIP1000} (experimental).
+@item dip25
+Implements @uref{http://wiki.dlang.org/DIP25} (experimental).
+@item field
+List all non-mutable fields which occupy an object instance.
+@item import
+Tells the compiler to revert to using an old lookup behavior for resolving
+unqualified symbol names, where this was done in a single pass, ignoring
+any protection attributes.  The default name lookup strategy is to use two
+passes, the first ignoring imported declarations, and the second only
+looking at imports.  The protection (@code{private}, @code{package},
+@code{protected}) of symbols is also enforced to resolve any conflicts
+between private and public symbols.
+@item nogc
+List all hidden GC allocations.
+@item tls
+List all variables going into thread local storage.
+@end table
+
+@end table
+
+@node Linking
+@section Options for Linking
+@cindex options, linking
+@cindex linking, static
+
+These options come into play when the compiler links object files into an
+executable output file.  They are meaningless if the compiler is not doing
+a link step.
+
+@table @gcctabopt
+
+@item -defaultlib @var{libname}
+@cindex @option{-defaultlib}
+Specify the library to use instead of libphobos when linking.  Options
+specifying the linkage of libphobos, such as @option{-static-libphobos}
+or @option{-shared-libphobos}, are ignored.
+
+@item -debuglib
+@cindex @option{-debuglib}
+Specify the debug library to use instead of libphobos when linking.
+This option has no effect unless the @option{-g} option was also given
+on the command line.  Options specifying the linkage of libphobos, such
+as @option{-static-libphobos} or @option{-shared-libphobos}, are ignored.
+
+@item -nophoboslib
+@cindex @option{-nophoboslib}
+Do not use the Phobos or D runtime library when linking.  Options specifying
+the linkage of libphobos, such as @option{-static-libphobos} or
+@option{-shared-libphobos}, are ignored.  The standard system libraries are
+used normally, unless @option{-nostdlib} or @option{-nodefaultlibs} is used.
+
+@item -shared-libphobos
+@cindex @option{-shared-libphobos}
+On systems that provide @file{libgphobos} and @file{libgdruntime} as a
+shared and a static library, this option forces the use of the shared
+version.  If no shared version was built when the compiler was configured,
+this option has no effect.
+
+@item -static-libphobos
+@cindex @option{-static-libphobos}
+On systems that provide @file{libgphobos} and @file{libgdruntime} as a
+shared and a static library, this option forces the use of the static
+version.  If no static version was built when the compiler was configured,
+this option has no effect.
+
+@end table
+
+@node Developer Options
+@section Developer Options
+@cindex developer options
+@cindex debug dump options
+@cindex dump options
+
+This section describes command-line options that are primarily of
+interest to developers or language tooling.
+
+@table @gcctabopt
+
+@item -fdump-d-original
+@cindex @option{-fdump-d-original}
+Output the internal front-end AST after the @code{semantic3} stage.
+This option is only useful for debugging the GNU D compiler itself.
+
+@item -v
+@cindex @option{-v}
+Dump information about the compiler language processing stages as the source
+program is being compiled.  This includes listing all modules that are
+processed through the @code{parse}, @code{semantic}, @code{semantic2}, and
+@code{semantic3} stages; all @code{import} modules and their file paths;
+and all @code{function} bodies that are being compiled.
+
+@end table
+
+@c man end
+
+@node Index
+@unnumbered Index
+
+@printindex cp
+
+@bye

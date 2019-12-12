@@ -7,7 +7,6 @@
 implicit none
 
 call call_a(a1)  ! { dg-error "Character length mismatch in function result" }
-call call_a(a2)  ! { dg-error "Character length mismatch in function result" }
 call call_b(b1)  ! { dg-error "Shape mismatch" }
 call call_c(c1)  ! { dg-error "POINTER attribute mismatch in function result" }
 call call_d(c1)  ! { dg-error "ALLOCATABLE attribute mismatch in function result" }
@@ -17,9 +16,6 @@ call call_f(c1)  ! { dg-error "PROCEDURE POINTER mismatch in function result" }
 contains
 
   character(1) function a1()
-  end function
-
-  character(:) function a2()
   end function
 
   subroutine call_a(a3)

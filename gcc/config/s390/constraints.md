@@ -1,5 +1,5 @@
 ;; Constraints definitions belonging to the gcc backend for IBM S/390.
-;; Copyright (C) 2006-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2019 Free Software Foundation, Inc.
 ;; Written by Wolfgang Gellerich, using code and information found in
 ;; files s390.md, s390.h, and s390.c.
 ;;
@@ -37,6 +37,7 @@
 ;;         jKK: constant vector with all elements having the same value and
 ;;              matching K constraint
 ;;         jm6: An integer operand with the lowest order 6 bits all ones.
+;;         jdd: A constant operand that fits into the data section.
 ;;    t -- Access registers 36 and 37.
 ;;    v -- Vector registers v0-v31.
 ;;    C -- A signed 8-bit constant (-128..127)
@@ -51,7 +52,7 @@
 ;;    M -- Constant integer with a value of 0x7fffffff.
 ;;    N -- Multiple letter constraint followed by 4 parameter letters.
 ;;         0..9,x:  number of the part counting from most to least significant
-;;         H,Q:     mode of the part
+;;         S,H,Q:   mode of the part
 ;;         D,S,H:   mode of the containing operand
 ;;         0,F:     value of the other parts (F - all bits set)
 ;;         --
@@ -89,6 +90,7 @@
 ;;    ZR -- Pointer with index register and short displacement.
 ;;    ZS -- Pointer without index register but with long displacement.
 ;;    ZT -- Pointer with index register and long displacement.
+;;    ZL -- LARL operand when in 64-bit mode, otherwise nothing.
 ;;
 ;;
 
@@ -202,9 +204,21 @@
   (match_test "s390_decompose_addrstyle_without_index (op, NULL, NULL)"  ))
 
 
+;; Shift count operands are not necessarily legitimate addresses
+;; but the predicate shift_count_operand will only allow
+;; proper operands.  If reload/lra need to change e.g. a spilled register
+;; they can still do so via the special handling of address constraints.
+;; To avoid further reloading (caused by a non-matching constraint) we
+;; always return true here as the predicate's checks are already sufficient.
+
+(define_address_constraint "jsc"
+  "Address style operand used as shift count."
+  (match_test "true" ))
+
+
 ;;    N -- Multiple letter constraint followed by 4 parameter letters.
 ;;         0..9,x:  number of the part counting from most to least significant
-;;         H,Q:     mode of the part
+;;         S,H,Q:   mode of the part
 ;;         D,S,H:   mode of the containing operand
 ;;         0,F:     value of the other parts (F = all bits set)
 ;;
@@ -224,6 +238,18 @@
   "@internal"
   (and (match_code "const_int")
        (match_test "s390_N_constraint_str (\"xQS0\", ival)")))
+
+
+(define_constraint "NxHD0"
+  "@internal"
+   (and (match_code "const_int")
+        (match_test "s390_N_constraint_str (\"xHD0\", ival)")))
+
+
+(define_constraint "NxSD0"
+  "@internal"
+   (and (match_code "const_int")
+        (match_test "s390_N_constraint_str (\"xSD0\", ival)")))
 
 
 (define_constraint "NxQD0"
@@ -550,3 +576,23 @@
 (define_address_constraint "ZT"
   "Pointer with index register and long displacement."
   (match_test "s390_mem_constraint (\"ZT\", op)"))
+
+(define_constraint "ZL"
+  "LARL operand when in 64-bit mode, otherwise nothing."
+  (match_test "TARGET_64BIT && larl_operand (op, VOIDmode)"))
+
+;; This constraint must behave like "i", in particular, the matching values
+;; must never be placed into registers or memory by
+;; cfgexpand.c:expand_asm_stmt.  It could be straightforward to start its name
+;; with a letter from genpreds.c:const_int_constraints, however it would
+;; require using (match_code "const_int"), which is infeasible.  To achieve the
+;; same effect, that is, setting maybe_allows_reg and maybe_allows_mem to false
+;; in genpreds.c:add_constraint, we explicitly exclude reg, subreg and mem
+;; codes.
+(define_constraint "jdd"
+  "A constant operand that fits into the data section.
+   Usage of this constraint might produce a relocation."
+  (and (not (match_code "reg"))
+       (not (match_code "subreg"))
+       (not (match_code "mem"))
+       (match_test "CONSTANT_P (op)")))

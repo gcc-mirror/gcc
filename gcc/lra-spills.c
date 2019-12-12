@@ -1,5 +1,5 @@
 /* Change pseudos by memory.
-   Copyright (C) 2010-2018 Free Software Foundation, Inc.
+   Copyright (C) 2010-2019 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -97,8 +97,9 @@ static struct pseudo_slot *pseudo_slots;
 
 /* The structure describes a register or a stack slot which can be
    used for several spilled pseudos.  */
-struct slot
+class slot
 {
+public:
   /* First pseudo with given stack slot.  */
   int regno;
   /* Hard reg into which the slot pseudos are spilled.	The value is
@@ -121,7 +122,7 @@ struct slot
 
 /* Array containing info about the stack slots.	 The array element is
    indexed by the stack slot number in the range [0..slots_num).  */
-static struct slot *slots;
+static class slot *slots;
 /* The number of the stack slots currently existing.  */
 static int slots_num;
 
@@ -232,7 +233,7 @@ assign_spill_hard_regs (int *pseudo_regnos, int n)
   basic_block bb;
   HARD_REG_SET conflict_hard_regs;
   bitmap setjump_crosses = regstat_get_setjmp_crosses ();
-  /* Hard registers which can not be used for any purpose at given
+  /* Hard registers which cannot be used for any purpose at given
      program point because they are unallocatable or already allocated
      for other pseudos.	 */
   HARD_REG_SET *reserved_hard_regs;
@@ -242,7 +243,7 @@ assign_spill_hard_regs (int *pseudo_regnos, int n)
   /* Set up reserved hard regs for every program point.	 */
   reserved_hard_regs = XNEWVEC (HARD_REG_SET, lra_live_max_point);
   for (p = 0; p < lra_live_max_point; p++)
-    COPY_HARD_REG_SET (reserved_hard_regs[p], lra_no_alloc_regs);
+    reserved_hard_regs[p] = lra_no_alloc_regs;
   for (i = FIRST_PSEUDO_REGISTER; i < regs_num; i++)
     if (lra_reg_info[i].nrefs != 0
 	&& (hard_regno = lra_get_regno_hard_regno (i)) >= 0)
@@ -273,16 +274,18 @@ assign_spill_hard_regs (int *pseudo_regnos, int n)
 	  continue;
 	}
       lra_assert (spill_class != NO_REGS);
-      COPY_HARD_REG_SET (conflict_hard_regs,
-			 lra_reg_info[regno].conflict_hard_regs);
+      conflict_hard_regs = lra_reg_info[regno].conflict_hard_regs;
       for (r = lra_reg_info[regno].live_ranges; r != NULL; r = r->next)
 	for (p = r->start; p <= r->finish; p++)
-	  IOR_HARD_REG_SET (conflict_hard_regs, reserved_hard_regs[p]);
+	  conflict_hard_regs |= reserved_hard_regs[p];
       spill_class_size = ira_class_hard_regs_num[spill_class];
       mode = lra_reg_info[regno].biggest_mode;
       for (k = 0; k < spill_class_size; k++)
 	{
 	  hard_regno = ira_class_hard_regs[spill_class][k];
+	  if (TEST_HARD_REG_BIT (eliminable_regset, hard_regno)
+	      || !targetm.hard_regno_mode_ok (hard_regno, mode))
+	    continue;
 	  if (! overlaps_hard_reg_set_p (conflict_hard_regs, mode, hard_regno))
 	    break;
 	}
@@ -548,6 +551,19 @@ spill_pseudos (void)
     }
 }
 
+/* Return true if we need scratch reg assignments.  */
+bool
+lra_need_for_scratch_reg_p (void)
+{
+  int i; max_regno = max_reg_num ();
+
+  for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
+    if (lra_reg_info[i].nrefs != 0 && lra_get_regno_hard_regno (i) < 0
+	&& lra_former_scratch_p (i))
+      return true;
+  return false;
+}
+
 /* Return true if we need to change some pseudos into memory.  */
 bool
 lra_need_for_spills_p (void)
@@ -586,7 +602,7 @@ lra_spill (void)
       spill_hard_reg[i] = NULL_RTX;
       pseudo_slots[i].mem = NULL_RTX;
     }
-  slots = XNEWVEC (struct slot, regs_num);
+  slots = XNEWVEC (class slot, regs_num);
   /* Sort regnos according their usage frequencies.  */
   qsort (pseudo_regnos, n, sizeof (int), regno_freq_compare);
   n = assign_spill_hard_regs (pseudo_regnos, n);
@@ -740,6 +756,7 @@ lra_final_code_change (void)
   int i, hard_regno;
   basic_block bb;
   rtx_insn *insn, *curr;
+  rtx set;
   int max_regno = max_reg_num ();
 
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
@@ -818,5 +835,19 @@ lra_final_code_change (void)
 	      }
 	  if (insn_change_p)
 	    lra_update_operator_dups (id);
+
+	  if ((set = single_set (insn)) != NULL
+	      && REG_P (SET_SRC (set)) && REG_P (SET_DEST (set))
+	      && REGNO (SET_SRC (set)) == REGNO (SET_DEST (set)))
+	    {
+	      /* Remove an useless move insn.  IRA can generate move
+		 insns involving pseudos.  It is better remove them
+		 earlier to speed up compiler a bit.  It is also
+		 better to do it here as they might not pass final RTL
+		 check in LRA, (e.g. insn moving a control register
+		 into itself).  */
+	      lra_invalidate_insn_data (insn);
+	      delete_insn (insn);
+	    }
 	}
 }

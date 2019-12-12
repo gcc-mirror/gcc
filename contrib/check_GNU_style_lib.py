@@ -99,6 +99,18 @@ class SpacesCheck:
                 line.replace(self.expanded_tab, error_string(ws_char * ts)),
                 'blocks of 8 spaces should be replaced with tabs', i)
 
+class SpacesAndTabsMixedCheck:
+    def __init__(self):
+        self.re = re.compile('\ \t')
+
+    def check(self, filename, lineno, line):
+        stripped = line.lstrip()
+        start = line[:len(line) - len(stripped)]
+        if self.re.search(line):
+            return CheckError(filename, lineno,
+                error_string(start.replace('\t', ws_char * ts)) + line[len(start):],
+                'a space should not precede a tab', 0)
+
 class TrailingWhitespaceCheck:
     def __init__(self):
         self.re = re.compile('(\s+)$')
@@ -236,12 +248,27 @@ class TrailingWhitespaceTest(unittest.TestCase):
         r = self.check.check('foo', 123, 'a = 123;\t')
         self.assertIsNotNone(r)
 
+class SpacesAndTabsMixedTest(unittest.TestCase):
+    def setUp(self):
+        self.check = SpacesAndTabsMixedCheck()
+
+    def test_trailing_whitespace_check_basic(self):
+        r = self.check.check('foo', 123, '   \ta = 123;')
+        self.assertEqual('foo', r.filename)
+        self.assertEqual(0, r.column)
+        self.assertIsNotNone(r.console_error)
+        r = self.check.check('foo', 123, '   \t  a = 123;')
+        self.assertIsNotNone(r.console_error)
+        r = self.check.check('foo', 123, '\t  a = 123;')
+        self.assertIsNone(r)
+
 def check_GNU_style_file(file, file_encoding, format):
     checks = [LineLengthCheck(), SpacesCheck(), TrailingWhitespaceCheck(),
         SentenceSeparatorCheck(), SentenceEndOfCommentCheck(),
         SentenceDotEndCheck(), FunctionParenthesisCheck(),
         SquareBracketCheck(), ClosingParenthesisCheck(),
-        BracesOnSeparateLineCheck(), TrailinigOperatorCheck()]
+        BracesOnSeparateLineCheck(), TrailinigOperatorCheck(),
+        SpacesAndTabsMixedCheck()]
     errors = []
 
     patch = PatchSet(file, encoding=file_encoding)

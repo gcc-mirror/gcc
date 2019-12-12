@@ -1,4 +1,4 @@
-# Copyright (C) 2007-2018 Free Software Foundation, Inc.
+# Copyright (C) 2007-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ if ![istarget s390*-*-*] then {
 # Load support procs.
 load_lib gcc-dg.exp
 load_lib target-supports.exp
+load_lib gfortran-dg.exp
 
 # Return 1 if the the assembler understands .machine and .machinemode.  The
 # target attribute needs that feature to work.
@@ -86,18 +87,22 @@ proc check_effective_target_s390_useable_hw { } {
 	int main (void)
 	{
 	    asm (".machinemode zarch" : : );
-	#if __ARCH__ >= 11
-	    asm ("lcbb %%r2,0(%%r15),0" : : );
+	#if __ARCH__ >= 13
+	    asm ("ncrk %%r2,%%r2,%%r2" : : : "r2");
+	#elif __ARCH__ >= 12
+	    asm ("agh %%r2,0(%%r15)" : : : "r2");
+	#elif __ARCH__ >= 11
+	    asm ("lochiz %%r2,42" : : : "r2");
 	#elif __ARCH__ >= 10
-	    asm ("risbgn %%r2,%%r2,0,0,0" : : );
+	    asm ("risbgn %%r2,%%r2,0,0,0" : : : "r2");
 	#elif __ARCH__ >= 9
-	    asm ("sgrk %%r2,%%r2,%%r2" : : );
+	    asm ("sgrk %%r2,%%r2,%%r2" : : : "r2");
 	#elif __ARCH__ >= 8
-	    asm ("rosbg %%r2,%%r2,0,0,0" : : );
+	    asm ("rosbg %%r2,%%r2,0,0,0" : : : "r2");
 	#elif __ARCH__ >= 7
-	    asm ("nilf %%r2,0" : : );
+	    asm ("nilf %%r2,0" : : : "r2");
 	#elif __ARCH__ >= 6
-	    asm ("lay %%r2,0(%%r15)" : : );
+	    asm ("lay %%r2,0(%%r15)" : : : "r2");
 	#elif __ARCH__ >= 5
 	    asm ("tam" : : );
 	#endif
@@ -107,8 +112,8 @@ proc check_effective_target_s390_useable_hw { } {
 	    asm ("etnd %0" : "=d" (nd));
 	  }
 	#endif
-	#ifdef __VX__
-	    asm ("vzero %%v0" : : );
+	#if defined (__VX__) && defined (__zarch__)
+	    asm ("vzero %%v0" : : : "v0");
 	#endif
 	  return 0;
 	}
@@ -193,6 +198,10 @@ global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {
     set DEFAULT_CFLAGS " -ansi -pedantic-errors"
 }
+global DEFAULT_FFLAGS
+if ![info exists DEFAULT_FFLAGS] then {
+    set DEFAULT_FFLAGS " -pedantic-errors"
+}
 
 # Initialize `dg'.
 dg-init
@@ -209,11 +218,17 @@ dg-runtest [lsort [prune [glob -nocomplain $srcdir/$subdir/*.{c,S}] \
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*vector*/*.{c,S}]] \
 	"" $DEFAULT_CFLAGS
 
+gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*vector*/*.F90]] \
+	"" $DEFAULT_FFLAGS
+
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/target-attribute/*.{c,S}]] \
 	"" $DEFAULT_CFLAGS
 
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/arch12/*.{c,S}]] \
 	"" "-O3 -march=arch12 -mzarch"
+
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/arch13/*.{c,S}]] \
+	"" "-O3 -march=arch13 -mzarch"
 
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vxe/*.{c,S}]] \
 	"" "-O3 -march=arch12 -mzarch"
@@ -251,6 +266,15 @@ set MD_TEST_OPTS [list \
 set-torture-options $MD_TEST_OPTS
 gcc-dg-runtest [lsort [glob -nocomplain $md_tests]] "" "$DEFAULT_CFLAGS"
 torture-finish
+
+# Tests that should pass on all optimization levels.
+foreach t [list $srcdir/$subdir/pr80080-3.c] {
+	torture-init
+	set-torture-options [list -O1 -O2 -O3 -O0 -Os -Ofast -Og]
+	gcc-dg-runtest [list $t] \
+		"" $DEFAULT_CFLAGS
+	torture-finish
+}
 
 # All done.
 dg-finish

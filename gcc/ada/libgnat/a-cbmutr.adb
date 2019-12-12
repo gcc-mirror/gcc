@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2011-2018, Free Software Foundation, Inc.      --
+--             Copyright (C) 2011-2019, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -600,7 +600,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
            (Element => Container.Elements (Position.Node)'Access,
             Control => (Controlled with TC))
          do
-            Lock (TC.all);
+            Busy (TC.all);
          end return;
       end;
    end Constant_Reference;
@@ -625,15 +625,12 @@ package body Ada.Containers.Bounded_Multiway_Trees is
      (Source   : Tree;
       Capacity : Count_Type := 0) return Tree
    is
-      C : Count_Type;
-
+      C : constant Count_Type :=
+        (if Capacity = 0 then Source.Count
+         else Capacity);
    begin
-      if Capacity = 0 then
-         C := Source.Count;
-      elsif Capacity >= Source.Count then
-         C := Capacity;
-      elsif Checks then
-         raise Capacity_Error with "Capacity value too small";
+      if Checks and then C < Source.Count then
+         raise Capacity_Error with "Capacity too small";
       end if;
 
       return Target : Tree (Capacity => C) do
@@ -1767,10 +1764,8 @@ package body Ada.Containers.Bounded_Multiway_Trees is
      (Container : Tree;
       From, To  : Count_Type) return Boolean
    is
-      Idx : Count_Type;
-
+      Idx : Count_Type'Base := From;
    begin
-      Idx := From;
       while Idx >= 0 loop
          if Idx = To then
             return True;
@@ -2296,7 +2291,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       TC : constant Tamper_Counts_Access := Container.TC'Unrestricted_Access;
    begin
       return R : constant Reference_Control_Type := (Controlled with TC) do
-         Lock (TC.all);
+         Busy (TC.all);
       end return;
    end Pseudo_Reference;
 
@@ -2495,7 +2490,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
            (Element => Container.Elements (Position.Node)'Access,
             Control => (Controlled with TC))
          do
-            Lock (TC.all);
+            Busy (TC.all);
          end return;
       end;
    end Reference;

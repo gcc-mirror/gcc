@@ -1,5 +1,5 @@
 /* gospec.c -- Specific flags and argument handling of the gcc Go front end.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -139,6 +139,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
       switch (decoded_options[i].opt_index)
 	{
+	case OPT_r:
 	case OPT_nostdlib:
 	case OPT_nodefaultlibs:
 	  library = -1;

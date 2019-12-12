@@ -20,9 +20,7 @@
 void
 check_div_float (void)
 {
-#ifndef __SPU__
   CHECK_DIV (float, __builtin_copysignf, 0.0f, 0.0if, 1.0f);
-#endif
 }
 
 void

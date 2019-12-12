@@ -1,7 +1,7 @@
 @ libgcc routines for ARM cpu.
 @ Division routines, written by Richard Earnshaw, (rearnsha@armltd.co.uk)
 
-/* Copyright (C) 1995-2018 Free Software Foundation, Inc.
+/* Copyright (C) 1995-2019 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -359,12 +359,8 @@ SYM (\name):
 #define THUMB_SYNTAX
 #endif
 
-.macro FUNC_START name sp_section=
-  .ifc \sp_section, function_section
-	.section	.text.__\name,"ax",%progbits
-  .else
+.macro FUNC_START name
 	.text
-  .endif
 	.globl SYM (__\name)
 	TYPE (__\name)
 	.align 0
@@ -390,8 +386,8 @@ SYM (\name):
 #if defined(__thumb2__)
 
 /* For Thumb-2 we build everything in thumb mode.  */
-.macro ARM_FUNC_START name sp_section=
-       FUNC_START \name \sp_section
+.macro ARM_FUNC_START name
+       FUNC_START \name
        .syntax unified
 .endm
 #define EQUIV .thumb_set
@@ -422,12 +418,8 @@ _L__\name:
 #ifdef NOT_ISA_TARGET_32BIT
 #define EQUIV .thumb_set
 #else
-.macro	ARM_FUNC_START name sp_section=
-  .ifc \sp_section, function_section
-	.section	.text.__\name,"ax",%progbits
-  .else
+.macro	ARM_FUNC_START name
 	.text
-  .endif
 	.globl SYM (__\name)
 	TYPE (__\name)
 	.align 0
@@ -1533,6 +1525,50 @@ LSYM(Lover12):
 #error "This is only for ARM EABI GNU/Linux"
 #endif
 #endif /* L_clear_cache */
+
+#ifdef L_speculation_barrier
+	FUNC_START speculation_barrier
+#if __ARM_ARCH >= 7
+	isb
+	dsb sy
+#elif defined __ARM_EABI__ && defined __linux__
+	/* We don't have a speculation barrier directly for this
+	   platform/architecture variant.  But we can use a kernel
+	   clear_cache service routine which will emit such instructions
+	   if run on a later version of the architecture.  We don't
+	   really want to flush the cache, but we must give it a valid
+	   address, so just clear pc..pc+1.  */
+#if defined __thumb__ && !defined __thumb2__
+	push	{r7}
+	mov	r7, #0xf
+	lsl	r7, #16
+	add	r7, #2
+	adr	r0, . + 4
+	add	r1, r0, #1
+	mov	r2, #0
+	svc	0
+	pop	{r7}
+#else
+	do_push	{r7}
+#ifdef __ARM_ARCH_6T2__
+	movw	r7, #2
+	movt	r7, #0xf
+#else
+	mov	r7, #0xf0000
+	add	r7, r7, #2
+#endif
+	add	r0, pc, #0	/* ADR.  */
+	add	r1, r0, #1
+	mov	r2, #0
+	svc	0
+	do_pop	{r7}
+#endif /* Thumb1 only */
+#else
+#warning "No speculation barrier defined for this platform"
+#endif
+	RET
+	FUNC_END speculation_barrier
+#endif
 /* ------------------------------------------------------------------------ */
 /* Dword shift operations.  */
 /* All the following Dword shift variants rely on the fact that
@@ -2125,7 +2161,8 @@ LSYM(Lchange_\register):
 .endm
 
 #ifndef __symbian__
-/* The condition here must match the one in gcc/config/arm/elf.h.  */
+/* The condition here must match the one in gcc/config/arm/elf.h and
+   libgcc/config/arm/t-elf.  */
 #ifndef NOT_ISA_TARGET_32BIT
 #include "ieee754-df.S"
 #include "ieee754-sf.S"

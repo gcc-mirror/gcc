@@ -1,5 +1,5 @@
 /* Unit tests for function-handling.
-   Copyright (C) 2015-2018 Free Software Foundation, Inc.
+   Copyright (C) 2015-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -570,6 +570,19 @@ test_conversion_to_ssa ()
   ASSERT_EQ (SSA_NAME, TREE_CODE (gimple_return_retval (return_stmt)));
 }
 
+/* Test range folding.  We must start this here because we need cfun
+   set.  */
+
+static void
+test_ranges ()
+{
+  tree fndecl = build_trivial_high_gimple_function ();
+  function *fun = DECL_STRUCT_FUNCTION (fndecl);
+  push_cfun (fun);
+  range_tests ();
+  pop_cfun ();
+}
+
 /* Test of expansion from gimple-ssa to RTL.  */
 
 static void
@@ -661,6 +674,7 @@ test_expansion_to_rtl ()
   ASSERT_STR_CONTAINS (dump, ") ;; function \"test_fn\"\n");
 
   free (dump);
+  free_after_compilation (fun);
 }
 
 /* Run all of the selftests within this file.  */
@@ -673,6 +687,7 @@ function_tests_c_tests ()
   test_gimplification ();
   test_building_cfg ();
   test_conversion_to_ssa ();
+  test_ranges ();
   test_expansion_to_rtl ();
 }
 

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX V7.2.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@gnu.org).
 
    This file is part of GCC.
@@ -27,7 +27,7 @@ do {									\
   if (TARGET_64BIT && ! TARGET_POWERPC64)				\
     {									\
       rs6000_isa_flags |= OPTION_MASK_POWERPC64;			\
-      warning (0, "-maix64 requires PowerPC64 architecture remain enabled"); \
+      warning (0, "%<-maix64%> requires PowerPC64 architecture remain enabled"); \
     }									\
   if (TARGET_SOFT_FLOAT && TARGET_LONG_DOUBLE_128)			\
     {									\
@@ -37,14 +37,14 @@ do {									\
     }									\
   if (TARGET_POWERPC64 && ! TARGET_64BIT)				\
     {									\
-      error ("-maix64 required: 64-bit computation with 32-bit addressing not yet supported"); \
+      error ("%<-maix64%> required: 64-bit computation with 32-bit addressing not yet supported"); \
     }									\
   if ((rs6000_isa_flags_explicit					\
        & OPTION_MASK_MINIMAL_TOC) != 0)					\
     {									\
       if (global_options_set.x_rs6000_current_cmodel			\
 	  && rs6000_current_cmodel != CMODEL_SMALL)			\
-	error ("-mcmodel incompatible with other toc options"); 	\
+	error ("%<-mcmodel%> incompatible with other toc options"); 	\
       SET_CMODEL (CMODEL_SMALL);					\
     }									\
   if (rs6000_current_cmodel != CMODEL_SMALL)				\
@@ -56,10 +56,16 @@ do {									\
     {									\
       rs6000_current_cmodel = CMODEL_LARGE;				\
     }									\
+  if (! strcmp (lang_hooks.name, "GNU Go")				\
+      && TARGET_32BIT)							\
+    {									\
+      /* aix/ppc doesn't support -mvsx and -maltivec with Go */		\
+      rs6000_isa_flags &= ~(OPTION_MASK_VSX | OPTION_MASK_ALTIVEC);	\
+    }									\
 } while (0)
 
 #undef ASM_SPEC
-#define ASM_SPEC "-u %{maix64:-a64 %{!mcpu*:-mppc64}} %(asm_cpu)"
+#define ASM_SPEC "-u %{maix64:-a64} %(asm_cpu)"
 
 /* Common ASM definitions used by ASM_SPEC amongst the various targets for
    handling -mcpu=xxx switches.  There is a parallel list in driver-rs6000.c to
@@ -67,35 +73,32 @@ do {									\
    you make changes here, make them there also.  */
 #undef ASM_CPU_SPEC
 #define ASM_CPU_SPEC \
-"%{!mcpu*: %{!maix64: \
-  %{mpowerpc64: -mppc64} \
-  %{maltivec: -m970} \
-  %{!maltivec: %{!mpowerpc64: %(asm_default)}}}} \
-%{mcpu=native: %(asm_cpu_native)} \
-%{mcpu=power3: -m620} \
-%{mcpu=power4: -mpwr4} \
-%{mcpu=power5: -mpwr5} \
-%{mcpu=power5+: -mpwr5x} \
-%{mcpu=power6: -mpwr6} \
-%{mcpu=power6x: -mpwr6} \
-%{mcpu=power7: -mpwr7} \
-%{mcpu=power8: -mpwr8} \
-%{mcpu=power9: -mpwr9} \
-%{mcpu=powerpc: -mppc} \
-%{mcpu=rs64a: -mppc} \
-%{mcpu=603: -m603} \
-%{mcpu=603e: -m603} \
-%{mcpu=604: -m604} \
-%{mcpu=604e: -m604} \
-%{mcpu=620: -m620} \
-%{mcpu=630: -m620} \
-%{mcpu=970: -m970} \
-%{mcpu=G5: -m970} \
-%{mvsx: %{!mcpu*: -mpwr7}} \
+"%{mcpu=native: %(asm_cpu_native); \
+  mcpu=power9: -mpwr9; \
+  mcpu=power8: -mpwr8; \
+  mcpu=power7: -mpwr7; \
+  mcpu=power6x|mcpu=power6: -mpwr6; \
+  mcpu=power5+: -mpwr5x; \
+  mcpu=power5: -mpwr5; \
+  mcpu=power4: -mpwr4; \
+  mcpu=power3: -m620; \
+  mcpu=powerpc: -mppc; \
+  mcpu=rs64: -mppc; \
+  mcpu=603: -m603; \
+  mcpu=603e: -m603; \
+  mcpu=604: -m604; \
+  mcpu=604e: -m604; \
+  mcpu=620: -m620; \
+  mcpu=630: -m620; \
+  mcpu=970|mcpu=G5: -m970; \
+  !mcpu*: %{mvsx: -mpwr6; \
+	    maltivec: -m970; \
+	    maix64|mpowerpc64: -mppc64; \
+	    : %(asm_default)}} \
 -many"
 
 #undef	ASM_DEFAULT_SPEC
-#define ASM_DEFAULT_SPEC "-mpwr4"
+#define ASM_DEFAULT_SPEC "-mpwr7"
 
 #undef TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()     \

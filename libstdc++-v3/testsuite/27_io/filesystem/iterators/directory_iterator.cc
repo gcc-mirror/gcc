@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2018 Free Software Foundation, Inc.
+// Copyright (C) 2015-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++17 -lstdc++fs" }
+// { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
 // { dg-require-filesystem-ts "" }
 
@@ -100,6 +100,15 @@ test02()
   VERIFY( entry1.path() == p/"x" );
   VERIFY( iter == end(iter) );
 
+  // Test post-increment (libstdc++/89986)
+  ec = bad_ec;
+  iter = fs::directory_iterator(p, ec);
+  VERIFY( !ec );
+  VERIFY( iter != end(iter) );
+  iter.increment(ec);
+  VERIFY( !ec );
+  VERIFY( iter == end(iter) );
+
   remove_all(p, ec);
 }
 
@@ -138,6 +147,9 @@ test05()
   static_assert( noexcept(begin(it)), "begin is noexcept" );
   VERIFY( end(it) == endit );
   static_assert( noexcept(end(it)), "end is noexcept" );
+
+  std::error_code ec;
+  remove_all(p, ec);
 }
 
 int

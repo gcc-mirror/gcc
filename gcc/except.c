@@ -1,5 +1,5 @@
 /* Implements exception handling.
-   Copyright (C) 1989-2018 Free Software Foundation, Inc.
+   Copyright (C) 1989-2019 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GCC.
@@ -27,14 +27,14 @@ along with GCC; see the file COPYING3.  If not see
    the compilation process:
 
    In the beginning, in the front end, we have the GENERIC trees
-   TRY_CATCH_EXPR, TRY_FINALLY_EXPR, WITH_CLEANUP_EXPR,
+   TRY_CATCH_EXPR, TRY_FINALLY_EXPR, EH_ELSE_EXPR, WITH_CLEANUP_EXPR,
    CLEANUP_POINT_EXPR, CATCH_EXPR, and EH_FILTER_EXPR.
 
-   During initial gimplification (gimplify.c) these are lowered
-   to the GIMPLE_TRY, GIMPLE_CATCH, and GIMPLE_EH_FILTER nodes.
-   The WITH_CLEANUP_EXPR and CLEANUP_POINT_EXPR nodes are converted
-   into GIMPLE_TRY_FINALLY nodes; the others are a more direct 1-1
-   conversion.
+   During initial gimplification (gimplify.c) these are lowered to the
+   GIMPLE_TRY, GIMPLE_CATCH, GIMPLE_EH_ELSE, and GIMPLE_EH_FILTER
+   nodes.  The WITH_CLEANUP_EXPR and CLEANUP_POINT_EXPR nodes are
+   converted into GIMPLE_TRY_FINALLY nodes; the others are a more
+   direct 1-1 conversion.
 
    During pass_lower_eh (tree-eh.c) we record the nested structure
    of the TRY nodes in EH_REGION nodes in CFUN->EH->REGION_TREE.
@@ -921,7 +921,7 @@ assign_filter_values (void)
 static basic_block
 emit_to_new_bb_before (rtx_insn *seq, rtx_insn *insn)
 {
-  rtx_insn *last;
+  rtx_insn *next, *last;
   basic_block bb;
   edge e;
   edge_iterator ei;
@@ -934,7 +934,16 @@ emit_to_new_bb_before (rtx_insn *seq, rtx_insn *insn)
       force_nonfallthru (e);
     else
       ei_next (&ei);
-  last = emit_insn_before (seq, insn);
+
+  /* Make sure to put the location of INSN or a subsequent instruction on SEQ
+     to avoid inheriting the location of the previous instruction.  */
+  next = insn;
+  while (next && !NONDEBUG_INSN_P (next))
+    next = NEXT_INSN (next);
+  if (next)
+    last = emit_insn_before_setloc (seq, insn, INSN_LOCATION (next));
+  else
+    last = emit_insn_before (seq, insn);
   if (BARRIER_P (last))
     last = PREV_INSN (last);
   bb = create_basic_block (seq, last, BLOCK_FOR_INSN (insn)->prev_bb);
@@ -1006,7 +1015,7 @@ dw2_build_landing_pads (void)
       make_single_succ_edge (bb, bb->next_bb, e_flags);
       if (current_loops)
 	{
-	  struct loop *loop = bb->next_bb->loop_father;
+	  class loop *loop = bb->next_bb->loop_father;
 	  /* If we created a pre-header block, add the new block to the
 	     outer loop, otherwise to the loop itself.  */
 	  if (bb->next_bb == loop->header)
@@ -1159,7 +1168,7 @@ sjlj_emit_function_enter (rtx_code_label *dispatch_label)
 
   /* We're storing this libcall's address into memory instead of
      calling it directly.  Thus, we must call assemble_external_libcall
-     here, as we can not depend on emit_library_call to do it for us.  */
+     here, as we cannot depend on emit_library_call to do it for us.  */
   assemble_external_libcall (personality);
   mem = adjust_address (fc, Pmode, sjlj_fc_personality_ofs);
   emit_move_insn (mem, personality);
@@ -1380,7 +1389,7 @@ sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
 	make_single_succ_edge (bb, bb->next_bb, EDGE_FALLTHRU);
 	if (current_loops)
 	  {
-	    struct loop *loop = bb->next_bb->loop_father;
+	    class loop *loop = bb->next_bb->loop_father;
 	    /* If we created a pre-header block, add the new block to the
 	       outer loop, otherwise to the loop itself.  */
 	    if (bb->next_bb == loop->header)
@@ -1418,7 +1427,7 @@ sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
       make_single_succ_edge (bb, bb->next_bb, EDGE_FALLTHRU);
       if (current_loops)
 	{
-	  struct loop *loop = bb->next_bb->loop_father;
+	  class loop *loop = bb->next_bb->loop_father;
 	  /* If we created a pre-header block, add the new block to the
 	     outer loop, otherwise to the loop itself.  */
 	  if (bb->next_bb == loop->header)
@@ -1756,6 +1765,8 @@ copy_reg_eh_region_note_forward (rtx note_or_insn, rtx_insn *first, rtx last)
       if (note == NULL)
 	return;
     }
+  else if (is_a <rtx_insn *> (note_or_insn))
+    return;
   note = XEXP (note, 0);
 
   for (insn = first; insn != last ; insn = NEXT_INSN (insn))
@@ -1778,6 +1789,8 @@ copy_reg_eh_region_note_backward (rtx note_or_insn, rtx_insn *last, rtx first)
       if (note == NULL)
 	return;
     }
+  else if (is_a <rtx_insn *> (note_or_insn))
+    return;
   note = XEXP (note, 0);
 
   for (insn = last; insn != first; insn = PREV_INSN (insn))
@@ -2284,7 +2297,7 @@ expand_eh_return (void)
       if (rtx handler = EH_RETURN_HANDLER_RTX)
 	emit_move_insn (handler, crtl->eh.ehr_handler);
       else
-	error ("__builtin_eh_return not supported on this target");
+	error ("%<__builtin_eh_return%> not supported on this target");
     }
 
   emit_label (around_label);
@@ -3189,7 +3202,8 @@ output_function_exception_table (int section)
   rtx personality = get_personality_function (current_function_decl);
 
   /* Not all functions need anything.  */
-  if (!crtl->uses_eh_lsda)
+  if (!crtl->uses_eh_lsda
+      || targetm_common.except_unwind_info (&global_options) == UI_NONE)
     return;
 
   /* No need to emit any boilerplate stuff for the cold part.  */
@@ -3407,7 +3421,7 @@ verify_eh_tree (struct function *fun)
 	  count_r++;
 	else
 	  {
-	    error ("region_array is corrupted for region %i", r->index);
+	    error ("%<region_array%> is corrupted for region %i", r->index);
 	    err = true;
 	  }
       }
@@ -3420,7 +3434,7 @@ verify_eh_tree (struct function *fun)
 	  count_lp++;
 	else
 	  {
-	    error ("lp_array is corrupted for lp %i", lp->index);
+	    error ("%<lp_array%> is corrupted for lp %i", lp->index);
 	    err = true;
 	  }
       }
@@ -3432,7 +3446,7 @@ verify_eh_tree (struct function *fun)
     {
       if ((*fun->eh->region_array)[r->index] != r)
 	{
-	  error ("region_array is corrupted for region %i", r->index);
+	  error ("%<region_array%> is corrupted for region %i", r->index);
 	  err = true;
 	}
       if (r->outer != outer)
@@ -3451,7 +3465,7 @@ verify_eh_tree (struct function *fun)
 	{
 	  if ((*fun->eh->lp_array)[lp->index] != lp)
 	    {
-	      error ("lp_array is corrupted for lp %i", lp->index);
+	      error ("%<lp_array%> is corrupted for lp %i", lp->index);
 	      err = true;
 	    }
 	  if (lp->region != r)
@@ -3488,19 +3502,19 @@ verify_eh_tree (struct function *fun)
     }
   if (count_r != nvisited_r)
     {
-      error ("region_array does not match region_tree");
+      error ("%<region_array%> does not match %<region_tree%>");
       err = true;
     }
   if (count_lp != nvisited_lp)
     {
-      error ("lp_array does not match region_tree");
+      error ("%<lp_array%> does not match %<region_tree%>");
       err = true;
     }
 
   if (err)
     {
       dump_eh_tree (stderr, fun);
-      internal_error ("verify_eh_tree failed");
+      internal_error ("%qs failed", __func__);
     }
 }
 

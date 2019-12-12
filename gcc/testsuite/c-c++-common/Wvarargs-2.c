@@ -9,7 +9,7 @@ void
 err (int a)
 {
   va_list vp;
-  va_start (vp, a); // { dg-error "used in function with fixed args" }
+  va_start (vp, a); // { dg-error "used in function with fixed arguments" }
 }
 
 void

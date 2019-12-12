@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-skip-if "" { ! { arm_thumb1_ok || arm_thumb2_ok } } } */
+/* { dg-skip-if "r9 is reserved in FDPIC" { arm*-*-uclinuxfdpiceabi } "*" "" } */
 /* { dg-options "-mthumb -O2 -mtpcs-leaf-frame" } */
 
 __attribute__ ((noinline, noclone)) void

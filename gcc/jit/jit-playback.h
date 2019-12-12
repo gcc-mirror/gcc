@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for playing back recorded API calls.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -74,6 +74,12 @@ public:
   new_field (location *loc,
 	     type *type,
 	     const char *name);
+
+  field *
+  new_bitfield (location *loc,
+		type *type,
+		int width,
+		const char *name);
 
   compound_type *
   new_compound_type (location *loc,
@@ -426,6 +432,8 @@ private:
   tree m_inner;
 };
 
+class bitfield : public field {};
+
 class function : public wrapper
 {
 public:
@@ -614,6 +622,8 @@ public:
   rvalue *
   get_address (location *loc);
 
+private:
+  bool mark_addressable (location *loc);
 };
 
 class param : public lvalue
@@ -686,7 +696,7 @@ public:
 
   recording::location *get_recording_loc () const { return m_recording_loc; }
 
-  source_location m_srcloc;
+  location_t m_srcloc;
 
 private:
   recording::location *m_recording_loc;
@@ -703,4 +713,3 @@ extern playback::context *active_playback_ctxt;
 } // namespace gcc
 
 #endif /* JIT_PLAYBACK_H */
-

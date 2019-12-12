@@ -1,6 +1,6 @@
 /* PR middle-end/38454 */
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fno-tree-dse" } */
 
 typedef __SIZE_TYPE__ size_t;
 

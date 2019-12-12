@@ -1,5 +1,5 @@
 /* Internal functions.
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -187,6 +187,7 @@ extern bool direct_internal_fn_supported_p (internal_fn, tree_pair,
 					    optimization_type);
 extern bool direct_internal_fn_supported_p (internal_fn, tree,
 					    optimization_type);
+extern bool direct_internal_fn_supported_p (gcall *, optimization_type);
 
 /* Return true if FN is supported for types TYPE0 and TYPE1 when the
    optimization type is OPT_TYPE.  The types are those associated with
@@ -200,6 +201,8 @@ direct_internal_fn_supported_p (internal_fn fn, tree type0, tree type1,
   return direct_internal_fn_supported_p (fn, tree_pair (type0, type1),
 					 opt_type);
 }
+
+extern int first_commutative_argument (internal_fn);
 
 extern bool set_edom_supported_p (void);
 
@@ -217,7 +220,9 @@ extern bool internal_gather_scatter_fn_p (internal_fn);
 extern int internal_fn_mask_index (internal_fn);
 extern int internal_fn_stored_value_index (internal_fn);
 extern bool internal_gather_scatter_fn_supported_p (internal_fn, tree,
-						    tree, signop, int);
+						    tree, tree, int);
+extern bool internal_check_ptrs_fn_supported_p (internal_fn, tree,
+						poly_uint64, unsigned int);
 
 extern void expand_internal_call (gcall *);
 extern void expand_internal_call (internal_fn, gcall *);

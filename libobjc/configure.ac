@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-#   Copyright (C) 1994-2018 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2019 Free Software Foundation, Inc.
 #   Originally contributed by Dave Love (d.love@dl.ac.uk).
 #
 #This file is part of GCC.
@@ -18,7 +18,6 @@
 #along with GCC; see the file COPYING3.  If not see
 #<http://www.gnu.org/licenses/>.
 
-AC_PREREQ(2.64)
 AC_INIT(package-unused, version-unused,, libobjc)
 AC_CONFIG_SRCDIR([objc/objc.h])
 GCC_TOPLEV_SUBDIRS

@@ -1,4 +1,4 @@
-// Copyright (C) 2004-2018 Free Software Foundation, Inc.
+// Copyright (C) 2004-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,10 +21,8 @@
 #include <list>
 #include <testsuite_api.h>
 
-// { dg-do compile }
+// { dg-do compile { target c++98_only } }
 
-// N.B. In C++0x mode we cannot instantiate with T == NonDefaultConstructible
-// because of 23.3.4.1.4
-#if __cplusplus < 201103L
+// N.B. Since C++11 we cannot instantiate with T == NonDefaultConstructible
+// because of [list.cons] p4: "Requires: T shall be DefaultConstructible."
 template class std::list<__gnu_test::NonDefaultConstructible>;
-#endif

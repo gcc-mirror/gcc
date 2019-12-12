@@ -1,7 +1,8 @@
 //===-- tsan_interface_inl.h ------------------------------------*- C++ -*-===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -14,7 +15,7 @@
 
 #define CALLERPC ((uptr)__builtin_return_address(0))
 
-using namespace __tsan;  // NOLINT
+using namespace __tsan;
 
 void __tsan_read1(void *addr) {
   MemoryRead(cur_thread(), CALLERPC, (uptr)addr, kSizeLog1);
@@ -120,4 +121,12 @@ void __tsan_read_range(void *addr, uptr size) {
 
 void __tsan_write_range(void *addr, uptr size) {
   MemoryAccessRange(cur_thread(), CALLERPC, (uptr)addr, size, true);
+}
+
+void __tsan_read_range_pc(void *addr, uptr size, void *pc) {
+  MemoryAccessRange(cur_thread(), (uptr)pc, (uptr)addr, size, false);
+}
+
+void __tsan_write_range_pc(void *addr, uptr size, void *pc) {
+  MemoryAccessRange(cur_thread(), (uptr)pc, (uptr)addr, size, true);
 }

@@ -1,5 +1,5 @@
 /* Tree based points-to analysis
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>
 
    This file is part of GCC.
@@ -37,11 +37,12 @@
 #include "gimple-iterator.h"
 #include "tree-into-ssa.h"
 #include "tree-dfa.h"
-#include "params.h"
 #include "gimple-walk.h"
 #include "varasm.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "tree-ssa.h"
+#include "tree-cfg.h"
 
 /* The idea behind this analyzer is to generate set constraints from the
    program, then solve the resulting constraints in order to generate the
@@ -298,6 +299,11 @@ struct variable_info
   /* Full size of the base variable, in bits.  */
   unsigned HOST_WIDE_INT fullsize;
 
+  /* In IPA mode the shadow UID in case the variable needs to be duplicated in
+     the final points-to solution because it reaches its containing
+     function recursively.  Zero if none is needed.  */
+  unsigned int shadow_var_uid;
+
   /* Name of this variable */
   const char *name;
 
@@ -396,6 +402,7 @@ new_var_info (tree t, const char *name, bool add_id)
   ret->solution = BITMAP_ALLOC (&pta_obstack);
   ret->oldsolution = NULL;
   ret->next = 0;
+  ret->shadow_var_uid = 0;
   ret->head = ret->id;
 
   stats.total_vars++;
@@ -1385,8 +1392,9 @@ static bitmap changed;
 
 /* Strongly Connected Component visitation info.  */
 
-struct scc_info
+class scc_info
 {
+public:
   scc_info (size_t size);
   ~scc_info ();
 
@@ -1411,7 +1419,7 @@ struct scc_info
    number 1, pages 9-14.  */
 
 static void
-scc_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
+scc_visit (constraint_graph_t graph, class scc_info *si, unsigned int n)
 {
   unsigned int i;
   bitmap_iterator bi;
@@ -1903,7 +1911,7 @@ typedef const struct equiv_class_label *const_equiv_class_label_t;
 
 /* Equiv_class_label hashtable helpers.  */
 
-struct equiv_class_hasher : free_ptr_hash <equiv_class_label>
+struct equiv_class_hasher : nofree_ptr_hash <equiv_class_label>
 {
   static inline hashval_t hash (const equiv_class_label *);
   static inline bool equal (const equiv_class_label *,
@@ -1936,6 +1944,8 @@ static hash_table<equiv_class_hasher> *pointer_equiv_class_table;
    classes.  */
 static hash_table<equiv_class_hasher> *location_equiv_class_table;
 
+struct obstack equiv_class_obstack;
+
 /* Lookup a equivalence class in TABLE by the bitmap of LABELS with
    hash HAS it contains.  Sets *REF_LABELS to the bitmap LABELS
    is equivalent to.  */
@@ -1952,7 +1962,7 @@ equiv_class_lookup_or_add (hash_table<equiv_class_hasher> *table,
   slot = table->find_slot (&ecl, INSERT);
   if (!*slot)
     {
-      *slot = XNEW (struct equiv_class_label);
+      *slot = XOBNEW (&equiv_class_obstack, struct equiv_class_label);
       (*slot)->labels = labels;
       (*slot)->hashcode = ecl.hashcode;
       (*slot)->equivalence_class = 0;
@@ -2014,7 +2024,7 @@ static int location_equiv_class;
    and label it's nodes with DFS numbers.  */
 
 static void
-condense_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
+condense_visit (constraint_graph_t graph, class scc_info *si, unsigned int n)
 {
   unsigned int i;
   bitmap_iterator bi;
@@ -2062,36 +2072,73 @@ condense_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
   /* See if any components have been identified.  */
   if (si->dfs[n] == my_dfs)
     {
-      while (si->scc_stack.length () != 0
-	     && si->dfs[si->scc_stack.last ()] >= my_dfs)
+      if (si->scc_stack.length () != 0
+	  && si->dfs[si->scc_stack.last ()] >= my_dfs)
 	{
-	  unsigned int w = si->scc_stack.pop ();
-	  si->node_mapping[w] = n;
-
-	  if (!bitmap_bit_p (graph->direct_nodes, w))
+	  /* Find the first node of the SCC and do non-bitmap work.  */
+	  bool direct_p = true;
+	  unsigned first = si->scc_stack.length ();
+	  do
+	    {
+	      --first;
+	      unsigned int w = si->scc_stack[first];
+	      si->node_mapping[w] = n;
+	      if (!bitmap_bit_p (graph->direct_nodes, w))
+		direct_p = false;
+	    }
+	  while (first > 0
+		 && si->dfs[si->scc_stack[first - 1]] >= my_dfs);
+	  if (!direct_p)
 	    bitmap_clear_bit (graph->direct_nodes, n);
 
-	  /* Unify our nodes.  */
-	  if (graph->preds[w])
+	  /* Want to reduce to node n, push that first.  */
+	  si->scc_stack.reserve (1);
+	  si->scc_stack.quick_push (si->scc_stack[first]);
+	  si->scc_stack[first] = n;
+
+	  unsigned scc_size = si->scc_stack.length () - first;
+	  unsigned split = scc_size / 2;
+	  unsigned carry = scc_size - split * 2;
+	  while (split > 0)
 	    {
-	      if (!graph->preds[n])
-		graph->preds[n] = BITMAP_ALLOC (&predbitmap_obstack);
-	      bitmap_ior_into (graph->preds[n], graph->preds[w]);
+	      for (unsigned i = 0; i < split; ++i)
+		{
+		  unsigned a = si->scc_stack[first + i];
+		  unsigned b = si->scc_stack[first + split + carry + i];
+
+		  /* Unify our nodes.  */
+		  if (graph->preds[b])
+		    {
+		      if (!graph->preds[a])
+			std::swap (graph->preds[a], graph->preds[b]);
+		      else
+			bitmap_ior_into_and_free (graph->preds[a],
+						  &graph->preds[b]);
+		    }
+		  if (graph->implicit_preds[b])
+		    {
+		      if (!graph->implicit_preds[a])
+			std::swap (graph->implicit_preds[a],
+				   graph->implicit_preds[b]);
+		      else
+			bitmap_ior_into_and_free (graph->implicit_preds[a],
+						  &graph->implicit_preds[b]);
+		    }
+		  if (graph->points_to[b])
+		    {
+		      if (!graph->points_to[a])
+			std::swap (graph->points_to[a], graph->points_to[b]);
+		      else
+			bitmap_ior_into_and_free (graph->points_to[a],
+						  &graph->points_to[b]);
+		    }
+		}
+	      unsigned remain = split + carry;
+	      split = remain / 2;
+	      carry = remain - split * 2;
 	    }
-	  if (graph->implicit_preds[w])
-	    {
-	      if (!graph->implicit_preds[n])
-		graph->implicit_preds[n] = BITMAP_ALLOC (&predbitmap_obstack);
-	      bitmap_ior_into (graph->implicit_preds[n],
-			       graph->implicit_preds[w]);
-	    }
-	  if (graph->points_to[w])
-	    {
-	      if (!graph->points_to[n])
-		graph->points_to[n] = BITMAP_ALLOC (&predbitmap_obstack);
-	      bitmap_ior_into (graph->points_to[n],
-			       graph->points_to[w]);
-	    }
+	  /* Actually pop the SCC.  */
+	  si->scc_stack.truncate (first);
 	}
       bitmap_set_bit (si->deleted, n);
     }
@@ -2119,7 +2166,7 @@ condense_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
    3. Hashable.  */
 
 static void
-label_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
+label_visit (constraint_graph_t graph, class scc_info *si, unsigned int n)
 {
   unsigned int i, first_pred;
   bitmap_iterator bi;
@@ -2206,7 +2253,7 @@ label_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
 /* Print the pred graph in dot format.  */
 
 static void
-dump_pred_graph (struct scc_info *si, FILE *file)
+dump_pred_graph (class scc_info *si, FILE *file)
 {
   unsigned int i;
 
@@ -2281,7 +2328,7 @@ dump_pred_graph (struct scc_info *si, FILE *file)
 /* Perform offline variable substitution, discovering equivalence
    classes, and eliminating non-pointer variables.  */
 
-static struct scc_info *
+static class scc_info *
 perform_var_substitution (constraint_graph_t graph)
 {
   unsigned int i;
@@ -2289,6 +2336,7 @@ perform_var_substitution (constraint_graph_t graph)
   scc_info *si = new scc_info (size);
 
   bitmap_obstack_initialize (&iteration_obstack);
+  gcc_obstack_init (&equiv_class_obstack);
   pointer_equiv_class_table = new hash_table<equiv_class_hasher> (511);
   location_equiv_class_table
     = new hash_table<equiv_class_hasher> (511);
@@ -2415,7 +2463,7 @@ perform_var_substitution (constraint_graph_t graph)
    substitution.  */
 
 static void
-free_var_substitution_info (struct scc_info *si)
+free_var_substitution_info (class scc_info *si)
 {
   delete si;
   free (graph->pointer_label);
@@ -2428,6 +2476,7 @@ free_var_substitution_info (struct scc_info *si)
   pointer_equiv_class_table = NULL;
   delete location_equiv_class_table;
   location_equiv_class_table = NULL;
+  obstack_free (&equiv_class_obstack, NULL);
   bitmap_obstack_release (&iteration_obstack);
 }
 
@@ -2539,7 +2588,7 @@ move_complex_constraints (constraint_graph_t graph)
 
 static void
 rewrite_constraints (constraint_graph_t graph,
-		     struct scc_info *si)
+		     class scc_info *si)
 {
   int i;
   constraint_t c;
@@ -2928,15 +2977,26 @@ get_constraint_for_ssa_var (tree t, vec<ce_s> *results, bool address_p)
   /* We allow FUNCTION_DECLs here even though it doesn't make much sense.  */
   gcc_assert (TREE_CODE (t) == SSA_NAME || DECL_P (t));
 
-  /* For parameters, get at the points-to set for the actual parm
-     decl.  */
   if (TREE_CODE (t) == SSA_NAME
-      && SSA_NAME_IS_DEFAULT_DEF (t)
-      && (TREE_CODE (SSA_NAME_VAR (t)) == PARM_DECL
-	  || TREE_CODE (SSA_NAME_VAR (t)) == RESULT_DECL))
+      && SSA_NAME_IS_DEFAULT_DEF (t))
     {
-      get_constraint_for_ssa_var (SSA_NAME_VAR (t), results, address_p);
-      return;
+      /* For parameters, get at the points-to set for the actual parm
+	 decl.  */
+      if (TREE_CODE (SSA_NAME_VAR (t)) == PARM_DECL
+	  || TREE_CODE (SSA_NAME_VAR (t)) == RESULT_DECL)
+	{
+	  get_constraint_for_ssa_var (SSA_NAME_VAR (t), results, address_p);
+	  return;
+	}
+      /* For undefined SSA names return nothing.  */
+      else if (!ssa_defined_default_def_p (t))
+	{
+	  cexpr.var = nothing_id;
+	  cexpr.type = SCALAR;
+	  cexpr.offset = 0;
+	  results->safe_push (cexpr);
+	  return;
+	}
     }
 
   /* For global variables resort to the alias target.  */
@@ -3232,9 +3292,29 @@ get_constraint_for_component_ref (tree t, vec<ce_s> *results,
       return;
     }
 
-  /* Pretend to take the address of the base, we'll take care of
-     adding the required subset of sub-fields below.  */
-  get_constraint_for_1 (t, results, true, lhs_p);
+  /* Avoid creating pointer-offset constraints, so handle MEM_REF
+     offsets directly.  Pretend to take the address of the base,
+     we'll take care of adding the required subset of sub-fields below.  */
+  if (TREE_CODE (t) == MEM_REF
+      && !integer_zerop (TREE_OPERAND (t, 0)))
+    {
+      poly_offset_int off = mem_ref_offset (t);
+      off <<= LOG2_BITS_PER_UNIT;
+      off += bitpos;
+      poly_int64 off_hwi;
+      if (off.to_shwi (&off_hwi))
+	bitpos = off_hwi;
+      else
+	{
+	  bitpos = 0;
+	  bitmaxsize = -1;
+	}
+      get_constraint_for_1 (TREE_OPERAND (t, 0), results, false, lhs_p);
+      do_deref (results);
+    }
+  else
+    get_constraint_for_1 (t, results, true, lhs_p);
+
   /* Strip off nothing_id.  */
   if (results->length () == 2)
     {
@@ -3836,7 +3916,6 @@ make_heapvar (const char *name, bool add_id)
   DECL_EXTERNAL (heapvar) = 1;
 
   vi = new_var_info (heapvar, name, add_id);
-  vi->is_artificial_var = true;
   vi->is_heap_var = true;
   vi->is_unknown_size_var = true;
   vi->offset = 0;
@@ -4075,7 +4154,7 @@ handle_lhs_call (gcall *stmt, tree lhs, int flags, vec<ce_s> rhsc,
 	 initialized and thus may point to global memory.  All
 	 builtin functions with the malloc attribute behave in a sane way.  */
       if (!fndecl
-	  || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
+	  || !fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
 	make_constraint_from (vi, nonlocal_id);
       tmpc.var = vi->id;
       tmpc.offset = 0;
@@ -4391,6 +4470,32 @@ find_func_aliases_for_builtin_call (struct function *fn, gcall *t)
 	      process_constraint (new_constraint (*lhsp, ac));
 	  return true;
 	}
+      case BUILT_IN_STACK_SAVE:
+      case BUILT_IN_STACK_RESTORE:
+        /* Nothing interesting happens.  */
+        return true;
+      case BUILT_IN_ALLOCA:
+      case BUILT_IN_ALLOCA_WITH_ALIGN:
+      case BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX:
+	{
+	  tree ptr = gimple_call_lhs (t);
+	  if (ptr == NULL_TREE)
+	    return true;
+	  get_constraint_for (ptr, &lhsc);
+	  varinfo_t vi = make_heapvar ("HEAP", true);
+	  /* Alloca storage is never global.  To exempt it from escaped
+	     handling make it a non-heap var.  */
+	  DECL_EXTERNAL (vi->decl) = 0;
+	  vi->is_global_var = 0;
+	  vi->is_heap_var = 0;
+	  struct constraint_expr tmpc;
+	  tmpc.var = vi->id;
+	  tmpc.offset = 0;
+	  tmpc.type = ADDRESSOF;
+	  rhsc.safe_push (tmpc);
+	  process_all_all_constraints (lhsc, rhsc);
+	  return true;
+	}
       case BUILT_IN_POSIX_MEMALIGN:
         {
 	  tree ptrptr = gimple_call_arg (t, 0);
@@ -4685,7 +4790,7 @@ find_func_aliases_for_builtin_call (struct function *fn, gcall *t)
 		  argpos = 1;
 		  break;
 		case BUILT_IN_GOACC_PARALLEL:
-		  /* __builtin_GOACC_parallel (device, fn, mapnum, hostaddrs,
+		  /* __builtin_GOACC_parallel (flags_m, fn, mapnum, hostaddrs,
 					       sizes, kinds, ...).  */
 		  fnpos = 1;
 		  argpos = 3;
@@ -4729,7 +4834,7 @@ find_func_aliases_for_call (struct function *fn, gcall *t)
   varinfo_t fi;
 
   if (fndecl != NULL_TREE
-      && DECL_BUILT_IN (fndecl)
+      && fndecl_built_in_p (fndecl)
       && find_func_aliases_for_builtin_call (fn, t))
     return;
 
@@ -4833,35 +4938,19 @@ find_func_aliases (struct function *fn, gimple *origt)
   gimple *t = origt;
   auto_vec<ce_s, 16> lhsc;
   auto_vec<ce_s, 16> rhsc;
-  struct constraint_expr *c;
   varinfo_t fi;
 
   /* Now build constraints expressions.  */
   if (gimple_code (t) == GIMPLE_PHI)
     {
-      size_t i;
-      unsigned int j;
-
       /* For a phi node, assign all the arguments to
 	 the result.  */
       get_constraint_for (gimple_phi_result (t), &lhsc);
-      for (i = 0; i < gimple_phi_num_args (t); i++)
+      for (unsigned i = 0; i < gimple_phi_num_args (t); i++)
 	{
-	  tree strippedrhs = PHI_ARG_DEF (t, i);
-
-	  STRIP_NOPS (strippedrhs);
 	  get_constraint_for_rhs (gimple_phi_arg_def (t, i), &rhsc);
-
-	  FOR_EACH_VEC_ELT (lhsc, j, c)
-	    {
-	      struct constraint_expr *c2;
-	      while (rhsc.length () > 0)
-		{
-		  c2 = &rhsc.last ();
-		  process_constraint (new_constraint (*c, *c2));
-		  rhsc.pop ();
-		}
-	    }
+	  process_all_all_constraints (lhsc, rhsc);
+	  rhsc.truncate (0);
 	}
     }
   /* In IPA mode, we need to generate constraints to pass call
@@ -4898,6 +4987,9 @@ find_func_aliases (struct function *fn, gimple *origt)
 	  if (code == POINTER_PLUS_EXPR)
 	    get_constraint_for_ptr_offset (gimple_assign_rhs1 (t),
 					   gimple_assign_rhs2 (t), &rhsc);
+	  else if (code == POINTER_DIFF_EXPR)
+	    /* The result is not a pointer (part).  */
+	    ;
 	  else if (code == BIT_AND_EXPR
 		   && TREE_CODE (gimple_assign_rhs2 (t)) == INTEGER_CST)
 	    {
@@ -4906,6 +4998,17 @@ find_func_aliases (struct function *fn, gimple *origt)
 	      get_constraint_for_ptr_offset (gimple_assign_rhs1 (t),
 					     NULL_TREE, &rhsc);
 	    }
+	  else if (code == TRUNC_DIV_EXPR
+		   || code == CEIL_DIV_EXPR
+		   || code == FLOOR_DIV_EXPR
+		   || code == ROUND_DIV_EXPR
+		   || code == EXACT_DIV_EXPR
+		   || code == TRUNC_MOD_EXPR
+		   || code == CEIL_MOD_EXPR
+		   || code == FLOOR_MOD_EXPR
+		   || code == ROUND_MOD_EXPR)
+	    /* Division and modulo transfer the pointer from the LHS.  */
+	    get_constraint_for_rhs (gimple_assign_rhs1 (t), &rhsc);
 	  else if ((CONVERT_EXPR_CODE_P (code)
 		    && !(POINTER_TYPE_P (gimple_expr_type (t))
 			 && !POINTER_TYPE_P (TREE_TYPE (rhsop))))
@@ -4960,7 +5063,12 @@ find_func_aliases (struct function *fn, gimple *origt)
       greturn *return_stmt = as_a <greturn *> (t);
       fi = NULL;
       if (!in_ipa_mode
-	  || !(fi = get_vi_for_tree (fn->decl)))
+	  && SSA_VAR_P (gimple_return_retval (return_stmt)))
+	{
+	  /* We handle simple returns by post-processing the solutions.  */
+	  ;
+	}
+      if (!(fi = get_vi_for_tree (fn->decl)))
 	make_escape_constraint (gimple_return_retval (return_stmt));
       else if (in_ipa_mode)
 	{
@@ -5259,7 +5367,7 @@ find_func_clobbers (struct function *fn, gimple *origt)
 		  argpos = 1;
 		  break;
 		case BUILT_IN_GOACC_PARALLEL:
-		  /* __builtin_GOACC_parallel (device, fn, mapnum, hostaddrs,
+		  /* __builtin_GOACC_parallel (flags_m, fn, mapnum, hostaddrs,
 					       sizes, kinds, ...).  */
 		  fnpos = 1;
 		  argpos = 3;
@@ -5586,9 +5694,9 @@ push_fields_onto_fieldstack (tree type, vec<fieldoff_s> *fieldstack,
     return false;
 
   /* If the vector of fields is growing too big, bail out early.
-     Callers check for vec::length <= MAX_FIELDS_FOR_FIELD_SENSITIVE, make
+     Callers check for vec::length <= param_max_fields_for_field_sensitive, make
      sure this fails.  */
-  if (fieldstack->length () > MAX_FIELDS_FOR_FIELD_SENSITIVE)
+  if (fieldstack->length () > (unsigned)param_max_fields_for_field_sensitive)
     return false;
 
   for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
@@ -5908,7 +6016,6 @@ create_function_info_for (tree decl, const char *name, bool add_id,
 
       gcc_assert (prev_vi->offset < argvi->offset);
       prev_vi->next = argvi->id;
-      prev_vi = argvi;
     }
 
   return vi;
@@ -6010,7 +6117,7 @@ create_variable_info_for_1 (tree decl, const char *name, bool add_id,
   /* If we didn't end up collecting sub-variables create a full
      variable for the decl.  */
   if (fieldstack.length () == 0
-      || fieldstack.length () > MAX_FIELDS_FOR_FIELD_SENSITIVE)
+      || fieldstack.length () > (unsigned)param_max_fields_for_field_sensitive)
     {
       vi = new_var_info (decl, name, add_id);
       vi->offset = 0;
@@ -6406,9 +6513,7 @@ set_uids_in_ptset (bitmap into, bitmap from, struct pt_solution *pt,
     {
       varinfo_t vi = get_varinfo (i);
 
-      /* The only artificial variables that are allowed in a may-alias
-	 set are heap variables.  */
-      if (vi->is_artificial_var && !vi->is_heap_var)
+      if (vi->is_artificial_var)
 	continue;
 
       if (everything_escaped
@@ -6416,7 +6521,7 @@ set_uids_in_ptset (bitmap into, bitmap from, struct pt_solution *pt,
 	      && bitmap_bit_p (escaped_vi->solution, i)))
 	{
 	  pt->vars_contains_escaped = true;
-	  pt->vars_contains_escaped_heap = vi->is_heap_var;
+	  pt->vars_contains_escaped_heap |= vi->is_heap_var;
 	}
 
       if (vi->is_restrict_var)
@@ -6456,6 +6561,16 @@ set_uids_in_ptset (bitmap into, bitmap from, struct pt_solution *pt,
 	      && (TREE_STATIC (vi->decl) || DECL_EXTERNAL (vi->decl))
 	      && ! decl_binds_to_current_def_p (vi->decl))
 	    pt->vars_contains_interposable = true;
+
+	  /* If this is a local variable we can have overlapping lifetime
+	     of different function invocations through recursion duplicate
+	     it with its shadow variable.  */
+	  if (in_ipa_mode
+	      && vi->shadow_var_uid != 0)
+	    {
+	      bitmap_set_bit (into, vi->shadow_var_uid);
+	      pt->vars_contains_nonlocal = true;
+	    }
 	}
 
       else if (TREE_CODE (vi->decl) == FUNCTION_DECL
@@ -6518,9 +6633,6 @@ find_what_var_points_to (tree fndecl, varinfo_t orig_vi)
 	    }
 	  else if (vi->id == nonlocal_id)
 	    pt->nonlocal = 1;
-	  else if (vi->is_heap_var)
-	    /* We represent heapvars in the points-to set properly.  */
-	    ;
 	  else if (vi->id == string_id)
 	    /* Nobody cares - STRING_CSTs are read-only entities.  */
 	    ;
@@ -7070,7 +7182,7 @@ init_base_vars (void)
 static void
 init_alias_vars (void)
 {
-  use_field_sensitive = (MAX_FIELDS_FOR_FIELD_SENSITIVE > 1);
+  use_field_sensitive = (param_max_fields_for_field_sensitive > 1);
 
   bitmap_obstack_initialize (&pta_obstack);
   bitmap_obstack_initialize (&oldpta_obstack);
@@ -7132,7 +7244,7 @@ remove_preds_and_fake_succs (constraint_graph_t graph)
 static void
 solve_constraints (void)
 {
-  struct scc_info *si;
+  class scc_info *si;
 
   /* Sort varinfos so that ones that cannot be pointed to are last.
      This makes bitmaps more efficient.  */
@@ -7228,9 +7340,6 @@ solve_constraints (void)
       dump_constraint_graph (dump_file);
       fprintf (dump_file, "\n\n");
     }
-
-  if (dump_file)
-    dump_sa_points_to_info (dump_file);
 }
 
 /* Create points-to sets for the current function.  See the comments
@@ -7277,6 +7386,73 @@ compute_points_to_sets (void)
 
   /* From the constraints compute the points-to sets.  */
   solve_constraints ();
+
+  /* Post-process solutions for escapes through returns.  */
+  edge_iterator ei;
+  edge e;
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
+    if (greturn *ret = safe_dyn_cast <greturn *> (last_stmt (e->src)))
+      {
+	tree val = gimple_return_retval (ret);
+	/* ???  Easy to handle simple indirections with some work.
+	   Arbitrary references like foo.bar.baz are more difficult
+	   (but conservatively easy enough with just looking at the base).
+	   Mind to fixup find_func_aliases as well.  */
+	if (!val || !SSA_VAR_P (val))
+	  continue;
+	/* returns happen last in non-IPA so they only influence
+	   the ESCAPED solution and we can filter local variables.  */
+	varinfo_t escaped_vi = get_varinfo (find (escaped_id));
+	varinfo_t vi = lookup_vi_for_tree (val);
+	bitmap delta = BITMAP_ALLOC (&pta_obstack);
+	bitmap_iterator bi;
+	unsigned i;
+	for (; vi; vi = vi_next (vi))
+	  {
+	    varinfo_t part_vi = get_varinfo (find (vi->id));
+	    EXECUTE_IF_AND_COMPL_IN_BITMAP (part_vi->solution,
+					    escaped_vi->solution, 0, i, bi)
+	      {
+		varinfo_t pointed_to_vi = get_varinfo (i);
+		if (pointed_to_vi->is_global_var
+		    /* We delay marking of heap memory as global.  */
+		    || pointed_to_vi->is_heap_var)
+		  bitmap_set_bit (delta, i);
+	      }
+	  }
+
+	/* Now compute the transitive closure.  */
+	bitmap_ior_into (escaped_vi->solution, delta);
+	bitmap new_delta = BITMAP_ALLOC (&pta_obstack);
+	while (!bitmap_empty_p (delta))
+	  {
+	    EXECUTE_IF_SET_IN_BITMAP (delta, 0, i, bi)
+	      {
+		varinfo_t pointed_to_vi = get_varinfo (i);
+		pointed_to_vi = get_varinfo (find (pointed_to_vi->id));
+		unsigned j;
+		bitmap_iterator bi2;
+		EXECUTE_IF_AND_COMPL_IN_BITMAP (pointed_to_vi->solution,
+						escaped_vi->solution,
+						0, j, bi2)
+		  {
+		    varinfo_t pointed_to_vi2 = get_varinfo (j);
+		    if (pointed_to_vi2->is_global_var
+			/* We delay marking of heap memory as global.  */
+			|| pointed_to_vi2->is_heap_var)
+		      bitmap_set_bit (new_delta, j);
+		  }
+	      }
+	    bitmap_ior_into (escaped_vi->solution, new_delta);
+	    bitmap_clear (delta);
+	    std::swap (delta, new_delta);
+	  }
+	BITMAP_FREE (delta);
+	BITMAP_FREE (new_delta);
+      }
+
+  if (dump_file)
+    dump_sa_points_to_info (dump_file);
 
   /* Compute the points-to set for ESCAPED used for call-clobber analysis.  */
   cfun->gimple_df->escaped = find_what_var_points_to (cfun->decl,
@@ -7401,6 +7577,7 @@ delete_points_to_sets (void)
 struct vls_data
 {
   unsigned short clique;
+  bool escaped_p;
   bitmap rvars;
 };
 
@@ -7412,6 +7589,7 @@ visit_loadstore (gimple *, tree base, tree ref, void *data)
 {
   unsigned short clique = ((vls_data *) data)->clique;
   bitmap rvars = ((vls_data *) data)->rvars;
+  bool escaped_p = ((vls_data *) data)->escaped_p;
   if (TREE_CODE (base) == MEM_REF
       || TREE_CODE (base) == TARGET_MEM_REF)
     {
@@ -7432,7 +7610,8 @@ visit_loadstore (gimple *, tree base, tree ref, void *data)
 	    return false;
 
 	  vi = get_varinfo (find (vi->id));
-	  if (bitmap_intersect_p (rvars, vi->solution))
+	  if (bitmap_intersect_p (rvars, vi->solution)
+	      || (escaped_p && bitmap_bit_p (vi->solution, escaped_id)))
 	    return false;
 	}
 
@@ -7467,36 +7646,64 @@ visit_loadstore (gimple *, tree base, tree ref, void *data)
   return false;
 }
 
-/* If REF is a MEM_REF then assign a clique, base pair to it, updating
-   CLIQUE, *RESTRICT_VAR and LAST_RUID.  Return whether dependence info
-   was assigned to REF.  */
+struct msdi_data {
+  tree ptr;
+  unsigned short *clique;
+  unsigned short *last_ruid;
+  varinfo_t restrict_var;
+};
+
+/* If BASE is a MEM_REF then assign a clique, base pair to it, updating
+   CLIQUE, *RESTRICT_VAR and LAST_RUID as passed via DATA.
+   Return whether dependence info was assigned to BASE.  */
 
 static bool
-maybe_set_dependence_info (tree ref, tree ptr,
-			   unsigned short &clique, varinfo_t restrict_var,
-			   unsigned short &last_ruid)
+maybe_set_dependence_info (gimple *, tree base, tree, void *data)
 {
-  while (handled_component_p (ref))
-    ref = TREE_OPERAND (ref, 0);
-  if ((TREE_CODE (ref) == MEM_REF
-       || TREE_CODE (ref) == TARGET_MEM_REF)
-      && TREE_OPERAND (ref, 0) == ptr)
+  tree ptr = ((msdi_data *)data)->ptr;
+  unsigned short &clique = *((msdi_data *)data)->clique;
+  unsigned short &last_ruid = *((msdi_data *)data)->last_ruid;
+  varinfo_t restrict_var = ((msdi_data *)data)->restrict_var;
+  if ((TREE_CODE (base) == MEM_REF
+       || TREE_CODE (base) == TARGET_MEM_REF)
+      && TREE_OPERAND (base, 0) == ptr)
     {
       /* Do not overwrite existing cliques.  This avoids overwriting dependence
 	 info inlined from a function with restrict parameters inlined
 	 into a function with restrict parameters.  This usually means we
 	 prefer to be precise in innermost loops.  */
-      if (MR_DEPENDENCE_CLIQUE (ref) == 0)
+      if (MR_DEPENDENCE_CLIQUE (base) == 0)
 	{
 	  if (clique == 0)
-	    clique = ++cfun->last_clique;
+	    {
+	      if (cfun->last_clique == 0)
+		cfun->last_clique = 1;
+	      clique = 1;
+	    }
 	  if (restrict_var->ruid == 0)
 	    restrict_var->ruid = ++last_ruid;
-	  MR_DEPENDENCE_CLIQUE (ref) = clique;
-	  MR_DEPENDENCE_BASE (ref) = restrict_var->ruid;
+	  MR_DEPENDENCE_CLIQUE (base) = clique;
+	  MR_DEPENDENCE_BASE (base) = restrict_var->ruid;
 	  return true;
 	}
     }
+  return false;
+}
+
+/* Clear dependence info for the clique DATA.  */
+
+static bool
+clear_dependence_clique (gimple *, tree base, tree, void *data)
+{
+  unsigned short clique = (uintptr_t)data;
+  if ((TREE_CODE (base) == MEM_REF
+       || TREE_CODE (base) == TARGET_MEM_REF)
+      && MR_DEPENDENCE_CLIQUE (base) == clique)
+    {
+      MR_DEPENDENCE_CLIQUE (base) = 0;
+      MR_DEPENDENCE_BASE (base) = 0;
+    }
+
   return false;
 }
 
@@ -7506,9 +7713,23 @@ maybe_set_dependence_info (tree ref, tree ptr,
 static void
 compute_dependence_clique (void)
 {
+  /* First clear the special "local" clique.  */
+  basic_block bb;
+  if (cfun->last_clique != 0)
+    FOR_EACH_BB_FN (bb, cfun)
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  walk_stmt_load_store_ops (stmt, (void *)(uintptr_t) 1,
+				    clear_dependence_clique,
+				    clear_dependence_clique);
+	}
+
   unsigned short clique = 0;
   unsigned short last_ruid = 0;
   bitmap rvars = BITMAP_ALLOC (NULL);
+  bool escaped_p = false;
   for (unsigned i = 0; i < num_ssa_names; ++i)
     {
       tree ptr = ssa_name (i);
@@ -7531,9 +7752,12 @@ compute_dependence_clique (void)
       EXECUTE_IF_SET_IN_BITMAP (vi->solution, 0, j, bi)
 	{
 	  varinfo_t oi = get_varinfo (j);
+	  if (oi->head != j)
+	    oi = get_varinfo (oi->head);
 	  if (oi->is_restrict_var)
 	    {
-	      if (restrict_var)
+	      if (restrict_var
+		  && restrict_var != oi)
 		{
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {
@@ -7565,20 +7789,21 @@ compute_dependence_clique (void)
 	  imm_use_iterator ui;
 	  gimple *use_stmt;
 	  bool used = false;
+	  msdi_data data = { ptr, &clique, &last_ruid, restrict_var };
 	  FOR_EACH_IMM_USE_STMT (use_stmt, ui, ptr)
-	    {
-	      /* ???  Calls and asms.  */
-	      if (!gimple_assign_single_p (use_stmt))
-		continue;
-	      used |= maybe_set_dependence_info (gimple_assign_lhs (use_stmt),
-						 ptr, clique, restrict_var,
-						 last_ruid);
-	      used |= maybe_set_dependence_info (gimple_assign_rhs1 (use_stmt),
-						 ptr, clique, restrict_var,
-						 last_ruid);
-	    }
+	    used |= walk_stmt_load_store_ops (use_stmt, &data,
+					      maybe_set_dependence_info,
+					      maybe_set_dependence_info);
 	  if (used)
-	    bitmap_set_bit (rvars, restrict_var->id);
+	    {
+	      /* Add all subvars to the set of restrict pointed-to set. */
+	      for (unsigned sv = restrict_var->head; sv != 0;
+		   sv = get_varinfo (sv)->next)
+		bitmap_set_bit (rvars, sv);
+	      varinfo_t escaped = get_varinfo (find (escaped_id));
+	      if (bitmap_bit_p (escaped->solution, restrict_var->id))
+		escaped_p = true;
+	    }
 	}
     }
 
@@ -7591,7 +7816,7 @@ compute_dependence_clique (void)
 	 parameters) we can't restrict scoping properly thus the following
 	 is too aggressive there.  For now we have excluded those globals from
 	 getting into the MR_DEPENDENCE machinery.  */
-      vls_data data = { clique, rvars };
+      vls_data data = { clique, escaped_p, rvars };
       basic_block bb;
       FOR_EACH_BB_FN (bb, cfun)
 	for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
@@ -7737,7 +7962,7 @@ associate_varinfo_to_alias (struct cgraph_node *node, void *data)
 {
   if ((node->alias
        || (node->thunk.thunk_p
-	   && ! node->global.inlined_to))
+	   && ! node->inlined_to))
       && node->analyzed
       && !node->ifunc_resolver)
     insert_vi_for_tree (node->decl, (varinfo_t)data);
@@ -7907,7 +8132,7 @@ ipa_pta_execute (void)
       /* Nodes without a body are not interesting.  Especially do not
          visit clones at this point for now - we get duplicate decls
 	 there for inline clones at least.  */
-      if (!node->has_gimple_body_p () || node->global.inlined_to)
+      if (!node->has_gimple_body_p () || node->inlined_to)
 	continue;
       node->get_body ();
 
@@ -8033,6 +8258,65 @@ ipa_pta_execute (void)
 
   /* From the constraints compute the points-to sets.  */
   solve_constraints ();
+
+  if (dump_file)
+    dump_sa_points_to_info (dump_file);
+
+  /* Now post-process solutions to handle locals from different
+     runtime instantiations coming in through recursive invocations.  */
+  unsigned shadow_var_cnt = 0;
+  for (unsigned i = 1; i < varmap.length (); ++i)
+    {
+      varinfo_t fi = get_varinfo (i);
+      if (fi->is_fn_info
+	  && fi->decl)
+	/* Automatic variables pointed to by their containing functions
+	   parameters need this treatment.  */
+	for (varinfo_t ai = first_vi_for_offset (fi, fi_parm_base);
+	     ai; ai = vi_next (ai))
+	  {
+	    varinfo_t vi = get_varinfo (find (ai->id));
+	    bitmap_iterator bi;
+	    unsigned j;
+	    EXECUTE_IF_SET_IN_BITMAP (vi->solution, 0, j, bi)
+	      {
+		varinfo_t pt = get_varinfo (j);
+		if (pt->shadow_var_uid == 0
+		    && pt->decl
+		    && auto_var_in_fn_p (pt->decl, fi->decl))
+		  {
+		    pt->shadow_var_uid = allocate_decl_uid ();
+		    shadow_var_cnt++;
+		  }
+	      }
+	  }
+      /* As well as global variables which are another way of passing
+         arguments to recursive invocations.  */
+      else if (fi->is_global_var)
+	{
+	  for (varinfo_t ai = fi; ai; ai = vi_next (ai))
+	    {
+	      varinfo_t vi = get_varinfo (find (ai->id));
+	      bitmap_iterator bi;
+	      unsigned j;
+	      EXECUTE_IF_SET_IN_BITMAP (vi->solution, 0, j, bi)
+		{
+		  varinfo_t pt = get_varinfo (j);
+		  if (pt->shadow_var_uid == 0
+		      && pt->decl
+		      && auto_var_p (pt->decl))
+		    {
+		      pt->shadow_var_uid = allocate_decl_uid ();
+		      shadow_var_cnt++;
+		    }
+		}
+	    }
+	}
+    }
+  if (shadow_var_cnt && dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Allocated %u shadow variables for locals "
+	     "maybe leaking into recursive invocations of their containing "
+	     "functions\n", shadow_var_cnt);
 
   /* Compute the global points-to sets for ESCAPED.
      ???  Note that the computed escape set is not correct

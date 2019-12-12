@@ -1,5 +1,5 @@
 /* Target instruction definitions.
-   Copyright (C) 2015-2018 Free Software Foundation, Inc.
+   Copyright (C) 2015-2019 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -96,7 +96,9 @@ DEF_TARGET_INSN (sibcall_value, (rtx x0, rtx x1, rtx opt2, rtx opt3,
 DEF_TARGET_INSN (simple_return, (void))
 DEF_TARGET_INSN (split_stack_prologue, (void))
 DEF_TARGET_INSN (split_stack_space_check, (rtx x0, rtx x1))
+DEF_TARGET_INSN (stack_protect_combined_set, (rtx x0, rtx x1))
 DEF_TARGET_INSN (stack_protect_set, (rtx x0, rtx x1))
+DEF_TARGET_INSN (stack_protect_combined_test, (rtx x0, rtx x1, rtx x2))
 DEF_TARGET_INSN (stack_protect_test, (rtx x0, rtx x1, rtx x2))
 DEF_TARGET_INSN (store_multiple, (rtx x0, rtx x1, rtx x2))
 DEF_TARGET_INSN (tablejump, (rtx x0, rtx x1))

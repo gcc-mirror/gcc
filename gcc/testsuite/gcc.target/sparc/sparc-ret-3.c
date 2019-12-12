@@ -50,4 +50,4 @@ unsigned int bug(unsigned int crc, const void *address, unsigned int length)
 
 	return *ctx;
 }
-/* { dg-final { scan-assembler "ld\[ \t\]*\\\[%i5\\+8\\\], %i0\n\[^\n\]*return\[ \t\]*%i7\\+8" } } */
+/* { dg-final { scan-assembler "ld\[ \t\]*\\\[%\[a-z0-9\]*\\+\[0-9\]*\\\], %i0\n\[^\n\]*return\[ \t\]*%i7\\+8" } } */

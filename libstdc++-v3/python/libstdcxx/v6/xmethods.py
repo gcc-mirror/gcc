@@ -1,6 +1,6 @@
 # Xmethods for libstdc++.
 
-# Copyright (C) 2014-2018 Free Software Foundation, Inc.
+# Copyright (C) 2014-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -586,11 +586,22 @@ class UniquePtrGetWorker(gdb.xmethod.XMethodWorker):
 
     def __call__(self, obj):
         impl_type = obj.dereference().type.fields()[0].type.tag
-        if re.match('^std::(__\d+::)?__uniq_ptr_impl<.*>$', impl_type): # New implementation
-            return obj['_M_t']['_M_t']['_M_head_impl']
+        # Check for new implementations first:
+        if re.match('^std::(__\d+::)?__uniq_ptr_(data|impl)<.*>$', impl_type):
+            tuple_member = obj['_M_t']['_M_t']
         elif re.match('^std::(__\d+::)?tuple<.*>$', impl_type):
-            return obj['_M_t']['_M_head_impl']
-        return None
+            tuple_member = obj['_M_t']
+        else:
+            return None
+        tuple_impl_type = tuple_member.type.fields()[0].type # _Tuple_impl
+        tuple_head_type = tuple_impl_type.fields()[1].type   # _Head_base
+        head_field = tuple_head_type.fields()[0]
+        if head_field.name == '_M_head_impl':
+            return tuple_member['_M_head_impl']
+        elif head_field.is_base_class:
+            return tuple_member.cast(head_field.type)
+        else:
+            return None
 
 class UniquePtrDerefWorker(UniquePtrGetWorker):
     "Implements std::unique_ptr<T>::operator*()"
@@ -728,7 +739,7 @@ class SharedPtrUseCountWorker(gdb.xmethod.XMethodWorker):
         return gdb.lookup_type('long')
 
     def __call__(self, obj):
-        refcounts = ['_M_refcount']['_M_pi']
+        refcounts = obj['_M_refcount']['_M_pi']
         return refcounts['_M_use_count'] if refcounts else 0
 
 class SharedPtrUniqueWorker(SharedPtrUseCountWorker):

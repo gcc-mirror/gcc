@@ -22,7 +22,7 @@ program udr7
   do i = 1, 64
     x = x + i
   end do
-  if (any (x /= 2080.0)) STOP 1
+  if (any (x /= 2080.0)) stop 1
 contains
   elemental subroutine omp_out (x, y)
     real, intent (out) :: x

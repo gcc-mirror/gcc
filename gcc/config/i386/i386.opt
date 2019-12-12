@@ -1,6 +1,6 @@
 ; Options for the IA-32 and AMD64 ports of the compiler.
 
-; Copyright (C) 2005-2018 Free Software Foundation, Inc.
+; Copyright (C) 2005-2019 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -253,7 +253,7 @@ EnumValue
 Enum(ix86_align_data) String(cacheline) Value(ix86_align_data_type_cacheline)
 
 march=
-Target RejectNegative Joined Var(ix86_arch_string)
+Target RejectNegative Negative(march=) Joined Var(ix86_arch_string)
 Generate code for given CPU.
 
 masm=
@@ -377,7 +377,6 @@ Inline memset/memcpy string operations, but perform inline version only for smal
 
 mintel-syntax
 Target Undocumented Alias(masm=, intel, att) Warn(%<-mintel-syntax%> and %<-mno-intel-syntax%> are deprecated; use %<-masm=intel%> and %<-masm=att%> instead)
-;; Deprecated
 
 mms-bitfields
 Target Report Mask(MS_BITFIELD_LAYOUT) Save
@@ -510,7 +509,7 @@ Target Report Mask(TLS_DIRECT_SEG_REFS)
 Use direct references against %gs when accessing tls data.
 
 mtune=
-Target RejectNegative Joined Var(ix86_tune_string)
+Target RejectNegative Negative(mtune=) Joined Var(ix86_tune_string)
 Schedule code for given CPU.
 
 mtune-ctrl=
@@ -601,7 +600,7 @@ Use given register vector width instructions instead of maximum register width i
 
 Enum
 Name(prefer_vector_width) Type(enum prefer_vector_width)
-Known preferred register vector length (to use with the -mprefer-vector-width= option)
+Known preferred register vector length (to use with the -mprefer-vector-width= option):
 
 EnumValue
 Enum(prefer_vector_width) String(none) Value(PVW_NONE)
@@ -749,6 +748,10 @@ mavx512bitalg
 Target Report Mask(ISA_AVX512BITALG) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512BITALG built-in functions and code generation.
 
+mavx512vp2intersect
+Target Report Mask(ISA_AVX512VP2INTERSECT) Var(ix86_isa_flags2) Save
+Support AVX512VP2INTERSECT built-in functions and code generation.
+
 mfma
 Target Report Mask(ISA_FMA) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation.
@@ -784,6 +787,10 @@ Support PCONFIG built-in functions and code generation.
 mwbnoinvd
 Target Report Mask(ISA_WBNOINVD) Var(ix86_isa_flags2) Save
 Support WBNOINVD built-in functions and code generation.
+
+mptwrite
+Target Report Mask(ISA_PTWRITE) Var(ix86_isa_flags2) Save
+Support PTWRITE built-in functions and code generation.
 
 msgx
 Target Report Mask(ISA_SGX) Var(ix86_isa_flags2) Save
@@ -842,8 +849,7 @@ Target Report Mask(ISA_CLWB) Var(ix86_isa_flags) Save
 Support CLWB instruction.
 
 mpcommit
-Target Undocumented Warn(%<-mpcommit%> was deprecated)
-;; Deprecated
+Target WarnRemoved
 
 mfxsr
 Target Report Mask(ISA_FXSR) Var(ix86_isa_flags) Save
@@ -930,6 +936,14 @@ Target Report Var(flag_nop_mcount)
 Generate mcount/__fentry__ calls as nops. To activate they need to be
 patched in.
 
+mfentry-name=
+Target RejectNegative Joined Var(fentry_name)
+Set name of __fentry__ symbol called at function entry.
+
+mfentry-section=
+Target RejectNegative Joined Var(fentry_section)
+Set name of section to record mrecord-mcount calls.
+
 mskip-rax-setup
 Target Report Var(flag_skip_rax_setup)
 Skip setting up RAX register when passing variable arguments.
@@ -951,8 +965,8 @@ Target Report Mask(ISA_RTM) Var(ix86_isa_flags) Save
 Support RTM built-in functions and code generation.
 
 mmpx
-Target Report Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+Target WarnRemoved
+Removed in GCC 9.  This switch has no effect.
 
 mmwaitx
 Target Report Mask(ISA_MWAITX) Var(ix86_isa_flags2) Save
@@ -999,8 +1013,7 @@ Target RejectNegative Joined Integer Var(ix86_stack_protector_guard_symbol_str)
 Use the given symbol for addressing the stack-protector guard.
 
 mmitigate-rop
-Target Var(flag_mitigate_rop)
-Attempt to avoid generating instruction sequences containing ret bytes.
+Target WarnRemoved
 
 mgeneral-regs-only
 Target Report RejectNegative Mask(GENERAL_REGS_ONLY) Var(ix86_target_flags) Save
@@ -1015,6 +1028,11 @@ mcet-switch
 Target Report Undocumented Var(flag_cet_switch) Init(0)
 Turn on CET instrumentation for switch statements that use a jump table and
 an indirect jump.
+
+mmanual-endbr
+Target Report Var(flag_manual_endbr) Init(0)
+Insert ENDBR instruction at function entry only via cf_check attribute
+for CET instrumentation.
 
 mforce-indirect-call
 Target Report Var(flag_force_indirect_call) Init(0)
@@ -1063,3 +1081,33 @@ Support WAITPKG built-in functions and code generation.
 mcldemote
 Target Report Mask(ISA_CLDEMOTE) Var(ix86_isa_flags2) Save
 Support CLDEMOTE built-in functions and code generation.
+
+minstrument-return=
+Target Report RejectNegative Joined Enum(instrument_return) Var(ix86_instrument_return) Init(instrument_return_none)
+Instrument function exit in instrumented functions with __fentry__.
+
+Enum
+Name(instrument_return) Type(enum instrument_return)
+Known choices for return instrumentation with -minstrument-return=:
+
+EnumValue
+Enum(instrument_return) String(none) Value(instrument_return_none)
+
+EnumValue
+Enum(instrument_return) String(call) Value(instrument_return_call)
+
+EnumValue
+Enum(instrument_return) String(nop5) Value(instrument_return_nop5)
+
+mrecord-return
+Target Report Var(ix86_flag_record_return) Init(0)
+Generate a __return_loc section pointing to all return instrumentation code.
+
+mavx512bf16
+Target Report Mask(ISA_AVX512BF16) Var(ix86_isa_flags2) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and
+AVX512BF16 built-in functions and code generation.
+
+menqcmd
+Target Report Mask(ISA_ENQCMD) Var(ix86_isa_flags2) Save
+Support ENQCMD built-in functions and code generation.

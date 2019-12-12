@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---                     Copyright (C) 1996-2018, AdaCore                     --
+--                     Copyright (C) 1996-2019, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,7 +53,7 @@
 --       matching with the restriction that it matches entire strings. It
 --       is particularly useful for file name matching, and in particular
 --       it provides "globbing patterns" that are useful in implementing
---       unix or DOS style wild card matching for file names.
+--       unix or DOS style wildcard matching for file names.
 
 --     GNAT.Regpat (files g-regpat.ads/s-regpat.ads/s-regpat.adb)
 --       This is a more complete implementation of Unix-style regular

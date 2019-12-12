@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,7 +45,7 @@ void test02()
   test_type v2(1, alloc_type(2));
   v2 = std::move(v1);
   VERIFY( it == v2.begin() );
-  VERIFY(0 == v1.get_allocator().get_personality());
+  VERIFY(1 == v1.get_allocator().get_personality());
   VERIFY(1 == v2.get_allocator().get_personality());
 }
 

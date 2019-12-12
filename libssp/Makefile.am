@@ -1,9 +1,9 @@
 ## Makefile for the toplevel directory of the libssp library.
 ##
-## Copyright (C) 2005-2018 Free Software Foundation, Inc.
+## Copyright (C) 2005-2019 Free Software Foundation, Inc.
 ##
 
-AUTOMAKE_OPTIONS = 1.9.5 foreign
+AUTOMAKE_OPTIONS = foreign
 ACLOCAL_AMFLAGS = -I .. -I ../config
 MAINT_CHARSET = latin1
 
@@ -107,3 +107,4 @@ MAKEOVERRIDES=
 
 ## ################################################################
 
+include $(top_srcdir)/../multilib.am

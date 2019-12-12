@@ -11,7 +11,7 @@
 {
   Class isa;
 }
-@property int a[8]; /* { dg-error "property can not be an array" } */
-@property int b:8;  /* { dg-error "property can not be a bit-field" } */
-@property int c[];  /* { dg-error "property can not be an array" } */
+@property int a[8]; /* { dg-error "property cannot be an array" } */
+@property int b:8;  /* { dg-error "property cannot be a bit-field" } */
+@property int c[];  /* { dg-error "property cannot be an array" } */
 @end

@@ -1,5 +1,5 @@
 /* UndefinedBehaviorSanitizer, undefined behavior detector.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
    Contributed by Marek Polacek <polacek@redhat.com>
 
 This file is part of GCC.
@@ -663,7 +663,7 @@ bool
 is_ubsan_builtin_p (tree t)
 {
   return TREE_CODE (t) == FUNCTION_DECL
-	 && DECL_BUILT_IN_CLASS (t) == BUILT_IN_NORMAL
+	 && fndecl_built_in_p (t, BUILT_IN_NORMAL)
 	 && strncmp (IDENTIFIER_POINTER (DECL_NAME (t)),
 		     "__builtin___ubsan_", 18) == 0;
 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2018 Free Software Foundation, Inc.
+// Copyright (C) 2011-2019 Free Software Foundation, Inc.
 //  
 // This file is part of GCC.
 //
@@ -26,6 +26,6 @@
 
 namespace __gnu_cxx
 {
-  recursive_init_error::~recursive_init_error() throw() { }
+  recursive_init_error::recursive_init_error() noexcept { }
+  recursive_init_error::~recursive_init_error() noexcept { }
 }
-

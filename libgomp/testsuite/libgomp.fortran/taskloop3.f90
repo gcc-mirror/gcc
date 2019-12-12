@@ -1,18 +1,17 @@
-! { dg-do run }
 ! { dg-options "-O2" }
 
   integer, save :: g
   integer :: i
   !$omp parallel
   !$omp single
-    if (f1 (74) .ne. 63 + 4) STOP 1
+    if (f1 (74) .ne. 63 + 4) stop 1
     g = 77
     call f2
     !$omp taskwait
-    if (g .ne. 63 + 9) STOP 2
-    if (f3 (7_8, 11_8, 2_8) .ne. 11 * 7 + 13) STOP 3
+    if (g .ne. 63 + 9) stop 2
+    if (f3 (7_8, 11_8, 2_8) .ne. 11 * 7 + 13) stop 3
     if (f4 (0_8, 31_8, 16_8, 46_8, 1_8, 2_8, 73) .ne. 32 + 5 * 48 &
-&       + 11 * 31 + 17 * 46) STOP 4
+&       + 11 * 31 + 17 * 46) stop 4
   !$omp end single
   !$omp end parallel
 contains
@@ -22,7 +21,7 @@ contains
     x = y
     !$omp taskloop firstprivate(x)lastprivate(x)
     do i = 0, 63
-      if (x .ne. 74) STOP 5
+      if (x .ne. 74) stop 5
       if (i .eq. 63) then
         x = i + 4
       end if
@@ -33,7 +32,7 @@ contains
     integer :: i
     !$omp taskloop firstprivate(g)lastprivate(g)nogroup
     do i = 0, 63
-      if (g .ne. 77) STOP 6
+      if (g .ne. 77) stop 6
       if (i .eq. 63) then
         g = i + 9
       end if
@@ -60,7 +59,7 @@ contains
     !$omp & lastprivate (i, j, k, l)
     do i = a, b, e
       do j = c, d, f
-        if (k .ne. 73) STOP 7
+        if (k .ne. 73) stop 7
         if (i .eq. 31 .and. j .eq. 46) then
           k = i
         end if

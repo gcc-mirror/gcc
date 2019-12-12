@@ -1,5 +1,5 @@
 /* Intrinsic functions of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -993,14 +993,14 @@ nds32_expand_builtin_impl (tree exp,
 			   int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   unsigned i;
   struct builtin_description *d;
 
   if (!NDS32_EXT_DSP_P ()
       && fcode > NDS32_BUILTIN_DSP_BEGIN
       && fcode < NDS32_BUILTIN_DSP_END)
-    error ("don't support DSP extension instructions");
+    error ("don%'t support DSP extension instructions");
 
   switch (fcode)
     {
@@ -1059,7 +1059,7 @@ nds32_expand_builtin_impl (tree exp,
     case NDS32_BUILTIN_CLO:
       if (!TARGET_EXT_PERF)
 	{
-	  error ("don't support performance extension instructions");
+	  error ("don%'t support performance extension instructions");
 	  return NULL_RTX;
 	}
       break;
@@ -1071,7 +1071,7 @@ nds32_expand_builtin_impl (tree exp,
     case NDS32_BUILTIN_BSP:
       if (!TARGET_EXT_PERF2)
 	{
-	  error ("don't support performance extension "
+	  error ("don%'t support performance extension "
 		 "version 2 instructions");
 	  return NULL_RTX;
 	}
@@ -1083,7 +1083,7 @@ nds32_expand_builtin_impl (tree exp,
     case NDS32_BUILTIN_FLMISM:
       if (!TARGET_EXT_STRING)
 	{
-	  error ("don't support string extension instructions");
+	  error ("don%'t support string extension instructions");
 	  return NULL_RTX;
 	}
       break;

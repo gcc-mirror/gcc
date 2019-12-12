@@ -1,6 +1,6 @@
 // random number generation -*- C++ -*-
 
-// Copyright (C) 2009-2018 Free Software Foundation, Inc.
+// Copyright (C) 2009-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,6 +33,9 @@
 
 #include <vector>
 #include <bits/uniform_int_dist.h>
+#if __cplusplus > 201703L
+# include <concepts>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -47,6 +50,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * A facility for generating random numbers on selected distributions.
    * @{
    */
+
+#ifdef __cpp_lib_concepts
+  /// Requirements for a uniform random bit generator.
+  template<typename _Gen>
+    concept uniform_random_bit_generator
+      = invocable<_Gen&> && unsigned_integral<invoke_result_t<_Gen&>>
+      && requires
+      {
+	{ _Gen::min() } -> same_as<invoke_result_t<_Gen&>>;
+	{ _Gen::max() } -> same_as<invoke_result_t<_Gen&>>;
+      };
+#endif
 
   /**
    * @brief A function template for converting the output of a (integral)
@@ -1602,20 +1617,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // constructors, destructors and member functions
 
-#ifdef _GLIBCXX_USE_RANDOM_TR1
     random_device() { _M_init("default"); }
 
     explicit
     random_device(const std::string& __token) { _M_init(__token); }
 
+#if defined _GLIBCXX_USE_DEV_RANDOM
     ~random_device()
     { _M_fini(); }
-#else
-    random_device() { _M_init("mt19937"); }
-
-    explicit
-    random_device(const std::string& __token)
-    { _M_init_pretr1(__token); }
 #endif
 
     static constexpr result_type
@@ -1629,7 +1638,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     double
     entropy() const noexcept
     {
-#ifdef _GLIBCXX_USE_RANDOM_TR1
+#ifdef _GLIBCXX_USE_DEV_RANDOM
       return this->_M_getentropy();
 #else
       return 0.0;
@@ -1638,13 +1647,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     result_type
     operator()()
-    {
-#ifdef _GLIBCXX_USE_RANDOM_TR1
-      return this->_M_getval();
-#else
-      return this->_M_getval_pretr1();
-#endif
-    }
+    { return this->_M_getval(); }
 
     // No copy functions.
     random_device(const random_device&) = delete;
@@ -1660,9 +1663,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     result_type _M_getval_pretr1();
     double _M_getentropy() const noexcept;
 
+    void _M_init(const char*, size_t); // not exported from the shared library
+
     union
     {
-      void*      _M_file;
+      struct
+      {
+	void*      _M_file;
+	result_type (*_M_func)(void*);
+	int _M_fd;
+      };
       mt19937    _M_mt;
     };
   };
@@ -6080,9 +6090,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     size_t size() const noexcept
     { return _M_v.size(); }
 
-    template<typename OutputIterator>
+    template<typename _OutputIterator>
       void
-      param(OutputIterator __dest) const
+      param(_OutputIterator __dest) const
       { std::copy(_M_v.begin(), _M_v.end(), __dest); }
 
     // no copy functions

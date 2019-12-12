@@ -1,6 +1,6 @@
 // Specific definitions for HPUX  -*- C++ -*-
 
-// Copyright (C) 2000-2018 Free Software Foundation, Inc.
+// Copyright (C) 2000-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -109,4 +109,9 @@ typedef long int __padding_type;
 #if defined (__hppa__)
 #define _GLIBCXX_HAVE_BROKEN_STRTOLD 1
 #endif
+
+// The vnsprintf function returns -1 when the buffer is too small.
+// See PR libstdc++/68737.
+#define _GLIBCXX_HAVE_BROKEN_VSNPRINTF 1
+
 #endif

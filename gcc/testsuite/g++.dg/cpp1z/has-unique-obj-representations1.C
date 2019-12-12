@@ -9,7 +9,7 @@ struct V { int i : INTB * 3 / 4; int j : INTB / 4 + 1; };
 struct W {};
 struct X : public W { int i; void bar (); };
 struct Y {
-  char a[3]; char b[];   // { dg-warning "forbids flexible array member" }
+  char a[3]; char b[];   // { dg-warning "19:ISO C\\+\\+ forbids flexible array member" }
 };
 struct Z { int a; float b; };
 struct A { int i : INTB * 2; int j; };			// { dg-warning "exceeds its type" }

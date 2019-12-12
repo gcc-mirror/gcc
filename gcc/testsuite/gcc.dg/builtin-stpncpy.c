@@ -35,7 +35,7 @@ void test_cst (char *d)
 
   __builtin_stpncpy (d, "123", n);
 
-  __builtin_stpncpy (d, "123", n + 1);    /* { dg-warning "specified size \[0-9\]+ exceeds maximum object size \[0-9\]+" } */
+  __builtin_stpncpy (d, "123", n + 1);    /* { dg-warning "specified bound \[0-9\]+ exceeds maximum object size \[0-9\]+" } */
 }
 
 
@@ -73,5 +73,5 @@ void test_rng (char *d)
 
   __builtin_stpncpy (d, "123", R (n - 1, n + 1));
 
-  __builtin_stpncpy (d, "123", R (n + 1, n + 2));   /* { dg-warning "specified size between \[0-9\]+ and \[0-9\]+ exceeds maximum object size \[0-9\]+" } */
+  __builtin_stpncpy (d, "123", R (n + 1, n + 2));   /* { dg-warning "specified bound between \[0-9\]+ and \[0-9\]+ exceeds maximum object size \[0-9\]+" } */
 }

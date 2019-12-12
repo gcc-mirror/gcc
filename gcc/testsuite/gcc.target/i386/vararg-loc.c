@@ -23,5 +23,5 @@ f (int a, ...)			/* 8.  */
 }
 
 /* { dg-final { scan-rtl-dump-not "vararg-loc\\.c.:\[6789\] " "final" } } */
-/* { dg-final { scan-rtl-dump "vararg-loc\\.c.:18 " "final" } } */
-/* { dg-final { scan-rtl-dump "vararg-loc\\.c.:20 " "final" } } */
+/* { dg-final { scan-rtl-dump "vararg-loc\\.c.:18:\[0-9\]+ " "final" } } */
+/* { dg-final { scan-rtl-dump "vararg-loc\\.c.:20:\[0-9\]+ " "final" } } */

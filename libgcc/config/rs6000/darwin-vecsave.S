@@ -1,6 +1,6 @@
 /*  This file contains the vector save and restore routines.
  *
- *   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+ *   Copyright (C) 2004-2019 Free Software Foundation, Inc.
  * 
  * This file is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -31,8 +31,14 @@
    (4 bytes) to do the operation; for Vector regs, 2 instructions are
    required (8 bytes.).   */
 
+/* With some assemblers, we need the correct machine directive to get the
+   right CPU type / subtype in the file header.  */
+#if	__ppc64__
+	.machine ppc64
+#else
 	.machine ppc7400
-.text
+#endif
+	.text
 	.align 2
 
 .private_extern saveVEC

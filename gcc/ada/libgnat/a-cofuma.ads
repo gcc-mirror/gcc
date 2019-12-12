@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2016-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 2016-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -39,6 +39,7 @@ generic
    with function Equivalent_Keys
      (Left  : Key_Type;
       Right : Key_Type) return Boolean is "=";
+   with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
    Enable_Handling_Of_Equivalence : Boolean := True;
    --  This constant should only be set to False when no particular handling
@@ -241,6 +242,20 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
          and Get (Add'Result, New_Key) = New_Item
          and Container <= Add'Result
          and Keys_Included_Except (Add'Result, Container, New_Key);
+
+   function Remove
+     (Container : Map;
+      Key       : Key_Type) return Map
+   --  Returns Container without any mapping for Key
+
+   with
+     Global => null,
+     Pre    => Has_Key (Container, Key),
+     Post   =>
+       Length (Container) = Length (Remove'Result) + 1
+         and not Has_Key (Remove'Result, Key)
+         and Remove'Result <= Container
+         and Keys_Included_Except (Container, Remove'Result, Key);
 
    function Set
      (Container : Map;

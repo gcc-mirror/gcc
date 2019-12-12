@@ -1,5 +1,7 @@
 /* Declaration of the frame size doesn't work on ptx.  */
 /* { dg-require-effective-target untyped_assembly } */
+/* { dg-require-effective-target indirect_calls } */
+
 #ifndef ASIZE
 # define ASIZE 0x10000000000UL
 #endif

@@ -20,4 +20,4 @@ main (int argc, char **argv)
 
 // { dg-output "ERROR: AddressSanitizer: stack-use-after-scope on address.*(\n|\r\n|\r)" }
 // { dg-output "WRITE of size .*" }
-// { dg-output ".*'a' <== Memory access at offset \[0-9\]* is inside this variable.*" }
+// { dg-output ".*'a' \\(line 12\\) <== Memory access at offset \[0-9\]* is inside this variable.*" }

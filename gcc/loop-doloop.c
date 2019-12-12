@@ -1,5 +1,5 @@
 /* Perform doloop optimizations
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
    Based on code by Michael P. Hayes (m.hayes@elec.canterbury.ac.nz)
 
 This file is part of GCC.
@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "cfgloop.h"
 #include "cfgrtl.h"
-#include "params.h"
 #include "dumpfile.h"
 #include "loop-unroll.h"
 #include "regs.h"
@@ -263,7 +262,7 @@ doloop_condition_get (rtx_insn *doloop_pat)
    describes the number of iterations of the loop.  */
 
 static bool
-doloop_valid_p (struct loop *loop, struct niter_desc *desc)
+doloop_valid_p (class loop *loop, class niter_desc *desc)
 {
   basic_block *body = get_loop_body (loop), bb;
   rtx_insn *insn;
@@ -405,7 +404,7 @@ add_test (rtx cond, edge *e, basic_block dest)
    DOLOOP_SEQ.  COUNT is the number of iterations of the LOOP.  */
 
 static void
-doloop_modify (struct loop *loop, struct niter_desc *desc,
+doloop_modify (class loop *loop, class niter_desc *desc,
 	       rtx_insn *doloop_seq, rtx condition, rtx count)
 {
   rtx counter_reg;
@@ -603,7 +602,7 @@ record_reg_sets (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
    modified.  */
 
 static bool
-doloop_optimize (struct loop *loop)
+doloop_optimize (class loop *loop)
 {
   scalar_int_mode mode;
   rtx doloop_reg;
@@ -614,7 +613,7 @@ doloop_optimize (struct loop *loop)
   unsigned level;
   HOST_WIDE_INT est_niter;
   int max_cost;
-  struct niter_desc *desc;
+  class niter_desc *desc;
   unsigned word_mode_size;
   unsigned HOST_WIDE_INT word_mode_max;
   int entered_at_top;
@@ -651,7 +650,7 @@ doloop_optimize (struct loop *loop)
     }
 
   max_cost
-    = COSTS_N_INSNS (PARAM_VALUE (PARAM_MAX_ITERATIONS_COMPUTATION_COST));
+    = COSTS_N_INSNS (param_max_iterations_computation_cost);
   if (set_src_cost (desc->niter_expr, mode, optimize_loop_for_speed_p (loop))
       > max_cost)
     {
@@ -731,7 +730,7 @@ doloop_optimize (struct loop *loop)
     bitmap modified = BITMAP_ALLOC (NULL);
 
     for (rtx_insn *i = doloop_seq; i != NULL; i = NEXT_INSN (i))
-      note_stores (PATTERN (i), record_reg_sets, modified);
+      note_stores (i, record_reg_sets, modified);
 
     basic_block loop_end = desc->out_edge->src;
     bool fail = bitmap_intersect_p (df_get_live_out (loop_end), modified);
@@ -754,7 +753,7 @@ doloop_optimize (struct loop *loop)
 void
 doloop_optimize_loops (void)
 {
-  struct loop *loop;
+  class loop *loop;
 
   if (optimize == 1)
     {

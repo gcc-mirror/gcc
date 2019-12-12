@@ -1,4 +1,4 @@
-# Copyright (C) 2001-2018 Free Software Foundation, Inc.
+# Copyright (C) 2001-2019 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -15,6 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
+
+define pp
+call debug ($)
+end
+
+document pp
+Print a representation of the GCC data structure that is $.
+Works only when an inferior is executing.
+end
 
 define pr
 set debug_rtx ($)
@@ -104,7 +113,7 @@ Works only when an inferior is executing.
 end
 
 define ptc
-output (enum tree_code) $.common.code
+output (enum tree_code) $.base.code
 echo \n
 end
 
@@ -166,14 +175,6 @@ In cc1plus, print the current binding stack, frame by frame, up to and
 including the global binding level.
 end
 
-define pbb
-set debug ($)
-end
-
-document pbb
-Dump the basic block that is in $, including rtx.
-end
-
 define pbm
 set bitmap_print (stderr, $, "", "\n")
 end
@@ -200,6 +201,14 @@ document pcfun
 Print current function.
 end
 
+define trt
+print ($.typed.type)
+end
+
+document trt
+Print TREE_TYPE of the tree node that is $
+end
+
 define break-on-diagnostic
 break diagnostic_show_locus
 end
@@ -210,6 +219,16 @@ is emitted (as opposed to those warnings that are suppressed by
 command-line options).
 end
 
+define reload-gdbhooks
+python import imp; imp.reload(gdbhooks)
+end
+
+document reload-gdbhooks
+Load the gdbhooks.py module again in order to pick up any changes made to it.
+end
+
+alias rh = reload-gdbhooks
+
 # Define some macros helpful to gdb when it is expanding macros.
 macro define __FILE__ "gdb"
 macro define __LINE__ 1
@@ -217,6 +236,11 @@ macro define __FUNCTION__ "gdb"
 macro define __null 0
 macro define input_line expand_location(input_location).line
 macro define input_filename expand_location(input_location).file
+
+# Remember previous pagination status and turn it off, so that
+# the messages for skip commands don't require pagination.
+python __gcc_prev_pagination=gdb.parameter("pagination")
+set pagination off
 
 # Gracefully handle aborts in functions used from gdb.
 set unwindonsignal on
@@ -275,3 +299,6 @@ skip PATTERN
 skip INSN_LOCATION
 skip INSN_HAS_LOCATION
 skip JUMP_LABEL_AS_INSN
+
+# Restore pagination to the previous state.
+python if __gcc_prev_pagination: gdb.execute("set pagination on")

@@ -14,6 +14,7 @@ int f2 (int a, int *b, int c)
   return a + *b + c;
 }
 
+// { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-5 }
 // { dg-final { scan-assembler-times "_ZGVbM8uva32l4__Z2f2iPii:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVbN8uva32l4__Z2f2iPii:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVcM8uva32l4__Z2f2iPii:" 1 { target { i?86-*-* x86_64-*-* } } } }
@@ -89,6 +90,8 @@ namespace N1
 // { dg-final { scan-assembler-times "_ZGVdN2va16__ZN2N12N23f10EPx:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVeM2va16__ZN2N12N23f10EPx:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVeN2va16__ZN2N12N23f10EPx:" 1 { target { i?86-*-* x86_64-*-* } } } }
+// { dg-final { scan-assembler-times "_ZGVnM2va16__ZN2N12N23f10EPx:" 1 { target { aarch64*-*-* } } } }
+// { dg-final { scan-assembler-times "_ZGVnN2va16__ZN2N12N23f10EPx:" 1 { target { aarch64*-*-* } } } }
 
 struct A
 {
@@ -191,6 +194,7 @@ int B<int>::f25<7> (int a, int *b, int c)
   return a + *b + c;
 }
 
+// { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-5 }
 // { dg-final { scan-assembler-times "_ZGVbM8vuva32u__ZN1BIiE3f25ILi7EEEiiPii:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVbN8vuva32u__ZN1BIiE3f25ILi7EEEiiPii:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVcM8vuva32u__ZN1BIiE3f25ILi7EEEiiPii:" 1 { target { i?86-*-* x86_64-*-* } } } }
@@ -208,6 +212,7 @@ int B<int>::f26<-1> (int a, int *b, int c)
   return a + *b + c;
 }
 
+// { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-5 }
 // { dg-final { scan-assembler-times "_ZGVbM4vl2va32__ZN1BIiE3f26ILin1EEEiiPii:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVbN4vl2va32__ZN1BIiE3f26ILin1EEEiiPii:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVcM4vl2va32__ZN1BIiE3f26ILin1EEEiiPii:" 1 { target { i?86-*-* x86_64-*-* } } } }
@@ -239,6 +244,7 @@ f30 (int x)
   return x;
 }
 
+// { dg-warning "GCC does not currently support simdlen 16 for type 'int'" "" { target aarch64*-*-* } .-7 }
 // { dg-final { scan-assembler-times "_ZGVbM16v__Z3f30i:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVbN16v__Z3f30i:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVcM16v__Z3f30i:" 1 { target { i?86-*-* x86_64-*-* } } } }
@@ -281,6 +287,7 @@ struct D
   int f37 (int a);
   int e;
 };
+// { dg-warning "GCC does not currently support simdlen 16 for type 'int'" "" { target aarch64*-*-* } .-3 }
 
 void
 f38 (D &d)

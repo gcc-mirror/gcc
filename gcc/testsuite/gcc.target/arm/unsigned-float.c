@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_fp_ok } */
 /* { dg-skip-if "need fp instructions" { *-*-* } { "-mfloat-abi=soft" } { "" } } */
+/* { dg-skip-if "-mpure-code supports M-profile only" { *-*-* } { "-mpure-code" } } */
 /* { dg-options "-march=armv7-a -O1" } */
 /* { dg-add-options arm_fp } */
 

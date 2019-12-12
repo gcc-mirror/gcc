@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -42,6 +42,7 @@ package Ada.Streams.Stream_IO is
    type Stream_Access is access all Root_Stream_Type'Class;
 
    type File_Type is limited private with Default_Initial_Condition;
+   pragma Preelaborable_Initialization (File_Type);
 
    type File_Mode is (In_File, Out_File, Append_File);
 

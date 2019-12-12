@@ -836,7 +836,7 @@ Parse::parameter_list(bool* is_varargs)
     {
       std::string name = token->identifier();
       bool is_exported = token->is_identifier_exported();
-      Location location = token->location();
+      Location id_location = token->location();
       token = this->advance_token();
       if (!token->is_op(OPERATOR_COMMA))
 	{
@@ -861,7 +861,7 @@ Parse::parameter_list(bool* is_varargs)
 	    }
 
 	  this->unget_token(Token::make_identifier_token(name, is_exported,
-							 location));
+							 id_location));
 	}
       else
 	{
@@ -872,15 +872,15 @@ Parse::parameter_list(bool* is_varargs)
 	  // commas as we can.
 	  std::string id_name = this->gogo_->pack_hidden_name(name,
 							      is_exported);
-	  ret->push_back(Typed_identifier(id_name, NULL, location));
+	  ret->push_back(Typed_identifier(id_name, NULL, id_location));
 	  bool just_saw_comma = true;
 	  while (this->advance_token()->is_identifier())
 	    {
 	      name = this->peek_token()->identifier();
 	      is_exported = this->peek_token()->is_identifier_exported();
-	      location = this->peek_token()->location();
+	      id_location = this->peek_token()->location();
 	      id_name = this->gogo_->pack_hidden_name(name, is_exported);
-	      ret->push_back(Typed_identifier(id_name, NULL, location));
+	      ret->push_back(Typed_identifier(id_name, NULL, id_location));
 	      if (!this->advance_token()->is_op(OPERATOR_COMMA))
 		{
 		  just_saw_comma = false;
@@ -909,7 +909,7 @@ Parse::parameter_list(bool* is_varargs)
 	      // names.
 	      parameters_have_names = false;
 	      this->unget_token(Token::make_identifier_token(name, is_exported,
-							     location));
+							     id_location));
 	      ret->pop_back();
 	      just_saw_comma = true;
 	    }
@@ -1359,7 +1359,7 @@ Parse::decl(void (Parse::*pfn)(void*, unsigned int), void* varg,
     {
       if (pragmas != 0)
 	go_warning_at(this->location(), 0,
-		      "ignoring magic //go:... comment before group");
+		      "ignoring magic %<//go:...%> comment before group");
       if (!this->advance_token()->is_op(OPERATOR_RPAREN))
 	{
 	  this->list(pfn, varg, true);
@@ -1605,7 +1605,7 @@ Parse::type_spec(void*, unsigned int pragmas)
 	    }
 	  if (pragmas != 0)
 	    go_warning_at(location, 0,
-			  "ignoring magic //go:... comment before type");
+			  "ignoring magic %<//go:...%> comment before type");
 	}
       else
 	{
@@ -1633,7 +1633,7 @@ Parse::var_spec(void*, unsigned int pragmas)
 {
   if (pragmas != 0)
     go_warning_at(this->location(), 0,
-		  "ignoring magic //go:... comment before var");
+		  "ignoring magic %<//go:...%> comment before var");
 
   // Get the variable names.
   Typed_identifier_list til;
@@ -2360,7 +2360,10 @@ Parse::function_decl(unsigned int pragmas)
 	{ GOPRAGMA_NOINLINE, "noinline", false, true, true },
 	{ GOPRAGMA_SYSTEMSTACK, "systemstack", false, true, true },
 	{ GOPRAGMA_NOWRITEBARRIER, "nowritebarrier", false, true, true },
-	{ GOPRAGMA_NOWRITEBARRIERREC, "nowritebarrierrec", false, true, true },
+	{ GOPRAGMA_NOWRITEBARRIERREC, "nowritebarrierrec", false, true,
+	  true },
+	{ GOPRAGMA_YESWRITEBARRIERREC, "yeswritebarrierrec", false, true,
+	  true },
 	{ GOPRAGMA_CGOUNSAFEARGS, "cgo_unsafe_args", false, true, true },
 	{ GOPRAGMA_UINTPTRESCAPES, "uintptrescapes", true, true, true },
       };
@@ -2380,7 +2383,7 @@ Parse::function_decl(unsigned int pragmas)
 	      if (pragma_check[i].decl_ok)
 		continue;
 	      go_warning_at(location, 0,
-			    ("ignoring magic //go:%s comment "
+			    ("ignoring magic %<//go:%s%> comment "
 			     "before declaration"),
 			    pragma_check[i].name);
 	    }
@@ -2389,7 +2392,7 @@ Parse::function_decl(unsigned int pragmas)
 	      if (pragma_check[i].func_ok)
 		continue;
 	      go_warning_at(location, 0,
-			    ("ignoring magic //go:%s comment "
+			    ("ignoring magic %<//go:%s%> comment "
 			     "before function definition"),
 			    pragma_check[i].name);
 	    }
@@ -2398,7 +2401,7 @@ Parse::function_decl(unsigned int pragmas)
 	      if (pragma_check[i].method_ok)
 		continue;
 	      go_warning_at(location, 0,
-			    ("ignoring magic //go:%s comment "
+			    ("ignoring magic %<//go:%s%> comment "
 			     "before method definition"),
 			    pragma_check[i].name);
 	    }
@@ -2599,7 +2602,7 @@ Parse::operand(bool may_be_sink, bool* is_parenthesized)
 	      return Expression::make_sink(location);
 	    else
 	      {
-		go_error_at(location, "cannot use _ as value");
+		go_error_at(location, "cannot use %<_%> as value");
 		return Expression::make_error(location);
 	      }
 	  case Named_object::NAMED_OBJECT_FUNC:
@@ -2805,7 +2808,7 @@ Parse::composite_lit(Type* type, int depth, Location location)
 	{
 	  std::string identifier = token->identifier();
 	  bool is_exported = token->is_identifier_exported();
-	  Location location = token->location();
+	  Location id_location = token->location();
 
 	  if (this->advance_token()->is_op(OPERATOR_COLON))
 	    {
@@ -2817,14 +2820,14 @@ Parse::composite_lit(Type* type, int depth, Location location)
 	      Gogo* gogo = this->gogo_;
 	      val = this->id_to_expression(gogo->pack_hidden_name(identifier,
 								  is_exported),
-					   location, false);
+					   id_location, false);
 	      is_name = true;
 	    }
 	  else
 	    {
 	      this->unget_token(Token::make_identifier_token(identifier,
 							     is_exported,
-							     location));
+							     id_location));
 	      val = this->expression(PRECEDENCE_NORMAL, false, true, NULL,
 				     NULL);
 	    }
@@ -2920,14 +2923,14 @@ Parse::composite_lit(Type* type, int depth, Location location)
 	    go_error_at(this->location(), "expected %<,%> or %<}%>");
 
 	  this->gogo_->mark_locals_used();
-	  int depth = 0;
+	  int edepth = 0;
 	  while (!token->is_eof()
-		 && (depth > 0 || !token->is_op(OPERATOR_RCURLY)))
+		 && (edepth > 0 || !token->is_op(OPERATOR_RCURLY)))
 	    {
 	      if (token->is_op(OPERATOR_LCURLY))
-		++depth;
+		++edepth;
 	      else if (token->is_op(OPERATOR_RCURLY))
-		--depth;
+		--edepth;
 	      token = this->advance_token();
 	    }
 	  if (token->is_op(OPERATOR_RCURLY))
@@ -3480,7 +3483,7 @@ Parse::expression(Precedence precedence, bool may_be_sink,
 
       if (is_parenthesized != NULL)
 	*is_parenthesized = false;
-      
+
       Operator op = token->op();
       Location binop_location = token->location();
 
@@ -3573,7 +3576,7 @@ Parse::unary_expr(bool may_be_sink, bool may_be_composite_lit,
 
   // There is a complex parse for <- chan.  The choices are
   // Convert x to type <- chan int:
-  //   (<- chan int)(x)         
+  //   (<- chan int)(x)
   // Receive from (x converted to type chan <- chan int):
   //   (<- chan <- chan int (x))
   // Convert x to type <- chan (<- chan int).
@@ -4175,7 +4178,7 @@ Parse::tuple_assignment(Expression_list* lhs, bool may_be_composite_lit,
       if ((*pe)->is_error_expression())
 	return;
       if (op != OPERATOR_EQ && (*pe)->is_sink_expression())
-	go_error_at((*pe)->location(), "cannot use _ as value");
+	go_error_at((*pe)->location(), "cannot use %<_%> as value");
     }
   for (Expression_list::const_iterator pe = vals->begin();
        pe != vals->end();
@@ -4301,9 +4304,15 @@ Parse::go_or_defer_stat()
   this->gogo_->start_block(stat_location);
   Statement* stat;
   if (is_go)
-    stat = Statement::make_go_statement(call_expr, stat_location);
+    {
+      stat = Statement::make_go_statement(call_expr, stat_location);
+      call_expr->set_is_concurrent();
+    }
   else
-    stat = Statement::make_defer_statement(call_expr, stat_location);
+    {
+      stat = Statement::make_defer_statement(call_expr, stat_location);
+      call_expr->set_is_deferred();
+    }
   this->gogo_->add_statement(stat);
   this->gogo_->add_block(this->gogo_->finish_block(stat_location),
 			 stat_location);
@@ -5712,7 +5721,7 @@ Parse::package_clause()
 	  name = token->identifier();
 	  if (name == "_")
 	    {
-	      go_error_at(this->location(), "invalid package name _");
+	      go_error_at(this->location(), "invalid package name %<_%>");
 	      name = Gogo::erroneous_name();
 	    }
 	  this->advance_token();
@@ -5743,7 +5752,7 @@ Parse::import_spec(void*, unsigned int pragmas)
 {
   if (pragmas != 0)
     go_warning_at(this->location(), 0,
-		  "ignoring magic //go:... comment before import");
+		  "ignoring magic %<//go:...%> comment before import");
 
   const Token* token = this->peek_token();
   Location location = token->location();
@@ -5867,7 +5876,7 @@ Parse::verify_not_sink(Expression* expr)
 {
   if (expr->is_sink_expression())
     {
-      go_error_at(expr->location(), "cannot use _ as value");
+      go_error_at(expr->location(), "cannot use %<_%> as value");
       expr = Expression::make_error(expr->location());
     }
 

@@ -24,7 +24,7 @@ void a0(void)
 #ifdef __VEC__
 #error __VEC__ is defined
 #endif
-  __builtin_s390_vll ((unsigned int)0, (const void *)8); /* { dg-error "requires -mvx" } */
+  __builtin_s390_vll ((unsigned int)0, (const void *)8); /* { dg-error "requires '-mvx'" } */
 }
 
 void d(void)
@@ -32,5 +32,5 @@ void d(void)
 #ifdef __VEC__
 #error __VEC__ is defined
 #endif
-  __builtin_s390_vll ((unsigned int)0, (const void *)8); /* { dg-error "requires -mvx" } */
+  __builtin_s390_vll ((unsigned int)0, (const void *)8); /* { dg-error "requires '-mvx'" } */
 }

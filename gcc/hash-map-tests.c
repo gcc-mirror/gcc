@@ -1,5 +1,5 @@
 /* Unit tests for hash-map.h.
-   Copyright (C) 2015-2018 Free Software Foundation, Inc.
+   Copyright (C) 2015-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -53,7 +53,7 @@ test_map_of_strings_to_int ()
   const char *eric = "half a bee";
 
   /* A fresh hash_map should be empty.  */
-  ASSERT_EQ (0, m.elements ());
+  ASSERT_TRUE (m.is_empty ());
   ASSERT_EQ (NULL, m.get (ostrich));
 
   /* Populate the hash_map.  */
@@ -77,6 +77,164 @@ test_map_of_strings_to_int ()
   m.remove (eric);
   ASSERT_EQ (5, m.elements ());
   ASSERT_EQ (NULL, m.get (eric));
+
+  m.remove (eric);
+  ASSERT_EQ (5, m.elements ());
+  ASSERT_EQ (NULL, m.get (eric));
+
+  /* A plain char * key is hashed based on its value (address), rather
+     than the string it points to.  */
+  char *another_ant = static_cast <char *> (xcalloc (4, 1));
+  another_ant[0] = 'a';
+  another_ant[1] = 'n';
+  another_ant[2] = 't';
+  another_ant[3] = 0;
+  ASSERT_NE (ant, another_ant);
+  unsigned prev_size = m.elements ();
+  ASSERT_EQ (false, m.put (another_ant, 7));
+  ASSERT_EQ (prev_size + 1, m.elements ());
+
+  /* Need to use string_hash or nofree_string_hash key types to hash
+     based on the string contents.  */
+  hash_map <nofree_string_hash, int> string_map;
+  ASSERT_EQ (false, string_map.put (ant, 1));
+  ASSERT_EQ (1, string_map.elements ());
+  ASSERT_EQ (true, string_map.put (another_ant, 5));
+  ASSERT_EQ (1, string_map.elements ());
+}
+
+typedef class hash_map_test_val_t
+{
+public:
+  static int ndefault;
+  static int ncopy;
+  static int nassign;
+  static int ndtor;
+
+  hash_map_test_val_t ()
+    : ptr (&ptr)
+  {
+    ++ndefault;
+  }
+
+  hash_map_test_val_t (const hash_map_test_val_t &)
+    : ptr (&ptr)
+  {
+    ++ncopy;
+  }
+
+  hash_map_test_val_t& operator= (const hash_map_test_val_t &)
+    {
+     ++nassign;
+     return *this;
+    }
+
+  ~hash_map_test_val_t ()
+    {
+     gcc_assert (ptr == &ptr);
+     ++ndtor;
+    }
+
+  void *ptr;
+} val_t;
+
+int val_t::ndefault;
+int val_t::ncopy;
+int val_t::nassign;
+int val_t::ndtor;
+
+static void
+test_map_of_type_with_ctor_and_dtor ()
+{
+  typedef hash_map <void *, val_t> Map;
+
+  {
+    /* Test default ctor.  */
+    Map m;
+    (void)&m;
+  }
+
+  ASSERT_TRUE (val_t::ndefault == 0);
+  ASSERT_TRUE (val_t::ncopy == 0);
+  ASSERT_TRUE (val_t::nassign == 0);
+  ASSERT_TRUE (val_t::ndtor == 0);
+
+  {
+    /* Test single insertion.  */
+    Map m;
+    void *p = &p;
+    m.get_or_insert (p);
+  }
+
+  ASSERT_TRUE (val_t::ndefault + val_t::ncopy == val_t::ndtor);
+
+  {
+    /* Test copy ctor.  */
+    Map m1;
+    void *p = &p;
+    val_t &rv1 = m1.get_or_insert (p);
+
+    int ncopy = val_t::ncopy;
+    int nassign = val_t::nassign;
+
+    Map m2 (m1);
+    val_t *pv2 = m2.get (p);
+
+    ASSERT_TRUE (ncopy + 1 == val_t::ncopy);
+    ASSERT_TRUE (nassign == val_t::nassign);
+
+    ASSERT_TRUE (&rv1 != pv2);
+    ASSERT_TRUE (pv2->ptr == &pv2->ptr);
+  }
+
+  ASSERT_TRUE (val_t::ndefault + val_t::ncopy == val_t::ndtor);
+
+#if 0   /* Avoid testing until bug 90959 is fixed.  */
+  {
+    /* Test copy assignment into an empty map.  */
+    Map m1;
+    void *p = &p;
+    val_t &rv1 = m1.get_or_insert (p);
+
+    int ncopy = val_t::ncopy;
+    int nassign = val_t::nassign;
+
+    Map m2;
+    m2 = m1;
+    val_t *pv2 = m2.get (p);
+
+    ASSERT_TRUE (ncopy == val_t::ncopy);
+    ASSERT_TRUE (nassign + 1 == val_t::nassign);
+
+    ASSERT_TRUE (&rv1 != pv2);
+    ASSERT_TRUE (pv2->ptr == &pv2->ptr);
+  }
+
+  ASSERT_TRUE (val_t::ndefault + val_t::ncopy == val_t::ndtor);
+
+#endif
+
+  {
+    Map m;
+    void *p = &p, *q = &q;
+    val_t &v1 = m.get_or_insert (p);
+    val_t &v2 = m.get_or_insert (q);
+
+    ASSERT_TRUE (v1.ptr == &v1.ptr && &v2.ptr == v2.ptr);
+  }
+
+  ASSERT_TRUE (val_t::ndefault + val_t::ncopy == val_t::ndtor);
+
+  {
+    Map m;
+    void *p = &p, *q = &q;
+    m.get_or_insert (p);
+    m.remove (p);
+    m.get_or_insert (q);
+    m.remove (q);
+
+    ASSERT_TRUE (val_t::ndefault + val_t::ncopy == val_t::ndtor);
+  }
 }
 
 /* Run all of the selftests within this file.  */
@@ -85,6 +243,7 @@ void
 hash_map_tests_c_tests ()
 {
   test_map_of_strings_to_int ();
+  test_map_of_type_with_ctor_and_dtor ();
 }
 
 } // namespace selftest

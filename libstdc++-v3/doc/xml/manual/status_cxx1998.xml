@@ -1126,6 +1126,10 @@ particular release.
       implementation will be described under
       <link linkend="std.localization.locales.locale">Localization</link>.
    </para>
+   <para><emphasis>[23.*]</emphasis> All of the containers in this clause
+     define <type>size_type</type> as <type>std::size_t</type> and
+     <type>difference_type</type> as <type>std::ptrdiff_t</type>.
+   </para>
    <para><emphasis>[26.2.8]/9</emphasis> I have no idea what
       <code>complex&lt;T&gt;</code>'s <code>pow(0,0)</code> returns.
    </para>

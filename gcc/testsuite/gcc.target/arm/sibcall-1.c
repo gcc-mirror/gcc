@@ -1,5 +1,6 @@
 /* { dg-do compile { target { arm32 } } } */
 /* { dg-options "-O2" } */
+/* { dg-skip-if "FDPIC does not support sibcall optimization" { arm*-*-uclinuxfdpiceabi } "*" "" } */
 
 #define noinline __attribute__((noinline))
 

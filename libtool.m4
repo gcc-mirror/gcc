@@ -1079,7 +1079,7 @@ m4_defun([_LT_DARWIN_LINKER_FEATURES],
 # to the aix ld manual.
 m4_defun([_LT_SYS_MODULE_PATH_AIX],
 [m4_require([_LT_DECL_SED])dnl
-AC_LINK_IFELSE(AC_LANG_PROGRAM,[
+AC_LINK_IFELSE([AC_LANG_SOURCE([AC_LANG_PROGRAM])],[
 lt_aix_libpath_sed='
     /Import File Strings/,/^$/ {
 	/^0/ {
@@ -2449,7 +2449,12 @@ linux*oldld* | linux*aout* | linux*coff*)
   ;;
 
 # This must be Linux ELF.
-linux* | k*bsd*-gnu | kopensolaris*-gnu)
+
+# uclinux* changes (here and below) have been submitted to the libtool
+# project, but have not yet been accepted: they are GCC-local changes
+# for the time being.  (See
+# https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
+linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
   version_type=linux
   need_lib_prefix=no
   need_version=no
@@ -3089,7 +3094,7 @@ irix5* | irix6* | nonstopux*)
   ;;
 
 # This must be Linux ELF.
-linux* | k*bsd*-gnu | kopensolaris*-gnu)
+linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
   lt_cv_deplibs_check_method=pass_all
   ;;
 
@@ -4449,7 +4454,7 @@ _LT_EOF
       _LT_TAGVAR(archive_expsym_cmds, $1)='sed "s,^,_," $export_symbols >$output_objdir/$soname.expsym~$CC -shared $pic_flag $libobjs $deplibs $compiler_flags ${wl}-h,$soname ${wl}--retain-symbols-file,$output_objdir/$soname.expsym ${wl}--image-base,`expr ${RANDOM-$$} % 4096 / 2 \* 262144 + 1342177280` -o $lib'
       ;;
 
-    gnu* | linux* | tpf* | k*bsd*-gnu | kopensolaris*-gnu)
+    gnu* | linux* | tpf* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
       tmp_diet=no
       if test "$host_os" = linux-dietlibc; then
 	case $cc_basename in
@@ -4932,7 +4937,7 @@ _LT_EOF
 	# implicitly export all symbols.
         save_LDFLAGS="$LDFLAGS"
         LDFLAGS="$LDFLAGS -shared ${wl}-exported_symbol ${wl}foo ${wl}-update_registry ${wl}/dev/null"
-        AC_LINK_IFELSE(int foo(void) {},
+        AC_LINK_IFELSE([AC_LANG_SOURCE([int foo(void) {}])],
           _LT_TAGVAR(archive_expsym_cmds, $1)='$CC -shared $libobjs $deplibs $compiler_flags ${wl}-soname ${wl}$soname `test -n "$verstring" && func_echo_all "${wl}-set_version ${wl}$verstring"` ${wl}-update_registry ${wl}${output_objdir}/so_locations ${wl}-exports_file ${wl}$export_symbols -o $lib'
         )
         LDFLAGS="$save_LDFLAGS"

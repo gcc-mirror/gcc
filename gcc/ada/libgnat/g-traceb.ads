@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2018, AdaCore                     --
+--                     Copyright (C) 1999-2019, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -97,5 +97,15 @@ package GNAT.Traceback is
    --  It will be equal to Traceback'Length unless the entire traceback is
    --  shorter, in which case positions in Traceback past the Len position
    --  are undefined on return.
+
+   function Call_Chain
+     (Max_Len     : Positive;
+      Skip_Frames : Natural := 1) return Tracebacks_Array;
+   --  Returns up to Max_Len tracebacks corresponding to the current call
+   --  chain. Result array order is the same as in above procedure Call_Chain
+   --  except that Skip_Frames says how many of the most recent calls should be
+   --  excluded from the result, starting with this procedure itself: 1 means
+   --  exclude the frame for this procedure, 2 means 1 + exclude the frame for
+   --  this procedure's caller, ...
 
 end GNAT.Traceback;

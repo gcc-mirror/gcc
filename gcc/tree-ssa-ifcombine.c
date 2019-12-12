@@ -1,5 +1,5 @@
 /* Combining of if-expressions on trees.
-   Copyright (C) 2007-2018 Free Software Foundation, Inc.
+   Copyright (C) 2007-2019 Free Software Foundation, Inc.
    Contributed by Richard Guenther <rguenther@suse.de>
 
 This file is part of GCC.
@@ -360,8 +360,15 @@ update_profile_after_ifcombine (basic_block inner_cond_bb,
 
   inner_cond_bb->count = outer_cond_bb->count;
 
-  inner_taken->probability = outer2->probability + outer_to_inner->probability
-			     * inner_taken->probability;
+  /* Handle special case where inner_taken probability is always. In this case
+     we know that the overall outcome will be always as well, but combining
+     probabilities will be conservative because it does not know that
+     outer2->probability is inverse of outer_to_inner->probability.  */
+  if (inner_taken->probability == profile_probability::always ())
+    ;
+  else
+    inner_taken->probability = outer2->probability + outer_to_inner->probability
+			       * inner_taken->probability;
   inner_not_taken->probability = profile_probability::always ()
 				 - inner_taken->probability;
 
@@ -547,7 +554,7 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 	return false;
       /* Don't return false so fast, try maybe_fold_or_comparisons?  */
 
-      if (!(t = maybe_fold_and_comparisons (inner_cond_code,
+      if (!(t = maybe_fold_and_comparisons (boolean_type_node, inner_cond_code,
 					    gimple_cond_lhs (inner_cond),
 					    gimple_cond_rhs (inner_cond),
 					    outer_cond_code,
@@ -556,7 +563,11 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 	{
 	  tree t1, t2;
 	  gimple_stmt_iterator gsi;
-	  if (!LOGICAL_OP_NON_SHORT_CIRCUIT || flag_sanitize_coverage)
+	  bool logical_op_non_short_circuit = LOGICAL_OP_NON_SHORT_CIRCUIT;
+	  if (param_logical_op_non_short_circuit != -1)
+	    logical_op_non_short_circuit
+	      = param_logical_op_non_short_circuit;
+	  if (!logical_op_non_short_circuit || flag_sanitize_coverage)
 	    return false;
 	  /* Only do this optimization if the inner bb contains only the conditional. */
 	  if (!gsi_one_before_end_p (gsi_start_nondebug_after_labels_bb (inner_cond_bb)))
@@ -587,6 +598,12 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
       t = canonicalize_cond_expr_cond (t);
       if (!t)
 	return false;
+      if (!is_gimple_condexpr_for_cond (t))
+	{
+	  gsi = gsi_for_stmt (inner_cond);
+	  t = force_gimple_operand_gsi_1 (&gsi, t, is_gimple_condexpr_for_cond,
+					  NULL, true, GSI_SAME_STMT);
+	}
       gimple_cond_set_condition_from_tree (inner_cond, t);
       update_stmt (inner_cond);
 

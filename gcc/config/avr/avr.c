@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for ATMEL AVR micro controllers
-   Copyright (C) 1998-2018 Free Software Foundation, Inc.
+   Copyright (C) 1998-2019 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
    This file is part of GCC.
@@ -51,7 +51,6 @@
 #include "expr.h"
 #include "langhooks.h"
 #include "cfgrtl.h"
-#include "params.h"
 #include "builtins.h"
 #include "context.h"
 #include "tree-pass.h"
@@ -741,15 +740,6 @@ avr_option_override (void)
   if (avr_strict_X)
     flag_caller_saves = 0;
 
-  /* Allow optimizer to introduce store data races. This used to be the
-     default - it was changed because bigger targets did not see any
-     performance decrease. For the AVR though, disallowing data races
-     introduces additional code in LIM and increases reg pressure.  */
-
-  maybe_set_param_value (PARAM_ALLOW_STORE_DATA_RACES, 1,
-                         global_options.x_param_values,
-                         global_options_set.x_param_values);
-
   /* Unwind tables currently require a frame pointer for correctness,
      see toplev.c:process_options().  */
 
@@ -762,13 +752,13 @@ avr_option_override (void)
     }
 
   if (flag_pic == 1)
-    warning (OPT_fpic, "-fpic is not supported");
+    warning (OPT_fpic, "%<-fpic%> is not supported");
   if (flag_pic == 2)
-    warning (OPT_fPIC, "-fPIC is not supported");
+    warning (OPT_fPIC, "%<-fPIC%> is not supported");
   if (flag_pie == 1)
-    warning (OPT_fpie, "-fpie is not supported");
+    warning (OPT_fpie, "%<-fpie%> is not supported");
   if (flag_pie == 2)
-    warning (OPT_fPIE, "-fPIE is not supported");
+    warning (OPT_fPIE, "%<-fPIE%> is not supported");
 
 #if !defined (HAVE_AS_AVR_MGCCISR_OPTION)
   avr_gasisr_prologues = 0;
@@ -776,6 +766,9 @@ avr_option_override (void)
 
   if (!avr_set_core_architecture())
     return;
+
+  /* Sould be set by avr-common.c */
+  gcc_assert (avr_long_double >= avr_double && avr_double >= 32);
 
   /* RAM addresses of some SFRs common to all devices in respective arch. */
 
@@ -1183,9 +1176,9 @@ avr_regs_to_save (HARD_REG_SET *set)
       if (fixed_regs[reg])
         continue;
 
-      if ((int_or_sig_p && !crtl->is_leaf && call_used_regs[reg])
+      if ((int_or_sig_p && !crtl->is_leaf && call_used_or_fixed_reg_p (reg))
           || (df_regs_ever_live_p (reg)
-              && (int_or_sig_p || !call_used_regs[reg])
+              && (int_or_sig_p || !call_used_or_fixed_reg_p (reg))
               /* Don't record frame pointer registers here.  They are treated
                  indivitually in prologue.  */
               && !(frame_pointer_needed
@@ -1302,22 +1295,6 @@ avr_build_builtin_va_list (void)
 }
 
 
-/* Implement `TARGET_BUILTIN_SETJMP_FRAME_VALUE'.  */
-/* Actual start of frame is virtual_stack_vars_rtx this is offset from
-   frame pointer by +TARGET_STARTING_FRAME_OFFSET.
-   Using saved frame = virtual_stack_vars_rtx - TARGET_STARTING_FRAME_OFFSET
-   avoids creating add/sub of offset in nonlocal goto and setjmp.  */
-
-static rtx
-avr_builtin_setjmp_frame_value (void)
-{
-  rtx xval = gen_reg_rtx (Pmode);
-  emit_insn (gen_subhi3 (xval, virtual_stack_vars_rtx,
-                         gen_int_mode (avr_starting_frame_offset (), Pmode)));
-  return xval;
-}
-
-
 /* Return contents of MEM at frame pointer + stack size + 1 (+2 if 3-byte PC).
    This is return address of function.  */
 
@@ -1383,7 +1360,7 @@ sequent_regs_live (void)
             continue;
         }
 
-      if (!call_used_regs[reg])
+      if (!call_used_or_fixed_reg_p (reg))
         {
           if (df_regs_ever_live_p (reg))
             {
@@ -3404,14 +3381,13 @@ avr_num_arg_regs (machine_mode mode, const_tree type)
    in a register, and which register.  */
 
 static rtx
-avr_function_arg (cumulative_args_t cum_v, machine_mode mode,
-                  const_tree type, bool named ATTRIBUTE_UNUSED)
+avr_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  int bytes = avr_num_arg_regs (mode, type);
+  int bytes = avr_num_arg_regs (arg.mode, arg.type);
 
   if (cum->nregs && bytes <= cum->nregs)
-    return gen_rtx_REG (mode, cum->regno - bytes);
+    return gen_rtx_REG (arg.mode, cum->regno - bytes);
 
   return NULL_RTX;
 }
@@ -3422,11 +3398,11 @@ avr_function_arg (cumulative_args_t cum_v, machine_mode mode,
    in the argument list.  */
 
 static void
-avr_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-                          const_tree type, bool named ATTRIBUTE_UNUSED)
+avr_function_arg_advance (cumulative_args_t cum_v,
+			  const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  int bytes = avr_num_arg_regs (mode, type);
+  int bytes = avr_num_arg_regs (arg.mode, arg.type);
 
   cum->nregs -= bytes;
   cum->regno -= bytes;
@@ -3438,7 +3414,7 @@ avr_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 
   if (cum->regno >= 8
       && cum->nregs >= 0
-      && !call_used_regs[cum->regno])
+      && !call_used_or_fixed_reg_p (cum->regno))
     {
       /* FIXME: We ship info on failing tail-call in struct machine_function.
          This uses internals of calls.c:expand_call() and the way args_so_far
@@ -3585,7 +3561,7 @@ avr_find_unused_d_reg (rtx_insn *insn, rtx exclude)
           && (TREE_THIS_VOLATILE (current_function_decl)
               || cfun->machine->is_OS_task
               || cfun->machine->is_OS_main
-              || (!isr_p && call_used_regs[regno])))
+              || (!isr_p && call_used_or_fixed_reg_p (regno))))
         {
           return reg;
         }
@@ -3797,13 +3773,14 @@ avr_out_lpm (rtx_insn *insn, rtx *op, int *plen)
           gcc_unreachable();
 
         case 1:
-          return avr_asm_len ("%4lpm %0,%a2", xop, plen, 1);
+          avr_asm_len ("%4lpm %0,%a2", xop, plen, 1);
+          break;
 
         case 2:
           if (REGNO (dest) == REG_Z)
-            return avr_asm_len ("%4lpm %5,%a2+" CR_TAB
-                                "%4lpm %B0,%a2" CR_TAB
-                                "mov %A0,%5", xop, plen, 3);
+            avr_asm_len ("%4lpm %5,%a2+" CR_TAB
+                         "%4lpm %B0,%a2" CR_TAB
+                         "mov %A0,%5", xop, plen, 3);
           else
             {
               avr_asm_len ("%4lpm %A0,%a2+" CR_TAB
@@ -3832,9 +3809,9 @@ avr_out_lpm (rtx_insn *insn, rtx *op, int *plen)
                        "%4lpm %B0,%a2+", xop, plen, 2);
 
           if (REGNO (dest) == REG_Z - 2)
-            return avr_asm_len ("%4lpm %5,%a2+" CR_TAB
-                                "%4lpm %C0,%a2" CR_TAB
-                                "mov %D0,%5", xop, plen, 3);
+            avr_asm_len ("%4lpm %5,%a2+" CR_TAB
+                         "%4lpm %C0,%a2" CR_TAB
+                         "mov %D0,%5", xop, plen, 3);
           else
             {
               avr_asm_len ("%4lpm %C0,%a2+" CR_TAB
@@ -9420,7 +9397,7 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
     case ADJUST_LEN_MOV16: output_movhi (insn, op, &len); break;
     case ADJUST_LEN_MOV24: avr_out_movpsi (insn, op, &len); break;
     case ADJUST_LEN_MOV32: output_movsisf (insn, op, &len); break;
-    case ADJUST_LEN_MOVMEM: avr_out_movmem (insn, op, &len); break;
+    case ADJUST_LEN_CPYMEM: avr_out_cpymem (insn, op, &len); break;
     case ADJUST_LEN_XLOAD: avr_out_xload (insn, op, &len); break;
     case ADJUST_LEN_SEXT: avr_out_sign_extend (insn, op, &len); break;
 
@@ -9569,7 +9546,7 @@ _reg_unused_after (rtx_insn *insn, rtx reg)
 		&& REG_P (XEXP (XEXP (tem, 0), 0))
 		&& reg_overlap_mentioned_p (reg, XEXP (XEXP (tem, 0), 0)))
 	      return 0;
-	  if (call_used_regs[REGNO (reg)])
+	  if (call_used_or_fixed_reg_p (REGNO (reg)))
 	    return 1;
 	}
 
@@ -10179,7 +10156,7 @@ avr_asm_output_aligned_decl_common (FILE * stream,
       return;
     }
 
-  /* __gnu_lto_v1 etc. are just markers for the linker injected by toplev.c.
+  /* __gnu_lto_slim is just a marker for the linker injected by toplev.c.
      There is no need to trigger __do_clear_bss code for them.  */
 
   if (!STR_PREFIX_P (name, "__gnu_lto"))
@@ -12181,7 +12158,8 @@ avr_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 /* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  */
 
 static bool
-avr_hard_regno_call_part_clobbered (unsigned regno, machine_mode mode)
+avr_hard_regno_call_part_clobbered (unsigned, unsigned regno,
+				    machine_mode mode)
 {
   /* FIXME: This hook gets called with MODE:REGNO combinations that don't
         represent valid hard registers like, e.g. HI:29.  Returning TRUE
@@ -13336,7 +13314,7 @@ avr_emit3_fix_outputs (rtx (*gen)(rtx,rtx,rtx), rtx *op,
 }
 
 
-/* Worker function for movmemhi expander.
+/* Worker function for cpymemhi expander.
    XOP[0]  Destination as MEM:BLK
    XOP[1]  Source      "     "
    XOP[2]  # Bytes to copy
@@ -13345,7 +13323,7 @@ avr_emit3_fix_outputs (rtx (*gen)(rtx,rtx,rtx), rtx *op,
    Return FALSE if the operand compination is not supported.  */
 
 bool
-avr_emit_movmemhi (rtx *xop)
+avr_emit_cpymemhi (rtx *xop)
 {
   HOST_WIDE_INT count;
   machine_mode loop_mode;
@@ -13422,14 +13400,14 @@ avr_emit_movmemhi (rtx *xop)
          Do the copy-loop inline.  */
 
       rtx (*fun) (rtx, rtx, rtx)
-        = QImode == loop_mode ? gen_movmem_qi : gen_movmem_hi;
+        = QImode == loop_mode ? gen_cpymem_qi : gen_cpymem_hi;
 
       insn = fun (xas, loop_reg, loop_reg);
     }
   else
     {
       rtx (*fun) (rtx, rtx)
-        = QImode == loop_mode ? gen_movmemx_qi : gen_movmemx_hi;
+        = QImode == loop_mode ? gen_cpymemx_qi : gen_cpymemx_hi;
 
       emit_move_insn (gen_rtx_REG (QImode, 23), a_hi8);
 
@@ -13443,7 +13421,7 @@ avr_emit_movmemhi (rtx *xop)
 }
 
 
-/* Print assembler for movmem_qi, movmem_hi insns...
+/* Print assembler for cpymem_qi, cpymem_hi insns...
        $0     : Address Space
        $1, $2 : Loop register
        Z      : Source address
@@ -13451,7 +13429,7 @@ avr_emit_movmemhi (rtx *xop)
 */
 
 const char*
-avr_out_movmem (rtx_insn *insn ATTRIBUTE_UNUSED, rtx *op, int *plen)
+avr_out_cpymem (rtx_insn *insn ATTRIBUTE_UNUSED, rtx *op, int *plen)
 {
   addr_space_t as = (addr_space_t) INTVAL (op[0]);
   machine_mode loop_mode = GET_MODE (op[1]);
@@ -14258,7 +14236,7 @@ avr_expand_builtin (tree exp, rtx target,
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   const char *bname = IDENTIFIER_POINTER (DECL_NAME (fndecl));
-  unsigned int id = DECL_FUNCTION_CODE (fndecl);
+  unsigned int id = DECL_MD_FUNCTION_CODE (fndecl);
   const struct avr_builtin_description *d = &avr_bdesc[id];
   tree arg0;
   rtx op0;
@@ -14410,7 +14388,7 @@ static tree
 avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
                   bool ignore ATTRIBUTE_UNUSED)
 {
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   tree val_type = TREE_TYPE (TREE_TYPE (fndecl));
 
   if (!optimize)
@@ -14670,9 +14648,6 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
 
 #undef  TARGET_STRICT_ARGUMENT_NAMING
 #define TARGET_STRICT_ARGUMENT_NAMING hook_bool_CUMULATIVE_ARGS_true
-
-#undef  TARGET_BUILTIN_SETJMP_FRAME_VALUE
-#define TARGET_BUILTIN_SETJMP_FRAME_VALUE avr_builtin_setjmp_frame_value
 
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE avr_conditional_register_usage

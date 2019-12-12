@@ -20,7 +20,7 @@
 ! F2008: C4106
   u2 = [u1] ! { dg-error "shall not be unlimited polymorphic" }
 
-  i = u2 ! { dg-error "Can\\'t convert CLASS\\(\\*\\)" }
+  i = u2 ! { dg-error "Cannot convert CLASS\\(\\*\\)" }
 
 ! Repeats same_type_as_1.f03 for unlimited polymorphic u2
   flag = same_type_as (i, u2) ! { dg-error "cannot be of type INTEGER" }

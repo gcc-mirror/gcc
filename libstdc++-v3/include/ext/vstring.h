@@ -1,6 +1,6 @@
 // Versatile string -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -58,6 +58,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typedef _Base<_CharT, _Traits, _Alloc>                __vstring_base;    
       typedef typename __vstring_base::_CharT_alloc_type    _CharT_alloc_type;
+      typedef __alloc_traits<_CharT_alloc_type> _CharT_alloc_traits;
 
       // Types:
     public:
@@ -68,8 +69,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename _CharT_alloc_type::difference_type   difference_type;
       typedef value_type&               	            reference;
       typedef const value_type&                             const_reference;
-      typedef typename _CharT_alloc_type::pointer	    pointer;
-      typedef typename _CharT_alloc_type::const_pointer	    const_pointer;
+      typedef typename _CharT_alloc_traits::pointer	    pointer;
+      typedef typename _CharT_alloc_traits::const_pointer   const_pointer;
       typedef __gnu_cxx::__normal_iterator<pointer, __versa_string>  iterator;
       typedef __gnu_cxx::__normal_iterator<const_pointer, __versa_string>
                                                             const_iterator;
@@ -518,7 +519,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Returns true if the %string is empty.  Equivalent to 
        *  <code>*this == ""</code>.
        */
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const _GLIBCXX_NOEXCEPT
       { return this->size() == 0; }
 
@@ -2933,7 +2934,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 #endif
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   /// std::hash specialization for __u16vstring.
   template<>
     struct hash<__gnu_cxx::__u16vstring>
@@ -2955,13 +2955,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return std::_Hash_impl::hash(__s.data(),
                                      __s.length() * sizeof(char32_t)); }
     };
-#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
 #endif // C++11
 
-#include "vstring.tcc" 
+#include <ext/vstring.tcc>
 
 #endif /* _VSTRING_H */

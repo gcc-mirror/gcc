@@ -1,6 +1,6 @@
 // Safe sequence implementation  -*- C++ -*-
 
-// Copyright (C) 2010-2018 Free Software Foundation, Inc.
+// Copyright (C) 2010-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -68,6 +68,9 @@ namespace __gnu_debug
       _Safe_sequence<_Sequence>::
       _M_transfer_from_if(_Safe_sequence& __from, _Predicate __pred)
       {
+	if (this == std::__addressof(__from))
+	  return;
+
 	typedef typename _Sequence::iterator iterator;
 	typedef typename _Sequence::const_iterator const_iterator;
 

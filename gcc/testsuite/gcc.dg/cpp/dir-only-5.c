@@ -3,4 +3,4 @@
 
 /* { dg-do preprocess } */
 /* { dg-options "-fdirectives-only -traditional" } */
-/* { dg-error "-fdirectives-only is incompatible with -traditional\n" "-traditional check" { target *-*-* } 0 } */
+/* { dg-error "'-fdirectives-only' is incompatible with '-traditional'\n" "'-traditional' check" { target *-*-* } 0 } */

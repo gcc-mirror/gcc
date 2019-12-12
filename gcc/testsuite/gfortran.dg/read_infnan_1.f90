@@ -1,6 +1,5 @@
 ! { dg-do run }
 ! { dg-add-options ieee }
-! { dg-skip-if "NaN not supported" { spu-*-* } }
 
 ! PR43298  Fortran library does not read in NaN, NaN(), -Inf, or Inf
 

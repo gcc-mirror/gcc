@@ -13,7 +13,7 @@ constexpr void
 P<N>::foo (const char *, int i)
 {
   for (auto j = 0; j < 2; ++j)
-    arr[i][j] = true;
+    arr[i][j] = true;		// { dg-error "outside the bounds of array type" }
 }
 
 template <typename... T>
@@ -30,5 +30,5 @@ bar (T... a)
 int
 main ()
 {
-  constexpr auto a = bar ("", "");	// { dg-error "outside the bounds of array type|in .constexpr. expansion of " }
+  constexpr auto a = bar ("", "");	// { dg-message "in .constexpr. expansion of " }
 }

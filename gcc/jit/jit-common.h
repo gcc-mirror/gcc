@@ -1,5 +1,5 @@
 /* Core of implementation of libgccjit.so
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -119,6 +119,7 @@ namespace recording {
 	class union_;
       class vector_type;
     class field;
+      class bitfield;
     class fields;
     class function;
     class block;

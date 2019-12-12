@@ -12,7 +12,7 @@ struct A {
     if (z != 0) abort ();
     auto b = [this] { return &a; };
     auto c = [*this] { return &a; };	// { dg-warning "'*this' capture only available with" "" { target c++14_down } }
-    auto d = [=] { return &a; };
+    auto d = [=] { return &a; }; // { dg-warning "implicit capture" "" { target c++2a } }
     auto e = [&] { return &a; };
     if (b () != &a) abort ();
     if (*b () != 4) abort ();
@@ -24,7 +24,7 @@ struct A {
     if (e () != &a) abort ();
     auto g = [this] { return a + z; };
     auto h = [*this] { return a + z; };	// { dg-warning "'*this' capture only available with" "" { target c++14_down } }
-    auto i = [=] { return a + z; };
+    auto i = [=] { return a + z; }; // { dg-warning "implicit capture" "" { target c++2a } }
     auto j = [&] { return a + z; };
     if (g () != 4 || h () != 5 || i () != 4 || j () != 4) abort ();
   }
@@ -39,7 +39,7 @@ struct B {
     if (z != 0) abort ();
     auto b = [this] { return &a; };
     auto c = [*this] { return &a; };	// { dg-warning "'*this' capture only available with" "" { target c++14_down } }
-    auto d = [=] { return &a; };
+    auto d = [=] { return &a; }; // { dg-warning "implicit capture" "" { target c++2a } }
     auto e = [&] { return &a; };
     if (b () != &a) abort ();
     if (*b () != 9) abort ();
@@ -51,7 +51,7 @@ struct B {
     if (e () != &a) abort ();
     auto g = [this] { return a + z; };
     auto h = [*this] { return a + z; };	// { dg-warning "'*this' capture only available with" "" { target c++14_down } }
-    auto i = [=] { return a + z; };
+    auto i = [=] { return a + z; }; // { dg-warning "implicit capture" "" { target c++2a } }
     auto j = [&] { return a + z; };
     if (g () != 9 || h () != 10 || i () != 9 || j () != 9) abort ();
   }

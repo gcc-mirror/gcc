@@ -1,10 +1,9 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -ffast-math -ftree-vectorize -mavx512f" } */
 /* { dg-require-effective-target avx512f } */
-/* { dg-skip-if "no M_PI" { vxworks_kernel } } */
 
 #define __NO_MATH_INLINES
-#include <math.h>
+#include "math_m_pi.h"
 #include "avx512f-check.h"
 
 #define NUM 64

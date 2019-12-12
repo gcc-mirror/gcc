@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 1991-2018 Free Software Foundation, Inc.
+   Copyright (C) 1991-2019 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -46,6 +46,9 @@ extern char arm_arch_name[];
 
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS() arm_cpu_cpp_builtins (pfile)
+
+/* Target CPU versions for D.  */
+#define TARGET_D_CPU_VERSIONS arm_d_target_versions
 
 #include "config/arm/arm-opts.h"
 
@@ -119,11 +122,18 @@ extern tree arm_fp16_type_node;
 #define TARGET_32BIT_P(flags)  (TARGET_ARM_P (flags) || TARGET_THUMB2_P (flags))
 
 /* Run-time Target Specification.  */
-/* Use hardware floating point instructions. */
-#define TARGET_HARD_FLOAT	(arm_float_abi != ARM_FLOAT_ABI_SOFT	\
+/* Use hardware floating point instructions. -mgeneral-regs-only prevents
+the use of floating point instructions and registers but does not prevent
+emission of floating point pcs attributes.  */
+#define TARGET_HARD_FLOAT_SUB	(arm_float_abi != ARM_FLOAT_ABI_SOFT	\
 				 && bitmap_bit_p (arm_active_target.isa, \
-						  isa_bit_vfpv2))
-#define TARGET_SOFT_FLOAT	(!TARGET_HARD_FLOAT)
+						  isa_bit_vfpv2) \
+				 && TARGET_32BIT)
+
+#define TARGET_HARD_FLOAT	(TARGET_HARD_FLOAT_SUB		\
+				 && !TARGET_GENERAL_REGS_ONLY)
+
+#define TARGET_SOFT_FLOAT	(!TARGET_HARD_FLOAT_SUB)
 /* User has permitted use of FP instructions, if they exist for this
    target.  */
 #define TARGET_MAYBE_HARD_FLOAT (arm_float_abi != ARM_FLOAT_ABI_SOFT)
@@ -131,8 +141,10 @@ extern tree arm_fp16_type_node;
 #define TARGET_HARD_FLOAT_ABI		(arm_float_abi == ARM_FLOAT_ABI_HARD)
 #define TARGET_IWMMXT			(arm_arch_iwmmxt)
 #define TARGET_IWMMXT2			(arm_arch_iwmmxt2)
-#define TARGET_REALLY_IWMMXT		(TARGET_IWMMXT && TARGET_32BIT)
-#define TARGET_REALLY_IWMMXT2		(TARGET_IWMMXT2 && TARGET_32BIT)
+#define TARGET_REALLY_IWMMXT		(TARGET_IWMMXT && TARGET_32BIT \
+					 && !TARGET_GENERAL_REGS_ONLY)
+#define TARGET_REALLY_IWMMXT2		(TARGET_IWMMXT2 && TARGET_32BIT \
+					 && !TARGET_GENERAL_REGS_ONLY)
 #define TARGET_IWMMXT_ABI (TARGET_32BIT && arm_abi == ARM_ABI_IWMMXT)
 #define TARGET_ARM                      (! TARGET_THUMB)
 #define TARGET_EITHER			1 /* (TARGET_ARM | TARGET_THUMB) */
@@ -191,7 +203,7 @@ extern tree arm_fp16_type_node;
 /* FPU supports converting between HFmode and DFmode in a single hardware
    step.  */
 #define TARGET_FP16_TO_DOUBLE						\
-  (TARGET_HARD_FLOAT && (TARGET_FP16 && TARGET_VFP5))
+  (TARGET_HARD_FLOAT && TARGET_FP16 && TARGET_VFP5 && TARGET_VFP_DOUBLE)
 
 /* FPU supports fused-multiply-add operations.  */
 #define TARGET_FMA (bitmap_bit_p (arm_active_target.isa, isa_bit_vfpv4))
@@ -211,10 +223,13 @@ extern tree arm_fp16_type_node;
 #define TARGET_NEON_RDMA (TARGET_NEON && arm_arch8_1)
 
 /* Supports the Dot Product AdvSIMD extensions.  */
-#define TARGET_DOTPROD (TARGET_NEON					\
+#define TARGET_DOTPROD (TARGET_NEON && TARGET_VFP5			\
 			&& bitmap_bit_p (arm_active_target.isa,		\
 					isa_bit_dotprod)		\
 			&& arm_arch8_2)
+
+/* Supports the Armv8.3-a Complex number AdvSIMD extensions.  */
+#define TARGET_COMPLEX (TARGET_NEON && arm_arch8_3)
 
 /* FPU supports the floating point FP16 instructions for ARMv8.2-A
    and later.  */
@@ -297,9 +312,6 @@ extern tree arm_fp16_type_node;
 
 /* Nonzero if disallow volatile memory access in IT block.  */
 #define TARGET_NO_VOLATILE_CE		(arm_arch_no_volatile_ce)
-
-/* Should NEON be used for 64-bits bitops.  */
-#define TARGET_PREFER_NEON_64BITS (prefer_neon_for_64bits)
 
 /* Should constant I be slplit for OP.  */
 #define DONT_EARLY_SPLIT_CONSTANT(i, op) \
@@ -438,6 +450,12 @@ extern int arm_arch8_1;
 /* Nonzero if this chip supports the ARM Architecture 8.2 extensions.  */
 extern int arm_arch8_2;
 
+/* Nonzero if this chip supports the ARM Architecture 8.3 extensions.  */
+extern int arm_arch8_3;
+
+/* Nonzero if this chip supports the ARM Architecture 8.4 extensions.  */
+extern int arm_arch8_4;
+
 /* Nonzero if this chip supports the FP16 instructions extension of ARM
    Architecture 8.2.  */
 extern int arm_fp16_inst;
@@ -487,10 +505,6 @@ extern int arm_arch_thumb_hwdiv;
 
 /* Nonzero if chip disallows volatile memory access in IT block.  */
 extern int arm_arch_no_volatile_ce;
-
-/* Nonzero if we should use Neon to handle 64-bits operations rather
-   than core registers.  */
-extern int prefer_neon_for_64bits;
 
 /* Nonzero if we shouldn't use literal pools.  */
 #ifndef USED_FOR_TARGET
@@ -709,6 +723,10 @@ extern int arm_arch_cmse;
 	                goto.  Without it fp appears to be used and the
 			elimination code won't get rid of sfp.  It tracks
 			fp exactly at all times.
+	apsrq		Nor this, it is used to track operations on the Q bit
+			of APSR by ACLE saturating intrinsics.
+	apsrge		Nor this, it is used to track operations on the GE bits
+			of APSR by ACLE SIMD32 intrinsics
 
    *: See TARGET_CONDITIONAL_REGISTER_USAGE  */
 
@@ -756,7 +774,7 @@ extern int arm_arch_cmse;
   1,1,1,1,1,1,1,1,		\
   1,1,1,1,			\
   /* Specials.  */		\
-  1,1,1,1			\
+  1,1,1,1,1,1			\
 }
 
 /* 1 for registers not available across function calls.
@@ -786,7 +804,7 @@ extern int arm_arch_cmse;
   1,1,1,1,1,1,1,1,		\
   1,1,1,1,			\
   /* Specials.  */		\
-  1,1,1,1			\
+  1,1,1,1,1,1			\
 }
 
 #ifndef SUBTARGET_CONDITIONAL_REGISTER_USAGE
@@ -870,6 +888,9 @@ extern int arm_arch_cmse;
    as an invisible last argument (possible since varargs don't exist in
    Pascal), so the following is not true.  */
 #define STATIC_CHAIN_REGNUM	12
+
+/* r9 is the FDPIC register (base register for GOT and FUNCDESC accesses).  */
+#define FDPIC_REGNUM		9
 
 /* Define this to be where the real frame pointer is if it is not possible to
    work out the offset between the frame pointer and the automatic variables
@@ -958,10 +979,11 @@ extern int arm_arch_cmse;
   ((((REGNUM) - FIRST_VFP_REGNUM) & 3) == 0 \
    && (LAST_VFP_REGNUM - (REGNUM) >= 2 * (N) - 1))
 
-/* The number of hard registers is 16 ARM + 1 CC + 1 SFP + 1 AFP.  */
+/* The number of hard registers is 16 ARM + 1 CC + 1 SFP + 1 AFP
+   + 1 APSRQ + 1 APSRGE.  */
 /* Intel Wireless MMX Technology registers add 16 + 4 more.  */
 /* VFP (VFP3) adds 32 (64) + 1 VFPCC.  */
-#define FIRST_PSEUDO_REGISTER   104
+#define FIRST_PSEUDO_REGISTER   106
 
 #define DBX_REGISTER_NUMBER(REGNO) arm_dbx_register_number (REGNO)
 
@@ -1045,15 +1067,14 @@ extern int arm_regs_in_sequence[];
   /* Registers not for general use.  */		\
   CC_REGNUM, VFPCC_REGNUM,			\
   FRAME_POINTER_REGNUM, ARG_POINTER_REGNUM,	\
-  SP_REGNUM, PC_REGNUM 				\
+  SP_REGNUM, PC_REGNUM, APSRQ_REGNUM, APSRGE_REGNUM	\
 }
 
 /* Use different register alloc ordering for Thumb.  */
 #define ADJUST_REG_ALLOC_ORDER arm_order_regs_for_local_alloc ()
 
-/* Tell IRA to use the order we define rather than messing it up with its
-   own cost calculations.  */
-#define HONOR_REG_ALLOC_ORDER 1
+/* Tell IRA to use the order we define when optimizing for size.  */
+#define HONOR_REG_ALLOC_ORDER optimize_function_for_size_p (cfun)
 
 /* Interrupt functions can only use registers that have already been
    saved by the prologue, even if they would normally be
@@ -1164,7 +1185,7 @@ enum reg_class
    : GET_MODE_SIZE (MODE) >= 4 ? BASE_REGS			\
    : LO_REGS)
 
-/* For Thumb we can not support SP+reg addressing, so we return LO_REGS
+/* For Thumb we cannot support SP+reg addressing, so we return LO_REGS
    instead of BASE_REGS.  */
 #define MODE_BASE_REG_REG_CLASS(MODE) BASE_REG_CLASS
 
@@ -1386,6 +1407,9 @@ typedef struct GTY(()) machine_function
 machine_function;
 #endif
 
+#define ARM_Q_BIT_READ (arm_q_bit_access ())
+#define ARM_GE_BITS_READ (arm_ge_bits_access ())
+
 /* As in the machine_function, a global set of call-via labels, for code 
    that is in text_section.  */
 extern GTY(()) rtx thumb_call_via_label[14];
@@ -1578,7 +1602,7 @@ typedef struct
 #define INIT_EXPANDERS  arm_init_expanders ()
 
 /* Length in units of the trampoline for entering a nested function.  */
-#define TRAMPOLINE_SIZE  (TARGET_32BIT ? 16 : 20)
+#define TRAMPOLINE_SIZE  (TARGET_FDPIC ? 32 : (TARGET_32BIT ? 16 : 20))
 
 /* Alignment required for a trampoline in bits.  */
 #define TRAMPOLINE_ALIGNMENT  32
@@ -1643,7 +1667,7 @@ enum arm_auto_incmodes
    : ARM_REGNO_OK_FOR_BASE_P (REGNO))
 
 /* Nonzero if X can be the base register in a reg+reg addressing mode.
-   For Thumb, we can not use SP + reg, so reject SP.  */
+   For Thumb, we cannot use SP + reg, so reject SP.  */
 #define REGNO_MODE_OK_FOR_REG_BASE_P(X, MODE)	\
   REGNO_MODE_OK_FOR_BASE_P (X, QImode)
 
@@ -1819,7 +1843,7 @@ enum arm_auto_incmodes
    : ARM_REG_OK_FOR_INDEX_P (X))
 
 /* Nonzero if X can be the base register in a reg+reg addressing mode.
-   For Thumb, we can not use SP + reg, so reject SP.  */
+   For Thumb, we cannot use SP + reg, so reject SP.  */
 #define REG_MODE_OK_FOR_REG_BASE_P(X, MODE)	\
   REG_OK_FOR_INDEX_P (X)
 
@@ -1927,6 +1951,10 @@ extern unsigned arm_pic_register;
    data addresses in memory.  */
 #define PIC_OFFSET_TABLE_REGNUM arm_pic_register
 
+/* For FDPIC, the FDPIC register is call-clobbered (otherwise PLT
+   entries would need to handle saving and restoring it).  */
+#define PIC_OFFSET_TABLE_REG_CALL_CLOBBERED TARGET_FDPIC
+
 /* We can't directly access anything that contains a symbol,
    nor can we indirect via the constant pool.  One exception is
    UNSPEC_TLS, which is always PIC.  */
@@ -1938,6 +1966,13 @@ extern unsigned arm_pic_register;
 	       && (symbol_mentioned_p (get_pool_constant (X))		\
 		   || label_mentioned_p (get_pool_constant (X)))))	\
 	 || tls_mentioned_p (X))
+
+/* We may want to save the PIC register if it is a dedicated one.  */
+#define PIC_REGISTER_MAY_NEED_SAVING			\
+  (flag_pic						\
+   && !TARGET_SINGLE_PIC_BASE				\
+   && !TARGET_FDPIC					\
+   && arm_pic_register != INVALID_REGNUM)
 
 /* We need to know when we are making a constant pool; this determines
    whether data needs to be in the GOT or can be referenced via a GOT

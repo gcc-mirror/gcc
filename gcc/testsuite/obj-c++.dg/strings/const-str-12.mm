@@ -6,7 +6,7 @@
 /* { dg-options "-mno-constant-cfstrings -fconstant-string-class=Foo" { target *-*-darwin* } } */
 
 #ifdef __NEXT_RUNTIME__
-#include <Foundation/NSObject.h>
+#include "../../objc-obj-c++-shared/F-NSObject.h"
 #define OBJECT NSObject
 #else
 #include <objc/Object.h>

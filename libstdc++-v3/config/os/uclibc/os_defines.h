@@ -1,6 +1,6 @@
 // Specific definitions for GNU/Linux with uClibc  -*- C++ -*-
 
-// Copyright (C) 2000-2018 Free Software Foundation, Inc.
+// Copyright (C) 2000-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,8 +37,5 @@
 #define __NO_CTYPE 1
 
 #include <features.h>
-
-// We must not see the optimized string functions GNU libc defines.
-#define __NO_STRING_INLINES
 
 #endif

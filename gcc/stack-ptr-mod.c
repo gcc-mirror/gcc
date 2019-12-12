@@ -1,5 +1,5 @@
 /* Discover if the stack pointer is modified in a function.
-   Copyright (C) 2007-2018 Free Software Foundation, Inc.
+   Copyright (C) 2007-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -91,9 +91,7 @@ pass_stack_ptr_mod::execute (function *fun)
 	  if (INSN_P (insn))
 	    {
 	      /* Check if insn modifies the stack pointer.  */
-	      note_stores (PATTERN (insn),
-			   notice_stack_pointer_modification_1,
-			   NULL);
+	      note_stores (insn, notice_stack_pointer_modification_1, NULL);
 	      if (! crtl->sp_is_unchanging)
 		return 0;
 	    }

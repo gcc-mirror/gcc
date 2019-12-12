@@ -24,7 +24,9 @@ avx512f_test (void)
   s1.x = _mm_set_ps (-24.43, 68.346, -43.35, 546.46);
   s2 = 0xFEDCA987;
 
+  asm volatile ("" : "+m" (s2));
   res.x = _mm_cvtu32_ss (s1.x, s2);
+  asm volatile ("" : "+m" (s2));
 
   compute_vcvtusi2ss (s1.a, s2, res_ref);
 

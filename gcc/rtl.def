@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    Register Transfer Expressions (rtx's) that make up the
    Register Transfer Language (rtl) used in the Back End of the GNU compiler.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -298,7 +298,7 @@ DEF_RTL_EXPR(SET, "set", "ee", RTX_EXTRA)
    For example, subroutine calls will use the register
    in which the static chain is passed.
 
-   USE can not appear as an operand of other rtx except for PARALLEL.
+   USE cannot appear as an operand of other rtx except for PARALLEL.
    USE is not deletable, as it indicates that the operand
    is used in some unknown way.  */
 DEF_RTL_EXPR(USE, "use", "e", RTX_EXTRA)
@@ -307,7 +307,7 @@ DEF_RTL_EXPR(USE, "use", "e", RTX_EXTRA)
    For example, subroutine calls will clobber some physical registers
    (the ones that are by convention not saved).
 
-   CLOBBER can not appear as an operand of other rtx except for PARALLEL.
+   CLOBBER cannot appear as an operand of other rtx except for PARALLEL.
    CLOBBER of a hard register appearing by itself (not within PARALLEL)
    is considered undeletable before reload.  */
 DEF_RTL_EXPR(CLOBBER, "clobber", "e", RTX_EXTRA)
@@ -542,20 +542,25 @@ DEF_RTL_EXPR(POST_INC, "post_inc", "e", RTX_AUTOINC)
 DEF_RTL_EXPR(PRE_MODIFY, "pre_modify", "ee", RTX_AUTOINC)
 DEF_RTL_EXPR(POST_MODIFY, "post_modify", "ee", RTX_AUTOINC)
 
-/* Comparison operations.  The ordered comparisons exist in two
-   flavors, signed and unsigned.  */
+/* Comparison operations.  The first 6 are allowed only for integral,
+floating-point and vector modes.  LTGT is only allowed for floating-point
+modes.  The last 4 are allowed only for integral and vector modes.
+For floating-point operations, if either operand is a NaN, then NE returns
+true and the remaining operations return false.  The operations other than
+EQ and NE may generate an exception on quiet NaNs.  */
 DEF_RTL_EXPR(NE, "ne", "ee", RTX_COMM_COMPARE)
 DEF_RTL_EXPR(EQ, "eq", "ee", RTX_COMM_COMPARE)
 DEF_RTL_EXPR(GE, "ge", "ee", RTX_COMPARE)
 DEF_RTL_EXPR(GT, "gt", "ee", RTX_COMPARE)
 DEF_RTL_EXPR(LE, "le", "ee", RTX_COMPARE)
 DEF_RTL_EXPR(LT, "lt", "ee", RTX_COMPARE)
+DEF_RTL_EXPR(LTGT, "ltgt", "ee", RTX_COMM_COMPARE)
 DEF_RTL_EXPR(GEU, "geu", "ee", RTX_COMPARE)
 DEF_RTL_EXPR(GTU, "gtu", "ee", RTX_COMPARE)
 DEF_RTL_EXPR(LEU, "leu", "ee", RTX_COMPARE)
 DEF_RTL_EXPR(LTU, "ltu", "ee", RTX_COMPARE)
 
-/* Additional floating point unordered comparison flavors.  */
+/* Additional floating-point unordered comparison flavors.  */
 DEF_RTL_EXPR(UNORDERED, "unordered", "ee", RTX_COMM_COMPARE)
 DEF_RTL_EXPR(ORDERED, "ordered", "ee", RTX_COMM_COMPARE)
 
@@ -565,9 +570,6 @@ DEF_RTL_EXPR(UNGE, "unge", "ee", RTX_COMPARE)
 DEF_RTL_EXPR(UNGT, "ungt", "ee", RTX_COMPARE)
 DEF_RTL_EXPR(UNLE, "unle", "ee", RTX_COMPARE)
 DEF_RTL_EXPR(UNLT, "unlt", "ee", RTX_COMPARE)
-
-/* This is an ordered NE, ie !UNEQ, ie false for NaN.  */
-DEF_RTL_EXPR(LTGT, "ltgt", "ee", RTX_COMM_COMPARE)
 
 /* Represents the result of sign-extending the sole operand.
    The machine modes of the operand and of the SIGN_EXTEND expression
@@ -673,7 +675,7 @@ DEF_RTL_EXPR(PARITY, "parity", "e", RTX_UNARY)
    operand 2 counts from the msb of the memory unit.
    Otherwise, the first bit is the lsb and operand 2 counts from
    the lsb of the memory unit.
-   This kind of expression can not appear as an lvalue in RTL.  */
+   This kind of expression cannot appear as an lvalue in RTL.  */
 DEF_RTL_EXPR(SIGN_EXTRACT, "sign_extract", "eee", RTX_BITFIELD_OPS)
 
 /* Similar for unsigned bit-field.
@@ -926,6 +928,12 @@ DEF_RTL_EXPR(DEFINE_SPLIT, "define_split", "EsES", RTX_EXTRA)
    7: optionally, a vector of attributes for this insn.  */
 DEF_RTL_EXPR(DEFINE_INSN_AND_SPLIT, "define_insn_and_split", "sEsTsESV", RTX_EXTRA)
 
+/* A form of define_insn_and_split in which the split insn pattern (operand 5)
+   is determined automatically by replacing match_operands with match_dups
+   and match_operators with match_op_dups.  The operands are the same as
+   define_insn_and_split but with operand 5 removed.  */
+DEF_RTL_EXPR(DEFINE_INSN_AND_REWRITE, "define_insn_and_rewrite", "sEsTsSV", RTX_EXTRA)
+
 /* Definition of an RTL peephole operation.
    Follows the same arguments as define_split.  */
 DEF_RTL_EXPR(DEFINE_PEEPHOLE2, "define_peephole2", "EsES", RTX_EXTRA)
@@ -1069,7 +1077,7 @@ DEF_RTL_EXPR(DEFINE_CPU_UNIT, "define_cpu_unit", "sS", RTX_EXTRA)
 DEF_RTL_EXPR(DEFINE_QUERY_CPU_UNIT, "define_query_cpu_unit", "sS", RTX_EXTRA)
 
 /* (exclusion_set string string) means that each CPU functional unit
-   in the first string can not be reserved simultaneously with any
+   in the first string cannot be reserved simultaneously with any
    unit whose name is in the second string and vise versa.  CPU units
    in the string are separated by commas.  For example, it is useful
    for description CPU with fully pipelined floating point functional
@@ -1079,7 +1087,7 @@ DEF_RTL_EXPR(DEFINE_QUERY_CPU_UNIT, "define_query_cpu_unit", "sS", RTX_EXTRA)
 DEF_RTL_EXPR(EXCLUSION_SET, "exclusion_set", "ss", RTX_EXTRA)
 
 /* (presence_set string string) means that each CPU functional unit in
-   the first string can not be reserved unless at least one of pattern
+   the first string cannot be reserved unless at least one of pattern
    of units whose names are in the second string is reserved.  This is
    an asymmetric relation.  CPU units or unit patterns in the strings
    are separated by commas.  Pattern is one unit name or unit names
@@ -1129,13 +1137,13 @@ DEF_RTL_EXPR(FINAL_PRESENCE_SET, "final_presence_set", "ss", RTX_EXTRA)
    are separated by commas.  Pattern is one unit name or unit names
    separated by white-spaces.
 
-   For example, it is useful for description that slot0 can not be
+   For example, it is useful for description that slot0 cannot be
    reserved after slot1 or slot2 reservation for a VLIW processor.  We
    could describe it by the following construction
 
       (absence_set "slot2" "slot0, slot1")
 
-   Or slot2 can not be reserved if slot0 and unit b0 are reserved or
+   Or slot2 cannot be reserved if slot0 and unit b0 are reserved or
    slot1 and unit b1 are reserved .  In this case we could write
 
       (absence_set "slot2" "slot0 b0, slot1 b1")
@@ -1300,7 +1308,7 @@ DEF_RTL_EXPR(EQ_ATTR, "eq_attr", "ss", RTX_EXTRA)
 
 /* A special case of the above representing a set of alternatives.  The first
    operand is bitmap of the set, the second one is the default value.  */
-DEF_RTL_EXPR(EQ_ATTR_ALT, "eq_attr_alt", "ii", RTX_EXTRA)
+DEF_RTL_EXPR(EQ_ATTR_ALT, "eq_attr_alt", "ww", RTX_EXTRA)
 
 /* A conditional expression which is true if the specified flag is
    true for the insn being scheduled in reorg.

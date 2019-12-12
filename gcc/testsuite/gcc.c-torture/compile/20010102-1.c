@@ -4,6 +4,8 @@
 
    Copyright (C) 2001  Free Software Foundation.  */
 
+/* { dg-require-effective-target indirect_calls } */
+
 # define PTR_INT_TYPE __PTRDIFF_TYPE__
 
 struct _obstack_chunk

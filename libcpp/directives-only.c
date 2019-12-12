@@ -1,5 +1,5 @@
 /* CPP Library - directive only preprocessing for distributed compilation.
-   Copyright (C) 2007-2018 Free Software Foundation, Inc.
+   Copyright (C) 2007-2019 Free Software Foundation, Inc.
    Contributed by Ollie Wild <aaw@google.com>.
 
 This program is free software; you can redistribute it and/or modify it
@@ -43,7 +43,7 @@ _cpp_preprocess_dir_only (cpp_reader *pfile,
   unsigned flags;
   linenum_type lines;
   int col;
-  source_location loc;
+  location_t loc;
 
  restart:
   /* Buffer initialization ala _cpp_clean_line(). */
@@ -88,7 +88,7 @@ _cpp_preprocess_dir_only (cpp_reader *pfile,
 	{
 	  if (c != '#' && (flags & DO_BOL))
 	  {
-	    struct line_maps *line_table;
+	    class line_maps *line_table;
 
 	    if (!pfile->state.skipping && next_line != base)
 	      cb->print_lines (lines, base, next_line - base);
@@ -101,7 +101,7 @@ _cpp_preprocess_dir_only (cpp_reader *pfile,
 	    /* Ensure proper column numbering for generated error messages. */
 	    buffer->line_base -= col - 1;
 
-	    _cpp_handle_directive (pfile, 0 /* ignore indented */);
+	    _cpp_handle_directive (pfile, false /* ignore indented */);
 
 	    /* Sanitize the line settings.  Duplicate #include's can mess
 	       things up. */

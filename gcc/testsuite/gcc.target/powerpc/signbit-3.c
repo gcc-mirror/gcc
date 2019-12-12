@@ -1,6 +1,6 @@
 /* { dg-do run { target { powerpc*-*-linux* } } } */
 /* { dg-require-effective-target ppc_float128_sw } */
-/* { dg-options "-mcpu=power7 -O2 -mfloat128 -lm" } */
+/* { dg-options "-mdejagnu-cpu=power7 -O2 -mfloat128 -lm" } */
 
 #ifdef DEBUG
 #include <stdio.h>

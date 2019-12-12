@@ -1,5 +1,5 @@
 /* Scheduler hooks for IA-32 which implement CPU specific logic.
-   Copyright (C) 1988-2018 Free Software Foundation, Inc.
+   Copyright (C) 1988-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,10 +27,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "cfghooks.h"
 #include "tm_p.h"
+#include "target.h"
 #include "insn-config.h"
 #include "insn-attr.h"
+#include "insn-opinit.h"
 #include "recog.h"
-#include "target.h"
 
 /* Return the maximum number of instructions a cpu can issue.  */
 
@@ -64,6 +65,7 @@ ix86_issue_rate (void)
     case PROCESSOR_BDVER3:
     case PROCESSOR_BDVER4:
     case PROCESSOR_ZNVER1:
+    case PROCESSOR_ZNVER2:
     case PROCESSOR_CORE2:
     case PROCESSOR_NEHALEM:
     case PROCESSOR_SANDYBRIDGE:
@@ -393,6 +395,7 @@ ix86_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
       break;
 
     case PROCESSOR_ZNVER1:
+    case PROCESSOR_ZNVER2:
       /* Stack engine allows to execute push&pop instructions in parall.  */
       if ((insn_type == TYPE_PUSH || insn_type == TYPE_POP)
 	  && (dep_insn_type == TYPE_PUSH || dep_insn_type == TYPE_POP))
@@ -523,6 +526,7 @@ ix86_macro_fusion_pair_p (rtx_insn *condgen, rtx_insn *condjmp)
   enum rtx_code ccode;
   rtx compare_set = NULL_RTX, test_if, cond;
   rtx alu_set = NULL_RTX, addr = NULL_RTX;
+  enum attr_type condgen_type;
 
   if (!any_condjump_p (condjmp))
     return false;
@@ -536,15 +540,25 @@ ix86_macro_fusion_pair_p (rtx_insn *condgen, rtx_insn *condjmp)
       || !modified_in_p (cc_reg_1, condgen))
     return false;
 
-  if (get_attr_type (condgen) != TYPE_TEST
-      && get_attr_type (condgen) != TYPE_ICMP
-      && get_attr_type (condgen) != TYPE_INCDEC
-      && get_attr_type (condgen) != TYPE_ALU)
+  condgen_type = get_attr_type (condgen);
+  if (condgen_type == TYPE_MULTI
+      && INSN_CODE (condgen) == code_for_stack_protect_test_1 (ptr_mode)
+      && TARGET_FUSE_ALU_AND_BRANCH)
+    {
+      /* stack_protect_test_<mode> ends with a sub, which subtracts
+	 a non-rip special memory operand from a GPR.  */
+      src = NULL_RTX;
+      alu_set = XVECEXP (PATTERN (condgen), 0, 1);
+      goto handle_stack_protect_test;
+    }
+  else if (condgen_type != TYPE_TEST
+	   && condgen_type != TYPE_ICMP
+	   && condgen_type != TYPE_INCDEC
+	   && condgen_type != TYPE_ALU)
     return false;
 
   compare_set = single_set (condgen);
-  if (compare_set == NULL_RTX
-      && !TARGET_FUSE_ALU_AND_BRANCH)
+  if (compare_set == NULL_RTX && !TARGET_FUSE_ALU_AND_BRANCH)
     return false;
 
   if (compare_set == NULL_RTX)
@@ -569,10 +583,8 @@ ix86_macro_fusion_pair_p (rtx_insn *condgen, rtx_insn *condjmp)
 
   /* Macro-fusion for cmp/test MEM-IMM + conditional jmp is not
      supported.  */
-  if ((MEM_P (XEXP (src, 0))
-       && CONST_INT_P (XEXP (src, 1)))
-      || (MEM_P (XEXP (src, 1))
-	  && CONST_INT_P (XEXP (src, 0))))
+  if ((MEM_P (XEXP (src, 0)) && CONST_INT_P (XEXP (src, 1)))
+      || (MEM_P (XEXP (src, 1)) && CONST_INT_P (XEXP (src, 0))))
     return false;
 
   /* No fusion for RIP-relative address.  */
@@ -581,29 +593,27 @@ ix86_macro_fusion_pair_p (rtx_insn *condgen, rtx_insn *condjmp)
   else if (MEM_P (XEXP (src, 1)))
     addr = XEXP (XEXP (src, 1), 0);
 
-  if (addr) {
-    ix86_address parts;
-    int ok = ix86_decompose_address (addr, &parts);
-    gcc_assert (ok);
+  if (addr)
+    {
+      ix86_address parts;
+      int ok = ix86_decompose_address (addr, &parts);
+      gcc_assert (ok);
 
-    if (ix86_rip_relative_addr_p (&parts))
-      return false;
-  }
+      if (ix86_rip_relative_addr_p (&parts))
+	return false;
+    }
 
+ handle_stack_protect_test:
   test_if = SET_SRC (pc_set (condjmp));
   cond = XEXP (test_if, 0);
   ccode = GET_CODE (cond);
   /* Check whether conditional jump use Sign or Overflow Flags.  */
   if (!TARGET_FUSE_CMP_AND_BRANCH_SOFLAGS
-      && (ccode == GE
-          || ccode == GT
-	  || ccode == LE
-	  || ccode == LT))
+      && (ccode == GE || ccode == GT || ccode == LE || ccode == LT))
     return false;
 
   /* Return true for TYPE_TEST and TYPE_ICMP.  */
-  if (get_attr_type (condgen) == TYPE_TEST
-      || get_attr_type (condgen) == TYPE_ICMP)
+  if (condgen_type == TYPE_TEST || condgen_type == TYPE_ICMP)
     return true;
 
   /* The following is the case that macro-fusion for alu + jmp.  */
@@ -617,11 +627,8 @@ ix86_macro_fusion_pair_p (rtx_insn *condgen, rtx_insn *condjmp)
 
   /* Macro-fusion for inc/dec + unsigned conditional jump is not
      supported.  */
-  if (get_attr_type (condgen) == TYPE_INCDEC
-      && (ccode == GEU
-	  || ccode == GTU
-	  || ccode == LEU
-	  || ccode == LTU))
+  if (condgen_type == TYPE_INCDEC
+      && (ccode == GEU || ccode == GTU || ccode == LEU || ccode == LTU))
     return false;
 
   return true;

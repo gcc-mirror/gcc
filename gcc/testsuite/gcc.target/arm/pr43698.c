@@ -6,7 +6,7 @@
 
 char do_reverse_endian = 0;
 
-#  define bswap_32(x) \
+#  define my_bswap_32(x) \
   ((((x) & 0xff000000) >> 24) | \
    (((x) & 0x00ff0000) >>  8) | \
    (((x) & 0x0000ff00) <<  8) | \
@@ -16,7 +16,7 @@ char do_reverse_endian = 0;
   (__extension__ ({ \
       uint64_t __res; \
       if (!do_reverse_endian) {    __res = (X); \
-      } else if (sizeof(X) == 4) { __res = bswap_32((X)); \
+      } else if (sizeof(X) == 4) { __res = my_bswap_32((X)); \
       } \
       __res; \
     }))

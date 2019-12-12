@@ -1,4 +1,4 @@
-@c Copyright (C) 2002-2018 Free Software Foundation, Inc.
+@c Copyright (C) 2002-2019 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -66,7 +66,7 @@ include it in @code{libc}.
 The Ada runtime library.
 
 @item libatomic
-The runtime support library for atomic operations (e.g. for @code{__sync}
+The runtime support library for atomic operations (e.g.@: for @code{__sync}
 and @code{__atomic}).
 
 @item libcpp
@@ -105,6 +105,10 @@ The Objective-C and Objective-C++ runtime library.
 
 @item libquadmath
 The runtime support library for quad-precision math operations.
+
+@item libphobos
+The D standard and runtime library.  The bulk of this library is mirrored
+from the @uref{https://github.com/@/dlang, master D repositories}.
 
 @item libssp
 The Stack protector runtime library.
@@ -562,8 +566,8 @@ and the online manuals should be linked to from
 @file{onlinedocs/index.html}.
 @item
 Any old releases or CVS repositories of the front end, before its
-inclusion in GCC, should be made available on the GCC FTP site
-@uref{ftp://gcc.gnu.org/pub/gcc/old-releases/}.
+inclusion in GCC, should be made available on the GCC web site at
+@uref{https://gcc.gnu.org/pub/gcc/old-releases/}.
 @item
 The release and snapshot script @file{maintainer-scripts/gcc_release}
 should be updated to generate appropriate tarballs for this front end.
@@ -1353,8 +1357,17 @@ Target has @code{int} that is at 32 bits or longer.
 @item int16
 Target has @code{int} that is 16 bits or shorter.
 
+@item longlong64
+Target has 64-bit @code{long long}.
+
 @item long_neq_int
 Target has @code{int} and @code{long} with different sizes.
+
+@item int_eq_float
+Target has @code{int} and @code{float} with the same size.
+
+@item ptr_eq_long
+Target has pointers (@code{void *}) and @code{long} with the same size.
 
 @item large_double
 Target supports @code{double} that is longer than @code{float}.
@@ -1365,8 +1378,13 @@ Target supports @code{long double} that is longer than @code{double}.
 @item ptr32plus
 Target has pointers that are 32 bits or longer.
 
+@item size20plus
+Target has a 20-bit or larger address space, so at least supports
+16-bit array and structure sizes.
+
 @item size32plus
-Target supports array and structure sizes that are 32 bits or longer.
+Target has a 32-bit or larger address space, so at least supports
+24-bit array and structure sizes.
 
 @item 4byte_wchar_t
 Target has @code{wchar_t} that is at least 4 bytes.
@@ -1389,8 +1407,11 @@ for any options added with @code{dg-add-options}.
 Target has runtime support for any options added with
 @code{dg-add-options} for any @code{_Float@var{n}} or
 @code{_Float@var{n}x} type.
-@end table
 
+@item inf
+Target supports floating point infinite (@code{inf}) for type
+@code{double}.
+@end table
 @subsubsection Fortran-specific attributes
 
 @table @code
@@ -1420,6 +1441,14 @@ vector alignment.
 @item vect_avg_qi
 Target supports both signed and unsigned averaging operations on vectors
 of bytes.
+
+@item vect_mulhrs_hi
+Target supports both signed and unsigned multiply-high-with-round-and-scale
+operations on vectors of half-words.
+
+@item vect_sdiv_pow2_si
+Target supports signed division by constant power-of-2 operations
+on vectors of 4-byte integers.
 
 @item vect_condition
 Target supports vector conditional operations.
@@ -1458,6 +1487,10 @@ Target supports hardware vectors of @code{long}.
 @item vect_long_long
 Target supports hardware vectors of @code{long long}.
 
+@item vect_check_ptrs
+Target supports the @code{check_raw_ptrs} and @code{check_war_ptrs}
+optabs on vectors.
+
 @item vect_fully_masked
 Target supports fully-masked (also known as fully-predicated) loops,
 so that vector loops can handle partial as well as full vectors.
@@ -1488,6 +1521,10 @@ Target does not support a vector add instruction on @code{int}.
 
 @item vect_no_bitwise
 Target does not support vector bitwise instructions.
+
+@item vect_char_add
+Target supports addition of @code{char} vectors for at least one
+vector length.
 
 @item vect_char_mult
 Target supports @code{vector char} multiplication.
@@ -1875,6 +1912,19 @@ in @ref{arm_coproc2_ok} in addition the following: @code{MCRR} and @code{MRRC}.
 @item arm_coproc4_ok
 ARM target supports all the coprocessor instructions also listed as supported
 in @ref{arm_coproc3_ok} in addition the following: @code{MCRR2} and @code{MRRC2}.
+
+@item arm_simd32_ok
+@anchor{arm_simd32_ok}
+ARM Target supports options suitable for accessing the SIMD32 intrinsics from
+@code{arm_acle.h}.
+Some multilibs may be incompatible with these options.
+
+@item arm_qbit_ok
+@anchor{arm_qbit_ok}
+ARM Target supports options suitable for accessing the Q-bit manipulation
+intrinsics from @code{arm_acle.h}.
+Some multilibs may be incompatible with these options.
+
 @end table
 
 @subsubsection AArch64-specific attributes
@@ -1990,9 +2040,6 @@ PowerPC target supports PowerPC 405.
 @item ppc_recip_hw
 PowerPC target supports executing reciprocal estimate instructions.
 
-@item spu_auto_overlay
-SPU target has toolchain that supports automatic overlay generation.
-
 @item vmx_hw
 PowerPC target supports executing AltiVec instructions.
 
@@ -2024,6 +2071,9 @@ Target supports compiling @code{avx512f} instructions.
 
 @item avx512f_runtime
 Target supports the execution of @code{avx512f} instructions.
+
+@item avx512vp2intersect
+Target supports the execution of @code{avx512vp2intersect} instructions.
 
 @item cell_hw
 Test system can execute AltiVec and Cell PPU instructions.
@@ -2099,13 +2149,23 @@ Target provides a full C99 runtime.
 Target @code{string.h} and @code{wchar.h} headers provide C++ required
 overloads for @code{strchr} etc. functions.
 
+@item d_runtime
+Target provides the D runtime.
+
 @item dummy_wcsftime
 Target uses a dummy @code{wcsftime} function that always returns zero.
 
 @item fd_truncate
 Target can truncate a file from a file descriptor, as used by
-@file{libgfortran/io/unix.c:fd_truncate}; i.e. @code{ftruncate} or
+@file{libgfortran/io/unix.c:fd_truncate}; i.e.@: @code{ftruncate} or
 @code{chsize}.
+
+@item fenv
+Target provides @file{fenv.h} include file.
+
+@item fenv_exceptions
+Target supports @file{fenv.h} with all the standard IEEE exceptions
+and floating-point exceptions are raised by arithmetic operations.
 
 @item freestanding
 Target is @samp{freestanding} as defined in section 4 of the C99 standard.
@@ -2137,6 +2197,10 @@ Target supports @code{mmap}.
 @item newlib
 Target supports Newlib.
 
+@item newlib_nano_io
+GCC was configured with @code{--enable-newlib-nano-formatted-io}, which reduces
+the code size of Newlib formatted I/O functions.
+
 @item pow10
 Target provides @code{pow10} function.
 
@@ -2152,8 +2216,8 @@ time) should be run on this target.  This can be enabled by setting the
 @env{GCC_TEST_RUN_EXPENSIVE} environment variable to a non-empty string.
 
 @item simulator
-Test system runs executables on a simulator (i.e. slowly) rather than
-hardware (i.e. fast).
+Test system runs executables on a simulator (i.e.@: slowly) rather than
+hardware (i.e.@: fast).
 
 @item signal
 Target has @code{signal.h}.
@@ -2203,6 +2267,9 @@ Target uses @code{__cxa_atexit}.
 @item default_packed
 Target has packed layout of structure members by default.
 
+@item exceptions
+Target supports exceptions.
+
 @item fgraphite
 Target supports Graphite optimizations.
 
@@ -2237,8 +2304,15 @@ Target uses GNU @command{ld}.
 Target keeps null pointer checks, either due to the use of
 @option{-fno-delete-null-pointer-checks} or hardwired into the target.
 
+@item llvm_binutils
+Target is using an LLVM assembler and/or linker, instead of GNU Binutils.
+
 @item lto
 Compiler has been configured to support link-time optimization (LTO).
+
+@item lto_incremental
+Compiler and linker support link-time optimization relocatable linking
+with @option{-r} and @option{-flto} options.
 
 @item naked_functions
 Target supports the @code{naked} function attribute.
@@ -2254,8 +2328,14 @@ Target uses natural alignment (aligned to type size) for types of
 Target uses natural alignment (aligned to type size) for types of
 64 bits or less.
 
+@item noinit
+Target supports the @code{noinit} variable attribute.
+
 @item nonpic
 Target does not generate PIC by default.
+
+@item offload_gcn
+Target has been configured for OpenACC/OpenMP offloading on AMD GCN.
 
 @item pie_enabled
 Target generates PIE by default.
@@ -2323,6 +2403,10 @@ Target supports @code{wchar_t} that is compatible with @code{char32_t}.
 
 @item comdat_group
 Target uses comdat groups.
+
+@item indirect_calls
+Target supports indirect calls, i.e. calls where the target is not
+constant.
 @end table
 
 @subsubsection Local to tests in @code{gcc.target/i386}
@@ -2336,6 +2420,10 @@ Target supports compiling @code{aes} instructions.
 
 @item fma4
 Target supports compiling @code{fma4} instructions.
+
+@item mfentry
+Target supports the @code{-mfentry} option that alters the
+position of profiling calls such that they precede the prologue.
 
 @item ms_hook_prologue
 Target supports attribute @code{ms_hook_prologue}.
@@ -2363,13 +2451,6 @@ Target supports compiling @code{vpclmul} instructions.
 
 @item xop
 Target supports compiling @code{xop} instructions.
-@end table
-
-@subsubsection Local to tests in @code{gcc.target/spu/ea}
-
-@table @code
-@item ealib
-Target @code{__ea} library functions are available.
 @end table
 
 @subsubsection Local to tests in @code{gcc.test-framework}
@@ -2461,9 +2542,6 @@ instructions, if this is supported by the target; see the
 Add the target-specific flags needed to enable functions to bind
 locally when using pic/PIC passes in the testsuite.
 
-@item c99_runtime
-Add the target-specific flags needed to access the C99 runtime.
-
 @item float@var{n}
 Add the target-specific flags needed to use the @code{_Float@var{n}} type.
 
@@ -2483,6 +2561,10 @@ Only MIPS targets support this feature, and only then in certain modes.
 Add the flags needed to define macro STACK_SIZE and set it to the stack size
 limit associated with the @ref{stack_size_et,,@code{stack_size} effective
 target}.
+
+@item sqrt_insn
+Add the target-specific flags needed to enable hardware square root
+instructions, if any.
 
 @item tls
 Add the target-specific flags needed to use thread-local storage.
@@ -2610,12 +2692,98 @@ assembly output.
 @item scan-not-hidden @var{symbol} [@{ target/xfail @var{selector} @}]
 Passes if @var{symbol} is not defined as a hidden symbol in the test's
 assembly output.
+
+@item check-function-bodies @var{prefix} @var{terminator} [@var{option}]
+Looks through the source file for comments that give the expected assembly
+output for selected functions.  Each line of expected output starts with the
+prefix string @var{prefix} and the expected output for a function as a whole
+is followed by a line that starts with the string @var{terminator}.
+Specifying an empty terminator is equivalent to specifying @samp{"*/"}.
+
+If @var{option} is specified, the test only applies to command lines
+that contain @var{option}.  This can be useful if a source file is compiled
+both with and without optimization, since it is rarely useful to check the
+assembly output for unoptimized code.
+
+The first line of the expected output for a function @var{fn} has the form:
+
+@smallexample
+@var{prefix} @var{fn}:  [@{ target/xfail @var{selector} @}]
+@end smallexample
+
+Subsequent lines of the expected output also start with @var{prefix}.
+In both cases, whitespace after @var{prefix} is not significant.
+
+The test discards assembly directives such as @code{.cfi_startproc}
+and local label definitions such as @code{.LFB0} from the compiler's
+assembly output.  It then matches the result against the expected
+output for a function as a single regular expression.  This means that
+later lines can use backslashes to refer back to @samp{(@dots{})}
+captures on earlier lines.  For example:
+
+@smallexample
+/* @{ dg-final @{ check-function-bodies "**" "" "-DCHECK_ASM" @} @} */
+@dots{}
+/*
+** add_w0_s8_m:
+**	mov	(z[0-9]+\.b), w0
+**	add	z0\.b, p0/m, z0\.b, \1
+**	ret
+*/
+svint8_t add_w0_s8_m (@dots{}) @{ @dots{} @}
+@dots{}
+/*
+** add_b0_s8_m:
+**	mov	(z[0-9]+\.b), b0
+**	add	z1\.b, p0/m, z1\.b, \1
+**	ret
+*/
+svint8_t add_b0_s8_m (@dots{}) @{ @dots{} @}
+@end smallexample
+
+checks whether the implementations of @code{add_w0_s8_m} and
+@code{add_b0_s8_m} match the regular expressions given.  The test only
+runs when @samp{-DCHECK_ASM} is passed on the command line.
+
+It is possible to create non-capturing multi-line regular expression
+groups of the form @samp{(@var{a}|@var{b}|@dots{})} by putting the
+@samp{(}, @samp{|} and @samp{)} on separate lines (each still using
+@var{prefix}).  For example:
+
+@smallexample
+/*
+** cmple_f16_tied:
+** (
+**	fcmge	p0\.h, p0/z, z1\.h, z0\.h
+** |
+**	fcmle	p0\.h, p0/z, z0\.h, z1\.h
+** )
+**	ret
+*/
+svbool_t cmple_f16_tied (@dots{}) @{ @dots{} @}
+@end smallexample
+
+checks whether @code{cmple_f16_tied} is implemented by the
+@code{fcmge} instruction followed by @code{ret} or by the
+@code{fcmle} instruction followed by @code{ret}.  The test is
+still a single regular rexpression.
+
+A line containing just:
+
+@smallexample
+@var{prefix} ...
+@end smallexample
+
+stands for zero or more unmatched lines; the whitespace after
+@var{prefix} is again not significant.
+
 @end table
 
 @subsubsection Scan optimization dump files
 
 These commands are available for @var{kind} of @code{tree}, @code{ltrans-tree},
-@code{offload-tree}, @code{rtl}, @code{ipa}, and @code{wpa-ipa}.
+@code{offload-tree}, @code{rtl}, @code{offload-rtl}, @code{ipa}, and
+@code{wpa-ipa}.
 
 @table @code
 @item scan-@var{kind}-dump @var{regex} @var{suffix} [@{ target/xfail @var{selector} @}]
@@ -2638,7 +2806,7 @@ Passes if @var{regex} does not match demangled text in the dump file with
 suffix @var{suffix}.
 @end table
 
-@subsubsection Verify that an output files exists or not
+@subsubsection Check for output files
 
 @table @code
 @item output-exists [@{ target/xfail @var{selector} @}]
@@ -2646,13 +2814,12 @@ Passes if compiler output file exists.
 
 @item output-exists-not [@{ target/xfail @var{selector} @}]
 Passes if compiler output file does not exist.
-@end table
 
-@subsubsection Check for LTO tests
-
-@table @code
 @item scan-symbol @var{regexp} [@{ target/xfail @var{selector} @}]
 Passes if the pattern is present in the final executable.
+
+@item scan-symbol-not @var{regexp} [@{ target/xfail @var{selector} @}]
+Passes if the pattern is absent from the final executable.
 @end table
 
 @subsubsection Checks for @command{gcov} tests
@@ -2726,9 +2893,6 @@ int main() @{ return 0; @}
 
 @item cleanup-profile-file
 Removes profiling files generated for this test.
-
-@item cleanup-repo-files
-Removes files generated for this test for @option{-frepo}.
 
 @end table
 
@@ -2918,7 +3082,7 @@ in @file{lib/gcc-dg.exp} to compile and run the test program.  A typical
 @command{gcov} test contains the following DejaGnu commands within comments:
 
 @smallexample
-@{ dg-options "-fprofile-arcs -ftest-coverage" @}
+@{ dg-options "--coverage" @}
 @{ dg-do run @{ target native @} @}
 @{ dg-final @{ run-gcov sourcefile @} @}
 @end smallexample
@@ -3214,7 +3378,7 @@ bb_5:
 
 The @code{startwith} argument indicates at which pass to begin.
 
-Use the dump modifier @code{-gimple} (e.g. @option{-fdump-tree-all-gimple})
+Use the dump modifier @code{-gimple} (e.g.@: @option{-fdump-tree-all-gimple})
 to make tree dumps more closely follow the format accepted by the GIMPLE
 parser.
 

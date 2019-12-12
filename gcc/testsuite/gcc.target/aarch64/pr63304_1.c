@@ -1,7 +1,7 @@
 /* { dg-do assemble } */
 /* { dg-options "-O1 --save-temps" } */
 #pragma GCC push_options
-#pragma GCC target ("+nothing+simd, cmodel=small")
+#pragma GCC target ("+nothing+simd,cmodel=small")
 
 int
 cal (double a)

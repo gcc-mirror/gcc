@@ -43,6 +43,10 @@
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="status_cxx2017.xml">
     </xi:include>
 
+    <!-- Section 01.4 : Status C++ 2020 -->
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="status_cxx2020.xml">
+    </xi:include>
+
     <!-- Section 01.5 : Status C++ TR1 -->
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="status_cxxtr1.xml">
     </xi:include>
@@ -438,6 +442,17 @@ requirements of the license of GCC.
 	<emphasis>Should basic_istream::sentry's constructor ever set eofbit?</emphasis>
     </term>
     <listitem><para>Yes, it can, specifically if EOF is reached while skipping whitespace.
+    </para></listitem></varlistentry>
+
+    <varlistentry xml:id="manual.bugs.dr206"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#206">206</link>:
+	<emphasis><code>operator new(size_t, nothrow)</code> may become
+          unlinked to ordinary <code>operator new</code> if ordinary
+          version replaced
+        </emphasis>
+    </term>
+    <listitem><para>The <code>nothrow</code> forms of new and delete were
+      changed to call the throwing forms, handling any exception by
+      catching it and returning a null pointer.
     </para></listitem></varlistentry>
 
     <varlistentry xml:id="manual.bugs.dr211"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#211">211</link>:
@@ -1030,6 +1045,17 @@ requirements of the license of GCC.
     <listitem><para>Remove <code>explicit</code> from the constructor.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr2408"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2408">2408</link>:
+       <emphasis>SFINAE-friendly
+         <code>common_type</code>/<code>iterator_traits</code>
+         is missing in C++14
+       </emphasis>
+    </term>
+    <listitem><para>Make <code>iterator_traits</code> empty if any of the
+      types is not present in the iterator.
+      Make <code>common_type&lt;&gt;</code> empty.
+    </para></listitem></varlistentry>
+
     <varlistentry xml:id="manual.bugs.dr2415"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2415">2415</link>:
        <emphasis>Inconsistency between <code>unique_ptr</code> and <code>shared_ptr</code></emphasis>
     </term>
@@ -1090,6 +1116,15 @@ requirements of the license of GCC.
     <listitem><para>Add debug mode assertion.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr2465"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2465">2465</link>:
+       <emphasis>SFINAE-friendly <code>common_type</code> is nearly impossible
+       to specialize correctly and regresses key functionality
+       </emphasis>
+    </term>
+    <listitem><para>Detect whether <code>decay_t</code> changes either type
+      and use the decayed types if so.
+    </para></listitem></varlistentry>
+
     <varlistentry xml:id="manual.bugs.dr2466"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2466">2466</link>:
        <emphasis><code>allocator_traits::max_size()</code> default behavior is incorrect
        </emphasis>
@@ -1105,11 +1140,34 @@ requirements of the license of GCC.
     ill-formed.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr2537"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2537">2537</link>:
+       <emphasis>Constructors for <code>priority_queue</code> taking allocators
+	 should call <code>make_heap</code>
+       </emphasis>
+    </term>
+    <listitem><para>Call <code>make_heap</code>.
+    </para></listitem></varlistentry>
+
+    <varlistentry xml:id="manual.bugs.dr2566"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2566">2566</link>:
+       <emphasis>Requirements on the first template parameter of container adaptors
+       </emphasis>
+    </term>
+    <listitem><para>Add static assertions to enforce the requirement.
+    </para></listitem></varlistentry>
+
     <varlistentry xml:id="manual.bugs.dr2583"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2583">2583</link>:
        <emphasis>There is no way to supply an allocator for <code>basic_string(str, pos)</code>
        </emphasis>
     </term>
-    <listitem><para>Add new constructor
+    <listitem><para>Add new constructor.
+    </para></listitem></varlistentry>
+
+    <varlistentry xml:id="manual.bugs.dr2586"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2586">2586</link>:
+       <emphasis>Wrong value category used in <code>scoped_allocator_adaptor::construct()</code>
+       </emphasis>
+    </term>
+    <listitem><para>Change internal helper for uses-allocator construction
+      to always check using const lvalue allocators.
     </para></listitem></varlistentry>
 
     <varlistentry xml:id="manual.bugs.dr2684"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2684">2684</link>:
@@ -1117,6 +1175,17 @@ requirements of the license of GCC.
        </emphasis>
     </term>
     <listitem><para>Define the <code>value_compare</code> typedef.
+    </para></listitem></varlistentry>
+
+    <varlistentry xml:id="manual.bugs.dr2735"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2735">2735</link>:
+       <emphasis><code>std::abs(short)</code>,
+	 <code>std::abs(signed char)</code> and others should return
+	 <code>int</code> instead of <code>double</code> in order to be
+	 compatible with C++98 and C
+       </emphasis>
+    </term>
+    <listitem><para>Resolved by the changes for
+      <link linkend="manual.bugs.dr2192">2192</link>.
     </para></listitem></varlistentry>
 
     <varlistentry xml:id="manual.bugs.dr2770"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2770">2770</link>:
@@ -1152,12 +1221,28 @@ requirements of the license of GCC.
     <listitem><para>Use rvalues for deleters.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr2921"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2921">2921</link>:
+       <emphasis><code>packaged_task</code> and type-erased allocators
+       </emphasis>
+    </term>
+    <listitem><para>For C++17 mode, remove the constructors taking
+      an allocator argument.
+    </para></listitem></varlistentry>
+
     <varlistentry xml:id="manual.bugs.dr2942"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2942">2942</link>:
        <emphasis>LWG 2873's resolution missed
          <code>weak_ptr::owner_before</code>
        </emphasis>
     </term>
     <listitem><para>Add noexcept.
+    </para></listitem></varlistentry>
+
+    <varlistentry xml:id="manual.bugs.dr2996"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2996">2996</link>:
+       <emphasis>Missing rvalue overloads for
+         <code>shared_ptr</code> operations
+       </emphasis>
+    </term>
+    <listitem><para>Add additional constructor and cast overloads.
     </para></listitem></varlistentry>
 
     <varlistentry xml:id="manual.bugs.dr2993"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2993">2993</link>:
@@ -1181,6 +1266,13 @@ requirements of the license of GCC.
        </emphasis>
     </term>
     <listitem><para>Change constructors to constrained templates.
+    </para></listitem></varlistentry>
+
+    <varlistentry xml:id="manual.bugs.dr3096"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#3096">3096</link>:
+       <emphasis><code>path::lexically_relative</code> is confused by trailing slashes
+       </emphasis>
+    </term>
+    <listitem><para>Implement the fix for trailing slashes.
     </para></listitem></varlistentry>
 
   </variablelist>

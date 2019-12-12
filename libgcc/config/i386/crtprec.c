@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2018 Free Software Foundation, Inc.
+ * Copyright (C) 2007-2019 Free Software Foundation, Inc.
  *
  * This file is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -39,7 +39,7 @@ set_precision (void)
 {
   unsigned short int cwd;
 
-  asm volatile ("fstcw\t%0" : "=m" (cwd));
+  asm volatile ("fnstcw\t%0" : "=m" (cwd));
 
   cwd &= ~X87CW_PCMASK;
   cwd |= X87CW;

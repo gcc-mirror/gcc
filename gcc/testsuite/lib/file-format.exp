@@ -1,4 +1,4 @@
-#   Copyright (C) 1999-2018 Free Software Foundation, Inc.
+#   Copyright (C) 1999-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,6 +41,9 @@ proc gcc_target_object_format { } {
     } elseif { [istarget *-*-aix*] } {
 	# AIX doesn't necessarily have objdump, so hand-code it.
 	set gcc_target_object_format_saved coff
+    } elseif { [istarget *-*-amdhsa*] } {
+	# AMD GCN uses LLVM objdump which is not CLI-compatible
+	set gcc_target_object_format_saved elf
     } else {
         set objdump_name [find_binutils_prog objdump]
         set open_file [open objfmtst.c w]

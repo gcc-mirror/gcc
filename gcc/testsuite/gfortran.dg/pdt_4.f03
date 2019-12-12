@@ -97,9 +97,9 @@ contains
     type (mytype(4, *)) :: arg      ! OK
   end subroutine
   subroutine bar(arg)               ! { dg-error "is neither allocatable nor a pointer" }
-    type (thytype(8, :, 4) :: arg
+    type (thytype(8, :, 4)) :: arg
   end subroutine
   subroutine foobar(arg)            ! OK
-    type (thytype(8, *, 4) :: arg
+    type (thytype(8, *, 4)) :: arg
   end subroutine
 end

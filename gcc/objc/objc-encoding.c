@@ -1,5 +1,5 @@
 /* Routines dealing with ObjC encoding of types
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -801,7 +801,7 @@ encode_gnu_bitfield (int position, tree type, int size)
   else
     {
       /* Do not do any encoding, produce an error and keep going.  */
-      error ("trying to encode non-integer type as a bitfield");
+      error ("trying to encode non-integer type as a bit-field");
       return;
     }
 

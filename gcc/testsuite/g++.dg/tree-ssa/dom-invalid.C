@@ -1,7 +1,7 @@
 // PR tree-optimization/39557
 // invalid post-dom info leads to infinite loop
 // { dg-do run }
-// { dg-options "-Wall -fno-exceptions -O2 -fprofile-use -fopt-info -fno-rtti" }
+// { dg-options "-Wall -fno-exceptions -O2 -fprofile-use -fopt-info-missed-ipa -fno-rtti -Wno-missing-profile" }
 
 struct C
 {
@@ -49,4 +49,4 @@ main ()
 {
  E e;
  e.bar ();
-} // { dg-message  "note: file" }
+} // { dg-missed "file .* not found" }

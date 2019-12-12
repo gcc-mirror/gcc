@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for AltiVec enhanced PowerPC machines running GNU/Linux.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez (aldyh@redhat.com).
 
    This file is part of GCC.
@@ -27,6 +27,9 @@
 #undef	TARGET_DEFAULT
 #define	TARGET_DEFAULT MASK_ALTIVEC
 #endif
+
+#undef	ASM_DEFAULT_EXTRA
+#define	ASM_DEFAULT_EXTRA " %{!mvsx:%{!maltivec:%{!mno-altivec:-maltivec}}}"
 
 #undef  SUBSUBTARGET_OVERRIDE_OPTIONS
 #define SUBSUBTARGET_OVERRIDE_OPTIONS rs6000_altivec_abi = 1

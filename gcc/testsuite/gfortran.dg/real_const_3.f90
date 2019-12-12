@@ -1,7 +1,6 @@
 !{ dg-do run }
 !{ dg-options "-fno-range-check" }
 !{ dg-add-options ieee }
-!{ dg-skip-if "NaN not supported" { spu-*-* } }
 ! PR19310 and PR19904, allow disabling range check during compile.
 ! Contributed by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 program main

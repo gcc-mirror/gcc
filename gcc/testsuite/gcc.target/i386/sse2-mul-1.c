@@ -14,11 +14,6 @@
 
 #include <stdlib.h>
 
-/* mingw runtime don't provide random().  */
-#ifdef __MINGW32__
-#define random rand
-#endif
-
 #define N 512
 static short a1[N], a2[N], a3[N];
 static unsigned short b1[N], b2[N], b3[N];
@@ -160,12 +155,12 @@ TEST (void)
       asm volatile ("" : : "r" (&s2) : "memory");
       asm volatile ("" : : "r" (&s3) : "memory");
       asm volatile ("" : : "r" (&s4) : "memory");
-      b2[i] = (int) random ();
-      b3[i] = (int) random ();
+      b2[i] = (int) rand ();
+      b3[i] = (int) rand ();
       a2[i] = b2[i];
       a3[i] = b3[i];
-      d2[i] = (((int) random ()) << 16) | b2[i];
-      d3[i] = (((int) random ()) << 16) | b3[i];
+      d2[i] = (((int) rand ()) << 16) | b2[i];
+      d3[i] = (((int) rand ()) << 16) | b3[i];
       c2[i] = d2[i];
       c3[i] = d3[i];
       s1 += a2[i] * a3[i];

@@ -1,5 +1,6 @@
-# Multilibs for Visium.
-# Copyright (C) 2012-2018 Free Software Foundation, Inc.
+# General rules that all visium/ targets must have.
+
+# Copyright (C) 2012-2019 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -16,6 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
+
+PASSES_EXTRA += $(srcdir)/config/visium/visium-passes.def
 
 # The compiler defaults to -mcpu=gr5 but this may be overridden via --with-cpu
 # at configure time so the -mcpu setting must be symmetrical.

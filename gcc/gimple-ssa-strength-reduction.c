@@ -1,5 +1,5 @@
 /* Straight-line strength reduction.
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by Bill Schmidt, IBM <wschmidt@linux.ibm.com>
 
 This file is part of GCC.
@@ -52,7 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-cfg.h"
 #include "domwalk.h"
-#include "params.h"
 #include "tree-ssa-address.h"
 #include "tree-affine.h"
 #include "tree-eh.h"
@@ -226,8 +225,9 @@ enum cand_kind
   CAND_PHI
 };
 
-struct slsr_cand_d
+class slsr_cand_d
 {
+public:
   /* The candidate statement S1.  */
   gimple *cand_stmt;
 
@@ -296,8 +296,8 @@ struct slsr_cand_d
   tree cached_basis;
 };
 
-typedef struct slsr_cand_d slsr_cand, *slsr_cand_t;
-typedef const struct slsr_cand_d *const_slsr_cand_t;
+typedef class slsr_cand_d slsr_cand, *slsr_cand_t;
+typedef const class slsr_cand_d *const_slsr_cand_t;
 
 /* Pointers to candidates are chained together as part of a mapping
    from base expressions to the candidates that use them.  */
@@ -329,8 +329,9 @@ typedef const struct cand_chain_d *const_cand_chain_t;
    of the cost of initializers.  The absolute value of the increment
    is stored in the incr_info.  */
 
-struct incr_info_d
+class incr_info_d
 {
+public:
   /* The increment that relates a candidate to its basis.  */
   widest_int incr;
 
@@ -352,7 +353,7 @@ struct incr_info_d
   basic_block init_bb;
 };
 
-typedef struct incr_info_d incr_info, *incr_info_t;
+typedef class incr_info_d incr_info, *incr_info_t;
 
 /* Candidates are maintained in a vector.  If candidate X dominates
    candidate Y, then X appears before Y in the vector; but the
@@ -418,7 +419,7 @@ static bool legal_cast_p_1 (tree, tree);
 static slsr_cand_t
 lookup_cand (cand_idx idx)
 {
-  return cand_vec[idx - 1];
+  return cand_vec[idx];
 }
 
 /* Helper for hashing a candidate chain header.  */
@@ -544,7 +545,7 @@ find_basis_for_base_expr (slsr_cand_t c, tree base_expr)
 
   // Limit potential of N^2 behavior for long candidate chains.
   int iters = 0;
-  int max_iters = PARAM_VALUE (PARAM_MAX_SLSR_CANDIDATE_SCAN);
+  int max_iters = param_max_slsr_candidate_scan;
 
   mapping_key.base_expr = base_expr;
   chain = base_cand_map->find (&mapping_key);
@@ -688,7 +689,7 @@ alloc_cand_and_find_basis (enum cand_kind kind, gimple *gs, tree base,
   c->cand_type = ctype;
   c->stride_type = stype;
   c->kind = kind;
-  c->cand_num = cand_vec.length () + 1;
+  c->cand_num = cand_vec.length ();
   c->next_interp = 0;
   c->first_interp = c->cand_num;
   c->dependent = 0;
@@ -805,7 +806,7 @@ slsr_process_phi (gphi *phi, bool speed)
   unsigned i;
   tree arg0_base = NULL_TREE, base_type;
   slsr_cand_t c;
-  struct loop *cand_loop = gimple_bb (phi)->loop_father;
+  class loop *cand_loop = gimple_bb (phi)->loop_father;
   unsigned savings = 0;
 
   /* A CAND_PHI requires each of its arguments to have the same
@@ -933,10 +934,7 @@ backtrace_base_for_ref (tree *pbase)
 	  return base_cand->index;
 	}
 
-      if (base_cand->next_interp)
-	base_cand = lookup_cand (base_cand->next_interp);
-      else
-	base_cand = NULL;
+      base_cand = lookup_cand (base_cand->next_interp);
     }
 
   return 0;
@@ -1124,10 +1122,7 @@ create_mul_ssa_cand (gimple *gs, tree base_in, tree stride_in, bool speed)
 		       + stmt_cost (base_cand->cand_stmt, speed));
 	}
 
-      if (base_cand->next_interp)
-	base_cand = lookup_cand (base_cand->next_interp);
-      else
-	base_cand = NULL;
+      base_cand = lookup_cand (base_cand->next_interp);
     }
 
   if (!base)
@@ -1214,10 +1209,7 @@ create_mul_imm_cand (gimple *gs, tree base_in, tree stride_in, bool speed)
 		       + stmt_cost (base_cand->cand_stmt, speed));
 	}
 
-      if (base_cand->next_interp)
-	base_cand = lookup_cand (base_cand->next_interp);
-      else
-	base_cand = NULL;
+      base_cand = lookup_cand (base_cand->next_interp);
     }
 
   if (!base)
@@ -1268,7 +1260,7 @@ slsr_process_mul (gimple *gs, tree rhs1, tree rhs2, bool speed)
       c->next_interp = c2->cand_num;
       c2->first_interp = c->cand_num;
     }
-  else if (TREE_CODE (rhs2) == INTEGER_CST)
+  else if (TREE_CODE (rhs2) == INTEGER_CST && !integer_zerop (rhs2))
     {
       /* Record an interpretation for the multiply-immediate.  */
       c = create_mul_imm_cand (gs, rhs1, rhs2, speed);
@@ -1320,10 +1312,7 @@ create_add_ssa_cand (gimple *gs, tree base_in, tree addend_in,
 		       + stmt_cost (addend_cand->cand_stmt, speed));
 	}
 
-      if (addend_cand->next_interp)
-	addend_cand = lookup_cand (addend_cand->next_interp);
-      else
-	addend_cand = NULL;
+      addend_cand = lookup_cand (addend_cand->next_interp);
     }
 
   while (base_cand && !base && base_cand->kind != CAND_PHI)
@@ -1371,18 +1360,12 @@ create_add_ssa_cand (gimple *gs, tree base_in, tree addend_in,
 		    savings = (subtrahend_cand->dead_savings 
 			       + stmt_cost (subtrahend_cand->cand_stmt, speed));
 		}
-	      
-	      if (subtrahend_cand->next_interp)
-		subtrahend_cand = lookup_cand (subtrahend_cand->next_interp);
-	      else
-		subtrahend_cand = NULL;
+
+	      subtrahend_cand = lookup_cand (subtrahend_cand->next_interp);
 	    }
 	}
       
-      if (base_cand->next_interp)
-	base_cand = lookup_cand (base_cand->next_interp);
-      else
-	base_cand = NULL;
+      base_cand = lookup_cand (base_cand->next_interp);
     }
 
   if (!base)
@@ -1446,10 +1429,7 @@ create_add_imm_cand (gimple *gs, tree base_in, const widest_int &index_in,
 		       + stmt_cost (base_cand->cand_stmt, speed));
 	}
 
-      if (base_cand->next_interp)
-	base_cand = lookup_cand (base_cand->next_interp);
-      else
-	base_cand = NULL;
+      base_cand = lookup_cand (base_cand->next_interp);
     }
 
   if (!base)
@@ -1652,10 +1632,7 @@ slsr_process_cast (gimple *gs, tree rhs1, bool speed)
 	  if (first_cand != c)
 	    c->first_interp = first_cand->cand_num;
 
-	  if (base_cand->next_interp)
-	    base_cand = lookup_cand (base_cand->next_interp);
-	  else
-	    base_cand = NULL;
+	  base_cand = lookup_cand (base_cand->next_interp);
 	}
     }
   else 
@@ -1719,10 +1696,7 @@ slsr_process_copy (gimple *gs, tree rhs1, bool speed)
 	  if (first_cand != c)
 	    c->first_interp = first_cand->cand_num;
 
-	  if (base_cand->next_interp)
-	    base_cand = lookup_cand (base_cand->next_interp);
-	  else
-	    base_cand = NULL;
+	  base_cand = lookup_cand (base_cand->next_interp);
 	}
     }
   else 
@@ -1775,7 +1749,7 @@ find_candidates_dom_walker::before_dom_children (basic_block bb)
     {
       gimple *gs = gsi_stmt (gsi);
 
-      if (stmt_could_throw_p (gs))
+      if (stmt_could_throw_p (cfun, gs))
 	continue;
 
       if (gimple_vuse (gs) && gimple_assign_single_p (gs))
@@ -1933,7 +1907,8 @@ dump_cand_vec (void)
   fprintf (dump_file, "\nStrength reduction candidate vector:\n\n");
   
   FOR_EACH_VEC_ELT (cand_vec, i, c)
-    dump_candidate (c);
+    if (c != NULL)
+      dump_candidate (c);
 }
 
 /* Callback used to dump the candidate chains hash table.  */
@@ -2023,6 +1998,23 @@ replace_ref (tree *expr, slsr_cand_t c)
   update_stmt (c->cand_stmt);
 }
 
+/* Return true if CAND_REF candidate C is a valid memory reference.  */
+
+static bool
+valid_mem_ref_cand_p (slsr_cand_t c)
+{
+  if (TREE_CODE (TREE_OPERAND (c->stride, 1)) != INTEGER_CST)
+    return false;
+
+  struct mem_address addr
+    = { NULL_TREE, c->base_expr, TREE_OPERAND (c->stride, 0),
+	TREE_OPERAND (c->stride, 1), wide_int_to_tree (sizetype, c->index) };
+
+  return
+    valid_mem_ref_p (TYPE_MODE (c->cand_type), TYPE_ADDR_SPACE (c->cand_type),
+		     &addr);
+}
+
 /* Replace CAND_REF candidate C, each sibling of candidate C, and each
    dependent of candidate C with an equivalent strength-reduced data
    reference.  */
@@ -2030,6 +2022,16 @@ replace_ref (tree *expr, slsr_cand_t c)
 static void
 replace_refs (slsr_cand_t c)
 {
+  /* Replacing a chain of only 2 candidates which are valid memory references
+     is generally counter-productive because you cannot recoup the additional
+     calculation added in front of them.  */
+  if (c->basis == 0
+      && c->dependent
+      && !lookup_cand (c->dependent)->dependent
+      && valid_mem_ref_cand_p (c)
+      && valid_mem_ref_cand_p (lookup_cand (c->dependent)))
+    return;
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fputs ("Replacing reference: ", dump_file);
@@ -2181,7 +2183,7 @@ replace_mult_candidate (slsr_cand_t c, tree basis_name, widest_int bump)
       while (cc)
 	{
 	  cc->cand_stmt = copy_stmt;
-	  cc = cc->next_interp ? lookup_cand (cc->next_interp) : NULL;
+	  cc = lookup_cand (cc->next_interp);
 	}
       if (dump_file && (dump_flags & TDF_DETAILS))
 	stmt_to_print = copy_stmt;
@@ -2214,7 +2216,7 @@ replace_mult_candidate (slsr_cand_t c, tree basis_name, widest_int bump)
 	  while (cc)
 	    {
 	      cc->cand_stmt = gsi_stmt (gsi);
-	      cc = cc->next_interp ? lookup_cand (cc->next_interp) : NULL;
+	      cc = lookup_cand (cc->next_interp);
 	    }
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    stmt_to_print = gsi_stmt (gsi);
@@ -2779,17 +2781,23 @@ record_phi_increments_1 (slsr_cand_t basis, gimple *phi)
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
       tree arg = gimple_phi_arg_def (phi, i);
+      gimple *arg_def = SSA_NAME_DEF_STMT (arg);
 
-      if (!operand_equal_p (arg, phi_cand->base_expr, 0))
+      if (gimple_code (arg_def) == GIMPLE_PHI)
+	record_phi_increments_1 (basis, arg_def);
+      else
 	{
-	  gimple *arg_def = SSA_NAME_DEF_STMT (arg);
+	  widest_int diff;
 
-	  if (gimple_code (arg_def) == GIMPLE_PHI)
-	    record_phi_increments_1 (basis, arg_def);
+	  if (operand_equal_p (arg, phi_cand->base_expr, 0))
+	    {
+	      diff = -basis->index;
+	      record_increment (phi_cand, diff, PHI_ADJUST);
+	    }
 	  else
 	    {
 	      slsr_cand_t arg_cand = base_cand_from_table (arg);
-	      widest_int diff = arg_cand->index - basis->index;
+	      diff = arg_cand->index - basis->index;
 	      record_increment (arg_cand, diff, PHI_ADJUST);
 	    }
 	}
@@ -2864,29 +2872,43 @@ phi_incr_cost_1 (slsr_cand_t c, const widest_int &incr, gimple *phi,
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
       tree arg = gimple_phi_arg_def (phi, i);
+      gimple *arg_def = SSA_NAME_DEF_STMT (arg);
 
-      if (!operand_equal_p (arg, phi_cand->base_expr, 0))
+      if (gimple_code (arg_def) == GIMPLE_PHI)
 	{
-	  gimple *arg_def = SSA_NAME_DEF_STMT (arg);
-      
-	  if (gimple_code (arg_def) == GIMPLE_PHI)
+	  int feeding_savings = 0;
+	  tree feeding_var = gimple_phi_result (arg_def);
+	  cost += phi_incr_cost_1 (c, incr, arg_def, &feeding_savings);
+	  if (uses_consumed_by_stmt (feeding_var, phi))
+	    *savings += feeding_savings;
+	}
+      else
+	{
+	  widest_int diff;
+	  slsr_cand_t arg_cand;
+
+	  /* When the PHI argument is just a pass-through to the base
+	     expression of the hidden basis, the difference is zero minus
+	     the index of the basis.  There is no potential savings by
+	     eliminating a statement in this case.  */
+	  if (operand_equal_p (arg, phi_cand->base_expr, 0))
 	    {
-	      int feeding_savings = 0;
-	      tree feeding_var = gimple_phi_result (arg_def);
-	      cost += phi_incr_cost_1 (c, incr, arg_def, &feeding_savings);
-	      if (uses_consumed_by_stmt (feeding_var, phi))
-		*savings += feeding_savings;
+	      arg_cand = (slsr_cand_t)NULL;
+	      diff = -basis->index;
 	    }
 	  else
 	    {
-	      slsr_cand_t arg_cand = base_cand_from_table (arg);
-	      widest_int diff = arg_cand->index - basis->index;
-
-	      if (incr == diff)
+	      arg_cand = base_cand_from_table (arg);
+	      diff = arg_cand->index - basis->index;
+	    }
+	  
+	  if (incr == diff)
+	    {
+	      tree basis_lhs = gimple_assign_lhs (basis->cand_stmt);
+	      cost += add_cost (true, TYPE_MODE (TREE_TYPE (basis_lhs)));
+	      if (arg_cand)
 		{
-		  tree basis_lhs = gimple_assign_lhs (basis->cand_stmt);
 		  tree lhs = gimple_assign_lhs (arg_cand->cand_stmt);
-		  cost += add_cost (true, TYPE_MODE (TREE_TYPE (basis_lhs)));
 		  if (uses_consumed_by_stmt (lhs, phi))
 		    *savings += stmt_cost (arg_cand->cand_stmt, true);
 		}
@@ -3228,23 +3250,26 @@ ncd_with_phi (slsr_cand_t c, const widest_int &incr, gphi *phi,
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
       tree arg = gimple_phi_arg_def (phi, i);
+      gimple *arg_def = SSA_NAME_DEF_STMT (arg);
 
-      if (!operand_equal_p (arg, phi_cand->base_expr, 0))
+      if (gimple_code (arg_def) == GIMPLE_PHI)
+	ncd = ncd_with_phi (c, incr, as_a <gphi *> (arg_def), ncd, where);
+      else 
 	{
-	  gimple *arg_def = SSA_NAME_DEF_STMT (arg);
+	  widest_int diff;
 
-	  if (gimple_code (arg_def) == GIMPLE_PHI)
-	    ncd = ncd_with_phi (c, incr, as_a <gphi *> (arg_def), ncd,
-				where);
-	  else 
+	  if (operand_equal_p (arg, phi_cand->base_expr, 0))
+	    diff = -basis->index;
+	  else
 	    {
 	      slsr_cand_t arg_cand = base_cand_from_table (arg);
-	      widest_int diff = arg_cand->index - basis->index;
-	      basic_block pred = gimple_phi_arg_edge (phi, i)->src;
-
-	      if ((incr == diff) || (!address_arithmetic_p && incr == -diff))
-		ncd = ncd_for_two_cands (ncd, pred, *where, NULL, where);
+	      diff = arg_cand->index - basis->index;
 	    }
+	  
+	  basic_block pred = gimple_phi_arg_edge (phi, i)->src;
+	  
+	  if ((incr == diff) || (!address_arithmetic_p && incr == -diff))
+	    ncd = ncd_for_two_cands (ncd, pred, *where, NULL, where);
 	}
     }
 
@@ -3515,51 +3540,53 @@ all_phi_incrs_profitable_1 (slsr_cand_t c, gphi *phi, int *spread)
 	return false;
 
       tree arg = gimple_phi_arg_def (phi, i);
+      gimple *arg_def = SSA_NAME_DEF_STMT (arg);
 
-      if (!operand_equal_p (arg, phi_cand->base_expr, 0))
+      if (gimple_code (arg_def) == GIMPLE_PHI)
 	{
-	  gimple *arg_def = SSA_NAME_DEF_STMT (arg);
+	  if (!all_phi_incrs_profitable_1 (c, as_a <gphi *> (arg_def), spread)
+	      || *spread > MAX_SPREAD)
+	    return false;
+	}
+      else
+	{
+	  int j;
+	  widest_int increment;
 
-	  if (gimple_code (arg_def) == GIMPLE_PHI)
-	    {
-	      if (!all_phi_incrs_profitable_1 (c, as_a <gphi *> (arg_def),
-					       spread)
-		  || *spread > MAX_SPREAD)
-		return false;
-	    }
+	  if (operand_equal_p (arg, phi_cand->base_expr, 0))
+	    increment = -basis->index;
 	  else
 	    {
-	      int j;
 	      slsr_cand_t arg_cand = base_cand_from_table (arg);
-	      widest_int increment = arg_cand->index - basis->index;
-
-	      if (!address_arithmetic_p && wi::neg_p (increment))
-		increment = -increment;
-
-	      j = incr_vec_index (increment);
-
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		{
-		  fprintf (dump_file, "  Conditional candidate %d, phi: ",
-			   c->cand_num);
-		  print_gimple_stmt (dump_file, phi, 0);
-		  fputs ("    increment: ", dump_file);
-		  print_decs (increment, dump_file);
-		  if (j < 0)
-		    fprintf (dump_file,
-			     "\n  Not replaced; incr_vec overflow.\n");
-		  else {
-		    fprintf (dump_file, "\n    cost: %d\n", incr_vec[j].cost);
-		    if (profitable_increment_p (j))
-		      fputs ("  Replacing...\n", dump_file);
-		    else
-		      fputs ("  Not replaced.\n", dump_file);
-		  }
-		}
-
-	      if (j < 0 || !profitable_increment_p (j))
-		return false;
+	      increment = arg_cand->index - basis->index;
 	    }
+
+	  if (!address_arithmetic_p && wi::neg_p (increment))
+	    increment = -increment;
+
+	  j = incr_vec_index (increment);
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "  Conditional candidate %d, phi: ",
+		       c->cand_num);
+	      print_gimple_stmt (dump_file, phi, 0);
+	      fputs ("    increment: ", dump_file);
+	      print_decs (increment, dump_file);
+	      if (j < 0)
+		fprintf (dump_file,
+			 "\n  Not replaced; incr_vec overflow.\n");
+	      else {
+		fprintf (dump_file, "\n    cost: %d\n", incr_vec[j].cost);
+		if (profitable_increment_p (j))
+		  fputs ("  Replacing...\n", dump_file);
+		else
+		  fputs ("  Not replaced.\n", dump_file);
+	      }
+	    }
+
+	  if (j < 0 || !profitable_increment_p (j))
+	    return false;
 	}
     }
 
@@ -3629,7 +3656,7 @@ replace_rhs_if_not_dup (enum tree_code new_code, tree new_rhs1, tree new_rhs2,
       while (cc)
 	{
 	  cc->cand_stmt = gsi_stmt (gsi);
-	  cc = cc->next_interp ? lookup_cand (cc->next_interp) : NULL;
+	  cc = lookup_cand (cc->next_interp);
 	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3745,7 +3772,7 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree basis_name)
 	  while (cc)
 	    {
 	      cc->cand_stmt = gsi_stmt (gsi);
-	      cc = cc->next_interp ? lookup_cand (cc->next_interp) : NULL;
+	      cc = lookup_cand (cc->next_interp);
 	    }
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3771,7 +3798,7 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree basis_name)
 	  while (cc)
 	    {
 	      cc->cand_stmt = copy_stmt;
-	      cc = cc->next_interp ? lookup_cand (cc->next_interp) : NULL;
+	      cc = lookup_cand (cc->next_interp);
 	    }
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3787,7 +3814,7 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree basis_name)
 	  while (cc)
 	    {
 	      cc->cand_stmt = cast_stmt;
-	      cc = cc->next_interp ? lookup_cand (cc->next_interp) : NULL;
+	      cc = lookup_cand (cc->next_interp);
 	    }
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3877,8 +3904,10 @@ analyze_candidates_and_replace (void)
   /* Each candidate that has a null basis and a non-null
      dependent is the root of a tree of related statements.
      Analyze each tree to determine a subset of those
-     statements that can be replaced with maximum benefit.  */
-  FOR_EACH_VEC_ELT (cand_vec, i, c)
+     statements that can be replaced with maximum benefit.
+
+     Note the first NULL element is skipped.  */
+  FOR_EACH_VEC_ELT_FROM (cand_vec, i, c, 1)
     {
       slsr_cand_t first_dep;
 
@@ -3985,8 +4014,9 @@ pass_strength_reduction::execute (function *fun)
   /* Create the obstack where candidates will reside.  */
   gcc_obstack_init (&cand_obstack);
 
-  /* Allocate the candidate vector.  */
+  /* Allocate the candidate vector and initialize the first NULL element.  */
   cand_vec.create (128);
+  cand_vec.safe_push (NULL);
 
   /* Allocate the mapping from statements to candidate indices.  */
   stmt_cand_map = new hash_map<gimple *, slsr_cand_t>;

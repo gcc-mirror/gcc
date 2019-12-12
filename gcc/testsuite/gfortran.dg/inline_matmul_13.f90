@@ -44,4 +44,4 @@ program main
   deallocate(calloc)
 
 end program main
-! { dg-final { scan-tree-dump-times "_gfortran_matmul" 0 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_matmul" 1 "original" } }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,10 +36,6 @@ package Sem_Ch12 is
    procedure Analyze_Formal_Type_Declaration            (N : Node_Id);
    procedure Analyze_Formal_Subprogram_Declaration      (N : Node_Id);
    procedure Analyze_Formal_Package_Declaration         (N : Node_Id);
-
-   procedure Add_Pending_Instantiation (Inst : Node_Id; Act_Decl : Node_Id);
-   --  Add an entry in the table of instance bodies that must be analyzed
-   --  when inlining requires its body or the body of a nested instance.
 
    function Build_Function_Wrapper
      (Formal_Subp : Entity_Id;

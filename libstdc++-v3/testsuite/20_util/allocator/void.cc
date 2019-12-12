@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2018 Free Software Foundation, Inc.
+// Copyright (C) 2016-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,6 +32,28 @@ test01()
   VERIFY( i == 42 );
   std::allocator_traits<alloc_type>::destroy(a, &i);
 }
+
+// These properties are formally unspecified, but have always been true for
+// the libstdc++ definition of allocator<void>.
+static_assert(
+    std::is_trivially_default_constructible<std::allocator<void>>::value,
+    "explicit specialization has trivial default constructor");
+static_assert(
+    std::is_trivially_copy_constructible<std::allocator<void>>::value,
+    "explicit specialization has trivial copy constructor");
+static_assert(
+    std::is_trivially_move_constructible<std::allocator<void>>::value,
+    "explicit specialization has trivial move constructor");
+static_assert(
+    std::is_trivially_destructible<std::allocator<void>>::value,
+    "explicit specialization has trivial destructor");
+
+#if __cplusplus > 201703L
+// C++20 removes the allocator<void> explicit specialization, so it can now be
+// constructed using the converting constructor from other specializations.
+static_assert( std::is_constructible_v<std::allocator<void>,
+				       std::allocator<int>> );
+#endif
 
 int
 main()

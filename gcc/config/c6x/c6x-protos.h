@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in c6x.c.
-   Copyright (C) 2010-2018 Free Software Foundation, Inc.
+   Copyright (C) 2010-2019 Free Software Foundation, Inc.
    Contributed by CodeSourcery.
 
    This file is part of GCC.
@@ -35,7 +35,7 @@ extern bool c6x_long_call_p (rtx);
 extern void c6x_expand_call (rtx, rtx, bool);
 extern rtx c6x_expand_compare (rtx, machine_mode);
 extern bool c6x_force_op_for_comparison_p (enum rtx_code, rtx);
-extern bool c6x_expand_movmem (rtx, rtx, rtx, rtx, rtx, rtx);
+extern bool c6x_expand_cpymem (rtx, rtx, rtx, rtx, rtx, rtx);
 
 extern rtx c6x_subword (rtx, bool);
 extern void split_di (rtx *, int, rtx *, rtx *);
@@ -53,6 +53,8 @@ extern void c6x_expand_epilogue (bool);
 extern rtx c6x_return_addr_rtx (int);
 
 extern void c6x_set_return_address (rtx, rtx);
+
+enum reg_class c6x_regno_reg_class (int);
 #endif
 
 extern void c6x_override_options (void);

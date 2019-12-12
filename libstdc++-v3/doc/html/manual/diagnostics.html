@@ -8,20 +8,32 @@
   Diagnostics
   <a id="id-1.3.4.3.1.1.1" class="indexterm"></a>
 </h2></div></div></div><div class="toc"><p><strong>Table of Contents</strong></p><dl class="toc"><dt><span class="section"><a href="diagnostics.html#std.diagnostics.exceptions">Exceptions</a></span></dt><dd><dl><dt><span class="section"><a href="diagnostics.html#std.diagnostics.exceptions.api">API Reference</a></span></dt><dt><span class="section"><a href="diagnostics.html#std.diagnostics.exceptions.data">Adding Data to <code class="classname">exception</code></a></span></dt></dl></dd><dt><span class="section"><a href="errno.html">Use of errno by the library</a></span></dt><dt><span class="section"><a href="concept_checking.html">Concept Checking</a></span></dt></dl></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="std.diagnostics.exceptions"></a>Exceptions</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="std.diagnostics.exceptions.api"></a>API Reference</h3></div></div></div><p>
-      All exception objects are defined in one of the standard header
-      files: <code class="filename">exception</code>,
-      <code class="filename">stdexcept</code>, <code class="filename">new</code>, and
-      <code class="filename">typeinfo</code>.
+      Most exception classes are defined in one of the standard headers
+      <code class="filename">&lt;exception&gt;</code>,
+      <code class="filename">&lt;stdexcept&gt;</code>,
+      <code class="filename">&lt;new&gt;</code>, and
+      <code class="filename">&lt;typeinfo&gt;</code>.
+      The C++ 2011 revision of the standard added more exception types
+      in the headers
+      <code class="filename">&lt;functional&gt;</code>,
+      <code class="filename">&lt;future&gt;</code>,
+      <code class="filename">&lt;regex&gt;</code>, and
+      <code class="filename">&lt;system_error&gt;</code>.
+      The C++ 2017 revision of the standard added more exception types
+      in the headers
+      <code class="filename">&lt;any&gt;</code>,
+      <code class="filename">&lt;filesystem&gt;</code>,
+      <code class="filename">&lt;optional&gt;</code>, and
+      <code class="filename">&lt;variant&gt;</code>.
     </p><p>
-      The base exception object is <code class="classname">exception</code>,
-      located in <code class="filename">exception</code>. This object has no
-      <code class="classname">string</code> member.
+      All exceptions thrown by the library have a base class of type
+      <code class="classname">std::exception</code>,
+      defined in <code class="filename">&lt;exception&gt;</code>.
+      This type has no <code class="classname">std::string</code> member.
     </p><p>
       Derived from this are several classes that may have a
-      <code class="classname">string</code> member: a full hierarchy can be
+      <code class="classname">std::string</code> member. A full hierarchy can be
       found in the source documentation.
-    </p><p>
-      Full API details.
     </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="std.diagnostics.exceptions.data"></a>Adding Data to <code class="classname">exception</code></h3></div></div></div><p>
       The standard exception classes carry with them a single string as
       data (usually describing what went wrong or where the 'throw' took

@@ -26,17 +26,21 @@ struct caller
   String file;
   intgo line;
   intgo index;
+  intgo frames;
 };
 
 /* Collect file/line information for a PC value.  If this is called
-   more than once, due to inlined functions, we use the last call, as
-   that is usually the most useful one.  */
+   more than once, due to inlined functions, we record the number of
+   inlined frames but return file/func/line for the last call, as
+   that is usually the most useful one.   */
 
 static int
 callback (void *data, uintptr_t pc __attribute__ ((unused)),
 	  const char *filename, int lineno, const char *function)
 {
   struct caller *c = (struct caller *) data;
+
+  c->frames++;
 
   /* The libbacktrace library says that these strings might disappear,
      but with the current implementation they won't.  We can't easily
@@ -125,23 +129,27 @@ __go_get_backtrace_state ()
   return back_state;
 }
 
-/* Return function/file/line information for PC.  The index parameter
+/* Return function/file/line/nframes information for PC.  The index parameter
    is the entry on the stack of inlined functions; -1 means the last
-   one.  */
+   one, with *nframes set to the count of inlined frames for this PC.  */
 
 static _Bool
-__go_file_line (uintptr pc, int index, String *fn, String *file, intgo *line)
+__go_file_line (uintptr pc, int index, String *fn, String *file, intgo *line, intgo *nframes)
 {
   struct caller c;
   struct backtrace_state *state;
 
   runtime_memclr (&c, sizeof c);
   c.index = index;
+  c.frames = 0;
+  runtime_xadd (&__go_runtime_in_callers, 1);
   state = __go_get_backtrace_state ();
+  runtime_xadd (&__go_runtime_in_callers, -1);
   backtrace_pcinfo (state, pc, callback, error_callback, &c);
   *fn = c.fn;
   *file = c.file;
   *line = c.line;
+  *nframes = c.frames;
 
   // If backtrace_pcinfo didn't get the function name from the debug
   // info, try to get it from the symbol table.
@@ -169,8 +177,13 @@ syminfo_callback (void *data, uintptr_t pc __attribute__ ((unused)),
 static _Bool
 __go_symbol_value (uintptr pc, uintptr *val)
 {
+  struct backtrace_state *state;
+
   *val = 0;
-  backtrace_syminfo (__go_get_backtrace_state (), pc, syminfo_callback,
+  runtime_xadd (&__go_runtime_in_callers, 1);
+  state = __go_get_backtrace_state ();
+  runtime_xadd (&__go_runtime_in_callers, -1);
+  backtrace_syminfo (state, pc, syminfo_callback,
 		     error_callback, val);
   return *val != 0;
 }
@@ -185,12 +198,12 @@ struct caller_ret
   _Bool ok;
 };
 
-struct caller_ret Caller (int n) __asm__ (GOSYM_PREFIX "runtime.Caller");
+struct caller_ret Caller (intgo n) __asm__ (GOSYM_PREFIX "runtime.Caller");
 
 /* Implement runtime.Caller.  */
 
 struct caller_ret
-Caller (int skip)
+Caller (intgo skip)
 {
   struct caller_ret ret;
   Location loc;
@@ -210,23 +223,12 @@ Caller (int skip)
 /* Look up the function name, file name, and line number for a PC.  */
 
 struct funcfileline_return
-{
-  String retfn;
-  String retfile;
-  intgo retline;
-};
-
-struct funcfileline_return
-runtime_funcfileline (uintptr targetpc, int32 index)
-  __asm__ (GOSYM_PREFIX "runtime.funcfileline");
-
-struct funcfileline_return
 runtime_funcfileline (uintptr targetpc, int32 index)
 {
   struct funcfileline_return ret;
 
   if (!__go_file_line (targetpc, index, &ret.retfn, &ret.retfile,
-		       &ret.retline))
+		       &ret.retline, &ret.retframes))
     runtime_memclr (&ret, sizeof ret);
   return ret;
 }

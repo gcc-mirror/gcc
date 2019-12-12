@@ -1,6 +1,8 @@
 // Contributed by Alexandre Oliva <aoliva@redhat.com>
 // From Red Hat case 106165.
 
+/* { dg-require-effective-target indirect_calls } */
+
 typedef struct s1
 {
   unsigned short v1;

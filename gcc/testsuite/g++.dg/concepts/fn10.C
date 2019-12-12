@@ -1,5 +1,5 @@
-// { dg-do compile }
-// { dg-options "-std=c++17 -fconcepts" }
+// { dg-do compile { target c++17_only } }
+// { dg-options "-fconcepts" }
 
 // Test that constraint satisfaction checks work even when
 // processing template declarations.
@@ -40,7 +40,7 @@ template <typename T>
 template <typename T>
   concept bool Concept()
   {
-    return requires( T t ) {
+    return requires( T t ) { // { dg-message "in requirements" }
       requires Float<decltype( project(t) )>();
     };
   }

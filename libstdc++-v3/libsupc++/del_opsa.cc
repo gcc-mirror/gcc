@@ -1,6 +1,6 @@
 // Boilerplate support routines for -*- C++ -*- dynamic memory management.
 
-// Copyright (C) 1997-2018 Free Software Foundation, Inc.
+// Copyright (C) 1997-2019 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -27,7 +27,7 @@
 #include "new"
 
 _GLIBCXX_WEAK_DEFINITION void
-operator delete(void* ptr, std::size_t, std::align_val_t al) _GLIBCXX_USE_NOEXCEPT
+operator delete(void* ptr, std::size_t, std::align_val_t al) noexcept
 {
   ::operator delete (ptr, al);
 }

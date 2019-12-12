@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2018 Free Software Foundation, Inc.
+// Copyright (C) 2016-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,6 +28,11 @@ namespace fs = std::experimental::filesystem;
 void
 test01()
 {
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  // filesystem permissions not supported
+  return;
+#endif
+
   auto p = __gnu_test::nonexistent_path();
   create_directory(p);
   permissions(p, fs::perms::none);

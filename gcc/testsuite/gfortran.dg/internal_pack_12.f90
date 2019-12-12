@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-fdump-tree-original" }
+! { dg-options "-O0 -fdump-tree-original" }
 !
 ! Test the fix for PR43243, where unnecessary calls to internal_pack/unpack
 ! were being produced below. These references are contiguous and so do not

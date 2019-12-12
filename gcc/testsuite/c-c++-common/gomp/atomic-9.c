@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fopenmp -fdump-tree-ompexp" } */
+/* { dg-additional-options "-Wno-volatile" { target c++ } } */
 /* { dg-require-effective-target cas_int } */
 
 volatile int *bar(void);

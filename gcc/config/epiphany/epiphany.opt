@@ -1,6 +1,6 @@
 ; Options for the Adapteva EPIPHANY port of the compiler
 ;
-; Copyright (C) 2005-2018 Free Software Foundation, Inc.
+; Copyright (C) 2005-2019 Free Software Foundation, Inc.
 ; Contributed by Embecosm on behalf of Adapteva, Inc.
 ;
 ; This file is part of GCC.
@@ -25,7 +25,7 @@ Don't use any of r32..r63.
 
 mprefer-short-insn-regs
 Target Mask(PREFER_SHORT_INSN_REGS)
-preferentially allocate registers that allow short instruction generation.
+Preferentially allocate registers that allow short instruction generation.
 
 mbranch-cost=
 Target RejectNegative Joined UInteger Var(epiphany_branch_cost) Init(3)
@@ -33,11 +33,11 @@ Set branch cost.
 
 mcmove
 Target Mask(CMOVE)
-enable conditional move instruction usage.
+Enable conditional move instruction usage.
 
 mnops=
 Target RejectNegative Joined UInteger Var(epiphany_n_nops) Init(0)
-set number of nops to emit before each insn pattern.
+Set number of nops to emit before each insn pattern.
 
 ; Problems with using the flags from fsub for comparison are:
 ; - Because of underflow (lack of subnormal numbers), different small numbers

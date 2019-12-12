@@ -1,5 +1,5 @@
 // PR c++/82022
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 template <class T>
 void f2()

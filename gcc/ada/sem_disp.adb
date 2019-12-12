@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -210,6 +210,15 @@ package body Sem_Disp is
          Ctrl_Type := Check_Controlling_Type (Etype (Formal), Subp);
 
          if Present (Ctrl_Type) then
+
+            --  Obtain the full type in case we are looking at an incomplete
+            --  view.
+
+            if Ekind (Ctrl_Type) = E_Incomplete_Type
+              and then Present (Full_View (Ctrl_Type))
+            then
+               Ctrl_Type := Full_View (Ctrl_Type);
+            end if;
 
             --  When controlling type is concurrent and declared within a
             --  generic or inside an instance use corresponding record type.
@@ -587,7 +596,7 @@ package body Sem_Disp is
                --  We need to determine whether the context of the call
                --  provides a tag to make the call dispatching. This requires
                --  the call to be the actual in an enclosing call, and that
-               --  actual must be controlling.  If the call is an operand of
+               --  actual must be controlling. If the call is an operand of
                --  equality, the other operand must not ve abstract.
 
                if not Is_Tagged_Type (Typ)
@@ -1135,10 +1144,14 @@ package body Sem_Disp is
          --  3. Subprograms associated with stream attributes (built by
          --     New_Stream_Subprogram)
 
-         --  4. Wrapper built for inherited operations with inherited class-
+         --  4. Wrappers built for inherited operations with inherited class-
          --     wide conditions, where the conditions include calls to other
          --     overridden primitives. The wrappers include checks on these
          --     modified conditions. (AI12-113).
+
+         --  5. Declarations built for subprograms without separate specs that
+         --     are eligible for inlining in GNATprove (inside
+         --     Sem_Ch6.Analyze_Subprogram_Body_Helper).
 
          if Present (Old_Subp)
            and then Present (Overridden_Operation (Subp))
@@ -1159,7 +1172,9 @@ package body Sem_Disp is
               or else Get_TSS_Name (Subp) = TSS_Stream_Read
               or else Get_TSS_Name (Subp) = TSS_Stream_Write
 
-              or else Present (Contract (Overridden_Operation (Subp))));
+              or else Present (Contract (Overridden_Operation (Subp)))
+
+              or else GNATprove_Mode);
 
             Check_Controlling_Formals (Tagged_Type, Subp);
             Override_Dispatching_Operation (Tagged_Type, Old_Subp, Subp);

@@ -291,7 +291,7 @@ void fn::print_def (ostream &out) const
   if (get_msabi () && get_alloca ())
     {
       const char *size_str = m_args.empty () ? "42" : "a";
-      out << "  void *alloca_mem = alloca (8 + " << size_str << ");" << endl
+      out << "  void *alloca_mem = __builtin_alloca (8 + " << size_str << ");" << endl
 	  << "  *(long*)alloca_mem = FLAG_ALLOCA;" << endl;
     }
   if (get_msabi () && get_varargs ())

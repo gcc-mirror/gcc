@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -26,6 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "io.h"
 #include "fbuf.h"
 #include "unix.h"
+#include "async.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -514,7 +515,8 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
      Do not error if opening file preconnected to stdin, stdout, stderr.  */
 
   u2 = NULL;
-  if ((opp->common.flags & IOPARM_OPEN_HAS_FILE) != 0)
+  if ((opp->common.flags & IOPARM_OPEN_HAS_FILE) != 0
+      && !(compile_options.allow_std & GFC_STD_F2018))
     u2 = find_file (opp->file, opp->file_len);
   if (u2 != NULL
       && (options.stdin_unit < 0 || u2->unit_number != options.stdin_unit)
@@ -528,6 +530,14 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
 
   if (u2 != NULL)
     unlock_unit (u2);
+
+  /* If the unit specified is preconnected with a file specified to be open,
+     then clear the format buffer.  */
+  if ((opp->common.unit == options.stdin_unit ||
+       opp->common.unit == options.stdout_unit ||
+       opp->common.unit == options.stderr_unit)
+      && (opp->common.flags & IOPARM_OPEN_HAS_FILE) != 0)
+    fbuf_destroy (u);
 
   /* Open file.  */
 
@@ -651,8 +661,12 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
   else
     u->fbuf = NULL;
 
-    
-    
+  /* Check if asynchrounous.  */
+  if (flags->async == ASYNC_YES)
+    init_async_unit (u);
+  else
+    u->au = NULL;
+
   return u;
 
  cleanup:
@@ -700,12 +714,12 @@ already_open (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
       if (u->filename && u->flags.status == STATUS_SCRATCH)
 	remove (u->filename);
 #endif
-     free (u->filename);
-     u->filename = NULL;
-
+      free (u->filename);
+      u->filename = NULL;
+      
       u = new_unit (opp, u, flags);
       if (u != NULL)
-	unlock_unit (u);
+      unlock_unit (u);
       return;
     }
 

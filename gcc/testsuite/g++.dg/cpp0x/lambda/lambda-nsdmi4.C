@@ -10,5 +10,5 @@ struct function
 struct testee
 {
   function l1 = []() { };
-  function l2 = [=]() { l1; };
+  function l2 = [=]() { l1; }; // { dg-warning "implicit capture" "" { target c++2a } }
 };

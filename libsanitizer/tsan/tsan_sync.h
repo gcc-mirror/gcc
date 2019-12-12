@@ -1,7 +1,8 @@
 //===-- tsan_sync.h ---------------------------------------------*- C++ -*-===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -32,6 +33,7 @@ enum MutexFlags {
   MutexFlagTryLockFailed       = 1 << 5, // __tsan_mutex_try_lock_failed
   MutexFlagRecursiveLock       = 1 << 6, // __tsan_mutex_recursive_lock
   MutexFlagRecursiveUnlock     = 1 << 7, // __tsan_mutex_recursive_unlock
+  MutexFlagNotStatic           = 1 << 8, // __tsan_mutex_not_static
 
   // The following flags are runtime private.
   // Mutex API misuse was detected, so don't report any more.
@@ -41,7 +43,8 @@ enum MutexFlags {
   // Must list all mutex creation flags.
   MutexCreationFlagMask        = MutexFlagLinkerInit |
                                  MutexFlagWriteReentrant |
-                                 MutexFlagReadReentrant,
+                                 MutexFlagReadReentrant |
+                                 MutexFlagNotStatic,
 };
 
 struct SyncVar {

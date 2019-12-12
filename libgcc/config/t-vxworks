@@ -1,8 +1,10 @@
 # Don't build libgcc.a with debug info
 LIBGCC2_DEBUG_CFLAGS =
 
-# Extra libgcc2 modules used by gthr-vxworks.h functions
-LIB2ADDEH += $(srcdir)/config/vxlib.c $(srcdir)/config/vxlib-tls.c
+# We provide our own implementation for __clear_cache, using a
+# VxWorks specific entry point.
+LIB2FUNCS_EXCLUDE += _clear_cache
+LIB2ADD += $(srcdir)/config/vxcache.c
 
 # This ensures that the correct target headers are used; some VxWorks
 # system headers have names that collide with GCC's internal (host)

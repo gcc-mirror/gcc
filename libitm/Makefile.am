@@ -1,5 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
+AUTOMAKE_OPTIONS = info-in-builddir
 ACLOCAL_AMFLAGS = -I .. -I ../config
 SUBDIRS = testsuite
 
@@ -11,7 +12,6 @@ abi_version = -fabi-version=4
 config_path = @config_path@
 search_path = $(addprefix $(top_srcdir)/config/, $(config_path)) $(top_srcdir)
 
-fincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/finclude
 libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 
 vpath % $(strip $(search_path))
@@ -118,5 +118,7 @@ stamp-build-info: libitm.texi
 	@touch $@
 
 
-CLEANFILES = $(STAMP_GENINSRC) $(STAMP_BUILD_INFO) libitm.info
+CLEANFILES = $(STAMP_GENINSRC) $(STAMP_BUILD_INFO)
 MAINTAINERCLEANFILES = $(srcdir)/libitm.info
+
+include $(top_srcdir)/../multilib.am

@@ -1,6 +1,6 @@
 /* Verify that IPA-CP can make edges direct based on aggregate contents.  */
 /* { dg-do compile } */
-/* { dg-options "-O3 -fno-early-inlining -fdump-ipa-cp -fdump-ipa-inline"  } */
+/* { dg-options "-O3 -fno-early-inlining -fno-ipa-sra -fdump-ipa-cp -fdump-ipa-inline"  } */
 
 struct S
 {

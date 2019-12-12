@@ -18,7 +18,7 @@ void test_characters ()
   T ("%A",    0.0);   /* { dg-warning ".%A. directive writing between 6 and 20 " } */
   T ("%a",    0.0);   /* { dg-warning ".%a. directive writing between 6 and 20 " } */
 
-  T ("%C",    'a');   /* { dg-warning ".%C. directive writing 1 byte" "bug 80537" { xfail *-*-* } } */
+  T ("%C",   L'a');   /* { dg-warning ".%C. directive writing up to 6 bytes" } */
   T ("%c",    'a');   /* { dg-warning ".%c. directive writing 1 byte" } */
 
   T ("%d",     12);   /* { dg-warning ".%d. directive writing 2 bytes" } */
@@ -93,7 +93,8 @@ void test_characters ()
   T ("%x",    1234);  /* { dg-warning ".%x. directive writing 3 bytes" } */
   T ("%#X",   1235);  /* { dg-warning ".%#X. directive writing 5 bytes" } */
 
-  T ("%S",    L"1");  /* { dg-warning ".%S. directive writing 1 byte" } */
+  T ("%S",    L"1");  /* { dg-warning ".%S. directive writing up to 6 bytes" } */
+  T ("%ls",  L"12");  /* { dg-warning ".%ls. directive writing up to 12 bytes" } */
   T ("%-s",    "1");  /* { dg-warning ".%-s. directive writing 1 byte" } */
 
   /* Verify that characters in the source character set appear in
@@ -116,10 +117,10 @@ void test_width_and_precision_out_of_range (char *d)
 {
   /* The range here happens to be a property of the compiler, not
      one of the target.  */
-  T ("%9223372036854775808i", 0);    /* { dg-warning "width out of range" } */
-  /* { dg-warning "result to exceed .INT_MAX." "" { target *-*-* } .-1 } */
-  T ("%.9223372036854775808i", 0);   /* { dg-warning "precision out of range" } */
-  /* { dg-warning "causes result to exceed .INT_MAX." "" { target *-*-* } .-1 } */
+  T ("%9223372036854775808i", 0);    /* { dg-warning "width out of range" "first" } */
+  /* { dg-warning "exceeds .INT_MAX." "second" { target *-*-* } .-1 } */
+  T ("%.9223372036854775808i", 0);   /* { dg-warning "precision out of range" "first" } */
+  /* { dg-warning "exceeds .INT_MAX." "second" { target *-*-* } .-1 } */
 
   /* The following is diagnosed by -Wformat (disabled here).  */
   /* T ("%9223372036854775808$i", 0); */

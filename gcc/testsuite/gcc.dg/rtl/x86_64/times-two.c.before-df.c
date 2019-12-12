@@ -49,6 +49,6 @@ int __RTL (startwith ("rtl-dfinit")) times_two (int i)
    on, due to not setting up crtl->return_rtx based on
    DECL_RESULT (fndecl).  */
 
-/* { dg-final { scan-rtl-dump ";;  exit block uses.*0 .ax. 6 .bp. 7 .sp. 20 .frame." "dfinit" } } */
+/* { dg-final { scan-rtl-dump ";;  exit block uses.*0 .ax. 6 .bp. 7 .sp. 19 .frame." "dfinit" } } */
 
 /* { dg-final { scan-rtl-dump ";;  regs ever live.*0 .ax. 5 .di. 17 .flags." "dfinit" } } */

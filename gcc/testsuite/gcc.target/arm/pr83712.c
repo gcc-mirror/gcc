@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target arm_arch_v5t_thumb_ok } */
 /* { dg-options "-mfloat-abi=softfp -mthumb -march=armv5t -O2" }  */
 #pragma GCC optimize ("-O2")
 

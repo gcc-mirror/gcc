@@ -1,6 +1,5 @@
 /* { dg-do compile { target c99_runtime } } */
-/* { dg-options "-O2 -fdump-ipa-icf"  } */
-/* { dg-add-options c99_runtime } */
+/* { dg-options "-O2 -fdump-ipa-icf-optimized"  } */
 
 #include <complex.h>
 

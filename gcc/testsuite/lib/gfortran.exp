@@ -1,4 +1,4 @@
-# Copyright (C) 2003-2018 Free Software Foundation, Inc.
+# Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -218,13 +218,6 @@ proc gfortran_init { args } {
 
     if [info exists TOOL_OPTIONS] {
 	lappend ALWAYS_GFORTRANFLAGS "additional_flags=$TOOL_OPTIONS"
-    }
-
-    # On the SPU, most of the fortran test cases exceed local store size.
-    # Use automatic overlay support to make them fit.
-    if { [check_effective_target_spu_auto_overlay] } {
-	lappend ALWAYS_GFORTRANFLAGS "ldflags=-Wl,--auto-overlay"
-	lappend ALWAYS_GFORTRANFLAGS "ldflags=-Wl,--reserved-space=131072"
     }
 
     verbose -log "ALWAYS_GFORTRANFLAGS set to $ALWAYS_GFORTRANFLAGS"

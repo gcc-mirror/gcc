@@ -1,7 +1,6 @@
 /* { dg-do compile { target { powerpc64*-*-* && lp64 } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* powerpc-*-aix* } } */
-/* { dg-options "-mcpu=power8 -O3" } */
+/* { dg-options "-mdejagnu-cpu=power8 -O3" } */
 
 /* Verify that vec_xl and vec_xst accept vector pixel parameters.  */
 

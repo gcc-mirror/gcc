@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -mcpu=v9" } */
 
 int foo1 (int a)
 {

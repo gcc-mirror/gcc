@@ -1,8 +1,8 @@
 /* Origin PR preprocessor/64803
 
    This test ensures that the value the __LINE__ macro expands to is
-   constant and corresponds to the line of the closing parenthesis of
-   the top-most function-like macro expansion it's part of.
+   constant and corresponds to the line of the macro expansion point
+   the function-like macro expansion it's part of.
 
    { dg-do run }
    { do-options -no-integrated-cpp }  */
@@ -19,8 +19,8 @@ main()
   M(a
     );
 
-  assert(L20 == 20);		/* 20 is the line number of the
-				   closing parenthesis of the
+  assert(L19 == 19);		/* 19 is the line number of the
+				   macro expansion point of the
 				   invocation of the M macro.  Please
 				   adjust in case the layout of this
 				   file changes.  */

@@ -1,5 +1,5 @@
 /* A pass for lowering gimple to HSAIL
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
    Contributed by Martin Jambor <mjambor@suse.cz> and
    Martin Liska <mliska@suse.cz>.
 
@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-iterators.h"
 #include "cgraph.h"
 #include "print-tree.h"
+#include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "hsa-common.h"
 #include "cfghooks.h"
@@ -55,7 +56,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "cfganal.h"
 #include "builtins.h"
-#include "params.h"
 #include "gomp-constants.h"
 #include "internal-fn.h"
 #include "builtins.h"
@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
   do \
   { \
     hsa_fail_cfun (); \
+    auto_diagnostic_group d; \
     if (warning_at (EXPR_LOCATION (hsa_cfun->m_decl), OPT_Whsa, \
 		    HSA_SORRY_MSG)) \
       inform (location, message, __VA_ARGS__); \
@@ -81,6 +82,7 @@ along with GCC; see the file COPYING3.  If not see
   do \
   { \
     hsa_fail_cfun (); \
+    auto_diagnostic_group d; \
     if (warning_at (EXPR_LOCATION (hsa_cfun->m_decl), OPT_Whsa, \
 		    HSA_SORRY_MSG)) \
       inform (location, message); \
@@ -2262,7 +2264,7 @@ gen_hsa_addr_insns (tree val, hsa_op_reg *dest, hsa_bb *hbb)
     {
       HSA_SORRY_ATV (EXPR_LOCATION (val), "support for HSA does "
 		     "not implement taking addresses of complex "
-		     "CONST_DECLs such as %E", val);
+		     "%<CONST_DECL%> such as %E", val);
       return;
     }
 
@@ -2447,7 +2449,7 @@ gen_hsa_insns_for_load (hsa_op_reg *dest, tree rhs, tree type, hsa_bb *hbb)
 	    {
 	      HSA_SORRY_ATV (EXPR_LOCATION (rhs),
 			     "support for HSA does not implement conversion "
-			     "of %E to the requested non-pointer type.", rhs);
+			     "of %E to the requested non-pointer type", rhs);
 	      return;
 	    }
 
@@ -3010,7 +3012,7 @@ gen_hsa_cmp_insn_from_gimple (enum tree_code code, tree lhs, tree rhs,
     default:
       HSA_SORRY_ATV (EXPR_LOCATION (lhs),
 		     "support for HSA does not implement comparison tree "
-		     "code %s\n", get_tree_code_name (code));
+		     "code %s", get_tree_code_name (code));
       return;
     }
 
@@ -3160,8 +3162,8 @@ gen_hsa_insns_for_operation_assignment (gimple *assign, hsa_bb *hbb)
     case FLOOR_DIV_EXPR:
     case ROUND_DIV_EXPR:
       HSA_SORRY_AT (gimple_location (assign),
-		    "support for HSA does not implement CEIL_DIV_EXPR, "
-		    "FLOOR_DIV_EXPR or ROUND_DIV_EXPR");
+		    "support for HSA does not implement %<CEIL_DIV_EXPR%>, "
+		    "%<FLOOR_DIV_EXPR%> or %<ROUND_DIV_EXPR%>");
       return;
     case TRUNC_MOD_EXPR:
       opcode = BRIG_OPCODE_REM;
@@ -3170,8 +3172,8 @@ gen_hsa_insns_for_operation_assignment (gimple *assign, hsa_bb *hbb)
     case FLOOR_MOD_EXPR:
     case ROUND_MOD_EXPR:
       HSA_SORRY_AT (gimple_location (assign),
-		    "support for HSA does not implement CEIL_MOD_EXPR, "
-		    "FLOOR_MOD_EXPR or ROUND_MOD_EXPR");
+		    "support for HSA does not implement %<CEIL_MOD_EXPR%>, "
+		    "%<FLOOR_MOD_EXPR%> or %<ROUND_MOD_EXPR%>");
       return;
     case NEGATE_EXPR:
       opcode = BRIG_OPCODE_NEG;
@@ -3473,7 +3475,6 @@ gen_hsa_insns_for_switch_stmt (gswitch *s, hsa_bb *hbb)
   e->flags &= ~EDGE_FALLTHRU;
   e->flags |= EDGE_TRUE_VALUE;
 
-  function *func = DECL_STRUCT_FUNCTION (current_function_decl);
   tree index_tree = gimple_switch_index (s);
   tree lowest = get_switch_low (s);
   tree highest = get_switch_high (s);
@@ -3497,9 +3498,7 @@ gen_hsa_insns_for_switch_stmt (gswitch *s, hsa_bb *hbb)
 
   hbb->append_insn (new hsa_insn_cbr (cmp_reg));
 
-  tree default_label = gimple_switch_default_label (s);
-  basic_block default_label_bb = label_to_block_fn (func,
-						    CASE_LABEL (default_label));
+  basic_block default_label_bb = gimple_switch_default_bb (cfun, s);
 
   if (!gimple_seq_empty_p (phi_nodes (default_label_bb)))
     {
@@ -3534,7 +3533,7 @@ gen_hsa_insns_for_switch_stmt (gswitch *s, hsa_bb *hbb)
   for (unsigned i = 1; i < labels; i++)
     {
       tree label = gimple_switch_label (s, i);
-      basic_block bb = label_to_block_fn (func, CASE_LABEL (label));
+      basic_block bb = label_to_block (cfun, CASE_LABEL (label));
 
       unsigned HOST_WIDE_INT sub_low
 	= tree_to_uhwi (int_const_binop (MINUS_EXPR, CASE_LOW (label), lowest));
@@ -4189,8 +4188,8 @@ gen_get_level (gimple *stmt, hsa_bb *hbb)
   if (shadow_reg_ptr == NULL)
     {
       HSA_SORRY_AT (gimple_location (stmt),
-		    "support for HSA does not implement omp_get_level called "
-		    "from a function not being inlined within a kernel");
+		    "support for HSA does not implement %<omp_get_level%> "
+		    "called from a function not being inlined within a kernel");
       return;
     }
 
@@ -4231,7 +4230,8 @@ gen_hsa_alloca (gcall *call, hsa_bb *hbb)
   if (lhs == NULL_TREE)
     return;
 
-  built_in_function fn = DECL_FUNCTION_CODE (gimple_call_fndecl (call));
+  tree fndecl = gimple_call_fndecl (call);
+  built_in_function fn = DECL_FUNCTION_CODE (fndecl);
 
   gcc_checking_assert (ALLOCA_FUNCTION_CODE_P (fn));
 
@@ -4244,8 +4244,8 @@ gen_hsa_alloca (gcall *call, hsa_bb *hbb)
 	{
 	  HSA_SORRY_ATV (gimple_location (call),
 			 "support for HSA does not implement "
-			 "__builtin_alloca_with_align with a non-constant "
-			 "alignment: %E", alignment_tree);
+			 "%qD with a non-constant alignment %E",
+			 fndecl, alignment_tree);
 	}
 
       bit_alignment = tree_to_uhwi (alignment_tree);
@@ -4549,7 +4549,7 @@ omp_simple_builtin::generate (gimple *stmt, hsa_bb *hbb)
 	HSA_SORRY_AT (gimple_location (stmt), m_warning_message);
       else
 	HSA_SORRY_ATV (gimple_location (stmt),
-		       "Support for HSA does not implement calls to %s\n",
+		       "support for HSA does not implement calls to %qs",
 		       m_name);
     }
   else if (m_warning_message != NULL)
@@ -5050,7 +5050,7 @@ gen_hsa_atomic_for_builtin (bool ret_orig, enum BrigAtomicOperation acode,
 	{
 	  HSA_SORRY_ATV (gimple_location (stmt),
 			 "support for HSA does not implement memory model for "
-			 "ATOMIC_ST: %s", mmname);
+			 "%<ATOMIC_ST%>: %s", mmname);
 	  return;
 	}
     }
@@ -5301,8 +5301,7 @@ gen_hsa_insns_for_call (gimple *stmt, hsa_bb *hbb)
       tree function_decl = gimple_call_fndecl (stmt);
       /* Prefetch pass can create type-mismatching prefetch builtin calls which
 	 fail the gimple_call_builtin_p test above.  Handle them here.  */
-      if (DECL_BUILT_IN_CLASS (function_decl)
-	  && DECL_FUNCTION_CODE (function_decl) == BUILT_IN_PREFETCH)
+      if (fndecl_built_in_p (function_decl, BUILT_IN_PREFETCH))
 	return;
 
       if (function_decl == NULL_TREE)
@@ -5316,8 +5315,8 @@ gen_hsa_insns_for_call (gimple *stmt, hsa_bb *hbb)
 	gen_hsa_insns_for_direct_call (stmt, hbb);
       else if (!gen_hsa_insns_for_known_library_call (stmt, hbb))
 	HSA_SORRY_AT (gimple_location (stmt),
-		      "HSA supports only calls of functions marked with pragma "
-		      "omp declare target");
+		      "HSA supports only calls of functions marked with "
+		      "%<#pragma omp declare target%>");
       return;
     }
 
@@ -5627,7 +5626,7 @@ gen_hsa_insns_for_call (gimple *stmt, hsa_bb *hbb)
     case BUILT_IN_GOMP_PARALLEL:
       HSA_SORRY_AT (gimple_location (stmt),
 		    "support for HSA does not implement non-gridified "
-		    "OpenMP parallel constructs.");
+		    "OpenMP parallel constructs");
       break;
 
     case BUILT_IN_OMP_GET_THREAD_NUM:
@@ -5940,7 +5939,7 @@ init_prologue (void)
   unsigned index = hsa_get_number_decl_kernel_mappings ();
 
   /* Emit store to debug argument.  */
-  if (PARAM_VALUE (PARAM_HSA_GEN_DEBUG_STORES) > 0)
+  if (param_hsa_gen_debug_stores > 0)
     set_debug_value (prologue, new hsa_op_immed (1000 + index, BRIG_TYPE_U64));
 }
 
@@ -6071,7 +6070,7 @@ gen_function_def_parameters ()
   for (parm = DECL_ARGUMENTS (cfun->decl); parm;
        parm = DECL_CHAIN (parm))
     {
-      struct hsa_symbol **slot;
+      class hsa_symbol **slot;
 
       hsa_symbol *arg
 	= new hsa_symbol (BRIG_TYPE_NONE, hsa_cfun->m_kern_p
@@ -6129,7 +6128,7 @@ gen_function_def_parameters ()
 
   if (!VOID_TYPE_P (TREE_TYPE (TREE_TYPE (cfun->decl))))
     {
-      struct hsa_symbol **slot;
+      class hsa_symbol **slot;
 
       hsa_cfun->m_output_arg = new hsa_symbol (BRIG_TYPE_NONE, BRIG_SEGMENT_ARG,
 					       BRIG_LINKAGE_FUNCTION);
@@ -6214,8 +6213,9 @@ transformable_switch_to_sbr_p (gswitch *s)
 /* Structure hold connection between PHI nodes and immediate
    values hold by there nodes.  */
 
-struct phi_definition
+class phi_definition
 {
+public:
   phi_definition (unsigned phi_i, unsigned label_i, tree imm):
     phi_index (phi_i), label_index (label_i), phi_value (imm)
   {}
@@ -6288,12 +6288,11 @@ LD:    hard_work_3 ();
 static bool
 convert_switch_statements (void)
 {
-  function *func = DECL_STRUCT_FUNCTION (current_function_decl);
   basic_block bb;
 
   bool modified_cfg = false;
 
-  FOR_EACH_BB_FN (bb, func)
+  FOR_EACH_BB_FN (bb, cfun)
   {
     gimple_stmt_iterator gsi = gsi_last_bb (bb);
     if (gsi_end_p (gsi))
@@ -6316,7 +6315,7 @@ convert_switch_statements (void)
 	tree index_type = TREE_TYPE (index);
 	tree default_label = gimple_switch_default_label (s);
 	basic_block default_label_bb
-	  = label_to_block_fn (func, CASE_LABEL (default_label));
+	  = label_to_block (cfun, CASE_LABEL (default_label));
 	basic_block cur_bb = bb;
 
 	auto_vec <edge> new_edges;
@@ -6328,8 +6327,7 @@ convert_switch_statements (void)
 	   should be fixed after we add new collection of edges.  */
 	for (unsigned i = 0; i < labels; i++)
 	  {
-	    tree label = gimple_switch_label (s, i);
-	    basic_block label_bb = label_to_block_fn (func, CASE_LABEL (label));
+	    basic_block label_bb = gimple_switch_label_bb (cfun, s, i);
 	    edge e = find_edge (bb, label_bb);
 	    edge_counts.safe_push (e->count ());
 	    edge_probabilities.safe_push (e->probability);
@@ -6411,8 +6409,7 @@ convert_switch_statements (void)
 
 	    gsi_insert_before (&cond_gsi, c, GSI_SAME_STMT);
 
-	    basic_block label_bb
-	      = label_to_block_fn (func, CASE_LABEL (label));
+	    basic_block label_bb = label_to_block (cfun, CASE_LABEL (label));
 	    edge new_edge = make_edge (cur_bb, label_bb, EDGE_TRUE_VALUE);
 	    profile_probability prob_sum = sum_slice <profile_probability>
 		 (edge_probabilities, i, labels, profile_probability::never ())
@@ -6479,10 +6476,9 @@ convert_switch_statements (void)
 static void
 expand_builtins ()
 {
-  function *func = DECL_STRUCT_FUNCTION (current_function_decl);
   basic_block bb;
 
-  FOR_EACH_BB_FN (bb, func)
+  FOR_EACH_BB_FN (bb, cfun)
   {
     for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
 	 gsi_next (&gsi))

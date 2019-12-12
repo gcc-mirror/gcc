@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,6 +37,8 @@
  * @file trie_policy/prefix_search_node_update_imp.hpp
  * Contains an implementation of prefix_search_node_update.
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 PB_DS_CLASS_T_DEC
 std::pair<
@@ -137,3 +139,4 @@ inline void
 PB_DS_CLASS_C_DEC::
 operator()(node_iterator /*nd_it*/, node_const_iterator /*end_nd_it*/) const
 { }
+#endif

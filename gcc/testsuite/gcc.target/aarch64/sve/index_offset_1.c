@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -msve-vector-bits=256" } */
+/* { dg-options "-O2 -ftree-vectorize -msve-vector-bits=256 -fno-tree-loop-distribute-patterns" } */
 
 #define SIZE (15 * 8 + 3)
 

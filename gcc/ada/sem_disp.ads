@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -151,7 +151,8 @@ package Sem_Disp is
    --  Returns True if E is a null procedure that is an interface primitive
 
    function Is_Overriding_Subprogram (E : Entity_Id) return Boolean;
-   --  Returns True if E is an overriding subprogram
+   --  Returns True if E is an overriding subprogram and False otherwise, in
+   --  particular for an inherited subprogram.
 
    function Is_Tag_Indeterminate (N : Node_Id) return Boolean;
    --  Returns true if the expression N is tag-indeterminate. An expression

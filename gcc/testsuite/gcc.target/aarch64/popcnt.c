@@ -19,5 +19,16 @@ foo2 (long long x)
   return __builtin_popcountll (x);
 }
 
-/* { dg-final { scan-assembler-not "popcount" } } */
-/* { dg-final { scan-assembler-times "cnt\t" 3 } } */
+int
+foo3 (int *p)
+{
+  return __builtin_popcount (*p);
+}
+
+/* { dg-final { scan-assembler-not {popcount} } } */
+/* { dg-final { scan-assembler-times {cnt\t} 4 } } */
+/* { dg-final { scan-assembler-times {fmov\ts} 1 {target lp64} } } */
+/* { dg-final { scan-assembler-times {fmov\td} 2 {target lp64} } } */
+/* { dg-final { scan-assembler-times {fmov\ts} 2 {target ilp32} } } */
+/* { dg-final { scan-assembler-times {fmov\td} 1 {target ilp32} } } */
+/* { dg-final { scan-assembler-times {ldr\ts} 1 } } */

@@ -74,7 +74,6 @@ GNATLIBCFLAGS= -g -O2 $(TCFLAGS)
 ADA_INCLUDE_DIR = $(libsubdir)/adainclude
 ADA_RTL_OBJ_DIR = $(libsubdir)/adalib
 THREAD_KIND=native
-TRACE=no
 # We do not want the WARN_CFLAGS of the compiler in Ada as it is for C/C++.
 COMMON_FLAGS_TO_PASS = $(filter-out $(WARN_CFLAGS), $(FLAGS_TO_PASS))
 ADA_FLAGS_TO_PASS = \
@@ -317,8 +316,11 @@ GNAT_ADA_OBJS =	\
  ada/frontend.o	\
  ada/libgnat/g-byorma.o	\
  ada/libgnat/g-dynhta.o	\
+ ada/libgnat/g-graphs.o \
  ada/libgnat/g-hesora.o	\
  ada/libgnat/g-htable.o	\
+ ada/libgnat/g-lists.o	\
+ ada/libgnat/g-sets.o	\
  ada/libgnat/g-spchge.o	\
  ada/libgnat/g-speche.o	\
  ada/libgnat/g-u3spch.o	\
@@ -352,6 +354,7 @@ GNAT_ADA_OBJS =	\
  ada/prep.o	\
  ada/prepcomp.o	\
  ada/put_scos.o	\
+ ada/repinfo-input.o	\
  ada/repinfo.o	\
  ada/restrict.o	\
  ada/rident.o	\
@@ -447,7 +450,6 @@ GNAT_ADA_OBJS =	\
  ada/sem_res.o	\
  ada/sem_scil.o	\
  ada/sem_smem.o	\
- ada/sem_spark.o	\
  ada/sem_type.o	\
  ada/sem_util.o	\
  ada/sem_warn.o	\
@@ -505,6 +507,15 @@ GNATBIND_OBJS = \
  ada/binde.o      \
  ada/binderr.o    \
  ada/bindgen.o    \
+ ada/bindo.o      \
+ ada/bindo-augmentors.o   \
+ ada/bindo-builders.o     \
+ ada/bindo-diagnostics.o  \
+ ada/bindo-elaborators.o  \
+ ada/bindo-graphs.o       \
+ ada/bindo-units.o        \
+ ada/bindo-validators.o   \
+ ada/bindo-writers.o      \
  ada/bindusg.o    \
  ada/butil.o      \
  ada/casing.o     \
@@ -524,8 +535,12 @@ GNATBIND_OBJS = \
  ada/fname-uf.o   \
  ada/fname.o      \
  ada/libgnat/g-byorma.o   \
+ ada/libgnat/g-dynhta.o   \
+ ada/libgnat/g-graphs.o   \
  ada/libgnat/g-hesora.o   \
  ada/libgnat/g-htable.o   \
+ ada/libgnat/g-lists.o    \
+ ada/libgnat/g-sets.o     \
  ada/libgnat/gnat.o       \
  ada/gnatbind.o   \
  ada/gnatvsn.o    \
@@ -673,12 +688,10 @@ regnattools:
 cross-gnattools: force
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools1-re
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
-	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools4
 
 canadian-gnattools: force
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools1-re
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
-	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools4
 
 gnatlib gnatlib-sjlj gnatlib-zcx gnatlib-shared: force
 	$(MAKE) -C ada $(COMMON_FLAGS_TO_PASS)  \
@@ -686,7 +699,7 @@ gnatlib gnatlib-sjlj gnatlib-zcx gnatlib-shared: force
 	   GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
 	   TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
 	   THREAD_KIND="$(THREAD_KIND)" \
-	   TRACE="$(TRACE)" \
+	   LN_S="$(LN_S)" \
 	   FORCE_DEBUG_ADAFLAGS="$(FORCE_DEBUG_ADAFLAGS)" \
 	   $@
 
@@ -809,9 +822,9 @@ doc/gnat-style.pdf: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
 # gnatlink, gnatls, gnatmake, gnatname, gnatprep, gnatxref, gnatfind,
 # gnatclean).
 # gnatdll is only used on Windows.
-# vxaddr2line is only used for cross VxWorks ports (it calls the underlying
-# cross addr2line).
-ada.install-common:
+ada.install-common: $(gnat_install_lib) gnat-install-tools
+
+gnat-install-tools:
 	$(MKDIR) $(DESTDIR)$(bindir)
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
@@ -827,16 +840,12 @@ ada.install-common:
 	  done; \
 	  $(RM) $(DESTDIR)$(bindir)/gnatdll$(exeext); \
 	  $(INSTALL_PROGRAM) gnatdll$(exeext) $(DESTDIR)$(bindir)/gnatdll$(exeext); \
-	  if [ -f vxaddr2line$(exeext) ] ; \
-	  then \
-	    $(RM) $(DESTDIR)$(bindir)/vxaddr2line$(exeext); \
-	    $(INSTALL_PROGRAM) vxaddr2line$(exeext) $(DESTDIR)$(bindir)/vxaddr2line$(exeext); \
-	  fi ; \
 	fi
 
 #
 # Finally, install the library
 #
+gnat-install-lib: | gnat-install-tools
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
 	  $(MAKE) $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) install-gnatlib; \
@@ -857,7 +866,6 @@ ada.uninstall:
 	  -$(RM) $(DESTDIR)$(bindir)/$$install_name; \
 	done
 	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatdll$(exeext)
-	-$(RM) $(DESTDIR)$(tooldir)/bin/vxaddr2line$(exeext)
 
 # Clean hooks:
 # A lot of the ancillary files are deleted by the main makefile.
@@ -927,6 +935,9 @@ check_gnat_parallelize = 1000
 
 check-ada: check-acats check-gnat
 check-ada-subtargets: check-acats-subtargets check-gnat-subtargets
+
+# No ada-specific selftests
+selftest-ada:
 
 ACATSDIR = $(TESTSUITEDIR)/ada/acats
 ACATSCMD = run_acats.sh

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -302,15 +302,16 @@ package System.Soft_Links is
    --  Wrapper to the possible user specified traceback decorator to be
    --  called during automatic output of exception data.
 
-   --  The null value of this wrapper correspond sto the null value of the
+   --  The null value of this wrapper corresponds to the null value of the
    --  current actual decorator. This is ensured first by the null initial
    --  value of the corresponding variables, and then by Set_Trace_Decorator
    --  in g-exctra.adb.
 
    pragma Atomic (Traceback_Decorator_Wrapper);
    --  Since concurrent read/write operations may occur on this variable.
-   --  See the body of Tailored_Exception_Traceback in Ada.Exceptions for
-   --  a more detailed description of the potential problems.
+   --  See the body of Tailored_Exception_Traceback in
+   --  Ada.Exceptions.Exception_Data for a more detailed description of the
+   --  potential problems.
 
    procedure Save_Library_Occurrence (E : EOA);
    --  When invoked, this routine saves an exception occurrence into a hidden

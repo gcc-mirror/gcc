@@ -1,3 +1,37 @@
+2019-10-01  Maciej W. Rozycki  <macro@wdc.com>
+
+	* Makefile.in (toolexecdir, toolexeclibdir): New variables.
+	(LIBADA_FLAGS_TO_PASS): Add `toolexeclibdir'.
+	* configure.ac: Add `--enable-version-specific-runtime-libs'.
+	Update version-specific `toolexecdir' and `toolexeclibdir' from 
+	ADA_RTL_OBJ_DIR from gcc/ada/gcc-interface/Makefile.in.
+	* configure: Regenerate.
+
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2018-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/88429
+	* configure.ac (default_gnatlib_target): Set to gnatlib instead of
+	gnatlib-plain if --disable-shared.
+	* configure: Regenerate.
+	* Makefile.in (all): Replace gnatlib prerequisite with libada.
+	(ADA_RTS_SUBDIR): Delete.
+	(libada): New target, renamed from...
+	(gnatlib): ...this.  Merge with other library targets.
+	(gnatlib-plain): Delete.
+	(install-gnatlib): Rename to...
+	(install-libada): ...this.
+	(install): Replace install-gnatlib prerequisite with install-libada.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* configure.ac: Remove AC_PREREQ.
+	* configure: Regenerate.
+
 2018-04-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/85384
@@ -187,11 +221,11 @@
 
 2009-04-06  Laurent GUERBY  <laurent@guerby.net>
 
-        * Makefile.in (ADA_RTS_DIR): Define.
-        * Makefile.in (gnatlib-*): Link adainclude and adalib to it.
+	* Makefile.in (ADA_RTS_DIR): Define.
+	* Makefile.in (gnatlib-*): Link adainclude and adalib to it.
 
 2008-09-21  Laurent Guerby  <laurent@guerby.net>
-            Paolo Bonzini  <bonzini@gnu.org>
+	    Paolo Bonzini  <bonzini@gnu.org>
 
 	PR ada/5911
 	* Makefile.in (all, install, mostlyclean, clean, distclean): Add
@@ -405,7 +439,7 @@
 
 	* New directory, new ChangeLog.
 
-Copyright (C) 2003-2018 Free Software Foundation, Inc.
+Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 This ChangeLog is free software; the Free Software Foundation gives
 unlimited permission to copy, distribute, and modify it.

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-rtl-combine" } */
+/* { dg-options "-O2" } */
 
 int
 f1 (int x, int y)
@@ -31,4 +31,4 @@ f5 (long long x, long long y)
   return (x & ~0xffffffffull) | (y & 0xffffffff);
 }
 
-/* { dg-final { scan-rtl-dump-times "\\*aarch64_bfi" 5 "combine" } } */
+/* { dg-final { scan-assembler-times {\tbfi\t} 5 } } */

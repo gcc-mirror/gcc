@@ -1,5 +1,5 @@
 /* Various declarations for the C and C++ pretty-printers.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -36,7 +36,7 @@ enum pp_c_pretty_print_flags
 
 /* The data type used to bundle information necessary for pretty-printing
    a C or C++ entity.  */
-struct c_pretty_printer;
+class c_pretty_printer;
 
 /* The type of a C pretty-printer 'member' function.  */
 typedef void (*c_pretty_print_fn) (c_pretty_printer *, tree);
@@ -47,8 +47,9 @@ typedef void (*c_pretty_print_fn) (c_pretty_printer *, tree);
    facilities provided here.  A derived pretty-printer can override
    any function listed in the vtable below.  See cp/cxx-pretty-print.h
    and cp/cxx-pretty-print.c for an example of derivation.  */
-struct c_pretty_printer : pretty_printer
+class c_pretty_printer : public pretty_printer
 {
+public:
   c_pretty_printer ();
 
   // Format string, possibly translated.
@@ -128,11 +129,13 @@ void pp_c_logical_or_expression (c_pretty_printer *, tree);
 void pp_c_expression_list (c_pretty_printer *, tree);
 void pp_c_constructor_elts (c_pretty_printer *, vec<constructor_elt, va_gc> *);
 void pp_c_call_argument_list (c_pretty_printer *, tree);
+void pp_c_type_cast (c_pretty_printer *, tree);
 void pp_c_cast_expression (c_pretty_printer *, tree);
 void pp_c_init_declarator (c_pretty_printer *, tree);
 void pp_c_ws_string (c_pretty_printer *, const char *);
 void pp_c_identifier (c_pretty_printer *, const char *);
 void pp_c_string_literal (c_pretty_printer *, tree);
+void pp_c_integer_constant (c_pretty_printer *, tree);
 
 void print_c_tree (FILE *file, tree t);
 

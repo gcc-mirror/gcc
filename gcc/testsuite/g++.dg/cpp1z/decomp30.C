@@ -1,5 +1,5 @@
 // PR c++/81258
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 int a[2];
 auto [b, c] (a);

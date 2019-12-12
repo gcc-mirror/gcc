@@ -1,5 +1,5 @@
 /* RTL-level loop invariant motion.
-   Copyright (C) 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -52,15 +52,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgrtl.h"
 #include "cfgloop.h"
 #include "expr.h"
-#include "params.h"
 #include "rtl-iter.h"
 #include "dumpfile.h"
 
 /* The data stored for the loop.  */
 
-struct loop_data
+class loop_data
 {
-  struct loop *outermost_exit;	/* The outermost exit of the loop.  */
+public:
+  class loop *outermost_exit;	/* The outermost exit of the loop.  */
   bool has_call;		/* True if the loop contains a call.  */
   /* Maximal register pressure inside loop for given register class
      (defined only for the pressure classes).  */
@@ -70,7 +70,7 @@ struct loop_data
   bitmap_head regs_live;
 };
 
-#define LOOP_DATA(LOOP) ((struct loop_data *) (LOOP)->aux)
+#define LOOP_DATA(LOOP) ((class loop_data *) (LOOP)->aux)
 
 /* The description of an use.  */
 
@@ -143,7 +143,7 @@ struct invariant
 };
 
 /* Currently processed loop.  */
-static struct loop *curr_loop;
+static class loop *curr_loop;
 
 /* Table of invariants indexed by the df_ref uid field.  */
 
@@ -557,7 +557,7 @@ merge_identical_invariants (void)
    get_loop_body_in_dom_order.  */
 
 static void
-compute_always_reached (struct loop *loop, basic_block *body,
+compute_always_reached (class loop *loop, basic_block *body,
 			bitmap may_exit, bitmap always_reached)
 {
   unsigned i;
@@ -577,13 +577,13 @@ compute_always_reached (struct loop *loop, basic_block *body,
    additionally mark blocks that may exit due to a call.  */
 
 static void
-find_exits (struct loop *loop, basic_block *body,
+find_exits (class loop *loop, basic_block *body,
 	    bitmap may_exit, bitmap has_exit)
 {
   unsigned i;
   edge_iterator ei;
   edge e;
-  struct loop *outermost_exit = loop, *aexit;
+  class loop *outermost_exit = loop, *aexit;
   bool has_call = false;
   rtx_insn *insn;
 
@@ -644,7 +644,7 @@ find_exits (struct loop *loop, basic_block *body,
 
   if (loop->aux == NULL)
     {
-      loop->aux = xcalloc (1, sizeof (struct loop_data));
+      loop->aux = xcalloc (1, sizeof (class loop_data));
       bitmap_initialize (&LOOP_DATA (loop)->regs_ref, &reg_obstack);
       bitmap_initialize (&LOOP_DATA (loop)->regs_live, &reg_obstack);
     }
@@ -672,7 +672,7 @@ may_assign_reg_p (rtx x)
    BODY.  */
 
 static void
-find_defs (struct loop *loop)
+find_defs (class loop *loop)
 {
   if (dump_file)
     {
@@ -681,11 +681,7 @@ find_defs (struct loop *loop)
 	       loop->num);
     }
 
-  df_remove_problem (df_chain);
-  df_process_deferred_rescans ();
   df_chain_add_problem (DF_UD_CHAIN);
-  df_live_add_problem ();
-  df_live_set_all_dirty ();
   df_set_flags (DF_RD_PRUNE_DEAD_DEFS);
   df_analyze_loop (loop);
   check_invariant_table_size ();
@@ -1053,7 +1049,7 @@ check_dependencies (rtx_insn *insn, bitmap depends_on)
   return true;
 }
 
-/* Pre-check candidate DEST to skip the one which can not make a valid insn
+/* Pre-check candidate DEST to skip the one which cannot make a valid insn
    during move_invariant_reg.  SIMPLE is to skip HARD_REGISTER.  */
 static bool
 pre_check_invariant_p (bool simple, rtx dest)
@@ -1213,7 +1209,7 @@ find_invariants_bb (basic_block bb, bool always_reached, bool always_executed)
    ends due to a function call.  */
 
 static void
-find_invariants_body (struct loop *loop, basic_block *body,
+find_invariants_body (class loop *loop, basic_block *body,
 		      bitmap always_reached, bitmap always_executed)
 {
   unsigned i;
@@ -1227,7 +1223,7 @@ find_invariants_body (struct loop *loop, basic_block *body,
 /* Finds invariants in LOOP.  */
 
 static void
-find_invariants (struct loop *loop)
+find_invariants (class loop *loop)
 {
   auto_bitmap may_exit;
   auto_bitmap always_reached;
@@ -1365,7 +1361,7 @@ get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed,
        This usually has the effect that FP constant loads from the constant
        pool are not moved out of the loop.
 
-       Note that this also means that dependent invariants can not be moved.
+       Note that this also means that dependent invariants cannot be moved.
        However, the primary purpose of this pass is to move loop invariant
        address arithmetic out of loops, and address arithmetic that depends
        on floating point constants is unlikely to ever occur.  */
@@ -1494,7 +1490,7 @@ gain_for_invariant (struct invariant *inv, unsigned *regs_needed,
 	  if ((int) new_regs[pressure_class]
 	      + (int) regs_needed[pressure_class]
 	      + LOOP_DATA (curr_loop)->max_reg_pressure[pressure_class]
-	      + IRA_LOOP_RESERVED_REGS
+	      + param_ira_loop_reserved_regs
 	      > ira_class_hard_regs_num[pressure_class])
 	    break;
 	}
@@ -1690,7 +1686,7 @@ replace_uses (struct invariant *inv, rtx reg, bool in_group)
    the block preceding its header.  */
 
 static bool
-can_move_invariant_reg (struct loop *loop, struct invariant *inv, rtx reg)
+can_move_invariant_reg (class loop *loop, struct invariant *inv, rtx reg)
 {
   df_ref def, use;
   unsigned int dest_regno, defs_in_loop_count = 0;
@@ -1763,7 +1759,7 @@ can_move_invariant_reg (struct loop *loop, struct invariant *inv, rtx reg)
    otherwise.  */
 
 static bool
-move_invariant_reg (struct loop *loop, unsigned invno)
+move_invariant_reg (class loop *loop, unsigned invno)
 {
   struct invariant *inv = invariants[invno];
   struct invariant *repr = invariants[inv->eqto];
@@ -1869,7 +1865,7 @@ fail:
    in TEMPORARY_REGS.  */
 
 static void
-move_invariants (struct loop *loop)
+move_invariants (class loop *loop)
 {
   struct invariant *inv;
   unsigned i;
@@ -1891,6 +1887,10 @@ move_invariants (struct loop *loop)
 				 GENERAL_REGS, NO_REGS, GENERAL_REGS);
 	  }
     }
+  /* Remove the DF_UD_CHAIN problem added in find_defs before rescanning,
+     to save a bit of compile time.  */
+  df_remove_problem (df_chain);
+  df_process_deferred_rescans ();
 }
 
 /* Initializes invariant motion data.  */
@@ -1938,7 +1938,7 @@ free_inv_motion_data (void)
 /* Move the invariants out of the LOOP.  */
 
 static void
-move_single_loop_invariants (struct loop *loop)
+move_single_loop_invariants (class loop *loop)
 {
   init_inv_motion_data ();
 
@@ -1953,9 +1953,9 @@ move_single_loop_invariants (struct loop *loop)
 /* Releases the auxiliary data for LOOP.  */
 
 static void
-free_loop_data (struct loop *loop)
+free_loop_data (class loop *loop)
 {
-  struct loop_data *data = LOOP_DATA (loop);
+  class loop_data *data = LOOP_DATA (loop);
   if (!data)
     return;
 
@@ -2034,7 +2034,7 @@ change_pressure (int regno, bool incr_p)
 static void
 mark_regno_live (int regno)
 {
-  struct loop *loop;
+  class loop *loop;
 
   for (loop = curr_loop;
        loop != current_loops->tree_root;
@@ -2103,7 +2103,7 @@ mark_ref_regs (rtx x)
   code = GET_CODE (x);
   if (code == REG)
     {
-      struct loop *loop;
+      class loop *loop;
 
       for (loop = curr_loop;
 	   loop != current_loops->tree_root;
@@ -2135,12 +2135,12 @@ calculate_loop_reg_pressure (void)
   basic_block bb;
   rtx_insn *insn;
   rtx link;
-  struct loop *loop, *parent;
+  class loop *loop, *parent;
 
   FOR_EACH_LOOP (loop, 0)
     if (loop->aux == NULL)
       {
-	loop->aux = xcalloc (1, sizeof (struct loop_data));
+	loop->aux = xcalloc (1, sizeof (class loop_data));
 	bitmap_initialize (&LOOP_DATA (loop)->regs_ref, &reg_obstack);
 	bitmap_initialize (&LOOP_DATA (loop)->regs_live, &reg_obstack);
       }
@@ -2170,7 +2170,7 @@ calculate_loop_reg_pressure (void)
 
 	  mark_ref_regs (PATTERN (insn));
 	  n_regs_set = 0;
-	  note_stores (PATTERN (insn), mark_reg_clobber, NULL);
+	  note_stores (insn, mark_reg_clobber, NULL);
 
 	  /* Mark any registers dead after INSN as dead now.  */
 
@@ -2183,7 +2183,7 @@ calculate_loop_reg_pressure (void)
 	     Clobbers are processed again, so they conflict with
 	     the registers that are set.  */
 
-	  note_stores (PATTERN (insn), mark_reg_store, NULL);
+	  note_stores (insn, mark_reg_store, NULL);
 
 	  if (AUTO_INC_DEC)
 	    for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
@@ -2201,7 +2201,7 @@ calculate_loop_reg_pressure (void)
 	    }
 	}
     }
-  bitmap_clear (&curr_regs_live);
+  bitmap_release (&curr_regs_live);
   if (flag_ira_region == IRA_REGION_MIXED
       || flag_ira_region == IRA_REGION_ALL)
     FOR_EACH_LOOP (loop, 0)
@@ -2252,8 +2252,16 @@ calculate_loop_reg_pressure (void)
 void
 move_loop_invariants (void)
 {
-  struct loop *loop;
+  class loop *loop;
 
+  if (optimize == 1)
+    df_live_add_problem ();
+  /* ??? This is a hack.  We should only need to call df_live_set_all_dirty
+     for optimize == 1, but can_move_invariant_reg relies on DF_INSN_LUID
+     being up-to-date.  That isn't always true (even after df_analyze)
+     because df_process_deferred_rescans doesn't necessarily cause
+     blocks to be rescanned.  */
+  df_live_set_all_dirty ();
   if (flag_ira_loop_pressure)
     {
       df_analyze ();
@@ -2267,9 +2275,13 @@ move_loop_invariants (void)
   FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
       curr_loop = loop;
-      /* move_single_loop_invariants for very large loops
-	 is time consuming and might need a lot of memory.  */
-      if (loop->num_nodes <= (unsigned) LOOP_INVARIANT_MAX_BBS_IN_LOOP)
+      /* move_single_loop_invariants for very large loops is time consuming
+	 and might need a lot of memory.  For -O1 only do loop invariant
+	 motion for very small loops.  */
+      unsigned max_bbs = param_loop_invariant_max_bbs_in_loop;
+      if (optimize < 2)
+	max_bbs /= 10;
+      if (loop->num_nodes <= max_bbs)
 	move_single_loop_invariants (loop);
     }
 
@@ -2285,6 +2297,9 @@ move_loop_invariants (void)
   free (invariant_table);
   invariant_table = NULL;
   invariant_table_size = 0;
+
+  if (optimize == 1)
+    df_remove_problem (df_live);
 
   checking_verify_flow_info ();
 }

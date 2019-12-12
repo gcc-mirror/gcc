@@ -1,5 +1,5 @@
 /* Register to Stack convert for GNU compiler.
-   Copyright (C) 1992-2018 Free Software Foundation, Inc.
+   Copyright (C) 1992-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -162,6 +162,7 @@
 #include "df.h"
 #include "insn-config.h"
 #include "memmodel.h"
+#include "regs.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 #include "recog.h"
 #include "varasm.h"
@@ -367,7 +368,7 @@ straighten_stack (rtx_insn *insn, stack_ptr regstack)
   if (regstack->top <= 0)
     return;
 
-  COPY_HARD_REG_SET (temp_stack.reg_set, regstack->reg_set);
+  temp_stack.reg_set = regstack->reg_set;
 
   for (top = temp_stack.top = regstack->top; top >= 0; top--)
     temp_stack.reg[top] = FIRST_STACK_REG + temp_stack.top - top;
@@ -413,8 +414,9 @@ get_true_reg (rtx *pat)
 	/* Eliminate FP subregister accesses in favor of the
 	   actual FP register in use.  */
 	{
-	  rtx subreg;
-	  if (STACK_REG_P (subreg = SUBREG_REG (*pat)))
+	  rtx subreg = SUBREG_REG (*pat);
+
+	  if (STACK_REG_P (subreg))
 	    {
 	      int regno_off = subreg_regno_offset (REGNO (subreg),
 						   GET_MODE (subreg),
@@ -427,6 +429,12 @@ get_true_reg (rtx *pat)
 	  pat = &XEXP (*pat, 0);
 	  break;
 	}
+
+      case FLOAT_TRUNCATE:
+	if (!flag_unsafe_math_optimizations)
+	  return pat;
+	/* FALLTHRU */
+
       case FLOAT:
       case FIX:
       case FLOAT_EXTEND:
@@ -438,12 +446,6 @@ get_true_reg (rtx *pat)
 	    || XINT (*pat, 1) == UNSPEC_FILD_ATOMIC)
 	  pat = &XVECEXP (*pat, 0, 0);
 	return pat;
-
-      case FLOAT_TRUNCATE:
-	if (!flag_unsafe_math_optimizations)
-	  return pat;
-	pat = &XEXP (*pat, 0);
-	break;
 
       default:
 	return pat;
@@ -482,7 +484,6 @@ check_asm_stack_operands (rtx_insn *insn)
 
   if (which_alternative < 0)
     {
-      malformed_asm = 1;
       /* Avoid further trouble with this insn.  */
       PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
       return 0;
@@ -543,7 +544,8 @@ check_asm_stack_operands (rtx_insn *insn)
 	    for (j = 0; j < n_clobbers; j++)
 	      if (REGNO (recog_data.operand[i]) == REGNO (clobber_reg[j]))
 		{
-		  error_for_asm (insn, "output constraint %d cannot be specified together with \"%s\" clobber",
+		  error_for_asm (insn, "output constraint %d cannot be "
+				 "specified together with %qs clobber",
 				 i, reg_names [REGNO (clobber_reg[j])]);
 		  malformed_asm = 1;
 		  break;
@@ -566,7 +568,7 @@ check_asm_stack_operands (rtx_insn *insn)
 
   if (i != LAST_STACK_REG + 1)
     {
-      error_for_asm (insn, "output regs must be grouped at top of stack");
+      error_for_asm (insn, "output registers must be grouped at top of stack");
       malformed_asm = 1;
     }
 
@@ -606,7 +608,8 @@ check_asm_stack_operands (rtx_insn *insn)
   if (i != LAST_STACK_REG + 1)
     {
       error_for_asm (insn,
-		     "implicitly popped regs must be grouped at top of stack");
+		     "implicitly popped registers must be grouped "
+		     "at top of stack");
       malformed_asm = 1;
     }
 
@@ -623,7 +626,8 @@ check_asm_stack_operands (rtx_insn *insn)
   if (i != LAST_STACK_REG + 1)
     {
       error_for_asm (insn,
-		     "explicitly used regs must be grouped at top of stack");
+		     "explicitly used registers must be grouped "
+		     "at top of stack");
       malformed_asm = 1;
     }
 
@@ -710,7 +714,7 @@ replace_reg (rtx *reg, int regno)
   gcc_assert (IN_RANGE (regno, FIRST_STACK_REG, LAST_STACK_REG));
   gcc_assert (STACK_REG_P (*reg));
 
-  gcc_assert (SCALAR_FLOAT_MODE_P (GET_MODE (*reg))
+  gcc_assert (GET_MODE_CLASS (GET_MODE (*reg)) == MODE_FLOAT
 	      || GET_MODE_CLASS (GET_MODE (*reg)) == MODE_COMPLEX_FLOAT);
 
   *reg = FP_MODE_REG (regno, GET_MODE (*reg));
@@ -764,8 +768,10 @@ get_hard_regnum (stack_ptr regstack, rtx reg)
    cases the movdf pattern to pop.  */
 
 static rtx_insn *
-emit_pop_insn (rtx_insn *insn, stack_ptr regstack, rtx reg, enum emit_where where)
+emit_pop_insn (rtx_insn *insn, stack_ptr regstack, rtx reg,
+	       enum emit_where where)
 {
+  machine_mode raw_mode = reg_raw_mode[FIRST_STACK_REG];
   rtx_insn *pop_insn;
   rtx pop_rtx;
   int hard_regno;
@@ -774,8 +780,8 @@ emit_pop_insn (rtx_insn *insn, stack_ptr regstack, rtx reg, enum emit_where wher
      CLOBBER and USE expressions.  */
   if (COMPLEX_MODE_P (GET_MODE (reg)))
     {
-      rtx reg1 = FP_MODE_REG (REGNO (reg), DFmode);
-      rtx reg2 = FP_MODE_REG (REGNO (reg) + 1, DFmode);
+      rtx reg1 = FP_MODE_REG (REGNO (reg), raw_mode);
+      rtx reg2 = FP_MODE_REG (REGNO (reg) + 1, raw_mode);
 
       pop_insn = NULL;
       if (get_hard_regnum (regstack, reg1) >= 0)
@@ -790,15 +796,15 @@ emit_pop_insn (rtx_insn *insn, stack_ptr regstack, rtx reg, enum emit_where wher
 
   gcc_assert (hard_regno >= FIRST_STACK_REG);
 
-  pop_rtx = gen_rtx_SET (FP_MODE_REG (hard_regno, DFmode),
-			 FP_MODE_REG (FIRST_STACK_REG, DFmode));
+  pop_rtx = gen_rtx_SET (FP_MODE_REG (hard_regno, raw_mode),
+			 FP_MODE_REG (FIRST_STACK_REG, raw_mode));
 
   if (where == EMIT_AFTER)
     pop_insn = emit_insn_after (pop_rtx, insn);
   else
     pop_insn = emit_insn_before (pop_rtx, insn);
 
-  add_reg_note (pop_insn, REG_DEAD, FP_MODE_REG (FIRST_STACK_REG, DFmode));
+  add_reg_note (pop_insn, REG_DEAD, FP_MODE_REG (FIRST_STACK_REG, raw_mode));
 
   regstack->reg[regstack->top - (hard_regno - FIRST_STACK_REG)]
     = regstack->reg[regstack->top];
@@ -819,7 +825,6 @@ static void
 emit_swap_insn (rtx_insn *insn, stack_ptr regstack, rtx reg)
 {
   int hard_regno;
-  rtx swap_rtx;
   int other_reg;		/* swap regno temps */
   rtx_insn *i1;			/* the stack-reg insn prior to INSN */
   rtx i1set = NULL_RTX;		/* the SET rtx within I1 */
@@ -977,9 +982,13 @@ emit_swap_insn (rtx_insn *insn, stack_ptr regstack, rtx reg)
       return;
     }
 
-  swap_rtx = gen_swapxf (FP_MODE_REG (hard_regno, XFmode),
-			 FP_MODE_REG (FIRST_STACK_REG, XFmode));
-
+  machine_mode raw_mode = reg_raw_mode[FIRST_STACK_REG];
+  rtx op1 = FP_MODE_REG (hard_regno, raw_mode);
+  rtx op2 = FP_MODE_REG (FIRST_STACK_REG, raw_mode);
+  rtx swap_rtx
+    = gen_rtx_PARALLEL (VOIDmode,
+			gen_rtvec (2, gen_rtx_SET (op1, op2),
+				   gen_rtx_SET (op2, op1)));
   if (i1)
     emit_insn_after (swap_rtx, i1);
   else if (current_block)
@@ -1808,10 +1817,10 @@ subst_stack_regs_pat (rtx_insn *insn, stack_ptr regstack, rtx pat)
 	      case UNSPEC_FRNDINT:
 	      case UNSPEC_F2XM1:
 
+	      case UNSPEC_FRNDINT_ROUNDEVEN:
 	      case UNSPEC_FRNDINT_FLOOR:
 	      case UNSPEC_FRNDINT_CEIL:
 	      case UNSPEC_FRNDINT_TRUNC:
-	      case UNSPEC_FRNDINT_MASK_PM:
 
 		/* Above insns operate on the top of the stack.  */
 
@@ -2274,13 +2283,7 @@ subst_asm_stack_regs (rtx_insn *insn, stack_ptr regstack)
       int regnum = get_hard_regnum (regstack, clobber_reg[i]);
 
       if (regnum >= 0)
-	{
-	  /* Sigh - clobbers always have QImode.  But replace_reg knows
-	     that these regs can't be MODE_INT and will assert.  Just put
-	     the right reg there without calling replace_reg.  */
-
-	  *clobber_loc[i] = FP_MODE_REG (regnum, DFmode);
-	}
+	replace_reg (clobber_loc[i], regnum);
     }
 
   /* Now remove from REGSTACK any inputs that the asm implicitly popped.  */
@@ -2492,6 +2495,7 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
 	      enum emit_where where)
 {
   int reg;
+  machine_mode raw_mode = reg_raw_mode[FIRST_STACK_REG];
   rtx_insn *update_end = NULL;
   int i;
 
@@ -2593,7 +2597,7 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
 		next--;
 	      dest = next--;
 	    }
-	  emit_pop_insn (insn, old, FP_MODE_REG (old->reg[dest], DFmode),
+	  emit_pop_insn (insn, old, FP_MODE_REG (old->reg[dest], raw_mode),
 			 EMIT_BEFORE);
 	}
     }
@@ -2615,11 +2619,11 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
 	  {
 	    while (TEST_HARD_REG_BIT (new_stack->reg_set, old->reg[next]))
 	      next--;
-	    emit_pop_insn (insn, old, FP_MODE_REG (old->reg[next], DFmode),
+	    emit_pop_insn (insn, old, FP_MODE_REG (old->reg[next], raw_mode),
 			   EMIT_BEFORE);
 	  }
 	else
-	  emit_pop_insn (insn, old, FP_MODE_REG (old->reg[old->top], DFmode),
+	  emit_pop_insn (insn, old, FP_MODE_REG (old->reg[old->top], raw_mode),
 			 EMIT_BEFORE);
     }
 
@@ -2639,7 +2643,7 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
       /* By now, the only difference should be the order of the stack,
 	 not their depth or liveliness.  */
 
-      gcc_assert (hard_reg_set_equal_p (old->reg_set, new_stack->reg_set));
+      gcc_assert (old->reg_set == new_stack->reg_set);
       gcc_assert (old->top == new_stack->top);
 
       /* If the stack is not empty (new_stack->top != -1), loop here emitting
@@ -2666,7 +2670,7 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
 		gcc_assert (reg != -1);
 
 		emit_swap_insn (insn, old,
-				FP_MODE_REG (old->reg[reg], DFmode));
+				FP_MODE_REG (old->reg[reg], raw_mode));
 	      }
 
 	    /* See if any regs remain incorrect.  If so, bring an
@@ -2677,7 +2681,7 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
 	      if (new_stack->reg[reg] != old->reg[reg])
 		{
 		  emit_swap_insn (insn, old,
-				  FP_MODE_REG (old->reg[reg], DFmode));
+				  FP_MODE_REG (old->reg[reg], raw_mode));
 		  break;
 		}
 	  } while (reg >= 0);
@@ -2926,6 +2930,7 @@ compensate_edge (edge e)
       seq = get_insns ();
       end_sequence ();
 
+      set_insn_locations (seq, e->goto_locus);
       insert_insn_on_edge (seq, e);
       return true;
     }
@@ -3153,8 +3158,7 @@ convert_regs_1 (basic_block block)
      asms, we zapped the instruction itself, but that didn't produce the
      same pattern of register kills as before.  */
 
-  gcc_assert (hard_reg_set_equal_p (regstack.reg_set, bi->out_reg_set)
-	      || any_malformed_asm);
+  gcc_assert (regstack.reg_set == bi->out_reg_set || any_malformed_asm);
   bi->stack_out = regstack;
   bi->done = true;
 

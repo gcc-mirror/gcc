@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -38,6 +38,8 @@
  * Contains an implementation class for pat_trie.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::access_traits& 
 PB_DS_CLASS_C_DEC::
@@ -61,3 +63,4 @@ const typename PB_DS_CLASS_C_DEC::node_update&
 PB_DS_CLASS_C_DEC::
 get_node_update() const
 { return *this; }
+#endif

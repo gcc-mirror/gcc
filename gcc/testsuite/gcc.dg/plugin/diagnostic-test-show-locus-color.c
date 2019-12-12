@@ -44,6 +44,8 @@ void test_multiline (void)
         [32m[K~~~~~~~~~~~~~~~~~[m[K
         [01;35m[K+[m[K [34m[Ksecond_function ()[m[K);
         [01;35m[K^[m[K [34m[K~~~~~~~~~~~~~~~~~~[m[K
+        [01;35m[K|[m[K
+        [01;35m[Klabel[m[K
    { dg-end-multiline-output "" } */
 #endif
 }
@@ -66,6 +68,8 @@ void test_many_lines (void)
 /* { dg-begin-multiline-output "" }
    x = ([32m[Kfirst_function_with_a_very_long_name (lorem, ipsum, dolor, sit, amet,[m[K
         [32m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+        [32m[K|[m[K
+        [32m[Klabel 1[m[K
  [32m[K                                            consectetur, adipiscing, elit,[m[K
                                              [32m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
  [32m[K                                            sed, eiusmod, tempor,[m[K
@@ -76,6 +80,9 @@ void test_many_lines (void)
                                              [32m[K~~~~~~~~~~~~~~~~~~~~~~[m[K
         [01;35m[K+[m[K [34m[Ksecond_function_with_a_very_long_name (lorem, ipsum, dolor, sit,
         [01;35m[K^[m[K [34m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+        [01;35m[K|[m[K [34m[K|[m[K
+        [01;35m[K|[m[K [34m[Klabel 2[m[K
+        [01;35m[Klabel 0[m[K
  [34m[K                                                amet, consectetur,[m[K
                                                  [34m[K~~~~~~~~~~~~~~~~~~[m[K
  [34m[K                                                adipiscing, elit, sed,[m[K
@@ -115,13 +122,15 @@ void test_caret_within_proper_range (void)
 void test_very_wide_line (void)
 {
 #if 0
-                                                                                float f = foo * bar; /* { dg-warning "95: test" } */
+                             float x                                                    = foo * bar; /* { dg-warning "95: test" } */
 /* { dg-begin-multiline-output "" }
      0         0         0         0         0         0         1     
      4         5         6         7         8         9         0     
  6789012345678901234567890123456789012345678901234567890123456789012345
-                                              float f = [01;35m[Kfoo * bar[m[K;
-                                                        [01;35m[K~~~~^~~~~[m[K
+ [32m[Kx[m[K                                                    = [01;35m[Kfoo * bar[m[K;
+ [32m[K~[m[K                                                      [01;35m[K~~~~^~~~~[m[K
+ [32m[K|[m[K                                                          [01;35m[K|[m[K
+ [32m[Klabel 1[m[K                                                    [01;35m[Klabel 0[m[K
                                                         [32m[Kbar * foo[m[K
    { dg-end-multiline-output "" } */
 #endif
@@ -208,6 +217,7 @@ void test_fixit_insert_newline (void)
       x = b;
     }
 /* { dg-begin-multiline-output "" }
+       x = a;
 +[32m[K      break;[m[K
      [01;35m[Kcase 'b'[m[K:
      [01;35m[K^~~~~~~~[m[K

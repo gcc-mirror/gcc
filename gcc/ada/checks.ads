@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -90,7 +90,7 @@ package Checks is
    --  When we have address clauses, there is an issue of whether the address
    --  specified is appropriate to the alignment. In the general case where the
    --  address is dynamic, we generate a check and a possible warning (this
-   --  warning occurs for example if we have a restricted run time with the
+   --  warning occurs for example if we have a restricted runtime with the
    --  restriction No_Exception_Propagation). We also issue this warning in
    --  the case where the address is static, but we don't know the alignment
    --  at the time we process the address clause. In such a case, we issue the
@@ -98,7 +98,7 @@ package Checks is
    --  annotated the actual alignment chosen) that the warning was not needed.
 
    --  To deal with deleting these potentially annoying warnings, we save the
-   --  warning information in a table, and then delete the waranings in the
+   --  warning information in a table, and then delete the warnings in the
    --  post compilation validation stage if we can tell that the check would
    --  never fail (in general the back end will also optimize away the check
    --  in such cases).
@@ -112,6 +112,9 @@ package Checks is
       A : Uint;
       --  Compile time known value of address clause for which the alignment
       --  is to be checked once we know the alignment.
+
+      P : Node_Id;
+      --  Prefix of address clause when it is of the form X'Address
 
       W : Error_Msg_Id;
       --  Id of warning message we might delete
@@ -161,7 +164,7 @@ package Checks is
 
    procedure Activate_Range_Check (N : Node_Id);
    pragma Inline (Activate_Range_Check);
-   --  Sets Do_Range_Check flag in node N, and handles possible local raise
+   --  Sets Do_Range_Check flag in node N, and handles possible local raise.
    --  Always call this routine rather than calling Set_Do_Range_Check to
    --  set an explicit value of True, to ensure handling the local raise case.
 
@@ -310,14 +313,16 @@ package Checks is
    --  then OK is True on return, and Lo and Hi are set to a conservative
    --  estimate of the possible range of values of N. Thus if OK is True on
    --  return, the value of the subexpression N is known to lie in the range
-   --  Lo .. Hi (inclusive). If the expression is not of a discrete type, or
-   --  some kind of error condition is detected, then OK is False on exit, and
-   --  Lo/Hi are set to No_Uint. Thus the significance of OK being False on
-   --  return is that no useful information is available on the range of the
-   --  expression. Assume_Valid determines whether the processing is allowed to
-   --  assume that values are in range of their subtypes. If it is set to True,
-   --  then this assumption is valid, if False, then processing is done using
-   --  base types to allow invalid values.
+   --  Lo .. Hi (inclusive). For enumeration and character literals the values
+   --  returned are the Pos value in the relevant enumeration type. If the
+   --  expression is not of a discrete type, or some kind of error condition
+   --  is detected, then OK is False on exit, and Lo/Hi are set to No_Uint.
+   --  Thus the significance of OK being False on return is that no useful
+   --  information is available on the range of the expression. Assume_Valid
+   --  determines whether the processing is allowed to assume that values are
+   --  in range of their subtypes. If it is set to True, then this assumption
+   --  is valid, if False, then processing is done using base types to allow
+   --  invalid values.
 
    procedure Determine_Range_R
      (N            : Node_Id;

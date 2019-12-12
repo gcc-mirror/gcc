@@ -1,3 +1,4 @@
+/* { dg-skip-if "exceeds eBPF stack limit" { bpf-*-* } } */
 
 struct w
 {

@@ -1,5 +1,5 @@
 /* Machine mode definitions for GCC; included by rtl.h and tree.h.
-   Copyright (C) 1991-2018 Free Software Foundation, Inc.
+   Copyright (C) 1991-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -237,9 +237,6 @@ extern const unsigned char mode_class[NUM_MACHINE_MODES];
    || CLASS == MODE_ACCUM                      \
    || CLASS == MODE_UACCUM)
 
-#define POINTER_BOUNDS_MODE_P(MODE)      \
-  (GET_MODE_CLASS (MODE) == MODE_POINTER_BOUNDS)
-
 /* An optional T (i.e. a T or nothing), where T is some form of mode class.  */
 template<typename T>
 class opt_mode
@@ -247,18 +244,22 @@ class opt_mode
 public:
   enum from_int { dummy = MAX_MACHINE_MODE };
 
-  ALWAYS_INLINE opt_mode () : m_mode (E_VOIDmode) {}
-  ALWAYS_INLINE opt_mode (const T &m) : m_mode (m) {}
+  ALWAYS_INLINE CONSTEXPR opt_mode () : m_mode (E_VOIDmode) {}
+  ALWAYS_INLINE CONSTEXPR opt_mode (const T &m) : m_mode (m) {}
   template<typename U>
-  ALWAYS_INLINE opt_mode (const U &m) : m_mode (T (m)) {}
-  ALWAYS_INLINE opt_mode (from_int m) : m_mode (machine_mode (m)) {}
+  ALWAYS_INLINE CONSTEXPR opt_mode (const U &m) : m_mode (T (m)) {}
+  ALWAYS_INLINE CONSTEXPR opt_mode (from_int m) : m_mode (machine_mode (m)) {}
 
   machine_mode else_void () const;
-  machine_mode else_blk () const;
+  machine_mode else_blk () const { return else_mode (BLKmode); }
+  machine_mode else_mode (machine_mode) const;
   T require () const;
 
   bool exists () const;
   template<typename U> bool exists (U *) const;
+
+  bool operator== (const T &m) const { return m_mode == m; }
+  bool operator!= (const T &m) const { return m_mode != m; }
 
 private:
   machine_mode m_mode;
@@ -274,13 +275,13 @@ opt_mode<T>::else_void () const
   return m_mode;
 }
 
-/* If the T exists, return its enum value, otherwise return E_BLKmode.  */
+/* If the T exists, return its enum value, otherwise return FALLBACK.  */
 
 template<typename T>
 inline machine_mode
-opt_mode<T>::else_blk () const
+opt_mode<T>::else_mode (machine_mode fallback) const
 {
-  return m_mode == E_VOIDmode ? E_BLKmode : m_mode;
+  return m_mode == E_VOIDmode ? fallback : m_mode;
 }
 
 /* Assert that the object contains a T and return it.  */
@@ -326,8 +327,12 @@ struct pod_mode
   typedef typename T::measurement_type measurement_type;
 
   machine_mode m_mode;
-  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
-  ALWAYS_INLINE operator T () const { return from_int (m_mode); }
+  ALWAYS_INLINE CONSTEXPR
+  operator machine_mode () const { return m_mode; }
+
+  ALWAYS_INLINE CONSTEXPR
+  operator T () const { return from_int (m_mode); }
+
   ALWAYS_INLINE pod_mode &operator = (const T &m) { m_mode = m; return *this; }
 };
 
@@ -405,8 +410,11 @@ public:
   typedef unsigned short measurement_type;
 
   ALWAYS_INLINE scalar_int_mode () {}
-  ALWAYS_INLINE scalar_int_mode (from_int m) : m_mode (machine_mode (m)) {}
-  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
+
+  ALWAYS_INLINE CONSTEXPR
+  scalar_int_mode (from_int m) : m_mode (machine_mode (m)) {}
+
+  ALWAYS_INLINE CONSTEXPR operator machine_mode () const { return m_mode; }
 
   static bool includes_p (machine_mode);
 
@@ -430,8 +438,11 @@ public:
   typedef unsigned short measurement_type;
 
   ALWAYS_INLINE scalar_float_mode () {}
-  ALWAYS_INLINE scalar_float_mode (from_int m) : m_mode (machine_mode (m)) {}
-  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
+
+  ALWAYS_INLINE CONSTEXPR
+  scalar_float_mode (from_int m) : m_mode (machine_mode (m)) {}
+
+  ALWAYS_INLINE CONSTEXPR operator machine_mode () const { return m_mode; }
 
   static bool includes_p (machine_mode);
 
@@ -455,11 +466,20 @@ public:
   typedef unsigned short measurement_type;
 
   ALWAYS_INLINE scalar_mode () {}
-  ALWAYS_INLINE scalar_mode (from_int m) : m_mode (machine_mode (m)) {}
-  ALWAYS_INLINE scalar_mode (const scalar_int_mode &m) : m_mode (m) {}
-  ALWAYS_INLINE scalar_mode (const scalar_float_mode &m) : m_mode (m) {}
-  ALWAYS_INLINE scalar_mode (const scalar_int_mode_pod &m) : m_mode (m) {}
-  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
+
+  ALWAYS_INLINE CONSTEXPR
+  scalar_mode (from_int m) : m_mode (machine_mode (m)) {}
+
+  ALWAYS_INLINE CONSTEXPR
+  scalar_mode (const scalar_int_mode &m) : m_mode (m) {}
+
+  ALWAYS_INLINE CONSTEXPR
+  scalar_mode (const scalar_float_mode &m) : m_mode (m) {}
+
+  ALWAYS_INLINE CONSTEXPR
+  scalar_mode (const scalar_int_mode_pod &m) : m_mode (m) {}
+
+  ALWAYS_INLINE CONSTEXPR operator machine_mode () const { return m_mode; }
 
   static bool includes_p (machine_mode);
 
@@ -482,7 +502,6 @@ scalar_mode::includes_p (machine_mode m)
     case MODE_UACCUM:
     case MODE_FLOAT:
     case MODE_DECIMAL_FLOAT:
-    case MODE_POINTER_BOUNDS:
       return true;
     default:
       return false;
@@ -497,8 +516,11 @@ public:
   typedef unsigned short measurement_type;
 
   ALWAYS_INLINE complex_mode () {}
-  ALWAYS_INLINE complex_mode (from_int m) : m_mode (machine_mode (m)) {}
-  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
+
+  ALWAYS_INLINE CONSTEXPR
+  complex_mode (from_int m) : m_mode (machine_mode (m)) {}
+
+  ALWAYS_INLINE CONSTEXPR operator machine_mode () const { return m_mode; }
 
   static bool includes_p (machine_mode);
 
@@ -767,14 +789,29 @@ public:
   typedef unsigned short measurement_type;
 
   ALWAYS_INLINE fixed_size_mode () {}
-  ALWAYS_INLINE fixed_size_mode (from_int m) : m_mode (machine_mode (m)) {}
-  ALWAYS_INLINE fixed_size_mode (const scalar_mode &m) : m_mode (m) {}
-  ALWAYS_INLINE fixed_size_mode (const scalar_int_mode &m) : m_mode (m) {}
-  ALWAYS_INLINE fixed_size_mode (const scalar_float_mode &m) : m_mode (m) {}
-  ALWAYS_INLINE fixed_size_mode (const scalar_mode_pod &m) : m_mode (m) {}
-  ALWAYS_INLINE fixed_size_mode (const scalar_int_mode_pod &m) : m_mode (m) {}
-  ALWAYS_INLINE fixed_size_mode (const complex_mode &m) : m_mode (m) {}
-  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
+
+  ALWAYS_INLINE CONSTEXPR
+  fixed_size_mode (from_int m) : m_mode (machine_mode (m)) {}
+
+  ALWAYS_INLINE CONSTEXPR
+  fixed_size_mode (const scalar_mode &m) : m_mode (m) {}
+
+  ALWAYS_INLINE CONSTEXPR
+  fixed_size_mode (const scalar_int_mode &m) : m_mode (m) {}
+
+  ALWAYS_INLINE CONSTEXPR
+  fixed_size_mode (const scalar_float_mode &m) : m_mode (m) {}
+
+  ALWAYS_INLINE CONSTEXPR
+  fixed_size_mode (const scalar_mode_pod &m) : m_mode (m) {}
+
+  ALWAYS_INLINE CONSTEXPR
+  fixed_size_mode (const scalar_int_mode_pod &m) : m_mode (m) {}
+
+  ALWAYS_INLINE CONSTEXPR
+  fixed_size_mode (const complex_mode &m) : m_mode (m) {}
+
+  ALWAYS_INLINE CONSTEXPR operator machine_mode () const { return m_mode; }
 
   static bool includes_p (machine_mode);
 
@@ -845,20 +882,9 @@ smallest_int_mode_for_size (poly_uint64 size)
 extern opt_scalar_int_mode int_mode_for_mode (machine_mode);
 extern opt_machine_mode bitwise_mode_for_mode (machine_mode);
 extern opt_machine_mode mode_for_vector (scalar_mode, poly_uint64);
-extern opt_machine_mode mode_for_int_vector (unsigned int, poly_uint64);
-
-/* Return the integer vector equivalent of MODE, if one exists.  In other
-   words, return the mode for an integer vector that has the same number
-   of bits as MODE and the same number of elements as MODE, with the
-   latter being 1 if MODE is scalar.  The returned mode can be either
-   an integer mode or a vector mode.  */
-
-inline opt_machine_mode
-mode_for_int_vector (machine_mode mode)
-{
-  return mode_for_int_vector (GET_MODE_UNIT_BITSIZE (mode),
-			      GET_MODE_NUNITS (mode));
-}
+extern opt_machine_mode related_vector_mode (machine_mode, scalar_mode,
+					     poly_uint64 = 0);
+extern opt_machine_mode related_int_vector_mode (machine_mode);
 
 /* A class for iterating through possible bitfield modes.  */
 class bit_field_mode_iterator

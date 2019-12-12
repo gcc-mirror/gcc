@@ -1,5 +1,5 @@
 /* Demangler for the Rust programming language
-   Copyright (C) 2016-2018 Free Software Foundation, Inc.
+   Copyright (C) 2016-2019 Free Software Foundation, Inc.
    Written by David Tolnay (dtolnay@gmail.com).
 
 This file is part of the libiberty library.
@@ -33,9 +33,11 @@ If not, see <http://www.gnu.org/licenses/>.  */
 
 #include "safe-ctype.h"
 
+#include <inttypes.h>
 #include <sys/types.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -48,301 +50,483 @@ extern void *memset(void *s, int c, size_t n);
 #include <demangle.h>
 #include "libiberty.h"
 
-
-/* Mangled Rust symbols look like this:
-     _$LT$std..sys..fd..FileDesc$u20$as$u20$core..ops..Drop$GT$::drop::hc68340e1baa4987a
-
-   The original symbol is:
-     <std::sys::fd::FileDesc as core::ops::Drop>::drop
-
-   The last component of the path is a 64-bit hash in lowercase hex,
-   prefixed with "h". Rust does not have a global namespace between
-   crates, an illusion which Rust maintains by using the hash to
-   distinguish things that would otherwise have the same symbol.
-
-   Any path component not starting with a XID_Start character is
-   prefixed with "_".
-
-   The following escape sequences are used:
-
-   ","  =>  $C$
-   "@"  =>  $SP$
-   "*"  =>  $BP$
-   "&"  =>  $RF$
-   "<"  =>  $LT$
-   ">"  =>  $GT$
-   "("  =>  $LP$
-   ")"  =>  $RP$
-   " "  =>  $u20$
-   "\"" =>  $u22$
-   "'"  =>  $u27$
-   "+"  =>  $u2b$
-   ";"  =>  $u3b$
-   "["  =>  $u5b$
-   "]"  =>  $u5d$
-   "{"  =>  $u7b$
-   "}"  =>  $u7d$
-   "~"  =>  $u7e$
-
-   A double ".." means "::" and a single "." means "-".
-
-   The only characters allowed in the mangled symbol are a-zA-Z0-9 and _.:$  */
-
-static const char *hash_prefix = "::h";
-static const size_t hash_prefix_len = 3;
-static const size_t hash_len = 16;
-
-static int is_prefixed_hash (const char *start);
-static int looks_like_rust (const char *sym, size_t len);
-static int unescape (const char **in, char **out, const char *seq, char value);
-
-/* INPUT: sym: symbol that has been through C++ (gnu v3) demangling
-
-   This function looks for the following indicators:
-
-   1. The hash must consist of "h" followed by 16 lowercase hex digits.
-
-   2. As a sanity check, the hash must use between 5 and 15 of the 16
-      possible hex digits. This is true of 99.9998% of hashes so once
-      in your life you may see a false negative. The point is to
-      notice path components that could be Rust hashes but are
-      probably not, like "haaaaaaaaaaaaaaaa". In this case a false
-      positive (non-Rust symbol has an important path component
-      removed because it looks like a Rust hash) is worse than a false
-      negative (the rare Rust symbol is not demangled) so this sets
-      the balance in favor of false negatives.
-
-   3. There must be no characters other than a-zA-Z0-9 and _.:$
-
-   4. There must be no unrecognized $-sign sequences.
-
-   5. There must be no sequence of three or more dots in a row ("...").  */
-
-int
-rust_is_mangled (const char *sym)
+struct rust_demangler
 {
-  size_t len, len_without_hash;
+  const char *sym;
+  size_t sym_len;
 
-  if (!sym)
-    return 0;
+  void *callback_opaque;
+  demangle_callbackref callback;
 
-  len = strlen (sym);
-  if (len <= hash_prefix_len + hash_len)
-    /* Not long enough to contain "::h" + hash + something else */
-    return 0;
+  /* Position of the next character to read from the symbol. */
+  size_t next;
 
-  len_without_hash = len - (hash_prefix_len + hash_len);
-  if (!is_prefixed_hash (sym + len_without_hash))
-    return 0;
+  /* Non-zero if any error occurred. */
+  int errored;
 
-  return looks_like_rust (sym, len_without_hash);
+  /* Non-zero if printing should be verbose (e.g. include hashes). */
+  int verbose;
+
+  /* Rust mangling version, with legacy mangling being -1. */
+  int version;
+};
+
+/* Parsing functions. */
+
+static char
+peek (const struct rust_demangler *rdm)
+{
+  if (rdm->next < rdm->sym_len)
+    return rdm->sym[rdm->next];
+  return 0;
 }
 
-/* A hash is the prefix "::h" followed by 16 lowercase hex digits. The
-   hex digits must comprise between 5 and 15 (inclusive) distinct
-   digits.  */
+static char
+next (struct rust_demangler *rdm)
+{
+  char c = peek (rdm);
+  if (!c)
+    rdm->errored = 1;
+  else
+    rdm->next++;
+  return c;
+}
 
+struct rust_mangled_ident
+{
+  /* ASCII part of the identifier. */
+  const char *ascii;
+  size_t ascii_len;
+};
+
+static struct rust_mangled_ident
+parse_ident (struct rust_demangler *rdm)
+{
+  char c;
+  size_t start, len;
+  struct rust_mangled_ident ident;
+
+  ident.ascii = NULL;
+  ident.ascii_len = 0;
+
+  c = next (rdm);
+  if (!ISDIGIT (c))
+    {
+      rdm->errored = 1;
+      return ident;
+    }
+  len = c - '0';
+
+  if (c != '0')
+    while (ISDIGIT (peek (rdm)))
+      len = len * 10 + (next (rdm) - '0');
+
+  start = rdm->next;
+  rdm->next += len;
+  /* Check for overflows. */
+  if ((start > rdm->next) || (rdm->next > rdm->sym_len))
+    {
+      rdm->errored = 1;
+      return ident;
+    }
+
+  ident.ascii = rdm->sym + start;
+  ident.ascii_len = len;
+
+  if (ident.ascii_len == 0)
+    ident.ascii = NULL;
+
+  return ident;
+}
+
+/* Printing functions. */
+
+static void
+print_str (struct rust_demangler *rdm, const char *data, size_t len)
+{
+  if (!rdm->errored)
+    rdm->callback (data, len, rdm->callback_opaque);
+}
+
+#define PRINT(s) print_str (rdm, s, strlen (s))
+
+/* Return a 0x0-0xf value if the char is 0-9a-f, and -1 otherwise. */
 static int
-is_prefixed_hash (const char *str)
+decode_lower_hex_nibble (char nibble)
 {
-  const char *end;
-  char seen[16];
-  size_t i;
-  int count;
+  if ('0' <= nibble && nibble <= '9')
+    return nibble - '0';
+  if ('a' <= nibble && nibble <= 'f')
+    return 0xa + (nibble - 'a');
+  return -1;
+}
 
-  if (strncmp (str, hash_prefix, hash_prefix_len))
+/* Return the unescaped character for a "$...$" escape, or 0 if invalid. */
+static char
+decode_legacy_escape (const char *e, size_t len, size_t *out_len)
+{
+  char c = 0;
+  size_t escape_len = 0;
+  int lo_nibble = -1, hi_nibble = -1;
+
+  if (len < 3 || e[0] != '$')
     return 0;
-  str += hash_prefix_len;
 
-  memset (seen, 0, sizeof(seen));
-  for (end = str + hash_len; str < end; str++)
-    if (*str >= '0' && *str <= '9')
-      seen[*str - '0'] = 1;
-    else if (*str >= 'a' && *str <= 'f')
-      seen[*str - 'a' + 10] = 1;
-    else
-      return 0;
+  e++;
+  len--;
 
-  /* Count how many distinct digits seen */
-  count = 0;
-  for (i = 0; i < 16; i++)
-    if (seen[i])
-      count++;
+  if (e[0] == 'C')
+    {
+      escape_len = 1;
 
-  return count >= 5 && count <= 15;
+      c = ',';
+    }
+  else if (len > 2)
+    {
+      escape_len = 2;
+
+      if (e[0] == 'S' && e[1] == 'P')
+        c = '@';
+      else if (e[0] == 'B' && e[1] == 'P')
+        c = '*';
+      else if (e[0] == 'R' && e[1] == 'F')
+        c = '&';
+      else if (e[0] == 'L' && e[1] == 'T')
+        c = '<';
+      else if (e[0] == 'G' && e[1] == 'T')
+        c = '>';
+      else if (e[0] == 'L' && e[1] == 'P')
+        c = '(';
+      else if (e[0] == 'R' && e[1] == 'P')
+        c = ')';
+      else if (e[0] == 'u' && len > 3)
+        {
+          escape_len = 3;
+
+          hi_nibble = decode_lower_hex_nibble (e[1]);
+          if (hi_nibble < 0)
+            return 0;
+          lo_nibble = decode_lower_hex_nibble (e[2]);
+          if (lo_nibble < 0)
+            return 0;
+
+          /* Only allow non-control ASCII characters. */
+          if (hi_nibble > 7)
+            return 0;
+          c = (hi_nibble << 4) | lo_nibble;
+          if (c < 0x20)
+            return 0;
+        }
+    }
+
+  if (!c || len <= escape_len || e[escape_len] != '$')
+    return 0;
+
+  *out_len = 2 + escape_len;
+  return c;
 }
 
-static int
-looks_like_rust (const char *str, size_t len)
+static void
+print_ident (struct rust_demangler *rdm, struct rust_mangled_ident ident)
 {
-  const char *end = str + len;
+  char unescaped;
+  size_t len;
 
-  while (str < end)
-    switch (*str)
-      {
-      case '$':
-	if (!strncmp (str, "$C$", 3))
-	  str += 3;
-	else if (!strncmp (str, "$SP$", 4)
-		 || !strncmp (str, "$BP$", 4)
-		 || !strncmp (str, "$RF$", 4)
-		 || !strncmp (str, "$LT$", 4)
-		 || !strncmp (str, "$GT$", 4)
-		 || !strncmp (str, "$LP$", 4)
-		 || !strncmp (str, "$RP$", 4))
-	  str += 4;
-	else if (!strncmp (str, "$u20$", 5)
-		 || !strncmp (str, "$u22$", 5)
-		 || !strncmp (str, "$u27$", 5)
-		 || !strncmp (str, "$u2b$", 5)
-		 || !strncmp (str, "$u3b$", 5)
-		 || !strncmp (str, "$u5b$", 5)
-		 || !strncmp (str, "$u5d$", 5)
-		 || !strncmp (str, "$u7b$", 5)
-		 || !strncmp (str, "$u7d$", 5)
-		 || !strncmp (str, "$u7e$", 5))
-	  str += 5;
-	else
-	  return 0;
-	break;
-      case '.':
-	/* Do not allow three or more consecutive dots */
-	if (!strncmp (str, "...", 3))
-	  return 0;
-	/* Fall through */
-      case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
-      case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
-      case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
-      case 's': case 't': case 'u': case 'v': case 'w': case 'x':
-      case 'y': case 'z':
-      case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
-      case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
-      case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
-      case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
-      case 'Y': case 'Z':
-      case '0': case '1': case '2': case '3': case '4': case '5':
-      case '6': case '7': case '8': case '9':
-      case '_':
-      case ':':
-	str++;
-	break;
-      default:
-	return 0;
-      }
-
-  return 1;
-}
-
-/*
-  INPUT: sym: symbol for which rust_is_mangled(sym) returned 1.
-
-  The input is demangled in-place because the mangled name is always
-  longer than the demangled one.  */
-
-void
-rust_demangle_sym (char *sym)
-{
-  const char *in;
-  char *out;
-  const char *end;
-
-  if (!sym)
+  if (rdm->errored)
     return;
 
-  in = sym;
-  out = sym;
-  end = sym + strlen (sym) - (hash_prefix_len + hash_len);
+  if (rdm->version == -1)
+    {
+      /* Ignore leading underscores preceding escape sequences.
+         The mangler inserts an underscore to make sure the
+         identifier begins with a XID_Start character. */
+      if (ident.ascii_len >= 2 && ident.ascii[0] == '_'
+          && ident.ascii[1] == '$')
+        {
+          ident.ascii++;
+          ident.ascii_len--;
+        }
 
-  while (in < end)
-    switch (*in)
-      {
-      case '$':
-	if (!(unescape (&in, &out, "$C$", ',')
-	      || unescape (&in, &out, "$SP$", '@')
-	      || unescape (&in, &out, "$BP$", '*')
-	      || unescape (&in, &out, "$RF$", '&')
-	      || unescape (&in, &out, "$LT$", '<')
-	      || unescape (&in, &out, "$GT$", '>')
-	      || unescape (&in, &out, "$LP$", '(')
-	      || unescape (&in, &out, "$RP$", ')')
-	      || unescape (&in, &out, "$u20$", ' ')
-	      || unescape (&in, &out, "$u22$", '\"')
-	      || unescape (&in, &out, "$u27$", '\'')
-	      || unescape (&in, &out, "$u2b$", '+')
-	      || unescape (&in, &out, "$u3b$", ';')
-	      || unescape (&in, &out, "$u5b$", '[')
-	      || unescape (&in, &out, "$u5d$", ']')
-	      || unescape (&in, &out, "$u7b$", '{')
-	      || unescape (&in, &out, "$u7d$", '}')
-	      || unescape (&in, &out, "$u7e$", '~'))) {
-	  /* unexpected escape sequence, not looks_like_rust. */
-	  goto fail;
-	}
-	break;
-      case '_':
-	/* If this is the start of a path component and the next
-	   character is an escape sequence, ignore the underscore. The
-	   mangler inserts an underscore to make sure the path
-	   component begins with a XID_Start character. */
-	if ((in == sym || in[-1] == ':') && in[1] == '$')
-	  in++;
-	else
-	  *out++ = *in++;
-	break;
-      case '.':
-	if (in[1] == '.')
-	  {
-	    /* ".." becomes "::" */
-	    *out++ = ':';
-	    *out++ = ':';
-	    in += 2;
-	  }
-	else
-	  {
-	    /* "." becomes "-" */
-	    *out++ = '-';
-	    in++;
-	  }
-	break;
-      case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
-      case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
-      case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
-      case 's': case 't': case 'u': case 'v': case 'w': case 'x':
-      case 'y': case 'z':
-      case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
-      case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
-      case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
-      case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
-      case 'Y': case 'Z':
-      case '0': case '1': case '2': case '3': case '4': case '5':
-      case '6': case '7': case '8': case '9':
-      case ':':
-	*out++ = *in++;
-	break;
-      default:
-	/* unexpected character in symbol, not looks_like_rust.  */
-	goto fail;
-      }
-  goto done;
+      while (ident.ascii_len > 0)
+        {
+          /* Handle legacy escape sequences ("$...$", ".." or "."). */
+          if (ident.ascii[0] == '$')
+            {
+              unescaped
+                  = decode_legacy_escape (ident.ascii, ident.ascii_len, &len);
+              if (unescaped)
+                print_str (rdm, &unescaped, 1);
+              else
+                {
+                  /* Unexpected escape sequence, print the rest verbatim. */
+                  print_str (rdm, ident.ascii, ident.ascii_len);
+                  return;
+                }
+            }
+          else if (ident.ascii[0] == '.')
+            {
+              if (ident.ascii_len >= 2 && ident.ascii[1] == '.')
+                {
+                  /* ".." becomes "::" */
+                  PRINT ("::");
+                  len = 2;
+                }
+              else
+                {
+                  /* "." becomes "-" */
+                  PRINT ("-");
+                  len = 1;
+                }
+            }
+          else
+            {
+              /* Print everything before the next escape sequence, at once. */
+              for (len = 0; len < ident.ascii_len; len++)
+                if (ident.ascii[len] == '$' || ident.ascii[len] == '.')
+                  break;
 
-fail:
-  *out++ = '?'; /* This is pretty lame, but it's hard to do better. */
-done:
-  *out = '\0';
+              print_str (rdm, ident.ascii, len);
+            }
+
+          ident.ascii += len;
+          ident.ascii_len -= len;
+        }
+
+      return;
+    }
 }
 
+/* A legacy hash is the prefix "h" followed by 16 lowercase hex digits.
+   The hex digits must contain at least 5 distinct digits. */
 static int
-unescape (const char **in, char **out, const char *seq, char value)
+is_legacy_prefixed_hash (struct rust_mangled_ident ident)
 {
-  size_t len = strlen (seq);
+  uint16_t seen;
+  int nibble;
+  size_t i, count;
 
-  if (strncmp (*in, seq, len))
+  if (ident.ascii_len != 17 || ident.ascii[0] != 'h')
     return 0;
 
-  **out = value;
+  seen = 0;
+  for (i = 0; i < 16; i++)
+    {
+      nibble = decode_lower_hex_nibble (ident.ascii[1 + i]);
+      if (nibble < 0)
+        return 0;
+      seen |= (uint16_t)1 << nibble;
+    }
 
-  *in += len;
-  *out += 1;
+  /* Count how many distinct digits were seen. */
+  count = 0;
+  while (seen)
+    {
+      if (seen & 1)
+        count++;
+      seen >>= 1;
+    }
 
-  return 1;
+  return count >= 5;
+}
+
+int
+rust_demangle_callback (const char *mangled, int options,
+                        demangle_callbackref callback, void *opaque)
+{
+  const char *p;
+  struct rust_demangler rdm;
+  struct rust_mangled_ident ident;
+
+  rdm.sym = mangled;
+  rdm.sym_len = 0;
+
+  rdm.callback_opaque = opaque;
+  rdm.callback = callback;
+
+  rdm.next = 0;
+  rdm.errored = 0;
+  rdm.verbose = (options & DMGL_VERBOSE) != 0;
+  rdm.version = 0;
+
+  /* Rust symbols always start with _ZN (legacy). */
+  if (rdm.sym[0] == '_' && rdm.sym[1] == 'Z' && rdm.sym[2] == 'N')
+    {
+      rdm.sym += 3;
+      rdm.version = -1;
+    }
+  else
+    return 0;
+
+  /* Legacy Rust symbols use only [_0-9a-zA-Z.:$] characters. */
+  for (p = rdm.sym; *p; p++)
+    {
+      rdm.sym_len++;
+
+      if (*p == '_' || ISALNUM (*p))
+        continue;
+
+      if (rdm.version == -1 && (*p == '$' || *p == '.' || *p == ':'))
+        continue;
+
+      return 0;
+    }
+
+  /* Legacy Rust symbols need to be handled separately. */
+  if (rdm.version == -1)
+    {
+      /* Legacy Rust symbols always end with E. */
+      if (!(rdm.sym_len > 0 && rdm.sym[rdm.sym_len - 1] == 'E'))
+        return 0;
+      rdm.sym_len--;
+
+      /* Legacy Rust symbols also always end with a path segment
+         that encodes a 16 hex digit hash, i.e. '17h[a-f0-9]{16}'.
+         This early check, before any parse_ident calls, should
+         quickly filter out most C++ symbols unrelated to Rust. */
+      if (!(rdm.sym_len > 19
+            && !memcmp (&rdm.sym[rdm.sym_len - 19], "17h", 3)))
+        return 0;
+
+      do
+        {
+          ident = parse_ident (&rdm);
+          if (rdm.errored || !ident.ascii)
+            return 0;
+        }
+      while (rdm.next < rdm.sym_len);
+
+      /* The last path segment should be the hash. */
+      if (!is_legacy_prefixed_hash (ident))
+        return 0;
+
+      /* Reset the state for a second pass, to print the symbol. */
+      rdm.next = 0;
+      if (!rdm.verbose && rdm.sym_len > 19)
+        {
+          /* Hide the last segment, containing the hash, if not verbose. */
+          rdm.sym_len -= 19;
+        }
+
+      do
+        {
+          if (rdm.next > 0)
+            print_str (&rdm, "::", 2);
+
+          ident = parse_ident (&rdm);
+          print_ident (&rdm, ident);
+        }
+      while (rdm.next < rdm.sym_len);
+    }
+  else
+    return 0;
+
+  return !rdm.errored;
+}
+
+/* Growable string buffers. */
+struct str_buf
+{
+  char *ptr;
+  size_t len;
+  size_t cap;
+  int errored;
+};
+
+static void
+str_buf_reserve (struct str_buf *buf, size_t extra)
+{
+  size_t available, min_new_cap, new_cap;
+  char *new_ptr;
+
+  /* Allocation failed before. */
+  if (buf->errored)
+    return;
+
+  available = buf->cap - buf->len;
+
+  if (extra <= available)
+    return;
+
+  min_new_cap = buf->cap + (extra - available);
+
+  /* Check for overflows. */
+  if (min_new_cap < buf->cap)
+    {
+      buf->errored = 1;
+      return;
+    }
+
+  new_cap = buf->cap;
+
+  if (new_cap == 0)
+    new_cap = 4;
+
+  /* Double capacity until sufficiently large. */
+  while (new_cap < min_new_cap)
+    {
+      new_cap *= 2;
+
+      /* Check for overflows. */
+      if (new_cap < buf->cap)
+        {
+          buf->errored = 1;
+          return;
+        }
+    }
+
+  new_ptr = (char *)realloc (buf->ptr, new_cap);
+  if (new_ptr == NULL)
+    {
+      free (buf->ptr);
+      buf->ptr = NULL;
+      buf->len = 0;
+      buf->cap = 0;
+      buf->errored = 1;
+    }
+  else
+    {
+      buf->ptr = new_ptr;
+      buf->cap = new_cap;
+    }
+}
+
+static void
+str_buf_append (struct str_buf *buf, const char *data, size_t len)
+{
+  str_buf_reserve (buf, len);
+  if (buf->errored)
+    return;
+
+  memcpy (buf->ptr + buf->len, data, len);
+  buf->len += len;
+}
+
+static void
+str_buf_demangle_callback (const char *data, size_t len, void *opaque)
+{
+  str_buf_append ((struct str_buf *)opaque, data, len);
+}
+
+char *
+rust_demangle (const char *mangled, int options)
+{
+  struct str_buf out;
+  int success;
+
+  out.ptr = NULL;
+  out.len = 0;
+  out.cap = 0;
+  out.errored = 0;
+
+  success = rust_demangle_callback (mangled, options,
+                                    str_buf_demangle_callback, &out);
+
+  if (!success)
+    {
+      free (out.ptr);
+      return NULL;
+    }
+
+  str_buf_append (&out, "\0", 1);
+  return out.ptr;
 }

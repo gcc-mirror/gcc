@@ -1,4 +1,4 @@
-/* { dg-options "-fdiagnostics-show-caret" }  */
+/* { dg-options "-fdiagnostics-show-caret -Wpointer-sign" }  */
 
 /* A collection of calls where argument 2 is of the wrong type.  */
 
@@ -12,6 +12,8 @@ int test_1 (int first, int second, float third)
   /* { dg-begin-multiline-output "" }
    return callee_1 (first, second, third);
                            ^~~~~~
+                           |
+                           int
      { dg-end-multiline-output "" } */
   /* { dg-message "expected 'const char \\*' but argument is of type 'int'" "" { target *-*-* } callee_1 } */
   /* { dg-begin-multiline-output "" }
@@ -30,6 +32,8 @@ int test_2 (int first, int second, float third)
   /* { dg-begin-multiline-output "" }
    return callee_2 (first, second, third);
                            ^~~~~~
+                           |
+                           int
      { dg-end-multiline-output "" } */
   /* { dg-message "expected 'const char \\*' but argument is of type 'int'" "" { target *-*-* } callee_2 } */
   /* { dg-begin-multiline-output "" }
@@ -51,6 +55,8 @@ int test_3 (int first, int second, float third)
   /* { dg-begin-multiline-output "" }
    return callee_3 (first, second, third);
                            ^~~~~~
+                           |
+                           int
      { dg-end-multiline-output "" } */
   /* { dg-message "expected 'const char \\*' but argument is of type 'int'" "" { target *-*-* } callee_3 } */
   /* { dg-begin-multiline-output "" }
@@ -69,6 +75,8 @@ int test_4 (int first, const char *second, float third)
   /* { dg-begin-multiline-output "" }
    return callee_4 (first, second, third);
                            ^~~~~~
+                           |
+                           const char *
      { dg-end-multiline-output "" } */
   /* { dg-message "expected 'float' but argument is of type 'const char \\*'" "" { target *-*-* } callee_4 } */
   /* { dg-begin-multiline-output "" }
@@ -87,6 +95,8 @@ int test_5 (int first, const char *second, float third)
   /* { dg-begin-multiline-output "" }
    return callee_5 (first, second, third);
                            ^~~~~~
+                           |
+                           const char *
      { dg-end-multiline-output "" } */
   /* { dg-message "expected 'float' but argument is of type 'const char \\*'" "" { target *-*-* } callee_5 } */
   /* { dg-begin-multiline-output "" }
@@ -105,6 +115,8 @@ int test_6 (int first, int second, float third)
   /* { dg-begin-multiline-output "" }
    return callee_6 (first, second, third);
                            ^~~~~~
+                           |
+                           int
      { dg-end-multiline-output "" } */
   /* { dg-message " expected 'int \\(\\*\\)\\(int,  int\\)' but argument is of type 'int'" "" { target *-*-* } callee_6 } */
   /* { dg-begin-multiline-output "" }
@@ -123,10 +135,52 @@ int test_7 (int first, int second, float third)
   /* { dg-begin-multiline-output "" }
    return callee_7 (first, second, third);
                            ^~~~~~
+                           |
+                           int
      { dg-end-multiline-output "" } */
   /* { dg-message " expected 'int \\(\\*\\)\\(int,  int\\)' but argument is of type 'int'" "" { target *-*-* } callee_7 } */
   /* { dg-begin-multiline-output "" }
  extern int callee_7 (int one, int (*)(int, int), float three);
                                ^~~~~~~~~~~~~~~~~
+     { dg-end-multiline-output "" } */
+}
+
+/* -Wincompatible-pointer-types for a parameter.  */
+
+extern int callee_8 (int one, float *two, float (three)); /* { dg-line callee_8 } */
+
+int test_8 (int first, int *second, float third)
+{
+  return callee_8 (first, second, third); /* { dg-warning "passing argument 2 of 'callee_8' from incompatible pointer type" } */
+  /* { dg-begin-multiline-output "" }
+   return callee_8 (first, second, third);
+                           ^~~~~~
+                           |
+                           int *
+     { dg-end-multiline-output "" } */
+  /* { dg-message "expected 'float \\*' but argument is of type 'int \\*'" "" { target *-*-* } callee_8 } */
+  /* { dg-begin-multiline-output "" }
+ extern int callee_8 (int one, float *two, float (three));
+                               ~~~~~~~^~~
+     { dg-end-multiline-output "" } */
+}
+
+/* -Wpointer-sign for a parameter.  */
+
+extern int callee_9 (int one, int *two, float (three)); /* { dg-line callee_9 } */
+
+int test_9 (int first, unsigned int *second, float third)
+{
+  return callee_9 (first, second, third); /* { dg-warning "pointer targets in passing argument 2 of 'callee_9' differ in signedness" } */
+  /* { dg-begin-multiline-output "" }
+   return callee_9 (first, second, third);
+                           ^~~~~~
+                           |
+                           unsigned int *
+     { dg-end-multiline-output "" } */
+  /* { dg-message "expected 'int \\*' but argument is of type 'unsigned int \\*'" "" { target *-*-* } callee_9 } */
+  /* { dg-begin-multiline-output "" }
+ extern int callee_9 (int one, int *two, float (three));
+                               ~~~~~^~~
      { dg-end-multiline-output "" } */
 }

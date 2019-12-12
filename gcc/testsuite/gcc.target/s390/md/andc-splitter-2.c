@@ -1,7 +1,9 @@
 /* Machine description pattern tests.  */
 
 /* { dg-do compile } */
-/* { dg-options "-save-temps -dP" } */
+/* Starting with arch13 the and with complement instruction is
+   available and the splitter is disabled.  */
+/* { dg-options "-march=z14 -save-temps -dP" } */
 /* { dg-do run { target { s390_useable_hw } } } */
 /* Skip test if -O0 is present on the command line:
 
@@ -14,26 +16,26 @@
 __attribute__ ((noinline))
 unsigned int andc_vv(unsigned int a, unsigned int b)
 { return ~b & a; }
-/* { dg-final { scan-assembler ":16 .\* \{\\*andsi3_\(esa\|zarch\)\}" } } */
-/* { dg-final { scan-assembler ":16 .\* \{\\*xorsi3\}" } } */
+/* { dg-final { scan-assembler ":18:.\* \{\\*andsi3_\(esa\|zarch\)\}" } } */
+/* { dg-final { scan-assembler ":18:.\* \{\\*xorsi3\}" } } */
 
 __attribute__ ((noinline))
 unsigned int andc_pv(unsigned int *a, unsigned int b)
 { return ~b & *a; }
-/* { dg-final { scan-assembler ":22 .\* \{\\*andsi3_\(esa\|zarch\)\}" } } */
-/* { dg-final { scan-assembler ":22 .\* \{\\*xorsi3\}" } } */
+/* { dg-final { scan-assembler ":24:.\* \{\\*andsi3_\(esa\|zarch\)\}" } } */
+/* { dg-final { scan-assembler ":24:.\* \{\\*xorsi3\}" } } */
 
 __attribute__ ((noinline))
 unsigned int andc_vp(unsigned int a, unsigned int *b)
 { return ~*b & a; }
-/* { dg-final { scan-assembler ":28 .\* \{\\*andsi3_\(esa\|zarch\)\}" } } */
-/* { dg-final { scan-assembler ":28 .\* \{\\*xorsi3\}" } } */
+/* { dg-final { scan-assembler ":30:.\* \{\\*andsi3_\(esa\|zarch\)\}" } } */
+/* { dg-final { scan-assembler ":30:.\* \{\\*xorsi3\}" } } */
 
 __attribute__ ((noinline))
 unsigned int andc_pp(unsigned int *a, unsigned int *b)
 { return ~*b & *a; }
-/* { dg-final { scan-assembler ":34 .\* \{\\*andsi3_\(esa\|zarch\)\}" } } */
-/* { dg-final { scan-assembler ":34 .\* \{\\*xorsi3\}" } } */
+/* { dg-final { scan-assembler ":36:.\* \{\\*andsi3_\(esa\|zarch\)\}" } } */
+/* { dg-final { scan-assembler ":36:.\* \{\\*xorsi3\}" } } */
 
 /* { dg-final { scan-assembler-times "\tnr\?k\?\t" 4 } } */
 /* { dg-final { scan-assembler-times "\txr\?k\?\t" 4 } } */

@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                          (VxWorks 6.x E500 RTP)                          --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -119,10 +119,6 @@ package System is
    Default_Priority : constant Priority := 122;
 
 private
-
-   pragma Linker_Options ("--specs=vxworks-gnat-crtbe-link.spec");
-   --  Pull in crtbegin/crtend objects and register exceptions for ZCX.
-   --  This is commented out by our Makefile for SJLJ runtimes.
 
    pragma Linker_Options ("--specs=vxworks-e500-link.spec");
    --  Setup proper set of -L's for this configuration

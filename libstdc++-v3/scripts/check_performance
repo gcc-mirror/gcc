@@ -44,6 +44,8 @@ do
   TESTNAME=$SRC_DIR/testsuite/$NAME
   FILE_NAME="`basename $NAME`"
   FILE_NAME="`echo $FILE_NAME | sed 's/.cc//g'`"
+  ORIG_CXX="$CXX"
+  CXX="$CXX `sed -n 's/.* STD=/-std=/p' $TESTNAME`"
 
   # TEST_S == single thread
   # TEST_B == do both single and multi-thread
@@ -90,6 +92,7 @@ do
 	mv tmp.$FILE_NAME $FILE_NAME.xml
     fi
   fi
+  CXX="$ORIG_CXX"
 done
 
 exit 0

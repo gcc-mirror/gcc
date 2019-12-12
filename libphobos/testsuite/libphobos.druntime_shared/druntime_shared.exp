@@ -1,0 +1,43 @@
+# Copyright (C) 2019 Free Software Foundation, Inc.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Immediately exit if we can't run target executables.
+if { ![isnative] || ![is-effective-target shared] } {
+    return
+}
+
+# Gather a list of all tests.
+set tests [lsort [filter_libphobos_unittests [find $srcdir/../libdruntime "*.d"]]]
+
+set version_flags ""
+
+if { [is-effective-target linux_pre_2639] } {
+    lappend version_flags "-fversion=Linux_Pre_2639"
+}
+
+# Initialize dg.
+dg-init
+
+# Main loop.
+foreach test $tests {
+    set libphobos_test_name "$subdir/[dg-trim-dirname $srcdir/../libdruntime $test]"
+    dg-runtest $test "-fversion=Shared -shared-libphobos" \
+	"-fmain -fbuilding-libphobos-tests -fno-moduleinfo $version_flags"
+    set libphobos_test_name ""
+}
+
+# All done.
+dg-finish

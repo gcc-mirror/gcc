@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-ccp1 -Wno-psabi -w" } */
+/* { dg-options "-O -fdump-tree-ssa -fdump-tree-ccp1 -Wno-psabi -w" } */
 /* { dg-additional-options "-msse2" { target i?86-*-* x86_64-*-* } } */
 /* { dg-additional-options "-maltivec" { target powerpc_altivec_ok } } */
 
@@ -32,4 +32,5 @@ v4si test4 (v4si v, int i)
   return v;
 }
 
-/* { dg-final { scan-tree-dump-times "Now a gimple register: v" 4 "ccp1" { target { { i?86-*-* x86_64-*-* aarch64*-*-* spu*-*-* } || { powerpc_altivec_ok } } } } } */
+/* { dg-final { scan-tree-dump-times "Now a gimple register: v" 2 "ssa" { target { { i?86-*-* x86_64-*-* aarch64*-*-* } || { powerpc_altivec_ok } } } } } */
+/* { dg-final { scan-tree-dump-times "Now a gimple register: v" 2 "ccp1" { target { { i?86-*-* x86_64-*-* aarch64*-*-* } || { powerpc_altivec_ok } } } } } */

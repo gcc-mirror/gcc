@@ -1,6 +1,6 @@
 // wstring_convert implementation -*- C++ -*-
 
-// Copyright (C) 2015-2018 Free Software Foundation, Inc.
+// Copyright (C) 2015-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,10 +35,10 @@
 #else
 
 #include <streambuf>
-#include "stringfwd.h"
-#include "allocator.h"
-#include "codecvt.h"
-#include "unique_ptr.h"
+#include <bits/stringfwd.h>
+#include <bits/allocator.h>
+#include <bits/codecvt.h>
+#include <bits/unique_ptr.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -86,17 +86,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return false;
 	}
 
-      if (__result == codecvt_base::noconv)
-	{
-	  __outstr.assign(__first, __last);
-	  __count = __last - __first;
-	}
-      else
-	{
-	  __outstr.resize(__outchars);
-	  __count = __next - __first;
-	}
+      // The codecvt facet will only return noconv when the types are
+      // the same, so avoid instantiating basic_string::assign otherwise
+      if _GLIBCXX17_CONSTEXPR (is_same<typename _Codecvt::intern_type,
+				       typename _Codecvt::extern_type>())
+	if (__result == codecvt_base::noconv)
+	  {
+	    __outstr.assign(__first, __last);
+	    __count = __last - __first;
+	    return true;
+	  }
 
+      __outstr.resize(__outchars);
+      __count = __next - __first;
       return true;
     }
 
@@ -118,6 +120,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      __count, __fn);
     }
 
+  // As above, but with no __count parameter
   template<typename _CharT, typename _Traits, typename _Alloc, typename _State>
     inline bool
     __str_codecvt_in(const char* __first, const char* __last,
@@ -127,6 +130,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _State __state = {};
       size_t __n;
       return __str_codecvt_in(__first, __last, __outstr, __cvt, __state, __n);
+    }
+
+  // As above, but returns false for partial conversion
+  template<typename _CharT, typename _Traits, typename _Alloc, typename _State>
+    inline bool
+    __str_codecvt_in_all(const char* __first, const char* __last,
+			 basic_string<_CharT, _Traits, _Alloc>& __outstr,
+			 const codecvt<_CharT, char, _State>& __cvt)
+    {
+      _State __state = {};
+      size_t __n;
+      return __str_codecvt_in(__first, __last, __outstr, __cvt, __state, __n)
+	&& (__n == (__last - __first));
     }
 
   // Convert wide character string to narrow.
@@ -147,6 +163,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      __count, __fn);
     }
 
+  // As above, but with no __count parameter
   template<typename _CharT, typename _Traits, typename _Alloc, typename _State>
     inline bool
     __str_codecvt_out(const _CharT* __first, const _CharT* __last,
@@ -157,6 +174,52 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_t __n;
       return __str_codecvt_out(__first, __last, __outstr, __cvt, __state, __n);
     }
+
+  // As above, but returns false for partial conversions
+  template<typename _CharT, typename _Traits, typename _Alloc, typename _State>
+    inline bool
+    __str_codecvt_out_all(const _CharT* __first, const _CharT* __last,
+			  basic_string<char, _Traits, _Alloc>& __outstr,
+			  const codecvt<_CharT, char, _State>& __cvt)
+    {
+      _State __state = {};
+      size_t __n;
+      return __str_codecvt_out(__first, __last, __outstr, __cvt, __state, __n)
+	&& (__n == (__last - __first));
+    }
+
+#ifdef _GLIBCXX_USE_CHAR8_T
+
+  // Convert wide character string to narrow.
+  template<typename _CharT, typename _Traits, typename _Alloc, typename _State>
+    inline bool
+    __str_codecvt_out(const _CharT* __first, const _CharT* __last,
+		      basic_string<char8_t, _Traits, _Alloc>& __outstr,
+		      const codecvt<_CharT, char8_t, _State>& __cvt,
+		      _State& __state, size_t& __count)
+    {
+      using _Codecvt = codecvt<_CharT, char8_t, _State>;
+      using _ConvFn
+	= codecvt_base::result
+	  (_Codecvt::*)(_State&, const _CharT*, const _CharT*, const _CharT*&,
+			char8_t*, char8_t*, char8_t*&) const;
+      _ConvFn __fn = &codecvt<_CharT, char8_t, _State>::out;
+      return __do_str_codecvt(__first, __last, __outstr, __cvt, __state,
+			      __count, __fn);
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc, typename _State>
+    inline bool
+    __str_codecvt_out(const _CharT* __first, const _CharT* __last,
+		      basic_string<char8_t, _Traits, _Alloc>& __outstr,
+		      const codecvt<_CharT, char8_t, _State>& __cvt)
+    {
+      _State __state = {};
+      size_t __n;
+      return __str_codecvt_out(__first, __last, __outstr, __cvt, __state, __n);
+    }
+
+#endif  // _GLIBCXX_USE_CHAR8_T
 
 #ifdef _GLIBCXX_USE_WCHAR_T
 

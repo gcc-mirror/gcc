@@ -1,6 +1,6 @@
 /* PR debug/83666 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -g --param=sccvn-max-scc-size=10 -Wno-psabi" } */
+/* { dg-options "-O2 -g -Wno-psabi" } */
 /* { dg-additional-options "-fno-common" { target hppa*-*-hpux* } } */
 
 typedef int __attribute__ ((vector_size (64))) V;

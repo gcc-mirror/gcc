@@ -1,5 +1,5 @@
 /* Header for array handling functions
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -52,6 +52,8 @@ bool gfc_caf_is_dealloc_only (int);
 tree gfc_nullify_alloc_comp (gfc_symbol *, tree, int, int cm = 0);
 
 tree gfc_deallocate_alloc_comp (gfc_symbol *, tree, int, int cm = 0);
+tree gfc_bcast_alloc_comp (gfc_symbol *, gfc_expr *, int, tree,
+			   tree, tree, tree);
 tree gfc_deallocate_alloc_comp_no_caf (gfc_symbol *, tree, int);
 tree gfc_reassign_alloc_comp_caf (gfc_symbol *, tree, tree);
 
@@ -136,6 +138,8 @@ void gfc_conv_tmp_array_ref (gfc_se * se);
 /* Translate a reference to an array temporary.  */
 void gfc_conv_tmp_ref (gfc_se *);
 
+/* Calculate the overall offset, including subreferences.  */
+void gfc_get_dataptr_offset (stmtblock_t*, tree, tree, tree, bool, gfc_expr*);
 /* Obtain the span of an array.  */
 tree gfc_get_array_span (tree, gfc_expr *);
 /* Evaluate an array expression.  */
@@ -167,6 +171,8 @@ tree gfc_conv_descriptor_offset_get (tree);
 tree gfc_conv_descriptor_span_get (tree);
 tree gfc_conv_descriptor_dtype (tree);
 tree gfc_conv_descriptor_rank (tree);
+tree gfc_conv_descriptor_elem_len (tree);
+tree gfc_conv_descriptor_attribute (tree);
 tree gfc_get_descriptor_dimension (tree);
 tree gfc_conv_descriptor_stride_get (tree, tree);
 tree gfc_conv_descriptor_lbound_get (tree, tree);

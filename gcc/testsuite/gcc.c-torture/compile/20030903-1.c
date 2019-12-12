@@ -1,6 +1,8 @@
 /* Derived from PR optimization/11700.  */
 /* The compiler used to ICE during reload for m68k targets.  */
 
+/* { dg-skip-if "exceeds eBPF stack limit" { bpf-*-* } } */
+
 void check_complex (__complex__ double, __complex__ double,
                     __complex__ double, __complex__ int);
 void check_float (double, double, double, int);

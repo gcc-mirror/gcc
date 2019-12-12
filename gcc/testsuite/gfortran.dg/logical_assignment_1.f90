@@ -5,6 +5,6 @@
 program emptyarray5
   implicit none
   real a(0)
-  a = [logical::] ! { dg-error "Can't convert LOGICAL" }
+  a = [logical::] ! { dg-error "Cannot convert LOGICAL" }
   print *,size(a)
 end program emptyarray5

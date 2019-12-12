@@ -2,6 +2,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O2 -fexceptions -fnon-call-exceptions" } */
+/* { dg-require-effective-target exceptions } */
 
 extern long double cosl (long double);
 extern long double sinl (long double);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -154,7 +154,7 @@ package System.Stream_Attributes is
 
    function Block_IO_OK return Boolean;
    --  Package System.Stream_Attributes has several bodies - the default one
-   --  distributed with GNAT, and s-stratt-xdr.adb, which is based on the XDR
+   --  distributed with GNAT, and s-stratt__xdr.adb, which is based on the XDR
    --  standard. Both bodies share the same spec. The role of this function is
    --  to indicate whether the current version of System.Stream_Attributes
    --  supports block IO. See System.Strings.Stream_Ops (s-ststop) for details.

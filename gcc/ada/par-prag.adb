@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1088,6 +1088,21 @@ begin
       when Pragma_Suppress_All =>
          Set_Has_Pragma_Suppress_All (Cunit (Current_Source_Unit));
 
+      ----------------------
+      -- Warning_As_Error --
+      ----------------------
+
+      --  pragma Warning_As_Error (static_string_EXPRESSION);
+
+      --  Further processing is done in Sem_Prag
+
+      when Pragma_Warning_As_Error =>
+         Check_Arg_Count (1);
+         Check_Arg_Is_String_Literal (Arg1);
+         Warnings_As_Errors_Count := Warnings_As_Errors_Count + 1;
+         Warnings_As_Errors (Warnings_As_Errors_Count) :=
+           new String'(Acquire_Warning_Match_String (Get_Pragma_Arg (Arg1)));
+
       ---------------------
       -- Warnings (GNAT) --
       ---------------------
@@ -1295,11 +1310,16 @@ begin
       -- All Other Pragmas --
       -----------------------
 
-      --  For all other pragmas, checking and processing is handled
-      --  entirely in Sem_Prag, and no further checking is done by Par.
+      --  For all other pragmas, checking and processing is handled entirely in
+      --  Sem_Prag, and no further checking is done by Par.
 
       when Pragma_Abort_Defer
          | Pragma_Abstract_State
+         | Pragma_Acc_Data
+         | Pragma_Acc_Kernels
+         | Pragma_Acc_Loop
+         | Pragma_Acc_Parallel
+         | Pragma_Aggregate_Individually_Assign
          | Pragma_Async_Readers
          | Pragma_Async_Writers
          | Pragma_Assertion_Policy
@@ -1411,9 +1431,11 @@ begin
          | Pragma_Main
          | Pragma_Main_Storage
          | Pragma_Max_Entry_Queue_Depth
+         | Pragma_Max_Entry_Queue_Length
          | Pragma_Max_Queue_Length
          | Pragma_Memory_Size
          | Pragma_No_Body
+         | Pragma_No_Caching
          | Pragma_No_Component_Reordering
          | Pragma_No_Elaboration_Code_All
          | Pragma_No_Heap_Finalization
@@ -1513,7 +1535,6 @@ begin
          | Pragma_Volatile_Components
          | Pragma_Volatile_Full_Access
          | Pragma_Volatile_Function
-         | Pragma_Warning_As_Error
          | Pragma_Weak_External
          | Pragma_Validity_Checks
       =>

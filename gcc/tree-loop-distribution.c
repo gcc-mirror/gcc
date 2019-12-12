@@ -1,5 +1,5 @@
 /* Loop distribution.
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by Georges-Andre Silber <Georges-Andre.Silber@ensmp.fr>
    and Sebastian Pop <sebastian.pop@amd.com>.
 
@@ -90,7 +90,6 @@ along with GCC; see the file COPYING3.  If not see
 	data reuse.  */
 
 #include "config.h"
-#define INCLUDE_ALGORITHM /* stable_sort */
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -113,12 +112,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
-#include "params.h"
 #include "tree-vectorizer.h"
+#include "tree-eh.h"
+#include "gimple-fold.h"
 
 
 #define MAX_DATAREFS_NUM \
-	((unsigned) PARAM_VALUE (PARAM_LOOP_MAX_DATAREFS_FOR_DATADEPS))
+	((unsigned) param_loop_max_datarefs_for_datadeps)
 
 /* Threshold controlling number of distributed partitions.  Given it may
    be unnecessary if a memory stream cost model is invented in the future,
@@ -154,17 +154,9 @@ ddr_hasher::equal (const data_dependence_relation *ddr1,
   return (DDR_A (ddr1) == DDR_A (ddr2) && DDR_B (ddr1) == DDR_B (ddr2));
 }
 
-/* The loop (nest) to be distributed.  */
-static vec<loop_p> loop_nest;
 
-/* Vector of data references in the loop to be distributed.  */
-static vec<data_reference_p> datarefs_vec;
 
-/* Store index of data reference in aux field.  */
 #define DR_INDEX(dr)      ((uintptr_t) (dr)->aux)
-
-/* Hash table for data dependence relation in the loop to be distributed.  */
-static hash_table<ddr_hasher> *ddrs_table;
 
 /* A Reduced Dependence Graph (RDG) vertex representing a statement.  */
 struct rdg_vertex
@@ -211,6 +203,83 @@ struct rdg_edge
 };
 
 #define RDGE_TYPE(E)        ((struct rdg_edge *) ((E)->data))->type
+
+/* Kind of distributed loop.  */
+enum partition_kind {
+    PKIND_NORMAL,
+    /* Partial memset stands for a paritition can be distributed into a loop
+       of memset calls, rather than a single memset call.  It's handled just
+       like a normal parition, i.e, distributed as separate loop, no memset
+       call is generated.
+
+       Note: This is a hacking fix trying to distribute ZERO-ing stmt in a
+       loop nest as deep as possible.  As a result, parloop achieves better
+       parallelization by parallelizing deeper loop nest.  This hack should
+       be unnecessary and removed once distributed memset can be understood
+       and analyzed in data reference analysis.  See PR82604 for more.  */
+    PKIND_PARTIAL_MEMSET,
+    PKIND_MEMSET, PKIND_MEMCPY, PKIND_MEMMOVE
+};
+
+/* Type of distributed loop.  */
+enum partition_type {
+    /* The distributed loop can be executed parallelly.  */
+    PTYPE_PARALLEL = 0,
+    /* The distributed loop has to be executed sequentially.  */
+    PTYPE_SEQUENTIAL
+};
+
+/* Builtin info for loop distribution.  */
+struct builtin_info
+{
+  /* data-references a kind != PKIND_NORMAL partition is about.  */
+  data_reference_p dst_dr;
+  data_reference_p src_dr;
+  /* Base address and size of memory objects operated by the builtin.  Note
+     both dest and source memory objects must have the same size.  */
+  tree dst_base;
+  tree src_base;
+  tree size;
+  /* Base and offset part of dst_base after stripping constant offset.  This
+     is only used in memset builtin distribution for now.  */
+  tree dst_base_base;
+  unsigned HOST_WIDE_INT dst_base_offset;
+};
+
+/* Partition for loop distribution.  */
+struct partition
+{
+  /* Statements of the partition.  */
+  bitmap stmts;
+  /* True if the partition defines variable which is used outside of loop.  */
+  bool reduction_p;
+  location_t loc;
+  enum partition_kind kind;
+  enum partition_type type;
+  /* Data references in the partition.  */
+  bitmap datarefs;
+  /* Information of builtin parition.  */
+  struct builtin_info *builtin;
+};
+
+/* Partitions are fused because of different reasons.  */
+enum fuse_type
+{
+  FUSE_NON_BUILTIN = 0,
+  FUSE_REDUCTION = 1,
+  FUSE_SHARE_REF = 2,
+  FUSE_SAME_SCC = 3,
+  FUSE_FINALIZE = 4
+};
+
+/* Description on different fusing reason.  */
+static const char *fuse_message[] = {
+  "they are non-builtins",
+  "they have reductions",
+  "they have shared memory refs",
+  "they are in the same dependence scc",
+  "there is no point to distribute loop"};
+
 
 /* Dump vertex I in RDG to FILE.  */
 
@@ -432,11 +501,205 @@ create_rdg_cd_edges (struct graph *rdg, control_dependences *cd, loop_p loop)
     }
 }
 
-/* Build the vertices of the reduced dependence graph RDG.  Return false
-   if that failed.  */
 
-static bool
-create_rdg_vertices (struct graph *rdg, vec<gimple *> stmts, loop_p loop)
+class loop_distribution
+{
+  private:
+  /* The loop (nest) to be distributed.  */
+  vec<loop_p> loop_nest;
+
+  /* Vector of data references in the loop to be distributed.  */
+  vec<data_reference_p> datarefs_vec;
+
+  /* If there is nonaddressable data reference in above vector.  */
+  bool has_nonaddressable_dataref_p;
+
+  /* Store index of data reference in aux field.  */
+
+  /* Hash table for data dependence relation in the loop to be distributed.  */
+  hash_table<ddr_hasher> *ddrs_table;
+
+  /* Array mapping basic block's index to its topological order.  */
+  int *bb_top_order_index;
+  /* And size of the array.  */
+  int bb_top_order_index_size;
+
+  /* Build the vertices of the reduced dependence graph RDG.  Return false
+     if that failed.  */
+  bool create_rdg_vertices (struct graph *rdg, vec<gimple *> stmts, loop_p loop);
+
+  /* Initialize STMTS with all the statements of LOOP.  We use topological
+     order to discover all statements.  The order is important because
+     generate_loops_for_partition is using the same traversal for identifying
+     statements in loop copies.  */
+  void stmts_from_loop (class loop *loop, vec<gimple *> *stmts);
+
+
+  /* Build the Reduced Dependence Graph (RDG) with one vertex per statement of
+     LOOP, and one edge per flow dependence or control dependence from control
+     dependence CD.  During visiting each statement, data references are also
+     collected and recorded in global data DATAREFS_VEC.  */
+  struct graph * build_rdg (class loop *loop, control_dependences *cd);
+
+/* Merge PARTITION into the partition DEST.  RDG is the reduced dependence
+   graph and we update type for result partition if it is non-NULL.  */
+  void partition_merge_into (struct graph *rdg,
+			     partition *dest, partition *partition,
+			     enum fuse_type ft);
+
+
+  /* Return data dependence relation for data references A and B.  The two
+     data references must be in lexicographic order wrto reduced dependence
+     graph RDG.  We firstly try to find ddr from global ddr hash table.  If
+     it doesn't exist, compute the ddr and cache it.  */
+  data_dependence_relation * get_data_dependence (struct graph *rdg,
+						  data_reference_p a,
+						  data_reference_p b);
+
+
+  /* In reduced dependence graph RDG for loop distribution, return true if
+     dependence between references DR1 and DR2 leads to a dependence cycle
+     and such dependence cycle can't be resolved by runtime alias check.  */
+  bool data_dep_in_cycle_p (struct graph *rdg, data_reference_p dr1,
+			    data_reference_p dr2);
+
+
+  /* Given reduced dependence graph RDG, PARTITION1 and PARTITION2, update
+     PARTITION1's type after merging PARTITION2 into PARTITION1.  */
+  void update_type_for_merge (struct graph *rdg,
+			      partition *partition1, partition *partition2);
+
+
+  /* Returns a partition with all the statements needed for computing
+     the vertex V of the RDG, also including the loop exit conditions.  */
+  partition *build_rdg_partition_for_vertex (struct graph *rdg, int v);
+
+  /* Given data references DST_DR and SRC_DR in loop nest LOOP and RDG, classify
+     if it forms builtin memcpy or memmove call.  */
+  void classify_builtin_ldst (loop_p loop, struct graph *rdg, partition *partition,
+			      data_reference_p dst_dr, data_reference_p src_dr);
+
+  /* Classifies the builtin kind we can generate for PARTITION of RDG and LOOP.
+     For the moment we detect memset, memcpy and memmove patterns.  Bitmap
+     STMT_IN_ALL_PARTITIONS contains statements belonging to all partitions.
+     Returns true if there is a reduction in all partitions and we
+     possibly did not mark PARTITION as having one for this reason.  */
+
+  bool
+  classify_partition (loop_p loop,
+		      struct graph *rdg, partition *partition,
+		      bitmap stmt_in_all_partitions);
+
+
+  /* Returns true when PARTITION1 and PARTITION2 access the same memory
+     object in RDG.  */
+  bool share_memory_accesses (struct graph *rdg,
+			      partition *partition1, partition *partition2);
+
+  /* For each seed statement in STARTING_STMTS, this function builds
+     partition for it by adding depended statements according to RDG.
+     All partitions are recorded in PARTITIONS.  */
+  void rdg_build_partitions (struct graph *rdg,
+			     vec<gimple *> starting_stmts,
+			     vec<partition *> *partitions);
+
+  /* Compute partition dependence created by the data references in DRS1
+     and DRS2, modify and return DIR according to that.  IF ALIAS_DDR is
+     not NULL, we record dependence introduced by possible alias between
+     two data references in ALIAS_DDRS; otherwise, we simply ignore such
+     dependence as if it doesn't exist at all.  */
+  int pg_add_dependence_edges (struct graph *rdg, int dir, bitmap drs1,
+			       bitmap drs2, vec<ddr_p> *alias_ddrs);
+
+
+  /* Build and return partition dependence graph for PARTITIONS.  RDG is
+     reduced dependence graph for the loop to be distributed.  If IGNORE_ALIAS_P
+     is true, data dependence caused by possible alias between references
+     is ignored, as if it doesn't exist at all; otherwise all depdendences
+     are considered.  */
+  struct graph *build_partition_graph (struct graph *rdg,
+				       vec<struct partition *> *partitions,
+				       bool ignore_alias_p);
+
+  /* Given reduced dependence graph RDG merge strong connected components
+     of PARTITIONS.  If IGNORE_ALIAS_P is true, data dependence caused by
+     possible alias between references is ignored, as if it doesn't exist
+     at all; otherwise all depdendences are considered.  */
+  void merge_dep_scc_partitions (struct graph *rdg, vec<struct partition *>
+				 *partitions, bool ignore_alias_p);
+
+/* This is the main function breaking strong conected components in
+   PARTITIONS giving reduced depdendence graph RDG.  Store data dependence
+   relations for runtime alias check in ALIAS_DDRS.  */
+  void break_alias_scc_partitions (struct graph *rdg, vec<struct partition *>
+				   *partitions, vec<ddr_p> *alias_ddrs);
+
+
+  /* Fuse PARTITIONS of LOOP if necessary before finalizing distribution.
+     ALIAS_DDRS contains ddrs which need runtime alias check.  */
+  void finalize_partitions (class loop *loop, vec<struct partition *>
+			    *partitions, vec<ddr_p> *alias_ddrs);
+
+  /* Distributes the code from LOOP in such a way that producer statements
+     are placed before consumer statements.  Tries to separate only the
+     statements from STMTS into separate loops.  Returns the number of
+     distributed loops.  Set NB_CALLS to number of generated builtin calls.
+     Set *DESTROY_P to whether LOOP needs to be destroyed.  */
+  int distribute_loop (class loop *loop, vec<gimple *> stmts,
+		       control_dependences *cd, int *nb_calls, bool *destroy_p,
+		       bool only_patterns_p);
+
+  /* Compute topological order for basic blocks.  Topological order is
+     needed because data dependence is computed for data references in
+     lexicographical order.  */
+  void bb_top_order_init (void);
+
+  void bb_top_order_destroy (void);
+
+  public:
+
+  /* Getter for bb_top_order.  */
+
+  inline int get_bb_top_order_index_size (void)
+    {
+      return bb_top_order_index_size;
+    }
+
+  inline int get_bb_top_order_index (int i)
+    {
+      return bb_top_order_index[i];
+    }
+
+  unsigned int execute (function *fun);
+};
+
+
+/* If X has a smaller topological sort number than Y, returns -1;
+   if greater, returns 1.  */
+static int
+bb_top_order_cmp_r (const void *x, const void *y, void *loop)
+{
+  loop_distribution *_loop =
+    (loop_distribution *) loop;
+
+  basic_block bb1 = *(const basic_block *) x;
+  basic_block bb2 = *(const basic_block *) y;
+
+  int bb_top_order_index_size = _loop->get_bb_top_order_index_size ();
+
+  gcc_assert (bb1->index < bb_top_order_index_size
+	      && bb2->index < bb_top_order_index_size);
+  gcc_assert (bb1 == bb2
+	      || _loop->get_bb_top_order_index(bb1->index)
+		 != _loop->get_bb_top_order_index(bb2->index));
+
+  return (_loop->get_bb_top_order_index(bb1->index) - 
+	  _loop->get_bb_top_order_index(bb2->index));
+}
+
+bool
+loop_distribution::create_rdg_vertices (struct graph *rdg, vec<gimple *> stmts,
+					loop_p loop)
 {
   int i;
   gimple *stmt;
@@ -467,44 +730,17 @@ create_rdg_vertices (struct graph *rdg, vec<gimple *> stmts, loop_p loop)
 	  else
 	    RDGV_HAS_MEM_WRITE (v) = true;
 	  RDGV_DATAREFS (v).safe_push (dr);
+	  has_nonaddressable_dataref_p |= may_be_nonaddressable_p (dr->ref);
 	}
     }
   return true;
 }
 
-/* Array mapping basic block's index to its topological order.  */
-static int *bb_top_order_index;
-/* And size of the array.  */
-static int bb_top_order_index_size;
-
-/* If X has a smaller topological sort number than Y, returns -1;
-   if greater, returns 1.  */
-
-static int
-bb_top_order_cmp (const void *x, const void *y)
-{
-  basic_block bb1 = *(const basic_block *) x;
-  basic_block bb2 = *(const basic_block *) y;
-
-  gcc_assert (bb1->index < bb_top_order_index_size
-	      && bb2->index < bb_top_order_index_size);
-  gcc_assert (bb1 == bb2
-	      || bb_top_order_index[bb1->index]
-		 != bb_top_order_index[bb2->index]);
-
-  return (bb_top_order_index[bb1->index] - bb_top_order_index[bb2->index]);
-}
-
-/* Initialize STMTS with all the statements of LOOP.  We use topological
-   order to discover all statements.  The order is important because
-   generate_loops_for_partition is using the same traversal for identifying
-   statements in loop copies.  */
-
-static void
-stmts_from_loop (struct loop *loop, vec<gimple *> *stmts)
+void
+loop_distribution::stmts_from_loop (class loop *loop, vec<gimple *> *stmts)
 {
   unsigned int i;
-  basic_block *bbs = get_loop_body_in_custom_order (loop, bb_top_order_cmp);
+  basic_block *bbs = get_loop_body_in_custom_order (loop, this, bb_top_order_cmp_r);
 
   for (i = 0; i < loop->num_nodes; i++)
     {
@@ -553,13 +789,8 @@ free_rdg (struct graph *rdg)
   free_graph (rdg);
 }
 
-/* Build the Reduced Dependence Graph (RDG) with one vertex per statement of
-   LOOP, and one edge per flow dependence or control dependence from control
-   dependence CD.  During visiting each statement, data references are also
-   collected and recorded in global data DATAREFS_VEC.  */
-
-static struct graph *
-build_rdg (struct loop *loop, control_dependences *cd)
+struct graph *
+loop_distribution::build_rdg (class loop *loop, control_dependences *cd)
 {
   struct graph *rdg;
 
@@ -582,64 +813,6 @@ build_rdg (struct loop *loop, control_dependences *cd)
 }
 
 
-/* Kind of distributed loop.  */
-enum partition_kind {
-    PKIND_NORMAL,
-    /* Partial memset stands for a paritition can be distributed into a loop
-       of memset calls, rather than a single memset call.  It's handled just
-       like a normal parition, i.e, distributed as separate loop, no memset
-       call is generated.
-
-       Note: This is a hacking fix trying to distribute ZERO-ing stmt in a
-       loop nest as deep as possible.  As a result, parloop achieves better
-       parallelization by parallelizing deeper loop nest.  This hack should
-       be unnecessary and removed once distributed memset can be understood
-       and analyzed in data reference analysis.  See PR82604 for more.  */
-    PKIND_PARTIAL_MEMSET,
-    PKIND_MEMSET, PKIND_MEMCPY, PKIND_MEMMOVE
-};
-
-/* Type of distributed loop.  */
-enum partition_type {
-    /* The distributed loop can be executed parallelly.  */
-    PTYPE_PARALLEL = 0,
-    /* The distributed loop has to be executed sequentially.  */
-    PTYPE_SEQUENTIAL
-};
-
-/* Builtin info for loop distribution.  */
-struct builtin_info
-{
-  /* data-references a kind != PKIND_NORMAL partition is about.  */
-  data_reference_p dst_dr;
-  data_reference_p src_dr;
-  /* Base address and size of memory objects operated by the builtin.  Note
-     both dest and source memory objects must have the same size.  */
-  tree dst_base;
-  tree src_base;
-  tree size;
-  /* Base and offset part of dst_base after stripping constant offset.  This
-     is only used in memset builtin distribution for now.  */
-  tree dst_base_base;
-  unsigned HOST_WIDE_INT dst_base_offset;
-};
-
-/* Partition for loop distribution.  */
-struct partition
-{
-  /* Statements of the partition.  */
-  bitmap stmts;
-  /* True if the partition defines variable which is used outside of loop.  */
-  bool reduction_p;
-  enum partition_kind kind;
-  enum partition_type type;
-  /* Data references in the partition.  */
-  bitmap datarefs;
-  /* Information of builtin parition.  */
-  struct builtin_info *builtin;
-};
-
-
 /* Allocate and initialize a partition from BITMAP.  */
 
 static partition *
@@ -648,7 +821,9 @@ partition_alloc (void)
   partition *partition = XCNEW (struct partition);
   partition->stmts = BITMAP_ALLOC (NULL);
   partition->reduction_p = false;
+  partition->loc = UNKNOWN_LOCATION;
   partition->kind = PKIND_NORMAL;
+  partition->type = PTYPE_PARALLEL;
   partition->datarefs = BITMAP_ALLOC (NULL);
   return partition;
 }
@@ -682,33 +857,9 @@ partition_reduction_p (partition *partition)
   return partition->reduction_p;
 }
 
-/* Partitions are fused because of different reasons.  */
-enum fuse_type
-{
-  FUSE_NON_BUILTIN = 0,
-  FUSE_REDUCTION = 1,
-  FUSE_SHARE_REF = 2,
-  FUSE_SAME_SCC = 3,
-  FUSE_FINALIZE = 4
-};
-
-/* Description on different fusing reason.  */
-static const char *fuse_message[] = {
-  "they are non-builtins",
-  "they have reductions",
-  "they have shared memory refs",
-  "they are in the same dependence scc",
-  "there is no point to distribute loop"};
-
-static void
-update_type_for_merge (struct graph *, partition *, partition *);
-
-/* Merge PARTITION into the partition DEST.  RDG is the reduced dependence
-   graph and we update type for result partition if it is non-NULL.  */
-
-static void
-partition_merge_into (struct graph *rdg, partition *dest,
-		      partition *partition, enum fuse_type ft)
+void
+loop_distribution::partition_merge_into (struct graph *rdg,
+		      partition *dest, partition *partition, enum fuse_type ft)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -779,10 +930,10 @@ stmt_has_scalar_dependences_outside_loop (loop_p loop, gimple *stmt)
 
 /* Return a copy of LOOP placed before LOOP.  */
 
-static struct loop *
-copy_loop_before (struct loop *loop)
+static class loop *
+copy_loop_before (class loop *loop)
 {
-  struct loop *res;
+  class loop *res;
   edge preheader = loop_preheader_edge (loop);
 
   initialize_original_copy_tables ();
@@ -797,7 +948,7 @@ copy_loop_before (struct loop *loop)
 /* Creates an empty basic block after LOOP.  */
 
 static void
-create_bb_after_loop (struct loop *loop)
+create_bb_after_loop (class loop *loop)
 {
   edge exit = single_exit (loop);
 
@@ -814,7 +965,7 @@ create_bb_after_loop (struct loop *loop)
    basic blocks of a loop are taken in dom order.  */
 
 static void
-generate_loops_for_partition (struct loop *loop, partition *partition,
+generate_loops_for_partition (class loop *loop, partition *partition,
 			      bool copy_p)
 {
   unsigned i;
@@ -986,7 +1137,7 @@ const_with_all_bytes_same (tree val)
 /* Generate a call to memset for PARTITION in LOOP.  */
 
 static void
-generate_memset_builtin (struct loop *loop, partition *partition)
+generate_memset_builtin (class loop *loop, partition *partition)
 {
   gimple_stmt_iterator gsi;
   tree mem, fn, nb_bytes;
@@ -997,7 +1148,7 @@ generate_memset_builtin (struct loop *loop, partition *partition)
   /* The new statements will be placed before LOOP.  */
   gsi = gsi_last_bb (loop_preheader_edge (loop)->src);
 
-  nb_bytes = builtin->size;
+  nb_bytes = rewrite_to_non_trapping_overflow (builtin->size);
   nb_bytes = force_gimple_operand_gsi (&gsi, nb_bytes, true, NULL_TREE,
 				       false, GSI_CONTINUE_LINKING);
   mem = builtin->dst_base;
@@ -1023,7 +1174,9 @@ generate_memset_builtin (struct loop *loop, partition *partition)
 
   fn = build_fold_addr_expr (builtin_decl_implicit (BUILT_IN_MEMSET));
   fn_call = gimple_build_call (fn, 3, mem, val, nb_bytes);
+  gimple_set_location (fn_call, partition->loc);
   gsi_insert_after (&gsi, fn_call, GSI_CONTINUE_LINKING);
+  fold_stmt (&gsi);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1038,7 +1191,7 @@ generate_memset_builtin (struct loop *loop, partition *partition)
 /* Generate a call to memcpy for PARTITION in LOOP.  */
 
 static void
-generate_memcpy_builtin (struct loop *loop, partition *partition)
+generate_memcpy_builtin (class loop *loop, partition *partition)
 {
   gimple_stmt_iterator gsi;
   gimple *fn_call;
@@ -1049,7 +1202,7 @@ generate_memcpy_builtin (struct loop *loop, partition *partition)
   /* The new statements will be placed before LOOP.  */
   gsi = gsi_last_bb (loop_preheader_edge (loop)->src);
 
-  nb_bytes = builtin->size;
+  nb_bytes = rewrite_to_non_trapping_overflow (builtin->size);
   nb_bytes = force_gimple_operand_gsi (&gsi, nb_bytes, true, NULL_TREE,
 				       false, GSI_CONTINUE_LINKING);
   dest = builtin->dst_base;
@@ -1066,7 +1219,9 @@ generate_memcpy_builtin (struct loop *loop, partition *partition)
 				  false, GSI_CONTINUE_LINKING);
   fn = build_fold_addr_expr (builtin_decl_implicit (kind));
   fn_call = gimple_build_call (fn, 3, dest, src, nb_bytes);
+  gimple_set_location (fn_call, partition->loc);
   gsi_insert_after (&gsi, fn_call, GSI_CONTINUE_LINKING);
+  fold_stmt (&gsi);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1080,7 +1235,7 @@ generate_memcpy_builtin (struct loop *loop, partition *partition)
 /* Remove and destroy the loop LOOP.  */
 
 static void
-destroy_loop (struct loop *loop)
+destroy_loop (class loop *loop)
 {
   unsigned nbbs = loop->num_nodes;
   edge exit = single_exit (loop);
@@ -1089,6 +1244,50 @@ destroy_loop (struct loop *loop)
   unsigned i;
 
   bbs = get_loop_body_in_dom_order (loop);
+
+  gimple_stmt_iterator dst_gsi = gsi_after_labels (exit->dest);
+  bool safe_p = single_pred_p (exit->dest);
+  for (unsigned i = 0; i < nbbs; ++i)
+    {
+      /* We have made sure to not leave any dangling uses of SSA
+         names defined in the loop.  With the exception of virtuals.
+	 Make sure we replace all uses of virtual defs that will remain
+	 outside of the loop with the bare symbol as delete_basic_block
+	 will release them.  */
+      for (gphi_iterator gsi = gsi_start_phis (bbs[i]); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  gphi *phi = gsi.phi ();
+	  if (virtual_operand_p (gimple_phi_result (phi)))
+	    mark_virtual_phi_result_for_renaming (phi);
+	}
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bbs[i]); !gsi_end_p (gsi);)
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  tree vdef = gimple_vdef (stmt);
+	  if (vdef && TREE_CODE (vdef) == SSA_NAME)
+	    mark_virtual_operand_for_renaming (vdef);
+	  /* Also move and eventually reset debug stmts.  We can leave
+	     constant values in place in case the stmt dominates the exit.
+	     ???  Non-constant values from the last iteration can be
+	     replaced with final values if we can compute them.  */
+	  if (gimple_debug_bind_p (stmt))
+	    {
+	      tree val = gimple_debug_bind_get_value (stmt);
+	      gsi_move_before (&gsi, &dst_gsi);
+	      if (val
+		  && (!safe_p
+		      || !is_gimple_min_invariant (val)
+		      || !dominated_by_p (CDI_DOMINATORS, exit->src, bbs[i])))
+		{
+		  gimple_debug_bind_reset_value (stmt);
+		  update_stmt (stmt);
+		}
+	    }
+	  else
+	    gsi_next (&gsi);
+	}
+    }
 
   redirect_edge_pred (exit, src);
   exit->flags &= ~(EDGE_TRUE_VALUE|EDGE_FALSE_VALUE);
@@ -1099,27 +1298,7 @@ destroy_loop (struct loop *loop)
   i = nbbs;
   do
     {
-      /* We have made sure to not leave any dangling uses of SSA
-         names defined in the loop.  With the exception of virtuals.
-	 Make sure we replace all uses of virtual defs that will remain
-	 outside of the loop with the bare symbol as delete_basic_block
-	 will release them.  */
       --i;
-      for (gphi_iterator gsi = gsi_start_phis (bbs[i]); !gsi_end_p (gsi);
-	   gsi_next (&gsi))
-	{
-	  gphi *phi = gsi.phi ();
-	  if (virtual_operand_p (gimple_phi_result (phi)))
-	    mark_virtual_phi_result_for_renaming (phi);
-	}
-      for (gimple_stmt_iterator gsi = gsi_start_bb (bbs[i]); !gsi_end_p (gsi);
-	   gsi_next (&gsi))
-	{
-	  gimple *stmt = gsi_stmt (gsi);
-	  tree vdef = gimple_vdef (stmt);
-	  if (vdef && TREE_CODE (vdef) == SSA_NAME)
-	    mark_virtual_operand_for_renaming (vdef);
-	}
       delete_basic_block (bbs[i]);
     }
   while (i != 0);
@@ -1133,7 +1312,7 @@ destroy_loop (struct loop *loop)
 /* Generates code for PARTITION.  Return whether LOOP needs to be destroyed.  */
 
 static bool 
-generate_code_for_partition (struct loop *loop,
+generate_code_for_partition (class loop *loop,
 			     partition *partition, bool copy_p)
 {
   switch (partition->kind)
@@ -1166,13 +1345,9 @@ generate_code_for_partition (struct loop *loop,
   return false;
 }
 
-/* Return data dependence relation for data references A and B.  The two
-   data references must be in lexicographic order wrto reduced dependence
-   graph RDG.  We firstly try to find ddr from global ddr hash table.  If
-   it doesn't exist, compute the ddr and cache it.  */
-
-static data_dependence_relation *
-get_data_dependence (struct graph *rdg, data_reference_p a, data_reference_p b)
+data_dependence_relation *
+loop_distribution::get_data_dependence (struct graph *rdg, data_reference_p a,
+					data_reference_p b)
 {
   struct data_dependence_relation ent, **slot;
   struct data_dependence_relation *ddr;
@@ -1193,13 +1368,10 @@ get_data_dependence (struct graph *rdg, data_reference_p a, data_reference_p b)
   return *slot;
 }
 
-/* In reduced dependence graph RDG for loop distribution, return true if
-   dependence between references DR1 and DR2 leads to a dependence cycle
-   and such dependence cycle can't be resolved by runtime alias check.  */
-
-static bool
-data_dep_in_cycle_p (struct graph *rdg,
-		     data_reference_p dr1, data_reference_p dr2)
+bool
+loop_distribution::data_dep_in_cycle_p (struct graph *rdg,
+					data_reference_p dr1,
+					data_reference_p dr2)
 {
   struct data_dependence_relation *ddr;
 
@@ -1229,12 +1401,10 @@ data_dep_in_cycle_p (struct graph *rdg,
   return true;
 }
 
-/* Given reduced dependence graph RDG, PARTITION1 and PARTITION2, update
-   PARTITION1's type after merging PARTITION2 into PARTITION1.  */
-
-static void
-update_type_for_merge (struct graph *rdg,
-		       partition *partition1, partition *partition2)
+void
+loop_distribution::update_type_for_merge (struct graph *rdg,
+					   partition *partition1,
+					   partition *partition2)
 {
   unsigned i, j;
   bitmap_iterator bi, bj;
@@ -1262,11 +1432,8 @@ update_type_for_merge (struct graph *rdg,
     }
 }
 
-/* Returns a partition with all the statements needed for computing
-   the vertex V of the RDG, also including the loop exit conditions.  */
-
-static partition *
-build_rdg_partition_for_vertex (struct graph *rdg, int v)
+partition *
+loop_distribution::build_rdg_partition_for_vertex (struct graph *rdg, int v)
 {
   partition *partition = partition_alloc ();
   auto_vec<int, 3> nodes;
@@ -1310,7 +1477,7 @@ build_rdg_partition_for_vertex (struct graph *rdg, int v)
    data references.  */
 
 static bool
-find_single_drs (struct loop *loop, struct graph *rdg, partition *partition,
+find_single_drs (class loop *loop, struct graph *rdg, partition *partition,
 		 data_reference_p *dst_dr, data_reference_p *src_dr)
 {
   unsigned i;
@@ -1433,7 +1600,7 @@ compute_access_range (loop_p loop_nest, data_reference_p dr, tree *base,
 {
   location_t loc = gimple_location (DR_STMT (dr));
   basic_block bb = gimple_bb (DR_STMT (dr));
-  struct loop *loop = bb->loop_father;
+  class loop *loop = bb->loop_father;
   tree ref = DR_REF (dr);
   tree access_base = build_fold_addr_expr (ref);
   tree access_size = TYPE_SIZE_UNIT (TREE_TYPE (ref));
@@ -1560,9 +1727,11 @@ classify_builtin_st (loop_p loop, partition *partition, data_reference_p dr)
 /* Given data references DST_DR and SRC_DR in loop nest LOOP and RDG, classify
    if it forms builtin memcpy or memmove call.  */
 
-static void
-classify_builtin_ldst (loop_p loop, struct graph *rdg, partition *partition,
-		       data_reference_p dst_dr, data_reference_p src_dr)
+void
+loop_distribution::classify_builtin_ldst (loop_p loop, struct graph *rdg,
+					  partition *partition,
+					  data_reference_p dst_dr,
+					  data_reference_p src_dr)
 {
   tree base, size, src_base, src_size;
   auto_vec<tree> dst_steps, src_steps;
@@ -1620,13 +1789,10 @@ classify_builtin_ldst (loop_p loop, struct graph *rdg, partition *partition,
   return;
 }
 
-/* Classifies the builtin kind we can generate for PARTITION of RDG and LOOP.
-   For the moment we detect memset, memcpy and memmove patterns.  Bitmap
-   STMT_IN_ALL_PARTITIONS contains statements belonging to all partitions.  */
-
-static void
-classify_partition (loop_p loop, struct graph *rdg, partition *partition,
-		    bitmap stmt_in_all_partitions)
+bool
+loop_distribution::classify_partition (loop_p loop,
+				       struct graph *rdg, partition *partition,
+				       bitmap stmt_in_all_partitions)
 {
   bitmap_iterator bi;
   unsigned i;
@@ -1652,38 +1818,40 @@ classify_partition (loop_p loop, struct graph *rdg, partition *partition,
 	     to all partitions.  In such case, reduction will be computed
 	     correctly no matter how partitions are fused/distributed.  */
 	  if (!bitmap_bit_p (stmt_in_all_partitions, i))
-	    {
-	      partition->reduction_p = true;
-	      return;
-	    }
-	  has_reduction = true;
+	    partition->reduction_p = true;
+	  else
+	    has_reduction = true;
 	}
     }
 
+  /* Simple workaround to prevent classifying the partition as builtin
+     if it contains any use outside of loop.  For the case where all
+     partitions have the reduction this simple workaround is delayed
+     to only affect the last partition.  */
+  if (partition->reduction_p)
+     return has_reduction;
+
   /* Perform general partition disqualification for builtins.  */
   if (volatiles_p
-      /* Simple workaround to prevent classifying the partition as builtin
-	 if it contains any use outside of loop.  */
-      || has_reduction
       || !flag_tree_loop_distribute_patterns)
-    return;
+    return has_reduction;
 
   /* Find single load/store data references for builtin partition.  */
   if (!find_single_drs (loop, rdg, partition, &single_st, &single_ld))
-    return;
+    return has_reduction;
+
+  partition->loc = gimple_location (DR_STMT (single_st));
 
   /* Classify the builtin kind.  */
   if (single_ld == NULL)
     classify_builtin_st (loop, partition, single_st);
   else
     classify_builtin_ldst (loop, rdg, partition, single_st, single_ld);
+  return has_reduction;
 }
 
-/* Returns true when PARTITION1 and PARTITION2 access the same memory
-   object in RDG.  */
-
-static bool
-share_memory_accesses (struct graph *rdg,
+bool
+loop_distribution::share_memory_accesses (struct graph *rdg,
 		       partition *partition1, partition *partition2)
 {
   unsigned i, j;
@@ -1730,10 +1898,10 @@ share_memory_accesses (struct graph *rdg,
    partition for it by adding depended statements according to RDG.
    All partitions are recorded in PARTITIONS.  */
 
-static void
-rdg_build_partitions (struct graph *rdg,
-		      vec<gimple *> starting_stmts,
-		      vec<partition *> *partitions)
+void
+loop_distribution::rdg_build_partitions (struct graph *rdg,
+					 vec<gimple *> starting_stmts,
+					 vec<partition *> *partitions)
 {
   auto_bitmap processed;
   int i;
@@ -1849,14 +2017,8 @@ partition_contains_all_rw (struct graph *rdg,
   return false;
 }
 
-/* Compute partition dependence created by the data references in DRS1
-   and DRS2, modify and return DIR according to that.  IF ALIAS_DDR is
-   not NULL, we record dependence introduced by possible alias between
-   two data references in ALIAS_DDRS; otherwise, we simply ignore such
-   dependence as if it doesn't exist at all.  */
-
-static int
-pg_add_dependence_edges (struct graph *rdg, int dir,
+int
+loop_distribution::pg_add_dependence_edges (struct graph *rdg, int dir,
 			 bitmap drs1, bitmap drs2, vec<ddr_p> *alias_ddrs)
 {
   unsigned i, j;
@@ -1897,7 +2059,7 @@ pg_add_dependence_edges (struct graph *rdg, int dir,
 	      /* Be conservative.  If data references are not well analyzed,
 		 or the two data references have the same base address and
 		 offset, add dependence and consider it alias to each other.
-		 In other words, the dependence can not be resolved by
+		 In other words, the dependence cannot be resolved by
 		 runtime alias check.  */
 	      if (!DR_BASE_ADDRESS (dr1) || !DR_BASE_ADDRESS (dr2)
 		  || !DR_OFFSET (dr1) || !DR_OFFSET (dr2)
@@ -1922,7 +2084,8 @@ pg_add_dependence_edges (struct graph *rdg, int dir,
 	      if (DDR_NUM_DIST_VECTS (ddr) != 1)
 		this_dir = 2;
 	      /* If the overlap is exact preserve stmt order.  */
-	      else if (lambda_vector_zerop (DDR_DIST_VECT (ddr, 0), 1))
+	      else if (lambda_vector_zerop (DDR_DIST_VECT (ddr, 0),
+					    DDR_NB_LOOPS (ddr)))
 		;
 	      /* Else as the distance vector is lexicographic positive swap
 		 the dependence direction.  */
@@ -2071,10 +2234,10 @@ free_partition_graph_vdata (struct graph *pg)
    is ignored, as if it doesn't exist at all; otherwise all depdendences
    are considered.  */
 
-static struct graph *
-build_partition_graph (struct graph *rdg,
-		       vec<struct partition *> *partitions,
-		       bool ignore_alias_p)
+struct graph *
+loop_distribution::build_partition_graph (struct graph *rdg,
+					  vec<struct partition *> *partitions,
+					  bool ignore_alias_p)
 {
   int i, j;
   struct partition *partition1, *partition2;
@@ -2109,7 +2272,7 @@ build_partition_graph (struct graph *rdg,
 
 	  /* Add edge to partition graph if there exists dependence.  There
 	     are two types of edges.  One type edge is caused by compilation
-	     time known dependence, this type can not be resolved by runtime
+	     time known dependence, this type cannot be resolved by runtime
 	     alias check.  The other type can be resolved by runtime alias
 	     check.  */
 	  if (dir == 1 || dir == 2
@@ -2156,15 +2319,10 @@ sort_partitions_by_post_order (struct graph *pg,
     }
 }
 
-/* Given reduced dependence graph RDG merge strong connected components
-   of PARTITIONS.  If IGNORE_ALIAS_P is true, data dependence caused by
-   possible alias between references is ignored, as if it doesn't exist
-   at all; otherwise all depdendences are considered.  */
-
-static void
-merge_dep_scc_partitions (struct graph *rdg,
-			  vec<struct partition *> *partitions,
-			  bool ignore_alias_p)
+void
+loop_distribution::merge_dep_scc_partitions (struct graph *rdg,
+					     vec<struct partition *> *partitions,
+					     bool ignore_alias_p)
 {
   struct partition *partition1, *partition2;
   struct pg_vdata *data;
@@ -2237,11 +2395,10 @@ pg_collect_alias_ddrs (struct graph *g, struct graph_edge *e, void *data)
 /* This is the main function breaking strong conected components in
    PARTITIONS giving reduced depdendence graph RDG.  Store data dependence
    relations for runtime alias check in ALIAS_DDRS.  */
-
-static void
-break_alias_scc_partitions (struct graph *rdg,
-			    vec<struct partition *> *partitions,
-			    vec<ddr_p> *alias_ddrs)
+void
+loop_distribution::break_alias_scc_partitions (struct graph *rdg,
+					       vec<struct partition *> *partitions,
+					       vec<ddr_p> *alias_ddrs)
 {
   int i, j, k, num_sccs, num_sccs_no_alias;
   /* Build partition dependence graph.  */
@@ -2382,7 +2539,7 @@ data_ref_segment_size (struct data_reference *dr, tree niters)
    DR.  */
 
 static inline bool
-latch_dominated_by_data_ref (struct loop *loop, data_reference *dr)
+latch_dominated_by_data_ref (class loop *loop, data_reference *dr)
 {
   return dominated_by_p (CDI_DOMINATORS, single_exit (loop)->src,
 			 gimple_bb (DR_STMT (dr)));
@@ -2392,7 +2549,7 @@ latch_dominated_by_data_ref (struct loop *loop, data_reference *dr)
    data dependence relations ALIAS_DDRS.  */
 
 static void
-compute_alias_check_pairs (struct loop *loop, vec<ddr_p> *alias_ddrs,
+compute_alias_check_pairs (class loop *loop, vec<ddr_p> *alias_ddrs,
 			   vec<dr_with_seg_len_pair_t> *comp_alias_pairs)
 {
   unsigned int i;
@@ -2413,12 +2570,6 @@ compute_alias_check_pairs (struct loop *loop, vec<ddr_p> *alias_ddrs,
       struct data_reference *dr_a = DDR_A (ddr);
       struct data_reference *dr_b = DDR_B (ddr);
       tree seg_length_a, seg_length_b;
-      int comp_res = data_ref_compare_tree (DR_BASE_ADDRESS (dr_a),
-					    DR_BASE_ADDRESS (dr_b));
-
-      if (comp_res == 0)
-	comp_res = data_ref_compare_tree (DR_OFFSET (dr_a), DR_OFFSET (dr_b));
-      gcc_assert (comp_res != 0);
 
       if (latch_dominated_by_data_ref (loop, dr_a))
 	seg_length_a = data_ref_segment_size (dr_a, niters_plus_one);
@@ -2439,11 +2590,9 @@ compute_alias_check_pairs (struct loop *loop, vec<ddr_p> *alias_ddrs,
 
       dr_with_seg_len_pair_t dr_with_seg_len_pair
 	(dr_with_seg_len (dr_a, seg_length_a, access_size_a, align_a),
-	 dr_with_seg_len (dr_b, seg_length_b, access_size_b, align_b));
-
-      /* Canonicalize pairs by sorting the two DR members.  */
-      if (comp_res > 0)
-	std::swap (dr_with_seg_len_pair.first, dr_with_seg_len_pair.second);
+	 dr_with_seg_len (dr_b, seg_length_b, access_size_b, align_b),
+	 /* ??? Would WELL_ORDERED be safe?  */
+	 dr_with_seg_len_pair_t::REORDERED);
 
       comp_alias_pairs->safe_push (dr_with_seg_len_pair);
     }
@@ -2464,11 +2613,11 @@ compute_alias_check_pairs (struct loop *loop, vec<ddr_p> *alias_ddrs,
 
 static void
 version_loop_by_alias_check (vec<struct partition *> *partitions,
-			     struct loop *loop, vec<ddr_p> *alias_ddrs)
+			     class loop *loop, vec<ddr_p> *alias_ddrs)
 {
   profile_probability prob;
   basic_block cond_bb;
-  struct loop *nloop;
+  class loop *nloop;
   tree lhs, arg0, cond_expr = NULL_TREE;
   gimple_seq cond_stmts = NULL;
   gimple *call_stmt = NULL;
@@ -2561,12 +2710,14 @@ version_for_distribution_p (vec<struct partition *> *partitions,
 
 /* Compare base offset of builtin mem* partitions P1 and P2.  */
 
-static bool
-offset_cmp (struct partition *p1, struct partition *p2)
+static int
+offset_cmp (const void *vp1, const void *vp2)
 {
-  gcc_assert (p1 != NULL && p1->builtin != NULL);
-  gcc_assert (p2 != NULL && p2->builtin != NULL);
-  return p1->builtin->dst_base_offset < p2->builtin->dst_base_offset;
+  struct partition *p1 = *(struct partition *const *) vp1;
+  struct partition *p2 = *(struct partition *const *) vp2;
+  unsigned HOST_WIDE_INT o1 = p1->builtin->dst_base_offset;
+  unsigned HOST_WIDE_INT o2 = p2->builtin->dst_base_offset;
+  return (o2 < o1) - (o1 < o2);
 }
 
 /* Fuse adjacent memset builtin PARTITIONS if possible.  This is a special
@@ -2618,8 +2769,8 @@ fuse_memset_builtins (vec<struct partition *> *partitions)
 	}
 
       /* Stable sort is required in order to avoid breaking dependence.  */
-      std::stable_sort (&(*partitions)[i],
-			&(*partitions)[i] + j - i, offset_cmp);
+      gcc_stablesort (&(*partitions)[i], j - i, sizeof (*partitions)[i],
+		      offset_cmp);
       /* Continue with next partition.  */
       i = j;
     }
@@ -2673,12 +2824,10 @@ fuse_memset_builtins (vec<struct partition *> *partitions)
     }
 }
 
-/* Fuse PARTITIONS of LOOP if necessary before finalizing distribution.
-   ALIAS_DDRS contains ddrs which need runtime alias check.  */
-
-static void
-finalize_partitions (struct loop *loop, vec<struct partition *> *partitions,
-		     vec<ddr_p> *alias_ddrs)
+void
+loop_distribution::finalize_partitions (class loop *loop,
+					vec<struct partition *> *partitions,
+					vec<ddr_p> *alias_ddrs)
 {
   unsigned i;
   struct partition *partition, *a;
@@ -2733,14 +2882,14 @@ finalize_partitions (struct loop *loop, vec<struct partition *> *partitions,
    distributed loops.  Set NB_CALLS to number of generated builtin calls.
    Set *DESTROY_P to whether LOOP needs to be destroyed.  */
 
-static int
-distribute_loop (struct loop *loop, vec<gimple *> stmts,
-		 control_dependences *cd, int *nb_calls, bool *destroy_p)
+int
+loop_distribution::distribute_loop (class loop *loop, vec<gimple *> stmts,
+		 control_dependences *cd, int *nb_calls, bool *destroy_p,
+		 bool only_patterns_p)
 {
   ddrs_table = new hash_table<ddr_hasher> (389);
   struct graph *rdg;
   partition *partition;
-  bool any_builtin;
   int i, nbp;
 
   *destroy_p = false;
@@ -2754,6 +2903,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
     }
 
   datarefs_vec.create (20);
+  has_nonaddressable_dataref_p = false;
   rdg = build_rdg (loop, cd);
   if (!rdg)
     {
@@ -2799,16 +2949,18 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
   for (i = 1; partitions.iterate (i, &partition); ++i)
     bitmap_and_into (stmt_in_all_partitions, partitions[i]->stmts);
 
-  any_builtin = false;
+  bool any_builtin = false;
+  bool reduction_in_all = false;
   FOR_EACH_VEC_ELT (partitions, i, partition)
     {
-      classify_partition (loop, rdg, partition, stmt_in_all_partitions);
+      reduction_in_all
+	|= classify_partition (loop, rdg, partition, stmt_in_all_partitions);
       any_builtin |= partition_builtin_p (partition);
     }
 
   /* If we are only distributing patterns but did not detect any,
      simply bail out.  */
-  if (!flag_tree_loop_distribution
+  if (only_patterns_p
       && !any_builtin)
     {
       nbp = 0;
@@ -2820,7 +2972,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
      a loop into pieces, separated by builtin calls.  That is, we
      only want no or a single loop body remaining.  */
   struct partition *into;
-  if (!flag_tree_loop_distribution)
+  if (only_patterns_p)
     {
       for (i = 0; partitions.iterate (i, &into); ++i)
 	if (!partition_builtin_p (into))
@@ -2877,13 +3029,30 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
 	i--;
     }
 
+  /* Put a non-builtin partition last if we need to preserve a reduction.
+     ???  This is a workaround that makes sort_partitions_by_post_order do
+     the correct thing while in reality it should sort each component
+     separately and then put the component with a reduction or a non-builtin
+     last.  */
+  if (reduction_in_all
+      && partition_builtin_p (partitions.last()))
+    FOR_EACH_VEC_ELT (partitions, i, partition)
+      if (!partition_builtin_p (partition))
+	{
+	  partitions.unordered_remove (i);
+	  partitions.quick_push (partition);
+	  break;
+	}
+
   /* Build the partition dependency graph and fuse partitions in strong
      connected component.  */
   if (partitions.length () > 1)
     {
       /* Don't support loop nest distribution under runtime alias check
-	 since it's not likely to enable many vectorization opportunities.  */
-      if (loop->inner)
+	 since it's not likely to enable many vectorization opportunities.
+	 Also if loop has any data reference which may be not addressable
+	 since alias check needs to take, compare address of the object.  */
+      if (loop->inner || has_nonaddressable_dataref_p)
 	merge_dep_scc_partitions (rdg, &partitions, false);
       else
 	{
@@ -2894,6 +3063,21 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
     }
 
   finalize_partitions (loop, &partitions, &alias_ddrs);
+
+  /* If there is a reduction in all partitions make sure the last one
+     is not classified for builtin code generation.  */
+  if (reduction_in_all)
+    {
+      partition = partitions.last ();
+      if (only_patterns_p
+	  && partition_builtin_p (partition)
+	  && !partition_builtin_p (partitions[0]))
+	{
+	  nbp = 0;
+	  goto ldist_done;
+	}
+      partition->kind = PKIND_NORMAL;
+    }
 
   nbp = partitions.length ();
   if (nbp == 0
@@ -2939,6 +3123,224 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
   return nbp - *nb_calls;
 }
 
+
+void loop_distribution::bb_top_order_init (void)
+{
+  int rpo_num;
+  int *rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
+
+  bb_top_order_index = XNEWVEC (int, last_basic_block_for_fn (cfun));
+  bb_top_order_index_size = last_basic_block_for_fn (cfun);
+  rpo_num = pre_and_rev_post_order_compute_fn (cfun, NULL, rpo, true);
+  for (int i = 0; i < rpo_num; i++)
+    bb_top_order_index[rpo[i]] = i;
+
+  free (rpo);
+}
+
+void loop_distribution::bb_top_order_destroy ()
+{
+  free (bb_top_order_index);
+  bb_top_order_index = NULL;
+  bb_top_order_index_size = 0;
+}
+
+
+/* Given LOOP, this function records seed statements for distribution in
+   WORK_LIST.  Return false if there is nothing for distribution.  */
+
+static bool
+find_seed_stmts_for_distribution (class loop *loop, vec<gimple *> *work_list)
+{
+  basic_block *bbs = get_loop_body_in_dom_order (loop);
+
+  /* Initialize the worklist with stmts we seed the partitions with.  */
+  for (unsigned i = 0; i < loop->num_nodes; ++i)
+    {
+      for (gphi_iterator gsi = gsi_start_phis (bbs[i]);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gphi *phi = gsi.phi ();
+	  if (virtual_operand_p (gimple_phi_result (phi)))
+	    continue;
+	  /* Distribute stmts which have defs that are used outside of
+	     the loop.  */
+	  if (!stmt_has_scalar_dependences_outside_loop (loop, phi))
+	    continue;
+	  work_list->safe_push (phi);
+	}
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bbs[i]);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+
+	  /* Ignore clobbers, they do not have true side effects.  */
+	  if (gimple_clobber_p (stmt))
+	    continue;
+
+	  /* If there is a stmt with side-effects bail out - we
+	     cannot and should not distribute this loop.  */
+	  if (gimple_has_side_effects (stmt))
+	    {
+	      free (bbs);
+	      return false;
+	    }
+
+	  /* Distribute stmts which have defs that are used outside of
+	     the loop.  */
+	  if (stmt_has_scalar_dependences_outside_loop (loop, stmt))
+	    ;
+	  /* Otherwise only distribute stores for now.  */
+	  else if (!gimple_vdef (stmt))
+	    continue;
+
+	  work_list->safe_push (stmt);
+	}
+    }
+  free (bbs);
+  return work_list->length () > 0;
+}
+
+/* Given innermost LOOP, return the outermost enclosing loop that forms a
+   perfect loop nest.  */
+
+static class loop *
+prepare_perfect_loop_nest (class loop *loop)
+{
+  class loop *outer = loop_outer (loop);
+  tree niters = number_of_latch_executions (loop);
+
+  /* TODO: We only support the innermost 3-level loop nest distribution
+     because of compilation time issue for now.  This should be relaxed
+     in the future.  Note we only allow 3-level loop nest distribution
+     when parallelizing loops.  */
+  while ((loop->inner == NULL
+	  || (loop->inner->inner == NULL && flag_tree_parallelize_loops > 1))
+	 && loop_outer (outer)
+	 && outer->inner == loop && loop->next == NULL
+	 && single_exit (outer)
+	 && !chrec_contains_symbols_defined_in_loop (niters, outer->num)
+	 && (niters = number_of_latch_executions (outer)) != NULL_TREE
+	 && niters != chrec_dont_know)
+    {
+      loop = outer;
+      outer = loop_outer (loop);
+    }
+
+  return loop;
+}
+
+
+unsigned int
+loop_distribution::execute (function *fun)
+{
+  class loop *loop;
+  bool changed = false;
+  basic_block bb;
+  control_dependences *cd = NULL;
+  auto_vec<loop_p> loops_to_be_destroyed;
+
+  if (number_of_loops (fun) <= 1)
+    return 0;
+
+  bb_top_order_init ();
+
+  FOR_ALL_BB_FN (bb, fun)
+    {
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	gimple_set_uid (gsi_stmt (gsi), -1);
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	gimple_set_uid (gsi_stmt (gsi), -1);
+    }
+
+  /* We can at the moment only distribute non-nested loops, thus restrict
+     walking to innermost loops.  */
+  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
+    {
+      /* Don't distribute multiple exit edges loop, or cold loop when
+         not doing pattern detection.  */
+      if (!single_exit (loop)
+	  || (!flag_tree_loop_distribute_patterns
+	      && !optimize_loop_for_speed_p (loop)))
+	continue;
+
+      /* Don't distribute loop if niters is unknown.  */
+      tree niters = number_of_latch_executions (loop);
+      if (niters == NULL_TREE || niters == chrec_dont_know)
+	continue;
+
+      /* Get the perfect loop nest for distribution.  */
+      loop = prepare_perfect_loop_nest (loop);
+      for (; loop; loop = loop->inner)
+	{
+	  auto_vec<gimple *> work_list;
+	  if (!find_seed_stmts_for_distribution (loop, &work_list))
+	    break;
+
+	  const char *str = loop->inner ? " nest" : "";
+	  dump_user_location_t loc = find_loop_location (loop);
+	  if (!cd)
+	    {
+	      calculate_dominance_info (CDI_DOMINATORS);
+	      calculate_dominance_info (CDI_POST_DOMINATORS);
+	      cd = new control_dependences ();
+	      free_dominance_info (CDI_POST_DOMINATORS);
+	    }
+
+	  bool destroy_p;
+	  int nb_generated_loops, nb_generated_calls;
+	  nb_generated_loops
+	    = distribute_loop (loop, work_list, cd, &nb_generated_calls,
+			       &destroy_p, (!optimize_loop_for_speed_p (loop)
+					    || !flag_tree_loop_distribution));
+	  if (destroy_p)
+	    loops_to_be_destroyed.safe_push (loop);
+
+	  if (nb_generated_loops + nb_generated_calls > 0)
+	    {
+	      changed = true;
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_OPTIMIZED_LOCATIONS,
+				 loc, "Loop%s %d distributed: split to %d loops "
+				 "and %d library calls.\n", str, loop->num,
+				 nb_generated_loops, nb_generated_calls);
+
+	      break;
+	    }
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Loop%s %d not distributed.\n", str, loop->num);
+	}
+    }
+
+  if (cd)
+    delete cd;
+
+  if (bb_top_order_index != NULL)
+    bb_top_order_destroy ();
+
+  if (changed)
+    {
+      /* Destroy loop bodies that could not be reused.  Do this late as we
+	 otherwise can end up refering to stale data in control dependences.  */
+      unsigned i;
+      FOR_EACH_VEC_ELT (loops_to_be_destroyed, i, loop)
+	destroy_loop (loop);
+
+      /* Cached scalar evolutions now may refer to wrong or non-existing
+	 loops.  */
+      scev_reset_htab ();
+      mark_virtual_operands_for_renaming (fun);
+      rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
+    }
+
+  checking_verify_loop_structure ();
+
+  return changed ? TODO_cleanup_cfg : 0;
+}
+
+
 /* Distribute all loops in the current function.  */
 
 namespace {
@@ -2974,210 +3376,10 @@ public:
 
 }; // class pass_loop_distribution
 
-
-/* Given LOOP, this function records seed statements for distribution in
-   WORK_LIST.  Return false if there is nothing for distribution.  */
-
-static bool
-find_seed_stmts_for_distribution (struct loop *loop, vec<gimple *> *work_list)
-{
-  basic_block *bbs = get_loop_body_in_dom_order (loop);
-
-  /* Initialize the worklist with stmts we seed the partitions with.  */
-  for (unsigned i = 0; i < loop->num_nodes; ++i)
-    {
-      for (gphi_iterator gsi = gsi_start_phis (bbs[i]);
-	   !gsi_end_p (gsi); gsi_next (&gsi))
-	{
-	  gphi *phi = gsi.phi ();
-	  if (virtual_operand_p (gimple_phi_result (phi)))
-	    continue;
-	  /* Distribute stmts which have defs that are used outside of
-	     the loop.  */
-	  if (!stmt_has_scalar_dependences_outside_loop (loop, phi))
-	    continue;
-	  work_list->safe_push (phi);
-	}
-      for (gimple_stmt_iterator gsi = gsi_start_bb (bbs[i]);
-	   !gsi_end_p (gsi); gsi_next (&gsi))
-	{
-	  gimple *stmt = gsi_stmt (gsi);
-
-	  /* If there is a stmt with side-effects bail out - we
-	     cannot and should not distribute this loop.  */
-	  if (gimple_has_side_effects (stmt))
-	    {
-	      free (bbs);
-	      return false;
-	    }
-
-	  /* Distribute stmts which have defs that are used outside of
-	     the loop.  */
-	  if (stmt_has_scalar_dependences_outside_loop (loop, stmt))
-	    ;
-	  /* Otherwise only distribute stores for now.  */
-	  else if (!gimple_vdef (stmt))
-	    continue;
-
-	  work_list->safe_push (stmt);
-	}
-    }
-  free (bbs);
-  return work_list->length () > 0;
-}
-
-/* Given innermost LOOP, return the outermost enclosing loop that forms a
-   perfect loop nest.  */
-
-static struct loop *
-prepare_perfect_loop_nest (struct loop *loop)
-{
-  struct loop *outer = loop_outer (loop);
-  tree niters = number_of_latch_executions (loop);
-
-  /* TODO: We only support the innermost 3-level loop nest distribution
-     because of compilation time issue for now.  This should be relaxed
-     in the future.  Note we only allow 3-level loop nest distribution
-     when parallelizing loops.  */
-  while ((loop->inner == NULL
-	  || (loop->inner->inner == NULL && flag_tree_parallelize_loops > 1))
-	 && loop_outer (outer)
-	 && outer->inner == loop && loop->next == NULL
-	 && single_exit (outer)
-	 && optimize_loop_for_speed_p (outer)
-	 && !chrec_contains_symbols_defined_in_loop (niters, outer->num)
-	 && (niters = number_of_latch_executions (outer)) != NULL_TREE
-	 && niters != chrec_dont_know)
-    {
-      loop = outer;
-      outer = loop_outer (loop);
-    }
-
-  return loop;
-}
-
 unsigned int
 pass_loop_distribution::execute (function *fun)
 {
-  struct loop *loop;
-  bool changed = false;
-  basic_block bb;
-  control_dependences *cd = NULL;
-  auto_vec<loop_p> loops_to_be_destroyed;
-
-  if (number_of_loops (fun) <= 1)
-    return 0;
-
-  /* Compute topological order for basic blocks.  Topological order is
-     needed because data dependence is computed for data references in
-     lexicographical order.  */
-  if (bb_top_order_index == NULL)
-    {
-      int rpo_num;
-      int *rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
-
-      bb_top_order_index = XNEWVEC (int, last_basic_block_for_fn (cfun));
-      bb_top_order_index_size = last_basic_block_for_fn (cfun);
-      rpo_num = pre_and_rev_post_order_compute_fn (cfun, NULL, rpo, true);
-      for (int i = 0; i < rpo_num; i++)
-	bb_top_order_index[rpo[i]] = i;
-
-      free (rpo);
-    }
-
-  FOR_ALL_BB_FN (bb, fun)
-    {
-      gimple_stmt_iterator gsi;
-      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	gimple_set_uid (gsi_stmt (gsi), -1);
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	gimple_set_uid (gsi_stmt (gsi), -1);
-    }
-
-  /* We can at the moment only distribute non-nested loops, thus restrict
-     walking to innermost loops.  */
-  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
-    {
-      /* Don't distribute multiple exit edges loop, or cold loop.  */
-      if (!single_exit (loop)
-	  || !optimize_loop_for_speed_p (loop))
-	continue;
-
-      /* Don't distribute loop if niters is unknown.  */
-      tree niters = number_of_latch_executions (loop);
-      if (niters == NULL_TREE || niters == chrec_dont_know)
-	continue;
-
-      /* Get the perfect loop nest for distribution.  */
-      loop = prepare_perfect_loop_nest (loop);
-      for (; loop; loop = loop->inner)
-	{
-	  auto_vec<gimple *> work_list;
-	  if (!find_seed_stmts_for_distribution (loop, &work_list))
-	    break;
-
-	  const char *str = loop->inner ? " nest" : "";
-	  dump_user_location_t loc = find_loop_location (loop);
-	  if (!cd)
-	    {
-	      calculate_dominance_info (CDI_DOMINATORS);
-	      calculate_dominance_info (CDI_POST_DOMINATORS);
-	      cd = new control_dependences ();
-	      free_dominance_info (CDI_POST_DOMINATORS);
-	    }
-
-	  bool destroy_p;
-	  int nb_generated_loops, nb_generated_calls;
-	  nb_generated_loops = distribute_loop (loop, work_list, cd,
-						&nb_generated_calls,
-						&destroy_p);
-	  if (destroy_p)
-	    loops_to_be_destroyed.safe_push (loop);
-
-	  if (nb_generated_loops + nb_generated_calls > 0)
-	    {
-	      changed = true;
-	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS,
-			       loc, "Loop%s %d distributed: split to %d loops "
-			       "and %d library calls.\n", str, loop->num,
-			       nb_generated_loops, nb_generated_calls);
-
-	      break;
-	    }
-
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Loop%s %d not distributed.\n", str, loop->num);
-	}
-    }
-
-  if (cd)
-    delete cd;
-
-  if (bb_top_order_index != NULL)
-    {
-      free (bb_top_order_index);
-      bb_top_order_index = NULL;
-      bb_top_order_index_size = 0;
-    }
-
-  if (changed)
-    {
-      /* Destroy loop bodies that could not be reused.  Do this late as we
-	 otherwise can end up refering to stale data in control dependences.  */
-      unsigned i;
-      FOR_EACH_VEC_ELT (loops_to_be_destroyed, i, loop)
-	destroy_loop (loop);
-
-      /* Cached scalar evolutions now may refer to wrong or non-existing
-	 loops.  */
-      scev_reset_htab ();
-      mark_virtual_operands_for_renaming (fun);
-      rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
-    }
-
-  checking_verify_loop_structure ();
-
-  return changed ? TODO_cleanup_cfg : 0;
+  return loop_distribution ().execute (fun);
 }
 
 } // anon namespace

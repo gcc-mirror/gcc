@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Vitesse IQ2000 processors
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -152,21 +152,20 @@ static void iq2000_init_builtins      (void);
 static rtx  iq2000_expand_builtin     (tree, rtx, rtx, machine_mode, int);
 static bool iq2000_return_in_memory   (const_tree, const_tree);
 static void iq2000_setup_incoming_varargs (cumulative_args_t,
-					   machine_mode, tree, int *,
-					   int);
+					   const function_arg_info &,
+					   int *, int);
 static bool iq2000_rtx_costs          (rtx, machine_mode, int, int, int *, bool);
 static int  iq2000_address_cost       (rtx, machine_mode, addr_space_t,
 				       bool);
-static section *iq2000_select_section (tree, int, unsigned HOST_WIDE_INT);
 static rtx  iq2000_legitimize_address (rtx, rtx, machine_mode);
-static bool iq2000_pass_by_reference  (cumulative_args_t, machine_mode,
-				       const_tree, bool);
-static int  iq2000_arg_partial_bytes  (cumulative_args_t, machine_mode,
-				       tree, bool);
+static bool iq2000_pass_by_reference  (cumulative_args_t,
+				       const function_arg_info &);
+static int  iq2000_arg_partial_bytes  (cumulative_args_t,
+				       const function_arg_info &arg);
 static rtx iq2000_function_arg	      (cumulative_args_t,
-				       machine_mode, const_tree, bool);
+				       const function_arg_info &);
 static void iq2000_function_arg_advance (cumulative_args_t,
-					 machine_mode, const_tree, bool);
+					 const function_arg_info &);
 static pad_direction iq2000_function_arg_padding (machine_mode, const_tree);
 static unsigned int iq2000_function_arg_boundary (machine_mode,
 						  const_tree);
@@ -197,16 +196,9 @@ static HOST_WIDE_INT iq2000_starting_frame_offset (void);
 #define TARGET_RTX_COSTS		iq2000_rtx_costs
 #undef  TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST		iq2000_address_cost
-#undef  TARGET_ASM_SELECT_SECTION
-#define TARGET_ASM_SELECT_SECTION	iq2000_select_section
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS	iq2000_legitimize_address
-
-/* The assembler supports switchable .bss sections, but
-   iq2000_select_section doesn't yet make use of them.  */
-#undef  TARGET_HAVE_SWITCHABLE_BSS_SECTIONS
-#define TARGET_HAVE_SWITCHABLE_BSS_SECTIONS false
 
 #undef  TARGET_PRINT_OPERAND
 #define TARGET_PRINT_OPERAND		iq2000_print_operand
@@ -273,6 +265,9 @@ static HOST_WIDE_INT iq2000_starting_frame_offset (void);
 
 #undef  TARGET_STARTING_FRAME_OFFSET
 #define TARGET_STARTING_FRAME_OFFSET	iq2000_starting_frame_offset
+
+#undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1150,12 +1145,11 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
     }
 }
 
-/* Advance the argument of type TYPE and mode MODE to the next argument
-   position in CUM.  */
+/* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
 
 static void
-iq2000_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			     const_tree type, bool named)
+iq2000_function_arg_advance (cumulative_args_t cum_v,
+			     const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
@@ -1164,29 +1158,29 @@ iq2000_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
       fprintf (stderr,
 	       "function_adv({gp reg found = %d, arg # = %2d, words = %2d}, %4s, ",
 	       cum->gp_reg_found, cum->arg_number, cum->arg_words,
-	       GET_MODE_NAME (mode));
-      fprintf (stderr, "%p", (const void *) type);
-      fprintf (stderr, ", %d )\n\n", named);
+	       GET_MODE_NAME (arg.mode));
+      fprintf (stderr, "%p", (const void *) arg.type);
+      fprintf (stderr, ", %d )\n\n", arg.named);
     }
 
   cum->arg_number++;
-  switch (mode)
+  switch (arg.mode)
     {
     case E_VOIDmode:
       break;
 
     default:
-      gcc_assert (GET_MODE_CLASS (mode) == MODE_COMPLEX_INT
-		  || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT);
+      gcc_assert (GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_INT
+		  || GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_FLOAT);
 
       cum->gp_reg_found = 1;
-      cum->arg_words += ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1)
+      cum->arg_words += ((GET_MODE_SIZE (arg.mode) + UNITS_PER_WORD - 1)
 			 / UNITS_PER_WORD);
       break;
 
     case E_BLKmode:
       cum->gp_reg_found = 1;
-      cum->arg_words += ((int_size_in_bytes (type) + UNITS_PER_WORD - 1)
+      cum->arg_words += ((int_size_in_bytes (arg.type) + UNITS_PER_WORD - 1)
 			 / UNITS_PER_WORD);
       break;
 
@@ -1221,14 +1215,15 @@ iq2000_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
     }
 }
 
-/* Return an RTL expression containing the register for the given mode MODE
-   and type TYPE in CUM, or 0 if the argument is to be passed on the stack.  */
+/* Return an RTL expression containing the register for argument ARG in CUM,
+   or 0 if the argument is to be passed on the stack.  */
 
 static rtx
-iq2000_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		     const_tree type, bool named)
+iq2000_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+  tree type = arg.type;
+  machine_mode mode = arg.mode;
   rtx ret;
   int regbase = -1;
   int bias = 0;
@@ -1245,7 +1240,7 @@ iq2000_function_arg (cumulative_args_t cum_v, machine_mode mode,
 	       cum->gp_reg_found, cum->arg_number, cum->arg_words,
 	       GET_MODE_NAME (mode));
       fprintf (stderr, "%p", (const void *) type);
-      fprintf (stderr, ", %d ) = ", named);
+      fprintf (stderr, ", %d ) = ", arg.named);
     }
 
 
@@ -1303,7 +1298,7 @@ iq2000_function_arg (cumulative_args_t cum_v, machine_mode mode,
       gcc_assert (regbase != -1);
 
       if (! type || TREE_CODE (type) != RECORD_TYPE
-	  || ! named  || ! TYPE_SIZE_UNIT (type)
+	  || ! arg.named || ! TYPE_SIZE_UNIT (type)
 	  || ! tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
 	ret = gen_rtx_REG (mode, regbase + *arg_words + bias);
       else
@@ -1375,11 +1370,11 @@ iq2000_function_arg (cumulative_args_t cum_v, machine_mode mode,
 		 struct_p ? ", [struct]" : "");
     }
 
-  /* We will be called with a mode of VOIDmode after the last argument
+  /* We will be called with an end marker after the last argument
      has been seen.  Whatever we return will be passed to the call
      insn.  If we need any shifts for small structures, return them in
      a PARALLEL.  */
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     {
       if (cum->num_adjusts > 0)
 	ret = gen_rtx_PARALLEL ((machine_mode) cum->fp_code,
@@ -1418,13 +1413,12 @@ iq2000_function_arg_boundary (machine_mode mode, const_tree type)
 }
 
 static int
-iq2000_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
-			  tree type ATTRIBUTE_UNUSED,
-			  bool named ATTRIBUTE_UNUSED)
+iq2000_arg_partial_bytes (cumulative_args_t cum_v,
+			  const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  if (mode == DImode && cum->arg_words == MAX_ARGS_IN_REGISTERS - 1)
+  if (arg.mode == DImode && cum->arg_words == MAX_ARGS_IN_REGISTERS - 1)
     {
       if (TARGET_DEBUG_D_MODE)
 	fprintf (stderr, "iq2000_arg_partial_bytes=%d\n", UNITS_PER_WORD);
@@ -1965,11 +1959,10 @@ iq2000_expand_prologue (void)
 	  passed_mode = Pmode;
 	}
 
-      entry_parm = iq2000_function_arg (args_so_far, passed_mode,
-					passed_type, true);
+      function_arg_info arg (passed_type, passed_mode, /*named=*/true);
+      entry_parm = iq2000_function_arg (args_so_far, arg);
 
-      iq2000_function_arg_advance (args_so_far, passed_mode,
-				   passed_type, true);
+      iq2000_function_arg_advance (args_so_far, arg);
       next_arg = DECL_CHAIN (cur_arg);
 
       if (entry_parm && store_args_on_stack)
@@ -2011,8 +2004,8 @@ iq2000_expand_prologue (void)
      iq2000_unction_arg has encoded a PARALLEL rtx, holding a vector of
      adjustments to be made as the next_arg_reg variable, so we split up
      the insns, and emit them separately.  */
-  next_arg_reg = iq2000_function_arg (args_so_far, VOIDmode,
-				      void_type_node, true);
+  next_arg_reg = iq2000_function_arg (args_so_far,
+				      function_arg_info::end_marker ());
   if (next_arg_reg != 0 && GET_CODE (next_arg_reg) == PARALLEL)
     {
       rtvec adjust = XVEC (next_arg_reg, 0);
@@ -2200,48 +2193,6 @@ iq2000_select_rtx_section (machine_mode mode, rtx x ATTRIBUTE_UNUSED,
   return mergeable_constant_section (mode, align, 0);
 }
 
-/* Choose the section to use for DECL.  RELOC is true if its value contains
-   any relocatable expression.
-
-   Some of the logic used here needs to be replicated in
-   ENCODE_SECTION_INFO in iq2000.h so that references to these symbols
-   are done correctly.  */
-
-static section *
-iq2000_select_section (tree decl, int reloc ATTRIBUTE_UNUSED,
-		       unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
-{
-  if (TARGET_EMBEDDED_DATA)
-    {
-      /* For embedded applications, always put an object in read-only data
-	 if possible, in order to reduce RAM usage.  */
-      if ((TREE_CODE (decl) == VAR_DECL
-	   && TREE_READONLY (decl) && !TREE_SIDE_EFFECTS (decl)
-	   && DECL_INITIAL (decl)
-	   && (DECL_INITIAL (decl) == error_mark_node
-	       || TREE_CONSTANT (DECL_INITIAL (decl))))
-	  /* Deal with calls from output_constant_def_contents.  */
-	  || TREE_CODE (decl) != VAR_DECL)
-	return readonly_data_section;
-      else
-	return data_section;
-    }
-  else
-    {
-      /* For hosted applications, always put an object in small data if
-	 possible, as this gives the best performance.  */
-      if ((TREE_CODE (decl) == VAR_DECL
-	   && TREE_READONLY (decl) && !TREE_SIDE_EFFECTS (decl)
-	   && DECL_INITIAL (decl)
-	   && (DECL_INITIAL (decl) == error_mark_node
-	       || TREE_CONSTANT (DECL_INITIAL (decl))))
-	  /* Deal with calls from output_constant_def_contents.  */
-	  || TREE_CODE (decl) != VAR_DECL)
-	return readonly_data_section;
-      else
-	return data_section;
-    }
-}
 /* Return register to use for a function return value with VALTYPE for function
    FUNC.  */
 
@@ -2290,8 +2241,8 @@ iq2000_function_value_regno_p (const unsigned int regno)
 /* Return true when an argument must be passed by reference.  */
 
 static bool
-iq2000_pass_by_reference (cumulative_args_t cum_v, machine_mode mode,
-			  const_tree type, bool named ATTRIBUTE_UNUSED)
+iq2000_pass_by_reference (cumulative_args_t cum_v,
+			  const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int size;
@@ -2299,7 +2250,7 @@ iq2000_pass_by_reference (cumulative_args_t cum_v, machine_mode mode,
   /* We must pass by reference if we would be both passing in registers
      and the stack.  This is because any subsequent partial arg would be
      handled incorrectly in this case.  */
-  if (cum && targetm.calls.must_pass_in_stack (mode, type))
+  if (cum && targetm.calls.must_pass_in_stack (arg))
      {
        /* Don't pass the actual CUM to FUNCTION_ARG, because we would
 	  get double copies of any offsets generated for small structs
@@ -2307,15 +2258,14 @@ iq2000_pass_by_reference (cumulative_args_t cum_v, machine_mode mode,
        CUMULATIVE_ARGS temp;
 
        temp = *cum;
-       if (iq2000_function_arg (pack_cumulative_args (&temp), mode, type, named)
-	   != 0)
+       if (iq2000_function_arg (pack_cumulative_args (&temp), arg) != 0)
 	 return 1;
      }
 
-  if (type == NULL_TREE || mode == DImode || mode == DFmode)
+  if (arg.type == NULL_TREE || arg.mode == DImode || arg.mode == DFmode)
     return 0;
 
-  size = int_size_in_bytes (type);
+  size = int_size_in_bytes (arg.type);
   return size == -1 || size > UNITS_PER_WORD;
 }
 
@@ -2704,7 +2654,7 @@ iq2000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 		       int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  int fcode = DECL_FUNCTION_CODE (fndecl);
+  int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   enum rtx_code code [5];
 
   code[0] = REG;
@@ -2892,9 +2842,8 @@ iq2000_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 
 static void
 iq2000_setup_incoming_varargs (cumulative_args_t cum_v,
-			       machine_mode mode ATTRIBUTE_UNUSED,
-			       tree type ATTRIBUTE_UNUSED, int * pretend_size,
-			       int no_rtl)
+			       const function_arg_info &,
+			       int *pretend_size, int no_rtl)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   unsigned int iq2000_off = ! cum->last_arg_fp; 
@@ -3096,7 +3045,7 @@ iq2000_print_operand (FILE *file, rtx op, int letter)
 	  break;
 
 	default:
-	  error ("PRINT_OPERAND: Unknown punctuation '%c'", letter);
+	  error ("PRINT_OPERAND: Unknown punctuation %<%c%>", letter);
 	  break;
 	}
 

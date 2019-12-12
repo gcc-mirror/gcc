@@ -1,5 +1,5 @@
 /* Tree-dumping functionality for intermediate representation.
-   Copyright (C) 1999-2018 Free Software Foundation, Inc.
+   Copyright (C) 1999-2019 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>
 
 This file is part of GCC.
@@ -561,6 +561,7 @@ dequeue_and_dump (dump_info_p di)
     case ADDR_EXPR:
     case INDIRECT_REF:
     case CLEANUP_POINT_EXPR:
+    case VIEW_CONVERT_EXPR:
     case SAVE_EXPR:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
@@ -604,6 +605,7 @@ dequeue_and_dump (dump_info_p di)
       break;
 
     case TRY_FINALLY_EXPR:
+    case EH_ELSE_EXPR:
       dump_child ("op 0", TREE_OPERAND (t, 0));
       dump_child ("op 1", TREE_OPERAND (t, 1));
       break;

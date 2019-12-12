@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O2 -fzee" } */
+/* { dg-options "-O2" } */
 /* { dg-final { scan-assembler-not "mov\[\\t \]+\(%\[\^,\]+\),\[\\t \]*\\1" } } */
 int mask[100];
 int foo(unsigned x)

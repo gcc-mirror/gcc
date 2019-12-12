@@ -1,5 +1,5 @@
 /* Subroutines used for expanding RISC-V builtins.
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
 
 This file is part of GCC.
@@ -256,7 +256,7 @@ riscv_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 		      int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   const struct riscv_builtin_description *d = &riscv_builtins[fcode];
 
   switch (d->builtin_type)

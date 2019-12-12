@@ -7,7 +7,8 @@
 #include "runtime.h"
 
 _Bool memequal (void *, void *, uintptr)
-  __asm__ (GOSYM_PREFIX "runtime.memequal");
+  __asm__ (GOSYM_PREFIX "runtime.memequal")
+  __attribute__ ((no_split_stack));
 
 _Bool
 memequal (void *p1, void *p2, uintptr len)

@@ -1,6 +1,5 @@
 // { dg-do run { target fpic } }
 // { dg-options "-fPIC" }
-// { dg-skip-if "requires unsupported run-time relocation" { spu-*-* } }
 // Test that non-variadic function calls using thunks and PIC work right.
 
 struct A {

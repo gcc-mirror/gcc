@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2011-2018 Free Software Foundation, Inc.
+// Copyright (C) 2011-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -138,3 +138,13 @@ static_assert(!std::is_default_constructible<DelCopy>::value, "Error");
 static_assert(!std::is_default_constructible<const DelCopy>::value, "Error");
 static_assert(!std::is_default_constructible<DelDtor>::value, "Error");
 static_assert(!std::is_default_constructible<const DelDtor>::value, "Error");
+
+static_assert(!std::is_default_constructible<int[]>::value, "PR c++/90532");
+static_assert(!std::is_default_constructible<Empty[]>::value, "PR c++/90532");
+static_assert(!std::is_default_constructible<B[]>::value, "PR c++/90532");
+static_assert(!std::is_default_constructible<D[]>::value, "PR c++/90532");
+static_assert(!std::is_default_constructible<U[]>::value, "PR c++/90532");
+static_assert(!std::is_default_constructible<Ukn[]>::value, "PR c++/90532");
+static_assert(!std::is_default_constructible<Ellipsis[]>::value, "PR c++/90532");
+static_assert(!std::is_default_constructible<Any[]>::value, "PR c++/90532");
+static_assert(!std::is_default_constructible<nAny[]>::value, "PR c++/90532");

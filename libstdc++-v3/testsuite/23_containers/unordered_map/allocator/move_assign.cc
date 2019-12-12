@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2018 Free Software Foundation, Inc.
+// Copyright (C) 2013-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,8 @@ using __gnu_test::counter_type;
 
 void test01()
 {
-  typedef propagating_allocator<counter_type, false> alloc_type;
+  typedef std::pair<const counter_type, counter_type> value_type;
+  typedef propagating_allocator<value_type, false> alloc_type;
   typedef __gnu_test::counter_type_hasher hash;
   typedef std::unordered_map<counter_type, counter_type, hash,
 			     std::equal_to<counter_type>,
@@ -54,7 +55,8 @@ void test01()
 
 void test02()
 {
-  typedef propagating_allocator<counter_type, true> alloc_type;
+  typedef std::pair<const counter_type, counter_type> value_type;
+  typedef propagating_allocator<value_type, true> alloc_type;
   typedef __gnu_test::counter_type_hasher hash;
   typedef std::unordered_map<counter_type, counter_type, hash,
 			     std::equal_to<counter_type>,
@@ -74,7 +76,7 @@ void test02()
 
   v2 = std::move(v1);
 
-  VERIFY(0 == v1.get_allocator().get_personality());
+  VERIFY(1 == v1.get_allocator().get_personality());
   VERIFY(1 == v2.get_allocator().get_personality());
 
   VERIFY( counter_type::move_assign_count == 0 );

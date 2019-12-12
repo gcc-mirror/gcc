@@ -1,5 +1,5 @@
 /* This test needs runtime that provides stpcpy and mempcpy functions.  */
-/* { dg-do run { target *-*-linux* *-*-gnu* } } */
+/* { dg-do run { target *-*-linux* *-*-gnu* *-*-uclinux* } } */
 /* { dg-options "-O2 -fdump-tree-strlen" } */
 /* Bionic targets don't have mempcpy */
 /* { dg-require-effective-target non_bionic } */
@@ -107,10 +107,10 @@ main ()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "strlen \\(" 4 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "memcpy \\(" 1 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "mempcpy \\(" 2 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "strcpy \\(" 0 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "strcat \\(" 0 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "strchr \\(" 0 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "stpcpy \\(" 2 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "strlen \\(" 4 "strlen1" } } */
+/* { dg-final { scan-tree-dump-times "memcpy \\(" 1 "strlen1" } } */
+/* { dg-final { scan-tree-dump-times "mempcpy \\(" 2 "strlen1" } } */
+/* { dg-final { scan-tree-dump-times "strcpy \\(" 0 "strlen1" } } */
+/* { dg-final { scan-tree-dump-times "strcat \\(" 0 "strlen1" } } */
+/* { dg-final { scan-tree-dump-times "strchr \\(" 0 "strlen1" } } */
+/* { dg-final { scan-tree-dump-times "stpcpy \\(" 2 "strlen1" } } */

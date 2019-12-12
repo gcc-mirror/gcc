@@ -1,5 +1,5 @@
 /* brig-lang.c -- brig (HSAIL) input gcc interface.
-   Copyright (C) 2016-2018 Free Software Foundation, Inc.
+   Copyright (C) 2016-2019 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -145,7 +145,7 @@ brig_langhook_init_options_struct (struct gcc_options *opts)
 static bool
 brig_langhook_handle_option
   (size_t scode, const char *arg ATTRIBUTE_UNUSED,
-  int value ATTRIBUTE_UNUSED, int kind ATTRIBUTE_UNUSED,
+  HOST_WIDE_INT value ATTRIBUTE_UNUSED, int kind ATTRIBUTE_UNUSED,
   location_t loc ATTRIBUTE_UNUSED,
   const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
 {
@@ -166,8 +166,8 @@ brig_langhook_handle_option
 static bool
 brig_langhook_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 {
-  if (flag_excess_precision_cmdline == EXCESS_PRECISION_DEFAULT)
-    flag_excess_precision_cmdline = EXCESS_PRECISION_STANDARD;
+  if (flag_excess_precision == EXCESS_PRECISION_DEFAULT)
+    flag_excess_precision = EXCESS_PRECISION_STANDARD;
 
   /* gccbrig casts pointers around like crazy, TBAA might produce broken
      code if not disabling it by default.  Some PRM conformance tests such
@@ -587,6 +587,7 @@ static GTY(()) tree signed_size_type_node;
 int flag_isoc94;
 int flag_isoc99;
 int flag_isoc11;
+int flag_isoc2x;
 
 static void
 def_fn_type (builtin_type def, builtin_type ret, bool var, int n, ...)
@@ -864,10 +865,12 @@ brig_build_c_type_nodes (void)
       for (i = 0; i < NUM_INT_N_ENTS; i++)
 	if (int_n_enabled_p[i])
 	  {
-	    char name[50];
+	    char name[50], altname[50];
 	    sprintf (name, "__int%d unsigned", int_n_data[i].bitsize);
+	    sprintf (altname, "__int%d__ unsigned", int_n_data[i].bitsize);
 
-	    if (strcmp (name, SIZE_TYPE) == 0)
+	    if (strcmp (name, SIZE_TYPE) == 0
+		|| strcmp (altname, SIZE_TYPE) == 0)
 	      {
 		intmax_type_node = int_n_trees[i].signed_type;
 		uintmax_type_node = int_n_trees[i].unsigned_type;

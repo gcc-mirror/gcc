@@ -47,7 +47,7 @@ struct W
 {
   static inline int var24;			// { dg-warning "10:inline variables are only available with" "" { target c++14_down } }
   static inline const int var25;		// { dg-warning "10:inline variables are only available with" "" { target c++14_down } }
-						// { dg-error "uninitialized const" "" { target *-*-* } .-1 }
+						// { dg-error "uninitialized 'const" "" { target *-*-* } .-1 }
   static inline int var26 = 5;			// { dg-warning "10:inline variables are only available with" "" { target c++14_down } }
   static inline const int var27 = 6;		// { dg-warning "10:inline variables are only available with" "" { target c++14_down } }
   static inline double var28 = { 4.0 };		// { dg-warning "10:inline variables are only available with" "" { target c++14_down } }
@@ -90,7 +90,7 @@ struct Z
 {
   static inline int var37;			// { dg-warning "10:inline variables are only available with" "" { target c++14_down } }
   static inline const int var38;		// { dg-warning "10:inline variables are only available with" "" { target c++14_down } }
-						// { dg-error "uninitialized const" "" { target *-*-* } .-1 }
+						// { dg-error "uninitialized 'const" "" { target *-*-* } .-1 }
   static inline int var39 = 5;			// { dg-warning "10:inline variables are only available with" "" { target c++14_down } }
   static inline const int var40 = 6;		// { dg-warning "10:inline variables are only available with" "" { target c++14_down } }
   static inline double var41 = { 4.0 };		// { dg-warning "10:inline variables are only available with" "" { target c++14_down } }

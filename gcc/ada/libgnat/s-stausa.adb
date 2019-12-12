@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2004-2018, Free Software Foundation, Inc.          --
+--         Copyright (C) 2004-2019, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,7 @@ package body System.Stack_Usage is
    -- Stack_Slots --
    -----------------
 
-   --  Stackl_Slots is an internal data type to represent a sequence of real
+   --  Stack_Slots is an internal data type to represent a sequence of real
    --  stack slots initialized with a provided pattern, with operations to
    --  abstract away the target call stack growth direction.
 

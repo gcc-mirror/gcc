@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,10 +32,9 @@
 
 --  See the body for exact details of the file that is generated
 
-with Binde; use Binde;
+with ALI; use ALI;
 
 package Bindgen is
-
    procedure Gen_Output_File
      (Filename   : String;
       Elab_Order : Unit_Id_Array);

@@ -13,7 +13,7 @@ void (*fp)(void);
 
 void function_1 ()
 {
-  fp = 1 ? function_0 : fp;		// { dg-error "conditional expression|invalid conversion" } 
+  fp = 1 ? function_0 : fp;		// { dg-error "10:conditional expression|invalid conversion" } 
 }
 
 int main () { return 0; }

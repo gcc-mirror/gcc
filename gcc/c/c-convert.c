@@ -1,5 +1,5 @@
 /* Language-level data type conversion for GNU C.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -115,6 +115,7 @@ convert (tree type, tree expr)
 	  && COMPLETE_TYPE_P (type))
 	{
 	  expr = save_expr (expr);
+	  expr = c_fully_fold (expr, false, NULL);
 	  tree check = ubsan_instrument_float_cast (loc, type, expr);
 	  expr = fold_build1 (FIX_TRUNC_EXPR, type, expr);
 	  if (check == NULL_TREE)
@@ -146,8 +147,20 @@ convert (tree type, tree expr)
       goto maybe_fold;
 
     case VECTOR_TYPE:
-      ret = convert_to_vector (type, e);
-      goto maybe_fold;
+      if (gnu_vector_type_p (type)
+	  || gnu_vector_type_p (TREE_TYPE (e))
+	  /* Allow conversions between compatible non-GNU vector types
+	     when -flax-vector-conversions is passed.  The whole purpose
+	     of the option is to bend the normal type rules and accept
+	     nonconforming code.  */
+	  || (flag_lax_vector_conversions
+	      && VECTOR_TYPE_P (TREE_TYPE (e))
+	      && vector_types_convertible_p (type, TREE_TYPE (e), false)))
+	{
+	  ret = convert_to_vector (type, e);
+	  goto maybe_fold;
+	}
+      break;
 
     case RECORD_TYPE:
     case UNION_TYPE:

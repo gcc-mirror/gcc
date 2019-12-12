@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -78,7 +78,7 @@ namespace __gnu_pbds
     : public left_child_next_sibling_heap PB_DS_BASE_T_P
     {
     private:
-      typedef typename _Alloc::template rebind<Value_Type>::other __rebind_a;
+      typedef rebind_traits<_Alloc, Value_Type>		  __rebind_a;
       typedef left_child_next_sibling_heap PB_DS_BASE_T_P base_type;
 
     protected:

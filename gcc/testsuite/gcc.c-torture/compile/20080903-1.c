@@ -1,3 +1,5 @@
+/* { dg-require-stack-size "4096" } */
+
 struct bar { unsigned short length; };
 
 int

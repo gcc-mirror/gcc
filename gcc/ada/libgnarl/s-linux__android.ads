@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---            Copyright (C) 2014-2018, Free Software Foundation, Inc.       --
+--            Copyright (C) 2014-2019, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -82,7 +82,7 @@ package System.Linux is
    SIGILL     : constant := 4; --  illegal instruction (not reset)
    SIGTRAP    : constant := 5; --  trace trap (not reset)
    SIGIOT     : constant := 6; --  IOT instruction
-   SIGABRT    : constant := 6; --  used by abort, replace SIGIOT in the  future
+   SIGABRT    : constant := 6; --  used by abort, replace SIGIOT in the future
    SIGFPE     : constant := 8; --  floating point exception
    SIGKILL    : constant := 9; --  kill (cannot be caught or ignored)
    SIGBUS     : constant := 7; --  bus error
@@ -111,9 +111,9 @@ package System.Linux is
    SIGXFSZ    : constant := 25; --  filesize limit exceeded
    SIGUNUSED  : constant := 31; --  unused signal (GNU/Linux)
    SIGSTKFLT  : constant := 16; --  coprocessor stack fault (Linux)
-   SIGLTHRRES : constant := 32; --  GNU/LinuxThreads restart signal
-   SIGLTHRCAN : constant := 33; --  GNU/LinuxThreads cancel signal
-   SIGLTHRDBG : constant := 34; --  GNU/LinuxThreads debugger signal
+   SIG32      : constant := 32; --  glibc internal signal
+   SIG33      : constant := 33; --  glibc internal signal
+   SIG34      : constant := 34; --  glibc internal signal
 
    --  struct_sigaction offsets
 

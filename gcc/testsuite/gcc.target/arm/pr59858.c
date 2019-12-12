@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-march=armv5te -fno-builtin -mfloat-abi=soft -mthumb -fno-stack-protector -Os -fno-tree-loop-optimize -fno-tree-dominator-opts -fPIC -w" } */
 /* { dg-skip-if "Incompatible command line options: -mfloat-abi=soft -mfloat-abi=hard" { *-*-* } { "-mfloat-abi=hard" } { "" } } */
+/* { dg-require-effective-target arm_arch_v5te_thumb_ok } */
 
 typedef enum {
  REG_ENOSYS = -1,

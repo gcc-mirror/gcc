@@ -20,6 +20,7 @@ func kevent(kq int32, ch *keventt, nch uintptr, ev *keventt, nev uintptr, ts *ti
 //extern __go_fcntl_uintptr
 func fcntlUintptr(fd, cmd, arg uintptr) (uintptr, uintptr)
 
+//go:nosplit
 func closeonexec(fd int32) {
 	fcntlUintptr(uintptr(fd), _F_SETFD, _FD_CLOEXEC)
 }
@@ -73,9 +74,9 @@ func netpollarm(pd *pollDesc, mode int) {
 
 // Polls for ready network connections.
 // Returns list of goroutines that become runnable.
-func netpoll(block bool) *g {
+func netpoll(block bool) gList {
 	if kq == -1 {
-		return nil
+		return gList{}
 	}
 	var tp *timespec
 	var ts timespec
@@ -93,7 +94,7 @@ retry:
 		}
 		goto retry
 	}
-	var gp guintptr
+	var toRun gList
 	for i := 0; i < int(n); i++ {
 		ev := &events[i]
 		var mode int32
@@ -117,11 +118,16 @@ retry:
 			mode += 'w'
 		}
 		if mode != 0 {
-			netpollready(&gp, (*pollDesc)(unsafe.Pointer(ev.udata)), mode)
+			pd := (*pollDesc)(unsafe.Pointer(ev.udata))
+			pd.everr = false
+			if ev.flags == _EV_ERROR {
+				pd.everr = true
+			}
+			netpollready(&toRun, pd, mode)
 		}
 	}
-	if block && gp == 0 {
+	if block && toRun.empty() {
 		goto retry
 	}
-	return gp.ptr()
+	return toRun
 }

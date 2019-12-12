@@ -1,5 +1,5 @@
 /* Predictive commoning.
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -231,7 +231,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
-#include "params.h"
 #include "tree-affine.h"
 #include "builtins.h"
 
@@ -243,8 +242,9 @@ along with GCC; see the file COPYING3.  If not see
 /* Data references (or phi nodes that carry data reference values across
    loop iterations).  */
 
-typedef struct dref_d
+typedef class dref_d
 {
+public:
   /* The reference itself.  */
   struct data_reference *ref;
 
@@ -734,7 +734,7 @@ determine_offset (struct data_reference *a, struct data_reference *b,
    it is executed whenever the loop is entered.  */
 
 static basic_block
-last_always_executed_block (struct loop *loop)
+last_always_executed_block (class loop *loop)
 {
   unsigned i;
   vec<edge> exits = get_loop_exit_edges (loop);
@@ -751,7 +751,7 @@ last_always_executed_block (struct loop *loop)
 /* Splits dependence graph on DATAREFS described by DEPENDS to components.  */
 
 static struct component *
-split_data_refs_to_components (struct loop *loop,
+split_data_refs_to_components (class loop *loop,
 			       vec<data_reference_p> datarefs,
 			       vec<ddr_p> depends)
 {
@@ -895,7 +895,7 @@ split_data_refs_to_components (struct loop *loop,
 	  comps[ca] = comp;
 	}
 
-      dataref = XCNEW (struct dref_d);
+      dataref = XCNEW (class dref_d);
       dataref->ref = dr;
       dataref->stmt = DR_STMT (dr);
       dataref->offset = 0;
@@ -930,7 +930,7 @@ end:
    loop.  */
 
 static bool
-suitable_component_p (struct loop *loop, struct component *comp)
+suitable_component_p (class loop *loop, struct component *comp)
 {
   unsigned i;
   dref a, first;
@@ -986,7 +986,7 @@ suitable_component_p (struct loop *loop, struct component *comp)
    the beginning of this file.  LOOP is the current loop.  */
 
 static struct component *
-filter_suitable_components (struct loop *loop, struct component *comps)
+filter_suitable_components (class loop *loop, struct component *comps)
 {
   struct component **comp, *act;
 
@@ -1231,7 +1231,7 @@ valid_initializer_p (struct data_reference *ref,
    is the root of the current chain.  */
 
 static gphi *
-find_looparound_phi (struct loop *loop, dref ref, dref root)
+find_looparound_phi (class loop *loop, dref ref, dref root)
 {
   tree name, init, init_ref;
   gphi *phi = NULL;
@@ -1280,7 +1280,8 @@ find_looparound_phi (struct loop *loop, dref ref, dref root)
   memset (&init_dr, 0, sizeof (struct data_reference));
   DR_REF (&init_dr) = init_ref;
   DR_STMT (&init_dr) = phi;
-  if (!dr_analyze_innermost (&DR_INNERMOST (&init_dr), init_ref, loop))
+  if (!dr_analyze_innermost (&DR_INNERMOST (&init_dr), init_ref, loop,
+			     init_stmt))
     return NULL;
 
   if (!valid_initializer_p (&init_dr, ref->distance + 1, root->ref))
@@ -1294,7 +1295,7 @@ find_looparound_phi (struct loop *loop, dref ref, dref root)
 static void
 insert_looparound_copy (chain_p chain, dref ref, gphi *phi)
 {
-  dref nw = XCNEW (struct dref_d), aref;
+  dref nw = XCNEW (class dref_d), aref;
   unsigned i;
 
   nw->stmt = phi;
@@ -1319,7 +1320,7 @@ insert_looparound_copy (chain_p chain, dref ref, gphi *phi)
    (also, it may allow us to combine chains together).  */
 
 static void
-add_looparound_copies (struct loop *loop, chain_p chain)
+add_looparound_copies (class loop *loop, chain_p chain)
 {
   unsigned i;
   dref ref, root = get_chain_root (chain);
@@ -1344,7 +1345,7 @@ add_looparound_copies (struct loop *loop, chain_p chain)
    loop.  */
 
 static void
-determine_roots_comp (struct loop *loop,
+determine_roots_comp (class loop *loop,
 		      struct component *comp,
 		      vec<chain_p> *chains)
 {
@@ -1434,7 +1435,7 @@ determine_roots_comp (struct loop *loop,
    separates the references to CHAINS.  LOOP is the current loop.  */
 
 static void
-determine_roots (struct loop *loop,
+determine_roots (class loop *loop,
 		 struct component *comps, vec<chain_p> *chains)
 {
   struct component *comp;
@@ -1651,7 +1652,7 @@ predcom_tmp_var (tree ref, unsigned i, bitmap tmp_vars)
    temporary variables are marked in TMP_VARS.  */
 
 static void
-initialize_root_vars (struct loop *loop, chain_p chain, bitmap tmp_vars)
+initialize_root_vars (class loop *loop, chain_p chain, bitmap tmp_vars)
 {
   unsigned i;
   unsigned n = chain->length;
@@ -1705,14 +1706,14 @@ initialize_root_vars (struct loop *loop, chain_p chain, bitmap tmp_vars)
    In this case, we can use these invariant values directly after LOOP.  */
 
 static bool
-is_inv_store_elimination_chain (struct loop *loop, chain_p chain)
+is_inv_store_elimination_chain (class loop *loop, chain_p chain)
 {
   if (chain->length == 0 || chain->type != CT_STORE_STORE)
     return false;
 
   gcc_assert (!chain->has_max_use_after);
 
-  /* If loop iterates for unknown times or fewer times than chain->lenght,
+  /* If loop iterates for unknown times or fewer times than chain->length,
      we still need to setup root variable and propagate it with PHI node.  */
   tree niters = number_of_latch_executions (loop);
   if (TREE_CODE (niters) != INTEGER_CST
@@ -1799,7 +1800,7 @@ initialize_root_vars_store_elim_1 (chain_p chain)
    of the newly created root variables are marked in TMP_VARS.  */
 
 static void
-initialize_root_vars_store_elim_2 (struct loop *loop,
+initialize_root_vars_store_elim_2 (class loop *loop,
 				   chain_p chain, bitmap tmp_vars)
 {
   unsigned i, n = chain->length;
@@ -1884,7 +1885,7 @@ initialize_root_vars_store_elim_2 (struct loop *loop,
    (CHAIN->length - 1) iterations.  */
 
 static void
-finalize_eliminated_stores (struct loop *loop, chain_p chain)
+finalize_eliminated_stores (class loop *loop, chain_p chain)
 {
   unsigned i, n = chain->length;
 
@@ -1912,7 +1913,7 @@ finalize_eliminated_stores (struct loop *loop, chain_p chain)
    initializer.  */
 
 static void
-initialize_root_vars_lm (struct loop *loop, dref root, bool written,
+initialize_root_vars_lm (class loop *loop, dref root, bool written,
 			 vec<tree> *vars, vec<tree> inits,
 			 bitmap tmp_vars)
 {
@@ -1960,7 +1961,7 @@ initialize_root_vars_lm (struct loop *loop, dref root, bool written,
    created temporary variables are marked in TMP_VARS.  */
 
 static void
-execute_load_motion (struct loop *loop, chain_p chain, bitmap tmp_vars)
+execute_load_motion (class loop *loop, chain_p chain, bitmap tmp_vars)
 {
   auto_vec<tree> vars;
   dref a;
@@ -2101,7 +2102,7 @@ remove_stmt (gimple *stmt)
    Uids of the newly created temporary variables are marked in TMP_VARS.*/
 
 static void
-execute_pred_commoning_chain (struct loop *loop, chain_p chain,
+execute_pred_commoning_chain (class loop *loop, chain_p chain,
 			      bitmap tmp_vars)
 {
   unsigned i;
@@ -2192,7 +2193,7 @@ determine_unroll_factor (vec<chain_p> chains)
 {
   chain_p chain;
   unsigned factor = 1, af, nfactor, i;
-  unsigned max = PARAM_VALUE (PARAM_MAX_UNROLL_TIMES);
+  unsigned max = param_max_unroll_times;
 
   FOR_EACH_VEC_ELT (chains, i, chain)
     {
@@ -2232,7 +2233,7 @@ determine_unroll_factor (vec<chain_p> chains)
    Uids of the newly created temporary variables are marked in TMP_VARS.  */
 
 static void
-execute_pred_commoning (struct loop *loop, vec<chain_p> chains,
+execute_pred_commoning (class loop *loop, vec<chain_p> chains,
 			bitmap tmp_vars)
 {
   chain_p chain;
@@ -2315,7 +2316,7 @@ struct epcc_data
 };
 
 static void
-execute_pred_commoning_cbck (struct loop *loop, void *data)
+execute_pred_commoning_cbck (class loop *loop, void *data)
 {
   struct epcc_data *const dta = (struct epcc_data *) data;
 
@@ -2331,7 +2332,7 @@ execute_pred_commoning_cbck (struct loop *loop, void *data)
    the header of the LOOP.  */
 
 static void
-base_names_in_chain_on (struct loop *loop, tree name, tree var)
+base_names_in_chain_on (class loop *loop, tree name, tree var)
 {
   gimple *stmt, *phi;
   imm_use_iterator iter;
@@ -2364,7 +2365,7 @@ base_names_in_chain_on (struct loop *loop, tree name, tree var)
    for those we want to perform this.  */
 
 static void
-eliminate_temp_copies (struct loop *loop, bitmap tmp_vars)
+eliminate_temp_copies (class loop *loop, bitmap tmp_vars)
 {
   edge e;
   gphi *phi;
@@ -2749,7 +2750,7 @@ combine_chains (chain_p ch1, chain_p ch2)
   for (i = 0; (ch1->refs.iterate (i, &r1)
 	       && ch2->refs.iterate (i, &r2)); i++)
     {
-      nw = XCNEW (struct dref_d);
+      nw = XCNEW (class dref_d);
       nw->stmt = stmt_combining_refs (r1, r2);
       nw->distance = r1->distance;
 
@@ -2799,7 +2800,7 @@ pcom_stmt_dominates_stmt_p (gimple *s1, gimple *s2)
 /* Try to combine the CHAINS in LOOP.  */
 
 static void
-try_combine_chains (struct loop *loop, vec<chain_p> *chains)
+try_combine_chains (class loop *loop, vec<chain_p> *chains)
 {
   unsigned i, j;
   chain_p ch1, ch2, cch;
@@ -2835,7 +2836,7 @@ try_combine_chains (struct loop *loop, vec<chain_p> *chains)
     return;
 
   /* Setup UID for all statements in dominance order.  */
-  basic_block *bbs = get_loop_body (loop);
+  basic_block *bbs = get_loop_body_in_dom_order (loop);
   renumber_gimple_stmt_uids_in_blocks (bbs, loop->num_nodes);
   free (bbs);
 
@@ -2909,7 +2910,7 @@ try_combine_chains (struct loop *loop, vec<chain_p> *chains)
    otherwise.  */
 
 static bool
-prepare_initializers_chain_store_elim (struct loop *loop, chain_p chain)
+prepare_initializers_chain_store_elim (class loop *loop, chain_p chain)
 {
   unsigned i, n = chain->length;
 
@@ -2976,7 +2977,7 @@ prepare_initializers_chain_store_elim (struct loop *loop, chain_p chain)
    impossible because one of these initializers may trap, true otherwise.  */
 
 static bool
-prepare_initializers_chain (struct loop *loop, chain_p chain)
+prepare_initializers_chain (class loop *loop, chain_p chain)
 {
   unsigned i, n = (chain->type == CT_INVARIANT) ? 1 : chain->length;
   struct data_reference *dr = get_chain_root (chain)->ref;
@@ -3032,7 +3033,7 @@ prepare_initializers_chain (struct loop *loop, chain_p chain)
    be used because the initializers might trap.  */
 
 static void
-prepare_initializers (struct loop *loop, vec<chain_p> chains)
+prepare_initializers (class loop *loop, vec<chain_p> chains)
 {
   chain_p chain;
   unsigned i;
@@ -3054,7 +3055,7 @@ prepare_initializers (struct loop *loop, vec<chain_p> chains)
    if finalizer code for CHAIN can be generated, otherwise false.  */
 
 static bool
-prepare_finalizers_chain (struct loop *loop, chain_p chain)
+prepare_finalizers_chain (class loop *loop, chain_p chain)
 {
   unsigned i, n = chain->length;
   struct data_reference *dr = get_chain_root (chain)->ref;
@@ -3102,7 +3103,7 @@ prepare_finalizers_chain (struct loop *loop, chain_p chain)
    if finalizer code generation for CHAINS breaks loop closed ssa form.  */
 
 static bool
-prepare_finalizers (struct loop *loop, vec<chain_p> chains)
+prepare_finalizers (class loop *loop, vec<chain_p> chains)
 {
   chain_p chain;
   unsigned i;
@@ -3141,7 +3142,7 @@ prepare_finalizers (struct loop *loop, vec<chain_p> chains)
 /* Insert all initializing gimple stmts into loop's entry edge.  */
 
 static void
-insert_init_seqs (struct loop *loop, vec<chain_p> chains)
+insert_init_seqs (class loop *loop, vec<chain_p> chains)
 {
   unsigned i;
   edge entry = loop_preheader_edge (loop);
@@ -3159,14 +3160,14 @@ insert_init_seqs (struct loop *loop, vec<chain_p> chains)
    form was corrupted.  */
 
 static unsigned
-tree_predictive_commoning_loop (struct loop *loop)
+tree_predictive_commoning_loop (class loop *loop)
 {
   vec<data_reference_p> datarefs;
   vec<ddr_p> dependences;
   struct component *components;
   vec<chain_p> chains = vNULL;
   unsigned unroll_factor;
-  struct tree_niter_desc desc;
+  class tree_niter_desc desc;
   bool unroll = false, loop_closed_ssa = false;
   edge exit;
 
@@ -3302,7 +3303,7 @@ end: ;
 unsigned
 tree_predictive_commoning (void)
 {
-  struct loop *loop;
+  class loop *loop;
   unsigned ret = 0, changed = 0;
 
   initialize_original_copy_tables ();

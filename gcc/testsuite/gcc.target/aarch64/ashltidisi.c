@@ -45,5 +45,5 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-final { scan-assembler-times "asr" 4 } } */
+/* { dg-final { scan-assembler-times "asr" 3 } } */
 /* { dg-final { scan-assembler-not "extr\t" } } */

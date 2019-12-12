@@ -1,5 +1,5 @@
 /* Definitions for LM32 running Linux-based GNU systems using ELF
-   Copyright (C) 1993-2018 Free Software Foundation, Inc.
+   Copyright (C) 1993-2019 Free Software Foundation, Inc.
    Contributed by Philip Blundell <philb@gnu.org>
 
    This file is part of GCC.
@@ -68,7 +68,7 @@
 #define TARGET_OS_CPP_BUILTINS() GNU_USER_TARGET_OS_CPP_BUILTINS()
 
 #define LINK_GCC_C_SEQUENCE_SPEC \
-  "%{static|static-pie:--start-group} %G %L \
+  "%{static|static-pie:--start-group} %G %{!nolibc:%L} \
    %{static|static-pie:--end-group}%{!static:%{!static-pie:%G}}"
 
 #undef  CC1_SPEC

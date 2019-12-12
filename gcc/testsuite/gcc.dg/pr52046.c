@@ -1,6 +1,7 @@
 /* PR tree-optimization/52046 */
 /* { dg-do compile } */
 /* { dg-options "-O3 -fexceptions -fnon-call-exceptions" } */
+/* { dg-require-effective-target exceptions } */
 
 extern float a[], b[], c[], d[];
 extern int k[];

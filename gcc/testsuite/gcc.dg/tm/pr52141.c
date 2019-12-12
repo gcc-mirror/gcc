@@ -4,7 +4,7 @@
 __attribute__((always_inline))
 static void asmfunc(void)
 {
-  __asm__ (""); /* { dg-error "asm not allowed in .transaction_safe" } */
+  __asm__ (""); /* { dg-error "'asm' not allowed in 'transaction_safe" } */
 }
 
 __attribute__((transaction_safe))

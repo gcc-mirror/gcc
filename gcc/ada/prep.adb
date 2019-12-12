@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -825,7 +825,7 @@ package body Prep is
    ------------------
 
    procedure List_Symbols (Foreword : String) is
-      Order : array (0 ..  Integer (Symbol_Table.Last (Mapping)))
+      Order : array (0 .. Integer (Symbol_Table.Last (Mapping)))
                  of Symbol_Id;
       --  After alphabetical sorting, this array stores the indexes of the
       --  symbols in the order they are displayed.

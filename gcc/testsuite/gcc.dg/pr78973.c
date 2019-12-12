@@ -6,7 +6,7 @@
    { dg-do compile }
    { dg-options "-O2 -Wall" } */
 
-void f (void *p, int n)
+static void f (void *p, int n)
 {
   if (n <= 4)
     __builtin_memset (p, 0, n);   /* { dg-warning "exceeds maximum object size" "pr79073" { xfail ilp32 } } */

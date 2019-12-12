@@ -1,3 +1,4 @@
+/* { dg-skip-if "AArch64 does not support these bounds." { aarch64*-*-* } { "--param stack-clash-protection-*" } } */
 
 /*-------------------------------------------------------------*/
 /*--- Block sorting machinery                               ---*/

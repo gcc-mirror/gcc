@@ -1,6 +1,6 @@
 // Set implementation -*- C++ -*-
 
-// Copyright (C) 2001-2018 Free Software Foundation, Inc.
+// Copyright (C) 2001-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -107,7 +107,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #if __cplusplus >= 201103L
       static_assert(is_same<typename remove_cv<_Key>::type, _Key>::value,
 	  "std::set must have a non-const, non-volatile value_type");
-# ifdef __STRICT_ANSI__
+# if __cplusplus > 201703L || defined __STRICT_ANSI__
       static_assert(is_same<typename _Alloc::value_type, _Key>::value,
 	  "std::set must have the same value_type as its allocator");
 # endif
@@ -190,7 +190,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _InputIterator>
 	set(_InputIterator __first, _InputIterator __last)
 	: _M_t()
-	{ _M_t._M_insert_unique(__first, __last); }
+	{ _M_t._M_insert_range_unique(__first, __last); }
 
       /**
        *  @brief  Builds a %set from a range.
@@ -209,7 +209,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    const _Compare& __comp,
 	    const allocator_type& __a = allocator_type())
 	: _M_t(__comp, _Key_alloc_type(__a))
-	{ _M_t._M_insert_unique(__first, __last); }
+	{ _M_t._M_insert_range_unique(__first, __last); }
 
       /**
        *  @brief  %Set copy constructor.
@@ -244,7 +244,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  const _Compare& __comp = _Compare(),
 	  const allocator_type& __a = allocator_type())
       : _M_t(__comp, _Key_alloc_type(__a))
-      { _M_t._M_insert_unique(__l.begin(), __l.end()); }
+      { _M_t._M_insert_range_unique(__l.begin(), __l.end()); }
 
       /// Allocator-extended default constructor.
       explicit
@@ -264,14 +264,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /// Allocator-extended initialier-list constructor.
       set(initializer_list<value_type> __l, const allocator_type& __a)
       : _M_t(_Key_alloc_type(__a))
-      { _M_t._M_insert_unique(__l.begin(), __l.end()); }
+      { _M_t._M_insert_range_unique(__l.begin(), __l.end()); }
 
       /// Allocator-extended range constructor.
       template<typename _InputIterator>
 	set(_InputIterator __first, _InputIterator __last,
 	    const allocator_type& __a)
 	: _M_t(_Key_alloc_type(__a))
-	{ _M_t._M_insert_unique(__first, __last); }
+	{ _M_t._M_insert_range_unique(__first, __last); }
 
       /**
        *  The dtor only erases the elements, and note that if the elements
@@ -410,7 +410,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
       ///  Returns true if the %set is empty.
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const _GLIBCXX_NOEXCEPT
       { return _M_t.empty(); }
 
@@ -564,7 +564,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _InputIterator>
 	void
 	insert(_InputIterator __first, _InputIterator __last)
-	{ _M_t._M_insert_unique(__first, __last); }
+	{ _M_t._M_insert_range_unique(__first, __last); }
 
 #if __cplusplus >= 201103L
       /**
@@ -934,6 +934,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   typename _Allocator =
 	     allocator<typename iterator_traits<_InputIterator>::value_type>,
 	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireNotAllocator<_Compare>,
 	   typename = _RequireAllocator<_Allocator>>
     set(_InputIterator, _InputIterator,
 	_Compare = _Compare(), _Allocator = _Allocator())
@@ -942,6 +943,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Key, typename _Compare = less<_Key>,
 	   typename _Allocator = allocator<_Key>,
+	   typename = _RequireNotAllocator<_Compare>,
 	   typename = _RequireAllocator<_Allocator>>
     set(initializer_list<_Key>,
 	_Compare = _Compare(), _Allocator = _Allocator())
@@ -1049,6 +1051,15 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       _S_get_tree(_GLIBCXX_STD_C::multiset<_Val, _Cmp2, _Alloc>& __set)
       { return __set._M_t; }
     };
+#if __cplusplus > 201703L
+namespace ranges::__detail
+{
+  template<typename _Tp> extern inline const bool __enable_view_impl;
+  template<typename _Key, typename _Compare, typename _Alloc>
+    inline constexpr bool
+      __enable_view_impl<_GLIBCXX_STD_C::set<_Key, _Compare, _Alloc>> = false;
+} // namespace ranges::__detail
+#endif // C++20
 #endif // C++17
 
 _GLIBCXX_END_NAMESPACE_VERSION

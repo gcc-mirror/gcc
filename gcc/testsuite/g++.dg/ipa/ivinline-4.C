@@ -1,7 +1,7 @@
 /* Verify that simple virtual calls are inlined even without early
    inlining, even when a typecast to an ancestor is involved along the
    way.  */
-/* { dg-do run { target nonpic } } */
+/* { dg-do run { target { nonpic || pie_enabled } } } */
 /* { dg-options "-O3 -fdump-ipa-inline -fno-early-inlining -fno-ipa-cp"  } */
 
 extern "C" void abort (void);

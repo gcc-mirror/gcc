@@ -1,6 +1,5 @@
 /* { dg-do compile { target { powerpc64le-*-* } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
-/* { dg-options "-mcpu=power9 -O2" } */
+/* { dg-options "-mdejagnu-cpu=power9 -O2" } */
 
 /* Test generation of VPERMR/XXPERMR on ISA 3.0 in little endian.  */
 

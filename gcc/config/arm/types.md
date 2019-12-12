@@ -1,6 +1,6 @@
 ;; Instruction Classification for ARM for GNU compiler.
 
-;; Copyright (C) 1991-2018 Free Software Foundation, Inc.
+;; Copyright (C) 1991-2019 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.
@@ -546,6 +546,10 @@
 ; The classification below is for coprocessor instructions
 ;
 ; coproc
+;
+; The classification below is for TME instructions
+;
+; tme
 
 (define_attr "type"
  "adc_imm,\
@@ -763,6 +767,9 @@
   neon_sub_halve,\
   neon_sub_halve_q,\
   neon_sub_halve_narrow_q,\
+\
+  neon_fcadd,\
+  neon_fcmla,\
 \
   neon_abs,\
   neon_abs_q,\
@@ -1088,7 +1095,9 @@
   crypto_sha3,\
   crypto_sm3,\
   crypto_sm4,\
-  coproc"
+  coproc,\
+  tme,\
+  memtag"
    (const_string "untyped"))
 
 ; Is this an (integer side) multiply with a 32-bit (or smaller) result?
@@ -1100,8 +1109,8 @@
     (const_string "yes")
     (const_string "no")))
 
-; Is this an (integer side) multiply with a 64-bit result?
-(define_attr "mul64" "no,yes"
+; Is this an (integer side) widening multiply with a 64-bit result?
+(define_attr "widen_mul64" "no,yes"
   (if_then_else
     (eq_attr "type"
      "smlalxy,umull,umulls,umaal,umlal,umlals,smull,smulls,smlal,smlals")
@@ -1212,3 +1221,7 @@
           crypto_sha256_fast, crypto_sha256_slow")
         (const_string "yes")
         (const_string "no")))
+
+(define_insn_reservation "no_reservation" 0
+  (eq_attr "type" "no_insn")
+  "nothing")

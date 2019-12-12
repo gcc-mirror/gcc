@@ -2,7 +2,7 @@
 
 // 2010-02-17  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2010-2018 Free Software Foundation, Inc.
+// Copyright (C) 2010-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -84,6 +84,9 @@ int main()
   do_test<signed char>();
   do_test<unsigned char>();
   do_test<wchar_t>();
+#ifdef _GLIBCXX_USE_CHAR8_T
+  do_test<char8_t>();
+#endif
   do_test<char16_t>();
   do_test<char32_t>();
   do_test<short>();

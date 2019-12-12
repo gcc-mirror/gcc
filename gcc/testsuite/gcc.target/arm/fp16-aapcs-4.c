@@ -16,5 +16,5 @@ F (__fp16 a, __fp16 b, __fp16 c)
 }
 
 /* { dg-final { scan-assembler-times {mov\tr[0-9]+, r[0-2]} 3 } }  */
-/* { dg-final { scan-assembler-times {mov\tr1, r0} 1 } }  */
+/* { dg-final { scan-assembler-times {mov\tr1, r[03]} 1 } }  */
 /* { dg-final { scan-assembler-times {mov\tr0, r[0-9]+} 2 } }  */

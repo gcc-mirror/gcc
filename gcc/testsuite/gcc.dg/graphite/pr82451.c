@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O -floop-parallelize-all" } */
 
-static int a[];
+extern int a[];
 int b[1];
 int c;
 static void

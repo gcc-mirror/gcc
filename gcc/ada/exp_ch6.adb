@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,7 +60,6 @@ with Sem;       use Sem;
 with Sem_Aux;   use Sem_Aux;
 with Sem_Ch6;   use Sem_Ch6;
 with Sem_Ch8;   use Sem_Ch8;
-with Sem_Ch12;  use Sem_Ch12;
 with Sem_Ch13;  use Sem_Ch13;
 with Sem_Dim;   use Sem_Dim;
 with Sem_Disp;  use Sem_Disp;
@@ -147,6 +146,12 @@ package body Exp_Ch6 is
    --  access discriminants do not require secondary stack use. Note we must
    --  always use the secondary stack for dispatching-on-result calls.
 
+   function Check_Number_Of_Actuals
+     (Subp_Call : Node_Id;
+      Subp_Id   : Entity_Id) return Boolean;
+   --  Given a subprogram call to the given subprogram return True if the
+   --  number of actual parameters (including extra actuals) is correct.
+
    procedure Check_Overriding_Operation (Subp : Entity_Id);
    --  Subp is a dispatching operation. Check whether it may override an
    --  inherited private operation, in which case its DT entry is that of
@@ -203,8 +208,8 @@ package body Exp_Ch6 is
    --  For all parameter modes, actuals that denote components and slices of
    --  packed arrays are expanded into suitable temporaries.
    --
-   --  For non-scalar objects that are possibly unaligned, add call by copy
-   --  code (copy in for IN and IN OUT, copy out for OUT and IN OUT).
+   --  For nonscalar objects that are possibly unaligned, add call by copy code
+   --  (copy in for IN and IN OUT, copy out for OUT and IN OUT).
    --
    --  For OUT and IN OUT parameters, add predicate checks after the call
    --  based on the predicates of the actual type.
@@ -544,8 +549,6 @@ package body Exp_Ch6 is
       Chain         : Node_Id := Empty)
    is
       Loc           : constant Source_Ptr := Sloc (Function_Call);
-      Result_Subt   : constant Entity_Id :=
-                        Available_View (Etype (Function_Id));
       Actual        : Node_Id;
       Chain_Actual  : Node_Id;
       Chain_Formal  : Node_Id;
@@ -554,7 +557,7 @@ package body Exp_Ch6 is
    begin
       --  No such extra parameters are needed if there are no tasks
 
-      if not Has_Task (Result_Subt) then
+      if not Needs_BIP_Task_Actuals (Function_Id) then
          return;
       end if;
 
@@ -869,6 +872,33 @@ package body Exp_Ch6 is
             and then No (Controlling_Argument (Func_Call)))
         or else not Requires_Transient_Scope (Underlying_Type (Result_Subt));
    end Caller_Known_Size;
+
+   -----------------------------
+   -- Check_Number_Of_Actuals --
+   -----------------------------
+
+   function Check_Number_Of_Actuals
+     (Subp_Call : Node_Id;
+      Subp_Id   : Entity_Id) return Boolean
+   is
+      Formal : Entity_Id;
+      Actual : Node_Id;
+
+   begin
+      pragma Assert (Nkind_In (Subp_Call, N_Entry_Call_Statement,
+                                          N_Function_Call,
+                                          N_Procedure_Call_Statement));
+
+      Formal := First_Formal_With_Extras (Subp_Id);
+      Actual := First_Actual (Subp_Call);
+
+      while Present (Formal) and then Present (Actual) loop
+         Next_Formal_With_Extras (Formal);
+         Next_Actual (Actual);
+      end loop;
+
+      return No (Formal) and then No (Actual);
+   end Check_Number_Of_Actuals;
 
    --------------------------------
    -- Check_Overriding_Operation --
@@ -1222,10 +1252,11 @@ package body Exp_Ch6 is
       --  also takes care of any constraint checks required for the type
       --  conversion case (on both the way in and the way out).
 
-      procedure Add_Simple_Call_By_Copy_Code;
+      procedure Add_Simple_Call_By_Copy_Code (Bit_Packed_Array : Boolean);
       --  This is similar to the above, but is used in cases where we know
       --  that all that is needed is to simply create a temporary and copy
-      --  the value in and out of the temporary.
+      --  the value in and out of the temporary. If Bit_Packed_Array is True,
+      --  the procedure is called for a bit-packed array actual.
 
       procedure Add_Validation_Call_By_Copy_Code (Act : Node_Id);
       --  Perform copy-back for actual parameter Act which denotes a validation
@@ -1239,11 +1270,11 @@ package body Exp_Ch6 is
 
       function Is_Legal_Copy return Boolean;
       --  Check that an actual can be copied before generating the temporary
-      --  to be used in the call. If the actual is of a by_reference type then
-      --  the program is illegal (this can only happen in the presence of
-      --  rep. clauses that force an incorrect alignment). If the formal is
-      --  a by_reference parameter imposed by a DEC pragma, emit a warning to
-      --  the effect that this might lead to unaligned arguments.
+      --  to be used in the call. If the formal is of a by_reference type or
+      --  is aliased, then the program is illegal (this can only happen in
+      --  the presence of representation clauses that force a misalignment)
+      --  If the formal is a by_reference parameter imposed by a DEC pragma,
+      --  emit a warning that this might lead to unaligned arguments.
 
       function Make_Var (Actual : Node_Id) return Entity_Id;
       --  Returns an entity that refers to the given actual parameter, Actual
@@ -1295,7 +1326,14 @@ package body Exp_Ch6 is
             Indic := New_Occurrence_Of (F_Typ, Loc);
          end if;
 
+         --  The new code will be properly analyzed below and the setting of
+         --  the Do_Range_Check flag recomputed so remove the obsolete one.
+
+         Set_Do_Range_Check (Actual, False);
+
          if Nkind (Actual) = N_Type_Conversion then
+            Set_Do_Range_Check (Expression (Actual), False);
+
             V_Typ := Etype (Expression (Actual));
 
             --  If the formal is an (in-)out parameter, capture the name
@@ -1321,8 +1359,14 @@ package body Exp_Ch6 is
          --  bounds of the actual and build an uninitialized temporary of the
          --  right size.
 
+         --  If the formal is an out parameter with discriminants, the
+         --  discriminants must be captured even if the rest of the object
+         --  is in principle uninitialized, because the discriminants may
+         --  be read by the called subprogram.
+
          if Ekind (Formal) = E_In_Out_Parameter
            or else (Is_Array_Type (F_Typ) and then not Is_Constrained (F_Typ))
+           or else Has_Discriminants (F_Typ)
          then
             if Nkind (Actual) = N_Type_Conversion then
                if Conversion_OK (Actual) then
@@ -1393,6 +1437,16 @@ package body Exp_Ch6 is
                Init := New_Occurrence_Of (Var, Loc);
             end if;
 
+         --  Access types are passed in without checks, but if a copy-back is
+         --  required for a null-excluding check on an in-out or out parameter,
+         --  then the initial value is that of the actual.
+
+         elsif Is_Access_Type (E_Formal)
+           and then Can_Never_Be_Null (Etype (Actual))
+           and then not Can_Never_Be_Null (E_Formal)
+         then
+            Init := New_Occurrence_Of (Var, Loc);
+
          else
             Init := Empty;
          end if;
@@ -1442,6 +1496,7 @@ package body Exp_Ch6 is
 
             Kill_Current_Values (Temp);
             Set_Is_Known_Valid (Temp, False);
+            Set_Is_True_Constant (Temp, False);
 
             --  If type conversion, use reverse conversion on exit
 
@@ -1530,6 +1585,19 @@ package body Exp_Ch6 is
                         Type_Access_Level (E_Formal))));
 
                else
+                  if Is_Access_Type (E_Formal)
+                    and then Can_Never_Be_Null (Etype (Actual))
+                    and then not Can_Never_Be_Null (E_Formal)
+                  then
+                     Append_To (Post_Call,
+                       Make_Raise_Constraint_Error (Loc,
+                         Condition =>
+                           Make_Op_Eq (Loc,
+                             Left_Opnd  => New_Occurrence_Of (Temp, Loc),
+                             Right_Opnd => Make_Null (Loc)),
+                         Reason => CE_Access_Check_Failed));
+                  end if;
+
                   Append_To (Post_Call,
                     Make_Assignment_Statement (Loc,
                       Name       => Lhs,
@@ -1543,7 +1611,7 @@ package body Exp_Ch6 is
       -- Add_Simple_Call_By_Copy_Code --
       ----------------------------------
 
-      procedure Add_Simple_Call_By_Copy_Code is
+      procedure Add_Simple_Call_By_Copy_Code (Bit_Packed_Array : Boolean) is
          Decl   : Node_Id;
          F_Typ  : Entity_Id := Etype (Formal);
          Incod  : Node_Id;
@@ -1554,7 +1622,12 @@ package body Exp_Ch6 is
          Temp   : Entity_Id;
 
       begin
-         if not Is_Legal_Copy then
+         --  ??? We need to do the copy for a bit-packed array because this is
+         --  where the rewriting into a mask-and-shift sequence is done. But of
+         --  course this may break the program if it expects bits to be really
+         --  passed by reference. That's what we have done historically though.
+
+         if not Bit_Packed_Array and then not Is_Legal_Copy then
             return;
          end if;
 
@@ -1653,6 +1726,7 @@ package body Exp_Ch6 is
          if Ekind (Formal) /= E_In_Parameter then
             Lhs := Outcod;
             Rhs := New_Occurrence_Of (Temp, Loc);
+            Set_Is_True_Constant (Temp, False);
 
             --  Deal with conversion
 
@@ -1681,6 +1755,20 @@ package body Exp_Ch6 is
          Var_Id  : Entity_Id;
 
       begin
+         --  Generate range check if required
+
+         if Do_Range_Check (Actual) then
+            Generate_Range_Check (Actual, E_Formal, CE_Range_Check_Failed);
+         end if;
+
+         --  If there is a type conversion in the actual, it will be reinstated
+         --  below, the new instance will be properly analyzed and the setting
+         --  of the Do_Range_Check flag recomputed so remove the obsolete one.
+
+         if Nkind (Actual) = N_Type_Conversion then
+            Set_Do_Range_Check (Expression (Actual), False);
+         end if;
+
          --  Copy the value of the validation variable back into the object
          --  being validated.
 
@@ -1777,12 +1865,16 @@ package body Exp_Ch6 is
          --  An attempt to copy a value of such a type can only occur if
          --  representation clauses give the actual a misaligned address.
 
-         if Is_By_Reference_Type (Etype (Formal)) then
+         if Is_By_Reference_Type (Etype (Formal))
+           or else Is_Aliased (Formal)
+           or else (Mechanism (Formal) = By_Reference
+                     and then not Has_Foreign_Convention (Subp))
+         then
 
             --  The actual may in fact be properly aligned but there is not
             --  enough front-end information to determine this. In that case
-            --  gigi will emit an error if a copy is not legal, or generate
-            --  the proper code.
+            --  gigi will emit an error or a warning if a copy is not legal,
+            --  or generate the proper code.
 
             return False;
 
@@ -1793,6 +1885,7 @@ package body Exp_Ch6 is
          --  be lurking.
 
          elsif Mechanism (Formal) = By_Reference
+           and then Ekind (Scope (Formal)) = E_Procedure
            and then Is_Valued_Procedure (Scope (Formal))
          then
             Error_Msg_N
@@ -1913,7 +2006,8 @@ package body Exp_Ch6 is
             Apply_Constraint_Check (Actual, E_Formal);
 
          --  Out parameter case. No constraint checks on access type
-         --  RM 6.4.1 (13)
+         --  RM 6.4.1 (13), but on return a null-excluding check may be
+         --  required (see below).
 
          elsif Is_Access_Type (E_Formal) then
             null;
@@ -1988,9 +2082,9 @@ package body Exp_Ch6 is
             --  [in] out parameters.
 
             elsif Is_Ref_To_Bit_Packed_Array (Actual) then
-               Add_Simple_Call_By_Copy_Code;
+               Add_Simple_Call_By_Copy_Code (Bit_Packed_Array => True);
 
-            --  If a non-scalar actual is possibly bit-aligned, we need a copy
+            --  If a nonscalar actual is possibly bit-aligned, we need a copy
             --  because the back-end cannot cope with such objects. In other
             --  cases where alignment forces a copy, the back-end generates
             --  it properly. It should not be generated unconditionally in the
@@ -2004,7 +2098,7 @@ package body Exp_Ch6 is
                 Component_May_Be_Bit_Aligned (Entity (Selector_Name (Actual)))
               and then not Represented_As_Scalar (Etype (Formal))
             then
-               Add_Simple_Call_By_Copy_Code;
+               Add_Simple_Call_By_Copy_Code (Bit_Packed_Array => False);
 
             --  References to slices of bit-packed arrays are expanded
 
@@ -2020,11 +2114,14 @@ package body Exp_Ch6 is
             --  formal subtype are not the same, requiring a check.
 
             --  It is necessary to exclude tagged types because of "downward
-            --  conversion" errors.
+            --  conversion" errors, but null-excluding checks on return may be
+            --  required.
 
             elsif Is_Access_Type (E_Formal)
-              and then not Same_Type (E_Formal, E_Actual)
               and then not Is_Tagged_Type (Designated_Type (E_Formal))
+              and then (not Same_Type (E_Formal, E_Actual)
+                or else (Can_Never_Be_Null (E_Actual)
+                          and then not Can_Never_Be_Null (E_Formal)))
             then
                Add_Call_By_Copy_Code;
 
@@ -2065,14 +2162,6 @@ package body Exp_Ch6 is
                     (Ekind (Formal) = E_In_Out_Parameter
                       and then not In_Subrange_Of (E_Actual, E_Formal)))
             then
-               --  Perhaps the setting back to False should be done within
-               --  Add_Call_By_Copy_Code, since it could get set on other
-               --  cases occurring above???
-
-               if Do_Range_Check (Actual) then
-                  Set_Do_Range_Check (Actual, False);
-               end if;
-
                Add_Call_By_Copy_Code;
             end if;
 
@@ -2186,6 +2275,12 @@ package body Exp_Ch6 is
          --  Processing for IN parameters
 
          else
+            --  Generate range check if required
+
+            if Do_Range_Check (Actual) then
+               Generate_Range_Check (Actual, E_Formal, CE_Range_Check_Failed);
+            end if;
+
             --  For IN parameters in the bit-packed array case, we expand an
             --  indexed component (the circuit in Exp_Ch4 deliberately left
             --  indexed components appearing as actuals untouched, so that
@@ -2206,14 +2301,14 @@ package body Exp_Ch6 is
             --  Is this really necessary in all cases???
 
             elsif Is_Ref_To_Bit_Packed_Array (Actual) then
-               Add_Simple_Call_By_Copy_Code;
+               Add_Simple_Call_By_Copy_Code (Bit_Packed_Array => True);
 
-            --  If a non-scalar actual is possibly unaligned, we need a copy
+            --  If a nonscalar actual is possibly unaligned, we need a copy
 
             elsif Is_Possibly_Unaligned_Object (Actual)
               and then not Represented_As_Scalar (Etype (Formal))
             then
-               Add_Simple_Call_By_Copy_Code;
+               Add_Simple_Call_By_Copy_Code (Bit_Packed_Array => False);
 
             --  Similarly, we have to expand slices of packed arrays here
             --  because the result must be byte aligned.
@@ -2311,6 +2406,13 @@ package body Exp_Ch6 is
       --  Adds invariant checks for every intermediate type between the range
       --  of a view converted argument to its ancestor (from parent to child).
 
+      function Can_Fold_Predicate_Call (P : Entity_Id) return Boolean;
+      --  Try to constant-fold a predicate check, which often enough is a
+      --  simple arithmetic expression that can be computed statically if
+      --  its argument is static. This cleans up the output of CCG, even
+      --  though useless predicate checks will be generally removed by
+      --  back-end optimizations.
+
       function Inherited_From_Formal (S : Entity_Id) return Entity_Id;
       --  Within an instance, a type derived from an untagged formal derived
       --  type inherits from the original parent, not from the actual. The
@@ -2322,6 +2424,10 @@ package body Exp_Ch6 is
 
       function In_Unfrozen_Instance (E : Entity_Id) return Boolean;
       --  Return true if E comes from an instance that is not yet frozen
+
+      function Is_Class_Wide_Interface_Type (E : Entity_Id) return Boolean;
+      --  Return True when E is a class-wide interface type or an access to
+      --  a class-wide interface type.
 
       function Is_Direct_Deep_Call (Subp : Entity_Id) return Boolean;
       --  Determine if Subp denotes a non-dispatching call to a Deep routine
@@ -2455,6 +2561,113 @@ package body Exp_Ch6 is
          end if;
       end Add_View_Conversion_Invariants;
 
+      -----------------------------
+      -- Can_Fold_Predicate_Call --
+      -----------------------------
+
+      function Can_Fold_Predicate_Call (P : Entity_Id) return Boolean is
+         Actual : Node_Id;
+
+         function May_Fold (N : Node_Id) return Traverse_Result;
+         --  The predicate expression is foldable if it only contains operators
+         --  and literals. During this check, we also replace occurrences of
+         --  the formal of the constructed predicate function with the static
+         --  value of the actual. This is done on a copy of the analyzed
+         --  expression for the predicate.
+
+         --------------
+         -- May_Fold --
+         --------------
+
+         function May_Fold (N : Node_Id) return Traverse_Result is
+         begin
+            case Nkind (N) is
+               when N_Binary_Op
+                  | N_Unary_Op
+               =>
+                  return OK;
+
+               when N_Expanded_Name
+                  | N_Identifier
+               =>
+                  if Ekind (Entity (N)) = E_In_Parameter
+                    and then Entity (N) = First_Entity (P)
+                  then
+                     Rewrite (N, New_Copy (Actual));
+                     Set_Is_Static_Expression (N);
+                     return OK;
+
+                  elsif Ekind (Entity (N)) = E_Enumeration_Literal then
+                     return OK;
+
+                  else
+                     return Abandon;
+                  end if;
+
+               when N_Case_Expression
+                  | N_If_Expression
+               =>
+                  return OK;
+
+               when N_Integer_Literal =>
+                  return OK;
+
+               when others =>
+                  return Abandon;
+            end case;
+         end May_Fold;
+
+         function Try_Fold is new Traverse_Func (May_Fold);
+
+         --  Other lLocal variables
+
+         Subt   : constant Entity_Id := Etype (First_Entity (P));
+         Aspect : Node_Id;
+         Pred   : Node_Id;
+
+      --  Start of processing for Can_Fold_Predicate_Call
+
+      begin
+         --  Folding is only interesting if the actual is static and its type
+         --  has a Dynamic_Predicate aspect. For CodePeer we preserve the
+         --  function call.
+
+         Actual := First (Parameter_Associations (Call_Node));
+         Aspect := Find_Aspect (Subt, Aspect_Dynamic_Predicate);
+
+         --  If actual is a declared constant, retrieve its value
+
+         if Is_Entity_Name (Actual)
+           and then Ekind (Entity (Actual)) = E_Constant
+         then
+            Actual := Constant_Value (Entity (Actual));
+         end if;
+
+         if No (Actual)
+           or else Nkind (Actual) /= N_Integer_Literal
+           or else not Has_Dynamic_Predicate_Aspect (Subt)
+           or else No (Aspect)
+           or else CodePeer_Mode
+         then
+            return False;
+         end if;
+
+         --  Retrieve the analyzed expression for the predicate
+
+         Pred := New_Copy_Tree (Expression (Aspect));
+
+         if Try_Fold (Pred) = OK then
+            Rewrite (Call_Node, Pred);
+            Analyze_And_Resolve (Call_Node, Standard_Boolean);
+            return True;
+
+         --  Otherwise continue the expansion of the function call
+
+         else
+            return False;
+         end if;
+      end Can_Fold_Predicate_Call;
+
       ---------------------------
       -- Inherited_From_Formal --
       ---------------------------
@@ -2576,6 +2789,32 @@ package body Exp_Ch6 is
 
          return False;
       end In_Unfrozen_Instance;
+
+      ----------------------------------
+      -- Is_Class_Wide_Interface_Type --
+      ----------------------------------
+
+      function Is_Class_Wide_Interface_Type (E : Entity_Id) return Boolean is
+         DDT : Entity_Id;
+         Typ : Entity_Id := E;
+
+      begin
+         if Has_Non_Limited_View (Typ) then
+            Typ := Non_Limited_View (Typ);
+         end if;
+
+         if Ekind (Typ) = E_Anonymous_Access_Type then
+            DDT := Directly_Designated_Type (Typ);
+
+            if Has_Non_Limited_View (DDT) then
+               DDT := Non_Limited_View (DDT);
+            end if;
+
+            return Is_Class_Wide_Type (DDT) and then Is_Interface (DDT);
+         else
+            return Is_Class_Wide_Type (Typ) and then Is_Interface (Typ);
+         end if;
+      end Is_Class_Wide_Interface_Type;
 
       -------------------------
       -- Is_Direct_Deep_Call --
@@ -2777,6 +3016,17 @@ package body Exp_Ch6 is
          end;
       end if;
 
+      --  if this is a call to a predicate function, try to constant
+      --  fold it.
+
+      if Nkind (Call_Node) = N_Function_Call
+        and then Is_Entity_Name (Name (Call_Node))
+        and then Is_Predicate_Function (Subp)
+        and then Can_Fold_Predicate_Call (Subp)
+      then
+         return;
+      end if;
+
       if Modify_Tree_For_C
         and then Nkind (Call_Node) = N_Function_Call
         and then Is_Entity_Name (Name (Call_Node))
@@ -2891,16 +3141,6 @@ package body Exp_Ch6 is
       Actual := First_Actual (Call_Node);
       Param_Count := 1;
       while Present (Formal) loop
-
-         --  Generate range check if required
-
-         if Do_Range_Check (Actual)
-           and then Ekind (Formal) = E_In_Parameter
-         then
-            Generate_Range_Check
-              (Actual, Etype (Formal), CE_Range_Check_Failed);
-         end if;
-
          --  Prepare to examine current entry
 
          Prev := Actual;
@@ -2911,15 +3151,7 @@ package body Exp_Ch6 is
 
          CW_Interface_Formals_Present :=
            CW_Interface_Formals_Present
-             or else
-               (Is_Class_Wide_Type (Etype (Formal))
-                 and then Is_Interface (Etype (Etype (Formal))))
-             or else
-               (Ekind (Etype (Formal)) = E_Anonymous_Access_Type
-                 and then Is_Class_Wide_Type (Directly_Designated_Type
-                                               (Etype (Etype (Formal))))
-                 and then Is_Interface (Directly_Designated_Type
-                                         (Etype (Etype (Formal)))));
+             or else Is_Class_Wide_Interface_Type (Etype (Formal));
 
          --  Create possible extra actual for constrained case. Usually, the
          --  extra actual is of the form actual'constrained, but since this
@@ -3000,7 +3232,7 @@ package body Exp_Ch6 is
 
          --  Create possible extra actual for accessibility level
 
-         if Present (Extra_Accessibility (Formal)) then
+         if Present (Get_Accessibility (Formal)) then
 
             --  Ada 2005 (AI-252): If the actual was rewritten as an Access
             --  attribute, then the original actual may be an aliased object
@@ -3076,8 +3308,8 @@ package body Exp_Ch6 is
 
                   Add_Extra_Actual
                     (Expr =>
-                       New_Occurrence_Of (Extra_Accessibility (Parm_Ent), Loc),
-                     EF   => Extra_Accessibility (Formal));
+                       New_Occurrence_Of (Get_Accessibility (Parm_Ent), Loc),
+                     EF   => Get_Accessibility (Formal));
                end;
 
             elsif Is_Entity_Name (Prev_Orig) then
@@ -3106,12 +3338,12 @@ package body Exp_Ch6 is
                   begin
                      pragma Assert (Present (Parm_Ent));
 
-                     if Present (Extra_Accessibility (Parm_Ent)) then
+                     if Present (Get_Accessibility (Parm_Ent)) then
                         Add_Extra_Actual
                           (Expr =>
                              New_Occurrence_Of
-                               (Extra_Accessibility (Parm_Ent), Loc),
-                           EF   => Extra_Accessibility (Formal));
+                               (Get_Accessibility (Parm_Ent), Loc),
+                           EF   => Get_Accessibility (Formal));
 
                      --  If the actual access parameter does not have an
                      --  associated extra formal providing its scope level,
@@ -3123,7 +3355,7 @@ package body Exp_Ch6 is
                           (Expr =>
                              Make_Integer_Literal (Loc,
                                Intval => Scope_Depth (Standard_Standard)),
-                           EF   => Extra_Accessibility (Formal));
+                           EF   => Get_Accessibility (Formal));
                      end if;
                   end;
 
@@ -3133,7 +3365,7 @@ package body Exp_Ch6 is
                else
                   Add_Extra_Actual
                     (Expr => Dynamic_Accessibility_Level (Prev_Orig),
-                     EF   => Extra_Accessibility (Formal));
+                     EF   => Get_Accessibility (Formal));
                end if;
 
             --  If the actual is an access discriminant, then pass the level
@@ -3149,7 +3381,7 @@ package body Exp_Ch6 is
                  (Expr =>
                     Make_Integer_Literal (Loc,
                       Intval => Object_Access_Level (Prefix (Prev_Orig))),
-                  EF   => Extra_Accessibility (Formal));
+                  EF   => Get_Accessibility (Formal));
 
             --  All other cases
 
@@ -3195,7 +3427,7 @@ package body Exp_Ch6 is
                            --  ???
 
                            --  A further case that requires special handling
-                           --  is the common idiom E.all'access.  If E is a
+                           --  is the common idiom E.all'access. If E is a
                            --  formal of the enclosing subprogram, the
                            --  accessibility of the expression is that of E.
 
@@ -3219,19 +3451,19 @@ package body Exp_Ch6 is
                                    Make_Integer_Literal (Loc,
                                      Intval =>
                                        Type_Access_Level (Pref_Entity)),
-                                 EF   => Extra_Accessibility (Formal));
+                                 EF   => Get_Accessibility (Formal));
 
                            elsif Nkind (Prev_Orig) = N_Explicit_Dereference
                              and then Present (Pref_Entity)
                              and then Is_Formal (Pref_Entity)
                              and then Present
-                                        (Extra_Accessibility (Pref_Entity))
+                                        (Get_Accessibility (Pref_Entity))
                            then
                               Add_Extra_Actual
                                 (Expr =>
                                    New_Occurrence_Of
-                                     (Extra_Accessibility (Pref_Entity), Loc),
-                                 EF   => Extra_Accessibility (Formal));
+                                     (Get_Accessibility (Pref_Entity), Loc),
+                                 EF   => Get_Accessibility (Formal));
 
                            else
                               Add_Extra_Actual
@@ -3239,7 +3471,7 @@ package body Exp_Ch6 is
                                    Make_Integer_Literal (Loc,
                                      Intval =>
                                        Object_Access_Level (Prev_Orig)),
-                                 EF   => Extra_Accessibility (Formal));
+                                 EF   => Get_Accessibility (Formal));
                            end if;
 
                         --  Treat the unchecked attributes as library-level
@@ -3251,7 +3483,7 @@ package body Exp_Ch6 is
                              (Expr =>
                                 Make_Integer_Literal (Loc,
                                   Intval => Scope_Depth (Standard_Standard)),
-                              EF   => Extra_Accessibility (Formal));
+                              EF   => Get_Accessibility (Formal));
 
                         --  No other cases of attributes returning access
                         --  values that can be passed to access parameters.
@@ -3263,14 +3495,17 @@ package body Exp_Ch6 is
 
                   --  For allocators we pass the level of the execution of the
                   --  called subprogram, which is one greater than the current
-                  --  scope level.
+                  --  scope level. However, according to RM 3.10.2(14/3) this
+                  --  is wrong since for an anonymous allocator defining the
+                  --  value of an access parameter, the accessibility level is
+                  --  that of the innermost master of the call???
 
                   when N_Allocator =>
                      Add_Extra_Actual
                        (Expr =>
                           Make_Integer_Literal (Loc,
                             Intval => Scope_Depth (Current_Scope) + 1),
-                        EF   => Extra_Accessibility (Formal));
+                        EF   => Get_Accessibility (Formal));
 
                   --  For most other cases we simply pass the level of the
                   --  actual's access type. The type is retrieved from
@@ -3281,7 +3516,7 @@ package body Exp_Ch6 is
                   when others =>
                      Add_Extra_Actual
                        (Expr => Dynamic_Accessibility_Level (Prev),
-                        EF   => Extra_Accessibility (Formal));
+                        EF   => Get_Accessibility (Formal));
                end case;
             end if;
          end if;
@@ -3424,13 +3659,12 @@ package body Exp_Ch6 is
                --  or IN OUT parameter. We do reset the Is_Known_Valid flag
                --  since the subprogram could have returned in invalid value.
 
-               if Ekind_In (Formal, E_Out_Parameter, E_In_Out_Parameter)
-                 and then Is_Assignable (Ent)
-               then
+               if Is_Assignable (Ent) then
                   Sav := Last_Assignment (Ent);
                   Kill_Current_Values (Ent);
                   Set_Last_Assignment (Ent, Sav);
                   Set_Is_Known_Valid (Ent, False);
+                  Set_Is_True_Constant (Ent, False);
 
                --  For all other cases, just kill the current values
 
@@ -4123,15 +4357,15 @@ package body Exp_Ch6 is
          if not Is_Inlined (Subp) then
             null;
 
-         --  Frontend inlining of expression functions (performed also when
-         --  backend inlining is enabled).
+         --  Front-end inlining of expression functions (performed also when
+         --  back-end inlining is enabled).
 
          elsif Is_Inlinable_Expression_Function (Subp) then
             Rewrite (N, New_Copy (Expression_Of_Expression_Function (Subp)));
             Analyze (N);
             return;
 
-         --  Handle frontend inlining
+         --  Handle front-end inlining
 
          elsif not Back_End_Inlining then
             Inlined_Subprogram : declare
@@ -4227,86 +4461,30 @@ package body Exp_Ch6 is
                end if;
             end Inlined_Subprogram;
 
-         --  Back end inlining: let the back end handle it
-
-         elsif No (Unit_Declaration_Node (Subp))
-           or else Nkind (Unit_Declaration_Node (Subp)) /=
-                                                 N_Subprogram_Declaration
-           or else No (Body_To_Inline (Unit_Declaration_Node (Subp)))
-           or else Nkind (Body_To_Inline (Unit_Declaration_Node (Subp))) in
-                                                                      N_Entity
-         then
-            Add_Inlined_Body (Subp, Call_Node);
-
-            --  If the inlined call appears within an instantiation and some
-            --  level of optimization is required, ensure that the enclosing
-            --  instance body is available so that the back-end can actually
-            --  perform the inlining.
-
-            if In_Instance
-              and then Comes_From_Source (Subp)
-              and then Optimization_Level > 0
-            then
-               declare
-                  Decl      : Node_Id;
-                  Inst      : Entity_Id;
-                  Inst_Node : Node_Id;
-
-               begin
-                  Inst := Scope (Subp);
-
-                  --  Find enclosing instance
-
-                  while Present (Inst) and then Inst /= Standard_Standard loop
-                     exit when Is_Generic_Instance (Inst);
-                     Inst := Scope (Inst);
-                  end loop;
-
-                  if Present (Inst)
-                    and then Is_Generic_Instance (Inst)
-                    and then not Is_Inlined (Inst)
-                  then
-                     Set_Is_Inlined (Inst);
-                     Decl := Unit_Declaration_Node (Inst);
-
-                     --  Do not add a pending instantiation if the body exits
-                     --  already, or if the instance is a compilation unit, or
-                     --  the instance node is missing.
-
-                     if Present (Corresponding_Body (Decl))
-                       or else Nkind (Parent (Decl)) = N_Compilation_Unit
-                       or else No (Next (Decl))
-                     then
-                        null;
-
-                     else
-                        --  The instantiation node usually follows the package
-                        --  declaration for the instance. If the generic unit
-                        --  has aspect specifications, they are transformed
-                        --  into pragmas in the instance, and the instance node
-                        --  appears after them.
-
-                        Inst_Node := Next (Decl);
-
-                        while Nkind (Inst_Node) /= N_Package_Instantiation loop
-                           Inst_Node := Next (Inst_Node);
-                        end loop;
-
-                        Add_Pending_Instantiation (Inst_Node, Decl);
-                     end if;
-                  end if;
-               end;
-            end if;
-
-         --  Front end expansion of simple functions returning unconstrained
+         --  Front-end expansion of simple functions returning unconstrained
          --  types (see Check_And_Split_Unconstrained_Function). Note that the
-         --  case of a simple renaming (Body_To_Inline in N_Entity above, see
+         --  case of a simple renaming (Body_To_Inline in N_Entity below, see
          --  also Build_Renamed_Body) cannot be expanded here because this may
          --  give rise to order-of-elaboration issues for the types of the
          --  parameters of the subprogram, if any.
 
-         else
+         elsif Present (Unit_Declaration_Node (Subp))
+           and then Nkind (Unit_Declaration_Node (Subp)) =
+                                                       N_Subprogram_Declaration
+           and then Present (Body_To_Inline (Unit_Declaration_Node (Subp)))
+           and then
+             Nkind (Body_To_Inline (Unit_Declaration_Node (Subp))) not in
+                                                                       N_Entity
+         then
             Expand_Inlined_Call (Call_Node, Subp, Orig_Subp);
+
+         --  Back-end inlining either if optimization is enabled or the call is
+         --  required to be inlined.
+
+         elsif Optimization_Level > 0
+           or else Has_Pragma_Inline_Always (Subp)
+         then
+            Add_Inlined_Body (Subp, Call_Node);
          end if;
       end if;
 
@@ -4763,7 +4941,7 @@ package body Exp_Ch6 is
       --  the pointer to the object) they are always handled by means of
       --  simple return statements.
 
-      pragma Assert (not Is_Thunk (Current_Scope));
+      pragma Assert (not Is_Thunk (Current_Subprogram));
 
       if Nkind (Ret_Obj_Decl) = N_Object_Declaration then
          Exp := Expression (Ret_Obj_Decl);
@@ -4772,9 +4950,9 @@ package body Exp_Ch6 is
          --  then F and G are both b-i-p, or neither b-i-p.
 
          if Nkind (Exp) = N_Function_Call then
-            pragma Assert (Ekind (Current_Scope) = E_Function);
+            pragma Assert (Ekind (Current_Subprogram) = E_Function);
             pragma Assert
-              (Is_Build_In_Place_Function (Current_Scope) =
+              (Is_Build_In_Place_Function (Current_Subprogram) =
                Is_Build_In_Place_Function_Call (Exp));
             null;
          end if;
@@ -5063,7 +5241,7 @@ package body Exp_Ch6 is
                end if;
 
                --  When the function's subtype is unconstrained, a run-time
-               --  test is needed to determine the form of allocation to use
+               --  test may be needed to decide the form of allocation to use
                --  for the return object. The function has an implicit formal
                --  parameter indicating this. If the BIP_Alloc_Form formal has
                --  the value one, then the caller has passed access to an
@@ -5090,6 +5268,7 @@ package body Exp_Ch6 is
                      Alloc_Obj_Id   : Entity_Id;
                      Alloc_Obj_Decl : Node_Id;
                      Alloc_If_Stmt  : Node_Id;
+                     Guard_Except   : Node_Id;
                      Heap_Allocator : Node_Id;
                      Pool_Decl      : Node_Id;
                      Pool_Allocator : Node_Id;
@@ -5098,13 +5277,6 @@ package body Exp_Ch6 is
                      SS_Allocator   : Node_Id;
 
                   begin
-                     --  Reuse the itype created for the function's implicit
-                     --  access formal. This avoids the need to create a new
-                     --  access type here, plus it allows assigning the access
-                     --  formal directly without applying a conversion.
-
-                     --    Ref_Type := Etype (Object_Access);
-
                      --  Create an access type designating the function's
                      --  result subtype.
 
@@ -5267,8 +5439,9 @@ package body Exp_Ch6 is
                         Set_Comes_From_Source (Pool_Allocator, True);
                      end if;
 
-                     --  The allocator is returned on the secondary stack.
+                     --  The allocator is returned on the secondary stack
 
+                     Check_Restriction (No_Secondary_Stack, N);
                      Set_Storage_Pool (SS_Allocator, RTE (RE_SS_Pool));
                      Set_Procedure_To_Call
                        (SS_Allocator, RTE (RE_SS_Allocate));
@@ -5287,6 +5460,18 @@ package body Exp_Ch6 is
                      Set_Sec_Stack_Needed_For_Return
                        (Return_Statement_Entity (N));
                      Set_Enclosing_Sec_Stack_Return (N);
+
+                     --  Guard against poor expansion on the caller side by
+                     --  using a raise statement to catch out-of-range values
+                     --  of formal parameter BIP_Alloc_Form.
+
+                     if Exceptions_OK then
+                        Guard_Except :=
+                          Make_Raise_Program_Error (Loc,
+                            Reason => PE_Build_In_Place_Mismatch);
+                     else
+                        Guard_Except := Make_Null_Statement (Loc);
+                     end if;
 
                      --  Create an if statement to test the BIP_Alloc_Form
                      --  formal and initialize the access object to either the
@@ -5390,9 +5575,7 @@ package body Exp_Ch6 is
                          --  Raise Program_Error if it's none of the above;
                          --  this is a compiler bug.
 
-                         Else_Statements => New_List (
-                           Make_Raise_Program_Error (Loc,
-                             Reason => PE_Build_In_Place_Mismatch)));
+                         Else_Statements => New_List (Guard_Except));
 
                      --  If a separate initialization assignment was created
                      --  earlier, append that following the assignment of the
@@ -5418,6 +5601,64 @@ package body Exp_Ch6 is
                      end if;
 
                      Insert_Before (Ret_Obj_Decl, Alloc_If_Stmt);
+
+                     --  Remember the local access object for use in the
+                     --  dereference of the renaming created below.
+
+                     Obj_Acc_Formal := Alloc_Obj_Id;
+                  end;
+
+               --  When the function's subtype is unconstrained and a run-time
+               --  test is not needed, we nevertheless need to build the return
+               --  using the function's result subtype.
+
+               elsif not Is_Constrained (Underlying_Type (Etype (Func_Id)))
+               then
+                  declare
+                     Alloc_Obj_Id   : Entity_Id;
+                     Alloc_Obj_Decl : Node_Id;
+                     Ptr_Type_Decl  : Node_Id;
+                     Ref_Type       : Entity_Id;
+
+                  begin
+                     --  Create an access type designating the function's
+                     --  result subtype.
+
+                     Ref_Type := Make_Temporary (Loc, 'A');
+
+                     Ptr_Type_Decl :=
+                       Make_Full_Type_Declaration (Loc,
+                         Defining_Identifier => Ref_Type,
+                         Type_Definition     =>
+                           Make_Access_To_Object_Definition (Loc,
+                             All_Present        => True,
+                             Subtype_Indication =>
+                               New_Occurrence_Of (Ret_Obj_Typ, Loc)));
+
+                     Insert_Before (Ret_Obj_Decl, Ptr_Type_Decl);
+
+                     --  Create an access object initialized to the conversion
+                     --  of the implicit access value passed in by the caller.
+
+                     Alloc_Obj_Id := Make_Temporary (Loc, 'R');
+                     Set_Etype (Alloc_Obj_Id, Ref_Type);
+
+                     --  See the ??? comment a few lines above about the use of
+                     --  an unchecked conversion here.
+
+                     Alloc_Obj_Decl :=
+                       Make_Object_Declaration (Loc,
+                         Defining_Identifier => Alloc_Obj_Id,
+                         Object_Definition   =>
+                           New_Occurrence_Of (Ref_Type, Loc),
+                         Expression =>
+                           Make_Unchecked_Type_Conversion (Loc,
+                             Subtype_Mark =>
+                               New_Occurrence_Of (Ref_Type, Loc),
+                             Expression   =>
+                               New_Occurrence_Of (Obj_Acc_Formal, Loc)));
+
+                     Insert_Before (Ret_Obj_Decl, Alloc_Obj_Decl);
 
                      --  Remember the local access object for use in the
                      --  dereference of the renaming created below.
@@ -5467,7 +5708,7 @@ package body Exp_Ch6 is
       Set_Comes_From_Extended_Return_Statement (Return_Stmt);
 
       Rewrite (N, Result);
-      Analyze (N);
+      Analyze (N, Suppress => All_Checks);
    end Expand_N_Extended_Return_Statement;
 
    ----------------------------
@@ -6387,6 +6628,31 @@ package body Exp_Ch6 is
          then
             Rec := New_Occurrence_Of (First_Entity (Current_Scope), Sloc (N));
 
+         --  A default parameter of a protected operation may be a call to
+         --  a protected function of the type. This appears as an internal
+         --  call in the profile of the operation, but if the context is an
+         --  external call we must convert the call into an external one,
+         --  using the protected object that is the target, so that:
+
+         --     Prot.P (F)
+         --  is transformed into
+         --     Prot.P (Prot.F)
+
+         elsif Nkind (Parent (N)) = N_Procedure_Call_Statement
+           and then Nkind (Name (Parent (N))) = N_Selected_Component
+           and then Is_Protected_Type (Etype (Prefix (Name (Parent (N)))))
+           and then Is_Entity_Name (Name (N))
+           and then Scope (Entity (Name (N))) =
+                      Etype (Prefix (Name (Parent (N))))
+         then
+            Rewrite (Name (N),
+              Make_Selected_Component (Sloc (N),
+                Prefix        => New_Copy_Tree (Prefix (Name (Parent (N)))),
+                Selector_Name => Relocate_Node (Name (N))));
+
+            Analyze_And_Resolve (N);
+            return;
+
          else
             --  If the context is the initialization procedure for a protected
             --  type, the call is legal because the called entity must be a
@@ -6629,7 +6895,12 @@ package body Exp_Ch6 is
       elsif Is_Thunk (Current_Scope) and then Is_Incomplete_Type (Exptyp) then
          return;
 
-      elsif not Requires_Transient_Scope (R_Type) then
+      --  A return statement from a Ghost function does not use the secondary
+      --  stack (or any other one).
+
+      elsif not Requires_Transient_Scope (R_Type)
+        or else Is_Ignored_Ghost_Entity (Scope_Id)
+      then
 
          --  Mutable records with variable-length components are not returned
          --  on the sec-stack, so we need to make sure that the back end will
@@ -6799,7 +7070,7 @@ package body Exp_Ch6 is
         and then (Nkind_In (Exp, N_Type_Conversion,
                                  N_Unchecked_Type_Conversion)
                     or else (Is_Entity_Name (Exp)
-                               and then Ekind (Entity (Exp)) in Formal_Kind))
+                               and then Is_Formal (Entity (Exp))))
       then
          --  When the return type is limited, perform a check that the tag of
          --  the result is the same as the tag of the return type.
@@ -6877,7 +7148,7 @@ package body Exp_Ch6 is
             or else Nkind_In (Exp, N_Type_Conversion,
                                    N_Unchecked_Type_Conversion)
             or else (Is_Entity_Name (Exp)
-                      and then Ekind (Entity (Exp)) in Formal_Kind)
+                      and then Is_Formal (Entity (Exp)))
             or else Scope_Depth (Enclosing_Dynamic_Scope (Etype (Exp))) >
                       Scope_Depth (Enclosing_Dynamic_Scope (Scope_Id)))
       then
@@ -7210,12 +7481,13 @@ package body Exp_Ch6 is
          end;
       end if;
 
-      --  If we are returning an object that may not be bit-aligned, then copy
-      --  the value into a temporary first. This copy may need to expand to a
-      --  loop of component operations.
+      --  If we are returning a nonscalar object that is possibly unaligned,
+      --  then copy the value into a temporary first. This copy may need to
+      --  expand to a loop of component operations.
 
       if Is_Possibly_Unaligned_Slice (Exp)
-        or else Is_Possibly_Unaligned_Object (Exp)
+        or else (Is_Possibly_Unaligned_Object (Exp)
+                  and then not Represented_As_Scalar (Etype (Exp)))
       then
          declare
             ExpR : constant Node_Id   := Relocate_Node (Exp);
@@ -7719,22 +7991,20 @@ package body Exp_Ch6 is
 
       --  For now we test whether E denotes a function or access-to-function
       --  type whose result subtype is inherently limited. Later this test
-      --  may be revised to allow composite nonlimited types. Functions with
-      --  a foreign convention or whose result type has a foreign convention
-      --  never qualify.
+      --  may be revised to allow composite nonlimited types.
 
       if Ekind_In (E, E_Function, E_Generic_Function)
         or else (Ekind (E) = E_Subprogram_Type
                   and then Etype (E) /= Standard_Void_Type)
       then
-         --  Note: If the function has a foreign convention, it cannot build
-         --  its result in place, so you're on your own. On the other hand,
-         --  if only the return type has a foreign convention, its layout is
-         --  intended to be compatible with the other language, but the build-
-         --  in place machinery can ensure that the object is not copied.
+         --  If the function is imported from a foreign language, we don't do
+         --  build-in-place. Note that Import (Ada) functions can do
+         --  build-in-place. Note that it is OK for a build-in-place function
+         --  to return a type with a foreign convention; the build-in-place
+         --  machinery will ensure there is no copying.
 
          return Is_Build_In_Place_Result_Type (Etype (E))
-           and then not Has_Foreign_Convention (E)
+           and then not (Has_Foreign_Convention (E) and then Is_Imported (E))
            and then not Debug_Flag_Dot_L;
       else
          return False;
@@ -7936,13 +8206,41 @@ package body Exp_Ch6 is
       --  since it is already attached on the related finalization master.
 
       --  Here and in related routines, we must examine the full view of the
-      --  type, because the view at the point of call may differ from that
-      --  that in the function body, and the expansion mechanism depends on
+      --  type, because the view at the point of call may differ from the
+      --  one in the function body, and the expansion mechanism depends on
       --  the characteristics of the full view.
 
-      if Is_Constrained (Underlying_Type (Result_Subt))
-        and then not Needs_Finalization (Underlying_Type (Result_Subt))
-      then
+      if Needs_BIP_Alloc_Form (Function_Id) then
+         Temp_Init := Empty;
+
+         --  Case of a user-defined storage pool. Pass an allocation parameter
+         --  indicating that the function should allocate its result in the
+         --  pool, and pass the pool. Use 'Unrestricted_Access because the
+         --  pool may not be aliased.
+
+         if Present (Associated_Storage_Pool (Acc_Type)) then
+            Alloc_Form := User_Storage_Pool;
+            Pool :=
+              Make_Attribute_Reference (Loc,
+                Prefix         =>
+                  New_Occurrence_Of
+                    (Associated_Storage_Pool (Acc_Type), Loc),
+                Attribute_Name => Name_Unrestricted_Access);
+
+         --  No user-defined pool; pass an allocation parameter indicating that
+         --  the function should allocate its result on the heap.
+
+         else
+            Alloc_Form := Global_Heap;
+            Pool := Make_Null (No_Location);
+         end if;
+
+         --  The caller does not provide the return object in this case, so we
+         --  have to pass null for the object access actual.
+
+         Return_Obj_Actual := Empty;
+
+      else
          --  Replace the initialized allocator of form "new T'(Func (...))"
          --  with an uninitialized allocator of form "new T", where T is the
          --  result subtype of the called function. The call to the function
@@ -7991,35 +8289,6 @@ package body Exp_Ch6 is
       --  perform the allocation of the return object, so we pass parameters
       --  indicating that.
 
-      else
-         Temp_Init := Empty;
-
-         --  Case of a user-defined storage pool. Pass an allocation parameter
-         --  indicating that the function should allocate its result in the
-         --  pool, and pass the pool. Use 'Unrestricted_Access because the
-         --  pool may not be aliased.
-
-         if Present (Associated_Storage_Pool (Acc_Type)) then
-            Alloc_Form := User_Storage_Pool;
-            Pool :=
-              Make_Attribute_Reference (Loc,
-                Prefix         =>
-                  New_Occurrence_Of
-                    (Associated_Storage_Pool (Acc_Type), Loc),
-                Attribute_Name => Name_Unrestricted_Access);
-
-         --  No user-defined pool; pass an allocation parameter indicating that
-         --  the function should allocate its result on the heap.
-
-         else
-            Alloc_Form := Global_Heap;
-            Pool := Make_Null (No_Location);
-         end if;
-
-         --  The caller does not provide the return object in this case, so we
-         --  have to pass null for the object access actual.
-
-         Return_Obj_Actual := Empty;
       end if;
 
       --  Declare the temp object
@@ -8113,6 +8382,7 @@ package body Exp_Ch6 is
       Rewrite (Allocator, New_Occurrence_Of (Return_Obj_Access, Loc));
 
       Analyze_And_Resolve (Allocator, Acc_Type);
+      pragma Assert (Check_Number_Of_Actuals (Func_Call, Function_Id));
    end Make_Build_In_Place_Call_In_Allocator;
 
    ---------------------------------------------------
@@ -8234,6 +8504,8 @@ package body Exp_Ch6 is
          Add_Access_Actual_To_Build_In_Place_Call
            (Func_Call, Function_Id, New_Occurrence_Of (Return_Obj_Id, Loc));
 
+         pragma Assert (Check_Number_Of_Actuals (Func_Call, Function_Id));
+
       --  When the result subtype is unconstrained, the function must allocate
       --  the return object in the secondary stack, so appropriate implicit
       --  parameters are added to the call to indicate that. A transient
@@ -8257,6 +8529,8 @@ package body Exp_Ch6 is
 
          Add_Access_Actual_To_Build_In_Place_Call
            (Func_Call, Function_Id, Empty);
+
+         pragma Assert (Check_Number_Of_Actuals (Func_Call, Function_Id));
       end if;
    end Make_Build_In_Place_Call_In_Anonymous_Context;
 
@@ -8362,6 +8636,7 @@ package body Exp_Ch6 is
       Insert_After_And_Analyze (Ptr_Typ_Decl, Obj_Decl);
 
       Rewrite (Assign, Make_Null_Statement (Loc));
+      pragma Assert (Check_Number_Of_Actuals (Func_Call, Func_Id));
    end Make_Build_In_Place_Call_In_Assignment;
 
    ----------------------------------------------------
@@ -8478,7 +8753,7 @@ package body Exp_Ch6 is
          --  The presence of an address clause complicates the build-in-place
          --  expansion because the indicated address must be processed before
          --  the indirect call is generated (including the definition of a
-         --  local pointer to the object).  The address clause may come from
+         --  local pointer to the object). The address clause may come from
          --  an aspect specification or from an explicit attribute
          --  specification appearing after the object declaration. These two
          --  cases require different processing.
@@ -8686,7 +8961,7 @@ package body Exp_Ch6 is
          Master_Exp => Fmaster_Actual);
 
       if Nkind (Parent (Obj_Decl)) = N_Extended_Return_Statement
-        and then Has_Task (Result_Subt)
+        and then Needs_BIP_Task_Actuals (Function_Id)
       then
          --  Here we're passing along the master that was passed in to this
          --  function.
@@ -8803,6 +9078,8 @@ package body Exp_Ch6 is
          Replace_Renaming_Declaration_Id
            (Obj_Decl, Original_Node (Obj_Decl));
       end if;
+
+      pragma Assert (Check_Number_Of_Actuals (Func_Call, Function_Id));
    end Make_Build_In_Place_Call_In_Object_Declaration;
 
    -------------------------------------------------
@@ -9074,6 +9351,17 @@ package body Exp_Ch6 is
       Analyze_And_Resolve (Allocator, Acc_Type);
    end Make_CPP_Constructor_Call_In_Allocator;
 
+   ----------------------------
+   -- Needs_BIP_Task_Actuals --
+   ----------------------------
+
+   function Needs_BIP_Task_Actuals (Func_Id : Entity_Id) return Boolean is
+      pragma Assert (Is_Build_In_Place_Function (Func_Id));
+      Func_Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
+   begin
+      return Has_Task (Func_Typ);
+   end Needs_BIP_Task_Actuals;
+
    -----------------------------------
    -- Needs_BIP_Finalization_Master --
    -----------------------------------
@@ -9107,30 +9395,8 @@ package body Exp_Ch6 is
    function Needs_BIP_Alloc_Form (Func_Id : Entity_Id) return Boolean is
       pragma Assert (Is_Build_In_Place_Function (Func_Id));
       Func_Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
-
    begin
-      --  A build-in-place function needs to know which allocation form to
-      --  use when:
-      --
-      --  1) The result subtype is unconstrained. In this case, depending on
-      --     the context of the call, the object may need to be created in the
-      --     secondary stack, the heap, or a user-defined storage pool.
-      --
-      --  2) The result subtype is tagged. In this case the function call may
-      --     dispatch on result and thus needs to be treated in the same way as
-      --     calls to functions with class-wide results, because a callee that
-      --     can be dispatched to may have any of various result subtypes, so
-      --     if any of the possible callees would require an allocation form to
-      --     be passed then they all do.
-      --
-      --  3) The result subtype needs finalization actions. In this case, based
-      --     on the context of the call, the object may need to be created at
-      --     the caller site, in the heap, or in a user-defined storage pool.
-
-      return
-        not Is_Constrained (Func_Typ)
-          or else Is_Tagged_Type (Func_Typ)
-          or else Needs_Finalization (Func_Typ);
+      return Requires_Transient_Scope (Func_Typ);
    end Needs_BIP_Alloc_Form;
 
    --------------------------------------
@@ -9189,8 +9455,9 @@ package body Exp_Ch6 is
          return False;
       end Has_Unconstrained_Access_Discriminant_Component;
 
-      Feature_Disabled : constant Boolean := True;
-      --  Temporary
+      Disable_Coextension_Cases : constant Boolean := True;
+      --  Flag used to temporarily disable a "True" result for types with
+      --  access discriminants and related coextension cases.
 
    --  Start of processing for Needs_Result_Accessibility_Level
 
@@ -9198,9 +9465,6 @@ package body Exp_Ch6 is
       --  False if completion unavailable (how does this happen???)
 
       if not Present (Func_Typ) then
-         return False;
-
-      elsif Feature_Disabled then
          return False;
 
       --  False if not a function, also handle enum-lit renames case
@@ -9227,23 +9491,37 @@ package body Exp_Ch6 is
       elsif Ada_Version < Ada_2012 then
          return False;
 
-      elsif Ekind (Func_Typ) = E_Anonymous_Access_Type
-        or else Is_Tagged_Type (Func_Typ)
-      then
-         --  In the case of, say, a null tagged record result type, the need
-         --  for this extra parameter might not be obvious. This function
-         --  returns True for all tagged types for compatibility reasons.
-         --  A function with, say, a tagged null controlling result type might
-         --  be overridden by a primitive of an extension having an access
-         --  discriminant and the overrider and overridden must have compatible
-         --  calling conventions (including implicitly declared parameters).
-         --  Similarly, values of one access-to-subprogram type might designate
-         --  both a primitive subprogram of a given type and a function
-         --  which is, for example, not a primitive subprogram of any type.
-         --  Again, this requires calling convention compatibility.
-         --  It might be possible to solve these issues by introducing
-         --  wrappers, but that is not the approach that was chosen.
+      --  Handle the situation where a result is an anonymous access type
+      --  RM 3.10.2 (10.3/3).
 
+      elsif Ekind (Func_Typ) = E_Anonymous_Access_Type then
+         return True;
+
+      --  The following cases are related to coextensions and do not fully
+      --  cover everything mentioned in RM 3.10.2 (12) ???
+
+      --  Temporarily disabled ???
+
+      elsif Disable_Coextension_Cases then
+         return False;
+
+      --  In the case of, say, a null tagged record result type, the need for
+      --  this extra parameter might not be obvious so this function returns
+      --  True for all tagged types for compatibility reasons.
+
+      --  A function with, say, a tagged null controlling result type might
+      --  be overridden by a primitive of an extension having an access
+      --  discriminant and the overrider and overridden must have compatible
+      --  calling conventions (including implicitly declared parameters).
+
+      --  Similarly, values of one access-to-subprogram type might designate
+      --  both a primitive subprogram of a given type and a function which is,
+      --  for example, not a primitive subprogram of any type. Again, this
+      --  requires calling convention compatibility. It might be possible to
+      --  solve these issues by introducing wrappers, but that is not the
+      --  approach that was chosen.
+
+      elsif Is_Tagged_Type (Func_Typ) then
          return True;
 
       elsif Has_Unconstrained_Access_Discriminants (Func_Typ) then

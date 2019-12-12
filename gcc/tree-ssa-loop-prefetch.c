@@ -1,5 +1,5 @@
 /* Array prefetching.
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-into-ssa.h"
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
-#include "params.h"
 #include "langhooks.h"
 #include "tree-inline.h"
 #include "tree-data-ref.h"
@@ -167,7 +166,7 @@ along with GCC; see the file COPYING3.  If not see
    of cache hierarchy).  */
 
 #ifndef PREFETCH_BLOCK
-#define PREFETCH_BLOCK L1_CACHE_LINE_SIZE
+#define PREFETCH_BLOCK param_l1_cache_line_size
 #endif
 
 /* Do we have a forward hardware sequential prefetching?  */
@@ -191,8 +190,8 @@ along with GCC; see the file COPYING3.  If not see
 #define ACCEPTABLE_MISS_RATE 50
 #endif
 
-#define L1_CACHE_SIZE_BYTES ((unsigned) (L1_CACHE_SIZE * 1024))
-#define L2_CACHE_SIZE_BYTES ((unsigned) (L2_CACHE_SIZE * 1024))
+#define L1_CACHE_SIZE_BYTES ((unsigned) (param_l1_cache_size * 1024))
+#define L2_CACHE_SIZE_BYTES ((unsigned) (param_l2_cache_size * 1024))
 
 /* We consider a memory access nontemporal if it is not reused sooner than
    after L2_CACHE_SIZE_BYTES of memory are accessed.  However, we ignore
@@ -421,7 +420,7 @@ release_mem_refs (struct mem_ref_group *groups)
 
 struct ar_data
 {
-  struct loop *loop;			/* Loop of the reference.  */
+  class loop *loop;			/* Loop of the reference.  */
   gimple *stmt;				/* Statement of the reference.  */
   tree *step;				/* Step of the memory reference.  */
   HOST_WIDE_INT *delta;			/* Offset of the memory reference.  */
@@ -486,7 +485,7 @@ idx_analyze_ref (tree base, tree *index, void *data)
    references from REF_P.  */
 
 static bool
-analyze_ref (struct loop *loop, tree *ref_p, tree *base,
+analyze_ref (class loop *loop, tree *ref_p, tree *base,
 	     tree *step, HOST_WIDE_INT *delta,
 	     gimple *stmt)
 {
@@ -535,7 +534,7 @@ analyze_ref (struct loop *loop, tree *ref_p, tree *base,
    reference was recorded, false otherwise.  */
 
 static bool
-gather_memory_references_ref (struct loop *loop, struct mem_ref_group **refs,
+gather_memory_references_ref (class loop *loop, struct mem_ref_group **refs,
 			      tree ref, bool write_p, gimple *stmt)
 {
   tree base, step;
@@ -606,7 +605,7 @@ gather_memory_references_ref (struct loop *loop, struct mem_ref_group **refs,
    true if there are no other memory references inside the loop.  */
 
 static struct mem_ref_group *
-gather_memory_references (struct loop *loop, bool *no_other_refs, unsigned *ref_count)
+gather_memory_references (class loop *loop, bool *no_other_refs, unsigned *ref_count)
 {
   basic_block *body = get_loop_body_in_dom_order (loop);
   basic_block bb;
@@ -993,7 +992,8 @@ static bool
 should_issue_prefetch_p (struct mem_ref *ref)
 {
   /* Do we want to issue prefetches for non-constant strides?  */
-  if (!cst_and_fits_in_hwi (ref->group->step) && PREFETCH_DYNAMIC_STRIDES == 0)
+  if (!cst_and_fits_in_hwi (ref->group->step)
+      && param_prefetch_dynamic_strides == 0)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
@@ -1008,14 +1008,14 @@ should_issue_prefetch_p (struct mem_ref *ref)
      range.  */
   if (cst_and_fits_in_hwi (ref->group->step)
       && abs_hwi (int_cst_value (ref->group->step))
-	  < (HOST_WIDE_INT) PREFETCH_MINIMUM_STRIDE)
+	  < (HOST_WIDE_INT) param_prefetch_minimum_stride)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
 		 "Step for reference %u:%u (" HOST_WIDE_INT_PRINT_DEC
 		 ") is less than the mininum required stride of %d\n",
 		 ref->group->uid, ref->uid, int_cst_value (ref->group->step),
-		 PREFETCH_MINIMUM_STRIDE);
+		 param_prefetch_minimum_stride);
       return false;
     }
 
@@ -1055,8 +1055,9 @@ schedule_prefetches (struct mem_ref_group *groups, unsigned unroll_factor,
   struct mem_ref *ref;
   bool any = false;
 
-  /* At most SIMULTANEOUS_PREFETCHES should be running at the same time.  */
-  remaining_prefetch_slots = SIMULTANEOUS_PREFETCHES;
+  /* At most param_simultaneous_prefetches should be running
+     at the same time.  */
+  remaining_prefetch_slots = param_simultaneous_prefetches;
 
   /* The prefetch will run for AHEAD iterations of the original loop, i.e.,
      AHEAD / UNROLL_FACTOR iterations of the unrolled loop.  In each iteration,
@@ -1286,7 +1287,7 @@ mark_nontemporal_store (struct mem_ref *ref)
 /* Issue a memory fence instruction after LOOP.  */
 
 static void
-emit_mfence_after_loop (struct loop *loop)
+emit_mfence_after_loop (class loop *loop)
 {
   vec<edge> exits = get_loop_exit_edges (loop);
   edge exit;
@@ -1315,7 +1316,7 @@ emit_mfence_after_loop (struct loop *loop)
 /* Returns true if we can use storent in loop, false otherwise.  */
 
 static bool
-may_use_storent_in_loop_p (struct loop *loop)
+may_use_storent_in_loop_p (class loop *loop)
 {
   bool ret = true;
 
@@ -1345,7 +1346,7 @@ may_use_storent_in_loop_p (struct loop *loop)
    references in the loop.  */
 
 static void
-mark_nontemporal_stores (struct loop *loop, struct mem_ref_group *groups)
+mark_nontemporal_stores (class loop *loop, struct mem_ref_group *groups)
 {
   struct mem_ref *ref;
   bool any = false;
@@ -1366,7 +1367,7 @@ mark_nontemporal_stores (struct loop *loop, struct mem_ref_group *groups)
    iterations.  */
 
 static bool
-should_unroll_loop_p (struct loop *loop, struct tree_niter_desc *desc,
+should_unroll_loop_p (class loop *loop, class tree_niter_desc *desc,
 		      unsigned factor)
 {
   if (!can_unroll_loop_p (loop, factor, desc))
@@ -1390,8 +1391,8 @@ should_unroll_loop_p (struct loop *loop, struct tree_niter_desc *desc,
    the loop, or -1 if no estimate is available.  */
 
 static unsigned
-determine_unroll_factor (struct loop *loop, struct mem_ref_group *refs,
-			 unsigned ninsns, struct tree_niter_desc *desc,
+determine_unroll_factor (class loop *loop, struct mem_ref_group *refs,
+			 unsigned ninsns, class tree_niter_desc *desc,
 			 HOST_WIDE_INT est_niter)
 {
   unsigned upper_bound;
@@ -1406,7 +1407,7 @@ determine_unroll_factor (struct loop *loop, struct mem_ref_group *refs,
      us from unrolling the loops too many times in cases where we only expect
      gains from better scheduling and decreasing loop overhead, which is not
      the case here.  */
-  upper_bound = PARAM_VALUE (PARAM_MAX_UNROLLED_INSNS) / ninsns;
+  upper_bound = param_max_unrolled_insns / ninsns;
 
   /* If we unrolled the loop more times than it iterates, the unrolled version
      of the loop would be never entered.  */
@@ -1459,7 +1460,7 @@ volume_of_references (struct mem_ref_group *refs)
 	   accessed in each iteration.  TODO -- in the latter case, we should
 	   take the size of the reference into account, rounding it up on cache
 	   line size multiple.  */
-	volume += L1_CACHE_LINE_SIZE / ref->prefetch_mod;
+	volume += param_l1_cache_line_size / ref->prefetch_mod;
       }
   return volume;
 }
@@ -1493,9 +1494,9 @@ volume_of_dist_vector (lambda_vector vec, unsigned *loop_sizes, unsigned n)
 
 static void
 add_subscript_strides (tree access_fn, unsigned stride,
-		       HOST_WIDE_INT *strides, unsigned n, struct loop *loop)
+		       HOST_WIDE_INT *strides, unsigned n, class loop *loop)
 {
-  struct loop *aloop;
+  class loop *aloop;
   tree step;
   HOST_WIDE_INT astep;
   unsigned min_depth = loop_depth (loop) - n;
@@ -1512,7 +1513,7 @@ add_subscript_strides (tree access_fn, unsigned stride,
       if (tree_fits_shwi_p (step))
 	astep = tree_to_shwi (step);
       else
-	astep = L1_CACHE_LINE_SIZE;
+	astep = param_l1_cache_line_size;
 
       strides[n - 1 - loop_depth (loop) + loop_depth (aloop)] += astep * stride;
 
@@ -1526,7 +1527,7 @@ add_subscript_strides (tree access_fn, unsigned stride,
 
 static unsigned
 self_reuse_distance (data_reference_p dr, unsigned *loop_sizes, unsigned n,
-		     struct loop *loop)
+		     class loop *loop)
 {
   tree stride, access_fn;
   HOST_WIDE_INT *strides, astride;
@@ -1562,7 +1563,7 @@ self_reuse_distance (data_reference_p dr, unsigned *loop_sizes, unsigned n,
 	  if (tree_fits_uhwi_p (stride))
 	    astride = tree_to_uhwi (stride);
 	  else
-	    astride = L1_CACHE_LINE_SIZE;
+	    astride = param_l1_cache_line_size;
 
 	  ref = TREE_OPERAND (ref, 0);
 	}
@@ -1578,7 +1579,7 @@ self_reuse_distance (data_reference_p dr, unsigned *loop_sizes, unsigned n,
 
       s = strides[i] < 0 ?  -strides[i] : strides[i];
 
-      if (s < (unsigned) L1_CACHE_LINE_SIZE
+      if (s < (unsigned) param_l1_cache_line_size
 	  && (loop_sizes[i]
 	      > (unsigned) (L1_CACHE_SIZE_BYTES / NONTEMPORAL_FRACTION)))
 	{
@@ -1596,10 +1597,10 @@ self_reuse_distance (data_reference_p dr, unsigned *loop_sizes, unsigned n,
    memory references in the loop.  Return false if the analysis fails.  */
 
 static bool
-determine_loop_nest_reuse (struct loop *loop, struct mem_ref_group *refs,
+determine_loop_nest_reuse (class loop *loop, struct mem_ref_group *refs,
 			   bool no_other_refs)
 {
-  struct loop *nest, *aloop;
+  class loop *nest, *aloop;
   vec<data_reference_p> datarefs = vNULL;
   vec<ddr_p> dependences = vNULL;
   struct mem_ref_group *gr;
@@ -1825,7 +1826,7 @@ mem_ref_count_reasonable_p (unsigned ninsns, unsigned mem_ref_count)
      should account for cache misses.  */
   insn_to_mem_ratio = ninsns / mem_ref_count;
 
-  if (insn_to_mem_ratio < PREFETCH_MIN_INSN_TO_MEM_RATIO)
+  if (insn_to_mem_ratio < param_prefetch_min_insn_to_mem_ratio)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
         fprintf (dump_file,
@@ -1862,7 +1863,7 @@ insn_to_prefetch_ratio_too_small_p (unsigned ninsns, unsigned prefetch_count,
      and the exit branches will get eliminated), so it might be better to use
      tree_estimate_loop_size + estimated_unrolled_size.  */
   insn_to_prefetch_ratio = (unroll_factor * ninsns) / prefetch_count;
-  if (insn_to_prefetch_ratio < MIN_INSN_TO_PREFETCH_RATIO)
+  if (insn_to_prefetch_ratio < param_min_insn_to_prefetch_ratio)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
         fprintf (dump_file,
@@ -1879,12 +1880,12 @@ insn_to_prefetch_ratio_too_small_p (unsigned ninsns, unsigned prefetch_count,
    true if the LOOP was unrolled.  */
 
 static bool
-loop_prefetch_arrays (struct loop *loop)
+loop_prefetch_arrays (class loop *loop)
 {
   struct mem_ref_group *refs;
   unsigned ahead, ninsns, time, unroll_factor;
   HOST_WIDE_INT est_niter;
-  struct tree_niter_desc desc;
+  class tree_niter_desc desc;
   bool unrolled = false, no_other_refs;
   unsigned prefetch_count;
   unsigned mem_ref_count;
@@ -1902,7 +1903,7 @@ loop_prefetch_arrays (struct loop *loop)
   if (time == 0)
     return false;
 
-  ahead = (PREFETCH_LATENCY + time - 1) / time;
+  ahead = (param_prefetch_latency + time - 1) / time;
   est_niter = estimated_stmt_executions_int (loop);
   if (est_niter == -1)
     est_niter = likely_max_stmt_executions_int (loop);
@@ -1982,7 +1983,7 @@ fail:
 unsigned int
 tree_ssa_prefetch_arrays (void)
 {
-  struct loop *loop;
+  class loop *loop;
   bool unrolled = false;
   int todo_flags = 0;
 
@@ -1998,17 +1999,19 @@ tree_ssa_prefetch_arrays (void)
     {
       fprintf (dump_file, "Prefetching parameters:\n");
       fprintf (dump_file, "    simultaneous prefetches: %d\n",
-	       SIMULTANEOUS_PREFETCHES);
-      fprintf (dump_file, "    prefetch latency: %d\n", PREFETCH_LATENCY);
+	       param_simultaneous_prefetches);
+      fprintf (dump_file, "    prefetch latency: %d\n", param_prefetch_latency);
       fprintf (dump_file, "    prefetch block size: %d\n", PREFETCH_BLOCK);
       fprintf (dump_file, "    L1 cache size: %d lines, %d kB\n",
-	       L1_CACHE_SIZE_BYTES / L1_CACHE_LINE_SIZE, L1_CACHE_SIZE);
-      fprintf (dump_file, "    L1 cache line size: %d\n", L1_CACHE_LINE_SIZE);
-      fprintf (dump_file, "    L2 cache size: %d kB\n", L2_CACHE_SIZE);
+	       L1_CACHE_SIZE_BYTES / param_l1_cache_line_size,
+	       param_l1_cache_size);
+      fprintf (dump_file, "    L1 cache line size: %d\n",
+	       param_l1_cache_line_size);
+      fprintf (dump_file, "    L2 cache size: %d kB\n", param_l2_cache_size);
       fprintf (dump_file, "    min insn-to-prefetch ratio: %d \n",
-	       MIN_INSN_TO_PREFETCH_RATIO);
+	       param_min_insn_to_prefetch_ratio);
       fprintf (dump_file, "    min insn-to-mem ratio: %d \n",
-	       PREFETCH_MIN_INSN_TO_MEM_RATIO);
+	       param_prefetch_min_insn_to_mem_ratio);
       fprintf (dump_file, "\n");
     }
 

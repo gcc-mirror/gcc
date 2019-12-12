@@ -1,6 +1,6 @@
 // Filesystem directory utilities -*- C++ -*-
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,7 +49,7 @@ namespace filesystem
 inline namespace v1
 {
   /**
-   * @ingroup filesystem-ts
+   * @addtogroup filesystem-ts
    * @{
    */
 

@@ -5,12 +5,12 @@
 /* { dg-options "-Wstrict-selector-match" } */
 
 #ifdef __NEXT_RUNTIME__
-#include <Foundation/NSObject.h>
-#define OBJECT NSObject
+# include "../objc-obj-c++-shared/F-NSObject.h"
+# define OBJECT NSObject
 #else
-#include <objc/Object.h>
-#include <objc/Protocol.h>
-#define OBJECT Object
+# include <objc/Object.h>
+# include <objc/Protocol.h>
+# define OBJECT Object
 #endif
 
 @interface Base
@@ -31,9 +31,7 @@ void foo(void) {
        /* { dg-message "also found .\\+\\(Protocol \\*\\)port." "" { target *-*-* } Derived_port_last } */
 
   [receiver starboard];  /* { dg-warning "no .\\+starboard. method found" } */
-       /* { dg-warning "Messages without a matching method signature" "" { target *-*-* } .-1 } */
-       /* { dg-warning "will be assumed to return .id. and accept" "" { target *-*-* } .-2 } */
-       /* { dg-warning ".\.\.\.. as arguments" "" { target *-*-* } .-3 } */
+  /* { dg-warning "messages without a matching method signature will be assumed to return .id. and accept .\.\.\.. as arguments" "" { target *-*-* } 0 } */
 
   [Class port];  /* { dg-error ".Class. is not an Objective\\-C class name or alias" } */
 }

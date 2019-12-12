@@ -97,5 +97,4 @@ int main()
 }
 
 
-/* { dg-final { scan-tree-dump-times "MEM\\\[\\(struct FixBuf \\*\\)&<retval> \\+ \[0-9\]+B\\\] = {}" 1 "dse1" } } */
-
+/* { dg-final { scan-tree-dump-times "MEM <char\\\[\[0-9\]+]> \\\[\\(struct FixBuf \\*\\)&<retval> \\+ \[0-9\]+B\\\] = {}" 1 "dse1" } } */

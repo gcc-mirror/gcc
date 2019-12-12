@@ -1,6 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-mcpu=power8 -O0 -mno-fold-gimple -dp" } */
+/* { dg-options "-mdejagnu-cpu=power8 -O0 -mno-fold-gimple -dp" } */
 /* { dg-prune-output "gimple folding of rs6000 builtins has been disabled." } */
 
 #include <altivec.h>
@@ -276,21 +275,20 @@ int main ()
    vec_any_lt          vcmpgtud.
    vec_any_le          vcmpgtud.
    vec_and             xxland
-   vec_andc            xxland
+   vec_andc            xxlandc
    vec_cntlz           vclzd, vclzb, vclzw, vclzh
-   xvcpsgnsp           vec_cpsgn
+   vec_cpsgn           xvcpsgnsp           
    vec_ctf             xvmuldp 
-   vec_cts             xvcvdpsxds, vctsxs
-   vec_ctu             xvcvdpuxds, vctuxs
+   vec_cts             vctsxs
+   vec_ctu             vctuxs
    vec_div             divd, divdu | __divdi3(), __udivdi3()
    vec_mergel          vmrghb, vmrghh, xxmrghw
-   vec_mergeh          xxmrglw, vmrglh
+   vec_mergeh          xxmrglw, vmrglh, vmrglb
    vec_mul             mulld | mullw, mulhwu
    vec_nor             xxlnor
-   vec_or              xxlor
    vec_packsu          vpkudus
-   vec_                perm vperm
-   vec_                round xvrdpi
+   vec_perm            vperm
+   vec_round           xvrdpi
    vec_sel             xxsel
    vec_xor             xxlxor 
    vec_rsqrt           xvrsqrtesp
@@ -324,8 +322,6 @@ int main ()
 /* { dg-final { scan-assembler-times "xxmrglw" 8 } } */
 /* { dg-final { scan-assembler-times "vmrglh" 8 } } */
 /* { dg-final { scan-assembler-times "xxlnor" 6 } } */
-/* { dg-final { scan-assembler-times "xxlor" 11 { target { ilp32 } } } } */
-/* { dg-final { scan-assembler-times "xxlor" 7  { target { lp64 } } } } */
 /* { dg-final { scan-assembler-times {\mvpkudus\M} 1 } } */
 /* { dg-final { scan-assembler-times "vperm" 4 } } */
 /* { dg-final { scan-assembler-times "xvrdpi" 2 } } */
@@ -334,8 +330,10 @@ int main ()
 /* { dg-final { scan-assembler-times "divd" 8  { target lp64 } } } */
 /* { dg-final { scan-assembler-times "divdu" 2  { target lp64 } } } */
 /* { dg-final { scan-assembler-times "mulld" 4  { target lp64 } } } */
-/* { dg-final { scan-assembler-times {\mbl __divdi3\M} 2  { target { ilp32 } } } } */
-/* { dg-final { scan-assembler-times {\mbl __udivdi3\M} 2  { target {ilp32 } } } } */
+/* check for .__divdi3 (AIX), __divdi3 (Linux) and ___divdi3 (Darwin) */
+/* { dg-final { scan-assembler-times {\mbl \.?_?__divdi3\M} 2   { target { ilp32 } } } } */
+/* check for both .__udivdi3 (AIX), __udivdi3 (Linux) and ___udivdi3 (Darwin) */
+/* { dg-final { scan-assembler-times {\mbl \.?_?__udivdi3\M} 2  { target { ilp32 } } } } */
 /* { dg-final { scan-assembler-times "mullw" 12  { target ilp32 } } } */
 /* { dg-final { scan-assembler-times "mulhwu" 4  { target ilp32 } } } */
 /* { dg-final { scan-assembler-times "xxmrgld" 0 } } */

@@ -6,10 +6,10 @@
 //
 // For the concurrent garbage collector, the Go compiler implements
 // updates to pointer-valued fields that may be in heap objects by
-// emitting calls to write barriers. This file contains the actual write barrier
-// implementation, gcmarkwb_m, and the various wrappers called by the
-// compiler to implement pointer assignment, slice assignment,
-// typed memmove, and so on.
+// emitting calls to write barriers. The main write barrier for
+// individual pointer writes is gcWriteBarrier and is implemented in
+// assembly. This file contains write barrier entry points for bulk
+// operations. See also mwbbuf.go.
 
 package runtime
 
@@ -18,17 +18,13 @@ import (
 	"unsafe"
 )
 
-// For gccgo, use go:linkname to rename compiler-called functions to
-// themselves, so that the compiler will export them.
+// For gccgo, use go:linkname to export compiler-called functions.
 //
-//go:linkname writebarrierptr runtime.writebarrierptr
-//go:linkname typedmemmove runtime.typedmemmove
-//go:linkname typedslicecopy runtime.typedslicecopy
+//go:linkname typedmemmove
+//go:linkname typedslicecopy
+//go:linkname memclrHasPointers
 
-// gcmarkwb_m is the mark-phase write barrier, the only barrier we have.
-// The rest of this file exists only to make calls to this function.
-//
-// This is a hybrid barrier that combines a Yuasa-style deletion
+// Go uses a hybrid barrier that combines a Yuasa-style deletion
 // barrier—which shades the object whose reference is being
 // overwritten—with Dijkstra insertion barrier—which shades the object
 // whose reference is being written. The insertion part of the barrier
@@ -144,105 +140,17 @@ import (
 // reachable by some goroutine that currently cannot reach it.
 //
 //
-//go:nowritebarrierrec
-//go:systemstack
-func gcmarkwb_m(slot *uintptr, ptr uintptr) {
-	if writeBarrier.needed {
-		// Note: This turns bad pointer writes into bad
-		// pointer reads, which could be confusing. We avoid
-		// reading from obviously bad pointers, which should
-		// take care of the vast majority of these. We could
-		// patch this up in the signal handler, or use XCHG to
-		// combine the read and the write. Checking inheap is
-		// insufficient since we need to track changes to
-		// roots outside the heap.
-		//
-		// Note: profbuf.go omits a barrier during signal handler
-		// profile logging; that's safe only because this deletion barrier exists.
-		// If we remove the deletion barrier, we'll have to work out
-		// a new way to handle the profile logging.
-		if slot1 := uintptr(unsafe.Pointer(slot)); slot1 >= minPhysPageSize {
-			if optr := *slot; optr != 0 {
-				shade(optr)
-			}
-		}
-		// TODO: Make this conditional on the caller's stack color.
-		if ptr != 0 && inheap(ptr) {
-			shade(ptr)
-		}
-	}
-}
-
-// writebarrierptr_prewrite1 invokes a write barrier for *dst = src
-// prior to the write happening.
+// Signal handler pointer writes:
 //
-// Write barrier calls must not happen during critical GC and scheduler
-// related operations. In particular there are times when the GC assumes
-// that the world is stopped but scheduler related code is still being
-// executed, dealing with syscalls, dealing with putting gs on runnable
-// queues and so forth. This code cannot execute write barriers because
-// the GC might drop them on the floor. Stopping the world involves removing
-// the p associated with an m. We use the fact that m.p == nil to indicate
-// that we are in one these critical section and throw if the write is of
-// a pointer to a heap object.
-//go:nosplit
-func writebarrierptr_prewrite1(dst *uintptr, src uintptr) {
-	mp := acquirem()
-	if mp.inwb || mp.dying > 0 {
-		// We explicitly allow write barriers in startpanic_m,
-		// since we're going down anyway. Ignore them here.
-		releasem(mp)
-		return
-	}
-	systemstack(func() {
-		if mp.p == 0 && memstats.enablegc && !mp.inwb && inheap(src) {
-			throw("writebarrierptr_prewrite1 called with mp.p == nil")
-		}
-		mp.inwb = true
-		gcmarkwb_m(dst, src)
-	})
-	mp.inwb = false
-	releasem(mp)
-}
-
-// NOTE: Really dst *unsafe.Pointer, src unsafe.Pointer,
-// but if we do that, Go inserts a write barrier on *dst = src.
-//go:nosplit
-func writebarrierptr(dst *uintptr, src uintptr) {
-	if writeBarrier.cgo {
-		cgoCheckWriteBarrier(dst, src)
-	}
-	if !writeBarrier.needed {
-		*dst = src
-		return
-	}
-	if src != 0 && src < minPhysPageSize {
-		systemstack(func() {
-			print("runtime: writebarrierptr *", dst, " = ", hex(src), "\n")
-			throw("bad pointer in write barrier")
-		})
-	}
-	writebarrierptr_prewrite1(dst, src)
-	*dst = src
-}
-
-// writebarrierptr_prewrite is like writebarrierptr, but the store
-// will be performed by the caller after this call. The caller must
-// not allow preemption between this call and the write.
+// In general, the signal handler cannot safely invoke the write
+// barrier because it may run without a P or even during the write
+// barrier.
 //
-//go:nosplit
-func writebarrierptr_prewrite(dst *uintptr, src uintptr) {
-	if writeBarrier.cgo {
-		cgoCheckWriteBarrier(dst, src)
-	}
-	if !writeBarrier.needed {
-		return
-	}
-	if src != 0 && src < minPhysPageSize {
-		systemstack(func() { throw("bad pointer in write barrier") })
-	}
-	writebarrierptr_prewrite1(dst, src)
-}
+// There is exactly one exception: profbuf.go omits a barrier during
+// signal handler profile logging. That's safe only because of the
+// deletion barrier. See profbuf.go for a detailed argument. If we
+// remove the deletion barrier, we'll have to work out a new way to
+// handle the profile logging.
 
 // typedmemmove copies a value of type t to dst from src.
 // Must be nosplit, see #16026.
@@ -252,7 +160,10 @@ func writebarrierptr_prewrite(dst *uintptr, src uintptr) {
 //
 //go:nosplit
 func typedmemmove(typ *_type, dst, src unsafe.Pointer) {
-	if typ.kind&kindNoPointers == 0 {
+	if dst == src {
+		return
+	}
+	if typ.ptrdata != 0 {
 		bulkBarrierPreWrite(uintptr(dst), uintptr(src), typ.size)
 	}
 	// There's a race here: if some other goroutine can write to
@@ -281,11 +192,16 @@ func reflect_typedmemmove(typ *_type, dst, src unsafe.Pointer) {
 	typedmemmove(typ, dst, src)
 }
 
+//go:linkname reflectlite_typedmemmove internal..z2freflectlite.typedmemmove
+func reflectlite_typedmemmove(typ *_type, dst, src unsafe.Pointer) {
+	reflect_typedmemmove(typ, dst, src)
+}
+
 // typedmemmovepartial is like typedmemmove but assumes that
 // dst and src point off bytes into the value and only copies size bytes.
 //go:linkname reflect_typedmemmovepartial reflect.typedmemmovepartial
 func reflect_typedmemmovepartial(typ *_type, dst, src unsafe.Pointer, off, size uintptr) {
-	if writeBarrier.needed && typ.kind&kindNoPointers == 0 && size >= sys.PtrSize {
+	if writeBarrier.needed && typ.ptrdata != 0 && size >= sys.PtrSize {
 		// Pointer-align start address for bulk barrier.
 		adst, asrc, asize := dst, src, size
 		if frag := -off & (sys.PtrSize - 1); frag != 0 {
@@ -304,8 +220,6 @@ func reflect_typedmemmovepartial(typ *_type, dst, src unsafe.Pointer, off, size 
 
 //go:nosplit
 func typedslicecopy(typ *_type, dst, src slice) int {
-	// TODO(rsc): If typedslicecopy becomes faster than calling
-	// typedmemmove repeatedly, consider using during func growslice.
 	n := dst.len
 	if n > src.len {
 		n = src.len
@@ -335,7 +249,11 @@ func typedslicecopy(typ *_type, dst, src slice) int {
 		cgoCheckSliceCopy(typ, dst, src, n)
 	}
 
-	// Note: No point in checking typ.kind&kindNoPointers here:
+	if dstp == srcp {
+		return n
+	}
+
+	// Note: No point in checking typ.ptrdata here:
 	// compiler only emits calls to typedslicecopy for types with pointers,
 	// and growslice and reflect_typedslicecopy check for pointers
 	// before calling typedslicecopy.
@@ -351,7 +269,7 @@ func typedslicecopy(typ *_type, dst, src slice) int {
 
 //go:linkname reflect_typedslicecopy reflect.typedslicecopy
 func reflect_typedslicecopy(elemType *_type, dst, src slice) int {
-	if elemType.kind&kindNoPointers != 0 {
+	if elemType.ptrdata == 0 {
 		n := dst.len
 		if n > src.len {
 			n = src.len
@@ -388,15 +306,28 @@ func reflect_typedslicecopy(elemType *_type, dst, src slice) int {
 //
 //go:nosplit
 func typedmemclr(typ *_type, ptr unsafe.Pointer) {
-	if typ.kind&kindNoPointers == 0 {
+	if typ.ptrdata != 0 {
 		bulkBarrierPreWrite(uintptr(ptr), 0, typ.size)
 	}
 	memclrNoHeapPointers(ptr, typ.size)
 }
 
+//go:linkname reflect_typedmemclr reflect.typedmemclr
+func reflect_typedmemclr(typ *_type, ptr unsafe.Pointer) {
+	typedmemclr(typ, ptr)
+}
+
+//go:linkname reflect_typedmemclrpartial reflect.typedmemclrpartial
+func reflect_typedmemclrpartial(typ *_type, ptr unsafe.Pointer, off, size uintptr) {
+	if typ.ptrdata != 0 {
+		bulkBarrierPreWrite(uintptr(ptr), 0, size)
+	}
+	memclrNoHeapPointers(ptr, size)
+}
+
 // memclrHasPointers clears n bytes of typed memory starting at ptr.
 // The caller must ensure that the type of the object at ptr has
-// pointers, usually by checking typ.kind&kindNoPointers. However, ptr
+// pointers, usually by checking typ.ptrdata. However, ptr
 // does not have to point to the start of the allocation.
 //
 //go:nosplit

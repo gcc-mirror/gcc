@@ -1,4 +1,4 @@
-@c Copyright (C) 2014-2018 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2019 Free Software Foundation, Inc.
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -293,8 +293,8 @@ nested and a @code{for} can have multiple operators to iterate.
 @end smallexample
 
 In this example the pattern will be repeated four times with
-@code{opa, opb, opc} being @code{plus, minus, plus},
-@code{plus, minus, minus}, @code{minus, plus, plus},
+@code{opa, opb, opc} being @code{plus, minus, plus};
+@code{plus, minus, minus}; @code{minus, plus, plus};
 @code{minus, plus, minus}.
 
 To avoid repeating operator lists in @code{for} you can name

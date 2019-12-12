@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -mtune=amdfam10 -fexpensive-optimizations -fgcse -foptimize-register-move -freorder-blocks -fschedule-insns2 -funswitch-loops -fgcse-las -fselective-scheduling2 -fsel-sched-pipelining -funroll-all-loops" } */
+/* { dg-options "-O1 -mtune=amdfam10 -fexpensive-optimizations -fgcse -freorder-blocks -fschedule-insns2 -funswitch-loops -fgcse-las -fselective-scheduling2 -fsel-sched-pipelining -funroll-all-loops" } */
 
 typedef char uint8_t;
 typedef int uint32_t;

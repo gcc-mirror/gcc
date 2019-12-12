@@ -171,6 +171,11 @@ type Symbol struct {
 	Info, Other byte
 	Section     SectionIndex
 	Value, Size uint64
+
+	// Version and Library are present only for the dynamic symbol
+	// table.
+	Version string
+	Library string
 }
 
 /*
@@ -276,7 +281,6 @@ func NewFile(r io.ReaderAt) (*File, error) {
 	var phentsize, phnum int
 	var shoff int64
 	var shentsize, shnum, shstrndx int
-	shstrndx = -1
 	switch f.Class {
 	case ELFCLASS32:
 		hdr := new(Header32)
@@ -318,7 +322,11 @@ func NewFile(r io.ReaderAt) (*File, error) {
 		shstrndx = int(hdr.Shstrndx)
 	}
 
-	if shnum > 0 && shoff > 0 && (shstrndx < 0 || shstrndx >= shnum) {
+	if shoff == 0 && shnum != 0 {
+		return nil, &FormatError{0, "invalid ELF shnum for shoff=0", shnum}
+	}
+
+	if shnum > 0 && shstrndx >= shnum {
 		return nil, &FormatError{0, "invalid ELF shstrndx", shstrndx}
 	}
 
@@ -609,6 +617,8 @@ func (f *File) applyRelocations(dst []byte, rels []byte) error {
 		return f.applyRelocationsMIPS(dst, rels)
 	case f.Class == ELFCLASS64 && f.Machine == EM_MIPS:
 		return f.applyRelocationsMIPS64(dst, rels)
+	case f.Class == ELFCLASS64 && f.Machine == EM_RISCV:
+		return f.applyRelocationsRISCV64(dst, rels)
 	case f.Class == ELFCLASS64 && f.Machine == EM_S390:
 		return f.applyRelocationss390x(dst, rels)
 	case f.Class == ELFCLASS32 && (f.Machine == EM_SPARC || f.Machine == EM_SPARC32PLUS):
@@ -970,6 +980,55 @@ func (f *File) applyRelocationsMIPS64(dst []byte, rels []byte) error {
 	return nil
 }
 
+func (f *File) applyRelocationsRISCV64(dst []byte, rels []byte) error {
+	// 24 is the size of Rela64.
+	if len(rels)%24 != 0 {
+		return errors.New("length of relocation section is not a multiple of 24")
+	}
+
+	symbols, _, err := f.getSymbols(SHT_SYMTAB)
+	if err != nil {
+		return err
+	}
+
+	b := bytes.NewReader(rels)
+	var rela Rela64
+
+	for b.Len() > 0 {
+		binary.Read(b, f.ByteOrder, &rela)
+		symNo := rela.Info >> 32
+		t := R_RISCV(rela.Info & 0xffff)
+
+		if symNo == 0 || symNo > uint64(len(symbols)) {
+			continue
+		}
+		sym := &symbols[symNo-1]
+		switch SymType(sym.Info & 0xf) {
+		case STT_SECTION, STT_NOTYPE:
+			break
+		default:
+			continue
+		}
+
+		switch t {
+		case R_RISCV_64:
+			if rela.Off+8 >= uint64(len(dst)) || rela.Addend < 0 {
+				continue
+			}
+			val := sym.Value + uint64(rela.Addend)
+			f.ByteOrder.PutUint64(dst[rela.Off:rela.Off+8], val)
+		case R_RISCV_32:
+			if rela.Off+4 >= uint64(len(dst)) || rela.Addend < 0 {
+				continue
+			}
+			val := uint32(sym.Value) + uint32(rela.Addend)
+			f.ByteOrder.PutUint32(dst[rela.Off:rela.Off+4], val)
+		}
+	}
+
+	return nil
+}
+
 func (f *File) applyRelocationss390x(dst []byte, rels []byte) error {
 	// 24 is the size of Rela64.
 	if len(rels)%24 != 0 {
@@ -1154,6 +1213,17 @@ func (f *File) applyRelocationsALPHA(dst []byte, rels []byte) error {
 }
 
 func (f *File) DWARF() (*dwarf.Data, error) {
+	dwarfSuffix := func(s *Section) string {
+		switch {
+		case strings.HasPrefix(s.Name, ".debug_"):
+			return s.Name[7:]
+		case strings.HasPrefix(s.Name, ".zdebug_"):
+			return s.Name[8:]
+		default:
+			return ""
+		}
+
+	}
 	// sectionData gets the data for s, checks its size, and
 	// applies any applicable relations.
 	sectionData := func(i int, s *Section) ([]byte, error) {
@@ -1202,13 +1272,8 @@ func (f *File) DWARF() (*dwarf.Data, error) {
 	// Don't bother loading others.
 	var dat = map[string][]byte{"abbrev": nil, "info": nil, "str": nil, "line": nil, "ranges": nil}
 	for i, s := range f.Sections {
-		suffix := ""
-		switch {
-		case strings.HasPrefix(s.Name, ".debug_"):
-			suffix = s.Name[7:]
-		case strings.HasPrefix(s.Name, ".zdebug_"):
-			suffix = s.Name[8:]
-		default:
+		suffix := dwarfSuffix(s)
+		if suffix == "" {
 			continue
 		}
 		if _, ok := dat[suffix]; !ok {
@@ -1228,16 +1293,19 @@ func (f *File) DWARF() (*dwarf.Data, error) {
 
 	// Look for DWARF4 .debug_types sections.
 	for i, s := range f.Sections {
-		if s.Name == ".debug_types" {
-			b, err := sectionData(i, s)
-			if err != nil {
-				return nil, err
-			}
+		suffix := dwarfSuffix(s)
+		if suffix != "types" {
+			continue
+		}
 
-			err = d.AddTypes(fmt.Sprintf("types-%d", i), b)
-			if err != nil {
-				return nil, err
-			}
+		b, err := sectionData(i, s)
+		if err != nil {
+			return nil, err
+		}
+
+		err = d.AddTypes(fmt.Sprintf("types-%d", i), b)
+		if err != nil {
+			return nil, err
 		}
 	}
 
@@ -1258,12 +1326,23 @@ func (f *File) Symbols() ([]Symbol, error) {
 // DynamicSymbols returns the dynamic symbol table for f. The symbols
 // will be listed in the order they appear in f.
 //
+// If f has a symbol version table, the returned Symbols will have
+// initialized Version and Library fields.
+//
 // For compatibility with Symbols, DynamicSymbols omits the null symbol at index 0.
 // After retrieving the symbols as symtab, an externally supplied index x
 // corresponds to symtab[x-1], not symtab[x].
 func (f *File) DynamicSymbols() ([]Symbol, error) {
-	sym, _, err := f.getSymbols(SHT_DYNSYM)
-	return sym, err
+	sym, str, err := f.getSymbols(SHT_DYNSYM)
+	if err != nil {
+		return nil, err
+	}
+	if f.gnuVersionInit(str) {
+		for i := range sym {
+			sym[i].Library, sym[i].Version = f.gnuVersion(i)
+		}
+	}
+	return sym, nil
 }
 
 type ImportedSymbol struct {
@@ -1286,7 +1365,8 @@ func (f *File) ImportedSymbols() ([]ImportedSymbol, error) {
 	for i, s := range sym {
 		if ST_BIND(s.Info) == STB_GLOBAL && s.Section == SHN_UNDEF {
 			all = append(all, ImportedSymbol{Name: s.Name})
-			f.gnuVersion(i, &all[len(all)-1])
+			sym := &all[len(all)-1]
+			sym.Library, sym.Version = f.gnuVersion(i)
 		}
 	}
 	return all, nil
@@ -1299,11 +1379,16 @@ type verneed struct {
 
 // gnuVersionInit parses the GNU version tables
 // for use by calls to gnuVersion.
-func (f *File) gnuVersionInit(str []byte) {
+func (f *File) gnuVersionInit(str []byte) bool {
+	if f.gnuNeed != nil {
+		// Already initialized
+		return true
+	}
+
 	// Accumulate verneed information.
 	vn := f.SectionByType(SHT_GNU_VERNEED)
 	if vn == nil {
-		return
+		return false
 	}
 	d, _ := vn.Data()
 
@@ -1358,17 +1443,18 @@ func (f *File) gnuVersionInit(str []byte) {
 	// Versym parallels symbol table, indexing into verneed.
 	vs := f.SectionByType(SHT_GNU_VERSYM)
 	if vs == nil {
-		return
+		return false
 	}
 	d, _ = vs.Data()
 
 	f.gnuNeed = need
 	f.gnuVersym = d
+	return true
 }
 
 // gnuVersion adds Library and Version information to sym,
 // which came from offset i of the symbol table.
-func (f *File) gnuVersion(i int, sym *ImportedSymbol) {
+func (f *File) gnuVersion(i int) (library string, version string) {
 	// Each entry is two bytes.
 	i = (i + 1) * 2
 	if i >= len(f.gnuVersym) {
@@ -1379,8 +1465,7 @@ func (f *File) gnuVersion(i int, sym *ImportedSymbol) {
 		return
 	}
 	n := &f.gnuNeed[j]
-	sym.Library = n.File
-	sym.Version = n.Name
+	return n.File, n.Name
 }
 
 // ImportedLibraries returns the names of all libraries

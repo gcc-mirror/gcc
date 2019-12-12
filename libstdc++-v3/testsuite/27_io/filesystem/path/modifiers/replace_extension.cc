@@ -1,8 +1,7 @@
-// { dg-options "-std=gnu++17 -lstdc++fs" }
+// { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
-// { dg-require-filesystem-ts "" }
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,6 +33,15 @@ test01()
   compare_paths( path("/foo.txt").replace_extension("cpp"), "/foo.cpp" );
   compare_paths( path("/foo.txt").replace_extension(".cpp"), "/foo.cpp" );
   compare_paths( path("/").replace_extension("bar"), "/.bar" );
+  compare_paths( path("/").replace_extension(".bar"), "/.bar" );
+  compare_paths( path("/dir/").replace_extension("bar"), "/dir/.bar" );
+  compare_paths( path("dir/foo").replace_extension("bar"), "dir/foo.bar" );
+
+  // PR 89117:
+  compare_paths( path("/foo.txt").replace_extension(), "/foo" );
+  compare_paths( path("foo.txt").replace_extension(), "foo" );
+  compare_paths( path("/foo").replace_extension(), "/foo" );
+  compare_paths( path("foo").replace_extension(), "foo" );
 }
 
 void

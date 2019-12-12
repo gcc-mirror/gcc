@@ -95,12 +95,6 @@ func checkChainTrustStatus(c *Certificate, chainCtx *syscall.CertChainContext) e
 	return nil
 }
 
-type _CertChainPolicyPara struct {
-	Size            uint32
-	Flags           uint32
-	ExtraPolicyPara unsafe.Pointer
-}
-
 // checkChainSSLServerPolicy checks that the certificate chain in chainCtx is valid for
 // use as a certificate chain for a SSL/TLS server.
 func checkChainSSLServerPolicy(c *Certificate, chainCtx *syscall.CertChainContext, opts *VerifyOptions) error {
@@ -114,13 +108,13 @@ func checkChainSSLServerPolicy(c *Certificate, chainCtx *syscall.CertChainContex
 	}
 	sslPara.Size = uint32(unsafe.Sizeof(*sslPara))
 
-	para := &_CertChainPolicyPara{
-		ExtraPolicyPara: unsafe.Pointer(sslPara),
+	para := &syscall.CertChainPolicyPara{
+		ExtraPolicyPara: (syscall.Pointer)(unsafe.Pointer(sslPara)),
 	}
 	para.Size = uint32(unsafe.Sizeof(*para))
 
 	status := syscall.CertChainPolicyStatus{}
-	err = syscall.CertVerifyCertificateChainPolicy(syscall.CERT_CHAIN_POLICY_SSL, chainCtx, (*syscall.CertChainPolicyPara)(unsafe.Pointer(para)), &status)
+	err = syscall.CertVerifyCertificateChainPolicy(syscall.CERT_CHAIN_POLICY_SSL, chainCtx, para, &status)
 	if err != nil {
 		return err
 	}
@@ -235,7 +229,11 @@ func loadSystemRoots() (*CertPool, error) {
 	// TODO: restore this functionality on Windows. We tried to do
 	// it in Go 1.8 but had to revert it. See Issue 18609.
 	// Returning (nil, nil) was the old behavior, prior to CL 30578.
-	return nil, nil
+	// The if statement here avoids vet complaining about
+	// unreachable code below.
+	if true {
+		return nil, nil
+	}
 
 	const CRYPT_E_NOT_FOUND = 0x80092004
 

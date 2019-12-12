@@ -1,4 +1,5 @@
 /* { dg-skip-if "not enough registers" { pdp11-*-* } } */
+/* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
 
 typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;

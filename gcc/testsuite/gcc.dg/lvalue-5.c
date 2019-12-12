@@ -1,7 +1,7 @@
 /* Test assignment to elements of a string literal is a warning, not
    an error.  PR 27676.  */
 /* { dg-do compile } */
-/* { dg-options "-pedantic-errors" } */
+/* { dg-options "-O -pedantic-errors" } */
 
 void
 f (void)

@@ -1,4 +1,4 @@
-// { dg-do run { target *-*-linux* *-*-gnu* } }
+// { dg-do run { target *-*-linux* *-*-gnu* *-*-uclinux* } }
 // { dg-options "-pthread" }
 
 #include <pthread.h>

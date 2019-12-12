@@ -3,6 +3,7 @@
 /* { dg-options "-fexceptions" } */
 /* { dg-skip-if "" { "ia64-*-hpux11.*" } } */
 /* { dg-skip-if "" { ! nonlocal_goto } } */
+/* { dg-require-effective-target exceptions } */
 /* Verify that cleanups work with exception handling.  */
 
 #include <unwind.h>

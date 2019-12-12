@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,39 +89,54 @@ package Exp_Util is
    --  calls, and this guarantee is preserved for the special cases above.
 
    procedure Insert_Action
-     (Assoc_Node : Node_Id;
-      Ins_Action : Node_Id);
+     (Assoc_Node   : Node_Id;
+      Ins_Action   : Node_Id;
+      Spec_Expr_OK : Boolean := False);
    --  Insert the action Ins_Action at the appropriate point as described
    --  above. The action is analyzed using the default checks after it is
    --  inserted. Assoc_Node is the node with which the action is associated.
+   --  When flag Spec_Expr_OK is set, insertions triggered in the context of
+   --  spec expressions are honored, even though they contradict "Handling
+   --  of Default and Per-Object Expressions".
 
    procedure Insert_Action
-     (Assoc_Node : Node_Id;
-      Ins_Action : Node_Id;
-      Suppress   : Check_Id);
+     (Assoc_Node   : Node_Id;
+      Ins_Action   : Node_Id;
+      Suppress     : Check_Id;
+      Spec_Expr_OK : Boolean := False);
    --  Insert the action Ins_Action at the appropriate point as described
    --  above. The action is analyzed using the default checks as modified
    --  by the given Suppress argument after it is inserted. Assoc_Node is
-   --  the node with which the action is associated.
+   --  the node with which the action is associated. When flag Spec_Expr_OK
+   --  is set, insertions triggered in the context of spec expressions are
+   --  honored, even though they contradict "Handling of Default and Per-
+   --  Object Expressions".
 
    procedure Insert_Actions
-     (Assoc_Node  : Node_Id;
-      Ins_Actions : List_Id);
+     (Assoc_Node   : Node_Id;
+      Ins_Actions  : List_Id;
+      Spec_Expr_OK : Boolean := False);
    --  Insert the list of action Ins_Actions at the appropriate point as
    --  described above. The actions are analyzed using the default checks
    --  after they are inserted. Assoc_Node is the node with which the actions
    --  are associated. Ins_Actions may be No_List, in which case the call has
-   --  no effect.
+   --  no effect. When flag Spec_Expr_OK is set, insertions triggered in the
+   --  context of spec expressions are honored, even though they contradict
+   --  "Handling of Default and Per-Object Expressions".
 
    procedure Insert_Actions
-     (Assoc_Node  : Node_Id;
-      Ins_Actions : List_Id;
-      Suppress    : Check_Id);
+     (Assoc_Node   : Node_Id;
+      Ins_Actions  : List_Id;
+      Suppress     : Check_Id;
+      Spec_Expr_OK : Boolean := False);
    --  Insert the list of action Ins_Actions at the appropriate point as
    --  described above. The actions are analyzed using the default checks
    --  as modified by the given Suppress argument after they are inserted.
-   --  Assoc_Node is the node with which the actions are associated.
+   --  Assoc_Node is the node with which the actions are associated. List
    --  Ins_Actions may be No_List, in which case the call has no effect.
+   --  When flag Spec_Expr_OK is set, insertions triggered in the context of
+   --  spec expressions are honored, even though they contradict "Handling
+   --  of Default and Per-Object Expressions".
 
    procedure Insert_Action_After
      (Assoc_Node : Node_Id;
@@ -224,6 +239,10 @@ package Exp_Util is
    --  added, and the actions within the list will be elaborated in list order.
    --  Note that the added nodes are not analyzed. The analyze call is found in
    --  Exp_Ch13.Expand_N_Freeze_Entity.
+
+   function Attribute_Constrained_Static_Value (Pref : Node_Id) return Boolean;
+   --  Return the static value of a statically known attribute reference
+   --  Pref'Constrained.
 
    procedure Build_Allocate_Deallocate_Proc
      (N           : Node_Id;
@@ -386,32 +405,27 @@ package Exp_Util is
    --  case overflow.
 
    function Component_May_Be_Bit_Aligned (Comp : Entity_Id) return Boolean;
-   --  This function is in charge of detecting record components that may
-   --  cause trouble in the back end if an attempt is made to assign the
-   --  component. The back end can handle such assignments with no problem if
-   --  the components involved are small (64-bits or less) records or scalar
-   --  items (including bit-packed arrays represented with modular types) or
-   --  are both aligned on a byte boundary (starting on a byte boundary, and
-   --  occupying an integral number of bytes).
+   --  This function is in charge of detecting record components that may cause
+   --  trouble for the back end if an attempt is made to access the component
+   --  as a whole. The back end can handle such accesses with no problem if the
+   --  components involved are small (64 bits or less) records or scalar items
+   --  (including bit-packed arrays represented with a modular type), or else
+   --  if they are aligned on byte boundaries (i.e. starting on a byte boundary
+   --  and occupying an integral number of bytes).
    --
    --  However, problems arise for records larger than 64 bits, or for arrays
    --  (other than bit-packed arrays represented with a modular type) if the
-   --  component starts on a non-byte boundary, or does not occupy an integral
-   --  number of bytes (i.e. there are some bits possibly shared with fields
-   --  at the start or beginning of the component). The back end cannot handle
-   --  loading and storing such components in a single operation.
+   --  component either does not start on a byte boundary or does not occupy an
+   --  integral number of bytes (i.e. there are some bits possibly shared with
+   --  other components at the start or the end of the component). The back end
+   --  cannot handle loading from or storing to such components as a whole.
    --
-   --  This function is used to detect the troublesome situation. it is
-   --  conservative in the sense that it produces True unless it knows for
-   --  sure that the component is safe (as outlined in the first paragraph
-   --  above). The code generation for record and array assignment checks for
-   --  trouble using this function, and if so the assignment is generated
+   --  This function is used to detect the troublesome situation. It is meant
+   --  to be conservative in the sense that it produces True unless it knows
+   --  for sure that the component is safe (as outlined in the first paragraph
+   --  above). The processing for record and array assignment indirectly checks
+   --  for trouble using this function and, if so, the assignment is expanded
    --  component-wise, which the back end is required to handle correctly.
-   --
-   --  Note that in GNAT 3, the back end will reject such components anyway,
-   --  so the hard work in checking for this case is wasted in GNAT 3, but
-   --  it is harmless, so it is easier to do it in all cases, rather than
-   --  conditionalize it in GNAT 5 or beyond.
 
    function Containing_Package_With_Ext_Axioms
      (E : Entity_Id) return Entity_Id;
@@ -544,10 +558,6 @@ package Exp_Util is
    --  indicating that no checks were required). The Sloc field of the
    --  constructed N_Or_Else node is copied from Cond1.
 
-   function Exceptions_In_Finalization_OK return Boolean;
-   --  Determine whether the finalization machinery can safely add exception
-   --  handlers and recovery circuitry.
-
    procedure Expand_Static_Predicates_In_Choices (N : Node_Id);
    --  N is either a case alternative or a variant. The Discrete_Choices field
    --  of N points to a list of choices. If any of these choices is the name
@@ -585,8 +595,9 @@ package Exp_Util is
    function Find_Interface_Tag
      (T     : Entity_Id;
       Iface : Entity_Id) return Entity_Id;
-   --  Ada 2005 (AI-251): Given a type T implementing the interface Iface,
-   --  return the record component containing the tag of Iface.
+   --  Ada 2005 (AI-251): Given a type T and an interface Iface, return the
+   --  record component containing the tag of Iface if T implements Iface or
+   --  Empty if it does not.
 
    function Find_Prim_Op (T : Entity_Id; Name : Name_Id) return Entity_Id;
    --  Find the first primitive operation of a tagged type T with name Name.
@@ -723,7 +734,7 @@ package Exp_Util is
    --  pragmas at the start of the package declaration contains
    --    pragma Annotate (GNATprove, External_Axiomatization);
 
-   function Homonym_Number (Subp : Entity_Id) return Nat;
+   function Homonym_Number (Subp : Entity_Id) return Pos;
    --  Here subp is the entity for a subprogram. This routine returns the
    --  homonym number used to disambiguate overloaded subprograms in the same
    --  scope (the number is used as part of constructed names to make sure that
@@ -932,10 +943,6 @@ package Exp_Util is
    --  consist of constants, when the object has a nontrivial initialization
    --  or is controlled.
 
-   function Needs_Finalization (Typ : Entity_Id) return Boolean;
-   --  Determine whether type Typ is controlled and this requires finalization
-   --  actions.
-
    function Non_Limited_Designated_Type (T : Entity_Id) return Entity_Id;
    --  An anonymous access type may designate a limited view. Check whether
    --  non-limited view is available during expansion, to examine components
@@ -954,12 +961,12 @@ package Exp_Util is
    --  returned only if the replacement is safe.
 
    function Possible_Bit_Aligned_Component (N : Node_Id) return Boolean;
-   --  This function is used during processing the assignment of a record or
-   --  indexed component. The argument N is either the left hand or right hand
-   --  side of an assignment, and this function determines if there is a record
-   --  component reference where the record may be bit aligned in a manner that
-   --  causes trouble for the back end (see Component_May_Be_Bit_Aligned for
-   --  further details).
+   --  This function is used during processing the assignment of a record or an
+   --  array, or the construction of an aggregate. The argument N is either the
+   --  left or the right hand side of an assignment and the function determines
+   --  whether there is a record component reference where the component may be
+   --  bit aligned in a manner that causes trouble for the back end (see also
+   --  Component_May_Be_Bit_Aligned for further details).
 
    function Power_Of_Two (N : Node_Id) return Nat;
    --  Determines if N is a known at compile time value which  is of the form
@@ -1139,11 +1146,16 @@ package Exp_Util is
    --  the boolean array is False..False or True..True, where it is required
    --  that a Constraint_Error exception be raised (RM 4.5.6(6)).
 
-   procedure Silly_Boolean_Array_Xor_Test (N : Node_Id; T : Entity_Id);
-   --  N is the node for a boolean array XOR operation, and T is the type of
-   --  the array. This routine deals with the silly case where the subtype of
-   --  the boolean array is True..True, where a raise of a Constraint_Error
-   --  exception is required (RM 4.5.6(6)).
+   procedure Silly_Boolean_Array_Xor_Test
+     (N : Node_Id;
+      R : Node_Id;
+      T : Entity_Id);
+   --  N is the node for a boolean array XOR operation, T is the type of the
+   --  array, and R is a copy of the right operand of N, required to prevent
+   --  scope anomalies when unnesting is in effect. This routine deals with
+   --  the admitedly silly case where the subtype of the boolean array is
+   --  True..True, where a raise of a Constraint_Error exception is required
+   --  (RM 4.5.6(6)) and ACATS-tested.
 
    function Target_Has_Fixed_Ops
      (Left_Typ   : Entity_Id;
@@ -1157,8 +1169,9 @@ package Exp_Util is
    function Type_May_Have_Bit_Aligned_Components
      (Typ : Entity_Id) return Boolean;
    --  Determines if Typ is a composite type that has within it (looking down
-   --  recursively at any subcomponents), a record type which has component
-   --  that may be bit aligned (see Possible_Bit_Aligned_Component). The result
+   --  recursively at subcomponents) a record which contains a component that
+   --  may be bit aligned in a manner that causes trouble for the back end
+   --  (see also Component_May_Be_Bit_Aligned for further details). The result
    --  is conservative, in that a result of False is decisive. A result of True
    --  means that such a component may or may not be present.
 

@@ -1,7 +1,8 @@
 //===-- sanitizer_symbolizer.h ----------------------------------*- C++ -*-===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -19,6 +20,7 @@
 
 #include "sanitizer_common.h"
 #include "sanitizer_mutex.h"
+#include "sanitizer_vector.h"
 
 namespace __sanitizer {
 
@@ -76,6 +78,32 @@ struct DataInfo {
   void Clear();
 };
 
+struct LocalInfo {
+  char *function_name = nullptr;
+  char *name = nullptr;
+  char *decl_file = nullptr;
+  unsigned decl_line = 0;
+
+  bool has_frame_offset = false;
+  bool has_size = false;
+  bool has_tag_offset = false;
+
+  sptr frame_offset;
+  uptr size;
+  uptr tag_offset;
+
+  void Clear();
+};
+
+struct FrameInfo {
+  char *module;
+  uptr module_offset;
+  ModuleArch module_arch;
+
+  InternalMmapVector<LocalInfo> locals;
+  void Clear();
+};
+
 class SymbolizerTool;
 
 class Symbolizer final {
@@ -88,6 +116,7 @@ class Symbolizer final {
   // all inlined functions, if necessary).
   SymbolizedStack *SymbolizePC(uptr address);
   bool SymbolizeData(uptr address, DataInfo *info);
+  bool SymbolizeFrame(uptr address, FrameInfo *info);
 
   // The module names Symbolizer returns are stable and unique for every given
   // module.  It is safe to store and compare them as pointers.
@@ -105,7 +134,6 @@ class Symbolizer final {
   void Flush();
   // Attempts to demangle the provided C++ mangled name.
   const char *Demangle(const char *name);
-  void PrepareForSandboxing();
 
   // Allow user to install hooks that would be called before/after Symbolizer
   // does the actual file/line info fetching. Specific sanitizers may need this
@@ -131,8 +159,9 @@ class Symbolizer final {
   class ModuleNameOwner {
    public:
     explicit ModuleNameOwner(BlockingMutex *synchronized_by)
-        : storage_(kInitialCapacity), last_match_(nullptr),
-          mu_(synchronized_by) {}
+        : last_match_(nullptr), mu_(synchronized_by) {
+      storage_.reserve(kInitialCapacity);
+    }
     const char *GetOwnedCopy(const char *str);
 
    private:
@@ -156,7 +185,6 @@ class Symbolizer final {
 
   // Platform-specific default demangler, must not return nullptr.
   const char *PlatformDemangle(const char *name);
-  void PlatformPrepareForSandboxing();
 
   static Symbolizer *symbolizer_;
   static StaticSpinMutex init_mu_;

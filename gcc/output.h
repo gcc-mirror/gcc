@@ -1,6 +1,6 @@
 /* Declarations for insn-output.c and other code to write to asm_out_file.
    These functions are defined in final.c, and varasm.c.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -219,7 +219,7 @@ extern void assemble_external (tree);
 extern void assemble_zeros (unsigned HOST_WIDE_INT);
 
 /* Assemble an alignment pseudo op for an ALIGN-bit boundary.  */
-extern void assemble_align (int);
+extern void assemble_align (unsigned int);
 
 /* Assemble a string constant with the specified C string as contents.  */
 extern void assemble_string (const char *, int);
@@ -604,7 +604,7 @@ extern int maybe_assemble_visibility (tree);
 
 extern int default_address_cost (rtx, machine_mode, addr_space_t, bool);
 
-/* Output stack usage information.  */
+/* Stack usage.  */
 extern void output_stack_usage (void);
 
 #endif /* ! GCC_OUTPUT_H */

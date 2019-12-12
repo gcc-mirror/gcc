@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -mavx512f" } */
 /* { dg-require-effective-target avx512f } */
-#include <math.h>
+#include "math_m_pi.h"
 #define AVX512F
 #include "avx512f-helper.h"
 

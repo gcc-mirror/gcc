@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-fre -fdump-tree-vrp1" } */
+/* { dg-options "-O2 -fno-ssa-phiopt -fno-tree-fre -fdump-tree-vrp1" } */
 
 struct foo1 {
   int i:1;
@@ -22,7 +22,7 @@ int test2 (struct foo2 *x)
 {
   if (x->i == 0)
     return 1;
-  else if (x->i == -1) /* This test is already folded to false by ccp1.  */
+  else if (x->i == -1) /* This test is already optimized by ccp1 or phiopt1.  */
     return 1;
   return 0;
 }
@@ -31,7 +31,7 @@ int test3 (struct foo1 *x)
 {
   if (x->i == 0)
     return 1;
-  else if (x->i == 1) /* This test is already folded to false by fold.  */
+  else if (x->i == 1) /* This test is already optimized by ccp1 or phiopt1.  */
     return 1;
   return 0;
 }

@@ -1,4 +1,4 @@
-! { dg-do run { target { ! { *-*-mingw* *-*-cygwin* spu-*-* } } } }
+! { dg-do run { target { ! { *-*-mingw* *-*-cygwin* } } } }
 ! PR30005 Enhanced error messages for OPEN
 ! Submitted by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 ! See PR38956.  Test fails on cygwin when user has Administrator rights

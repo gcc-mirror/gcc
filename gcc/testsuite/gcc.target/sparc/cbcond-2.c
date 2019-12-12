@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O -mcbcond" } */
 /* { dg-require-effective-target lp64 } */
+/* { dg-options "-O -mcbcond" } */
 
 extern void foo (void);
 extern void bar (void);

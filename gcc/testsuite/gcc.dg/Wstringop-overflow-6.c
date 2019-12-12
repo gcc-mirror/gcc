@@ -25,7 +25,7 @@ void test_strcpy_strcat_1 (void)
 
 void test_strcpy_strcat_2 (void)
 {
-  strcpy (a2, "12"), strcat (a2, "3");   /* { dg-warning "\\\[-Wstringop-overflow=]" "bug 86121" { xfail *-*-* } } */
+  strcpy (a2, "12"), strcat (a2, "3");   /* { dg-warning "\\\[-Wstringop-overflow=]" } */
 }
 
 void test_strcpy_strcat_3 (void)

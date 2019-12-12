@@ -9,4 +9,4 @@ template <typename... T> struct A	// { dg-warning "variadic templates" }
   static const int i = sizeof (++t);	// { dg-error "was not declared in this scope" }
 };
 
-int x[A <int>::i];		// { dg-error "constant-expression" }
+int x[A <int>::i];		// { dg-error "16:size of array .x. is not an integral constant-expression" }

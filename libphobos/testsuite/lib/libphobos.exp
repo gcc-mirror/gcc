@@ -1,0 +1,299 @@
+# Copyright (C) 2017-2019 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+#
+# DejaGnu does not have proper library search paths for load_lib.
+# We have to explicitly load everything that gdc.exp wants to load.
+#
+
+proc load_gcc_lib { filename } {
+    global srcdir loaded_libs
+
+    load_file $srcdir/../../gcc/testsuite/lib/$filename
+    set loaded_libs($filename) ""
+}
+
+load_lib dg.exp
+load_lib libgloss.exp
+
+load_gcc_lib target-supports.exp
+load_gcc_lib target-supports-dg.exp
+load_gcc_lib dg-options.exp
+load_gcc_lib target-libpath.exp
+load_gcc_lib timeout.exp
+load_gcc_lib wrapper.exp
+load_gcc_lib target-utils.exp
+load_gcc_lib gcc-defs.exp
+
+set TESTING_IN_BUILD_TREE 1
+
+# Define libphobos callbacks for dg.exp.
+
+proc libphobos-dg-test { prog do_what extra_tool_flags } {
+    set compile_type ""
+    set output_file ""
+
+    global libphobos_test_name
+    upvar name name
+    if { $libphobos_test_name != "" } {
+	set name $libphobos_test_name
+    }
+
+    # Set up the compiler flags, based on what we're going to do.
+    switch $do_what {
+	"run" {
+	    set compile_type "executable"
+	    # FIXME: "./" is to cope with "." not being in $PATH.
+	    # Should this be handled elsewhere?
+	    # YES.
+	    set output_file "./[file rootname [file tail $prog]].exe"
+	    # This is the only place where we care if an executable was
+	    # created or not.  If it was, dg.exp will try to run it.
+	    catch { remote_file build delete $output_file }
+	}
+	"link" {
+	    set compile_type "executable"
+	    set output_file "./[file rootname [file tail $prog]].exe"
+	}
+	default {
+	    perror "$do_what: not a valid dg-do keyword"
+	    return ""
+	}
+    }
+
+    set select_compile "libphobos_target_compile"
+    set options ""
+    if { $extra_tool_flags != "" } {
+	lappend options "additional_flags=$extra_tool_flags"
+    }
+
+    set unsupported_message [libphobos_skipped_test_p $name]
+    if { $unsupported_message != "" } {
+	return [list "::unsupported::$unsupported_message" $output_file]
+    }
+
+    set comp_output [$select_compile "$prog" "$output_file" "$compile_type" $options]
+    return [list $comp_output $output_file]
+}
+
+proc libphobos-dg-prune { system text } {
+    return $text
+}
+
+#
+# libphobos_init
+#
+
+proc libphobos_init { args } {
+    global env
+    global srcdir blddir objdir tool_root_dir
+    global exeext
+    global gdc gdcflags
+    global gdcpaths gdcldflags
+    global gluefile wrap_flags
+    global ld_library_path
+    global DEFAULT_DFLAGS
+
+    # If a testcase doesn't have special options, use these.
+    if ![info exists DEFAULT_DFLAGS] then {
+	set DEFAULT_DFLAGS ""
+    }
+
+    # By default, we assume we want to run program images.
+    global dg-do-what-default
+    if [isnative] {
+	set dg-do-what-default "run"
+    } else {
+	set dg-do-what-default "link"
+    }
+
+    # What arguments to pass to run program images.
+    global libphobos_run_args
+    set libphobos_run_args ""
+
+    # If the name of the test should be something else.
+    global libphobos_test_name
+    set libphobos_test_name ""
+
+    global libphobos_skip_tests
+    set libphobos_skip_tests { }
+
+    # Default settings.
+    set blddir [lookfor_file [get_multilibs] libphobos]
+    set flags_file "${blddir}/testsuite/testsuite_flags"
+    set shlib_ext [get_shlib_extension]
+
+    set gdc [transform "gdc"]
+    set gdcflags "-fmessage-length=0"
+    set gdcpaths "-I${srcdir}"
+    set gdcldflags ""
+
+    if { [file exists $flags_file] } {
+	set gdc [exec sh $flags_file --gdc]
+	set gdcflags [exec sh $flags_file --gdcflags]
+	set gdcpaths [exec sh $flags_file --gdcpaths]
+	set gdcldflags [exec sh $flags_file --gdcldflags]
+    }
+
+    set exeext ""
+    if [info exists env(EXEEXT)] {
+	set exeext $env(EXEEXT)
+    }
+
+    # Compute what needs to be added to the existing LD_LIBRARY_PATH.
+    set ld_library_path "."
+
+    set gccdir [lookfor_file $tool_root_dir gcc/libgcc.a]
+    if {$gccdir != ""} {
+	set gccdir [file dirname $gccdir]
+	append ld_library_path ":${gccdir}"
+    }
+
+    if { [file exists "${blddir}/libdruntime/.libs/libgdruntime.${shlib_ext}"] } {
+	append ld_library_path ":${blddir}/libdruntime/.libs"
+    }
+
+    if { [file exists "${blddir}/src/.libs/libgphobos.${shlib_ext}"] } {
+	append ld_library_path ":${blddir}/src/.libs"
+    }
+
+    # Compute what needs to be added to the existing LD_LIBRARY_PATH.
+    if {$gccdir != ""} {
+	set compiler ${gccdir}/gdc
+
+	if { [is_remote host] == 0 && [which $compiler] != 0 } {
+	  foreach i "[exec $compiler --print-multi-lib]" {
+	    set mldir ""
+	    regexp -- "\[a-z0-9=_/\.-\]*;" $i mldir
+	    set mldir [string trimright $mldir "\;@"]
+	    if { "$mldir" == "." } {
+	      continue
+	    }
+	    if { [llength [glob -nocomplain ${gccdir}/${mldir}/libgcc_s*.so.*]] >= 1 } {
+	      append ld_library_path ":${gccdir}/${mldir}"
+	    }
+	  }
+	}
+    }
+
+    set_ld_library_path_env_vars
+
+    libphobos_maybe_build_wrapper "${objdir}/testglue.o"
+}
+
+#
+# libphobos_target_compile -- compile a source file.
+#
+
+proc libphobos_target_compile { source dest type options } {
+    global gdc gdcflags
+    global gdcpaths gdcldflags
+    global gluefile wrap_flags
+
+    lappend options "additional_flags=-fno-diagnostics-show-caret -fdiagnostics-color=never"
+
+    if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
+	lappend options "libs=${gluefile}"
+	lappend options "ldflags=${wrap_flags}"
+    }
+
+    # Flag setting based on type argument.
+    if { $type == "executable" } {
+	# Link the support objects into executables.
+	lappend options "additional_flags=$gdcldflags"
+    }
+
+    # Set the compiler, only add D flags and paths if building D sources.
+    set gdc_final $gdc
+    if [regexp ".*\.d\$" $source] {
+	set gdc_final [concat $gdc_final $gdcflags]
+	set gdc_final [concat $gdc_final $gdcpaths]
+    }
+
+    lappend options "compiler=$gdc_final"
+    lappend options "timeout=[timeout_value]"
+
+    set options [dg-additional-files-options $options $source]
+    set comp_output [target_compile $source $dest $type $options]
+
+    return $comp_output
+}
+
+#
+# Helper used by libphobos and libdruntime unittest runner, filters out
+# D sources that may contain a unittest function.
+#
+
+proc filter_libphobos_unittests { list } {
+    set res {}
+    foreach filename $list {
+	set fid [open $filename r]
+	if [regexp -- {unittest} [read $fid [file size $filename]]] {
+	    lappend res $filename
+	}
+	close $fid
+    }
+    return $res
+}
+
+# Skip the unittest (report it as UNSUPPORTED) if the module exists in
+# libphobos_skip_tests and its target list is matched by dg-process-target.
+#
+# The expected format of the libphobos_skip_tests file is:
+# { test { targets } }
+proc libphobos_skipped_test_p { test } {
+    global libphobos_skip_tests
+
+    set row [lsearch -inline -index 0 $libphobos_skip_tests $test]
+    if { $row eq "" } {
+	return ""
+    }
+
+    if { [llength $row] != 2 } {
+	error "syntax error in libphobos_skip_tests: $row"
+    }
+
+    set selector [list target [lindex $row 1]]
+    if { [dg-process-target-1 $selector] != "S" } {
+	return ""
+    }
+
+    return "skipped test"
+}
+
+# Return true if the curl library is supported on the target.
+proc check_effective_target_libcurl_available { } {
+    return [check_no_compiler_messages libcurl_available executable {
+	int main (void) { return 0; }
+    } "-lcurl"]
+}
+
+# Return true if the target is linux version < 2.6.39
+proc check_effective_target_linux_pre_2639 { } {
+    if { ![istarget *-*-linux*] } {
+	return 0
+    }
+
+    if { [check_no_compiler_messages linux_pre_2639 assembly {
+	#include <linux/version.h>
+	#if !defined LINUX_VERSION_CODE || LINUX_VERSION_CODE < KERNEL_VERSION(2.6.39)
+	#error Yes, it is.
+	#endif
+    }] } {
+	return 0
+    }
+    return 1
+}

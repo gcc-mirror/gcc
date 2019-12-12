@@ -1,5 +1,5 @@
 # Generate an ELF symbol version map a-la Solaris and GNU ld.
-#	Copyright (C) 2007-2018 Free Software Foundation, Inc.
+#	Copyright (C) 2007-2019 Free Software Foundation, Inc.
 #	Contributed by Richard Henderson <rth@cygnus.com>
 #
 # This file is part of GCC.
@@ -33,7 +33,7 @@ BEGIN {
 }
 
 # We begin with nm input.  Collect the set of symbols that are present
-# so that we can not emit them into the final version script -- Solaris
+# so that we cannot emit them into the final version script -- Solaris
 # complains at us if we do.
 
 state == "nm" && /^%%/ {

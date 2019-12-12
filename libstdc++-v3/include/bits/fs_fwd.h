@@ -1,6 +1,6 @@
 // Filesystem declarations -*- C++ -*-
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,20 +40,17 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+/** @addtogroup filesystem
+ *  @{
+ */
+
+/// ISO C++ 2017 namespace for File System library
 namespace filesystem
 {
 #if _GLIBCXX_USE_CXX11_ABI
 inline namespace __cxx11 __attribute__((__abi_tag__ ("cxx11"))) { }
 #endif
 
-  /**
-   * @defgroup filesystem Filesystem
-   *
-   * Utilities for performing operations on file systems and their components,
-   * such as paths, regular files, and directories.
-   *
-   * @{
-   */
 
   class file_status;
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
@@ -294,7 +291,49 @@ _GLIBCXX_END_NAMESPACE_CXX11
   operator^=(directory_options& __x, directory_options __y) noexcept
   { return __x = __x ^ __y; }
 
-  using file_time_type = std::chrono::system_clock::time_point;
+  struct __file_clock
+  {
+    using duration                  = chrono::nanoseconds;
+    using rep                       = duration::rep;
+    using period                    = duration::period;
+    using time_point                = chrono::time_point<__file_clock>;
+    static constexpr bool is_steady = false;
+
+    static time_point
+    now() noexcept
+    { return _S_from_sys(chrono::system_clock::now()); }
+
+  private:
+    using __sys_clock = chrono::system_clock;
+
+    // This clock's (unspecified) epoch is 2174-01-01 00:00:00 UTC.
+    // A signed 64-bit duration with nanosecond resolution gives roughly
+    // +/- 292 years, which covers the 1901-2446 date range for ext4.
+    static constexpr chrono::seconds _S_epoch_diff{6437664000};
+
+  protected:
+    // For internal use only
+    template<typename _Dur>
+      static
+      chrono::time_point<__file_clock, _Dur>
+      _S_from_sys(const chrono::time_point<__sys_clock, _Dur>& __t) noexcept
+      {
+	using __file_time = chrono::time_point<__file_clock, _Dur>;
+	return __file_time{__t.time_since_epoch()} - _S_epoch_diff;
+      }
+
+    // For internal use only
+    template<typename _Dur>
+      static
+      chrono::time_point<__sys_clock, _Dur>
+      _S_to_sys(const chrono::time_point<__file_clock, _Dur>& __t) noexcept
+      {
+	using __sys_time = chrono::time_point<__sys_clock, _Dur>;
+	return __sys_time{__t.time_since_epoch()} + _S_epoch_diff;
+      }
+  };
+
+  using file_time_type = __file_clock::time_point;
 
   // operational functions
 
@@ -337,12 +376,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
   bool is_regular_file(file_status) noexcept;
   bool is_symlink(file_status) noexcept;
 
-  // @} group filesystem
 } // namespace filesystem
-
+// @}
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-
 #endif // C++17
-
 #endif // _GLIBCXX_FS_FWD_H

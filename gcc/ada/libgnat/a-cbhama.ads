@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -107,7 +107,8 @@ package Ada.Containers.Bounded_Hashed_Maps is
    --  Equivalent to Length (Container) = 0
 
    procedure Clear (Container : in out Map);
-   --  Removes all of the items from the map
+   --  Removes all of the items from the map. This will deallocate all memory
+   --  associated with this map.
 
    function Key (Position : Cursor) return Key_Type;
    --  Returns the key of the node designated by the cursor

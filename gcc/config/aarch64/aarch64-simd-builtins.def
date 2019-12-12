@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+   Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -217,6 +217,25 @@
   BUILTIN_VB (QUADOP_LANE, sdot_laneq, 0)
   BUILTIN_VB (QUADOPU_LANE, udot_laneq, 0)
 
+  /* Implemented by aarch64_fcadd<rot><mode>.   */
+  BUILTIN_VHSDF (BINOP, fcadd90, 0)
+  BUILTIN_VHSDF (BINOP, fcadd270, 0)
+
+  /* Implemented by aarch64_fcmla{_lane}{q}<rot><mode>.   */
+  BUILTIN_VHSDF (TERNOP, fcmla0, 0)
+  BUILTIN_VHSDF (TERNOP, fcmla90, 0)
+  BUILTIN_VHSDF (TERNOP, fcmla180, 0)
+  BUILTIN_VHSDF (TERNOP, fcmla270, 0)
+  BUILTIN_VHSDF (QUADOP_LANE_PAIR, fcmla_lane0, 0)
+  BUILTIN_VHSDF (QUADOP_LANE_PAIR, fcmla_lane90, 0)
+  BUILTIN_VHSDF (QUADOP_LANE_PAIR, fcmla_lane180, 0)
+  BUILTIN_VHSDF (QUADOP_LANE_PAIR, fcmla_lane270, 0)
+
+  BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane0, 0)
+  BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane90, 0)
+  BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane180, 0)
+  BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane270, 0)
+
   BUILTIN_VDQ_I (SHIFTIMM, ashr, 3)
   VAR1 (SHIFTIMM, ashr_simd, 0, di)
   BUILTIN_VDQ_I (SHIFTIMM, lshr, 3)
@@ -405,7 +424,7 @@
   BUILTIN_VB (UNOP, rbit, 0)
 
   /* Implemented by
-     aarch64_<PERMUTE:perm_insn><PERMUTE:perm_hilo><mode>.  */
+     aarch64_<PERMUTE:perm_insn><mode>.  */
   BUILTIN_VALL (BINOP, zip1, 0)
   BUILTIN_VALL (BINOP, zip2, 0)
   BUILTIN_VALL (BINOP, uzp1, 0)
@@ -413,8 +432,6 @@
   BUILTIN_VALL (BINOP, trn1, 0)
   BUILTIN_VALL (BINOP, trn2, 0)
 
-  /* Implemented by
-     aarch64_frecp<FRECP:frecp_suffix><mode>.  */
   BUILTIN_GPF_F16 (UNOP, frecpe, 0)
   BUILTIN_GPF_F16 (UNOP, frecpx, 0)
 
@@ -448,11 +465,17 @@
   /* Implemented by aarch64_ld1x3<VALLDIF:mode>.  */
   BUILTIN_VALLDIF (LOADSTRUCT, ld1x3, 0)
 
+  /* Implemented by aarch64_ld1x4<VALLDIF:mode>.  */
+  BUILTIN_VALLDIF (LOADSTRUCT, ld1x4, 0)
+
   /* Implemented by aarch64_st1x2<VALLDIF:mode>.  */
   BUILTIN_VALLDIF (STORESTRUCT, st1x2, 0)
 
   /* Implemented by aarch64_st1x3<VALLDIF:mode>.  */
   BUILTIN_VALLDIF (STORESTRUCT, st1x3, 0)
+
+  /* Implemented by aarch64_st1x4<VALLDIF:mode>.  */
+  BUILTIN_VALLDIF (STORESTRUCT, st1x4, 0)
 
   /* Implemented by fma<mode>4.  */
   BUILTIN_VHSDF (TERNOP, fma, 4)
@@ -653,3 +676,9 @@
   /* Implemented by aarch64_fml<f16mac1>lq_laneq_highv4sf.  */
   VAR1 (QUADOP_LANE, fmlalq_laneq_high, 0, v4sf)
   VAR1 (QUADOP_LANE, fmlslq_laneq_high, 0, v4sf)
+
+  /* Implemented by aarch64_<frintnzs_op><mode>.  */
+  BUILTIN_VSFDF (UNOP, frint32z, 0)
+  BUILTIN_VSFDF (UNOP, frint32x, 0)
+  BUILTIN_VSFDF (UNOP, frint64z, 0)
+  BUILTIN_VSFDF (UNOP, frint64x, 0)

@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2011-2018 Free Software Foundation, Inc.
+// Copyright (C) 2011-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -806,9 +806,11 @@ static_assert(!std::is_constructible<int&&, ExplicitTo<int>>::value, "Error");
 // Binding through reference-compatible type is required to perform
 // direct-initialization as described in [over.match.ref] p. 1 b. 1:
 static_assert(std::is_constructible<int&, ExplicitTo<int&>>::value, "Error");
-static_assert(std::is_constructible<const int&, ExplicitTo<int&&>>::value,
-	      "Error");
 static_assert(std::is_constructible<int&&, ExplicitTo<int&&>>::value, "Error");
+
+// But an xvalue doesn't count for direct binding.
+static_assert(!std::is_constructible<const int&, ExplicitTo<int&&>>::value,
+	      "Error");
 
 // Binding through temporary behaves like copy-initialization,
 // see [dcl.init.ref] p. 5, very last sub-bullet:

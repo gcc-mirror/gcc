@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for Xilinx MicroBlaze.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
 
    Contributed by Michael Eager <eager@eagercon.com>.
 
@@ -695,7 +695,7 @@ do {									\
   fprintf (STREAM, "\t.align\t%d\n", (LOG))
 
 #define ASM_OUTPUT_SKIP(STREAM,SIZE)					\
-  fprintf (STREAM, "\t.space\t%lu\n", (SIZE))
+  fprintf (STREAM, "\t.space\t" HOST_WIDE_INT_PRINT_UNSIGNED "\n", (SIZE))
 
 #define ASCII_DATA_ASM_OP		"\t.ascii\t"
 #define STRING_ASM_OP			"\t.asciz\t"

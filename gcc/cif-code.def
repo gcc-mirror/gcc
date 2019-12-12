@@ -1,7 +1,7 @@
 /* This file contains the definitions of the cgraph_inline_failed_t
    enums used in GCC.
 
-   Copyright (C) 2008-2018 Free Software Foundation, Inc.
+   Copyright (C) 2008-2019 Free Software Foundation, Inc.
    Contributed by Doug Kwan <dougkwan@google.com>
 
 This file is part of GCC.
@@ -70,6 +70,8 @@ DEFCIFCODE(LARGE_STACK_FRAME_GROWTH_LIMIT, CIF_FINAL_NORMAL,
 	   N_("--param large-stack-frame-growth limit reached"))
 DEFCIFCODE(MAX_INLINE_INSNS_SINGLE_LIMIT, CIF_FINAL_NORMAL,
 	   N_("--param max-inline-insns-single limit reached"))
+DEFCIFCODE(MAX_INLINE_INSNS_SINGLE_O2_LIMIT, CIF_FINAL_NORMAL,
+	   N_("--param max-inline-insns-single-O2 limit reached"))
 DEFCIFCODE(MAX_INLINE_INSNS_AUTO_LIMIT, CIF_FINAL_NORMAL,
 	   N_("--param max-inline-insns-auto limit reached"))
 DEFCIFCODE(INLINE_UNIT_GROWTH_LIMIT, CIF_FINAL_NORMAL,
@@ -83,13 +85,13 @@ DEFCIFCODE(RECURSIVE_INLINING, CIF_FINAL_NORMAL,
 DEFCIFCODE(UNLIKELY_CALL, CIF_FINAL_NORMAL,
 	   N_("call is unlikely and code size would grow"))
 
+/* Call is considered never executed.  */
+DEFCIFCODE(NEVER_CALL, CIF_FINAL_NORMAL,
+	   N_("call is considered never executed and code size would grow"))
+
 /* Function is not declared as inline.  */
 DEFCIFCODE(NOT_DECLARED_INLINED, CIF_FINAL_NORMAL,
 	   N_("function not declared inline and code size would grow"))
-
-/* Caller and callee disagree on the arguments.  */
-DEFCIFCODE(MISMATCHED_ARGUMENTS, CIF_FINAL_ERROR,
-	   N_("mismatched arguments"))
 
 /* Caller and callee disagree on the arguments.  */
 DEFCIFCODE(LTO_MISMATCHED_DECLARATIONS, CIF_FINAL_ERROR,
@@ -132,10 +134,12 @@ DEFCIFCODE(USES_COMDAT_LOCAL, CIF_FINAL_ERROR,
 DEFCIFCODE(ATTRIBUTE_MISMATCH, CIF_FINAL_ERROR,
 	   N_("function attribute mismatch"))
 
+/* We can't inline because the user requests only static functions
+   but the function has external linkage for live patching purpose.  */
+DEFCIFCODE(EXTERN_LIVE_ONLY_STATIC, CIF_FINAL_ERROR,
+	   N_("function has external linkage when the user requests only"
+	      " inlining static for live patching"))
+
 /* We proved that the call is unreachable.  */
 DEFCIFCODE(UNREACHABLE, CIF_FINAL_ERROR,
 	   N_("unreachable"))
-
-/* We can't inline because of instrumentation thunk.  */
-DEFCIFCODE(CHKP, CIF_FINAL_ERROR,
-	   N_("caller is instrumentation thunk"))

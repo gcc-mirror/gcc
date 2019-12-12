@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,5 +30,10 @@ with Types; use Types;
 package Exp_Attr is
 
    procedure Expand_N_Attribute_Reference (N : Node_Id);
+
+   procedure Expand_Size_Attribute (N : Node_Id);
+   --  Handles part of the expansion of attributes 'Object_Size, 'Size,
+   --  'Value_Size, and 'VADS_Size, so that it can also be used in the special
+   --  expansion in GNATprove mode.
 
 end Exp_Attr;

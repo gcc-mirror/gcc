@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Testing</title><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><meta name="keywords" content="ISO C++, policy, container, data, structure, associated, tree, trie, hash, metaprogramming" /><meta name="keywords" content="ISO C++, library" /><meta name="keywords" content="ISO C++, runtime, library" /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="policy_data_structures.html" title="Chapter 22. Policy-Based Data Structures" /><link rel="prev" href="policy_data_structures_design.html" title="Design" /><link rel="next" href="policy_data_structures_ack.html" title="Acknowledgments" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Testing</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="policy_data_structures_design.html">Prev</a> </td><th width="60%" align="center">Chapter 22. Policy-Based Data Structures</th><td width="20%" align="right"> <a accesskey="n" href="policy_data_structures_ack.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="pbds.test"></a>Testing</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.test.regression"></a>Regression</h3></div></div></div><p>The library contains a single comprehensive regression test.
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Testing</title><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><meta name="keywords" content="ISO C++, policy, container, data, structure, associated, tree, trie, hash, metaprogramming" /><meta name="keywords" content="ISO C++, library" /><meta name="keywords" content="ISO C++, runtime, library" /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="policy_data_structures.html" title="Chapter 21. Policy-Based Data Structures" /><link rel="prev" href="policy_data_structures_design.html" title="Design" /><link rel="next" href="policy_data_structures_ack.html" title="Acknowledgments" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Testing</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="policy_data_structures_design.html">Prev</a> </td><th width="60%" align="center">Chapter 21. Policy-Based Data Structures</th><td width="20%" align="right"> <a accesskey="n" href="policy_data_structures_ack.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="pbds.test"></a>Testing</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.test.regression"></a>Regression</h3></div></div></div><p>The library contains a single comprehensive regression test.
     For a given container type in this library, the test creates
     an object of the container type and an object of the
     corresponding standard type (e.g., <code class="classname">std::set</code>). It
@@ -989,7 +989,7 @@
 	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="branch.text_insert.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of values with keys from an arbitrary
-	  text ([ wickland96thirty ]) into a container
+	  text ([wickland96thirty]) into a container
 	  using <code class="function">insert</code> . It measures the average time
 	  for <code class="function">insert</code> as a function of the number of
 	  values inserted.</p><p>The test checks the effect of different underlying
@@ -1207,7 +1207,7 @@
 	</h5></div></div></div><p></p><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="branch.text_lor_find.info"></a>
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of values with keys from an
-	  arbitrary text ([ wickland96thirty ]) into
+	  arbitrary text ([wickland96thirty]) into
 	  a container, then performs a series of finds using
 	  <code class="function">find</code>. It is different than Tree-Based and
 	  Trie-Based Text <code class="function">find</code> Find Timing Test in the
@@ -1467,7 +1467,7 @@
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of pairs into a container. The
 	  first item of each pair is a string from an arbitrary text
-	  [wickland96thirty], and
+	  ([wickland96thirty]), and
 	  the second is a uniform i.i.d.integer. The container is a
 	  "multimap" - it considers the first member of each pair as a
 	  primary key, and the second member of each pair as a secondary
@@ -1639,7 +1639,7 @@
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of pairs into a container. The
 	  first item of each pair is a string from an arbitrary text
-	  [wickland96thirty], and
+	  ([wickland96thirty]), and
 	  the second is a uniform integer. The container is a
 	  "multimap" - it considers the first member of each pair as a
 	  primary key, and the second member of each pair as a secondary
@@ -1811,7 +1811,7 @@
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of pairs into a container. The
 	  first item of each pair is a string from an arbitrary text
-	  [wickland96thirty], and
+	  ([wickland96thirty]), and
 	  the second is a uniform integer. The container is a
 	  "multimap" - it considers the first member of each pair as a
 	  primary key, and the second member of each pair as a secondary
@@ -1985,7 +1985,7 @@
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of pairs into a container. The
 	  first item of each pair is a string from an arbitrary text
-	  [wickland96thirty], and
+	  ([wickland96thirty]), and
 	  the second is a uniform integer. The container is a
 	  "multimap" - it considers the first member of each pair as a
 	  primary key, and the second member of each pair as a secondary
@@ -2159,7 +2159,7 @@
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of pairs into a container. The
 	  first item of each pair is a string from an arbitrary text
-	  [wickland96thirty], and
+	  ([wickland96thirty]), and
 	  the second is a uniform integer. The container is a
 	  "multimap" - it considers the first member of each pair as a
 	  primary key, and the second member of each pair as a secondary
@@ -2328,7 +2328,7 @@
 	    Description
 	  </h6></div></div></div><p>This test inserts a number of pairs into a container. The
 	  first item of each pair is a string from an arbitrary text
-	  [wickland96thirty], and
+	  ([wickland96thirty]), and
 	  the second is a uniform integer. The container is a
 	  "multimap" - it considers the first member of each pair as a
 	  primary key, and the second member of each pair as a secondary

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2018, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2019, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -41,8 +41,7 @@
 #endif
 
 #ifdef IN_RTS
-#include "tconfig.h"
-#include "tsystem.h"
+#include "runtime.h"
 /* We don't have libiberty, so use malloc.  */
 #define xmalloc(S) malloc (S)
 #define xrealloc(V,S) realloc (V,S)

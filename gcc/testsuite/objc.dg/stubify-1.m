@@ -4,7 +4,7 @@
 /* { dg-do compile { target *-*-darwin* } } */
 /* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 /* { dg-require-effective-target ilp32 } */
-/* { dg-options "-Os -mdynamic-no-pic -mmacosx-version-min=10.4" } */
+/* { dg-options "-Os -mdynamic-no-pic -mmacosx-version-min=10.4 -msymbol-stubs" } */
 
 typedef struct objc_object { } *id ;
 int x = 41 ;
@@ -28,8 +28,8 @@ extern int bogonic (int, int, int) ;
 }
 @end
 
-/* { dg-final { scan-assembler-not "\(bl|call\)\[ \t\]+_objc_msgSend\n" } } */
-/* { dg-final { scan-assembler     "\(bl|call\)\[ \t\]+L_objc_msgSend\\\$stub\n" } } */
-/* { dg-final { scan-assembler-not "\(bl|call\)\[ \t\]+_bogonic\n" } } */
-/* { dg-final { scan-assembler     "\(bl|call\)\[ \t\]+L_bogonic\\\$stub\n" } } */
-/* { dg-final { scan-assembler-not "\\\$non_lazy_ptr" } } */
+/* { dg-final { scan-assembler-not {(bl|call)[ \t]+_objc_msgSend\n} } } */
+/* { dg-final { scan-assembler     {(bl|call)[ \t]+L_objc_msgSend\$stub\n} } } */
+/* { dg-final { scan-assembler-not {(bl|call)[ \t]+_bogonic\n} } } */
+/* { dg-final { scan-assembler     {(bl|call)[ \t]+L_bogonic\$stub\n} } } */
+/* { dg-final { scan-assembler-not {\$non_lazy_ptr} } } */

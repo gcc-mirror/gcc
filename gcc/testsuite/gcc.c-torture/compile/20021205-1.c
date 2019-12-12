@@ -1,3 +1,5 @@
+/* { dg-require-effective-target indirect_calls } */
+
 typedef struct x x;
 extern void *baz(char *);
 struct x { char * (*bar) (int); };

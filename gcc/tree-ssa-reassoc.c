@@ -1,5 +1,5 @@
 /* Reassociation for trees.
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org>
 
 This file is part of GCC.
@@ -48,7 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "langhooks.h"
 #include "cfgloop.h"
-#include "params.h"
 #include "builtins.h"
 #include "gimplify.h"
 #include "case-cfn-macros.h"
@@ -270,7 +269,7 @@ static long
 phi_rank (gimple *stmt)
 {
   basic_block bb = gimple_bb (stmt);
-  struct loop *father = bb->loop_father;
+  class loop *father = bb->loop_father;
   tree res;
   unsigned i;
   use_operand_p use;
@@ -603,7 +602,7 @@ add_repeat_to_ops_vec (vec<operand_entry *> *ops, tree op,
    operation with tree code CODE, and is inside LOOP.  */
 
 static bool
-is_reassociable_op (gimple *stmt, enum tree_code code, struct loop *loop)
+is_reassociable_op (gimple *stmt, enum tree_code code, class loop *loop)
 {
   basic_block bb = gimple_bb (stmt);
 
@@ -618,7 +617,7 @@ is_reassociable_op (gimple *stmt, enum tree_code code, struct loop *loop)
       && has_single_use (gimple_assign_lhs (stmt)))
     {
       tree rhs1 = gimple_assign_rhs1 (stmt);
-      tree rhs2 = gimple_assign_rhs1 (stmt);
+      tree rhs2 = gimple_assign_rhs2 (stmt);
       if (TREE_CODE (rhs1) == SSA_NAME
 	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs1))
 	return false;
@@ -1015,7 +1014,7 @@ eliminate_using_constants (enum tree_code opcode,
 		    fprintf (dump_file, "Found * 0, removing all other ops\n");
 
 		  reassociate_stats.ops_eliminated += ops->length () - 1;
-		  ops->truncate (1);
+		  ops->truncate (0);
 		  ops->quick_push (oelast);
 		  return;
 		}
@@ -1560,7 +1559,7 @@ build_and_add_sum (tree type, tree op1, tree op2, enum tree_code opcode)
 
 static bool
 undistribute_ops_list (enum tree_code opcode,
-		       vec<operand_entry *> *ops, struct loop *loop)
+		       vec<operand_entry *> *ops, class loop *loop)
 {
   unsigned int length = ops->length ();
   operand_entry *oe1;
@@ -1772,6 +1771,350 @@ undistribute_ops_list (enum tree_code opcode,
   return changed;
 }
 
+/* Pair to hold the information of one specific VECTOR_TYPE SSA_NAME:
+   first: element index for each relevant BIT_FIELD_REF.
+   second: the index of vec ops* for each relevant BIT_FIELD_REF.  */
+typedef std::pair<unsigned, unsigned> v_info_elem;
+struct v_info {
+  tree vec_type;
+  auto_vec<v_info_elem, 32> vec;
+};
+typedef v_info *v_info_ptr;
+
+/* Comparison function for qsort on VECTOR SSA_NAME trees by machine mode.  */
+static int
+sort_by_mach_mode (const void *p_i, const void *p_j)
+{
+  const tree tr1 = *((const tree *) p_i);
+  const tree tr2 = *((const tree *) p_j);
+  unsigned int mode1 = TYPE_MODE (TREE_TYPE (tr1));
+  unsigned int mode2 = TYPE_MODE (TREE_TYPE (tr2));
+  if (mode1 > mode2)
+    return 1;
+  else if (mode1 < mode2)
+    return -1;
+  else
+    return 0;
+}
+
+/* Cleanup hash map for VECTOR information.  */
+static void
+cleanup_vinfo_map (hash_map<tree, v_info_ptr> &info_map)
+{
+  for (hash_map<tree, v_info_ptr>::iterator it = info_map.begin ();
+       it != info_map.end (); ++it)
+    {
+      v_info_ptr info = (*it).second;
+      delete info;
+      (*it).second = NULL;
+    }
+}
+
+/* Perform un-distribution of BIT_FIELD_REF on VECTOR_TYPE.
+     V1[0] + V1[1] + ... + V1[k] + V2[0] + V2[1] + ... + V2[k] + ... Vn[k]
+   is transformed to
+     Vs = (V1 + V2 + ... + Vn)
+     Vs[0] + Vs[1] + ... + Vs[k]
+
+   The basic steps are listed below:
+
+    1) Check the addition chain *OPS by looking those summands coming from
+       VECTOR bit_field_ref on VECTOR type.  Put the information into
+       v_info_map for each satisfied summand, using VECTOR SSA_NAME as key.
+
+    2) For each key (VECTOR SSA_NAME), validate all its BIT_FIELD_REFs are
+       continuous, they can cover the whole VECTOR perfectly without any holes.
+       Obtain one VECTOR list which contain candidates to be transformed.
+
+    3) Sort the VECTOR list by machine mode of VECTOR type, for each group of
+       candidates with same mode, build the addition statements for them and
+       generate BIT_FIELD_REFs accordingly.
+
+   TODO:
+       The current implementation requires the whole VECTORs should be fully
+       covered, but it can be extended to support partial, checking adjacent
+       but not fill the whole, it may need some cost model to define the
+       boundary to do or not.
+*/
+static bool
+undistribute_bitref_for_vector (enum tree_code opcode,
+				vec<operand_entry *> *ops, struct loop *loop)
+{
+  if (ops->length () <= 1)
+    return false;
+
+  if (opcode != PLUS_EXPR
+      && opcode != MULT_EXPR
+      && opcode != BIT_XOR_EXPR
+      && opcode != BIT_IOR_EXPR
+      && opcode != BIT_AND_EXPR)
+    return false;
+
+  hash_map<tree, v_info_ptr> v_info_map;
+  operand_entry *oe1;
+  unsigned i;
+
+  /* Find those summands from VECTOR BIT_FIELD_REF in addition chain, put the
+     information into map.  */
+  FOR_EACH_VEC_ELT (*ops, i, oe1)
+    {
+      enum tree_code dcode;
+      gimple *oe1def;
+
+      if (TREE_CODE (oe1->op) != SSA_NAME)
+	continue;
+      oe1def = SSA_NAME_DEF_STMT (oe1->op);
+      if (!is_gimple_assign (oe1def))
+	continue;
+      dcode = gimple_assign_rhs_code (oe1def);
+      if (dcode != BIT_FIELD_REF || !is_reassociable_op (oe1def, dcode, loop))
+	continue;
+
+      tree rhs = gimple_assign_rhs1 (oe1def);
+      tree vec = TREE_OPERAND (rhs, 0);
+      tree vec_type = TREE_TYPE (vec);
+
+      if (TREE_CODE (vec) != SSA_NAME || !VECTOR_TYPE_P (vec_type))
+	continue;
+
+      /* Ignore it if target machine can't support this VECTOR type.  */
+      if (!VECTOR_MODE_P (TYPE_MODE (vec_type)))
+	continue;
+
+      /* Check const vector type, constrain BIT_FIELD_REF offset and size.  */
+      if (!TYPE_VECTOR_SUBPARTS (vec_type).is_constant ())
+	continue;
+
+      if (VECTOR_TYPE_P (TREE_TYPE (rhs))
+	  || !is_a <scalar_mode> (TYPE_MODE (TREE_TYPE (rhs))))
+	continue;
+
+      /* The type of BIT_FIELD_REF might not be equal to the element type of
+	 the vector.  We want to use a vector type with element type the
+	 same as the BIT_FIELD_REF and size the same as TREE_TYPE (vec).  */
+      if (!useless_type_conversion_p (TREE_TYPE (rhs), TREE_TYPE (vec_type)))
+	{
+	  machine_mode simd_mode;
+	  unsigned HOST_WIDE_INT size, nunits;
+	  unsigned HOST_WIDE_INT elem_size
+	    = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (rhs)));
+	  if (!GET_MODE_BITSIZE (TYPE_MODE (vec_type)).is_constant (&size))
+	    continue;
+	  if (size <= elem_size || (size % elem_size) != 0)
+	    continue;
+	  nunits = size / elem_size;
+	  if (!mode_for_vector (SCALAR_TYPE_MODE (TREE_TYPE (rhs)),
+				nunits).exists (&simd_mode))
+	    continue;
+	  vec_type = build_vector_type_for_mode (TREE_TYPE (rhs), simd_mode);
+
+	  /* Ignore it if target machine can't support this VECTOR type.  */
+	  if (!VECTOR_MODE_P (TYPE_MODE (vec_type)))
+	    continue;
+
+	  /* Check const vector type, constrain BIT_FIELD_REF offset and
+	     size.  */
+	  if (!TYPE_VECTOR_SUBPARTS (vec_type).is_constant ())
+	    continue;
+
+	  if (maybe_ne (GET_MODE_SIZE (TYPE_MODE (vec_type)),
+			GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (vec)))))
+	    continue;
+	}
+
+      tree elem_type = TREE_TYPE (vec_type);
+      unsigned HOST_WIDE_INT elem_size = tree_to_uhwi (TYPE_SIZE (elem_type));
+      if (maybe_ne (bit_field_size (rhs), elem_size))
+	continue;
+
+      unsigned idx;
+      if (!constant_multiple_p (bit_field_offset (rhs), elem_size, &idx))
+	continue;
+
+      /* Ignore it if target machine can't support this type of VECTOR
+         operation.  */
+      optab op_tab = optab_for_tree_code (opcode, vec_type, optab_vector);
+      if (optab_handler (op_tab, TYPE_MODE (vec_type)) == CODE_FOR_nothing)
+	continue;
+
+      bool existed;
+      v_info_ptr &info = v_info_map.get_or_insert (vec, &existed);
+      if (!existed)
+	{
+	  info = new v_info;
+	  info->vec_type = vec_type;
+	}
+      else if (!types_compatible_p (vec_type, info->vec_type))
+	continue;
+      info->vec.safe_push (std::make_pair (idx, i));
+    }
+
+  /* At least two VECTOR to combine.  */
+  if (v_info_map.elements () <= 1)
+    {
+      cleanup_vinfo_map (v_info_map);
+      return false;
+    }
+
+  /* Verify all VECTOR candidates by checking two conditions:
+       1) sorted offsets are adjacent, no holes.
+       2) can fill the whole VECTOR perfectly.
+     And add the valid candidates to a vector for further handling.  */
+  auto_vec<tree> valid_vecs (v_info_map.elements ());
+  for (hash_map<tree, v_info_ptr>::iterator it = v_info_map.begin ();
+       it != v_info_map.end (); ++it)
+    {
+      tree cand_vec = (*it).first;
+      v_info_ptr cand_info = (*it).second;
+      unsigned int num_elems
+	= TYPE_VECTOR_SUBPARTS (cand_info->vec_type).to_constant ();
+      if (cand_info->vec.length () != num_elems)
+	continue;
+      sbitmap holes = sbitmap_alloc (num_elems);
+      bitmap_ones (holes);
+      bool valid = true;
+      v_info_elem *curr;
+      FOR_EACH_VEC_ELT (cand_info->vec, i, curr)
+	{
+	  if (!bitmap_bit_p (holes, curr->first))
+	    {
+	      valid = false;
+	      break;
+	    }
+	  else
+	    bitmap_clear_bit (holes, curr->first);
+	}
+      if (valid && bitmap_empty_p (holes))
+	valid_vecs.quick_push (cand_vec);
+      sbitmap_free (holes);
+    }
+
+  /* At least two VECTOR to combine.  */
+  if (valid_vecs.length () <= 1)
+    {
+      cleanup_vinfo_map (v_info_map);
+      return false;
+    }
+
+  valid_vecs.qsort (sort_by_mach_mode);
+  /* Go through all candidates by machine mode order, query the mode_to_total
+     to get the total number for each mode and skip the single one.  */
+  for (unsigned i = 0; i < valid_vecs.length () - 1; ++i)
+    {
+      tree tvec = valid_vecs[i];
+      enum machine_mode mode = TYPE_MODE (TREE_TYPE (tvec));
+
+      /* Skip modes with only a single candidate.  */
+      if (TYPE_MODE (TREE_TYPE (valid_vecs[i + 1])) != mode)
+	continue;
+
+      unsigned int idx, j;
+      gimple *sum = NULL;
+      tree sum_vec = tvec;
+      v_info_ptr info_ptr = *(v_info_map.get (tvec));
+      v_info_elem *elem;
+      tree vec_type = info_ptr->vec_type;
+
+      /* Build the sum for all candidates with same mode.  */
+      do
+	{
+	  sum = build_and_add_sum (vec_type, sum_vec,
+				   valid_vecs[i + 1], opcode);
+	  if (!useless_type_conversion_p (vec_type,
+					  TREE_TYPE (valid_vecs[i + 1])))
+	    {
+	      /* Update the operands only after build_and_add_sum,
+		 so that we don't have to repeat the placement algorithm
+		 of build_and_add_sum.  */
+	      gimple_stmt_iterator gsi = gsi_for_stmt (sum);
+	      tree vce = build1 (VIEW_CONVERT_EXPR, vec_type,
+				 valid_vecs[i + 1]);
+	      tree lhs = make_ssa_name (vec_type);
+	      gimple *g = gimple_build_assign (lhs, VIEW_CONVERT_EXPR, vce);
+	      gimple_set_uid (g, gimple_uid (sum));
+	      gsi_insert_before (&gsi, g, GSI_NEW_STMT);
+	      gimple_assign_set_rhs2 (sum, lhs);
+	      if (sum_vec == tvec)
+		{
+		  vce = build1 (VIEW_CONVERT_EXPR, vec_type, sum_vec);
+		  lhs = make_ssa_name (vec_type);
+		  g = gimple_build_assign (lhs, VIEW_CONVERT_EXPR, vce);
+		  gimple_set_uid (g, gimple_uid (sum));
+		  gsi_insert_before (&gsi, g, GSI_NEW_STMT);
+		  gimple_assign_set_rhs1 (sum, lhs);
+		}
+	      update_stmt (sum);
+	    }
+	  sum_vec = gimple_get_lhs (sum);
+	  info_ptr = *(v_info_map.get (valid_vecs[i + 1]));
+	  gcc_assert (types_compatible_p (vec_type, info_ptr->vec_type));
+	  /* Update those related ops of current candidate VECTOR.  */
+	  FOR_EACH_VEC_ELT (info_ptr->vec, j, elem)
+	    {
+	      idx = elem->second;
+	      gimple *def = SSA_NAME_DEF_STMT ((*ops)[idx]->op);
+	      /* Set this then op definition will get DCEd later.  */
+	      gimple_set_visited (def, true);
+	      if (opcode == PLUS_EXPR
+		  || opcode == BIT_XOR_EXPR
+		  || opcode == BIT_IOR_EXPR)
+		(*ops)[idx]->op = build_zero_cst (TREE_TYPE ((*ops)[idx]->op));
+	      else if (opcode == MULT_EXPR)
+		(*ops)[idx]->op = build_one_cst (TREE_TYPE ((*ops)[idx]->op));
+	      else
+		{
+		  gcc_assert (opcode == BIT_AND_EXPR);
+		  (*ops)[idx]->op
+		    = build_all_ones_cst (TREE_TYPE ((*ops)[idx]->op));
+		}
+	      (*ops)[idx]->rank = 0;
+	    }
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Generating addition -> ");
+	      print_gimple_stmt (dump_file, sum, 0);
+	    }
+	  i++;
+	}
+      while ((i < valid_vecs.length () - 1)
+	     && TYPE_MODE (TREE_TYPE (valid_vecs[i + 1])) == mode);
+
+      /* Referring to first valid VECTOR with this mode, generate the
+         BIT_FIELD_REF statements accordingly.  */
+      info_ptr = *(v_info_map.get (tvec));
+      gcc_assert (sum);
+      tree elem_type = TREE_TYPE (vec_type);
+      FOR_EACH_VEC_ELT (info_ptr->vec, j, elem)
+	{
+	  idx = elem->second;
+	  tree dst = make_ssa_name (elem_type);
+	  tree pos = bitsize_int (elem->first
+				  * tree_to_uhwi (TYPE_SIZE (elem_type)));
+	  tree bfr = build3 (BIT_FIELD_REF, elem_type, sum_vec,
+			     TYPE_SIZE (elem_type), pos);
+	  gimple *gs = gimple_build_assign (dst, BIT_FIELD_REF, bfr);
+	  insert_stmt_after (gs, sum);
+	  gimple *def = SSA_NAME_DEF_STMT ((*ops)[idx]->op);
+	  /* Set this then op definition will get DCEd later.  */
+	  gimple_set_visited (def, true);
+	  (*ops)[idx]->op = gimple_assign_lhs (gs);
+	  (*ops)[idx]->rank = get_rank ((*ops)[idx]->op);
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Generating bit_field_ref -> ");
+	      print_gimple_stmt (dump_file, gs, 0);
+	    }
+	}
+    }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "undistributiong bit_field_ref for vector done.\n");
+
+  cleanup_vinfo_map (v_info_map);
+
+  return true;
+}
+
 /* If OPCODE is BIT_IOR_EXPR or BIT_AND_EXPR and CURR is a comparison
    expression, examine the other OPS to see if any of them are comparisons
    of the same values, which we may be able to combine or eliminate.
@@ -1820,12 +2163,15 @@ eliminate_redundant_comparison (enum tree_code opcode,
 
       /* If we got here, we have a match.  See if we can combine the
 	 two comparisons.  */
+      tree type = TREE_TYPE (gimple_assign_lhs (def1));
       if (opcode == BIT_IOR_EXPR)
-	t = maybe_fold_or_comparisons (lcode, op1, op2,
+	t = maybe_fold_or_comparisons (type,
+				       lcode, op1, op2,
 				       rcode, gimple_assign_rhs1 (def2),
 				       gimple_assign_rhs2 (def2));
       else
-	t = maybe_fold_and_comparisons (lcode, op1, op2,
+	t = maybe_fold_and_comparisons (type,
+					lcode, op1, op2,
 					rcode, gimple_assign_rhs1 (def2),
 					gimple_assign_rhs2 (def2));
       if (!t)
@@ -2039,9 +2385,6 @@ optimize_ops_list (enum tree_code opcode,
       i++;
     }
 
-  length = ops->length ();
-  oelast = ops->last ();
-
   if (iterate)
     optimize_ops_list (opcode, ops);
 }
@@ -2143,7 +2486,8 @@ init_range_entry (struct range_entry *r, tree exp, gimple *stmt)
 	  exp_type = boolean_type_node;
 	}
 
-      if (TREE_CODE (arg0) != SSA_NAME)
+      if (TREE_CODE (arg0) != SSA_NAME
+	  || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (arg0))
 	break;
       loc = gimple_location (stmt);
       switch (code)
@@ -2537,8 +2881,23 @@ optimize_range_tests_xor (enum tree_code opcode, tree type,
   if (!tree_int_cst_equal (lowxor, highxor))
     return false;
 
+  exp = rangei->exp;
+  scalar_int_mode mode = as_a <scalar_int_mode> (TYPE_MODE (type));
+  int prec = GET_MODE_PRECISION (mode);
+  if (TYPE_PRECISION (type) < prec
+      || (wi::to_wide (TYPE_MIN_VALUE (type))
+	  != wi::min_value (prec, TYPE_SIGN (type)))
+      || (wi::to_wide (TYPE_MAX_VALUE (type))
+	  != wi::max_value (prec, TYPE_SIGN (type))))
+    {
+      type = build_nonstandard_integer_type (prec, TYPE_UNSIGNED (type));
+      exp = fold_convert (type, exp);
+      lowxor = fold_convert (type, lowxor);
+      lowi = fold_convert (type, lowi);
+      highi = fold_convert (type, highi);
+    }
   tem = fold_build1 (BIT_NOT_EXPR, type, lowxor);
-  exp = fold_build2 (BIT_AND_EXPR, type, rangei->exp, tem);
+  exp = fold_build2 (BIT_AND_EXPR, type, exp, tem);
   lowj = fold_build2 (BIT_AND_EXPR, type, lowi, tem);
   highj = fold_build2 (BIT_AND_EXPR, type, highi, tem);
   if (update_range_test (rangei, rangej, NULL, 1, opcode, ops, exp,
@@ -2581,7 +2940,16 @@ optimize_range_tests_diff (enum tree_code opcode, tree type,
   if (!integer_pow2p (tem1))
     return false;
 
-  type = unsigned_type_for (type);
+  scalar_int_mode mode = as_a <scalar_int_mode> (TYPE_MODE (type));
+  int prec = GET_MODE_PRECISION (mode);
+  if (TYPE_PRECISION (type) < prec
+      || (wi::to_wide (TYPE_MIN_VALUE (type))
+	  != wi::min_value (prec, TYPE_SIGN (type)))
+      || (wi::to_wide (TYPE_MAX_VALUE (type))
+	  != wi::max_value (prec, TYPE_SIGN (type))))
+    type = build_nonstandard_integer_type (prec, 1);
+  else
+    type = unsigned_type_for (type);
   tem1 = fold_convert (type, tem1);
   tem2 = fold_convert (type, tem2);
   lowi = fold_convert (type, lowi);
@@ -3455,10 +3823,11 @@ optimize_range_tests (enum tree_code opcode,
 
 /* A subroutine of optimize_vec_cond_expr to extract and canonicalize
    the operands of the VEC_COND_EXPR.  Returns ERROR_MARK on failure,
-   otherwise the comparison code.  */
+   otherwise the comparison code.  TYPE is a return value that is set
+   to type of comparison.  */
 
 static tree_code
-ovce_extract_ops (tree var, gassign **rets, bool *reti)
+ovce_extract_ops (tree var, gassign **rets, bool *reti, tree *type)
 {
   if (TREE_CODE (var) != SSA_NAME)
     return ERROR_MARK;
@@ -3500,6 +3869,8 @@ ovce_extract_ops (tree var, gassign **rets, bool *reti)
     *rets = stmt;
   if (reti)
     *reti = inv;
+  if (type)
+    *type = TREE_TYPE (cond);
   return cmp;
 }
 
@@ -3521,7 +3892,8 @@ optimize_vec_cond_expr (tree_code opcode, vec<operand_entry *> *ops)
 
       gassign *stmt0;
       bool invert;
-      tree_code cmp0 = ovce_extract_ops (elt0, &stmt0, &invert);
+      tree type;
+      tree_code cmp0 = ovce_extract_ops (elt0, &stmt0, &invert, &type);
       if (cmp0 == ERROR_MARK)
 	continue;
 
@@ -3530,7 +3902,7 @@ optimize_vec_cond_expr (tree_code opcode, vec<operand_entry *> *ops)
 	  tree &elt1 = (*ops)[j]->op;
 
 	  gassign *stmt1;
-	  tree_code cmp1 = ovce_extract_ops (elt1, &stmt1, NULL);
+	  tree_code cmp1 = ovce_extract_ops (elt1, &stmt1, NULL, NULL);
 	  if (cmp1 == ERROR_MARK)
 	    continue;
 
@@ -3544,9 +3916,11 @@ optimize_vec_cond_expr (tree_code opcode, vec<operand_entry *> *ops)
 
 	  tree comb;
 	  if (opcode == BIT_AND_EXPR)
-	    comb = maybe_fold_and_comparisons (cmp0, x0, y0, cmp1, x1, y1);
+	    comb = maybe_fold_and_comparisons (type, cmp0, x0, y0, cmp1, x1,
+					       y1);
 	  else if (opcode == BIT_IOR_EXPR)
-	    comb = maybe_fold_or_comparisons (cmp0, x0, y0, cmp1, x1, y1);
+	    comb = maybe_fold_or_comparisons (type, cmp0, x0, y0, cmp1, x1,
+					      y1);
 	  else
 	    gcc_unreachable ();
 	  if (comb == NULL)
@@ -3702,7 +4076,7 @@ suitable_cond_bb (basic_block bb, basic_block test_bb, basic_block *other_bb,
       || (gimple_code (stmt) != GIMPLE_COND
 	  && (backward || !final_range_test_p (stmt)))
       || gimple_visited_p (stmt)
-      || stmt_could_throw_p (stmt)
+      || stmt_could_throw_p (cfun, stmt)
       || *other_bb == bb)
     return false;
   is_cond = gimple_code (stmt) == GIMPLE_COND;
@@ -3839,7 +4213,7 @@ no_side_effect_bb (basic_block bb)
 
 static bool
 get_ops (tree var, enum tree_code code, vec<operand_entry *> *ops,
-	 struct loop *loop)
+	 class loop *loop)
 {
   gimple *stmt = SSA_NAME_DEF_STMT (var);
   tree rhs[2];
@@ -3874,7 +4248,7 @@ get_ops (tree var, enum tree_code code, vec<operand_entry *> *ops,
 
 static tree
 update_ops (tree var, enum tree_code code, vec<operand_entry *> ops,
-	    unsigned int *pidx, struct loop *loop)
+	    unsigned int *pidx, class loop *loop)
 {
   gimple *stmt = SSA_NAME_DEF_STMT (var);
   tree rhs[4];
@@ -3958,7 +4332,7 @@ maybe_optimize_range_tests (gimple *stmt)
   else
     return cfg_cleanup_needed;
 
-  if (stmt_could_throw_p (stmt))
+  if (stmt_could_throw_p (cfun, stmt))
     return cfg_cleanup_needed;
 
   /* As relative ordering of post-dominator sons isn't fixed,
@@ -4646,7 +5020,7 @@ static int
 get_reassociation_width (int ops_num, enum tree_code opc,
 			 machine_mode mode)
 {
-  int param_width = PARAM_VALUE (PARAM_TREE_REASSOC_WIDTH);
+  int param_width = param_tree_reassoc_width;
   int width;
   int width_min;
   int cycles_best;
@@ -4787,6 +5161,7 @@ rewrite_expr_tree_parallel (gassign *stmt, int width,
       else
 	{
 	  stmts[i] = build_and_add_sum (TREE_TYPE (last_rhs1), op1, op2, opcode);
+	  gimple_set_visited (stmts[i], true);
 	}
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -4811,7 +5186,7 @@ linearize_expr (gimple *stmt)
   gimple *oldbinrhs = binrhs;
   enum tree_code rhscode = gimple_assign_rhs_code (stmt);
   gimple *newbinrhs = NULL;
-  struct loop *loop = loop_containing_stmt (stmt);
+  class loop *loop = loop_containing_stmt (stmt);
   tree lhs = gimple_assign_lhs (stmt);
 
   gcc_assert (is_reassociable_op (binlhs, rhscode, loop)
@@ -4945,7 +5320,7 @@ should_break_up_subtract (gimple *stmt)
   tree binlhs = gimple_assign_rhs1 (stmt);
   tree binrhs = gimple_assign_rhs2 (stmt);
   gimple *immusestmt;
-  struct loop *loop = loop_containing_stmt (stmt);
+  class loop *loop = loop_containing_stmt (stmt);
 
   if (TREE_CODE (binlhs) == SSA_NAME
       && is_reassociable_op (SSA_NAME_DEF_STMT (binlhs), PLUS_EXPR, loop))
@@ -5100,7 +5475,7 @@ linearize_expr_tree (vec<operand_entry *> *ops, gimple *stmt,
   bool binlhsisreassoc = false;
   bool binrhsisreassoc = false;
   enum tree_code rhscode = gimple_assign_rhs_code (stmt);
-  struct loop *loop = loop_containing_stmt (stmt);
+  class loop *loop = loop_containing_stmt (stmt);
 
   if (set_visited)
     gimple_set_visited (stmt, true);
@@ -5109,14 +5484,14 @@ linearize_expr_tree (vec<operand_entry *> *ops, gimple *stmt,
     {
       binlhsdef = SSA_NAME_DEF_STMT (binlhs);
       binlhsisreassoc = (is_reassociable_op (binlhsdef, rhscode, loop)
-			 && !stmt_could_throw_p (binlhsdef));
+			 && !stmt_could_throw_p (cfun, binlhsdef));
     }
 
   if (TREE_CODE (binrhs) == SSA_NAME)
     {
       binrhsdef = SSA_NAME_DEF_STMT (binrhs);
       binrhsisreassoc = (is_reassociable_op (binrhsdef, rhscode, loop)
-			 && !stmt_could_throw_p (binrhsdef));
+			 && !stmt_could_throw_p (cfun, binrhsdef));
     }
 
   /* If the LHS is not reassociable, but the RHS is, we need to swap
@@ -5851,15 +6226,10 @@ reassociate_bb (basic_block bb)
       stmt = gsi_stmt (gsi);
 
       if (is_gimple_assign (stmt)
-	  && !stmt_could_throw_p (stmt))
+	  && !stmt_could_throw_p (cfun, stmt))
 	{
 	  tree lhs, rhs1, rhs2;
 	  enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
-
-	  /* If this is not a gimple binary expression, there is
-	     nothing for us to do with it.  */
-	  if (get_gimple_rhs_class (rhs_code) != GIMPLE_BINARY_RHS)
-	    continue;
 
 	  /* If this was part of an already processed statement,
 	     we don't need to touch it again. */
@@ -5886,6 +6256,11 @@ reassociate_bb (basic_block bb)
 		}
 	      continue;
 	    }
+
+	  /* If this is not a gimple binary expression, there is
+	     nothing for us to do with it.  */
+	  if (get_gimple_rhs_class (rhs_code) != GIMPLE_BINARY_RHS)
+	    continue;
 
 	  lhs = gimple_assign_lhs (stmt);
 	  rhs1 = gimple_assign_rhs1 (stmt);
@@ -5925,7 +6300,12 @@ reassociate_bb (basic_block bb)
 		  ops.qsort (sort_by_operand_rank);
 		  optimize_ops_list (rhs_code, &ops);
 		}
-
+	      if (undistribute_bitref_for_vector (rhs_code, &ops,
+						  loop_containing_stmt (stmt)))
+		{
+		  ops.qsort (sort_by_operand_rank);
+		  optimize_ops_list (rhs_code, &ops);
+		}
 	      if (rhs_code == PLUS_EXPR
 		  && transform_add_to_multiply (&ops))
 		ops.qsort (sort_by_operand_rank);
@@ -5987,12 +6367,7 @@ reassociate_bb (basic_block bb)
 		{
 		  machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
 		  int ops_num = ops.length ();
-		  int width = get_reassociation_width (ops_num, rhs_code, mode);
-
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    fprintf (dump_file,
-			     "Width = %d was chosen for reassociation\n", width);
-
+		  int width;
 
 		  /* For binary bit operations, if there are at least 3
 		     operands and the last last operand in OPS is a constant,
@@ -6006,10 +6381,21 @@ reassociate_bb (basic_block bb)
 		      && TREE_CODE (ops.last ()->op) == INTEGER_CST)
 		    std::swap (*ops[0], *ops[ops_num - 1]);
 
-		  if (width > 1
-		      && ops.length () > 3)
-		    rewrite_expr_tree_parallel (as_a <gassign *> (stmt),
-						width, ops);
+		  /* Only rewrite the expression tree to parallel in the
+		     last reassoc pass to avoid useless work back-and-forth
+		     with initial linearization.  */
+		  if (!reassoc_insert_powi_p
+		      && ops.length () > 3
+		      && (width = get_reassociation_width (ops_num, rhs_code,
+							   mode)) > 1)
+		    {
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			fprintf (dump_file,
+				 "Width = %d was chosen for reassociation\n",
+				 width);
+		      rewrite_expr_tree_parallel (as_a <gassign *> (stmt),
+						  width, ops);
+		    }
 		  else
                     {
                       /* When there are three operands left, we want

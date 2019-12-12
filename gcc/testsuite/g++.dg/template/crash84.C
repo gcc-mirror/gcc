@@ -14,7 +14,7 @@ void
 foo ()
 {
   a<int> a1; // OK
-  a<int>::b<a,int> b1; // { dg-error "template argument|converted constant" }
+  a<int>::b<a,int> b1; // { dg-error "template argument|convert" }
 }
 
 // { dg-prune-output "invalid type in declaration" }

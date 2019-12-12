@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1" } */
+/* { dg-options "-O2 -fdump-tree-vrp1 -fdisable-tree-evrp" } */
 
 int f(int a) {
     switch (a & 1) {

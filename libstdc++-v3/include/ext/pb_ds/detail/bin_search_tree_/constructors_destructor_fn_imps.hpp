@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,6 +37,8 @@
  * @file bin_search_tree_/constructors_destructor_fn_imps.hpp
  * Contains an implementation class for bin_search_tree_.
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::node_allocator
@@ -215,4 +217,4 @@ initialize_min_max()
     m_p_head->m_p_right = p_max;
   }
 }
-
+#endif

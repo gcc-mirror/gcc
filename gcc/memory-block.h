@@ -1,5 +1,5 @@
 /* Shared pool of memory blocks for pool allocators.
-   Copyright (C) 2015-2018 Free Software Foundation, Inc.
+   Copyright (C) 2015-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,12 +28,15 @@ class memory_block_pool
 public:
   /* Blocks have fixed size.  This is necessary for sharing.  */
   static const size_t block_size = 64 * 1024;
+  /* Number of blocks we keep in the freelists.  */
+  static const size_t freelist_size = 1024 * 1024 / block_size;
 
   memory_block_pool ();
 
   static inline void *allocate () ATTRIBUTE_MALLOC;
   static inline void release (void *);
-  void clear_free_list ();
+  static void trim (int nblocks = freelist_size);
+  void reduce_free_list (int);
 
 private:
   /* memory_block_pool singleton instance, defined in memory-block.cc.  */
@@ -68,6 +71,11 @@ memory_block_pool::release (void *uncast_block)
   block_list *block = new (uncast_block) block_list;
   block->m_next = instance.m_blocks;
   instance.m_blocks = block;
+
+  VALGRIND_DISCARD (VALGRIND_MAKE_MEM_NOACCESS ((char *)uncast_block
+						+ sizeof (block_list),
+						block_size
+						- sizeof (block_list)));
 }
 
 extern void *mempool_obstack_chunk_alloc (size_t) ATTRIBUTE_MALLOC;

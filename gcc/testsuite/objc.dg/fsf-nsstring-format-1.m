@@ -21,7 +21,7 @@ int s1b (NSString *fmt, ...) __attribute__((format(CFString, 1, 2))) ; /* { dg-e
 
 int s2 (int a, NSString *fmt, ... ) __attribute__((format(__NSString__, 2, 3))) ; /* OK */
 
-int s2a (int a, NSString *fmt, ... ) __attribute__((format(NSString, 2, 2))) ; /* { dg-error "format string argument follows the args to be formatted" } */
+int s2a (int a, NSString *fmt, ... ) __attribute__((format(NSString, 2, 2))) ; /* { dg-error ".format. attribute argument 3 value .2. does not refer to a variable argument list" } */
 
 int s3 (const char *fmt, ... ) __attribute__((format(__NSString__, 1, 2))) ; /* { dg-error "format argument should be a .NSString. reference but a string was found" } */
 int s4 (NSString *fmt, ... ) __attribute__((format(printf, 1, 2))) ; /* { dg-error "found a .NSString. reference but the format argument should be a string" } */
@@ -29,7 +29,7 @@ int s4 (NSString *fmt, ... ) __attribute__((format(printf, 1, 2))) ; /* { dg-err
 char *s5 (char dum, char *fmt1, ... ) __attribute__((format_arg(2))) ; /* OK */
 NSString *s6 (NSString *dum, NSString *fmt1, ... ) __attribute__((format_arg(2))) ; /* OK */
 
-char *s7 (int dum, void *fmt1, ... ) __attribute__((format_arg(2))) ; /* { dg-error "format string argument is not a string type" } */
+char *s7 (int dum, void *fmt1, ... ) __attribute__((format_arg(2))) ; /* { dg-error ".format_arg. attribute argument value .2. refers to parameter type .void \\\*." } */
 int s8 (NSString *dum, NSString *fmt1, ... ) __attribute__((format_arg(2))) ; /* { dg-error "function does not return string type" } */
 
 char *s9 (int dum, char *fmt1, ... ) __attribute__((format_arg(2))) ; /* OK */

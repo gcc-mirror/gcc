@@ -1,5 +1,5 @@
 /* Declarations and definitions dealing with attribute handling.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -35,6 +35,7 @@ extern tree decl_attributes (tree *, tree, int, tree = NULL_TREE);
 
 extern bool cxx11_attribute_p (const_tree);
 extern tree get_attribute_name (const_tree);
+extern tree get_attribute_namespace (const_tree);
 extern void apply_tm_attr (tree, tree);
 extern tree make_attribute (const char *, const char *, tree);
 
@@ -104,6 +105,12 @@ extern int attribute_list_contained (const_tree, const_tree);
    for size.  */
 extern tree private_lookup_attribute (const char *attr_name, size_t attr_len,
 				      tree list);
+
+extern unsigned decls_mismatched_attributes (tree, tree, tree,
+					     const char* const[],
+					     pretty_printer*);
+
+extern void maybe_diag_alias_attributes (tree, tree);
 
 /* For a given IDENTIFIER_NODE, strip leading and trailing '_' characters
    so that we have a canonical form of attribute names.  */
@@ -210,5 +217,25 @@ lookup_attribute_by_prefix (const char *attr_name, tree list)
       return list;
     }
 }
+
+/* Description of a function argument declared with attribute access.
+   Used as an "iterator" over all such arguments in a function declaration
+   or call.  */
+
+struct attr_access
+{
+  /* The attribute pointer argument.  */
+  tree ptr;
+  /* The size of the pointed-to object or NULL when not specified.  */
+  tree size;
+
+  /* The zero-based number of each of the formal function arguments.  */
+  unsigned ptrarg;
+  unsigned sizarg;
+
+  /* The access mode.  */
+  enum access_mode { read_only, write_only, read_write };
+  access_mode mode;
+};
 
 #endif // GCC_ATTRIBS_H

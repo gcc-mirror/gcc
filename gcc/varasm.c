@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stmt.h"
 #include "expr.h"
 #include "expmed.h"
+#include "optabs.h"
 #include "output.h"
 #include "langhooks.h"
 #include "debug.h"
@@ -68,8 +69,8 @@ extern GTY(()) const char *weak_global_object_name;
 const char *first_global_object_name;
 const char *weak_global_object_name;
 
-struct addr_const;
-struct constant_descriptor_rtx;
+class addr_const;
+class constant_descriptor_rtx;
 struct rtx_constant_pool;
 
 #define n_deferred_constants (crtl->varasm.deferred_constants)
@@ -105,13 +106,13 @@ static int contains_pointers_p (tree);
 #ifdef ASM_OUTPUT_EXTERNAL
 static bool incorporeal_function_p (tree);
 #endif
-static void decode_addr_const (tree, struct addr_const *);
+static void decode_addr_const (tree, class addr_const *);
 static hashval_t const_hash_1 (const tree);
 static int compare_constant (const tree, const tree);
 static void output_constant_def_contents (rtx);
 static void output_addressed_constants (tree);
 static unsigned HOST_WIDE_INT output_constant (tree, unsigned HOST_WIDE_INT,
-					       unsigned int, bool);
+					       unsigned int, bool, bool);
 static void globalize_decl (tree);
 static bool decl_readonly_section_1 (enum section_category);
 #ifdef BSS_SECTION_ASM_OP
@@ -363,7 +364,11 @@ use_object_blocks_p (void)
 
 /* Return the object_block structure for section SECT.  Create a new
    structure if we haven't created one already.  Return null if SECT
-   itself is null.  */
+   itself is null.  Return also null for mergeable sections since
+   section anchors can't be used in mergeable sections anyway,
+   because the linker might move objects around, and using the
+   object blocks infrastructure in that case is both a waste and a
+   maintenance burden.  */
 
 static struct object_block *
 get_block_for_section (section *sect)
@@ -371,6 +376,9 @@ get_block_for_section (section *sect)
   struct object_block *block;
 
   if (sect == NULL)
+    return NULL;
+
+  if (sect->common.flags & SECTION_MERGE)
     return NULL;
 
   object_block **slot
@@ -805,7 +813,7 @@ mergeable_string_section (tree decl ATTRIBUTE_UNUSED,
       && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
       && align <= 256
       && (len = int_size_in_bytes (TREE_TYPE (decl))) > 0
-      && TREE_STRING_LENGTH (decl) >= len)
+      && TREE_STRING_LENGTH (decl) == len)
     {
       scalar_int_mode mode;
       unsigned int modesize;
@@ -823,6 +831,9 @@ mergeable_string_section (tree decl ATTRIBUTE_UNUSED,
 	  if (align < modesize)
 	    align = modesize;
 
+	  if (!HAVE_LD_ALIGNED_SHF_MERGE && align > 8)
+	    return readonly_data_section;
+
 	  str = TREE_STRING_POINTER (decl);
 	  unit = GET_MODE_SIZE (mode);
 
@@ -835,7 +846,7 @@ mergeable_string_section (tree decl ATTRIBUTE_UNUSED,
 	      if (j == unit)
 		break;
 	    }
-	  if (i == len - unit)
+	  if (i == len - unit || (unit == 1 && i == len))
 	    {
 	      sprintf (name, "%s.str%d.%d", prefix,
 		       modesize / 8, (int) (align / 8));
@@ -861,7 +872,8 @@ mergeable_constant_section (machine_mode mode ATTRIBUTE_UNUSED,
       && known_le (GET_MODE_BITSIZE (mode), align)
       && align >= 8
       && align <= 256
-      && (align & (align - 1)) == 0)
+      && (align & (align - 1)) == 0
+      && (HAVE_LD_ALIGNED_SHF_MERGE ? 1 : align == 8))
     {
       const char *prefix = function_mergeable_rodata_prefix ();
       char *name = (char *) alloca (strlen (prefix) + 30);
@@ -1854,28 +1866,22 @@ assemble_start_function (tree decl, const char *fnname)
       tree pp_val = TREE_VALUE (patchable_function_entry_attr);
       tree patchable_function_entry_value1 = TREE_VALUE (pp_val);
 
-      if (tree_fits_uhwi_p (patchable_function_entry_value1))
-	patch_area_size = tree_to_uhwi (patchable_function_entry_value1);
-      else
-	gcc_unreachable ();
-
+      patch_area_size = tree_to_uhwi (patchable_function_entry_value1);
       patch_area_entry = 0;
-      if (list_length (pp_val) > 1)
+      if (TREE_CHAIN (pp_val) != NULL_TREE)
 	{
-	  tree patchable_function_entry_value2 =
-	    TREE_VALUE (TREE_CHAIN (pp_val));
-
-	  if (tree_fits_uhwi_p (patchable_function_entry_value2))
-	    patch_area_entry = tree_to_uhwi (patchable_function_entry_value2);
-	  else
-	    gcc_unreachable ();
+	  tree patchable_function_entry_value2
+	    = TREE_VALUE (TREE_CHAIN (pp_val));
+	  patch_area_entry = tree_to_uhwi (patchable_function_entry_value2);
 	}
     }
 
   if (patch_area_entry > patch_area_size)
     {
       if (patch_area_size > 0)
-	warning (OPT_Wattributes, "Patchable function entry > size");
+	warning (OPT_Wattributes,
+		 "patchable function entry %wu exceeds size %wu",
+		 patch_area_entry, patch_area_size);
       patch_area_entry = 0;
     }
 
@@ -1895,7 +1901,8 @@ assemble_start_function (tree decl, const char *fnname)
   /* And the area after the label.  Record it if we haven't done so yet.  */
   if (patch_area_size > patch_area_entry)
     targetm.asm_out.print_patchable_function_entry (asm_out_file,
-					     patch_area_size-patch_area_entry,
+						    patch_area_size
+						    - patch_area_entry,
 						    patch_area_entry == 0);
 
   if (lookup_attribute ("no_split_stack", DECL_ATTRIBUTES (decl)))
@@ -1970,7 +1977,7 @@ assemble_zeros (unsigned HOST_WIDE_INT size)
 /* Assemble an alignment pseudo op for an ALIGN-bit boundary.  */
 
 void
-assemble_align (int align)
+assemble_align (unsigned int align)
 {
   if (align > BITS_PER_UNIT)
     {
@@ -2117,7 +2124,7 @@ assemble_noswitch_variable (tree decl, const char *name, section *sect,
 
 static void
 assemble_variable_contents (tree decl, const char *name,
-			    bool dont_output_data)
+			    bool dont_output_data, bool merge_strings)
 {
   /* Do any machine/system dependent processing of the object.  */
 #ifdef ASM_DECLARE_OBJECT_NAME
@@ -2140,7 +2147,7 @@ assemble_variable_contents (tree decl, const char *name,
 	output_constant (DECL_INITIAL (decl),
 			 tree_to_uhwi (DECL_SIZE_UNIT (decl)),
 			 get_variable_align (decl),
-			 false);
+			 false, merge_strings);
       else
 	/* Leave space for it.  */
 	assemble_zeros (tree_to_uhwi (DECL_SIZE_UNIT (decl)));
@@ -2316,7 +2323,9 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 	switch_to_section (sect);
       if (align > BITS_PER_UNIT)
 	ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
-      assemble_variable_contents (decl, name, dont_output_data);
+      assemble_variable_contents (decl, name, dont_output_data,
+				  (sect->common.flags & SECTION_MERGE)
+				  && (sect->common.flags & SECTION_STRINGS));
       if (asan_protected)
 	{
 	  unsigned HOST_WIDE_INT int size
@@ -2401,7 +2410,7 @@ static hash_set<tree> *pending_assemble_externals_set;
 static bool
 incorporeal_function_p (tree decl)
 {
-  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl))
+  if (TREE_CODE (decl) == FUNCTION_DECL && fndecl_built_in_p (decl))
     {
       const char *name;
 
@@ -2727,10 +2736,24 @@ integer_asm_op (int size, int aligned_p)
       return targetm.asm_out.byte_op;
     case 2:
       return ops->hi;
+    case 3:
+      return ops->psi;
     case 4:
       return ops->si;
+    case 5:
+    case 6:
+    case 7:
+      return ops->pdi;
     case 8:
       return ops->di;
+    case 9:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+    case 14:
+    case 15:
+      return ops->pti;
     case 16:
       return ops->ti;
     default:
@@ -2850,25 +2873,27 @@ assemble_real (REAL_VALUE_TYPE d, scalar_float_mode mode, unsigned int align,
   real_to_target (data, &d, mode);
 
   /* Put out the first word with the specified alignment.  */
+  unsigned int chunk_nunits = MIN (nunits, units_per);
   if (reverse)
     elt = flip_storage_order (SImode, gen_int_mode (data[nelts - 1], SImode));
   else
-    elt = GEN_INT (data[0]);
-  assemble_integer (elt, MIN (nunits, units_per), align, 1);
-  nunits -= units_per;
+    elt = GEN_INT (sext_hwi (data[0], chunk_nunits * BITS_PER_UNIT));
+  assemble_integer (elt, chunk_nunits, align, 1);
+  nunits -= chunk_nunits;
 
   /* Subsequent words need only 32-bit alignment.  */
   align = min_align (align, 32);
 
   for (int i = 1; i < nelts; i++)
     {
+      chunk_nunits = MIN (nunits, units_per);
       if (reverse)
 	elt = flip_storage_order (SImode,
 				  gen_int_mode (data[nelts - 1 - i], SImode));
       else
-	elt = GEN_INT (data[i]);
-      assemble_integer (elt, MIN (nunits, units_per), align, 1);
-      nunits -= units_per;
+	elt = GEN_INT (sext_hwi (data[i], chunk_nunits * BITS_PER_UNIT));
+      assemble_integer (elt, chunk_nunits, align, 1);
+      nunits -= chunk_nunits;
     }
 }
 
@@ -2877,13 +2902,14 @@ assemble_real (REAL_VALUE_TYPE d, scalar_float_mode mode, unsigned int align,
    Store them both in the structure *VALUE.
    EXP must be reducible.  */
 
-struct addr_const {
+class addr_const {
+public:
   rtx base;
   poly_int64 offset;
 };
 
 static void
-decode_addr_const (tree exp, struct addr_const *value)
+decode_addr_const (tree exp, class addr_const *value)
 {
   tree target = TREE_OPERAND (exp, 0);
   poly_int64 offset = 0;
@@ -2941,7 +2967,9 @@ decode_addr_const (tree exp, struct addr_const *value)
     case COMPLEX_CST:
     case CONSTRUCTOR:
     case INTEGER_CST:
-      x = output_constant_def (target, 1);
+      x = lookup_constant_def (target);
+      /* Should have been added by output_addressed_constants.  */
+      gcc_assert (x);
       break;
 
     case INDIRECT_REF:
@@ -2949,6 +2977,11 @@ decode_addr_const (tree exp, struct addr_const *value)
       offset += tree_to_shwi (TREE_OPERAND (target, 0));
       x = gen_rtx_MEM (QImode,
 		       gen_rtx_SYMBOL_REF (Pmode, "origin of addresses"));
+      break;
+
+    case COMPOUND_LITERAL_EXPR:
+      gcc_assert (COMPOUND_LITERAL_EXPR_DECL (target));
+      x = DECL_RTL (COMPOUND_LITERAL_EXPR_DECL (target));
       break;
 
     default:
@@ -3040,9 +3073,13 @@ const_hash_1 (const tree exp)
       }
 
     case ADDR_EXPR:
+      if (CONSTANT_CLASS_P (TREE_OPERAND (exp, 0)))
+       return const_hash_1 (TREE_OPERAND (exp, 0));
+
+      /* Fallthru.  */
     case FDESC_EXPR:
       {
-	struct addr_const value;
+	class addr_const value;
 
 	decode_addr_const (exp, &value);
 	switch (GET_CODE (value.base))
@@ -3146,7 +3183,9 @@ compare_constant (const tree t1, const tree t2)
       return FIXED_VALUES_IDENTICAL (TREE_FIXED_CST (t1), TREE_FIXED_CST (t2));
 
     case STRING_CST:
-      if (TYPE_MODE (TREE_TYPE (t1)) != TYPE_MODE (TREE_TYPE (t2)))
+      if (TYPE_MODE (TREE_TYPE (t1)) != TYPE_MODE (TREE_TYPE (t2))
+	  || int_size_in_bytes (TREE_TYPE (t1))
+	     != int_size_in_bytes (TREE_TYPE (t2)))
 	return 0;
 
       return (TREE_STRING_LENGTH (t1) == TREE_STRING_LENGTH (t2)
@@ -3236,7 +3275,7 @@ compare_constant (const tree t1, const tree t2)
     case ADDR_EXPR:
     case FDESC_EXPR:
       {
-	struct addr_const value1, value2;
+	class addr_const value1, value2;
 	enum rtx_code code;
 	int ret;
 
@@ -3303,8 +3342,9 @@ get_constant_size (tree exp)
   HOST_WIDE_INT size;
 
   size = int_size_in_bytes (TREE_TYPE (exp));
-  if (TREE_CODE (exp) == STRING_CST)
-    size = MAX (TREE_STRING_LENGTH (exp), size);
+  gcc_checking_assert (size >= 0);
+  gcc_checking_assert (TREE_CODE (exp) != STRING_CST
+		       || size >= TREE_STRING_LENGTH (exp));
   return size;
 }
 
@@ -3349,7 +3389,15 @@ build_constant_desc (tree exp)
   if (TREE_CODE (exp) == STRING_CST)
     SET_DECL_ALIGN (decl, targetm.constant_alignment (exp, DECL_ALIGN (decl)));
   else
-    align_variable (decl, 0);
+    {
+      align_variable (decl, 0);
+      if (DECL_ALIGN (decl) < GET_MODE_ALIGNMENT (DECL_MODE (decl))
+	  && ((optab_handler (movmisalign_optab, DECL_MODE (decl))
+	       != CODE_FOR_nothing)
+	      || targetm.slow_unaligned_access (DECL_MODE (decl),
+						DECL_ALIGN (decl))))
+	SET_DECL_ALIGN (decl, GET_MODE_ALIGNMENT (DECL_MODE (decl)));
+    }
 
   /* Now construct the SYMBOL_REF and the MEM.  */
   if (use_object_blocks_p ())
@@ -3392,6 +3440,43 @@ build_constant_desc (tree exp)
   return desc;
 }
 
+/* Subroutine of output_constant_def and tree_output_constant_def:
+   Add a constant to the hash table that tracks which constants
+   already have labels.  */
+
+static constant_descriptor_tree *
+add_constant_to_table (tree exp)
+{
+  /* The hash table methods may call output_constant_def for addressed
+     constants, so handle them first.  */
+  output_addressed_constants (exp);
+
+  /* Sanity check to catch recursive insertion.  */
+  static bool inserting;
+  gcc_assert (!inserting);
+  inserting = true;
+
+  /* Look up EXP in the table of constant descriptors.  If we didn't
+     find it, create a new one.  */
+  struct constant_descriptor_tree key;
+  key.value = exp;
+  key.hash = const_hash_1 (exp);
+  constant_descriptor_tree **loc
+    = const_desc_htab->find_slot_with_hash (&key, key.hash, INSERT);
+
+  inserting = false;
+
+  struct constant_descriptor_tree *desc = *loc;
+  if (!desc)
+    {
+      desc = build_constant_desc (exp);
+      desc->hash = key.hash;
+      *loc = desc;
+    }
+
+  return desc;
+}
+
 /* Return an rtx representing a reference to constant data in memory
    for the constant expression EXP.
 
@@ -3408,24 +3493,7 @@ build_constant_desc (tree exp)
 rtx
 output_constant_def (tree exp, int defer)
 {
-  struct constant_descriptor_tree *desc;
-  struct constant_descriptor_tree key;
-
-  /* Look up EXP in the table of constant descriptors.  If we didn't find
-     it, create a new one.  */
-  key.value = exp;
-  key.hash = const_hash_1 (exp);
-  constant_descriptor_tree **loc
-    = const_desc_htab->find_slot_with_hash (&key, key.hash, INSERT);
-
-  desc = *loc;
-  if (desc == 0)
-    {
-      desc = build_constant_desc (exp);
-      desc->hash = key.hash;
-      *loc = desc;
-    }
-
+  struct constant_descriptor_tree *desc = add_constant_to_table (exp);
   maybe_output_constant_def_contents (desc, defer);
   return desc->rtl;
 }
@@ -3468,7 +3536,8 @@ maybe_output_constant_def_contents (struct constant_descriptor_tree *desc,
    constant's alignment in bits.  */
 
 static void
-assemble_constant_contents (tree exp, const char *label, unsigned int align)
+assemble_constant_contents (tree exp, const char *label, unsigned int align,
+			    bool merge_strings)
 {
   HOST_WIDE_INT size;
 
@@ -3478,7 +3547,7 @@ assemble_constant_contents (tree exp, const char *label, unsigned int align)
   targetm.asm_out.declare_constant_name (asm_out_file, label, exp, size);
 
   /* Output the value of EXP.  */
-  output_constant (exp, size, align, false);
+  output_constant (exp, size, align, false, merge_strings);
 
   targetm.asm_out.decl_end ();
 }
@@ -3519,10 +3588,13 @@ output_constant_def_contents (rtx symbol)
 		   || (VAR_P (decl) && DECL_IN_CONSTANT_POOL (decl))
 		   ? DECL_ALIGN (decl)
 		   : symtab_node::get (decl)->definition_alignment ());
-      switch_to_section (get_constant_section (exp, align));
+      section *sect = get_constant_section (exp, align);
+      switch_to_section (sect);
       if (align > BITS_PER_UNIT)
 	ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
-      assemble_constant_contents (exp, XSTR (symbol, 0), align);
+      assemble_constant_contents (exp, XSTR (symbol, 0), align,
+				  (sect->common.flags & SECTION_MERGE)
+				  && (sect->common.flags & SECTION_STRINGS));
       if (asan_protected)
 	{
 	  HOST_WIDE_INT size = get_constant_size (exp);
@@ -3555,31 +3627,15 @@ lookup_constant_def (tree exp)
 tree
 tree_output_constant_def (tree exp)
 {
-  struct constant_descriptor_tree *desc, key;
-  tree decl;
-
-  /* Look up EXP in the table of constant descriptors.  If we didn't find
-     it, create a new one.  */
-  key.value = exp;
-  key.hash = const_hash_1 (exp);
-  constant_descriptor_tree **loc
-    = const_desc_htab->find_slot_with_hash (&key, key.hash, INSERT);
-
-  desc = *loc;
-  if (desc == 0)
-    {
-      desc = build_constant_desc (exp);
-      desc->hash = key.hash;
-      *loc = desc;
-    }
-
-  decl = SYMBOL_REF_DECL (XEXP (desc->rtl, 0));
+  struct constant_descriptor_tree *desc = add_constant_to_table (exp);
+  tree decl = SYMBOL_REF_DECL (XEXP (desc->rtl, 0));
   varpool_node::finalize_decl (decl);
   return decl;
 }
 
-struct GTY((chain_next ("%h.next"), for_user)) constant_descriptor_rtx {
-  struct constant_descriptor_rtx *next;
+class GTY((chain_next ("%h.next"), for_user)) constant_descriptor_rtx {
+public:
+  class constant_descriptor_rtx *next;
   rtx mem;
   rtx sym;
   rtx constant;
@@ -3606,8 +3662,8 @@ struct const_rtx_desc_hasher : ggc_ptr_hash<constant_descriptor_rtx>
 
 struct GTY(()) rtx_constant_pool {
   /* Pointers to first and last constant in pool, as ordered by offset.  */
-  struct constant_descriptor_rtx *first;
-  struct constant_descriptor_rtx *last;
+  class constant_descriptor_rtx *first;
+  class constant_descriptor_rtx *last;
 
   /* Hash facility for making memory-constants from constant rtl-expressions.
      It is used on RISC machines where immediate integer arguments and
@@ -3767,7 +3823,7 @@ simplify_subtraction (rtx x)
 rtx
 force_const_mem (machine_mode in_mode, rtx x)
 {
-  struct constant_descriptor_rtx *desc, tmp;
+  class constant_descriptor_rtx *desc, tmp;
   struct rtx_constant_pool *pool;
   char label[256];
   rtx def, symbol;
@@ -3875,7 +3931,7 @@ get_pool_constant (const_rtx addr)
 rtx
 get_pool_constant_mark (rtx addr, bool *pmarked)
 {
-  struct constant_descriptor_rtx *desc;
+  class constant_descriptor_rtx *desc;
 
   desc = SYMBOL_REF_CONSTANT (addr);
   *pmarked = (desc->mark != 0);
@@ -3923,7 +3979,6 @@ output_constant_pool_2 (fixed_size_mode mode, rtx x, unsigned int align)
     case MODE_UFRACT:
     case MODE_ACCUM:
     case MODE_UACCUM:
-    case MODE_POINTER_BOUNDS:
       assemble_integer (x, GET_MODE_SIZE (mode), align, 1);
       break;
 
@@ -3984,7 +4039,7 @@ output_constant_pool_2 (fixed_size_mode mode, rtx x, unsigned int align)
    giving it ALIGN bits of alignment.  */
 
 static void
-output_constant_pool_1 (struct constant_descriptor_rtx *desc,
+output_constant_pool_1 (class constant_descriptor_rtx *desc,
 			unsigned int align)
 {
   rtx x, tmp;
@@ -4061,7 +4116,7 @@ output_constant_pool_1 (struct constant_descriptor_rtx *desc,
 static void
 recompute_pool_offsets (struct rtx_constant_pool *pool)
 {
-  struct constant_descriptor_rtx *desc;
+  class constant_descriptor_rtx *desc;
   pool->offset = 0;
 
   for (desc = pool->first; desc ; desc = desc->next)
@@ -4090,7 +4145,7 @@ mark_constants_in_pattern (rtx insn)
 	{
 	  if (CONSTANT_POOL_ADDRESS_P (x))
 	    {
-	      struct constant_descriptor_rtx *desc = SYMBOL_REF_CONSTANT (x);
+	      class constant_descriptor_rtx *desc = SYMBOL_REF_CONSTANT (x);
 	      if (desc->mark == 0)
 		{
 		  desc->mark = 1;
@@ -4159,7 +4214,7 @@ mark_constant_pool (void)
 static void
 output_constant_pool_contents (struct rtx_constant_pool *pool)
 {
-  struct constant_descriptor_rtx *desc;
+  class constant_descriptor_rtx *desc;
 
   for (desc = pool->first; desc ; desc = desc->next)
     if (desc->mark)
@@ -4774,6 +4829,30 @@ initializer_constant_valid_for_bitfield_p (tree value)
   return false;
 }
 
+/* Check if a STRING_CST fits into the field.
+   Tolerate only the case when the NUL termination
+   does not fit into the field.   */
+
+static bool
+check_string_literal (tree string, unsigned HOST_WIDE_INT size)
+{
+  tree type = TREE_TYPE (string);
+  tree eltype = TREE_TYPE (type);
+  unsigned HOST_WIDE_INT elts = tree_to_uhwi (TYPE_SIZE_UNIT (eltype));
+  unsigned HOST_WIDE_INT mem_size = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+  int len = TREE_STRING_LENGTH (string);
+
+  if (elts != 1 && elts != 2 && elts != 4)
+    return false;
+  if (len < 0 || len % elts != 0)
+    return false;
+  if (size < (unsigned)len)
+    return false;
+  if (mem_size != size)
+    return false;
+  return true;
+}
+
 /* output_constructor outer state of relevance in recursive calls, typically
    for nested aggregate bitfields.  */
 
@@ -4812,7 +4891,7 @@ output_constructor (tree, unsigned HOST_WIDE_INT, unsigned int, bool,
 
 static unsigned HOST_WIDE_INT
 output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align,
-		 bool reverse)
+		 bool reverse, bool merge_strings)
 {
   enum tree_code code;
   unsigned HOST_WIDE_INT thissize;
@@ -4927,10 +5006,11 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align,
       break;
 
     case COMPLEX_TYPE:
-      output_constant (TREE_REALPART (exp), thissize / 2, align, reverse);
+      output_constant (TREE_REALPART (exp), thissize / 2, align,
+		       reverse, false);
       output_constant (TREE_IMAGPART (exp), thissize / 2,
 		       min_align (align, BITS_PER_UNIT * (thissize / 2)),
-		       reverse);
+		       reverse, false);
       break;
 
     case ARRAY_TYPE:
@@ -4940,8 +5020,12 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align,
 	case CONSTRUCTOR:
 	  return output_constructor (exp, size, align, reverse, NULL);
 	case STRING_CST:
-	  thissize
-	    = MIN ((unsigned HOST_WIDE_INT)TREE_STRING_LENGTH (exp), size);
+	  thissize = (unsigned HOST_WIDE_INT)TREE_STRING_LENGTH (exp);
+	  if (merge_strings
+	      && (thissize == 0
+		  || TREE_STRING_POINTER (exp) [thissize - 1] != '\0'))
+	    thissize++;
+	  gcc_checking_assert (check_string_literal (exp, size));
 	  assemble_string (TREE_STRING_POINTER (exp), thissize);
 	  break;
 	case VECTOR_CST:
@@ -4950,14 +5034,14 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align,
 	    unsigned int nalign = MIN (align, GET_MODE_ALIGNMENT (inner));
 	    int elt_size = GET_MODE_SIZE (inner);
 	    output_constant (VECTOR_CST_ELT (exp, 0), elt_size, align,
-			     reverse);
+			     reverse, false);
 	    thissize = elt_size;
 	    /* Static constants must have a fixed size.  */
 	    unsigned int nunits = VECTOR_CST_NELTS (exp).to_constant ();
 	    for (unsigned int i = 1; i < nunits; i++)
 	      {
 		output_constant (VECTOR_CST_ELT (exp, i), elt_size, nalign,
-				 reverse);
+				 reverse, false);
 		thissize += elt_size;
 	      }
 	    break;
@@ -5078,8 +5162,8 @@ output_constructor_array_range (oc_local_state *local)
       if (local->val == NULL_TREE)
 	assemble_zeros (fieldsize);
       else
-	fieldsize
-	  = output_constant (local->val, fieldsize, align2, local->reverse);
+	fieldsize = output_constant (local->val, fieldsize, align2,
+				     local->reverse, false);
 
       /* Count its size.  */
       local->total_bytes += fieldsize;
@@ -5161,6 +5245,8 @@ output_constructor_regular_field (oc_local_state *local)
 	     on the chain is a TYPE_DECL of the enclosing struct.  */
 	  const_tree next = DECL_CHAIN (local->field);
 	  gcc_assert (!fieldsize || !next || TREE_CODE (next) != FIELD_DECL);
+	  tree size = TYPE_SIZE_UNIT (TREE_TYPE (local->val));
+	  gcc_checking_assert (compare_tree_int (size, fieldsize) == 0);
 	}
       else
 	fieldsize = tree_to_uhwi (DECL_SIZE_UNIT (local->field));
@@ -5172,8 +5258,8 @@ output_constructor_regular_field (oc_local_state *local)
   if (local->val == NULL_TREE)
     assemble_zeros (fieldsize);
   else
-    fieldsize
-      = output_constant (local->val, fieldsize, align2, local->reverse);
+    fieldsize = output_constant (local->val, fieldsize, align2,
+				 local->reverse, false);
 
   /* Count its size.  */
   local->total_bytes += fieldsize;
@@ -5283,7 +5369,7 @@ output_constructor_bitfield (oc_local_state *local, unsigned int bit_offset)
     {
       int this_time;
       int shift;
-      HOST_WIDE_INT value;
+      unsigned HOST_WIDE_INT value;
       HOST_WIDE_INT next_byte = next_offset / BITS_PER_UNIT;
       HOST_WIDE_INT next_bit = next_offset % BITS_PER_UNIT;
 
@@ -5315,15 +5401,13 @@ output_constructor_bitfield (oc_local_state *local, unsigned int bit_offset)
 	      this_time = end - shift + 1;
 	    }
 
-	  /* Now get the bits from the appropriate constant word.  */
-	  value = TREE_INT_CST_ELT (local->val, shift / HOST_BITS_PER_WIDE_INT);
-	  shift = shift & (HOST_BITS_PER_WIDE_INT - 1);
+	  /* Now get the bits we want to insert.  */
+	  value = wi::extract_uhwi (wi::to_widest (local->val),
+				    shift, this_time);
 
 	  /* Get the result.  This works only when:
 	     1 <= this_time <= HOST_BITS_PER_WIDE_INT.  */
-	  local->byte |= (((value >> shift)
-			   & (((HOST_WIDE_INT) 2 << (this_time - 1)) - 1))
-			  << (BITS_PER_UNIT - this_time - next_bit));
+	  local->byte |= value << (BITS_PER_UNIT - this_time - next_bit);
 	}
       else
 	{
@@ -5340,15 +5424,13 @@ output_constructor_bitfield (oc_local_state *local, unsigned int bit_offset)
 	    this_time
 	      = HOST_BITS_PER_WIDE_INT - (shift & (HOST_BITS_PER_WIDE_INT - 1));
 
-	  /* Now get the bits from the appropriate constant word.  */
-	  value = TREE_INT_CST_ELT (local->val, shift / HOST_BITS_PER_WIDE_INT);
-	  shift = shift & (HOST_BITS_PER_WIDE_INT - 1);
+	  /* Now get the bits we want to insert.  */
+	  value = wi::extract_uhwi (wi::to_widest (local->val),
+				    shift, this_time);
 
 	  /* Get the result.  This works only when:
 	     1 <= this_time <= HOST_BITS_PER_WIDE_INT.  */
-	  local->byte |= (((value >> shift)
-			   & (((HOST_WIDE_INT) 2 << (this_time - 1)) - 1))
-			  << next_bit);
+	  local->byte |= value << next_bit;
 	}
 
       next_offset += this_time;
@@ -5835,7 +5917,7 @@ do_assemble_alias (tree decl, tree target)
       else
 #endif
 	error_at (DECL_SOURCE_LOCATION (decl),
-		  "ifunc is not supported on this target");
+		  "%qs is not supported on this target", "ifunc");
     }
 
 # ifdef ASM_OUTPUT_DEF_FROM_DECLS
@@ -5893,9 +5975,9 @@ assemble_alias (tree decl, tree target)
       ultimate_transparent_alias_target (&target);
 
       if (alias == target)
-	error ("weakref %q+D ultimately targets itself", decl);
+	error ("%qs symbol %q+D ultimately targets itself", "weakref", decl);
       if (TREE_PUBLIC (decl))
-	error ("weakref %q+D must have static linkage", decl);
+	error ("%qs symbol %q+D must have static linkage", "weakref", decl);
     }
   else
     {
@@ -5912,7 +5994,7 @@ assemble_alias (tree decl, tree target)
 	  if (TREE_CODE (decl) == FUNCTION_DECL
 	      && lookup_attribute ("ifunc", DECL_ATTRIBUTES (decl)))
 	    error_at (DECL_SOURCE_LOCATION (decl),
-		      "ifunc is not supported in this configuration");
+		      "%qs is not supported in this configuration", "ifunc");
 	  else
 	    error_at (DECL_SOURCE_LOCATION (decl),
 		      "only weak aliases are supported in this configuration");
@@ -6359,6 +6441,9 @@ default_section_type_flags (tree decl, const char *name, int reloc)
       || strncmp (name, ".gnu.linkonce.tb.", 17) == 0)
     flags |= SECTION_TLS | SECTION_BSS;
 
+  if (strcmp (name, ".noinit") == 0)
+    flags |= SECTION_WRITE | SECTION_BSS | SECTION_NOTYPE;
+
   /* Various sections have special ELF types that the assembler will
      assign by default based on the name.  They are neither SHT_PROGBITS
      nor SHT_NOBITS, so when changing sections we don't want to print a
@@ -6684,6 +6769,7 @@ default_elf_select_section (tree decl, int reloc,
 			    unsigned HOST_WIDE_INT align)
 {
   const char *sname;
+
   switch (categorize_decl_for_section (decl, reloc))
     {
     case SECCAT_TEXT:
@@ -6721,6 +6807,13 @@ default_elf_select_section (tree decl, int reloc,
       sname = ".tdata";
       break;
     case SECCAT_BSS:
+      if (DECL_P (decl)
+	  && lookup_attribute ("noinit", DECL_ATTRIBUTES (decl)) != NULL_TREE)
+	{
+	  sname = ".noinit";
+	  break;
+	}
+
       if (bss_section)
 	return bss_section;
       sname = ".bss";
@@ -6947,14 +7040,13 @@ default_asm_output_anchor (rtx symbol)
 bool
 default_use_anchors_for_symbol_p (const_rtx symbol)
 {
-  section *sect;
   tree decl;
+  section *sect = SYMBOL_REF_BLOCK (symbol)->sect;
 
-  /* Don't use anchors for mergeable sections.  The linker might move
-     the objects around.  */
-  sect = SYMBOL_REF_BLOCK (symbol)->sect;
-  if (sect->common.flags & SECTION_MERGE)
-    return false;
+  /* This function should only be called with non-zero SYMBOL_REF_BLOCK,
+     furthermore get_block_for_section should not create object blocks
+     for mergeable sections.  */
+  gcc_checking_assert (sect && !(sect->common.flags & SECTION_MERGE));
 
   /* Don't use anchors for small data sections.  The small data register
      acts as an anchor for such sections.  */
@@ -7382,7 +7474,7 @@ void
 place_block_symbol (rtx symbol)
 {
   unsigned HOST_WIDE_INT size, mask, offset;
-  struct constant_descriptor_rtx *desc;
+  class constant_descriptor_rtx *desc;
   unsigned int alignment;
   struct object_block *block;
   tree decl;
@@ -7544,7 +7636,7 @@ get_section_anchor (struct object_block *block, HOST_WIDE_INT offset,
 static void
 output_object_block (struct object_block *block)
 {
-  struct constant_descriptor_rtx *desc;
+  class constant_descriptor_rtx *desc;
   unsigned int i;
   HOST_WIDE_INT offset;
   tree decl;
@@ -7563,6 +7655,7 @@ output_object_block (struct object_block *block)
   else
     switch_to_section (block->sect);
 
+  gcc_checking_assert (!(block->sect->common.flags & SECTION_MERGE));
   assemble_align (block->alignment);
 
   /* Define the values of all anchors relative to the current section
@@ -7589,8 +7682,8 @@ output_object_block (struct object_block *block)
 	{
 	  HOST_WIDE_INT size;
 	  decl = SYMBOL_REF_DECL (symbol);
-	  assemble_constant_contents
-	       (DECL_INITIAL (decl), XSTR (symbol, 0), DECL_ALIGN (decl));
+	  assemble_constant_contents (DECL_INITIAL (decl), XSTR (symbol, 0),
+				      DECL_ALIGN (decl), false);
 
 	  size = get_constant_size (DECL_INITIAL (decl));
 	  offset += size;
@@ -7607,7 +7700,7 @@ output_object_block (struct object_block *block)
 	{
 	  HOST_WIDE_INT size;
 	  decl = SYMBOL_REF_DECL (symbol);
-	  assemble_variable_contents (decl, XSTR (symbol, 0), false);
+	  assemble_variable_contents (decl, XSTR (symbol, 0), false, false);
 	  size = tree_to_uhwi (DECL_SIZE_UNIT (decl));
 	  offset += size;
 	  if ((flag_sanitize & SANITIZE_ADDRESS)

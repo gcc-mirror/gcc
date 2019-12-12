@@ -1,7 +1,8 @@
 //===-- sanitizer_libignore.h -----------------------------------*- C++ -*-===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -64,14 +65,16 @@ class LibIgnore {
     return (pc >= range.begin && pc < range.end);
   }
 
-  static const uptr kMaxLibs = 128;
+  static const uptr kMaxIgnoredRanges = 128;
+  static const uptr kMaxInstrumentedRanges = 1024;
+  static const uptr kMaxLibs = 1024;
 
   // Hot part:
   atomic_uintptr_t ignored_ranges_count_;
-  LibCodeRange ignored_code_ranges_[kMaxLibs];
+  LibCodeRange ignored_code_ranges_[kMaxIgnoredRanges];
 
   atomic_uintptr_t instrumented_ranges_count_;
-  LibCodeRange instrumented_code_ranges_[kMaxLibs];
+  LibCodeRange instrumented_code_ranges_[kMaxInstrumentedRanges];
 
   // Cold part:
   BlockingMutex mutex_;

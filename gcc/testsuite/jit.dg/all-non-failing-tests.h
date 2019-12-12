@@ -8,6 +8,13 @@
    hooks provided by each test case.  */
 #define COMBINED_TEST
 
+/* test-accessing-bitfield.c */
+#define create_code create_code_accessing_bitfield
+#define verify_code verify_code_accessing_bitfield
+#include "test-accessing-bitfield.c"
+#undef create_code
+#undef verify_code
+
 /* test-accessing-struct.c */
 #define create_code create_code_accessing_struct
 #define verify_code verify_code_accessing_struct
@@ -21,6 +28,9 @@
 #include "test-accessing-union.c"
 #undef create_code
 #undef verify_code
+
+/* test-add-driver-options.c: We don't use this one, since the extra options
+   affect the whole context.  */
 
 /* test-alignment.c */
 #define create_code create_code_alignment
@@ -263,6 +273,9 @@ struct testcase
 };
 
 const struct testcase testcases[] = {
+  {"accessing_bitfield",
+   create_code_accessing_bitfield,
+   verify_code_accessing_bitfield},
   {"accessing_struct",
    create_code_accessing_struct,
    verify_code_accessing_struct},

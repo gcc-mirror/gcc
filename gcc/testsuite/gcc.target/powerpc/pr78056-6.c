@@ -1,11 +1,10 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power6" } } */
 /* dfp_hw represents power 6 */
 /* { dg-require-effective-target dfp_hw } */
 /* powerpc_vsx_ok represents power7 */
 /* { dg-skip-if "" { powerpc_vsx_ok } } */
 /* { dg-skip-if "" { powerpc*-*-aix* } } */
-/* { dg-options "-mcpu=power6" } */
+/* { dg-options "-mdejagnu-cpu=power6" } */
 
 /* This test should succeed on both 32- and 64-bit configurations.  */
 #include <altivec.h>

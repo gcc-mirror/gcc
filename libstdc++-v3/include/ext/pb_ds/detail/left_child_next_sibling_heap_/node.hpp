@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -41,6 +41,8 @@
 #ifndef PB_DS_LEFT_CHILD_NEXT_SIBLING_HEAP_NODE_HPP
 #define PB_DS_LEFT_CHILD_NEXT_SIBLING_HEAP_NODE_HPP
 
+#include <ext/pb_ds/detail/types_traits.hpp>
+
 namespace __gnu_pbds
 {
   namespace detail
@@ -57,7 +59,7 @@ namespace __gnu_pbds
       typedef typename _Alloc::size_type 	size_type;
       typedef _Metadata 			metadata_type;
 
-      typedef typename _Alloc::template rebind<this_type>::other::pointer node_pointer;
+      typedef typename rebind_traits<_Alloc, this_type>::pointer node_pointer;
 
       value_type 	m_value;
       metadata_type 	m_metadata;
@@ -76,7 +78,7 @@ namespace __gnu_pbds
       typedef _Value 				value_type;
       typedef typename _Alloc::size_type 	size_type;
 
-      typedef typename _Alloc::template rebind<this_type>::other::pointer node_pointer;
+      typedef typename rebind_traits<_Alloc, this_type>::pointer node_pointer;
 
       value_type 	m_value;
       node_pointer 	m_p_l_child;

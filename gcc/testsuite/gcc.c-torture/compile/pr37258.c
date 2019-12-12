@@ -1,4 +1,6 @@
 /* { dg-require-effective-target untyped_assembly } */
+/* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
+
 typedef signed char int8_t;
 typedef short int int16_t;
 typedef int int32_t;

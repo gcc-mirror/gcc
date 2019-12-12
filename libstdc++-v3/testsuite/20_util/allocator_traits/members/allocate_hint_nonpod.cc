@@ -1,6 +1,6 @@
 // { dg-do run { target c++11 } }
 
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,7 +45,7 @@ struct Alloc
   { return pointer(std::allocator<T>().allocate(n)); }
 
   void deallocate(pointer p, std::size_t n)
-  { std::allocator<T>().deallocate(p.value, n); }
+  { std::allocator<T>().deallocate(p.operator->(), n); }
 };
 
 template<typename T>

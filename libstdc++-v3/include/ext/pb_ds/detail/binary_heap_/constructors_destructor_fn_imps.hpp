@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,6 +37,8 @@
  * @file binary_heap_/constructors_destructor_fn_imps.hpp
  * Contains an implementation class for binary_heap_.
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::entry_allocator
@@ -137,3 +139,4 @@ PB_DS_CLASS_C_DEC::
     erase_at(m_a_entries, i, s_no_throw_copies_ind);
   s_entry_allocator.deallocate(m_a_entries, m_actual_size);
 }
+#endif

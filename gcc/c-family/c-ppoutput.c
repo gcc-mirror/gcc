@@ -1,5 +1,5 @@
 /* Preprocess only, using cpplib.
-   Copyright (C) 1995-2018 Free Software Foundation, Inc.
+   Copyright (C) 1995-2019 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
    This program is free software; you can redistribute it and/or modify it
@@ -59,24 +59,24 @@ static void account_for_newlines (const unsigned char *, size_t);
 static int dump_macro (cpp_reader *, cpp_hashnode *, void *);
 static void dump_queued_macros (cpp_reader *);
 
-static bool print_line_1 (source_location, const char*, FILE *);
-static bool print_line (source_location, const char *);
-static bool maybe_print_line_1 (source_location, FILE *);
-static bool maybe_print_line (source_location);
+static bool print_line_1 (location_t, const char*, FILE *);
+static bool print_line (location_t, const char *);
+static bool maybe_print_line_1 (location_t, FILE *);
+static bool maybe_print_line (location_t);
 static bool do_line_change (cpp_reader *, const cpp_token *,
-			    source_location, int);
+			    location_t, int);
 
 /* Callback routines for the parser.   Most of these are active only
    in specific modes.  */
 static void cb_line_change (cpp_reader *, const cpp_token *, int);
-static void cb_define (cpp_reader *, source_location, cpp_hashnode *);
-static void cb_undef (cpp_reader *, source_location, cpp_hashnode *);
-static void cb_used_define (cpp_reader *, source_location, cpp_hashnode *);
-static void cb_used_undef (cpp_reader *, source_location, cpp_hashnode *);
-static void cb_include (cpp_reader *, source_location, const unsigned char *,
+static void cb_define (cpp_reader *, location_t, cpp_hashnode *);
+static void cb_undef (cpp_reader *, location_t, cpp_hashnode *);
+static void cb_used_define (cpp_reader *, location_t, cpp_hashnode *);
+static void cb_used_undef (cpp_reader *, location_t, cpp_hashnode *);
+static void cb_include (cpp_reader *, location_t, const unsigned char *,
 			const char *, int, const cpp_token **);
-static void cb_ident (cpp_reader *, source_location, const cpp_string *);
-static void cb_def_pragma (cpp_reader *, source_location);
+static void cb_ident (cpp_reader *, location_t, const cpp_string *);
+static void cb_def_pragma (cpp_reader *, location_t);
 static void cb_read_pch (cpp_reader *pfile, const char *name,
 			 int fd, const char *orig_name);
 
@@ -151,6 +151,7 @@ init_pp_output (FILE *out_stream)
     }
 
   cb->has_attribute = c_common_has_attribute;
+  cb->has_builtin = c_common_has_builtin;
   cb->get_source_date_epoch = cb_get_source_date_epoch;
   cb->remap_filename = remap_macro_filename;
 
@@ -179,7 +180,7 @@ scan_translation_unit (cpp_reader *pfile)
   print.source = NULL;
   for (;;)
     {
-      source_location loc;
+      location_t loc;
       const cpp_token *token = cpp_get_token_with_location (pfile, &loc);
 
       if (token->type == CPP_PADDING)
@@ -336,7 +337,7 @@ scan_translation_unit_trad (cpp_reader *pfile)
    return FALSE.  */
 
 static bool
-maybe_print_line_1 (source_location src_loc, FILE *stream)
+maybe_print_line_1 (location_t src_loc, FILE *stream)
 {
   bool emitted_line_marker = false;
   int src_line = LOCATION_LINE (src_loc);
@@ -373,7 +374,7 @@ maybe_print_line_1 (source_location src_loc, FILE *stream)
    return FALSE.  */
 
 static bool
-maybe_print_line (source_location src_loc)
+maybe_print_line (location_t src_loc)
 {
   if (cpp_get_options (parse_in)->debug)
     linemap_dump_location (line_table, src_loc,
@@ -386,7 +387,7 @@ maybe_print_line (source_location src_loc)
    was effectively emitted, return TRUE otherwise return FALSE.  */
 
 static bool
-print_line_1 (source_location src_loc, const char *special_flags, FILE *stream)
+print_line_1 (location_t src_loc, const char *special_flags, FILE *stream)
 {
   bool emitted_line_marker = false;
 
@@ -435,7 +436,7 @@ print_line_1 (source_location src_loc, const char *special_flags, FILE *stream)
    line marker was effectively emitted, FALSE otherwise.  */
 
 static bool
-print_line (source_location src_loc, const char *special_flags)
+print_line (location_t src_loc, const char *special_flags)
 {
     if (cpp_get_options (parse_in)->debug)
       linemap_dump_location (line_table, src_loc,
@@ -447,7 +448,7 @@ print_line (source_location src_loc, const char *special_flags)
    Return TRUE if a line marker is emitted, FALSE otherwise.  */
 static bool
 do_line_change (cpp_reader *pfile, const cpp_token *token,
-		source_location src_loc, int parsing_args)
+		location_t src_loc, int parsing_args)
 {
   bool emitted_line_marker = false;
   if (define_queue || undef_queue)
@@ -487,7 +488,7 @@ cb_line_change (cpp_reader *pfile, const cpp_token *token,
 }
 
 static void
-cb_ident (cpp_reader *pfile ATTRIBUTE_UNUSED, source_location line,
+cb_ident (cpp_reader *pfile ATTRIBUTE_UNUSED, location_t line,
 	  const cpp_string *str)
 {
   maybe_print_line (line);
@@ -496,7 +497,7 @@ cb_ident (cpp_reader *pfile ATTRIBUTE_UNUSED, source_location line,
 }
 
 static void
-cb_define (cpp_reader *pfile, source_location line, cpp_hashnode *node)
+cb_define (cpp_reader *pfile, location_t line, cpp_hashnode *node)
 {
   const line_map_ordinary *map;
 
@@ -520,7 +521,7 @@ cb_define (cpp_reader *pfile, source_location line, cpp_hashnode *node)
 }
 
 static void
-cb_undef (cpp_reader *pfile ATTRIBUTE_UNUSED, source_location line,
+cb_undef (cpp_reader *pfile ATTRIBUTE_UNUSED, location_t line,
 	  cpp_hashnode *node)
 {
   maybe_print_line (line);
@@ -529,21 +530,22 @@ cb_undef (cpp_reader *pfile ATTRIBUTE_UNUSED, source_location line,
 }
 
 static void
-cb_used_define (cpp_reader *pfile, source_location line ATTRIBUTE_UNUSED,
+cb_used_define (cpp_reader *pfile, location_t line ATTRIBUTE_UNUSED,
 		cpp_hashnode *node)
 {
-  macro_queue *q;
-  if (node->flags & NODE_BUILTIN)
-    return;
-  q = XNEW (macro_queue);
-  q->macro = xstrdup ((const char *) cpp_macro_definition (pfile, node));
-  q->next = define_queue;
-  define_queue = q;
+  if (cpp_user_macro_p (node))
+    {
+      macro_queue *q;
+      q = XNEW (macro_queue);
+      q->macro = xstrdup ((const char *) cpp_macro_definition (pfile, node));
+      q->next = define_queue;
+      define_queue = q;
+    }
 }
 
 static void
 cb_used_undef (cpp_reader *pfile ATTRIBUTE_UNUSED,
-	       source_location line ATTRIBUTE_UNUSED,
+	       location_t line ATTRIBUTE_UNUSED,
 	       cpp_hashnode *node)
 {
   macro_queue *q;
@@ -594,7 +596,7 @@ dump_queued_macros (cpp_reader *pfile ATTRIBUTE_UNUSED)
 }
 
 static void
-cb_include (cpp_reader *pfile ATTRIBUTE_UNUSED, source_location line,
+cb_include (cpp_reader *pfile ATTRIBUTE_UNUSED, location_t line,
 	    const unsigned char *dir, const char *header, int angle_brackets,
 	    const cpp_token **comments)
 {
@@ -663,11 +665,9 @@ pp_file_change (const line_map_ordinary *map)
 	  /* Bring current file to correct line when entering a new file.  */
 	  if (map->reason == LC_ENTER)
 	    {
-	      const line_map_ordinary *from = INCLUDED_FROM (line_table, map);
-	      maybe_print_line (LAST_SOURCE_LINE_LOCATION (from));
+	      maybe_print_line (linemap_included_from (map));
+	      flags = " 1";
 	    }
-	  if (map->reason == LC_ENTER)
-	    flags = " 1";
 	  else if (map->reason == LC_LEAVE)
 	    flags = " 2";
 	  print_line (map->start_location, flags);
@@ -677,7 +677,7 @@ pp_file_change (const line_map_ordinary *map)
 
 /* Copy a #pragma directive to the preprocessed output.  */
 static void
-cb_def_pragma (cpp_reader *pfile, source_location line)
+cb_def_pragma (cpp_reader *pfile, location_t line)
 {
   maybe_print_line (line);
   fputs ("#pragma ", print.outf);
@@ -690,7 +690,7 @@ cb_def_pragma (cpp_reader *pfile, source_location line)
 static int
 dump_macro (cpp_reader *pfile, cpp_hashnode *node, void *v ATTRIBUTE_UNUSED)
 {
-  if (node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
+  if (cpp_user_macro_p (node))
     {
       fputs ("#define ", print.outf);
       fputs ((const char *) cpp_macro_definition (pfile, node),

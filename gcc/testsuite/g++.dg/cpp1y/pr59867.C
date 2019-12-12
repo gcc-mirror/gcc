@@ -1,5 +1,6 @@
 // PR c++/59867
 // { dg-do compile { target c++14 } }
+// { dg-options -w }
 
 using namespace std;
 

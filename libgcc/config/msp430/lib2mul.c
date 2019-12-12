@@ -1,5 +1,5 @@
 /* libgcc routines for MSP430
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -45,6 +45,9 @@ typedef unsigned int  uint08_type   __attribute__ ((mode (QI)));
 #include "msp430-mul.h"
 
 #elif defined MUL_16
+
+/* The 16-bit multiply library needs a software version of SI->DI widening
+   multiplication.  */
 
 signed long long
 __mspabi_mpysll (signed long a, signed long b)

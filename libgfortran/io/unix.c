@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "io.h"
 #include "unix.h"
+#include "async.h"
 #include <limits.h>
 
 #ifdef HAVE_UNISTD_H
@@ -149,13 +150,21 @@ fallback_access (const char *path, int mode)
 {
   int fd;
 
-  if ((mode & R_OK) && (fd = open (path, O_RDONLY)) < 0)
-    return -1;
-  close (fd);
+  if (mode & R_OK)
+    {
+      if ((fd = open (path, O_RDONLY)) < 0)
+	return -1;
+      else
+	close (fd);
+    }
 
-  if ((mode & W_OK) && (fd = open (path, O_WRONLY)) < 0)
-    return -1;
-  close (fd);
+  if (mode & W_OK)
+    {
+      if ((fd = open (path, O_WRONLY)) < 0)
+	return -1;
+      else
+	close (fd);
+    }
 
   if (mode == F_OK)
     {
@@ -184,7 +193,8 @@ fallback_access (const char *path, int mode)
 
 /* Unix and internal stream I/O module */
 
-static const int BUFFER_SIZE = 8192;
+static const int FORMATTED_BUFFER_SIZE_DEFAULT = 8192;
+static const int UNFORMATTED_BUFFER_SIZE_DEFAULT = 128*1024;
 
 typedef struct
 {
@@ -196,6 +206,7 @@ typedef struct
   gfc_offset file_length;	/* Length of the file. */
 
   char *buffer;                 /* Pointer to the buffer.  */
+  ssize_t buffer_size;           /* Length of the buffer.  */
   int fd;                       /* The POSIX file descriptor.  */
 
   int active;			/* Length of valid bytes in the buffer */
@@ -583,9 +594,9 @@ buf_read (unix_stream *s, void *buf, ssize_t nbyte)
           && raw_seek (s, new_logical, SEEK_SET) < 0)
         return -1;
       s->buffer_offset = s->physical_offset = new_logical;
-      if (to_read <= BUFFER_SIZE/2)
+      if (to_read <= s->buffer_size/2)
         {
-          did_read = raw_read (s, s->buffer, BUFFER_SIZE);
+          did_read = raw_read (s, s->buffer, s->buffer_size);
 	  if (likely (did_read >= 0))
 	    {
 	      s->physical_offset += did_read;
@@ -623,11 +634,11 @@ buf_write (unix_stream *s, const void *buf, ssize_t nbyte)
     s->buffer_offset = s->logical_offset;
 
   /* Does the data fit into the buffer?  As a special case, if the
-     buffer is empty and the request is bigger than BUFFER_SIZE/2,
+     buffer is empty and the request is bigger than s->buffer_size/2,
      write directly. This avoids the case where the buffer would have
      to be flushed at every write.  */
-  if (!(s->ndirty == 0 && nbyte > BUFFER_SIZE/2)
-      && s->logical_offset + nbyte <= s->buffer_offset + BUFFER_SIZE
+  if (!(s->ndirty == 0 && nbyte > s->buffer_size/2)
+      && s->logical_offset + nbyte <= s->buffer_offset + s->buffer_size
       && s->buffer_offset <= s->logical_offset
       && s->buffer_offset + s->ndirty >= s->logical_offset)
     {
@@ -642,7 +653,7 @@ buf_write (unix_stream *s, const void *buf, ssize_t nbyte)
          the request is bigger than the buffer size, write directly
          bypassing the buffer.  */
       buf_flush (s);
-      if (nbyte <= BUFFER_SIZE/2)
+      if (nbyte <= s->buffer_size/2)
         {
           memcpy (s->buffer, buf, nbyte);
           s->buffer_offset = s->logical_offset;
@@ -679,7 +690,7 @@ buf_write (unix_stream *s, const void *buf, ssize_t nbyte)
 static int
 buf_markeor (unix_stream *s)
 {
-  if (s->unbuffered || s->ndirty >= BUFFER_SIZE / 2)
+  if (s->unbuffered || s->ndirty >= s->buffer_size / 2)
     return buf_flush (s);
   return 0;
 }
@@ -756,11 +767,32 @@ static const struct stream_vtable buf_vtable = {
 };
 
 static int
-buf_init (unix_stream *s)
+buf_init (unix_stream *s, bool unformatted)
 {
   s->st.vptr = &buf_vtable;
 
-  s->buffer = xmalloc (BUFFER_SIZE);
+  /* Try to guess a good value for the buffer size.  For formatted
+     I/O, we use so many CPU cycles converting the data that there is
+     more sense in converving memory and especially cache.  For
+     unformatted, a bigger block can have a large impact in some
+     environments.  */
+
+  if (unformatted)
+    {
+      if (options.unformatted_buffer_size > 0)
+	s->buffer_size = options.unformatted_buffer_size;
+      else
+	s->buffer_size = UNFORMATTED_BUFFER_SIZE_DEFAULT;
+    }
+  else
+    {
+      if (options.formatted_buffer_size > 0)
+	s->buffer_size = options.formatted_buffer_size;
+      else
+	s->buffer_size = FORMATTED_BUFFER_SIZE_DEFAULT;
+    }
+
+  s->buffer = xmalloc (s->buffer_size);
   return 0;
 }
 
@@ -1111,13 +1143,13 @@ fd_to_stream (int fd, bool unformatted)
 	   (s->fd == STDIN_FILENO 
 	    || s->fd == STDOUT_FILENO 
 	    || s->fd == STDERR_FILENO)))
-    buf_init (s);
+    buf_init (s, unformatted);
   else
     {
       if (unformatted)
 	{
 	  s->unbuffered = true;
-	  buf_init (s);
+	  buf_init (s, unformatted);
 	}
       else
 	raw_init (s);
@@ -1613,7 +1645,7 @@ error_stream (void)
    filename. */
 
 int
-compare_file_filename (gfc_unit *u, const char *name, int len)
+compare_file_filename (gfc_unit *u, const char *name, gfc_charlen_type len)
 {
   struct stat st;
   int ret;
@@ -1742,7 +1774,7 @@ find_file (const char *file, gfc_charlen_type file_len)
   id = id_from_path (path);
 #endif
 
-  __gthread_mutex_lock (&unit_lock);
+  LOCK (&unit_lock);
 retry:
   u = find_file0 (unit_root, FIND_FILE0_ARGS);
   if (u != NULL)
@@ -1751,20 +1783,20 @@ retry:
       if (! __gthread_mutex_trylock (&u->lock))
 	{
 	  /* assert (u->closed == 0); */
-	  __gthread_mutex_unlock (&unit_lock);
+	  UNLOCK (&unit_lock);
 	  goto done;
 	}
 
       inc_waiting_locked (u);
     }
-  __gthread_mutex_unlock (&unit_lock);
+  UNLOCK (&unit_lock);
   if (u != NULL)
     {
-      __gthread_mutex_lock (&u->lock);
+      LOCK (&u->lock);
       if (u->closed)
 	{
-	  __gthread_mutex_lock (&unit_lock);
-	  __gthread_mutex_unlock (&u->lock);
+	  LOCK (&unit_lock);
+	  UNLOCK (&u->lock);
 	  if (predec_waiting_locked (u) == 0)
 	    free (u);
 	  goto retry;
@@ -1794,7 +1826,7 @@ flush_all_units_1 (gfc_unit *u, int min_unit)
 	    return u;
 	  if (u->s)
 	    sflush (u->s);
-	  __gthread_mutex_unlock (&u->lock);
+	  UNLOCK (&u->lock);
 	}
       u = u->right;
     }
@@ -1807,31 +1839,31 @@ flush_all_units (void)
   gfc_unit *u;
   int min_unit = 0;
 
-  __gthread_mutex_lock (&unit_lock);
+  LOCK (&unit_lock);
   do
     {
       u = flush_all_units_1 (unit_root, min_unit);
       if (u != NULL)
 	inc_waiting_locked (u);
-      __gthread_mutex_unlock (&unit_lock);
+      UNLOCK (&unit_lock);
       if (u == NULL)
 	return;
 
-      __gthread_mutex_lock (&u->lock);
+      LOCK (&u->lock);
 
       min_unit = u->unit_number + 1;
 
       if (u->closed == 0)
 	{
 	  sflush (u->s);
-	  __gthread_mutex_lock (&unit_lock);
-	  __gthread_mutex_unlock (&u->lock);
+	  LOCK (&unit_lock);
+	  UNLOCK (&u->lock);
 	  (void) predec_waiting_locked (u);
 	}
       else
 	{
-	  __gthread_mutex_lock (&unit_lock);
-	  __gthread_mutex_unlock (&u->lock);
+	  LOCK (&unit_lock);
+	  UNLOCK (&u->lock);
 	  if (predec_waiting_locked (u) == 0)
 	    free (u);
 	}
@@ -1909,7 +1941,7 @@ static const char yes[] = "YES", no[] = "NO", unknown[] = "UNKNOWN";
    string. */
 
 const char *
-inquire_sequential (const char *string, int len)
+inquire_sequential (const char *string, gfc_charlen_type len)
 {
   struct stat statbuf;
 
@@ -1938,7 +1970,7 @@ inquire_sequential (const char *string, int len)
    suitable for direct access.  Returns a C-style string. */
 
 const char *
-inquire_direct (const char *string, int len)
+inquire_direct (const char *string, gfc_charlen_type len)
 {
   struct stat statbuf;
 
@@ -1967,7 +1999,7 @@ inquire_direct (const char *string, int len)
    is suitable for formatted form.  Returns a C-style string. */
 
 const char *
-inquire_formatted (const char *string, int len)
+inquire_formatted (const char *string, gfc_charlen_type len)
 {
   struct stat statbuf;
 
@@ -1997,7 +2029,7 @@ inquire_formatted (const char *string, int len)
    is suitable for unformatted form.  Returns a C-style string. */
 
 const char *
-inquire_unformatted (const char *string, int len)
+inquire_unformatted (const char *string, gfc_charlen_type len)
 {
   return inquire_formatted (string, len);
 }
@@ -2007,7 +2039,7 @@ inquire_unformatted (const char *string, int len)
    suitable for access. */
 
 static const char *
-inquire_access (const char *string, int len, int mode)
+inquire_access (const char *string, gfc_charlen_type len, int mode)
 {
   if (string == NULL)
     return no;
@@ -2025,7 +2057,7 @@ inquire_access (const char *string, int len, int mode)
    suitable for READ access. */
 
 const char *
-inquire_read (const char *string, int len)
+inquire_read (const char *string, gfc_charlen_type len)
 {
   return inquire_access (string, len, R_OK);
 }
@@ -2035,7 +2067,7 @@ inquire_read (const char *string, int len)
    suitable for READ access. */
 
 const char *
-inquire_write (const char *string, int len)
+inquire_write (const char *string, gfc_charlen_type len)
 {
   return inquire_access (string, len, W_OK);
 }
@@ -2045,7 +2077,7 @@ inquire_write (const char *string, int len)
    suitable for read and write access. */
 
 const char *
-inquire_readwrite (const char *string, int len)
+inquire_readwrite (const char *string, gfc_charlen_type len)
 {
   return inquire_access (string, len, R_OK | W_OK);
 }

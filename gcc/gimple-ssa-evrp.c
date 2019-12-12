@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -70,6 +70,7 @@ class evrp_dom_walker : public dom_walker
 public:
   evrp_dom_walker ()
     : dom_walker (CDI_DOMINATORS),
+      evrp_range_analyzer (true),
       evrp_folder (evrp_range_analyzer.get_vr_values ())
     {
       need_eh_cleanup = BITMAP_ALLOC (NULL);
@@ -108,10 +109,10 @@ evrp_dom_walker::before_dom_children (basic_block bb)
       if (virtual_operand_p (lhs))
 	continue;
 
-      value_range *vr = evrp_range_analyzer.get_value_range (lhs);
+      const value_range_equiv *vr = evrp_range_analyzer.get_value_range (lhs);
       /* Mark PHIs whose lhs we fully propagate for removal.  */
-      tree val = value_range_constant_singleton (vr);
-      if (val && may_propagate_copy (lhs, val))
+      tree val;
+      if (vr->singleton_p (&val) && may_propagate_copy (lhs, val))
 	{
 	  stmts_to_remove.safe_push (phi);
 	  continue;
@@ -157,14 +158,14 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	  output = get_output_for_vrp (stmt);
 	  if (output)
 	    {
-	      tree val;
-	      value_range *vr = evrp_range_analyzer.get_value_range (output);
+	      const value_range_equiv *vr
+		= evrp_range_analyzer.get_value_range (output);
 
 	      /* Mark stmts whose output we fully propagate for removal.  */
-	      if ((vr->type == VR_RANGE || vr->type == VR_ANTI_RANGE)
-		  && (val = value_range_constant_singleton (vr))
+	      tree val;
+	      if (vr->singleton_p (&val)
 		  && may_propagate_copy (output, val)
-		  && !stmt_could_throw_p (stmt)
+		  && !stmt_could_throw_p (cfun, stmt)
 		  && !gimple_has_side_effects (stmt))
 		{
 		  stmts_to_remove.safe_push (stmt);
@@ -175,6 +176,8 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 
       /* Try folding stmts with the VR discovered.  */
       bool did_replace = evrp_folder.replace_uses_in (stmt);
+      gimple_stmt_iterator prev_gsi = gsi;
+      gsi_prev (&prev_gsi);
       if (fold_stmt (&gsi, follow_single_use_edges)
 	  || did_replace)
 	{
@@ -191,6 +194,21 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 
       if (did_replace)
 	{
+	  /* If we wound up generating new stmts during folding
+	     drop all their defs to VARYING.  We can't easily
+	     process them because we've already instantiated
+	     ranges on uses on STMT that only hold after it.  */
+	  if (gsi_end_p (prev_gsi))
+	    prev_gsi = gsi_start_bb (bb);
+	  else
+	    gsi_next (&prev_gsi);
+	  while (gsi_stmt (prev_gsi) != gsi_stmt (gsi))
+	    {
+	      evrp_range_analyzer.get_vr_values ()
+		->set_defs_to_varying (gsi_stmt (prev_gsi));
+	      gsi_next (&prev_gsi);
+	    }
+
 	  /* If we cleaned up EH information from the statement,
 	     remove EH edges.  */
 	  if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))
@@ -226,9 +244,10 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	  if (TREE_CODE (arg) != SSA_NAME
 	      || virtual_operand_p (arg))
 	    continue;
-	  value_range *vr = evrp_range_analyzer.get_value_range (arg);
-	  tree val = value_range_constant_singleton (vr);
-	  if (val && may_propagate_copy (arg, val))
+	  const value_range_equiv
+	    *vr = evrp_range_analyzer.get_value_range (arg);
+	  tree val;
+	  if (vr->singleton_p (&val) && may_propagate_copy (arg, val))
 	    propagate_value (use_p, val);
 	}
     }
@@ -287,6 +306,8 @@ evrp_dom_walker::cleanup (void)
       gimple *stmt = stmts_to_fixup.pop ();
       fixup_noreturn_call (stmt);
     }
+
+  evrp_folder.vr_values->cleanup_edges_and_switches ();
 }
 
 /* Main entry point for the early vrp pass which is a simplified non-iterative

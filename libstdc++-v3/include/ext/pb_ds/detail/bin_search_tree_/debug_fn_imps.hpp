@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,6 +37,8 @@
  * @file bin_search_tree_/debug_fn_imps.hpp
  * Contains an implementation class for bin_search_tree_.
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 #ifdef _GLIBCXX_DEBUG
 
@@ -274,4 +276,5 @@ PB_DS_CLASS_C_DEC::
 assert_size(const char* __file, int __line) const
 { PB_DS_DEBUG_VERIFY(recursive_count(m_p_head->m_p_parent) == m_size); }
 
+#endif
 #endif

@@ -3,7 +3,7 @@
 
 // 2011-02-23  Benjamin Kosnik  <bkoz@redhat.com>
 //
-// Copyright (C) 2011-2018 Free Software Foundation, Inc.
+// Copyright (C) 2011-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,6 +50,9 @@ int main()
   gen_type_info<long long>();
   gen_type_info<unsigned long long>();
   gen_type_info<wchar_t>();
+#ifdef _GLIBCXX_USE_CHAR8_T
+  gen_type_info<char8_t>();
+#endif
   gen_type_info<char16_t>();
   gen_type_info<char32_t>();
 

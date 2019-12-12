@@ -8,5 +8,5 @@ int foo (void)
   return i;
 }
 
-/* { dg-warning "unrecognized command line option .-Wno-foobar." "" { target *-*-* } 0 } */
+/* { dg-warning "unrecognized command-line option .-Wno-foobar." "" { target *-*-* } 0 } */
 

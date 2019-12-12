@@ -1,5 +1,5 @@
 /* A type-safe hash set.
-   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2014-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,23 +21,34 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef hash_set_h
 #define hash_set_h
 
-template<typename KeyId, typename Traits = default_hash_traits<KeyId> >
+/* Class hash_set is a hash-value based container for objects of
+   KeyId type.
+   KeyId may be a non-trivial (non-POD) type provided a suitabe Traits
+   class.  Default Traits specializations are provided for basic types
+   such as integers, pointers, and std::pair.  Inserted elements are
+   value-initialized either to zero for POD types or by invoking their
+   default ctor.  Removed elements are destroyed by invoking their dtor.
+   On hash_set destruction all elements are removed.  Objects of
+   hash_set type are copy-constructible but not assignable.  */
+
+template<typename KeyId, bool Lazy = false,
+	 typename Traits = default_hash_traits<KeyId> >
 class hash_set
 {
 public:
   typedef typename Traits::value_type Key;
   explicit hash_set (size_t n = 13, bool ggc = false CXX_MEM_STAT_INFO)
-    : m_table (n, ggc, GATHER_STATISTICS, HASH_SET_ORIGIN PASS_MEM_STAT) {}
+    : m_table (n, ggc, true, GATHER_STATISTICS, HASH_SET_ORIGIN PASS_MEM_STAT) {}
 
   /* Create a hash_set in gc memory with space for at least n elements.  */
 
   static hash_set *
-    create_ggc (size_t n)
-      {
-	hash_set *set = ggc_alloc<hash_set> ();
-	new (set) hash_set (n, true);
-	return set;
-      }
+  create_ggc (size_t n)
+    {
+      hash_set *set = ggc_alloc<hash_set> ();
+      new (set) hash_set (n, true);
+      return set;
+    }
 
   /* If key k isn't already in the map add it to the map, and
      return false.  Otherwise return true.  */
@@ -47,7 +58,7 @@ public:
       Key *e = m_table.find_slot_with_hash (k, Traits::hash (k), INSERT);
       bool existed = !Traits::is_empty (*e);
       if (!existed)
-	*e = k;
+	new (e) Key (k);
 
       return existed;
     }
@@ -56,6 +67,9 @@ public:
 
   bool contains (const Key &k)
     {
+      if (Lazy)
+	return (m_table.find_slot_with_hash (k, Traits::hash (k), NO_INSERT)
+		!= NULL);
       Key &e = m_table.find_with_hash (k, Traits::hash (k));
       return !Traits::is_empty (e);
     }
@@ -71,7 +85,7 @@ public:
   template<typename Arg, bool (*f)(const typename Traits::value_type &, Arg)>
   void traverse (Arg a) const
     {
-      for (typename hash_table<Traits>::iterator iter = m_table.begin ();
+      for (typename hash_table<Traits, Lazy>::iterator iter = m_table.begin ();
 	   iter != m_table.end (); ++iter)
 	f (*iter, a);
     }
@@ -84,10 +98,14 @@ public:
 
   void empty () { m_table.empty (); }
 
+  /* Return true when there are no elements in this hash set.  */
+  bool is_empty () const { return m_table.is_empty (); }
+
   class iterator
   {
   public:
-    explicit iterator (const typename hash_table<Traits>::iterator &iter) :
+    explicit iterator (const typename hash_table<Traits,
+						 Lazy>::iterator &iter) :
       m_iter (iter) {}
 
     iterator &operator++ ()
@@ -109,7 +127,7 @@ public:
       }
 
   private:
-    typename hash_table<Traits>::iterator m_iter;
+    typename hash_table<Traits, Lazy>::iterator m_iter;
   };
 
   /* Standard iterator retrieval methods.  */
@@ -120,11 +138,14 @@ public:
 
 private:
 
-  template<typename T, typename U> friend void gt_ggc_mx (hash_set<T, U> *);
-  template<typename T, typename U> friend void gt_pch_nx (hash_set<T, U> *);
-      template<typename T, typename U> friend void gt_pch_nx (hash_set<T, U> *, gt_pointer_operator, void *);
+  template<typename T, typename U>
+  friend void gt_ggc_mx (hash_set<T, false, U> *);
+  template<typename T, typename U>
+  friend void gt_pch_nx (hash_set<T, false, U> *);
+  template<typename T, typename U>
+  friend void gt_pch_nx (hash_set<T, false, U> *, gt_pointer_operator, void *);
 
-  hash_table<Traits> m_table;
+  hash_table<Traits, Lazy> m_table;
 };
 
 /* Generic hash_set<TYPE> debug helper.
@@ -169,21 +190,21 @@ debug_helper (hash_set<T> &ref)
 
 template<typename K, typename H>
 static inline void
-gt_ggc_mx (hash_set<K, H> *h)
+gt_ggc_mx (hash_set<K, false, H> *h)
 {
   gt_ggc_mx (&h->m_table);
 }
 
 template<typename K, typename H>
 static inline void
-gt_pch_nx (hash_set<K, H> *h)
+gt_pch_nx (hash_set<K, false, H> *h)
 {
   gt_pch_nx (&h->m_table);
 }
 
 template<typename K, typename H>
 static inline void
-gt_pch_nx (hash_set<K, H> *h, gt_pointer_operator op, void *cookie)
+gt_pch_nx (hash_set<K, false, H> *h, gt_pointer_operator op, void *cookie)
 {
   op (&h->m_table.m_entries, cookie);
 }

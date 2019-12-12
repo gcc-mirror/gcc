@@ -1,6 +1,6 @@
 // Specific definitions for generic platforms  -*- C++ -*-
 
-// Copyright (C) 2000-2018 Free Software Foundation, Inc.
+// Copyright (C) 2000-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -87,5 +87,7 @@
 
 // See libstdc++/59807
 #define _GTHREAD_USE_MUTEX_INIT_FUNC 1
+
+#define _GLIBCXX_USE_CRT_RAND_S 1
 
 #endif

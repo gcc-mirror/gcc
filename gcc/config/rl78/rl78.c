@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Renesas RL78 processors.
-   Copyright (C) 2011-2018 Free Software Foundation, Inc.
+   Copyright (C) 2011-2019 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -366,12 +366,13 @@ rl78_option_override (void)
       && strcmp (lang_hooks.name, "GNU C")
       && strcmp (lang_hooks.name, "GNU C11")
       && strcmp (lang_hooks.name, "GNU C17")
+      && strcmp (lang_hooks.name, "GNU C2X")
       && strcmp (lang_hooks.name, "GNU C89")
       && strcmp (lang_hooks.name, "GNU C99")
       /* Compiling with -flto results in a language of GNU GIMPLE being used... */
       && strcmp (lang_hooks.name, "GNU GIMPLE"))
     /* Address spaces are currently only supported by C.  */
-    error ("-mes0 can only be used with C");
+    error ("%<-mes0%> can only be used with C");
 
   if (TARGET_SAVE_MDUC_REGISTERS && !(TARGET_G13 || RL78_MUL_G13))
     warning (0, "mduc registers only saved for G13 target");
@@ -389,8 +390,10 @@ rl78_option_override (void)
 	{
 	case MUL_UNINIT: rl78_mul_type = MUL_NONE; break;
 	case MUL_NONE:   break;
-	case MUL_G13:  	 error ("-mmul=g13 cannot be used with -mcpu=g10"); break;
-	case MUL_G14:  	 error ("-mmul=g14 cannot be used with -mcpu=g10"); break;
+	case MUL_G13:  	 error ("%<-mmul=g13%> cannot be used with "
+				"%<-mcpu=g10%>"); break;
+	case MUL_G14:  	 error ("%<-mmul=g14%> cannot be used with "
+				"%<-mcpu=g10%>"); break;
 	}
       break;
 
@@ -401,7 +404,8 @@ rl78_option_override (void)
 	case MUL_NONE:   break;
 	case MUL_G13:  	break;
 	  /* The S2 core does not have mul/div instructions.  */
-	case MUL_G14: 	error ("-mmul=g14 cannot be used with -mcpu=g13"); break;
+	case MUL_G14: 	error ("%<-mmul=g14%> cannot be used with "
+			       "%<-mcpu=g13%>"); break;
 	}
       break;
 
@@ -413,7 +417,8 @@ rl78_option_override (void)
 	case MUL_G14:  	break;
 	/* The G14 core does not have the hardware multiply peripheral used by the
 	   G13 core, hence you cannot use G13 multipliy routines on G14 hardware.  */
-	case MUL_G13: 	error ("-mmul=g13 cannot be used with -mcpu=g14"); break;
+	case MUL_G13: 	error ("%<-mmul=g13%> cannot be used with "
+			       "%<-mcpu=g14%>"); break;
 	}
       break;
     }
@@ -718,7 +723,7 @@ need_to_save (unsigned int regno)
 	 any call_used registers, so we have to preserve them.
          We do not have to worry about the frame pointer register
 	 though, as that is handled below.  */
-      if (!crtl->is_leaf && call_used_regs[regno] && regno < 22)
+      if (!crtl->is_leaf && call_used_or_fixed_reg_p (regno) && regno < 22)
 	return true;
 
       /* Otherwise we only have to save a register, call_used
@@ -734,7 +739,7 @@ need_to_save (unsigned int regno)
   if (crtl->calls_eh_return)
     return true;
   if (df_regs_ever_live_p (regno)
-      && !call_used_regs[regno])
+      && !call_used_or_fixed_reg_p (regno))
     return true;
   return false;
 }
@@ -859,7 +864,7 @@ rl78_handle_saddr_attribute (tree * node,
 
   if (TREE_CODE (* node) == FUNCTION_DECL)
     {
-      warning (OPT_Wattributes, "%qE attribute doesn't apply to functions",
+      warning (OPT_Wattributes, "%qE attribute doesn%'t apply to functions",
 	       name);
       * no_add_attrs = true;
     }
@@ -1732,21 +1737,11 @@ rl78_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
   return mode;
 }
 
-/* Return an RTL expression describing the register holding a function
-   parameter of mode MODE and type TYPE or NULL_RTX if the parameter should
-   be passed on the stack.  CUM describes the previous parameters to the
-   function and NAMED is false if the parameter is part of a variable
-   parameter list, or the last named parameter before the start of a
-   variable parameter list.  */
-
 #undef  TARGET_FUNCTION_ARG
 #define TARGET_FUNCTION_ARG     	rl78_function_arg
 
 static rtx
-rl78_function_arg (cumulative_args_t cum_v ATTRIBUTE_UNUSED,
-		   machine_mode mode ATTRIBUTE_UNUSED,
-		   const_tree type ATTRIBUTE_UNUSED,
-		   bool named ATTRIBUTE_UNUSED)
+rl78_function_arg (cumulative_args_t, const function_arg_info &)
 {
   return NULL_RTX;
 }
@@ -1755,14 +1750,13 @@ rl78_function_arg (cumulative_args_t cum_v ATTRIBUTE_UNUSED,
 #define TARGET_FUNCTION_ARG_ADVANCE     rl78_function_arg_advance
 
 static void
-rl78_function_arg_advance (cumulative_args_t cum_v, machine_mode mode, const_tree type,
-			   bool named ATTRIBUTE_UNUSED)
+rl78_function_arg_advance (cumulative_args_t cum_v,
+			   const function_arg_info &arg)
 {
   int rounded_size;
   CUMULATIVE_ARGS * cum = get_cumulative_args (cum_v);
 
-  rounded_size = ((mode == BLKmode)
-		  ? int_size_in_bytes (type) : GET_MODE_SIZE (mode));
+  rounded_size = arg.promoted_size_in_bytes ();
   if (rounded_size & 1)
     rounded_size ++;
   (*cum) += rounded_size;
@@ -2735,38 +2729,44 @@ insn_ok_now (rtx_insn * insn)
 	    if (GET_CODE (OP (i)) == MEM
 		&& GET_MODE (XEXP (OP (i), 0)) == SImode
 		&& GET_CODE (XEXP (OP (i), 0)) != UNSPEC)
-	      return false;
+	      goto not_ok;
 
 	  return true;
 	}
     }
-  else
-    {
-      /* We need to re-recog the insn with virtual registers to get
-	 the operands.  */
-      cfun->machine->virt_insns_ok = 1;
-      if (recog (pattern, insn, 0) > -1)
-	{
-	  extract_insn (insn);
-	  if (constrain_operands (0, get_preferred_alternatives (insn)))
-	    {
-	      cfun->machine->virt_insns_ok = 0;
-	      return false;
-	    }
-	}
+
+  /* INSN is not OK as-is.  It may not be recognized in real mode or
+     it might not have satisfied its constraints in real mode.  Either
+     way it will require fixups.
+
+     It is vital we always re-recognize at this point as some insns
+     have fewer operands in real mode than virtual mode.  If we do
+     not re-recognize, then the recog_data will refer to real mode
+     operands and we may read invalid data.  Usually this isn't a
+     problem, but once in a while the data we read is bogus enough
+     to cause a segfault or other undesirable behavior.  */
+ not_ok:
+
+  /* We need to re-recog the insn with virtual registers to get
+     the operands.  */
+    INSN_CODE (insn) = -1;
+    cfun->machine->virt_insns_ok = 1;
+    if (recog (pattern, insn, 0) > -1)
+      {
+	extract_insn (insn);
+	/* In theory this should always be true.  */
+	if (constrain_operands (0, get_preferred_alternatives (insn)))
+	  {
+	    cfun->machine->virt_insns_ok = 0;
+	    return false;
+	  }
+      }
 
 #if DEBUG_ALLOC
-      fprintf (stderr, "\033[41;30m Unrecognized *virtual* insn \033[0m\n");
-      debug_rtx (insn);
-#endif
-      gcc_unreachable ();
-    }
-
-#if DEBUG_ALLOC
-  fprintf (stderr, "\033[31m");
+  fprintf (stderr, "\033[41;30m Unrecognized *virtual* insn \033[0m\n");
   debug_rtx (insn);
-  fprintf (stderr, "\033[0m");
 #endif
+  gcc_unreachable ();
   return false;
 }
 

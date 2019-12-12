@@ -1,4 +1,4 @@
-;; Copyright (C) 2013-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2013-2019 Free Software Foundation, Inc.
 ;;
 ;; micromips.md   Machine Description for the microMIPS instruction set
 ;; This file is part of GCC.
@@ -133,5 +133,5 @@
     return "movep\t%2,%0,%z3,%z1";
 }
   [(set_attr "type" "move")
-   (set_attr "mode" "<MODE>")
+   (set_attr "mode" "<MOVEP1:MODE>")
    (set_attr "can_delay" "no")])

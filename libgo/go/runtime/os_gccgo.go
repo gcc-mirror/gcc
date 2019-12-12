@@ -9,7 +9,7 @@ import (
 )
 
 // For C code to call:
-//go:linkname minit runtime.minit
+//go:linkname minit
 
 func goenvs() {
 	goenvs_unix()
@@ -27,7 +27,8 @@ func mpreinit(mp *m) {
 func minit() {
 	minitSignals()
 
-	// FIXME: We should set _g_.m.procid here.
+	// FIXME: only works on linux for now.
+	getg().m.procid = uint64(gettid())
 }
 
 // Called from dropm to undo the effect of an minit.

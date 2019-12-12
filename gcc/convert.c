@@ -1,5 +1,5 @@
 /* Utility routines for data type conversion for GCC.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
+#include "selftest.h"
 
 #define maybe_fold_build1_loc(FOLD_P, LOC, CODE, TYPE, EXPR) \
   ((FOLD_P) ? fold_build1_loc (LOC, CODE, TYPE, EXPR)	     \
@@ -98,6 +99,25 @@ convert_to_pointer_1 (tree type, tree expr, bool fold_p)
     }
 }
 
+/* Subroutine of the various convert_to_*_maybe_fold routines.
+
+   If a location wrapper has been folded to a constant (presumably of
+   a different type), re-wrap the new constant with a location wrapper.  */
+
+tree
+preserve_any_location_wrapper (tree result, tree orig_expr)
+{
+  if (CONSTANT_CLASS_P (result) && location_wrapper_p (orig_expr))
+    {
+      if (result == TREE_OPERAND (orig_expr, 0))
+	return orig_expr;
+      else
+	return maybe_wrap_with_location (result, EXPR_LOCATION (orig_expr));
+    }
+
+  return result;
+}
+
 /* A wrapper around convert_to_pointer_1 that always folds the
    expression.  */
 
@@ -108,12 +128,15 @@ convert_to_pointer (tree type, tree expr)
 }
 
 /* A wrapper around convert_to_pointer_1 that only folds the
-   expression if DOFOLD, or if it is CONSTANT_CLASS_P.  */
+   expression if DOFOLD, or if it is CONSTANT_CLASS_OR_WRAPPER_P.  */
 
 tree
 convert_to_pointer_maybe_fold (tree type, tree expr, bool dofold)
 {
-  return convert_to_pointer_1 (type, expr, dofold || CONSTANT_CLASS_P (expr));
+  tree result
+    = convert_to_pointer_1 (type, expr,
+			    dofold || CONSTANT_CLASS_OR_WRAPPER_P (expr));
+  return preserve_any_location_wrapper (result, expr);
 }
 
 /* Convert EXPR to some floating-point type TYPE.
@@ -193,12 +216,15 @@ convert_to_real_1 (tree type, tree expr, bool fold_p)
 	  CASE_MATHFN (FABS)
 	  CASE_MATHFN (LOGB)
 #undef CASE_MATHFN
+	    if (call_expr_nargs (expr) != 1
+		|| !SCALAR_FLOAT_TYPE_P (TREE_TYPE (CALL_EXPR_ARG (expr, 0))))
+	      break;
 	    {
 	      tree arg0 = strip_float_extensions (CALL_EXPR_ARG (expr, 0));
 	      tree newtype = type;
 
-	      /* We have (outertype)sqrt((innertype)x).  Choose the wider mode from
-		 the both as the safe type for operation.  */
+	      /* We have (outertype)sqrt((innertype)x).  Choose the wider mode
+		 from the both as the safe type for operation.  */
 	      if (TYPE_PRECISION (TREE_TYPE (arg0)) > TYPE_PRECISION (type))
 		newtype = TREE_TYPE (arg0);
 
@@ -209,7 +235,7 @@ convert_to_real_1 (tree type, tree expr, bool fold_p)
 		     (T1) sqrtT4 ((T4) exprT3)
 
 		  , where T1 is TYPE, T2 is ITYPE, T3 is TREE_TYPE (ARG0),
-		 and T4 is NEWTYPE.  All those types are of floating point types.
+		 and T4 is NEWTYPE.  All those types are of floating-point types.
 		 T4 (NEWTYPE) should be narrower than T2 (ITYPE). This conversion
 		 is safe only if P1 >= P2*2+2, where P1 and P2 are precisions of
 		 T2 and T4.  See the following URL for a reference:
@@ -272,92 +298,6 @@ convert_to_real_1 (tree type, tree expr, bool fold_p)
 	      return build1 (TREE_CODE (expr), type, arg);
 	    }
 	  break;
-	/* Convert (outertype)((innertype0)a+(innertype1)b)
-	   into ((newtype)a+(newtype)b) where newtype
-	   is the widest mode from all of these.  */
-	case PLUS_EXPR:
-	case MINUS_EXPR:
-	case MULT_EXPR:
-	case RDIV_EXPR:
-	   {
-	     tree arg0 = strip_float_extensions (TREE_OPERAND (expr, 0));
-	     tree arg1 = strip_float_extensions (TREE_OPERAND (expr, 1));
-
-	     if (FLOAT_TYPE_P (TREE_TYPE (arg0))
-		 && FLOAT_TYPE_P (TREE_TYPE (arg1))
-		 && DECIMAL_FLOAT_TYPE_P (itype) == DECIMAL_FLOAT_TYPE_P (type))
-	       {
-		  tree newtype = type;
-
-		  if (TYPE_MODE (TREE_TYPE (arg0)) == SDmode
-		      || TYPE_MODE (TREE_TYPE (arg1)) == SDmode
-		      || TYPE_MODE (type) == SDmode)
-		    newtype = dfloat32_type_node;
-		  if (TYPE_MODE (TREE_TYPE (arg0)) == DDmode
-		      || TYPE_MODE (TREE_TYPE (arg1)) == DDmode
-		      || TYPE_MODE (type) == DDmode)
-		    newtype = dfloat64_type_node;
-		  if (TYPE_MODE (TREE_TYPE (arg0)) == TDmode
-		      || TYPE_MODE (TREE_TYPE (arg1)) == TDmode
-		      || TYPE_MODE (type) == TDmode)
-                    newtype = dfloat128_type_node;
-		  if (newtype == dfloat32_type_node
-		      || newtype == dfloat64_type_node
-		      || newtype == dfloat128_type_node)
-		    {
-		      expr = build2 (TREE_CODE (expr), newtype,
-				     convert_to_real_1 (newtype, arg0,
-							fold_p),
-				     convert_to_real_1 (newtype, arg1,
-							fold_p));
-		      if (newtype == type)
-			return expr;
-		      break;
-		    }
-
-		  if (TYPE_PRECISION (TREE_TYPE (arg0)) > TYPE_PRECISION (newtype))
-		    newtype = TREE_TYPE (arg0);
-		  if (TYPE_PRECISION (TREE_TYPE (arg1)) > TYPE_PRECISION (newtype))
-		    newtype = TREE_TYPE (arg1);
-		  /* Sometimes this transformation is safe (cannot
-		     change results through affecting double rounding
-		     cases) and sometimes it is not.  If NEWTYPE is
-		     wider than TYPE, e.g. (float)((long double)double
-		     + (long double)double) converted to
-		     (float)(double + double), the transformation is
-		     unsafe regardless of the details of the types
-		     involved; double rounding can arise if the result
-		     of NEWTYPE arithmetic is a NEWTYPE value half way
-		     between two representable TYPE values but the
-		     exact value is sufficiently different (in the
-		     right direction) for this difference to be
-		     visible in ITYPE arithmetic.  If NEWTYPE is the
-		     same as TYPE, however, the transformation may be
-		     safe depending on the types involved: it is safe
-		     if the ITYPE has strictly more than twice as many
-		     mantissa bits as TYPE, can represent infinities
-		     and NaNs if the TYPE can, and has sufficient
-		     exponent range for the product or ratio of two
-		     values representable in the TYPE to be within the
-		     range of normal values of ITYPE.  */
-		  if (TYPE_PRECISION (newtype) < TYPE_PRECISION (itype)
-		      && (flag_unsafe_math_optimizations
-			  || (TYPE_PRECISION (newtype) == TYPE_PRECISION (type)
-			      && real_can_shorten_arithmetic (TYPE_MODE (itype),
-							      TYPE_MODE (type))
-			      && !excess_precision_type (newtype))))
-		    {
-		      expr = build2 (TREE_CODE (expr), newtype,
-				     convert_to_real_1 (newtype, arg0,
-							fold_p),
-				     convert_to_real_1 (newtype, arg1,
-							fold_p));
-		      if (newtype == type)
-			return expr;
-		    }
-	       }
-	   }
-	  break;
 	default:
 	  break;
       }
@@ -389,11 +329,11 @@ convert_to_real_1 (tree type, tree expr, bool fold_p)
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      error ("pointer value used where a floating point value was expected");
+      error ("pointer value used where a floating-point was expected");
       return convert_to_real_1 (type, integer_zero_node, fold_p);
 
     default:
-      error ("aggregate value used where a float was expected");
+      error ("aggregate value used where a floating-point was expected");
       return convert_to_real_1 (type, integer_zero_node, fold_p);
     }
 }
@@ -408,12 +348,15 @@ convert_to_real (tree type, tree expr)
 }
 
 /* A wrapper around convert_to_real_1 that only folds the
-   expression if DOFOLD, or if it is CONSTANT_CLASS_P.  */
+   expression if DOFOLD, or if it is CONSTANT_CLASS_OR_WRAPPER_P.  */
 
 tree
 convert_to_real_maybe_fold (tree type, tree expr, bool dofold)
 {
-  return convert_to_real_1 (type, expr, dofold || CONSTANT_CLASS_P (expr));
+  tree result
+    = convert_to_real_1 (type, expr,
+			 dofold || CONSTANT_CLASS_OR_WRAPPER_P (expr));
+  return preserve_any_location_wrapper (result, expr);
 }
 
 /* Try to narrow EX_FORM ARG0 ARG1 in narrowed arg types producing a
@@ -592,7 +535,8 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	CASE_FLT_FN (BUILT_IN_ROUND):
 	CASE_FLT_FN_FLOATN_NX (BUILT_IN_ROUND):
 	  /* Only convert in ISO C99 mode and with -fno-math-errno.  */
-	  if (!targetm.libc_has_function (function_c99_misc) || flag_errno_math)
+	  if (!targetm.libc_has_function (function_c99_misc)
+	      || flag_errno_math)
 	    break;
 	  if (outprec < TYPE_PRECISION (integer_type_node)
 	      || (outprec == TYPE_PRECISION (integer_type_node)
@@ -615,7 +559,8 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	CASE_FLT_FN (BUILT_IN_RINT):
 	CASE_FLT_FN_FLOATN_NX (BUILT_IN_RINT):
 	  /* Only convert in ISO C99 mode and with -fno-math-errno.  */
-	  if (!targetm.libc_has_function (function_c99_misc) || flag_errno_math)
+	  if (!targetm.libc_has_function (function_c99_misc)
+	      || flag_errno_math)
 	    break;
 	  if (outprec < TYPE_PRECISION (integer_type_node)
 	      || (outprec == TYPE_PRECISION (integer_type_node)
@@ -631,14 +576,20 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 
 	CASE_FLT_FN (BUILT_IN_TRUNC):
 	CASE_FLT_FN_FLOATN_NX (BUILT_IN_TRUNC):
-	  return convert_to_integer_1 (type, CALL_EXPR_ARG (s_expr, 0), dofold);
+	  if (call_expr_nargs (s_expr) != 1
+	      || !SCALAR_FLOAT_TYPE_P (TREE_TYPE (CALL_EXPR_ARG (s_expr, 0))))
+	    break;
+	  return convert_to_integer_1 (type, CALL_EXPR_ARG (s_expr, 0),
+				       dofold);
 
 	default:
 	  break;
 	}
 
-      if (fn)
-        {
+      if (fn
+	  && call_expr_nargs (s_expr) == 1
+	  && SCALAR_FLOAT_TYPE_P (TREE_TYPE (CALL_EXPR_ARG (s_expr, 0))))
+	{
 	  tree newexpr = build_call_expr (fn, 1, CALL_EXPR_ARG (s_expr, 0));
 	  return convert_to_integer_1 (type, newexpr, dofold);
 	}
@@ -668,7 +619,9 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	  break;
 	}
 
-      if (fn)
+      if (fn
+	  && call_expr_nargs (s_expr) == 1
+	  && SCALAR_FLOAT_TYPE_P (TREE_TYPE (CALL_EXPR_ARG (s_expr, 0))))
         {
 	  tree newexpr = build_call_expr (fn, 1, CALL_EXPR_ARG (s_expr, 0));
 	  return convert_to_integer_1 (type, newexpr, dofold);
@@ -679,7 +632,8 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
     {
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      if (integer_zerop (expr) && !TREE_OVERFLOW (expr))
+      if (integer_zerop (expr)
+	  && !TREE_OVERFLOW (tree_strip_any_location_wrapper (expr)))
 	return build_int_cst (type, 0);
 
       /* Convert to an unsigned integer of the correct width first, and from
@@ -959,7 +913,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 
       /* When parsing long initializers, we might end up with a lot of casts.
 	 Shortcut this.  */
-      if (TREE_CODE (expr) == INTEGER_CST)
+      if (TREE_CODE (tree_strip_any_location_wrapper (expr)) == INTEGER_CST)
 	return fold_convert (type, expr);
       return build1 (CONVERT_EXPR, type, expr);
 
@@ -989,7 +943,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
     case VECTOR_TYPE:
       if (!tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (TREE_TYPE (expr))))
 	{
-	  error ("can%'t convert a vector of type %qT"
+	  error ("cannot convert a vector of type %qT"
 		 " to type %qT which has different size",
 		 TREE_TYPE (expr), type);
 	  return error_mark_node;
@@ -1017,12 +971,15 @@ convert_to_integer (tree type, tree expr)
 }
 
 /* A wrapper around convert_to_complex_1 that only folds the
-   expression if DOFOLD, or if it is CONSTANT_CLASS_P.  */
+   expression if DOFOLD, or if it is CONSTANT_CLASS_OR_WRAPPER_P.  */
 
 tree
 convert_to_integer_maybe_fold (tree type, tree expr, bool dofold)
 {
-  return convert_to_integer_1 (type, expr, dofold || CONSTANT_CLASS_P (expr));
+  tree result
+    = convert_to_integer_1 (type, expr,
+			    dofold || CONSTANT_CLASS_OR_WRAPPER_P (expr));
+  return preserve_any_location_wrapper (result, expr);
 }
 
 /* Convert EXPR to the complex type TYPE in the usual ways.  If FOLD_P is
@@ -1101,12 +1058,15 @@ convert_to_complex (tree type, tree expr)
 }
 
 /* A wrapper around convert_to_complex_1 that only folds the
-   expression if DOFOLD, or if it is CONSTANT_CLASS_P.  */
+   expression if DOFOLD, or if it is CONSTANT_CLASS_OR_WRAPPER_P.  */
 
 tree
 convert_to_complex_maybe_fold (tree type, tree expr, bool dofold)
 {
-  return convert_to_complex_1 (type, expr, dofold || CONSTANT_CLASS_P (expr));
+  tree result
+    = convert_to_complex_1 (type, expr,
+			    dofold || CONSTANT_CLASS_OR_WRAPPER_P (expr));
+  return preserve_any_location_wrapper (result, expr);
 }
 
 /* Convert EXPR to the vector type TYPE in the usual ways.  */
@@ -1120,7 +1080,7 @@ convert_to_vector (tree type, tree expr)
     case VECTOR_TYPE:
       if (!tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (TREE_TYPE (expr))))
 	{
-	  error ("can%'t convert a value of type %qT"
+	  error ("cannot convert a value of type %qT"
 		 " to vector type %qT which has different size",
 		 TREE_TYPE (expr), type);
 	  return error_mark_node;
@@ -1128,7 +1088,7 @@ convert_to_vector (tree type, tree expr)
       return build1 (VIEW_CONVERT_EXPR, type, expr);
 
     default:
-      error ("can%'t convert value to a vector");
+      error ("cannot convert value to a vector");
       return error_mark_node;
     }
 }
@@ -1171,3 +1131,85 @@ convert_to_fixed (tree type, tree expr)
       return error_mark_node;
     }
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Selftests for conversions.  */
+
+static void
+test_convert_to_integer_maybe_fold (tree orig_type, tree new_type)
+{
+  /* Calling convert_to_integer_maybe_fold on an INTEGER_CST.  */
+
+  tree orig_cst = build_int_cst (orig_type, 42);
+
+  /* Verify that convert_to_integer_maybe_fold on a constant returns a new
+     constant of the new type, unless the types are the same, in which
+     case verify it's a no-op.  */
+  {
+    tree result = convert_to_integer_maybe_fold (new_type,
+						 orig_cst, false);
+    if (orig_type != new_type)
+      {
+	ASSERT_EQ (TREE_TYPE (result), new_type);
+	ASSERT_EQ (TREE_CODE (result), INTEGER_CST);
+      }
+    else
+      ASSERT_EQ (result, orig_cst);
+  }
+
+  /* Calling convert_to_integer_maybe_fold on a location wrapper around
+     an INTEGER_CST.
+
+     Verify that convert_to_integer_maybe_fold on a location wrapper
+     around a constant returns a new location wrapper around an equivalent
+     constant, both of the new type, unless the types are the same,
+     in which case the original wrapper should be returned.   */
+  {
+    const location_t loc = BUILTINS_LOCATION;
+    tree wrapped_orig_cst = maybe_wrap_with_location (orig_cst, loc);
+    tree result
+      = convert_to_integer_maybe_fold (new_type, wrapped_orig_cst, false);
+    ASSERT_EQ (TREE_TYPE (result), new_type);
+    ASSERT_EQ (EXPR_LOCATION (result), loc);
+    ASSERT_TRUE (location_wrapper_p (result));
+    ASSERT_EQ (TREE_TYPE (TREE_OPERAND (result, 0)), new_type);
+    ASSERT_EQ (TREE_CODE (TREE_OPERAND (result, 0)), INTEGER_CST);
+
+    if (orig_type == new_type)
+      ASSERT_EQ (result, wrapped_orig_cst);
+  }
+}
+
+/* Verify that convert_to_integer_maybe_fold preserves locations.  */
+
+static void
+test_convert_to_integer_maybe_fold ()
+{
+  /* char -> long.  */
+  test_convert_to_integer_maybe_fold (char_type_node, long_integer_type_node);
+
+  /* char -> char.  */
+  test_convert_to_integer_maybe_fold (char_type_node, char_type_node);
+
+  /* long -> char.  */
+  test_convert_to_integer_maybe_fold (char_type_node, long_integer_type_node);
+
+  /* long -> long.  */
+  test_convert_to_integer_maybe_fold (long_integer_type_node,
+				      long_integer_type_node);
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+convert_c_tests ()
+{
+  test_convert_to_integer_maybe_fold ();
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P */

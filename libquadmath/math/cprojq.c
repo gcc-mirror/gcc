@@ -1,5 +1,5 @@
-/* Compute projection of complex __float128 value to Riemann sphere.
-   Copyright (C) 1997, 1999, 2010 Free Software Foundation, Inc.
+/* Compute projection of complex float type value to Riemann sphere.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -14,24 +14,20 @@
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
 
 #include "quadmath-imp.h"
-
 
 __complex128
 cprojq (__complex128 x)
 {
-  if (isnanq (__real__ x) && isnanq (__imag__ x))
-    return x;
-  else if (!finiteq (__real__ x) || !finiteq (__imag__ x))
+  if (isinfq (__real__ x) || isinfq (__imag__ x))
     {
       __complex128 res;
 
       __real__ res = __builtin_inf ();
-      __imag__ res = copysignq (0.0, __imag__ x);
+      __imag__ res = copysignq (0, __imag__ x);
 
       return res;
     }

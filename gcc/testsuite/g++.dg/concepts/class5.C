@@ -1,4 +1,5 @@
-// { dg-options "-std=c++17 -fconcepts" }
+// { dg-do compile { target c++17_only } }
+// { dg-options "-fconcepts" }
 
 template<typename T>
   concept bool One() { return sizeof(T) >= 4; }

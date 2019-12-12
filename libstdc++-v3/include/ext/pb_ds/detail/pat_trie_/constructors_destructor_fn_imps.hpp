@@ -1,6 +1,6 @@
  // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,6 +37,8 @@
  * @file pat_trie_/constructors_destructor_fn_imps.hpp
  * Contains an implementation class for pat_trie.
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::head_allocator
@@ -212,3 +214,4 @@ recursive_copy_node(node_const_pointer p_ncp)
   apply_update(p_ret, (node_update*)this);
   return p_ret;
 }
+#endif

@@ -1,6 +1,6 @@
 /* Header file for minimum-cost maximal flow routines used to smooth basic
    block and edge frequency counts.
-   Copyright (C) 2008-2018 Free Software Foundation, Inc.
+   Copyright (C) 2008-2019 Free Software Foundation, Inc.
    Contributed by Paul Yuan (yingbo.com@gmail.com)
        and Vinodha Ramasamy (vinodha@google.com).
 
@@ -75,6 +75,6 @@ extern void get_working_sets (void);
 
 /* Counter summary from the last set of coverage counts read by
    profile.c.  */
-extern const struct gcov_summary *profile_info;
+extern struct gcov_summary *profile_info;
 
 #endif /* PROFILE_H */

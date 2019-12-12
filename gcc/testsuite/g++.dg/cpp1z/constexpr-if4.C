@@ -4,7 +4,7 @@
 void f()
 {
   goto l;			// { dg-message "from here" }
-  if constexpr (false)		// { dg-message "enters constexpr if" }
+  if constexpr (false)		// { dg-message "enters 'constexpr if'" }
     {
     l:;				// { dg-error "jump to label" }
     }

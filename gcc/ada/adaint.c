@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2018, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2019, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -35,8 +35,14 @@
    library calls directly. This file contains all other routines.  */
 
 /* Ensure access to errno is thread safe.  */
+
+#ifndef _REENTRANT
 #define _REENTRANT
+#endif
+
+#ifndef _THREAD_SAFE
 #define _THREAD_SAFE
+#endif
 
 /* Use 64 bit Large File API */
 #if defined (__QNX__)
@@ -68,6 +74,12 @@
    (such as chmod) are only available on VxWorks 6.  */
 #include "version.h"
 
+/* vwModNum.h and dosFsLib.h are needed for the VxWorks 6 rename workaround.
+   See below.  */
+#if (_WRS_VXWORKS_MAJOR == 6)
+#include <vwModNum.h>
+#include <dosFsLib.h>
+#endif /* 6.x */
 #endif /* VxWorks */
 
 #if defined (__APPLE__)
@@ -88,8 +100,26 @@
 #endif
 
 #ifdef IN_RTS
+
+#ifdef STANDALONE
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+
+/* for CPU_SET/CPU_ZERO */
+#define _GNU_SOURCE
+#define __USE_GNU
+
+#include "runtime.h"
+
+#else
 #include "tconfig.h"
 #include "tsystem.h"
+#endif
+
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
@@ -326,7 +356,7 @@ int __gnat_use_acl = 1;
    system provides the routine readdir_r.
    ... but we never define it anywhere???  */
 #undef HAVE_READDIR_R
-
+
 #define MAYBE_TO_PTR32(argv) argv
 
 static const char ATTR_UNSET = 127;
@@ -392,13 +422,6 @@ __gnat_to_gm_time (OS_Time *p_time, int *p_year, int *p_month, int *p_day,
 {
   struct tm *res;
   time_t time = (time_t) *p_time;
-
-#ifdef _WIN32
-  /* On Windows systems, the time is sometimes rounded up to the nearest
-     even second, so if the number of seconds is odd, increment it.  */
-  if (time & 1)
-    time++;
-#endif
 
   res = gmtime (&time);
   if (res)
@@ -662,6 +685,7 @@ void
 __gnat_get_executable_suffix_ptr (int *len, const char **value)
 {
   *value = HOST_EXECUTABLE_SUFFIX;
+
   if (!*value)
     *len = 0;
   else
@@ -735,6 +759,20 @@ __gnat_rename (char *from, char *to)
     S2WSC (wfrom, from, GNAT_MAX_PATH_LEN);
     S2WSC (wto, to, GNAT_MAX_PATH_LEN);
     return _trename (wfrom, wto);
+  }
+#elif defined (__vxworks) && (_WRS_VXWORKS_MAJOR == 6)
+  {
+    /* When used on a dos filesystem under VxWorks 6.9 rename will trigger a
+       S_dosFsLib_FILE_NOT_FOUND errno when the file is not found.  Let's map
+       that to ENOENT so Ada.Directory.Rename can detect that and raise the
+       Name_Error exception.  */
+    int ret = rename (from, to);
+
+    if (ret && (errno == S_dosFsLib_FILE_NOT_FOUND))
+      {
+        errno = ENOENT;
+      }
+    return ret;
   }
 #else
   return rename (from, to);
@@ -2893,12 +2931,12 @@ __gnat_locate_regular_file (char *file_name, char *path_val)
 char *
 __gnat_locate_exec (char *exec_name, char *path_val)
 {
+  const unsigned int len = strlen (HOST_EXECUTABLE_SUFFIX);
   char *ptr;
-  if (!strstr (exec_name, HOST_EXECUTABLE_SUFFIX))
+
+  if (len > 0 && !strstr (exec_name, HOST_EXECUTABLE_SUFFIX))
     {
-      char *full_exec_name =
-        (char *) alloca
-	  (strlen (exec_name) + strlen (HOST_EXECUTABLE_SUFFIX) + 1);
+      char *full_exec_name = (char *) alloca (strlen (exec_name) + len + 1);
 
       strcpy (full_exec_name, exec_name);
       strcat (full_exec_name, HOST_EXECUTABLE_SUFFIX);
@@ -3238,9 +3276,13 @@ __gnat_lwp_self (void)
 #endif
 
 #if defined (__APPLE__)
-#include <mach/thread_info.h>
-#include <mach/mach_init.h>
-#include <mach/thread_act.h>
+# if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1060
+#  include <mach/thread_info.h>
+#  include <mach/mach_init.h>
+#  include <mach/thread_act.h>
+# else
+#  include <pthread.h>
+# endif
 
 /* System-wide thread identifier.  Note it could be truncated on 32 bit
    hosts.
@@ -3248,6 +3290,7 @@ __gnat_lwp_self (void)
 void *
 __gnat_lwp_self (void)
 {
+#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1060
   thread_identifier_info_data_t data;
   mach_msg_type_number_t count = THREAD_IDENTIFIER_INFO_COUNT;
   kern_return_t kret;
@@ -3258,6 +3301,9 @@ __gnat_lwp_self (void)
     return (void *)(uintptr_t)data.thread_id;
   else
     return 0;
+#else
+  return (void *)pthread_mach_thread_np (pthread_self ());
+#endif
 }
 #endif
 

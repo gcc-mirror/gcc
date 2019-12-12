@@ -1,5 +1,5 @@
 /* Implementation of the MAXLOC intrinsic
-   Copyright (C) 2017-2018 Free Software Foundation, Inc.
+   Copyright (C) 2017-2019 Free Software Foundation, Inc.
    Contributed by Thomas Koenig
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -30,12 +30,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <limits.h>
 
 
-#if defined (HAVE_GFC_INTEGER_4) && defined (HAVE_GFC_INTEGER_4)
+#if defined (HAVE_GFC_UINTEGER_4) && defined (HAVE_GFC_UINTEGER_4)
 
 static inline int
-compare_fcn (const GFC_INTEGER_4 *a, const GFC_INTEGER_4 *b, gfc_charlen_type n)
+compare_fcn (const GFC_UINTEGER_4 *a, const GFC_UINTEGER_4 *b, gfc_charlen_type n)
 {
-  if (sizeof (GFC_INTEGER_4) == 1)
+  if (sizeof (GFC_UINTEGER_4) == 1)
     return memcmp (a, b, n);
   else
     return memcmp_char4 (a, b, n);
@@ -44,20 +44,20 @@ compare_fcn (const GFC_INTEGER_4 *a, const GFC_INTEGER_4 *b, gfc_charlen_type n)
 
 #define INITVAL 255
 
-extern void minval0_s4 (GFC_INTEGER_4 * restrict,
+extern void minval0_s4 (GFC_UINTEGER_4 * restrict,
         gfc_charlen_type,
 	gfc_array_s4 * const restrict array, gfc_charlen_type);
 export_proto(minval0_s4);
 
 void
-minval0_s4 (GFC_INTEGER_4 * restrict ret,
+minval0_s4 (GFC_UINTEGER_4 * restrict ret,
         gfc_charlen_type xlen,
 	gfc_array_s4 * const restrict array, gfc_charlen_type len)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
-  const GFC_INTEGER_4 *base;
+  const GFC_UINTEGER_4 *base;
   index_type rank;
   index_type n;
 
@@ -83,7 +83,7 @@ minval0_s4 (GFC_INTEGER_4 * restrict ret,
 
   {
 
-  const GFC_INTEGER_4 *retval;
+  const GFC_UINTEGER_4 *retval;
    retval = ret;
 
   while (base)
@@ -130,13 +130,13 @@ minval0_s4 (GFC_INTEGER_4 * restrict ret,
 }
 
 
-extern void mminval0_s4 (GFC_INTEGER_4 * restrict,
+extern void mminval0_s4 (GFC_UINTEGER_4 * restrict,
        gfc_charlen_type, gfc_array_s4 * const restrict array,
        gfc_array_l1 * const restrict mask, gfc_charlen_type len);
 export_proto(mminval0_s4);
 
 void
-mminval0_s4 (GFC_INTEGER_4 * const restrict ret,
+mminval0_s4 (GFC_UINTEGER_4 * const restrict ret,
 	gfc_charlen_type xlen, gfc_array_s4 * const restrict array,
 	gfc_array_l1 * const restrict mask, gfc_charlen_type len)
 {
@@ -144,11 +144,17 @@ mminval0_s4 (GFC_INTEGER_4 * const restrict ret,
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type mstride[GFC_MAX_DIMENSIONS];
-  const GFC_INTEGER_4 *base;
+  const GFC_UINTEGER_4 *base;
   GFC_LOGICAL_1 *mbase;
   int rank;
   index_type n;
   int mask_kind;
+
+  if (mask == NULL)
+    {
+      minval0_s4 (ret, xlen, array, len);
+      return;
+    }
 
   rank = GFC_DESCRIPTOR_RANK (array);
   if (rank <= 0)
@@ -185,7 +191,7 @@ mminval0_s4 (GFC_INTEGER_4 * const restrict ret,
   base = array->base_addr;
   {
 
-  const GFC_INTEGER_4 *retval;
+  const GFC_UINTEGER_4 *retval;
 
   retval = ret;
 
@@ -236,18 +242,18 @@ mminval0_s4 (GFC_INTEGER_4 * const restrict ret,
 }
 
 
-extern void sminval0_s4 (GFC_INTEGER_4 * restrict,
+extern void sminval0_s4 (GFC_UINTEGER_4 * restrict,
         gfc_charlen_type,
 	gfc_array_s4 * const restrict array, GFC_LOGICAL_4 *, gfc_charlen_type);
 export_proto(sminval0_s4);
 
 void
-sminval0_s4 (GFC_INTEGER_4 * restrict ret,
+sminval0_s4 (GFC_UINTEGER_4 * restrict ret,
         gfc_charlen_type xlen, gfc_array_s4 * const restrict array,
 	GFC_LOGICAL_4 *mask, gfc_charlen_type len)
 	
 {
-  if (*mask)
+  if (mask == NULL || *mask)
     {
       minval0_s4 (ret, xlen, array, len);
       return;

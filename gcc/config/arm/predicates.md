@@ -1,5 +1,5 @@
 ;; Predicate definitions for ARM and Thumb
-;; Copyright (C) 2004-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2004-2019 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.
@@ -29,6 +29,23 @@
   return (REG_P (op)
 	  && (REGNO (op) >= FIRST_PSEUDO_REGISTER
 	      || REGNO_REG_CLASS (REGNO (op)) != NO_REGS));
+})
+
+; Predicate for stack protector guard's address in
+; stack_protect_combined_set_insn and stack_protect_combined_test_insn patterns
+(define_predicate "guard_addr_operand"
+  (match_test "true")
+{
+  return (CONSTANT_ADDRESS_P (op)
+	  || !targetm.cannot_force_const_mem (mode, op));
+})
+
+; Predicate for stack protector guard in stack_protect_combined_set and
+; stack_protect_combined_test patterns
+(define_predicate "guard_operand"
+  (match_code "mem")
+{
+  return guard_addr_operand (XEXP (op, 0), mode);
 })
 
 (define_predicate "imm_for_neon_inv_logic_operand"
@@ -176,6 +193,14 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (UINTVAL (op), 1, GET_MODE_BITSIZE (mode))")))
 
+(define_predicate "ssat16_imm"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 1, 16)")))
+
+(define_predicate "usat16_imm"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 15)")))
+
 (define_predicate "ldrd_strd_offset_operand"
   (and (match_operand 0 "const_int_operand")
        (match_test "TARGET_LDRD && offset_ok_for_ldrd_strd (INTVAL (op))")))
@@ -184,27 +209,25 @@
   (ior (match_operand 0 "arm_rhs_operand")
        (match_operand 0 "arm_neg_immediate_operand")))
 
-(define_predicate "arm_anddi_operand_neon"
+(define_predicate "arm_adddi_operand"
   (ior (match_operand 0 "s_register_operand")
        (and (match_code "const_int")
-	    (match_test "const_ok_for_dimode_op (INTVAL (op), AND)"))
-       (match_operand 0 "neon_inv_logic_op2")))
+	    (match_test "const_ok_for_dimode_op (INTVAL (op), PLUS)"))))
 
-(define_predicate "arm_iordi_operand_neon"
+(define_predicate "arm_anddi_operand"
   (ior (match_operand 0 "s_register_operand")
        (and (match_code "const_int")
-	    (match_test "const_ok_for_dimode_op (INTVAL (op), IOR)"))
-       (match_operand 0 "neon_logic_op2")))
+	    (match_test "const_ok_for_dimode_op (INTVAL (op), AND)"))))
+
+(define_predicate "arm_iordi_operand"
+  (ior (match_operand 0 "s_register_operand")
+       (and (match_code "const_int")
+	    (match_test "const_ok_for_dimode_op (INTVAL (op), IOR)"))))
 
 (define_predicate "arm_xordi_operand"
   (ior (match_operand 0 "s_register_operand")
        (and (match_code "const_int")
 	    (match_test "const_ok_for_dimode_op (INTVAL (op), XOR)"))))
-
-(define_predicate "arm_adddi_operand"
-  (ior (match_operand 0 "s_register_operand")
-       (and (match_code "const_int")
-	    (match_test "const_ok_for_dimode_op (INTVAL (op), PLUS)"))))
 
 (define_predicate "arm_addimm_operand"
   (ior (match_operand 0 "arm_immediate_operand")
@@ -212,6 +235,12 @@
 
 (define_predicate "arm_not_operand"
   (ior (match_operand 0 "arm_rhs_operand")
+       (match_operand 0 "arm_not_immediate_operand")))
+
+;; A constant that can be used with ADC(SBC) or SBC(ADC) when bit-wise
+;; inverted.  Similar to arm_not_operand, but excludes registers.
+(define_predicate "arm_adcimm_operand"
+  (ior (match_operand 0 "arm_immediate_operand")
        (match_operand 0 "arm_not_immediate_operand")))
 
 (define_predicate "arm_di_operand"
@@ -341,6 +370,48 @@
 (define_special_predicate "lt_ge_comparison_operator"
   (match_code "lt,ge"))
 
+(define_special_predicate "arm_carry_operation"
+  (match_code "geu,ltu")
+  {
+    if (XEXP (op, 1) != const0_rtx)
+      return false;
+
+    rtx op0 = XEXP (op, 0);
+
+    if (!REG_P (op0) || REGNO (op0) != CC_REGNUM)
+      return false;
+
+    machine_mode ccmode = GET_MODE (op0);
+    if (ccmode == CC_Cmode)
+      return GET_CODE (op) == LTU;
+    else if (ccmode == CCmode || ccmode == CC_RSBmode || ccmode == CC_ADCmode)
+      return GET_CODE (op) == GEU;
+
+    return false;
+  }
+)
+
+;; Match a "borrow" operation for use with SBC.  The precise code will
+;; depend on the form of the comparison.  This is generally the inverse of
+;; a carry operation, since the logic of SBC uses "not borrow" in it's
+;; calculation.
+(define_special_predicate "arm_borrow_operation"
+  (match_code "geu,ltu")
+  {
+    if (XEXP (op, 1) != const0_rtx)
+      return false;
+    rtx op0 = XEXP (op, 0);
+    if (!REG_P (op0) || REGNO (op0) != CC_REGNUM)
+      return false;
+    machine_mode ccmode = GET_MODE (op0);
+    if (ccmode == CC_Cmode)
+      return GET_CODE (op) == GEU;
+    else if (ccmode == CCmode || ccmode == CC_RSBmode || ccmode == CC_ADCmode)
+      return GET_CODE (op) == LTU;
+    return false;
+  }
+)
+
 ;; The vsel instruction only accepts the ARM condition codes listed below.
 (define_special_predicate "arm_vsel_comparison_operator"
   (and (match_operand 0 "expandable_comparison_operator")
@@ -359,7 +430,7 @@
 		     (match_operand 0 "arm_vsel_comparison_operator"))
 		(match_operand 0 "expandable_comparison_operator")))
 
-(define_special_predicate "noov_comparison_operator"
+(define_special_predicate "nz_comparison_operator"
   (match_code "lt,ge,eq,ne"))
 
 (define_special_predicate "minmax_operator"
@@ -455,6 +526,24 @@
   (ior (match_code "const_double")
        (and (match_code "reg,subreg,mem")
 	    (match_operand 0 "nonimmediate_soft_df_operand"))))
+
+;; Predicate for thumb2_movsf_vfp.  Compared to general_operand, this
+;; forbids constant loaded via literal pool iff literal pools are disabled.
+(define_predicate "hard_sf_operand"
+  (and (match_operand 0 "general_operand")
+       (ior (not (match_code "const_double"))
+	    (not (match_test "arm_disable_literal_pool"))
+	    (match_test "satisfies_constraint_Dv (op)"))))
+
+;; Predicate for thumb2_movdf_vfp.  Compared to soft_df_operand used in
+;; movdf_soft_insn, this forbids constant loaded via literal pool iff
+;; literal pools are disabled.
+(define_predicate "hard_df_operand"
+  (and (match_operand 0 "soft_df_operand")
+       (ior (not (match_code "const_double"))
+	    (not (match_test "arm_disable_literal_pool"))
+	    (match_test "satisfies_constraint_Dy (op)")
+	    (match_test "satisfies_constraint_G (op)"))))
 
 (define_special_predicate "load_multiple_operation"
   (match_code "parallel")
@@ -658,3 +747,7 @@
   (ior (and (match_code "symbol_ref")
 	    (match_test "!arm_is_long_call_p (SYMBOL_REF_DECL (op))"))
        (match_operand 0 "s_register_operand")))
+
+(define_special_predicate "aligned_operand"
+  (ior (not (match_code "mem"))
+       (match_test "MEM_ALIGN (op) >= GET_MODE_ALIGNMENT (mode)")))

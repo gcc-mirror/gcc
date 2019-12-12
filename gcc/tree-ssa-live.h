@@ -1,5 +1,5 @@
 /* Routines for liveness in SSA trees.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod  <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -80,7 +80,7 @@ typedef struct _var_map
 /* Value used to represent no partition number.  */
 #define NO_PARTITION		-1
 
-extern var_map init_var_map (int, struct loop* = NULL);
+extern var_map init_var_map (int, class loop* = NULL);
 extern void delete_var_map (var_map);
 extern int var_union (var_map, tree, tree);
 extern void partition_view_normal (var_map);
@@ -266,6 +266,11 @@ extern void debug (tree_live_info_d &ref);
 extern void debug (tree_live_info_d *ptr);
 extern void dump_live_info (FILE *, tree_live_info_p, int);
 
+typedef hash_map<int_hash <unsigned int, -1U>, unsigned int> live_vars_map;
+extern vec<bitmap_head> compute_live_vars (struct function *, live_vars_map *);
+extern bitmap live_vars_at_stmt (vec<bitmap_head> &, live_vars_map *,
+				 gimple *);
+extern void destroy_live_vars (vec<bitmap_head> &);
 
 /*  Return TRUE if P is marked as a global in LIVE.  */
 

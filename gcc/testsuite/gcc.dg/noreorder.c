@@ -13,7 +13,7 @@ static int func2(void);
 
 asm("firstasm");
 
-NOREORDER __attribute__((noinline)) int bozo(void)
+NOREORDER __attribute__((noipa)) int bozo(void)
 {
   f2(3);
   func2();
@@ -21,14 +21,14 @@ NOREORDER __attribute__((noinline)) int bozo(void)
 
 asm("jukjuk");
 
-NOREORDER __attribute__((noinline)) static int func1(void)
+NOREORDER __attribute__((noipa)) static int func1(void)
 {
   f2(1);
 }
 
 asm("barbar");
 
-NOREORDER __attribute__((noinline)) static int func2(void)
+NOREORDER __attribute__((noipa)) static int func2(void)
 {
   func1();
 }

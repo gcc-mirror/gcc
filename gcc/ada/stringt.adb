@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -348,6 +348,17 @@ package body Stringt is
    begin
       return Strings.Table (First_String_Id)'Address;
    end Strings_Address;
+
+   ---------------
+   -- To_String --
+   ---------------
+
+   function To_String (S : String_Id) return String is
+      Buf : Bounded_String;
+   begin
+      Append (Buf, S);
+      return To_String (Buf);
+   end To_String;
 
    ---------------
    -- Tree_Read --

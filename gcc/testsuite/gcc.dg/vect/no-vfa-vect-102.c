@@ -28,6 +28,7 @@ int main1 (int x, int y) {
     }
 
   /* Not vectorizable: distance 1.  */
+#pragma GCC unroll 0
   for (i = 0; i < N - 1; i++)
     {
        *((int *)p + x + i + 1) = *((int *)p + x + i);

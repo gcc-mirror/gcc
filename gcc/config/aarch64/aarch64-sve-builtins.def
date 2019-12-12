@@ -1,0 +1,98 @@
+/* Builtin lists for AArch64 SVE
+   Copyright (C) 2018-2019 Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+#ifndef DEF_SVE_MODE
+#define DEF_SVE_MODE(A, B, C, D)
+#endif
+
+#ifndef DEF_SVE_TYPE
+#define DEF_SVE_TYPE(A, B, C, D)
+#endif
+
+#ifndef DEF_SVE_TYPE_SUFFIX
+#define DEF_SVE_TYPE_SUFFIX(A, B, C, D, E)
+#endif
+
+#ifndef DEF_SVE_FUNCTION
+#define DEF_SVE_FUNCTION(A, B, C, D)
+#endif
+
+DEF_SVE_MODE (n, none, none, none)
+DEF_SVE_MODE (index, none, none, elements)
+DEF_SVE_MODE (offset, none, none, bytes)
+DEF_SVE_MODE (s32index, none, svint32_t, elements)
+DEF_SVE_MODE (s32offset, none, svint32_t, bytes)
+DEF_SVE_MODE (s64index,  none, svint64_t, elements)
+DEF_SVE_MODE (s64offset, none, svint64_t, bytes)
+DEF_SVE_MODE (u32base, svuint32_t, none, none)
+DEF_SVE_MODE (u32base_index, svuint32_t, none, elements)
+DEF_SVE_MODE (u32base_offset, svuint32_t, none, bytes)
+DEF_SVE_MODE (u32base_s32index, svuint32_t, svint32_t, elements)
+DEF_SVE_MODE (u32base_s32offset, svuint32_t, svint32_t, bytes)
+DEF_SVE_MODE (u32base_u32index, svuint32_t, svuint32_t, elements)
+DEF_SVE_MODE (u32base_u32offset, svuint32_t, svuint32_t, bytes)
+DEF_SVE_MODE (u32index, none, svuint32_t, elements)
+DEF_SVE_MODE (u32offset, none, svuint32_t, bytes)
+DEF_SVE_MODE (u64base, svuint64_t, none, none)
+DEF_SVE_MODE (u64base_index, svuint64_t, none, elements)
+DEF_SVE_MODE (u64base_offset, svuint64_t, none, bytes)
+DEF_SVE_MODE (u64base_s64index, svuint64_t, svint64_t, elements)
+DEF_SVE_MODE (u64base_s64offset, svuint64_t, svint64_t, bytes)
+DEF_SVE_MODE (u64base_u64index, svuint64_t, svuint64_t, elements)
+DEF_SVE_MODE (u64base_u64offset, svuint64_t, svuint64_t, bytes)
+DEF_SVE_MODE (u64index, none, svuint64_t, elements)
+DEF_SVE_MODE (u64offset, none, svuint64_t, bytes)
+DEF_SVE_MODE (vnum, none, none, vectors)
+
+DEF_SVE_TYPE (svbool_t, 10, __SVBool_t, boolean_type_node)
+DEF_SVE_TYPE (svfloat16_t, 13, __SVFloat16_t, aarch64_fp16_type_node)
+DEF_SVE_TYPE (svfloat32_t, 13, __SVFloat32_t, float_type_node)
+DEF_SVE_TYPE (svfloat64_t, 13, __SVFloat64_t, double_type_node)
+DEF_SVE_TYPE (svint8_t, 10, __SVInt8_t, intQI_type_node)
+DEF_SVE_TYPE (svint16_t, 11, __SVInt16_t, intHI_type_node)
+DEF_SVE_TYPE (svint32_t, 11, __SVInt32_t, intSI_type_node)
+DEF_SVE_TYPE (svint64_t, 11, __SVInt64_t, intDI_type_node)
+DEF_SVE_TYPE (svuint8_t, 11, __SVUint8_t, unsigned_intQI_type_node)
+DEF_SVE_TYPE (svuint16_t, 12, __SVUint16_t, unsigned_intHI_type_node)
+DEF_SVE_TYPE (svuint32_t, 12, __SVUint32_t, unsigned_intSI_type_node)
+DEF_SVE_TYPE (svuint64_t, 12, __SVUint64_t, unsigned_intDI_type_node)
+
+DEF_SVE_TYPE_SUFFIX (b, svbool_t, bool, 8, VNx16BImode)
+DEF_SVE_TYPE_SUFFIX (b8, svbool_t, bool, 8, VNx16BImode)
+DEF_SVE_TYPE_SUFFIX (b16, svbool_t, bool, 16, VNx8BImode)
+DEF_SVE_TYPE_SUFFIX (b32, svbool_t, bool, 32, VNx4BImode)
+DEF_SVE_TYPE_SUFFIX (b64, svbool_t, bool, 64, VNx2BImode)
+DEF_SVE_TYPE_SUFFIX (f16, svfloat16_t, float, 16, VNx8HFmode)
+DEF_SVE_TYPE_SUFFIX (f32, svfloat32_t, float, 32, VNx4SFmode)
+DEF_SVE_TYPE_SUFFIX (f64, svfloat64_t, float, 64, VNx2DFmode)
+DEF_SVE_TYPE_SUFFIX (s8, svint8_t, signed, 8, VNx16QImode)
+DEF_SVE_TYPE_SUFFIX (s16, svint16_t, signed, 16, VNx8HImode)
+DEF_SVE_TYPE_SUFFIX (s32, svint32_t, signed, 32, VNx4SImode)
+DEF_SVE_TYPE_SUFFIX (s64, svint64_t, signed, 64, VNx2DImode)
+DEF_SVE_TYPE_SUFFIX (u8, svuint8_t, unsigned, 8, VNx16QImode)
+DEF_SVE_TYPE_SUFFIX (u16, svuint16_t, unsigned, 16, VNx8HImode)
+DEF_SVE_TYPE_SUFFIX (u32, svuint32_t, unsigned, 32, VNx4SImode)
+DEF_SVE_TYPE_SUFFIX (u64, svuint64_t, unsigned, 64, VNx2DImode)
+
+#include "aarch64-sve-builtins-base.def"
+
+#undef DEF_SVE_FUNCTION
+#undef DEF_SVE_TYPE_SUFFIX
+#undef DEF_SVE_TYPE
+#undef DEF_SVE_MODE

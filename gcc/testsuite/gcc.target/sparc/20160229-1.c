@@ -2,8 +2,8 @@
 /* Reported by John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de> */
 
 /* { dg-do run } */
-/* { dg-options "-std=gnu99" }
 /* { dg-require-effective-target lp64 } */
+/* { dg-options "-std=gnu99" } */
 
 extern void abort (void);
 

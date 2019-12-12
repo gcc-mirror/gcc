@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2018, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2019, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -85,7 +85,7 @@ extern void Set_RM_Size			(Entity_Id, Uint);
 extern Boolean Is_Entity_Name		(Node_Id);
 
 #define Get_Attribute_Definition_Clause einfo__get_attribute_definition_clause
-extern Node_Id Get_Attribute_Definition_Clause (Entity_Id, char);
+extern Node_Id Get_Attribute_Definition_Clause (Entity_Id, unsigned char);
 
 /* errout: */
 
@@ -156,11 +156,19 @@ extern void Setup_Asm_Outputs		(Node_Id);
 extern void Get_Encoded_Name	(Entity_Id);
 extern void Get_External_Name	(Entity_Id, Boolean, String_Pointer);
 
+/* exp_tss: */
+
+#define Is_Init_Proc exp_tss__is_init_proc
+
+extern Boolean Is_Init_Proc		(Entity_Id);
+
 /* exp_util: */
 
 #define Is_Fully_Repped_Tagged_Type exp_util__is_fully_repped_tagged_type
+#define Find_Interface_Tag exp_util__find_interface_tag
 
 extern Boolean Is_Fully_Repped_Tagged_Type      (Entity_Id);
+extern Entity_Id Find_Interface_Tag		(Entity_Id, Entity_Id);
 
 /* lib: */
 
@@ -177,6 +185,7 @@ extern Boolean In_Same_Source_Unit              (Node_Id, Node_Id);
 /* opt: */
 
 #define Back_End_Inlining              opt__back_end_inlining
+#define Debug_Generated_Code           opt__debug_generated_code
 #define Exception_Extra_Info           opt__exception_extra_info
 #define Exception_Locations_Suppressed opt__exception_locations_suppressed
 #define Exception_Mechanism            opt__exception_mechanism
@@ -185,12 +194,14 @@ extern Boolean In_Same_Source_Unit              (Node_Id, Node_Id);
 #define GNAT_Mode                      opt__gnat_mode
 #define List_Representation_Info       opt__list_representation_info
 #define No_Strict_Aliasing_CP          opt__no_strict_aliasing
+#define Suppress_Checks                opt__suppress_checks
 
 typedef enum {
   Front_End_SJLJ, Back_End_ZCX, Back_End_SJLJ
 } Exception_Mechanism_Type;
 
 extern Boolean Back_End_Inlining;
+extern Boolean Debug_Generated_Code;
 extern Boolean Exception_Extra_Info;
 extern Boolean Exception_Locations_Suppressed;
 extern Exception_Mechanism_Type Exception_Mechanism;
@@ -199,6 +210,7 @@ extern Boolean Generate_SCO_Instance_Table;
 extern Boolean GNAT_Mode;
 extern Int List_Representation_Info;
 extern Boolean No_Strict_Aliasing_CP;
+extern Boolean Suppress_Checks;
 
 #define ZCX_Exceptions            opt__zcx_exceptions
 #define SJLJ_Exceptions           opt__sjlj_exceptions
@@ -269,12 +281,18 @@ extern Boolean Is_OK_Static_Subtype	(Entity_Id);
 #define Defining_Entity			sem_util__defining_entity
 #define First_Actual			sem_util__first_actual
 #define Next_Actual			sem_util__next_actual
+#define Is_Atomic_Object		sem_util__is_atomic_object
+#define Is_Variable_Size_Record 	sem_util__is_variable_size_record
+#define Is_Volatile_Object		sem_util__is_volatile_object
 #define Requires_Transient_Scope	sem_util__requires_transient_scope
 
 extern Entity_Id Defining_Entity	(Node_Id);
 extern Node_Id First_Actual		(Node_Id);
 extern Node_Id Next_Actual		(Node_Id);
-extern Boolean Requires_Transient_Scope (Entity_Id);
+extern Boolean Is_Atomic_Object 	(Node_Id);
+extern Boolean Is_Variable_Size_Record 	(Entity_Id Id);
+extern Boolean Is_Volatile_Object 	(Node_Id);
+extern Boolean Requires_Transient_Scope	(Entity_Id);
 
 /* sinfo: */
 

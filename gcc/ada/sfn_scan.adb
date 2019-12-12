@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2000-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -106,6 +106,7 @@ package body SFN_Scan is
    --  ('a' .. 'z').
 
    procedure Error (Err : String);
+   pragma No_Return (Error);
    --  Called if an error is detected. Raises Syntax_Error_In_GNAT_ADC
    --  with a message of the form gnat.adc:line:col: xxx, where xxx is
    --  the string Err passed as a parameter.
@@ -606,6 +607,7 @@ package body SFN_Scan is
 
    exception
       when others =>
+         pragma Assert (P'Valid);
          Cursor := P - S'First + 1;
          raise;
    end Scan_SFN_Pragmas;

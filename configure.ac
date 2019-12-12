@@ -1,6 +1,6 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
 #   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012,
-#   2014, 2015, 2016 Free Software Foundation, Inc.
+#   2014, 2015, 2016, 2019 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -31,7 +31,6 @@ m4_include([lt~obsolete.m4])
 m4_include([config/isl.m4])
 
 AC_INIT(move-if-change)
-AC_PREREQ(2.64)
 AC_DISABLE_OPTION_CHECKING
 
 progname=$0
@@ -132,7 +131,7 @@ build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"
 
 # these libraries are used by various programs built for the host environment
 #f
-host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libdecnumber gmp mpfr mpc isl libelf libiconv"
+host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libdecnumber gmp mpfr mpc isl libelf libiconv libctf"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -163,7 +162,9 @@ target_libraries="target-libgcc \
 		target-libffi \
 		target-libobjc \
 		target-libada \
-		target-libgo"
+		target-libgo \
+		target-libphobos \
+		target-zlib"
 
 # these tools are built using the target libraries, and are intended to
 # run only in the target environment
@@ -637,7 +638,14 @@ case "${target}" in
     # No hosted I/O support.
     noconfigdirs="$noconfigdirs target-libssp"
     ;;
+  bpf-*-*)
+    noconfigdirs="$noconfigdirs target-libssp"
+    ;;
   powerpc-*-aix* | rs6000-*-aix*)
+    noconfigdirs="$noconfigdirs target-libssp"
+    ;;
+  pru-*-*)
+    # No hosted I/O support.
     noconfigdirs="$noconfigdirs target-libssp"
     ;;
   rl78-*-*)
@@ -667,16 +675,84 @@ if test "${ENABLE_LIBSTDCXX}" = "default" ; then
     avr-*-*)
       noconfigdirs="$noconfigdirs target-libstdc++-v3"
       ;;
+    bpf-*-*)
+      noconfigdirs="$noconfigdirs target-libstdc++-v3"
+      ;;
     ft32-*-*)
       noconfigdirs="$noconfigdirs target-libstdc++-v3"
       ;;
   esac
 fi
 
+# Disable C++ on systems where it is known to not work.
+# For testing, you can override this with --enable-languages=c++.
+case ,${enable_languages}, in
+  *,c++,*)
+    ;;
+  *)
+      case "${target}" in
+        bpf-*-*)
+          unsupported_languages="$unsupported_languages c++"
+          ;;
+      esac
+      ;;
+esac
+
+# Disable Objc on systems where it is known to not work.
+# For testing, you can override this with --enable-languages=objc.
+case ,${enable_languages}, in
+  *,objc,*)
+    ;;
+  *)
+      case "${target}" in
+        bpf-*-*)
+          unsupported_languages="$unsupported_languages objc"
+          ;;
+      esac
+      ;;
+esac
+
+# Disable D on systems where it is known to not work.
+# For testing, you can override this with --enable-languages=d.
+case ,${enable_languages}, in
+  *,d,*)
+    ;;
+  *)
+    case "${target}" in
+      *-*-darwin*)
+	unsupported_languages="$unsupported_languages d"
+        ;;
+      bpf-*-*)
+	unsupported_languages="$unsupported_languages d"
+	;;
+    esac
+    ;;
+esac
+
+# Disable libphobos on unsupported systems.
+# For testing, you can override this with --enable-libphobos.
+if test -d ${srcdir}/libphobos; then
+    if test x$enable_libphobos = x; then
+	AC_MSG_CHECKING([for libphobos support])
+	if (srcdir=${srcdir}/libphobos; \
+		. ${srcdir}/configure.tgt; \
+		test "$LIBPHOBOS_SUPPORTED" != "yes")
+	then
+	    AC_MSG_RESULT([no])
+	    noconfigdirs="$noconfigdirs target-libphobos"
+	else
+	    AC_MSG_RESULT([yes])
+	fi
+    fi
+fi
+
 # Disable Fortran for some systems.
 case "${target}" in
   mmix-*-*)
     # See <http://gcc.gnu.org/ml/gcc-patches/2004-11/msg00572.html>.
+    unsupported_languages="$unsupported_languages fortran"
+    ;;
+  bpf-*-*)
     unsupported_languages="$unsupported_languages fortran"
     ;;
 esac
@@ -725,6 +801,9 @@ case "${target}" in
   arm*-*-symbianelf*)
     noconfigdirs="$noconfigdirs target-libffi"
     ;;
+  bpf-*-*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
   cris-*-* | crisv32-*-*)
     case "${target}" in
       *-*-linux*)
@@ -771,7 +850,7 @@ esac
 # Disable the go frontend on systems where it is known to not work. Please keep
 # this in sync with contrib/config-list.mk.
 case "${target}" in
-*-*-darwin* | *-*-cygwin* | *-*-mingw*)
+*-*-darwin* | *-*-cygwin* | *-*-mingw* | bpf-* )
     unsupported_languages="$unsupported_languages go"
     ;;
 esac
@@ -787,6 +866,9 @@ if test x$enable_libgo = x; then
     *-*-cygwin* | *-*-mingw*)
 	noconfigdirs="$noconfigdirs target-libgo"
 	;;
+    bpf-*-*)
+        noconfigdirs="$noconfigdirs target-libgo"
+        ;;
     esac
 fi
 
@@ -824,6 +906,9 @@ case "${target}" in
   powerpc*-*-*)
     libgloss_dir=rs6000
     ;;
+  pru-*-*)
+    libgloss_dir=pru
+    ;;
   sparc*-*-*)
     libgloss_dir=sparc
     ;;
@@ -853,6 +938,9 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
   sparc-*-sunos4*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    ;;
+  bpf-*-*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
   *-*-aix*)
@@ -902,6 +990,8 @@ case "${target}" in
   aarch64-*-darwin*)
     noconfigdirs="$noconfigdirs ld gas gdb gprof"
     noconfigdirs="$noconfigdirs sim target-rda"
+    ;;
+  amdgcn*-*-*)
     ;;
   arm-*-darwin*)
     noconfigdirs="$noconfigdirs ld gas gdb gprof"
@@ -965,6 +1055,9 @@ case "${target}" in
   alpha*-*-*)
     # newlib is not 64 bit ready
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    ;;
+  bpf-*-*)
+    noconfigdirs="$noconfigdirs target-libobjc target-libbacktrace"
     ;;
   sh*-*-pe|mips*-*-pe|*arm-wince-pe)
     noconfigdirs="$noconfigdirs tcl tk itcl libgui sim"
@@ -1235,6 +1328,7 @@ if test "${build}" != "${host}" ; then
   CXX_FOR_BUILD=${CXX_FOR_BUILD-g++}
   GFORTRAN_FOR_BUILD=${GFORTRAN_FOR_BUILD-gfortran}
   GOC_FOR_BUILD=${GOC_FOR_BUILD-gccgo}
+  GDC_FOR_BUILD=${GDC_FOR_BUILD-gdc}
   DLLTOOL_FOR_BUILD=${DLLTOOL_FOR_BUILD-dlltool}
   LD_FOR_BUILD=${LD_FOR_BUILD-ld}
   NM_FOR_BUILD=${NM_FOR_BUILD-nm}
@@ -1248,6 +1342,7 @@ else
   CXX_FOR_BUILD="\$(CXX)"
   GFORTRAN_FOR_BUILD="\$(GFORTRAN)"
   GOC_FOR_BUILD="\$(GOC)"
+  GDC_FOR_BUILD="\$(GDC)"
   DLLTOOL_FOR_BUILD="\$(DLLTOOL)"
   LD_FOR_BUILD="\$(LD)"
   NM_FOR_BUILD="\$(NM)"
@@ -1286,11 +1381,11 @@ if test "$GCC" = yes; then
   LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
   AC_MSG_CHECKING([whether g++ accepts -static-libstdc++ -static-libgcc])
   AC_LANG_PUSH(C++)
-  AC_LINK_IFELSE([
+  AC_LINK_IFELSE([AC_LANG_SOURCE([
 #if (__GNUC__ < 4) || (__GNUC__ == 4 && __GNUC_MINOR__ < 5)
 #error -static-libstdc++ not implemented
 #endif
-int main() {}],
+int main() {}])],
     [AC_MSG_RESULT([yes]); have_static_libs=yes],
     [AC_MSG_RESULT([no])])
   AC_LANG_POP(C++)
@@ -1506,12 +1601,12 @@ if test -d ${srcdir}/gcc && test "x$have_gmp" = xno; then
     AC_MSG_CHECKING([for the correct version of mpfr.h])
     AC_TRY_COMPILE([#include <gmp.h>
     #include <mpfr.h>],[
-    #if MPFR_VERSION < MPFR_VERSION_NUM(2,4,0)
+    #if MPFR_VERSION < MPFR_VERSION_NUM(3,1,0)
     choke me
     #endif
     ], [AC_TRY_COMPILE([#include <gmp.h>
     #include <mpfr.h>],[
-    #if MPFR_VERSION < MPFR_VERSION_NUM(2,4,2)
+    #if MPFR_VERSION < MPFR_VERSION_NUM(3,1,6)
     choke me
     #endif
     ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([buggy but acceptable])])],
@@ -1566,11 +1661,11 @@ if test -d ${srcdir}/gcc && test "x$have_gmp" = xno; then
 # The library versions listed in the error message below should match
 # the HARD-minimums enforced above.
   if test x$have_gmp != xyes; then
-    AC_MSG_ERROR([Building GCC requires GMP 4.2+, MPFR 2.4.0+ and MPC 0.8.0+.
+    AC_MSG_ERROR([Building GCC requires GMP 4.2+, MPFR 3.1.0+ and MPC 0.8.0+.
 Try the --with-gmp, --with-mpfr and/or --with-mpc options to specify
 their locations.  Source code for these libraries can be found at
 their respective hosting sites as well as at
-ftp://gcc.gnu.org/pub/gcc/infrastructure/.  See also
+https://gcc.gnu.org/pub/gcc/infrastructure/.  See also
 http://gcc.gnu.org/install/prerequisites.html for additional info.  If
 you obtained GMP, MPFR and/or MPC from a vendor distribution package,
 make sure that you have installed both the libraries and the header
@@ -1597,6 +1692,19 @@ AC_ARG_WITH(stage1-libs,
 [stage1_libs=])
 AC_SUBST(stage1_libs)
 
+# Whether or not to use -static-libstdc++ and -static-libgcc.  The
+# default is yes if gcc is being built; no otherwise.  The reason for
+# this default is that gdb is sometimes linked against GNU Source
+# Highlight, which is a shared library that uses C++ exceptions.  In
+# this case, -static-libstdc++ will cause crashes.
+AC_ARG_WITH(static-standard-libraries,
+[AS_HELP_STRING([--with-static-standard-libraries],
+                [use -static-libstdc++ and -static-libgcc (default=auto)])],
+[], [with_static_standard_libraries=auto])
+if test "$with_static_standard_libraries" = auto; then
+  with_static_standard_libraries=$have_compiler
+fi
+
 # Linker flags to use for stage1 or when not bootstrapping.
 AC_ARG_WITH(stage1-ldflags,
 [AS_HELP_STRING([--with-stage1-ldflags=FLAGS], [linker flags for stage1])],
@@ -1609,7 +1717,8 @@ AC_ARG_WITH(stage1-ldflags,
  # In stage 1, default to linking libstdc++ and libgcc statically with GCC
  # if supported.  But if the user explicitly specified the libraries to use,
  # trust that they are doing what they want.
- if test "$stage1_libs" = "" -a "$have_static_libs" = yes; then
+ if test "$with_static_standard_libraries" = yes -a "$stage1_libs" = "" \
+     -a "$have_static_libs" = yes; then
    stage1_ldflags="-static-libstdc++ -static-libgcc"
  fi])
 AC_SUBST(stage1_ldflags)
@@ -2707,6 +2816,14 @@ esac
 CONFIGURE_GDB_TK=`echo ${GDB_TK} | sed s/-all-/-configure-/g`
 INSTALL_GDB_TK=`echo ${GDB_TK} | sed s/-all-/-install-/g`
 
+# gdb depends on gnulib, but as nothing else does, only include it if
+# gdb is built.
+if echo " ${configdirs} " | grep " gdb " > /dev/null 2>&1 ; then
+  # The Makefile provides the ordering, so it's enough here to add
+  # gnulib to the list.
+  configdirs="${configdirs} gnulib"
+fi
+
 # Strip out unwanted targets.
 
 # While at that, we remove Makefiles if we were started for recursive
@@ -3235,6 +3352,7 @@ AC_SUBST(CXX_FOR_BUILD)
 AC_SUBST(DLLTOOL_FOR_BUILD)
 AC_SUBST(GFORTRAN_FOR_BUILD)
 AC_SUBST(GOC_FOR_BUILD)
+AC_SUBST(GDC_FOR_BUILD)
 AC_SUBST(LDFLAGS_FOR_BUILD)
 AC_SUBST(LD_FOR_BUILD)
 AC_SUBST(NM_FOR_BUILD)
@@ -3320,6 +3438,7 @@ NCN_STRICT_CHECK_TOOLS(WINDRES, windres)
 NCN_STRICT_CHECK_TOOLS(WINDMC, windmc)
 NCN_STRICT_CHECK_TOOLS(OBJCOPY, objcopy)
 NCN_STRICT_CHECK_TOOLS(OBJDUMP, objdump)
+NCN_STRICT_CHECK_TOOLS(OTOOL, otool)
 NCN_STRICT_CHECK_TOOLS(READELF, readelf)
 AC_SUBST(CC)
 AC_SUBST(CXX)
@@ -3344,6 +3463,7 @@ NCN_STRICT_CHECK_TARGET_TOOLS(CXX_FOR_TARGET, c++ g++ cxx gxx)
 NCN_STRICT_CHECK_TARGET_TOOLS(GCC_FOR_TARGET, gcc, ${CC_FOR_TARGET})
 NCN_STRICT_CHECK_TARGET_TOOLS(GFORTRAN_FOR_TARGET, gfortran)
 NCN_STRICT_CHECK_TARGET_TOOLS(GOC_FOR_TARGET, gccgo)
+NCN_STRICT_CHECK_TARGET_TOOLS(GDC_FOR_TARGET, gdc)
 
 ACX_CHECK_INSTALLED_TARGET_TOOL(AR_FOR_TARGET, ar)
 ACX_CHECK_INSTALLED_TARGET_TOOL(AS_FOR_TARGET, as)
@@ -3353,6 +3473,7 @@ ACX_CHECK_INSTALLED_TARGET_TOOL(LIPO_FOR_TARGET, lipo)
 ACX_CHECK_INSTALLED_TARGET_TOOL(NM_FOR_TARGET, nm)
 ACX_CHECK_INSTALLED_TARGET_TOOL(OBJCOPY_FOR_TARGET, objcopy)
 ACX_CHECK_INSTALLED_TARGET_TOOL(OBJDUMP_FOR_TARGET, objdump)
+ACX_CHECK_INSTALLED_TARGET_TOOL(OTOOL_FOR_TARGET, otool)
 ACX_CHECK_INSTALLED_TARGET_TOOL(RANLIB_FOR_TARGET, ranlib)
 ACX_CHECK_INSTALLED_TARGET_TOOL(READELF_FOR_TARGET, readelf)
 ACX_CHECK_INSTALLED_TARGET_TOOL(STRIP_FOR_TARGET, strip)
@@ -3377,11 +3498,14 @@ GCC_TARGET_TOOL(gfortran, GFORTRAN_FOR_TARGET, GFORTRAN,
 		[gcc/gfortran -B$$r/$(HOST_SUBDIR)/gcc/], fortran)
 GCC_TARGET_TOOL(gccgo, GOC_FOR_TARGET, GOC,
 		[gcc/gccgo -B$$r/$(HOST_SUBDIR)/gcc/], go)
+GCC_TARGET_TOOL(gdc, GDC_FOR_TARGET, GDC,
+		[gcc/gdc -B$$r/$(HOST_SUBDIR)/gcc/], d)
 GCC_TARGET_TOOL(ld, LD_FOR_TARGET, LD, [ld/ld-new])
 GCC_TARGET_TOOL(lipo, LIPO_FOR_TARGET, LIPO)
 GCC_TARGET_TOOL(nm, NM_FOR_TARGET, NM, [binutils/nm-new])
 GCC_TARGET_TOOL(objcopy, OBJCOPY_FOR_TARGET, OBJCOPY, [binutils/objcopy])
 GCC_TARGET_TOOL(objdump, OBJDUMP_FOR_TARGET, OBJDUMP, [binutils/objdump])
+GCC_TARGET_TOOL(otool, OTOOL_FOR_TARGET, OTOOL)
 GCC_TARGET_TOOL(ranlib, RANLIB_FOR_TARGET, RANLIB, [binutils/ranlib])
 GCC_TARGET_TOOL(readelf, READELF_FOR_TARGET, READELF, [binutils/readelf])
 GCC_TARGET_TOOL(strip, STRIP_FOR_TARGET, STRIP, [binutils/strip-new])

@@ -2,7 +2,7 @@
 /* { dg-require-effective-target ia32 } */
 /* { dg-options "" } */
 
-register unsigned int EAX asm ("r14"); /* { dg-error "register name" } */
+register unsigned int EAX asm ("r14"); /* { dg-error "cannot be accessed" } */
 
 void foo ()
 {

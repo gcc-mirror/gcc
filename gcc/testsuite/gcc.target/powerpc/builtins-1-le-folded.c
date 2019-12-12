@@ -1,6 +1,5 @@
 /* { dg-do compile { target { powerpc64le-*-* } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-mcpu=power8 -O2 -mfold-gimple" } */
+/* { dg-options "-mdejagnu-cpu=power8 -O2 -mfold-gimple" } */
 
 /* Based on builtins-1-le.c ; ensure that the power8 builtins are accepted by
    the compiler, at O2 with gimple folding enabled.  */

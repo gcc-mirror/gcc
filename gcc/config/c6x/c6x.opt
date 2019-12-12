@@ -1,5 +1,5 @@
 ; Option definitions for TI C6X.
-; Copyright (C) 2010-2018 Free Software Foundation, Inc.
+; Copyright (C) 2010-2019 Free Software Foundation, Inc.
 ; Contributed by Bernd Schmidt <bernds@codesourcery.com>
 ; Contributed by CodeSourcery.
 ;
@@ -43,7 +43,7 @@ Select method for sdata handling.
 
 Enum
 Name(c6x_sdata) Type(enum c6x_sdata)
-Valid arguments for the -msdata= option.
+Valid arguments for the -msdata= option:
 
 EnumValue
 Enum(c6x_sdata) String(none) Value(C6X_SDATA_NONE)

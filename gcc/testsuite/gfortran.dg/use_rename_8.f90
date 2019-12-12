@@ -19,8 +19,8 @@ SUBROUTINE T
     USE MOO, ONLY: X => B
 END SUBROUTINE T
 
-SUBROUTINE C
-    USE MOO, ONLY: C  ! { dg-error "is also the name of the current program unit" }
+SUBROUTINE C          ! { dg-error "\(1\)" }
+    USE MOO, ONLY: C  ! { dg-error "conflicts with the" }
 END SUBROUTINE C
 
 SUBROUTINE D
@@ -36,15 +36,15 @@ SUBROUTINE F
     USE MOO, ONLY: X => F
 END SUBROUTINE F
 
-SUBROUTINE X
-    USE MOO, ONLY: X => G ! { dg-error "is also the name of the current program unit" }
+SUBROUTINE X              ! { dg-error "\(1\)" }
+    USE MOO, ONLY: X => G ! { dg-error "conflicts with the rename" }
 END SUBROUTINE X
 
-SUBROUTINE Y
-    USE MOO, ONLY: Y => H ! { dg-error "is also the name of the current program unit" }
+SUBROUTINE Y              ! { dg-error "\(1\)" }
+    USE MOO, ONLY: Y => H ! { dg-error "conflicts with the rename" }
 END SUBROUTINE Y
 
-SUBROUTINE Z
-    USE MOO, ONLY: Z => I, Z => I ! { dg-error "is also the name of the current program unit" }
+SUBROUTINE Z                        ! { dg-error "\(1\)" }
+    USE MOO, ONLY: Z => I, Z => I   ! { dg-error "conflicts with the rename" }
 END SUBROUTINE Z
 

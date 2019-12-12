@@ -1,7 +1,7 @@
 // PR lto/60567
 // { dg-lto-do link }
 // { dg-lto-options { { -flto -fno-use-linker-plugin } } }
-// { dg-extra-ld-options "-r -nostdlib" }
+// { dg-extra-ld-options "-r" }
 
 #pragma implementation
 struct S {};

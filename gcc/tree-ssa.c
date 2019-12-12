@@ -1,5 +1,5 @@
 /* Miscellaneous SSA utility functions.
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -52,7 +52,7 @@ static hash_map<edge, auto_vec<edge_var_map> > *edge_var_maps;
 /* Add a mapping with PHI RESULT and PHI DEF associated with edge E.  */
 
 void
-redirect_edge_var_map_add (edge e, tree result, tree def, source_location locus)
+redirect_edge_var_map_add (edge e, tree result, tree def, location_t locus)
 {
   edge_var_map new_node;
 
@@ -151,7 +151,7 @@ ssa_redirect_edge (edge e, basic_block dest)
     for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
       {
 	tree def;
-	source_location locus ;
+	location_t locus;
 
 	phi = gsi.phi ();
 	def = gimple_phi_arg_def (phi, e->dest_idx);
@@ -358,6 +358,11 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
       else if (value == error_mark_node)
 	value = NULL;
     }
+  else if (gimple_clobber_p (def_stmt))
+    /* We can end up here when rewriting a decl into SSA and coming
+       along a clobber for the original decl.  Turn that into
+       # DEBUG decl => NULL  */
+    value = NULL;
   else if (is_gimple_assign (def_stmt))
     {
       bool no_value = false;
@@ -554,20 +559,25 @@ release_defs_bitset (bitmap toremove)
 
   /* Performing a topological sort is probably overkill, this will
      most likely run in slightly superlinear time, rather than the
-     pathological quadratic worst case.  */
+     pathological quadratic worst case.
+     But iterate from max SSA name version to min one because
+     that mimics allocation order during code generation behavior best.
+     Use an array for this which we compact on-the-fly with a NULL
+     marker moving towards the end of the vector.  */
+  auto_vec<tree, 16> names;
+  names.reserve (bitmap_count_bits (toremove) + 1);
+  names.quick_push (NULL_TREE);
+  EXECUTE_IF_SET_IN_BITMAP (toremove, 0, j, bi)
+    names.quick_push (ssa_name (j));
+
+  bitmap_tree_view (toremove);
   while (!bitmap_empty_p (toremove))
     {
-      unsigned to_remove_bit = -1U;
-      EXECUTE_IF_SET_IN_BITMAP (toremove, 0, j, bi)
+      j = names.length () - 1;
+      for (unsigned i = names.length () - 1; names[i];)
 	{
-	  if (to_remove_bit != -1U)
-	    {
-	      bitmap_clear_bit (toremove, to_remove_bit);
-	      to_remove_bit = -1U;
-	    }
-
 	  bool remove_now = true;
-	  tree var = ssa_name (j);
+	  tree var = names[i];
 	  gimple *stmt;
 	  imm_use_iterator uit;
 
@@ -612,15 +622,25 @@ release_defs_bitset (bitmap toremove)
 		  gsi_remove (&gsi, true);
 		  release_defs (def);
 		}
-
-	      to_remove_bit = j;
+	      bitmap_clear_bit (toremove, SSA_NAME_VERSION (var));
 	    }
+	  else
+	    --i;
+	  if (--j != i)
+	    names[i] = names[j];
 	}
-      if (to_remove_bit != -1U)
-	bitmap_clear_bit (toremove, to_remove_bit);
     }
-
+  bitmap_list_view (toremove);
 }
+
+/* Disable warnings about missing quoting in GCC diagnostics for
+   the verification errors.  Their format strings don't follow GCC
+   diagnostic conventions and the calls are ultimately followed by
+   one to internal_error.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
 
 /* Verify virtual SSA form.  */
 
@@ -1188,6 +1208,9 @@ err:
   internal_error ("verify_ssa failed");
 }
 
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif
 
 /* Initialize global DFA and SSA structures.  */
 
@@ -1446,6 +1469,7 @@ non_rewritable_mem_ref_base (tree ref)
 	return NULL_TREE;
       /* For integral typed extracts we can use a BIT_FIELD_REF.  */
       if (DECL_SIZE (decl)
+	  && TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST
 	  && (known_subrange_p
 	      (mem_ref_offset (base),
 	       wi::to_poly_offset (TYPE_SIZE_UNIT (TREE_TYPE (base))),
@@ -1515,14 +1539,29 @@ non_rewritable_lvalue_p (tree lhs)
       if (DECL_P (decl)
 	  && VECTOR_TYPE_P (TREE_TYPE (decl))
 	  && TYPE_MODE (TREE_TYPE (decl)) != BLKmode
-	  && operand_equal_p (TYPE_SIZE_UNIT (TREE_TYPE (lhs)),
-			      TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl))), 0)
 	  && known_ge (mem_ref_offset (lhs), 0)
 	  && known_gt (wi::to_poly_offset (TYPE_SIZE_UNIT (TREE_TYPE (decl))),
 		       mem_ref_offset (lhs))
 	  && multiple_of_p (sizetype, TREE_OPERAND (lhs, 1),
 			    TYPE_SIZE_UNIT (TREE_TYPE (lhs))))
-	return false;
+	{
+	  poly_uint64 lhs_bits, nelts;
+	  if (poly_int_tree_p (TYPE_SIZE (TREE_TYPE (lhs)), &lhs_bits)
+	      && multiple_p (lhs_bits,
+			     tree_to_uhwi
+			       (TYPE_SIZE (TREE_TYPE (TREE_TYPE (decl)))),
+			     &nelts))
+	    {
+	      if (known_eq (nelts, 1u))
+		return false;
+	      /* For sub-vector inserts the insert vector mode has to be
+		 supported.  */
+	      tree vtype = build_vector_type (TREE_TYPE (TREE_TYPE (decl)),
+					      nelts);
+	      if (TYPE_MODE (vtype) != BLKmode)
+		return false;
+	    }
+	}
     }
 
   /* A vector-insert using a BIT_FIELD_REF is rewritable using
@@ -1860,20 +1899,30 @@ execute_update_addresses_taken (void)
 		    && bitmap_bit_p (suitable_for_renaming, DECL_UID (sym))
 		    && VECTOR_TYPE_P (TREE_TYPE (sym))
 		    && TYPE_MODE (TREE_TYPE (sym)) != BLKmode
-		    && operand_equal_p (TYPE_SIZE_UNIT (TREE_TYPE (lhs)),
-					TYPE_SIZE_UNIT
-					  (TREE_TYPE (TREE_TYPE (sym))), 0)
-		    && tree_fits_uhwi_p (TREE_OPERAND (lhs, 1))
-		    && tree_int_cst_lt (TREE_OPERAND (lhs, 1),
-					TYPE_SIZE_UNIT (TREE_TYPE (sym)))
-		    && (tree_to_uhwi (TREE_OPERAND (lhs, 1))
-			% tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (lhs)))) == 0)
+		    && known_ge (mem_ref_offset (lhs), 0)
+		    && known_gt (wi::to_poly_offset
+				   (TYPE_SIZE_UNIT (TREE_TYPE (sym))),
+				 mem_ref_offset (lhs))
+		    && multiple_of_p (sizetype,
+				      TREE_OPERAND (lhs, 1),
+				      TYPE_SIZE_UNIT (TREE_TYPE (lhs))))
 		  {
 		    tree val = gimple_assign_rhs1 (stmt);
 		    if (! types_compatible_p (TREE_TYPE (val),
 					      TREE_TYPE (TREE_TYPE (sym))))
 		      {
-			tree tem = make_ssa_name (TREE_TYPE (TREE_TYPE (sym)));
+			poly_uint64 lhs_bits, nelts;
+			tree temtype = TREE_TYPE (TREE_TYPE (sym));
+			if (poly_int_tree_p (TYPE_SIZE (TREE_TYPE (lhs)),
+					     &lhs_bits)
+			    && multiple_p (lhs_bits,
+					   tree_to_uhwi
+					     (TYPE_SIZE (TREE_TYPE
+							   (TREE_TYPE (sym)))),
+					   &nelts)
+			    && maybe_ne (nelts, 1u))
+			  temtype = build_vector_type (temtype, nelts);
+			tree tem = make_ssa_name (temtype);
 			gimple *pun
 			  = gimple_build_assign (tem,
 						 build1 (VIEW_CONVERT_EXPR,
@@ -1967,9 +2016,7 @@ execute_update_addresses_taken (void)
 			    /* In ASAN_MARK (UNPOISON, &b, ...) the variable
 			       is uninitialized.  Avoid dependencies on
 			       previous out of scope value.  */
-			    tree clobber
-			      = build_constructor (TREE_TYPE (var), NULL);
-			    TREE_THIS_VOLATILE (clobber) = 1;
+			    tree clobber = build_clobber (TREE_TYPE (var));
 			    gimple *g = gimple_build_assign (var, clobber);
 			    gsi_replace (&gsi, g, GSI_SAME_STMT);
 			  }

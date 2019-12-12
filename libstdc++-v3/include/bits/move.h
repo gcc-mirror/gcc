@@ -1,6 +1,6 @@
 // Move, forward and identity for C++11 + swap -*- C++ -*-
 
-// Copyright (C) 2007-2018 Free Software Foundation, Inc.
+// Copyright (C) 2007-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,7 +31,9 @@
 #define _MOVE_H 1
 
 #include <bits/c++config.h>
-#include <bits/concept_check.h>
+#if __cplusplus < 201103L
+# include <bits/concept_check.h>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -145,6 +147,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // C++11 version of std::exchange for internal use.
   template <typename _Tp, typename _Up = _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline _Tp
     __exchange(_Tp& __obj, _Up&& __new_val)
     {
@@ -174,22 +177,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @return   Nothing.
   */
   template<typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline
 #if __cplusplus >= 201103L
     typename enable_if<__and_<__not_<__is_tuple_like<_Tp>>,
 			      is_move_constructible<_Tp>,
 			      is_move_assignable<_Tp>>::value>::type
-    swap(_Tp& __a, _Tp& __b)
-    noexcept(__and_<is_nothrow_move_constructible<_Tp>,
-	            is_nothrow_move_assignable<_Tp>>::value)
 #else
     void
-    swap(_Tp& __a, _Tp& __b)
 #endif
+    swap(_Tp& __a, _Tp& __b)
+    _GLIBCXX_NOEXCEPT_IF(__and_<is_nothrow_move_constructible<_Tp>,
+				is_nothrow_move_assignable<_Tp>>::value)
     {
+#if __cplusplus < 201103L
       // concept requirements
       __glibcxx_function_requires(_SGIAssignableConcept<_Tp>)
-
+#endif
       _Tp __tmp = _GLIBCXX_MOVE(__a);
       __a = _GLIBCXX_MOVE(__b);
       __b = _GLIBCXX_MOVE(__tmp);
@@ -199,15 +203,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // DR 809. std::swap should be overloaded for array types.
   /// Swap the contents of two arrays.
   template<typename _Tp, size_t _Nm>
+    _GLIBCXX20_CONSTEXPR
     inline
 #if __cplusplus >= 201103L
     typename enable_if<__is_swappable<_Tp>::value>::type
-    swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
-    noexcept(__is_nothrow_swappable<_Tp>::value)
 #else
     void
-    swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
 #endif
+    swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
+    _GLIBCXX_NOEXCEPT_IF(__is_nothrow_swappable<_Tp>::value)
     {
       for (size_t __n = 0; __n < _Nm; ++__n)
 	swap(__a[__n], __b[__n]);

@@ -12,7 +12,7 @@ test_stringified_token_1 (int x)
 {
 #define STRINGIFY(EXPR) #EXPR
 
-  __emit_string_literal_range (STRINGIFY(x > 0), /* { dg-error "unable to read substring location: macro expansion" } */
+  __emit_string_literal_range (STRINGIFY(x > 0), /* { dg-error "macro expansion|cpp_interpret_string_1 failed" } */
                                0, 0, 4);
 
 #undef STRINGIFY
@@ -43,7 +43,7 @@ test_stringified_token_3 (int x)
 #define XSTR(s) STR(s)
 #define STR(s) #s
 #define FOO 123456789
-  __emit_string_literal_range (XSTR (FOO), /* { dg-error "unable to read substring location: macro expansion" } */
+  __emit_string_literal_range (XSTR (FOO), /* { dg-error "macro expansion|cpp_interpret_string_1 failed" } */
                                2, 2, 3);
 
 #undef XSTR
@@ -69,7 +69,8 @@ test_pr79210 (void)
   "some multiline blurb with a short final line "
   "here");
 
-  /* { dg-error "19: unable to read substring location: line is not wide enough" "" { target *-*-* } .-11 } */
+  /* { dg-error "19: unable to read substring location: range endpoints are on different lines" "" { target c } .-11 } */
+  /* { dg-error "19: unable to read substring location: line is not wide enough" "" { target c++ } .-12 } */
 
 #undef LPFC_VPORT_ATTR_R
 #undef lpfc_vport_param_init

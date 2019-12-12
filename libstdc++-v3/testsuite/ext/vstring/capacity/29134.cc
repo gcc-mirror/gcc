@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2018 Free Software Foundation, Inc.
+// Copyright (C) 2006-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,13 +19,14 @@
 
 #include <ext/vstring.h>
 #include <testsuite_hooks.h>
+#include <testsuite_allocator.h>
 
 // libstdc++/29134
 void test01()
 {
   __gnu_cxx::__vstring vs;
 
-  VERIFY( vs.max_size() <= vs.get_allocator().max_size() );
+  VERIFY( vs.max_size() <= __gnu_test::max_size(vs.get_allocator()) );
 }
 
 int main()

@@ -1,6 +1,6 @@
 /* nodiscard attribute tests, adapted from gcc.dg/attr-warn-unused-result.c.  */
-/* { dg-do compile } */
-/* { dg-options "-std=c++17 -O -ftrack-macro-expansion=0" } */
+/* { dg-do compile { target c++17 } } */
+/* { dg-options "-O -ftrack-macro-expansion=0" } */
 
 #define WUR [[nodiscard]]
 #define WURAI [[nodiscard, gnu::always_inline]] inline
@@ -13,8 +13,8 @@ typedef struct { char big[1024]; fnt fn; } C;
 struct [[nodiscard]] D { int i; D(); ~D(); };
 
 WUR E check1 (void);
-WUR void check2 (void); /* { dg-warning "nodiscard" } */
-WUR int foo;		/* { dg-warning "nodiscard" } */
+WUR void check2 (void); /* { dg-warning "10:.nodiscard." } */
+WUR int foo;		/* { dg-warning "9:.nodiscard." } */
 int bar (void);
 WURAI E check3 (void) { return (E)bar (); }
 WUR A check4 (void);

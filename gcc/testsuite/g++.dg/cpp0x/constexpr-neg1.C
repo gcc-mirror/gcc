@@ -61,7 +61,7 @@ struct pixel2 {	   // { dg-message "no user-provided default constructor" }
   int x, y;
 };
 constexpr pixel2 ur = { 1294, 1024 };// OK
-constexpr pixel2 origin;	     // { dg-error "uninitialized const" }
+constexpr pixel2 origin;	     // { dg-error "uninitialized 'const" }
 
 constexpr const int* addr(const int& ir) { return &ir; } // OK
 

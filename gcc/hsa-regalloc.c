@@ -1,5 +1,5 @@
 /* HSAIL IL Register allocation and out-of-SSA.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
    Contributed by Michael Matz <matz@suse.de>
 
 This file is part of GCC.
@@ -27,14 +27,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "dominance.h"
 #include "basic-block.h"
-#include "cfg.h"
-#include "cfganal.h"
 #include "function.h"
+#include "cfganal.h"
+#include "cfg.h"
 #include "bitmap.h"
 #include "dumpfile.h"
 #include "cgraph.h"
 #include "print-tree.h"
 #include "cfghooks.h"
+#include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "hsa-common.h"
 
@@ -256,7 +257,7 @@ dump_hsa_cfun_regalloc (FILE *f)
 
   FOR_ALL_BB_FN (bb, cfun)
   {
-    hsa_bb *hbb = (struct hsa_bb *) bb->aux;
+    hsa_bb *hbb = (class hsa_bb *) bb->aux;
     bitmap_print (dump_file, hbb->m_livein, "m_livein  ", "\n");
     dump_hsa_bb (f, hbb);
     bitmap_print (dump_file, hbb->m_liveout, "m_liveout ", "\n");

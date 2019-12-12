@@ -4,7 +4,7 @@
 /* { dg-do compile { target *-*-darwin* } } */
 /* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 /* { dg-require-effective-target ilp32 } */
-/* { dg-options "-mdynamic-no-pic -fdump-rtl-jump -mmacosx-version-min=10.4" } */
+/* { dg-options "-mdynamic-no-pic -fdump-rtl-jump -mmacosx-version-min=10.4 -msymbol-stubs" } */
 
 typedef struct objc_object { } *id ;
 int x = 41 ;
@@ -16,9 +16,9 @@ extern int bogonic (int, int, int) ;
 - (Document *) close;
 @end
 @implementation Document
-- (Document *) class { }
-- (Document *) close { }
-- (Document *) window { }
+- (Document *) class { return (Document *)0; }
+- (Document *) close { return (Document *)0; }
+- (Document *) window { return (Document *)0; }
 - (void)willEndCloseSheet:(void *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo {
   [[self window] close];
   ((void (*)(id, char *, int))objc_msgSend)([self class], (char *)contextInfo, 1);
@@ -30,4 +30,10 @@ extern int bogonic (int, int, int) ;
 
 /* Any symbol_ref of an un-stubified objc_msgSend is an error; look
    for "objc_msgSend" in quotes, without the $stub suffix. */
-/* { dg-final {  scan-rtl-dump-not "symbol_ref.*\"objc_msgSend\"" "jump" } } */
+/* { dg-final {  scan-rtl-dump-not {symbol_ref.*"objc_msgSend"} "jump" { target powerpc*-*-darwin* } } } */
+
+/* { dg-final { scan-assembler-not {(bl|call)[ \t]+_objc_msgSend\n} } } */
+/* { dg-final { scan-assembler     {(bl|call)[ \t]+L_objc_msgSend\$stub\n} } } */
+/* { dg-final { scan-assembler-not {(bl|call)[ \t]+_Z7bogoniciii\n} } } */
+/* { dg-final { scan-assembler     {(bl|call)[ \t]+L__Z7bogoniciii\$stub\n} } } */
+/* { dg-final { scan-assembler-not {\$non_lazy_ptr} } } */

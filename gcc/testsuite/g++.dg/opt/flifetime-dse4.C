@@ -1,5 +1,6 @@
 // { dg-options "-O3 -flifetime-dse=1" }
 // { dg-do run }
+// { dg-xfail-run-if "AIX operator new" { powerpc-ibm-aix* } }
 
 typedef __SIZE_TYPE__ size_t;
 inline void * operator new (size_t, void *p) { return p; }

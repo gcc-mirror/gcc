@@ -7,5 +7,5 @@ class A {
 };
 class B : A {
   template <typename>
-  void foo ();		// { dg-warning "by .B::foo\\(\\)." }
+  void foo ();		// { dg-message "by .B::foo\\(\\)." }
 };

@@ -1,4 +1,4 @@
-@c Copyright (C) 2000-2018 Free Software Foundation, Inc.
+@c Copyright (C) 2000-2019 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -38,6 +38,8 @@ with some exceptions, and possibly with some extensions.
 @cindex C1X
 @cindex ISO C17
 @cindex C17
+@cindex ISO C2X
+@cindex C2X
 @cindex Technical Corrigenda
 @cindex TC1
 @cindex Technical Corrigendum 1
@@ -102,11 +104,16 @@ in 2011 as ISO/IEC 9899:2011.  (While in development, drafts of this
 standard version were referred to as @dfn{C1X}.)
 GCC has substantially complete support
 for this standard, enabled with @option{-std=c11} or
-@option{-std=iso9899:2011}.  A version with corrections integrated is
+@option{-std=iso9899:2011}.  A version with corrections integrated was
+prepared in 2017 and published in 2018 as ISO/IEC 9899:2018; it is
 known as @dfn{C17} and is supported with @option{-std=c17} or
 @option{-std=iso9899:2017}; the corrections are also applied with
 @option{-std=c11}, and the only difference between the options is the
 value of @code{__STDC_VERSION__}.
+
+A further version of the C standard, known as @dfn{C2X}, is under
+development; experimental and incomplete support for this is enabled
+with @option{-std=c2x}.
 
 By default, GCC provides some extensions to the C language that, on
 rare occasions conflict with the C standard.  @xref{C
@@ -294,7 +301,7 @@ GCC has currently no support for non-fragile instance variables.
 The authoritative manual on Objective-C 2.0 is available from Apple:
 @itemize
 @item
-@uref{https://developer.apple.com/library/content/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/Introduction/Introduction.html}
+@uref{https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/Introduction/Introduction.html}
 @end itemize
 
 For more information concerning the history of Objective-C that is
@@ -312,6 +319,12 @@ described in HSA Programmer's Reference Manual version 1.0.1. This
 capability is typically utilized to implement the HSA runtime API's HSAIL 
 finalization extension for a gcc supported processor. HSA standards are
 freely available at @uref{http://www.hsafoundation.com/standards/}.
+
+@section D language
+
+GCC supports the D 2.0 programming language.  The D language itself is
+currently defined by its reference implementation and supporting language
+specification, described at @uref{https://dlang.org/spec/spec.html}.
 
 @section References for Other Languages
 

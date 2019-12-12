@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -81,7 +81,20 @@ cpu_relax (void)
 static inline bool
 htm_available (void)
 {
-  return (getauxval (AT_HWCAP2) & PPC_FEATURE2_HAS_HTM) ? true : false;
+#ifdef __BUILTIN_CPU_SUPPORTS__
+  if (__builtin_cpu_supports ("htm-no-suspend")
+      || __builtin_cpu_supports ("htm"))
+    return true;
+#else
+  unsigned long htm_flags = PPC_FEATURE2_HAS_HTM
+#ifdef PPC_FEATURE2_HTM_NO_SUSPEND
+			    | PPC_FEATURE2_HTM_NO_SUSPEND
+#endif
+			    | 0;
+  if (getauxval (AT_HWCAP2) & htm_flags)
+    return true;
+#endif
+  return false;
 }
 
 static inline uint32_t

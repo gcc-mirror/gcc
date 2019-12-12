@@ -1,5 +1,5 @@
 `/* Implementation of the MINLOC intrinsic
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -63,27 +63,27 @@ FOREACH_FUNCTION(
 	}
       else
 #endif
-    if (back)
-      do
-	{
-	  if (unlikely (*base <= minval))
-	    {
-	      minval = *base;
-	      for (n = 0; n < rank; n++)
-		dest[n * dstride] = count[n] + 1;
-	    }
-	  base += sstride[0];
-	}
-      while (++count[0] != extent[0]);
-    else
-      do
-        {
-	  if (unlikely (*base < minval))
-	    {
-	      minval = *base;
-	      for (n = 0; n < rank; n++)
-	        dest[n * dstride] = count[n] + 1;
-	    }')
+      if (back)
+	do
+	  {
+	    if (unlikely (*base <= minval))
+	      {
+		minval = *base;
+		for (n = 0; n < rank; n++)
+		  dest[n * dstride] = count[n] + 1;
+	      }
+	    base += sstride[0];
+	  }
+	while (++count[0] != extent[0]);
+      else
+	do
+	  {
+	    if (unlikely (*base < minval))
+	      {
+		minval = *base;
+		for (n = 0; n < rank; n++)
+		  dest[n * dstride] = count[n] + 1;
+	      }')
 MASKED_FOREACH_FUNCTION(
 `  atype_name minval;
    int fast = 0;

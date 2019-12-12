@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -mavx512bw" } */
+/* { dg-options "-O2 -mavx512bw -Wno-address-of-packed-member" } */
 /* { dg-require-effective-target avx512bw } */
 
 #define AVX512BW

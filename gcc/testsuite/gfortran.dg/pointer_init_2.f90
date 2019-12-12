@@ -18,7 +18,7 @@ subroutine sub
   integer, pointer :: dp0 => 13  ! { dg-error "Error in pointer initialization" }
   integer, pointer :: dp1 => r   ! { dg-error "Different types in pointer assignment" }
   integer, pointer :: dp2 => v   ! { dg-error "Different ranks in pointer assignment" }
-  integer, pointer :: dp3 => i   ! { dg-error "is neither TARGET nor POINTER" }
+  integer, pointer :: dp3 => i   ! { dg-error "Pointer assignment target in initialization expression does not have the TARGET attribute" }
   integer, pointer :: dp4 => j   ! { dg-error "must have the SAVE attribute" }
   integer, pointer :: dp5 => a   ! { dg-error "must not be ALLOCATABLE" }
 
@@ -35,7 +35,7 @@ subroutine sub
   end type t3
 
   type t4
-    integer, pointer :: dpc3 => i   ! { dg-error "Pointer assignment target is neither TARGET nor POINTER" }
+    integer, pointer :: dpc3 => i   ! { dg-error "Pointer assignment target in initialization expression does not have the TARGET attribute" }
   end type t4
 
   type t5

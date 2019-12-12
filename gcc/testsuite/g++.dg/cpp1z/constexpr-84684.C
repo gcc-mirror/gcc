@@ -1,5 +1,5 @@
 // PR c++/84684
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 typedef decltype (sizeof (0)) size_t;
 

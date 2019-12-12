@@ -13,6 +13,15 @@ void test_make_shared ()
   // { dg-error "expected primary-expression before '\\)' token" "" { target *-*-* } .-3 }
 }
 
+template<class T>
+void test_make_unique ()
+{
+  std::make_unique<T>(); // { dg-error "'make_unique' is not a member of 'std'" }
+  // { dg-message "'std::make_unique' is only available from C\\+\\+14 onwards" "" { target *-*-* } .-1 }
+  // { dg-error "expected primary-expression before '>' token" "" { target *-*-* } .-2 }
+  // { dg-error "expected primary-expression before '\\)' token" "" { target *-*-* } .-3 }
+}
+
 void test_array ()
 {
   std::array a; // { dg-error "'array' is not a member of 'std'" }

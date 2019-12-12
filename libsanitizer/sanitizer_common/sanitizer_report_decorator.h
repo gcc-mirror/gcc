@@ -1,7 +1,8 @@
 //===-- sanitizer_report_decorator.h ----------------------------*- C++ -*-===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -23,10 +24,11 @@ class SanitizerCommonDecorator {
   // stdout, which is not the case on Windows (see SetConsoleTextAttribute()).
  public:
   SanitizerCommonDecorator() : ansi_(ColorizeReports()) {}
-  const char *Bold()    const { return ansi_ ? "\033[1m" : ""; }
+  const char *Bold() const { return ansi_ ? "\033[1m" : ""; }
   const char *Default() const { return ansi_ ? "\033[1m\033[0m"  : ""; }
   const char *Warning() const { return Red(); }
-  const char *MemoryByte() { return Magenta(); }
+  const char *Error() const { return Red(); }
+  const char *MemoryByte() const { return Magenta(); }
 
  protected:
   const char *Black()   const { return ansi_ ? "\033[1m\033[30m" : ""; }

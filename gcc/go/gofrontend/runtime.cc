@@ -30,8 +30,16 @@ enum Runtime_function_type
   RFT_BOOLPTR,
   // Go type int, C type intgo.
   RFT_INT,
+  // Go type uint, C type uintgo.
+  RFT_UINT,
+  // Go type uint8, C type uint8_t.
+  RFT_UINT8,
+  // Go type uint16, C type uint16_t.
+  RFT_UINT16,
   // Go type int32, C type int32_t.
   RFT_INT32,
+  // Go type uint32, C type uint32_t.
+  RFT_UINT32,
   // Go type int64, C type int64_t.
   RFT_INT64,
   // Go type uint64, C type uint64_t.
@@ -60,8 +68,6 @@ enum Runtime_function_type
   RFT_IFACE,
   // Go type interface{}, C type struct __go_empty_interface.
   RFT_EFACE,
-  // Go type func(unsafe.Pointer), C type void (*) (void *).
-  RFT_FUNC_PTR,
   // Pointer to Go type descriptor.
   RFT_TYPE,
   // [2]string.
@@ -109,8 +115,24 @@ runtime_function_type(Runtime_function_type bft)
 	  t = Type::lookup_integer_type("int");
 	  break;
 
+	case RFT_UINT:
+	  t = Type::lookup_integer_type("uint");
+	  break;
+
+	case RFT_UINT8:
+	  t = Type::lookup_integer_type("uint8");
+	  break;
+
+	case RFT_UINT16:
+	  t = Type::lookup_integer_type("uint16");
+	  break;
+
 	case RFT_INT32:
 	  t = Type::lookup_integer_type("int32");
+	  break;
+
+	case RFT_UINT32:
+	  t = Type::lookup_integer_type("uint32");
 	  break;
 
 	case RFT_INT64:
@@ -174,15 +196,6 @@ runtime_function_type(Runtime_function_type bft)
 
 	case RFT_EFACE:
 	  t = Type::make_empty_interface_type(bloc);
-	  break;
-
-	case RFT_FUNC_PTR:
-	  {
-	    Typed_identifier_list* param_types = new Typed_identifier_list();
-	    Type* ptrtype = runtime_function_type(RFT_POINTER);
-	    param_types->push_back(Typed_identifier("", ptrtype, bloc));
-	    t = Type::make_function_type(NULL, param_types, NULL, bloc);
-	  }
 	  break;
 
 	case RFT_TYPE:
@@ -255,7 +268,11 @@ convert_to_runtime_function_type(Runtime_function_type bft, Expression* e,
     case RFT_BOOL:
     case RFT_BOOLPTR:
     case RFT_INT:
+    case RFT_UINT:
+    case RFT_UINT8:
+    case RFT_UINT16:
     case RFT_INT32:
+    case RFT_UINT32:
     case RFT_INT64:
     case RFT_UINT64:
     case RFT_UINTPTR:
@@ -265,7 +282,6 @@ convert_to_runtime_function_type(Runtime_function_type bft, Expression* e,
     case RFT_COMPLEX128:
     case RFT_STRING:
     case RFT_POINTER:
-    case RFT_FUNC_PTR:
       {
 	Type* t = runtime_function_type(bft);
 	if (!Type::are_identical(t, e->type(), true, NULL))

@@ -1,6 +1,6 @@
 // TR2 <dynamic_bitset> -*- C++ -*-
 
-// Copyright (C) 2009-2018 Free Software Foundation, Inc.
+// Copyright (C) 2009-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -174,7 +174,7 @@ namespace tr2
 
   // Definitions of non-inline member functions.
   template<typename _WordT, typename _Alloc>
-    template<typename _CharT, typename _Traits>
+    template<typename _Traits, typename _CharT>
       void
       dynamic_bitset<_WordT, _Alloc>::
       _M_copy_from_ptr(const _CharT* __str, size_t __len,

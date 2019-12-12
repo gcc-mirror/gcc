@@ -1,4 +1,4 @@
-#pragma acc routine seq
+#pragma acc routine
 template <typename T> T
 accDouble(int val)
 {

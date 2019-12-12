@@ -1,5 +1,5 @@
 /* Interface for -fdump-ada-spec capability.
-   Copyright (C) 2010-2018 Free Software Foundation, Inc.
+   Copyright (C) 2010-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 enum cpp_operation {
   HAS_DEPENDENT_TEMPLATE_ARGS,
   IS_ABSTRACT,
+  IS_ASSIGNMENT_OPERATOR,
   IS_CONSTRUCTOR,
   IS_DESTRUCTOR,
   IS_COPY_CONSTRUCTOR,

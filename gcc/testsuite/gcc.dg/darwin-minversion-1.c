@@ -1,6 +1,6 @@
 /* Basic test for -mmacosx-version-min switch on Darwin.  */
 /* { dg-options "-mmacosx-version-min=10.5" } */
-/* { dg-do run { target *-*-darwin* } } */
+/* { dg-do compile { target *-*-darwin* } } */
 
 int
 main ()

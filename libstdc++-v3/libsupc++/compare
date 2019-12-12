@@ -1,0 +1,925 @@
+// -*- C++ -*- operator<=> three-way comparison support.
+
+// Copyright (C) 2019 Free Software Foundation, Inc.
+//
+// This file is part of GCC.
+//
+// GCC is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 3, or (at your option)
+// any later version.
+//
+// GCC is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+/** @file compare
+ *  This is a Standard C++ Library header.
+ */
+
+#ifndef _COMPARE
+#define _COMPARE
+
+#pragma GCC system_header
+
+#if __cplusplus > 201703L && __cpp_impl_three_way_comparison >= 201907L
+
+#pragma GCC visibility push(default)
+
+#include <concepts>
+
+namespace std
+{
+#define __cpp_lib_three_way_comparison 201711L
+
+  // [cmp.categories], comparison category types
+
+  namespace __cmp_cat
+  {
+    enum class _Eq
+    { equal = 0, equivalent = equal, nonequal = 1, nonequivalent = nonequal };
+
+    enum class _Ord { _Less = -1, _Greater = 1 };
+
+    enum class _Ncmp { _Unordered = -127 };
+
+    struct __unspec
+    {
+      constexpr __unspec(__unspec*) { }
+    };
+  }
+
+  class partial_ordering
+  {
+    int _M_value;
+    bool _M_is_ordered;
+
+    constexpr explicit
+    partial_ordering(__cmp_cat::_Eq __v) noexcept
+    : _M_value(int(__v)), _M_is_ordered(true)
+    { }
+
+    constexpr explicit
+    partial_ordering(__cmp_cat::_Ord __v) noexcept
+    : _M_value(int(__v)), _M_is_ordered(true)
+    { }
+
+    constexpr explicit
+    partial_ordering(__cmp_cat::_Ncmp __v) noexcept
+    : _M_value(int(__v)), _M_is_ordered(false)
+    { }
+
+  public:
+    // valid values
+    static const partial_ordering less;
+    static const partial_ordering equivalent;
+    static const partial_ordering greater;
+    static const partial_ordering unordered;
+
+    // comparisons
+    friend constexpr bool
+    operator==(partial_ordering __v, __cmp_cat::__unspec) noexcept
+    { return __v._M_is_ordered && __v._M_value == 0; }
+
+    friend constexpr bool
+    operator==(partial_ordering, partial_ordering) noexcept = default;
+
+    friend constexpr bool
+    operator< (partial_ordering __v, __cmp_cat::__unspec) noexcept
+    { return __v._M_is_ordered && __v._M_value < 0; }
+
+    friend constexpr bool
+    operator> (partial_ordering __v, __cmp_cat::__unspec) noexcept
+    { return __v._M_is_ordered && __v._M_value > 0; }
+
+    friend constexpr bool
+    operator<=(partial_ordering __v, __cmp_cat::__unspec) noexcept
+    { return __v._M_is_ordered && __v._M_value <= 0; }
+
+    friend constexpr bool
+    operator>=(partial_ordering __v, __cmp_cat::__unspec) noexcept
+    { return __v._M_is_ordered && __v._M_value >= 0; }
+
+    friend constexpr bool
+    operator< (__cmp_cat::__unspec, partial_ordering __v) noexcept
+    { return __v._M_is_ordered && 0 < __v._M_value; }
+
+    friend constexpr bool
+    operator> (__cmp_cat::__unspec, partial_ordering __v) noexcept
+    { return __v._M_is_ordered && 0 > __v._M_value; }
+
+    friend constexpr bool
+    operator<=(__cmp_cat::__unspec, partial_ordering __v) noexcept
+    { return __v._M_is_ordered && 0 <= __v._M_value; }
+
+    friend constexpr bool
+    operator>=(__cmp_cat::__unspec, partial_ordering __v) noexcept
+    { return __v._M_is_ordered && 0 >= __v._M_value; }
+
+    friend constexpr partial_ordering
+    operator<=>(partial_ordering __v, __cmp_cat::__unspec) noexcept
+    { return __v; }
+
+    friend constexpr partial_ordering
+    operator<=>(__cmp_cat::__unspec, partial_ordering __v) noexcept
+    {
+      if (__v < 0)
+	return  partial_ordering::greater;
+      else if (__v > 0)
+	return partial_ordering::less;
+      else
+	return __v;
+    }
+  };
+
+  // valid values' definitions
+  inline constexpr partial_ordering
+  partial_ordering::less(__cmp_cat::_Ord::_Less);
+
+  inline constexpr partial_ordering
+  partial_ordering::equivalent(__cmp_cat::_Eq::equivalent);
+
+  inline constexpr partial_ordering
+  partial_ordering::greater(__cmp_cat::_Ord::_Greater);
+
+  inline constexpr partial_ordering
+  partial_ordering::unordered(__cmp_cat::_Ncmp::_Unordered);
+
+  class weak_ordering
+  {
+    int _M_value;
+
+    constexpr explicit
+    weak_ordering(__cmp_cat::_Eq __v) noexcept : _M_value(int(__v))
+    { }
+
+    constexpr explicit
+    weak_ordering(__cmp_cat::_Ord __v) noexcept : _M_value(int(__v))
+    { }
+
+  public:
+    // valid values
+    static const weak_ordering less;
+    static const weak_ordering equivalent;
+    static const weak_ordering greater;
+
+    constexpr operator partial_ordering() const noexcept
+    {
+      if (_M_value == 0)
+	return partial_ordering::equivalent;
+      else if (_M_value < 0)
+	return partial_ordering::less;
+      else
+	return partial_ordering::greater;
+    }
+
+    // comparisons
+    friend constexpr bool
+    operator==(weak_ordering __v, __cmp_cat::__unspec) noexcept
+    { return __v._M_value == 0; }
+
+    friend constexpr bool
+    operator==(weak_ordering, weak_ordering) noexcept = default;
+
+    friend constexpr bool
+    operator< (weak_ordering __v, __cmp_cat::__unspec) noexcept
+    { return __v._M_value < 0; }
+
+    friend constexpr bool
+    operator> (weak_ordering __v, __cmp_cat::__unspec) noexcept
+    { return __v._M_value > 0; }
+
+    friend constexpr bool
+    operator<=(weak_ordering __v, __cmp_cat::__unspec) noexcept
+    { return __v._M_value <= 0; }
+
+    friend constexpr bool
+    operator>=(weak_ordering __v, __cmp_cat::__unspec) noexcept
+    { return __v._M_value >= 0; }
+
+    friend constexpr bool
+    operator< (__cmp_cat::__unspec, weak_ordering __v) noexcept
+    { return 0 < __v._M_value; }
+
+    friend constexpr bool
+    operator> (__cmp_cat::__unspec, weak_ordering __v) noexcept
+    { return 0 > __v._M_value; }
+
+    friend constexpr bool
+    operator<=(__cmp_cat::__unspec, weak_ordering __v) noexcept
+    { return 0 <= __v._M_value; }
+
+    friend constexpr bool
+    operator>=(__cmp_cat::__unspec, weak_ordering __v) noexcept
+    { return 0 >= __v._M_value; }
+
+    friend constexpr weak_ordering
+    operator<=>(weak_ordering __v, __cmp_cat::__unspec) noexcept
+    { return __v; }
+
+    friend constexpr weak_ordering
+    operator<=>(__cmp_cat::__unspec, weak_ordering __v) noexcept
+    {
+      if (__v < 0)
+	return  weak_ordering::greater;
+      else if (__v > 0)
+	return weak_ordering::less;
+      else
+	return __v;
+    }
+  };
+
+  // valid values' definitions
+  inline constexpr weak_ordering
+  weak_ordering::less(__cmp_cat::_Ord::_Less);
+
+  inline constexpr weak_ordering
+  weak_ordering::equivalent(__cmp_cat::_Eq::equivalent);
+
+  inline constexpr weak_ordering
+  weak_ordering::greater(__cmp_cat::_Ord::_Greater);
+
+  class strong_ordering
+  {
+    int _M_value;
+
+    constexpr explicit
+    strong_ordering(__cmp_cat::_Eq __v) noexcept
+    : _M_value(int(__v))
+    { }
+
+    constexpr explicit
+    strong_ordering(__cmp_cat::_Ord __v) noexcept
+    : _M_value(int(__v))
+    { }
+
+  public:
+    // valid values
+    static const strong_ordering less;
+    static const strong_ordering equal;
+    static const strong_ordering equivalent;
+    static const strong_ordering greater;
+
+    constexpr operator partial_ordering() const noexcept
+    {
+      if (_M_value == 0)
+	return partial_ordering::equivalent;
+      else if (_M_value < 0)
+	return partial_ordering::less;
+      else
+	return partial_ordering::greater;
+    }
+
+    constexpr operator weak_ordering() const noexcept
+    {
+      if (_M_value == 0)
+	return weak_ordering::equivalent;
+      else if (_M_value < 0)
+	return weak_ordering::less;
+      else
+	return weak_ordering::greater;
+    }
+
+    // comparisons
+    friend constexpr bool
+    operator==(strong_ordering __v, __cmp_cat::__unspec) noexcept
+    { return __v._M_value == 0; }
+
+    friend constexpr bool
+    operator==(strong_ordering, strong_ordering) noexcept = default;
+
+    friend constexpr bool
+    operator< (strong_ordering __v, __cmp_cat::__unspec) noexcept
+    { return __v._M_value < 0; }
+
+    friend constexpr bool
+    operator> (strong_ordering __v, __cmp_cat::__unspec) noexcept
+    { return __v._M_value > 0; }
+
+    friend constexpr bool
+    operator<=(strong_ordering __v, __cmp_cat::__unspec) noexcept
+    { return __v._M_value <= 0; }
+
+    friend constexpr bool
+    operator>=(strong_ordering __v, __cmp_cat::__unspec) noexcept
+    { return __v._M_value >= 0; }
+
+    friend constexpr bool
+    operator< (__cmp_cat::__unspec, strong_ordering __v) noexcept
+    { return 0 < __v._M_value; }
+
+    friend constexpr bool
+    operator> (__cmp_cat::__unspec, strong_ordering __v) noexcept
+    { return 0 > __v._M_value; }
+
+    friend constexpr bool
+    operator<=(__cmp_cat::__unspec, strong_ordering __v) noexcept
+    { return 0 <= __v._M_value; }
+
+    friend constexpr bool
+    operator>=(__cmp_cat::__unspec, strong_ordering __v) noexcept
+    { return 0 >= __v._M_value; }
+
+    friend constexpr strong_ordering
+    operator<=>(strong_ordering __v, __cmp_cat::__unspec) noexcept
+    { return __v; }
+
+    friend constexpr strong_ordering
+    operator<=>(__cmp_cat::__unspec, strong_ordering __v) noexcept
+    {
+      if (__v < 0)
+	return  strong_ordering::greater;
+      else if (__v > 0)
+	return strong_ordering::less;
+      else
+	return __v;
+    }
+  };
+
+  // valid values' definitions
+  inline constexpr strong_ordering
+  strong_ordering::less(__cmp_cat::_Ord::_Less);
+
+  inline constexpr strong_ordering
+  strong_ordering::equal(__cmp_cat::_Eq::equal);
+
+  inline constexpr strong_ordering
+  strong_ordering::equivalent(__cmp_cat::_Eq::equivalent);
+
+  inline constexpr strong_ordering
+  strong_ordering::greater(__cmp_cat::_Ord::_Greater);
+
+
+  // named comparison functions
+  constexpr bool
+  is_eq(partial_ordering __cmp) noexcept
+  { return __cmp == 0; }
+
+  constexpr bool
+  is_neq(partial_ordering __cmp) noexcept
+  { return __cmp != 0; }
+
+  constexpr bool
+  is_lt  (partial_ordering __cmp) noexcept
+  { return __cmp < 0; }
+
+  constexpr bool
+  is_lteq(partial_ordering __cmp) noexcept
+  { return __cmp <= 0; }
+
+  constexpr bool
+  is_gt  (partial_ordering __cmp) noexcept
+  { return __cmp > 0; }
+
+  constexpr bool
+  is_gteq(partial_ordering __cmp) noexcept
+  { return __cmp >= 0; }
+
+#if __cpp_lib_concepts
+  namespace __detail
+  {
+    template<typename _Tp>
+      inline constexpr unsigned __cmp_cat_id = 1;
+    template<>
+      inline constexpr unsigned __cmp_cat_id<strong_ordering> = 2;
+    template<>
+      inline constexpr unsigned __cmp_cat_id<weak_ordering> = 4;
+    template<>
+      inline constexpr unsigned __cmp_cat_id<partial_ordering> = 8;
+
+    template<typename... _Ts>
+      constexpr unsigned __cmp_cat_ids()
+      { return (__cmp_cat_id<_Ts> | ...); }
+
+    template<unsigned>
+      struct __common_cmp_cat;
+
+    // If any Ti is not a comparison category type, U is void.
+    template<unsigned _Bits>
+      requires ((_Bits & 1) == 1)
+      struct __common_cmp_cat<_Bits> { using type = void; };
+
+    // Otherwise, if at least one Ti is std::partial_ordering,
+    // U is std::partial_ordering.
+    template<unsigned _Bits>
+      requires ((_Bits & 0b1001) == 0b1000)
+      struct __common_cmp_cat<_Bits> { using type = partial_ordering; };
+
+    // Otherwise, if at least one Ti is std::weak_ordering,
+    // U is std::weak_ordering.
+    template<unsigned _Bits>
+      requires ((_Bits & 0b1101) == 0b0100)
+      struct __common_cmp_cat<_Bits> { using type = weak_ordering; };
+
+    // Otherwise, U is std::strong_ordering.
+    template<>
+      struct __common_cmp_cat<0b0010> { using type = strong_ordering; };
+  } // namespace __detail
+
+  // [cmp.common], common comparison category type
+  template<typename... _Ts>
+    struct common_comparison_category
+    {
+      using type
+	= __detail::__common_cmp_cat<__detail::__cmp_cat_ids<_Ts...>()>::type;
+    };
+
+  // Partial specializations for one and zero argument cases.
+
+  template<typename _Tp>
+    struct common_comparison_category<_Tp>
+    { using type = void; };
+
+  template<>
+    struct common_comparison_category<partial_ordering>
+    { using type = partial_ordering; };
+
+  template<>
+    struct common_comparison_category<weak_ordering>
+    { using type = weak_ordering; };
+
+  template<>
+    struct common_comparison_category<strong_ordering>
+    { using type = strong_ordering; };
+
+  template<>
+    struct common_comparison_category<>
+    { using type = strong_ordering; };
+
+  template<typename... _Ts>
+    using common_comparison_category_t
+      = typename common_comparison_category<_Ts...>::type;
+
+  namespace __detail
+  {
+    template<typename _Tp, typename _Cat>
+      concept __compares_as
+	= same_as<common_comparison_category_t<_Tp, _Cat>, _Cat>;
+
+    template<typename _Tp, typename _Up>
+      concept __partially_ordered_with
+	= requires(const remove_reference_t<_Tp>& __t,
+		   const remove_reference_t<_Up>& __u) {
+	  { __t <  __u } -> boolean;
+	  { __t >  __u } -> boolean;
+	  { __t <= __u } -> boolean;
+	  { __t >= __u } -> boolean;
+	  { __u <  __t } -> boolean;
+	  { __u >  __t } -> boolean;
+	  { __u <= __t } -> boolean;
+	  { __u >= __t } -> boolean;
+	};
+  } // namespace __detail
+
+  // [cmp.concept], concept three_way_comparable
+  template<typename _Tp, typename _Cat = partial_ordering>
+    concept three_way_comparable
+      = __detail::__weakly_eq_cmp_with<_Tp, _Tp>
+      && (!convertible_to<_Cat, partial_ordering>
+	  || __detail::__partially_ordered_with<_Tp, _Tp>)
+      && requires(const remove_reference_t<_Tp>& __a,
+		  const remove_reference_t<_Tp>& __b) {
+	{ __a <=> __b } -> __detail::__compares_as<_Cat>;
+      };
+
+  template<typename _Tp, typename _Up, typename _Cat = partial_ordering>
+    concept three_way_comparable_with
+      = __detail::__weakly_eq_cmp_with<_Tp, _Up>
+      && (!convertible_to<_Cat, partial_ordering>
+	  || __detail::__partially_ordered_with<_Tp, _Up>)
+      && three_way_comparable<_Tp, _Cat>
+      && three_way_comparable<_Up, _Cat>
+      && common_reference_with<const remove_reference_t<_Tp>&,
+			       const remove_reference_t<_Up>&>
+      && three_way_comparable<
+	  common_reference_t<const remove_reference_t<_Tp>&,
+			     const remove_reference_t<_Up>&>, _Cat>
+      && requires(const remove_reference_t<_Tp>& __t,
+		  const remove_reference_t<_Up>& __u) {
+	{ __t <=> __u } -> __detail::__compares_as<_Cat>;
+	{ __u <=> __t } -> __detail::__compares_as<_Cat>;
+      };
+#endif
+
+  template<typename _Tp, typename _Up>
+    using __cmp2way_res_t
+      = decltype(std::declval<_Tp&>() <=> std::declval<_Up&>());
+
+  template<typename _Tp, typename _Up = _Tp, typename = void>
+    struct __cmp3way_helper
+    { };
+
+  template<typename _Tp, typename _Up>
+    struct __cmp3way_helper<_Tp, _Up, void_t<__cmp2way_res_t<_Tp, _Up>>>
+    {
+      using type = __cmp2way_res_t<_Tp, _Up>;
+      using __type = type;
+    };
+
+  /// [cmp.result], result of three-way comparison
+  template<typename _Tp, typename _Up = _Tp>
+    struct compare_three_way_result
+    : __cmp3way_helper<_Tp, _Up>
+    { };
+
+  template<typename _Tp, typename _Up = _Tp>
+    using compare_three_way_result_t
+      = typename compare_three_way_result<_Tp, _Up>::__type;
+
+#if __cpp_lib_concepts
+  namespace __detail
+  {
+    // BUILTIN-PTR-THREE-WAY(T, U)
+    template<typename _Tp, typename _Up>
+      concept __3way_builtin_ptr_cmp
+	= convertible_to<_Tp, const volatile void*>
+	  && convertible_to<_Up, const volatile void*>
+	  && ! requires(_Tp&& __t, _Up&& __u)
+	     { operator<=>(static_cast<_Tp&&>(__t), static_cast<_Up&&>(__u)); }
+	  && ! requires(_Tp&& __t, _Up&& __u)
+	     { static_cast<_Tp&&>(__t).operator<=>(static_cast<_Up&&>(__u)); };
+  } // namespace __detail
+
+  // [cmp.object], typename compare_three_way
+  struct compare_three_way
+  {
+    template<typename _Tp, typename _Up>
+      requires (three_way_comparable_with<_Tp, _Up>
+	  || __detail::__3way_builtin_ptr_cmp<_Tp, _Up>)
+      constexpr auto
+      operator()(_Tp&& __t, _Up&& __u) const noexcept
+      {
+	if constexpr (__detail::__3way_builtin_ptr_cmp<_Tp, _Up>)
+	  {
+	    auto __pt = static_cast<const volatile void*>(__t);
+	    auto __pu = static_cast<const volatile void*>(__u);
+	    if (__builtin_is_constant_evaluated())
+	      return __pt <=> __pu;
+	    auto __it = reinterpret_cast<__UINTPTR_TYPE__>(__pt);
+	    auto __iu = reinterpret_cast<__UINTPTR_TYPE__>(__pu);
+	    return __it <=> __iu;
+	  }
+	else
+	  return static_cast<_Tp&&>(__t) <=> static_cast<_Up&&>(__u);
+      }
+
+    using is_transparent = void;
+  };
+
+  namespace __cmp_cust
+  {
+    template<floating_point _Tp>
+      constexpr weak_ordering
+      __fp_weak_ordering(_Tp __e, _Tp __f)
+      {
+	// Returns an integer with the same sign as the argument, and magnitude
+	// indicating the classification: zero=1 subnorm=2 norm=3 inf=4 nan=5
+	auto __cat = [](_Tp __fp) -> int {
+	  const int __sign = __builtin_signbit(__fp) ? -1 : 1;
+	  if (__builtin_isnormal(__fp))
+	    return (__fp == 0 ? 1 : 3) * __sign;
+	  if (__builtin_isnan(__fp))
+	    return 5 * __sign;
+	  if (int __inf = __builtin_isinf_sign(__fp))
+	    return 4 * __inf;
+	  return 2 * __sign;
+	};
+
+	auto __po = __e <=> __f;
+	if (is_lt(__po))
+	  return weak_ordering::less;
+	else if (is_gt(__po))
+	  return weak_ordering::greater;
+	else if (__po == partial_ordering::equivalent)
+	  return weak_ordering::equivalent;
+	else  // unordered, at least one argument is NaN
+	  {
+	    // return -1 for negative nan, +1 for positive nan, 0 otherwise.
+	    auto __isnan_sign = [](_Tp __fp) -> int {
+	      return __builtin_isnan(__fp)
+		? __builtin_signbit(__fp) ? -1 : 1
+		: 0;
+	    };
+	    auto __ord = __isnan_sign(__e) <=> __isnan_sign(__f);
+	    if (is_eq(__ord))
+	      return weak_ordering::equivalent;
+	    else if (is_lt(__ord))
+	      return weak_ordering::less;
+	    else
+	      return weak_ordering::greater;
+	  }
+      }
+
+    template<typename _Tp, typename _Up>
+      concept __adl_strong = requires(_Tp&& __t, _Up&& __u)
+	{
+	  strong_ordering(strong_order(static_cast<_Tp&&>(__t),
+				       static_cast<_Up&&>(__u)));
+	};
+
+    template<typename _Tp, typename _Up>
+      concept __adl_weak = requires(_Tp&& __t, _Up&& __u)
+	{
+	  weak_ordering(weak_order(static_cast<_Tp&&>(__t),
+				   static_cast<_Up&&>(__u)));
+	};
+
+    template<typename _Tp, typename _Up>
+      concept __adl_partial = requires(_Tp&& __t, _Up&& __u)
+	{
+	  partial_ordering(partial_order(static_cast<_Tp&&>(__t),
+					 static_cast<_Up&&>(__u)));
+	};
+
+    template<typename _Ord, typename _Tp, typename _Up>
+      concept __op_cmp = requires(_Tp&& __t, _Up&& __u)
+	{
+	  _Ord(static_cast<_Tp&&>(__t) <=> static_cast<_Up&&>(__u));
+	};
+
+    template<typename _Tp, typename _Up>
+      concept __strongly_ordered
+	= __adl_strong<_Tp, _Up>
+	  // FIXME: || floating_point<remove_reference_t<_Tp>>
+	  || __op_cmp<strong_ordering, _Tp, _Up>;
+
+    class _Strong_order
+    {
+      template<typename _Tp, typename _Up>
+	static constexpr bool
+	_S_noexcept()
+	{
+	  if constexpr (floating_point<decay_t<_Tp>>)
+	    return true;
+	  else if constexpr (__adl_strong<_Tp, _Up>)
+	    return noexcept(strong_ordering(strong_order(std::declval<_Tp>(),
+							 std::declval<_Up>())));
+	  else if constexpr (__op_cmp<strong_ordering, _Tp, _Up>)
+	    return noexcept(std::declval<_Tp>() <=> std::declval<_Up>());
+	}
+
+      friend class _Weak_order;
+      friend class _Strong_fallback;
+
+    public:
+      template<typename _Tp, typename _Up>
+	requires __strongly_ordered<_Tp, _Up>
+	constexpr strong_ordering
+	operator()(_Tp&& __e, _Up&& __f) const
+	noexcept(_S_noexcept<_Tp, _Up>())
+	{
+	  static_assert(same_as<decay_t<_Tp>, decay_t<_Up>>);
+
+	  /* FIXME:
+	  if constexpr (floating_point<decay_t<_Tp>>)
+	    return __cmp_cust::__fp_strong_order(__e, __f);
+	  else */ if constexpr (__adl_strong<_Tp, _Up>)
+	    return strong_ordering(strong_order(static_cast<_Tp&&>(__e),
+						static_cast<_Up&&>(__f)));
+	  else if constexpr (__op_cmp<strong_ordering, _Tp, _Up>)
+	    return static_cast<_Tp&&>(__e) <=> static_cast<_Up&&>(__f);
+	}
+    };
+
+    template<typename _Tp, typename _Up>
+      concept __weakly_ordered
+	= floating_point<remove_reference_t<_Tp>>
+	  || __adl_weak<_Tp, _Up>
+	  || __op_cmp<weak_ordering, _Tp, _Up>
+	  || __strongly_ordered<_Tp, _Up>;
+
+    class _Weak_order
+    {
+      template<typename _Tp, typename _Up>
+	static constexpr bool
+	_S_noexcept()
+	{
+	  if constexpr (floating_point<decay_t<_Tp>>)
+	    return true;
+	  else if constexpr (__adl_weak<_Tp, _Up>)
+	    return noexcept(weak_ordering(weak_order(std::declval<_Tp>(),
+						     std::declval<_Up>())));
+	  else if constexpr (__op_cmp<weak_ordering, _Tp, _Up>)
+	    return noexcept(std::declval<_Tp>() <=> std::declval<_Up>());
+	  else if constexpr (__strongly_ordered<_Tp, _Up>)
+	    return _Strong_order::_S_noexcept<_Tp, _Up>();
+	}
+
+      friend class _Partial_order;
+      friend class _Weak_fallback;
+
+    public:
+      template<typename _Tp, typename _Up>
+	requires __weakly_ordered<_Tp, _Up>
+	constexpr weak_ordering
+	operator()(_Tp&& __e, _Up&& __f) const
+	noexcept(_S_noexcept<_Tp, _Up>())
+	{
+	  static_assert(same_as<decay_t<_Tp>, decay_t<_Up>>);
+
+	  if constexpr (floating_point<decay_t<_Tp>>)
+	    return __cmp_cust::__fp_weak_ordering(__e, __f);
+	  else if constexpr (__adl_weak<_Tp, _Up>)
+	    return weak_ordering(weak_order(static_cast<_Tp&&>(__e),
+					    static_cast<_Up&&>(__f)));
+	  else if constexpr (__op_cmp<weak_ordering, _Tp, _Up>)
+	    return static_cast<_Tp&&>(__e) <=> static_cast<_Up&&>(__f);
+	  else if constexpr (__strongly_ordered<_Tp, _Up>)
+	    return _Strong_order{}(static_cast<_Tp&&>(__e),
+				   static_cast<_Up&&>(__f));
+	}
+    };
+
+    template<typename _Tp, typename _Up>
+      concept __partially_ordered
+	= __adl_partial<_Tp, _Up>
+	|| __op_cmp<partial_ordering, _Tp, _Up>
+	|| __weakly_ordered<_Tp, _Up>;
+
+    class _Partial_order
+    {
+      template<typename _Tp, typename _Up>
+	static constexpr bool
+	_S_noexcept()
+	{
+	  if constexpr (__adl_partial<_Tp, _Up>)
+	    return noexcept(partial_ordering(partial_order(std::declval<_Tp>(),
+							 std::declval<_Up>())));
+	  else if constexpr (__op_cmp<partial_ordering, _Tp, _Up>)
+	    return noexcept(std::declval<_Tp>() <=> std::declval<_Up>());
+	  else if constexpr (__weakly_ordered<_Tp, _Up>)
+	    return _Weak_order::_S_noexcept<_Tp, _Up>();
+	}
+
+      friend class _Partial_fallback;
+
+    public:
+      template<typename _Tp, typename _Up>
+	requires __partially_ordered<_Tp, _Up>
+	constexpr partial_ordering
+	operator()(_Tp&& __e, _Up&& __f) const
+	noexcept(_S_noexcept<_Tp, _Up>())
+	{
+	  static_assert(same_as<decay_t<_Tp>, decay_t<_Up>>);
+
+	  if constexpr (__adl_partial<_Tp, _Up>)
+	    return partial_ordering(partial_order(static_cast<_Tp&&>(__e),
+						  static_cast<_Up&&>(__f)));
+	  else if constexpr (__op_cmp<partial_ordering, _Tp, _Up>)
+	    return static_cast<_Tp&&>(__e) <=> static_cast<_Up&&>(__f);
+	  else if constexpr (__weakly_ordered<_Tp, _Up>)
+	    return _Weak_order{}(static_cast<_Tp&&>(__e),
+				 static_cast<_Up&&>(__f));
+	}
+    };
+
+    template<typename _Tp, typename _Up>
+      concept __op_eq_lt = requires(_Tp&& __t, _Up&& __u)
+	{
+	  { static_cast<_Tp&&>(__t) == static_cast<_Up&&>(__u) }
+	    -> convertible_to<bool>;
+	  { static_cast<_Tp&&>(__t) < static_cast<_Up&&>(__u) }
+	    -> convertible_to<bool>;
+	};
+
+    class _Strong_fallback
+    {
+      template<typename _Tp, typename _Up>
+	static constexpr bool
+	_S_noexcept()
+	{
+	  if constexpr (__strongly_ordered<_Tp, _Up>)
+	    return _Strong_order::_S_noexcept<_Tp, _Up>();
+	  else
+	    return noexcept(bool(std::declval<_Tp>() == std::declval<_Up>()))
+	      && noexcept(bool(std::declval<_Tp>() < std::declval<_Up>()));
+	}
+
+    public:
+      template<typename _Tp, typename _Up>
+	requires __strongly_ordered<_Tp, _Up> || __op_eq_lt<_Tp, _Up>
+	constexpr decltype(auto)
+	operator()(_Tp&& __e, _Up&& __f) const
+	noexcept(_S_noexcept<_Tp, _Up>())
+	{
+	  static_assert(same_as<decay_t<_Tp>, decay_t<_Up>>);
+
+	  if constexpr (__strongly_ordered<_Tp, _Up>)
+	    return _Strong_order{}(static_cast<_Tp&&>(__e),
+				   static_cast<_Up&&>(__f));
+	  else if constexpr (__op_eq_lt<_Tp, _Up>)
+	    return static_cast<_Tp&&>(__e) == static_cast<_Up&&>(__f)
+	      ? strong_ordering::equal
+	      : static_cast<_Tp&&>(__e) < static_cast<_Up&&>(__f)
+	      ? strong_ordering::less
+	      : strong_ordering::greater;
+	}
+    };
+
+    class _Weak_fallback
+    {
+      template<typename _Tp, typename _Up>
+	static constexpr bool
+	_S_noexcept()
+	{
+	  if constexpr (__weakly_ordered<_Tp, _Up>)
+	    return _Weak_order::_S_noexcept<_Tp, _Up>();
+	  else
+	    return noexcept(bool(std::declval<_Tp>() == std::declval<_Up>()))
+	      && noexcept(bool(std::declval<_Tp>() < std::declval<_Up>()));
+	}
+
+    public:
+      template<typename _Tp, typename _Up>
+	requires __weakly_ordered<_Tp, _Up> || __op_eq_lt<_Tp, _Up>
+	constexpr decltype(auto)
+	operator()(_Tp&& __e, _Up&& __f) const
+	noexcept(_S_noexcept<_Tp, _Up>())
+	{
+	  static_assert(same_as<decay_t<_Tp>, decay_t<_Up>>);
+
+	  if constexpr (__weakly_ordered<_Tp, _Up>)
+	    return _Weak_order{}(static_cast<_Tp&&>(__e),
+				 static_cast<_Up&&>(__f));
+	  else if constexpr (__op_eq_lt<_Tp, _Up>)
+	    return static_cast<_Tp&&>(__e) == static_cast<_Up&&>(__f)
+	      ? weak_ordering::equivalent
+	      : static_cast<_Tp&&>(__e) < static_cast<_Up&&>(__f)
+	      ? weak_ordering::less
+	      : weak_ordering::greater;
+	}
+    };
+
+    class _Partial_fallback
+    {
+      template<typename _Tp, typename _Up>
+	static constexpr bool
+	_S_noexcept()
+	{
+	  if constexpr (__partially_ordered<_Tp, _Up>)
+	    return _Partial_order::_S_noexcept<_Tp, _Up>();
+	  else
+	    return noexcept(bool(std::declval<_Tp>() == std::declval<_Up>()))
+	      && noexcept(bool(std::declval<_Tp>() < std::declval<_Up>()));
+	}
+
+    public:
+      template<typename _Tp, typename _Up>
+	requires __partially_ordered<_Tp, _Up> || __op_eq_lt<_Tp, _Up>
+	constexpr decltype(auto)
+	operator()(_Tp&& __e, _Up&& __f) const
+	noexcept(_S_noexcept<_Tp, _Up>())
+	{
+	  static_assert(same_as<decay_t<_Tp>, decay_t<_Up>>);
+
+	  if constexpr (__partially_ordered<_Tp, _Up>)
+	    return _Partial_order{}(static_cast<_Tp&&>(__e),
+				    static_cast<_Up&&>(__f));
+	  else if constexpr (__op_eq_lt<_Tp, _Up>)
+	    return static_cast<_Tp&&>(__e) == static_cast<_Up&&>(__f)
+	      ? partial_ordering::equivalent
+	      : static_cast<_Tp&&>(__e) < static_cast<_Up&&>(__f)
+	      ? partial_ordering::less
+	      : static_cast<_Up&&>(__f) < static_cast<_Tp&&>(__e)
+	      ? partial_ordering::greater
+	      : partial_ordering::unordered;
+	}
+    };
+  } // namespace __cmp_cust
+
+  // [cmp.alg], comparison algorithms
+  inline namespace __cmp_alg
+  {
+    inline constexpr __cmp_cust::_Strong_order strong_order{};
+
+    inline constexpr __cmp_cust::_Weak_order weak_order{};
+
+    inline constexpr __cmp_cust::_Partial_order partial_order{};
+
+    inline constexpr __cmp_cust::_Strong_fallback
+    compare_strong_order_fallback{};
+
+    inline constexpr __cmp_cust::_Weak_fallback
+    compare_weak_order_fallback{};
+
+    inline constexpr __cmp_cust::_Partial_fallback
+    compare_partial_order_fallback{};
+  }
+#endif // concepts
+} // namespace std
+
+#pragma GCC visibility pop
+
+#endif // C++20
+
+#endif // _COMPARE

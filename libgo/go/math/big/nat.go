@@ -5,10 +5,16 @@
 // This file implements unsigned multi-precision integers (natural
 // numbers). They are the building blocks for the implementation
 // of signed integers, rationals, and floating-point numbers.
+//
+// Caution: This implementation relies on the function "alias"
+//          which assumes that (nat) slice capacities are never
+//          changed (no 3-operand slice expressions). If that
+//          changes, alias needs to be updated for correctness.
 
 package big
 
 import (
+	"encoding/binary"
 	"math/bits"
 	"math/rand"
 	"sync"
@@ -29,9 +35,10 @@ import (
 type nat []Word
 
 var (
-	natOne = nat{1}
-	natTwo = nat{2}
-	natTen = nat{10}
+	natOne  = nat{1}
+	natTwo  = nat{2}
+	natFive = nat{5}
+	natTen  = nat{10}
 )
 
 func (z nat) clear() {
@@ -51,6 +58,10 @@ func (z nat) norm() nat {
 func (z nat) make(n int) nat {
 	if n <= cap(z) {
 		return z[:n] // reuse z
+	}
+	if n == 1 {
+		// Most nats start small and stay that way; don't over-allocate.
+		return make(nat, 1)
 	}
 	// Choosing a good value for e has significant performance impact
 	// because it increases the chance that a value can be reused.
@@ -207,18 +218,17 @@ func (z nat) montgomery(x, y, m nat, k Word, n int) nat {
 	if len(x) != n || len(y) != n || len(m) != n {
 		panic("math/big: mismatched montgomery number lengths")
 	}
-	z = z.make(n)
+	z = z.make(n * 2)
 	z.clear()
 	var c Word
 	for i := 0; i < n; i++ {
 		d := y[i]
-		c2 := addMulVVW(z, x, d)
-		t := z[0] * k
-		c3 := addMulVVW(z, m, t)
-		copy(z, z[1:])
+		c2 := addMulVVW(z[i:n+i], x, d)
+		t := z[i] * k
+		c3 := addMulVVW(z[i:n+i], m, t)
 		cx := c + c2
 		cy := cx + c3
-		z[n-1] = cy
+		z[n+i] = cy
 		if cx < c2 || cy < c3 {
 			c = 1
 		} else {
@@ -226,9 +236,11 @@ func (z nat) montgomery(x, y, m nat, k Word, n int) nat {
 		}
 	}
 	if c != 0 {
-		subVV(z, z, m)
+		subVV(z[:n], z[n:], m)
+	} else {
+		copy(z[:n], z[n:])
 	}
-	return z
+	return z[:n]
 }
 
 // Fast version of z[0:n+n>>1].add(z[0:n+n>>1], x[0:n]) w/o bounds checks.
@@ -351,6 +363,10 @@ func karatsuba(z, x, y nat) {
 }
 
 // alias reports whether x and y share the same base array.
+// Note: alias assumes that the capacity of underlying arrays
+//       is never changed for nat values; i.e. that there are
+//       no 3-operand slice expressions in this code (or worse,
+//       reflect-based operations to the same effect).
 func alias(x, y nat) bool {
 	return cap(x) > 0 && cap(y) > 0 && &x[0:cap(x)][cap(x)-1] == &y[0:cap(y)][cap(y)-1]
 }
@@ -377,12 +393,12 @@ func max(x, y int) int {
 }
 
 // karatsubaLen computes an approximation to the maximum k <= n such that
-// k = p<<i for a number p <= karatsubaThreshold and an i >= 0. Thus, the
+// k = p<<i for a number p <= threshold and an i >= 0. Thus, the
 // result is the largest number that can be divided repeatedly by 2 before
-// becoming about the value of karatsubaThreshold.
-func karatsubaLen(n int) int {
+// becoming about the value of threshold.
+func karatsubaLen(n, threshold int) int {
 	i := uint(0)
-	for n > karatsubaThreshold {
+	for n > threshold {
 		n >>= 1
 		i++
 	}
@@ -422,7 +438,7 @@ func (z nat) mul(x, y nat) nat {
 	//   y = yh*b + y0  (0 <= y0 < b)
 	//   b = 1<<(_W*k)  ("base" of digits xi, yi)
 	//
-	k := karatsubaLen(n)
+	k := karatsubaLen(n, karatsubaThreshold)
 	// k <= n
 
 	// multiply x0 and y0 via Karatsuba
@@ -475,8 +491,8 @@ func (z nat) mul(x, y nat) nat {
 
 // basicSqr sets z = x*x and is asymptotically faster than basicMul
 // by about a factor of 2, but slower for small arguments due to overhead.
-// Requirements: len(x) > 0, len(z) >= 2*len(x)
-// The (non-normalized) result is placed in z[0 : 2 * len(x)].
+// Requirements: len(x) > 0, len(z) == 2*len(x)
+// The (non-normalized) result is placed in z.
 func basicSqr(z, x nat) {
 	n := len(x)
 	t := make(nat, 2*n)            // temporary variable to hold the products
@@ -492,11 +508,47 @@ func basicSqr(z, x nat) {
 	addVV(z, z, t)                              // combine the result
 }
 
+// karatsubaSqr squares x and leaves the result in z.
+// len(x) must be a power of 2 and len(z) >= 6*len(x).
+// The (non-normalized) result is placed in z[0 : 2*len(x)].
+//
+// The algorithm and the layout of z are the same as for karatsuba.
+func karatsubaSqr(z, x nat) {
+	n := len(x)
+
+	if n&1 != 0 || n < karatsubaSqrThreshold || n < 2 {
+		basicSqr(z[:2*n], x)
+		return
+	}
+
+	n2 := n >> 1
+	x1, x0 := x[n2:], x[0:n2]
+
+	karatsubaSqr(z, x0)
+	karatsubaSqr(z[n:], x1)
+
+	// s = sign(xd*yd) == -1 for xd != 0; s == 1 for xd == 0
+	xd := z[2*n : 2*n+n2]
+	if subVV(xd, x1, x0) != 0 {
+		subVV(xd, x0, x1)
+	}
+
+	p := z[n*3:]
+	karatsubaSqr(p, xd)
+
+	r := z[n*4:]
+	copy(r, z[:n*2])
+
+	karatsubaAdd(z[n2:], r, n)
+	karatsubaAdd(z[n2:], r[n:], n)
+	karatsubaSub(z[n2:], p, n) // s == -1 for p != 0; s == 1 for p == 0
+}
+
 // Operands that are shorter than basicSqrThreshold are squared using
 // "grade school" multiplication; for operands longer than karatsubaSqrThreshold
-// the Karatsuba algorithm is used.
+// we use the Karatsuba algorithm optimized for x == y.
 var basicSqrThreshold = 20      // computed by calibrate_test.go
-var karatsubaSqrThreshold = 400 // computed by calibrate_test.go
+var karatsubaSqrThreshold = 260 // computed by calibrate_test.go
 
 // z = x*x
 func (z nat) sqr(x nat) nat {
@@ -514,18 +566,43 @@ func (z nat) sqr(x nat) nat {
 	if alias(z, x) {
 		z = nil // z is an alias for x - cannot reuse
 	}
-	z = z.make(2 * n)
 
 	if n < basicSqrThreshold {
+		z = z.make(2 * n)
 		basicMul(z, x, x)
 		return z.norm()
 	}
 	if n < karatsubaSqrThreshold {
+		z = z.make(2 * n)
 		basicSqr(z, x)
 		return z.norm()
 	}
 
-	return z.mul(x, x)
+	// Use Karatsuba multiplication optimized for x == y.
+	// The algorithm and layout of z are the same as for mul.
+
+	// z = (x1*b + x0)^2 = x1^2*b^2 + 2*x1*x0*b + x0^2
+
+	k := karatsubaLen(n, karatsubaSqrThreshold)
+
+	x0 := x[0:k]
+	z = z.make(max(6*k, 2*n))
+	karatsubaSqr(z, x0) // z = x0^2
+	z = z[0 : 2*n]
+	z[2*k:].clear()
+
+	if k < n {
+		var t nat
+		x0 := x0.norm()
+		x1 := x[k:]
+		t = t.mul(x0, x1)
+		addAt(z, t, k)
+		addAt(z, t, k) // z = 2*x1*x0*b + x0^2
+		t = t.sqr(x1)
+		addAt(z, t, 2*k) // z = x1^2*b^2 + 2*x1*x0*b + x0^2
+	}
+
+	return z.norm()
 }
 
 // mulRange computes the product of all the unsigned integers in the
@@ -608,43 +685,36 @@ func putNat(x *nat) {
 
 var natPool sync.Pool
 
-// q = (uIn-r)/v, with 0 <= r < y
+// q = (uIn-r)/vIn, with 0 <= r < y
 // Uses z as storage for q, and u as storage for r if possible.
 // See Knuth, Volume 2, section 4.3.1, Algorithm D.
 // Preconditions:
-//    len(v) >= 2
-//    len(uIn) >= len(v)
-func (z nat) divLarge(u, uIn, v nat) (q, r nat) {
-	n := len(v)
+//    len(vIn) >= 2
+//    len(uIn) >= len(vIn)
+//    u must not alias z
+func (z nat) divLarge(u, uIn, vIn nat) (q, r nat) {
+	n := len(vIn)
 	m := len(uIn) - n
 
-	// determine if z can be reused
-	// TODO(gri) should find a better solution - this if statement
-	//           is very costly (see e.g. time pidigits -s -n 10000)
-	if alias(z, u) || alias(z, uIn) || alias(z, v) {
-		z = nil // z is an alias for u or uIn or v - cannot reuse
+	// D1.
+	shift := nlz(vIn[n-1])
+	// do not modify vIn, it may be used by another goroutine simultaneously
+	vp := getNat(n)
+	v := *vp
+	shlVU(v, vIn, shift)
+
+	// u may safely alias uIn or vIn, the value of uIn is used to set u and vIn was already used
+	u = u.make(len(uIn) + 1)
+	u[len(uIn)] = shlVU(u[0:len(uIn)], uIn, shift)
+
+	// z may safely alias uIn or vIn, both values were used already
+	if alias(z, u) {
+		z = nil // z is an alias for u - cannot reuse
 	}
 	q = z.make(m + 1)
 
 	qhatvp := getNat(n + 1)
 	qhatv := *qhatvp
-	if alias(u, uIn) || alias(u, v) {
-		u = nil // u is an alias for uIn or v - cannot reuse
-	}
-	u = u.make(len(uIn) + 1)
-	u.clear() // TODO(gri) no need to clear if we allocated a new u
-
-	// D1.
-	var v1p *nat
-	shift := nlz(v[n-1])
-	if shift > 0 {
-		// do not modify v, it may be used by another goroutine simultaneously
-		v1p = getNat(n)
-		v1 := *v1p
-		shlVU(v1, v, shift)
-		v = v1
-	}
-	u[len(uIn)] = shlVU(u[0:len(uIn)], uIn, shift)
 
 	// D2.
 	vn1 := v[n-1]
@@ -684,9 +754,8 @@ func (z nat) divLarge(u, uIn, v nat) (q, r nat) {
 
 		q[j] = qhat
 	}
-	if v1p != nil {
-		putNat(v1p)
-	}
+
+	putNat(vp)
 	putNat(qhatvp)
 
 	q = q.norm()
@@ -718,8 +787,21 @@ func (x nat) trailingZeroBits() uint {
 	return i*_W + uint(bits.TrailingZeros(uint(x[i])))
 }
 
+func same(x, y nat) bool {
+	return len(x) == len(y) && len(x) > 0 && &x[0] == &y[0]
+}
+
 // z = x << s
 func (z nat) shl(x nat, s uint) nat {
+	if s == 0 {
+		if same(z, x) {
+			return z
+		}
+		if !alias(z, x) {
+			return z.set(x)
+		}
+	}
+
 	m := len(x)
 	if m == 0 {
 		return z[:0]
@@ -736,6 +818,15 @@ func (z nat) shl(x nat, s uint) nat {
 
 // z = x >> s
 func (z nat) shr(x nat, s uint) nat {
+	if s == 0 {
+		if same(z, x) {
+			return z
+		}
+		if !alias(z, x) {
+			return z.set(x)
+		}
+	}
+
 	m := len(x)
 	n := m - int(s/_W)
 	if n <= 0 {
@@ -952,7 +1043,7 @@ func (z nat) expNN(x, y, m nat) nat {
 
 	// x**1 mod m == x mod m
 	if len(y) == 1 && y[0] == 1 && len(m) != 0 {
-		_, z = z.div(z, x, m)
+		_, z = nat(nil).div(z, x, m)
 		return z
 	}
 	// y > 1
@@ -1125,7 +1216,7 @@ func (z nat) expNNMontgomery(x, y, m nat) nat {
 	// RR = 2**(2*_W*len(m)) mod m
 	RR := nat(nil).setWord(1)
 	zz := nat(nil).shl(RR, uint(2*numWords*_W))
-	_, RR = RR.div(RR, zz, m)
+	_, RR = nat(nil).div(RR, zz, m)
 	if len(RR) < numWords {
 		zz = zz.make(numWords)
 		copy(zz, RR)
@@ -1208,25 +1299,31 @@ func (z nat) bytes(buf []byte) (i int) {
 	return
 }
 
+// bigEndianWord returns the contents of buf interpreted as a big-endian encoded Word value.
+func bigEndianWord(buf []byte) Word {
+	if _W == 64 {
+		return Word(binary.BigEndian.Uint64(buf))
+	}
+	return Word(binary.BigEndian.Uint32(buf))
+}
+
 // setBytes interprets buf as the bytes of a big-endian unsigned
 // integer, sets z to that value, and returns z.
 func (z nat) setBytes(buf []byte) nat {
 	z = z.make((len(buf) + _S - 1) / _S)
 
-	k := 0
-	s := uint(0)
-	var d Word
-	for i := len(buf); i > 0; i-- {
-		d |= Word(buf[i-1]) << s
-		if s += 8; s == _S*8 {
-			z[k] = d
-			k++
-			s = 0
-			d = 0
-		}
+	i := len(buf)
+	for k := 0; i >= _S; k++ {
+		z[k] = bigEndianWord(buf[i-_S : i])
+		i -= _S
 	}
-	if k < len(z) {
-		z[k] = d
+	if i > 0 {
+		var d Word
+		for s := uint(0); i > 0; s += 8 {
+			d |= Word(buf[i-1]) << s
+			i--
+		}
+		z[len(z)-1] = d
 	}
 
 	return z.norm()
@@ -1249,7 +1346,7 @@ func (z nat) sqrt(x nat) nat {
 	var z1, z2 nat
 	z1 = z
 	z1 = z1.setUint64(1)
-	z1 = z1.shl(z1, uint(x.bitLen()/2+1)) // must be ≥ √x
+	z1 = z1.shl(z1, uint(x.bitLen()+1)/2) // must be ≥ √x
 	for n := 0; ; n++ {
 		z2, _ = z2.div(nil, x, z1)
 		z2 = z2.add(z2, z1)

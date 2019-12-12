@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -126,6 +126,9 @@ package Stringt is
    --  Append characters of given string to Buf. Error if any characters are
    --  out of Character range. Does not attempt to do any encoding of
    --  characters.
+
+   function To_String (S : String_Id) return String;
+   --  Return S as a String
 
    procedure String_To_Name_Buffer (S : String_Id);
    --  Place characters of given string in Name_Buffer, setting Name_Len.

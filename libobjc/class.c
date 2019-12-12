@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime class related functions
-   Copyright (C) 1993-2018 Free Software Foundation, Inc.
+   Copyright (C) 1993-2019 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup and Dennis Glatting.
 
    Lock-free class table code designed and written from scratch by
@@ -958,7 +958,7 @@ class_getSuperclass (Class class_)
   /* Classes that are in construction are not resolved, and still have
      the class name (instead of a class pointer) in the
      class_->super_class field.  In that case we need to lookup the
-     superclass name to return the superclass.  We can not resolve the
+     superclass name to return the superclass.  We cannot resolve the
      class until it is registered.  */
   if (CLS_IS_IN_CONSTRUCTION (class_))
     {

@@ -1,5 +1,5 @@
 /* HOST_WIDE_INT definitions for the GNU compiler.
-   Copyright (C) 1998-2018 Free Software Foundation, Inc.
+   Copyright (C) 1998-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -242,7 +242,7 @@ floor_log2 (unsigned HOST_WIDE_INT x)
 static inline int
 ceil_log2 (unsigned HOST_WIDE_INT x)
 {
-  return floor_log2 (x - 1) + 1;
+  return x == 0 ? 0 : floor_log2 (x - 1) + 1;
 }
 
 static inline int

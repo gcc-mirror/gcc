@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH.
-   Copyright (C) 1993-2018 Free Software Foundation, Inc.
+   Copyright (C) 1993-2019 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -69,6 +69,8 @@ extern int code_for_indirect_jump_scratch;
    FPU is disabled (which makes it compatible with SH4al-dsp).  */
 #define TARGET_SH4A_FP (TARGET_SH4A && TARGET_FPU_ANY)
 
+/* True if the FPU is a SH4-300 variant.  */
+#define TARGET_FPU_SH4_300 (TARGET_FPU_ANY && TARGET_SH4_300)
 
 /* This is not used by the SH2E calling convention  */
 #define TARGET_VARARGS_PRETEND_ARGS(FUN_DECL) \
@@ -728,45 +730,6 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
   0,      0,      0,      0,      0,      0,      0,      0,		\
 /*"gbr",  "ap",	  "pr",   "t",    "mach", "macl", "fpul", "fpscr", */	\
   1,      1,      1,      1,      1,      1,      0,      1,		\
-/*"rap",  "sfp","fpscr0","fpscr1"  */					\
-  1,      1,      1,      1,						\
-}
-
-/* 1 for registers not available across function calls.
-   These must include the FIXED_REGISTERS and also any
-   registers that can be used without being saved.
-   The latter must include the registers where values are returned
-   and the register where structure-value addresses are passed.
-   Aside from that, you can include as many other registers as you like.  */
-#define CALL_USED_REGISTERS						\
-{									\
-/* Regular registers.  */						\
-  1,      1,      1,      1,      1,      1,      1,      1,		\
-  /* R8 and R9 are call-clobbered on SH5, but not on earlier SH ABIs.	\
-     Only the lower 32bits of R10-R14 are guaranteed to be preserved	\
-     across SH5 function calls.  */					\
-  0,      0,      0,      0,      0,      0,      0,      1,		\
-  1,      1,      1,      1,      1,      1,      1,      1,		\
-  1,      1,      1,      1,      0,      0,      0,      0,		\
-  0,      0,      0,      0,      1,      1,      1,      1,		\
-  1,      1,      1,      1,      0,      0,      0,      0,		\
-  0,      0,      0,      0,      0,      0,      0,      0,		\
-  0,      0,      0,      0,      1,      1,      1,      1,		\
-/* FP registers.  */							\
-  1,      1,      1,      1,      1,      1,      1,      1,		\
-  1,      1,      1,      1,      0,      0,      0,      0,		\
-  1,      1,      1,      1,      1,      1,      1,      1,		\
-  1,      1,      1,      1,      1,      1,      1,      1,		\
-  1,      1,      1,      1,      0,      0,      0,      0,		\
-  0,      0,      0,      0,      0,      0,      0,      0,		\
-  0,      0,      0,      0,      0,      0,      0,      0,		\
-  0,      0,      0,      0,      0,      0,      0,      0,		\
-/* Branch target registers.  */						\
-  1,      1,      1,      1,      1,      0,      0,      0,		\
-/* XD registers.  */							\
-  1,      1,      1,      1,      1,      1,      0,      0,		\
-/*"gbr",  "ap",	  "pr",   "t",    "mach", "macl", "fpul", "fpscr", */	\
-  1,      1,      1,      1,      1,      1,      1,      1,		\
 /*"rap",  "sfp","fpscr0","fpscr1"  */					\
   1,      1,      1,      1,						\
 }

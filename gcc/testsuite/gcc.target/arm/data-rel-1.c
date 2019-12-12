@@ -1,3 +1,4 @@
+/* { dg-skip-if "-mpure-code and -fPIC incompatible" { *-*-* } { "-mpure-code" } } */
 /* { dg-options "-fPIC -mno-pic-data-is-text-relative" } */
 /* { dg-final { scan-assembler-not "j-\\(.LPIC"  } } */
 /* { dg-final { scan-assembler-not "_GLOBAL_OFFSET_TABLE_-\\(.LPIC" } } */

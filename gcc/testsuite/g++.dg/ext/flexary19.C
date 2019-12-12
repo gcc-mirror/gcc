@@ -146,13 +146,13 @@ struct S16
 {
   int i;
 
-  struct {          // { dg-warning "invalid use" }
+  struct {          // { dg-warning "10:ISO C\\+\\+ prohibits anonymous struct|invalid use" }
     // A flexible array as a sole member of an anonymous struct is
     // rejected with an error in C mode but emits just a pedantic
     // warning in C++.  Other than excessive pedantry there is no
     // reason to reject it.
     int a[];
-  };                // { dg-warning "anonymous struct" }
+  };
 };
 
 struct S17
@@ -177,9 +177,9 @@ struct S19
 {
   int i;
 
-  struct {          // { dg-warning "invalid use" }
+  struct {          // { dg-warning "10:ISO C\\+\\+ prohibits anonymous struct|invalid use" }
     int j, a[];     // { dg-message "declared here" }
-  };                // { dg-warning "anonymous struct" }
+  };
 };
 
 struct S20
@@ -198,10 +198,10 @@ struct S21
   static int i;
   typedef int A[];
 
-  struct {          // { dg-warning "invalid use" }
+  struct {          // { dg-warning "10:ISO C\\+\\+ prohibits anonymous struct|invalid use" }
     int j;
     A a;            // { dg-message "declared here" }
-  };                // { dg-warning "anonymous struct" }
+  };
 };
 
 struct S22
@@ -215,11 +215,11 @@ struct S22
 
 struct S23
 {
-  struct {
+  struct {          // { dg-warning "10:ISO C\\+\\+ prohibits anonymous struct" }
     static int i;   // { dg-error "static data member" }
 
     int a[];        // { dg-error "in an otherwise empty" }
-  };                // { dg-warning "anonymous struct" }
+  };
 };
 
 struct S24
@@ -296,11 +296,11 @@ union A
 
 union B
 {
-  struct {
-    struct {        // { dg-warning "invalid use" }
+  struct {          // { dg-warning "10:ISO C\\+\\+ prohibits anonymous struct" }
+    struct {        // { dg-warning "12:ISO C\\+\\+ prohibits anonymous struct|invalid use" }
       int i, a[];   // { dg-message "declared here" }
-    };              // { dg-warning "anonymous struct" }
-  };                // { dg-warning "anonymous struct" }
+    };
+  };
   int j;
 };
 

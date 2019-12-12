@@ -1,6 +1,6 @@
 LIB1ASMSRC = arm/lib1funcs.S
 LIB1ASMFUNCS = _thumb1_case_sqi _thumb1_case_uqi _thumb1_case_shi \
-	_thumb1_case_uhi _thumb1_case_si
+	_thumb1_case_uhi _thumb1_case_si _speculation_barrier
 
 HAVE_CMSE:=$(findstring __ARM_FEATURE_CMSE,$(shell $(gcc_compile_bare) -dM -E - </dev/null))
 ifneq ($(shell $(gcc_compile_bare) -E -mcmse - </dev/null 2>/dev/null),)

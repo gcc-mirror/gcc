@@ -64,7 +64,7 @@ prog kernel &Kernel(kernarg_u64 %input_ptr, kernarg_u64 %output_ptr)
 /* { dg-final { scan-tree-dump "_\[0-9\]+ = q2 \\\+ q3;" "gimple" } } */
 
 /* Insert the lowest element of the result to the lowest element of the result register. */
-/* { dg-final { scan-tree-dump "= VEC_PERM_EXPR <\[a-z0-9_\]+, new_output.\[0-9\]+_\[0-9\]+, { 16, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }>;" "gimple" } } */
+/* { dg-final { scan-tree-dump "= VEC_PERM_EXPR <new_output.\[0-9\]+_\[0-9\]+, \[a-z0-9_\]+, { 0, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 }>;" "gimple" } } */
 
 /* FIXME */
 /* { dg-final { scan-tree-dump "q4 = \(VIEW_CONVERT_EXPR<uint128_t>\\\()?s_output.\[0-9\]+\(_\[0-9\]+\)*\\\)?;" "gimple" } } */

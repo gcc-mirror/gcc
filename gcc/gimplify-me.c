@@ -1,7 +1,7 @@
 /* Tree lowering to gimple for middle end use only.  
    This converts the GENERIC functions-as-trees tree representation into
    the GIMPLE form.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
    Major work done by Sebastian Pop <s.pop@laposte.net>,
    Diego Novillo <dnovillo@redhat.com> and Jason Merrill <jason@redhat.com>.
 
@@ -273,7 +273,7 @@ gimple_regimplify_operands (gimple *stmt, gimple_stmt_iterator *gsi_p)
 			  || !(i & (ECF_CONST | ECF_PURE)))
 			need_temp = true;
 		    }
-		  if (stmt_can_throw_internal (stmt))
+		  if (stmt_can_throw_internal (cfun, stmt))
 		    need_temp = true;
 		}
 	    }

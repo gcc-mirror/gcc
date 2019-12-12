@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Matsushita MN10300 series
-   Copyright (C) 1996-2018 Free Software Foundation, Inc.
+   Copyright (C) 1996-2019 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.
@@ -104,7 +104,7 @@ mn10300_option_override (void)
       else if (strcasecmp (mn10300_tune_string, "am34") == 0)
 	mn10300_tune_cpu = PROCESSOR_AM34;
       else
-	error ("-mtune= expects mn10300, am33, am33-2, or am34");
+	error ("%<-mtune=%> expects mn10300, am33, am33-2, or am34");
     }
 }
 
@@ -552,7 +552,7 @@ fp_regs_to_save (void)
     return 0;
 
   for (i = FIRST_FP_REGNUM; i <= LAST_FP_REGNUM; ++i)
-    if (df_regs_ever_live_p (i) && ! call_really_used_regs[i])
+    if (df_regs_ever_live_p (i) && ! call_used_regs[i])
       ++n;
 
   return n;
@@ -640,7 +640,7 @@ mn10300_get_live_callee_saved_regs (unsigned int * bytes_saved)
 
   count = mask = 0;
   for (i = 0; i <= LAST_EXTENDED_REGNUM; i++)
-    if (df_regs_ever_live_p (i) && ! call_really_used_regs[i])
+    if (df_regs_ever_live_p (i) && ! call_used_regs[i])
       {
 	mask |= (1 << i);
 	++ count;
@@ -878,7 +878,7 @@ mn10300_expand_prologue (void)
 	 frame pointer, size is nonzero and the user hasn't
 	 changed the calling conventions of a0.  */
       if (! frame_pointer_needed && size
-	  && call_really_used_regs [FIRST_ADDRESS_REGNUM]
+	  && call_used_regs[FIRST_ADDRESS_REGNUM]
 	  && ! fixed_regs[FIRST_ADDRESS_REGNUM])
 	{
 	  /* Insn: add -(size + 4 * num_regs_to_save), sp.  */
@@ -902,7 +902,7 @@ mn10300_expand_prologue (void)
 
       /* Consider alternative save_a0_no_merge if the user hasn't
 	 changed the calling conventions of a0.  */
-      if (call_really_used_regs [FIRST_ADDRESS_REGNUM]
+      if (call_used_regs[FIRST_ADDRESS_REGNUM]
 	  && ! fixed_regs[FIRST_ADDRESS_REGNUM])
 	{
 	  /* Insn: add -4 * num_regs_to_save, sp.  */
@@ -984,7 +984,7 @@ mn10300_expand_prologue (void)
 
       /* Now actually save the FP registers.  */
       for (i = FIRST_FP_REGNUM; i <= LAST_FP_REGNUM; ++i)
-	if (df_regs_ever_live_p (i) && ! call_really_used_regs [i])
+	if (df_regs_ever_live_p (i) && ! call_used_regs[i])
 	  {
 	    rtx addr;
 
@@ -1118,7 +1118,7 @@ mn10300_expand_epilogue (void)
 
 	  /* Consider using a1 in post-increment mode, as long as the
 	     user hasn't changed the calling conventions of a1.  */
-	  if (call_really_used_regs [FIRST_ADDRESS_REGNUM + 1]
+	  if (call_used_regs[FIRST_ADDRESS_REGNUM + 1]
 	      && ! fixed_regs[FIRST_ADDRESS_REGNUM+1])
 	    {
 	      /* Insn: mov sp,a1.  */
@@ -1186,7 +1186,7 @@ mn10300_expand_epilogue (void)
 	reg = gen_rtx_POST_INC (SImode, reg);
 
       for (i = FIRST_FP_REGNUM; i <= LAST_FP_REGNUM; ++i)
-	if (df_regs_ever_live_p (i) && ! call_really_used_regs [i])
+	if (df_regs_ever_live_p (i) && ! call_used_regs[i])
 	  {
 	    rtx addr;
 
@@ -1526,26 +1526,17 @@ mn10300_va_start (tree valist, rtx nextarg)
 /* Return true when a parameter should be passed by reference.  */
 
 static bool
-mn10300_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-			   machine_mode mode, const_tree type,
-			   bool named ATTRIBUTE_UNUSED)
+mn10300_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  unsigned HOST_WIDE_INT size;
-
-  if (type)
-    size = int_size_in_bytes (type);
-  else
-    size = GET_MODE_SIZE (mode);
-
+  unsigned HOST_WIDE_INT size = arg.type_size_in_bytes ();
   return (size > 8 || size == 0);
 }
 
-/* Return an RTX to represent where a value with mode MODE will be returned
-   from a function.  If the result is NULL_RTX, the argument is pushed.  */
+/* Return an RTX to represent where argument ARG will be passed to a function.
+   If the result is NULL_RTX, the argument is pushed.  */
 
 static rtx
-mn10300_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		      const_tree type, bool named ATTRIBUTE_UNUSED)
+mn10300_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   rtx result = NULL_RTX;
@@ -1555,11 +1546,7 @@ mn10300_function_arg (cumulative_args_t cum_v, machine_mode mode,
   int nregs = 2;
 
   /* Figure out the size of the object to be passed.  */
-  if (mode == BLKmode)
-    size = int_size_in_bytes (type);
-  else
-    size = GET_MODE_SIZE (mode);
-
+  size = arg.promoted_size_in_bytes ();
   cum->nbytes = (cum->nbytes + 3) & ~3;
 
   /* Don't pass this arg via a register if all the argument registers
@@ -1569,17 +1556,17 @@ mn10300_function_arg (cumulative_args_t cum_v, machine_mode mode,
 
   /* Don't pass this arg via a register if it would be split between
      registers and memory.  */
-  if (type == NULL_TREE
+  if (arg.type == NULL_TREE
       && cum->nbytes + size > nregs * UNITS_PER_WORD)
     return result;
 
   switch (cum->nbytes / UNITS_PER_WORD)
     {
     case 0:
-      result = gen_rtx_REG (mode, FIRST_ARGUMENT_REGNUM);
+      result = gen_rtx_REG (arg.mode, FIRST_ARGUMENT_REGNUM);
       break;
     case 1:
-      result = gen_rtx_REG (mode, FIRST_ARGUMENT_REGNUM + 1);
+      result = gen_rtx_REG (arg.mode, FIRST_ARGUMENT_REGNUM + 1);
       break;
     default:
       break;
@@ -1588,27 +1575,23 @@ mn10300_function_arg (cumulative_args_t cum_v, machine_mode mode,
   return result;
 }
 
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
+/* Update the data in CUM to advance over argument ARG.  */
 
 static void
-mn10300_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			      const_tree type, bool named ATTRIBUTE_UNUSED)
+mn10300_function_arg_advance (cumulative_args_t cum_v,
+			      const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  cum->nbytes += (mode != BLKmode
-		  ? (GET_MODE_SIZE (mode) + 3) & ~3
-		  : (int_size_in_bytes (type) + 3) & ~3);
+  cum->nbytes += (arg.promoted_size_in_bytes () + 3) & ~3;
 }
 
 /* Return the number of bytes of registers to use for an argument passed
    partially in registers and partially in memory.  */
 
 static int
-mn10300_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
-			   tree type, bool named ATTRIBUTE_UNUSED)
+mn10300_arg_partial_bytes (cumulative_args_t cum_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int size;
@@ -1617,11 +1600,7 @@ mn10300_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
   int nregs = 2;
 
   /* Figure out the size of the object to be passed.  */
-  if (mode == BLKmode)
-    size = int_size_in_bytes (type);
-  else
-    size = GET_MODE_SIZE (mode);
-
+  size = arg.promoted_size_in_bytes ();
   cum->nbytes = (cum->nbytes + 3) & ~3;
 
   /* Don't pass this arg via a register if all the argument registers
@@ -1634,7 +1613,7 @@ mn10300_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
 
   /* Don't pass this arg via a register if it would be split between
      registers and memory.  */
-  if (type == NULL_TREE
+  if (arg.type == NULL_TREE
       && cum->nbytes + size > nregs * UNITS_PER_WORD)
     return 0;
 
@@ -2585,8 +2564,10 @@ mn10300_asm_output_mi_thunk (FILE *        file,
 			     HOST_WIDE_INT vcall_offset,
 			     tree          function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
   const char * _this;
 
+  assemble_start_function (thunk_fndecl, fnname);
   /* Get the register holding the THIS parameter.  Handle the case
      where there is a hidden first argument for a returned structure.  */
   if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function))
@@ -2613,6 +2594,7 @@ mn10300_asm_output_mi_thunk (FILE *        file,
   fputs ("\tjmp ", file);
   assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
   putc ('\n', file);
+  assemble_end_function (thunk_fndecl, fnname);
 }
 
 /* Return true if mn10300_output_mi_thunk would be able to output the
@@ -2848,17 +2830,16 @@ mn10300_conditional_register_usage (void)
     {
       for (i = FIRST_EXTENDED_REGNUM;
 	   i <= LAST_EXTENDED_REGNUM; i++)
-	fixed_regs[i] = call_used_regs[i] = 1;
+	fixed_regs[i] = 1;
     }
   if (!TARGET_AM33_2)
     {
       for (i = FIRST_FP_REGNUM;
 	   i <= LAST_FP_REGNUM; i++)
-	fixed_regs[i] = call_used_regs[i] = 1;
+	fixed_regs[i] = 1;
     }
   if (flag_pic)
-    fixed_regs[PIC_OFFSET_TABLE_REGNUM] =
-    call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
+    fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
 }
 
 /* Worker function for TARGET_MD_ASM_ADJUST.
@@ -3372,7 +3353,7 @@ mn10300_reorg (void)
 #undef  TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE mn10300_pass_by_reference
 #undef  TARGET_CALLEE_COPIES
-#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
+#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_arg_info_true
 #undef  TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES mn10300_arg_partial_bytes
 #undef  TARGET_FUNCTION_ARG
@@ -3436,5 +3417,8 @@ mn10300_reorg (void)
 
 #undef  TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P mn10300_modes_tieable_p
+
+#undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
 
 struct gcc_target targetm = TARGET_INITIALIZER;

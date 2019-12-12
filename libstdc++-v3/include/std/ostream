@@ -1,6 +1,6 @@
 // Output streams -*- C++ -*-
 
-// Copyright (C) 1997-2018 Free Software Foundation, Inc.
+// Copyright (C) 1997-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -245,6 +245,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator<<(const void* __p)
       { return _M_insert(__p); }
 
+#if __cplusplus >= 201703L
+      __ostream_type&
+      operator<<(nullptr_t)
+      { return *this << "nullptr"; }
+#endif
+
       /**
        *  @brief  Extracting from another streambuf.
        *  @param  __sb  A pointer to a streambuf
@@ -444,6 +450,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       explicit
       sentry(basic_ostream<_CharT, _Traits>& __os);
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       /**
        *  @brief  Possibly flushes the stream.
        *
@@ -461,6 +469,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      _M_os.setstate(ios_base::badbit);
 	  }
       }
+#pragma GCC diagnostic pop
 
       /**
        *  @brief  Quick status checking.

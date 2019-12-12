@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wsuggest-attribute=pure" } */
+/* { dg-options "-O2 -Wsuggest-attribute=pure -fno-finite-loops" } */
 /* { dg-add-options bind_pic_locally } */
 
 extern int extern_const(int a) __attribute__ ((pure));

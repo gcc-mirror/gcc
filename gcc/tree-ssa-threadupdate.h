@@ -1,6 +1,6 @@
 /* Communication between registering jump thread requests and
    updating the SSA/CFG for jump threading.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -59,6 +59,6 @@ enum bb_dom_status
   DOMST_DOMINATING
 };
 
-enum bb_dom_status determine_bb_domination_status (struct loop *, basic_block);
+enum bb_dom_status determine_bb_domination_status (class loop *, basic_block);
 
 #endif

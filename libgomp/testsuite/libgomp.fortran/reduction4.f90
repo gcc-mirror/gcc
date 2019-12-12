@@ -4,12 +4,12 @@
   integer (kind = 4) :: i, ia (6), j, ja (6), k, ka (6), ta (6), n, cnt, x
   logical :: v
 
-  i = Z'ffff0f'
-  ia = Z'f0ff0f'
-  j = Z'0f0000'
-  ja = Z'0f5a00'
-  k = Z'055aa0'
-  ka = Z'05a5a5'
+  i = int(Z'ffff0f')
+  ia = int(Z'f0ff0f')
+  j = int(Z'0f0000')
+  ja = int(Z'0f5a00')
+  k = int(Z'055aa0')
+  ka = int(Z'05a5a5')
   v = .false.
   cnt = -1
   x = not(0)
@@ -22,35 +22,35 @@
   n = omp_get_thread_num ()
   if (n .eq. 0) then
     cnt = omp_get_num_threads ()
-    i = Z'ff7fff'
-    ia(3:5) = Z'fffff1'
-    j = Z'078000'
+    i = int(Z'ff7fff')
+    ia(3:5) = int(Z'fffff1')
+    j = int(Z'078000')
     ja(1:3) = 1
-    k = Z'78'
-    ka(3:6) = Z'f0f'
+    k = int(Z'78')
+    ka(3:6) = int(Z'f0f')
   else if (n .eq. 1) then
-    i = Z'ffff77'
-    ia(2:5) = Z'ffafff'
-    j = Z'007800'
+    i = int(Z'ffff77')
+    ia(2:5) = int(Z'ffafff')
+    j = int(Z'007800')
     ja(2:5) = 8
-    k = Z'57'
-    ka(3:4) = Z'f0108'
+    k = int(Z'57')
+    ka(3:4) = int(Z'f0108')
   else
-    i = Z'777fff'
-    ia(1:2) = Z'fffff3'
-    j = Z'000780'
-    ja(5:6) = Z'f00'
-    k = Z'1000'
-    ka(6:6) = Z'777'
+    i = int(Z'777fff')
+    ia(1:2) = int(Z'fffff3')
+    j = int(Z'000780')
+    ja(5:6) = int(Z'f00')
+    k = int(Z'1000')
+    ka(6:6) = int(Z'777')
   end if
 !$omp end parallel
-  if (v) STOP 1
+  if (v) stop 1
   if (cnt .eq. 3) then
-    ta = (/Z'f0ff03', Z'f0af03', Z'f0af01', Z'f0af01', Z'f0af01', Z'f0ff0f'/)
-    if (i .ne. Z'777f07' .or. any (ia .ne. ta)) STOP 2
-    ta = (/Z'f5a01', Z'f5a09', Z'f5a09', Z'f5a08', Z'f5f08', Z'f5f00'/)
-    if (j .ne. Z'fff80' .or. any (ja .ne. ta)) STOP 3
-    ta = (/Z'5a5a5', Z'5a5a5', Z'aaba2', Z'aaba2', Z'5aaaa', Z'5addd'/)
-    if (k .ne. Z'54a8f' .or. any (ka .ne. ta)) STOP 4
+    ta = (/int(Z'f0ff03'), int(Z'f0af03'), int(Z'f0af01'), int(Z'f0af01'), int(Z'f0af01'), int(Z'f0ff0f')/)
+    if (i .ne. int(Z'777f07') .or. any (ia .ne. ta)) stop 2
+    ta = (/int(Z'f5a01'), int(Z'f5a09'), int(Z'f5a09'), int(Z'f5a08'), int(Z'f5f08'), int(Z'f5f00')/)
+    if (j .ne. int(Z'fff80') .or. any (ja .ne. ta)) stop 3
+    ta = (/int(Z'5a5a5'), int(Z'5a5a5'), int(Z'aaba2'), int(Z'aaba2'), int(Z'5aaaa'), int(Z'5addd')/)
+    if (k .ne. int(Z'54a8f') .or. any (ka .ne. ta)) stop 4
   end if
 end

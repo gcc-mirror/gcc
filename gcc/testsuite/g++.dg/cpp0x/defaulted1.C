@@ -23,7 +23,9 @@ struct B
 int main()
 {
   A a1, a2;
+#if __cplusplus <= 201703L
   B b = {1};
+#endif
   a1 = a2;
 }
 

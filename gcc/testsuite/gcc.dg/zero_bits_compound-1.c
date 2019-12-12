@@ -4,7 +4,7 @@
 /* Note: This test requires that char, int and long have different sizes and the
    target has a way to do 32 -> 64 bit zero extension other than AND.  */
 
-/* { dg-do compile { target i?86-*-* x86_64-*-* s390*-*-* aarch64*-*-* } } */
+/* { dg-do compile { target i?86-*-* x86_64-*-* s390*-*-* } } */
 /* { dg-require-effective-target lp64 } */
 /* { dg-options "-O3 -dP" } */
 

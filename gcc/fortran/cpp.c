@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -134,16 +134,17 @@ static void scan_translation_unit_trad (cpp_reader *);
    in specific modes.  */
 static void cb_file_change (cpp_reader *, const line_map_ordinary *);
 static void cb_line_change (cpp_reader *, const cpp_token *, int);
-static void cb_define (cpp_reader *, source_location, cpp_hashnode *);
-static void cb_undef (cpp_reader *, source_location, cpp_hashnode *);
-static void cb_def_pragma (cpp_reader *, source_location);
-static void cb_include (cpp_reader *, source_location, const unsigned char *,
+static void cb_define (cpp_reader *, location_t, cpp_hashnode *);
+static void cb_undef (cpp_reader *, location_t, cpp_hashnode *);
+static void cb_def_pragma (cpp_reader *, location_t);
+static void cb_include (cpp_reader *, location_t, const unsigned char *,
 			const char *, int, const cpp_token **);
-static void cb_ident (cpp_reader *, source_location, const cpp_string *);
-static void cb_used_define (cpp_reader *, source_location, cpp_hashnode *);
-static void cb_used_undef (cpp_reader *, source_location, cpp_hashnode *);
-static bool cb_cpp_error (cpp_reader *, int, int, rich_location *,
-			  const char *, va_list *)
+static void cb_ident (cpp_reader *, location_t, const cpp_string *);
+static void cb_used_define (cpp_reader *, location_t, cpp_hashnode *);
+static void cb_used_undef (cpp_reader *, location_t, cpp_hashnode *);
+static bool cb_cpp_diagnostic (cpp_reader *, enum cpp_diagnostic_level,
+			       enum cpp_warning_reason, rich_location *,
+			       const char *, va_list *)
      ATTRIBUTE_GCC_DIAG(5,0);
 void pp_dir_change (cpp_reader *, const char *);
 
@@ -504,7 +505,7 @@ gfc_cpp_init_0 (void)
   cb->line_change = cb_line_change;
   cb->ident = cb_ident;
   cb->def_pragma = cb_def_pragma;
-  cb->error = cb_cpp_error;
+  cb->diagnostic = cb_cpp_diagnostic;
 
   if (gfc_cpp_option.dump_includes)
     cb->include = cb_include;
@@ -577,9 +578,8 @@ gfc_cpp_init (void)
   if (!gfc_cpp_option.no_predefined)
     {
       /* Make sure all of the builtins about to be declared have
-	BUILTINS_LOCATION has their source_location.  */
-      source_location builtins_loc = BUILTINS_LOCATION;
-      cpp_force_token_locations (cpp_in, &builtins_loc);
+	BUILTINS_LOCATION has their location_t.  */
+      cpp_force_token_locations (cpp_in, BUILTINS_LOCATION);
 
       cpp_define_builtins (cpp_in);
 
@@ -607,6 +607,28 @@ gfc_cpp_init (void)
       else if (opt->code == OPT_MT || opt->code == OPT_MQ)
 	deps_add_target (cpp_get_deps (cpp_in),
 			 opt->arg, opt->code == OPT_MQ);
+    }
+
+  /* Pre-defined macros for non-required INTEGER kind types.  */
+  for (gfc_integer_info *itype = gfc_integer_kinds; itype->kind != 0; itype++)
+    {
+      if (itype->kind == 1)
+	cpp_define (cpp_in, "__GFC_INT_1__=1");
+      if (itype->kind == 2)
+	cpp_define (cpp_in, "__GFC_INT_2__=1");
+      if (itype->kind == 8)
+	cpp_define (cpp_in, "__GFC_INT_8__=1");
+      if (itype->kind == 16)
+	cpp_define (cpp_in, "__GFC_INT_16__=1");
+    }
+
+  /* Pre-defined macros for non-required REAL kind types.  */
+  for (gfc_real_info *rtype = gfc_real_kinds; rtype->kind != 0; rtype++)
+    {
+      if (rtype->kind == 10)
+	cpp_define (cpp_in, "__GFC_REAL_10__=1");
+      if (rtype->kind == 16)
+	cpp_define (cpp_in, "__GFC_REAL_16__=1");
     }
 
   if (gfc_cpp_option.working_directory
@@ -709,8 +731,8 @@ static void scan_translation_unit_trad (cpp_reader *);
 static void account_for_newlines (const unsigned char *, size_t);
 static int dump_macro (cpp_reader *, cpp_hashnode *, void *);
 
-static void print_line (source_location, const char *);
-static void maybe_print_line (source_location);
+static void print_line (location_t, const char *);
+static void maybe_print_line (location_t);
 
 
 /* Writes out the preprocessed file, handling spacing and paste
@@ -790,7 +812,7 @@ scan_translation_unit_trad (cpp_reader *pfile)
    different line to the current one, output the required newlines or
    a line marker.  */
 static void
-maybe_print_line (source_location src_loc)
+maybe_print_line (location_t src_loc)
 {
   const line_map_ordinary *map
     = linemap_check_ordinary (linemap_lookup (line_table, src_loc));
@@ -819,7 +841,7 @@ maybe_print_line (source_location src_loc)
 /* Output a line marker for logical line LINE.  Special flags are "1"
    or "2" indicating entering or leaving a file.  */
 static void
-print_line (source_location src_loc, const char *special_flags)
+print_line (location_t src_loc, const char *special_flags)
 {
   /* End any previous line of text.  */
   if (print.printed)
@@ -881,10 +903,7 @@ cb_file_change (cpp_reader * ARG_UNUSED (pfile), const line_map_ordinary *map)
 	{
 	  /* Bring current file to correct line when entering a new file.  */
 	  if (map->reason == LC_ENTER)
-	    {
-	      const line_map_ordinary *from = INCLUDED_FROM (line_table, map);
-	      maybe_print_line (LAST_SOURCE_LINE_LOCATION (from));
-	    }
+	    maybe_print_line (linemap_included_from (map));
 	  if (map->reason == LC_ENTER)
 	    flags = " 1";
 	  else if (map->reason == LC_LEAVE)
@@ -900,7 +919,7 @@ static void
 cb_line_change (cpp_reader *pfile, const cpp_token *token,
 		int parsing_args)
 {
-  source_location src_loc = token->src_loc;
+  location_t src_loc = token->src_loc;
 
   if (token->type == CPP_EOF || parsing_args)
     return;
@@ -927,7 +946,7 @@ cb_line_change (cpp_reader *pfile, const cpp_token *token,
 }
 
 static void
-cb_ident (cpp_reader *pfile ATTRIBUTE_UNUSED, source_location line,
+cb_ident (cpp_reader *pfile ATTRIBUTE_UNUSED, location_t line,
 	  const cpp_string *str)
 {
   maybe_print_line (line);
@@ -936,7 +955,7 @@ cb_ident (cpp_reader *pfile ATTRIBUTE_UNUSED, source_location line,
 }
 
 static void
-cb_define (cpp_reader *pfile ATTRIBUTE_UNUSED, source_location line,
+cb_define (cpp_reader *pfile ATTRIBUTE_UNUSED, location_t line,
            cpp_hashnode *node ATTRIBUTE_UNUSED)
 {
   maybe_print_line (line);
@@ -955,7 +974,7 @@ cb_define (cpp_reader *pfile ATTRIBUTE_UNUSED, source_location line,
 }
 
 static void
-cb_undef (cpp_reader *pfile ATTRIBUTE_UNUSED, source_location line,
+cb_undef (cpp_reader *pfile ATTRIBUTE_UNUSED, location_t line,
 	  cpp_hashnode *node)
 {
   maybe_print_line (line);
@@ -964,7 +983,7 @@ cb_undef (cpp_reader *pfile ATTRIBUTE_UNUSED, source_location line,
 }
 
 static void
-cb_include (cpp_reader *pfile ATTRIBUTE_UNUSED, source_location line,
+cb_include (cpp_reader *pfile ATTRIBUTE_UNUSED, location_t line,
 	    const unsigned char *dir, const char *header, int angle_brackets,
 	    const cpp_token **comments)
 {
@@ -993,7 +1012,7 @@ cb_include (cpp_reader *pfile ATTRIBUTE_UNUSED, source_location line,
 static int
 dump_macro (cpp_reader *pfile, cpp_hashnode *node, void *v ATTRIBUTE_UNUSED)
 {
-  if (node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
+  if (cpp_user_macro_p (node))
     {
       fputs ("#define ", print.outf);
       fputs ((const char *) cpp_macro_definition (pfile, node),
@@ -1006,7 +1025,7 @@ dump_macro (cpp_reader *pfile, cpp_hashnode *node, void *v ATTRIBUTE_UNUSED)
 }
 
 static void
-cb_used_define (cpp_reader *pfile, source_location line ATTRIBUTE_UNUSED,
+cb_used_define (cpp_reader *pfile, location_t line ATTRIBUTE_UNUSED,
 		cpp_hashnode *node)
 {
   gfc_cpp_macro_queue *q;
@@ -1023,9 +1042,11 @@ cb_used_define (cpp_reader *pfile, source_location line ATTRIBUTE_UNUSED,
    Returns true if a diagnostic was emitted, false otherwise.  */
 
 static bool
-cb_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
-	      rich_location *richloc,
-	      const char *msg, va_list *ap)
+cb_cpp_diagnostic (cpp_reader *pfile ATTRIBUTE_UNUSED,
+		   enum cpp_diagnostic_level level,
+		   enum cpp_warning_reason reason,
+		   rich_location *richloc,
+		   const char *msg, va_list *ap)
 {
   diagnostic_info diagnostic;
   diagnostic_t dlevel;
@@ -1087,7 +1108,7 @@ pp_dir_change (cpp_reader *pfile ATTRIBUTE_UNUSED, const char *dir)
 
 /* Copy a #pragma directive to the preprocessed output.  */
 static void
-cb_def_pragma (cpp_reader *pfile, source_location line)
+cb_def_pragma (cpp_reader *pfile, location_t line)
 {
   maybe_print_line (line);
   fputs ("#pragma ", print.outf);
@@ -1097,7 +1118,7 @@ cb_def_pragma (cpp_reader *pfile, source_location line)
 
 static void
 cb_used_undef (cpp_reader *pfile ATTRIBUTE_UNUSED,
-	       source_location line ATTRIBUTE_UNUSED,
+	       location_t line ATTRIBUTE_UNUSED,
 	       cpp_hashnode *node)
 {
   gfc_cpp_macro_queue *q;

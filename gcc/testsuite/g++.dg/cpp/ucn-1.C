@@ -12,4 +12,6 @@ int main()
   int c\u0024c;	// { dg-error "not valid in an identifier" "" { target { powerpc-ibm-aix* } } }
 
   U"\uD800";		  // { dg-error "not a valid universal character" }
+
+  U'\U00110000'; // { dg-warning "outside" "110000 outside UCS" { target c++2a } }
 }

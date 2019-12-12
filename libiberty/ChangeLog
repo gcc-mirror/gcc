@@ -1,3 +1,303 @@
+2019-11-16  Tim Ruehsen  <tim.ruehsen@gmx.de>
+
+	* cp-demangle.c (d_print_init): Remove const from 4th param.
+	(cplus_demangle_fill_name): Initialize d->d_counting.
+	(cplus_demangle_fill_extended_operator): Likewise.
+	(cplus_demangle_fill_ctor): Likewise.
+	(cplus_demangle_fill_dtor): Likewise.
+	(d_make_empty): Likewise.
+	(d_count_templates_scopes): Remobe const from 3rd param,
+	Return on dc->d_counting > 1,
+	Increment dc->d_counting.
+        * cp-demint.c (cplus_demangle_fill_component): Initialize d->d_counting.
+	(cplus_demangle_fill_builtin_type): Likewise.
+	(cplus_demangle_fill_operator): Likewise.
+
+2019-11-16  Eduard-Mihai Burtescu  <eddyb@lyken.rs>
+
+	* cplus-dem.c (cplus_demangle): Use rust_demangle directly.
+	(rust_demangle): Remove.
+	* rust-demangle.c (is_prefixed_hash): Rename to is_legacy_prefixed_hash.
+	(parse_lower_hex_nibble): Rename to decode_lower_hex_nibble.
+	(parse_legacy_escape): Rename to decode_legacy_escape.
+	(rust_is_mangled): Remove.
+	(struct rust_demangler): Add.
+	(peek): Add.
+	(next): Add.
+	(struct rust_mangled_ident): Add.
+	(parse_ident): Add.
+	(rust_demangle_sym): Remove.
+	(print_str): Add.
+	(PRINT): Add.
+	(print_ident): Add.
+	(rust_demangle_callback): Add.
+	(struct str_buf): Add.
+	(str_buf_reserve): Add.
+	(str_buf_append): Add.
+	(str_buf_demangle_callback): Add.
+	(rust_demangle): Add.
+	* rust-demangle.h: Remove.
+
+2019-11-15  Miguel Saldivar  <saldivarcher@gmail.com>
+
+	* testsuite/demangle-expected: Fix test.
+
+2019-11-04  Kamlesh Kumar  <kamleshbhalui@gmail.com>
+
+	* cp-demangle.c (d_expr_primary): Handle
+	nullptr demangling.
+	* testsuite/demangle-expected: Added test.
+
+2019-10-29 Paul Pluzhnikov  <ppluzhnikov@google.com>
+
+	* cp-demangle.c (d_number): Avoid signed int overflow.
+
+2019-10-28  Miguel Saldivar  <saldivarcher@gmail.com>
+
+	* cp-demangle.c (d_print_mod): Add a space before printing `complex`
+	and `imaginary`, as opposed to after.
+	* testsuite/demangle-expected: Adjust test.
+
+2019-10-03  Eduard-Mihai Burtescu  <eddyb@lyken.rs>
+
+	* rust-demangle.c (looks_like_rust): Remove.
+	(rust_is_mangled): Don't check escapes.
+	(is_prefixed_hash): Allow 0-9a-f permutations.
+	(rust_demangle_sym): Don't bail on unknown escapes.
+	* testsuite/rust-demangle-expected: Update 'main::$99$' test.
+
+2019-09-03  Eduard-Mihai Burtescu  <eddyb@lyken.rs>
+
+	* rust-demangle.c (unescape): Remove.
+	(parse_lower_hex_nibble): New function.
+	(parse_legacy_escape): New function.
+	(is_prefixed_hash): Use parse_lower_hex_nibble.
+	(looks_like_rust): Use parse_legacy_escape.
+	(rust_demangle_sym): Use parse_legacy_escape.
+	* testsuite/rust-demangle-expected: Add 'llv$u6d$' test.
+
+2019-08-27  Martin Liska  <mliska@suse.cz>
+
+	PR lto/91478
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_sections):
+	First find a WEAK HIDDEN symbol in symbol table that will be
+	preserved.  Later, use the symbol name for all removed symbols.
+
+2019-08-12  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Add filedescriptor.c.
+	* filedescriptor.c: New file.
+	* lrealpath.c (is_valid_fd): Remove.
+
+2019-08-08  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/91352
+	* lrealpath.c (is_valid_fd): New function.
+
+2019-07-24  Martin Liska  <mliska@suse.cz>
+
+	PR lto/91228
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_sections):
+	Find first '\0' starting from gnu_lto + 1.
+
+2019-07-12  Ren Kimura  <rkx1209dev@gmail.com>
+
+	* simple-object-elf.c (simple_object_elf_match): Check zero value shstrndx.
+	This fixes a Bug 90924.
+
+2019-07-22  Martin Liska  <mliska@suse.cz>
+
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_sections):
+	Do not search for gnu_lto_v1, but search for first '\0'.
+
+2019-07-18  Eduard-Mihai Burtescu  <eddyb@lyken.rs>
+
+	* cplus-dem.c: Include rust-demangle.h.
+	* rust-demangle.c: Include rust-demangle.h.
+	* rust-demangle.h: New file.
+
+2019-05-31  Michael Forney  <mforney@mforney.org>
+
+	* cp-demangle.c: Don't define CP_DYNAMIC_ARRAYS if __STDC_NO_VLA__
+	is non-zero.
+
+2019-04-30  Ben L  <bobsayshilol@live.co.uk>
+
+	* d-demangle.c (dlang_parse_assocarray): Correctly handle error result.
+	* testsuite/d-demangle-expected: Add testcase.
+
+	* d-demangle.c (dlang_parse_tuple): Correctly handle error result.
+	* testsuite/d-demangle-expected: Add testcase.
+
+	* d-demangle.c (dlang_parse_structlit): Correctly handle error result.
+	* testsuite/d-demangle-expected: Add testcase.
+
+	* d-demangle.c (dlang_parse_arrayliteral): Correctly handle error result.
+	* testsuite/d-demangle-expected: Add testcase.
+
+	* d-demangle.c (dlang_parse_integer): Fix stack underflow.
+	* testsuite/d-demangle-expected: Add testcase.
+
+	* cp-demangle (d_print_comp_inner): Guard against a NULL 'typed_name'.
+	* testsuite/demangle-expected: Add testcase.
+
+	* cp-demangle.c (d_encoding): Guard against NULL return values from
+	d_right (dc).
+	* testsuite/demangle-expected: Add testcase.
+
+2019-04-29  Ben L  <bobsayshilol@live.co.uk>
+
+	* cp-demangle.c (d_expression_1): Don't peek ahead unless the current
+	char is valid.
+	* testsuite/demangle-expected: Add testcase.
+
+2019-04-10  Nick Clifton  <nickc@redhat.com>
+
+	PR 89394
+	* cp-demangle.c (cplus_demangle_fill_name): Reject negative
+	lengths.
+	(d_count_templates_scopes): Replace num_templates and num_scopes
+	parameters with a struct d_print_info pointer parameter.  Adjust
+	body of the function accordingly.  Add recursion counter and check
+	that the recursion limit is not reached.
+	(d_print_init): Pass dpi parameter to d_count_templates_scopes.
+	Reset recursion counter afterwards, unless the recursion limit was
+	reached.
+
+2019-04-07  Alan Modra  <amodra@gmail.com>
+
+	* functions.texi: Regenerate.
+
+2019-03-14  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* hashtab.c (htab_remove_elt_with_hash): Return if slot is NULL rather
+	than if *slot is HTAB_EMPTY_ENTRY.
+
+2019-02-11  Philippe Waroquiers  <philippe.waroquiers@skynet.be>
+
+	* splay-tree.c (splay_tree_insert): Also release old KEY in case
+	of insertion of a key equal to an already present key.
+	(splay_tree_new_typed_alloc): Update comment.
+
+2019-01-22  Nidal Faour  <nidal.faour@wdc.com>
+
+	PR lto/88422
+	* simple-object.c (O_BINARY): Define if not already defined.
+	(simple_object_copy_lto_debug_sections): Create file in binary
+	mode.
+
+2019-01-21  Tom Tromey  <tom@tromey.com>
+
+	* splay-tree.c (splay_tree_remove): Delete the key if necessary.
+
+2019-01-14  Tom Honermann  <tom@honermann.net>
+
+	* cp-demangle.c (cplus_demangle_builtin_types)
+	(cplus_demangle_type): Add name demangling for char8_t (Du).
+	* cp-demangle.h: Increase D_BUILTIN_TYPE_COUNT to accommodate the
+	new char8_t type.
+
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+
+	* cp-demangle.c: Mechanically replace "can not" with "cannot".
+	* floatformat.c: Likewise.
+	* strerror.c: Likewise.
+
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2018-12-22  Jason Merrill  <jason@redhat.com>
+
+	Remove support for demangling GCC 2.x era mangling schemes.
+	* cplus-dem.c: Remove cplus_mangle_opname, cplus_demangle_opname,
+	internal_cplus_demangle, and all subroutines.
+	(libiberty_demanglers): Remove entries for ancient GNU (pre-3.0),
+	Lucid, ARM, HP, and EDG demangling styles.
+	(cplus_demangle): Remove 'work' variable.  Don't call
+	internal_cplus_demangle.
+
+2018-12-07  Nick Clifton  <nickc@redhat.com>
+
+	PR 87681
+	PR 87675
+	PR 87636
+	PR 87350
+	PR 87335
+	* cp-demangle.h (struct d_info): Add recursion_level field.
+	* cp-demangle.c (d_function_type): Add recursion counter.
+	If the recursion limit is reached and the check is not disabled,
+	then return with a failure result.
+	(cplus_demangle_init_info): Initialise the recursion_level field.
+        (d_demangle_callback): If the recursion limit is enabled, check
+	for a mangled string that is so long that there is not enough
+	stack space for the local arrays.
+        * cplus-dem.c (struct work): Add recursion_level field.
+	(squangle_mop_up): Set the numb and numk fields to zero.
+	(work_stuff_copy_to_from): Handle the case where a btypevec or
+	ktypevec field is NULL.
+	(demangle_nested_args): Add recursion counter.  If
+	the recursion limit is not disabled and reached, return with a
+	failure result.
+
+2018-10-23  Jason Merrill  <jason@redhat.com>
+
+	Implement P0732R2, class types in non-type template parameters.
+	* cp-demangle.c (d_dump, d_make_comp, d_count_templates_scopes)
+	(d_print_comp_inner): Handle DEMANGLE_COMPONENT_TPARM_OBJ.
+	(d_special_name): Handle TA.
+	(d_expresion_1): Fix demangling of brace-enclosed initializer list.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	Merge from binutils-gdb:
+	2018-06-19  Simon Marchi  <simon.marchi@ericsson.com>
+
+	* configure.ac: Remove AC_PREREQ.
+	* configure: Re-generate.
+	* config.in: Re-generate.
+
+2018-10-01  Nathan Sidwell  <nathan@acm.org>
+
+	* configure.ac (checkfuncs): Add pipe2.
+	* config.in, configure: Rebuilt.
+	* pex-unix.c (pex_unix_exec_child): Comminicate errors from child
+	to parent with a pipe, when possible.
+
+2018-08-23  Nathan Sidwell  <nathan@acm.org>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR driver/87056
+	* pex-unix.c (pex_unix_exec_child): Duplicate bad_fn into local
+	scopes to avoid potential clobber.
+
+2018-08-20  Nathan Sidwell  <nathan@acm.org>
+
+	* pex-unix.c (pex_child_error): Delete.
+	(pex_unix_exec_child): Commonize error paths to single message &
+	exit.
+
+2018-07-30  Tom Tromey  <tom@tromey.com>
+
+	* cplus-dem.c (remember_Btype): Don't call memcpy with LEN==0.
+
+2018-07-26  Martin Liska  <mliska@suse.cz>
+
+	PR lto/86548
+	* make-temp-file.c (TEMP_FILE): Remove leading 'cc'.
+	(make_temp_file): Call make_temp_file_with_prefix with
+	first argument set to NULL.
+	(make_temp_file_with_prefix): Support also prefix.
+
+2018-07-19  Eli Zaretskii  <eliz@gnu.org>
+
+	* simple-object-elf.c (ENOTSUP): If not defined by errno.h, redirect
+	to ENOSYS.
+
 2018-05-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* simple-object.c (handle_lto_debug_sections): Add rename parameter.
@@ -899,8 +1199,8 @@
 	* functions.texi: Regenerate.
 
 2014-12-11  Uros Bizjak  <ubizjak@gmail.com>
-            Ben Elliston  <bje@au.ibm.com>
-            Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+	    Ben Elliston  <bje@au.ibm.com>
+	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* xvasprintf.c: New file.
 	* vprintf-support.h: Likewise.

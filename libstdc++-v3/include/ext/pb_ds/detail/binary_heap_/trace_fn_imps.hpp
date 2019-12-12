@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,6 +37,8 @@
  * @file binary_heap_/trace_fn_imps.hpp
  * Contains an implementation class for a binary_heap.
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 #ifdef PB_DS_BINARY_HEAP_TRACE_
 
@@ -76,3 +78,4 @@ trace_entry(const entry& r_e, true_type) const
 }
 
 #endif // #ifdef PB_DS_BINARY_HEAP_TRACE_
+#endif

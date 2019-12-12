@@ -10,4 +10,5 @@ typedef union
 
 A a = { 0 };
 A b = {{ 0 }};
-A c = {{{ 0 }}};  // { dg-error "braces" }
+A c = {{{ 0 }}};    // { dg-error "braces" "" { target c++98_only } }
+A d = {{{{ 0 }}}};  // { dg-error "braces" }

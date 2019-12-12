@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2018 Free Software Foundation, Inc.
+// Copyright (C) 2017-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,3 +43,7 @@ test02()
 }
 
 // { dg-error "value type is destructible" "" { target *-*-* } 0 }
+
+// Needed because of PR c++/92193
+// { dg-prune-output "deleted function" }
+// { dg-prune-output "private within this context" }

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2008-2018, AdaCore                     *
+ *                     Copyright (C) 2008-2019, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -29,12 +29,12 @@
  *                                                                          *
  ****************************************************************************/
 
+#define ATTRIBUTE_UNUSED __attribute__((unused))
+
 /* First all usupported platforms. Add stubs for exported routines. */
 
 #if defined (VMS) || defined (__vxworks) || defined (__Lynx__) \
   || defined (__ANDROID__) || defined (__PikeOS__) || defined(__DJGPP__)
-
-#define ATTRIBUTE_UNUSED __attribute__((unused))
 
 void *
 __gnat_new_tty (void)
@@ -108,7 +108,7 @@ __gnat_tty_supported (void)
 }
 
 int
-__gnat_tty_waitpid (void *desc ATTRIBUTE_UNUSED)
+__gnat_tty_waitpid (void *desc ATTRIBUTE_UNUSED, int blocking)
 {
   return 1;
 }
@@ -152,6 +152,7 @@ __gnat_setup_winsize (void *desc ATTRIBUTE_UNUSED,
 #include <stdlib.h>
 
 #include <windows.h>
+#include <winternl.h>
 
 #define MAXPATHLEN 1024
 
@@ -169,7 +170,7 @@ struct TTY_Process {
   BOOL usePipe;
 };
 
-/* Control whether create_child cause the process to inherit GPS'
+/* Control whether create_child cause the process to inherit GNAT Studio'
    error mode setting.  The default is 1, to minimize the possibility of
    subprocesses blocking when accessing unmounted drives.  */
 static int Vw32_start_process_inherit_error_mode = 1;
@@ -1014,20 +1015,28 @@ __gnat_terminate_pid (int pid)
    the Win32 API instead of the C one. */
 
 int
-__gnat_tty_waitpid (struct TTY_Process* p)
+__gnat_tty_waitpid (struct TTY_Process* p, int blocking)
 {
   DWORD exitcode;
-  DWORD res;
-  HANDLE proc_hand = p->procinfo.hProcess;
+  HANDLE hprocess = p->procinfo.hProcess;
 
-  res = WaitForSingleObject (proc_hand, 0);
-  GetExitCodeProcess (proc_hand, &exitcode);
+  if (blocking) {
+     /* Wait is needed on Windows only in blocking mode. */
+     WaitForSingleObject (hprocess, 0);
+  }
 
-  CloseHandle (p->procinfo.hThread);
-  CloseHandle (p->procinfo.hProcess);
+  GetExitCodeProcess (hprocess, &exitcode);
+
+  if (exitcode == STILL_ACTIVE) {
+     /* If process is still active return -1. */
+     exitcode = -1;
+  } else {
+     /* Process is dead, so handle to process and main thread can be closed. */
+     CloseHandle (p->procinfo.hThread);
+     CloseHandle (hprocess);
+  }
 
   /* No need to close the handles: they were closed on the ada side */
-
   return (int) exitcode;
 }
 
@@ -1107,14 +1116,6 @@ __gnat_setup_winsize (void *desc, int rows, int columns)
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-/* On some system termio is either absent or including it will disable termios
-   (HP-UX) */
-#if !defined (__hpux__) && !defined (BSD) && !defined (__APPLE__) \
-  && !defined (__rtems__) && !defined (__QNXNTO__)
-#   include <termio.h>
-#endif
-
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <fcntl.h>
@@ -1130,7 +1131,6 @@ __gnat_setup_winsize (void *desc, int rows, int columns)
 #   include <sys/signal.h>
 #endif
 #if defined (__hpux__)
-#   include <sys/termio.h>
 #   include <sys/stropts.h>
 #endif
 
@@ -1421,7 +1421,7 @@ int
 __gnat_setup_child_communication
    (pty_desc *desc,
     char **new_argv,
-    int Use_Pipes)
+    int Use_Pipes ATTRIBUTE_UNUSED)
 {
   int status;
   int pid = getpid ();
@@ -1565,11 +1565,21 @@ __gnat_terminate_pid (int pid)
  *   exit status of the child process
  */
 int
-__gnat_tty_waitpid (pty_desc *desc)
+__gnat_tty_waitpid (pty_desc *desc, int blocking)
 {
-  int status = 0;
-  waitpid (desc->child_pid, &status, 0);
-  return WEXITSTATUS (status);
+  int status = -1;
+  int options = 0;
+
+  if (blocking) {
+     options = 0;
+  } else {
+     options = WNOHANG;
+  }
+  waitpid (desc->child_pid, &status, options);
+  if WIFEXITED (status) {
+     status = WEXITSTATUS (status);
+  }
+  return status;
 }
 
 /* __gnat_tty_supported - Are tty supported ?
@@ -1597,7 +1607,10 @@ __gnat_free_process (pty_desc** desc)
 
 /* __gnat_send_header - dummy function. this interface is only used on Windows */
 void
-__gnat_send_header (pty_desc* desc, char header[5], int size, int *ret)
+__gnat_send_header (pty_desc* desc ATTRIBUTE_UNUSED,
+		    char header[5] ATTRIBUTE_UNUSED,
+		    int size ATTRIBUTE_UNUSED,
+		    int *ret ATTRIBUTE_UNUSED)
 {
   *ret = 0;
 }
@@ -1635,8 +1648,8 @@ __gnat_new_tty (void)
  */
 void __gnat_close_tty (pty_desc* desc)
 {
-  if (desc->master_fd >= 0) close (desc->master_fd);
-  if (desc->slave_fd  >= 0) close (desc->slave_fd);
+  if (desc->master_fd >= 0) { close (desc->master_fd); desc->master_fd = -1; }
+  if (desc->slave_fd  >= 0) { close (desc->slave_fd);  desc->slave_fd  = -1; }
 }
 
 /* __gnat_tty_name - return slave side device name

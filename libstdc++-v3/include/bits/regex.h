@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010-2018 Free Software Foundation, Inc.
+// Copyright (C) 2010-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -628,8 +628,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * expression pattern interpreted according to @p __flags.  If
        * regex_error is thrown, *this remains unchanged.
        */
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3296. Inconsistent default argument for basic_regex<>::assign
       basic_regex&
-      assign(const _Ch_type* __p, std::size_t __len, flag_type __flags)
+      assign(const _Ch_type* __p, size_t __len, flag_type __flags = ECMAScript)
       { return this->assign(string_type(__p, __len), __flags); }
 
       /**
@@ -838,6 +840,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
    * @brief Swaps the contents of two regular expression objects.
    * @param __lhs First regular expression.
    * @param __rhs Second regular expression.
+   * @relates basic_regex
    */
   template<typename _Ch_type, typename _Rx_traits>
     inline void
@@ -937,10 +940,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { return this->_M_str().compare(__s); }
       // @}
 
+      /// @cond undocumented
       // Non-standard, used by comparison operators
       int
       _M_compare(const value_type* __s, size_t __n) const
       { return this->_M_str().compare({__s, __n}); }
+      /// @endcond
 
     private:
       // Simplified basic_string_view for C++11
@@ -1015,6 +1020,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   // [7.9.2] sub_match non-member operators
 
+  /// @relates sub_match @{
+
   /**
    * @brief Tests the equivalence of two regular expression submatches.
    * @param __lhs First regular expression submatch.
@@ -1081,11 +1088,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     operator>(const sub_match<_BiIter>& __lhs, const sub_match<_BiIter>& __rhs)
     { return __lhs.compare(__rhs) > 0; }
 
+  /// @cond undocumented
+
   // Alias for a basic_string that can be compared to a sub_match.
   template<typename _Bi_iter, typename _Ch_traits, typename _Ch_alloc>
     using __sub_match_string = basic_string<
 			      typename iterator_traits<_Bi_iter>::value_type,
 			      _Ch_traits, _Ch_alloc>;
+  /// @endcond
 
   /**
    * @brief Tests the equivalence of a string and a regular expression
@@ -1554,6 +1564,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	       const sub_match<_Bi_iter>& __m)
     { return __os << __m.str(); }
 
+  // @} relates sub_match
+
   // [7.10] Class template match_results
 
   /**
@@ -1575,8 +1587,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
    * of characters [first, second) which formed that match. Otherwise matched
    * is false, and members first and second point to the end of the sequence
    * that was searched.
-   *
-   * @nosubgrouping
    */
   template<typename _Bi_iter,
 	   typename _Alloc = allocator<sub_match<_Bi_iter> > >
@@ -1606,7 +1616,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     public:
       /**
-       * @name 10.? Public Types
+       * @name 28.10 Public Types
        */
       //@{
       typedef sub_match<_Bi_iter>			   value_type;
@@ -1630,16 +1640,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       /**
        * @brief Constructs a default %match_results container.
        * @post size() returns 0 and str() returns an empty string.
-       * @{
        */
       match_results() : match_results(_Alloc()) { }
 
+      /**
+       * @brief Constructs a default %match_results container.
+       * @post size() returns 0 and str() returns an empty string.
+       */
       explicit
       match_results(const _Alloc& __a) noexcept
       : _Base_type(__a)
       { }
-
-      // @}
 
       /**
        * @brief Copy constructs a %match_results.
@@ -1698,21 +1709,21 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       size_type
       max_size() const noexcept
-      { return _Base_type::max_size(); }
+      { return _Base_type::max_size() - 3; }
 
       /**
        * @brief Indicates if the %match_results contains no results.
        * @retval true The %match_results object is empty.
        * @retval false The %match_results object is not empty.
        */
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const noexcept
       { return size() == 0; }
 
       //@}
 
       /**
-       * @name 10.3 Element Access
+       * @name 28.10.4 Element Access
        */
       //@{
 
@@ -1837,7 +1848,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       //@}
 
       /**
-       * @name 10.4 Formatting
+       * @name 28.10.5 Formatting
        *
        * These functions perform formatted substitution of the matched
        * character sequences into their target.  The format specifiers and
@@ -1898,7 +1909,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       //@}
 
       /**
-       * @name 10.5 Allocator
+       * @name 28.10.6 Allocator
        */
       //@{
 
@@ -1912,7 +1923,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       //@}
 
       /**
-       * @name 10.6 Swap
+       * @name 28.10.7 Swap
        */
        //@{
 
@@ -1929,11 +1940,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       //@}
 
     private:
-      template<typename, typename, typename, bool>
-	friend class __detail::_Executor;
-
       template<typename, typename, typename>
 	friend class regex_iterator;
+
+      /// @cond undocumented
+
+      template<typename, typename, typename, bool>
+	friend class __detail::_Executor;
 
       template<typename _Bp, typename _Ap, typename _Cp, typename _Rp,
 	__detail::_RegexExecutorPolicy, bool>
@@ -1942,9 +1955,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 				    const basic_regex<_Cp, _Rp>&,
 				    regex_constants::match_flag_type);
 
+      // Reset contents to __size unmatched sub_match objects
+      // (plus additional objects for prefix, suffix and unmatched sub).
       void
       _M_resize(unsigned int __size)
-      { _Base_type::resize(__size + 3); }
+      { _Base_type::assign(__size + 3, sub_match<_Bi_iter>{}); }
+
+      // Set state to a failed match for the given past-the-end iterator.
+      void
+      _M_establish_failed_match(_Bi_iter __end)
+      {
+	sub_match<_Bi_iter> __sm;
+	__sm.first = __sm.second = __end;
+	_Base_type::assign(3, __sm);
+      }
 
       const_reference
       _M_unmatched_sub() const
@@ -1971,6 +1995,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { return _Base_type::operator[](_Base_type::size() - 1); }
 
       _Bi_iter _M_begin;
+      /// @endcond
     };
 
   typedef match_results<const char*>		 cmatch;
@@ -1981,10 +2006,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
 
   // match_results comparisons
+
   /**
    * @brief Compares two match_results for equality.
    * @returns true if the two objects refer to the same match,
-   * false otherwise.
+   *          false otherwise.
    */
   template<typename _Bi_iter, typename _Alloc>
     inline bool
@@ -2008,7 +2034,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   /**
    * @brief Compares two match_results for inequality.
    * @returns true if the two objects do not refer to the same match,
-   * false otherwise.
+   *          false otherwise.
    */
   template<typename _Bi_iter, class _Alloc>
     inline bool
@@ -2032,7 +2058,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
 _GLIBCXX_END_NAMESPACE_CXX11
 
-  // [7.11.2] Function template regex_match
+#if __cplusplus > 201703L
+namespace ranges::__detail
+{
+  template<typename _Tp> extern inline const bool __enable_view_impl;
+  template<typename _Bi_iter, typename _Alloc>
+    inline constexpr bool __enable_view_impl<match_results<_Bi_iter, _Alloc>>
+      = false;
+} // namespace ranges::__detail
+#endif // C++20
+
+  // [28.11.2] Function template regex_match
   /**
    * @name Matching, Searching, and Replacing
    */

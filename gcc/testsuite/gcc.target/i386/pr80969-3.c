@@ -2,10 +2,9 @@
 /* { dg-do compile { target { { ! x32 } && { ! avx512f_runtime } } } } */
 /* { dg-options "-Ofast -mabi=ms -mavx512f" } */
 /* { dg-require-effective-target avx512f } */
+/* { dg-require-effective-target alloca } */
 
 /* Test with alloca (and DRAP).  */
-
-#include <alloca.h>
 
 int a[56];
 volatile int b = -12345;
@@ -19,7 +18,7 @@ void (*volatile const foo_noinfo)(int *, int, int) = foo;
 
 int main (int argc, char *argv[]) {
   int c;
-  int *e = alloca (d);
+  int *e = __builtin_alloca (d);
   foo_noinfo (e, d, 0);
   for (; b; b++) {
     c = b;

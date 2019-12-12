@@ -1,5 +1,5 @@
 # -*- shell-script -*-
-#  Copyright (C) 2012-2018 Free Software Foundation, Inc.
+#  Copyright (C) 2012-2019 Free Software Foundation, Inc.
 #  Contributed by Richard Henderson <rth@redhat.com>.
 #
 #  This file is part of the GNU Atomic Library (libatomic).
@@ -53,7 +53,7 @@ case "${target_cpu}" in
   arm*)
 	ARCH=arm
 	case "${target}" in
-            arm*-*-freebsd*)
+            arm*-*-freebsd* | arm*-*-netbsd*)
                 ;;
             *)
                 # ??? Detect when -march=armv7 is already enabled.
@@ -124,7 +124,7 @@ case "${target}" in
 	config_path="${config_path} linux/aarch64 posix"
 	;;
 
-  arm*-*-linux*)
+  arm*-*-linux* | arm*-*-uclinux*)
 	# OS support for atomic primitives.
 	config_path="${config_path} linux/arm posix"
 	;;

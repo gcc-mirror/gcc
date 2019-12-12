@@ -4,4 +4,4 @@
 /* { dg-do compile } */
 /* { dg-options "-Wformat-zero-length" } */
 
-/* { dg-warning "-Wformat-zero-length ignored without -Wformat" "ignored" { target *-*-* } 0 } */
+/* { dg-warning "'-Wformat-zero-length' ignored without '-Wformat'" "ignored" { target *-*-* } 0 } */

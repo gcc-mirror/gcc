@@ -6,6 +6,7 @@
 // license that can be found in the LICENSE file.
 
 // +build !aix
+// +build !hurd
 // +build !linux
 // +build !solaris !386
 // +build !solaris !sparc

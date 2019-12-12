@@ -1,6 +1,6 @@
 # GCC Makefile fragment for Synopsys DesignWare ARC
 
-# Copyright (C) 2007-2018 Free Software Foundation, Inc.
+# Copyright (C) 2007-2019 Free Software Foundation, Inc.
 # Contributor: Joern Rennecke <joern.rennecke@embecosm.com>
 #              on behalf of Synopsys Inc.
 
@@ -21,7 +21,7 @@
 
 CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = arc/lib1funcs.S
-LIB1ASMFUNCS = _mulsi3 _umulsidi3  _umulsi3_highpart \
+LIB1ASMFUNCS = _mulsi3 _umulsidi3  _umulsi3_highpart _muldi3 \
   _udivsi3 _divsi3 _umodsi3 _modsi3 \
   _divmod_tools _clzsi2 \
   _millicodethunk_st _millicodethunk_ld _millicodethunk_ret \
@@ -46,7 +46,6 @@ LIB2ADD = fp-bit.c dp-bit.c
 
 dp-bit.c: $(srcdir)/fp-bit.c
 	echo '#ifndef __big_endian__' > dp-bit.c
-	echo '#define FLOAT_BIT_ORDER_MISMATCH' >> dp-bit.c
 	echo '#endif' >> dp-bit.c
 	echo '#include "fp-bit.h"' >> dp-bit.c
 	echo '#include "config/arc/dp-hack.h"' >> dp-bit.c
@@ -55,7 +54,6 @@ dp-bit.c: $(srcdir)/fp-bit.c
 fp-bit.c: $(srcdir)/fp-bit.c
 	echo '#define FLOAT' > fp-bit.c
 	echo '#ifndef __big_endian__' >> fp-bit.c
-	echo '#define FLOAT_BIT_ORDER_MISMATCH' >> fp-bit.c
 	echo '#endif' >> fp-bit.c
 	echo '#include "config/arc/fp-hack.h"' >> fp-bit.c
 	cat $(srcdir)/fp-bit.c >> fp-bit.c

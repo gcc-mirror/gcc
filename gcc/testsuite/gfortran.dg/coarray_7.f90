@@ -50,9 +50,9 @@ program test
   call coarray(caf2)
   call coarray(caf2[1]) ! { dg-error "must be a coarray" }
   call ups(i)
-  call ups(i[1]) ! { dg-error "with ultimate pointer component" }
-  call ups(i%ptr)
-  call ups(i[1]%ptr) ! OK - passes target not pointer
+  call ups1(i[1]) ! { dg-error "with ultimate pointer component" }
+  call ups2(i%ptr)
+  call ups3(i[1]%ptr) ! OK - passes target not pointer
 contains
   subroutine asyn(a)
     integer, intent(in), asynchronous :: a

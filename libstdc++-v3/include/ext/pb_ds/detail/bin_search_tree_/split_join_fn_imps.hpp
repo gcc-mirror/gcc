@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,6 +37,8 @@
  * @file bin_search_tree_/split_join_fn_imps.hpp
  * Contains an implementation class for bin_search_tree_.
  */
+
+#ifdef PB_DS_CLASS_C_DEC
 
 PB_DS_CLASS_T_DEC
 bool
@@ -148,3 +150,4 @@ recursive_count(node_pointer p) const
   return 1 + recursive_count(p->m_p_left) + recursive_count(p->m_p_right);
 }
 
+#endif

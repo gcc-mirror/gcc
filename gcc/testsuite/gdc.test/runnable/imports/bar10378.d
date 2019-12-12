@@ -1,0 +1,4 @@
+
+module bar;
+
+void writeln() { }

@@ -6,6 +6,5 @@ struct meminfo {};
 
 void frob ()
 {
-  meminf (); // { dg-error "not declared" }
-  // { dg-message "suggested alternative" "" { target *-*-* } .-1 }
+  meminf (); // { dg-error "'meminf' was not declared in this scope; did you mean 'meminfo'\\?" }
 }

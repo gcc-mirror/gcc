@@ -6,10 +6,9 @@ package runtime
 
 import _ "unsafe" // For go:linkname.
 
-// For gccgo, use go:linkname to rename compiler-called functions to
-// themselves, so that the compiler will export them.
+// For gccgo, use go:linkname to export compiler-called functions.
 //
-//go:linkname decoderune runtime.decoderune
+//go:linkname decoderune
 
 // Numbers fundamental to the encoding.
 const (
@@ -45,6 +44,15 @@ const (
 	locb = 0x80 // 1000 0000
 	hicb = 0xBF // 1011 1111
 )
+
+// countrunes returns the number of runes in s.
+func countrunes(s string) int {
+	n := 0
+	for range s {
+		n++
+	}
+	return n
+}
 
 // decoderune returns the non-ASCII rune at the start of
 // s[k:] and the index after the rune in s.

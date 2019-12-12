@@ -61,7 +61,7 @@ main (void)
       thrglobalvar++;	/* Predetermined - threadprivate.  */
       thrlocvar++;	/* Predetermined - threadprivate.  */
       foo (i);		/* Predetermined - private (omp for loop variable).  */
-      foo (constvar.x);	/* Predetermined - shared (const qualified type).  */
+      foo (constvar.x);	/* { dg-error "not specified in" } */
       foo (T::t.i);	/* Predetermined - shared (static data member).  */
       foo (*p);		/* *p predetermined - shared (heap allocated */
       (*p)++;		/* storage).  */

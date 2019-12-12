@@ -19,18 +19,18 @@ constexpr int *p0 = &i;
 constexpr bool b0  = p0;        // { dg-warning "address of .A::i." }
 constexpr bool b1  = p0 == 0;   // { dg-warning "address of .A::i." }
 constexpr bool b2  = p0 != 0;   // { dg-warning "address of .A::i." }
-constexpr bool b3  = p0 <  0;   // { dg-warning "ordered comparison" }
-constexpr bool b4  = p0 <= 0;   // { dg-warning "ordered comparison" }
-constexpr bool b5  = p0 >  0;   // { dg-warning "ordered comparison" }
-constexpr bool b6  = p0 >= 0;   // { dg-warning "ordered comparison" }
+constexpr bool b3  = p0 <  0;   // { dg-warning "25:ordered comparison" }
+constexpr bool b4  = p0 <= 0;   // { dg-warning "25:ordered comparison" }
+constexpr bool b5  = p0 >  0;   // { dg-warning "25:ordered comparison" }
+constexpr bool b6  = p0 >= 0;   // { dg-warning "25:ordered comparison" }
 
 constexpr bool b7  = !p0;       // { dg-warning "address of .A::i." }
 constexpr bool b8  = 0 == p0;   // { dg-warning "address of .A::i." }
 constexpr bool b9  = 0 != p0;   // { dg-warning "address of .A::i." }
-constexpr bool b10 = 0 <  p0;   // { dg-warning "ordered comparison" }
-constexpr bool b11 = 0 <= p0;   // { dg-warning "ordered comparison" }
-constexpr bool b12 = 0 >  p0;   // { dg-warning "ordered comparison" }
-constexpr bool b13 = 0 >= p0;   // { dg-warning "ordered comparison" }
+constexpr bool b10 = 0 <  p0;   // { dg-warning "24:ordered comparison" }
+constexpr bool b11 = 0 <= p0;   // { dg-warning "24:ordered comparison" }
+constexpr bool b12 = 0 >  p0;   // { dg-warning "24:ordered comparison" }
+constexpr bool b13 = 0 >= p0;   // { dg-warning "24:ordered comparison" }
 
 }
 

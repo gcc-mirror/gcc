@@ -1,9 +1,9 @@
-AddressSanitizer (http://code.google.com/p/address-sanitizer) and
-ThreadSanitizer (http://code.google.com/p/thread-sanitizer/) are
+AddressSanitizer and ThreadSanitizer (https://github.com/google/sanitizers) are
 projects initially developed by Google Inc.
+
 Both tools consist of a compiler module and a run-time library.
 The sources of the run-time library for these projects are hosted at
-http://llvm.org/svn/llvm-project/compiler-rt in the following directories:
+https://llvm.org/svn/llvm-project/compiler-rt in the following directories:
   include/sanitizer
   lib/sanitizer_common
   lib/interception

@@ -51,10 +51,10 @@ func TestStack(t *testing.T) {
 		n++
 	}
 	n++
-	frame("stack.go", "runtime_debug.Stack")
+	frame("stack.go", "debug.Stack")
 	frame("stack_test.go", "ptrmethod")
 	frame("stack_test.go", "method")
-	frame("stack_test.go", "runtime_debug_test.TestStack")
+	frame("stack_test.go", "test.TestStack")
 	frame("testing.go", "")
 }
 

@@ -2,7 +2,7 @@
 //
 // 2014-10-09  Ville Voutilainen  <ville.voutilainen@gmail.com>
 //
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -62,4 +62,13 @@ void test01()
 		construct::Nontrivial>(false), "");
   static_assert(test_category<is_trivially_default_constructible, 
 		HasTemplateCtor>(true), "");
+
+  static_assert(test_category<is_trivially_default_constructible,
+		int[]>(false), "PR c++/90532");
+  struct A { };
+  static_assert(test_category<is_trivially_default_constructible,
+		A[]>(false), "PR c++/90532");
+  struct B { B() { } };
+  static_assert(test_category<is_trivially_default_constructible,
+		B[]>(false), "PR c++/90532");
 }

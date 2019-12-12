@@ -1,6 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-optimized" } */
-/* { dg-additional-options "-mbranch-cost=2" { target branch_cost } } */
+/* { dg-options "-O1 -fdump-tree-optimized --param logical-op-non-short-circuit=1" } */
 
 int f(int a, int b, int c)
 {
@@ -23,5 +22,4 @@ int h(int a, int b, int c, int d)
  return a;
 }
 
-/* { dg-final { scan-tree-dump-times "if" 0 "optimized" { target { ! logical_op_short_circuit } } } } */
-/* { dg-final { scan-tree-dump-times "if" 2 "optimized" { target logical_op_short_circuit } } } */
+/* { dg-final { scan-tree-dump-times "if" 0 "optimized" } } */

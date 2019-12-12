@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fipa-cp -fipa-cp-clone -fdump-ipa-cp -fno-early-inlining -fdump-tree-optimized -fno-ipa-icf"  } */
+/* { dg-options "-O3 -fipa-cp -fipa-cp-clone -fdump-ipa-cp -fno-early-inlining -fno-ipa-sra -fdump-tree-optimized -fno-ipa-icf"  } */
 /* { dg-add-options bind_pic_locally } */
 
 int array[100];
@@ -72,7 +72,7 @@ main()
 }
 
 /* { dg-final { scan-ipa-dump-times "Creating a specialized node of i_can_be_propagated_fully2" 1 "cp"  } } */
-/* { dg-final { scan-ipa-dump-times "Creating a specialized node of i_can_be_propagated_fully/" 1 "cp"  } } */
+/* { dg-final { scan-ipa-dump-times "Creating a specialized node of i_can_be_propagated_fully\[./\]" 1 "cp"  } } */
 /* { dg-final { scan-ipa-dump-not "Creating a specialized node of i_can_not_be_propagated_fully2" "cp"  } } */
 /* { dg-final { scan-ipa-dump-not "Creating a specialized node of i_can_not_be_propagated_fully/" "cp"  } } */
 /* { dg-final { scan-tree-dump-not "i_can_be_propagated_fully \\(" "optimized"  } } */

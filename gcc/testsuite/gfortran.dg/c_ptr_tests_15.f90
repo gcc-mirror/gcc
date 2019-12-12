@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-fwhole-file -fdump-tree-original" }
+! { dg-options "-fdump-tree-original" }
 !
 ! PR fortran/43042 - fix ICE with c_null_ptr when using
 ! -fwhole-file (or -flto, which implies -fwhole-file).

@@ -1,3 +1,11 @@
+# This list is from t-elf, but with some things removed.
+LIB1ASMFUNCS += _udivsi3 _divsi3 _umodsi3 _modsi3 _dvmd_tls _bb_init_func \
+	_call_via_rX _interwork_call_via_rX \
+	_arm_fixunsdfsi _arm_fixunssfsi \
+	_arm_floatdidf _arm_floatdisf _arm_floatundidf _arm_floatundisf \
+	_lshrdi3 _ashrdi3 _ashldi3 \
+	_clzsi2 _clzdi2 _ctzsi2
+
 # Just for these, we omit the frame pointer since it makes such a big
 # difference.  It is then pointless adding debugging.
 HOST_LIBGCC2_CFLAGS += -fomit-frame-pointer

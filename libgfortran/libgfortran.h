@@ -1,5 +1,5 @@
 /* Common declarations for all of libgfortran.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>, and
    Andy Vaught <andy@xena.eas.asu.edu>
 
@@ -86,6 +86,10 @@ extern long double __strtold (const char *, char **);
 
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
+
+#ifdef HAVE_SYS_UIO_H
+#include <sys/uio.h>
 #endif
 
 #ifdef __MINGW32__
@@ -198,7 +202,7 @@ extern int __mingw_snprintf (char *, size_t, const char *, ...)
 # define iexport(x)		iexport1(x, IPREFIX(x))
 # define iexport1(x,y)		iexport2(x,y)
 # define iexport2(x,y) \
-	extern __typeof(x) PREFIX(x) __attribute__((__alias__(#y)))
+  extern __typeof(x) PREFIX(x) __attribute__((__alias__(#y), __copy__ (x)))
 #else
 # define export_proto(x)	sym_rename(x, PREFIX(x))
 # define export_proto_np(x)	extern char swallow_semicolon
@@ -355,6 +359,7 @@ typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_1) gfc_array_i1;
 typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_2) gfc_array_i2;
 typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_4) gfc_array_i4;
 typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_8) gfc_array_i8;
+typedef GFC_ARRAY_DESCRIPTOR (index_type) gfc_array_index_type;
 #ifdef HAVE_GFC_INTEGER_16
 typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_16) gfc_array_i16;
 #endif
@@ -381,8 +386,9 @@ typedef GFC_ARRAY_DESCRIPTOR (GFC_LOGICAL_8) gfc_array_l8;
 #ifdef HAVE_GFC_LOGICAL_16
 typedef GFC_ARRAY_DESCRIPTOR (GFC_LOGICAL_16) gfc_array_l16;
 #endif
-typedef gfc_array_i1 gfc_array_s1;
-typedef gfc_array_i4 gfc_array_s4;
+
+typedef GFC_ARRAY_DESCRIPTOR (GFC_UINTEGER_1) gfc_array_s1;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_UINTEGER_4) gfc_array_s4;
 
 /* These are for when you actually want to declare a descriptor, as
    opposed to a pointer to it.  */
@@ -534,6 +540,7 @@ typedef struct
 
   int all_unbuffered, unbuffered_preconnected;
   int fpe, backtrace;
+  int unformatted_buffer_size, formatted_buffer_size;
 }
 options_t;
 
@@ -701,8 +708,15 @@ internal_proto(exit_error);
 extern ssize_t estr_write (const char *);
 internal_proto(estr_write);
 
-extern int st_vprintf (const char *, va_list);
-internal_proto(st_vprintf);
+#if !defined(HAVE_WRITEV) && !defined(HAVE_SYS_UIO_H)
+struct iovec {
+  void  *iov_base;    /* Starting address */
+  size_t iov_len;     /* Number of bytes to transfer */
+};
+#endif
+
+extern ssize_t estr_writev (const struct iovec *iov, int iovcnt);
+internal_proto(estr_writev);
 
 extern int st_printf (const char *, ...)
   __attribute__((format (gfc_printf, 1, 2)));
@@ -713,6 +727,10 @@ internal_proto(gfc_xtoa);
 
 extern _Noreturn void os_error (const char *);
 iexport_proto(os_error);
+
+extern _Noreturn void os_error_at (const char *, const char *, ...)
+  __attribute__ ((format (gfc_printf, 2, 3)));
+iexport_proto(os_error_at);
 
 extern void show_locus (st_parameter_common *);
 internal_proto(show_locus);
@@ -737,6 +755,9 @@ internal_proto(translate_error);
 
 extern void generate_error (st_parameter_common *, int, const char *);
 iexport_proto(generate_error);
+
+extern bool generate_error_common (st_parameter_common *, int, const char *);
+iexport_proto(generate_error_common);
 
 extern void generate_warning (st_parameter_common *, const char *);
 internal_proto(generate_warning);
@@ -1359,6 +1380,11 @@ typedef GFC_ARRAY_DESCRIPTOR (void) array_t;
 extern index_type size0 (const array_t * array); 
 iexport_proto(size0);
 
+/* is_contiguous.c */
+
+extern GFC_LOGICAL_4 is_contiguous0 (const array_t * const restrict array); 
+iexport_proto(is_contiguous0);
+
 /* bounds.c */
 
 extern void bounds_equal_extents (array_t *, array_t *, const char *,
@@ -1743,5 +1769,9 @@ void cshift1_16_c16 (gfc_array_c16 * const restrict,
 internal_proto(cshift1_16_c16);
 #endif
 
+/* We always have these.  */
+
+#define HAVE_GFC_UINTEGER_1 1
+#define HAVE_GFC_UINTEGER_4 1
 
 #endif  /* LIBGFOR_H  */

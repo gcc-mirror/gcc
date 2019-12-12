@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2014-2019 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -32,7 +32,9 @@ void *__nvptx_stacks[32] __attribute__((shared,nocommon));
 /* Likewise for -muniform-simt.  */
 unsigned __nvptx_uni[32] __attribute__((shared,nocommon));
 
-void __attribute__((kernel))
+extern void __main (int *, int, void **) __attribute__((kernel));
+
+void
 __main (int *rval_ptr, int argc, void **argv)
 {
   __exitval_ptr = rval_ptr;

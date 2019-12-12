@@ -1,5 +1,5 @@
 /* A self-testing framework, for use by -fself-test.
-   Copyright (C) 2015-2018 Free Software Foundation, Inc.
+   Copyright (C) 2015-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,8 +30,9 @@ namespace selftest {
 /* A struct describing the source-location of a selftest, to make it
    easier to track down failing tests.  */
 
-struct location
+class location
 {
+public:
   location (const char *file, int line, const char *function)
     : m_file (file), m_line (line), m_function (function) {}
 
@@ -141,7 +142,7 @@ class auto_fix_quotes
    - line_table->default_range_bits: some frontends use a non-zero value
    and others use zero
    - the fallback modes within line-map.c: there are various threshold
-   values for source_location/location_t beyond line-map.c changes
+   values for location_t beyond line-map.c changes
    behavior (disabling of the range-packing optimization, disabling
    of column-tracking).  We can exercise these by starting the line_table
    at interesting values at or near these thresholds.
@@ -149,7 +150,7 @@ class auto_fix_quotes
    The following struct describes a particular case within our test
    matrix.  */
 
-struct line_table_case;
+class line_table_case;
 
 /* A class for overriding the global "line_table" within a selftest,
    restoring its value afterwards.  At most one instance of this
@@ -215,7 +216,10 @@ class test_runner
    alphabetical order.  */
 extern void attribute_c_tests ();
 extern void bitmap_c_tests ();
+extern void cgraph_c_tests ();
+extern void convert_c_tests ();
 extern void diagnostic_c_tests ();
+extern void diagnostic_format_json_cc_tests ();
 extern void diagnostic_show_locus_c_tests ();
 extern void dumpfile_c_tests ();
 extern void edit_context_c_tests ();
@@ -228,8 +232,12 @@ extern void gimple_c_tests ();
 extern void hash_map_tests_c_tests ();
 extern void hash_set_tests_c_tests ();
 extern void input_c_tests ();
+extern void json_cc_tests ();
+extern void opt_problem_cc_tests ();
+extern void optinfo_emit_json_cc_tests ();
 extern void predict_c_tests ();
 extern void pretty_print_c_tests ();
+extern void range_tests ();
 extern void read_rtl_function_c_tests ();
 extern void rtl_tests_c_tests ();
 extern void sbitmap_c_tests ();
@@ -247,6 +255,7 @@ extern void vec_c_tests ();
 extern void vec_perm_indices_c_tests ();
 extern void wide_int_cc_tests ();
 extern void opt_proposer_c_tests ();
+extern void dbgcnt_c_tests ();
 
 extern int num_passes;
 
@@ -429,6 +438,15 @@ extern int num_passes;
 #define ASSERT_STR_CONTAINS(HAYSTACK, NEEDLE)				\
   SELFTEST_BEGIN_STMT							\
   ::selftest::assert_str_contains (SELFTEST_LOCATION, #HAYSTACK, #NEEDLE, \
+				   (HAYSTACK), (NEEDLE));		\
+  SELFTEST_END_STMT
+
+/* Like ASSERT_STR_CONTAINS, but treat LOC as the effective location of the
+   selftest.  */
+
+#define ASSERT_STR_CONTAINS_AT(LOC, HAYSTACK, NEEDLE)			\
+  SELFTEST_BEGIN_STMT							\
+  ::selftest::assert_str_contains (LOC, #HAYSTACK, #NEEDLE,		\
 				   (HAYSTACK), (NEEDLE));		\
   SELFTEST_END_STMT
 

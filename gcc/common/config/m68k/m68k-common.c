@@ -1,5 +1,5 @@
 /* Common hooks for Motorola 68000 family.
-   Copyright (C) 1987-2018 Free Software Foundation, Inc.
+   Copyright (C) 1987-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -57,7 +57,7 @@ m68k_handle_option (struct gcc_options *opts,
 
     case OPT_mshared_library_id_:
       if (value > MAX_LIBRARY_ID)
-	error_at (loc, "-mshared-library-id=%s is not between 0 and %d",
+	error_at (loc, "%<-mshared-library-id=%s%> is not between 0 and %d",
 		  arg, MAX_LIBRARY_ID);
       else
         {

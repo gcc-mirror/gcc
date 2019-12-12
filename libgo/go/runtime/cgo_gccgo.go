@@ -47,7 +47,7 @@ func Cgocall() {
 	mp := getg().m
 	mp.ncgocall++
 	mp.ncgo++
-	entersyscall(0)
+	entersyscall()
 	mp.incgo = true
 }
 
@@ -63,7 +63,7 @@ func CgocallDone() {
 	// If we are invoked because the C function called _cgo_panic,
 	// then _cgo_panic will already have exited syscall mode.
 	if readgstatus(gp)&^_Gscan == _Gsyscall {
-		exitsyscall(0)
+		exitsyscall()
 	}
 }
 
@@ -80,12 +80,16 @@ func CgocallBack() {
 		gp = getg()
 		mp := gp.m
 		mp.dropextram = true
+
+		// This is a C-created stack.
+		// Record the outermost Go frame to help stack scan.
+		gp.entrysp = getcallersp()
 	}
 
 	lockOSThread()
 
-	exitsyscall(0)
 	gp.m.incgo = false
+	exitsyscall()
 
 	if gp.m.ncgo == 0 {
 		// The C call to Go came from a thread created by C.
@@ -108,43 +112,47 @@ func CgocallBack() {
 func CgocallBackDone() {
 	unlockOSThread()
 
-	// If we are the top level Go function called from C/C++, then
-	// we need to release the m. But don't release it if we are
-	// panicing; since this is the top level, we are going to
-	// crash the program, and we need the g and m to print the
-	// panic values.
-	//
-	// Dropping the m is going to clear g. This function is being
-	// called as a deferred function, so we will return to
-	// deferreturn which will want to clear the _defer field.
-	// As soon as we call dropm another thread may call needm and
-	// start using g, so we must not tamper with the _defer field
-	// after dropm. So clear _defer now.
+	// We are going to stop running in Go mode and return to C mode.
+	// We were almost certainly called by defer; if so, clean up
+	// the defer struct now, before we leave Go mode. But don't
+	// leave Go mode if we are panicing or called from Goexit,
+	// since in those cases we will continue executing deferred functions.
 	gp := getg()
 	mp := gp.m
 	drop := false
-	if mp.dropextram && mp.ncgo == 0 && gp._panic == nil {
+	if gp.deferring && gp._panic == nil && !gp.goexiting {
 		d := gp._defer
-		if d == nil || d.link != nil {
-			throw("unexpected g._defer in CgocallBackDone")
+		if d == nil {
+			throw("no defer struct when deferring")
 		}
-		gp._defer = nil
+		gp._defer = d.link
 		freedefer(d)
-		drop = true
+
+		// If we are the top level Go function called from C,
+		// then we need to release the m.
+		if mp.dropextram && mp.ncgo == 0 {
+			drop = true
+		}
 	}
 
-	gp.m.incgo = true
-	entersyscall(0)
+	// Don't go back to C mode if we are panicing. Just let the
+	// panic walk up through the Go stack.
+	if gp._panic == nil && !gp.goexiting {
+		gp.m.incgo = true
+		entersyscall()
+	}
 
 	if drop {
 		mp.dropextram = false
 		dropm()
+	} else if gp.deferring && gp._panic == nil && !gp.goexiting {
+		gp.ranCgocallBackDone = true
 	}
 }
 
 // _cgo_panic may be called by SWIG code to panic.
 func _cgo_panic(p *byte) {
-	exitsyscall(0)
+	exitsyscall()
 	panic(gostringnocopy(p))
 }
 

@@ -6,6 +6,6 @@ struct A {
 };
 
 struct B {
-    void A::a1(); // this used to die in chainon(), now grokdeclarator should// { dg-error "" }  cannot declare.*
-    void A::a2(); // should be fixed by the 930629 change.// { dg-error "" }  cannot declare.*
+    void A::a1(); // this used to die in chainon(), now grokdeclarator should// { dg-error "10:cannot declare" }  cannot declare.*
+    void A::a2(); // should be fixed by the 930629 change.// { dg-error "10:cannot declare" }  cannot declare.*
 };

@@ -1,6 +1,6 @@
 // Explicit instantiation file.
 
-// Copyright (C) 2001-2018 Free Software Foundation, Inc.
+// Copyright (C) 2001-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,15 +45,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template size_t valarray<size_t>::size() const;
   template size_t& valarray<size_t>::operator[](size_t);
 
+  // Compute the product of all elements in the non-empty range [__f, __l)
+  template<typename _Tp>
+    inline _Tp
+    __valarray_product(const _Tp* __f, const _Tp* __l)
+    {
+      _Tp __r = *__f++;
+      while (__f != __l)
+	__r = __r * *__f++;
+      return __r;
+    }
+
   inline size_t
   __valarray_product(const valarray<size_t>& __a)
   {
-    const size_t __n = __a.size();
-    // XXX: This ugly cast is necessary because
-    //      valarray::operator[]() const return a VALUE!
-    //      Try to get the committee to correct that gross error.
-    valarray<size_t>& __t = const_cast<valarray<size_t>&>(__a);
-    return __valarray_product(&__t[0], &__t[0] + __n);
+    return __valarray_product(&__a[0], &__a[0] + __a.size());
   }
 
   // Map a gslice, described by its multidimensional LENGTHS

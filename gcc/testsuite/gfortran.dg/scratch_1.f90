@@ -1,5 +1,4 @@
 ! { dg-do run }
-! { dg-skip-if "Too big for local store" { spu-*-* } }
 ! Check that we can open more than 26 scratch files concurrently
   integer :: i
   do i = 1, 30

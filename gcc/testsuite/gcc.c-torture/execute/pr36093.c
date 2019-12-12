@@ -1,3 +1,5 @@
+/* { dg-skip-if "small alignment" { pdp11-*-* } } */
+
 extern void abort (void);
 
 typedef struct Bar {

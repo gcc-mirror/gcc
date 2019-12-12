@@ -1,5 +1,4 @@
 ! { dg-do compile }
-! { dg-options "-fno-whole-file" }
 !
 ! PR fortran/42051
 ! PR fortran/44064

@@ -1,5 +1,5 @@
 /* IR-agnostic target query functions relating to optabs
-   Copyright (C) 2001-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -144,8 +144,9 @@ get_vcond_eq_icode (machine_mode vmode, machine_mode cmode)
 enum extraction_pattern { EP_insv, EP_extv, EP_extzv };
 
 /* Describes an instruction that inserts or extracts a bitfield.  */
-struct extraction_insn
+class extraction_insn
 {
+public:
   /* The code of the instruction.  */
   enum insn_code icode;
 

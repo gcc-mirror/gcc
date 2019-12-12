@@ -4,4 +4,5 @@
 
 // PR c++/9364: ICE processing typename with name error.
 
-void find(typename int&); // { dg-error "typename|void|expected" }
+void find(typename int&); // { dg-error "6:variable or field .find. declared void" }
+// { dg-error "expected" "" { target *-*-* } .-1 }

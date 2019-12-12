@@ -1,0 +1,13 @@
+#
+# This spec file is read by gdc when linking.
+# It is used to specify the libraries we need to link in, in the right
+# order.
+#
+
+@DRTSTUFF_SPEC@
+
+%rename link linkorig_gdc_renamed
+*link: %(linkorig_gdc_renamed) @OS_LINK_SPEC@
+
+%rename lib liborig_gdc_renamed
+*lib: %{debuglib|defaultlib|nophoboslib: ; :@SPEC_PHOBOS_DEPS@} %(liborig_gdc_renamed)

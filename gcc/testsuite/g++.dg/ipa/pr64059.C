@@ -1,4 +1,4 @@
-// { dg-options "-r -nostdlib -O2 -flto -fno-devirtualize" }
+// { dg-options "-r -O2 -flto -fno-devirtualize" }
 // { dg-require-effective-target lto }
 
 class A;

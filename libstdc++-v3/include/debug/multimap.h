@@ -1,6 +1,6 @@
 // Debugging multimap implementation -*- C++ -*-
 
-// Copyright (C) 2003-2018 Free Software Foundation, Inc.
+// Copyright (C) 2003-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -55,6 +55,9 @@ namespace __debug
       typedef typename _Base::const_iterator	_Base_const_iterator;
       typedef typename _Base::iterator		_Base_iterator;
       typedef __gnu_debug::_Equal_to<_Base_const_iterator> _Equal;
+
+      template<typename _ItT, typename _SeqT, typename _CatT>
+	friend class ::__gnu_debug::_Safe_iterator;
 
     public:
       // types:
@@ -225,18 +228,18 @@ namespace __debug
       template<typename... _Args>
 	iterator
 	emplace(_Args&&... __args)
-	{
-	  return iterator(_Base::emplace(std::forward<_Args>(__args)...), this);
-	}
+	{ return { _Base::emplace(std::forward<_Args>(__args)...), this }; }
 
       template<typename... _Args>
 	iterator
 	emplace_hint(const_iterator __pos, _Args&&... __args)
 	{
 	  __glibcxx_check_insert(__pos);
-	  return iterator(_Base::emplace_hint(__pos.base(),
-					      std::forward<_Args>(__args)...),
-			  this);
+	  return
+	    {
+	      _Base::emplace_hint(__pos.base(), std::forward<_Args>(__args)...),
+	      this
+	    };
 	}
 #endif
 
@@ -256,7 +259,7 @@ namespace __debug
 						    _Pair&&>::value>::type>
 	iterator
 	insert(_Pair&& __x)
-	{ return iterator(_Base::insert(std::forward<_Pair>(__x)), this); }
+	{ return { _Base::insert(std::forward<_Pair>(__x)), this }; }
 #endif
 
 #if __cplusplus >= 201103L
@@ -293,8 +296,11 @@ namespace __debug
 	insert(const_iterator __position, _Pair&& __x)
 	{
 	  __glibcxx_check_insert(__position);
-	  return iterator(_Base::insert(__position.base(),
-					std::forward<_Pair>(__x)), this);
+	  return
+	    {
+	      _Base::insert(__position.base(), std::forward<_Pair>(__x)),
+	      this
+	    };
 	}
 #endif
 
@@ -334,13 +340,13 @@ namespace __debug
 
       iterator
       insert(node_type&& __nh)
-      { return iterator(_Base::insert(std::move(__nh)), this); }
+      { return { _Base::insert(std::move(__nh)), this }; }
 
       iterator
       insert(const_iterator __hint, node_type&& __nh)
       {
 	__glibcxx_check_insert(__hint);
-	return iterator(_Base::insert(__hint.base(), std::move(__nh)), this);
+	return { _Base::insert(__hint.base(), std::move(__nh)), this };
       }
 
       using _Base::merge;
@@ -352,9 +358,10 @@ namespace __debug
       {
 	__glibcxx_check_erase(__position);
 	this->_M_invalidate_if(_Equal(__position.base()));
-	return iterator(_Base::erase(__position.base()), this);
+	return { _Base::erase(__position.base()), this };
       }
 
+      _GLIBCXX_ABI_TAG_CXX11
       iterator
       erase(iterator __position)
       { return erase(const_iterator(__position)); }
@@ -394,13 +401,14 @@ namespace __debug
 	for (_Base_const_iterator __victim = __first.base();
 	     __victim != __last.base(); ++__victim)
 	  {
-	    _GLIBCXX_DEBUG_VERIFY(__victim != _Base::end(),
+	    _GLIBCXX_DEBUG_VERIFY(__victim != _Base::cend(),
 				  _M_message(__gnu_debug::__msg_valid_range)
 				  ._M_iterator(__first, "first")
 				  ._M_iterator(__last, "last"));
 	    this->_M_invalidate_if(_Equal(__victim));
 	  }
-	return iterator(_Base::erase(__first.base(), __last.base()), this);
+
+	return { _Base::erase(__first.base(), __last.base()), this };
       }
 #else
       void
@@ -577,6 +585,7 @@ namespace __debug
 	   typename _Compare = less<__iter_key_t<_InputIterator>>,
 	   typename _Allocator = allocator<__iter_to_alloc_t<_InputIterator>>,
 	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireNotAllocator<_Compare>,
 	   typename = _RequireAllocator<_Allocator>>
     multimap(_InputIterator, _InputIterator,
 	     _Compare = _Compare(), _Allocator = _Allocator())
@@ -585,6 +594,7 @@ namespace __debug
 
   template<typename _Key, typename _Tp, typename _Compare = less<_Key>,
 	   typename _Allocator = allocator<pair<const _Key, _Tp>>,
+	   typename = _RequireNotAllocator<_Compare>,
 	   typename = _RequireAllocator<_Allocator>>
     multimap(initializer_list<pair<_Key, _Tp>>,
 	     _Compare = _Compare(), _Allocator = _Allocator())

@@ -1,12 +1,12 @@
 /*							cbrtq.c
  *
- *	Cube root, __float128 precision
+ *	Cube root, long double precision
  *
  *
  *
  * SYNOPSIS:
  *
- * __float128 x, y, cbrtq();
+ * long double x, y, cbrtq();
  *
  * y = cbrtq( x );
  *
@@ -53,7 +53,6 @@ Adapted for glibc October, 2001.
     License along with this library; if not, see
     <http://www.gnu.org/licenses/>.  */
 
-
 #include "quadmath-imp.h"
 
 static const __float128 CBRT2 = 1.259921049894873164767210607278228350570251Q;
@@ -63,7 +62,7 @@ static const __float128 CBRT4I = 0.6299605249474365823836053036391141752851257Q;
 
 
 __float128
-cbrtq ( __float128 x)
+cbrtq (__float128 x)
 {
   int e, rem, sign;
   __float128 z;

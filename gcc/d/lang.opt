@@ -1,0 +1,366 @@
+; lang.opt -- Options for the D front end.
+; Copyright (C) 2006-2019 Free Software Foundation, Inc.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+; See the GCC internals manual for a description of this file's format.
+
+; Please try to keep this file in ASCII collating order.
+
+Language
+D
+
+-dependencies
+D Alias(M)
+; Documented in C
+
+-print-missing-file-dependencies
+D Alias(MG)
+; Documented in C
+
+-user-dependencies
+D Alias(MM)
+; Documented in C
+
+-write-dependencies
+D NoDriverArg Separate Alias(MD)
+; Documented in C
+
+-write-user-dependencies
+D NoDriverArg Separate Alias(MMD)
+; Documented in C
+
+H
+D
+; Different from documented use in C.
+
+Hd
+D Joined Separate
+-Hd <dir>	Write D interface files to directory <dir>.
+
+Hf
+D Joined Separate
+-Hf <file>	Write D interface to <file>.
+
+I
+D Joined Separate
+; Documented in C
+
+J
+D Joined Separate
+; Different from documented use in Fortran.
+
+M
+D
+; Documented in C
+
+MD
+D Separate NoDriverArg
+; Documented in C
+
+MF
+D Joined Separate
+; Documented in C
+
+MG
+D
+; Documented in C
+
+MM
+D
+; Documented in C
+
+MMD
+D Separate NoDriverArg
+; Documented in C
+
+MP
+D
+; Documented in C
+
+MT
+D Joined Separate
+; Documented in C
+
+MQ
+D Joined Separate
+; Documented in C
+
+Waddress
+D Warning Var(warn_address)
+; Documented in C
+
+Wall
+D
+; Documented in C
+
+Walloca
+D
+; Documented in C
+
+Walloca-larger-than=
+D
+; Documented in C
+
+Wno-alloca-larger-than
+D
+; Documented in C
+
+Wcast-result
+D Warning Var(warn_cast_result)
+Warn about casts that will produce a null result.
+
+Wdeprecated
+D
+; Documented in common.opt
+
+Werror
+D
+; Documented in common.opt
+
+Wpsabi
+D
+; Documented in C
+
+Wspeculative
+D
+Warn from speculative compiles such as __traits(compiles).
+
+Wtemplates
+D
+; Documented in C
+
+Wunknown-pragmas
+D LangEnabledBy(D, Wall)
+; Documented in C
+
+X
+D
+Generate JSON file.
+
+Xf
+D Joined Separate
+-Xf <file>	Write JSON output to the given <file>.
+
+debuglib=
+Driver Joined
+Debug library to use instead of phobos.
+
+defaultlib=
+Driver Joined
+Default library to use instead of phobos.
+
+dstartfiles
+Driver
+Do link the standard D startup files in the compilation.
+
+-verbose
+D Alias(v)
+
+fall-instantiations
+D
+Generate code for all template instantiations.
+
+fassert
+D Var(flag_assert)
+Generate code for assert contracts.
+
+fbounds-check
+D
+; Documented in common.opt
+
+fbounds-check=
+D Joined RejectNegative Enum(bounds_check) Var(flag_bounds_check)
+-fbounds-check=[on|safeonly|off]	Turn array bounds checks on, in @safe code only, or off.
+
+Enum
+Name(bounds_check) Type(int) UnknownError(unknown array bounds setting %qs)
+
+EnumValue
+Enum(bounds_check) String(off) Value(0)
+
+EnumValue
+Enum(bounds_check) String(safeonly) Value(1)
+
+EnumValue
+Enum(bounds_check) String(on) Value(2)
+
+; Generates a secondary ModuleInfo symbol for linking in unittests
+fbuilding-libphobos-tests
+D Undocumented Var(flag_building_libphobos_tests)
+
+fbuiltin
+D Var(flag_no_builtin, 0)
+; Documented in C
+
+fdebug
+D
+Compile in debug code.
+
+fdebug=
+D Joined RejectNegative
+-fdebug=<level|ident>	Compile in debug code, code <= <level>, or code identified by <ident>.
+
+fdoc
+D
+Generate documentation.
+
+fdoc-dir=
+D Joined RejectNegative
+-fdoc-dir=<dir>	Write documentation file to directory <dir>.
+
+fdoc-file=
+D Joined RejectNegative
+-fdoc-file=<file>	Write documentation to <file>.
+
+fdoc-inc=
+D Joined RejectNegative
+-fdoc-inc=<file>	Include a Ddoc macro <file>.
+
+fdruntime
+D
+Assume that standard D runtime libraries and \"D main\" exist.
+
+fdump-d-original
+D
+Display the frontend AST after parsing and semantic passes.
+
+fignore-unknown-pragmas
+D
+Ignore unsupported pragmas.
+
+finvariants
+D Var(flag_invariants)
+Generate code for class invariant contracts.
+
+fmain
+D RejectNegative
+Generate a default D main() function when compiling.
+
+fmodule-file=
+D Joined RejectNegative
+-fmodule-file=<package.module>=<filespec>	use <filespec> as source file for <package.module>.
+
+fmoduleinfo
+D Var(flag_moduleinfo)
+Generate ModuleInfo struct for output module.
+
+fonly=
+D Joined RejectNegative
+Process all modules specified on the command line, but only generate code for the module specified by the argument.
+
+fpostconditions
+D Var(flag_postconditions)
+Generate code for postcondition contracts.
+
+fpreconditions
+D Var(flag_preconditions)
+Generate code for precondition contracts.
+
+frelease
+D
+Compile release version.
+
+frtti
+D
+; Documented in C
+
+fswitch-errors
+D Var(flag_switch_errors)
+Generate code for switches without a default case.
+
+ftransition=all
+D RejectNegative
+List information on all language changes.
+
+ftransition=checkimports
+D RejectNegative
+Give deprecation messages about -ftransition=import anomalies.
+
+ftransition=complex
+D RejectNegative
+List all usages of complex or imaginary types.
+
+ftransition=dip1000
+D RejectNegative
+Implement DIP1000: Scoped pointers (experimental).
+
+ftransition=dip25
+D RejectNegative
+Implement DIP25: Sealed references (experimental).
+
+ftransition=field
+D RejectNegative
+List all non-mutable fields which occupy an object instance.
+
+ftransition=import
+D RejectNegative
+Revert to single phase name lookup.
+
+ftransition=nogc
+D RejectNegative
+List all hidden GC allocations.
+
+ftransition=tls
+D RejectNegative
+List all variables going into thread local storage.
+
+funittest
+D
+Compile in unittest code.
+
+fversion=
+D Joined RejectNegative
+-fversion=<level|ident>	Compile in version code >= <level> or identified by <ident>.
+
+fweak
+D Var(flag_weak) Init(1)
+Emit common-like symbols as weak symbols.
+
+imultilib
+D Joined Separate
+; Documented in C
+
+iprefix
+D Joined Separate
+; Documented in C
+
+isysroot
+D Joined Separate
+; Documented in C
+
+isystem
+D Joined Separate
+; Documented in C
+
+nophoboslib
+Driver
+Do not link the standard D library in the compilation.
+
+nostdinc
+D
+; Documented in C
+
+static-libphobos
+Driver
+Link the standard D library statically in the compilation.
+
+shared-libphobos
+Driver
+Link the standard D library dynamically in the compilation.
+
+v
+D
+; Documented in C

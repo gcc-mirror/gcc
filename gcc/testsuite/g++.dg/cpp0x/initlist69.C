@@ -5,12 +5,12 @@ template <typename T>
 struct ca {
   T elem[1];
 
-  ca(const T (&s)[1]): elem{{s}} { }	   // { dg-error "braces" }
+  ca(const T (&s)[1]): elem{{s}} { }	   // { dg-error "invalid" }
   ca(const T (&s)[1],int): elem({{s}}) { } // { dg-error "paren|invalid" }
   ca(const T (&s)[1],char): elem(s) { }	   // { dg-error "array" }
   ca(const T (&s)[1],double): elem{s} { }  // { dg-error "invalid" }
 
-  ca(const T &v): elem{{v}} { }	      // { dg-error "braces" }
+  ca(const T &v): elem{{v}} { }	      // OK
   ca(const T &v,int): elem{{{v}}} { } // { dg-error "braces" }
   ca(const T &v,char): elem{v} { }    // OK
   ca(const T &v,double): elem({v}) { } // { dg-error "paren" }

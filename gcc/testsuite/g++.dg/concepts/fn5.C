@@ -1,4 +1,5 @@
-// { dg-options "-std=c++17 -fconcepts" }
+// { dg-do compile { target c++17_only } }
+// { dg-options "-fconcepts" }
 
 // Check shorthand notation.
 
@@ -18,6 +19,6 @@ int main() {
   S1<char> s1;      // { dg-error "constraint|invalid" }
   S2<int, char> s2; // { dg-error "constraint|invalid" }
 
-  f('a');    // { dg-error "cannot" }
-  g(0, 'a'); // { dg-error "cannot" }
+  f('a');    // { dg-error "unsatisfied" }
+  g(0, 'a'); // { dg-error "unsatisfied" }
 }

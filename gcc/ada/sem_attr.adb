@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1634,7 +1634,9 @@ package body Sem_Attr is
             raise Bad_Attribute;
          end if;
 
-         --  Normal case of array type or subtype
+         --  Normal case of array type or subtype. Note that if the
+         --  prefix is a current instance of a type declaration it
+         --  appears within an aspect specification and is legal.
 
          Check_Either_E0_Or_E1;
          Check_Dereference;
@@ -1643,6 +1645,7 @@ package body Sem_Attr is
             if not Is_Constrained (P_Type)
               and then Is_Entity_Name (P)
               and then Is_Type (Entity (P))
+              and then not Is_Current_Instance (P)
             then
                --  Note: we do not call Error_Attr here, since we prefer to
                --  continue, using the relevant index type of the array,
@@ -3833,14 +3836,16 @@ package body Sem_Attr is
             Check_Discrete_Type;
             Resolve (E1, P_Base_Type);
 
-         --  X'Enum_Rep case. X must be an object or enumeration literal, and
-         --  it must be of a discrete type.
+         --  X'Enum_Rep case. X must be an object or enumeration literal
+         --  (including an attribute reference), and it must be of a
+         --  discrete type.
 
          elsif not
            ((Is_Object_Reference (P)
                or else
                  (Is_Entity_Name (P)
-                    and then Ekind (Entity (P)) = E_Enumeration_Literal))
+                    and then Ekind (Entity (P)) = E_Enumeration_Literal)
+               or else Nkind (P) = N_Attribute_Reference)
              and then Is_Discrete_Type (Etype (P)))
          then
             Error_Attr_P ("prefix of % attribute must be discrete object");
@@ -5843,8 +5848,19 @@ package body Sem_Attr is
                       or else Ekind (Entity (P)) = E_Enumeration_Literal)
            and then Size_Known_At_Compile_Time (Entity (P))
          then
-            Rewrite (N, Make_Integer_Literal (Sloc (N), Esize (Entity (P))));
-            Analyze (N);
+            declare
+               Siz : Uint;
+
+            begin
+               if Known_Static_RM_Size (Entity (P)) then
+                  Siz := RM_Size (Entity (P));
+               else
+                  Siz := Esize (Entity (P));
+               end if;
+
+               Rewrite (N, Make_Integer_Literal (Sloc (N), Siz));
+               Analyze (N);
+            end;
          end if;
 
       -----------
@@ -6144,7 +6160,6 @@ package body Sem_Attr is
 
       when Attribute_To_Address => To_Address : declare
          Val : Uint;
-
       begin
          Check_E1;
          Analyze (P);
@@ -6153,10 +6168,7 @@ package body Sem_Attr is
          Generate_Reference (RTE (RE_Address), P);
          Analyze_And_Resolve (E1, Any_Integer);
          Set_Etype (N, RTE (RE_Address));
-
-         if Is_Static_Expression (E1) then
-            Set_Is_Static_Expression (N, True);
-         end if;
+         Set_Is_Static_Expression (N, Is_Static_Expression (E1));
 
          --  OK static expression case, check range and set appropriate type
 
@@ -6188,8 +6200,6 @@ package body Sem_Attr is
                Set_Etype (E1, Standard_Unsigned_64);
             end if;
          end if;
-
-         Set_Is_Static_Expression (N, True);
       end To_Address;
 
       ------------
@@ -7202,7 +7212,7 @@ package body Sem_Attr is
       P_Root_Type : Entity_Id;
       --  The root type of the prefix type
 
-      Static : Boolean;
+      Static : Boolean := False;
       --  True if the result is Static. This is set by the general processing
       --  to true if the prefix is static, and all expressions are static. It
       --  can be reset as processing continues for particular attributes. This
@@ -7563,10 +7573,16 @@ package body Sem_Attr is
    --  Start of processing for Eval_Attribute
 
    begin
+      --  The To_Address attribute can be static, but it cannot be evaluated at
+      --  compile time, so just return.
+
+      if Id = Attribute_To_Address then
+         return;
+      end if;
+
       --  Initialize result as non-static, will be reset if appropriate
 
       Set_Is_Static_Expression (N, False);
-      Static := False;
 
       --  Acquire first two expressions (at the moment, no attributes take more
       --  than two expressions in any case).
@@ -8283,8 +8299,8 @@ package body Sem_Attr is
          --  static attribute in GNAT.
 
          Analyze_And_Resolve (N, Standard_Boolean);
-            Static := True;
-            Set_Is_Static_Expression (N, True);
+         Static := True;
+         Set_Is_Static_Expression (N);
       end Atomic_Always_Lock_Free;
 
       ---------
@@ -8346,7 +8362,6 @@ package body Sem_Attr is
          --  attribute reference, and this reference is not static.
 
          Set_Is_Static_Expression (N, False);
-         null;
 
       ---------------
       -- Copy_Sign --
@@ -8737,8 +8752,8 @@ package body Sem_Attr is
          --  static attribute in GNAT.
 
          Analyze_And_Resolve (N, Standard_Boolean);
-            Static := True;
-            Set_Is_Static_Expression (N, True);
+         Static := True;
+         Set_Is_Static_Expression (N);
       end Lock_Free;
 
       ----------
@@ -11245,6 +11260,15 @@ package body Sem_Attr is
                            New_Occurrence_Of (Standard_Short_Integer, Loc),
                          Expression          =>
                            Make_Integer_Literal (Loc, Uint_0)));
+
+                     --  The above sets the Scope of the flag entity to the
+                     --  current scope, in which the attribute appears, but
+                     --  the flag declaration has been inserted after that
+                     --  of Subp_Id, so the scope of the flag is the same as
+                     --  that of Subp_Id. This is relevant when unnesting,
+                     --  where processing depends on correct scope setting.
+
+                     Set_Scope (Flag_Id, Scop);
                   end if;
 
                   --  Taking the 'Access of an expression function freezes its
@@ -11408,7 +11432,7 @@ package body Sem_Attr is
                   if Present (Lo) then
                      Rewrite (P,
                         Make_Indexed_Component (Loc,
-                           Prefix =>  Relocate_Node (Prefix (P)),
+                           Prefix => Relocate_Node (Prefix (P)),
                            Expressions => New_List (Lo)));
 
                      Analyze_And_Resolve (P);
@@ -11546,6 +11570,16 @@ package body Sem_Attr is
          begin
             if not Is_Entity_Name (P) or else not Is_Type (Entity (P)) then
                Resolve (P);
+
+               --  If the prefix is a function call returning on the secondary
+               --  stack, we must make sure to mark/release the stack.
+
+               if Nkind (P) = N_Function_Call
+                 and then Nkind (Parent (N)) = N_Loop_Parameter_Specification
+                 and then Requires_Transient_Scope (Etype (P))
+               then
+                  Set_Uses_Sec_Stack (Scope (Current_Scope));
+               end if;
             end if;
 
             Dims := Expressions (N);

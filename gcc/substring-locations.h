@@ -1,5 +1,5 @@
 /* Source locations within string literals.
-   Copyright (C) 2016-2018 Free Software Foundation, Inc.
+   Copyright (C) 2016-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -74,45 +74,53 @@ class substring_loc
   int m_end_idx;
 };
 
-/* Functions for emitting a warning about a format string.  */
+/* A bundle of state for emitting a diagnostic relating to a format string.  */
 
-extern bool format_warning_va (const substring_loc &fmt_loc,
-			       location_t param_loc,
-			       const char *corrected_substring,
-			       int opt, const char *gmsgid, va_list *ap)
-  ATTRIBUTE_GCC_DIAG (5, 0);
+class format_string_diagnostic_t
+{
+ public:
+  format_string_diagnostic_t (const substring_loc &fmt_loc,
+			      const range_label *fmt_label,
+			      location_t param_loc,
+			      const range_label *param_label,
+			      const char *corrected_substring);
 
-extern bool format_warning_n_va (const substring_loc &fmt_loc,
-				 location_t param_loc,
-				 const char *corrected_substring,
-				 int opt, unsigned HOST_WIDE_INT n,
-				 const char *singular_gmsgid,
-				 const char *plural_gmsgid, va_list *ap)
-  ATTRIBUTE_GCC_DIAG (6, 0) ATTRIBUTE_GCC_DIAG (7, 0);
+  /* Functions for emitting a warning about a format string.  */
 
-extern bool format_warning_at_substring (const substring_loc &fmt_loc,
-					 location_t param_loc,
-					 const char *corrected_substring,
-					 int opt, const char *gmsgid, ...)
-  ATTRIBUTE_GCC_DIAG (5, 6);
+  bool emit_warning_va (int opt, const char *gmsgid, va_list *ap) const
+    ATTRIBUTE_GCC_DIAG (3, 0);
 
-extern bool format_warning_at_substring_n (const substring_loc &fmt_loc,
-					   location_t param_loc,
-					   const char *corrected_substring,
-					   int opt, unsigned HOST_WIDE_INT n,
-					   const char *singular_gmsgid,
-					   const char *plural_gmsgid, ...)
-  ATTRIBUTE_GCC_DIAG (6, 8) ATTRIBUTE_GCC_DIAG (7, 8);
+  bool emit_warning_n_va (int opt, unsigned HOST_WIDE_INT n,
+			  const char *singular_gmsgid,
+			  const char *plural_gmsgid, va_list *ap) const
+  ATTRIBUTE_GCC_DIAG (4, 0) ATTRIBUTE_GCC_DIAG (5, 0);
+
+  bool emit_warning (int opt, const char *gmsgid, ...) const
+    ATTRIBUTE_GCC_DIAG (3, 4);
+
+  bool emit_warning_n (int opt, unsigned HOST_WIDE_INT n,
+		       const char *singular_gmsgid,
+		       const char *plural_gmsgid, ...) const
+  ATTRIBUTE_GCC_DIAG (4, 6) ATTRIBUTE_GCC_DIAG (5, 6);
+
+ private:
+  const substring_loc &m_fmt_loc;
+  const range_label *m_fmt_label;
+  location_t m_param_loc;
+  const range_label *m_param_label;
+  const char *m_corrected_substring;
+};
+
 
 /* Implementation detail, for use when implementing
    LANG_HOOKS_GET_SUBSTRING_LOCATION.  */
 
-extern const char *get_source_location_for_substring (cpp_reader *pfile,
-						      string_concat_db *concats,
-						      location_t strloc,
-						      enum cpp_ttype type,
-						      int caret_idx,
-						      int start_idx, int end_idx,
-						      location_t *out_loc);
+extern const char *get_location_within_string (cpp_reader *pfile,
+					       string_concat_db *concats,
+					       location_t strloc,
+					       enum cpp_ttype type,
+					       int caret_idx,
+					       int start_idx, int end_idx,
+					       location_t *out_loc);
 
 #endif /* ! GCC_SUBSTRING_LOCATIONS_H */

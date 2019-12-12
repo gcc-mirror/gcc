@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Renesas M32R cpu.
-   Copyright (C) 1996-2018 Free Software Foundation, Inc.
+   Copyright (C) 1996-2019 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -348,15 +348,13 @@
 #define SUBTARGET_CALL_USED_REGISTERS
 #endif
 
-#define CALL_USED_REGISTERS	\
+#define CALL_REALLY_USED_REGISTERS \
 {				\
   1, 1, 1, 1, 1, 1, 1, 1,	\
   0, 0, 0, 0, 0, 0, 1, 1,	\
   1, 1, 1			\
   SUBTARGET_CALL_USED_REGISTERS	\
 }
-
-#define CALL_REALLY_USED_REGISTERS CALL_USED_REGISTERS
 
 /* If defined, an initializer for a vector of integers, containing the
    numbers of hard registers in the order in which GCC should

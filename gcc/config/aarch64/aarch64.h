@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -25,6 +25,9 @@
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS()	\
   aarch64_cpu_cpp_builtins (pfile)
+
+/* Target CPU versions for D.  */
+#define TARGET_D_CPU_VERSIONS aarch64_d_target_versions
 
 
 
@@ -83,6 +86,18 @@
 #define DOUBLE_TYPE_SIZE	64
 
 #define LONG_DOUBLE_TYPE_SIZE	128
+
+/* This value is the amount of bytes a caller is allowed to drop the stack
+   before probing has to be done for stack clash protection.  */
+#define STACK_CLASH_CALLER_GUARD 1024
+
+/* This value represents the minimum amount of bytes we expect the function's
+   outgoing arguments to be when stack-clash is enabled.  */
+#define STACK_CLASH_MIN_BYTES_OUTGOING_ARGS 8
+
+/* This value controls how many pages we manually unroll the loop for when
+   generating stack clash probes.  */
+#define STACK_CLASH_MAX_UNROLL_PAGES 4
 
 /* The architecture reserves all bits of the address for hardware use,
    so the vbit must go into the delta field of pointers to member
@@ -157,6 +172,35 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_SM4	      (1 << 17)  /* Has ARMv8.4-A SM3 and SM4.  */
 #define AARCH64_FL_SHA3	      (1 << 18)  /* Has ARMv8.4-a SHA3 and SHA512.  */
 #define AARCH64_FL_F16FML     (1 << 19)  /* Has ARMv8.4-a FP16 extensions.  */
+#define AARCH64_FL_RCPC8_4    (1 << 20)  /* Has ARMv8.4-a RCPC extensions.  */
+
+/* Statistical Profiling extensions.  */
+#define AARCH64_FL_PROFILE    (1 << 21)
+
+/* ARMv8.5-A architecture extensions.  */
+#define AARCH64_FL_V8_5	      (1 << 22)  /* Has ARMv8.5-A features.  */
+#define AARCH64_FL_RNG	      (1 << 23)  /* ARMv8.5-A Random Number Insns.  */
+#define AARCH64_FL_MEMTAG     (1 << 24)  /* ARMv8.5-A Memory Tagging
+					    Extensions.  */
+
+/* Speculation Barrier instruction supported.  */
+#define AARCH64_FL_SB	      (1 << 25)
+
+/* Speculative Store Bypass Safe instruction supported.  */
+#define AARCH64_FL_SSBS	      (1 << 26)
+
+/* Execution and Data Prediction Restriction instructions supported.  */
+#define AARCH64_FL_PREDRES    (1 << 27)
+
+/* SVE2 instruction supported.  */
+#define AARCH64_FL_SVE2		(1 << 28)
+#define AARCH64_FL_SVE2_AES	(1 << 29)
+#define AARCH64_FL_SVE2_SM4	(1 << 30)
+#define AARCH64_FL_SVE2_SHA3	(1ULL << 31)
+#define AARCH64_FL_SVE2_BITPERM	(1ULL << 32)
+
+/* Transactional Memory Extension.  */
+#define AARCH64_FL_TME	      (1ULL << 33)  /* Has TME instructions.  */
 
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
@@ -175,7 +219,10 @@ extern unsigned aarch64_architecture_version;
   (AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_V8_3)
 #define AARCH64_FL_FOR_ARCH8_4			\
   (AARCH64_FL_FOR_ARCH8_3 | AARCH64_FL_V8_4 | AARCH64_FL_F16FML \
-   | AARCH64_FL_DOTPROD)
+   | AARCH64_FL_DOTPROD | AARCH64_FL_RCPC8_4)
+#define AARCH64_FL_FOR_ARCH8_5			\
+  (AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_V8_5	\
+   | AARCH64_FL_SB | AARCH64_FL_SSBS | AARCH64_FL_PREDRES)
 
 /* Macros to test ISA flags.  */
 
@@ -188,6 +235,7 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_V8_2	   (aarch64_isa_flags & AARCH64_FL_V8_2)
 #define AARCH64_ISA_F16		   (aarch64_isa_flags & AARCH64_FL_F16)
 #define AARCH64_ISA_SVE            (aarch64_isa_flags & AARCH64_FL_SVE)
+#define AARCH64_ISA_SVE2	   (aarch64_isa_flags & AARCH64_FL_SVE2)
 #define AARCH64_ISA_V8_3	   (aarch64_isa_flags & AARCH64_FL_V8_3)
 #define AARCH64_ISA_DOTPROD	   (aarch64_isa_flags & AARCH64_FL_DOTPROD)
 #define AARCH64_ISA_AES	           (aarch64_isa_flags & AARCH64_FL_AES)
@@ -196,6 +244,11 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_SM4	           (aarch64_isa_flags & AARCH64_FL_SM4)
 #define AARCH64_ISA_SHA3	   (aarch64_isa_flags & AARCH64_FL_SHA3)
 #define AARCH64_ISA_F16FML	   (aarch64_isa_flags & AARCH64_FL_F16FML)
+#define AARCH64_ISA_RCPC8_4	   (aarch64_isa_flags & AARCH64_FL_RCPC8_4)
+#define AARCH64_ISA_RNG		   (aarch64_isa_flags & AARCH64_FL_RNG)
+#define AARCH64_ISA_V8_5	   (aarch64_isa_flags & AARCH64_FL_V8_5)
+#define AARCH64_ISA_TME		   (aarch64_isa_flags & AARCH64_FL_TME)
+#define AARCH64_ISA_MEMTAG	   (aarch64_isa_flags & AARCH64_FL_MEMTAG)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)
@@ -231,8 +284,29 @@ extern unsigned aarch64_architecture_version;
 /* SVE instructions, enabled through +sve.  */
 #define TARGET_SVE (AARCH64_ISA_SVE)
 
+/* SVE2 instructions, enabled through +sve2.  */
+#define TARGET_SVE2 (AARCH64_ISA_SVE2)
+
 /* ARMv8.3-A features.  */
 #define TARGET_ARMV8_3	(AARCH64_ISA_V8_3)
+
+/* Javascript conversion instruction from Armv8.3-a.  */
+#define TARGET_JSCVT	(TARGET_FLOAT && AARCH64_ISA_V8_3)
+
+/* Armv8.3-a Complex number extension to AdvSIMD extensions.  */
+#define TARGET_COMPLEX (TARGET_SIMD && TARGET_ARMV8_3)
+
+/* Floating-point rounding instructions from Armv8.5-a.  */
+#define TARGET_FRINT (AARCH64_ISA_V8_5 && TARGET_FLOAT)
+
+/* TME instructions are enabled.  */
+#define TARGET_TME (AARCH64_ISA_TME)
+
+/* Random number instructions from Armv8.5-a.  */
+#define TARGET_RNG (AARCH64_ISA_RNG)
+
+/* Memory Tagging instructions optional to Armv8.5 enabled through +memtag.  */
+#define TARGET_MEMTAG (AARCH64_ISA_V8_5 && AARCH64_ISA_MEMTAG)
 
 /* Make sure this is always defined so we don't have to check for ifdefs
    but rather use normal ifs.  */
@@ -296,6 +370,9 @@ extern unsigned aarch64_architecture_version;
    P0-P7        Predicate low registers: valid in all predicate contexts
    P8-P15       Predicate high registers: used as scratch space
 
+   FFR		First Fault Register, a fixed-use SVE predicate register
+   FFRT		FFR token: a fake register used for modelling dependencies
+
    VG           Pseudo "vector granules" register
 
    VG is the number of 64-bit elements in an SVE vector.  We define
@@ -316,6 +393,7 @@ extern unsigned aarch64_architecture_version;
     1, 1, 1, 1,			/* SFP, AP, CC, VG */	\
     0, 0, 0, 0,   0, 0, 0, 0,   /* P0 - P7 */           \
     0, 0, 0, 0,   0, 0, 0, 0,   /* P8 - P15 */          \
+    1, 1			/* FFR and FFRT */	\
   }
 
 /* X30 is marked as caller-saved which is in line with regular function call
@@ -338,6 +416,7 @@ extern unsigned aarch64_architecture_version;
     1, 1, 1, 1,			/* SFP, AP, CC, VG */	\
     1, 1, 1, 1,   1, 1, 1, 1,	/* P0 - P7 */		\
     1, 1, 1, 1,   1, 1, 1, 1,	/* P8 - P15 */		\
+    1, 1			/* FFR and FFRT */	\
   }
 
 #define REGISTER_NAMES						\
@@ -353,6 +432,7 @@ extern unsigned aarch64_architecture_version;
     "sfp", "ap",  "cc",  "vg",					\
     "p0",  "p1",  "p2",  "p3",  "p4",  "p5",  "p6",  "p7",	\
     "p8",  "p9",  "p10", "p11", "p12", "p13", "p14", "p15",	\
+    "ffr", "ffrt"						\
   }
 
 /* Generate the register aliases for core register N */
@@ -389,13 +469,7 @@ extern unsigned aarch64_architecture_version;
     V_ALIASES(28), V_ALIASES(29), V_ALIASES(30), V_ALIASES(31)  \
   }
 
-/* Say that the return address register is used by the epilogue, but only after
-   epilogue generation is complete.  Note that in the case of sibcalls, the
-   values "used by the epilogue" are considered live at the start of the called
-   function.  */
-
-#define EPILOGUE_USES(REGNO) \
-  (epilogue_completed && (REGNO) == LR_REGNUM)
+#define EPILOGUE_USES(REGNO) (aarch64_epilogue_uses (REGNO))
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  This is only true if the function
@@ -407,11 +481,12 @@ extern unsigned aarch64_architecture_version;
 #define FRAME_POINTER_REGNUM		SFP_REGNUM
 #define STACK_POINTER_REGNUM		SP_REGNUM
 #define ARG_POINTER_REGNUM		AP_REGNUM
-#define FIRST_PSEUDO_REGISTER		(P15_REGNUM + 1)
+#define FIRST_PSEUDO_REGISTER		(FFRT_REGNUM + 1)
 
-/* The number of (integer) argument register available.  */
+/* The number of argument registers available for each class.  */
 #define NUM_ARG_REGS			8
 #define NUM_FP_ARG_REGS			8
+#define NUM_PR_ARG_REGS			4
 
 /* A Homogeneous Floating-Point or Short-Vector Aggregate may have at most
    four members.  */
@@ -469,6 +544,18 @@ extern unsigned aarch64_architecture_version;
 #define ASM_DECLARE_FUNCTION_NAME(STR, NAME, DECL)	\
   aarch64_declare_function_name (STR, NAME, DECL)
 
+/* Output assembly strings for alias definition.  */
+#define ASM_OUTPUT_DEF_FROM_DECLS(STR, DECL, TARGET) \
+  aarch64_asm_output_alias (STR, DECL, TARGET)
+
+/* Output assembly strings for undefined extern symbols.  */
+#undef ASM_OUTPUT_EXTERNAL
+#define ASM_OUTPUT_EXTERNAL(STR, DECL, NAME) \
+  aarch64_asm_output_external (STR, DECL, NAME)
+
+/* Output assembly strings after .cfi_startproc is emitted.  */
+#define ASM_POST_CFI_STARTPROC  aarch64_post_cfi_startproc
+
 /* For EH returns X4 contains the stack adjustment.  */
 #define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, R4_REGNUM)
 #define EH_RETURN_HANDLER_RTX  aarch64_eh_return_handler_rtx ()
@@ -476,6 +563,9 @@ extern unsigned aarch64_architecture_version;
 /* Don't use __builtin_setjmp until we've defined it.  */
 #undef DONT_USE_BUILTIN_SETJMP
 #define DONT_USE_BUILTIN_SETJMP 1
+
+#undef TARGET_COMPUTE_FRAME_LAYOUT
+#define TARGET_COMPUTE_FRAME_LAYOUT aarch64_layout_frame
 
 /* Register in which the structure value is to be returned.  */
 #define AARCH64_STRUCT_VALUE_REGNUM R8_REGNUM
@@ -494,12 +584,17 @@ extern unsigned aarch64_architecture_version;
 #define FP_LO_REGNUM_P(REGNO)            \
   (((unsigned) (REGNO - V0_REGNUM)) <= (V15_REGNUM - V0_REGNUM))
 
+#define FP_LO8_REGNUM_P(REGNO)            \
+  (((unsigned) (REGNO - V0_REGNUM)) <= (V7_REGNUM - V0_REGNUM))
+
 #define PR_REGNUM_P(REGNO)\
   (((unsigned) (REGNO - P0_REGNUM)) <= (P15_REGNUM - P0_REGNUM))
 
 #define PR_LO_REGNUM_P(REGNO)\
   (((unsigned) (REGNO - P0_REGNUM)) <= (P7_REGNUM - P0_REGNUM))
 
+#define FP_SIMD_SAVED_REGNUM_P(REGNO)			\
+  (((unsigned) (REGNO - V8_REGNUM)) <= (V23_REGNUM - V8_REGNUM))
 
 /* Register and constant classes.  */
 
@@ -510,12 +605,15 @@ enum reg_class
   GENERAL_REGS,
   STACK_REG,
   POINTER_REGS,
+  FP_LO8_REGS,
   FP_LO_REGS,
   FP_REGS,
   POINTER_AND_FP_REGS,
   PR_LO_REGS,
   PR_HI_REGS,
   PR_REGS,
+  FFR_REGS,
+  PR_AND_FFR_REGS,
   ALL_REGS,
   LIM_REG_CLASSES		/* Last */
 };
@@ -529,28 +627,34 @@ enum reg_class
   "GENERAL_REGS",				\
   "STACK_REG",					\
   "POINTER_REGS",				\
+  "FP_LO8_REGS",				\
   "FP_LO_REGS",					\
   "FP_REGS",					\
   "POINTER_AND_FP_REGS",			\
   "PR_LO_REGS",					\
   "PR_HI_REGS",					\
   "PR_REGS",					\
+  "FFR_REGS",					\
+  "PR_AND_FFR_REGS",				\
   "ALL_REGS"					\
 }
 
 #define REG_CLASS_CONTENTS						\
 {									\
   { 0x00000000, 0x00000000, 0x00000000 },	/* NO_REGS */		\
-  { 0x0004ffff, 0x00000000, 0x00000000 },	/* TAILCALL_ADDR_REGS */\
+  { 0x00030000, 0x00000000, 0x00000000 },	/* TAILCALL_ADDR_REGS */\
   { 0x7fffffff, 0x00000000, 0x00000003 },	/* GENERAL_REGS */	\
   { 0x80000000, 0x00000000, 0x00000000 },	/* STACK_REG */		\
   { 0xffffffff, 0x00000000, 0x00000003 },	/* POINTER_REGS */	\
+  { 0x00000000, 0x000000ff, 0x00000000 },       /* FP_LO8_REGS  */	\
   { 0x00000000, 0x0000ffff, 0x00000000 },       /* FP_LO_REGS  */	\
   { 0x00000000, 0xffffffff, 0x00000000 },       /* FP_REGS  */		\
   { 0xffffffff, 0xffffffff, 0x00000003 },	/* POINTER_AND_FP_REGS */\
   { 0x00000000, 0x00000000, 0x00000ff0 },	/* PR_LO_REGS */	\
   { 0x00000000, 0x00000000, 0x000ff000 },	/* PR_HI_REGS */	\
   { 0x00000000, 0x00000000, 0x000ffff0 },	/* PR_REGS */		\
+  { 0x00000000, 0x00000000, 0x00300000 },	/* FFR_REGS */		\
+  { 0x00000000, 0x00000000, 0x003ffff0 },	/* PR_AND_FFR_REGS */	\
   { 0xffffffff, 0xffffffff, 0x000fffff }	/* ALL_REGS */		\
 }
 
@@ -626,7 +730,7 @@ extern enum aarch64_processor aarch64_tune;
 #ifdef HAVE_POLY_INT_H
 struct GTY (()) aarch64_frame
 {
-  HOST_WIDE_INT reg_offset[FIRST_PSEUDO_REGISTER];
+  poly_int64 reg_offset[LAST_SAVED_REGNUM + 1];
 
   /* The number of extra stack bytes taken up by register varargs.
      This area is allocated by the callee at the very top of the
@@ -634,9 +738,12 @@ struct GTY (()) aarch64_frame
      STACK_BOUNDARY.  */
   HOST_WIDE_INT saved_varargs_size;
 
-  /* The size of the saved callee-save int/FP registers.  */
+  /* The size of the callee-save registers with a slot in REG_OFFSET.  */
+  poly_int64 saved_regs_size;
 
-  HOST_WIDE_INT saved_regs_size;
+  /* The size of the callee-save registers with a slot in REG_OFFSET that
+     are saved below the hard frame pointer.  */
+  poly_int64 below_hard_fp_saved_regs_size;
 
   /* Offset from the base of the frame (incomming SP) to the
      top of the locals area.  This value is always a multiple of
@@ -664,6 +771,10 @@ struct GTY (()) aarch64_frame
      It may be non-zero if no push is used (ie. callee_adjust == 0).  */
   poly_int64 callee_offset;
 
+  /* The size of the stack adjustment before saving or after restoring
+     SVE registers.  */
+  poly_int64 sve_callee_adjust;
+
   /* The size of the stack adjustment after saving callee-saves.  */
   poly_int64 final_adjust;
 
@@ -672,6 +783,11 @@ struct GTY (()) aarch64_frame
 
   unsigned wb_candidate1;
   unsigned wb_candidate2;
+
+  /* Big-endian SVE frames need a spare predicate register in order
+     to save vector registers in the correct layout for unwinding.
+     This is the register they should use.  */
+  unsigned spare_pred_reg;
 
   bool laid_out;
 };
@@ -700,6 +816,10 @@ enum aarch64_abi_type
 enum arm_pcs
 {
   ARM_PCS_AAPCS64,		/* Base standard AAPCS for 64 bit.  */
+  ARM_PCS_SIMD,			/* For aarch64_vector_pcs functions.  */
+  ARM_PCS_SVE,			/* For functions that pass or return
+				   values in SVE registers.  */
+  ARM_PCS_TLSDESC,		/* For targets of tlsdesc calls.  */
   ARM_PCS_UNKNOWN
 };
 
@@ -726,6 +846,8 @@ typedef struct
   int aapcs_nextncrn;		/* Next next core register number.  */
   int aapcs_nvrn;		/* Next Vector register number.  */
   int aapcs_nextnvrn;		/* Next Next Vector register number.  */
+  int aapcs_nprn;		/* Next Predicate register number.  */
+  int aapcs_nextnprn;		/* Next Next Predicate register number.  */
   rtx aapcs_reg;		/* Register assigned to this argument.  This
 				   is NULL_RTX if this parameter goes on
 				   the stack.  */
@@ -736,6 +858,8 @@ typedef struct
 				   aapcs_reg == NULL_RTX.  */
   int aapcs_stack_size;		/* The total size (in words, per 8 byte) of the
 				   stack arg area so far.  */
+  bool silent_p;		/* True if we should act silently, rather than
+				   raise an error for invalid calls.  */
 } CUMULATIVE_ARGS;
 #endif
 
@@ -791,7 +915,7 @@ typedef struct
 /* MOVE_RATIO dictates when we will use the move_by_pieces infrastructure.
    move_by_pieces will continually copy the largest safe chunks.  So a
    7-byte copy is a 4-byte + 2-byte + byte copy.  This proves inefficient
-   for both size and speed of copy, so we will instead use the "movmem"
+   for both size and speed of copy, so we will instead use the "cpymem"
    standard name to implement the copy.  This logic does not apply when
    targeting -mstrict-align, so keep a sensible default in that case.  */
 #define MOVE_RATIO(speed) \
@@ -880,7 +1004,7 @@ typedef struct
 
 #define RETURN_ADDR_RTX aarch64_return_addr
 
-/* 3 insns + padding + 2 pointer-sized entries.  */
+/* BTI c + 3 insns + 2 pointer-sized entries.  */
 #define TRAMPOLINE_SIZE	(TARGET_ILP32 ? 24 : 32)
 
 /* Trampolines contain dwords, so must be dword aligned.  */
@@ -1043,7 +1167,8 @@ extern poly_uint16 aarch64_sve_vg;
 #define BITS_PER_SVE_VECTOR (poly_uint16 (aarch64_sve_vg * 64))
 #define BYTES_PER_SVE_VECTOR (poly_uint16 (aarch64_sve_vg * 8))
 
-/* The number of bytes in an SVE predicate.  */
+/* The number of bits and bytes in an SVE predicate.  */
+#define BITS_PER_SVE_PRED BYTES_PER_SVE_VECTOR
 #define BYTES_PER_SVE_PRED aarch64_sve_vg
 
 /* The SVE mode for a vector of bytes.  */
@@ -1059,5 +1184,18 @@ extern poly_uint16 aarch64_sve_vg;
 #endif
 
 #define REGMODE_NATURAL_SIZE(MODE) aarch64_regmode_natural_size (MODE)
+
+/* Allocate a minimum of STACK_CLASH_MIN_BYTES_OUTGOING_ARGS bytes for the
+   outgoing arguments if stack clash protection is enabled.  This is essential
+   as the extra arg space allows us to skip a check in alloca.  */
+#undef STACK_DYNAMIC_OFFSET
+#define STACK_DYNAMIC_OFFSET(FUNDECL)			   \
+   ((flag_stack_clash_protection			   \
+     && cfun->calls_alloca				   \
+     && known_lt (crtl->outgoing_args_size,		   \
+		  STACK_CLASH_MIN_BYTES_OUTGOING_ARGS))    \
+    ? ROUND_UP (STACK_CLASH_MIN_BYTES_OUTGOING_ARGS,       \
+		STACK_BOUNDARY / BITS_PER_UNIT)		   \
+    : (crtl->outgoing_args_size + STACK_POINTER_OFFSET))
 
 #endif /* GCC_AARCH64_H */

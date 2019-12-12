@@ -1,5 +1,5 @@
 /* { dg-do run { target { vsx_hw } } } */
-/* { dg-options "-O2 -mvsx -mcpu=power7" } */
+/* { dg-options "-O2 -mvsx -mdejagnu-cpu=power7" } */
 
 #include <altivec.h> // vector
 

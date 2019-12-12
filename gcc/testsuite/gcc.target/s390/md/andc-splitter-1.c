@@ -1,7 +1,9 @@
 /* Machine description pattern tests.  */
 
 /* { dg-do compile { target { lp64 } } } */
-/* { dg-options "-mzarch -save-temps -dP" } */
+/* Starting with arch13 the and with complement instruction is
+   available and the splitter is disabled.  */
+/* { dg-options "-march=z14 -mzarch -save-temps -dP" } */
 /* { dg-do run { target { lp64 && s390_useable_hw } } } */
 /* Skip test if -O0 is present on the command line:
 
@@ -14,26 +16,26 @@
 __attribute__ ((noinline))
 unsigned long andc_vv(unsigned long a, unsigned long b)
 { return ~b & a; }
-/* { dg-final { scan-assembler ":16 .\* \{\\*anddi3\}" } } */
-/* { dg-final { scan-assembler ":16 .\* \{\\*xordi3\}" } } */
+/* { dg-final { scan-assembler ":18:.\* \{\\*anddi3\}" } } */
+/* { dg-final { scan-assembler ":18:.\* \{\\*xordi3\}" } } */
 
 __attribute__ ((noinline))
 unsigned long andc_pv(unsigned long *a, unsigned long b)
 { return ~b & *a; }
-/* { dg-final { scan-assembler ":22 .\* \{\\*anddi3\}" } } */
-/* { dg-final { scan-assembler ":22 .\* \{\\*xordi3\}" } } */
+/* { dg-final { scan-assembler ":24:.\* \{\\*anddi3\}" } } */
+/* { dg-final { scan-assembler ":24:.\* \{\\*xordi3\}" } } */
 
 __attribute__ ((noinline))
 unsigned long andc_vp(unsigned long a, unsigned long *b)
 { return ~*b & a; }
-/* { dg-final { scan-assembler ":28 .\* \{\\*anddi3\}" } } */
-/* { dg-final { scan-assembler ":28 .\* \{\\*xordi3\}" } } */
+/* { dg-final { scan-assembler ":30:.\* \{\\*anddi3\}" } } */
+/* { dg-final { scan-assembler ":30:.\* \{\\*xordi3\}" } } */
 
 __attribute__ ((noinline))
 unsigned long andc_pp(unsigned long *a, unsigned long *b)
 { return ~*b & *a; }
-/* { dg-final { scan-assembler ":34 .\* \{\\*anddi3\}" } } */
-/* { dg-final { scan-assembler ":34 .\* \{\\*xordi3\}" } } */
+/* { dg-final { scan-assembler ":36:.\* \{\\*anddi3\}" } } */
+/* { dg-final { scan-assembler ":36:.\* \{\\*xordi3\}" } } */
 
 /* { dg-final { scan-assembler-times "\tngr\?k\?\t" 4 } } */
 /* { dg-final { scan-assembler-times "\txgr\?\t" 4 } } */

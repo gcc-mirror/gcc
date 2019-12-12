@@ -1,4 +1,4 @@
-/* Copyright (C) 2011-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2011-2019 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -46,6 +46,7 @@
 /* ARMv8-A Architecture Processors.  */
 
 /* ARM ('A') cores. */
+AARCH64_CORE("cortex-a34",  cortexa34, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa35, 0x41, 0xd02, -1)
 AARCH64_CORE("cortex-a35",  cortexa35, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa35, 0x41, 0xd04, -1)
 AARCH64_CORE("cortex-a53",  cortexa53, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa53, 0x41, 0xd03, -1)
 AARCH64_CORE("cortex-a57",  cortexa57, cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa57, 0x41, 0xd07, -1)
@@ -58,8 +59,19 @@ AARCH64_CORE("thunderx",      thunderx,      thunderx,  8A,  AARCH64_FL_FOR_ARCH
    this order is required to handle variant correctly. */
 AARCH64_CORE("thunderxt88p1", thunderxt88p1, thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO,	thunderxt88,  0x43, 0x0a1, 0)
 AARCH64_CORE("thunderxt88",   thunderxt88,   thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderxt88,  0x43, 0x0a1, -1)
+
+/* OcteonTX is the official name for T81/T83. */
+AARCH64_CORE("octeontx",      octeontx,      thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  0x43, 0x0a0, -1)
+AARCH64_CORE("octeontx81",    octeontxt81,   thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  0x43, 0x0a2, -1)
+AARCH64_CORE("octeontx83",    octeontxt83,   thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  0x43, 0x0a3, -1)
+
 AARCH64_CORE("thunderxt81",   thunderxt81,   thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  0x43, 0x0a2, -1)
 AARCH64_CORE("thunderxt83",   thunderxt83,   thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  0x43, 0x0a3, -1)
+
+/* Ampere Computing cores. */
+/* Do not swap around "emag" and "xgene1",
+   this order is required to handle variant correctly. */
+AARCH64_CORE("emag",        emag,      xgene1,    8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, emag, 0x50, 0x000, 3)
 
 /* APM ('P') cores. */
 AARCH64_CORE("xgene1",      xgene1,    xgene1,    8A,  AARCH64_FL_FOR_ARCH8, xgene1, 0x50, 0x000, -1)
@@ -70,6 +82,9 @@ AARCH64_CORE("qdf24xx",     qdf24xx,   falkor,    8A,  AARCH64_FL_FOR_ARCH8 | AA
 
 /* Samsung ('S') cores. */
 AARCH64_CORE("exynos-m1",   exynosm1,  exynosm1,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, exynosm1,  0x53, 0x001, -1)
+
+/* HXT ('h') cores. */
+AARCH64_CORE("phecda",      phecda,    falkor,    8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, qdf24xx,   0x68, 0x000, -1)
 
 /* ARMv8.1-A Architecture Processors.  */
 
@@ -85,12 +100,22 @@ AARCH64_CORE("thunderx2t99",  thunderx2t99,  thunderx2t99, 8_1A,  AARCH64_FL_FOR
 /* ARM ('A') cores. */
 AARCH64_CORE("cortex-a55",  cortexa55, cortexa53, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD, cortexa53, 0x41, 0xd05, -1)
 AARCH64_CORE("cortex-a75",  cortexa75, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD, cortexa73, 0x41, 0xd0a, -1)
-AARCH64_CORE("cortex-a76",  cortexa76, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD, cortexa72, 0x41, 0xd0b, -1)
+AARCH64_CORE("cortex-a76",  cortexa76, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD, neoversen1, 0x41, 0xd0b, -1)
+AARCH64_CORE("cortex-a76ae",  cortexa76ae, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD | AARCH64_FL_SSBS, cortexa72, 0x41, 0xd0e, -1)
+AARCH64_CORE("cortex-a77",  cortexa77, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD | AARCH64_FL_SSBS, cortexa72, 0x41, 0xd0d, -1)
+AARCH64_CORE("cortex-a65",  cortexa65, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD | AARCH64_FL_SSBS, cortexa73, 0x41, 0xd06, -1)
+AARCH64_CORE("cortex-a65ae",  cortexa65ae, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD | AARCH64_FL_SSBS, cortexa73, 0x41, 0xd43, -1)
+AARCH64_CORE("ares",  ares, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD | AARCH64_FL_PROFILE, neoversen1, 0x41, 0xd0c, -1)
+AARCH64_CORE("neoverse-n1",  neoversen1, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD | AARCH64_FL_PROFILE, neoversen1, 0x41, 0xd0c, -1)
+AARCH64_CORE("neoverse-e1",  neoversee1, cortexa53, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD | AARCH64_FL_SSBS, cortexa53, 0x41, 0xd4a, -1)
+
+/* HiSilicon ('H') cores. */
+AARCH64_CORE("tsv110",  tsv110, tsv110, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_CRYPTO | AARCH64_FL_F16 | AARCH64_FL_AES | AARCH64_FL_SHA2, tsv110,   0x48, 0xd01, -1)
 
 /* ARMv8.4-A Architecture Processors.  */
 
 /* Qualcomm ('Q') cores. */
-AARCH64_CORE("saphira",     saphira,    falkor,    8_4A,  AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_CRYPTO | AARCH64_FL_RCPC, saphira,   0x51, 0xC01, -1)
+AARCH64_CORE("saphira",     saphira,    saphira,    8_4A,  AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_CRYPTO | AARCH64_FL_RCPC, saphira,   0x51, 0xC01, -1)
 
 /* ARMv8-A big.LITTLE implementations.  */
 

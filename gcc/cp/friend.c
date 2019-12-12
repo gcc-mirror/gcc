@@ -1,5 +1,5 @@
 /* Help friends in C++.
-   Copyright (C) 1997-2018 Free Software Foundation, Inc.
+   Copyright (C) 1997-2019 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -173,12 +173,6 @@ add_friend (tree type, tree decl, bool complain)
   if (decl == error_mark_node)
     return;
 
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      && DECL_TEMPLATE_INSTANTIATION (decl))
-    /* We'll have parsed this as a declaration, and therefore not
-       marked the lookup set for keeping.  Do that now.  */
-    lookup_keep (DECL_TI_TEMPLATE (decl));
-
   typedecl = TYPE_MAIN_DECL (type);
   list = DECL_FRIENDLIST (typedecl);
   name = DECL_NAME (decl);
@@ -304,6 +298,7 @@ make_friend_class (tree type, tree friend_type, bool complain)
       if (TYPE_TEMPLATE_INFO (friend_type)
 	  && !PRIMARY_TEMPLATE_P (TYPE_TI_TEMPLATE (friend_type)))
 	{
+	  auto_diagnostic_group d;
 	  error ("%qT is not a template", friend_type);
 	  inform (location_of (friend_type), "previous declaration here");
 	  if (TYPE_CLASS_SCOPE_P (friend_type)
@@ -384,6 +379,7 @@ make_friend_class (tree type, tree friend_type, bool complain)
 		}
 	      if (template_member_p && !DECL_CLASS_TEMPLATE_P (decl))
 		{
+		  auto_diagnostic_group d;
 		  error ("%qT is not a member class template of %qT",
 			 name, ctype);
 		  inform (DECL_SOURCE_LOCATION (decl),
@@ -393,6 +389,7 @@ make_friend_class (tree type, tree friend_type, bool complain)
 	      if (!template_member_p && (TREE_CODE (decl) != TYPE_DECL
 					 || !CLASS_TYPE_P (TREE_TYPE (decl))))
 		{
+		  auto_diagnostic_group d;
 		  error ("%qT is not a nested class of %qT",
 			 name, ctype);
 		  inform (DECL_SOURCE_LOCATION (decl),
@@ -636,13 +633,15 @@ do_friend (tree ctype, tree declarator, tree decl,
 	      static int explained;
 	      bool warned;
 
+	      auto_diagnostic_group d;
 	      warned = warning (OPT_Wnon_template_friend, "friend declaration "
 				"%q#D declares a non-template function", decl);
 	      if (! explained && warned)
 		{
-		  inform (input_location, "(if this is not what you intended, make sure "
-			  "the function template has already been declared "
-			  "and add <> after the function name here) ");
+		  inform (input_location, "(if this is not what you intended, "
+			  "make sure the function template has already been "
+			  "declared and add %<<>%> after the function name "
+			  "here)");
 		  explained = 1;
 		}
 	    }

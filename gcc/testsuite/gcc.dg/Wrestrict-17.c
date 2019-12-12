@@ -1,6 +1,7 @@
 /* PR tree-optimization/85826 - ICE in gimple-ssa-warn-restruct on
    a variable-length struct
    { dg-do compile }
+   { dg-require-effective-target alloca }
    { dg-options "-O2 -Wall" }  */
 
 int f (int n)

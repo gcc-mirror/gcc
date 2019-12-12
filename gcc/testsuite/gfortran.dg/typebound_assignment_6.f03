@@ -1,5 +1,4 @@
 ! { dg-do run }
-! { dg-options "-fdump-tree-original" }
 !
 ! PR fortran/56136
 ! ICE on defined assignment with class arrays.
@@ -36,7 +35,4 @@
         IF (ANY(A( ::2)%I /= (/ (50+I, I=1,SIZE(A)/2) /))) STOP 2
         IF (ANY(A(2::2)%I /= (/ ((50+2*I, I=1,SIZE(A)/4), J=1,2) /))) STOP 3
       END PROGRAM
-
-! { dg-final { scan-tree-dump-times "_gfortran_internal_pack" 1 "original" } }
-! { dg-final { scan-tree-dump-times "_gfortran_internal_unpack" 1 "original" } }
 

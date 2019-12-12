@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for recording calls made to the JIT API.
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -245,7 +245,7 @@ class reproducer : public dump
   {
     static void remove (const char *) {}
   };
-  hash_set<const char *, hash_traits> m_set_identifiers;
+  hash_set<const char *, false, hash_traits> m_set_identifiers;
   allocator m_allocator;
 };
 
@@ -616,6 +616,8 @@ recording::context::~context ()
   char *optname;
   FOR_EACH_VEC_ELT (m_command_line_options, i, optname)
     free (optname);
+  FOR_EACH_VEC_ELT (m_driver_options, i, optname)
+    free (optname);
 
   if (m_builtins_manager)
     delete m_builtins_manager;
@@ -866,6 +868,24 @@ recording::context::new_field (recording::location *loc,
 {
   recording::field *result =
     new recording::field (this, loc, type, new_string (name));
+  record (result);
+  return result;
+}
+
+/* Create a recording::bitfield instance and add it to this context's list
+   of mementos.
+
+   Implements the post-error-checking part of
+   gcc_jit_context_new_bitfield.  */
+
+recording::field *
+recording::context::new_bitfield (recording::location *loc,
+				  recording::type *type,
+				  int width,
+				  const char *name)
+{
+  recording::field *result =
+    new recording::bitfield (this, loc, type, width, new_string (name));
   record (result);
   return result;
 }
@@ -1304,6 +1324,31 @@ recording::context::append_command_line_options (vec <char *> *argvec)
   int i;
   char *optname;
   FOR_EACH_VEC_ELT (m_command_line_options, i, optname)
+    argvec->safe_push (xstrdup (optname));
+}
+
+/* Add the given optname to this context's list of extra driver options.  */
+
+void
+recording::context::add_driver_option (const char *optname)
+{
+  m_driver_options.safe_push (xstrdup (optname));
+}
+
+/* Add any user-provided driver options, starting with any from
+   parent contexts.
+   Called by playback::context::invoke_driver.  */
+
+void
+recording::context::append_driver_options (auto_string_vec *argvec)
+{
+  if (m_parent_ctxt)
+    m_parent_ctxt->append_driver_options (argvec);
+
+  int i;
+  char *optname;
+
+  FOR_EACH_VEC_ELT (m_driver_options, i, optname)
     argvec->safe_push (xstrdup (optname));
 }
 
@@ -1795,6 +1840,17 @@ recording::context::dump_reproducer_to_file (const char *path)
 	  r.write ("  /* User-provided command-line options.  */\n");
 	  FOR_EACH_VEC_ELT (m_command_line_options, i, optname)
 	    r.write ("  gcc_jit_context_add_command_line_option (%s, \"%s\");\n",
+		     r.get_identifier (contexts[ctxt_idx]),
+		     optname);
+	}
+
+      if (!m_driver_options.is_empty ())
+	{
+	  int i;
+	  char *optname;
+	  r.write ("  /* User-provided driver options.  */\n");
+	  FOR_EACH_VEC_ELT (m_driver_options, i, optname)
+	    r.write ("  gcc_jit_context_add_driver_option (%s, \"%s\");\n",
 		     r.get_identifier (contexts[ctxt_idx]),
 		     optname);
 	}
@@ -2924,7 +2980,7 @@ recording::field::replay_into (replayer *r)
    recording::memento::write_to_dump.  Dump each field
    by dumping a line of the form:
       TYPE NAME;
-   so that we can build up a struct/union field-byfield.  */
+   so that we can build up a struct/union field by field.  */
 
 void
 recording::field::write_to_dump (dump &d)
@@ -2959,6 +3015,66 @@ recording::field::write_reproducer (reproducer &r)
 	  r.get_identifier (m_loc),
 	  r.get_identifier_as_type (m_type),
 	  m_name->get_debug_string ());
+}
+
+/* The implementation of class gcc::jit::recording::bitfield.  */
+
+/* Implementation of pure virtual hook recording::memento::replay_into
+   for recording::bitfield.  */
+
+void
+recording::bitfield::replay_into (replayer *r)
+{
+  set_playback_obj (r->new_bitfield (playback_location (r, m_loc),
+				     m_type->playback_type (),
+				     m_width,
+				     playback_string (m_name)));
+}
+
+/* Override the default implementation of
+   recording::memento::write_to_dump.  Dump each bit field
+   by dumping a line of the form:
+      TYPE NAME:WIDTH;
+   so that we can build up a struct/union field by field.  */
+
+void
+recording::bitfield::write_to_dump (dump &d)
+{
+  d.write ("  %s %s:%d;\n",
+	   m_type->get_debug_string (),
+	   m_name->c_str (),
+	   m_width);
+}
+
+/* Implementation of recording::memento::make_debug_string for
+   results of new_bitfield.  */
+
+recording::string *
+recording::bitfield::make_debug_string ()
+{
+  return string::from_printf (m_ctxt,
+			      "%s:%d",
+			      m_name->c_str (), m_width);
+}
+
+/* Implementation of recording::memento::write_reproducer for bitfields.  */
+
+void
+recording::bitfield::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "bitfield");
+  r.write ("  gcc_jit_field *%s =\n"
+	   "    gcc_jit_context_new_bitfield (%s,\n"
+	   "                               %s, /* gcc_jit_location *loc */\n"
+	   "                               %s, /* gcc_jit_type *type, */\n"
+	   "                               %d, /* int width, */\n"
+	   "                               %s); /* const char *name */\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (m_loc),
+	   r.get_identifier_as_type (m_type),
+	   m_width,
+	   m_name->get_debug_string ());
 }
 
 /* The implementation of class gcc::jit::recording::compound_type */
@@ -4772,7 +4888,7 @@ recording::unary_op::make_debug_string ()
 			      m_a->get_debug_string ());
 }
 
-static const char * const unary_op_reproducer_strings[] = {
+const char * const unary_op_reproducer_strings[] = {
   "GCC_JIT_UNARY_OP_MINUS",
   "GCC_JIT_UNARY_OP_BITWISE_NEGATE",
   "GCC_JIT_UNARY_OP_LOGICAL_NEGATE",
@@ -4852,7 +4968,7 @@ recording::binary_op::make_debug_string ()
 			      m_b->get_debug_string_parens (prec));
 }
 
-static const char * const binary_op_reproducer_strings[] = {
+const char * const binary_op_reproducer_strings[] = {
   "GCC_JIT_BINARY_OP_PLUS",
   "GCC_JIT_BINARY_OP_MINUS",
   "GCC_JIT_BINARY_OP_MULT",

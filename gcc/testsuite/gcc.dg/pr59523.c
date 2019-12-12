@@ -16,3 +16,5 @@ foo (int a, int *b, int *c, int *d)
       r[i] = 1;
   return r;
 }
+
+/* { dg-prune-output "-Wreturn-local-addr" } */

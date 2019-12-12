@@ -1,5 +1,5 @@
 /* { dg-do compile { target powerpc64*-*-* } } */
-/* { dg-options "-O2 -mcpu=power7" } */
+/* { dg-options "-O2 -mdejagnu-cpu=power7" } */
 /* { dg-final { scan-assembler-not "xxlor" } } */
 
 #include <altivec.h>

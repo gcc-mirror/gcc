@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 //
-// Copyright (C) 2011-2018 Free Software Foundation, Inc.
+// Copyright (C) 2011-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,13 +37,21 @@ void test01()
 		char (int, ClassType) const volatile &&>(true), "");
 
   // Negative tests.
+  static_assert(test_category<is_function, int*>(false), "");
   static_assert(test_category<is_function, int&>(false), "");
   static_assert(test_category<is_function, void>(false), "");
   static_assert(test_category<is_function, const void>(false), "");
+  static_assert(test_category<is_function, void*>(false), "");
+  static_assert(test_category<is_function, const void*>(false), "");
+  static_assert(test_category<is_function, void**>(false), "");
+  static_assert(test_category<is_function, std::nullptr_t>(false), "");
 
   static_assert(test_category<is_function, AbstractClass>(false), "");
   static_assert(test_category<is_function, int(&)(int)>(false), "");
+  static_assert(test_category<is_function, int(*)(int)>(false), "");
   
   // Sanity check.
   static_assert(test_category<is_function, ClassType>(false), "");
+  static_assert(test_category<is_function, IncompleteClass>(false), "");
+  static_assert(test_category<is_function, IncompleteUnion>(false), "");
 }

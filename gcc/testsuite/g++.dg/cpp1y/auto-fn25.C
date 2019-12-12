@@ -5,7 +5,7 @@
 
 struct A
 {
-  virtual auto foo() {}		// { dg-error "virtual.*deduced" }
+  virtual auto foo() {}		// { dg-error "11:virtual.*deduced" }
 };
 
 struct B : A

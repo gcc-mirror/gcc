@@ -11,5 +11,5 @@ class A
   };
 };
 template <typename T> template <typename U>
-A<T>::B<U> A<T>::B<U>::foo() {}
+A<T>::template B<U> A<T>::B<U>::foo() {}
 

@@ -1,5 +1,7 @@
 /* { dg-require-effective-target int128 } */
 /* { dg-additional-options "-g" } */
+/* { dg-skip-if "exceeds eBPF stack limit" { bpf-*-* } } */
+
 
 typedef unsigned __int128 v2ti __attribute__ ((vector_size (32)));
 

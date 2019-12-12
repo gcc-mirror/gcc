@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2000-2018, AdaCore                     --
+--                     Copyright (C) 2000-2019, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -612,6 +612,10 @@ private
    --  Finish the set up of the pipes while in the child process This also
    --  spawns the child process (based on Cmd). On systems that support fork,
    --  this procedure is executed inside the newly created process.
+
+   procedure Close_Input (Pid : in out Process_Descriptor);
+   --  Closes input file descriptor. Set Input_Fd to Invalid_Fd as well as
+   --  Output_Fd and Error_Fd when they share same file descriptor.
 
    type Process_Descriptor is tagged record
       Pid              : aliased Process_Id := Invalid_Pid;

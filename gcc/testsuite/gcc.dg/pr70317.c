@@ -1,6 +1,6 @@
 /* PR tree-optimization/70317 */
 /* { dg-do compile } */
-/* { dg-skip-if "No NaN support" { spu*-*-* vax*-*-* pdp11*-*-* } } */
+/* { dg-skip-if "No NaN support" { vax*-*-* pdp11*-*-* } } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
 /* { dg-additional-options "-fno-common" { target hppa*-*-hpux* } } */
 

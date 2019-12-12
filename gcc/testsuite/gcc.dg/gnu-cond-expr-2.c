@@ -9,5 +9,5 @@ int a, b, c;
 void
 f (void)
 {
-  c = (++a ? : b); /* { dg-warning "ISO C forbids omitting the middle term of a \\?: expression" } */
+  c = (++a ? : b); /* { dg-warning "ISO C forbids omitting the middle term of a '\\?:' expression" } */
 }

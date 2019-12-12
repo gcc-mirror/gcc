@@ -6,4 +6,4 @@
 /* Ensure we don't offer non-recoverable "-fsanitize-recover=thread"
    as a suggestion.  */
 /* { dg-bogus "did you mean" "" { target *-*-* } 0 } */
-/* { dg-error "unrecognized argument to -fsanitize-recover= option: .threed." "" { target *-*-* } 0 } */
+/* { dg-error "unrecognized argument to '-fsanitize-recover=' option: 'threed'" "" { target *-*-* } 0 } */

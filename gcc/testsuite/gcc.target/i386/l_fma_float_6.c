@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -Wno-attributes -mfpmath=sse -mfma -mtune=generic -mno-fma4" } */
+/* Disabling epilogues until we find a better way to deal with scans.  */
+/* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 
 /* Test that the compiler properly optimizes floating point multiply
    and add instructions into FMA3 instructions.  */

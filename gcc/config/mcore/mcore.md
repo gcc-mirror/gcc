@@ -1,5 +1,5 @@
 ;;  Machine description the Motorola MCore
-;;  Copyright (C) 1993-2018 Free Software Foundation, Inc.
+;;  Copyright (C) 1993-2019 Free Software Foundation, Inc.
 ;;  Contributed by Motorola.
 
 ;; This file is part of GCC.
@@ -2552,7 +2552,7 @@
 ;; Block move - adapted from m88k.md
 ;; ------------------------------------------------------------------------
 
-(define_expand "movmemsi"
+(define_expand "cpymemsi"
   [(parallel [(set (mem:BLK (match_operand:BLK 0 "" ""))
 		   (mem:BLK (match_operand:BLK 1 "" "")))
 	      (use (match_operand:SI 2 "general_operand" ""))

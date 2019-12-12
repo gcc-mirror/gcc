@@ -1,6 +1,6 @@
 /* Limit this to known non-strict alignment targets.  */
 /* { dg-do run { target { i?86-*-linux* x86_64-*-linux* } } } */
-/* { dg-options "-fsanitize=null,alignment" } */
+/* { dg-options "-fsanitize=null,alignment -Wno-address-of-packed-member" } */
 
 #include "align-2.c"
 

@@ -1,0 +1,54 @@
+#!/bin/sh
+
+#
+# This script computes the various flags needed to run D Phobos unittests.
+#
+
+# Print a message saying how this script is intended to be invoked
+print_usage() {
+    cat <<EOF
+Usage:
+    testsuite_flags --gdc
+		    --gdcflags
+		    --gdcpaths
+		    --gdcldflags
+
+EOF
+}
+
+# Establish configure-generated directory structure.
+BUILD_DIR=@libphobos_builddir@
+SRC_DIR=@libphobos_srcdir@
+query=$1
+
+case ${query} in
+    --gdc)
+      GDC="@GDC@"
+      echo ${GDC}
+      ;;
+    --gdcflags)
+      GDCFLAGS_default="-fmessage-length=0 -fno-show-column"
+      GDCFLAGS_config="@GDCFLAGSX@"
+      echo ${GDCFLAGS_default} ${GDCFLAGS_config}
+      ;;
+    --gdcpaths)
+      GDCPATHS_default="-nostdinc"
+      GDCPATHS_config="-B${BUILD_DIR}/src
+                       -I${BUILD_DIR}/libdruntime
+                       -I${SRC_DIR}/libdruntime
+                       -I${SRC_DIR}/src"
+      echo ${GDCPATHS_default} ${GDCPATHS_config}
+      ;;
+    --gdcldflags)
+      GDCLDFLAGS="-B${BUILD_DIR}/src
+                  -B${BUILD_DIR}/libdruntime/gcc
+                  -L${BUILD_DIR}/libdruntime/.libs
+                  -L${BUILD_DIR}/src/.libs"
+      echo ${GDCLDFLAGS}
+      ;;
+    *)
+      print_usage
+      ;;
+esac
+
+exit 0

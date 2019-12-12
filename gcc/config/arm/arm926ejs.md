@@ -1,5 +1,5 @@
 ;; ARM 926EJ-S Pipeline Description
-;; Copyright (C) 2003-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2003-2019 Free Software Foundation, Inc.
 ;; Written by CodeSourcery, LLC.
 ;;
 ;; This file is part of GCC.
@@ -67,7 +67,7 @@
                        shift_imm,shift_reg,extend,\
                        mov_imm,mov_reg,mov_shift,\
                        mvn_imm,mvn_reg,mvn_shift,\
-                       multiple,no_insn"))
+                       multiple"))
  "e,m,w")
 
 ;; ALU operations with a shift-by-register operand

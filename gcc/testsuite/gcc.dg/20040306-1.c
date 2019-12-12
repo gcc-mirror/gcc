@@ -2,7 +2,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-
+/* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
 
 typedef struct test
 {

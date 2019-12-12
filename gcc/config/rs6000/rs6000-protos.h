@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 2000-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2019 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -36,7 +36,6 @@ extern int vspltis_shifted (rtx);
 extern HOST_WIDE_INT const_vector_elt_as_int (rtx, unsigned int);
 extern bool macho_lo_sum_memory_operand (rtx, machine_mode);
 extern int num_insns_constant (rtx, machine_mode);
-extern int num_insns_constant_wide (HOST_WIDE_INT);
 extern int small_data_operand (rtx, machine_mode);
 extern bool mem_operand_gpr (rtx, machine_mode);
 extern bool mem_operand_ds_form (rtx, machine_mode);
@@ -47,6 +46,7 @@ extern bool legitimate_constant_pool_address_p (const_rtx, machine_mode,
 extern bool legitimate_indirect_address_p (rtx, int);
 extern bool legitimate_indexed_address_p (rtx, int);
 extern bool avoiding_indexed_address_p (machine_mode);
+extern rtx rs6000_force_indexed_or_indirect_mem (rtx x);
 
 extern rtx rs6000_got_register (rtx);
 extern rtx find_addr_reg (rtx);
@@ -61,7 +61,6 @@ extern void rs6000_expand_vector_set (rtx, rtx, int);
 extern void rs6000_expand_vector_extract (rtx, rtx, rtx);
 extern void rs6000_split_vec_extract_var (rtx, rtx, rtx, rtx, rtx);
 extern rtx rs6000_adjust_vec_address (rtx, rtx, rtx, rtx, machine_mode);
-extern void rs6000_split_v4si_init (rtx []);
 extern void altivec_expand_vec_perm_le (rtx op[4]);
 extern void rs6000_expand_extract_even (rtx, rtx, rtx);
 extern void rs6000_expand_interleave (rtx, rtx, rtx, bool);
@@ -70,7 +69,7 @@ extern void rs6000_generate_float2_code (bool, rtx, rtx, rtx);
 extern void rs6000_generate_float2_double_code (rtx, rtx, rtx);
 extern void rs6000_generate_vsigned2_code (bool, rtx, rtx, rtx);
 extern int expand_block_clear (rtx[]);
-extern int expand_block_move (rtx[]);
+extern int expand_block_move (rtx[], bool);
 extern bool expand_block_compare (rtx[]);
 extern bool expand_strn_compare (rtx[], int);
 extern bool rs6000_is_valid_mask (rtx, int *, int *, machine_mode);
@@ -91,14 +90,7 @@ extern bool quad_load_store_p (rtx, rtx);
 extern bool fusion_gpr_load_p (rtx, rtx, rtx, rtx);
 extern void expand_fusion_gpr_load (rtx *);
 extern void emit_fusion_addis (rtx, rtx);
-extern void emit_fusion_load_store (rtx, rtx, rtx, const char *);
 extern const char *emit_fusion_gpr_load (rtx, rtx);
-extern bool fusion_p9_p (rtx, rtx, rtx, rtx);
-extern void expand_fusion_p9_load (rtx *);
-extern void expand_fusion_p9_store (rtx *);
-extern const char *emit_fusion_p9_load (rtx, rtx, rtx);
-extern const char *emit_fusion_p9_store (rtx, rtx, rtx);
-extern rtx fusion_wrap_memory_address (rtx);
 extern enum reg_class (*rs6000_preferred_reload_class_ptr) (rtx,
 							    enum reg_class);
 extern enum reg_class (*rs6000_secondary_reload_class_ptr) (enum reg_class,
@@ -112,9 +104,15 @@ extern int ccr_bit (rtx, int);
 extern void rs6000_output_function_entry (FILE *, const char *);
 extern void print_operand (FILE *, rtx, int);
 extern void print_operand_address (FILE *, rtx);
+extern const char *rs6000_call_template (rtx *, unsigned int);
+extern const char *rs6000_sibcall_template (rtx *, unsigned int);
+extern const char *rs6000_indirect_call_template (rtx *, unsigned int);
+extern const char *rs6000_indirect_sibcall_template (rtx *, unsigned int);
+extern const char *rs6000_pltseq_template (rtx *, int);
 extern enum rtx_code rs6000_reverse_condition (machine_mode,
 					       enum rtx_code);
 extern rtx rs6000_emit_eqne (machine_mode, rtx, rtx, rtx);
+extern rtx rs6000_emit_fp_cror (rtx_code, machine_mode, rtx);
 extern void rs6000_emit_sCOND (machine_mode, rtx[]);
 extern void rs6000_emit_cbranch (machine_mode, rtx[]);
 extern char * output_cbranch (rtx, const char *, int, rtx_insn *);
@@ -133,7 +131,6 @@ extern void rs6000_expand_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx);
 extern void rs6000_emit_swdiv (rtx, rtx, rtx, bool);
 extern void rs6000_emit_swsqrt (rtx, rtx, bool);
 extern void output_toc (FILE *, rtx, int, machine_mode);
-extern rtx rs6000_longcall_ref (rtx);
 extern void rs6000_fatal_bad_address (rtx);
 extern rtx create_TOC_reference (rtx, rtx);
 extern void rs6000_split_multireg_move (rtx, rtx);
@@ -141,8 +138,6 @@ extern void rs6000_emit_le_vsx_permute (rtx, rtx, machine_mode);
 extern void rs6000_emit_le_vsx_move (rtx, rtx, machine_mode);
 extern bool valid_sf_si_move (rtx, rtx, machine_mode);
 extern void rs6000_emit_move (rtx, rtx, machine_mode);
-extern rtx (*rs6000_legitimize_reload_address_ptr) (rtx, machine_mode,
-						    int, int, int, int *);
 extern bool rs6000_legitimate_offset_address_p (machine_mode, rtx,
 						bool, bool);
 extern rtx rs6000_find_base_term (rtx);
@@ -154,10 +149,72 @@ extern void rs6000_emit_parity (rtx, rtx);
 
 extern rtx rs6000_machopic_legitimize_pic_address (rtx, machine_mode,
 						   rtx);
-extern rtx rs6000_address_for_fpconvert (rtx);
 extern rtx rs6000_allocate_stack_temp (machine_mode, bool, bool);
 extern align_flags rs6000_loop_align (rtx);
 extern void rs6000_split_logical (rtx [], enum rtx_code, bool, bool, bool);
+extern bool rs6000_pcrel_p (struct function *);
+extern bool rs6000_fndecl_pcrel_p (const_tree);
+
+/* Different PowerPC instruction formats that are used by GCC.  There are
+   various other instruction formats used by the PowerPC hardware, but these
+   formats are not currently used by GCC.  */
+
+enum insn_form {
+  INSN_FORM_BAD,		/* Bad instruction format.  */
+  INSN_FORM_BASE_REG,		/* Base register only.  */
+  INSN_FORM_D,			/* Reg + 16-bit numeric offset.  */
+  INSN_FORM_DS,			/* Reg + offset, bottom 2 bits must be 0.  */
+  INSN_FORM_DQ,			/* Reg + offset, bottom 4 bits must be 0.  */
+  INSN_FORM_X,			/* Base register + index register.  */
+  INSN_FORM_UPDATE,		/* Address updates base register.  */
+  INSN_FORM_LO_SUM,		/* Reg + offset using symbol.  */
+  INSN_FORM_PREFIXED_NUMERIC,	/* Reg + 34 bit numeric offset.  */
+  INSN_FORM_PCREL_LOCAL,	/* PC-relative local symbol.  */
+  INSN_FORM_PCREL_EXTERNAL	/* PC-relative external symbol.  */
+};
+
+/* Instruction format for the non-prefixed version of a load or store.  This is
+   used to determine if a 16-bit offset is valid to be used with a non-prefixed
+   (traditional) instruction or if the bottom bits of the offset cannot be used
+   with a DS or DQ instruction format, and GCC has to use a prefixed
+   instruction for the load or store.  */
+
+enum non_prefixed_form {
+  NON_PREFIXED_DEFAULT,		/* Use the default.  */
+  NON_PREFIXED_D,		/* All 16-bits are valid.  */
+  NON_PREFIXED_DS,		/* Bottom 2 bits must be 0.  */
+  NON_PREFIXED_DQ,		/* Bottom 4 bits must be 0.  */
+  NON_PREFIXED_X		/* No offset memory form exists.  */
+};
+
+extern enum insn_form address_to_insn_form (rtx, machine_mode,
+					    enum non_prefixed_form);
+extern bool prefixed_load_p (rtx_insn *);
+extern bool prefixed_store_p (rtx_insn *);
+extern bool prefixed_paddi_p (rtx_insn *);
+extern void rs6000_asm_output_opcode (FILE *);
+extern void rs6000_final_prescan_insn (rtx_insn *, rtx [], int);
+extern int rs6000_adjust_insn_length (rtx_insn *, int);
+
+/* Return true if the address can be used for a prefixed load, store, or add
+   immediate instructions that cannot be used with a non-prefixed instruction.
+   For example, using a numeric offset that is not valid for the non-prefixed
+   instruction or a PC-relative reference to a local symbol would return true,
+   but an address with an offset of 64 would not return true.
+
+   References to external PC-relative symbols aren't allowed, because GCC has
+   to load the address into a register and then issue a separate load or
+   store.  */
+
+static inline bool
+address_is_prefixed (rtx addr,
+		     machine_mode mode,
+		     enum non_prefixed_form non_prefixed)
+{
+  enum insn_form iform = address_to_insn_form (addr, mode, non_prefixed);
+  return (iform == INSN_FORM_PREFIXED_NUMERIC
+	  || iform == INSN_FORM_PCREL_LOCAL);
+}
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
@@ -196,12 +253,16 @@ extern alias_set_type get_TOC_alias_set (void);
 extern void rs6000_emit_prologue (void);
 extern void rs6000_emit_load_toc_table (int);
 extern unsigned int rs6000_dbx_register_number (unsigned int, unsigned int);
-extern void rs6000_emit_epilogue (int);
+extern void rs6000_emit_epilogue (enum epilogue_type);
 extern void rs6000_expand_split_stack_prologue (void);
 extern void rs6000_split_stack_space_check (rtx, rtx);
 extern void rs6000_emit_eh_reg_restore (rtx, rtx);
 extern void rs6000_call_aix (rtx, rtx, rtx, rtx);
 extern void rs6000_sibcall_aix (rtx, rtx, rtx, rtx);
+extern void rs6000_call_sysv (rtx, rtx, rtx, rtx);
+extern void rs6000_sibcall_sysv (rtx, rtx, rtx, rtx);
+extern void rs6000_call_darwin (rtx, rtx, rtx, rtx);
+extern void rs6000_sibcall_darwin (rtx, rtx, rtx, rtx);
 extern void rs6000_aix_asm_output_dwarf_table_ref (char *);
 extern void get_ppc476_thunk_name (char name[32]);
 extern bool rs6000_overloaded_builtin_p (enum rs6000_builtins);
@@ -226,15 +287,12 @@ extern void rs6000_target_modify_macros (bool, HOST_WIDE_INT, HOST_WIDE_INT);
 extern void (*rs6000_target_modify_macros_ptr) (bool, HOST_WIDE_INT,
 						HOST_WIDE_INT);
 
-#if TARGET_MACHO
-char *output_call (rtx_insn *, rtx *, int, int);
-#endif
+/* Declare functions in rs6000-d.c  */
+extern void rs6000_d_target_versions (void);
 
 #ifdef NO_DOLLAR_IN_LABEL
 const char * rs6000_xcoff_strip_dollar (const char *);
 #endif
-
-void rs6000_final_prescan_insn (rtx_insn *, rtx *operand, int num_operands);
 
 extern unsigned char rs6000_class_max_nregs[][LIM_REG_CLASSES];
 extern unsigned char rs6000_hard_regno_nregs[][FIRST_PSEUDO_REGISTER];

@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2018 Free Software Foundation, Inc.
+// Copyright (C) 2017-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -59,7 +59,7 @@ struct Alloc
   void deallocate(pointer p, std::size_t n)
   {
     if (n)
-      std::allocator<T>().deallocate(p.value, n);
+      std::allocator<T>().deallocate(p.operator->(), n);
   }
 };
 

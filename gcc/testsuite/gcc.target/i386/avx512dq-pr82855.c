@@ -1,7 +1,7 @@
 /* PR target/82855 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -mavx512vl -mavx512dq" } */
-/* { dg-final { scan-assembler {\mktestb\M} } } */
+/* { dg-final { scan-assembler {\mkortestb\M} } } */
 
 #include <immintrin.h>
 

@@ -1,5 +1,5 @@
 // PR c++/79790
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 template <int N>
 struct array
@@ -7,4 +7,4 @@ struct array
   int a [N];
 };
 
-array a = { 1, 2, 3 };  // { dg-error "cannot deduce" }
+array a = { 1, 2, 3 };  // { dg-error "" }

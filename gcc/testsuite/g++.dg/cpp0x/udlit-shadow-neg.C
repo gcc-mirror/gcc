@@ -2,7 +2,7 @@
 
 //  Test that the standard suffixes shadow any user-defined suffixes of the same name.
 long double
-operator"" L(long double x)  // { dg-warning "floating point suffix|shadowed by implementation" }
+operator"" L(long double x)  // { dg-warning "floating-point suffix|shadowed by implementation" }
 { return x; }
 
 unsigned long long int
@@ -10,7 +10,7 @@ operator"" ULL(unsigned long long int k)  // { dg-warning "integer suffix|shadow
 { return k; }
 
 long double
-operator"" l(long double x)  // { dg-warning "floating point suffix|shadowed by implementation" }
+operator"" l(long double x)  // { dg-warning "floating-point suffix|shadowed by implementation" }
 { return x; }
 
 unsigned long long int

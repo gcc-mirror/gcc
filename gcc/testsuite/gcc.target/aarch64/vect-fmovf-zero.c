@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-all -fno-vect-cost-model" } */
+/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-all -fno-vect-cost-model -fno-tree-loop-distribute-patterns" } */
 
 #pragma GCC target "+nosve"
 

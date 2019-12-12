@@ -1,5 +1,5 @@
 ;; ARM Cortex-A53 pipeline description
-;; Copyright (C) 2013-2018 Free Software Foundation, Inc.
+;; Copyright (C) 2013-2019 Free Software Foundation, Inc.
 ;;
 ;; Contributed by ARM Ltd.
 ;;
@@ -86,7 +86,7 @@
 			alu_sreg,alus_sreg,logic_reg,logics_reg,
 			adc_imm,adcs_imm,adc_reg,adcs_reg,
 			csel,clz,rbit,rev,alu_dsp_reg,
-			mov_reg,mvn_reg,mrs,multiple,no_insn"))
+			mov_reg,mvn_reg,mrs,multiple"))
   "cortex_a53_slot_any")
 
 (define_insn_reservation "cortex_a53_alu_shift" 3
@@ -111,7 +111,7 @@
 (define_insn_reservation "cortex_a53_mul" 4
   (and (eq_attr "tune" "cortexa53")
        (ior (eq_attr "mul32" "yes")
-	    (eq_attr "mul64" "yes")))
+	    (eq_attr "widen_mul64" "yes")))
   "cortex_a53_slot_any+cortex_a53_imul")
 
 ;; From the perspective of the GCC scheduling state machine, if we wish to
@@ -722,10 +722,4 @@
 (define_bypass 4 "cortex_a53_fpmac"
 		 "cortex_a53_fpmac"
 		 "aarch_accumulator_forwarding")
-
-;; We want AESE and AESMC to end up consecutive to one another.
-
-(define_bypass 0 "cortex_a53_crypto_aese"
-		 "cortex_a53_crypto_aesmc"
-		 "aarch_crypto_can_dual_issue")
 

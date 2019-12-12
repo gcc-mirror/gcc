@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O -fdump-rtl-expand" } */
+/* { dg-options "-O2 -fdump-rtl-expand" } */
 
 typedef struct { char s[8]; int x; } S;
 __attribute__ ((noinline)) int

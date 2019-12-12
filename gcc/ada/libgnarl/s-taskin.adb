@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -267,9 +267,12 @@ package body System.Tasking is
            Dispatching_Domain_Tasks (Base_CPU) + 1;
       end if;
 
-      --  Only initialize the first element since others are not relevant
-      --  in ravenscar mode. Rest of the initialization is done in Init_RTS.
+      --  The full initialization of the environment task's Entry_Calls array
+      --  is deferred to Init_RTS because only the first element of the array
+      --  is used by the restricted Ravenscar runtime.
 
-      T.Entry_Calls (1).Self := T;
+      T.Entry_Calls (T.Entry_Calls'First).Self := T;
+      T.Entry_Calls (T.Entry_Calls'First).Level := T.Entry_Calls'First;
+
    end Initialize;
 end System.Tasking;

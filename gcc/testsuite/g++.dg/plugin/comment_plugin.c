@@ -13,7 +13,7 @@ int plugin_is_GPL_compatible;
 /* Test callback for cpp_callbacks::comments.  */
 
 void
-my_comment_cb (cpp_reader *, source_location loc,
+my_comment_cb (cpp_reader *, location_t loc,
 	       const unsigned char *content, size_t len)
 {
   if (in_system_header_at (loc))

@@ -1,6 +1,6 @@
 /* OpenACC Runtime Library User-facing Declarations
 
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2019 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -55,6 +55,7 @@ typedef enum acc_device_t {
   /* acc_device_host_nonshm = 3 removed.  */
   acc_device_not_host = 4,
   acc_device_nvidia = 5,
+  acc_device_gcn = 8,
   _ACC_device_hwm,
   /* Ensure enumeration is layout compatible with int.  */
   _ACC_highest = __INT_MAX__,
@@ -114,6 +115,16 @@ void acc_copyout_finalize (void *, size_t) __GOACC_NOTHROW;
 void acc_copyout_finalize_async (void *, size_t, int) __GOACC_NOTHROW;
 void acc_delete_finalize (void *, size_t) __GOACC_NOTHROW;
 void acc_delete_finalize_async (void *, size_t, int) __GOACC_NOTHROW;
+
+/* Async functions, specified in OpenACC 2.5.  */
+void acc_copyin_async (void *, size_t, int) __GOACC_NOTHROW;
+void acc_create_async (void *, size_t, int) __GOACC_NOTHROW;
+void acc_copyout_async (void *, size_t, int) __GOACC_NOTHROW;
+void acc_delete_async (void *, size_t, int) __GOACC_NOTHROW;
+void acc_update_device_async (void *, size_t, int) __GOACC_NOTHROW;
+void acc_update_self_async (void *, size_t, int) __GOACC_NOTHROW;
+void acc_memcpy_to_device_async (void *, void *, size_t, int) __GOACC_NOTHROW;
+void acc_memcpy_from_device_async (void *, void *, size_t, int) __GOACC_NOTHROW;
 
 /* CUDA-specific routines.  */
 void *acc_get_current_cuda_device (void) __GOACC_NOTHROW;
