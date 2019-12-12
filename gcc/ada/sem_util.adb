@@ -3398,12 +3398,6 @@ package body Sem_Util is
            or else Ekind_In (Context, E_Block, E_Task_Type)
          then
             return;
-
-         --  When examining a package body, use the entity of the spec as it
-         --  carries the abstract state declarations.
-
-         elsif Ekind (Context) = E_Package_Body then
-            Context := Spec_Entity (Context);
          end if;
 
          --  Stop the traversal when a package subject to a null abstract state
