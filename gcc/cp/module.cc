@@ -2598,7 +2598,8 @@ depset *depset::make_entity (tree entity, entity_kind ek, bool is_defn)
 class specset {
 public:
   /* key  */
-  tree ns;  /* Namespace containing the template.  */
+  mc_slot ns;  /* Namespace containing the template, or entity number
+		  for pending member  */
   tree name;  /* Name of the entity.  */
 
   /* Payload.  */
@@ -2611,7 +2612,7 @@ public:
 
 public:
   /* Even with ctors, we're very pod-like.  */
-  specset (tree ns, tree name)
+  specset (mc_slot ns, tree name)
     : ns (ns), name (name),
       allocp2 (0), num (0)
   {
@@ -2624,13 +2625,14 @@ public:
     if (from->num)
       allocp2++;
   }
+  void lazy_load ();
 
 public:
   struct traits : delete_ptr_hash<specset> {
     /* hash and equality for compare_type.  */
     inline static hashval_t hash (const compare_type p)
     {
-      hashval_t h = pointer_hash<tree_node>::hash (p->ns);
+      hashval_t h = pointer_hash<tree_node>::hash (p->ns.u.binding);
       hashval_t nh = pointer_hash<tree_node>::hash (p->name);
       h = iterative_hash_hashval_t (h, nh);
 
@@ -2638,7 +2640,7 @@ public:
     }
     inline static bool equal (const value_type b, const compare_type p)
     {
-      if (b->ns != p->ns)
+      if (b->ns.u.binding != p->ns.u.binding)
 	return false;
 
       if (b->name != p->name)
@@ -2664,8 +2666,8 @@ public:
     }
 
   public:
-    bool add (tree ns, tree name, unsigned index);
-    specset *lookup (tree ns, tree name);
+    bool add (mc_slot ns, tree name, unsigned index);
+    specset *extract (mc_slot ns, tree name);
   };
 
   static hash *table;
@@ -11887,7 +11889,7 @@ depset::hash::connect ()
 }
 
 bool
-specset::hash::add (tree ns, tree name, unsigned index)
+specset::hash::add (mc_slot ns, tree name, unsigned index)
 {
   specset key (ns, name);
   specset **slot = find_slot (&key, INSERT);
@@ -11912,7 +11914,7 @@ specset::hash::add (tree ns, tree name, unsigned index)
 }
 
 specset *
-specset::hash::lookup (tree ns, tree name)
+specset::hash::extract (mc_slot ns, tree name)
 {
   specset key (ns, name);
   specset *res = NULL;
@@ -11927,6 +11929,27 @@ specset::hash::lookup (tree ns, tree name)
   return res;
 }
 
+/* Load the specializations referred to by this specset.  */
+
+void specset::lazy_load ()
+{
+  for (unsigned ix = 0; ix != num; ix++)
+    {
+      unsigned index = pending[ix];
+      module_state *module = import_entity_module (index);
+      mc_slot *slot = &(*entity_ary)[index];
+      if (slot->is_lazy ())
+	module->lazy_load (index - module->entity_lwm, slot, errorcount + 1);
+      else
+	dump () && dump ("%s %u@%M already loaded",
+			 name ? "Specialization" : "Member",
+			 index - module->entity_lwm, module);
+    }
+
+  /* We own set, so delete it now.  */
+  delete this;
+}
+      
 /* Initialize location spans.  */
 
 void
@@ -14310,7 +14333,7 @@ module_state::read_entities (unsigned count, const range_t &range)
       mc_slot slot;
       slot.u.binding = NULL_TREE;
       if (snum)
-	slot.set_lazy (snum);
+	slot.set_lazy (snum * 2);
       entity_ary->quick_push (slot);
     }
   entity_num = ix;
@@ -14385,7 +14408,8 @@ module_state::read_specializations (unsigned count)
 
   for (unsigned ix = 0; ix != count; ix++)
     {
-      tree ns = sec.tree_node ();
+      mc_slot ns;
+      ns = sec.tree_node ();
       tree id = sec.tree_node ();
       unsigned kind = sec.u ();
       unsigned index = sec.u ();
@@ -17323,7 +17347,8 @@ module_state::lazy_load (unsigned index, mc_slot *mslot, unsigned diags)
 
   gcc_checking_assert (function_depth);
 
-  unsigned snum = mslot->get_lazy ();
+  unsigned cookie = mslot->get_lazy ();
+  unsigned snum = cookie >> 1;
   dump () && dump ("Loading entity %M[%u] section:%u", this, index, snum);
 
   int e = elf::E_BAD_LAZY;
@@ -17356,18 +17381,17 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot)
 {
   timevar_start (TV_MODULE_IMPORT);
 
-  gcc_checking_assert (mod);
-  module_state *module = (*modules)[mod];
-  unsigned n = dump.push (module);
-
   /* Stop GC happening, even in outermost loads (because our caller
      could well be building up a lookup set).  */
   function_depth++;
 
+  gcc_checking_assert (mod);
+  module_state *module = (*modules)[mod];
+  unsigned n = dump.push (module);
+
   unsigned snum = mslot->get_lazy ();
   dump () && dump ("Lazily binding %P@%N section:%u", ns, id,
 		   module->name, snum);
-
   unsigned diags = errorcount + 1;
   module->load_section (snum);
 
@@ -17377,12 +17401,11 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot)
       module->from ()->set_error (elf::E_BAD_DATA);
       *mslot = NULL_TREE;
     }
+  module->check_read (diags, ns, id);
+  dump.pop (n);
 
   function_depth--;
 
-  module->check_read (diags, ns, id);
-
-  dump.pop (n);
   timevar_stop (TV_MODULE_IMPORT);
 }
 
@@ -17397,33 +17420,20 @@ lazy_load_specializations (tree tmpl)
   tree owner = get_originating_module_decl (tmpl);
 
   timevar_start (TV_MODULE_IMPORT);
-  if (specset *set
-      = specset::table->lookup (CP_DECL_CONTEXT (owner), DECL_NAME (owner)))
+  mc_slot ns;
+  ns = CP_DECL_CONTEXT (owner);
+  if (specset *set = specset::table->extract (ns, DECL_NAME (owner)))
     {
+      function_depth++; /* Prevent GC */
       unsigned n = dump.push (NULL);
       dump () && dump ("Reading %u pending specializations keyed to %N",
 		       set->num, owner);
-      function_depth++; /* Prevent GC */
-      for (unsigned ix = 0; ix != set->num; ix++)
-	{
-	  unsigned index = set->pending[ix];
-	  mc_slot *slot = &(*entity_ary)[index];
-	  if (slot->is_lazy ())
-	    {
-	      module_state *module = import_entity_module (index);
-	      module->lazy_load (index - module->entity_lwm, slot,
-				 errorcount + 1);
-	    }
-	  else
-	    dump () && dump ("Specialization %u already loaded", ix);
-	}
-      function_depth--;
-
-      note_loaded_specializations (set->ns, set->name);
-
-      /* We own set, so delete it now.  */
-      delete set;
+      set->lazy_load ();
       dump.pop (n);
+
+      note_loaded_specializations (ns, DECL_NAME (owner));
+
+      function_depth--;
     }
   timevar_stop (TV_MODULE_IMPORT);
 }

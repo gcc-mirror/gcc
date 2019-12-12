@@ -1,6 +1,17 @@
 2019-12-12  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (class specset): Make ns an mc_slot.
+	(specset::hash::add): Adjust.
+	(specset::hash::lookup): Rename to ...
+	(specset::hash::extract): ... here.  Adjust.
+	(specset::lazy_load): New.
+	(module_state::read_entities): Adjust lazy setting.
+	(module_state::read_specializations): Adjust hash table adding.
+	(lazy_load_binding): Reorder dump stacking.
+	(lazy_load_specializations): Likewise, call specset::lazy_load.
+
+	gcc/cp/
 	* cp-tree.h (DECL_MODULE_PARTITION_P): Update doc.
 	* module.cc (trees_in::decl_value): Only set
 	DECL_MODULE_PARTITION_P when primary interface.
