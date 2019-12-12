@@ -1,3 +1,8 @@
+2019-12-12  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch9.adb (Build_Protected_Entry): Set the Scope of the new
+	block to be the entity of the procedure created for the entry.
+
 2019-12-12  Steve Baird  <baird@adacore.com>
 
 	* sem_ch10.adb (Install_With_Clause): Check for the case of a

@@ -3724,9 +3724,12 @@ package body Exp_Ch9 is
             Handled_Statement_Sequence => Handled_Statement_Sequence (N)));
 
       --  Analyze now and reset scopes for declarations so that Scope fields
-      --  currently denoting the entry will now denote the block scope.
+      --  currently denoting the entry will now denote the block scope, and
+      --  the block's scope will be set to the new procedure entity.
 
       Analyze_Statements (Bod_Stmts);
+
+      Set_Scope (Entity (Identifier (First (Bod_Stmts))), Bod_Id);
 
       Reset_Scopes_To
         (First (Bod_Stmts), Entity (Identifier (First (Bod_Stmts))));
