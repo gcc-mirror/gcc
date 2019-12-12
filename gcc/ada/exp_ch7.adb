@@ -376,7 +376,7 @@ package body Exp_Ch7 is
 
    procedure Check_Unnesting_In_Decls_Or_Stmts (Decls_Or_Stmts : List_Id);
    --  Similarly, the declarations or statements in library-level packages may
-   --  have created blocks blocks with nested subprograms. Such a block must be
+   --  have created blocks with nested subprograms. Such a block must be
    --  transformed into a procedure followed by a call to it, so that unnesting
    --  can handle uplevel references within these nested subprograms (typically
    --  subprograms that handle finalization actions). This also applies to

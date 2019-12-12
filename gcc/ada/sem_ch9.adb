@@ -2758,7 +2758,7 @@ package body Sem_Ch9 is
       Insert_After (N, Obj_Decl);
       Mark_Rewrite_Insertion (Obj_Decl);
 
-      --  Relocate aspect Part_Of from the the original single protected
+      --  Relocate aspect Part_Of from the original single protected
       --  declaration to the anonymous object declaration. This emulates the
       --  placement of an equivalent source pragma.
 

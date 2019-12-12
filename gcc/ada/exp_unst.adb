@@ -526,8 +526,8 @@ package body Exp_Unst is
                procedure Note_Uplevel_Bound (N : Node_Id; Ref : Node_Id) is
                begin
                   --  Entity name case. Make sure that the entity is declared
-                  --  in a subprogram. This may not be the case for for a type
-                  --  in a loop appearing in a precondition.
+                  --  in a subprogram. This may not be the case for a type in a
+                  --  loop appearing in a precondition.
                   --  Exclude explicitly  discriminants (that can appear
                   --  in bounds of discriminated components).
 

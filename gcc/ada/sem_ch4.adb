@@ -1555,7 +1555,7 @@ package body Sem_Ch4 is
             --  there is only a limited view of it and there is nothing in
             --  the context of the current unit that has required a regular
             --  compilation of the unit containing the type. We recognize
-            --  this unusual case by the fact that that unit is not analyzed.
+            --  this unusual case by the fact that unit is not analyzed.
             --  Note that the call being analyzed is in a different unit from
             --  the function declaration, and nothing indicates that the type
             --  is a limited view.

@@ -1065,8 +1065,8 @@ package body Exp_Ch5 is
                end if;
 
                --  Reset the Analyzed flag, because the bounds of the index
-               --  type itself may be universal, and must must be reanalyzed
-               --  to acquire the proper type for the back end.
+               --  type itself may be universal, and must be reanalyzed to
+               --  acquire the proper type for the back end.
 
                Set_Analyzed (Cleft_Lo, False);
                Set_Analyzed (Cright_Lo, False);

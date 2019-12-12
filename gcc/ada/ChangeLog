@@ -1,3 +1,25 @@
+2019-12-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/g-altive.ads: Fix typo in comment.
+	* bindo-graphs.adb: Fix repeated words in comment.
+	* exp_ch4.adb: Likewise.
+	* exp_ch5.adb: Likewise.
+	* exp_ch7.adb: Likewise.
+	* exp_pakd.adb: Likewise.
+	* exp_unst.adb: Likewise.
+	* exp_util.adb: Likewise.
+	* freeze.adb: Likewise.
+	* inline.adb: Likewise.
+	* layout.adb: Likewise.
+	* sem_ch12.adb: Likewise.
+	* sem_ch13.adb: Likewise.
+	* sem_ch4.adb: Likewise.
+	* sem_ch9.adb: Likewise.
+	* sem_elab.adb: Likewise.
+	* doc/gnat_ugn/gnat_and_program_execution.rst: Fix repeated
+	words in user documentation.
+	* gnat_ugn.texi: Regenerate.
+
 2019-12-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_attr.adb (Expand_Size_Attribute): Look directly at the
