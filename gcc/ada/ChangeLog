@@ -1,3 +1,14 @@
+2019-12-12  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/g-comlin.ads (Get_Argument): New routine similar to
+	original Get_Argument but with one more out parameter
+	End_Of_Arguments.
+	(Get_Arguments): Comment improved.
+	* libgnat/g-comlin.adb (Get_Argument): Implementation taken from
+	original Get_Argument and improved.
+	(Get_Argument): Calls new routine Get_Argument with additional
+	parameter.
+
 2019-12-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (potential_alignment_gap): Delete.
