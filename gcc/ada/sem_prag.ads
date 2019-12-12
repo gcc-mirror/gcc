@@ -530,6 +530,11 @@ package Sem_Prag is
    --  the value of the Interface_Name. Otherwise it is encoded as needed by
    --  particular operating systems. See the body for details of the encoding.
 
+   procedure Set_Overflow_Mode (N : Node_Id);
+   --  Sets Sem.Scope_Suppress according to the overflow modes specified in
+   --  the pragma Overflow_Mode passed in argument. This should only be called
+   --  after N has been successfully analyzed.
+
    function Test_Case_Arg
      (Prag        : Node_Id;
       Arg_Nam     : Name_Id;
