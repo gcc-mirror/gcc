@@ -1385,7 +1385,7 @@ package body Ch4 is
       if Token = Tok_Left_Bracket and then Ada_Version >= Ada_2020 then
          Scan;
 
-         --  Special case for null aggregate in Ada2020.
+         --  Special case for null aggregate in Ada 2020
 
          if Token = Tok_Right_Bracket then
             Scan;   --  past ]

@@ -2181,8 +2181,8 @@ package body Scng is
 
             return;
 
-         --  Right bracket or right brace, treated as right paren
-         --  but proper aggregate delimiter in Ada_2020
+         --  Right bracket or right brace, treated as right paren but proper
+         --  aggregate delimiter in Ada 2020.
 
          when ']' | '}' =>
             if Ada_Version >= Ada_2020 then

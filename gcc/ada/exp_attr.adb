@@ -5476,18 +5476,18 @@ package body Exp_Attr is
             Typ     : constant Entity_Id := Etype (N);
             New_Loop : Node_Id;
 
-         --  If the prefix is an aggregwte, its unique component is sn
-         --  Iterated_Element, and we create a loop out of its itertor.
+         --  If the prefix is an aggregate, its unique component is an
+         --  Iterated_Element, and we create a loop out of its iterator.
 
          begin
             if Nkind (Prefix (N)) = N_Aggregate then
                declare
                   Stream  : constant Node_Id :=
-                     First (Component_Associations (Prefix (N)));
+                              First (Component_Associations (Prefix (N)));
                   Id      : constant Node_Id := Defining_Identifier (Stream);
                   Expr    : constant Node_Id := Expression (Stream);
                   Ch      : constant Node_Id :=
-                               First (Discrete_Choices (Stream));
+                              First (Discrete_Choices (Stream));
                begin
                   New_Loop := Make_Loop_Statement (Loc,
                     Iteration_Scheme =>
@@ -5509,9 +5509,9 @@ package body Exp_Attr is
                               Relocate_Node (Expr))))));
                end;
             else
-               --  If the prefix is a name we construct an element iterwtor
-               --  over it. Its expansion will verify that it is an array
-               --  or a container with the proper aspects.
+               --  If the prefix is a name, we construct an element iterator
+               --  over it. Its expansion will verify that it is an array or
+               --  a container with the proper aspects.
 
                declare
                   Iter : Node_Id;
