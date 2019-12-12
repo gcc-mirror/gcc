@@ -6,7 +6,7 @@ procedure Warn24 is
    type List_Acc is access List_D;
 
    type List_D (D : Boolean) is record
-      Next : List_Acc (D);  --  { dg-warning "constraint is ignored on component that is access to current record" }
+      Next : List_Acc (D);
    end record;
 
    X : List_D (True);

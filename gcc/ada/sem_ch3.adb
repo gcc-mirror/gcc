@@ -12971,29 +12971,39 @@ package body Sem_Ch3 is
               or else Is_Incomplete_Or_Private_Type (Desig_Type))
         and then not Is_Constrained (Desig_Type)
       then
-         --  ??? The following code is a temporary bypass to ignore a
-         --  discriminant constraint on access type if it is constraining
-         --  the current record. Avoid creating the implicit subtype of the
-         --  record we are currently compiling since right now, we cannot
-         --  handle these. For now, just return the access type itself.
+         --  If this is a constrained access definition for a record
+         --  component, we leave the type as an unconstrained access,
+         --  and mark the component so that its actual type is build
+         --  at a point of use (e.g an assignment statement). THis is
+         --  handled in sem_util, Build_Actual_Subtype_Of_Component.
 
          if Desig_Type = Current_Scope
            and then No (Def_Id)
          then
-            Error_Msg_Warn := SPARK_Mode /= On;
-            Error_Msg_N ("<<constraint is ignored on component that is "
-                         & "access to current record", S);
-
+            Desig_Subtype :=
+              Create_Itype
+                (E_Void, Related_Nod, Scope_Id => Scope (Desig_Type));
             Set_Ekind (Desig_Subtype, E_Record_Subtype);
             Def_Id := Entity (Subtype_Mark (S));
 
+            --  We indicate that the component has a pet-object
+            --  constraint for uniform treatment at a point of use,
+            --  even though the constraint may be independent of
+            --  discriminants of enclosing type.
+
+            if Nkind (Related_Nod) = N_Component_Declaration then
+               Set_Has_Per_Object_Constraint
+                 (Defining_Identifier (Related_Nod));
+            end if;
+
             --  This call added to ensure that the constraint is analyzed
             --  (needed for a B test). Note that we still return early from
-            --  this procedure to avoid recursive processing. ???
+            --  this procedure to avoid recursive processing.
 
             Constrain_Discriminated_Type
               (Desig_Subtype, S, Related_Nod, For_Access => True);
             return;
+
          end if;
 
          --  Enforce rule that the constraint is illegal if there is an

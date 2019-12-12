@@ -1187,18 +1187,28 @@ package body Sem_Util is
    is
       Loc       : constant Source_Ptr := Sloc (N);
       P         : constant Node_Id    := Prefix (N);
+
       D         : Elmt_Id;
       Id        : Node_Id;
       Index_Typ : Entity_Id;
+      Sel       : Entity_Id  := Empty;
 
       Desig_Typ : Entity_Id;
       --  This is either a copy of T, or if T is an access type, then it is
       --  the directly designated type of this access type.
 
+      function Build_Access_Record_Constraint (C : List_Id) return List_Id;
+      --  If the record component is a constrained access to the current
+      --  record, the subtype has not been constructed during analysis of
+      --  the enclosing record type (see Analyze_Access). In that case build
+      --  a constrainted access subtype after replacing references to the
+      --  enclosing discriminants by the corresponding discriminant values
+      --  of the prefix.
+
       function Build_Actual_Array_Constraint return List_Id;
       --  If one or more of the bounds of the component depends on
       --  discriminants, build  actual constraint using the discriminants
-      --  of the prefix.
+      --  of the prefx, as above.
 
       function Build_Actual_Record_Constraint return List_Id;
       --  Similar to previous one, for discriminated components constrained
@@ -1286,10 +1296,53 @@ package body Sem_Util is
          return Constraints;
       end Build_Actual_Record_Constraint;
 
+      ------------------------------------
+      -- Build_Access_Record_Constraint --
+      ------------------------------------
+
+      function Build_Access_Record_Constraint (C : List_Id) return List_Id is
+         Constraints : constant List_Id := New_List;
+         D           : Node_Id;
+         D_Val       : Node_Id;
+
+      begin
+         --  Retrieve the constraint from the compomnent declaration, because
+         --  the component subtype has not been constructed and the component
+         --  type is an unconstrained access.
+
+         D := First (C);
+         while Present (D) loop
+            if Nkind (D) = N_Discriminant_Association
+              and then Denotes_Discriminant (Expression (D))
+            then
+               D_Val := New_Copy_Tree (D);
+               Set_Expression (D_Val,
+                 Make_Selected_Component (Loc,
+                   Prefix => New_Copy_Tree (P),
+                  Selector_Name =>
+                     New_Occurrence_Of (Entity (Expression (D)), Loc)));
+
+            elsif Denotes_Discriminant (D) then
+               D_Val := Make_Selected_Component (Loc,
+                 Prefix => New_Copy_Tree (P),
+                Selector_Name => New_Occurrence_Of (Entity (D), Loc));
+
+            else
+               D_Val := New_Copy_Tree (D);
+            end if;
+
+            Append (D_Val, Constraints);
+            Next (D);
+         end loop;
+
+         return Constraints;
+      end Build_Access_Record_Constraint;
+
    --  Start of processing for Build_Actual_Subtype_Of_Component
 
    begin
-      --  Why the test for Spec_Expression mode here???
+      --  The subtype does not need to be created for a selected component
+      --  in a Spec_Expression,
 
       if In_Spec_Expression then
          return Empty;
@@ -1314,19 +1367,33 @@ package body Sem_Util is
                Remove_Side_Effects (P);
                return Build_Actual_Subtype (T, N);
             end if;
+
          else
+            return Empty;
+         end if;
+
+      elsif Nkind (N) = N_Selected_Component then
+         --  THe entity of the selected compomnent allows us to retrieve
+         --  the original constraint from its component declaration.
+
+         Sel := Entity (Selector_Name (N));
+         if Nkind (Parent (Sel)) /= N_Component_Declaration then
             return Empty;
          end if;
       end if;
 
-      if Ekind (T) = E_Access_Subtype then
+      if Is_Access_Type (T) then
          Desig_Typ := Designated_Type (T);
+
       else
          Desig_Typ := T;
       end if;
 
       if Ekind (Desig_Typ) = E_Array_Subtype then
          Id := First_Index (Desig_Typ);
+
+         --  Check whether an index bound is constrained by a discriminant.
+
          while Present (Id) loop
             Index_Typ := Underlying_Type (Etype (Id));
 
@@ -1345,6 +1412,7 @@ package body Sem_Util is
 
       elsif Is_Composite_Type (Desig_Typ)
         and then Has_Discriminants (Desig_Typ)
+        and then not Is_Empty_Elmt_List (Discriminant_Constraint (Desig_Typ))
         and then not Has_Unknown_Discriminants (Desig_Typ)
       then
          if Is_Private_Type (Desig_Typ)
@@ -1364,6 +1432,37 @@ package body Sem_Util is
 
             Next_Elmt (D);
          end loop;
+
+      --  Special processing for an access record component that is
+      --  the target of an assignment. If the designated type is an
+      --  unconstrained discriminated record we create its actual
+      --  subtype now.
+
+      elsif Ekind (T) = E_Access_Type
+        and then Present (Sel)
+        and then Has_Per_Object_Constraint (Sel)
+        and then Nkind (Parent (N)) = N_Assignment_Statement
+        and then N = Name (Parent (N))
+        --  and then not Inside_Init_Proc
+        --  and then Has_Discriminants (Desig_Typ)
+        --  and then not Is_Constrained (Desig_Typ)
+      then
+         declare
+            S_Indic : constant Node_Id :=
+              (Subtype_Indication
+                    (Component_Definition (Parent (Sel))));
+            Discs : List_Id;
+         begin
+            if Nkind (S_Indic) = N_Subtype_Indication then
+               Discs := Constraints (Constraint (S_Indic));
+
+               Remove_Side_Effects (P);
+               return Build_Component_Subtype
+                  (Build_Access_Record_Constraint (Discs), Loc, T);
+            else
+               return Empty;
+            end if;
+         end;
       end if;
 
       --  If none of the above, the actual and nominal subtypes are the same

@@ -1,3 +1,17 @@
+2019-12-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Constrain_Access): Remove obsolete comments and
+	warning concerning component types of an access type whose
+	designated type is a constrained record type. (Such constraints
+	were previously ignored). Set scope of itype for component to
+	the scope of the enclosing record.
+	* sem_ch4.adb: Remove call to Set_Ekind.
+	* sem_util.adb (Build_Actual_Subtype_Of_Component): Handle
+	components whose type is an access to a constrained
+	discriminant, where the constraints may be given by the
+	discriminants of the enclosing type. New subprogram
+	Build_Access_Record_Constraint.
+
 2019-12-12  Justin Squirek  <squirek@adacore.com>
 
 	* exp_ch6.adb (Expand_Call_Helper): Added null case for
