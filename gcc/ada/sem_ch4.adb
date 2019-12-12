@@ -3747,7 +3747,7 @@ package body Sem_Ch4 is
          --  Due to our current model of controlled type expansion we may
          --  have resolved a user call to a non-visible controlled primitive
          --  since these inherited subprograms may be generated in the current
-         --  scope. This is a side-effect of the need for the expander to be
+         --  scope. This is a side effect of the need for the expander to be
          --  able to resolve internally generated calls.
 
          --  Specifically, the issue appears when predefined controlled
