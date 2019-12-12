@@ -1599,6 +1599,19 @@ __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
 			   __gnat_personality_imp);
 }
 
+/* Define __gnat_personality_v0 for convenience */
+
+PERSONALITY_STORAGE _Unwind_Reason_Code
+__gnat_personality_v0 (version_arg_t version_arg,
+		       phases_arg_t phases_arg,
+		       _Unwind_Exception_Class uw_exception_class,
+		       _Unwind_Exception *uw_exception,
+		       _Unwind_Context *uw_context)
+{
+  return PERSONALITY_FUNCTION
+    (version_arg, phases_arg, uw_exception_class, uw_exception, uw_context);
+}
+
 #endif /* SEH */
 
 #if !defined (__USING_SJLJ_EXCEPTIONS__)
