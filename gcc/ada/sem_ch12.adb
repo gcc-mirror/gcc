@@ -13166,6 +13166,35 @@ package body Sem_Ch12 is
                Abandon_Instantiation (Actual);
             end if;
          end if;
+
+         --  Don't check Ada_Version here (for now) because AI12-0036 is
+         --  a binding interpretation; this decision may be reversed if
+         --  the situation turns out to be similar to that of the preceding
+         --  Is_Limited_Type test (see preceding comment).
+
+         declare
+            Formal_Is_Private_Extension : constant Boolean :=
+              Nkind (Parent (A_Gen_T)) = N_Private_Extension_Declaration;
+
+            Actual_Is_Tagged : constant Boolean := Is_Tagged_Type (Act_T);
+         begin
+            if Actual_Is_Tagged /= Formal_Is_Private_Extension then
+               if In_Instance then
+                  null;
+               else
+                  if Actual_Is_Tagged then
+                     Error_Msg_NE
+                       ("actual for & cannot be a tagged type",
+                        Actual, Gen_T);
+                  else
+                     Error_Msg_NE
+                       ("actual for & must be a tagged type",
+                        Actual, Gen_T);
+                  end if;
+                  Abandon_Instantiation (Actual);
+               end if;
+            end if;
+         end;
       end Validate_Derived_Type_Instance;
 
       ----------------------------------------
