@@ -440,6 +440,10 @@ package body System.Dwarf_Lines is
         or else Info_Sec = Null_Section
         or else Aranges_Sec = Null_Section
       then
+         pragma Annotate
+           (CodePeer, False_Positive,
+            "test always true", "codepeer got confused");
+
          C.Has_Debug := False;
          return;
       end if;
@@ -883,6 +887,7 @@ package body System.Dwarf_Lines is
       Success     :    out Boolean)
    is
    begin
+      Info_Offset := 0;
       Seek (C.Aranges, 0);
 
       while Tell (C.Aranges) < Length (C.Aranges) loop
@@ -905,6 +910,7 @@ package body System.Dwarf_Lines is
             end;
          end loop;
       end loop;
+
       Success := False;
    end Aranges_Lookup;
 
@@ -1028,6 +1034,7 @@ package body System.Dwarf_Lines is
       Has_Child     : uint8;
       pragma Unreferenced (Has_Child);
    begin
+      Line_Offset := 0;
       Success := False;
 
       Seek (C.Info, Info_Offset);
@@ -1119,7 +1126,8 @@ package body System.Dwarf_Lines is
       Version     : uint16;
       Sz          : uint8;
    begin
-      Success := False;
+      Success     := False;
+      Info_Offset := 0;
 
       Read_Initial_Length (C.Aranges, Unit_Length, Is64);
 
@@ -1407,6 +1415,7 @@ package body System.Dwarf_Lines is
       Success      : Boolean;
       Done         : Boolean;
       S            : Object_Symbol;
+
    begin
       --  Initialize result
       Dir_Name    := null;
@@ -1422,6 +1431,8 @@ package body System.Dwarf_Lines is
          begin
             First := C.Cache'First;
             Last  := C.Cache'Last;
+            Mid   := First;
+
             while First <= Last loop
                Mid := First + (Last - First) / 2;
                if Addr_Off < C.Cache (Mid).First then
@@ -1432,6 +1443,7 @@ package body System.Dwarf_Lines is
                   exit;
                end if;
             end loop;
+
             if Addr_Off >= C.Cache (Mid).First
               and then Addr_Off < C.Cache (Mid).First + C.Cache (Mid).Size
             then
@@ -1474,6 +1486,7 @@ package body System.Dwarf_Lines is
       C.Next_Prologue := 0;
       Initialize_State_Machine (C);
       Parse_Prologue (C);
+      Previous_Row.Line := 0;
 
       --  Advance to the first entry
 
@@ -1535,7 +1548,7 @@ package body System.Dwarf_Lines is
      (Cin          :        Dwarf_Context;
       Traceback    :        AET.Tracebacks_Array;
       Suppress_Hex :        Boolean;
-      Symbol_Found : in out Boolean;
+      Symbol_Found :    out Boolean;
       Res          : in out System.Bounded_Strings.Bounded_String)
    is
       use Ada.Characters.Handling;

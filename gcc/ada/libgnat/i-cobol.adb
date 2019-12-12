@@ -240,11 +240,6 @@ package body Interfaces.COBOL is
                            (COBOL_Character'Pos (K) -
                              COBOL_Character'Pos (COBOL_Digits'First));
 
-            elsif K in COBOL_Plus_Digits then
-               Result := Result * 10 +
-                           (COBOL_Character'Pos (K) -
-                             COBOL_Character'Pos (COBOL_Plus_Digits'First));
-
             elsif K in COBOL_Minus_Digits then
                Result := Result * 10 +
                            (COBOL_Character'Pos (K) -

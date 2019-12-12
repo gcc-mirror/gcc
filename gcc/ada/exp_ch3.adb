@@ -5579,7 +5579,7 @@ package body Exp_Ch3 is
          declare
             Comp  : Entity_Id;
             First : Boolean;
-            M_Id  : Entity_Id;
+            M_Id  : Entity_Id := Empty;
             Typ   : Entity_Id;
 
          begin
@@ -5612,6 +5612,7 @@ package body Exp_Ch3 is
                   --  Reuse the same master to service any additional types
 
                   else
+                     pragma Assert (Present (M_Id));
                      Set_Master_Id (Typ, M_Id);
                   end if;
                end if;

@@ -352,6 +352,9 @@ package body GNAT.Calendar is
 
    begin
       timeval_to_duration (T, sec'Access, usec'Access);
+      pragma Annotate (CodePeer, Modified, sec);
+      pragma Annotate (CodePeer, Modified, usec);
+
       return Duration (sec) + Duration (usec) / Micro;
    end To_Duration;
 

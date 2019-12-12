@@ -681,6 +681,8 @@ procedure Gnatname is
                                              Sources.Last
                               loop
                                  Current_Source := Sources.Table (Index);
+                                 pragma Annotate
+                                   (CodePeer, Modified, Current_Source);
 
                                  if Opt.Verbose_Mode then
                                     if Current_Source.Spec then

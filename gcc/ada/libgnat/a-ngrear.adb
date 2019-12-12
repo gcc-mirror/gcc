@@ -560,6 +560,8 @@ package body Ada.Numerics.Generic_Real_Arrays is
       function Compute_Tan (P, H : Real) return Real is
          (if Is_Tiny (P, Compared_To => H) then P / H
           else Compute_Tan (Theta => H / (2.0 * P)));
+      pragma Annotate
+        (CodePeer, False_Positive, "divide by zero", "H, P /= 0");
 
       function Sum_Strict_Upper (M : Square_Matrix) return Real;
       --  Return the sum of all elements in the strict upper triangle of M

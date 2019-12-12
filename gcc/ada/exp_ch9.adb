@@ -2546,7 +2546,7 @@ package body Exp_Ch9 is
       Lo    : Node_Id;
       Hi    : Node_Id;
       Decls : List_Id := New_List;
-      Ret   : Node_Id;
+      Ret   : Node_Id := Empty;
       Spec  : Node_Id;
       Siz   : Node_Id := Empty;
 
@@ -2692,16 +2692,21 @@ package body Exp_Ch9 is
               Make_Simple_Return_Statement (Loc,
                 Expression => Make_Integer_Literal (Loc, 1));
 
-         elsif Nkind (Ret) = N_If_Statement then
+         else
+            pragma Assert (Present (Ret));
 
-            --  Ranges are in increasing order, so last one doesn't need guard
+            if Nkind (Ret) = N_If_Statement then
 
-            declare
-               Nod : constant Node_Id := Last (Elsif_Parts (Ret));
-            begin
-               Remove (Nod);
-               Set_Else_Statements (Ret, Then_Statements (Nod));
-            end;
+               --  Ranges are in increasing order, so last one doesn't need
+               --  guard.
+
+               declare
+                  Nod : constant Node_Id := Last (Elsif_Parts (Ret));
+               begin
+                  Remove (Nod);
+                  Set_Else_Statements (Ret, Then_Statements (Nod));
+               end;
+            end if;
          end if;
       end if;
 
@@ -10209,8 +10214,7 @@ package body Exp_Ch9 is
 
          declare
             Elmt : Elmt_Id;
-            Op   : Entity_Id;
-            pragma Warnings (Off, Op);
+            Op   : Entity_Id := Empty;
 
          begin
             Elmt := First_Elmt (Primitive_Operations (Etype (Conc_Typ)));
@@ -10219,6 +10223,8 @@ package body Exp_Ch9 is
                exit when Chars (Op) = Name_uDisp_Requeue;
                Next_Elmt (Elmt);
             end loop;
+
+            pragma Assert (Present (Op));
 
             return
               Make_Procedure_Call_Statement (Loc,
@@ -10630,7 +10636,7 @@ package body Exp_Ch9 is
       Num_Alts       : Nat;
       Num_Accept     : Nat := 0;
       Proc           : Node_Id;
-      Time_Type      : Entity_Id;
+      Time_Type      : Entity_Id := Empty;
       Select_Call    : Node_Id;
 
       Qnam : constant Entity_Id :=
@@ -11250,6 +11256,8 @@ package body Exp_Ch9 is
            Make_Defining_Identifier (Loc, New_External_Name ('D', 2));
          Delay_Min :=
            Make_Defining_Identifier (Loc, New_External_Name ('D', 3));
+
+         pragma Assert (Present (Time_Type));
 
          Append_To (Decls,
            Make_Object_Declaration (Loc,

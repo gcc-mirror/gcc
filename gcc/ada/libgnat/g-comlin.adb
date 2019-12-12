@@ -537,6 +537,7 @@ package body GNAT.Command_Line is
       P      : Switch_Parameter_Type;
 
    begin
+      Param             := Parameter_None;
       Index_In_Switches := 0;
       Switch_Length     := 0;
 

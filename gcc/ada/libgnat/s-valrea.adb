@@ -92,8 +92,7 @@ package body System.Val_Real is
    -- As_Digit --
    --------------
 
-   function As_Digit (C : Character) return Char_As_Digit
-   is
+   function As_Digit (C : Character) return Char_As_Digit is
    begin
       case C is
          when '0' .. '9' =>
@@ -133,7 +132,9 @@ package body System.Val_Real is
 
       Trailing_Zeros : Natural := 0;
       --  Number of trailing zeros at a given point.
+
    begin
+      pragma Assert (Base in 2 .. 16);
 
       --  If initial Scale is not 0 then it means that Precision_Limit was
       --  reached during integral part scanning.
@@ -217,7 +218,6 @@ package body System.Val_Real is
             end if;
          end if;
       end loop;
-
    end Scan_Decimal_Digits;
 
    --------------------------
@@ -268,6 +268,8 @@ package body System.Val_Real is
             --  Precision limit has been reached so just update the exponent
             Scale := Scale + 1;
          else
+            pragma Assert (Base /= 0);
+
             if Value > (Precision_Limit - Digit) / Base then
                --  Updating Value will overflow so ignore this digit and any
                --  following ones. Only update the scale
@@ -369,6 +371,10 @@ package body System.Val_Real is
 
       --  First character can be either a decimal digit or a dot.
       if Str (Index) in '0' .. '9' then
+         pragma Annotate
+           (CodePeer, Intentional,
+            "test always true", "defensive code below");
+
          --  If this is a digit it can indicates either the float decimal
          --  part or the base to use
          Scan_Integral_Digits

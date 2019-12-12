@@ -438,7 +438,7 @@ package body System.Traceback.Symbolic is
       Suppress_Hex :        Boolean;
       Res          : in out Bounded_String)
    is
-      Success : Boolean := False;
+      Success : Boolean;
    begin
       if Symbolic.Module_Name.Is_Supported then
          Append (Res, '[');

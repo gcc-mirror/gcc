@@ -950,6 +950,8 @@ package body GNAT.Calendar.Time_IO is
       when End_Of_Source_Reached
          | Wrong_Syntax
       =>
+         Time :=
+           Time_Of (Year_Number'First, Month_Number'First, Day_Number'First);
          Success := False;
    end Parse_ISO_8861_UTC;
 

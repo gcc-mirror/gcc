@@ -343,7 +343,7 @@ package body Bindo.Diagnostics is
                                  (G     => Lib_Graph,
                                   Cycle => Cycle);
 
-      Current_Edge : Library_Graph_Edge_Id;
+      Current_Edge : Library_Graph_Edge_Id := No_Library_Graph_Edge;
       First_Edge   : Library_Graph_Edge_Id;
       Iter         : Edges_Of_Cycle_Iterator;
       Next_Edge    : Library_Graph_Edge_Id;

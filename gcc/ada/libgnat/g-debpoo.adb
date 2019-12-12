@@ -1420,6 +1420,7 @@ package body GNAT.Debug_Pools is
 
    begin
       Valid := Is_Valid (Storage_Address);
+      Size_In_Storage_Elements := Storage_Count'First;
 
       if Is_Valid (Storage_Address) then
          declare

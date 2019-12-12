@@ -2759,7 +2759,7 @@ package body Sem_Util is
                   declare
                      Count_Components   : Uint := Uint_0;
                      Num_Components     : Uint;
-                     Others_Assoc       : Node_Id;
+                     Others_Assoc       : Node_Id := Empty;
                      Others_Choice      : Node_Id := Empty;
                      Others_Box_Present : Boolean := False;
 
@@ -2843,6 +2843,8 @@ package body Sem_Util is
                            --  we analyze it silently to have available the
                            --  minimum decoration required to collect the
                            --  identifiers.
+
+                           pragma Assert (Present (Others_Assoc));
 
                            if not Expander_Active then
                               Comp_Expr := Expression (Others_Assoc);
@@ -13269,7 +13271,7 @@ package body Sem_Util is
    procedure Insert_Explicit_Dereference (N : Node_Id) is
       New_Prefix : constant Node_Id := Relocate_Node (N);
       Ent        : Entity_Id := Empty;
-      Pref       : Node_Id;
+      Pref       : Node_Id := Empty;
       I          : Interp_Index;
       It         : Interp;
       T          : Entity_Id;

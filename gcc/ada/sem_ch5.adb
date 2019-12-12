@@ -1847,7 +1847,7 @@ package body Sem_Ch5 is
       Save_Unblocked_Exit_Count : constant Nat := Unblocked_Exit_Count;
       --  Recursively save value of this global, will be restored on exit
 
-      Save_In_Deleted_Code : Boolean;
+      Save_In_Deleted_Code : Boolean := In_Deleted_Code;
 
       Del : Boolean := False;
       --  This flag gets set True if a True condition has been found, which

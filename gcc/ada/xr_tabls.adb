@@ -1015,12 +1015,12 @@ package body Xr_Tabls is
       Decl         : Declaration_Reference := Entities_HTable.Get_First;
       Arr          : Reference_Array_Access;
       Index        : Natural;
-      End_Index    : Natural;
+      End_Index    : Natural := 0;
       Current_File : File_Reference;
       Current_Line : Cst_String_Access;
       Buffer       : GNAT.OS_Lib.String_Access;
       Ref          : Reference;
-      Line         : Natural;
+      Line         : Natural := Natural'Last;
 
    begin
       --  Create a temporary array, where all references will be

@@ -103,6 +103,8 @@ begin
    --  this soft link, or this will be overridden during the elaboration of
    --  System.Tasking.Initialization
 
+   pragma Annotate (CodePeer, Modified, SSL.Timed_Delay);
+
    if SSL.Timed_Delay = null then
       SSL.Timed_Delay := Timed_Delay_NT'Access;
    end if;

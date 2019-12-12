@@ -568,6 +568,9 @@ package body Urealp is
       Num  : Uint;
 
    begin
+      pragma Annotate (CodePeer, Modified, Lval);
+      pragma Annotate (CodePeer, Modified, Rval);
+
       --  Note, in the temporary Ureal_Entry values used in this procedure,
       --  we store the sign as the sign of the numerator (i.e. xxx.Num may
       --  be negative, even though in stored entries this can never be so)
@@ -685,6 +688,8 @@ package body Urealp is
       Rneg : constant Boolean     := Rval.Negative xor Lval.Negative;
 
    begin
+      pragma Annotate (CodePeer, Modified, Lval);
+      pragma Annotate (CodePeer, Modified, Rval);
       pragma Assert (Rval.Num /= Uint_0);
 
       if Lval.Rbase = 0 then

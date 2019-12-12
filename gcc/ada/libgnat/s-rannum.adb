@@ -295,6 +295,7 @@ is
             K      : Bit_Count;       --  Next decrement to exponent
 
          begin
+            K := 0;
             Mantissa := Random (Gen) / 2**Extra_Bits;
             R := Unsigned_32 (Mantissa mod 2**Extra_Bits);
             R_Bits := Extra_Bits;

@@ -2814,7 +2814,7 @@ package body Exp_Ch4 is
       --  to just do a Copy_Node to get an appropriate copy. The extra zeroth
       --  entry always is set to zero. The length is of type Artyp.
 
-      Low_Bound : Node_Id;
+      Low_Bound : Node_Id := Empty;
       --  A tree node representing the low bound of the result (of type Ityp).
       --  This is either an integer literal node, or an identifier reference to
       --  a constant entity initialized to the appropriate value.
@@ -2834,7 +2834,7 @@ package body Exp_Ch4 is
       High_Bound : Node_Id := Empty;
       --  A tree node representing the high bound of the result (of type Ityp)
 
-      Result : Node_Id;
+      Result : Node_Id := Empty;
       --  Result of the concatenation (of type Ityp)
 
       Actions : constant List_Id := New_List;
@@ -3365,6 +3365,8 @@ package body Exp_Ch4 is
          end;
       end if;
 
+      pragma Assert (Present (Low_Bound));
+
       --  Now we can safely compute the upper bound, normally
       --  Low_Bound + Length - 1.
 
@@ -3621,6 +3623,7 @@ package body Exp_Ch4 is
       Result := New_Occurrence_Of (Ent, Loc);
 
    <<Done>>
+      pragma Assert (Present (Result));
       Rewrite (Cnode, Result);
       Analyze_And_Resolve (Cnode, Atyp);
 
@@ -4369,8 +4372,7 @@ package body Exp_Ch4 is
          declare
             Idx : Node_Id := First_Index (E);
             Len : Node_Id;
-            Res : Node_Id;
-            pragma Warnings (Off, Res);
+            Res : Node_Id := Empty;
 
          begin
             for J in 1 .. Number_Dimensions (E) loop
@@ -4443,6 +4445,7 @@ package body Exp_Ch4 is
                   Res := Len;
 
                else
+                  pragma Assert (Present (Res));
                   Res :=
                     Make_Op_Multiply (Loc,
                       Left_Opnd  => Res,
