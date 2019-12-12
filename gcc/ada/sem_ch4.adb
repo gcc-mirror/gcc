@@ -8574,7 +8574,7 @@ package body Sem_Ch4 is
       procedure Transform_Object_Operation
         (Call_Node       : out Node_Id;
          Node_To_Replace : out Node_Id);
-      --  Transform Obj.Operation (X, Y,,) into Operation (Obj, X, Y ..)
+      --  Transform Obj.Operation (X, Y, ...) into Operation (Obj, X, Y ...).
       --  Call_Node is the resulting subprogram call, Node_To_Replace is
       --  either N or the parent of N, and Subprog is a reference to the
       --  subprogram we are trying to match.
@@ -9299,7 +9299,7 @@ package body Sem_Ch4 is
          --  Prefix notation can also be used on operations that are not
          --  primitives of the type, but are declared in the same immediate
          --  declarative part, which can only mean the corresponding package
-         --  body (See RM 4.1.3 (9.2/3)). If we are in that body we extend the
+         --  body (see RM 4.1.3 (9.2/3)). If we are in that body we extend the
          --  list of primitives with body operations with the same name that
          --  may be candidates, so that Try_Primitive_Operations can examine
          --  them if no real primitive is found.
@@ -9425,56 +9425,55 @@ package body Sem_Ch4 is
 
          function Extended_Primitive_Ops (T : Entity_Id) return Elist_Id is
             Type_Scope : constant Entity_Id := Scope (T);
-
-            Body_Decls : List_Id;
-            Op_Found   : Boolean;
-            Op         : Entity_Id;
-            Op_List    : Elist_Id;
-
+            Op_List    : Elist_Id := Primitive_Operations (T);
          begin
-            Op_List := Primitive_Operations (T);
-
-            if Ekind (Type_Scope) = E_Package
-              and then In_Package_Body (Type_Scope)
-              and then In_Open_Scopes (Type_Scope)
+            if Ekind_In (Type_Scope, E_Package, E_Generic_Package)
+              and then ((In_Package_Body (Type_Scope)
+              and then In_Open_Scopes (Type_Scope)) or else In_Instance_Body)
             then
-               --  Retrieve list of declarations of package body.
+               --  Retrieve list of declarations of package body if possible
 
-               Body_Decls :=
-                 Declarations
-                   (Unit_Declaration_Node
-                     (Corresponding_Body
-                       (Unit_Declaration_Node (Type_Scope))));
+               declare
+                  The_Body : constant Node_Id :=
+                    Corresponding_Body (Unit_Declaration_Node (Type_Scope));
+               begin
+                  if Present (The_Body) then
+                     declare
+                        Body_Decls : constant List_Id :=
+                          Declarations (Unit_Declaration_Node (The_Body));
+                        Op_Found : Boolean := False;
+                        Op : Entity_Id := Current_Entity (Subprog);
+                     begin
+                        while Present (Op) loop
+                           if Comes_From_Source (Op)
+                             and then Is_Overloadable (Op)
 
-               Op       := Current_Entity (Subprog);
-               Op_Found := False;
-               while Present (Op) loop
-                  if Comes_From_Source (Op)
-                    and then Is_Overloadable (Op)
+                             --  Exclude overriding primitive operations of a
+                             --  type extension declared in the package body,
+                             --  to prevent duplicates in extended list.
 
-                    --  Exclude overriding primitive operations of a type
-                    --  extension declared in the package body, to prevent
-                    --  duplicates in extended list.
+                             and then not Is_Primitive (Op)
+                             and then Is_List_Member
+                               (Unit_Declaration_Node (Op))
+                             and then List_Containing
+                               (Unit_Declaration_Node (Op)) = Body_Decls
+                           then
+                              if not Op_Found then
+                                 --  Copy list of primitives so it is not
+                                 --  affected for other uses.
 
-                    and then not Is_Primitive (Op)
-                    and then Is_List_Member (Unit_Declaration_Node (Op))
-                    and then List_Containing (Unit_Declaration_Node (Op)) =
-                                                                   Body_Decls
-                  then
-                     if not Op_Found then
+                                 Op_List  := New_Copy_Elist (Op_List);
+                                 Op_Found := True;
+                              end if;
 
-                        --  Copy list of primitives so it is not affected for
-                        --  other uses.
+                              Append_Elmt (Op, Op_List);
+                           end if;
 
-                        Op_List  := New_Copy_Elist (Op_List);
-                        Op_Found := True;
-                     end if;
-
-                     Append_Elmt (Op, Op_List);
+                           Op := Homonym (Op);
+                        end loop;
+                     end;
                   end if;
-
-                  Op := Homonym (Op);
-               end loop;
+               end;
             end if;
 
             return Op_List;

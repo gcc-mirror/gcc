@@ -1,3 +1,8 @@
+2019-12-12  Bob Duff  <duff@adacore.com>
+
+	* sem_ch4.adb (Transform_Object_Operation): Deal properly with
+	prefix notation in instances.
+
 2019-12-12  Claire Dross  <dross@adacore.com>
 
 	* libgnat/a-cofove.adb, libgnat/a-cfinve.adb (Find_Index): Use
