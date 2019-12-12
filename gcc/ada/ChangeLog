@@ -1,3 +1,10 @@
+2019-12-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Assognment_Statement): Extend the
+	processing involving private types with unknown discriminants to
+	handle the case where the full view of the type is an
+	unconstrained array type.
+
 2019-12-12  Bob Duff  <duff@adacore.com>
 
 	* sem_ch4.adb (Transform_Object_Operation): Deal properly with
