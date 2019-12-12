@@ -31,6 +31,9 @@
 
 --  Support for universal real arithmetic
 
+--  WARNING: There is a C version of this package. Any changes to this
+--  source file must be properly reflected in the C header file urealp.h
+
 with Types; use Types;
 with Uintp; use Uintp;
 

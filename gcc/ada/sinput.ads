@@ -293,6 +293,8 @@ package Sinput is
    --  will be 1 since system.ads is read first.
 
    function Debug_Source_Name (S : SFI) return File_Name_Type;
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function File_Name         (S : SFI) return File_Name_Type;
    function File_Type         (S : SFI) return Type_Of_File;
    function First_Mapped_Line (S : SFI) return Logical_Line_Number;
@@ -532,6 +534,8 @@ package Sinput is
    --  determined and returned. Tab characters if present are assumed to
    --  represent the standard 1,9,17.. spacing pattern.
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Get_Logical_Line_Number
      (P : Source_Ptr) return Logical_Line_Number;
    --  The line number of the specified source position is obtained by
@@ -542,6 +546,8 @@ package Sinput is
    --  reference pragma itself, then No_Line is returned. If no source
    --  reference pragmas have been encountered, the value returned is
    --  the same as the physical line number.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    function Get_Logical_Line_Number_Img
      (P : Source_Ptr) return String;
@@ -560,6 +566,8 @@ package Sinput is
    --  Return file table index of file identified by given source pointer
    --  value. This call must always succeed, since any valid source pointer
    --  value belongs to some previously loaded source file.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    function Instantiation_Depth (S : Source_Ptr) return Nat;
    --  Determine instantiation depth for given Sloc value. A value of

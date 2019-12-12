@@ -28,6 +28,9 @@
 --  the ALI file, and by Get_SCO/Put_SCO to read and write the text form that
 --  is used in the ALI file.
 
+--  WARNING: There is a C version of this package. Any changes to this
+--  source file must be properly reflected in the C header file scos.h
+
 with Namet; use Namet;
 with Table;
 with Types; use Types;
@@ -47,9 +50,6 @@ package SCOs is
 
    --  Put_SCO reads the internal tables and generates text lines in the ALI
    --  format.
-
-   --  WARNING: There are C bindings for this package. Any changes to this
-   --  source file must be properly reflected in the C header file scos.h
 
    --------------------
    -- SCO ALI Format --

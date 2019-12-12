@@ -273,6 +273,8 @@ package Opt is
    --  switches -gnatN or -gnatd.z are used. See circuitry in gnat1drv for the
    --  exact conditions for setting this switch.
 
+   --  WARNING: There is a matching C declaration of this variable in fe.h
+
    Bind_Alternate_Main_Name : Boolean := False;
    --  GNATBIND
    --  True if main should be called Alternate_Main_Name.all.
@@ -458,6 +460,8 @@ package Opt is
    --  of the original source code. Causes debugging information to be
    --  written with respect to the generated code file that is written.
 
+   --  WARNING: There is a matching C declaration of this variable in fe.h
+
    Default_Pool : Node_Id := Empty;
    --  GNAT
    --  Used to record the storage pool name (or null literal) that is the
@@ -595,10 +599,14 @@ package Opt is
    --  associated with exception messages (in particular range and index
    --  checks).
 
+   --  WARNING: There is a matching C declaration of this variable in fe.h
+
    Exception_Locations_Suppressed : Boolean := False;
    --  GNAT
    --  Set to True if a Suppress_Exception_Locations configuration pragma is
    --  currently active.
+
+   --  WARNING: There is a matching C declaration of this variable in fe.h
 
    type Exception_Mechanism_Type is
    --  Determines the kind of mechanism used to handle exceptions
@@ -630,12 +638,16 @@ package Opt is
    --  (Frontend_Exceptions + ZCX_By_Default). The C convention is there to
    --  allow access by gigi.
 
+   --  WARNING: There is a matching C declaration of this variable in fe.h
+
    function Back_End_Exceptions return Boolean;
    function Front_End_Exceptions return Boolean;
    function ZCX_Exceptions return Boolean;
    function SJLJ_Exceptions return Boolean;
    --  GNAT
    --  Various properties of the active Exception_Mechanism
+
+   --  WARNING: There is a matching C declaration of these subprograms in fe.h
 
    Exception_Tracebacks : Boolean := False;
    --  GNATBIND
@@ -780,6 +792,8 @@ package Opt is
    --  GNAT
    --  True when switch -fdump-scos is used. When True, a table of instances is
    --  included in SCOs.
+
+   --  WARNING: There is a matching C declaration of this variable in fe.h
 
    Generating_Code : Boolean := False;
    --  GNAT
@@ -1008,6 +1022,8 @@ package Opt is
    --    3 = like 2, but variable fields are decoded symbolically
    --    4 = like 3, but list rep info for relevant compiler-generated types
 
+   --  WARNING: There is a matching C declaration of this variable in fe.h
+
    List_Representation_Info_To_File : Boolean := False;
    --  GNAT
    --  Set true by -gnatRs switch. Causes information from -gnatR[1-4]m to be
@@ -1208,6 +1224,8 @@ package Opt is
    No_Strict_Aliasing : Boolean := False;
    --  GNAT
    --  Set True if pragma No_Strict_Aliasing with no parameters encountered.
+
+   --  WARNING: There is a matching C declaration of this variable in fe.h
 
    No_Tagged_Streams : Node_Id := Empty;
    --  GNAT
@@ -1540,6 +1558,8 @@ package Opt is
    Suppress_Checks : Boolean := False;
    --  GNAT
    --  Set to True if -gnatp (suppress all checks) switch present.
+
+   --  WARNING: There is a matching C declaration of this variable in fe.h
 
    Suppress_Options : Suppress_Record;
    --  GNAT
@@ -2292,6 +2312,8 @@ package Opt is
    GNAT_Mode : Boolean := False;
    --  GNAT
    --  True if compiling in GNAT system mode (-gnatg switch)
+
+   --  WARNING: There is a matching C declaration of this variable in fe.h
 
    GNAT_Mode_Config : Boolean := False;
    --  GNAT

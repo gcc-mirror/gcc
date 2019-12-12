@@ -29,7 +29,9 @@
  *                                                                          *
  ****************************************************************************/
 
-/* This file corresponds to the Ada file repinfo.ads.  */
+/* This is the C header that corresponds to the Ada package specification for
+   Repinfo.  It was created manually from repinfo.ads and must be kept
+   synchronized with changes in this file.  */
 
 #ifdef __cplusplus
 extern "C" {

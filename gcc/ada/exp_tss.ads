@@ -150,6 +150,8 @@ package Exp_Tss is
    function Is_Init_Proc (E : Entity_Id) return Boolean;
    --  Version for init procs, same as Is_TSS (E, TSS_Init_Proc);
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Is_TSS (E : Entity_Id; Nam : TSS_Name_Type) return Boolean;
    --  Determines if given entity (E) is the name of a TSS identified by Nam
 

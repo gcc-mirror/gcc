@@ -476,6 +476,8 @@ package Lib is
    function Unit_Name        (U : Unit_Number_Type) return Unit_Name_Type;
    --  Get value of named field from given units table entry
 
+   --  WARNING: There is a matching C declaration of a few subprograms in fe.h
+
    procedure Set_Cunit            (U : Unit_Number_Type; N : Node_Id);
    procedure Set_Cunit_Entity     (U : Unit_Number_Type; E : Entity_Id);
    procedure Set_Dynamic_Elab     (U : Unit_Number_Type; B : Boolean := True);
@@ -616,6 +618,8 @@ package Lib is
    --  call in Restrict.Check_Restriction_No_Dependence, so we have moved
    --  the special case check to that routine. This avoids some difficulties
    --  with some other calls that malfunctioned with the odd return of True.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    function In_Extended_Main_Code_Unit (Loc : Source_Ptr) return Boolean;
    --  Same function as above, but argument is a source pointer rather

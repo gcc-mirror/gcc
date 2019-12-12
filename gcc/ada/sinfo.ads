@@ -10343,6 +10343,8 @@ package Sinfo is
    --  tree pointers (List1-4), the parent pointer of the Val node is set to
    --  point back to node N. This automates the setting of the parent pointer.
 
+   --  WARNING: There is a matching C declaration of a few subprograms in fe.h
+
    procedure Set_Abort_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag15
 
@@ -11457,6 +11459,8 @@ package Sinfo is
    --  N is an N_If_Statement or N_Case_Statement node, and this function
    --  returns the location of the IF token in the END IF sequence by
    --  translating the value of the End_Span field.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    procedure Set_End_Location (N : Node_Id; S : Source_Ptr);
    --  N is an N_If_Statement or N_Case_Statement node. This procedure sets

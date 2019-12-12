@@ -1,3 +1,16 @@
+2019-12-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* atree.ads, comperr.ads, debug.ads, einfo.ads, elists.ads,
+	err_vars.ads, errout.ads, exp_ch11.ads, exp_code.ads,
+	exp_dbug.ads, exp_tss.ads, exp_util.ads, lib.ads, namet.ads,
+	nlists.ads, opt.ads, repinfo.ads, restrict.ads, scos.ads,
+	sem_aggr.ads, sem_aux.ads, sem_eval.ads, sem_util.ads,
+	sinfo.ads, sinput.ads, stringt.ads, targparm.ads, types.ads,
+	urealp.ads warnsw.ads: Add WARNING line(s) in commentary.
+	* atree.h, elists.h, namet.h, nlists.h, repinfo.h, scos.h,
+	stringt.h, types.h, uintp.h, urealp.h: Tidy up.
+	* fe.h: Likewise.  Document WARNING mark.
+
 2019-12-12  Dmitriy Anisimkov  <anisimko@adacore.com>
 
 	* libgnat/g-comlin.ads (Get_Argument): New routine similar to
