@@ -1,6 +1,11 @@
 2019-12-12  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (DECL_MODULE_PARTITION_P): Update doc.
+	* module.cc (trees_in::decl_value): Only set
+	DECL_MODULE_PARTITION_P when primary interface.
+
+	gcc/cp/
 	* decl.c (lookup_and_check_tag): Refactor.
 
 	gcc/cp/

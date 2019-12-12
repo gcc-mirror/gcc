@@ -7778,7 +7778,8 @@ trees_in::decl_value ()
 	  if (inner_tag)
 	    /* We know there will be a lang_decl in this case.  */
 	    DECL_MODULE_IMPORT_P (inner) = true;
-	  if (state->is_partition ())
+	  if (state->is_partition ()
+	      && (module_interface_p () && !module_partition_p ()))
 	    {
 	      DECL_MODULE_PARTITION_P (decl) = true;
 	      if (inner_tag)

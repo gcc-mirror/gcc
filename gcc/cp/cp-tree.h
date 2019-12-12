@@ -1707,8 +1707,8 @@ check_constraint_info (tree t)
 #define DECL_MODULE_IMPORT_P(NODE) \
   (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (NODE))->u.base.module_import_p)
 
-/* True if this decl was imported from a partition, or is in the PMF
-   (not implemented).  */
+/* True if we're the primary interface and this decl was imported from
+   a partition, or is in the PMF (not implemented).  */
 #define DECL_MODULE_PARTITION_P(NODE) \
   (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (NODE))->u.base.module_partition_p)
 
