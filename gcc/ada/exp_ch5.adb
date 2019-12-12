@@ -2409,14 +2409,23 @@ package body Exp_Ch5 is
       --  checking. Convert Lhs as well, otherwise the actual subtype might
       --  not be constructible. If the discriminants have defaults the type
       --  is unconstrained and there is nothing to check.
+      --  Ditto if a private type with unknown discriminants has a full view
+      --  that is an unconstrained array, in which case a length check is
+      --  needed.
 
-      elsif Has_Unknown_Discriminants (Base_Type (Etype (Lhs)))
-        and then Has_Discriminants (Typ)
-        and then not Has_Defaulted_Discriminants (Typ)
-      then
-         Rewrite (Rhs, OK_Convert_To (Base_Type (Typ), Rhs));
-         Rewrite (Lhs, OK_Convert_To (Base_Type (Typ), Lhs));
-         Apply_Discriminant_Check (Rhs, Typ, Lhs);
+      elsif Has_Unknown_Discriminants (Base_Type (Etype (Lhs))) then
+         if Has_Discriminants (Typ)
+           and then not Has_Defaulted_Discriminants (Typ)
+         then
+            Rewrite (Rhs, OK_Convert_To (Base_Type (Typ), Rhs));
+            Rewrite (Lhs, OK_Convert_To (Base_Type (Typ), Lhs));
+            Apply_Discriminant_Check (Rhs, Typ, Lhs);
+
+         elsif Is_Array_Type (Typ) and then Is_Constrained (Typ)  then
+            Rewrite (Rhs, OK_Convert_To (Base_Type (Typ), Rhs));
+            Rewrite (Lhs, OK_Convert_To (Base_Type (Typ), Lhs));
+            Apply_Length_Check (Rhs, Typ);
+         end if;
 
       --  In the access type case, we need the same discriminant check, and
       --  also range checks if we have an access to constrained array.
