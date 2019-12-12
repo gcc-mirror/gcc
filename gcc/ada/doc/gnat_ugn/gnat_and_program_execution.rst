@@ -1214,8 +1214,7 @@ for more information.
 Profiling
 =========
 
-This section describes how to use the the ``gprof`` profiler tool on Ada
-programs.
+This section describes how to use the ``gprof`` profiler tool on Ada programs.
 
 .. index:: !  gprof
 .. index:: Profiling

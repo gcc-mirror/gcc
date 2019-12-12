@@ -770,8 +770,8 @@ package body Sem_Ch13 is
                   --     1 .. 4       3 .. 6         1         3
                   --     4 .. 7       0 .. 3         4         0
 
-                  --  The rule is that the first bit is is obtained by
-                  --  subtracting the old ending bit from storage_unit - 1.
+                  --  The rule is that the first bit is obtained by subtracting
+                  --  the old ending bit from storage_unit - 1.
 
                   Set_Component_Bit_Offset (Comp,
                     (Storage_Unit_Offset * System_Storage_Unit) +
@@ -13344,9 +13344,9 @@ package body Sem_Ch13 is
                   =>
                      --  Build predicate function specification and preanalyze
                      --  expression after type replacement. The function
-                     --  declaration must be analyzed in the scope of the
-                     --  type, but the the expression can reference components
-                     --  and discriminants of the type.
+                     --  declaration must be analyzed in the scope of the type,
+                     --  but the expression can reference components and
+                     --  discriminants of the type.
 
                      if No (Predicate_Function (E)) then
                         declare

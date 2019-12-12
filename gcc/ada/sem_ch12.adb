@@ -4501,7 +4501,7 @@ package body Sem_Ch12 is
          --  the case of nested instances for the time being.
 
          --  When we generate a nested instance body, calling stubs for any
-         --  relevant subprogram will be be inserted immediately after the
+         --  relevant subprogram will be inserted immediately after the
          --  subprogram declarations, and will take precedence over the
          --  subsequent (original) body. (The stub and original body will be
          --  complete homographs, but this is permitted in an instance).
@@ -5431,8 +5431,8 @@ package body Sem_Ch12 is
                   Instantiating => True),
              Name          => New_Occurrence_Of (Anon_Id, Loc));
 
-         --  The generic may be a a child unit. The renaming needs an
-         --  identifier with the proper name.
+         --  The generic may be a child unit. The renaming needs an identifier
+         --  with the proper name.
 
          Set_Defining_Unit_Name (Specification (Unit_Renaming),
             Make_Defining_Identifier (Loc, Chars (Gen_Unit)));

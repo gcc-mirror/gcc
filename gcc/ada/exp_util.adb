@@ -9718,7 +9718,7 @@ package body Exp_Util is
       end if;
 
       --  Do not generate a check within an internal subprogram (stream
-      --  functions and the like, including including predicate functions).
+      --  functions and the like, including predicate functions).
 
       if Within_Internal_Subprogram then
          return Make_Null_Statement (Loc);
