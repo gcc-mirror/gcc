@@ -213,7 +213,7 @@ package body Contracts is
       --    Initializes
       --    Part_Of (instantiation only)
 
-      elsif Ekind_In (Id, E_Generic_Package, E_Package) then
+      elsif Is_Package_Or_Generic_Package (Id) then
          if Nam_In (Prag_Nam, Name_Abstract_State,
                               Name_Initial_Condition,
                               Name_Initializes)

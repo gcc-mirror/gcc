@@ -9480,7 +9480,7 @@ package body Sem_Ch4 is
             Type_Scope : constant Entity_Id := Scope (T);
             Op_List    : Elist_Id := Primitive_Operations (T);
          begin
-            if Ekind_In (Type_Scope, E_Package, E_Generic_Package)
+            if Is_Package_Or_Generic_Package (Type_Scope)
               and then ((In_Package_Body (Type_Scope)
               and then In_Open_Scopes (Type_Scope)) or else In_Instance_Body)
             then

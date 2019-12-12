@@ -6167,7 +6167,7 @@ package body Exp_Ch9 is
                --  this safe. This is a common (if dubious) idiom.
 
                elsif S = Scope (Prot)
-                 and then Ekind_In (S, E_Package, E_Generic_Package)
+                 and then Is_Package_Or_Generic_Package (S)
                  and then Nkind (Parent (E)) = N_Object_Declaration
                  and then Nkind (Parent (Parent (E))) = N_Package_Body
                then
