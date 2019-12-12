@@ -3923,7 +3923,7 @@ import_entity_index (tree decl, bool null_ok = false)
     return *slot;
 
   gcc_checking_assert (null_ok);
-  return ~0u;
+  return ~(~0u >> 1);
 }
 
 /* Find the module for an imported entity at INDEX in the entity ary.
@@ -4130,8 +4130,13 @@ dumper::impl::nested_name (tree t)
 	     inconsistent data -- we're probably debugging, because
 	     Something Is Wrong.  */
 	  unsigned index = import_entity_index (t, true);
-	  if (index != ~0u)
+	  if (!(index & ~(~0u >> 1)))
 	    origin = import_entity_module (index)->mod;
+	  else if (index > ~(~0u >> 1))
+	    /* An imported partition member that we're emitting.  */
+	    origin = 0;
+	  else
+	    origin = -2;
 	}
 
       name = DECL_NAME (t) ? DECL_NAME (t)
@@ -4172,6 +4177,8 @@ dumper::impl::nested_name (tree t)
       fprintf (stream, "@%s:%d", !module ? "" : !module->name ? "(unnamed)"
 	       : module->get_flatname (), origin);
     }
+  else if (origin == -2)
+    fprintf (stream, "@???");
 
   if (ti)
     {
@@ -16510,7 +16517,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	  size = base[0]->cluster;
 
 	  /* Cluster is now used to number entities.  */
-	  base[0]->cluster = ~(~0u >> 1);
+	  base[0]->cluster = ~(~0u >> 1); /* A bad value.  */
 	  /* Record the section for consistency checking during stream
 	     out -- we don't want to start writing decls in different
 	     sections.  */
@@ -16981,7 +16988,7 @@ unsigned
 get_importing_module (tree decl, bool flexible)
 {
   unsigned index = import_entity_index (decl, flexible);
-  if (index == ~0u)
+  if (index == ~(~0u >> 1))
     return -1;
   module_state *module = import_entity_module (index);
 
