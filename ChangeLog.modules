@@ -1,6 +1,9 @@
 2019-12-12  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* decl.c (lookup_and_check_tag): Refactor.
+
+	gcc/cp/
 	* module.cc (import_entity_index): Use different fail value.
 	(dumper::impl::nested_name): Don't explode on bad import indices.
 	(module_state::write): Adjust.
