@@ -599,6 +599,8 @@ package Exp_Util is
    --  record component containing the tag of Iface if T implements Iface or
    --  Empty if it does not.
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Find_Prim_Op (T : Entity_Id; Name : Name_Id) return Entity_Id;
    --  Find the first primitive operation of a tagged type T with name Name.
    --  This function allows the use of a primitive operation which is not
@@ -783,6 +785,8 @@ package Exp_Util is
    --  unlikely that the special processing associated with the use of this
    --  routine is useful for the case of a discriminated type, and testing for
    --  component overlap would be a pain.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    function Is_Library_Level_Tagged_Type (Typ : Entity_Id) return Boolean;
    --  Return True if Typ is a library level tagged type. Currently we use

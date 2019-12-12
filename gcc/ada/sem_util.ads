@@ -566,6 +566,8 @@ package Sem_Util is
    --  debugging information, generated through Qualify_Entity_Names, and
    --  the loop declaration must be placed in the table Name_Qualify_Units.
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Denotes_Discriminant
      (N                : Node_Id;
       Check_Concurrent : Boolean := False) return Boolean;
@@ -900,6 +902,8 @@ package Sem_Util is
    --  then use Next_Actual to obtain the next actual in declaration order.
    --  Note that the value returned is always the expression (not the
    --  N_Parameter_Association nodes, even if named association is used).
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    function First_Global
      (Subp        : Entity_Id;
@@ -1526,6 +1530,8 @@ package Sem_Util is
    --  Determine whether arbitrary node N denotes a reference to an atomic
    --  object as per Ada RM C.6(12).
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Is_Atomic_Object_Entity (Id : Entity_Id) return Boolean;
    --  Determine whether arbitrary entity Id denotes an atomic object as per
    --  Ada RM C.6(12).
@@ -2062,6 +2068,8 @@ package Sem_Util is
    function Is_Variable_Size_Record (E : Entity_Id) return Boolean;
    --  Returns true if E has variable size components
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Is_Variable
      (N                 : Node_Id;
       Use_Original_Node : Boolean := True) return Boolean;
@@ -2092,6 +2100,8 @@ package Sem_Util is
    --  the legality checks described in RM C.6(12). Note that the test here is
    --  for something actually declared as volatile, not for an object that gets
    --  treated as volatile (see Einfo.Treat_As_Volatile).
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    generic
       with procedure Handle_Parameter (Formal : Entity_Id; Actual : Node_Id);
@@ -2361,11 +2371,6 @@ package Sem_Util is
    --  when the resulting entity does not have to be referenced as a
    --  public entity (and in this case Is_Public is not set).
 
-   procedure Next_Actual (Actual_Id : in out Node_Id);
-   pragma Inline (Next_Actual);
-   --  Next_Actual (N) is equivalent to N := Next_Actual (N). Note that we
-   --  inline this procedural form, but not the functional form that follows.
-
    function Next_Actual (Actual_Id : Node_Id) return Node_Id;
    --  Find next actual parameter in declaration order. As described for
    --  First_Actual, this is the next actual in the declaration order, not
@@ -2375,15 +2380,22 @@ package Sem_Util is
    --  Note that the result produced is always an expression, not a parameter
    --  association node, even if named notation was used.
 
-   procedure Next_Global (Node : in out Node_Id);
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
+   procedure Next_Actual (Actual_Id : in out Node_Id);
    pragma Inline (Next_Actual);
-   --  Next_Global (N) is equivalent to N := Next_Global (N). Note that we
-   --  inline this procedural form, but not the functional form that follows.
+   --  Next_Actual (N) is equivalent to N := Next_Actual (N). Note that we
+   --  inline this procedural form, but not the functional form above.
 
    function Next_Global (Node : Node_Id) return Node_Id;
    --  Node is a global item from a list, obtained through calling First_Global
    --  and possibly Next_Global a number of times. Returns the next global item
    --  with the same mode.
+
+   procedure Next_Global (Node : in out Node_Id);
+   pragma Inline (Next_Actual);
+   --  Next_Global (N) is equivalent to N := Next_Global (N). Note that we
+   --  inline this procedural form, but not the functional form above.
 
    function No_Caching_Enabled (Id : Entity_Id) return Boolean;
    --  Given the entity of a variable, determine whether Id is subject to
@@ -2587,6 +2599,8 @@ package Sem_Util is
    --  secondary stack is in use. Examples of types requiring such wrapping are
    --  controlled types and variable-sized types including unconstrained
    --  arrays.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    procedure Reset_Analyzed_Flags (N : Node_Id);
    --  Reset the Analyzed flags in all nodes of the tree whose root is N

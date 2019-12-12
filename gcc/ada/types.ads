@@ -38,7 +38,7 @@
 --  would have to be dealt with.
 
 --  WARNING: There is a C version of this package. Any changes to this source
---  file must be properly reflected in the C header file types.h declarations.
+--  file must be properly reflected in the C header file types.h
 
 --  Note: the declarations in this package reflect an expectation that the host
 --  machine has an efficient integer base type with a range at least 32 bits

@@ -23,8 +23,9 @@
  *                                                                          *
  ****************************************************************************/
 
-/* This file corresponds to the Ada package specification Uintp.  It was
-   created manually from the files uintp.ads and uintp.adb.  */
+/* This is the C header that corresponds to the Ada package specification for
+   Uintp.  It was created manually from uintp.ads and must be kept synchronized
+   with changes in this file.  */
 
 #ifdef __cplusplus
 extern "C" {
