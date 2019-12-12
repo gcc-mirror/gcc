@@ -1,3 +1,15 @@
+2019-12-12  Vineet Gupta  <vgupta@synopsys.com>
+
+	* config/arc/arc-modes.def (CC_FPUE): New Mode CC_FPUE which
+	helps codegen generate exceptions even for quiet NaN.
+	* config/arc/arc.c (arc_init_reg_tables): Handle New CC_FPUE mode.
+	(get_arc_condition_code): Likewise.
+	(arc_select_cc_mode): LT, LE, GT, GE to use the New CC_FPUE mode.
+	* config/arc/arc.h (REVERSE_CONDITION): Handle New CC_FPUE mode.
+	* config/arc/predicates.md (proper_comparison_operator): Likewise.
+	* config/arc/fpu.md (cmpsf_fpu_trap): New Pattern for CC_FPUE.
+	(cmpdf_fpu_trap): Likewise.
+
 2019-12-12  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.md (iterator SDF): Check TARGET_FP_DP_BASE.
