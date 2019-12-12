@@ -5414,6 +5414,7 @@ package body Sem_Attr is
             Spec_Id := Entity (P);
 
          elsif not Legal then
+            Error_Attr ("prefix of % attribute must be a function", P);
             return;
          end if;
 

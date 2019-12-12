@@ -1,3 +1,8 @@
+2019-12-12  Justin Squirek  <squirek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Add error message for
+	invalid usage of Attribute_Result.
+
 2019-12-12  Bob Duff  <duff@adacore.com>
 
 	* sem_attr.adb (Eval_Attribute): Never mark T'Descriptor_Size as
