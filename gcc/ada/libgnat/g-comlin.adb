@@ -385,10 +385,25 @@ package body GNAT.Command_Line is
    ------------------
 
    function Get_Argument
-     (Do_Expansion : Boolean    := False;
+     (Do_Expansion : Boolean := False;
       Parser       : Opt_Parser := Command_Line_Parser) return String
    is
+      End_Of_Args : Boolean;
    begin
+      return Get_Argument (Do_Expansion, Parser, End_Of_Args);
+   end Get_Argument;
+
+   ------------------
+   -- Get_Argument --
+   ------------------
+
+   function Get_Argument
+     (Do_Expansion     : Boolean    := False;
+      Parser           : Opt_Parser := Command_Line_Parser;
+      End_Of_Arguments : out Boolean) return String is
+   begin
+      End_Of_Arguments := False;
+
       if Parser.In_Expansion then
          declare
             S : constant String := Expansion (Parser.Expansion_It);
@@ -415,6 +430,7 @@ package body GNAT.Command_Line is
             end loop;
 
          else
+            End_Of_Arguments := True;
             return String'(1 .. 0 => ' ');
          end if;
 
@@ -436,9 +452,11 @@ package body GNAT.Command_Line is
       end loop;
 
       if Parser.Current_Argument > Parser.Arg_Count then
+         End_Of_Arguments := True;
          return String'(1 .. 0 => ' ');
+
       elsif Parser.Section (Parser.Current_Argument) = 0 then
-         return Get_Argument (Do_Expansion);
+         return Get_Argument (Do_Expansion, Parser, End_Of_Arguments);
       end if;
 
       Parser.Current_Argument := Parser.Current_Argument + 1;
@@ -451,13 +469,10 @@ package body GNAT.Command_Line is
                       Argument (Parser, Parser.Current_Argument - 1);
          begin
             for Index in Arg'Range loop
-               if Arg (Index) = '*'
-                 or else Arg (Index) = '?'
-                 or else Arg (Index) = '['
-               then
+               if Arg (Index) in '*' | '?' | '[' then
                   Parser.In_Expansion := True;
                   Start_Expansion (Parser.Expansion_It, Arg);
-                  return Get_Argument (Do_Expansion, Parser);
+                  return Get_Argument (Do_Expansion, Parser, End_Of_Arguments);
                end if;
             end loop;
          end;
