@@ -657,14 +657,22 @@ package body Sem_Ch3 is
    --  declaration, Prev_T is the original incomplete type, whose full view is
    --  the record type.
 
-   procedure Replace_Components (Typ : Entity_Id; Decl : Node_Id);
-   --  Subsidiary to Build_Derived_Record_Type. For untagged records, we
-   --  build a copy of the declaration tree of the parent, and we create
-   --  independently the list of components for the derived type. Semantic
-   --  information uses the component entities, but record representation
-   --  clauses are validated on the declaration tree. This procedure replaces
-   --  discriminants and components in the declaration with those that have
-   --  been created by Inherit_Components.
+   procedure Replace_Discriminants (Typ : Entity_Id; Decl : Node_Id);
+   --  Subsidiary to Build_Derived_Record_Type. For untagged record types, we
+   --  first create the list of components for the derived type from that of
+   --  the parent by means of Inherit_Components and then build a copy of the
+   --  declaration tree of the parent with the help of the mapping returned by
+   --  Inherit_Components, which will for example by used to validate record
+   --  representation claused given for the derived type. If the parent type
+   --  is private and has discriminants, the ancestor discriminants used in the
+   --  inheritance are that of the private declaration, whereas the ancestor
+   --  discriminants present in the declaration tree of the parent are that of
+   --  the full declaration; as a consequence, the remapping done during the
+   --  copy will leave the references to the ancestor discriminants unchanged
+   --  in the declaration tree and they need to be fixed up. If the derived
+   --  type has a known discriminant part, then the remapping done during the
+   --  copy will only create references to the girder discriminants and they
+   --  need to be replaced with references to the non-girder discriminants.
 
    procedure Set_Fixed_Range
      (E   : Entity_Id;
@@ -9628,7 +9636,7 @@ package body Sem_Ch3 is
             Set_Stored_Constraint
               (Derived_Type, Expand_To_Stored_Constraint (Parent_Type, Discs));
 
-            Replace_Components (Derived_Type, New_Decl);
+            Replace_Discriminants (Derived_Type, New_Decl);
          end if;
 
          --  Insert the new derived type declaration
@@ -22292,11 +22300,11 @@ package body Sem_Ch3 is
       end if;
    end Record_Type_Definition;
 
-   ------------------------
-   -- Replace_Components --
-   ------------------------
+   ---------------------------
+   -- Replace_Discriminants --
+   ---------------------------
 
-   procedure Replace_Components (Typ : Entity_Id; Decl : Node_Id) is
+   procedure Replace_Discriminants (Typ : Entity_Id; Decl : Node_Id) is
       function Process (N : Node_Id) return Traverse_Result;
 
       -------------
@@ -22310,7 +22318,9 @@ package body Sem_Ch3 is
          if Nkind (N) = N_Discriminant_Specification then
             Comp := First_Discriminant (Typ);
             while Present (Comp) loop
-               if Chars (Comp) = Chars (Defining_Identifier (N)) then
+               if Original_Record_Component (Comp) = Defining_Identifier (N)
+                 or else Chars (Comp) = Chars (Defining_Identifier (N))
+               then
                   Set_Defining_Identifier (N, Comp);
                   exit;
                end if;
@@ -22321,23 +22331,14 @@ package body Sem_Ch3 is
          elsif Nkind (N) = N_Variant_Part then
             Comp := First_Discriminant (Typ);
             while Present (Comp) loop
-               if Chars (Comp) = Chars (Name (N)) then
-                  Set_Entity (Name (N), Comp);
+               if Original_Record_Component (Comp) = Entity (Name (N))
+                 or else Chars (Comp) = Chars (Name (N))
+               then
+                  Set_Name (N, New_Occurrence_Of (Comp, Sloc (N)));
                   exit;
                end if;
 
                Next_Discriminant (Comp);
-            end loop;
-
-         elsif Nkind (N) = N_Component_Declaration then
-            Comp := First_Component (Typ);
-            while Present (Comp) loop
-               if Chars (Comp) = Chars (Defining_Identifier (N)) then
-                  Set_Defining_Identifier (N, Comp);
-                  exit;
-               end if;
-
-               Next_Component (Comp);
             end loop;
          end if;
 
@@ -22346,11 +22347,11 @@ package body Sem_Ch3 is
 
       procedure Replace is new Traverse_Proc (Process);
 
-   --  Start of processing for Replace_Components
+   --  Start of processing for Replace_Discriminants
 
    begin
       Replace (Decl);
-   end Replace_Components;
+   end Replace_Discriminants;
 
    -------------------------------
    -- Set_Completion_Referenced --
