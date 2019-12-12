@@ -1,3 +1,7 @@
+2019-12-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb: Fix processing of standard predefined operators.
+
 2019-12-12  Piotr Trojanek  <trojanek@adacore.com>
 
 	* libgnarl/a-dispat.ads (Yield): Update Global contract.
