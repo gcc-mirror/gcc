@@ -1,3 +1,8 @@
+2019-12-12  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch4.adb (Analyze_One_Call): Add condition to check for
+	incorrectly resolved hidden controlled primitives.
+
 2019-12-12  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb: Fix processing of standard predefined operators.

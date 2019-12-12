@@ -3249,6 +3249,7 @@ package body Sem_Ch4 is
       --  is already known to be compatible, and because this may be an
       --  indexing of a call with default parameters.
 
+      First_Form  : Entity_Id;
       Formal      : Entity_Id;
       Actual      : Node_Id;
       Is_Indexed  : Boolean := False;
@@ -3581,8 +3582,9 @@ package body Sem_Ch4 is
          --  Normalize_Actuals has chained the named associations in the
          --  correct order of the formals.
 
-         Actual := First_Actual (N);
-         Formal := First_Formal (Nam);
+         Actual     := First_Actual (N);
+         Formal     := First_Formal (Nam);
+         First_Form := Formal;
 
          --  If we are analyzing a call rewritten from object notation, skip
          --  first actual, which may be rewritten later as an explicit
@@ -3741,6 +3743,54 @@ package body Sem_Ch4 is
                Next_Formal (Formal);
             end if;
          end loop;
+
+         --  Due to our current model of controlled type expansion we may
+         --  have resolved a user call to a non-visible controlled primitive
+         --  since these inherited subprograms may be generated in the current
+         --  scope. This is a side-effect of the need for the expander to be
+         --  able to resolve internally generated calls.
+
+         --  Specifically, the issue appears when predefined controlled
+         --  operations get called on a type extension whose parent is a
+         --  private extension completed with a controlled extension - see
+         --  below:
+
+         --  package X is
+         --     type Par_Typ is tagged private;
+         --  private
+         --     type Par_Typ is new Controlled with null record;
+         --  end;
+         --  ...
+         --  procedure Main is
+         --     type Ext_Typ is new Par_Typ with null record;
+         --     Obj : Ext_Typ;
+         --  begin
+         --     Finalize (Obj); --  Will improperly resolve
+         --  end;
+
+         --  To avoid breaking privacy, Is_Hidden gets set elsewhere on such
+         --  primitives, but we still need to verify that Nam is indeed a
+         --  controlled subprogram. So, we do that here and issue the
+         --  appropriate error.
+
+         if Is_Hidden (Nam)
+           and then not In_Instance
+           and then not Comes_From_Source (Nam)
+           and then Comes_From_Source (N)
+
+           --  Verify Nam is a controlled primitive
+
+           and then Nam_In (Chars (Nam), Name_Adjust,
+                                         Name_Finalize,
+                                         Name_Initialize)
+           and then Ekind (Nam) = E_Procedure
+           and then Is_Controlled (Etype (First_Form))
+           and then No (Next_Formal (First_Form))
+         then
+            Error_Msg_Node_2 := Etype (First_Form);
+            Error_Msg_NE ("call to non-visible controlled primitive & on type"
+                            & " &", N, Nam);
+         end if;
 
          --  On exit, all actuals match
 
