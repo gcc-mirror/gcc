@@ -38,10 +38,14 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace tr1
 {
   using ::isblank;
 }
+
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 
 #endif
