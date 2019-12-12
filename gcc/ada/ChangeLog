@@ -1,3 +1,16 @@
+2019-12-12  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch9.adb (Build_Protected_Entry): Analyze the block created
+	to hold the declarations and statements of the protected entry
+	body right after it's created, and then call Reset_Scopes_To on
+	that block to reset the Scope of nested entities to the block
+	scope.
+	(Reset_Scope): Add handling for N_Freeze_Entity nodes, calling
+	Reset_Scopes recursively on the Actions of such nodes. Also, for
+	subprogram bodies that are encountered that might not have a
+	separate declaration (such as type init procedures), reset the
+	Scope of the subprogram's entity.
+
 2019-12-12  Justin Squirek  <squirek@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute): Add error message for
