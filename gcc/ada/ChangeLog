@@ -1,3 +1,8 @@
+2019-12-12  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Update gnatmetric
+	documentation for average lengths
+
 2019-12-12  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Constrain_Access): Remove obsolete comments and
