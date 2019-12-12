@@ -16,4 +16,7 @@ int foo (uint32_t arr[4][4])
     return (((uint16_t)sum) + ((uint32_t)sum >> 16)) >> 1;
 }
 
-/* { dg-final { scan-tree-dump {vectorizable_shift ===[\n\r][^\n]*prologue_cost = 0} "vect" } } */
+/* For a target that has a vector/scalar shift/rotate optab, check
+   that we are not adding the cost of creating a vector from the scalar
+   in the prologue.  */
+/* { dg-final { scan-tree-dump {vectorizable_shift ===[\n\r][^\n]*prologue_cost = 0} "vect" { target { aarch64*-*-* x86_64-*-* } } } } */

@@ -1,3 +1,8 @@
+2019-12-12  Sudakshina Das  <sudi.das@arm.com>
+
+	PR testsuite/92870
+	* gcc.dg/vect/vect-shift-5.c: Add target to scan-tree-dump.
+
 2019-12-12  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/warn24.adb: Remove expected warning.
