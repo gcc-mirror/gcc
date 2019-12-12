@@ -1,5 +1,15 @@
 2019-12-12  François Dumont  <fdumont@gcc.gnu.org>
 
+	* include/tr1/cctype: Add _GLIBCXX_BEGIN_VERSION_NAMESPACE and
+	_GLIBCXX_END_VERSION_NAMESPACE.
+	* include/tr1/cfenv: Likewise.
+	* include/tr1/cinttypes: Likewise.
+	* include/tr1/cstdint: Likewise.
+	* include/tr1/cstdio: Likewise.
+	* include/tr1/cstdlib: Likewise.
+	* include/tr1/cwchar: Likewise.
+	* include/tr1/cwctype: Likewise.
+
 	* src/c++11/random.cc: Include <cctype>.
 	(random_devise::_M_init_pretr1): Qualify isdigit call.
 
