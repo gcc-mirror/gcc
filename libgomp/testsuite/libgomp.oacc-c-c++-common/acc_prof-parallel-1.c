@@ -265,6 +265,8 @@ static void cb_enter_data_end (acc_prof_info *prof_info, acc_event_info *event_i
 
   if (acc_device_type == acc_device_host)
     assert (api_info->device_api == acc_device_api_none);
+  else if (acc_device_type == acc_device_gcn)
+    assert (api_info->device_api == acc_device_api_other);
   else
     assert (api_info->device_api == acc_device_api_cuda);
   assert (api_info->valid_bytes == _ACC_API_INFO_VALID_BYTES);
@@ -319,6 +321,8 @@ static void cb_exit_data_start (acc_prof_info *prof_info, acc_event_info *event_
 
   if (acc_device_type == acc_device_host)
     assert (api_info->device_api == acc_device_api_none);
+  else if (acc_device_type == acc_device_gcn)
+    assert (api_info->device_api == acc_device_api_other);
   else
     assert (api_info->device_api == acc_device_api_cuda);
   assert (api_info->valid_bytes == _ACC_API_INFO_VALID_BYTES);
@@ -371,6 +375,8 @@ static void cb_exit_data_end (acc_prof_info *prof_info, acc_event_info *event_in
 
   if (acc_device_type == acc_device_host)
     assert (api_info->device_api == acc_device_api_none);
+  else if (acc_device_type == acc_device_gcn)
+    assert (api_info->device_api == acc_device_api_other);
   else
     assert (api_info->device_api == acc_device_api_cuda);
   assert (api_info->valid_bytes == _ACC_API_INFO_VALID_BYTES);
@@ -510,6 +516,8 @@ static void cb_compute_construct_end (acc_prof_info *prof_info, acc_event_info *
 
   if (acc_device_type == acc_device_host)
     assert (api_info->device_api == acc_device_api_none);
+  else if (acc_device_type == acc_device_gcn)
+    assert (api_info->device_api == acc_device_api_other);
   else
     assert (api_info->device_api == acc_device_api_cuda);
   assert (api_info->valid_bytes == _ACC_API_INFO_VALID_BYTES);
@@ -573,6 +581,8 @@ static void cb_enqueue_launch_start (acc_prof_info *prof_info, acc_event_info *e
 
   if (acc_device_type == acc_device_host)
     assert (api_info->device_api == acc_device_api_none);
+  else if (acc_device_type == acc_device_gcn)
+    assert (api_info->device_api == acc_device_api_other);
   else
     assert (api_info->device_api == acc_device_api_cuda);
   assert (api_info->valid_bytes == _ACC_API_INFO_VALID_BYTES);
@@ -637,6 +647,8 @@ static void cb_enqueue_launch_end (acc_prof_info *prof_info, acc_event_info *eve
 
   if (acc_device_type == acc_device_host)
     assert (api_info->device_api == acc_device_api_none);
+  else if (acc_device_type == acc_device_gcn)
+    assert (api_info->device_api == acc_device_api_other);
   else
     assert (api_info->device_api == acc_device_api_cuda);
   assert (api_info->valid_bytes == _ACC_API_INFO_VALID_BYTES);
