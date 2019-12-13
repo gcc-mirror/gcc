@@ -1,5 +1,11 @@
 2019-12-13  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* sem_res.adb (Resolve_Actuals): Give canonical error for
+	illegal case of atomic/volatile parameter also if the formal is
+	aliased.
+
+2019-12-13  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* sem_util.ads (Is_Atomic_Object): Mention relevant RM clauses.
 	* sem_util.adb (Is_Atomic_Object): For an indexed component,
 	only look at the Has_Atomic_Components aspect of the prefix and
