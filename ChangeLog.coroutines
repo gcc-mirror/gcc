@@ -1,5 +1,16 @@
 2019-12-13  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/
+
+	PR c++/92933
+	* coroutines.cc (register_local_var_uses): Handle unnamed
+	compiler-generated local variables.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/pr92933.C: New test.
+
+2019-12-13  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/testsuite/
 	* g++.dg/coroutines/co-await-syntax-08-lambda-auto.C: Use
 	correct dg options for syntax check.

@@ -2636,10 +2636,24 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	  tree lvname = DECL_NAME (lvar);
 	  /* Make names depth+index unique, so that we can support nested
 	     scopes with identically named locals.  */
-	  size_t namsize = sizeof ("__lv...") + IDENTIFIER_LENGTH (lvname) + 18;
-	  char *buf = (char *) alloca (namsize);
-	  snprintf (buf, namsize, "__lv.%u.%u.%s", lvd->bind_indx,
-		    lvd->nest_depth, IDENTIFIER_POINTER (lvname));
+	  char *buf;
+	  size_t namsize = sizeof ("__lv...") + 18;
+	  if (lvname != NULL_TREE)
+	    {
+	      namsize += IDENTIFIER_LENGTH (lvname);
+	      buf = (char *) alloca (namsize);
+	      snprintf (buf, namsize, "__lv.%u.%u.%s",
+			lvd->bind_indx, lvd->nest_depth,
+			IDENTIFIER_POINTER (lvname));
+	    }
+	  else
+	    {
+	      namsize += 10;
+	      buf = (char *) alloca (namsize);
+	      snprintf (buf, namsize, "__lv.%u.%u.D%u",
+			lvd->bind_indx, lvd->nest_depth,
+			DECL_UID (lvar));
+	    }
 	  /* TODO: Figure out if we should build a local type that has any
 	     excess alignment or size from the original decl.  */
 	  local_var.field_id
