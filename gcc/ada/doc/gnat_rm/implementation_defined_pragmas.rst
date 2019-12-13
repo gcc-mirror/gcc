@@ -7425,8 +7425,8 @@ Syntax:
 This is similar in effect to pragma Volatile, except that any reference to the
 object is guaranteed to be done only with instructions that read or write all
 the bits of the object. Furthermore, if the object is of a composite type,
-then any reference to a component of the object is guaranteed to read and/or
-write all the bits of the object.
+then any reference to a subcomponent of the object is guaranteed to read
+and/or write all the bits of the object.
 
 The intention is that this be suitable for use with memory-mapped I/O devices
 on some machines. Note that there are two important respects in which this is
@@ -7438,7 +7438,7 @@ is not to the whole object; the compiler is allowed (and generally will)
 access only part of the object in this case.
 
 It is not permissible to specify ``Atomic`` and ``Volatile_Full_Access`` for
-the same object.
+the same type or object.
 
 It is not permissible to specify ``Volatile_Full_Access`` for a composite
 (record or array) type or object that has at least one ``Aliased`` component.
