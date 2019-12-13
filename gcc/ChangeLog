@@ -1,3 +1,19 @@
+2019-12-13  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config/aarch64/aarch64-arches.def (armv8.6-a): New.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_MATMUL_INT8, __ARM_FEATURE_BF16_VECTOR_ARITHMETIC and
+	__ARM_FEATURE_BF16_SCALAR_ARITHMETIC when enabled.
+	* config/aarch64/aarch64-option-extensions.def (i8mm, bf16): New.
+	(fp): Disabling fp also disables i8mm and bf16.
+	(simd): Disabling simd also disables i8mm.
+	* config/aarch64/aarch64.h (AARCH64_FL_V8_6): New macro.
+	(AARCH64_FL_I8MM, AARCH64_FL_BF16, AARCH64_FL_FOR_ARCH8_6): Likewise.
+	(AARCH64_ISA_V8_6, AARCH64_ISA_I8MM, AARCH64_ISA_BF16): Likewise.
+	(TARGET_I8MM, TARGET_BF16_FP, TARGET_BF16_SIMD): Likewise.
+	* doc/invoke.texi (armv8.6-a, i8mm, bf16): Document new options
+	and add a new table to list permissible values for ARCH.
+
 2019-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/92908
