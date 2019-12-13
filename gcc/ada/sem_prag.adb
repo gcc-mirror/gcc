@@ -1091,7 +1091,7 @@ package body Sem_Prag is
                         --  template is legal, do not perform this check in
                         --  the instance to circumvent this oddity.
 
-                        if Is_Generic_Instance (Spec_Id) then
+                        if In_Instance then
                            null;
 
                         --  An abstract state with visible refinement cannot
@@ -2390,7 +2390,7 @@ package body Sem_Prag is
                   --  do not perform this check in the instance to circumvent
                   --  this oddity.
 
-                  if Is_Generic_Instance (Spec_Id) then
+                  if In_Instance then
                      null;
 
                   --  An abstract state with visible refinement cannot appear
@@ -26026,18 +26026,17 @@ package body Sem_Prag is
       --  matched items found in pragma Depends.
 
       procedure Check_Output_States
-        (Spec_Id      : Entity_Id;
-         Spec_Inputs  : Elist_Id;
+        (Spec_Inputs  : Elist_Id;
          Spec_Outputs : Elist_Id;
          Body_Inputs  : Elist_Id;
          Body_Outputs : Elist_Id);
       --  Determine whether pragma Depends contains an output state with a
       --  visible refinement and if so, ensure that pragma Refined_Depends
-      --  mentions all its constituents as outputs. Spec_Id is the entity of
-      --  the related subprograms. Spec_Inputs and Spec_Outputs denote the
-      --  inputs and outputs of the subprogram spec synthesized from pragma
-      --  Depends. Body_Inputs and Body_Outputs denote the inputs and outputs
-      --  of the subprogram body synthesized from pragma Refined_Depends.
+      --  mentions all its constituents as outputs. Spec_Inputs and
+      --  Spec_Outputs denote the inputs and outputs of the subprogram spec
+      --  synthesized from pragma Depends. Body_Inputs and Body_Outputs denote
+      --  the inputs and outputs of the subprogram body synthesized from pragma
+      --  Refined_Depends.
 
       function Collect_States (Clauses : List_Id) return Elist_Id;
       --  Given a normalized list of dependencies obtained from calling
@@ -26059,11 +26058,8 @@ package body Sem_Prag is
       --  all special cases. Matched_Items contains the entities of all matched
       --  items found in pragma Depends.
 
-      procedure Report_Extra_Clauses
-        (Spec_Id : Entity_Id;
-         Clauses : List_Id);
-      --  Emit an error for each extra clause found in list Clauses. Spec_Id
-      --  denotes the entity of the related subprogram.
+      procedure Report_Extra_Clauses (Clauses : List_Id);
+      --  Emit an error for each extra clause found in list Clauses
 
       -----------------------------
       -- Check_Dependency_Clause --
@@ -26327,7 +26323,7 @@ package body Sem_Prag is
          --  Do not perform this check in an instance because it was already
          --  performed successfully in the generic template.
 
-         if Is_Generic_Instance (Spec_Id) then
+         if In_Instance then
             return;
          end if;
 
@@ -26494,8 +26490,7 @@ package body Sem_Prag is
       -------------------------
 
       procedure Check_Output_States
-        (Spec_Id      : Entity_Id;
-         Spec_Inputs  : Elist_Id;
+        (Spec_Inputs  : Elist_Id;
          Spec_Outputs : Elist_Id;
          Body_Inputs  : Elist_Id;
          Body_Outputs : Elist_Id)
@@ -26588,7 +26583,7 @@ package body Sem_Prag is
          --  Do not perform this check in an instance because it was already
          --  performed successfully in the generic template.
 
-         if Is_Generic_Instance (Spec_Id) then
+         if In_Instance then
             null;
 
          --  Inspect the outputs of pragma Depends looking for a state with a
@@ -26933,17 +26928,14 @@ package body Sem_Prag is
       -- Report_Extra_Clauses --
       --------------------------
 
-      procedure Report_Extra_Clauses
-        (Spec_Id : Entity_Id;
-         Clauses : List_Id)
-      is
+      procedure Report_Extra_Clauses (Clauses : List_Id) is
          Clause : Node_Id;
 
       begin
          --  Do not perform this check in an instance because it was already
          --  performed successfully in the generic template.
 
-         if Is_Generic_Instance (Spec_Id) then
+         if In_Instance then
             null;
 
          elsif Present (Clauses) then
@@ -27078,8 +27070,7 @@ package body Sem_Prag is
             --  constituents appear as outputs in the dependency refinement.
 
             Check_Output_States
-              (Spec_Id      => Spec_Id,
-               Spec_Inputs  => Spec_Inputs,
+              (Spec_Inputs  => Spec_Inputs,
                Spec_Outputs => Spec_Outputs,
                Body_Inputs  => Body_Inputs,
                Body_Outputs => Body_Outputs);
@@ -27149,7 +27140,7 @@ package body Sem_Prag is
          Remove_Extra_Clauses (Refinements, Matched_Items);
 
          if Serious_Errors_Detected = Errors then
-            Report_Extra_Clauses (Spec_Id, Refinements);
+            Report_Extra_Clauses (Refinements);
          end if;
       end if;
 
@@ -27402,7 +27393,7 @@ package body Sem_Prag is
          --  Do not perform this check in an instance because it was already
          --  performed successfully in the generic template.
 
-         if Is_Generic_Instance (Spec_Id) then
+         if In_Instance then
             null;
 
          --  Inspect the In_Out items of the corresponding Global pragma
@@ -27511,7 +27502,7 @@ package body Sem_Prag is
          --  Do not perform this check in an instance because it was already
          --  performed successfully in the generic template.
 
-         if Is_Generic_Instance (Spec_Id) then
+         if In_Instance then
             null;
 
          --  Inspect the Input items of the corresponding Global pragma looking
@@ -27634,7 +27625,7 @@ package body Sem_Prag is
          --  Do not perform this check in an instance because it was already
          --  performed successfully in the generic template.
 
-         if Is_Generic_Instance (Spec_Id) then
+         if In_Instance then
             null;
 
          --  Inspect the Output items of the corresponding Global pragma
@@ -27740,7 +27731,7 @@ package body Sem_Prag is
          --  Do not perform this check in an instance because it was already
          --  performed successfully in the generic template.
 
-         if Is_Generic_Instance (Spec_Id) then
+         if In_Instance then
             null;
 
          --  Inspect the Proof_In items of the corresponding Global pragma
@@ -27906,7 +27897,7 @@ package body Sem_Prag is
          --  Do not perform this check in an instance because it was already
          --  performed successfully in the generic template.
 
-         if Is_Generic_Instance (Spec_Id) then
+         if In_Instance then
             null;
 
          elsif Nkind (List) = N_Null then
@@ -28157,7 +28148,7 @@ package body Sem_Prag is
          --  Do not perform this check in an instance because it was already
          --  performed successfully in the generic template.
 
-         if Is_Generic_Instance (Spec_Id) then
+         if In_Instance then
             null;
 
          else
@@ -28180,7 +28171,7 @@ package body Sem_Prag is
          --  Do not perform this check in an instance because it was already
          --  performed successfully in the generic template.
 
-         if Is_Generic_Instance (Spec_Id) then
+         if In_Instance then
             null;
 
          else
@@ -28244,7 +28235,7 @@ package body Sem_Prag is
       --  body contract is instantiated. Since the generic template is legal,
       --  do not perform this check in the instance to circumvent this oddity.
 
-      if Is_Generic_Instance (Spec_Id) then
+      if In_Instance then
          null;
 
       --  Non-instance case
@@ -28360,7 +28351,7 @@ package body Sem_Prag is
       --  in the generic template.
 
       if Serious_Errors_Detected = Errors
-        and then not Is_Generic_Instance (Spec_Id)
+        and then not In_Instance
         and then not Has_Null_State
         and then No_Constit
       then
