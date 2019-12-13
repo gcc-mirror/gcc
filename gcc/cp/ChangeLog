@@ -1,3 +1,8 @@
+2019-11-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92150 - partial specialization with class NTTP.
+	* pt.c (unify): Handle VIEW_CONVERT_EXPR.
+
 2019-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/90767
