@@ -1166,6 +1166,8 @@ extern bool gomp_fini_device (struct gomp_device_descr *);
 extern void gomp_free_memmap (struct splay_tree_s *);
 extern void gomp_unload_device (struct gomp_device_descr *);
 extern bool gomp_remove_var (struct gomp_device_descr *, splay_tree_key);
+extern void gomp_remove_var_async (struct gomp_device_descr *, splay_tree_key,
+				   struct goacc_asyncqueue *);
 
 /* work.c */
 
