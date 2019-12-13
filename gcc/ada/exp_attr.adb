@@ -2316,6 +2316,24 @@ package body Exp_Attr is
       when Attribute_Address => Address : declare
          Task_Proc : Entity_Id;
 
+         function Is_Unnested_Component_Init (N : Node_Id) return Boolean;
+         --  Returns True if N is being used to initialize a component of
+         --  an activation record object where the component corresponds to
+         --  the object denoted by the prefix of the attribute N.
+
+         function Is_Unnested_Component_Init (N : Node_Id) return Boolean is
+         begin
+            return Present (Parent (N))
+              and then Nkind (Parent (N)) = N_Assignment_Statement
+              and then Is_Entity_Name (Pref)
+              and then Present (Activation_Record_Component (Entity (Pref)))
+              and then Nkind (Name (Parent (N))) = N_Selected_Component
+              and then Entity (Selector_Name (Name (Parent (N)))) =
+                         Activation_Record_Component (Entity (Pref));
+         end Is_Unnested_Component_Init;
+
+      --  Start of processing for Address
+
       begin
          --  If the prefix is a task or a task type, the useful address is that
          --  of the procedure for the task body, i.e. the actual program unit.
@@ -2379,13 +2397,19 @@ package body Exp_Attr is
          --  "displaced" to reference the tag associated with the interface
          --  type. In order to obtain the real address of such objects we
          --  generate a call to a run-time subprogram that returns the base
-         --  address of the object.
+         --  address of the object. This call is not generated in cases where
+         --  the attribute is being used to initialize a component of an
+         --  activation record object where the component corresponds to
+         --  prefix of the attribute (for back ends that require "unnesting"
+         --  of nested subprograms), since the address needs to be assigned
+         --  as-is to such components.
 
          elsif Is_Class_Wide_Type (Ptyp)
            and then Is_Interface (Underlying_Type (Ptyp))
            and then Tagged_Type_Expansion
            and then not (Nkind (Pref) in N_Has_Entity
                           and then Is_Subprogram (Entity (Pref)))
+           and then not Is_Unnested_Component_Init (N)
          then
             Rewrite (N,
               Make_Function_Call (Loc,
