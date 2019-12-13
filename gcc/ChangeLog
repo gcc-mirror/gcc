@@ -1,5 +1,11 @@
 2019-12-13  Roman Zhuykov  <zhroma@ispras.ru>
 
+	PR rtl-optimization/92591
+	* modulo-sched.c (ps_add_node_check_conflicts): Improve checking
+	for history > 0 case.
+
+2019-12-13  Roman Zhuykov  <zhroma@ispras.ru>
+
 	* modulo-sched.c (sms_schedule): Use param_sms_max_ii_factor
 	value instead of macro.  Adjust comment.
 	(sms_schedule_by_order): Use parameter value without macro.
@@ -8,6 +14,7 @@
 
 2019-12-13  Roman Zhuykov  <zhroma@ispras.ru>
 
+	PR rtl-optimization/90001
 	* ddg.c (create_ddg): Init max_dist array for each node.
 	(free_ddg): Free max_dist array.
 	(create_ddg_edge): Use bool field instead of aux union.
