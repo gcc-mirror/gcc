@@ -1531,7 +1531,7 @@ package Sem_Util is
 
    function Is_Atomic_Object (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N denotes a reference to an atomic
-   --  object as per Ada RM C.6(12).
+   --  object as per Ada RM C.6(7) and the crucial remark in C.6(8).
 
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
 

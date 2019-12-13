@@ -1,3 +1,12 @@
+2019-12-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.ads (Is_Atomic_Object): Mention relevant RM clauses.
+	* sem_util.adb (Is_Atomic_Object): For an indexed component,
+	only look at the Has_Atomic_Components aspect of the prefix and
+	do not recurse on it; for a selected component, do not look at
+	the prefix.
+	(Is_Atomic_Or_VFA_Object): Minor tweak.
+
 2019-12-13  Arnaud Charlet  <charlet@adacore.com>
 
 	* libgnat/a-calfor.ads, libgnat/a-calfor.adb (Split_Duration):
