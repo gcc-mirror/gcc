@@ -1,3 +1,21 @@
+2019-12-13  Steve Baird  <baird@adacore.com>
+
+	* einfo.ads: Correct comment for Derived_Type_Link to reflect
+	that fact that this function is now used for more than just
+	generation of warnings.
+	* sem_ch3.adb (Build_Derived_Type): Do not call
+	Set_Derived_Type_Link if the derived type and the parent type
+	are in different compilation units. Such a derivation cannot be
+	a problematic "early" derivation (identifying these is what the
+	Derived_Type_Link attribute is used for) and we don't like
+	inter-unit references that go in the opposite direction of
+	semantic dependencies.
+	* sem_ch13.adb (Is_Type_Related_Rep_Item): A new function,
+	analogous to the existing function Is_Operational_Item.
+	(Rep_Item_Too_Late): Generate a hard error (with same text as
+	the warning that was previously being generated) if the
+	AI12-0109 legality rule is violated.
+
 2019-12-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/gnat_rm/implementation_defined_pragmas.rst: Minor tweak to

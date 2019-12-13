@@ -9741,9 +9741,17 @@ package body Sem_Ch3 is
            (Derived_Type, No_Tagged_Streams_Pragma (Parent_Type));
       end if;
 
-      --  If the parent has primitive routines, set the derived type link
+      --  If the parent has primitive routines and may have not-seen-yet aspect
+      --  specifications (e.g., a Pack pragma), then set the derived type link
+      --  in order to later diagnose "early derivation" issues. If in different
+      --  compilation units, then "early derivation" cannot be an issue (and we
+      --  don't like interunit references that go in the opposite direction of
+      --  semantic dependencies).
 
-      if Has_Primitive_Operations (Parent_Type) then
+      if Has_Primitive_Operations (Parent_Type)
+         and then Enclosing_Comp_Unit_Node (Parent_Type) =
+           Enclosing_Comp_Unit_Node (Derived_Type)
+      then
          Set_Derived_Type_Link (Parent_Base, Derived_Type);
       end if;
 
