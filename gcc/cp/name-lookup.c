@@ -4171,30 +4171,6 @@ import_module_binding  (tree ns, tree name, unsigned mod, unsigned snum)
   return true;
 }
 
-static void
-mark_pending_on_decl (tree decl)
-{
-  if (TREE_CODE (decl) == TEMPLATE_DECL)
-    {
-      DECL_TEMPLATE_LAZY_SPECIALIZATIONS_P (decl) = true;
-      decl = DECL_TEMPLATE_RESULT (decl);
-    }
-
-  if (DECL_IMPLICIT_TYPEDEF_P (decl)
-      && RECORD_OR_UNION_CODE_P (TREE_CODE (TREE_TYPE (decl))))
-    for (tree member = TYPE_FIELDS (TREE_TYPE (decl)); member;
-	 member = TREE_CHAIN (member))
-      mark_pending_on_decl (member);
-}
-
-static void
-mark_pending_on_binding (tree binding)
-{
-  for (ovl_iterator iter (binding); iter; ++iter)
-    if (!iter.using_p ())
-      mark_pending_on_decl (*iter);
-}
-
 /* During an import NAME is being bound within namespace NS and
    MODULE.  There should be no existing binding.  VALUE and TYPE are
    the value and type bindings.  */
@@ -4218,13 +4194,6 @@ set_module_binding (tree ns, tree name, unsigned mod, bool inter_p,
     /* Again, bogus BMI could give find to missing or already loaded slot.  */
     return false;
 
-  if (MODULE_VECTOR_LAZY_SPEC_P (*slot))
-    {
-      mark_pending_on_binding (value);
-      if (type)
-	mark_pending_on_decl (type);
-    }
-
   tree bind = value;
   if (type || visible != bind)
     {
@@ -4240,78 +4209,55 @@ set_module_binding (tree ns, tree name, unsigned mod, bool inter_p,
   return true;
 }
 
-// FIXME: I think we set the wrong number for instantiations of GMF
-// entities from modules/imports.  check?  oh, and use an enum!
-// 0->header unit
-// 1->module
-// 2->import
-
-bool
-note_pending_specializations (tree ns, tree name, unsigned import_kind)
+void
+note_pending_specializations (tree ns, tree name, bool is_header)
 {
-  tree *slot = find_namespace_slot (ns, name, false);
-  /* We should have already created a vector on this slot.  */
-  // FIXME: What if we specialize a member of an anonymous namespace?
-  if (!slot || TREE_CODE (*slot) != MODULE_VECTOR)
-    return false;
-
-  tree vec = *slot;
-  MODULE_VECTOR_LAZY_SPEC_P (vec) = true;
-
-  if (import_kind != 2)
-    {
-      /* Mark the global or partition slot.  */
-      unsigned ix = (import_kind == 1
-		     ? MODULE_SLOT_PARTITION : MODULE_SLOT_GLOBAL);
-      module_cluster &cluster
-	= MODULE_VECTOR_CLUSTER (vec, ix / MODULE_VECTOR_SLOTS_PER_CLUSTER);
-      unsigned off = ix % MODULE_VECTOR_SLOTS_PER_CLUSTER;
-      gcc_checking_assert (cluster.indices[off].base == 0
-			   && cluster.indices[off].span == 1);
-      if (tree binding = cluster.slots[off])
-	for (ovl_iterator iter (binding); iter; ++iter)
-	  mark_pending_on_decl (*iter);
-    }
-  else
-    {
-      /* Mark every slot's loaded entities.  */
-      module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (vec);
-      unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (vec);
-      if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_SLOTS_FIXED)
-	{
-	  ix--;
-	  cluster++;
-	}
-
-      for (; ix--; cluster++)
-	for (unsigned jx = 0; jx != MODULE_VECTOR_SLOTS_PER_CLUSTER; jx++)
-	  {
-	    if (unsigned base = cluster->indices[jx].base)
-	      /* Spans of > 1 are namespaces.  */
-	      if (cluster->indices[jx].span == 1
-		  && !cluster->slots[jx].is_lazy ()
-		  && module_normal_import_p (base))
-		{
-		  tree binding = cluster->slots[jx];
-		  mark_pending_on_binding (MAYBE_STAT_DECL (binding));
-		  if (tree type = MAYBE_STAT_TYPE (binding))
-		    mark_pending_on_decl (type);
-		}
-	  }
-    }
-
-  return true;
+  if (tree *slot = find_namespace_slot (ns, name, false))
+    if (TREE_CODE (*slot) == MODULE_VECTOR)
+      {
+	tree vec = *slot;
+	MODULE_VECTOR_PENDING_SPECIALIZATIONS_P (vec) = true;
+	if (is_header)
+	  MODULE_VECTOR_PENDING_IS_HEADER_P (vec) = true;
+	else
+	  MODULE_VECTOR_PENDING_IS_PARTITION_P (vec) = true;
+      }
 }
 
 void
-note_loaded_specializations (tree ns, tree name)
+load_pending_specializations (tree ns, tree name)
 {
-  /* NS and NAME are from internal data, so we're not presuming the
-     fidelity of a BMI here.  */
   tree *slot = find_namespace_slot (ns, name, false);
-  tree vec = *slot;
 
-  MODULE_VECTOR_LAZY_SPEC_P (vec) = false;
+  if (!slot || TREE_CODE (*slot) != MODULE_VECTOR
+      || !MODULE_VECTOR_PENDING_SPECIALIZATIONS_P (*slot))
+    return;
+
+  tree vec = *slot;
+  MODULE_VECTOR_PENDING_SPECIALIZATIONS_P (vec) = false;
+
+  bool do_header = MODULE_VECTOR_PENDING_IS_HEADER_P (vec);
+  bool do_partition = MODULE_VECTOR_PENDING_IS_PARTITION_P (vec);
+  MODULE_VECTOR_PENDING_IS_HEADER_P (vec) = false;
+  MODULE_VECTOR_PENDING_IS_PARTITION_P (vec) = false;
+
+  gcc_checking_assert (do_header | do_partition);
+  module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (vec);
+  unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (vec);
+  if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_SLOTS_FIXED)
+    {
+      ix--;
+      cluster++;
+    }
+
+  for (; ix--; cluster++)
+    for (unsigned jx = 0; jx != MODULE_VECTOR_SLOTS_PER_CLUSTER; jx++)
+      if (cluster->indices[jx].span
+	  && cluster->slots[jx].is_lazy ()
+	  && lazy_specializations_p (cluster->indices[jx].base,
+				     do_header, do_partition))
+	lazy_load_binding (cluster->indices[jx].base, ns, name,
+			   &cluster->slots[jx]);
 }
 
 void

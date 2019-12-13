@@ -15,3 +15,6 @@ export inline int user (int i)
   x.m = i;
   return x.m;
 }
+
+// { dg-final { scan-lang-dump {Specialization '::TPL<int>' entity:. keyed to foo\[.\] '::template TPL'} module } }
+// { dg-final { scan-lang-dump {Specialization '::TPL<int>::TPL<int>' entity:. keyed to foo\[.\] '::template TPL<T>::template TPL'} module } }

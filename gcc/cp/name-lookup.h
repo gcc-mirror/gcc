@@ -114,6 +114,11 @@ struct GTY(()) mc_slot {
     gcc_checking_assert (!u.binding);
     u.binding = tree (uintptr_t ((snum << 1) | 1));
   }
+  void or_lazy (unsigned snum)
+  {
+    gcc_checking_assert (is_lazy ());
+    u.binding = tree (uintptr_t (u.binding) | (snum << 1));
+  }
   unsigned get_lazy () const
   {
     gcc_checking_assert (is_lazy ());
@@ -390,8 +395,7 @@ extern tree lookup_field_ident (tree ctx, tree name, unsigned ix);
 extern tree add_imported_namespace (tree ctx, tree name, unsigned module,
 				    location_t, bool visible_p, bool inline_p,
 				    tree anon_name);
-extern bool note_pending_specializations (tree ns, tree name,
-					  unsigned import_kind);
-extern void note_loaded_specializations (tree ns, tree name);
+extern void note_pending_specializations (tree ns, tree name, bool is_header);
+extern void load_pending_specializations (tree ns, tree name);
 extern const char *get_cxx_dialect_name (enum cxx_dialect dialect);
 #endif /* GCC_CP_NAME_LOOKUP_H */

@@ -16,4 +16,4 @@ template<typename T> struct X<T,1>
 
 // { dg-final { scan-lang-dump {Dependency on specialization template_decl:'::template X<T,0x1>' found} module } }
 // { dg-final { scan-lang-dump {Cluster members:\n(  \[.\][^\n]*'\n)*  \[.\]=specialization definition '::template X<T,0x1>'} module } }
-// { dg-final { scan-lang-dump {Specialization '::template X<T,0x1>' entity:[0-9]* keyed to '::template X' \(2\)} module } }
+// { dg-final { scan-lang-dump {Specialization '::template X<T,0x1>' entity:[0-9]* keyed to TPL\[0\] '::template X'} module } }

@@ -9644,8 +9644,17 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	return error_mark_node;
 
       gen_tmpl = most_general_template (templ);
-      if (DECL_TEMPLATE_LAZY_SPECIALIZATIONS_P (gen_tmpl))
-	lazy_load_specializations (gen_tmpl);
+      if (flag_modules)
+	{
+	  // FIXME: I think we can optimize this by checking where
+	  // gen_tmpl comes from -- if it's not a header or partition,
+	  // it can't be affected by this.
+	  tree origin = get_originating_module_decl (gen_tmpl);
+	  load_pending_specializations (CP_DECL_CONTEXT (origin),
+					DECL_NAME (origin));
+	  if (DECL_MODULE_PENDING_SPECIALIZATIONS_P (gen_tmpl))
+	    lazy_load_specializations (gen_tmpl);
+	}
 
       parmlist = DECL_TEMPLATE_PARMS (gen_tmpl);
       parm_depth = TMPL_PARMS_DEPTH (parmlist);
@@ -20432,8 +20441,14 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
 		(DECL_TI_ARGS (DECL_TEMPLATE_RESULT (tmpl)),
 		 targ_ptr));
 
-  if (DECL_TEMPLATE_LAZY_SPECIALIZATIONS_P (gen_tmpl))
-    lazy_load_specializations (gen_tmpl);
+  if (flag_modules)
+    {
+      tree origin = get_originating_module_decl (gen_tmpl);
+      load_pending_specializations (CP_DECL_CONTEXT (origin),
+				    DECL_NAME (origin));
+      if (DECL_MODULE_PENDING_SPECIALIZATIONS_P (gen_tmpl))
+	lazy_load_specializations (gen_tmpl);
+    }
 
   /* It would be nice to avoid hashing here and then again in tsubst_decl,
      but it doesn't seem to be on the hot path.  */

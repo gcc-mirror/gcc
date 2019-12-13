@@ -1,5 +1,34 @@
 2019-12-13  Nathan Sidwell  <nathan@acm.org>
 
+	Pending specializations keyed by ident
+	gcc/cp/
+	* cp-tree.h (DECL_TEMPLATE_LAZY_SPECIALIZATIONS_P): Delete.
+	(MODULE_VECTOR_LAZY_SPEC_P): Delete.
+	(MODULE_VECTOR_PENDING_{SPECIALIZATIONS,IS_HEADER,IS_PARTITION}_P): New.
+	(DECL_MODULE_PENDINGSPECIALIZATIONS_P): New.
+	(lang_decl_base): Add module_specializations_p.
+	(lazy_specializations_p): Declare.
+	* name-lookup.h (note_pending_specializations): No return value.
+	(load_pending_specializations): Declare.
+	(note_loaded_specializations): Delete.
+	* module.cc (specset): Key is entity ident.  Adjust throughout.
+	(trees_in::decl_value): Deal with pending specializations.
+	(specset::lazy_load): Deal with indirections.
+	(module_state::{read,write}_specializations): Reimplement.
+	(lazy_specializations_p): New.
+	(lazy_load_specializations): Reimplement.
+	* name-lookup.c (mark_pending_on_{decl,binding}): Delete.
+	(set_module_binding): Drop lazy specialization tagging here.
+	(note_pending_specializations): Reimplement.
+	(load_pending_specializations): New.
+	(note_loaded_specializations): Delete.
+	* pt.c (lookup_template_class_1): Reimplement lazy specialization
+	loading.
+	(instantiate_template_1): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/inst-4_[ab].C: Adjust scans.
+	* g++.dg/modules/tpl-spec-[12345]_[abcd].C: Likewise.
+
 	gcc/cp/
 	* cp-tree.h (DECL_MODULE_ENTITY_P): New.
 	(lang_decl_bas): Add module_entity_p flag.

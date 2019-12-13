@@ -532,7 +532,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    7: DECL_THUNK_P (in a member FUNCTION_DECL)
       DECL_NORMAL_CAPTURE_P (in FIELD_DECL)
    8: DECL_DECLARED_CONSTEXPR_P (in VAR_DECL, FUNCTION_DECL)
-      DECL_TEMPLATE_LAZY_SPECIALIZATIONS_P (in TEMPLATE_DECL)
 
    Usage of language-independent fields in a language-dependent manner:
 
@@ -982,8 +981,16 @@ struct GTY(()) tree_module_vec {
 #define MODULE_VECTOR_NAME(NODE) \
   (((tree_module_vec *)MODULE_VECTOR_CHECK (NODE))->name)
 
-#define MODULE_VECTOR_LAZY_SPEC_P(NODE) \
+/* There are specializations of a template keyed to this binding.  */
+#define MODULE_VECTOR_PENDING_SPECIALIZATIONS_P(NODE) \
   TREE_THIS_VOLATILE (MODULE_VECTOR_CHECK (NODE))
+/* The key is in a header unit (not a named module partition or
+   primary).  */
+#define MODULE_VECTOR_PENDING_IS_HEADER_P(NODE) \
+  (MODULE_VECTOR_CHECK (NODE)->base.public_flag)
+/* The key is in a named module (primary or partition).  */
+#define MODULE_VECTOR_PENDING_IS_PARTITION_P(NODE) \
+  (MODULE_VECTOR_CHECK (NODE)->base.private_flag)
 
 /* Simplified unique_ptr clone to release a tree vec on exit.  */
 
@@ -1716,6 +1723,10 @@ check_constraint_info (tree t)
    some variant was imported, even if DECL_MODULE_IMPORT_P is false.  */
 #define DECL_MODULE_ENTITY_P(NODE) \
   (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (NODE))->u.base.module_entity_p)
+
+/* True if there are unloaded specializations keyed to this template.  */
+#define DECL_MODULE_PENDING_SPECIALIZATIONS_P(NODE) \
+  (DECL_LANG_SPECIFIC (TEMPLATE_DECL_CHECK (NODE))->u.base.module_pending_p)
 
 /* Whether this is an exported DECL.  Held on any decl that can appear
    at namespace scope (function, var, type, template, const or
@@ -2758,6 +2769,8 @@ struct GTY(()) lang_decl_base {
 					      PMF.  */
   unsigned module_entity_p : 1;		   /* is in the entitity ary &
 					      hash.  */
+  unsigned module_pending_p : 1;   	   /* has specializations toload.  */
+  
   
   /* 13 spare bits.  */
 };
@@ -4841,11 +4854,6 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define DECL_TEMPLATE_SPECIALIZATIONS(NODE)     \
   DECL_SIZE (TEMPLATE_DECL_CHECK (NODE))
 
-/* True if this template has unloaded specializations.  We must load
-   them before instantiation.  */
-#define DECL_TEMPLATE_LAZY_SPECIALIZATIONS_P(NODE)	\
-  DECL_LANG_FLAG_8 (TEMPLATE_DECL_CHECK (NODE))
-    
 /* Nonzero for a DECL which is actually a template parameter.  Keep
    these checks in ascending tree code order.   */
 #define DECL_TEMPLATE_PARM_P(NODE)		\
@@ -6990,6 +6998,7 @@ extern void mangle_module_fini ();
 extern bool module_normal_import_p (unsigned m);
 extern void lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot);
 extern void lazy_load_specializations (tree tmpl);
+extern bool lazy_specializations_p (unsigned, bool, bool);
 extern bool import_module (module_state *, location_t, bool, tree,
 			   cpp_reader *, bool in_extern_c);
 extern bool declare_module (module_state *, location_t, bool, tree,

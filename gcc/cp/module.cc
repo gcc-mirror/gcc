@@ -2597,26 +2597,25 @@ depset *depset::make_entity (tree entity, entity_kind ek, bool is_defn)
 
 class specset {
 public:
-  /* key  */
-  mc_slot ns;  /* Namespace containing the template, or entity number
-		  for pending member  */
-  tree name;  /* Name of the entity.  */
+  unsigned key;  /* Entity index of the template being specialized.  */
 
   /* Payload.  */
-  unsigned short allocp2;  /* Allocated pending  */
-  unsigned num;    /* Number of pending.  */
+  unsigned allocp2 : 5;  /* log(2) allocated pending  */
+  unsigned num : 27;    /* Number of pending.  */
 
-  /* Trailing array of pending specializations.  These are indices
-     into the entity array.  */
+  /* Trailing array of pending specializations.
+     If !MSB set, indices into the entity array.  If MSB set, an
+     indirection to another specset.  */
   unsigned pending[1];
 
 public:
   /* Even with ctors, we're very pod-like.  */
-  specset (mc_slot ns, tree name)
-    : ns (ns), name (name),
-      allocp2 (0), num (0)
+  specset (unsigned tmpl)
+    : key (tmpl), allocp2 (0), num (0)
   {
   }
+  /* Copy constructor, which is exciting because of the trailing
+     array.  */
   specset (const specset *from)
   {
     size_t size = (offsetof (specset, pending)
@@ -2629,24 +2628,21 @@ public:
 
 public:
   struct traits : delete_ptr_hash<specset> {
+    typedef unsigned compare_type;
+
     /* hash and equality for compare_type.  */
-    inline static hashval_t hash (const compare_type p)
+    inline static hashval_t hash (const compare_type k)
     {
-      hashval_t h = pointer_hash<tree_node>::hash (p->ns.u.binding);
-      hashval_t nh = pointer_hash<tree_node>::hash (p->name);
-      h = iterative_hash_hashval_t (h, nh);
-
-      return h;
+      return hashval_t (k);
     }
-    inline static bool equal (const value_type b, const compare_type p)
+    inline static hashval_t hash (const value_type v)
     {
-      if (b->ns.u.binding != p->ns.u.binding)
-	return false;
+      return hash (v->key);
+    }
 
-      if (b->name != p->name)
-	return false;
-
-      return true;
+    inline static bool equal (const value_type v, const compare_type k)
+    {
+      return v->key == k;
     }
   };
 
@@ -2665,9 +2661,15 @@ public:
     {
     }
 
+  private:
+    specset **find_slot (key_t key, insert_option insert)
+    {
+      return find_slot_with_hash (key, traits::hash (key), insert);
+    }
+
   public:
-    bool add (mc_slot ns, tree name, unsigned index);
-    specset *extract (mc_slot ns, tree name);
+    bool add (key_t key, unsigned index);
+    specset *extract (key_t key);
   };
 
   static hash *table;
@@ -7761,7 +7763,11 @@ trees_in::decl_value ()
   else
     {
       /* Insert the real decl into the entity ary.  */
-      (*entity_ary)[state->entity_lwm + entity_index - 1] = existing;
+      mc_slot &slot = (*entity_ary)[state->entity_lwm + entity_index - 1];
+
+      bool pending = slot.get_lazy () & 1;
+      slot = existing;
+      unsigned ident = state->entity_lwm + entity_index - 1;
 
       /* And into the entity hash, if it's not already there.  */
       if (!DECL_LANG_SPECIFIC (existing)
@@ -7775,7 +7781,16 @@ trees_in::decl_value ()
 	  unsigned &slot
 	    = entity_map->get_or_insert (DECL_UID (existing), &existed);
 	  gcc_checking_assert (!existed);
-	  slot = state->entity_lwm + entity_index - 1;
+	  slot = ident;
+
+	  if (pending)
+	    DECL_MODULE_PENDING_SPECIALIZATIONS_P (existing) = true;
+	}
+      else if (pending)
+	{
+	  unsigned key_ident = import_entity_index (existing);
+	  if (specset::table->add (key_ident, ~ident))
+	    DECL_MODULE_PENDING_SPECIALIZATIONS_P (existing) = true;
 	}
     }
 
@@ -9246,10 +9261,10 @@ trees_in::tree_node ()
       /* Index into the entity table.  Perhaps not loaded yet!  */
       {
 	unsigned origin = state->slurp->remap_module (u ());
-	int ident = u ();
+	unsigned ident = u ();
 	module_state *from = (*modules)[origin];
 
-	if (unsigned (ident) >= from->entity_num)
+	if (ident >= from->entity_num)
 	  set_overrun ();
 	if (!get_overrun ())
 	  {
@@ -11901,22 +11916,25 @@ depset::hash::connect ()
 }
 
 bool
-specset::hash::add (mc_slot ns, tree name, unsigned index)
+specset::hash::add (unsigned key, unsigned index)
 {
-  specset key (ns, name);
-  specset **slot = find_slot (&key, INSERT);
+  specset **slot = find_slot (key, INSERT);
   specset *set = *slot;
   bool is_new = !set;
 
   if (is_new || set->num == (1u << set->allocp2))
     {
-      unsigned n = set ? set->num * 2 : 1;
-      size_t new_size = (offsetof (specset, pending)
-			 + sizeof (specset::pending) * n);
-      specset *new_set = (new (::operator new (new_size))
-			  specset (set ? set : &key));
-      delete set;
-      set = new_set;
+      if (set)
+	{
+	  unsigned n = set->num * 2;
+	  size_t new_size = (offsetof (specset, pending)
+			     + sizeof (specset::pending) * n);
+	  specset *new_set = new (::operator new (new_size)) specset (set);
+	  delete set;
+	  set = new_set;
+	}
+      else
+	set = new (::operator new (sizeof (*set))) specset (key);
       *slot = set;
     }
 
@@ -11926,12 +11944,11 @@ specset::hash::add (mc_slot ns, tree name, unsigned index)
 }
 
 specset *
-specset::hash::extract (mc_slot ns, tree name)
+specset::hash::extract (unsigned key)
 {
-  specset key (ns, name);
   specset *res = NULL;
 
-  if (specset **slot = find_slot (&key, NO_INSERT))
+  if (specset **slot = find_slot (key, NO_INSERT))
     {
       res = *slot;
       /* We need to remove the specset without deleting it. */
@@ -11948,14 +11965,22 @@ void specset::lazy_load ()
   for (unsigned ix = 0; ix != num; ix++)
     {
       unsigned index = pending[ix];
-      module_state *module = import_entity_module (index);
-      mc_slot *slot = &(*entity_ary)[index];
-      if (slot->is_lazy ())
-	module->lazy_load (index - module->entity_lwm, slot, errorcount + 1);
+      if (index & ~(~0u >> 1))
+	{
+	  /* An indirection.  */
+	  specset *other = table->extract (~index);
+	  other->lazy_load ();
+	}
       else
-	dump () && dump ("%s %u@%M already loaded",
-			 name ? "Specialization" : "Member",
-			 index - module->entity_lwm, module);
+	{
+	  module_state *module = import_entity_module (index);
+	  mc_slot *slot = &(*entity_ary)[index];
+	  if (slot->is_lazy ())
+	    module->lazy_load (index - module->entity_lwm, slot, errorcount + 1);
+	  else
+	    dump () && dump ("Specialiation %M[%u[ already loaded",
+			     module, index - module->entity_lwm);
+	}
     }
 
   /* We own set, so delete it now.  */
@@ -14378,27 +14403,36 @@ module_state::write_specializations (elf_out *to, vec<depset *> depsets,
       depset *d = depsets[ix];
       if (d->get_entity_kind () == depset::EK_SPECIALIZATION)
 	{
+	  gcc_checking_assert (!d->is_import ());
 	  tree spec = d->get_entity ();
-	  tree key = get_originating_module_decl (spec);
-	  module_state *from = (*modules)[0];
-	  if (DECL_LANG_SPECIFIC (key) && DECL_MODULE_IMPORT_P (key))
-	    {
-	      unsigned index = import_entity_index (key);
-	      from = import_entity_module (index);
-	    }
+	  spec_entry *entry = reinterpret_cast <spec_entry *> (d->deps[0]);
+	  tree tmpl = entry->tmpl;
 
-	  unsigned kind = 0;
-	  if (!from->is_header ())
-	    kind = from->is_partition () ? 1 : 2;
+	  {
+	    /* Key the specialization to its general template.  */
+	    depset *tmpl_dep = table.find_dependency (tmpl);
+	    unsigned tmpl_origin
+	      = tmpl_dep->is_import () ? tmpl_dep->section : 0;
+	    sec.u (tmpl_origin);
+	    sec.u (tmpl_dep->cluster);
+	    sec.u (d->cluster);
+	    dump () && dump ("Specialization %N entity:%u keyed to %M[%u] %N",
+			     spec, d->cluster, (*modules)[tmpl_origin],
+			     tmpl_dep->cluster, tmpl);
+	  }
 
-	  tree ctx = CP_DECL_CONTEXT (key);
-	  gcc_checking_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
-	  sec.tree_node (ctx);
-	  sec.tree_node (DECL_NAME (key));
-	  sec.u (kind);
-	  sec.u (d->cluster);
-	  dump () && dump ("Specialization %N entity:%u keyed to %N (%u)",
-			   spec, d->cluster, key, kind);
+	  {
+	    /* Key the general template to the originating decl.  */
+	    tree origin = get_originating_module_decl (tmpl);
+	    unsigned origin_ident = import_entity_index (origin);
+	    module_state *origin_from = this;
+	    if (!(origin_ident & ~(~0u>>1)))
+	      origin_from = import_entity_module (origin_ident);
+	    sec.u (origin_from->remap);
+	    sec.tree_node (CP_DECL_CONTEXT (origin));
+	    sec.tree_node (DECL_NAME (origin));
+	  }
+
 	  count--;
 	}
       }
@@ -14415,38 +14449,77 @@ module_state::read_specializations (unsigned count)
   if (!sec.begin (loc, from (), MOD_SNAME_PFX ".spc"))
     return false;
 
-  dump () && dump ("Reading specializastions");
+  dump () && dump ("Reading specializations");
   dump.indent ();
 
   for (unsigned ix = 0; ix != count; ix++)
     {
-      mc_slot ns;
-      ns = sec.tree_node ();
-      tree id = sec.tree_node ();
-      unsigned kind = sec.u ();
-      unsigned index = sec.u ();
+      unsigned key_origin = slurp->remap_module (sec.u ());
+      unsigned key_index = sec.u ();
+      unsigned ent_index = sec.u ();
+      module_state *from = (*modules)[key_origin];
 
-      if (kind > 2 || index >= entity_num)
- 	sec.set_overrun ();
-       if (sec.get_overrun ())
- 	break;
+      if (key_index >= from->entity_num || ent_index >= entity_num)
+	sec.set_overrun ();
+      if (sec.get_overrun ())
+	break;
 
-      /* It's now a regular import kind, if it's not part of the
-	 same module.  */
-      if (kind == 1
-	  && !(is_primary () || is_partition ()))
-	kind = 2;
-      dump () && dump ("Specialization key %P (%u) entity:%u",
-		       ns, id, kind, index);
-      if (specset::table->add (ns, id, index + entity_lwm))
-	if (!note_pending_specializations (ns, id, kind))
-	  sec.set_overrun ();
+      bool not_loaded = true;
+      dump () && dump ("Specialization keyed to %M[%u] entity:%u",
+		       from, key_index, ent_index);
+      unsigned key_ident = from->entity_lwm + key_index;
+      if (specset::table->add (key_ident, ent_index + entity_lwm))
+	{
+	  mc_slot &slot = (*entity_ary)[key_ident];
+	  if (slot.is_lazy ())
+	    slot.or_lazy (1);
+	  else
+	    {
+	      tree tmpl = slot;
+
+	      not_loaded = false;
+	      if (tmpl && TREE_CODE (tmpl) == TEMPLATE_DECL)
+		DECL_MODULE_PENDING_SPECIALIZATIONS_P (tmpl) = true;
+	      else
+		sec.set_overrun ();
+	    }
+	}
+
+      {
+	unsigned origin = slurp->remap_module (sec.u ());
+	tree ns = sec.tree_node ();
+	tree name = sec.tree_node ();
+	if (sec.get_overrun ())
+	  break;
+
+	module_state *origin_from = (*modules)[origin];
+	if (not_loaded
+	    && (origin_from->is_header ()
+		|| (origin_from->is_partition ()
+		    || origin_from->is_primary ())))
+	  note_pending_specializations (ns, name, origin_from->is_header ());
+      }
     }
 
   dump.outdent ();
   if (!sec.end (from ()))
     return false;
   return true;
+}
+
+/* Return true if module MOD cares about lazy specializations keyed to
+   possibly duplicated entity bindings.  */
+
+bool
+lazy_specializations_p (unsigned mod, bool header_p, bool partition_p)
+{
+  module_state *module = (*modules)[mod];
+  if (module->is_header ())
+    return header_p;
+  if (module->is_primary () || module->is_partition ())
+    return partition_p;
+
+  return false;
 }
 
 /* Read & write locations.  */
@@ -17427,23 +17500,20 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot)
 void
 lazy_load_specializations (tree tmpl)
 {
-  gcc_checking_assert (DECL_TEMPLATE_LAZY_SPECIALIZATIONS_P (tmpl));
-
-  tree owner = get_originating_module_decl (tmpl);
+  gcc_checking_assert (DECL_MODULE_PENDING_SPECIALIZATIONS_P (tmpl)
+		       && DECL_MODULE_ENTITY_P (tmpl));
 
   timevar_start (TV_MODULE_IMPORT);
-  mc_slot ns;
-  ns = CP_DECL_CONTEXT (owner);
-  if (specset *set = specset::table->extract (ns, DECL_NAME (owner)))
+  unsigned ident = import_entity_index (tmpl);
+  if (specset *set = specset::table->extract (ident))
     {
       function_depth++; /* Prevent GC */
       unsigned n = dump.push (NULL);
-      dump () && dump ("Reading %u pending specializations keyed to %N",
-		       set->num, owner);
+      dump () && dump ("Reading %u pending specializations keyed to %M[%u] %N",
+		       set->num, import_entity_module (ident),
+		       ident - import_entity_module (ident)->entity_lwm, tmpl);
       set->lazy_load ();
       dump.pop (n);
-
-      note_loaded_specializations (ns, DECL_NAME (owner));
 
       function_depth--;
     }
