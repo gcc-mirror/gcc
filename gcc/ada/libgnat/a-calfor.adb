@@ -52,6 +52,15 @@ package body Ada.Calendar.Formatting is
    --  such as 1983-*1-j3 u5:n7:k9 which should be 1983-01-03 05:07:09. Raise
    --  Constraint_Error if there is a mismatch.
 
+   procedure Split_Duration
+     (Seconds    : Duration;
+      Hour       : out Natural;
+      Minute     : out Minute_Number;
+      Second     : out Second_Number;
+      Sub_Second : out Second_Duration);
+   --  Version of Split that allows durations < 100 hours.
+   --  Will raise Time_Error if Seconds >= 100 hours.
+
    ----------------
    -- Check_Char --
    ----------------
@@ -140,7 +149,7 @@ package body Ada.Calendar.Formatting is
       Include_Time_Fraction : Boolean := False) return String
    is
       To_Char    : constant array (0 .. 9) of Character := "0123456789";
-      Hour       : Hour_Number;
+      Hour       : Natural;
       Minute     : Minute_Number;
       Second     : Second_Number;
       Sub_Second : Duration;
@@ -155,7 +164,7 @@ package body Ada.Calendar.Formatting is
       Result : String := "-00:00:00.00";
 
    begin
-      Split (abs (Elapsed_Time), Hour, Minute, Second, Sub_Second);
+      Split_Duration (abs Elapsed_Time, Hour, Minute, Second, Sub_Second);
 
       --  Hour processing, positions 2 and 3
 
@@ -361,6 +370,34 @@ package body Ada.Calendar.Formatting is
              Sub_Second;
    end Seconds_Of;
 
+   --------------------
+   -- Split_Duration --
+   --------------------
+
+   procedure Split_Duration
+     (Seconds    : Duration;
+      Hour       : out Natural;
+      Minute     : out Minute_Number;
+      Second     : out Second_Number;
+      Sub_Second : out Second_Duration)
+   is
+      Secs : Natural;
+   begin
+      --  Check that Seconds is below 100 hours
+
+      if Seconds >= 3600.0 * 100.0 then
+         raise Time_Error;
+      end if;
+
+      Secs := (if Seconds = 0.0 then 0 else Natural (Seconds - 0.5));
+
+      Sub_Second := Second_Duration (Seconds - Duration (Secs));
+      Hour       := Natural (Secs / 3_600);
+      Secs       := Secs mod 3_600;
+      Minute     := Minute_Number (Secs / 60);
+      Second     := Second_Number (Secs mod 60);
+   end Split_Duration;
+
    -----------
    -- Split --
    -----------
@@ -372,8 +409,7 @@ package body Ada.Calendar.Formatting is
       Second     : out Second_Number;
       Sub_Second : out Second_Duration)
    is
-      Secs : Natural;
-
+      Unchecked_Hour : Natural;
    begin
       --  Validity checks
 
@@ -381,23 +417,13 @@ package body Ada.Calendar.Formatting is
          raise Constraint_Error;
       end if;
 
-      Secs := (if Seconds = 0.0 then 0 else Natural (Seconds - 0.5));
+      Split_Duration (Seconds, Unchecked_Hour, Minute, Second, Sub_Second);
 
-      Sub_Second := Second_Duration (Seconds - Day_Duration (Secs));
-      Hour       := Hour_Number (Secs / 3_600);
-      Secs       := Secs mod 3_600;
-      Minute     := Minute_Number (Secs / 60);
-      Second     := Second_Number (Secs mod 60);
-
-      --  Validity checks
-
-      if not Hour'Valid
-        or else not Minute'Valid
-        or else not Second'Valid
-        or else not Sub_Second'Valid
-      then
+      if Unchecked_Hour > Hour_Number'Last then
          raise Time_Error;
       end if;
+
+      Hour := Unchecked_Hour;
    end Split;
 
    -----------
