@@ -1,3 +1,10 @@
+2019-12-13  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (mulv64si3<exec>): Rename to ...
+	(mul<mode>3<exec>): ... this, and implement sub-dword patterns.
+	(mulv64si3_dup<exec>): Rename to ...
+	(mul<mode>3_dup<exec>): ... this, and implement sub-dword patterns.
+
 2019-12-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-utils.c (ipa_merge_profiles): Improve dumping; merge common
