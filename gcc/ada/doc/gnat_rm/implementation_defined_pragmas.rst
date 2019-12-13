@@ -3058,8 +3058,8 @@ different ways:
 
   The compile-time approach is intended to optimize the generated code for the
   pragma, by possibly using fast operations such as ``memset``. Note that such
-  optimizations require using values the bytes of which all have the same
-  binary representation.
+  optimizations require using values where the bytes all have the same binary
+  representation.
 
 * At bind time, the programmer has several options:
 
