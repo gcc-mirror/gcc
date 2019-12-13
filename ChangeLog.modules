@@ -1,5 +1,8 @@
 2019-12-13  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc: Rename specset to pendset.  Document.
+
 	Pending specializations keyed by ident
 	gcc/cp/
 	* cp-tree.h (DECL_TEMPLATE_LAZY_SPECIALIZATIONS_P): Delete.

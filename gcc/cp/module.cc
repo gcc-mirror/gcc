@@ -154,8 +154,8 @@ Classes used:
    depset::hash - hash table of depsets
    depset::tarjan - SCC determinator
 
-   specset - specialization set
-   specset::hash - hash table of specsets
+   pendset - pending set
+   pendset::hash - hash table of pendings
 
    loc_spans - location map data
 
@@ -2591,35 +2591,40 @@ depset *depset::make_entity (tree entity, entity_kind ek, bool is_defn)
   return r;
 }
 
-/* Specializations that have yet to be loaded.  These are keyed to
-   the name of the namespace-scope entity containing their
-   most-general template.  */
+/* Entities keyed to some other entity.  When we load the other
+   entity, we mark it in some way to indicate there are further
+   entities to load when you start looking inside it.  For instance
+   template specializations are keyed to their most general template.
+   When we instantiate that, we need to know all the partial
+   specializations (to pick the right template), and all the known
+   specializations (to avoid reinstantiating it, and/or whether it's
+   extern).  */
 
-class specset {
+class pendset {
 public:
-  unsigned key;  /* Entity index of the template being specialized.  */
+  unsigned key;  /* Entity index of the other entity.  */
 
   /* Payload.  */
   unsigned allocp2 : 5;  /* log(2) allocated pending  */
   unsigned num : 27;    /* Number of pending.  */
 
-  /* Trailing array of pending specializations.
-     If !MSB set, indices into the entity array.  If MSB set, an
-     indirection to another specset.  */
+  /* Trailing array of pending entity indices.  If !MSB set, indices
+     into the entity array.  If MSB set, an indirection to another
+     pendset.  */
   unsigned pending[1];
 
 public:
   /* Even with ctors, we're very pod-like.  */
-  specset (unsigned tmpl)
+  pendset (unsigned tmpl)
     : key (tmpl), allocp2 (0), num (0)
   {
   }
   /* Copy constructor, which is exciting because of the trailing
      array.  */
-  specset (const specset *from)
+  pendset (const pendset *from)
   {
-    size_t size = (offsetof (specset, pending)
-		   + sizeof (specset::pending) * from->num);
+    size_t size = (offsetof (pendset, pending)
+		   + sizeof (pendset::pending) * from->num);
     memmove (this, from, size);
     if (from->num)
       allocp2++;
@@ -2627,10 +2632,10 @@ public:
   void lazy_load ();
 
 public:
-  struct traits : delete_ptr_hash<specset> {
+  struct traits : delete_ptr_hash<pendset> {
     typedef unsigned compare_type;
 
-    /* hash and equality for compare_type.  */
+    /* Hash and equality for compare_type.  */
     inline static hashval_t hash (const compare_type k)
     {
       return hashval_t (k);
@@ -2662,20 +2667,20 @@ public:
     }
 
   private:
-    specset **find_slot (key_t key, insert_option insert)
+    pendset **find_slot (key_t key, insert_option insert)
     {
       return find_slot_with_hash (key, traits::hash (key), insert);
     }
 
   public:
     bool add (key_t key, unsigned index);
-    specset *extract (key_t key);
+    pendset *extract (key_t key);
   };
 
   static hash *table;
 };
 
-specset::hash *specset::table;
+pendset::hash *pendset::table;
 
 /********************************************************************/
 /* Tree streaming.   The tree streaming is very specific to the tree
@@ -7789,7 +7794,7 @@ trees_in::decl_value ()
       else if (pending)
 	{
 	  unsigned key_ident = import_entity_index (existing);
-	  if (specset::table->add (key_ident, ~ident))
+	  if (pendset::table->add (key_ident, ~ident))
 	    DECL_MODULE_PENDING_SPECIALIZATIONS_P (existing) = true;
 	}
     }
@@ -11915,11 +11920,14 @@ depset::hash::connect ()
   return connector.result;
 }
 
+/* Entity INDEX depends on entity KEY.  Add it to KEY's pendset.
+   Returns true if we created the pendset.  */
+
 bool
-specset::hash::add (unsigned key, unsigned index)
+pendset::hash::add (unsigned key, unsigned index)
 {
-  specset **slot = find_slot (key, INSERT);
-  specset *set = *slot;
+  pendset **slot = find_slot (key, INSERT);
+  pendset *set = *slot;
   bool is_new = !set;
 
   if (is_new || set->num == (1u << set->allocp2))
@@ -11927,14 +11935,14 @@ specset::hash::add (unsigned key, unsigned index)
       if (set)
 	{
 	  unsigned n = set->num * 2;
-	  size_t new_size = (offsetof (specset, pending)
-			     + sizeof (specset::pending) * n);
-	  specset *new_set = new (::operator new (new_size)) specset (set);
+	  size_t new_size = (offsetof (pendset, pending)
+			     + sizeof (pendset::pending) * n);
+	  pendset *new_set = new (::operator new (new_size)) pendset (set);
 	  delete set;
 	  set = new_set;
 	}
       else
-	set = new (::operator new (sizeof (*set))) specset (key);
+	set = new (::operator new (sizeof (*set))) pendset (key);
       *slot = set;
     }
 
@@ -11943,24 +11951,26 @@ specset::hash::add (unsigned key, unsigned index)
   return is_new;
 }
 
-specset *
-specset::hash::extract (unsigned key)
-{
-  specset *res = NULL;
+/* Locate KEY's pendset, removing it from the hash table  */
 
-  if (specset **slot = find_slot (key, NO_INSERT))
+pendset *
+pendset::hash::extract (unsigned key)
+{
+  pendset *res = NULL;
+
+  if (pendset **slot = find_slot (key, NO_INSERT))
     {
       res = *slot;
-      /* We need to remove the specset without deleting it. */
+      /* We need to remove the pendset without deleting it. */
       traits::mark_deleted (*slot);
     }
 
   return res;
 }
 
-/* Load the specializations referred to by this specset.  */
+/* Load the entities referred to by this pendset.  */
 
-void specset::lazy_load ()
+void pendset::lazy_load ()
 {
   for (unsigned ix = 0; ix != num; ix++)
     {
@@ -11968,7 +11978,7 @@ void specset::lazy_load ()
       if (index & ~(~0u >> 1))
 	{
 	  /* An indirection.  */
-	  specset *other = table->extract (~index);
+	  pendset *other = table->extract (~index);
 	  other->lazy_load ();
 	}
       else
@@ -14468,7 +14478,7 @@ module_state::read_specializations (unsigned count)
       dump () && dump ("Specialization keyed to %M[%u] entity:%u",
 		       from, key_index, ent_index);
       unsigned key_ident = from->entity_lwm + key_index;
-      if (specset::table->add (key_ident, ent_index + entity_lwm))
+      if (pendset::table->add (key_ident, ent_index + entity_lwm))
 	{
 	  mc_slot &slot = (*entity_ary)[key_ident];
 	  if (slot.is_lazy ())
@@ -17505,7 +17515,7 @@ lazy_load_specializations (tree tmpl)
 
   timevar_start (TV_MODULE_IMPORT);
   unsigned ident = import_entity_index (tmpl);
-  if (specset *set = specset::table->extract (ident))
+  if (pendset *set = pendset::table->extract (ident))
     {
       function_depth++; /* Prevent GC */
       unsigned n = dump.push (NULL);
@@ -18149,7 +18159,7 @@ init_module_processing (cpp_reader *reader)
 
   if (!flag_preprocess_only)
     {
-      specset::table = new specset::hash (EXPERIMENT (1, 400));
+      pendset::table = new pendset::hash (EXPERIMENT (1, 400));
 
       entity_map = new entity_map_t (EXPERIMENT (1, 400));
       vec_safe_reserve (entity_ary, EXPERIMENT (1, 400));
@@ -18326,9 +18336,9 @@ finish_module_processing (cpp_reader *reader)
   delete entity_ary;
   entity_ary = NULL;
 
-  /* Or remember any pending specializations.  */
-  delete specset::table;
-  specset::table = NULL;
+  /* Or remember any pending entities.  */
+  delete pendset::table;
+  pendset::table = NULL;
 
   /* Allow a GC, we've possibly made much data unreachable.  */
   ggc_collect ();
