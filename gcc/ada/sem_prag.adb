@@ -19188,6 +19188,17 @@ package body Sem_Prag is
                      Set_Linker_Section_Pragma
                        (Entity (Corresponding_Aspect (N)), N);
 
+                     --  Propagate it to its ultimate aliased entity to
+                     --  facilitate the backend processing this attribute
+                     --  in instantiations of generic subprograms.
+
+                     if Present (Alias (Entity (Corresponding_Aspect (N))))
+                     then
+                        Set_Linker_Section_Pragma
+                          (Ultimate_Alias
+                            (Entity (Corresponding_Aspect (N))), N);
+                     end if;
+
                   --  Pragma case, we must climb the homonym chain, but skip
                   --  any for which the linker section is already set.
 
@@ -19195,6 +19206,15 @@ package body Sem_Prag is
                      loop
                         if No (Linker_Section_Pragma (Ent)) then
                            Set_Linker_Section_Pragma (Ent, N);
+
+                           --  Propagate it to its ultimate aliased entity to
+                           --  facilitate the backend processing this attribute
+                           --  in instantiations of generic subprograms.
+
+                           if Present (Alias (Ent)) then
+                              Set_Linker_Section_Pragma
+                                (Ultimate_Alias (Ent), N);
+                           end if;
 
                            --  A pragma that applies to a Ghost entity becomes
                            --  Ghost for the purposes of legality checks and
