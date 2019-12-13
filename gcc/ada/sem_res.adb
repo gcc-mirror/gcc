@@ -2640,17 +2640,43 @@ package body Sem_Res is
                   Set_Etype (N, Expr_Type);
 
                --  AI05-0139-2: Expression is overloaded because type has
-               --  implicit dereference. If type matches context, no implicit
-               --  dereference is involved. If the expression is an entity,
-               --  generate a reference to it, as this is not done for an
-               --  overloaded construct during analysis.
+               --  implicit dereference. The context may be the one that
+               --  requires implicit dereferemce.
 
                elsif Has_Implicit_Dereference (Expr_Type) then
                   Set_Etype (N, Expr_Type);
                   Set_Is_Overloaded (N, False);
 
-                  if Is_Entity_Name (N) then
+               --  If the expression is an entity, generate a reference
+               --  to it, as this is not done for an overloaded construct
+               --  during analysis.
+
+                  if Is_Entity_Name (N)
+                    and then Comes_From_Source (N)
+                  then
                      Generate_Reference (Entity (N), N);
+
+                     --  Examine access discriminants of entity type,
+                     --  to check whether one of them yields the
+                     --  expected type.
+
+                     declare
+                        Disc : Entity_Id :=
+                          First_Discriminant (Etype (Entity (N)));
+
+                     begin
+                        while Present (Disc) loop
+                           exit when Is_Access_Type (Etype (Disc))
+                             and then Has_Implicit_Dereference (Disc)
+                             and then Designated_Type (Etype (Disc)) = Typ;
+
+                           Next_Discriminant (Disc);
+                        end loop;
+
+                        if Present (Disc) then
+                           Build_Explicit_Dereference (N, Disc);
+                        end if;
+                     end;
                   end if;
 
                   exit Interp_Loop;

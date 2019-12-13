@@ -1,3 +1,14 @@
+2019-12-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve): IF an entity reference is overloaded
+	because its type has an Implicit_Dereference aspect, we must
+	examine the discriminants of the type to determine whether an
+	explicit dereference must be inserted for use in code
+	generation. Previously this was done for other expressions but
+	not for entity references by themselves.  This was sufficient to
+	handle uses of the aspect in container handling and iteration,
+	but not more generally.
+
 2019-12-13  Javier Miranda  <miranda@adacore.com>
 
 	* exp_disp.ads (Expand_Interface_Thunk): Adding one formal (the
