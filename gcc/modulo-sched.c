@@ -1331,9 +1331,6 @@ setup_sched_infos (void)
    version may be entered.  Just a guess.  */
 #define PROB_SMS_ENOUGH_ITERATIONS 80
 
-/* Used to calculate the upper bound of ii.  */
-#define MAXII_FACTOR 2
-
 /* Main entry point, perform SMS scheduling on the loops of the function
    that consist of single basic blocks.  */
 static void
@@ -1597,7 +1594,7 @@ sms_schedule (void)
       rec_mii = sms_order_nodes (g, mii, node_order, &max_asap);
       mii = MAX (res_MII (g), rec_mii);
       mii = MAX (mii, 1);
-      maxii = MAX (max_asap, MAXII_FACTOR * mii);
+      maxii = MAX (max_asap, param_sms_max_ii_factor * mii);
 
       if (dump_file)
 	fprintf (dump_file, "SMS iis %d %d %d (rec_mii, mii, maxii)\n",
@@ -1636,7 +1633,7 @@ sms_schedule (void)
 	      gcc_assert (stage_count >= 1);
 	    }
 
-	  /* The default value of PARAM_SMS_MIN_SC is 2 as stage count of
+	  /* The default value of param_sms_min_sc is 2 as stage count of
 	     1 means that there is no interleaving between iterations thus
 	     we let the scheduling passes do the job in this case.  */
 	  if (stage_count < param_sms_min_sc
@@ -1827,11 +1824,6 @@ sms_schedule (void)
    In rare cases, it may be better to allow windows of II+1 cycles.
    The window would then start and end on the same row, but with
    different "must precede" and "must follow" requirements.  */
-
-/* A limit on the number of cycles that resource conflicts can span.  ??? Should
-   be provided by DFA, and be dependent on the type of insn scheduled.  Currently
-   set to 0 to save compile time.  */
-#define DFA_HISTORY param_sms_dfa_history
 
 /* A threshold for the number of repeated unsuccessful attempts to insert
    an empty row, before we flush the partial schedule and start over.  */
@@ -2136,7 +2128,12 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
   auto_sbitmap must_follow (num_nodes);
   auto_sbitmap tobe_scheduled (num_nodes);
 
-  partial_schedule_ptr ps = create_partial_schedule (ii, g, DFA_HISTORY);
+  /* Value of param_sms_dfa_history is a limit on the number of cycles that
+     resource conflicts can span.  ??? Should be provided by DFA, and be
+     dependent on the type of insn scheduled.  Set to 0 by default to save
+     compile time.  */
+  partial_schedule_ptr ps = create_partial_schedule (ii, g,
+						     param_sms_dfa_history);
 
   bitmap_ones (tobe_scheduled);
   bitmap_clear (sched_nodes);
