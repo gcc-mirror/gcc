@@ -1,5 +1,10 @@
 2019-12-13  Javier Miranda  <miranda@adacore.com>
 
+	* exp_unst.adb (Unnest_Subprogram): Generate an extra temporary
+	to facilitate the C backend processing dereferences.
+
+2019-12-13  Javier Miranda  <miranda@adacore.com>
+
 	* sem_prag.adb (Analyze_Pragma): Propagate the
 	Linker_Section_Attribute to the ultimate alias of the subprogram
 	to facilitate the C backend processing this attribute.
