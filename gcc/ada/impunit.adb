@@ -609,7 +609,9 @@ package body Impunit is
     ("a-cforse", F),  -- Ada.Containers.Formal_Ordered_Sets
     ("a-cforma", F),  -- Ada.Containers.Formal_Ordered_Maps
     ("a-cfhase", F),  -- Ada.Containers.Formal_Hashed_Sets
-    ("a-cfhama", F)); -- Ada.Containers.Formal_Hashed_Maps
+    ("a-cfhama", F),  -- Ada.Containers.Formal_Hashed_Maps
+    ("a-cvgpso", F)   -- Ada.Containers.Vectors.Generic_Parallel_Sorting from
+   );                 -- GNATCOLL.OMP
 
    -----------------------
    -- Alternative Units --
