@@ -423,11 +423,6 @@ ipa_merge_profiles (struct cgraph_node *dst,
   if (!src->count.initialized_p ()
       || !(src->count.ipa () == src->count))
     return;
-  if (symtab->dump_file)
-    {
-      fprintf (symtab->dump_file, "Merging profiles of %s to %s\n",
-	       src->dump_name (), dst->dump_name ());
-    }
   profile_count orig_count = dst->count;
 
   /* Either sum the profiles if both are IPA and not global0, or
@@ -450,6 +445,19 @@ ipa_merge_profiles (struct cgraph_node *dst,
   /* If no updating needed return early.  */
   if (dst->count == orig_count)
     return;
+
+  if (symtab->dump_file)
+    {
+      fprintf (symtab->dump_file, "Merging profiles of %s count:",
+	       src->dump_name ());
+      src->count.dump (symtab->dump_file);
+      fprintf (symtab->dump_file, " to %s count:",
+	       dst->dump_name ());
+      orig_count.dump (symtab->dump_file);
+      fprintf (symtab->dump_file, " resulting count:");
+      dst->count.dump (symtab->dump_file);
+      fprintf (symtab->dump_file, "\n");
+    }
 
   /* First handle functions with no gimple body.  */
   if (dst->thunk.thunk_p || dst->alias
@@ -516,45 +524,86 @@ ipa_merge_profiles (struct cgraph_node *dst,
   else 
     {
       basic_block srcbb, dstbb;
+      struct cgraph_edge *e, *e2;
 
-      FOR_ALL_BB_FN (srcbb, srccfun)
+      for (e = dst->callees, e2 = src->callees; e && e2 && match;
+	   e2 = e2->next_callee, e = e->next_callee)
 	{
-	  unsigned int i;
-
-	  dstbb = BASIC_BLOCK_FOR_FN (dstcfun, srcbb->index);
-	  if (dstbb == NULL)
+	  if (gimple_bb (e->call_stmt)->index
+	      != gimple_bb (e2->call_stmt)->index)
 	    {
 	      if (symtab->dump_file)
 		fprintf (symtab->dump_file,
-			 "No matching block for bb %i.\n",
-			 srcbb->index);
+			 "Giving up; call stmt mismatch.\n");
 	      match = false;
-	      break;
-	    }
-	  if (EDGE_COUNT (srcbb->succs) != EDGE_COUNT (dstbb->succs))
-	    {
-	      if (symtab->dump_file)
-		fprintf (symtab->dump_file,
-			 "Edge count mismatch for bb %i.\n",
-			 srcbb->index);
-	      match = false;
-	      break;
-	    }
-	  for (i = 0; i < EDGE_COUNT (srcbb->succs); i++)
-	    {
-	      edge srce = EDGE_SUCC (srcbb, i);
-	      edge dste = EDGE_SUCC (dstbb, i);
-	      if (srce->dest->index != dste->dest->index)
-		{
-		  if (symtab->dump_file)
-		    fprintf (symtab->dump_file,
-			     "Succ edge mismatch for bb %i.\n",
-			     srce->dest->index);
-		  match = false;
-		  break;
-		}
 	    }
 	}
+      if (e || e2)
+	{
+	  if (symtab->dump_file)
+	    fprintf (symtab->dump_file,
+		     "Giving up; number of calls differs.\n");
+	  match = false;
+	}
+      for (e = dst->indirect_calls, e2 = src->indirect_calls; e && e2 && match;
+	   e2 = e2->next_callee, e = e->next_callee)
+	{
+	  if (gimple_bb (e->call_stmt)->index
+	      != gimple_bb (e2->call_stmt)->index)
+	    {
+	      if (symtab->dump_file)
+		fprintf (symtab->dump_file,
+			 "Giving up; indirect call stmt mismatch.\n");
+	      match = false;
+	    }
+	}
+      if (e || e2)
+	{
+	  if (symtab->dump_file)
+	    fprintf (symtab->dump_file,
+		     "Giving up; number of indirect calls differs.\n");
+	  match=false;
+	}
+
+      if (match)
+	FOR_ALL_BB_FN (srcbb, srccfun)
+	  {
+	    unsigned int i;
+
+	    dstbb = BASIC_BLOCK_FOR_FN (dstcfun, srcbb->index);
+	    if (dstbb == NULL)
+	      {
+		if (symtab->dump_file)
+		  fprintf (symtab->dump_file,
+			   "No matching block for bb %i.\n",
+			   srcbb->index);
+		match = false;
+		break;
+	      }
+	    if (EDGE_COUNT (srcbb->succs) != EDGE_COUNT (dstbb->succs))
+	      {
+		if (symtab->dump_file)
+		  fprintf (symtab->dump_file,
+			   "Edge count mismatch for bb %i.\n",
+			   srcbb->index);
+		match = false;
+		break;
+	      }
+	    for (i = 0; i < EDGE_COUNT (srcbb->succs); i++)
+	      {
+		edge srce = EDGE_SUCC (srcbb, i);
+		edge dste = EDGE_SUCC (dstbb, i);
+		if (srce->dest->index != dste->dest->index)
+		  {
+		    if (symtab->dump_file)
+		      fprintf (symtab->dump_file,
+			       "Succ edge mismatch for bb %i.\n",
+			       srce->dest->index);
+		    match = false;
+		    break;
+		  }
+	      }
+	  }
     }
   if (match)
     {
@@ -626,6 +675,70 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	   e2 = (e2 ? e2->next_callee : NULL), e = e->next_callee)
 	{
 	  profile_count count = gimple_bb (e->call_stmt)->count;
+	  if (copy_counts)
+	    {
+	      e->indirect_info->common_target_id
+		      = e2->indirect_info->common_target_id;
+	      e->indirect_info->common_target_probability
+		      = e2->indirect_info->common_target_probability;
+	    }
+	  else if (e->indirect_info->common_target_id
+		   || e2->indirect_info->common_target_id)
+	    {
+	      sreal scale1
+		 = e->count.ipa().to_sreal_scale (count);
+	      sreal scale2
+		 = e2->count.ipa().to_sreal_scale (count);
+
+	      if (scale1 == 0 && scale2 == 0)
+		scale1 = scale2 = 1;
+	      sreal sum = scale1 + scale2;
+	      int scaled_probability1
+		      = ((sreal)e->indirect_info->common_target_probability
+			* scale1 / sum).to_int ();
+	      int scaled_probability2
+		      = ((sreal)e2->indirect_info->common_target_probability
+			 * scale2 / sum).to_int ();
+	      if (symtab->dump_file)
+		{
+		  fprintf (symtab->dump_file,
+			   "Merging common targets %i prob %i"
+			   " and %i prob %i with scales %f %f\n",
+			   e->indirect_info->common_target_id,
+			   e->indirect_info->common_target_probability,
+			   e2->indirect_info->common_target_id,
+			   e2->indirect_info->common_target_probability,
+			   scale1.to_double (),
+			   scale2.to_double ());
+		  fprintf (symtab->dump_file, "Combined BB count ");
+		  count.dump (symtab->dump_file);
+		  fprintf (symtab->dump_file, " dst edge count ");
+		  e->count.dump (symtab->dump_file);
+		  fprintf (symtab->dump_file, " src edge count ");
+		  e2->count.dump (symtab->dump_file);
+		  fprintf (symtab->dump_file, "\n");
+		}
+	      if (e->indirect_info->common_target_id
+		  == e2->indirect_info->common_target_id)
+		e->indirect_info->common_target_probability
+		       	= scaled_probability1 + scaled_probability2;
+	      else if (!e2->indirect_info->common_target_id
+		       || scaled_probability1 > scaled_probability2)
+		e->indirect_info->common_target_probability
+		       	= scaled_probability1;
+	      else 
+		{
+		  e->indirect_info->common_target_id
+			  = e2->indirect_info->common_target_id;
+		  e->indirect_info->common_target_probability
+			  = scaled_probability2;
+		}
+	      if (symtab->dump_file)
+		fprintf (symtab->dump_file, "Merged as %i prob %i\n",
+			 e->indirect_info->common_target_id,
+			 e->indirect_info->common_target_probability);
+	    }
+
 	  /* When call is speculative, we need to re-distribute probabilities
 	     the same way as they was.  This is not really correct because
 	     in the other copy the speculation may differ; but probably it
@@ -647,8 +760,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
 		     indirect edge.  */
 		  if (!e2)
 		    {
-		      if (dump_file)
-		        fprintf (dump_file,
+		      if (symtab->dump_file)
+		        fprintf (symtab->dump_file,
 				 "Mismatch in merging indirect edges\n");
 		    }
 		  else if (!e2->speculative)
