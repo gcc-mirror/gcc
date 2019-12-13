@@ -1,3 +1,8 @@
+2019-12-13  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_unst.adb (Unnest_Subprogram): Account for trees produced
+	by Annex E constructs.
+
 2019-12-13  Ghjuvan Lacambre  <lacambre@adacore.com>
 
 	* doc/gnat_rm/implementation_defined_pragmas.rst: Update

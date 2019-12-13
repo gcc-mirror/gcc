@@ -414,11 +414,14 @@ package body Exp_Unst is
       then
          return;
 
-      --  Only unnest when generating code for the main source unit or if we're
-      --  unnesting for inline.
+      --  Only unnest when generating code for the main source unit or if
+      --  we're unnesting for inline.  But in some Annex E cases the Sloc
+      --  points to a different unit, so also make sure that the Parent
+      --  isn't in something that we know we're generating code for.
 
       elsif not For_Inline
         and then not In_Extended_Main_Code_Unit (Subp_Body)
+        and then not In_Extended_Main_Code_Unit (Parent (Subp_Body))
       then
          return;
       end if;
