@@ -7607,7 +7607,8 @@ package body Exp_Ch6 is
            and then Ekind (Node (Iface_DT_Ptr)) = E_Constant
          loop
             pragma Assert (Has_Thunks (Node (Iface_DT_Ptr)));
-            Expand_Interface_Thunk (Prim, Thunk_Id, Thunk_Code);
+            Expand_Interface_Thunk (Prim, Thunk_Id, Thunk_Code,
+              Iface => Related_Type (Node (Iface_DT_Ptr)));
 
             if Present (Thunk_Code) then
                Insert_Actions_After (N, New_List (
