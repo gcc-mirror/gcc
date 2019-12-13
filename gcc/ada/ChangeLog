@@ -1,3 +1,17 @@
+2019-12-13  Justin Squirek  <squirek@adacore.com>
+
+	* sem_res.adb (Resolve_Allocator): Add calls to
+	Check_Cond_Expr_Accessibility when a conditional expression is
+	found.
+	(Check_Allocator_Discrim_Accessibility_Exprs): Created to
+	recursively traverse a potentially compound conditional
+	expression and perform accessibility checks for each
+	alternative.
+	* sem_util.adb (Dynamic_Accessibility_Level): Avoid use of
+	original node of the expression in question so we can handle
+	dynamic accessibility in the limited case of a constant folded
+	conditional expression.
+
 2019-12-13  Steve Baird  <baird@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Op_Eq.Is_Equality): Move this function

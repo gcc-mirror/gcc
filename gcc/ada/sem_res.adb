@@ -4965,6 +4965,12 @@ package body Sem_Res is
       --  the cases of a constraint expression which is an access attribute or
       --  an access discriminant.
 
+      procedure Check_Allocator_Discrim_Accessibility_Exprs
+        (Curr_Exp  : Node_Id;
+         Alloc_Typ : Entity_Id);
+      --  Dispatch checks performed by Check_Allocator_Discrim_Accessibility
+      --  across all expressions within a given conditional expression.
+
       function In_Dispatching_Context return Boolean;
       --  If the allocator is an actual in a call, it is allowed to be class-
       --  wide when the context is not because it is a controlling actual.
@@ -5015,6 +5021,62 @@ package body Sem_Res is
             null;
          end if;
       end Check_Allocator_Discrim_Accessibility;
+
+      -------------------------------------------------
+      -- Check_Allocator_Discrim_Accessibility_Exprs --
+      -------------------------------------------------
+
+      procedure Check_Allocator_Discrim_Accessibility_Exprs
+        (Curr_Exp  : Node_Id;
+         Alloc_Typ : Entity_Id)
+      is
+         Alt      : Node_Id;
+         Expr     : Node_Id;
+         Disc_Exp : constant Node_Id := Original_Node (Curr_Exp);
+      begin
+         --  When conditional expressions are constant folded we know at
+         --  compile time which expression to check - so don't bother with
+         --  the rest of the cases.
+
+         if Nkind (Curr_Exp) = N_Attribute_Reference then
+            Check_Allocator_Discrim_Accessibility (Curr_Exp, Alloc_Typ);
+
+         --  Non-constant-folded if expressions
+
+         elsif Nkind (Disc_Exp) = N_If_Expression then
+            --  Check both expressions if they are still present in the face
+            --  of expansion.
+
+            Expr := Next (First (Expressions (Disc_Exp)));
+            if Present (Expr) then
+               Check_Allocator_Discrim_Accessibility_Exprs (Expr, Alloc_Typ);
+               Expr := Next (Expr);
+               if Present (Expr) then
+                  Check_Allocator_Discrim_Accessibility_Exprs
+                    (Expr, Alloc_Typ);
+               end if;
+            end if;
+
+         --  Non-constant-folded case expressions
+
+         elsif Nkind (Disc_Exp) = N_Case_Expression then
+            --  Check all alternatives
+
+            Alt := First (Alternatives (Disc_Exp));
+            while Present (Alt) loop
+               Check_Allocator_Discrim_Accessibility_Exprs
+                 (Expression (Alt), Alloc_Typ);
+
+               Next (Alt);
+            end loop;
+
+         --  Base case, check the accessibility of the original node of the
+         --  expression.
+
+         else
+            Check_Allocator_Discrim_Accessibility (Disc_Exp, Alloc_Typ);
+         end if;
+      end Check_Allocator_Discrim_Accessibility_Exprs;
 
       ----------------------------
       -- In_Dispatching_Context --
@@ -5167,7 +5229,8 @@ package body Sem_Res is
 
                while Present (Discrim) and then Present (Disc_Exp) loop
                   if Ekind (Etype (Discrim)) = E_Anonymous_Access_Type then
-                     Check_Allocator_Discrim_Accessibility (Disc_Exp, Typ);
+                     Check_Allocator_Discrim_Accessibility_Exprs
+                       (Disc_Exp, Typ);
                   end if;
 
                   Next_Discriminant (Discrim);
@@ -5225,12 +5288,13 @@ package body Sem_Res is
                while Present (Discrim) and then Present (Constr) loop
                   if Ekind (Etype (Discrim)) = E_Anonymous_Access_Type then
                      if Nkind (Constr) = N_Discriminant_Association then
-                        Disc_Exp := Original_Node (Expression (Constr));
+                        Disc_Exp := Expression (Constr);
                      else
-                        Disc_Exp := Original_Node (Constr);
+                        Disc_Exp := Constr;
                      end if;
 
-                     Check_Allocator_Discrim_Accessibility (Disc_Exp, Typ);
+                     Check_Allocator_Discrim_Accessibility_Exprs
+                       (Disc_Exp, Typ);
                   end if;
 
                   Next_Discriminant (Discrim);
