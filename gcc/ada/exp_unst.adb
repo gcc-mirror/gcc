@@ -27,6 +27,7 @@ with Atree;    use Atree;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
+with Exp_Util; use Exp_Util;
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -2345,6 +2346,18 @@ package body Exp_Unst is
                --  expect any exceptions)
 
                Analyze_And_Resolve (UPJ.Ref, Typ, Suppress => All_Checks);
+
+               --  Generate an extra temporary to facilitate the C backend
+               --  processing this dereference
+
+               if Opt.Modify_Tree_For_C
+                 and then Nkind_In (Parent (UPJ.Ref),
+                            N_Type_Conversion,
+                            N_Unchecked_Type_Conversion)
+               then
+                  Force_Evaluation (UPJ.Ref, Mode => Strict);
+               end if;
+
                Pop_Scope;
             end Rewrite_One_Ref;
          end;
