@@ -1,3 +1,8 @@
+2019-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92904
+	* gcc.c-torture/execute/pr92904.c: New test.
+
 2019-12-12  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/92898
