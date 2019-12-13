@@ -1,3 +1,30 @@
+2019-12-13  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (sdwa): New mode attribute.
+	(VCVT_FROM_MODE): Rename to ...
+	(VCVT_MODE): ... this.
+	(VCVT_TO_MODE): Delete mode iterator.
+	(VCVT_FMODE): New mode iterator.
+	(VCVT_IMODE): Likewise.
+	(<cvt_name><VCVT_FROM_MODE:mode><VCVT_TO_MODE:mode>2<exec>): Change ...
+	(<cvt_name><VCVT_MODE:mode><VCVT_FMODE:mode>2<exec>): ... to this.
+	(<cvt_name><VCVT_FMODE:mode><VCVT_IMODE:mode>2<exec>): New.
+	(zero_convert): New code iterator.
+	(convop): New code attribute.
+	(<convop><VEC_ALL1REG_INT_ALT:mode><VEC_ALL1REG_INT_MODE:mode>2<exec>)
+	: New.
+	(extend<VEC_ALL1REG_INT_ALT:mode><VEC_ALL1REG_INT_MODE:mode>2<exec>)
+	: New.
+	(vec_truncatev64div64si): Rename to ...
+	(truncv64di<mode>2): ... this and implement sub-dword patterns.
+	(vec_truncatev64div64si_exec): Rename to ...
+	(truncv64di<mode>2_exec): ... this and implement sub-dword patterns.
+	(<convop><mode>v64di2): New insn_and_split.
+	(<convop><mode>v64di2_exec): Likewise.
+	(mask_gather_load<mode>): Update truncate names.
+	(mask_scatter_store<mode>): Likewise.
+	* config/gcn/gcn.c (gcn_expand_scaled_offsets): Update truncate names.
+
 2019-12-13  Dennis Zhang  <dennis.zhang@arm.com>
 
 	* config/aarch64/aarch64-arches.def (armv8.6-a): New.
