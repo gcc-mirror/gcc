@@ -1,5 +1,13 @@
 2019-12-13  Roman Zhuykov  <zhroma@ispras.ru>
 
+	* modulo-sched.c (sms_schedule): Use param_sms_max_ii_factor
+	value instead of macro.  Adjust comment.
+	(sms_schedule_by_order): Use parameter value without macro.
+	* params.opt: Add ranges for modulo scheduler parameters,
+	set param_sms_max_ii_factor = 2 by default.
+
+2019-12-13  Roman Zhuykov  <zhroma@ispras.ru>
+
 	* ddg.c (create_ddg): Init max_dist array for each node.
 	(free_ddg): Free max_dist array.
 	(create_ddg_edge): Use bool field instead of aux union.
