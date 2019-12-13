@@ -22334,7 +22334,18 @@ package body Sem_Ch3 is
                if Original_Record_Component (Comp) = Entity (Name (N))
                  or else Chars (Comp) = Chars (Name (N))
                then
-                  Set_Name (N, New_Occurrence_Of (Comp, Sloc (N)));
+                  --  Make sure to preserve the type coming from the parent on
+                  --  the Name, even if the subtype of the discriminant can be
+                  --  constrained, so that discrete choices inherited from the
+                  --  parent in the variant part are not flagged as violating
+                  --  the constraints of the subtype.
+
+                  declare
+                     Typ : constant Entity_Id := Etype (Name (N));
+                  begin
+                     Rewrite (Name (N), New_Occurrence_Of (Comp, Sloc (N)));
+                     Set_Etype (Name (N), Typ);
+                  end;
                   exit;
                end if;
 
