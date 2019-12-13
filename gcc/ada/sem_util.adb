@@ -12855,6 +12855,30 @@ package body Sem_Util is
         and then not In_Private_Part (Scope_Id);
    end In_Visible_Part;
 
+   -----------------------------
+   -- In_While_Loop_Condition --
+   -----------------------------
+
+   function In_While_Loop_Condition (N : Node_Id) return Boolean is
+      Prev : Node_Id := N;
+      P    : Node_Id := Parent (N);
+      --  P and Prev will be used for traversing the AST, while maintaining an
+      --  invariant that P = Parent (Prev).
+   begin
+      loop
+         if No (P) then
+            return False;
+         elsif Nkind (P) = N_Iteration_Scheme
+           and then Prev = Condition (P)
+         then
+            return True;
+         else
+            Prev := P;
+            P := Parent (P);
+         end if;
+      end loop;
+   end In_While_Loop_Condition;
+
    --------------------------------
    -- Incomplete_Or_Partial_View --
    --------------------------------

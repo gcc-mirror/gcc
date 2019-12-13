@@ -1446,6 +1446,9 @@ package Sem_Util is
    --  package specification. The package must be on the scope stack, and the
    --  corresponding private part must not.
 
+   function In_While_Loop_Condition (N : Node_Id) return Boolean;
+   --  Returns true if the expression N occurs within the condition of a while
+
    function Incomplete_Or_Partial_View (Id : Entity_Id) return Entity_Id;
    --  Given the entity of a constant or a type, retrieve the incomplete or
    --  partial view of the same entity. Note that Id may not have a partial
