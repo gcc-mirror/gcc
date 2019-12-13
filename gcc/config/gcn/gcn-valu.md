@@ -1740,22 +1740,22 @@
   [(set_attr "type" "vop3a")
    (set_attr "length" "8")])
 
-(define_insn "mulv64si3<exec>"
-  [(set (match_operand:V64SI 0 "register_operand"  "=   v")
-	(mult:V64SI
-	  (match_operand:V64SI 1 "gcn_alu_operand" "%vSvA")
-	  (match_operand:V64SI 2 "gcn_alu_operand" " vSvA")))]
+(define_insn "mul<mode>3<exec>"
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand"  "=   v")
+	(mult:VEC_ALL1REG_INT_MODE
+	  (match_operand:VEC_ALL1REG_INT_MODE 1 "gcn_alu_operand" "%vSvA")
+	  (match_operand:VEC_ALL1REG_INT_MODE 2 "gcn_alu_operand" " vSvA")))]
   ""
   "v_mul_lo_u32\t%0, %1, %2"
   [(set_attr "type" "vop3a")
    (set_attr "length" "8")])
 
-(define_insn "mulv64si3_dup<exec>"
-  [(set (match_operand:V64SI 0 "register_operand"  "=   v")
-	(mult:V64SI
-	  (match_operand:V64SI 1 "gcn_alu_operand" "%vSvA")
-	  (vec_duplicate:V64SI
-	    (match_operand:SI 2 "gcn_alu_operand"  "  SvA"))))]
+(define_insn "mul<mode>3_dup<exec>"
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand"  "=   v")
+	(mult:VEC_ALL1REG_INT_MODE
+	  (match_operand:VEC_ALL1REG_INT_MODE 1 "gcn_alu_operand" "%vSvA")
+	  (vec_duplicate:VEC_ALL1REG_INT_MODE
+	    (match_operand:<SCALAR_MODE> 2 "gcn_alu_operand"	  "  SvA"))))]
   ""
   "v_mul_lo_u32\t%0, %1, %2"
   [(set_attr "type" "vop3a")
