@@ -1,4 +1,4 @@
-//  { dg-do run }
+//  { dg-additional-options "-fsyntax-only -w" }
 
 // Check that we decline return type deduction for lambda coroutines.
 
