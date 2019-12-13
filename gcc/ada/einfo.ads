@@ -929,12 +929,12 @@ package Einfo is
 --
 --       In this case, if primitive operations have been declared for R, at
 --       the point of declaration of G, then the Derived_Type_Link of R is set
---       to point to the entity for G. This is used to generate warnings for
---       rep clauses that appear later on for R, which might result in an
---       unexpected implicit conversion operation.
+--       to point to the entity for G. This is used to generate warnings and
+--       errors for rep clauses that appear later on for R, which might result
+--       in an unexpected (or illegal) implicit conversion operation.
 --
 --       Note: if there is more than one such derived type, the link will point
---       to the last one (this is only used in generating warning messages).
+--       to the last one.
 
 --    Designated_Type (synthesized)
 --       Applies to access types. Returns the designated type. Differs from
