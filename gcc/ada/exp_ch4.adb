@@ -12471,6 +12471,27 @@ package body Exp_Ch4 is
          end;
       end if;
 
+      --  Generate an extra temporary for cases unsupported by the C backend
+
+      if Modify_Tree_For_C then
+         declare
+            Source     : constant Node_Id := Unqual_Conv (Expression (N));
+            Source_Typ : Entity_Id        := Get_Full_View (Etype (Source));
+
+         begin
+            if Is_Packed_Array (Source_Typ) then
+               Source_Typ := Packed_Array_Impl_Type (Source_Typ);
+            end if;
+
+            if Nkind (Source) = N_Function_Call
+              and then (Is_Composite_Type (Etype (Source))
+                          or else Is_Composite_Type (Target_Type))
+            then
+               Force_Evaluation (Source);
+            end if;
+         end;
+      end if;
+
       --  Nothing to do if conversion is safe
 
       if Safe_Unchecked_Type_Conversion (N) then

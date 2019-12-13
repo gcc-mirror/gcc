@@ -1,3 +1,8 @@
+2019-12-13  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Unchecked_Type_Conversion): Generate an
+	extra temporary for cases unsupported by the C backend.
+
 2019-12-13  Steve Baird  <baird@adacore.com>
 
 	* einfo.ads: Correct comment for Derived_Type_Link to reflect
