@@ -4717,7 +4717,7 @@ package body Sem_Res is
 
             --  Check bad case of atomic/volatile argument (RM C.6(12))
 
-            if Is_By_Reference_Type (Etype (F))
+            if (Is_By_Reference_Type (Etype (F)) or else Is_Aliased (F))
               and then Comes_From_Source (N)
             then
                if Is_Atomic_Object (A)
