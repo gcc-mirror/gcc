@@ -1,3 +1,20 @@
+2019-12-13  Steve Baird  <baird@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Eq.Is_Equality): Move this function
+	from within Expand_N_Op_Eq.Find_Equality out to immediately
+	within Expand_N_Op_Eq in order to give it greater visibility.
+	Add a new Typ parameter (defaulted to Empty) which, if
+	non-empty, means the function will return False in the case of
+	an equality op for some other type.
+	* (Expand_N_Op_Eq.User_Defined_Primitive_Equality_Op): A new
+	function. Given an untagged record type, finds the corresponding
+	user-defined primitive equality op (if any).  May return Empty.
+	Ignores visibility.
+	* (Expand_N_Op): For Ada2012 or later, check for presence of a
+	user-defined primitive equality op before falling back on the
+	usual predefined component-by-component comparison. If found,
+	then call the user-defined op instead.
+
 2019-12-13  Justin Squirek  <squirek@adacore.com>
 
 	* sem_ch6.adb (Check_Overriding_Indicator): Modify condition to
