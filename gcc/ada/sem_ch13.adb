@@ -3788,6 +3788,15 @@ package body Sem_Ch13 is
                Set_From_Aspect_Specification (Aitem);
             end if;
 
+            --  For an aspect that applies to a type, indicate whether it
+            --  appears on a partial view of the type.
+
+            if Is_Type (E)
+              and then Is_Private_Type (E)
+            then
+               Set_Aspect_On_Partial_View (Aspect);
+            end if;
+
             --  In the context of a compilation unit, we directly put the
             --  pragma in the Pragmas_After list of the N_Compilation_Unit_Aux
             --  node (no delay is required here) except for aspects on a

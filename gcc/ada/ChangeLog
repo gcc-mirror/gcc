@@ -1,3 +1,12 @@
+2019-12-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads, sinfo.adb (Aspect_On_Partial_View,
+	Set_Aspect_On_Partial_View): New flag for use by SPARK, to
+	indicate whether an aspect that appears on a type declaration
+	applies to the partial view of that type.
+	* sem_ch13.adb (Analyze_Aspect_Specification): Set new flag
+	appropriately.
+
 2019-12-12  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Same_Reprewentation): if the actual in a call is
