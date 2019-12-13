@@ -1,3 +1,5 @@
+/* { dg-do run { target openacc_nvidia_accel_selected } } */
+
 /* Test mapping of async values to specific underlying queues.  */
 
 #undef NDEBUG

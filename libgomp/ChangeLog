@@ -1,3 +1,14 @@
+2019-12-13  Andrew Stubbs  <ams@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-init-1.c: Handle gcn.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-parallel-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/asyncwait-nop-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/function-not-offloaded.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/async_queue-1.c: Disable on GCN.
+	* testsuite/libgomp.oacc-c-c++-common/tile-1.c: Likewise.
+
 2019-12-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	* openacc.f90 (module openacc_kinds): Use 'PUBLIC' to mark all symbols
