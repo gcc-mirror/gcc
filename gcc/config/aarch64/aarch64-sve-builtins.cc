@@ -3352,6 +3352,26 @@ verify_type_context (location_t loc, type_context_kind context,
       if (!silent_p)
 	error_at (loc, "array elements cannot have SVE type %qT", type);
       return false;
+
+    case TCTX_ALLOCATION:
+      if (!silent_p)
+	error_at (loc, "cannot allocate objects with SVE type %qT", type);
+      return false;
+
+    case TCTX_DEALLOCATION:
+      if (!silent_p)
+	error_at (loc, "cannot delete objects with SVE type %qT", type);
+      return false;
+
+    case TCTX_EXCEPTIONS:
+      if (!silent_p)
+	error_at (loc, "cannot throw or catch SVE type %qT", type);
+      return false;
+
+    case TCTX_CAPTURE_BY_COPY:
+      if (!silent_p)
+	error_at (loc, "capture by copy of SVE type %qT", type);
+      return false;
     }
   gcc_unreachable ();
 }

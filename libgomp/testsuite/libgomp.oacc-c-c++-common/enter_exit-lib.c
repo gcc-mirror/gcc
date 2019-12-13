@@ -1,4 +1,4 @@
-/* Verify enter/exit data interoperablilty between pragmas and
+/* Verify enter/exit data interoperability between pragmas and
    acc library calls.  */
 
 /* { dg-do run } */

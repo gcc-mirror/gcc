@@ -8,7 +8,7 @@ void
 test ()
 {
   int (&r)[1] = const_cast<int(&)[1]>(arr);
-  int (&r2)[] = const_cast<int(&)[]>(arr); // { dg-error "invalid" }
+  int (&r2)[] = const_cast<int(&)[]>(arr); // { dg-error "17:invalid .const_cast." }
   int (&r3)[1] = (int(&)[1]) arr;
   int (&r4)[] = (int(&)[]) arr;
   int (&r5)[1] = static_cast<int(&)[1]>(arr);
@@ -23,5 +23,5 @@ test ()
   int(*p6)[] = (int(*)[1]) (int(*)[]) &arr;
   int(*p7)[] = static_cast<int(*)[]>(&arr);
   int(*p8)[] = static_cast<int(*)[1]>(&arr);
-  int(*p9)[] = static_cast<int(*)[1]>(&arr2); // { dg-error "invalid" }
+  int(*p9)[] = static_cast<int(*)[1]>(&arr2); // { dg-error "16:invalid .static_cast." }
 }

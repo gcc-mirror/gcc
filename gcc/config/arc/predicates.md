@@ -439,6 +439,7 @@
 	      || code == ORDERED || code == UNORDERED);
 
     case E_CC_FPUmode:
+    case E_CC_FPUEmode:
       return 1;
     case E_CC_FPU_UNEQmode:
       return 1;

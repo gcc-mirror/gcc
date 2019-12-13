@@ -44,6 +44,7 @@
      _C+8, _C+9, _C+10, _C+11, _C+12, _C+13, _C+14, _C+15})
 #endif
 
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 namespace __gnu_cxx _GLIBCXX_VISIBILITY (default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -175,6 +176,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace
 
+#endif // __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #endif // __ARM_NEON
 
 #endif // _EXT_OPT_RANDOM_H

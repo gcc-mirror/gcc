@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-mem.h"
 #include "attribs.h"
 #include "tree-iterator.h"
+#include "target.h"
 
 static void push_eh_cleanup (tree);
 static tree prepare_eh_type (tree);
@@ -925,6 +926,10 @@ is_admissible_throw_operand_or_catch_parameter (tree t, bool is_throw)
 	    of throw is treated exactly as a function argument in a call
 	    (5.2.2) or the operand of a return statement.  */
   if (!complete_ptr_ref_or_void_ptr_p (type, expr))
+    return false;
+
+  tree nonref_type = non_reference (type);
+  if (!verify_type_context (input_location, TCTX_EXCEPTIONS, nonref_type))
     return false;
 
   /* 10.4/3 An abstract class shall not be used as a parameter type,

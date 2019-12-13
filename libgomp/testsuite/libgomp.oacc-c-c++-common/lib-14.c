@@ -48,7 +48,7 @@ main (int argc, char **argv)
 	abort ();
     }
 
-  acc_free (d);
+  acc_delete (h, N);
 
   for (i = 0; i < N; i++)
     {

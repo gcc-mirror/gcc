@@ -1,3 +1,108 @@
+2019-12-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/92898
+	* check.c (gfc_check_is_contiguous): Simplify check to handle
+	arbitrary NULL() argument.
+
+2019-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92899
+	* trans-openmp.c (gfc_trans_omp_atomic): For GFC_OMP_ATOMIC_SWAP,
+	do look through conversion on expr2 if any.
+
+2019-12-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/92897
+	* array.c (gfc_set_array_spec):  Remove invalid assert() triggered
+	by invalid Fortran code.
+
+2019-12-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91643
+	* trans-array.c (gfc_conv_array_parameter): Do not repack
+	an assumed rank dummy argument.
+
+2019-12-10  Martin Liska  <mliska@suse.cz>
+
+	PR fortran/92874
+	* dependency.c (gfc_dep_compare_expr): Bail out
+	when one of the arguments is null.
+
+2019-12-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92863
+	* misc.c (gfc_typename): If derived component is NULL for
+	derived or class, return "invalid type" or "invalid class",
+	respectively.
+
+2019-12-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92872
+	* trans-array.c (get_CFI_desc): Fix cond whether saved desc exists.
+
+2019-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.c (gfc_diagnostic_starter): Add pp_newline call before
+	call to diagnostic_show_locus.
+
+2019-12-09  Frederik Harwath  <frederik@codesourcery.com>
+
+	* trans-openmp.c (gfc_trans_omp_reduction_list): Pass correct location for each
+	clause to build_omp_clause.
+
+2018-12-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92780
+	* resolve.c (resolve_assoc_var): Issue error if the associating
+	entity is a program.
+
+2018-12-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92764
+	* interface.c (gfc_procedure_use): Check for existence of derived
+	component before using (twice).
+
+2019-12-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92755
+	* dependency.c (gfc_dep_resolver):  Move skipping of _data ref
+	into the loop.
+
+2019-12-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92793
+	* trans.c (gfc_get_location): Declare.
+	* trans.c (gfc_get_location): Define; returns column-corrected location.
+	(trans_runtime_error_vararg, gfc_trans_runtime_check,
+	gfc_generate_module_code): Use new function.
+	* trans-array.c (gfc_trans_auto_array_allocation): Likewise.
+	* trans-common.c (build_field, get_init_field, create_common): Likewise.
+	* trans-decl.c (gfc_build_label_decl, gfc_get_symbol_decl): Likewise.
+	* trans-openmp.c (gfc_trans_omp_reduction_list, gfc_trans_omp_clauses):
+	Likewise.
+	* trans-stmt.c (gfc_trans_if_1): Likewise.
+
+2019-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92775
+	* trans.h (struct lang_type, struct lang_decl): Remove span member.
+	(GFC_DECL_SPAN, GFC_TYPE_ARRAY_SPAN): Remove macros.
+	* trans-array.h (gfc_get_descriptor_offsets_for_info): Add another
+	argument.
+	* trans-array.c (gfc_get_descriptor_offsets_for_info): Add SPAN_OFF
+	argument and initialize *SPAN_OFF to the offset of span field.
+	* trans-types.c (gfc_get_array_descr_info): Adjust
+	gfc_get_descriptor_offsets_for_info caller.  Compute elem_size
+	as base->span instead of TYPE_SIZE_UNIT (etype) constant.
+
+2019-12-06  Tobias Burnus  <tobias@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* trans-openmp.c (gfc_build_conditional_assign,
+	gfc_build_conditional_assign_expr): New static functions.
+	(gfc_omp_finish_clause, gfc_trans_omp_clauses): Handle mapping of
+	absent optional arguments and fix mapping of present optional args.
+
 2019-12-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-openmp.c (gfc_omp_is_optional_argument,

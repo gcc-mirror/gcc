@@ -1502,7 +1502,7 @@ package body Freeze is
 
             --  In GNATprove mode this is where we can collect the inherited
             --  conditions, because we do not create the Check pragmas that
-            --  normally convey the the modified class-wide conditions on
+            --  normally convey the modified class-wide conditions on
             --  overriding operations.
 
             if GNATprove_Mode then

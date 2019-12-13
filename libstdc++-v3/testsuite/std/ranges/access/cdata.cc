@@ -51,17 +51,22 @@ struct R
   long l = 0;
 
   int* data() const { return nullptr; }
-  friend long* begin(R&& r) { return &r.l; }
-  friend const long* begin(const R&& r) { return &r.l + 1; }
+  friend long* begin(R&& r); // this function is not defined
+  friend const long* begin(const R& r) { return &r.l; }
+  friend const short* begin(const R&&); // not defined
 };
+
+// This is a lie, ranges::begin(R&&) returns a dangling iterator.
+template<> constexpr bool std::ranges::enable_safe_range<R> = true;
 
 void
 test03()
 {
   R r;
   const R& c = r;
-  VERIFY( std::ranges::cdata(std::move(r)) == std::ranges::data(std::move(c)) );
-  VERIFY( std::ranges::cdata(std::move(c)) == std::ranges::data(std::move(c)) );
+  VERIFY( std::ranges::cdata(r) == std::ranges::data(c) );
+  VERIFY( std::ranges::cdata(std::move(r)) == std::ranges::begin(c) );
+  VERIFY( std::ranges::cdata(std::move(c)) == std::ranges::begin(c) );
 }
 
 int

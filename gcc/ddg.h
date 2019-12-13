@@ -64,6 +64,10 @@ struct ddg_node
   sbitmap successors;
   sbitmap predecessors;
 
+  /* Temporary array used for Floyd-Warshall algorithm to find
+     scc recurrence length.  */
+  int *max_dist;
+
   /* For general use by algorithms manipulating the ddg.  */
   union {
     int count;
@@ -95,11 +99,8 @@ struct ddg_edge
   ddg_edge_ptr next_in;
   ddg_edge_ptr next_out;
 
-  /* For general use by algorithms manipulating the ddg.  */
-  union {
-    int count;
-    void *info;
-  } aux;
+  /* Is true when edge is already in scc.  */
+  bool in_scc;
 };
 
 /* This structure holds the Data Dependence Graph for a basic block.  */
@@ -178,7 +179,6 @@ ddg_all_sccs_ptr create_ddg_all_sccs (ddg_ptr);
 void free_ddg_all_sccs (ddg_all_sccs_ptr);
 
 int find_nodes_on_paths (sbitmap result, ddg_ptr, sbitmap from, sbitmap to);
-int longest_simple_path (ddg_ptr, int from, int to, sbitmap via);
 
 bool autoinc_var_is_used_p (rtx_insn *, rtx_insn *);
 

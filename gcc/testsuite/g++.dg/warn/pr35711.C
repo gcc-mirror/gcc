@@ -4,5 +4,5 @@
 
 int* foo (volatile int *p)
 {
-  return (int*)p; // { dg-warning "cast from type 'volatile int\\*' to type 'int\\*' casts away qualifiers" }
+  return (int*)p; // { dg-warning "10:cast from type 'volatile int\\*' to type 'int\\*' casts away qualifiers" }
 }

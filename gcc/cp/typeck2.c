@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "intl.h"
 #include "gcc-rich-location.h"
+#include "target.h"
 
 static tree
 process_init_constructor (tree type, tree init, int nested, int flags,
@@ -2227,9 +2228,9 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 
 /* Return a tree node for the expression TYPENAME '(' PARMS ')'.  */
 
-tree
-build_functional_cast (location_t loc, tree exp, tree parms,
-		       tsubst_flags_t complain)
+static tree
+build_functional_cast_1 (location_t loc, tree exp, tree parms,
+			 tsubst_flags_t complain)
 {
   /* This is either a call to a constructor,
      or a C cast in C++'s `functional' notation.  */
@@ -2318,7 +2319,7 @@ build_functional_cast (location_t loc, tree exp, tree parms,
 
       /* This must build a C cast.  */
       parms = build_x_compound_expr_from_list (parms, ELK_FUNC_CAST, complain);
-      return cp_build_c_cast (type, parms, complain);
+      return cp_build_c_cast (loc, type, parms, complain);
     }
 
   /* Prepare to evaluate as a call to a constructor.  If this expression
@@ -2339,7 +2340,7 @@ build_functional_cast (location_t loc, tree exp, tree parms,
      conversion is equivalent (in definedness, and if defined in
      meaning) to the corresponding cast expression.  */
   if (parms && TREE_CHAIN (parms) == NULL_TREE)
-    return cp_build_c_cast (type, TREE_VALUE (parms), complain);
+    return cp_build_c_cast (loc, type, TREE_VALUE (parms), complain);
 
   /* [expr.type.conv]
 
@@ -2366,6 +2367,15 @@ build_functional_cast (location_t loc, tree exp, tree parms,
     return error_mark_node;
 
   return build_cplus_new (type, exp, complain);
+}
+
+tree
+build_functional_cast (location_t loc, tree exp, tree parms,
+		       tsubst_flags_t complain)
+{
+  tree result = build_functional_cast_1 (loc, exp, parms, complain);
+  protected_set_expr_location (result, loc);
+  return result;  
 }
 
 
@@ -2401,6 +2411,9 @@ add_exception_specifier (tree list, tree spec, tsubst_flags_t complain)
     ok = true;
   else if (processing_template_decl)
     ok = true;
+  else if (!verify_type_context (input_location, TCTX_EXCEPTIONS, core,
+				 !(complain & tf_error)))
+    return error_mark_node;
   else
     {
       ok = true;

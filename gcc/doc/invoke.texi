@@ -9828,8 +9828,8 @@ It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 @item -ftree-loop-distribute-patterns
 @opindex ftree-loop-distribute-patterns
 Perform loop distribution of patterns that can be code generated with
-calls to a library.  This flag is enabled by default at @option{-O3}, and
-by @option{-fprofile-use} and @option{-fauto-profile}.
+calls to a library.  This flag is enabled by default at @option{-O2} and
+higher, and by @option{-fprofile-use} and @option{-fauto-profile}.
 
 This pass distributes the initialization loops and generates a call to
 memset zero.  For example, the loop
@@ -13052,9 +13052,12 @@ on Intel Control-flow Enforcement Technology (CET).
 Emit extra code to check for buffer overflows, such as stack smashing
 attacks.  This is done by adding a guard variable to functions with
 vulnerable objects.  This includes functions that call @code{alloca}, and
-functions with buffers larger than 8 bytes.  The guards are initialized
-when a function is entered and then checked when the function exits.
-If a guard check fails, an error message is printed and the program exits.
+functions with buffers larger than or equal to 8 bytes.  The guards are
+initialized when a function is entered and then checked when the function
+exits.  If a guard check fails, an error message is printed and the program
+exits.  Only variables that are actually allocated on the stack are
+considered, optimized away variables or variables allocated in registers
+don't count.
 
 @item -fstack-protector-all
 @opindex fstack-protector-all
@@ -13064,7 +13067,9 @@ Like @option{-fstack-protector} except that all functions are protected.
 @opindex fstack-protector-strong
 Like @option{-fstack-protector} but includes additional functions to
 be protected --- those that have local array definitions, or have
-references to local frame addresses.
+references to local frame addresses.  Only variables that are actually
+allocated on the stack are considered, optimized away variables or variables
+allocated in registers don't count.
 
 @item -fstack-protector-explicit
 @opindex fstack-protector-explicit
@@ -16122,25 +16127,19 @@ Specify the name of the target architecture and, optionally, one or
 more feature modifiers.  This option has the form
 @option{-march=@var{arch}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}.
 
-The permissible values for @var{arch} are @samp{armv8-a},
-@samp{armv8.1-a}, @samp{armv8.2-a}, @samp{armv8.3-a}, @samp{armv8.4-a},
-@samp{armv8.5-a} or @var{native}.
+The table below summarizes the permissible values for @var{arch}
+and the features that they enable by default:
 
-The value @samp{armv8.5-a} implies @samp{armv8.4-a} and enables compiler
-support for the ARMv8.5-A architecture extensions.
-
-The value @samp{armv8.4-a} implies @samp{armv8.3-a} and enables compiler
-support for the ARMv8.4-A architecture extensions.
-
-The value @samp{armv8.3-a} implies @samp{armv8.2-a} and enables compiler
-support for the ARMv8.3-A architecture extensions.
-
-The value @samp{armv8.2-a} implies @samp{armv8.1-a} and enables compiler
-support for the ARMv8.2-A architecture extensions.
-
-The value @samp{armv8.1-a} implies @samp{armv8-a} and enables compiler
-support for the ARMv8.1-A architecture extension.  In particular, it
-enables the @samp{+crc}, @samp{+lse}, and @samp{+rdma} features.
+@multitable @columnfractions 0.20 0.20 0.60
+@headitem @var{arch} value @tab Architecture @tab Includes by default
+@item @samp{armv8-a} @tab Armv8-A @tab @samp{+fp}, @samp{+simd}
+@item @samp{armv8.1-a} @tab Armv8.1-A @tab @samp{armv8-a}, @samp{+crc}, @samp{+lse}, @samp{+rdma}
+@item @samp{armv8.2-a} @tab Armv8.2-A @tab @samp{armv8.1-a}
+@item @samp{armv8.3-a} @tab Armv8.3-A @tab @samp{armv8.2-a}
+@item @samp{armv8.4-a} @tab Armv8.4-A @tab @samp{armv8.3-a}, @samp{+fp16fml}, @samp{+dotprod}
+@item @samp{armv8.5-a} @tab Armv8.5-A @tab @samp{armv8.4-a}, @samp{+sb}, @samp{+ssbs}, @samp{+predres}
+@item @samp{armv8.6-a} @tab Armv8.6-A @tab @samp{armv8.5-a}, @samp{+bf16}, @samp{+i8mm}
+@end multitable
 
 The value @samp{native} is available on native AArch64 GNU/Linux and
 causes the compiler to pick the architecture of the host system.  This
@@ -16355,6 +16354,7 @@ generation.  This option is enabled by default for @option{-march=armv8.5-a}.
 Enable the Armv8-a Execution and Data Prediction Restriction instructions.
 This option is only to enable the extension at the assembler level and does
 not affect code generation.  This option is enabled by default for
+@option{-march=armv8.5-a}.
 @item sve2
 Enable the Armv8-a Scalable Vector Extension 2.  This also enables SVE
 instructions.
@@ -16366,9 +16366,18 @@ Enable SVE2 sm4 instructions.  This also enables SVE2 instructions.
 Enable SVE2 aes instructions.  This also enables SVE2 instructions.
 @item sve2-sha3
 Enable SVE2 sha3 instructions.  This also enables SVE2 instructions.
-@option{-march=armv8.5-a}.
 @item tme
 Enable the Transactional Memory Extension.
+@item i8mm
+Enable 8-bit Integer Matrix Multiply instructions.  This also enables
+Advanced SIMD and floating-point instructions.  This option is enabled by
+default for @option{-march=armv8.6-a}.  Use of this option with architectures
+prior to Armv8.2-A is not supported.
+@item bf16
+Enable brain half-precision floating-point instructions.  This also enables
+Advanced SIMD and floating-point instructions.  This option is enabled by
+default for @option{-march=armv8.6-a}.  Use of this option with architectures
+prior to Armv8.2-A is not supported.
 
 @end table
 

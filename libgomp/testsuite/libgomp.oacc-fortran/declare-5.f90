@@ -102,6 +102,6 @@ program test
   if (.not. acc_is_present (y)) stop 7
   if (.not. acc_is_present (z)) stop 8
 
-  if (a /= 3.0) stop 3
-  if (k /= -378) stop 3
+  if (a /= 3.0) stop 30
+  if (k /= -378) stop 31
 end program test

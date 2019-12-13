@@ -23,7 +23,7 @@ main (int argc, char **argv)
 
   d = acc_copyin (h, N);
 
-  acc_free (d);
+  acc_delete (h, N);
 
   fprintf (stderr, "CheCKpOInT\n");
   acc_copyout (h, N);

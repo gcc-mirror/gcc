@@ -256,7 +256,7 @@ package body Inline is
    --  the call is in the main compilation unit, Caller is Empty.
 
    procedure Add_Inlined_Instance (E : Entity_Id);
-   --  Add instance E to the list of of inlined instances for the unit
+   --  Add instance E to the list of inlined instances for the unit
 
    procedure Add_Inlined_Subprogram (E : Entity_Id);
    --  Add subprogram E to the list of inlined subprograms for the unit

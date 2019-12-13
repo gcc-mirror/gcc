@@ -1334,6 +1334,7 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
       k->tgt = tgt;
       k->tgt_offset = target_table[i].start;
       k->refcount = REFCOUNT_INFINITY;
+      k->dynamic_refcount = 0;
       k->link_key = NULL;
       array->left = NULL;
       array->right = NULL;
@@ -1366,6 +1367,7 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
       k->tgt = tgt;
       k->tgt_offset = target_var->start;
       k->refcount = target_size & link_bit ? REFCOUNT_LINK : REFCOUNT_INFINITY;
+      k->dynamic_refcount = 0;
       k->link_key = NULL;
       array->left = NULL;
       array->right = NULL;
@@ -2095,16 +2097,7 @@ gomp_exit_data (struct gomp_device_descr *devicep, size_t mapnum,
 					  - k->host_start),
 				cur_node.host_end - cur_node.host_start);
 	  if (k->refcount == 0)
-	    {
-	      splay_tree_remove (&devicep->mem_map, k);
-	      if (k->link_key)
-		splay_tree_insert (&devicep->mem_map,
-				   (splay_tree_node) k->link_key);
-	      if (k->tgt->refcount > 1)
-		k->tgt->refcount--;
-	      else
-		gomp_unmap_tgt (k->tgt);
-	    }
+	    gomp_remove_var (devicep, k);
 
 	  break;
 	default:
@@ -2636,6 +2629,7 @@ omp_target_associate_ptr (const void *host_ptr, const void *device_ptr,
       k->tgt = tgt;
       k->tgt_offset = (uintptr_t) device_ptr + device_offset;
       k->refcount = REFCOUNT_INFINITY;
+      k->dynamic_refcount = 0;
       array->left = NULL;
       array->right = NULL;
       splay_tree_insert (&devicep->mem_map, array);
@@ -2906,7 +2900,6 @@ gomp_target_init (void)
 		current_device.type = current_device.get_type_func ();
 		current_device.mem_map.root = NULL;
 		current_device.state = GOMP_DEVICE_UNINITIALIZED;
-		current_device.openacc.data_environ = NULL;
 		for (i = 0; i < new_num_devices; i++)
 		  {
 		    current_device.target_id = i;

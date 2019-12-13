@@ -1,3 +1,26 @@
+2019-12-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-pretty-print.c (c_pretty_printer::clone): New vfunc
+	implementation.
+	* c-pretty-print.h (c_pretty_printer::clone): New vfunc decl.
+
+2019-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (range_label_for_format_type_mismatch::get_text):
+	Replace label_text ctor called with true with label_text::take.
+
+2019-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (selftest::test_type_mismatch_range_labels): Remove
+	initial newline from expected outputs.
+	* c-opts.c (c_diagnostic_finalizer): Add pp_newline call before
+	call to diagnostic_show_locus.
+
+2019-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Don't define __cpp_consteval for
+	now.
+
 2019-12-05  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

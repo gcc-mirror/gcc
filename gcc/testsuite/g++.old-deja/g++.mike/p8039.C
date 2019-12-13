@@ -11,5 +11,5 @@ extern void bar(int*);
 int main()
 {
   int (C::*mfp)() = &C::func;
-  bar((int*)mfp);		// { dg-error "" } no clear semantics
+  bar((int*)mfp);		// { dg-error "7:invalid cast" } no clear semantics
 }

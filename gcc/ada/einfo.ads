@@ -929,12 +929,12 @@ package Einfo is
 --
 --       In this case, if primitive operations have been declared for R, at
 --       the point of declaration of G, then the Derived_Type_Link of R is set
---       to point to the entity for G. This is used to generate warnings for
---       rep clauses that appear later on for R, which might result in an
---       unexpected implicit conversion operation.
+--       to point to the entity for G. This is used to generate warnings and
+--       errors for rep clauses that appear later on for R, which might result
+--       in an unexpected (or illegal) implicit conversion operation.
 --
 --       Note: if there is more than one such derived type, the link will point
---       to the last one (this is only used in generating warning messages).
+--       to the last one.
 
 --    Designated_Type (synthesized)
 --       Applies to access types. Returns the designated type. Differs from
@@ -7751,6 +7751,8 @@ package Einfo is
    -- Attribute Set Procedures --
    ------------------------------
 
+   --  WARNING: There is a matching C declaration of a few subprograms in fe.h
+
    procedure Set_Abstract_States                 (Id : E; V : L);
    procedure Set_Accept_Address                  (Id : E; V : L);
    procedure Set_Access_Disp_Table               (Id : E; V : L);
@@ -8430,6 +8432,8 @@ package Einfo is
    --  value returned is the N_Attribute_Definition_Clause node, otherwise
    --  Empty is returned.
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Get_Pragma (E : Entity_Id; Id : Pragma_Id) return Node_Id;
    --  Searches the Rep_Item chain of entity E, for an instance of a pragma
    --  with the given pragma Id. If found, the value returned is the N_Pragma
@@ -8499,6 +8503,8 @@ package Einfo is
    function Is_Entity_Name (N : Node_Id) return Boolean;
    --  Test if the node N is the name of an entity (i.e. is an identifier,
    --  expanded name, or an attribute reference that returns an entity).
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    procedure Link_Entities (First : Entity_Id; Second : Entity_Id);
    --  Link entities First and Second in one entity chain.

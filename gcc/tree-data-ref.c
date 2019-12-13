@@ -1535,6 +1535,9 @@ void
 prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 			       poly_uint64)
 {
+  if (alias_pairs->is_empty ())
+    return;
+
   /* Canonicalize each pair so that the base components are ordered wrt
      data_ref_compare_tree.  This allows the loop below to merge more
      cases.  */
@@ -1565,10 +1568,11 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 
   /* Scan the sorted dr pairs and check if we can combine alias checks
      of two neighboring dr pairs.  */
+  unsigned int last = 0;
   for (i = 1; i < alias_pairs->length (); ++i)
     {
       /* Deal with two ddrs (dr_a1, dr_b1) and (dr_a2, dr_b2).  */
-      dr_with_seg_len_pair_t *alias_pair1 = &(*alias_pairs)[i - 1];
+      dr_with_seg_len_pair_t *alias_pair1 = &(*alias_pairs)[last];
       dr_with_seg_len_pair_t *alias_pair2 = &(*alias_pairs)[i];
 
       dr_with_seg_len *dr_a1 = &alias_pair1->first;
@@ -1584,9 +1588,14 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 			 DR_REF (dr_a1->dr), DR_REF (dr_b1->dr),
 			 DR_REF (dr_a2->dr), DR_REF (dr_b2->dr));
 	  alias_pair1->flags |= alias_pair2->flags;
-	  alias_pairs->ordered_remove (i--);
 	  continue;
 	}
+
+      /* Assume that we won't be able to merge the pairs, then correct
+	 if we do.  */
+      last += 1;
+      if (last != i)
+	(*alias_pairs)[last] = (*alias_pairs)[i];
 
       if (*dr_a1 == *dr_a2 || *dr_b1 == *dr_b2)
 	{
@@ -1695,10 +1704,10 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 			 DR_REF (dr_a1->dr), DR_REF (dr_b1->dr),
 			 DR_REF (dr_a2->dr), DR_REF (dr_b2->dr));
 	  alias_pair1->flags |= alias_pair2->flags;
-	  alias_pairs->ordered_remove (i);
-	  i--;
+	  last -= 1;
 	}
     }
+  alias_pairs->truncate (last + 1);
 
   /* Try to restore the original dr_with_seg_len order within each
      dr_with_seg_len_pair_t.  If we ended up combining swapped and

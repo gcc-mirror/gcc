@@ -3389,6 +3389,15 @@ package body Exp_Ch6 is
                case Nkind (Prev_Orig) is
                   when N_Attribute_Reference =>
                      case Get_Attribute_Id (Attribute_Name (Prev_Orig)) is
+                        --  Ignore 'Result, 'Loop_Entry, and 'Old as they can
+                        --  be used to identify access objects and do not have
+                        --  an effect on accessibility level.
+
+                        when Attribute_Loop_Entry
+                           | Attribute_Old
+                           | Attribute_Result
+                        =>
+                           null;
 
                         --  For X'Access, pass on the level of the prefix X
 
@@ -7598,7 +7607,8 @@ package body Exp_Ch6 is
            and then Ekind (Node (Iface_DT_Ptr)) = E_Constant
          loop
             pragma Assert (Has_Thunks (Node (Iface_DT_Ptr)));
-            Expand_Interface_Thunk (Prim, Thunk_Id, Thunk_Code);
+            Expand_Interface_Thunk (Prim, Thunk_Id, Thunk_Code,
+              Iface => Related_Type (Node (Iface_DT_Ptr)));
 
             if Present (Thunk_Code) then
                Insert_Actions_After (N, New_List (

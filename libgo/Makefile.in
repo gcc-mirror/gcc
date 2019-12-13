@@ -104,8 +104,9 @@ target_triplet = @target@
 # Using an import file for libgo avoid requiring to use the -brtl flag
 # when builing a go program
 @LIBGO_IS_AIX_TRUE@am__append_2 = -Wl,-bbigtoc -Wl,-bI:$(srcdir)/libgo.imp
-@GOC_IS_LLGO_TRUE@am__append_3 = libgo-llgo.la libgobegin-llgo.a
-@GOC_IS_LLGO_FALSE@am__append_4 = libgo.la libgobegin.a
+@LIBGO_IS_LINUX_TRUE@@LIBGO_IS_X86_TRUE@am__append_3 = runtime/go-context.S
+@GOC_IS_LLGO_TRUE@am__append_4 = libgo-llgo.la libgobegin-llgo.a
+@GOC_IS_LLGO_FALSE@am__append_5 = libgo.la libgobegin.a
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
@@ -229,9 +230,12 @@ am__DEPENDENCIES_5 = $(am__DEPENDENCIES_3) \
 	$(am__DEPENDENCIES_4) $(am__DEPENDENCIES_4) \
 	$(am__DEPENDENCIES_4) $(am__DEPENDENCIES_4)
 libgo_llgo_la_DEPENDENCIES = $(am__DEPENDENCIES_5)
-@LIBGO_IS_RTEMS_TRUE@am__objects_1 =  \
+@LIBGO_IS_LINUX_TRUE@@LIBGO_IS_X86_TRUE@am__objects_1 =  \
+@LIBGO_IS_LINUX_TRUE@@LIBGO_IS_X86_TRUE@	runtime/go-context.lo
+am__objects_2 = $(am__objects_1)
+@LIBGO_IS_RTEMS_TRUE@am__objects_3 =  \
 @LIBGO_IS_RTEMS_TRUE@	runtime/rtems-task-variable-add.lo
-am__objects_2 = runtime/aeshash.lo runtime/go-assert.lo \
+am__objects_4 = runtime/aeshash.lo runtime/go-assert.lo \
 	runtime/go-caller.lo runtime/go-callers.lo runtime/go-cdiv.lo \
 	runtime/go-cgo.lo runtime/go-construct-map.lo \
 	runtime/go-ffi.lo runtime/go-fieldtrack.lo \
@@ -244,8 +248,8 @@ am__objects_2 = runtime/aeshash.lo runtime/go-assert.lo \
 	runtime/go-unwind.lo runtime/go-varargs.lo \
 	runtime/env_posix.lo runtime/panic.lo runtime/print.lo \
 	runtime/proc.lo runtime/runtime_c.lo runtime/stack.lo \
-	runtime/yield.lo runtime/go-context.lo $(am__objects_1)
-am_libgo_llgo_la_OBJECTS = $(am__objects_2)
+	runtime/yield.lo $(am__objects_2) $(am__objects_3)
+am_libgo_llgo_la_OBJECTS = $(am__objects_4)
 libgo_llgo_la_OBJECTS = $(am_libgo_llgo_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -256,7 +260,7 @@ libgo_llgo_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(libgo_llgo_la_LDFLAGS) $(LDFLAGS) -o $@
 @GOC_IS_LLGO_TRUE@am_libgo_llgo_la_rpath = -rpath $(toolexeclibdir)
 libgo_la_DEPENDENCIES = $(am__DEPENDENCIES_5)
-am_libgo_la_OBJECTS = $(am__objects_2)
+am_libgo_la_OBJECTS = $(am__objects_4)
 libgo_la_OBJECTS = $(am_libgo_la_OBJECTS)
 libgo_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -862,6 +866,7 @@ noinst_DATA = golang.org/x/net/nettest.gox internal/cfg.gox \
 	runtime/pprof/internal/profile.gox zdefaultcc.go
 @LIBGO_IS_RTEMS_FALSE@rtems_task_variable_add_file = 
 @LIBGO_IS_RTEMS_TRUE@rtems_task_variable_add_file = runtime/rtems-task-variable-add.c
+runtime_context_asm_file = $(am__append_3)
 runtime_files = \
 	runtime/aeshash.c \
 	runtime/go-assert.c \
@@ -893,7 +898,7 @@ runtime_files = \
 	runtime/runtime_c.c \
 	runtime/stack.c \
 	runtime/yield.c \
-	runtime/go-context.S \
+	$(runtime_context_asm_file) \
 	$(rtems_task_variable_add_file)
 
 GCCGO_INSTALL_NAME := $(shell echo gccgo|sed '$(program_transform_name)')
@@ -1053,8 +1058,8 @@ CHECK_DEPS = $(toolexeclibgo_DATA) $(toolexeclibgoarchive_DATA) \
 	$(toolexeclibgoruntime_DATA) $(toolexeclibgosync_DATA) \
 	$(toolexeclibgotesting_DATA) $(toolexeclibgotext_DATA) \
 	$(toolexeclibgotexttemplate_DATA) $(toolexeclibgounicode_DATA) \
-	$(noinst_DATA) $(noinst_LIBRARIES) $(am__append_3) \
-	$(am__append_4)
+	$(noinst_DATA) $(noinst_LIBRARIES) $(am__append_4) \
+	$(am__append_5)
 
 # Pass -ffp-contract=off, or 386-specific options, when building the
 # math package.  MATH_FLAG is defined in configure.ac.

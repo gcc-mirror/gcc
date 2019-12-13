@@ -202,6 +202,15 @@ extern unsigned aarch64_architecture_version;
 /* Transactional Memory Extension.  */
 #define AARCH64_FL_TME	      (1ULL << 33)  /* Has TME instructions.  */
 
+/* Armv8.6-A architecture extensions.  */
+#define AARCH64_FL_V8_6	      (1ULL << 34)
+
+/* 8-bit Integer Matrix Multiply (I8MM) extensions.  */
+#define AARCH64_FL_I8MM	      (1ULL << 35)
+
+/* Brain half-precision floating-point (BFloat16) Extension.  */
+#define AARCH64_FL_BF16	      (1ULL << 36)
+
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
 
@@ -223,6 +232,9 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_FOR_ARCH8_5			\
   (AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_V8_5	\
    | AARCH64_FL_SB | AARCH64_FL_SSBS | AARCH64_FL_PREDRES)
+#define AARCH64_FL_FOR_ARCH8_6			\
+  (AARCH64_FL_FOR_ARCH8_5 | AARCH64_FL_V8_6 | AARCH64_FL_FPSIMD \
+   | AARCH64_FL_I8MM | AARCH64_FL_BF16)
 
 /* Macros to test ISA flags.  */
 
@@ -249,6 +261,9 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_V8_5	   (aarch64_isa_flags & AARCH64_FL_V8_5)
 #define AARCH64_ISA_TME		   (aarch64_isa_flags & AARCH64_FL_TME)
 #define AARCH64_ISA_MEMTAG	   (aarch64_isa_flags & AARCH64_FL_MEMTAG)
+#define AARCH64_ISA_V8_6	   (aarch64_isa_flags & AARCH64_FL_V8_6)
+#define AARCH64_ISA_I8MM	   (aarch64_isa_flags & AARCH64_FL_I8MM)
+#define AARCH64_ISA_BF16	   (aarch64_isa_flags & AARCH64_FL_BF16)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)
@@ -307,6 +322,13 @@ extern unsigned aarch64_architecture_version;
 
 /* Memory Tagging instructions optional to Armv8.5 enabled through +memtag.  */
 #define TARGET_MEMTAG (AARCH64_ISA_V8_5 && AARCH64_ISA_MEMTAG)
+
+/* I8MM instructions are enabled through +i8mm.  */
+#define TARGET_I8MM (AARCH64_ISA_I8MM)
+
+/* BF16 instructions are enabled through +bf16.  */
+#define TARGET_BF16_FP (AARCH64_ISA_BF16)
+#define TARGET_BF16_SIMD (AARCH64_ISA_BF16 && TARGET_SIMD)
 
 /* Make sure this is always defined so we don't have to check for ifdefs
    but rather use normal ifs.  */

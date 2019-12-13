@@ -1,3 +1,8 @@
+2019-12-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* libcp1plugin.cc (plugin_build_cast_expr): Adjust build_cast
+	declaration.
+
 2019-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* libcp1plugin.cc (plugin_build_expression_list_expr): Adjust

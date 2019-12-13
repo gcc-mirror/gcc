@@ -11,7 +11,7 @@ struct D : public B {
 
 void foo() {
   B x;
-  dynamic_cast<D*>(&x); // { dg-warning "" } will never succeed
+  dynamic_cast<D*>(&x); // { dg-warning "3:.dynamic_cast" } will never succeed
   B* p = &x;
   dynamic_cast<D*>(p);
 }

@@ -5285,13 +5285,16 @@ expand_assignment (tree to, tree from, bool nontemporal)
 		}
 	      else
 		{
+		  machine_mode from_mode
+		    = GET_MODE (result) == VOIDmode
+		      ? TYPE_MODE (TREE_TYPE (from))
+		      : GET_MODE (result);
 		  rtx from_rtx;
 		  if (MEM_P (result))
 		    from_rtx = change_address (result, to_mode, NULL_RTX);
 		  else
 		    from_rtx
-		      = simplify_gen_subreg (to_mode, result,
-					     TYPE_MODE (TREE_TYPE (from)), 0);
+		      = simplify_gen_subreg (to_mode, result, from_mode, 0);
 		  if (from_rtx)
 		    {
 		      emit_move_insn (XEXP (to_rtx, 0),
@@ -5303,12 +5306,9 @@ expand_assignment (tree to, tree from, bool nontemporal)
 		    {
 		      to_mode = GET_MODE_INNER (to_mode);
 		      rtx from_real
-			= simplify_gen_subreg (to_mode, result,
-					       TYPE_MODE (TREE_TYPE (from)),
-					       0);
+			= simplify_gen_subreg (to_mode, result, from_mode, 0);
 		      rtx from_imag
-			= simplify_gen_subreg (to_mode, result,
-					       TYPE_MODE (TREE_TYPE (from)),
+			= simplify_gen_subreg (to_mode, result, from_mode,
 					       GET_MODE_SIZE (to_mode));
 		      if (!from_real || !from_imag)
 			goto concat_store_slow;

@@ -41,6 +41,7 @@
 
 #include <cerrno>
 #include <cstdio>
+#include <cctype> // For std::isdigit.
 
 #if defined _GLIBCXX_HAVE_UNISTD_H && defined _GLIBCXX_HAVE_FCNTL_H
 # include <unistd.h>
@@ -286,7 +287,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
     _M_mt.seed(seed);
 #else
     // Convert old default token "mt19937" or numeric seed tokens to "default".
-    if (token == "mt19937" || isdigit((unsigned char)token[0]))
+    if (token == "mt19937" || std::isdigit((unsigned char)token[0]))
       _M_init("default");
     else
       _M_init(token);

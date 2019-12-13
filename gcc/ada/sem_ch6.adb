@@ -3304,7 +3304,18 @@ package body Sem_Ch6 is
             then
                null;
 
-            elsif not Present (Overridden_Operation (Spec_Id)) then
+            --  Overridden controlled primitives may have had their
+            --  Overridden_Operation field cleared according to the setting of
+            --  the Is_Hidden flag. An issue arises, however, when analyzing
+            --  an instance that may have manipulated the flag during
+            --  expansion. As a result, we add an exception for this case.
+
+            elsif not Present (Overridden_Operation (Spec_Id))
+              and then not (Nam_In (Chars (Spec_Id), Name_Adjust,
+                                                     Name_Finalize,
+                                                     Name_Initialize)
+                             and then In_Instance)
+            then
                Error_Msg_NE
                  ("subprogram& is not overriding", Body_Spec, Spec_Id);
 
@@ -6427,13 +6438,18 @@ package body Sem_Ch6 is
 
       --  If there is an overridden subprogram, then check that there is no
       --  "not overriding" indicator, and mark the subprogram as overriding.
+
       --  This is not done if the overridden subprogram is marked as hidden,
       --  which can occur for the case of inherited controlled operations
       --  (see Derive_Subprogram), unless the inherited subprogram's parent
-      --  subprogram is not itself hidden. (Note: This condition could probably
-      --  be simplified, leaving out the testing for the specific controlled
-      --  cases, but it seems safer and clearer this way, and echoes similar
-      --  special-case tests of this kind in other places.)
+      --  subprogram is not itself hidden or we are within a generic instance,
+      --  in which case the hidden flag may have been modified for the
+      --  expansion of the instance.
+
+      --  (Note: This condition could probably be simplified, leaving out the
+      --  testing for the specific controlled cases, but it seems safer and
+      --  clearer this way, and echoes similar special-case tests of this
+      --  kind in other places.)
 
       if Present (Overridden_Subp)
         and then (not Is_Hidden (Overridden_Subp)
@@ -6442,7 +6458,8 @@ package body Sem_Ch6 is
                                                        Name_Adjust,
                                                        Name_Finalize)
                       and then Present (Alias (Overridden_Subp))
-                      and then not Is_Hidden (Alias (Overridden_Subp))))
+                      and then (not Is_Hidden (Alias (Overridden_Subp))
+                                 or else In_Instance)))
       then
          if Must_Not_Override (Spec) then
             Error_Msg_Sloc := Sloc (Overridden_Subp);
@@ -10487,9 +10504,10 @@ package body Sem_Ch6 is
       is
          function Check_Conforming_Parameters
            (E1_Param : Node_Id;
-            E2_Param : Node_Id) return Boolean;
+            E2_Param : Node_Id;
+            Ctype    : Conformance_Type) return Boolean;
          --  Starting from the given parameters, check that all the parameters
-         --  of two entries or subprograms are subtype conformant. Used to skip
+         --  of two entries or subprograms are conformant. Used to skip
          --  the check on the controlling argument.
 
          function Matching_Entry_Or_Subprogram
@@ -10516,26 +10534,38 @@ package body Sem_Ch6 is
          --  whose name matches the original name of Subp and has a profile
          --  conformant with the profile of Subp; return Empty if not found.
 
+         function Normalized_First_Parameter_Type
+           (E : Entity_Id) return Entity_Id;
+         --  Return the type of the first parameter unless that type
+         --  is an anonymous access type, in which case return the
+         --  designated type. Used to treat anonymous-access-to-synchronized
+         --  the same as synchronized for purposes of checking for
+         --  prefixed view profile conflicts.
+
          ---------------------------------
          -- Check_Conforming_Parameters --
          ---------------------------------
 
          function Check_Conforming_Parameters
            (E1_Param : Node_Id;
-            E2_Param : Node_Id) return Boolean
+            E2_Param : Node_Id;
+            Ctype    : Conformance_Type) return Boolean
          is
             Param_E1 : Node_Id := E1_Param;
             Param_E2 : Node_Id := E2_Param;
 
          begin
             while Present (Param_E1) and then Present (Param_E2) loop
-               if Ekind (Defining_Identifier (Param_E1)) /=
-                    Ekind (Defining_Identifier (Param_E2))
-                 or else not
+               if (Ctype >= Mode_Conformant) and then
+                 Ekind (Defining_Identifier (Param_E1)) /=
+                 Ekind (Defining_Identifier (Param_E2))
+               then
+                  return False;
+               elsif not
                    Conforming_Types
                      (Find_Parameter_Type (Param_E1),
                       Find_Parameter_Type (Param_E2),
-                      Subtype_Conformant)
+                      Ctype)
                then
                   return False;
                end if;
@@ -10568,7 +10598,8 @@ package body Sem_Ch6 is
                  and then
                    Check_Conforming_Parameters
                      (First (Parameter_Specifications (Parent (E))),
-                      Next (First (Parameter_Specifications (Parent (Subp)))))
+                      Next (First (Parameter_Specifications (Parent (Subp)))),
+                      Type_Conformant)
                then
                   return E;
                end if;
@@ -10608,7 +10639,8 @@ package body Sem_Ch6 is
                  and then
                    Check_Conforming_Parameters
                      (First (Parameter_Specifications (Parent (Ent))),
-                      Next (First (Parameter_Specifications (Parent (E)))))
+                      Next (First (Parameter_Specifications (Parent (E)))),
+                      Subtype_Conformant)
                then
                   return E;
                end if;
@@ -10662,6 +10694,21 @@ package body Sem_Ch6 is
             return Empty;
          end Matching_Original_Protected_Subprogram;
 
+         -------------------------------------
+         -- Normalized_First_Parameter_Type --
+         -------------------------------------
+
+         function Normalized_First_Parameter_Type
+           (E : Entity_Id) return Entity_Id
+         is
+            Result : Entity_Id := Etype (First_Entity (E));
+         begin
+            if Ekind (Result) = E_Anonymous_Access_Type then
+               Result := Designated_Type (Result);
+            end if;
+            return Result;
+         end Normalized_First_Parameter_Type;
+
       --  Start of processing for Has_Matching_Entry_Or_Subprogram
 
       begin
@@ -10672,20 +10719,23 @@ package body Sem_Ch6 is
          if Comes_From_Source (E)
            and then Is_Subprogram (E)
            and then Present (First_Entity (E))
-           and then Is_Concurrent_Record_Type (Etype (First_Entity (E)))
+           and then Is_Concurrent_Record_Type
+                      (Normalized_First_Parameter_Type (E))
          then
             if Scope (E) =
                  Scope (Corresponding_Concurrent_Type
-                         (Etype (First_Entity (E))))
+                         (Normalized_First_Parameter_Type (E)))
               and then
                 Present
                   (Matching_Entry_Or_Subprogram
-                     (Corresponding_Concurrent_Type (Etype (First_Entity (E))),
+                     (Corresponding_Concurrent_Type
+                        (Normalized_First_Parameter_Type (E)),
                       Subp => E))
             then
                Report_Conflict (E,
                  Matching_Entry_Or_Subprogram
-                   (Corresponding_Concurrent_Type (Etype (First_Entity (E))),
+                   (Corresponding_Concurrent_Type
+                      (Normalized_First_Parameter_Type (E)),
                     Subp => E));
                return True;
             end if;

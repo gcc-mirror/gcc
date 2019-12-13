@@ -2473,7 +2473,7 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
 	      tree_code outer_op = OMP_CLAUSE_REDUCTION_CODE (outer_clause);
 	      if (outer_var == local_var && outer_op != local_op)
 		{
-		  warning_at (gimple_location (stmt), 0,
+		  warning_at (OMP_CLAUSE_LOCATION (local_clause), 0,
 			      "conflicting reduction operations for %qE",
 			      local_var);
 		  inform (OMP_CLAUSE_LOCATION (outer_clause),
@@ -11817,7 +11817,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      {
 		gcc_checking_assert (is_gimple_omp_oacc (ctx->stmt));
 		s = TREE_TYPE (ovar);
-		if (TREE_CODE (s) == REFERENCE_TYPE)
+		if (TREE_CODE (s) == REFERENCE_TYPE
+		    || omp_check_optional_argument (ovar, false))
 		  s = TREE_TYPE (s);
 		s = TYPE_SIZE_UNIT (s);
 	      }

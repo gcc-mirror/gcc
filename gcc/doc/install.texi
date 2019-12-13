@@ -1086,6 +1086,9 @@ softfloat, m68881, m68000, m68020.
 @item mips*-*-*
 single-float, biendian, softfloat.
 
+@item msp430-*-*
+no-exceptions
+
 @item powerpc*-*-*, rs6000*-*-*
 aix64, pthread, softfloat, powercpu, powerpccpu, powerpcos, biendian,
 sysv, aix.

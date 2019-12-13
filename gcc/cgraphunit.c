@@ -274,7 +274,7 @@ symtab_node::needed_p (void)
 /* Head and terminator of the queue of nodes to be processed while building
    callgraph.  */
 
-static symtab_node symtab_terminator;
+static symtab_node symtab_terminator (SYMTAB_SYMBOL);
 static symtab_node *queued_nodes = &symtab_terminator;
 
 /* Add NODE to queue starting at QUEUED_NODES. 
@@ -2359,19 +2359,29 @@ cgraph_node::expand (void)
 /* Node comparator that is responsible for the order that corresponds
    to time when a function was launched for the first time.  */
 
-static int
-node_cmp (const void *pa, const void *pb)
+int
+tp_first_run_node_cmp (const void *pa, const void *pb)
 {
   const cgraph_node *a = *(const cgraph_node * const *) pa;
   const cgraph_node *b = *(const cgraph_node * const *) pb;
+  unsigned int tp_first_run_a = a->tp_first_run;
+  unsigned int tp_first_run_b = b->tp_first_run;
+
+  if (!opt_for_fn (a->decl, flag_profile_reorder_functions)
+      || a->no_reorder)
+    tp_first_run_a = 0;
+  if (!opt_for_fn (b->decl, flag_profile_reorder_functions)
+      || b->no_reorder)
+    tp_first_run_b = 0;
+
+  if (tp_first_run_a == tp_first_run_b)
+    return a->order - b->order;
 
   /* Functions with time profile must be before these without profile.  */
-  if (!a->tp_first_run || !b->tp_first_run)
-    return a->tp_first_run - b->tp_first_run;
+  tp_first_run_a = (tp_first_run_a - 1) & INT_MAX;
+  tp_first_run_b = (tp_first_run_b - 1) & INT_MAX;
 
-  return a->tp_first_run != b->tp_first_run
-	 ? b->tp_first_run - a->tp_first_run
-	 : b->order - a->order;
+  return tp_first_run_a - tp_first_run_b;
 }
 
 /* Expand all functions that must be output.
@@ -2390,8 +2400,10 @@ expand_all_functions (void)
   cgraph_node *node;
   cgraph_node **order = XCNEWVEC (cgraph_node *,
 					 symtab->cgraph_count);
+  cgraph_node **tp_first_run_order = XCNEWVEC (cgraph_node *,
+					 symtab->cgraph_count);
   unsigned int expanded_func_count = 0, profiled_func_count = 0;
-  int order_pos, new_order_pos = 0;
+  int order_pos, tp_first_run_order_pos = 0, new_order_pos = 0;
   int i;
 
   order_pos = ipa_reverse_postorder (order);
@@ -2401,20 +2413,25 @@ expand_all_functions (void)
      optimization.  So we must be sure to not reference them.  */
   for (i = 0; i < order_pos; i++)
     if (order[i]->process)
-      order[new_order_pos++] = order[i];
+      {
+	if (order[i]->tp_first_run
+	    && opt_for_fn (order[i]->decl, flag_profile_reorder_functions))
+	  tp_first_run_order[tp_first_run_order_pos++] = order[i];
+	else
+          order[new_order_pos++] = order[i];
+      }
 
-  if (flag_profile_reorder_functions)
-    qsort (order, new_order_pos, sizeof (cgraph_node *), node_cmp);
-
-  for (i = new_order_pos - 1; i >= 0; i--)
+  /* First output functions with time profile in specified order.  */
+  qsort (tp_first_run_order, tp_first_run_order_pos,
+	 sizeof (cgraph_node *), tp_first_run_node_cmp);
+  for (i = 0; i < tp_first_run_order_pos; i++)
     {
-      node = order[i];
+      node = tp_first_run_order[i];
 
       if (node->process)
 	{
 	  expanded_func_count++;
-	  if(node->tp_first_run)
-	    profiled_func_count++;
+	  profiled_func_count++;
 
 	  if (symtab->dump_file)
 	    fprintf (symtab->dump_file,
@@ -2425,11 +2442,26 @@ expand_all_functions (void)
 	}
     }
 
-    if (dump_file)
-      fprintf (dump_file, "Expanded functions with time profile (%s):%u/%u\n",
-               main_input_filename, profiled_func_count, expanded_func_count);
+  /* Output functions in RPO so callees get optimized before callers.  This
+     makes ipa-ra and other propagators to work.
+     FIXME: This is far from optimal code layout.  */
+  for (i = new_order_pos - 1; i >= 0; i--)
+    {
+      node = order[i];
 
-  if (symtab->dump_file && flag_profile_reorder_functions)
+      if (node->process)
+	{
+	  expanded_func_count++;
+	  node->process = 0;
+	  node->expand ();
+	}
+    }
+
+  if (dump_file)
+    fprintf (dump_file, "Expanded functions with time profile (%s):%u/%u\n",
+	     main_input_filename, profiled_func_count, expanded_func_count);
+
+  if (symtab->dump_file && tp_first_run_order_pos)
     fprintf (symtab->dump_file, "Expanded functions with time profile:%u/%u\n",
              profiled_func_count, expanded_func_count);
 

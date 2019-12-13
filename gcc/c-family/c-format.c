@@ -4629,7 +4629,7 @@ class range_label_for_format_type_mismatch
 
     char *result = concat (text.m_buffer, p, NULL);
     text.maybe_free ();
-    return label_text (result, true);
+    return label_text::take (result);
   }
 
  private:
@@ -5392,16 +5392,14 @@ test_type_mismatch_range_labels ()
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   if (c_dialect_cxx ())
     /* "char*", without a space.  */
-    ASSERT_STREQ ("\n"
-		  "   printf (\"msg: %i\\n\", msg);\n"
+    ASSERT_STREQ ("   printf (\"msg: %i\\n\", msg);\n"
 		  "                 ~^     ~~~\n"
 		  "                  |     |\n"
 		  "                  char* int\n",
 		  pp_formatted_text (dc.printer));
   else
     /* "char *", with a space.  */
-    ASSERT_STREQ ("\n"
-		  "   printf (\"msg: %i\\n\", msg);\n"
+    ASSERT_STREQ ("   printf (\"msg: %i\\n\", msg);\n"
 		  "                 ~^     ~~~\n"
 		  "                  |     |\n"
 		  "                  |     int\n"

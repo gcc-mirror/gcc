@@ -1,5 +1,7 @@
 2019-12-13  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r279384.
+
 	gcc/cp/
 	* module.cc: Rename specset to pendset.  Document.
 

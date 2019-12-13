@@ -51,7 +51,7 @@ main (int argc, char **argv)
   if (acc_is_present (h, 0) != 0)
     abort ();
 
-  acc_free (d);
+  acc_delete (h, N);
 
   if (acc_is_present (h, 1) != 0)
     abort ();

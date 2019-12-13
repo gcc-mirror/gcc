@@ -122,6 +122,9 @@ split_directories (const char *name, int *ptr_num_dirs)
   const char *p, *q;
   int ch;
 
+  if (!*name)
+    return NULL;
+
   /* Count the number of directories.  Special case MSDOS disk names as part
      of the initial directory.  */
   p = name;

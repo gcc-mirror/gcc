@@ -8842,6 +8842,12 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 
       gcc_assert (target->symtree);
       tsym = target->symtree->n.sym;
+      if (tsym->attr.flavor == FL_PROGRAM)
+	{
+	  gfc_error ("Associating entity %qs at %L is a PROGRAM",
+		     tsym->name, &target->where);
+	  return;
+	}
 
       sym->attr.asynchronous = tsym->attr.asynchronous;
       sym->attr.volatile_ = tsym->attr.volatile_;

@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Oct 09, 2019
+GNAT User's Guide for Native Platforms , Dec 10, 2019
 
 AdaCore
 
@@ -20730,8 +20730,7 @@ for more information.
 @section Profiling
 
 
-This section describes how to use the the @code{gprof} profiler tool on Ada
-programs.
+This section describes how to use the @code{gprof} profiler tool on Ada programs.
 
 @geindex gprof
 

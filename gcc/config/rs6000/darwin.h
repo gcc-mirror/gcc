@@ -173,6 +173,12 @@
    %:version-compare(!> 10.4 mmacosx-version-min= crt3_2.o%s) \
   }}"
 
+/* We need to jam the dylib1 to 10.5 for 10.6 (Rosetta) use.  */
+#undef DARWIN_DYLIB1_SPEC
+#define DARWIN_DYLIB1_SPEC						\
+  "%:version-compare(!> 10.5 mmacosx-version-min= -ldylib1.o)		\
+   %:version-compare(>< 10.5 10.7 mmacosx-version-min= -ldylib1.10.5.o)"
+
 /* The PPC regs save/restore functions are leaves and could, conceivably
    be used by the tm destructor.  */
 #undef ENDFILE_SPEC

@@ -187,25 +187,25 @@ struct ix86_target_opts
    ISAs come first.  Target string will be displayed in the same order.  */
 static struct ix86_target_opts isa2_opts[] =
 {
-  { "-mcx16",		OPTION_MASK_ISA_CX16 },
-  { "-mvaes",		OPTION_MASK_ISA_VAES },
-  { "-mrdpid",		OPTION_MASK_ISA_RDPID },
-  { "-mpconfig",	OPTION_MASK_ISA_PCONFIG },
-  { "-mwbnoinvd",	OPTION_MASK_ISA_WBNOINVD },
-  { "-mavx512vp2intersect", OPTION_MASK_ISA_AVX512VP2INTERSECT },
-  { "-msgx",		OPTION_MASK_ISA_SGX },
-  { "-mavx5124vnniw",	OPTION_MASK_ISA_AVX5124VNNIW },
-  { "-mavx5124fmaps",	OPTION_MASK_ISA_AVX5124FMAPS },
-  { "-mhle",		OPTION_MASK_ISA_HLE },
-  { "-mmovbe",		OPTION_MASK_ISA_MOVBE },
-  { "-mclzero",		OPTION_MASK_ISA_CLZERO },
-  { "-mmwaitx",		OPTION_MASK_ISA_MWAITX },
-  { "-mmovdir64b",	OPTION_MASK_ISA_MOVDIR64B },
-  { "-mwaitpkg",	OPTION_MASK_ISA_WAITPKG },
-  { "-mcldemote",	OPTION_MASK_ISA_CLDEMOTE },
-  { "-mptwrite",	OPTION_MASK_ISA_PTWRITE },
-  { "-mavx512bf16",	OPTION_MASK_ISA_AVX512BF16 },
-  { "-menqcmd",		OPTION_MASK_ISA_ENQCMD }
+  { "-mcx16",		OPTION_MASK_ISA2_CX16 },
+  { "-mvaes",		OPTION_MASK_ISA2_VAES },
+  { "-mrdpid",		OPTION_MASK_ISA2_RDPID },
+  { "-mpconfig",	OPTION_MASK_ISA2_PCONFIG },
+  { "-mwbnoinvd",	OPTION_MASK_ISA2_WBNOINVD },
+  { "-mavx512vp2intersect", OPTION_MASK_ISA2_AVX512VP2INTERSECT },
+  { "-msgx",		OPTION_MASK_ISA2_SGX },
+  { "-mavx5124vnniw",	OPTION_MASK_ISA2_AVX5124VNNIW },
+  { "-mavx5124fmaps",	OPTION_MASK_ISA2_AVX5124FMAPS },
+  { "-mhle",		OPTION_MASK_ISA2_HLE },
+  { "-mmovbe",		OPTION_MASK_ISA2_MOVBE },
+  { "-mclzero",		OPTION_MASK_ISA2_CLZERO },
+  { "-mmwaitx",		OPTION_MASK_ISA2_MWAITX },
+  { "-mmovdir64b",	OPTION_MASK_ISA2_MOVDIR64B },
+  { "-mwaitpkg",	OPTION_MASK_ISA2_WAITPKG },
+  { "-mcldemote",	OPTION_MASK_ISA2_CLDEMOTE },
+  { "-mptwrite",	OPTION_MASK_ISA2_PTWRITE },
+  { "-mavx512bf16",	OPTION_MASK_ISA2_AVX512BF16 },
+  { "-menqcmd",		OPTION_MASK_ISA2_ENQCMD }
 };
 static struct ix86_target_opts isa_opts[] =
 {
@@ -2030,8 +2030,8 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_BMI2))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_BMI2;
 	if (((processor_alias_table[i].flags & PTA_CX16) != 0)
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_CX16))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_CX16;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_CX16))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_CX16;
 	if (((processor_alias_table[i].flags & (PTA_POPCNT | PTA_ABM)) != 0)
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_POPCNT))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_POPCNT;
@@ -2040,8 +2040,8 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_SAHF))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SAHF;
 	if (((processor_alias_table[i].flags & PTA_MOVBE) != 0)
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_MOVBE))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_MOVBE;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_MOVBE))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_MOVBE;
 	if (((processor_alias_table[i].flags & PTA_AES) != 0)
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_AES))
 	  ix86_isa_flags |= OPTION_MASK_ISA_AES;
@@ -2064,8 +2064,8 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_RTM))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_RTM;
 	if (((processor_alias_table[i].flags & PTA_HLE) != 0)
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_HLE))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_HLE;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_HLE))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_HLE;
 	if (((processor_alias_table[i].flags & PTA_PRFCHW) != 0)
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_PRFCHW))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PRFCHW;
@@ -2106,8 +2106,8 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_CLFLUSHOPT))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_CLFLUSHOPT;
 	if (((processor_alias_table[i].flags & PTA_CLZERO) != 0)
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_CLZERO))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_CLZERO;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_CLZERO))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_CLZERO;
 	if (((processor_alias_table[i].flags & PTA_XSAVEC) != 0)
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_XSAVEC))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_XSAVEC;
@@ -2149,55 +2149,55 @@ ix86_option_override_internal (bool main_args_p,
 
 	if (((processor_alias_table[i].flags & PTA_AVX512VP2INTERSECT) != 0)
 	    && !(opts->x_ix86_isa_flags2_explicit
-		 & OPTION_MASK_ISA_AVX512VP2INTERSECT))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_AVX512VP2INTERSECT;
+		 & OPTION_MASK_ISA2_AVX512VP2INTERSECT))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AVX512VP2INTERSECT;
 	if (((processor_alias_table[i].flags & PTA_AVX5124VNNIW) != 0)
 	    && !(opts->x_ix86_isa_flags2_explicit
-		 & OPTION_MASK_ISA_AVX5124VNNIW))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_AVX5124VNNIW;
+		 & OPTION_MASK_ISA2_AVX5124VNNIW))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AVX5124VNNIW;
 	if (((processor_alias_table[i].flags & PTA_AVX5124FMAPS) != 0)
 	    && !(opts->x_ix86_isa_flags2_explicit
-		 & OPTION_MASK_ISA_AVX5124FMAPS))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_AVX5124FMAPS;
+		 & OPTION_MASK_ISA2_AVX5124FMAPS))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AVX5124FMAPS;
 	if (((processor_alias_table[i].flags & PTA_AVX512VPOPCNTDQ) != 0)
 	    && !(opts->x_ix86_isa_flags_explicit
 		 & OPTION_MASK_ISA_AVX512VPOPCNTDQ))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512VPOPCNTDQ;
 	if (((processor_alias_table[i].flags & PTA_AVX512BF16) != 0)
 	    && !(opts->x_ix86_isa_flags2_explicit
-		 & OPTION_MASK_ISA_AVX512BF16))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_AVX512BF16;
+		 & OPTION_MASK_ISA2_AVX512BF16))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AVX512BF16;
         if (((processor_alias_table[i].flags & PTA_MOVDIRI) != 0)
             && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_MOVDIRI))
           opts->x_ix86_isa_flags |= OPTION_MASK_ISA_MOVDIRI;
         if (((processor_alias_table[i].flags & PTA_MOVDIR64B) != 0)
-            && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_MOVDIR64B))
-          opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_MOVDIR64B;
+            && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_MOVDIR64B))
+          opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_MOVDIR64B;
 	if (((processor_alias_table[i].flags & PTA_SGX) != 0)
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_SGX))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_SGX;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_SGX))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_SGX;
 	if (((processor_alias_table[i].flags & PTA_VAES) != 0)
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_VAES))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_VAES;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_VAES))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_VAES;
 	if (((processor_alias_table[i].flags & PTA_RDPID) != 0)
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_RDPID))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_RDPID;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_RDPID))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_RDPID;
 	if (((processor_alias_table[i].flags & PTA_PCONFIG) != 0)
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_PCONFIG))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_PCONFIG;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_PCONFIG))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_PCONFIG;
 	if (((processor_alias_table[i].flags & PTA_WBNOINVD) != 0)
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_WBNOINVD))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_WBNOINVD;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_WBNOINVD))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_WBNOINVD;
 	if (((processor_alias_table[i].flags & PTA_PTWRITE) != 0)
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_PTWRITE))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_PTWRITE;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_PTWRITE))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_PTWRITE;
 
 	if ((processor_alias_table[i].flags
 	   & (PTA_PREFETCH_SSE | PTA_SSE)) != 0)
 	  x86_prefetch_sse = true;
 	if (((processor_alias_table[i].flags & PTA_MWAITX) != 0)
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_MWAITX))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_MWAITX;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_MWAITX))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_MWAITX;
 	if (((processor_alias_table[i].flags & PTA_PKU) != 0)
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_PKU))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PKU;

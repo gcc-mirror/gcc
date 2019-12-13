@@ -540,9 +540,10 @@ gfc_conv_shift_descriptor_lbound (stmtblock_t* block, tree desc,
 
 void
 gfc_get_descriptor_offsets_for_info (const_tree desc_type, tree *data_off,
-				     tree *dtype_off, tree *dim_off,
-				     tree *dim_size, tree *stride_suboff,
-				     tree *lower_suboff, tree *upper_suboff)
+				     tree *dtype_off, tree *span_off,
+				     tree *dim_off, tree *dim_size,
+				     tree *stride_suboff, tree *lower_suboff,
+				     tree *upper_suboff)
 {
   tree field;
   tree type;
@@ -552,6 +553,8 @@ gfc_get_descriptor_offsets_for_info (const_tree desc_type, tree *data_off,
   *data_off = byte_position (field);
   field = gfc_advance_chain (TYPE_FIELDS (type), DTYPE_FIELD);
   *dtype_off = byte_position (field);
+  field = gfc_advance_chain (TYPE_FIELDS (type), SPAN_FIELD);
+  *span_off = byte_position (field);
   field = gfc_advance_chain (TYPE_FIELDS (type), DIMENSION_FIELD);
   *dim_off = byte_position (field);
   type = TREE_TYPE (TREE_TYPE (field));
@@ -879,7 +882,7 @@ get_CFI_desc (gfc_symbol *sym, gfc_expr *expr,
   else
     tmp = sym->backend_decl;
 
-  if (tmp && DECL_LANG_SPECIFIC (tmp))
+  if (tmp && DECL_LANG_SPECIFIC (tmp) && GFC_DECL_SAVED_DESCRIPTOR (tmp))
     tmp = GFC_DECL_SAVED_DESCRIPTOR (tmp);
 
   *desc = tmp;
@@ -6364,7 +6367,7 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym,
   if (flag_stack_arrays)
     {
       gcc_assert (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE);
-      space = build_decl (sym->declared_at.lb->location,
+      space = build_decl (gfc_get_location (&sym->declared_at),
 			  VAR_DECL, create_tmp_var_name ("A"),
 			  TREE_TYPE (TREE_TYPE (decl)));
       gfc_trans_vla_type_sizes (sym, &init);
@@ -6406,7 +6409,7 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym,
       tmp = fold_build1_loc (input_location, DECL_EXPR,
 			     TREE_TYPE (space), space);
       gfc_add_expr_to_block (&init, tmp);
-      addr = fold_build1_loc (sym->declared_at.lb->location,
+      addr = fold_build1_loc (gfc_get_location (&sym->declared_at),
 			      ADDR_EXPR, TREE_TYPE (decl), space);
       gfc_add_modify (&init, decl, addr);
       gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
@@ -8138,6 +8141,8 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 
       if (g77 && optimize && !optimize_size && expr->expr_type == EXPR_VARIABLE
 	  && !is_pointer (expr) && ! gfc_has_dimen_vector_ref (expr)
+	  && !(expr->symtree->n.sym->as
+	       && expr->symtree->n.sym->as->type == AS_ASSUMED_RANK)
 	  && (fsym == NULL || fsym->ts.type != BT_ASSUMED))
 	{
 	  gfc_conv_subref_array_arg (se, expr, g77,

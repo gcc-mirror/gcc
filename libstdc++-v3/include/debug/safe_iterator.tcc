@@ -29,6 +29,8 @@
 #ifndef _GLIBCXX_DEBUG_SAFE_ITERATOR_TCC
 #define _GLIBCXX_DEBUG_SAFE_ITERATOR_TCC 1
 
+#include <bits/stl_algobase.h>
+
 namespace __gnu_debug
 {
   template<typename _Iterator, typename _Sequence, typename _Category>
@@ -82,7 +84,7 @@ namespace __gnu_debug
   template<typename _Iterator, typename _Sequence, typename _Category>
     bool
     _Safe_iterator<_Iterator, _Sequence, _Category>::
-    _M_can_advance(difference_type __n) const
+    _M_can_advance(difference_type __n, bool __strict) const
     {
       if (this->_M_singular())
 	return false;
@@ -94,17 +96,17 @@ namespace __gnu_debug
 	{
 	  std::pair<difference_type, _Distance_precision> __dist =
 	    _M_get_distance_from_begin();
-	  bool __ok =  ((__dist.second == __dp_exact && __dist.first >= -__n)
-			|| (__dist.second != __dp_exact && __dist.first > 0));
-	  return __ok;
+	  return __dist.second == __dp_exact
+	    ? __dist.first >= -__n
+	    : !__strict && __dist.first > 0;
 	}
       else
 	{
 	  std::pair<difference_type, _Distance_precision> __dist =
 	    _M_get_distance_to_end();
-	  bool __ok = ((__dist.second == __dp_exact && __dist.first >= __n)
-		       || (__dist.second != __dp_exact && __dist.first > 0));
-	  return __ok;
+	  return __dist.second == __dp_exact
+	    ? __dist.first >= __n
+	    : !__strict && __dist.first > 0;
 	}
     }
 
@@ -227,5 +229,242 @@ namespace __gnu_debug
       return __dist.first == 0;
     }
 } // namespace __gnu_debug
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  template<bool _IsMove,
+	   typename _Ite, typename _Seq, typename _Cat, typename _OI>
+    _OI
+    __copy_move_a(
+      const ::__gnu_debug::_Safe_iterator<_Ite, _Seq, _Cat>& __first,
+      const ::__gnu_debug::_Safe_iterator<_Ite, _Seq, _Cat>& __last,
+      _OI __result)
+    {
+      typename ::__gnu_debug::_Distance_traits<_Ite>::__type __dist;
+      __glibcxx_check_valid_range2(__first, __last, __dist);
+      __glibcxx_check_can_increment(__result, __dist.first);
+
+      if (__dist.second > ::__gnu_debug::__dp_equality)
+	return std::__copy_move_a<_IsMove>(__first.base(), __last.base(),
+					   __result);
+
+      return std::__copy_move_a1<_IsMove>(__first, __last, __result);
+    }
+
+  template<bool _IsMove,
+	   typename _II, typename _Ite, typename _Seq, typename _Cat>
+    __gnu_debug::_Safe_iterator<_Ite, _Seq, _Cat>
+    __copy_move_a(_II __first, _II __last,
+      const ::__gnu_debug::_Safe_iterator<_Ite, _Seq, _Cat>& __result)
+    {
+      typename ::__gnu_debug::_Distance_traits<_II>::__type __dist;
+      __glibcxx_check_valid_range2(__first, __last, __dist);
+      __glibcxx_check_can_increment(__result, __dist.first);
+
+      if (__dist.second > ::__gnu_debug::__dp_sign
+	  && __result._M_can_advance(__dist.first, true))
+	return ::__gnu_debug::_Safe_iterator<_Ite, _Seq, _Cat>(
+		std::__copy_move_a<_IsMove>(__first, __last, __result.base()),
+		__result._M_sequence);
+
+      return std::__copy_move_a1<_IsMove>(__first, __last, __result);
+    }
+
+  template<bool _IsMove,
+	   typename _IIte, typename _ISeq, typename _ICat,
+	   typename _OIte, typename _OSeq, typename _OCat>
+    ::__gnu_debug::_Safe_iterator<_OIte, _OSeq, _OCat>
+    __copy_move_a(
+      const ::__gnu_debug::_Safe_iterator<_IIte, _ISeq, _ICat>& __first,
+      const ::__gnu_debug::_Safe_iterator<_IIte, _ISeq, _ICat>& __last,
+      const ::__gnu_debug::_Safe_iterator<_OIte, _OSeq, _OCat>& __result)
+    {
+      typename ::__gnu_debug::_Distance_traits<_IIte>::__type __dist;
+      __glibcxx_check_valid_range2(__first, __last, __dist);
+      __glibcxx_check_can_increment(__result, __dist.first);
+
+      if (__dist.second > ::__gnu_debug::__dp_equality)
+	{
+	  if (__dist.second > ::__gnu_debug::__dp_sign
+	      && __result._M_can_advance(__dist.first, true))
+	    return ::__gnu_debug::_Safe_iterator<_OIte, _OSeq, _OCat>(
+	      std::__copy_move_a<_IsMove>(__first.base(), __last.base(),
+					  __result.base()),
+	      __result._M_sequence);
+
+	  return std::__copy_move_a<_IsMove>(__first.base(), __last.base(),
+					     __result);
+	}
+
+      return std::__copy_move_a1<_IsMove>(__first, __last, __result);
+    }
+
+  template<bool _IsMove,
+	   typename _Ite, typename _Seq, typename _Cat, typename _OI>
+    _OI
+    __copy_move_backward_a(
+		const ::__gnu_debug::_Safe_iterator<_Ite, _Seq, _Cat>& __first,
+		const ::__gnu_debug::_Safe_iterator<_Ite, _Seq, _Cat>& __last,
+		_OI __result)
+    {
+      typename ::__gnu_debug::_Distance_traits<_Ite>::__type __dist;
+      __glibcxx_check_valid_range2(__first, __last, __dist);
+      __glibcxx_check_can_increment(__result, -__dist.first);
+
+      if (__dist.second > ::__gnu_debug::__dp_equality)
+	return std::__copy_move_backward_a<_IsMove>(
+		__first.base(), __last.base(), __result);
+
+      return std::__copy_move_backward_a1<_IsMove>(__first, __last, __result);
+    }
+
+  template<bool _IsMove,
+	   typename _II, typename _Ite, typename _Seq, typename _Cat>
+    __gnu_debug::_Safe_iterator<_Ite, _Seq, _Cat>
+    __copy_move_backward_a(_II __first, _II __last,
+	const ::__gnu_debug::_Safe_iterator<_Ite, _Seq, _Cat>& __result)
+    {
+      typename ::__gnu_debug::_Distance_traits<_II>::__type __dist;
+      __glibcxx_check_valid_range2(__first, __last, __dist);
+      __glibcxx_check_can_increment(__result, -__dist.first);
+
+      if (__dist.second > ::__gnu_debug::__dp_sign
+	  && __result._M_can_advance(-__dist.first, true))
+	return ::__gnu_debug::_Safe_iterator<_Ite, _Seq, _Cat>(
+		std::__copy_move_backward_a<_IsMove>(__first, __last,
+						     __result.base()),
+		__result._M_sequence);
+
+      return std::__copy_move_backward_a1<_IsMove>(__first, __last, __result);
+    }
+
+  template<bool _IsMove,
+	   typename _IIte, typename _ISeq, typename _ICat,
+	   typename _OIte, typename _OSeq, typename _OCat>
+    ::__gnu_debug::_Safe_iterator<_OIte, _OSeq, _OCat>
+    __copy_move_backward_a(
+	const ::__gnu_debug::_Safe_iterator<_IIte, _ISeq, _ICat>& __first,
+	const ::__gnu_debug::_Safe_iterator<_IIte, _ISeq, _ICat>& __last,
+	const ::__gnu_debug::_Safe_iterator<_OIte, _OSeq, _OCat>& __result)
+    {
+      typename ::__gnu_debug::_Distance_traits<_IIte>::__type __dist;
+      __glibcxx_check_valid_range2(__first, __last, __dist);
+      __glibcxx_check_can_increment(__result, -__dist.first);
+
+      if (__dist.second > ::__gnu_debug::__dp_equality)
+	{
+	  if (__dist.second > ::__gnu_debug::__dp_sign
+	      && __result._M_can_advance(-__dist.first, true))
+	    return ::__gnu_debug::_Safe_iterator<_OIte, _OSeq, _OCat>(
+	      std::__copy_move_backward_a<_IsMove>(__first.base(), __last.base(),
+						   __result.base()),
+	      __result._M_sequence);
+
+	  return std::__copy_move_backward_a<_IsMove>(
+	    __first.base(), __last.base(), __result);
+	}
+
+      return std::__copy_move_backward_a1<_IsMove>(__first, __last, __result);
+    }
+
+  template<typename _Ite, typename _Seq, typename _Cat, typename _Tp>
+    void
+    __fill_a(const ::__gnu_debug::_Safe_iterator<_Ite, _Seq, _Cat>& __first,
+	     const ::__gnu_debug::_Safe_iterator<_Ite, _Seq, _Cat>& __last,
+	     const _Tp& __value)
+    {
+      typename ::__gnu_debug::_Distance_traits<_Ite>::__type __dist;
+      __glibcxx_check_valid_range2(__first, __last, __dist);
+
+      if (__dist.second > ::__gnu_debug::__dp_equality)
+	std::__fill_a(__first.base(), __last.base(), __value);
+
+      std::__fill_a1(__first, __last, __value);
+    }
+
+  template<typename _Ite, typename _Seq, typename _Cat, typename _Size,
+	   typename _Tp>
+    ::__gnu_debug::_Safe_iterator<_Ite, _Seq, _Cat>
+    __fill_n_a(const ::__gnu_debug::_Safe_iterator<_Ite, _Seq, _Cat>& __first,
+	       _Size __n, const _Tp& __value,
+	       std::input_iterator_tag)
+    {
+#if __cplusplus >= 201103L
+      static_assert(is_integral<_Size>{}, "fill_n must pass integral size");
+#endif
+
+      if (__n <= 0)
+	return __first;
+
+      __glibcxx_check_can_increment(__first, __n);
+      if (__first._M_can_advance(__n, true))
+	return ::__gnu_debug::_Safe_iterator<_Ite, _Seq, _Cat>(
+		std::__fill_n_a(__first.base(), __n, __value, _Cat()),
+		__first._M_sequence);
+
+      return std::__fill_n_a1(__first, __n, __value);
+    }
+
+  template<typename _II1, typename _Seq1, typename _Cat1, typename _II2>
+    bool
+    __equal_aux(
+	const ::__gnu_debug::_Safe_iterator<_II1, _Seq1, _Cat1>& __first1,
+	const ::__gnu_debug::_Safe_iterator<_II1, _Seq1, _Cat1>& __last1,
+	_II2 __first2)
+    {
+      typename ::__gnu_debug::_Distance_traits<_II1>::__type __dist;
+      __glibcxx_check_valid_range2(__first1, __last1, __dist);
+      __glibcxx_check_can_increment(__first2, __dist.first);
+
+      if (__dist.second > ::__gnu_debug::__dp_equality)
+	return std::__equal_aux(__first1.base(), __last1.base(), __first2);
+
+      return std::__equal_aux1(__first1, __last1, __first2);
+    }
+
+  template<typename _II1, typename _II2, typename _Seq2, typename _Cat2>
+    bool
+    __equal_aux(_II1 __first1, _II1 __last1,
+	const ::__gnu_debug::_Safe_iterator<_II2, _Seq2, _Cat2>& __first2)
+    {
+      typename ::__gnu_debug::_Distance_traits<_II1>::__type __dist;
+      __glibcxx_check_valid_range2(__first1, __last1, __dist);
+      __glibcxx_check_can_increment(__first2, __dist.first);
+
+      if (__dist.second > ::__gnu_debug::__dp_sign
+	  && __first2._M_can_advance(__dist.first, true))
+	return std::__equal_aux(__first1, __last1, __first2.base());
+
+      return std::__equal_aux1(__first1, __last1, __first2);
+    }
+
+  template<typename _II1, typename _Seq1, typename _Cat1,
+	   typename _II2, typename _Seq2, typename _Cat2>
+    bool
+    __equal_aux(
+	const ::__gnu_debug::_Safe_iterator<_II1, _Seq1, _Cat1>& __first1,
+	const ::__gnu_debug::_Safe_iterator<_II1, _Seq1, _Cat1>& __last1,
+	const ::__gnu_debug::_Safe_iterator<_II2, _Seq2, _Cat2>& __first2)
+    {
+      typename ::__gnu_debug::_Distance_traits<_II1>::__type __dist;
+      __glibcxx_check_valid_range2(__first1, __last1, __dist);
+      __glibcxx_check_can_increment(__first2, __dist.first);
+
+      if (__dist.second > ::__gnu_debug::__dp_equality)
+	{
+	  if (__dist.second > ::__gnu_debug::__dp_sign &&
+	      __first2._M_can_advance(__dist.first, true))
+	    return std::__equal_aux(__first1.base(), __last1.base(),
+				    __first2.base());
+	  return std::__equal_aux(__first1.base(), __last1.base(), __first2);
+	}
+
+      return __equal_aux1(__first1, __last1, __first2);
+    }
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
 
 #endif

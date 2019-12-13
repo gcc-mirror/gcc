@@ -171,6 +171,13 @@ class line_table_test
   ~line_table_test ();
 };
 
+/* Helper function for selftests that need a function decl.  */
+
+extern tree make_fndecl (tree return_type,
+			 const char *name,
+			 vec <tree> &param_types,
+			 bool is_variadic = false);
+
 /* Run TESTCASE multiple times, once for each case in our test matrix.  */
 
 extern void

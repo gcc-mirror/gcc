@@ -6461,7 +6461,9 @@ extern tree convert_for_arg_passing		(tree, tree, tsubst_flags_t);
 extern bool is_properly_derived_from		(tree, tree);
 extern tree initialize_reference		(tree, tree, int,
 						 tsubst_flags_t);
-extern tree extend_ref_init_temps		(tree, tree, vec<tree, va_gc>**);
+extern tree extend_ref_init_temps		(tree, tree,
+						 vec<tree, va_gc>**,
+						 tree * = NULL);
 extern tree make_temporary_var_for_ref_to_temp	(tree, tree);
 extern bool type_has_extended_temps		(tree);
 extern tree strip_top_quals			(tree);
@@ -7232,7 +7234,8 @@ extern tree get_tinfo_decl_direct	        (tree, tree, int);
 extern tree get_tinfo_decl			(tree);
 extern tree get_typeid				(tree, tsubst_flags_t);
 extern tree build_headof			(tree);
-extern tree build_dynamic_cast			(tree, tree, tsubst_flags_t);
+extern tree build_dynamic_cast			(location_t, tree, tree,
+						 tsubst_flags_t);
 extern void emit_support_tinfos			(void);
 extern bool emit_tinfo_decl			(tree);
 extern unsigned get_pseudo_tinfo_index		(tree);
@@ -7784,13 +7787,17 @@ extern tree build_x_compound_expr		(location_t, tree, tree,
 						 tsubst_flags_t);
 extern tree build_compound_expr                 (location_t, tree, tree);
 extern tree cp_build_compound_expr		(tree, tree, tsubst_flags_t);
-extern tree build_static_cast			(tree, tree, tsubst_flags_t);
-extern tree build_reinterpret_cast		(tree, tree, tsubst_flags_t);
-extern tree build_const_cast			(tree, tree, tsubst_flags_t);
+extern tree build_static_cast			(location_t, tree, tree,
+						 tsubst_flags_t);
+extern tree build_reinterpret_cast		(location_t, tree, tree,
+						 tsubst_flags_t);
+extern tree build_const_cast			(location_t, tree, tree,
+						 tsubst_flags_t);
 extern tree build_c_cast			(location_t, tree, tree);
 extern cp_expr build_c_cast			(location_t loc, tree type,
 						 cp_expr expr);
-extern tree cp_build_c_cast			(tree, tree, tsubst_flags_t);
+extern tree cp_build_c_cast			(location_t, tree, tree,
+						 tsubst_flags_t);
 extern cp_expr build_x_modify_expr		(location_t, tree,
 						 enum tree_code, tree,
 						 tsubst_flags_t);
@@ -7850,7 +7857,8 @@ extern int lvalue_or_else			(tree, enum lvalue_use,
 extern void check_template_keyword		(tree);
 extern bool check_raw_literal_operator		(const_tree decl);
 extern bool check_literal_operator_args		(const_tree, bool *, bool *);
-extern void maybe_warn_about_useless_cast       (tree, tree, tsubst_flags_t);
+extern void maybe_warn_about_useless_cast       (location_t, tree, tree,
+						 tsubst_flags_t);
 extern tree cp_perform_integral_promotions      (tree, tsubst_flags_t);
 
 extern tree finish_left_unary_fold_expr      (tree, int);

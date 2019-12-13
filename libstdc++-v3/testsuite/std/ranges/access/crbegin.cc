@@ -31,15 +31,29 @@ struct R1
   friend const int* rbegin(const R1&& r) { return &r.j; }
 };
 
+struct R1V // view on an R1
+{
+  R1& r;
+
+  friend const long* rbegin(R1V&); // this is not defined
+  friend const int* rbegin(const R1V& rv) noexcept { return rv.r.rbegin(); }
+};
+
+// Allow ranges::end to work with R1V&&
+template<> constexpr bool std::ranges::enable_safe_range<R1V> = true;
+
 void
 test01()
 {
   R1 r;
   const R1& c = r;
   VERIFY( std::ranges::crbegin(r) == std::ranges::rbegin(c) );
-  VERIFY( std::ranges::crbegin(std::move(r)) == std::ranges::rbegin(std::move(c)) );
   VERIFY( std::ranges::crbegin(c) == std::ranges::rbegin(c) );
-  VERIFY( std::ranges::crbegin(std::move(c)) == std::ranges::rbegin(std::move(c)) );
+
+  R1V v{r};
+  const R1V cv{r};
+  VERIFY( std::ranges::crbegin(std::move(v)) == std::ranges::rbegin(c) );
+  VERIFY( std::ranges::crbegin(std::move(cv)) == std::ranges::rbegin(c) );
 }
 
 struct R2
@@ -50,9 +64,12 @@ struct R2
   const int* begin() const { return a; }
   const int* end() const { return a + 2; }
 
-  friend const long* begin(const R2&& r) { return r.l; }
-  friend const long* end(const R2&& r) { return r.l + 2; }
+  friend const long* begin(const R2&&); // not defined
+  friend const long* end(const R2&&); // not defined
 };
+
+// N.B. this is a lie, rbegin on an R2 rvalue will return a dangling pointer.
+template<> constexpr bool std::ranges::enable_safe_range<R2> = true;
 
 void
 test02()
@@ -60,9 +77,10 @@ test02()
   R2 r;
   const R2& c = r;
   VERIFY( std::ranges::crbegin(r) == std::ranges::rbegin(c) );
-  VERIFY( std::ranges::crbegin(std::move(r)) == std::ranges::rbegin(std::move(c)) );
   VERIFY( std::ranges::crbegin(c) == std::ranges::rbegin(c) );
-  VERIFY( std::ranges::crbegin(std::move(c)) == std::ranges::rbegin(std::move(c)) );
+
+  VERIFY( std::ranges::crbegin(std::move(r)) == std::ranges::rbegin(c) );
+  VERIFY( std::ranges::crbegin(std::move(c)) == std::ranges::rbegin(c) );
 }
 
 int

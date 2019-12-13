@@ -10,7 +10,7 @@ struct S {
   S(const S &s) {}
 };
 
-S getS() [[gnu::__stdcall__]];  // { dg-warning "ignored" }
+S getS() [[gnu::__stdcall__]];
 
 void test()
 {

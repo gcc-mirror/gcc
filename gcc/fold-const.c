@@ -2598,6 +2598,7 @@ maybe_lvalue_p (const_tree x)
   case TARGET_EXPR:
   case COND_EXPR:
   case BIND_EXPR:
+  case VIEW_CONVERT_EXPR:
     break;
 
   default:

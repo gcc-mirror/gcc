@@ -1846,7 +1846,7 @@ gcn_expand_scaled_offsets (addr_space_t as, rtx base, rtx offsets, rtx scale,
   if (GET_MODE (offsets) == V64DImode)
     {
       rtx tmp = gen_reg_rtx (V64SImode);
-      emit_insn (gen_vec_truncatev64div64si (tmp, offsets));
+      emit_insn (gen_truncv64div64si2 (tmp, offsets));
       offsets = tmp;
     }
 
@@ -3997,12 +3997,8 @@ gcn_vectorize_vec_perm_const (machine_mode vmode, rtx dst,
 static bool
 gcn_vector_mode_supported_p (machine_mode mode)
 {
-  /* FIXME: Enable V64QImode and V64HImode.
-	    We should support these modes, but vector operations are usually
-	    assumed to automatically truncate types, and GCN does not.  We
-	    need to add explicit truncates and/or use SDWA for QI/HI insns.  */
-  return (/* mode == V64QImode || mode == V64HImode
-	  ||*/ mode == V64SImode || mode == V64DImode
+  return (mode == V64QImode || mode == V64HImode
+	  || mode == V64SImode || mode == V64DImode
 	  || mode == V64SFmode || mode == V64DFmode);
 }
 
@@ -4030,6 +4026,25 @@ gcn_vectorize_preferred_simd_mode (scalar_mode mode)
     default:
       return word_mode;
     }
+}
+
+/* Implement TARGET_VECTORIZE_RELATED_MODE.
+
+   All GCN vectors are 64-lane, so this is simpler than other architectures.
+   In particular, we do *not* want to match vector bit-size.  */
+
+static opt_machine_mode
+gcn_related_vector_mode (machine_mode vector_mode, scalar_mode element_mode,
+			 poly_uint64 nunits)
+{
+  if (known_ne (nunits, 0U) && known_ne (nunits, 64U))
+    return VOIDmode;
+
+  machine_mode pref_mode = gcn_vectorize_preferred_simd_mode (element_mode);
+  if (!VECTOR_MODE_P (pref_mode))
+    return VOIDmode;
+
+  return pref_mode;
 }
 
 /* Implement TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT.
@@ -6162,6 +6177,8 @@ print_operand (FILE *file, rtx x, int code)
 #undef  TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT
 #define TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT \
   gcn_preferred_vector_alignment
+#undef  TARGET_VECTORIZE_RELATED_MODE
+#define TARGET_VECTORIZE_RELATED_MODE gcn_related_vector_mode
 #undef  TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT
 #define TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT \
   gcn_vectorize_support_vector_misalignment

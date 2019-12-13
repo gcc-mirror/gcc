@@ -14,5 +14,5 @@ array_type *ap;
 
 void foo ()
 {
-  int i = *((array_type) *ap);	/* { dg-error "" } missed */
+  int i = *((array_type) *ap);	/* { dg-error "13:ISO C\\+\\+ forbids casting to an array type" } missed */
 }

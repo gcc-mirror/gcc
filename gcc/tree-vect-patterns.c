@@ -1928,7 +1928,10 @@ vect_recog_mulhs_pattern (stmt_vec_info last_stmt_info, tree *type_out)
 	    TYPE avg = (TYPE) avg';
 
   where NTYPE is no wider than half of TYPE.  Since only the bottom half
-  of avg is used, all or part of the cast of avg' should become redundant.  */
+  of avg is used, all or part of the cast of avg' should become redundant.
+
+  If there is no target support available, generate code to distribute rshift
+  over plus and add a carry.  */
 
 static gimple *
 vect_recog_average_pattern (stmt_vec_info last_stmt_info, tree *type_out)
@@ -2032,9 +2035,20 @@ vect_recog_average_pattern (stmt_vec_info last_stmt_info, tree *type_out)
 
   /* Check for target support.  */
   tree new_vectype = get_vectype_for_scalar_type (vinfo, new_type);
-  if (!new_vectype
-      || !direct_internal_fn_supported_p (ifn, new_vectype,
-					  OPTIMIZE_FOR_SPEED))
+  if (!new_vectype)
+    return NULL;
+
+  bool fallback_p = false;
+
+  if (direct_internal_fn_supported_p (ifn, new_vectype, OPTIMIZE_FOR_SPEED))
+    ;
+  else if (TYPE_UNSIGNED (new_type)
+	   && optab_for_tree_code (RSHIFT_EXPR, new_vectype, optab_scalar)
+	   && optab_for_tree_code (PLUS_EXPR, new_vectype, optab_default)
+	   && optab_for_tree_code (BIT_IOR_EXPR, new_vectype, optab_default)
+	   && optab_for_tree_code (BIT_AND_EXPR, new_vectype, optab_default))
+    fallback_p = true;
+  else
     return NULL;
 
   /* The IR requires a valid vector type for the cast result, even though
@@ -2043,11 +2057,53 @@ vect_recog_average_pattern (stmt_vec_info last_stmt_info, tree *type_out)
   if (!*type_out)
     return NULL;
 
-  /* Generate the IFN_AVG* call.  */
   tree new_var = vect_recog_temp_ssa_var (new_type, NULL);
   tree new_ops[2];
   vect_convert_inputs (last_stmt_info, 2, new_ops, new_type,
 		       unprom, new_vectype);
+
+  if (fallback_p)
+    {
+      /* As a fallback, generate code for following sequence:
+
+	 shifted_op0 = new_ops[0] >> 1;
+	 shifted_op1 = new_ops[1] >> 1;
+	 sum_of_shifted = shifted_op0 + shifted_op1;
+	 unmasked_carry = new_ops[0] and/or new_ops[1];
+	 carry = unmasked_carry & 1;
+	 new_var = sum_of_shifted + carry;
+      */	 
+
+      tree one_cst = build_one_cst (new_type);
+      gassign *g;
+
+      tree shifted_op0 = vect_recog_temp_ssa_var (new_type, NULL);
+      g = gimple_build_assign (shifted_op0, RSHIFT_EXPR, new_ops[0], one_cst);
+      append_pattern_def_seq (last_stmt_info, g, new_vectype);
+
+      tree shifted_op1 = vect_recog_temp_ssa_var (new_type, NULL);
+      g = gimple_build_assign (shifted_op1, RSHIFT_EXPR, new_ops[1], one_cst);
+      append_pattern_def_seq (last_stmt_info, g, new_vectype);
+
+      tree sum_of_shifted = vect_recog_temp_ssa_var (new_type, NULL);
+      g = gimple_build_assign (sum_of_shifted, PLUS_EXPR,
+			       shifted_op0, shifted_op1);
+      append_pattern_def_seq (last_stmt_info, g, new_vectype);
+      
+      tree unmasked_carry = vect_recog_temp_ssa_var (new_type, NULL);
+      tree_code c = (ifn == IFN_AVG_CEIL) ? BIT_IOR_EXPR : BIT_AND_EXPR;
+      g = gimple_build_assign (unmasked_carry, c, new_ops[0], new_ops[1]);
+      append_pattern_def_seq (last_stmt_info, g, new_vectype);
+ 
+      tree carry = vect_recog_temp_ssa_var (new_type, NULL);
+      g = gimple_build_assign (carry, BIT_AND_EXPR, unmasked_carry, one_cst);
+      append_pattern_def_seq (last_stmt_info, g, new_vectype);
+
+      g = gimple_build_assign (new_var, PLUS_EXPR, sum_of_shifted, carry);
+      return vect_convert_output (last_stmt_info, type, g, new_vectype);
+    }
+
+  /* Generate the IFN_AVG* call.  */
   gcall *average_stmt = gimple_build_call_internal (ifn, 2, new_ops[0],
 						    new_ops[1]);
   gimple_call_set_lhs (average_stmt, new_var);
@@ -2376,14 +2432,12 @@ vect_recog_rotate_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
       oprnd0 = def;
     }
 
-  if (dt == vect_external_def
-      && TREE_CODE (oprnd1) == SSA_NAME)
+  if (dt == vect_external_def && TREE_CODE (oprnd1) == SSA_NAME)
     ext_def = vect_get_external_def_edge (vinfo, oprnd1);
 
   def = NULL_TREE;
   scalar_int_mode mode = SCALAR_INT_TYPE_MODE (type);
-  if (TREE_CODE (oprnd1) == INTEGER_CST
-      || TYPE_MODE (TREE_TYPE (oprnd1)) == mode)
+  if (dt != vect_internal_def || TYPE_MODE (TREE_TYPE (oprnd1)) == mode)
     def = oprnd1;
   else if (def_stmt && gimple_assign_cast_p (def_stmt))
     {
@@ -2398,14 +2452,7 @@ vect_recog_rotate_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
     {
       def = vect_recog_temp_ssa_var (type, NULL);
       def_stmt = gimple_build_assign (def, NOP_EXPR, oprnd1);
-      if (ext_def)
-	{
-	  basic_block new_bb
-	    = gsi_insert_on_edge_immediate (ext_def, def_stmt);
-	  gcc_assert (!new_bb);
-	}
-      else
-	append_pattern_def_seq (stmt_vinfo, def_stmt);
+      append_pattern_def_seq (stmt_vinfo, def_stmt);
     }
   stype = TREE_TYPE (def);
   scalar_int_mode smode = SCALAR_INT_TYPE_MODE (stype);

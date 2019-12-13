@@ -16,5 +16,5 @@ void HeapTracked::isObjectAllocation(HeapTracked *ptr)
 void HeapTracked::isObjectAllocation(const HeapTracked *ptr)
 {
   const_cast<void*>(dynamic_cast<const void*>(ptr));
-  dynamic_cast<void*>(ptr);		// { dg-error "" } 
+  dynamic_cast<void*>(ptr);		// { dg-error "3:cannot .dynamic_cast." } 
 }

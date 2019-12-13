@@ -5523,6 +5523,13 @@ start_decl_1 (tree decl, bool initialized)
       cp_apply_type_quals_to_decl (cp_type_quals (type), decl);
     }
 
+  if (is_global_var (decl))
+    {
+      type_context_kind context = (DECL_THREAD_LOCAL_P (decl)
+				   ? TCTX_THREAD_STORAGE
+				   : TCTX_STATIC_STORAGE);
+      verify_type_context (input_location, context, TREE_TYPE (decl));
+    }
   if (initialized)
     /* Is it valid for this decl to have an initializer at all?  */
     {
@@ -6536,7 +6543,8 @@ reshape_init (tree type, tree init, tsubst_flags_t complain)
 	{
 	  warning_sentinel w (warn_useless_cast);
 	  warning_sentinel w2 (warn_ignored_qualifiers);
-	  return cp_build_c_cast (type, elt, tf_warning_or_error);
+	  return cp_build_c_cast (input_location, type, elt,
+				  tf_warning_or_error);
 	}
       else
 	return error_mark_node;
@@ -6588,6 +6596,11 @@ check_array_initializer (tree decl, tree type, tree init)
 	error ("elements of array %q#T have incomplete type", type);
       return true;
     }
+
+  location_t loc = (decl ? location_of (decl) : input_location);
+  if (!verify_type_context (loc, TCTX_ARRAY_ELEMENT, element_type))
+    return true;
+
   /* A compound literal can't have variable size.  */
   if (init && !decl
       && ((COMPLETE_TYPE_P (type) && !TREE_CONSTANT (TYPE_SIZE (type)))
@@ -7535,6 +7548,8 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
   if (VAR_P (decl)
       && DECL_CLASS_SCOPE_P (decl)
+      && verify_type_context (DECL_SOURCE_LOCATION (decl),
+			      TCTX_STATIC_STORAGE, type)
       && DECL_INITIALIZED_IN_CLASS_P (decl))
     check_static_variable_definition (decl, type);
 
@@ -10605,6 +10620,10 @@ create_array_type_for_decl (tree name, tree type, tree size, location_t loc)
       break;
     }
 
+  if (!verify_type_context (name ? loc : input_location,
+			    TCTX_ARRAY_ELEMENT, type))
+    return error_mark_node;
+
   /* [dcl.array]
 
      The constant expressions that specify the bounds of the arrays
@@ -13310,6 +13329,14 @@ grokdeclarator (const cp_declarator *declarator,
 		type = error_mark_node;
 		decl = NULL_TREE;
 	      }
+	  }
+	else if (!verify_type_context (input_location,
+				       staticp
+				       ? TCTX_STATIC_STORAGE
+				       : TCTX_FIELD, type))
+	  {
+	    type = error_mark_node;
+	    decl = NULL_TREE;
 	  }
 	else
 	  {

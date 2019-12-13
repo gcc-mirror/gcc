@@ -283,14 +283,8 @@ symbol_table::initialize (void)
 cgraph_node *
 symbol_table::create_empty (void)
 {
-  cgraph_node *node = allocate_cgraph_symbol ();
-
-  node->type = SYMTAB_FUNCTION;
-  node->frequency = NODE_FREQUENCY_NORMAL;
-  node->count_materialization_scale = REG_BR_PROB_BASE;
   cgraph_count++;
-
-  return node;
+  return new (ggc_alloc<cgraph_node> ()) cgraph_node (cgraph_max_uid++);
 }
 
 /* Register HOOK to be called with DATA on each removed edge.  */
@@ -509,8 +503,6 @@ cgraph_node::create (tree decl)
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
 
   node->decl = decl;
-
-  node->count = profile_count::uninitialized ();
 
   if ((flag_openacc || flag_openmp)
       && lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl)))
@@ -1954,7 +1946,7 @@ cgraph_node::dump (FILE *f)
       count.dump (f);
     }
   if (tp_first_run > 0)
-    fprintf (f, " first_run:%i", tp_first_run);
+    fprintf (f, " first_run:%" PRId64, (int64_t) tp_first_run);
   if (origin)
     fprintf (f, " nested in:%s", origin->asm_name ());
   if (gimple_has_body_p (decl))
@@ -3074,6 +3066,11 @@ cgraph_node::verify_node (void)
       inlined_to->count.debug ();
       error_found = true;
     }
+  if (tp_first_run < 0)
+    {
+      error ("tp_first_run must be non-negative");
+      error_found = true;
+    }
   if (!definition && !in_other_partition && local)
     {
       error ("local symbols must be defined");
@@ -3750,7 +3747,7 @@ symbol_table_test::symbol_table_test ()
 {
   gcc_assert (saved_symtab == NULL);
   saved_symtab = symtab;
-  symtab = new (ggc_alloc <symbol_table> ()) symbol_table ();
+  symtab = new (ggc_alloc<symbol_table> ()) symbol_table ();
 }
 
 /* Destructor.  Restore the old value of symtab.  */

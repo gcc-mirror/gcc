@@ -256,6 +256,7 @@ get_odr_name_for_type (tree type)
 {
   tree type_name = TYPE_NAME (type);
   if (type_name == NULL_TREE
+      || TREE_CODE (type_name) != TYPE_DECL
       || !DECL_ASSEMBLER_NAME_SET_P (type_name))
     return NULL;
 

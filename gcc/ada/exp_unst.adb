@@ -27,6 +27,7 @@ with Atree;    use Atree;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
+with Exp_Util; use Exp_Util;
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -413,11 +414,14 @@ package body Exp_Unst is
       then
          return;
 
-      --  Only unnest when generating code for the main source unit or if we're
-      --  unnesting for inline.
+      --  Only unnest when generating code for the main source unit or if
+      --  we're unnesting for inline.  But in some Annex E cases the Sloc
+      --  points to a different unit, so also make sure that the Parent
+      --  isn't in something that we know we're generating code for.
 
       elsif not For_Inline
         and then not In_Extended_Main_Code_Unit (Subp_Body)
+        and then not In_Extended_Main_Code_Unit (Parent (Subp_Body))
       then
          return;
       end if;
@@ -526,8 +530,8 @@ package body Exp_Unst is
                procedure Note_Uplevel_Bound (N : Node_Id; Ref : Node_Id) is
                begin
                   --  Entity name case. Make sure that the entity is declared
-                  --  in a subprogram. This may not be the case for for a type
-                  --  in a loop appearing in a precondition.
+                  --  in a subprogram. This may not be the case for a type in a
+                  --  loop appearing in a precondition.
                   --  Exclude explicitly  discriminants (that can appear
                   --  in bounds of discriminated components).
 
@@ -1801,7 +1805,7 @@ package body Exp_Unst is
                      Comp  : Entity_Id;
 
                      Decl_Assign : Node_Id;
-                     --  Assigment to set uplink, Empty if none
+                     --  Assignment to set uplink, Empty if none
 
                      Decl_ARECnT  : Node_Id;
                      Decl_ARECnPT : Node_Id;
@@ -2345,6 +2349,18 @@ package body Exp_Unst is
                --  expect any exceptions)
 
                Analyze_And_Resolve (UPJ.Ref, Typ, Suppress => All_Checks);
+
+               --  Generate an extra temporary to facilitate the C backend
+               --  processing this dereference
+
+               if Opt.Modify_Tree_For_C
+                 and then Nkind_In (Parent (UPJ.Ref),
+                            N_Type_Conversion,
+                            N_Unchecked_Type_Conversion)
+               then
+                  Force_Evaluation (UPJ.Ref, Mode => Strict);
+               end if;
+
                Pop_Scope;
             end Rewrite_One_Ref;
          end;

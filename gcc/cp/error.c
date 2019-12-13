@@ -143,6 +143,11 @@ class cxx_format_postprocessor : public format_postprocessor
   : m_type_a (), m_type_b ()
   {}
 
+  format_postprocessor *clone() const FINAL OVERRIDE
+  {
+    return new cxx_format_postprocessor ();
+  }
+
   void handle (pretty_printer *pp) FINAL OVERRIDE;
 
   deferred_printed_type m_type_a;
@@ -4564,7 +4569,7 @@ label_text
 range_label_for_type_mismatch::get_text (unsigned /*range_idx*/) const
 {
   if (m_labelled_type == NULL_TREE)
-    return label_text (NULL, false);
+    return label_text::borrow (NULL);
 
   const bool verbose = false;
   const bool show_color = false;
@@ -4579,5 +4584,5 @@ range_label_for_type_mismatch::get_text (unsigned /*range_idx*/) const
 
   /* Both of the above return GC-allocated buffers, so the caller mustn't
      free them.  */
-  return label_text (const_cast <char *> (result), false);
+  return label_text::borrow (result);
 }

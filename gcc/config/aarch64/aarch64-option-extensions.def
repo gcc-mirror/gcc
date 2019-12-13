@@ -52,25 +52,27 @@
 
 /* Enabling "fp" just enables "fp".
    Disabling "fp" also disables "simd", "crypto", "fp16", "aes", "sha2",
-   "sha3", sm3/sm4, "sve", "sve2", "sve2-aes", "sve2-sha3", "sve2-sm4", and
-   "sve2-bitperm".  */
+   "sha3", sm3/sm4, "sve", "sve2", "sve2-aes", "sve2-sha3", "sve2-sm4",
+   "sve2-bitperm", "i8mm" and "bf16".  */
 AARCH64_OPT_EXTENSION("fp", AARCH64_FL_FP, 0, AARCH64_FL_SIMD | \
 		      AARCH64_FL_CRYPTO | AARCH64_FL_F16 | AARCH64_FL_AES | \
 		      AARCH64_FL_SHA2 | AARCH64_FL_SHA3 | AARCH64_FL_SM4 | \
 		      AARCH64_FL_SVE | AARCH64_FL_SVE2 | AARCH64_FL_SVE2_AES | \
 		      AARCH64_FL_SVE2_SHA3 | AARCH64_FL_SVE2_SM4 | \
-		      AARCH64_FL_SVE2_BITPERM, false, "fp")
+		      AARCH64_FL_SVE2_BITPERM | AARCH64_FL_I8MM | \
+		      AARCH64_FL_BF16, false, "fp")
 
 /* Enabling "simd" also enables "fp".
    Disabling "simd" also disables "crypto", "dotprod", "aes", "sha2", "sha3",
-   "sm3/sm4", "sve", "sve2", "sve2-aes", "sve2-sha3", "sve2-sm4", and
-   "sve2-bitperm".  */
+   "sm3/sm4", "sve", "sve2", "sve2-aes", "sve2-sha3", "sve2-sm4",
+   "sve2-bitperm", and "i8mm".  */
 AARCH64_OPT_EXTENSION("simd", AARCH64_FL_SIMD, AARCH64_FL_FP, \
 		      AARCH64_FL_CRYPTO | AARCH64_FL_DOTPROD | \
 		      AARCH64_FL_AES | AARCH64_FL_SHA2 | AARCH64_FL_SHA3 | \
 		      AARCH64_FL_SM4 | AARCH64_FL_SVE | AARCH64_FL_SVE2 | \
 		      AARCH64_FL_SVE2_AES | AARCH64_FL_SVE2_SHA3 | \
-		      AARCH64_FL_SVE2_SM4 | AARCH64_FL_SVE2_BITPERM, false, \
+		      AARCH64_FL_SVE2_SM4 | AARCH64_FL_SVE2_BITPERM | \
+		      AARCH64_FL_I8MM, false, \
 		      "asimd")
 
 /* Enabling "crypto" also enables "fp", "simd", "aes" and "sha2".
@@ -197,5 +199,15 @@ AARCH64_OPT_EXTENSION("sve2-bitperm", AARCH64_FL_SVE2_BITPERM, AARCH64_FL_SIMD |
 
 /* Enabling or disabling "tme" only changes "tme".  */
 AARCH64_OPT_EXTENSION("tme", AARCH64_FL_TME, 0, 0, false, "")
+
+/* Enabling "i8mm" also enables "simd" and "fp".
+   Disabling "i8mm" only disables "i8mm".  */
+AARCH64_OPT_EXTENSION("i8mm", AARCH64_FL_I8MM, \
+		      AARCH64_FL_SIMD | AARCH64_FL_FP, 0, false, "i8mm")
+
+/* Enabling "bf16" also enables "simd" and "fp".
+   Disabling "bf16" only disables "bf16".  */
+AARCH64_OPT_EXTENSION("bf16", AARCH64_FL_BF16, \
+		      AARCH64_FL_SIMD | AARCH64_FL_FP, 0, false, "bf16")
 
 #undef AARCH64_OPT_EXTENSION

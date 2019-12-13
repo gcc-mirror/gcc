@@ -282,7 +282,7 @@ build_field (segment_info *h, tree union_type, record_layout_info rli)
   unsigned HOST_WIDE_INT desired_align, known_align;
 
   name = get_identifier (h->sym->name);
-  field = build_decl (h->sym->declared_at.lb->location,
+  field = build_decl (gfc_get_location (&h->sym->declared_at),
 		      FIELD_DECL, name, h->field);
   known_align = (offset & -offset) * BITS_PER_UNIT;
   if (known_align == 0 || known_align > BIGGEST_ALIGNMENT)
@@ -559,7 +559,7 @@ get_init_field (segment_info *head, tree union_type, tree *field_init,
   tmp = build_range_type (gfc_array_index_type,
 			  gfc_index_zero_node, tmp);
   tmp = build_array_type (type, tmp);
-  field = build_decl (gfc_current_locus.lb->location,
+  field = build_decl (gfc_get_location (&gfc_current_locus),
 		      FIELD_DECL, NULL_TREE, tmp);
 
   known_align = BIGGEST_ALIGNMENT;
@@ -711,7 +711,7 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
     {
       tree var_decl;
 
-      var_decl = build_decl (s->sym->declared_at.lb->location,
+      var_decl = build_decl (gfc_get_location (&s->sym->declared_at),
 			     VAR_DECL, DECL_NAME (s->field),
 			     TREE_TYPE (s->field));
       TREE_STATIC (var_decl) = TREE_STATIC (decl);

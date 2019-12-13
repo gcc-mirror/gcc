@@ -1286,6 +1286,8 @@ xcoff_add (struct backtrace_state *state, int descriptor, off_t offset,
 			      + (dwsect[i].offset - min_offset));
 	}
 
+      memset (&dwarf_sections, 0, sizeof dwarf_sections);
+
       dwarf_sections.data[DEBUG_INFO] = dwsect[DEBUG_INFO].data;
       dwarf_sections.size[DEBUG_INFO] = dwsect[DEBUG_INFO].size;
 #if BACKTRACE_XCOFF_SIZE == 32

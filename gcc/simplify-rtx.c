@@ -5037,6 +5037,15 @@ simplify_relational_operation (enum rtx_code code, machine_mode mode,
 	  return NULL_RTX;
 #endif
 	}
+      /* For vector comparison with scalar int result, it is unknown
+	 if the target means here a comparison into an integral bitmask,
+	 or comparison where all comparisons true mean const_true_rtx
+	 whole result, or where any comparisons true mean const_true_rtx
+	 whole result.  For const0_rtx all the cases are the same.  */
+      if (VECTOR_MODE_P (cmp_mode)
+	  && SCALAR_INT_MODE_P (mode)
+	  && tem == const_true_rtx)
+	return NULL_RTX;
 
       return tem;
     }
@@ -5383,7 +5392,7 @@ comparison_result (enum rtx_code code, int known_results)
 }
 
 /* Check if the given comparison (done in the given MODE) is actually
-   a tautology or a contradiction.  If the mode is VOID_mode, the
+   a tautology or a contradiction.  If the mode is VOIDmode, the
    comparison is done in "infinite precision".  If no simplification
    is possible, this function returns zero.  Otherwise, it returns
    either const_true_rtx or const0_rtx.  */

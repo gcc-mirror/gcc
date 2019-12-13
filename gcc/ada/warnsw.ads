@@ -63,6 +63,8 @@ package Warnsw is
    --  efficiency reasons and would be improved by reordering the components.
    --  Off by default, modified by use of -gnatw.q/.Q (but not -gnatwa).
 
+   --  WARNING: There is a matching C declaration of this variable in fe.h
+
    Warn_On_Record_Holes : Boolean := False;
    --  Warn when explicit record component clauses leave uncovered holes (gaps)
    --  in a record layout. Off by default, set by -gnatw.h (but not -gnatwa).

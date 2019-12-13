@@ -8,5 +8,5 @@ typedef union {__v_4F v; float a[4];} __v4F;
 void f(void)
 {
       __v_4F b;
-      (reinterpret_cast<__v4F>(b).a)[1] = 1; // { dg-error "" }
+      (reinterpret_cast<__v4F>(b).a)[1] = 1; // { dg-error "8:invalid cast" }
 }

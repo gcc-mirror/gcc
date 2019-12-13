@@ -166,7 +166,7 @@ void test_pfrd1 (void)
 }
 
 
-WRONLY (4, 3) void (*pfwr4_3)(int, const char*, int, int*);
+WRONLY (4, 3) void (*pfwr4_3)(int, const char*, int, int32_t*);
 
 void test_pfwr4_3 (void)
 {

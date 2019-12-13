@@ -3534,7 +3534,8 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	inform (location, "C++20 %<constinit%> only available with "
 		"%<-std=c++2a%> or %<-std=gnu++2a%>");
       else if (!flag_concepts && id == ridpointers[(int)RID_CONCEPT])
-	inform (location, "%<concept%> only available with %<-fconcepts%>");
+	inform (location, "%<concept%> only available with %<-std=c++2a%> or "
+		"%<-fconcepts%>");
       else if (C_RID_CODE (id) == RID_MODULE || C_RID_CODE (id) == RID_IMPORT)
 	{
 	  if (!modules_p ())
@@ -7201,36 +7202,38 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    break;
 	  }
 
-	switch (keyword)
-	  {
-	  case RID_DYNCAST:
-	    postfix_expression
-	      = build_dynamic_cast (type, expression, tf_warning_or_error);
-	    break;
-	  case RID_STATCAST:
-	    postfix_expression
-	      = build_static_cast (type, expression, tf_warning_or_error);
-	    break;
-	  case RID_REINTCAST:
-	    postfix_expression
-	      = build_reinterpret_cast (type, expression,
-                                        tf_warning_or_error);
-	    break;
-	  case RID_CONSTCAST:
-	    postfix_expression
-	      = build_const_cast (type, expression, tf_warning_or_error);
-	    break;
-	  default:
-	    gcc_unreachable ();
-	  }
-
 	/* Construct a location e.g. :
 	     reinterpret_cast <int *> (expr)
 	     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	   ranging from the start of the "*_cast" token to the final closing
 	   paren, with the caret at the start.  */
 	location_t cp_cast_loc = make_location (start_loc, start_loc, end_loc);
-	postfix_expression.set_location (cp_cast_loc);
+
+	switch (keyword)
+	  {
+	  case RID_DYNCAST:
+	    postfix_expression
+	      = build_dynamic_cast (cp_cast_loc, type, expression,
+				    tf_warning_or_error);
+	    break;
+	  case RID_STATCAST:
+	    postfix_expression
+	      = build_static_cast (cp_cast_loc, type, expression,
+				   tf_warning_or_error);
+	    break;
+	  case RID_REINTCAST:
+	    postfix_expression
+	      = build_reinterpret_cast (cp_cast_loc, type, expression,
+                                        tf_warning_or_error);
+	    break;
+	  case RID_CONSTCAST:
+	    postfix_expression
+	      = build_const_cast (cp_cast_loc, type, expression,
+				  tf_warning_or_error);
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
       }
       break;
 
@@ -9456,17 +9459,18 @@ get_cast_suggestion (tree dst_type, tree orig_expr)
     return NULL;
 
   /* First try const_cast.  */
-  trial = build_const_cast (dst_type, orig_expr, tf_none);
+  trial = build_const_cast (input_location, dst_type, orig_expr, tf_none);
   if (trial != error_mark_node)
     return "const_cast";
 
   /* If that fails, try static_cast.  */
-  trial = build_static_cast (dst_type, orig_expr, tf_none);
+  trial = build_static_cast (input_location, dst_type, orig_expr, tf_none);
   if (trial != error_mark_node)
     return "static_cast";
 
   /* Finally, try reinterpret_cast.  */
-  trial = build_reinterpret_cast (dst_type, orig_expr, tf_none);
+  trial = build_reinterpret_cast (input_location, dst_type, orig_expr,
+				  tf_none);
   if (trial != error_mark_node)
     return "reinterpret_cast";
 
@@ -10454,8 +10458,8 @@ cp_parser_builtin_offsetof (cp_parser *parser)
 
   /* Build the (type *)null that begins the traditional offsetof macro.  */
   tree object_ptr
-    = build_static_cast (build_pointer_type (type), null_pointer_node,
-			 tf_warning_or_error);
+    = build_static_cast (input_location, build_pointer_type (type),
+			 null_pointer_node, tf_warning_or_error);
 
   /* Parse the offsetof-member-designator.  We begin as if we saw "expr->".  */
   expr = cp_parser_postfix_dot_deref_expression (parser, CPP_DEREF, object_ptr,
@@ -15137,11 +15141,6 @@ cp_parser_decltype_expr (cp_parser *parser,
   cp_token *id_expr_start_token;
   tree expr;
 
-  /* Since we're going to preserve any side-effects from this parse, set up a
-     firewall to protect our callers from cp_parser_commit_to_tentative_parse
-     in the expression.  */
-  tentative_firewall firewall (parser);
-
   /* First, try parsing an id-expression.  */
   id_expr_start_token = cp_lexer_peek_token (parser->lexer);
   cp_parser_parse_tentatively (parser);
@@ -15233,9 +15232,6 @@ cp_parser_decltype_expr (cp_parser *parser,
          expression.  */
       cp_parser_abort_tentative_parse (parser);
 
-      /* Commit to the tentative_firewall so we get syntax errors.  */
-      cp_parser_commit_to_tentative_parse (parser);
-
       /* Parse a full expression.  */
       expr = cp_parser_expression (parser, /*pidk=*/NULL, /*cast_p=*/false,
 				   /*decltype_p=*/true);
@@ -15272,6 +15268,17 @@ cp_parser_decltype (cp_parser *parser)
   matching_parens parens;
   if (!parens.require_open (parser))
     return error_mark_node;
+
+  /* Since we're going to preserve any side-effects from this parse, set up a
+     firewall to protect our callers from cp_parser_commit_to_tentative_parse
+     in the expression.  */
+  tentative_firewall firewall (parser);
+
+  /* If in_declarator_p, a reparse as an expression might succeed (60361).
+     Otherwise, commit now for better diagnostics.  */
+  if (cp_parser_uncommitted_to_tentative_parse_p (parser)
+      && !parser->in_declarator_p)
+    cp_parser_commit_to_topmost_tentative_parse (parser);
 
   push_deferring_access_checks (dk_deferred);
 
@@ -15333,10 +15340,16 @@ cp_parser_decltype (cp_parser *parser)
     }
 
   /* Parse to the closing `)'.  */
-  if (!parens.require_close (parser))
+  if (expr == error_mark_node || !parens.require_close (parser))
     {
       cp_parser_skip_to_closing_parenthesis (parser, true, false,
 					     /*consume_paren=*/true);
+      expr = error_mark_node;
+    }
+
+  /* If we got a parse error while tentative, bail out now.  */
+  if (cp_parser_error_occurred (parser))
+    {
       pop_deferring_access_checks ();
       return error_mark_node;
     }
@@ -15359,6 +15372,11 @@ cp_parser_decltype (cp_parser *parser)
   start_token->u.tree_check_value->value = expr;
   start_token->u.tree_check_value->checks = get_deferred_access_checks ();
   start_token->keyword = RID_MAX;
+
+  location_t loc = start_token->location;
+  loc = make_location (loc, loc, parser->lexer);
+  start_token->location = loc;
+
   cp_lexer_purge_tokens_after (parser->lexer, start_token);
 
   pop_to_parent_deferring_access_checks ();
@@ -29801,7 +29819,6 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
 					   parser->lexer);
   cast = build_functional_cast (combined_loc, type, expression_list,
                                 tf_warning_or_error);
-  cast.set_location (combined_loc);
   
   /* [expr.const]/1: In an integral constant expression "only type
      conversions to integral or enumeration type can be used".  */

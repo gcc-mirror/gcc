@@ -417,6 +417,18 @@ proc gcc-dg-prune { system text } {
 	return "::unsupported::large return values"
     }
 
+    # If exceptions are disabled, mark tests expecting exceptions to be enabled
+    # as unsupported.
+    if { ![check_effective_target_exceptions_enabled] } {
+	if [regexp "(^|\n)\[^\n\]*: error: exception handling disabled" $text] {
+	    return "::unsupported::exception handling disabled"
+	}
+
+	if [regexp "(^|\n)\[^\n\]*: error: #error .__cpp_exceptions." $text] {
+	    return "::unsupported::exception handling disabled"
+	}
+    }
+
     return $text
 }
 

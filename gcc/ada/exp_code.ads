@@ -38,6 +38,8 @@ package Exp_Code is
    --  Note that the implementations of these routines must not attempt
    --  to expand tables that are frozen on entry to Gigi.
 
+   --  WARNING: There is a matching C declaration of these subprograms in fe.h
+
    function Is_Asm_Volatile (N : Node_Id) return Boolean;
    --  Given an N_Code_Statement node N, return True if Volatile=True is
    --  specified, and False if Volatile=False is specified (or set by default).

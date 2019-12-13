@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "gcc-rich-location.h"
 #include "selftest.h"
+#include "target.h"
 
 /* The type of functions taking a tree, and some additional data, and
    returning an int.  */
@@ -11846,6 +11847,9 @@ instantiate_class_template_1 (tree type)
 			      error ("flexible array member %qD in union", r);
 			      TREE_TYPE (r) = error_mark_node;
 			    }
+			  else if (!verify_type_context (input_location,
+							 TCTX_FIELD, rtype))
+			    TREE_TYPE (r) = error_mark_node;
 			}
 
 		      /* If it is a TYPE_DECL for a class-scoped ENUMERAL_TYPE,
@@ -19077,16 +19081,16 @@ tsubst_copy_and_build (tree t,
 	    r = build_functional_cast (input_location, type, op, complain);
 	    break;
 	  case REINTERPRET_CAST_EXPR:
-	    r = build_reinterpret_cast (type, op, complain);
+	    r = build_reinterpret_cast (input_location, type, op, complain);
 	    break;
 	  case CONST_CAST_EXPR:
-	    r = build_const_cast (type, op, complain);
+	    r = build_const_cast (input_location, type, op, complain);
 	    break;
 	  case DYNAMIC_CAST_EXPR:
-	    r = build_dynamic_cast (type, op, complain);
+	    r = build_dynamic_cast (input_location, type, op, complain);
 	    break;
 	  case STATIC_CAST_EXPR:
-	    r = build_static_cast (type, op, complain);
+	    r = build_static_cast (input_location, type, op, complain);
 	    break;
 	  default:
 	    gcc_unreachable ();
@@ -21248,7 +21252,7 @@ static bool
 deducible_expression (tree expr)
 {
   /* Strip implicit conversions.  */
-  while (CONVERT_EXPR_P (expr))
+  while (CONVERT_EXPR_P (expr) || TREE_CODE (expr) == VIEW_CONVERT_EXPR)
     expr = TREE_OPERAND (expr, 0);
   return (TREE_CODE (expr) == TEMPLATE_PARM_INDEX);
 }
