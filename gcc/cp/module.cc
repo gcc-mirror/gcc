@@ -7759,8 +7759,25 @@ trees_in::decl_value ()
       set_overrun ();
     }
   else
-    /* Insert the real decl into the entity ary.  */
-    (*entity_ary)[state->entity_lwm + entity_index - 1] = existing;
+    {
+      /* Insert the real decl into the entity ary.  */
+      (*entity_ary)[state->entity_lwm + entity_index - 1] = existing;
+
+      /* And into the entity hash, if it's not already there.  */
+      if (!DECL_LANG_SPECIFIC (existing)
+	  || !DECL_MODULE_ENTITY_P (existing))
+	{
+	  retrofit_lang_decl (existing);
+	  DECL_MODULE_ENTITY_P (existing) = true;
+
+	  /* Insert into the entity hash (it cannot already be there).  */
+	  bool existed;
+	  unsigned &slot
+	    = entity_map->get_or_insert (DECL_UID (existing), &existed);
+	  gcc_checking_assert (!existed);
+	  slot = state->entity_lwm + entity_index - 1;
+	}
+    }
 
   bool is_new = existing == decl;
   if (is_new)
@@ -7780,6 +7797,7 @@ trees_in::decl_value ()
 	  if (inner_tag)
 	    /* We know there will be a lang_decl in this case.  */
 	    DECL_MODULE_IMPORT_P (inner) = true;
+
 	  if (state->is_partition ()
 	      && (module_interface_p () && !module_partition_p ()))
 	    {
@@ -7787,12 +7805,6 @@ trees_in::decl_value ()
 	      if (inner_tag)
 		DECL_MODULE_PARTITION_P (inner) = true;
 	    }
-
-	  /* Insert into the entity hash (it cannot already be there).  */
-	  bool existed;
-	  unsigned &slot = entity_map->get_or_insert (DECL_UID (decl), &existed);
-	  gcc_checking_assert (!existed);
-	  slot = state->entity_lwm + entity_index - 1;
 	}
 
       if (constraints)

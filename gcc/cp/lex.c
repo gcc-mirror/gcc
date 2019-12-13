@@ -1101,6 +1101,7 @@ cxx_dup_lang_specific_decl (tree node)
   struct lang_decl *ld = (struct lang_decl *) ggc_internal_alloc (size);
   memcpy (ld, DECL_LANG_SPECIFIC (node), size);
   DECL_LANG_SPECIFIC (node) = ld;
+  DECL_MODULE_ENTITY_P (node) = false;
 
   if (GATHER_STATISTICS)
     {

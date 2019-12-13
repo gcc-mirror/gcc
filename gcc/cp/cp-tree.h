@@ -1703,7 +1703,7 @@ check_constraint_info (tree t)
 #define DECL_MODULE_PURVIEW_P(N) \
   (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (N))->u.base.module_purview_p)
 
-/* True if this decl was imported.  */
+/* True if the live version of the decl was imported.  */
 #define DECL_MODULE_IMPORT_P(NODE) \
   (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (NODE))->u.base.module_import_p)
 
@@ -1711,6 +1711,11 @@ check_constraint_info (tree t)
    a partition, or is in the PMF (not implemented).  */
 #define DECL_MODULE_PARTITION_P(NODE) \
   (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (NODE))->u.base.module_partition_p)
+
+/* True if this decl is in the entity hash & array.  This means that
+   some variant was imported, even if DECL_MODULE_IMPORT_P is false.  */
+#define DECL_MODULE_ENTITY_P(NODE) \
+  (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (NODE))->u.base.module_entity_p)
 
 /* Whether this is an exported DECL.  Held on any decl that can appear
    at namespace scope (function, var, type, template, const or
@@ -2751,7 +2756,9 @@ struct GTY(()) lang_decl_base {
   unsigned module_partition_p : 1;	   /* from an imported
 					      partition, or in the
 					      PMF.  */
-
+  unsigned module_entity_p : 1;		   /* is in the entitity ary &
+					      hash.  */
+  
   /* 13 spare bits.  */
 };
 

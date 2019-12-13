@@ -1,3 +1,12 @@
+2019-12-13  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (DECL_MODULE_ENTITY_P): New.
+	(lang_decl_bas): Add module_entity_p flag.
+	* module.cc (trees_in::decl_value): Insert according to
+	DECL_MODULE_ENTITY_P.
+	* lex.c (cxx_dup_lang_specific): Clear DECL_MODULE_ENTITY_P.
+
 2019-12-12  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
