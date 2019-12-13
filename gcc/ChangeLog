@@ -1,3 +1,7 @@
+2019-12-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h (DARWIN_DYLIB1_SPEC): New.
+
 2019-12-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-streamer-in.c (input_function): Add node parameter.
