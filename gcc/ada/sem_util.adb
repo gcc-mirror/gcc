@@ -6612,6 +6612,13 @@ package body Sem_Util is
          end if;
       end if;
 
+      --  Handle a constant-folded conditional expression by avoiding use of
+      --  the original node.
+
+      if Nkind_In (Expr, N_Case_Expression, N_If_Expression) then
+         Expr := N;
+      end if;
+
       --  Unimplemented: Ptr.all'Access, where Ptr has Extra_Accessibility ???
 
       case Nkind (Expr) is
