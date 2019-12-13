@@ -1,3 +1,7 @@
+2019-12-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb, exp_unst.adb: Minor fix typo in comment.
+
 2019-12-13  Steve Baird  <baird@adacore.com>
 
 	* sem_res.adb (Resolve, Valid_Conversion): Add Base_Type call

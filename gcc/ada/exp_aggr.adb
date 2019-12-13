@@ -7499,7 +7499,7 @@ package body Exp_Aggr is
          return;
       end if;
 
-      --  If the pramga Aggregate_Individually_Assign is set, always convert to
+      --  If the pragma Aggregate_Individually_Assign is set, always convert to
       --  assignments.
 
       if Aggregate_Individually_Assign then
