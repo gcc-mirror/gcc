@@ -16068,25 +16068,19 @@ Specify the name of the target architecture and, optionally, one or
 more feature modifiers.  This option has the form
 @option{-march=@var{arch}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}.
 
-The permissible values for @var{arch} are @samp{armv8-a},
-@samp{armv8.1-a}, @samp{armv8.2-a}, @samp{armv8.3-a}, @samp{armv8.4-a},
-@samp{armv8.5-a} or @var{native}.
+The table below summarizes the permissible values for @var{arch}
+and the features that they enable by default:
 
-The value @samp{armv8.5-a} implies @samp{armv8.4-a} and enables compiler
-support for the ARMv8.5-A architecture extensions.
-
-The value @samp{armv8.4-a} implies @samp{armv8.3-a} and enables compiler
-support for the ARMv8.4-A architecture extensions.
-
-The value @samp{armv8.3-a} implies @samp{armv8.2-a} and enables compiler
-support for the ARMv8.3-A architecture extensions.
-
-The value @samp{armv8.2-a} implies @samp{armv8.1-a} and enables compiler
-support for the ARMv8.2-A architecture extensions.
-
-The value @samp{armv8.1-a} implies @samp{armv8-a} and enables compiler
-support for the ARMv8.1-A architecture extension.  In particular, it
-enables the @samp{+crc}, @samp{+lse}, and @samp{+rdma} features.
+@multitable @columnfractions 0.20 0.20 0.60
+@headitem @var{arch} value @tab Architecture @tab Includes by default
+@item @samp{armv8-a} @tab Armv8-A @tab @samp{+fp}, @samp{+simd}
+@item @samp{armv8.1-a} @tab Armv8.1-A @tab @samp{armv8-a}, @samp{+crc}, @samp{+lse}, @samp{+rdma}
+@item @samp{armv8.2-a} @tab Armv8.2-A @tab @samp{armv8.1-a}
+@item @samp{armv8.3-a} @tab Armv8.3-A @tab @samp{armv8.2-a}
+@item @samp{armv8.4-a} @tab Armv8.4-A @tab @samp{armv8.3-a}, @samp{+fp16fml}, @samp{+dotprod}
+@item @samp{armv8.5-a} @tab Armv8.5-A @tab @samp{armv8.4-a}, @samp{+sb}, @samp{+ssbs}, @samp{+predres}
+@item @samp{armv8.6-a} @tab Armv8.6-A @tab @samp{armv8.5-a}, @samp{+bf16}, @samp{+i8mm}
+@end multitable
 
 The value @samp{native} is available on native AArch64 GNU/Linux and
 causes the compiler to pick the architecture of the host system.  This
@@ -16301,6 +16295,7 @@ generation.  This option is enabled by default for @option{-march=armv8.5-a}.
 Enable the Armv8-a Execution and Data Prediction Restriction instructions.
 This option is only to enable the extension at the assembler level and does
 not affect code generation.  This option is enabled by default for
+@option{-march=armv8.5-a}.
 @item sve2
 Enable the Armv8-a Scalable Vector Extension 2.  This also enables SVE
 instructions.
@@ -16312,9 +16307,18 @@ Enable SVE2 sm4 instructions.  This also enables SVE2 instructions.
 Enable SVE2 aes instructions.  This also enables SVE2 instructions.
 @item sve2-sha3
 Enable SVE2 sha3 instructions.  This also enables SVE2 instructions.
-@option{-march=armv8.5-a}.
 @item tme
 Enable the Transactional Memory Extension.
+@item i8mm
+Enable 8-bit Integer Matrix Multiply instructions.  This also enables
+Advanced SIMD and floating-point instructions.  This option is enabled by
+default for @option{-march=armv8.6-a}.  Use of this option with architectures
+prior to Armv8.2-A is not supported.
+@item bf16
+Enable brain half-precision floating-point instructions.  This also enables
+Advanced SIMD and floating-point instructions.  This option is enabled by
+default for @option{-march=armv8.6-a}.  Use of this option with architectures
+prior to Armv8.2-A is not supported.
 
 @end table
 
