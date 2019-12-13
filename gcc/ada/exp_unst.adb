@@ -1801,7 +1801,7 @@ package body Exp_Unst is
                      Comp  : Entity_Id;
 
                      Decl_Assign : Node_Id;
-                     --  Assigment to set uplink, Empty if none
+                     --  Assignment to set uplink, Empty if none
 
                      Decl_ARECnT  : Node_Id;
                      Decl_ARECnPT : Node_Id;
