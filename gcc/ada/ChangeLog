@@ -1,3 +1,16 @@
+2019-12-13  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference,
+	Attribute_Address): Suppress generation of a call to
+	Base_Address in the case where the Address attribute is being
+	used to initialize a corresponding component of an activation
+	record.
+	(Is_Unnested_Component_Init): New function to determine whether
+	an attribute reference for Address is used to initialized a
+	component of an activation record object that corresponds to the
+	object denoted by the prefix of the attribute (an assignment
+	used in support of unnesting for back ends like LLVM).
+
 2019-12-13  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Resolve): IF an entity reference is overloaded
