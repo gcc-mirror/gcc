@@ -1,3 +1,9 @@
+2019-12-13  Gary Dismukes  <dismukes@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Minor
+	rewording of one sentence.
+	* gnat_rm.texi: Regenerate.
+
 2019-12-13  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_unst.adb (Unnest_Subprogram): Account for trees produced
