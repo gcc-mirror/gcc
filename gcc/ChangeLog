@@ -1,3 +1,8 @@
+2019-12-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-utils.c (ipa_merge_profiles): Improve dumping; merge common
+	targets.
+
 2019-12-13  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (sdwa): New mode attribute.
