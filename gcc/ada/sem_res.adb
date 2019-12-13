@@ -3256,7 +3256,7 @@ package body Sem_Res is
          --  convert implicitly are allowed in membership tests).
 
          if Ada_Version >= Ada_2012
-           and then Ekind (Ctx_Type) = E_General_Access_Type
+           and then Ekind (Base_Type (Ctx_Type)) = E_General_Access_Type
            and then Ekind (Etype (N)) = E_Anonymous_Access_Type
            and then Nkind (Parent (N)) not in N_Membership_Test
          then
@@ -13328,7 +13328,7 @@ package body Sem_Res is
             if Ada_Version >= Ada_2012
               and then not Comes_From_Source (N)
               and then Is_Rewrite_Substitution (N)
-              and then Ekind (Target_Type) = E_General_Access_Type
+              and then Ekind (Base_Type (Target_Type)) = E_General_Access_Type
               and then Ekind (Opnd_Type) = E_Anonymous_Access_Type
             then
                if Is_Itype (Opnd_Type) then
