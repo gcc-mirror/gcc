@@ -34,7 +34,7 @@
   b = b + 3
   r = r + 1
 !$omp end parallel
-  if (any (a /= 2 * r) .or. b /= 3 * r) STOP 1
+  if (any (a /= 2 * r) .or. b /= 3 * r) stop 1
   a(:) = 0
   b = 0
   r = 0
@@ -43,7 +43,7 @@
   b = b + 3
   r = r + 1
 !$omp end parallel
-  if (any (a /= 4 * r) .or. b /= 6 * r) STOP 2
+  if (any (a /= 4 * r) .or. b /= 6 * r) stop 2
   a(:) = 0
   b = 0
   r = 0
@@ -52,7 +52,7 @@
   b = b + 3
   r = r + 1
 !$omp end parallel
-  if (any (a /= 2 * r) .or. b /= 3 * r) STOP 3
+  if (any (a /= 2 * r) .or. b /= 3 * r) stop 3
 end
 elemental function fn1 (x, y)
   integer, intent(in) :: x, y

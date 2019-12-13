@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "ggc-internal.h"
 #include "timevar.h"
-#include "params.h"
 #include "cgraph.h"
 #include "cfgloop.h"
 #include "plugin.h"
@@ -2185,9 +2184,12 @@ ggc_collect (void)
      total allocations haven't expanded much since the last
      collection.  */
   float allocated_last_gc =
-    MAX (G.allocated_last_gc, (size_t)PARAM_VALUE (GGC_MIN_HEAPSIZE) * 1024);
+    MAX (G.allocated_last_gc, (size_t)param_ggc_min_heapsize * 1024);
 
-  float min_expand = allocated_last_gc * PARAM_VALUE (GGC_MIN_EXPAND) / 100;
+  /* It is also good time to get memory block pool into limits.  */
+  memory_block_pool::trim ();
+
+  float min_expand = allocated_last_gc * param_ggc_min_expand / 100;
   if (G.allocated < allocated_last_gc + min_expand && !ggc_force_collect)
     return;
 
@@ -2267,7 +2269,7 @@ ggc_grow (void)
   else
     ggc_collect ();
   if (!quiet_flag)
-    fprintf (stderr, " {GC start %luk} ", (unsigned long) G.allocated / 1024);
+    fprintf (stderr, " {GC %luk} ", (unsigned long) G.allocated / 1024);
 }
 
 void

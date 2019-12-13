@@ -94,6 +94,16 @@ proc check_effective_target_barrelshifter { } {
     }]
 }
 
+#return 1 if we have code density option on.
+proc check_effective_target_codedensity { } {
+    return [check_no_compiler_messages codedensity assembly {
+        #if !defined(__ARC_CODE_DENSITY__)
+        #error No code density option for this config
+        #endif
+    }]
+}
+
+
 #return 1 if we use ARCv2 Accumulator registers
 proc check_effective_target_accregs { } {
     return [check_no_compiler_messages accregs assembly {

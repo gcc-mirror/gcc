@@ -28,8 +28,9 @@ namespace std
   using __gnu_test::pod_int;
 
   typedef pod_int 		value_type;
-  typedef value_type* 		input_iterator;
-  typedef value_type* 		output_iterator;
+  typedef value_type* 		input_iterator_type;
+  typedef value_type* 		output_iterator_type;
 
-  template output_iterator partial_sum(input_iterator, input_iterator, output_iterator);
+  template output_iterator_type
+  partial_sum(input_iterator_type, input_iterator_type, output_iterator_type);
 } 

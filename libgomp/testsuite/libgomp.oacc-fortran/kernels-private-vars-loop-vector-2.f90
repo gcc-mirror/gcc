@@ -30,7 +30,7 @@ program main
         do k = 0, 32 - 1
            idx = i * 1024 + j * 32 + k
            if (arr(idx) .ne. idx + ieor(i, j * 3) * k + ior(i, j * 5) * k) then
-              call abort
+              stop 1
            end if
         end do
      end do

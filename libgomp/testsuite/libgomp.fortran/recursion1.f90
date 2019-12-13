@@ -14,7 +14,7 @@ do i=1,10
   call sub(i)
 end do
 !$omp end parallel do
-if (s/=55) STOP 1
+if (s/=55) stop 1
 
 contains
 

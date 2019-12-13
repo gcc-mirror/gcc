@@ -100,7 +100,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-into-ssa.h"
 #include "tree-dfa.h"
 #include "tree-inline.h"
-#include "params.h"
 #include "gimple-pretty-print.h"
 #include "ipa-fnsummary.h"
 #include "cfgloop.h"
@@ -169,7 +168,7 @@ test_nonssa_use (gimple *, tree t, tree, void *data)
       || (VAR_P (t)
 	  && auto_var_in_fn_p (t, current_function_decl))
       || TREE_CODE (t) == RESULT_DECL
-	 /* Normal labels are part of CFG and will be handled gratefuly.
+	 /* Normal labels are part of CFG and will be handled gratefully.
 	    Forced labels however can be used directly by statements and
 	    need to stay in one partition along with their uses.  */
       || (TREE_CODE (t) == LABEL_DECL
@@ -453,10 +452,10 @@ consider_split (class split_point *current, bitmap non_ssa_vars,
      is unknown.  */
   if (!(current->count
        < (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.apply_scale
-	   (PARAM_VALUE (PARAM_PARTIAL_INLINING_ENTRY_PROBABILITY), 100))))
+	   (param_partial_inlining_entry_probability, 100))))
     {
       /* When profile is guessed, we cannot expect it to give us
-	 realistic estimate on likelyness of function taking the
+	 realistic estimate on likeliness of function taking the
 	 complex path.  As a special case, when tail of the function is
 	 a loop, enable splitting since inlining code skipping the loop
 	 is likely noticeable win.  */
@@ -563,8 +562,8 @@ consider_split (class split_point *current, bitmap non_ssa_vars,
      that.  Next stage1 we should try to be more meaningful here.  */
   if (current->header_size + call_overhead
       >= (unsigned int)(DECL_DECLARED_INLINE_P (current_function_decl)
-			? MAX_INLINE_INSNS_SINGLE
-			: MAX_INLINE_INSNS_AUTO) + 10)
+			? param_max_inline_insns_single
+			: param_max_inline_insns_auto) + 10)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
@@ -577,7 +576,7 @@ consider_split (class split_point *current, bitmap non_ssa_vars,
      Limit this duplication.  This is consistent with limit in tree-sra.c  
      FIXME: with LTO we ought to be able to do better!  */
   if (DECL_ONE_ONLY (current_function_decl)
-      && current->split_size >= (unsigned int) MAX_INLINE_INSNS_AUTO + 10)
+      && current->split_size >= (unsigned int) param_max_inline_insns_auto + 10)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
@@ -589,7 +588,7 @@ consider_split (class split_point *current, bitmap non_ssa_vars,
      FIXME: with LTO we ought to be able to do better!  */
   if (DECL_ONE_ONLY (current_function_decl)
       && current->split_size
-	 <= (unsigned int) PARAM_VALUE (PARAM_EARLY_INLINING_INSNS) / 2)
+	 <= (unsigned int) param_early_inlining_insns / 2)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
@@ -1204,7 +1203,7 @@ split_function (basic_block return_bb, class split_point *split_point,
       dump_split_point (dump_file, split_point);
     }
 
-  if (cur_node->local.can_change_signature)
+  if (cur_node->can_change_signature)
     args_to_skip = BITMAP_ALLOC (NULL);
   else
     args_to_skip = NULL;
@@ -1370,7 +1369,8 @@ split_function (basic_block return_bb, class split_point *split_point,
 
 
   /* Let's take a time profile for splitted function.  */
-  node->tp_first_run = cur_node->tp_first_run + 1;
+  if (cur_node->tp_first_run)
+    node->tp_first_run = cur_node->tp_first_run + 1;
 
   /* For usual cloning it is enough to clear builtin only when signature
      changes.  For partial inlining we however cannot expect the part
@@ -1757,7 +1757,7 @@ execute_split_functions (void)
      then inlining would still benefit.  */
   if ((!node->callers
        /* Local functions called once will be completely inlined most of time.  */
-       || (!node->callers->next_caller && node->local.local))
+       || (!node->callers->next_caller && node->local))
       && !node->address_taken
       && !node->has_aliases_p ()
       && (!flag_lto || !node->externally_visible))

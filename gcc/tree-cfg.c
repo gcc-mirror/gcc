@@ -3553,6 +3553,24 @@ verify_gimple_assign_unary (gassign *stmt)
     {
     CASE_CONVERT:
       {
+	/* Allow conversions between vectors with the same number of elements,
+	   provided that the conversion is OK for the element types too.  */
+	if (VECTOR_TYPE_P (lhs_type)
+	    && VECTOR_TYPE_P (rhs1_type)
+	    && known_eq (TYPE_VECTOR_SUBPARTS (lhs_type),
+			 TYPE_VECTOR_SUBPARTS (rhs1_type)))
+	  {
+	    lhs_type = TREE_TYPE (lhs_type);
+	    rhs1_type = TREE_TYPE (rhs1_type);
+	  }
+	else if (VECTOR_TYPE_P (lhs_type) || VECTOR_TYPE_P (rhs1_type))
+	  {
+	    error ("invalid vector types in nop conversion");
+	    debug_generic_expr (lhs_type);
+	    debug_generic_expr (rhs1_type);
+	    return true;
+	  }
+
 	/* Allow conversions from pointer type to integral type only if
 	   there is no sign or zero extension involved.
 	   For targets were the precision of ptrofftype doesn't match that
@@ -9533,6 +9551,7 @@ execute_fixup_cfg (void)
   gimple_stmt_iterator gsi;
   int todo = 0;
   cgraph_node *node = cgraph_node::get (current_function_decl);
+  /* Same scaling is also done by ipa_merge_profiles.  */
   profile_count num = node->count;
   profile_count den = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
   bool scale = num.initialized_p () && !(num == den);
@@ -9646,7 +9665,10 @@ execute_fixup_cfg (void)
 	}
     }
   if (scale)
-    compute_function_frequency ();
+    {
+      update_max_bb_count ();
+      compute_function_frequency ();
+    }
 
   if (current_loops
       && (todo & TODO_cleanup_cfg))

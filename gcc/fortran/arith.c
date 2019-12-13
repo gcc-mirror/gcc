@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 void
 gfc_mpfr_to_mpz (mpz_t z, mpfr_t x, locus *where)
 {
-  mp_exp_t e;
+  mpfr_exp_t e;
 
   if (mpfr_inf_p (x) || mpfr_nan_p (x))
     {
@@ -376,7 +376,7 @@ gfc_check_real_range (mpfr_t p, int kind)
     }
   else if (mpfr_cmp (q, gfc_real_kinds[i].tiny) < 0)
     {
-      mp_exp_t emin, emax;
+      mpfr_exp_t emin, emax;
       int en;
 
       /* Save current values of emin and emax.  */
@@ -385,8 +385,8 @@ gfc_check_real_range (mpfr_t p, int kind)
 
       /* Set emin and emax for the current model number.  */
       en = gfc_real_kinds[i].min_exponent - gfc_real_kinds[i].digits + 1;
-      mpfr_set_emin ((mp_exp_t) en);
-      mpfr_set_emax ((mp_exp_t) gfc_real_kinds[i].max_exponent);
+      mpfr_set_emin ((mpfr_exp_t) en);
+      mpfr_set_emax ((mpfr_exp_t) gfc_real_kinds[i].max_exponent);
       mpfr_check_range (q, 0, GFC_RND_MODE);
       mpfr_subnormalize (q, 0, GFC_RND_MODE);
 
@@ -396,9 +396,9 @@ gfc_check_real_range (mpfr_t p, int kind)
 
       /* Copy sign if needed.  */
       if (mpfr_sgn (p) < 0)
-	mpfr_neg (p, q, GMP_RNDN);
+	mpfr_neg (p, q, MPFR_RNDN);
       else
-	mpfr_set (p, q, GMP_RNDN);
+	mpfr_set (p, q, MPFR_RNDN);
     }
 
   mpfr_clear (q);
@@ -2510,9 +2510,9 @@ hollerith2representation (gfc_expr *result, gfc_expr *src)
 
   if (src_len > result_len)
     {
-      gfc_warning (0,
-		   "The Hollerith constant at %L is too long to convert to %qs",
-		   &src->where, gfc_typename(&result->ts));
+      gfc_warning (OPT_Wcharacter_truncation, "The Hollerith constant at %L "
+		   "is truncated in conversion to %qs", &src->where,
+		   gfc_typename(&result->ts));
     }
 
   result->representation.string = XCNEWVEC (char, result_len + 1);
@@ -2526,6 +2526,35 @@ hollerith2representation (gfc_expr *result, gfc_expr *src)
   result->representation.length = result_len;
 }
 
+
+/* Helper function to set the representation in a character conversion.
+   This assumes that the ts.type and ts.kind of the result have already
+   been set.  */
+
+static void
+character2representation (gfc_expr *result, gfc_expr *src)
+{
+  size_t src_len, result_len, i;
+  src_len = src->value.character.length;
+  gfc_target_expr_size (result, &result_len);
+
+  if (src_len > result_len)
+    gfc_warning (OPT_Wcharacter_truncation, "The character constant at %L is "
+		 "truncated in conversion to %s", &src->where,
+		 gfc_typename(&result->ts));
+
+  result->representation.string = XCNEWVEC (char, result_len + 1);
+
+  for (i = 0; i < MIN (result_len, src_len); i++)
+    result->representation.string[i] = (char) src->value.character.string[i];
+
+  if (src_len < result_len)
+    memset (&result->representation.string[src_len], ' ',
+	    result_len - src_len);
+
+  result->representation.string[result_len] = '\0'; /* For debugger.  */
+  result->representation.length = result_len;
+}
 
 /* Convert Hollerith to integer. The constant will be padded or truncated.  */
 
@@ -2542,8 +2571,21 @@ gfc_hollerith2int (gfc_expr *src, int kind)
   return result;
 }
 
+/* Convert character to integer.  The constant will be padded or truncated.  */
 
-/* Convert Hollerith to real. The constant will be padded or truncated.  */
+gfc_expr *
+gfc_character2int (gfc_expr *src, int kind)
+{
+  gfc_expr *result;
+  result = gfc_get_constant_expr (BT_INTEGER, kind, &src->where);
+
+  character2representation (result, src);
+  gfc_interpret_integer (kind, (unsigned char *) result->representation.string,
+			 result->representation.length, result->value.integer);
+  return result;
+}
+
+/* Convert Hollerith to real.  The constant will be padded or truncated.  */
 
 gfc_expr *
 gfc_hollerith2real (gfc_expr *src, int kind)
@@ -2552,6 +2594,21 @@ gfc_hollerith2real (gfc_expr *src, int kind)
   result = gfc_get_constant_expr (BT_REAL, kind, &src->where);
 
   hollerith2representation (result, src);
+  gfc_interpret_float (kind, (unsigned char *) result->representation.string,
+		       result->representation.length, result->value.real);
+
+  return result;
+}
+
+/* Convert character to real.  The constant will be padded or truncated.  */
+
+gfc_expr *
+gfc_character2real (gfc_expr *src, int kind)
+{
+  gfc_expr *result;
+  result = gfc_get_constant_expr (BT_REAL, kind, &src->where);
+
+  character2representation (result, src);
   gfc_interpret_float (kind, (unsigned char *) result->representation.string,
 		       result->representation.length, result->value.real);
 
@@ -2568,6 +2625,21 @@ gfc_hollerith2complex (gfc_expr *src, int kind)
   result = gfc_get_constant_expr (BT_COMPLEX, kind, &src->where);
 
   hollerith2representation (result, src);
+  gfc_interpret_complex (kind, (unsigned char *) result->representation.string,
+			 result->representation.length, result->value.complex);
+
+  return result;
+}
+
+/* Convert character to complex. The constant will be padded or truncated.  */
+
+gfc_expr *
+gfc_character2complex (gfc_expr *src, int kind)
+{
+  gfc_expr *result;
+  result = gfc_get_constant_expr (BT_COMPLEX, kind, &src->where);
+
+  character2representation (result, src);
   gfc_interpret_complex (kind, (unsigned char *) result->representation.string,
 			 result->representation.length, result->value.complex);
 
@@ -2604,6 +2676,21 @@ gfc_hollerith2logical (gfc_expr *src, int kind)
   result = gfc_get_constant_expr (BT_LOGICAL, kind, &src->where);
 
   hollerith2representation (result, src);
+  gfc_interpret_logical (kind, (unsigned char *) result->representation.string,
+			 result->representation.length, &result->value.logical);
+
+  return result;
+}
+
+/* Convert character to logical. The constant will be padded or truncated.  */
+
+gfc_expr *
+gfc_character2logical (gfc_expr *src, int kind)
+{
+  gfc_expr *result;
+  result = gfc_get_constant_expr (BT_LOGICAL, kind, &src->where);
+
+  character2representation (result, src);
   gfc_interpret_logical (kind, (unsigned char *) result->representation.string,
 			 result->representation.length, &result->value.logical);
 

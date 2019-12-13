@@ -27,5 +27,5 @@
   l = l .or. (p .ne. d + 1)
 !$omp end parallel
 
-  if (l) STOP 1
+  if (l) stop 1
 end

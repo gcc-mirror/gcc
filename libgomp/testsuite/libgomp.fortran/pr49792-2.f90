@@ -17,6 +17,6 @@ program pr49792
 !$omp parallel workshare
   a = b
 !$omp end parallel workshare
-  if (size(a).ne.size(b)) STOP 1
-  if (any (a.ne.b)) STOP 2
+  if (size(a).ne.size(b)) stop 1
+  if (any (a.ne.b)) stop 2
 end program pr49792

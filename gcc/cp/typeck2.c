@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "intl.h"
 #include "gcc-rich-location.h"
+#include "target.h"
 
 static tree
 process_init_constructor (tree type, tree init, int nested, int flags,
@@ -938,7 +939,8 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
    constants.  */
 
 bool
-check_narrowing (tree type, tree init, tsubst_flags_t complain, bool const_only)
+check_narrowing (tree type, tree init, tsubst_flags_t complain,
+		 bool const_only/*= false*/)
 {
   tree ftype = unlowered_expr_type (init);
   bool ok = true;
@@ -1017,6 +1019,11 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain, bool const_only)
 	    ok = true;
 	}
     }
+  else if (TREE_CODE (type) == BOOLEAN_TYPE
+	   && (TYPE_PTR_P (ftype) || TYPE_PTRMEM_P (ftype)))
+    /* This hasn't actually made it into C++20 yet, but let's add it now to get
+       an idea of the impact.  */
+    ok = (cxx_dialect < cxx2a);
 
   bool almost_ok = ok;
   if (!ok && !CONSTANT_CLASS_P (init) && (complain & tf_warning_or_error))
@@ -1110,6 +1117,10 @@ digest_init_r (tree type, tree init, int nested, int flags,
   location_t loc = cp_expr_loc_or_input_loc (init);
 
   tree stripped_init = init;
+
+  if (BRACE_ENCLOSED_INITIALIZER_P (init)
+      && CONSTRUCTOR_IS_PAREN_INIT (init))
+    flags |= LOOKUP_AGGREGATE_PAREN_INIT;
 
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue
      (g++.old-deja/g++.law/casts2.C).  */
@@ -1218,7 +1229,9 @@ digest_init_r (tree type, tree init, int nested, int flags,
   if ((code != COMPLEX_TYPE || BRACE_ENCLOSED_INITIALIZER_P (stripped_init))
       && (SCALAR_TYPE_P (type) || code == REFERENCE_TYPE))
     {
-      if (nested)
+      /* Narrowing is OK when initializing an aggregate from
+	 a parenthesized list.  */
+      if (nested && !(flags & LOOKUP_AGGREGATE_PAREN_INIT))
 	flags |= LOOKUP_NO_NARROWING;
       init = convert_for_initialization (0, type, init, flags,
 					 ICR_INIT, NULL_TREE, 0,
@@ -1329,6 +1342,8 @@ digest_nsdmi_init (tree decl, tree init, tsubst_flags_t complain)
   gcc_assert (TREE_CODE (decl) == FIELD_DECL);
 
   tree type = TREE_TYPE (decl);
+  if (DECL_BIT_FIELD_TYPE (decl))
+    type = DECL_BIT_FIELD_TYPE (decl);
   int flags = LOOKUP_IMPLICIT;
   if (DIRECT_LIST_INIT_P (init))
     {
@@ -1378,9 +1393,12 @@ static tree
 massage_init_elt (tree type, tree init, int nested, int flags,
 		  tsubst_flags_t complain)
 {
-  flags &= LOOKUP_ALLOW_FLEXARRAY_INIT;
-  flags |= LOOKUP_IMPLICIT;
-  init = digest_init_r (type, init, nested ? 2 : 1, flags, complain);
+  int new_flags = LOOKUP_IMPLICIT;
+  if (flags & LOOKUP_ALLOW_FLEXARRAY_INIT)
+    new_flags |= LOOKUP_ALLOW_FLEXARRAY_INIT;
+  if (flags & LOOKUP_AGGREGATE_PAREN_INIT)
+    new_flags |= LOOKUP_AGGREGATE_PAREN_INIT;
+  init = digest_init_r (type, init, nested ? 2 : 1, new_flags, complain);
   /* Strip a simple TARGET_EXPR when we know this is an initializer.  */
   if (SIMPLE_TARGET_EXPR_P (init))
     init = TARGET_EXPR_INITIAL (init);
@@ -2038,7 +2056,11 @@ build_x_arrow (location_t loc, tree expr, tsubst_flags_t complain)
 	last_rval = convert_from_reference (last_rval);
     }
   else
-    last_rval = decay_conversion (expr, complain);
+    {
+      last_rval = decay_conversion (expr, complain);
+      if (last_rval == error_mark_node)
+	return error_mark_node;
+    }
 
   if (TYPE_PTR_P (TREE_TYPE (last_rval)))
     {
@@ -2050,7 +2072,7 @@ build_x_arrow (location_t loc, tree expr, tsubst_flags_t complain)
 	  return expr;
 	}
 
-      return cp_build_indirect_ref (last_rval, RO_ARROW, complain);
+      return cp_build_indirect_ref (loc, last_rval, RO_ARROW, complain);
     }
 
   if (complain & tf_error)
@@ -2206,8 +2228,9 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 
 /* Return a tree node for the expression TYPENAME '(' PARMS ')'.  */
 
-tree
-build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
+static tree
+build_functional_cast_1 (location_t loc, tree exp, tree parms,
+			 tsubst_flags_t complain)
 {
   /* This is either a call to a constructor,
      or a C cast in C++'s `functional' notation.  */
@@ -2233,7 +2256,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
       if (complain & tf_error)
-	error ("functional cast to array type %qT", type);
+	error_at (loc, "functional cast to array type %qT", type);
       return error_mark_node;
     }
 
@@ -2242,7 +2265,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
       if (!CLASS_PLACEHOLDER_TEMPLATE (anode))
 	{
 	  if (complain & tf_error)
-	    error ("invalid use of %qT", anode);
+	    error_at (loc, "invalid use of %qT", anode);
 	  return error_mark_node;
 	}
       else if (!parms)
@@ -2255,8 +2278,8 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
 	  if (type == error_mark_node)
 	    {
 	      if (complain & tf_error)
-		error ("cannot deduce template arguments for %qT from %<()%>",
-		       anode);
+		error_at (loc, "cannot deduce template arguments "
+			  "for %qT from %<()%>", anode);
 	      return error_mark_node;
 	    }
 	}
@@ -2275,7 +2298,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
       if (TYPE_REF_P (type) && !parms)
 	{
 	  if (complain & tf_error)
-	    error ("invalid value-initialization of reference type");
+	    error_at (loc, "invalid value-initialization of reference type");
 	  return error_mark_node;
 	}
 
@@ -2296,7 +2319,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
 
       /* This must build a C cast.  */
       parms = build_x_compound_expr_from_list (parms, ELK_FUNC_CAST, complain);
-      return cp_build_c_cast (type, parms, complain);
+      return cp_build_c_cast (loc, type, parms, complain);
     }
 
   /* Prepare to evaluate as a call to a constructor.  If this expression
@@ -2317,7 +2340,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
      conversion is equivalent (in definedness, and if defined in
      meaning) to the corresponding cast expression.  */
   if (parms && TREE_CHAIN (parms) == NULL_TREE)
-    return cp_build_c_cast (type, TREE_VALUE (parms), complain);
+    return cp_build_c_cast (loc, type, TREE_VALUE (parms), complain);
 
   /* [expr.type.conv]
 
@@ -2344,6 +2367,15 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
     return error_mark_node;
 
   return build_cplus_new (type, exp, complain);
+}
+
+tree
+build_functional_cast (location_t loc, tree exp, tree parms,
+		       tsubst_flags_t complain)
+{
+  tree result = build_functional_cast_1 (loc, exp, parms, complain);
+  protected_set_expr_location (result, loc);
+  return result;  
 }
 
 
@@ -2379,6 +2411,9 @@ add_exception_specifier (tree list, tree spec, tsubst_flags_t complain)
     ok = true;
   else if (processing_template_decl)
     ok = true;
+  else if (!verify_type_context (input_location, TCTX_EXCEPTIONS, core,
+				 !(complain & tf_error)))
+    return error_mark_node;
   else
     {
       ok = true;

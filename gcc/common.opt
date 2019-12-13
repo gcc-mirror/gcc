@@ -63,9 +63,6 @@ int flag_complex_method = 1
 Variable
 bool flag_warn_unused_result = false
 
-Variable
-int *param_values
-
 ; Nonzero if we should write GIMPLE bytecode for link-time optimization.
 Variable
 int flag_generate_lto
@@ -436,13 +433,6 @@ Common Driver Alias(-target-help)
 
 fversion
 Common Driver Alias(-version)
-
--param
-Common Separate
---param <param>=<value>	Set parameter <param> to value.  See below for a complete list of parameters.
-
--param=
-Common Joined Alias(-param)
 
 -sysroot
 Driver Separate Alias(-sysroot=)
@@ -951,6 +941,8 @@ Driver Undocumented
 ; 13: Fixes the accidental change in 12 to the calling convention for classes
 ;     with deleted copy constructor and trivial move constructor.
 ;     Default in G++ 8.2.
+; 14: Corrects the mangling of nullptr expression.
+;     Default in G++ 10.
 ;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
@@ -1091,6 +1083,14 @@ fbtr-bb-exclusive
 Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
+fcallgraph-info
+Common Report RejectNegative Var(flag_callgraph_info) Init(NO_CALLGRAPH_INFO);
+Output callgraph information on a per-file basis.
+
+fcallgraph-info=
+Common Report RejectNegative Joined
+Output callgraph information on a per-file basis with decorations.
+
 fcall-saved-
 Common Joined RejectNegative Var(common_deferred_options) Defer
 -fcall-saved-<register>	Mark <register> as being preserved across functions.
@@ -1131,7 +1131,7 @@ Common Report Var(flag_combine_stack_adjustments) Optimization
 Looks for opportunities to reduce stack adjustments and stack references.
 
 fcommon
-Common Report Var(flag_no_common,0)
+Common Report Var(flag_no_common,0) Init(1)
 Put uninitialized globals in the common section.
 
 fcompare-debug
@@ -1188,7 +1188,7 @@ List all available debugging counters with their limits and counts.
 
 fdbg-cnt=
 Common RejectNegative Joined Var(common_deferred_options) Defer
--fdbg-cnt=<counter>[:<lower_limit>]:<upper_limit>[,<counter>:...]	Set the debug counter limit.
+-fdbg-cnt=<counter>[:<lower_limit1>-]<upper_limit1>[:<lower_limit2>-<upper_limit2>:...][,<counter>:...]	Set the debug counter limit.
 
 fdebug-prefix-map=
 Common Joined RejectNegative Var(common_deferred_options) Defer
@@ -2160,6 +2160,10 @@ fprofile-generate=
 Common Joined RejectNegative
 Enable common options for generating profile info for profile feedback directed optimizations, and set -fprofile-dir=.
 
+fprofile-partial-training
+Common Report Var(flag_profile_partial_training) Optimization
+Do not assume that functions never executed during the train run are cold.
+
 fprofile-use
 Common Var(flag_profile_use)
 Enable common options for performing profile feedback directed optimizations.
@@ -2177,7 +2181,7 @@ Common Report Var(profile_report)
 Report on consistency of profile.
 
 fprofile-reorder-functions
-Common Report Var(flag_profile_reorder_functions)
+Common Report Var(flag_profile_reorder_functions) Optimization
 Enable function reordering that improves code placement.
 
 fpatchable-function-entry=
@@ -2582,7 +2586,7 @@ EnumValue
 Enum(tls_model) String(local-exec) Value(TLS_MODEL_LOCAL_EXEC)
 
 ftoplevel-reorder
-Common Report Var(flag_toplevel_reorder) Init(2)
+Common Report Var(flag_toplevel_reorder) Init(2) Optimization
 Reorder top level functions, variables, and asms.
 
 ftracer

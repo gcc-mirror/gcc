@@ -51,7 +51,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "ipa-utils.h"
 #include "profile.h"
-#include "params.h"
 #include "value-prof.h"
 #include "tree-inline.h"
 #include "symbol-summary.h"
@@ -326,8 +325,8 @@ ipa_propagate_frequency_1 (struct cgraph_node *node, void *data)
       if (profile_info
 	  && !(edge->callee->count.ipa () == profile_count::zero ())
 	  && (edge->caller->frequency != NODE_FREQUENCY_UNLIKELY_EXECUTED
-	      || (edge->caller->global.inlined_to
-		  && edge->caller->global.inlined_to->frequency
+	      || (edge->caller->inlined_to
+		  && edge->caller->inlined_to->frequency
 		     != NODE_FREQUENCY_UNLIKELY_EXECUTED)))
 	  d->maybe_unlikely_executed = false;
       if (edge->count.ipa ().initialized_p ()
@@ -393,7 +392,7 @@ ipa_propagate_frequency (struct cgraph_node *node)
 
   /* We cannot propagate anything useful about externally visible functions
      nor about virtuals.  */
-  if (!node->local.local
+  if (!node->local
       || node->alias
       || (opt_for_fn (node->decl, flag_devirtualize)
 	  && DECL_VIRTUAL_P (node->decl)))
@@ -477,6 +476,27 @@ ipa_propagate_frequency (struct cgraph_node *node)
   return changed;
 }
 
+/* Check that number of arguments of N agrees with E.
+   Be conservative when summaries are not present.  */
+
+static bool
+check_argument_count (struct cgraph_node *n, struct cgraph_edge *e)
+{
+  if (!ipa_node_params_sum || !ipa_edge_args_sum)
+    return true;
+  class ipa_node_params *info = IPA_NODE_REF (n->function_symbol ());
+  if (!info)
+    return true;
+  ipa_edge_args *e_info = IPA_EDGE_REF (e);
+  if (!e_info)
+    return true;
+  if (ipa_get_param_count (info) != ipa_get_cs_argument_count (e_info)
+      && (ipa_get_param_count (info) >= ipa_get_cs_argument_count (e_info)
+	  || !stdarg_p (TREE_TYPE (n->decl))))
+    return false;
+  return true;
+}
+
 /* Simple ipa profile pass propagating frequencies across the callgraph.  */
 
 static unsigned int
@@ -506,7 +526,7 @@ ipa_profile (void)
 
       gcc_assert (overall_size);
 
-      cutoff = (overall_time * PARAM_VALUE (HOT_BB_COUNT_WS_PERMILLE) + 500) / 1000;
+      cutoff = (overall_time * param_hot_bb_count_ws_permille + 500) / 1000;
       threshold = 0;
       for (i = 0; cumulated < cutoff; i++)
 	{
@@ -543,7 +563,7 @@ ipa_profile (void)
   histogram.release ();
   histogram_pool.release ();
 
-  /* Produce speculative calls: we saved common traget from porfiling into
+  /* Produce speculative calls: we saved common target from porfiling into
      e->common_target_id.  Now, at link time, we can look up corresponding
      function node and produce speculative call.  */
 
@@ -600,20 +620,13 @@ ipa_profile (void)
 				 "Not speculating: target is overwritable "
 				 "and can be discarded.\n");
 		    }
-		  else if (ipa_node_params_sum && ipa_edge_args_sum
-			   && (!vec_safe_is_empty
-			       (IPA_NODE_REF (n2)->descriptors))
-			   && ipa_get_param_count (IPA_NODE_REF (n2))
-			      != ipa_get_cs_argument_count (IPA_EDGE_REF (e))
-			    && (ipa_get_param_count (IPA_NODE_REF (n2))
-				>= ipa_get_cs_argument_count (IPA_EDGE_REF (e))
-				|| !stdarg_p (TREE_TYPE (n2->decl))))
+		  else if (!check_argument_count (n2, e))
 		    {
 		      nmismatch++;
 		      if (dump_file)
 			fprintf (dump_file,
 				 "Not speculating: "
-				 "parameter count mistmatch\n");
+				 "parameter count mismatch\n");
 		    }
 		  else if (e->indirect_info->polymorphic
 			   && !opt_for_fn (n->decl, flag_devirtualize)
@@ -682,12 +695,12 @@ ipa_profile (void)
   order_pos = ipa_reverse_postorder (order);
   for (i = order_pos - 1; i >= 0; i--)
     {
-      if (order[i]->local.local
+      if (order[i]->local
 	  && opt_for_fn (order[i]->decl, flag_ipa_profile)
 	  && ipa_propagate_frequency (order[i]))
 	{
 	  for (e = order[i]->callees; e; e = e->next_callee)
-	    if (e->callee->local.local && !e->callee->aux)
+	    if (e->callee->local && !e->callee->aux)
 	      {
 	        something_changed = true;
 	        e->callee->aux = (void *)1;
@@ -706,7 +719,7 @@ ipa_profile (void)
 	      && ipa_propagate_frequency (order[i]))
 	    {
 	      for (e = order[i]->callees; e; e = e->next_callee)
-		if (e->callee->local.local && !e->callee->aux)
+		if (e->callee->local && !e->callee->aux)
 		  {
 		    something_changed = true;
 		    e->callee->aux = (void *)1;

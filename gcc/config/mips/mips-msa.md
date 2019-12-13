@@ -436,14 +436,17 @@
 })
 
 (define_insn "msa_insert_<msafmt_f>"
-  [(set (match_operand:MSA 0 "register_operand" "=f")
+  [(set (match_operand:MSA 0 "register_operand" "=f,f")
 	(vec_merge:MSA
 	  (vec_duplicate:MSA
-	    (match_operand:<UNITMODE> 1 "reg_or_0_operand" "dJ"))
-	  (match_operand:MSA 2 "register_operand" "0")
+	    (match_operand:<UNITMODE> 1 "reg_or_0_operand" "dJ,f"))
+	  (match_operand:MSA 2 "register_operand" "0,0")
 	  (match_operand 3 "const_<bitmask>_operand" "")))]
   "ISA_HAS_MSA"
 {
+  if (which_alternative == 1)
+    return "insve.<msafmt>\t%w0[%y3],%w1[0]";
+
   if (!TARGET_64BIT && (<MODE>mode == V2DImode || <MODE>mode == V2DFmode))
     return "#";
   else
@@ -462,6 +465,8 @@
   "reload_completed && ISA_HAS_MSA && !TARGET_64BIT"
   [(const_int 0)]
 {
+  if (REG_P (operands[1]) && FP_REG_P (REGNO (operands[1])))
+    FAIL;
   mips_split_msa_insert_d (operands[0], operands[2], operands[3], operands[1]);
   DONE;
 })
@@ -2714,7 +2719,8 @@
 }
  [(set_attr "type" "simd_branch")
   (set_attr "mode" "<MODE>")
-  (set_attr "compact_form" "never")])
+  (set_attr "compact_form" "never")
+  (set_attr "branch_likely" "no")])
 
 (define_insn "msa_<msabr>_v_<msafmt_f>"
  [(set (pc) (if_then_else
@@ -2733,4 +2739,5 @@
 }
  [(set_attr "type" "simd_branch")
   (set_attr "mode" "TI")
-  (set_attr "compact_form" "never")])
+  (set_attr "compact_form" "never")
+  (set_attr "branch_likely" "no")])

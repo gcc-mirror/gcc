@@ -56,7 +56,7 @@ contains
     do j = 1, n
       do i = 1, n
         diff = a(i,j) - b(i,j)
-        if (diff > EPS .or. -diff > EPS) STOP 1
+        if (diff > EPS .or. -diff > EPS) stop 1
       end do
     end do
   end subroutine

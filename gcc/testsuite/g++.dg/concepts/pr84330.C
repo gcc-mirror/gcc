@@ -5,7 +5,7 @@
 struct A
 {
   template<typename T>
-    requires (sizeof(T) >> 0)
+    requires (sizeof(T) >> 0) // { dg-error "constraint does not have type 'bool'" }
   void foo(T);
 
   void bar()

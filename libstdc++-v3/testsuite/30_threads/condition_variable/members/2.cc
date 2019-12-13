@@ -25,6 +25,7 @@
 #include <condition_variable>
 #include <system_error>
 #include <testsuite_hooks.h>
+#include <slow_clock.h>
 
 template <typename ClockType>
 void test01()
@@ -51,22 +52,6 @@ void test01()
       VERIFY( false );
     }
 }
-
-struct slow_clock
-{
-  using rep = std::chrono::system_clock::rep;
-  using period = std::chrono::system_clock::period;
-  using duration = std::chrono::system_clock::duration;
-  using time_point = std::chrono::time_point<slow_clock, duration>;
-  static constexpr bool is_steady = false;
-
-  static time_point now()
-  {
-    auto real = std::chrono::system_clock::now();
-    return time_point{real.time_since_epoch() / 3};
-  }
-};
-
 
 void test01_alternate_clock()
 {

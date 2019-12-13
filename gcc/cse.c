@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgcleanup.h"
 #include "alias.h"
 #include "toplev.h"
-#include "params.h"
 #include "rtlhooks-def.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
@@ -6414,7 +6413,7 @@ cse_find_path (basic_block first_bb, struct cse_basic_block_data *data,
   if (follow_jumps)
     {
       bb = data->path[path_size - 1].bb;
-      while (bb && path_size < PARAM_VALUE (PARAM_MAX_CSE_PATH_LENGTH))
+      while (bb && path_size < param_max_cse_path_length)
 	{
 	  if (single_succ_p (bb))
 	    e = single_succ_edge (bb);
@@ -6592,7 +6591,7 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 	     FIXME: This is a real kludge and needs to be done some other
 		    way.  */
 	  if (NONDEBUG_INSN_P (insn)
-	      && num_insns++ > PARAM_VALUE (PARAM_MAX_CSE_INSNS))
+	      && num_insns++ > param_max_cse_insns)
 	    {
 	      flush_hash_table ();
 	      num_insns = 0;
@@ -6736,7 +6735,7 @@ cse_main (rtx_insn *f ATTRIBUTE_UNUSED, int nregs)
   init_cse_reg_info (nregs);
 
   ebb_data.path = XNEWVEC (struct branch_path,
-			   PARAM_VALUE (PARAM_MAX_CSE_PATH_LENGTH));
+			   param_max_cse_path_length);
 
   cse_cfg_altered = false;
   cse_jumps_altered = false;
@@ -7702,7 +7701,7 @@ rest_of_handle_cse2 (void)
       cse_cfg_altered |= cleanup_cfg (CLEANUP_CFG_CHANGED);
       timevar_pop (TV_JUMP);
     }
-  else if (tem == 1)
+  else if (tem == 1 || cse_cfg_altered)
     cse_cfg_altered |= cleanup_cfg (0);
 
   cse_not_expected = 1;
@@ -7776,7 +7775,7 @@ rest_of_handle_cse_after_global_opts (void)
       cse_cfg_altered |= cleanup_cfg (CLEANUP_CFG_CHANGED);
       timevar_pop (TV_JUMP);
     }
-  else if (tem == 1)
+  else if (tem == 1 || cse_cfg_altered)
     cse_cfg_altered |= cleanup_cfg (0);
 
   flag_cse_follow_jumps = save_cfj;

@@ -1278,7 +1278,7 @@ int& int_if_addable<Y>(A<sizeof ((*((Y*)(0)))+(*((Y*)(0))))>*)
 #
 --format=gnu-v3
 _Z3bazIiEvP1AIXszcl3foocvT__ELCf00000000_00000000EEEE
-void baz<int>(A<sizeof (foo((int)(), (floatcomplex )00000000_00000000))>*)
+void baz<int>(A<sizeof (foo((int)(), (float _Complex)00000000_00000000))>*)
 #
 --format=gnu-v3
 _Z3fooI1FEN1XIXszdtcl1PclcvT__EEE5arrayEE4TypeEv
@@ -1446,3 +1446,7 @@ Foo<int>()::X::fn
 _ZZZ3FooIiEfvENKUlT_E_clIcEEDaS0_EN1X2fnEv
 Foo<int>()::{lambda(auto:1)#1}::operator()<char>(char) const::X::fn()
 Foo<int>()::{lambda(auto:1)#1}::operator()<char>(char) const::X::fn
+#PR91979 demangling nullptr expression
+
+_Z3fooILPv0EEvPN9enable_ifIXeqT_LDnEEvE4typeE
+void foo<(void*)0>(enable_if<((void*)0)==((decltype(nullptr))), void>::type*)

@@ -211,7 +211,7 @@ host_openacc_async_queue_callback (struct goacc_asyncqueue *aq
 }
 
 static struct goacc_asyncqueue *
-host_openacc_async_construct (void)
+host_openacc_async_construct (int device __attribute__((unused)))
 {
   /* Non-NULL 0xffff... value as opaque dummy.  */
   return (struct goacc_asyncqueue *) -1;
@@ -260,12 +260,10 @@ static struct gomp_device_descr host_dispatch =
     .run_func = host_run,
 
     .mem_map = { NULL },
-    /* .lock initilized in goacc_host_init.  */
+    /* .lock initialized in goacc_host_init.  */
     .state = GOMP_DEVICE_UNINITIALIZED,
 
     .openacc = {
-      .data_environ = NULL,
-
       .exec_func = host_openacc_exec,
 
       .create_thread_data_func = host_openacc_create_thread_data,

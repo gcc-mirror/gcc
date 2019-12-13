@@ -589,9 +589,13 @@ default_function_section (tree decl, enum node_frequency freq,
      where we can split away unnecessary parts of static constructors.  */
   if (startup && freq != NODE_FREQUENCY_UNLIKELY_EXECUTED)
   {
-    /* If we do have a profile or(and) LTO phase is executed, we do not need
-       these ELF section.  */
-    if (!in_lto_p || !flag_profile_values)
+    /* During LTO the tp_first_run profiling will naturally place all
+       initialization code first.  Using separate section is counter-productive
+       because startup only code may call functions which are no longer
+       startup only.  */
+    if (!in_lto_p
+        || !cgraph_node::get (decl)->tp_first_run
+	|| !opt_for_fn (decl, flag_profile_reorder_functions))
       return get_named_text_section (decl, ".text.startup", NULL);
     else
       return NULL;
@@ -607,10 +611,7 @@ default_function_section (tree decl, enum node_frequency freq,
       case NODE_FREQUENCY_UNLIKELY_EXECUTED:
 	return get_named_text_section (decl, ".text.unlikely", NULL);
       case NODE_FREQUENCY_HOT:
-        /* If we do have a profile or(and) LTO phase is executed, we do not need
-           these ELF section.  */
-        if (!in_lto_p || !flag_profile_values)
-          return get_named_text_section (decl, ".text.hot", NULL);
+        return get_named_text_section (decl, ".text.hot", NULL);
 	/* FALLTHRU */
       default:
 	return NULL;
@@ -5957,6 +5958,23 @@ do_assemble_alias (tree decl, tree target)
 	  p = &TREE_CHAIN (t);
       }
   }
+#endif
+}
+
+/* Output .symver directive.  */
+
+void
+do_assemble_symver (tree decl, tree target)
+{
+  tree id = DECL_ASSEMBLER_NAME (decl);
+  ultimate_transparent_alias_target (&id);
+  ultimate_transparent_alias_target (&target);
+#ifdef ASM_OUTPUT_SYMVER_DIRECTIVE
+  ASM_OUTPUT_SYMVER_DIRECTIVE (asm_out_file,
+			       IDENTIFIER_POINTER (target),
+			       IDENTIFIER_POINTER (id));
+#else
+  error ("symver is only supported on ELF platforms");
 #endif
 }
 

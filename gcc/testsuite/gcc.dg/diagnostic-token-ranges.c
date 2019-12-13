@@ -67,7 +67,7 @@ foo (unknown_type param); /* { dg-error "unknown type name 'unknown_type'" } */
 
 void wide_string_literal_in_asm (void)
 {
-  __asm (L"nop"); /* { dg-error "wide string literal in 'asm'" } */
+  __asm (L"nop"); /* { dg-error "a wide string is invalid in this context" } */
 /*
 { dg-begin-multiline-output "" }
    __asm (L"nop");

@@ -658,6 +658,10 @@ void gfc_finish_decl_attrs (tree, symbol_attribute *);
 /* Allocate the lang-specific part of a decl node.  */
 void gfc_allocate_lang_decl (tree);
 
+/* Get the location suitable for the ME from a gfortran locus; required to get
+   the column number right.  */
+location_t gfc_get_location (locus *);
+
 /* Advance along a TREE_CHAIN.  */
 tree gfc_advance_chain (tree, int);
 
@@ -787,7 +791,8 @@ bool gfc_get_array_descr_info (const_tree, struct array_descr_info *);
 
 /* In trans-openmp.c */
 bool gfc_omp_is_allocatable_or_ptr (const_tree);
-bool gfc_omp_is_optional_argument (const_tree);
+tree gfc_omp_check_optional_argument (tree, bool);
+tree gfc_omp_array_data (tree, bool);
 bool gfc_omp_privatize_by_reference (const_tree);
 enum omp_clause_default_kind gfc_omp_predetermined_sharing (tree);
 tree gfc_omp_report_decl (tree);
@@ -980,7 +985,6 @@ struct GTY(())	lang_type	 {
   tree offset;
   tree dtype;
   tree dataptr_type;
-  tree span;
   tree base_decl[2];
   tree nonrestricted_type;
   tree caf_token;
@@ -996,7 +1000,6 @@ struct GTY(()) lang_decl {
      address of target label.  */
   tree stringlen;
   tree addr;
-  tree span;
   /* For assumed-shape coarrays.  */
   tree token, caf_offset;
   unsigned int scalar_allocatable : 1;
@@ -1007,7 +1010,6 @@ struct GTY(()) lang_decl {
 
 #define GFC_DECL_ASSIGN_ADDR(node) DECL_LANG_SPECIFIC(node)->addr
 #define GFC_DECL_STRING_LEN(node) DECL_LANG_SPECIFIC(node)->stringlen
-#define GFC_DECL_SPAN(node) DECL_LANG_SPECIFIC(node)->span
 #define GFC_DECL_TOKEN(node) DECL_LANG_SPECIFIC(node)->token
 #define GFC_DECL_CAF_OFFSET(node) DECL_LANG_SPECIFIC(node)->caf_offset
 #define GFC_DECL_SAVED_DESCRIPTOR(node) \
@@ -1058,7 +1060,6 @@ struct GTY(()) lang_decl {
 #define GFC_TYPE_ARRAY_DTYPE(node) (TYPE_LANG_SPECIFIC(node)->dtype)
 #define GFC_TYPE_ARRAY_DATAPTR_TYPE(node) \
   (TYPE_LANG_SPECIFIC(node)->dataptr_type)
-#define GFC_TYPE_ARRAY_SPAN(node) (TYPE_LANG_SPECIFIC(node)->span)
 #define GFC_TYPE_ARRAY_BASE_DECL(node, internal) \
   (TYPE_LANG_SPECIFIC(node)->base_decl[(internal)])
 

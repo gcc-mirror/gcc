@@ -171,6 +171,13 @@ class line_table_test
   ~line_table_test ();
 };
 
+/* Helper function for selftests that need a function decl.  */
+
+extern tree make_fndecl (tree return_type,
+			 const char *name,
+			 vec <tree> &param_types,
+			 bool is_variadic = false);
+
 /* Run TESTCASE multiple times, once for each case in our test matrix.  */
 
 extern void
@@ -237,6 +244,7 @@ extern void opt_problem_cc_tests ();
 extern void optinfo_emit_json_cc_tests ();
 extern void predict_c_tests ();
 extern void pretty_print_c_tests ();
+extern void range_tests ();
 extern void read_rtl_function_c_tests ();
 extern void rtl_tests_c_tests ();
 extern void sbitmap_c_tests ();
@@ -254,14 +262,11 @@ extern void vec_c_tests ();
 extern void vec_perm_indices_c_tests ();
 extern void wide_int_cc_tests ();
 extern void opt_proposer_c_tests ();
+extern void dbgcnt_c_tests ();
 
 extern int num_passes;
 
 } /* end of namespace selftest.  */
-
-/* This is outside of the selftest namespace because it's a friend of
-   value_range_base.  */
-extern void range_tests ();
 
 /* Macros for writing tests.  */
 

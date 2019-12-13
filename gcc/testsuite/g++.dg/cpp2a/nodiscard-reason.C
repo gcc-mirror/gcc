@@ -13,8 +13,8 @@ typedef struct { char big[1024]; fnt fn; } C;
 struct [[nodiscard("exact_D_message")]] D { int i; D(); ~D(); };
 
 NODIS E check1 (void);
-NODIS void check2 (void); /* { dg-warning "10:.nodiscard\[^\n\r]*exact_message" } */
-NODIS int foo;         /* { dg-warning "9:.nodiscard\[^\n\r]*exact_message" } */
+NODIS void check2 (void); /* { dg-warning "12:.nodiscard\[^\n\r]*void" } */
+NODIS int foo;         /* { dg-warning "11:.nodiscard\[^\n\r]*class" } */
 int bar (void);
 NODISAI E check3 (void) { return (E)bar (); }
 NODIS A check4 (void);
@@ -173,23 +173,23 @@ test (void)
     return;
   i += (k ? check3 : check11) ();
   i += ({ (k ? check3 : check11) (); });
-  (k ? check3 : check11) (); /* { dg-warning "nodiscard\[^\n\r]*exact_inline_message" } */
+  (k ? check3 : check11) (); /* { dg-warning "nodiscard\[^\n\r]*exact_E_message" } */
   (void) (k ? check3 : check11) ();
-  (k ? check3 : check11) (), bar (); /* { dg-warning "nodiscard\[^\n\r]*exact_inline_message" } */
+  (k ? check3 : check11) (), bar (); /* { dg-warning "nodiscard\[^\n\r]*exact_E_message" } */
   if (pcheck1 ())
     return;
   i += pcheck1 ();
   i += ({ pcheck1 (); });
-  pcheck1 ();          /* { dg-warning "nodiscard\[^\n\r]*exact_E_message" } */
+  pcheck1 ();          /* { dg-warning "nodiscard\[^\n\r]*exact_" } */
   (void) pcheck1 ();
-  pcheck1 (), bar ();  /* { dg-warning "nodiscard\[^\n\r]*exact_E_message" } */
+  pcheck1 (), bar ();  /* { dg-warning "nodiscard\[^\n\r]*exact_" } */
   if (pcheck3 ())
     return;
   i += pcheck3 ();
   i += ({ pcheck3 (); });
-  pcheck3 ();          /* { dg-warning "nodiscard\[^\n\r]*exact_E_message" } */
+  pcheck3 ();          /* { dg-warning "nodiscard\[^\n\r]*exact_" } */
   (void) pcheck3 ();
-  pcheck3 (), bar ();  /* { dg-warning "nodiscard\[^\n\r]*exact_E_message" } */
+  pcheck3 (), bar ();  /* { dg-warning "nodiscard\[^\n\r]*exact_" } */
   d = check12 ();
   if (d.i)
     return;

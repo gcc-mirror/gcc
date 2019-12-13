@@ -1725,7 +1725,8 @@ gfc_conv_expr_present (gfc_symbol * sym)
       /* Walk function argument list to find hidden arg.  */
       cond = DECL_ARGUMENTS (DECL_CONTEXT (decl));
       for ( ; cond != NULL_TREE; cond = TREE_CHAIN (cond))
-	if (DECL_NAME (cond) == tree_name)
+	if (DECL_NAME (cond) == tree_name
+	    && DECL_ARTIFICIAL (cond))
 	  break;
 
       gcc_assert (cond);
@@ -5206,7 +5207,6 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
   int attribute;
   int cfi_attribute;
   symbol_attribute attr = gfc_expr_attr (e);
-  stmtblock_t block;
 
   /* If this is a full array or a scalar, the allocatable and pointer
      attributes can be passed. Otherwise it is 'CFI_attribute_other'*/
@@ -5240,6 +5240,9 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
       if (POINTER_TYPE_P (TREE_TYPE (parmse->expr)))
 	parmse->expr = build_fold_indirect_ref_loc (input_location,
 						    parmse->expr);
+      bool is_artificial = (INDIRECT_REF_P (parmse->expr)
+			    ? DECL_ARTIFICIAL (TREE_OPERAND (parmse->expr, 0))
+			    : DECL_ARTIFICIAL (parmse->expr));
 
       /* Unallocated allocatable arrays and unassociated pointer arrays
 	 need their dtype setting if they are argument associated with
@@ -5259,7 +5262,7 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
       type = e->ts.type != BT_ASSUMED ? gfc_typenode_for_spec (&e->ts) :
 					NULL_TREE;
 
-      if (type && DECL_ARTIFICIAL (parmse->expr)
+      if (type && is_artificial
 	  && type != gfc_get_element_type (TREE_TYPE (parmse->expr)))
 	{
 	  /* Obtain the offset to the data.  */
@@ -5272,7 +5275,7 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 			  gfc_get_dtype_rank_type (e->rank, type));
 	}
       else if (type == NULL_TREE
-	       || (!is_subref_array (e) && !DECL_ARTIFICIAL (parmse->expr)))
+	       || (!is_subref_array (e) && !is_artificial))
 	{
 	  /* Make sure that the span is set for expressions where it
 	     might not have been done already.  */
@@ -5304,13 +5307,13 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
   /* Now pass the gfc_descriptor by reference.  */
   parmse->expr = gfc_build_addr_expr (NULL_TREE, parmse->expr);
 
-  /* Variables to point to the gfc and CFI descriptors.  */
+  /* Variables to point to the gfc and CFI descriptors; cfi = NULL implies
+     that the CFI descriptor is allocated by the gfor_fndecl_gfc_to_cfi call.  */
   gfc_desc_ptr = parmse->expr;
   cfi_desc_ptr = gfc_create_var (pvoid_type_node, "cfi");
-  gfc_add_modify (&parmse->pre, cfi_desc_ptr,
-		  build_int_cst (pvoid_type_node, 0));
+  gfc_add_modify (&parmse->pre, cfi_desc_ptr, null_pointer_node);
 
-  /* Allocate the CFI descriptor and fill the fields.  */
+  /* Allocate the CFI descriptor itself and fill the fields.  */
   tmp = gfc_build_addr_expr (NULL_TREE, cfi_desc_ptr);
   tmp = build_call_expr_loc (input_location,
 			     gfor_fndecl_gfc_to_cfi, 2, tmp, gfc_desc_ptr);
@@ -5326,15 +5329,7 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
   parmse->expr = cfi_desc_ptr;
 
   /* Free the CFI descriptor.  */
-  gfc_init_block (&block);
-  cond = fold_build2_loc (input_location, NE_EXPR,
-			  logical_type_node, cfi_desc_ptr,
-			  build_int_cst (TREE_TYPE (cfi_desc_ptr), 0));
   tmp = gfc_call_free (cfi_desc_ptr);
-  gfc_add_expr_to_block (&block, tmp);
-  tmp = build3_v (COND_EXPR, cond,
-		  gfc_finish_block (&block),
-		  build_empty_stmt (input_location));
   gfc_prepend_expr_to_block (&parmse->post, tmp);
 
   /* Transfer values back to gfc descriptor.  */
@@ -5755,7 +5750,9 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 					fold_convert (TREE_TYPE (parmse.expr),
 						      integer_zero_node));
 
-			    vec_safe_push (optionalargs, tmp);
+			    vec_safe_push (optionalargs,
+					   fold_convert (boolean_type_node,
+							 tmp));
 			  }
 		      }
 		    }
@@ -6250,8 +6247,14 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      gfc_add_expr_to_block (&se->pre, tmp);
 		  }
 
-		  tmp = build_fold_indirect_ref_loc (input_location,
-						     parmse.expr);
+		  tmp = parmse.expr;
+		  /* With bind(C), the actual argument is replaced by a bind-C
+		     descriptor; in this case, the data component arrives here,
+		     which shall not be dereferenced, but still freed and
+		     nullified.  */
+		  if  (TREE_TYPE(tmp) != pvoid_type_node)
+		    tmp = build_fold_indirect_ref_loc (input_location,
+						       parmse.expr);
 		  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
 		    tmp = gfc_conv_descriptor_data_get (tmp);
 		  tmp = gfc_deallocate_with_status (tmp, NULL_TREE, NULL_TREE,
@@ -8327,7 +8330,6 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr, bool init, bool coarray)
   gfc_se se;
 
   gfc_start_block (&block);
-  cm = expr->ts.u.derived->components;
 
   if (expr->ts.u.derived->from_intmod == INTMOD_ISO_C_BINDING
       && (expr->ts.u.derived->intmod_sym_id == ISOCBINDING_PTR
@@ -8344,6 +8346,17 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr, bool init, bool coarray)
 
       return gfc_finish_block (&block);
     }
+
+  /* Make sure that the derived type has been completely built.  */
+  if (!expr->ts.u.derived->backend_decl
+      || !TYPE_FIELDS (expr->ts.u.derived->backend_decl))
+    {
+      tmp = gfc_typenode_for_spec (&expr->ts);
+      gcc_assert (tmp);
+    }
+
+  cm = expr->ts.u.derived->components;
+
 
   if (coarray)
     gfc_init_se (&se, NULL);
@@ -8415,6 +8428,7 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr, bool init, bool coarray)
 	  gfc_add_expr_to_block (&block, tmp);
 	}
       field = cm->backend_decl;
+      gcc_assert(field);
       tmp = fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
 			     dest, field, NULL_TREE);
       if (!c->expr)

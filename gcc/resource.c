@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "emit-rtl.h"
 #include "resource.h"
 #include "insn-attr.h"
-#include "params.h"
 #include "function-abi.h"
 
 /* This structure is used to record liveness information at the targets or
@@ -928,7 +927,7 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
     }
 
   if (b == -1)
-    b = find_basic_block (target, MAX_DELAY_SLOT_LIVE_SEARCH);
+    b = find_basic_block (target, param_max_delay_slot_live_search);
 
   if (target_hash_table != NULL)
     {
@@ -1289,7 +1288,7 @@ clear_hashed_info_for_insn (rtx_insn *insn)
 void
 incr_ticks_for_insn (rtx_insn *insn)
 {
-  int b = find_basic_block (insn, MAX_DELAY_SLOT_LIVE_SEARCH);
+  int b = find_basic_block (insn, param_max_delay_slot_live_search);
 
   if (b != -1)
     bb_ticks[b]++;

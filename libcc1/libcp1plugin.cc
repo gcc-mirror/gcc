@@ -630,7 +630,8 @@ plugin_pragma_push_user_expression (cpp_reader *)
 	 usable.  */
       tree this_val = lookup_name (get_identifier ("this"));
       current_class_ref = !this_val ? NULL_TREE
-	: cp_build_indirect_ref (this_val, RO_NULL, tf_warning_or_error);
+	: cp_build_indirect_ref (input_location, this_val, RO_NULL,
+				 tf_warning_or_error);
       current_class_ptr = this_val;
     }
 }
@@ -3063,7 +3064,8 @@ plugin_build_cast_expr (cc1_plugin::connection *self,
 			gcc_expr operand2)
 {
   plugin_context *ctx = static_cast<plugin_context *> (self);
-  tree (*build_cast)(tree type, tree expr, tsubst_flags_t complain) = NULL;
+  tree (*build_cast)(location_t loc, tree type, tree expr,
+		     tsubst_flags_t complain) = NULL;
   tree type = convert_in (operand1);
   tree expr = convert_in (operand2);
 
@@ -3100,7 +3102,7 @@ plugin_build_cast_expr (cc1_plugin::connection *self,
   if (!template_dependent_p)
     processing_template_decl--;
 
-  tree val = build_cast (type, expr, tf_error);
+  tree val = build_cast (input_location, type, expr, tf_error);
 
   if (template_dependent_p)
     processing_template_decl--;
@@ -3154,7 +3156,7 @@ plugin_build_expression_list_expr (cc1_plugin::connection *self,
     case CHARS2 ('c', 'v'): // conversion with parenthesized expression list
       gcc_assert (TYPE_P (type));
       args = args_to_tree_list (values_in);
-      result = build_functional_cast (type, args, tf_error);
+      result = build_functional_cast (input_location, type, args, tf_error);
       break;
 
     case CHARS2 ('t', 'l'): // conversion with braced expression list

@@ -31,7 +31,7 @@ class S
 
 int main()
 {
-  f1(s); // { dg-error "cannot call|private" }
+  f1(s); // { dg-error "unsatisfied|private" }
   f2(s); // { dg-error "" }
 
   // When used in non-SFINAE contexts, make sure that we fail

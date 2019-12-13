@@ -573,30 +573,25 @@ decl_attributes (tree *node, tree attributes, int flags,
 	    }
 	  continue;
 	}
-      else if (list_length (args) < spec->min_length
-	       || (spec->max_length >= 0
-		   && list_length (args) > spec->max_length))
+      else
 	{
-	  error ("wrong number of arguments specified for %qE attribute",
-		 name);
-	  continue;
+	  int nargs = list_length (args);
+	  if (nargs < spec->min_length
+	      || (spec->max_length >= 0
+		  && nargs > spec->max_length))
+	    {
+	      error ("wrong number of arguments specified for %qE attribute",
+		     name);
+	      if (spec->max_length < 0)
+		inform (input_location, "expected %i or more, found %i",
+			spec->min_length, nargs);
+	      else
+		inform (input_location, "expected between %i and %i, found %i",
+			spec->min_length, spec->max_length, nargs);
+	      continue;
+	    }
 	}
       gcc_assert (is_attribute_p (spec->name, name));
-
-      if (TYPE_P (*node)
-	  && cxx11_attr_p
-	  && !(flags & ATTR_FLAG_TYPE_IN_PLACE))
-	{
-	  /* This is a c++11 attribute that appertains to a
-	     type-specifier, outside of the definition of, a class
-	     type.  Ignore it.  */
-	  auto_diagnostic_group d;
-	  if (warning (OPT_Wattributes, "attribute ignored"))
-	    inform (input_location,
-		    "an attribute that appertains to a type-specifier "
-		    "is ignored");
-	  continue;
-	}
 
       if (spec->decl_required && !DECL_P (*anode))
 	{

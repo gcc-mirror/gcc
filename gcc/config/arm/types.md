@@ -1096,7 +1096,8 @@
   crypto_sm3,\
   crypto_sm4,\
   coproc,\
-  tme"
+  tme,\
+  memtag"
    (const_string "untyped"))
 
 ; Is this an (integer side) multiply with a 32-bit (or smaller) result?

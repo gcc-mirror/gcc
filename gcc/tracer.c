@@ -44,12 +44,12 @@
 #include "tree-pass.h"
 #include "profile.h"
 #include "cfganal.h"
-#include "params.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-ssa.h"
 #include "tree-inline.h"
 #include "cfgloop.h"
+#include "alloc-pool.h"
 #include "fibonacci_heap.h"
 #include "tracer.h"
 
@@ -276,13 +276,13 @@ tail_duplicate (void)
   initialize_original_copy_tables ();
 
   if (profile_info && profile_status_for_fn (cfun) == PROFILE_READ)
-    probability_cutoff = PARAM_VALUE (TRACER_MIN_BRANCH_PROBABILITY_FEEDBACK);
+    probability_cutoff = param_tracer_min_branch_probability_feedback;
   else
-    probability_cutoff = PARAM_VALUE (TRACER_MIN_BRANCH_PROBABILITY);
+    probability_cutoff = param_tracer_min_branch_probability;
   probability_cutoff = REG_BR_PROB_BASE / 100 * probability_cutoff;
 
   branch_ratio_cutoff =
-    (REG_BR_PROB_BASE / 100 * PARAM_VALUE (TRACER_MIN_BRANCH_RATIO));
+    (REG_BR_PROB_BASE / 100 * param_tracer_min_branch_ratio);
 
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -296,11 +296,11 @@ tail_duplicate (void)
     }
 
   if (profile_info && profile_status_for_fn (cfun) == PROFILE_READ)
-    cover_insns = PARAM_VALUE (TRACER_DYNAMIC_COVERAGE_FEEDBACK);
+    cover_insns = param_tracer_dynamic_coverage_feedback;
   else
-    cover_insns = PARAM_VALUE (TRACER_DYNAMIC_COVERAGE);
+    cover_insns = param_tracer_dynamic_coverage;
   cover_insns = (weighted_insns * cover_insns + 50) / 100;
-  max_dup_insns = (ninsns * PARAM_VALUE (TRACER_MAX_CODE_GROWTH) + 50) / 100;
+  max_dup_insns = (ninsns * param_tracer_max_code_growth + 50) / 100;
 
   while (traced_insns < cover_insns && nduplicated < max_dup_insns
          && !heap.empty ())

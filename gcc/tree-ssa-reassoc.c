@@ -48,7 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "langhooks.h"
 #include "cfgloop.h"
-#include "params.h"
 #include "builtins.h"
 #include "gimplify.h"
 #include "case-cfn-macros.h"
@@ -1776,7 +1775,10 @@ undistribute_ops_list (enum tree_code opcode,
    first: element index for each relevant BIT_FIELD_REF.
    second: the index of vec ops* for each relevant BIT_FIELD_REF.  */
 typedef std::pair<unsigned, unsigned> v_info_elem;
-typedef auto_vec<v_info_elem, 32> v_info;
+struct v_info {
+  tree vec_type;
+  auto_vec<v_info_elem, 32> vec;
+};
 typedef v_info *v_info_ptr;
 
 /* Comparison function for qsort on VECTOR SSA_NAME trees by machine mode.  */
@@ -1841,8 +1843,11 @@ undistribute_bitref_for_vector (enum tree_code opcode,
   if (ops->length () <= 1)
     return false;
 
-  if (opcode != PLUS_EXPR && opcode != MULT_EXPR && opcode != BIT_XOR_EXPR
-      && opcode != BIT_IOR_EXPR && opcode != BIT_AND_EXPR)
+  if (opcode != PLUS_EXPR
+      && opcode != MULT_EXPR
+      && opcode != BIT_XOR_EXPR
+      && opcode != BIT_IOR_EXPR
+      && opcode != BIT_AND_EXPR)
     return false;
 
   hash_map<tree, v_info_ptr> v_info_map;
@@ -1880,9 +1885,45 @@ undistribute_bitref_for_vector (enum tree_code opcode,
       if (!TYPE_VECTOR_SUBPARTS (vec_type).is_constant ())
 	continue;
 
+      if (VECTOR_TYPE_P (TREE_TYPE (rhs))
+	  || !is_a <scalar_mode> (TYPE_MODE (TREE_TYPE (rhs))))
+	continue;
+
+      /* The type of BIT_FIELD_REF might not be equal to the element type of
+	 the vector.  We want to use a vector type with element type the
+	 same as the BIT_FIELD_REF and size the same as TREE_TYPE (vec).  */
+      if (!useless_type_conversion_p (TREE_TYPE (rhs), TREE_TYPE (vec_type)))
+	{
+	  machine_mode simd_mode;
+	  unsigned HOST_WIDE_INT size, nunits;
+	  unsigned HOST_WIDE_INT elem_size
+	    = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (rhs)));
+	  if (!GET_MODE_BITSIZE (TYPE_MODE (vec_type)).is_constant (&size))
+	    continue;
+	  if (size <= elem_size || (size % elem_size) != 0)
+	    continue;
+	  nunits = size / elem_size;
+	  if (!mode_for_vector (SCALAR_TYPE_MODE (TREE_TYPE (rhs)),
+				nunits).exists (&simd_mode))
+	    continue;
+	  vec_type = build_vector_type_for_mode (TREE_TYPE (rhs), simd_mode);
+
+	  /* Ignore it if target machine can't support this VECTOR type.  */
+	  if (!VECTOR_MODE_P (TYPE_MODE (vec_type)))
+	    continue;
+
+	  /* Check const vector type, constrain BIT_FIELD_REF offset and
+	     size.  */
+	  if (!TYPE_VECTOR_SUBPARTS (vec_type).is_constant ())
+	    continue;
+
+	  if (maybe_ne (GET_MODE_SIZE (TYPE_MODE (vec_type)),
+			GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (vec)))))
+	    continue;
+	}
+
       tree elem_type = TREE_TYPE (vec_type);
-      unsigned HOST_WIDE_INT elem_size
-	= TREE_INT_CST_LOW (TYPE_SIZE (elem_type));
+      unsigned HOST_WIDE_INT elem_size = tree_to_uhwi (TYPE_SIZE (elem_type));
       if (maybe_ne (bit_field_size (rhs), elem_size))
 	continue;
 
@@ -1899,8 +1940,13 @@ undistribute_bitref_for_vector (enum tree_code opcode,
       bool existed;
       v_info_ptr &info = v_info_map.get_or_insert (vec, &existed);
       if (!existed)
-	info = new v_info;
-      info->safe_push (std::make_pair (idx, i));
+	{
+	  info = new v_info;
+	  info->vec_type = vec_type;
+	}
+      else if (!types_compatible_p (vec_type, info->vec_type))
+	continue;
+      info->vec.safe_push (std::make_pair (idx, i));
     }
 
   /* At least two VECTOR to combine.  */
@@ -1920,14 +1966,15 @@ undistribute_bitref_for_vector (enum tree_code opcode,
     {
       tree cand_vec = (*it).first;
       v_info_ptr cand_info = (*it).second;
-      unsigned int num_elems = VECTOR_CST_NELTS (cand_vec).to_constant ();
-      if (cand_info->length () != num_elems)
+      unsigned int num_elems
+	= TYPE_VECTOR_SUBPARTS (cand_info->vec_type).to_constant ();
+      if (cand_info->vec.length () != num_elems)
 	continue;
       sbitmap holes = sbitmap_alloc (num_elems);
       bitmap_ones (holes);
       bool valid = true;
       v_info_elem *curr;
-      FOR_EACH_VEC_ELT (*cand_info, i, curr)
+      FOR_EACH_VEC_ELT (cand_info->vec, i, curr)
 	{
 	  if (!bitmap_bit_p (holes, curr->first))
 	    {
@@ -1963,25 +2010,53 @@ undistribute_bitref_for_vector (enum tree_code opcode,
 
       unsigned int idx, j;
       gimple *sum = NULL;
-      v_info_ptr info_ptr;
       tree sum_vec = tvec;
+      v_info_ptr info_ptr = *(v_info_map.get (tvec));
       v_info_elem *elem;
+      tree vec_type = info_ptr->vec_type;
 
       /* Build the sum for all candidates with same mode.  */
       do
 	{
-	  sum = build_and_add_sum (TREE_TYPE (sum_vec), sum_vec,
+	  sum = build_and_add_sum (vec_type, sum_vec,
 				   valid_vecs[i + 1], opcode);
+	  if (!useless_type_conversion_p (vec_type,
+					  TREE_TYPE (valid_vecs[i + 1])))
+	    {
+	      /* Update the operands only after build_and_add_sum,
+		 so that we don't have to repeat the placement algorithm
+		 of build_and_add_sum.  */
+	      gimple_stmt_iterator gsi = gsi_for_stmt (sum);
+	      tree vce = build1 (VIEW_CONVERT_EXPR, vec_type,
+				 valid_vecs[i + 1]);
+	      tree lhs = make_ssa_name (vec_type);
+	      gimple *g = gimple_build_assign (lhs, VIEW_CONVERT_EXPR, vce);
+	      gimple_set_uid (g, gimple_uid (sum));
+	      gsi_insert_before (&gsi, g, GSI_NEW_STMT);
+	      gimple_assign_set_rhs2 (sum, lhs);
+	      if (sum_vec == tvec)
+		{
+		  vce = build1 (VIEW_CONVERT_EXPR, vec_type, sum_vec);
+		  lhs = make_ssa_name (vec_type);
+		  g = gimple_build_assign (lhs, VIEW_CONVERT_EXPR, vce);
+		  gimple_set_uid (g, gimple_uid (sum));
+		  gsi_insert_before (&gsi, g, GSI_NEW_STMT);
+		  gimple_assign_set_rhs1 (sum, lhs);
+		}
+	      update_stmt (sum);
+	    }
 	  sum_vec = gimple_get_lhs (sum);
 	  info_ptr = *(v_info_map.get (valid_vecs[i + 1]));
+	  gcc_assert (types_compatible_p (vec_type, info_ptr->vec_type));
 	  /* Update those related ops of current candidate VECTOR.  */
-	  FOR_EACH_VEC_ELT (*info_ptr, j, elem)
+	  FOR_EACH_VEC_ELT (info_ptr->vec, j, elem)
 	    {
 	      idx = elem->second;
 	      gimple *def = SSA_NAME_DEF_STMT ((*ops)[idx]->op);
 	      /* Set this then op definition will get DCEd later.  */
 	      gimple_set_visited (def, true);
-	      if (opcode == PLUS_EXPR || opcode == BIT_XOR_EXPR
+	      if (opcode == PLUS_EXPR
+		  || opcode == BIT_XOR_EXPR
 		  || opcode == BIT_IOR_EXPR)
 		(*ops)[idx]->op = build_zero_cst (TREE_TYPE ((*ops)[idx]->op));
 	      else if (opcode == MULT_EXPR)
@@ -2008,16 +2083,16 @@ undistribute_bitref_for_vector (enum tree_code opcode,
          BIT_FIELD_REF statements accordingly.  */
       info_ptr = *(v_info_map.get (tvec));
       gcc_assert (sum);
-      tree elem_type = TREE_TYPE (TREE_TYPE (tvec));
-      FOR_EACH_VEC_ELT (*info_ptr, j, elem)
+      tree elem_type = TREE_TYPE (vec_type);
+      FOR_EACH_VEC_ELT (info_ptr->vec, j, elem)
 	{
 	  idx = elem->second;
 	  tree dst = make_ssa_name (elem_type);
-	  gimple *gs = gimple_build_assign (
-	    dst, BIT_FIELD_REF,
-	    build3 (BIT_FIELD_REF, elem_type, sum_vec, TYPE_SIZE (elem_type),
-		    bitsize_int (elem->first
-				 * tree_to_uhwi (TYPE_SIZE (elem_type)))));
+	  tree pos = bitsize_int (elem->first
+				  * tree_to_uhwi (TYPE_SIZE (elem_type)));
+	  tree bfr = build3 (BIT_FIELD_REF, elem_type, sum_vec,
+			     TYPE_SIZE (elem_type), pos);
+	  gimple *gs = gimple_build_assign (dst, BIT_FIELD_REF, bfr);
 	  insert_stmt_after (gs, sum);
 	  gimple *def = SSA_NAME_DEF_STMT ((*ops)[idx]->op);
 	  /* Set this then op definition will get DCEd later.  */
@@ -4945,7 +5020,7 @@ static int
 get_reassociation_width (int ops_num, enum tree_code opc,
 			 machine_mode mode)
 {
-  int param_width = PARAM_VALUE (PARAM_TREE_REASSOC_WIDTH);
+  int param_width = param_tree_reassoc_width;
   int width;
   int width_min;
   int cycles_best;

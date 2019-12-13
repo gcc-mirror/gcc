@@ -1678,7 +1678,7 @@ propagate_pure_const (void)
 	  /* Inline clones share declaration with their offline copies;
 	     do not modify their declarations since the offline copy may
 	     be different.  */
-	  if (!w->global.inlined_to)
+	  if (!w->inlined_to)
 	    switch (this_state)
 	      {
 	      case IPA_CONST:
@@ -1839,7 +1839,7 @@ propagate_nothrow (void)
 	      /* Inline clones share declaration with their offline copies;
 		 do not modify their declarations since the offline copy may
 		 be different.  */
-	      if (!w->global.inlined_to)
+	      if (!w->inlined_to)
 		{
 		  w->set_nothrow_flag (true);
 		  if (dump_file)
@@ -1966,7 +1966,7 @@ propagate_malloc (void)
 	funct_state l = funct_state_summaries->get (node);
 	if (!node->alias
 	    && l->malloc_state == STATE_MALLOC
-	    && !node->global.inlined_to)
+	    && !node->inlined_to)
 	  {
 	    if (dump_file && (dump_flags & TDF_DETAILS))
 	      fprintf (dump_file, "Function %s found to be malloc\n",

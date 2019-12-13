@@ -85,7 +85,6 @@
     (V29_REGNUM		61)
     (V30_REGNUM		62)
     (V31_REGNUM		63)
-    (LAST_SAVED_REGNUM	63)
     (SFP_REGNUM		64)
     (AP_REGNUM		65)
     (CC_REGNUM		66)
@@ -107,6 +106,11 @@
     (P13_REGNUM		81)
     (P14_REGNUM		82)
     (P15_REGNUM		83)
+    (LAST_SAVED_REGNUM	83)
+    (FFR_REGNUM		84)
+    ;; "FFR token": a fake register used for representing the scheduling
+    ;; restrictions on FFR-related operations.
+    (FFRT_REGNUM	85)
     ;; Scratch register used by stack clash protection to calculate
     ;; SVE CFA offsets during probing.
     (STACK_CLASH_SVE_CFA_REGNUM 11)
@@ -222,21 +226,31 @@
     UNSPEC_XPACLRI
     UNSPEC_LD1_SVE
     UNSPEC_ST1_SVE
+    UNSPEC_LDNT1_SVE
+    UNSPEC_STNT1_SVE
     UNSPEC_LD1RQ
     UNSPEC_LD1_GATHER
+    UNSPEC_LDFF1_GATHER
     UNSPEC_ST1_SCATTER
     UNSPEC_PRED_X
     UNSPEC_PRED_Z
     UNSPEC_PTEST
+    UNSPEC_PTRUE
     UNSPEC_UNPACKSHI
     UNSPEC_UNPACKUHI
     UNSPEC_UNPACKSLO
     UNSPEC_UNPACKULO
     UNSPEC_PACK
+    UNSPEC_WHILE_LE
     UNSPEC_WHILE_LO
+    UNSPEC_WHILE_LS
+    UNSPEC_WHILE_LT
+    UNSPEC_WHILERW
+    UNSPEC_WHILEWR
     UNSPEC_LDN
     UNSPEC_STN
     UNSPEC_INSR
+    UNSPEC_CLASTA
     UNSPEC_CLASTB
     UNSPEC_FADDA
     UNSPEC_REV_SUBREG
@@ -244,6 +258,21 @@
     UNSPEC_SPECULATION_TRACKER
     UNSPEC_COPYSIGN
     UNSPEC_TTEST		; Represent transaction test.
+    UNSPEC_UPDATE_FFR
+    UNSPEC_UPDATE_FFRT
+    UNSPEC_RDFFR
+    UNSPEC_WRFFR
+    ;; Represents an SVE-style lane index, in which the indexing applies
+    ;; within the containing 128-bit block.
+    UNSPEC_SVE_LANE_SELECT
+    UNSPEC_SVE_CNT_PAT
+    UNSPEC_SVE_PREFETCH
+    UNSPEC_SVE_PREFETCH_GATHER
+    UNSPEC_SVE_COMPACT
+    UNSPEC_SVE_SPLICE
+    UNSPEC_GEN_TAG		; Generate a 4-bit MTE tag.
+    UNSPEC_GEN_TAG_RND		; Generate a random 4-bit MTE tag.
+    UNSPEC_TAG_SPACE		; Translate address to MTE tag address space.
 ])
 
 (define_c_enum "unspecv" [
@@ -7358,6 +7387,93 @@
   "TARGET_RNG"
   "mrs\t%0, RNDRRS"
   [(set_attr "type" "mrs")]
+)
+
+;; Memory Tagging Extension (MTE) instructions.
+
+(define_insn "irg"
+  [(set (match_operand:DI 0 "register_operand" "=rk")
+	(ior:DI
+	 (and:DI (match_operand:DI 1 "register_operand" "rk")
+		 (const_int -1080863910568919041)) ;; 0xf0ff...
+	 (ashift:DI (unspec:QI [(match_operand:DI 2 "register_operand" "r")]
+		     UNSPEC_GEN_TAG_RND)
+		    (const_int 56))))]
+  "TARGET_MEMTAG"
+  "irg\\t%0, %1, %2"
+  [(set_attr "type" "memtag")]
+)
+
+(define_insn "gmi"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(ior:DI (ashift:DI
+		 (const_int 1)
+		 (and:QI (lshiftrt:DI
+			  (match_operand:DI 1 "register_operand" "rk")
+			  (const_int 56)) (const_int 15)))
+		(match_operand:DI 2 "register_operand" "r")))]
+  "TARGET_MEMTAG"
+  "gmi\\t%0, %1, %2"
+  [(set_attr "type" "memtag")]
+)
+
+(define_insn "addg"
+  [(set (match_operand:DI 0 "register_operand" "=rk")
+	(ior:DI
+	 (and:DI (plus:DI (match_operand:DI 1 "register_operand" "rk")
+			  (match_operand:DI 2 "aarch64_granule16_uimm6" "i"))
+		 (const_int -1080863910568919041)) ;; 0xf0ff...
+	 (ashift:DI
+	  (unspec:QI
+	   [(and:QI (lshiftrt:DI (match_dup 1) (const_int 56)) (const_int 15))
+	    (match_operand:QI 3 "aarch64_memtag_tag_offset" "i")]
+	   UNSPEC_GEN_TAG)
+	  (const_int 56))))]
+  "TARGET_MEMTAG"
+  "addg\\t%0, %1, #%2, #%3"
+  [(set_attr "type" "memtag")]
+)
+
+(define_insn "subp"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(minus:DI
+	  (and:DI (match_operand:DI 1 "register_operand" "rk")
+		  (const_int 72057594037927935)) ;; 0x00ff...
+	  (and:DI (match_operand:DI 2 "register_operand" "rk")
+		  (const_int 72057594037927935))))] ;; 0x00ff...
+  "TARGET_MEMTAG"
+  "subp\\t%0, %1, %2"
+  [(set_attr "type" "memtag")]
+)
+
+;; LDG will use the 16-byte aligned value of the address.
+(define_insn "ldg"
+  [(set (match_operand:DI 0 "register_operand" "+r")
+	(ior:DI
+	 (and:DI (match_dup 0) (const_int -1080863910568919041)) ;; 0xf0ff...
+	 (ashift:DI
+	  (mem:QI (unspec:DI
+	   [(and:DI (plus:DI (match_operand:DI 1 "register_operand" "rk")
+			     (match_operand:DI 2 "aarch64_granule16_simm9" "i"))
+		    (const_int -16))] UNSPEC_TAG_SPACE))
+	  (const_int 56))))]
+  "TARGET_MEMTAG"
+  "ldg\\t%0, [%1, #%2]"
+  [(set_attr "type" "memtag")]
+)
+
+;; STG doesn't align the address but aborts with alignment fault
+;; when the address is not 16-byte aligned.
+(define_insn "stg"
+  [(set (mem:QI (unspec:DI
+	 [(plus:DI (match_operand:DI 1 "register_operand" "rk")
+		   (match_operand:DI 2 "aarch64_granule16_simm9" "i"))]
+	 UNSPEC_TAG_SPACE))
+	(and:QI (lshiftrt:DI (match_operand:DI 0 "register_operand" "rk")
+			     (const_int 56)) (const_int 15)))]
+  "TARGET_MEMTAG"
+  "stg\\t%0, [%1, #%2]"
+  [(set_attr "type" "memtag")]
 )
 
 ;; AdvSIMD Stuff

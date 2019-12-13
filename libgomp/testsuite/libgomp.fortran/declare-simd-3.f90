@@ -17,6 +17,6 @@ subroutine bar
     b(i) = foo (7.0_8, 5 * i, b(i))
   end do
   do i = 1, 128
-    if (b(i).ne.(7.0 + 10.0 * i * i)) STOP 1
+    if (b(i).ne.(7.0 + 10.0 * i * i)) stop 1
   end do
 end subroutine bar

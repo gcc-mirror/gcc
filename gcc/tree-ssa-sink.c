@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "cfgloop.h"
-#include "params.h"
 
 /* TODO:
    1. Sinking store only using scalar promotion (IE without moving the RHS):
@@ -177,7 +176,7 @@ nearest_common_dominator_of_uses (def_operand_p def_p, bool *debug_stmts)
 
    If the resulting block is in a shallower loop nest, then use it.  Else
    only use the resulting block if it has significantly lower execution
-   frequency than EARLY_BB to avoid gratutious statement movement.  We
+   frequency than EARLY_BB to avoid gratuitous statement movement.  We
    consider statements with VOPS more desirable to move.
 
    This pass would obviously benefit from PDO as it utilizes block
@@ -215,7 +214,7 @@ select_best_block (basic_block early_bb,
   /* Get the sinking threshold.  If the statement to be moved has memory
      operands, then increase the threshold by 7% as those are even more
      profitable to avoid, clamping at 100%.  */
-  threshold = PARAM_VALUE (PARAM_SINK_FREQUENCY_THRESHOLD);
+  threshold = param_sink_frequency_threshold;
   if (gimple_vuse (stmt) || gimple_vdef (stmt))
     {
       threshold += 7;
@@ -224,12 +223,12 @@ select_best_block (basic_block early_bb,
     }
 
   /* If BEST_BB is at the same nesting level, then require it to have
-     significantly lower execution frequency to avoid gratutious movement.  */
+     significantly lower execution frequency to avoid gratuitous movement.  */
   if (bb_loop_depth (best_bb) == bb_loop_depth (early_bb)
-      /* If result of comparsion is unknown, preffer EARLY_BB.
+      /* If result of comparsion is unknown, prefer EARLY_BB.
 	 Thus use !(...>=..) rather than (...<...)  */
       && !(best_bb->count.apply_scale (100, 1)
-	   > (early_bb->count.apply_scale (threshold, 1))))
+	   >= early_bb->count.apply_scale (threshold, 1)))
     return best_bb;
 
   /* No better block found, so return EARLY_BB, which happens to be the

@@ -354,11 +354,8 @@ can_conditionally_move_p (machine_mode mode)
 opt_machine_mode
 qimode_for_vec_perm (machine_mode mode)
 {
-  machine_mode qimode;
-  if (GET_MODE_INNER (mode) != QImode
-      && mode_for_vector (QImode, GET_MODE_SIZE (mode)).exists (&qimode)
-      && VECTOR_MODE_P (qimode))
-    return qimode;
+  if (GET_MODE_INNER (mode) != QImode)
+    return related_vector_mode (mode, QImode, GET_MODE_SIZE (mode));
   return opt_machine_mode ();
 }
 
@@ -588,22 +585,21 @@ can_vec_mask_load_store_p (machine_mode mode,
   if (!VECTOR_MODE_P (vmode))
     return false;
 
-  if ((targetm.vectorize.get_mask_mode
-       (GET_MODE_NUNITS (vmode), GET_MODE_SIZE (vmode)).exists (&mask_mode))
+  if (targetm.vectorize.get_mask_mode (vmode).exists (&mask_mode)
       && convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
     return true;
 
-  auto_vector_sizes vector_sizes;
-  targetm.vectorize.autovectorize_vector_sizes (&vector_sizes, true);
-  for (unsigned int i = 0; i < vector_sizes.length (); ++i)
+  auto_vector_modes vector_modes;
+  targetm.vectorize.autovectorize_vector_modes (&vector_modes, true);
+  for (unsigned int i = 0; i < vector_modes.length (); ++i)
     {
-      poly_uint64 cur = vector_sizes[i];
+      poly_uint64 cur = GET_MODE_SIZE (vector_modes[i]);
       poly_uint64 nunits;
       if (!multiple_p (cur, GET_MODE_SIZE (smode), &nunits))
 	continue;
       if (mode_for_vector (smode, nunits).exists (&vmode)
 	  && VECTOR_MODE_P (vmode)
-	  && targetm.vectorize.get_mask_mode (nunits, cur).exists (&mask_mode)
+	  && targetm.vectorize.get_mask_mode (vmode).exists (&mask_mode)
 	  && convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
 	return true;
     }
@@ -698,14 +694,18 @@ lshift_cheap_p (bool speed_p)
   return cheap[speed_p];
 }
 
-/* Return true if optab OP supports at least one mode.  */
+/* Return true if vector conversion optab OP supports at least one mode,
+   given that the second mode is always an integer vector.  */
 
 static bool
-supports_at_least_one_mode_p (optab op)
+supports_vec_convert_optab_p (optab op)
 {
   for (int i = 0; i < NUM_MACHINE_MODES; ++i)
-    if (direct_optab_handler (op, (machine_mode) i) != CODE_FOR_nothing)
-      return true;
+    if (VECTOR_MODE_P ((machine_mode) i))
+      for (int j = MIN_MODE_VECTOR_INT; j < MAX_MODE_VECTOR_INT; ++j)
+	if (convert_optab_handler (op, (machine_mode) i,
+				   (machine_mode) j) != CODE_FOR_nothing)
+	  return true;
 
   return false;
 }
@@ -722,7 +722,7 @@ supports_vec_gather_load_p ()
   this_fn_optabs->supports_vec_gather_load_cached = true;
 
   this_fn_optabs->supports_vec_gather_load
-    = supports_at_least_one_mode_p (gather_load_optab);
+    = supports_vec_convert_optab_p (gather_load_optab);
 
   return this_fn_optabs->supports_vec_gather_load;
 }
@@ -739,7 +739,7 @@ supports_vec_scatter_store_p ()
   this_fn_optabs->supports_vec_scatter_store_cached = true;
 
   this_fn_optabs->supports_vec_scatter_store
-    = supports_at_least_one_mode_p (scatter_store_optab);
+    = supports_vec_convert_optab_p (scatter_store_optab);
 
   return this_fn_optabs->supports_vec_scatter_store;
 }

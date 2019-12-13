@@ -45,19 +45,13 @@ package Impunit is
       --  This is not a predefined unit, so no checks are needed
 
       Ada_95_Unit,
-      --  This unit is defined in the Ada 95 RM, and can be freely with'ed in
-      --  both Ada 95 mode and Ada 05 mode. Note that in Ada 83 mode, no child
-      --  units are allowed, so you can't even name such a unit.
-
       Ada_2005_Unit,
-      --  This unit is defined in the Ada 2005 RM. Withing this unit from an
-      --  Ada 95 mode program will generate a warning (again, strictly speaking
-      --  this should be an error, but that seems over-strenuous).
-
-      Ada_2012_Unit);
-      --  This unit is defined in the Ada 2012 RM. Withing this unit from an
-      --  Ada 95 or 2005 mode program will generate a warning (again, strictly
-      --  speaking this should be an error, but that seems over-strenuous).
+      Ada_2012_Unit,
+      Ada_202X_Unit);
+      --  This unit is defined in the Ada RM of the given year. This is used to
+      --  give a warning when withing a unit from a wrong mode (e.g. withing an
+      --  Ada_2012_Unit when compiling with -gnat95). Note that in Ada 83 mode,
+      --  no child units are allowed, so you can't even name such a unit.
 
    function Get_Kind_Of_Unit (U : Unit_Number_Type) return Kind_Of_Unit;
    --  Given the unit number of a unit, this function determines the type

@@ -12,13 +12,13 @@ template<typename T> constexpr fool p1() { return {}; }
 template<typename T> constexpr fool p2() { return {}; }
 
 template<typename T>
-concept Bad = p1<T>() && p2<T>();
+concept Bad = p1<T>() && p2<T>(); // { dg-error "does not have type 'bool'" }
 
 template<typename T> requires Bad<T> void bad(T x) { }
 
 void driver_2()
 {
-  bad(0); // { dg-error "cannot call" }
+  bad(0); // { dg-error "" }
 }
 
 // req6.C
@@ -26,14 +26,14 @@ struct X { };
 int operator==(X, X) { return 0; }
 
 template<typename T>
-concept C1 = (X());
+concept C1 = (X()); // { dg-error "does not have type 'bool'" }
 
 template<typename T>
-concept C2 = (X() == X());
+concept C2 = (X() == X()); // { dg-error "does not have type 'bool'" }
 
 template<typename T>
   requires C1<T>
-void h1(T) { } 
+void h1(T) { }
 
 template<typename T>
   requires C2<T>
@@ -41,13 +41,13 @@ void h2(T);
 
 void driver_3()
 {
-  h1(0); // { dg-error "cannot call" }
-  h2(0); // { dg-error "cannot call" } 
+  h1(0); // { dg-error "" }
+  h2(0); // { dg-error "" }
 }
 
 // req7.C
 template<bool B>
-struct boolean_constant 
+struct boolean_constant
 {
   constexpr operator bool() const { return B; }
 };

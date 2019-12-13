@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #define IN_TARGET_CODE 1
 
 #include "config.h"
+#define INCLUDE_STRING
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -194,6 +195,7 @@ static bool m68k_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool m68k_modes_tieable_p (machine_mode, machine_mode);
 static machine_mode m68k_promote_function_mode (const_tree, machine_mode,
 						int *, const_tree, int);
+static void m68k_asm_final_postscan_insn (FILE *, rtx_insn *insn, rtx [], int);
 
 /* Initialize the GCC target structure.  */
 
@@ -354,6 +356,9 @@ static machine_mode m68k_promote_function_mode (const_tree, machine_mode,
 
 #undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
+#undef TARGET_ASM_FINAL_POSTSCAN_INSN
+#define TARGET_ASM_FINAL_POSTSCAN_INSN m68k_asm_final_postscan_insn
 
 static const struct attribute_spec m68k_attribute_table[] =
 {
@@ -1356,40 +1361,6 @@ m68k_expand_epilogue (bool sibcall_p)
     emit_jump_insn (ret_rtx);
 }
 
-/* Return true if X is a valid comparison operator for the dbcc 
-   instruction.  
-
-   Note it rejects floating point comparison operators.
-   (In the future we could use Fdbcc).
-
-   It also rejects some comparisons when CC_NO_OVERFLOW is set.  */
-   
-int
-valid_dbcc_comparison_p_2 (rtx x, machine_mode mode ATTRIBUTE_UNUSED)
-{
-  switch (GET_CODE (x))
-    {
-      case EQ: case NE: case GTU: case LTU:
-      case GEU: case LEU:
-        return 1;
-
-      /* Reject some when CC_NO_OVERFLOW is set.  This may be over
-         conservative */
-      case GT: case LT: case GE: case LE:
-        return ! (cc_prev_status.flags & CC_NO_OVERFLOW);
-      default:
-        return 0;
-    }
-}
-
-/* Return nonzero if flags are currently in the 68881 flag register.  */
-int
-flags_in_68881 (void)
-{
-  /* We could add support for these in the future */
-  return cc_status.flags & CC_IN_68881;
-}
-
 /* Return true if PARALLEL contains register REGNO.  */
 static bool
 m68k_reg_present_p (const_rtx parallel, unsigned int regno)
@@ -1580,18 +1551,186 @@ m68k_legitimize_address (rtx x, rtx oldx, machine_mode mode)
 
   return x;
 }
+
+/* For eliding comparisons, we remember how the flags were set.
+   FLAGS_COMPARE_OP0 and FLAGS_COMPARE_OP1 are remembered for a direct
+   comparison, they take priority.  FLAGS_OPERAND1 and FLAGS_OPERAND2
+   are used in more cases, they are a fallback for comparisons against
+   zero after a move or arithmetic insn.
+   FLAGS_VALID is set to FLAGS_VALID_NO if we should not use any of
+   these values.  */
 
- 
-/* Output a dbCC; jCC sequence.  Note we do not handle the 
-   floating point version of this sequence (Fdbcc).  We also
-   do not handle alternative conditions when CC_NO_OVERFLOW is
-   set.  It is assumed that valid_dbcc_comparison_p and flags_in_68881 will
-   kick those out before we get here.  */
+static rtx flags_compare_op0, flags_compare_op1;
+static rtx flags_operand1, flags_operand2;
+static attr_flags_valid flags_valid = FLAGS_VALID_NO;
+
+/* Return a code other than UNKNOWN if we can elide a CODE comparison of
+   OP0 with OP1.  */
+
+rtx_code
+m68k_find_flags_value (rtx op0, rtx op1, rtx_code code)
+{
+  if (flags_compare_op0 != NULL_RTX)
+    {
+      if (rtx_equal_p (op0, flags_compare_op0)
+	  && rtx_equal_p (op1, flags_compare_op1))
+	return code;
+      if (rtx_equal_p (op0, flags_compare_op1)
+	  && rtx_equal_p (op1, flags_compare_op0))
+	return swap_condition (code);
+      return UNKNOWN;
+    }
+
+  machine_mode mode = GET_MODE (op0);
+  if (op1 != CONST0_RTX (mode))
+    return UNKNOWN;
+  /* Comparisons against 0 with these two should have been optimized out.  */
+  gcc_assert (code != LTU && code != GEU);
+  if (flags_valid == FLAGS_VALID_NOOV && (code == GT || code == LE))
+    return UNKNOWN;
+  if (rtx_equal_p (flags_operand1, op0) || rtx_equal_p (flags_operand2, op0))
+    return (FLOAT_MODE_P (mode) ? code
+	    : code == GE ? PLUS : code == LT ? MINUS : code);
+  /* See if we are testing whether the high part of a DImode value is
+     positive or negative and we have the full value as a remembered
+     operand.  */
+  if (code != GE && code != LT)
+    return UNKNOWN;
+  if (mode == SImode
+      && flags_operand1 != NULL_RTX && GET_MODE (flags_operand1) == DImode
+      && REG_P (flags_operand1) && REG_P (op0)
+      && hard_regno_nregs (REGNO (flags_operand1), DImode) == 2
+      && REGNO (flags_operand1) == REGNO (op0))
+    return code == GE ? PLUS : MINUS;
+  if (mode == SImode
+      && flags_operand2 != NULL_RTX && GET_MODE (flags_operand2) == DImode
+      && REG_P (flags_operand2) && REG_P (op0)
+      && hard_regno_nregs (REGNO (flags_operand2), DImode) == 2
+      && REGNO (flags_operand2) == REGNO (op0))
+    return code == GE ? PLUS : MINUS;
+  return UNKNOWN;
+}
+
+/* Called through CC_STATUS_INIT, which is invoked by final whenever a
+   label is encountered.  */
 
 void
-output_dbcc_and_branch (rtx *operands)
+m68k_init_cc ()
 {
-  switch (GET_CODE (operands[3]))
+  flags_compare_op0 = flags_compare_op1 = NULL_RTX;
+  flags_operand1 = flags_operand2 = NULL_RTX;
+  flags_valid = FLAGS_VALID_NO;
+}
+
+/* Update flags for a move operation with OPERANDS.  Called for move
+   operations where attr_flags_valid returns "set".  */
+
+static void
+handle_flags_for_move (rtx *operands)
+{
+  flags_compare_op0 = flags_compare_op1 = NULL_RTX;
+  if (!ADDRESS_REG_P (operands[0]))
+    {
+      flags_valid = FLAGS_VALID_MOVE;
+      flags_operand1 = side_effects_p (operands[0]) ? NULL_RTX : operands[0];
+      if (side_effects_p (operands[1])
+	  /* ??? For mem->mem moves, this can discard the source as a
+	     valid compare operand.  If you assume aligned moves, this
+	     is unnecessary, but in theory, we could have an unaligned
+	     move overwriting parts of its source.  */
+	  || modified_in_p (operands[1], current_output_insn))
+	flags_operand2 = NULL_RTX;
+      else
+	flags_operand2 = operands[1];
+      return;
+    }
+  if (flags_operand1 != NULL_RTX
+      && modified_in_p (flags_operand1, current_output_insn))
+    flags_operand1 = NULL_RTX;
+  if (flags_operand2 != NULL_RTX
+      && modified_in_p (flags_operand2, current_output_insn))
+    flags_operand2 = NULL_RTX;
+}
+
+/* Process INSN to remember flag operands if possible.  */
+
+static void
+m68k_asm_final_postscan_insn (FILE *, rtx_insn *insn, rtx [], int)
+{
+  enum attr_flags_valid v = get_attr_flags_valid (insn);
+  if (v == FLAGS_VALID_SET)
+    return;
+  /* Comparisons use FLAGS_VALID_SET, so we can be sure we need to clear these
+     now.  */
+  flags_compare_op0 = flags_compare_op1 = NULL_RTX;
+
+  if (v == FLAGS_VALID_NO)
+    {
+      flags_operand1 = flags_operand2 = NULL_RTX;
+      return;
+    }
+  else if (v == FLAGS_VALID_UNCHANGED)
+    {
+      if (flags_operand1 != NULL_RTX && modified_in_p (flags_operand1, insn))
+	flags_operand1 = NULL_RTX;
+      if (flags_operand2 != NULL_RTX && modified_in_p (flags_operand2, insn))
+	flags_operand2 = NULL_RTX;
+      return;
+    }
+
+  flags_valid = v;
+  rtx set = single_set (insn);
+  rtx dest = SET_DEST (set);
+  rtx src = SET_SRC (set);
+  if (side_effects_p (dest))
+      dest = NULL_RTX;
+
+  switch (v)
+    {
+    case FLAGS_VALID_YES:
+    case FLAGS_VALID_NOOV:
+      flags_operand1 = dest;
+      flags_operand2 = NULL_RTX;
+      break;
+    case FLAGS_VALID_MOVE:
+      /* fmoves to memory or data registers do not set the condition
+	 codes.  Normal moves _do_ set the condition codes, but not in
+	 a way that is appropriate for comparison with 0, because -0.0
+	 would be treated as a negative nonzero number.  Note that it
+	 isn't appropriate to conditionalize this restriction on
+	 HONOR_SIGNED_ZEROS because that macro merely indicates whether
+	 we care about the difference between -0.0 and +0.0.  */
+      if (dest != NULL_RTX
+	  && !FP_REG_P (dest)
+	  && (FP_REG_P (src)
+	      || GET_CODE (src) == FIX
+	      || FLOAT_MODE_P (GET_MODE (dest))))
+	flags_operand1 = flags_operand2 = NULL_RTX;
+      else
+	{
+	  flags_operand1 = dest;
+	  if (GET_MODE (src) != VOIDmode && !side_effects_p (src)
+	      && !modified_in_p (src, insn))
+	    flags_operand2 = src;
+	  else
+	    flags_operand2 = NULL_RTX;
+	}
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  return;
+}
+
+/* Output a dbCC; jCC sequence.  Note we do not handle the 
+   floating point version of this sequence (Fdbcc).
+   OPERANDS are as in the two peepholes.  CODE is the code
+   returned by m68k_output_branch_<mode>.  */
+
+void
+output_dbcc_and_branch (rtx *operands, rtx_code code)
+{
+  switch (code)
     {
       case EQ:
 	output_asm_insn ("dbeq %0,%l1\n\tjeq %l2", operands);
@@ -1631,6 +1770,14 @@ output_dbcc_and_branch (rtx *operands)
 
       case LEU:
 	output_asm_insn ("dbls %0,%l1\n\tjls %l2", operands);
+	break;
+
+      case PLUS:
+	output_asm_insn ("dbpl %0,%l1\n\tjle %l2", operands);
+	break;
+
+      case MINUS:
+	output_asm_insn ("dbmi %0,%l1\n\tjle %l2", operands);
 	break;
 
       default:
@@ -1790,11 +1937,12 @@ output_scc_di (rtx op, rtx operand1, rtx operand2, rtx dest)
   return "";
 }
 
-const char *
-output_btst (rtx *operands, rtx countop, rtx dataop, rtx_insn *insn, int signpos)
+rtx_code
+m68k_output_btst (rtx countop, rtx dataop, rtx_code code, int signpos)
 {
-  operands[0] = countop;
-  operands[1] = dataop;
+  rtx ops[2];
+  ops[0] = countop;
+  ops[1] = dataop;
 
   if (GET_CODE (countop) == CONST_INT)
     {
@@ -1805,40 +1953,41 @@ output_btst (rtx *operands, rtx countop, rtx dataop, rtx_insn *insn, int signpos
 	{
 	  int offset = (count & ~signpos) / 8;
 	  count = count & signpos;
-	  operands[1] = dataop = adjust_address (dataop, QImode, offset);
+	  ops[1] = dataop = adjust_address (dataop, QImode, offset);
 	}
-      if (count == signpos)
-	cc_status.flags = CC_NOT_POSITIVE | CC_Z_IN_NOT_N;
-      else
-	cc_status.flags = CC_NOT_NEGATIVE | CC_Z_IN_NOT_N;
 
-      /* These three statements used to use next_insns_test_no...
-	 but it appears that this should do the same job.  */
-      if (count == 31
-	  && next_insn_tests_no_inequality (insn))
-	return "tst%.l %1";
-      if (count == 15
-	  && next_insn_tests_no_inequality (insn))
-	return "tst%.w %1";
-      if (count == 7
-	  && next_insn_tests_no_inequality (insn))
-	return "tst%.b %1";
+      if (code == EQ || code == NE)
+	{
+	  if (count == 31)
+	    {
+	      output_asm_insn ("tst%.l %1", ops);
+	      return code == EQ ? PLUS : MINUS;
+	    }
+	  if (count == 15)
+	    {
+	      output_asm_insn ("tst%.w %1", ops);
+	      return code == EQ ? PLUS : MINUS;
+	    }
+	  if (count == 7)
+	    {
+	      output_asm_insn ("tst%.b %1", ops);
+	      return code == EQ ? PLUS : MINUS;
+	    }
+	}
       /* Try to use `movew to ccr' followed by the appropriate branch insn.
          On some m68k variants unfortunately that's slower than btst.
          On 68000 and higher, that should also work for all HImode operands. */
       if (TUNE_CPU32 || TARGET_COLDFIRE || optimize_size)
 	{
-	  if (count == 3 && DATA_REG_P (operands[1])
-	      && next_insn_tests_no_inequality (insn))
+	  if (count == 3 && DATA_REG_P (ops[1]) && (code == EQ || code == NE))
 	    {
-	    cc_status.flags = CC_NOT_NEGATIVE | CC_Z_IN_NOT_N | CC_NO_OVERFLOW;
-	    return "move%.w %1,%%ccr";
+	      output_asm_insn ("move%.w %1,%%ccr", ops);
+	      return code == EQ ? PLUS : MINUS;
 	    }
-	  if (count == 2 && DATA_REG_P (operands[1])
-	      && next_insn_tests_no_inequality (insn))
+	  if (count == 2 && DATA_REG_P (ops[1]) && (code == EQ || code == NE))
 	    {
-	    cc_status.flags = CC_NOT_NEGATIVE | CC_INVERTED | CC_NO_OVERFLOW;
-	    return "move%.w %1,%%ccr";
+	      output_asm_insn ("move%.w %1,%%ccr", ops);
+	      return code == EQ ? NE : EQ;
 	    }
 	  /* count == 1 followed by bvc/bvs and
 	     count == 0 followed by bcc/bcs are also possible, but need
@@ -1847,7 +1996,28 @@ output_btst (rtx *operands, rtx countop, rtx dataop, rtx_insn *insn, int signpos
 
       cc_status.flags = CC_NOT_NEGATIVE;
     }
-  return "btst %0,%1";
+  output_asm_insn ("btst %0,%1", ops);
+  return code;
+}
+
+/* Output a bftst instruction for a zero_extract with ZXOP0, ZXOP1 and ZXOP2
+   operands.  CODE is the code of the comparison, and we return the code to
+   be actually used in the jump.  */
+
+rtx_code
+m68k_output_bftst (rtx zxop0, rtx zxop1, rtx zxop2, rtx_code code)
+{
+  if (zxop1 == const1_rtx && GET_CODE (zxop2) == CONST_INT)
+    {
+      int width = GET_CODE (zxop0) == REG ? 31 : 7;
+      /* Pass 1000 as SIGNPOS argument so that btst will
+	 not think we are testing the sign bit for an `and'
+	 and assume that nonzero implies a negative result.  */
+      return m68k_output_btst (GEN_INT (width - INTVAL (zxop2)), zxop0, code, 1000);
+    }
+  rtx ops[3] = { zxop0, zxop1, zxop2 };
+  output_asm_insn ("bftst %0{%b2:%b1}", ops);
+  return code;
 }
 
 /* Return true if X is a legitimate base register.  STRICT_P says
@@ -2839,7 +3009,8 @@ m68k_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case CONST_DOUBLE:
       /* Make 0.0 cheaper than other floating constants to
          encourage creating tstsf and tstdf insns.  */
-      if (outer_code == COMPARE
+      if ((GET_RTX_CLASS (outer_code) == RTX_COMPARE
+	   || GET_RTX_CLASS (outer_code) == RTX_COMM_COMPARE)
           && (x == CONST0_RTX (SFmode) || x == CONST0_RTX (DFmode)))
 	*total = 4;
       else
@@ -2953,7 +3124,8 @@ m68k_rtx_costs (rtx x, machine_mode mode, int outer_code,
       return true;
 
     case ZERO_EXTRACT:
-      if (outer_code == COMPARE)
+      if (GET_RTX_CLASS (outer_code) == RTX_COMPARE
+	  || GET_RTX_CLASS (outer_code) == RTX_COMM_COMPARE)
         *total = 0;
       return false;
 
@@ -3056,6 +3228,8 @@ output_move_simode_const (rtx *operands)
 const char *
 output_move_simode (rtx *operands)
 {
+  handle_flags_for_move (operands);
+
   if (GET_CODE (operands[1]) == CONST_INT)
     return output_move_simode_const (operands);
   else if ((GET_CODE (operands[1]) == SYMBOL_REF
@@ -3072,7 +3246,7 @@ output_move_simode (rtx *operands)
 const char *
 output_move_himode (rtx *operands)
 {
- if (GET_CODE (operands[1]) == CONST_INT)
+  if (GET_CODE (operands[1]) == CONST_INT)
     {
       if (operands[1] == const0_rtx
 	  && (DATA_REG_P (operands[0])
@@ -3094,16 +3268,18 @@ output_move_himode (rtx *operands)
 	return "move%.w %1,%0";
     }
   else if (CONSTANT_P (operands[1]))
-    return "move%.l %1,%0";
+    gcc_unreachable ();
   return "move%.w %1,%0";
 }
 
 const char *
 output_move_qimode (rtx *operands)
 {
+  handle_flags_for_move (operands);
+
   /* 68k family always modifies the stack pointer by at least 2, even for
      byte pushes.  The 5200 (ColdFire) does not do this.  */
-  
+
   /* This case is generated by pushqi1 pattern now.  */
   gcc_assert (!(GET_CODE (operands[0]) == MEM
 		&& GET_CODE (XEXP (operands[0], 0)) == PRE_DEC
@@ -3134,11 +3310,15 @@ output_move_qimode (rtx *operands)
   if (operands[1] == const0_rtx && ADDRESS_REG_P (operands[0]))
     return "sub%.l %0,%0";
   if (GET_CODE (operands[1]) != CONST_INT && CONSTANT_P (operands[1]))
-    return "move%.l %1,%0";
+    gcc_unreachable ();
   /* 68k family (including the 5200 ColdFire) does not support byte moves to
      from address registers.  */
   if (ADDRESS_REG_P (operands[0]) || ADDRESS_REG_P (operands[1]))
-    return "move%.w %1,%0";
+    {
+      if (ADDRESS_REG_P (operands[1]))
+	CC_STATUS_INIT;
+      return "move%.w %1,%0";
+    }
   return "move%.b %1,%0";
 }
 
@@ -4136,125 +4316,448 @@ output_addsi3 (rtx *operands)
     }
   return "add%.l %2,%0";
 }
-
-/* Store in cc_status the expressions that the condition codes will
-   describe after execution of an instruction whose pattern is EXP.
-   Do not alter them if the instruction would not alter the cc's.  */
 
-/* On the 68000, all the insns to store in an address register fail to
-   set the cc's.  However, in some cases these instructions can make it
-   possibly invalid to use the saved cc's.  In those cases we clear out
-   some or all of the saved cc's so they won't be used.  */
-
-void
-notice_update_cc (rtx exp, rtx insn)
+/* Emit a comparison between OP0 and OP1.  Return true iff the comparison
+   was reversed.  SC1 is an SImode scratch reg, and SC2 a DImode scratch reg,
+   as needed.  CODE is the code of the comparison, we return it unchanged or
+   swapped, as necessary.  */
+rtx_code
+m68k_output_compare_di (rtx op0, rtx op1, rtx sc1, rtx sc2, rtx_insn *insn,
+			rtx_code code)
 {
-  if (GET_CODE (exp) == SET)
+  rtx ops[4];
+  ops[0] = op0;
+  ops[1] = op1;
+  ops[2] = sc1;
+  ops[3] = sc2;
+  if (op1 == const0_rtx)
     {
-      if (GET_CODE (SET_SRC (exp)) == CALL)
-	CC_STATUS_INIT; 
-      else if (ADDRESS_REG_P (SET_DEST (exp)))
+      if (!REG_P (op0) || ADDRESS_REG_P (op0))
 	{
-	  if (cc_status.value1 && modified_in_p (cc_status.value1, insn))
-	    cc_status.value1 = 0;
-	  if (cc_status.value2 && modified_in_p (cc_status.value2, insn))
-	    cc_status.value2 = 0; 
+	  rtx xoperands[2];
+
+	  xoperands[0] = sc2;
+	  xoperands[1] = op0;
+	  output_move_double (xoperands);
+	  output_asm_insn ("neg%.l %R0\n\tnegx%.l %0", xoperands);
+	  return swap_condition (code);
 	}
-      /* fmoves to memory or data registers do not set the condition
-	 codes.  Normal moves _do_ set the condition codes, but not in
-	 a way that is appropriate for comparison with 0, because -0.0
-	 would be treated as a negative nonzero number.  Note that it
-	 isn't appropriate to conditionalize this restriction on
-	 HONOR_SIGNED_ZEROS because that macro merely indicates whether
-	 we care about the difference between -0.0 and +0.0.  */
-      else if (!FP_REG_P (SET_DEST (exp))
-	       && SET_DEST (exp) != cc0_rtx
-	       && (FP_REG_P (SET_SRC (exp))
-		   || GET_CODE (SET_SRC (exp)) == FIX
-		   || FLOAT_MODE_P (GET_MODE (SET_DEST (exp)))))
-	CC_STATUS_INIT; 
-      /* A pair of move insns doesn't produce a useful overall cc.  */
-      else if (!FP_REG_P (SET_DEST (exp))
-	       && !FP_REG_P (SET_SRC (exp))
-	       && GET_MODE_SIZE (GET_MODE (SET_SRC (exp))) > 4
-	       && (GET_CODE (SET_SRC (exp)) == REG
-		   || GET_CODE (SET_SRC (exp)) == MEM
-		   || GET_CODE (SET_SRC (exp)) == CONST_DOUBLE))
-	CC_STATUS_INIT; 
-      else if (SET_DEST (exp) != pc_rtx)
+      if (find_reg_note (insn, REG_DEAD, op0))
 	{
-	  cc_status.flags = 0;
-	  cc_status.value1 = SET_DEST (exp);
-	  cc_status.value2 = SET_SRC (exp);
+	  output_asm_insn ("neg%.l %R0\n\tnegx%.l %0", ops);
+	  return swap_condition (code);
+	}
+      else
+	{
+	  /* 'sub' clears %1, and also clears the X cc bit.
+	     'tst' sets the Z cc bit according to the low part of the DImode
+	     operand.
+	     'subx %1' (i.e. subx #0) acts as a (non-existent) tstx on the high
+	     part.  */
+	  output_asm_insn ("sub%.l %2,%2\n\ttst%.l %R0\n\tsubx%.l %2,%0", ops);
+	  return code;
 	}
     }
-  else if (GET_CODE (exp) == PARALLEL
-	   && GET_CODE (XVECEXP (exp, 0, 0)) == SET)
-    {
-      rtx dest = SET_DEST (XVECEXP (exp, 0, 0));
-      rtx src  = SET_SRC  (XVECEXP (exp, 0, 0));
 
-      if (ADDRESS_REG_P (dest))
-	CC_STATUS_INIT;
-      else if (dest != pc_rtx)
-	{
-	  cc_status.flags = 0;
-	  cc_status.value1 = dest;
-	  cc_status.value2 = src;
-	}
+  if (rtx_equal_p (sc2, op0))
+    {
+      output_asm_insn ("sub%.l %R1,%R3\n\tsubx%.l %1,%3", ops);
+      return code;
     }
   else
-    CC_STATUS_INIT;
-  if (cc_status.value2 != 0
-      && ADDRESS_REG_P (cc_status.value2)
-      && GET_MODE (cc_status.value2) == QImode)
-    CC_STATUS_INIT;
-  if (cc_status.value2 != 0)
-    switch (GET_CODE (cc_status.value2))
-      {
-      case ASHIFT: case ASHIFTRT: case LSHIFTRT:
-      case ROTATE: case ROTATERT:
-	/* These instructions always clear the overflow bit, and set
-	   the carry to the bit shifted out.  */
-	cc_status.flags |= CC_OVERFLOW_UNUSABLE | CC_NO_CARRY;
-	break;
-
-      case PLUS: case MINUS: case MULT:
-      case DIV: case UDIV: case MOD: case UMOD: case NEG:
-	if (GET_MODE (cc_status.value2) != VOIDmode)
-	  cc_status.flags |= CC_NO_OVERFLOW;
-	break;
-      case ZERO_EXTEND:
-	/* (SET r1 (ZERO_EXTEND r2)) on this machine
-	   ends with a move insn moving r2 in r2's mode.
-	   Thus, the cc's are set for r2.
-	   This can set N bit spuriously.  */
-	cc_status.flags |= CC_NOT_NEGATIVE; 
-
-      default:
-	break;
-      }
-  if (cc_status.value1 && GET_CODE (cc_status.value1) == REG
-      && cc_status.value2
-      && reg_overlap_mentioned_p (cc_status.value1, cc_status.value2))
-    cc_status.value2 = 0;
-  /* Check for PRE_DEC in dest modifying a register used in src.  */
-  if (cc_status.value1 && GET_CODE (cc_status.value1) == MEM
-      && GET_CODE (XEXP (cc_status.value1, 0)) == PRE_DEC
-      && cc_status.value2
-      && reg_overlap_mentioned_p (XEXP (XEXP (cc_status.value1, 0), 0),
-				  cc_status.value2))
-    cc_status.value2 = 0;
-  if (((cc_status.value1 && FP_REG_P (cc_status.value1))
-       || (cc_status.value2 && FP_REG_P (cc_status.value2))))
-    cc_status.flags = CC_IN_68881;
-  if (cc_status.value2 && GET_CODE (cc_status.value2) == COMPARE
-      && GET_MODE_CLASS (GET_MODE (XEXP (cc_status.value2, 0))) == MODE_FLOAT)
     {
-      cc_status.flags = CC_IN_68881;
-      if (!FP_REG_P (XEXP (cc_status.value2, 0))
-	  && FP_REG_P (XEXP (cc_status.value2, 1)))
-	cc_status.flags |= CC_REVERSED;
+      output_asm_insn ("sub%.l %R0,%R3\n\tsubx%.l %0,%3", ops);
+      return swap_condition (code);
+    }
+}
+
+static void
+remember_compare_flags (rtx op0, rtx op1)
+{
+  if (side_effects_p (op0) || side_effects_p (op1))
+    CC_STATUS_INIT;
+  else
+    {
+      flags_compare_op0 = op0;
+      flags_compare_op1 = op1;
+      flags_operand1 = flags_operand2 = NULL_RTX;
+      flags_valid = FLAGS_VALID_SET;
+    }
+}
+
+/* Emit a comparison between OP0 and OP1.  CODE is the code of the
+   comparison.  It is returned, potentially modified if necessary.  */
+rtx_code
+m68k_output_compare_si (rtx op0, rtx op1, rtx_code code)
+{
+  rtx_code tmp = m68k_find_flags_value (op0, op1, code);
+  if (tmp != UNKNOWN)
+    return tmp;
+
+  remember_compare_flags (op0, op1);
+
+  rtx ops[2];
+  ops[0] = op0;
+  ops[1] = op1;
+  if (op1 == const0_rtx && (TARGET_68020 || TARGET_COLDFIRE || !ADDRESS_REG_P (op0)))
+    output_asm_insn ("tst%.l %0", ops);
+  else if (GET_CODE (op0) == MEM && GET_CODE (op1) == MEM)
+    output_asm_insn ("cmpm%.l %1,%0", ops);
+  else if (REG_P (op1)
+      || (!REG_P (op0) && GET_CODE (op0) != MEM))
+    {
+      output_asm_insn ("cmp%.l %d0,%d1", ops);
+      std::swap (flags_compare_op0, flags_compare_op1);
+      return swap_condition (code);
+    }
+  else if (!TARGET_COLDFIRE
+	   && ADDRESS_REG_P (op0)
+	   && GET_CODE (op1) == CONST_INT
+	   && INTVAL (op1) < 0x8000
+	   && INTVAL (op1) >= -0x8000)
+    output_asm_insn ("cmp%.w %1,%0", ops);
+  else
+    output_asm_insn ("cmp%.l %d1,%d0", ops);
+  return code;
+}
+
+/* Emit a comparison between OP0 and OP1.  CODE is the code of the
+   comparison.  It is returned, potentially modified if necessary.  */
+rtx_code
+m68k_output_compare_hi (rtx op0, rtx op1, rtx_code code)
+{
+  rtx_code tmp = m68k_find_flags_value (op0, op1, code);
+  if (tmp != UNKNOWN)
+    return tmp;
+
+  remember_compare_flags (op0, op1);
+
+  rtx ops[2];
+  ops[0] = op0;
+  ops[1] = op1;
+  if (op1 == const0_rtx)
+    output_asm_insn ("tst%.w %d0", ops);
+  else if (GET_CODE (op0) == MEM && GET_CODE (op1) == MEM)
+    output_asm_insn ("cmpm%.w %1,%0", ops);
+  else if ((REG_P (op1) && !ADDRESS_REG_P (op1))
+	   || (!REG_P (op0) && GET_CODE (op0) != MEM))
+    {
+      output_asm_insn ("cmp%.w %d0,%d1", ops);
+      std::swap (flags_compare_op0, flags_compare_op1);
+      return swap_condition (code);
+    }
+  else
+    output_asm_insn ("cmp%.w %d1,%d0", ops);
+  return code;
+}
+
+/* Emit a comparison between OP0 and OP1.  CODE is the code of the
+   comparison.  It is returned, potentially modified if necessary.  */
+rtx_code
+m68k_output_compare_qi (rtx op0, rtx op1, rtx_code code)
+{
+  rtx_code tmp = m68k_find_flags_value (op0, op1, code);
+  if (tmp != UNKNOWN)
+    return tmp;
+
+  remember_compare_flags (op0, op1);
+
+  rtx ops[2];
+  ops[0] = op0;
+  ops[1] = op1;
+  if (op1 == const0_rtx)
+    output_asm_insn ("tst%.b %d0", ops);
+  else if (GET_CODE (op0) == MEM && GET_CODE (op1) == MEM)
+    output_asm_insn ("cmpm%.b %1,%0", ops);
+  else if (REG_P (op1) || (!REG_P (op0) && GET_CODE (op0) != MEM))
+    {
+      output_asm_insn ("cmp%.b %d0,%d1", ops);
+      std::swap (flags_compare_op0, flags_compare_op1);
+      return swap_condition (code);
+    }
+  else
+    output_asm_insn ("cmp%.b %d1,%d0", ops);
+  return code;
+}
+
+/* Emit a comparison between OP0 and OP1.  CODE is the code of the
+   comparison.  It is returned, potentially modified if necessary.  */
+rtx_code
+m68k_output_compare_fp (rtx op0, rtx op1, rtx_code code)
+{
+  rtx_code tmp = m68k_find_flags_value (op0, op1, code);
+  if (tmp != UNKNOWN)
+    return tmp;
+
+  rtx ops[2];
+  ops[0] = op0;
+  ops[1] = op1;
+
+  remember_compare_flags (op0, op1);
+
+  machine_mode mode = GET_MODE (op0);
+  std::string prec = mode == SFmode ? "s" : mode == DFmode ? "d" : "x";
+
+  if (op1 == CONST0_RTX (GET_MODE (op0)))
+    {
+      if (FP_REG_P (op0))
+	{
+	  if (TARGET_COLDFIRE_FPU)
+	    output_asm_insn ("ftst%.d %0", ops);
+	  else
+	    output_asm_insn ("ftst%.x %0", ops);
+	}
+      else
+	output_asm_insn (("ftst%." + prec + " %0").c_str (), ops);
+      return code;
+    }
+
+  switch (which_alternative)
+    {
+    case 0:
+      if (TARGET_COLDFIRE_FPU)
+	output_asm_insn ("fcmp%.d %1,%0", ops);
+      else
+	output_asm_insn ("fcmp%.x %1,%0", ops);
+      break;
+    case 1:
+      output_asm_insn (("fcmp%." + prec + " %f1,%0").c_str (), ops);
+      break;
+    case 2:
+      output_asm_insn (("fcmp%." + prec + " %0,%f1").c_str (), ops);
+      std::swap (flags_compare_op0, flags_compare_op1);
+      return swap_condition (code);
+    case 3:
+      /* This is the ftst case, handled earlier.  */
+      gcc_unreachable ();
+    }
+  return code;
+}
+
+/* Return an output template for a branch with CODE.  */
+const char *
+m68k_output_branch_integer (rtx_code code)
+{
+  switch (code)
+    {
+    case EQ:
+      return "jeq %l3";
+    case NE:
+      return "jne %l3";
+    case GT:
+      return "jgt %l3";
+    case GTU:
+      return "jhi %l3";
+    case LT:
+      return "jlt %l3";
+    case LTU:
+      return "jcs %l3";
+    case GE:
+      return "jge %l3";
+    case GEU:
+      return "jcc %l3";
+    case LE:
+      return "jle %l3";
+    case LEU:
+      return "jls %l3";
+    case PLUS:
+      return "jpl %l3";
+    case MINUS:
+      return "jmi %l3";
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Return an output template for a reversed branch with CODE.  */
+const char *
+m68k_output_branch_integer_rev (rtx_code code)
+{
+  switch (code)
+    {
+    case EQ:
+      return "jne %l3";
+    case NE:
+      return "jeq %l3";
+    case GT:
+      return "jle %l3";
+    case GTU:
+      return "jls %l3";
+    case LT:
+      return "jge %l3";
+    case LTU:
+      return "jcc %l3";
+    case GE:
+      return "jlt %l3";
+    case GEU:
+      return "jcs %l3";
+    case LE:
+      return "jgt %l3";
+    case LEU:
+      return "jhi %l3";
+    case PLUS:
+      return "jmi %l3";
+    case MINUS:
+      return "jpl %l3";
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Return an output template for a scc instruction with CODE.  */
+const char *
+m68k_output_scc (rtx_code code)
+{
+  switch (code)
+    {
+    case EQ:
+      return "seq %0";
+    case NE:
+      return "sne %0";
+    case GT:
+      return "sgt %0";
+    case GTU:
+      return "shi %0";
+    case LT:
+      return "slt %0";
+    case LTU:
+      return "scs %0";
+    case GE:
+      return "sge %0";
+    case GEU:
+      return "scc %0";
+    case LE:
+      return "sle %0";
+    case LEU:
+      return "sls %0";
+    case PLUS:
+      return "spl %0";
+    case MINUS:
+      return "smi %0";
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Return an output template for a floating point branch
+   instruction with CODE.  */
+const char *
+m68k_output_branch_float (rtx_code code)
+{
+  switch (code)
+    {
+    case EQ:
+      return "fjeq %l3";
+    case NE:
+      return "fjne %l3";
+    case GT:
+      return "fjgt %l3";
+    case LT:
+      return "fjlt %l3";
+    case GE:
+      return "fjge %l3";
+    case LE:
+      return "fjle %l3";
+    case ORDERED:
+      return "fjor %l3";
+    case UNORDERED:
+      return "fjun %l3";
+    case UNEQ:
+      return "fjueq %l3";
+    case UNGE:
+      return "fjuge %l3";
+    case UNGT:
+      return "fjugt %l3";
+    case UNLE:
+      return "fjule %l3";
+    case UNLT:
+      return "fjult %l3";
+    case LTGT:
+      return "fjogl %l3";
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Return an output template for a reversed floating point branch
+   instruction with CODE.  */
+const char *
+m68k_output_branch_float_rev (rtx_code code)
+{
+  switch (code)
+    {
+    case EQ:
+      return "fjne %l3";
+    case NE:
+      return "fjeq %l3";
+    case GT:
+      return "fjngt %l3";
+    case LT:
+      return "fjnlt %l3";
+    case GE:
+      return "fjnge %l3";
+    case LE:
+      return "fjnle %l3";
+    case ORDERED:
+      return "fjun %l3";
+    case UNORDERED:
+      return "fjor %l3";
+    case UNEQ:
+      return "fjogl %l3";
+    case UNGE:
+      return "fjolt %l3";
+    case UNGT:
+      return "fjole %l3";
+    case UNLE:
+      return "fjogt %l3";
+    case UNLT:
+      return "fjoge %l3";
+    case LTGT:
+      return "fjueq %l3";
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Return an output template for a floating point scc
+   instruction with CODE.  */
+const char *
+m68k_output_scc_float (rtx_code code)
+{
+  switch (code)
+    {
+    case EQ:
+      return "fseq %0";
+    case NE:
+      return "fsne %0";
+    case GT:
+      return "fsgt %0";
+    case GTU:
+      return "fshi %0";
+    case LT:
+      return "fslt %0";
+    case GE:
+      return "fsge %0";
+    case LE:
+      return "fsle %0";
+    case ORDERED:
+      return "fsor %0";
+    case UNORDERED:
+      return "fsun %0";
+    case UNEQ:
+      return "fsueq %0";
+    case UNGE:
+      return "fsuge %0";
+    case UNGT:
+      return "fsugt %0";
+    case UNLE:
+      return "fsule %0";
+    case UNLT:
+      return "fsult %0";
+    case LTGT:
+      return "fsogl %0";
+    default:
+      gcc_unreachable ();
     }
 }
 
@@ -4932,6 +5435,7 @@ const char *
 output_andsi3 (rtx *operands)
 {
   int logval;
+  CC_STATUS_INIT;
   if (GET_CODE (operands[2]) == CONST_INT
       && (INTVAL (operands[2]) | 0xffff) == -1
       && (DATA_REG_P (operands[0])
@@ -4941,8 +5445,6 @@ output_andsi3 (rtx *operands)
       if (GET_CODE (operands[0]) != REG)
         operands[0] = adjust_address (operands[0], HImode, 2);
       operands[2] = GEN_INT (INTVAL (operands[2]) & 0xffff);
-      /* Do not delete a following tstl %0 insn; that would be incorrect.  */
-      CC_STATUS_INIT;
       if (operands[2] == const0_rtx)
         return "clr%.w %0";
       return "and%.w %2,%0";
@@ -4959,10 +5461,13 @@ output_andsi3 (rtx *operands)
 	  operands[0] = adjust_address (operands[0], SImode, 3 - (logval / 8));
 	  operands[1] = GEN_INT (logval % 8);
         }
-      /* This does not set condition codes in a standard way.  */
-      CC_STATUS_INIT;
       return "bclr %1,%0";
     }
+  /* Only a standard logical operation on the whole word sets the
+     condition codes in a way we can use.  */
+  if (!side_effects_p (operands[0]))
+    flags_operand1 = operands[0];
+  flags_valid = FLAGS_VALID_YES;
   return "and%.l %2,%0";
 }
 
@@ -4970,6 +5475,7 @@ const char *
 output_iorsi3 (rtx *operands)
 {
   register int logval;
+  CC_STATUS_INIT;
   if (GET_CODE (operands[2]) == CONST_INT
       && INTVAL (operands[2]) >> 16 == 0
       && (DATA_REG_P (operands[0])
@@ -4978,8 +5484,6 @@ output_iorsi3 (rtx *operands)
     {
       if (GET_CODE (operands[0]) != REG)
         operands[0] = adjust_address (operands[0], HImode, 2);
-      /* Do not delete a following tstl %0 insn; that would be incorrect.  */
-      CC_STATUS_INIT;
       if (INTVAL (operands[2]) == 0xffff)
 	return "mov%.w %2,%0";
       return "or%.w %2,%0";
@@ -4996,9 +5500,13 @@ output_iorsi3 (rtx *operands)
 	  operands[0] = adjust_address (operands[0], SImode, 3 - (logval / 8));
 	  operands[1] = GEN_INT (logval % 8);
 	}
-      CC_STATUS_INIT;
       return "bset %1,%0";
     }
+  /* Only a standard logical operation on the whole word sets the
+     condition codes in a way we can use.  */
+  if (!side_effects_p (operands[0]))
+    flags_operand1 = operands[0];
+  flags_valid = FLAGS_VALID_YES;
   return "or%.l %2,%0";
 }
 
@@ -5006,6 +5514,7 @@ const char *
 output_xorsi3 (rtx *operands)
 {
   register int logval;
+  CC_STATUS_INIT;
   if (GET_CODE (operands[2]) == CONST_INT
       && INTVAL (operands[2]) >> 16 == 0
       && (offsettable_memref_p (operands[0]) || DATA_REG_P (operands[0]))
@@ -5013,8 +5522,6 @@ output_xorsi3 (rtx *operands)
     {
       if (! DATA_REG_P (operands[0]))
 	operands[0] = adjust_address (operands[0], HImode, 2);
-      /* Do not delete a following tstl %0 insn; that would be incorrect.  */
-      CC_STATUS_INIT;
       if (INTVAL (operands[2]) == 0xffff)
 	return "not%.w %0";
       return "eor%.w %2,%0";
@@ -5031,9 +5538,13 @@ output_xorsi3 (rtx *operands)
 	  operands[0] = adjust_address (operands[0], SImode, 3 - (logval / 8));
 	  operands[1] = GEN_INT (logval % 8);
 	}
-      CC_STATUS_INIT;
       return "bchg %1,%0";
     }
+  /* Only a standard logical operation on the whole word sets the
+     condition codes in a way we can use.  */
+  if (!side_effects_p (operands[0]))
+    flags_operand1 = operands[0];
+  flags_valid = FLAGS_VALID_YES;
   return "eor%.l %2,%0";
 }
 

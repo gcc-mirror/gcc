@@ -517,7 +517,7 @@ d_growable_string_callback_adapter (const char *, size_t, void *);
 
 static void
 d_print_init (struct d_print_info *, demangle_callbackref, void *,
-	      const struct demangle_component *);
+	      struct demangle_component *);
 
 static inline void d_print_error (struct d_print_info *);
 
@@ -864,6 +864,7 @@ cplus_demangle_fill_name (struct demangle_component *p, const char *s, int len)
   if (p == NULL || s == NULL || len <= 0)
     return 0;
   p->d_printing = 0;
+  p->d_counting = 0;
   p->type = DEMANGLE_COMPONENT_NAME;
   p->u.s_name.s = s;
   p->u.s_name.len = len;
@@ -880,6 +881,7 @@ cplus_demangle_fill_extended_operator (struct demangle_component *p, int args,
   if (p == NULL || args < 0 || name == NULL)
     return 0;
   p->d_printing = 0;
+  p->d_counting = 0;
   p->type = DEMANGLE_COMPONENT_EXTENDED_OPERATOR;
   p->u.s_extended_operator.args = args;
   p->u.s_extended_operator.name = name;
@@ -900,6 +902,7 @@ cplus_demangle_fill_ctor (struct demangle_component *p,
       || (int) kind > gnu_v3_object_ctor_group)
     return 0;
   p->d_printing = 0;
+  p->d_counting = 0;
   p->type = DEMANGLE_COMPONENT_CTOR;
   p->u.s_ctor.kind = kind;
   p->u.s_ctor.name = name;
@@ -920,6 +923,7 @@ cplus_demangle_fill_dtor (struct demangle_component *p,
       || (int) kind > gnu_v3_object_dtor_group)
     return 0;
   p->d_printing = 0;
+  p->d_counting = 0;
   p->type = DEMANGLE_COMPONENT_DTOR;
   p->u.s_dtor.kind = kind;
   p->u.s_dtor.name = name;
@@ -937,6 +941,7 @@ d_make_empty (struct d_info *di)
     return NULL;
   p = &di->comps[di->next_comp];
   p->d_printing = 0;
+  p->d_counting = 0;
   ++di->next_comp;
   return p;
 }
@@ -1717,7 +1722,7 @@ d_number (struct d_info *di)
 	}
       if (ret > ((INT_MAX - (peek - '0')) / 10))
         return -1;
-      ret = ret * 10 + peek - '0';
+      ret = ret * 10 + (peek - '0');
       d_advance (di, 1);
       peek = d_peek_char (di);
     }
@@ -3577,6 +3582,17 @@ d_expr_primary (struct d_info *di)
 	  && type->u.s_builtin.type->print != D_PRINT_DEFAULT)
 	di->expansion -= type->u.s_builtin.type->len;
 
+      if (type->type == DEMANGLE_COMPONENT_BUILTIN_TYPE
+	  && strcmp (type->u.s_builtin.type->name,
+		     cplus_demangle_builtin_types[33].name) == 0)
+	{
+	  if (d_peek_char (di) == 'E')
+	    {
+	      d_advance (di, 1);
+	      return type;
+	    }
+	}
+
       /* Rather than try to interpret the literal value, we just
 	 collect it as a string.  Note that it's possible to have a
 	 floating point literal here.  The ABI specifies that the
@@ -4068,10 +4084,12 @@ d_growable_string_callback_adapter (const char *s, size_t l, void *opaque)
 
 static void
 d_count_templates_scopes (struct d_print_info *dpi,
-			  const struct demangle_component *dc)
+			  struct demangle_component *dc)
 {
-  if (dc == NULL)
+  if (dc == NULL || dc->d_counting > 1 || dpi->recursion > MAX_RECURSION_COUNT)
     return;
+
+  ++ dc->d_counting;
 
   switch (dc->type)
     {
@@ -4202,7 +4220,7 @@ d_count_templates_scopes (struct d_print_info *dpi,
 
 static void
 d_print_init (struct d_print_info *dpi, demangle_callbackref callback,
-	      void *opaque, const struct demangle_component *dc)
+	      void *opaque, struct demangle_component *dc)
 {
   dpi->len = 0;
   dpi->last_char = '\0';
@@ -5977,10 +5995,10 @@ d_print_mod (struct d_print_info *dpi, int options,
       d_append_string (dpi, "&&");
       return;
     case DEMANGLE_COMPONENT_COMPLEX:
-      d_append_string (dpi, "complex ");
+      d_append_string (dpi, " _Complex");
       return;
     case DEMANGLE_COMPONENT_IMAGINARY:
-      d_append_string (dpi, "imaginary ");
+      d_append_string (dpi, " _Imaginary");
       return;
     case DEMANGLE_COMPONENT_PTRMEM_TYPE:
       if (d_last_char (dpi) != '(')

@@ -240,6 +240,9 @@ case ${host} in
   aarch64-*-*)
     GOARCH=arm64
     ;;
+  aarch64_be-*-*)
+    GOARCH=arm64be
+    ;;
   arm*-*-* | strongarm*-*-* | ep9312*-*-* | xscale-*-*)
     GOARCH=arm
     case ${host} in
@@ -877,7 +880,7 @@ else
   multilib_arg=
 fi
 
-AC_CONFIG_FILES(Makefile testsuite/Makefile)
+AC_CONFIG_FILES(Makefile testsuite/Makefile testsuite/libgo-test-support.exp)
 
 AC_CONFIG_COMMANDS([default],
 [if test -n "$CONFIG_FILES"; then

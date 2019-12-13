@@ -10,11 +10,11 @@ struct A { };
 int main()
 {
   const_cast<int&>(lval<int>());
-  const_cast<int&>(xval<int>());   // { dg-error "" }
-  const_cast<int&>(prval<int>());  // { dg-error "" }
+  const_cast<int&>(xval<int>());   // { dg-error "3:invalid .const_cast. of an rvalue" }
+  const_cast<int&>(prval<int>());  // { dg-error "3:invalid .const_cast. of an rvalue" }
   const_cast<int&&>(lval<int>());
   const_cast<int&&>(xval<int>());
-  const_cast<int&&>(prval<int>()); // { dg-error "" }
+  const_cast<int&&>(prval<int>()); // { dg-error "3:invalid .const_cast. of an rvalue" }
   const_cast<A&&>(lval<A>());
   const_cast<A&&>(xval<A>());
   const_cast<A&&>(prval<A>());

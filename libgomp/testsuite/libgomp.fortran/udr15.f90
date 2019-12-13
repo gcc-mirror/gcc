@@ -60,5 +60,5 @@ end module udr15m2
     j = j.addthree.iand (i, -4)
     d = d + dt(i)
   end do
-  if (d%x /= 5050 .or. j /= 4903) STOP 1
+  if (d%x /= 5050 .or. j /= 4903) stop 1
 end

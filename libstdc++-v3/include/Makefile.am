@@ -64,6 +64,7 @@ std_headers = \
 	${std_srcdir}/ostream \
 	${std_srcdir}/queue \
 	${std_srcdir}/random \
+	${std_srcdir}/ranges \
 	${std_srcdir}/ratio \
 	${std_srcdir}/regex \
 	${std_srcdir}/scoped_allocator \
@@ -73,6 +74,7 @@ std_headers = \
 	${std_srcdir}/sstream \
 	${std_srcdir}/stack \
 	${std_srcdir}/stdexcept \
+	${std_srcdir}/stop_token \
 	${std_srcdir}/streambuf \
 	${std_srcdir}/string \
 	${std_srcdir}/string_view \
@@ -129,6 +131,7 @@ bits_headers = \
 	${bits_srcdir}/invoke.h \
 	${bits_srcdir}/ios_base.h \
 	${bits_srcdir}/istream.tcc \
+	${bits_srcdir}/iterator_concepts.h \
 	${bits_srcdir}/list.tcc \
 	${bits_srcdir}/locale_classes.h \
 	${bits_srcdir}/locale_classes.tcc \
@@ -1383,8 +1386,9 @@ endif
 # <new>, <typeinfo>, <exception>, <initializer_list>, <cstdalign>, <cstdarg>,
 # <concepts>, <cstdbool>, <type_traits>, <bit>, <atomic>,
 # and any files which they include (and which we provide).
-# <new>, <typeinfo>, <exception>, and <initializer_list> are installed by
-# libsupc++, so only the others and the sub-includes are copied here.
+# <new>, <typeinfo>, <exception>, <initializer_list> and <compare>
+# are installed by libsupc++, so only the others and the sub-includes
+# are copied here.
 install-freestanding-headers:
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/bits
 	for file in c++0x_warning.h atomic_base.h concept_check.h move.h; do \

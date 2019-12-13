@@ -8,9 +8,9 @@ int (*fp)();
 void
 test ()
 {
-    vp++;               /* { dg-error "" } incrementing void * */
-    ap++;               /* { dg-error "" } incrementing ptr to incomplete type */
-    sp++;               /* { dg-error "" } incrementing ptr to incomplete type */
-    up++;               /* { dg-error "" } incrementing ptr to incomplete type */
-    fp++;               /* { dg-error "" } incrementing ptr to function */
+    vp++;               /* { dg-error "5:ISO C\\+\\+ forbids incrementing" } incrementing void * */
+    ap++;               /* { dg-error "5:cannot increment" } incrementing ptr to incomplete type */
+    sp++;               /* { dg-error "5:cannot increment" } incrementing ptr to incomplete type */
+    up++;               /* { dg-error "5:cannot increment" } incrementing ptr to incomplete type */
+    fp++;               /* { dg-error "5:ISO C\\+\\+ forbids incrementing" } incrementing ptr to function */
 }

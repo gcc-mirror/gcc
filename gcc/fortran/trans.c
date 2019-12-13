@@ -48,6 +48,18 @@ const char gfc_msg_fault[] = N_("Array reference out of bounds");
 const char gfc_msg_wrong_return[] = N_("Incorrect function return value");
 
 
+/* Return a location_t suitable for 'tree' for a gfortran locus.  The way the
+   parser works in gfortran, loc->lb->location contains only the line number
+   and LOCATION_COLUMN is 0; hence, the column has to be added when generating
+   locations for 'tree'.  Cf. error.c's gfc_format_decoder.  */
+
+location_t
+gfc_get_location (locus *loc)
+{
+  return linemap_position_for_loc_and_offset (line_table, loc->lb->location,
+					      loc->nextc - loc->lb->line);
+}
+
 /* Advance along TREE_CHAIN n times.  */
 
 tree
@@ -503,7 +515,7 @@ trans_runtime_error_vararg (tree errorfunc, locus* where, const char* msgid,
      irectly.  */
   fntype = TREE_TYPE (errorfunc);
 
-  loc = where ? where->lb->location : input_location;
+  loc = where ? gfc_get_location (where) : input_location;
   tmp = fold_build_call_array_loc (loc, TREE_TYPE (fntype),
 				   fold_build1_loc (loc, ADDR_EXPR,
 					     build_pointer_type (fntype),
@@ -582,14 +594,14 @@ gfc_trans_runtime_check (bool error, bool once, tree cond, stmtblock_t * pblock,
   else
     {
       if (once)
-	cond = fold_build2_loc (where->lb->location, TRUTH_AND_EXPR,
+	cond = fold_build2_loc (gfc_get_location (where), TRUTH_AND_EXPR,
 				long_integer_type_node, tmpvar, cond);
       else
 	cond = fold_convert (long_integer_type_node, cond);
 
-      tmp = fold_build3_loc (where->lb->location, COND_EXPR, void_type_node,
+      tmp = fold_build3_loc (gfc_get_location (where), COND_EXPR, void_type_node,
 			     cond, body,
-			     build_empty_stmt (where->lb->location));
+			     build_empty_stmt (gfc_get_location (where)));
       gfc_add_expr_to_block (pblock, tmp);
     }
 }
@@ -2137,6 +2149,8 @@ trans_code (gfc_code * code, tree cond)
 	case EXEC_OACC_KERNELS_LOOP:
 	case EXEC_OACC_PARALLEL:
 	case EXEC_OACC_PARALLEL_LOOP:
+	case EXEC_OACC_SERIAL:
+	case EXEC_OACC_SERIAL_LOOP:
 	case EXEC_OACC_ENTER_DATA:
 	case EXEC_OACC_EXIT_DATA:
 	case EXEC_OACC_ATOMIC:
@@ -2212,7 +2226,7 @@ gfc_generate_module_code (gfc_namespace * ns)
 
   gcc_assert (ns->proc_name->backend_decl == NULL);
   ns->proc_name->backend_decl
-    = build_decl (ns->proc_name->declared_at.lb->location,
+    = build_decl (gfc_get_location (&ns->proc_name->declared_at),
 		  NAMESPACE_DECL, get_identifier (ns->proc_name->name),
 		  void_type_node);
   entry = gfc_find_module (ns->proc_name->name);

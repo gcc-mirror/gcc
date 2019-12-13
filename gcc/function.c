@@ -3087,7 +3087,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 	move_block_from_reg (REGNO (entry_parm), mem,
 			     size_stored / UNITS_PER_WORD);
     }
-  else if (data->stack_parm == 0)
+  else if (data->stack_parm == 0 && !TYPE_EMPTY_P (data->arg.type))
     {
       push_to_sequence2 (all->first_conversion_insn, all->last_conversion_insn);
       emit_block_move (stack_parm, data->entry_parm, GEN_INT (size),
@@ -3488,7 +3488,9 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
       dest = validize_mem (copy_rtx (data->stack_parm));
       src = validize_mem (copy_rtx (data->entry_parm));
 
-      if (MEM_P (src))
+      if (TYPE_EMPTY_P (data->arg.type))
+	/* Empty types don't really need to be copied.  */;
+      else if (MEM_P (src))
 	{
 	  /* Use a block move to handle potentially misaligned entry_parm.  */
 	  if (!to_conversion)
@@ -3643,6 +3645,16 @@ assign_parms (tree fndecl)
 	{
 	  assign_parm_find_stack_rtl (parm, &data);
 	  assign_parm_adjust_entry_rtl (&data);
+	  /* For arguments that occupy no space in the parameter
+	     passing area, have non-zero size and have address taken,
+	     force creation of a stack slot so that they have distinct
+	     address from other parameters.  */
+	  if (TYPE_EMPTY_P (data.arg.type)
+	      && TREE_ADDRESSABLE (parm)
+	      && data.entry_parm == data.stack_parm
+	      && MEM_P (data.entry_parm)
+	      && int_size_in_bytes (data.arg.type))
+	    data.stack_parm = NULL_RTX;
 	}
       /* Record permanently how this parm was passed.  */
       if (data.arg.pass_by_reference)
@@ -4725,6 +4737,16 @@ get_last_funcdef_no (void)
   return funcdef_no;
 }
 
+/* Allocate and initialize the stack usage info data structure for the
+   current function.  */
+static void
+allocate_stack_usage_info (void)
+{
+  gcc_assert (!cfun->su);
+  cfun->su = ggc_cleared_alloc<stack_usage> ();
+  cfun->su->static_stack_size = -1;
+}
+
 /* Allocate a function structure for FNDECL and set its contents
    to the defaults.  Set cfun to the newly-allocated object.
    Some of the helper functions invoked during initialization assume
@@ -4802,6 +4824,9 @@ allocate_struct_function (tree fndecl, bool abstract_p)
 
       if (!profile_flag && !flag_instrument_function_entry_exit)
 	DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (fndecl) = 1;
+
+      if (flag_callgraph_info)
+	allocate_stack_usage_info ();
     }
 
   /* Don't enable begin stmt markers if var-tracking at assignments is
@@ -4846,11 +4871,8 @@ prepare_function_start (void)
   init_expr ();
   default_rtl_profile ();
 
-  if (flag_stack_usage_info)
-    {
-      cfun->su = ggc_cleared_alloc<stack_usage> ();
-      cfun->su->static_stack_size = -1;
-    }
+  if (flag_stack_usage_info && !flag_callgraph_info)
+    allocate_stack_usage_info ();
 
   cse_not_expected = ! optimize;
 
@@ -6373,10 +6395,44 @@ rest_of_handle_thread_prologue_and_epilogue (void)
   cleanup_cfg (optimize ? CLEANUP_EXPENSIVE : 0);
 
   /* The stack usage info is finalized during prologue expansion.  */
-  if (flag_stack_usage_info)
+  if (flag_stack_usage_info || flag_callgraph_info)
     output_stack_usage ();
 
   return 0;
+}
+
+/* Record a final call to CALLEE at LOCATION.  */
+
+void
+record_final_call (tree callee, location_t location)
+{
+  struct callinfo_callee datum = { location, callee };
+  vec_safe_push (cfun->su->callees, datum);
+}
+
+/* Record a dynamic allocation made for DECL_OR_EXP.  */
+
+void
+record_dynamic_alloc (tree decl_or_exp)
+{
+  struct callinfo_dalloc datum;
+
+  if (DECL_P (decl_or_exp))
+    {
+      datum.location = DECL_SOURCE_LOCATION (decl_or_exp);
+      const char *name = lang_hooks.decl_printable_name (decl_or_exp, 2);
+      const char *dot = strrchr (name, '.');
+      if (dot)
+	name = dot + 1;
+      datum.name = ggc_strdup (name);
+    }
+  else
+    {
+      datum.location = EXPR_LOCATION (decl_or_exp);
+      datum.name = NULL;
+    }
+
+  vec_safe_push (cfun->su->dallocs, datum);
 }
 
 namespace {

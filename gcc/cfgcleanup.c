@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "emit-rtl.h"
 #include "cselib.h"
-#include "params.h"
 #include "tree-pass.h"
 #include "cfgloop.h"
 #include "cfgrtl.h"
@@ -258,6 +257,10 @@ thread_jump (edge e, basic_block b)
   regset nonequal;
   bool failed = false;
   reg_set_iterator rsi;
+
+  /* Jump threading may cause fixup_partitions to introduce new crossing edges,
+     which is not allowed after reload.  */
+  gcc_checking_assert (!reload_completed || !crtl->has_bb_partition);
 
   if (b->flags & BB_NONTHREADABLE_BLOCK)
     return NULL;
@@ -2018,7 +2021,7 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
      of matching instructions or the 'from' block was totally matched
      (such that its predecessors will hopefully be redirected and the
      block removed).  */
-  if ((nmatch < PARAM_VALUE (PARAM_MIN_CROSSJUMP_INSNS))
+  if ((nmatch < param_min_crossjump_insns)
       && (newpos1 != BB_HEAD (src1)))
     return false;
 
@@ -2211,7 +2214,7 @@ try_crossjump_bb (int mode, basic_block bb)
      a block that falls through into BB, as that adds no branches to the
      program.  We'll try that combination first.  */
   fallthru = NULL;
-  max = PARAM_VALUE (PARAM_MAX_CROSSJUMP_EDGES);
+  max = param_max_crossjump_edges;
 
   if (EDGE_COUNT (bb->preds) > max)
     return false;
@@ -3280,10 +3283,10 @@ make_pass_jump (gcc::context *ctxt)
 
 namespace {
 
-const pass_data pass_data_postreload_jump =
+const pass_data pass_data_jump_after_combine =
 {
   RTL_PASS, /* type */
-  "postreload_jump", /* name */
+  "jump_after_combine", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
   TV_JUMP, /* tv_id */
   0, /* properties_required */
@@ -3293,31 +3296,34 @@ const pass_data pass_data_postreload_jump =
   0, /* todo_flags_finish */
 };
 
-class pass_postreload_jump : public rtl_opt_pass
+class pass_jump_after_combine : public rtl_opt_pass
 {
 public:
-  pass_postreload_jump (gcc::context *ctxt)
-    : rtl_opt_pass (pass_data_postreload_jump, ctxt)
+  pass_jump_after_combine (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_jump_after_combine, ctxt)
   {}
 
   /* opt_pass methods: */
+  virtual bool gate (function *) { return flag_thread_jumps; }
   virtual unsigned int execute (function *);
 
-}; // class pass_postreload_jump
+}; // class pass_jump_after_combine
 
 unsigned int
-pass_postreload_jump::execute (function *)
+pass_jump_after_combine::execute (function *)
 {
-  cleanup_cfg (flag_thread_jumps ? CLEANUP_THREADING : 0);
+  /* Jump threading does not keep dominators up-to-date.  */
+  free_dominance_info (CDI_DOMINATORS);
+  cleanup_cfg (CLEANUP_THREADING);
   return 0;
 }
 
 } // anon namespace
 
 rtl_opt_pass *
-make_pass_postreload_jump (gcc::context *ctxt)
+make_pass_jump_after_combine (gcc::context *ctxt)
 {
-  return new pass_postreload_jump (ctxt);
+  return new pass_jump_after_combine (ctxt);
 }
 
 namespace {

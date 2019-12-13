@@ -77,10 +77,26 @@ test03()
   compare_paths( path("/dir/.").lexically_relative("/dir/."), "." );
 }
 
+void
+test04()
+{
+#if defined(__MING32__) || defined(__MINGW64__)
+  // DR 3070
+  compare_paths(path("c:/f:o/bar").lexically_relative("c:/f:o/bar"), ".");
+  compare_paths(path("c:/foo/bar").lexically_relative("c:/foo/b:r"), "..\\bar");
+  compare_paths(path("c:/foo/b:r").lexically_relative("c:/foo/bar"), "..\\b:r");
+  compare_paths(path("c:/foo/b:").lexically_relative("c:/foo/b:"), "");
+  compare_paths(path("c:/foo/bar").lexically_relative("c:/foo/b:"), "");
+  compare_paths(path("c:/f:/bar").lexically_relative("c:/foo/bar"), "");
+  compare_paths(path("foo/bar").lexically_relative("foo/b:/bar"), "");
+#endif
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
+  test04();
 }

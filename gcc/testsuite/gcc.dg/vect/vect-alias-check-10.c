@@ -65,3 +65,6 @@ main (void)
   FOR_EACH_TYPE (DO_TEST)
   return 0;
 }
+
+/* { dg-final { scan-tree-dump-not "using an address-based" "vect" } } */
+/* { dg-final { scan-tree-dump-not "using an index-based" "vect" } } */

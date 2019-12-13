@@ -1,5 +1,6 @@
 /* PR target/59575 */
 /* { dg-do compile } */
+/* { dg-skip-if "-mpure-code supports M-profile only" { *-*-* } { "-mpure-code" } } */
 /* { dg-options "-Os -g -march=armv7-a" } */
 
 void foo (int *);

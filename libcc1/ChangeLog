@@ -1,3 +1,18 @@
+2019-12-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* libcp1plugin.cc (plugin_build_cast_expr): Adjust build_cast
+	declaration.
+
+2019-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* libcp1plugin.cc (plugin_build_expression_list_expr): Adjust
+	build_functional_cast call.
+
+2019-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* libcp1plugin.cc (plugin_pragma_push_user_expression): Update
+	cp_build_indirect_ref call.
+
 2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
 
 	* configure: Regenerate.

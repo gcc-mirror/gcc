@@ -66,6 +66,7 @@ static tree handle_stack_protect_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noinline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noclone_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nocf_check_attribute (tree *, tree, tree, int, bool *);
+static tree handle_symver_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noicf_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noipa_attribute (tree *, tree, tree, int, bool *);
 static tree handle_leaf_attribute (tree *, tree, tree, int, bool *);
@@ -115,8 +116,6 @@ static tree handle_pure_attribute (tree *, tree, tree, int, bool *);
 static tree handle_tm_attribute (tree *, tree, tree, int, bool *);
 static tree handle_tm_wrap_attribute (tree *, tree, tree, int, bool *);
 static tree handle_novops_attribute (tree *, tree, tree, int, bool *);
-static tree handle_deprecated_attribute (tree *, tree, tree, int,
-					 bool *);
 static tree handle_vector_size_attribute (tree *, tree, tree, int,
 					  bool *);
 static tree handle_nonnull_attribute (tree *, tree, tree, int, bool *);
@@ -125,6 +124,8 @@ static tree handle_nothrow_attribute (tree *, tree, tree, int, bool *);
 static tree handle_cleanup_attribute (tree *, tree, tree, int, bool *);
 static tree handle_warn_unused_result_attribute (tree *, tree, tree, int,
 						 bool *);
+static tree handle_access_attribute (tree *, tree, tree, int, bool *);
+
 static tree handle_sentinel_attribute (tree *, tree, tree, int, bool *);
 static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
 static tree handle_alloc_size_attribute (tree *, tree, tree, int, bool *);
@@ -146,7 +147,6 @@ static tree handle_simd_attribute (tree *, tree, tree, int, bool *);
 static tree handle_omp_declare_target_attribute (tree *, tree, tree, int,
 						 bool *);
 static tree handle_designated_init_attribute (tree *, tree, tree, int, bool *);
-static tree handle_fallthrough_attribute (tree *, tree, tree, int, bool *);
 static tree handle_patchable_function_entry_attribute (tree *, tree, tree,
 						       int, bool *);
 static tree handle_copy_attribute (tree *, tree, tree, int, bool *);
@@ -476,10 +476,14 @@ const struct attribute_spec c_common_attribute_table[] =
 			      NULL },
   { "nocf_check",	      0, 0, false, true, true, true,
 			      handle_nocf_check_attribute, NULL },
+  { "symver",		      1, -1, true, false, false, false,
+			      handle_symver_attribute, NULL},
   { "copy",                   1, 1, false, false, false, false,
 			      handle_copy_attribute, NULL },
   { "noinit",		      0, 0, true,  false, false, false,
 			      handle_noinit_attribute, attr_noinit_exclusions },
+  { "access",		      1, 3, false, true, true, false,
+			      handle_access_attribute, NULL },
   { NULL,                     0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -511,7 +515,8 @@ attribute_takes_identifier_p (const_tree attr_id)
     return true;
   else if (!strcmp ("mode", spec->name)
 	   || !strcmp ("format", spec->name)
-	   || !strcmp ("cleanup", spec->name))
+	   || !strcmp ("cleanup", spec->name)
+	   || !strcmp ("access", spec->name))
     return true;
   else
     return targetm.attribute_takes_identifier_p (attr_id);
@@ -1864,6 +1869,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
 		typefm = make_signed_type (TYPE_PRECISION (typefm));
 	      TREE_TYPE (typefm) = type;
 	    }
+	  *no_add_attrs = false;
 	}
       else if (VECTOR_MODE_P (mode)
 	       ? TREE_CODE (type) != TREE_CODE (TREE_TYPE (typefm))
@@ -2331,6 +2337,62 @@ handle_noplt_attribute (tree *node, tree name,
     }
   return NULL_TREE;
 }
+
+/* Handle a "symver" attribute.  */
+
+static tree
+handle_symver_attribute (tree *node, tree ARG_UNUSED (name), tree args,
+			 int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  tree symver;
+  const char *symver_str;
+
+  if (TREE_CODE (*node) != FUNCTION_DECL && TREE_CODE (*node) != VAR_DECL)
+    {
+      warning (OPT_Wattributes,
+	       "%<symver%> attribute only applies to functions and variables");
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  if (!decl_in_symtab_p (*node))
+    {
+      warning (OPT_Wattributes,
+	       "%<symver%> attribute is only applicable to symbols");
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  for (; args; args = TREE_CHAIN (args))
+    {
+      symver = TREE_VALUE (args);
+      if (TREE_CODE (symver) != STRING_CST)
+	{
+	  error ("%<symver%> attribute argument not a string constant");
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+
+      symver_str = TREE_STRING_POINTER (symver);
+
+      int ats = 0;
+      for (int n = 0; (int)n < TREE_STRING_LENGTH (symver); n++)
+	if (symver_str[n] == '@')
+	  ats++;
+
+      if (ats != 1 && ats != 2)
+	{
+	  error ("symver attribute argument must have format %<name@nodename%>");
+	  error ("%<symver%> attribute argument %qs must contain one or two "
+		 "%<@%>", symver_str);
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+    }
+
+  return NULL_TREE;
+}
+
 
 /* Handle an "alias" or "ifunc" attribute; arguments as in
    struct attribute_spec.handler, except that IS_ALIAS tells us
@@ -3227,10 +3289,12 @@ parse_tm_stmt_attr (tree attrs, int allowed)
 
   for ( ; attrs ; attrs = TREE_CHAIN (attrs))
     {
-      tree a = TREE_PURPOSE (attrs);
+      tree a = get_attribute_name (attrs);
+      tree ns = get_attribute_namespace (attrs);
       int m = 0;
 
-      if (is_attribute_p ("outer", a))
+      if (is_attribute_p ("outer", a)
+	  && (ns == NULL_TREE || strcmp (IDENTIFIER_POINTER (ns), "gnu") == 0))
 	m = TM_STMT_ATTR_OUTER;
 
       if ((m & allowed) == 0)
@@ -3466,7 +3530,7 @@ handle_novops_attribute (tree *node, tree ARG_UNUSED (name),
 /* Handle a "deprecated" attribute; arguments as in
    struct attribute_spec.handler.  */
 
-static tree
+tree
 handle_deprecated_attribute (tree *node, tree name,
 			     tree args, int flags,
 			     bool *no_add_attrs)
@@ -3796,6 +3860,395 @@ handle_nonstring_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   return NULL_TREE;
 }
 
+/* Given a function type FUNCTYPE, returns the type of the parameter
+   ARGNO or null if ARGNO exceeds the number of parameters.  On failure
+   set *NARGS to the number of function parameters.  */
+
+static tree
+get_argument_type (tree functype, unsigned argno, unsigned *nargs)
+{
+  function_args_iterator iter;
+  function_args_iter_init (&iter, functype);
+
+  unsigned count = 0;
+
+  for ( ; iter.next; ++count, function_args_iter_next (&iter))
+    {
+      if (count + 1 == argno)
+	{
+	  tree argtype = function_args_iter_cond (&iter);
+	  if (VOID_TYPE_P (argtype))
+	    break;
+	  return argtype;
+	}
+    }
+
+  *nargs = count;
+  return NULL_TREE;
+}
+
+/* Appends ATTRSTR to the access string in ATTRS if one is there
+   or creates a new one and returns the concatenated access string.  */
+
+static tree
+append_access_attrs (tree t, tree attrs, const char *attrstr,
+		     char code, HOST_WIDE_INT idxs[2])
+{
+  char attrspec[80];
+  int n1 = sprintf (attrspec, "%c%u", code, (unsigned) idxs[0] - 1);
+  int n2 = 0;
+  if (idxs[1])
+    n2 = sprintf (attrspec + n1 + 1, "%u", (unsigned) idxs[1] - 1);
+
+  size_t newlen = n1 + n2 + !!n2;
+  char *newspec = attrspec;
+
+  if (tree acs = lookup_attribute ("access", attrs))
+    {
+      acs = TREE_VALUE (acs);
+      gcc_assert (TREE_CODE (acs) == STRING_CST);
+
+      /* Check to make sure ATTRSPEC doesn't conflict with another
+	 access attribute specified in ATTRS by searching the access
+	 string in ATTRS for the position string formatted above into
+	 ATTRSPEC, and if it's found, that the two match.  */
+
+      const char *posstr = attrspec + 1;
+      const char *str = TREE_STRING_POINTER (acs);
+      const char *pos = str;
+      for ( ; ; pos += n1)
+	{
+	  pos = strstr (pos, posstr);
+	  if (!pos)
+	    break;
+
+	  if (ISDIGIT (pos[-1]) || ISDIGIT (pos[n1 -1]))
+	    continue;
+
+	  /* Found a matching positional argument.  */
+	  if (*attrspec != pos[-1])
+	    {
+	      /* Mismatch in access mode.  */
+	      auto_diagnostic_group d;
+	      if (warning (OPT_Wattributes,
+			   "attribute %qs mismatch with mode %qs",
+			   attrstr,
+			   (pos[-1] == 'r'
+			    ? "read_only"
+			    : (pos[-1] == 'w' ? "write_only" : "read_write")))
+		  && DECL_P (t))
+		inform (DECL_SOURCE_LOCATION (t),
+			"previous declaration here");
+	      return NULL_TREE;
+	    }
+
+	  if ((n2 && pos[n1 - 1] != ','))
+	    {
+	      /* Mismatch in the presence of the size argument.  */
+	      auto_diagnostic_group d;
+	      if (warning (OPT_Wattributes,
+			   "attribute %qs positional argument 2 conflicts "
+			   "with previous designation",
+			   attrstr)
+		  && DECL_P (t))
+		inform (DECL_SOURCE_LOCATION (t),
+			"previous declaration here");
+	      return NULL_TREE;
+	    }
+
+	  if (!n2 && pos[n1 - 1] == ',')
+	    {
+	      /* Mismatch in the presence of the size argument.  */
+	      auto_diagnostic_group d;
+	      if (warning (OPT_Wattributes,
+			   "attribute %qs missing positional argument 2 "
+			   "provided in previous designation",
+			   attrstr)
+		  && DECL_P (t))
+		inform (DECL_SOURCE_LOCATION (t),
+			"previous declaration here");
+	      return NULL_TREE;
+	    }
+
+	  if (n2 && strncmp (attrstr + n1 + 1, pos + n1, n2))
+	    {
+	      /* Mismatch in the value of the size argument.  */
+	      auto_diagnostic_group d;
+	      if (warning (OPT_Wattributes,
+			   "attribute %qs mismatch positional argument "
+			   "values %i and %i",
+			   attrstr, atoi (attrstr + n1 + 1), atoi (pos + n1))
+		  && DECL_P (t))
+		inform (DECL_SOURCE_LOCATION (t),
+			"previous declaration here");
+	      return NULL_TREE;
+	    }
+
+	  /* Avoid adding the same attribute specification.  */
+	  return NULL_TREE;
+	}
+
+      /* Connect the two substrings formatted above into a single one.  */
+      if (idxs[1])
+	attrspec[n1] = ',';
+
+      size_t len = strlen (str);
+      newspec = XNEWVEC (char, newlen + len + 1);
+      strcpy (newspec, str);
+      strcpy (newspec + len, attrspec);
+      newlen += len;
+    }
+  else if (idxs[1])
+    /* Connect the two substrings formatted above into a single one.  */
+    attrspec[n1] = ',';
+
+  tree ret = build_string (newlen + 1, newspec);
+  if (newspec != attrspec)
+    XDELETEVEC (newspec);
+  return ret;
+}
+
+/* Handle the access attribute (read_only, write_only, and read_write).  */
+
+static tree
+handle_access_attribute (tree *node, tree name, tree args,
+			 int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  tree type = *node;
+  tree attrs = TYPE_ATTRIBUTES (type);
+
+  *no_add_attrs = true;
+
+  /* Verify a full prototype is provided so that the argument types
+     can be validated.  Avoid diagnosing type-generic built-ins since
+     those have no prototype.  */
+  if (!args
+      && !prototype_p (type)
+      && (!attrs || !lookup_attribute ("type generic", attrs)))
+    {
+      error ("attribute %qE without arguments on a non-prototype", name);
+      return NULL_TREE;
+    }
+
+  /* Set to true when the access mode has the form of a function call
+     as in 'attribute (read_only (1, 2))'.  That's an easy mistake to
+     make and so worth a special diagnostic.  */
+  bool funcall = false;
+  tree access_mode = TREE_VALUE (args);
+  if (TREE_CODE (access_mode) == CALL_EXPR)
+    {
+      access_mode = CALL_EXPR_FN (access_mode);
+      if (TREE_CODE (access_mode) != ADDR_EXPR)
+	{
+	  error ("attribute %qE invalid mode", name);
+	  return NULL_TREE;
+	}
+      access_mode = TREE_OPERAND (access_mode, 0);
+      access_mode = DECL_NAME (access_mode);
+      funcall = true;
+    }
+
+  const char* const access_str = IDENTIFIER_POINTER (access_mode);
+  const char *ps = access_str;
+  if (ps[0] == '_' && ps[1] == '_')
+    {
+      size_t len = strlen (ps);
+      if (ps[len - 1] == '_' && ps[len - 2] == '_')
+	ps += 2;
+    }
+
+  const bool read_only = strncmp (ps, "read_only", 9) == 0;
+  const bool write_only = strncmp (ps, "write_only", 9) == 0;
+  if (!read_only && !write_only && strncmp (ps, "read_write", 9))
+    {
+      error ("attribute %qE invalid mode %qs; expected one of "
+	     "%qs, %qs, or %qs", name, access_str,
+	     "read_only", "read_write", "write_only");
+      return NULL_TREE;
+    }
+
+  if (funcall)
+    {
+      error ("attribute %qE unexpected %<(%> after mode %qs; expected "
+	     "a positional argument or %<)%>",
+	     name, access_str);
+      return NULL_TREE;
+    }
+
+  args = TREE_CHAIN (args);
+  if (!args)
+    {
+      /* The first positional argument is required.  It may be worth
+	 dropping the requirement at some point and having read_only
+	 apply to all const-qualified pointers and read_write or
+	 write_only to the rest.  */
+      error ("attribute %<%E(%s)%> missing an argument",
+	     name, access_str);
+      return NULL_TREE;
+    }
+
+  /* One or more positional arguments have been specified.  Validate
+     them.  */
+  tree idxnodes[2] = { NULL_TREE, NULL_TREE };
+  tree argtypes[2] = { NULL_TREE, NULL_TREE };
+  /* 1-based attribute positional arguments or zero if not specified.
+     Invalid negative or excessive values are also stored but used
+     only in diagnostics.  */
+  HOST_WIDE_INT idxs[2] = { 0, 0 };
+
+  /* Number of function formal arguments (used in diagnostics).  */
+  unsigned nfuncargs = 0;
+  /* Number of (optional) attribute positional arguments.  */
+  unsigned nattrargs = 0;
+
+  for (unsigned i = 0; i != 2; ++i, args = TREE_CHAIN (args), ++nattrargs)
+    {
+      if (!args)
+	break;
+
+      idxnodes[i] = TREE_VALUE (args);
+
+      if (TREE_CODE (idxnodes[i]) != IDENTIFIER_NODE
+	  && TREE_CODE (idxnodes[i]) != FUNCTION_DECL)
+	idxnodes[i] = default_conversion (idxnodes[i]);
+
+      if (tree_fits_shwi_p (idxnodes[i]))
+	{
+	  idxs[i] = tree_to_shwi (idxnodes[i]);
+	  argtypes[i] = get_argument_type (type, idxs[i], &nfuncargs);
+	}
+    }
+
+  if ((nattrargs == 1 && !idxs[0])
+      || (nattrargs == 2 && (!idxs[0] || !idxs[1])))
+    {
+      if (idxnodes[1])
+	error ("attribute %<%E(%s, %E, %E)%> invalid positional argument %i",
+	       name, access_str, idxnodes[0], idxnodes[1], idxs[0] ? 2 : 1);
+      else
+	error ("attribute %<%E(%s, %E)%> invalid positional argument %i",
+	       name, access_str, idxnodes[0], idxs[0] ? 2 : 1);
+      return NULL_TREE;
+    }
+
+  /* Format the attribute specification to include in diagnostics.  */
+  char attrstr[80];
+  if (idxnodes[1])
+    snprintf (attrstr, sizeof attrstr, "%s(%s, %lli, %lli)",
+	      IDENTIFIER_POINTER (name), access_str,
+	      (long long) idxs[0], (long long) idxs[1]);
+  else if (idxnodes[0])
+    snprintf (attrstr, sizeof attrstr, "%s(%s, %lli)",
+	      IDENTIFIER_POINTER (name), access_str,
+	      (long long) idxs[0]);
+  else
+    snprintf (attrstr, sizeof attrstr, "%s(%s)",
+	      IDENTIFIER_POINTER (name), access_str);
+
+  /* Verify the positional argument values are in range.  */
+  if (!argtypes[0] || (idxnodes[1] && !argtypes[1]))
+    {
+      if (idxnodes[0])
+	{
+	  if (idxs[0] < 0 || idxs[1] < 0)
+	    error ("attribute %qs positional argument %i invalid value %wi",
+		   attrstr, idxs[0] < 0 ? 1 : 2,
+		   idxs[0] < 0 ? idxs[0] : idxs[1]);
+	  else
+	    error ("attribute %qs positional argument %i value %wi exceeds "
+		   "number of function arguments %u",
+		   attrstr, idxs[0] ? 1 : 2,
+		   idxs[0] ? idxs[0] : idxs[1],
+		   nfuncargs);
+	}
+      else
+	error ("attribute %qs invalid positional argument", attrstr);
+
+      return NULL_TREE;
+    }
+
+  if (!POINTER_TYPE_P (argtypes[0]))
+    {
+      /* The first argument must have a pointer or reference type.  */
+      error ("attribute %qs positional argument 1 references "
+	     "non-pointer argument type %qT",
+	     attrstr, argtypes[0]);
+      return NULL_TREE;
+    }
+
+  {
+    /* Pointers to functions are not allowed.  */
+    tree ptrtype = TREE_TYPE (argtypes[0]);
+    if (FUNC_OR_METHOD_TYPE_P (ptrtype))
+      {
+	error ("attribute %qs positional argument 1 references "
+	       "argument of function type %qT",
+	       attrstr, ptrtype);
+	return NULL_TREE;
+      }
+  }
+
+  if (!read_only)
+    {
+      /* A read_write and write_only modes must reference non-const
+	 arguments.  */
+      if (TYPE_READONLY (TREE_TYPE (argtypes[0])))
+	{
+	  error ("attribute %qs positional argument 1 references "
+		 "%qs-qualified argument type %qT",
+		 attrstr, "const", argtypes[0]);
+	  return NULL_TREE;
+	}
+    }
+  else if (!TYPE_READONLY (TREE_TYPE (argtypes[0])))
+    {
+      /* A read_only mode should ideally reference const-qualified
+	 arguments but it's not diagnosed error if one doesn't.
+	 This makes it possible to annotate legacy, const-incorrect
+	 APIs.  It might be worth a diagnostic along the lines of
+	 -Wsuggest-const.  */
+      ;
+    }
+
+  if (argtypes[1] && !INTEGRAL_TYPE_P (argtypes[1]))
+    {
+      error ("attribute %qs positional argument 2 references "
+	     "non-integer argument type %qT",
+	     attrstr, argtypes[1]);
+      return NULL_TREE;
+    }
+
+  /* Verify that the new attribute doesn't conflict with any existing
+     attributes specified on previous declarations of the same type
+     and if not, concatenate the two.  */
+  const char code = read_only ? 'r' : write_only ? 'w' : 'x';
+  tree new_attrs = append_access_attrs (node[0], attrs, attrstr, code, idxs);
+  if (!new_attrs)
+    return NULL_TREE;
+
+  /* Replace any existing access attribute specification with
+     the concatenation above.  */
+  attrs = remove_attribute (IDENTIFIER_POINTER (name), attrs);
+  new_attrs = tree_cons (name, new_attrs, attrs);
+
+  if (node[1])
+    {
+      /* Repeat for the previously declared type.  */
+      attrs = TYPE_ATTRIBUTES (TREE_TYPE (node[1]));
+      tree new_attrs
+	= append_access_attrs (node[1], attrs, attrstr, code, idxs);
+      if (!new_attrs)
+	return NULL_TREE;
+
+      attrs = remove_attribute (IDENTIFIER_POINTER (name), attrs);
+      new_attrs = tree_cons (name, new_attrs, attrs);
+      TYPE_ATTRIBUTES (TREE_TYPE (node[1])) = new_attrs;
+    }
+
+  TYPE_ATTRIBUTES (*node) = new_attrs;
+  return NULL_TREE;
+}
+
 /* Handle a "nothrow" attribute; arguments as in
    struct attribute_spec.handler.  */
 
@@ -4114,11 +4567,11 @@ handle_designated_init_attribute (tree *node, tree name, tree, int,
 /* Handle a "fallthrough" attribute; arguments as in struct
    attribute_spec.handler.  */
 
-static tree
+tree
 handle_fallthrough_attribute (tree *, tree name, tree, int,
 			      bool *no_add_attrs)
 {
-  warning (OPT_Wattributes, "%qE attribute ignored", name);
+  pedwarn (input_location, OPT_Wattributes, "%qE attribute ignored", name);
   *no_add_attrs = true;
   return NULL_TREE;
 }

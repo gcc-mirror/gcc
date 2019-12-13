@@ -4,7 +4,7 @@
 void f ()
 {
   enum e { a };
-  using e::a; // { dg-error "not a namespace or unscoped enum" }
+  using e::a; // { dg-error "name enumerator" }
 }
 
 struct S {

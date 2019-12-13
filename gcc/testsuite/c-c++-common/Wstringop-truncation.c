@@ -425,7 +425,7 @@ void test_strncpy_alloc (const char* s)
   size_t n = 7;
   char *d = (char *)__builtin_malloc (n);
 
-  CPY (d, s, n);                    /* { dg-warning "specified bound 7 equals destination size" "bug 79016" { xfail *-*-* } } */
+  CPY (d, s, n);                    /* { dg-warning "specified bound 7 equals destination size" } */
 
   Dest *pd = (Dest *)__builtin_malloc (sizeof *pd * n);
   CPY (pd->a5, s, 5);               /* { dg-warning "specified bound 5 equals destination size" } */

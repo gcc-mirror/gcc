@@ -1441,10 +1441,9 @@ merge_in_block (int max_reg, basic_block bb)
 	  continue;
 	}
 
-      /* This continue is deliberate.  We do not want the uses of the
-	 jump put into reg_next_use because it is not considered safe to
-	 combine a preincrement with a jump.  */
-      if (JUMP_P (insn))
+      /* Reload should handle auto-inc within a jump correctly, while LRA
+	 is known to have issues with autoinc.  */
+      if (JUMP_P (insn) && targetm.lra_p ())
 	continue;
 
       if (dump_file)

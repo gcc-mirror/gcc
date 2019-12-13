@@ -1,3 +1,429 @@
+2019-12-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/92898
+	* check.c (gfc_check_is_contiguous): Simplify check to handle
+	arbitrary NULL() argument.
+
+2019-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92899
+	* trans-openmp.c (gfc_trans_omp_atomic): For GFC_OMP_ATOMIC_SWAP,
+	do look through conversion on expr2 if any.
+
+2019-12-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/92897
+	* array.c (gfc_set_array_spec):  Remove invalid assert() triggered
+	by invalid Fortran code.
+
+2019-12-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91643
+	* trans-array.c (gfc_conv_array_parameter): Do not repack
+	an assumed rank dummy argument.
+
+2019-12-10  Martin Liska  <mliska@suse.cz>
+
+	PR fortran/92874
+	* dependency.c (gfc_dep_compare_expr): Bail out
+	when one of the arguments is null.
+
+2019-12-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92863
+	* misc.c (gfc_typename): If derived component is NULL for
+	derived or class, return "invalid type" or "invalid class",
+	respectively.
+
+2019-12-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92872
+	* trans-array.c (get_CFI_desc): Fix cond whether saved desc exists.
+
+2019-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.c (gfc_diagnostic_starter): Add pp_newline call before
+	call to diagnostic_show_locus.
+
+2019-12-09  Frederik Harwath  <frederik@codesourcery.com>
+
+	* trans-openmp.c (gfc_trans_omp_reduction_list): Pass correct location for each
+	clause to build_omp_clause.
+
+2018-12-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92780
+	* resolve.c (resolve_assoc_var): Issue error if the associating
+	entity is a program.
+
+2018-12-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92764
+	* interface.c (gfc_procedure_use): Check for existence of derived
+	component before using (twice).
+
+2019-12-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92755
+	* dependency.c (gfc_dep_resolver):  Move skipping of _data ref
+	into the loop.
+
+2019-12-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92793
+	* trans.c (gfc_get_location): Declare.
+	* trans.c (gfc_get_location): Define; returns column-corrected location.
+	(trans_runtime_error_vararg, gfc_trans_runtime_check,
+	gfc_generate_module_code): Use new function.
+	* trans-array.c (gfc_trans_auto_array_allocation): Likewise.
+	* trans-common.c (build_field, get_init_field, create_common): Likewise.
+	* trans-decl.c (gfc_build_label_decl, gfc_get_symbol_decl): Likewise.
+	* trans-openmp.c (gfc_trans_omp_reduction_list, gfc_trans_omp_clauses):
+	Likewise.
+	* trans-stmt.c (gfc_trans_if_1): Likewise.
+
+2019-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92775
+	* trans.h (struct lang_type, struct lang_decl): Remove span member.
+	(GFC_DECL_SPAN, GFC_TYPE_ARRAY_SPAN): Remove macros.
+	* trans-array.h (gfc_get_descriptor_offsets_for_info): Add another
+	argument.
+	* trans-array.c (gfc_get_descriptor_offsets_for_info): Add SPAN_OFF
+	argument and initialize *SPAN_OFF to the offset of span field.
+	* trans-types.c (gfc_get_array_descr_info): Adjust
+	gfc_get_descriptor_offsets_for_info caller.  Compute elem_size
+	as base->span instead of TYPE_SIZE_UNIT (etype) constant.
+
+2019-12-06  Tobias Burnus  <tobias@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* trans-openmp.c (gfc_build_conditional_assign,
+	gfc_build_conditional_assign_expr): New static functions.
+	(gfc_omp_finish_clause, gfc_trans_omp_clauses): Handle mapping of
+	absent optional arguments and fix mapping of present optional args.
+
+2019-12-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.c (gfc_omp_is_optional_argument,
+	gfc_omp_check_optional_argument): Handle type(c_ptr),value which uses a
+
+2019-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92781
+	* trans-decl.c (gfc_get_symbol_decl): If sym->backend_decl is
+	current_function_decl, add length to current rather than parent
+	function and expect DECL_CONTEXT (length) to be current_function_decl.
+
+2019-12-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92754
+	* intrinsic.c (gfc_intrinsic_func_interface): Set
+	sym's flavor, intrinsic and function attribute if
+	unset.
+
+2019-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92756
+	* trans-openmp.c (gfc_trans_omp_teams): Wrap OMP_TEAMS body into a
+	BIND_EXPR with a forced BLOCK.
+
+2019-11-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91783
+	* dependency.c (gfc_dep_resolver): Do not look at _data
+	component if present.
+
+2019-11-28  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
+
+	PR fortran/90374
+	* io.c (check_format): Allow zero width expoenent with e0.
+
+2019-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/91944
+	* simplify.c (gfc_simplify_spread): Check gfc_init_expr_flag instead
+	of gfc_current_ns->sym_root->n.sym->attr.flavor == FL_PARAMETER.
+
+2019-11-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/92463
+	* arith.c (gfc_check_real_range): Replace mp_exp_t by mpfr_exp_t.
+
+2019-11-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/92629
+	* simplify.c (convert_mpz_to_unsigned): Skip assert for argument
+	range when -fno-range-check is specified.
+
+2019-11-25  Mark Eggleston  <mark.eggleston@codethink.com>
+	    Jim MacArthur  <jim.macarthur@codethink.co.uk>
+
+	* gfortran.texi: Update Hollerith constants support for character types
+	and use in comparisons.
+	* invoke.texi: Tidy up list of options. Update description of
+	-fdec-char-conversions.
+	* resolve.c (is_character_based): New.
+	(Convert_hollerith_to_character): New.  (convert_to_numeric): New.
+	(resolve_operator): If both sides are character based and -fdec is
+	enabled convert Hollerith to character. If an operand is Hollerith, the
+	other is numeric and -fdec is enabled convert to numeric.
+	(resolve_ordinary_assign): Add check for -fdec-char-conversions for
+	assignment of character literals.2019-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/92463
+	Revert r269139
+	* simplify.c (norm2_do_sqrt, gfc_simplify_norm2): Use
+	mpfr_regular_p instead of mpfr_number_p && !mpfr_zero_p.
+	(norm2_add_squared): Likewise.  Use mpfr_exp_t rather than
+	mp_exp_t.
+
+2019-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/92463
+	* arith.c (gfc_mpfr_to_mpz): Change mp_exp_t to mpfr_exp_t.
+	(gfc_check_real_range): Likewise.
+	* gfortran.h (GFC_RND_MODE): Change GMP_RNDN to MPFR_RNDN.
+	* module.c (mio_gmp_real): Change mp_exp_t to mpfr_exp_t.
+	* simplify.c (degrees_f): Change mp_rnd_t to mpfr_rnd_t.
+	(radians_f): Likewise.
+	(fullprec_erfc_scaled): Change mp_prec_t to mpfr_prec_t.
+	(asympt_erfc_scaled): Likewise.
+	(gfc_simplify_nearest): Change mp_exp_t to mpfr_exp_t, and
+	GMP_RND* to MPFR_RND*.
+
+2019-11-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/69654
+	* trans-expr.c (gfc_trans_structure_assign): Move assignment to
+	'cm' after treatment of C pointer types and test that the type
+	has been completely built before it. Add an assert that the
+	backend_decl for each component exists.
+
+2019-11-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-expr.c (gfc_conv_procedure_call): Fold hidden
+	is-present argument to the right type.
+
+2019-11-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/81651
+	* module.c (gzopen_included_file, gzopen_included_file_1)
+	(gzopen_intrinsic_module, bad_module, gfc_use_module): Use fully
+	qualified module path for error reporting.
+
+2019-11-12  Martin Liska  <mliska@suse.cz>
+
+	* options.c (gfc_init_options):
+	Use SET_OPTION_IF_UNSET.
+
+2019-11-12  Maciej W. Rozycki  <macro@codesourcery.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+
+	gcc/fortran/
+	* gfortran.h (gfc_statement): Add ST_OACC_SERIAL_LOOP,
+	ST_OACC_END_SERIAL_LOOP, ST_OACC_SERIAL and ST_OACC_END_SERIAL
+	enumeration constants.
+	(gfc_exec_op): Add EXEC_OACC_SERIAL_LOOP and EXEC_OACC_SERIAL
+	enumeration constants.
+	* match.h (gfc_match_oacc_serial): New prototype.
+	(gfc_match_oacc_serial_loop): Likewise.
+	* dump-parse-tree.c (show_omp_node, show_code_node): Handle
+	EXEC_OACC_SERIAL_LOOP and EXEC_OACC_SERIAL.
+	* match.c (match_exit_cycle): Handle EXEC_OACC_SERIAL_LOOP.
+	* openmp.c (OACC_SERIAL_CLAUSES): New macro.
+	(gfc_match_oacc_serial_loop): New function.
+	(gfc_match_oacc_serial): Likewise.
+	(oacc_is_loop): Handle EXEC_OACC_SERIAL_LOOP.
+	(resolve_omp_clauses): Handle EXEC_OACC_SERIAL.
+	(oacc_code_to_statement): Handle EXEC_OACC_SERIAL and
+	EXEC_OACC_SERIAL_LOOP.
+	(gfc_resolve_oacc_directive): Likewise.
+	* parse.c (decode_oacc_directive) <'s'>: Add case for "serial"
+	and "serial loop".
+	(next_statement): Handle ST_OACC_SERIAL_LOOP and ST_OACC_SERIAL.
+	(gfc_ascii_statement): Likewise.  Handle ST_OACC_END_SERIAL_LOOP
+	and ST_OACC_END_SERIAL.
+	(parse_oacc_structured_block): Handle ST_OACC_SERIAL.
+	(parse_oacc_loop): Handle ST_OACC_SERIAL_LOOP and
+	ST_OACC_END_SERIAL_LOOP.
+	(parse_executable): Handle ST_OACC_SERIAL_LOOP and
+	ST_OACC_SERIAL.
+	(is_oacc): Handle EXEC_OACC_SERIAL_LOOP and EXEC_OACC_SERIAL.
+	* resolve.c (gfc_resolve_blocks, gfc_resolve_code): Likewise.
+	* st.c (gfc_free_statement): Likewise.
+	* trans-openmp.c (gfc_trans_oacc_construct): Handle
+	EXEC_OACC_SERIAL.
+	(gfc_trans_oacc_combined_directive): Handle
+	EXEC_OACC_SERIAL_LOOP.
+	(gfc_trans_oacc_directive): Handle EXEC_OACC_SERIAL_LOOP and
+	EXEC_OACC_SERIAL.
+	* trans.c (trans_code): Likewise.
+
+2019-11-11  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/91828
+	* simplify.c (gfc_simplify_fraction): Remove fallback path for
+	MPFR < 3.1.0.
+
+2019-11-11  Tobias Burnus  <tobias@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* trans-expr.c (gfc_conv_expr_present): Check for DECL_ARTIFICIAL
+	for the VALUE hidden argument avoiding -fallow-underscore issues.
+	* trans-decl.c (create_function_arglist): Also set
+	GFC_DECL_OPTIONAL_ARGUMENT for per-value arguments.
+	* f95-lang.c (LANG_HOOKS_OMP_CHECK_OPTIONAL_ARGUMENT):
+	Renamed from LANG_HOOKS_OMP_IS_OPTIONAL_ARGUMENT; point
+	to gfc_omp_check_optional_argument.
+	* trans.h (gfc_omp_check_optional_argument): Subsitutes
+	gfc_omp_is_optional_argument declaration.
+	* trans-openmp.c (gfc_omp_is_optional_argument): Make static.
+	(gfc_omp_check_optional_argument): New function.
+
+2019-11-10  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/91413
+	* trans-decl.c (gfc_finish_var_decl): Don't print warning when
+	-fno-automatic is enabled.
+
+2019-11-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/92123
+	*decl.c (gfc_verify_c_interop_param): Remove error asserting
+	that pointer or allocatable variables in a bind C procedure are
+	not supported. Delete some trailing spaces.
+	* trans-stmt.c (trans_associate_var): Correct the attempt to
+	treat scalar pointer or allocatable temporaries as if they are
+	array descriptors.
+
+2019-11-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92321
+	* frontend-passes.c (call_external_blas): Commit symbol for
+	external BLAS routine.
+
+2019-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* arith.c (character2representation): Change i type to size_t.
+
+2019-11-08  Mark Eggleston  <mark.eggleston@codethink.com>
+	    Jim MacArthur  <jim.macarthur@codethink.co.uk>
+
+	* arith.c (hollerith2representation): Use OPT_Wcharacter_truncation in
+	call to gfc_warning.
+	(character2representation, gfc_character2int, gfc_character2real,
+	gfc_character2complex and gfc_character2logical): New.
+	* arith.h (gfc_character2int, gfc_character2real, gfc_character2complex,
+	gfc_character2logical): Declare.
+	* expr.c (gfc_check_assign): Return true if left hand side is numeric
+	or logical and the right hand side is character and of kind=1.
+	* gfortran.texi: Add -fdec-char-conversions.
+	* intrinsic.c (add_conversions): Add conversions from character to
+	integer, real, complex and logical types for their supported kinds.
+	(gfc_convert_type_warn): Reorder if..else if.. sequence so that warnings
+	are produced for conversion to logical.
+	* invoke.texi: Add option to list of options.
+	* invoke.texi: Add Character conversion subsection to Extensions
+	section.
+	* lang.opt: Add new option.
+	* options.c (set_dec_flags): Add SET_BITFLAG for
+	flag_dec_char_conversions.
+	* resolve.c (resolve_ordindary_assign): Issue error if the left hand
+	side is numeric or logical and the right hand side is a character
+	variable.
+	* simplify.c (gfc_convert_constant): Assign the conversion function
+	depending on destination type.
+	* trans-const.c (gfc_constant_to_tree): Use OPT_Wsurprising in
+	gfc_warning allowing the warning to be switched off only if
+	flag_dec_char_conversions is enabled.
+
+2019-11-08  Tobias Burnus  <tobias@codesourcery.com
+
+	PR fortran/91253
+	* scanner.c (skip_fixed_comments): Move comment
+	lines to next if block.
+	(gfc_next_char_literal): Fix continue_line setting.
+	(get_file): Remove bogus ATTRIBUTE_UNUSED.
+
+2019-11-06  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
+
+	PR fortran/90374
+	* io.c (check_format): Allow zero width for D, E, EN, and ES
+	specifiers as default and when -std=F2018 is given. Retain
+	existing errors when using the -fdec family of flags.
+
+2019-11-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92113
+	* trans-decl.c (gfc_get_symbol_decl): If __def_init actually
+	contains a value, put it into  the read-only section.
+
+2019-11-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* decl.c (match_byte_typespec): New function.  Match BYTE type-spec.
+	(gfc_match_decl_type_spec): Use it.
+
+2019-11-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90988
+	* decl.c (gfc_match_private, gfc_match_public): Fixed-form source code
+	does not require whitespace between PRIVATE (or PUBLIC) and an entity.
+
+2019-11-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* f95-lang.c (LANG_HOOKS_OMP_ARRAY_DATA): Set to gfc_omp_array_data.
+	* trans-array.c (gfc_conv_descriptor_data_get): Handle also
+	REFERENCE_TYPE.
+	* trans-openmp.c (gfc_omp_array_data): New.
+	* trans.h (gfc_omp_array_data): New prototype.
+
+2019-10-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92284.
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Free CFI descriptor
+	at the end; partial revised revert of Rev. 277502.
+
+2019-10-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92277
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Fix DECL_ARTIFICIAL
+	checking.
+
+2019-10-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92208
+	* trans-array.c (gfc_conv_array_parameter): Only copy
+	string-length backend_decl if expression is not a function.
+
+2019-10-30  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	* invoke.texi: Add -Wno-overwrite-recursive to list of options. Add
+	description of -Wno-overwrite-recursive. Fix typo in description
+	of -Winteger-division.
+	* lang.opt: Add option -Woverwrite-recursive initialised as on.
+	* option.c (gfc_post_options): Output warning only if it is enabled.
+
+2019-10-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/91863
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Don't free data
+	memory as that's done on the Fortran side.
+	(gfc_conv_procedure_call): Handle void* pointers from
+	gfc_conv_gfc_desc_to_cfi_desc.
+
+2019-10-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/86248
+	* resolve.c (flag_fn_result_spec): Correct a typo before the
+	function declaration.
+	* trans-decl.c (gfc_sym_identifier): Boost the length of 'name'
+	to allow for all variants. Simplify the code by using a pointer
+	to the symbol's proc_name and taking the return out of each of
+	the conditional branches. Allow symbols with fn_result_spec set
+	that do not come from a procedure namespace and have a module
+	name to go through the non-fn_result_spec branch.
+
 2019-10-25  Cesar Philippidis <cesar@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 
@@ -23,7 +449,7 @@
 
 	PR fortran/92174
 	* decl.c (attr_decl1): Move check for F2018:C822 from here ...
-	* array.c (gfc_set_array_spec): ... to here. 
+	* array.c (gfc_set_array_spec): ... to here.
 
 2019-10-18  Steven G. Kargl  <kargl@gcc.gnu.org>
 

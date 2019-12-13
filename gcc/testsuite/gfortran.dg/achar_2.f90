@@ -2023,4 +2023,9 @@ program main
   c = "ÿ"
   if (achar(i) /= "ÿ") STOP 1514
   if (iachar(c) /= iachar("ÿ")) STOP 1515
+  print *, 'DONE'
 end program main
+
+! DejaGNU only checks the exit code but 'STOP 256' has exit code 0. Hence,
+! check output for:
+! { dg-output "DONE" }

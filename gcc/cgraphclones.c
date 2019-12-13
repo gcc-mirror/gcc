@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* This module provide facilities for clonning functions. I.e. creating
+/* This module provide facilities for cloning functions.  I.e. creating
    new functions based on existing functions with simple modifications,
    such as replacement of parameters.
 
@@ -80,6 +80,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "dumpfile.h"
 #include "gimple-pretty-print.h"
+#include "alloc-pool.h"
+#include "symbol-summary.h"
+#include "tree-vrp.h"
+#include "ipa-prop.h"
+#include "ipa-fnsummary.h"
 
 /* Create clone of edge in the node N represented by CALL_EXPR
    the callgraph.  */
@@ -136,8 +141,9 @@ cgraph_edge::clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
 
   /* Update IPA profile.  Local profiles need no updating in original.  */
   if (update_original)
-    count = count.combine_with_ipa_count (count.ipa () 
-					  - new_edge->count.ipa ());
+    count = count.combine_with_ipa_count_within (count.ipa () 
+						 - new_edge->count.ipa (),
+						 caller->count);
   symtab->call_edge_duplication_hooks (this, new_edge);
   return new_edge;
 }
@@ -159,7 +165,7 @@ set_new_clone_decl_and_node_flags (cgraph_node *new_node)
   DECL_SET_IS_OPERATOR_DELETE (new_node->decl, 0);
 
   new_node->externally_visible = 0;
-  new_node->local.local = 1;
+  new_node->local = 1;
   new_node->lowered = true;
 }
 
@@ -223,11 +229,14 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
   new_thunk = cgraph_node::create (new_decl);
   set_new_clone_decl_and_node_flags (new_thunk);
   new_thunk->definition = true;
-  new_thunk->local.can_change_signature = node->local.can_change_signature;
+  new_thunk->can_change_signature = node->can_change_signature;
   new_thunk->thunk = thunk->thunk;
   new_thunk->unique_name = in_lto_p;
   new_thunk->former_clone_of = thunk->decl;
   new_thunk->clone.param_adjustments = node->clone.param_adjustments;
+  new_thunk->unit_id = thunk->unit_id;
+  new_thunk->merged_comdat = thunk->merged_comdat;
+  new_thunk->merged_extern_inline = thunk->merged_extern_inline;
 
   cgraph_edge *e = new_thunk->create_edge (node, NULL, new_thunk->count);
   symtab->call_edge_duplication_hooks (thunk->callees, e);
@@ -267,6 +276,8 @@ cgraph_node::expand_all_artificial_thunks ()
 	  {
 	    thunk->thunk.thunk_p = false;
 	    thunk->analyze ();
+	    ipa_analyze_node (thunk);
+	    inline_analyze_function (thunk);
 	  }
 	thunk->expand_all_artificial_thunks ();
       }
@@ -296,6 +307,22 @@ dump_callgraph_transformation (const cgraph_node *original,
     }
 }
 
+/* Turn profile of N to local profile.   */
+
+static void
+localize_profile (cgraph_node *n)
+{
+  n->count = n->count.guessed_local ();
+  for (cgraph_edge *e = n->callees; e; e=e->next_callee)
+    {
+      e->count = e->count.guessed_local ();
+      if (!e->inline_failed)
+	localize_profile (e->callee);
+    }
+  for (cgraph_edge *e = n->indirect_calls; e; e=e->next_callee)
+    e->count = e->count.guessed_local ();
+}
+
 /* Create node representing clone of N executed COUNT times.  Decrease
    the execution counts from original node too.
    The new clone will have decl set to DECL that may or may not be the same
@@ -304,12 +331,12 @@ dump_callgraph_transformation (const cgraph_node *original,
    When UPDATE_ORIGINAL is true, the counts are subtracted from the original
    function's profile to reflect the fact that part of execution is handled
    by node.  
-   When CALL_DUPLICATOIN_HOOK is true, the ipa passes are acknowledged about
+   When CALL_DUPLICATION_HOOK is true, the ipa passes are acknowledged about
    the new clone. Otherwise the caller is responsible for doing so later.
 
    If the new node is being inlined into another one, NEW_INLINED_TO should be
    the outline function the new one is (even indirectly) inlined to.  All hooks
-   will see this in node's global.inlined_to, when invoked.  Can be NULL if the
+   will see this in node's inlined_to, when invoked.  Can be NULL if the
    node is not inlined.
 
    If PARAM_ADJUSTMENTS is non-NULL, the parameter manipulation information
@@ -329,6 +356,7 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
   cgraph_edge *e;
   unsigned i;
   profile_count old_count = count;
+  bool nonzero = count.ipa ().nonzero_p ();
 
   if (new_inlined_to)
     dump_callgraph_transformation (this, new_inlined_to, "inlining to");
@@ -341,7 +369,14 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
 
   /* Update IPA profile.  Local profiles need no updating in original.  */
   if (update_original)
-    count = count.combine_with_ipa_count (count.ipa () - prof_count.ipa ());
+    {
+      if (inlined_to)
+        count = count.combine_with_ipa_count_within (count.ipa ()
+						     - prof_count.ipa (),
+						     inlined_to->count);
+      else
+        count = count.combine_with_ipa_count (count.ipa () - prof_count.ipa ());
+    }
   new_node->decl = new_decl;
   new_node->register_symbol ();
   new_node->origin = origin;
@@ -353,12 +388,14 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
     }
   new_node->analyzed = analyzed;
   new_node->definition = definition;
-  new_node->local = local;
+  new_node->versionable = versionable;
+  new_node->can_change_signature = can_change_signature;
+  new_node->redefined_extern_inline = redefined_extern_inline;
+  new_node->tm_may_enter_irr = tm_may_enter_irr;
   new_node->externally_visible = false;
   new_node->no_reorder = no_reorder;
-  new_node->local.local = true;
-  new_node->global = global;
-  new_node->global.inlined_to = new_inlined_to;
+  new_node->local = true;
+  new_node->inlined_to = new_inlined_to;
   new_node->rtl = rtl;
   new_node->frequency = frequency;
   new_node->tp_first_run = tp_first_run;
@@ -366,6 +403,9 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
   new_node->icf_merged = icf_merged;
   new_node->merged_comdat = merged_comdat;
   new_node->thunk = thunk;
+  new_node->unit_id = unit_id;
+  new_node->merged_comdat = merged_comdat;
+  new_node->merged_extern_inline = merged_extern_inline;
 
   if (param_adjustments)
     new_node->clone.param_adjustments = param_adjustments;
@@ -379,7 +419,7 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
     {
       /* Redirect calls to the old version node to point to its new
 	 version.  The only exception is when the edge was proved to
-	 be unreachable during the clonning procedure.  */
+	 be unreachable during the cloning procedure.  */
       if (!e->callee
 	  || !fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE))
         e->redirect_callee_duplicating_thunks (new_node);
@@ -403,6 +443,16 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
 
   if (call_duplication_hook)
     symtab->call_cgraph_duplication_hooks (this, new_node);
+  /* With partial train run we do not want to assume that original's
+     count is zero whenever we redurect all executed edges to clone.
+     Simply drop profile to local one in this case.  */
+  if (update_original
+      && opt_for_fn (decl, flag_profile_partial_training)
+      && nonzero
+      && count.ipa_p ()
+      && !count.ipa ().nonzero_p ()
+      && !inlined_to)
+    localize_profile (this);
 
   if (!new_inlined_to)
     dump_callgraph_transformation (this, new_node, suffix);
@@ -525,11 +575,11 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
   ipa_replace_map *map;
   char *name;
 
-  gcc_checking_assert (local.versionable);
+  gcc_checking_assert (versionable);
   /* TODO: It would be nice if we could recognize that param_adjustments do not
      actually perform any changes, but at the moment let's require it simply
      does not exist.  */
-  gcc_assert (local.can_change_signature || !param_adjustments);
+  gcc_assert (can_change_signature || !param_adjustments);
 
   /* Make a new FUNCTION_DECL tree node */
   if (!param_adjustments)
@@ -568,6 +618,7 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
      ??? We cannot use COMDAT linkage because there is no
      ABI support for this.  */
   set_new_clone_decl_and_node_flags (new_node);
+  new_node->ipcp_clone = ipcp_clone;
   new_node->clone.tree_map = tree_map;
   if (!implicit_section)
     new_node->set_section (get_section ());
@@ -670,6 +721,11 @@ cgraph_node::find_replacement (void)
 	  n->clone_of = next_inline_clone;
 	  n = n->next_sibling_clone;
 	}
+
+      /* Update order in order to be able to find a LTO section
+	 with function body.  */
+      replacement->order = order;
+
       return replacement;
     }
   else
@@ -861,10 +917,13 @@ cgraph_node::create_version_clone (tree new_decl,
    new_version->local = local;
    new_version->externally_visible = false;
    new_version->no_reorder = no_reorder;
-   new_version->local.local = new_version->definition;
-   new_version->global = global;
+   new_version->local = new_version->definition;
+   new_version->inlined_to = inlined_to;
    new_version->rtl = rtl;
    new_version->count = count;
+   new_version->unit_id = unit_id;
+   new_version->merged_comdat = merged_comdat;
+   new_version->merged_extern_inline = merged_extern_inline;
 
    for (e = callees; e; e=e->next_callee)
      if (!bbs_to_copy
@@ -884,8 +943,6 @@ cgraph_node::create_version_clone (tree new_decl,
 	  version.  */
        e->redirect_callee (new_version);
      }
-
-   symtab->call_cgraph_duplication_hooks (this, new_version);
 
    dump_callgraph_transformation (this, new_version, suffix);
 
@@ -932,7 +989,7 @@ cgraph_node::create_version_clone_with_body
     return NULL;
 
   /* TODO: Restore an assert that we do not change signature if
-     local.can_change_signature is false.  We cannot just check that
+     can_change_signature is false.  We cannot just check that
      param_adjustments is NULL because unfortunately ipa-split removes return
      values from such functions.  */
 
@@ -988,7 +1045,7 @@ cgraph_node::create_version_clone_with_body
   new_version_node->make_decl_local ();
   DECL_VIRTUAL_P (new_version_node->decl) = 0;
   new_version_node->externally_visible = 0;
-  new_version_node->local.local = 1;
+  new_version_node->local = 1;
   new_version_node->lowered = true;
   if (!implicit_section)
     new_version_node->set_section (get_section ());
@@ -1005,6 +1062,22 @@ cgraph_node::create_version_clone_with_body
 
   symtab->call_cgraph_insertion_hooks (new_version_node);
   return new_version_node;
+}
+
+/* Remove the node from the tree of virtual and inline clones and make it a
+   standalone node - not a clone any more.  */
+
+void cgraph_node::remove_from_clone_tree ()
+{
+  if (next_sibling_clone)
+    next_sibling_clone->prev_sibling_clone = prev_sibling_clone;
+  if (prev_sibling_clone)
+    prev_sibling_clone->next_sibling_clone = next_sibling_clone;
+  else
+    clone_of->clones = next_sibling_clone;
+  next_sibling_clone = NULL;
+  prev_sibling_clone = NULL;
+  clone_of = NULL;
 }
 
 /* Given virtual clone, turn it into actual clone.  */
@@ -1027,22 +1100,15 @@ cgraph_materialize_clone (cgraph_node *node)
       dump_function_to_file (node->decl, symtab->dump_file, dump_flags);
     }
 
+  cgraph_node *clone_of = node->clone_of;
   /* Function is no longer clone.  */
-  if (node->next_sibling_clone)
-    node->next_sibling_clone->prev_sibling_clone = node->prev_sibling_clone;
-  if (node->prev_sibling_clone)
-    node->prev_sibling_clone->next_sibling_clone = node->next_sibling_clone;
-  else
-    node->clone_of->clones = node->next_sibling_clone;
-  node->next_sibling_clone = NULL;
-  node->prev_sibling_clone = NULL;
-  if (!node->clone_of->analyzed && !node->clone_of->clones)
+  node->remove_from_clone_tree ();
+  if (!clone_of->analyzed && !clone_of->clones)
     {
-      node->clone_of->release_body ();
-      node->clone_of->remove_callees ();
-      node->clone_of->remove_all_references ();
+      clone_of->release_body ();
+      clone_of->remove_callees ();
+      clone_of->remove_all_references ();
     }
-  node->clone_of = NULL;
   bitmap_obstack_release (NULL);
 }
 

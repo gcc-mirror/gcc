@@ -3888,6 +3888,7 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 	  /* F2008, C1303 and C1304.  */
 	  if (a->expr
 	      && (a->expr->ts.type == BT_DERIVED || a->expr->ts.type == BT_CLASS)
+	      && a->expr->ts.u.derived
 	      && ((a->expr->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
 		   && a->expr->ts.u.derived->intmod_sym_id == ISOFORTRAN_LOCK_TYPE)
 		  || gfc_expr_attr (a->expr).lock_comp))
@@ -3901,6 +3902,7 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 
 	  if (a->expr
 	      && (a->expr->ts.type == BT_DERIVED || a->expr->ts.type == BT_CLASS)
+	      && a->expr->ts.u.derived
 	      && ((a->expr->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
 		   && a->expr->ts.u.derived->intmod_sym_id
 		      == ISOFORTRAN_EVENT_TYPE)

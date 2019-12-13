@@ -4390,7 +4390,7 @@ get_format_for_type_1 (const format_kind_info *fki, tree arg_type,
       for (int i = 0; i < FMT_LEN_MAX; i++)
 	{
 	  const format_type_detail *ftd = &spec->types[i];
-	  if (!ftd->type)
+	  if (!ftd->type || *ftd->type == NULL_TREE)
 	    continue;
 	  if (matching_type_p (*ftd->type, effective_arg_type))
 	    {
@@ -4629,7 +4629,7 @@ class range_label_for_format_type_mismatch
 
     char *result = concat (text.m_buffer, p, NULL);
     text.maybe_free ();
-    return label_text (result, true);
+    return label_text::take (result);
   }
 
  private:
@@ -4899,31 +4899,32 @@ init_dynamic_gfc_info (void)
     }
 }
 
-/* Lookup the type named NAME and return a pointer-to-NAME type if found.
-   Otherwise, return void_type_node if NAME has not been used yet, or NULL_TREE if
-   NAME is not a type (issuing an error).  */
+/* Lookup the type named NAME and return a NAME type if found.
+   Otherwise, return void_type_node if NAME has not been used yet,
+   or NULL_TREE if NAME is not a type (issuing an error).  */
 
 static tree
-get_pointer_to_named_type (const char *name)
+get_named_type (const char *name)
 {
-  tree result;
-  if ((result = maybe_get_identifier (name)))
+  if (tree result = maybe_get_identifier (name))
     {
-      result = identifier_global_value (result);
+      result = identifier_global_tag (result);
       if (result)
 	{
-	  if (TREE_CODE (result) != TYPE_DECL)
+	  if (TYPE_P (result))
+	    ;
+	  else if (TREE_CODE (result) == TYPE_DECL)
+	    result = TREE_TYPE (result);
+	  else
 	    {
 	      error ("%qs is not defined as a type", name);
 	      result = NULL_TREE;
 	    }
-	  else
-	    result = TREE_TYPE (result);
 	}
+      return result;
     }
   else
-    result = void_type_node;
-  return result;
+    return void_type_node;
 }
 
 /* Determine the types of "tree" and "location_t" in the code being
@@ -4953,23 +4954,24 @@ init_dynamic_diag_info (void)
 	 an extra type level.  */
       if ((local_tree_type_node = maybe_get_identifier ("tree")))
 	{
-	  local_tree_type_node = identifier_global_value (local_tree_type_node);
+	  local_tree_type_node
+	    = identifier_global_value (local_tree_type_node);
 	  if (local_tree_type_node)
 	    {
 	      if (TREE_CODE (local_tree_type_node) != TYPE_DECL)
 		{
 		  error ("%<tree%> is not defined as a type");
-		  local_tree_type_node = 0;
+		  local_tree_type_node = NULL_TREE;
 		}
 	      else if (TREE_CODE (TREE_TYPE (local_tree_type_node))
 		       != POINTER_TYPE)
 		{
 		  error ("%<tree%> is not defined as a pointer type");
-		  local_tree_type_node = 0;
+		  local_tree_type_node = NULL_TREE;
 		}
 	      else
-		local_tree_type_node =
-		  TREE_TYPE (TREE_TYPE (local_tree_type_node));
+		local_tree_type_node
+		  = TREE_TYPE (TREE_TYPE (local_tree_type_node));
 	    }
 	}
       else
@@ -4979,12 +4981,12 @@ init_dynamic_diag_info (void)
   /* Similar to the above but for gimple*.  */
   if (!local_gimple_ptr_node
       || local_gimple_ptr_node == void_type_node)
-    local_gimple_ptr_node = get_pointer_to_named_type ("gimple");
+    local_gimple_ptr_node = get_named_type ("gimple");
 
   /* Similar to the above but for cgraph_node*.  */
   if (!local_cgraph_node_ptr_node
       || local_cgraph_node_ptr_node == void_type_node)
-    local_cgraph_node_ptr_node = get_pointer_to_named_type ("cgraph_node");
+    local_cgraph_node_ptr_node = get_named_type ("cgraph_node");
 
   static tree hwi;
 
@@ -5390,16 +5392,14 @@ test_type_mismatch_range_labels ()
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   if (c_dialect_cxx ())
     /* "char*", without a space.  */
-    ASSERT_STREQ ("\n"
-		  "   printf (\"msg: %i\\n\", msg);\n"
+    ASSERT_STREQ ("   printf (\"msg: %i\\n\", msg);\n"
 		  "                 ~^     ~~~\n"
 		  "                  |     |\n"
 		  "                  char* int\n",
 		  pp_formatted_text (dc.printer));
   else
     /* "char *", with a space.  */
-    ASSERT_STREQ ("\n"
-		  "   printf (\"msg: %i\\n\", msg);\n"
+    ASSERT_STREQ ("   printf (\"msg: %i\\n\", msg);\n"
 		  "                 ~^     ~~~\n"
 		  "                  |     |\n"
 		  "                  |     int\n"

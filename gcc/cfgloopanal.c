@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "explow.h"
 #include "expr.h"
 #include "graphds.h"
-#include "params.h"
 #include "sreal.h"
 #include "regs.h"
 #include "function-abi.h"
@@ -256,7 +255,7 @@ expected_loop_iterations_unbounded (const class loop *loop,
     {
       if (by_profile_only)
 	return -1;
-      expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
+      expected = param_avg_loop_niter;
     }
   else if (loop->latch && (loop->latch->count.initialized_p ()
 			   || loop->header->count.initialized_p ()))
@@ -274,7 +273,7 @@ expected_loop_iterations_unbounded (const class loop *loop,
 	{
           if (by_profile_only)
 	    return -1;
-	  expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
+	  expected = param_avg_loop_niter;
 	}
       else if (!count_in.nonzero_p ())
 	{
@@ -295,7 +294,7 @@ expected_loop_iterations_unbounded (const class loop *loop,
     {
       if (by_profile_only)
 	return -1;
-      expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
+      expected = param_avg_loop_niter;
     }
 
   if (!by_profile_only)
@@ -427,7 +426,7 @@ estimate_reg_pressure_cost (unsigned n_new, unsigned n_old, bool speed,
 
   if (optimize && (flag_ira_region == IRA_REGION_ALL
 		   || flag_ira_region == IRA_REGION_MIXED)
-      && number_of_loops (cfun) <= (unsigned) IRA_MAX_LOOPS_NUM)
+      && number_of_loops (cfun) <= (unsigned) param_ira_max_loops_num)
     /* IRA regional allocation deals with high register pressure
        better.  So decrease the cost (to do more accurate the cost
        calculation for IRA, we need to know how many registers lives
@@ -468,16 +467,14 @@ mark_loop_exit_edges (void)
    to noreturn call.  */
 
 edge
-single_likely_exit (class loop *loop)
+single_likely_exit (class loop *loop, vec<edge> exits)
 {
   edge found = single_exit (loop);
-  vec<edge> exits;
   unsigned i;
   edge ex;
 
   if (found)
     return found;
-  exits = get_loop_exit_edges (loop);
   FOR_EACH_VEC_ELT (exits, i, ex)
     {
       if (probably_never_executed_edge_p (cfun, ex)
@@ -490,12 +487,8 @@ single_likely_exit (class loop *loop)
       if (!found)
 	found = ex;
       else
-	{
-	  exits.release ();
-	  return NULL;
-	}
+	return NULL;
     }
-  exits.release ();
   return found;
 }
 

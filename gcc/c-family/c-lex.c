@@ -81,6 +81,7 @@ init_c_lex (void)
   cb->valid_pch = c_common_valid_pch;
   cb->read_pch = c_common_read_pch;
   cb->has_attribute = c_common_has_attribute;
+  cb->has_builtin = c_common_has_builtin;
   cb->get_source_date_epoch = cb_get_source_date_epoch;
   cb->get_suggestion = cb_get_suggestion;
   cb->remap_filename = remap_macro_filename;
@@ -386,6 +387,58 @@ c_common_has_attribute (cpp_reader *pfile)
 
   return result;
 }
+
+/* Callback for has_builtin.  */
+
+int
+c_common_has_builtin (cpp_reader *pfile)
+{
+  const cpp_token *token = get_token_no_padding (pfile);
+  if (token->type != CPP_OPEN_PAREN)
+    {
+      cpp_error (pfile, CPP_DL_ERROR,
+		 "missing '(' after \"__has_builtin\"");
+      return 0;
+    }
+
+  const char *name = "";
+  token = get_token_no_padding (pfile);
+  if (token->type == CPP_NAME)
+    {
+      name = (const char *) cpp_token_as_text (pfile, token);
+      token = get_token_no_padding (pfile);
+      if (token->type != CPP_CLOSE_PAREN)
+	{
+	  cpp_error (pfile, CPP_DL_ERROR,
+		     "expected ')' after \"%s\"", name);
+	  name = "";
+	}
+    }
+  else
+    {
+      cpp_error (pfile, CPP_DL_ERROR,
+		 "macro \"__has_builtin\" requires an identifier");
+      if (token->type == CPP_CLOSE_PAREN)
+	return 0;
+    }
+
+  /* Consume tokens up to the closing parenthesis, including any nested
+     pairs of parentheses, to avoid confusing redundant errors.  */
+  for (unsigned nparen = 1; ; token = get_token_no_padding (pfile))
+    {
+      if (token->type == CPP_OPEN_PAREN)
+	++nparen;
+      else if (token->type == CPP_CLOSE_PAREN)
+	--nparen;
+      else if (token->type == CPP_EOF)
+	break;
+      if (!nparen)
+	break;
+    }
+
+  return names_builtin_p (name);
+}
+
 
 /* Read a token and return its type.  Fill *VALUE with its value, if
    applicable.  Fill *CPP_FLAGS with the token's flags, if it is
@@ -824,7 +877,12 @@ interpret_float (const cpp_token *token, unsigned int flags,
 
   /* Decode type based on width and properties. */
   if (flags & CPP_N_DFLOAT)
-    if ((flags & CPP_N_WIDTH) == CPP_N_LARGE)
+    if (!targetm.decimal_float_supported_p ())
+      {
+	error ("decimal floating-point not supported for this target");
+	return error_mark_node;
+      }
+    else if ((flags & CPP_N_WIDTH) == CPP_N_LARGE)
       type = dfloat128_type_node;
     else if ((flags & CPP_N_WIDTH) == CPP_N_SMALL)
       type = dfloat32_type_node;
@@ -1323,7 +1381,9 @@ lex_charconst (const cpp_token *token)
     type = char16_type_node;
   else if (token->type == CPP_UTF8CHAR)
     {
-      if (flag_char8_t)
+      if (!c_dialect_cxx ())
+	type = unsigned_char_type_node;
+      else if (flag_char8_t)
         type = char8_type_node;
       else
         type = char_type_node;

@@ -50,9 +50,9 @@ class range_operator
 {
 public:
   // Perform an operation between 2 ranges and return it.
-  virtual value_range_base fold_range (tree type,
-				       const value_range_base &lh,
-				       const value_range_base &rh) const;
+  virtual bool fold_range (value_range &r, tree type,
+			   const value_range &lh,
+			   const value_range &rh) const;
 
   // Return the range for op[12] in the general case.  LHS is the range for
   // the LHS of the expression, OP[12]is the range for the other
@@ -65,24 +65,27 @@ public:
   //
   // i.e.  [LHS] = ??? + OP2
   // is re-formed as R = [LHS] - OP2.
-  virtual bool op1_range (value_range_base &r, tree type,
-			  const value_range_base &lhs,
-			  const value_range_base &op2) const;
-  virtual bool op2_range (value_range_base &r, tree type,
-			  const value_range_base &lhs,
-			  const value_range_base &op1) const;
+  virtual bool op1_range (value_range &r, tree type,
+			  const value_range &lhs,
+			  const value_range &op2) const;
+  virtual bool op2_range (value_range &r, tree type,
+			  const value_range &lhs,
+			  const value_range &op1) const;
 
 protected:
-  // Perform an operation between 2 sub-ranges and return it.
-  virtual value_range_base wi_fold (tree type,
-				    const wide_int &lh_lb,
-				    const wide_int &lh_ub,
-				    const wide_int &rh_lb,
-				    const wide_int &rh_ub) const;
+  // Perform an integral operation between 2 sub-ranges and return it.
+  virtual void wi_fold (value_range &r, tree type,
+		        const wide_int &lh_lb,
+		        const wide_int &lh_ub,
+		        const wide_int &rh_lb,
+		        const wide_int &rh_ub) const;
 };
 
 extern range_operator *range_op_handler (enum tree_code code, tree type);
-
-extern void range_cast (value_range_base &, tree type);
+extern void range_cast (value_range &, tree type);
+extern void wi_set_zero_nonzero_bits (tree type,
+				      const wide_int &, const wide_int &,
+				      wide_int &maybe_nonzero,
+				      wide_int &mustbe_nonzero);
 
 #endif // GCC_RANGE_OP_H

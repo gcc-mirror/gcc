@@ -3021,64 +3021,6 @@ may_trap_or_fault_p (const_rtx x)
   return may_trap_p_1 (x, 1);
 }
 
-/* Return nonzero if X contains a comparison that is not either EQ or NE,
-   i.e., an inequality.  */
-
-int
-inequality_comparisons_p (const_rtx x)
-{
-  const char *fmt;
-  int len, i;
-  const enum rtx_code code = GET_CODE (x);
-
-  switch (code)
-    {
-    case REG:
-    case SCRATCH:
-    case PC:
-    case CC0:
-    CASE_CONST_ANY:
-    case CONST:
-    case LABEL_REF:
-    case SYMBOL_REF:
-      return 0;
-
-    case LT:
-    case LTU:
-    case GT:
-    case GTU:
-    case LE:
-    case LEU:
-    case GE:
-    case GEU:
-      return 1;
-
-    default:
-      break;
-    }
-
-  len = GET_RTX_LENGTH (code);
-  fmt = GET_RTX_FORMAT (code);
-
-  for (i = 0; i < len; i++)
-    {
-      if (fmt[i] == 'e')
-	{
-	  if (inequality_comparisons_p (XEXP (x, i)))
-	    return 1;
-	}
-      else if (fmt[i] == 'E')
-	{
-	  int j;
-	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	    if (inequality_comparisons_p (XVECEXP (x, i, j)))
-	      return 1;
-	}
-    }
-
-  return 0;
-}
-
 /* Replace any occurrence of FROM in X with TO.  The function does
    not enter into CONST_DOUBLE for the replace.
 
@@ -4009,9 +3951,7 @@ simplify_subreg_regno (unsigned int xregno, machine_mode xmode,
   /* Give the backend a chance to disallow the mode change.  */
   if (GET_MODE_CLASS (xmode) != MODE_COMPLEX_INT
       && GET_MODE_CLASS (xmode) != MODE_COMPLEX_FLOAT
-      && !REG_CAN_CHANGE_MODE_P (xregno, xmode, ymode)
-      /* We can use mode change in LRA for some transformations.  */
-      && ! lra_in_progress)
+      && !REG_CAN_CHANGE_MODE_P (xregno, xmode, ymode))
     return -1;
 
   /* We shouldn't simplify stack-related registers.  */

@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #define VXWORKS_LIBGCC_SPEC ""
 #define	VXWORKS_STARTFILE_SPEC ""
 #define VXWORKS_ENDFILE_SPEC ""
+#define VXWORKS_CC1_SPEC ""
 
 /* VxWorks cannot have dots in constructor labels, because it uses a
    mutant variation of collect2 that generates C code instead of
@@ -57,11 +58,23 @@ along with GCC; see the file COPYING3.  If not see
 #undef WINT_TYPE_SIZE
 #define WINT_TYPE_SIZE 16
 
-/* Dwarf2 unwind info is supported.  */
+/* Dwarf2 unwind info is supported, unless overriden by a request for a target
+   specific format.
+
+   Taking care of this here allows using DWARF2_UNWIND_INFO in #if conditions
+   from the common config/vxworks.h files, included before the cpu
+   specializations.  Unlike with conditions used in C expressions, where the
+   definitions which matter are those at the expression expansion point, use
+   in #if constructs requires an accurate definition of the operands at the
+   #if point.  Since <cpu>/vxworks.h. is typically included after
+   config/vxworks.h, #if expressions in the latter can't rely on possible
+   redefinitions in the former.  */
+#if !ARM_UNWIND_INFO
 #undef DWARF2_UNWIND_INFO
 #define DWARF2_UNWIND_INFO 1
+#endif
 
-/* VxWorks uses DWARF2.  */
+/* VxWorks uses DWARF2 debugging info.  */
 #define DWARF2_DEBUGGING_INFO 1
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
@@ -86,10 +99,3 @@ along with GCC; see the file COPYING3.  If not see
 /* We occasionally need to distinguish between the VxWorks variants.  */
 #define VXWORKS_KIND_NORMAL  1
 #define VXWORKS_KIND_AE      2
-
-/*
- * libitm is not supported on VxWorks. Rather than providing stub
- * no-op _ITM_registerTMCloneTable/_ITM_deregisterTMCloneTable
- * functions, simply prevent crtstuff from even referring to those.
- */
-#define USE_TM_CLONE_REGISTRY 0

@@ -79,3 +79,5 @@ main ()
 /* { dg-final { scan-assembler-not "\trisbg" { target { lp64 } } } } */
 /* Just one for the ret != 6 comparison.  */
 /* { dg-final { scan-assembler-times "ci" 1 } } */
+/* { dg-final { scan-assembler-times "\tlochio\t" 6 { target { ! lp64 } } } } */
+/* { dg-final { scan-assembler-times "\tlocghio\t" 6 { target lp64 } } } */

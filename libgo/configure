@@ -14056,6 +14056,9 @@ case ${host} in
   aarch64-*-*)
     GOARCH=arm64
     ;;
+  aarch64_be-*-*)
+    GOARCH=arm64be
+    ;;
   arm*-*-* | strongarm*-*-* | ep9312*-*-* | xscale-*-*)
     GOARCH=arm
     case ${host} in
@@ -15850,7 +15853,7 @@ else
   multilib_arg=
 fi
 
-ac_config_files="$ac_config_files Makefile testsuite/Makefile"
+ac_config_files="$ac_config_files Makefile testsuite/Makefile testsuite/libgo-test-support.exp"
 
 
 ac_config_commands="$ac_config_commands default"
@@ -17031,6 +17034,7 @@ do
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "testsuite/Makefile") CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
+    "testsuite/libgo-test-support.exp") CONFIG_FILES="$CONFIG_FILES testsuite/libgo-test-support.exp" ;;
     "default") CONFIG_COMMANDS="$CONFIG_COMMANDS default" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;

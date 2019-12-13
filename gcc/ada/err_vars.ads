@@ -113,6 +113,8 @@ package Err_Vars is
    Error_Msg_Uint_2 : Uint;
    --  Uint values for ^ insertion characters in message
 
+   --  WARNING: There is a matching C declaration of these variables in fe.h
+
    Error_Msg_Sloc : Source_Ptr;
    --  Source location for # insertion character in message
 

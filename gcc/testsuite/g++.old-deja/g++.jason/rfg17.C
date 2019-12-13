@@ -12,5 +12,5 @@ void
 test ()
 {
   b1 = b2;	      /* OK */
-  a1 = a2;	      /* { dg-error "" } array assignment */
+  a1 = a2;	      /* { dg-error "6:invalid array assignment" } array assignment */
 }

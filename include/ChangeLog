@@ -1,3 +1,20 @@
+2019-11-16  Tim Ruehsen  <tim.ruehsen@gmx.de>
+
+	* demangle.h (struct demangle_component): Add member
+	d_counting.
+
+2019-11-16  Eduard-Mihai Burtescu  <eddyb@lyken.rs>
+
+	* demangle.h (rust_demangle_callback): Add.
+
+2019-11-13  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	* gomp-constants.h (GOMP_DEVICE_GCN): Define.
+	(GOMP_VERSION_GCN): Define.
+
 2019-08-08  Martin Liska  <mliska@suse.cz>
 
 	PR bootstrap/91352

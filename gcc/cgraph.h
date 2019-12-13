@@ -81,8 +81,9 @@ enum availability
      program.  */
   AVAIL_AVAILABLE,
   /* Function body/variable initializer is known and all it's uses are
-     explicitly visible within current unit (ie it's address is never taken and
-     it is not exported to other units). Currently used only for functions.  */
+     explicitly visible within current unit (i.e. it's address is never taken
+     and it is not exported to other units). Currently used only for
+     functions.  */
   AVAIL_LOCAL
 };
 
@@ -92,7 +93,7 @@ enum symbol_partitioning_class
    /* External declarations are ignored by partitioning algorithms and they are
       added into the boundary later via compute_ltrans_boundary.  */
    SYMBOL_EXTERNAL,
-   /* Partitioned symbols are pur into one of partitions.  */
+   /* Partitioned symbols are put into one of partitions.  */
    SYMBOL_PARTITION,
    /* Duplicated symbols (such as comdat or constant pool references) are
       copied into every node needing them via add_symbol_to_partition.  */
@@ -107,6 +108,23 @@ struct GTY((desc ("%h.type"), tag ("SYMTAB_SYMBOL"),
 {
 public:
   friend class symbol_table;
+
+  /* Constructor.  */
+  explicit symtab_node (symtab_type t)
+    : type (t), resolution (LDPR_UNKNOWN), definition (false), alias (false),
+      transparent_alias (false), weakref (false), cpp_implicit_alias (false),
+      symver (false), analyzed (false), writeonly (false),
+      refuse_visibility_changes (false), externally_visible (false),
+      no_reorder (false), force_output (false), forced_by_abi (false),
+      unique_name (false), implicit_section (false), body_removed (false),
+      used_from_other_partition (false), in_other_partition (false),
+      address_taken (false), in_init_priority_hash (false),
+      need_lto_streaming (false), offloadable (false), ifunc_resolver (false),
+      order (false), next_sharing_asm_name (NULL),
+      previous_sharing_asm_name (NULL), same_comdat_group (NULL), ref_list (),
+      alias_target (NULL), lto_file_data (NULL), aux (NULL),
+      x_comdat_group (NULL_TREE), x_section (NULL)
+  {}
 
   /* Return name.  */
   const char *name () const;
@@ -146,13 +164,13 @@ public:
   void DEBUG_FUNCTION verify (void);
 
   /* Return ipa reference from this symtab_node to
-     REFERED_NODE or REFERED_VARPOOL_NODE. USE_TYPE specify type
+     REFERRED_NODE or REFERRED_VARPOOL_NODE. USE_TYPE specify type
      of the use and STMT the statement (if it exists).  */
   ipa_ref *create_reference (symtab_node *referred_node,
 			     enum ipa_ref_use use_type);
 
   /* Return ipa reference from this symtab_node to
-     REFERED_NODE or REFERED_VARPOOL_NODE. USE_TYPE specify type
+     REFERRED_NODE or REFERRED_VARPOOL_NODE. USE_TYPE specify type
      of the use and STMT the statement (if it exists).  */
   ipa_ref *create_reference (symtab_node *referred_node,
 			     enum ipa_ref_use use_type, gimple *stmt);
@@ -371,7 +389,7 @@ public:
      Assume that symbol is used (so there is no need to take into account
      garbage collecting linkers)
 
-     This can happen for comdats, commons and weaks when they are previaled
+     This can happen for comdats, commons and weaks when they are prevailed
      by other definition at static linking time.  */
   inline bool
   can_be_discarded_p (void)
@@ -406,7 +424,7 @@ public:
 
      If MEMORY_ACCESSED is true, assume that both memory pointer to THIS
      and S2 is going to be accessed.  This eliminates the situations when
-     either THIS or S2 is NULL and is seful for comparing bases when deciding
+     either THIS or S2 is NULL and is useful for comparing bases when deciding
      about memory aliasing.  */
   int equal_address_to (symtab_node *s2, bool memory_accessed = false);
 
@@ -463,7 +481,7 @@ public:
      set via finalize_function or finalize_decl  */
   unsigned definition : 1;
   /* True when symbol is an alias.
-     Set by ssemble_alias.  */
+     Set by assemble_alias.  */
   unsigned alias : 1;
   /* When true the alias is translated into its target symbol either by GCC
      or assembler (it also may just be a duplicate declaration of the same
@@ -477,7 +495,7 @@ public:
 	 by varasm.c. For those DECL_ASSEMBLER_NAME have
 	 IDENTIFIER_TRANSPARENT_ALIAS set and thus also their assembler
 	 name must be unique.
-	 Weakrefs belong to this cateogry when we target assembler without
+	 Weakrefs belong to this category when we target assembler without
 	 .weakref directive.
        - weakrefs that are renamed by assembler via .weakref directive.
 	 In this case the alias may or may not be definition (depending if
@@ -496,6 +514,8 @@ public:
      and their visibility needs to be copied from their "masters" at
      the end of parsing.  */
   unsigned cpp_implicit_alias : 1;
+  /* The alias is a symbol version.  */
+  unsigned symver : 1;
   /* Set once the definition was analyzed.  The list of references and
      other properties are built during analysis.  */
   unsigned analyzed : 1;
@@ -707,38 +727,6 @@ struct GTY(()) cgraph_thunk_info {
   bool thunk_p;
 };
 
-/* Information about the function collected locally.
-   Available after function is analyzed.  */
-
-struct GTY(()) cgraph_local_info {
-  /* Set when function is visible in current compilation unit only and
-     its address is never taken.  */
-  unsigned local : 1;
-
-  /* False when there is something makes versioning impossible.  */
-  unsigned versionable : 1;
-
-  /* False when function calling convention and signature cannot be changed.
-     This is the case when __builtin_apply_args is used.  */
-  unsigned can_change_signature : 1;
-
-  /* True when the function has been originally extern inline, but it is
-     redefined now.  */
-  unsigned redefined_extern_inline : 1;
-
-  /* True if the function may enter serial irrevocable mode.  */
-  unsigned tm_may_enter_irr : 1;
-};
-
-/* Information about the function that needs to be computed globally
-   once compilation is finished.  Available only with -funit-at-a-time.  */
-
-struct GTY(()) cgraph_global_info {
-  /* For inline clones this points to the function they will be
-     inlined into.  */
-  cgraph_node *inlined_to;
-};
-
 /* Represent which DECL tree (or reference to such tree)
    will be replaced by another tree while versioning.  */
 struct GTY(()) ipa_replace_map
@@ -930,6 +918,28 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 {
   friend class symbol_table;
 
+  /* Constructor.  */
+  explicit cgraph_node (int uid)
+    : symtab_node (SYMTAB_FUNCTION), callees (NULL), callers (NULL),
+      indirect_calls (NULL), origin (NULL), nested (NULL), next_nested (NULL),
+      next_sibling_clone (NULL), prev_sibling_clone (NULL), clones (NULL),
+      clone_of (NULL), call_site_hash (NULL), former_clone_of (NULL),
+      simdclone (NULL), simd_clones (NULL), ipa_transforms_to_apply (vNULL),
+      inlined_to (NULL), rtl (NULL), clone (), thunk (),
+      count (profile_count::uninitialized ()),
+      count_materialization_scale (REG_BR_PROB_BASE), profile_id (0),
+      unit_id (0), tp_first_run (0), used_as_abstract_origin (false),
+      lowered (false), process (false), frequency (NODE_FREQUENCY_NORMAL),
+      only_called_at_startup (false), only_called_at_exit (false),
+      tm_clone (false), dispatcher_function (false), calls_comdat_local (false),
+      icf_merged (false), nonfreeing_fn (false), merged_comdat (false),
+      merged_extern_inline (false), parallelized_function (false),
+      split_part (false), indirect_call_target (false), local (false),
+      versionable (false), can_change_signature (false),
+      redefined_extern_inline (false), tm_may_enter_irr (false),
+      ipcp_clone (false), m_uid (uid), m_summary_id (-1)
+  {}
+
   /* Remove the node from cgraph and all inline clones inlined into it.
      Skip however removal of FORBIDDEN_NODE and return true if it needs to be
      removed.  This allows to call the function from outer loop walking clone
@@ -974,12 +984,12 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
      When UPDATE_ORIGINAL is true, the counts are subtracted from the original
      function's profile to reflect the fact that part of execution is handled
      by node.
-     When CALL_DUPLICATOIN_HOOK is true, the ipa passes are acknowledged about
+     When CALL_DUPLICATION_HOOK is true, the ipa passes are acknowledged about
      the new clone. Otherwise the caller is responsible for doing so later.
 
      If the new node is being inlined into another one, NEW_INLINED_TO should be
      the outline function the new one is (even indirectly) inlined to.
-     All hooks will see this in node's global.inlined_to, when invoked.
+     All hooks will see this in node's inlined_to, when invoked.
      Can be NULL if the node is not inlined.  SUFFIX is string that is appended
      to the original name.  */
   cgraph_node *create_clone (tree decl, profile_count count,
@@ -997,6 +1007,10 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 				     vec<ipa_replace_map *, va_gc> *tree_map,
 				     ipa_param_adjustments *param_adjustments,
 				     const char * suffix, unsigned num_suffix);
+
+  /* Remove the node from the tree of virtual and inline clones and make it a
+     standalone node - not a clone any more.  */
+  void remove_from_clone_tree ();
 
   /* cgraph node being removed from symbol table; see if its entry can be
    replaced by other inline clone.  */
@@ -1155,7 +1169,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   /* Likewise indicate that a node is having address taken.  */
   void mark_address_taken (void);
 
-  /* Set fialization priority to PRIORITY.  */
+  /* Set finalization priority to PRIORITY.  */
   void set_fini_priority (priority_type priority);
 
   /* Return the finalization priority.  */
@@ -1211,7 +1225,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
     If SET_CONST if false, clear the flag.
 
     When setting the flag be careful about possible interposition and
-    do not set the flag for functions that can be interposet and set pure
+    do not set the flag for functions that can be interposed and set pure
     flag for functions that can bind to other definition. 
 
     Return true if any change was done. */
@@ -1379,9 +1393,9 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   static cgraph_node * get_create (tree);
 
   /* Return local info for the compiled function.  */
-  static cgraph_local_info *local_info (tree decl);
+  static cgraph_node *local_info_node (tree decl);
 
-  /* Return local info for the compiled function.  */
+  /* Return RTL info for the compiled function.  */
   static struct cgraph_rtl_info *rtl_info (const_tree);
 
   /* Return the cgraph node that has ASMNAME for its DECL_ASSEMBLER_NAME.
@@ -1445,8 +1459,10 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
      per-function in order to allow IPA passes to introduce new functions.  */
   vec<ipa_opt_pass> GTY((skip)) ipa_transforms_to_apply;
 
-  cgraph_local_info local;
-  cgraph_global_info global;
+  /* For inline clones this points to the function they will be
+     inlined into.  */
+  cgraph_node *inlined_to;
+
   struct cgraph_rtl_info *rtl;
   cgraph_clone_info clone;
   cgraph_thunk_info thunk;
@@ -1458,6 +1474,8 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   int count_materialization_scale;
   /* ID assigned by the profiling.  */
   unsigned int profile_id;
+  /* ID of the translation unit.  */
+  int unit_id;
   /* Time profiler: first run of function.  */
   int tp_first_run;
 
@@ -1494,12 +1512,29 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   unsigned nonfreeing_fn : 1;
   /* True if there was multiple COMDAT bodies merged by lto-symtab.  */
   unsigned merged_comdat : 1;
+  /* True if this def was merged with extern inlines.  */
+  unsigned merged_extern_inline : 1;
   /* True if function was created to be executed in parallel.  */
   unsigned parallelized_function : 1;
   /* True if function is part split out by ipa-split.  */
   unsigned split_part : 1;
   /* True if the function appears as possible target of indirect call.  */
   unsigned indirect_call_target : 1;
+  /* Set when function is visible in current compilation unit only and
+     its address is never taken.  */
+  unsigned local : 1;
+  /* False when there is something makes versioning impossible.  */
+  unsigned versionable : 1;
+  /* False when function calling convention and signature cannot be changed.
+     This is the case when __builtin_apply_args is used.  */
+  unsigned can_change_signature : 1;
+  /* True when the function has been originally extern inline, but it is
+     redefined now.  */
+  unsigned redefined_extern_inline : 1;
+  /* True if the function may enter serial irrevocable mode.  */
+  unsigned tm_may_enter_irr : 1;
+  /* True if this was a clone created by ipa-cp.  */
+  unsigned ipcp_clone : 1;
 
 private:
   /* Unique id of the node.  */
@@ -1581,7 +1616,7 @@ public:
   ipa_polymorphic_call_context (cgraph_edge *e);
   /* Build polymorphic call context for IP invariant CST.
      If specified, OTR_TYPE specify the type of polymorphic call
-     that takes CST+OFFSET as a prameter.  */
+     that takes CST+OFFSET as a parameter.  */
   ipa_polymorphic_call_context (tree cst, tree otr_type = NULL,
 				HOST_WIDE_INT offset = 0);
   /* Build context for pointer REF contained in FNDECL at statement STMT.
@@ -1597,7 +1632,7 @@ public:
   /* Make context non-speculative.  */
   void clear_speculation ();
 
-  /* Produce context specifying all derrived types of OTR_TYPE.  If OTR_TYPE is
+  /* Produce context specifying all derived types of OTR_TYPE.  If OTR_TYPE is
      NULL, the context is set to dummy "I know nothing" setting.  */
   void clear_outer_type (tree otr_type = NULL);
 
@@ -1620,8 +1655,8 @@ public:
   /* Use when we cannot track dynamic type change.  This speculatively assume
      type change is not happening.  */
   void possible_dynamic_type_change (bool, tree otr_type = NULL);
-  /* Assume that both THIS and a given context is valid and strenghten THIS
-     if possible.  Return true if any strenghtening was made.
+  /* Assume that both THIS and a given context is valid and strengthen THIS
+     if possible.  Return true if any strengthening was made.
      If actual type the context is being used in is known, OTR_TYPE should be
      set accordingly. This improves quality of combined result.  */
   bool combine_with (ipa_polymorphic_call_context, tree otr_type = NULL);
@@ -1668,7 +1703,7 @@ public:
   int param_index;
   /* ECF flags determined from the caller.  */
   int ecf_flags;
-  /* Profile_id of common target obtrained from profile.  */
+  /* Profile_id of common target obtained from profile.  */
   int common_target_id;
   /* Probability that call will land in function with COMMON_TARGET_ID.  */
   int common_target_probability;
@@ -1734,7 +1769,7 @@ public:
   void speculative_call_info (cgraph_edge *&direct, cgraph_edge *&indirect,
 			      ipa_ref *&reference);
 
-  /* Speculative call edge turned out to be direct call to CALLE_DECL.
+  /* Speculative call edge turned out to be direct call to CALLEE_DECL.
      Remove the speculative call sequence and return edge representing the call.
      It is up to caller to redirect the call as appropriate. */
   cgraph_edge *resolve_speculation (tree callee_decl = NULL);
@@ -1829,10 +1864,10 @@ public:
      to a same call statement:
      1) a direct call (to expected_fn)
      2) an indirect call (to call_target)
-     3) a IPA_REF_ADDR refrence to expected_fn.
+     3) a IPA_REF_ADDR reference to expected_fn.
 
      Optimizers may later redirect direct call to clone, so 1) and 3)
-     do not need to necesarily agree with destination.  */
+     do not need to necessarily agree with destination.  */
   unsigned int speculative : 1;
   /* Set to true when caller is a constructor or destructor of polymorphic
      type.  */
@@ -1881,6 +1916,12 @@ private:
 
 struct GTY((tag ("SYMTAB_VARIABLE"))) varpool_node : public symtab_node
 {
+  /* Constructor.  */
+  explicit varpool_node ()
+    : symtab_node (SYMTAB_VARIABLE), output (0), dynamically_initialized (0),
+      tls_model (TLS_MODEL_NONE), used_by_single_function (0)
+  {}
+
   /* Dump given varpool node to F.  */
   void dump (FILE *f);
 
@@ -1925,7 +1966,7 @@ struct GTY((tag ("SYMTAB_VARIABLE"))) varpool_node : public symtab_node
      sections can be resolved.  */
   void finalize_named_section_flags (void);
 
-  /* Call calback on varpool symbol and aliases associated to varpool symbol.
+  /* Call callback on varpool symbol and aliases associated to varpool symbol.
      When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
      skipped. */
   bool call_for_symbol_and_aliases (bool (*callback) (varpool_node *, void *),
@@ -1993,7 +2034,7 @@ struct GTY((tag ("SYMTAB_VARIABLE"))) varpool_node : public symtab_node
   ENUM_BITFIELD(tls_model) tls_model : 3;
 
   /* Set if the variable is known to be used by single function only.
-     This is computed by ipa_signle_use pass and used by late optimizations
+     This is computed by ipa_single_use pass and used by late optimizations
      in places where optimization would be valid for local static variable
      if we did not do any inter-procedural code movement.  */
   unsigned used_by_single_function : 1;
@@ -2031,7 +2072,7 @@ is_a_helper <cgraph_node *>::test (symtab_node *p)
   return p && p->type == SYMTAB_FUNCTION;
 }
 
-/* Report whether or not THIS symtab node is a vriable, aka varpool_node.  */
+/* Report whether or not THIS symtab node is a variable, aka varpool_node.  */
 
 template <>
 template <>
@@ -2100,7 +2141,7 @@ public:
   edges_count (0), edges_max_uid (1), edges_max_summary_id (0),
   cgraph_released_summary_ids (), edge_released_summary_ids (),
   nodes (NULL), asmnodes (NULL), asm_last_node (NULL),
-  order (0), global_info_ready (false), state (PARSING),
+  order (0), max_unit (0), global_info_ready (false), state (PARSING),
   function_flags_ready (false), cpp_implicit_aliases_done (false),
   section_hash (NULL), assembler_name_hash (NULL), init_priority_hash (NULL),
   dump_file (NULL), ipa_clones_dump_file (NULL), cloned_nodes (),
@@ -2122,9 +2163,9 @@ public:
 
   /* C++ frontend produce same body aliases all over the place, even before PCH
      gets streamed out. It relies on us linking the aliases with their function
-     in order to do the fixups, but ipa-ref is not PCH safe.  Consequentely we
-     first produce aliases without links, but once C++ FE is sure he won't sream
-     PCH we build the links via this function.  */
+     in order to do the fixups, but ipa-ref is not PCH safe.  Consequently we
+     first produce aliases without links, but once C++ FE is sure it won't
+     stream PCH we build the links via this function.  */
   void process_same_body_aliases (void);
 
   /* Perform simple optimizations based on callgraph.  */
@@ -2298,7 +2339,7 @@ public:
   /* Arrange node to be first in its entry of assembler_name_hash.  */
   void symtab_prevail_in_asm_name_hash (symtab_node *node);
 
-  /* Initalize asm name hash unless.  */
+  /* Initialize asm name hash unless.  */
   void symtab_initialize_asm_name_hash (void);
 
   /* Set the DECL_ASSEMBLER_NAME and update symtab hashtables.  */
@@ -2365,6 +2406,9 @@ public:
      them, to support -fno-toplevel-reorder.  */
   int order;
 
+  /* Maximal unit ID used.  */
+  int max_unit;
+
   /* Set when whole unit has been analyzed so we can access global info.  */
   bool global_info_ready;
   /* What state callgraph is in right now.  */
@@ -2374,7 +2418,7 @@ public:
 
   bool cpp_implicit_aliases_done;
 
-  /* Hash table used to hold sectoons.  */
+  /* Hash table used to hold sections.  */
   hash_table<section_name_hasher> *GTY(()) section_hash;
 
   /* Hash table used to convert assembler names into nodes.  */
@@ -2390,9 +2434,6 @@ public:
   hash_set <const cgraph_node *> GTY ((skip)) cloned_nodes;
 
 private:
-  /* Allocate new callgraph node.  */
-  inline cgraph_node * allocate_cgraph_symbol (void);
-
   /* Allocate a cgraph_edge structure and fill it with data according to the
      parameters of which only CALLEE can be NULL (when creating an indirect
      call edge).  CLONING_P should be set if properties that are copied from an
@@ -2420,7 +2461,7 @@ private:
 
   /* List of hooks triggered when an edge is removed.  */
   cgraph_edge_hook_list * GTY((skip)) m_first_edge_removal_hook;
-  /* List of hooks triggem_red when a cgraph node is removed.  */
+  /* List of hooks trigger_red when a cgraph node is removed.  */
   cgraph_node_hook_list * GTY((skip)) m_first_cgraph_removal_hook;
   /* List of hooks triggered when an edge is duplicated.  */
   cgraph_2edge_hook_list * GTY((skip)) m_first_edge_duplicated_hook;
@@ -2462,10 +2503,9 @@ bool cgraph_function_possibly_inlined_p (tree);
 const char* cgraph_inline_failed_string (cgraph_inline_failed_t);
 cgraph_inline_failed_type_t cgraph_inline_failed_type (cgraph_inline_failed_t);
 
-extern bool gimple_check_call_matching_types (gimple *, tree, bool);
-
 /* In cgraphunit.c  */
 void cgraphunit_c_finalize (void);
+int tp_first_run_node_cmp (const void *pa, const void *pb);
 
 /*  Initialize datastructures so DECL is a function in lowered gimple form.
     IN_SSA is true if the gimple is in SSA.  */
@@ -2519,13 +2559,13 @@ symtab_node::real_symbol_p (void)
   if (!is_a <cgraph_node *> (this))
     return true;
   cnode = dyn_cast <cgraph_node *> (this);
-  if (cnode->global.inlined_to)
+  if (cnode->inlined_to)
     return false;
   return true;
 }
 
 /* Return true if DECL should have entry in symbol table if used.
-   Those are functions and static & external veriables*/
+   Those are functions and static & external variables.  */
 
 static inline bool
 decl_in_symtab_p (const_tree decl)
@@ -2542,13 +2582,13 @@ symtab_node::in_same_comdat_group_p (symtab_node *target)
 
   if (cgraph_node *cn = dyn_cast <cgraph_node *> (target))
     {
-      if (cn->global.inlined_to)
-	source = cn->global.inlined_to;
+      if (cn->inlined_to)
+	source = cn->inlined_to;
     }
   if (cgraph_node *cn = dyn_cast <cgraph_node *> (target))
     {
-      if (cn->global.inlined_to)
-	target = cn->global.inlined_to;
+      if (cn->inlined_to)
+	target = cn->inlined_to;
     }
 
   return source->get_comdat_group () == target->get_comdat_group ();
@@ -2718,21 +2758,6 @@ symbol_table::release_symbol (cgraph_node *node)
     cgraph_released_summary_ids.safe_push (node->m_summary_id);
   ggc_free (node);
 }
-
-/* Allocate new callgraph node.  */
-
-inline cgraph_node *
-symbol_table::allocate_cgraph_symbol (void)
-{
-  cgraph_node *node;
-
-  node = ggc_cleared_alloc<cgraph_node> ();
-  node->type = SYMTAB_FUNCTION;
-  node->m_summary_id = -1;
-  node->m_uid = cgraph_max_uid++;
-  return node;
-}
-
 
 /* Return first static symbol with definition.  */
 inline symtab_node *
@@ -2995,7 +3020,7 @@ struct GTY((for_user)) constant_descriptor_tree {
 inline bool
 cgraph_node::only_called_directly_or_aliased_p (void)
 {
-  gcc_assert (!global.inlined_to);
+  gcc_assert (!inlined_to);
   return (!force_output && !address_taken
 	  && !ifunc_resolver
 	  && !used_from_other_partition
@@ -3012,7 +3037,7 @@ cgraph_node::only_called_directly_or_aliased_p (void)
 inline bool
 cgraph_node::can_remove_if_no_direct_calls_and_refs_p (void)
 {
-  gcc_checking_assert (!global.inlined_to);
+  gcc_checking_assert (!inlined_to);
   /* Extern inlines can always go, we will use the external definition.  */
   if (DECL_EXTERNAL (decl))
     return true;
@@ -3183,8 +3208,8 @@ inline bool
 cgraph_edge::recursive_p (void)
 {
   cgraph_node *c = callee->ultimate_alias_target ();
-  if (caller->global.inlined_to)
-    return caller->global.inlined_to->decl == c->decl;
+  if (caller->inlined_to)
+    return caller->inlined_to->decl == c->decl;
   else
     return caller->decl == c->decl;
 }
@@ -3221,8 +3246,8 @@ cgraph_edge::binds_to_current_def_p ()
 inline int
 cgraph_edge::frequency ()
 {
-  return count.to_cgraph_frequency (caller->global.inlined_to
-				    ? caller->global.inlined_to->count
+  return count.to_cgraph_frequency (caller->inlined_to
+				    ? caller->inlined_to->count
 				    : caller->count);
 }
 
@@ -3244,7 +3269,7 @@ inline void
 cgraph_node::mark_force_output (void)
 {
   force_output = 1;
-  gcc_checking_assert (!global.inlined_to);
+  gcc_checking_assert (!inlined_to);
 }
 
 /* Return true if function should be optimized for size.  */
@@ -3283,7 +3308,7 @@ symtab_node::get_availability (symtab_node *ref)
     return dyn_cast <varpool_node *> (this)->get_availability (ref);
 }
 
-/* Call calback on symtab node and aliases associated to this node.
+/* Call callback on symtab node and aliases associated to this node.
    When INCLUDE_OVERWRITABLE is false, overwritable symbols are skipped. */
 
 inline bool
@@ -3324,7 +3349,7 @@ cgraph_node::call_for_symbol_and_aliases (bool (*callback) (cgraph_node *,
   return false;
 }
 
-/* Call calback on varpool symbol and aliases associated to varpool symbol.
+/* Call callback on varpool symbol and aliases associated to varpool symbol.
    When INCLUDE_OVERWRITABLE is false, overwritable symbols are
    skipped. */
 
@@ -3345,7 +3370,7 @@ varpool_node::call_for_symbol_and_aliases (bool (*callback) (varpool_node *,
   return false;
 }
 
-/* Return true if refernece may be used in address compare.  */
+/* Return true if reference may be used in address compare.  */
 
 inline bool
 ipa_ref::address_matters_p ()
@@ -3388,7 +3413,7 @@ ipa_polymorphic_call_context::clear_speculation ()
   speculative_maybe_derived_type = false;
 }
 
-/* Produce context specifying all derrived types of OTR_TYPE.  If OTR_TYPE is
+/* Produce context specifying all derived types of OTR_TYPE.  If OTR_TYPE is
    NULL, the context is set to dummy "I know nothing" setting.  */
 
 inline void

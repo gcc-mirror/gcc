@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "gimple-pretty-print.h"
 #include "tree-into-ssa.h"
-#include "params.h"
 
 /* Return true when TYPE contains an polymorphic type and thus is interesting
    for devirtualization machinery.  */
@@ -70,7 +69,7 @@ contains_polymorphic_type_p (const_tree type)
 }
 
 /* Return true if it seems valid to use placement new to build EXPECTED_TYPE
-   at possition CUR_OFFSET within TYPE.  
+   at position CUR_OFFSET within TYPE.  
 
    POD can be changed to an instance of a polymorphic type by
    placement new.  Here we play safe and assume that any
@@ -100,7 +99,7 @@ possible_placement_new (tree type, tree expected_type,
    to represent it.
 
    If OTR_TYPE is NULL, just find outermost polymorphic type with
-   virtual table present at possition OFFSET.
+   virtual table present at position OFFSET.
 
    For example when THIS represents type
    class A
@@ -114,7 +113,7 @@ possible_placement_new (tree type, tree expected_type,
 
    If we cannot find corresponding class, give up by setting
    THIS->OUTER_TYPE to OTR_TYPE and THIS->OFFSET to NULL. 
-   Return true when lookup was sucesful.
+   Return true when lookup was successful.
 
    When CONSIDER_PLACEMENT_NEW is false, reject contexts that may be made
    valid only via allocation of new polymorphic type inside by means
@@ -148,7 +147,7 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree otr_type,
     Because the instance type may contain field whose type is of OUTER_TYPE,
     we cannot derive any effective information about it.
 
-    TODO: In the case we know all derrived types, we can definitely do better
+    TODO: In the case we know all derived types, we can definitely do better
     here.  */
   else if (TYPE_SIZE (outer_type)
 	   && tree_fits_shwi_p (TYPE_SIZE (outer_type))
@@ -241,7 +240,7 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree otr_type,
 	      if (cur_offset != 0)
 		goto no_useful_type_info;
 	      /* If we determined type precisely or we have no clue on
- 		 speuclation, we are done.  */
+ 		 speculation, we are done.  */
 	      if (!maybe_derived_type || !speculative_outer_type
 		  || !speculation_consistent_p (speculative_outer_type,
 					        speculative_offset,
@@ -318,7 +317,7 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree otr_type,
 		{
 		  outer_type = type;
 		  offset = cur_offset;
-		  /* As soon as we se an field containing the type,
+		  /* As soon as we see an field containing the type,
 		     we know we are not looking for derivations.  */
 		  maybe_derived_type = false;
 		}
@@ -396,7 +395,7 @@ no_useful_type_info:
 	      else
 		return true;
 	    }
-	  /* We found no way to embedd EXPECTED_TYPE in TYPE.
+	  /* We found no way to embed EXPECTED_TYPE in TYPE.
 	     We still permit two special cases - placement new and
 	     the case of variadic types containing themselves.  */
 	  if (!speculative
@@ -553,7 +552,7 @@ decl_maybe_in_construction_p (tree base, tree outer_type,
     return true;
 
   /* Pure functions cannot do any changes on the dynamic type;
-     that require writting to memory.  */
+     that require writing to memory.  */
   if ((!base || !auto_var_in_fn_p (base, function))
       && flags_from_decl_or_type (function) & (ECF_PURE | ECF_CONST))
     return false;
@@ -722,7 +721,7 @@ ipa_polymorphic_call_context::stream_in (class lto_input_block *ib,
     }
 }
 
-/* Proudce polymorphic call context for call method of instance
+/* Produce polymorphic call context for call method of instance
    that is located within BASE (that is assumed to be a decl) at offset OFF. */
 
 void
@@ -916,7 +915,7 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 	  if (TREE_CODE (base) == MEM_REF || DECL_P (base))
 	    {
 	      /* We found dereference of a pointer.  Type of the pointer
-		 and MEM_REF is meaningless, but we can look futher.  */
+		 and MEM_REF is meaningless, but we can look further.  */
 	      offset_int mem_offset;
 	      if (TREE_CODE (base) == MEM_REF
 		  && mem_ref_offset (base).is_constant (&mem_offset))
@@ -1005,14 +1004,14 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 	     0-thunk.fixed_offset.  It starts with code that adds
 	     think.fixed_offset to the pointer to compensate for this.
 
-	     Because we walked all the way to the begining of thunk, we now
+	     Because we walked all the way to the beginning of thunk, we now
 	     see pointer &bar-thunk.fixed_offset and need to compensate
 	     for it.  */
 	  if (node->thunk.fixed_offset)
 	    offset -= node->thunk.fixed_offset * BITS_PER_UNIT;
 
 	  /* Dynamic casting has possibly upcasted the type
-	     in the hiearchy.  In this case outer type is less
+	     in the hierarchy.  In this case outer type is less
 	     informative than inner type and we should forget
 	     about it.  */
 	  if ((otr_type
@@ -1114,7 +1113,7 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 			      offset,
 			      true, NULL /* Do not change type here */);
   /* TODO: There are multiple ways to derive a type.  For instance
-     if BASE_POINTER is passed to an constructor call prior our refernece.
+     if BASE_POINTER is passed to an constructor call prior our reference.
      We do not make this type of flow sensitive analysis yet.  */
   if (instance)
     *instance = base_pointer;
@@ -1324,7 +1323,7 @@ extr_type_from_vtbl_ptr_store (gimple *stmt, struct type_change_info *tci,
     {
       if (dump_file)
 	fprintf (dump_file, "    Construction vtable used\n");
-      /* FIXME: We should suport construction contexts.  */
+      /* FIXME: We should support construction contexts.  */
       return NULL;
     }
  
@@ -1400,7 +1399,7 @@ record_known_type (struct type_change_info *tci, tree type, HOST_WIDE_INT offset
 static inline bool
 csftc_abort_walking_p (unsigned speculative)
 {
-  unsigned max = PARAM_VALUE (PARAM_MAX_SPECULATIVE_DEVIRT_MAYDEFS);
+  unsigned max = param_max_speculative_devirt_maydefs;
   return speculative > max ? true : false;
 }
 
@@ -1558,7 +1557,7 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
 
    AA_WALK_BUDGET_P, if not NULL, is how statements we should allow
    walk_aliased_vdefs to examine.  The value should be decremented by the
-   number of stetements we examined or set to zero if exhausted.  */
+   number of statements we examined or set to zero if exhausted.  */
 
 bool
 ipa_polymorphic_call_context::get_dynamic_type (tree instance,
@@ -1584,7 +1583,7 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
     otr_type = TYPE_MAIN_VARIANT (otr_type);
 
   /* Walk into inner type. This may clear maybe_derived_type and save us
-     from useless work.  It also makes later comparsions with static type
+     from useless work.  It also makes later comparisons with static type
      easier.  */
   if (outer_type && otr_type)
     {
@@ -1600,7 +1599,7 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
   if (TREE_CODE (instance) == MEM_REF)
     return false;
 
-  /* We need to obtain refernce to virtual table pointer.  It is better
+  /* We need to obtain reference to virtual table pointer.  It is better
      to look it up in the code rather than build our own.  This require bit
      of pattern matching, but we end up verifying that what we found is
      correct. 
@@ -1779,7 +1778,7 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
 
      Therefore if the static outer type was found (outer_type)
      we can safely ignore tci.speculative that is set on calls and give up
-     only if there was dyanmic type store that may affect given variable
+     only if there was dynamic type store that may affect given variable
      (seen_unanalyzed_store)  */
 
   if (walked < 0)
@@ -1916,7 +1915,7 @@ ipa_polymorphic_call_context::combine_speculation_with
     return false;
 
   /* restrict_to_inner_class may eliminate wrong speculation making our job
-     easeier.  */
+     easier.  */
   if (otr_type)
     restrict_to_inner_class (otr_type);
 
@@ -1964,7 +1963,7 @@ ipa_polymorphic_call_context::combine_speculation_with
     }
   /* Choose type that contains the other.  This one either contains the outer
      as a field (thus giving exactly one target) or is deeper in the type
-     hiearchy.  */
+     hierarchy.  */
   else if (speculative_outer_type
 	   && speculative_maybe_derived_type
 	   && (new_offset > speculative_offset
@@ -2016,7 +2015,7 @@ ipa_polymorphic_call_context::meet_speculation_with
     }
 
   /* restrict_to_inner_class may eliminate wrong speculation making our job
-     easeier.  */
+     easier.  */
   if (otr_type)
     restrict_to_inner_class (otr_type);
 
@@ -2096,8 +2095,8 @@ ipa_polymorphic_call_context::meet_speculation_with
     }
 }
 
-/* Assume that both THIS and a given context is valid and strenghten THIS
-   if possible.  Return true if any strenghtening was made.
+/* Assume that both THIS and a given context is valid and strengthen THIS
+   if possible.  Return true if any strengthening was made.
    If actual type the context is being used in is known, OTR_TYPE should be
    set accordingly. This improves quality of combined result.  */
 
@@ -2262,7 +2261,7 @@ ipa_polymorphic_call_context::combine_with (ipa_polymorphic_call_context ctx,
 	      goto invalidate;
 	    }
 	}
-      /* Pick variant deeper in the hiearchy.  */
+      /* Pick variant deeper in the hierarchy.  */
       else
 	{
 	  outer_type = ctx.outer_type;
@@ -2300,7 +2299,7 @@ ipa_polymorphic_call_context::combine_with (ipa_polymorphic_call_context ctx,
 	    }
 	}
     }
-  /* TODO handle merging using hiearchy. */
+  /* TODO handle merging using hierarchy. */
   else if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Giving up on merge\n");
 
@@ -2588,7 +2587,7 @@ ipa_polymorphic_call_context::meet_with (ipa_polymorphic_call_context ctx,
       if (!dynamic && ctx.dynamic)
 	dynamic = true;
     }
-  /* TODO handle merging using hiearchy. */
+  /* TODO handle merging using hierarchy. */
   else
     {
       if (dump_file && (dump_flags & TDF_DETAILS))

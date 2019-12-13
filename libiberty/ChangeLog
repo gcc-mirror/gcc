@@ -1,3 +1,68 @@
+2019-12-06  Tim Ruehsen  <tim.ruehsen@gmx.de>
+
+	* make-relative-prefix.c (split_directories):
+	Return early on empty 'name'
+
+2019-11-16  Tim Ruehsen  <tim.ruehsen@gmx.de>
+
+	* cp-demangle.c (d_print_init): Remove const from 4th param.
+	(cplus_demangle_fill_name): Initialize d->d_counting.
+	(cplus_demangle_fill_extended_operator): Likewise.
+	(cplus_demangle_fill_ctor): Likewise.
+	(cplus_demangle_fill_dtor): Likewise.
+	(d_make_empty): Likewise.
+	(d_count_templates_scopes): Remobe const from 3rd param,
+	Return on dc->d_counting > 1,
+	Increment dc->d_counting.
+        * cp-demint.c (cplus_demangle_fill_component): Initialize d->d_counting.
+	(cplus_demangle_fill_builtin_type): Likewise.
+	(cplus_demangle_fill_operator): Likewise.
+
+2019-11-16  Eduard-Mihai Burtescu  <eddyb@lyken.rs>
+
+	* cplus-dem.c (cplus_demangle): Use rust_demangle directly.
+	(rust_demangle): Remove.
+	* rust-demangle.c (is_prefixed_hash): Rename to is_legacy_prefixed_hash.
+	(parse_lower_hex_nibble): Rename to decode_lower_hex_nibble.
+	(parse_legacy_escape): Rename to decode_legacy_escape.
+	(rust_is_mangled): Remove.
+	(struct rust_demangler): Add.
+	(peek): Add.
+	(next): Add.
+	(struct rust_mangled_ident): Add.
+	(parse_ident): Add.
+	(rust_demangle_sym): Remove.
+	(print_str): Add.
+	(PRINT): Add.
+	(print_ident): Add.
+	(rust_demangle_callback): Add.
+	(struct str_buf): Add.
+	(str_buf_reserve): Add.
+	(str_buf_append): Add.
+	(str_buf_demangle_callback): Add.
+	(rust_demangle): Add.
+	* rust-demangle.h: Remove.
+
+2019-11-15  Miguel Saldivar  <saldivarcher@gmail.com>
+
+	* testsuite/demangle-expected: Fix test.
+
+2019-11-04  Kamlesh Kumar  <kamleshbhalui@gmail.com>
+
+	* cp-demangle.c (d_expr_primary): Handle
+	nullptr demangling.
+	* testsuite/demangle-expected: Added test.
+
+2019-10-29 Paul Pluzhnikov  <ppluzhnikov@google.com>
+
+	* cp-demangle.c (d_number): Avoid signed int overflow.
+
+2019-10-28  Miguel Saldivar  <saldivarcher@gmail.com>
+
+	* cp-demangle.c (d_print_mod): Add a space before printing `complex`
+	and `imaginary`, as opposed to after.
+	* testsuite/demangle-expected: Adjust test.
+
 2019-10-03  Eduard-Mihai Burtescu  <eddyb@lyken.rs>
 
 	* rust-demangle.c (looks_like_rust): Remove.

@@ -71,7 +71,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "generic-match.h"
 #include "gimple-fold.h"
-#include "params.h"
 #include "tree-into-ssa.h"
 #include "md5.h"
 #include "case-cfn-macros.h"
@@ -2376,9 +2375,14 @@ fold_convertible_p (const_tree type, const_tree arg)
 
     case REAL_TYPE:
     case FIXED_POINT_TYPE:
-    case VECTOR_TYPE:
     case VOID_TYPE:
       return TREE_CODE (type) == TREE_CODE (orig);
+
+    case VECTOR_TYPE:
+      return (VECTOR_TYPE_P (orig)
+	      && known_eq (TYPE_VECTOR_SUBPARTS (type),
+			   TYPE_VECTOR_SUBPARTS (orig))
+	      && fold_convertible_p (TREE_TYPE (type), TREE_TYPE (orig)));
 
     default:
       return false;
@@ -2594,6 +2598,7 @@ maybe_lvalue_p (const_tree x)
   case TARGET_EXPR:
   case COND_EXPR:
   case BIND_EXPR:
+  case VIEW_CONVERT_EXPR:
     break;
 
   default:
@@ -2934,6 +2939,11 @@ combine_comparisons (location_t loc,
    If OEP_LEXICOGRAPHIC is set, then also handle expressions with side-effects
    such as MODIFY_EXPR, RETURN_EXPR, as well as STATEMENT_LISTs.
 
+   If OEP_BITWISE is set, then require the values to be bitwise identical
+   rather than simply numerically equal.  Do not take advantage of things
+   like math-related flags or undefined behavior; only return true for
+   values that are provably bitwise identical in all circumstances.
+
    Unless OEP_MATCH_SIDE_EFFECTS is set, the function returns false on
    any operand with side effect.  This is unnecesarily conservative in the
    case we know that arg0 and arg1 are in disjoint code paths (such as in
@@ -2942,29 +2952,12 @@ combine_comparisons (location_t loc,
    even if var is volatile.  */
 
 bool
-operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
+operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
+				  unsigned int flags)
 {
-  /* When checking, verify at the outermost operand_equal_p call that
-     if operand_equal_p returns non-zero then ARG0 and ARG1 has the same
-     hash value.  */
-  if (flag_checking && !(flags & OEP_NO_HASH_CHECK))
-    {
-      if (operand_equal_p (arg0, arg1, flags | OEP_NO_HASH_CHECK))
-	{
-	  if (arg0 != arg1)
-	    {
-	      inchash::hash hstate0 (0), hstate1 (0);
-	      inchash::add_expr (arg0, hstate0, flags | OEP_HASH_CHECK);
-	      inchash::add_expr (arg1, hstate1, flags | OEP_HASH_CHECK);
-	      hashval_t h0 = hstate0.end ();
-	      hashval_t h1 = hstate1.end ();
-	      gcc_assert (h0 == h1);
-	    }
-	  return true;
-	}
-      else
-	return false;
-    }
+  bool r;
+  if (verify_hash_value (arg0, arg1, flags, &r))
+    return r;
 
   STRIP_ANY_LOCATION_WRAPPER (arg0);
   STRIP_ANY_LOCATION_WRAPPER (arg1);
@@ -2978,6 +2971,11 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
   /* Similar, if either does not have a type (like a template id),
      they aren't equal.  */
   if (!TREE_TYPE (arg0) || !TREE_TYPE (arg1))
+    return false;
+
+  /* Bitwise identity makes no sense if the values have different layouts.  */
+  if ((flags & OEP_BITWISE)
+      && !tree_nop_conversion_p (TREE_TYPE (arg0), TREE_TYPE (arg1)))
     return false;
 
   /* We cannot consider pointers to different address space equal.  */
@@ -3112,8 +3110,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	if (real_identical (&TREE_REAL_CST (arg0), &TREE_REAL_CST (arg1)))
 	  return true;
 
-
-	if (!HONOR_SIGNED_ZEROS (arg0))
+	if (!(flags & OEP_BITWISE) && !HONOR_SIGNED_ZEROS (arg0))
 	  {
 	    /* If we do not distinguish between signed and unsigned zero,
 	       consider them equal.  */
@@ -3165,7 +3162,9 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	break;
       }
 
-  if (flags & OEP_ONLY_CONST)
+  /* Don't handle more cases for OEP_BITWISE, since we can't guarantee that
+     two instances of undefined behavior will give identical results.  */
+  if (flags & (OEP_ONLY_CONST | OEP_BITWISE))
     return false;
 
 /* Define macros to test an operand from arg0 and arg1 for equality and a
@@ -3325,6 +3324,24 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	  flags &= ~OEP_ADDRESS_OF;
 	  return OP_SAME (1) && OP_SAME (2);
 
+	/* Virtual table call.  */
+	case OBJ_TYPE_REF:
+	  {
+	    if (!operand_equal_p (OBJ_TYPE_REF_EXPR (arg0),
+				  OBJ_TYPE_REF_EXPR (arg1), flags))
+	      return false;
+	    if (tree_to_uhwi (OBJ_TYPE_REF_TOKEN (arg0))
+		!= tree_to_uhwi (OBJ_TYPE_REF_TOKEN (arg1)))
+	      return false;
+	    if (!operand_equal_p (OBJ_TYPE_REF_OBJECT (arg0),
+				  OBJ_TYPE_REF_OBJECT (arg1), flags))
+	      return false;
+	    if (!types_same_for_odr (obj_type_ref_class (arg0),
+				     obj_type_ref_class (arg1)))
+	      return false;
+	    return true;
+	  }
+
 	default:
 	  return false;
 	}
@@ -3474,6 +3491,9 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
     case tcc_exceptional:
       if (TREE_CODE (arg0) == CONSTRUCTOR)
 	{
+	  if (CONSTRUCTOR_NO_CLEARING (arg0) != CONSTRUCTOR_NO_CLEARING (arg1))
+	    return false;
+
 	  /* In GIMPLE constructors are used only to build vectors from
 	     elements.  Individual elements in the constructor must be
 	     indexed in increasing order and form an initial sequence.
@@ -3563,6 +3583,342 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 
 #undef OP_SAME
 #undef OP_SAME_WITH_NULL
+}
+
+/* Generate a hash value for an expression.  This can be used iteratively
+   by passing a previous result as the HSTATE argument.  */
+
+void
+operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
+			       unsigned int flags)
+{
+  int i;
+  enum tree_code code;
+  enum tree_code_class tclass;
+
+  if (t == NULL_TREE || t == error_mark_node)
+    {
+      hstate.merge_hash (0);
+      return;
+    }
+
+  STRIP_ANY_LOCATION_WRAPPER (t);
+
+  if (!(flags & OEP_ADDRESS_OF))
+    STRIP_NOPS (t);
+
+  code = TREE_CODE (t);
+
+  switch (code)
+    {
+    /* Alas, constants aren't shared, so we can't rely on pointer
+       identity.  */
+    case VOID_CST:
+      hstate.merge_hash (0);
+      return;
+    case INTEGER_CST:
+      gcc_checking_assert (!(flags & OEP_ADDRESS_OF));
+      for (i = 0; i < TREE_INT_CST_EXT_NUNITS (t); i++)
+	hstate.add_hwi (TREE_INT_CST_ELT (t, i));
+      return;
+    case REAL_CST:
+      {
+	unsigned int val2;
+	if (!HONOR_SIGNED_ZEROS (t) && real_zerop (t))
+	  val2 = rvc_zero;
+	else
+	  val2 = real_hash (TREE_REAL_CST_PTR (t));
+	hstate.merge_hash (val2);
+	return;
+      }
+    case FIXED_CST:
+      {
+	unsigned int val2 = fixed_hash (TREE_FIXED_CST_PTR (t));
+	hstate.merge_hash (val2);
+	return;
+      }
+    case STRING_CST:
+      hstate.add ((const void *) TREE_STRING_POINTER (t),
+		  TREE_STRING_LENGTH (t));
+      return;
+    case COMPLEX_CST:
+      hash_operand (TREE_REALPART (t), hstate, flags);
+      hash_operand (TREE_IMAGPART (t), hstate, flags);
+      return;
+    case VECTOR_CST:
+      {
+	hstate.add_int (VECTOR_CST_NPATTERNS (t));
+	hstate.add_int (VECTOR_CST_NELTS_PER_PATTERN (t));
+	unsigned int count = vector_cst_encoded_nelts (t);
+	for (unsigned int i = 0; i < count; ++i)
+	  hash_operand (VECTOR_CST_ENCODED_ELT (t, i), hstate, flags);
+	return;
+      }
+    case SSA_NAME:
+      /* We can just compare by pointer.  */
+      hstate.add_hwi (SSA_NAME_VERSION (t));
+      return;
+    case PLACEHOLDER_EXPR:
+      /* The node itself doesn't matter.  */
+      return;
+    case BLOCK:
+    case OMP_CLAUSE:
+      /* Ignore.  */
+      return;
+    case TREE_LIST:
+      /* A list of expressions, for a CALL_EXPR or as the elements of a
+	 VECTOR_CST.  */
+      for (; t; t = TREE_CHAIN (t))
+	hash_operand (TREE_VALUE (t), hstate, flags);
+      return;
+    case CONSTRUCTOR:
+      {
+	unsigned HOST_WIDE_INT idx;
+	tree field, value;
+	flags &= ~OEP_ADDRESS_OF;
+	hstate.add_int (CONSTRUCTOR_NO_CLEARING (t));
+	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), idx, field, value)
+	  {
+	    /* In GIMPLE the indexes can be either NULL or matching i.  */
+	    if (field == NULL_TREE)
+	      field = bitsize_int (idx);
+	    hash_operand (field, hstate, flags);
+	    hash_operand (value, hstate, flags);
+	  }
+	return;
+      }
+    case STATEMENT_LIST:
+      {
+	tree_stmt_iterator i;
+	for (i = tsi_start (CONST_CAST_TREE (t));
+	     !tsi_end_p (i); tsi_next (&i))
+	  hash_operand (tsi_stmt (i), hstate, flags);
+	return;
+      }
+    case TREE_VEC:
+      for (i = 0; i < TREE_VEC_LENGTH (t); ++i)
+	hash_operand (TREE_VEC_ELT (t, i), hstate, flags);
+      return;
+    case IDENTIFIER_NODE:
+      hstate.add_object (IDENTIFIER_HASH_VALUE (t));
+      return;
+    case FUNCTION_DECL:
+      /* When referring to a built-in FUNCTION_DECL, use the __builtin__ form.
+	 Otherwise nodes that compare equal according to operand_equal_p might
+	 get different hash codes.  However, don't do this for machine specific
+	 or front end builtins, since the function code is overloaded in those
+	 cases.  */
+      if (DECL_BUILT_IN_CLASS (t) == BUILT_IN_NORMAL
+	  && builtin_decl_explicit_p (DECL_FUNCTION_CODE (t)))
+	{
+	  t = builtin_decl_explicit (DECL_FUNCTION_CODE (t));
+	  code = TREE_CODE (t);
+	}
+      /* FALL THROUGH */
+    default:
+      if (POLY_INT_CST_P (t))
+	{
+	  for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+	    hstate.add_wide_int (wi::to_wide (POLY_INT_CST_COEFF (t, i)));
+	  return;
+	}
+      tclass = TREE_CODE_CLASS (code);
+
+      if (tclass == tcc_declaration)
+	{
+	  /* DECL's have a unique ID */
+	  hstate.add_hwi (DECL_UID (t));
+	}
+      else if (tclass == tcc_comparison && !commutative_tree_code (code))
+	{
+	  /* For comparisons that can be swapped, use the lower
+	     tree code.  */
+	  enum tree_code ccode = swap_tree_comparison (code);
+	  if (code < ccode)
+	    ccode = code;
+	  hstate.add_object (ccode);
+	  hash_operand (TREE_OPERAND (t, ccode != code), hstate, flags);
+	  hash_operand (TREE_OPERAND (t, ccode == code), hstate, flags);
+	}
+      else if (CONVERT_EXPR_CODE_P (code))
+	{
+	  /* NOP_EXPR and CONVERT_EXPR are considered equal by
+	     operand_equal_p.  */
+	  enum tree_code ccode = NOP_EXPR;
+	  hstate.add_object (ccode);
+
+	  /* Don't hash the type, that can lead to having nodes which
+	     compare equal according to operand_equal_p, but which
+	     have different hash codes.  Make sure to include signedness
+	     in the hash computation.  */
+	  hstate.add_int (TYPE_UNSIGNED (TREE_TYPE (t)));
+	  hash_operand (TREE_OPERAND (t, 0), hstate, flags);
+	}
+      /* For OEP_ADDRESS_OF, hash MEM_EXPR[&decl, 0] the same as decl.  */
+      else if (code == MEM_REF
+	       && (flags & OEP_ADDRESS_OF) != 0
+	       && TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR
+	       && DECL_P (TREE_OPERAND (TREE_OPERAND (t, 0), 0))
+	       && integer_zerop (TREE_OPERAND (t, 1)))
+	hash_operand (TREE_OPERAND (TREE_OPERAND (t, 0), 0),
+		      hstate, flags);
+      /* Don't ICE on FE specific trees, or their arguments etc.
+	 during operand_equal_p hash verification.  */
+      else if (!IS_EXPR_CODE_CLASS (tclass))
+	gcc_assert (flags & OEP_HASH_CHECK);
+      else
+	{
+	  unsigned int sflags = flags;
+
+	  hstate.add_object (code);
+
+	  switch (code)
+	    {
+	    case ADDR_EXPR:
+	      gcc_checking_assert (!(flags & OEP_ADDRESS_OF));
+	      flags |= OEP_ADDRESS_OF;
+	      sflags = flags;
+	      break;
+
+	    case INDIRECT_REF:
+	    case MEM_REF:
+	    case TARGET_MEM_REF:
+	      flags &= ~OEP_ADDRESS_OF;
+	      sflags = flags;
+	      break;
+
+	    case ARRAY_REF:
+	    case ARRAY_RANGE_REF:
+	    case COMPONENT_REF:
+	    case BIT_FIELD_REF:
+	      sflags &= ~OEP_ADDRESS_OF;
+	      break;
+
+	    case COND_EXPR:
+	      flags &= ~OEP_ADDRESS_OF;
+	      break;
+
+	    case WIDEN_MULT_PLUS_EXPR:
+	    case WIDEN_MULT_MINUS_EXPR:
+	      {
+		/* The multiplication operands are commutative.  */
+		inchash::hash one, two;
+		hash_operand (TREE_OPERAND (t, 0), one, flags);
+		hash_operand (TREE_OPERAND (t, 1), two, flags);
+		hstate.add_commutative (one, two);
+		hash_operand (TREE_OPERAND (t, 2), two, flags);
+		return;
+	      }
+
+	    case CALL_EXPR:
+	      if (CALL_EXPR_FN (t) == NULL_TREE)
+		hstate.add_int (CALL_EXPR_IFN (t));
+	      break;
+
+	    case TARGET_EXPR:
+	      /* For TARGET_EXPR, just hash on the TARGET_EXPR_SLOT.
+		 Usually different TARGET_EXPRs just should use
+		 different temporaries in their slots.  */
+	      hash_operand (TARGET_EXPR_SLOT (t), hstate, flags);
+	      return;
+
+	    /* Virtual table call.  */
+	    case OBJ_TYPE_REF:
+	      inchash::add_expr (OBJ_TYPE_REF_EXPR (t), hstate, flags);
+	      inchash::add_expr (OBJ_TYPE_REF_TOKEN (t), hstate, flags);
+	      inchash::add_expr (OBJ_TYPE_REF_OBJECT (t), hstate, flags);
+	      return;
+	    default:
+	      break;
+	    }
+
+	  /* Don't hash the type, that can lead to having nodes which
+	     compare equal according to operand_equal_p, but which
+	     have different hash codes.  */
+	  if (code == NON_LVALUE_EXPR)
+	    {
+	      /* Make sure to include signness in the hash computation.  */
+	      hstate.add_int (TYPE_UNSIGNED (TREE_TYPE (t)));
+	      hash_operand (TREE_OPERAND (t, 0), hstate, flags);
+	    }
+
+	  else if (commutative_tree_code (code))
+	    {
+	      /* It's a commutative expression.  We want to hash it the same
+		 however it appears.  We do this by first hashing both operands
+		 and then rehashing based on the order of their independent
+		 hashes.  */
+	      inchash::hash one, two;
+	      hash_operand (TREE_OPERAND (t, 0), one, flags);
+	      hash_operand (TREE_OPERAND (t, 1), two, flags);
+	      hstate.add_commutative (one, two);
+	    }
+	  else
+	    for (i = TREE_OPERAND_LENGTH (t) - 1; i >= 0; --i)
+	      hash_operand (TREE_OPERAND (t, i), hstate,
+			    i == 0 ? flags : sflags);
+	}
+      return;
+    }
+}
+
+bool
+operand_compare::verify_hash_value (const_tree arg0, const_tree arg1,
+				    unsigned int flags, bool *ret)
+{
+  /* When checking, verify at the outermost operand_equal_p call that
+     if operand_equal_p returns non-zero then ARG0 and ARG1 has the same
+     hash value.  */
+  if (flag_checking && !(flags & OEP_NO_HASH_CHECK))
+    {
+      if (operand_equal_p (arg0, arg1, flags | OEP_NO_HASH_CHECK))
+	{
+	  if (arg0 != arg1)
+	    {
+	      inchash::hash hstate0 (0), hstate1 (0);
+	      hash_operand (arg0, hstate0, flags | OEP_HASH_CHECK);
+	      hash_operand (arg1, hstate1, flags | OEP_HASH_CHECK);
+	      hashval_t h0 = hstate0.end ();
+	      hashval_t h1 = hstate1.end ();
+	      gcc_assert (h0 == h1);
+	    }
+	  *ret = true;
+	}
+      else
+	*ret = false;
+
+      return true;
+    }
+
+  return false;
+}
+
+
+static operand_compare default_compare_instance;
+
+/* Conveinece wrapper around operand_compare class because usually we do
+   not need to play with the valueizer.  */
+
+bool
+operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
+{
+  return default_compare_instance.operand_equal_p (arg0, arg1, flags);
+}
+
+namespace inchash
+{
+
+/* Generate a hash value for an expression.  This can be used iteratively
+   by passing a previous result as the HSTATE argument.
+
+   This function is intended to produce the same hash for expressions which
+   would compare equal using operand_equal_p.  */
+void
+add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
+{
+  default_compare_instance.hash_operand (t, hstate, flags);
+}
+
 }
 
 /* Similar to operand_equal_p, but see if ARG0 might be a variant of ARG1
@@ -5589,9 +5945,9 @@ fold_range_test (location_t loc, enum tree_code code, tree type,
      short-circuited branch and the underlying object on both sides
      is the same, make a non-short-circuit operation.  */
   bool logical_op_non_short_circuit = LOGICAL_OP_NON_SHORT_CIRCUIT;
-  if (PARAM_VALUE (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT) != -1)
+  if (param_logical_op_non_short_circuit != -1)
     logical_op_non_short_circuit
-      = PARAM_VALUE (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT);
+      = param_logical_op_non_short_circuit;
   if (logical_op_non_short_circuit
       && !flag_sanitize_coverage
       && lhs != 0 && rhs != 0
@@ -7376,32 +7732,60 @@ native_encode_complex (const_tree expr, unsigned char *ptr, int len, int off)
   return rsize + isize;
 }
 
-
-/* Subroutine of native_encode_expr.  Encode the VECTOR_CST
-   specified by EXPR into the buffer PTR of length LEN bytes.
-   Return the number of bytes placed in the buffer, or zero
-   upon failure.  */
+/* Like native_encode_vector, but only encode the first COUNT elements.
+   The other arguments are as for native_encode_vector.  */
 
 static int
-native_encode_vector (const_tree expr, unsigned char *ptr, int len, int off)
+native_encode_vector_part (const_tree expr, unsigned char *ptr, int len,
+			   int off, unsigned HOST_WIDE_INT count)
 {
-  unsigned HOST_WIDE_INT i, count;
-  int size, offset;
-  tree itype, elem;
+  tree itype = TREE_TYPE (TREE_TYPE (expr));
+  if (VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (expr))
+      && TYPE_PRECISION (itype) <= BITS_PER_UNIT)
+    {
+      /* This is the only case in which elements can be smaller than a byte.
+	 Element 0 is always in the lsb of the containing byte.  */
+      unsigned int elt_bits = TYPE_PRECISION (itype);
+      int total_bytes = CEIL (elt_bits * count, BITS_PER_UNIT);
+      if ((off == -1 && total_bytes > len) || off >= total_bytes)
+	return 0;
 
-  offset = 0;
-  if (!VECTOR_CST_NELTS (expr).is_constant (&count))
-    return 0;
-  itype = TREE_TYPE (TREE_TYPE (expr));
-  size = GET_MODE_SIZE (SCALAR_TYPE_MODE (itype));
-  for (i = 0; i < count; i++)
+      if (off == -1)
+	off = 0;
+
+      /* Zero the buffer and then set bits later where necessary.  */
+      int extract_bytes = MIN (len, total_bytes - off);
+      if (ptr)
+	memset (ptr, 0, extract_bytes);
+
+      unsigned int elts_per_byte = BITS_PER_UNIT / elt_bits;
+      unsigned int first_elt = off * elts_per_byte;
+      unsigned int extract_elts = extract_bytes * elts_per_byte;
+      for (unsigned int i = 0; i < extract_elts; ++i)
+	{
+	  tree elt = VECTOR_CST_ELT (expr, first_elt + i);
+	  if (TREE_CODE (elt) != INTEGER_CST)
+	    return 0;
+
+	  if (ptr && wi::extract_uhwi (wi::to_wide (elt), 0, 1))
+	    {
+	      unsigned int bit = i * elt_bits;
+	      ptr[bit / BITS_PER_UNIT] |= 1 << (bit % BITS_PER_UNIT);
+	    }
+	}
+      return extract_bytes;
+    }
+
+  int offset = 0;
+  int size = GET_MODE_SIZE (SCALAR_TYPE_MODE (itype));
+  for (unsigned HOST_WIDE_INT i = 0; i < count; i++)
     {
       if (off >= size)
 	{
 	  off -= size;
 	  continue;
 	}
-      elem = VECTOR_CST_ELT (expr, i);
+      tree elem = VECTOR_CST_ELT (expr, i);
       int res = native_encode_expr (elem, ptr ? ptr + offset : NULL,
 				    len - offset, off);
       if ((off == -1 && res != size) || res == 0)
@@ -7413,6 +7797,20 @@ native_encode_vector (const_tree expr, unsigned char *ptr, int len, int off)
 	off = 0;
     }
   return offset;
+}
+
+/* Subroutine of native_encode_expr.  Encode the VECTOR_CST
+   specified by EXPR into the buffer PTR of length LEN bytes.
+   Return the number of bytes placed in the buffer, or zero
+   upon failure.  */
+
+static int
+native_encode_vector (const_tree expr, unsigned char *ptr, int len, int off)
+{
+  unsigned HOST_WIDE_INT count;
+  if (!VECTOR_CST_NELTS (expr).is_constant (&count))
+    return 0;
+  return native_encode_vector_part (expr, ptr, len, off, count);
 }
 
 
@@ -7622,6 +8020,55 @@ native_interpret_complex (tree type, const unsigned char *ptr, int len)
   return build_complex (type, rpart, ipart);
 }
 
+/* Read a vector of type TYPE from the target memory image given by BYTES,
+   which contains LEN bytes.  The vector is known to be encodable using
+   NPATTERNS interleaved patterns with NELTS_PER_PATTERN elements each.
+
+   Return the vector on success, otherwise return null.  */
+
+static tree
+native_interpret_vector_part (tree type, const unsigned char *bytes,
+			      unsigned int len, unsigned int npatterns,
+			      unsigned int nelts_per_pattern)
+{
+  tree elt_type = TREE_TYPE (type);
+  if (VECTOR_BOOLEAN_TYPE_P (type)
+      && TYPE_PRECISION (elt_type) <= BITS_PER_UNIT)
+    {
+      /* This is the only case in which elements can be smaller than a byte.
+	 Element 0 is always in the lsb of the containing byte.  */
+      unsigned int elt_bits = TYPE_PRECISION (elt_type);
+      if (elt_bits * npatterns * nelts_per_pattern > len * BITS_PER_UNIT)
+	return NULL_TREE;
+
+      tree_vector_builder builder (type, npatterns, nelts_per_pattern);
+      for (unsigned int i = 0; i < builder.encoded_nelts (); ++i)
+	{
+	  unsigned int bit_index = i * elt_bits;
+	  unsigned int byte_index = bit_index / BITS_PER_UNIT;
+	  unsigned int lsb = bit_index % BITS_PER_UNIT;
+	  builder.quick_push (bytes[byte_index] & (1 << lsb)
+			      ? build_all_ones_cst (elt_type)
+			      : build_zero_cst (elt_type));
+	}
+      return builder.build ();
+    }
+
+  unsigned int elt_bytes = tree_to_uhwi (TYPE_SIZE_UNIT (elt_type));
+  if (elt_bytes * npatterns * nelts_per_pattern > len)
+    return NULL_TREE;
+
+  tree_vector_builder builder (type, npatterns, nelts_per_pattern);
+  for (unsigned int i = 0; i < builder.encoded_nelts (); ++i)
+    {
+      tree elt = native_interpret_expr (elt_type, bytes, elt_bytes);
+      if (!elt)
+	return NULL_TREE;
+      builder.quick_push (elt);
+      bytes += elt_bytes;
+    }
+  return builder.build ();
+}
 
 /* Subroutine of native_interpret_expr.  Interpret the contents of
    the buffer PTR of length LEN as a VECTOR_CST of type TYPE.
@@ -7630,8 +8077,8 @@ native_interpret_complex (tree type, const unsigned char *ptr, int len)
 static tree
 native_interpret_vector (tree type, const unsigned char *ptr, unsigned int len)
 {
-  tree etype, elem;
-  unsigned int i, size;
+  tree etype;
+  unsigned int size;
   unsigned HOST_WIDE_INT count;
 
   etype = TREE_TYPE (type);
@@ -7640,15 +8087,7 @@ native_interpret_vector (tree type, const unsigned char *ptr, unsigned int len)
       || size * count > len)
     return NULL_TREE;
 
-  tree_vector_builder elements (type, count, 1);
-  for (i = 0; i < count; ++i)
-    {
-      elem = native_interpret_expr (etype, ptr+(i*size), size);
-      if (!elem)
-	return NULL_TREE;
-      elements.quick_push (elem);
-    }
-  return elements.build ();
+  return native_interpret_vector_part (type, ptr, len, count, 1);
 }
 
 
@@ -7710,6 +8149,65 @@ can_native_interpret_type_p (tree type)
     }
 }
 
+/* Try to view-convert VECTOR_CST EXPR to VECTOR_TYPE TYPE by operating
+   directly on the VECTOR_CST encoding, in a way that works for variable-
+   length vectors.  Return the resulting VECTOR_CST on success or null
+   on failure.  */
+
+static tree
+fold_view_convert_vector_encoding (tree type, tree expr)
+{
+  tree expr_type = TREE_TYPE (expr);
+  poly_uint64 type_bits, expr_bits;
+  if (!poly_int_tree_p (TYPE_SIZE (type), &type_bits)
+      || !poly_int_tree_p (TYPE_SIZE (expr_type), &expr_bits))
+    return NULL_TREE;
+
+  poly_uint64 type_units = TYPE_VECTOR_SUBPARTS (type);
+  poly_uint64 expr_units = TYPE_VECTOR_SUBPARTS (expr_type);
+  unsigned int type_elt_bits = vector_element_size (type_bits, type_units);
+  unsigned int expr_elt_bits = vector_element_size (expr_bits, expr_units);
+
+  /* We can only preserve the semantics of a stepped pattern if the new
+     vector element is an integer of the same size.  */
+  if (VECTOR_CST_STEPPED_P (expr)
+      && (!INTEGRAL_TYPE_P (type) || type_elt_bits != expr_elt_bits))
+    return NULL_TREE;
+
+  /* The number of bits needed to encode one element from every pattern
+     of the original vector.  */
+  unsigned int expr_sequence_bits
+    = VECTOR_CST_NPATTERNS (expr) * expr_elt_bits;
+
+  /* The number of bits needed to encode one element from every pattern
+     of the result.  */
+  unsigned int type_sequence_bits
+    = least_common_multiple (expr_sequence_bits, type_elt_bits);
+
+  /* Don't try to read more bytes than are available, which can happen
+     for constant-sized vectors if TYPE has larger elements than EXPR_TYPE.
+     The general VIEW_CONVERT handling can cope with that case, so there's
+     no point complicating things here.  */
+  unsigned int nelts_per_pattern = VECTOR_CST_NELTS_PER_PATTERN (expr);
+  unsigned int buffer_bytes = CEIL (nelts_per_pattern * type_sequence_bits,
+				    BITS_PER_UNIT);
+  unsigned int buffer_bits = buffer_bytes * BITS_PER_UNIT;
+  if (known_gt (buffer_bits, expr_bits))
+    return NULL_TREE;
+
+  /* Get enough bytes of EXPR to form the new encoding.  */
+  auto_vec<unsigned char, 128> buffer (buffer_bytes);
+  buffer.quick_grow (buffer_bytes);
+  if (native_encode_vector_part (expr, buffer.address (), buffer_bytes, 0,
+				 buffer_bits / expr_elt_bits)
+      != (int) buffer_bytes)
+    return NULL_TREE;
+
+  /* Reencode the bytes as TYPE.  */
+  unsigned int type_npatterns = type_sequence_bits / type_elt_bits;
+  return native_interpret_vector_part (type, &buffer[0], buffer.length (),
+				       type_npatterns, nelts_per_pattern);
+}
 
 /* Fold a VIEW_CONVERT_EXPR of a constant expression EXPR to type
    TYPE at compile-time.  If we're unable to perform the conversion
@@ -7725,6 +8223,10 @@ fold_view_convert_expr (tree type, tree expr)
   /* Check that the host and target are sane.  */
   if (CHAR_BIT != 8 || BITS_PER_UNIT != 8)
     return NULL_TREE;
+
+  if (VECTOR_TYPE_P (type) && TREE_CODE (expr) == VECTOR_CST)
+    if (tree res = fold_view_convert_vector_encoding (type, expr))
+      return res;
 
   len = native_encode_expr (expr, buffer, sizeof (buffer));
   if (len == 0)
@@ -8260,9 +8762,9 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
     return tem;
 
   bool logical_op_non_short_circuit = LOGICAL_OP_NON_SHORT_CIRCUIT;
-  if (PARAM_VALUE (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT) != -1)
+  if (param_logical_op_non_short_circuit != -1)
     logical_op_non_short_circuit
-      = PARAM_VALUE (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT);
+      = param_logical_op_non_short_circuit;
   if (logical_op_non_short_circuit
       && !flag_sanitize_coverage
       && (code == TRUTH_AND_EXPR
@@ -13025,7 +13527,7 @@ tree_single_nonnegative_warnv_p (tree t, bool *strict_overflow_p, int depth)
 	 would not, passes that need this information could be revised
 	 to provide it through dataflow propagation.  */
       return (!name_registered_for_update_p (t)
-	      && depth < PARAM_VALUE (PARAM_MAX_SSA_NAME_QUERY_DEPTH)
+	      && depth < param_max_ssa_name_query_depth
 	      && gimple_stmt_nonnegative_warnv_p (SSA_NAME_DEF_STMT (t),
 						  strict_overflow_p, depth));
 
@@ -13673,7 +14175,7 @@ integer_valued_real_single_p (tree t, int depth)
 	 would not, passes that need this information could be revised
 	 to provide it through dataflow propagation.  */
       return (!name_registered_for_update_p (t)
-	      && depth < PARAM_VALUE (PARAM_MAX_SSA_NAME_QUERY_DEPTH)
+	      && depth < param_max_ssa_name_query_depth
 	      && gimple_stmt_integer_valued_real_p (SSA_NAME_DEF_STMT (t),
 						    depth));
 

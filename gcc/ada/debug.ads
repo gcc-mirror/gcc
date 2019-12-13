@@ -48,6 +48,8 @@ package Debug is
    --  is contained in the body of Debug rather than the spec, so that we don't
    --  have to recompile the world when a new debug flag is added.
 
+   --  WARNING: There is a matching C declaration of a few flags in fe.h
+
    Debug_Flag_A : Boolean := False;
    Debug_Flag_B : Boolean := False;
    Debug_Flag_C : Boolean := False;

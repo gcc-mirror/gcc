@@ -13,7 +13,7 @@ struct One
   constexpr One () : a(), b() {} // { dg-error "multiple" }
   constexpr One (int) : a() {}
   constexpr One (unsigned) : b () {}
-  constexpr One (void *) {} // { dg-error "exactly one" }
+  constexpr One (void *) {} // { dg-error "exactly one" "" { target c++17_down } }
 };
 
 One a ();
@@ -30,10 +30,10 @@ struct Two
   };
 
   constexpr Two () : a(), b() {}
-  constexpr Two (int) : a() {} // { dg-error "b' must be initialized" }
-  constexpr Two (unsigned) : b () {} // { dg-error "a' must be initialized" }
-  constexpr Two (void *) {} // { dg-error "a' must be initialized" }
-   // { dg-error "b' must be initialized" "" { target *-*-* } .-1 }
+  constexpr Two (int) : a() {} // { dg-error "b' must be initialized" "" { target c++17_down } }
+  constexpr Two (unsigned) : b () {} // { dg-error "a' must be initialized" "" { target c++17_down } }
+  constexpr Two (void *) {} // { dg-error "a' must be initialized" "" { target c++17_down } }
+   // { dg-error "b' must be initialized" "" { target c++17_down } .-1 }
 };
 
 Two e ();

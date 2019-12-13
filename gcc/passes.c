@@ -2375,7 +2375,8 @@ should_skip_pass_p (opt_pass *pass)
     return false;
 
   /* Don't skip df init; later RTL passes need it.  */
-  if (strstr (pass->name, "dfinit") != NULL)
+  if (strstr (pass->name, "dfinit") != NULL
+      || strstr (pass->name, "dfinish") != NULL)
     return false;
 
   if (!quiet_flag)
@@ -2398,6 +2399,11 @@ skip_pass (opt_pass *pass)
      things depend on this (e.g. instructions in .md files).  */
   if (strcmp (pass->name, "reload") == 0)
     reload_completed = 1;
+
+  /* Similar for pass "pro_and_epilogue" and the "epilogue_completed" global
+     variable.  */
+  if (strcmp (pass->name, "pro_and_epilogue") == 0)
+    epilogue_completed = 1;
 
   /* The INSN_ADDRESSES vec is normally set up by
      shorten_branches; set it up for the benefit of passes that
@@ -2564,6 +2570,8 @@ execute_one_pass (opt_pass *pass)
   if (!((todo_after | pass->todo_flags_finish) & TODO_do_not_ggc_collect))
     ggc_collect ();
 
+  if (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS)
+    report_heap_memory_use ();
   return true;
 }
 
@@ -2818,6 +2826,8 @@ ipa_read_summaries_1 (opt_pass *pass)
 	      /* If a timevar is present, start it.  */
 	      if (pass->tv_id)
 		timevar_push (pass->tv_id);
+	      if (!quiet_flag)
+		fprintf (stderr, " <%s>", pass->name ? pass->name : "");
 
 	      pass_init_dump_file (pass);
 
@@ -2829,6 +2839,8 @@ ipa_read_summaries_1 (opt_pass *pass)
 	      /* Stop timevar.  */
 	      if (pass->tv_id)
 		timevar_pop (pass->tv_id);
+	      ggc_grow ();
+	      report_heap_memory_use ();
 	    }
 
 	  if (pass->sub && pass->sub->type != GIMPLE_PASS)
@@ -2869,6 +2881,8 @@ ipa_read_optimization_summaries_1 (opt_pass *pass)
 	      /* If a timevar is present, start it.  */
 	      if (pass->tv_id)
 		timevar_push (pass->tv_id);
+	      if (!quiet_flag)
+		fprintf (stderr, " <%s>", pass->name ? pass->name : "");
 
 	      pass_init_dump_file (pass);
 
@@ -2884,6 +2898,8 @@ ipa_read_optimization_summaries_1 (opt_pass *pass)
 
 	  if (pass->sub && pass->sub->type != GIMPLE_PASS)
 	    ipa_read_optimization_summaries_1 (pass->sub);
+	  ggc_grow ();
+	  report_heap_memory_use ();
 	}
       pass = pass->next;
     }
@@ -3033,7 +3049,7 @@ function_called_by_processed_nodes_p (void)
         continue;
       if (TREE_ASM_WRITTEN (e->caller->decl))
         continue;
-      if (!e->caller->process && !e->caller->global.inlined_to)
+      if (!e->caller->process && !e->caller->inlined_to)
       	break;
     }
   if (dump_file && e)

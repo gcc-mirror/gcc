@@ -49,24 +49,31 @@ run_rtl_passes (char *initial_pass_name)
   switch_to_section (text_section);
   (*debug_hooks->assembly_start) ();
 
-  /* Pass "expand" normally sets this up.  */
+  if (initial_pass_name)
+    {
+      /* Pass "expand" normally sets this up.  */
 #ifdef INSN_SCHEDULING
-  init_sched_attrs ();
+      init_sched_attrs ();
 #endif
+      bitmap_obstack_initialize (NULL);
+      bitmap_obstack_initialize (&reg_obstack);
+      opt_pass *rest_of_compilation
+	= g->get_passes ()->get_rest_of_compilation ();
+      gcc_assert (rest_of_compilation);
+      execute_pass_list (cfun, rest_of_compilation);
 
-  bitmap_obstack_initialize (NULL);
-  bitmap_obstack_initialize (&reg_obstack);
-
-  opt_pass *rest_of_compilation
-    = g->get_passes ()->get_rest_of_compilation ();
-  gcc_assert (rest_of_compilation);
-  execute_pass_list (cfun, rest_of_compilation);
-
-  opt_pass *clean_slate = g->get_passes ()->get_clean_slate ();
-  gcc_assert (clean_slate);
-  execute_pass_list (cfun, clean_slate);
-
-  bitmap_obstack_release (&reg_obstack);
+      opt_pass *clean_slate = g->get_passes ()->get_clean_slate ();
+      gcc_assert (clean_slate);
+      execute_pass_list (cfun, clean_slate);
+      bitmap_obstack_release (&reg_obstack);
+    }
+  else
+    {
+      opt_pass *clean_slate = g->get_passes ()->get_clean_slate ();
+      gcc_assert (clean_slate);
+      execute_pass_list (cfun, clean_slate);
+    }
 
   cfun->curr_properties |= PROP_rtl;
+  free (initial_pass_name);
 }

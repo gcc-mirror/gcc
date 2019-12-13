@@ -22,6 +22,10 @@
 #ifdef _FILE_OFFSET_BITS
 #undef _FILE_OFFSET_BITS
 #endif
+
+// Must go after undef _FILE_OFFSET_BITS.
+#include "sanitizer_glibc_version.h"
+
 #include <arpa/inet.h>
 #include <dirent.h>
 #include <grp.h>
@@ -136,6 +140,7 @@ typedef struct user_fpregs elf_fpregset_t;
 #include <linux/serial.h>
 #include <sys/msg.h>
 #include <sys/ipc.h>
+#include <crypt.h>
 #endif // SANITIZER_LINUX && !SANITIZER_ANDROID
 
 #if SANITIZER_ANDROID
@@ -225,7 +230,7 @@ namespace __sanitizer {
   // has been removed from glibc 2.28.
 #if defined(__aarch64__) || defined(__s390x__) || defined (__mips64) \
   || defined(__powerpc64__) || defined(__arch64__) || defined(__sparcv9) \
-  || defined(__x86_64__)
+  || defined(__x86_64__) || (defined(__riscv) && __riscv_xlen == 64)
 #define SIZEOF_STRUCT_USTAT 32
 #elif defined(__arm__) || defined(__i386__) || defined(__mips__) \
   || defined(__powerpc__) || defined(__s390__) || defined(__sparc__)
@@ -236,6 +241,7 @@ namespace __sanitizer {
   unsigned struct_ustat_sz = SIZEOF_STRUCT_USTAT;
   unsigned struct_rlimit64_sz = sizeof(struct rlimit64);
   unsigned struct_statvfs64_sz = sizeof(struct statvfs64);
+  unsigned struct_crypt_data_sz = sizeof(struct crypt_data);
 #endif // SANITIZER_LINUX && !SANITIZER_ANDROID
 
 #if SANITIZER_LINUX && !SANITIZER_ANDROID
@@ -1005,10 +1011,6 @@ CHECK_SIZE_AND_OFFSET(cmsghdr, cmsg_len);
 CHECK_SIZE_AND_OFFSET(cmsghdr, cmsg_level);
 CHECK_SIZE_AND_OFFSET(cmsghdr, cmsg_type);
 
-#ifndef __GLIBC_PREREQ
-#define __GLIBC_PREREQ(x, y) 0
-#endif
-
 #if SANITIZER_LINUX && (__ANDROID_API__ >= 21 || __GLIBC_PREREQ (2, 14))
 CHECK_TYPE_SIZE(mmsghdr);
 CHECK_SIZE_AND_OFFSET(mmsghdr, msg_hdr);
@@ -1126,12 +1128,9 @@ CHECK_SIZE_AND_OFFSET(ipc_perm, uid);
 CHECK_SIZE_AND_OFFSET(ipc_perm, gid);
 CHECK_SIZE_AND_OFFSET(ipc_perm, cuid);
 CHECK_SIZE_AND_OFFSET(ipc_perm, cgid);
-#if (!defined(__aarch64__) || !SANITIZER_LINUX || __GLIBC_PREREQ (2, 21)) && \
-    !defined(__arm__)
-/* On aarch64 glibc 2.20 and earlier provided incorrect mode field.  */
-/* On Arm glibc 2.31 and later provide a different mode field, this field is
-   never used by libsanitizer so we can simply ignore this assert for all glibc
-   versions.  */
+#if !SANITIZER_LINUX || __GLIBC_PREREQ (2, 31)
+/* glibc 2.30 and earlier provided 16-bit mode field instead of 32-bit
+   on many architectures.  */
 CHECK_SIZE_AND_OFFSET(ipc_perm, mode);
 #endif
 

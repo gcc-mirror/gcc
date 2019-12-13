@@ -47,7 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "pass_manager.h"
 #include "intl.h"
-#include "params.h"
 #include "auto-profile.h"
 #include "profile.h"
 
@@ -324,7 +323,7 @@ get_coverage_counts (unsigned counter, unsigned cfg_checksum,
 	}
       return NULL;
     }
-  if (PARAM_VALUE (PARAM_PROFILE_FUNC_INTERNAL_ID))
+  if (param_profile_func_internal_id)
     elt.ident = current_function_funcdef_no + 1;
   else
     {
@@ -560,7 +559,7 @@ coverage_compute_profile_id (struct cgraph_node *n)
     {
       expanded_location xloc
 	= expand_location (DECL_SOURCE_LOCATION (n->decl));
-      bool use_name_only = (PARAM_VALUE (PARAM_PROFILE_FUNC_INTERNAL_ID) == 0);
+      bool use_name_only = (param_profile_func_internal_id == 0);
 
       chksum = (use_name_only ? 0 : xloc.line);
       if (xloc.file)
@@ -628,7 +627,7 @@ coverage_begin_function (unsigned lineno_checksum, unsigned cfg_checksum)
 
   /* Announce function */
   offset = gcov_write_tag (GCOV_TAG_FUNCTION);
-  if (PARAM_VALUE (PARAM_PROFILE_FUNC_INTERNAL_ID))
+  if (param_profile_func_internal_id)
     gcov_write_unsigned (current_function_funcdef_no + 1);
   else
     {
@@ -682,7 +681,7 @@ coverage_end_function (unsigned lineno_checksum, unsigned cfg_checksum)
 
       item = ggc_alloc<coverage_data> ();
 
-      if (PARAM_VALUE (PARAM_PROFILE_FUNC_INTERNAL_ID))
+      if (param_profile_func_internal_id)
 	item->ident = current_function_funcdef_no + 1;
       else
 	{
@@ -1072,8 +1071,7 @@ build_init_ctor (tree gcov_info_type)
 static void
 build_gcov_exit_decl (void)
 {
-  tree init_fn = build_function_type_list (void_type_node, void_type_node,
-					   NULL);
+  tree init_fn = build_function_type_list (void_type_node, NULL);
   init_fn = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
 			get_identifier ("__gcov_exit"), init_fn);
   TREE_PUBLIC (init_fn) = 1;
@@ -1229,7 +1227,7 @@ coverage_init (const char *filename)
       else
 	profile_data_prefix = getpwd ();
     }
-  else
+  else if (profile_data_prefix != NULL)
     {
       /* when filename is a absolute path, we also need to mangle the full
       path of filename to prevent the profiling data being stored into a

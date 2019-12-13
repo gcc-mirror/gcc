@@ -52,7 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "intl.h"
 #include "tree-diagnostic.h"
-#include "params.h"
 #include "reload.h"
 #include "lra.h"
 #include "dwarf2asm.h"
@@ -84,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "ipa-fnsummary.h"
 #include "dump-context.h"
+#include "print-tree.h"
 #include "optinfo-emit-json.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
@@ -174,6 +174,8 @@ const char *user_label_prefix;
 
 FILE *asm_out_file;
 FILE *aux_info_file;
+FILE *callgraph_info_file = NULL;
+static bitmap callgraph_info_external_printed;
 FILE *stack_usage_file = NULL;
 
 /* The current working directory of a translation.  It's generally the
@@ -676,7 +678,7 @@ print_version (FILE *file, const char *indent, bool show_global_state)
       fprintf (file,
 	       file == stderr ? _(fmt4) : fmt4,
 	       indent, *indent != 0 ? " " : "",
-	       PARAM_VALUE (GGC_MIN_EXPAND), PARAM_VALUE (GGC_MIN_HEAPSIZE));
+	       param_ggc_min_expand, param_ggc_min_heapsize);
 
       print_plugins_versions (file, indent);
     }
@@ -913,8 +915,8 @@ alloc_for_identifier_to_locale (size_t len)
 }
 
 /* Output stack usage information.  */
-void
-output_stack_usage (void)
+static void
+output_stack_usage_1 (FILE *cf)
 {
   static bool warning_issued = false;
   enum stack_usage_kind_type { STATIC = 0, DYNAMIC, DYNAMIC_BOUNDED };
@@ -970,41 +972,17 @@ output_stack_usage (void)
       stack_usage += current_function_dynamic_stack_size;
     }
 
+  if (flag_callgraph_info & CALLGRAPH_INFO_STACK_USAGE)
+    fprintf (cf, "\\n" HOST_WIDE_INT_PRINT_DEC " bytes (%s)",
+	     stack_usage,
+	     stack_usage_kind_str[stack_usage_kind]);
+
   if (stack_usage_file)
     {
-      expanded_location loc
-	= expand_location (DECL_SOURCE_LOCATION (current_function_decl));
-      /* We don't want to print the full qualified name because it can be long,
-	 so we strip the scope prefix, but we may need to deal with the suffix
-	 created by the compiler.  */
-      const char *suffix
-	= strchr (IDENTIFIER_POINTER (DECL_NAME (current_function_decl)), '.');
-      const char *name
-	= lang_hooks.decl_printable_name (current_function_decl, 2);
-      if (suffix)
-	{
-	  const char *dot = strchr (name, '.');
-	  while (dot && strcasecmp (dot, suffix) != 0)
-	    {
-	      name = dot + 1;
-	      dot = strchr (name, '.');
-	    }
-	}
-      else
-	{
-	  const char *dot = strrchr (name, '.');
-	  if (dot)
-	    name = dot + 1;
-	}
-
-      fprintf (stack_usage_file,
-	       "%s:%d:%d:%s\t" HOST_WIDE_INT_PRINT_DEC"\t%s\n",
-	       loc.file == NULL ? "(artificial)" : lbasename (loc.file),
-	       loc.line,
-	       loc.column,
-	       name,
-	       stack_usage,
-	       stack_usage_kind_str[stack_usage_kind]);
+      print_decl_identifier (stack_usage_file, current_function_decl,
+			     PRINT_DECL_ORIGIN | PRINT_DECL_NAME);
+      fprintf (stack_usage_file, "\t" HOST_WIDE_INT_PRINT_DEC"\t%s\n",
+	       stack_usage, stack_usage_kind_str[stack_usage_kind]);
     }
 
   if (warn_stack_usage >= 0 && warn_stack_usage < HOST_WIDE_INT_MAX)
@@ -1024,6 +1002,107 @@ output_stack_usage (void)
 			stack_usage);
 	}
     }
+}
+
+/* Dump placeholder node for indirect calls in VCG format.  */
+
+#define INDIRECT_CALL_NAME  "__indirect_call"
+
+static void
+dump_final_node_vcg_start (FILE *f, tree decl)
+{
+  fputs ("node: { title: \"", f);
+  if (decl)
+    print_decl_identifier (f, decl, PRINT_DECL_UNIQUE_NAME);
+  else
+    fputs (INDIRECT_CALL_NAME, f);
+  fputs ("\" label: \"", f);
+  if (decl)
+    {
+      print_decl_identifier (f, decl, PRINT_DECL_NAME);
+      fputs ("\\n", f);
+      print_decl_identifier (f, decl, PRINT_DECL_ORIGIN);
+    }
+  else
+    fputs ("Indirect Call Placeholder", f);
+}
+
+/* Dump final cgraph edge in VCG format.  */
+
+static void
+dump_final_callee_vcg (FILE *f, location_t location, tree callee)
+{
+  if ((!callee || DECL_EXTERNAL (callee))
+      && bitmap_set_bit (callgraph_info_external_printed,
+			 callee ? DECL_UID (callee) + 1 : 0))
+    {
+      dump_final_node_vcg_start (f, callee);
+      fputs ("\" shape : ellipse }\n", f);
+    }
+
+  fputs ("edge: { sourcename: \"", f);
+  print_decl_identifier (f, current_function_decl, PRINT_DECL_UNIQUE_NAME);
+  fputs ("\" targetname: \"", f);
+  if (callee)
+    print_decl_identifier (f, callee, PRINT_DECL_UNIQUE_NAME);
+  else
+    fputs (INDIRECT_CALL_NAME, f);
+  if (LOCATION_LOCUS (location) != UNKNOWN_LOCATION)
+    {
+      expanded_location loc;
+      fputs ("\" label: \"", f);
+      loc = expand_location (location);
+      fprintf (f, "%s:%d:%d", loc.file, loc.line, loc.column);
+    }
+  fputs ("\" }\n", f);
+}
+
+/* Dump final cgraph node in VCG format.  */
+
+static void
+dump_final_node_vcg (FILE *f)
+{
+  dump_final_node_vcg_start (f, current_function_decl);
+
+  if (flag_stack_usage_info
+      || (flag_callgraph_info & CALLGRAPH_INFO_STACK_USAGE))
+    output_stack_usage_1 (f);
+
+  if (flag_callgraph_info & CALLGRAPH_INFO_DYNAMIC_ALLOC)
+    {
+      fprintf (f, "\\n%u dynamic objects", vec_safe_length (cfun->su->dallocs));
+
+      unsigned i;
+      callinfo_dalloc *cda;
+      FOR_EACH_VEC_SAFE_ELT (cfun->su->dallocs, i, cda)
+	{
+	  expanded_location loc = expand_location (cda->location);
+	  fprintf (f, "\\n %s", cda->name);
+	  fprintf (f, " %s:%d:%d", loc.file, loc.line, loc.column);
+	}
+
+      vec_free (cfun->su->dallocs);
+      cfun->su->dallocs = NULL;
+    }
+
+  fputs ("\" }\n", f);
+
+  unsigned i;
+  callinfo_callee *c;
+  FOR_EACH_VEC_SAFE_ELT (cfun->su->callees, i, c)
+    dump_final_callee_vcg (f, c->location, c->decl);
+  vec_free (cfun->su->callees);
+  cfun->su->callees = NULL;
+}
+
+/* Output stack usage and callgraph info, as requested.  */
+void
+output_stack_usage (void)
+{
+  if (flag_callgraph_info)
+    dump_final_node_vcg (callgraph_info_file);
+  else
+    output_stack_usage_1 (NULL);
 }
 
 /* Open an auxiliary output file.  */
@@ -1153,13 +1232,6 @@ general_init (const char *argv0, bool init_signals)
   /* Initialize register usage now so switches may override.  */
   init_reg_sets ();
 
-  /* Register the language-independent parameters.  */
-  global_init_params ();
-
-  /* This must be done after global_init_params but before argument
-     processing.  */
-  init_ggc_heuristics ();
-
   /* Create the singleton holder for global state.  This creates the
      dump manager.  */
   g = new gcc::context ();
@@ -1175,7 +1247,6 @@ general_init (const char *argv0, bool init_signals)
 
   statistics_early_init ();
   debuginfo_early_init ();
-  finish_params ();
 }
 
 /* Return true if the current target supports -fsection-anchors.  */
@@ -1775,7 +1846,7 @@ process_options (void)
 
   if (flag_checking >= 2)
     hash_table_sanitize_eq_limit
-      = PARAM_VALUE (PARAM_HASH_TABLE_VERIFICATION_LIMIT);
+      = param_hash_table_verification_limit;
 
   /* Please don't change global_options after this point, those changes won't
      be reflected in optimization_{default,current}_node.  */
@@ -1900,6 +1971,17 @@ lang_dependent_init (const char *name)
       /* If stack usage information is desired, open the output file.  */
       if (flag_stack_usage && !flag_generate_lto)
 	stack_usage_file = open_auxiliary_file ("su");
+
+      /* If call graph information is desired, open the output file.  */
+      if (flag_callgraph_info && !flag_generate_lto)
+	{
+	  callgraph_info_file = open_auxiliary_file ("ci");
+	  /* Write the file header.  */
+	  fprintf (callgraph_info_file,
+		   "graph: { title: \"%s\"\n", main_input_filename);
+	  bitmap_obstack_initialize (NULL);
+	  callgraph_info_external_printed = BITMAP_ALLOC (NULL);
+	}
     }
 
   /* This creates various _DECL nodes, so needs to be called after the
@@ -1994,8 +2076,17 @@ target_reinit (void)
 }
 
 void
-dump_memory_report (bool final)
+dump_memory_report (const char *header)
 {
+  /* Print significant header.  */
+  fputc ('\n', stderr);
+  for (unsigned i = 0; i < 80; i++)
+    fputc ('#', stderr);
+  fprintf (stderr, "\n# %-77s#\n", header);
+  for (unsigned i = 0; i < 80; i++)
+    fputc ('#', stderr);
+  fputs ("\n\n", stderr);
+
   dump_line_table_statistics ();
   ggc_print_statistics ();
   stringpool_statistics ();
@@ -2006,7 +2097,7 @@ dump_memory_report (bool final)
   dump_bitmap_statistics ();
   dump_hash_table_loc_statistics ();
   dump_vec_loc_statistics ();
-  dump_ggc_loc_statistics (final);
+  dump_ggc_loc_statistics ();
   dump_alias_stats (stderr);
   dump_pta_stats (stderr);
 }
@@ -2044,6 +2135,15 @@ finalize (bool no_backend)
       stack_usage_file = NULL;
     }
 
+  if (callgraph_info_file)
+    {
+      fputs ("}\n", callgraph_info_file);
+      fclose (callgraph_info_file);
+      callgraph_info_file = NULL;
+      BITMAP_FREE (callgraph_info_external_printed);
+      bitmap_obstack_release (NULL);
+    }
+
   if (seen_error ())
     coverage_remove_note_file ();
 
@@ -2058,7 +2158,7 @@ finalize (bool no_backend)
     }
 
   if (mem_report)
-    dump_memory_report (true);
+    dump_memory_report ("Final");
 
   if (profile_report)
     dump_profile_report ();
@@ -2265,6 +2365,10 @@ toplev::main (int argc, char **argv)
   init_options_struct (&global_options, &global_options_set);
   lang_hooks.init_options_struct (&global_options);
 
+  /* Init GGC heuristics must be caller after we initialize
+     options.  */
+  init_ggc_heuristics ();
+
   /* Convert the options to an array.  */
   decode_cmdline_options_to_array_default_mask (argc,
 						CONST_CAST2 (const char **,
@@ -2352,10 +2456,6 @@ toplev::finalize (void)
   gcse_c_finalize ();
   ipa_cp_c_finalize ();
   ira_costs_c_finalize ();
-  params_c_finalize ();
-
-  finalize_options_struct (&global_options);
-  finalize_options_struct (&global_options_set);
 
   /* save_decoded_options uses opts_obstack, so these must
      be cleaned up together.  */

@@ -59,11 +59,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
-#include "params.h"
 #include "tree-inline.h"
 #include "tree-cfgcleanup.h"
 #include "builtins.h"
 #include "tree-ssa-sccvn.h"
+#include "dbgcnt.h"
 
 /* Specifies types of loops that may be unrolled.  */
 
@@ -163,7 +163,7 @@ struct loop_size
 static bool
 constant_after_peeling (tree op, gimple *stmt, class loop *loop)
 {
-  if (is_gimple_min_invariant (op))
+  if (CONSTANT_CLASS_P (op))
     return true;
 
   /* We can still fold accesses to constant arrays when index is known.  */
@@ -195,8 +195,9 @@ constant_after_peeling (tree op, gimple *stmt, class loop *loop)
   /* Induction variables are constants when defined in loop.  */
   if (loop_containing_stmt (stmt) != loop)
     return false;
-  tree ev = instantiate_parameters (loop, analyze_scalar_evolution (loop, op));
-  if (chrec_contains_undetermined (ev))
+  tree ev = analyze_scalar_evolution (loop, op);
+  if (chrec_contains_undetermined (ev)
+      || chrec_contains_symbols (ev))
     return false;
   return true;
 }
@@ -293,7 +294,8 @@ tree_estimate_loop_size (class loop *loop, edge exit, edge edge_to_cancel,
 						  stmt, loop)
 		       && (gimple_assign_rhs_class (stmt) != GIMPLE_BINARY_RHS
 			   || constant_after_peeling (gimple_assign_rhs2 (stmt),
-						      stmt, loop)))
+						      stmt, loop))
+		       && gimple_assign_rhs_class (stmt) != GIMPLE_TERNARY_RHS)
 		{
 		  size->constant_iv = true;
 		  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -738,7 +740,7 @@ try_unroll_loop_completely (class loop *loop,
     return false;
 
   if (!loop->unroll
-      && n_unroll > (unsigned) PARAM_VALUE (PARAM_MAX_COMPLETELY_PEEL_TIMES))
+      && n_unroll > (unsigned) param_max_completely_peel_times)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Not unrolling loop %d "
@@ -779,7 +781,7 @@ try_unroll_loop_completely (class loop *loop,
 	  bool large
 	    = tree_estimate_loop_size
 		(loop, remove_exit ? exit : NULL, edge_to_cancel, &size,
-		 PARAM_VALUE (PARAM_MAX_COMPLETELY_PEELED_INSNS));
+		 param_max_completely_peeled_insns);
 	  if (large)
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
@@ -863,7 +865,7 @@ try_unroll_loop_completely (class loop *loop,
 	     blow the branch predictor tables.  Limit number of
 	     branches on the hot path through the peeled sequence.  */
 	  else if (size.num_branches_on_hot_path * (int)n_unroll
-		   > PARAM_VALUE (PARAM_MAX_PEEL_BRANCHES))
+		   > param_max_peel_branches)
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "Not unrolling loop %d: "
@@ -873,7 +875,7 @@ try_unroll_loop_completely (class loop *loop,
 	      return false;
 	    }
 	  else if (unr_insns
-		   > (unsigned) PARAM_VALUE (PARAM_MAX_COMPLETELY_PEELED_INSNS))
+		   > (unsigned) param_max_completely_peeled_insns)
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "Not unrolling loop %d: "
@@ -883,6 +885,9 @@ try_unroll_loop_completely (class loop *loop,
 	      return false;
 	    }
 	}
+
+      if (!dbg_cnt (gimple_unroll))
+	return false;
 
       initialize_original_copy_tables ();
       auto_sbitmap wont_exit (n_unroll + 1);
@@ -994,7 +999,7 @@ try_peel_loop (class loop *loop,
   int peeled_size;
 
   if (!flag_peel_loops
-      || PARAM_VALUE (PARAM_MAX_PEEL_TIMES) <= 0
+      || param_max_peel_times <= 0
       || !peeled_loops)
     return false;
 
@@ -1053,7 +1058,7 @@ try_peel_loop (class loop *loop,
   /* We want to peel estimated number of iterations + 1 (so we never
      enter the loop on quick path).  Check against PARAM_MAX_PEEL_TIMES
      and be sure to avoid overflows.  */
-  if (npeel > PARAM_VALUE (PARAM_MAX_PEEL_TIMES) - 1)
+  if (npeel > param_max_peel_times - 1)
     {
       if (dump_file)
 	fprintf (dump_file, "Not peeling: rolls too much "
@@ -1064,15 +1069,18 @@ try_peel_loop (class loop *loop,
 
   /* Check peeled loops size.  */
   tree_estimate_loop_size (loop, exit, NULL, &size,
-			   PARAM_VALUE (PARAM_MAX_PEELED_INSNS));
+			   param_max_peeled_insns);
   if ((peeled_size = estimated_peeled_sequence_size (&size, (int) npeel))
-      > PARAM_VALUE (PARAM_MAX_PEELED_INSNS))
+      > param_max_peeled_insns)
     {
       if (dump_file)
 	fprintf (dump_file, "Not peeling: peeled sequence size is too large "
 		 "(%i insns > --param max-peel-insns)", peeled_size);
       return false;
     }
+
+  if (!dbg_cnt (gimple_unroll))
+    return false;
 
   /* Duplicate possibly eliminating the exits.  */
   initialize_original_copy_tables ();
@@ -1214,8 +1222,10 @@ canonicalize_loop_induction_variables (class loop *loop,
      by find_loop_niter_by_eval.  Be sure to keep it for future.  */
   if (niter && TREE_CODE (niter) == INTEGER_CST)
     {
+      vec<edge> exits = get_loop_exit_edges  (loop);
       record_niter_bound (loop, wi::to_widest (niter),
-			  exit == single_likely_exit (loop), true);
+			  exit == single_likely_exit (loop, exits), true);
+      exits.release ();
     }
 
   /* Force re-computation of loop bounds so we can remove redundant exits.  */
@@ -1495,7 +1505,7 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
         BITMAP_FREE (loop_closed_ssa_invalidated);
     }
   while (changed
-	 && ++iteration <= PARAM_VALUE (PARAM_MAX_UNROLL_ITERATIONS));
+	 && ++iteration <= param_max_unroll_iterations);
 
   BITMAP_FREE (father_bbs);
 

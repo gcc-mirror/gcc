@@ -7,7 +7,7 @@ char foo[26];
 
 void bar()
 {
-  foo = "0123456789012345678901234"; // { dg-error "array" }
+  foo = "0123456789012345678901234"; // { dg-error "7:invalid array assignment" }
 }
 
 

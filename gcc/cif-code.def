@@ -70,12 +70,8 @@ DEFCIFCODE(LARGE_STACK_FRAME_GROWTH_LIMIT, CIF_FINAL_NORMAL,
 	   N_("--param large-stack-frame-growth limit reached"))
 DEFCIFCODE(MAX_INLINE_INSNS_SINGLE_LIMIT, CIF_FINAL_NORMAL,
 	   N_("--param max-inline-insns-single limit reached"))
-DEFCIFCODE(MAX_INLINE_INSNS_SINGLE_O2_LIMIT, CIF_FINAL_NORMAL,
-	   N_("--param max-inline-insns-single-O2 limit reached"))
 DEFCIFCODE(MAX_INLINE_INSNS_AUTO_LIMIT, CIF_FINAL_NORMAL,
 	   N_("--param max-inline-insns-auto limit reached"))
-DEFCIFCODE(MAX_INLINE_INSNS_AUTO_O2_LIMIT, CIF_FINAL_NORMAL,
-	   N_("--param max-inline-insns-auto-O2 limit reached"))
 DEFCIFCODE(INLINE_UNIT_GROWTH_LIMIT, CIF_FINAL_NORMAL,
 	   N_("--param inline-unit-growth limit reached"))
 
@@ -94,10 +90,6 @@ DEFCIFCODE(NEVER_CALL, CIF_FINAL_NORMAL,
 /* Function is not declared as inline.  */
 DEFCIFCODE(NOT_DECLARED_INLINED, CIF_FINAL_NORMAL,
 	   N_("function not declared inline and code size would grow"))
-
-/* Caller and callee disagree on the arguments.  */
-DEFCIFCODE(MISMATCHED_ARGUMENTS, CIF_FINAL_ERROR,
-	   N_("mismatched arguments"))
 
 /* Caller and callee disagree on the arguments.  */
 DEFCIFCODE(LTO_MISMATCHED_DECLARATIONS, CIF_FINAL_ERROR,

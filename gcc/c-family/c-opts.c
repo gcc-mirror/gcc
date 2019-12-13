@@ -170,6 +170,7 @@ c_diagnostic_finalizer (diagnostic_context *context,
 {
   char *saved_prefix = pp_take_prefix (context->printer);
   pp_set_prefix (context->printer, NULL);
+  pp_newline (context->printer);
   diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind);
   /* By default print macro expansion contexts in the diagnostic
      finalizer -- for tokens resulting from macro expansion.  */
@@ -828,9 +829,9 @@ c_common_post_options (const char **pfilename)
 
   /* C2X Annex F does not permit certain built-in functions to raise
      "inexact".  */
-  if (flag_isoc2x
-      && !global_options_set.x_flag_fp_int_builtin_inexact)
-    flag_fp_int_builtin_inexact = 0;
+  if (flag_isoc2x)
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 flag_fp_int_builtin_inexact, 0);
 
   /* By default we use C99 inline semantics in GNU99 or C99 mode.  C99
      inline semantics are not supported in GNU89 or C89 mode.  */
@@ -847,9 +848,9 @@ c_common_post_options (const char **pfilename)
 
   /* If -ffreestanding, -fno-hosted or -fno-builtin then disable
      pattern recognition.  */
-  if (!global_options_set.x_flag_tree_loop_distribute_patterns
-      && flag_no_builtin)
-    flag_tree_loop_distribute_patterns = 0;
+  if (flag_no_builtin)
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 flag_tree_loop_distribute_patterns, 0);
 
   /* -Woverlength-strings is off by default, but is enabled by -Wpedantic.
      It is never enabled in C++, as the minimum limit is not normative
@@ -904,6 +905,10 @@ c_common_post_options (const char **pfilename)
   if (warn_implicit_int == -1)
     warn_implicit_int = flag_isoc99;
 
+  /* -Wold-style-definition is enabled by default for C2X.  */
+  if (warn_old_style_definition == -1)
+    warn_old_style_definition = flag_isoc2x;
+
   /* -Wshift-overflow is enabled by default in C99 and C++11 modes.  */
   if (warn_shift_overflow == -1)
     warn_shift_overflow = cxx_dialect >= cxx11 || flag_isoc99;
@@ -914,16 +919,17 @@ c_common_post_options (const char **pfilename)
 				 && (cxx_dialect >= cxx11 || flag_isoc99));
 
   /* -Wregister is enabled by default in C++17.  */
-  if (!global_options_set.x_warn_register)
-    warn_register = cxx_dialect >= cxx17;
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set, warn_register,
+		       cxx_dialect >= cxx17);
 
   /* -Wcomma-subscript is enabled by default in C++20.  */
-  if (!global_options_set.x_warn_comma_subscript)
-    warn_comma_subscript = (cxx_dialect >= cxx2a && warn_deprecated);
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       warn_comma_subscript,
+		       cxx_dialect >= cxx2a && warn_deprecated);
 
   /* -Wvolatile is enabled by default in C++20.  */
-  if (!global_options_set.x_warn_volatile)
-    warn_volatile = (cxx_dialect >= cxx2a && warn_deprecated);
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set, warn_volatile,
+		       cxx_dialect >= cxx2a && warn_deprecated);
 
   /* Declone C++ 'structors if -Os.  */
   if (flag_declone_ctor_dtor == -1)
@@ -937,7 +943,7 @@ c_common_post_options (const char **pfilename)
 
   /* Change flag_abi_version to be the actual current ABI level, for the
      benefit of c_cpp_builtins, and to make comparison simpler.  */
-  const int latest_abi_version = 13;
+  const int latest_abi_version = 14;
   /* Generate compatibility aliases for ABI v11 (7.1) by default.  */
   const int abi_compat_default = 11;
 
@@ -975,12 +981,13 @@ c_common_post_options (const char **pfilename)
   /* By default, enable the new inheriting constructor semantics along with ABI
      11.  New and old should coexist fine, but it is a change in what
      artificial symbols are generated.  */
-  if (!global_options_set.x_flag_new_inheriting_ctors)
-    flag_new_inheriting_ctors = abi_version_at_least (11);
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       flag_new_inheriting_ctors,
+		       abi_version_at_least (11));
 
   /* For GCC 7, only enable DR150 resolution by default if -std=c++17.  */
-  if (!global_options_set.x_flag_new_ttp)
-    flag_new_ttp = (cxx_dialect >= cxx17);
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set, flag_new_ttp,
+		       cxx_dialect >= cxx17);
 
   if (cxx_dialect >= cxx11)
     {
@@ -1038,7 +1045,7 @@ c_common_post_options (const char **pfilename)
      to know when concepts are enabled. Note that -fconcepts-ts can
      be used to include additional features, although modified to
      work with the standard.  */
-  if (cxx_dialect >= cxx2a)
+  if (cxx_dialect >= cxx2a || flag_concepts_ts)
     flag_concepts = 1;
   else if (flag_concepts)
     /* For -std=c++17 -fconcepts, imply -fconcepts-ts.  */

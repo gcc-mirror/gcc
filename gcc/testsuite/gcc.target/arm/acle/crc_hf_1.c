@@ -3,7 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_hard_vfp_ok }  */
-/* { dg-options "-mfloat-abi=hard -march=armv8-a+simd+crc" } */
+/* { dg-additional-options "-mfloat-abi=hard -march=armv8-a+simd+crc" } */
 
 #include <arm_acle.h>
 

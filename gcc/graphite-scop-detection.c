@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "cfghooks.h"
 #include "domwalk.h"
-#include "params.h"
 #include "tree.h"
 #include "gimple.h"
 #include "ssa.h"
@@ -1639,7 +1638,7 @@ build_scops (vec<scop_p> *scops)
 	  continue;
 	}
 
-      unsigned max_arrays = PARAM_VALUE (PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP);
+      unsigned max_arrays = param_graphite_max_arrays_per_scop;
       if (max_arrays > 0
 	  && scop->drs.length () >= max_arrays)
 	{
@@ -1652,7 +1651,7 @@ build_scops (vec<scop_p> *scops)
 	}
 
       find_scop_parameters (scop);
-      graphite_dim_t max_dim = PARAM_VALUE (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS);
+      graphite_dim_t max_dim = param_graphite_max_nb_scop_params;
       if (max_dim > 0
 	  && scop_nb_params (scop) > max_dim)
 	{

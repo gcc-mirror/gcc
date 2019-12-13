@@ -63,12 +63,19 @@ lto_cgraph_replace_node (struct cgraph_node *node,
     prevailing_node->forced_by_abi = true;
   if (node->address_taken)
     {
-      gcc_assert (!prevailing_node->global.inlined_to);
+      gcc_assert (!prevailing_node->inlined_to);
       prevailing_node->mark_address_taken ();
     }
   if (node->definition && prevailing_node->definition
       && DECL_COMDAT (node->decl) && DECL_COMDAT (prevailing_node->decl))
     prevailing_node->merged_comdat = true;
+  else if ((node->definition || node->body_removed)
+	   && DECL_DECLARED_INLINE_P (node->decl)
+	   && DECL_EXTERNAL (node->decl)
+	   && prevailing_node->definition)
+    prevailing_node->merged_extern_inline = true;
+  prevailing_node->merged_comdat |= node->merged_comdat;
+  prevailing_node->merged_extern_inline |= node->merged_extern_inline;
 
   /* Redirect all incoming edges.  */
   compatible_p
@@ -910,7 +917,7 @@ lto_symtab_merge_symbols_1 (symtab_node *prevailing)
       cgraph_node *ce = dyn_cast <cgraph_node *> (e);
 
       if ((!TREE_PUBLIC (e->decl) && !DECL_EXTERNAL (e->decl))
-	  || (ce != NULL && ce->global.inlined_to))
+	  || (ce != NULL && ce->inlined_to))
 	continue;
       symtab_node *to = symtab_node::get (lto_symtab_prevailing_decl (e->decl));
 

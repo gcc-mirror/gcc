@@ -9,6 +9,9 @@
 
 typedef __SIZE_TYPE__ size_t;
 
+/* Prevent equivalent functions from being merged.  */
+#define NOIPA __attribute__ ((noipa))
+
 #ifndef LINE
 #  define LINE 0
 #endif
@@ -53,7 +56,7 @@ extern int x (void);
    argument is in a known range of lengths and one or both of which
    exceed the size of the destination.  */
 
-void test_sprintf_chk_string (const char *s, const char *t)
+NOIPA void test_sprintf_chk_string (const char *s, const char *t)
 {
 #define x x ()
 
@@ -84,7 +87,7 @@ void test_sprintf_chk_string (const char *s, const char *t)
 /* Verify that the checker makes use of integer constant propagation
    to detect buffer overflow in non-constant cases.  */
 
-void test_sprintf_chk_integer_value (void)
+NOIPA void test_sprintf_chk_integer_value (void)
 {
   T ( 1, "%i",  i (    0));         /* { dg-warning "nul past the end" } */
   T ( 1, "%i",  i (    1));         /* { dg-warning "nul past the end" } */
@@ -182,7 +185,7 @@ range_uint (unsigned int min, unsigned int max)
   return val < min || max < val ? min : val;
 }
 
-void test_sprintf_chk_range_schar (void)
+NOIPA void test_sprintf_chk_range_schar (void)
 {
 #define R(min, max) range_sint (min, max)
 
@@ -239,7 +242,7 @@ void test_sprintf_chk_range_schar (void)
   T ( 6, "%.3i|%.2i/%i", R (0, 1), R (0, 2), R (0, 3)); /* { dg-warning "./. directive writing 1 byte into a region of size 0" } */
 }
 
-void test_sprintf_chk_range_uchar (void)
+NOIPA void test_sprintf_chk_range_uchar (void)
 {
 #undef R
 #define R(min, max) range_uchar (min, max)
@@ -253,7 +256,7 @@ void test_sprintf_chk_range_uchar (void)
   T ( 3, "%i",  R (0, 100));  /* { dg-warning "may write a terminating nul past the end of the destination" } */
 }
 
-void test_sprintf_chk_range_sshrt (void)
+NOIPA void test_sprintf_chk_range_sshrt (void)
 {
 #undef R
 #define R(min, max) range_sshrt (min, max)
@@ -276,7 +279,7 @@ void test_sprintf_chk_range_sshrt (void)
   T ( 4, "%i",  R (999, 1000)); /* { dg-warning "may write a terminating nul past the end of the destination" } */
 }
 
-void test_sprintf_chk_range_ushrt (void)
+NOIPA void test_sprintf_chk_range_ushrt (void)
 {
 #undef R
 #define R(min, max) range_ushrt (min, max)
@@ -298,7 +301,7 @@ void test_sprintf_chk_range_ushrt (void)
   T ( 4, "%i",  R (999, 1000)); /* { dg-warning "may write a terminating nul past the end of the destination" } */
 }
 
-void test_sprintf_chk_range_sint (void)
+NOIPA void test_sprintf_chk_range_sint (void)
 {
 #undef R
 #define R(min, max) range_sint (min, max)
@@ -321,7 +324,7 @@ void test_sprintf_chk_range_sint (void)
   T ( 4, "%i",  R (999, 1000)); /* { dg-warning "may write a terminating nul past the end of the destination" } */
 }
 
-void test_sprintf_chk_range_uint (void)
+NOIPA void test_sprintf_chk_range_uint (void)
 {
 #undef R
 #define R(min, max) range_uint (min, max)
@@ -351,7 +354,7 @@ void test_sprintf_chk_range_uint (void)
    fail.  The latter because due to the limit of ptrdiff_t no object
    can be larger than PTRDIFF_MAX bytes.  */
 
-void test_too_large (char *d, int x, __builtin_va_list va)
+NOIPA void test_too_large (char *d, int x, __builtin_va_list va)
 {
   const size_t imax = __INT_MAX__;
   const size_t imax_p1 = imax + 1;
@@ -393,7 +396,7 @@ void test_too_large (char *d, int x, __builtin_va_list va)
 #define TEST_SPRINTF(d, maxsize, objsize, fmt, ...)	\
   __builtin_sprintf (d, fmt, __VA_ARGS__)
 
-void test_sprintf_malloc (const char *s, const char *t)
+NOIPA void test_sprintf_malloc (const char *s, const char *t)
 {
 #define x x ()
 
@@ -421,7 +424,7 @@ void test_sprintf_malloc (const char *s, const char *t)
 #undef ALLOC
 #define ALLOC(p, n) (p) = __builtin_alloca (n)
 
-void test_sprintf_alloca (const char *s, const char *t)
+NOIPA void test_sprintf_alloca (const char *s, const char *t)
 {
 #define x x ()
 
@@ -449,7 +452,7 @@ void test_sprintf_alloca (const char *s, const char *t)
 #undef ALLOC
 #define ALLOC(p, n) char vla [i (n)]; (p) = vla
 
-void test_sprintf_vla (const char *s, const char *t)
+NOIPA void test_sprintf_vla (const char *s, const char *t)
 {
 #define x x ()
 

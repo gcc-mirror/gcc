@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -mavx512f -mtune=knl" } */
+/* Disabling epilogues until we find a better way to deal with scans.  */
+/* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 
 #include "avx512f-gather-4.c"
 

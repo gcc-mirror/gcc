@@ -36,7 +36,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "optabs-tree.h"
 #include "cgraph.h"
 #include "gimple-pretty-print.h"
-#include "params.h"
 #include "fold-const.h"
 #include "varasm.h"
 #include "stor-layout.h"
@@ -62,7 +61,7 @@ using namespace tree_switch_conversion;
 
 /* Constructor.  */
 
-switch_conversion::switch_conversion (): m_final_bb (NULL), m_other_count (),
+switch_conversion::switch_conversion (): m_final_bb (NULL),
   m_constructors (NULL), m_default_values (NULL),
   m_arr_ref_first (NULL), m_arr_ref_last (NULL),
   m_reason (NULL), m_default_case_nonstandard (false), m_cfg_altered (false)
@@ -90,10 +89,6 @@ switch_conversion::collect (gswitch *swtch)
   e_default = gimple_switch_default_edge (cfun, swtch);
   m_default_bb = e_default->dest;
   m_default_prob = e_default->probability;
-  m_default_count = e_default->count ();
-  FOR_EACH_EDGE (e, ei, m_switch_bb->succs)
-    if (e != e_default)
-      m_other_count += e->count ();
 
   /* Get upper and lower bounds of case values, and the covered range.  */
   min_case = gimple_switch_label (swtch, 1);
@@ -194,7 +189,7 @@ switch_conversion::check_range ()
     }
 
   if (tree_to_uhwi (m_range_size)
-      > ((unsigned) m_count * SWITCH_CONVERSION_BRANCH_RATIO))
+      > ((unsigned) m_count * param_switch_conversion_branch_ratio))
     {
       m_reason = "the maximum range-branch ratio exceeded";
       return false;
@@ -1268,8 +1263,8 @@ jump_table_cluster::can_be_handled (const vec<cluster *> &clusters,
 
   unsigned HOST_WIDE_INT max_ratio
     = (optimize_insn_for_size_p ()
-       ? PARAM_VALUE (PARAM_JUMP_TABLE_MAX_GROWTH_RATIO_FOR_SIZE)
-       : PARAM_VALUE (PARAM_JUMP_TABLE_MAX_GROWTH_RATIO_FOR_SPEED));
+       ? param_jump_table_max_growth_ratio_for_size
+       : param_jump_table_max_growth_ratio_for_speed);
   unsigned HOST_WIDE_INT range = get_range (clusters[start]->get_low (),
 					    clusters[end]->get_high ());
   /* Check overflow.  */
@@ -1834,6 +1829,7 @@ switch_decision_tree::try_switch_expansion (vec<cluster *> &clusters)
     if (clusters[i]->get_type () != SIMPLE_CASE)
       {
 	clusters[i]->m_case_bb = create_empty_bb (bb);
+	clusters[i]->m_case_bb->count = bb->count;
 	clusters[i]->m_case_bb->loop_father = bb->loop_father;
       }
 

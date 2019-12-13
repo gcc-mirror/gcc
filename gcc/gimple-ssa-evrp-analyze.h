@@ -37,11 +37,11 @@ class evrp_range_analyzer
   void record_ranges_from_stmt (gimple *, bool);
 
   /* Main interface to retrieve range information.  */
-  const value_range *get_value_range (const_tree op)
+  const value_range_equiv *get_value_range (const_tree op)
     { return vr_values->get_value_range (op); }
 
   /* Record a new unwindable range.  */
-  void push_value_range (tree var, value_range *vr);
+  void push_value_range (tree var, value_range_equiv *vr);
 
   /* Dump all the current value ranges.  This is primarily
      a debugging interface.  */
@@ -63,13 +63,14 @@ class evrp_range_analyzer
   class vr_values *vr_values;
 
   void pop_value_range ();
-  value_range *try_find_new_range (tree, tree op, tree_code code, tree limit);
+  value_range_equiv *try_find_new_range (tree, tree op, tree_code code,
+					 tree limit);
   void record_ranges_from_incoming_edge (basic_block);
   void record_ranges_from_phis (basic_block);
-  void set_ssa_range_info (tree, value_range *);
+  void set_ssa_range_info (tree, value_range_equiv *);
 
   /* STACK holds the old VR.  */
-  auto_vec<std::pair <tree, value_range *> > stack;
+  auto_vec<std::pair <tree, value_range_equiv *> > stack;
 
   /* True if we are updating global ranges, false otherwise.  */
   bool m_update_global_ranges;

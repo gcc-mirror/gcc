@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "sched-int.h"
 #include "cfgloop.h"
 #include "expr.h"
-#include "params.h"
 #include "ddg.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
@@ -1332,9 +1331,6 @@ setup_sched_infos (void)
    version may be entered.  Just a guess.  */
 #define PROB_SMS_ENOUGH_ITERATIONS 80
 
-/* Used to calculate the upper bound of ii.  */
-#define MAXII_FACTOR 2
-
 /* Main entry point, perform SMS scheduling on the loops of the function
    that consist of single basic blocks.  */
 static void
@@ -1433,7 +1429,7 @@ sms_schedule (void)
       if ( latch_edge->count () > profile_count::zero ()
           && (latch_edge->count()
 	      < single_exit (loop)->count ().apply_scale
-				 (SMS_LOOP_AVERAGE_COUNT_THRESHOLD, 1)))
+				 (param_sms_loop_average_count_threshold, 1)))
 	{
 	  if (dump_file)
 	    {
@@ -1598,7 +1594,7 @@ sms_schedule (void)
       rec_mii = sms_order_nodes (g, mii, node_order, &max_asap);
       mii = MAX (res_MII (g), rec_mii);
       mii = MAX (mii, 1);
-      maxii = MAX (max_asap, MAXII_FACTOR * mii);
+      maxii = MAX (max_asap, param_sms_max_ii_factor * mii);
 
       if (dump_file)
 	fprintf (dump_file, "SMS iis %d %d %d (rec_mii, mii, maxii)\n",
@@ -1637,10 +1633,10 @@ sms_schedule (void)
 	      gcc_assert (stage_count >= 1);
 	    }
 
-	  /* The default value of PARAM_SMS_MIN_SC is 2 as stage count of
+	  /* The default value of param_sms_min_sc is 2 as stage count of
 	     1 means that there is no interleaving between iterations thus
 	     we let the scheduling passes do the job in this case.  */
-	  if (stage_count < PARAM_VALUE (PARAM_SMS_MIN_SC)
+	  if (stage_count < param_sms_min_sc
 	      || (count_init && (loop_count <= stage_count))
 	      || (max_trip_count >= 0 && max_trip_count <= stage_count)
 	      || (trip_count >= 0 && trip_count <= stage_count))
@@ -1828,11 +1824,6 @@ sms_schedule (void)
    In rare cases, it may be better to allow windows of II+1 cycles.
    The window would then start and end on the same row, but with
    different "must precede" and "must follow" requirements.  */
-
-/* A limit on the number of cycles that resource conflicts can span.  ??? Should
-   be provided by DFA, and be dependent on the type of insn scheduled.  Currently
-   set to 0 to save compile time.  */
-#define DFA_HISTORY SMS_DFA_HISTORY
 
 /* A threshold for the number of repeated unsuccessful attempts to insert
    an empty row, before we flush the partial schedule and start over.  */
@@ -2137,7 +2128,12 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
   auto_sbitmap must_follow (num_nodes);
   auto_sbitmap tobe_scheduled (num_nodes);
 
-  partial_schedule_ptr ps = create_partial_schedule (ii, g, DFA_HISTORY);
+  /* Value of param_sms_dfa_history is a limit on the number of cycles that
+     resource conflicts can span.  ??? Should be provided by DFA, and be
+     dependent on the type of insn scheduled.  Set to 0 by default to save
+     compile time.  */
+  partial_schedule_ptr ps = create_partial_schedule (ii, g,
+						     param_sms_dfa_history);
 
   bitmap_ones (tobe_scheduled);
   bitmap_clear (sched_nodes);
@@ -3201,7 +3197,7 @@ ps_add_node_check_conflicts (partial_schedule_ptr ps, int n,
    			     int c, sbitmap must_precede,
 			     sbitmap must_follow)
 {
-  int has_conflicts = 0;
+  int i, first, amount, has_conflicts = 0;
   ps_insn_ptr ps_i;
 
   /* First add the node to the PS, if this succeeds check for
@@ -3209,23 +3205,32 @@ ps_add_node_check_conflicts (partial_schedule_ptr ps, int n,
   if (! (ps_i = add_node_to_ps (ps, n, c, must_precede, must_follow)))
     return NULL; /* Failed to insert the node at the given cycle.  */
 
-  has_conflicts = ps_has_conflicts (ps, c, c)
-		  || (ps->history > 0
-		      && ps_has_conflicts (ps,
-					   c - ps->history,
-					   c + ps->history));
-
-  /* Try different issue slots to find one that the given node can be
-     scheduled in without conflicts.  */
-  while (has_conflicts)
+  while (1)
     {
+      has_conflicts = ps_has_conflicts (ps, c, c);
+      if (ps->history > 0 && !has_conflicts)
+	{
+	  /* Check all 2h+1 intervals, starting from c-2h..c up to c..2h,
+	     but not more than ii intervals.  */
+	  first = c - ps->history;
+	  amount = 2 * ps->history + 1;
+	  if (amount > ps->ii)
+	    amount = ps->ii;
+	  for (i = first; i < first + amount; i++)
+	    {
+	      has_conflicts = ps_has_conflicts (ps,
+						i - ps->history,
+						i + ps->history);
+	      if (has_conflicts)
+		break;
+	    }
+	}
+      if (!has_conflicts)
+	break;
+      /* Try different issue slots to find one that the given node can be
+	 scheduled in without conflicts.  */
       if (! ps_insn_advance_column (ps, ps_i, must_follow))
 	break;
-      has_conflicts = ps_has_conflicts (ps, c, c)
-		      || (ps->history > 0
-			  && ps_has_conflicts (ps,
-					       c - ps->history,
-					       c + ps->history));
     }
 
   if (has_conflicts)

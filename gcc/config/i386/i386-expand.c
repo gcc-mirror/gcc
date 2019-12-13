@@ -58,7 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "dwarf2.h"
 #include "tm-constrs.h"
-#include "params.h"
 #include "cselib.h"
 #include "sched-int.h"
 #include "opts.h"
@@ -3423,6 +3422,29 @@ ix86_expand_sse_fp_minmax (rtx dest, enum rtx_code code, rtx cmp_op0,
   return true;
 }
 
+/* Return true if MODE is valid for vector compare to mask register,
+   Same result for conditionl vector move with mask register.  */
+static bool
+ix86_valid_mask_cmp_mode (machine_mode mode)
+{
+  /* XOP has its own vector conditional movement.  */
+  if (TARGET_XOP && !TARGET_AVX512F)
+    return false;
+
+  /* AVX512F is needed for mask operation.  */
+  if (!(TARGET_AVX512F && VECTOR_MODE_P (mode)))
+    return false;
+
+  /* AVX512BW is needed for vector QI/HImode,
+     AVX512VL is needed for 128/256-bit vector.  */
+  machine_mode inner_mode = GET_MODE_INNER (mode);
+  int vector_size = GET_MODE_SIZE (mode);
+  if ((inner_mode == QImode || inner_mode == HImode) && !TARGET_AVX512BW)
+    return false;
+
+  return vector_size == 64 || TARGET_AVX512VL;
+}
+
 /* Expand an SSE comparison.  Return the register with the result.  */
 
 static rtx
@@ -3439,11 +3461,11 @@ ix86_expand_sse_cmp (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1,
   bool maskcmp = false;
   rtx x;
 
-  if (GET_MODE_SIZE (cmp_ops_mode) == 64)
+  if (ix86_valid_mask_cmp_mode (cmp_ops_mode))
     {
       unsigned int nbits = GET_MODE_NUNITS (cmp_ops_mode);
-      cmp_mode = int_mode_for_size (nbits, 0).require ();
       maskcmp = true;
+      cmp_mode = nbits > 8 ? int_mode_for_size (nbits, 0).require () : E_QImode;
     }
   else
     cmp_mode = cmp_ops_mode;
@@ -3462,37 +3484,6 @@ ix86_expand_sse_cmp (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1,
       || (op_false && reg_overlap_mentioned_p (dest, op_false)))
     dest = gen_reg_rtx (maskcmp ? cmp_mode : mode);
 
-  /* Compare patterns for int modes are unspec in AVX512F only.  */
-  if (maskcmp && (code == GT || code == EQ))
-    {
-      rtx (*gen)(rtx, rtx, rtx);
-
-      switch (cmp_ops_mode)
-	{
-	case E_V64QImode:
-	  gcc_assert (TARGET_AVX512BW);
-	  gen = code == GT ? gen_avx512bw_gtv64qi3 : gen_avx512bw_eqv64qi3_1;
-	  break;
-	case E_V32HImode:
-	  gcc_assert (TARGET_AVX512BW);
-	  gen = code == GT ? gen_avx512bw_gtv32hi3 : gen_avx512bw_eqv32hi3_1;
-	  break;
-	case E_V16SImode:
-	  gen = code == GT ? gen_avx512f_gtv16si3 : gen_avx512f_eqv16si3_1;
-	  break;
-	case E_V8DImode:
-	  gen = code == GT ? gen_avx512f_gtv8di3 : gen_avx512f_eqv8di3_1;
-	  break;
-	default:
-	  gen = NULL;
-	}
-
-      if (gen)
-	{
-	  emit_insn (gen (dest, cmp_op0, cmp_op1));
-	  return dest;
-	}
-    }
   x = gen_rtx_fmt_ee (code, cmp_mode, cmp_op0, cmp_op1);
 
   if (cmp_mode != mode && !maskcmp)
@@ -3516,7 +3507,7 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
   machine_mode cmpmode = GET_MODE (cmp);
 
   /* In AVX512F the result of comparison is an integer mask.  */
-  bool maskcmp = (mode != cmpmode && TARGET_AVX512F);
+  bool maskcmp = mode != cmpmode && ix86_valid_mask_cmp_mode (mode);
 
   rtx t2, t3, x;
 
@@ -3530,85 +3521,34 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
 
   if (maskcmp)
     {
-      rtx (*gen) (rtx, rtx) = NULL;
-      if ((op_true == CONST0_RTX (mode)
-	   && vector_all_ones_operand (op_false, mode))
-	  || (op_false == CONST0_RTX (mode)
-	      && vector_all_ones_operand (op_true, mode)))
-	switch (mode)
-	  {
-	  case E_V64QImode:
-	    if (TARGET_AVX512BW)
-	      gen = gen_avx512bw_cvtmask2bv64qi;
-	    break;
-	  case E_V32QImode:
-	    if (TARGET_AVX512VL && TARGET_AVX512BW)
-	      gen = gen_avx512vl_cvtmask2bv32qi;
-	    break;
-	  case E_V16QImode:
-	    if (TARGET_AVX512VL && TARGET_AVX512BW)
-	      gen = gen_avx512vl_cvtmask2bv16qi;
-	    break;
-	  case E_V32HImode:
-	    if (TARGET_AVX512BW)
-	      gen = gen_avx512bw_cvtmask2wv32hi;
-	    break;
-	  case E_V16HImode:
-	    if (TARGET_AVX512VL && TARGET_AVX512BW)
-	      gen = gen_avx512vl_cvtmask2wv16hi;
-	    break;
-	  case E_V8HImode:
-	    if (TARGET_AVX512VL && TARGET_AVX512BW)
-	      gen = gen_avx512vl_cvtmask2wv8hi;
-	    break;
-	  case E_V16SImode:
-	    if (TARGET_AVX512DQ)
-	      gen = gen_avx512f_cvtmask2dv16si;
-	    break;
-	  case E_V8SImode:
-	    if (TARGET_AVX512VL && TARGET_AVX512DQ)
-	      gen = gen_avx512vl_cvtmask2dv8si;
-	    break;
-	  case E_V4SImode:
-	    if (TARGET_AVX512VL && TARGET_AVX512DQ)
-	      gen = gen_avx512vl_cvtmask2dv4si;
-	    break;
-	  case E_V8DImode:
-	    if (TARGET_AVX512DQ)
-	      gen = gen_avx512f_cvtmask2qv8di;
-	    break;
-	  case E_V4DImode:
-	    if (TARGET_AVX512VL && TARGET_AVX512DQ)
-	      gen = gen_avx512vl_cvtmask2qv4di;
-	    break;
-	  case E_V2DImode:
-	    if (TARGET_AVX512VL && TARGET_AVX512DQ)
-	      gen = gen_avx512vl_cvtmask2qv2di;
-	    break;
-	  default:
-	    break;
-	  }
-      if (gen && SCALAR_INT_MODE_P (cmpmode))
+      /* Using vector move with mask register.  */
+      cmp = force_reg (cmpmode, cmp);
+      /* Optimize for mask zero.  */
+      op_true = (op_true != CONST0_RTX (mode)
+		 ? force_reg (mode, op_true) : op_true);
+      op_false = (op_false != CONST0_RTX (mode)
+		  ? force_reg (mode, op_false) : op_false);
+      if (op_true == CONST0_RTX (mode))
 	{
-	  cmp = force_reg (cmpmode, cmp);
-	  if (op_true == CONST0_RTX (mode))
+	  rtx (*gen_not) (rtx, rtx);
+	  switch (cmpmode)
 	    {
-	      rtx (*gen_not) (rtx, rtx);
-	      switch (cmpmode)
-		{
-		case E_QImode: gen_not = gen_knotqi; break;
-		case E_HImode: gen_not = gen_knothi; break;
-		case E_SImode: gen_not = gen_knotsi; break;
-		case E_DImode: gen_not = gen_knotdi; break;
-		default: gcc_unreachable ();
-		}
-	      rtx n = gen_reg_rtx (cmpmode);
-	      emit_insn (gen_not (n, cmp));
-	      cmp = n;
+	    case E_QImode: gen_not = gen_knotqi; break;
+	    case E_HImode: gen_not = gen_knothi; break;
+	    case E_SImode: gen_not = gen_knotsi; break;
+	    case E_DImode: gen_not = gen_knotdi; break;
+	    default: gcc_unreachable ();
 	    }
-	  emit_insn (gen (dest, cmp));
-	  return;
+	  rtx n = gen_reg_rtx (cmpmode);
+	  emit_insn (gen_not (n, cmp));
+	  cmp = n;
+	  /* Reverse op_true op_false.  */
+	  std::swap (op_true, op_false);
 	}
+
+      rtx vec_merge = gen_rtx_VEC_MERGE (mode, op_true, op_false, cmp);
+      emit_insn (gen_rtx_SET (dest, vec_merge));
+      return;
     }
   else if (vector_all_ones_operand (op_true, mode)
 	   && op_false == CONST0_RTX (mode))
@@ -4068,6 +4008,10 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
   if (TARGET_XOP
       && (mode == V16QImode || mode == V8HImode
 	  || mode == V4SImode || mode == V2DImode))
+    ;
+  /* AVX512F supports all of the comparsions
+     on all 128/256/512-bit vector int types.  */
+  else if (ix86_valid_mask_cmp_mode (mode))
     ;
   else
     {
@@ -7348,7 +7292,7 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 	     && optab_handler (mov_optab, wider_mode) != CODE_FOR_nothing)
 	move_mode = wider_mode;
 
-      if (TARGET_AVX128_OPTIMAL && GET_MODE_BITSIZE (move_mode) > 128)
+      if (TARGET_AVX256_SPLIT_REGS && GET_MODE_BITSIZE (move_mode) > 128)
 	move_mode = TImode;
 
       /* Find the corresponding vector mode with the same size as MOVE_MODE.
@@ -13654,8 +13598,8 @@ static void
 ix86_expand_vector_init_concat (machine_mode mode,
 				rtx target, rtx *ops, int n)
 {
-  machine_mode cmode, hmode = VOIDmode, gmode = VOIDmode;
-  rtx first[16], second[8], third[4];
+  machine_mode half_mode = VOIDmode;
+  rtx half[2];
   rtvec v;
   int i, j;
 
@@ -13665,55 +13609,55 @@ ix86_expand_vector_init_concat (machine_mode mode,
       switch (mode)
 	{
 	case E_V16SImode:
-	  cmode = V8SImode;
+	  half_mode = V8SImode;
 	  break;
 	case E_V16SFmode:
-	  cmode = V8SFmode;
+	  half_mode = V8SFmode;
 	  break;
 	case E_V8DImode:
-	  cmode = V4DImode;
+	  half_mode = V4DImode;
 	  break;
 	case E_V8DFmode:
-	  cmode = V4DFmode;
+	  half_mode = V4DFmode;
 	  break;
 	case E_V8SImode:
-	  cmode = V4SImode;
+	  half_mode = V4SImode;
 	  break;
 	case E_V8SFmode:
-	  cmode = V4SFmode;
+	  half_mode = V4SFmode;
 	  break;
 	case E_V4DImode:
-	  cmode = V2DImode;
+	  half_mode = V2DImode;
 	  break;
 	case E_V4DFmode:
-	  cmode = V2DFmode;
+	  half_mode = V2DFmode;
 	  break;
 	case E_V4SImode:
-	  cmode = V2SImode;
+	  half_mode = V2SImode;
 	  break;
 	case E_V4SFmode:
-	  cmode = V2SFmode;
+	  half_mode = V2SFmode;
 	  break;
 	case E_V2DImode:
-	  cmode = DImode;
+	  half_mode = DImode;
 	  break;
 	case E_V2SImode:
-	  cmode = SImode;
+	  half_mode = SImode;
 	  break;
 	case E_V2DFmode:
-	  cmode = DFmode;
+	  half_mode = DFmode;
 	  break;
 	case E_V2SFmode:
-	  cmode = SFmode;
+	  half_mode = SFmode;
 	  break;
 	default:
 	  gcc_unreachable ();
 	}
 
-      if (!register_operand (ops[1], cmode))
-	ops[1] = force_reg (cmode, ops[1]);
-      if (!register_operand (ops[0], cmode))
-	ops[0] = force_reg (cmode, ops[0]);
+      if (!register_operand (ops[1], half_mode))
+	ops[1] = force_reg (half_mode, ops[1]);
+      if (!register_operand (ops[0], half_mode))
+	ops[0] = force_reg (half_mode, ops[0]);
       emit_insn (gen_rtx_SET (target, gen_rtx_VEC_CONCAT (mode, ops[0],
 							  ops[1])));
       break;
@@ -13722,16 +13666,16 @@ ix86_expand_vector_init_concat (machine_mode mode,
       switch (mode)
 	{
 	case E_V4DImode:
-	  cmode = V2DImode;
+	  half_mode = V2DImode;
 	  break;
 	case E_V4DFmode:
-	  cmode = V2DFmode;
+	  half_mode = V2DFmode;
 	  break;
 	case E_V4SImode:
-	  cmode = V2SImode;
+	  half_mode = V2SImode;
 	  break;
 	case E_V4SFmode:
-	  cmode = V2SFmode;
+	  half_mode = V2SFmode;
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -13742,20 +13686,16 @@ ix86_expand_vector_init_concat (machine_mode mode,
       switch (mode)
 	{
 	case E_V8DImode:
-	  cmode = V2DImode;
-	  hmode = V4DImode;
+	  half_mode = V4DImode;
 	  break;
 	case E_V8DFmode:
-	  cmode = V2DFmode;
-	  hmode = V4DFmode;
+	  half_mode = V4DFmode;
 	  break;
 	case E_V8SImode:
-	  cmode = V2SImode;
-	  hmode = V4SImode;
+	  half_mode = V4SImode;
 	  break;
 	case E_V8SFmode:
-	  cmode = V2SFmode;
-	  hmode = V4SFmode;
+	  half_mode = V4SFmode;
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -13766,14 +13706,10 @@ ix86_expand_vector_init_concat (machine_mode mode,
       switch (mode)
 	{
 	case E_V16SImode:
-	  cmode = V2SImode;
-	  hmode = V4SImode;
-	  gmode = V8SImode;
+	  half_mode = V8SImode;
 	  break;
 	case E_V16SFmode:
-	  cmode = V2SFmode;
-	  hmode = V4SFmode;
-	  gmode = V8SFmode;
+	  half_mode = V8SFmode;
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -13783,50 +13719,32 @@ ix86_expand_vector_init_concat (machine_mode mode,
 half:
       /* FIXME: We process inputs backward to help RA.  PR 36222.  */
       i = n - 1;
-      j = (n >> 1) - 1;
-      for (; i > 0; i -= 2, j--)
+      for (j = 1; j != -1; j--)
 	{
-	  first[j] = gen_reg_rtx (cmode);
-	  v = gen_rtvec (2, ops[i - 1], ops[i]);
-	  ix86_expand_vector_init (false, first[j],
-				   gen_rtx_PARALLEL (cmode, v));
+	  half[j] = gen_reg_rtx (half_mode);
+	  switch (n >> 1)
+	    {
+	    case 2:
+	      v = gen_rtvec (2, ops[i-1], ops[i]);
+	      i -= 2;
+	      break;
+	    case 4:
+	      v = gen_rtvec (4, ops[i-3], ops[i-2], ops[i-1], ops[i]);
+	      i -= 4;
+	      break;
+	    case 8:
+	      v = gen_rtvec (8, ops[i-7], ops[i-6], ops[i-5], ops[i-4],
+			     ops[i-3], ops[i-2], ops[i-1], ops[i]);
+	      i -= 8;
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	  ix86_expand_vector_init (false, half[j],
+				   gen_rtx_PARALLEL (half_mode, v));
 	}
 
-      n >>= 1;
-      if (n > 4)
-	{
-	  gcc_assert (hmode != VOIDmode);
-	  gcc_assert (gmode != VOIDmode);
-	  for (i = j = 0; i < n; i += 2, j++)
-	    {
-	      second[j] = gen_reg_rtx (hmode);
-	      ix86_expand_vector_init_concat (hmode, second [j],
-					      &first [i], 2);
-	    }
-	  n >>= 1;
-	  for (i = j = 0; i < n; i += 2, j++)
-	    {
-	      third[j] = gen_reg_rtx (gmode);
-	      ix86_expand_vector_init_concat (gmode, third[j],
-					      &second[i], 2);
-	    }
-	  n >>= 1;
-	  ix86_expand_vector_init_concat (mode, target, third, n);
-	}
-      else if (n > 2)
-	{
-	  gcc_assert (hmode != VOIDmode);
-	  for (i = j = 0; i < n; i += 2, j++)
-	    {
-	      second[j] = gen_reg_rtx (hmode);
-	      ix86_expand_vector_init_concat (hmode, second [j],
-					      &first [i], 2);
-	    }
-	  n >>= 1;
-	  ix86_expand_vector_init_concat (mode, target, second, n);
-	}
-      else
-	ix86_expand_vector_init_concat (mode, target, first, n);
+      ix86_expand_vector_init_concat (mode, target, half, 2);
       break;
 
     default:

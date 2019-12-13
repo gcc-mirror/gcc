@@ -1786,7 +1786,7 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
   gimple *def_stmt;
-  tree op, op0, op1, op2;
+  tree op, op0, op1;
   tree elem_type;
   unsigned idx, size;
   enum tree_code code;
@@ -1804,20 +1804,7 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
     return false;
 
   op1 = TREE_OPERAND (op, 1);
-  op2 = TREE_OPERAND (op, 2);
   code = gimple_assign_rhs_code (def_stmt);
-
-  if (code == CONSTRUCTOR)
-    {
-      tree tem = fold_ternary (BIT_FIELD_REF, TREE_TYPE (op),
-			       gimple_assign_rhs1 (def_stmt), op1, op2);
-      if (!tem || !valid_gimple_rhs_p (tem))
-	return false;
-      gimple_assign_set_rhs_from_tree (gsi, tem);
-      update_stmt (gsi_stmt (*gsi));
-      return true;
-    }
-
   elem_type = TREE_TYPE (TREE_TYPE (op0));
   if (TREE_TYPE (op) != elem_type)
     return false;
@@ -2017,16 +2004,12 @@ get_bit_field_ref_def (tree val, enum tree_code &conv_code)
     return NULL_TREE;
   enum tree_code code = gimple_assign_rhs_code (def_stmt);
   if (code == FLOAT_EXPR
-      || code == FIX_TRUNC_EXPR)
+      || code == FIX_TRUNC_EXPR
+      || CONVERT_EXPR_CODE_P (code))
     {
       tree op1 = gimple_assign_rhs1 (def_stmt);
       if (conv_code == ERROR_MARK)
-	{
-	  if (maybe_ne (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (val))),
-			GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op1)))))
-	    return NULL_TREE;
-	  conv_code = code;
-	}
+	conv_code = code;
       else if (conv_code != code)
 	return NULL_TREE;
       if (TREE_CODE (op1) != SSA_NAME)
@@ -2047,25 +2030,24 @@ static bool
 simplify_vector_constructor (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
-  tree op, op2, orig[2], type, elem_type;
+  tree op, orig[2], type, elem_type;
   unsigned elem_size, i;
   unsigned HOST_WIDE_INT nelts;
+  unsigned HOST_WIDE_INT refnelts;
   enum tree_code conv_code;
   constructor_elt *elt;
   bool maybe_ident;
 
-  gcc_checking_assert (gimple_assign_rhs_code (stmt) == CONSTRUCTOR);
-
   op = gimple_assign_rhs1 (stmt);
   type = TREE_TYPE (op);
-  gcc_checking_assert (TREE_CODE (type) == VECTOR_TYPE);
+  gcc_checking_assert (TREE_CODE (op) == CONSTRUCTOR
+		       && TREE_CODE (type) == VECTOR_TYPE);
 
   if (!TYPE_VECTOR_SUBPARTS (type).is_constant (&nelts))
     return false;
   elem_type = TREE_TYPE (type);
   elem_size = TREE_INT_CST_LOW (TYPE_SIZE (elem_type));
 
-  vec_perm_builder sel (nelts, nelts, 1);
   orig[0] = NULL;
   orig[1] = NULL;
   conv_code = ERROR_MARK;
@@ -2074,6 +2056,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   tree one_nonconstant = NULL_TREE;
   auto_vec<tree> constants;
   constants.safe_grow_cleared (nelts);
+  auto_vec<std::pair<unsigned, unsigned>, 64> elts;
   FOR_EACH_VEC_SAFE_ELT (CONSTRUCTOR_ELTS (op), i, elt)
     {
       tree ref, op1;
@@ -2090,9 +2073,9 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  && VECTOR_TYPE_P (TREE_TYPE (ref))
 	  && useless_type_conversion_p (TREE_TYPE (op1),
 					TREE_TYPE (TREE_TYPE (ref)))
-	  && known_eq (bit_field_size (op1), elem_size)
 	  && constant_multiple_p (bit_field_offset (op1),
-				  elem_size, &elem))
+				  bit_field_size (op1), &elem)
+	  && TYPE_VECTOR_SUBPARTS (TREE_TYPE (ref)).is_constant (&refnelts))
 	{
 	  unsigned int j;
 	  for (j = 0; j < 2; ++j)
@@ -2111,11 +2094,9 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  if (j < 2)
 	    {
 	      orig[j] = ref;
-	      if (j)
-		elem += nelts;
-	      if (elem != i)
+	      if (elem != i || j != 0)
 		maybe_ident = false;
-	      sel.quick_push (elem);
+	      elts.safe_push (std::make_pair (j, elem));
 	      continue;
 	    }
 	  /* Else fallthru.  */
@@ -2144,28 +2125,118 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  else if (!operand_equal_p (one_nonconstant, elt->value, 0))
 	    return false;
 	}
-      sel.quick_push (i + nelts);
+      elts.safe_push (std::make_pair (1, i));
       maybe_ident = false;
     }
   if (i < nelts)
     return false;
 
   if (! orig[0]
-      || ! VECTOR_TYPE_P (TREE_TYPE (orig[0]))
-      || maybe_ne (TYPE_VECTOR_SUBPARTS (type),
-		   TYPE_VECTOR_SUBPARTS (TREE_TYPE (orig[0]))))
+      || ! VECTOR_TYPE_P (TREE_TYPE (orig[0])))
     return false;
-
-  tree tem;
-  if (conv_code != ERROR_MARK
-      && (! supportable_convert_operation (conv_code, type,
-					   TREE_TYPE (orig[0]),
-					   &tem, &conv_code)
-	  || conv_code == CALL_EXPR))
+  refnelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (orig[0])).to_constant ();
+  /* We currently do not handle larger destination vectors.  */
+  if (refnelts < nelts)
     return false;
 
   if (maybe_ident)
     {
+      tree conv_src_type
+	= (nelts != refnelts
+	   ? (conv_code != ERROR_MARK
+	      ? build_vector_type (TREE_TYPE (TREE_TYPE (orig[0])), nelts)
+	      : type)
+	   : TREE_TYPE (orig[0]));
+      if (conv_code != ERROR_MARK
+	  && !supportable_convert_operation (conv_code, type, conv_src_type,
+					     &conv_code))
+	{
+	  /* Only few targets implement direct conversion patterns so try
+	     some simple special cases via VEC_[UN]PACK[_FLOAT]_LO_EXPR.  */
+	  optab optab;
+	  tree halfvectype, dblvectype;
+	  if (CONVERT_EXPR_CODE_P (conv_code)
+	      && (2 * TYPE_PRECISION (TREE_TYPE (TREE_TYPE (orig[0])))
+		  == TYPE_PRECISION (TREE_TYPE (type)))
+	      && mode_for_vector (as_a <scalar_mode>
+				  (TYPE_MODE (TREE_TYPE (TREE_TYPE (orig[0])))),
+				  nelts * 2).exists ()
+	      && (dblvectype
+		  = build_vector_type (TREE_TYPE (TREE_TYPE (orig[0])),
+				       nelts * 2))
+	      && (optab = optab_for_tree_code (FLOAT_TYPE_P (TREE_TYPE (type))
+					       ? VEC_UNPACK_FLOAT_LO_EXPR
+					       : VEC_UNPACK_LO_EXPR,
+					       dblvectype,
+					       optab_default))
+	      && (optab_handler (optab, TYPE_MODE (dblvectype))
+		  != CODE_FOR_nothing))
+	    {
+	      gimple_seq stmts = NULL;
+	      tree dbl;
+	      if (refnelts == nelts)
+		{
+		  /* ???  Paradoxical subregs don't exist, so insert into
+		     the lower half of a wider zero vector.  */
+		  dbl = gimple_build (&stmts, BIT_INSERT_EXPR, dblvectype,
+				      build_zero_cst (dblvectype), orig[0],
+				      bitsize_zero_node);
+		}
+	      else if (refnelts == 2 * nelts)
+		dbl = orig[0];
+	      else
+		dbl = gimple_build (&stmts, BIT_FIELD_REF, dblvectype,
+				    orig[0], TYPE_SIZE (dblvectype),
+				    bitsize_zero_node);
+	      gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	      gimple_assign_set_rhs_with_ops (gsi,
+					      FLOAT_TYPE_P (TREE_TYPE (type))
+					      ? VEC_UNPACK_FLOAT_LO_EXPR
+					      : VEC_UNPACK_LO_EXPR,
+					      dbl);
+	    }
+	  else if (CONVERT_EXPR_CODE_P (conv_code)
+		   && (TYPE_PRECISION (TREE_TYPE (TREE_TYPE (orig[0])))
+		       == 2 * TYPE_PRECISION (TREE_TYPE (type)))
+		   && mode_for_vector (as_a <scalar_mode>
+				         (TYPE_MODE
+					   (TREE_TYPE (TREE_TYPE (orig[0])))),
+				       nelts / 2).exists ()
+		   && (halfvectype
+		         = build_vector_type (TREE_TYPE (TREE_TYPE (orig[0])),
+					      nelts / 2))
+		   && (optab = optab_for_tree_code (VEC_PACK_TRUNC_EXPR,
+						    halfvectype,
+						    optab_default))
+		   && (optab_handler (optab, TYPE_MODE (halfvectype))
+		       != CODE_FOR_nothing))
+	    {
+	      gimple_seq stmts = NULL;
+	      tree low = gimple_build (&stmts, BIT_FIELD_REF, halfvectype,
+				       orig[0], TYPE_SIZE (halfvectype),
+				       bitsize_zero_node);
+	      tree hig = gimple_build (&stmts, BIT_FIELD_REF, halfvectype,
+				       orig[0], TYPE_SIZE (halfvectype),
+				       TYPE_SIZE (halfvectype));
+	      gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	      gimple_assign_set_rhs_with_ops (gsi, VEC_PACK_TRUNC_EXPR,
+					      low, hig);
+	    }
+	  else
+	    return false;
+	  update_stmt (gsi_stmt (*gsi));
+	  return true;
+	}
+      if (nelts != refnelts)
+	{
+	  gassign *lowpart
+	    = gimple_build_assign (make_ssa_name (conv_src_type),
+				   build3 (BIT_FIELD_REF, conv_src_type,
+					   orig[0], TYPE_SIZE (conv_src_type),
+					   bitsize_zero_node));
+	  gsi_insert_before (gsi, lowpart, GSI_SAME_STMT);
+	  orig[0] = gimple_assign_lhs (lowpart);
+	}
       if (conv_code == ERROR_MARK)
 	gimple_assign_set_rhs_from_tree (gsi, orig[0]);
       else
@@ -2174,65 +2245,109 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
     }
   else
     {
-      tree mask_type;
+      tree mask_type, perm_type, conv_src_type;
+      perm_type = TREE_TYPE (orig[0]);
+      conv_src_type = (nelts == refnelts
+		       ? perm_type
+		       : build_vector_type (TREE_TYPE (perm_type), nelts));
+      if (conv_code != ERROR_MARK
+	  && !supportable_convert_operation (conv_code, type, conv_src_type,
+					     &conv_code))
+	return false;
 
-      vec_perm_indices indices (sel, orig[1] ? 2 : 1, nelts);
-      if (!can_vec_perm_const_p (TYPE_MODE (type), indices))
+      /* Now that we know the number of elements of the source build the
+	 permute vector.
+	 ???  When the second vector has constant values we can shuffle
+	 it and its source indexes to make the permutation supported.
+	 For now it mimics a blend.  */
+      vec_perm_builder sel (refnelts, refnelts, 1);
+      for (i = 0; i < elts.length (); ++i)
+	sel.quick_push (elts[i].second + elts[i].first * refnelts);
+      /* And fill the tail with "something".  It's really don't care,
+         and ideally we'd allow VEC_PERM to have a smaller destination
+	 vector.  As heuristic try to preserve a uniform orig[0] which
+	 facilitates later pattern-matching VEC_PERM_EXPR to a
+	 BIT_INSERT_EXPR.  */
+      for (; i < refnelts; ++i)
+	sel.quick_push ((elts[0].second == 0 && elts[0].first == 0
+			 ? 0 : refnelts) + i);
+      vec_perm_indices indices (sel, orig[1] ? 2 : 1, refnelts);
+      if (!can_vec_perm_const_p (TYPE_MODE (perm_type), indices))
 	return false;
       mask_type
 	= build_vector_type (build_nonstandard_integer_type (elem_size, 1),
-			     nelts);
+			     refnelts);
       if (GET_MODE_CLASS (TYPE_MODE (mask_type)) != MODE_VECTOR_INT
 	  || maybe_ne (GET_MODE_SIZE (TYPE_MODE (mask_type)),
-		       GET_MODE_SIZE (TYPE_MODE (type))))
+		       GET_MODE_SIZE (TYPE_MODE (perm_type))))
 	return false;
-      op2 = vec_perm_indices_to_tree (mask_type, indices);
-      bool convert_orig0 = false;
+      tree op2 = vec_perm_indices_to_tree (mask_type, indices);
+      bool converted_orig1 = false;
+      gimple_seq stmts = NULL;
       if (!orig[1])
 	orig[1] = orig[0];
       else if (orig[1] == error_mark_node
 	       && one_nonconstant)
 	{
-	  gimple_seq seq = NULL;
-	  orig[1] = gimple_build_vector_from_val (&seq, UNKNOWN_LOCATION,
-						  type, one_nonconstant);
-	  gsi_insert_seq_before (gsi, seq, GSI_SAME_STMT);
-	  convert_orig0 = true;
+	  /* ???  We can see if we can safely convert to the original
+	     element type.  */
+	  converted_orig1 = conv_code != ERROR_MARK;
+	  orig[1] = gimple_build_vector_from_val (&stmts, UNKNOWN_LOCATION,
+						  converted_orig1
+						  ? type : perm_type,
+						  one_nonconstant);
 	}
       else if (orig[1] == error_mark_node)
 	{
-	  tree_vector_builder vec (type, nelts, 1);
-	  for (unsigned i = 0; i < nelts; ++i)
-	    if (constants[i])
+	  /* ???  See if we can convert the vector to the original type.  */
+	  converted_orig1 = conv_code != ERROR_MARK;
+	  unsigned n = converted_orig1 ? nelts : refnelts;
+	  tree_vector_builder vec (converted_orig1
+				   ? type : perm_type, n, 1);
+	  for (unsigned i = 0; i < n; ++i)
+	    if (i < nelts && constants[i])
 	      vec.quick_push (constants[i]);
 	    else
 	      /* ??? Push a don't-care value.  */
 	      vec.quick_push (one_constant);
 	  orig[1] = vec.build ();
-	  convert_orig0 = true;
 	}
-      if (conv_code == ERROR_MARK)
-	gimple_assign_set_rhs_with_ops (gsi, VEC_PERM_EXPR, orig[0],
-					orig[1], op2);
-      else if (convert_orig0)
+      tree blend_op2 = NULL_TREE;
+      if (converted_orig1)
 	{
-	  gimple *conv
-	    = gimple_build_assign (make_ssa_name (type), conv_code, orig[0]);
-	  orig[0] = gimple_assign_lhs (conv);
-	  gsi_insert_before (gsi, conv, GSI_SAME_STMT);
-	  gimple_assign_set_rhs_with_ops (gsi, VEC_PERM_EXPR,
-					  orig[0], orig[1], op2);
+	  /* Make sure we can do a blend in the target type.  */
+	  vec_perm_builder sel (nelts, nelts, 1);
+	  for (i = 0; i < elts.length (); ++i)
+	    sel.quick_push (elts[i].first
+			    ? elts[i].second + nelts : i);
+	  vec_perm_indices indices (sel, 2, nelts);
+	  if (!can_vec_perm_const_p (TYPE_MODE (type), indices))
+	    return false;
+	  mask_type
+	    = build_vector_type (build_nonstandard_integer_type (elem_size, 1),
+				 nelts);
+	  if (GET_MODE_CLASS (TYPE_MODE (mask_type)) != MODE_VECTOR_INT
+	      || maybe_ne (GET_MODE_SIZE (TYPE_MODE (mask_type)),
+			   GET_MODE_SIZE (TYPE_MODE (type))))
+	    return false;
+	  blend_op2 = vec_perm_indices_to_tree (mask_type, indices);
 	}
-      else
-	{
-	  gimple *perm
-	    = gimple_build_assign (make_ssa_name (TREE_TYPE (orig[0])),
-				   VEC_PERM_EXPR, orig[0], orig[1], op2);
-	  orig[0] = gimple_assign_lhs (perm);
-	  gsi_insert_before (gsi, perm, GSI_SAME_STMT);
-	  gimple_assign_set_rhs_with_ops (gsi, conv_code, orig[0],
-					  NULL_TREE, NULL_TREE);
-	}
+      tree orig1_for_perm
+	= converted_orig1 ? build_zero_cst (perm_type) : orig[1];
+      tree res = gimple_build (&stmts, VEC_PERM_EXPR, perm_type,
+			       orig[0], orig1_for_perm, op2);
+      if (nelts != refnelts)
+	res = gimple_build (&stmts, BIT_FIELD_REF,
+			    conv_code != ERROR_MARK ? conv_src_type : type,
+			    res, TYPE_SIZE (type), bitsize_zero_node);
+      if (conv_code != ERROR_MARK)
+	res = gimple_build (&stmts, conv_code, type, res);
+      /* Blend in the actual constant.  */
+      if (converted_orig1)
+	res = gimple_build (&stmts, VEC_PERM_EXPR, type,
+			    res, orig[1], blend_op2);
+      gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+      gimple_assign_set_rhs_with_ops (gsi, SSA_NAME, res);
     }
   update_stmt (gsi_stmt (*gsi));
   return true;

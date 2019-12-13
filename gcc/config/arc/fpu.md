@@ -242,6 +242,18 @@
    (set_attr "type" "fpu")
    (set_attr "predicable" "yes")])
 
+(define_insn "*cmpsf_fpu_trap"
+  [(set (reg:CC_FPUE CC_REG)
+	(compare:CC_FPUE (match_operand:SF 0 "register_operand"  "r,  r,r")
+			(match_operand:SF 1 "nonmemory_operand" "r,CfZ,F")))]
+  "TARGET_FP_SP_BASE"
+  "fscmpf%?\\t%0,%1"
+  [(set_attr "length" "4,4,8")
+   (set_attr "iscompact" "false")
+   (set_attr "cond" "set")
+   (set_attr "type" "fpu")
+   (set_attr "predicable" "yes")])
+
 (define_insn "*cmpsf_fpu_uneq"
   [(set (reg:CC_FPU_UNEQ CC_REG)
 	(compare:CC_FPU_UNEQ
@@ -332,6 +344,18 @@
 			(match_operand:DF 1 "even_register_operand"  "r")))]
   "TARGET_FP_DP_BASE"
   "fdcmp%? %0, %1"
+  [(set_attr "length" "4")
+   (set_attr "iscompact" "false")
+   (set_attr "cond" "set")
+   (set_attr "type" "fpu")
+   (set_attr "predicable" "yes")])
+
+(define_insn "*cmpdf_fpu_trap"
+  [(set (reg:CC_FPUE CC_REG)
+	(compare:CC_FPUE (match_operand:DF 0 "even_register_operand"  "r")
+			(match_operand:DF 1 "even_register_operand"  "r")))]
+  "TARGET_FP_DP_BASE"
+  "fdcmpf%? %0, %1"
   [(set_attr "length" "4")
    (set_attr "iscompact" "false")
    (set_attr "cond" "set")

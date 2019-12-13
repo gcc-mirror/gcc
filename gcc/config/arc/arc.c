@@ -607,16 +607,17 @@ arc_preferred_simd_mode (scalar_mode mode)
 }
 
 /* Implements target hook
-   TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES.  */
+   TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES.  */
 
-static void
-arc_autovectorize_vector_sizes (vector_sizes *sizes, bool)
+static unsigned int
+arc_autovectorize_vector_modes (vector_modes *modes, bool)
 {
   if (TARGET_PLUS_QMACW)
     {
-      sizes->quick_push (8);
-      sizes->quick_push (4);
+      modes->quick_push (V4HImode);
+      modes->quick_push (V2HImode);
     }
+  return 0;
 }
 
 
@@ -726,8 +727,8 @@ static rtx arc_legitimize_address_0 (rtx, rtx, machine_mode mode);
 #undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
 #define TARGET_VECTORIZE_PREFERRED_SIMD_MODE arc_preferred_simd_mode
 
-#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
-#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES arc_autovectorize_vector_sizes
+#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
+#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES arc_autovectorize_vector_modes
 
 #undef TARGET_CAN_USE_DOLOOP_P
 #define TARGET_CAN_USE_DOLOOP_P arc_can_use_doloop_p
@@ -961,14 +962,24 @@ const pass_data pass_data_arc_ifcvt =
 
 class pass_arc_ifcvt : public rtl_opt_pass
 {
-public:
-  pass_arc_ifcvt(gcc::context *ctxt)
-  : rtl_opt_pass(pass_data_arc_ifcvt, ctxt)
-  {}
+ public:
+ pass_arc_ifcvt (gcc::context *ctxt)
+   : rtl_opt_pass (pass_data_arc_ifcvt, ctxt)
+    {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_arc_ifcvt (m_ctxt); }
-  virtual unsigned int execute (function *) { return arc_ifcvt (); }
+  opt_pass * clone ()
+    {
+      return new pass_arc_ifcvt (m_ctxt);
+    }
+  virtual unsigned int execute (function *)
+  {
+    return arc_ifcvt ();
+  }
+  virtual bool gate (function *)
+  {
+    return (optimize > 1 && !TARGET_NO_COND_EXEC);
+  }
 };
 
 } // anon namespace
@@ -998,16 +1009,20 @@ const pass_data pass_data_arc_predicate_delay_insns =
 
 class pass_arc_predicate_delay_insns : public rtl_opt_pass
 {
-public:
-  pass_arc_predicate_delay_insns(gcc::context *ctxt)
-  : rtl_opt_pass(pass_data_arc_predicate_delay_insns, ctxt)
-  {}
+ public:
+ pass_arc_predicate_delay_insns(gcc::context *ctxt)
+   : rtl_opt_pass(pass_data_arc_predicate_delay_insns, ctxt)
+    {}
 
   /* opt_pass methods: */
   virtual unsigned int execute (function *)
-    {
-      return arc_predicate_delay_insns ();
-    }
+  {
+    return arc_predicate_delay_insns ();
+  }
+  virtual bool gate (function *)
+  {
+    return flag_delayed_branch;
+  }
 };
 
 } // anon namespace
@@ -1100,30 +1115,6 @@ arc_init (void)
   arc_punct_chars['&'] = 1;
   arc_punct_chars['+'] = 1;
   arc_punct_chars['_'] = 1;
-
-  if (optimize > 1 && !TARGET_NO_COND_EXEC)
-    {
-      /* There are two target-independent ifcvt passes, and arc_reorg may do
-	 one or more arc_ifcvt calls.  */
-      opt_pass *pass_arc_ifcvt_4 = make_pass_arc_ifcvt (g);
-      struct register_pass_info arc_ifcvt4_info
-	= { pass_arc_ifcvt_4, "dbr", 1, PASS_POS_INSERT_AFTER };
-      struct register_pass_info arc_ifcvt5_info
-	= { pass_arc_ifcvt_4->clone (), "shorten", 1, PASS_POS_INSERT_BEFORE };
-
-      register_pass (&arc_ifcvt4_info);
-      register_pass (&arc_ifcvt5_info);
-    }
-
-  if (flag_delayed_branch)
-    {
-      opt_pass *pass_arc_predicate_delay_insns
-	= make_pass_arc_predicate_delay_insns (g);
-      struct register_pass_info arc_predicate_delay_info
-	= { pass_arc_predicate_delay_insns, "dbr", 1, PASS_POS_INSERT_AFTER };
-
-      register_pass (&arc_predicate_delay_info);
-    }
 }
 
 /* Parse -mirq-ctrl-saved=RegisterRange, blink, lp_copunt.  The
@@ -1573,6 +1564,7 @@ get_arc_condition_code (rtx comparison)
 	default : gcc_unreachable ();
 	}
     case E_CC_FPUmode:
+    case E_CC_FPUEmode:
       switch (GET_CODE (comparison))
 	{
 	case EQ	       : return ARC_CC_EQ;
@@ -1695,11 +1687,13 @@ arc_select_cc_mode (enum rtx_code op, rtx x, rtx y)
       case UNLE:
       case UNGT:
       case UNGE:
+	return CC_FPUmode;
+
       case LT:
       case LE:
       case GT:
       case GE:
-	return CC_FPUmode;
+	return CC_FPUEmode;
 
       case LTGT:
       case UNEQ:
@@ -1853,7 +1847,7 @@ arc_init_reg_tables (void)
 	  if (i == (int) CCmode || i == (int) CC_ZNmode || i == (int) CC_Zmode
 	      || i == (int) CC_Cmode
 	      || i == CC_FP_GTmode || i == CC_FP_GEmode || i == CC_FP_ORDmode
-	      || i == CC_FPUmode || i == CC_FPU_UNEQmode)
+	      || i == CC_FPUmode || i == CC_FPUEmode || i == CC_FPU_UNEQmode)
 	    arc_mode_class[i] = 1 << (int) C_MODE;
 	  else
 	    arc_mode_class[i] = 0;
@@ -6219,6 +6213,22 @@ arc_legitimize_pic_address (rtx addr)
 
   switch (GET_CODE (addr))
     {
+    case UNSPEC:
+      /* Can be one or our GOT or GOTOFFPC unspecs.  This situation
+	 happens when an address is not a legitimate constant and we
+	 need the resolve it via force_reg in
+	 prepare_move_operands.  */
+      switch (XINT (addr, 1))
+	{
+	case ARC_UNSPEC_GOT:
+	case ARC_UNSPEC_GOTOFFPC:
+	  /* Recover the symbol ref.  */
+	  addr = XVECEXP (addr, 0, 0);
+	  break;
+	default:
+	  return addr;
+	}
+      /* Fall through.  */
     case SYMBOL_REF:
       /* TLS symbols are handled in different place.  */
       if (SYMBOL_REF_TLS_MODEL (addr))
@@ -8394,6 +8404,7 @@ arc_reorg (void)
 
 	  /* Avoid FPU instructions.  */
 	  if ((GET_MODE (XEXP (XEXP (pc_target, 0), 0)) == CC_FPUmode)
+	      || (GET_MODE (XEXP (XEXP (pc_target, 0), 0)) == CC_FPUEmode)
 	      || (GET_MODE (XEXP (XEXP (pc_target, 0), 0)) == CC_FPU_UNEQmode))
 	    continue;
 
@@ -11495,8 +11506,10 @@ arc_split_ior (rtx *operands)
       emit_insn (gen_rtx_SET (operands[0],
 			      gen_rtx_IOR (SImode, op1, GEN_INT (maskx))));
       break;
-    default:
+    case 0:
       break;
+    default:
+      gcc_unreachable ();
     }
 }
 
@@ -11506,6 +11519,10 @@ bool
 arc_check_ior_const (HOST_WIDE_INT ival)
 {
   unsigned int mask = (unsigned int) (ival & 0xffffffff);
+
+  if (UNSIGNED_INT6 (ival)
+      || IS_POWEROF2_P (mask))
+    return false;
   if (__builtin_popcount (mask) <= 3)
     return true;
   if (__builtin_popcount (mask & ~0x3f) <= 1)
@@ -11526,9 +11543,6 @@ arc_split_mov_const (rtx *operands)
   /* Manage a constant.  */
   gcc_assert (CONST_INT_P (operands[1]));
   ival = INTVAL (operands[1]) & 0xffffffff;
-
-  if (SIGNED_INT12 (ival))
-    return false;
 
   /* 1. Check if we can just rotate limm by 8 but using ROR8.  */
   if (TARGET_BARREL_SHIFTER && TARGET_V2
@@ -11596,7 +11610,7 @@ arc_split_mov_const (rtx *operands)
       return true;
     }
 
-  return false;
+  gcc_unreachable ();
 }
 
 /* Helper to check Cax constraint.  */
@@ -11605,6 +11619,9 @@ bool
 arc_check_mov_const (HOST_WIDE_INT ival)
 {
   ival = ival & 0xffffffff;
+
+  if (SIGNED_INT12 (ival))
+    return false;
 
   if ((ival & ~0x8000001f) == 0)
     return true;

@@ -873,7 +873,16 @@ decl_mangling_context (tree decl)
   else if (template_type_parameter_p (decl))
      /* template type parms have no mangling context.  */
       return NULL_TREE;
-  return CP_DECL_CONTEXT (decl);
+
+  tcontext = CP_DECL_CONTEXT (decl);
+
+  /* Ignore the artificial declare reduction functions.  */
+  if (tcontext
+      && TREE_CODE (tcontext) == FUNCTION_DECL
+      && DECL_OMP_DECLARE_REDUCTION_P (tcontext))
+    return decl_mangling_context (tcontext);
+
+  return tcontext;
 }
 
 /* <name> ::= <unscoped-name>
@@ -3400,7 +3409,9 @@ write_template_arg_literal (const tree value)
       case INTEGER_CST:
 	gcc_assert (!same_type_p (TREE_TYPE (value), boolean_type_node)
 		    || integer_zerop (value) || integer_onep (value));
-	write_integer_cst (value);
+	if (!(abi_version_at_least (14)
+	      && NULLPTR_TYPE_P (TREE_TYPE (value))))
+	  write_integer_cst (value);
 	break;
 
       case REAL_CST:

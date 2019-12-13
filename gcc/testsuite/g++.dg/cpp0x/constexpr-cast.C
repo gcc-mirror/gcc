@@ -14,11 +14,11 @@ template <class T>
 constexpr bool f ()
 {
 #if __cplusplus > 201103L
-  T *p = reinterpret_cast<T*>(sizeof (T));
+  T *p = reinterpret_cast<T*>(sizeof (T));  // { dg-error "not a constant expression" "" { target c++14 } }
   return p;
 #else
-  return *reinterpret_cast<T*>(sizeof (T));
+  return *reinterpret_cast<T*>(sizeof (T));  // { dg-error "not a constant expression" "" { target c++11_only } }
 #endif
 }
 
-constexpr bool b = f<int>();   // { dg-error "not a constant expression|in .constexpr. expansion of " }
+constexpr bool b = f<int>();   // { dg-message "in .constexpr. expansion of " }

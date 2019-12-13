@@ -35,16 +35,26 @@
 # include <bits/c++0x_warning.h>
 #else
 
-#include <chrono>
-#include <memory>
-#include <tuple>
-#include <cerrno>
-#include <bits/functexcept.h>
-#include <bits/functional_hash.h>
-#include <bits/invoke.h>
-#include <bits/gthr.h>
+#include <bits/c++config.h>
 
 #if defined(_GLIBCXX_HAS_GTHREADS)
+#include <bits/gthr.h>
+
+#include <chrono> // std::chrono::*
+#include <memory> // std::unique_ptr
+#include <tuple>  // std::tuple
+
+#if __cplusplus > 201703L
+# include <stop_token> // std::stop_source, std::stop_token, std::nostopstate
+#endif
+
+#ifdef _GLIBCXX_USE_NANOSLEEP
+# include <cerrno>  // errno, EINTR
+# include <time.h>  // nanosleep
+#endif
+
+#include <bits/functional_hash.h> // std::hash
+#include <bits/invoke.h>	  // std::__invoke
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -409,11 +419,136 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // @} group threads
 
+#ifdef __cpp_lib_jthread
+
+  class jthread
+  {
+  public:
+    using id = std::thread::id;
+    using native_handle_type = std::thread::native_handle_type;
+
+    jthread() noexcept
+    : _M_stop_source{nostopstate}
+    { }
+
+    template<typename _Callable, typename... _Args,
+	     typename = enable_if_t<!is_same_v<remove_cvref_t<_Callable>,
+					       jthread>>>
+      explicit
+      jthread(_Callable&& __f, _Args&&... __args)
+      : _M_thread{_S_create(_M_stop_source, std::forward<_Callable>(__f),
+			    std::forward<_Args>(__args)...)}
+      { }
+
+    jthread(const jthread&) = delete;
+    jthread(jthread&&) noexcept = default;
+
+    ~jthread()
+    {
+      if (joinable())
+        {
+          request_stop();
+          join();
+        }
+    }
+
+    jthread&
+    operator=(const jthread&) = delete;
+
+    jthread&
+    operator=(jthread&&) noexcept = default;
+
+    void
+    swap(jthread& __other) noexcept
+    {
+      std::swap(_M_stop_source, __other._M_stop_source);
+      std::swap(_M_thread, __other._M_thread);
+    }
+
+    [[nodiscard]] bool
+    joinable() const noexcept
+    {
+      return _M_thread.joinable();
+    }
+
+    void
+    join()
+    {
+      _M_thread.join();
+    }
+
+    void
+    detach()
+    {
+      _M_thread.detach();
+    }
+
+    [[nodiscard]] id
+    get_id() const noexcept
+    {
+      return _M_thread.get_id();
+    }
+
+    [[nodiscard]] native_handle_type
+    native_handle()
+    {
+      return _M_thread.native_handle();
+    }
+
+    [[nodiscard]] static unsigned
+    hardware_concurrency() noexcept
+    {
+      return std::thread::hardware_concurrency();
+    }
+
+    [[nodiscard]] stop_source
+    get_stop_source() noexcept
+    {
+      return _M_stop_source;
+    }
+
+    [[nodiscard]] stop_token
+    get_stop_token() const noexcept
+    {
+      return _M_stop_source.get_token();
+    }
+
+    bool request_stop() noexcept
+    {
+      return _M_stop_source.request_stop();
+    }
+
+    friend void swap(jthread& __lhs, jthread& __rhs) noexcept
+    {
+      __lhs.swap(__rhs);
+    }
+
+  private:
+    template<typename _Callable, typename... _Args>
+      static thread
+      _S_create(stop_source& __ssrc, _Callable&& __f, _Args&&... __args)
+      {
+	if constexpr(is_invocable_v<decay_t<_Callable>, stop_token,
+				    decay_t<_Args>...>)
+	  return thread{std::forward<_Callable>(__f), __ssrc.get_token(),
+			std::forward<_Args>(__args)...};
+	else
+	  {
+	    static_assert(is_invocable_v<decay_t<_Callable>,
+					 decay_t<_Args>...>,
+			  "std::thread arguments must be invocable after"
+			  " conversion to rvalues");
+	    return thread{std::forward<_Callable>(__f),
+			  std::forward<_Args>(__args)...};
+	  }
+      }
+
+    stop_source _M_stop_source;
+    std::thread _M_thread;
+  };
+#endif // __cpp_lib_jthread
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
-
 #endif // _GLIBCXX_HAS_GTHREADS
-
 #endif // C++11
-
 #endif // _GLIBCXX_THREAD

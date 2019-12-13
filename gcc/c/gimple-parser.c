@@ -63,7 +63,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-phinodes.h"
 #include "tree-into-ssa.h"
 #include "bitmap.h"
-#include "params.h"
 
 
 /* GIMPLE parser state.  */
@@ -235,6 +234,7 @@ c_parser_parse_gimple_body (c_parser *cparser, char *gimple_pass,
       /* We have at least cdil_gimple_cfg.  */
       gimple_register_cfg_hooks ();
       init_empty_tree_cfg ();
+      parser.current_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
       /* Initialize the bare loop structure - we are going to only
          mark headers and leave the rest to fixup.  */
       set_loops_for_fn (cfun, ggc_cleared_alloc<struct loops> ());
@@ -353,7 +353,7 @@ c_parser_parse_gimple_body (c_parser *cparser, char *gimple_pass,
   if (cfun->curr_properties & PROP_cfg)
     {
       ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = entry_bb_count;
-      gcov_type t = PARAM_VALUE (PARAM_GIMPLE_FE_COMPUTED_HOT_BB_THRESHOLD);
+      gcov_type t = param_gimple_fe_computed_hot_bb_threshold;
       set_hot_bb_threshold (t);
       update_max_bb_count ();
       cgraph_node::get_create (cfun->decl);
@@ -594,7 +594,7 @@ c_parser_gimple_compound_statement (gimple_parser &parser, gimple_seq *seq)
 	      if (last_basic_block_for_fn (cfun) <= index)
 		last_basic_block_for_fn (cfun) = index + 1;
 	      n_basic_blocks_for_fn (cfun)++;
-	      if (!parser.current_bb)
+	      if (parser.current_bb->index == ENTRY_BLOCK)
 		parser.push_edge (ENTRY_BLOCK, bb->index, EDGE_FALLTHRU,
 				  profile_probability::always ());
 
@@ -1395,6 +1395,7 @@ c_parser_gimple_postfix_expression (gimple_parser &parser)
     case CPP_CHAR:
     case CPP_CHAR16:
     case CPP_CHAR32:
+    case CPP_UTF8CHAR:
     case CPP_WCHAR:
       expr.value = c_parser_peek_token (parser)->value;
       set_c_expr_source_range (&expr, tok_range);
@@ -1405,10 +1406,7 @@ c_parser_gimple_postfix_expression (gimple_parser &parser)
     case CPP_STRING32:
     case CPP_WSTRING:
     case CPP_UTF8STRING:
-      expr.value = c_parser_peek_token (parser)->value;
-      set_c_expr_source_range (&expr, tok_range);
-      expr.original_code = STRING_CST;
-      c_parser_consume_token (parser);
+      expr = c_parser_string_literal (parser, false, true);
       break;
     case CPP_DOT:
       expr = c_parser_gimple_call_internal (parser);
@@ -1925,8 +1923,8 @@ c_parser_gimple_or_rtl_pass_list (c_parser *parser, c_declspecs *specs)
 	      return;
 	    }
 	  pass = xstrdup (TREE_STRING_POINTER
-				(c_parser_peek_token (parser)->value));
-	  c_parser_consume_token (parser);
+			  (c_parser_string_literal (parser, false,
+						    false).value));
 	  if (! c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<(%>"))
 	    return;
 	}
@@ -2017,7 +2015,7 @@ c_parser_gimple_declaration (gimple_parser &parser)
   struct c_declarator *declarator;
   struct c_declspecs *specs = build_null_declspecs ();
   c_parser_declspecs (parser, specs, true, true, true,
-		      true, true, cla_nonabstract_decl);
+		      true, true, true, true, cla_nonabstract_decl);
   finish_declspecs (specs);
 
   /* Provide better error recovery.  Note that a type name here is usually
@@ -2042,13 +2040,13 @@ c_parser_gimple_declaration (gimple_parser &parser)
       unsigned version, ver_offset;
       if (declarator->kind == cdk_id
 	  && is_gimple_reg_type (specs->type)
-	  && c_parser_parse_ssa_name_id (declarator->u.id,
+	  && c_parser_parse_ssa_name_id (declarator->u.id.id,
 					 &version, &ver_offset)
 	  /* The following restricts it to unnamed anonymous SSA names
 	     which fails parsing of named ones in dumps (we could
 	     decide to not dump their name for -gimple).  */
 	  && ver_offset == 0)
-	c_parser_parse_ssa_name (parser, declarator->u.id, specs->type,
+	c_parser_parse_ssa_name (parser, declarator->u.id.id, specs->type,
 				 version, ver_offset);
       else
 	{

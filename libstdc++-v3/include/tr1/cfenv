@@ -53,6 +53,8 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace tr1
 {
   // types
@@ -74,6 +76,8 @@ namespace tr1
   using ::fesetenv;
   using ::feupdateenv;
 }
+
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 
 #endif // _GLIBCXX_USE_C99_FENV_TR1

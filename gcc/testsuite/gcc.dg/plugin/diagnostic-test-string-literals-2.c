@@ -69,7 +69,8 @@ test_pr79210 (void)
   "some multiline blurb with a short final line "
   "here");
 
-  /* { dg-error "19: unable to read substring location: line is not wide enough" "" { target *-*-* } .-11 } */
+  /* { dg-error "19: unable to read substring location: range endpoints are on different lines" "" { target c } .-11 } */
+  /* { dg-error "19: unable to read substring location: line is not wide enough" "" { target c++ } .-12 } */
 
 #undef LPFC_VPORT_ATTR_R
 #undef lpfc_vport_param_init

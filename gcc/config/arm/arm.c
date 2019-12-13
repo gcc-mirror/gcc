@@ -59,7 +59,6 @@
 #include "langhooks.h"
 #include "intl.h"
 #include "libfuncs.h"
-#include "params.h"
 #include "opts.h"
 #include "dumpfile.h"
 #include "target-globals.h"
@@ -289,7 +288,7 @@ static bool arm_builtin_support_vector_misalignment (machine_mode mode,
 static void arm_conditional_register_usage (void);
 static enum flt_eval_method arm_excess_precision (enum excess_precision_type);
 static reg_class_t arm_preferred_rename_class (reg_class_t rclass);
-static void arm_autovectorize_vector_sizes (vector_sizes *, bool);
+static unsigned int arm_autovectorize_vector_modes (vector_modes *, bool);
 static int arm_default_branch_cost (bool, bool);
 static int arm_cortex_a5_branch_cost (bool, bool);
 static int arm_cortex_m_branch_cost (bool, bool);
@@ -326,6 +325,9 @@ static unsigned int arm_hard_regno_nregs (unsigned int, machine_mode);
 static bool arm_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool arm_modes_tieable_p (machine_mode, machine_mode);
 static HOST_WIDE_INT arm_constant_alignment (const_tree, HOST_WIDE_INT);
+static rtx_insn * thumb1_md_asm_adjust (vec<rtx> &, vec<rtx> &,
+					vec<const char *> &, vec<rtx> &,
+					HARD_REG_SET &);
 
 /* Table of machine attributes.  */
 static const struct attribute_spec arm_attribute_table[] =
@@ -384,6 +386,9 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef  TARGET_MERGE_DECL_ATTRIBUTES
 #define TARGET_MERGE_DECL_ATTRIBUTES merge_dllimport_decl_attributes
 #endif
+
+#undef TARGET_CHECK_BUILTIN_CALL
+#define TARGET_CHECK_BUILTIN_CALL arm_check_builtin_call
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS arm_legitimize_address
@@ -522,9 +527,9 @@ static const struct attribute_spec arm_attribute_table[] =
 #define TARGET_ARRAY_MODE_SUPPORTED_P arm_array_mode_supported_p
 #undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
 #define TARGET_VECTORIZE_PREFERRED_SIMD_MODE arm_preferred_simd_mode
-#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
-#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES \
-  arm_autovectorize_vector_sizes
+#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
+#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES \
+  arm_autovectorize_vector_modes
 
 #undef  TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG arm_reorg
@@ -814,6 +819,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT arm_constant_alignment
+
+#undef TARGET_MD_ASM_ADJUST
+#define TARGET_MD_ASM_ADJUST arm_md_asm_adjust
 
 /* Obstack for minipool constant handling.  */
 static struct obstack minipool_obstack;
@@ -2936,6 +2944,11 @@ arm_option_params_internal (void)
   /* For THUMB2, we limit the conditional sequence to one IT block.  */
   if (TARGET_THUMB2)
     max_insns_skipped = MIN (max_insns_skipped, MAX_INSN_PER_IT_BLOCK);
+
+  if (TARGET_THUMB1)
+    targetm.md_asm_adjust = thumb1_md_asm_adjust;
+  else
+    targetm.md_asm_adjust = arm_md_asm_adjust;
 }
 
 /* True if -mflip-thumb should next add an attribute for the default
@@ -3031,6 +3044,11 @@ arm_option_override_internal (struct gcc_options *opts,
   if (!TARGET_THUMB2_P (opts->x_target_flags) || !arm_arch_notm)
     opts->x_arm_restrict_it = 0;
 
+  /* Use the IT size from CPU specific tuning unless -mrestrict-it is used.  */
+  if (!opts_set->x_arm_restrict_it
+      && (opts_set->x_arm_cpu_string || opts_set->x_arm_tune_string))
+    opts->x_arm_restrict_it = 0;
+
   /* Enable -munaligned-access by default for
      - all ARMv6 architecture-based processors when compiling for a 32-bit ISA
      i.e. Thumb2 and ARM state only.
@@ -3091,7 +3109,8 @@ arm_option_override_internal (struct gcc_options *opts,
 #endif
 }
 
-static sbitmap isa_all_fpubits;
+static sbitmap isa_all_fpubits_internal;
+static sbitmap isa_all_fpbits;
 static sbitmap isa_quirkbits;
 
 /* Configure a build target TARGET from the user-specified options OPTS and
@@ -3158,7 +3177,12 @@ arm_configure_build_target (struct arm_build_target *target,
 	  /* Ignore any bits that are quirk bits.  */
 	  bitmap_and_compl (isa_delta, isa_delta, isa_quirkbits);
 	  /* Ignore (for now) any bits that might be set by -mfpu.  */
-	  bitmap_and_compl (isa_delta, isa_delta, isa_all_fpubits);
+	  bitmap_and_compl (isa_delta, isa_delta, isa_all_fpubits_internal);
+
+	  /* And if the target ISA lacks floating point, ignore any
+	     extensions that depend on that.  */
+	  if (!bitmap_bit_p (target->isa, isa_bit_vfpv2))
+	    bitmap_and_compl (isa_delta, isa_delta, isa_all_fpbits);
 
 	  if (!bitmap_empty_p (isa_delta))
 	    {
@@ -3317,7 +3341,7 @@ arm_configure_build_target (struct arm_build_target *target,
       auto_sbitmap fpu_bits (isa_num_bits);
 
       arm_initialize_isa (fpu_bits, arm_selected_fpu->isa_bits);
-      bitmap_and_compl (target->isa, target->isa, isa_all_fpubits);
+      bitmap_and_compl (target->isa, target->isa, isa_all_fpubits_internal);
       bitmap_ior (target->isa, target->isa, fpu_bits);
     }
 
@@ -3343,16 +3367,20 @@ arm_configure_build_target (struct arm_build_target *target,
 static void
 arm_option_override (void)
 {
-  static const enum isa_feature fpu_bitlist[]
+  static const enum isa_feature fpu_bitlist_internal[]
     = { ISA_ALL_FPU_INTERNAL, isa_nobit };
+  static const enum isa_feature fp_bitlist[]
+    = { ISA_ALL_FP, isa_nobit };
   static const enum isa_feature quirk_bitlist[] = { ISA_ALL_QUIRKS, isa_nobit};
   cl_target_option opts;
 
   isa_quirkbits = sbitmap_alloc (isa_num_bits);
   arm_initialize_isa (isa_quirkbits, quirk_bitlist);
 
-  isa_all_fpubits = sbitmap_alloc (isa_num_bits);
-  arm_initialize_isa (isa_all_fpubits, fpu_bitlist);
+  isa_all_fpubits_internal = sbitmap_alloc (isa_num_bits);
+  isa_all_fpbits = sbitmap_alloc (isa_num_bits);
+  arm_initialize_isa (isa_all_fpubits_internal, fpu_bitlist_internal);
+  arm_initialize_isa (isa_all_fpbits, fp_bitlist);
 
   arm_active_target.isa = sbitmap_alloc (isa_num_bits);
 
@@ -3521,9 +3549,8 @@ arm_option_override (void)
        but measurable, size reduction for PIC code.  Therefore, we decrease
        the bar for unrestricted expression hoisting to the cost of PIC address
        calculation, which is 2 instructions.  */
-    maybe_set_param_value (PARAM_GCSE_UNRESTRICTED_COST, 2,
-			   global_options.x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 param_gcse_unrestricted_cost, 2);
 
   /* ARM EABI defaults to strict volatile bitfields.  */
   if (TARGET_AAPCS_BASED && flag_strict_volatile_bitfields < 0
@@ -3543,47 +3570,43 @@ arm_option_override (void)
      override the defaults unless we are tuning for a core we have
      researched values for.  */
   if (current_tune->prefetch.num_slots > 0)
-    maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES,
-			   current_tune->prefetch.num_slots,
-			   global_options.x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 param_simultaneous_prefetches,
+			 current_tune->prefetch.num_slots);
   if (current_tune->prefetch.l1_cache_line_size >= 0)
-    maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
-			   current_tune->prefetch.l1_cache_line_size,
-			   global_options.x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 param_l1_cache_line_size,
+			 current_tune->prefetch.l1_cache_line_size);
   if (current_tune->prefetch.l1_cache_size >= 0)
-    maybe_set_param_value (PARAM_L1_CACHE_SIZE,
-			   current_tune->prefetch.l1_cache_size,
-			   global_options.x_param_values,
-			   global_options_set.x_param_values);
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 param_l1_cache_size,
+			 current_tune->prefetch.l1_cache_size);
 
   /* Look through ready list and all of queue for instructions
      relevant for L2 auto-prefetcher.  */
-  int param_sched_autopref_queue_depth;
+  int sched_autopref_queue_depth;
 
   switch (current_tune->sched_autopref)
     {
     case tune_params::SCHED_AUTOPREF_OFF:
-      param_sched_autopref_queue_depth = -1;
+      sched_autopref_queue_depth = -1;
       break;
 
     case tune_params::SCHED_AUTOPREF_RANK:
-      param_sched_autopref_queue_depth = 0;
+      sched_autopref_queue_depth = 0;
       break;
 
     case tune_params::SCHED_AUTOPREF_FULL:
-      param_sched_autopref_queue_depth = max_insn_queue_index + 1;
+      sched_autopref_queue_depth = max_insn_queue_index + 1;
       break;
 
     default:
       gcc_unreachable ();
     }
 
-  maybe_set_param_value (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH,
-			 param_sched_autopref_queue_depth,
-			 global_options.x_param_values,
-			 global_options_set.x_param_values);
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       param_sched_autopref_queue_depth,
+		       sched_autopref_queue_depth);
 
   /* Currently, for slow flash data, we just disable literal pools.  We also
      disable it for pure-code.  */
@@ -5956,8 +5979,9 @@ arm_get_pcs_model (const_tree type, const_tree decl)
 	     so we are free to use whatever conventions are
 	     appropriate.  */
 	  /* FIXME: remove CONST_CAST_TREE when cgraph is constified.  */
-	  cgraph_local_info *i = cgraph_node::local_info (CONST_CAST_TREE(decl));
-	  if (i && i->local)
+	  cgraph_node *local_info_node
+	    = cgraph_node::local_info_node (CONST_CAST_TREE (decl));
+	  if (local_info_node && local_info_node->local)
 	    return ARM_PCS_AAPCS_LOCAL;
 	}
     }
@@ -9038,17 +9062,20 @@ arm_legitimize_address (rtx x, rtx orig_x, machine_mode mode)
       HOST_WIDE_INT mask, base, index;
       rtx base_reg;
 
-      /* ldr and ldrb can use a 12-bit index, ldrsb and the rest can only
-         use a 8-bit index. So let's use a 12-bit index for SImode only and
-         hope that arm_gen_constant will enable ldrb to use more bits. */
+      /* LDR and LDRB can use a 12-bit index, ldrsb and the rest can
+	 only use a 8-bit index. So let's use a 12-bit index for
+	 SImode only and hope that arm_gen_constant will enable LDRB
+	 to use more bits. */
       bits = (mode == SImode) ? 12 : 8;
       mask = (1 << bits) - 1;
       base = INTVAL (x) & ~mask;
       index = INTVAL (x) & mask;
-      if (bit_count (base & 0xffffffff) > (32 - bits)/2)
-        {
-	  /* It'll most probably be more efficient to generate the base
-	     with more bits set and use a negative index instead. */
+      if (TARGET_ARM && bit_count (base & 0xffffffff) > (32 - bits)/2)
+	{
+	  /* It'll most probably be more efficient to generate the
+	     base with more bits set and use a negative index instead.
+	     Don't do this for Thumb as negative offsets are much more
+	     limited.  */
 	  base |= mask;
 	  index -= mask;
 	}
@@ -15375,7 +15402,7 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 	  || GET_CODE (x) == ASHIFT || GET_CODE (x) == ASHIFTRT
 	  || GET_CODE (x) == ROTATERT
 	  || (TARGET_32BIT && GET_CODE (x) == ZERO_EXTRACT)))
-    return CC_NOOVmode;
+    return CC_NZmode;
 
   /* A comparison of ~reg with a const is really a special
      canoncialization of compare (~const, reg), which is a reverse
@@ -15491,11 +15518,11 @@ arm_gen_dicompare_reg (rtx_code code, rtx x, rtx y, rtx scratch)
 	      }
 
 	    rtx clobber = gen_rtx_CLOBBER (VOIDmode, scratch);
-	    cc_reg = gen_rtx_REG (CC_NOOVmode, CC_REGNUM);
+	    cc_reg = gen_rtx_REG (CC_NZmode, CC_REGNUM);
 
 	    rtx set
 	      = gen_rtx_SET (cc_reg,
-			     gen_rtx_COMPARE (CC_NOOVmode,
+			     gen_rtx_COMPARE (CC_NZmode,
 					      gen_rtx_IOR (SImode, x_lo, x_hi),
 					      const0_rtx));
 	    emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set,
@@ -23880,7 +23907,7 @@ maybe_get_arm_condition_code (rtx comparison)
 	return code;
       return ARM_NV;
 
-    case E_CC_NOOVmode:
+    case E_CC_NZmode:
       switch (comp_code)
 	{
 	case NE: return ARM_NE;
@@ -25303,7 +25330,7 @@ thumb1_final_prescan_insn (rtx_insn *insn)
 	  cfun->machine->thumb1_cc_insn = insn;
 	  cfun->machine->thumb1_cc_op0 = SET_DEST (set);
 	  cfun->machine->thumb1_cc_op1 = const0_rtx;
-	  cfun->machine->thumb1_cc_mode = CC_NOOVmode;
+	  cfun->machine->thumb1_cc_mode = CC_NZmode;
 	  if (INSN_CODE (insn) == CODE_FOR_thumb1_subsi3_insn)
 	    {
 	      rtx src1 = XEXP (SET_SRC (set), 1);
@@ -27241,7 +27268,7 @@ arm_print_asm_arch_directives ()
 	     don't print anything if all the bits are part of the
 	     FPU specification.  */
 	  if (bitmap_subset_p (opt_bits, arm_active_target.isa)
-	      && !bitmap_subset_p (opt_bits, isa_all_fpubits))
+	      && !bitmap_subset_p (opt_bits, isa_all_fpubits_internal))
 	    asm_fprintf (asm_out_file, "\t.arch_extension %s\n", opt->name);
 	}
     }
@@ -29011,14 +29038,15 @@ arm_vector_alignment (const_tree type)
   return align;
 }
 
-static void
-arm_autovectorize_vector_sizes (vector_sizes *sizes, bool)
+static unsigned int
+arm_autovectorize_vector_modes (vector_modes *modes, bool)
 {
   if (!TARGET_NEON_VECTORIZE_DOUBLE)
     {
-      sizes->safe_push (16);
-      sizes->safe_push (8);
+      modes->safe_push (V16QImode);
+      modes->safe_push (V8QImode);
     }
+  return 0;
 }
 
 static bool
@@ -29136,6 +29164,11 @@ arm_conditional_register_usage (void)
       if (TARGET_CALLER_INTERWORKING)
 	global_regs[ARM_HARD_FRAME_POINTER_REGNUM] = 1;
     }
+
+  /* The Q and GE bits are only accessed via special ACLE patterns.  */
+  CLEAR_HARD_REG_BIT (operand_reg_set, APSRQ_REGNUM);
+  CLEAR_HARD_REG_BIT (operand_reg_set, APSRGE_REGNUM);
+
   SUBTARGET_CONDITIONAL_REGISTER_USAGE
 }
 
@@ -30480,7 +30513,7 @@ arm_emit_coreregs_64bit_shift (enum rtx_code code, rtx out, rtx in,
   else
     {
       /* We have a shift-by-register.  */
-      rtx cc_reg = gen_rtx_REG (CC_NOOVmode, CC_REGNUM);
+      rtx cc_reg = gen_rtx_REG (CC_NZmode, CC_REGNUM);
 
       /* This alternative requires the scratch registers.  */
       gcc_assert (scratch1 && REG_P (scratch1));
@@ -31736,8 +31769,6 @@ arm_valid_target_attribute_p (tree fndecl, tree ARG_UNUSED (name),
 
   DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl) = new_optimize;
 
-  finalize_options_struct (&func_options);
-
   return ret;
 }
 
@@ -31750,7 +31781,7 @@ arm_identify_fpu_from_isa (sbitmap isa)
   auto_sbitmap fpubits (isa_num_bits);
   auto_sbitmap cand_fpubits (isa_num_bits);
 
-  bitmap_and (fpubits, isa, isa_all_fpubits);
+  bitmap_and (fpubits, isa, isa_all_fpubits_internal);
 
   /* If there are no ISA feature bits relating to the FPU, we must be
      doing soft-float.  */
@@ -31810,7 +31841,7 @@ arm_declare_function_name (FILE *stream, const char *name, tree decl)
 		{
 		  arm_initialize_isa (opt_bits, opt->isa_bits);
 		  if (bitmap_subset_p (opt_bits, arm_active_target.isa)
-		      && !bitmap_subset_p (opt_bits, isa_all_fpubits))
+		      && !bitmap_subset_p (opt_bits, isa_all_fpubits_internal))
 		    asm_fprintf (asm_out_file, "\t.arch_extension %s\n",
 				 opt->name);
 		}
@@ -32371,6 +32402,26 @@ arm_emit_speculation_barrier_function ()
   emit_library_call (speculation_barrier_libfunc, LCT_NORMAL, VOIDmode);
 }
 
+/* Have we recorded an explicit access to the Q bit of APSR?.  */
+bool
+arm_q_bit_access (void)
+{
+  if (cfun && cfun->decl)
+    return lookup_attribute ("acle qbit",
+			     DECL_ATTRIBUTES (cfun->decl));
+  return true;
+}
+
+/* Have we recorded an explicit access to the GE bits of PSTATE?.  */
+bool
+arm_ge_bits_access (void)
+{
+  if (cfun && cfun->decl)
+    return lookup_attribute ("acle gebits",
+			     DECL_ATTRIBUTES (cfun->decl));
+  return true;
+}
+
 #if CHECKING_P
 namespace selftest {
 
@@ -32463,28 +32514,28 @@ arm_test_cpu_arch_data (void)
 static void
 arm_test_fpu_data (void)
 {
-  auto_sbitmap isa_all_fpubits (isa_num_bits);
+  auto_sbitmap isa_all_fpubits_internal (isa_num_bits);
   auto_sbitmap fpubits (isa_num_bits);
   auto_sbitmap tmpset (isa_num_bits);
 
-  static const enum isa_feature fpu_bitlist[]
+  static const enum isa_feature fpu_bitlist_internal[]
     = { ISA_ALL_FPU_INTERNAL, isa_nobit };
-  arm_initialize_isa (isa_all_fpubits, fpu_bitlist);
+  arm_initialize_isa (isa_all_fpubits_internal, fpu_bitlist_internal);
 
   for (unsigned int i = 0; i < TARGET_FPU_auto; i++)
   {
     arm_initialize_isa (fpubits, all_fpus[i].isa_bits);
-    bitmap_and_compl (tmpset, isa_all_fpubits, fpubits);
-    bitmap_clear (isa_all_fpubits);
-    bitmap_copy (isa_all_fpubits, tmpset);
+    bitmap_and_compl (tmpset, isa_all_fpubits_internal, fpubits);
+    bitmap_clear (isa_all_fpubits_internal);
+    bitmap_copy (isa_all_fpubits_internal, tmpset);
   }
 
-  if (!bitmap_empty_p (isa_all_fpubits))
+  if (!bitmap_empty_p (isa_all_fpubits_internal))
     {
 	fprintf (stderr, "Error: found feature bits in the ALL_FPU_INTERAL"
 			 " group that are not defined by any FPU.\n"
 			 "       Check your arm-cpus.in.\n");
-	ASSERT_TRUE (bitmap_empty_p (isa_all_fpubits));
+	ASSERT_TRUE (bitmap_empty_p (isa_all_fpubits_internal));
     }
 }
 
@@ -32499,6 +32550,23 @@ arm_run_selftests (void)
 #undef TARGET_RUN_TARGET_SELFTESTS
 #define TARGET_RUN_TARGET_SELFTESTS selftest::arm_run_selftests
 #endif /* CHECKING_P */
+
+/* Worker function for TARGET_MD_ASM_ADJUST, while in thumb1 mode.
+   Unlike the arm version, we do NOT implement asm flag outputs.  */
+
+rtx_insn *
+thumb1_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
+		      vec<const char *> &constraints,
+		      vec<rtx> &/*clobbers*/, HARD_REG_SET &/*clobbered_regs*/)
+{
+  for (unsigned i = 0, n = outputs.length (); i < n; ++i)
+    if (strncmp (constraints[i], "=@cc", 4) == 0)
+      {
+	sorry ("asm flags not supported in thumb1 mode");
+	break;
+      }
+  return NULL;
+}
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

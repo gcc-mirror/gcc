@@ -16,7 +16,7 @@ program newunit_1
   rewind(myunit)
   rewind(myunit2)
   read(myunit2,'(a)') str
-  if (str.ne." abcdefghijklmnop") STOP 1
+  if (str.ne." abcdefghijklmnop") stop 1
   close(myunit)
   close(myunit2, status="delete")
 end program newunit_1

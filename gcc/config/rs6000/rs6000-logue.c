@@ -45,7 +45,6 @@
 #include "langhooks.h"
 #include "optabs.h"
 #include "diagnostic-core.h"
-#include "params.h"
 #include "alias.h"
 #include "rs6000-internal.h"
 #if TARGET_MACHO
@@ -1515,14 +1514,14 @@ static HOST_WIDE_INT
 get_stack_clash_protection_probe_interval (void)
 {
   return (HOST_WIDE_INT_1U
-	  << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL));
+	  << param_stack_clash_protection_probe_interval);
 }
 
 static HOST_WIDE_INT
 get_stack_clash_protection_guard_size (void)
 {
   return (HOST_WIDE_INT_1U
-	  << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE));
+	  << param_stack_clash_protection_guard_size);
 }
 
 /* Allocate ORIG_SIZE bytes on the stack and probe the newly
@@ -1700,10 +1699,14 @@ rs6000_emit_allocate_stack (HOST_WIDE_INT size, rtx copy_reg, int copy_off)
 						    stack_limit_rtx,
 						    GEN_INT (size)));
 
-	  emit_insn (gen_elf_high (tmp_reg, toload));
-	  emit_insn (gen_elf_low (tmp_reg, tmp_reg, toload));
-	  emit_insn (gen_cond_trap (LTU, stack_reg, tmp_reg,
-				    const0_rtx));
+	  /* We cannot use r0 with elf_low.  Lamely solve this problem by
+	     moving registers around.  */
+	  rtx r11_reg = gen_rtx_REG (Pmode, 11);
+	  emit_move_insn (tmp_reg, r11_reg);
+	  emit_insn (gen_elf_high (r11_reg, toload));
+	  emit_insn (gen_elf_low (r11_reg, r11_reg, toload));
+	  emit_insn (gen_cond_trap (LTU, stack_reg, r11_reg, const0_rtx));
+	  emit_move_insn (r11_reg, tmp_reg);
 	}
       else
 	warning (0, "stack limit expression is not supported");

@@ -303,6 +303,9 @@ print "";
 print "/* Compare two target option variables from a structure.  */";
 print "extern bool cl_target_option_eq (const struct cl_target_option *, const struct cl_target_option *);";
 print "";
+print "/* Free heap memory used by target option variables.  */";
+print "extern void cl_target_option_free (struct cl_target_option *);";
+print "";
 print "/* Hash option variables from a structure.  */";
 print "extern hashval_t cl_target_option_hash (const struct cl_target_option *);";
 print "";
@@ -311,6 +314,9 @@ print "extern hashval_t cl_optimization_hash (const struct cl_optimization *);";
 print "";
 print "/* Compare two optimization options.  */";
 print "extern bool cl_optimization_option_eq (cl_optimization const *ptr1, cl_optimization const *ptr2);"
+print "";
+print "/* Free heap memory used by optimization options.  */";
+print "extern void cl_optimization_option_free (cl_optimization *ptr1);"
 print "";
 print "/* Generator files may not have access to location_t, and don't need these.  */"
 print "#if defined(UNKNOWN_LOCATION)"

@@ -91,6 +91,8 @@ package Sem_Aux is
    --  subtype then it returns the subtype or type from which the subtype was
    --  obtained, otherwise it returns Empty.
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Available_View (Ent : Entity_Id) return Entity_Id;
    --  Ent denotes an abstract state or a type that may come from a limited
    --  with clause. Return the non-limited view of Ent if there is one or Ent
@@ -103,6 +105,8 @@ package Sem_Aux is
    --  in some other cases of internal entities, which cannot be treated as
    --  constants from the point of view of constant folding. Empty is also
    --  returned for variables with no initialization expression.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    function Corresponding_Unsigned_Type (Typ : Entity_Id) return Entity_Id;
    --  Typ is a signed integer subtype. This routine returns the standard
@@ -122,6 +126,8 @@ package Sem_Aux is
    --  The caller is responsible for checking that the type has discriminants.
    --  When called on a private type with unknown discriminants, the function
    --  always returns Empty.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    function First_Stored_Discriminant (Typ : Entity_Id) return Entity_Id;
    --  Typ is a type with discriminants. Gives the first discriminant stored
@@ -146,10 +152,14 @@ package Sem_Aux is
    --  discriminants from Gigi's standpoint, i.e. those that will be stored in
    --  actual objects of the type.
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function First_Subtype (Typ : Entity_Id) return Entity_Id;
    --  Applies to all types and subtypes. For types, yields the first subtype
    --  of the type. For subtypes, yields the first subtype of the base type of
    --  the subtype.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    function First_Tag_Component (Typ : Entity_Id) return Entity_Id;
    --  Typ must be a tagged record type. This function returns the Entity for
@@ -317,6 +327,8 @@ package Sem_Aux is
    --  Ent is any entity. Returns True if Ent is a type entity where the type
    --  is required to be passed by reference, as defined in (RM 6.2(4-9)).
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Is_Definite_Subtype (T : Entity_Id) return Boolean;
    --  T is a type entity. Returns True if T is a definite subtype.
    --  Indefinite subtypes are unconstrained arrays, unconstrained
@@ -328,6 +340,8 @@ package Sem_Aux is
    function Is_Derived_Type (Ent : Entity_Id) return Boolean;
    --  Determines if the given entity Ent is a derived type. Result is always
    --  false if argument is not a type.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    function Is_Generic_Formal (E : Entity_Id) return Boolean;
    --  Determine whether E is a generic formal parameter. In particular this is

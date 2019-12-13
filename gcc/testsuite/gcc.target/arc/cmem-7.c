@@ -21,7 +21,7 @@ some_function ()
   return 0;
 }
 
-/* { dg-final { scan-assembler "xldb \[^\n\]*@ss" } } */
-/* { dg-final { scan-assembler "xstb \[^\n\]*@ss" } } */
-/* { dg-final { scan-assembler-not "xldb \[^\n\]*@tt" } } */
-/* { dg-final { scan-assembler-not "xstb \[^\n\]*@tt" } } */
+/* { dg-final { scan-assembler "xldb\\s+\[^\n\]*@ss" } } */
+/* { dg-final { scan-assembler "xstb\\s+\[^\n\]*@ss" } } */
+/* { dg-final { scan-assembler-not "xldb\\s+\[^\n\]*@tt" } } */
+/* { dg-final { scan-assembler-not "xstb\\s+\[^\n\]*@tt" } } */

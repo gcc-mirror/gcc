@@ -2104,7 +2104,7 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
 
       /* Nonzero value, possibly overflowing or underflowing.  */
       mpfr_init2 (m, SIGNIFICAND_BITS);
-      inexact = mpfr_strtofr (m, str, NULL, 10, GMP_RNDZ);
+      inexact = mpfr_strtofr (m, str, NULL, 10, MPFR_RNDZ);
       /* The result should never be a NaN, and because the rounding is
 	 toward zero should never be an infinity.  */
       gcc_assert (!mpfr_nan_p (m) && !mpfr_inf_p (m));
@@ -2120,7 +2120,7 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
 	}
       else
 	{
-	  real_from_mpfr (r, m, NULL_TREE, GMP_RNDZ);
+	  real_from_mpfr (r, m, NULL_TREE, MPFR_RNDZ);
 	  /* 1 to 3 bits may have been shifted off (with a sticky bit)
 	     because the hex digits used in real_from_mpfr did not
 	     start with a digit 8 to f, but the exponent bounds above
@@ -2431,9 +2431,9 @@ dconst_e_ptr (void)
     {
       mpfr_t m;
       mpfr_init2 (m, SIGNIFICAND_BITS);
-      mpfr_set_ui (m, 1, GMP_RNDN);
-      mpfr_exp (m, m, GMP_RNDN);
-      real_from_mpfr (&value, m, NULL_TREE, GMP_RNDN);
+      mpfr_set_ui (m, 1, MPFR_RNDN);
+      mpfr_exp (m, m, MPFR_RNDN);
+      real_from_mpfr (&value, m, NULL_TREE, MPFR_RNDN);
       mpfr_clear (m);
 
     }
@@ -2474,8 +2474,8 @@ dconst_sqrt2_ptr (void)
     {
       mpfr_t m;
       mpfr_init2 (m, SIGNIFICAND_BITS);
-      mpfr_sqrt_ui (m, 2, GMP_RNDN);
-      real_from_mpfr (&value, m, NULL_TREE, GMP_RNDN);
+      mpfr_sqrt_ui (m, 2, MPFR_RNDN);
+      real_from_mpfr (&value, m, NULL_TREE, MPFR_RNDN);
       mpfr_clear (m);
     }
   return &value;
@@ -4799,6 +4799,116 @@ decode_ieee_half (const struct real_format *fmt, REAL_VALUE_TYPE *r,
     }
 }
 
+/* Encode arm_bfloat types.  */
+static void
+encode_arm_bfloat_half (const struct real_format *fmt, long *buf,
+		    const REAL_VALUE_TYPE *r)
+{
+  unsigned long image, sig, exp;
+  unsigned long sign = r->sign;
+  bool denormal = (r->sig[SIGSZ-1] & SIG_MSB) == 0;
+
+  image = sign << 15;
+  sig = (r->sig[SIGSZ-1] >> (HOST_BITS_PER_LONG - 8)) & 0x7f;
+
+  switch (r->cl)
+    {
+    case rvc_zero:
+      break;
+
+    case rvc_inf:
+      if (fmt->has_inf)
+	image |= 255 << 7;
+      else
+	image |= 0x7fff;
+      break;
+
+    case rvc_nan:
+      if (fmt->has_nans)
+	{
+	  if (r->canonical)
+	    sig = (fmt->canonical_nan_lsbs_set ? (1 << 6) - 1 : 0);
+	  if (r->signalling == fmt->qnan_msb_set)
+	    sig &= ~(1 << 6);
+	  else
+	    sig |= 1 << 6;
+	  if (sig == 0)
+	    sig = 1 << 5;
+
+	  image |= 255 << 7;
+	  image |= sig;
+	}
+      else
+	image |= 0x7fff;
+      break;
+
+    case rvc_normal:
+      if (denormal)
+	exp = 0;
+      else
+      exp = REAL_EXP (r) + 127 - 1;
+      image |= exp << 7;
+      image |= sig;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  buf[0] = image;
+}
+
+/* Decode arm_bfloat types.  */
+static void
+decode_arm_bfloat_half (const struct real_format *fmt, REAL_VALUE_TYPE *r,
+		    const long *buf)
+{
+  unsigned long image = buf[0] & 0xffff;
+  bool sign = (image >> 15) & 1;
+  int exp = (image >> 7) & 0xff;
+
+  memset (r, 0, sizeof (*r));
+  image <<= HOST_BITS_PER_LONG - 8;
+  image &= ~SIG_MSB;
+
+  if (exp == 0)
+    {
+      if (image && fmt->has_denorm)
+	{
+	  r->cl = rvc_normal;
+	  r->sign = sign;
+	  SET_REAL_EXP (r, -126);
+	  r->sig[SIGSZ-1] = image << 1;
+	  normalize (r);
+	}
+      else if (fmt->has_signed_zero)
+	r->sign = sign;
+    }
+  else if (exp == 255 && (fmt->has_nans || fmt->has_inf))
+    {
+      if (image)
+	{
+	  r->cl = rvc_nan;
+	  r->sign = sign;
+	  r->signalling = (((image >> (HOST_BITS_PER_LONG - 2)) & 1)
+			   ^ fmt->qnan_msb_set);
+	  r->sig[SIGSZ-1] = image;
+	}
+      else
+	{
+	  r->cl = rvc_inf;
+	  r->sign = sign;
+	}
+    }
+  else
+    {
+      r->cl = rvc_normal;
+      r->sign = sign;
+      SET_REAL_EXP (r, exp - 127 + 1);
+      r->sig[SIGSZ-1] = image | SIG_MSB;
+    }
+}
+
 /* Half-precision format, as specified in IEEE 754R.  */
 const struct real_format ieee_half_format =
   {
@@ -4848,6 +4958,33 @@ const struct real_format arm_half_format =
     false,
     "arm_half"
   };
+
+/* ARM Bfloat half-precision format.  This format resembles a truncated
+   (16-bit) version of the 32-bit IEEE 754 single-precision floating-point
+   format.  */
+const struct real_format arm_bfloat_half_format =
+  {
+    encode_arm_bfloat_half,
+    decode_arm_bfloat_half,
+    2,
+    8,
+    8,
+    -125,
+    128,
+    15,
+    15,
+    0,
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    "arm_bfloat_half"
+  };
+
 
 /* A synthetic "format" for internal arithmetic.  It's the size of the
    internal significand minus the two bits needed for proper rounding.
@@ -5242,13 +5379,19 @@ real_nextafter (REAL_VALUE_TYPE *r, format_helper fmt,
 /* Write into BUF the maximum representable finite floating-point
    number, (1 - b**-p) * b**emax for a given FP format FMT as a hex
    float string.  LEN is the size of BUF, and the buffer must be large
-   enough to contain the resulting string.  */
+   enough to contain the resulting string.  If NORM_MAX, instead write
+   the maximum representable finite normalized floating-point number,
+   defined to be such that all choices of digits for that exponent are
+   representable in the format (this only makes a difference for IBM
+   long double).  */
 
 void
-get_max_float (const struct real_format *fmt, char *buf, size_t len)
+get_max_float (const struct real_format *fmt, char *buf, size_t len,
+	       bool norm_max)
 {
   int i, n;
   char *p;
+  bool is_ibm_extended = fmt->pnan < fmt->p;
 
   strcpy (buf, "0x0.");
   n = fmt->p;
@@ -5256,8 +5399,9 @@ get_max_float (const struct real_format *fmt, char *buf, size_t len)
     *p++ = 'f';
   if (i < n)
     *p++ = "08ce"[n - i];
-  sprintf (p, "p%d", fmt->emax);
-  if (fmt->pnan < fmt->p)
+  sprintf (p, "p%d",
+	   (is_ibm_extended && norm_max) ? fmt->emax - 1 : fmt->emax);
+  if (is_ibm_extended && !norm_max)
     {
       /* This is an IBM extended double format made up of two IEEE
 	 doubles.  The value of the long double is the sum of the
@@ -5403,13 +5547,13 @@ build_sinatan_real (REAL_VALUE_TYPE * r, tree type)
 
   mpfr_inits (mpfr_const1, mpfr_c, mpfr_maxval, NULL);
 
-  mpfr_from_real (mpfr_const1, &dconst1, GMP_RNDN);
-  mpfr_from_real (mpfr_maxval, &maxval,  GMP_RNDN);
+  mpfr_from_real (mpfr_const1, &dconst1, MPFR_RNDN);
+  mpfr_from_real (mpfr_maxval, &maxval,  MPFR_RNDN);
 
-  mpfr_sub (mpfr_c, mpfr_maxval, mpfr_const1, GMP_RNDN);
-  mpfr_sqrt (mpfr_c, mpfr_c, GMP_RNDZ);
+  mpfr_sub (mpfr_c, mpfr_maxval, mpfr_const1, MPFR_RNDN);
+  mpfr_sqrt (mpfr_c, mpfr_c, MPFR_RNDZ);
 
-  real_from_mpfr (r, mpfr_c, fmt, GMP_RNDZ);
+  real_from_mpfr (r, mpfr_c, fmt, MPFR_RNDZ);
   
   mpfr_clears (mpfr_const1, mpfr_c, mpfr_maxval, NULL);
 }

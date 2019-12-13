@@ -153,6 +153,8 @@ call_ ## FUNC (void)					\
 
 #if !defined(USE_TM_CLONE_REGISTRY) && defined(OBJECT_FORMAT_ELF)
 # define USE_TM_CLONE_REGISTRY 1
+#elif !defined(USE_TM_CLONE_REGISTRY)
+# define USE_TM_CLONE_REGISTRY 0
 #endif
 
 /* We do not want to add the weak attribute to the declarations of these
@@ -323,11 +325,14 @@ register_tm_clones (void)
 
 #ifdef OBJECT_FORMAT_ELF
 
+#if DEFAULT_USE_CXA_ATEXIT
 /* Declare the __dso_handle variable.  It should have a unique value
    in every shared-object; in a main program its value is zero.  The
    object should in any case be protected.  This means the instance
    in one DSO or the main program is not used in another object.  The
-   dynamic linker takes care of this.  */
+   dynamic linker takes care of this.
+   If __cxa_atexit is not being used, __dso_handle will not be used and
+   doesn't need to be defined.  */
 
 #ifdef TARGET_LIBGCC_SDATA_SECTION
 extern void *__dso_handle __attribute__ ((__section__ (TARGET_LIBGCC_SDATA_SECTION)));
@@ -340,6 +345,7 @@ void *__dso_handle = &__dso_handle;
 #else
 void *__dso_handle = 0;
 #endif
+#endif /* DEFAULT_USE_CXA_ATEXIT */
 
 /* The __cxa_finalize function may not be available so we use only a
    weak declaration.  */
@@ -362,8 +368,12 @@ extern void __cxa_finalize (void *) TARGET_ATTRIBUTE_WEAK;
    On some systems, this routine is run more than once from the .fini,
    when exit is called recursively, so we arrange to remember where in
    the list we left off processing, and we resume at that point,
-   should we be re-invoked.  */
+   should we be re-invoked.
 
+   This routine does not need to be run if none of the following clauses are
+   true, as it will not do anything, so can be removed.  */
+#if defined(CRTSTUFFS_O) || !defined(FINI_ARRAY_SECTION_ASM_OP) \
+  || USE_TM_CLONE_REGISTRY || defined(USE_EH_FRAME_REGISTRY)
 static void __attribute__((used))
 __do_global_dtors_aux (void)
 {
@@ -449,9 +459,10 @@ __do_global_dtors_aux_1 (void)
 CRT_CALL_STATIC_FUNCTION (__LIBGCC_INIT_SECTION_ASM_OP__,
 			  __do_global_dtors_aux_1)
 #endif
+#endif /* defined(CRTSTUFFS_O) || !defined(FINI_ARRAY_SECTION_ASM_OP)
+  || USE_TM_CLONE_REGISTRY || defined(USE_EH_FRAME_REGISTRY) */
 
-#if defined(USE_EH_FRAME_REGISTRY) \
-    || defined(USE_TM_CLONE_REGISTRY)
+#if defined(USE_EH_FRAME_REGISTRY) || USE_TM_CLONE_REGISTRY
 /* Stick a call to __register_frame_info into the .init section.  For some
    reason calls with no arguments work more reliably in .init, so stick the
    call in another function.  */
@@ -560,8 +571,7 @@ __do_global_dtors (void)
 #endif
 }
 
-#if defined(USE_EH_FRAME_REGISTRY) \
-    || defined(USE_TM_CLONE_REGISTRY)
+#if defined(USE_EH_FRAME_REGISTRY) || USE_TM_CLONE_REGISTRY
 /* A helper function for __do_global_ctors, which is in crtend.o.  Here
    in crtbegin.o, we can reference a couple of symbols not visible there.
    Plus, since we're before libgcc.a, we have no problems referencing
@@ -733,8 +743,7 @@ void
 __do_global_ctors (void)
 {
   func_ptr *p;
-#if defined(USE_EH_FRAME_REGISTRY) \
-    || defined(USE_TM_CLONE_REGISTRY)
+#if defined(USE_EH_FRAME_REGISTRY) || USE_TM_CLONE_REGISTRY
   __do_global_ctors_1();
 #endif
   for (p = __CTOR_END__ - 1; *p != (func_ptr) -1; p--)

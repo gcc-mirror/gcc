@@ -79,7 +79,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "gimplify.h"
 #include "predict.h"
-#include "params.h"
 #include "real.h"
 #include "langhooks.h"
 #include "sbitmap.h"
@@ -689,16 +688,6 @@ default_builtin_md_vectorized_function (tree, tree, tree)
   return NULL_TREE;
 }
 
-/* Vectorized conversion.  */
-
-tree
-default_builtin_vectorized_conversion (unsigned int code ATTRIBUTE_UNUSED,
-				       tree dest_type ATTRIBUTE_UNUSED,
-				       tree src_type ATTRIBUTE_UNUSED)
-{
-  return NULL_TREE;
-}
-
 /* Default vectorizer cost model values.  */
 
 int
@@ -1299,32 +1288,39 @@ default_split_reduction (machine_mode mode)
   return mode;
 }
 
-/* By default only the size derived from the preferred vector mode
-   is tried.  */
+/* By default only the preferred vector mode is tried.  */
 
-void
-default_autovectorize_vector_sizes (vector_sizes *, bool)
+unsigned int
+default_autovectorize_vector_modes (vector_modes *, bool)
 {
+  return 0;
+}
+
+/* The default implementation of TARGET_VECTORIZE_RELATED_MODE.  */
+
+opt_machine_mode
+default_vectorize_related_mode (machine_mode vector_mode,
+				scalar_mode element_mode,
+				poly_uint64 nunits)
+{
+  machine_mode result_mode;
+  if ((maybe_ne (nunits, 0U)
+       || multiple_p (GET_MODE_SIZE (vector_mode),
+		      GET_MODE_SIZE (element_mode), &nunits))
+      && mode_for_vector (element_mode, nunits).exists (&result_mode)
+      && VECTOR_MODE_P (result_mode)
+      && targetm.vector_mode_supported_p (result_mode))
+    return result_mode;
+
+  return opt_machine_mode ();
 }
 
 /* By default a vector of integers is used as a mask.  */
 
 opt_machine_mode
-default_get_mask_mode (poly_uint64 nunits, poly_uint64 vector_size)
+default_get_mask_mode (machine_mode mode)
 {
-  unsigned int elem_size = vector_element_size (vector_size, nunits);
-  scalar_int_mode elem_mode
-    = smallest_int_mode_for_size (elem_size * BITS_PER_UNIT);
-  machine_mode vector_mode;
-
-  gcc_assert (known_eq (elem_size * nunits, vector_size));
-
-  if (mode_for_vector (elem_mode, nunits).exists (&vector_mode)
-      && VECTOR_MODE_P (vector_mode)
-      && targetm.vector_mode_supported_p (vector_mode))
-    return vector_mode;
-
-  return opt_machine_mode ();
+  return related_int_vector_mode (mode);
 }
 
 /* By default consider masked stores to be expensive.  */
@@ -1415,9 +1411,11 @@ default_ref_may_alias_errno (ao_ref *ref)
   if (TYPE_UNSIGNED (TREE_TYPE (base))
       || TYPE_MODE (TREE_TYPE (base)) != TYPE_MODE (integer_type_node))
     return false;
-  /* The default implementation assumes an errno location
-     declaration is never defined in the current compilation unit.  */
+  /* The default implementation assumes an errno location declaration
+     is never defined in the current compilation unit and may not be
+     aliased by a local variable.  */
   if (DECL_P (base)
+      && DECL_EXTERNAL (base)
       && !TREE_STATIC (base))
     return true;
   else if (TREE_CODE (base) == MEM_REF
@@ -2274,17 +2272,18 @@ default_max_noce_ifcvt_seq_cost (edge e)
 {
   bool predictable_p = predictable_edge_p (e);
 
-  enum compiler_param param
-    = (predictable_p
-       ? PARAM_MAX_RTL_IF_CONVERSION_PREDICTABLE_COST
-       : PARAM_MAX_RTL_IF_CONVERSION_UNPREDICTABLE_COST);
-
-  /* If we have a parameter set, use that, otherwise take a guess using
-     BRANCH_COST.  */
-  if (global_options_set.x_param_values[param])
-    return PARAM_VALUE (param);
+  if (predictable_p)
+    {
+      if (global_options_set.x_param_max_rtl_if_conversion_predictable_cost)
+	return param_max_rtl_if_conversion_predictable_cost;
+    }
   else
-    return BRANCH_COST (true, predictable_p) * COSTS_N_INSNS (3);
+    {
+      if (global_options_set.x_param_max_rtl_if_conversion_unpredictable_cost)
+	return param_max_rtl_if_conversion_unpredictable_cost;
+    }
+
+  return BRANCH_COST (true, predictable_p) * COSTS_N_INSNS (3);
 }
 
 /* Default implementation of TARGET_MIN_ARITHMETIC_PRECISION.  */

@@ -1,3 +1,156 @@
+2019-12-11  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config.host (msp430*-*-elf): Add crt{begin,end}_no_eh.o to
+	"extra_parts".
+	* config/msp430/t-msp430: Add rules to build crt{begin,end}_no_eh.o.
+
+2019-12-11  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* crtstuff.c: Declare __dso_handle only if DEFAULT_USE_CXA_ATEXIT is
+	true.
+
+2019-12-09  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* crtstuff.c (__do_global_dtors_aux): Check if USE_EH_FRAME_REGISTRY is
+	defined instead of its value.
+
+2019-12-09  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* crtstuff.c (__do_global_dtors_aux): Wrap in #if so it's only defined
+	if it will have contents.
+
+2019-12-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/92055
+	* config/avr/t-avrlibc (MULTISUBDIR): Search for double, not double64.
+
+2019-11-18  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR libgcc/91737
+	* config.host: Add t-gthr-noweak on *-*-musl*.
+	* config/t-gthr-noweak: New file.
+
+2019-11-17  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-atomic.c (__kernel_cmpxchg): Change argument 1 to
+	volatile void *.  Remove trap check.
+	(__kernel_cmpxchg2): Likewise.
+	(FETCH_AND_OP_2): Adjust operand types.
+	(OP_AND_FETCH_2): Likewise.
+	(FETCH_AND_OP_WORD): Likewise.
+	(OP_AND_FETCH_WORD): Likewise.
+	(COMPARE_AND_SWAP_2): Likewise.
+	(__sync_val_compare_and_swap_4): Likewise.
+	(__sync_bool_compare_and_swap_4): Likewise.
+	(SYNC_LOCK_TEST_AND_SET_2): Likewise.
+	(__sync_lock_test_and_set_4): Likewise.
+	(SYNC_LOCK_RELEASE_1): Likewise.  Use __kernel_cmpxchg2 for release.
+	(__sync_lock_release_4): Adjust operand types.  Use __kernel_cmpxchg
+	for release.
+	(__sync_lock_release_8): Remove.
+
+2019-11-15  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/m68k/linux-unwind.h (struct uw_ucontext): Use sigset_t instead
+	of __sigset_t.
+
+2019-11-14  Jerome Lambourg  <lambourg@adacore.com>
+	    Doug Rupp <rupp@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config.host: Collapse the arm-vxworks entries into
+	a single arm-wrs-vxworks7* one.
+	* config/arm/unwind-arm-vxworks.c: Update comments.  Provide
+	__gnu_Unwind_Find_exidx and a weak dummy __cxa_type_match for
+	kernel modules, to be overriden by libstdc++ when we link with
+	it.  Rely on externally provided __exidx_start/end.
+
+2019-11-14  Doug Rupp  <rupp@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config.host: Handle aarch64*-wrs-vxworks7*.
+
+2019-11-12  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-gthr-vxworksae: New file, add all the gthr-vxworks
+	sources except the cxx0x support to LIB2ADDEH.  We don't support
+	cxx0x on AE/653.
+	* config/t-vxworksae: New file.
+	* config.host: Handle *-*-vxworksae: Add the two aforementioned
+	Makefile fragment files at their expected position in the tmake_file
+	list, in accordance with what is done for other VxWorks variants.
+
+2019-11-12  Corentin Gay  <gay@adacore.com>
+	    Jerome Lambourg  <lambourg@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-gthr-vxworks: New file, add all the gthr-vxworks
+	sources to LIB2ADDEH.
+	* config/t-vxworks: Remove adjustments to LIB2ADDEH.
+	* config/t-vxworks7: Likewise.
+
+	* config.host: Append a block at the end of the file to add the
+	t-gthr files to the tmake_file list for VxWorks after everything
+	else.
+
+	* config/vxlib.c: Rename as gthr-vxworks.c.
+	* config/vxlib-tls.c: Rename as gthr-vxworks-tls.c.
+
+	* config/gthr-vxworks.h: Simplify a few comments.  Expose a TAS
+	API and a basic error checking API, both internal.  Simplify the
+	__gthread_once_t type definition and initializers.  Add sections
+	for condition variables support and for the C++0x thread support,
+	conditioned against Vx653 for the latter.
+
+	* config/gthr-vxworks.c (__gthread_once): Simplify comments and
+	implementation, leveraging the TAS internal API.
+	* config/gthr-vxworks-tls.c: Introduce an internal TLS data access
+	API, leveraging the general availability of TLS services in VxWorks7
+	post SR6xxx.
+	(__gthread_setspecific, __gthread_setspecific): Use it.
+	(tls_delete_hook): Likewise, and simplify the enter/leave dtor logic.
+	* config/gthr-vxworks-cond.c: New file.  GTHREAD_COND variable
+	support based on VxWorks primitives.
+	* config/gthr-vxworks-thread.c: New file.  GTHREAD_CXX0X support
+	based on VxWorks primitives.
+
+2019-11-06  Jerome Lambourg  <lambourg@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxcrtstuff.c: New file.
+	* config/t-vxcrtstuff: New Makefile fragment.
+	* config.host: Append t-vxcrtstuff to the tmake_file list
+	on all VxWorks ports using dwarf for table based EH.
+
+2019-11-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	Support 64-bit double and 64-bit long double configurations.
+
+	PR target/92055
+	* config/avr/t-avr (HOST_LIBGCC2_CFLAGS): Only add -DF=SF if
+	long double is a 32-bit type.
+	* config/avr/t-avrlibc: Copy double64 and long-double64
+	multilib(s) from the vanilla one.
+	* config/avr/t-copy-libgcc: New Makefile snip.
+
+2019-11-04  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* crtstuff.c: Define USE_TM_CLONE_REGISTRY to 0 if it's undefined and
+	the target output object format is not ELF.
+	s/defined(USE_TM_CLONE_REGISTRY)/USE_TM_CLONE_REGISTRY.
+
+2019-11-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR libgcc/78804
+	* fp-bit.h: Remove FLOAT_BIT_ORDER_MISMATCH.
+	* fp-bit.c (pack_d, unpack_d): Remove special cases for
+	FLOAT_BIT_ORDER_MISMATCH.
+	* config/arc/t-arc: Remove FLOAT_BIT_ORDER_MISMATCH.
+
+2019-11-01  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/t-softfp32 (softfp_extra): Add FP divide routines
+
 2019-10-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config/msp430/lib2hw_mul.S: Fix wrong syntax in branch instruction.

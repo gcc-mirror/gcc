@@ -23,8 +23,9 @@
  *                                                                          *
  ****************************************************************************/
 
-/* This is the C file that corresponds to the Ada package spec SCOs.  It was
-   created manually from the file scos.ads.  */
+/* This is the C header that corresponds to the Ada package specification for
+   Scos.  It was created manually from scos.ads and must be kept synchronized
+   with changes in this file.  */
 
 #ifdef __cplusplus
 extern "C" {

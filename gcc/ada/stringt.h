@@ -23,8 +23,10 @@
  *                                                                          *
  ****************************************************************************/
 
-/* This file is the C file that corresponds to the Ada package spec
-   Stringt. It was created manually from stringt.ads and stringt.adb
+/* This is the C header that corresponds to the Ada package specification for
+   Stringt.  It also contains the implementations of inlined functions from the
+   package body for Stringt.  It was created manually from stringt.ads and
+   stringt.adb and must be kept synchronized with changes in these files.
 
    Note: only the access functions are provided, since the tree transformer
    is not allowed to modify the tree or its auxiliary structures.

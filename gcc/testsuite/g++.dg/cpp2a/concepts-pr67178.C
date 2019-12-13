@@ -12,7 +12,7 @@ concept C0 = requires (auto x) { // { dg-error "placeholder type" }
 template<typename T>
 concept C1 = requires (C1 auto x) { // { dg-error "not been declared|placeholder|two or more|in requirements" }
   x; // { dg-error "not declared" }
-  { x } -> c; // { dg-error "not declared|does not satisfy" }
+  { x } -> c; // { dg-message "not declared|does not satisfy" }
 };
 
 template<typename T>
@@ -20,7 +20,7 @@ template<typename T>
 void f(T) {}
 
 int main() {
-  f(1); // { dg-error "cannot call" }
+  f(1); // { dg-error "" }
 }
 
 

@@ -98,6 +98,8 @@ struct subst_info
   tree in_decl;
 };
 
+static tree satisfy_constraint (tree, tree, subst_info);
+
 /* True if T is known to be some type other than bool. Note that this
    is false for dependent types and errors.  */
 
@@ -564,6 +566,15 @@ build_parameter_mapping (tree expr, tree args, tree decl)
       tree parms = DECL_TEMPLATE_PARMS (decl);
       depth = TREE_INT_CST_LOW (TREE_PURPOSE (parms));
     }
+  else if (current_template_parms)
+    {
+      /* TODO: This should probably be the only case, but because the
+	 point of declaration of concepts is currently set after the
+	 initializer, the template parameter lists are not available
+	 when normalizing concept definitions, hence the case above.  */
+      depth = TMPL_PARMS_DEPTH (current_template_parms);
+    }
+
   tree parms = find_template_parameters (expr, depth);
   tree map = map_arguments (parms, args);
   return map;
@@ -592,7 +603,7 @@ parameter_mapping_equivalent_p (tree t1, tree t2)
 
 struct norm_info : subst_info
 {
-  norm_info(tsubst_flags_t complain)
+  explicit norm_info (tsubst_flags_t complain)
     : subst_info (tf_warning_or_error | complain, NULL_TREE),
       context()
   {}
@@ -838,10 +849,12 @@ get_normalized_constraints_from_decl (tree d, bool diag = false)
 /* Returns the normal form of TMPL's definition.  */
 
 static tree
-normalize_concept_definition (tree tmpl)
+normalize_concept_definition (tree tmpl, bool diag = false)
 {
-  if (tree *p = hash_map_safe_get (normalized_map, tmpl))
-    return *p;
+  if (!diag)
+    if (tree *p = hash_map_safe_get (normalized_map, tmpl))
+      return *p;
+
   gcc_assert (concept_definition_p (tmpl));
   if (OVL_P (tmpl))
     tmpl = OVL_FIRST (tmpl);
@@ -849,10 +862,13 @@ normalize_concept_definition (tree tmpl)
   tree args = generic_targs_for (tmpl);
   tree def = get_concept_definition (DECL_TEMPLATE_RESULT (tmpl));
   ++processing_template_decl;
-  norm_info info (tmpl, tf_none);
+  norm_info info (tmpl, diag ? tf_norm : tf_none);
   tree norm = get_normalized_constraints (def, args, info);
   --processing_template_decl;
-  hash_map_safe_put<hm_ggc> (normalized_map, tmpl, norm);
+
+  if (!diag)
+    hash_map_safe_put<hm_ggc> (normalized_map, tmpl, norm);
+
   return norm;
 }
 
@@ -870,6 +886,20 @@ static tree
 normalize_nontemplate_requirements (tree decl, bool diag = false)
 {
   return get_normalized_constraints_from_decl (decl, diag);
+}
+
+/* Normalize an EXPR as a constraint using ARGS.  */
+
+static tree
+normalize_constraint_expression (tree expr, tree args, bool diag = false)
+{
+  if (!expr || expr == error_mark_node)
+    return expr;
+  ++processing_template_decl;
+  norm_info info (diag ? tf_norm : tf_none);
+  tree norm = get_normalized_constraints (expr, args, info);
+  --processing_template_decl;
+  return norm;
 }
 
 /* Normalize an EXPR as a constraint.  */
@@ -891,11 +921,7 @@ normalize_constraint_expression (tree expr, bool diag = false)
   else
     args = NULL_TREE;
 
-  ++processing_template_decl;
-  norm_info info (diag ? tf_norm : tf_none);
-  tree norm = get_normalized_constraints (expr, args, info);
-  --processing_template_decl;
-  return norm;
+  return normalize_constraint_expression (expr, args, diag);
 }
 
 /* 17.4.1.2p2. Two constraints are identical if they are formed
@@ -1090,15 +1116,34 @@ build_constraints (tree tr, tree dr)
   return (tree)ci;
 }
 
+/* Add constraint RHS to the end of CONSTRAINT_INFO ci.  */
+
+tree
+append_constraint (tree ci, tree rhs)
+{
+  tree tr = ci ? CI_TEMPLATE_REQS (ci) : NULL_TREE;
+  tree dr = ci ? CI_DECLARATOR_REQS (ci) : NULL_TREE;
+  dr = combine_constraint_expressions (dr, rhs);
+  if (ci)
+    {
+      CI_DECLARATOR_REQS (ci) = dr;
+      tree ac = combine_constraint_expressions (tr, dr);
+      CI_ASSOCIATED_CONSTRAINTS (ci) = ac;
+    }
+  else
+    ci = build_constraints (tr, dr);
+  return ci;
+}
+
 /* A mapping from declarations to constraint information.  */
 
-static GTY ((cache)) tree_cache_map *decl_constraints;
+static GTY ((cache)) decl_tree_cache_map *decl_constraints;
 
 /* Returns the template constraints of declaration T. If T is not
    constrained, return NULL_TREE. Note that T must be non-null. */
 
 tree
-get_constraints (tree t)
+get_constraints (const_tree t)
 {
   if (!flag_concepts)
     return NULL_TREE;
@@ -1108,7 +1153,7 @@ get_constraints (tree t)
   gcc_assert (DECL_P (t));
   if (TREE_CODE (t) == TEMPLATE_DECL)
     t = DECL_TEMPLATE_RESULT (t);
-  tree* found = decl_constraints->get (t);
+  tree* found = decl_constraints->get (CONST_CAST_TREE (t));
   if (found)
     return *found;
   else
@@ -1237,6 +1282,7 @@ build_function_check (tree tmpl, tree args, tsubst_flags_t /*complain*/)
   ++processing_template_decl;
   vec<tree, va_gc> *fargs = make_tree_vector ();
   tree call = build_min_nt_call_vec (id, fargs);
+  TREE_TYPE (call) = boolean_type_node;
   release_tree_vector (fargs);
   --processing_template_decl;
 
@@ -1371,6 +1417,7 @@ build_constrained_parameter (tree cnc, tree proto, tree args)
 
    Note that the constraints are neither reduced nor decomposed. That is
    done only after the requires clause has been parsed (or not).  */
+
 tree
 finish_shorthand_constraint (tree decl, tree constr)
 {
@@ -1822,10 +1869,7 @@ tsubst_type_requirement (tree t, tree args, subst_info info)
   return finish_type_requirement (EXPR_LOCATION (t), type);
 }
 
-/* True if TYPE can be deduced from EXPR.
-
-   FIXME: C++20 compound requirement constraints should be normalized and then
-   satisfied rather than substituted.  */
+/* True if TYPE can be deduced from EXPR.  */
 
 static bool
 type_deducible_p (tree expr, tree type, tree placeholder, tree args,
@@ -1839,11 +1883,16 @@ type_deducible_p (tree expr, tree type, tree placeholder, tree args,
      substitutes args into any template parameters in the trailing
      result type.  */
   tree saved_constr = PLACEHOLDER_TYPE_CONSTRAINTS (placeholder);
-  PLACEHOLDER_TYPE_CONSTRAINTS (placeholder)
+  tree subst_constr
     = tsubst_constraint (saved_constr,
 			 args,
 			 info.complain | tf_partial,
 			 info.in_decl);
+
+  if (subst_constr == error_mark_node)
+    return false;
+
+  PLACEHOLDER_TYPE_CONSTRAINTS (placeholder) = subst_constr;
 
   /* Temporarily unlink the canonical type.  */
   tree saved_type = TYPE_CANONICAL (placeholder);
@@ -1928,33 +1977,14 @@ tsubst_compound_requirement (tree t, tree args, subst_info info)
 static tree
 tsubst_nested_requirement (tree t, tree args, subst_info info)
 {
-  tree t0 = TREE_OPERAND (t, 0);
-  tree expr = tsubst_expr (t0, args, info.complain, info.in_decl, false);
-  if (expr == error_mark_node)
+  gcc_assert (!uses_template_parms (args));
+
+  /* Ensure that we're in an evaluation context prior to satisfaction.  */
+  tree norm = TREE_VALUE (TREE_TYPE (t));
+  tree result = satisfy_constraint (norm, args, info);
+  if (result != boolean_true_node)
     return error_mark_node;
-
-  /* Ensure that concrete results are satisfied.  */
-  if (!uses_template_parms (args))
-    {
-      /* FIXME satisfy_constraint_expression (t0, args, info) */
-
-      /* [17.4.1.2] ... lvalue-to-value conversion is performed as necessary,
-         and EXPR shall be a constant expression of type bool.  */
-      tree result = force_rvalue (expr, tf_error);
-      if (result == error_mark_node)
-        return error_mark_node;
-
-      /* FIXME: The expression must have boolean type.  */
-      if (cv_unqualified (TREE_TYPE (result)) != boolean_type_node)
-        return error_mark_node;
-
-      /* Compute the value of the expression.  */
-      result = satisfaction_value (cxx_constant_value (result));
-      if (result == error_mark_node || result == boolean_false_node)
-        return error_mark_node;
-    }
-
-  return finish_nested_requirement (EXPR_LOCATION (t), expr);
+  return result;
 }
 
 /* Substitute ARGS into the requirement T.  */
@@ -2227,8 +2257,8 @@ struct sat_hasher : ggc_ptr_hash<sat_entry>
 /* Cache the result of satisfy_atom.  */
 static GTY((deletable)) hash_table<sat_hasher> *sat_cache;
 
-/* Cache the result of constraints_satisfied_p.  */
-static GTY((deletable)) hash_map<tree,bool> *decl_satisfied_cache;
+/* Cache the result of constraint_satisfaction_value.  */
+static GTY((deletable)) hash_map<tree, tree> *decl_satisfied_cache;
 
 static tree
 get_satisfaction (tree constr, tree args)
@@ -2383,7 +2413,7 @@ satisfaction_value (tree t)
 tree
 get_mapped_args (tree map)
 {
-  /* If there's no map, then there are no arguments.  */
+  /* No map, no arguments.  */
   if (!map)
     return NULL_TREE;
 
@@ -2417,7 +2447,7 @@ get_mapped_args (tree map)
       list[index] = TREE_PURPOSE (p);
     }
 
-  /* Build the actual argument list.  */
+  /* Build the new argument list.  */
   tree args = make_tree_vec (lists.length ());
   for (unsigned i = 0; i != lists.length (); ++i)
     {
@@ -2451,8 +2481,7 @@ satisfy_atom (tree t, tree args, subst_info info)
      removed before returning.  */
   diagnosing_failed_constraint failure (t, args, info.noisy ());
 
-  /* Instantiate the parameter mapping, so that we map directly to
-     the arguments provided to the instantiation.  */
+  /* Instantiate the parameter mapping.  */
   tree map = tsubst_parameter_mapping (ATOMIC_CONSTR_MAP (t), args, quiet);
   if (map == error_mark_node)
     {
@@ -2478,21 +2507,17 @@ satisfy_atom (tree t, tree args, subst_info info)
       return cache.save (boolean_false_node);
     }
 
-  location_t loc = cp_expr_location (expr);
+  location_t loc = cp_expr_loc_or_input_loc (expr);
 
   /* [17.4.1.2] ... lvalue-to-value conversion is performed as necessary,
      and EXPR shall be a constant expression of type bool.  */
-  result = force_rvalue (result, tf_error);
+  result = force_rvalue (result, info.complain);
   if (result == error_mark_node)
-    {
-      if (info.noisy ())
-        inform (loc, "cannot convert constraint to rvalue");
-      return cache.save (error_mark_node);
-    }
+    return cache.save (error_mark_node);
   if (!same_type_p (TREE_TYPE (result), boolean_type_node))
     {
       if (info.noisy ())
-	inform (loc, "constraint does not have type %<bool%>");
+	error_at (loc, "constraint does not have type %<bool%>");
       return cache.save (error_mark_node);
     }
 
@@ -2548,10 +2573,6 @@ satisfy_constraint (tree t, tree args, subst_info info)
   /* We need to check access during satisfaction.  */
   deferring_access_check_sentinel acs (dk_no_deferred);
 
-  /* Avoid early exit in tsubst and tsubst_copy from null args.  */
-  if (args == NULL_TREE)
-    args = make_tree_vec (1);
-
   return satisfy_constraint_r (t, args, info);
 }
 
@@ -2561,7 +2582,7 @@ satisfy_constraint (tree t, tree args, subst_info info)
 static tree
 satisfy_associated_constraints (tree t, tree args, subst_info info)
 {
-  /* If there are no constraints then this is trivially satisfied. */
+  /* If there are no constraints then this is trivially satisfied.  */
   if (!t)
     return boolean_true_node;
 
@@ -2577,24 +2598,31 @@ satisfy_associated_constraints (tree t, tree args, subst_info info)
    satisfaction value. */
 
 static tree
-satisfy_constraint_expression (tree expr, tree args, subst_info info)
+satisfy_constraint_expression (tree t, tree args, subst_info info)
 {
-  /* Normalize the expression before satisfaction testing.  */
+  if (t == error_mark_node)
+    return error_mark_node;
+
+  gcc_assert (EXPR_P (t));
+
+  /* Get the normalized constraints.  */
   tree norm;
-  if (args == NULL_TREE && concept_check_p (expr))
+  if (args == NULL_TREE && concept_check_p (t))
     {
-      tree id = unpack_concept_check (expr);
+      tree id = unpack_concept_check (t);
       args = TREE_OPERAND (id, 1);
       tree tmpl = get_concept_check_template (id);
-      norm = normalize_concept_definition (tmpl);
+      norm = normalize_concept_definition (tmpl, info.noisy ());
     }
   else
-    norm = normalize_constraint_expression (expr);
+    norm = normalize_constraint_expression (t, info.noisy ());
+
+  /* Perform satisfaction.  */
   return satisfy_constraint (norm, args, info);
 }
 
-/* Used to evaluate concept checks and requires-expressions during
-   constant expression evaluation.  */
+/* Used only to evaluate requires-expressions during constant expression
+   evaluation.  */
 
 tree
 satisfy_constraint_expression (tree expr)
@@ -2603,20 +2631,10 @@ satisfy_constraint_expression (tree expr)
   return satisfy_constraint_expression (expr, NULL_TREE, info);
 }
 
-/* True if T is satisfied for ARGS.  */
-
-static bool
-constraint_expression_satisfied_p (tree t, tree args, subst_info info)
+static tree
+satisfy_declaration_constraints (tree t, subst_info info)
 {
-  tree r = satisfy_constraint_expression (t, args, info);
-  return r == boolean_true_node;
-}
-
-static bool
-constraints_satisfied_p (tree t, subst_info info)
-{
-  if (!DECL_P (t))
-    return constraint_expression_satisfied_p (t, NULL_TREE, info);
+  gcc_assert (DECL_P (t));
 
   /* For inherited constructors, consider the original declaration;
      it has the correct template information attached. */
@@ -2627,21 +2645,19 @@ constraints_satisfied_p (tree t, subst_info info)
   info.in_decl = t;
 
   if (info.quiet ())
-    if (bool *p = hash_map_safe_get (decl_satisfied_cache, t))
-      return *p;
+    if (tree *result = hash_map_safe_get (decl_satisfied_cache, t))
+      return *result;
 
-  /* Get the constraints to check for satisfaction. This depends
-     on whether we're looking at a template specialization or not. */
+  /* Get the normalized constraints.  */
   tree norm = NULL_TREE;
   tree args = NULL_TREE;
-  tree ti = DECL_TEMPLATE_INFO (t);
-  if (ti)
+  if (tree ti = DECL_TEMPLATE_INFO (t))
     {
       tree tmpl = TI_TEMPLATE (ti);
       norm = normalize_template_requirements (tmpl, info.noisy ());
 
       /* The initial parameter mapping is the complete set of
-         template arguments substituted into the declaration.  */
+	 template arguments substituted into the declaration.  */
       args = TI_ARGS (ti);
     }
   else
@@ -2650,44 +2666,25 @@ constraints_satisfied_p (tree t, subst_info info)
       norm = normalize_nontemplate_requirements (t, info.noisy ());
     }
 
-  bool r = true;
+  tree result = boolean_true_node;
   if (norm)
     {
+      push_tinst_level (t);
       push_access_scope (t);
-      tree eval = satisfy_associated_constraints (norm, args, info);
+      result = satisfy_associated_constraints (norm, args, info);
       pop_access_scope (t);
-      r = (eval == boolean_true_node);
+      pop_tinst_level ();
     }
 
   if (info.quiet ())
-    hash_map_safe_put<hm_ggc> (decl_satisfied_cache, t, r);
+    hash_map_safe_put<hm_ggc> (decl_satisfied_cache, t, result);
 
-  return r;
+  return result;
 }
 
-/* Returns true if the T's constraints are satisfied, of if T is an expression,
-   if T is satisfied. This is used in cases where the arguments can be
-   determined from the declaration or expression.
-
-   Note that T is typically a template specialization.  */
-
-bool
-constraints_satisfied_p (tree t)
+static tree
+satisfy_declaration_constraints (tree t, tree args, subst_info info)
 {
-  subst_info info (tf_none, NULL_TREE);
-  return constraints_satisfied_p (t, info);
-}
-
-/* Returns true if the expression or constrained declaration T is
-   satisfied by ARGS.  In this case, we don't have a specialization
-   where we can cache the results (e.g., alias templates).  */
-
-static bool
-constraints_satisfied_p (tree t, tree args, subst_info info)
-{
-  if (!DECL_P (t))
-    return constraint_expression_satisfied_p (t, args, info);
-
   /* Update the declaration for diagnostics.  */
   info.in_decl = t;
 
@@ -2696,46 +2693,72 @@ constraints_satisfied_p (tree t, tree args, subst_info info)
     {
       tree pattern = DECL_TEMPLATE_RESULT (t);
       push_access_scope (pattern);
-      tree eval = satisfy_associated_constraints (norm, args, info);
+      tree result = satisfy_associated_constraints (norm, args, info);
       pop_access_scope (pattern);
-      return eval == boolean_true_node;
+      return result;
     }
 
-  return true;
+  return boolean_true_node;
 }
+
+static tree
+constraint_satisfaction_value (tree t, tsubst_flags_t complain)
+{
+  subst_info info (complain, NULL_TREE);
+  if (DECL_P (t))
+    return satisfy_declaration_constraints (t, info);
+  else
+    return satisfy_constraint_expression (t, NULL_TREE, info);
+}
+
+static tree
+constraint_satisfaction_value (tree t, tree args, tsubst_flags_t complain)
+{
+  subst_info info (complain, NULL_TREE);
+  if (DECL_P (t))
+    return satisfy_declaration_constraints (t, args, info);
+  else
+    return satisfy_constraint_expression (t, args, info);
+}
+
+/* True iff the result of satisfying T is BOOLEAN_TRUE_NODE and false
+   otherwise, even in the case of errors.  */
+
+bool
+constraints_satisfied_p (tree t)
+{
+  return constraint_satisfaction_value (t, tf_none) == boolean_true_node;
+}
+
+/* True iff the result of satisfying T with ARGS is BOOLEAN_TRUE_NODE
+    and false otherwise, even in the case of errors.  */
 
 bool
 constraints_satisfied_p (tree t, tree args)
 {
-  subst_info info (tf_none, NULL);
-  return constraints_satisfied_p (t, args, info);
+  return constraint_satisfaction_value (t, args, tf_none) == boolean_true_node;
 }
 
-/* Evaluate a concept check of the form C<ARGS>, returning either TRUE
-   or FALSE. If ARGS contains any template parameters, this returns the
-   check. If satisfaction yields a hard error, diagnose the error.  */
+/* Evaluate a concept check of the form C<ARGS>. This is only used for the
+   evaluation of template-ids as id-expressions.  */
 
 tree
 evaluate_concept_check (tree check, tsubst_flags_t complain)
 {
-  /* FIXME we ought to be able to pass complain into subst_info rather
-     than repeat satisfaction, but currently that will complain about
-     non-satisfaction as well as errors.  */
   if (check == error_mark_node)
     return error_mark_node;
 
   gcc_assert (concept_check_p (check));
 
-  subst_info info (tf_none, NULL_TREE);
-  tree result = satisfy_constraint_expression (check, NULL_TREE, info);
+  /* Check for satisfaction without diagnostics.  */
+  subst_info quiet (tf_none, NULL_TREE);
+  tree result = satisfy_constraint_expression (check, NULL_TREE, quiet);
   if (result == error_mark_node && (complain & tf_error))
-    {
-      location_t loc = cp_expr_loc_or_input_loc (check);
-      error_at (loc, "concept satisfaction failed");
-      info.complain = complain;
-      satisfy_constraint_expression (check, NULL_TREE, info);
-    }
-
+  {
+    /* Replay the error with re-normalized requirements.  */
+    subst_info noisy (tf_warning_or_error, NULL_TREE);
+    satisfy_constraint_expression (check, NULL_TREE, noisy);
+  }
   return result;
 }
 
@@ -2806,7 +2829,16 @@ finish_compound_requirement (location_t loc, tree expr, tree type, bool noexcept
 tree
 finish_nested_requirement (location_t loc, tree expr)
 {
-  tree r = build_nt (NESTED_REQ, expr);
+  /* Save the normalized constraint and complete set of normalization
+     arguments with the requirement.  We keep the complete set of arguments
+     around for re-normalization during diagnostics.  */
+  tree args = current_template_parms
+    ? template_parms_to_args (current_template_parms) : NULL_TREE;
+  tree norm = normalize_constraint_expression (expr, args, false);
+  tree info = build_tree_list (args, norm);
+
+  /* Build the constraint, saving its normalization as its type.  */
+  tree r = build1 (NESTED_REQ, info, expr);
   SET_EXPR_LOCATION (r, loc);
   return r;
 }
@@ -2951,6 +2983,17 @@ more_constrained (tree d1, tree d2)
   if (subsumes (n2, n1))
     --winner;
   return winner;
+}
+
+/* Return whether D1 is at least as constrained as D2.  */
+
+bool
+at_least_as_constrained (tree d1, tree d2)
+{
+  tree n1 = get_normalized_constraints_from_decl (d1);
+  tree n2 = get_normalized_constraints_from_decl (d2);
+
+  return subsumes (n1, n2);
 }
 
 /*---------------------------------------------------------------------------
@@ -3139,7 +3182,8 @@ diagnose_compound_requirement (tree req, tree args, tree in_decl)
 	  if (!type_deducible_p (expr, type, placeholder, args, quiet))
 	    {
 	      tree orig_expr = TREE_OPERAND (req, 0);
-	      inform (loc, "type deduction from %qE failed", orig_expr);
+	      inform (loc, "%qE does not satisfy return-type-requirement",
+		      orig_expr);
 
 	      /* Further explain the reason for the error.  */
 	      type_deducible_p (expr, type, placeholder, args, noisy);
@@ -3166,15 +3210,21 @@ diagnose_type_requirement (tree req, tree args, tree in_decl)
 static void
 diagnose_nested_requirement (tree req, tree args)
 {
-  tree expr = TREE_OPERAND (req, 0);
-  if (constraints_satisfied_p (expr, args))
+  /* Quietly check for satisfaction first. We can elaborate details
+     later if needed.  */
+  tree norm = TREE_VALUE (TREE_TYPE (req));
+  subst_info info (tf_none, NULL_TREE);
+  tree result = satisfy_constraint (norm, args, info);
+  if (result == boolean_true_node)
     return;
+
+  tree expr = TREE_OPERAND (req, 0);
   location_t loc = cp_expr_location (expr);
   inform (loc, "nested requirement %qE is not satisfied", expr);
 
   /* TODO: Replay the substitution to diagnose the error?  */
   // subst_info noisy (tf_warning_or_error, NULL_TREE);
-  // constraints_satisfied_p (expr, args, noisy);
+  // satisfy_constraint (norm, args, info);
 }
 
 static void
@@ -3260,6 +3310,8 @@ diagnose_atomic_constraint (tree t, tree args, subst_info info)
     }
 }
 
+GTY(()) tree current_failed_constraint;
+
 diagnosing_failed_constraint::
 diagnosing_failed_constraint (tree t, tree args, bool diag)
   : diagnosing_error (diag)
@@ -3284,11 +3336,10 @@ diagnose_constraints (location_t loc, tree t, tree args)
   inform (loc, "constraints not satisfied");
 
   /* Replay satisfaction, but diagnose errors.  */
-  subst_info info (tf_warning_or_error, NULL_TREE);
   if (!args)
-    constraints_satisfied_p (t, info);
+    constraint_satisfaction_value (t, tf_warning_or_error);
   else
-    constraints_satisfied_p (t, args, info);
+    constraint_satisfaction_value (t, args, tf_warning_or_error);
 }
 
 #include "gt-cp-constraint.h"

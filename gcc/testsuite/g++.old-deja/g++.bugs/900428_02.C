@@ -15,13 +15,13 @@ void (*fp) ();
 
 void test ()
 {
-  vp++;		/* { dg-error "" } */
-  ++vp;		/* { dg-error "" } */
-  vp--;		/* { dg-error "" } */
-  --vp;		/* { dg-error "" } */
+  vp++;		/* { dg-error "3:ISO C\\+\\+ forbids incrementing" } */
+  ++vp;		/* { dg-error "5:ISO C\\+\\+ forbids incrementing" } */
+  vp--;		/* { dg-error "3:ISO C\\+\\+ forbids decrementing" } */
+  --vp;		/* { dg-error "5:ISO C\\+\\+ forbids decrementing" } */
 
-  fp++;		/* { dg-error "" } */
-  ++fp;		/* { dg-error "" } */
-  fp--;		/* { dg-error "" } */
-  --fp;		/* { dg-error "" } */
+  fp++;		/* { dg-error "3:ISO C\\+\\+ forbids incrementing" } */
+  ++fp;		/* { dg-error "5:ISO C\\+\\+ forbids incrementing" } */
+  fp--;		/* { dg-error "3:ISO C\\+\\+ forbids decrementing" } */
+  --fp;		/* { dg-error "5:ISO C\\+\\+ forbids decrementing" } */
 }

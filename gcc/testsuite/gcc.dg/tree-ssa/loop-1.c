@@ -45,8 +45,6 @@ int xxx(void)
    relaxation.  */
 /* CRIS and MSP430 keep the address in a register.  */
 /* m68k sometimes puts the address in a register, depending on CPU and PIC.  */
-/* AMD GCN loads symbol addresses as hi/lo pairs, and then reuses that for
-   each jump.  */
 
 /* { dg-final { scan-assembler-times "foo" 5 { xfail hppa*-*-* ia64*-*-* sh*-*-* cris-*-* crisv32-*-* fido-*-* m68k-*-* i?86-*-mingw* i?86-*-cygwin* x86_64-*-mingw* visium-*-* nvptx*-*-* pdp11*-*-* msp430-*-* amdgcn*-*-* } } } */
 /* { dg-final { scan-assembler-times "foo,%r" 5 { target hppa*-*-* } } } */
@@ -58,5 +56,4 @@ int xxx(void)
 /* { dg-final { scan-assembler-times "\[jb\]sr" 5 { target fido-*-* m68k-*-* pdp11-*-* } } } */
 /* { dg-final { scan-assembler-times "bra *tr,r\[1-9\]*,r21" 5 { target visium-*-* } } } */
 /* { dg-final { scan-assembler-times "(?n)\[ \t\]call\[ \t\].*\[ \t\]foo," 5 { target nvptx*-*-* } } } */
-/* { dg-final { scan-assembler-times "add_u32\t\[sv\]\[0-9\]*, \[sv\]\[0-9\]*, foo@rel32@lo" 1 { target { amdgcn*-*-* } } } } */
 /* { dg-final { scan-assembler-times "s_swappc_b64" 5 { target { amdgcn*-*-* } } } } */

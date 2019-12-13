@@ -1,3 +1,104 @@
+2019-12-13  Ian Lance Taylor  <iant@golang.org>
+
+	Add DWARF 5 support.
+	* dwarf.c (struct attr): Add val field.
+	(enum attr_val_encoding): Add ATTR_VAL_ADDDRESS_INDEX,
+	ATTR_VAL_STRING_INDEX, ATTR_VAL_RNGLISTS_INDEX.
+	(struct line_header): Add addrsize field.
+	(struct line_header_format): Define.
+	(struct unit): Add str_offsets_base, addr_base, and rnglists_base
+	fields.
+	(read_uint24): New static function.
+	(read_attribute): Add implicit_val parameter.  Replace dwarf_str
+	and dwarf_str_size parameters with dwarf_sections parameter.  Add
+	support for new DWARF 5 forms.  Change all callers.
+	(resolve_string): New static function.
+	(resolve_addr_index): Likewise.
+	(read_abbrevs): Support DW_FORM_implicit_const.
+	(struct pcrange): Add lowpc_is_addr_index, highpc_is_addr_Index,
+	and ranges_is_index fields.
+	(update_pcrange): Support DWARF 5 encodings.
+	(add_high_low_range): New static function, split out of
+	add_ranges.
+	(add_ranges_from_ranges): Likewise.
+	(add_ranges_from_rnglists): New static function.
+	(add_ranges): Just call new helper functions.
+	(find_address_ranges): Use resolve_string for strings, after
+	reading all attributes.  Handle new DWARF 5 attributes.
+	(build_address_map): Support DWARF 5 compilation units.
+	(read_v2_paths): New static function, split out of
+	read_line_header.
+	(read_lnct): New static	function.
+	(read_line_header_format_entries): Likewise.
+	(read_line_header): Add ddata parameter.  Support DWARF 5 line
+	headers.  Call new helper functions.  Change all callers.
+	(read_line_program): Use addrsize from line program header.  Don't
+	special case directory index 0 for DWARF 5.
+	(read_referenced_name): Use resolve_string.
+	(read_function_entry): Handle DWARF 5 encodings.  Use
+	resolve_string.
+	* internal.h (enum dwarf_section): Add DEBUG_ADDR,
+	DEBUG_STR_OFFSETS, DEBUG_LINE_STR, DEBUG_RNGLISTS.
+	* elf.c (dwarf_section_names): Add new section names.
+	* pecoff.c (dwarf_section_names): Likewise.
+	* xcoff.c (xcoff_add): Clear dwarf_sections before setting
+	fields.
+	* configure.ac: Define HAVE_DWARF5 automake conditional.
+	* Makefile.am (dwarf5_SOURCES): New variable if HAVE_DWARF5.
+	(dwarf5_CFLAGS, dwarf5_LDADD): Likewise.
+	(dwarf5_alloc_SOURCES, dwarf5_alloc_CFLAGS): Likewise.
+	(dwarf5_alloc_LDADD): Likewise.
+	(BUILDTESTS): Add dwarf5 tests if HAVE_DWARF5.
+	(CLEANFILES, clean-local): Define.
+
+2019-12-08  Ian Lance Taylor  <iant@golang.org>
+
+	* dwarf.c (struct pcrange): Define.
+	(update_pcrange, add_ranges): New static functions.
+	(add_unit_addr): Change signature to work with add_ranges.  Don't
+	add base_address here.
+	(add_unit_ranges): Remove.
+	(find_address_ranges): Replace str/ranges parameters with
+	dwarf_sections.  Use update_pcrange and add_ranges.  Change all
+	callers.
+	(add_function_range): Change signature to work with add_ranges.
+	Don't add base_address here.
+	(add_function_ranges): Remove.
+	(read_function_entry): Use update_pcrange and add_ranges.
+
+2019-12-04  Ian Lance Taylor  <iant@golang.org>
+
+	* edtest.c (test1): Add noclone attribute.
+
+2019-12-04  Ian Lance Taylor  <iant@golang.org>
+
+	* internal.h (enum dwarf_section): Define.
+	(struct dwarf_sections): Define.
+	(backtrace_dwarf_add): Update declaration to replace specific
+	section parameters with dwarf_sections parameter.
+	* dwarf.c (struct dwarf_data): Replace specific section fields
+	with dwarf_sections field.
+	(read_attribute): Use dwarf_sections with altlink.
+	(build_address_map): Replace specific section parameters with
+	dwarf_sections parameter.  Change all callers.
+	(read_line_info): Use dwarf_sections with ddata.
+	(read_referenced_name): Likewise.
+	(add_function_ranges): Likewise.
+	(read_function_entry): Likewise.
+	(read_function_info): Likewise.
+	(build_dwarf_data): Replace specific section parameters with
+	dwarf_sections parameter.  Change all callers.
+	(backtrace_dwarf_add): Likewise.
+	* elf.c (enum debug_section): Remove.
+	(dwarf_section_names): Remove .zdebug names.
+	(elf_add): Track zsections separately.  Build dwarf_sections.
+	* pecoff.c (enum debug_section): Remove.
+	(struct debug_section_info): Remove data field.
+	(coff_add): Build dwarf_sections.
+	* xcoff.c (enum dwarf_section): Remove.  Replace DWSECT_xxx
+	references with DEBUG_xxx references.
+	(xcoff_add): Build dwarf_sections.
+
 2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
 
 	* configure: Regenerate.

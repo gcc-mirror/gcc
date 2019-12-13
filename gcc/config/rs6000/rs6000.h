@@ -228,15 +228,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define TARGET_MFCRF 0
 #endif
 
-/* Define TARGET_TLS_MARKERS if the target assembler does not support
-   arg markers for __tls_get_addr calls.  */
-#ifndef HAVE_AS_TLS_MARKERS
-#undef  TARGET_TLS_MARKERS
-#define TARGET_TLS_MARKERS 0
-#else
-#define TARGET_TLS_MARKERS tls_markers
-#endif
-
 #ifndef TARGET_SECURE_PLT
 #define TARGET_SECURE_PLT 0
 #endif
@@ -1488,13 +1479,6 @@ enum rs6000_pltseq_enum {
 #define IS_V4_FP_ARGS(OP) \
   ((INTVAL (OP) & (CALL_V4_CLEAR_FP_ARGS | CALL_V4_SET_FP_ARGS)) != 0)
 
-/* Whether OP is an UNSPEC used in !TARGET_TLS_MARKER calls.  */
-#define IS_NOMARK_TLSGETADDR(OP)		\
-  (!TARGET_TLS_MARKERS				\
-   && GET_CODE (OP) == UNSPEC			\
-   && (XINT (OP, 1) == UNSPEC_TLSGD		\
-       || XINT (OP, 1) == UNSPEC_TLSLD))
-
 /* We don't have prologue and epilogue functions to save/restore
    everything for most ABIs.  */
 #define WORLD_SAVE_P(INFO) 0
@@ -2380,6 +2364,18 @@ enum rs6000_builtins
 #undef RS6000_BUILTIN_H
 #undef RS6000_BUILTIN_P
 #undef RS6000_BUILTIN_X
+
+/* Mappings for overloaded builtins.  */
+struct altivec_builtin_types
+{
+  enum rs6000_builtins code;
+  enum rs6000_builtins overloaded_code;
+  signed char ret_type;
+  signed char op1;
+  signed char op2;
+  signed char op3;
+};
+extern const struct altivec_builtin_types altivec_overloaded_builtins[];
 
 enum rs6000_builtin_type_index
 {

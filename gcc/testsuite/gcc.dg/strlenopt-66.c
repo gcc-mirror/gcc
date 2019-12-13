@@ -1,7 +1,7 @@
 /* PRE tree-optimization/90626 - fold strcmp(a, b) == 0 to zero when
    one string length is exact and the other is unequal
    { dg-do run }
-   { dg-options "-O2 -Wall -fdump-tree-optimized" } */
+   { dg-options "-O2 -Wall" } */
 
 #include "strlenopt.h"
 
@@ -103,6 +103,12 @@ int main (void)
   test_strncmp_a4_cond_s5_s2_2 ("12", 0);
   test_strncmp_a4_cond_a5_s2_5 ("12", "1234", 0);
 
-  test_strncmp_a4_cond_a5_a3_n ("12", "123", "1234", 0, 2);
-  test_strncmp_a4_cond_a5_a3_n ("123", "12", "12", 1, 3);
+  test_strncmp_a4_cond_a5_a3_n ("12", "1", "1",    0, 1);
+  test_strncmp_a4_cond_a5_a3_n ("",   "1", "1234", 1, 1);
+
+  test_strncmp_a4_cond_a5_a3_n ("12", "12", "1",    0, 2);
+  test_strncmp_a4_cond_a5_a3_n ("",   "12", "1234", 1, 2);
+
+  test_strncmp_a4_cond_a5_a3_n ("12", "123", "1",    0, 2);
+  test_strncmp_a4_cond_a5_a3_n ("",   "123", "1234", 1, 3);
 }

@@ -6,7 +6,7 @@
 struct A
 {
   int i;
-  constexpr A(int _i) { i = _i; } // { dg-error "empty body|A::i" }
+  constexpr A(int _i) { i = _i; } // { dg-error "empty body|A::i" "" { target c++17_down } }
 };
 
 template <class T>

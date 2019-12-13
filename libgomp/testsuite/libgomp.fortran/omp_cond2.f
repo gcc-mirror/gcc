@@ -2,13 +2,13 @@ c Test conditional compilation in fixed form if -fno-openmp
 ! { dg-options "-fno-openmp" }
    10 foo = 2
      &56
-      if (foo.ne.256) STOP 1
+      if (foo.ne.256) stop 1
       bar = 26
 !$2 0 ba
 c$   +r = 42
       !$ bar = 62
 !$    bar = bar + 1
-      if (bar.ne.26) STOP 2
+      if (bar.ne.26) stop 2
       baz = bar
 *$   0baz = 5
 C$   +12! Comment
@@ -18,5 +18,5 @@ c$   !4
 !$ X  baz = 0 ! Not valid OpenMP conditional compilation lines
 ! $   baz = 1
 c$ 10&baz = 2
-      if (baz.ne.26) STOP 3
+      if (baz.ne.26) stop 3
       end

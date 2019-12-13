@@ -566,8 +566,8 @@ and the online manuals should be linked to from
 @file{onlinedocs/index.html}.
 @item
 Any old releases or CVS repositories of the front end, before its
-inclusion in GCC, should be made available on the GCC FTP site
-@uref{ftp://gcc.gnu.org/pub/gcc/old-releases/}.
+inclusion in GCC, should be made available on the GCC web site at
+@uref{https://gcc.gnu.org/pub/gcc/old-releases/}.
 @item
 The release and snapshot script @file{maintainer-scripts/gcc_release}
 should be updated to generate appropriate tarballs for this front end.
@@ -1487,6 +1487,10 @@ Target supports hardware vectors of @code{long}.
 @item vect_long_long
 Target supports hardware vectors of @code{long long}.
 
+@item vect_check_ptrs
+Target supports the @code{check_raw_ptrs} and @code{check_war_ptrs}
+optabs on vectors.
+
 @item vect_fully_masked
 Target supports fully-masked (also known as fully-predicated) loops,
 so that vector loops can handle partial as well as full vectors.
@@ -1517,6 +1521,14 @@ Target does not support a vector add instruction on @code{int}.
 
 @item vect_no_bitwise
 Target does not support vector bitwise instructions.
+
+@item vect_bool_cmp
+Target supports comparison of @code{bool} vectors for at least one
+vector length.
+
+@item vect_char_add
+Target supports addition of @code{char} vectors for at least one
+vector length.
 
 @item vect_char_mult
 Target supports @code{vector char} multiplication.
@@ -1911,6 +1923,12 @@ ARM Target supports options suitable for accessing the SIMD32 intrinsics from
 @code{arm_acle.h}.
 Some multilibs may be incompatible with these options.
 
+@item arm_qbit_ok
+@anchor{arm_qbit_ok}
+ARM Target supports options suitable for accessing the Q-bit manipulation
+intrinsics from @code{arm_acle.h}.
+Some multilibs may be incompatible with these options.
+
 @end table
 
 @subsubsection AArch64-specific attributes
@@ -2255,6 +2273,10 @@ Target has packed layout of structure members by default.
 
 @item exceptions
 Target supports exceptions.
+
+@item exceptions_enabled
+Target supports exceptions and they are enabled in the current
+testing configuration.
 
 @item fgraphite
 Target supports Graphite optimizations.

@@ -128,10 +128,6 @@ typedef unsigned int UTItype __attribute__ ((mode (TI)));
 #define NO_DI_MODE
 #endif
 
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#define FLOAT_BIT_ORDER_MISMATCH
-#endif
-
 #if __BYTE_ORDER__ != __FLOAT_WORD_ORDER__
 #define FLOAT_WORD_ORDER_MISMATCH
 #endif
@@ -352,16 +348,6 @@ typedef union
 # else
   halffractype words[2];
 # endif
-#endif
-
-#ifdef FLOAT_BIT_ORDER_MISMATCH
-  struct
-    {
-      fractype fraction:FRACBITS __attribute__ ((packed));
-      unsigned int exp:EXPBITS __attribute__ ((packed));
-      unsigned int sign:1 __attribute__ ((packed));
-    }
-  bits;
 #endif
 
 #ifdef _DEBUG_BITFLOAT

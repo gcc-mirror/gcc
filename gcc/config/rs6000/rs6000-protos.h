@@ -112,6 +112,7 @@ extern const char *rs6000_pltseq_template (rtx *, int);
 extern enum rtx_code rs6000_reverse_condition (machine_mode,
 					       enum rtx_code);
 extern rtx rs6000_emit_eqne (machine_mode, rtx, rtx, rtx);
+extern rtx rs6000_emit_fp_cror (rtx_code, machine_mode, rtx);
 extern void rs6000_emit_sCOND (machine_mode, rtx[]);
 extern void rs6000_emit_cbranch (machine_mode, rtx[]);
 extern char * output_cbranch (rtx, const char *, int, rtx_insn *);
@@ -139,7 +140,6 @@ extern bool valid_sf_si_move (rtx, rtx, machine_mode);
 extern void rs6000_emit_move (rtx, rtx, machine_mode);
 extern bool rs6000_legitimate_offset_address_p (machine_mode, rtx,
 						bool, bool);
-extern void rs6000_output_tlsargs (rtx *);
 extern rtx rs6000_find_base_term (rtx);
 extern rtx rs6000_return_addr (int, rtx);
 extern void rs6000_output_symbol_ref (FILE*, rtx);

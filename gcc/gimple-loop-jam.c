@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "params.h"
 #include "tree-pass.h"
 #include "backend.h"
 #include "tree.h"
@@ -572,15 +571,15 @@ tree_loop_unroll_and_jam (void)
       /* We regard a user-specified minimum percentage of zero as a request
 	 to ignore all profitability concerns and apply the transformation
 	 always.  */
-      if (!PARAM_VALUE (PARAM_UNROLL_JAM_MIN_PERCENT))
+      if (!param_unroll_jam_min_percent)
 	profit_unroll = MAX(2, profit_unroll);
       else if (removed * 100 / datarefs.length ()
-	  < (unsigned)PARAM_VALUE (PARAM_UNROLL_JAM_MIN_PERCENT))
+	  < (unsigned)param_unroll_jam_min_percent)
 	profit_unroll = 1;
       if (unroll_factor > profit_unroll)
 	unroll_factor = profit_unroll;
-      if (unroll_factor > (unsigned)PARAM_VALUE (PARAM_UNROLL_JAM_MAX_UNROLL))
-	unroll_factor = PARAM_VALUE (PARAM_UNROLL_JAM_MAX_UNROLL);
+      if (unroll_factor > (unsigned)param_unroll_jam_max_unroll)
+	unroll_factor = param_unroll_jam_max_unroll;
       unroll = (unroll_factor > 1
 		&& can_unroll_loop_p (outer, unroll_factor, &desc));
 

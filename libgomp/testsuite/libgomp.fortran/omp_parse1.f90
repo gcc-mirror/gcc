@@ -43,16 +43,16 @@ contains
     d(b + 1) = c
     if (f .ne. g .or. f .ne. b) h = .true.
 !$omp endparallel
-    if (h) STOP 1
-    if (a .ne. 6) STOP 2
-    if (j .ne. 24) STOP 3
-    if (d(1) .eq. -1) STOP 4
+    if (h) stop 1
+    if (a .ne. 6) stop 2
+    if (j .ne. 24) stop 3
+    if (d(1) .eq. -1) stop 4
     e = 1
     do g = 1, d(1)
-      if (d(g) .ne. d(1)) STOP 5
+      if (d(g) .ne. d(1)) stop 5
       e = e * 2
     end do
-    if (e .ne. i) STOP 6
+    if (e .ne. i) stop 6
   end subroutine test_parallel
 
   subroutine test_do_orphan
@@ -79,7 +79,7 @@ contains
     call test_do_orphan
 !$omp do schedule (static) firstprivate (n)
     do 200 i = 1, j
-      if (i .eq. 1 .and. n .ne. 24) STOP 7
+      if (i .eq. 1 .and. n .ne. 24) stop 7
       n = i
 200   d(n) = omp_get_thread_num ()
 !$omp enddo nowait
@@ -103,11 +103,11 @@ contains
     end do
     ! Implied omp end do here
 !$omp end parallel
-    if (.not. m) STOP 8
+    if (.not. m) stop 8
 
     j = 0
     do i = 1, 64
-      if (d(i) .lt. j .or. d(i) .ge. j + k) STOP 9
+      if (d(i) .lt. j .or. d(i) .ge. j + k) stop 9
       if (i .eq. 16) j = 1024
       if (i .eq. 32) j = 2048
       if (i .eq. 48) j = 4096
@@ -152,9 +152,9 @@ contains
     n = 7
 !$omp endsections
 !$omp end parallel
-    if (j .ne. 271 .or. l .ne. 0) STOP 10
-    if (m .ne. 4 + 6 + 8 + 10) STOP 11
-    if (n .ne. 7) STOP 12
+    if (j .ne. 271 .or. l .ne. 0) stop 10
+    if (m .ne. 4 + 6 + 8 + 10) stop 11
+    if (n .ne. 7) stop 12
   end subroutine test_sections
 
   subroutine test_single
@@ -182,6 +182,6 @@ contains
 !$omp end single copyprivate (j)
     if (i .ne. omp_get_thread_num () .or. j .ne. -2) m = .true.
 !$omp endparallel
-    if (m) STOP 13
+    if (m) stop 13
   end subroutine test_single
 end

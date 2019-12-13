@@ -476,7 +476,7 @@ case_tree_node::case_tree_node ():
 unsigned int
 jump_table_cluster::case_values_threshold (void)
 {
-  unsigned int threshold = PARAM_VALUE (PARAM_CASE_VALUES_THRESHOLD);
+  unsigned int threshold = param_case_values_threshold;
 
   if (threshold == 0)
     threshold = targetm.case_values_threshold ();
@@ -683,8 +683,8 @@ is changed into:
 	b_b = PHI <b_6, b_7>
 
 There are further constraints.  Specifically, the range of values across all
-case labels must not be bigger than SWITCH_CONVERSION_BRANCH_RATIO (default
-eight) times the number of the actual switch branches.
+case labels must not be bigger than param_switch_conversion_branch_ratio
+(default eight) times the number of the actual switch branches.
 
 This transformation was contributed by Martin Jambor, see this e-mail:
    http://gcc.gnu.org/ml/gcc-patches/2008-07/msg00011.html  */
@@ -818,12 +818,6 @@ public:
 
   /* The probability of the default edge in the replaced switch.  */
   profile_probability m_default_prob;
-
-  /* The count of the default edge in the replaced switch.  */
-  profile_count m_default_count;
-
-  /* Combined count of all other (non-default) edges in the replaced switch.  */
-  profile_count m_other_count;
 
   /* Number of phi nodes in the final bb (that we'll be replacing).  */
   int m_phi_count;

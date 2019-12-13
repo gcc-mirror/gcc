@@ -1881,10 +1881,11 @@ cpp_interpret_string_notranslate (cpp_reader *pfile, const cpp_string *from,
 /* Subroutine of cpp_interpret_charconst which performs the conversion
    to a number, for narrow strings.  STR is the string structure returned
    by cpp_interpret_string.  PCHARS_SEEN and UNSIGNEDP are as for
-   cpp_interpret_charconst.  */
+   cpp_interpret_charconst.  TYPE is the token type.  */
 static cppchar_t
 narrow_str_to_charconst (cpp_reader *pfile, cpp_string str,
-			 unsigned int *pchars_seen, int *unsignedp)
+			 unsigned int *pchars_seen, int *unsignedp,
+			 enum cpp_ttype type)
 {
   size_t width = CPP_OPTION (pfile, char_precision);
   size_t max_chars = CPP_OPTION (pfile, int_precision) / width;
@@ -1913,10 +1914,12 @@ narrow_str_to_charconst (cpp_reader *pfile, cpp_string str,
 	result = c;
     }
 
+  if (type == CPP_UTF8CHAR)
+    max_chars = 1;
   if (i > max_chars)
     {
       i = max_chars;
-      cpp_error (pfile, CPP_DL_WARNING,
+      cpp_error (pfile, type == CPP_UTF8CHAR ? CPP_DL_ERROR : CPP_DL_WARNING,
 		 "character constant too long for its type");
     }
   else if (i > 1 && CPP_OPTION (pfile, warn_multichar))
@@ -1925,6 +1928,8 @@ narrow_str_to_charconst (cpp_reader *pfile, cpp_string str,
   /* Multichar constants are of type int and therefore signed.  */
   if (i > 1)
     unsigned_p = 0;
+  else if (type == CPP_UTF8CHAR && !CPP_OPTION (pfile, cplusplus))
+    unsigned_p = 1;
   else
     unsigned_p = CPP_OPTION (pfile, unsigned_char);
 
@@ -1980,7 +1985,9 @@ wide_str_to_charconst (cpp_reader *pfile, cpp_string str,
      character exactly fills a wchar_t, so a multi-character wide
      character constant is guaranteed to overflow.  */
   if (str.len > nbwc * 2)
-    cpp_error (pfile, CPP_DL_WARNING,
+    cpp_error (pfile, (CPP_OPTION (pfile, cplusplus)
+		       && (type == CPP_CHAR16 || type == CPP_CHAR32))
+		      ? CPP_DL_ERROR : CPP_DL_WARNING,
 	       "character constant too long for its type");
 
   /* Truncate the constant to its natural width, and simultaneously
@@ -2038,7 +2045,8 @@ cpp_interpret_charconst (cpp_reader *pfile, const cpp_token *token,
     result = wide_str_to_charconst (pfile, str, pchars_seen, unsignedp,
 				    token->type);
   else
-    result = narrow_str_to_charconst (pfile, str, pchars_seen, unsignedp);
+    result = narrow_str_to_charconst (pfile, str, pchars_seen, unsignedp,
+				      token->type);
 
   if (str.text != token->val.str.text)
     free ((void *)str.text);
@@ -2256,4 +2264,107 @@ cpp_string_location_reader::get_next ()
   if (m_loc <= LINE_MAP_MAX_LOCATION_WITH_COLS)
     m_loc += m_offset_per_column;
   return result;
+}
+
+/* Helper for cpp_byte_column_to_display_column and its inverse.  Given a
+   pointer to a UTF-8-encoded character, compute its display width.  *INBUFP
+   points on entry to the start of the UTF-8 encoding of the character, and
+   is updated to point just after the last byte of the encoding.  *INBYTESLEFTP
+   contains on entry the remaining size of the buffer into which *INBUFP
+   points, and this is also updated accordingly.  If *INBUFP does not
+   point to a valid UTF-8-encoded sequence, then it will be treated as a single
+   byte with display width 1.  */
+
+static inline int
+compute_next_display_width (const uchar **inbufp, size_t *inbytesleftp)
+{
+  cppchar_t c;
+  if (one_utf8_to_cppchar (inbufp, inbytesleftp, &c) != 0)
+    {
+      /* Input is not convertible to UTF-8.  This could be fine, e.g. in a
+	 string literal, so don't complain.  Just treat it as if it has a width
+	 of one.  */
+      ++*inbufp;
+      --*inbytesleftp;
+      return 1;
+    }
+
+  /*  one_utf8_to_cppchar() has updated inbufp and inbytesleftp for us.  */
+  return cpp_wcwidth (c);
+}
+
+/*  For the string of length DATA_LENGTH bytes that begins at DATA, compute
+    how many display columns are occupied by the first COLUMN bytes.  COLUMN
+    may exceed DATA_LENGTH, in which case the phantom bytes at the end are
+    treated as if they have display width 1.  */
+
+int
+cpp_byte_column_to_display_column (const char *data, int data_length,
+				   int column)
+{
+  int display_col = 0;
+  const uchar *udata = (const uchar *) data;
+  const int offset = MAX (0, column - data_length);
+  size_t inbytesleft = column - offset;
+  while (inbytesleft)
+    display_col += compute_next_display_width (&udata, &inbytesleft);
+  return display_col + offset;
+}
+
+/*  For the string of length DATA_LENGTH bytes that begins at DATA, compute
+    the least number of bytes that will result in at least DISPLAY_COL display
+    columns.  The return value may exceed DATA_LENGTH if the entire string does
+    not occupy enough display columns.  */
+
+int
+cpp_display_column_to_byte_column (const char *data, int data_length,
+				   int display_col)
+{
+  int column = 0;
+  const uchar *udata = (const uchar *) data;
+  size_t inbytesleft = data_length;
+  while (column < display_col && inbytesleft)
+      column += compute_next_display_width (&udata, &inbytesleft);
+  return data_length - inbytesleft + MAX (0, display_col - column);
+}
+
+/* Our own version of wcwidth().  We don't use the actual wcwidth() in glibc,
+   because that will inspect the user's locale, and in particular in an ASCII
+   locale, it will not return anything useful for extended characters.  But GCC
+   in other respects (see e.g. _cpp_default_encoding()) behaves as if
+   everything is UTF-8.  We also make some tweaks that are useful for the way
+   GCC needs to use this data, e.g. tabs and other control characters should be
+   treated as having width 1.  The lookup tables are generated from
+   contrib/unicode/gen_wcwidth.py and were made by simply calling glibc
+   wcwidth() on all codepoints, then applying the small tweaks.  These tables
+   are not highly optimized, but for the present purpose of outputting
+   diagnostics, they are sufficient.  */
+
+#include "generated_cpp_wcwidth.h"
+int cpp_wcwidth (cppchar_t c)
+{
+  if (__builtin_expect (c <= wcwidth_range_ends[0], true))
+    return wcwidth_widths[0];
+
+  /* Binary search the tables.  */
+  int begin = 1;
+  static const int end
+      = sizeof wcwidth_range_ends / sizeof (*wcwidth_range_ends);
+  int len = end - begin;
+  do
+    {
+      int half = len/2;
+      int middle = begin + half;
+      if (c > wcwidth_range_ends[middle])
+	{
+	  begin = middle + 1;
+	  len -= half + 1;
+	}
+      else
+	len = half;
+    } while (len);
+
+  if (__builtin_expect (begin != end, true))
+    return wcwidth_widths[begin];
+  return 1;
 }

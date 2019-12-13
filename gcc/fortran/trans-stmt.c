@@ -1454,7 +1454,8 @@ gfc_trans_if_1 (gfc_code * code)
     elsestmt = build_empty_stmt (input_location);
 
   /* Build the condition expression and add it to the condition block.  */
-  loc = code->expr1->where.lb ? code->expr1->where.lb->location : input_location;
+  loc = code->expr1->where.lb ? gfc_get_location (&code->expr1->where)
+			      : input_location;
   stmt = fold_build3_loc (loc, COND_EXPR, void_type_node, if_se.expr, stmt,
 			  elsestmt);
 
@@ -1841,10 +1842,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	  if (rank > 0)
 	    copy_descriptor (&se.post, se.expr, desc, rank);
 	  else
-	    {
-	      tmp = gfc_conv_descriptor_data_get (desc);
-	      gfc_conv_descriptor_data_set (&se.post, se.expr, tmp);
-	    }
+	    gfc_conv_descriptor_data_set (&se.post, se.expr, desc);
 
 	  /* The dynamic type could have changed too.  */
 	  if (sym->ts.type == BT_CLASS)
@@ -2331,7 +2329,7 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
   type = TREE_TYPE (dovar);
   bool is_step_positive = tree_int_cst_sgn (step) > 0;
 
-  loc = code->ext.iterator->start->where.lb->location;
+  loc = gfc_get_location (&code->ext.iterator->start->where);
 
   /* Initialize the DO variable: dovar = from.  */
   gfc_add_modify_loc (loc, pblock, dovar,
@@ -2510,7 +2508,7 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
 
   gfc_start_block (&block);
 
-  loc = code->ext.iterator->start->where.lb->location;
+  loc = gfc_get_location (&code->ext.iterator->start->where);
 
   /* Evaluate all the expressions in the iterator.  */
   gfc_init_se (&se, NULL);
@@ -2804,15 +2802,17 @@ gfc_trans_do_while (gfc_code * code)
   gfc_init_se (&cond, NULL);
   gfc_conv_expr_val (&cond, code->expr1);
   gfc_add_block_to_block (&block, &cond.pre);
-  cond.expr = fold_build1_loc (code->expr1->where.lb->location,
-			       TRUTH_NOT_EXPR, TREE_TYPE (cond.expr), cond.expr);
+  cond.expr = fold_build1_loc (gfc_get_location (&code->expr1->where),
+			       TRUTH_NOT_EXPR, TREE_TYPE (cond.expr),
+			       cond.expr);
 
   /* Build "IF (! cond) GOTO exit_label".  */
   tmp = build1_v (GOTO_EXPR, exit_label);
   TREE_USED (exit_label) = 1;
-  tmp = fold_build3_loc (code->expr1->where.lb->location, COND_EXPR,
+  tmp = fold_build3_loc (gfc_get_location (&code->expr1->where), COND_EXPR,
 			 void_type_node, cond.expr, tmp,
-			 build_empty_stmt (code->expr1->where.lb->location));
+			 build_empty_stmt (gfc_get_location (
+					     &code->expr1->where)));
   gfc_add_expr_to_block (&block, tmp);
 
   /* The main body of the loop.  */
@@ -2831,7 +2831,7 @@ gfc_trans_do_while (gfc_code * code)
 
   gfc_init_block (&block);
   /* Build the loop.  */
-  tmp = fold_build1_loc (code->expr1->where.lb->location, LOOP_EXPR,
+  tmp = fold_build1_loc (gfc_get_location (&code->expr1->where), LOOP_EXPR,
 			 void_type_node, tmp);
   gfc_add_expr_to_block (&block, tmp);
 

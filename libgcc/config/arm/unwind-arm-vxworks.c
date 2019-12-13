@@ -1,4 +1,4 @@
-/* Support for ARM EABI unwinding in VxWorks Downloadable Kernel Modules.
+/* Support for ARM EABI unwinding on VxWorks Downloadable Kernel Modules.
    Copyright (C) 2017-2019 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it
@@ -20,14 +20,59 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#if defined(__vxworks) && !defined (__RTP__)
-/* Vxworks for ARM uses __gnu_Unwind_Find_exidx to retrieve the exception
-   table for downloadable kernel modules.  As those modules are only partially
-   linked, the linker won't generate __exidx_start|end, but the two symbols
-   are still used in alternate paths from unwind-arm-common.inc.
+/* The common unwinding code refers to __gnu_Unwind_Find_exidx and
+   __cxa_type_match symbols, which are not in VxWorks kernels on ARM,
+   now llvm based.
 
-   As we don't rely on them, but still need the symbols, we define dummy
-   values here.  */
-void *__exidx_start __attribute__((__visibility__ ("hidden")));
-void *__exidx_end __attribute__((__visibility__ ("hidden")));
+   While the common code works just fine for RTPs thanks to weak references
+   and proper positioning of __exidx_start/end from linker scripts, we need
+   symbol definitions for kernel modules.  */
+
+#ifndef __RTP__
+
+#include <private/moduleLibP.h>
+
+/* __gnu_Unwind_Find_exidx.  See if we can use _func_moduleExidxGet to
+   refine whatever we have in __exidx_start and __exidx_end.  */
+
+typedef struct
+{
+  UINT32 fnoffset;
+  UINT32 content;
+} __EIT_entry;
+
+extern __EIT_entry __exidx_start;
+extern __EIT_entry __exidx_end;
+
+__EIT_entry *
+__gnu_Unwind_Find_exidx (void *pc, int *nrec)
+{
+  __EIT_entry *pstart = 0;
+  __EIT_entry *pend = 0;
+
+  if (_func_moduleExidxGet != NULL)
+    _func_moduleExidxGet (pc,
+			  (void *) &__exidx_start, (void *) &__exidx_end,
+			  (void **) &pstart, (void **) &pend);
+
+  if (!pstart)
+    {
+      pstart = &__exidx_start;
+      pend = &__exidx_end;
+    }
+
+  *nrec = pend - pstart;
+
+  return pstart;
+}
+
+/* __cxa_type_match.  A dummy version to be overridden by the libstdc++ one
+ when we link with it.  */
+
+void * __attribute__((weak))
+__cxa_type_match ()
+{
+  return (void *) 0;
+}
+
 #endif

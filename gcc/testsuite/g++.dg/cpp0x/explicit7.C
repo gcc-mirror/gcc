@@ -10,7 +10,7 @@ struct A { };
 struct B: A { };
 struct C {
   explicit operator B*();	// { dg-message "explicit" }
-  explicit operator B&();	// { dg-message "explicit" }
+  explicit operator B&();	// { dg-message "explicit" "" { target c++17_down } }
 };
 
 C c;

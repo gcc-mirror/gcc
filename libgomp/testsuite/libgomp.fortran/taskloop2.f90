@@ -1,4 +1,3 @@
-! { dg-do run }
 ! { dg-options "-O2" }
 ! { dg-additional-options "-msse2" { target sse2_runtime } }
 ! { dg-additional-options "-mavx" { target avx_runtime } }
@@ -13,7 +12,7 @@
   !$omp end single
   !$omp end parallel
   do i = 1, 1024
-    if (u(i) .ne. 2 * i + 1) STOP 1
+    if (u(i) .ne. 2 * i + 1) stop 1
     v(i) = 1024 - i
     w(i) = 512 - i
   end do
@@ -24,45 +23,45 @@
   !$omp end parallel
   do i = 1, 1024
     if (i .lt. 2 .or. i .gt. 1022) then
-      if (u(i) .ne. 2 * i + 1) STOP 2
+      if (u(i) .ne. 2 * i + 1) stop 2
     else
-      if (u(i) .ne. 1536 - 2 * i) STOP 3
+      if (u(i) .ne. 1536 - 2 * i) stop 3
     end if
     v(i) = i
     w(i) = i + 1
   end do
-  if (m .ne. (1023 + 2 * (1021 * 5 + 17) + 9)) STOP 4
+  if (m .ne. (1023 + 2 * (1021 * 5 + 17) + 9)) stop 4
   !$omp parallel
   !$omp single
     call f3 (1, 1024)
   !$omp end single
   !$omp end parallel 
   do i = 1, 1024
-    if (u(i) .ne. 2 * i + 1) STOP 5
+    if (u(i) .ne. 2 * i + 1) stop 5
     v(i) = 1024 - i
     w(i) = 512 - i
   end do
-  if (m .ne. 1025) STOP 6
+  if (m .ne. 1025) stop 6
   !$omp parallel
   !$omp single
     call f4 (0, 31, 1, 32)
   !$omp end single
   !$omp end parallel 
   do i = 1, 1024
-    if (u(i) .ne. 1536 - 2 * i) STOP 7
+    if (u(i) .ne. 1536 - 2 * i) stop 7
     v(i) = i
     w(i) = i + 1
   end do
-  if (m .ne. 32 + 33 + 1024) STOP 8
+  if (m .ne. 32 + 33 + 1024) stop 8
   !$omp parallel
   !$omp single
     call f5 (0, 31, 1, 32)
   !$omp end single
   !$omp end parallel 
   do i = 1, 1024
-    if (u(i) .ne. 2 * i + 1) STOP 9
+    if (u(i) .ne. 2 * i + 1) stop 9
   end do
-  if (m .ne. 32 + 33) STOP 10
+  if (m .ne. 32 + 33) stop 10
 contains
   subroutine f1 (a, b)
     integer, intent(in) :: a, b

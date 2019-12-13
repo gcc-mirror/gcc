@@ -1,3 +1,78 @@
+2019-12-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-partition.c (lto_balanced_map): Fix printing of tp_first_run.
+
+2019-12-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-partition.c (node_cmp): Turn into simple order comparsions.
+	(varpool_node_cmp): Remove.
+	(add_sorted_nodes): Use node_cmp.
+	(lto_balanced_map): Use tp_first_run_node_cmp.
+
+2019-11-25  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/91985
+	* lto-lang.c (lto_type_for_mode): Handle decimal floating-point
+	types being NULL_TREE.
+
+2019-11-22  Jan Hubicka  <jh@suse.cz>
+	
+	* lto.c (lto_wpa_write_files): Call memory_block_pool::trim.
+
+2019-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Remove wrong dependency
+	of LTO_DUMP_EXE on LTO_EXE.
+
+2019-11-12  Martin Liska  <mliska@suse.cz>
+
+	* lto-common.c: Do not include params.h.
+	* lto-partition.c: Likewise.
+	* lto.c: Likewise.
+
+2019-11-12  Martin Liska  <mliska@suse.cz>
+
+	* lto-partition.c (lto_balanced_map): Replace old parameter syntax
+	with the new one, include opts.h if needed.  Use SET_OPTION_IF_UNSET
+	macro.
+	* lto.c (do_whole_program_analysis): Likewise.
+
+2019-11-11  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Relax dependency of lto-dump.o to
+	LTO_OBJS which will allow faster linking (mainly with LTO).
+
+2019-11-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (do_whole_program_analysis): Call lto_free_file_name_hash.
+
+2019-11-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-common.c (read_cgraph_and_symbols): Improve -Q reporting.
+	* lto.c (lto_wpa_write_files): Likewise.
+
+2019-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/92231
+	* lto-lang.c (handle_const_attribute): Don't call fndecl_built_in_p
+	on *node that is not FUNCTION_DECL.
+
+2019-10-30  Martin Liska  <mliska@suse.cz>
+
+	PR lto/91393
+	PR lto/88220
+	* lto-common.c (lto_file_finalize): Use lto_get_summary_section_data.
+	(get_section_data): Add order argument.
+
+2019-10-29  Martin Liska  <mliska@suse.cz>
+
+	* lto.c (do_whole_program_analysis): Pass
+	title as dump_memory_report argument.
+
+2019-10-29  Martin Liska  <mliska@suse.cz>
+
+	* lto.c (do_whole_program_analysis): Remove argument.
+
 2019-10-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-partition.c (add_symbol_to_partition_1): Update.

@@ -100,7 +100,8 @@ lookup_goacc_asyncqueue (struct goacc_thread *thr, bool create, int async)
 
   if (!dev->openacc.async.asyncqueue[async])
     {
-      dev->openacc.async.asyncqueue[async] = dev->openacc.async.construct_func ();
+      dev->openacc.async.asyncqueue[async]
+	= dev->openacc.async.construct_func (dev->target_id);
 
       if (!dev->openacc.async.asyncqueue[async])
 	{
@@ -351,6 +352,77 @@ acc_wait_all_async (int async)
 
   if (!ret)
     gomp_fatal ("wait all async(%d) failed", async);
+}
+
+void
+GOACC_wait (int async, int num_waits, ...)
+{
+  goacc_lazy_initialize ();
+
+  struct goacc_thread *thr = goacc_thread ();
+
+  /* No nesting.  */
+  assert (thr->prof_info == NULL);
+  assert (thr->api_info == NULL);
+  acc_prof_info prof_info;
+  acc_api_info api_info;
+  bool profiling_p = GOACC_PROFILING_SETUP_P (thr, &prof_info, &api_info);
+  if (profiling_p)
+    {
+      prof_info.async = async;
+      prof_info.async_queue = prof_info.async;
+    }
+
+  if (num_waits)
+    {
+      va_list ap;
+
+      va_start (ap, num_waits);
+      goacc_wait (async, num_waits, &ap);
+      va_end (ap);
+    }
+  else if (async == acc_async_sync)
+    acc_wait_all ();
+  else
+    acc_wait_all_async (async);
+
+  if (profiling_p)
+    {
+      thr->prof_info = NULL;
+      thr->api_info = NULL;
+    }
+}
+
+attribute_hidden void
+goacc_wait (int async, int num_waits, va_list *ap)
+{
+  while (num_waits--)
+    {
+      int qid = va_arg (*ap, int);
+
+      /* Waiting on ACC_ASYNC_NOVAL maps to 'wait all'.  */
+      if (qid == acc_async_noval)
+	{
+	  if (async == acc_async_sync)
+	    acc_wait_all ();
+	  else
+	    acc_wait_all_async (async);
+	  break;
+	}
+
+      if (acc_async_test (qid))
+	continue;
+
+      if (async == acc_async_sync)
+	acc_wait (qid);
+      else if (qid == async)
+	/* If we're waiting on the same asynchronous queue as we're
+	   launching on, the queue itself will order work as
+	   required, so there's no need to wait explicitly.  */
+	;
+      else
+	acc_wait_async (qid, async);
+    }
 }
 
 attribute_hidden void

@@ -37,6 +37,9 @@
 --  through the nodes themselves (using the Link field), which is more time
 --  and space efficient, but a node can be only one such list.
 
+--  WARNING: There is a C version of this package. Any changes to this
+--  source file must be properly reflected in the C header file elists.h
+
 with Types;  use Types;
 with System;
 

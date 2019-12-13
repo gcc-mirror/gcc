@@ -47,7 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "explow.h"
 #include "expr.h"
 #include "dbgcnt.h"
-#include "params.h"
 #include "rtl-iter.h"
 #include "cfgcleanup.h"
 #include "calls.h"
@@ -2657,7 +2656,7 @@ dse_step1 (void)
 
   /* For -O1 reduce the maximum number of active local stores for RTL DSE
      since this can consume huge amounts of memory (PR89115).  */
-  int max_active_local_stores = PARAM_VALUE (PARAM_MAX_DSE_ACTIVE_LOCAL_STORES);
+  int max_active_local_stores = param_max_dse_active_local_stores;
   if (optimize < 2)
     max_active_local_stores /= 10;
 

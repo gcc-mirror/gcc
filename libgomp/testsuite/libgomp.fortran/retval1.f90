@@ -14,7 +14,7 @@ function f1 ()
   l = l .or. (omp_get_thread_num () .eq. 0 .and. f1 .ne. 8.5)
   l = l .or. (omp_get_thread_num () .eq. 1 .and. f1 .ne. 14.5)
 !$omp end parallel
-  if (l) STOP 1
+  if (l) stop 1
   f1 = -2.5
 end function f1
 function f2 ()
@@ -32,7 +32,7 @@ entry e2 ()
   l = l .or. (omp_get_thread_num () .eq. 0 .and. e2 .ne. 8.5)
   l = l .or. (omp_get_thread_num () .eq. 1 .and. e2 .ne. 14.5)
 !$omp end parallel
-  if (l) STOP 2
+  if (l) stop 2
   e2 = 7.5
 end function f2
 function f3 ()
@@ -53,7 +53,7 @@ entry e3 ()
   l = l .or. (omp_get_thread_num () .eq. 1 .and. e3 .ne. 14.5)
   l = l .or. f3 .ne. e3 - 4.5
 !$omp end parallel
-  if (l) STOP 3
+  if (l) stop 3
   e3 = 0.5
 end function f3
 function f4 () result (r4)
@@ -74,7 +74,7 @@ entry e4 () result (s4)
   l = l .or. (omp_get_thread_num () .eq. 1 .and. s4 .ne. 14.5)
   l = l .or. r4 .ne. s4 - 4.5
 !$omp end parallel
-  if (l) STOP 4
+  if (l) stop 4
   s4 = -0.5
 end function f4
 function f5 (is_f5)
@@ -101,20 +101,20 @@ entry e5 (is_f5)
   l = l .or. (omp_get_thread_num () .eq. 1 .and. e5 .ne. 14)
   l = l .or. f5 .ne. e5 - 4.5
 !$omp end parallel
-  if (l) STOP 5
+  if (l) stop 5
   if (is_f5) f5 = -2.5
   if (.not. is_f5) e5 = 8
 end function f5
 
   real :: f1, f2, e2, f3, e3, f4, e4, f5
   integer :: e5
-  if (f1 () .ne. -2.5) STOP 6
-  if (f2 () .ne. 7.5) STOP 7
-  if (e2 () .ne. 7.5) STOP 8
-  if (f3 () .ne. 0.5) STOP 9
-  if (e3 () .ne. 0.5) STOP 10
-  if (f4 () .ne. -0.5) STOP 11
-  if (e4 () .ne. -0.5) STOP 12
-  if (f5 (.true.) .ne. -2.5) STOP 13
-  if (e5 (.false.) .ne. 8) STOP 14
+  if (f1 () .ne. -2.5) stop 6
+  if (f2 () .ne. 7.5) stop 7
+  if (e2 () .ne. 7.5) stop 8
+  if (f3 () .ne. 0.5) stop 9
+  if (e3 () .ne. 0.5) stop 10
+  if (f4 () .ne. -0.5) stop 11
+  if (e4 () .ne. -0.5) stop 12
+  if (f5 (.true.) .ne. -2.5) stop 13
+  if (e5 (.false.) .ne. 8) stop 14
 end

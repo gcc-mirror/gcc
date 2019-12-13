@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-march=*" } { "-march=armv7-a" } } */
 /* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-marm" } { "" } } */
+/* { dg-skip-if "-mpure-code supports M-profile only" { *-*-* } { "-mpure-code" } } */
 /* { dg-options "-mthumb" } */
 /* { dg-add-options arm_arch_v7a } */
 

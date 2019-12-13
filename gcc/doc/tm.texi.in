@@ -736,10 +736,6 @@ options are changed via @code{#pragma GCC optimize} or by using the
 
 @hook TARGET_OPTION_INIT_STRUCT
 
-@hook TARGET_OPTION_DEFAULT_PARAMS
-
-@hook TARGET_OPTION_VALIDATE_PARAM
-
 @defmac SWITCHABLE_TARGET
 Some targets need to switch between substantially different subtargets
 during compilation.  For example, the MIPS target has one subtarget for
@@ -4167,8 +4163,6 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_VECTORIZE_VEC_PERM_CONST
 
-@hook TARGET_VECTORIZE_BUILTIN_CONVERSION
-
 @hook TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
 
 @hook TARGET_VECTORIZE_BUILTIN_MD_VECTORIZED_FUNCTION
@@ -4179,7 +4173,9 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_VECTORIZE_SPLIT_REDUCTION
 
-@hook TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
+@hook TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
+
+@hook TARGET_VECTORIZE_RELATED_MODE
 
 @hook TARGET_VECTORIZE_GET_MASK_MODE
 
@@ -4204,6 +4200,8 @@ address;  but often a machine-dependent strategy can generate better code.
 @hook TARGET_SIMD_CLONE_USABLE
 
 @hook TARGET_SIMT_VF
+
+@hook TARGET_OMP_DEVICE_KIND_ARCH_ISA
 
 @hook TARGET_GOACC_VALIDATE_DIMS
 
@@ -7998,22 +7996,6 @@ object files that are not referenced from @code{main} and uses export
 lists.
 @end defmac
 
-@defmac MODIFY_JNI_METHOD_CALL (@var{mdecl})
-Define this macro to a C expression representing a variant of the
-method call @var{mdecl}, if Java Native Interface (JNI) methods
-must be invoked differently from other methods on your target.
-For example, on 32-bit Microsoft Windows, JNI methods must be invoked using
-the @code{stdcall} calling convention and this macro is then
-defined as this expression:
-
-@smallexample
-build_type_attribute_variant (@var{mdecl},
-                              build_tree_list
-                              (get_identifier ("stdcall"),
-                               NULL))
-@end smallexample
-@end defmac
-
 @hook TARGET_CANNOT_MODIFY_JUMPS_P
 
 @hook TARGET_HAVE_CONDITIONAL_EXECUTION
@@ -8104,6 +8086,8 @@ and scanf formatter settings.
 @hook TARGET_PROMOTED_TYPE
 
 @hook TARGET_CONVERT_TO_TYPE
+
+@hook TARGET_VERIFY_TYPE_CONTEXT
 
 @defmac OBJC_JBLEN
 This macro determines the size of the objective C jump buffer for the

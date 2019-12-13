@@ -2640,17 +2640,43 @@ package body Sem_Res is
                   Set_Etype (N, Expr_Type);
 
                --  AI05-0139-2: Expression is overloaded because type has
-               --  implicit dereference. If type matches context, no implicit
-               --  dereference is involved. If the expression is an entity,
-               --  generate a reference to it, as this is not done for an
-               --  overloaded construct during analysis.
+               --  implicit dereference. The context may be the one that
+               --  requires implicit dereferemce.
 
                elsif Has_Implicit_Dereference (Expr_Type) then
                   Set_Etype (N, Expr_Type);
                   Set_Is_Overloaded (N, False);
 
-                  if Is_Entity_Name (N) then
+               --  If the expression is an entity, generate a reference
+               --  to it, as this is not done for an overloaded construct
+               --  during analysis.
+
+                  if Is_Entity_Name (N)
+                    and then Comes_From_Source (N)
+                  then
                      Generate_Reference (Entity (N), N);
+
+                     --  Examine access discriminants of entity type,
+                     --  to check whether one of them yields the
+                     --  expected type.
+
+                     declare
+                        Disc : Entity_Id :=
+                          First_Discriminant (Etype (Entity (N)));
+
+                     begin
+                        while Present (Disc) loop
+                           exit when Is_Access_Type (Etype (Disc))
+                             and then Has_Implicit_Dereference (Disc)
+                             and then Designated_Type (Etype (Disc)) = Typ;
+
+                           Next_Discriminant (Disc);
+                        end loop;
+
+                        if Present (Disc) then
+                           Build_Explicit_Dereference (N, Disc);
+                        end if;
+                     end;
                   end if;
 
                   exit Interp_Loop;
@@ -3230,7 +3256,7 @@ package body Sem_Res is
          --  convert implicitly are allowed in membership tests).
 
          if Ada_Version >= Ada_2012
-           and then Ekind (Ctx_Type) = E_General_Access_Type
+           and then Ekind (Base_Type (Ctx_Type)) = E_General_Access_Type
            and then Ekind (Etype (N)) = E_Anonymous_Access_Type
            and then Nkind (Parent (N)) not in N_Membership_Test
          then
@@ -4691,7 +4717,7 @@ package body Sem_Res is
 
             --  Check bad case of atomic/volatile argument (RM C.6(12))
 
-            if Is_By_Reference_Type (Etype (F))
+            if (Is_By_Reference_Type (Etype (F)) or else Is_Aliased (F))
               and then Comes_From_Source (N)
             then
                if Is_Atomic_Object (A)
@@ -4965,6 +4991,12 @@ package body Sem_Res is
       --  the cases of a constraint expression which is an access attribute or
       --  an access discriminant.
 
+      procedure Check_Allocator_Discrim_Accessibility_Exprs
+        (Curr_Exp  : Node_Id;
+         Alloc_Typ : Entity_Id);
+      --  Dispatch checks performed by Check_Allocator_Discrim_Accessibility
+      --  across all expressions within a given conditional expression.
+
       function In_Dispatching_Context return Boolean;
       --  If the allocator is an actual in a call, it is allowed to be class-
       --  wide when the context is not because it is a controlling actual.
@@ -5015,6 +5047,62 @@ package body Sem_Res is
             null;
          end if;
       end Check_Allocator_Discrim_Accessibility;
+
+      -------------------------------------------------
+      -- Check_Allocator_Discrim_Accessibility_Exprs --
+      -------------------------------------------------
+
+      procedure Check_Allocator_Discrim_Accessibility_Exprs
+        (Curr_Exp  : Node_Id;
+         Alloc_Typ : Entity_Id)
+      is
+         Alt      : Node_Id;
+         Expr     : Node_Id;
+         Disc_Exp : constant Node_Id := Original_Node (Curr_Exp);
+      begin
+         --  When conditional expressions are constant folded we know at
+         --  compile time which expression to check - so don't bother with
+         --  the rest of the cases.
+
+         if Nkind (Curr_Exp) = N_Attribute_Reference then
+            Check_Allocator_Discrim_Accessibility (Curr_Exp, Alloc_Typ);
+
+         --  Non-constant-folded if expressions
+
+         elsif Nkind (Disc_Exp) = N_If_Expression then
+            --  Check both expressions if they are still present in the face
+            --  of expansion.
+
+            Expr := Next (First (Expressions (Disc_Exp)));
+            if Present (Expr) then
+               Check_Allocator_Discrim_Accessibility_Exprs (Expr, Alloc_Typ);
+               Expr := Next (Expr);
+               if Present (Expr) then
+                  Check_Allocator_Discrim_Accessibility_Exprs
+                    (Expr, Alloc_Typ);
+               end if;
+            end if;
+
+         --  Non-constant-folded case expressions
+
+         elsif Nkind (Disc_Exp) = N_Case_Expression then
+            --  Check all alternatives
+
+            Alt := First (Alternatives (Disc_Exp));
+            while Present (Alt) loop
+               Check_Allocator_Discrim_Accessibility_Exprs
+                 (Expression (Alt), Alloc_Typ);
+
+               Next (Alt);
+            end loop;
+
+         --  Base case, check the accessibility of the original node of the
+         --  expression.
+
+         else
+            Check_Allocator_Discrim_Accessibility (Disc_Exp, Alloc_Typ);
+         end if;
+      end Check_Allocator_Discrim_Accessibility_Exprs;
 
       ----------------------------
       -- In_Dispatching_Context --
@@ -5167,7 +5255,8 @@ package body Sem_Res is
 
                while Present (Discrim) and then Present (Disc_Exp) loop
                   if Ekind (Etype (Discrim)) = E_Anonymous_Access_Type then
-                     Check_Allocator_Discrim_Accessibility (Disc_Exp, Typ);
+                     Check_Allocator_Discrim_Accessibility_Exprs
+                       (Disc_Exp, Typ);
                   end if;
 
                   Next_Discriminant (Discrim);
@@ -5225,12 +5314,13 @@ package body Sem_Res is
                while Present (Discrim) and then Present (Constr) loop
                   if Ekind (Etype (Discrim)) = E_Anonymous_Access_Type then
                      if Nkind (Constr) = N_Discriminant_Association then
-                        Disc_Exp := Original_Node (Expression (Constr));
+                        Disc_Exp := Expression (Constr);
                      else
-                        Disc_Exp := Original_Node (Constr);
+                        Disc_Exp := Constr;
                      end if;
 
-                     Check_Allocator_Discrim_Accessibility (Disc_Exp, Typ);
+                     Check_Allocator_Discrim_Accessibility_Exprs
+                       (Disc_Exp, Typ);
                   end if;
 
                   Next_Discriminant (Discrim);
@@ -7108,6 +7198,14 @@ package body Sem_Res is
                     ("cannot inline & (in potentially unevaluated context)?",
                      N, Nam_UA);
 
+               --  Calls cannot be inlined inside the conditions of while
+               --  loops, as this would create complex actions inside
+               --  the condition, that are not handled by GNATprove.
+
+               elsif In_While_Loop_Condition (N) then
+                  Cannot_Inline
+                    ("cannot inline & (in while loop condition)?", N, Nam_UA);
+
                --  Do not inline calls which would possibly lead to missing a
                --  type conversion check on an input parameter.
 
@@ -8478,15 +8576,19 @@ package body Sem_Res is
                Get_First_Interp (N, I, It);
 
                --  If the equality is user-defined, the type of the operands
-               --  matches that of the formals. For a predefined operqtor,
+               --  matches that of the formals. For a predefined operator,
                --  it is the scope that matters, given that the predefined
                --  equality has Any_Type formals. In either case the result
-               --  type (most often Booleam) must match the context .
+               --  type (most often Boolean) must match the context. The scope
+               --  is either that of the type, if there is a generated equality
+               --  (when there is an equality for the component type), or else
+               --  Standard otherwise.
 
                while Present (It.Typ) loop
                   if Etype (It.Nam) = Typ
                     and then
                      (Etype (First_Entity (It.Nam)) = Etype (L)
+                       or else Scope (It.Nam) = Standard_Standard
                        or else Scope (It.Nam) = Scope (T))
                   then
                      Set_Entity (N, It.Nam);
@@ -13226,7 +13328,7 @@ package body Sem_Res is
             if Ada_Version >= Ada_2012
               and then not Comes_From_Source (N)
               and then Is_Rewrite_Substitution (N)
-              and then Ekind (Target_Type) = E_General_Access_Type
+              and then Ekind (Base_Type (Target_Type)) = E_General_Access_Type
               and then Ekind (Opnd_Type) = E_Anonymous_Access_Type
             then
                if Is_Itype (Opnd_Type) then

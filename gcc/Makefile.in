@@ -567,7 +567,7 @@ xm_include_list=@xm_include_list@
 xm_defines=@xm_defines@
 lang_checks=
 lang_checks_parallelized=
-lang_opt_files=@lang_opt_files@ $(srcdir)/c-family/c.opt $(srcdir)/common.opt
+lang_opt_files=@lang_opt_files@ $(srcdir)/c-family/c.opt $(srcdir)/common.opt $(srcdir)/params.opt
 lang_specs_files=@lang_specs_files@
 lang_tree_files=@lang_tree_files@
 target_cpu_default=@target_cpu_default@
@@ -928,7 +928,6 @@ RTL_BASE_H = $(CORETYPES_H) rtl.h rtl.def reg-notes.def \
 FIXED_VALUE_H = fixed-value.h
 RTL_H = $(RTL_BASE_H) $(FLAGS_H) genrtl.h
 READ_MD_H = $(OBSTACK_H) $(HASHTAB_H) read-md.h
-PARAMS_H = params.h params-enum.h params.def
 BUILTINS_DEF = builtins.def sync-builtins.def omp-builtins.def \
 	gtm-builtins.def sanitizer.def \
 	hsa-builtins.def
@@ -1122,6 +1121,7 @@ endif
 # Support for additional languages (other than C).
 # C can be supported this way too (leave for later).
 
+LANG_CONFIGUREFRAGS  = @all_lang_configurefrags@
 LANG_MAKEFRAGS = @all_lang_makefrags@
 
 # Used by gcc/jit/Make-lang.in
@@ -1602,6 +1602,7 @@ OBJS = \
 	typed-splay-tree.o \
 	unique-ptr-tests.o \
 	valtrack.o \
+	value-range.o \
 	value-prof.o \
 	var-tracking.o \
 	varasm.o \
@@ -1630,7 +1631,7 @@ OBJS-libcommon = diagnostic.o diagnostic-color.o diagnostic-show-locus.o \
 
 # Objects in libcommon-target.a, used by drivers and by the core
 # compiler and containing target-dependent code.
-OBJS-libcommon-target = $(common_out_object_file) prefix.o params.o \
+OBJS-libcommon-target = $(common_out_object_file) prefix.o \
 	opts.o opts-common.o options.o vec.o hooks.o common/common-targhooks.o \
 	hash-table.o file-find.o spellcheck.o selftest.o opt-suggestions.o
 
@@ -1899,10 +1900,18 @@ cstamp-h: config.in config.status
 	CONFIG_FILES= \
 	LANGUAGES="$(CONFIG_LANGUAGES)" $(SHELL) config.status
 
+# On configurations that require auto-build.h, it is created while
+# running configure, so make config.status depend on it, so that
+# config.status --recheck runs and updates or creates it.
+@HAVE_AUTO_BUILD@auto-build.h: $(srcdir)/configure $(srcdir)/config.gcc
+@HAVE_AUTO_BUILD@	@if test -f $@; then echo rerunning config.status to update $@; \
+@HAVE_AUTO_BUILD@	else echo rerunning config.status to update $@; fi
+@HAVE_AUTO_BUILD@config.status: auto-build.h
+
 # Really, really stupid make features, such as SUN's KEEP_STATE, may force
 # a target to build even if it is up-to-date.  So we must verify that
 # config.status does not exist before failing.
-config.status: $(srcdir)/configure $(srcdir)/config.gcc
+config.status: $(srcdir)/configure $(srcdir)/config.gcc $(LANG_CONFIGUREFRAGS)
 	@if [ ! -f config.status ] ; then \
 	  echo You must configure gcc.  Look at http://gcc.gnu.org/install/ for details.; \
 	  false; \
@@ -2581,6 +2590,7 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/target-globals.h \
   $(srcdir)/ipa-predicate.h \
   $(srcdir)/ipa-fnsummary.h \
+  $(srcdir)/value-range.h \
   $(srcdir)/vtable-verify.c \
   $(srcdir)/asan.c \
   $(srcdir)/ubsan.c \
@@ -2644,8 +2654,8 @@ generated_files = config.h tm.h $(TM_P_H) $(TM_D_H) $(TM_H) multilib.h \
        options.h target-hooks-def.h insn-opinit.h \
        common/common-target-hooks-def.h pass-instances.def \
        c-family/c-target-hooks-def.h d/d-target-hooks-def.h \
-       params.list params.options case-cfn-macros.h \
-       cfn-operators.pd
+       case-cfn-macros.h \
+       cfn-operators.pd omp-device-properties.h
 
 #
 # How to compile object files to run on the build machine.
@@ -2853,6 +2863,30 @@ gengtype$(exeext) : gengtype.o gengtype-lex.o gengtype-parse.o \
 $(genprog:%=build/gen%$(build_exeext)): build/gen%$(build_exeext): build/gen%.o $(BUILD_LIBDEPS)
 	+$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ \
 	    $(filter-out $(BUILD_LIBDEPS), $^) $(BUILD_LIBS)
+
+omp-general.o: omp-device-properties.h
+
+omp_device_properties = @omp_device_properties@
+omp-device-properties.h: s-omp-device-properties-h ; @true
+s-omp-device-properties-h: @omp_device_property_deps@
+	-rm -f tmp-omp-device-properties.h; \
+	for kind in kind arch isa; do \
+	  echo 'const char omp_offload_device_'$${kind}'[] = ' \
+	    >> tmp-omp-device-properties.h; \
+	  for prop in none $(omp_device_properties); do \
+	    [ "$$prop" = "none" ] && continue; \
+	    tgt=`echo "$$prop" | sed 's/=.*$$//'`; \
+	    props=`echo "$$prop" | sed 's/.*=//'`; \
+	    echo "\"$$tgt\\0\"" >> tmp-omp-device-properties.h; \
+	    sed -n 's/^'$${kind}': //p' $${props} \
+	      | sed 's/[[:blank:]]/ /g;s/  */ /g;s/^ //;s/ $$//;s/ /\\0/g;s/^/"/;s/$$/\\0\\0"/' \
+	      >> tmp-omp-device-properties.h; \
+	  done; \
+	  echo '"";' >> tmp-omp-device-properties.h; \
+	done; \
+	$(SHELL) $(srcdir)/../move-if-change tmp-omp-device-properties.h \
+	  omp-device-properties.h
+	$(STAMP) s-omp-device-properties-h
 
 # Generated source files for gengtype.  Prepend inclusion of
 # config.h/bconfig.h because AIX requires _LARGE_FILES to be defined before
@@ -3168,7 +3202,8 @@ TEXI_GCC_FILES = gcc.texi gcc-common.texi gcc-vers.texi frontends.texi	\
 	 gcov.texi trouble.texi bugreport.texi service.texi		\
 	 contribute.texi compat.texi funding.texi gnu.texi gpl_v3.texi	\
 	 fdl.texi contrib.texi cppenv.texi cppopts.texi avr-mmcu.texi	\
-	 implement-c.texi implement-cxx.texi gcov-tool.texi gcov-dump.texi lto-dump.texi
+	 implement-c.texi implement-cxx.texi gcov-tool.texi gcov-dump.texi \
+	 lto-dump.texi
 
 # we explicitly use $(srcdir)/doc/tm.texi here to avoid confusion with
 # the generated tm.texi; the latter might have a more recent timestamp,
@@ -3291,7 +3326,8 @@ $(build_htmldir)/gccinstall/index.html: $(TEXI_GCCINSTALL_FILES)
 	$(SHELL) $(srcdir)/doc/install.texi2html
 
 MANFILES = doc/gcov.1 doc/cpp.1 doc/gcc.1 doc/gfdl.7 doc/gpl.7 \
-           doc/fsf-funding.7 doc/gcov-tool.1 doc/gcov-dump.1
+           doc/fsf-funding.7 doc/gcov-tool.1 doc/gcov-dump.1 \
+	   $(if $(filter yes,@enable_lto@),doc/lto-dump.1)
 
 generated-manpages: man
 
@@ -3480,19 +3516,6 @@ installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(infodir)
 	$(mkinstalldirs) $(DESTDIR)$(man1dir)
 	$(mkinstalldirs) $(DESTDIR)$(man7dir)
-
-params.list: s-params.list; @true
-s-params.list: $(srcdir)/params-list.h $(srcdir)/params.def
-	$(CPP) $(srcdir)/params-list.h | sed 's/^#.*//;/^$$/d' > tmp-params.list
-	$(SHELL) $(srcdir)/../move-if-change tmp-params.list params.list
-	$(STAMP) s-params.list
-
-params.options: s-params.options; @true
-s-params.options: $(srcdir)/params-options.h $(srcdir)/params.def
-	$(CPP) $(srcdir)/params-options.h | sed 's/^#.*//;/^$$/d' > tmp-params.options
-	$(SHELL) $(srcdir)/../move-if-change tmp-params.options params.options
-	$(STAMP) s-params.options
-
 
 PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   toplev.h $(DIAGNOSTIC_CORE_H) $(BASIC_BLOCK_H) $(HASH_TABLE_H) \
@@ -3701,6 +3724,7 @@ install-man: lang.install-man \
 	$(DESTDIR)$(man1dir)/$(GCOV_INSTALL_NAME)$(man1ext) \
 	$(DESTDIR)$(man1dir)/$(GCOV_TOOL_INSTALL_NAME)$(man1ext) \
 	$(DESTDIR)$(man1dir)/$(GCOV_DUMP_INSTALL_NAME)$(man1ext) \
+	$(if $(filter yes,@enable_lto@),$(DESTDIR)$(man1dir)/$(LTO_DUMP_INSTALL_NAME)$(man1ext)) \
 	$(DESTDIR)$(man7dir)/fsf-funding$(man7ext) \
 	$(DESTDIR)$(man7dir)/gfdl$(man7ext) \
 	$(DESTDIR)$(man7dir)/gpl$(man7ext)
@@ -3731,6 +3755,11 @@ $(DESTDIR)$(man1dir)/$(GCOV_TOOL_INSTALL_NAME)$(man1ext): doc/gcov-tool.1 instal
 	-chmod a-x $@
 
 $(DESTDIR)$(man1dir)/$(GCOV_DUMP_INSTALL_NAME)$(man1ext): doc/gcov-dump.1 installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
+
+$(DESTDIR)$(man1dir)/$(LTO_DUMP_INSTALL_NAME)$(man1ext): doc/lto-dump.1 installdirs
 	-rm -f $@
 	-$(INSTALL_DATA) $< $@
 	-chmod a-x $@

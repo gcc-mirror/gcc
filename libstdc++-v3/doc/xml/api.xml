@@ -52,7 +52,7 @@
 <para>
   The rendered HTML, as above, is also available for download on the
   gcc.gnu.org site in a directory located at
-   <literal>&lt;URL:ftp://gcc.gnu.org/pub/gcc/libstdc++/doxygen/&gt;</literal>.
+   <literal>&lt;URL:https://gcc.gnu.org/pub/gcc/libstdc++/doxygen/&gt;</literal>.
    You will almost certainly need to use one of the
    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/mirrors.html">mirror sites</link> to download
    the tarball. After unpacking, simply load libstdc++-html-*/index.html

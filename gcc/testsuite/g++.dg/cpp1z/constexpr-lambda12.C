@@ -3,7 +3,7 @@
 void f(int i)
 {
   [i]() constexpr {
-    int j;			// { dg-error "uninitialized" }
+    int j;			// { dg-error "uninitialized" "" { target c++17_down } }
     j = i;
     return j;
   }();

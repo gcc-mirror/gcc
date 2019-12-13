@@ -319,6 +319,8 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 
   if (e1 == NULL && e2 == NULL)
     return 0;
+  else if (e1 == NULL || e2 == NULL)
+    return -2;
 
   e1 = gfc_discard_nops (e1);
   e2 = gfc_discard_nops (e2);
@@ -2105,6 +2107,18 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse,
 
   while (lref && rref)
     {
+      /* The refs might come in mixed, one with a _data component and one
+	 without.  Look at their next reference in order to avoid an
+	 ICE.  */
+
+      if (lref && lref->type == REF_COMPONENT && lref->u.c.component
+	  && strcmp (lref->u.c.component->name, "_data") == 0)
+	lref = lref->next;
+
+      if (rref && rref->type == REF_COMPONENT && rref->u.c.component
+	  && strcmp (rref->u.c.component->name, "_data") == 0)
+	rref = rref->next;
+
       /* We're resolving from the same base symbol, so both refs should be
 	 the same type.  We traverse the reference chain until we find ranges
 	 that are not equal.  */

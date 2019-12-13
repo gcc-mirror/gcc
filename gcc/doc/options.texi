@@ -475,6 +475,9 @@ affect executable code generation may use this flag instead, so that the
 option is not taken into account in ways that might affect executable
 code generation.
 
+@item Param
+This is an option that is a parameter.
+
 @item Undocumented
 The option is deliberately missing documentation and should not
 be included in the @option{--help} output.

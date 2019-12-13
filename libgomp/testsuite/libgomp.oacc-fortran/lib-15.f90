@@ -23,14 +23,14 @@ program main
 
   call acc_update_device (h, sizeof (h))
 
-  if (acc_is_present (h) .neqv. .TRUE.) call abort
+  if (acc_is_present (h) .neqv. .TRUE.) stop 1
 
   h(:) = 0
 
   call acc_copyout (h, sizeof (h))
 
   do i = 1, N
-    if (h(i) /= i + i) call abort
+    if (h(i) /= i + i) stop 2
   end do 
 
   call acc_copyin (h, sizeof (h))
@@ -39,14 +39,14 @@ program main
 
   call acc_update_self (h, sizeof (h))
   
-  if (acc_is_present (h) .neqv. .TRUE.) call abort
+  if (acc_is_present (h) .neqv. .TRUE.) stop 3
 
   do i = 1, N
-    if (h(i) /= i + i) call abort
+    if (h(i) /= i + i) stop 4
   end do 
 
   call acc_delete (h)
 
-  if (acc_is_present (h) .neqv. .FALSE.) call abort
+  if (acc_is_present (h) .neqv. .FALSE.) stop 5
   
 end program

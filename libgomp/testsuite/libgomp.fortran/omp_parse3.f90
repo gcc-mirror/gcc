@@ -45,10 +45,10 @@ contains
     j = 1
     do 100 i = 1, 100
       if (i .eq. j) then
-	if (d(i) .ne. i) STOP 1
+	if (d(i) .ne. i) stop 1
 	j = i + 5
       else
-	if (d(i) .ne. -1) STOP 2
+	if (d(i) .ne. -1) stop 2
       end if
 100   d(i) = -1
   end subroutine test_ordered
@@ -69,17 +69,17 @@ contains
 !$omp parallel copyin (/tlsblock/, z) reduction (.or.:m) &
 !$omp& num_threads (4)
     if (omp_get_thread_num () .eq. 0) i = omp_get_num_threads ()
-    if (x .ne. 6 .or. y .ne. 7 .or. z .ne. 8) STOP 3
+    if (x .ne. 6 .or. y .ne. 7 .or. z .ne. 8) stop 3
     x = omp_get_thread_num ()
     y = omp_get_thread_num () + 1024
     z = omp_get_thread_num () + 4096
 !$omp end parallel
-    if (x .ne. 0 .or. y .ne. 1024 .or. z .ne. 4096) STOP 4
+    if (x .ne. 0 .or. y .ne. 1024 .or. z .ne. 4096) stop 4
 !$omp parallel num_threads (4), private (j) reduction (.or.:n)
     if (omp_get_num_threads () .eq. i) then
       j = omp_get_thread_num ()
       if (x .ne. j .or. y .ne. j + 1024 .or. z .ne. j + 4096) &
-&       STOP 5
+&       stop 5
     end if
 !$omp end parallel
     m = m .or. n
@@ -89,9 +89,9 @@ contains
     if (z .ne. 4096) n = .true.
     if (omp_get_num_threads () .eq. i) then
       j = omp_get_thread_num ()
-      if (x .ne. j .or. y .ne. j + 1024) STOP 6
+      if (x .ne. j .or. y .ne. j + 1024) stop 6
     end if
 !$omp end parallel
-    if (m .or. n) STOP 7
+    if (m .or. n) stop 7
   end subroutine test_threadprivate
 end

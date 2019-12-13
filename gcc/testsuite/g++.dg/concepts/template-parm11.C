@@ -15,5 +15,5 @@ void getTable(const ColSpec&...)
 
 void f()
 {
-  getTable(7, 'a'); // { dg-error "cannot call" }
+  getTable(7, 'a'); // { dg-error "" }
 };

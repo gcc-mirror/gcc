@@ -2,10 +2,8 @@
    float.  */
 /* { dg-do run } */
 /* { dg-require-effective-target int128 } */
-/* { dg-require-effective-target fenv } */
 /* { dg-options "-frounding-math" } */
 
-#include <fenv.h>
 #include <stdlib.h>
 
 int
@@ -15,7 +13,6 @@ main (void)
   volatile unsigned long long l = 0xdLL;
   volatile unsigned __int128 u128 = (((unsigned __int128) h) << 64) | l;
   volatile __int128 s128 = u128;
-  fesetround (FE_TONEAREST);
   float fs = s128;
   if (fs != -0x1p+127)
     abort ();

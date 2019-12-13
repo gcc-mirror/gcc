@@ -78,21 +78,21 @@ template<Enum T> void f18();
 
 
 int main() {
-  f1<void>(); // { dg-error "cannot call" }
-  f2<void>(); // { dg-error "cannot call" }
-  f3<void>(); // { dg-error "cannot call" }
-  f4<void>(); // { dg-error "cannot call" }
-  f5<void>(); // { dg-error "cannot call" }
-  f6<void>(); // { dg-error "cannot call" }
-  f7<void>(); // { dg-error "cannot call" }
-  f8<void>(); // { dg-error "cannot call" }
-  f9<void>(); // { dg-error "cannot call" }
-  f10<void>(); // { dg-error "cannot call" }
-  f11<void>(); // { dg-error "cannot call" }
-  f12<void>(); // { dg-error "cannot call" }
-  f13<void>(); // { dg-error "cannot call" }
-  f14<void>(); // { dg-error "cannot call" }
-  f15<void>(); // { dg-error "cannot call" }
-  f16<void>(); // { dg-error "cannot call" }
-  f17<void>(); // { dg-error "cannot call" }
+  f1<void>(); // { dg-error "" }
+  f2<void>(); // { dg-error "" }
+  f3<void>(); // { dg-error "" }
+  f4<void>(); // { dg-error "" }
+  f5<void>(); // { dg-error "" }
+  f6<void>(); // { dg-error "" }
+  f7<void>(); // { dg-error "" }
+  f8<void>(); // { dg-error "" }
+  f9<void>(); // { dg-error "" }
+  f10<void>(); // { dg-error "" }
+  f11<void>(); // { dg-error "" }
+  f12<void>(); // { dg-error "" }
+  f13<void>(); // { dg-error "" }
+  f14<void>(); // { dg-error "" }
+  f15<void>(); // { dg-error "" }
+  f16<void>(); // { dg-error "" }
+  f17<void>(); // { dg-error "" }
 }

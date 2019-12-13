@@ -127,7 +127,6 @@
 #include "expr.h"
 #include "cfgrtl.h"
 #include "rtl-error.h"
-#include "params.h"
 #include "lra.h"
 #include "lra-int.h"
 #include "print-rtl.h"
@@ -389,11 +388,24 @@ address_eliminator::~address_eliminator ()
     *m_index_loc = m_index_reg;
 }
 
-/* Return true if the eliminated form of AD is a legitimate target address.  */
+/* Return true if the eliminated form of AD is a legitimate target address.
+   If OP is a MEM, AD is the address within OP, otherwise OP should be
+   ignored.  CONSTRAINT is one constraint that the operand may need
+   to meet.  */
 static bool
-valid_address_p (struct address_info *ad)
+valid_address_p (rtx op, struct address_info *ad,
+		 enum constraint_num constraint)
 {
   address_eliminator eliminator (ad);
+
+  /* Allow a memory OP if it matches CONSTRAINT, even if CONSTRAINT is more
+     forgiving than "m".  */
+  if (MEM_P (op)
+      && (insn_extra_memory_constraint (constraint)
+	  || insn_extra_special_memory_constraint (constraint))
+      && constraint_satisfied_p (op, constraint))
+    return true;
+
   return valid_address_p (ad->mode, *ad->outer, ad->as);
 }
 
@@ -3398,7 +3410,7 @@ process_address_1 (int nop, bool check_only_p,
 
      All these cases involve a non-autoinc address, so there is no
      point revalidating other types.  */
-  if (ad.autoinc_p || valid_address_p (&ad))
+  if (ad.autoinc_p || valid_address_p (op, &ad, cn))
     return change_p;
 
   /* Any index existed before LRA started, so we can assume that the
@@ -3427,7 +3439,7 @@ process_address_1 (int nop, bool check_only_p,
 	      if (code >= 0)
 		{
 		  *ad.inner = gen_rtx_LO_SUM (Pmode, new_reg, addr);
-		  if (! valid_address_p (ad.mode, *ad.outer, ad.as))
+		  if (!valid_address_p (op, &ad, cn))
 		    {
 		      /* Try to put lo_sum into register.  */
 		      insn = emit_insn (gen_rtx_SET
@@ -3437,7 +3449,7 @@ process_address_1 (int nop, bool check_only_p,
 		      if (code >= 0)
 			{
 			  *ad.inner = new_reg;
-			  if (! valid_address_p (ad.mode, *ad.outer, ad.as))
+			  if (!valid_address_p (op, &ad, cn))
 			    {
 			      *ad.inner = addr;
 			      code = -1;
@@ -3532,7 +3544,7 @@ process_address_1 (int nop, bool check_only_p,
 	  && CONSTANT_P (XEXP (SET_SRC (set), 1)))
 	{
 	  *ad.inner = SET_SRC (set);
-	  if (valid_address_p (ad.mode, *ad.outer, ad.as))
+	  if (valid_address_p (op, &ad, cn))
 	    {
 	      *ad.base_term = XEXP (SET_SRC (set), 0);
 	      *ad.disp_term = XEXP (SET_SRC (set), 1);
@@ -4653,11 +4665,14 @@ loc_equivalence_callback (rtx loc, const_rtx, void *data)
 /* The current iteration number of this LRA pass.  */
 int lra_constraint_iter;
 
-/* True if we substituted equiv which needs checking register
-   allocation correctness because the equivalent value contains
-   allocatable hard registers or when we restore multi-register
-   pseudo.  */
-bool lra_risky_transformations_p;
+/* True if we should during assignment sub-pass check assignment
+   correctness for all pseudos and spill some of them to correct
+   conflicts.  It can be necessary when we substitute equiv which
+   needs checking register allocation correctness because the
+   equivalent value contains allocatable hard registers, or when we
+   restore multi-register pseudo, or when we change the insn code and
+   its operand became INOUT operand when it was IN one before.  */
+bool check_and_force_assignment_correctness_p;
 
 /* Return true if REGNO is referenced in more than one block.  */
 static bool
@@ -4799,14 +4814,14 @@ lra_constraints (bool first_p)
   changed_p = false;
   if (pic_offset_table_rtx
       && REGNO (pic_offset_table_rtx) >= FIRST_PSEUDO_REGISTER)
-    lra_risky_transformations_p = true;
-  else
+    check_and_force_assignment_correctness_p = true;
+  else if (first_p)
     /* On the first iteration we should check IRA assignment
        correctness.  In rare cases, the assignments can be wrong as
        early clobbers operands are ignored in IRA or usages of
        paradoxical sub-registers are not taken into account by
        IRA.  */
-    lra_risky_transformations_p = first_p;
+    check_and_force_assignment_correctness_p = true;
   new_insn_uid_start = get_max_uid ();
   new_regno_start = first_p ? lra_constraint_new_regno_start : max_reg_num ();
   /* Mark used hard regs for target stack size calulations.  */
@@ -4982,7 +4997,7 @@ lra_constraints (bool first_p)
 		      dump_insn_slim (lra_dump_file, curr_insn);
 		    }
 		  if (contains_reg_p (x, true, false))
-		    lra_risky_transformations_p = true;
+		    check_and_force_assignment_correctness_p = true;
 		  lra_set_insn_deleted (curr_insn);
 		  continue;
 		}
@@ -5495,7 +5510,7 @@ need_for_split_p (HARD_REG_SET potential_reload_hard_regs, int regno)
 	   /* Don't split call clobbered hard regs living through
 	      calls, otherwise we might have a check problem in the
 	      assign sub-pass as in the most cases (exception is a
-	      situation when lra_risky_transformations_p value is
+	      situation when check_and_force_assignment_correctness_p value is
 	      true) the assign pass assumes that all pseudos living
 	      through calls are assigned to call saved hard regs.  */
 	   && (regno >= FIRST_PSEUDO_REGISTER
@@ -5787,7 +5802,7 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
        sub-register levels, LRA do this on pseudos level right now and
        this discrepancy may create allocation conflicts after
        splitting.  */
-    lra_risky_transformations_p = true;
+    check_and_force_assignment_correctness_p = true;
   if (lra_dump_file != NULL)
     fprintf (lra_dump_file,
 	     "	  ))))))))))))))))))))))))))))))))))))))))))))))))\n");
@@ -6549,7 +6564,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 						 before_p, curr_insn, max_uid))
 			{
 			  if (reg->subreg_p)
-			    lra_risky_transformations_p = true;
+			    check_and_force_assignment_correctness_p = true;
 			  change_p = true;
 			  /* Invalidate. */
 			  usage_insns[src_regno].check = 0;
@@ -6682,7 +6697,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
    a BB is not greater than the following value, we don't add the BB
    to EBB.  */
 #define EBB_PROBABILITY_CUTOFF \
-  ((REG_BR_PROB_BASE * LRA_INHERITANCE_EBB_PROBABILITY_CUTOFF) / 100)
+  ((REG_BR_PROB_BASE * param_lra_inheritance_ebb_probability_cutoff) / 100)
 
 /* Current number of inheritance/split iteration.  */
 int lra_inheritance_iter;

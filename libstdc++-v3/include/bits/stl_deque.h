@@ -156,13 +156,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #else
       // Conversion from iterator to const_iterator.
       template<typename _Iter,
-	      typename = _Require<is_same<_Self, const_iterator>,
-				  is_same<_Iter, iterator>>>
+	       typename = _Require<is_same<_Self, const_iterator>,
+				   is_same<_Iter, iterator>>>
        _Deque_iterator(const _Iter& __x) noexcept
        : _M_cur(__x._M_cur), _M_first(__x._M_first),
 	 _M_last(__x._M_last), _M_node(__x._M_node) { }
 
-      _Deque_iterator(const _Deque_iterator&) = default;
+      _Deque_iterator(const _Deque_iterator& __x) noexcept
+       : _M_cur(__x._M_cur), _M_first(__x._M_first),
+	 _M_last(__x._M_last), _M_node(__x._M_node) { }
+
       _Deque_iterator& operator=(const _Deque_iterator&) = default;
 #endif
 
@@ -369,77 +372,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       operator+(difference_type __n, const _Self& __x) _GLIBCXX_NOEXCEPT
       { return __x + __n; }
     };
-
-  template<typename _Tp>
-    void
-    fill(const _Deque_iterator<_Tp, _Tp&, _Tp*>&,
-	 const _Deque_iterator<_Tp, _Tp&, _Tp*>&, const _Tp&);
-
-  template<typename _Tp>
-    _Deque_iterator<_Tp, _Tp&, _Tp*>
-    copy(_Deque_iterator<_Tp, const _Tp&, const _Tp*>,
-	 _Deque_iterator<_Tp, const _Tp&, const _Tp*>,
-	 _Deque_iterator<_Tp, _Tp&, _Tp*>);
-
-  template<typename _Tp>
-    inline _Deque_iterator<_Tp, _Tp&, _Tp*>
-    copy(_Deque_iterator<_Tp, _Tp&, _Tp*> __first,
-	 _Deque_iterator<_Tp, _Tp&, _Tp*> __last,
-	 _Deque_iterator<_Tp, _Tp&, _Tp*> __result)
-    { return std::copy(_Deque_iterator<_Tp, const _Tp&, const _Tp*>(__first),
-		       _Deque_iterator<_Tp, const _Tp&, const _Tp*>(__last),
-		       __result); }
-
-  template<typename _Tp>
-    _Deque_iterator<_Tp, _Tp&, _Tp*>
-    copy_backward(_Deque_iterator<_Tp, const _Tp&, const _Tp*>,
-		  _Deque_iterator<_Tp, const _Tp&, const _Tp*>,
-		  _Deque_iterator<_Tp, _Tp&, _Tp*>);
-
-  template<typename _Tp>
-    inline _Deque_iterator<_Tp, _Tp&, _Tp*>
-    copy_backward(_Deque_iterator<_Tp, _Tp&, _Tp*> __first,
-		  _Deque_iterator<_Tp, _Tp&, _Tp*> __last,
-		  _Deque_iterator<_Tp, _Tp&, _Tp*> __result)
-    { return std::copy_backward(_Deque_iterator<_Tp,
-				const _Tp&, const _Tp*>(__first),
-				_Deque_iterator<_Tp,
-				const _Tp&, const _Tp*>(__last),
-				__result); }
-
-#if __cplusplus >= 201103L
-  template<typename _Tp>
-    _Deque_iterator<_Tp, _Tp&, _Tp*>
-    move(_Deque_iterator<_Tp, const _Tp&, const _Tp*>,
-	 _Deque_iterator<_Tp, const _Tp&, const _Tp*>,
-	 _Deque_iterator<_Tp, _Tp&, _Tp*>);
-
-  template<typename _Tp>
-    inline _Deque_iterator<_Tp, _Tp&, _Tp*>
-    move(_Deque_iterator<_Tp, _Tp&, _Tp*> __first,
-	 _Deque_iterator<_Tp, _Tp&, _Tp*> __last,
-	 _Deque_iterator<_Tp, _Tp&, _Tp*> __result)
-    { return std::move(_Deque_iterator<_Tp, const _Tp&, const _Tp*>(__first),
-		       _Deque_iterator<_Tp, const _Tp&, const _Tp*>(__last),
-		       __result); }
-
-  template<typename _Tp>
-    _Deque_iterator<_Tp, _Tp&, _Tp*>
-    move_backward(_Deque_iterator<_Tp, const _Tp&, const _Tp*>,
-		  _Deque_iterator<_Tp, const _Tp&, const _Tp*>,
-		  _Deque_iterator<_Tp, _Tp&, _Tp*>);
-
-  template<typename _Tp>
-    inline _Deque_iterator<_Tp, _Tp&, _Tp*>
-    move_backward(_Deque_iterator<_Tp, _Tp&, _Tp*> __first,
-		  _Deque_iterator<_Tp, _Tp&, _Tp*> __last,
-		  _Deque_iterator<_Tp, _Tp&, _Tp*> __result)
-    { return std::move_backward(_Deque_iterator<_Tp,
-				const _Tp&, const _Tp*>(__first),
-				_Deque_iterator<_Tp,
-				const _Tp&, const _Tp*>(__last),
-				__result); }
-#endif
 
   /**
    *  Deque base class.  This class provides the unified face for %deque's

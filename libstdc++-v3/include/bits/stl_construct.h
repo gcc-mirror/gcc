@@ -137,7 +137,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * Destroy the object pointed to by a pointer type.
    */
   template<typename _Tp>
-    _GLIBCXX_CONSTEXPR inline void
+    _GLIBCXX14_CONSTEXPR inline void
     _Destroy(_Tp* __pointer)
     {
 #if __cplusplus > 201703L

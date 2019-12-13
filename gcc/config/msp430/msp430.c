@@ -47,12 +47,15 @@
 #include "builtins.h"
 #include "intl.h"
 #include "msp430-devices.h"
+#include "incpath.h"
+#include "prefix.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
 
 
 static void msp430_compute_frame_info (void);
+static bool use_32bit_hwmult (void);
 
 
 
@@ -284,6 +287,12 @@ msp430_option_override (void)
      possible to build newlib with -Os enabled.  Until now...  */
   if (TARGET_OPT_SPACE && optimize < 3)
     optimize_size = 1;
+
+#ifndef HAVE_NEWLIB_NANO_FORMATTED_IO
+  if (TARGET_TINY_PRINTF)
+    error ("GCC must be configured with %<--enable-newlib-nano-formatted-io%> "
+	   "to use %<-mtiny-printf%>");
+#endif
 }
 
 #undef  TARGET_SCALAR_MODE_SUPPORTED_P
@@ -2691,7 +2700,7 @@ void
 msp430_expand_helper (rtx *operands, const char *helper_name,
 		      bool const_variants)
 {
-  rtx c, f;
+  rtx c, fusage, fsym;
   char *helper_const = NULL;
   int arg1 = 12;
   int arg2 = 13;
@@ -2700,8 +2709,14 @@ msp430_expand_helper (rtx *operands, const char *helper_name,
   machine_mode arg1mode = GET_MODE (operands[1]);
   machine_mode arg2mode = GET_MODE (operands[2]);
   int have_430x = msp430x ? 1 : 0;
+  int expand_mpy = strncmp (helper_name, "__mspabi_mpy",
+			    sizeof ("__mspabi_mpy") - 1) == 0;
+  /* This function has been used incorrectly if CONST_VARIANTS is TRUE for a
+     hwmpy function.  */
+  gcc_assert (!(expand_mpy && const_variants));
 
-  if (CONST_INT_P (operands[2]))
+  /* Emit size-optimal insns for small shifts we can easily do inline.  */
+  if (CONST_INT_P (operands[2]) && !expand_mpy)
     {
       int i;
 
@@ -2718,6 +2733,10 @@ msp430_expand_helper (rtx *operands, const char *helper_name,
 	}
     }
 
+  if (arg1mode != VOIDmode && arg2mode != VOIDmode)
+    /* Modes of arguments must be equal if not constants.  */
+    gcc_assert (arg1mode == arg2mode);
+
   if (arg1mode == VOIDmode)
     arg1mode = arg0mode;
   if (arg2mode == VOIDmode)
@@ -2730,12 +2749,13 @@ msp430_expand_helper (rtx *operands, const char *helper_name,
     }
   else if (arg1mode == DImode)
     {
-      /* Shift value in R8:R11, shift amount in R12.  */
       arg1 = 8;
       arg1sz = 4;
       arg2 = 12;
     }
 
+  /* Use the "const_variant" of a shift library function if requested.
+     These are faster, but have larger code size.  */
   if (const_variants
       && CONST_INT_P (operands[2])
       && INTVAL (operands[2]) >= 1
@@ -2749,25 +2769,58 @@ msp430_expand_helper (rtx *operands, const char *helper_name,
 		(int) INTVAL (operands[2]));
     }
 
+  /* Setup the arguments to the helper function.  */
   emit_move_insn (gen_rtx_REG (arg1mode, arg1),
 		  operands[1]);
   if (!helper_const)
     emit_move_insn (gen_rtx_REG (arg2mode, arg2),
 		    operands[2]);
 
-  c = gen_call_value_internal (gen_rtx_REG (arg0mode, 12),
-			       gen_rtx_SYMBOL_REF (VOIDmode, helper_const
-						   ? helper_const
-						   : helper_name),
-			       GEN_INT (0));
+  if (expand_mpy)
+    {
+      if (msp430_use_f5_series_hwmult ())
+	fsym = gen_rtx_SYMBOL_REF (VOIDmode, concat (helper_name,
+						     "_f5hw", NULL));
+      else if (use_32bit_hwmult ())
+	{
+	  /* When the arguments are 16-bits, the 16-bit hardware multiplier is
+	     used.  */
+	  if (arg1mode == HImode)
+	    fsym = gen_rtx_SYMBOL_REF (VOIDmode, concat (helper_name,
+							 "_hw", NULL));
+	  else
+	    fsym = gen_rtx_SYMBOL_REF (VOIDmode, concat (helper_name,
+							 "_hw32", NULL));
+	}
+      /* 16-bit hardware multiply.  */
+      else if (msp430_has_hwmult ())
+	fsym = gen_rtx_SYMBOL_REF (VOIDmode, concat (helper_name,
+						     "_hw", NULL));
+      else
+	fsym = gen_rtx_SYMBOL_REF (VOIDmode, helper_name);
+    }
+  else
+    fsym = gen_rtx_SYMBOL_REF (VOIDmode,
+			       helper_const ? helper_const : helper_name);
+
+  c = gen_call_value_internal (gen_rtx_REG (arg0mode, 12), fsym, GEN_INT (0));
+
   c = emit_call_insn (c);
   RTL_CONST_CALL_P (c) = 1;
 
-  f = 0;
-  use_regs (&f, arg1, arg1sz);
+  /* Add register usage information for the arguments to the call.  */
+  fusage = NULL;
+  use_regs (&fusage, arg1, arg1sz);
   if (!helper_const)
-    use_regs (&f, arg2, 1);
-  add_function_usage_to (c, f);
+    {
+      /* If we are expanding a shift, we only need to use the low register
+	 for the shift amount.  */
+      if (!expand_mpy)
+	use_regs (&fusage, arg2, 1);
+      else
+	use_regs (&fusage, arg2, arg1sz);
+    }
+  add_function_usage_to (c, fusage);
 
   emit_move_insn (operands[0],
 		  /* Return value will always start in R12.  */
@@ -3232,10 +3285,37 @@ msp430_print_operand_addr (FILE * file, machine_mode /*mode*/, rtx addr)
   msp430_print_operand_raw (file, addr);
 }
 
+/* We can only allow signed 15-bit indexes i.e. +/-32K.  */
+static bool
+msp430_check_index_not_high_mem (rtx op)
+{
+  if (CONST_INT_P (op)
+      && IN_RANGE (INTVAL (op), HOST_WIDE_INT_M1U << 15, (1 << 15) - 1))
+    return true;
+  return false;
+}
+
+/* If this returns true, we don't need a 430X insn.  */
+static bool
+msp430_check_plus_not_high_mem (rtx op)
+{
+  if (GET_CODE (op) != PLUS)
+    return false;
+  rtx op0 = XEXP (op, 0);
+  rtx op1 = XEXP (op, 1);
+  if (SYMBOL_REF_P (op0)
+      && (SYMBOL_REF_FLAGS (op0) & SYMBOL_FLAG_LOW_MEM)
+      && msp430_check_index_not_high_mem (op1))
+    return true;
+  return false;
+}
+
 /* Determine whether an RTX is definitely not a MEM referencing an address in
    the upper memory region.  Returns true if we've decided the address will be
    in the lower memory region, or the RTX is not a MEM.  Returns false
-   otherwise.  */
+   otherwise.
+   The Ys constraint will catch (mem (plus (const/reg)) but we catch cases
+   involving a symbol_ref here.  */
 bool
 msp430_op_not_in_high_mem (rtx op)
 {
@@ -3251,11 +3331,15 @@ msp430_op_not_in_high_mem (rtx op)
        memory.  */
     return true;
 
-  /* Catch (mem (const (plus ((symbol_ref) (const_int))))) e.g. &addr+2.  */
-  if ((GET_CODE (op0) == CONST)
-      && (GET_CODE (XEXP (op0, 0)) == PLUS)
-      && (SYMBOL_REF_P (XEXP (XEXP (op0, 0), 0)))
-      && (SYMBOL_REF_FLAGS (XEXP (XEXP (op0, 0), 0)) & SYMBOL_FLAG_LOW_MEM))
+  /* Check possibilites for (mem (plus)).
+     e.g. (mem (const (plus ((symbol_ref) (const_int))))) : &addr+2.  */
+  if (msp430_check_plus_not_high_mem (op0)
+      || ((GET_CODE (op0) == CONST)
+	  && msp430_check_plus_not_high_mem (XEXP (op0, 0))))
+    return true;
+
+  /* An absolute 16-bit address is allowed.  */
+  if ((CONST_INT_P (op0) && (IN_RANGE (INTVAL (op0), 0, (1 << 16) - 1))))
     return true;
 
   /* Return false when undecided.  */
@@ -3557,6 +3641,27 @@ rtx
 msp430_incoming_return_addr_rtx (void)
 {
   return gen_rtx_MEM (Pmode, stack_pointer_rtx);
+}
+
+/* If the path to the MSP430-GCC support files has been found by examining
+   an environment variable (see msp430_check_env_var_for_devices in
+   msp430-devices.c), or -mdevices-csv-loc=, register this path as an include
+   directory so the user can #include msp430.h without needing to specify the
+   path to the support files with -I.  */
+void
+msp430_register_pre_includes (const char *sysroot ATTRIBUTE_UNUSED,
+			      const char *iprefix ATTRIBUTE_UNUSED,
+			      int stdinc ATTRIBUTE_UNUSED)
+{
+  char *include_dir;
+  if (msp430_devices_csv_loc)
+    include_dir = xstrdup (msp430_devices_csv_loc);
+  else if (msp430_check_env_var_for_devices (&include_dir))
+    return;
+  include_dir = msp430_dirname (include_dir);
+
+  include_dir = update_path (include_dir, "");
+  add_path (include_dir, INC_SYSTEM, false, false);
 }
 
 /* Instruction generation stuff.  */

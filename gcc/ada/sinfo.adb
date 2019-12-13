@@ -269,6 +269,14 @@ package body Sinfo is
       return Node3 (N);
    end Array_Aggregate;
 
+   function Aspect_On_Partial_View
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification);
+      return Flag18 (N);
+   end Aspect_On_Partial_View;
+
    function Aspect_Rep_Item
       (N : Node_Id) return Node_Id is
    begin
@@ -3762,6 +3770,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Enumeration_Representation_Clause);
       Set_Node3_With_Parent (N, Val);
    end Set_Array_Aggregate;
+
+   procedure Set_Aspect_On_Partial_View
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification);
+      Set_Flag18 (N, Val);
+   end Set_Aspect_On_Partial_View;
 
    procedure Set_Aspect_Rep_Item
       (N : Node_Id; Val : Node_Id) is

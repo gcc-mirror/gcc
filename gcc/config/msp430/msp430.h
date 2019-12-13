@@ -44,13 +44,20 @@ extern bool msp430x;
     }						\
   while (0)
 
+/* For the "c" language where exceptions are implicitly disabled, use
+   crt*_no_eh.o unless -fexceptions is passed.  For other languages, only use
+   crt*_no_eh.o if -fno-exceptions is explicitly passed.  */
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC "%{pg:gcrt0.o%s}" \
-  "%{!pg:%{minrt:crt0-minrt.o%s}%{!minrt:crt0.o%s}} %{!minrt:crtbegin.o%s}"
+  "%{!pg:%{minrt:crt0-minrt.o%s}%{!minrt:crt0.o%s}} " \
+  "%{!minrt:%{,c:%{!fexceptions:crtbegin_no_eh.o%s; :crtbegin.o%s}; " \
+    ":%{fno-exceptions:crtbegin_no_eh.o%s; :crtbegin.o%s}}}"
 
 /* -lgcc is included because crtend.o needs __mspabi_func_epilog_1.  */
 #undef  ENDFILE_SPEC
-#define ENDFILE_SPEC "%{!minrt:crtend.o%s} " \
+#define ENDFILE_SPEC \
+  "%{!minrt:%{,c:%{!fexceptions:crtend_no_eh.o%s; :crtend.o%s}; " \
+    ":%{fno-exceptions:crtend_no_eh.o%s; :crtend.o%s}}} " \
   "%{minrt:%:if-exists(crtn-minrt.o%s)}%{!minrt:%:if-exists(crtn.o%s)} -lgcc"
 
 #define ASM_SPEC "-mP " /* Enable polymorphic instructions.  */ \
@@ -75,6 +82,8 @@ extern bool msp430x;
     "msp430_propagate_region_opt(%* %{muse-lower-region-prefix})} " \
   "%{mdata-region=*:--data-region=%:" \
     "msp430_propagate_region_opt(%* %{muse-lower-region-prefix})} " \
+  "%:msp430_get_linker_devices_include_path() " \
+  "%{mtiny-printf:--wrap puts --wrap printf} "
 
 #define DRIVER_SELF_SPECS \
   " %{!mlarge:%{mcode-region=*:%{mdata-region=*:%e-mcode-region and "	\
@@ -94,6 +103,7 @@ extern const char * msp430_select_cpu (int, const char **);
 extern const char * msp430_set_driver_var (int, const char **);
 extern const char * msp430_check_path_for_devices (int, const char **);
 extern const char *msp430_propagate_region_opt (int, const char **);
+extern const char *msp430_get_linker_devices_include_path (int, const char **);
 
 /* There must be a trailing comma after the last item, see gcc.c
    "static_spec_functions".  */
@@ -102,7 +112,9 @@ extern const char *msp430_propagate_region_opt (int, const char **);
   { "msp430_select_cpu", msp430_select_cpu },		\
   { "msp430_set_driver_var", msp430_set_driver_var },		\
   { "msp430_check_path_for_devices", msp430_check_path_for_devices }, \
-  { "msp430_propagate_region_opt", msp430_propagate_region_opt },
+  { "msp430_propagate_region_opt", msp430_propagate_region_opt }, \
+  { "msp430_get_linker_devices_include_path", \
+    msp430_get_linker_devices_include_path },
 
 /* Specify the libraries to include on the linker command line.
 
@@ -495,6 +507,12 @@ typedef struct
   msp430_start_function ((FILE), (NAME), (DECL))
 
 #define TARGET_HAS_NO_HW_DIVIDE (! TARGET_HWMULT)
+
+void msp430_register_pre_includes (const char *sysroot ATTRIBUTE_UNUSED,
+				   const char *iprefix ATTRIBUTE_UNUSED,
+				   int stdinc ATTRIBUTE_UNUSED);
+#undef TARGET_EXTRA_PRE_INCLUDES
+#define TARGET_EXTRA_PRE_INCLUDES msp430_register_pre_includes
 
 #undef  USE_SELECT_SECTION_FOR_FUNCTIONS
 #define USE_SELECT_SECTION_FOR_FUNCTIONS 1

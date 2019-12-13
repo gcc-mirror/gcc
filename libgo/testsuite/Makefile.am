@@ -11,6 +11,8 @@ RUNTEST = `if [ -f $(top_srcdir)/../dejagnu/runtest ] ; then \
 	       echo $(top_srcdir)/../dejagnu/runtest ; \
 	    else echo runtest; fi`
 
+EXTRA_DEJAGNU_SITE_CONFIG = libgo-test-support.exp
+
 # When running the tests we set GCC_EXEC_PREFIX to the install tree so that
 # files that have already been installed there will be found.  The -B option
 # overrides it, so use of GCC_EXEC_PREFIX will not result in using GCC files

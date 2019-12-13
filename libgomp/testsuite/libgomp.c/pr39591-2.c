@@ -3,7 +3,7 @@
 
 extern void abort (void);
 
-int err;
+int e;
 
 void __attribute__((noinline))
 foo (int *array)
@@ -14,7 +14,7 @@ foo (int *array)
     for (j = 0; j < 40; j++)
       if (array[j] != 0x55555555)
 #pragma omp atomic
-	err++;
+	e++;
   }
 }
 
@@ -32,7 +32,7 @@ main (void)
     for (i = 0; i < 50; i++)
       foo (array);
   }
-  if (err)
+  if (e)
     abort ();
   return 0;
 }

@@ -41,7 +41,6 @@ compilation is specified by a string called a "spec".  */
 #include "diagnostic.h"
 #include "flags.h"
 #include "opts.h"
-#include "params.h"
 #include "filenames.h"
 #include "spellcheck.h"
 
@@ -4742,7 +4741,7 @@ process_command (unsigned int decoded_options_count,
   /* More prefixes are enabled in main, after we read the specs file
      and determine whether this is cross-compilation or not.  */
 
-  if (n_infiles == last_language_n_infiles && spec_lang != 0)
+  if (n_infiles != 0 && n_infiles == last_language_n_infiles && spec_lang != 0)
     warning (0, "%<-x %s%> after last input file has no effect", spec_lang);
 
   /* Synthesize -fcompare-debug flag from the GCC_COMPARE_DEBUG
@@ -7423,10 +7422,6 @@ driver::expand_at_files (int *argc, char ***argv) const
 void
 driver::decode_argv (int argc, const char **argv)
 {
-  /* Register the language-independent parameters.  */
-  global_init_params ();
-  finish_params ();
-
   init_opts_obstack ();
   init_options_struct (&global_options, &global_options_set);
 
@@ -10114,7 +10109,6 @@ void
 driver::finalize ()
 {
   env.restore ();
-  params_c_finalize ();
   diagnostic_finish (global_dc);
 
   is_cpp_driver = 0;
@@ -10134,9 +10128,6 @@ driver::finalize ()
   save_temps_length = 0;
   spec_machine = DEFAULT_TARGET_MACHINE;
   greatest_status = 1;
-
-  finalize_options_struct (&global_options);
-  finalize_options_struct (&global_options_set);
 
   obstack_free (&obstack, NULL);
   obstack_free (&opts_obstack, NULL); /* in opts.c */

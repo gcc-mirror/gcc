@@ -25,8 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "cgraph.h"
 #include "tree-vrp.h"
-#include "symbol-summary.h"
 #include "alloc-pool.h"
+#include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "real.h"
@@ -444,8 +444,8 @@ dump_clause (FILE *f, conditions conds, clause_t clause)
 }
 
 
-/* Dump THIS to F. CONDS a vector of conditions used when evauating
-   predicats. When NL is true new line is output at the end of dump.  */
+/* Dump THIS to F.  CONDS a vector of conditions used when evaluating
+   predicates.  When NL is true new line is output at the end of dump.  */
 
 void
 predicate::dump (FILE *f, conditions conds, bool nl) const
@@ -495,7 +495,7 @@ predicate::remap_after_duplication (clause_t possible_truths)
 
    INFO is ipa_fn_summary of function we are adding predicate into, CALLEE_INFO
    is summary of function predicate P is from. OPERAND_MAP is array giving
-   callee formal IDs the caller formal IDs. POSSSIBLE_TRUTHS is clausule of all
+   callee formal IDs the caller formal IDs. POSSSIBLE_TRUTHS is clause of all
    callee conditions that may be true in caller context.  TOPLEV_PREDICATE is
    predicate under which callee is executed.  OFFSET_MAP is an array of of
    offsets that need to be added to conditions, negative offset means that
@@ -505,6 +505,7 @@ predicate::remap_after_duplication (clause_t possible_truths)
 
 predicate
 predicate::remap_after_inlining (class ipa_fn_summary *info,
+				 class ipa_node_params *params_summary,
 				 class ipa_fn_summary *callee_info,
 				 vec<int> operand_map,
 				 vec<int> offset_map,
@@ -566,7 +567,7 @@ predicate::remap_after_inlining (class ipa_fn_summary *info,
 		    ap.offset = c->offset + offset_delta;
 		    ap.agg_contents = c->agg_contents;
 		    ap.by_ref = c->by_ref;
-		    cond_predicate = add_condition (info,
+		    cond_predicate = add_condition (info, params_summary,
 						    operand_map[c->operand_num],
 						    c->type, &ap, c->code,
 						    c->val, c->param_ops);
@@ -629,7 +630,9 @@ predicate::stream_out (struct output_block *ob)
    aggregate.  */
 
 predicate
-add_condition (class ipa_fn_summary *summary, int operand_num,
+add_condition (class ipa_fn_summary *summary,
+	       class ipa_node_params *params_summary,
+	       int operand_num,
 	       tree type, struct agg_position_info *aggpos,
 	       enum tree_code code, tree val, expr_eval_ops param_ops)
 {
@@ -639,6 +642,9 @@ add_condition (class ipa_fn_summary *summary, int operand_num,
   HOST_WIDE_INT offset;
   bool agg_contents, by_ref;
   expr_eval_op *op;
+
+  if (params_summary)
+    ipa_set_param_used_by_ipa_predicates (params_summary, operand_num, true);
 
   if (aggpos)
     {

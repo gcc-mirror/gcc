@@ -922,19 +922,38 @@ data_desc:
 
       if (u != FMT_POSINT)
 	{
+	  if (flag_dec)
+	    {
+	      if (flag_dec_format_defaults)
+		{
+		  /* Assume a default width based on the variable size.  */
+		  saved_token = u;
+		  break;
+		}
+	      else
+		{
+		  gfc_error ("Positive width required in format "
+			     "specifier %s at %L", token_to_string (t),
+			     &format_locus);
+		  saved_token = u;
+		  goto fail;
+		}
+	    }
+
+	  format_locus.nextc += format_string_pos;
+	  if (!gfc_notify_std (GFC_STD_F2018,
+			       "positive width required at %L",
+			       &format_locus))
+	    {
+	      saved_token = u;
+	      goto fail;
+	    }
 	  if (flag_dec_format_defaults)
 	    {
 	      /* Assume a default width based on the variable size.  */
 	      saved_token = u;
 	      break;
 	    }
-
-	  format_locus.nextc += format_string_pos;
-	  gfc_error ("Positive width required in format "
-			 "specifier %s at %L", token_to_string (t),
-			 &format_locus);
-	  saved_token = u;
-	  goto fail;
 	}
 
       u = format_lex ();
@@ -988,9 +1007,22 @@ data_desc:
 	    goto fail;
 	  if (u != FMT_POSINT)
 	    {
-	      error = G_("Positive exponent width required in format string "
-			 "at %L");
-	      goto syntax;
+	      if (u == FMT_ZERO)
+		{
+		  if (!gfc_notify_std (GFC_STD_F2018,
+				      "Positive exponent width required in "
+				      "format string at %L", &format_locus))
+		    {
+		      saved_token = u;
+		      goto fail;
+		    }
+		}
+	      else
+		{
+		  error = G_("Positive exponent width required in format "
+			     "string at %L");
+		  goto syntax;
+		}
 	    }
 	}
 

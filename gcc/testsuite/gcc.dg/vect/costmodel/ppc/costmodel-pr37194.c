@@ -9,6 +9,8 @@ ggSpectrum_Set8(float * data, float d)
 {
    int i;
 
+   /* PR92127, disable unroll to avoid unexpected profit calculation.  */
+   #pragma GCC unroll 0
    for (i = 0; i < 8; i++)
       data[i] = d;
 }

@@ -635,9 +635,20 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	}
       if (bb_gcov_count (bb))
 	{
+	  bool set_to_guessed = false;
 	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    e->probability = profile_probability::probability_in_gcov_type
-		(edge_gcov_count (e), bb_gcov_count (bb));
+	    {
+	      bool prev_never = e->probability == profile_probability::never ();
+	      e->probability = profile_probability::probability_in_gcov_type
+		  (edge_gcov_count (e), bb_gcov_count (bb));
+	      if (e->probability == profile_probability::never ()
+		  && !prev_never
+		  && flag_profile_partial_training)
+		set_to_guessed = true;
+	    }
+	  if (set_to_guessed)
+	    FOR_EACH_EDGE (e, ei, bb->succs)
+	      e->probability = e->probability.guessed ();
 	  if (bb->index >= NUM_FIXED_BLOCKS
 	      && block_ends_with_condjump_p (bb)
 	      && EDGE_COUNT (bb->succs) >= 2)
@@ -697,17 +708,23 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	}
     }
 
-  if (exec_counts)
+  if (exec_counts
+      && (bb_gcov_count (ENTRY_BLOCK_PTR_FOR_FN (cfun))
+	  || !flag_profile_partial_training))
     profile_status_for_fn (cfun) = PROFILE_READ;
 
   /* If we have real data, use them!  */
   if (bb_gcov_count (ENTRY_BLOCK_PTR_FOR_FN (cfun))
       || !flag_guess_branch_prob)
     FOR_ALL_BB_FN (bb, cfun)
-      bb->count = profile_count::from_gcov_type (bb_gcov_count (bb));
+      if (bb_gcov_count (bb) || !flag_profile_partial_training)
+        bb->count = profile_count::from_gcov_type (bb_gcov_count (bb));
+      else
+	bb->count = profile_count::guessed_zero ();
   /* If function was not trained, preserve local estimates including statically
      determined zero counts.  */
-  else if (profile_status_for_fn (cfun) == PROFILE_READ)
+  else if (profile_status_for_fn (cfun) == PROFILE_READ
+	   && !flag_profile_partial_training)
     FOR_ALL_BB_FN (bb, cfun)
       if (!(bb->count == profile_count::zero ()))
         bb->count = bb->count.global0 ();
@@ -854,7 +871,15 @@ compute_value_histograms (histogram_values values, unsigned cfg_checksum,
       if (hist->type == HIST_TYPE_TIME_PROFILE)
         {
 	  node = cgraph_node::get (hist->fun->decl);
-	  node->tp_first_run = hist->hvalue.counters[0];
+	  if (hist->hvalue.counters[0] >= 0
+	      && hist->hvalue.counters[0] < INT_MAX / 2)
+	    node->tp_first_run = hist->hvalue.counters[0];
+	  else
+	    {
+	      if (flag_profile_correction)
+		error ("corrupted profile info: invalid time profile");
+	      node->tp_first_run = 0;
+	    }
 
           if (dump_file)
             fprintf (dump_file, "Read tp_first_run: %d\n", node->tp_first_run);
@@ -1417,7 +1442,7 @@ branch_prob (bool thunk)
       /* At this moment we have precise loop iteration count estimates.
 	 Record them to loop structure before the profile gets out of date. */
       FOR_EACH_LOOP (loop, 0)
-	if (loop->header->count > 0)
+	if (loop->header->count > 0 && loop->header->count.reliable_p ())
 	  {
 	    gcov_type nit = expected_loop_iterations_unbounded (loop);
 	    widest_int bound = gcov_type_to_wide_int (nit);

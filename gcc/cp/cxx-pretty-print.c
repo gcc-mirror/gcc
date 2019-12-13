@@ -172,11 +172,11 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
     case TYPENAME_TYPE:
     case UNBOUND_CLASS_TEMPLATE:
       pp_cxx_unqualified_id (pp, TYPE_NAME (t));
-      if (CLASS_TYPE_P (t) && CLASSTYPE_USE_TEMPLATE (t))
+      if (tree ti = TYPE_TEMPLATE_INFO_MAYBE_ALIAS (t))
 	{
 	  pp_cxx_begin_template_argument_list (pp);
-	  pp_cxx_template_argument_list (pp, INNERMOST_TEMPLATE_ARGS
-                                                 (CLASSTYPE_TI_ARGS (t)));
+	  tree args = INNERMOST_TEMPLATE_ARGS (TI_ARGS (ti));
+	  pp_cxx_template_argument_list (pp, args);
 	  pp_cxx_end_template_argument_list (pp);
 	}
       break;
@@ -2551,52 +2551,8 @@ static char const*
 get_fold_operator (tree t)
 {
   int op = int_cst_value (FOLD_EXPR_OP (t));
-  if (FOLD_EXPR_MODIFY_P (t))
-    {
-      switch (op)
-        {
-        case NOP_EXPR: return "=";
-        case PLUS_EXPR: return "+=";
-        case MINUS_EXPR: return "-=";
-        case MULT_EXPR: return "*=";
-        case TRUNC_DIV_EXPR: return "/=";
-        case TRUNC_MOD_EXPR: return "%=";
-        case BIT_XOR_EXPR: return "^=";
-        case BIT_AND_EXPR: return "&=";
-        case BIT_IOR_EXPR: return "|=";
-        case LSHIFT_EXPR: return "<<=";
-        case RSHIFT_EXPR: return ">>=";
-        default: gcc_unreachable ();
-        }
-    }
-  else
-    {
-      switch (op)
-        {
-        case PLUS_EXPR: return "+";
-        case MINUS_EXPR: return "-";
-        case MULT_EXPR: return "*";
-        case TRUNC_DIV_EXPR: return "/";
-        case TRUNC_MOD_EXPR: return "%";
-        case BIT_XOR_EXPR: return "^";
-        case BIT_AND_EXPR: return "&";
-        case BIT_IOR_EXPR: return "|";
-        case LSHIFT_EXPR: return "<<";
-        case RSHIFT_EXPR: return ">>";
-        case EQ_EXPR: return "==";
-        case NE_EXPR: return "!=";
-        case LT_EXPR: return "<";
-        case GT_EXPR: return ">";
-        case LE_EXPR: return "<=";
-        case GE_EXPR: return ">=";
-        case TRUTH_ANDIF_EXPR: return "&&";
-        case TRUTH_ORIF_EXPR: return "||";
-        case MEMBER_REF: return "->*";
-        case DOTSTAR_EXPR: return ".*";
-        case OFFSET_REF: return ".*";
-        default: return ","; /* FIXME: Not the right default.  */
-        }
-    }
+  ovl_op_info_t *info = OVL_OP_INFO (FOLD_EXPR_MODIFY_P (t), op);
+  return info->name;
 }
 
 void
@@ -2705,7 +2661,7 @@ pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
       pp_cxx_ws_string (pp, "__is_polymorphic");
       break;
     case CPTK_IS_SAME_AS:
-      pp_cxx_ws_string (pp, "__is_same_as");
+      pp_cxx_ws_string (pp, "__is_same");
       break;
     case CPTK_IS_STD_LAYOUT:
       pp_cxx_ws_string (pp, "__is_std_layout");
@@ -3011,4 +2967,12 @@ cxx_pretty_printer::cxx_pretty_printer ()
 {
   type_specifier_seq = (pp_fun) pp_cxx_type_specifier_seq;
   parameter_list = (pp_fun) pp_cxx_parameter_declaration_clause;
+}
+
+/* cxx_pretty_printer's implementation of pretty_printer::clone vfunc.  */
+
+pretty_printer *
+cxx_pretty_printer::clone () const
+{
+  return new cxx_pretty_printer (*this);
 }

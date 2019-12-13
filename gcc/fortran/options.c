@@ -76,6 +76,7 @@ set_dec_flags (int value)
   SET_BITFLAG (flag_dec_include, value, value);
   SET_BITFLAG (flag_dec_format_defaults, value, value);
   SET_BITFLAG (flag_dec_blank_format_item, value, value);
+  SET_BITFLAG (flag_dec_char_conversions, value, value);
 }
 
 /* Finalize DEC flags.  */
@@ -161,8 +162,8 @@ gfc_init_options (unsigned int decoded_options_count,
   /* ??? Wmissing-include-dirs is disabled by default in C/C++ but
      enabled by default in Fortran.  Ideally, we should express this
      in .opt, but that is not supported yet.  */
-  if (!global_options_set.x_cpp_warn_missing_include_dirs)
-    global_options.x_cpp_warn_missing_include_dirs = 1;
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       cpp_warn_missing_include_dirs, 1);
 
   set_dec_flags (0);
 
@@ -409,7 +410,8 @@ gfc_post_options (const char **pfilename)
     gfc_warning_now (0, "Flag %<-fno-automatic%> overwrites %<-fmax-stack-var-size=%d%>",
 		     flag_max_stack_var_size);
   else if (!flag_automatic && flag_recursive)
-    gfc_warning_now (0, "Flag %<-fno-automatic%> overwrites %<-frecursive%>");
+    gfc_warning_now (OPT_Woverwrite_recursive, "Flag %<-fno-automatic%> "
+		     "overwrites %<-frecursive%>");
   else if (!flag_automatic && flag_openmp)
     gfc_warning_now (0, "Flag %<-fno-automatic%> overwrites %<-frecursive%> implied by "
 		     "%<-fopenmp%>");

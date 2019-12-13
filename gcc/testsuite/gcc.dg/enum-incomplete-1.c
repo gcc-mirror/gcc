@@ -13,14 +13,16 @@ f0 (int i)
 {
   ve; /* { dg-error "incomplete" } */
   vs; /* { dg-error "incomplete" } */
-  (void) ve;
-  (void) vs;
+  (void) ve; /* { dg-error "incomplete" } */
+  (void) vs; /* { dg-error "incomplete" } */
   (void) (i ? ve : ve); /* { dg-error "incomplete" } */
   (void) (i ? vs : vs); /* { dg-error "incomplete" } */
   (void) (ve = ve); /* { dg-error "incomplete" } */
   (void) (vs = vs); /* { dg-error "incomplete" } */
-  (void) ve, (void) ve;
-  (void) vs, (void) vs;
+  (void) ve, /* { dg-error "incomplete" } */
+    (void) ve; /* { dg-error "incomplete" } */
+  (void) vs, /* { dg-error "incomplete" } */
+    (void) vs; /* { dg-error "incomplete" } */
   p = &ve;
   p = &vs;
   (void) sizeof (ve); /* { dg-error "incomplete" } */

@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "cgraph.h"
 #include "lto-streamer.h"
-#include "params.h"
 #include "symbol-summary.h"
 #include "tree-vrp.h"
 #include "ipa-prop.h"
@@ -182,7 +181,7 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
 
       /* Add all thunks associated with the function.  */
       for (e = cnode->callers; e; e = e->next_caller)
-	if (e->caller->thunk.thunk_p && !e->caller->global.inlined_to)
+	if (e->caller->thunk.thunk_p && !e->caller->inlined_to)
 	  add_symbol_to_partition_1 (part, e->caller);
     }
 
@@ -233,8 +232,8 @@ contained_in_symbol (symtab_node *node)
   if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
     {
       cnode = cnode->function_symbol ();
-      if (cnode->global.inlined_to)
-	cnode = cnode->global.inlined_to;
+      if (cnode->inlined_to)
+	cnode = cnode->inlined_to;
       return cnode;
     }
   else if (varpool_node *vnode = dyn_cast <varpool_node *> (node))
@@ -373,38 +372,9 @@ lto_max_map (void)
     new_partition ("empty");
 }
 
-/* Helper function for qsort; sort nodes by order. noreorder functions must have
-   been removed earlier.  */
-static int
-node_cmp (const void *pa, const void *pb)
-{
-  const struct cgraph_node *a = *(const struct cgraph_node * const *) pa;
-  const struct cgraph_node *b = *(const struct cgraph_node * const *) pb;
-
-  /* Profile reorder flag enables function reordering based on first execution
-     of a function. All functions with profile are placed in ascending
-     order at the beginning.  */
-
-  if (flag_profile_reorder_functions)
-  {
-    /* Functions with time profile are sorted in ascending order.  */
-    if (a->tp_first_run && b->tp_first_run)
-      return a->tp_first_run != b->tp_first_run
-	? a->tp_first_run - b->tp_first_run
-        : a->order - b->order;
-
-    /* Functions with time profile are sorted before the functions
-       that do not have the profile.  */
-    if (a->tp_first_run || b->tp_first_run)
-      return b->tp_first_run - a->tp_first_run;
-  }
-
-  return b->order - a->order;
-}
-
 /* Helper function for qsort; sort nodes by order.  */
 static int
-varpool_node_cmp (const void *pa, const void *pb)
+node_cmp (const void *pa, const void *pb)
 {
   const symtab_node *a = *static_cast<const symtab_node * const *> (pa);
   const symtab_node *b = *static_cast<const symtab_node * const *> (pb);
@@ -419,7 +389,7 @@ add_sorted_nodes (vec<symtab_node *> &next_nodes, ltrans_partition partition)
   unsigned i;
   symtab_node *node;
 
-  next_nodes.qsort (varpool_node_cmp);
+  next_nodes.qsort (node_cmp);
   FOR_EACH_VEC_ELT (next_nodes, i, node)
     if (!symbol_partitioned_p (node))
       add_symbol_to_partition (partition, node);
@@ -538,7 +508,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
      unit tends to import a lot of global trees defined there.  We should
      get better about minimizing the function bounday, but until that
      things works smoother if we order in source order.  */
-  order.qsort (node_cmp);
+  order.qsort (tp_first_run_node_cmp);
   noreorder.qsort (node_cmp);
 
   if (dump_file)
@@ -557,16 +527,16 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 	&& vnode->no_reorder)
       varpool_order.safe_push (vnode);
   n_varpool_nodes = varpool_order.length ();
-  varpool_order.qsort (varpool_node_cmp);
+  varpool_order.qsort (node_cmp);
 
   /* Compute partition size and create the first partition.  */
-  if (PARAM_VALUE (MIN_PARTITION_SIZE) > max_partition_size)
+  if (param_min_partition_size > max_partition_size)
     fatal_error (input_location, "min partition size cannot be greater "
 		 "than max partition size");
 
   partition_size = total_size / n_lto_partitions;
-  if (partition_size < PARAM_VALUE (MIN_PARTITION_SIZE))
-    partition_size = PARAM_VALUE (MIN_PARTITION_SIZE);
+  if (partition_size < param_min_partition_size)
+    partition_size = param_min_partition_size;
   npartitions = 1;
   partition = new_partition ("");
   if (dump_file)
@@ -816,8 +786,8 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 	    fprintf (dump_file,
 		     "Total size: %" PRId64 " partition_size: %" PRId64 "\n",
 		     total_size, partition_size);
-	  if (partition_size < PARAM_VALUE (MIN_PARTITION_SIZE))
-	    partition_size = PARAM_VALUE (MIN_PARTITION_SIZE);
+	  if (partition_size < param_min_partition_size)
+	    partition_size = param_min_partition_size;
 	  npartitions ++;
 	}
     }

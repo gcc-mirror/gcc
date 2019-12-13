@@ -8,16 +8,16 @@ program nested1
   e3 = 0
   call omp_set_nested (.true.)
   call omp_set_dynamic (.false.)
-  if (omp_in_parallel ()) STOP 1
-  if (omp_get_num_threads ().ne.1) STOP 2
-  if (omp_get_level ().ne.0) STOP 3
-  if (omp_get_ancestor_thread_num (0).ne.0) STOP 4
-  if (omp_get_ancestor_thread_num (-1).ne.-1) STOP 5
-  if (omp_get_ancestor_thread_num (1).ne.-1) STOP 6
-  if (omp_get_team_size (0).ne.1) STOP 7
-  if (omp_get_team_size (-1).ne.-1) STOP 8
-  if (omp_get_team_size (1).ne.-1) STOP 9
-  if (omp_get_active_level ().ne.0) STOP 10
+  if (omp_in_parallel ()) stop 1
+  if (omp_get_num_threads ().ne.1) stop 2
+  if (omp_get_level ().ne.0) stop 3
+  if (omp_get_ancestor_thread_num (0).ne.0) stop 4
+  if (omp_get_ancestor_thread_num (-1).ne.-1) stop 5
+  if (omp_get_ancestor_thread_num (1).ne.-1) stop 6
+  if (omp_get_team_size (0).ne.1) stop 7
+  if (omp_get_team_size (-1).ne.-1) stop 8
+  if (omp_get_team_size (1).ne.-1) stop 9
+  if (omp_get_active_level ().ne.0) stop 10
 !$omp parallel num_threads (4) private (e, tn1)
   e = 0
   tn1 = omp_get_thread_num ()
@@ -83,5 +83,5 @@ program nested1
 !$omp end parallel
 !$omp end parallel
 !$omp end parallel
-  if (e1.ne.0.or.e2.ne.0.or.e3.ne.0) STOP 11
+  if (e1.ne.0.or.e2.ne.0.or.e3.ne.0) stop 11
 end program nested1

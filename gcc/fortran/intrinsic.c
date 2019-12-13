@@ -4025,6 +4025,29 @@ add_conversions (void)
 	  add_conv (BT_LOGICAL, gfc_logical_kinds[j].kind,
 		    BT_INTEGER, gfc_integer_kinds[i].kind, GFC_STD_LEGACY);
 	}
+
+  /* DEC legacy feature allows character conversions similar to Hollerith
+     conversions - the character data will transferred on a byte by byte
+     basis.  */
+  if (flag_dec_char_conversions)
+    {
+      /* Character-Integer conversions.  */
+      for (i = 0; gfc_integer_kinds[i].kind != 0; i++)
+	add_conv (BT_CHARACTER, gfc_default_character_kind,
+		  BT_INTEGER, gfc_integer_kinds[i].kind, GFC_STD_LEGACY);
+      /* Character-Real conversions.  */
+      for (i = 0; gfc_real_kinds[i].kind != 0; i++)
+	add_conv (BT_CHARACTER, gfc_default_character_kind,
+		  BT_REAL, gfc_real_kinds[i].kind, GFC_STD_LEGACY);
+      /* Character-Complex conversions.  */
+      for (i = 0; gfc_real_kinds[i].kind != 0; i++)
+	add_conv (BT_CHARACTER, gfc_default_character_kind,
+		  BT_COMPLEX, gfc_real_kinds[i].kind, GFC_STD_LEGACY);
+      /* Character-Logical conversions.  */
+      for (i = 0; gfc_logical_kinds[i].kind != 0; i++)
+	add_conv (BT_CHARACTER, gfc_default_character_kind,
+		  BT_LOGICAL, gfc_logical_kinds[i].kind, GFC_STD_LEGACY);
+    }
 }
 
 
@@ -4816,9 +4839,9 @@ gfc_check_intrinsic_standard (const gfc_intrinsic_sym* isym,
 match
 gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
 {
+  gfc_symbol *sym;
   gfc_intrinsic_sym *isym, *specific;
   gfc_actual_arglist *actual;
-  const char *name;
   int flag;
 
   if (expr->value.function.isym != NULL)
@@ -4834,15 +4857,15 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
       flag |= (actual->expr->ts.type != BT_INTEGER
 	       && actual->expr->ts.type != BT_CHARACTER);
 
-  name = expr->symtree->n.sym->name;
+  sym = expr->symtree->n.sym;
 
-  if (expr->symtree->n.sym->intmod_sym_id)
+  if (sym->intmod_sym_id)
     {
-      gfc_isym_id id = gfc_isym_id_by_intmod_sym (expr->symtree->n.sym);
+      gfc_isym_id id = gfc_isym_id_by_intmod_sym (sym);
       isym = specific = gfc_intrinsic_function_by_id (id);
     }
   else
-    isym = specific = gfc_find_function (name);
+    isym = specific = gfc_find_function (sym->name);
 
   if (isym == NULL)
     {
@@ -4856,7 +4879,7 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
        || isym->id == GFC_ISYM_SNGL || isym->id == GFC_ISYM_DFLOAT)
       && gfc_init_expr_flag
       && !gfc_notify_std (GFC_STD_F2003, "Function %qs as initialization "
-			  "expression at %L", name, &expr->where))
+			  "expression at %L", sym->name, &expr->where))
     {
       if (!error_flag)
 	gfc_pop_suppress_errors ();
@@ -4875,7 +4898,7 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
 	  && id != GFC_ISYM_TRANSFER && id != GFC_ISYM_TRIM
 	  && !gfc_notify_std (GFC_STD_F2003, "Transformational function %qs "
 			      "at %L is invalid in an initialization "
-			      "expression", name, &expr->where))
+			      "expression", sym->name, &expr->where))
 	{
 	  if (!error_flag)
 	    gfc_pop_suppress_errors ();
@@ -4933,9 +4956,6 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
 
 got_specific:
   expr->value.function.isym = specific;
-  if (!expr->symtree->n.sym->module)
-    gfc_intrinsic_symbol (expr->symtree->n.sym);
-
   if (!error_flag)
     gfc_pop_suppress_errors ();
 
@@ -4956,6 +4976,16 @@ got_specific:
 			  "initialization expression with non-integer/non-"
 			  "character arguments at %L", &expr->where))
     return MATCH_ERROR;
+
+  if (sym->attr.flavor == FL_UNKNOWN)
+    {
+      sym->attr.function = 1;
+      sym->attr.intrinsic = 1;
+      sym->attr.flavor = FL_PROCEDURE;
+    }
+
+  if (!sym->module)
+    gfc_intrinsic_symbol (sym);
 
   return MATCH_YES;
 }
@@ -5119,8 +5149,10 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
   /* At this point, a conversion is necessary. A warning may be needed.  */
   if ((gfc_option.warn_std & sym->standard) != 0)
     {
+      const char *type_name = is_char_constant ? gfc_typename (expr)
+					       : gfc_typename (&from_ts);
       gfc_warning_now (0, "Extension: Conversion from %s to %s at %L",
-		       gfc_typename (&from_ts), gfc_dummy_typename (ts),
+		       type_name, gfc_dummy_typename (ts),
 		       &expr->where);
     }
   else if (wflag)
@@ -5135,14 +5167,14 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 	     If range checking was disabled, but -Wconversion enabled,
 	     a non range checked warning is generated below.  */
 	}
-      else if (from_ts.type == BT_LOGICAL || ts->type == BT_LOGICAL)
+      else if (flag_dec_char_conversions && from_ts.type == BT_CHARACTER
+	       && (gfc_numeric_ts (ts) || ts->type == BT_LOGICAL))
 	{
-	  /* Do nothing. This block exists only to simplify the other
-	     else-if expressions.
-	       LOGICAL <> LOGICAL    no warning, independent of kind values
-	       LOGICAL <> INTEGER    extension, warned elsewhere
-	       LOGICAL <> REAL       invalid, error generated elsewhere
-	       LOGICAL <> COMPLEX    invalid, error generated elsewhere  */
+	  const char *type_name = is_char_constant ? gfc_typename (expr)
+						   : gfc_typename (&from_ts);
+	  gfc_warning_now (OPT_Wconversion, "Nonstandard conversion from %s "
+			   "to %s at %L", type_name, gfc_typename (ts),
+			   &expr->where);
 	}
       else if (from_ts.type == ts->type
 	       || (from_ts.type == BT_INTEGER && ts->type == BT_REAL)
@@ -5159,7 +5191,7 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 				 "conversion from %s to %s at %L",
 				 gfc_typename (&from_ts), gfc_typename (ts),
 				 &expr->where);
-	      else if (warn_conversion_extra)
+	      else
 		gfc_warning_now (OPT_Wconversion_extra, "Conversion from %s to %s "
 				 "at %L", gfc_typename (&from_ts),
 				 gfc_typename (ts), &expr->where);
@@ -5171,7 +5203,7 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 	{
 	  /* Conversion from REAL/COMPLEX to INTEGER or COMPLEX to REAL
 	     usually comes with a loss of information, regardless of kinds.  */
-	  if (warn_conversion && expr->expr_type != EXPR_CONSTANT)
+	  if (expr->expr_type != EXPR_CONSTANT)
 	    gfc_warning_now (OPT_Wconversion, "Possible change of value in "
 			     "conversion from %s to %s at %L",
 			     gfc_typename (&from_ts), gfc_typename (ts),
@@ -5180,13 +5212,21 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
       else if (from_ts.type == BT_HOLLERITH || ts->type == BT_HOLLERITH)
 	{
 	  /* If HOLLERITH is involved, all bets are off.  */
-	  if (warn_conversion)
-	    gfc_warning_now (OPT_Wconversion, "Conversion from %s to %s at %L",
-			     gfc_typename (&from_ts), gfc_dummy_typename (ts),
-			     &expr->where);
+	  gfc_warning_now (OPT_Wconversion, "Conversion from %s to %s at %L",
+			   gfc_typename (&from_ts), gfc_dummy_typename (ts),
+			   &expr->where);
+	}
+      else if (from_ts.type == BT_LOGICAL || ts->type == BT_LOGICAL)
+	{
+	  /* Do nothing. This block exists only to simplify the other
+	     else-if expressions.
+	       LOGICAL <> LOGICAL    no warning, independent of kind values
+	       LOGICAL <> INTEGER    extension, warned elsewhere
+	       LOGICAL <> REAL       invalid, error generated elsewhere
+	       LOGICAL <> COMPLEX    invalid, error generated elsewhere  */
 	}
       else
-        gcc_unreachable ();
+	gcc_unreachable ();
     }
 
   /* Insert a pre-resolved function call to the right function.  */
@@ -5244,8 +5284,7 @@ bad:
     }
 
   gfc_internal_error ("Cannot convert %qs to %qs at %L", type_name,
-		      gfc_typename (ts),
-		      &expr->where);
+		      gfc_typename (ts), &expr->where);
   /* Not reached */
 }
 

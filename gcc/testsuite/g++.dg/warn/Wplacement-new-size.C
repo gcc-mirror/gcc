@@ -314,11 +314,11 @@ void test (void *p, int n)
     new (&sssac4_2) char[sizeof sssac4_2 + 1];   // { dg-warning "placement" }
 
     // taking the address of a temporary is allowed with -fpermissive
-    new (&fsc ().c) int;                // { dg-warning "address|placement" }
-    new (&fasc1 ().ac) int;             // { dg-warning "address|placement" }
-    new (&fasc2 ().ac) int;             // { dg-warning "address|placement" }
-    new (&fasc3 ().ac) int;             // { dg-warning "address|placement" }
-    new (&fasc4 ().ac) int;             // { dg-warning "address|placement" }
+    new (&fsc ().c) int;                // { dg-warning "18:taking address|placement" }
+    new (&fasc1 ().ac) int;             // { dg-warning "20:taking address|placement" }
+    new (&fasc2 ().ac) int;             // { dg-warning "20:taking address|placement" }
+    new (&fasc3 ().ac) int;             // { dg-warning "20:taking address|placement" }
+    new (&fasc4 ().ac) int;             // { dg-warning "20:taking address|placement" }
 
     new (&uac1) int;                    // { dg-warning "placement" }
     new (&uac2) int;                    // { dg-warning "placement" }

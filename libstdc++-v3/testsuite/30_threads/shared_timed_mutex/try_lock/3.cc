@@ -27,7 +27,8 @@
 #include <system_error>
 #include <testsuite_hooks.h>
 
-int main()
+template <typename clock_type>
+void test()
 {
   typedef std::shared_timed_mutex mutex_type;
 
@@ -42,15 +43,15 @@ int main()
           {
             using namespace std::chrono;
             auto timeout = 100ms;
-            auto start = system_clock::now();
+            auto start = clock_type::now();
             b = m.try_lock_for(timeout);
-            auto t = system_clock::now() - start;
+            auto t = clock_type::now() - start;
             VERIFY( !b );
             VERIFY( t >= timeout );
 
-            start = system_clock::now();
+            start = clock_type::now();
             b = m.try_lock_until(start + timeout);
-            t = system_clock::now() - start;
+            t = clock_type::now() - start;
             VERIFY( !b );
             VERIFY( t >= timeout );
           }
@@ -70,4 +71,10 @@ int main()
     {
       VERIFY( false );
     }
+}
+
+int main()
+{
+  test<std::chrono::system_clock>();
+  test<std::chrono::steady_clock>();
 }

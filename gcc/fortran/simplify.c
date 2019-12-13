@@ -169,8 +169,10 @@ convert_mpz_to_unsigned (mpz_t x, int bitsize)
     }
   else
     {
-      /* Confirm that no bits above the signed range are set.  */
-      gcc_assert (mpz_scan1 (x, bitsize-1) == ULONG_MAX);
+      /* Confirm that no bits above the signed range are set if we
+	 are doing range checking.  */
+      if (flag_range_check != 0)
+	gcc_assert (mpz_scan1 (x, bitsize-1) == ULONG_MAX);
     }
 }
 
@@ -1768,7 +1770,7 @@ simplify_trig_call (gfc_expr *icall)
 /* Convert a floating-point number from radians to degrees.  */
 
 static void
-degrees_f (mpfr_t x, mp_rnd_t rnd_mode)
+degrees_f (mpfr_t x, mpfr_rnd_t rnd_mode)
 {
   mpfr_t tmp;
   mpfr_init (tmp);
@@ -1791,7 +1793,7 @@ degrees_f (mpfr_t x, mp_rnd_t rnd_mode)
 /* Convert a floating-point number from degrees to radians.  */
 
 static void
-radians_f (mpfr_t x, mp_rnd_t rnd_mode)
+radians_f (mpfr_t x, mpfr_rnd_t rnd_mode)
 {
   mpfr_t tmp;
   mpfr_init (tmp);
@@ -2681,7 +2683,7 @@ gfc_simplify_erfc (gfc_expr *x)
 static void
 fullprec_erfc_scaled (mpfr_t res, mpfr_t arg)
 {
-  mp_prec_t prec;
+  mpfr_prec_t prec;
   mpfr_t a, b;
 
   prec = mpfr_get_default_prec ();
@@ -2718,7 +2720,7 @@ asympt_erfc_scaled (mpfr_t res, mpfr_t arg)
 {
   mpfr_t sum, x, u, v, w, oldsum, sumtrunc;
   mpz_t num;
-  mp_prec_t prec;
+  mpfr_prec_t prec;
   unsigned i;
 
   prec = mpfr_get_default_prec ();
@@ -3076,12 +3078,7 @@ gfc_expr *
 gfc_simplify_fraction (gfc_expr *x)
 {
   gfc_expr *result;
-
-#if MPFR_VERSION < MPFR_VERSION_NUM(3,1,0)
-  mpfr_t absv, exp, pow2;
-#else
   mpfr_exp_t e;
-#endif
 
   if (x->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -3095,40 +3092,8 @@ gfc_simplify_fraction (gfc_expr *x)
       return result;
     }
 
-#if MPFR_VERSION < MPFR_VERSION_NUM(3,1,0)
-
-  /* MPFR versions before 3.1.0 do not include mpfr_frexp.
-     TODO: remove the kludge when MPFR 3.1.0 or newer will be required */
-
-  if (mpfr_sgn (x->value.real) == 0)
-    {
-      mpfr_set (result->value.real, x->value.real, GFC_RND_MODE);
-      return result;
-    }
-
-  gfc_set_model_kind (x->ts.kind);
-  mpfr_init (exp);
-  mpfr_init (absv);
-  mpfr_init (pow2);
-
-  mpfr_abs (absv, x->value.real, GFC_RND_MODE);
-  mpfr_log2 (exp, absv, GFC_RND_MODE);
-
-  mpfr_trunc (exp, exp);
-  mpfr_add_ui (exp, exp, 1, GFC_RND_MODE);
-
-  mpfr_ui_pow (pow2, 2, exp, GFC_RND_MODE);
-
-  mpfr_div (result->value.real, x->value.real, pow2, GFC_RND_MODE);
-
-  mpfr_clears (exp, absv, pow2, NULL);
-
-#else
-
   /* mpfr_frexp() correctly handles zeros and NaNs.  */
   mpfr_frexp (&e, result->value.real, x->value.real, GFC_RND_MODE);
-
-#endif
 
   return range_check (result, "FRACTION");
 }
@@ -5951,7 +5916,7 @@ gfc_expr *
 gfc_simplify_nearest (gfc_expr *x, gfc_expr *s)
 {
   gfc_expr *result;
-  mp_exp_t emin, emax;
+  mpfr_exp_t emin, emax;
   int kind;
 
   if (x->expr_type != EXPR_CONSTANT || s->expr_type != EXPR_CONSTANT)
@@ -5965,20 +5930,20 @@ gfc_simplify_nearest (gfc_expr *x, gfc_expr *s)
 
   /* Set emin and emax for the current model number.  */
   kind = gfc_validate_kind (BT_REAL, x->ts.kind, 0);
-  mpfr_set_emin ((mp_exp_t) gfc_real_kinds[kind].min_exponent -
+  mpfr_set_emin ((mpfr_exp_t) gfc_real_kinds[kind].min_exponent -
 		mpfr_get_prec(result->value.real) + 1);
-  mpfr_set_emax ((mp_exp_t) gfc_real_kinds[kind].max_exponent - 1);
-  mpfr_check_range (result->value.real, 0, GMP_RNDU);
+  mpfr_set_emax ((mpfr_exp_t) gfc_real_kinds[kind].max_exponent - 1);
+  mpfr_check_range (result->value.real, 0, MPFR_RNDU);
 
   if (mpfr_sgn (s->value.real) > 0)
     {
       mpfr_nextabove (result->value.real);
-      mpfr_subnormalize (result->value.real, 0, GMP_RNDU);
+      mpfr_subnormalize (result->value.real, 0, MPFR_RNDU);
     }
   else
     {
       mpfr_nextbelow (result->value.real);
-      mpfr_subnormalize (result->value.real, 0, GMP_RNDD);
+      mpfr_subnormalize (result->value.real, 0, MPFR_RNDD);
     }
 
   mpfr_set_emin (emin);
@@ -6060,8 +6025,8 @@ norm2_add_squared (gfc_expr *result, gfc_expr *e)
 
   gfc_set_model_kind (result->ts.kind);
   int index = gfc_validate_kind (BT_REAL, result->ts.kind, false);
-  mp_exp_t exp;
-  if (mpfr_number_p (result->value.real) && !mpfr_zero_p (result->value.real))
+  mpfr_exp_t exp;
+  if (mpfr_regular_p (result->value.real))
     {
       exp = mpfr_get_exp (result->value.real);
       /* If result is getting close to overflowing, scale down.  */
@@ -6075,7 +6040,7 @@ norm2_add_squared (gfc_expr *result, gfc_expr *e)
     }
 
   mpfr_init (tmp);
-  if (mpfr_number_p (e->value.real) && !mpfr_zero_p (e->value.real))
+  if (mpfr_regular_p (e->value.real))
     {
       exp = mpfr_get_exp (e->value.real);
       /* If e**2 would overflow or close to overflowing, scale down.  */
@@ -6116,9 +6081,7 @@ norm2_do_sqrt (gfc_expr *result, gfc_expr *e)
   if (result != e)
     mpfr_set (result->value.real, e->value.real, GFC_RND_MODE);
   mpfr_sqrt (result->value.real, result->value.real, GFC_RND_MODE);
-  if (norm2_scale
-      && mpfr_number_p (result->value.real)
-      && !mpfr_zero_p (result->value.real))
+  if (norm2_scale && mpfr_regular_p (result->value.real))
     {
       mpfr_t tmp;
       mpfr_init (tmp);
@@ -6157,9 +6120,7 @@ gfc_simplify_norm2 (gfc_expr *e, gfc_expr *dim)
       result = simplify_transformation_to_scalar (result, e, NULL,
 						  norm2_add_squared);
       mpfr_sqrt (result->value.real, result->value.real, GFC_RND_MODE);
-      if (norm2_scale
-	  && mpfr_number_p (result->value.real)
-	  && !mpfr_zero_p (result->value.real))
+      if (norm2_scale && mpfr_regular_p (result->value.real))
 	{
 	  mpfr_t tmp;
 	  mpfr_init (tmp);
@@ -7695,7 +7656,7 @@ gfc_simplify_spread (gfc_expr *source, gfc_expr *dim_expr, gfc_expr *ncopies_exp
   nelem = mpz_get_si (size) * ncopies;
   if (nelem > flag_max_array_constructor)
     {
-      if (gfc_current_ns->sym_root->n.sym->attr.flavor == FL_PARAMETER)
+      if (gfc_init_expr_flag)
 	{
 	  gfc_error ("The number of elements (%d) in the array constructor "
 		     "at %L requires an increase of the allowed %d upper "
@@ -8522,10 +8483,31 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
       break;
 
     case BT_CHARACTER:
-      if (type == BT_CHARACTER)
-	f = gfc_character2character;
-      else
-	goto oops;
+      switch (type)
+	{
+	case BT_INTEGER:
+	  f = gfc_character2int;
+	  break;
+
+	case BT_REAL:
+	  f = gfc_character2real;
+	  break;
+
+	case BT_COMPLEX:
+	  f = gfc_character2complex;
+	  break;
+
+	case BT_CHARACTER:
+	  f = gfc_character2character;
+	  break;
+
+	case BT_LOGICAL:
+	  f = gfc_character2logical;
+	  break;
+
+	default:
+	  goto oops;
+	}
       break;
 
     default:

@@ -233,7 +233,10 @@ struct GTY(()) cp_binding_level {
      'this_entity'.  */
   unsigned defining_class_p : 1;
 
-  /* 23 bits left to fill a 32-bit word.  */
+  /* true for SK_FUNCTION_PARMS of immediate functions.  */
+  unsigned immediate_fn_ctx_p : 1;
+
+  /* 22 bits left to fill a 32-bit word.  */
 };
 
 /* The binding level currently in effect.  */
@@ -284,7 +287,8 @@ inline tree get_global_binding (tree id)
 {
   return get_namespace_binding (NULL_TREE, id);
 }
-extern tree lookup_qualified_name (tree, tree, int, bool, /*hidden*/bool = false);
+extern tree lookup_qualified_name (tree, tree, int = 0, bool = true, /*hidden*/bool = false);
+extern tree lookup_qualified_name (tree t, const char *p, int = 0, bool = true, bool = false);
 extern tree lookup_name_nonclass (tree);
 extern bool is_local_extern (tree);
 extern bool pushdecl_class_level (tree);

@@ -1,0 +1,18 @@
+// PR c++/91369
+// { dg-do compile { target c++2a } }
+
+struct A {
+  constexpr A () : p{new int} {}
+  constexpr ~A () { delete p; }
+  int *p;
+};
+
+constexpr bool
+test ()
+{
+  A{};
+  return true;
+}
+
+constexpr auto res = test ();
+static_assert (res);

@@ -164,9 +164,19 @@ gfc_typename (gfc_typespec *ts)
       sprintf (buffer, "UNION(%s)", ts->u.derived->name);
       break;
     case BT_DERIVED:
+      if (ts->u.derived == NULL)
+	{
+	  sprintf (buffer, "invalid type");
+	  break;
+	}
       sprintf (buffer, "TYPE(%s)", ts->u.derived->name);
       break;
     case BT_CLASS:
+      if (ts->u.derived == NULL)
+	{
+	  sprintf (buffer, "invalid class");
+	  break;
+	}
       ts1 = ts->u.derived->components ? &ts->u.derived->components->ts : NULL;
       if (ts1 && ts1->u.derived && ts1->u.derived->attr.unlimited_polymorphic)
 	sprintf (buffer, "CLASS(*)");

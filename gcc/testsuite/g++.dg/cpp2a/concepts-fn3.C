@@ -31,11 +31,11 @@ struct S
 int main()
 {
   f1(1, 2, 3);
-  f1(1, 2, 3u); // { dg-error "cannot call" }
+  f1(1, 2, 3u); // { dg-error "" }
   f2(1, 2, 3);
-  f2(1, 2, 3u); // { dg-error "cannot call" }
+  f2(1, 2, 3u); // { dg-error "" }
   f3(1, 2, 3);
-  f3(1, 2, 3u); // { dg-error "cannot call" }
+  f3(1, 2, 3u); // { dg-error "" }
   f3(1u, 2, 3);
 
   S<void> s;

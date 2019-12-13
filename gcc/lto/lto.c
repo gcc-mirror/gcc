@@ -46,7 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "pass_manager.h"
 #include "ipa-fnsummary.h"
-#include "params.h"
 #include "ipa-utils.h"
 #include "gomp-constants.h"
 #include "lto-symtab.h"
@@ -312,6 +311,8 @@ lto_wpa_write_files (void)
       lto_prepare_function_for_streaming (node);
 
   ggc_trim ();
+  report_heap_memory_use ();
+
   /* Generate a prefix for the LTRANS unit files.  */
   blen = strlen (ltrans_output_list);
   temp_filename = (char *) xmalloc (blen + sizeof ("2147483648.o"));
@@ -386,6 +387,7 @@ lto_wpa_write_files (void)
       temp_priority.safe_push (part->insns);
       temp_filenames.safe_push (xstrdup (temp_filename));
     }
+  memory_block_pool::trim (0);
 
   for (int set = 0; set < MAX (lto_parallelism, 1); set++)
     {
@@ -434,14 +436,14 @@ do_whole_program_analysis (void)
 
   /* TODO: jobserver communication is not supported, yet.  */
   if (!strcmp (flag_wpa, "jobserver"))
-    lto_parallelism = PARAM_VALUE (PARAM_MAX_LTO_STREAMING_PARALLELISM);
+    lto_parallelism = param_max_lto_streaming_parallelism;
   else
     {
       lto_parallelism = atoi (flag_wpa);
       if (lto_parallelism <= 0)
 	lto_parallelism = 0;
-      if (lto_parallelism >= PARAM_VALUE (PARAM_MAX_LTO_STREAMING_PARALLELISM))
-	lto_parallelism = PARAM_VALUE (PARAM_MAX_LTO_STREAMING_PARALLELISM);
+      if (lto_parallelism >= param_max_lto_streaming_parallelism)
+	lto_parallelism = param_max_lto_streaming_parallelism;
     }
 
   timevar_start (TV_PHASE_OPT_GEN);
@@ -455,10 +457,7 @@ do_whole_program_analysis (void)
   timevar_push (TV_WHOPR_WPA);
 
   if (pre_ipa_mem_report)
-    {
-      fprintf (stderr, "Memory consumption before IPA\n");
-      dump_memory_report (false);
-    }
+    dump_memory_report ("Memory consumption before IPA");
 
   symtab->function_flags_ready = true;
 
@@ -475,6 +474,10 @@ do_whole_program_analysis (void)
 
   /* We are about to launch the final LTRANS phase, stop the WPA timer.  */
   timevar_pop (TV_WHOPR_WPA);
+
+  /* We are no longer going to stream in anything.  Free some memory.  */
+  lto_free_file_name_hash ();
+
 
   timevar_push (TV_WHOPR_PARTITIONING);
 
@@ -493,8 +496,8 @@ do_whole_program_analysis (void)
   else if (flag_lto_partition == LTO_PARTITION_ONE)
     lto_balanced_map (1, INT_MAX);
   else if (flag_lto_partition == LTO_PARTITION_BALANCED)
-    lto_balanced_map (PARAM_VALUE (PARAM_LTO_PARTITIONS),
-		      PARAM_VALUE (MAX_PARTITION_SIZE));
+    lto_balanced_map (param_lto_partitions,
+		      param_max_partition_size);
   else
     gcc_unreachable ();
 
@@ -537,16 +540,13 @@ do_whole_program_analysis (void)
   timevar_stop (TV_PHASE_STREAM_OUT);
 
   if (post_ipa_mem_report)
-    {
-      fprintf (stderr, "Memory consumption after IPA\n");
-      dump_memory_report (false);
-    }
+    dump_memory_report ("Memory consumption after IPA");
 
   /* Show the LTO report before launching LTRANS.  */
   if (flag_lto_report || (flag_wpa && flag_lto_report_wpa))
     print_lto_report_1 ();
   if (mem_report_wpa)
-    dump_memory_report (true);
+    dump_memory_report ("Final");
 }
 
 /* Create artificial pointers for "omp declare target link" vars.  */

@@ -26,6 +26,6 @@ subroutine f4(x, i)
   end do
 end subroutine f4
 
-! { dg-final { scan-tree-dump-times {likely to be the innermost dimension} 6 "lversion" } }
+! { dg-final { scan-tree-dump-times {likely to be the innermost dimension} 4 "lversion" } }
 ! { dg-final { scan-tree-dump-times {want to version} 4 "lversion" } }
 ! { dg-final { scan-tree-dump-times {versioned} 4 "lversion" } }

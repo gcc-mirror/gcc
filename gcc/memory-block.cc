@@ -28,15 +28,30 @@ memory_block_pool memory_block_pool::instance;
 
 memory_block_pool::memory_block_pool () : m_blocks (NULL) {}
 
-/* Return all blocks from free list to the OS.  */
+/* Reduce free list to NUM blocks and return remaining to malloc.  */
 void
-memory_block_pool::clear_free_list ()
+memory_block_pool::reduce_free_list (int num)
 {
-  while (m_blocks)
+  block_list **blocks = &m_blocks;
+
+  /* First skip NUM blocks.  */
+
+  for (;num > 0 && *blocks; num--)
+    blocks = &(*blocks)->m_next;
+
+  if (!*blocks)
+    return;
+
+  /* And free the remainder of them.  */
+
+  block_list *to_free = *blocks;
+  *blocks = NULL;
+
+  while (to_free)
     {
-      block_list *next = m_blocks->m_next;
-      XDELETEVEC (m_blocks);
-      m_blocks = next;
+      block_list *next = to_free->m_next;
+      XDELETEVEC (to_free);
+      to_free = next;
     }
 }
 
@@ -61,4 +76,11 @@ mempool_obstack_chunk_free (void *chunk)
     memory_block_pool::release (chunk);
   else
     XDELETEVEC (chunk);
+}
+
+/* Return allocated memory back to malloc (and to system).  */
+void
+memory_block_pool::trim (int num)
+{
+  instance.reduce_free_list (num);
 }

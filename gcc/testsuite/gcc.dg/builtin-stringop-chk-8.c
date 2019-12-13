@@ -102,9 +102,9 @@ void test_memop_warn_alloc (void *p)
 
   struct A *a = __builtin_malloc (sizeof *a * 2);
 
-  memcpy (p, a, n);   /* { dg-warning "reading between 8 and 32 bytes from region of size 4" "memcpy from allocated" { xfail *-*-*} } */
+  memcpy (p, a, n);   /* { dg-warning "reading between 8 and 32 bytes from a region of size 4" "memcpy from allocated" } */
 
-  memcpy (p, &a[0], n);   /* { dg-warning "reading between 8 and 32 bytes from a region of size 4" "memcpy from allocated" { xfail *-*-*} } */
+  memcpy (p, &a[0], n);   /* { dg-warning "reading between 8 and 32 bytes from a region of size 4" "memcpy from allocated" } */
 
   memcpy (p, &a[0].a, n);   /* { dg-warning "reading between 8 and 32 bytes from a region of size 4" "memcpy from allocated" { xfail *-*-*} } */
 
@@ -112,13 +112,13 @@ void test_memop_warn_alloc (void *p)
 
   struct B *b = __builtin_malloc (sizeof *b * 2);
 
-  memcpy (p, &b[0], n);   /* { dg-warning "reading between 12 and 32 bytes from a region of size 8" "memcpy from allocated" { xfail *-*-*} } */
+  memcpy (p, &b[0], n);   /* { dg-warning "reading between 12 and 32 bytes from a region of size 8" "memcpy from allocated" } */
 
   /* Verify memchr/memcmp.  */
   n = sizeof *b * 2 + 1;
 
-  memchr (b, 1, n);   /* { dg-warning "reading 5 bytes from a region of size 4" "memcmp from allocated" { xfail *-*-* } } */
-  memcmp (p, b, n);   /* { dg-warning "reading 5 bytes from a region of size 4" "memcmp from allocated" { xfail *-*-* } } */
+  memchr (b, 1, n);   /* { dg-warning "reading 9 bytes from a region of size 8" "memcmp from allocated" } */
+  memcmp (p, b, n);   /* { dg-warning "reading 9 bytes from a region of size 8" "memcmp from allocated" } */
 }
 
 

@@ -560,6 +560,12 @@
 	 (eq_attr "type" "idiv,idiv3")
 	 (symbol_ref "mips_idiv_insns (GET_MODE (PATTERN (insn)))")
 
+	 ;; simd div have 3 instruction if TARGET_CHECK_ZERO_DIV is true.
+	 (eq_attr "type" "simd_div")
+	 (if_then_else (match_test "TARGET_CHECK_ZERO_DIV")
+		       (const_int 3)
+		       (const_int 1))
+
 	 (not (eq_attr "sync_mem" "none"))
 	 (symbol_ref "mips_sync_loop_insns (insn, operands)")]
 	(const_int 1)))
@@ -759,7 +765,7 @@
 
 ;; Can the instruction be put into a delay slot?
 (define_attr "can_delay" "no,yes"
-  (if_then_else (and (eq_attr "type" "!branch,call,jump")
+  (if_then_else (and (eq_attr "type" "!branch,call,jump,simd_branch")
 		     (eq_attr "hazard" "none")
 		     (match_test "get_attr_insn_count (insn) == 1"))
 		(const_string "yes")
@@ -1098,7 +1104,7 @@
 
 ;; Branches that have delay slots and don't have likely variants do
 ;; not annul on false.
-(define_delay (and (eq_attr "type" "branch")
+(define_delay (and (eq_attr "type" "branch,simd_branch")
 		   (not (match_test "TARGET_MIPS16"))
 		   (ior (match_test "TARGET_CB_NEVER")
 			(and (eq_attr "compact_form" "maybe")
@@ -2464,9 +2470,11 @@
   [(set (match_operand:TI 0 "register_operand")
 	(mult:TI (any_extend:TI (match_operand:DI 1 "register_operand"))
 		 (any_extend:TI (match_operand:DI 2 "register_operand"))))]
-  "ISA_HAS_DMULT && !(<CODE> == ZERO_EXTEND && TARGET_FIX_VR4120)"
+  "ISA_HAS_R6DMUL
+   || (ISA_HAS_DMULT
+       && !(<CODE> == ZERO_EXTEND && TARGET_FIX_VR4120))"
 {
-  rtx hilo;
+  rtx hilo, hi, lo;
 
   if (TARGET_MIPS16)
     {
@@ -2476,9 +2484,16 @@
     }
   else if (TARGET_FIX_R4000)
     emit_insn (gen_<u>mulditi3_r4000 (operands[0], operands[1], operands[2]));
-  else
+  else if (ISA_HAS_DMULT)
     emit_insn (gen_<u>mulditi3_internal (operands[0], operands[1],
 					 operands[2]));
+  else
+    {
+      hi = mips_subword (operands[0], 1);
+      lo = mips_subword (operands[0], 0);
+      emit_insn (gen_muldi3_mul3_nohilo (lo, operands[1], operands[2]));
+      emit_insn (gen_<su>muldi3_highpart_r6 (hi, operands[1], operands[2]));
+    }
   DONE;
 })
 
@@ -5836,8 +5851,8 @@
   "ISA_HAS_ROR"
 {
   if (CONST_INT_P (operands[2]))
-    gcc_assert (INTVAL (operands[2]) >= 0
-		&& INTVAL (operands[2]) < GET_MODE_BITSIZE (<MODE>mode));
+    operands[2] = GEN_INT (INTVAL (operands[2])
+                           & (GET_MODE_BITSIZE (<MODE>mode) - 1));
 
   return "<d>ror\t%0,%1,%2";
 }

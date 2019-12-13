@@ -16763,7 +16763,12 @@ loc_descriptor (rtx rtl, machine_mode mode,
       if (mode == VOIDmode)
 	mode = GET_MODE (rtl);
 
-      if (mode != VOIDmode && (dwarf_version >= 4 || !dwarf_strict))
+      if (mode != VOIDmode
+	  /* The combination of a length and byte elt_size doesn't extend
+	     naturally to boolean vectors, where several elements are packed
+	     into the same byte.  */
+	  && GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL
+	  && (dwarf_version >= 4 || !dwarf_strict))
 	{
 	  unsigned int length;
 	  if (!CONST_VECTOR_NUNITS (rtl).is_constant (&length))
@@ -19622,6 +19627,12 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 	  return false;
 
 	machine_mode mode = GET_MODE (rtl);
+	/* The combination of a length and byte elt_size doesn't extend
+	   naturally to boolean vectors, where several elements are packed
+	   into the same byte.  */
+	if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+	  return false;
+
 	unsigned int elt_size = GET_MODE_UNIT_SIZE (mode);
 	unsigned char *array
 	  = ggc_vec_alloc<unsigned char> (length * elt_size);
@@ -27117,6 +27128,9 @@ lookup_filename (const char *file_name)
 
   if (!file_name)
     return NULL;
+
+  if (!file_name[0])
+    file_name = "<stdin>";
 
   dwarf_file_data **slot
     = file_table->find_slot_with_hash (file_name, htab_hash_string (file_name),

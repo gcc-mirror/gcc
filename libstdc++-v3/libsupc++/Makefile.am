@@ -31,7 +31,7 @@ toolexeclib_LTLIBRARIES = libsupc++.la
 noinst_LTLIBRARIES = libsupc++convenience.la
 
 std_HEADERS = \
-	cxxabi.h exception initializer_list new typeinfo
+	compare cxxabi.h exception initializer_list new typeinfo
 
 bits_HEADERS = \
 	atomic_lockfree_defines.h cxxabi_forced.h \

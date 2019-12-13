@@ -58,7 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "dwarf2.h"
 #include "tm-constrs.h"
-#include "params.h"
 #include "cselib.h"
 #include "sched-int.h"
 #include "opts.h"
@@ -1170,25 +1169,25 @@ ix86_init_mmx_sse_builtins (void)
 	       VOID_FTYPE_PCVOID, IX86_BUILTIN_CLWB);
 
   /* MONITORX and MWAITX.  */
-  def_builtin (0, OPTION_MASK_ISA_MWAITX, "__builtin_ia32_monitorx",
+  def_builtin (0, OPTION_MASK_ISA2_MWAITX, "__builtin_ia32_monitorx",
 		VOID_FTYPE_PCVOID_UNSIGNED_UNSIGNED, IX86_BUILTIN_MONITORX);
-  def_builtin (0, OPTION_MASK_ISA_MWAITX, "__builtin_ia32_mwaitx",
+  def_builtin (0, OPTION_MASK_ISA2_MWAITX, "__builtin_ia32_mwaitx",
 		VOID_FTYPE_UNSIGNED_UNSIGNED_UNSIGNED, IX86_BUILTIN_MWAITX);
 
   /* CLZERO.  */
-  def_builtin (0, OPTION_MASK_ISA_CLZERO, "__builtin_ia32_clzero",
+  def_builtin (0, OPTION_MASK_ISA2_CLZERO, "__builtin_ia32_clzero",
 		VOID_FTYPE_PCVOID, IX86_BUILTIN_CLZERO);
 
   /* WAITPKG.  */
-  def_builtin (0, OPTION_MASK_ISA_WAITPKG, "__builtin_ia32_umonitor",
+  def_builtin (0, OPTION_MASK_ISA2_WAITPKG, "__builtin_ia32_umonitor",
 	       VOID_FTYPE_PVOID, IX86_BUILTIN_UMONITOR);
-  def_builtin (0, OPTION_MASK_ISA_WAITPKG, "__builtin_ia32_umwait",
+  def_builtin (0, OPTION_MASK_ISA2_WAITPKG, "__builtin_ia32_umwait",
 	       UINT8_FTYPE_UNSIGNED_UINT64, IX86_BUILTIN_UMWAIT);
-  def_builtin (0, OPTION_MASK_ISA_WAITPKG, "__builtin_ia32_tpause",
+  def_builtin (0, OPTION_MASK_ISA2_WAITPKG, "__builtin_ia32_tpause",
 	       UINT8_FTYPE_UNSIGNED_UINT64, IX86_BUILTIN_TPAUSE);
 
   /* CLDEMOTE.  */
-  def_builtin (0, OPTION_MASK_ISA_CLDEMOTE, "__builtin_ia32_cldemote",
+  def_builtin (0, OPTION_MASK_ISA2_CLDEMOTE, "__builtin_ia32_cldemote",
 	       VOID_FTYPE_PCVOID, IX86_BUILTIN_CLDEMOTE);
 
   /* Add FMA4 multi-arg argument instructions */

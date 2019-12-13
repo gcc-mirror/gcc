@@ -3,5 +3,5 @@
 
 int main(int, char**) {
   const int foo[2] = {1,1};
-  ((int*)foo)[0] = 0; // { dg-warning "cast" }
+  ((int*)foo)[0] = 0; // { dg-warning "4:cast" }
 }

@@ -54,7 +54,7 @@ public:
 }; 
 
 CHECK_DECLTYPE(decltype(aa.*&A::a), int&);
-decltype(aa.*&A::b) zz; // { dg-error "cannot create pointer to reference member" "cannot" }
+decltype(aa.*&A::b) zz; // { dg-error "18:cannot create pointer to reference member" "cannot" }
 
 CHECK_DECLTYPE(decltype(caa.*&A::a), const int&);
 

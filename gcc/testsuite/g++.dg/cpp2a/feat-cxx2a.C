@@ -122,20 +122,20 @@
 
 #ifndef __cpp_init_captures
 #  error "__cpp_init_captures"
-#elif __cpp_init_captures != 201304
-#  error "__cpp_init_captures != 201304"
+#elif __cpp_init_captures != 201803
+#  error "__cpp_init_captures != 201803"
 #endif
 
 #ifndef __cpp_generic_lambdas
 #  error "__cpp_generic_lambdas"
-#elif __cpp_generic_lambdas != 201304
-#  error "__cpp_generic_lambdas != 201304"
+#elif __cpp_generic_lambdas != 201707
+#  error "__cpp_generic_lambdas != 201707"
 #endif
 
 #ifndef __cpp_constexpr
 #  error "__cpp_constexpr"
-#elif __cpp_constexpr != 201603
-#  error "__cpp_constexpr != 201603"
+#elif __cpp_constexpr != 201907
+#  error "__cpp_constexpr != 201907"
 #endif
 
 #ifndef __cpp_decltype_auto
@@ -358,8 +358,8 @@
 
 #ifndef __cpp_deduction_guides
 #  error "__cpp_deduction_guides"
-#elif __cpp_deduction_guides != 201703
-#  error "__cpp_deduction_guides != 201703"
+#elif __cpp_deduction_guides != 201907
+#  error "__cpp_deduction_guides != 201907"
 #endif
 
 #ifndef __cpp_if_constexpr
@@ -460,6 +460,12 @@
 #  error "__cpp_constexpr_dynamic_alloc != 201907"
 #endif
 
+#ifndef __cpp_aggregate_paren_init
+#  error "__cpp_aggregate_paren_init"
+#elif __cpp_aggregate_paren_init != 201902
+#  error "__cpp_aggregate_paren_init != 201902"
+#endif
+
 #ifdef __has_cpp_attribute
 
 #  if ! __has_cpp_attribute(maybe_unused)
@@ -506,4 +512,30 @@
 #  error "__cpp_char8_t"
 #elif __cpp_char8_t != 201811
 #  error "__cpp_char8_t != 201811"
+#endif
+
+#ifndef __cpp_designated_initializers
+#  error "__cpp_designated_initializers"
+#elif __cpp_designated_initializers != 201707
+#  error "__cpp_designated_initializers != 201707"
+#endif
+
+#ifndef __cpp_constexpr_in_decltype
+#  error "__cpp_constexpr_in_decltype"
+#elif __cpp_constexpr_in_decltype != 201711
+#  error "__cpp_constexpr_in_decltype != 201711"
+#endif
+
+/* Not supported fully yet:
+#ifndef __cpp_consteval
+#  error "__cpp_consteval"
+#elif __cpp_consteval != 201811
+#  error "__cpp_consteval != 201811"
+#endif
+*/
+
+#ifndef __cpp_concepts
+#  error "__cpp_concepts"
+#elif __cpp_concepts != 201907
+#  error "__cpp_concepts != 201907"
 #endif

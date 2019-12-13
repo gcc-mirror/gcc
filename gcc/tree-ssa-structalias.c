@@ -37,7 +37,6 @@
 #include "gimple-iterator.h"
 #include "tree-into-ssa.h"
 #include "tree-dfa.h"
-#include "params.h"
 #include "gimple-walk.h"
 #include "varasm.h"
 #include "stringpool.h"
@@ -1912,7 +1911,7 @@ typedef const struct equiv_class_label *const_equiv_class_label_t;
 
 /* Equiv_class_label hashtable helpers.  */
 
-struct equiv_class_hasher : free_ptr_hash <equiv_class_label>
+struct equiv_class_hasher : nofree_ptr_hash <equiv_class_label>
 {
   static inline hashval_t hash (const equiv_class_label *);
   static inline bool equal (const equiv_class_label *,
@@ -1945,6 +1944,8 @@ static hash_table<equiv_class_hasher> *pointer_equiv_class_table;
    classes.  */
 static hash_table<equiv_class_hasher> *location_equiv_class_table;
 
+struct obstack equiv_class_obstack;
+
 /* Lookup a equivalence class in TABLE by the bitmap of LABELS with
    hash HAS it contains.  Sets *REF_LABELS to the bitmap LABELS
    is equivalent to.  */
@@ -1961,7 +1962,7 @@ equiv_class_lookup_or_add (hash_table<equiv_class_hasher> *table,
   slot = table->find_slot (&ecl, INSERT);
   if (!*slot)
     {
-      *slot = XNEW (struct equiv_class_label);
+      *slot = XOBNEW (&equiv_class_obstack, struct equiv_class_label);
       (*slot)->labels = labels;
       (*slot)->hashcode = ecl.hashcode;
       (*slot)->equivalence_class = 0;
@@ -2335,6 +2336,7 @@ perform_var_substitution (constraint_graph_t graph)
   scc_info *si = new scc_info (size);
 
   bitmap_obstack_initialize (&iteration_obstack);
+  gcc_obstack_init (&equiv_class_obstack);
   pointer_equiv_class_table = new hash_table<equiv_class_hasher> (511);
   location_equiv_class_table
     = new hash_table<equiv_class_hasher> (511);
@@ -2474,6 +2476,7 @@ free_var_substitution_info (class scc_info *si)
   pointer_equiv_class_table = NULL;
   delete location_equiv_class_table;
   location_equiv_class_table = NULL;
+  obstack_free (&equiv_class_obstack, NULL);
   bitmap_obstack_release (&iteration_obstack);
 }
 
@@ -5691,9 +5694,9 @@ push_fields_onto_fieldstack (tree type, vec<fieldoff_s> *fieldstack,
     return false;
 
   /* If the vector of fields is growing too big, bail out early.
-     Callers check for vec::length <= MAX_FIELDS_FOR_FIELD_SENSITIVE, make
+     Callers check for vec::length <= param_max_fields_for_field_sensitive, make
      sure this fails.  */
-  if (fieldstack->length () > MAX_FIELDS_FOR_FIELD_SENSITIVE)
+  if (fieldstack->length () > (unsigned)param_max_fields_for_field_sensitive)
     return false;
 
   for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
@@ -6114,7 +6117,7 @@ create_variable_info_for_1 (tree decl, const char *name, bool add_id,
   /* If we didn't end up collecting sub-variables create a full
      variable for the decl.  */
   if (fieldstack.length () == 0
-      || fieldstack.length () > MAX_FIELDS_FOR_FIELD_SENSITIVE)
+      || fieldstack.length () > (unsigned)param_max_fields_for_field_sensitive)
     {
       vi = new_var_info (decl, name, add_id);
       vi->offset = 0;
@@ -7179,7 +7182,7 @@ init_base_vars (void)
 static void
 init_alias_vars (void)
 {
-  use_field_sensitive = (MAX_FIELDS_FOR_FIELD_SENSITIVE > 1);
+  use_field_sensitive = (param_max_fields_for_field_sensitive > 1);
 
   bitmap_obstack_initialize (&pta_obstack);
   bitmap_obstack_initialize (&oldpta_obstack);
@@ -7959,7 +7962,7 @@ associate_varinfo_to_alias (struct cgraph_node *node, void *data)
 {
   if ((node->alias
        || (node->thunk.thunk_p
-	   && ! node->global.inlined_to))
+	   && ! node->inlined_to))
       && node->analyzed
       && !node->ifunc_resolver)
     insert_vi_for_tree (node->decl, (varinfo_t)data);
@@ -8129,7 +8132,7 @@ ipa_pta_execute (void)
       /* Nodes without a body are not interesting.  Especially do not
          visit clones at this point for now - we get duplicate decls
 	 there for inline clones at least.  */
-      if (!node->has_gimple_body_p () || node->global.inlined_to)
+      if (!node->has_gimple_body_p () || node->inlined_to)
 	continue;
       node->get_body ();
 

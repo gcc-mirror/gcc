@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "tracer.h"
 #include "predict.h"
-#include "params.h"
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
@@ -366,7 +365,7 @@ is_feasible_trace (basic_block bb)
 
   /* Upper Hard limit on the number statements to copy.  */
   if (num_stmts_in_join
-      >= PARAM_VALUE (PARAM_MAX_JUMP_THREAD_DUPLICATION_STMTS))
+      >= param_max_jump_thread_duplication_stmts)
     return false;
 
   return true;

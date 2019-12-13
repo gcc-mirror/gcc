@@ -13,7 +13,7 @@ void sink (void*);
 struct Ax
 {
   char n;
-  char a[];                     // { dg-message "while referencing .Ax::a." "pr91463" { xfail *-*-* } }
+  char a[];                     // { dg-message "while referencing .Ax::a." }
 };
 
 // Verify warning for a definition with no initializer.
@@ -21,9 +21,9 @@ Ax ax_;
 
 void gax_ ()
 {
-  ax_.a[0] = 0;                 // { dg-warning "\\\[-Warray-bounds" "pr91463" { xfail *-*-* } }
-  ax_.a[1] = 0;                 // { dg-warning "\\\[-Warray-bounds" "pr91463" { xfail *-*-* } }
-  ax_.a[2] = 0;                 // { dg-warning "\\\[-Warray-bounds" "pr91463" { xfail *-*-* } }
+  ax_.a[0] = 0;                 // { dg-warning "\\\[-Warray-bounds" }
+  ax_.a[1] = 0;                 // { dg-warning "\\\[-Warray-bounds" }
+  ax_.a[2] = 0;                 // { dg-warning "\\\[-Warray-bounds" }
 }
 
 // Verify warning for access to a definition with an initializer that doesn't
@@ -32,9 +32,9 @@ Ax ax0 = { 0 };
 
 void gax0 ()
 {
-  ax0.a[0] = 0;                 // { dg-warning "\\\[-Warray-bounds" "pr91463" { xfail *-*-* } }
-  ax0.a[1] = 0;                 // { dg-warning "\\\[-Warray-bounds" "pr91463" { xfail *-*-* } }
-  ax0.a[2] = 0;                 // { dg-warning "\\\[-Warray-bounds" "pr91463" { xfail *-*-* } }
+  ax0.a[0] = 0;                 // { dg-warning "\\\[-Warray-bounds" }
+  ax0.a[1] = 0;                 // { dg-warning "\\\[-Warray-bounds" }
+  ax0.a[2] = 0;                 // { dg-warning "\\\[-Warray-bounds" }
 }
 
 // Verify warning for access to a definition with an initializer that
@@ -43,9 +43,9 @@ Ax ax0_ = { 0, { } };
 
 void gax0_ ()
 {
-  ax0_.a[0] = 0;                // { dg-warning "\\\[-Warray-bounds" "pr91463" { xfail *-*-* } }
-  ax0_.a[1] = 0;                // { dg-warning "\\\[-Warray-bounds" "pr91463" { xfail *-*-* } }
-  ax0_.a[2] = 0;                // { dg-warning "\\\[-Warray-bounds" "pr91463" { xfail *-*-* } }
+  ax0_.a[0] = 0;                // { dg-warning "\\\[-Warray-bounds" }
+  ax0_.a[1] = 0;                // { dg-warning "\\\[-Warray-bounds" }
+  ax0_.a[2] = 0;                // { dg-warning "\\\[-Warray-bounds" }
 }
 
 // Verify warning for out-of-bounds accesses to a definition with
@@ -55,8 +55,8 @@ Ax ax1 = { 1, { 0 } };
 void gax1 ()
 {
   ax1.a[0] = 0;
-  ax1.a[1] = 0;                 // { dg-warning "\\\[-Warray-bounds" "pr91463" { xfail *-*-* } }
-  ax1.a[2] = 0;                 // { dg-warning "\\\[-Warray-bounds" "pr91463" { xfail *-*-* } }
+  ax1.a[1] = 0;                 // { dg-warning "\\\[-Warray-bounds" }
+  ax1.a[2] = 0;                 // { dg-warning "\\\[-Warray-bounds" }
 }
 
 Ax ax2 = { 2, { 1, 0 } };
@@ -65,7 +65,7 @@ void gax2 ()
 {
   ax2.a[0] = 0;
   ax2.a[1] = 0;
-  ax2.a[2] = 0;                 // { dg-warning "\\\[-Warray-bounds" "pr91463" { xfail *-*-* } }
+  ax2.a[2] = 0;                 // { dg-warning "\\\[-Warray-bounds" }
 }
 
 
@@ -308,14 +308,14 @@ void ga1ix ()
 struct Bx
 {
   char n;
-  char a[];                     // { dg-message "while referencing .Bx::a." "pr91463" { xfail *-*-* } }
+  char a[];                     // { dg-message "while referencing .Bx::a." }
 
   // Verify the warning for a constant.
-  Bx () { a[0] = 0; }           // { dg-warning "\\\[-Warray-bounds" "pr91463" { xfail *-*-* } }
+  Bx () { a[0] = 0; }           // { dg-warning "\\\[-Warray-bounds" }
 
   // And also for a non-constant.  Regardless of the subscript, the array
   // of the object in function gxi() below has a zero size.
-  Bx (int i) { a[i] = 0; }      // { dg-warning "\\\[-Warray-bounds" "pr91463" { xfail *-*-* } }
+  Bx (int i) { a[i] = 0; }      // { dg-warning "\\\[-Warray-bounds" }
 };
 
 void gbx (void)

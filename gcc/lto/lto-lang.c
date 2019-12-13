@@ -305,7 +305,8 @@ handle_const_attribute (tree *node, tree ARG_UNUSED (name),
 			tree ARG_UNUSED (args), int ARG_UNUSED (flags),
 			bool * ARG_UNUSED (no_add_attrs))
 {
-  if (!fndecl_built_in_p (*node))
+  if (TREE_CODE (*node) != FUNCTION_DECL
+      || !fndecl_built_in_p (*node))
     inform (UNKNOWN_LOCATION, "%s:%s: %E: %E", __FILE__, __func__, *node, name);
 
   tree type = TREE_TYPE (*node);
@@ -1050,11 +1051,14 @@ lto_type_for_mode (machine_mode mode, int unsigned_p)
 	return build_vector_type_for_mode (inner_type, mode);
     }
 
-  if (mode == TYPE_MODE (dfloat32_type_node))
+  if (dfloat32_type_node != NULL_TREE
+      && mode == TYPE_MODE (dfloat32_type_node))
     return dfloat32_type_node;
-  if (mode == TYPE_MODE (dfloat64_type_node))
+  if (dfloat64_type_node != NULL_TREE
+      && mode == TYPE_MODE (dfloat64_type_node))
     return dfloat64_type_node;
-  if (mode == TYPE_MODE (dfloat128_type_node))
+  if (dfloat128_type_node != NULL_TREE
+      && mode == TYPE_MODE (dfloat128_type_node))
     return dfloat128_type_node;
 
   if (ALL_SCALAR_FIXED_POINT_MODE_P (mode))

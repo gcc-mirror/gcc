@@ -307,7 +307,7 @@ gfc_build_label_decl (tree label_id)
 void
 gfc_set_decl_location (tree decl, locus * loc)
 {
-  DECL_SOURCE_LOCATION (decl) = loc->lb->location;
+  DECL_SOURCE_LOCATION (decl) = gfc_get_location (loc);
 }
 
 
@@ -369,44 +369,37 @@ gfc_sym_identifier (gfc_symbol * sym)
 static const char *
 mangled_identifier (gfc_symbol *sym)
 {
-  static char name[GFC_MAX_MANGLED_SYMBOL_LEN + 1];
+  gfc_symbol *proc = sym->ns->proc_name;
+  static char name[3*GFC_MAX_MANGLED_SYMBOL_LEN + 14];
   /* Prevent the mangling of identifiers that have an assigned
      binding label (mainly those that are bind(c)).  */
 
   if (sym->attr.is_bind_c == 1 && sym->binding_label)
     return sym->binding_label;
 
-  if (!sym->fn_result_spec)
+  if (!sym->fn_result_spec
+      || (sym->module && !(proc && proc->attr.flavor == FL_PROCEDURE)))
     {
       if (sym->module == NULL)
 	return sym_identifier (sym);
       else
-	{
-	  snprintf (name, sizeof name, "__%s_MOD_%s", sym->module, sym->name);
-	  return name;
-	}
+	snprintf (name, sizeof name, "__%s_MOD_%s", sym->module, sym->name);
     }
   else
     {
       /* This is an entity that is actually local to a module procedure
 	 that appears in the result specification expression.  Since
 	 sym->module will be a zero length string, we use ns->proc_name
-	 instead. */
-      if (sym->ns->proc_name && sym->ns->proc_name->module)
-	{
-	  snprintf (name, sizeof name, "__%s_MOD__%s_PROC_%s",
-		    sym->ns->proc_name->module,
-		    sym->ns->proc_name->name,
-		    sym->name);
-	  return name;
-	}
+	 to provide the module name instead. */
+      if (proc && proc->module)
+	snprintf (name, sizeof name, "__%s_MOD__%s_PROC_%s",
+		  proc->module, proc->name, sym->name);
       else
-	{
-	  snprintf (name, sizeof name, "__%s_PROC_%s",
-		    sym->ns->proc_name->name, sym->name);
-	  return name;
-	}
+	snprintf (name, sizeof name, "__%s_PROC_%s",
+		  proc->name, sym->name);
     }
+
+  return name;
 }
 
 /* Get mangled identifier, adding the symbol to the global table if
@@ -753,15 +746,16 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
 	  || sym->attr.allocatable)
       && !DECL_ARTIFICIAL (decl))
     {
-      gfc_warning (OPT_Wsurprising,
-		   "Array %qs at %L is larger than limit set by"
-		   " %<-fmax-stack-var-size=%>, moved from stack to static"
-		   " storage. This makes the procedure unsafe when called"
-		   " recursively, or concurrently from multiple threads."
-		   " Consider using %<-frecursive%>, or increase the"
-		   " %<-fmax-stack-var-size=%> limit, or change the code to"
-		   " use an ALLOCATABLE array.",
-		   sym->name, &sym->declared_at);
+      if (flag_max_stack_var_size > 0)
+	gfc_warning (OPT_Wsurprising,
+		     "Array %qs at %L is larger than limit set by"
+		     " %<-fmax-stack-var-size=%>, moved from stack to static"
+		     " storage. This makes the procedure unsafe when called"
+		     " recursively, or concurrently from multiple threads."
+		     " Consider using %<-frecursive%>, or increase the"
+		     " %<-fmax-stack-var-size=%> limit, or change the code to"
+		     " use an ALLOCATABLE array.",
+		     sym->name, &sym->declared_at);
 
       TREE_STATIC (decl) = 1;
 
@@ -1637,15 +1631,18 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	      /* Add the string length to the same context as the symbol.  */
 	      if (DECL_CONTEXT (length) == NULL_TREE)
 		{
-		  if (DECL_CONTEXT (sym->backend_decl)
-		      == current_function_decl)
+		  if (sym->backend_decl == current_function_decl
+		      || (DECL_CONTEXT (sym->backend_decl)
+			  == current_function_decl))
 		    gfc_add_decl_to_function (length);
 		  else
 		    gfc_add_decl_to_parent_function (length);
 		}
 
-	      gcc_assert (DECL_CONTEXT (sym->backend_decl)
-			  == DECL_CONTEXT (length));
+	      gcc_assert (sym->backend_decl == current_function_decl
+			  ? DECL_CONTEXT (length) == current_function_decl
+			  : (DECL_CONTEXT (sym->backend_decl)
+			     == DECL_CONTEXT (length)));
 
 	      gfc_defer_symbol_init (sym);
 	    }
@@ -1763,7 +1760,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
     }
 
   /* Create the decl for the variable.  */
-  decl = build_decl (sym->declared_at.lb->location,
+  decl = build_decl (gfc_get_location (&sym->declared_at),
 		     VAR_DECL, gfc_sym_identifier (sym), gfc_sym_type (sym));
 
   /* Add attributes to variables.  Functions are handled elsewhere.  */
@@ -1911,13 +1908,20 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   if (sym->attr.associate_var)
     GFC_DECL_ASSOCIATE_VAR_P (decl) = 1;
 
-  /* We no longer mark __def_init as read-only so it does not take up
-     space in the read-only section and dan go into the BSS instead,
-     see PR 84487.  Marking this as artificial means that OpenMP will
-     treat this as predetermined shared.  */
-  if (sym->attr.vtab
-      || (sym->name[0] == '_' && gfc_str_startswith (sym->name, "__def_init")))
-    DECL_ARTIFICIAL (decl) = 1;
+  /* We only longer mark __def_init as read-only if it actually has an
+     initializer, it does not needlessly take up space in the
+     read-only section and can go into the BSS instead, see PR 84487.
+     Marking this as artificial means that OpenMP will treat this as
+     predetermined shared.  */
+
+  bool def_init = gfc_str_startswith (sym->name, "__def_init");
+
+  if (sym->attr.vtab || def_init)
+    {
+      DECL_ARTIFICIAL (decl) = 1;
+      if (def_init && sym->value)
+	TREE_READONLY (decl) = 1;
+    }
 
   return decl;
 }
@@ -2691,9 +2695,8 @@ create_function_arglist (gfc_symbol * sym)
 	  && (!f->sym->attr.proc_pointer
 	      && f->sym->attr.flavor != FL_PROCEDURE))
 	DECL_BY_REFERENCE (parm) = 1;
-      if (f->sym->attr.optional && !f->sym->attr.value)
+      if (f->sym->attr.optional)
 	{
-	  /* With value, the argument is passed as is.  */
 	  gfc_allocate_lang_decl (parm);
 	  GFC_DECL_OPTIONAL_ARGUMENT (parm) = 1;
 	}

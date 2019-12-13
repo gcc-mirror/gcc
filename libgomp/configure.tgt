@@ -17,6 +17,9 @@ if test $gcc_cv_have_tls = yes ; then
     *-*-k*bsd*-gnu*)
 	;;
 
+    *-*-musl*)
+	;;
+
     *-*-linux* | *-*-gnu*)
 	XCFLAGS="${XCFLAGS} -ftls-model=initial-exec -DUSING_INITIAL_EXEC_TLS"
 	;;
@@ -154,7 +157,7 @@ case "${target}" in
 	;;
 
   nvptx*-*-*)
-	config_path="nvptx"
+	config_path="nvptx accel"
 	;;
 
   *-*-rtems*)
@@ -162,6 +165,10 @@ case "${target}" in
 	if test "x$ac_cv_type_struct__Mutex_Control" = xyes ; then
 	    config_path="rtems posix"
 	fi
+	;;
+
+  amdgcn*-*-*)
+	config_path="gcn accel"
 	;;
 
   *)

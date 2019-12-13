@@ -448,6 +448,15 @@ enum aarch64_builtins
   /* Armv8.5-a RNG instruction builtins.  */
   AARCH64_BUILTIN_RNG_RNDR,
   AARCH64_BUILTIN_RNG_RNDRRS,
+  /* MEMTAG builtins.  */
+  AARCH64_MEMTAG_BUILTIN_START,
+  AARCH64_MEMTAG_BUILTIN_IRG,
+  AARCH64_MEMTAG_BUILTIN_GMI,
+  AARCH64_MEMTAG_BUILTIN_SUBP,
+  AARCH64_MEMTAG_BUILTIN_INC_TAG,
+  AARCH64_MEMTAG_BUILTIN_SET_TAG,
+  AARCH64_MEMTAG_BUILTIN_GET_TAG,
+  AARCH64_MEMTAG_BUILTIN_END,
   AARCH64_BUILTIN_MAX
 };
 
@@ -1130,6 +1139,51 @@ aarch64_init_rng_builtins (void)
 				   AARCH64_BUILTIN_RNG_RNDRRS);
 }
 
+/* Initialize the memory tagging extension (MTE) builtins.  */
+struct
+{
+  tree ftype;
+  enum insn_code icode;
+} aarch64_memtag_builtin_data[AARCH64_MEMTAG_BUILTIN_END -
+			      AARCH64_MEMTAG_BUILTIN_START - 1];
+
+static void
+aarch64_init_memtag_builtins (void)
+{
+  tree fntype = NULL;
+
+#define AARCH64_INIT_MEMTAG_BUILTINS_DECL(F, N, I, T) \
+  aarch64_builtin_decls[AARCH64_MEMTAG_BUILTIN_##F] \
+    = aarch64_general_add_builtin ("__builtin_aarch64_memtag_"#N, \
+				   T, AARCH64_MEMTAG_BUILTIN_##F); \
+  aarch64_memtag_builtin_data[AARCH64_MEMTAG_BUILTIN_##F - \
+			      AARCH64_MEMTAG_BUILTIN_START - 1] = \
+				{T, CODE_FOR_##I};
+
+  fntype = build_function_type_list (ptr_type_node, ptr_type_node,
+				     uint64_type_node, NULL);
+  AARCH64_INIT_MEMTAG_BUILTINS_DECL (IRG, irg, irg, fntype);
+
+  fntype = build_function_type_list (uint64_type_node, ptr_type_node,
+				     uint64_type_node, NULL);
+  AARCH64_INIT_MEMTAG_BUILTINS_DECL (GMI, gmi, gmi, fntype);
+
+  fntype = build_function_type_list (ptrdiff_type_node, ptr_type_node,
+				     ptr_type_node, NULL);
+  AARCH64_INIT_MEMTAG_BUILTINS_DECL (SUBP, subp, subp, fntype);
+
+  fntype = build_function_type_list (ptr_type_node, ptr_type_node,
+				     unsigned_type_node, NULL);
+  AARCH64_INIT_MEMTAG_BUILTINS_DECL (INC_TAG, inc_tag, addg, fntype);
+
+  fntype = build_function_type_list (void_type_node, ptr_type_node, NULL);
+  AARCH64_INIT_MEMTAG_BUILTINS_DECL (SET_TAG, set_tag, stg, fntype);
+
+  fntype = build_function_type_list (ptr_type_node, ptr_type_node, NULL);
+  AARCH64_INIT_MEMTAG_BUILTINS_DECL (GET_TAG, get_tag, ldg, fntype);
+
+#undef AARCH64_INIT_MEMTAG_BUILTINS_DECL
+}
 
 /* Initialize all builtins in the AARCH64_BUILTIN_GENERAL group.  */
 
@@ -1184,6 +1238,9 @@ aarch64_general_init_builtins (void)
 
   if (TARGET_TME)
     aarch64_init_tme_builtins ();
+
+  if (TARGET_MEMTAG)
+    aarch64_init_memtag_builtins ();
 }
 
 /* Implement TARGET_BUILTIN_DECL for the AARCH64_BUILTIN_GENERAL group.  */
@@ -1665,6 +1722,79 @@ aarch64_expand_rng_builtin (tree exp, rtx target, int fcode, int ignore)
   return target;
 }
 
+/* Expand an expression EXP that calls a MEMTAG built-in FCODE
+   with result going to TARGET.  */
+static rtx
+aarch64_expand_builtin_memtag (int fcode, tree exp, rtx target)
+{
+  if (TARGET_ILP32)
+    {
+      error ("Memory Tagging Extension does not support %<-mabi=ilp32%>");
+      return const0_rtx;
+    }
+
+  rtx pat = NULL;
+  enum insn_code icode = aarch64_memtag_builtin_data[fcode -
+			   AARCH64_MEMTAG_BUILTIN_START - 1].icode;
+
+  rtx op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
+  machine_mode mode0 = GET_MODE (op0);
+  op0 = force_reg (mode0 == VOIDmode ? DImode : mode0, op0);
+  op0 = convert_to_mode (DImode, op0, true);
+
+  switch (fcode)
+    {
+      case AARCH64_MEMTAG_BUILTIN_IRG:
+      case AARCH64_MEMTAG_BUILTIN_GMI:
+      case AARCH64_MEMTAG_BUILTIN_SUBP:
+      case AARCH64_MEMTAG_BUILTIN_INC_TAG:
+	{
+	  if (! target
+	      || GET_MODE (target) != DImode
+	      || ! (*insn_data[icode].operand[0].predicate) (target, DImode))
+	    target = gen_reg_rtx (DImode);
+
+	  if (fcode == AARCH64_MEMTAG_BUILTIN_INC_TAG)
+	    {
+	      rtx op1 = expand_normal (CALL_EXPR_ARG (exp, 1));
+
+	      if ((*insn_data[icode].operand[3].predicate) (op1, QImode))
+		{
+		  pat = GEN_FCN (icode) (target, op0, const0_rtx, op1);
+		  break;
+		}
+	      error ("%Kargument %d must be a constant immediate "
+		     "in range [0,15]", exp, 2);
+	      return const0_rtx;
+	    }
+	  else
+	    {
+	      rtx op1 = expand_normal (CALL_EXPR_ARG (exp, 1));
+	      machine_mode mode1 = GET_MODE (op1);
+	      op1 = force_reg (mode1 == VOIDmode ? DImode : mode1, op1);
+	      op1 = convert_to_mode (DImode, op1, true);
+	      pat = GEN_FCN (icode) (target, op0, op1);
+	    }
+	  break;
+	}
+      case AARCH64_MEMTAG_BUILTIN_GET_TAG:
+	target = op0;
+	pat = GEN_FCN (icode) (target, op0, const0_rtx);
+	break;
+      case AARCH64_MEMTAG_BUILTIN_SET_TAG:
+	pat = GEN_FCN (icode) (op0, op0, const0_rtx);
+	break;
+      default:
+	gcc_unreachable();
+    }
+
+  if (!pat)
+    return NULL_RTX;
+
+  emit_insn (pat);
+  return target;
+}
+
 /* Expand an expression EXP that calls built-in function FCODE,
    with result going to TARGET if that's convenient.  IGNORE is true
    if the result of the builtin is ignored.  */
@@ -1800,6 +1930,10 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
       || fcode == AARCH64_TME_BUILTIN_TCANCEL)
     return aarch64_expand_builtin_tme (fcode, exp, target);
 
+  if (fcode >= AARCH64_MEMTAG_BUILTIN_START
+      && fcode <= AARCH64_MEMTAG_BUILTIN_END)
+    return aarch64_expand_builtin_memtag (fcode, exp, target);
+
   gcc_unreachable ();
 }
 
@@ -1918,29 +2052,6 @@ aarch64_builtin_vectorized_function (unsigned int fn, tree type_out,
 
 	return aarch64_builtin_decls[builtin];
       }
-    case CFN_BUILT_IN_BSWAP16:
-#undef AARCH64_CHECK_BUILTIN_MODE
-#define AARCH64_CHECK_BUILTIN_MODE(C, N) \
-  (out_mode == N##Imode && out_n == C \
-   && in_mode == N##Imode && in_n == C)
-      if (AARCH64_CHECK_BUILTIN_MODE (4, H))
-	return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOPU_bswapv4hi];
-      else if (AARCH64_CHECK_BUILTIN_MODE (8, H))
-	return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOPU_bswapv8hi];
-      else
-	return NULL_TREE;
-    case CFN_BUILT_IN_BSWAP32:
-      if (AARCH64_CHECK_BUILTIN_MODE (2, S))
-	return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOPU_bswapv2si];
-      else if (AARCH64_CHECK_BUILTIN_MODE (4, S))
-	return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOPU_bswapv4si];
-      else
-	return NULL_TREE;
-    case CFN_BUILT_IN_BSWAP64:
-      if (AARCH64_CHECK_BUILTIN_MODE (2, D))
-	return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOPU_bswapv2di];
-      else
-	return NULL_TREE;
     default:
       return NULL_TREE;
     }
@@ -2174,6 +2285,106 @@ aarch64_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 			    reload_fenv, restore_fnenv), update_call);
 }
 
+/* Resolve overloaded MEMTAG build-in functions.  */
+#define AARCH64_BUILTIN_SUBCODE(F) \
+  (DECL_MD_FUNCTION_CODE (F) >> AARCH64_BUILTIN_SHIFT)
+
+static tree
+aarch64_resolve_overloaded_memtag (location_t loc,
+				   tree fndecl, void *pass_params)
+{
+  vec<tree, va_gc> *params = static_cast<vec<tree, va_gc> *> (pass_params);
+  unsigned param_num = params ? params->length() : 0;
+  unsigned int fcode = AARCH64_BUILTIN_SUBCODE (fndecl);
+  tree inittype = aarch64_memtag_builtin_data[
+		    fcode - AARCH64_MEMTAG_BUILTIN_START - 1].ftype;
+  unsigned arg_num = list_length (TYPE_ARG_TYPES (inittype)) - 1;
+
+  if (param_num != arg_num)
+    {
+      TREE_TYPE (fndecl) = inittype;
+      return NULL_TREE;
+    }
+  tree retype = NULL;
+
+  if (fcode == AARCH64_MEMTAG_BUILTIN_SUBP)
+    {
+      tree t0 = TREE_TYPE ((*params)[0]);
+      tree t1 = TREE_TYPE ((*params)[1]);
+
+      if (t0 == error_mark_node || TREE_CODE (t0) != POINTER_TYPE)
+	t0 = ptr_type_node;
+      if (t1 == error_mark_node || TREE_CODE (t1) != POINTER_TYPE)
+	t1 = ptr_type_node;
+
+      if (TYPE_MODE (t0) != DImode)
+	warning_at (loc, 1, "expected 64-bit address but argument 1 is %d-bit",
+	    (int)tree_to_shwi (DECL_SIZE ((*params)[0])));
+
+      if (TYPE_MODE (t1) != DImode)
+	warning_at (loc, 1, "expected 64-bit address but argument 2 is %d-bit",
+	    (int)tree_to_shwi (DECL_SIZE ((*params)[1])));
+
+      retype = build_function_type_list (ptrdiff_type_node, t0, t1, NULL);
+    }
+  else
+    {
+      tree t0 = TREE_TYPE ((*params)[0]);
+
+      if (t0 == error_mark_node || TREE_CODE (t0) != POINTER_TYPE)
+	{
+	  TREE_TYPE (fndecl) = inittype;
+	  return NULL_TREE;
+	}
+
+      if (TYPE_MODE (t0) != DImode)
+	warning_at (loc, 1, "expected 64-bit address but argument 1 is %d-bit",
+	    (int)tree_to_shwi (DECL_SIZE ((*params)[0])));
+
+      switch (fcode)
+	{
+	case AARCH64_MEMTAG_BUILTIN_IRG:
+	  retype = build_function_type_list (t0, t0, uint64_type_node, NULL);
+	  break;
+	case AARCH64_MEMTAG_BUILTIN_GMI:
+	  retype = build_function_type_list (uint64_type_node, t0,
+	      uint64_type_node, NULL);
+	  break;
+	case AARCH64_MEMTAG_BUILTIN_INC_TAG:
+	  retype = build_function_type_list (t0, t0, unsigned_type_node, NULL);
+	  break;
+	case AARCH64_MEMTAG_BUILTIN_SET_TAG:
+	  retype = build_function_type_list (void_type_node, t0, NULL);
+	  break;
+	case AARCH64_MEMTAG_BUILTIN_GET_TAG:
+	  retype = build_function_type_list (t0, t0, NULL);
+	  break;
+	default:
+	  return NULL_TREE;
+	}
+    }
+
+  if (!retype || retype == error_mark_node)
+    TREE_TYPE (fndecl) = inittype;
+  else
+    TREE_TYPE (fndecl) = retype;
+
+  return NULL_TREE;
+}
+
+/* Called at aarch64_resolve_overloaded_builtin in aarch64-c.c.  */
+tree
+aarch64_resolve_overloaded_builtin_general (location_t loc, tree function,
+					    void *pass_params)
+{
+  unsigned int fcode = AARCH64_BUILTIN_SUBCODE (function);
+
+  if (fcode >= AARCH64_MEMTAG_BUILTIN_START
+      && fcode <= AARCH64_MEMTAG_BUILTIN_END)
+    return aarch64_resolve_overloaded_memtag(loc, function, pass_params);
+
+  return NULL_TREE;
+}
 
 #undef AARCH64_CHECK_BUILTIN_MODE
 #undef AARCH64_FIND_FRINT_VARIANT

@@ -794,13 +794,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 #endif
 
- template<typename _Iterator, typename _Container, typename _Sequence>
-    _Iterator
-    __niter_base(const __gnu_debug::_Safe_iterator<
-		 __gnu_cxx::__normal_iterator<_Iterator, _Container>,
-		 _Sequence, std::random_access_iterator_tag>& __it)
-    { return std::__niter_base(__it.base()); }
-
 #if __cplusplus >= 201703L
   namespace __detail::__variant
   {

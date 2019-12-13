@@ -9,7 +9,7 @@ program main
   implicit none
 
   integer :: i, j
-  real ::  a(n) = 0, b(n) = 0, c, d
+  real ::  a(n) = 0, b(n) = 0, c, d, e(n)
   real ::  x(n) = 0, y(n), z
   common /BLOCK/ a, b, c, j, d
   common /KERNELS_BLOCK/ x, y, z
@@ -35,5 +35,10 @@ end program main
 ! { dg-final { scan-tree-dump-times "omp target oacc_kernels .*map\\(tofrom:y \\\[len: 400\\\]\\\)" 1 "omplower" } }
 ! { dg-final { scan-tree-dump-times "omp target oacc_kernels .*map\\(force_tofrom:c \\\[len: 4\\\]\\)" 1 "omplower" } }
 
-! { dg-final { scan-tree-dump-not "map\\(.*:block\\)" "omplower" } }
-! { dg-final { scan-tree-dump-not "map\\(.*:kernels_block\\)" "omplower" } }
+! Expecting no mapping of un-referenced common-blocks variables
+
+! { dg-final { scan-tree-dump-not "map\\(.*:block" "omplower" } }
+! { dg-final { scan-tree-dump-not "map\\(.*:kernels_block" "omplower" } }
+! { dg-final { scan-tree-dump-not "map\\(.*:d " "omplower" } }
+! { dg-final { scan-tree-dump-not "map\\(.*:e " "omplower" } }
+! { dg-final { scan-tree-dump-not "map\\(.*:z " "omplower" } }

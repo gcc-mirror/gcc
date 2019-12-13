@@ -49,7 +49,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "profile.h"
 #include "tree-cfgcleanup.h"
-#include "params.h"
 #include "stringpool.h"
 #include "attribs.h"
 #include "tree-pretty-print.h"
@@ -74,8 +73,8 @@ static GTY(()) tree ic_tuple_callee_field;
 /* Do initialization work for the edge profiler.  */
 
 /* Add code:
-   __thread gcov*	__gcov_indirect_call_counters; // pointer to actual counter
-   __thread void*	__gcov_indirect_call_callee; // actual callee address
+   __thread gcov*	__gcov_indirect_call.counters; // pointer to actual counter
+   __thread void*	__gcov_indirect_call.callee; // actual callee address
    __thread int __gcov_function_counter; // time profiler function counter
 */
 static void
@@ -382,7 +381,7 @@ gimple_gen_ic_profiler (histogram_value value, unsigned tag)
       f_1 = foo;
       __gcov_indirect_call.counters = &__gcov4.main[0];
       PROF_9 = f_1;
-      __gcov_indirect_call_callee = PROF_9;
+      __gcov_indirect_call.callee = PROF_9;
       _4 = f_1 ();
    */
 
@@ -445,11 +444,11 @@ gimple_gen_ic_func_profiler (void)
 
   /* Insert code:
 
-     if (__gcov_indirect_call_callee != NULL)
+     if (__gcov_indirect_call.callee != NULL)
        __gcov_indirect_call_profiler_v3 (profile_id, &current_function_decl);
 
      The function __gcov_indirect_call_profiler_v3 is responsible for
-     resetting __gcov_indirect_call_callee to NULL.  */
+     resetting __gcov_indirect_call.callee to NULL.  */
 
   gimple_stmt_iterator gsi = gsi_start_bb (cond_bb);
   void0 = build_int_cst (ptr_type_node, 0);
@@ -786,7 +785,8 @@ tree_profiling (void)
       if (flag_branch_probabilities
 	  && !thunk
 	  && flag_profile_values
-	  && flag_value_profile_transformations)
+	  && flag_value_profile_transformations
+	  && profile_status_for_fn (cfun) == PROFILE_READ)
 	gimple_value_profile_transformations ();
 
       /* The above could hose dominator info.  Currently there is
@@ -891,7 +891,7 @@ pass_ipa_tree_profile::gate (function *)
 {
   /* When profile instrumentation, use or test coverage shall be performed.
      But for AutoFDO, this there is no instrumentation, thus this pass is
-     diabled.  */
+     disabled.  */
   return (!in_lto_p && !flag_auto_profile
 	  && (flag_branch_probabilities || flag_test_coverage
 	      || profile_arc_flag));

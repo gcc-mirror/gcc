@@ -16,6 +16,28 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
+HAVE_DOUBLE32 = $(findstring HAVE_DOUBLE32, $(tm_defines))
+HAVE_DOUBLE64 = $(findstring HAVE_DOUBLE64, $(tm_defines))
+HAVE_LONG_DOUBLE32 = $(findstring HAVE_LONG_DOUBLE32, $(tm_defines))
+HAVE_LONG_DOUBLE64 = $(findstring HAVE_LONG_DOUBLE64, $(tm_defines))
+HAVE_LONG_DOUBLE_IS_DOUBLE = $(findstring HAVE_LONG_DOUBLE_IS_DOUBLE, $(tm_defines))
+
+ifeq (WITH_DOUBLE32, $(findstring WITH_DOUBLE32, $(tm_defines)))
+WITH_DOUBLE=32
+endif
+
+ifeq (WITH_DOUBLE64, $(findstring WITH_DOUBLE64, $(tm_defines)))
+WITH_DOUBLE=64
+endif
+
+ifeq (WITH_LONG_DOUBLE32, $(findstring WITH_LONG_DOUBLE32, $(tm_defines)))
+WITH_LONG_DOUBLE=32
+endif
+
+ifeq (WITH_LONG_DOUBLE64, $(findstring WITH_LONG_DOUBLE64, $(tm_defines)))
+WITH_LONG_DOUBLE=64
+endif
+
 PASSES_EXTRA += $(srcdir)/config/avr/avr-passes.def
 
 driver-avr.o: $(srcdir)/config/avr/driver-avr.c \
@@ -56,8 +78,7 @@ AVR_MCUS = $(srcdir)/config/avr/avr-mcus.def
 
 .PHONY: avr-mcus
 
-avr-mcus: $(srcdir)/config/avr/t-multilib \
-	  $(srcdir)/doc/avr-mmcu.texi ; @true
+avr-mcus: $(srcdir)/doc/avr-mmcu.texi ; @true
 
 # Make sure that native -mmcu= support is in sync with -mmcu= documentation.
 gen-avr-mmcu-texi$(build_exeext): $(srcdir)/config/avr/gen-avr-mmcu-texi.c \
@@ -93,9 +114,19 @@ install-device-specs: s-device-specs installdirs
 # MULTILIB_OPTIONS
 # MULTILIB_DIRNAMES
 # MULTILIB_REQUIRED
+# MULTILIB_REUSE
 
-s-mlib: $(srcdir)/config/avr/t-multilib
+multilib.h Makefile s-mlib: t-multilib-avr
 
-$(srcdir)/config/avr/t-multilib: $(srcdir)/config/avr/genmultilib.awk \
+t-multilib-avr: $(srcdir)/config/avr/genmultilib.awk \
 				 $(AVR_MCUS)
-	$(AWK) -f $< $< $(AVR_MCUS) > $@
+	$(AWK)	-v HAVE_LONG_DOUBLE_IS_DOUBLE=$(HAVE_LONG_DOUBLE_IS_DOUBLE) \
+		-v HAVE_DOUBLE32=$(HAVE_DOUBLE32) 			\
+		-v HAVE_DOUBLE64=$(HAVE_DOUBLE64) 			\
+		-v HAVE_LONG_DOUBLE32=$(HAVE_LONG_DOUBLE32)		\
+		-v HAVE_LONG_DOUBLE64=$(HAVE_LONG_DOUBLE64) 		\
+		-v with_double=$(WITH_DOUBLE) 				\
+		-v with_long_double=$(WITH_LONG_DOUBLE)			\
+		-f $< $< $(AVR_MCUS) > $@
+
+include t-multilib-avr

@@ -103,11 +103,11 @@ init_internal_fns ()
 #define mask_load_direct { -1, 2, false }
 #define load_lanes_direct { -1, -1, false }
 #define mask_load_lanes_direct { -1, -1, false }
-#define gather_load_direct { -1, -1, false }
+#define gather_load_direct { 3, 1, false }
 #define mask_store_direct { 3, 2, false }
 #define store_lanes_direct { 0, 0, false }
 #define mask_store_lanes_direct { 0, 0, false }
-#define scatter_store_direct { 3, 3, false }
+#define scatter_store_direct { 3, 1, false }
 #define unary_direct { 0, 0, true }
 #define binary_direct { 0, 0, true }
 #define ternary_direct { 0, 0, true }
@@ -118,6 +118,7 @@ init_internal_fns ()
 #define fold_extract_direct { 2, 2, false }
 #define fold_left_direct { 1, 1, false }
 #define mask_fold_left_direct { 1, 1, false }
+#define check_ptrs_direct { 0, 0, false }
 
 const direct_internal_fn_info direct_internal_fn_array[IFN_LAST + 1] = {
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) not_direct,
@@ -1408,7 +1409,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
   /* s1 * s2 -> ur  */
   if (!uns0_p && !uns1_p && unsr_p)
     {
-      rtx tem, tem2;
+      rtx tem;
       switch (pos_neg0 | pos_neg1)
 	{
 	case 1: /* Both operands known to be non-negative.  */
@@ -1438,10 +1439,8 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	      ops.op2 = NULL_TREE;
 	      ops.location = loc;
 	      res = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
-	      tem = expand_binop (mode, and_optab, op0, op1, NULL_RTX, false,
-				  OPTAB_LIB_WIDEN);
-	      do_compare_rtx_and_jump (tem, const0_rtx, EQ, true, mode,
-				       NULL_RTX, NULL, done_label,
+	      do_compare_rtx_and_jump (pos_neg0 == 1 ? op0 : op1, const0_rtx, EQ,
+				       true, mode, NULL_RTX, NULL, done_label,
 				       profile_probability::very_likely ());
 	      goto do_error_label;
 	    }
@@ -1472,16 +1471,23 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	  arg1 = error_mark_node;
 	  emit_jump (do_main_label);
 	  emit_label (after_negate_label);
-	  tem2 = expand_binop (mode, xor_optab, op0, op1, NULL_RTX, false,
-			       OPTAB_LIB_WIDEN);
-	  do_compare_rtx_and_jump (tem2, const0_rtx, GE, false, mode, NULL_RTX,
-				   NULL, do_main_label, profile_probability::very_likely ());
+	  tem = expand_binop (mode, xor_optab, op0, op1, NULL_RTX, false,
+			      OPTAB_LIB_WIDEN);
+	  do_compare_rtx_and_jump (tem, const0_rtx, GE, false, mode, NULL_RTX,
+				   NULL, do_main_label,
+				   profile_probability::very_likely ());
 	  /* One argument is negative here, the other positive.  This
 	     overflows always, unless one of the arguments is 0.  But
 	     if e.g. s2 is 0, (U) s1 * 0 doesn't overflow, whatever s1
 	     is, thus we can keep do_main code oring in overflow as is.  */
-	  do_compare_rtx_and_jump (tem, const0_rtx, EQ, true, mode, NULL_RTX,
-				   NULL, do_main_label, profile_probability::very_likely ());
+	  if (pos_neg0 != 2)
+	    do_compare_rtx_and_jump (op0, const0_rtx, EQ, true, mode, NULL_RTX,
+				     NULL, do_main_label,
+				     profile_probability::very_unlikely ());
+	  if (pos_neg1 != 2)
+	    do_compare_rtx_and_jump (op1, const0_rtx, EQ, true, mode, NULL_RTX,
+				     NULL, do_main_label,
+				     profile_probability::very_unlikely ());
 	  expand_arith_set_overflow (lhs, target);
 	  emit_label (do_main_label);
 	  goto do_main;
@@ -2785,7 +2791,8 @@ expand_scatter_store_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
       create_input_operand (&ops[i++], mask_rtx, TYPE_MODE (TREE_TYPE (mask)));
     }
 
-  insn_code icode = direct_optab_handler (optab, TYPE_MODE (TREE_TYPE (rhs)));
+  insn_code icode = convert_optab_handler (optab, TYPE_MODE (TREE_TYPE (rhs)),
+					   TYPE_MODE (TREE_TYPE (offset)));
   expand_insn (icode, i, ops);
 }
 
@@ -2813,11 +2820,12 @@ expand_gather_load_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
   create_integer_operand (&ops[i++], scale_int);
   if (optab == mask_gather_load_optab)
     {
-      tree mask = gimple_call_arg (stmt, 3);
+      tree mask = gimple_call_arg (stmt, 4);
       rtx mask_rtx = expand_normal (mask);
       create_input_operand (&ops[i++], mask_rtx, TYPE_MODE (TREE_TYPE (mask)));
     }
-  insn_code icode = direct_optab_handler (optab, TYPE_MODE (TREE_TYPE (lhs)));
+  insn_code icode = convert_optab_handler (optab, TYPE_MODE (TREE_TYPE (lhs)),
+					   TYPE_MODE (TREE_TYPE (offset)));
   expand_insn (icode, i, ops);
 }
 
@@ -3004,6 +3012,9 @@ expand_while_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 #define expand_mask_fold_left_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 3)
 
+#define expand_check_ptrs_optab_fn(FN, STMT, OPTAB) \
+  expand_direct_optab_fn (FN, STMT, OPTAB, 4)
+
 /* RETURN_TYPE and ARGS are a return type and argument list that are
    in principle compatible with FN (which satisfies direct_internal_fn_p).
    Return the types that should be used to determine whether the
@@ -3084,15 +3095,16 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_mask_load_optab_supported_p direct_optab_supported_p
 #define direct_load_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_load_lanes_optab_supported_p multi_vector_optab_supported_p
-#define direct_gather_load_optab_supported_p direct_optab_supported_p
+#define direct_gather_load_optab_supported_p convert_optab_supported_p
 #define direct_mask_store_optab_supported_p direct_optab_supported_p
 #define direct_store_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_store_lanes_optab_supported_p multi_vector_optab_supported_p
-#define direct_scatter_store_optab_supported_p direct_optab_supported_p
+#define direct_scatter_store_optab_supported_p convert_optab_supported_p
 #define direct_while_optab_supported_p convert_optab_supported_p
 #define direct_fold_extract_optab_supported_p direct_optab_supported_p
 #define direct_fold_left_optab_supported_p direct_optab_supported_p
 #define direct_mask_fold_left_optab_supported_p direct_optab_supported_p
+#define direct_check_ptrs_optab_supported_p direct_optab_supported_p
 
 /* Return the optab used by internal function FN.  */
 
@@ -3513,8 +3525,6 @@ internal_fn_mask_index (internal_fn fn)
       return 2;
 
     case IFN_MASK_GATHER_LOAD:
-      return 3;
-
     case IFN_MASK_SCATTER_STORE:
       return 4;
 
@@ -3546,27 +3556,48 @@ internal_fn_stored_value_index (internal_fn fn)
    IFN.  For loads, VECTOR_TYPE is the vector type of the load result,
    while for stores it is the vector type of the stored data argument.
    MEMORY_ELEMENT_TYPE is the type of the memory elements being loaded
-   or stored.  OFFSET_SIGN is the sign of the offset argument, which is
-   only relevant when the offset is narrower than an address.  SCALE is
-   the amount by which the offset should be multiplied *after* it has
-   been extended to address width.  */
+   or stored.  OFFSET_VECTOR_TYPE is the vector type that holds the
+   offset from the shared base address of each loaded or stored element.
+   SCALE is the amount by which these offsets should be multiplied
+   *after* they have been extended to address width.  */
 
 bool
 internal_gather_scatter_fn_supported_p (internal_fn ifn, tree vector_type,
 					tree memory_element_type,
-					signop offset_sign, int scale)
+					tree offset_vector_type, int scale)
 {
   if (!tree_int_cst_equal (TYPE_SIZE (TREE_TYPE (vector_type)),
 			   TYPE_SIZE (memory_element_type)))
     return false;
+  if (maybe_ne (TYPE_VECTOR_SUBPARTS (vector_type),
+		TYPE_VECTOR_SUBPARTS (offset_vector_type)))
+    return false;
   optab optab = direct_internal_fn_optab (ifn);
-  insn_code icode = direct_optab_handler (optab, TYPE_MODE (vector_type));
+  insn_code icode = convert_optab_handler (optab, TYPE_MODE (vector_type),
+					   TYPE_MODE (offset_vector_type));
   int output_ops = internal_load_fn_p (ifn) ? 1 : 0;
+  bool unsigned_p = TYPE_UNSIGNED (TREE_TYPE (offset_vector_type));
   return (icode != CODE_FOR_nothing
-	  && insn_operand_matches (icode, 2 + output_ops,
-				   GEN_INT (offset_sign == UNSIGNED))
-	  && insn_operand_matches (icode, 3 + output_ops,
-				   GEN_INT (scale)));
+	  && insn_operand_matches (icode, 2 + output_ops, GEN_INT (unsigned_p))
+	  && insn_operand_matches (icode, 3 + output_ops, GEN_INT (scale)));
+}
+
+/* Return true if the target supports IFN_CHECK_{RAW,WAR}_PTRS function IFN
+   for pointers of type TYPE when the accesses have LENGTH bytes and their
+   common byte alignment is ALIGN.  */
+
+bool
+internal_check_ptrs_fn_supported_p (internal_fn ifn, tree type,
+				    poly_uint64 length, unsigned int align)
+{
+  machine_mode mode = TYPE_MODE (type);
+  optab optab = direct_internal_fn_optab (ifn);
+  insn_code icode = direct_optab_handler (optab, mode);
+  if (icode == CODE_FOR_nothing)
+    return false;
+  rtx length_rtx = immed_wide_int_const (length, mode);
+  return (insn_operand_matches (icode, 3, length_rtx)
+	  && insn_operand_matches (icode, 4, GEN_INT (align)));
 }
 
 /* Expand STMT as though it were a call to internal function FN.  */

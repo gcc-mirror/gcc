@@ -41,5 +41,5 @@ main (int argc, char **argv)
 }
 
 /* { dg-output "CheCKpOInT(\n|\r\n|\r).*" } */
-/* { dg-output "\\\[\[0-9a-fA-FxX\]+,256\\\] surrounds2 \\\[\[0-9a-fA-FxX\]+,\\\+512\\\]" } */
+/* { dg-output "\\\[\[0-9a-fA-FxX\]+,\\\+512\\\] outside mapped block \\\[\[0-9a-fA-FxX\]+,\\\+256\\\]" } */
 /* { dg-shouldfail "" } */

@@ -120,7 +120,7 @@ gomp_init_work_share (struct gomp_work_share *ws, size_t ordered,
       else
 	ordered = nthreads * sizeof (*ws->ordered_team_ids);
       if (ordered > INLINE_ORDERED_TEAM_IDS_SIZE)
-	ws->ordered_team_ids = gomp_malloc (ordered);
+	ws->ordered_team_ids = team_malloc (ordered);
       else
 	ws->ordered_team_ids = ws->inline_ordered_team_ids;
       memset (ws->ordered_team_ids, '\0', ordered);
@@ -142,7 +142,7 @@ gomp_fini_work_share (struct gomp_work_share *ws)
 {
   gomp_mutex_destroy (&ws->lock);
   if (ws->ordered_team_ids != ws->inline_ordered_team_ids)
-    free (ws->ordered_team_ids);
+    team_free (ws->ordered_team_ids);
   gomp_ptrlock_destroy (&ws->next_ws);
 }
 

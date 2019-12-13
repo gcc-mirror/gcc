@@ -62,7 +62,6 @@
 #include "gimple-ssa.h"
 #include "gimple-walk.h"
 #include "intl.h"
-#include "params.h"
 #include "tm-constrs.h"
 #include "tree-vectorizer.h"
 #include "target-globals.h"
@@ -80,6 +79,7 @@
 #include "tree-vrp.h"
 #include "tree-ssanames.h"
 #include "rs6000-internal.h"
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -1427,6 +1427,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #define TARGET_VECTORIZE_FINISH_COST rs6000_finish_cost
 #undef TARGET_VECTORIZE_DESTROY_COST_DATA
 #define TARGET_VECTORIZE_DESTROY_COST_DATA rs6000_destroy_cost_data
+
+#undef TARGET_LOOP_UNROLL_ADJUST
+#define TARGET_LOOP_UNROLL_ADJUST rs6000_loop_unroll_adjust
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS rs6000_init_builtins
@@ -4511,34 +4514,36 @@ rs6000_option_override_internal (bool global_init_p)
 
   if (global_init_p)
     {
-      maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES,
-			     rs6000_cost->simultaneous_prefetches,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
-      maybe_set_param_value (PARAM_L1_CACHE_SIZE, rs6000_cost->l1_cache_size,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
-      maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
-			     rs6000_cost->cache_line_size,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
-      maybe_set_param_value (PARAM_L2_CACHE_SIZE, rs6000_cost->l2_cache_size,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_simultaneous_prefetches,
+			   rs6000_cost->simultaneous_prefetches);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_l1_cache_size,
+			   rs6000_cost->l1_cache_size);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_l1_cache_line_size,
+			   rs6000_cost->cache_line_size);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_l2_cache_size,
+			   rs6000_cost->l2_cache_size);
 
       /* Increase loop peeling limits based on performance analysis. */
-      maybe_set_param_value (PARAM_MAX_PEELED_INSNS, 400,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
-      maybe_set_param_value (PARAM_MAX_COMPLETELY_PEELED_INSNS, 400,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_max_peeled_insns, 400);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_max_completely_peeled_insns, 400);
 
       /* Use the 'model' -fsched-pressure algorithm by default.  */
-      maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM,
-			     SCHED_PRESSURE_MODEL,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_sched_pressure_algorithm,
+			   SCHED_PRESSURE_MODEL);
+
+      /* Explicit -funroll-loops turns -munroll-only-small-loops off.  */
+      if (((global_options_set.x_flag_unroll_loops && flag_unroll_loops)
+	   || (global_options_set.x_flag_unroll_all_loops
+	       && flag_unroll_all_loops))
+	  && !global_options_set.x_unroll_only_small_loops)
+	unroll_only_small_loops = 0;
 
       /* If using typedef char *va_list, signal that
 	 __builtin_va_start (&ap, 0) can be optimized to
@@ -4763,15 +4768,17 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
   switch (type_of_cost)
     {
       case scalar_stmt:
-      case scalar_load:
       case scalar_store:
       case vector_stmt:
-      case vector_load:
       case vector_store:
       case vec_to_scalar:
       case scalar_to_vec:
       case cond_branch_not_taken:
         return 1;
+      case scalar_load:
+      case vector_load:
+	/* Like rs6000_insn_cost, make load insns cost a bit more.  */
+	  return 2;
 
       case vec_perm:
 	/* Power7 has only one permute unit, make it a bit expensive.  */
@@ -4792,42 +4799,44 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
       case unaligned_load:
       case vector_gather_load:
+	/* Like rs6000_insn_cost, make load insns cost a bit more.  */
 	if (TARGET_EFFICIENT_UNALIGNED_VSX)
-	  return 1;
+	  return 2;
 
-        if (TARGET_VSX && TARGET_ALLOW_MOVMISALIGN)
-          {
-            elements = TYPE_VECTOR_SUBPARTS (vectype);
-            if (elements == 2)
-              /* Double word aligned.  */
-              return 2;
+	if (TARGET_VSX && TARGET_ALLOW_MOVMISALIGN)
+	  {
+	    elements = TYPE_VECTOR_SUBPARTS (vectype);
+	    if (elements == 2)
+	      /* Double word aligned.  */
+	      return 4;
 
-            if (elements == 4)
-              {
-                switch (misalign)
-                  {
-                    case 8:
-                      /* Double word aligned.  */
-                      return 2;
+	    if (elements == 4)
+	      {
+		switch (misalign)
+		  {
+		  case 8:
+		    /* Double word aligned.  */
+		    return 4;
 
-                    case -1:
-                      /* Unknown misalignment.  */
-                    case 4:
-                    case 12:
-                      /* Word aligned.  */
-                      return 22;
+		  case -1:
+		    /* Unknown misalignment.  */
+		  case 4:
+		  case 12:
+		    /* Word aligned.  */
+		    return 33;
 
-                    default:
-                      gcc_unreachable ();
-                  }
-              }
-          }
+		  default:
+		    gcc_unreachable ();
+		  }
+	      }
+	  }
 
-        if (TARGET_ALTIVEC)
-          /* Misaligned loads are not supported.  */
-          gcc_unreachable ();
+	if (TARGET_ALTIVEC)
+	  /* Misaligned loads are not supported.  */
+	  gcc_unreachable ();
 
-        return 2;
+	/* Like rs6000_insn_cost, make load insns cost a bit more.  */
+	return 4;
 
       case unaligned_store:
       case vector_scatter_store:
@@ -4906,30 +4915,11 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 static machine_mode
 rs6000_preferred_simd_mode (scalar_mode mode)
 {
-  if (TARGET_VSX)
-    switch (mode)
-      {
-      case E_DFmode:
-	return V2DFmode;
-      default:;
-      }
-  if (TARGET_ALTIVEC || TARGET_VSX)
-    switch (mode)
-      {
-      case E_SFmode:
-	return V4SFmode;
-      case E_TImode:
-	return V1TImode;
-      case E_DImode:
-	return V2DImode;
-      case E_SImode:
-	return V4SImode;
-      case E_HImode:
-	return V8HImode;
-      case E_QImode:
-	return V16QImode;
-      default:;
-      }
+  opt_machine_mode vmode = mode_for_vector (mode, 16 / GET_MODE_SIZE (mode));
+
+  if (vmode.exists () && !VECTOR_MEM_NONE_P (vmode.require ()))
+    return vmode.require ();
+
   return word_mode;
 }
 
@@ -5007,6 +4997,29 @@ rs6000_init_cost (struct loop *loop_info)
   return data;
 }
 
+/* Adjust vectorization cost after calling rs6000_builtin_vectorization_cost.
+   For some statement, we would like to further fine-grain tweak the cost on
+   top of rs6000_builtin_vectorization_cost handling which doesn't have any
+   information on statement operation codes etc.  One typical case here is
+   COND_EXPR, it takes the same cost to simple FXU instruction when evaluating
+   for scalar cost, but it should be priced more whatever transformed to either
+   compare + branch or compare + isel instructions.  */
+
+static unsigned
+adjust_vectorization_cost (enum vect_cost_for_stmt kind,
+			   struct _stmt_vec_info *stmt_info)
+{
+  if (kind == scalar_stmt && stmt_info && stmt_info->stmt
+      && gimple_code (stmt_info->stmt) == GIMPLE_ASSIGN)
+    {
+      tree_code subcode = gimple_assign_rhs_code (stmt_info->stmt);
+      if (subcode == COND_EXPR)
+	return 2;
+    }
+
+  return 0;
+}
+
 /* Implement targetm.vectorize.add_stmt_cost.  */
 
 static unsigned
@@ -5022,6 +5035,7 @@ rs6000_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
       tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
       int stmt_cost = rs6000_builtin_vectorization_cost (kind, vectype,
 							 misalign);
+      stmt_cost += adjust_vectorization_cost (kind, stmt_info);
       /* Statements in an inner loop relative to the loop being
 	 vectorized are weighted more heavily.  The value here is
 	 arbitrary and could potentially be improved with analysis.  */
@@ -5079,6 +5093,25 @@ static void
 rs6000_destroy_cost_data (void *data)
 {
   free (data);
+}
+
+/* Implement targetm.loop_unroll_adjust.  */
+
+static unsigned
+rs6000_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
+{
+   if (unroll_only_small_loops)
+    {
+      /* TODO: This is hardcoded to 10 right now.  It can be refined, for
+	 example we may want to unroll very small loops more times (4 perhaps).
+	 We also should use a PARAM for this.  */
+      if (loop->ninsns <= 10)
+	return MIN (2, nunroll);
+      else
+	return 0;
+    }
+
+  return nunroll;
 }
 
 /* Handler for the Mathematical Acceleration Subsystem (mass) interface to a
@@ -8467,41 +8500,6 @@ rs6000_legitimize_tls_address_aix (rtx addr, enum tls_model model)
   return dest;
 }
 
-/* Output arg setup instructions for a !TARGET_TLS_MARKERS
-   __tls_get_addr call.  */
-
-void
-rs6000_output_tlsargs (rtx *operands)
-{
-  /* Set up operands for output_asm_insn, without modifying OPERANDS.  */
-  rtx op[3];
-
-  /* The set dest of the call, ie. r3, which is also the first arg reg.  */
-  op[0] = operands[0];
-  /* The TLS symbol from global_tlsarg stashed as CALL operand 2.  */
-  op[1] = XVECEXP (operands[2], 0, 0);
-  if (XINT (operands[2], 1) == UNSPEC_TLSGD)
-    {
-      /* The GOT register.  */
-      op[2] = XVECEXP (operands[2], 0, 1);
-      if (TARGET_CMODEL != CMODEL_SMALL)
-	output_asm_insn ("addis %0,%2,%1@got@tlsgd@ha\n\t"
-			 "addi %0,%0,%1@got@tlsgd@l", op);
-      else
-	output_asm_insn ("addi %0,%2,%1@got@tlsgd", op);
-    }
-  else if (XINT (operands[2], 1) == UNSPEC_TLSLD)
-    {
-      if (TARGET_CMODEL != CMODEL_SMALL)
-	output_asm_insn ("addis %0,%1,%&@got@tlsld@ha\n\t"
-			 "addi %0,%0,%&@got@tlsld@l", op);
-      else
-	output_asm_insn ("addi %0,%1,%&@got@tlsld", op);
-    }
-  else
-    gcc_unreachable ();
-}
-
 /* Passes the tls arg value for global dynamic and local dynamic
    emit_library_call_value in rs6000_legitimize_tls_address to
    rs6000_call_aix and rs6000_call_sysv.  This is used to emit the
@@ -8520,7 +8518,8 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
     return rs6000_legitimize_tls_address_aix (addr, model);
 
   dest = gen_reg_rtx (Pmode);
-  if (model == TLS_MODEL_LOCAL_EXEC && rs6000_tls_size == 16)
+  if (model == TLS_MODEL_LOCAL_EXEC
+      && (rs6000_tls_size == 16 || rs6000_pcrel_p (cfun)))
     {
       rtx tlsreg;
 
@@ -8567,7 +8566,9 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	 them in the .got section.  So use a pointer to the .got section,
 	 not one to secondary TOC sections used by 64-bit -mminimal-toc,
 	 or to secondary GOT sections used by 32-bit -fPIC.  */
-      if (TARGET_64BIT)
+      if (rs6000_pcrel_p (cfun))
+	got = const0_rtx;
+      else if (TARGET_64BIT)
 	got = gen_rtx_REG (Pmode, 2);
       else
 	{
@@ -8603,16 +8604,10 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	  rtx arg = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, addr, got),
 				    UNSPEC_TLSGD);
 	  tga = rs6000_tls_get_addr ();
+	  rtx argreg = gen_rtx_REG (Pmode, 3);
+	  emit_insn (gen_rtx_SET (argreg, arg));
 	  global_tlsarg = arg;
-	  if (TARGET_TLS_MARKERS)
-	    {
-	      rtx argreg = gen_rtx_REG (Pmode, 3);
-	      emit_insn (gen_rtx_SET (argreg, arg));
-	      emit_library_call_value (tga, dest, LCT_CONST, Pmode,
-				       argreg, Pmode);
-	    }
-	  else
-	    emit_library_call_value (tga, dest, LCT_CONST, Pmode);
+	  emit_library_call_value (tga, dest, LCT_CONST, Pmode, argreg, Pmode);
 	  global_tlsarg = NULL_RTX;
 
 	  /* Make a note so that the result of this call can be CSEd.  */
@@ -8625,16 +8620,10 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	  rtx arg = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, got), UNSPEC_TLSLD);
 	  tga = rs6000_tls_get_addr ();
 	  tmp1 = gen_reg_rtx (Pmode);
+	  rtx argreg = gen_rtx_REG (Pmode, 3);
+	  emit_insn (gen_rtx_SET (argreg, arg));
 	  global_tlsarg = arg;
-	  if (TARGET_TLS_MARKERS)
-	    {
-	      rtx argreg = gen_rtx_REG (Pmode, 3);
-	      emit_insn (gen_rtx_SET (argreg, arg));
-	      emit_library_call_value (tga, tmp1, LCT_CONST, Pmode,
-				       argreg, Pmode);
-	    }
-	  else
-	    emit_library_call_value (tga, tmp1, LCT_CONST, Pmode);
+	  emit_library_call_value (tga, tmp1, LCT_CONST, Pmode, argreg, Pmode);
 	  global_tlsarg = NULL_RTX;
 
 	  /* Make a note so that the result of this call can be CSEd.  */
@@ -8642,7 +8631,7 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	  rtx uns = gen_rtx_UNSPEC (Pmode, vec, UNSPEC_TLS_GET_ADDR);
 	  set_unique_reg_note (get_last_insn (), REG_EQUAL, uns);
 
-	  if (rs6000_tls_size == 16)
+	  if (rs6000_tls_size == 16 || rs6000_pcrel_p (cfun))
 	    {
 	      if (TARGET_64BIT)
 		insn = gen_tls_dtprel_64 (dest, tmp1, addr);
@@ -8683,7 +8672,14 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	  else
 	    insn = gen_tls_got_tprel_32 (tmp2, got, addr);
 	  emit_insn (insn);
-	  if (TARGET_64BIT)
+	  if (rs6000_pcrel_p (cfun))
+	    {
+	      if (TARGET_64BIT)
+		insn = gen_tls_tls_pcrel_64 (dest, tmp2, addr);
+	      else
+		insn = gen_tls_tls_pcrel_32 (dest, tmp2, addr);
+	    }
+	  else if (TARGET_64BIT)
 	    insn = gen_tls_tls_64 (dest, tmp2, addr);
 	  else
 	    insn = gen_tls_tls_32 (dest, tmp2, addr);
@@ -10229,14 +10225,6 @@ validate_condition_mode (enum rtx_code code, machine_mode mode)
 		  && code != UNEQ && code != LTGT
 		  && code != UNGT && code != UNLT
 		  && code != UNGE && code != UNLE));
-
-  /* These should never be generated except for
-     flag_finite_math_only.  */
-  gcc_assert (mode != CCFPmode
-	      || flag_finite_math_only
-	      || (code != LE && code != GE
-		  && code != UNEQ && code != LTGT
-		  && code != UNGT && code != UNLT));
 
   /* These are invalid; the information is not there.  */
   gcc_assert (mode != CCEQmode || code == EQ || code == NE);
@@ -13430,14 +13418,12 @@ rs6000_call_template_1 (rtx *operands, unsigned int funop, bool sibcall)
 
   char arg[12];
   arg[0] = 0;
-  if (TARGET_TLS_MARKERS && GET_CODE (operands[funop + 1]) == UNSPEC)
+  if (GET_CODE (operands[funop + 1]) == UNSPEC)
     {
       if (XINT (operands[funop + 1], 1) == UNSPEC_TLSGD)
 	sprintf (arg, "(%%%u@tlsgd)", funop + 1);
       else if (XINT (operands[funop + 1], 1) == UNSPEC_TLSLD)
 	sprintf (arg, "(%%&@tlsld)");
-      else
-	gcc_unreachable ();
     }
 
   /* The magic 32768 offset here corresponds to the offset of
@@ -13578,7 +13564,7 @@ rs6000_indirect_call_template_1 (rtx *operands, unsigned int funop,
       const char *rel64 = TARGET_64BIT ? "64" : "";
       char tls[29];
       tls[0] = 0;
-      if (TARGET_TLS_MARKERS && GET_CODE (operands[funop + 1]) == UNSPEC)
+      if (GET_CODE (operands[funop + 1]) == UNSPEC)
 	{
 	  if (XINT (operands[funop + 1], 1) == UNSPEC_TLSGD)
 	    sprintf (tls, ".reloc .,R_PPC%s_TLSGD,%%%u\n\t",
@@ -13586,8 +13572,6 @@ rs6000_indirect_call_template_1 (rtx *operands, unsigned int funop,
 	  else if (XINT (operands[funop + 1], 1) == UNSPEC_TLSLD)
 	    sprintf (tls, ".reloc .,R_PPC%s_TLSLD,%%&\n\t",
 		     rel64);
-	  else
-	    gcc_unreachable ();
 	}
 
       const char *notoc = rs6000_pcrel_p (cfun) ? "_NOTOC" : "";
@@ -13674,7 +13658,7 @@ rs6000_pltseq_template (rtx *operands, int which)
   const char *rel64 = TARGET_64BIT ? "64" : "";
   char tls[30];
   tls[0] = 0;
-  if (TARGET_TLS_MARKERS && GET_CODE (operands[3]) == UNSPEC)
+  if (GET_CODE (operands[3]) == UNSPEC)
     {
       char off = which == RS6000_PLTSEQ_PLT_PCREL34 ? '8' : '4';
       if (XINT (operands[3], 1) == UNSPEC_TLSGD)
@@ -13683,8 +13667,6 @@ rs6000_pltseq_template (rtx *operands, int which)
       else if (XINT (operands[3], 1) == UNSPEC_TLSLD)
 	sprintf (tls, ".reloc .-%c,R_PPC%s_TLSLD,%%&\n\t",
 		 off, rel64);
-      else
-	gcc_unreachable ();
     }
 
   gcc_assert (DEFAULT_ABI == ABI_ELFv2 || DEFAULT_ABI == ABI_V4);
@@ -13975,42 +13957,6 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
       else
 	emit_insn (gen_rtx_SET (compare_result,
 				gen_rtx_COMPARE (comp_mode, op0, op1)));
-    }
-
-  /* Some kinds of FP comparisons need an OR operation;
-     under flag_finite_math_only we don't bother.  */
-  if (FLOAT_MODE_P (mode)
-      && (!FLOAT128_IEEE_P (mode) || TARGET_FLOAT128_HW)
-      && !flag_finite_math_only
-      && (code == LE || code == GE
-	  || code == UNEQ || code == LTGT
-	  || code == UNGT || code == UNLT))
-    {
-      enum rtx_code or1, or2;
-      rtx or1_rtx, or2_rtx, compare2_rtx;
-      rtx or_result = gen_reg_rtx (CCEQmode);
-
-      switch (code)
-	{
-	case LE: or1 = LT;  or2 = EQ;  break;
-	case GE: or1 = GT;  or2 = EQ;  break;
-	case UNEQ: or1 = UNORDERED;  or2 = EQ;  break;
-	case LTGT: or1 = LT;  or2 = GT;  break;
-	case UNGT: or1 = UNORDERED;  or2 = GT;  break;
-	case UNLT: or1 = UNORDERED;  or2 = LT;  break;
-	default:  gcc_unreachable ();
-	}
-      validate_condition_mode (or1, comp_mode);
-      validate_condition_mode (or2, comp_mode);
-      or1_rtx = gen_rtx_fmt_ee (or1, SImode, compare_result, const0_rtx);
-      or2_rtx = gen_rtx_fmt_ee (or2, SImode, compare_result, const0_rtx);
-      compare2_rtx = gen_rtx_COMPARE (CCEQmode,
-				      gen_rtx_IOR (SImode, or1_rtx, or2_rtx),
-				      const_true_rtx);
-      emit_insn (gen_rtx_SET (or_result, compare2_rtx));
-
-      compare_result = or_result;
-      code = EQ;
     }
 
   validate_condition_mode (code, GET_MODE (compare_result));
@@ -14324,21 +14270,44 @@ rs6000_emit_eqne (machine_mode mode, rtx op1, rtx op2, rtx scratch)
   return scratch;
 }
 
+/* Emit code doing a cror of two CR bits, for FP comparisons with a CODE that
+   requires this.  The result is mode MODE.  */
+rtx
+rs6000_emit_fp_cror (rtx_code code, machine_mode mode, rtx x)
+{
+  rtx cond[2];
+  int n = 0;
+  if (code == LTGT || code == LE || code == UNLT)
+    cond[n++] = gen_rtx_fmt_ee (LT, mode, x, const0_rtx);
+  if (code == LTGT || code == GE || code == UNGT)
+    cond[n++] = gen_rtx_fmt_ee (GT, mode, x, const0_rtx);
+  if (code == LE || code == GE || code == UNEQ)
+    cond[n++] = gen_rtx_fmt_ee (EQ, mode, x, const0_rtx);
+  if (code == UNLT || code == UNGT || code == UNEQ)
+    cond[n++] = gen_rtx_fmt_ee (UNORDERED, mode, x, const0_rtx);
+
+  gcc_assert (n == 2);
+
+  rtx cc = gen_reg_rtx (CCEQmode);
+  rtx logical = gen_rtx_IOR (mode, cond[0], cond[1]);
+  emit_insn (gen_cceq_ior_compare (mode, cc, logical, cond[0], x, cond[1], x));
+
+  return cc;
+}
+
 void
 rs6000_emit_sCOND (machine_mode mode, rtx operands[])
 {
-  rtx condition_rtx;
-  machine_mode op_mode;
-  enum rtx_code cond_code;
-  rtx result = operands[0];
+  rtx condition_rtx = rs6000_generate_compare (operands[1], mode);
+  rtx_code cond_code = GET_CODE (condition_rtx);
 
-  condition_rtx = rs6000_generate_compare (operands[1], mode);
-  cond_code = GET_CODE (condition_rtx);
-
-  if (cond_code == NE
-      || cond_code == GE || cond_code == LE
-      || cond_code == GEU || cond_code == LEU
-      || cond_code == ORDERED || cond_code == UNGE || cond_code == UNLE)
+  if (FLOAT_MODE_P (mode) && HONOR_NANS (mode)
+      && !(FLOAT128_VECTOR_P (mode) && !TARGET_FLOAT128_HW))
+    ;
+  else if (cond_code == NE
+	   || cond_code == GE || cond_code == LE
+	   || cond_code == GEU || cond_code == LEU
+	   || cond_code == ORDERED || cond_code == UNGE || cond_code == UNLE)
     {
       rtx not_result = gen_reg_rtx (CCEQmode);
       rtx not_op, rev_cond_rtx;
@@ -14353,19 +14322,19 @@ rs6000_emit_sCOND (machine_mode mode, rtx operands[])
       condition_rtx = gen_rtx_EQ (VOIDmode, not_result, const0_rtx);
     }
 
-  op_mode = GET_MODE (XEXP (operands[1], 0));
+  machine_mode op_mode = GET_MODE (XEXP (operands[1], 0));
   if (op_mode == VOIDmode)
     op_mode = GET_MODE (XEXP (operands[1], 1));
 
   if (TARGET_POWERPC64 && (op_mode == DImode || FLOAT_MODE_P (mode)))
     {
       PUT_MODE (condition_rtx, DImode);
-      convert_move (result, condition_rtx, 0);
+      convert_move (operands[0], condition_rtx, 0);
     }
   else
     {
       PUT_MODE (condition_rtx, SImode);
-      emit_insn (gen_rtx_SET (result, condition_rtx));
+      emit_insn (gen_rtx_SET (operands[0], condition_rtx));
     }
 }
 
@@ -14374,13 +14343,10 @@ rs6000_emit_sCOND (machine_mode mode, rtx operands[])
 void
 rs6000_emit_cbranch (machine_mode mode, rtx operands[])
 {
-  rtx condition_rtx, loc_ref;
-
-  condition_rtx = rs6000_generate_compare (operands[0], mode);
-  loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands[3]);
-  emit_jump_insn (gen_rtx_SET (pc_rtx,
-			       gen_rtx_IF_THEN_ELSE (VOIDmode, condition_rtx,
-						     loc_ref, pc_rtx)));
+  rtx condition_rtx = rs6000_generate_compare (operands[0], mode);
+  rtx loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands[3]);
+  rtx ite = gen_rtx_IF_THEN_ELSE (VOIDmode, condition_rtx, loc_ref, pc_rtx);
+  emit_jump_insn (gen_rtx_SET (pc_rtx, ite));
 }
 
 /* Return the string to output a conditional branch to LABEL, which is
@@ -17734,14 +17700,216 @@ get_next_active_insn (rtx_insn *insn, rtx_insn *tail)
   return insn;
 }
 
+/* Move instruction at POS to the end of the READY list.  */
+
+static void
+move_to_end_of_ready (rtx_insn **ready, int pos, int lastpos)
+{
+  rtx_insn *tmp;
+  int i;
+
+  tmp = ready[pos];
+  for (i = pos; i < lastpos; i++)
+    ready[i] = ready[i + 1];
+  ready[lastpos] = tmp;
+}
+
+/* Do Power6 specific sched_reorder2 reordering of ready list.  */
+
+static int
+power6_sched_reorder2 (rtx_insn **ready, int lastpos)
+{
+  /* For Power6, we need to handle some special cases to try and keep the
+     store queue from overflowing and triggering expensive flushes.
+
+     This code monitors how load and store instructions are being issued
+     and skews the ready list one way or the other to increase the likelihood
+     that a desired instruction is issued at the proper time.
+
+     A couple of things are done.  First, we maintain a "load_store_pendulum"
+     to track the current state of load/store issue.
+
+       - If the pendulum is at zero, then no loads or stores have been
+	 issued in the current cycle so we do nothing.
+
+       - If the pendulum is 1, then a single load has been issued in this
+	 cycle and we attempt to locate another load in the ready list to
+	 issue with it.
+
+       - If the pendulum is -2, then two stores have already been
+	 issued in this cycle, so we increase the priority of the first load
+	 in the ready list to increase it's likelihood of being chosen first
+	 in the next cycle.
+
+       - If the pendulum is -1, then a single store has been issued in this
+	 cycle and we attempt to locate another store in the ready list to
+	 issue with it, preferring a store to an adjacent memory location to
+	 facilitate store pairing in the store queue.
+
+       - If the pendulum is 2, then two loads have already been
+	 issued in this cycle, so we increase the priority of the first store
+	 in the ready list to increase it's likelihood of being chosen first
+	 in the next cycle.
+
+       - If the pendulum < -2 or > 2, then do nothing.
+
+       Note: This code covers the most common scenarios.  There exist non
+	     load/store instructions which make use of the LSU and which
+	     would need to be accounted for to strictly model the behavior
+	     of the machine.  Those instructions are currently unaccounted
+	     for to help minimize compile time overhead of this code.
+   */
+  int pos;
+  rtx load_mem, str_mem;
+
+  if (is_store_insn (last_scheduled_insn, &str_mem))
+    /* Issuing a store, swing the load_store_pendulum to the left */
+    load_store_pendulum--;
+  else if (is_load_insn (last_scheduled_insn, &load_mem))
+    /* Issuing a load, swing the load_store_pendulum to the right */
+    load_store_pendulum++;
+  else
+    return cached_can_issue_more;
+
+  /* If the pendulum is balanced, or there is only one instruction on
+     the ready list, then all is well, so return. */
+  if ((load_store_pendulum == 0) || (lastpos <= 0))
+    return cached_can_issue_more;
+
+  if (load_store_pendulum == 1)
+    {
+      /* A load has been issued in this cycle.  Scan the ready list
+	 for another load to issue with it */
+      pos = lastpos;
+
+      while (pos >= 0)
+	{
+	  if (is_load_insn (ready[pos], &load_mem))
+	    {
+	      /* Found a load.  Move it to the head of the ready list,
+		 and adjust it's priority so that it is more likely to
+		 stay there */
+	      move_to_end_of_ready (ready, pos, lastpos);
+
+	      if (!sel_sched_p ()
+		  && INSN_PRIORITY_KNOWN (ready[lastpos]))
+		INSN_PRIORITY (ready[lastpos])++;
+	      break;
+	    }
+	  pos--;
+	}
+    }
+  else if (load_store_pendulum == -2)
+    {
+      /* Two stores have been issued in this cycle.  Increase the
+	 priority of the first load in the ready list to favor it for
+	 issuing in the next cycle. */
+      pos = lastpos;
+
+      while (pos >= 0)
+	{
+	  if (is_load_insn (ready[pos], &load_mem)
+	      && !sel_sched_p ()
+	      && INSN_PRIORITY_KNOWN (ready[pos]))
+	    {
+	      INSN_PRIORITY (ready[pos])++;
+
+	      /* Adjust the pendulum to account for the fact that a load
+		 was found and increased in priority.  This is to prevent
+		 increasing the priority of multiple loads */
+	      load_store_pendulum--;
+
+	      break;
+	    }
+	  pos--;
+	}
+    }
+  else if (load_store_pendulum == -1)
+    {
+      /* A store has been issued in this cycle.  Scan the ready list for
+	 another store to issue with it, preferring a store to an adjacent
+	 memory location */
+      int first_store_pos = -1;
+
+      pos = lastpos;
+
+      while (pos >= 0)
+	{
+	  if (is_store_insn (ready[pos], &str_mem))
+	    {
+	      rtx str_mem2;
+	      /* Maintain the index of the first store found on the
+		 list */
+	      if (first_store_pos == -1)
+		first_store_pos = pos;
+
+	      if (is_store_insn (last_scheduled_insn, &str_mem2)
+		  && adjacent_mem_locations (str_mem, str_mem2))
+		{
+		  /* Found an adjacent store.  Move it to the head of the
+		     ready list, and adjust it's priority so that it is
+		     more likely to stay there */
+		  move_to_end_of_ready (ready, pos, lastpos);
+
+		  if (!sel_sched_p ()
+		      && INSN_PRIORITY_KNOWN (ready[lastpos]))
+		    INSN_PRIORITY (ready[lastpos])++;
+
+		  first_store_pos = -1;
+
+		  break;
+		};
+	    }
+	  pos--;
+	}
+
+      if (first_store_pos >= 0)
+	{
+	  /* An adjacent store wasn't found, but a non-adjacent store was,
+	     so move the non-adjacent store to the front of the ready
+	     list, and adjust its priority so that it is more likely to
+	     stay there. */
+	  move_to_end_of_ready (ready, first_store_pos, lastpos);
+	  if (!sel_sched_p ()
+	      && INSN_PRIORITY_KNOWN (ready[lastpos]))
+	    INSN_PRIORITY (ready[lastpos])++;
+	}
+    }
+  else if (load_store_pendulum == 2)
+    {
+      /* Two loads have been issued in this cycle.  Increase the priority
+	 of the first store in the ready list to favor it for issuing in
+	 the next cycle. */
+      pos = lastpos;
+
+      while (pos >= 0)
+	{
+	  if (is_store_insn (ready[pos], &str_mem)
+	      && !sel_sched_p ()
+	      && INSN_PRIORITY_KNOWN (ready[pos]))
+	    {
+	      INSN_PRIORITY (ready[pos])++;
+
+	      /* Adjust the pendulum to account for the fact that a store
+		 was found and increased in priority.  This is to prevent
+		 increasing the priority of multiple stores */
+	      load_store_pendulum++;
+
+	      break;
+	    }
+	  pos--;
+	}
+    }
+
+  return cached_can_issue_more;
+}
+
 /* Do Power9 specific sched_reorder2 reordering of ready list.  */
 
 static int
 power9_sched_reorder2 (rtx_insn **ready, int lastpos)
 {
   int pos;
-  int i;
-  rtx_insn *tmp;
   enum attr_type type, type2;
 
   type = get_attr_type (last_scheduled_insn);
@@ -17761,10 +17929,7 @@ power9_sched_reorder2 (rtx_insn **ready, int lastpos)
 	  if (recog_memoized (ready[pos]) >= 0
 	      && get_attr_type (ready[pos]) == TYPE_DIV)
 	    {
-	      tmp = ready[pos];
-	      for (i = pos; i < lastpos; i++)
-		ready[i] = ready[i + 1];
-	      ready[lastpos] = tmp;
+	      move_to_end_of_ready (ready, pos, lastpos);
 	      break;
 	    }
 	  pos--;
@@ -17807,10 +17972,7 @@ power9_sched_reorder2 (rtx_insn **ready, int lastpos)
 			{
 			  /* Found a vector insn to pair with, move it to the
 			     end of the ready list so it is scheduled next.  */
-			  tmp = ready[pos];
-			  for (i = pos; i < lastpos; i++)
-			    ready[i] = ready[i + 1];
-			  ready[lastpos] = tmp;
+			  move_to_end_of_ready (ready, pos, lastpos);
 			  vec_pairing = 1;
 			  return cached_can_issue_more;
 			}
@@ -17824,10 +17986,7 @@ power9_sched_reorder2 (rtx_insn **ready, int lastpos)
 		{
 		  /* Didn't find a vector to pair with but did find a vecload,
 		     move it to the end of the ready list.  */
-		  tmp = ready[vecload_pos];
-		  for (i = vecload_pos; i < lastpos; i++)
-		    ready[i] = ready[i + 1];
-		  ready[lastpos] = tmp;
+		  move_to_end_of_ready (ready, vecload_pos, lastpos);
 		  vec_pairing = 1;
 		  return cached_can_issue_more;
 		}
@@ -17851,10 +18010,7 @@ power9_sched_reorder2 (rtx_insn **ready, int lastpos)
 			{
 			  /* Found a vecload insn to pair with, move it to the
 			     end of the ready list so it is scheduled next.  */
-			  tmp = ready[pos];
-			  for (i = pos; i < lastpos; i++)
-			    ready[i] = ready[i + 1];
-			  ready[lastpos] = tmp;
+			  move_to_end_of_ready (ready, pos, lastpos);
 			  vec_pairing = 1;
 			  return cached_can_issue_more;
 			}
@@ -17869,10 +18025,7 @@ power9_sched_reorder2 (rtx_insn **ready, int lastpos)
 		{
 		  /* Didn't find a vecload to pair with but did find a vector
 		     insn, move it to the end of the ready list.  */
-		  tmp = ready[vec_pos];
-		  for (i = vec_pos; i < lastpos; i++)
-		    ready[i] = ready[i + 1];
-		  ready[lastpos] = tmp;
+		  move_to_end_of_ready (ready, vec_pos, lastpos);
 		  vec_pairing = 1;
 		  return cached_can_issue_more;
 		}
@@ -17926,198 +18079,9 @@ rs6000_sched_reorder2 (FILE *dump, int sched_verbose, rtx_insn **ready,
   if (sched_verbose)
     fprintf (dump, "// rs6000_sched_reorder2 :\n");
 
-  /* For Power6, we need to handle some special cases to try and keep the
-     store queue from overflowing and triggering expensive flushes.
-
-     This code monitors how load and store instructions are being issued
-     and skews the ready list one way or the other to increase the likelihood
-     that a desired instruction is issued at the proper time.
-
-     A couple of things are done.  First, we maintain a "load_store_pendulum"
-     to track the current state of load/store issue.
-
-       - If the pendulum is at zero, then no loads or stores have been
-         issued in the current cycle so we do nothing.
-
-       - If the pendulum is 1, then a single load has been issued in this
-         cycle and we attempt to locate another load in the ready list to
-         issue with it.
-
-       - If the pendulum is -2, then two stores have already been
-         issued in this cycle, so we increase the priority of the first load
-         in the ready list to increase it's likelihood of being chosen first
-         in the next cycle.
-
-       - If the pendulum is -1, then a single store has been issued in this
-         cycle and we attempt to locate another store in the ready list to
-         issue with it, preferring a store to an adjacent memory location to
-         facilitate store pairing in the store queue.
-
-       - If the pendulum is 2, then two loads have already been
-         issued in this cycle, so we increase the priority of the first store
-         in the ready list to increase it's likelihood of being chosen first
-         in the next cycle.
-
-       - If the pendulum < -2 or > 2, then do nothing.
-
-       Note: This code covers the most common scenarios.  There exist non
-             load/store instructions which make use of the LSU and which
-             would need to be accounted for to strictly model the behavior
-             of the machine.  Those instructions are currently unaccounted
-             for to help minimize compile time overhead of this code.
-   */
+  /* Do Power6 dependent reordering if necessary.  */
   if (rs6000_tune == PROCESSOR_POWER6 && last_scheduled_insn)
-    {
-      int pos;
-      int i;
-      rtx_insn *tmp;
-      rtx load_mem, str_mem;
-
-      if (is_store_insn (last_scheduled_insn, &str_mem))
-        /* Issuing a store, swing the load_store_pendulum to the left */
-        load_store_pendulum--;
-      else if (is_load_insn (last_scheduled_insn, &load_mem))
-        /* Issuing a load, swing the load_store_pendulum to the right */
-        load_store_pendulum++;
-      else
-        return cached_can_issue_more;
-
-      /* If the pendulum is balanced, or there is only one instruction on
-         the ready list, then all is well, so return. */
-      if ((load_store_pendulum == 0) || (*pn_ready <= 1))
-        return cached_can_issue_more;
-
-      if (load_store_pendulum == 1)
-        {
-          /* A load has been issued in this cycle.  Scan the ready list
-             for another load to issue with it */
-          pos = *pn_ready-1;
-
-          while (pos >= 0)
-            {
-              if (is_load_insn (ready[pos], &load_mem))
-                {
-                  /* Found a load.  Move it to the head of the ready list,
-                     and adjust it's priority so that it is more likely to
-                     stay there */
-                  tmp = ready[pos];
-                  for (i=pos; i<*pn_ready-1; i++)
-                    ready[i] = ready[i + 1];
-                  ready[*pn_ready-1] = tmp;
-
-                  if (!sel_sched_p () && INSN_PRIORITY_KNOWN (tmp))
-                    INSN_PRIORITY (tmp)++;
-                  break;
-                }
-              pos--;
-            }
-        }
-      else if (load_store_pendulum == -2)
-        {
-          /* Two stores have been issued in this cycle.  Increase the
-             priority of the first load in the ready list to favor it for
-             issuing in the next cycle. */
-          pos = *pn_ready-1;
-
-          while (pos >= 0)
-            {
-              if (is_load_insn (ready[pos], &load_mem)
-                  && !sel_sched_p ()
-		  && INSN_PRIORITY_KNOWN (ready[pos]))
-                {
-                  INSN_PRIORITY (ready[pos])++;
-
-                  /* Adjust the pendulum to account for the fact that a load
-                     was found and increased in priority.  This is to prevent
-                     increasing the priority of multiple loads */
-                  load_store_pendulum--;
-
-                  break;
-                }
-              pos--;
-            }
-        }
-      else if (load_store_pendulum == -1)
-        {
-          /* A store has been issued in this cycle.  Scan the ready list for
-             another store to issue with it, preferring a store to an adjacent
-             memory location */
-          int first_store_pos = -1;
-
-          pos = *pn_ready-1;
-
-          while (pos >= 0)
-            {
-              if (is_store_insn (ready[pos], &str_mem))
-                {
-		  rtx str_mem2;
-                  /* Maintain the index of the first store found on the
-                     list */
-                  if (first_store_pos == -1)
-                    first_store_pos = pos;
-
-                  if (is_store_insn (last_scheduled_insn, &str_mem2)
-                      && adjacent_mem_locations (str_mem, str_mem2))
-                    {
-                      /* Found an adjacent store.  Move it to the head of the
-                         ready list, and adjust it's priority so that it is
-                         more likely to stay there */
-                      tmp = ready[pos];
-                      for (i=pos; i<*pn_ready-1; i++)
-                        ready[i] = ready[i + 1];
-                      ready[*pn_ready-1] = tmp;
-
-                      if (!sel_sched_p () && INSN_PRIORITY_KNOWN (tmp))
-                        INSN_PRIORITY (tmp)++;
-
-                      first_store_pos = -1;
-
-                      break;
-                    };
-                }
-              pos--;
-            }
-
-          if (first_store_pos >= 0)
-            {
-              /* An adjacent store wasn't found, but a non-adjacent store was,
-                 so move the non-adjacent store to the front of the ready
-                 list, and adjust its priority so that it is more likely to
-                 stay there. */
-              tmp = ready[first_store_pos];
-              for (i=first_store_pos; i<*pn_ready-1; i++)
-                ready[i] = ready[i + 1];
-              ready[*pn_ready-1] = tmp;
-              if (!sel_sched_p () && INSN_PRIORITY_KNOWN (tmp))
-                INSN_PRIORITY (tmp)++;
-            }
-        }
-      else if (load_store_pendulum == 2)
-       {
-           /* Two loads have been issued in this cycle.  Increase the priority
-              of the first store in the ready list to favor it for issuing in
-              the next cycle. */
-          pos = *pn_ready-1;
-
-          while (pos >= 0)
-            {
-              if (is_store_insn (ready[pos], &str_mem)
-                  && !sel_sched_p ()
-		  && INSN_PRIORITY_KNOWN (ready[pos]))
-                {
-                  INSN_PRIORITY (ready[pos])++;
-
-                  /* Adjust the pendulum to account for the fact that a store
-                     was found and increased in priority.  This is to prevent
-                     increasing the priority of multiple stores */
-                  load_store_pendulum++;
-
-                  break;
-                }
-              pos--;
-            }
-        }
-    }
+    return power6_sched_reorder2 (ready, *pn_ready - 1);
 
   /* Do Power9 dependent reordering if necessary.  */
   if (rs6000_tune == PROCESSOR_POWER9 && last_scheduled_insn
@@ -22951,9 +22915,6 @@ static struct rs6000_opt_var const rs6000_opt_vars[] =
   { "align-branch-targets",
     offsetof (struct gcc_options, x_TARGET_ALIGN_BRANCH_TARGETS),
     offsetof (struct cl_target_option, x_TARGET_ALIGN_BRANCH_TARGETS), },
-  { "tls-markers",
-    offsetof (struct gcc_options, x_tls_markers),
-    offsetof (struct cl_target_option, x_tls_markers), },
   { "sched-prolog",
     offsetof (struct gcc_options, x_TARGET_SCHED_PROLOG),
     offsetof (struct cl_target_option, x_TARGET_SCHED_PROLOG), },
@@ -26059,8 +26020,8 @@ rs6000_generate_float2_double_code (rtx dst, rtx src1, rtx src2)
   rtx_tmp2 = gen_reg_rtx (V4SFmode);
   rtx_tmp3 = gen_reg_rtx (V4SFmode);
 
-  emit_insn (gen_vsx_xvcdpsp (rtx_tmp2, rtx_tmp0));
-  emit_insn (gen_vsx_xvcdpsp (rtx_tmp3, rtx_tmp1));
+  emit_insn (gen_vsx_xvcvdpsp (rtx_tmp2, rtx_tmp0));
+  emit_insn (gen_vsx_xvcvdpsp (rtx_tmp3, rtx_tmp1));
 
   if (BYTES_BIG_ENDIAN)
     emit_insn (gen_p8_vmrgew_v4sf (dst, rtx_tmp2, rtx_tmp3));

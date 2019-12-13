@@ -42,5 +42,9 @@ extern void print_node (FILE *, const char *, tree, int,
 extern void print_node_brief (FILE *, const char *, const_tree, int);
 extern void indent_to (FILE *, int);
 #endif
+#define PRINT_DECL_ORIGIN       0x1
+#define PRINT_DECL_NAME         0x2
+#define PRINT_DECL_UNIQUE_NAME  0x4
+extern void print_decl_identifier (FILE *, tree, int flags);
 
 #endif  // GCC_PRINT_TREE_H

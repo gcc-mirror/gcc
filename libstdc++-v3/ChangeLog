@@ -1,3 +1,1009 @@
+2019-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/compare (common_comparison_category): Define without using
+	concepts and optimise for compilation time.
+	(__detail::__cmp_cat_ids): Remove.
+	(__detail::__common_cmp_cat): Replace class template and
+	specializations with constexpr function.
+
+2019-12-12  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/tr1/cctype: Add _GLIBCXX_BEGIN_VERSION_NAMESPACE and
+	_GLIBCXX_END_VERSION_NAMESPACE.
+	* include/tr1/cfenv: Likewise.
+	* include/tr1/cinttypes: Likewise.
+	* include/tr1/cstdint: Likewise.
+	* include/tr1/cstdio: Likewise.
+	* include/tr1/cstdlib: Likewise.
+	* include/tr1/cwchar: Likewise.
+	* include/tr1/cwctype: Likewise.
+
+	* src/c++11/random.cc: Include <cctype>.
+	(random_devise::_M_init_pretr1): Qualify isdigit call.
+
+2019-12-10  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/pstl/glue_numeric_defs.h: Restore enable_if lost during
+	original import of pstl.
+	* include/pstl/glue_numeric_impl.h: Likewise.
+
+2019-12-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	(span(ContiguousIterator, Sentinel)): Add conditional noexcept.
+	* include/std/span (span(ContiguousIterator, size_type)): Change
+	noexcept to be unconditionally true.
+	* testsuite/23_containers/span/nothrow_cons.cc: New test.
+
+2019-12-10  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algobase.h
+	(__copy_move_a1<>(_II, _II, _OI)): New.
+	(__copy_move_a1<>(_Deque_iterator<>, _Deque_iterator<>, _OI)): New.
+	(__copy_move_a1<>(_Deque_iterator<>, _Deque_iterator<>,
+	_Deque_iterator<>)): New.
+	(__copy_move_a1<>(_II, _II, _Deque_iterator<>)): New.
+	(__copy_move_a<>(_II, _II, _OI)): Adapt, call __copy_move_a1<>.
+	(__copy_move_a<>(const _Safe_iterator<>&, const _Safe_iterator<>&,
+	_OI)): New.
+	(__copy_move_a<>(const _Safe_iterator<>&, const _Safe_iterator<>&,
+	 const _Safe_iterator<>&)): New.
+	(__copy_move_a<>(_II, _II, const _Safe_iterator<>&)): New.
+	(copy, move): Adapt, call __copy_move_a.
+	(__copy_move_backward_a1<>(_II, _II, _OI)): New,
+	call __copy_move_backward_a2.
+	(__copy_move_backward_a1<>(_Deque_iterator<>, _Deque_iterator<>, _OI)): New.
+	(__copy_move_backward_a1<>(_Deque_iterator<>, _Deque_iterator<>,
+	_Deque_iterator<>)): New.
+	(__copy_move_backward_a1<>(_II, _II, _Deque_iterator<>)): New.
+	(__copy_move_backward_a<>(_II, _II, _OI)): Adapt, call
+	__copy_move_backward_a1<>.
+	(__copy_move_backward_a<>(const _Safe_iterator<>&, const _Safe_iterator<>&,
+	_OI)): New.
+	(__copy_move_backward_a<>(const _Safe_iterator<>&, const _Safe_iterator<>&,
+	 const _Safe_iterator<>&)): New.
+	(__copy_move_backward_a<>(_II, _II, const _Safe_iterator<>&)): New.
+	(copy_backward, move_backward): Adapt, call __copy_move_backward_a<>.
+	(__fill_a): Rename into...
+	(__fill_a1): ... this.
+	(__fill_a1(__normal_iterator<>, __normal_iterator<>, const _Tp&)): New.
+	(__fill_a1(const _Deque_iterator<>&, const _Deque_iterator<>&, _VTp)):
+	New.
+	(__fill_a(_FIte, _FIte, const _Tp&)): New, call __fill_a1.
+	(__fill_a(const _Safe_iterator<>&, const _Safe_iterator<>&,
+	const _Tp&)): New.
+	(fill): Adapt, remove __niter_base usage.
+	(__fill_n_a): Rename into...
+	(__fill_n_a1): ...this.
+	(__fill_n_a(const _Safe_iterator<>&, _Size, const _Tp&,
+	input_iterator_tag)): New.
+	(__fill_n_a(_OI, _Size, const _Tp&, output_iterator_tag)): New, call
+	__fill_n_a1.
+	(__fill_n_a(_OI, _Size, const _Tp&, random_access_iterator_tag)): New,
+	call __fill_a.
+	(__equal_aux): Rename into...
+	(__equal_aux1): ...this.
+	(__equal_aux1(_Deque_iterator<>, _Deque_iterator<>, _OI)): New.
+	(__equal_aux1(_Deque_iterator<>, _Deque_iterator<>,
+	_Deque_iterator<>)): New.
+	(__equal_aux1(_II, _II, _Deque_iterator<>)): New.
+	(__equal_aux(_II1, _II1, _II2)): New, call __equal_aux1.
+	(__equal_aux(const _Safe_iterator<>&, const _Safe_iterator<>&,
+	_OI)): New.
+	(__equal_aux(const _Safe_iterator<>&, const _Safe_iterator<>&,
+	 const _Safe_iterator<>&)): New.
+	(__equal_aux(_II, _II, const _Safe_iterator<>&)): New.
+	(equal(_II1, _II1, _II2)): Adapt.
+	* include/bits/stl_deque.h
+	(fill, copy, copy_backward, move, move_backward): Remove.
+	* include/bits/deque.tcc: Include <bits/stl_algobase.h>.
+	(__fill_a1): New.
+	(__copy_move_dit): New.
+	(__copy_move_a1): New, use latter.
+	(__copy_move_a1(_II, _II, _Deque_iterator<>)): New.
+	(__copy_move_backward_dit): New.
+	(__copy_move_backward_a1): New, use latter.
+	(__copy_move_backward_a1(_II, _II, _Deque_iterator<>)): New.
+	(__equal_dit): New.
+	(__equal_aux1): New, use latter.
+	(__equal_aux1(_II, _II, _Deque_iterator<>)): New.
+	* include/std/numeric (__is_random_access_iter): Move...
+	* include/bits/stl_iterator_base_types.h (__is_random_access_iter): ...
+	here. Provide pre-C++11 definition.
+	* include/debug/debug.h (_Safe_iterator<>): New declaration.
+	* include/debug/safe_iterator.h (_Safe_iterator<>::_M_can_advance): Add
+	__strict parameter.
+	* include/debug/safe_iterator.tcc: Include <bits/stl_algobase.h>.
+	(_Safe_iterator<>::_M_can_advance): Adapt.
+	(std::__copy_move_a, std::__copy_move_backward_a, __fill_a): New.
+	(__fill_n_a, __equal_aux): New.
+	* include/debug/stl_iterator.h (__niter_base): Remove.
+	* include/debug/vector (__niter_base): Remove.
+	* testsuite/performance/25_algorithms/copy_backward_deque_iterators.cc:
+	Include <vector> and <list>. Add benches.
+	* testsuite/performance/25_algorithms/copy_deque_iterators.cc: Likewise.
+	* testsuite/performance/25_algorithms/equal_deque_iterators.cc: Likewise.
+	* testsuite/25_algorithms/copy/debug/1_neg.cc: New.
+	* testsuite/25_algorithms/copy/deque_iterators/2.cc: New.
+	* testsuite/25_algorithms/copy/deque_iterators/31.cc: New.
+	* testsuite/25_algorithms/copy/deque_iterators/32.cc: New.
+	* testsuite/25_algorithms/copy/deque_iterators/33.cc: New.
+	* testsuite/25_algorithms/copy/deque_iterators/41.cc: New.
+	* testsuite/25_algorithms/copy/deque_iterators/42.cc: New.
+	* testsuite/25_algorithms/copy/deque_iterators/43.cc: New.
+	* testsuite/25_algorithms/copy/streambuf_iterators/char/4.cc (test02):
+	New.
+	* testsuite/25_algorithms/copy_backward/deque_iterators/2.cc: New.
+	* testsuite/25_algorithms/equal/deque_iterators/1.cc: New.
+	* testsuite/25_algorithms/fill/deque_iterators/1.cc: New.
+	* testsuite/25_algorithms/move/deque_iterators/2.cc: New.
+	* testsuite/25_algorithms/move_backward/deque_iterators/2.cc: New.
+
+2019-12-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92886
+	* include/bits/ios_base.h (std::ios_base::trunc): Fix comment.
+
+	* include/std/complex (__cpp_lib_constexpr_complex): Define.
+	* include/std/version (__cpp_lib_constexpr_complex): Likewise.
+	* testsuite/26_numerics/complex/1.cc: New test.
+	* testsuite/26_numerics/complex/2.cc: New test.
+
+	* include/std/span: Do not include <tuple> and <utility>.
+	(tuple_size, tuple_element): Declare.
+
+	* include/bits/iterator_concepts.h (indirect_result_t): Do not apply
+	iter_reference_t to parameter pack.
+	* testsuite/24_iterators/indirect_callable/projected.cc: New test.
+
+2019-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h (ranges::enable_safe_range): Define.
+	(ranges::begin, ranges::end, ranges::rbegin, ranges::rend): Constrain
+	to only accept types satisfying safe_range and treat argument as an
+	lvalue when calling a member of performing ADL.
+	(ranges::__detail::__range_impl, ranges::__detail::__forwarding_range):
+	Remove.
+	(ranges::range): Adjust definition.
+	(ranges::safe_range): Define.
+	(ranges::iterator_t, ranges::range_difference_t): Reorder definitions
+	to match the synopsis in the working draft.
+	(ranges::disable_sized_range): Remove duplicate definition.
+	* include/experimental/string_view (ranges::enable_safe_range): Add
+	partial specialization for std::experimental::basic_string_view.
+	* include/std/ranges (ranges::viewable_range, ranges::subrange)
+	(ranges::empty_view, ranges::iota_view): Use safe_range. Specialize
+	enable_safe_range.
+	(ranges::safe_iterator_t, ranges::safe_subrange_t): Define.
+	* include/std/span (ranges::enable_safe_range): Add partial
+	specialization for std::span.
+	* include/std/string_view (ranges::enable_safe_range): Likewise for
+	std::basic_string_view.
+	* testsuite/std/ranges/access/begin.cc: Adjust expected results.
+	* testsuite/std/ranges/access/cbegin.cc: Likewise.
+	* testsuite/std/ranges/access/cdata.cc: Likewise.
+	* testsuite/std/ranges/access/cend.cc: Likewise.
+	* testsuite/std/ranges/access/crbegin.cc: Likewise.
+	* testsuite/std/ranges/access/crend.cc: Likewise.
+	* testsuite/std/ranges/access/data.cc: Likewise.
+	* testsuite/std/ranges/access/end.cc: Likewise.
+	* testsuite/std/ranges/access/rbegin.cc: Likewise.
+	* testsuite/std/ranges/access/rend.cc: Likewise.
+	* testsuite/std/ranges/empty_view.cc: Test ranges::begin and
+	ranges::end instead of unqualified calls to begin and end.
+	* testsuite/std/ranges/safe_range.cc: New test.
+	* testsuite/std/ranges/safe_range_types.cc: New test.
+	* testsuite/util/testsuite_iterators.h: Add comment about safe_range.
+
+	* testsuite/27_io/filesystem/path/concat/strings.cc: Test more cases.
+
+	PR libstdc++/92853
+	* src/c++17/fs_path.cc (filesystem::path::operator+=(const path&)):
+	Do not process a trailing directory separator twice.
+	* testsuite/27_io/filesystem/path/concat/92853.cc: New test.
+	* testsuite/27_io/filesystem/path/concat/path.cc: Test more cases.
+
+2019-12-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc:
+	Fix static_assert line number.
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_debug_neg.cc: Likewise.
+
+2019-12-07  Andrew Pinski  <apinski@marvell.com>
+
+	* config/cpu/aarch64/opt/ext/opt_random.h: Wrap around with check
+	for little-endian like ext/random is done.
+
+2019-12-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/span/lwg3255.cc: Fix test. Constructing a
+	span of non-const elements should not be possible from a const array
+	or an array of const elements.
+
+2019-12-05  JeanHeyd "ThePhD" Meneide  <phdofthehouse@gmail.com>
+
+	Implement P1872R0 and P1394R0 for std::span
+	* include/bits/range_access.h (__adl_begin, __adl_end): Remove.
+	(sentinel_t, range_value_t, range_reference_t)
+	(range_rvalue_reference_t, __forwarding_range, disable_sized_range)
+	(output_range, input_range, forward_range, bidirectional_range)
+	(random_access_range, contiguous_range, common_range): Move here from
+	<ranges>, to make this the "ranges lite" internal header.
+	* include/std/ranges: Move basic aliases and concepts to
+	<bits/range_access.h>.
+	* include/std/span: Use concepts and ranges:: calls instead of
+	enable_if and friends.
+	* include/std/type_traits: Add __is_array_convertible trait.
+
+2019-12-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algobase.h (lexicographical_compare_three_way):
+	Define for C++20.
+	* testsuite/25_algorithms/lexicographical_compare_three_way/1.cc: New
+	test.
+	* testsuite/25_algorithms/lexicographical_compare_three_way/
+	constexpr.cc: New test.
+
+	* python/libstdcxx/v6/printers.py (StdCmpCatPrinter): New printer.
+	* testsuite/libstdc++-prettyprinters/cxx20.cc: New test.
+
+	* include/bits/cpp_type_traits.h (__is_byte<char8_t>): Add
+	specialization.
+	* include/std/array (operator<=>): Likewise.
+	* testsuite/23_containers/array/comparison_operators/constexpr.cc:
+	Test three-way comparisons and arrays of unsigned char.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Adjust
+	dg-error line numbers.
+
+2019-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_pair.h [__cpp_lib_three_way_comparison]
+	(operator<=>): Define for C++20.
+	* libsupc++/compare (__cmp2way_res_t): Rename to __cmp3way_res_t,
+	move into __detail namespace. Do not turn argument types into lvalues.
+	(__cmp3way_helper): Rename to __cmp3way_res_impl, move into __detail
+	namespace. Constrain with concepts instead of using void_t.
+	(compare_three_way_result): Adjust name of base class.
+	(compare_three_way_result_t): Use __cmp3way_res_impl directly.
+	(__detail::__3way_cmp_with): Add workaround for PR 91073.
+	(compare_three_way): Use workaround.
+	(__detail::__synth3way, __detail::__synth3way_t): Define new helpers
+	implementing synth-three-way and synth-three-way-result semantics.
+	* testsuite/20_util/pair/comparison_operators/constexpr_c++20.cc: New
+	test.
+
+	* include/bits/stl_pair.h (pair): Remove stray Doxygen closing marker.
+
+	* testsuite/util/slow_clock.h: Fix copyright date.
+
+2019-12-02  Mike Crowe  <mac@mcrowe.com>
+
+	Fix try_lock_until and try_lock_shared_until on arbitrary clock
+	* include/std/shared_mutex (shared_timed_mutex::try_lock_until)
+	(shared_timed_mutex::try_lock_shared_until): Loop until the absolute
+	timeout time is reached as measured against the appropriate clock.
+	* testsuite/30_threads/shared_timed_mutex/try_lock_until/1.cc: New
+	file. Test try_lock_until and try_lock_shared_until timeouts against
+	various clocks.
+	* testsuite/30_threads/shared_timed_mutex/try_lock_until/1.cc: New
+	file. Test try_lock_until and try_lock_shared_until timeouts against
+	various clocks.
+
+	Add full steady_clock support to shared_timed_mutex
+	* acinclude.m4 (GLIBCXX_CHECK_PTHREAD_RWLOCK_CLOCKLOCK): Define
+	to check for the presence of both pthread_rwlock_clockrdlock and
+	pthread_rwlock_clockwrlock.
+	* config.h.in: Regenerate.
+	* configure.ac: Call GLIBCXX_USE_PTHREAD_RWLOCK_CLOCKLOCK.
+	* configure: Regenerate.
+	* include/std/shared_mutex (shared_timed_mutex): Define __clock_t as
+	the best clock to use for relative waits.
+	(shared_timed_mutex::try_lock_for) Round up wait duration if necessary.
+	(shared_timed_mutex::try_lock_shared_for): Likewise.
+	(shared_timed_mutex::try_lock_until): Use existing try_lock_until
+	implementation for system_clock (which matches __clock_t when
+	_GLIBCCXX_USE_PTHREAD_RWLOCK_CLOCKLOCK is not defined). Add new
+	overload for steady_clock that uses pthread_rwlock_clockwrlock if it
+	is available. Simplify overload for non-standard clock to just call
+	try_lock_for with a relative timeout.
+	(shared_timed_mutex::try_lock_shared_until): Likewise.
+
+	PR libstdc++/91906 Fix timed_mutex::try_lock_until on arbitrary clock
+	* include/std/mutex (__timed_mutex_impl::_M_try_lock_until): Loop
+	until the absolute timeout time is reached as measured against the
+	appropriate clock.
+	* testsuite/util/slow_clock.h: New file. Move implementation of
+	slow_clock test class.
+	* testsuite/30_threads/condition_variable/members/2.cc: Include
+	slow_clock from header.
+	* testsuite/30_threads/shared_timed_mutex/try_lock/3.cc: Convert
+	existing test to templated function so that it can be called with
+	both system_clock and steady_clock.
+	* testsuite/30_threads/timed_mutex/try_lock_until/3.cc: Also run test
+	using slow_clock to test above fix.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/3.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/4.cc: Add
+	new test that try_lock_until behaves as try_lock if the timeout has
+	already expired or exactly matches the current time.
+
+	PR libstdc++/78237 Add full steady_clock support to timed_mutex
+	* acinclude.m4 (GLIBCXX_CHECK_PTHREAD_MUTEX_CLOCKLOCK): Define to
+	detect presence of pthread_mutex_clocklock function.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Call GLIBCXX_CHECK_PTHREAD_MUTEX_CLOCKLOCK.
+	* include/std/mutex (__timed_mutex_impl): Remove unnecessary __clock_t.
+	(__timed_mutex_impl::_M_try_lock_for): Use best clock to turn relative
+	timeout into absolute timeout.
+	(__timed_mutex_impl::_M_try_lock_until): Keep existing implementation
+	for system_clock. Add new implementation for steady_clock that calls
+	_M_clocklock. Modify overload for user-defined clock to use a relative
+	wait so that it automatically uses the best clock.
+	[_GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK] (timed_mutex::_M_clocklock):
+	New member function.
+	(recursive_timed_mutex::_M_clocklock): Likewise.
+
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/3.cc:
+	New test. Ensure that timed_mutex::try_lock_until actually times out
+	after the specified time when using both system_clock and
+	steady_clock.
+	* testsuite/30_threads/timed_mutex/try_lock_until/3.cc: New test.
+	Likewise but for recursive_timed_mutex.
+	* testsuite/30_threads/timed_mutex/try_lock_until/57641.cc: Template
+	test functions and use them to test both steady_clock and system_clock.
+	* testsuite/30_threads/unique_lock/locking/4.cc: Likewise. Wrap call
+	to timed_mutex::try_lock_until in VERIFY macro to check its return
+	value.
+
+2019-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_FILESYSTEM_TS): Enable by default for
+	mingw targets.
+	* configure: Regenerate.
+
+	* include/bits/fs_path.h (u8path(InputIterator, InputIterator))
+	(u8path(const Source&)) [_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Simplify
+	conditions.
+	* include/experimental/bits/fs_path.h [_GLIBCXX_FILESYSTEM_IS_WINDOWS]
+	(__u8path(const Source&, char)): Add overloads for std::string and
+	types convertible to std::string.
+	(_Cvt::_S_wconvert): Add a new overload for char8_t strings and use
+	codecvt_utf8_utf16 to do the correct conversion.
+
+2019-11-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (path::operator/=): Change template-head to
+	use typename instead of class.
+	* include/experimental/bits/fs_path.h (path::operator/=): Likewise.
+	* include/std/ostream (operator<<): Likewise.
+
+2019-11-29  Tom Honermann  <tom@honermann.net>
+
+	New tests
+	* testsuite/27_io/basic_ostream/inserters_character/char/deleted.cc:
+	New test to validate deleted overloads of character and string
+	inserters for narrow ostreams.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/deleted.cc:
+	New test to validate deleted overloads of character and string
+	inserters for wide ostreams.
+	* testsuite/27_io/filesystem/path/factory/u8path-char8_t.cc: New test
+	to validate u8path invocations with sequences of char8_t.
+	* testsuite/experimental/filesystem/path/factory/u8path-char8_t.cc:
+	New test to validate u8path invocations with sequences of char8_t.
+
+	Updates to existing tests
+	* testsuite/experimental/feat-char8_t.cc: Updated the expected
+	__cpp_lib_char8_t feature test macro value.
+	* testsuite/27_io/filesystem/path/factory/u8path.cc: Added testing of
+	u8path invocation with std::string, std::string_view, and iterators
+	thereof.
+	* testsuite/experimental/filesystem/path/factory/u8path.cc: Added
+	testing of u8path invocation with std::string, std::string_view, and
+	iterators thereof.
+
+	Update feature test macro, add deleted operators, update u8path
+	* include/bits/c++config: Bumped the value of the __cpp_lib_char8_t
+	feature test macro.
+	* include/bits/fs_path.h (u8path): Modified u8path to accept sequences
+	of char8_t.
+	* include/experimental/bits/fs_path.h (u8path): Modified u8path to
+	accept sequences of char8_t.
+	* include/std/ostream: Added deleted overloads of wchar_t, char8_t,
+	char16_t, and char32_t for ordinary and wide formatted character and
+	string inserters.
+
+	Decouple constraints for u8path from path constructors
+	* include/bits/fs_path.h: Moved helper utilities out of
+	std::filesystem::path into a detail namespace to make them
+	available for use by u8path.
+	* include/experimental/bits/fs_path.h: Moved helper utilities out
+	of std::experimental::filesystem::v1::path into a detail
+	namespace to make them available for use by u8path.
+
+2019-11-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91997
+	* python/libstdcxx/v6/printers.py (find_type): Fail more gracefully
+	if we run out of base classes to look at.
+	(lookup_templ_spec, lookup_node_type): New utilities to find node
+	types for node-based containers.
+	(StdListPrinter.children, NodeIteratorPrinter.__init__)
+	(NodeIteratorPrinter.to_string, StdSlistPrinter.children)
+	(StdSlistIteratorPrinter.to_string, StdRbtreeIteratorPrinter.__init__)
+	(StdMapPrinter.children, StdSetPrinter.children)
+	(StdForwardListPrinter.children): Use lookup_node_type instead of
+	find_type.
+	(StdListIteratorPrinter.__init__, StdFwdListIteratorPrinter.__init__):
+	Pass name of node type to NodeIteratorPrinter constructor.
+	(Tr1HashtableIterator.__init__): Rename argument.
+	(StdHashtableIterator.__init__): Likewise. Use lookup_templ_spec
+	instead of find_type.
+	* testsuite/libstdc++-prettyprinters/59161.cc: Remove workaround for
+	_Node typedef not being present in debuginfo.
+	* testsuite/libstdc++-prettyprinters/91997.cc: New test.
+
+2019-11-26  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/helper_functions.h (__valid_range_aux): Use C++98
+	std::input_iterator_tag default constructor invocation.
+
+	* include/debug/array (array<>::fill): Add C++20 constexpr.
+	(array<>::swap): Likewise.
+
+	* include/debug/safe_iterator.h
+	[__cpp_lib_concepts](_Safe_iterator<>::iterator_concept): Define for
+	C++20.
+
+2019-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (ranges::iter_swap): Fix parameter
+	types of poison pill overload. Use remove_reference_t when checking
+	constraints.
+	* include/bits/stl_iterator.h (move_sentinel): Define for C++20.
+	(move_iterator): Adjust definitions of nested types for C++20. Add
+	hidden friends for move_sentinel operations, iter_move and iter_swap.
+	(common_iterator, counted_iterator): Define for C++20.
+	* testsuite/24_iterators/move_iterator/cust.cc: New test.
+	* testsuite/24_iterators/move_iterator/sentinel.cc: New test.
+	* testsuite/24_iterators/common_iterator/1.cc: New test.
+	* testsuite/24_iterators/counted_iterator/1.cc: New test.
+
+	PR libstdc++/91786
+	* include/bits/fs_path.h (filesystem_error): Move definition before
+	the use in u8path.
+
+2019-11-24  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/functions.h: Remove <bits/move.h> include.
+	(__check_singular_aux, __check_singular): Move...
+	* include/debug/helper_functions.h:
+	(__check_singular_aux, __check_singular): ...here.
+	(__valid_range_aux): Adapt to use latter.
+	* testsuite/25_algorithms/copy/debug/2_neg.cc: New.
+
+2019-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* doc/html/api.html: Use https for gcc.gnu.org.
+	* doc/xml/api.xml: Likewise.
+
+2019-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (ranges::__detail::__enable_view_impl): Fix
+	declaration.
+	* include/bits/stl_multiset.h (ranges::__detail::__enable_view_impl):
+	Likewise.
+	* include/bits/stl_set.h (ranges::__detail::__enable_view_impl):
+	Likewise.
+	* include/bits/unordered_set.h (ranges::__detail::__enable_view_impl):
+	Likewise.
+	* include/debug/multiset.h (ranges::__detail::__enable_view_impl):
+	Likewise.
+	* include/debug/set.h (ranges::__detail::__enable_view_impl): Likewise.
+	* include/debug/unordered_set (ranges::__detail::__enable_view_impl):
+	Likewise.
+
+2019-11-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/thread: Reduce header dependencies.
+	(jthread::get_id()): Add missing return.
+	(jthread::get_stop_token()): Avoid unnecessary stop_source temporary.
+	(jthread::_S_create): Check is_invocable using decayed types. Add
+	static assertion.
+	* testsuite/30_threads/jthread/1.cc: Add dg-require-gthreads.
+	* testsuite/30_threads/jthread/2.cc: Likewise.
+	* testsuite/30_threads/jthread/3.cc: New test.
+	* testsuite/30_threads/jthread/jthread.cc: Add missing directives for
+	pthread and gthread support. Use VERIFY instead of assert.
+
+	* include/bits/alloc_traits.h (allocator_traits::construct)
+	(allocator_traits::destroy, allocator_traits::max_size): Add unused
+	attributes to parameters that are not used in C++20.
+	* include/std/bit (__ceil2): Add braces around assertion to avoid
+	-Wmissing-braces warning.
+
+2019-11-16  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Repair the <tuple> part of C++20 p1032 Misc constexpr bits.
+	* include/bits/uses_allocator.h (__uses_alloc0::_Sink::operaror=)
+	(__use_alloc(const _Alloc&)) : Constexpr.
+
+2019-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/string_view (basic_string_view(It, End)): Add range
+	constructor and deduction guide from P1391R4.
+	* testsuite/21_strings/basic_string_view/cons/char/range.cc: New test.
+
+	* include/bits/regex.h (match_results): Specialize __enable_view_impl.
+	* include/bits/stl_set.h (set): Likewise.
+	* include/bits/unordered_set.h (unordered_set, unordered_multiset):
+	Likewise.
+	* include/debug/multiset.h (__debug::multiset): Likewise.
+	* include/debug/set.h (__debug::set): Likewise.
+	* include/debug/unordered_set (__debug::unordered_set)
+	(__debug::unordered_multiset): Likewise.
+	* include/std/ranges (ranges::view, ranges::enable_view)
+	(ranges::view_interface, ranges::subrange, ranges::empty_view)
+	(ranges::single_view, ranges::views::single, ranges::iota_view)
+	(ranges::views::iota): Define for C++20.
+	* testsuite/std/ranges/empty_view.cc: New test.
+	* testsuite/std/ranges/iota_view.cc: New test.
+	* testsuite/std/ranges/single_view.cc: New test.
+	* testsuite/std/ranges/view.cc: New test.
+
+2019-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges: Revert accidentally committed changes.
+
+	* include/std/thread (jthread::jthread()): Use nostopstate constant.
+	(jthread::jthread(Callable&&, Args&&...)): Use helper function to
+	create std::thread instead of indirection through a lambda. Use
+	remove_cvref_t instead of decay_t.
+	(jthread::joinable(), jthread::get_id(), jthread::native_handle())
+	(jthread::hardware_concurrency()): Add nodiscard attribute.
+	(swap(jthread&. jthread&)): Define hidden friend.
+	(jthread::_S_create): New helper function for constructor.
+
+2019-11-15  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement the <tuple> part of C++20 p1032 Misc constexpr bits.
+	* include/std/tuple (_Head_base, _Tuple_impl(allocator_arg_t,...)
+	(_M_assign, tuple(allocator_arg_t,...), _Inherited, operator=, _M_swap)
+	(swap, pair(piecewise_construct_t,): Constexpr.
+	* (__uses_alloc0::_Sink::operator=, __uses_alloc_t): Constexpr.
+	* testsuite/20_util/tuple/cons/constexpr_allocator_arg_t.cc: New test.
+	* testsuite/20_util/tuple/constexpr_swap.cc : New test.
+	* testsuite/20_util/uses_allocator/69293_neg.cc: Extra error for C++20.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: : Extra error for C++20.
+
+2019-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stop_token: Reduce header dependencies by including
+	internal headers.
+	(stop_token::swap(stop_token&), swap(stop_token&, stop_token&)):
+	Define.
+	(operator!=(const stop_token&, const stop_token&)): Fix return value.
+	(stop_token::_Stop_cb::_Stop_cb(Cb&&)): Use std::forward instead of
+	(stop_token::_Stop_state_t) [_GLIBCXX_HAS_GTHREADS]: Use lock_guard
+	instead of unique_lock.
+	[!_GLIBCXX_HAS_GTHREADS]: Do not use mutex.
+	(stop_token::stop_token(_Stop_state)): Change parameter to lvalue
+	reference.
+	(stop_source): Remove unnecessary using-declarations for names only
+	used once.
+	(swap(stop_source&, stop_source&)): Define.
+	(stop_callback(const stop_token&, _Cb&&))
+	(stop_callback(stop_token&&, _Cb&&)): Replace lambdas with a named
+	function. Use std::forward instead of std::move. Run callbacks if a
+	stop request has already been made.
+	(stop_source::_M_execute()): Remove.
+	(stop_source::_S_execute(_Stop_cb*)): Define.
+	* include/std/version (__cpp_lib_jthread): Define conditionally.
+	* testsuite/30_threads/stop_token/stop_callback.cc: New test.
+	* testsuite/30_threads/stop_token/stop_source.cc: New test.
+	* testsuite/30_threads/stop_token/stop_token.cc: Enable test for
+	immediate execution of callback.
+
+2019-11-15  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement the default_searcher part of C++20 p1032 Misc constexpr bits.
+	* include/std/functional
+	(default_searcher, default_searcher::operator()): Constexpr.
+	* testsuite/20_util/function_objects/constexpr_searcher.cc: New.
+
+2019-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (weakly_incrementable): Adjust.
+	* include/std/concepts (default_constructible): Rename to
+	default_initializable and require default-list-initialization and
+	default-initialization to be valid (LWG 3149).
+	(semiregular): Adjust to new name.
+	* testsuite/std/concepts/concepts.lang/concept.defaultconstructible/
+	1.cc: Rename directory to concept.defaultinitializable and adjust to
+	new name.
+	* testsuite/std/concepts/concepts.lang/concept.defaultinitializable/
+	lwg3149.cc: New test.
+	* testsuite/util/testsuite_iterators.h (test_range): Adjust.
+
+	* src/c++17/fs_path.cc [_GLIBCXX_FILESYSTEM_IS_WINDOWS]
+	(is_disk_designator): New helper function.
+	(path::_Parser::root_path()): Use is_disk_designator.
+	(path::lexically_relative(const path&)): Implement resolution of
+	LWG 3070.
+	* testsuite/27_io/filesystem/path/generation/relative.cc: Check with
+	path components that look like a root-name.
+
+	* doc/doxygen/user.cfg.in: Add <stop_token>.
+	* include/precompiled/stdc++.h: Likewise.
+	* include/std/stop_token: Fix definition of std::nostopstate.
+	* testsuite/30_threads/headers/stop_token/synopsis.cc: New test.
+	* testsuite/30_threads/headers/thread/types_std_c++20.cc: New test.
+	* testsuite/30_threads/stop_token/stop_source.cc: New test.
+	* testsuite/30_threads/stop_token/stop_token.cc: Remove unnecessary
+	dg-require directives. Remove I/O and inclusion of <iostream>.
+
+2019-11-14  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/Makefile.am: Add <stop_token> header.
+	* include/Makefile.in: Regenerate.
+	* include/std/condition_variable: Add overloads for stop_token support
+	to condition_variable_any.
+	* include/std/stop_token: New file.
+	* include/std/thread: Add jthread type.
+	* include/std/version (__cpp_lib_jthread): New value.
+	* testsuite/30_threads/condition_variable_any/stop_token/1.cc: New test.
+	* testsuite/30_threads/condition_variable_any/stop_token/2.cc: New test.
+	* testsuite/30_threads/condition_variable_any/stop_token/wait_on.cc:
+	New test.
+	* testsuite/30_threads/jthread/1.cc: New test.
+	* testsuite/30_threads/jthread/2.cc: New test.
+	* testsuite/30_threads/jthread/jthread.cc: New test.
+	* testsuite/30_threads/stop_token/1.cc: New test.
+	* testsuite/30_threads/stop_token/2.cc: New test.
+	* testsuite/30_threads/stop_token/stop_token.cc: New test.
+
+2019-11-14  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement the <array> part of C++20 p1032 Misc constexpr bits.
+	* include/std/array (fill, swap): Make constexpr.
+	* testsuite/23_containers/array/requirements/constexpr_fill.cc: New.
+	* testsuite/23_containers/array/requirements/constexpr_swap.cc: New.
+
+2019-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (__iter_concept_impl): Add
+	comments.
+	(indirect_relation): Rename to indirect_binary_predicate and adjust
+	definition as per P1716R3.
+	(indirect_equivalence_relation): Define.
+	(indirectly_comparable): Adjust definition.
+	* include/std/concepts (equivalence_relation): Define.
+	* testsuite/std/concepts/concepts.callable/relation.cc: Add tests for
+	equivalence_relation.
+
+	* include/bits/iterator_concepts.h (disable_sized_sentinel): Rename to
+	disable_sized_sentinel_for.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++20.cc: Adjust.
+
+2019-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/compare (strong_order, weak_order, partial_order)
+	(compare_strong_order_fallback, compare_weak_order_fallback)
+	(compare_partial_order_fallback): Define customization point objects
+	for C++20.
+	* testsuite/18_support/comparisons/algorithms/partial_order.cc: New
+	test.
+	* testsuite/18_support/comparisons/algorithms/strong_order.cc: New
+	test.
+	* testsuite/18_support/comparisons/algorithms/weak_order.cc: New test.
+
+2019-11-11  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/gnu/gpl-3.0.xml: Adjust link to "Why not LGPL".
+
+2019-11-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/using.xml: Switch www.hboehm.info to https.
+
+2019-11-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (INPUT): Add <compare> header.
+	* include/precompiled/stdc++.h: Include <compare> header.
+
+	* libsupc++/compare (common_comparison_category)
+	(common_comparison_category_t): Define for C++20.
+	* testsuite/18_support/comparisons/common/1.cc: New test.
+
+	* include/bits/stl_algo.h (for_each_n): Handle negative count.
+	* testsuite/25_algorithms/for_each/for_each_n_debug.cc: New test.
+
+2019-11-07  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/compare: Remove strong_equality and weak_equality.
+
+2019-11-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* libsupc++/compare (__3way_builtin_ptr_cmp): Define helper.
+	(compare_three_way): Add missing implementation.
+
+	* include/bits/iterator_concepts.h (unreachable_sentinel_t): Remove
+	redundant equality operators.
+	* testsuite/util/testsuite_iterators.h (test_range::sentinel):
+	Likewise.
+
+2019-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/compare: New header.
+	* libsupc++/Makefile.am (std_HEADERS): Add compare.
+	* include/std/version: Define __cpp_lib_three_way_comparison.
+	* include/std/functional: #include <compare>.
+
+	* include/std/version [!_GLIBCXX_HOSTED]: Do not define feature test
+	macros for features that are only present in hosted builds.
+
+	* include/bits/iterator_concepts.h (__iter_without_nested_types):
+	Remove incorrect comment.
+
+2019-10-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/html/*: Regenerate.
+
+	* include/bits/refwrap.h (reference_wrapper, ref, cref): Add constexpr
+	specifiers for C++20.
+	* include/std/functional (_Mem_fn, mem_fn, _Bind, _Bind_result, bind)
+	(bind_front, _Not_fn, not_fn): Likewise.
+	* testsuite/20_util/bind/constexpr.cc: New test.
+	* testsuite/20_util/function_objects/bind_front/constexpr.cc: New test.
+	* testsuite/20_util/function_objects/mem_fn/constexpr.cc: New test.
+	* testsuite/20_util/function_objects/not_fn/constexpr.cc: New test.
+	* testsuite/20_util/reference_wrapper/constexpr.cc: New test.
+
+	* doc/doxygen/user.cfg.in: Add new header.
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/precompiled/stdc++.h: Include new header.
+	* include/std/ranges: New header.
+	(ranges::sentinel_t, ranges::range_value_t, ranges::range_reference_t)
+	(ranges::range_rvalue_reference_t, ranges::sized_range)
+	(ranges::output_range, ranges::input_ranges, ranges::forward_range)
+	(ranges::bidirectional_range, ranges::random_access_range)
+	(ranges::contiguous_range, ranges::common::range): Define.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++20.cc: Check
+	that disabled_sized_sentinel can be specialized.
+	* testsuite/std/ranges/access/begin.cc: Include <ranges> instead of
+	<iterator>.
+	* testsuite/std/ranges/access/cbegin.cc: Likewise.
+	* testsuite/std/ranges/access/cdata.cc: Likewise.
+	* testsuite/std/ranges/access/cend.cc: Likewise.
+	* testsuite/std/ranges/access/crbegin.cc: Likewise.
+	* testsuite/std/ranges/access/crend.cc: Likewise.
+	* testsuite/std/ranges/access/data.cc: Likewise.
+	* testsuite/std/ranges/access/empty.cc: Likewise.
+	* testsuite/std/ranges/access/end.cc: Likewise.
+	* testsuite/std/ranges/access/end_neg.cc: Likewise.
+	* testsuite/std/ranges/access/rbegin.cc: Likewise.
+	* testsuite/std/ranges/access/rend.cc: Likewise.
+	* testsuite/std/ranges/access/size.cc: Likewise.
+	* testsuite/std/ranges/access/size_neg.cc: Likewise.
+	* testsuite/std/ranges/headers/ranges/synopsis.cc: New test.
+	* testsuite/std/ranges/range.cc: New test.
+	* testsuite/std/ranges/refinements.cc: New test.
+	* testsuite/std/ranges/sized.cc: New test.
+	* testsuite/util/testsuite_iterators.h: Add aliases for range types.
+	(output_iterator_wrapper::WritableObject::operator=): Add const
+	qualifier so that output_iterator_wrapper satisfies writable.
+
+	* testsuite/20_util/add_pointer/value.cc: Check void types.
+
+	* include/bits/range_access.h (__sizable): Rename to __sentinel_size.
+	Remove workaround for PR c++/92268 and remove redundant requirements
+	that are already checked by sized_sentinel_for.
+	* testsuite/std/ranges/access/cend.cc: Fix failures.
+	* testsuite/std/ranges/access/end.cc: Likewise.
+
+	* include/bits/range_access.h (ranges::begin): Combine array and
+	non-array overloads into one function template. Only use ADL for
+	classes and enums.
+	(ranges::end, ranges::size): Likewise. Make unbounded arrays
+	ill-formed.
+	(ranges::rbegin, ranges::rend): Only use ADL for classes and enums.
+	Reformat _S_noexcept() functions to mirror operator() structure.
+	* testsuite/std/ranges/access/begin.cc: Check incomplete array.
+	* testsuite/std/ranges/access/end_neg.cc: New test.
+	* testsuite/std/ranges/access/size.cc: Check array of incomplete type.
+	* testsuite/std/ranges/access/size_neg.cc: New test.
+
+	* testsuite/24_iterators/range_access*.cc: Move to ...
+	* testsuite/24_iterators/range_access/range_access*.cc: ... here.
+	* testsuite/24_iterators/range_access/range_access_cpp20_neg.cc: New
+	test.
+
+2019-10-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/concepts (std::ranges::swap): Use a single overload for
+	the non-array cases, and switch using if-constexpr.
+
+	* include/bits/stl_iterator.h (__normal_iterator::iterator_concept):
+	Guard with __cpp_lib_concepts macro.
+
+	* include/std/bit (__cpp_lib_bitops): Define.
+	* include/std/version (__cpp_lib_constexpr): Remove.
+	(__cpp_lib_bitops, __cpp_lib_constexpr_dynamic_alloc): Define.
+	* testsuite/26_numerics/bit/header.cc: New test.
+	* testsuite/26_numerics/bit/header-2.cc: New test.
+	* testsuite/20_util/allocator_traits/header.cc: New test.
+	* testsuite/20_util/allocator_traits/header-2.cc: New test.
+
+	* include/bits/stl_iterator.h (namespace __gnu_cxx): Remove
+	using-declarations for std::iterator and std::iterator_traits.
+	(__gnu_cxx::__normal_iterator): Qualify iterator_traits.
+	* include/ext/algorithm (namespace __gnu_cxx): Remove
+	using-declarations for std names and qualify those names when used.
+	Also refer to std::min in parentheses to protect against function-like
+	macros.
+	* include/ext/rc_string_base.h: Qualify iterator_traits.
+	* include/ext/sso_string_base.h: Qualify iterator_traits.
+
+	PR libstdc++/92272
+	* include/bits/stl_bvector.h (_Bit_iterator::pointer)
+	(_Bit_const_iterator::pointer): Define as void for C++20.
+	* include/bits/stl_iterator.h (reverse_iterator::operator->()): Add
+	constraints for C++20.
+	(__normal_iterator::iterator_concept): Define for C++20.
+	* include/bits/streambuf_iterator.h (istreambuf_iterator::pointer):
+	Define as void for C++20.
+	(ostreambuf_iterator::difference_type): Define as ptrdiff_t for C++20.
+	(ostreambuf_iterator::ostreambuf_iterator()): Add default constructor
+	for C++20.
+	* testsuite/23_containers/vector/bool/iterator_c++20.cc: New test.
+	* testsuite/24_iterators/bidirectional/concept.cc: New test.
+	* testsuite/24_iterators/bidirectional/tag.cc: New test.
+	* testsuite/24_iterators/contiguous/concept.cc: New test.
+	* testsuite/24_iterators/contiguous/tag.cc: New test.
+	* testsuite/24_iterators/forward/concept.cc: New test.
+	* testsuite/24_iterators/forward/tag.cc: New test.
+	* testsuite/24_iterators/input/concept.cc: New test.
+	* testsuite/24_iterators/input/tag.cc: New test.
+	* testsuite/24_iterators/istreambuf_iterator/requirements/typedefs.cc:
+	New test.
+	* testsuite/24_iterators/ostreambuf_iterator/requirements/typedefs.cc:
+	New test.
+	* testsuite/24_iterators/output/concept.cc: New test.
+	* testsuite/24_iterators/output/tag.cc: New test.
+	* testsuite/24_iterators/random_access/concept.cc: New test.
+	* testsuite/24_iterators/random_access/tag.cc: New test.
+	* testsuite/24_iterators/range_operations/advance_debug_neg.cc: New
+	test.
+	* testsuite/24_iterators/random_access_iterator/26020.cc: Move to ...
+	* testsuite/24_iterators/operations/26020.cc: ... here.
+	* testsuite/24_iterators/random_access_iterator/
+	string_vector_iterators.cc: Move to ...
+	* testsuite/24_iterators/random_access/string_vector_iterators.cc: ...
+	here.
+
+	* testsuite/util/testsuite_iterators.h: Fix typo in __cplusplus check.
+
+2019-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h (ranges::disable_sized_range)
+	(ranges::begin, ranges::end, ranges::cbegin, ranges::cend)
+	(ranges::rbegin, ranges::rend, ranges::crbegin, ranges::crend)
+	(ranges::size, ranges::empty, ranges::data, ranges::cdata)
+	(ranges::range, ranges::sized_range, ranges::advance, ranges::distance)
+	(ranges::next, ranges::prev): Guard with __cpp_lib_concepts.
+	* include/bits/stl_iterator.h (disable_sized_sentinel): Likewise.
+
+	* include/bits/alloc_traits.h (__cpp_lib_constexpr_dynamic_alloc):
+	Define.
+	(allocator_traits::_S_construct, allocator_traits::_S_destroy)
+	(__alloc_on_copy, __alloc_on_move, __alloc_on_swap): Use
+	_GLIBCXX14_CONSTEXPR instead of constexpr.
+	* include/bits/stl_construct.h (_Destroy): Likewise.
+
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/iterator_concepts.h: New header.
+	(contiguous_iterator_tag, iter_reference_t, ranges::iter_move)
+	(iter_rvalue_reference_t, incrementable_traits, iter_difference_t)
+	(readable_traits, iter_value_t, readable, iter_common_reference_t)
+	(writable, waekly_incrementable, incrementable)
+	(input_or_output_iterator, sentinel_for, disable_sized_sentinel)
+	(sized_sentinel_for, input_iterator, output_iterator)
+	(forward_iterator, bidirectional_iterator, random_access_iterator)
+	(contiguous_iterator, indirectly_unary_invocable)
+	(indirectly_regular_unary_invocable, indirect_unary_predicate)
+	(indirect_relation, indirect_strict_weak_order, indirect_result_t)
+	(projected, indirectly_movable, indirectly_movable_storable)
+	(indirectly_copyable, indirectly_copyable_storable, ranges::iter_swap)
+	(indirectly_swappable, indirectly_comparable, permutable, mergeable)
+	(sortable, unreachable_sentinel_t, unreachable_sentinel)
+	(default_sentinel_t, default_sentinel): Define.
+	(__detail::__cpp17_iterator, __detail::__cpp17_input_iterator)
+	(__detail::__cpp17_fwd_iterator, __detail::__cpp17_bidi_iterator)
+	(__detail::__cpp17_randacc_iterator): Define.
+	(__iterator_traits): Define constrained specializations.
+	* include/bits/move.h (move): Only use old concept check for C++98.
+	* include/bits/range_access.h (ranges::disable_sized_range)
+	(ranges::begin, ranges::end, ranges::cbegin, ranges::cend)
+	(ranges::rbegin, ranges::rend, ranges::crbegin, ranges::crend)
+	(ranges::size, ranges::empty, ranges::data, ranges::cdata): Define
+	new customization points for C++20.
+	(ranges::range, ranges::sized_range): Define new concepts for C++20.
+	(ranges::advance, ranges::distance, ranges::next, ranges::prev):
+	Define new functions for C++20.
+	(__adl_end, __adl_cdata, __adl_cbegin, __adl_cend, __adl_rbegin)
+	(__adl_rend, __adl_crbegin, __adl_crend, __adl_cdata, __adl_size)
+	(__adl_empty): Remove.
+	* include/bits/stl_iterator.h (disable_sized_sentinel): Specialize
+	for reverse_iterator.
+	* include/bits/stl_iterator_base_types.h (contiguous_iterator_tag):
+	Define new struct for C++20.
+	(iterator_traits<_Tp*>): Constrain partial specialization in C++20.
+	* include/std/concepts (__is_class_or_enum): Move to __detail
+	namespace.
+	* testsuite/20_util/forward/c_neg.cc: Adjust dg-error line number.
+	* testsuite/20_util/forward/f_neg.cc: Likewise.
+	* testsuite/24_iterators/associated_types/incrementable.traits.cc: New
+	test.
+	* testsuite/24_iterators/associated_types/readable.traits.cc: New test.
+	* testsuite/24_iterators/contiguous/concept.cc: New test.
+	* testsuite/24_iterators/contiguous/tag.cc: New test.
+	* testsuite/24_iterators/customization_points/iter_move.cc: New test.
+	* testsuite/24_iterators/customization_points/iter_swap.cc: New test.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++20.cc: New test.
+	* testsuite/24_iterators/range_operations/advance.cc: New test.
+	* testsuite/24_iterators/range_operations/distance.cc: New test.
+	* testsuite/24_iterators/range_operations/next.cc: New test.
+	* testsuite/24_iterators/range_operations/prev.cc: New test.
+	* testsuite/26_numerics/adjacent_difference/requirements/
+	explicit_instantiation/2.cc: Rename types that conflict with C++20
+	concepts.
+	* testsuite/26_numerics/adjacent_difference/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/26_numerics/partial_sum/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/26_numerics/partial_sum/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/experimental/iterator/requirements.cc: Likewise.
+	* testsuite/std/ranges/access/begin.cc: New test.
+	* testsuite/std/ranges/access/cbegin.cc: New test.
+	* testsuite/std/ranges/access/cdata.cc: New test.
+	* testsuite/std/ranges/access/cend.cc: New test.
+	* testsuite/std/ranges/access/crbegin.cc: New test.
+	* testsuite/std/ranges/access/crend.cc: New test.
+	* testsuite/std/ranges/access/data.cc: New test.
+	* testsuite/std/ranges/access/empty.cc: New test.
+	* testsuite/std/ranges/access/end.cc: New test.
+	* testsuite/std/ranges/access/rbegin.cc: New test.
+	* testsuite/std/ranges/access/rend.cc: New test.
+	* testsuite/std/ranges/access/size.cc: New test.
+	* testsuite/util/testsuite_iterators.h (contiguous_iterator_wrapper)
+	(test_range, test_sized_range): New test utilities.
+
+	* testsuite/util/testsuite_iterators.h (BoundsContainer::size()): Add
+	new member function.
+	(WritableObject::operator=): Constrain with enable_if when available.
+	(remove_cv): Use std::remove_if when available.
+	(test_container::it(int)): Use size().
+	(test_container::size()): Use BoundsContainer::size().
+
+	PR libstdc++/92267
+	* include/bits/stl_deque.h (_Deque_iterator(const _Deque_iterator&)):
+	Do not define as defaulted.
+	* testsuite/23_containers/deque/types/92267.cc: New test.
+
+2019-10-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/codecvt.xml: Switch pubs.opengroup.org to https.
+	* doc/xml/manual/locale.xml (LC_ALL): Ditto.
+	* doc/xml/manual/messages.xml: Ditto.
+
+2019-10-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
+
 2019-10-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/util/testsuite_iterators.h (output_iterator_wrapper)
@@ -22,7 +1028,7 @@
 	pubs.opengroup.org to https.
 
 2019-10-25  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* doc/xml/gnu/gpl-3.0.xml: Switch www.gnu.org to https.
 
 2019-09-09  Edward Smith-Rowland  <3dw4rd@verizon.net>
@@ -2091,7 +3097,7 @@
 	PSTL backend if no TBB present.
 	* testsuite/utils/pstl/test_utils.h: Remove check for
 	_PSTL_USE_PAR_POLICIES
-	
+
 2019-06-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/24_iterators/container_access.cc: Move dg-options before
@@ -3887,7 +4893,7 @@
 	Document PSTL linker flags
 
 	* doc/xml/manual/using.xml: Add PSTL linker flags to table 3.1.
-	
+
 2019-04-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/variant (__detail::__variant::_Traits): Make
@@ -3969,7 +4975,7 @@
 
 	* include/bits/c++config: Remove explicit PSTL configuration
 	macros and use definitions from <pstl/pstl_config.h>.
-	
+
 2019-04-20  Thomas Rodgers <trodgers@redhat.com>
 
 	Cleanup algorithm implementations
@@ -3979,9 +4985,9 @@
 	(equal): Qualify call to std::equal().
 	(partial_sort): Forward execution policy.
 	(inplace_merge): Forward execution policy.
-	
+
 2019-04-19  Thomas Rodgers <trodgers@redhat.com>
-	
+
 	Improve implementation of parallel equal()
 	* include/pstl/algorithm_impl.h
 	(__internal::__brick_equal): use "4 iterator" version of
@@ -3996,7 +5002,7 @@
 	* include/pstl/glue_algorithm_impl.h
 	(std::equal): dispatch to "4 iterator" version of
 	__internal::__pattern_equal().
-	
+
 2019-04-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90105
@@ -4037,7 +5043,7 @@
 	* testsuite/20_util/optional/observers/4.cc: Likewise.
 
 2019-04-12  Thomas Rodgers  <trodgers@redhat.com>
-	
+
 	* include/pstl/algorithm_impl.h: Uglify identfiers.
 	* include/pstl/numeric_impl.h:  Uglify identfiers.
 	* include/pstl/parallel_backend_tbb.h: Uglify identfiers.
@@ -4318,7 +5324,7 @@
 	avoid -Wconversion warnings.
 
 2019-03-21  Thomas Rodgers  <trodgers@redhat.com>
-	
+
 	* include/Makefile.am (std_header): Add ${std_srcdir}/execution.
 	(pstl_srcdir, pstl_builddir, pstl_headers): New variables.
 	(allstamped): Add stamp-pstl.

@@ -5,7 +5,7 @@ class Mesh
 {
 public:
   Mesh(const char*)
-  { typele={0}; }		// { dg-error "" }
+  { typele={0}; }		// { dg-error "11:assigning to an array from an initializer list" }
 
 private:
   int typele[7][2];

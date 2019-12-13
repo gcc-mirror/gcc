@@ -150,6 +150,19 @@ msp430_select_hwmult_lib (int argc ATTRIBUTE_UNUSED,
   return "-lmul_none";
 }
 
+/* Spec function.  Used to place the path to the MSP430-GCC support files
+   on the command line, prefixed with "-L", so the linker finds the linker
+   scripts in that directory.  */
+const char *
+msp430_get_linker_devices_include_path (int argc ATTRIBUTE_UNUSED,
+					const char **argv ATTRIBUTE_UNUSED)
+{
+  char *devices_csv_path;
+  if (msp430_check_env_var_for_devices (&devices_csv_path))
+    return NULL;
+  return concat ("-L", msp430_dirname (devices_csv_path), NULL);
+}
+
 /* Spec function.  Propagate -m{code,data}-region= to the linker, unless the
    lower region has been specified without -muse-lower-region-prefix also being
    used.  */

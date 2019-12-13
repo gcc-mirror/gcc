@@ -78,6 +78,7 @@ struct _cpp_file;
   OP(NOT_EQ,		"!=")						\
   OP(GREATER_EQ,	">=")						\
   OP(LESS_EQ,		"<=")						\
+  OP(SPACESHIP,		"<=>")						\
 									\
   /* These two are unary + / - in preprocessor expressions.  */		\
   OP(PLUS_EQ,		"+=")	/* math */				\
@@ -676,6 +677,9 @@ struct cpp_callbacks
   /* Callback to identify whether an attribute exists.  */
   int (*has_attribute) (cpp_reader *);
 
+  /* Callback to determine whether a built-in function is recognized.  */
+  int (*has_builtin) (cpp_reader *);
+
   /* Callback that can change a user lazy into normal macro.  */
   void (*user_lazy_macro) (cpp_reader *, cpp_macro *, unsigned);
 
@@ -855,7 +859,8 @@ enum cpp_builtin_type
   BT_PRAGMA,			/* `_Pragma' operator */
   BT_TIMESTAMP,			/* `__TIMESTAMP__' */
   BT_COUNTER,			/* `__COUNTER__' */
-  BT_HAS_ATTRIBUTE		/* `__has_attribute__(x)' */
+  BT_HAS_ATTRIBUTE,		/* `__has_attribute__(x)' */
+  BT_HAS_BUILTIN		/* `__has_builtin(x)' */
 };
 
 #define CPP_HASHNODE(HNODE)	((cpp_hashnode *) (HNODE))
@@ -1314,5 +1319,16 @@ extern bool cpp_userdef_char_p
   (enum cpp_ttype type);
 extern const char * cpp_get_userdef_suffix
   (const cpp_token *);
+
+/* In charset.c */
+int cpp_byte_column_to_display_column (const char *data, int data_length,
+				       int column);
+inline int cpp_display_width (const char *data, int data_length)
+{
+    return cpp_byte_column_to_display_column (data, data_length, data_length);
+}
+int cpp_display_column_to_byte_column (const char *data, int data_length,
+				       int display_col);
+int cpp_wcwidth (cppchar_t c);
 
 #endif /* ! LIBCPP_CPPLIB_H */

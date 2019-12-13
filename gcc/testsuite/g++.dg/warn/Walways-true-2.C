@@ -23,11 +23,11 @@ bar (int a)
     foo (2);
   if (i)
     foo (3);
-  if (&a)	// { dg-warning "always evaluate as|never be NULL" "correct warning" }
+  if (&a)	// { dg-warning "7:the address of .a. will never be NULL" "correct warning" }
     foo (4);
   if (a)
     foo (5);
-  if (&&lab)	// { dg-warning "always evaluate as|never be NULL" "correct warning" }
+  if (&&lab)	// { dg-warning "7:the address of .lab. will never be NULL" "correct warning" }
     foo (6);
   if (foo == 0)
     foo (7);
@@ -37,11 +37,11 @@ bar (int a)
     foo (9);
   if (i == 0)
     foo (10);
-  if (&a == 0)	// { dg-warning "never be NULL" "correct warning" }
+  if (&a == 0)	// { dg-warning "10:the address of .a. will never be NULL" "correct warning" }
     foo (11);
   if (a == 0)
     foo (12);
-  if (&&lab == 0) // { dg-warning "never be NULL" "correct warning" }
+  if (&&lab == 0) // { dg-warning "13:the address of .lab. will never be NULL" "correct warning" }
     foo (13);
   if (0 == foo)
     foo (14);
@@ -51,10 +51,10 @@ bar (int a)
     foo (16);
   if (0 == i)
     foo (17);
-  if (0 == &a)	// { dg-warning "never be NULL" "correct warning" }
+  if (0 == &a)	// { dg-warning "9:the address of .a. will never be NULL" "correct warning" }
     foo (18);
   if (0 == a)
     foo (19);
-  if (0 == &&lab) // { dg-warning "never be NULL" "correct warning" }
+  if (0 == &&lab) // { dg-warning "9:the address of .lab. will never be NULL" "correct warning" }
     foo (20);
 }

@@ -315,12 +315,12 @@ m32c*-*-*)
         ;;
 aarch64*-*-*)
 	cpu_type=aarch64
-	extra_headers="arm_fp16.h arm_neon.h arm_acle.h"
+	extra_headers="arm_fp16.h arm_neon.h arm_acle.h arm_sve.h"
 	c_target_objs="aarch64-c.o"
 	cxx_target_objs="aarch64-c.o"
 	d_target_objs="aarch64-d.o"
-	extra_objs="aarch64-builtins.o aarch-common.o cortex-a57-fma-steering.o aarch64-speculation.o falkor-tag-collision-avoidance.o aarch64-bti-insert.o"
-	target_gtfiles="\$(srcdir)/config/aarch64/aarch64-builtins.c"
+	extra_objs="aarch64-builtins.o aarch-common.o aarch64-sve-builtins.o aarch64-sve-builtins-shapes.o aarch64-sve-builtins-base.o cortex-a57-fma-steering.o aarch64-speculation.o falkor-tag-collision-avoidance.o aarch64-bti-insert.o"
+	target_gtfiles="\$(srcdir)/config/aarch64/aarch64-builtins.c \$(srcdir)/config/aarch64/aarch64-sve-builtins.h \$(srcdir)/config/aarch64/aarch64-sve-builtins.cc"
 	target_has_targetm_common=yes
 	;;
 alpha*-*-*)
@@ -523,7 +523,7 @@ pru-*-*)
 	;;
 riscv*)
 	cpu_type=riscv
-	extra_objs="riscv-builtins.o riscv-c.o"
+	extra_objs="riscv-builtins.o riscv-c.o riscv-sr.o"
 	d_target_objs="riscv-d.o"
 	;;
 rs6000*-*-*)
@@ -962,6 +962,11 @@ case ${target} in
     "" | yes | vxworks) thread_file='vxworks' ;;
     *) echo 'Unknown thread configuration for VxWorks'; exit 1 ;;
   esac
+
+  # A few common macro definitions conveying general characteristics
+  # of the configuration at hand. Note that by VxWorks 7, we mean the
+  # the SR6xx major update or beyond in vendor parlance:
+
   case $target in
     *-*-vxworks7*)
       tm_defines="$tm_defines TARGET_VXWORKS7=1"
@@ -970,6 +975,18 @@ case ${target} in
   case $target in
     *64-*-vxworks*)
       tm_defines="$tm_defines TARGET_VXWORKS64=1"
+      ;;
+  esac
+
+  # Then a few build configuration controls for VxWorks 7, which
+  # has specificities on top of which we aim to provide more complete
+  # C++ support:
+
+  case $target in
+    *-*-vxworks7*)
+      # VxWorks 7 always has init/fini_array support and it is simpler to
+      # just leverage this, sticking to what the system toolchain does:
+      gcc_cv_initfini_array=yes
       ;;
   esac
   ;;
@@ -1059,6 +1076,11 @@ aarch64*-*-linux*)
 	done
 	TM_MULTILIB_CONFIG=`echo $TM_MULTILIB_CONFIG | sed 's/^,//'`
 	;;
+aarch64*-wrs-vxworks*)
+        tm_file="${tm_file} elfos.h aarch64/aarch64-elf.h"
+        tm_file="${tm_file} vx-common.h vxworks.h aarch64/aarch64-vxworks.h"
+        tmake_file="${tmake_file} aarch64/t-aarch64 aarch64/t-aarch64-vxworks"
+        ;;
 alpha*-*-linux*)
 	tm_file="elfos.h ${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h glibc-stdint.h"
 	tmake_file="${tmake_file} alpha/t-linux alpha/t-alpha"
@@ -1126,23 +1148,17 @@ arc*-*-linux*)
 	# automatically detect that GAS supports it, yet we require it.
 	gcc_cv_initfini_array=yes
 	;;
-arm-wrs-vxworks|arm-wrs-vxworks7)
+arm-wrs-vxworks7*)
+	# We only support VxWorks 7 now on ARM, post SR600.  Pre SR600
+	# VxWorks 7 was transitory and major versions prior to 7 were based
+	# on long deprecated ABI, not supported at all any more regardless
+	# of VxWorks.
 	extra_options="${extra_options} arm/vxworks.opt"
-	tmake_file="${tmake_file} arm/t-arm arm/t-vxworks"
-        case $target in
-	*-vxworks7)
-            # VxWorks7 on ARM adheres to the ARM Base Platform ABI
-	    tmake_file="${tmake_file} arm/t-bpabi"
-	    tm_file="arm/bpabi.h ${tm_file}"
-	    # The BPABI long long divmod functions return a 128-bit value in
-	    # registers r0-r3.
-	    need_64bit_hwint=yes
-	    default_use_cxa_atexit=yes
-	    ;;
-        *)  ;;
-        esac
-        tm_file="elfos.h arm/elf.h arm/aout.h ${tm_file} vx-common.h vxworks.h arm/vxworks.h"
-	target_cpu_cname="arm8"
+	tmake_file="${tmake_file} arm/t-arm arm/t-vxworks arm/t-bpabi"
+	tm_file="elfos.h arm/elf.h arm/bpabi.h arm/aout.h ${tm_file}"
+	tm_file="${tm_file} vx-common.h vxworks.h arm/vxworks.h"
+	target_cpu_cname="armv7-a"
+	need_64bit_hwint=yes
 	;;
 arm*-*-freebsd*)                # ARM FreeBSD EABI
 	tm_file="dbxelf.h elfos.h ${fbsd_tm_file} arm/elf.h"
@@ -1287,6 +1303,88 @@ avr-*-*)
 	    tm_file="${tm_file} ${cpu_type}/avrlibc.h"
 	    tm_defines="${tm_defines} WITH_AVRLIBC"
 	fi
+	case y${with_double} in
+	    y | y32)
+		avr_double=32
+		tm_defines="${tm_defines} HAVE_DOUBLE32"
+		;;
+	    y64)
+		avr_double=64
+		tm_defines="${tm_defines} HAVE_DOUBLE64"
+		;;
+	    y64,32)
+		avr_double=64
+		avr_double_multilib=1
+		tm_defines="${tm_defines} HAVE_DOUBLE32"
+		tm_defines="${tm_defines} HAVE_DOUBLE64"
+		tm_defines="${tm_defines} HAVE_DOUBLE_MULTILIB"
+		;;
+	    y32,64)
+		avr_double=32
+		avr_double_multilib=1
+		tm_defines="${tm_defines} HAVE_DOUBLE32"
+		tm_defines="${tm_defines} HAVE_DOUBLE64"
+		tm_defines="${tm_defines} HAVE_DOUBLE_MULTILIB"
+		;;
+	    *)
+		echo "Error: --with-double= can only be used with: '32', '32,64', '64,32', '64'" 1>&2
+		exit 1
+		;;
+	esac
+	case y${with_long_double} in
+	    y | y32)
+		avr_long_double=32
+		tm_defines="${tm_defines} HAVE_LONG_DOUBLE32"
+		;;
+	    y64)
+		avr_long_double=64
+		tm_defines="${tm_defines} HAVE_LONG_DOUBLE64"
+		;;
+	    y64,32)
+		avr_long_double=64
+		avr_long_double_multilib=1
+		tm_defines="${tm_defines} HAVE_LONG_DOUBLE32"
+		tm_defines="${tm_defines} HAVE_LONG_DOUBLE64"
+		tm_defines="${tm_defines} HAVE_LONG_DOUBLE_MULTILIB"
+		;;
+	    y32,64)
+		avr_long_double=32
+		avr_long_double_multilib=1
+		tm_defines="${tm_defines} HAVE_LONG_DOUBLE32"
+		tm_defines="${tm_defines} HAVE_LONG_DOUBLE64"
+		tm_defines="${tm_defines} HAVE_LONG_DOUBLE_MULTILIB"
+		;;
+	    ydouble)
+		avr_long_double=${avr_double}
+		tm_defines="${tm_defines} HAVE_LONG_DOUBLE_IS_DOUBLE"
+		if test y${avr_double_multilib} = y1; then
+		    tm_defines="${tm_defines} HAVE_LONG_DOUBLE32"
+		    tm_defines="${tm_defines} HAVE_LONG_DOUBLE64"
+		else
+		    tm_defines="${tm_defines} HAVE_LONG_DOUBLE${avr_long_double}"
+		fi
+		;;
+	    *)
+		echo "Error: --with-long_double= can only be used with: '32', '32,64', '64,32', '64', 'double'" 1>&2
+		exit 1
+		;;
+	esac
+	if test ${avr_long_double}x${avr_long_double_multilib}y${avr_double_multilib}z = 32xy1z; then
+	    if test y${with_long_double} != ydouble; then
+		echo "Error: --with-double=${with_double} requests a multilib for double, but long double is always 32 bits wide due to --with-long-double=${with_long_double}" 1>&2
+		exit 1
+	    fi
+	fi
+	if test ${avr_double}x${avr_long_double_multilib}y${avr_double_multilib}z = 64x1yz; then
+	    echo "Error: --with-long-double=${with_long_double} requests a multilib for long double, but double is always 64 bits wide due to --with-double=64" 1>&2
+	    exit 1
+	fi
+	if test y${avr_double}${avr_long_double} = y6432; then
+	    echo "Error: double default of 64 bits from --with-double=${with_double} conflicts with default of 32 bits for long double from --with-long-double=${with_long_double}" 1>&2
+	    exit 1
+	fi
+	tm_defines="${tm_defines} WITH_DOUBLE${avr_double}"
+	tm_defines="${tm_defines} WITH_LONG_DOUBLE${avr_long_double}"
 	tmake_file="${tmake_file} avr/t-avr avr/t-multilib"
 	use_gcc_stdint=wrap
 	extra_gcc_objs="driver-avr.o avr-devices.o"

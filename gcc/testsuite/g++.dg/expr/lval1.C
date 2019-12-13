@@ -3,5 +3,5 @@
 void f ()
 {
   int n;
-  (char) n = 1; // { dg-error "" }
+  (char) n = 1; // { dg-error "3:lvalue required" }
 }

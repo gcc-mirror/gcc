@@ -1600,6 +1600,7 @@ additional compatibility extensions along with those enabled by
 * Unary operators::
 * Implicitly convert LOGICAL and INTEGER values::
 * Hollerith constants support::
+* Character conversion::
 * Cray pointers::
 * CONVERT specifier::
 * OpenMP::
@@ -1915,14 +1916,14 @@ in I/O operations.
 @subsection Hollerith constants support
 @cindex Hollerith constants
 
-GNU Fortran supports Hollerith constants in assignments, function
-arguments, and @code{DATA} statements.  A Hollerith constant is written
-as a string of characters preceded by an integer constant indicating the
-character count, and the letter @code{H} or @code{h}, and stored in
-bytewise fashion in a numeric (@code{INTEGER}, @code{REAL}, or
-@code{COMPLEX}) or @code{LOGICAL} variable.  The constant will be padded
-with spaces or truncated to fit the size of the variable in which it is
-stored.
+GNU Fortran supports Hollerith constants in assignments, @code{DATA}
+statements, function and subroutine arguments. A Hollerith constant is
+written as a string of characters preceded by an integer constant 
+indicating the character count, and the letter @code{H} or
+@code{h}, and stored in bytewise fashion in a numeric (@code{INTEGER},
+@code{REAL}, or @code{COMPLEX}), @code{LOGICAL} or @code{CHARACTER} variable.
+The constant will be padded with spaces or truncated to fit the size of
+the variable in which it is stored.
 
 Examples of valid uses of Hollerith constants:
 @smallexample
@@ -1950,8 +1951,44 @@ case where the intent is specifically to initialize a numeric variable
 with a given byte sequence.  In these cases, the same result can be
 obtained by using the @code{TRANSFER} statement, as in this example.
 @smallexample
-      INTEGER(KIND=4) :: a
-      a = TRANSFER ("abcd", a)     ! equivalent to: a = 4Habcd
+      integer(kind=4) :: a
+      a = transfer ("abcd", a)     ! equivalent to: a = 4Habcd
+@end smallexample
+
+The use of the @option{-fdec} option extends support of Hollerith constants
+to comparisons:
+@smallexample
+      integer*4 a
+      a = 4hABCD
+      if (a .ne. 4habcd) then
+        write(*,*) "no match"
+      end if
+@end smallexample
+
+Supported types are numeric (@code{INTEGER}, @code{REAL}, or @code{COMPLEX}),
+and @code{CHARACTER}.
+
+@node Character conversion
+@subsection Character conversion
+@cindex conversion, to character
+
+Allowing character literals to be used in a similar way to Hollerith constants
+is a non-standard extension.  This feature is enabled using
+-fdec-char-conversions and only applies to character literals of @code{kind=1}.
+
+Character literals can be used in @code{DATA} statements and assignments with
+numeric (@code{INTEGER}, @code{REAL}, or @code{COMPLEX}) or @code{LOGICAL}
+variables. Like Hollerith constants they are copied byte-wise fashion. The
+constant will be padded with spaces or truncated to fit the size of the
+variable in which it is stored.
+
+Examples:
+@smallexample
+      integer*4 x
+      data x / 'abcd' /
+
+      x = 'A'       ! Will be padded.
+      x = 'ab1234'  ! Will be truncated.
 @end smallexample
 
 

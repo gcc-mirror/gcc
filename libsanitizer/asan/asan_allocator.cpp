@@ -246,6 +246,7 @@ struct Allocator {
   AllocatorCache fallback_allocator_cache;
   QuarantineCache fallback_quarantine_cache;
 
+  uptr max_user_defined_malloc_size;
   atomic_uint8_t rss_limit_exceeded;
 
   // ------------------- Options --------------------------
@@ -280,6 +281,10 @@ struct Allocator {
     SetAllocatorMayReturnNull(options.may_return_null);
     allocator.InitLinkerInitialized(options.release_to_os_interval_ms);
     SharedInitCode(options);
+    max_user_defined_malloc_size = common_flags()->max_allocation_size_mb
+                                       ? common_flags()->max_allocation_size_mb
+                                             << 20
+                                       : kMaxAllowedMallocSize;
   }
 
   bool RssLimitExceeded() {
@@ -394,6 +399,16 @@ struct Allocator {
     return right_chunk;
   }
 
+  bool UpdateAllocationStack(uptr addr, BufferedStackTrace *stack) {
+    AsanChunk *m = GetAsanChunkByAddr(addr);
+    if (!m) return false;
+    if (m->chunk_state != CHUNK_ALLOCATED) return false;
+    if (m->Beg() != addr) return false;
+    atomic_store((atomic_uint32_t *)&m->alloc_context_id, StackDepotPut(*stack),
+                 memory_order_relaxed);
+    return true;
+  }
+
   // -------------------- Allocation/Deallocation routines ---------------
   void *Allocate(uptr size, uptr alignment, BufferedStackTrace *stack,
                  AllocType alloc_type, bool can_fill) {
@@ -435,14 +450,16 @@ struct Allocator {
       using_primary_allocator = false;
     }
     CHECK(IsAligned(needed_size, min_alignment));
-    if (size > kMaxAllowedMallocSize || needed_size > kMaxAllowedMallocSize) {
+    if (size > kMaxAllowedMallocSize || needed_size > kMaxAllowedMallocSize ||
+        size > max_user_defined_malloc_size) {
       if (AllocatorMayReturnNull()) {
         Report("WARNING: AddressSanitizer failed to allocate 0x%zx bytes\n",
                (void*)size);
         return nullptr;
       }
-      ReportAllocationSizeTooBig(size, needed_size, kMaxAllowedMallocSize,
-                                 stack);
+      uptr malloc_limit =
+          Min(kMaxAllowedMallocSize, max_user_defined_malloc_size);
+      ReportAllocationSizeTooBig(size, needed_size, malloc_limit, stack);
     }
 
     AsanThread *t = GetCurrentThread();
@@ -1075,7 +1092,7 @@ IgnoreObjectResult IgnoreObjectLocked(const void *p) {
 }  // namespace __lsan
 
 // ---------------------- Interface ---------------- {{{1
-using namespace __asan;  // NOLINT
+using namespace __asan;
 
 // ASan allocator doesn't reserve extra bytes, so normally we would
 // just return "size". We don't want to expose our redzone sizes, etc here.
@@ -1103,6 +1120,11 @@ uptr __sanitizer_get_allocated_size(const void *p) {
 void __sanitizer_purge_allocator() {
   GET_STACK_TRACE_MALLOC;
   instance.Purge(&stack);
+}
+
+int __asan_update_allocation_context(void* addr) {
+  GET_STACK_TRACE_MALLOC;
+  return instance.UpdateAllocationStack((uptr)addr, &stack);
 }
 
 #if !SANITIZER_SUPPORTS_WEAK_HOOKS

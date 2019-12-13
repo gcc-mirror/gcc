@@ -20,7 +20,7 @@ int_array ia2;
 
 void function_0 ()
 {
-  ia1 = ia2;		// { dg-error "" } gnu extension
+  ia1 = ia2;		// { dg-error "7:invalid array assignment" } gnu extension
 }
 
 int main () { return 0; }

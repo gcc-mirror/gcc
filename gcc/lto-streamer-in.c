@@ -42,21 +42,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "cfgloop.h"
 #include "debug.h"
+#include "alloc-pool.h"
 
-
-struct freeing_string_slot_hasher : string_slot_hasher
-{
-  static inline void remove (value_type *);
-};
-
-inline void
-freeing_string_slot_hasher::remove (value_type *v)
-{
-  free (v);
-}
+/* Allocator used to hold string slot entries for line map streaming.  */
+static struct object_allocator<struct string_slot> *string_slot_allocator;
 
 /* The table to hold the file names.  */
-static hash_table<freeing_string_slot_hasher> *file_name_hash_table;
+static hash_table<string_slot_hasher> *file_name_hash_table;
+
+/* This obstack holds file names used in locators. Line map datastructures
+   points here and thus it needs to be kept allocated as long as linemaps
+   exists.  */
+static struct obstack file_name_obstack;
 
 
 /* Check that tag ACTUAL has one of the given values.  NUM_TAGS is the
@@ -113,8 +110,8 @@ canon_file_name (const char *string)
       char *saved_string;
       struct string_slot *new_slot;
 
-      saved_string = (char *) xmalloc (len + 1);
-      new_slot = XCNEW (struct string_slot);
+      saved_string = XOBNEWVEC (&file_name_obstack, char, len + 1);
+      new_slot = string_slot_allocator->allocate ();
       memcpy (saved_string, string, len + 1);
       new_slot->s = saved_string;
       new_slot->len = len;
@@ -1025,13 +1022,13 @@ input_struct_function_base (struct function *fn, class data_in *data_in,
 
 static void
 input_function (tree fn_decl, class data_in *data_in,
-		class lto_input_block *ib, class lto_input_block *ib_cfg)
+		class lto_input_block *ib, class lto_input_block *ib_cfg,
+		cgraph_node *node)
 {
   struct function *fn;
   enum LTO_tags tag;
   gimple **stmts;
   basic_block bb;
-  struct cgraph_node *node;
 
   tag = streamer_read_record_start (ib);
   lto_tag_check (tag, LTO_function);
@@ -1067,9 +1064,6 @@ input_function (tree fn_decl, class data_in *data_in,
 
   gimple_register_cfg_hooks ();
 
-  node = cgraph_node::get (fn_decl);
-  if (!node)
-    node = cgraph_node::create (fn_decl);
   input_struct_function_base (fn, data_in, ib);
   input_cfg (ib_cfg, data_in, fn);
 
@@ -1226,7 +1220,6 @@ input_function (tree fn_decl, class data_in *data_in,
   fixup_call_stmt_edges (node, stmts);
   execute_all_ipa_stmt_fixups (node, stmts);
 
-  update_ssa (TODO_update_ssa_only_virtuals);
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
   free (stmts);
@@ -1297,7 +1290,8 @@ lto_read_body_or_constructor (struct lto_file_decl_data *file_data, struct symta
 	{
 	  lto_input_block ib_cfg (data + cfg_offset, header->cfg_size,
 				  file_data->mode_table);
-	  input_function (fn_decl, data_in, &ib_main, &ib_cfg);
+	  input_function (fn_decl, data_in, &ib_main, &ib_cfg,
+			  dyn_cast <cgraph_node *>(node));
 	}
       else
         input_constructor (fn_decl, data_in, &ib_main);
@@ -1562,8 +1556,8 @@ void
 lto_input_toplevel_asms (struct lto_file_decl_data *file_data, int order_base)
 {
   size_t len;
-  const char *data = lto_get_section_data (file_data, LTO_section_asm,
-					   NULL, &len);
+  const char *data
+    = lto_get_summary_section_data (file_data, LTO_section_asm, &len);
   const struct lto_simple_header_with_strings *header
     = (const struct lto_simple_header_with_strings *) data;
   int string_offset;
@@ -1601,8 +1595,8 @@ void
 lto_input_mode_table (struct lto_file_decl_data *file_data)
 {
   size_t len;
-  const char *data = lto_get_section_data (file_data, LTO_section_mode_table,
-					   NULL, &len);
+  const char *data
+    = lto_get_summary_section_data (file_data, LTO_section_mode_table, &len);
   if (! data)
     {
       internal_error ("cannot read LTO mode table from %s",
@@ -1722,7 +1716,23 @@ lto_reader_init (void)
 {
   lto_streamer_init ();
   file_name_hash_table
-    = new hash_table<freeing_string_slot_hasher> (37);
+    = new hash_table<string_slot_hasher> (37);
+  string_slot_allocator = new object_allocator <struct string_slot>
+				("line map file name hash");
+  gcc_obstack_init (&file_name_obstack);
+}
+
+/* Free hash table used to stream in location file names.  */
+
+void
+lto_free_file_name_hash (void)
+{
+  delete file_name_hash_table;
+  file_name_hash_table = NULL;
+  delete string_slot_allocator;
+  string_slot_allocator = NULL;
+  /* file_name_obstack must stay allocated since it is referred to by
+     line map table.  */
 }
 
 

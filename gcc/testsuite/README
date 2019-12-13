@@ -3,7 +3,7 @@ the C testsuite, see README.gcc.
 
 The driver that runs this testsuite is called DejaGnu and you will
 need a current DejaGnu snapshot, which is available from
-ftp://gcc.gnu.org/pub/gcc/infrastructure, for example.
+https://gcc.gnu.org/pub/gcc/infrastructure, for example.
 
 These tests are included "as is". If any of them fails, do not report
 a bug.  Bug reports for DejaGnu can go to bug-dejagnu@gnu.org.

@@ -20,6 +20,6 @@ template<C2 T>
 void g2(T t);
 
 void test() {
-  g1(0); // { dg-error "cannot call" }
+  g1(0); // { dg-error "" }
   g2(0);
 }

@@ -1,3 +1,68 @@
+2019-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/92154
+	* sanitizer_common/sanitizer_platform_limits_posix.h: Cherry-pick
+	llvm-project revision 947f9692440836dcb8d88b74b69dd379d85974ce.
+	* sanitizer_common/sanitizer_platform_limits_posix.cpp: Likewise.
+
+2019-11-20  Martin Liska  <mliska@suse.cz>
+
+	* libtool-version: Remove.
+	* lsan/libtool-version: Upate comment to not mention libmudflap.
+	* tsan/libtool-version: Likewise.
+	* ubsan/libtool-version: Likewise.
+
+2019-11-13  Andreas Schwab  <schwab@suse.de>
+
+	* configure.tgt (riscv64-*-linux*): Enable build.
+
+2019-11-07  Martin Liska  <mliska@suse.cz>
+
+	* all source files: Reapply all revisions mentioned in LOCAL_PATCHES.
+
+2019-11-07  Martin Liska  <mliska@suse.cz>
+
+	* merge.sh: Update to use llvm-project git repository.
+	* all source files: Merge from upstream
+	82588e05cc32bb30807e480abd4e689b0dee132a.
+
+2019-11-05  Martin Liska  <mliska@suse.cz>
+
+	* ubsan/ubsan_flags.cpp (InitializeFlags): Trunk decided to print
+	summary for all sanitizers, but we want to have UBSAN without it.
+
+2019-11-05  Martin Liska  <mliska@suse.cz>
+
+	* asan/asan_globals.cpp (CheckODRViolationViaIndicator): Reapply from
+	LOCAL_PATCHES.
+	(CheckODRViolationViaPoisoning): Likewise.
+	(RegisterGlobal): Likewise.
+	* asan/asan_interceptors.h (ASAN_INTERCEPT___CXA_RETHROW_PRIMARY_EXCEPTION): Likewise.
+	(defined): Likewise.
+	* asan/asan_mapping.h: Likewise.
+	* sanitizer_common/sanitizer_linux_libcdep.cpp (defined): Likewise.
+	* sanitizer_common/sanitizer_mac.cpp (defined): Likewise.
+	* sanitizer_common/sanitizer_platform_limits_linux.cpp (defined): Likewise.
+	* sanitizer_common/sanitizer_platform_limits_posix.h: Likewise.
+	* sanitizer_common/sanitizer_stacktrace.cpp (GetCanonicFrame): Likewise.
+	* tsan/tsan_rtl_ppc64.S: Likewise.
+	* ubsan/ubsan_handlers.cpp (__ubsan::__ubsan_handle_cfi_bad_icall): Likewise.
+	(__ubsan::__ubsan_handle_cfi_bad_icall_abort): Likewise.
+	* ubsan/ubsan_handlers.h (struct CFIBadIcallData): Likewise.
+	(struct CFICheckFailData): Likewise.
+	(RECOVERABLE): Likewise.
+	* ubsan/ubsan_platform.h: Likewise.
+
+2019-11-05  Martin Liska  <mliska@suse.cz>
+
+	* tsan/Makefile.am: Rename tsan_interceptors.cpp to
+	tsan_interceptors_posix.
+	* tsan/Makefile.in: Regenerate.
+
+2019-11-05  Martin Liska  <mliska@suse.cz>
+
+	* all source files: Merge from upstream r375507.
+
 2019-10-22  Tamar Christina  <tamar.christina@arm.com>
 
 	PR sanitizer/92154

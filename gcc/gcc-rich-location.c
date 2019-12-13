@@ -196,7 +196,7 @@ maybe_range_label_for_tree_type_mismatch::get_text (unsigned range_idx) const
 {
   if (m_expr == NULL_TREE
       || !EXPR_P (m_expr))
-    return label_text (NULL, false);
+    return label_text::borrow (NULL);
   tree expr_type = TREE_TYPE (m_expr);
 
   tree other_type = NULL_TREE;

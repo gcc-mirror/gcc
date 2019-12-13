@@ -75,8 +75,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-walk.h"
 #include "tree-dfa.h"
 #include "tree-sra.h"
+#include "alloc-pool.h"
 #include "symbol-summary.h"
-#include "params.h"
 #include "dbgcnt.h"
 #include "tree-inline.h"
 #include "ipa-utils.h"
@@ -101,7 +101,7 @@ struct GTY(()) param_access
 {
   /* Type that a potential replacement should have.  This field only has
      meaning in the summary building and transformation phases, when it is
-     reconstructoed from the body.  Must not be touched in IPA analysys
+     reconstructed from the body.  Must not be touched in IPA analysis
      stage.  */
   tree type;
 
@@ -122,7 +122,7 @@ struct GTY(()) param_access
   unsigned reverse : 1;
 };
 
-/* This structure has the same purpose as the one above and additoonally it
+/* This structure has the same purpose as the one above and additionally it
    contains some fields that are only necessary in the summary generation
    phase.  */
 
@@ -141,10 +141,10 @@ struct gensum_param_access
 
   /* Type that a potential replacement should have.  This field only has
      meaning in the summary building and transformation phases, when it is
-     reconstructoed from the body.  Must not be touched in IPA analysys
+     reconstructed from the body.  Must not be touched in IPA analysis
      stage.  */
   tree type;
-  /* Alias refrerence type to be used in MEM_REFs when adjusting caller
+  /* Alias reference type to be used in MEM_REFs when adjusting caller
      arguments.  */
   tree alias_ptr_type;
 
@@ -187,7 +187,7 @@ struct gensum_param_desc
   /* Number of accesses in the access tree rooted in field accesses.  */
   unsigned access_count;
 
-  /* If the below is non-zero, this is the nuber of uses as actual arguents.  */
+  /* If the below is non-zero, this is the number of uses as actual arguments.  */
   int call_uses;
   /* Number of times this parameter has been directly passed to.  */
   unsigned ptr_pt_count;
@@ -202,7 +202,7 @@ struct gensum_param_desc
   bool locally_unused;
   /* An aggregate that is a candidate for breaking up or a pointer passing data
      by reference that is a candidate for being converted to a set of
-     parameters passing thosa data by value.  */
+     parameters passing those data by value.  */
   bool split_candidate;
   /* Is this a parameter passing stuff by reference?  */
   bool by_ref;
@@ -214,7 +214,7 @@ struct gensum_param_desc
   int deref_index;
 };
 
-/* Properly deallocate accesses of DESC.  TODO: Since this data strucutre is
+/* Properly deallocate accesses of DESC.  TODO: Since this data structure is
    not in GC memory, this is not necessary and we can consider removing the
    function.  */
 
@@ -228,7 +228,7 @@ free_param_decl_accesses (isra_param_desc *desc)
 }
 
 /* Class used to convey information about functions from the
-   intra-procedurwl analysis stage to inter-procedural one.  */
+   intra-procedural analysis stage to inter-procedural one.  */
 
 class GTY((for_user)) isra_func_summary
 {
@@ -244,7 +244,7 @@ public:
 
   ~isra_func_summary ();
 
-  /* Mark the function as not a candidate for any IPA-SRA transofrmation.
+  /* Mark the function as not a candidate for any IPA-SRA transformation.
      Return true if it was a candidate until now.  */
 
   bool zap ();
@@ -271,8 +271,8 @@ public:
   unsigned m_queued : 1;
 };
 
-/* Claen up and deallocate isra_func_summary points to.  TODO: Since this data
-   strucutre is not in GC memory, this is not necessary and we can consider
+/* Clean up and deallocate isra_func_summary points to.  TODO: Since this data
+   structure is not in GC memory, this is not necessary and we can consider
    removing the destructor.  */
 
 isra_func_summary::~isra_func_summary ()
@@ -284,7 +284,7 @@ isra_func_summary::~isra_func_summary ()
 }
 
 
-/* Mark the function as not a candidate for any IPA-SRA transofrmation.  Return
+/* Mark the function as not a candidate for any IPA-SRA transformation.  Return
    true if it was a candidate until now.  */
 
 bool
@@ -312,7 +312,7 @@ struct isra_param_flow
      If aggregate_pass_through or pointer_pass_through below are true, it must
      contain exactly one element which is passed through from a formal
      parameter if the given number.  Otherwise, the array contains indices of
-     collee's formal parameters which are used to calculate value of this
+     callee's formal parameters which are used to calculate value of this
      actual argument. */
   unsigned char inputs[IPA_SRA_MAX_PARAM_FLOW_LEN];
 
@@ -332,7 +332,7 @@ struct isra_param_flow
   unsigned safe_to_import_accesses : 1;
 };
 
-/* Strucutre used to convey information about calls from the intra-procedurwl
+/* Structure used to convey information about calls from the intra-procedural
    analysis stage to inter-procedural one.  */
 
 class isra_call_summary
@@ -347,7 +347,7 @@ public:
   void dump (FILE *f);
 
   /* Information about what formal parameters of the caller are used to compute
-     indivisual actual arguments of this call.  */
+     individual actual arguments of this call.  */
   auto_vec <isra_param_flow> m_arg_flow;
 
   /* Set to true if the call statement does not have a LHS.  */
@@ -501,7 +501,7 @@ isra_call_summary::dump (FILE *f)
     }
 }
 
-/* Duplicate edge summare when an edge is cloned.  */
+/* Duplicate edge summary when an edge is cloned.  */
 
 void
 ipa_sra_call_summaries::duplicate (cgraph_edge *, cgraph_edge *,
@@ -525,7 +525,7 @@ namespace {
 
 hash_map<tree, gensum_param_desc *> *decl2desc;
 
-/* Countdown of allowe Alias analysis steps during summary building.  */
+/* Countdown of allowed Alias analysis steps during summary building.  */
 
 int aa_walking_limit;
 
@@ -552,7 +552,7 @@ struct obstack gensum_obstack;
 static bool
 ipa_sra_preliminary_function_checks (cgraph_node *node)
 {
-  if (!node->local.can_change_signature)
+  if (!node->can_change_signature)
     {
       if (dump_file)
 	fprintf (dump_file, "Function cannot change signature.\n");
@@ -678,7 +678,7 @@ dump_gensum_param_descriptor (FILE *f, gensum_param_desc *desc)
     dump_gensum_access (f, acc, 2);
 }
 
-/* Dump all parameter descriptors in IFS, assuming it describes FNDECl, to
+/* Dump all parameter descriptors in IFS, assuming it describes FNDECL, to
    F.  */
 
 static void
@@ -723,7 +723,7 @@ dump_isra_param_descriptor (FILE *f, isra_param_desc *desc)
     }
 }
 
-/* Dump all parameter descriptors in IFS, assuming it describes FNDECl, to
+/* Dump all parameter descriptors in IFS, assuming it describes FNDECL, to
    F.  */
 
 static void
@@ -1265,7 +1265,7 @@ allocate_access (gensum_param_desc *desc,
 		 HOST_WIDE_INT offset, HOST_WIDE_INT size)
 {
   if (desc->access_count
-      == (unsigned) PARAM_VALUE (PARAM_IPA_SRA_MAX_REPLACEMENTS))
+      == (unsigned) param_ipa_sra_max_replacements)
     {
       disqualify_split_candidate (desc, "Too many replacement candidates");
       return NULL;
@@ -1287,10 +1287,10 @@ enum isra_scan_context {ISRA_CTX_LOAD, ISRA_CTX_ARG, ISRA_CTX_STORE};
 
 /* Return an access describing memory access to the variable described by DESC
    at OFFSET with SIZE in context CTX, starting at pointer to the linked list
-   at a certaint tree level FIRST.  Attempt to create it and put into the
+   at a certain tree level FIRST.  Attempt to create it and put into the
    appropriate place in the access tree if does not exist, but fail and return
    NULL if there are already too many accesses, if it would create a partially
-   overlapping access or if an access would end up withiin a pre-existing
+   overlapping access or if an access would end up within a pre-existing
    non-call access.  */
 
 static gensum_param_access *
@@ -1415,7 +1415,7 @@ get_access_1 (gensum_param_desc *desc, gensum_param_access **first,
    at OFFSET with SIZE in context CTX, mark it as used in context CTX.  Attempt
    to create if it does not exist, but fail and return NULL if there are
    already too many accesses, if it would create a partially overlapping access
-   or if an access woule end up in a non-call access.  */
+   or if an access would end up in a non-call access.  */
 
 static gensum_param_access *
 get_access (gensum_param_desc *desc, HOST_WIDE_INT offset, HOST_WIDE_INT size,
@@ -1448,7 +1448,7 @@ get_access (gensum_param_desc *desc, HOST_WIDE_INT offset, HOST_WIDE_INT size,
 }
 
 /* Verify that parameter access tree starting with ACCESS is in good shape.
-   PARENT_OFFSET and PARENT_SIZE are the ciorresponding fields of parent of
+   PARENT_OFFSET and PARENT_SIZE are the corresponding fields of parent of
    ACCESS or zero if there is none.  */
 
 static bool
@@ -1590,7 +1590,7 @@ type_prevails_p (tree old_type, tree new_type)
 }
 
 /* When scanning an expression which is a call argument, this structure
-   specifies the call and the position of the agrument.  */
+   specifies the call and the position of the argument.  */
 
 struct scan_call_info
 {
@@ -1635,7 +1635,7 @@ mark_maybe_modified (ao_ref *, tree, void *data)
 /* Analyze expression EXPR from GIMPLE for accesses to parameters. CTX
    specifies whether EXPR is used in a load, store or as an argument call. BB
    must be the basic block in which expr resides.  If CTX specifies call
-   arguemnt context, CALL_INFO must describe tha call and argument position,
+   argument context, CALL_INFO must describe that call and argument position,
    otherwise it is ignored.  */
 
 static void
@@ -1766,7 +1766,7 @@ scan_expr_access (tree expr, gimple *stmt, isra_scan_context ctx,
     }
   else
     /* Pointer parameters with direct uses should have been ruled out by
-       analyzing SSA default def when looking at the paremeters.  */
+       analyzing SSA default def when looking at the parameters.  */
     gcc_assert (!desc->by_ref);
 
   gensum_param_access *access = get_access (desc, offset, size, ctx);
@@ -1817,8 +1817,8 @@ scan_expr_access (tree expr, gimple *stmt, isra_scan_context ctx,
 	{
 	  /* We need the same aggregate type on all accesses to be able to
 	     distinguish transformation spots from pass-through arguments in
-	     the transofrmation phase.  */
-	  disqualify_split_candidate (desc, "We do not support aggegate "
+	     the transformation phase.  */
+	  disqualify_split_candidate (desc, "We do not support aggregate "
 				      "type punning.");
 	  return;
 	}
@@ -2279,8 +2279,7 @@ process_scan_results (cgraph_node *node, struct function *fun,
       if (!desc->by_ref || optimize_function_for_size_p (fun))
 	param_size_limit = cur_param_size;
       else
-	param_size_limit = (PARAM_VALUE (PARAM_IPA_SRA_PTR_GROWTH_FACTOR)
-			   * cur_param_size);
+	param_size_limit = param_ipa_sra_ptr_growth_factor * cur_param_size;
       if (nonarg_acc_size > param_size_limit
 	  || (!desc->by_ref && nonarg_acc_size == param_size_limit))
 	{
@@ -2319,7 +2318,7 @@ process_scan_results (cgraph_node *node, struct function *fun,
      offset in this function at IPA level.
 
      TODO: Measure the overhead and the effect of just being pessimistic.
-     Maybe this is ony -O3 material?
+     Maybe this is only -O3 material?
   */
   bool pdoms_calculated = false;
   if (check_pass_throughs)
@@ -2376,7 +2375,7 @@ process_scan_results (cgraph_node *node, struct function *fun,
 
   /* TODO: Add early exit if we disqualified everything.  This also requires
      that we either relax the restriction that
-     ipa_param_adjustments.m_always_copy_start mut be the number of PARM_DECLs
+     ipa_param_adjustments.m_always_copy_start must be the number of PARM_DECLs
      or store the number of parameters to IPA-SRA function summary and use that
      when just removing params.  */
 
@@ -2404,7 +2403,7 @@ process_scan_results (cgraph_node *node, struct function *fun,
 }
 
 /* Return true if there are any overlaps among certain accesses of DESC.  If
-   non-NULL, set *CERTAIN_ACCESS_PRESENT_P upon encountering a certain accesss
+   non-NULL, set *CERTAIN_ACCESS_PRESENT_P upon encountering a certain access
    too.  DESC is assumed to be a split candidate that is not locally
    unused.  */
 
@@ -2500,7 +2499,7 @@ ipa_sra_summarize_function (cgraph_node *node)
 	  bb_dereferences = XCNEWVEC (HOST_WIDE_INT,
 				      by_ref_count
 				      * last_basic_block_for_fn (fun));
-	  aa_walking_limit = PARAM_VALUE (PARAM_IPA_MAX_AA_STEPS);
+	  aa_walking_limit = param_ipa_max_aa_steps;
 	  scan_function (node, fun);
 
 	  if (dump_file)
@@ -2546,7 +2545,7 @@ ipa_sra_generate_summary (void)
   gcc_checking_assert (!func_sums);
   gcc_checking_assert (!call_sums);
   func_sums
-    = (new (ggc_cleared_alloc <ipa_sra_function_summaries> ())
+    = (new (ggc_alloc_no_dtor <ipa_sra_function_summaries> ())
        ipa_sra_function_summaries (symtab, true));
   call_sums = new ipa_sra_call_summaries (symtab);
 
@@ -2555,7 +2554,7 @@ ipa_sra_generate_summary (void)
   return;
 }
 
-/* Write intraproceural analysis information about E and all of its outgoing
+/* Write intraprocedural analysis information about E and all of its outgoing
    edges into a stream for LTO WPA.  */
 
 static void
@@ -2585,7 +2584,7 @@ isra_write_edge_summary (output_block *ob, cgraph_edge *e)
   streamer_write_bitpack (&bp);
 }
 
-/* Write intraproceural analysis information about NODE and all of its outgoing
+/* Write intraprocedural analysis information about NODE and all of its outgoing
    edges into a stream for LTO WPA.  */
 
 static void
@@ -2635,7 +2634,7 @@ isra_write_node_summary (output_block *ob, cgraph_node *node)
     isra_write_edge_summary (ob, e);
 }
 
-/* Write intraproceural analysis information into a stream for LTO WPA.  */
+/* Write intraprocedural analysis information into a stream for LTO WPA.  */
 
 static void
 ipa_sra_write_summary (void)
@@ -2674,7 +2673,7 @@ ipa_sra_write_summary (void)
   destroy_output_block (ob);
 }
 
-/* Read intraproceural analysis information about E and all of its outgoing
+/* Read intraprocedural analysis information about E and all of its outgoing
    edges into a stream for LTO WPA.  */
 
 static void
@@ -2702,7 +2701,7 @@ isra_read_edge_summary (struct lto_input_block *ib, cgraph_edge *cs)
   csum->m_bit_aligned_arg = bp_unpack_value (&bp, 1);
 }
 
-/* Read intraproceural analysis information about NODE and all of its outgoing
+/* Read intraprocedural analysis information about NODE and all of its outgoing
    edges into a stream for LTO WPA.  */
 
 static void
@@ -2793,7 +2792,7 @@ isra_read_summary_section (struct lto_file_decl_data *file_data,
   lto_data_in_delete (data_in);
 }
 
-/* Read intraproceural analysis information into a stream for LTO WPA.  */
+/* Read intraprocedural analysis information into a stream for LTO WPA.  */
 
 static void
 ipa_sra_read_summary (void)
@@ -2805,15 +2804,15 @@ ipa_sra_read_summary (void)
   gcc_checking_assert (!func_sums);
   gcc_checking_assert (!call_sums);
   func_sums
-    = (new (ggc_cleared_alloc <ipa_sra_function_summaries> ())
+    = (new (ggc_alloc_no_dtor <ipa_sra_function_summaries> ())
        ipa_sra_function_summaries (symtab, true));
   call_sums = new ipa_sra_call_summaries (symtab);
 
   while ((file_data = file_data_vec[j++]))
     {
       size_t len;
-      const char *data = lto_get_section_data (file_data, LTO_section_ipa_sra,
-					       NULL, &len);
+      const char *data
+	= lto_get_summary_section_data (file_data, LTO_section_ipa_sra, &len);
       if (data)
         isra_read_summary_section (file_data, data, len);
     }
@@ -2882,7 +2881,7 @@ ipa_sra_ipa_function_checks (cgraph_node *node)
 		 "made local.\n", node->dump_name ());
       return false;
     }
-  if (!node->local.can_change_signature)
+  if (!node->can_change_signature)
     {
       if (dump_file)
 	fprintf (dump_file, "Function can not change signature.\n");
@@ -2968,7 +2967,7 @@ check_all_callers_for_issues (cgraph_node *node)
 	 TODO: We could only prevent splitting the problematic parameters if
 	 anybody thinks it is worth it.  */
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "A call of %s has bit-alinged aggregate argument,"
+	fprintf (dump_file, "A call of %s has bit-aligned aggregate argument,"
 		 " disabling parameter splitting.\n", node->dump_name ());
 
       isra_func_summary *ifs = func_sums->get (node);
@@ -3168,7 +3167,7 @@ isra_mark_caller_param_used (isra_func_summary *from_ifs, int input_idx,
 
 
 /* Propagate information that any parameter is not used only locally within a
-   SCC accross CS to the caller, which must be in the same SCC as the
+   SCC across CS to the caller, which must be in the same SCC as the
    callee. Push any callers that need to be re-processed to STACK.  */
 
 static void
@@ -3336,7 +3335,7 @@ pull_accesses_from_callee (isra_param_desc *param_desc,
       return NULL;
 
     if ((prop_count + pclen
-	 > (unsigned) PARAM_VALUE (PARAM_IPA_SRA_MAX_REPLACEMENTS))
+	 > (unsigned) param_ipa_sra_max_replacements)
 	|| size_would_violate_limit_p (param_desc,
 				       param_desc->size_reached + prop_size))
       return "propagating accesses would violate the count or size limit";
@@ -3374,7 +3373,7 @@ pull_accesses_from_callee (isra_param_desc *param_desc,
 /* Propagate parameter splitting information through call graph edge CS.
    Return true if any changes that might need to be propagated within SCCs have
    been made.  The function also clears the aggregate_pass_through and
-   pointer_pass_through in call summarries which do not need to be processed
+   pointer_pass_through in call summaries which do not need to be processed
    again if this CS is revisited when iterating while changes are propagated
    within an SCC.  */
 
@@ -3398,7 +3397,7 @@ param_splitting_across_edge (cgraph_edge *cs)
        : 0);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "Splitting accross %s->%s:\n",
+    fprintf (dump_file, "Splitting across %s->%s:\n",
 	     cs->caller->dump_name (), callee->dump_name ());
 
   unsigned i;
@@ -3677,7 +3676,7 @@ push_param_adjustments_for_index (isra_func_summary *ifs, unsigned base_index,
 }
 
 
-/* Do finall processing of results of IPA propagation regarding NODE, clone it
+/* Do final processing of results of IPA propagation regarding NODE, clone it
    if appropriate.  */
 
 static void
@@ -3760,6 +3759,9 @@ process_isra_node_results (cgraph_node *node,
     = node->create_virtual_clone (callers, NULL, new_adjustments, "isra",
 				  suffix_counter);
   suffix_counter++;
+  if (node->same_comdat_group)
+    new_node->add_to_same_comdat_group (node);
+  new_node->calls_comdat_local = node->calls_comdat_local;
 
   if (dump_file)
     fprintf (dump_file, "  Created new node %s\n", new_node->dump_name ());
@@ -3874,9 +3876,9 @@ ipa_sra_analysis (void)
 	      param_removal_cross_scc_edge (cs);
 	}
 
-      /* Look at edges within the current SCC and propagate used-ness accross
-          them, pushing onto the stack all notes which might need to be
-          revisited.  */
+      /* Look at edges within the current SCC and propagate used-ness across
+	 them, pushing onto the stack all notes which might need to be
+	 revisited.  */
       FOR_EACH_VEC_ELT (cycle_nodes, j, v)
 	v->call_for_symbol_thunks_and_aliases (propagate_used_to_scc_callers,
 					       &stack, true);
@@ -3989,9 +3991,9 @@ ipa_sra_analysis (void)
     process_isra_node_results (node, clone_num_suffixes);
 
   delete clone_num_suffixes;
-  func_sums->release ();
+  ggc_delete (func_sums);
   func_sums = NULL;
-  call_sums->release ();
+  delete call_sums;
   call_sums = NULL;
 
   if (dump_file)

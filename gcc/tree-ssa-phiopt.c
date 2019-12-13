@@ -44,7 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
 #include "tree-inline.h"
-#include "params.h"
 #include "case-cfn-macros.h"
 
 static unsigned int tree_ssa_phiopt_worker (bool, bool, bool);
@@ -1382,7 +1381,8 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 
   /* Turn EQ/NE of extreme values to order comparisons.  */
   if ((cmp == NE_EXPR || cmp == EQ_EXPR)
-      && TREE_CODE (rhs) == INTEGER_CST)
+      && TREE_CODE (rhs) == INTEGER_CST
+      && INTEGRAL_TYPE_P (TREE_TYPE (rhs)))
     {
       if (wi::eq_p (wi::to_wide (rhs), wi::min_value (TREE_TYPE (rhs))))
 	{
@@ -1408,7 +1408,8 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
       larger = rhs;
       /* If we have smaller < CST it is equivalent to smaller <= CST-1.
 	 Likewise smaller <= CST is equivalent to smaller < CST+1.  */
-      if (TREE_CODE (larger) == INTEGER_CST)
+      if (TREE_CODE (larger) == INTEGER_CST
+	  && INTEGRAL_TYPE_P (TREE_TYPE (larger)))
 	{
 	  if (cmp == LT_EXPR)
 	    {
@@ -1436,7 +1437,8 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
       larger = gimple_cond_lhs (cond);
       /* If we have larger > CST it is equivalent to larger >= CST+1.
 	 Likewise larger >= CST is equivalent to larger > CST-1.  */
-      if (TREE_CODE (smaller) == INTEGER_CST)
+      if (TREE_CODE (smaller) == INTEGER_CST
+	  && INTEGRAL_TYPE_P (TREE_TYPE (smaller)))
 	{
 	  wi::overflow_type overflow;
 	  if (cmp == GT_EXPR)
@@ -2270,6 +2272,10 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
   name = make_temp_ssa_name (TREE_TYPE (lhs), NULL, "cstore");
   new_stmt = gimple_build_assign (name, lhs);
   gimple_set_location (new_stmt, locus);
+  lhs = unshare_expr (lhs);
+  /* Set TREE_NO_WARNING on the rhs of the load to avoid uninit
+     warnings.  */
+  TREE_NO_WARNING (gimple_assign_rhs1 (new_stmt)) = 1;
   gsi_insert_on_edge (e1, new_stmt);
 
   /* 3) Create a PHI node at the join block, with one argument
@@ -2280,7 +2286,6 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
   add_phi_arg (newphi, rhs, e0, locus);
   add_phi_arg (newphi, name, e1, locus);
 
-  lhs = unshare_expr (lhs);
   new_stmt = gimple_build_assign (lhs, PHI_RESULT (newphi));
 
   /* 4) Insert that PHI node.  */
@@ -2469,7 +2474,7 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
 
   /* If either vectorization or if-conversion is disabled then do
      not sink any stores.  */
-  if (MAX_STORES_TO_SINK == 0
+  if (param_max_stores_to_sink == 0
       || (!flag_tree_loop_vectorize && !flag_tree_slp_vectorize)
       || !flag_tree_loop_if_convert)
     return false;
@@ -2528,7 +2533,7 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
 
   /* No pairs of stores found.  */
   if (!then_stores.length ()
-      || then_stores.length () > (unsigned) MAX_STORES_TO_SINK)
+      || then_stores.length () > (unsigned) param_max_stores_to_sink)
     {
       free_data_refs (then_datarefs);
       free_data_refs (else_datarefs);
@@ -2658,7 +2663,7 @@ static void
 hoist_adjacent_loads (basic_block bb0, basic_block bb1,
 		      basic_block bb2, basic_block bb3)
 {
-  int param_align = PARAM_VALUE (PARAM_L1_CACHE_LINE_SIZE);
+  int param_align = param_l1_cache_line_size;
   unsigned param_align_bits = (unsigned) (param_align * BITS_PER_UNIT);
   gphi_iterator gsi;
 
@@ -2808,7 +2813,7 @@ static bool
 gate_hoist_loads (void)
 {
   return (flag_hoist_adjacent_loads == 1
-	  && PARAM_VALUE (PARAM_L1_CACHE_LINE_SIZE)
+	  && param_l1_cache_line_size
 	  && HAVE_conditional_move);
 }
 
