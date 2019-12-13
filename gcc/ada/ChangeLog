@@ -1,3 +1,9 @@
+2019-12-13  Bob Duff  <duff@adacore.com>
+
+	* exp_attr.adb (Is_Available): Remove this function, and replace
+	all calls with RTE_Available. RTE_Available will return True if
+	"not Configurable_Run_Time_Mode". Remove the "???" comment.
+
 2019-12-13  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch7.adb (Analyze_Package_Body_Helper): Do not call
