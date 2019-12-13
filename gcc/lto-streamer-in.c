@@ -1022,13 +1022,13 @@ input_struct_function_base (struct function *fn, class data_in *data_in,
 
 static void
 input_function (tree fn_decl, class data_in *data_in,
-		class lto_input_block *ib, class lto_input_block *ib_cfg)
+		class lto_input_block *ib, class lto_input_block *ib_cfg,
+		cgraph_node *node)
 {
   struct function *fn;
   enum LTO_tags tag;
   gimple **stmts;
   basic_block bb;
-  struct cgraph_node *node;
 
   tag = streamer_read_record_start (ib);
   lto_tag_check (tag, LTO_function);
@@ -1064,9 +1064,6 @@ input_function (tree fn_decl, class data_in *data_in,
 
   gimple_register_cfg_hooks ();
 
-  node = cgraph_node::get (fn_decl);
-  if (!node)
-    node = cgraph_node::create (fn_decl);
   input_struct_function_base (fn, data_in, ib);
   input_cfg (ib_cfg, data_in, fn);
 
@@ -1293,7 +1290,8 @@ lto_read_body_or_constructor (struct lto_file_decl_data *file_data, struct symta
 	{
 	  lto_input_block ib_cfg (data + cfg_offset, header->cfg_size,
 				  file_data->mode_table);
-	  input_function (fn_decl, data_in, &ib_main, &ib_cfg);
+	  input_function (fn_decl, data_in, &ib_main, &ib_cfg,
+			  dyn_cast <cgraph_node *>(node));
 	}
       else
         input_constructor (fn_decl, data_in, &ib_main);

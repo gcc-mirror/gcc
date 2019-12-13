@@ -1,3 +1,8 @@
+2019-12-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-in.c (input_function): Add node parameter.
+	(lto_read_body_or_constructor): Use it.
+
 2019-12-13  Roman Zhuykov  <zhroma@ispras.ru>
 
 	PR rtl-optimization/92591
