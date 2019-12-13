@@ -5418,7 +5418,11 @@ cp_build_binary_op (const op_location_t &location,
 	result_type = NULL_TREE;
 
       if (result_type)
-	build_type = spaceship_type (result_type, complain);
+	{
+	  build_type = spaceship_type (result_type, complain);
+	  if (build_type == error_mark_node)
+	    return error_mark_node;
+	}
 
       if (result_type && arithmetic_types_p)
 	{
