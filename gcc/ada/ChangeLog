@@ -1,3 +1,10 @@
+2019-12-13  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.adb (Scope_Within): For the case of checking for a
+	task type procedure, check the Implementation_Base_Type of Curr.
+	(Scope_Within_Or_Same): For the case of checking for a task type
+	procedure, check the Implementation_Base_Type of Curr.
+
 2019-12-13  Arnaud Charlet  <charlet@adacore.com>
 
 	* impunit.adb (Non_Imp_File_Names_12): Add

@@ -24721,8 +24721,9 @@ package body Sem_Util is
          --  A selective accept body appears within a task type, but the
          --  enclosing subprogram is the procedure of the task body.
 
-         elsif Ekind (Curr) = E_Task_Type
-           and then Outer = Task_Body_Procedure (Curr)
+         elsif Ekind (Implementation_Base_Type (Curr)) = E_Task_Type
+           and then
+             Outer = Task_Body_Procedure (Implementation_Base_Type (Curr))
          then
             return True;
 
@@ -24763,8 +24764,9 @@ package body Sem_Util is
          if Curr = Outer then
             return True;
 
-         elsif Ekind (Curr) = E_Task_Type
-           and then Outer = Task_Body_Procedure (Curr)
+         elsif Ekind (Implementation_Base_Type (Curr)) = E_Task_Type
+           and then
+             Outer = Task_Body_Procedure (Implementation_Base_Type (Curr))
          then
             return True;
 
