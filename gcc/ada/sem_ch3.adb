@@ -662,8 +662,8 @@ package body Sem_Ch3 is
    --  first create the list of components for the derived type from that of
    --  the parent by means of Inherit_Components and then build a copy of the
    --  declaration tree of the parent with the help of the mapping returned by
-   --  Inherit_Components, which will for example by used to validate record
-   --  representation claused given for the derived type. If the parent type
+   --  Inherit_Components, which will for example be used to validate record
+   --  representation clauses given for the derived type. If the parent type
    --  is private and has discriminants, the ancestor discriminants used in the
    --  inheritance are that of the private declaration, whereas the ancestor
    --  discriminants present in the declaration tree of the parent are that of
