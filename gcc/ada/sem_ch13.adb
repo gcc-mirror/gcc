@@ -3479,11 +3479,14 @@ package body Sem_Ch13 is
                   --  don't do this in GNATprove mode, because it brings no
                   --  benefit for proof and causes annoynace for flow analysis,
                   --  which prefers to be as close to the original source code
-                  --  as possible.
+                  --  as possible. Also we don't do this when analyzing generic
+                  --  units since it causes spurious visibility errors in the
+                  --  preanalysis of instantiations.
 
                   if not (ASIS_Mode or GNATprove_Mode)
                     and then (Pname = Name_Postcondition
                                or else not Class_Present (Aspect))
+                    and then not Inside_A_Generic
                   then
                      while Nkind (Expr) = N_And_Then loop
                         Insert_After (Aspect,

@@ -1,3 +1,11 @@
+2019-12-13  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specification): Processing a
+	precondition, if the expression is of the form A and then B, do
+	not generate separate Pre/Post aspects for the separate clases
+	when we are processing a generic unit. Required to avoid
+	reporting spurious visibility errors on the instantiations.
+
 2019-12-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_res.adb (Resolve_Actuals): Give canonical error for
