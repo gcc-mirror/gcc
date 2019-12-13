@@ -1,3 +1,8 @@
+2019-12-13  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Original_Aspect_Pragma_Name): Go through
+	Original_Node for pragma.
+
 2019-12-13  Piotr Trojanek  <trojanek@adacore.com>
 
 	* exp_aggr.adb, exp_unst.adb: Minor fix typo in comment.

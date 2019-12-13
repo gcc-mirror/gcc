@@ -23326,13 +23326,16 @@ package body Sem_Util is
          Item := Corresponding_Aspect (Item);
       end if;
 
-      --  Retrieve the name of the aspect/pragma. Note that Pre, Pre_Class,
+      --  Retrieve the name of the aspect/pragma. As assertion pragmas from
+      --  a generic instantiation might have been rewritten into pragma Check,
+      --  we look at the original node for Item. Note also that Pre, Pre_Class,
       --  Post and Post_Class rewrite their pragma identifier to preserve the
-      --  original name.
+      --  original name, so we look at the original node for the identifier.
       --  ??? this is kludgey
 
       if Nkind (Item) = N_Pragma then
-         Item_Nam := Chars (Original_Node (Pragma_Identifier (Item)));
+         Item_Nam :=
+           Chars (Original_Node (Pragma_Identifier (Original_Node (Item))));
 
       else
          pragma Assert (Nkind (Item) = N_Aspect_Specification);
