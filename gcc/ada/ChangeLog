@@ -1,3 +1,11 @@
+2019-12-13  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch6.adb (Check_Overriding_Indicator): Modify condition to
+	take into account the modification of the Is_Hidden flag within
+	generic instances.
+	(Verify_Overriding_Indicator): Add an exception for controlled
+	primitives within an instance.
+
 2019-12-13  Ed Schonberg  <schonberg@adacore.com>
 
 	* sinfo.ads, sinfo.adb (Aspect_On_Partial_View,
