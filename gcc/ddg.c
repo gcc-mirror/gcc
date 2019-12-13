@@ -32,9 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifdef INSN_SCHEDULING
 
-/* A flag indicating that a ddg edge belongs to an SCC or not.  */
-enum edge_flag {NOT_IN_SCC = 0, IN_SCC};
-
 /* Forward declarations.  */
 static void add_backarc_to_ddg (ddg_ptr, ddg_edge_ptr);
 static void add_backarc_to_scc (ddg_scc_ptr, ddg_edge_ptr);
@@ -564,7 +561,7 @@ create_ddg (basic_block bb, int closing_branch_deps)
 {
   ddg_ptr g;
   rtx_insn *insn, *first_note;
-  int i;
+  int i, j;
   int num_nodes = 0;
 
   g = (ddg_ptr) xcalloc (1, sizeof (struct ddg));
@@ -632,6 +629,12 @@ create_ddg (basic_block bb, int closing_branch_deps)
       g->nodes[i].predecessors = sbitmap_alloc (num_nodes);
       bitmap_clear (g->nodes[i].predecessors);
       g->nodes[i].first_note = (first_note ? first_note : insn);
+
+      g->nodes[i].aux.count = -1;
+      g->nodes[i].max_dist = XCNEWVEC (int, num_nodes);
+      for (j = 0; j < num_nodes; j++)
+         g->nodes[i].max_dist[j] = -1;
+
       g->nodes[i++].insn = insn;
       first_note = NULL;
     }
@@ -668,6 +671,7 @@ free_ddg (ddg_ptr g)
 	}
       sbitmap_free (g->nodes[i].successors);
       sbitmap_free (g->nodes[i].predecessors);
+      free (g->nodes[i].max_dist);
     }
   if (g->num_backarcs > 0)
     free (g->backarcs);
@@ -792,7 +796,7 @@ create_ddg_edge (ddg_node_ptr src, ddg_node_ptr dest,
   e->latency = l;
   e->distance = d;
   e->next_in = e->next_out = NULL;
-  e->aux.info = 0;
+  e->in_scc = false;
   return e;
 }
 
@@ -820,7 +824,7 @@ add_edge_to_ddg (ddg_ptr g ATTRIBUTE_UNUSED, ddg_edge_ptr e)
    for now that cycles in the data dependence graph contain a single backarc.
    This simplifies the algorithm, and can be generalized later.  */
 static void
-set_recurrence_length (ddg_scc_ptr scc, ddg_ptr g)
+set_recurrence_length (ddg_scc_ptr scc)
 {
   int j;
   int result = -1;
@@ -828,17 +832,14 @@ set_recurrence_length (ddg_scc_ptr scc, ddg_ptr g)
   for (j = 0; j < scc->num_backarcs; j++)
     {
       ddg_edge_ptr backarc = scc->backarcs[j];
-      int length;
       int distance = backarc->distance;
       ddg_node_ptr src = backarc->dest;
       ddg_node_ptr dest = backarc->src;
+      int length = src->max_dist[dest->cuid];
 
-      length = longest_simple_path (g, src->cuid, dest->cuid, scc->nodes);
-      if (length < 0 )
-	{
-	  /* fprintf (stderr, "Backarc not on simple cycle in SCC.\n"); */
-	  continue;
-	}
+      if (length < 0)
+        continue;
+
       length += backarc->latency;
       result = MAX (result, (length / distance));
     }
@@ -846,9 +847,9 @@ set_recurrence_length (ddg_scc_ptr scc, ddg_ptr g)
 }
 
 /* Create a new SCC given the set of its nodes.  Compute its recurrence_length
-   and mark edges that belong to this scc as IN_SCC.  */
+   and mark edges that belong to this scc.  */
 static ddg_scc_ptr
-create_scc (ddg_ptr g, sbitmap nodes)
+create_scc (ddg_ptr g, sbitmap nodes, int id)
 {
   ddg_scc_ptr scc;
   unsigned int u = 0;
@@ -866,16 +867,18 @@ create_scc (ddg_ptr g, sbitmap nodes)
       ddg_edge_ptr e;
       ddg_node_ptr n = &g->nodes[u];
 
+      gcc_assert (n->aux.count == -1);
+      n->aux.count = id;
+
       for (e = n->out; e; e = e->next_out)
 	if (bitmap_bit_p (nodes, e->dest->cuid))
 	  {
-	    e->aux.count = IN_SCC;
+	    e->in_scc = true;
 	    if (e->distance > 0)
 	      add_backarc_to_scc (scc, e);
 	  }
     }
 
-  set_recurrence_length (scc, g);
   return scc;
 }
 
@@ -1018,7 +1021,7 @@ check_sccs (ddg_all_sccs_ptr sccs, int num_nodes)
 ddg_all_sccs_ptr
 create_ddg_all_sccs (ddg_ptr g)
 {
-  int i;
+  int i, j, k, scc, way;
   int num_nodes = g->num_nodes;
   auto_sbitmap from (num_nodes);
   auto_sbitmap to (num_nodes);
@@ -1038,7 +1041,7 @@ create_ddg_all_sccs (ddg_ptr g)
       ddg_node_ptr dest = backarc->dest;
 
       /* If the backarc already belongs to an SCC, continue.  */
-      if (backarc->aux.count == IN_SCC)
+      if (backarc->in_scc)
 	continue;
 
       bitmap_clear (scc_nodes);
@@ -1049,10 +1052,52 @@ create_ddg_all_sccs (ddg_ptr g)
 
       if (find_nodes_on_paths (scc_nodes, g, from, to))
 	{
-	  scc = create_scc (g, scc_nodes);
+	  scc = create_scc (g, scc_nodes, sccs->num_sccs);
 	  add_scc_to_ddg (sccs, scc);
 	}
     }
+
+  /* Init max_dist arrays for Floyd–Warshall-like
+     longest patch calculation algorithm.  */
+  for (k = 0; k < num_nodes; k++)
+    {
+      ddg_edge_ptr e;
+      ddg_node_ptr n = &g->nodes[k];
+
+      if (n->aux.count == -1)
+        continue;
+
+      n->max_dist[k] = 0;
+      for (e = n->out; e; e = e->next_out)
+        if (e->distance == 0 && g->nodes[e->dest->cuid].aux.count == n->aux.count)
+          n->max_dist[e->dest->cuid] = e->latency;
+    }
+
+  /* Run main Floid-Warshall loop.  We use only non-backarc edges
+     inside each scc.  */
+  for (k = 0; k < num_nodes; k++)
+    {
+      scc = g->nodes[k].aux.count;
+      if (scc != -1)
+        {
+          for (i = 0; i < num_nodes; i++)
+            if (g->nodes[i].aux.count == scc)
+              for (j = 0; j < num_nodes; j++)
+                if (g->nodes[j].aux.count == scc
+                    && g->nodes[i].max_dist[k] >= 0
+                    && g->nodes[k].max_dist[j] >= 0)
+                  {
+                    way = g->nodes[i].max_dist[k] + g->nodes[k].max_dist[j];
+                    if (g->nodes[i].max_dist[j] < way)
+                      g->nodes[i].max_dist[j] = way;
+                  }
+        }
+    }
+
+  /* Calculate recurrence_length using max_dist info.  */
+  for (i = 0; i < sccs->num_sccs; i++)
+    set_recurrence_length (sccs->sccs[i]);
+
   order_sccs (sccs);
 
   if (flag_checking)
@@ -1153,74 +1198,6 @@ find_nodes_on_paths (sbitmap result, ddg_ptr g, sbitmap from, sbitmap to)
     }
 
   return bitmap_and (result, reachable_from, reach_to);
-}
-
-
-/* Updates the counts of U_NODE's successors (that belong to NODES) to be
-   at-least as large as the count of U_NODE plus the latency between them.
-   Sets a bit in TMP for each successor whose count was changed (increased).
-   Returns nonzero if any count was changed.  */
-static int
-update_dist_to_successors (ddg_node_ptr u_node, sbitmap nodes, sbitmap tmp)
-{
-  ddg_edge_ptr e;
-  int result = 0;
-
-  for (e = u_node->out; e; e = e->next_out)
-    {
-      ddg_node_ptr v_node = e->dest;
-      int v = v_node->cuid;
-
-      if (bitmap_bit_p (nodes, v)
-	  && (e->distance == 0)
-	  && (v_node->aux.count < u_node->aux.count + e->latency))
-	{
-	  v_node->aux.count = u_node->aux.count + e->latency;
-	  bitmap_set_bit (tmp, v);
-	  result = 1;
-	}
-    }
-  return result;
-}
-
-
-/* Find the length of a longest path from SRC to DEST in G,
-   going only through NODES, and disregarding backarcs.  */
-int
-longest_simple_path (struct ddg * g, int src, int dest, sbitmap nodes)
-{
-  int i;
-  unsigned int u = 0;
-  int change = 1;
-  int num_nodes = g->num_nodes;
-  auto_sbitmap workset (num_nodes);
-  auto_sbitmap tmp (num_nodes);
-
-
-  /* Data will hold the distance of the longest path found so far from
-     src to each node.  Initialize to -1 = less than minimum.  */
-  for (i = 0; i < g->num_nodes; i++)
-    g->nodes[i].aux.count = -1;
-  g->nodes[src].aux.count = 0;
-
-  bitmap_clear (tmp);
-  bitmap_set_bit (tmp, src);
-
-  while (change)
-    {
-      sbitmap_iterator sbi;
-
-      change = 0;
-      bitmap_copy (workset, tmp);
-      bitmap_clear (tmp);
-      EXECUTE_IF_SET_IN_BITMAP (workset, 0, u, sbi)
-	{
-	  ddg_node_ptr u_node = &g->nodes[u];
-
-	  change |= update_dist_to_successors (u_node, nodes, tmp);
-	}
-    }
-  return g->nodes[dest].aux.count;
 }
 
 #endif /* INSN_SCHEDULING */

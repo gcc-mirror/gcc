@@ -1,3 +1,19 @@
+2019-12-13  Roman Zhuykov  <zhroma@ispras.ru>
+
+	* ddg.c (create_ddg): Init max_dist array for each node.
+	(free_ddg): Free max_dist array.
+	(create_ddg_edge): Use bool field instead of aux union.
+	(set_recurrence_length): Use prepared max_dist information instead
+	of calling longest_simple_path.
+	(create_scc): Remove graph argument, fill node's aux.count with
+	SCC id, and move set_recurrence_length call to...
+	(create_ddg_all_sccs): ...here, after filling all max_dist arrays
+	using Floyd–Warshall-like algorithm.
+	(update_dist_to_successors): Remove the whole function.
+	(longest_simple_path): Likewise.
+	* ddg.h (struct ddg_node): Add max_dist pointer.
+	(struct ddg_edge): Use bool field instead of unused aux union.
+
 2019-12-13  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (mulv64si3<exec>): Rename to ...
