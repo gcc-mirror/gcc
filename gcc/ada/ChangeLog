@@ -1,3 +1,12 @@
+2019-12-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Do not call
+	Declare_Inherited_Private_Subprograms on s child body: the
+	required operations have already been created when analyzing the
+	corresponding package declaration. This prevents a redeclaration
+	of inehrited operation, and a crash when inserting the new
+	operation in the current scope.
+
 2019-12-13  Yannick Moy  <moy@adacore.com>
 
 	* sem_prag.adb (Analyze_Depends_In_Decl_Part,

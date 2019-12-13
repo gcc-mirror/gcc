@@ -925,9 +925,12 @@ package body Sem_Ch7 is
       --  This is a nested package, so it may be necessary to declare certain
       --  inherited subprograms that are not yet visible because the parent
       --  type's subprograms are now visible.
+      --  Note that for child units these operations were generated when
+      --  analyzing the package specification.
 
       if Ekind (Scope (Spec_Id)) = E_Package
         and then Scope (Spec_Id) /= Standard_Standard
+        and then not Is_Child_Unit (Spec_Id)
       then
          Declare_Inherited_Private_Subprograms (Spec_Id);
       end if;
