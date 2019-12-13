@@ -1,3 +1,8 @@
+2019-12-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92496 - ICE with <=> and no #include <compare>.
+	* typeck.c (cp_build_binary_op): Handle error from spaceship_type.
+
 2019-12-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* cxx-pretty-print.c (cxx_pretty_printer::clone): New vfunc
