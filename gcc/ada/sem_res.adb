@@ -7172,6 +7172,14 @@ package body Sem_Res is
                     ("cannot inline & (in potentially unevaluated context)?",
                      N, Nam_UA);
 
+               --  Calls cannot be inlined inside the conditions of while
+               --  loops, as this would create complex actions inside
+               --  the condition, that are not handled by GNATprove.
+
+               elsif In_While_Loop_Condition (N) then
+                  Cannot_Inline
+                    ("cannot inline & (in while loop condition)?", N, Nam_UA);
+
                --  Do not inline calls which would possibly lead to missing a
                --  type conversion check on an input parameter.
 

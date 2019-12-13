@@ -1,3 +1,10 @@
+2019-12-13  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Prevent inlining inside while loop
+	conditions.
+	* sem_util.adb, sem_util.ads (In_While_Loop_Condition): New
+	query function.
+
 2019-12-13  Bob Duff  <duff@adacore.com>
 
 	* impunit.ads: Add Ada_202X_Unit.
