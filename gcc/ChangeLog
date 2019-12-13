@@ -1,3 +1,9 @@
+2019-12-13  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* config/rs6000/rs6000.c (adjust_vectorization_cost): New function.
+	(rs6000_add_stmt_cost): Call adjust_vectorization_cost and update
+	stmt_cost.
+
 2019-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/92904
