@@ -3057,7 +3057,9 @@ different ways:
   particular family of scalar types using the optional arguments of the pragma.
 
   The compile-time approach is intended to optimize the generated code for the
-  pragma, by possibly using fast operations such as ``memset``.
+  pragma, by possibly using fast operations such as ``memset``. Note that such
+  optimizations require using values the bytes of which all have the same
+  binary representation.
 
 * At bind time, the programmer has several options:
 
@@ -3077,7 +3079,7 @@ different ways:
   The bind-time approach is intended to provide fast turnaround for testing
   with different values, without having to recompile the program.
 
-* At execution time, the programmer can speify the invalid values using an
+* At execution time, the programmer can specify the invalid values using an
   environment variable. See the GNAT User's Guide for details.
 
   The execution-time approach is intended to provide fast turnaround for
