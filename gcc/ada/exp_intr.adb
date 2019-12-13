@@ -988,9 +988,31 @@ package body Exp_Intr is
       --  are allowed, the generated code may lack block statements.
 
       if Needs_Fin then
-         Obj_Ref :=
-           Make_Explicit_Dereference (Loc,
-             Prefix => Duplicate_Subexpr_No_Checks (Arg));
+
+         --  Ada 2005 (AI-251): In case of abstract interface type we displace
+         --  the pointer to reference the base of the object to deallocate its
+         --  memory, unless we're targetting a VM, in which case no special
+         --  processing is required.
+
+         if Is_Interface (Directly_Designated_Type (Typ))
+           and then Tagged_Type_Expansion
+         then
+            Obj_Ref :=
+              Make_Explicit_Dereference (Loc,
+                Prefix =>
+                  Unchecked_Convert_To (Typ,
+                    Make_Function_Call (Loc,
+                      Name                   =>
+                        New_Occurrence_Of (RTE (RE_Base_Address), Loc),
+                      Parameter_Associations => New_List (
+                        Unchecked_Convert_To (RTE (RE_Address),
+                          Duplicate_Subexpr_No_Checks (Arg))))));
+
+         else
+            Obj_Ref :=
+              Make_Explicit_Dereference (Loc,
+                Prefix => Duplicate_Subexpr_No_Checks (Arg));
+         end if;
 
          --  If the designated type is tagged, the finalization call must
          --  dispatch because the designated type may not be the actual type

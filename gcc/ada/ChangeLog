@@ -1,3 +1,24 @@
+2019-12-13  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.ads (Expand_Interface_Thunk): Adding one formal (the
+	interface type).
+	* exp_disp.adb (Expand_Interface_Thunk): Using the added formal
+	to ensure the correct profile of the thunk generated for
+	predefined primitives; in addition, the added formal is also
+	used to perform a check that ensures that the controlling type
+	of the thunk is the one expected by the GCC backend.
+	(Make_Secondary_DT, Register_Primitive): Adding the new formal
+	to the calls to Expand_Interface_Thunk.
+	* exp_ch6.adb (Register_Predefined_DT_Entry): Adding the new
+	formal to the call to Expand_Interface_Thunk.
+	* exp_intr.adb (Expand_Unc_Deallocation): When deallocating a
+	controlled type and the call to unchecked deallocation is
+	performed with a pointer to one of the convered interface types,
+	displace the pointer to the object to reference the base of the
+	object to deallocate its memory.
+	* gcc-interface/trans.c (maybe_make_gnu_thunk): Assert that the
+	controlling type of the thunk is an interface type.
+
 2019-12-13  Bob Duff  <duff@adacore.com>
 
 	* exp_attr.adb (Is_Available): Remove this function, and replace

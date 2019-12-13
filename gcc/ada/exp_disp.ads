@@ -242,7 +242,8 @@ package Exp_Disp is
    procedure Expand_Interface_Thunk
      (Prim       : Node_Id;
       Thunk_Id   : out Entity_Id;
-      Thunk_Code : out Node_Id);
+      Thunk_Code : out Node_Id;
+      Iface      : Entity_Id);
    --  Ada 2005 (AI-251): When a tagged type implements abstract interfaces we
    --  generate additional subprograms (thunks) associated with each primitive
    --  Prim to have a layout compatible with the C++ ABI. The thunk displaces
