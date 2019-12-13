@@ -2666,12 +2666,8 @@ package body Sem_Ch10 is
            and then not Implicit_With (N)
            and then not Restriction_Violation
          then
-            declare
-               U_Kind : constant Kind_Of_Unit :=
-                          Get_Kind_Of_Unit (Get_Source_Unit (U));
-
-            begin
-               if U_Kind = Implementation_Unit then
+            case Get_Kind_Of_Unit (Get_Source_Unit (U)) is
+               when Implementation_Unit =>
                   Error_Msg_F ("& is an internal 'G'N'A'T unit?i?", Name (N));
 
                   --  Add alternative name if available, otherwise issue a
@@ -2685,19 +2681,30 @@ package body Sem_Ch10 is
                         & "version-dependent?i?", Name (N));
                   end if;
 
-               elsif U_Kind = Ada_2005_Unit
-                 and then Ada_Version < Ada_2005
-                 and then Warn_On_Ada_2005_Compatibility
-               then
-                  Error_Msg_N ("& is an Ada 2005 unit?i?", Name (N));
+               when Not_Predefined_Unit | Ada_95_Unit =>
+                  null; -- no checks needed
 
-               elsif U_Kind = Ada_2012_Unit
-                 and then Ada_Version < Ada_2012
-                 and then Warn_On_Ada_2012_Compatibility
-               then
-                  Error_Msg_N ("& is an Ada 2012 unit?i?", Name (N));
-               end if;
-            end;
+               when Ada_2005_Unit =>
+                  if Ada_Version < Ada_2005
+                    and then Warn_On_Ada_2005_Compatibility
+                  then
+                     Error_Msg_N ("& is an Ada 2005 unit?i?", Name (N));
+                  end if;
+
+               when Ada_2012_Unit =>
+                  if Ada_Version < Ada_2012
+                    and then Warn_On_Ada_2012_Compatibility
+                  then
+                     Error_Msg_N ("& is an Ada 2012 unit?i?", Name (N));
+                  end if;
+
+               when Ada_202X_Unit =>
+                  if Ada_Version < Ada_2020
+                    and then Warn_On_Ada_202X_Compatibility
+                  then
+                     Error_Msg_N ("& is an Ada 202X unit?i?", Name (N));
+                  end if;
+            end case;
          end if;
       end if;
 

@@ -1767,6 +1767,12 @@ package Opt is
    --  including warnings on Ada 2012 obsolescent features used in Ada 2012
    --  mode. Modified by use of -gnatwy/Y.
 
+   Warn_On_Ada_202X_Compatibility : Boolean := True;
+   --  GNAT
+   --  Set to True to generate all warnings on Ada 202X compatibility issues,
+   --  including warnings on Ada 202X obsolescent features used in Ada 202X
+   --  mode. ???There is no warning switch for this yet.
+
    Warn_On_All_Unread_Out_Parameters : Boolean := False;
    --  GNAT
    --  Set to True to generate warnings in all cases where a variable is

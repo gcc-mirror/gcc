@@ -1,5 +1,16 @@
 2019-12-13  Bob Duff  <duff@adacore.com>
 
+	* impunit.ads: Add Ada_202X_Unit.
+	* impunit.adb: Add a table Non_Imp_File_Names_2X analogous to
+	the other tables. Add code to search this table.
+	* opt.ads: Add Warn_On_Ada_202X_Compatibility flag, currently
+	always True.
+	* sem_ch10.adb (Analyze_With_Clause): Give a warning if an Ada
+	2020 unit is with-ed when Ada_Version < Ada_2020.  Change 'if'
+	to 'case': Full coverage rules rule.
+
+2019-12-13  Bob Duff  <duff@adacore.com>
+
 	* rtsfind.ads: Minor comment fix.
 
 2019-12-13  Gary Dismukes  <dismukes@adacore.com>

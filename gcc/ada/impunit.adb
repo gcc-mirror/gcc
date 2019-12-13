@@ -613,6 +613,19 @@ package body Impunit is
     ("a-cvgpso", F)   -- Ada.Containers.Vectors.Generic_Parallel_Sorting from
    );                 -- GNATCOLL.OMP
 
+   --------------------
+   -- Ada 202X Units --
+   --------------------
+
+   --  The following units should be used only in Ada 202X mode
+
+   Non_Imp_File_Names_2X : constant File_List := (
+    0 => ("a-stteou", T)  -- Ada.Strings.Text_Output
+    --  ???We use named notation, because there is only one of these so far.
+    --  When we add more, we should switch to positional notation, and erase
+    --  the "0 =>".
+   );
+
    -----------------------
    -- Alternative Units --
    -----------------------
@@ -730,6 +743,14 @@ package body Impunit is
       for J in Non_Imp_File_Names_12'Range loop
          if Buffer = Non_Imp_File_Names_12 (J).Fname then
             return Ada_2012_Unit;
+         end if;
+      end loop;
+
+      --  See if name is in 202X list
+
+      for J in Non_Imp_File_Names_2X'Range loop
+         if Buffer = Non_Imp_File_Names_2X (J).Fname then
+            return Ada_202X_Unit;
          end if;
       end loop;
 
