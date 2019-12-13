@@ -121,10 +121,10 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3) \
-	$(am__EXEEXT_11)
+	$(am__EXEEXT_12)
 TESTS = $(am__append_4) $(am__append_6) $(am__append_8) \
 	$(am__append_11) $(am__append_12) $(am__append_18) \
-	$(am__EXEEXT_11)
+	$(am__EXEEXT_12)
 @HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_1 = libbacktrace_elf_for_test.la
 @NATIVE_TRUE@am__append_2 = test_elf_32 test_elf_64 test_xcoff_32 \
 @NATIVE_TRUE@	test_xcoff_64 test_pecoff test_unknown unittest \
@@ -148,6 +148,7 @@ TESTS = $(am__append_4) $(am__append_6) $(am__append_8) \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__append_19 = ctestg ctesta \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg_alloc \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta_alloc
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@am__append_20 = dwarf5 dwarf5_alloc
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/cet.m4 \
@@ -224,9 +225,11 @@ libbacktrace_noformat_la_OBJECTS =  \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta$(EXEEXT) \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg_alloc$(EXEEXT) \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta_alloc$(EXEEXT)
-am__EXEEXT_11 = $(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_6) \
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@am__EXEEXT_11 = dwarf5$(EXEEXT) \
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@	dwarf5_alloc$(EXEEXT)
+am__EXEEXT_12 = $(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_6) \
 	$(am__EXEEXT_7) $(am__EXEEXT_8) $(am__EXEEXT_9) \
-	$(am__EXEEXT_10)
+	$(am__EXEEXT_10) $(am__EXEEXT_11)
 @NATIVE_TRUE@am_allocfail_OBJECTS = allocfail.$(OBJEXT) \
 @NATIVE_TRUE@	testlib.$(OBJEXT)
 allocfail_OBJECTS = $(am_allocfail_OBJECTS)
@@ -305,20 +308,39 @@ ctestg_alloc_OBJECTS = $(am_ctestg_alloc_OBJECTS)
 ctestg_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(ctestg_alloc_CFLAGS) \
 	$(CFLAGS) $(ctestg_alloc_LDFLAGS) $(LDFLAGS) -o $@
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@am_dwarf5_OBJECTS =  \
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@	dwarf5-btest.$(OBJEXT) \
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@	dwarf5-testlib.$(OBJEXT)
+dwarf5_OBJECTS = $(am_dwarf5_OBJECTS)
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@dwarf5_DEPENDENCIES = libbacktrace.la
+dwarf5_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(dwarf5_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@am__objects_7 =  \
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@	dwarf5_alloc-btest.$(OBJEXT) \
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@	dwarf5_alloc-testlib.$(OBJEXT)
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@am_dwarf5_alloc_OBJECTS =  \
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@	$(am__objects_7)
+dwarf5_alloc_OBJECTS = $(am_dwarf5_alloc_OBJECTS)
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@dwarf5_alloc_DEPENDENCIES =  \
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@	libbacktrace_alloc.la
+dwarf5_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(dwarf5_alloc_CFLAGS) \
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 @NATIVE_TRUE@am_edtest_OBJECTS = edtest.$(OBJEXT) \
 @NATIVE_TRUE@	edtest2_build.$(OBJEXT) testlib.$(OBJEXT)
 edtest_OBJECTS = $(am_edtest_OBJECTS)
 @NATIVE_TRUE@edtest_DEPENDENCIES = libbacktrace.la
-@NATIVE_TRUE@am__objects_7 = edtest.$(OBJEXT) edtest2_build.$(OBJEXT) \
+@NATIVE_TRUE@am__objects_8 = edtest.$(OBJEXT) edtest2_build.$(OBJEXT) \
 @NATIVE_TRUE@	testlib.$(OBJEXT)
-@NATIVE_TRUE@am_edtest_alloc_OBJECTS = $(am__objects_7)
+@NATIVE_TRUE@am_edtest_alloc_OBJECTS = $(am__objects_8)
 edtest_alloc_OBJECTS = $(am_edtest_alloc_OBJECTS)
 @NATIVE_TRUE@edtest_alloc_DEPENDENCIES = libbacktrace_alloc.la
 @NATIVE_TRUE@am_stest_OBJECTS = stest.$(OBJEXT)
 stest_OBJECTS = $(am_stest_OBJECTS)
 @NATIVE_TRUE@stest_DEPENDENCIES = libbacktrace.la
-@NATIVE_TRUE@am__objects_8 = stest.$(OBJEXT)
-@NATIVE_TRUE@am_stest_alloc_OBJECTS = $(am__objects_8)
+@NATIVE_TRUE@am__objects_9 = stest.$(OBJEXT)
+@NATIVE_TRUE@am_stest_alloc_OBJECTS = $(am__objects_9)
 stest_alloc_OBJECTS = $(am_stest_alloc_OBJECTS)
 @NATIVE_TRUE@stest_alloc_DEPENDENCIES = libbacktrace_alloc.la
 @NATIVE_TRUE@am_test_elf_32_OBJECTS = test_format.$(OBJEXT) \
@@ -359,11 +381,11 @@ ttest_OBJECTS = $(am_ttest_OBJECTS)
 ttest_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(ttest_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__objects_9 =  \
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__objects_10 =  \
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	ttest_alloc-ttest.$(OBJEXT) \
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	ttest_alloc-testlib.$(OBJEXT)
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am_ttest_alloc_OBJECTS =  \
-@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	$(am__objects_9)
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	$(am__objects_10)
 ttest_alloc_OBJECTS = $(am_ttest_alloc_OBJECTS)
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_alloc_DEPENDENCIES =  \
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	libbacktrace_alloc.la
@@ -374,8 +396,8 @@ ttest_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 @NATIVE_TRUE@	testlib.$(OBJEXT)
 unittest_OBJECTS = $(am_unittest_OBJECTS)
 @NATIVE_TRUE@unittest_DEPENDENCIES = libbacktrace.la
-@NATIVE_TRUE@am__objects_10 = unittest.$(OBJEXT) testlib.$(OBJEXT)
-@NATIVE_TRUE@am_unittest_alloc_OBJECTS = $(am__objects_10)
+@NATIVE_TRUE@am__objects_11 = unittest.$(OBJEXT) testlib.$(OBJEXT)
+@NATIVE_TRUE@am_unittest_alloc_OBJECTS = $(am__objects_11)
 unittest_alloc_OBJECTS = $(am_unittest_alloc_OBJECTS)
 @NATIVE_TRUE@unittest_alloc_DEPENDENCIES = libbacktrace_alloc.la
 @HAVE_ELF_TRUE@@NATIVE_TRUE@am_ztest_OBJECTS = ztest-ztest.$(OBJEXT) \
@@ -387,11 +409,11 @@ ztest_OBJECTS = $(am_ztest_OBJECTS)
 ztest_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(ztest_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-@HAVE_ELF_TRUE@@NATIVE_TRUE@am__objects_11 =  \
+@HAVE_ELF_TRUE@@NATIVE_TRUE@am__objects_12 =  \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	ztest_alloc-ztest.$(OBJEXT) \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	ztest_alloc-testlib.$(OBJEXT)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@am_ztest_alloc_OBJECTS =  \
-@HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__objects_11)
+@HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__objects_12)
 ztest_alloc_OBJECTS = $(am_ztest_alloc_OBJECTS)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@ztest_alloc_DEPENDENCIES =  \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	libbacktrace_alloc.la \
@@ -441,7 +463,8 @@ SOURCES = $(libbacktrace_la_SOURCES) $(EXTRA_libbacktrace_la_SOURCES) \
 	$(b2test_SOURCES) $(b3test_SOURCES) $(btest_SOURCES) \
 	$(btest_alloc_SOURCES) $(btest_lto_SOURCES) $(ctesta_SOURCES) \
 	$(ctesta_alloc_SOURCES) $(ctestg_SOURCES) \
-	$(ctestg_alloc_SOURCES) $(edtest_SOURCES) \
+	$(ctestg_alloc_SOURCES) $(dwarf5_SOURCES) \
+	$(dwarf5_alloc_SOURCES) $(edtest_SOURCES) \
 	$(edtest_alloc_SOURCES) $(stest_SOURCES) \
 	$(stest_alloc_SOURCES) $(test_elf_32_SOURCES) \
 	$(test_elf_64_SOURCES) $(test_pecoff_SOURCES) \
@@ -863,7 +886,7 @@ libbacktrace_la_DEPENDENCIES = $(libbacktrace_la_LIBADD)
 # Add test to this variable, if you want it to be build and run.
 BUILDTESTS = $(am__append_2) $(am__append_9) $(am__append_10) \
 	$(am__append_15) $(am__append_16) $(am__append_17) \
-	$(am__append_19)
+	$(am__append_19) $(am__append_20)
 @NATIVE_TRUE@check_LTLIBRARIES = libbacktrace_alloc.la \
 @NATIVE_TRUE@	libbacktrace_noformat.la $(am__append_1) \
 @NATIVE_TRUE@	libbacktrace_instrumented_alloc.la
@@ -960,6 +983,13 @@ BUILDTESTS = $(am__append_2) $(am__append_9) $(am__append_10) \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_alloc_CFLAGS = $(ctesta_CFLAGS)
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_alloc_LDFLAGS = $(ctesta_LDFLAGS)
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_alloc_LDADD = libbacktrace_alloc.la
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@dwarf5_SOURCES = btest.c testlib.c
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@dwarf5_CFLAGS = $(AM_CFLAGS) -gdwarf-5
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@dwarf5_LDADD = libbacktrace.la
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@dwarf5_alloc_SOURCES = $(dwarf5_SOURCES)
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@dwarf5_alloc_CFLAGS = $(dwarf5_CFLAGS)
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@dwarf5_alloc_LDADD = libbacktrace_alloc.la
+CLEANFILES = $(TESTS) *.debug elf_for_test.c edtest2_build.c gen_edtest2_build
 
 # We can't use automake's automatic dependency tracking, because it
 # breaks when using bootstrap-lean.  Automatic dependency tracking
@@ -1123,6 +1153,14 @@ ctestg$(EXEEXT): $(ctestg_OBJECTS) $(ctestg_DEPENDENCIES) $(EXTRA_ctestg_DEPENDE
 ctestg_alloc$(EXEEXT): $(ctestg_alloc_OBJECTS) $(ctestg_alloc_DEPENDENCIES) $(EXTRA_ctestg_alloc_DEPENDENCIES) 
 	@rm -f ctestg_alloc$(EXEEXT)
 	$(AM_V_CCLD)$(ctestg_alloc_LINK) $(ctestg_alloc_OBJECTS) $(ctestg_alloc_LDADD) $(LIBS)
+
+dwarf5$(EXEEXT): $(dwarf5_OBJECTS) $(dwarf5_DEPENDENCIES) $(EXTRA_dwarf5_DEPENDENCIES) 
+	@rm -f dwarf5$(EXEEXT)
+	$(AM_V_CCLD)$(dwarf5_LINK) $(dwarf5_OBJECTS) $(dwarf5_LDADD) $(LIBS)
+
+dwarf5_alloc$(EXEEXT): $(dwarf5_alloc_OBJECTS) $(dwarf5_alloc_DEPENDENCIES) $(EXTRA_dwarf5_alloc_DEPENDENCIES) 
+	@rm -f dwarf5_alloc$(EXEEXT)
+	$(AM_V_CCLD)$(dwarf5_alloc_LINK) $(dwarf5_alloc_OBJECTS) $(dwarf5_alloc_LDADD) $(LIBS)
 
 edtest$(EXEEXT): $(edtest_OBJECTS) $(edtest_DEPENDENCIES) $(EXTRA_edtest_DEPENDENCIES) 
 	@rm -f edtest$(EXEEXT)
@@ -1310,6 +1348,30 @@ ctestg_alloc-testlib.o: testlib.c
 
 ctestg_alloc-testlib.obj: testlib.c
 	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctestg_alloc_CFLAGS) $(CFLAGS) -c -o ctestg_alloc-testlib.obj `if test -f 'testlib.c'; then $(CYGPATH_W) 'testlib.c'; else $(CYGPATH_W) '$(srcdir)/testlib.c'; fi`
+
+dwarf5-btest.o: btest.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(dwarf5_CFLAGS) $(CFLAGS) -c -o dwarf5-btest.o `test -f 'btest.c' || echo '$(srcdir)/'`btest.c
+
+dwarf5-btest.obj: btest.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(dwarf5_CFLAGS) $(CFLAGS) -c -o dwarf5-btest.obj `if test -f 'btest.c'; then $(CYGPATH_W) 'btest.c'; else $(CYGPATH_W) '$(srcdir)/btest.c'; fi`
+
+dwarf5-testlib.o: testlib.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(dwarf5_CFLAGS) $(CFLAGS) -c -o dwarf5-testlib.o `test -f 'testlib.c' || echo '$(srcdir)/'`testlib.c
+
+dwarf5-testlib.obj: testlib.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(dwarf5_CFLAGS) $(CFLAGS) -c -o dwarf5-testlib.obj `if test -f 'testlib.c'; then $(CYGPATH_W) 'testlib.c'; else $(CYGPATH_W) '$(srcdir)/testlib.c'; fi`
+
+dwarf5_alloc-btest.o: btest.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(dwarf5_alloc_CFLAGS) $(CFLAGS) -c -o dwarf5_alloc-btest.o `test -f 'btest.c' || echo '$(srcdir)/'`btest.c
+
+dwarf5_alloc-btest.obj: btest.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(dwarf5_alloc_CFLAGS) $(CFLAGS) -c -o dwarf5_alloc-btest.obj `if test -f 'btest.c'; then $(CYGPATH_W) 'btest.c'; else $(CYGPATH_W) '$(srcdir)/btest.c'; fi`
+
+dwarf5_alloc-testlib.o: testlib.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(dwarf5_alloc_CFLAGS) $(CFLAGS) -c -o dwarf5_alloc-testlib.o `test -f 'testlib.c' || echo '$(srcdir)/'`testlib.c
+
+dwarf5_alloc-testlib.obj: testlib.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(dwarf5_alloc_CFLAGS) $(CFLAGS) -c -o dwarf5_alloc-testlib.obj `if test -f 'testlib.c'; then $(CYGPATH_W) 'testlib.c'; else $(CYGPATH_W) '$(srcdir)/testlib.c'; fi`
 
 ttest-ttest.o: ttest.c
 	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ttest_CFLAGS) $(CFLAGS) -c -o ttest-ttest.o `test -f 'ttest.c' || echo '$(srcdir)/'`ttest.c
@@ -1771,6 +1833,20 @@ ctesta_alloc.log: ctesta_alloc$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+dwarf5.log: dwarf5$(EXEEXT)
+	@p='dwarf5$(EXEEXT)'; \
+	b='dwarf5'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+dwarf5_alloc.log: dwarf5_alloc$(EXEEXT)
+	@p='dwarf5_alloc$(EXEEXT)'; \
+	b='dwarf5_alloc'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 .test.log:
 	@p='$<'; \
 	$(am__set_b); \
@@ -1816,6 +1892,7 @@ mostlyclean-generic:
 	-test -z "$(TEST_SUITE_LOG)" || rm -f $(TEST_SUITE_LOG)
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -1973,6 +2050,9 @@ uninstall-am:
 @NATIVE_TRUE@	  "$(TEST_BUILD_ID_DIR)" \
 @NATIVE_TRUE@	  $<
 @NATIVE_TRUE@	$(OBJCOPY) --strip-debug $< $@
+
+clean-local:
+	-rm -rf usr
 alloc.lo: config.h backtrace.h internal.h
 backtrace.lo: config.h backtrace.h internal.h
 btest.lo: (INCDIR)/filenames.h backtrace.h backtrace-supported.h
