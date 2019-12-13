@@ -1846,7 +1846,7 @@ gcn_expand_scaled_offsets (addr_space_t as, rtx base, rtx offsets, rtx scale,
   if (GET_MODE (offsets) == V64DImode)
     {
       rtx tmp = gen_reg_rtx (V64SImode);
-      emit_insn (gen_vec_truncatev64div64si (tmp, offsets));
+      emit_insn (gen_truncv64div64si2 (tmp, offsets));
       offsets = tmp;
     }
 

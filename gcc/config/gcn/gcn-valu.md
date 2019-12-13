@@ -53,6 +53,8 @@
   [(V64QI "QI") (V64HI "HI") (V64SI "SI")
    (V64HF "HF") (V64SF "SF") (V64DI "DI") (V64DF "DF")])
 
+(define_mode_attr sdwa [(V64QI "BYTE_0") (V64HI "WORD_0") (V64SI "DWORD")])
+
 ;; }}}
 ;; {{{ Substitutions
 
@@ -2392,8 +2394,9 @@
 (define_mode_iterator CVT_FROM_MODE [HI SI HF SF DF])
 (define_mode_iterator CVT_TO_MODE [HI SI HF SF DF])
 
-(define_mode_iterator VCVT_FROM_MODE [V64HI V64SI V64HF V64SF V64DF])
-(define_mode_iterator VCVT_TO_MODE [V64HI V64SI V64HF V64SF V64DF])
+(define_mode_iterator VCVT_MODE [V64HI V64SI V64HF V64SF V64DF])
+(define_mode_iterator VCVT_FMODE [V64HF V64SF V64DF])
+(define_mode_iterator VCVT_IMODE [V64HI V64SI])
 
 (define_code_iterator cvt_op [fix unsigned_fix
 			      float unsigned_float
@@ -2416,11 +2419,21 @@
   [(set_attr "type" "vop1")
    (set_attr "length" "8")])
 
-(define_insn "<cvt_name><VCVT_FROM_MODE:mode><VCVT_TO_MODE:mode>2<exec>"
-  [(set (match_operand:VCVT_TO_MODE 0 "register_operand"    "=  v")
-	(cvt_op:VCVT_TO_MODE
-	  (match_operand:VCVT_FROM_MODE 1 "gcn_alu_operand" "vSvB")))]
-  "gcn_valid_cvt_p (<VCVT_FROM_MODE:MODE>mode, <VCVT_TO_MODE:MODE>mode,
+(define_insn "<cvt_name><VCVT_MODE:mode><VCVT_FMODE:mode>2<exec>"
+  [(set (match_operand:VCVT_FMODE 0 "register_operand" "=  v")
+	(cvt_op:VCVT_FMODE
+	  (match_operand:VCVT_MODE 1 "gcn_alu_operand" "vSvB")))]
+  "gcn_valid_cvt_p (<VCVT_MODE:MODE>mode, <VCVT_FMODE:MODE>mode,
+		    <cvt_name>_cvt)"
+  "v_cvt<cvt_operands>\t%0, %1"
+  [(set_attr "type" "vop1")
+   (set_attr "length" "8")])
+
+(define_insn "<cvt_name><VCVT_FMODE:mode><VCVT_IMODE:mode>2<exec>"
+  [(set (match_operand:VCVT_IMODE 0 "register_operand"  "=  v")
+	(cvt_op:VCVT_IMODE
+	  (match_operand:VCVT_FMODE 1 "gcn_alu_operand" "vSvB")))]
+  "gcn_valid_cvt_p (<VCVT_FMODE:MODE>mode, <VCVT_IMODE:MODE>mode,
 		    <cvt_name>_cvt)"
   "v_cvt<cvt_operands>\t%0, %1"
   [(set_attr "type" "vop1")
@@ -2429,42 +2442,137 @@
 ;; }}}
 ;; {{{ Int/int conversions
 
+(define_code_iterator zero_convert [truncate zero_extend])
+(define_code_attr convop [
+	(sign_extend "extend")
+	(zero_extend "zero_extend")
+	(truncate "trunc")])
+
+(define_insn "<convop><VEC_ALL1REG_INT_ALT:mode><VEC_ALL1REG_INT_MODE:mode>2<exec>"
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand"  "=v")
+        (zero_convert:VEC_ALL1REG_INT_MODE
+	  (match_operand:VEC_ALL1REG_INT_ALT 1 "register_operand" " v")))]
+  ""
+  "v_mov_b32_sdwa\t%0, %1 dst_sel:<VEC_ALL1REG_INT_MODE:sdwa> dst_unused:UNUSED_PAD src0_sel:<VEC_ALL1REG_INT_ALT:sdwa>"
+  [(set_attr "type" "vop_sdwa")
+   (set_attr "length" "8")])
+
+(define_insn "extend<VEC_ALL1REG_INT_ALT:mode><VEC_ALL1REG_INT_MODE:mode>2<exec>"
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand"  "=v")
+        (sign_extend:VEC_ALL1REG_INT_MODE
+	  (match_operand:VEC_ALL1REG_INT_ALT 1 "register_operand" " v")))]
+  ""
+  "v_mov_b32_sdwa\t%0, sext(%1) src0_sel:<VEC_ALL1REG_INT_ALT:sdwa>"
+  [(set_attr "type" "vop_sdwa")
+   (set_attr "length" "8")])
+
 ;; GCC can already do these for scalar types, but not for vector types.
 ;; Unfortunately you can't just do SUBREG on a vector to select the low part,
 ;; so there must be a few tricks here.
 
-(define_insn_and_split "vec_truncatev64div64si"
-  [(set (match_operand:V64SI 0 "register_operand"   "=v,&v")
-	(truncate:V64SI
-	  (match_operand:V64DI 1 "register_operand" " 0, v")))]
+(define_insn_and_split "truncv64di<mode>2"
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand" "=v")
+	(truncate:VEC_ALL1REG_INT_MODE
+	  (match_operand:V64DI 1 "register_operand"              " v")))]
   ""
   "#"
   "reload_completed"
-  [(set (match_dup 0) (match_dup 1))]
+  [(const_int 0)]
   {
-    operands[1] = gcn_operand_part (V64SImode, operands[1], 0);
-  }
-  [(set_attr "type" "vop2")
-   (set_attr "length" "0,4")])
+    rtx inlo = gcn_operand_part (V64DImode, operands[1], 0);
+    rtx out = operands[0];
 
-(define_insn_and_split "vec_truncatev64div64si_exec"
-  [(set (match_operand:V64SI 0 "register_operand"	     "=v,&v")
-	(vec_merge:V64SI
-	  (truncate:V64SI
-	    (match_operand:V64DI 1 "register_operand"        " 0, v"))
-	  (match_operand:V64SI 2 "gcn_alu_or_unspec_operand" "U0,U0")
-	  (match_operand:DI 3 "gcn_exec_operand"	     " e, e")))]
+    if (<MODE>mode != V64SImode)
+      emit_insn (gen_truncv64si<mode>2 (out, inlo));
+    else
+      emit_move_insn (out, inlo);
+  }
+  [(set_attr "type" "vop2")
+   (set_attr "length" "4")])
+
+(define_insn_and_split "truncv64di<mode>2_exec"
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand"       "=v")
+	(vec_merge:VEC_ALL1REG_INT_MODE
+	  (truncate:VEC_ALL1REG_INT_MODE
+	    (match_operand:V64DI 1 "register_operand"		       " v"))
+	  (match_operand:VEC_ALL1REG_INT_MODE 2 "gcn_alu_or_unspec_operand" 
+								       "U0")
+	  (match_operand:DI 3 "gcn_exec_operand"		       " e")))]
   ""
   "#"
   "reload_completed"
-  [(parallel [(set (match_dup 0)
-		   (vec_merge:V64SI (match_dup 1) (match_dup 2) (match_dup 3)))
-	      (clobber (scratch:V64DI))])]
+  [(const_int 0)]
   {
-    operands[1] = gcn_operand_part (V64SImode, operands[1], 0);
+    rtx out = operands[0];
+    rtx inlo = gcn_operand_part (V64DImode, operands[1], 0);
+    rtx merge = operands[2];
+    rtx exec = operands[3];
+
+    if (<MODE>mode != V64SImode)
+      emit_insn (gen_truncv64si<mode>2_exec (out, inlo, merge, exec));
+    else
+      emit_insn (gen_mov<mode>_exec (out, inlo, exec, merge));
   }
   [(set_attr "type" "vop2")
-   (set_attr "length" "0,4")])
+   (set_attr "length" "4")])
+
+(define_insn_and_split "<convop><mode>v64di2"
+  [(set (match_operand:V64DI 0 "register_operand"		   "=v")
+	(any_extend:V64DI
+	  (match_operand:VEC_ALL1REG_INT_MODE 1 "register_operand" " v")))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  {
+    rtx outlo = gcn_operand_part (V64DImode, operands[0], 0);
+    rtx outhi = gcn_operand_part (V64DImode, operands[0], 1);
+    rtx in = operands[1];
+      
+    if (<MODE>mode != V64SImode)
+      emit_insn (gen_<convop><mode>v64si2 (outlo, in));
+    else
+      emit_move_insn (outlo, in);
+    if ('<su>' == 's')
+      emit_insn (gen_ashrv64si3 (outhi, outlo, GEN_INT (31)));
+    else
+      emit_insn (gen_vec_duplicatev64si (outhi, const0_rtx));
+  }
+  [(set_attr "type" "mult")
+   (set_attr "length" "12")])
+
+(define_insn_and_split "<convop><mode>v64di2_exec"
+  [(set (match_operand:V64DI 0 "register_operand"		     "=v")
+	(vec_merge:V64DI
+	  (any_extend:V64DI
+	    (match_operand:VEC_ALL1REG_INT_MODE 1 "register_operand" " v"))
+	  (match_operand:V64DI 2 "gcn_alu_or_unspec_operand"	     "U0")
+	  (match_operand:DI 3 "gcn_exec_operand"		     " e")))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  {
+    rtx outlo = gcn_operand_part (V64DImode, operands[0], 0);
+    rtx outhi = gcn_operand_part (V64DImode, operands[0], 1);
+    rtx in = operands[1];
+    rtx mergelo = gcn_operand_part (V64DImode, operands[2], 0);
+    rtx mergehi = gcn_operand_part (V64DImode, operands[2], 1);
+    rtx exec = operands[3];
+      
+    if (<MODE>mode != V64SImode)
+      emit_insn (gen_<convop><mode>v64si2_exec (outlo, in, mergelo, exec));
+    else
+      emit_insn (gen_mov<mode>_exec (outlo, in, exec, mergelo));
+    if ('<su>' == 's')
+      emit_insn (gen_ashrv64si3_exec (outhi, outlo, GEN_INT (31), mergehi,
+				      exec));
+    else
+      emit_insn (gen_vec_duplicatev64si_exec (outhi, const0_rtx, mergehi,
+					      exec));
+  }
+  [(set_attr "type" "mult")
+   (set_attr "length" "12")])
 
 ;; }}}
 ;; {{{ Vector comparison/merge
@@ -2726,9 +2834,9 @@
     if (GET_MODE (operands[2]) == V64DImode)
       {
 	rtx tmp = gen_reg_rtx (V64SImode);
-	emit_insn (gen_vec_truncatev64div64si_exec (tmp, operands[2],
-						    gcn_gen_undef (V64SImode),
-						    exec));
+	emit_insn (gen_truncv64div64si2_exec (tmp, operands[2],
+					      gcn_gen_undef (V64SImode),
+					      exec));
 	operands[2] = tmp;
       }
 
@@ -2752,9 +2860,9 @@
     if (GET_MODE (operands[1]) == V64DImode)
       {
 	rtx tmp = gen_reg_rtx (V64SImode);
-	emit_insn (gen_vec_truncatev64div64si_exec (tmp, operands[1],
-						    gcn_gen_undef (V64SImode),
-						    exec));
+	emit_insn (gen_truncv64div64si2_exec (tmp, operands[1],
+					      gcn_gen_undef (V64SImode),
+					      exec));
 	operands[1] = tmp;
       }
 
