@@ -1,6 +1,12 @@
 2019-12-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (register_local_var_uses): Adjust frame entry
+	name for lambda capture proxies.
+
+2019-12-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (struct __local_vars_frame_data): Add fields to
 	collect lambda captures.
 	(register_local_var_uses): Register lambda captures separately.

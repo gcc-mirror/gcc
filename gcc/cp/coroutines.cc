@@ -2643,21 +2643,20 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	     scopes with identically named locals.  */
 	  char *buf;
 	  size_t namsize = sizeof ("__lv...") + 18;
+	  const char *nm = (captured ? "cp" : "lv");
 	  if (lvname != NULL_TREE)
 	    {
 	      namsize += IDENTIFIER_LENGTH (lvname);
 	      buf = (char *) alloca (namsize);
-	      snprintf (buf, namsize, "__lv.%u.%u.%s",
-			lvd->bind_indx, lvd->nest_depth,
-			IDENTIFIER_POINTER (lvname));
+	      snprintf (buf, namsize, "__%s.%u.%u.%s", nm, lvd->bind_indx,
+			lvd->nest_depth, IDENTIFIER_POINTER (lvname));
 	    }
 	  else
 	    {
-	      namsize += 10;
+	      namsize += 10; // 'D' followed by an unsigned.
 	      buf = (char *) alloca (namsize);
-	      snprintf (buf, namsize, "__lv.%u.%u.D%u",
-			lvd->bind_indx, lvd->nest_depth,
-			DECL_UID (lvar));
+	      snprintf (buf, namsize, "__%s.%u.%u.D%u", nm, lvd->bind_indx,
+			lvd->nest_depth, DECL_UID (lvar));
 	    }
 	  /* TODO: Figure out if we should build a local type that has any
 	     excess alignment or size from the original decl.  */
