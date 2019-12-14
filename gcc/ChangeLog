@@ -1,3 +1,43 @@
+2019-12-13  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/91582
+	PR middle-end/92868
+	* builtins.c (addr_decl_size): New function.
+	(gimple_call_alloc_size): Add arguments.
+	(compute_objsize): Add an argument.  Set *PDECL even for allocated
+	objects.
+	Correct checking for negative wide_int.
+	Correct handling of negative outer offsets into unknown regions
+	or with unknown inner offsets.
+	Extend offsets to at most sizetype precision.
+	Only handle constant subobject sizes.
+	* builtins.h (gimple_call_alloc_size): Add arguments.
+	* tree.c (component_ref_size): Always return sizetype.
+	* tree-ssa-strlen.c (strinfo::alloc): New member.
+	(get_addr_stridx): Add argument.
+	(get_stridx): Use ptrdiff_t.  Add argument.
+	(new_strinfo): Set new member.
+	(get_string_length): Handle alloca and VLA.
+	(dump_strlen_info): Dump more state.
+	(maybe_invalidate): Print more info.  Decrease indentation.
+	(unshare_strinfo): Set new member.
+	(valid_builtin_call): Handle alloca and VLA.
+	(maybe_warn_overflow): Check and set no-warning bit.  Improve
+	handling of offsets.  Print allocated objects.
+	(handle_builtin_strlen): Handle strinfo records with null lengths.
+	(handle_builtin_strcpy): Add argument.  Call maybe_warn_overflow.
+	(is_strlen_related_p): Handle dynamically allocated objects.
+	(get_range): Add argument.
+	(handle_builtin_malloc): Rename...
+	(handle_alloc): ...to this and handle all allocation functions.
+	(handle_builtin_memset): Call maybe_warn_overflow.
+	(count_nonzero_bytes): Handle more MEM_REF forms.
+	(strlen_check_and_optimize_call): Call handle_alloc_call.  Pass
+	arguments to more callees.
+	(handle_integral_assign): Add argument.  Create strinfo entries
+	for MEM_REF assignments.
+	(check_and_optimize_stmt): Handle more MEM_REF forms.
+
 2019-12-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/rs6000/darwin.h (DARWIN_DYLIB1_SPEC): New.

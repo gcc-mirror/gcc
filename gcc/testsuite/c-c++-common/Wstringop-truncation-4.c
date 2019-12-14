@@ -21,9 +21,13 @@ struct Arrays
 
 void test_arrays (struct Arrays *p, const char *s)
 {
+  /* Expect accesses to all three arrays to trigger the warning,
+     including the trailing one.  The size argument is a good
+     enough indication that it is not being used as a "legacy"
+     flexible array member.  */
   strncpy (p->a, s, sizeof p->a);           /* { dg-warning "\\\[-Wstringop-truncation" } */
   strncpy ((char*)p->b, s, sizeof p->b);    /* { dg-warning "\\\[-Wstringop-truncation" } */
-  strncpy ((char*)p->c, s, sizeof p->c);    /* { dg-bogus "\\\[-Wstringop-truncation" } */
+  strncpy ((char*)p->c, s, sizeof p->c);    /* { dg-warning "\\\[-Wstringop-truncation" } */
 }
 
 struct Pointers
@@ -49,9 +53,11 @@ struct ConstArrays
 
 void test_const_arrays (struct ConstArrays *p, const char *s)
 {
+  /* Expect accesses to all three arrays to trigger the warning,
+     including the trailing one.  */
   strncpy ((char*)p->a, s, sizeof p->a);    /* { dg-warning "\\\[-Wstringop-truncation" } */
   strncpy ((char*)p->b, s, sizeof p->b);    /* { dg-warning "\\\[-Wstringop-truncation" } */
-  strncpy ((char*)p->c, s, sizeof p->c);    /* { dg-bogus "\\\[-Wstringop-truncation" } */
+  strncpy ((char*)p->c, s, sizeof p->c);    /* { dg-warning "\\\[-Wstringop-truncation" } */
 }
 
 struct ConstPointers
@@ -77,9 +83,11 @@ struct VolatileArrays
 
 void test_volatile_arrays (struct VolatileArrays *p, const char *s)
 {
+  /* Expect accesses to all three arrays to trigger the warning,
+     including the trailing one.  */
   strncpy ((char*)p->a, s, sizeof p->a);    /* { dg-warning "\\\[-Wstringop-truncation" } */
   strncpy ((char*)p->b, s, sizeof p->b);    /* { dg-warning "\\\[-Wstringop-truncation" } */
-  strncpy ((char*)p->c, s, sizeof p->c);    /* { dg-bogus "\\\[-Wstringop-truncation" } */
+  strncpy ((char*)p->c, s, sizeof p->c);    /* { dg-warning "\\\[-Wstringop-truncation" } */
 }
 
 struct VolatilePointers
@@ -105,9 +113,11 @@ struct ConstVolatileArrays
 
 void test_const_volatile_arrays (struct ConstVolatileArrays *p, const char *s)
 {
+  /* Expect accesses to all three arrays to trigger the warning,
+     including the trailing one.  */
   strncpy ((char*)p->a, s, sizeof p->a);    /* { dg-warning "\\\[-Wstringop-truncation" } */
   strncpy ((char*)p->b, s, sizeof p->b);    /* { dg-warning "\\\[-Wstringop-truncation" } */
-  strncpy ((char*)p->c, s, sizeof p->c);    /* { dg-bogus "\\\[-Wstringop-truncation" } */
+  strncpy ((char*)p->c, s, sizeof p->c);    /* { dg-warning "\\\[-Wstringop-truncation" } */
 }
 
 struct ConstVolatilePointers

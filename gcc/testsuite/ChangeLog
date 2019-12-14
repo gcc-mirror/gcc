@@ -1,3 +1,22 @@
+2019-12-13  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/91582
+	* c-c++-common/Wrestrict.c: Adjust expected warnings.
+	* c-c++-common/Wstringop-truncation-4.c: Enable more
+	warnings.
+	* c-c++-common/Wstringop-truncation.c: Remove an xfail.
+	* gcc.dg/Warray-bounds-46.c: Disable -Wstringop-overflow.
+	* gcc.dg/Warray-bounds-47.c: Same.
+	* gcc.dg/Warray-bounds-52.c: New test.
+	* gcc.dg/Wstringop-overflow-27.c: New test.
+	* gcc.dg/Wstringop-overflow-28.c: New test.
+	* gcc.dg/Wstringop-overflow-29.c: New test.
+	* gcc.dg/attr-alloc_size.c (test): Disable -Warray-bounds.
+	* gcc.dg/attr-copy-2.c: Adjust expected warnings.
+	* gcc.dg/builtin-stringop-chk-5.c: Adjust text of expected messages.
+	* gcc.dg/strlenopt-86.c: Relax test.
+	* gcc.target/i386/pr82002-1.c: Prune expected warnings.
+
 2019-12-13  Roman Zhuykov  <zhroma@ispras.ru>
 
 	PR rtl-optimization/92591

@@ -13583,8 +13583,8 @@ get_initializer_for (tree init, tree decl)
    determine the size of an initialized flexible array member.
    If non-null, *INTERIOR_ZERO_LENGTH is set when REF refers to
    an interior zero-length array.
-   Returns the size (which might be zero for an object with
-   an uninitialized flexible array member) or null if the size
+   Returns the size as sizetype (which might be zero for an object
+   with an uninitialized flexible array member) or null if the size
    cannot be determined.  */
 
 tree
@@ -13733,7 +13733,7 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
 	  memsz64 -= baseoff;
 	  return wide_int_to_tree (TREE_TYPE (memsize), memsz64);
 	}
-      return integer_zero_node;
+      return size_zero_node;
     }
 
   /* Return "don't know" for an external non-array object since its
@@ -13744,7 +13744,7 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
 	  && DECL_EXTERNAL (base)
 	  && (!typematch
 	      || TREE_CODE (basetype) != ARRAY_TYPE)
-	  ? NULL_TREE : integer_zero_node);
+	  ? NULL_TREE : size_zero_node);
 }
 
 /* Return the machine mode of T.  For vectors, returns the mode of the
