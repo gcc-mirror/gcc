@@ -1,3 +1,8 @@
+2019-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92930
+	* gcc.dg/tree-ssa/pr92930.c: New test.
+
 2019-12-13  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/91582
