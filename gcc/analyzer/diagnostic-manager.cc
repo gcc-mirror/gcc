@@ -325,12 +325,19 @@ public:
     dedupe_key *key = new dedupe_key (sd, dc->get_path ());
     if (dedupe_candidate **slot = m_map.get (key))
       {
+	if (logger)
+	  logger->log ("already have this dedupe_key");
+
 	(*slot)->add_duplicate ();
 
 	if (dc->length () < (*slot)->length ())
 	  {
 	    /* We've got a shorter path for the key; replace
 	       the current candidate.  */
+	    if (logger)
+	      logger->log ("length %i is better than existing length %i;"
+			   " taking over this dedupe_key",
+			   dc->length (), (*slot)->length ());
 	    dc->m_num_dupes = (*slot)->get_num_dupes ();
 	    delete *slot;
 	    *slot = dc;
@@ -338,12 +345,22 @@ public:
 	else
 	  /* We haven't beaten the current best candidate;
 	     drop the new candidate.  */
-	  delete dc;
+	  {
+	    if (logger)
+	      logger->log ("length %i isn't better than existing length %i;"
+			   " dropping this candidate",
+			   dc->length (), (*slot)->length ());
+	    delete dc;
+	  }
 	delete key;
       }
     else
-      /* This is the first candidate for this key.  */
-      m_map.put (key, dc);
+      {
+	/* This is the first candidate for this key.  */
+	m_map.put (key, dc);
+	if (logger)
+	  logger->log ("first candidate for this dedupe_key");
+      }
   }
 
  /* Emit the simplest diagnostic within each set.  */

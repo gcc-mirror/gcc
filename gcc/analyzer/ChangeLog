@@ -1,5 +1,10 @@
 2020-01-14  David Malcolm  <dmalcolm@redhat.com>
 
+	* diagnostic-manager.cc (dedupe_winners::add): Add logging
+	of deduplication decisions made.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
 	* ChangeLog: New file.
 	* analyzer-selftests.cc: New file.
 	* analyzer-selftests.h: New file.
