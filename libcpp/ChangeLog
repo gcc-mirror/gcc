@@ -1,3 +1,9 @@
+2019-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/92919
+	* charset.c (wide_str_to_charconst): If str contains just the
+	NUL terminator, punt quietly.
+
 2019-12-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (label_text::label_text): Make private.
