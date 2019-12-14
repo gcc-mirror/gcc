@@ -12,12 +12,13 @@ template <typename T>
 class foo
 {
   public:
-  auto get_lam ()
+  auto get_lam (int parm)
     {
-      auto l = [](T y) -> coro1
+      int local = 3;
+      auto l = [=](T y) -> coro1
       {
 	T x = y;
-	co_return co_await x + 3;
+	co_return co_await x + local;
       };
       return l;
     }
@@ -26,7 +27,7 @@ class foo
 int main ()
 {
   foo<int> inst {};
-  auto ll = inst.get_lam ();
+  auto ll = inst.get_lam (10);
 
   PRINT ("main: create coro1");
   int arg = 17; // avoid a dangling reference

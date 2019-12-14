@@ -1,3 +1,22 @@
+2019-12-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (struct __local_vars_frame_data): Add fields to
+	collect lambda captures.
+	(register_local_var_uses): Register lambda captures separately.
+	(morph_fn_to_coro): For each lambda capture, create a local proxy
+	and initialise the frame copy from this.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/class-04-lambda-1.C: Avoid dangling ref
+	to a parameter.
+	* g++.dg/coroutines/torture/class-05-lambda-capture-copy-local.C: New.
+	* g++.dg/coroutines/torture/class-06-lambda-capture-ref.C: New test.
+	* g++.dg/coroutines/torture/lambda-05-capture-copy-local.C: New test.
+	* g++.dg/coroutines/torture/lambda-06-multi-capture.C: New test.
+	* g++.dg/coroutines/torture/lambda-07-multi-yield.C: New test.
+	* g++.dg/coroutines/torture/lambda-08-co-ret-parm-ref.C: New test.
+
 2019-12-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/

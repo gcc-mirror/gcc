@@ -1569,6 +1569,8 @@ typedef struct __local_var_info
 {
   tree field_id;
   tree field_idx;
+  tree frame_type;
+  tree captured;
   location_t def_loc;
 } __local_var_info_t;
 
@@ -2605,8 +2607,10 @@ struct __local_vars_frame_data
 {
   tree *field_list;
   hash_map<tree, __local_var_info_t> *local_var_uses;
+  vec<__local_var_info_t> *captures;
   unsigned int nest_depth, bind_indx;
   location_t loc;
+  bool saw_capture;
   bool local_var_seen;
 };
 
@@ -2634,6 +2638,7 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	  gcc_checking_assert (!existed);
 	  tree lvtype = TREE_TYPE (lvar);
 	  tree lvname = DECL_NAME (lvar);
+	  bool captured = is_normal_capture_proxy (lvar);
 	  /* Make names depth+index unique, so that we can support nested
 	     scopes with identically named locals.  */
 	  char *buf;
@@ -2659,9 +2664,20 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	  local_var.field_id
 	    = coro_make_frame_entry (lvd->field_list, buf, lvtype, lvd->loc);
 	  local_var.def_loc = DECL_SOURCE_LOCATION (lvar);
+	  local_var.frame_type = lvtype;
 	  local_var.field_idx = NULL_TREE;
+	  if (captured)
+	    {
+	      gcc_checking_assert (DECL_INITIAL (lvar) == NULL_TREE);
+	      local_var.captured = lvar;
+	      lvd->captures->safe_push (local_var);
+	      lvd->saw_capture = true;
+	    }
+	  else
+	    local_var.captured = NULL;
+	  lvd->local_var_seen = true;
 	  /* We don't walk any of the local var sub-trees, they won't contain
-	     any bind exprs - well, CHECKME, but I don't think so...  */
+	     any bind exprs.  */
 	}
       cp_walk_tree (&BIND_EXPR_BODY (*stmt), register_local_var_uses, d, NULL);
       *do_subtree = 0; /* We've done this.  */
@@ -2911,8 +2927,10 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   /* 4. Now make space for local vars, this is conservative again, and we
      would expect to delete unused entries later.  */
   hash_map<tree, __local_var_info_t> local_var_uses;
+  auto_vec<__local_var_info_t> captures;
+
   struct __local_vars_frame_data local_vars_data
-    = {&field_list, &local_var_uses, 0, 0, fn_start, false};
+    = {&field_list, &local_var_uses, &captures, 0, 0, fn_start, false, false};
   cp_walk_tree (&fnbody, register_local_var_uses, &local_vars_data, NULL);
 
   /* Tie off the struct for now, so that we can build offsets to the
@@ -2934,6 +2952,16 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree coro_fp = build_lang_decl (VAR_DECL, get_identifier ("coro.frameptr"),
 				  coro_frame_ptr);
   tree varlist = coro_fp;
+  __local_var_info_t *cap;
+  if (!captures.is_empty())
+    for (int ix = 0; captures.iterate (ix, &cap); ix++)
+      {
+	if (cap->field_id == NULL_TREE)
+	  continue;
+	tree t = cap->captured;
+	DECL_CHAIN (t) = varlist;
+	varlist = t;
+      }
 
   /* Collected the scope vars we need ... only one for now. */
   BIND_EXPR_VARS (ramp_bind) = nreverse (varlist);
@@ -3170,6 +3198,59 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  r = coro_build_cvt_void_expr_stmt (r, fn_start);
 	  add_stmt (r);
 	}
+    }
+
+  vec<tree, va_gc> *captures_dtor_list = NULL;
+  while (!captures.is_empty())
+    {
+      __local_var_info_t cap = captures.pop();
+      if (cap.field_id == NULL_TREE)
+	continue;
+
+      tree fld_ref = lookup_member (coro_frame_type, cap.field_id,
+				    /*protect*/ 1, /*want_type*/ 0,
+				    tf_warning_or_error);
+      tree fld_idx
+	= build_class_member_access_expr (deref_fp, fld_ref, NULL_TREE,
+					  false, tf_warning_or_error);
+
+      tree cap_type = cap.frame_type;
+
+      /* When we have a reference, we do not want to change the referenced
+	 item, but actually to set the reference to the proxy var.  */
+      if (REFERENCE_REF_P (fld_idx))
+	fld_idx = TREE_OPERAND (fld_idx, 0);
+
+      if (TYPE_NEEDS_CONSTRUCTING (cap_type))
+	{
+	  vec<tree, va_gc> *p_in;
+	  if (classtype_has_move_assign_or_move_ctor_p
+		(cap_type, true /* user-declared */))
+	    p_in = make_tree_vector_single (rvalue (cap.captured));
+	  else
+	    p_in = make_tree_vector_single (cap.captured);
+	  /* Construct in place or move as relevant.  */
+	  r = build_special_member_call (fld_idx, complete_ctor_identifier,
+					 &p_in, cap_type, LOOKUP_NORMAL,
+					 tf_warning_or_error);
+	  release_tree_vector (p_in);
+	  if (captures_dtor_list == NULL)
+	    captures_dtor_list = make_tree_vector ();
+	  vec_safe_push (captures_dtor_list, cap.field_id);
+	}
+      else
+	{
+	  if (!same_type_p (cap_type, TREE_TYPE (cap.captured)))
+	    r = build1_loc (DECL_SOURCE_LOCATION (cap.captured), CONVERT_EXPR,
+			    cap_type, cap.captured);
+	  else
+	    r = cap.captured;
+	  r = build_modify_expr (fn_start, fld_idx, cap_type,
+				 INIT_EXPR, DECL_SOURCE_LOCATION (cap.captured),
+				 r, TREE_TYPE (r));
+	}
+      r = coro_build_cvt_void_expr_stmt (r, fn_start);
+      add_stmt (r);
     }
 
   /* Set up a new bind context for the GRO.  */
