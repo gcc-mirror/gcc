@@ -2489,10 +2489,10 @@ The following attributes are supported on most targets.
 @itemx access (@var{access-mode}, @var{ref-index}, @var{size-index})
 
 The @code{access} attribute enables the detection of invalid or unsafe
-accesses by functions to which they apply to or their callers, as well
-as write-only accesses to objects that are never read from.  Such accesses
+accesses by functions to which they apply or their callers, as well as
+write-only accesses to objects that are never read from.  Such accesses
 may be diagnosed by warnings such as @option{-Wstringop-overflow},
-@option{-Wunnitialized}, @option{-Wunused}, and others.
+@option{-Wuninitialized}, @option{-Wunused}, and others.
 
 The @code{access} attribute specifies that a function to whose by-reference
 arguments the attribute applies accesses the referenced object according to
@@ -2501,13 +2501,13 @@ one of three names: @code{read_only}, @code{read_write}, or @code{write_only}.
 The remaining two are positional arguments.
 
 The required @var{ref-index} positional argument  denotes a function
-argument of pointer (or in C++, refeference) type that is subject to
+argument of pointer (or in C++, reference) type that is subject to
 the access.  The same pointer argument can be referenced by at most one
 distinct @code{access} attribute.
 
 The optional @var{size-index} positional argument denotes a function
 argument of integer type that specifies the maximum size of the access.
-The size is the number of elements of the type refefenced by @var{ref-index},
+The size is the number of elements of the type referenced by @var{ref-index},
 or the number of bytes when the pointer type is @code{void*}.  When no
 @var{size-index} argument is specified, the pointer argument must be either
 null or point to a space that is suitably aligned and large for at least one
@@ -2520,10 +2520,10 @@ applies is used to read the referenced object but not write to it.  Unless
 the argument specifying the size of the access denoted by @var{size-index}
 is zero, the referenced object must be initialized.  The mode implies
 a stronger guarantee than the @code{const} qualifier which, when cast away
-from a pointer, does not prevent a function from modifying the pointed-to
-object.  Examples of the use of the @code{read_only} access mode is
-the argument to the @code{puts} function, or the second and third arguments
-to the @code{memcpy} function.
+from a pointer, does not prevent the pointed-to object from being modified.
+Examples of the use of the @code{read_only} access mode is the argument to
+the @code{puts} function, or the second and third arguments to
+the @code{memcpy} function.
 
 @smallexample
 __attribute__ ((access (read_only))) int puts (const char*);
@@ -2534,7 +2534,7 @@ The @code{read_write} access mode applies to arguments of pointer types
 without the @code{const} qualifier.  It specifies that the pointer to which
 it applies is used to both read and write the referenced object.  Unless
 the argument specifying the size of the access denoted by @var{size-index}
-is zero, the object refrenced by the pointer must be initialized.  An example
+is zero, the object referenced by the pointer must be initialized.  An example
 of the use of the @code{read_write} access mode is the first argument to
 the @code{strcat} function.
 
