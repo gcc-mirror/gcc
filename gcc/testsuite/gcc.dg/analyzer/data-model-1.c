@@ -326,9 +326,7 @@ void test_16e (int i)
   __analyzer_eval (j == i); /* { dg-warning "TRUE" } */
 
   might_write_to (&j);
-  __analyzer_eval (j == i); /* { dg-warning "UNKNOWN" "" { xfail *-*-* } } */
-  /* { dg-warning "TRUE" "" { target *-*-* } .-1 } */
-  // TODO(xfail)
+  __analyzer_eval (j == i); /* { dg-warning "UNKNOWN" } */
 }
 
 /* TODO: and more complicated graph-like examples, where anything that's

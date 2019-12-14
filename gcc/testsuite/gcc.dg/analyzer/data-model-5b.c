@@ -87,5 +87,4 @@ void test_1 (const char *str)
   //__analyzer_dump();
   if (obj)
     unref (obj);
-} /* { dg-bogus "leak of 'obj'" "" { xfail *-*-* } } */
-// TODO (xfail): not sure why this is treated as leaking
+}

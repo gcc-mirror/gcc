@@ -1,5 +1,19 @@
 2020-01-14  David Malcolm  <dmalcolm@redhat.com>
 
+	* gcc.dg/analyzer/data-model-1.c: Remove xfail.
+	* gcc.dg/analyzer/data-model-5b.c: Likewise.
+	* gcc.dg/analyzer/data-model-5c.c: Likewise.
+	* gcc.dg/analyzer/setjmp-3.c: Mark "foo" as pure.
+	* gcc.dg/analyzer/setjmp-4.c: Likewise.
+	* gcc.dg/analyzer/setjmp-6.c: Likewise.
+	* gcc.dg/analyzer/setjmp-7.c: Likewise.
+	* gcc.dg/analyzer/setjmp-7a.c: Likewise.
+	* gcc.dg/analyzer/setjmp-8.c: Likewise.
+	* gcc.dg/analyzer/setjmp-9.c: Likewise.
+	* gcc.dg/analyzer/unknown-fns.c: New test.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
 	* gcc.dg/analyzer/CVE-2005-1689-dedupe-issue.c: New test.
 
 2020-01-15  Jakub Jelinek  <jakub@redhat.com>

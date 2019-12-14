@@ -4,7 +4,7 @@
 #include <setjmp.h>
 #include "analyzer-decls.h"
 
-extern int foo (int);
+extern int foo (int) __attribute__ ((__pure__));
 static jmp_buf buf;
 
 void inner (int x)

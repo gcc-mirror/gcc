@@ -1578,8 +1578,12 @@ class region_model
 
   void check_for_poison (tree expr, region_model_context *ctxt);
   void on_assignment (const gassign *stmt, region_model_context *ctxt);
-  void on_call_pre (const gcall *stmt, region_model_context *ctxt);
-  void on_call_post (const gcall *stmt, region_model_context *ctxt);
+  bool on_call_pre (const gcall *stmt, region_model_context *ctxt);
+  void on_call_post (const gcall *stmt,
+		     bool unknown_side_effects,
+		     region_model_context *ctxt);
+  void handle_unrecognized_call (const gcall *call,
+				 region_model_context *ctxt);
   void on_return (const greturn *stmt, region_model_context *ctxt);
   void on_setjmp (const gcall *stmt, const exploded_node *enode,
 		  region_model_context *ctxt);
@@ -1827,6 +1831,10 @@ class region_model_context
      to ptrs becoming known to be NULL or non-NULL, rather than just
      "unchecked") */
   virtual void on_condition (tree lhs, enum tree_code op, tree rhs) = 0;
+
+  /* Hooks for clients to be notified when an unknown change happens
+     to SID (in response to a call to an unknown function).  */
+  virtual void on_unknown_change (svalue_id sid) = 0;
 };
 
 /* A bundle of data for use when attempting to merge two region_model
@@ -1990,6 +1998,10 @@ public:
   void on_condition (tree lhs ATTRIBUTE_UNUSED,
 		     enum tree_code op ATTRIBUTE_UNUSED,
 		     tree rhs ATTRIBUTE_UNUSED) FINAL OVERRIDE
+  {
+  }
+
+  void on_unknown_change (svalue_id sid ATTRIBUTE_UNUSED) FINAL OVERRIDE
   {
   }
 

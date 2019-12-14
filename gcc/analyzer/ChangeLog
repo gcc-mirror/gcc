@@ -1,5 +1,31 @@
 2020-01-14  David Malcolm  <dmalcolm@redhat.com>
 
+	* analyzer.h (fndecl_has_gimple_body_p): New decl.
+	* engine.cc (impl_region_model_context::on_unknown_change): New
+	function.
+	(fndecl_has_gimple_body_p): Make non-static.
+	(exploded_node::on_stmt): Treat __analyzer_dump_exploded_nodes as
+	known.  Track whether we have a call with unknown side-effects and
+	pass it to on_call_post.
+	* exploded-graph.h (impl_region_model_context::on_unknown_change):
+	New decl.
+	* program-state.cc (sm_state_map::on_unknown_change): New function.
+	* program-state.h (sm_state_map::on_unknown_change): New decl.
+	* region-model.cc: Include "bitmap.h".
+	(region_model::on_call_pre): Return a bool, capturing whether the
+	call has unknown side effects.
+	(region_model::on_call_post): Add arg "bool unknown_side_effects"
+	and if true, call handle_unrecognized_call.
+	(class reachable_regions): New class.
+	(region_model::handle_unrecognized_call): New function.
+	* region-model.h (region_model::on_call_pre): Return a bool.
+	(region_model::on_call_post): Add arg "bool unknown_side_effects".
+	(region_model::handle_unrecognized_call): New decl.
+	(region_model_context::on_unknown_change): New vfunc.
+	(test_region_model_context::on_unknown_change): New function.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
 	* diagnostic-manager.cc (saved_diagnostic::operator==): Move here
 	from header.  Replace pointer equality test on m_var with call to
 	pending_diagnostic::same_tree_p.

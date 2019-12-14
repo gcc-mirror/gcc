@@ -4,7 +4,7 @@
 #include <setjmp.h>
 #include <stdlib.h>
 
-extern void foo (int);
+extern int foo (int) __attribute__ ((__pure__));
 
 static jmp_buf env;
 

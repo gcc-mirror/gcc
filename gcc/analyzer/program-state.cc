@@ -480,6 +480,14 @@ sm_state_map::on_cast (svalue_id src_sid,
   impl_set_state (dst_sid, state, get_origin (src_sid));
 }
 
+/* Purge state from SID (in response to a call to an unknown function).  */
+
+void
+sm_state_map::on_unknown_change (svalue_id sid)
+{
+  impl_set_state (sid, (state_machine::state_t)0, svalue_id::null ());
+}
+
 /* Assert that this object is sane.  */
 
 void

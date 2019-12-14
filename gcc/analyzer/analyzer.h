@@ -80,6 +80,8 @@ extern void register_analyzer_pass ();
 
 extern label_text make_label_text (bool can_colorize, const char *fmt, ...);
 
+extern bool fndecl_has_gimple_body_p (tree fndecl);
+
 /* An RAII-style class for pushing/popping cfun within a scope.
    Doing so ensures we get "In function " announcements
    from the diagnostics subsystem.  */
