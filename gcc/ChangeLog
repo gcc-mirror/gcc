@@ -1,3 +1,11 @@
+2019-12-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (DARWIN_EXTRA_SPECS): Add new
+	bundle spec. (DARWIN_BUNDLE1_SPEC): New.
+	(STARTFILE_SPEC): Use darwin bundle spec.
+	* config/rs6000/darwin.h (DARWIN_BUNDLE1_SPEC): New.
+	(DARWIN_DYLIB1_SPEC): Delete duplicate.
+
 2019-12-13  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/91582
