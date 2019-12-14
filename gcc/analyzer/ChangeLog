@@ -1,5 +1,25 @@
 2020-01-14  David Malcolm  <dmalcolm@redhat.com>
 
+	* diagnostic-manager.cc (saved_diagnostic::operator==): Move here
+	from header.  Replace pointer equality test on m_var with call to
+	pending_diagnostic::same_tree_p.
+	* diagnostic-manager.h (saved_diagnostic::operator==): Move to
+	diagnostic-manager.cc.
+	* pending-diagnostic.cc (pending_diagnostic::same_tree_p): New.
+	* pending-diagnostic.h (pending_diagnostic::same_tree_p): New.
+	* sm-file.cc (file_diagnostic::subclass_equal_p): Replace pointer
+	equality on m_arg with call to pending_diagnostic::same_tree_p.
+	* sm-malloc.cc (malloc_diagnostic::subclass_equal_p): Likewise.
+	(possible_null_arg::subclass_equal_p): Likewise.
+	(null_arg::subclass_equal_p): Likewise.
+	(free_of_non_heap::subclass_equal_p): Likewise.
+	* sm-pattern-test.cc (pattern_match::operator==): Likewise.
+	* sm-sensitive.cc (exposure_through_output_file::operator==):
+	Likewise.
+	* sm-taint.cc (tainted_array_index::operator==): Likewise.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
 	* diagnostic-manager.cc (dedupe_winners::add): Add logging
 	of deduplication decisions made.
 

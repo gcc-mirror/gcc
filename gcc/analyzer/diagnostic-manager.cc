@@ -91,6 +91,20 @@ saved_diagnostic::~saved_diagnostic ()
   delete m_d;
 }
 
+bool
+saved_diagnostic::operator== (const saved_diagnostic &other) const
+{
+  return (m_sm == other.m_sm
+	  /* We don't compare m_enode.  */
+	  && m_snode == other.m_snode
+	  && m_stmt == other.m_stmt
+	  /* We don't compare m_stmt_finder.  */
+	  && pending_diagnostic::same_tree_p (m_var, other.m_var)
+	  && m_state == other.m_state
+	  && m_d->equal_p (*other.m_d)
+	  && m_trailing_eedge == other.m_trailing_eedge);
+}
+
 /* class diagnostic_manager.  */
 
 /* diagnostic_manager's ctor.  */

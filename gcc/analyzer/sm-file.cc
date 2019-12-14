@@ -96,7 +96,7 @@ public:
 
   bool subclass_equal_p (const pending_diagnostic &base_other) const OVERRIDE
   {
-    return m_arg == ((const file_diagnostic &)base_other).m_arg;
+    return same_tree_p (m_arg, ((const file_diagnostic &)base_other).m_arg);
   }
 
   label_text describe_state_change (const evdesc::state_change &change)

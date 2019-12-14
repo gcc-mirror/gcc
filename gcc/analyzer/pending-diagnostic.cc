@@ -67,4 +67,13 @@ evdesc::event_desc::formatted_print (const char *fmt, ...) const
   return result;
 }
 
+/* Return true if T1 and T2 are "the same" for the purposes of
+   diagnostic deduplication.  */
+
+bool
+pending_diagnostic::same_tree_p (tree t1, tree t2)
+{
+  return simple_cst_equal (t1, t2) == 1;
+}
+
 #endif /* #if ENABLE_ANALYZER */

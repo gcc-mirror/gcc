@@ -102,7 +102,7 @@ public:
 
   bool subclass_equal_p (const pending_diagnostic &base_other) const OVERRIDE
   {
-    return m_arg == ((const malloc_diagnostic &)base_other).m_arg;
+    return same_tree_p (m_arg, ((const malloc_diagnostic &)base_other).m_arg);
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
@@ -282,7 +282,7 @@ public:
   {
     const possible_null_arg &sub_other
       = (const possible_null_arg &)base_other;
-    return (m_arg == sub_other.m_arg
+    return (same_tree_p (m_arg, sub_other.m_arg)
 	    && m_fndecl == sub_other.m_fndecl
 	    && m_arg_idx == sub_other.m_arg_idx);
   }
@@ -373,7 +373,7 @@ public:
   {
     const null_arg &sub_other
       = (const null_arg &)base_other;
-    return (m_arg == sub_other.m_arg
+    return (same_tree_p (m_arg, sub_other.m_arg)
 	    && m_fndecl == sub_other.m_fndecl
 	    && m_arg_idx == sub_other.m_arg_idx);
   }
@@ -499,7 +499,7 @@ public:
     FINAL OVERRIDE
   {
     const free_of_non_heap &other = (const free_of_non_heap &)base_other;
-    return (m_arg == other.m_arg && m_kind == other.m_kind);
+    return (same_tree_p (m_arg, other.m_arg) && m_kind == other.m_kind);
   }
 
   bool emit (rich_location *rich_loc) FINAL OVERRIDE

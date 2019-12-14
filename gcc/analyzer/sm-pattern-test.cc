@@ -78,9 +78,9 @@ public:
 
   bool operator== (const pattern_match &other) const
   {
-    return (m_lhs == other.m_lhs
+    return (same_tree_p (m_lhs, other.m_lhs)
 	    && m_op == other.m_op
-	    && m_rhs == other.m_rhs);
+	    && same_tree_p (m_rhs, other.m_rhs));
   }
 
   bool emit (rich_location *rich_loc) FINAL OVERRIDE

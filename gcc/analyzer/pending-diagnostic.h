@@ -169,6 +169,10 @@ class pending_diagnostic
      below for a convenience subclass for implementing this.  */
   virtual bool subclass_equal_p (const pending_diagnostic &other) const = 0;
 
+  /* Return true if T1 and T2 are "the same" for the purposes of
+     diagnostic deduplication.  */
+  static bool same_tree_p (tree t1, tree t2);
+
   /* For greatest precision-of-wording, the various following "describe_*"
      virtual functions give the pending diagnostic a way to describe events
      in a diagnostic_path in terms that make sense for that diagnostic.
