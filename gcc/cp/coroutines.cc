@@ -81,6 +81,7 @@ static bool coro_promise_type_found_p (tree, location_t);
 
 /* The state that we collect during parsing (and template expansion) for
    a coroutine.  */
+
 struct GTY((for_user)) coroutine_info
 {
   tree function_decl; /* The original function decl.  */
@@ -183,11 +184,13 @@ get_coroutine_info (tree fn_decl)
    on the first attempt to lookup the traits.  */
 
 /* Identifiers that are used by all coroutines.  */
+
 static tree coro_traits_identifier;
 static tree coro_handle_identifier;
 static tree coro_promise_type_identifier;
 
 /* Required promise method name identifiers.  */
+
 static tree coro_await_transform_identifier;
 static tree coro_initial_suspend_identifier;
 static tree coro_final_suspend_identifier;
@@ -201,11 +204,13 @@ static tree coro_gro_on_allocation_fail_identifier;
 static tree coro_unhandled_exception_identifier;
 
 /* Awaitable methods.  */
+
 static tree coro_await_ready_identifier;
 static tree coro_await_suspend_identifier;
 static tree coro_await_resume_identifier;
 
 /* Create the identifiers used by the coroutines library interfaces.  */
+
 static void
 coro_init_identifiers ()
 {
@@ -247,6 +252,7 @@ static tree void_coro_handle_type;
 
 /* TODO: Remove this when the coroutine header is moved to std::
    Lookup std::experimental.  */
+
 static tree
 find_std_experimental (location_t loc)
 {
@@ -308,6 +314,7 @@ find_coro_traits_template_class (tree fndecl, location_t kw)
 }
 
 /* [coroutine.handle] */
+
 static tree
 find_coro_handle_type (location_t kw, tree promise_type)
 {
@@ -427,6 +434,7 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
 
 /* These functions assumes that the caller has verified that the state for
    the decl has been initialized, we try to minimize work here.  */
+
 static tree
 get_coroutine_promise_type (tree decl)
 {
@@ -780,8 +788,8 @@ finish_co_await_expr (location_t kw, tree expr)
 
 /* Take the EXPR given and attempt to build:
      co_await p.yield_value (expr);
-   per [expr.yield] para 1.
-*/
+   per [expr.yield] para 1. */
+
 tree
 finish_co_yield_expr (location_t kw, tree expr)
 {
@@ -991,11 +999,10 @@ finish_co_return_stmt (location_t kw, tree expr)
      coroutine frame equivalents.
 
      The complete bodies for the ramp, actor and destroy function are passed
-     back to finish_function for folding and gimplification.
-
-*/
+     back to finish_function for folding and gimplification.  */
 
 /* Helpers to build EXPR_STMT and void-cast EXPR_STMT, common ops.  */
+
 static tree
 coro_build_expr_stmt (tree expr, location_t loc)
 {
@@ -1009,7 +1016,9 @@ coro_build_cvt_void_expr_stmt (tree expr, location_t loc)
   return coro_build_expr_stmt (t, loc);
 }
 
-/* Helpers for label creation.  */
+/* Helpers for label creation:
+   1. Create a named label in the specified context.  */
+
 static tree
 create_anon_label_with_ctx (location_t loc, tree ctx)
 {
@@ -1022,7 +1031,8 @@ create_anon_label_with_ctx (location_t loc, tree ctx)
   return lab;
 }
 
-/* Create a named label in the specified context.  */
+/*  2. Create a named label in the specified context.  */
+
 static tree
 create_named_label_with_ctx (location_t loc, const char *name, tree ctx)
 {
@@ -1055,6 +1065,7 @@ replace_proxy (tree *here, int *do_subtree, void *d)
 }
 
 /* Support for expansion of co_return statements.  */
+
 struct __coro_ret_data
 {
   tree promise_proxy;
@@ -1064,6 +1075,7 @@ struct __coro_ret_data
 
 /* If this is a coreturn statement (or one wrapped in a cleanup) then
    return the list of statements to replace it.  */
+
 static tree
 coro_maybe_expand_co_return (tree co_ret_expr, __coro_ret_data *data)
 {
@@ -1108,8 +1120,7 @@ coro_maybe_expand_co_return (tree co_ret_expr, __coro_ret_data *data)
    - for co_return [void expr];
    { expr; p.return_void(); goto final_suspend;}
    - for co_return [non void expr];
-   { p.return_value(expr); goto final_suspend; }
-*/
+   { p.return_value(expr); goto final_suspend; }  */
 
 static tree
 co_return_expander (tree *stmt, int *do_subtree, void *d)
@@ -1156,6 +1167,7 @@ co_return_expander (tree *stmt, int *do_subtree, void *d)
 }
 
 /* Walk the original function body, rewriting co_returns.  */
+
 static tree
 expand_co_returns (tree *fnbody, tree promise_proxy, tree promise,
 		   tree fs_label)
@@ -1166,6 +1178,7 @@ expand_co_returns (tree *fnbody, tree promise_proxy, tree promise,
 }
 
 /* Support for expansion of co_await statements.  */
+
 struct __coro_aw_data
 {
   tree actor_fn;   /* Decl for context.  */
@@ -1198,9 +1211,7 @@ co_await_find_in_subtree (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
 
    When we leave:
    the IFN_CO_YIELD carries the labels of the resume and destroy
-   branch targets for this await.
-
-*/
+   branch targets for this await.  */
 
 static tree
 co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
@@ -1479,6 +1490,7 @@ struct __await_xform_data
 /* When we built the await expressions, we didn't know the coro frame
    layout, therefore no idea where to find the promise or where to put
    the awaitables.  Now we know these things, fill them in.  */
+
 static tree
 transform_await_expr (tree await_expr, struct __await_xform_data *xform)
 {
@@ -1543,8 +1555,9 @@ transform_await_expr (tree await_expr, struct __await_xform_data *xform)
   return await_expr;
 }
 
-/* A wrapper for the routine above so that it can be a callback from
-   cp_walk_tree.  */
+/* A wrapper for the transform_await_expr function so that it can be a
+   callback from cp_walk_tree.  */
+
 static tree
 transform_await_wrapper (tree *stmt, int *do_subtree, void *d)
 {
@@ -1696,6 +1709,7 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 }
 
 /* The actor transform.  */
+
 static void
 build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 		tree orig, hash_map<tree, __param_info_t> *param_uses,
@@ -2076,8 +2090,8 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 
 /* The prototype 'destroy' function :
    frame->__resume_at |= 1;
-   actor (frame);
-*/
+   actor (frame);  */
+
 static void
 build_destroy_fn (location_t loc, tree coro_frame_type, tree destroy,
 		  tree actor)
@@ -2135,6 +2149,7 @@ build_destroy_fn (location_t loc, tree coro_frame_type, tree destroy,
 
 /* Helper that returns an identifier for an appended extension to the
    current un-mangled function name.  */
+
 static tree
 get_fn_local_identifier (tree orig, const char *append)
 {
@@ -2222,6 +2237,7 @@ register_await_info (tree await_expr, tree aw_type, tree aw_nam, tree susp_type,
 
 /* Small helper for the repetitive task of adding a new field to the coro
    frame type.  */
+
 static tree
 coro_make_frame_entry (tree *field_list, const char *name, tree fld_type,
 		       location_t loc)
@@ -2248,6 +2264,7 @@ struct __susp_frame_data
 /* Helper to return the type of an awaiter's await_suspend() method.
    We start with the result of the build method call, which will be either
    a call expression (void, bool) or a target expressions (handle).  */
+
 static tree
 get_await_suspend_return_type (tree aw_expr)
 {
@@ -2266,6 +2283,7 @@ get_await_suspend_return_type (tree aw_expr)
 
 /* Walk the sub-tree looking for call expressions that both capture
    references and have compiler-temporaries as parms.  */
+
 static tree
 captures_temporary (tree *stmt, int *do_subtree, void *d)
 {
@@ -2354,6 +2372,7 @@ captures_temporary (tree *stmt, int *do_subtree, void *d)
    frame storage is needed.
    If this is a co_yield (which embeds an await), drop the yield
    and record the await (the yield was kept for diagnostics only).  */
+
 static tree
 register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
 {
@@ -2430,12 +2449,14 @@ register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
    temporaries to be regular vars that will then get a coro frame slot.
    We don't want to incur the effort of checking for this unless we have
    an await expression in the current full expression.  */
+
 static tree
 maybe_promote_captured_temps (tree *stmt, void *d)
 {
   struct __susp_frame_data *awpts = (struct __susp_frame_data *) d;
   hash_set<tree> visited;
   awpts->saw_awaits = 0;
+
   /* When register_awaits sees an await, it walks the initializer for
      that await looking for temporaries captured by reference and notes
      them in awpts->captured_temps.  We only need to take any action
@@ -2557,6 +2578,7 @@ await_statement_walker (tree *stmt, int *do_subtree, void *d)
 }
 
 /* For figuring out what param usage we have.  */
+
 struct __param_frame_data
 {
   tree *field_list;
@@ -2605,6 +2627,7 @@ register_param_uses (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
 }
 
 /* For figuring out what local variable usage we have.  */
+
 struct __local_vars_frame_data
 {
   tree *field_list;
@@ -2717,9 +2740,8 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
   (maybe) parameters used in the body.
   (maybe) local variables saved
   (maybe) trailing space.
- };
+ };  */
 
-*/
 bool
 morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 {
@@ -2902,8 +2924,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  The second two entries start out empty - and only get populated
 	  when we see uses.  */
       param_uses = new hash_map<tree, __param_info_t>;
-      tree arg;
-      for (arg = DECL_ARGUMENTS (orig); arg != NULL; arg = DECL_CHAIN (arg))
+
+      for (tree arg = DECL_ARGUMENTS (orig); arg != NULL;
+	   arg = DECL_CHAIN (arg))
 	{
 	  bool existed;
 	  __param_info_t &parm = param_uses->get_or_insert (arg, &existed);
@@ -2920,9 +2943,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
       /* If no uses were seen, act as if there were no params.  */
       if (!param_data.param_seen)
-	{
-	  param_uses = NULL;
-	}
+	param_uses = NULL;
     }
 
   /* 4. Now make space for local vars, this is conservative again, and we
@@ -3425,15 +3446,17 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	warning_at (fn_start, 0, "no member named %qs in %qT",
 		    IDENTIFIER_POINTER (coro_unhandled_exception_identifier),
 		    get_coroutine_promise_type (orig));
-    } /* Else we don't check and don't care if the method is missing.  */
+    }
+  /* Else we don't check and don't care if the method is missing.  */
 
-  /* ==== start to build the final functions.
+  /* Start to build the final functions.
+
      We push_deferring_access_checks to avoid these routines being seen as
-     nested by the middle end, we are doing the outlining here.  */
+     nested by the middle end; we are doing the outlining here.  */
 
   push_deferring_access_checks (dk_no_check);
 
-  /* Actor...  */
+  /* Actor ...  */
   build_actor_fn (fn_start, coro_frame_type, actor, fnbody, orig, param_uses,
 		  &local_var_uses, param_dtor_list, initial_await, final_await,
 		  body_aw_points.count);

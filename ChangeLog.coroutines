@@ -1,6 +1,13 @@
 2019-12-15  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc: Check for blank lines before functions.
+	Check comment wrapping.
+	* decl.c (emit_coro_helper): Adjust a comment.
+
+2019-12-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (create_anon_label_with_ctx): Mark created
 	label as used.
 	(create_named_label_with_ctx): Likewise.

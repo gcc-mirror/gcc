@@ -16806,7 +16806,8 @@ emit_coro_helper (tree helper)
   cp_fold_function (helper);
   DECL_CONTEXT (DECL_RESULT (helper)) = helper;
   BLOCK_SUPERCONTEXT (DECL_INITIAL (helper)) = helper;
-  /* We should handle coroutine IFNs in middle end lowering.  */
+  /* This function has coroutine IFNs that we should handle in middle
+     end lowering.  */
   cfun->coroutine_component = true;
   cp_genericize (helper);
   expand_or_defer_fn (helper);
