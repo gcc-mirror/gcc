@@ -57,6 +57,9 @@ package body Exp_Atag is
    --    To_Dispatch_Table_Ptr
    --      (To_Address (Tag_Node) - Tag_Node.Prims_Ptr'Position);
 
+   function Build_Range (Loc : Source_Ptr; Lo, Hi : Nat) return Node_Id;
+   --  Build an N_Range node for [Lo; Hi] with Standard.Natural type
+
    function Build_TSD
      (Loc           : Source_Ptr;
       Tag_Node_Addr : Node_Id) return Node_Id;
@@ -65,6 +68,9 @@ package body Exp_Atag is
    --
    --  Generate: To_Type_Specific_Data_Ptr
    --              (To_Addr_Ptr (Tag_Node_Addr - Typeinfo_Offset).all);
+
+   function Build_Val (Loc : Source_Ptr; V : Uint) return Node_Id;
+   --  Build an N_Integer_Literal node for V with Standard.Natural type
 
    ------------------------------------------------
    -- Build_Common_Dispatching_Select_Statements --
@@ -241,7 +247,7 @@ package body Exp_Atag is
           Left_Opnd =>
             Make_Op_Ge (Loc,
               Left_Opnd  => New_Occurrence_Of (Index, Loc),
-              Right_Opnd => Make_Integer_Literal (Loc, Uint_0)),
+              Right_Opnd => Build_Val (Loc, Uint_0)),
 
           Right_Opnd =>
             Make_Op_Eq (Loc,
@@ -358,7 +364,7 @@ package body Exp_Atag is
                       New_Occurrence_Of
                         (RTE (RE_DT_Predef_Prims_Offset), Loc)))))),
           Expressions =>
-            New_List (Make_Integer_Literal (Loc, Position)));
+            New_List (Build_Val (Loc, Position)));
    end Build_Get_Predefined_Prim_Op_Address;
 
    -----------------------------
@@ -428,7 +434,7 @@ package body Exp_Atag is
                           (Node (Last_Elmt (Access_Disp_Table (Typ))),
                            New_Occurrence_Of (Typ_Tag, Loc))),
                     Expressions =>
-                       New_List (Make_Integer_Literal (Loc, Prim_Pos))),
+                       New_List (Build_Val (Loc, UI_From_Int (Prim_Pos)))),
 
                Expression =>
                  Unchecked_Convert_To (RTE (RE_Prim_Ptr),
@@ -566,7 +572,7 @@ package body Exp_Atag is
                                        New_Occurrence_Of (Typ_Tag, Loc))),
                                 Expressions =>
                                    New_List
-                                    (Make_Integer_Literal (Loc, Prim_Pos))),
+                                    (Build_Val (Loc, UI_From_Int (Prim_Pos)))),
 
                             Expression =>
                               Unchecked_Convert_To (RTE (RE_Prim_Ptr),
@@ -638,9 +644,7 @@ package body Exp_Atag is
                        New_Occurrence_Of
                          (RTE_Record_Component (RE_Prims_Ptr), Loc)),
                  Discrete_Range =>
-                   Make_Range (Loc,
-                   Low_Bound  => Make_Integer_Literal (Loc, 1),
-                   High_Bound => Make_Integer_Literal (Loc, Num_Prims))),
+                   Build_Range (Loc, 1, Num_Prims)),
 
              Expression =>
                Make_Slice (Loc,
@@ -652,9 +656,7 @@ package body Exp_Atag is
                        New_Occurrence_Of
                          (RTE_Record_Component (RE_Prims_Ptr), Loc)),
                  Discrete_Range =>
-                   Make_Range (Loc,
-                     Low_Bound  => Make_Integer_Literal (Loc, 1),
-                     High_Bound => Make_Integer_Literal (Loc, Num_Prims))));
+                   Build_Range (Loc, 1, Num_Prims)));
       else
          return
            Make_Assignment_Statement (Loc,
@@ -665,9 +667,7 @@ package body Exp_Atag is
                      (Node (Last_Elmt (Access_Disp_Table (Typ))),
                       New_Tag_Node),
                  Discrete_Range =>
-                   Make_Range (Loc,
-                   Low_Bound  => Make_Integer_Literal (Loc, 1),
-                   High_Bound => Make_Integer_Literal (Loc, Num_Prims))),
+                   Build_Range (Loc, 1, Num_Prims)),
 
              Expression =>
                Make_Slice (Loc,
@@ -676,9 +676,7 @@ package body Exp_Atag is
                      (Node (Last_Elmt (Access_Disp_Table (Typ))),
                       Old_Tag_Node),
                  Discrete_Range =>
-                   Make_Range (Loc,
-                     Low_Bound  => Make_Integer_Literal (Loc, 1),
-                     High_Bound => Make_Integer_Literal (Loc, Num_Prims))));
+                   Build_Range (Loc, 1, Num_Prims)));
       end if;
    end Build_Inherit_Prims;
 
@@ -715,7 +713,7 @@ package body Exp_Atag is
       New_Node :=
         Make_Indexed_Component (Loc,
           Prefix      => New_Prefix,
-          Expressions => New_List (Make_Integer_Literal (Loc, Position)));
+          Expressions => New_List (Build_Val (Loc, Position)));
    end Build_Get_Prim_Op_Address;
 
    -----------------------------
@@ -745,7 +743,7 @@ package body Exp_Atag is
      (Loc              : Source_Ptr;
       Old_Tag_Node     : Node_Id;
       New_Tag_Node     : Node_Id;
-      Num_Predef_Prims : Int) return Node_Id
+      Num_Predef_Prims : Nat) return Node_Id
    is
    begin
       return
@@ -758,9 +756,8 @@ package body Exp_Atag is
                     Make_Explicit_Dereference (Loc,
                       Unchecked_Convert_To (RTE (RE_Addr_Ptr),
                         New_Tag_Node)))),
-              Discrete_Range => Make_Range (Loc,
-                Make_Integer_Literal (Loc, Uint_1),
-                Make_Integer_Literal (Loc, Num_Predef_Prims))),
+              Discrete_Range =>
+                Build_Range (Loc, 1, Num_Predef_Prims)),
 
           Expression =>
             Make_Slice (Loc,
@@ -771,9 +768,7 @@ package body Exp_Atag is
                       Unchecked_Convert_To (RTE (RE_Addr_Ptr),
                         Old_Tag_Node)))),
               Discrete_Range =>
-                Make_Range (Loc,
-                  Make_Integer_Literal (Loc, 1),
-                  Make_Integer_Literal (Loc, Num_Predef_Prims))));
+                Build_Range (Loc, 1, Num_Predef_Prims)));
    end Build_Inherit_Predefined_Prims;
 
    -------------------------
@@ -808,6 +803,23 @@ package body Exp_Atag is
                   (RTE (RE_DT_Offset_To_Top_Offset), Loc)))));
    end Build_Offset_To_Top;
 
+   -----------------
+   -- Build_Range --
+   -----------------
+
+   function Build_Range (Loc : Source_Ptr; Lo, Hi : Nat) return Node_Id is
+      Result : Node_Id;
+
+   begin
+      Result :=
+        Make_Range (Loc,
+           Low_Bound  => Build_Val (Loc, UI_From_Int (Lo)),
+           High_Bound => Build_Val (Loc, UI_From_Int (Hi)));
+      Set_Etype (Result, Standard_Natural);
+      Set_Analyzed (Result);
+      return Result;
+   end Build_Range;
+
    ------------------------------------------
    -- Build_Set_Predefined_Prim_Op_Address --
    ------------------------------------------
@@ -828,7 +840,7 @@ package body Exp_Atag is
                    Make_Explicit_Dereference (Loc,
                      Unchecked_Convert_To (RTE (RE_Addr_Ptr), Tag_Node))),
                Expressions =>
-                 New_List (Make_Integer_Literal (Loc, Position))),
+                 New_List (Build_Val (Loc, Position))),
 
            Expression => Address_Node);
    end Build_Set_Predefined_Prim_Op_Address;
@@ -938,5 +950,20 @@ package body Exp_Atag is
                   New_Occurrence_Of
                     (RTE (RE_DT_Typeinfo_Ptr_Size), Loc))))));
    end Build_TSD;
+
+   ---------------
+   -- Build_Val --
+   ---------------
+
+   function Build_Val (Loc : Source_Ptr; V : Uint) return Node_Id is
+      Result : Node_Id;
+
+   begin
+      Result := Make_Integer_Literal (Loc, V);
+      Set_Etype (Result, Standard_Natural);
+      Set_Is_Static_Expression (Result);
+      Set_Analyzed (Result);
+      return Result;
+   end Build_Val;
 
 end Exp_Atag;

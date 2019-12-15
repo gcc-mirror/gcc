@@ -112,7 +112,7 @@ package Exp_Atag is
      (Loc              : Source_Ptr;
       Old_Tag_Node     : Node_Id;
       New_Tag_Node     : Node_Id;
-      Num_Predef_Prims : Int) return Node_Id;
+      Num_Predef_Prims : Nat) return Node_Id;
    --  Build code that inherits the predefined primitives of the parent.
    --
    --  Generates: Predefined_DT (New_T).D (All_Predefined_Prims) :=
