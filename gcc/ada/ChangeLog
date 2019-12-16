@@ -1,3 +1,26 @@
+2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch8.adb (Analyze_Object_Renaming): Set Atomic, Independent
+	and Volatile_Full_Access aspects on the entity of the renaming
+	the same way as the Volatile aspect is set.
+	* sem_util.ads (Is_Atomic_Object_Entity): Move declaration to...
+	(Is_Independent_Object): New function.
+	(Is_Volatile_Full_Access_Object): Likewise.
+	* sem_util.adb (Is_Atomic_Object_Entity): ...here.
+	(Prefix_Has_Atomic_Components): Minor tweak.
+	(Is_Atomic_Object): Test Is_Atomic on the Etype uniformly.
+	(Is_Atomic_Or_VFA_Object): Call Is_Volatile_Full_Access_Object.
+	(Is_Independent_Object): New predicate.
+	(Is_Subcomponent_Of_Atomic_Object): Remove redundant test.
+	(Is_Volatile_Full_Access_Object): New predicate.
+	(Is_Volatile_Prefix): Rename into...
+	(Prefix_Has_Volatile_Components): ... and call
+	Is_Volatile_Object.
+	(Object_Has_Volatile_Components): Delete.
+	(Is_Volatile_Object): Simplify.
+	* gcc-interface/trans.c (node_is_volatile_full_access): Adjust
+	comment.
+
 2019-12-16  Bob Duff  <duff@adacore.com>
 
 	* par.adb: Add Scopes function to do range checking on the scope

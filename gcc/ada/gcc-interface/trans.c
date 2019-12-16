@@ -4835,8 +4835,8 @@ node_is_atomic (Node_Id gnat_node)
 }
 
 /* Return true if GNAT_NODE references a Volatile_Full_Access entity.  This is
-   modeled on the Is_VFA_Object predicate of the front-end, but additionally
-   handles explicit dereferences.  */
+   modeled on the Is_Volatile_Full_Access_Object predicate of the front-end,
+   but additionally handles explicit dereferences.  */
 
 static bool
 node_is_volatile_full_access (Node_Id gnat_node)

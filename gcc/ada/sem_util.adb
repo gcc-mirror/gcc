@@ -122,6 +122,10 @@ package body Sem_Util is
    --  T is a derived tagged type. Check whether the type extension is null.
    --  If the parent type is fully initialized, T can be treated as such.
 
+   function Is_Atomic_Object_Entity (Id : Entity_Id) return Boolean;
+   --  Determine whether arbitrary entity Id denotes an atomic object as per
+   --  RM C.6(7).
+
    function Is_Fully_Initialized_Variant (Typ : Entity_Id) return Boolean;
    --  Subsidiary to Is_Fully_Initialized_Type. For an unconstrained type
    --  with discriminants whose default values are static, examine only the
@@ -13724,16 +13728,16 @@ package body Sem_Util is
    ----------------------
 
    function Is_Atomic_Object (N : Node_Id) return Boolean is
-      function Prefix_Has_Atomic_Components (Pref : Node_Id) return Boolean;
-      --  Determine whether prefix Pref of an indexed component has atomic
-      --  components.
+      function Prefix_Has_Atomic_Components (P : Node_Id) return Boolean;
+      --  Determine whether prefix P has atomic components. This requires the
+      --  presence of an Atomic_Components aspect/pragma.
 
       ---------------------------------
       -- Prefix_Has_Atomic_Components --
       ---------------------------------
 
-      function Prefix_Has_Atomic_Components (Pref : Node_Id) return Boolean is
-         Typ : constant Entity_Id := Etype (Pref);
+      function Prefix_Has_Atomic_Components (P : Node_Id) return Boolean is
+         Typ : constant Entity_Id := Etype (P);
 
       begin
          if Is_Access_Type (Typ) then
@@ -13742,8 +13746,8 @@ package body Sem_Util is
          elsif Has_Atomic_Components (Typ) then
             return True;
 
-         elsif Is_Entity_Name (Pref)
-           and then Has_Atomic_Components (Entity (Pref))
+         elsif Is_Entity_Name (P)
+           and then Has_Atomic_Components (Entity (P))
          then
             return True;
 
@@ -13758,18 +13762,18 @@ package body Sem_Util is
       if Is_Entity_Name (N) then
          return Is_Atomic_Object_Entity (Entity (N));
 
+      elsif Is_Atomic (Etype (N)) then
+         return True;
+
       elsif Nkind (N) = N_Indexed_Component then
-         return
-           Is_Atomic (Etype (N))
-             or else Prefix_Has_Atomic_Components (Prefix (N));
+         return Prefix_Has_Atomic_Components (Prefix (N));
 
       elsif Nkind (N) = N_Selected_Component then
-         return
-           Is_Atomic (Etype (N))
-             or else Is_Atomic (Entity (Selector_Name (N)));
-      end if;
+         return Is_Atomic (Entity (Selector_Name (N)));
 
-      return False;
+      else
+         return False;
+      end if;
    end Is_Atomic_Object;
 
    -----------------------------
@@ -13788,50 +13792,8 @@ package body Sem_Util is
    -----------------------------
 
    function Is_Atomic_Or_VFA_Object (N : Node_Id) return Boolean is
-      function Is_VFA_Object (N : Node_Id) return Boolean;
-      --  Determine whether arbitrary node N denotes a reference to an object
-      --  that is Volatile_Full_Access. Modeled on Is_Atomic_Object above.
-
-      function Is_VFA_Object_Entity (Id : Entity_Id) return Boolean;
-      --  Determine whether arbitrary entity Id denotes an object that is
-      --  Volatile_Full_Access. Modeled on Is_Atomic_Object_Entity above.
-
-      ---------------------
-      --  Is_VFA_Object  --
-      ---------------------
-
-      function Is_VFA_Object (N : Node_Id) return Boolean is
-      begin
-         if Is_Entity_Name (N) then
-            return Is_VFA_Object_Entity (Entity (N));
-
-         elsif Nkind (N) = N_Indexed_Component then
-            return Is_Volatile_Full_Access (Etype (N));
-
-         elsif Nkind (N) = N_Selected_Component then
-            return
-              Is_Volatile_Full_Access (Etype (N))
-                or else Is_Volatile_Full_Access (Entity (Selector_Name (N)));
-         end if;
-
-         return False;
-      end Is_VFA_Object;
-
-      ----------------------------
-      --  Is_VFA_Object_Entity  --
-      ----------------------------
-
-      function Is_VFA_Object_Entity (Id : Entity_Id) return Boolean is
-      begin
-         return
-           Is_Object (Id)
-             and then (Is_Volatile_Full_Access (Id)
-                         or else
-                       Is_Volatile_Full_Access (Etype (Id)));
-      end Is_VFA_Object_Entity;
-
    begin
-      return Is_Atomic_Object (N) or else Is_VFA_Object (N);
+      return Is_Atomic_Object (N) or else Is_Volatile_Full_Access_Object (N);
    end Is_Atomic_Or_VFA_Object;
 
    ----------------------
@@ -15478,6 +15440,78 @@ package body Sem_Util is
         Nkind_In (Spec_Decl, N_Generic_Package_Declaration,
                              N_Generic_Subprogram_Declaration);
    end Is_Generic_Declaration_Or_Body;
+
+   ---------------------------
+   -- Is_Independent_Object --
+   ---------------------------
+
+   function Is_Independent_Object (N : Node_Id) return Boolean is
+      function Is_Independent_Object_Entity (Id : Entity_Id) return Boolean;
+      --  Determine whether arbitrary entity Id denotes an object that is
+      --  Independent.
+
+      function Prefix_Has_Independent_Components (P : Node_Id) return Boolean;
+      --  Determine whether prefix P has independent components. This requires
+      --  the presence of an Independent_Components aspect/pragma.
+
+      ------------------------------------
+      --  Is_Independent_Object_Entity  --
+      ------------------------------------
+
+      function Is_Independent_Object_Entity (Id : Entity_Id) return Boolean is
+      begin
+         return
+           Is_Object (Id)
+             and then (Is_Independent (Id)
+                        or else
+                      Is_Independent (Etype (Id)));
+      end Is_Independent_Object_Entity;
+
+      -------------------------------------
+      -- Prefix_Has_Independent_Components --
+      -------------------------------------
+
+      function Prefix_Has_Independent_Components (P : Node_Id) return Boolean
+      is
+         Typ : constant Entity_Id := Etype (P);
+
+      begin
+         if Is_Access_Type (Typ) then
+            return Has_Independent_Components (Designated_Type (Typ));
+
+         elsif Has_Independent_Components (Typ) then
+            return True;
+
+         elsif Is_Entity_Name (P)
+           and then Has_Independent_Components (Entity (P))
+         then
+            return True;
+
+         else
+            return False;
+         end if;
+      end Prefix_Has_Independent_Components;
+
+   --  Start of processing for Is_Independent_Object
+
+   begin
+      if Is_Entity_Name (N) then
+         return Is_Independent_Object_Entity (Entity (N));
+
+      elsif Is_Independent (Etype (N)) then
+         return True;
+
+      elsif Nkind (N) = N_Indexed_Component then
+         return Prefix_Has_Independent_Components (Prefix (N));
+
+      elsif Nkind (N) = N_Selected_Component then
+         return Prefix_Has_Independent_Components (Prefix (N))
+           or else Is_Independent (Entity (Selector_Name (N)));
+
+      else
+         return False;
+      end if;
+   end Is_Independent_Object;
 
    ----------------------------
    -- Is_Inherited_Operation --
@@ -17903,7 +17937,7 @@ package body Sem_Util is
             end if;
 
          else
-            if Is_Atomic (Etype (R)) or else Is_Atomic_Object (R) then
+            if Is_Atomic_Object (R) then
                return True;
             end if;
          end if;
@@ -18545,6 +18579,45 @@ package body Sem_Util is
         and then Scope (Scope (Scope (Root))) = Standard_Standard;
    end Is_Visibly_Controlled;
 
+   --------------------------------------
+   --  Is_Volatile_Full_Access_Object  --
+   --------------------------------------
+
+   function Is_Volatile_Full_Access_Object (N : Node_Id) return Boolean is
+      function Is_VFA_Object_Entity (Id : Entity_Id) return Boolean;
+      --  Determine whether arbitrary entity Id denotes an object that is
+      --  Volatile_Full_Access.
+
+      ----------------------------
+      --  Is_VFA_Object_Entity  --
+      ----------------------------
+
+      function Is_VFA_Object_Entity (Id : Entity_Id) return Boolean is
+      begin
+         return
+           Is_Object (Id)
+             and then (Is_Volatile_Full_Access (Id)
+                         or else
+                       Is_Volatile_Full_Access (Etype (Id)));
+      end Is_VFA_Object_Entity;
+
+   --  Start of processing for Is_Volatile_Full_Access_Object
+
+   begin
+      if Is_Entity_Name (N) then
+         return Is_VFA_Object_Entity (Entity (N));
+
+      elsif Is_Volatile_Full_Access (Etype (N)) then
+         return True;
+
+      elsif Nkind (N) = N_Selected_Component then
+         return Is_Volatile_Full_Access (Entity (Selector_Name (N)));
+
+      else
+         return False;
+      end if;
+   end Is_Volatile_Full_Access_Object;
+
    --------------------------
    -- Is_Volatile_Function --
    --------------------------
@@ -18580,18 +18653,32 @@ package body Sem_Util is
    ------------------------
 
    function Is_Volatile_Object (N : Node_Id) return Boolean is
-      function Is_Volatile_Prefix (N : Node_Id) return Boolean;
-      --  If prefix is an implicit dereference, examine designated type
+      function Is_Volatile_Object_Entity (Id : Entity_Id) return Boolean;
+      --  Determine whether arbitrary entity Id denotes an object that is
+      --  Volatile.
 
-      function Object_Has_Volatile_Components (N : Node_Id) return Boolean;
-      --  Determines if given object has volatile components
+      function Prefix_Has_Volatile_Components (P : Node_Id) return Boolean;
+      --  Determine whether prefix P has volatile components. This requires
+      --  the presence of a Volatile_Components aspect/pragma or that P be
+      --  itself a volatile object as per RM C.6(8).
 
-      ------------------------
-      -- Is_Volatile_Prefix --
-      ------------------------
+      ---------------------------------
+      --  Is_Volatile_Object_Entity  --
+      ---------------------------------
 
-      function Is_Volatile_Prefix (N : Node_Id) return Boolean is
-         Typ  : constant Entity_Id := Etype (N);
+      function Is_Volatile_Object_Entity (Id : Entity_Id) return Boolean is
+      begin
+         return
+           Is_Object (Id)
+             and then (Is_Volatile (Id) or else Is_Volatile (Etype (Id)));
+      end Is_Volatile_Object_Entity;
+
+      ------------------------------------
+      -- Prefix_Has_Volatile_Components --
+      ------------------------------------
+
+      function Prefix_Has_Volatile_Components (P : Node_Id) return Boolean is
+         Typ  : constant Entity_Id := Etype (P);
 
       begin
          if Is_Access_Type (Typ) then
@@ -18599,67 +18686,41 @@ package body Sem_Util is
                Dtyp : constant Entity_Id := Designated_Type (Typ);
 
             begin
-               return Is_Volatile (Dtyp)
-                 or else Has_Volatile_Components (Dtyp);
+               return Has_Volatile_Components (Dtyp)
+                 or else Is_Volatile (Dtyp);
             end;
 
-         else
-            return Object_Has_Volatile_Components (N);
-         end if;
-      end Is_Volatile_Prefix;
+         elsif Has_Volatile_Components (Typ) then
+            return True;
 
-      ------------------------------------
-      -- Object_Has_Volatile_Components --
-      ------------------------------------
-
-      function Object_Has_Volatile_Components (N : Node_Id) return Boolean is
-         Typ : constant Entity_Id := Etype (N);
-
-      begin
-         if Is_Volatile (Typ)
-           or else Has_Volatile_Components (Typ)
+         elsif Is_Entity_Name (P)
+           and then Has_Volatile_Component (Entity (P))
          then
             return True;
 
-         elsif Is_Entity_Name (N)
-           and then (Has_Volatile_Components (Entity (N))
-                      or else Is_Volatile (Entity (N)))
-         then
+         elsif Is_Volatile_Object (P) then
             return True;
-
-         elsif Nkind (N) = N_Indexed_Component
-           or else Nkind (N) = N_Selected_Component
-         then
-            return Is_Volatile_Prefix (Prefix (N));
 
          else
             return False;
          end if;
-      end Object_Has_Volatile_Components;
+      end Prefix_Has_Volatile_Components;
 
    --  Start of processing for Is_Volatile_Object
 
    begin
-      if Nkind (N) = N_Defining_Identifier then
-         return Is_Volatile (N) or else Is_Volatile (Etype (N));
+      if Is_Entity_Name (N) then
+         return Is_Volatile_Object_Entity (Entity (N));
 
-      elsif Nkind (N) = N_Expanded_Name then
-         return Is_Volatile_Object (Entity (N));
-
-      elsif Is_Volatile (Etype (N))
-        or else (Is_Entity_Name (N) and then Is_Volatile (Entity (N)))
-      then
+      elsif Is_Volatile (Etype (N)) then
          return True;
 
-      elsif Nkind_In (N, N_Indexed_Component, N_Selected_Component)
-        and then Is_Volatile_Prefix (Prefix (N))
-      then
-         return True;
+      elsif Nkind (N) = N_Indexed_Component then
+         return Prefix_Has_Volatile_Components (Prefix (N));
 
-      elsif Nkind (N) = N_Selected_Component
-        and then Is_Volatile (Entity (Selector_Name (N)))
-      then
-         return True;
+      elsif Nkind (N) = N_Selected_Component then
+         return Prefix_Has_Volatile_Components (Prefix (N))
+           or else Is_Volatile (Entity (Selector_Name (N)));
 
       else
          return False;
