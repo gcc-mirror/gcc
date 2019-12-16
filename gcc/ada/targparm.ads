@@ -455,11 +455,15 @@ package Targparm is
    Stack_Check_Probes_On_Target : Boolean := False;
    --  Indicates if the GCC probing mechanism is used
 
+   --  WARNING: There is a matching C declaration of this variable in fe.h
+
    Stack_Check_Limits_On_Target : Boolean := False;
    --  Indicates if the GCC stack-limit mechanism is used
 
    --  Both flags cannot be simultaneously set to True. If neither
    --  is, the target independent fallback method is used.
+
+   --  WARNING: There is a matching C declaration of this variable in fe.h
 
    Stack_Check_Default_On_Target : Boolean := False;
    --  Indicates if stack checking is on by default
@@ -536,8 +540,12 @@ package Targparm is
    Machine_Overflows_On_Target : Boolean := False;
    --  Set to True for targets where S'Machine_Overflows is True
 
+   --  WARNING: There is a matching C declaration of this variable in fe.h
+
    Signed_Zeros_On_Target : Boolean := True;
    --  Set to False on targets that do not reliably support signed zeros
+
+   --  WARNING: There is a matching C declaration of this variable in fe.h
 
    -------------------------------------------
    -- Boolean-Valued Fixed-Point Attributes --

@@ -975,16 +975,7 @@ path::operator+=(const path& p)
 	}
 
       if (it != last && it->_M_type() == _Type::_Root_dir)
-	{
-	  ++it;
-	  if (it == last)
-	    {
-	      // This root-dir becomes a trailing slash
-	      auto pos = _M_pathname.length() + p._M_pathname.length();
-	      ::new(output++) _Cmpt({}, _Type::_Filename, pos);
-	      ++_M_cmpts._M_impl->_M_size;
-	    }
-	}
+	++it;
 
       while (it != last)
 	{

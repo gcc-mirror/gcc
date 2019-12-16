@@ -2541,9 +2541,9 @@
 	  (match_operand:<VEL> 2 "aarch64_sve_index_operand" "r, Usi, r")))]
   "TARGET_SVE"
   "@
-   index\t%0.<Vctype>, #%1, %<vwcore>2
-   index\t%0.<Vctype>, %<vwcore>1, #%2
-   index\t%0.<Vctype>, %<vwcore>1, %<vwcore>2"
+   index\t%0.<Vctype>, #%1, %<vccore>2
+   index\t%0.<Vctype>, %<vccore>1, #%2
+   index\t%0.<Vctype>, %<vccore>1, %<vccore>2"
 )
 
 ;; Optimize {x, x, x, x, ...} + {0, n, 2*n, 3*n, ...} if n is in range
@@ -2557,7 +2557,7 @@
   "TARGET_SVE && aarch64_check_zero_based_sve_index_immediate (operands[2])"
   {
     operands[2] = aarch64_check_zero_based_sve_index_immediate (operands[2]);
-    return "index\t%0.<Vctype>, %<vwcore>1, #%2";
+    return "index\t%0.<Vctype>, %<vccore>1, #%2";
   }
 )
 

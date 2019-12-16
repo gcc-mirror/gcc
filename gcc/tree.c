@@ -266,7 +266,7 @@ static void print_type_hash_statistics (void);
 static void print_debug_expr_statistics (void);
 static void print_value_expr_statistics (void);
 
-static tree build_array_type_1 (tree, tree, bool, bool);
+static tree build_array_type_1 (tree, tree, bool, bool, bool);
 
 tree global_trees[TI_MAX];
 tree integer_types[itk_none];
@@ -5303,8 +5303,9 @@ fld_process_array_type (tree t, tree t2, hash_map<tree, tree> *map,
      = map->get_or_insert (t, &existed);
   if (!existed)
     {
-      array = build_array_type_1 (t2, TYPE_DOMAIN (t),
-				  TYPE_TYPELESS_STORAGE (t), false);
+      array
+	= build_array_type_1 (t2, TYPE_DOMAIN (t), TYPE_TYPELESS_STORAGE (t),
+			      false, false);
       TYPE_CANONICAL (array) = TYPE_CANONICAL (t);
       if (!fld->pset.add (array))
 	add_tree_to_fld_list (array, fld);
@@ -8155,11 +8156,12 @@ subrange_type_for_debug_p (const_tree type, tree *lowval, tree *highval)
 /* Construct, lay out and return the type of arrays of elements with ELT_TYPE
    and number of elements specified by the range of values of INDEX_TYPE.
    If TYPELESS_STORAGE is true, TYPE_TYPELESS_STORAGE flag is set on the type.
-   If SHARED is true, reuse such a type that has already been constructed.  */
+   If SHARED is true, reuse such a type that has already been constructed.
+   If SET_CANONICAL is true, compute TYPE_CANONICAL from the element type.  */
 
 static tree
 build_array_type_1 (tree elt_type, tree index_type, bool typeless_storage,
-		    bool shared)
+		    bool shared, bool set_canonical)
 {
   tree t;
 
@@ -8176,19 +8178,13 @@ build_array_type_1 (tree elt_type, tree index_type, bool typeless_storage,
   TYPE_TYPELESS_STORAGE (t) = typeless_storage;
   layout_type (t);
 
-  /* If the element type is incomplete at this point we get marked for
-     structural equality.  Do not record these types in the canonical
-     type hashtable.  */
-  if (TYPE_STRUCTURAL_EQUALITY_P (t))
-    return t;
-
   if (shared)
     {
       hashval_t hash = type_hash_canon_hash (t);
       t = type_hash_canon (hash, t);
     }
 
-  if (TYPE_CANONICAL (t) == t)
+  if (TYPE_CANONICAL (t) == t && set_canonical)
     {
       if (TYPE_STRUCTURAL_EQUALITY_P (elt_type)
 	  || (index_type && TYPE_STRUCTURAL_EQUALITY_P (index_type))
@@ -8200,7 +8196,7 @@ build_array_type_1 (tree elt_type, tree index_type, bool typeless_storage,
 	  = build_array_type_1 (TYPE_CANONICAL (elt_type),
 				index_type
 				? TYPE_CANONICAL (index_type) : NULL_TREE,
-				typeless_storage, shared);
+				typeless_storage, shared, set_canonical);
     }
 
   return t;
@@ -8211,7 +8207,8 @@ build_array_type_1 (tree elt_type, tree index_type, bool typeless_storage,
 tree
 build_array_type (tree elt_type, tree index_type, bool typeless_storage)
 {
-  return build_array_type_1 (elt_type, index_type, typeless_storage, true);
+  return
+    build_array_type_1 (elt_type, index_type, typeless_storage, true, true);
 }
 
 /* Wrapper around build_array_type_1 with SHARED set to false.  */
@@ -8219,7 +8216,7 @@ build_array_type (tree elt_type, tree index_type, bool typeless_storage)
 tree
 build_nonshared_array_type (tree elt_type, tree index_type)
 {
-  return build_array_type_1 (elt_type, index_type, false, false);
+  return build_array_type_1 (elt_type, index_type, false, false, true);
 }
 
 /* Return a representation of ELT_TYPE[NELTS], using indices of type
@@ -13586,8 +13583,8 @@ get_initializer_for (tree init, tree decl)
    determine the size of an initialized flexible array member.
    If non-null, *INTERIOR_ZERO_LENGTH is set when REF refers to
    an interior zero-length array.
-   Returns the size (which might be zero for an object with
-   an uninitialized flexible array member) or null if the size
+   Returns the size as sizetype (which might be zero for an object
+   with an uninitialized flexible array member) or null if the size
    cannot be determined.  */
 
 tree
@@ -13736,7 +13733,7 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
 	  memsz64 -= baseoff;
 	  return wide_int_to_tree (TREE_TYPE (memsize), memsz64);
 	}
-      return integer_zero_node;
+      return size_zero_node;
     }
 
   /* Return "don't know" for an external non-array object since its
@@ -13747,7 +13744,7 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
 	  && DECL_EXTERNAL (base)
 	  && (!typematch
 	      || TREE_CODE (basetype) != ARRAY_TYPE)
-	  ? NULL_TREE : integer_zero_node);
+	  ? NULL_TREE : size_zero_node);
 }
 
 /* Return the machine mode of T.  For vectors, returns the mode of the

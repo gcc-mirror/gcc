@@ -2022,8 +2022,7 @@ Alternatively, you may run the script using the following command line:
     and/or format effectors (blank lines)
 
   * the average number of code lines in subprogram bodies, task bodies,
-    entry bodies and statement sequences in package bodies (this metric
-    is only computed across the whole set of the analyzed units)
+    entry bodies and statement sequences in package bodies
 
   ``gnatmetric`` sums the values of the line metrics for all the files
   being processed and then generates the cumulative results. The tool
@@ -2098,8 +2097,7 @@ Alternatively, you may run the script using the following command line:
 
   :switch:`--lines-average`
     Report the average number of code lines in subprogram bodies, task bodies,
-    entry bodies and statement sequences in package bodies. The metric is
-    reported for the whole set of processed Ada sources only.
+    entry bodies and statement sequences in package bodies.
 
 
   :switch:`--no-lines-average`

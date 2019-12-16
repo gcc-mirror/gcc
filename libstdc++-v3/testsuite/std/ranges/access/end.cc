@@ -74,6 +74,19 @@ struct R
   friend const int* end(const R&& r) noexcept { return r.a + 3; }
 };
 
+struct RV // view on an R
+{
+  R& r;
+
+  const int* begin() const;
+
+  friend int* end(RV& v) noexcept { return end(v.r); }
+  friend const int* end(const RV& v) { return end(std::as_const(v.r)); }
+};
+
+// Allow ranges::begin to work with RV&&
+template<> constexpr bool std::ranges::enable_safe_range<RV> = true;
+
 void
 test03()
 {
@@ -84,20 +97,21 @@ test03()
   static_assert(!noexcept(std::ranges::end(r)));
   VERIFY( std::ranges::end(r) == end(r) );
 
-  static_assert(same_as<decltype(std::ranges::end(std::move(r))),
-		decltype(end(std::move(r)))>);
-  static_assert(!noexcept(std::ranges::end(std::move(r))));
-  VERIFY( std::ranges::end(std::move(r)) == end(std::move(r)) );
-
-
   static_assert(same_as<decltype(std::ranges::end(c)), decltype(end(c))>);
   static_assert(noexcept(std::ranges::end(c)));
   VERIFY( std::ranges::end(c) == end(c) );
 
-  static_assert(same_as<decltype(std::ranges::end(std::move(c))),
-		decltype(end(std::move(c)))>);
-  static_assert(noexcept(std::ranges::end(std::move(c))));
-  VERIFY( std::ranges::end(std::move(c)) == end(std::move(c)) );
+  RV v{r};
+  static_assert(same_as<decltype(std::ranges::end(std::move(v))),
+		decltype(end(r))>);
+  static_assert(noexcept(std::ranges::end(std::move(v))));
+  VERIFY( std::ranges::end(std::move(v)) == end(r) );
+
+  const RV cv{r};
+  static_assert(same_as<decltype(std::ranges::end(std::move(cv))),
+		decltype(end(c))>);
+  static_assert(!noexcept(std::ranges::end(std::move(cv))));
+  VERIFY( std::ranges::end(std::move(cv)) == end(c) );
 }
 
 struct RR
@@ -123,6 +137,9 @@ struct RR
   friend const int* end(const RR&& r) noexcept { return r.a + 3; }
 };
 
+// N.B. this is a lie, end on an RR rvalue will return a dangling pointer.
+template<> constexpr bool std::ranges::enable_safe_range<RR> = true;
+
 void
 test04()
 {
@@ -131,14 +148,14 @@ test04()
   VERIFY( std::ranges::end(r) == &r.s );
   static_assert(noexcept(std::ranges::end(r)));
 
-  VERIFY( std::ranges::end(std::move(r)) == r.a + 1 );
-  static_assert(!noexcept(std::ranges::end(std::move(r))));
+  VERIFY( std::ranges::end(std::move(r)) == &r.s );
+  static_assert(noexcept(std::ranges::end(std::move(r))));
 
   VERIFY( std::ranges::end(c) == &r.l );
   static_assert(!noexcept(std::ranges::end(c)));
 
-  VERIFY( std::ranges::end(std::move(c)) == r.a + 3 );
-  static_assert(noexcept(std::ranges::end(std::move(c))));
+  VERIFY( std::ranges::end(std::move(c)) == &r.l );
+  static_assert(!noexcept(std::ranges::end(std::move(c))));
 }
 
 int

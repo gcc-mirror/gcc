@@ -23,7 +23,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-/* This file handles maintainance of threads on AMD GCN.  */
+/* This file handles maintenance of threads on AMD GCN.  */
 
 #include "libgomp.h"
 #include <stdlib.h>
@@ -74,7 +74,7 @@ gomp_gcn_enter_kernel (void)
 						      * numthreads);
       set_gcn_thrs (thrs);
 
-      /* Allocate and initailize a pool of threads in the team.
+      /* Allocate and initialize a pool of threads in the team.
          The threads are already running, of course, we just need to manage
          the communication between them.  */
       struct gomp_thread_pool *pool = team_malloc (sizeof (*pool));

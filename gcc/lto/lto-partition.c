@@ -514,11 +514,11 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
   if (dump_file)
     {
       for (unsigned i = 0; i < order.length (); i++)
-	fprintf (dump_file, "Balanced map symbol order:%s:%" PRId64 "\n",
-		 order[i]->name (), (int64_t) order[i]->tp_first_run);
+	fprintf (dump_file, "Balanced map symbol order:%s:%u\n",
+		 order[i]->name (), order[i]->tp_first_run);
       for (unsigned i = 0; i < noreorder.length (); i++)
-	fprintf (dump_file, "Balanced map symbol no_reorder:%s:%" PRId64 "\n",
-		 noreorder[i]->name (), (int64_t) noreorder[i]->tp_first_run);
+	fprintf (dump_file, "Balanced map symbol no_reorder:%s:%u\n",
+		 noreorder[i]->name (), noreorder[i]->tp_first_run);
     }
 
   /* Collect all variables that should not be reordered.  */

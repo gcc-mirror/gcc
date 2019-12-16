@@ -1311,6 +1311,11 @@ process_insn_for_elimination (rtx_insn *insn, bool final_p, bool first_p)
 
       if (icode >= 0 && icode != INSN_CODE (insn))
 	{
+	  if (INSN_CODE (insn) >= 0)
+	    /* Insn code is changed.  It may change its operand type
+	       from IN to INOUT.  Inform the subsequent assignment
+	       subpass about this situation.  */
+	    check_and_force_assignment_correctness_p = true;
 	  INSN_CODE (insn) = icode;
 	  lra_update_insn_recog_data (insn);
 	}

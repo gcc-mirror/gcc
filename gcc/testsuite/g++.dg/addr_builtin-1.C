@@ -93,8 +93,8 @@ static F* test_taking_address_of_gcc_builtin ()
   // Expect a diagnostic for an invalid static_cast of a function to
   // either uintptr_t or enum, rather than one for the argument being
   // a built-in function, since the former is more relevant than the latter.
-  a = static_cast<uintptr_t>(__builtin_trap);       // { dg-error "invalid" }
-  a = static_cast<UINTPTR_E>(__builtin_trap);       // { dg-error "invalid" }
+  a = static_cast<uintptr_t>(__builtin_trap);       // { dg-error "7:invalid .static_cast." }
+  a = static_cast<UINTPTR_E>(__builtin_trap);       // { dg-error "7:invalid .static_cast." }
 
   // Reinterpret cast can cast a function to uintptr_t or enum,
   // so verify that a diagnostic is issued for the use of a builtin.

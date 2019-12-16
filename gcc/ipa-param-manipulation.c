@@ -895,7 +895,7 @@ ipa_param_adjustments::debug ()
 }
 
 /* Register that REPLACEMENT should replace parameter described in APM and
-   optionally as DUMMY to mark transitive splits accross calls.  */
+   optionally as DUMMY to mark transitive splits across calls.  */
 
 void
 ipa_param_body_adjustments::register_replacement (ipa_adjusted_param *apm,

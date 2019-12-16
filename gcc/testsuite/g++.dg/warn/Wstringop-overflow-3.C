@@ -3,6 +3,8 @@
    { dg-do compile }
    { dg-options "-O2 -Wall -Wno-array-bounds" } */
 
+#define NOIPA __attribute__ ((noipa))
+
 void sink (void*);
 
 // Exercise flexible array members.
@@ -10,13 +12,13 @@ void sink (void*);
 struct Ax
 {
   char n;
-  char a[];                     // { dg-message "destination object declared here" }
+  char a[];                     // { dg-message "at offset \[0-2\] to object 'Ax::a' declared here" "note: flexarray" }
 };
 
 // Verify warning for a definition with no initializer.
 Ax ax_;
 
-void gax_ ()
+NOIPA void gax_ ()
 {
   ax_.a[0] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
   ax_.a[1] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
@@ -27,7 +29,7 @@ void gax_ ()
 // initialize the flexible array member.
 Ax ax0 = { 0 };
 
-void gax0 ()
+NOIPA void gax0 ()
 {
   ax0.a[0] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
   ax0.a[1] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
@@ -38,7 +40,7 @@ void gax0 ()
 // initializes the flexible array member to empty.
 Ax ax0_ = { 0, { } };
 
-void gax0_ ()
+NOIPA void gax0_ ()
 {
   ax0_.a[0] = 0;                // { dg-warning "\\\[-Wstringop-overflow" }
   ax0_.a[1] = 0;                // { dg-warning "\\\[-Wstringop-overflow" }
@@ -49,7 +51,7 @@ void gax0_ ()
 // an initializer.
 Ax ax1 = { 1, { 0 } };
 
-void gax1 ()
+NOIPA void gax1 ()
 {
   ax1.a[0] = 0;
   ax1.a[1] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
@@ -58,7 +60,7 @@ void gax1 ()
 
 Ax ax2 = { 2, { 1, 0 } };
 
-void gax2 ()
+NOIPA void gax2 ()
 {
   ax2.a[0] = 0;
   ax2.a[1] = 0;
@@ -67,7 +69,7 @@ void gax2 ()
 
 
 // Verify no warning for an unknown struct object.
-void gaxp (Ax *p)
+NOIPA void gaxp (Ax *p)
 {
   p->a[0] = 0;
   p->a[3] = 0;
@@ -79,7 +81,7 @@ void gaxp (Ax *p)
 // initialized to any number of elements.
 extern Ax axx;
 
-void gaxx ()
+NOIPA void gaxx ()
 {
   axx.a[0] = 0;
   axx.a[3] = 0;
@@ -91,13 +93,13 @@ void gaxx ()
 struct A0
 {
   char n;
-  char a[0];                    // { dg-message "destination object declared here" }
+  char a[0];                    // { dg-message "at offset \[0-2\] to object 'A0::a' with size 0 declared here" "note: trailing zero-length array" }
 };
 
 // Verify warning for a definition with no initializer.
 A0 a0_;
 
-void ga0_ ()
+NOIPA void ga0_ ()
 {
   a0_.a[0] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
   a0_.a[1] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
@@ -108,7 +110,7 @@ void ga0_ ()
 // initialize the flexible array member.
 A0 a00 = { 0 };
 
-void ga00 ()
+NOIPA void ga00 ()
 {
   a00.a[0] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
   a00.a[1] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
@@ -119,7 +121,7 @@ void ga00 ()
 // initializes the flexible array member to empty.
 A0 a00_ = { 0, { } };
 
-void ga00_ ()
+NOIPA void ga00_ ()
 {
   a00_.a[0] = 0;                // { dg-warning "\\\[-Wstringop-overflow" }
   a00_.a[1] = 0;                // { dg-warning "\\\[-Wstringop-overflow" }
@@ -133,7 +135,7 @@ void ga00_ ()
 
 
 // Verify no warning for an unknown struct object.
-void ga0p (A0 *p)
+NOIPA void ga0p (A0 *p)
 {
   p->a[0] = 0;
   p->a[3] = 0;
@@ -145,7 +147,7 @@ void ga0p (A0 *p)
 // flexible array member) may not be initialized.
 extern A0 a0x;
 
-void ga0x ()
+NOIPA void ga0x ()
 {
   a0x.a[0] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
   a0x.a[3] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
@@ -158,13 +160,13 @@ void ga0x ()
 struct A1
 {
   char n;
-  char a[1];                    // { dg-message "destination object declared here" }
+  char a[1];                    // { dg-message "at offset \[1-9\] to object 'A1::a' with size 1 declared here" "note: trailing one-element array" }
 };
 
 // Verify warning for a definition with no initializer.
 A1 a1_;
 
-void ga1_ ()
+NOIPA void ga1_ ()
 {
   a1_.a[0] = 0;
   a1_.a[1] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
@@ -175,7 +177,7 @@ void ga1_ ()
 // initialize the one-element array member.
 A1 a1__ = { 0 };
 
-void ga1__ ()
+NOIPA void ga1__ ()
 {
   a1__.a[0] = 0;
   a1__.a[1] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
@@ -186,7 +188,7 @@ void ga1__ ()
 // initializes the one-element array member to empty.
 A1 a1_0 = { 0, { } };
 
-void ga1_0_ ()
+NOIPA void ga1_0_ ()
 {
   a1_0.a[0] = 0;
   a1_0.a[1] = 0;                // { dg-warning "\\\[-Wstringop-overflow" }
@@ -197,7 +199,7 @@ void ga1_0_ ()
 // initializes the one-element array member.
 A1 a1_1 = { 0, { 1 } };
 
-void ga1_1 ()
+NOIPA void ga1_1 ()
 {
   a1_1.a[0] = 0;
   a1_1.a[1] = 0;                // { dg-warning "\\\[-Wstringop-overflow" }
@@ -206,7 +208,7 @@ void ga1_1 ()
 
 
 // Verify no warning for an unknown struct object.
-void ga1p (A1 *p)
+NOIPA void ga1p (A1 *p)
 {
   p->a[0] = 0;
   p->a[3] = 0;
@@ -219,7 +221,7 @@ void ga1p (A1 *p)
 // a single element.
 extern A1 a1x;
 
-void ga1x ()
+NOIPA void ga1x ()
 {
   a1x.a[0] = 0;
   a1x.a[3] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
@@ -232,14 +234,14 @@ void ga1x ()
 struct A1i
 {
   char n;
-  char a[1];                    // { dg-message "destination object declared here" }
+  char a[1];                    // { dg-message "at offset \[1-9\] to object 'A1i::a' with size 1 declared here" "note: interior one-element array" }
   char x;
 };
 
 // Verify warning for a definition with no initializer.
 A1i a1i_;
 
-void ga1i_ ()
+NOIPA void ga1i_ ()
 {
   a1i_.a[0] = 0;
   a1i_.a[1] = 0;                // { dg-warning "\\\[-Wstringop-overflow" }
@@ -250,7 +252,7 @@ void ga1i_ ()
 // initialize the one-element array member.
 A1i a1i__ = { 0 };
 
-void ga1i__ ()
+NOIPA void ga1i__ ()
 {
   a1i__.a[0] = 0;
   a1i__.a[1] = 0;                // { dg-warning "\\\[-Wstringop-overflow" }
@@ -261,7 +263,7 @@ void ga1i__ ()
 // initializes the one-element array member to empty.
 A1 a1i_0 = { 0, { } };
 
-void ga1i_0_ ()
+NOIPA void ga1i_0_ ()
 {
   a1i_0.a[0] = 0;
   a1i_0.a[1] = 0;               // { dg-warning "\\\[-Wstringop-overflow" }
@@ -272,7 +274,7 @@ void ga1i_0_ ()
 // initializes the one-element array member.
 A1 a1i_1 = { 0, { 1 } };
 
-void ga1i_1 ()
+NOIPA void ga1i_1 ()
 {
   a1i_1.a[0] = 0;
   a1i_1.a[1] = 0;               // { dg-warning "\\\[-Wstringop-overflow" }
@@ -281,7 +283,7 @@ void ga1i_1 ()
 
 
 // Verify no warning for an unknown struct object.
-void ga1ip (A1i *p)
+NOIPA void ga1ip (A1i *p)
 {
   p->a[0] = 0;
   p->a[3] = 0;                  // { dg-warning "\\\[-Wstringop-overflow" }
@@ -292,7 +294,7 @@ void ga1ip (A1i *p)
 // Verify no warning for an extern struct object.
 extern A1i a1ix;
 
-void ga1ix ()
+NOIPA void ga1ix ()
 {
   a1ix.a[0] = 0;
   a1ix.a[3] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
@@ -305,7 +307,7 @@ void ga1ix ()
 struct Bx
 {
   char n;
-  char a[];                     // { dg-message "destination object declared here" }
+  char a[];                     // { dg-message "at offset 0 to object 'Bx::a' declared here" "note: flexarray class member" }
 
   // Verify the warning for a constant.
   Bx () { a[0] = 0; }           // { dg-warning "\\\[-Wstringop-overflow" }
@@ -315,13 +317,13 @@ struct Bx
   Bx (int i) { a[i] = 0; }      // { dg-warning "\\\[-Wstringop-overflow" }
 };
 
-void gbx (void)
+NOIPA void gbx (void)
 {
   struct Bx bx;
   sink (&bx);
 }
 
-void gbxi (int i)
+NOIPA void gbxi (int i)
 {
   struct Bx bxi (i);
   sink (&bxi);
@@ -330,13 +332,13 @@ void gbxi (int i)
 struct B0
 {
   char n;
-  char a[0];                    // { dg-message "destination object declared here" }
+  char a[0];                    // { dg-message "at offset 0 to object 'B0::a' with size 0 declared here" "note: zero-length trailing array class member" }
 
   B0 () { a[0] = 0; }           // { dg-warning "\\\[-Wstringop-overflow" }
 };
 
 
-void gb0 (void)
+NOIPA void gb0 (void)
 {
   struct B0 b0;
   sink (&b0);
@@ -346,12 +348,12 @@ void gb0 (void)
 struct B1
 {
   char n;
-  char a[1];                    // { dg-message "destination object declared here" }
+  char a[1];                    // { dg-message "at offset 1 to object 'B1::a' with size 1 declared here" "note: one-element trailing array class member" }
 
   B1 () { a[1] = 0; }           // { dg-warning "\\\[-Wstringop-overflow" }
 };
 
-void gb1 (void)
+NOIPA void gb1 (void)
 {
   struct B1 b1;
   sink (&b1);
@@ -360,12 +362,12 @@ void gb1 (void)
 
 struct B123
 {
-  char a[123];                  // { dg-message "destination object declared here" }
+  char a[123];                  // { dg-message "at offset 123 to object 'B123::a' with size 123 declared here" "note: large trailing array class member" }
 
   B123 () { a[123] = 0; }       // { dg-warning "\\\[-Wstringop-overflow" }
 };
 
-void gb123 (void)
+NOIPA void gb123 (void)
 {
   struct B123 b123;
   sink (&b123);
@@ -374,12 +376,12 @@ void gb123 (void)
 
 struct B234
 {
-  char a[234];                  // { dg-message "destination object declared here" }
+  char a[234];                  // { dg-message "at offset 234 to object 'B234::a' with size 234 declared here" "note: large trailing array class member" }
 
   B234 (int i) { a[i] = 0; }    // { dg-warning "\\\[-Wstringop-overflow" }
 };
 
-void g234 (void)
+NOIPA void g234 (void)
 {
   struct B234 b234 (234);
   sink (&b234);

@@ -1,3 +1,106 @@
+2019-12-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92496 - ICE with <=> and no #include <compare>.
+	* typeck.c (cp_build_binary_op): Handle error from spaceship_type.
+
+2019-12-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* cxx-pretty-print.c (cxx_pretty_printer::clone): New vfunc
+	implementation.
+	* cxx-pretty-print.h (cxx_pretty_printer::clone): New vfunc decl.
+	* error.c (cxx_format_postprocessor::clone): New vfunc.
+
+2019-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92869
+	* class.c (finish_struct): For C++17 and earlier, check
+	type_has_user_provided_or_explicit_constructor rather than
+	TYPE_HAS_USER_CONSTRUCTOR whether to set CLASSTYPE_NON_AGGREGATE.
+
+2019-12-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92878 - Parenthesized init of aggregates in new-expression.
+	* init.c (build_new_1): Handle parenthesized initialization of
+	aggregates in new-expression.
+
+2019-12-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92105 - decltype(decltype) error cascade.
+	* parser.c (cp_parser_decltype_expr): Don't tentative_firewall here.
+	(cp_parser_decltype): Do it here.  Remember a non-tentative error.
+
+	PR c++/57082 - new X{} and private destructor.
+	* init.c (build_new_1): Also pass tf_no_cleanup to
+	build_special_member_call.
+
+	PR c++/92774 - ICE with implicitly deleted operator<=>.
+	* method.c (comp_info::~comp_info): Factor out of...
+	(build_comparison_op): Here.  Handle error return from build_new_op.
+
+	PR c++/92859 - ADL and bit-field.
+	* name-lookup.c: Use unlowered_expr_type.
+
+	PR c++/92446 - deduction of class NTTP.
+	* pt.c (deducible_expression): Look through VIEW_CONVERT_EXPR.
+
+2019-12-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92847 - C++20 comparison ambiguity with class template.
+	* call.c (cand_parms_match): Handle all templated functions.
+
+	Fix C++20 structural type vs. private base.
+	* class.c (build_base_field_1): Take access parameter.
+	(build_base_field): Likewise.
+	(build_base_fields, layout_virtual_bases): Pass it.
+	* tree.c (structural_type_p): Improve private base diagnostic.
+
+	PR c++/92560 - ICE with decltype and rewritten operator.
+	* call.c (build_new_op_1): Clear tf_decltype on inner call.
+
+2019-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.c (range_label_for_type_mismatch::get_text): Replace
+	label_text ctor calls with label_text::borrow.
+
+2019-12-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (check_for_casting_away_constness): Add location_t
+	parameter and use it.
+	(maybe_warn_about_useless_cast): Likewise.
+	(maybe_warn_about_cast_ignoring_quals): Likewise.
+	(build_static_cast_1): Likewise.
+	(build_static_cast): Likewise; sets the location of the returned tree.
+	(build_reinterpret_cast_1): Likewise.
+	(build_reinterpret_cast): Likewise; sets the location of the returned
+	tree.
+	(build_const_cast_1): Likewise.
+	(build_const_cast): Likewise; sets the location of the returned tree.
+	(cp_build_c_cast): Likewise.
+	(build_c_cast): Adjust.
+	(build_ptrmemfunc): Adjust calls.
+	(cp_build_unary_op): Pass the location to invert_truthvalue_loc.
+	* rtti.c (build_dynamic_cast_1): Add location_t parameter and
+	use it.
+	(build_dynamic_cast): Likewise.
+	* cp-tree.h: Adjust declarations.
+	* parser.c (cp_parser_postfix_expression): Pass cp_cast_loc to
+	the various build_*_cast functions.
+	(get_cast_suggestion): Adjust calls.
+	(cp_parser_builtin_offsetof): Likewise.
+	* decl.c (reshape_init): Adjust call.
+	* method.c (forward_parm): Likewise.
+	(build_comparison_op): Likewise.
+	* pt.c (tsubst_copy_and_build): Likewise.
+	* semantics.c (finish_omp_reduction_clause): Likewise.
+	(cp_omp_finish_iterators): Likewise.
+	* tree.c (cp_stabilize_reference): Likewise.
+	(move): Likewise.
+	* typeck2.c (build_functional_cast): Likewise.
+
+	* typeck2.c (build_functional_cast_1): New.
+	(build_functional_cast_1): Calls the latter and sets the location
+	of the returned tree.
+
 2019-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* cvt.c (maybe_warn_nodiscard): Add workaround for GCC 3.4-4.4 - cast

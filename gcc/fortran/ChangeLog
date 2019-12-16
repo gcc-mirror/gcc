@@ -1,3 +1,55 @@
+2019-12-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/92898
+	* check.c (gfc_check_is_contiguous): Simplify check to handle
+	arbitrary NULL() argument.
+
+2019-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92899
+	* trans-openmp.c (gfc_trans_omp_atomic): For GFC_OMP_ATOMIC_SWAP,
+	do look through conversion on expr2 if any.
+
+2019-12-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/92897
+	* array.c (gfc_set_array_spec):  Remove invalid assert() triggered
+	by invalid Fortran code.
+
+2019-12-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91643
+	* trans-array.c (gfc_conv_array_parameter): Do not repack
+	an assumed rank dummy argument.
+
+2019-12-10  Martin Liska  <mliska@suse.cz>
+
+	PR fortran/92874
+	* dependency.c (gfc_dep_compare_expr): Bail out
+	when one of the arguments is null.
+
+2019-12-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92863
+	* misc.c (gfc_typename): If derived component is NULL for
+	derived or class, return "invalid type" or "invalid class",
+	respectively.
+
+2019-12-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92872
+	* trans-array.c (get_CFI_desc): Fix cond whether saved desc exists.
+
+2019-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.c (gfc_diagnostic_starter): Add pp_newline call before
+	call to diagnostic_show_locus.
+
+2019-12-09  Frederik Harwath  <frederik@codesourcery.com>
+
+	* trans-openmp.c (gfc_trans_omp_reduction_list): Pass correct location for each
+	clause to build_omp_clause.
+
 2018-12-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/92780

@@ -23,7 +23,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-/* This file handles the maintainence of tasks in response to task
+/* This file handles the maintenance of tasks in response to task
    creation and termination.  */
 
 #ifdef __nvptx_softstack__

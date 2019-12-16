@@ -908,6 +908,22 @@ make_location (location_t caret, source_range src_range)
   return COMBINE_LOCATION_DATA (line_table, pure_loc, src_range, NULL);
 }
 
+/* An expanded_location stores the column in byte units.  This function
+   converts that column to display units.  That requires reading the associated
+   source line in order to calculate the display width.  If that cannot be done
+   for any reason, then returns the byte column as a fallback.  */
+int
+location_compute_display_column (expanded_location exploc)
+{
+  if (!(exploc.file && *exploc.file && exploc.line && exploc.column))
+    return exploc.column;
+  char_span line = location_get_source_line (exploc.file, exploc.line);
+  /* If line is NULL, this function returns exploc.column which is the
+     desired fallback.  */
+  return cpp_byte_column_to_display_column (line.get_buffer (), line.length (),
+					    exploc.column);
+}
+
 /* Dump statistics to stderr about the memory usage of the line_table
    set of line maps.  This also displays some statistics about macro
    expansion.  */
@@ -3590,6 +3606,93 @@ test_line_offset_overflow ()
   ASSERT_NE (ordmap_a, ordmap_b);
 }
 
+void test_cpp_utf8 ()
+{
+  /* Verify that wcwidth of invalid UTF-8 or control bytes is 1.  */
+  {
+    int w_bad = cpp_display_width ("\xf0!\x9f!\x98!\x82!", 8);
+    ASSERT_EQ (8, w_bad);
+    int w_ctrl = cpp_display_width ("\r\t\n\v\0\1", 6);
+    ASSERT_EQ (6, w_ctrl);
+  }
+
+  /* Verify that wcwidth of valid UTF-8 is as expected.  */
+  {
+    const int w_pi = cpp_display_width ("\xcf\x80", 2);
+    ASSERT_EQ (1, w_pi);
+    const int w_emoji = cpp_display_width ("\xf0\x9f\x98\x82", 4);
+    ASSERT_EQ (2, w_emoji);
+    const int w_umlaut_precomposed = cpp_display_width ("\xc3\xbf", 2);
+    ASSERT_EQ (1, w_umlaut_precomposed);
+    const int w_umlaut_combining = cpp_display_width ("y\xcc\x88", 3);
+    ASSERT_EQ (1, w_umlaut_combining);
+    const int w_han = cpp_display_width ("\xe4\xb8\xba", 3);
+    ASSERT_EQ (2, w_han);
+    const int w_ascii = cpp_display_width ("GCC", 3);
+    ASSERT_EQ (3, w_ascii);
+    const int w_mixed = cpp_display_width ("\xcf\x80 = 3.14 \xf0\x9f\x98\x82"
+					   "\x9f! \xe4\xb8\xba y\xcc\x88", 24);
+    ASSERT_EQ (18, w_mixed);
+  }
+
+  /* Verify that cpp_byte_column_to_display_column can go past the end,
+     and similar edge cases.  */
+  {
+    const char *str
+      /* Display columns.
+         111111112345  */
+      = "\xcf\x80 abc";
+      /* 111122223456
+	 Byte columns.  */
+
+    ASSERT_EQ (5, cpp_display_width (str, 6));
+    ASSERT_EQ (105, cpp_byte_column_to_display_column (str, 6, 106));
+    ASSERT_EQ (10000, cpp_byte_column_to_display_column (NULL, 0, 10000));
+    ASSERT_EQ (0, cpp_byte_column_to_display_column (NULL, 10000, 0));
+  }
+
+  /* Verify that cpp_display_column_to_byte_column can go past the end,
+     and similar edge cases, and check invertibility.  */
+  {
+    const char *str
+      /* Display columns.
+	 000000000000000000000000000000000000011
+	 111111112222222234444444455555555678901  */
+      = "\xf0\x9f\x98\x82 \xf0\x9f\x98\x82 hello";
+      /* 000000000000000000000000000000000111111
+	 111122223333444456666777788889999012345
+	 Byte columns.  */
+    ASSERT_EQ (4, cpp_display_column_to_byte_column (str, 15, 2));
+    ASSERT_EQ (15, cpp_display_column_to_byte_column (str, 15, 11));
+    ASSERT_EQ (115, cpp_display_column_to_byte_column (str, 15, 111));
+    ASSERT_EQ (10000, cpp_display_column_to_byte_column (NULL, 0, 10000));
+    ASSERT_EQ (0, cpp_display_column_to_byte_column (NULL, 10000, 0));
+
+    /* Verify that we do not interrupt a UTF-8 sequence.  */
+    ASSERT_EQ (4, cpp_display_column_to_byte_column (str, 15, 1));
+
+    for (int byte_col = 1; byte_col <= 15; ++byte_col)
+      {
+	const int disp_col = cpp_byte_column_to_display_column (str, 15,
+								byte_col);
+	const int byte_col2 = cpp_display_column_to_byte_column (str, 15,
+								 disp_col);
+
+	/* If we ask for the display column in the middle of a UTF-8
+	   sequence, it will return the length of the partial sequence,
+	   matching the behavior of GCC before display column support.
+	   Otherwise check the round trip was successful.  */
+	if (byte_col < 4)
+	  ASSERT_EQ (byte_col, disp_col);
+	else if (byte_col >= 6 && byte_col < 9)
+	  ASSERT_EQ (3 + (byte_col - 5), disp_col);
+	else
+	  ASSERT_EQ (byte_col2, byte_col);
+      }
+  }
+
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -3631,6 +3734,8 @@ input_c_tests ()
   test_reading_source_line ();
 
   test_line_offset_overflow ();
+
+  test_cpp_utf8 ();
 }
 
 } // namespace selftest

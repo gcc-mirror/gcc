@@ -474,7 +474,8 @@ forward_parm (tree parm)
   if (!TYPE_REF_P (type))
     type = cp_build_reference_type (type, /*rval=*/true);
   warning_sentinel w (warn_useless_cast);
-  exp = build_static_cast (type, exp, tf_warning_or_error);
+  exp = build_static_cast (input_location, type, exp,
+			   tf_warning_or_error);
   if (DECL_PACK_P (parm))
     exp = make_pack_expansion (exp);
   return exp;
@@ -1243,6 +1244,21 @@ struct comp_info
     if (noex && !expr_noexcept_p (expr, tf_none))
       noex = false;
   }
+
+  ~comp_info ()
+  {
+    if (first_time)
+      {
+	DECL_DECLARED_CONSTEXPR_P (fndecl) = constexp || was_constexp;
+	tree raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fndecl));
+	if (!raises || UNEVALUATED_NOEXCEPT_SPEC_P (raises))
+	  {
+	    raises = noex ? noexcept_true_spec : noexcept_false_spec;
+	    TREE_TYPE (fndecl) = build_exception_variant (TREE_TYPE (fndecl),
+							  raises);
+	  }
+      }
+  }
 };
 
 /* Build up the definition of a defaulted comparison operator.  Unlike other
@@ -1281,6 +1297,7 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
       if (complain & tf_error)
 	inform (info.loc, "cannot default compare union %qT", ctype);
       DECL_DELETED_FN (fndecl) = true;
+      return;
     }
 
   tree compound_stmt = NULL_TREE;
@@ -1334,6 +1351,11 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 				 NULL_TREE);
 	  tree comp = build_new_op (info.loc, code, flags, lhs_mem, rhs_mem,
 				    NULL_TREE, NULL, complain);
+	  if (comp == error_mark_node)
+	    {
+	      DECL_DELETED_FN (fndecl) = true;
+	      continue;
+	    }
 	  comps.safe_push (comp);
 	}
       if (code == SPACESHIP_EXPR && is_auto (rettype))
@@ -1361,7 +1383,8 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 	      if (TREE_CODE (comp) == SPACESHIP_EXPR)
 		TREE_TYPE (comp) = rettype;
 	      else
-		comp = build_static_cast (rettype, comp, complain);
+		comp = build_static_cast (input_location, rettype, comp,
+					  complain);
 	      info.check (comp);
 	      if (info.defining)
 		{
@@ -1395,7 +1418,8 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 	    {
 	      tree seql = lookup_comparison_result (cc_strong_ordering,
 						    "equal", complain);
-	      val = build_static_cast (rettype, seql, complain);
+	      val = build_static_cast (input_location, rettype, seql,
+				       complain);
 	    }
 	  finish_return_stmt (val);
 	}
@@ -1427,18 +1451,6 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
     finish_compound_stmt (compound_stmt);
   else
     --cp_unevaluated_operand;
-
-  if (info.first_time)
-    {
-      DECL_DECLARED_CONSTEXPR_P (fndecl) = info.constexp || info.was_constexp;
-      tree raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fndecl));
-      if (!raises || UNEVALUATED_NOEXCEPT_SPEC_P (raises))
-	{
-	  raises = info.noex ? noexcept_true_spec : noexcept_false_spec;
-	  TREE_TYPE (fndecl) = build_exception_variant (TREE_TYPE (fndecl),
-							raises);
-	}
-    }
 }
 
 /* Synthesize FNDECL, a non-static member function.   */

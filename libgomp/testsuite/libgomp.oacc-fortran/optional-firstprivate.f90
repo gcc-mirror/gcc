@@ -44,7 +44,7 @@ program test_firstprivate
 
   call test_allocatable(res_alloc, a_alloc, b_alloc, c_alloc)
   do i = 1, n
-    if (res_alloc(i) .ne. a_alloc(i) * b_alloc(i) + c_alloc(i)) stop 2
+    if (res_alloc(i) .ne. a_alloc(i) * b_alloc(i) + c_alloc(i)) stop 3
   end do
 
   deallocate(a_alloc)

@@ -300,8 +300,7 @@ void test_strncpy_array (Dest *pd, int i, const char* s)
   CPY (pd->a5, s, 5);               /* { dg-warning "specified bound 5 equals destination size" } */
   CPY (pd->a5, s, sizeof pd->a5);   /* { dg-warning "specified bound 5 equals destination size" } */
 
-  /* The following is not yet handled.  */
-  CPY (pd->a5 + i, s, sizeof pd->a5);   /* { dg-warning "specified bound 5 equals destination size" "member array" { xfail *-*-* } } */
+  CPY (pd->a5 + i, s, sizeof pd->a5);   /* { dg-warning "specified bound 5 equals destination size" "member array" } */
 
   /* Verify that a copy that nul-terminates is not diagnosed.  */
   CPY (pd->a5, "1234", sizeof pd->a5);

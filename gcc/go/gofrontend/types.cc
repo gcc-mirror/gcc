@@ -1453,13 +1453,13 @@ Type::type_descriptor_defined_elsewhere(Named_type* nt,
   else
     {
       if (this->points_to() != NULL
-	  && this->points_to()->named_type() != NULL
-	  && this->points_to()->named_type()->named_object()->package() != NULL)
+	  && this->points_to()->unalias()->named_type() != NULL
+	  && this->points_to()->unalias()->named_type()->named_object()->package() != NULL)
 	{
 	  // This is an unnamed pointer to a named type defined in a
 	  // different package.  The descriptor should be defined in
 	  // that package.
-	  *package = this->points_to()->named_type()->named_object()->package();
+	  *package = this->points_to()->unalias()->named_type()->named_object()->package();
 	  return true;
 	}
     }

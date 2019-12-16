@@ -21,7 +21,7 @@ public:
 
 C bar (void)
 {
-  (C ())(3); // { dg-error "invalid cast" } 
+  (C ())(3); // { dg-error "3:invalid cast" } 
   return (C ());
 }
 
@@ -41,9 +41,9 @@ void foo2 (void)
 {
   C ()[2];
   (C ())[2];
-  (S ())(3); // { dg-error "invalid cast" } 
-  (C())*var; // { dg-error "invalid cast" } 
-  (C())+var;  // { dg-error "invalid cast" } 
+  (S ())(3); // { dg-error "3:invalid cast" } 
+  (C())*var; // { dg-error "3:invalid cast" } 
+  (C())+var;  // { dg-error "3:invalid cast" } 
   S()(3);
   (S()(3));
 }

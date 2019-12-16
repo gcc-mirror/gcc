@@ -224,6 +224,8 @@ package Sem_Eval is
    --  efficient with compile time known values, e.g. range analysis for the
    --  purpose of removing checks is more effective if we know precise bounds.
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Compile_Time_Known_Value_Or_Aggr (Op : Node_Id) return Boolean;
    --  Similar to Compile_Time_Known_Value, but also returns True if the value
    --  is a compile-time-known aggregate, i.e. an aggregate all of whose
@@ -411,6 +413,8 @@ package Sem_Eval is
    --  routine. This routine is *not* to be used in contexts where the test is
    --  for compile time evaluation purposes. Use Compile_Time_Known_Value
    --  instead (see section on "Compile-Time Known Values" above).
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    function Is_OK_Static_Range (N : Node_Id) return Boolean;
    --  Determines if range is static, as defined in RM 4.9(26), and also checks

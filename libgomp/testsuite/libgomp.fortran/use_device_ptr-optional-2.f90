@@ -37,8 +37,8 @@ contains
       if (present(z)) then; z(1) = 5; stop 15; endif
       if (present(cptr)) then; cptr = c_loc(v); stop 16; endif
       if (present(cptr_in)) then
-        if (c_associated(cptr_in, c_loc(x))) stop 26
-        stop 27
+        if (c_associated(cptr_in, c_loc(x))) stop 17
+        stop 18
       endif
     !$omp end target data
 

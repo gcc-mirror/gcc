@@ -2316,6 +2316,24 @@ package body Exp_Attr is
       when Attribute_Address => Address : declare
          Task_Proc : Entity_Id;
 
+         function Is_Unnested_Component_Init (N : Node_Id) return Boolean;
+         --  Returns True if N is being used to initialize a component of
+         --  an activation record object where the component corresponds to
+         --  the object denoted by the prefix of the attribute N.
+
+         function Is_Unnested_Component_Init (N : Node_Id) return Boolean is
+         begin
+            return Present (Parent (N))
+              and then Nkind (Parent (N)) = N_Assignment_Statement
+              and then Is_Entity_Name (Pref)
+              and then Present (Activation_Record_Component (Entity (Pref)))
+              and then Nkind (Name (Parent (N))) = N_Selected_Component
+              and then Entity (Selector_Name (Name (Parent (N)))) =
+                         Activation_Record_Component (Entity (Pref));
+         end Is_Unnested_Component_Init;
+
+      --  Start of processing for Address
+
       begin
          --  If the prefix is a task or a task type, the useful address is that
          --  of the procedure for the task body, i.e. the actual program unit.
@@ -2379,13 +2397,19 @@ package body Exp_Attr is
          --  "displaced" to reference the tag associated with the interface
          --  type. In order to obtain the real address of such objects we
          --  generate a call to a run-time subprogram that returns the base
-         --  address of the object.
+         --  address of the object. This call is not generated in cases where
+         --  the attribute is being used to initialize a component of an
+         --  activation record object where the component corresponds to
+         --  prefix of the attribute (for back ends that require "unnesting"
+         --  of nested subprograms), since the address needs to be assigned
+         --  as-is to such components.
 
          elsif Is_Class_Wide_Type (Ptyp)
            and then Is_Interface (Underlying_Type (Ptyp))
            and then Tagged_Type_Expansion
            and then not (Nkind (Pref) in N_Has_Entity
                           and then Is_Subprogram (Entity (Pref)))
+           and then not Is_Unnested_Component_Init (N)
          then
             Rewrite (N,
               Make_Function_Call (Loc,
@@ -7455,8 +7479,6 @@ package body Exp_Attr is
       --  All other cases are handled by the back end
 
       else
-         Apply_Universal_Integer_Attribute_Checks (N);
-
          --  If Size is applied to a formal parameter that is of a packed
          --  array subtype, then apply Size to the actual subtype.
 
@@ -7489,9 +7511,7 @@ package body Exp_Attr is
          --  System.Unsigned_Types.Packed_Byte for code generation purposes so
          --  the size is always rounded up in the back end.
 
-         elsif Nkind (Original_Node (Pref)) = N_Slice
-           and then Is_Bit_Packed_Array (Ptyp)
-         then
+         elsif Nkind (Pref) = N_Slice and then Is_Bit_Packed_Array (Ptyp) then
             Rewrite (N,
               Make_Op_Multiply (Loc,
                 Make_Attribute_Reference (Loc,
@@ -7503,6 +7523,9 @@ package body Exp_Attr is
             Analyze_And_Resolve (N, Typ);
          end if;
 
+         --  Apply the required checks last, after rewriting has taken place
+
+         Apply_Universal_Integer_Attribute_Checks (N);
          return;
       end if;
 
@@ -7819,31 +7842,6 @@ package body Exp_Attr is
    is
       Base_Typ : constant Entity_Id := Base_Type (Typ);
       Ent      : constant Entity_Id := TSS (Typ, Nam);
-
-      function Is_Available (Entity : RE_Id) return Boolean;
-      pragma Inline (Is_Available);
-      --  Function to check whether the specified run-time call is available
-      --  in the run time used. In the case of a configurable run time, it
-      --  is normal that some subprograms are not there.
-      --
-      --  I don't understand this routine at all, why is this not just a
-      --  call to RTE_Available? And if for some reason we need a different
-      --  routine with different semantics, why is not in Rtsfind ???
-
-      ------------------
-      -- Is_Available --
-      ------------------
-
-      function Is_Available (Entity : RE_Id) return Boolean is
-      begin
-         --  Assume that the unit will always be available when using a
-         --  "normal" (not configurable) run time.
-
-         return not Configurable_Run_Time_Mode or else RTE_Available (Entity);
-      end Is_Available;
-
-   --  Start of processing for Find_Stream_Subprogram
-
    begin
       if Present (Ent) then
          return Ent;
@@ -7860,7 +7858,7 @@ package body Exp_Attr is
       --  that stream routines for string types are not present (they require
       --  file system support). In this case, the specific stream routines for
       --  strings are not used, relying on the regular stream mechanism
-      --  instead. That is why we include the test Is_Available when dealing
+      --  instead. That is why we include the test RTE_Available when dealing
       --  with these cases.
 
       if not Is_Predefined_Unit (Current_Sem_Unit) then
@@ -7872,22 +7870,22 @@ package body Exp_Attr is
 
             if Restriction_Active (No_Stream_Optimizations) then
                if Nam = TSS_Stream_Input
-                 and then Is_Available (RE_Storage_Array_Input)
+                 and then RTE_Available (RE_Storage_Array_Input)
                then
                   return RTE (RE_Storage_Array_Input);
 
                elsif Nam = TSS_Stream_Output
-                 and then Is_Available (RE_Storage_Array_Output)
+                 and then RTE_Available (RE_Storage_Array_Output)
                then
                   return RTE (RE_Storage_Array_Output);
 
                elsif Nam = TSS_Stream_Read
-                 and then Is_Available (RE_Storage_Array_Read)
+                 and then RTE_Available (RE_Storage_Array_Read)
                then
                   return RTE (RE_Storage_Array_Read);
 
                elsif Nam = TSS_Stream_Write
-                 and then Is_Available (RE_Storage_Array_Write)
+                 and then RTE_Available (RE_Storage_Array_Write)
                then
                   return RTE (RE_Storage_Array_Write);
 
@@ -7904,22 +7902,22 @@ package body Exp_Attr is
 
             else
                if Nam = TSS_Stream_Input
-                 and then Is_Available (RE_Storage_Array_Input_Blk_IO)
+                 and then RTE_Available (RE_Storage_Array_Input_Blk_IO)
                then
                   return RTE (RE_Storage_Array_Input_Blk_IO);
 
                elsif Nam = TSS_Stream_Output
-                 and then Is_Available (RE_Storage_Array_Output_Blk_IO)
+                 and then RTE_Available (RE_Storage_Array_Output_Blk_IO)
                then
                   return RTE (RE_Storage_Array_Output_Blk_IO);
 
                elsif Nam = TSS_Stream_Read
-                 and then Is_Available (RE_Storage_Array_Read_Blk_IO)
+                 and then RTE_Available (RE_Storage_Array_Read_Blk_IO)
                then
                   return RTE (RE_Storage_Array_Read_Blk_IO);
 
                elsif Nam = TSS_Stream_Write
-                 and then Is_Available (RE_Storage_Array_Write_Blk_IO)
+                 and then RTE_Available (RE_Storage_Array_Write_Blk_IO)
                then
                   return RTE (RE_Storage_Array_Write_Blk_IO);
 
@@ -7940,22 +7938,22 @@ package body Exp_Attr is
 
             if Restriction_Active (No_Stream_Optimizations) then
                if Nam = TSS_Stream_Input
-                 and then Is_Available (RE_Stream_Element_Array_Input)
+                 and then RTE_Available (RE_Stream_Element_Array_Input)
                then
                   return RTE (RE_Stream_Element_Array_Input);
 
                elsif Nam = TSS_Stream_Output
-                 and then Is_Available (RE_Stream_Element_Array_Output)
+                 and then RTE_Available (RE_Stream_Element_Array_Output)
                then
                   return RTE (RE_Stream_Element_Array_Output);
 
                elsif Nam = TSS_Stream_Read
-                 and then Is_Available (RE_Stream_Element_Array_Read)
+                 and then RTE_Available (RE_Stream_Element_Array_Read)
                then
                   return RTE (RE_Stream_Element_Array_Read);
 
                elsif Nam = TSS_Stream_Write
-                 and then Is_Available (RE_Stream_Element_Array_Write)
+                 and then RTE_Available (RE_Stream_Element_Array_Write)
                then
                   return RTE (RE_Stream_Element_Array_Write);
 
@@ -7972,22 +7970,22 @@ package body Exp_Attr is
 
             else
                if Nam = TSS_Stream_Input
-                 and then Is_Available (RE_Stream_Element_Array_Input_Blk_IO)
+                 and then RTE_Available (RE_Stream_Element_Array_Input_Blk_IO)
                then
                   return RTE (RE_Stream_Element_Array_Input_Blk_IO);
 
                elsif Nam = TSS_Stream_Output
-                 and then Is_Available (RE_Stream_Element_Array_Output_Blk_IO)
+                 and then RTE_Available (RE_Stream_Element_Array_Output_Blk_IO)
                then
                   return RTE (RE_Stream_Element_Array_Output_Blk_IO);
 
                elsif Nam = TSS_Stream_Read
-                 and then Is_Available (RE_Stream_Element_Array_Read_Blk_IO)
+                 and then RTE_Available (RE_Stream_Element_Array_Read_Blk_IO)
                then
                   return RTE (RE_Stream_Element_Array_Read_Blk_IO);
 
                elsif Nam = TSS_Stream_Write
-                 and then Is_Available (RE_Stream_Element_Array_Write_Blk_IO)
+                 and then RTE_Available (RE_Stream_Element_Array_Write_Blk_IO)
                then
                   return RTE (RE_Stream_Element_Array_Write_Blk_IO);
 
@@ -8008,22 +8006,22 @@ package body Exp_Attr is
 
             if Restriction_Active (No_Stream_Optimizations) then
                if Nam = TSS_Stream_Input
-                 and then Is_Available (RE_String_Input)
+                 and then RTE_Available (RE_String_Input)
                then
                   return RTE (RE_String_Input);
 
                elsif Nam = TSS_Stream_Output
-                 and then Is_Available (RE_String_Output)
+                 and then RTE_Available (RE_String_Output)
                then
                   return RTE (RE_String_Output);
 
                elsif Nam = TSS_Stream_Read
-                 and then Is_Available (RE_String_Read)
+                 and then RTE_Available (RE_String_Read)
                then
                   return RTE (RE_String_Read);
 
                elsif Nam = TSS_Stream_Write
-                 and then Is_Available (RE_String_Write)
+                 and then RTE_Available (RE_String_Write)
                then
                   return RTE (RE_String_Write);
 
@@ -8040,22 +8038,22 @@ package body Exp_Attr is
 
             else
                if Nam = TSS_Stream_Input
-                 and then Is_Available (RE_String_Input_Blk_IO)
+                 and then RTE_Available (RE_String_Input_Blk_IO)
                then
                   return RTE (RE_String_Input_Blk_IO);
 
                elsif Nam = TSS_Stream_Output
-                 and then Is_Available (RE_String_Output_Blk_IO)
+                 and then RTE_Available (RE_String_Output_Blk_IO)
                then
                   return RTE (RE_String_Output_Blk_IO);
 
                elsif Nam = TSS_Stream_Read
-                 and then Is_Available (RE_String_Read_Blk_IO)
+                 and then RTE_Available (RE_String_Read_Blk_IO)
                then
                   return RTE (RE_String_Read_Blk_IO);
 
                elsif Nam = TSS_Stream_Write
-                 and then Is_Available (RE_String_Write_Blk_IO)
+                 and then RTE_Available (RE_String_Write_Blk_IO)
                then
                   return RTE (RE_String_Write_Blk_IO);
 
@@ -8076,22 +8074,22 @@ package body Exp_Attr is
 
             if Restriction_Active (No_Stream_Optimizations) then
                if Nam = TSS_Stream_Input
-                 and then Is_Available (RE_Wide_String_Input)
+                 and then RTE_Available (RE_Wide_String_Input)
                then
                   return RTE (RE_Wide_String_Input);
 
                elsif Nam = TSS_Stream_Output
-                 and then Is_Available (RE_Wide_String_Output)
+                 and then RTE_Available (RE_Wide_String_Output)
                then
                   return RTE (RE_Wide_String_Output);
 
                elsif Nam = TSS_Stream_Read
-                 and then Is_Available (RE_Wide_String_Read)
+                 and then RTE_Available (RE_Wide_String_Read)
                then
                   return RTE (RE_Wide_String_Read);
 
                elsif Nam = TSS_Stream_Write
-                 and then Is_Available (RE_Wide_String_Write)
+                 and then RTE_Available (RE_Wide_String_Write)
                then
                   return RTE (RE_Wide_String_Write);
 
@@ -8108,22 +8106,22 @@ package body Exp_Attr is
 
             else
                if Nam = TSS_Stream_Input
-                 and then Is_Available (RE_Wide_String_Input_Blk_IO)
+                 and then RTE_Available (RE_Wide_String_Input_Blk_IO)
                then
                   return RTE (RE_Wide_String_Input_Blk_IO);
 
                elsif Nam = TSS_Stream_Output
-                 and then Is_Available (RE_Wide_String_Output_Blk_IO)
+                 and then RTE_Available (RE_Wide_String_Output_Blk_IO)
                then
                   return RTE (RE_Wide_String_Output_Blk_IO);
 
                elsif Nam = TSS_Stream_Read
-                 and then Is_Available (RE_Wide_String_Read_Blk_IO)
+                 and then RTE_Available (RE_Wide_String_Read_Blk_IO)
                then
                   return RTE (RE_Wide_String_Read_Blk_IO);
 
                elsif Nam = TSS_Stream_Write
-                 and then Is_Available (RE_Wide_String_Write_Blk_IO)
+                 and then RTE_Available (RE_Wide_String_Write_Blk_IO)
                then
                   return RTE (RE_Wide_String_Write_Blk_IO);
 
@@ -8144,22 +8142,22 @@ package body Exp_Attr is
 
             if Restriction_Active (No_Stream_Optimizations) then
                if Nam = TSS_Stream_Input
-                 and then Is_Available (RE_Wide_Wide_String_Input)
+                 and then RTE_Available (RE_Wide_Wide_String_Input)
                then
                   return RTE (RE_Wide_Wide_String_Input);
 
                elsif Nam = TSS_Stream_Output
-                 and then Is_Available (RE_Wide_Wide_String_Output)
+                 and then RTE_Available (RE_Wide_Wide_String_Output)
                then
                   return RTE (RE_Wide_Wide_String_Output);
 
                elsif Nam = TSS_Stream_Read
-                 and then Is_Available (RE_Wide_Wide_String_Read)
+                 and then RTE_Available (RE_Wide_Wide_String_Read)
                then
                   return RTE (RE_Wide_Wide_String_Read);
 
                elsif Nam = TSS_Stream_Write
-                 and then Is_Available (RE_Wide_Wide_String_Write)
+                 and then RTE_Available (RE_Wide_Wide_String_Write)
                then
                   return RTE (RE_Wide_Wide_String_Write);
 
@@ -8176,22 +8174,22 @@ package body Exp_Attr is
 
             else
                if Nam = TSS_Stream_Input
-                 and then Is_Available (RE_Wide_Wide_String_Input_Blk_IO)
+                 and then RTE_Available (RE_Wide_Wide_String_Input_Blk_IO)
                then
                   return RTE (RE_Wide_Wide_String_Input_Blk_IO);
 
                elsif Nam = TSS_Stream_Output
-                 and then Is_Available (RE_Wide_Wide_String_Output_Blk_IO)
+                 and then RTE_Available (RE_Wide_Wide_String_Output_Blk_IO)
                then
                   return RTE (RE_Wide_Wide_String_Output_Blk_IO);
 
                elsif Nam = TSS_Stream_Read
-                 and then Is_Available (RE_Wide_Wide_String_Read_Blk_IO)
+                 and then RTE_Available (RE_Wide_Wide_String_Read_Blk_IO)
                then
                   return RTE (RE_Wide_Wide_String_Read_Blk_IO);
 
                elsif Nam = TSS_Stream_Write
-                 and then Is_Available (RE_Wide_Wide_String_Write_Blk_IO)
+                 and then RTE_Available (RE_Wide_Wide_String_Write_Blk_IO)
                then
                   return RTE (RE_Wide_Wide_String_Write_Blk_IO);
 

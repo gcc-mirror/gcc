@@ -141,7 +141,11 @@ static const char * const debug_section_names[DEBUG_MAX] =
   ".debug_line",
   ".debug_abbrev",
   ".debug_ranges",
-  ".debug_str"
+  ".debug_str",
+  ".debug_addr",
+  ".debug_str_offsets",
+  ".debug_line_str",
+  ".debug_rnglists"
 };
 
 /* Information we gather for the sections we care about.  */

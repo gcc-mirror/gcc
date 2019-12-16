@@ -7520,9 +7520,20 @@ package body Exp_Ch4 is
       --  build and analyze call, adding conversions if the operation is
       --  inherited.
 
+      function Is_Equality (Subp : Entity_Id;
+                            Typ  : Entity_Id := Empty) return Boolean;
+      --  Determine whether arbitrary Entity_Id denotes a function with the
+      --  right name and profile for an equality op, specifically for the
+      --  base type Typ if Typ is nonempty.
+
       function Find_Equality (Prims : Elist_Id) return Entity_Id;
       --  Find a primitive equality function within primitive operation list
       --  Prims.
+
+      function User_Defined_Primitive_Equality_Op
+        (Typ : Entity_Id) return Entity_Id;
+      --  Find a user-defined primitive equality function for a given untagged
+      --  record type, ignoring visibility. Return Empty if no such op found.
 
       function Has_Unconstrained_UU_Component (Typ : Entity_Id) return Boolean;
       --  Determines whether a type has a subcomponent of an unconstrained
@@ -7772,6 +7783,43 @@ package body Exp_Ch4 is
          Analyze_And_Resolve (N, Standard_Boolean, Suppress => All_Checks);
       end Build_Equality_Call;
 
+      -----------------
+      -- Is_Equality --
+      -----------------
+
+      function Is_Equality (Subp : Entity_Id;
+                            Typ  : Entity_Id := Empty) return Boolean is
+         Formal_1 : Entity_Id;
+         Formal_2 : Entity_Id;
+      begin
+         --  The equality function carries name "=", returns Boolean, and has
+         --  exactly two formal parameters of an identical type.
+
+         if Ekind (Subp) = E_Function
+           and then Chars (Subp) = Name_Op_Eq
+           and then Base_Type (Etype (Subp)) = Standard_Boolean
+         then
+            Formal_1 := First_Formal (Subp);
+            Formal_2 := Empty;
+
+            if Present (Formal_1) then
+               Formal_2 := Next_Formal (Formal_1);
+            end if;
+
+            return
+              Present (Formal_1)
+                and then Present (Formal_2)
+                and then No (Next_Formal (Formal_2))
+                and then Base_Type (Etype (Formal_1)) =
+                         Base_Type (Etype (Formal_2))
+                and then
+                  (not Present (Typ)
+                    or else Implementation_Base_Type (Etype (Formal_1)) = Typ);
+         end if;
+
+         return False;
+      end Is_Equality;
+
       -------------------
       -- Find_Equality --
       -------------------
@@ -7780,9 +7828,6 @@ package body Exp_Ch4 is
          function Find_Aliased_Equality (Prim : Entity_Id) return Entity_Id;
          --  Find an equality in a possible alias chain starting from primitive
          --  operation Prim.
-
-         function Is_Equality (Id : Entity_Id) return Boolean;
-         --  Determine whether arbitrary entity Id denotes an equality
 
          ---------------------------
          -- Find_Aliased_Equality --
@@ -7806,39 +7851,6 @@ package body Exp_Ch4 is
 
             return Empty;
          end Find_Aliased_Equality;
-
-         -----------------
-         -- Is_Equality --
-         -----------------
-
-         function Is_Equality (Id : Entity_Id) return Boolean is
-            Formal_1 : Entity_Id;
-            Formal_2 : Entity_Id;
-
-         begin
-            --  The equality function carries name "=", returns Boolean, and
-            --  has exactly two formal parameters of an identical type.
-
-            if Ekind (Id) = E_Function
-              and then Chars (Id) = Name_Op_Eq
-              and then Base_Type (Etype (Id)) = Standard_Boolean
-            then
-               Formal_1 := First_Formal (Id);
-               Formal_2 := Empty;
-
-               if Present (Formal_1) then
-                  Formal_2 := Next_Formal (Formal_1);
-               end if;
-
-               return
-                 Present (Formal_1)
-                   and then Present (Formal_2)
-                   and then Etype (Formal_1) = Etype (Formal_2)
-                   and then No (Next_Formal (Formal_2));
-            end if;
-
-            return False;
-         end Is_Equality;
 
          --  Local variables
 
@@ -7868,6 +7880,47 @@ package body Exp_Ch4 is
 
          return Eq_Prim;
       end Find_Equality;
+
+      ----------------------------------------
+      -- User_Defined_Primitive_Equality_Op --
+      ----------------------------------------
+
+      function User_Defined_Primitive_Equality_Op
+        (Typ : Entity_Id) return Entity_Id
+      is
+         Enclosing_Scope : constant Node_Id := Scope (Typ);
+         E : Entity_Id;
+      begin
+         --  Prune this search by somehow not looking at decls that precede
+         --  the declaration of the first view of Typ (which might be a partial
+         --  view)???
+
+         for Private_Entities in Boolean loop
+            if Private_Entities then
+               if Ekind (Enclosing_Scope) /= E_Package then
+                  exit;
+               end if;
+               E := First_Private_Entity (Enclosing_Scope);
+
+            else
+               E := First_Entity (Enclosing_Scope);
+            end if;
+
+            while Present (E) loop
+               if Is_Equality (E, Typ) then
+                  return E;
+               end if;
+               E := Next_Entity (E);
+            end loop;
+         end loop;
+
+         if Is_Derived_Type (Typ) then
+            return User_Defined_Primitive_Equality_Op
+                     (Implementation_Base_Type (Etype (Typ)));
+         end if;
+
+         return Empty;
+      end User_Defined_Primitive_Equality_Op;
 
       ------------------------------------
       -- Has_Unconstrained_UU_Component --
@@ -8189,6 +8242,15 @@ package body Exp_Ch4 is
                Build_Equality_Call
                  (Find_Equality (Primitive_Operations (Typl)));
             end if;
+
+         --  See AI12-0101 (which only removes a legality rule) and then
+         --  AI05-0123 (which then applies in the previously illegal case).
+         --  AI12-0101 is a binding interpretation.
+
+         elsif Ada_Version >= Ada_2012
+           and then Present (User_Defined_Primitive_Equality_Op (Typl))
+         then
+            Build_Equality_Call (User_Defined_Primitive_Equality_Op (Typl));
 
          --  Ada 2005 (AI-216): Program_Error is raised when evaluating the
          --  predefined equality operator for a type which has a subcomponent
@@ -11013,7 +11075,8 @@ package body Exp_Ch4 is
 
       --    5. Prefix of an address attribute (this is an error which is caught
       --       elsewhere, and the expansion would interfere with generating the
-      --       error message).
+      --       error message) or of a size attribute (because 'Size may change
+      --       when applied to the temporary instead of the slice directly).
 
       if not Is_Packed (Typ) then
 
@@ -11039,7 +11102,8 @@ package body Exp_Ch4 is
          return;
 
       elsif Nkind (Parent (N)) = N_Attribute_Reference
-        and then Attribute_Name (Parent (N)) = Name_Address
+        and then (Attribute_Name (Parent (N)) = Name_Address
+                   or else Attribute_Name (Parent (N)) = Name_Size)
       then
          return;
 
@@ -11838,7 +11902,7 @@ package body Exp_Ch4 is
            --  The case where the target type is an anonymous access type of
            --  a discriminant is excluded, because the level of such a type
            --  depends on the context and currently the level returned for such
-           --  types is zero, resulting in warnings about about check failures
+           --  types is zero, resulting in warnings about check failures
            --  in certain legal cases involving class-wide interfaces as the
            --  designated type (some cases, such as return statements, are
            --  checked at run time, but not clear if these are handled right
@@ -12318,8 +12382,8 @@ package body Exp_Ch4 is
 
    --  Remove the unchecked expression node from the tree. Its job was simply
    --  to make sure that its constituent expression was handled with checks
-   --  off, and now that that is done, we can remove it from the tree, and
-   --  indeed must, since Gigi does not expect to see these nodes.
+   --  off, and now that is done, we can remove it from the tree, and indeed
+   --  must, since Gigi does not expect to see these nodes.
 
    procedure Expand_N_Unchecked_Expression (N : Node_Id) is
       Exp : constant Node_Id := Expression (N);
@@ -12403,6 +12467,27 @@ package body Exp_Ch4 is
                end if;
 
                return;
+            end if;
+         end;
+      end if;
+
+      --  Generate an extra temporary for cases unsupported by the C backend
+
+      if Modify_Tree_For_C then
+         declare
+            Source     : constant Node_Id := Unqual_Conv (Expression (N));
+            Source_Typ : Entity_Id        := Get_Full_View (Etype (Source));
+
+         begin
+            if Is_Packed_Array (Source_Typ) then
+               Source_Typ := Packed_Array_Impl_Type (Source_Typ);
+            end if;
+
+            if Nkind (Source) = N_Function_Call
+              and then (Is_Composite_Type (Etype (Source))
+                          or else Is_Composite_Type (Target_Type))
+            then
+               Force_Evaluation (Source);
             end if;
          end;
       end if;

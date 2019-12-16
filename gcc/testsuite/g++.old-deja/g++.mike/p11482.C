@@ -6,5 +6,5 @@ void *vp;
 enum E { bad, ok } e;
 
 void foo() {
-  e = (E)vp;		// { dg-error "" } 
+  e = (E)vp;		// { dg-error "7:invalid cast" } 
 }

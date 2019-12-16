@@ -38,7 +38,6 @@ package Namet is
 
 --  WARNING: There is a C version of this package. Any changes to this
 --  source file must be properly reflected in the C header file namet.h
---  which is created manually from namet.ads and namet.adb.
 
 --  This package contains routines for handling the names table. The table
 --  is used to store character strings for identifiers and operator symbols,

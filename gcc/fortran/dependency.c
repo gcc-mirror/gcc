@@ -319,6 +319,8 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 
   if (e1 == NULL && e2 == NULL)
     return 0;
+  else if (e1 == NULL || e2 == NULL)
+    return -2;
 
   e1 = gfc_discard_nops (e1);
   e2 = gfc_discard_nops (e2);

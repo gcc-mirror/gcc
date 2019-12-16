@@ -1,3 +1,17 @@
+2019-12-11  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Factor out common cases for compare_exclusions.
+	* configure: Regenerate.
+
+2019-12-11  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config-ml.in (msp430-*-*): Support --disable-no-exceptions configure
+	flag.
+
+2019-12-10  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2019-11-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/92463

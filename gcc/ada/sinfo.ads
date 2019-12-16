@@ -933,6 +933,12 @@ package Sinfo is
    --    is used for translation of the at end handler into a normal exception
    --    handler.
 
+   --  Aspect_On_Partial_View (Flag18)
+   --    Present on an N_Aspect_Specification node. For an aspect that applies
+   --    to a type entity, indicates whether the specification appears on the
+   --    partial view of a private type or extension. Undefined for aspects
+   --    that apply to other entities.
+
    --  Aspect_Rep_Item (Node2-Sem)
    --    Present in N_Aspect_Specification nodes. Points to the corresponding
    --    pragma/attribute definition node used to process the aspect.
@@ -7638,6 +7644,7 @@ package Sinfo is
       --  Is_Disabled (Flag15-Sem)
       --  Is_Boolean_Aspect (Flag16-Sem)
       --  Split_PPC (Flag17) Set if split pre/post attribute
+      --  Aspect_On_Partial_View (Flag18-Sem)
 
       --  Note: Aspect_Specification is an Ada 2012 feature
 
@@ -9299,6 +9306,9 @@ package Sinfo is
    function Array_Aggregate
      (N : Node_Id) return Node_Id;    -- Node3
 
+   function Aspect_On_Partial_View
+     (N : Node_Id) return Boolean;    -- Flag18
+
    function Aspect_Rep_Item
      (N : Node_Id) return Node_Id;    -- Node2
 
@@ -10343,6 +10353,8 @@ package Sinfo is
    --  tree pointers (List1-4), the parent pointer of the Val node is set to
    --  point back to node N. This automates the setting of the parent pointer.
 
+   --  WARNING: There is a matching C declaration of a few subprograms in fe.h
+
    procedure Set_Abort_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag15
 
@@ -10408,6 +10420,9 @@ package Sinfo is
 
    procedure Set_Array_Aggregate
      (N : Node_Id; Val : Node_Id);            -- Node3
+
+   procedure Set_Aspect_On_Partial_View
+     (N : Node_Id; Val : Boolean := True);    -- Flag18
 
    procedure Set_Aspect_Rep_Item
      (N : Node_Id; Val : Node_Id);            -- Node2
@@ -11457,6 +11472,8 @@ package Sinfo is
    --  N is an N_If_Statement or N_Case_Statement node, and this function
    --  returns the location of the IF token in the END IF sequence by
    --  translating the value of the End_Span field.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    procedure Set_End_Location (N : Node_Id; S : Source_Ptr);
    --  N is an N_If_Statement or N_Case_Statement node. This procedure sets
@@ -13320,6 +13337,7 @@ package Sinfo is
    pragma Inline (Ancestor_Part);
    pragma Inline (Atomic_Sync_Required);
    pragma Inline (Array_Aggregate);
+   pragma Inline (Aspect_On_Partial_View);
    pragma Inline (Aspect_Rep_Item);
    pragma Inline (Assignment_OK);
    pragma Inline (Associated_Node);
@@ -13686,6 +13704,7 @@ package Sinfo is
    pragma Inline (Set_Alternatives);
    pragma Inline (Set_Ancestor_Part);
    pragma Inline (Set_Array_Aggregate);
+   pragma Inline (Set_Aspect_On_Partial_View);
    pragma Inline (Set_Aspect_Rep_Item);
    pragma Inline (Set_Assignment_OK);
    pragma Inline (Set_Associated_Node);

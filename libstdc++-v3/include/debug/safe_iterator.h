@@ -400,7 +400,7 @@ namespace __gnu_debug
 
       // Can we advance the iterator @p __n steps (@p __n may be negative)
       bool
-      _M_can_advance(difference_type __n) const;
+      _M_can_advance(difference_type __n, bool __strict = false) const;
 
       // Is the iterator range [*this, __rhs) valid?
       bool

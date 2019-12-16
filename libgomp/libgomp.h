@@ -1025,13 +1025,6 @@ splay_compare (splay_tree_key x, splay_tree_key y)
 
 typedef struct acc_dispatch_t
 {
-  /* This is a linked list of data mapped using the
-     acc_map_data/acc_unmap_data or "acc enter data"/"acc exit data" pragmas.
-     Unlike mapped_data in the goacc_thread struct, unmapping can
-     happen out-of-order with respect to mapping.  */
-  /* This is guarded by the lock in the "outer" struct gomp_device_descr.  */
-  struct target_mem_desc *data_environ;
-
   /* Execute.  */
   __typeof (GOMP_OFFLOAD_openacc_exec) *exec_func;
 
@@ -1132,8 +1125,7 @@ struct gomp_device_descr
   enum gomp_device_state state;
 
   /* OpenACC-specific data and functions.  */
-  /* This is mutable because of its mutable data_environ and target_data
-     members.  */
+  /* This is mutable because of its mutable target_data member.  */
   acc_dispatch_t openacc;
 };
 
@@ -1146,8 +1138,6 @@ enum gomp_map_vars_kind
   GOMP_MAP_VARS_ENTER_DATA
 };
 
-extern void gomp_acc_insert_pointer (size_t, void **, size_t *, void *, int);
-extern void gomp_acc_remove_pointer (void *, size_t, bool, int, int, int);
 extern void gomp_acc_declare_allocate (bool, size_t, void **, size_t *,
 				       unsigned short *);
 struct gomp_coalesce_buf;
@@ -1176,6 +1166,8 @@ extern bool gomp_fini_device (struct gomp_device_descr *);
 extern void gomp_free_memmap (struct splay_tree_s *);
 extern void gomp_unload_device (struct gomp_device_descr *);
 extern bool gomp_remove_var (struct gomp_device_descr *, splay_tree_key);
+extern void gomp_remove_var_async (struct gomp_device_descr *, splay_tree_key,
+				   struct goacc_asyncqueue *);
 
 /* work.c */
 

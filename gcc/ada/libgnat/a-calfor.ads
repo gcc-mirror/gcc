@@ -204,7 +204,7 @@ package Ada.Calendar.Formatting is
    --  to the string as a point followed by a 2-digit value. If Elapsed_Time <
    --  0.0, the result is Image (abs Elapsed_Time, Include_Time_Fraction)
    --  prefixed with a minus sign. If abs Elapsed_Time represents 100 hours or
-   --  more, the result is implementation-defined.
+   --  more, Time_Error is raised.
 
    function Value (Elapsed_Time : String) return Duration;
    --  Returns a Duration value for the image given as Elapsed_Time.

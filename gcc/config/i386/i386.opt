@@ -725,11 +725,11 @@ Target Report Mask(ISA_AVX512VBMI) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VBMI built-in functions and code generation.
 
 mavx5124fmaps
-Target Report Mask(ISA_AVX5124FMAPS) Var(ix86_isa_flags2) Save
+Target Report Mask(ISA2_AVX5124FMAPS) Var(ix86_isa_flags2) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX5124FMAPS built-in functions and code generation.
 
 mavx5124vnniw
-Target Report Mask(ISA_AVX5124VNNIW) Var(ix86_isa_flags2) Save
+Target Report Mask(ISA2_AVX5124VNNIW) Var(ix86_isa_flags2) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX5124VNNIW built-in functions and code generation.
 
 mavx512vpopcntdq
@@ -749,7 +749,7 @@ Target Report Mask(ISA_AVX512BITALG) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512BITALG built-in functions and code generation.
 
 mavx512vp2intersect
-Target Report Mask(ISA_AVX512VP2INTERSECT) Var(ix86_isa_flags2) Save
+Target Report Mask(ISA2_AVX512VP2INTERSECT) Var(ix86_isa_flags2) Save
 Support AVX512VP2INTERSECT built-in functions and code generation.
 
 mfma
@@ -781,23 +781,23 @@ Target Report Mask(ISA_POPCNT) Var(ix86_isa_flags) Save
 Support code generation of popcnt instruction.
 
 mpconfig
-Target Report Mask(ISA_PCONFIG) Var(ix86_isa_flags2) Save
+Target Report Mask(ISA2_PCONFIG) Var(ix86_isa_flags2) Save
 Support PCONFIG built-in functions and code generation.
 
 mwbnoinvd
-Target Report Mask(ISA_WBNOINVD) Var(ix86_isa_flags2) Save
+Target Report Mask(ISA2_WBNOINVD) Var(ix86_isa_flags2) Save
 Support WBNOINVD built-in functions and code generation.
 
 mptwrite
-Target Report Mask(ISA_PTWRITE) Var(ix86_isa_flags2) Save
+Target Report Mask(ISA2_PTWRITE) Var(ix86_isa_flags2) Save
 Support PTWRITE built-in functions and code generation.
 
 msgx
-Target Report Mask(ISA_SGX) Var(ix86_isa_flags2) Save
+Target Report Mask(ISA2_SGX) Var(ix86_isa_flags2) Save
 Support SGX built-in functions and code generation.
 
 mrdpid
-Target Report Mask(ISA_RDPID) Var(ix86_isa_flags2) Save
+Target Report Mask(ISA2_RDPID) Var(ix86_isa_flags2) Save
 Support RDPID built-in functions and code generation.
 
 mgfni
@@ -805,7 +805,7 @@ Target Report Mask(ISA_GFNI) Var(ix86_isa_flags) Save
 Support GFNI built-in functions and code generation.
 
 mvaes
-Target Report Mask(ISA_VAES) Var(ix86_isa_flags2) Save
+Target Report Mask(ISA2_VAES) Var(ix86_isa_flags2) Save
 Support VAES built-in functions and code generation.
 
 mvpclmulqdq
@@ -825,7 +825,7 @@ Target Report Mask(ISA_LZCNT) Var(ix86_isa_flags) Save
 Support LZCNT built-in function and code generation.
 
 mhle
-Target Report Mask(ISA_HLE) Var(ix86_isa_flags2) Save
+Target Report Mask(ISA2_HLE) Var(ix86_isa_flags2) Save
 Support Hardware Lock Elision prefixes.
 
 mrdseed
@@ -876,7 +876,7 @@ Target Report Mask(ISA_TBM) Var(ix86_isa_flags) Save
 Support TBM built-in functions and code generation.
 
 mcx16
-Target Report Mask(ISA_CX16) Var(ix86_isa_flags2) Save
+Target Report Mask(ISA2_CX16) Var(ix86_isa_flags2) Save
 Support code generation of cmpxchg16b instruction.
 
 msahf
@@ -884,7 +884,7 @@ Target Report Mask(ISA_SAHF) Var(ix86_isa_flags) Save
 Support code generation of sahf instruction in 64bit x86-64 code.
 
 mmovbe
-Target Report Mask(ISA_MOVBE) Var(ix86_isa_flags2) Save
+Target Report Mask(ISA2_MOVBE) Var(ix86_isa_flags2) Save
 Support code generation of movbe instruction.
 
 mcrc32
@@ -969,11 +969,11 @@ Target WarnRemoved
 Removed in GCC 9.  This switch has no effect.
 
 mmwaitx
-Target Report Mask(ISA_MWAITX) Var(ix86_isa_flags2) Save
+Target Report Mask(ISA2_MWAITX) Var(ix86_isa_flags2) Save
 Support MWAITX and MONITORX built-in functions and code generation.
 
 mclzero
-Target Report Mask(ISA_CLZERO) Var(ix86_isa_flags2) Save
+Target Report Mask(ISA2_CLZERO) Var(ix86_isa_flags2) Save
 Support CLZERO built-in functions and code generation.
 
 mpku
@@ -1071,15 +1071,15 @@ Target Report Mask(ISA_MOVDIRI) Var(ix86_isa_flags) Save
 Support MOVDIRI built-in functions and code generation.
 
 mmovdir64b
-Target Report Mask(ISA_MOVDIR64B) Var(ix86_isa_flags2) Save
+Target Report Mask(ISA2_MOVDIR64B) Var(ix86_isa_flags2) Save
 Support MOVDIR64B built-in functions and code generation.
 
 mwaitpkg
-Target Report Mask(ISA_WAITPKG) Var(ix86_isa_flags2) Save
+Target Report Mask(ISA2_WAITPKG) Var(ix86_isa_flags2) Save
 Support WAITPKG built-in functions and code generation.
 
 mcldemote
-Target Report Mask(ISA_CLDEMOTE) Var(ix86_isa_flags2) Save
+Target Report Mask(ISA2_CLDEMOTE) Var(ix86_isa_flags2) Save
 Support CLDEMOTE built-in functions and code generation.
 
 minstrument-return=
@@ -1104,10 +1104,10 @@ Target Report Var(ix86_flag_record_return) Init(0)
 Generate a __return_loc section pointing to all return instrumentation code.
 
 mavx512bf16
-Target Report Mask(ISA_AVX512BF16) Var(ix86_isa_flags2) Save
+Target Report Mask(ISA2_AVX512BF16) Var(ix86_isa_flags2) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and
 AVX512BF16 built-in functions and code generation.
 
 menqcmd
-Target Report Mask(ISA_ENQCMD) Var(ix86_isa_flags2) Save
+Target Report Mask(ISA2_ENQCMD) Var(ix86_isa_flags2) Save
 Support ENQCMD built-in functions and code generation.

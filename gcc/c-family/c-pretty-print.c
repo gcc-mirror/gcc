@@ -2372,6 +2372,13 @@ c_pretty_printer::c_pretty_printer ()
   parameter_list            = pp_c_parameter_type_list;
 }
 
+/* c_pretty_printer's implementation of pretty_printer::clone vfunc.  */
+
+pretty_printer *
+c_pretty_printer::clone () const
+{
+  return new c_pretty_printer (*this);
+}
 
 /* Print the tree T in full, on file FILE.  */
 

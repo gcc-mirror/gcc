@@ -4997,6 +4997,29 @@ rs6000_init_cost (struct loop *loop_info)
   return data;
 }
 
+/* Adjust vectorization cost after calling rs6000_builtin_vectorization_cost.
+   For some statement, we would like to further fine-grain tweak the cost on
+   top of rs6000_builtin_vectorization_cost handling which doesn't have any
+   information on statement operation codes etc.  One typical case here is
+   COND_EXPR, it takes the same cost to simple FXU instruction when evaluating
+   for scalar cost, but it should be priced more whatever transformed to either
+   compare + branch or compare + isel instructions.  */
+
+static unsigned
+adjust_vectorization_cost (enum vect_cost_for_stmt kind,
+			   struct _stmt_vec_info *stmt_info)
+{
+  if (kind == scalar_stmt && stmt_info && stmt_info->stmt
+      && gimple_code (stmt_info->stmt) == GIMPLE_ASSIGN)
+    {
+      tree_code subcode = gimple_assign_rhs_code (stmt_info->stmt);
+      if (subcode == COND_EXPR)
+	return 2;
+    }
+
+  return 0;
+}
+
 /* Implement targetm.vectorize.add_stmt_cost.  */
 
 static unsigned
@@ -5012,6 +5035,7 @@ rs6000_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
       tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
       int stmt_cost = rs6000_builtin_vectorization_cost (kind, vectype,
 							 misalign);
+      stmt_cost += adjust_vectorization_cost (kind, stmt_info);
       /* Statements in an inner loop relative to the loop being
 	 vectorized are weighted more heavily.  The value here is
 	 arbitrary and could potentially be improved with analysis.  */

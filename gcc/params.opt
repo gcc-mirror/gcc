@@ -817,7 +817,7 @@ Common Joined UInteger Var(param_slp_max_insns_in_bb) Init(1000) Param
 Maximum number of instructions in basic block to be considered for SLP vectorization.
 
 -param=sms-dfa-history=
-Common Joined UInteger Var(param_sms_dfa_history) Param
+Common Joined UInteger Var(param_sms_dfa_history) IntegerRange(0, 16) Param
 The number of cycles the swing modulo scheduler considers when checking conflicts using DFA.
 
 -param=sms-loop-average-count-threshold=
@@ -825,11 +825,11 @@ Common Joined UInteger Var(param_sms_loop_average_count_threshold) Param
 A threshold on the average loop count considered by the swing modulo scheduler.
 
 -param=sms-max-ii-factor=
-Common Joined UInteger Var(param_sms_max_ii_factor) Init(100) Param
+Common Joined UInteger Var(param_sms_max_ii_factor) Init(2) IntegerRange(1, 16) Param
 A factor for tuning the upper bound that swing modulo scheduler uses for scheduling a loop.
 
 -param=sms-min-sc=
-Common Joined UInteger Var(param_sms_min_sc) Init(2) IntegerRange(1, 65536) Param
+Common Joined UInteger Var(param_sms_min_sc) Init(2) IntegerRange(1, 2) Param
 The minimum value of stage count that swing modulo scheduler will generate.
 
 -param=sra-max-scalarization-size-Osize=

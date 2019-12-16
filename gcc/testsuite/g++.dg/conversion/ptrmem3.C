@@ -27,5 +27,5 @@ int (A::*p7)() = static_cast<int (A::*)()>(&D::f);  // { dg-error "" }
 int (D::*p8)() = static_cast<int (D::*)()>(&A::f);  // { dg-error "" }
 
 // Attempts to change member type.
-float (B::*p13)() = static_cast<float (B::*)()>(&D::f); // { dg-error "" }
-float (D::*p14)() = static_cast<float (D::*)()>(&B::f); // { dg-error "" }
+float (B::*p13)() = static_cast<float (B::*)()>(&D::f); // { dg-error "21:invalid .static_cast." }
+float (D::*p14)() = static_cast<float (D::*)()>(&B::f); // { dg-error "21:invalid .static_cast." }

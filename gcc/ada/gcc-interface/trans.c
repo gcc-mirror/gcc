@@ -11287,11 +11287,12 @@ maybe_make_gnu_thunk (Entity_Id gnat_thunk, tree gnu_thunk)
   const Entity_Id gnat_controlling_type = get_controlling_type (gnat_target);
   const Entity_Id gnat_interface_type = get_controlling_type (gnat_thunk);
 
+  /* We must have an interface type at this point.  */
+  gcc_assert (Is_Interface (gnat_interface_type));
+
   /* Now compute whether the former covers the latter.  */
   const Entity_Id gnat_interface_tag
-    = Is_Interface (gnat_interface_type)
-      ? Find_Interface_Tag (gnat_controlling_type, gnat_interface_type)
-      : Empty;
+    = Find_Interface_Tag (gnat_controlling_type, gnat_interface_type);
   tree gnu_interface_tag
     = Present (gnat_interface_tag)
       ? gnat_to_gnu_field_decl (gnat_interface_tag)

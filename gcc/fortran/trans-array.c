@@ -882,7 +882,7 @@ get_CFI_desc (gfc_symbol *sym, gfc_expr *expr,
   else
     tmp = sym->backend_decl;
 
-  if (tmp && DECL_LANG_SPECIFIC (tmp))
+  if (tmp && DECL_LANG_SPECIFIC (tmp) && GFC_DECL_SAVED_DESCRIPTOR (tmp))
     tmp = GFC_DECL_SAVED_DESCRIPTOR (tmp);
 
   *desc = tmp;
@@ -8141,6 +8141,8 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 
       if (g77 && optimize && !optimize_size && expr->expr_type == EXPR_VARIABLE
 	  && !is_pointer (expr) && ! gfc_has_dimen_vector_ref (expr)
+	  && !(expr->symtree->n.sym->as
+	       && expr->symtree->n.sym->as->type == AS_ASSUMED_RANK)
 	  && (fsym == NULL || fsym->ts.type != BT_ASSUMED))
 	{
 	  gfc_conv_subref_array_arg (se, expr, g77,

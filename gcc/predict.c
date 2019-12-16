@@ -3217,16 +3217,15 @@ predict_paths_leading_to_edge (edge e, enum br_predictor pred,
   basic_block bb = e->src;
   FOR_EACH_EDGE (e2, ei, bb->succs)
     if (e2->dest != e->src && e2->dest != e->dest
-	&& !unlikely_executed_edge_p (e)
+	&& !unlikely_executed_edge_p (e2)
 	&& !dominated_by_p (CDI_POST_DOMINATORS, e->src, e2->dest))
       {
 	has_nonloop_edge = true;
 	break;
       }
+
   if (!has_nonloop_edge)
-    {
-      predict_paths_for_bb (bb, bb, pred, taken, auto_bitmap (), in_loop);
-    }
+    predict_paths_for_bb (bb, bb, pred, taken, auto_bitmap (), in_loop);
   else
     predict_edge_def (e, pred, taken);
 }
@@ -3933,13 +3932,11 @@ compute_function_frequency (void)
   if (DECL_STATIC_DESTRUCTOR (current_function_decl))
     node->only_called_at_exit = true;
 
-  if (profile_status_for_fn (cfun) != PROFILE_READ)
+  if (!ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa_p ())
     {
       int flags = flags_from_decl_or_type (current_function_decl);
-      if ((ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa_p ()
-	   && ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa() == profile_count::zero ())
-	  || lookup_attribute ("cold", DECL_ATTRIBUTES (current_function_decl))
-	     != NULL)
+      if (lookup_attribute ("cold", DECL_ATTRIBUTES (current_function_decl))
+	  != NULL)
 	{
           node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
 	  warn_function_cold (current_function_decl);

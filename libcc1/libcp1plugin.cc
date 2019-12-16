@@ -3064,7 +3064,8 @@ plugin_build_cast_expr (cc1_plugin::connection *self,
 			gcc_expr operand2)
 {
   plugin_context *ctx = static_cast<plugin_context *> (self);
-  tree (*build_cast)(tree type, tree expr, tsubst_flags_t complain) = NULL;
+  tree (*build_cast)(location_t loc, tree type, tree expr,
+		     tsubst_flags_t complain) = NULL;
   tree type = convert_in (operand1);
   tree expr = convert_in (operand2);
 
@@ -3101,7 +3102,7 @@ plugin_build_cast_expr (cc1_plugin::connection *self,
   if (!template_dependent_p)
     processing_template_decl--;
 
-  tree val = build_cast (type, expr, tf_error);
+  tree val = build_cast (input_location, type, expr, tf_error);
 
   if (template_dependent_p)
     processing_template_decl--;

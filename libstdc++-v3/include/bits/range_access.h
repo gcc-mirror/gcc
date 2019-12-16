@@ -342,6 +342,9 @@ namespace ranges
   template<typename>
     inline constexpr bool disable_sized_range = false;
 
+  template<typename _Tp>
+    inline constexpr bool enable_safe_range = false;
+
   namespace __detail
   {
     using __max_diff_type = long long;
@@ -359,10 +362,19 @@ namespace ranges
       constexpr make_unsigned_t<_Tp>
       __to_unsigned_like(_Tp __t) noexcept
       { return __t; }
+
+    // Part of the constraints of ranges::safe_range
+    template<typename _Tp>
+      concept __maybe_safe_range
+	= is_lvalue_reference_v<_Tp> || enable_safe_range<remove_cvref_t<_Tp>>;
+
   } // namespace __detail
 
   namespace __cust_access
   {
+    using std::ranges::__detail::__maybe_safe_range;
+    using std::__detail::__class_or_enum;
+
     template<typename _Tp>
       constexpr decay_t<_Tp>
       __decay_copy(_Tp&& __t)
@@ -370,20 +382,19 @@ namespace ranges
       { return std::forward<_Tp>(__t); }
 
     template<typename _Tp>
-      concept __member_begin = is_lvalue_reference_v<_Tp>
-	&& requires(_Tp __t)
-	{ { __decay_copy(__t.begin()) } -> input_or_output_iterator; };
+      concept __member_begin = requires(_Tp& __t)
+	{
+	  { __decay_copy(__t.begin()) } -> input_or_output_iterator;
+	};
 
     template<typename _Tp> void begin(_Tp&&) = delete;
     template<typename _Tp> void begin(initializer_list<_Tp>&&) = delete;
 
     template<typename _Tp>
-      concept __adl_begin
-	= std::__detail::__class_or_enum<remove_reference_t<_Tp>>
-	&& requires(_Tp&& __t)
+      concept __adl_begin = __class_or_enum<remove_reference_t<_Tp>>
+	&& requires(_Tp& __t)
 	{
-	  { __decay_copy(begin(std::forward<_Tp>(__t))) }
-	    -> input_or_output_iterator;
+	  { __decay_copy(begin(__t)) } -> input_or_output_iterator;
 	};
 
     struct _Begin
@@ -396,47 +407,45 @@ namespace ranges
 	  if constexpr (is_array_v<remove_reference_t<_Tp>>)
 	    return true;
 	  else if constexpr (__member_begin<_Tp>)
-	    return noexcept(__decay_copy(std::declval<_Tp>().begin()));
+	    return noexcept(__decay_copy(std::declval<_Tp&>().begin()));
 	  else
-	    return noexcept(__decay_copy(begin(std::declval<_Tp>())));
+	    return noexcept(__decay_copy(begin(std::declval<_Tp&>())));
 	}
 
     public:
-      template<typename _Tp>
+      template<__maybe_safe_range _Tp>
 	requires is_array_v<remove_reference_t<_Tp>> || __member_begin<_Tp>
 	  || __adl_begin<_Tp>
 	constexpr auto
-	operator()(_Tp&& __e) const noexcept(_S_noexcept<_Tp>())
+	operator()(_Tp&& __t) const noexcept(_S_noexcept<_Tp>())
 	{
 	  if constexpr (is_array_v<remove_reference_t<_Tp>>)
 	    {
 	      static_assert(is_lvalue_reference_v<_Tp>);
-	      return __e;
+	      return __t;
 	    }
 	  else if constexpr (__member_begin<_Tp>)
-	    return __e.begin();
+	    return __t.begin();
 	  else
-	    return begin(std::forward<_Tp>(__e));
+	    return begin(__t);
 	}
     };
 
     template<typename _Tp>
-      concept __member_end = is_lvalue_reference_v<_Tp>
-	&& requires(_Tp __t)
+      concept __member_end = requires(_Tp& __t)
 	{
 	  { __decay_copy(__t.end()) }
-	    -> sentinel_for<decltype(_Begin{}(__t))>;
+	    -> sentinel_for<decltype(_Begin{}(std::forward<_Tp>(__t)))>;
 	};
 
     template<typename _Tp> void end(_Tp&&) = delete;
     template<typename _Tp> void end(initializer_list<_Tp>&&) = delete;
 
     template<typename _Tp>
-      concept __adl_end
-	= std::__detail::__class_or_enum<remove_reference_t<_Tp>>
-	&& requires(_Tp&& __t)
+      concept __adl_end = __class_or_enum<remove_reference_t<_Tp>>
+	&& requires(_Tp& __t)
 	{
-	  { __decay_copy(end(std::forward<_Tp>(__t))) }
+	  { __decay_copy(end(__t)) }
 	    -> sentinel_for<decltype(_Begin{}(std::forward<_Tp>(__t)))>;
 	};
 
@@ -450,28 +459,28 @@ namespace ranges
 	  if constexpr (is_array_v<remove_reference_t<_Tp>>)
 	    return true;
 	  else if constexpr (__member_end<_Tp>)
-	    return noexcept(__decay_copy(std::declval<_Tp>().end()));
+	    return noexcept(__decay_copy(std::declval<_Tp&>().end()));
 	  else
-	    return noexcept(__decay_copy(end(std::declval<_Tp>())));
+	    return noexcept(__decay_copy(end(std::declval<_Tp&>())));
 	}
 
     public:
-      template<typename _Tp>
+      template<__maybe_safe_range _Tp>
 	requires is_array_v<remove_reference_t<_Tp>> || __member_end<_Tp>
 	|| __adl_end<_Tp>
 	constexpr auto
-	operator()(_Tp&& __e) const noexcept(_S_noexcept<_Tp>())
+	operator()(_Tp&& __t) const noexcept(_S_noexcept<_Tp>())
 	{
 	  if constexpr (is_array_v<remove_reference_t<_Tp>>)
 	    {
 	      static_assert(is_lvalue_reference_v<_Tp>);
 	      static_assert(is_bounded_array_v<remove_reference_t<_Tp>>);
-	      return __e + extent_v<remove_reference_t<_Tp>>;
+	      return __t + extent_v<remove_reference_t<_Tp>>;
 	    }
 	  else if constexpr (__member_end<_Tp>)
-	    return __e.end();
+	    return __t.end();
 	  else
-	    return end(std::forward<_Tp>(__e));
+	    return end(__t);
 	}
     };
 
@@ -510,27 +519,25 @@ namespace ranges
     };
 
     template<typename _Tp>
-      concept __member_rbegin = is_lvalue_reference_v<_Tp>
-	&& requires(_Tp __t)
-	{ { __decay_copy(__t.rbegin()) } -> input_or_output_iterator; };
+      concept __member_rbegin = requires(_Tp& __t)
+	{
+	  { __decay_copy(__t.rbegin()) } -> input_or_output_iterator;
+	};
 
     template<typename _Tp> void rbegin(_Tp&&) = delete;
 
     template<typename _Tp>
-      concept __adl_rbegin
-	= std::__detail::__class_or_enum<remove_reference_t<_Tp>>
-	&& requires(_Tp&& __t)
+      concept __adl_rbegin = __class_or_enum<remove_reference_t<_Tp>>
+	&& requires(_Tp& __t)
 	{
-	  { __decay_copy(rbegin(std::forward<_Tp>(__t))) }
-	    -> input_or_output_iterator;
+	  { __decay_copy(rbegin(__t)) } -> input_or_output_iterator;
 	};
 
     template<typename _Tp>
-      concept __reversable = requires(_Tp&& __t)
+      concept __reversable = requires(_Tp& __t)
 	{
-	  { _Begin{}(std::forward<_Tp>(__t)) } -> bidirectional_iterator;
-	  { _End{}(std::forward<_Tp>(__t)) }
-	    -> same_as<decltype(_Begin{}(std::forward<_Tp>(__t)))>;
+	  { _Begin{}(__t) } -> bidirectional_iterator;
+	  { _End{}(__t) } -> same_as<decltype(_Begin{}(__t))>;
 	};
 
     struct _RBegin
@@ -541,14 +548,14 @@ namespace ranges
 	_S_noexcept()
 	{
 	  if constexpr (__member_rbegin<_Tp>)
-	    return noexcept(__decay_copy(std::declval<_Tp>().rbegin()));
+	    return noexcept(__decay_copy(std::declval<_Tp&>().rbegin()));
 	  else if constexpr (__adl_rbegin<_Tp>)
-	    return noexcept(__decay_copy(rbegin(std::declval<_Tp>())));
+	    return noexcept(__decay_copy(rbegin(std::declval<_Tp&>())));
 	  else
 	    {
-	      if constexpr (noexcept(_End{}(std::declval<_Tp>())))
+	      if constexpr (noexcept(_End{}(std::declval<_Tp&>())))
 		{
-		  using _It = decltype(_End{}(std::declval<_Tp>()));
+		  using _It = decltype(_End{}(std::declval<_Tp&>()));
 		  // std::reverse_iterator copy-initializes its member.
 		  return is_nothrow_copy_constructible_v<_It>;
 		}
@@ -558,24 +565,23 @@ namespace ranges
 	}
 
     public:
-      template<typename _Tp>
+      template<__maybe_safe_range _Tp>
 	requires __member_rbegin<_Tp> || __adl_rbegin<_Tp> || __reversable<_Tp>
 	constexpr auto
-	operator()(_Tp&& __e) const
+	operator()(_Tp&& __t) const
 	noexcept(_S_noexcept<_Tp>())
 	{
 	  if constexpr (__member_rbegin<_Tp>)
-	    return __e.rbegin();
+	    return __t.rbegin();
 	  else if constexpr (__adl_rbegin<_Tp>)
-	    return rbegin(std::forward<_Tp>(__e));
+	    return rbegin(__t);
 	  else
-	    return std::make_reverse_iterator(_End{}(std::forward<_Tp>(__e)));
+	    return std::make_reverse_iterator(_End{}(__t));
 	}
     };
 
     template<typename _Tp>
-      concept __member_rend = is_lvalue_reference_v<_Tp>
-	&& requires(_Tp __t)
+      concept __member_rend = requires(_Tp& __t)
 	{
 	  { __decay_copy(__t.rend()) }
 	    -> sentinel_for<decltype(_RBegin{}(__t))>;
@@ -584,11 +590,10 @@ namespace ranges
     template<typename _Tp> void rend(_Tp&&) = delete;
 
     template<typename _Tp>
-      concept __adl_rend
-	= std::__detail::__class_or_enum<remove_reference_t<_Tp>>
-	&& requires(_Tp&& __t)
+      concept __adl_rend = __class_or_enum<remove_reference_t<_Tp>>
+	&& requires(_Tp& __t)
 	{
-	  { __decay_copy(rend(std::forward<_Tp>(__t))) }
+	  { __decay_copy(rend(__t)) }
 	    -> sentinel_for<decltype(_RBegin{}(std::forward<_Tp>(__t)))>;
 	};
 
@@ -600,14 +605,14 @@ namespace ranges
 	_S_noexcept()
 	{
 	  if constexpr (__member_rend<_Tp>)
-	    return noexcept(__decay_copy(std::declval<_Tp>().rend()));
+	    return noexcept(__decay_copy(std::declval<_Tp&>().rend()));
 	  else if constexpr (__adl_rend<_Tp>)
-	    return noexcept(__decay_copy(rend(std::declval<_Tp>())));
+	    return noexcept(__decay_copy(rend(std::declval<_Tp&>())));
 	  else
 	    {
-	      if constexpr (noexcept(_Begin{}(std::declval<_Tp>())))
+	      if constexpr (noexcept(_Begin{}(std::declval<_Tp&>())))
 		{
-		  using _It = decltype(_Begin{}(std::declval<_Tp>()));
+		  using _It = decltype(_Begin{}(std::declval<_Tp&>()));
 		  // std::reverse_iterator copy-initializes its member.
 		  return is_nothrow_copy_constructible_v<_It>;
 		}
@@ -617,18 +622,18 @@ namespace ranges
 	}
 
     public:
-      template<typename _Tp>
+      template<__maybe_safe_range _Tp>
 	requires __member_rend<_Tp> || __adl_rend<_Tp> || __reversable<_Tp>
 	constexpr auto
-	operator()(_Tp&& __e) const
+	operator()(_Tp&& __t) const
 	noexcept(_S_noexcept<_Tp>())
 	{
 	  if constexpr (__member_rend<_Tp>)
-	    return __e.rend();
+	    return __t.rend();
 	  else if constexpr (__adl_rend<_Tp>)
-	    return rend(std::forward<_Tp>(__e));
+	    return rend(__t);
 	  else
-	    return std::make_reverse_iterator(_Begin{}(std::forward<_Tp>(__e)));
+	    return std::make_reverse_iterator(_Begin{}(__t));
 	}
     };
 
@@ -667,8 +672,7 @@ namespace ranges
     template<typename _Tp> void size(_Tp&&) = delete;
 
     template<typename _Tp>
-      concept __adl_size
-	= std::__detail::__class_or_enum<remove_reference_t<_Tp>>
+      concept __adl_size = __class_or_enum<remove_reference_t<_Tp>>
 	&& !disable_sized_range<remove_cvref_t<_Tp>>
 	&& requires(_Tp&& __t)
 	{
@@ -842,25 +846,26 @@ namespace ranges
     inline constexpr __cust_access::_CData cdata{};
   }
 
-  namespace __detail
-  {
-    template<typename _Tp>
-      concept __range_impl = requires(_Tp&& __t) {
-	ranges::begin(std::forward<_Tp>(__t));
-	ranges::end(std::forward<_Tp>(__t));
-      };
-
-  } // namespace __detail
-
   /// [range.range] The range concept.
   template<typename _Tp>
-    concept range = __detail::__range_impl<_Tp&>;
+    concept range = requires(_Tp& __t)
+      {
+	ranges::begin(__t);
+	ranges::end(__t);
+      };
+
+  /// [range.range] The safe_range concept.
+  template<typename _Tp>
+    concept safe_range = range<_Tp> && __detail::__maybe_safe_range<_Tp>;
+
+  template<range _Range>
+    using iterator_t = decltype(ranges::begin(std::declval<_Range&>()));
 
   template<range _Range>
     using sentinel_t = decltype(ranges::end(std::declval<_Range&>()));
 
   template<range _Range>
-    using iterator_t = decltype(ranges::begin(std::declval<_Range&>()));
+    using range_difference_t = iter_difference_t<iterator_t<_Range>>;
 
   template<range _Range>
     using range_value_t = iter_value_t<iterator_t<_Range>>;
@@ -872,43 +877,38 @@ namespace ranges
     using range_rvalue_reference_t
       = iter_rvalue_reference_t<iterator_t<_Range>>;
 
-  template<range _Range>
-    using range_difference_t = iter_difference_t<iterator_t<_Range>>;
-
-  namespace __detail
-  {
-    template<typename _Tp>
-      concept __forwarding_range = range<_Tp> && __range_impl<_Tp>;
-  } // namespace __detail
-
   /// [range.sized] The sized_range concept.
   template<typename _Tp>
     concept sized_range = range<_Tp>
       && requires(_Tp& __t) { ranges::size(__t); };
 
-  template<typename>
-    inline constexpr bool disable_sized_range = false;
-
   // [range.refinements]
+
+  /// A range for which ranges::begin returns an output iterator.
   template<typename _Range, typename _Tp>
     concept output_range
       = range<_Range> && output_iterator<iterator_t<_Range>, _Tp>;
 
+  /// A range for which ranges::begin returns an input iterator.
   template<typename _Tp>
     concept input_range = range<_Tp> && input_iterator<iterator_t<_Tp>>;
 
+  /// A range for which ranges::begin returns a forward iterator.
   template<typename _Tp>
     concept forward_range
       = input_range<_Tp> && forward_iterator<iterator_t<_Tp>>;
 
+  /// A range for which ranges::begin returns a bidirectional iterator.
   template<typename _Tp>
     concept bidirectional_range
       = forward_range<_Tp> && bidirectional_iterator<iterator_t<_Tp>>;
 
+  /// A range for which ranges::begin returns a random access iterator.
   template<typename _Tp>
     concept random_access_range
       = bidirectional_range<_Tp> && random_access_iterator<iterator_t<_Tp>>;
 
+  /// A range for which ranges::begin returns a contiguous iterator.
   template<typename _Tp>
     concept contiguous_range
       = random_access_range<_Tp> && contiguous_iterator<iterator_t<_Tp>>
@@ -917,11 +917,12 @@ namespace ranges
 	{ ranges::data(__t) } -> same_as<add_pointer_t<range_reference_t<_Tp>>>;
       };
 
+  /// A range for which ranges::begin and ranges::end return the same type.
   template<typename _Tp>
     concept common_range
       = range<_Tp> && same_as<iterator_t<_Tp>, sentinel_t<_Tp>>;
 
-    // [range.iter.ops] range iterator operations
+  // [range.iter.ops] range iterator operations
 
   template<input_or_output_iterator _It>
     constexpr void

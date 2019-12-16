@@ -123,7 +123,7 @@ static GTY (()) vec<tinfo_s, va_gc> *tinfo_descs;
 
 static tree ifnonnull (tree, tree, tsubst_flags_t);
 static tree tinfo_name (tree, bool);
-static tree build_dynamic_cast_1 (tree, tree, tsubst_flags_t);
+static tree build_dynamic_cast_1 (location_t, tree, tree, tsubst_flags_t);
 static tree throw_bad_cast (void);
 static tree throw_bad_typeid (void);
 static tree get_tinfo_ptr (tree);
@@ -548,7 +548,8 @@ ifnonnull (tree test, tree result, tsubst_flags_t complain)
    paper.  */
 
 static tree
-build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
+build_dynamic_cast_1 (location_t loc, tree type, tree expr,
+		      tsubst_flags_t complain)
 {
   enum tree_code tc = TREE_CODE (type);
   tree exprtype;
@@ -646,7 +647,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
     tree binfo = lookup_base (TREE_TYPE (exprtype), TREE_TYPE (type),
 			      ba_check, NULL, complain);
     if (binfo)
-      return build_static_cast (type, expr, complain);
+      return build_static_cast (loc, type, expr, complain);
   }
 
   /* Apply trivial conversion T -> T& for dereferenced ptrs.  */
@@ -691,8 +692,9 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 		{
 		  tree expr = throw_bad_cast ();
                   if (complain & tf_warning)
-	            warning (0, "%<dynamic_cast<%#T>(%#D)%> can never succeed",
-	                     type, old_expr);
+	            warning_at (loc, 0,
+				"%<dynamic_cast<%#T>(%#D)%> can never succeed",
+				type, old_expr);
 		  /* Bash it to the expected type.  */
 		  TREE_TYPE (expr) = type;
 		  return expr;
@@ -706,8 +708,9 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 		  && TREE_CODE (TREE_TYPE (op)) == RECORD_TYPE)
 		{
                   if (complain & tf_warning)
-	            warning (0, "%<dynamic_cast<%#T>(%#D)%> can never succeed",
-	                     type, op);
+	            warning_at (loc, 0,
+				"%<dynamic_cast<%#T>(%#D)%> can never succeed",
+				type, op);
 		  retval = build_int_cst (type, 0);
 		  return retval;
 		}
@@ -717,7 +720,8 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 	  if (!flag_rtti)
 	    {
               if (complain & tf_error)
-		error ("%<dynamic_cast%> not permitted with %<-fno-rtti%>");
+		error_at (loc,
+			  "%<dynamic_cast%> not permitted with %<-fno-rtti%>");
 	      return error_mark_node;
 	    }
 
@@ -796,13 +800,15 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 
  fail:
   if (complain & tf_error)
-    error ("cannot %<dynamic_cast%> %qE (of type %q#T) to type %q#T (%s)",
-           old_expr, TREE_TYPE (old_expr), type, errstr);
+    error_at (loc, "cannot %<dynamic_cast%> %qE (of type %q#T) "
+	      "to type %q#T (%s)",
+	      old_expr, TREE_TYPE (old_expr), type, errstr);
   return error_mark_node;
 }
 
 tree
-build_dynamic_cast (tree type, tree expr, tsubst_flags_t complain)
+build_dynamic_cast (location_t loc, tree type, tree expr,
+		    tsubst_flags_t complain)
 {
   tree r;
 
@@ -813,12 +819,16 @@ build_dynamic_cast (tree type, tree expr, tsubst_flags_t complain)
     {
       expr = build_min (DYNAMIC_CAST_EXPR, type, expr);
       TREE_SIDE_EFFECTS (expr) = 1;
-      return convert_from_reference (expr);
+      r = convert_from_reference (expr);
+      protected_set_expr_location (r, loc);
+      return r;
     }
 
-  r = convert_from_reference (build_dynamic_cast_1 (type, expr, complain));
+  r = convert_from_reference (build_dynamic_cast_1 (loc, type, expr,
+						    complain));
   if (r != error_mark_node)
-    maybe_warn_about_useless_cast (type, expr, complain);
+    maybe_warn_about_useless_cast (loc, type, expr, complain);
+  protected_set_expr_location (r, loc);
   return r;
 }
 

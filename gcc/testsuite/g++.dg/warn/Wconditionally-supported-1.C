@@ -17,9 +17,9 @@ void foo ()
   PV pv;
   PO po;
 
-  pf = reinterpret_cast <PF>(pv); // { dg-warning "conditionally-supported" }
-  pv = reinterpret_cast <PV>(pf); // { dg-warning "conditionally-supported" }
+  pf = reinterpret_cast <PF>(pv); // { dg-warning "8:casting between pointer-to-function and pointer-to-object is conditionally-supported" }
+  pv = reinterpret_cast <PV>(pf); // { dg-warning "8:casting between pointer-to-function and pointer-to-object is conditionally-supported" }
 
-  pf = reinterpret_cast <PF>(po); // { dg-warning "conditionally-supported" }
-  po = reinterpret_cast <PO>(pf); // { dg-warning "conditionally-supported" }
+  pf = reinterpret_cast <PF>(po); // { dg-warning "8:casting between pointer-to-function and pointer-to-object is conditionally-supported" }
+  po = reinterpret_cast <PO>(pf); // { dg-warning "8:casting between pointer-to-function and pointer-to-object is conditionally-supported" }
 }

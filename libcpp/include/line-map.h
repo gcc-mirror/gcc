@@ -1764,18 +1764,41 @@ public:
   : m_buffer (NULL), m_caller_owned (false)
   {}
 
-  label_text (char *buffer, bool caller_owned)
-  : m_buffer (buffer), m_caller_owned (caller_owned)
-  {}
-
   void maybe_free ()
   {
     if (m_caller_owned)
       free (m_buffer);
   }
 
+  /* Create a label_text instance that borrows BUFFER from a
+     longer-lived owner.  */
+  static label_text borrow (const char *buffer)
+  {
+    return label_text (const_cast <char *> (buffer), false);
+  }
+
+  /* Create a label_text instance that takes ownership of BUFFER.  */
+  static label_text take (char *buffer)
+  {
+    return label_text (buffer, true);
+  }
+
+  /* Take ownership of the buffer, copying if necessary.  */
+  char *take_or_copy ()
+  {
+    if (m_caller_owned)
+      return m_buffer;
+    else
+      return xstrdup (m_buffer);
+  }
+
   char *m_buffer;
   bool m_caller_owned;
+
+private:
+  label_text (char *buffer, bool owned)
+  : m_buffer (buffer), m_caller_owned (owned)
+  {}
 };
 
 /* Abstract base class for labelling a range within a rich_location

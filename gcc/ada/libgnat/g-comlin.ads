@@ -462,8 +462,9 @@ package GNAT.Command_Line is
    function Get_Argument
      (Do_Expansion : Boolean := False;
       Parser       : Opt_Parser := Command_Line_Parser) return String;
-   --  Returns the next element on the command line that is not a switch.  This
-   --  function should not be called before Getopt has returned ASCII.NUL.
+   --  Returns the next element on the command line that is not a switch. This
+   --  function should be called either after Getopt has returned ASCII.NUL or
+   --  after Getopt procedure call.
    --
    --  If Do_Expansion is True, then the parameter on the command line will
    --  be considered as a filename with wildcards, and will be expanded. The
@@ -471,6 +472,16 @@ package GNAT.Command_Line is
    --  non-Unix systems for obtaining normal expansion of wildcard references.
    --  When there are no more arguments on the command line, this function
    --  returns an empty string.
+
+   function Get_Argument
+     (Do_Expansion     : Boolean    := False;
+      Parser           : Opt_Parser := Command_Line_Parser;
+      End_Of_Arguments : out Boolean) return String;
+   --  The same as above but able to distinguish empty element in argument list
+   --  from end of arguments.
+   --  End_Of_Arguments is True if the end of the command line has been reached
+   --  (i.e. all available arguments have been returned by previous calls to
+   --  Get_Argument).
 
    function Parameter
      (Parser : Opt_Parser := Command_Line_Parser) return String;

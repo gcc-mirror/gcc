@@ -908,7 +908,7 @@ name_lookup::adl_expr (tree expr)
 
   if (TREE_TYPE (expr) != unknown_type_node)
     {
-      adl_type (TREE_TYPE (expr));
+      adl_type (unlowered_expr_type (expr));
       return;
     }
 

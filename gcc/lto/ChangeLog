@@ -1,11 +1,16 @@
 2019-12-07  Jan Hubicka  <hubicka@ucw.cz>
 
+	* lto-partition.c (lto_balanced_map): Fix printing of tp_first_run.
+
+2019-12-10  Jan Hubicka  <hubicka@ucw.cz>
+
 	* lto-partition.c (node_cmp): Turn into simple order comparsions.
 	(varpool_node_cmp): Remove.
 	(add_sorted_nodes): Use node_cmp.
 	(lto_balanced_map): Use tp_first_run_node_cmp.
 
-/bin/bash: :q: command not found
+2019-11-25  Joseph Myers  <joseph@codesourcery.com>
+
 	PR c/91985
 	* lto-lang.c (lto_type_for_mode): Handle decimal floating-point
 	types being NULL_TREE.

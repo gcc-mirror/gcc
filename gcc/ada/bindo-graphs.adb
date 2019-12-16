@@ -1676,7 +1676,7 @@ package body Bindo.Graphs is
          --  successor and predecessor are kept consistent in both cases, and
          --  Add_Edge_With_Return will prevent the creation of the second edge.
 
-         --  Assume that that no Body_Before_Spec is necessary
+         --  Assume that no Body_Before_Spec is necessary
 
          Edge := No_Library_Graph_Edge;
 

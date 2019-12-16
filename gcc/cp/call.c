@@ -6254,6 +6254,10 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	    result = error_mark_node;
 	  else
 	    {
+	      tsubst_flags_t ocomplain = complain;
+	      if (cand->rewritten ())
+		/* We'll wrap this call in another one.  */
+		ocomplain &= ~tf_decltype;
 	      if (cand->reversed ())
 		{
 		  /* We swapped these in add_candidate, swap them back now.  */
@@ -6263,7 +6267,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 				"current function recursively with reversed "
 				"arguments");
 		}
-	      result = build_over_call (cand, LOOKUP_NORMAL, complain);
+	      result = build_over_call (cand, LOOKUP_NORMAL, ocomplain);
 	    }
 
 	  if (trivial_fn_p (cand->fn))
@@ -11061,24 +11065,25 @@ joust_maybe_elide_copy (z_candidate *&cand)
 bool
 cand_parms_match (z_candidate *c1, z_candidate *c2)
 {
-  tree fn1 = c1->template_decl;
-  tree fn2 = c2->template_decl;
-  if (fn1 && fn2)
-    {
-      fn1 = most_general_template (TI_TEMPLATE (fn1));
-      fn1 = DECL_TEMPLATE_RESULT (fn1);
-      fn2 = most_general_template (TI_TEMPLATE (fn2));
-      fn2 = DECL_TEMPLATE_RESULT (fn2);
-    }
-  else
-    {
-      fn1 = c1->fn;
-      fn2 = c2->fn;
-    }
+  tree fn1 = c1->fn;
+  tree fn2 = c2->fn;
   if (fn1 == fn2)
     return true;
   if (identifier_p (fn1) || identifier_p (fn2))
     return false;
+  /* We don't look at c1->template_decl because that's only set for primary
+     templates, not e.g. non-template member functions of class templates.  */
+  tree t1 = most_general_template (fn1);
+  tree t2 = most_general_template (fn2);
+  if (t1 || t2)
+    {
+      if (!t1 || !t2)
+	return false;
+      if (t1 == t2)
+	return true;
+      fn1 = DECL_TEMPLATE_RESULT (t1);
+      fn2 = DECL_TEMPLATE_RESULT (t2);
+    }
   return compparms (TYPE_ARG_TYPES (TREE_TYPE (fn1)),
 		    TYPE_ARG_TYPES (TREE_TYPE (fn2)));
 }

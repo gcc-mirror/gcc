@@ -337,7 +337,7 @@ extern void lra_init_equiv (void);
 extern int lra_constraint_offset (int, machine_mode);
 
 extern int lra_constraint_iter;
-extern bool lra_risky_transformations_p;
+extern bool check_and_force_assignment_correctness_p;
 extern int lra_inheritance_iter;
 extern int lra_undo_inheritance_iter;
 extern bool lra_constrain_insn (rtx_insn *);

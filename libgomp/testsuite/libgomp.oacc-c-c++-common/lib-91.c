@@ -72,6 +72,8 @@ main (int argc, char **argv)
   if (async > (sync * 1.5))
     abort ();
 
+  acc_unmap_data (h);
+
   acc_free (d);
 
   free (h);

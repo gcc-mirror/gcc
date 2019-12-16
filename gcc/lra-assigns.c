@@ -1131,7 +1131,7 @@ static int *sorted_pseudos;
 /* The constraints pass is allowed to create equivalences between
    pseudos that make the current allocation "incorrect" (in the sense
    that pseudos are assigned to hard registers from their own conflict
-   sets).  The global variable lra_risky_transformations_p says
+   sets).  The global variable check_and_force_assignment_correctness_p says
    whether this might have happened.
 
    Process pseudos assigned to hard registers (less frequently used
@@ -1152,7 +1152,7 @@ setup_live_pseudos_and_spill_after_risky_transforms (bitmap
   bitmap_iterator bi;
   int max_regno = max_reg_num ();
 
-  if (! lra_risky_transformations_p)
+  if (! check_and_force_assignment_correctness_p)
     {
       for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
 	if (reg_renumber[i] >= 0 && lra_reg_info[i].nrefs > 0)
@@ -1690,6 +1690,8 @@ lra_assign (bool &fails_p)
     internal_error
       ("maximum number of LRA assignment passes is achieved (%d)",
        LRA_MAX_ASSIGNMENT_ITERATION_NUMBER);
+  /* Reset the assignment correctness flag: */
+  check_and_force_assignment_correctness_p = false;
   return no_spills_p;
 }
 

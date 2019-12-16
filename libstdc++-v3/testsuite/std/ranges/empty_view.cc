@@ -31,5 +31,5 @@ static_assert(e.end() == nullptr);
 static_assert(e.data() == nullptr);
 static_assert(e.empty());
 
-static_assert(begin(e) == nullptr);
-static_assert(end(e) == nullptr);
+static_assert(std::ranges::begin(e) == nullptr);
+static_assert(std::ranges::end(e) == nullptr);

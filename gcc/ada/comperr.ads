@@ -50,6 +50,8 @@ package Comperr is
    --  for a GCC abort and false for a front end exception (with a possible
    --  message stored in TSD.Current_Excep).
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    procedure Delete_SCIL_Files;
    --  Delete SCIL files associated with the main unit
 

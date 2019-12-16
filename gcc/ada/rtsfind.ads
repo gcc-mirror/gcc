@@ -36,59 +36,10 @@ package Rtsfind is
    -- Runtime Unit Table --
    ------------------------
 
-   --  The following type includes an enumeration entry for each runtime unit.
-   --  The enumeration literal represents the fully qualified name of the unit,
-   --  as follows:
-
-   --    Names of the form Ada_xxx are first level children of Ada, whose name
-   --    is Ada.xxx. For example, the name Ada_Tags refers to package Ada.Tags.
-
-   --    Names of the form Ada_Calendar_xxx are second level children of
-   --    Ada.Calendar. This is part of a temporary implementation of delays;
-   --    eventually, packages implementing delays will be found relative to
-   --    the package that declares the time type.
-
-   --    Names of the form Ada_Interrupts_xxx are second level children of
-   --    Ada.Interrupts. This is needed for Ada.Interrupts.Names which is used
-   --    by pragma Interrupt_State.
-
-   --    Names of the form Ada_Real_Time_xxx are second level children of
-   --    Ada.Real_Time.
-
-   --    Names of the form Ada_Streams_xxx are second level children
-   --    of Ada.Streams.
-
-   --    Names of the form Ada_Strings_xxx are second level children
-   --    of Ada.Strings.
-
-   --    Names of the form Ada_Text_IO_xxx are second level children of
-   --    Ada.Text_IO.
-
-   --    Names of the form Ada_Wide_Text_IO_xxx are second level children of
-   --    Ada.Wide_Text_IO.
-
-   --    Names of the form Ada_Wide_Wide_Text_IO_xxx are second level children
-   --    of Ada.Wide_Wide_Text_IO.
-
-   --    Names of the form Interfaces_xxx are first level children of
-   --    Interfaces. For example, the name Interfaces_Packed_Decimal refers to
-   --    package Interfaces.Packed_Decimal.
-
-   --    Names of the form System_xxx are first level children of System, whose
-   --    name is System.xxx. For example, the name System_Str_Concat refers to
-   --    package System.Str_Concat.
-
-   --    Names of the form System_Storage_Pools_xxx are second level children
-   --    of the package System.Storage_Pools.
-
-   --    Names of the form System_Strings_xxx are second level children of the
-   --    package System.Strings.
-
-   --    Names of the form System_Tasking_xxx are second level children of the
-   --    package System.Tasking. For example, System_Tasking_Stages refers to
-   --    the package System.Tasking.Stages.
-
-   --    Other names stand for themselves (e.g. System for package System)
+   --  The following type includes an enumeration literal for each runtime
+   --  unit. The enumeration literal is the full expanded name of the unit
+   --  with "." replaced by "_". For example, the enumeration literal for
+   --  Ada.Interrupts.Names is Ada_Interrupts_Names
 
    --  This list can contain both subprogram and package unit names. For
    --  packages, the accessible entities in the package are separately listed
@@ -100,13 +51,13 @@ package Rtsfind is
    --  seem worthwhile, since the implementation controls the set of units that
    --  are referenced, and this restriction is easily met.
 
-   --  IMPORTANT NOTE: the specs of packages and procedures with'ed using this
-   --  mechanism may not contain use clauses. This is because these subprograms
-   --  are compiled in the current visibility environment, and it would be too
-   --  much trouble to establish a clean environment for the compilation. The
-   --  presence of extraneous visible stuff has no effect on the compilation
-   --  except in the presence of use clauses (which might result in unexpected
-   --  ambiguities).
+   --  IMPORTANT NOTE: the specs of packages and procedures with'ed using
+   --  this mechanism must not contain use clauses. This is because these
+   --  subprograms are compiled in the current visibility environment, and it
+   --  would be too much trouble to establish a clean environment for the
+   --  compilation. The presence of extraneous visible stuff has no effect on
+   --  the compilation except in the presence of use clauses, which might
+   --  result in unexpected ambiguities.
 
    type RTU_Id is (
 

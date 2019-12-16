@@ -23,7 +23,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-/* This file handles maintainance of threads on NVPTX.  */
+/* This file handles maintenance of threads on NVPTX.  */
 
 #if defined __nvptx_softstack__ && defined __nvptx_unisimt__
 

@@ -1,3 +1,4 @@
+! { dg-do run }
 ! Test that the cache directives work with optional arguments.  The effect
 ! of giving a non-present argument to the cache directive is not tested as
 ! it is undefined.  The test is based on gfortran.dg/goacc/cache-1.f95.

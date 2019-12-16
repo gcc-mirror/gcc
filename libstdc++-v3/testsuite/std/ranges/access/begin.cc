@@ -71,10 +71,21 @@ struct R
   int a[4] = { 0, 1, 2, 3 };
 
   friend int* begin(R& r) { return r.a + 0; }
-  friend int* begin(R&& r) { return r.a + 1; }
+  friend int* begin(R&& r); // this overload is not defined
   friend const int* begin(const R& r) noexcept { return r.a + 2; }
-  friend const int* begin(const R&& r) noexcept { return r.a + 3; }
+  friend const int* begin(const R&& r) noexcept; // not defined
 };
+
+struct RV // view on an R
+{
+  R& r;
+
+  friend int* begin(RV& rv) { return begin(rv.r); }
+  friend const int* begin(const RV& rv) noexcept { return begin(rv.r); }
+};
+
+// Allow ranges::begin to work with RV&&
+template<> constexpr bool std::ranges::enable_safe_range<RV> = true;
 
 void
 test03()
@@ -86,20 +97,23 @@ test03()
   static_assert(!noexcept(std::ranges::begin(r)));
   VERIFY( std::ranges::begin(r) == begin(r) );
 
-  static_assert(same_as<decltype(std::ranges::begin(std::move(r))),
-		decltype(begin(std::move(r)))>);
-  static_assert(!noexcept(std::ranges::begin(std::move(r))));
-  VERIFY( std::ranges::begin(std::move(r)) == begin(std::move(r)) );
-
-
   static_assert(same_as<decltype(std::ranges::begin(c)), decltype(begin(c))>);
   static_assert(noexcept(std::ranges::begin(c)));
   VERIFY( std::ranges::begin(c) == begin(c) );
 
-  static_assert(same_as<decltype(std::ranges::begin(std::move(c))),
-		decltype(begin(std::move(c)))>);
-  static_assert(noexcept(std::ranges::begin(std::move(c))));
-  VERIFY( std::ranges::begin(std::move(c)) == begin(std::move(c)) );
+  RV v{r};
+  // enable_safe_range<RV> allows ranges::begin to work for rvalues,
+  // but it will call v.begin() or begin(v) on an lvalue:
+  static_assert(same_as<decltype(std::ranges::begin(std::move(v))),
+		decltype(begin(v))>);
+  static_assert(!noexcept(std::ranges::begin(std::move(v))));
+  VERIFY( std::ranges::begin(std::move(v)) == begin(v) );
+
+  const RV cv{r};
+  static_assert(same_as<decltype(std::ranges::begin(std::move(cv))),
+		decltype(begin(cv))>);
+  static_assert(noexcept(std::ranges::begin(std::move(cv))));
+  VERIFY( std::ranges::begin(std::move(cv)) == begin(cv) );
 }
 
 struct RR
@@ -111,11 +125,14 @@ struct RR
   short* begin() noexcept { return &s; }
   const long* begin() const { return &l; }
 
-  friend int* begin(RR& r) { return r.a + 0; }
-  friend int* begin(RR&& r) { return r.a + 1; }
+  friend int* begin(RR& r) noexcept { return r.a + 0; }
+  friend int* begin(RR&& r); // not defined
   friend const int* begin(const RR& r) { return r.a + 2; }
-  friend const int* begin(const RR&& r) noexcept { return r.a + 3; }
+  friend const int* begin(const RR&& r) noexcept; // not defined
 };
+
+// N.B. this is a lie, begin on an RR rvalue will return a dangling pointer.
+template<> constexpr bool std::ranges::enable_safe_range<RR> = true;
 
 void
 test04()
@@ -125,14 +142,16 @@ test04()
   VERIFY( std::ranges::begin(r) == &r.s );
   static_assert(noexcept(std::ranges::begin(r)));
 
-  VERIFY( std::ranges::begin(std::move(r)) == r.a + 1 );
-  static_assert(!noexcept(std::ranges::begin(std::move(r))));
+  // calls r.begin() on an lvalue, not rvalue
+  VERIFY( std::ranges::begin(std::move(r)) == std::ranges::begin(r) );
+  static_assert(noexcept(std::ranges::begin(std::move(r))));
 
   VERIFY( std::ranges::begin(c) == &r.l );
   static_assert(!noexcept(std::ranges::begin(c)));
 
-  VERIFY( std::ranges::begin(std::move(c)) == r.a + 3 );
-  static_assert(noexcept(std::ranges::begin(std::move(c))));
+  // calls r.begin() on a const lvalue, not rvalue
+  VERIFY( std::ranges::begin(std::move(c)) == std::ranges::begin(c) );
+  static_assert(!noexcept(std::ranges::begin(std::move(c))));
 }
 
 int

@@ -5054,6 +5054,8 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
 	      tree scalar_value
 		= PHI_ARG_DEF_FROM_EDGE (orig_phis[i]->stmt,
 					 loop_preheader_edge (loop));
+	      scalar_value = gimple_convert (&seq, TREE_TYPE (vectype),
+					     scalar_value);
 	      vector_identity = gimple_build_vector_from_val (&seq, vectype,
 							      scalar_value);
 	    }
@@ -6196,8 +6198,9 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
 	  return false;
 	}
 
-      if (direct_internal_fn_supported_p (IFN_FOLD_EXTRACT_LAST,
-					  vectype_in, OPTIMIZE_FOR_SPEED))
+      if (reduc_chain_length == 1
+	  && direct_internal_fn_supported_p (IFN_FOLD_EXTRACT_LAST,
+					     vectype_in, OPTIMIZE_FOR_SPEED))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

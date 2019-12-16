@@ -4277,6 +4277,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   tree ptrtype;
   machine_mode nat_mode;
   unsigned int arg_boundary;
+  unsigned int type_align;
 
   /* Only 64bit target needs something special.  */
   if (is_va_list_char_pointer (TREE_TYPE (valist)))
@@ -4334,6 +4335,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   /* Pull the value out of the saved registers.  */
 
   addr = create_tmp_var (ptr_type_node, "addr");
+  type_align = TYPE_ALIGN (type);
 
   if (container)
     {
@@ -4504,6 +4506,9 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 	  t = build2 (PLUS_EXPR, TREE_TYPE (gpr), gpr,
 		      build_int_cst (TREE_TYPE (gpr), needed_intregs * 8));
 	  gimplify_assign (gpr, t, pre_p);
+	  /* The GPR save area guarantees only 8-byte alignment.  */
+	  if (!need_temp)
+	    type_align = MIN (type_align, 64);
 	}
 
       if (needed_sseregs)
@@ -4548,6 +4553,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   if (container)
     gimple_seq_add_stmt (pre_p, gimple_build_label (lab_over));
 
+  type = build_aligned_type (type, type_align);
   ptrtype = build_pointer_type_for_mode (type, ptr_mode, true);
   addr = fold_convert (ptrtype, addr);
 
@@ -12468,6 +12474,40 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	    }
 	  return;
 
+	case 'I':
+	  if (ASSEMBLER_DIALECT == ASM_ATT)
+	    putc ('$', file);
+	  switch (GET_CODE (x))
+	    {
+	    case EQ:
+	      putc ('0', file);
+	      break;
+	    case NE:
+	      putc ('4', file);
+	      break;
+	    case GE:
+	    case GEU:
+	      putc ('5', file);
+	      break;
+	    case GT:
+	    case GTU:
+	      putc ('6', file);
+	      break;
+	    case LE:
+	    case LEU:
+	      putc ('2', file);
+	      break;
+	    case LT:
+	    case LTU:
+	      putc ('1', file);
+	      break;
+	    default:
+	      output_operand_lossage ("operand is not a condition code, "
+				      "invalid operand code 'I'");
+	      return;
+	    }
+	  return;
+
 	case 'Y':
 	  switch (GET_CODE (x))
 	    {
@@ -14377,10 +14417,10 @@ distance_agu_use (unsigned int regno0, rtx_insn *insn)
 }
 
 /* Define this macro to tune LEA priority vs ADD, it take effect when
-   there is a dilemma of choicing LEA or ADD
+   there is a dilemma of choosing LEA or ADD
    Negative value: ADD is more preferred than LEA
-   Zero: Netrual
-   Positive value: LEA is more preferred than ADD*/
+   Zero: Neutral
+   Positive value: LEA is more preferred than ADD.  */
 #define IX86_LEA_PRIORITY 0
 
 /* Return true if usage of lea INSN has performance advantage

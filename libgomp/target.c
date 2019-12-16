@@ -1116,32 +1116,63 @@ gomp_unmap_tgt (struct target_mem_desc *tgt)
   free (tgt);
 }
 
-attribute_hidden bool
-gomp_remove_var (struct gomp_device_descr *devicep, splay_tree_key k)
-{
-  bool is_tgt_unmapped = false;
-  splay_tree_remove (&devicep->mem_map, k);
-  if (k->link_key)
-    splay_tree_insert (&devicep->mem_map, (splay_tree_node) k->link_key);
-  if (k->tgt->refcount > 1)
-    k->tgt->refcount--;
-  else
-    {
-      is_tgt_unmapped = true;
-      gomp_unmap_tgt (k->tgt);
-    }
-  return is_tgt_unmapped;
-}
-
-static void
+static bool
 gomp_unref_tgt (void *ptr)
 {
+  bool is_tgt_unmapped = false;
+
   struct target_mem_desc *tgt = (struct target_mem_desc *) ptr;
 
   if (tgt->refcount > 1)
     tgt->refcount--;
   else
-    gomp_unmap_tgt (tgt);
+    {
+      gomp_unmap_tgt (tgt);
+      is_tgt_unmapped = true;
+    }
+
+  return is_tgt_unmapped;
+}
+
+static void
+gomp_unref_tgt_void (void *ptr)
+{
+  (void) gomp_unref_tgt (ptr);
+}
+
+static inline __attribute__((always_inline)) bool
+gomp_remove_var_internal (struct gomp_device_descr *devicep, splay_tree_key k,
+			  struct goacc_asyncqueue *aq)
+{
+  bool is_tgt_unmapped = false;
+  splay_tree_remove (&devicep->mem_map, k);
+  if (k->link_key)
+    splay_tree_insert (&devicep->mem_map, (splay_tree_node) k->link_key);
+  if (aq)
+    devicep->openacc.async.queue_callback_func (aq, gomp_unref_tgt_void,
+						(void *) k->tgt);
+  else
+    is_tgt_unmapped = gomp_unref_tgt ((void *) k->tgt);
+  return is_tgt_unmapped;
+}
+
+attribute_hidden bool
+gomp_remove_var (struct gomp_device_descr *devicep, splay_tree_key k)
+{
+  return gomp_remove_var_internal (devicep, k, NULL);
+}
+
+/* Remove a variable asynchronously.  This actually removes the variable
+   mapping immediately, but retains the linked target_mem_desc until the
+   asynchronous operation has completed (as it may still refer to target
+   memory).  The device lock must be held before entry, and remains locked on
+   exit.  */
+
+attribute_hidden void
+gomp_remove_var_async (struct gomp_device_descr *devicep, splay_tree_key k,
+		       struct goacc_asyncqueue *aq)
+{
+  (void) gomp_remove_var_internal (devicep, k, aq);
 }
 
 /* Unmap variables described by TGT.  If DO_COPYFROM is true, copy relevant
@@ -1197,7 +1228,7 @@ gomp_unmap_vars_internal (struct target_mem_desc *tgt, bool do_copyfrom,
     }
 
   if (aq)
-    devicep->openacc.async.queue_callback_func (aq, gomp_unref_tgt,
+    devicep->openacc.async.queue_callback_func (aq, gomp_unref_tgt_void,
 						(void *) tgt);
   else
     gomp_unref_tgt ((void *) tgt);
@@ -1334,6 +1365,7 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
       k->tgt = tgt;
       k->tgt_offset = target_table[i].start;
       k->refcount = REFCOUNT_INFINITY;
+      k->dynamic_refcount = 0;
       k->link_key = NULL;
       array->left = NULL;
       array->right = NULL;
@@ -1366,6 +1398,7 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
       k->tgt = tgt;
       k->tgt_offset = target_var->start;
       k->refcount = target_size & link_bit ? REFCOUNT_LINK : REFCOUNT_INFINITY;
+      k->dynamic_refcount = 0;
       k->link_key = NULL;
       array->left = NULL;
       array->right = NULL;
@@ -2095,16 +2128,7 @@ gomp_exit_data (struct gomp_device_descr *devicep, size_t mapnum,
 					  - k->host_start),
 				cur_node.host_end - cur_node.host_start);
 	  if (k->refcount == 0)
-	    {
-	      splay_tree_remove (&devicep->mem_map, k);
-	      if (k->link_key)
-		splay_tree_insert (&devicep->mem_map,
-				   (splay_tree_node) k->link_key);
-	      if (k->tgt->refcount > 1)
-		k->tgt->refcount--;
-	      else
-		gomp_unmap_tgt (k->tgt);
-	    }
+	    gomp_remove_var (devicep, k);
 
 	  break;
 	default:
@@ -2636,6 +2660,7 @@ omp_target_associate_ptr (const void *host_ptr, const void *device_ptr,
       k->tgt = tgt;
       k->tgt_offset = (uintptr_t) device_ptr + device_offset;
       k->refcount = REFCOUNT_INFINITY;
+      k->dynamic_refcount = 0;
       array->left = NULL;
       array->right = NULL;
       splay_tree_insert (&devicep->mem_map, array);
@@ -2906,7 +2931,6 @@ gomp_target_init (void)
 		current_device.type = current_device.get_type_func ();
 		current_device.mem_map.root = NULL;
 		current_device.state = GOMP_DEVICE_UNINITIALIZED;
-		current_device.openacc.data_environ = NULL;
 		for (i = 0; i < new_num_devices; i++)
 		  {
 		    current_device.target_id = i;

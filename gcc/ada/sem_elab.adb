@@ -1457,7 +1457,7 @@ package body Sem_Elab is
       -- Types --
       -----------
 
-      --  The following type enumerates all possible Ghost mode mode kinds
+      --  The following type enumerates all possible Ghost mode kinds
 
       type Extended_Ghost_Mode is
         (Is_Ignored,
@@ -4963,7 +4963,7 @@ package body Sem_Elab is
             Output_Active_Scenarios (Attr, New_In_State);
          end if;
 
-         --  Treat the attribute an an immediate invocation of the target when
+         --  Treat the attribute an immediate invocation of the target when
          --  switch -gnatd.o (conservative elaboration order for indirect
          --  calls) is in effect. This has the following desirable effects:
          --
@@ -10015,8 +10015,8 @@ package body Sem_Elab is
       function Find_Enclosing_Context (N : Node_Id) return Node_Id;
       pragma Inline (Find_Enclosing_Context);
       --  Return the nearest enclosing non-library-level or compilation unit
-      --  node which which encapsulates arbitrary node N. Return Empty is no
-      --  such context is available.
+      --  node which encapsulates arbitrary node N. Return Empty is no such
+      --  context is available.
 
       function In_Nested_Context
         (Outer : Node_Id;
@@ -10916,8 +10916,8 @@ package body Sem_Elab is
          Spec_Id : Entity_Id;
 
       begin
-         --  The the task type has already been expanded, it carries the
-         --  procedure which emulates the behavior of the task body.
+         --  The task type has already been expanded, it carries the procedure
+         --  which emulates the behavior of the task body.
 
          if Present (Task_Body_Id) then
             Spec_Id := Task_Body_Id;
@@ -10951,8 +10951,8 @@ package body Sem_Elab is
          Spec_Id : Entity_Id;
 
       begin
-         --  The the task type has already been expanded, it carries the
-         --  procedure which emulates the behavior of the task body.
+         --  The task type has already been expanded, it carries the procedure
+         --  which emulates the behavior of the task body.
 
          if Present (Task_Body_Id) then
             Spec_Id := Task_Body_Id;

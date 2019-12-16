@@ -385,53 +385,43 @@ namespace std
   is_gteq(partial_ordering __cmp) noexcept
   { return __cmp >= 0; }
 
-#if __cpp_lib_concepts
   namespace __detail
   {
     template<typename _Tp>
       inline constexpr unsigned __cmp_cat_id = 1;
     template<>
-      inline constexpr unsigned __cmp_cat_id<strong_ordering> = 2;
+      inline constexpr unsigned __cmp_cat_id<partial_ordering> = 2;
     template<>
       inline constexpr unsigned __cmp_cat_id<weak_ordering> = 4;
     template<>
-      inline constexpr unsigned __cmp_cat_id<partial_ordering> = 8;
+      inline constexpr unsigned __cmp_cat_id<strong_ordering> = 8;
 
     template<typename... _Ts>
-      constexpr unsigned __cmp_cat_ids()
-      { return (__cmp_cat_id<_Ts> | ...); }
-
-    template<unsigned>
-      struct __common_cmp_cat;
-
-    // If any Ti is not a comparison category type, U is void.
-    template<unsigned _Bits>
-      requires ((_Bits & 1) == 1)
-      struct __common_cmp_cat<_Bits> { using type = void; };
-
-    // Otherwise, if at least one Ti is std::partial_ordering,
-    // U is std::partial_ordering.
-    template<unsigned _Bits>
-      requires ((_Bits & 0b1001) == 0b1000)
-      struct __common_cmp_cat<_Bits> { using type = partial_ordering; };
-
-    // Otherwise, if at least one Ti is std::weak_ordering,
-    // U is std::weak_ordering.
-    template<unsigned _Bits>
-      requires ((_Bits & 0b1101) == 0b0100)
-      struct __common_cmp_cat<_Bits> { using type = weak_ordering; };
-
-    // Otherwise, U is std::strong_ordering.
-    template<>
-      struct __common_cmp_cat<0b0010> { using type = strong_ordering; };
+      constexpr auto __common_cmp_cat()
+      {
+	constexpr unsigned __cats = (__cmp_cat_id<_Ts> | ...);
+	// If any Ti is not a comparison category type, U is void.
+	if constexpr (__cats & 1)
+	  return;
+	// Otherwise, if at least one Ti is std::partial_ordering,
+	// U is std::partial_ordering.
+	else if constexpr (bool(__cats & __cmp_cat_id<partial_ordering>))
+	  return partial_ordering::equivalent;
+	// Otherwise, if at least one Ti is std::weak_ordering,
+	// U is std::weak_ordering.
+	else if constexpr (bool(__cats & __cmp_cat_id<weak_ordering>))
+	  return weak_ordering::equivalent;
+	// Otherwise, U is std::strong_ordering.
+	else
+	  return strong_ordering::equivalent;
+      }
   } // namespace __detail
 
   // [cmp.common], common comparison category type
   template<typename... _Ts>
     struct common_comparison_category
     {
-      using type
-	= __detail::__common_cmp_cat<__detail::__cmp_cat_ids<_Ts...>()>::type;
+      using type = decltype(__detail::__common_cmp_cat<_Ts...>());
     };
 
   // Partial specializations for one and zero argument cases.
@@ -460,6 +450,7 @@ namespace std
     using common_comparison_category_t
       = typename common_comparison_category<_Ts...>::type;
 
+#if __cpp_lib_concepts
   namespace __detail
   {
     template<typename _Tp, typename _Cat>
