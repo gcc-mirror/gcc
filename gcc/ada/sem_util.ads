@@ -1996,6 +1996,10 @@ package Sem_Util is
    --  the N_Statement_Other_Than_Procedure_Call subtype from Sinfo).
    --  Note that a label is *not* a statement, and will return False.
 
+   function Is_Subcomponent_Of_Atomic_Object (N : Node_Id) return Boolean;
+   --  Determine whether arbitrary node N denotes a reference to a subcomponent
+   --  of an atomic object as per Ada RM C.6(7).
+
    function Is_Subprogram_Contract_Annotation (Item : Node_Id) return Boolean;
    --  Determine whether aspect specification or pragma Item is one of the
    --  following subprogram contract annotations:

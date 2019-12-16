@@ -3569,7 +3569,8 @@ package body Freeze is
             Error_Msg_N ("\??use explicit size clause to set size", E);
          end if;
 
-         --  Declaring a too-big array in disabled ghost code is OK
+         --  Declaring too big an array in disabled ghost code is OK
+
          if Is_Array_Type (Typ) and then not Is_Ignored_Ghost_Entity (E) then
             Check_Large_Modular_Array (Typ);
          end if;
@@ -3998,11 +3999,6 @@ package body Freeze is
          --  clause (used to warn about useless Bit_Order pragmas, and also
          --  to detect cases where Implicit_Packing may have an effect).
 
-         Rec_Pushed : Boolean := False;
-         --  Set True if the record type scope Rec has been pushed on the scope
-         --  stack. Needed for the analysis of delayed aspects specified to the
-         --  components of Rec.
-
          Sized_Component_Total_RM_Size : Uint := Uint_0;
          --  Accumulates total RM_Size values of all sized components. Used
          --  for processing of Implicit_Packing.
@@ -4141,47 +4137,6 @@ package body Freeze is
       --  Start of processing for Freeze_Record_Type
 
       begin
-         --  Deal with delayed aspect specifications for components. The
-         --  analysis of the aspect is required to be delayed to the freeze
-         --  point, thus we analyze the pragma or attribute definition
-         --  clause in the tree at this point. We also analyze the aspect
-         --  specification node at the freeze point when the aspect doesn't
-         --  correspond to pragma/attribute definition clause.
-
-         Comp := First_Entity (Rec);
-         while Present (Comp) loop
-            if Ekind (Comp) = E_Component
-              and then Has_Delayed_Aspects (Comp)
-            then
-               if not Rec_Pushed then
-                  Push_Scope (Rec);
-                  Rec_Pushed := True;
-
-                  --  The visibility to the discriminants must be restored in
-                  --  order to properly analyze the aspects.
-
-                  if Has_Discriminants (Rec) then
-                     Install_Discriminants (Rec);
-                  end if;
-               end if;
-
-               Analyze_Aspects_At_Freeze_Point (Comp);
-            end if;
-
-            Next_Entity (Comp);
-         end loop;
-
-         --  Pop the scope if Rec scope has been pushed on the scope stack
-         --  during the delayed aspect analysis process.
-
-         if Rec_Pushed then
-            if Has_Discriminants (Rec) then
-               Uninstall_Discriminants (Rec);
-            end if;
-
-            Pop_Scope;
-         end if;
-
          --  Freeze components and embedded subtypes
 
          Comp := First_Entity (Rec);
@@ -5491,6 +5446,56 @@ package body Freeze is
       --  the aspect doesn't correspond to pragma/attribute definition clause.
       --  In addition, a derived type may have inherited aspects that were
       --  delayed in the parent, so these must also be captured now.
+
+      --  For a record type, we deal with the delayed aspect specifications on
+      --  components first, which is consistent with the non-delayed case and
+      --  makes it possible to have a single processing to detect conflicts.
+
+      if Is_Record_Type (E) then
+         declare
+            Comp : Entity_Id;
+
+            Rec_Pushed : Boolean := False;
+            --  Set True if the record type E has been pushed on the scope
+            --  stack. Needed for the analysis of delayed aspects specified
+            --  to the components of Rec.
+
+         begin
+            Comp := First_Entity (E);
+            while Present (Comp) loop
+               if Ekind (Comp) = E_Component
+                 and then Has_Delayed_Aspects (Comp)
+               then
+                  if not Rec_Pushed then
+                     Push_Scope (E);
+                     Rec_Pushed := True;
+
+                     --  The visibility to the discriminants must be restored
+                     --  in order to properly analyze the aspects.
+
+                     if Has_Discriminants (E) then
+                        Install_Discriminants (E);
+                     end if;
+                  end if;
+
+                  Analyze_Aspects_At_Freeze_Point (Comp);
+               end if;
+
+               Next_Entity (Comp);
+            end loop;
+
+            --  Pop the scope if Rec scope has been pushed on the scope stack
+            --  during the delayed aspect analysis process.
+
+            if Rec_Pushed then
+               if Has_Discriminants (E) then
+                  Uninstall_Discriminants (E);
+               end if;
+
+               Pop_Scope;
+            end if;
+         end;
+      end if;
 
       if Has_Delayed_Aspects (E)
         or else May_Inherit_Delayed_Rep_Aspects (E)

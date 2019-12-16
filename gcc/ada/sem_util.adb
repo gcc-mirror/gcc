@@ -17844,6 +17844,26 @@ package body Sem_Util is
           or else Nkind (N) = N_Procedure_Call_Statement;
    end Is_Statement;
 
+   ----------------------------------------
+   --  Is_Subcomponent_Of_Atomic_Object  --
+   ----------------------------------------
+
+   function Is_Subcomponent_Of_Atomic_Object (N : Node_Id) return Boolean is
+      R : Node_Id;
+
+   begin
+      R := Get_Referenced_Object (N);
+      while Nkind_In (R, N_Indexed_Component, N_Selected_Component, N_Slice)
+      loop
+         R := Get_Referenced_Object (Prefix (R));
+         if Is_Atomic_Object (R) then
+            return True;
+         end if;
+      end loop;
+
+      return False;
+   end Is_Subcomponent_Of_Atomic_Object;
+
    ---------------------------------------
    -- Is_Subprogram_Contract_Annotation --
    ---------------------------------------
