@@ -1,3 +1,29 @@
+2019-12-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* scng.adb (Scan): In Ada2020, a left-bracket indicates the
+	start of an homogenous aggregate.
+	* par-ch4.adb (P_Reduction_Attribute_Reference): New procedure.
+	(P_Aggregate): Recognize Ada2020 bracket-delimited aggregates.
+	(P_Primary): Ditto.
+	* par-util.adb (Comma_Present): Return false on a right bracket
+	in Ada2020, indicating the end of an aggregate.
+	* snames.ads-tmpl: Introduce Name_Reduce and Attribute Reduce.
+	* sinfo.ads, sinfo.adb (Is_Homogeneous_Aggregate): New flag on
+	aggregates, to designate an Ada2020 array or container aggregate
+	that is bracket-delimited in the source.
+	* sem_attr.adb (Analyze_Attribute): For attribute Reduce, verify
+	that two arguments are present, and verify that the prefix is a
+	stream or an object that is iterable (array or contrainer).
+	(Resolve_Attribute): For attribute Reduce, resolve initial value
+	with the type of the context. Type-checking of element type of
+	prefix is performed after expansion.
+	* exp_attr.adb (Expand_N_Attribute_Reference): For attribute
+	Reduce, expand into a loop: a) If prefix is an aggregate with a
+	single iterated component association, use its iterator
+	specification to construct a loop, b) If prefix is a name, build
+	a loop using an element iterator loop.
+	* scans.ads: Add brackets tokens.
+
 2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Adjust calls to

@@ -2010,6 +2010,14 @@ package body Sinfo is
       return Flag2 (N);
    end Is_Generic_Contract_Pragma;
 
+   function Is_Homogeneous_Aggregate
+     (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aggregate);
+      return Flag14 (N);
+   end Is_Homogeneous_Aggregate;
+
    function Is_Ignored
       (N : Node_Id) return Boolean is
    begin
@@ -5504,6 +5512,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Pragma);
       Set_Flag2 (N, Val);
    end Set_Is_Generic_Contract_Pragma;
+
+   procedure Set_Is_Homogeneous_Aggregate
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aggregate);
+      Set_Flag14 (N, Val);
+   end Set_Is_Homogeneous_Aggregate;
 
    procedure Set_Is_Ignored
       (N : Node_Id; Val : Boolean := True) is

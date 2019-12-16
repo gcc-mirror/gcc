@@ -276,8 +276,11 @@ package body Util is
 
       --  If we have a right paren, then that is taken as ending the list
       --  i.e. no comma is present.
+      --  Ditto for a right bracket in Ada2020.
 
-      elsif Token = Tok_Right_Paren then
+      elsif Token = Tok_Right_Paren
+        or else (Token = Tok_Right_Bracket and then Ada_Version >= Ada_2020)
+      then
          return False;
 
       --  If pragmas, then get rid of them and make a recursive call
