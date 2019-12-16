@@ -861,6 +861,14 @@ package body Errout is
                end if;
             end;
          end if;
+
+         --  Disable warnings on unused use clauses and the like. Otherwise, an
+         --  error might hide a reference to an entity in a used package, so
+         --  after fixing the error, the use clause no longer looks like it was
+         --  unused.
+
+         Check_Unreferenced := False;
+         Check_Unreferenced_Formals := False;
       end Handle_Serious_Error;
 
    --  Start of processing for Error_Msg_Internal
