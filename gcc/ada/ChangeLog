@@ -1,3 +1,15 @@
+2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Requires_Atomic_Or_Volatile_Copy): New predicate.
+	(Expand_Actuals): Use it to decide whether to add call by copy
+	code as per the RM C.6(19) clause.
+	* fe.h (Is_Atomic_Object): Remove.
+	(Is_Volatile_Object): Likewise.
+	* sem_util.ads (Is_Atomic_Object): Remove WARNING note.
+	(Is_Volatile_Object): Likewise.
+	* gcc-interface/trans.c (atomic_or_volatile_copy_required_p): Delete.
+	(Call_to_gnu): Do not implement the  RM C.6(19) clause.
+
 2019-12-16  Ghjuvan Lacambre  <lacambre@adacore.com>
 
 	* sem_ch12.adb (Validate_Access_Subprogram_Instance): Add

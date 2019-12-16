@@ -5008,35 +5008,6 @@ create_init_temporary (const char *prefix, tree gnu_init, tree *gnu_init_stmt,
   return gnu_temp;
 }
 
-/* Return whether ACTUAL parameter corresponding to FORMAL_TYPE must be passed
-   by copy in a call as per RM C.6(19).  Note that we use the same predicates
-   as in the front-end for RM C.6(12) because it's purely a legality issue.  */
-
-static bool
-atomic_or_volatile_copy_required_p (Node_Id actual, Entity_Id formal_type)
-{
-  /* We should not have a scalar type here because such a type is passed
-     by copy.  But the Interlocked routines in System.Aux_DEC force some
-     of the their scalar parameters to be passed by reference so we need
-     to preserve that if we do not want to break the interface.  */
-  if (Is_Scalar_Type (formal_type))
-    return false;
-
-  if (Is_Atomic_Object (actual) && !Is_Atomic (formal_type))
-    {
-      post_error ("?atomic actual passed by copy (RM C.6(19))", actual);
-      return true;
-    }
-
-  if (Is_Volatile_Object (actual) && !Is_Volatile (formal_type))
-    {
-      post_error ("?volatile actual passed by copy (RM C.6(19))", actual);
-      return true;
-    }
-
-  return false;
-}
-
 /* Subroutine of gnat_to_gnu to translate gnat_node, either an N_Function_Call
    or an N_Procedure_Call_Statement, to a GCC tree, which is returned.
    GNU_RESULT_TYPE_P is a pointer to where we should place the result type.
@@ -5254,18 +5225,13 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	      = build_compound_expr (TREE_TYPE (gnu_name), init, gnu_name);
 	}
 
-      /* If we are passing a non-addressable actual parameter by reference,
-	 pass the address of a copy and, in the In Out or Out case, set up
-	 to copy back after the call.  We also need to do that if the actual
-	 parameter is atomic or volatile but the formal parameter is not.  */
+      /* If we are passing a non-addressable parameter by reference, pass the
+	 address of a copy.  In the In Out or Out case, set up to copy back
+	 out after the call.  */
       if (is_by_ref_formal_parm
 	  && (gnu_name_type = gnat_to_gnu_type (Etype (gnat_name)))
-	  && (!addressable_p (gnu_name, gnu_name_type)
-	      || (Comes_From_Source (gnat_node)
-		  && atomic_or_volatile_copy_required_p (gnat_actual,
-							 gnat_formal_type))))
+	  && !addressable_p (gnu_name, gnu_name_type))
 	{
-	  const bool atomic_p = atomic_access_required_p (gnat_actual, &sync);
 	  tree gnu_orig = gnu_name, gnu_temp, gnu_stmt;
 
 	  /* Do not issue warnings for CONSTRUCTORs since this is not a copy
@@ -5335,9 +5301,6 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	    }
 
 	  /* Create an explicit temporary holding the copy.  */
-	  if (atomic_p)
-	    gnu_name = build_atomic_load (gnu_name, sync);
-
 	  /* Do not initialize it for the _Init parameter of an initialization
 	     procedure since no data is meant to be passed in.  */
 	  if (Ekind (gnat_formal) == E_Out_Parameter
@@ -5367,13 +5330,8 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 		     (TREE_OPERAND (TREE_OPERAND (gnu_orig, 1), 1)))
 		gnu_orig = TREE_OPERAND (gnu_orig, 2);
 
-	      if (atomic_p)
-		gnu_stmt
-		  = build_atomic_store (gnu_orig, gnu_temp, sync);
-	      else
-		gnu_stmt
-		  = build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_orig,
-				     gnu_temp);
+	      gnu_stmt
+		= build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_orig, gnu_temp);
 	      set_expr_location_from_node (gnu_stmt, gnat_node);
 
 	      append_to_statement_list (gnu_stmt, &gnu_after_list);

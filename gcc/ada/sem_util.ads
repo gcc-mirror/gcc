@@ -1533,8 +1533,6 @@ package Sem_Util is
    --  Determine whether arbitrary node N denotes a reference to an atomic
    --  object as per Ada RM C.6(7) and the crucial remark in C.6(8).
 
-   --  WARNING: There is a matching C declaration of this subprogram in fe.h
-
    function Is_Atomic_Object_Entity (Id : Entity_Id) return Boolean;
    --  Determine whether arbitrary entity Id denotes an atomic object as per
    --  Ada RM C.6(12).
@@ -2107,8 +2105,6 @@ package Sem_Util is
    --  the legality checks described in RM C.6(12). Note that the test here is
    --  for something actually declared as volatile, not for an object that gets
    --  treated as volatile (see Einfo.Treat_As_Volatile).
-
-   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    generic
       with procedure Handle_Parameter (Formal : Entity_Id; Actual : Node_Id);
