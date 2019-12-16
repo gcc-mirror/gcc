@@ -1,3 +1,8 @@
+2019-12-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92859 - ADL and bit-field.
+	* name-lookup.c: Use unlowered_expr_type.
+
 2019-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
