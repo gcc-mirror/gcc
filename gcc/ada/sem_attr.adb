@@ -5841,13 +5841,16 @@ package body Sem_Attr is
          --  Time_Errors after the back end has been called and this occurrence
          --  of 'Size is known at compile time then it is safe to perform this
          --  evaluation. Needed to perform the static evaluation of the full
-         --  boolean expression of these pragmas.
+         --  boolean expression of these pragmas. Note that Known_RM_Size is
+         --  sometimes True when Size_Known_At_Compile_Time is False, when the
+         --  back end has computed it.
 
          if In_Compile_Time_Warning_Or_Error
            and then Is_Entity_Name (P)
            and then (Is_Type (Entity (P))
                       or else Ekind (Entity (P)) = E_Enumeration_Literal)
-           and then Size_Known_At_Compile_Time (Entity (P))
+           and then (Known_RM_Size (Entity (P))
+                       or else Size_Known_At_Compile_Time (Entity (P)))
          then
             declare
                Siz : Uint;
