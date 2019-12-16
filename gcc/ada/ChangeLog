@@ -1,3 +1,9 @@
+2019-12-16  Bob Duff  <duff@adacore.com>
+
+	* errout.ads, errout.adb (Is_Size_Too_Small_Message): Check for
+	"size for" instead of "size for& too small, minimum allowed is
+	^".
+
 2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Set only

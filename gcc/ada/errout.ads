@@ -954,6 +954,7 @@ package Errout is
 
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
+   function Is_Size_Too_Small_Message (S : String) return Boolean;
    Size_Too_Small_Message : constant String :=
      "size for& too small, minimum allowed is ^";
    --  This message is explicitly tested in Special_Msg_Delete in the package
