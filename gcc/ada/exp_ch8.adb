@@ -72,7 +72,14 @@ package body Exp_Ch8 is
    --  clause applies (that can specify an arbitrary bit boundary), or where
    --  the enclosing record itself has a non-standard representation.
 
-   --  In these two cases, we pre-evaluate the renaming expression, by
+   --  In Ada 2020, a third case arises when the renamed object is a nonatomic
+   --  subcomponent of an atomic object, because reads of or writes to it must
+   --  access the enclosing atomic object. That's also the case for an object
+   --  subject to the Volatile_Full_Access GNAT aspect/pragma in any language
+   --  version. For the sake of simplicity, we treat any subcomponent of an
+   --  atomic or Volatile_Full_Access object in any language version this way.
+
+   --  In these three cases, we pre-evaluate the renaming expression, by
    --  extracting and freezing the values of any subscripts, and then we
    --  set the flag Is_Renaming_Of_Object which means that any reference
    --  to the object will be handled by macro substitution in the front
@@ -102,10 +109,10 @@ package body Exp_Ch8 is
       --  Determines whether it is necessary to do static name evaluation for
       --  renaming of Nam. It is considered necessary if evaluating the name
       --  involves indexing a packed array, or extracting a component of a
-      --  record to which a component clause applies. Note that we are only
-      --  interested in these operations if they occur as part of the name
-      --  itself, subscripts are just values that are computed as part of the
-      --  evaluation, so their form is unimportant.
+      --  record to which a component clause applies, or a subcomponent of an
+      --  atomic object. Note that we are only interested in these operations
+      --  if they occur as part of the name itself, subscripts are just values
+      --  that are computed as part of the evaluation, so they are unimportant.
       --  In addition, always return True for Modify_Tree_For_C since the
       --  code generator doesn't know how to handle renamings.
 
@@ -121,6 +128,10 @@ package body Exp_Ch8 is
          elsif Nkind_In (Nam, N_Indexed_Component, N_Slice) then
             if Is_Packed (Etype (Prefix (Nam))) then
                return True;
+
+            elsif Is_Atomic_Or_VFA_Object (Prefix (Nam)) then
+               return True;
+
             else
                return Evaluation_Required (Prefix (Nam));
             end if;
@@ -139,6 +150,9 @@ package body Exp_Ch8 is
                  and then Is_Record_Type (Rec_Type)
                  and then not Is_Concurrent_Record_Type (Rec_Type)
                then
+                  return True;
+
+               elsif Is_Atomic_Or_VFA_Object (Prefix (Nam)) then
                   return True;
 
                else
