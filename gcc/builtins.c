@@ -3999,6 +3999,16 @@ compute_objsize (tree dest, int ostype, tree *pdecl /* = NULL */,
 	     above.  */
 	  if (TREE_CODE (dest) == ARRAY_REF)
 	    {
+	      tree lowbnd = array_ref_low_bound (dest);
+	      if (!integer_zerop (lowbnd) && tree_fits_uhwi_p (lowbnd))
+		{
+		  /* Adjust the offset by the low bound of the array
+		     domain (normally zero but 1 in Fortran).  */
+		  unsigned HOST_WIDE_INT lb = tree_to_uhwi (lowbnd);
+		  offrng[0] -= lb;
+		  offrng[1] -= lb;
+		}
+
 	      /* Convert the array index into a byte offset.  */
 	      tree eltype = TREE_TYPE (dest);
 	      tree tpsize = TYPE_SIZE_UNIT (eltype);

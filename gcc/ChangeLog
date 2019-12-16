@@ -1,3 +1,8 @@
+2019-12-16  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92952
+	* builtins.c (compute_objsize): Adjust offset by the array low bound.
+
 2019-12-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* pretty-print.c (pp_write_text_as_html_like_dot_to_stream): New
