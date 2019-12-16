@@ -4330,9 +4330,23 @@ The moxie processor.
 <hr />
 @end html
 @anchor{msp430-x-elf}
-@heading msp430-*-elf
+@heading msp430-*-elf*
 TI MSP430 processor.
 This configuration is intended for embedded systems.
+
+@samp{msp430-*-elf} is the standard configuration with most GCC
+features enabled by default.
+
+@samp{msp430-*-elfbare} is tuned for a bare-metal environment, and disables
+features related to shared libraries and other functionality not used for
+this device.  This reduces code and data usage of the GCC libraries, resulting
+in a minimal run-time environment by default.
+
+Features disabled by default include:
+@itemize
+@item transactional memory
+@item __cxa_atexit
+@end itemize
 
 @html
 <hr />
