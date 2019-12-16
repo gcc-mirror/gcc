@@ -1,3 +1,9 @@
+2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch8.adb (Expand_N_Object_Renaming_Declaration): Document
+	third special case of renamings requiring special handling.
+	(Evaluation_Required): Return true for an atomic or VFA prefix.
+
 2019-12-16  Ed Schonberg  <schonberg@adacore.com>
 
 	* checks.adb (Apply_Float_Conversion_Check): Use node of type
