@@ -7443,7 +7443,7 @@ It is not permissible to specify ``Atomic`` and ``Volatile_Full_Access`` for
 the same type or object.
 
 It is not permissible to specify ``Volatile_Full_Access`` for a composite
-(record or array) type or object that has at least one ``Aliased`` component.
+(record or array) type or object that has an ``Aliased`` subcomponent.
 
 .. _Pragma-Volatile_Function:
 

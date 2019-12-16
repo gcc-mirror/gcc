@@ -8949,7 +8949,7 @@ It is not permissible to specify @code{Atomic} and @code{Volatile_Full_Access} f
 the same type or object.
 
 It is not permissible to specify @code{Volatile_Full_Access} for a composite
-(record or array) type or object that has at least one @code{Aliased} component.
+(record or array) type or object that has an @code{Aliased} subcomponent.
 
 @node Pragma Volatile_Function,Pragma Warning_As_Error,Pragma Volatile_Full_Access,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas id56}@anchor{11e}@anchor{gnat_rm/implementation_defined_pragmas pragma-volatile-function}@anchor{11f}

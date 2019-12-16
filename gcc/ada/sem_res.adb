@@ -4715,7 +4715,7 @@ package body Sem_Res is
                end if;
             end if;
 
-            --  Check bad case of atomic/volatile argument (RM C.6(12))
+            --  Check illegal cases of atomic/volatile actual (RM C.6(12,13))
 
             if (Is_By_Reference_Type (Etype (F)) or else Is_Aliased (F))
               and then Comes_From_Source (N)
@@ -4724,14 +4724,30 @@ package body Sem_Res is
                  and then not Is_Atomic (Etype (F))
                then
                   Error_Msg_NE
-                    ("cannot pass atomic argument to non-atomic formal&",
+                    ("cannot pass atomic object to nonatomic formal&",
                      A, F);
+                  Error_Msg_N
+                    ("\which is passed by reference (RM C.6(12))", A);
 
                elsif Is_Volatile_Object (A)
                  and then not Is_Volatile (Etype (F))
                then
                   Error_Msg_NE
-                    ("cannot pass volatile argument to non-volatile formal&",
+                    ("cannot pass volatile object to nonvolatile formal&",
+                     A, F);
+                  Error_Msg_N
+                    ("\which is passed by reference (RM C.6(12))", A);
+               end if;
+
+               if Ada_Version >= Ada_2020
+                 and then Is_Subcomponent_Of_Atomic_Object (A)
+                 and then not Is_Atomic_Object (A)
+               then
+                  Error_Msg_N
+                    ("cannot pass nonatomic subcomponent of atomic object",
+                     A);
+                  Error_Msg_NE
+                    ("\to formal & which is passed by reference (RM C.6(13))",
                      A, F);
                end if;
             end if;

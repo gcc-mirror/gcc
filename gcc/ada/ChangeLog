@@ -1,3 +1,29 @@
+2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst (VFA): Document
+	extension of the no-aliasing rule to any subcomponent.
+	* freeze.adb (Freeze_Object_Declaration): Small comment tweak.
+	(Freeze_Record_Type): Do not deal with delayed aspect
+	specifications for components here but...
+	(Freeze_Entity): ...here instead.
+	* sem_ch12.adb (Instantiate_Object): Improve wording of errors
+	given for legality rules in C.6(12) and implement the new rule
+	in C.6(13).
+	* sem_res.adb (Resolve_Actuals): Likewise.
+	* sem_prag.adb (Check_Atomic_VFA): New procedure implementing
+	the new legality rules in C.6(13).
+	(Process_Atomic_Independent_Shared_Volatile): Call
+	Check_Atomic_VFA to check the legality rules.  Factor out code
+	marking types into...
+	(Mark_Type): ...this new procedure.
+	(Check_VFA_Conflicts): Do not check the legality rules here.
+	(Pragma_Atomic_Components): Call Check_Atomic_VFA on component
+	type.
+	* sem_util.ads (Is_Subcomponent_Of_Atomic_Object): Declare.
+	* sem_util.adb (Is_Subcomponent_Of_Atomic_Object): New
+	predicate.
+	* gnat_rm.texi: Regenerate.
+
 2019-12-13  Gary Dismukes  <dismukes@adacore.com>
 
 	* doc/gnat_rm/implementation_defined_pragmas.rst: Minor

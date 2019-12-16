@@ -11111,19 +11111,36 @@ package body Sem_Ch12 is
 
          Note_Possible_Modification (Actual, Sure => True);
 
-         --  Check for instantiation of atomic/volatile actual for
-         --  non-atomic/volatile formal (RM C.6 (12)).
+         --  Check for instantiation with atomic/volatile object actual for
+         --  nonatomic/nonvolatile formal (RM C.6 (12)).
 
          if Is_Atomic_Object (Actual) and then not Is_Atomic (Orig_Ftyp) then
-            Error_Msg_N
-              ("cannot instantiate non-atomic formal object "
-               & "with atomic actual", Actual);
+            Error_Msg_NE
+              ("cannot instantiate nonatomic formal & of mode in out",
+               Actual, Gen_Obj);
+            Error_Msg_N ("\with atomic object actual (RM C.6(12))", Actual);
 
          elsif Is_Volatile_Object (Actual) and then not Is_Volatile (Orig_Ftyp)
          then
+            Error_Msg_NE
+              ("cannot instantiate nonvolatile formal & of mode in out",
+               Actual, Gen_Obj);
+            Error_Msg_N ("\with volatile object actual (RM C.6(12))", Actual);
+         end if;
+
+         --  Check for instantiation on nonatomic subcomponent of an atomic
+         --  object in Ada 2020 (RM C.6 (13)).
+
+         if Ada_Version >= Ada_2020
+            and then Is_Subcomponent_Of_Atomic_Object (Actual)
+            and then not Is_Atomic_Object (Actual)
+         then
+            Error_Msg_NE
+              ("cannot instantiate formal & of mode in out with actual",
+               Actual, Gen_Obj);
             Error_Msg_N
-              ("cannot instantiate non-volatile formal object "
-               & "with volatile actual", Actual);
+              ("\nonatomic subcomponent of atomic object (RM C.6(13))",
+               Actual);
          end if;
 
       --  Formal in-parameter
