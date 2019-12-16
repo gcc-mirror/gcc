@@ -36,7 +36,7 @@
 
    "WARNING: There is a matching C declaration of this <entity_kind> in fe.h"
 
-   where <entity_kind> is either "subprogram" or "variable".
+   where <entity_kind> is either "subprogram" or "variable" or "type".
 
    WARNING: functions taking String_Pointer parameters must abide by the rule
    documented alongside the definition of String_Pointer in types.h.  */
@@ -187,6 +187,7 @@ extern Boolean In_Extended_Main_Code_Unit	(Entity_Id);
 
 /* opt: */
 
+#define Ada_Version			opt__ada_version
 #define Back_End_Inlining		opt__back_end_inlining
 #define Debug_Generated_Code		opt__debug_generated_code
 #define Exception_Extra_Info		opt__exception_extra_info
@@ -199,9 +200,14 @@ extern Boolean In_Extended_Main_Code_Unit	(Entity_Id);
 #define Suppress_Checks			opt__suppress_checks
 
 typedef enum {
+  Ada_83, Ada_95, Ada_2005, Ada_2012, Ada_2020
+} Ada_Version_Type;
+
+typedef enum {
   Front_End_SJLJ, Back_End_ZCX, Back_End_SJLJ
 } Exception_Mechanism_Type;
 
+extern Ada_Version_Type Ada_Version;
 extern Boolean Back_End_Inlining;
 extern Boolean Debug_Generated_Code;
 extern Boolean Exception_Extra_Info;
