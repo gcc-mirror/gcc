@@ -33,10 +33,15 @@ with Namet; use Namet;
 
 package Snames is
 
---  This package contains definitions of standard names (i.e. entries in the
---  Names table) that are used throughout the GNAT compiler. It also contains
---  the definitions of some enumeration types whose definitions are tied to the
---  order of these preset names.
+   --  This package contains definitions of standard names (i.e. entries in
+   --  the Names table) that are used throughout the GNAT compiler. It also
+   --  contains the definitions of some enumeration types whose definitions
+   --  are tied to the order of these preset names.
+
+   --  NOTE WELL: If you add names of attributes, the enumeration type
+   --  Attribute_Id must be kept in synch (same names in same order, with
+   --  some exceptions). See the body of Get_Attribute_Id for details. The
+   --  same is true of other enumeration types declared in this package.
 
    ------------------
    -- Preset Names --
