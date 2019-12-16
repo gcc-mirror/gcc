@@ -1,3 +1,10 @@
+2019-12-16  Joel Brobecker  <brobecker@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst
+	(_Switches_for_gnatbind): Reword the section explaining the
+	impact of -minimal on debugging.
+	* gnat_ugn.texi: Regenerate.
+
 2019-12-16  Gary Dismukes  <dismukes@adacore.com>
 
 	* libgnat/g-exptty.adb, libgnat/g-exptty.ads: Typo fixes and
