@@ -1,5 +1,9 @@
 2019-12-16  Arnaud Charlet  <charlet@adacore.com>
 
+	* libgnarl/s-tataat.ads (Deallocator): Mark as Favor_Top_Level.
+
+2019-12-16  Arnaud Charlet  <charlet@adacore.com>
+
 	* libgnat/s-aotase.adb, libgnat/s-aotase.ads,
 	libgnat/s-atoope.ads, libgnat/s-atopar.adb,
 	libgnat/s-atopar.ads, libgnat/s-atopex.adb,
