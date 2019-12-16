@@ -5476,7 +5476,7 @@ package body Sem_Ch13 is
                   Analyze (Decl, Suppress => All_Checks);
 
                   Set_Has_Delayed_Freeze        (New_Ctyp, False);
-                  Set_Esize                     (New_Ctyp, Csize);
+                  Init_Esize                    (New_Ctyp);
                   Set_RM_Size                   (New_Ctyp, Csize);
                   Init_Alignment                (New_Ctyp);
                   Set_Is_Itype                  (New_Ctyp, True);
