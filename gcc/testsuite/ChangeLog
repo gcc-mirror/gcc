@@ -1,3 +1,9 @@
+2019-12-15  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.c-torture/compile/bitfield-1.c: New test.
+	* gcc.c-torture/compile/bitfield-endian-1.c: New test.
+	* gcc.c-torture/compile/bitfield-endian-2.c: New test.
+
 2019-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92930
