@@ -121,9 +121,9 @@ package body Ch7 is
 
    begin
       Push_Scope_Stack;
-      Scope.Table (Scope.Last).Etyp := E_Name;
-      Scope.Table (Scope.Last).Ecol := Start_Column;
-      Scope.Table (Scope.Last).Lreq := False;
+      Scopes (Scope.Last).Etyp := E_Name;
+      Scopes (Scope.Last).Ecol := Start_Column;
+      Scopes (Scope.Last).Lreq := False;
 
       Package_Sloc := Token_Ptr;
       Scan; -- past PACKAGE
@@ -143,9 +143,9 @@ package body Ch7 is
          end if;
 
          T_Body;
-         Scope.Table (Scope.Last).Sloc := Token_Ptr;
+         Scopes (Scope.Last).Sloc := Token_Ptr;
          Name_Node := P_Defining_Program_Unit_Name;
-         Scope.Table (Scope.Last).Labl := Name_Node;
+         Scopes (Scope.Last).Labl := Name_Node;
          Current_Node := Name_Node;
 
          if Aspect_Specifications_Present then
@@ -209,9 +209,9 @@ package body Ch7 is
       --  Cases other than Package_Body
 
       else
-         Scope.Table (Scope.Last).Sloc := Token_Ptr;
+         Scopes (Scope.Last).Sloc := Token_Ptr;
          Name_Node := P_Defining_Program_Unit_Name;
-         Scope.Table (Scope.Last).Labl := Name_Node;
+         Scopes (Scope.Last).Labl := Name_Node;
          Current_Node := Name_Node;
 
          --  Case of renaming declaration
@@ -290,7 +290,7 @@ package body Ch7 is
                  (Specification_Node, P_Basic_Declarative_Items);
 
                if Token = Tok_Private then
-                  Error_Msg_Col := Scope.Table (Scope.Last).Ecol;
+                  Error_Msg_Col := Scopes (Scope.Last).Ecol;
 
                   if RM_Column_Check then
                      if Token_Is_At_Start_Of_Line

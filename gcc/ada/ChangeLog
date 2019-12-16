@@ -1,3 +1,16 @@
+2019-12-16  Bob Duff  <duff@adacore.com>
+
+	* par.adb: Add Scopes function to do range checking on the scope
+	stack.  Call Scopes all over the parser.  Add
+	SIS_Aspect_Import_Seen flag.
+	* par-ch6.adb (P_Subprogram): Initialize SIS_Aspect_Import_Seen
+	to False at the start, and check it at the end.
+	* par-ch13.adb (Get_Aspect_Specifications): Set
+	SIS_Aspect_Import_Seen to True when appropriate.
+	* par-ch10.adb, par-ch12.adb, par-ch2.adb, par-ch3.adb,
+	par-ch5.adb, par-ch7.adb, par-ch9.adb, par-endh.adb,
+	par-util.adb: Call Scopes.
+
 2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_prag.adb (Atomic_Components): Remove local variable and

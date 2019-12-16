@@ -528,7 +528,15 @@ package body Ch13 is
                   Inside_Depends := True;
                end if;
 
-               --  Parse the aspect definition depening on the expected
+               --  Note that we have seen an Import aspect specification.
+               --  This matters only while parsing a subprogram.
+
+               if A_Id = Aspect_Import then
+                  SIS_Aspect_Import_Seen := True;
+                  --  Should do it only for subprograms
+               end if;
+
+               --  Parse the aspect definition depending on the expected
                --  argument kind.
 
                if Aspect_Argument (A_Id) = Name
@@ -826,9 +834,9 @@ package body Ch13 is
             Set_Identifier (Rep_Clause_Node, Identifier_Node);
 
             Push_Scope_Stack;
-            Scope.Table (Scope.Last).Etyp := E_Record;
-            Scope.Table (Scope.Last).Ecol := Start_Column;
-            Scope.Table (Scope.Last).Sloc := Token_Ptr;
+            Scopes (Scope.Last).Etyp := E_Record;
+            Scopes (Scope.Last).Ecol := Start_Column;
+            Scopes (Scope.Last).Sloc := Token_Ptr;
             Scan; -- past RECORD
             Record_Items := P_Pragmas_Opt;
 

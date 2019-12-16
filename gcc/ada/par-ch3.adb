@@ -3338,11 +3338,11 @@ package body Ch3 is
 
       else
          Push_Scope_Stack;
-         Scope.Table (Scope.Last).Etyp := E_Record;
-         Scope.Table (Scope.Last).Ecol := Start_Column;
-         Scope.Table (Scope.Last).Sloc := Token_Ptr;
-         Scope.Table (Scope.Last).Labl := Error;
-         Scope.Table (Scope.Last).Junk := (Token /= Tok_Record);
+         Scopes (Scope.Last).Etyp := E_Record;
+         Scopes (Scope.Last).Ecol := Start_Column;
+         Scopes (Scope.Last).Sloc := Token_Ptr;
+         Scopes (Scope.Last).Labl := Error;
+         Scopes (Scope.Last).Junk := (Token /= Tok_Record);
 
          T_Record;
 
@@ -3419,7 +3419,7 @@ package body Ch3 is
             --  additional clue that confirms the incorrect spelling.
 
             if Token /= Tok_Identifier then
-               if Start_Column > Scope.Table (Scope.Last).Ecol
+               if Start_Column > Scopes (Scope.Last).Ecol
                  and then Is_Reserved_Identifier
                then
                   Save_Scan_State (Scan_State); -- at reserved id
@@ -3661,9 +3661,9 @@ package body Ch3 is
    begin
       Variant_Part_Node := New_Node (N_Variant_Part, Token_Ptr);
       Push_Scope_Stack;
-      Scope.Table (Scope.Last).Etyp := E_Case;
-      Scope.Table (Scope.Last).Sloc := Token_Ptr;
-      Scope.Table (Scope.Last).Ecol := Start_Column;
+      Scopes (Scope.Last).Etyp := E_Case;
+      Scopes (Scope.Last).Sloc := Token_Ptr;
+      Scopes (Scope.Last).Ecol := Start_Column;
 
       Scan; -- past CASE
       Case_Node := P_Expression;
@@ -4514,11 +4514,11 @@ package body Ch3 is
                   --  scan it out
 
                   Push_Scope_Stack;
-                  Scope.Table (Scope.Last).Sloc := SIS_Sloc;
-                  Scope.Table (Scope.Last).Etyp := E_Name;
-                  Scope.Table (Scope.Last).Ecol := SIS_Ecol;
-                  Scope.Table (Scope.Last).Labl := SIS_Labl;
-                  Scope.Table (Scope.Last).Lreq := False;
+                  Scopes (Scope.Last).Sloc := SIS_Sloc;
+                  Scopes (Scope.Last).Etyp := E_Name;
+                  Scopes (Scope.Last).Ecol := SIS_Ecol;
+                  Scopes (Scope.Last).Labl := SIS_Labl;
+                  Scopes (Scope.Last).Lreq := False;
                   SIS_Entry_Active := False;
                   Scan; -- past BEGIN
                   Set_Handled_Statement_Sequence (Body_Node,

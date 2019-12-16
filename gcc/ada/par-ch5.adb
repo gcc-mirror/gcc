@@ -358,7 +358,7 @@ package body Ch5 is
                   --  of the expected column of the end for this sequence
 
                   if SS_Flags.Eftm
-                     or else Start_Column < Scope.Table (Scope.Last).Ecol
+                     or else Start_Column < Scopes (Scope.Last).Ecol
                   then
                      Test_Statement_Required;
                      exit;
@@ -381,7 +381,7 @@ package body Ch5 is
                   --  of the expected column of the end for this sequence
 
                   if SS_Flags.Eltm
-                     or else Start_Column < Scope.Table (Scope.Last).Ecol
+                     or else Start_Column < Scopes (Scope.Last).Ecol
                   then
                      Test_Statement_Required;
                      exit;
@@ -405,7 +405,7 @@ package body Ch5 is
                   --  is not permitted.
 
                   if not SS_Flags.Extm and then
-                     Start_Column >= Scope.Table (Scope.Last).Ecol
+                     Start_Column >= Scopes (Scope.Last).Ecol
 
                   then
                      Error_Msg_SC ("exception handler not permitted here");
@@ -427,7 +427,7 @@ package body Ch5 is
                   --  expected column of the end for this sequence.
 
                   if SS_Flags.Ortm
-                     or else Start_Column < Scope.Table (Scope.Last).Ecol
+                     or else Start_Column < Scopes (Scope.Last).Ecol
                   then
                      Test_Statement_Required;
                      exit;
@@ -467,7 +467,7 @@ package body Ch5 is
                   --  the expected column of the end for this sequence.
 
                   if SS_Flags.Whtm
-                    or else Start_Column < Scope.Table (Scope.Last).Ecol
+                    or else Start_Column < Scopes (Scope.Last).Ecol
                   then
                      Test_Statement_Required;
                      exit;
@@ -1142,9 +1142,9 @@ package body Ch5 is
       procedure Check_If_Column is
       begin
          if RM_Column_Check and then Token_Is_At_Start_Of_Line
-           and then Start_Column /= Scope.Table (Scope.Last).Ecol
+           and then Start_Column /= Scopes (Scope.Last).Ecol
          then
-            Error_Msg_Col := Scope.Table (Scope.Last).Ecol;
+            Error_Msg_Col := Scopes (Scope.Last).Ecol;
             Error_Msg_SC ("(style) this token should be@");
          end if;
       end Check_If_Column;
@@ -1192,11 +1192,11 @@ package body Ch5 is
       If_Node := New_Node (N_If_Statement, Token_Ptr);
 
       Push_Scope_Stack;
-      Scope.Table (Scope.Last).Etyp := E_If;
-      Scope.Table (Scope.Last).Ecol := Start_Column;
-      Scope.Table (Scope.Last).Sloc := Token_Ptr;
-      Scope.Table (Scope.Last).Labl := Error;
-      Scope.Table (Scope.Last).Node := If_Node;
+      Scopes (Scope.Last).Etyp := E_If;
+      Scopes (Scope.Last).Ecol := Start_Column;
+      Scopes (Scope.Last).Sloc := Token_Ptr;
+      Scopes (Scope.Last).Labl := Error;
+      Scopes (Scope.Last).Node := If_Node;
 
       if Token = Tok_If then
          Loc := Token_Ptr;
@@ -1350,11 +1350,11 @@ package body Ch5 is
       Case_Node := New_Node (N_Case_Statement, Token_Ptr);
 
       Push_Scope_Stack;
-      Scope.Table (Scope.Last).Etyp := E_Case;
-      Scope.Table (Scope.Last).Ecol := Start_Column;
-      Scope.Table (Scope.Last).Sloc := Token_Ptr;
-      Scope.Table (Scope.Last).Labl := Error;
-      Scope.Table (Scope.Last).Node := Case_Node;
+      Scopes (Scope.Last).Etyp := E_Case;
+      Scopes (Scope.Last).Ecol := Start_Column;
+      Scopes (Scope.Last).Sloc := Token_Ptr;
+      Scopes (Scope.Last).Labl := Error;
+      Scopes (Scope.Last).Node := Case_Node;
 
       Scan; -- past CASE
       Set_Expression (Case_Node, P_Expression_No_Right_Paren);
@@ -1392,7 +1392,7 @@ package body Ch5 is
          --  complain about the missing WHEN, and discard the junk statements.
 
          elsif not Token_Is_At_Start_Of_Line
-           or else Start_Column > Scope.Table (Scope.Last).Ecol
+           or else Start_Column > Scopes (Scope.Last).Ecol
          then
             Error_Msg_BC ("WHEN (case statement alternative) expected");
 
@@ -1490,10 +1490,10 @@ package body Ch5 is
 
    begin
       Push_Scope_Stack;
-      Scope.Table (Scope.Last).Labl := Loop_Name;
-      Scope.Table (Scope.Last).Ecol := Start_Column;
-      Scope.Table (Scope.Last).Sloc := Token_Ptr;
-      Scope.Table (Scope.Last).Etyp := E_Loop;
+      Scopes (Scope.Last).Labl := Loop_Name;
+      Scopes (Scope.Last).Ecol := Start_Column;
+      Scopes (Scope.Last).Sloc := Token_Ptr;
+      Scopes (Scope.Last).Etyp := E_Loop;
 
       Loop_Node := New_Node (N_Loop_Statement, Token_Ptr);
       TF_Loop;
@@ -1504,7 +1504,7 @@ package body Ch5 is
          Set_Comes_From_Source (Created_Name, False);
          Set_Has_Created_Identifier (Loop_Node, True);
          Set_Identifier (Loop_Node, Created_Name);
-         Scope.Table (Scope.Last).Labl := Created_Name;
+         Scopes (Scope.Last).Labl := Created_Name;
       else
          Set_Identifier (Loop_Node, Loop_Name);
       end if;
@@ -1536,10 +1536,10 @@ package body Ch5 is
 
    begin
       Push_Scope_Stack;
-      Scope.Table (Scope.Last).Labl := Loop_Name;
-      Scope.Table (Scope.Last).Ecol := Start_Column;
-      Scope.Table (Scope.Last).Sloc := Token_Ptr;
-      Scope.Table (Scope.Last).Etyp := E_Loop;
+      Scopes (Scope.Last).Labl := Loop_Name;
+      Scopes (Scope.Last).Ecol := Start_Column;
+      Scopes (Scope.Last).Sloc := Token_Ptr;
+      Scopes (Scope.Last).Etyp := E_Loop;
 
       Loop_For_Flag := (Prev_Token = Tok_Loop);
       Scan; -- past FOR
@@ -1575,7 +1575,7 @@ package body Ch5 is
             Set_Comes_From_Source (Created_Name, False);
             Set_Has_Created_Identifier (Loop_Node, True);
             Set_Identifier (Loop_Node, Created_Name);
-            Scope.Table (Scope.Last).Labl := Created_Name;
+            Scopes (Scope.Last).Labl := Created_Name;
          else
             Set_Identifier (Loop_Node, Loop_Name);
          end if;
@@ -1607,10 +1607,10 @@ package body Ch5 is
 
    begin
       Push_Scope_Stack;
-      Scope.Table (Scope.Last).Labl := Loop_Name;
-      Scope.Table (Scope.Last).Ecol := Start_Column;
-      Scope.Table (Scope.Last).Sloc := Token_Ptr;
-      Scope.Table (Scope.Last).Etyp := E_Loop;
+      Scopes (Scope.Last).Labl := Loop_Name;
+      Scopes (Scope.Last).Ecol := Start_Column;
+      Scopes (Scope.Last).Sloc := Token_Ptr;
+      Scopes (Scope.Last).Etyp := E_Loop;
 
       Loop_While_Flag := (Prev_Token = Tok_Loop);
       Iter_Scheme_Node := New_Node (N_Iteration_Scheme, Token_Ptr);
@@ -1641,7 +1641,7 @@ package body Ch5 is
             Set_Comes_From_Source (Created_Name, False);
             Set_Has_Created_Identifier (Loop_Node, True);
             Set_Identifier (Loop_Node, Created_Name);
-            Scope.Table (Scope.Last).Labl := Created_Name;
+            Scopes (Scope.Last).Labl := Created_Name;
          else
             Set_Identifier (Loop_Node, Loop_Name);
          end if;
@@ -1805,11 +1805,11 @@ package body Ch5 is
       Block_Node := New_Node (N_Block_Statement, Token_Ptr);
 
       Push_Scope_Stack;
-      Scope.Table (Scope.Last).Etyp := E_Name;
-      Scope.Table (Scope.Last).Lreq := Present (Block_Name);
-      Scope.Table (Scope.Last).Ecol := Start_Column;
-      Scope.Table (Scope.Last).Labl := Block_Name;
-      Scope.Table (Scope.Last).Sloc := Token_Ptr;
+      Scopes (Scope.Last).Etyp := E_Name;
+      Scopes (Scope.Last).Lreq := Present (Block_Name);
+      Scopes (Scope.Last).Ecol := Start_Column;
+      Scopes (Scope.Last).Labl := Block_Name;
+      Scopes (Scope.Last).Sloc := Token_Ptr;
 
       Scan; -- past DECLARE
 
@@ -1819,7 +1819,7 @@ package body Ch5 is
          Set_Comes_From_Source (Created_Name, False);
          Set_Has_Created_Identifier (Block_Node, True);
          Set_Identifier (Block_Node, Created_Name);
-         Scope.Table (Scope.Last).Labl := Created_Name;
+         Scopes (Scope.Last).Labl := Created_Name;
       else
          Set_Identifier (Block_Node, Block_Name);
       end if;
@@ -1848,11 +1848,11 @@ package body Ch5 is
       Block_Node := New_Node (N_Block_Statement, Token_Ptr);
 
       Push_Scope_Stack;
-      Scope.Table (Scope.Last).Etyp := E_Name;
-      Scope.Table (Scope.Last).Lreq := Present (Block_Name);
-      Scope.Table (Scope.Last).Ecol := Start_Column;
-      Scope.Table (Scope.Last).Labl := Block_Name;
-      Scope.Table (Scope.Last).Sloc := Token_Ptr;
+      Scopes (Scope.Last).Etyp := E_Name;
+      Scopes (Scope.Last).Lreq := Present (Block_Name);
+      Scopes (Scope.Last).Ecol := Start_Column;
+      Scopes (Scope.Last).Labl := Block_Name;
+      Scopes (Scope.Last).Sloc := Token_Ptr;
 
       if No (Block_Name) then
          Created_Name :=
@@ -1860,15 +1860,15 @@ package body Ch5 is
          Set_Comes_From_Source (Created_Name, False);
          Set_Has_Created_Identifier (Block_Node, True);
          Set_Identifier (Block_Node, Created_Name);
-         Scope.Table (Scope.Last).Labl := Created_Name;
+         Scopes (Scope.Last).Labl := Created_Name;
       else
          Set_Identifier (Block_Node, Block_Name);
       end if;
 
       Append_Elmt (Block_Node, Label_List);
 
-      Scope.Table (Scope.Last).Ecol := Start_Column;
-      Scope.Table (Scope.Last).Sloc := Token_Ptr;
+      Scopes (Scope.Last).Ecol := Start_Column;
+      Scopes (Scope.Last).Sloc := Token_Ptr;
       Scan; -- past BEGIN
       Set_Handled_Statement_Sequence
         (Block_Node, P_Handled_Sequence_Of_Statements);
@@ -1913,7 +1913,7 @@ package body Ch5 is
          if not Token_Is_At_Start_Of_Line then
             return False;
 
-         elsif Scope.Table (Scope.Last).Etyp /= E_Case then
+         elsif Scopes (Scope.Last).Etyp /= E_Case then
             return False;
 
          else
@@ -1946,13 +1946,13 @@ package body Ch5 is
 
          Check_No_Exit_Name :
          for J in reverse 1 .. Scope.Last loop
-            if Scope.Table (J).Etyp = E_Loop then
-               if Present (Scope.Table (J).Labl)
-                 and then Comes_From_Source (Scope.Table (J).Labl)
+            if Scopes (J).Etyp = E_Loop then
+               if Present (Scopes (J).Labl)
+                 and then Comes_From_Source (Scopes (J).Labl)
                then
                   --  Innermost loop in fact had a name, style check fails
 
-                  Style.No_Exit_Name (Scope.Table (J).Labl);
+                  Style.No_Exit_Name (Scopes (J).Labl);
                end if;
 
                exit Check_No_Exit_Name;
@@ -2154,7 +2154,7 @@ package body Ch5 is
                Style.Check_Indentation;
             end if;
 
-            Error_Msg_Col := Scope.Table (Scope.Last).Ecol;
+            Error_Msg_Col := Scopes (Scope.Last).Ecol;
 
             if RM_Column_Check
               and then Token_Is_At_Start_Of_Line
@@ -2163,10 +2163,10 @@ package body Ch5 is
                Error_Msg_SC ("(style) BEGIN in wrong column, should be@");
 
             else
-               Scope.Table (Scope.Last).Ecol := Start_Column;
+               Scopes (Scope.Last).Ecol := Start_Column;
             end if;
 
-            Scope.Table (Scope.Last).Sloc := Token_Ptr;
+            Scopes (Scope.Last).Sloc := Token_Ptr;
             Scan; -- past BEGIN
             Set_Handled_Statement_Sequence (Parent,
               P_Handled_Sequence_Of_Statements);
@@ -2183,9 +2183,9 @@ package body Ch5 is
 
             if Parent_Nkind = N_Subprogram_Body
               and then Token  = Tok_End
-              and then Scope.Table (Scope.Last).Etyp = E_Suspicious_Is
+              and then Scopes (Scope.Last).Etyp = E_Suspicious_Is
             then
-               Scope.Table (Scope.Last).Etyp := E_Bad_Is;
+               Scopes (Scope.Last).Etyp := E_Bad_Is;
 
             --  Otherwise BEGIN is not required for a package body, so we
             --  don't mind if it is missing, but we do construct a dummy
@@ -2211,8 +2211,8 @@ package body Ch5 is
 
                --  Prepare to issue error message
 
-               Error_Msg_Sloc := Scope.Table (Scope.Last).Sloc;
-               Error_Msg_Node_1 := Scope.Table (Scope.Last).Labl;
+               Error_Msg_Sloc := Scopes (Scope.Last).Sloc;
+               Error_Msg_Node_1 := Scopes (Scope.Last).Labl;
 
                --  Now issue appropriate message
 
@@ -2272,6 +2272,7 @@ package body Ch5 is
       --  (because it is required to do so under all circumstances). We can
       --  therefore reference the entry it removed one past the stack top.
       --  What we are interested in is whether it was a case of a bad IS.
+      --  We can't call Scopes here.
 
       if Scope.Table (Scope.Last + 1).Etyp = E_Bad_Is then
          Error_Msg -- CODEFIX

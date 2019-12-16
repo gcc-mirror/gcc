@@ -180,7 +180,7 @@ package body Endh is
       Name_Scan_State : Saved_Scan_State;
       --  Save state at start of name if Name_On_Separate_Line is TRUE
 
-      Span_Node : constant Node_Id := Scope.Table (Scope.Last).Node;
+      Span_Node : constant Node_Id := Scopes (Scope.Last).Node;
 
    begin
       End_Labl_Present := False;
@@ -284,7 +284,7 @@ package body Endh is
 
                if Name_On_Separate_Line then
                   if Token /= Tok_Semicolon or else
-                    not Same_Label (End_Labl, Scope.Table (Scope.Last).Labl)
+                    not Same_Label (End_Labl, Scopes (Scope.Last).Labl)
                   then
                      Restore_Scan_State (Name_Scan_State);
                      End_Labl := Empty;
@@ -297,7 +297,7 @@ package body Endh is
             --  to the scan location past the END token.
 
             else
-               End_Labl := Scope.Table (Scope.Last).Labl;
+               End_Labl := Scopes (Scope.Last).Labl;
 
                if End_Labl > Empty_Or_Error then
 
@@ -382,10 +382,10 @@ package body Endh is
                   if Style_Check
                     and then End_Type = E_Name
                     and then Explicit_Start_Label (Scope.Last)
-                    and then Nkind (Parent (Scope.Table (Scope.Last).Labl))
+                    and then Nkind (Parent (Scopes (Scope.Last).Labl))
                                /= N_Block_Statement
                   then
-                     Style.No_End_Name (Scope.Table (Scope.Last).Labl);
+                     Style.No_End_Name (Scopes (Scope.Last).Labl);
                   end if;
                end if;
             end if;
@@ -710,7 +710,7 @@ package body Endh is
    ------------------------
 
    procedure Evaluate_End_Entry (SS_Index : Nat) is
-      STE : Scope_Table_Entry renames Scope.Table (SS_Index);
+      STE : Scope_Table_Entry renames Scopes (SS_Index).all;
 
    begin
       Column_OK := (End_Column = STE.Ecol);
@@ -741,7 +741,7 @@ package body Endh is
 
       if not Label_OK
         and then End_Labl_Present
-        and then not Comes_From_Source (Scope.Table (SS_Index).Labl)
+        and then not Comes_From_Source (Scopes (SS_Index).Labl)
       then
          --  Here is where we will search the suspicious labels table
 
@@ -792,7 +792,7 @@ package body Endh is
          --  If probably misspelling, then complain, and pretend it is OK
 
          declare
-            Nam : constant Node_Or_Entity_Id := Scope.Table (SS_Index).Labl;
+            Nam : constant Node_Or_Entity_Id := Scopes (SS_Index).Labl;
 
          begin
             if Nkind (End_Labl) in N_Has_Chars
@@ -828,7 +828,7 @@ package body Endh is
       elsif End_Type = E_Name then
          Syntax_OK := (not Explicit_Start_Label (SS_Index))
                          or else
-                      (not Scope.Table (SS_Index).Lreq);
+                      (not Scopes (SS_Index).Lreq);
 
       --  Otherwise we have cases which don't allow labels anyway, so we
       --  certainly accept an END which does not have a label.
@@ -843,8 +843,8 @@ package body Endh is
    --------------------------
 
    function Explicit_Start_Label (SS_Index : Nat) return Boolean is
-      L    : constant Node_Id := Scope.Table (SS_Index).Labl;
-      Etyp : constant SS_End_Type := Scope.Table (SS_Index).Etyp;
+      L    : constant Node_Id := Scopes (SS_Index).Labl;
+      Etyp : constant SS_End_Type := Scopes (SS_Index).Etyp;
 
    begin
       if No (L) then
@@ -906,16 +906,16 @@ package body Endh is
       --  Suppress message if this was a potentially junk entry (e.g. a record
       --  entry where no record keyword was present).
 
-      if Scope.Table (Scope.Last).Junk then
+      if Scopes (Scope.Last).Junk then
          return;
       end if;
 
-      End_Type := Scope.Table (Scope.Last).Etyp;
-      Error_Msg_Col  := Scope.Table (Scope.Last).Ecol;
-      Error_Msg_Sloc := Scope.Table (Scope.Last).Sloc;
+      End_Type := Scopes (Scope.Last).Etyp;
+      Error_Msg_Col  := Scopes (Scope.Last).Ecol;
+      Error_Msg_Sloc := Scopes (Scope.Last).Sloc;
 
       if Explicit_Start_Label (Scope.Last) then
-         Error_Msg_Node_1 := Scope.Table (Scope.Last).Labl;
+         Error_Msg_Node_1 := Scopes (Scope.Last).Labl;
       else
          Error_Msg_Node_1 := Empty;
       end if;
@@ -975,7 +975,7 @@ package body Endh is
       --  missing IS confirms the suspicion.
 
       else -- End_Type = E_Suspicious_Is or E_Bad_Is
-         Scope.Table (Scope.Last).Etyp := E_Bad_Is;
+         Scopes (Scope.Last).Etyp := E_Bad_Is;
       end if;
    end Output_End_Expected;
 
@@ -990,15 +990,15 @@ package body Endh is
       --  Suppress message if this was a potentially junk entry (e.g. a record
       --  entry where no record keyword was present).
 
-      if Scope.Table (Scope.Last).Junk then
+      if Scopes (Scope.Last).Junk then
          return;
       end if;
 
-      End_Type := Scope.Table (Scope.Last).Etyp;
-      Error_Msg_Sloc   := Scope.Table (Scope.Last).Sloc;
+      End_Type := Scopes (Scope.Last).Etyp;
+      Error_Msg_Sloc   := Scopes (Scope.Last).Sloc;
 
       if Explicit_Start_Label (Scope.Last) then
-         Error_Msg_Node_1 := Scope.Table (Scope.Last).Labl;
+         Error_Msg_Node_1 := Scopes (Scope.Last).Labl;
       else
          Error_Msg_Node_1 := Empty;
       end if;
@@ -1036,7 +1036,7 @@ package body Endh is
          end if;
 
       else -- End_Type = E_Suspicious_Is or E_Bad_Is
-         Scope.Table (Scope.Last).Etyp := E_Bad_Is;
+         Scopes (Scope.Last).Etyp := E_Bad_Is;
       end if;
    end Output_End_Missing;
 
@@ -1100,7 +1100,7 @@ package body Endh is
              Token = Tok_Separate)
            and then End_Type >= E_Name
            and then (not End_Labl_Present
-                      or else Same_Label (End_Labl, Scope.Table (1).Labl))
+                      or else Same_Label (End_Labl, Scopes (1).Labl))
            and then Scope.Last > 1
          then
             Restore_Scan_State (Scan_State); -- to END
@@ -1125,17 +1125,17 @@ package body Endh is
             --  line as the opener.
 
             if RM_Column_Check then
-               if End_Column /= Scope.Table (Scope.Last).Ecol
-                 and then Current_Line_Start > Scope.Table (Scope.Last).Sloc
+               if End_Column /= Scopes (Scope.Last).Ecol
+                 and then Current_Line_Start > Scopes (Scope.Last).Sloc
 
                --  A special case, for END RECORD, we are also allowed to
                --  line up with the TYPE keyword opening the declaration.
 
-                 and then (Scope.Table (Scope.Last).Etyp /= E_Record
+                 and then (Scopes (Scope.Last).Etyp /= E_Record
                             or else Get_Column_Number (End_Sloc) /=
                                     Get_Column_Number (Type_Token_Location))
                then
-                  Error_Msg_Col := Scope.Table (Scope.Last).Ecol;
+                  Error_Msg_Col := Scopes (Scope.Last).Ecol;
                   Error_Msg
                     ("(style) END in wrong column, should be@", End_Sloc);
                end if;
@@ -1176,7 +1176,7 @@ package body Endh is
                                  or else
                               (not Same_Label
                                      (End_Labl,
-                                      Scope.Table (Scope.Last - 1).Labl)))
+                                      Scopes (Scope.Last - 1).Labl)))
                      then
                         T_Semicolon;
                         Error_Msg ("duplicate end line ignored", End_Loc);
@@ -1229,7 +1229,7 @@ package body Endh is
          --  also it is unlikely that such nesting could occur by accident.
 
          Pretty_Good := (Token_OK and (Column_OK or Label_OK))
-                          or else Scope.Table (Scope.Last).Etyp = E_Record;
+                          or else Scopes (Scope.Last).Etyp = E_Record;
 
          --  Next check, if there is a deeper entry in the stack which
          --  has a very high probability of being acceptable, then insert
@@ -1289,8 +1289,8 @@ package body Endh is
          --  practices vary substantially in practice.
 
          if Pretty_Good
-            or else End_Column <= Scope.Table (Scope.Last).Ecol
-            or else (End_Type = Scope.Table (Scope.Last).Etyp
+            or else End_Column <= Scopes (Scope.Last).Ecol
+            or else (End_Type = Scopes (Scope.Last).Etyp
                         and then End_Type = E_Loop)
          then
             Output_End_Expected (Ins => False);

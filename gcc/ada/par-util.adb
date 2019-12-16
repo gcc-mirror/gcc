@@ -162,7 +162,7 @@ package body Util is
    procedure Check_Bad_Layout is
    begin
       if RM_Column_Check and then Token_Is_At_Start_Of_Line
-        and then Start_Column <= Scope.Table (Scope.Last).Ecol
+        and then Start_Column <= Scopes (Scope.Last).Ecol
       then
          Error_Msg_BC -- CODEFIX
            ("(style) incorrect layout");
@@ -668,9 +668,9 @@ package body Util is
       Scope.Decrement_Last;
 
       if Include_Subprogram_In_Messages
-        and then Scope.Table (Scope.Last).Labl /= Error
+        and then Scopes (Scope.Last).Labl /= Error
       then
-         Current_Node := Scope.Table (Scope.Last).Labl;
+         Current_Node := Scopes (Scope.Last).Labl;
       end if;
 
       if Debug_Flag_P then
@@ -695,8 +695,8 @@ package body Util is
             First_Non_Blank_Location);
       end if;
 
-      Scope.Table (Scope.Last).Junk := False;
-      Scope.Table (Scope.Last).Node := Empty;
+      Scopes (Scope.Last).Junk := False;
+      Scopes (Scope.Last).Node := Empty;
 
       if Debug_Flag_P then
          Error_Msg_Uint_1 := UI_From_Int (Scope.Last);
