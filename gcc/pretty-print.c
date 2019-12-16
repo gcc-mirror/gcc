@@ -907,6 +907,54 @@ pp_write_text_as_dot_label_to_stream (pretty_printer *pp, bool for_record)
   pp_clear_output_area (pp);
 }
 
+/* As pp_write_text_to_stream, but for GraphViz HTML-like strings.
+
+   Flush the formatted text of pretty-printer PP onto the attached stream,
+   escaping these characters
+     " & < >
+   using XML escape sequences.
+
+   http://www.graphviz.org/doc/info/lang.html#html states:
+      special XML escape sequences for ", &, <, and > may be necessary in
+      order to embed these characters in attribute values or raw text
+   This doesn't list "'" (which would normally be escaped in XML
+   as "&apos;" or in HTML as "&#39;");.
+
+   Experiments show that escaping "'" doesn't seem to be necessary.  */
+
+void
+pp_write_text_as_html_like_dot_to_stream (pretty_printer *pp)
+{
+  const char *text = pp_formatted_text (pp);
+  const char *p = text;
+  FILE *fp = pp_buffer (pp)->stream;
+
+  for (;*p; p++)
+    {
+      switch (*p)
+	{
+	case '"':
+	  fputs ("&quot;", fp);
+	  break;
+	case '&':
+	  fputs ("&amp;", fp);
+	  break;
+	case '<':
+	  fputs ("&lt;", fp);
+	  break;
+	case '>':
+	  fputs ("&gt;",fp);
+	  break;
+
+	default:
+	  fputc (*p, fp);
+	  break;
+	}
+    }
+
+  pp_clear_output_area (pp);
+}
+
 /* Wrap a text delimited by START and END into PRETTY-PRINTER.  */
 static void
 pp_wrap_text (pretty_printer *pp, const char *start, const char *end)
