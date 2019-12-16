@@ -1614,24 +1614,22 @@ package body Freeze is
          Set_Strict_Alignment (E);
 
       elsif Is_Array_Type (E) then
-         if Has_Aliased_Components (E)
-           or else Strict_Alignment (Component_Type (E))
-         then
-            Set_Strict_Alignment (E);
-         end if;
+         Set_Strict_Alignment (E, Strict_Alignment (Component_Type (E)));
+
+         --  ??? AI12-001: Any component of a packed type that contains an
+         --  aliased part must be aligned according to the alignment of its
+         --  subtype (RM 13.2(7)). This means that the following test:
+
+         --    if Has_Aliased_Components (E) then
+         --      Set_Strict_Alignment (E);
+         --    end if;
+
+         --  should be implemented here. Unfortunately it would break Florist,
+         --  which has the bad habit of overaligning all the types it declares
+         --  on 32-bit platforms. Other legacy codebases could also be affected
+         --  because this check has historically been missing in GNAT.
 
       elsif Is_Record_Type (E) then
-         --  ??? If the type has convention C_Pass_By_Copy, we consider
-         --  that it may be packed even if it contains aliased parts.
-         --  Such types are very unlikely to be misaligned in practice
-         --  and this makes the compiler accept dubious representation
-         --  clauses used in Florist on types containing arrays with
-         --  aliased components.
-
-         if C_Pass_By_Copy (E) then
-            return;
-         end if;
-
          Comp := First_Component (E);
          while Present (Comp) loop
             if not Is_Type (Comp)

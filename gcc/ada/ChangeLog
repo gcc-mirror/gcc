@@ -1,3 +1,8 @@
+2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Check_Strict_Alignment): Remove new check on
+	Has_Aliased_Components for array types.
+
 2019-12-16  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Try_Container_Indexing): In the case of a derived
