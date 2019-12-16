@@ -1,5 +1,10 @@
 2019-12-16  Bob Duff  <duff@adacore.com>
 
+	* errout.adb (Handle_Serious_Error): Disable the above-mentioned
+	warnings.
+
+2019-12-16  Bob Duff  <duff@adacore.com>
+
 	* errout.adb, errout.ads: Improve comments.
 
 2019-12-16  Bob Duff  <duff@adacore.com>
