@@ -95,7 +95,7 @@ package GNAT.Expect.TTY is
    function Is_Process_Running
       (Descriptor : in out TTY_Process_Descriptor)
       return Boolean;
-   --  Return True is the process is still alive
+   --  Returns True if the process is still alive
 
 private
 
@@ -142,7 +142,7 @@ private
       Process     : System.Address := System.Null_Address;
       --  Underlying structure used in C
       Exit_Status : Integer := Still_Active;
-      --  Hold the exit status of the process.
+      --  Holds the exit status of the process
       Use_Pipes   : Boolean := True;
    end record;
 

@@ -38,8 +38,9 @@ package body GNAT.Expect.TTY is
    On_Windows : constant Boolean := Directory_Separator = '\';
    --  True when on Windows
 
-   function Waitpid (Process : System.Address; Blocking : Integer)
-                     return Integer;
+   function Waitpid
+     (Process  : System.Address;
+      Blocking : Integer) return Integer;
    pragma Import (C, Waitpid, "__gnat_tty_waitpid");
    --  Wait for a specific process id, and return its exit code
 
@@ -48,8 +49,7 @@ package body GNAT.Expect.TTY is
    ------------------------
 
    function Is_Process_Running
-      (Descriptor : in out TTY_Process_Descriptor)
-      return Boolean
+     (Descriptor : in out TTY_Process_Descriptor) return Boolean
    is
    begin
       if Descriptor.Process = System.Null_Address then
@@ -57,6 +57,7 @@ package body GNAT.Expect.TTY is
       end if;
 
       Descriptor.Exit_Status := Waitpid (Descriptor.Process, Blocking => 0);
+
       return Descriptor.Exit_Status = Still_Active;
    end Is_Process_Running;
 
@@ -106,17 +107,20 @@ package body GNAT.Expect.TTY is
             Status := Waitpid (Descriptor.Process, Blocking => 0);
 
             if Status = Still_Active then
-               --  In theory the process might hav died since the check. In
+               --  In theory the process might have died since the check. In
                --  practice the following calls should not cause any issue.
+
                Interrupt (Descriptor);
                delay (0.05);
                Terminate_Process (Descriptor.Process);
                Status := Waitpid (Descriptor.Process, Blocking => 1);
                Descriptor.Exit_Status := Status;
             end if;
+
          else
             --  If Exit_Status is not STILL_ACTIVE just retrieve the saved
-            --  exit status
+            --  exit status.
+
             Status := Descriptor.Exit_Status;
          end if;
 
