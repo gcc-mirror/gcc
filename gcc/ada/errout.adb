@@ -1710,6 +1710,17 @@ package body Errout is
       Specific_Warnings.Init;
    end Initialize;
 
+   -------------------------------
+   -- Is_Size_Too_Small_Message --
+   -------------------------------
+
+   function Is_Size_Too_Small_Message (S : String) return Boolean is
+      Size_For : constant String := "size for";
+   begin
+      return S'Length >= Size_For'Length
+        and then S (S'First .. S'First + Size_For'Length - 1) = Size_For;
+   end Is_Size_Too_Small_Message;
+
    -----------------
    -- No_Warnings --
    -----------------
@@ -3259,7 +3270,7 @@ package body Errout is
 
       --  Processing for "Size too small" messages
 
-      elsif Msg = Size_Too_Small_Message then
+      elsif Is_Size_Too_Small_Message (Msg) then
 
          --  Suppress "size too small" errors in CodePeer mode, since code may
          --  be analyzed in a different configuration than the one used for
