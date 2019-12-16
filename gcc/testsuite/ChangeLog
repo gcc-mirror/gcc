@@ -1,3 +1,8 @@
+2019-12-16  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/92950
+	* gcc.target/s390/vector/pr92950.c: New test.
+
 2019-12-15  Andrew Pinski  <apinski@marvell.com>
 
 	* gcc.c-torture/compile/bitfield-1.c: New test.
