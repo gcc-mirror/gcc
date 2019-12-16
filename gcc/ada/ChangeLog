@@ -1,3 +1,21 @@
+2019-12-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* impunit.adb: Add a-nbnbin, a-nbnbre, a-nubinu to Ada 2020
+	units.
+	* Makefile.rtl: Enable new file.
+	* libgnat/a-nbnbin.adb, libgnat/a-nbnbin.ads,
+	libgnat/a-nbnbre.adb, libgnat/a-nbnbre.ads,
+	libgnat/a-nubinu.ads: New files. Provide default standalone
+	implementation of Ada.Numerics.Big_Numbers.Big_* based on
+	System.Generic_Bignum.
+	* libgnat/a-nbnbin__gmp.adb: Alternate implementation of
+	Ada.Numerics.Big_Numbers.Big_Integers based on GMP. Not enabled
+	for now.
+	* libgnat/s-bignum.ads, libgnat/s-bignum.adb: Now a simple
+	wrapper on top of s-genbig.ads.
+	* libgnat/s-genbig.ads, libgnat/s-genbig.adb: New files, making
+	s-bignum generic for reuse in Ada.Numerics.Big_Numbers.
+
 2019-12-16  Bob Duff  <duff@adacore.com>
 
 	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:

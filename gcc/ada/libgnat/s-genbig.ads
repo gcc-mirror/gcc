@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                       S Y S T E M . B I G N U M S                        --
+--               S Y S T E M . G E N E R I C _ B I G N U M S                --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -29,17 +29,67 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides arbitrary precision signed integer arithmetic for
---  use in computing intermediate values in expressions for the case where
---  pragma Overflow_Check (Eliminated) is in effect.
+--  This package provides arbitrary precision signed integer arithmetic
+--  and can be used either built into the compiler via System.Bignums or to
+--  implement a default version of Ada.Numerics.Big_Numbers.Big_Integers.
 
---  Note that we cannot use a straight instantiation of System.Generic_Bignums
---  because the rtsfind mechanism is not ready to handle instantiations.
+--  If Use_Secondary_Stack is True then all Bignum values are allocated on the
+--  secondary stack. If False, the heap is used and the caller is responsible
+--  for memory management.
 
-package System.Bignums is
+with Ada.Unchecked_Conversion;
+with Interfaces;
+
+generic
+   Use_Secondary_Stack : Boolean;
+package System.Generic_Bignums is
    pragma Preelaborate;
 
-   type Bignum is private;
+   pragma Assert (Long_Long_Integer'Size = 64);
+   --  This package assumes that Long_Long_Integer size is 64 bit (i.e. that it
+   --  has a range of -2**63 to 2**63-1). The front end ensures that the mode
+   --  ELIMINATED is not allowed for overflow checking if this is not the case.
+
+   subtype Length is Natural range 0 .. 2 ** 23 - 1;
+   --  Represent number of words in Digit_Vector
+
+   Base : constant := 2 ** 32;
+   --  Digit vectors use this base
+
+   subtype SD is Interfaces.Unsigned_32;
+   --  Single length digit
+
+   type Digit_Vector is array (Length range <>) of SD;
+   --  Represent digits of a number (most significant digit first)
+
+   type Bignum_Data (Len : Length) is record
+      Neg : Boolean;
+      --  Set if value is negative, never set for zero
+
+      D : Digit_Vector (1 .. Len);
+      --  Digits of number, most significant first, represented in base
+      --  2**Base. No leading zeroes are stored, and the value of zero is
+      --  represented using an empty vector for D.
+   end record;
+
+   for Bignum_Data use record
+      Len at 0 range 0 .. 23;
+      Neg at 3 range 0 .. 7;
+   end record;
+
+   type Bignum is access all Bignum_Data;
+   --  This is the type that is used externally. Possibly this could be a
+   --  private type, but we leave the structure exposed for now. For one
+   --  thing it helps with debugging. Note that this package never shares
+   --  an allocated Bignum value, so for example for X + 0, a copy of X is
+   --  returned, not X itself.
+
+   function To_Bignum is new Ada.Unchecked_Conversion (System.Address, Bignum);
+   function To_Address is new
+     Ada.Unchecked_Conversion (Bignum, System.Address);
+
+   --  Note: none of the subprograms in this package modify the Bignum_Data
+   --  records referenced by Bignum arguments of mode IN.
 
    function Big_Add (X, Y : Bignum) return Bignum;  --  "+"
    function Big_Sub (X, Y : Bignum) return Bignum;  --  "-"
@@ -71,31 +121,15 @@ package System.Bignums is
    --  Convert Long_Long_Integer to Bignum. No exception can be raised for any
    --  input argument.
 
+   function To_Bignum (X : Interfaces.Unsigned_64) return Bignum;
+   --  Convert Unsigned_64 to Bignum. No exception can be raised for any
+   --  input argument.
+
    function From_Bignum (X : Bignum) return Long_Long_Integer;
    --  Convert Bignum to Long_Long_Integer. Constraint_Error raised with
    --  appropriate message if value is out of range of Long_Long_Integer.
 
-private
+   function Is_Zero (X : Bignum) return Boolean;
+   --  Return True if X = 0
 
-   type Bignum is new System.Address;
-
-   pragma Inline (Big_Add);
-   pragma Inline (Big_Sub);
-   pragma Inline (Big_Mul);
-   pragma Inline (Big_Div);
-   pragma Inline (Big_Exp);
-   pragma Inline (Big_Mod);
-   pragma Inline (Big_Rem);
-   pragma Inline (Big_Neg);
-   pragma Inline (Big_Abs);
-   pragma Inline (Big_EQ);
-   pragma Inline (Big_NE);
-   pragma Inline (Big_GE);
-   pragma Inline (Big_LE);
-   pragma Inline (Big_GT);
-   pragma Inline (Big_LT);
-   pragma Inline (Bignum_In_LLI_Range);
-   pragma Inline (To_Bignum);
-   pragma Inline (From_Bignum);
-
-end System.Bignums;
+end System.Generic_Bignums;
