@@ -1,5 +1,9 @@
 2019-12-16  Arnaud Charlet  <charlet@adacore.com>
 
+	* socket.c: Shutdown warning.
+
+2019-12-16  Arnaud Charlet  <charlet@adacore.com>
+
 	* libgnarl/s-tataat.ads (Deallocator): Mark as Favor_Top_Level.
 
 2019-12-16  Arnaud Charlet  <charlet@adacore.com>
