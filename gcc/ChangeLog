@@ -1,3 +1,9 @@
+2019-12-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (movsi_to_cr_one): Use CR0_REGNO instead of
+	hardcoding the (old, expired) register number.
+	(*mtcrfsi): Ditto.
+
 2019-12-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config.gcc: s/msp430*-*-*/msp430-*-*.
