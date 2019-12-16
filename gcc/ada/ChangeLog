@@ -1,5 +1,14 @@
 2019-12-16  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch4.adb (Try_Container_Indexing): In the case of a derived
+	container type, use the base type to look for candidate indexing
+	operations, because the object may be a constrained subtype or
+	itype with no explicit declaration.  Candidate indexing
+	operations are found in the same scope and list of declarations
+	as the declaration of the base type.
+
+2019-12-16  Ed Schonberg  <schonberg@adacore.com>
+
 	* scng.adb (Scan): In Ada2020, a left-bracket indicates the
 	start of an homogenous aggregate.
 	* par-ch4.adb (P_Reduction_Attribute_Reference): New procedure.

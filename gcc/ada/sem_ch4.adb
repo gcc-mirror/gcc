@@ -8289,13 +8289,16 @@ package body Sem_Ch4 is
       --  Note that predefined containers are typically all derived from one of
       --  the Controlled types. The code below is motivated by containers that
       --  are derived from other types with a Reference aspect.
+      --  Note as well that we need to examine the base type, given that
+      --  the container object may be a constrained subtype or itype which
+      --  does not have an explicit declaration,
 
       elsif Is_Derived_Type (C_Type)
         and then Etype (First_Formal (Entity (Func_Name))) /= Pref_Typ
       then
          Func_Name :=
            Find_Indexing_Operations
-             (T           => C_Type,
+             (T           => Base_Type (C_Type),
               Nam         => Chars (Func_Name),
               Is_Constant => Is_Constant_Indexing);
       end if;
