@@ -1,3 +1,11 @@
+2019-12-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config.host: s/msp430*-*-elf/msp430-*-elf*.
+	Override default "extra_parts" variable.
+	* configure: Regenerate.
+	* configure.ac: Disable TM clone registry by default for
+	msp430-elfbare.
+
 2019-12-11  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config.host (msp430*-*-elf): Add crt{begin,end}_no_eh.o to

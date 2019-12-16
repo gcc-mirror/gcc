@@ -1,3 +1,19 @@
+2019-12-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config.gcc: s/msp430*-*-*/msp430-*-*.
+	Handle msp430-*-elfbare.
+	* config/msp430/msp430-devices.c (TARGET_SUBDIR): Define.
+	(_MSPMKSTR): Define.
+	(__MSPMKSTR): Define.
+	(rest_of_devices_path): Use TARGET_SUBDIR value in string.
+	* config/msp430/msp430.c (msp430_option_override): Error if
+	-fuse-cxa-atexit is used when it has been disabled at configure time.
+	* config/msp430/t-msp430: Define TARGET_SUBDIR when building
+	msp430-devices.o.
+	* doc/install.texi: Document msp430-*-elf and msp430-*-elfbare.
+	* doc/invoke.texi: Update documentation about which path devices.csv is
+	searched for.
+
 2019-12-16  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	PR target/92950

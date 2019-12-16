@@ -23311,8 +23311,8 @@ this directory for devices.csv.  If devices.csv is found, this directory will
 also be registered as an include path, and linker library path.  Header files
 and linker scripts in this directory can therefore be used without manually
 specifying @code{-I} and @code{-L} on the command line.
-@item The @samp{msp430-elf/include/devices} directory
-Finally, GCC will examine @samp{msp430-elf/include/devices} from the
+@item The @samp{msp430-elf@{,bare@}/include/devices} directory
+Finally, GCC will examine @samp{msp430-elf@{,bare@}/include/devices} from the
 toolchain root directory.  This directory does not exist in a default
 installation, but if the user has created it and copied @samp{devices.csv}
 there, then the MCU data will be read.  As above, this directory will

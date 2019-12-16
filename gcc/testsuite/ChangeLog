@@ -1,3 +1,11 @@
+2019-12-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* g++.dg/init/dso_handle1.C: Require cxa_atexit support.
+	* g++.dg/init/dso_handle2.C: Likewise.
+	* g++.dg/other/cxa-atexit1.C: Likewise.
+	* gcc.target/msp430/msp430.exp: Update csv-using-installed.c test to
+	handle msp430-elfbare configuration.
+
 2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/clause_on_volatile.ads,

@@ -68,7 +68,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   mipsel-elf mips64-elf mips64vr-elf mips64orion-elf mips-rtems \
   mips-wrs-vxworks mipstx39-elf mmix-knuth-mmixware mn10300-elf moxie-elf \
   moxie-uclinux moxie-rtems \
-  msp430-elf \
+  msp430-elf msp430-elfbare \
   nds32le-elf nds32be-elf \
   nios2-elf nios2-linux-gnu nios2-rtems \
   nvptx-none \
