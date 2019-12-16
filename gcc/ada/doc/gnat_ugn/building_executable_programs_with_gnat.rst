@@ -3000,7 +3000,7 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 .. index:: -gnatw_C  (gcc)
 
 :switch:`-gnatw_C`
-  *Suppress warnings on missing component clauses.*
+  *Suppress warnings on unknown condition in Compile_Time_Warning.*
 
   This switch supresses warnings on a pragma Compile_Time_Warning
   or Compile_Time_Error whose condition has a value that is not
