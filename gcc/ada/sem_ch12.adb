@@ -12303,6 +12303,12 @@ package body Sem_Ch12 is
             Error_Msg_NE
               ("actual for formal & must have convention %", Actual, Gen_T);
          end if;
+
+         if Can_Never_Be_Null (A_Gen_T) /= Can_Never_Be_Null (Act_T) then
+            Error_Msg_NE
+               ("non null exclusion of actual and formal & do not match",
+               Actual, Gen_T);
+         end if;
       end Validate_Access_Subprogram_Instance;
 
       -----------------------------------

@@ -1,3 +1,8 @@
+2019-12-16  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_ch12.adb (Validate_Access_Subprogram_Instance): Add
+	Can_Never_Be_Null checks.
+
 2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/gnat_rm/implementation_defined_pragmas.rst (VFA): Document
