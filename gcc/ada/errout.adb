@@ -1716,9 +1716,12 @@ package body Errout is
 
    function Is_Size_Too_Small_Message (S : String) return Boolean is
       Size_For : constant String := "size for";
+      pragma Assert (Size_Too_Small_Message (1 .. Size_For'Last) = Size_For);
+      --  Assert that Size_Too_Small_Message starts with Size_For
    begin
       return S'Length >= Size_For'Length
         and then S (S'First .. S'First + Size_For'Length - 1) = Size_For;
+      --  True if S starts with Size_For
    end Is_Size_Too_Small_Message;
 
    -----------------
