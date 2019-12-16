@@ -498,10 +498,14 @@ GNATRTL_NONTASKING_OBJS= \
   machcode$(objext) \
   s-addima$(objext) \
   s-addope$(objext) \
+  s-aotase$(objext) \
   s-arit64$(objext) \
   s-assert$(objext) \
   s-atacco$(objext) \
   s-atocou$(objext) \
+  s-atoope$(objext) \
+  s-atopar$(objext) \
+  s-atopex$(objext) \
   s-atopri$(objext) \
   s-auxdec$(objext) \
   s-bignum$(objext) \

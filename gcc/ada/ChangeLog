@@ -1,3 +1,13 @@
+2019-12-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-aotase.adb, libgnat/s-aotase.ads,
+	libgnat/s-atoope.ads, libgnat/s-atopar.adb,
+	libgnat/s-atopar.ads, libgnat/s-atopex.adb,
+	libgnat/s-atopex.ads: New files.
+	* libgnat/s-atopri.ads: Add new intrinsics.
+	* Makefile.rtl: Add new runtime files.
+	* impunit.adb: Add new units to Ada 2020 list.
+
 2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* freeze.adb (Check_Strict_Alignment): Remove new check on
