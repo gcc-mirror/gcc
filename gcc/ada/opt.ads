@@ -124,10 +124,13 @@ package Opt is
 
    type Ada_Version_Type is (Ada_83, Ada_95, Ada_2005, Ada_2012, Ada_2020);
    pragma Ordered (Ada_Version_Type);
+   pragma Convention (C, Ada_Version_Type);
    --  Versions of Ada for Ada_Version below. Note that these are ordered,
    --  so that tests like Ada_Version >= Ada_95 are legitimate and useful.
    --  Think twice before using "="; Ada_Version >= Ada_2012 is more likely
    --  what you want, because it will apply to future versions of the language.
+
+   --  WARNING: There is a matching C declaration of this type in fe.h
 
    Ada_Version_Default : constant Ada_Version_Type := Ada_2012;
    pragma Warnings (Off, Ada_Version_Default);
@@ -140,6 +143,8 @@ package Opt is
    --  Current Ada version for compiler, as set by configuration pragmas,
    --  compiler switches, or implicitly (to Ada_Version_Runtime) when a
    --  predefined or internal file is compiled.
+
+   --  WARNING: There is a matching C declaration of this variable in fe.h
 
    Ada_Version_Pragma : Node_Id := Empty;
    --  Reflects the Ada_xxx pragma that resulted in setting Ada_Version. Used
@@ -629,8 +634,9 @@ package Opt is
       --  Similar to Back_End_ZCX with respect to the front-end processing
       --  of regular and AT-END handlers. A setjmp/longjmp scheme is used to
       --  propagate and setup handler contexts on regular execution paths.
-
    pragma Convention (C, Exception_Mechanism_Type);
+
+   --  WARNING: There is a matching C declaration of this type in fe.h
 
    Exception_Mechanism : Exception_Mechanism_Type := Front_End_SJLJ;
    --  GNAT

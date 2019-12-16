@@ -1,3 +1,11 @@
+2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fe.h (Ada_Version_Type): New typedef.
+	(Ada_Version): Declare.
+	* opt.ads (Ada_Version_Type): Add Convention C and WARNING line.
+	(Ada_Version): Add WARNING line.
+	(Exception_Mechanism_Type): Likewise.
+
 2019-12-16  Gary Dismukes  <dismukes@adacore.com>
 
 	* checks.adb, sem_util.adb: Minor reformatting and U.S. spelling
