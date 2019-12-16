@@ -1358,19 +1358,13 @@ package body Sem_Ch8 is
       end if;
 
       --  The entity of the renaming declaration needs to reflect whether the
-      --  renamed object is volatile. Is_Volatile is set if the renamed object
-      --  is volatile in the RM legality sense.
+      --  renamed object is atomic, independent, volatile or VFA. These flags
+      --  are set on the renamed object in the RM legality sense.
 
-      Set_Is_Volatile (Id, Is_Volatile_Object (Nam));
-
-      --  Also copy settings of Atomic/Independent/Volatile_Full_Access
-
-      if Is_Entity_Name (Nam) then
-         Set_Is_Atomic               (Id, Is_Atomic      (Entity (Nam)));
-         Set_Is_Independent          (Id, Is_Independent (Entity (Nam)));
-         Set_Is_Volatile_Full_Access (Id,
-           Is_Volatile_Full_Access (Entity (Nam)));
-      end if;
+      Set_Is_Atomic               (Id, Is_Atomic_Object (Nam));
+      Set_Is_Independent          (Id, Is_Independent_Object (Nam));
+      Set_Is_Volatile             (Id, Is_Volatile_Object (Nam));
+      Set_Is_Volatile_Full_Access (Id, Is_Volatile_Full_Access_Object (Nam));
 
       --  Treat as volatile if we just set the Volatile flag
 
