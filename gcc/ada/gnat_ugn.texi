@@ -11250,7 +11250,7 @@ The default is that such warnings are generated.
 
 @item @code{-gnatw_C}
 
-@emph{Suppress warnings on missing component clauses.}
+@emph{Suppress warnings on unknown condition in Compile_Time_Warning.}
 
 This switch supresses warnings on a pragma Compile_Time_Warning
 or Compile_Time_Error whose condition has a value that is not
