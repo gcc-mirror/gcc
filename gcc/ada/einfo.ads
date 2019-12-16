@@ -1725,7 +1725,8 @@ package Einfo is
 --       has independent components is to see if either the object or its base
 --       type has this flag set. Note that in the case of a type, the pragma
 --       will be chained to the rep item chain of the first subtype in the
---       usual manner.
+--       usual manner. Also set if a pragma Has_Atomic_Components or pragma
+--       Has_Aliased_Components applies to the type or object.
 
 --    Has_Inheritable_Invariants (Flag248) [base type only]
 --       Defined in all type entities. Set on private types and interface types
@@ -2720,13 +2721,14 @@ package Einfo is
 --       Applies to all entities, true for incomplete types and subtypes
 
 --    Is_Independent (Flag268)
---       Defined in all type entities, and also in constants, components and
---       variables. Set if a valid pragma or aspect Independent applies to the
---       entity, or if a valid pragma or aspect Independent_Components applies
---       to the enclosing record type for a component. Also set if a pragma
---       Shared or pragma Atomic applies to the entity. In the case of private
---       and incomplete types, this flag is set in both the partial view and
---       the full view.
+--       Defined in all types and objects. Set if a valid pragma or aspect
+--       Independent applies to the entity, or for a component if a valid
+--       pragma or aspect Independent_Components applies to the enclosing
+--       record type. Also set if a pragma Shared or pragma Atomic applies to
+--       the entity, or if the declaration of the entity carries the Aliased
+--       keyword. For Ada 2012, also applies to formal parameters. In the
+--       case of private and incomplete types, this flag is set in both the
+--       partial view and the full view.
 
 --    Is_Initial_Condition_Procedure (Flag302)
 --       Defined in functions and procedures. Set for a generated procedure
@@ -4448,9 +4450,10 @@ package Einfo is
 --       the value of attribute 'Old's prefix.
 
 --    Strict_Alignment (Flag145) [implementation base type only]
---       Defined in all type entities. Indicates that some containing part
---       is either aliased or tagged. This prohibits packing the object
---       tighter than its natural size and alignment.
+--       Defined in all type entities. Indicates that the type is by-reference
+--       or contains an aliased part. This forbids packing a component of this
+--       type tighter than the alignment and size of the type, as specified by
+--       RM 13.2(7) modified by AI12-001 as a Binding Interpretation.
 
 --    String_Literal_Length (Uint16)
 --       Defined in string literal subtypes (which are created to correspond

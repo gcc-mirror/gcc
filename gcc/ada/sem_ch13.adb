@@ -10937,9 +10937,9 @@ package body Sem_Ch13 is
       end if;
 
       --  For records that have component clauses for all components, and whose
-      --  size is less than or equal to 32, we need to know the size in the
-      --  front end to activate possible packed array processing where the
-      --  component type is a record.
+      --  size is less than or equal to 32, and which can be fully packed, we
+      --  need to know the size in the front end to activate possible packed
+      --  array processing where the component type is a record.
 
       --  At this stage Hbit + 1 represents the first unused bit from all the
       --  component clauses processed, so if the component clauses are
@@ -10950,7 +10950,10 @@ package body Sem_Ch13 is
       --  length (it may for example be appropriate to round up the size
       --  to some convenient boundary, based on alignment considerations, etc).
 
-      if Unknown_RM_Size (Rectype) and then Hbit + 1 <= 32 then
+      if Unknown_RM_Size (Rectype)
+        and then Hbit + 1 <= 32
+        and then not Strict_Alignment (Rectype)
+      then
 
          --  Nothing to do if at least one component has no component clause
 
