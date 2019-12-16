@@ -1,3 +1,10 @@
+2019-12-16  Bob Duff  <duff@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Use Known_RM_Size. But we
+	still need Size_Known_At_Compile_Time, because when the size
+	really is known, sometimes only one or the other of these is
+	True.
+
 2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_util.adb (Is_Atomic_Or_VFA_Object): Also return true for
