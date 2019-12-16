@@ -1,5 +1,40 @@
 2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* sem_prag.adb (Atomic_Components): Remove local variable and
+	fix consistency issues.  Call Component_Type on the Etype of E.
+	(Independent_Components): Remove local variable.
+	* sem_util.adb (Is_Subcomponent_Of_Atomic_Object): Properly deal
+	with prefixes that are access values.
+	* gcc-interface/trans.c (atomic_acces_t): New enumeral type.
+	(node_is_atomic) <N_Indexed_Component>: Test the prefix.
+	(node_has_volatile_full_access): Rename into...
+	(node_is_volatile_full_access): ...this.
+	(node_is_component): New predicare.
+	(gnat_strip_type_conversion): Delete.
+	(outer_atomic_access_required_p): Likewise.
+	(atomic_access_required_p): Rename into...
+	(get_atomic_access): ...this.  Implement the 3 different semantics
+	of Atomic and Volatile_Full_Access.
+	(simple_atomic_access_required_p): New predicate.
+	(Call_to_gnu): Remove outer_atomic_access parameter and change the
+	type of atomic_access parameter to atomic_acces_t.  Replace call to
+	atomic_access_required_p with simple_atomic_access_required_p for
+	the in direction and call get_atomic_access for the out direction
+	instead of [outer_]atomic_access_required_p.
+	(lhs_or_actual_p): Constify local variables.
+	(present_in_lhs_or_actual_p): Likewise.
+	(gnat_to_gnu) <N_Identifier>: Replace call to atomic_access_required_p
+	with simple_atomic_access_required_p.
+	<N_Explicit_Dereference>: Likewise.
+	<N_Indexed_Component>: Likewise.
+	<N_Selected_Component>: Likewise.
+	<N_Assignment_Statement>: Call get_atomic_access for the name instead
+	of [outer_]atomic_access_required_p.  Adjust call to Call_to_gnu.
+	<N_Function_Call>: Adjust call to Call_to_gnu.
+	(get_controlling_type): Fix typo in comment.
+
+2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* fe.h (Ada_Version_Type): New typedef.
 	(Ada_Version): Declare.
 	* opt.ads (Ada_Version_Type): Add Convention C and WARNING line.

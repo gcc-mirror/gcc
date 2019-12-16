@@ -14039,7 +14039,6 @@ package body Sem_Prag is
             D    : Node_Id;
             E    : Entity_Id;
             E_Id : Node_Id;
-            K    : Node_Kind;
 
          begin
             Check_Ada_83_Warning;
@@ -14068,18 +14067,19 @@ package body Sem_Prag is
             end if;
 
             D := Declaration_Node (E);
-            K := Nkind (D);
 
-            if (K = N_Full_Type_Declaration and then Is_Array_Type (E))
+            if (Nkind (D) = N_Full_Type_Declaration and then Is_Array_Type (E))
               or else
-                ((Ekind (E) = E_Constant or else Ekind (E) = E_Variable)
-                   and then Nkind (D) = N_Object_Declaration
+                (Nkind (D) = N_Object_Declaration
+                   and then (Ekind (E) = E_Constant
+                              or else
+                             Ekind (E) = E_Variable)
                    and then Nkind (Object_Definition (D)) =
                                        N_Constrained_Array_Definition)
             then
-               --  The flag is set on the object, or on the base type
+               --  The flag is set on the base type, or on the object
 
-               if Nkind (D) /= N_Object_Declaration then
+               if Nkind (D) = N_Full_Type_Declaration then
                   E := Base_Type (E);
                end if;
 
@@ -14087,7 +14087,8 @@ package body Sem_Prag is
 
                if Prag_Id = Pragma_Atomic_Components then
                   if Ada_Version >= Ada_2020 then
-                     Check_Atomic_VFA (Component_Type (E), VFA => False);
+                     Check_Atomic_VFA
+                       (Component_Type (Etype (E)), VFA => False);
                   end if;
                   Set_Has_Atomic_Components (E);
                   Set_Has_Independent_Components (E);
@@ -17963,7 +17964,6 @@ package body Sem_Prag is
             D    : Node_Id;
             E_Id : Node_Id;
             E    : Entity_Id;
-            K    : Node_Kind;
 
          begin
             Check_Ada_83_Warning;
@@ -18030,11 +18030,10 @@ package body Sem_Prag is
             end if;
 
             D := Declaration_Node (E);
-            K := Nkind (D);
 
             --  The flag is set on the base type, or on the object
 
-            if K = N_Full_Type_Declaration
+            if Nkind (D) = N_Full_Type_Declaration
               and then (Is_Array_Type (E) or else Is_Record_Type (E))
             then
                Set_Has_Independent_Components (Base_Type (E));

@@ -17890,11 +17890,22 @@ package body Sem_Util is
 
    begin
       R := Get_Referenced_Object (N);
+
       while Nkind_In (R, N_Indexed_Component, N_Selected_Component, N_Slice)
       loop
          R := Get_Referenced_Object (Prefix (R));
-         if Is_Atomic_Object (R) then
-            return True;
+
+         --  If the prefix is an access value, only the designated type matters
+
+         if Is_Access_Type (Etype (R)) then
+            if Is_Atomic (Designated_Type (Etype (R))) then
+               return True;
+            end if;
+
+         else
+            if Is_Atomic (Etype (R)) or else Is_Atomic_Object (R) then
+               return True;
+            end if;
          end if;
       end loop;
 
