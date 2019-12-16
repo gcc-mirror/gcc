@@ -1535,7 +1535,7 @@ package Sem_Util is
 
    function Is_Atomic_Object_Entity (Id : Entity_Id) return Boolean;
    --  Determine whether arbitrary entity Id denotes an atomic object as per
-   --  Ada RM C.6(12).
+   --  Ada RM C.6(7).
 
    function Is_Atomic_Or_VFA_Object (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N denotes a reference to an object

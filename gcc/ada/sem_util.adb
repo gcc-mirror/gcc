@@ -13788,13 +13788,50 @@ package body Sem_Util is
    -----------------------------
 
    function Is_Atomic_Or_VFA_Object (N : Node_Id) return Boolean is
+      function Is_VFA_Object (N : Node_Id) return Boolean;
+      --  Determine whether arbitrary node N denotes a reference to an object
+      --  which is Volatile_Full_Access. Modelled on Is_Atomic_Object above.
+
+      function Is_VFA_Object_Entity (Id : Entity_Id) return Boolean;
+      --  Determine whether arbitrary entity Id denotes an object which is
+      --  Volatile_Full_Access. Modelled on Is_Atomic_Object_Entity above.
+
+      ---------------------
+      --  Is_VFA_Object  --
+      ---------------------
+
+      function Is_VFA_Object (N : Node_Id) return Boolean is
+      begin
+         if Is_Entity_Name (N) then
+            return Is_VFA_Object_Entity (Entity (N));
+
+         elsif Nkind (N) = N_Indexed_Component then
+            return Is_Volatile_Full_Access (Etype (N));
+
+         elsif Nkind (N) = N_Selected_Component then
+            return
+              Is_Volatile_Full_Access (Etype (N))
+                or else Is_Volatile_Full_Access (Entity (Selector_Name (N)));
+         end if;
+
+         return False;
+      end Is_VFA_Object;
+
+      ----------------------------
+      --  Is_VFA_Object_Entity  --
+      ----------------------------
+
+      function Is_VFA_Object_Entity (Id : Entity_Id) return Boolean is
+      begin
+         return
+           Is_Object (Id)
+             and then (Is_Volatile_Full_Access (Id)
+                         or else
+                       Is_Volatile_Full_Access (Etype (Id)));
+      end Is_VFA_Object_Entity;
+
    begin
-      return Is_Atomic_Object (N)
-        or else (Is_Entity_Name (N)
-                   and then Is_Object (Entity (N))
-                   and then (Is_Volatile_Full_Access (Entity (N))
-                                or else
-                             Is_Volatile_Full_Access (Etype (Entity (N)))));
+      return Is_Atomic_Object (N) or else Is_VFA_Object (N);
    end Is_Atomic_Or_VFA_Object;
 
    ----------------------

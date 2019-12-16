@@ -1,3 +1,10 @@
+2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.adb (Is_Atomic_Or_VFA_Object): Also return true for
+	components whose type is Volatile_Full_Access or which are
+	subject to the aspect/pragma individually.
+	* sem_util.ads (Is_Atomic_Object_Entity): Small comment fix.
+
 2019-12-16  Yannick Moy  <moy@adacore.com>
 
 	* exp_ch6.adb: Fix comment.
