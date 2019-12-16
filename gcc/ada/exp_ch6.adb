@@ -6934,8 +6934,8 @@ package body Exp_Ch6 is
       elsif Is_Thunk (Current_Scope) and then Is_Incomplete_Type (Exptyp) then
          return;
 
-      --  A return statement from a Ghost function does not use the secondary
-      --  stack (or any other one).
+      --  A return statement from an ignored Ghost function does not use the
+      --  secondary stack (or any other one).
 
       elsif not Requires_Transient_Scope (R_Type)
         or else Is_Ignored_Ghost_Entity (Scope_Id)

@@ -6675,7 +6675,9 @@ package body Sem_Res is
                   --  checkable, the case of calling an immediately containing
                   --  subprogram is easy to catch.
 
-                  Check_Restriction (No_Recursion, N);
+                  if not Is_Ignored_Ghost_Entity (Nam) then
+                     Check_Restriction (No_Recursion, N);
+                  end if;
 
                   --  If the recursive call is to a parameterless subprogram,
                   --  then even if we can't statically detect infinite
@@ -6820,9 +6822,13 @@ package body Sem_Res is
       then
          null;
 
+      --  A return statement from an ignored Ghost function does not use the
+      --  secondary stack (or any other one).
+
       elsif Expander_Active
         and then Ekind_In (Nam, E_Function, E_Subprogram_Type)
         and then Requires_Transient_Scope (Etype (Nam))
+        and then not Is_Ignored_Ghost_Entity (Nam)
       then
          Establish_Transient_Scope (N, Manage_Sec_Stack => True);
 
