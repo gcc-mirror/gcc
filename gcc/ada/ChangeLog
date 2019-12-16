@@ -1,5 +1,9 @@
 2019-12-16  Bob Duff  <duff@adacore.com>
 
+	* sem_util.ads: Minor comment fix.
+
+2019-12-16  Bob Duff  <duff@adacore.com>
+
 	* errout.ads, errout.adb (Is_Size_Too_Small_Message): Check for
 	"size for" instead of "size for& too small, minimum allowed is
 	^".

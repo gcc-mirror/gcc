@@ -2686,7 +2686,7 @@ package Sem_Util is
    function Scope_Within_Or_Same
      (Inner : Entity_Id;
       Outer : Entity_Id) return Boolean;
-   --  Determine whether scope Inner appears within scope Outer or both renote
+   --  Determine whether scope Inner appears within scope Outer or both denote
    --  the same scope. Note that scopes are partially ordered, so Scope_Within
    --  (A, B) and Scope_Within (B, A) may both return False.
 
