@@ -1042,14 +1042,21 @@ package body Exp_Unst is
                            --  handled during full traversal. Note that if the
                            --  nominal subtype of the prefix is unconstrained,
                            --  the bound must be obtained from the object, not
-                           --  from the (possibly) uplevel reference.
+                           --  from the (possibly) uplevel reference. We call
+                           --  Get_Referenced_Object to deal with prefixes that
+                           --  are object renamings (prefixes that are types
+                           --  can be passed and will simply be returned).
 
-                           if Is_Constrained (Etype (Prefix (N))) then
+                           if Is_Constrained
+                                (Etype (Get_Referenced_Object (Prefix (N))))
+                           then
                               declare
                                  DT : Boolean := False;
                               begin
                                  Check_Static_Type
-                                   (Etype (Prefix (N)), Empty, DT);
+                                   (Etype (Get_Referenced_Object (Prefix (N))),
+                                    Empty,
+                                    DT);
                               end;
 
                               return OK;

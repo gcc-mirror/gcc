@@ -1138,9 +1138,10 @@ package Sem_Util is
    --  corresponding aspect.
 
    function Get_Referenced_Object (N : Node_Id) return Node_Id;
-   --  Given a node, return the renamed object if the node represents a renamed
-   --  object, otherwise return the node unchanged. The node may represent an
-   --  arbitrary expression.
+   --  Given an arbitrary node, return the renamed object if the node
+   --  represents a renamed object; otherwise return the node unchanged.
+   --  The node can represent an arbitrary expression or any other kind of
+   --  node (such as the name of a type).
 
    function Get_Renamed_Entity (E : Entity_Id) return Entity_Id;
    --  Given an entity for an exception, package, subprogram or generic unit,

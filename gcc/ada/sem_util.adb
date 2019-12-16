@@ -10181,6 +10181,7 @@ package body Sem_Util is
    begin
       R := N;
       while Is_Entity_Name (R)
+        and then Is_Object (Entity (R))
         and then Present (Renamed_Object (Entity (R)))
       loop
          R := Renamed_Object (Entity (R));
