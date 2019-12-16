@@ -1441,9 +1441,6 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
 
       if (!*non_constant_p)
 	{
-	  /* Unsharing here isn't necessary for correctness, but it
-	     significantly improves memory performance for some reason.  */
-	  arg = unshare_constructor (arg);
 	  /* Make sure the binding has the same type as the parm.  But
 	     only for constant args.  */
 	  if (!TYPE_REF_P (type))
@@ -1959,19 +1956,11 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
      this function exits.  */
   class free_bindings
   {
+    tree *bindings;
   public:
-    tree &bindings;
-    bool do_free;
-    free_bindings (tree &b): bindings (b), do_free(true) { }
-    void preserve () { do_free = false; }
-    ~free_bindings () {
-      if (do_free)
-	{
-	  for (int i = 0; i < TREE_VEC_LENGTH (bindings); ++i)
-	    free_constructor (TREE_VEC_ELT (bindings, i));
-	  ggc_free (bindings);
-	}
-    }
+    free_bindings (tree &b): bindings (&b) { }
+    ~free_bindings () { if (bindings) ggc_free (*bindings); }
+    void preserve () { bindings = NULL; }
   } fb (new_call.bindings);
 
   if (*non_constant_p)
@@ -2074,7 +2063,18 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	  for (int i = 0; i < TREE_VEC_LENGTH (bound); ++i)
 	    {
 	      tree arg = TREE_VEC_ELT (bound, i);
-	      /* Don't share a CONSTRUCTOR that might be changed.  */
+	      if (entry)
+		{
+		  /* Unshare args going into the hash table to separate them
+		     from the caller's context, for better GC and to avoid
+		     problems with verify_gimple.  */
+		  arg = unshare_expr (arg);
+		  TREE_VEC_ELT (bound, i) = arg;
+		}
+	      /* Don't share a CONSTRUCTOR that might be changed.  This is not
+		 redundant with the unshare just above; we also don't want to
+		 change the argument values in the hash table.  XXX Could we
+		 unshare lazily in cxx_eval_store_expression?  */
 	      arg = unshare_constructor (arg);
 	      if (TREE_CODE (arg) == CONSTRUCTOR)
 		vec_safe_push (ctors, arg);
