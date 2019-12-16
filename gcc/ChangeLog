@@ -1,3 +1,9 @@
+2019-12-16  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/92950
+	* config/s390/vector.md ("mov<mode>" for V_8): Replace lh, lhy,
+	and lhrl with llc.
+
 2019-12-14  Martin Sebor  <msebor@redhat.com>
 
 	* doc/extend.texi (attribute access): Correct typos.
