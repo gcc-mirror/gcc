@@ -1,3 +1,8 @@
+2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/clause_on_volatile.ads,
+	gnat.dg/specs/size_clause3.ads: Update expected diagnostics.
+
 2019-12-16  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	PR target/92950

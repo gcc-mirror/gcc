@@ -1,5 +1,61 @@
 2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Adjust calls to
+	validate_size.
+	(gnat_to_gnu_component_type): Likewise.
+	(gnat_to_gnu_field): Likewise and pass string for error messages.
+	(components_need_strict_alignment): Remove test on Is_Aliased and
+	add test for the independence of the component.
+	(validate_size): Add S1 and S2 string parameters and use them to
+	give better error messages for fields.  Tweak a couple of messages.
+	* einfo.ads (Has_Independent_Components): Document more cases.
+	(Is_Independent): Likewise.
+	(Strict_Alignment): Document new semantics.
+	* exp_ch9.adb (Install_Private_Data_Declarations): Also set the
+	Is_Independent flag along with Is_Aliased on the renaming
+	entity.
+	* freeze.adb (Size_Known): Remove always-false test and add test
+	for the strict-alignment on the record type.  Remove redundant
+	tests and add test for the strict-alignment on the component
+	type.
+	(Check_Strict_Alignment): Set the flag if the type is by-ref and
+	remove now redundant conditions.  Set the flag on an array type
+	if it has aliased components.  In the record type case, do not
+	set type for C_Pass_By_Copy convention.
+	(Freeze_Array_Type): Move code checking for conflicts between
+	representation aspects and clauses to before specific handling
+	of packed array types. Give a warnind instead of an error for a
+	conflict with pragma Pack.  Do not test Has_Pragma_Pack for the
+	specific handling of packed array types.
+	(Freeze_Record_Type): Move error checking of representation
+	clause to...
+	(Freeze_Entity): ...here after Check_Strict_Alignment is called.
+	* sem_aggr.adb (Array_Aggr_Subtype): Also set the Is_Independent
+	flag along with Is_Aliased on the Itype.
+	* sem_ch13.adb (Check_Record_Representation_Clause): Do not set
+	the RM size for a strict-alignment type.
+	* sem_ch3.adb (Add_Interface_Tag_Components): Also set the
+	Is_Independent flag along with Is_Aliased on the tag.
+	(Add_Interface_Tag_Components): Likewise on the offset.
+	(Analyze_Component_Declaration): Likewise on the component.
+	(Analyze_Object_Declaration): Likewise on the object.
+	(Constrain_Array): Likewise on the array.
+	(Record_Type_Declaration: Likewise on the tag.
+	(Array_Type_Declaration): Also set the
+	Has_Independent_Components flag along with
+	Has_Aliased_Components on the array.
+	(Copy_Array_Base_Type_Attributes): Copy
+	Has_Independent_Components.
+	(Copy_Array_Subtype_Attributes): Copy Is_Atomic, Is_Independent
+	and Is_Volatile_Full_Access.
+	(Analyze_Iterator_Specification): Set Is_Independent on the loop
+	variable according to Independent_Components on the array.
+	* sem_ch5.adb: Likewise.
+	* sem_ch6.adb (Process_Formals): Also set the Is_Independent
+	flag along with Is_Aliased on the formal.
+
+2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* sem_ch8.adb (Analyze_Object_Renaming): Set Atomic, Independent
 	and Volatile_Full_Access aspects on the entity of the renaming
 	the same way as the Volatile aspect is set.
