@@ -17,6 +17,7 @@ foo (int len, int *z) {
 }
 
 
+__attribute__ ((optimize(("no-tree-vectorize"))))
 int main (void)
 {
   short i;

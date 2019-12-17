@@ -1,3 +1,9 @@
+2019-12-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/vect/pr65947-8.c: Change pass conditions for amdgcn.
+	* gcc.dg/vect/vect-multitypes-11.c: Ensure that main isn't vectorized.
+	* gcc.dg/vect/vect-multitypes-12.c: Likewise.
+
 2019-12-17  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/pr45701-1.c: Adjust for -mpure-code.
