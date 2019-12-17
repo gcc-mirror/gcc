@@ -1,5 +1,13 @@
 2019-12-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/79592 - missing explanation of invalid constexpr.
+	* constexpr.c (register_constexpr_fundef): Do store the body of a
+	template instantiation that is not potentially constant.
+	(explain_invalid_constexpr_fn): Look it up.
+	(cxx_eval_call_expression): Check fundef->result.
+
+2019-12-17  Jason Merrill  <jason@redhat.com>
+
 	PR c++/92576 - redeclaration of variable template.
 	* decl.c (redeclaration_error_message): Recurse for variable
 	templates.

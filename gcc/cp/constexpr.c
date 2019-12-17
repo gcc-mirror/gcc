@@ -885,16 +885,16 @@ register_constexpr_fundef (tree fun, tree body)
       return NULL;
     }
 
-  if (!potential_rvalue_constant_expression (massaged))
-    {
-      if (!DECL_GENERATED_P (fun))
-	require_potential_rvalue_constant_expression (massaged);
-      return NULL;
-    }
+  bool potential = potential_rvalue_constant_expression (massaged);
+  if (!potential && !DECL_GENERATED_P (fun))
+    require_potential_rvalue_constant_expression (massaged);
 
   if (DECL_CONSTRUCTOR_P (fun)
       && cx_check_missing_mem_inits (DECL_CONTEXT (fun),
 				     massaged, !DECL_GENERATED_P (fun)))
+    potential = false;
+
+  if (!potential && !DECL_GENERATED_P (fun))
     return NULL;
 
   /* Create the constexpr function table if necessary.  */
@@ -916,6 +916,12 @@ register_constexpr_fundef (tree fun, tree body)
   slot = constexpr_fundef_table->find_slot (&entry, INSERT);
   if (clear_ctx)
     DECL_CONTEXT (DECL_RESULT (fun)) = NULL_TREE;
+
+  if (!potential)
+    /* For a template instantiation, we want to remember the pre-generic body
+       for explain_invalid_constexpr_fn, but do tell cxx_eval_call_expression
+       that it doesn't need to bother trying to expand the function.  */
+    entry.result = error_mark_node;
 
   gcc_assert (*slot == NULL);
   *slot = ggc_alloc<constexpr_fundef> ();
@@ -962,11 +968,15 @@ explain_invalid_constexpr_fn (tree fun)
     {
       /* Then if it's OK, the body.  */
       if (!DECL_DECLARED_CONSTEXPR_P (fun)
-	  && !LAMBDA_TYPE_P (CP_DECL_CONTEXT (fun)))
+	  && DECL_DEFAULTED_FN (fun))
 	explain_implicit_non_constexpr (fun);
       else
 	{
-	  body = massage_constexpr_body (fun, DECL_SAVED_TREE (fun));
+	  if (constexpr_fundef *fd = retrieve_constexpr_fundef (fun))
+	    body = fd->body;
+	  else
+	    body = DECL_SAVED_TREE (fun);
+	  body = massage_constexpr_body (fun, body);
 	  require_potential_rvalue_constant_expression (body);
 	  if (DECL_CONSTRUCTOR_P (fun))
 	    cx_check_missing_mem_inits (DECL_CONTEXT (fun), body, true);
@@ -1919,6 +1929,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
     {
       new_call.fundef = retrieve_constexpr_fundef (fun);
       if (new_call.fundef == NULL || new_call.fundef->body == NULL
+	  || new_call.fundef->result == error_mark_node
 	  || fun == current_function_decl)
         {
 	  if (!ctx->quiet)
