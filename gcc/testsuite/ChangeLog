@@ -1,3 +1,8 @@
+2019-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92841
+	* gcc.target/i386/pr92841.c: New test.
+
 2019-12-17  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/pr45701-1.c: Adjust for -mpure-code.
