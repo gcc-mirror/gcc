@@ -1,3 +1,19 @@
+2019-12-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/ChangeLog:
+	* coroutines.cc (build_co_await): Set the co_await expression
+	type to that of the await_resume call.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/coro1-ret-int-yield-int.h: Add an awaitable
+	that returns a reference.
+	* g++.dg/coroutines/torture/call-03-temp-ref-co-aw.C: New test.
+	* g++.dg/coroutines/torture/co-await-12-operator-2.C: Make the
+	syntax more regular.
+	* g++.dg/coroutines/torture/co-await-13-return-ref.C: New test.
+	* g++.dg/coroutines/torture/co-yield-08-more-refs.C: New test.
+	* g++.dg/coroutines/torture/co-yield-09-more-templ-refs.C: New test.
+
 2019-12-16  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Merge trunk r279408.

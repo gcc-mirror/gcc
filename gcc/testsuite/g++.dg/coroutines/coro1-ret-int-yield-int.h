@@ -60,6 +60,15 @@ struct coro1 {
     long await_resume() const noexcept { PRINT ("susp-always-resume-longsq"); return x * x;}
   };
 
+  struct suspend_always_intrefprt {
+    int& x;
+    suspend_always_intrefprt(int& __x) : x(__x) {}
+    ~suspend_always_intrefprt() {}
+    bool await_ready() const noexcept { return false; }
+    void await_suspend(coro::coroutine_handle<>) const noexcept { PRINT ("susp-always-susp-intprt");}
+    int& await_resume() const noexcept { PRINT ("susp-always-resume-intprt"); return x;}
+  };
+
   struct promise_type {
 
   promise_type() : vv(-1) {  PRINT ("Created Promise"); }

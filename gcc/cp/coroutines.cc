@@ -713,7 +713,7 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
   TREE_VEC_ELT (awaiter_calls, 1) = awsp_call; /* await_suspend().  */
   TREE_VEC_ELT (awaiter_calls, 2) = awrs_call; /* await_resume().  */
 
-  return build5_loc (loc, CO_AWAIT_EXPR, TREE_TYPE (TREE_TYPE (awrs_func)), a,
+  return build5_loc (loc, CO_AWAIT_EXPR, TREE_TYPE (awrs_call), a,
 		     e_proxy, o, awaiter_calls,
 		     build_int_cst (integer_type_node, (int) suspend_kind));
 }

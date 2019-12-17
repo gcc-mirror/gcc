@@ -23,8 +23,8 @@ empty e{};
 coro1
 f ()
 {
-  int a = co_await(e); /* operator ovl lv. */
-  int b = co_await(empty{}); /* operator ovl rv. */
+  int a = co_await e; /* operator ovl lv. */
+  int b = co_await empty{}; /* operator ovl rv. */
   co_return b + a;
 }
 
