@@ -1,3 +1,12 @@
+2019-12-17  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backport from mainline
+	2019-12-16  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/92950
+	* config/s390/vector.md ("mov<mode>" for V_8): Replace lh, lhy,
+	and lhrl with llc.
+
 2019-12-12  Vineet Gupta  <vgupta@synopsys.com>
 
 	Backport from mainline

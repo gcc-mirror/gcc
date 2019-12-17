@@ -1,3 +1,11 @@
+2019-12-17  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backport from mainline
+	2019-12-16  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/92950
+	* gcc.target/s390/vector/pr92950.c: New test.
+
 2019-12-12  Harald Anlauf  <anlauf@gmx.de>
 
 	Backport from mainline
