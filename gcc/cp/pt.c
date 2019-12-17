@@ -10640,7 +10640,12 @@ push_tinst_level_loc (tree tldcl, tree targs, location_t loc)
      anything else.  Do allow deduction substitution and decls usable in
      constant expressions.  */
   if (!targs && limit_bad_template_recursion (tldcl))
-    return false;
+    {
+      /* Avoid no_linkage_errors and unused function warnings for this
+	 decl.  */
+      TREE_NO_WARNING (tldcl) = 1;
+      return false;
+    }
 
   /* When not -quiet, dump template instantiations other than functions, since
      announce_function will take care of those.  */
