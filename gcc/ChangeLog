@@ -1,3 +1,11 @@
+2019-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92841
+	* config/i386/i386.md (@stack_protect_set_1_<mode>,
+	@stack_protect_test_1_<mode>): Use output_asm_insn.
+	(*stack_protect_set_2_<mode>, *stack_protect_set_3): New define_insns
+	and corresponding define_peephole2s.
+
 2019-12-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	* symtab.c (symtab_node::get_partitioning_class): Aliases of external
