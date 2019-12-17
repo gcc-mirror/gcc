@@ -1737,6 +1737,10 @@ get_class_binding_direct (tree klass, tree name, bool want_type)
 static void
 maybe_lazily_declare (tree klass, tree name)
 {
+  if (DECL_LANG_SPECIFIC (TYPE_NAME (klass))
+      && DECL_MODULE_PENDING_MEMBERS_P (TYPE_NAME (klass)))
+    lazy_load_members (TYPE_NAME (klass));
+  
   /* Lazily declare functions, if we're going to search these.  */
   if (IDENTIFIER_CTOR_P (name))
     {

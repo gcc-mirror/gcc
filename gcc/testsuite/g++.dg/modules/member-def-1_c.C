@@ -1,0 +1,16 @@
+// { dg-additional-options "-fmodules-ts -fdump-lang-module-blocks-alias" }
+
+export module foo;
+// { dg-module-cmi foo }
+
+export import :part2;
+export import :part1;
+
+export auto foo ()
+{
+  return frob::inner ();
+}
+
+// { dg-final { scan-lang-dump {Reading 1 pending members keyed to foo:part1\[0\] '::frob@foo:part1:1'} module } }
+// { dg-final { scan-lang-dump { Cluster members:\n  \[0\]=decl definition '::frob@foo:part1:1'\n  \[1\]=decl declaration '::frob@foo:part1:1::frob@foo:part1:1'\n  \[2\]=decl definition '::frob@foo:part1:1::inner@foo:part1:1'\n  \[3\]=decl declaration '::frob@foo:part1:1::__as_base @foo:part1:1'\n  \[4\]=decl declaration '::frob@foo:part1:1::inner@foo:part1:1::inner@foo:part2:2'\n  \[5\]=binding '::frob'\n} module } }
+// { dg-final { scan-lang-dump {Pendings 0} module } }

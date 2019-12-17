@@ -1,5 +1,30 @@
 2019-12-17  Nathan Sidwell  <nathan@acm.org>
 
+	Out-of-class member class definitions
+	gcc/cp/
+	* cp-tree.h (DECL_MODULE_PENDING_MEMBERS_P): New.
+	(lang_decl_base): Add module_pending_members_p.
+	(lazy_load_members): Declare.
+	* module.cc (depset::entity_kind): Add EK_INNER_DECL.
+	(depset::disc_bits): Add DB_IS_MEMBER_BIT.
+	(depset::is_member): New.
+	(module_state::write_cluster): Take ref to module_state_config.
+	Adjust.
+	(module_state::{read,write}_specializations): Rename to ...
+	(module_stte::{read,write}_pendings): Generalize to pending
+	members.
+	(trees_in::decl_val): Deal with pending members.
+	(depset::hash::make_dependency): Adjust for EK_INNER_DECL.
+	(depset::hash::add_class_entities): Add them.
+	(struct module_state_config): Rename num_specializations ->
+	num_pendings.  Adjust throughout.
+	(module_state::read_entities): Shift snum another bit.
+	(module_sttate::lazy_load): Likewise.
+	(lazy_load_members): New.
+	* name-lookup.c (maybe_lazily_declare): Load pending members.
+	gcc/testsuite/
+	* g++.dg/modules/member-def-1_[abcd].C: New.
+
 	gcc/cp/
 	* cp-tree.h (set_defining_module): New.
 	* decl.c (xref_tag_1): Check can redeclare, set instantiating

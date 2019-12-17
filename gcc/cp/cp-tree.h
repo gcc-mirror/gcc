@@ -1725,8 +1725,18 @@ check_constraint_info (tree t)
   (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (NODE))->u.base.module_entity_p)
 
 /* True if there are unloaded specializations keyed to this template.  */
-#define DECL_MODULE_PENDING_SPECIALIZATIONS_P(NODE) \
-  (DECL_LANG_SPECIFIC (TEMPLATE_DECL_CHECK (NODE))->u.base.module_pending_p)
+#define DECL_MODULE_PENDING_SPECIALIZATIONS_P(NODE)	\
+  (DECL_LANG_SPECIFIC (TEMPLATE_DECL_CHECK (NODE))	\
+   ->u.base.module_pending_specializations_p)
+
+/* True if this class has unloaded members.  These should be loaded
+   before we do member lookups.  While this may be better on the
+   classtype, I think we can get this behaviour for enums too.  But
+   perhaps those need to be immediately loaded?  (Particularly if
+   unscoped).  */
+#define DECL_MODULE_PENDING_MEMBERS_P(NODE)		\
+  (DECL_LANG_SPECIFIC (TYPE_DECL_CHECK (NODE))		\
+   ->u.base.module_pending_members_p)
 
 /* Whether this is an exported DECL.  Held on any decl that can appear
    at namespace scope (function, var, type, template, const or
@@ -2769,10 +2779,11 @@ struct GTY(()) lang_decl_base {
 					      PMF.  */
   unsigned module_entity_p : 1;		   /* is in the entitity ary &
 					      hash.  */
-  unsigned module_pending_p : 1;   	   /* has specializations toload.  */
+  /* Has specializations or members yet to load.  */
+  unsigned module_pending_specializations_p : 1;
+  unsigned module_pending_members_p : 1;
   
-  
-  /* 13 spare bits.  */
+  /* 10 spare bits.  */
 };
 
 /* True for DECL codes which have template info and access.  */
@@ -7001,6 +7012,7 @@ extern void mangle_module_fini ();
 extern bool module_normal_import_p (unsigned m);
 extern void lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot);
 extern void lazy_load_specializations (tree tmpl);
+extern void lazy_load_members (tree decl);
 extern bool lazy_specializations_p (unsigned, bool, bool);
 extern bool import_module (module_state *, location_t, bool, tree,
 			   cpp_reader *, bool in_extern_c);

@@ -358,8 +358,11 @@ public:
     /* Tools tend to moan if the dtor's not virtual.  */
     virtual ~allocator () {}
 
+  public:
     void grow (data &obj, unsigned needed, bool exact);
     void shrink (data &obj);
+
+  public:
     virtual char *grow (char *ptr, unsigned needed);
     virtual void shrink (char *ptr);
   };
@@ -2272,6 +2275,8 @@ public:
     EK_EXPLICIT_HWM,  
     EK_BINDING = EK_EXPLICIT_HWM, /* Implicitly encoded.  */
     EK_FOR_BINDING,	/* A decl being inserted for a binding.  */
+    EK_INNER_DECL,	/* A decl defined outside of it's imported
+			   context.  */
 
     EK_BITS = 3		/* Only need to encode below EK_EXPLICIT_HWM.  */
   };
@@ -2285,6 +2290,7 @@ private:
     DB_KIND_BIT, /* Kind of the entity.  */
     DB_KIND_BITS = EK_BITS,
     DB_DEFN_BIT = DB_KIND_BIT + DB_KIND_BITS,
+    DB_IS_MEMBER_BIT,		/* Is an out-of-class member.  */
     DB_IS_INTERNAL_BIT,		/* It is an internal-linkage entity.  */
     DB_REFS_INTERNAL_BIT,	/* Refers to an internal-linkage
 				   entity. */
@@ -2361,6 +2367,11 @@ public:
     return get_flag_bit<DB_DEFN_BIT> ();
   }
 
+public:
+  bool is_member () const
+  {
+    return get_flag_bit<DB_IS_MEMBER_BIT> ();
+  }
 public:
   bool is_internal () const
   {
@@ -3461,8 +3472,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool read_namespaces (unsigned);
 
   unsigned write_cluster (elf_out *to, depset *depsets[], unsigned size,
-			  depset::hash &, unsigned &specializations,
-			  unsigned &entities, unsigned *crc_ptr);
+			  depset::hash &, struct module_state_config &,
+			  unsigned *crc_ptr);
   bool read_cluster (unsigned snum);
 
  private:
@@ -3470,9 +3481,9 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool read_inits (unsigned count);
 
  private:
-  void write_specializations (elf_out *to, vec<depset *> depsets,
-			      depset::hash &, unsigned count, unsigned *crc_ptr);
-  bool read_specializations (unsigned count);
+  void write_pendings (elf_out *to, vec<depset *> depsets,
+		      depset::hash &, unsigned count, unsigned *crc_ptr);
+  bool read_pendings (unsigned count);
 
  private:
   void write_entities (elf_out *to, vec<depset *> depsets,
@@ -7782,11 +7793,14 @@ trees_in::decl_value ()
       /* Insert the real decl into the entity ary.  */
       mc_slot &slot = (*entity_ary)[state->entity_lwm + entity_index - 1];
 
-      bool pending = slot.get_lazy () & 1;
+      /* See module_state::read_pendings for how this got set, at most
+	 one bit will be set.  */
+      int pending = slot.get_lazy () & 3;
+
       slot = existing;
       unsigned ident = state->entity_lwm + entity_index - 1;
 
-      /* And into the entity hash, if it's not already there.  */
+      /* And into the entity map, if it's not already there.  */
       if (!DECL_LANG_SPECIFIC (existing)
 	  || !DECL_MODULE_ENTITY_P (existing))
 	{
@@ -7799,15 +7813,23 @@ trees_in::decl_value ()
 	    = entity_map->get_or_insert (DECL_UID (existing), &existed);
 	  gcc_checking_assert (!existed);
 	  slot = ident;
-
-	  if (pending)
-	    DECL_MODULE_PENDING_SPECIALIZATIONS_P (existing) = true;
 	}
-      else if (pending)
+      else if (pending != 0)
 	{
 	  unsigned key_ident = import_entity_index (existing);
-	  if (pendset::table->add (key_ident, ~ident))
-	    DECL_MODULE_PENDING_SPECIALIZATIONS_P (existing) = true;
+	  if (!pendset::table->add (pending & 1 ? key_ident : ~key_ident,
+				    ~ident))
+	    pending = 0;
+	}
+
+      if (pending & 1)
+	DECL_MODULE_PENDING_SPECIALIZATIONS_P (existing) = true;
+      else if (pending & 2)
+	{
+	  DECL_MODULE_PENDING_MEMBERS_P (existing) = true;
+	  if (TREE_CODE (existing) == TEMPLATE_DECL)
+	    DECL_MODULE_PENDING_MEMBERS_P (DECL_TEMPLATE_RESULT (existing))
+	      = true;
 	}
     }
 
@@ -10925,7 +10947,7 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
       gcc_checking_assert (ek != EK_DECL || current);
 
       bool has_def = ek != EK_USING && has_definition (decl);
-      if (for_binding)
+      if (ek > EK_BINDING)
 	ek = EK_DECL;
 
       /* The only OVERLOADS we should see are USING decls from
@@ -11275,10 +11297,17 @@ depset::hash::add_namespace_entities (tree ns, bitmap partitions)
 void
 depset::hash::add_class_entities (vec<tree, va_gc> *class_members)
 {
-  while (class_members->length ())
+  for (unsigned ix = 0; ix != class_members->length (); ix++)
     {
-      tree defn = class_members->pop ();
-      (void)defn; // FIXME: do something
+      tree defn = (*class_members)[ix];
+      depset *dep = make_dependency (defn, EK_INNER_DECL);
+
+      if (dep->get_entity_kind () == EK_REDIRECT)
+	dep = dep->deps[0];
+
+      /* Only non-instantiations need marking as members.  */
+      if (dep->get_entity_kind () == EK_DECL)
+	dep->set_flag_bit <DB_IS_MEMBER_BIT> ();
     }
 }
 
@@ -13615,6 +13644,57 @@ module_state::read_partitions (unsigned count)
   return true;
 }
 
+/* Data for config reading and writing.  */
+struct module_state_config {
+  const char *dialect_str;
+  range_t sec_range;
+  unsigned num_pendings;
+  unsigned num_entities;
+  unsigned num_namespaces;
+  unsigned num_imports;
+  unsigned num_partitions;
+  unsigned num_bindings;
+  unsigned num_macros;
+  unsigned num_inits;
+
+public:
+  module_state_config ()
+    :dialect_str (get_dialect ()),
+     sec_range (0,0), num_pendings (0), num_entities (0),
+     num_namespaces (0), num_imports (0), num_partitions (0),
+     num_bindings (0), num_macros (0), num_inits (0)
+  {
+  }
+
+  static void release ()
+  {
+    XDELETEVEC (dialect);
+    dialect = NULL;
+  }
+
+private:
+  static const char *get_dialect ();
+  static char *dialect;
+};
+
+char *module_state_config::dialect;
+
+/* Generate a string of the significant compilation options.
+   Generally assume the user knows what they're doing, in the same way
+   that object files can be mixed.  */
+
+const char *
+module_state_config::get_dialect ()
+{
+  if (!dialect)
+    dialect = concat (get_cxx_dialect_name (cxx_dialect),
+		      flag_concepts ? "/concepts" : "",
+		      flag_coroutines ? "/coroutines" : "",
+		      NULL);
+
+  return dialect;
+}
+
 /* Contents of a cluster.  */
 enum cluster_tag {
   ct_decl,	/* A decl.  */
@@ -13644,8 +13724,8 @@ enum ct_bind_flags
 
 unsigned
 module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
-			     depset::hash &table, unsigned &specializations,
-			     unsigned &entities, unsigned *crc_ptr)
+			     depset::hash &table, module_state_config &config,
+			     unsigned *crc_ptr)
 {
   dump () && dump ("Writing section:%u %u depsets", table.section, size);
   dump.indent ();
@@ -13682,11 +13762,13 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  break;
 
 	case depset::EK_SPECIALIZATION:
-	  ++specializations;
+	  config.num_pendings++;
 	  /* FALLTHROUGH  */
 
 	case depset::EK_DECL:
-	  b->cluster = entities++;
+	  if (b->is_member ())
+	    config.num_pendings++;
+	  b->cluster = config.num_entities++;
 	  sec.mark_declaration (b->get_entity (), b->has_defn ());
 	  /* FALLTHROUGH  */
 
@@ -14392,7 +14474,7 @@ module_state::read_entities (unsigned count, const range_t &range)
       mc_slot slot;
       slot.u.binding = NULL_TREE;
       if (snum)
-	slot.set_lazy (snum * 2);
+	slot.set_lazy (snum << 2);
       entity_ary->quick_push (slot);
     }
   entity_num = ix;
@@ -14403,18 +14485,20 @@ module_state::read_entities (unsigned count, const range_t &range)
   return true;
 }
 
-/* Write the unnamed table to MOD_SNAME_PFX.spc
+/* Write the pending table to MOD_SNAME_PFX.pnd
 
-   Each entry is a section number, key-locator tuple.
-   Keys are so specialiazations can be loaded when instantiating the
-   thing they're keyed to.  */
-// FIXME: Should we coalesce according to key?
+   Specializations are keyed to their primary template.
+   Members are keyed to their context.
+
+   For specializations, primary templates are keyed to the (namespace
+   name) of their originating decl.  */
+
 void
-module_state::write_specializations (elf_out *to, vec<depset *> depsets,
-				     depset::hash &table,
-				     unsigned count, unsigned *crc_p)
+module_state::write_pendings (elf_out *to, vec<depset *> depsets,
+			      depset::hash &table,
+			      unsigned count, unsigned *crc_p)
 {
-  dump () && dump ("Writing specializations");
+  dump () && dump ("Writing %u pendings", count);
   dump.indent ();
 
   trees_out sec (to, this, table);
@@ -14423,55 +14507,74 @@ module_state::write_specializations (elf_out *to, vec<depset *> depsets,
   for (unsigned ix = 0; ix < depsets.length (); ix++)
     {
       depset *d = depsets[ix];
-      if (d->get_entity_kind () == depset::EK_SPECIALIZATION)
+      depset::entity_kind kind = d->get_entity_kind ();
+      tree key = NULL_TREE;
+      bool is_spec = kind == depset::EK_SPECIALIZATION;
+
+      if (is_spec)
+	key = reinterpret_cast <spec_entry *> (d->deps[0])->tmpl;
+      else if (kind == depset::EK_DECL && d->is_member ())
+	{
+	  tree ctx = DECL_CONTEXT (d->get_entity ());
+	  key = TYPE_NAME (ctx);
+	  if (tree ti = CLASSTYPE_TEMPLATE_INFO (ctx))
+	    if (DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti)) == key)
+	      key = TI_TEMPLATE (ti);
+	}
+
+      if (key)
 	{
 	  gcc_checking_assert (!d->is_import ());
-	  tree spec = d->get_entity ();
-	  spec_entry *entry = reinterpret_cast <spec_entry *> (d->deps[0]);
-	  tree tmpl = entry->tmpl;
 
 	  {
-	    /* Key the specialization to its general template.  */
-	    depset *tmpl_dep = table.find_dependency (tmpl);
-	    unsigned tmpl_origin
-	      = tmpl_dep->is_import () ? tmpl_dep->section : 0;
-	    sec.u (tmpl_origin);
-	    sec.u (tmpl_dep->cluster);
+	    /* Key the entity to its key.  */
+	    depset *key_dep = table.find_dependency (key);
+	    if (key_dep->get_entity_kind () == depset::EK_REDIRECT)
+	      key_dep = key_dep->deps[0];
+	    unsigned key_origin
+	      = key_dep->is_import () ? key_dep->section : 0;
+	    sec.u (key_origin);
+	    sec.u (key_dep->cluster);
 	    sec.u (d->cluster);
-	    dump () && dump ("Specialization %N entity:%u keyed to %M[%u] %N",
-			     spec, d->cluster, (*modules)[tmpl_origin],
-			     tmpl_dep->cluster, tmpl);
+	    dump () && dump ("%s %N entity:%u keyed to %M[%u] %N",
+			     is_spec ? "Specialization" : "Member",
+			     d->get_entity (),
+			     d->cluster, (*modules)[key_origin],
+			     key_dep->cluster, key);
 	  }
 
-	  {
-	    /* Key the general template to the originating decl.  */
-	    tree origin = get_originating_module_decl (tmpl);
-	    unsigned origin_ident = import_entity_index (origin);
-	    module_state *origin_from = this;
-	    if (!(origin_ident & ~(~0u>>1)))
-	      origin_from = import_entity_module (origin_ident);
-	    sec.u (origin_from->remap);
-	    sec.tree_node (CP_DECL_CONTEXT (origin));
-	    sec.tree_node (DECL_NAME (origin));
-	  }
+	  if (is_spec)
+	    {
+	      /* Key the general template to the originating decl.  */
+	      tree origin = get_originating_module_decl (key);
+	      sec.tree_node (CP_DECL_CONTEXT (origin));
+	      sec.tree_node (DECL_NAME (origin));
 
+	      unsigned origin_ident = import_entity_index (origin);
+	      module_state *origin_from = this;
+	      if (!(origin_ident & ~(~0u>>1)))
+		origin_from = import_entity_module (origin_ident);
+	      sec.u (origin_from->remap);
+	    }
+	  else
+	    sec.tree_node (NULL);
 	  count--;
 	}
       }
   gcc_assert (!count);
-  sec.end (to, to->name (MOD_SNAME_PFX ".spc"), crc_p);
+  sec.end (to, to->name (MOD_SNAME_PFX ".pnd"), crc_p);
   dump.outdent ();
 }
 
 bool
-module_state::read_specializations (unsigned count)
+module_state::read_pendings (unsigned count)
 {
   trees_in sec (this);
 
-  if (!sec.begin (loc, from (), MOD_SNAME_PFX ".spc"))
+  if (!sec.begin (loc, from (), MOD_SNAME_PFX ".pnd"))
     return false;
 
-  dump () && dump ("Reading specializations");
+  dump () && dump ("Reading %u pendings", count);
   dump.indent ();
 
   for (unsigned ix = 0; ix != count; ix++)
@@ -14480,47 +14583,66 @@ module_state::read_specializations (unsigned count)
       unsigned key_index = sec.u ();
       unsigned ent_index = sec.u ();
       module_state *from = (*modules)[key_origin];
+      tree ns = sec.tree_node ();
 
-      if (key_index >= from->entity_num || ent_index >= entity_num)
+      if (key_index >= from->entity_num || ent_index >= entity_num
+	  || (ns && TREE_CODE (ns) != NAMESPACE_DECL))
 	sec.set_overrun ();
       if (sec.get_overrun ())
 	break;
 
       bool not_loaded = true;
-      dump () && dump ("Specialization keyed to %M[%u] entity:%u",
+      dump () && dump ("%s keyed to %M[%u] entity:%u",
+		       ns ? "Specialization" : "Member",
 		       from, key_index, ent_index);
       unsigned key_ident = from->entity_lwm + key_index;
-      if (pendset::table->add (key_ident, ent_index + entity_lwm))
+      if (pendset::table->add (ns ? key_ident : ~key_ident,
+			       ent_index + entity_lwm))
 	{
 	  mc_slot &slot = (*entity_ary)[key_ident];
 	  if (slot.is_lazy ())
-	    slot.or_lazy (1);
+	    slot.or_lazy (ns ? 1 : 2);
 	  else
 	    {
-	      tree tmpl = slot;
+	      tree key = slot;
 
 	      not_loaded = false;
-	      if (tmpl && TREE_CODE (tmpl) == TEMPLATE_DECL)
-		DECL_MODULE_PENDING_SPECIALIZATIONS_P (tmpl) = true;
+	      if (ns)
+		{
+		  if (key && TREE_CODE (key) == TEMPLATE_DECL)
+		    DECL_MODULE_PENDING_SPECIALIZATIONS_P (key) = true;
+		  else
+		    sec.set_overrun ();
+		}
 	      else
-		sec.set_overrun ();
+		{
+		  if (key && TREE_CODE (key) != TYPE_DECL)
+		    DECL_MODULE_PENDING_MEMBERS_P (key) = true;
+		  else
+		    sec.set_overrun ();
+		}
 	    }
 	}
 
-      {
-	unsigned origin = slurp->remap_module (sec.u ());
-	tree ns = sec.tree_node ();
-	tree name = sec.tree_node ();
-	if (sec.get_overrun ())
-	  break;
+      if (ns)
+	{
+	  /* We also need to mark the namespace binding of the
+	     originating template, so we know to set its pending
+	     specializations flag, when we load it.  */
+	  tree name = sec.tree_node ();
+	  unsigned origin = slurp->remap_module (sec.u ());
+	  if (!name || TREE_CODE (name) != IDENTIFIER_NODE)
+	    sec.set_overrun ();
+	  if (sec.get_overrun ())
+	    break;
 
-	module_state *origin_from = (*modules)[origin];
-	if (not_loaded
-	    && (origin_from->is_header ()
-		|| (origin_from->is_partition ()
-		    || origin_from->is_primary ())))
-	  note_pending_specializations (ns, name, origin_from->is_header ());
-      }
+	  module_state *origin_from = (*modules)[origin];
+	  if (not_loaded
+	      && (origin_from->is_header ()
+		  || (origin_from->is_partition ()
+		      || origin_from->is_primary ())))
+	    note_pending_specializations (ns, name, origin_from->is_header ());
+	}
     }
 
   dump.outdent ();
@@ -16146,57 +16268,6 @@ module_state::read_inits (unsigned count)
 
    This is data that confirms current state (or fails).  */
 
-/* Data for config reading and writing.  */
-struct module_state_config {
-  const char *dialect_str;
-  range_t sec_range;
-  unsigned num_specializations;
-  unsigned num_entities;
-  unsigned num_namespaces;
-  unsigned num_imports;
-  unsigned num_partitions;
-  unsigned num_bindings;
-  unsigned num_macros;
-  unsigned num_inits;
-
-public:
-  module_state_config ()
-    :dialect_str (get_dialect ()),
-     sec_range (0,0), num_specializations (0), num_entities (0),
-     num_namespaces (0), num_imports (0), num_partitions (0),
-     num_bindings (0), num_macros (0), num_inits (0)
-  {
-  }
-
-  static void release ()
-  {
-    XDELETEVEC (dialect);
-    dialect = NULL;
-  }
-
-private:
-  static const char *get_dialect ();
-  static char *dialect;
-};
-
-char *module_state_config::dialect;
-
-/* Generate a string of the significant compilation options.
-   Generally assume the user knows what they're doing, in the same way
-   that object files can be mixed.  */
-
-const char *
-module_state_config::get_dialect ()
-{
-  if (!dialect)
-    dialect = concat (get_cxx_dialect_name (cxx_dialect),
-		      flag_concepts ? "/concepts" : "",
-		      flag_coroutines ? "/coroutines" : "",
-		      NULL);
-
-  return dialect;
-}
-
 void
 module_state::write_config (elf_out *to, module_state_config &config,
 			    unsigned inner_crc)
@@ -16248,8 +16319,8 @@ module_state::write_config (elf_out *to, module_state_config &config,
 
   cfg.u (config.num_bindings);
   dump () && dump ("Bindings %u", config.num_bindings);
-  cfg.u (config.num_specializations);
-  dump () && dump ("Specializations %u", config.num_specializations);
+  cfg.u (config.num_pendings);
+  dump () && dump ("Pendings %u", config.num_pendings);
   cfg.u (config.num_entities);
   dump () && dump ("Entities %u", config.num_entities);
   cfg.u (config.num_namespaces);
@@ -16442,8 +16513,8 @@ module_state::read_config (module_state_config &config)
   config.num_bindings = cfg.u ();
   dump () && dump ("Bindings %u", config.num_bindings);
 
-  config.num_specializations = cfg.u ();
-  dump () && dump ("Specializations %u", config.num_specializations);
+  config.num_pendings = cfg.u ();
+  dump () && dump ("Pendings %u", config.num_pendings);
 
   config.num_entities = cfg.u ();
   dump () && dump ("Entities %u", config.num_entities);
@@ -16654,9 +16725,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	     out -- we don't want to start writing decls in different
 	     sections.  */
 	  table.section = base[0]->section;
-	  bytes
-	    += write_cluster (to, base, size, table, config.num_specializations,
-			      config.num_entities, &crc);
+	  bytes += write_cluster (to, base, size, table, config, &crc);
 	  table.section = 0;
 	}
     }
@@ -16679,8 +16748,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
   config.num_bindings = write_bindings (to, sccs, &crc);
 
   /* Write the unnamed.  */
-  if (config.num_specializations)
-    write_specializations (to, sccs, table, config.num_specializations, &crc);
+  if (config.num_pendings)
+    write_pendings (to, sccs, table, config.num_pendings, &crc);
 
   /* Write the import table.  */
   if (config.num_imports > 1)
@@ -16801,8 +16870,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
 	  goto bail;
 
 	/* And unnamed.  */
-	if (config.num_specializations
-	    && !read_specializations (config.num_specializations))
+	if (config.num_pendings && !read_pendings (config.num_pendings))
 	  goto bail;
 
 	if (!flag_module_lazy)
@@ -17484,7 +17552,7 @@ module_state::lazy_load (unsigned index, mc_slot *mslot, unsigned diags)
   gcc_checking_assert (function_depth);
 
   unsigned cookie = mslot->get_lazy ();
-  unsigned snum = cookie >> 1;
+  unsigned snum = cookie >> 2;
   dump () && dump ("Loading entity %M[%u] section:%u", this, index, snum);
 
   int e = elf::E_BAD_LAZY;
@@ -17563,6 +17631,41 @@ lazy_load_specializations (tree tmpl)
       dump () && dump ("Reading %u pending specializations keyed to %M[%u] %N",
 		       set->num, import_entity_module (ident),
 		       ident - import_entity_module (ident)->entity_lwm, tmpl);
+      set->lazy_load ();
+      dump.pop (n);
+
+      function_depth--;
+    }
+  timevar_stop (TV_MODULE_IMPORT);
+}
+
+void
+lazy_load_members (tree decl)
+{
+  gcc_checking_assert (DECL_MODULE_PENDING_MEMBERS_P (decl));
+  if (!DECL_MODULE_ENTITY_P (decl))
+    {
+      // FIXME: I can't help feeling that DECL_TEMPLATE_RESULT should
+      // be inserted into the entity map, or perhaps have the same
+      // DECL_UID as the template, so I don't have to do this dance
+      // here and elsewhere.  It also simplifies when DECL is a
+      // partial specialization.  (also noted elsewhere as an issue)
+      tree ti = CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (decl));
+      tree tmpl = TI_TEMPLATE (ti);
+      gcc_checking_assert (DECL_TEMPLATE_RESULT (tmpl) == decl);
+      decl = tmpl;
+    }
+
+  // FIXME: This looks like the specialization load, modulo a bit invert
+  timevar_start (TV_MODULE_IMPORT);
+  unsigned ident = import_entity_index (decl);
+  if (pendset *set = pendset::table->extract (~ident))
+    {
+      function_depth++; /* Prevent GC */
+      unsigned n = dump.push (NULL);
+      dump () && dump ("Reading %u pending members keyed to %M[%u] %N",
+		       set->num, import_entity_module (ident),
+		       ident - import_entity_module (ident)->entity_lwm, decl);
       set->lazy_load ();
       dump.pop (n);
 
