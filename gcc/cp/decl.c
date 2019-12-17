@@ -16770,8 +16770,6 @@ finish_destructor_body (void)
 tree
 begin_function_body (void)
 {
-  tree stmt;
-
   if (! FUNCTION_NEEDS_BODY_BLOCK (current_function_decl))
     return NULL_TREE;
 
@@ -16783,7 +16781,7 @@ begin_function_body (void)
        operation of dwarfout.c.  */
     keep_next_level (true);
 
-  stmt = begin_compound_stmt (BCS_FN_BODY);
+  tree stmt = begin_compound_stmt (BCS_FN_BODY);
 
   if (processing_template_decl)
     /* Do nothing now.  */;

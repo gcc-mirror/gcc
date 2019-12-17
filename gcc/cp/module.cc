@@ -2875,7 +2875,7 @@ public:
   bool read_definition (tree decl);
   
 private:
-  bool is_matching_decl (tree existing, tree node);
+  bool is_matching_decl (tree existing, tree node, tree inner);
   bool read_function_def (tree decl, tree maybe_template);
   bool read_var_def (tree decl, tree maybe_template);
   bool read_class_def (tree decl, tree maybe_template);
@@ -7903,10 +7903,9 @@ trees_in::decl_value ()
 	/* Set the TEMPLATE_DECL's type.  */
 	TREE_TYPE (decl) = TREE_TYPE (inner);
 
-      if (!is_matching_decl (existing, decl))
+      if (!is_matching_decl (existing, decl, inner))
 	unmatched_duplicate (existing);
 
-      // FIXME: Check default tmpl and fn parms here
       /* And our result is the existing node.  */
       decl = existing;
     }
@@ -10006,7 +10005,7 @@ trees_in::key_mergeable (merge_kind mk, tree decl, tree inner, tree,
    bits from DECL to EXISTING.  */
 
 bool
-trees_in::is_matching_decl (tree existing, tree decl)
+trees_in::is_matching_decl (tree existing, tree decl, tree inner)
 {
   // FIXME: We should probably do some duplicate decl-like stuff here
   // (beware, default parms should be the same?)
@@ -10026,6 +10025,21 @@ trees_in::is_matching_decl (tree existing, tree decl)
       && DECL_TEMPLATE_INSTANTIATED (decl))
     /* Don't instantiate again!  */
     DECL_TEMPLATE_INSTANTIATED (existing) = true;
+
+  tree e_inner = inner == decl ? existing : DECL_TEMPLATE_RESULT (existing);
+
+  if (TREE_CODE (inner) == FUNCTION_DECL)
+    if (DECL_DECLARED_INLINE_P (inner))
+      DECL_DECLARED_INLINE_P (e_inner) = true;
+  if (!DECL_EXTERNAL (inner))
+    DECL_EXTERNAL (e_inner) = false;
+  if (DECL_LANG_SPECIFIC (inner) && DECL_NOT_REALLY_EXTERN (inner))
+    {
+      retrofit_lang_decl (e_inner);
+      DECL_NOT_REALLY_EXTERN (e_inner) = true;
+    }
+
+  // FIXME: Check default tmpl and fn parms here
 
   return true;
 }
@@ -16567,6 +16581,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
   if (!is_header () && !is_partition ())
     partitions = BITMAP_GGC_ALLOC ();
 
+  function_depth++;
   unsigned mod_hwm = 1;
   for (unsigned ix = 1; ix != modules->length (); ix++)
     {
@@ -16592,8 +16607,17 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	      error_at (imp->loc, "interface partition is not exported");
 	      bitmap_set_bit (exports, imp->mod);
 	    }
+
+	  /* Load all the entities of this partition.  */
+	  for (unsigned jx = 0; jx != imp->entity_num; jx++)
+	    {
+	      mc_slot *slot = &(*entity_ary)[imp->entity_lwm + jx];
+	      if (slot->is_lazy ())
+		imp->lazy_load (jx, slot);
+	    }
 	}
     }
+  function_depth--;
 
   /* Find the set of decls we must write out.  */
   depset::hash table (DECL_NAMESPACE_BINDINGS (global_namespace)->size () * 8);
@@ -18448,7 +18472,7 @@ finish_module_processing (cpp_reader *reader)
       dump () && dump ("Imported %u modules", modules->length () - 1);
       dump () && dump ("Containing %u clusters", available_clusters);
       dump () && dump ("Loaded %u clusters (%u%%)", loaded_clusters,
-		       (loaded_clusters * 100 + 50) /
+		       (loaded_clusters * 100 + available_clusters / 2) /
 		       (available_clusters + !available_clusters));
       dump.pop (n);
     }

@@ -29218,6 +29218,14 @@ cp_parser_function_definition_after_declarator (cp_parser* parser,
 
   /* Finish the function.  */
   fn = finish_function (inline_p);
+
+  if (flag_modules
+      && !inline_p
+      && TYPE_P (DECL_CONTEXT (fn))
+      && (DECL_DECLARED_INLINE_P (fn)
+	  || processing_template_decl))
+    set_defining_module (fn);
+
   /* Generate code for it, if necessary.  */
   expand_or_defer_fn (fn);
   /* Restore the saved values.  */

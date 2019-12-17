@@ -1,5 +1,17 @@
 2019-12-17  Nathan Sidwell  <nathan@acm.org>
 
+	Out-of-class member function definitions
+	gcc/cp/
+	* decl.c (begin_function_body): RAII.
+	* lex.c (cxx_dup_lang_specific): Clear IMPORT_P and PARTITION_P.
+	* module.cc (module_state::is_matching_decl): Add inner parm.
+	Propagate inline & externalness.
+	(module_state::write): Read all partition entities.
+	* parser.c (cp_parser_function_definition_after_decl): Set
+	defining module as appropriate.
+	gcc/testsuite/
+	* g++.dg/modules/member-def-2_[abcd].C: New.
+
 	Out-of-class member class definitions
 	gcc/cp/
 	* cp-tree.h (DECL_MODULE_PENDING_MEMBERS_P): New.
