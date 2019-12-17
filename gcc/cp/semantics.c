@@ -3179,6 +3179,19 @@ begin_class_definition (tree t)
       t = make_class_type (TREE_CODE (t));
       pushtag (TYPE_IDENTIFIER (t), t, /*tag_scope=*/ts_current);
     }
+
+  if (flag_modules)
+    {
+      if (!module_may_redeclare (TYPE_NAME (t)))
+	{
+	  error ("cannot declare %qD in a different module", TYPE_NAME (t));
+	  inform (DECL_SOURCE_LOCATION (TYPE_NAME (t)), "declared here");
+	  return error_mark_node;
+	}
+      set_instantiating_module (TYPE_NAME (t));
+      set_defining_module (TYPE_NAME (t));
+    }
+
   maybe_process_partial_specialization (t);
   pushclass (t);
   TYPE_BEING_DEFINED (t) = 1;
@@ -3205,7 +3218,7 @@ begin_class_definition (tree t)
       SET_CLASSTYPE_INTERFACE_UNKNOWN_X
 	(t, finfo->interface_unknown);
     }
-  reset_specialization();
+  reset_specialization ();
 
   /* Make a declaration for this class in its own scope.  */
   build_self_reference ();

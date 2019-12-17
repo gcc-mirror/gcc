@@ -49,11 +49,23 @@ along with GCC; see the file COPYING3.  If not see
    Cross-module references are by (remapped) module number and
    module-local index.
 
-   Each importable DECL contains 3 flags -- DECL_EXPORT_P,
-   DECL_MODULE_PURVIEW_P and DECL_MODULE_IMPORT_P.  The first
-   indicates whether it is exported, the second whether it is in the
-   module purview (as opposed to the global module fragment), and the
-   third indicates whether it was an import or not.
+   Each importable DECL contains several flags.  The simple set are
+   DECL_EXPORT_P, DECL_MODULE_PURVIEW_P and DECL_MODULE_IMPORT_P.  The
+   first indicates whether it is exported, the second whether it is in
+   the module purview (as opposed to the global module fragment), and
+   the third indicates whether it was an import or not.
+
+   The more detailed flags are DECL_MODULE_PARTITION_P,
+   DECL_MODULE_ENTITY_P & DECL_MODULE_PENDING_SPECIALIZATIONS_P.  The
+   first is set in a primary interface unit on decls that were read
+   from module partitions (these will have DECL_MODULE_IMPORT_P set
+   too).  Such decls will be streamed out to the primary's CMI.
+   DECL_MODULE_ENTITY_P is set when an entity is imported, even if it
+   matched a non-imported entity.  Such a decl will not have
+   DECL_MODULE_IMPORT_P set, even though it has an entry in the entity
+   map and array.  DECL_MODULE_PENDING_SPECIALIZATIONS_P is set on a
+   primary template, and indicates there are specializations that
+   should be streamed in before trying to specialize this template.
 
    Header units are module-like.
 
@@ -17115,9 +17127,9 @@ get_importing_module (tree decl, bool flexible)
   return module->mod;
 }
 
-// FIXME: I suspect we can get rid of this?
 /* Is it permissible to redeclare DECL.  */
-// FIXME: This needs extending, see its use in duplicate_decls
+// FIXME: This needs extending? see its use in decl.c  Perhaps we
+// should emit the errors here?
 
 bool
 module_may_redeclare (tree decl)
@@ -17126,6 +17138,22 @@ module_may_redeclare (tree decl)
   module_state *them = me;
   if (DECL_LANG_SPECIFIC (decl) && DECL_MODULE_IMPORT_P (decl))
     {
+      /* We can be given the TEMPLATE_RESULT.  We want the
+	 TEMPLATE_DECL.  */
+      int use_tpl = -1;
+      if (tree ti = node_template_info (decl, use_tpl))
+	{
+	  tree tmpl = TI_TEMPLATE (ti);
+	  if (DECL_TEMPLATE_RESULT (tmpl) == decl)
+	    decl = tmpl;
+	  // FIXME: What about partial specializations?  We need to
+	  // look at the specialization list in that case.  Unless our
+	  // caller's given us the right thing.  An alternative would
+	  // be to put both the template and the result into the
+	  // entity hash, but that seems expensive?
+	  // Also look at xref_tag_1's unhinding of friends, which
+	  // just looks at TYPE_TEMPLATE_INFO.
+	}
       unsigned index = import_entity_index (decl);
       them = import_entity_module (index);
     }
@@ -17174,28 +17202,43 @@ set_instantiating_module (tree decl)
       DECL_MODULE_IMPORT_P (decl) = false;
       DECL_MODULE_PARTITION_P (decl) = false;
     }
+}
 
-  int use_tpl = -1;
-  tree ti = node_template_info (decl, use_tpl);
-  if (use_tpl <= 0)
+/* If DECL is a class member, whose class is not defined in this TU
+   (it was imported), remember this decl.  */
+
+void
+set_defining_module (tree decl)
+{
+  gcc_checking_assert (!DECL_LANG_SPECIFIC (decl)
+		       || !DECL_MODULE_IMPORT_P (decl));
+
+  if (module_has_cmi_p ())
     {
-      tree ctx = CP_DECL_CONTEXT (decl);
-      if (TYPE_P (ctx))
-	ctx = TYPE_NAME (ctx);
-
-      if (TREE_CODE (ctx) != NAMESPACE_DECL
-	  && DECL_LANG_SPECIFIC (ctx)
-	  && DECL_MODULE_IMPORT_P (ctx))
+      tree ctx = DECL_CONTEXT (decl);
+      if (ctx
+	  && (TREE_CODE (ctx) == RECORD_TYPE || TREE_CODE (ctx) == UNION_TYPE)
+	  && DECL_LANG_SPECIFIC (TYPE_NAME (ctx))
+	  && DECL_MODULE_IMPORT_P (TYPE_NAME (ctx)))
 	{
-	  if (ti)
+	  /* This entity's context is from an import.  We may need to
+	     record this entity to make sure we emit it in the CMI.
+	     Template specializations are in the template hash tables,
+	     so we don't need to record them here as well.  */
+	  int use_tpl = -1;
+	  tree ti = node_template_info (decl, use_tpl);
+	  if (use_tpl <= 0)
 	    {
-	      gcc_checking_assert (!use_tpl);
-	      /* Get to the TEMPLATE_DECL.  */
-	      decl = TI_TEMPLATE (ti);
-	    }
+	      if (ti)
+		{
+		  gcc_checking_assert (!use_tpl);
+		  /* Get to the TEMPLATE_DECL.  */
+		  decl = TI_TEMPLATE (ti);
+		}
 
-	  /* Record it on the innner_decls list.  */
-	  vec_safe_push (class_members, decl);
+	      /* Record it on the class_members list.  */
+	      vec_safe_push (class_members, decl);
+	    }
 	}
     }
 }
@@ -17431,10 +17474,8 @@ module_state::freeze_an_elf ()
     dump () && dump ("No module available for freezing");
 }
 
-/* *SLOT is a lazy binding in namespace NS named ID.  Load it, or die
-   trying.  */
-// FIXME: Should we emit something when noisy ()?
-// FIXME: Reconsider API when no longer indexing by name
+/* Load the lazy slot *MSLOT, INDEX'th slot of the module.  */
+
 bool
 module_state::lazy_load (unsigned index, mc_slot *mslot, unsigned diags)
 {

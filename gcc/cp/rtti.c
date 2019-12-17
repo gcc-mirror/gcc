@@ -175,6 +175,9 @@ init_rtti_processing (void)
   push_nested_namespace (std_node);
   type_info_type = xref_tag (class_type, get_identifier ("type_info"),
 			     /*tag_scope=*/ts_current, false);
+  tree decl = TYPE_NAME (type_info_type);
+  /* This is exported from wherever it came from.  */
+  DECL_MODULE_EXPORT_P (decl) = true;
   pop_nested_namespace (std_node);
   const_type_info_type_node
     = cp_build_qualified_type (type_info_type, TYPE_QUAL_CONST);

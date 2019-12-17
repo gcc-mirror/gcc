@@ -1,3 +1,21 @@
+2019-12-17  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (set_defining_module): New.
+	* decl.c (xref_tag_1): Check can redeclare, set instantiating
+	module.
+	(start_enum): Likewise.
+	* module.c: Update doc preamble.
+	(module_may_redeclare): Get to the template.
+	(set_defining_module): New, broken out of ...
+	(set_instantiating_module): ... here.  DO NOT CALL IT.
+	* rtti.c (init_rtti_processing): "type_info" has exportedness.
+	* semantics.c (begin_class_definition): Check can redeclare.  Set
+	defining & instantiating.
+	gcc/testsuite/
+	* g++.dg/modules/friend-5_[ab].C: New.
+	* g++.dg/modules/tdef-4_[bc].C: Add comments.
+
 2019-12-13  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r279384.

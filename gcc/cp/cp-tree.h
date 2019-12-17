@@ -6994,6 +6994,7 @@ extern unsigned get_importing_module (tree, bool = false) ATTRIBUTE_PURE;
 
 /* Where current instance of the decl got declared/defined/instantiated.  */
 extern void set_instantiating_module (tree);
+extern void set_defining_module (tree);
 
 extern void mangle_module (int m);
 extern void mangle_module_fini ();

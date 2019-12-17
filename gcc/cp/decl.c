@@ -14759,8 +14759,7 @@ check_elaborated_type_specifier (enum tag_types tag_code,
    SCOPE and issue diagnostics if necessary.
    Return *_TYPE node upon success, NULL_TREE when the NAME is not
    found, and ERROR_MARK_NODE for type error.  */
-// FIXME:module_may_redeclare needed somewhere here -- in the defining
-// class and in the pushing a decl case
+
 static tree
 lookup_and_check_tag (enum tag_types tag_code, tree name,
 		      tag_scope scope, bool template_header_p)
@@ -14989,6 +14988,16 @@ xref_tag_1 (enum tag_types tag_code, tree name,
 	  return error_mark_node;
 	}
 
+      if (scope == ts_current
+	  && flag_modules
+	  && !module_may_redeclare (TYPE_NAME (t)))
+	{
+	  error ("cannot declare %qD in a different module", TYPE_NAME (t));
+	  inform (DECL_SOURCE_LOCATION (TYPE_NAME (t)), "declared here");
+	  return error_mark_node;
+	}
+
+      // ts_current check here?
       if (scope != ts_within_enclosing_non_class && TYPE_HIDDEN_P (t))
 	{
 	  /* This is no longer an invisible friend.  Make it
@@ -15004,6 +15013,9 @@ xref_tag_1 (enum tag_types tag_code, tree name,
 	      DECL_ANTICIPATED (tmpl) = false;
 	      DECL_FRIEND_P (tmpl) = false;
 	    }
+
+	  if (flag_modules)
+	    set_instantiating_module (TYPE_NAME (t));
 	}
     }
 
@@ -15367,6 +15379,19 @@ start_enum (tree name, tree enumtype, tree underlying_type,
 	  inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (enumtype)),
 		  "previous definition here");
 	  underlying_type = NULL_TREE;
+	}
+
+      if (flag_modules)
+	{
+	  if (!module_may_redeclare (TYPE_NAME (enumtype)))
+	    {
+	      error ("cannot define %qD in different module",
+		     TYPE_NAME (enumtype));
+	      inform (DECL_SOURCE_LOCATION (TYPE_NAME (enumtype)),
+		      "declared here");
+	      enumtype = error_mark_node;
+	    }
+	  set_instantiating_module (TYPE_NAME (enumtype));
 	}
     }
 
