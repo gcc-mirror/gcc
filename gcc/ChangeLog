@@ -1,3 +1,10 @@
+2019-12-17  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/92651
+	* config/i386/i386.h (TARGET_EXPAND_ABS): New macro.
+	* config/i386/x86-tune.def (X86_TUNE_EXPAND_ABS): New.
+	* config/i386/i386.md (abs<SWI48x>2): New define_expand.
+
 2019-12-17  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/92807
