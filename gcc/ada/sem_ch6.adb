@@ -814,51 +814,48 @@ package body Sem_Ch6 is
                   --  named access types.
 
                   Obj := Original_Node (Prefix (Expr));
-                  while Nkind_In (Obj, N_Indexed_Component,
+                  while Nkind_In (Obj, N_Explicit_Dereference,
+                                       N_Indexed_Component,
                                        N_Selected_Component)
                   loop
-                     Obj := Original_Node (Prefix (Obj));
-
                      --  When we encounter a named access type then we can
                      --  ignore accessibility checks on the dereference.
 
-                     if Ekind (Etype (Obj))
+                     if Ekind (Etype (Original_Node (Prefix (Obj))))
                           in E_Access_Type ..
                              E_Access_Protected_Subprogram_Type
                      then
-                        if Nkind (Parent (Obj)) = N_Selected_Component then
-                           Obj := Selector_Name (Parent (Obj));
+                        if Nkind (Obj) = N_Selected_Component then
+                           Obj := Selector_Name (Obj);
+                        else
+                           Obj := Original_Node (Prefix (Obj));
                         end if;
                         exit;
                      end if;
 
-                     --  Skip over the explicit dereference
-
-                     if Nkind (Obj) = N_Explicit_Dereference then
-                        Obj := Original_Node (Prefix (Obj));
-                     end if;
+                     Obj := Original_Node (Prefix (Obj));
                   end loop;
+
+                  if Nkind (Obj) = N_Selected_Component then
+                     Obj := Selector_Name (Obj);
+                  end if;
 
                   --  Do not check aliased formals or function calls. A
                   --  run-time check may still be needed ???
 
-                  if Is_Entity_Name (Obj)
-                    and then Comes_From_Source (Obj)
+                  pragma Assert (Is_Entity_Name (Obj));
+
+                  if Is_Formal (Entity (Obj))
+                    and then Is_Aliased (Entity (Obj))
                   then
-                     --  Explicitly aliased formals are allowed
+                     null;
 
-                     if Is_Formal (Entity (Obj))
-                       and then Is_Aliased (Entity (Obj))
-                     then
-                        null;
-
-                     elsif Object_Access_Level (Obj) >
-                             Scope_Depth (Scope (Scope_Id))
-                     then
-                        Error_Msg_N
-                          ("access discriminant in return aggregate would "
-                           & "be a dangling reference", Obj);
-                     end if;
+                  elsif Object_Access_Level (Obj) >
+                          Scope_Depth (Scope (Scope_Id))
+                  then
+                     Error_Msg_N
+                       ("access discriminant in return aggregate would "
+                        & "be a dangling reference", Obj);
                   end if;
                end if;
             end if;
