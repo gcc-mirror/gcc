@@ -591,6 +591,48 @@
    (set_attr "exec" "none")
    (set_attr "laneselect" "yes")])
 
+(define_expand "extract_last_<mode>"
+  [(match_operand:<SCALAR_MODE> 0 "register_operand")
+   (match_operand:DI 1 "gcn_alu_operand")
+   (match_operand:VEC_ALLREG_MODE 2 "register_operand")]
+  "can_create_pseudo_p ()"
+  {
+    rtx dst = operands[0];
+    rtx mask = operands[1];
+    rtx vect = operands[2];
+    rtx tmpreg = gen_reg_rtx (SImode);
+
+    emit_insn (gen_clzdi2 (tmpreg, mask));
+    emit_insn (gen_subsi3 (tmpreg, GEN_INT (63), tmpreg));
+    emit_insn (gen_vec_extract<mode><scalar_mode> (dst, vect, tmpreg));
+    DONE;
+  })
+
+(define_expand "fold_extract_last_<mode>"
+  [(match_operand:<SCALAR_MODE> 0 "register_operand")
+   (match_operand:<SCALAR_MODE> 1 "gcn_alu_operand")
+   (match_operand:DI 2 "gcn_alu_operand")
+   (match_operand:VEC_ALLREG_MODE 3 "register_operand")]
+  "can_create_pseudo_p ()"
+  {
+    rtx dst = operands[0];
+    rtx default_value = operands[1];
+    rtx mask = operands[2];
+    rtx vect = operands[3];
+    rtx else_label = gen_label_rtx ();
+    rtx end_label = gen_label_rtx ();
+
+    rtx cond = gen_rtx_EQ (VOIDmode, mask, const0_rtx);
+    emit_jump_insn (gen_cbranchdi4 (cond, mask, const0_rtx, else_label));
+    emit_insn (gen_extract_last_<mode> (dst, mask, vect));
+    emit_jump_insn (gen_jump (end_label));
+    emit_barrier ();
+    emit_label (else_label);
+    emit_move_insn (dst, default_value);
+    emit_label (end_label);
+    DONE;
+  })
+
 (define_expand "vec_init<mode><scalar_mode>"
   [(match_operand:VEC_ALLREG_MODE 0 "register_operand")
    (match_operand 1)]

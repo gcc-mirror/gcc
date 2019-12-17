@@ -1,5 +1,10 @@
 2019-12-17  Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/gcn/gcn-valu.md (extract_last_<mode>): New expander.
+	(fold_extract_last_<mode>): New expander.
+
+2019-12-17  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/gcn/gcn.h (CLZ_DEFINED_VALUE_AT_ZERO): Define.
 	(CTZ_DEFINED_VALUE_AT_ZERO): Define.
 	* config/gcn/gcn.md (s_mnemonic): Add clz and ctz.
