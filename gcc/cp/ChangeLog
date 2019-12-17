@@ -1,3 +1,11 @@
+2019-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/59655
+	* pt.c (push_tinst_level_loc): If limit_bad_template_recursion,
+	set TREE_NO_WARNING on tldcl.
+	* decl2.c (no_linkage_error): Treat templates with TREE_NO_WARNING
+	as defined during error recovery.
+
 2019-12-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/91165 - verify_gimple ICE with cached constexpr.
