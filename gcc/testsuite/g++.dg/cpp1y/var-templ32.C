@@ -4,4 +4,4 @@ template<typename T>
 bool V1 = true;
 
 template<typename T>
-bool V1<int> = false; // { dg-error "primary template|not deducible" }
+bool V1<int> = false; // { dg-error "primary template|redefinition|not deducible" }

@@ -1,5 +1,11 @@
 2019-12-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/92576 - redeclaration of variable template.
+	* decl.c (redeclaration_error_message): Recurse for variable
+	templates.
+
+2019-12-17  Jason Merrill  <jason@redhat.com>
+
 	* name-lookup.c (get_std_name_hint): Add std::byte.
 
 2019-12-17  Jakub Jelinek  <jakub@redhat.com>

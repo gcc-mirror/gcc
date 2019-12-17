@@ -2977,20 +2977,14 @@ redeclaration_error_message (tree newdecl, tree olddecl)
     {
       tree nt, ot;
 
-      if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == TYPE_DECL)
-	{
-	  if (COMPLETE_TYPE_P (TREE_TYPE (newdecl))
-	      && COMPLETE_TYPE_P (TREE_TYPE (olddecl)))
-	    return G_("redefinition of %q#D");
-	  return NULL;
-	}
-
       if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == CONCEPT_DECL)
         return G_("redefinition of %q#D");
 
-      if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) != FUNCTION_DECL
-	  || (DECL_TEMPLATE_RESULT (newdecl)
-	      == DECL_TEMPLATE_RESULT (olddecl)))
+      if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) != FUNCTION_DECL)
+	return redeclaration_error_message (DECL_TEMPLATE_RESULT (newdecl),
+					    DECL_TEMPLATE_RESULT (olddecl));
+
+      if (DECL_TEMPLATE_RESULT (newdecl) == DECL_TEMPLATE_RESULT (olddecl))
 	return NULL;
 
       nt = DECL_TEMPLATE_RESULT (newdecl);
