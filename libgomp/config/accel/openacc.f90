@@ -36,13 +36,12 @@ module openacc_kinds
   use iso_fortran_env, only: int32
   implicit none
 
+  public
   private :: int32
-  public :: acc_device_kind
+
+  ! When adding items, also update 'public' setting in 'module openacc' below.
 
   integer, parameter :: acc_device_kind = int32
-
-  public :: acc_device_none, acc_device_default, acc_device_host
-  public :: acc_device_not_host, acc_device_nvidia
 
   ! Keep in sync with include/gomp-constants.h.
   integer (acc_device_kind), parameter :: acc_device_none = 0
@@ -53,7 +52,7 @@ module openacc_kinds
   integer (acc_device_kind), parameter :: acc_device_nvidia = 5
   integer (acc_device_kind), parameter :: acc_device_gcn = 8
 
-end module
+end module openacc_kinds
 
 module openacc_internal
   use openacc_kinds
@@ -75,12 +74,19 @@ module openacc_internal
       integer (c_int), value :: d
     end function
   end interface
-end module
+end module openacc_internal
 
 module openacc
   use openacc_kinds
   use openacc_internal
   implicit none
+
+  private
+
+  ! From openacc_kinds
+  public :: acc_device_kind
+  public :: acc_device_none, acc_device_default, acc_device_host
+  public :: acc_device_not_host, acc_device_nvidia, acc_device_gcn
 
   public :: acc_on_device
 

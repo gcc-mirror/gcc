@@ -1,3 +1,14 @@
+2019-12-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/accel/openacc.f90 (module openacc_kinds): Use 'PUBLIC' to mark
+	all symbols as public except for the 'use …, only' imported symbol,
+	which is private.
+	(module openacc): Default to 'PRIVATE' to exclude openacc_internal; mark
+	all symbols from module openacc_kinds as PUBLIC
+	* openacc.f90: Add comment with crossref to that file and openmp_lib.h;
+	fix comment typo.
+	* openacc_lib.h (acc_device_gcn): Add this PARAMETER.
+
 2019-12-13  Julian Brown  <julian@codesourcery.com>
 
 	PR libgomp/92881
