@@ -1,3 +1,13 @@
+2019-12-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.h (CLZ_DEFINED_VALUE_AT_ZERO): Define.
+	(CTZ_DEFINED_VALUE_AT_ZERO): Define.
+	* config/gcn/gcn.md (s_mnemonic): Add clz and ctz.
+	(expander): Likewise.
+	(countzeros): New code iterator.
+	(<expander>si2): New insn pattern.
+	(<expander>di2): New insn pattern.
+
 2019-12-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/92962
