@@ -1,3 +1,10 @@
+2019-12-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/92807
+	* config/i386/i386.c (ix86_lea_outperforms): Check !TARGET_BONNELL.
+	(ix86_avoid_lea_for_addr): When not optimizing for Bonnell, use add
+	for a = a + b and a = b + a.
+
 2019-12-16  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/92952

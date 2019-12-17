@@ -14433,11 +14433,10 @@ ix86_lea_outperforms (rtx_insn *insn, unsigned int regno0, unsigned int regno1,
 {
   int dist_define, dist_use;
 
-  /* For Silvermont if using a 2-source or 3-source LEA for
-     non-destructive destination purposes, or due to wanting
-     ability to use SCALE, the use of LEA is justified.  */
-  if (TARGET_SILVERMONT || TARGET_GOLDMONT || TARGET_GOLDMONT_PLUS
-      || TARGET_TREMONT || TARGET_INTEL)
+  /* For Atom processors newer than Bonnell, if using a 2-source or
+     3-source LEA for non-destructive destination purposes, or due to
+     wanting ability to use SCALE, the use of LEA is justified.  */
+  if (!TARGET_BONNELL)
     {
       if (has_scale)
 	return true;
@@ -14572,10 +14571,6 @@ ix86_avoid_lea_for_addr (rtx_insn *insn, rtx operands[])
   struct ix86_address parts;
   int ok;
 
-  /* Check we need to optimize.  */
-  if (!TARGET_AVOID_LEA_FOR_ADDR || optimize_function_for_size_p (cfun))
-    return false;
-
   /* The "at least two components" test below might not catch simple
      move or zero extension insns if parts.base is non-NULL and parts.disp
      is const0_rtx as the only components in the address, e.g. if the
@@ -14611,6 +14606,20 @@ ix86_avoid_lea_for_addr (rtx_insn *insn, rtx operands[])
     regno1 = true_regnum (parts.base);
   if (parts.index)
     regno2 = true_regnum (parts.index);
+
+  /* Use add for a = a + b and a = b + a since it is faster and shorter
+     than lea for most processors.  For the processors like BONNELL, if
+     the destination register of LEA holds an actual address which will
+     be used soon, LEA is better and otherwise ADD is better.  */
+  if (!TARGET_BONNELL
+      && parts.scale == 1
+      && (!parts.disp || parts.disp == const0_rtx)
+      && (regno0 == regno1 || regno0 == regno2))
+    return true;
+
+  /* Check we need to optimize.  */
+  if (!TARGET_AVOID_LEA_FOR_ADDR || optimize_function_for_size_p (cfun))
+    return false;
 
   split_cost = 0;
 

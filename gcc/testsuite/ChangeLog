@@ -1,3 +1,8 @@
+2019-12-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/92807
+	* gcc.target/i386/pr92807-1.c: New test.
+
 2019-12-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* g++.dg/init/dso_handle1.C: Require cxa_atexit support.
