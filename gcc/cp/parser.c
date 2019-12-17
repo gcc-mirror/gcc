@@ -2599,8 +2599,9 @@ static enum tag_types cp_parser_token_is_class_key
   (cp_token *);
 static enum tag_types cp_parser_token_is_type_parameter_key
   (cp_token *);
+static void cp_parser_maybe_warn_enum_key (cp_parser *, location_t, tree, rid);
 static void cp_parser_check_class_key
-  (enum tag_types, tree type);
+(cp_parser *, location_t, enum tag_types, tree type, bool, bool);
 static void cp_parser_check_access_in_redeclaration
   (tree type, location_t location);
 static bool cp_parser_optional_template_keyword
@@ -18498,6 +18499,11 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
   tree globalscope;
   cp_token *token = NULL;
 
+  /* For class and enum types the location of the class-key or enum-key.  */
+  location_t key_loc = cp_lexer_peek_token (parser->lexer)->location;
+  /* For a scoped enum, the 'class' or 'struct' keyword id.  */
+  rid scoped_key = RID_MAX;
+
   /* See if we're looking at the `enum' keyword.  */
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_ENUM))
     {
@@ -18508,10 +18514,11 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
       /* Issue a warning if the `struct' or `class' key (for C++0x scoped
 	 enums) is used here.  */
       cp_token *token = cp_lexer_peek_token (parser->lexer);
-      if (cp_parser_is_keyword (token, RID_CLASS)
-	  || cp_parser_is_keyword (token, RID_STRUCT))
+      if (cp_parser_is_keyword (token, scoped_key = RID_CLASS)
+	  || cp_parser_is_keyword (token, scoped_key = RID_STRUCT))
 	{
-	  gcc_rich_location richloc (token->location);
+	  location_t loc = token->location;
+	  gcc_rich_location richloc (loc);
 	  richloc.add_range (input_location);
 	  richloc.add_fixit_remove ();
 	  pedwarn (&richloc, 0, "elaborated-type-specifier for "
@@ -18519,7 +18526,12 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 		   token->u.value);
 	  /* Consume the `struct' or `class' and parse it anyway.  */
 	  cp_lexer_consume_token (parser->lexer);
+	  /* Create a combined location for the whole scoped-enum-key.  */
+	  key_loc = make_location (key_loc, key_loc, loc);
 	}
+      else
+	scoped_key = RID_MAX;
+
       /* Parse the attributes.  */
       attributes = cp_parser_attributes_opt (parser);
     }
@@ -18535,6 +18547,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
   /* Otherwise it must be a class-key.  */
   else
     {
+      key_loc = cp_lexer_peek_token (parser->lexer)->location;
       tag_type = cp_parser_class_key (parser);
       if (tag_type == none_type)
 	return error_mark_node;
@@ -18845,13 +18858,18 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 		 "attributes ignored on elaborated-type-specifier that is not a forward declaration");
     }
 
-  if (tag_type != enum_type)
+  if (tag_type == enum_type)
+    cp_parser_maybe_warn_enum_key (parser, key_loc, type, scoped_key);
+  else
     {
+      /* Diagnose class/struct/union mismatches.  */
+      cp_parser_check_class_key (parser, key_loc, tag_type, type, false,
+				 cp_parser_declares_only_class_p (parser));
+
       /* Indicate whether this class was declared as a `class' or as a
 	 `struct'.  */
-      if (CLASS_TYPE_P (type))
+      if (CLASS_TYPE_P (type) && !currently_open_class (type))
 	CLASSTYPE_DECLARED_CLASS (type) = (tag_type == class_type);
-      cp_parser_check_class_key (tag_type, type);
     }
 
   /* A "<" cannot follow an elaborated type specifier.  If that
@@ -24389,11 +24407,14 @@ cp_parser_class_head (cp_parser* parser,
 		       parser->num_template_parameter_lists);
     }
 
+  /* Diagnose class/struct/union mismatches.  */
+  cp_parser_check_class_key (parser, UNKNOWN_LOCATION, class_key, type,
+			     true, true);
+
   /* Indicate whether this class was declared as a `class' or as a
      `struct'.  */
   if (TREE_CODE (type) == RECORD_TYPE)
-    CLASSTYPE_DECLARED_CLASS (type) = (class_key == class_type);
-  cp_parser_check_class_key (class_key, type);
+    CLASSTYPE_DECLARED_CLASS (type) = class_key == class_type;
 
   /* If this type was already complete, and we see another definition,
      that's an error.  Likewise if the type is already being defined:
@@ -30617,14 +30638,169 @@ cp_parser_token_is_type_parameter_key (cp_token* token)
     }
 }
 
-/* Issue an error message if the CLASS_KEY does not match the TYPE.  */
+/* Diagnose redundant enum-keys.  */
 
 static void
-cp_parser_check_class_key (enum tag_types class_key, tree type)
+cp_parser_maybe_warn_enum_key (cp_parser *parser, location_t key_loc,
+			       tree type, rid scoped_key)
+{
+  tree type_decl = TYPE_MAIN_DECL (type);
+  tree name = DECL_NAME (type_decl);
+  /* Look up the NAME to see if it unambiguously refers to the TYPE
+     and set KEY_REDUNDANT if so.  */
+  tree decl = cp_parser_lookup_name_simple (parser, name, input_location);
+
+  /* The enum-key is redundant for uses of the TYPE that are not
+     declarations and for which name lookup returns just the type
+     itself.  */
+  if (decl == type_decl)
+    {
+      gcc_rich_location richloc (key_loc);
+      richloc.add_fixit_remove (key_loc);
+      warning_at (&richloc, OPT_Wredundant_tags,
+		  "redundant enum-key %<enum%s%> in reference to %q#T",
+		  (scoped_key == RID_CLASS ? " class"
+		   : scoped_key == RID_STRUCT ? " struct" : ""), type);
+    }
+}
+
+/* Describes the set of declarations of a struct, class, or class template
+   or its specializations.  Used for -Wmismatched-tags.  */
+
+class class_decl_loc_t
+{
+ public:
+
+  class_decl_loc_t ()
+    : locvec (), idxdef (), def_class_key ()
+  {
+    locvec.create (4);
+  }
+
+  /* Constructs an object for a single declaration of a class with
+     CLASS_KEY at the current location in the current function (or
+     at another scope).  KEY_REDUNDANT is true if the class-key may
+     be omitted in the current context without an ambiguity with
+     another symbol with the same name.
+     DEF_P is true for a class declaration that is a definition.
+     CURLOC is the associated location.  */
+  class_decl_loc_t (tag_types class_key, bool key_redundant, bool def_p,
+		    location_t curloc = input_location)
+    : locvec (), idxdef (def_p ? 0 : UINT_MAX), def_class_key (class_key)
+  {
+    locvec.create (4);
+    class_key_loc_t ckl (current_function_decl, curloc, class_key,
+			 key_redundant);
+    locvec.quick_push (ckl);
+  }
+
+  /* Copy, assign, and destroy the object.  Necessary because LOCVEC
+     isn't safely copyable and assignable and doesn't release storage
+     on its own.  */
+  class_decl_loc_t (const class_decl_loc_t &rhs)
+    : locvec (rhs.locvec.copy ()), idxdef (rhs.idxdef),
+      def_class_key (rhs.def_class_key)
+  { }
+
+  class_decl_loc_t& operator= (const class_decl_loc_t &rhs)
+  {
+    if (this == &rhs)
+      return *this;
+    locvec.release ();
+    locvec = rhs.locvec.copy ();
+    idxdef = rhs.idxdef;
+    def_class_key = rhs.def_class_key;
+    return *this;
+  }
+
+  ~class_decl_loc_t ()
+  {
+    locvec.release ();
+  }
+
+  /* Issues -Wmismatched-tags for a single class.  */
+  void diag_mismatched_tags (tree);
+
+  /* Issues -Wmismatched-tags for all classes.  */
+  static void diag_mismatched_tags ();
+
+  /* Adds TYPE_DECL to the collection of class decls.  */
+  static void add (tree, tag_types, bool, bool);
+
+  /* Either adds this decl to the collection of class decls
+     or diagnoses it, whichever is appropriate.  */
+  void add_or_diag_mismatched_tag (tree, tag_types, bool, bool);
+
+private:
+
+  tree function (unsigned i) const
+  {
+    return locvec[i].func;
+  }
+
+  location_t location (unsigned i) const
+  {
+    return locvec[i].loc;
+  }
+
+  bool key_redundant (unsigned i) const
+  {
+    return locvec[i].key_redundant;
+  }
+
+  tag_types class_key (unsigned i) const
+  {
+    return locvec[i].class_key;
+  }
+
+  /* The location of a single mention of a class type with the given
+     class-key.  */
+  struct class_key_loc_t
+  {
+    class_key_loc_t (tree func, location_t loc, tag_types key, bool redundant)
+      : func (func), loc (loc), class_key (key), key_redundant (redundant) { }
+
+    /* The function the type is mentioned in.  */
+    tree func;
+    /* The exact location.  */
+    location_t loc;
+    /* The class-key used in the mention of the type.  */
+    tag_types class_key;
+    /* True when the class-key could be omitted at this location
+       without an ambiguity with another symbol of the same name.  */
+    bool key_redundant;
+  };
+  /* Avoid using auto_vec here since it's not safe to copy due to pr90904.  */
+  vec <class_key_loc_t> locvec;
+  /* LOCVEC index of the definition or UINT_MAX if none exists.  */
+  unsigned idxdef;
+  /* The class-key the class was last declared with or none_type when
+     it has been declared with a mismatched key.  */
+  tag_types def_class_key;
+
+  /* A mapping between a TYPE_DECL for a class and the class_decl_loc_t
+     description above.  */
+  typedef hash_map<tree_decl_hash, class_decl_loc_t> class_to_loc_map_t;
+  static class_to_loc_map_t class2loc;
+};
+
+class_decl_loc_t::class_to_loc_map_t class_decl_loc_t::class2loc;
+
+/* Issue an error message if the CLASS_KEY does not match the TYPE.
+   DEF_P is expected to be set for a definition of class TYPE.  DECL_P
+   is set for a declaration of class TYPE and clear for a reference to
+   it that is not a declaration of it.  */
+
+static void
+cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
+			   tag_types class_key, tree type, bool def_p,
+			   bool decl_p)
 {
   if (type == error_mark_node)
     return;
-  if ((TREE_CODE (type) == UNION_TYPE) != (class_key == union_type))
+
+  bool seen_as_union = TREE_CODE (type) == UNION_TYPE;
+  if (seen_as_union != (class_key == union_type))
     {
       if (permerror (input_location, "%qs tag used in naming %q#T",
 		     class_key == union_type ? "union"
@@ -30632,7 +30808,240 @@ cp_parser_check_class_key (enum tag_types class_key, tree type)
 		     type))
 	inform (DECL_SOURCE_LOCATION (TYPE_NAME (type)),
 		"%q#T was previously declared here", type);
+      return;
     }
+
+  if (!warn_mismatched_tags && !warn_redundant_tags)
+    return;
+
+  tree type_decl = TYPE_MAIN_DECL (type);
+  tree name = DECL_NAME (type_decl);
+  /* Look up the NAME to see if it unambiguously refers to the TYPE
+     and set KEY_REDUNDANT if so.  */
+  tree decl = cp_parser_lookup_name_simple (parser, name, input_location);
+
+  /* The class-key is redundant for uses of the CLASS_TYPE that are
+     neither definitions of it nor declarations, and for which name
+     lookup returns just the type itself.  */
+  bool key_redundant = !def_p && !decl_p && decl == type_decl;
+  if (key_redundant)
+    {
+      gcc_rich_location richloc (key_loc);
+      richloc.add_fixit_remove (key_loc);
+      warning_at (&richloc, OPT_Wredundant_tags,
+		"redundant class-key %qs in reference to %q#T",
+		class_key == union_type ? "union"
+		: class_key == record_type ? "struct" : "class",
+		type);
+    }
+
+  if (seen_as_union || !warn_mismatched_tags)
+    return;
+
+  class_decl_loc_t::add (type_decl, class_key, key_redundant, def_p);
+}
+
+/* Adds TYPE_DECL to the collection of class decls.  */
+
+void
+class_decl_loc_t::add (tree type_decl, tag_types class_key, bool redundant,
+		       bool def_p)
+{
+  bool exist;
+  class_decl_loc_t *rdl = &class2loc.get_or_insert (type_decl, &exist);
+  if (!exist)
+    {
+      tree type = TREE_TYPE (type_decl);
+      if (def_p || !COMPLETE_TYPE_P (type))
+	{
+	  /* TYPE_DECL is the first declaration or definition of the type
+	     (outside precompiled headers -- see below).  Just create
+	     a new entry for it.  */
+	  *rdl = class_decl_loc_t (class_key, false, def_p);
+	  return;
+	}
+
+      /* TYPE was previously defined in some unknown precompiled hdeader.
+	 Simply add a record of its definition at an unknown location and
+	 proceed below to add a reference to it at the current location.
+	 (Declarations in precompiled headers that are not definitions
+	 are ignored.)  */
+      tag_types def_key
+	= CLASSTYPE_DECLARED_CLASS (type) ? class_type : record_type;
+      location_t def_loc = DECL_SOURCE_LOCATION (type_decl);
+      *rdl = class_decl_loc_t (def_key, false, true, def_loc);
+    }
+
+  /* A prior declaration of TYPE_DECL has been seen.  */
+
+  if (rdl->idxdef != UINT_MAX && rdl->def_class_key == class_key)
+    /* Do nothing if the class-key in this declaration matches
+       the definition.  */
+    return;
+
+  rdl->add_or_diag_mismatched_tag (type_decl, class_key, redundant, def_p);
+}
+
+/* Either adds this DECL corresponding to the TYPE_DECL to the collection
+   of class decls or diagnoses it, whichever is appropriate.  */
+
+void
+class_decl_loc_t::add_or_diag_mismatched_tag (tree type_decl,
+					      tag_types class_key,
+					      bool redundant,
+					      bool def_p)
+{
+  /* Reset the CLASS_KEY associated with this type on mismatch.
+     This is an optimization that lets the diagnostic code skip
+     over classes that use the same class-key in all declarations.  */
+  if (def_class_key != class_key)
+    def_class_key = none_type;
+
+  /* Set IDXDEF to the index of the vector corresponding to
+     the definition.  */
+  if (def_p)
+    idxdef = locvec.length ();
+
+  /* Append a record of this declaration to the vector.  */
+  class_key_loc_t ckl (current_function_decl, input_location, class_key,
+		       redundant);
+  locvec.safe_push (ckl);
+
+  if (idxdef == UINT_MAX)
+    return;
+
+  /* As a space optimization diagnose declarations of a class
+     whose definition has been seen and purge the LOCVEC of
+     all entries except the definition.  */
+  diag_mismatched_tags (type_decl);
+  if (idxdef)
+    {
+      class_decl_loc_t::class_key_loc_t ent = locvec[idxdef];
+      locvec.release ();
+      locvec.reserve (2);
+      locvec.safe_push (ent);
+      idxdef = 0;
+    }
+  else
+    /* Pop the entry pushed above for this declaration.  */
+    locvec.pop ();
+}
+
+/* Issues -Wmismatched-tags for a single class.  */
+
+void
+class_decl_loc_t::diag_mismatched_tags (tree type_decl)
+{
+  unsigned ndecls = locvec.length ();
+
+  /* Skip a declaration that consistently uses the same class-key
+     or one with just a solitary declaration (i.e., TYPE_DECL).  */
+  if (def_class_key != none_type || ndecls < 2)
+    return;
+
+  /* Save the current function before changing it below.  */
+  tree save_func = current_function_decl;
+  /* Set if a class definition for RECLOC has been seen.  */
+  bool def_p = idxdef < ndecls;
+  unsigned idxguide = def_p ? idxdef : 0;
+  unsigned idx = 0;
+  /* Advance IDX to the first declaration that either is not
+     a definition or that doesn't match the first declaration
+     if no definition is provided.  */
+  while (class_key (idx) == class_key (idxguide))
+    if (++idx == ndecls)
+      return;
+
+  /* The class-key the class is expected to be declared with: it's
+     either the key used in its definition or the first declaration
+     if no definition has been provided.  */
+  tag_types xpect_key = class_key (def_p ? idxguide : 0);
+  const char *xmatchkstr = xpect_key == record_type ? "class" : "struct";
+  const char *xpectkstr = xpect_key == record_type ? "struct" : "class";
+  /* Set the function declaration to print in diagnostic context.  */
+  current_function_decl = function (idx);
+
+  location_t loc = location (idx);
+  bool key_redundant_p = key_redundant (idx);
+  auto_diagnostic_group d;
+  /* Issue a warning for the first mismatched declaration.
+     Avoid using "%#qT" since the class-key for the same type will
+     be the same regardless of which one was used in the declaraion.  */
+  warning_at (loc, OPT_Wmismatched_tags,
+	      "%qT declared with a mismatched class-key %qs",
+	      type_decl, xmatchkstr);
+
+  /* Suggest how to avoid the warning for each instance since
+     the guidance may be different depending on context.  */
+  inform (loc,
+	  (key_redundant_p
+	   ? G_("remove the class-key or replace it with %qs")
+	   : G_("replace the class-key with %qs")),
+	  xpectkstr);
+
+  /* Also point to the first declaration or definition that guided
+     the decision to issue the warning above.  */
+  inform (location (idxguide),
+	  (def_p
+	   ? G_("%qT defined as %qs here")
+	   : G_("%qT first declared as %qs here")),
+	  type_decl, xpectkstr);
+
+  /* Issue warnings for the remaining inconsistent declarations.  */
+  for (unsigned i = idx + 1; i != ndecls; ++i)
+    {
+      tag_types clskey = class_key (i);
+      /* Skip over the declarations that match either the definition
+	 if one was provided or the first declaration.  */
+      if (clskey == xpect_key)
+	continue;
+
+      loc = location (i);
+      key_redundant_p = key_redundant (i);
+      /* Set the function declaration to print in diagnostic context.  */
+      current_function_decl = function (i);
+      warning_at (loc, OPT_Wmismatched_tags,
+		  "%qT declared with a mismatched class-key %qs",
+		  type_decl, xmatchkstr);
+      /* Suggest how to avoid the warning for each instance since
+	 the guidance may be different depending on context.  */
+      inform (loc,
+	      (key_redundant_p
+	       ? G_("remove the class-key or replace it with %qs")
+	       : G_("replace the class-key with %qs")),
+	      xpectkstr);
+    }
+
+  /* Restore the current function in case it was replaced above.  */
+  current_function_decl = save_func;
+}
+
+/* Issues -Wmismatched-tags for all classes.  Called at the end
+   of processing a translation unit, after declarations of all class
+   types and their uses have been recorded.  */
+
+void
+class_decl_loc_t::diag_mismatched_tags ()
+{
+  /* CLASS2LOC should be empty if -Wmismatched-tags is disabled.  */
+  gcc_assert (warn_mismatched_tags || class2loc.is_empty ());
+
+  /* Save the current function before changing it below.  It should
+     be null at this point.  */
+  tree save_func = current_function_decl;
+
+  /* Iterate over the collected class/struct declarations.  */
+  typedef class_to_loc_map_t::iterator iter_t;
+  for (iter_t it = class2loc.begin (); it != class2loc.end (); ++it)
+    {
+      tree type_decl = (*it).first;
+      class_decl_loc_t &recloc = (*it).second;
+      recloc.diag_mismatched_tags (type_decl);
+    }
+
+  class2loc.empty ();
+  /* Restore the current function.  */
+  current_function_decl = save_func;
 }
 
 /* Issue an error message if DECL is redeclared with different
@@ -43065,6 +43474,8 @@ c_parse_file (void)
   push_deferring_access_checks (flag_access_control
 				? dk_no_deferred : dk_no_check);
   cp_parser_translation_unit (the_parser);
+  class_decl_loc_t::diag_mismatched_tags ();
+
   the_parser = NULL;
 
   finish_translation_unit ();

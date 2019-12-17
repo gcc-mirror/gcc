@@ -233,10 +233,10 @@ in the following sections.
 -Wabi=@var{n}  -Wabi-tag  -Wcomma-subscript  -Wconversion-null @gol
 -Wctor-dtor-privacy @gol
 -Wdelete-non-virtual-dtor  -Wdeprecated-copy  -Wdeprecated-copy-dtor @gol
--Wliteral-suffix @gol
+-Wliteral-suffix -Wmismatched-tags @gol
 -Wmultiple-inheritance  -Wno-init-list-lifetime @gol
 -Wnamespaces  -Wnarrowing @gol
--Wpessimizing-move  -Wredundant-move @gol
+-Wpessimizing-move  -Wredundant-move -Wredundant-tags @gol
 -Wnoexcept  -Wnoexcept-type  -Wclass-memaccess @gol
 -Wnon-virtual-dtor  -Wreorder  -Wregister @gol
 -Weffc++  -Wstrict-null-sentinel  -Wtemplates @gol
@@ -3323,6 +3323,21 @@ treats the return value as if it were designated by an rvalue.
 
 This warning is enabled by @option{-Wextra}.
 
+@item -Wredundant-tags @r{(C++ and Objective-C++ only)}
+@opindex Wredundant-tags
+@opindex Wno-redundant-tags
+Warn about redundant class-key and enum-key in references to class types
+and enumerated types in contexts where the key can be eliminated without
+causing an ambiguity.  For example
+
+@smallexample
+struct foo;
+struct foo *p;   // -Wredundant-tags, keyword struct can be eliminated
+
+void foo ();   // "hides" struct foo
+void bar (struct foo&);   // no warning, keyword struct cannot be eliminated
+@end smallexample
+
 @item -fext-numeric-literals @r{(C++ and Objective-C++ only)}
 @opindex fext-numeric-literals
 @opindex fno-ext-numeric-literals
@@ -3457,6 +3472,32 @@ rules disallow templates, and this may be used to enforce that rule.
 The warning is inactive inside a system header file, such as the STL, so
 one can still use the STL.  One may also instantiate or specialize
 templates.
+
+@item -Wmismatched-tags @r{(C++ and Objective-C++ only)}
+@opindex Wmismatched-tags
+@opindex Wno-mismatched-tags
+Warn for declarations of structs, classes, and class templates and their
+specializations with a class-key that does not match either the definition
+or the first declaration if no definition is provided.
+
+For example, the declaration of @code{struct Object} in the argument list
+of @code{draw} triggers the warning.  To avoid it, either remove the redundant
+class-key @code{struct} or replace it with @code{class} to match its definition.
+@smallexample
+class Object @{
+public:
+  virtual ~Object () = 0;
+@};
+void draw (struct Object*);
+@end smallexample
+
+It is not wrong to declare a class with the class-key @code{struct} as
+the example above shows.  The @option{-Wmismatched-tags} option is intended
+to help achieve a consistent style of class declarations.  In code that is
+intended to be portable to Windows-based compilers the warning helps prevent
+unresolved references due to the difference in the mangling of symbols
+declared with different class-keys.  The option can be used either on its
+own or in conjunction with @option{-Wredundant-tags}.
 
 @item -Wmultiple-inheritance @r{(C++ and Objective-C++ only)}
 @opindex Wmultiple-inheritance

@@ -1,3 +1,9 @@
+2019-12-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* doc/invoke.texi (-Wmismatched-tags, -Wredundant-tags): Document
+	new C++ options.
+
 2019-12-17  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/rs6000.c (num_insns_constant_gpr): Return 1 if the
