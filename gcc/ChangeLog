@@ -4,6 +4,8 @@
 	constant can be loaded with PLI if -mcpu=future.
 	* config/rs6000/rs6000.md (movdi_internal64): Add alternative to
 	use PLI to load up 34-bit constants if -mcpu=future.
+	(movsi_internal1): Add alternative to use PLI to load up 32-bit
+	constants if -mcpu=future.
 
 2019-12-17  Jakub Jelinek  <jakub@redhat.com>
 
