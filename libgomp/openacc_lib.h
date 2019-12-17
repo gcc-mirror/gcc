@@ -32,6 +32,8 @@
 ! Alternatively, the user can use the module version, which permits
 ! compilation with -std=f95.
 
+! Keep in sync with openacc.f90 and config/accel/openacc.f90.
+
       integer, parameter :: acc_device_kind = 4
 
 !     Keep in sync with include/gomp-constants.h.
@@ -42,6 +44,7 @@
 !     removed.
       integer (acc_device_kind), parameter :: acc_device_not_host = 4
       integer (acc_device_kind), parameter :: acc_device_nvidia = 5
+      integer (acc_device_kind), parameter :: acc_device_gcn = 8
 
       integer, parameter :: acc_handle_kind = 4
 
