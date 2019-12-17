@@ -1,3 +1,11 @@
+2019-12-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* g++.dg/warn/Wmismatched-tags.C: New test.
+	* g++.dg/warn/Wredundant-tags.C: New test.
+	* g++.dg/pch/Wmismatched-tags.C: New test.
+	* g++.dg/pch/Wmismatched-tags.Hs: New test header.
+
 2019-12-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/59655
