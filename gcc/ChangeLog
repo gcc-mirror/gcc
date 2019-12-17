@@ -1,3 +1,12 @@
+2019-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92962
+	* common/config/i386/i386-common.c (processor_alias_table): Formatting
+	fixes.
+	* doc/invoke.texi (bdver3, bdver4, znver1): Add missing closing paren.
+	(znver2): Likewise.  Add RDPID and WBNOINVD, remove spurious comma
+	before CLWB.
+
 2019-12-17  Hongyu Wang  <hongyu.wang@intel.com>
 
 	PR target/92651
