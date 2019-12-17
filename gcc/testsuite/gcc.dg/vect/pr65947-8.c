@@ -7,7 +7,7 @@ extern void abort (void) __attribute__ ((noreturn));
 #define N 27
 
 /* Condition reduction with multiple types in the comparison.  Will fail to
-   vectorize on architectures requiring matching vector sizes.  */
+   vectorize.  */
 
 int
 condition_reduction (char *a, int min_v)
@@ -41,6 +41,5 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" { target { ! amdgcn*-*-* } } } } */
-/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target amdgcn*-*-* } } } */
-/* { dg-final { scan-tree-dump "multiple types in double reduction or condition reduction" "vect" { target { ! amdgcn*-*-* } } } } */
+/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" } } */
+/* { dg-final { scan-tree-dump "multiple types in double reduction or condition reduction" "vect" } } */
