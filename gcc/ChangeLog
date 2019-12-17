@@ -1,5 +1,10 @@
 2019-12-17  Andrew Stubbs  <ams@codesourcery.com>
 
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Mention pr92772
+	in the comments.
+
+2019-12-17  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/gcn/gcn-valu.md (extract_last_<mode>): New expander.
 	(fold_extract_last_<mode>): New expander.
 
