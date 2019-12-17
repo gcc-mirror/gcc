@@ -1,11 +1,23 @@
 /* { dg-do compile } */
-/* { dg-options "-mpure-code" } */
+/* { dg-options "-mpure-code -mfp16-format=ieee" } */
 /* { dg-skip-if "" { *-*-* } { "-g" "-fpic" "-fPIC" } { "" } } */
 
+__fp16 hf;
 float sf;
 double df;
 long long l;
 static char *p = "Hello World";
+
+__fp16
+testsfp16 (__fp16 *p)
+{
+  hf = 1.3;
+  *p += hf;
+  if (*p > 1.1234f)
+    return 2.1234f;
+  else
+    return 3.1234f;
+}
 
 float
 testsf (float *p)
