@@ -1,3 +1,21 @@
+2020-02-25  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backport from mainline
+	2019-12-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-protos.h (thumb1_gen_const_int): Add new prototype.
+	* config/arm/arm.c (arm_option_check_internal): Remove restriction
+	on MOVT for -mpure-code.
+	(thumb1_gen_const_int): New function.
+	(thumb1_legitimate_address_p): Support -mpure-code.
+	(thumb1_rtx_costs): Likewise.
+	(thumb1_size_rtx_costs): Likewise.
+	(arm_thumb1_mi_thunk): Likewise.
+	* config/arm/arm.h (CASE_VECTOR_PC_RELATIVE): Likewise.
+	* config/arm/thumb1.md (thumb1_movsi_symbol_ref): New.
+	(*thumb1_movhf): Support -mpure-code.
+	* doc/invoke.texi (-mpure-code): Remove restriction on MOVT.
+
 2020-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/93908

@@ -25,11 +25,8 @@ if ![info exists DEFAULT_CFLAGS] then {
     set DEFAULT_CFLAGS " -ansi -pedantic-errors"
 }
 
-# The -mpure-code option is only available for M-profile targets that support
-# the MOVT instruction.
-if {([check_effective_target_arm_thumb2_ok]
-     || [check_effective_target_arm_thumb1_movt_ok])
-    && [check_effective_target_arm_cortex_m]} then {
+# The -mpure-code option is only available for M-profile targets.
+if {[check_effective_target_arm_cortex_m]} then {
 # Initialize `dg'.
 dg-init
 
@@ -56,4 +53,4 @@ set LTO_TORTURE_OPTIONS ${saved-lto_torture_options}
 
 # All done.
 dg-finish
-}
+#}

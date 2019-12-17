@@ -1854,9 +1854,11 @@ enum arm_auto_incmodes
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE Pmode
 
-#define CASE_VECTOR_PC_RELATIVE (TARGET_THUMB2				\
-				 || (TARGET_THUMB1			\
-				     && (optimize_size || flag_pic)))
+#define CASE_VECTOR_PC_RELATIVE ((TARGET_THUMB2				\
+				  || (TARGET_THUMB1			\
+				      && (optimize_size || flag_pic)))	\
+				 && (!target_pure_code))
+
 
 #define CASE_VECTOR_SHORTEN_MODE(min, max, body)			\
   (TARGET_THUMB1							\

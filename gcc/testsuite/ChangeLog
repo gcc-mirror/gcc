@@ -1,3 +1,16 @@
+2020-02-25  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backport from mainline
+	2019-12-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/pr45701-1.c: Adjust for -mpure-code.
+	* gcc.target/arm/pr45701-2.c: Likewise.
+	* gcc.target/arm/pure-code/no-literal-pool.c: Add tests for
+	__fp16.
+	* gcc.target/arm/pure-code/pure-code.exp: Remove thumb2 and movt
+	conditions.
+	* gcc.target/arm/thumb1-Os-mult.c: Skip if -mpure-code is used.
+
 2020-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/93908

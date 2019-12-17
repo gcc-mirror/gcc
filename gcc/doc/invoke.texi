@@ -17920,8 +17920,7 @@ provided for use in debugging the compiler.
 Do not allow constant data to be placed in code sections.
 Additionally, when compiling for ELF object format give all text sections the
 ELF processor-specific section attribute @code{SHF_ARM_PURECODE}.  This option
-is only available when generating non-pic code for M-profile targets with the
-MOVT instruction.
+is only available when generating non-pic code for M-profile targets.
 
 @item -mcmse
 @opindex mcmse
