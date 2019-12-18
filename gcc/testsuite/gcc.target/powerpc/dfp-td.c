@@ -1,6 +1,7 @@
 /* Test generation of DFP instructions for POWER6.  */
 /* Origin: Janis Johnson <janis187@us.ibm.com> */
-/* { dg-do compile { target { powerpc*-*-linux* && powerpc_fprs } } } */
+/* { dg-do compile { target { powerpc*-*-linux* } } } */
+/* { dg-require-effective-target hard_dfp } */
 /* { dg-options "-std=gnu99 -mdejagnu-cpu=power6" } */
 
 /* { dg-final { scan-assembler "daddq" } } */
