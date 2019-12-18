@@ -1061,17 +1061,6 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
   thr = goacc_thread ();
   acc_dev = thr->dev;
 
-  /* Determine whether "finalize" semantics apply to all mappings of this
-     OpenACC directive.  */
-  bool finalize = false;
-  if (mapnum > 0)
-    {
-      unsigned char kind = kinds[0] & 0xff;
-      if (kind == GOMP_MAP_DELETE
-	  || kind == GOMP_MAP_FORCE_FROM)
-	finalize = true;
-    }
-
   /* Determine if this is an "acc enter data".  */
   for (i = 0; i < mapnum; ++i)
     {
@@ -1223,6 +1212,9 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
     for (i = 0; i < mapnum; ++i)
       {
 	unsigned char kind = kinds[i] & 0xff;
+
+	bool finalize = (kind == GOMP_MAP_DELETE
+			 || kind == GOMP_MAP_FORCE_FROM);
 
 	int pointer = find_pointer (i, mapnum, kinds);
 
