@@ -1,3 +1,9 @@
+2019-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Pragma_to_gnu) <Pragma_Warnings>: Push a
+	diagnostics state for pragma Warnings (Off) before turning off all
+	the warnings and only pop it for pragma Warnings (On).
+
 2019-12-18  Justin Squirek  <squirek@adacore.com>
 
 	* sem_ch6.adb (Analyze_Function_Return): Modify handling of
