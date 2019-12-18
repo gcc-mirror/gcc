@@ -1,3 +1,8 @@
+2019-12-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/finalize-1.c: Extend.
+	* gfortran.dg/goacc/finalize-1.f: Likewise.
+
 2019-12-18  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/70853
