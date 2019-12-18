@@ -29,8 +29,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+pragma Ada_2020;
+
 generic
-   type Atomic_Type is private;  --  with Atomic;
+   type Atomic_Type is private with Atomic;
 package System.Atomic_Operations.Exchange
   with Pure
 --  Blocking

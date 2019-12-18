@@ -1,5 +1,10 @@
 2019-12-18  Arnaud Charlet  <charlet@adacore.com>
 
+	* libgnat/s-atopar.ads, libgnat/s-atopex.ads (Atomic_Type): Can
+	now be marked Atomic. This requires marking the unit Ada 202x.
+
+2019-12-18  Arnaud Charlet  <charlet@adacore.com>
+
 	* libgnat/a-nbnbin.ads, libgnat/a-nbnbin.adb,
 	libgnat/a-nbnbre.ads, libgnat/a-nbnbre.adb: Replace
 	Optional_Big_* types by a simple check and exception raise in
