@@ -25,19 +25,12 @@ package Ada.Numerics.Big_Numbers.Big_Integers
   with Preelaborate
 --  Nonblocking
 is
-   type Optional_Big_Integer is private
-     with Default_Initial_Condition => not Is_Valid (Optional_Big_Integer);
-   --       Integer_Literal => From_String,
+   type Big_Integer is private;
+   --  with Integer_Literal => From_String,
    --       Put_Image => Put_Image;
 
-   function Is_Valid (Arg : Optional_Big_Integer) return Boolean;
-
-   subtype Big_Integer is Optional_Big_Integer
-     with Dynamic_Predicate => Is_Valid (Big_Integer),
-          Predicate_Failure => (raise Constraint_Error);
-
-   function Invalid_Big_Integer return Optional_Big_Integer
-     with Post => not Is_Valid (Invalid_Big_Integer'Result);
+   function Is_Valid (Arg : Big_Integer) return Boolean
+     with Convention => Intrinsic;
 
    function "=" (L, R : Big_Integer) return Boolean;
 
@@ -50,18 +43,6 @@ is
    function ">=" (L, R : Big_Integer) return Boolean;
 
    function To_Big_Integer (Arg : Integer) return Big_Integer;
-
-   subtype Optional_Big_Positive is Optional_Big_Integer
-     with Dynamic_Predicate =>
-            (not Is_Valid (Optional_Big_Positive))
-             or else (Optional_Big_Positive > To_Big_Integer (0)),
-          Predicate_Failure => (raise Constraint_Error);
-
-   subtype Optional_Big_Natural is Optional_Big_Integer
-     with Dynamic_Predicate =>
-            (not Is_Valid (Optional_Big_Natural))
-             or else (Optional_Big_Natural >= To_Big_Integer (0)),
-          Predicate_Failure => (raise Constraint_Error);
 
    subtype Big_Positive is Big_Integer
      with Dynamic_Predicate => Big_Positive > To_Big_Integer (0),
@@ -157,7 +138,7 @@ private
    procedure Adjust   (This : in out Controlled_Bignum);
    procedure Finalize (This : in out Controlled_Bignum);
 
-   type Optional_Big_Integer is record
+   type Big_Integer is record
       Value : Controlled_Bignum;
    end record;
 

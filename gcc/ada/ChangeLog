@@ -1,3 +1,13 @@
+2019-12-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/a-nbnbin.ads, libgnat/a-nbnbin.adb,
+	libgnat/a-nbnbre.ads, libgnat/a-nbnbre.adb: Replace
+	Optional_Big_* types by a simple check and exception raise in
+	Get_Bignum.
+	(Set_Bignum): Arg should be 'out' and not 'in out'.
+	(Invalid_Big_Integer, No_Big_Real): Removed.
+	(Is_Valid): Now convention Intrinsic.
+
 2019-12-18  Piotr Trojanek  <trojanek@adacore.com>
 
 	* doc/gnat_rm/implementation_defined_pragmas.rst,

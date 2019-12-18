@@ -44,11 +44,14 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
 
    procedure Free is new Ada.Unchecked_Deallocation (Bignum_Data, Bignum);
 
-   function Get_Bignum (Arg : Optional_Big_Integer) return Bignum is
-     (To_Bignum (Arg.Value.C));
-   --  Return the Bignum value stored in Arg
+   function Get_Bignum (Arg : Big_Integer) return Bignum is
+     (if Arg.Value.C = System.Null_Address
+      then raise Constraint_Error with "invalid big integer"
+      else To_Bignum (Arg.Value.C));
+   --  Check for validity of Arg and return the Bignum value stored in Arg.
+   --  Raise Constraint_Error if Arg is uninitialized.
 
-   procedure Set_Bignum (Arg : in out Optional_Big_Integer; Value : Bignum)
+   procedure Set_Bignum (Arg : out Big_Integer; Value : Bignum)
      with Inline;
    --  Set the Bignum value stored in Arg to Value
 
@@ -56,7 +59,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- Set_Bignum --
    ----------------
 
-   procedure Set_Bignum (Arg : in out Optional_Big_Integer; Value : Bignum) is
+   procedure Set_Bignum (Arg : out Big_Integer; Value : Bignum) is
    begin
       Arg.Value.C := To_Address (Value);
    end Set_Bignum;
@@ -65,15 +68,8 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- Is_Valid --
    --------------
 
-   function Is_Valid (Arg : Optional_Big_Integer) return Boolean is
+   function Is_Valid (Arg : Big_Integer) return Boolean is
      (Arg.Value.C /= System.Null_Address);
-
-   --------------------------
-   -- Invalid_Big_Integer --
-   --------------------------
-
-   function Invalid_Big_Integer return Optional_Big_Integer is
-     (Value => (Ada.Finalization.Controlled with C => System.Null_Address));
 
    ---------
    -- "=" --
@@ -125,7 +121,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    --------------------
 
    function To_Big_Integer (Arg : Integer) return Big_Integer is
-      Result : Optional_Big_Integer;
+      Result : Big_Integer;
    begin
       Set_Bignum (Result, To_Bignum (Long_Long_Integer (Arg)));
       return Result;
@@ -151,7 +147,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
       --------------------
 
       function To_Big_Integer (Arg : Int) return Big_Integer is
-         Result : Optional_Big_Integer;
+         Result : Big_Integer;
       begin
          Set_Bignum (Result, To_Bignum (Long_Long_Integer (Arg)));
          return Result;
@@ -179,7 +175,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
       --------------------
 
       function To_Big_Integer (Arg : Int) return Big_Integer is
-         Result : Optional_Big_Integer;
+         Result : Big_Integer;
       begin
          Set_Bignum (Result, To_Bignum (Unsigned_64 (Arg)));
          return Result;
@@ -283,7 +279,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -----------------
 
    function From_String (Arg : String) return Big_Integer is
-      Result : Optional_Big_Integer;
+      Result : Big_Integer;
    begin
       --  ??? only support Long_Long_Integer, good enough for now
       Set_Bignum (Result, To_Bignum (Long_Long_Integer'Value (Arg)));
@@ -306,7 +302,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    ---------
 
    function "+" (L : Big_Integer) return Big_Integer is
-      Result : Optional_Big_Integer;
+      Result : Big_Integer;
    begin
       Set_Bignum (Result, new Bignum_Data'(Get_Bignum (L).all));
       return Result;
@@ -317,7 +313,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    ---------
 
    function "-" (L : Big_Integer) return Big_Integer is
-      Result : Optional_Big_Integer;
+      Result : Big_Integer;
    begin
       Set_Bignum (Result, Big_Neg (Get_Bignum (L)));
       return Result;
@@ -328,7 +324,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -----------
 
    function "abs" (L : Big_Integer) return Big_Integer is
-      Result : Optional_Big_Integer;
+      Result : Big_Integer;
    begin
       Set_Bignum (Result, Big_Abs (Get_Bignum (L)));
       return Result;
@@ -339,7 +335,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    ---------
 
    function "+" (L, R : Big_Integer) return Big_Integer is
-      Result : Optional_Big_Integer;
+      Result : Big_Integer;
    begin
       Set_Bignum (Result, Big_Add (Get_Bignum (L), Get_Bignum (R)));
       return Result;
@@ -350,7 +346,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    ---------
 
    function "-" (L, R : Big_Integer) return Big_Integer is
-      Result : Optional_Big_Integer;
+      Result : Big_Integer;
    begin
       Set_Bignum (Result, Big_Sub (Get_Bignum (L), Get_Bignum (R)));
       return Result;
@@ -361,7 +357,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    ---------
 
    function "*" (L, R : Big_Integer) return Big_Integer is
-      Result : Optional_Big_Integer;
+      Result : Big_Integer;
    begin
       Set_Bignum (Result, Big_Mul (Get_Bignum (L), Get_Bignum (R)));
       return Result;
@@ -372,7 +368,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    ---------
 
    function "/" (L, R : Big_Integer) return Big_Integer is
-      Result : Optional_Big_Integer;
+      Result : Big_Integer;
    begin
       Set_Bignum (Result, Big_Div (Get_Bignum (L), Get_Bignum (R)));
       return Result;
@@ -383,7 +379,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -----------
 
    function "mod" (L, R : Big_Integer) return Big_Integer is
-      Result : Optional_Big_Integer;
+      Result : Big_Integer;
    begin
       Set_Bignum (Result, Big_Mod (Get_Bignum (L), Get_Bignum (R)));
       return Result;
@@ -394,7 +390,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -----------
 
    function "rem" (L, R : Big_Integer) return Big_Integer is
-      Result : Optional_Big_Integer;
+      Result : Big_Integer;
    begin
       Set_Bignum (Result, Big_Rem (Get_Bignum (L), Get_Bignum (R)));
       return Result;
@@ -405,12 +401,23 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    ----------
 
    function "**" (L : Big_Integer; R : Natural) return Big_Integer is
-      Exp    : Bignum := To_Bignum (Long_Long_Integer (R));
-      Result : Optional_Big_Integer;
    begin
-      Set_Bignum (Result, Big_Exp (Get_Bignum (L), Exp));
-      Free (Exp);
-      return Result;
+      --  Explicitly check for validity before allocating Exp so that
+      --  the call to Get_Bignum below cannot raise an exception before
+      --  we get a chance to free Exp.
+
+      if not Is_Valid (L) then
+         raise Constraint_Error with "invalid big integer";
+      end if;
+
+      declare
+         Exp    : Bignum := To_Bignum (Long_Long_Integer (R));
+         Result : Big_Integer;
+      begin
+         Set_Bignum (Result, Big_Exp (Get_Bignum (L), Exp));
+         Free (Exp);
+         return Result;
+      end;
    end "**";
 
    ---------

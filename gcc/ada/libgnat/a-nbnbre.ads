@@ -23,19 +23,11 @@ package Ada.Numerics.Big_Numbers.Big_Reals
   with Preelaborate
 --  Nonblocking, Global => in out synchronized Big_Reals
 is
-   type Optional_Big_Real is private with
-     Default_Initial_Condition => not Is_Valid (Optional_Big_Real);
---   Real_Literal => From_String,
---   Put_Image => Put_Image;
+   type Big_Real is private;
+--   with Real_Literal => From_String,
+--        Put_Image    => Put_Image;
 
-   function Is_Valid (Arg : Optional_Big_Real) return Boolean;
-
-   function No_Big_Real return Optional_Big_Real
-     with Post => not Is_Valid (No_Big_Real'Result);
-
-   subtype Big_Real is Optional_Big_Real
-     with Dynamic_Predicate => Is_Valid (Big_Real),
-          Predicate_Failure => (raise Constraint_Error);
+   function Is_Valid (Arg : Big_Real) return Boolean;
 
    function "/" (Num, Den : Big_Integers.Big_Integer) return Big_Real;
 --   with Pre => (if Big_Integers."=" (Den, Big_Integers.To_Big_Integer (0))
@@ -139,8 +131,8 @@ is
 
 private
 
-   type Optional_Big_Real is record
-      Num, Den : Big_Integers.Optional_Big_Integer;
+   type Big_Real is record
+      Num, Den : Big_Integers.Big_Integer;
    end record;
 
 end Ada.Numerics.Big_Numbers.Big_Reals;
