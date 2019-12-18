@@ -1,3 +1,9 @@
+2019-12-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/12333 - X::~X() with implicit this->.
+	* parser.c (cp_parser_lookup_name): Use lookup_destructor.
+	* typeck.c (lookup_destructor): No longer static.
+
 2019-12-17  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/61339

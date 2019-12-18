@@ -27939,6 +27939,11 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
       if (!type || !CLASS_TYPE_P (type))
 	return error_mark_node;
 
+      /* In a non-static member function, check implicit this->.  */
+      if (current_class_ref)
+	return lookup_destructor (current_class_ref, parser->scope, name,
+				  tf_warning_or_error);
+
       if (CLASSTYPE_LAZY_DESTRUCTOR (type))
 	lazily_declare_fn (sfk_destructor, type);
 
