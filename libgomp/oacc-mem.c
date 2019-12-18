@@ -659,7 +659,9 @@ acc_pcopyin (void *h, size_t s)
 static void
 delete_copyout (unsigned f, void *h, size_t s, int async, const char *libfnname)
 {
-  splay_tree_key n;
+  /* No need to call lazy open, as the data must already have been
+     mapped.  */
+
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
 
@@ -677,16 +679,10 @@ delete_copyout (unsigned f, void *h, size_t s, int async, const char *libfnname)
 
   gomp_mutex_lock (&acc_dev->lock);
 
-  n = lookup_host (acc_dev, h, s);
-
-  /* No need to call lazy open, as the data must already have been
-     mapped.  */
-
+  splay_tree_key n = lookup_host (acc_dev, h, s);
   if (!n)
-    {
-      gomp_mutex_unlock (&acc_dev->lock);
-      gomp_fatal ("[%p,%d] is not mapped", (void *)h, (int)s);
-    }
+    /* PR92726, RP92970, PR92984: no-op.  */
+    goto out;
 
   if ((uintptr_t) h < n->host_start || (uintptr_t) h + s > n->host_end)
     {
@@ -741,6 +737,7 @@ delete_copyout (unsigned f, void *h, size_t s, int async, const char *libfnname)
 	}
     }
 
+ out:
   gomp_mutex_unlock (&acc_dev->lock);
 
   if (profiling_p)
@@ -1224,13 +1221,10 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
 	      {
 	      case GOMP_MAP_RELEASE:
 	      case GOMP_MAP_DELETE:
-		if (acc_is_present (hostaddrs[i], sizes[i]))
-		  {
-		    if (finalize)
-		      acc_delete_finalize_async (hostaddrs[i], sizes[i], async);
-		    else
-		      acc_delete_async (hostaddrs[i], sizes[i], async);
-		  }
+		if (finalize)
+		  acc_delete_finalize_async (hostaddrs[i], sizes[i], async);
+		else
+		  acc_delete_async (hostaddrs[i], sizes[i], async);
 		break;
 	      case GOMP_MAP_FROM:
 	      case GOMP_MAP_FORCE_FROM:
