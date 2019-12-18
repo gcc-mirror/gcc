@@ -9218,6 +9218,13 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	  break;
       rank_remap = (remap && remap->u.ar.end[0]);
 
+      if (remap && expr2->expr_type == EXPR_NULL)
+	{
+	  gfc_error ("If bounds remapping is specified at %L, "
+		     "the pointer target shall not be NULL", &expr1->where);
+	  return NULL_TREE;
+	}
+
       gfc_init_se (&lse, NULL);
       if (remap)
 	lse.descriptor_only = 1;
