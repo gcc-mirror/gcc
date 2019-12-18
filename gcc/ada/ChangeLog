@@ -1,3 +1,12 @@
+2019-12-18  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_res.adb (Resolve_Type_Conversion): Add handling for access
+	types with designated operand and target types that are
+	referenced in places that have a limited view of an interface
+	type by retrieving the nonlimited view when it exists.  Add ???
+	comments related to missing limited_with_clause handling for
+	Target (in the non-access case).
+
 2019-12-18  Ed Schonberg  <schonberg@adacore.com>
 
 	* par-ch12.adb (P_Formal_Derived_Type_Definition): In Ada_2020
