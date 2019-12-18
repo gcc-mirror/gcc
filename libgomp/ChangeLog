@@ -1,3 +1,11 @@
+2019-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/86416
+	* testsuite/libgomp.c/pr86416-1.c (main): Use L suffixes rather than
+	q or none.
+	* testsuite/libgomp.c/pr86416-2.c (main): Use Q suffixes rather than
+	L or none.
+
 2019-12-19  Julian Brown  <julian@codesourcery.com>
 	    Maciej W. Rozycki  <macro@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>

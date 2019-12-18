@@ -16,7 +16,7 @@ long double foo (long double x)
 
 int main()
 {
-  long double v = foo (10.0q) - 20.0q;
-  if (v > 1.0e-5 || v < -1.0e-5) abort();
+  long double v = foo (10.0L) - 20.0L;
+  if (v > 1.0e-5L || v < -1.0e-5L) abort();
   return 0;
 }
