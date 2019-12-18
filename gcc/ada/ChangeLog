@@ -1,5 +1,10 @@
 2019-12-18  Arnaud Charlet  <charlet@adacore.com>
 
+	* libgnat/s-regpat.adb (Parse_Literal, Parse_Piece): Ensure
+	Expr_Flags is always fully initialized.
+
+2019-12-18  Arnaud Charlet  <charlet@adacore.com>
+
 	* libgnat/s-atopar.ads, libgnat/s-atopex.ads (Atomic_Type): Can
 	now be marked Atomic. This requires marking the unit Ada 202x.
 
