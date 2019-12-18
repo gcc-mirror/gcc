@@ -636,14 +636,16 @@ acc_pcopyin (void *h, size_t s)
 }
 #endif
 
-#define FLAG_COPYOUT  (1 << 0)
-#define FLAG_FINALIZE (1 << 1)
+
+/* Exit a dynamic mapping.  */
 
 static void
-delete_copyout (unsigned f, void *h, size_t s, int async, const char *libfnname)
+goacc_exit_data (void *h, size_t s, unsigned short kind, int async)
 {
   /* No need to call lazy open, as the data must already have been
      mapped.  */
+
+  kind &= 0xff;
 
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
@@ -683,7 +685,9 @@ delete_copyout (unsigned f, void *h, size_t s, int async, const char *libfnname)
       gomp_fatal ("Dynamic reference counting assert fail\n");
     }
 
-  if (f & FLAG_FINALIZE)
+  bool finalize = (kind == GOMP_MAP_DELETE
+		   || kind == GOMP_MAP_FORCE_FROM);
+  if (finalize)
     {
       if (n->refcount != REFCOUNT_INFINITY)
 	n->refcount -= n->dynamic_refcount;
@@ -700,7 +704,9 @@ delete_copyout (unsigned f, void *h, size_t s, int async, const char *libfnname)
     {
       goacc_aq aq = get_goacc_asyncqueue (async);
 
-      if (f & FLAG_COPYOUT)
+      bool copyout = (kind == GOMP_MAP_FROM
+		      || kind == GOMP_MAP_FORCE_FROM);
+      if (copyout)
 	{
 	  void *d = (void *) (n->tgt->tgt_start + n->tgt_offset
 			      + (uintptr_t) h - n->host_start);
@@ -733,50 +739,49 @@ delete_copyout (unsigned f, void *h, size_t s, int async, const char *libfnname)
 void
 acc_delete (void *h , size_t s)
 {
-  delete_copyout (0, h, s, acc_async_sync, __FUNCTION__);
+  goacc_exit_data (h, s, GOMP_MAP_RELEASE, acc_async_sync);
 }
 
 void
 acc_delete_async (void *h , size_t s, int async)
 {
-  delete_copyout (0, h, s, async, __FUNCTION__);
+  goacc_exit_data (h, s, GOMP_MAP_RELEASE, async);
 }
 
 void
 acc_delete_finalize (void *h , size_t s)
 {
-  delete_copyout (FLAG_FINALIZE, h, s, acc_async_sync, __FUNCTION__);
+  goacc_exit_data (h, s, GOMP_MAP_DELETE, acc_async_sync);
 }
 
 void
 acc_delete_finalize_async (void *h , size_t s, int async)
 {
-  delete_copyout (FLAG_FINALIZE, h, s, async, __FUNCTION__);
+  goacc_exit_data (h, s, GOMP_MAP_DELETE, async);
 }
 
 void
 acc_copyout (void *h, size_t s)
 {
-  delete_copyout (FLAG_COPYOUT, h, s, acc_async_sync, __FUNCTION__);
+  goacc_exit_data (h, s, GOMP_MAP_FROM, acc_async_sync);
 }
 
 void
 acc_copyout_async (void *h, size_t s, int async)
 {
-  delete_copyout (FLAG_COPYOUT, h, s, async, __FUNCTION__);
+  goacc_exit_data (h, s, GOMP_MAP_FROM, async);
 }
 
 void
 acc_copyout_finalize (void *h, size_t s)
 {
-  delete_copyout (FLAG_COPYOUT | FLAG_FINALIZE, h, s, acc_async_sync,
-		  __FUNCTION__);
+  goacc_exit_data (h, s, GOMP_MAP_FORCE_FROM, acc_async_sync);
 }
 
 void
 acc_copyout_finalize_async (void *h, size_t s, int async)
 {
-  delete_copyout (FLAG_COPYOUT | FLAG_FINALIZE, h, s, async, __FUNCTION__);
+  goacc_exit_data (h, s, GOMP_MAP_FORCE_FROM, async);
 }
 
 static void
