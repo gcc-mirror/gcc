@@ -1,3 +1,14 @@
+2019-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92977
+	* frontend-passes.c (in_omp_atomic): New variable.
+	(cfe_expr_0, matmul_to_var_expr, matmul_temp_args,
+	inline_matmul_assign, call_external_blas): Don't optimize in
+	EXEC_OMP_ATOMIC.
+	(optimize_namespace): Clear in_omp_atomic.
+	(gfc_code_walker): Set in_omp_atomic for EXEC_OMP_ATOMIC, save/restore
+	it around.
+
 2019-12-19  Julian Brown  <julian@codesourcery.com>
 	    Maciej W. Rozycki  <macro@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>

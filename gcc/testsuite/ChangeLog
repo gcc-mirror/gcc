@@ -1,3 +1,8 @@
+2019-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92977
+	* gfortran.dg/gomp/pr92977.f90: New test.
+
 2019-12-19  Julian Brown  <julian@codesourcery.com>
 	    Maciej W. Rozycki  <macro@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
