@@ -1,3 +1,7 @@
+2019-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ira.c (ira): Use simple LRA algorithm when not optimizing.
+
 2019-12-18  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gimplify.c (gimplify_omp_target_update): Elaborate 'exit data'
