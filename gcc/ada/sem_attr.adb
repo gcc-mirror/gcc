@@ -10503,7 +10503,7 @@ package body Sem_Attr is
                   --  to a missed warning (the Valid check does not really
                   --  modify!) If this case, Note will be reset to False.
 
-                  --  Skip it as well if the type is an Acccess_To_Constant,
+                  --  Skip it as well if the type is an Access_To_Constant,
                   --  given that no use of the value can modify the prefix.
 
                begin

@@ -1344,7 +1344,7 @@ are equivalent to
 The precondition ensures that one and only one of the case guards is
 satisfied on entry to the subprogram.
 The postcondition ensures that for the case guard that was True on entry,
-the corrresponding consequence is True on exit. Other consequence expressions
+the corresponding consequence is True on exit. Other consequence expressions
 are not evaluated.
 
 A precondition ``P`` and postcondition ``Q`` can also be

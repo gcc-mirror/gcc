@@ -999,7 +999,7 @@ package body Ch6 is
 
          if Pf_Flags.Pbod
 
-           --  Disconnnect this processing if we have scanned a null procedure
+           --  Disconnect this processing if we have scanned a null procedure
            --  because in this case the spec is complete anyway with no body.
 
            and then (Nkind (Specification_Node) /= N_Procedure_Specification
