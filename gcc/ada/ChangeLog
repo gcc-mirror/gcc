@@ -1,3 +1,13 @@
+2019-12-18  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch6.adb (Analyze_Function_Return): Modify handling of
+	extended return statements to check accessibility of access
+	discriminants.
+	(Check_Aggregate_Accessibility): Removed.
+	(Check_Return_Obj_Accessibility): Added to centralize checking
+	of return aggregates and subtype indications in the case of an
+	extended return statement.
+
 2019-12-18  Arnaud Charlet  <charlet@adacore.com>
 
 	* libgnat/s-regpat.adb (Parse_Literal, Parse_Piece): Ensure
