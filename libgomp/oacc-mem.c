@@ -1158,28 +1158,26 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
     {
       for (i = 0; i < mapnum; i++)
 	{
-	  unsigned char kind = kinds[i] & 0xff;
-
 	  /* Scan for pointers and PSETs.  */
 	  int pointer = find_pointer (i, mapnum, kinds);
 
 	  if (!pointer)
 	    {
+	      unsigned char kind = kinds[i] & 0xff;
 	      switch (kind)
 		{
 		case GOMP_MAP_ALLOC:
 		case GOMP_MAP_FORCE_ALLOC:
-		  acc_create_async (hostaddrs[i], sizes[i], async);
-		  break;
 		case GOMP_MAP_TO:
 		case GOMP_MAP_FORCE_TO:
-		  acc_copyin_async (hostaddrs[i], sizes[i], async);
 		  break;
 		default:
 		  gomp_fatal (">>>> GOACC_enter_exit_data UNHANDLED kind 0x%.2x",
 			      kind);
 		  break;
 		}
+
+	      goacc_enter_data (hostaddrs[i], sizes[i], kinds[i], async);
 	    }
 	  else
 	    {
@@ -1198,9 +1196,6 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
       {
 	unsigned char kind = kinds[i] & 0xff;
 
-	bool finalize = (kind == GOMP_MAP_DELETE
-			 || kind == GOMP_MAP_FORCE_FROM);
-
 	int pointer = find_pointer (i, mapnum, kinds);
 
 	if (!pointer)
@@ -1209,26 +1204,21 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
 	      {
 	      case GOMP_MAP_RELEASE:
 	      case GOMP_MAP_DELETE:
-		if (finalize)
-		  acc_delete_finalize_async (hostaddrs[i], sizes[i], async);
-		else
-		  acc_delete_async (hostaddrs[i], sizes[i], async);
-		break;
 	      case GOMP_MAP_FROM:
 	      case GOMP_MAP_FORCE_FROM:
-		if (finalize)
-		  acc_copyout_finalize_async (hostaddrs[i], sizes[i], async);
-		else
-		  acc_copyout_async (hostaddrs[i], sizes[i], async);
 		break;
 	      default:
 		gomp_fatal (">>>> GOACC_enter_exit_data UNHANDLED kind 0x%.2x",
 			    kind);
 		break;
 	      }
+
+	    goacc_exit_data (hostaddrs[i], sizes[i], kinds[i], async);
 	  }
 	else
 	  {
+	    bool finalize = (kind == GOMP_MAP_DELETE
+			     || kind == GOMP_MAP_FORCE_FROM);
 	    bool copyfrom = (kind == GOMP_MAP_FORCE_FROM
 			     || kind == GOMP_MAP_FROM);
 	    goacc_remove_pointer (hostaddrs[i], sizes[i], copyfrom, async,
