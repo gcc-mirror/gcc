@@ -4076,7 +4076,8 @@ the vertical bars and the ``char *'' and ``long int'' text).
 @opindex fdiagnostics-show-cwe
 Diagnostic messages can optionally have an associated
 @url{https://cwe.mitre.org/index.html, CWE} identifier.
-GCC itself does not do this for any of its diagnostics, but plugins may do so.
+GCC itself only provides such metadata for some of the @option{-fanalyzer}
+diagnostics.  GCC plugins may also provide diagnostics with such metadata.
 By default, if this information is present, it will be printed with
 the diagnostic.  This option suppresses the printing of this metadata.
 

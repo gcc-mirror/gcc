@@ -1,5 +1,10 @@
 2020-01-14  David Malcolm  <dmalcolm@redhat.com>
 
+	* doc/invoke.texi (-fdiagnostics-show-cwe): Add note that some of
+	the analyzer options provide CWE identifiers.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
 	* tree-diagnostic-path.cc (path_summary::event_range::print):
 	When testing for UNKNOWN_LOCATION, look through ad-hoc wrappers
 	using get_pure_location.
