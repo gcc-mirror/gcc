@@ -1,3 +1,54 @@
+2019-12-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.opt (fdiagnostics-show-cwe): Add.
+	* diagnostic-core.h (class diagnostic_metadata): New forward decl.
+	(warning_at): Add overload taking a const diagnostic_metadata &.
+	(emit_diagnostic_valist): Add overload taking a
+	const diagnostic_metadata *.
+	* diagnostic-format-json.cc: Include "diagnostic-metadata.h".
+	(json_from_metadata): New function.
+	(json_end_diagnostic): Call it to add "metadata" child for
+	diagnostics with metadata.
+	(diagnostic_output_format_init): Clear context->show_cwe.
+	* diagnostic-metadata.h: New file.
+	* diagnostic.c: Include "diagnostic-metadata.h".
+	(diagnostic_impl): Add const diagnostic_metadata * param.
+	(diagnostic_n_impl): Likewise.
+	(diagnostic_initialize): Initialize context->show_cwe.
+	(diagnostic_set_info_translated): Initialize diagnostic->metadata.
+	(get_cwe_url): New function.
+	(print_any_cwe): New function.
+	(diagnostic_report_diagnostic): Call print_any_cwe if the
+	diagnostic has non-NULL metadata.
+	(emit_diagnostic): Pass NULL as the metadata in the call to
+	diagnostic_impl.
+	(emit_diagnostic_valist): Likewise.
+	(emit_diagnostic_valist): New overload taking a
+	const diagnostic_metadata *.
+	(inform): Pass NULL as the metadata in the call to
+	diagnostic_impl.
+	(inform_n): Likewise for diagnostic_n_impl.
+	(warning): Likewise.
+	(warning_at): Likewise.  Add overload that takes a
+	const diagnostic_metadata &.
+	(warning_n): Pass NULL as the metadata in the call to
+	diagnostic_n_impl.
+	(pedwarn): Likewise for diagnostic_impl.
+	(permerror): Likewise.
+	(error): Likewise.
+	(error_n): Likewise.
+	(error_at): Likewise.
+	(sorry): Likewise.
+	(sorry_at): Likewise.
+	(fatal_error): Likewise.
+	(internal_error): Likewise.
+	(internal_error_no_backtrace): Likewise.
+	* diagnostic.h (diagnostic_info::metadata): New field.
+	(diagnostic_context::show_cwe): New field.
+	* doc/invoke.texi (-fno-diagnostics-show-cwe): New option.
+	* opts.c (common_handle_option): Handle OPT_fdiagnostics_show_cwe.
+	* toplev.c (general_init): Initialize global_dc->show_cwe.
+
 2019-12-19  Julian Brown  <julian@codesourcery.com>
 	    Maciej W. Rozycki  <macro@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>

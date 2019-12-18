@@ -2407,6 +2407,10 @@ common_handle_option (struct gcc_options *opts,
       dc->parseable_fixits_p = value;
       break;
 
+    case OPT_fdiagnostics_show_cwe:
+      dc->show_cwe = value;
+      break;
+
     case OPT_fdiagnostics_show_option:
       dc->show_option_requested = value;
       break;

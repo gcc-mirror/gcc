@@ -45,6 +45,9 @@ class auto_diagnostic_group
   ~auto_diagnostic_group ();
 };
 
+/* Forward decl.  */
+class diagnostic_metadata; /* See diagnostic-metadata.h.  */
+
 extern const char *progname;
 
 extern const char *trim_filename (const char *);
@@ -78,6 +81,9 @@ extern bool warning_at (location_t, int, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
 extern bool warning_at (rich_location *, int, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
+extern bool warning_at (rich_location *, const diagnostic_metadata &, int,
+			const char *, ...)
+    ATTRIBUTE_GCC_DIAG(4,5);
 extern void error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern void error_n (location_t, unsigned HOST_WIDE_INT, const char *,
 		     const char *, ...)
@@ -109,6 +115,10 @@ extern bool emit_diagnostic (diagnostic_t, rich_location *, int,
 			     const char *, ...) ATTRIBUTE_GCC_DIAG(4,5);
 extern bool emit_diagnostic_valist (diagnostic_t, location_t, int, const char *,
 				    va_list *) ATTRIBUTE_GCC_DIAG (4,0);
+extern bool emit_diagnostic_valist (diagnostic_t, rich_location *,
+				    const diagnostic_metadata *metadata,
+				    int, const char *, va_list *)
+  ATTRIBUTE_GCC_DIAG (5,0);
 extern bool seen_error (void);
 
 #ifdef BUFSIZ
