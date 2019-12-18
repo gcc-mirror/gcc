@@ -1,3 +1,9 @@
+2019-12-18  Bob Duff  <duff@adacore.com>
+
+	* sem_ch8.adb (Note_Redundant_Use): It was already checking for
+	a use clause in the visible part of the child. Add an additional
+	check for a use clause in the context clause of the child.
+
 2019-12-16  Bob Duff  <duff@adacore.com>
 
 	* errout.adb (Handle_Serious_Error): Disable the above-mentioned
