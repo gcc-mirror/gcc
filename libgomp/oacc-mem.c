@@ -492,12 +492,13 @@ acc_unmap_data (void *h)
     }
 }
 
-#define FLAG_PRESENT (1 << 0)
-#define FLAG_CREATE (1 << 1)
-#define FLAG_COPY (1 << 2)
+
+/* Enter a dynamic mapping.
+
+   Return the device pointer.  */
 
 static void *
-present_create_copy (unsigned f, void *h, size_t s, int async)
+goacc_enter_data (void *h, size_t s, unsigned short kind, int async)
 {
   void *d;
   splay_tree_key n;
@@ -530,12 +531,6 @@ present_create_copy (unsigned f, void *h, size_t s, int async)
       /* Present. */
       d = (void *) (n->tgt->tgt_start + n->tgt_offset + h - n->host_start);
 
-      if (!(f & FLAG_PRESENT))
-        {
-	  gomp_mutex_unlock (&acc_dev->lock);
-          gomp_fatal ("[%p,+%d] already mapped to [%p,+%d]",
-        	      (void *)h, (int)s, (void *)d, (int)s);
-	}
       if ((h + s) > (void *)n->host_end)
 	{
 	  gomp_mutex_unlock (&acc_dev->lock);
@@ -549,29 +544,18 @@ present_create_copy (unsigned f, void *h, size_t s, int async)
 
       gomp_mutex_unlock (&acc_dev->lock);
     }
-  else if (!(f & FLAG_CREATE))
-    {
-      gomp_mutex_unlock (&acc_dev->lock);
-      gomp_fatal ("[%p,+%d] not mapped", (void *)h, (int)s);
-    }
   else
     {
       struct target_mem_desc *tgt;
       size_t mapnum = 1;
-      unsigned short kinds;
       void *hostaddrs = h;
-
-      if (f & FLAG_COPY)
-	kinds = GOMP_MAP_TO;
-      else
-	kinds = GOMP_MAP_ALLOC;
 
       gomp_mutex_unlock (&acc_dev->lock);
 
       goacc_aq aq = get_goacc_asyncqueue (async);
 
       tgt = gomp_map_vars_async (acc_dev, aq, mapnum, &hostaddrs, NULL, &s,
-				 &kinds, true, GOMP_MAP_VARS_ENTER_DATA);
+				 &kind, true, GOMP_MAP_VARS_ENTER_DATA);
       assert (tgt);
       n = tgt->list[0].key;
       assert (n->refcount == 1);
@@ -593,13 +577,13 @@ present_create_copy (unsigned f, void *h, size_t s, int async)
 void *
 acc_create (void *h, size_t s)
 {
-  return present_create_copy (FLAG_PRESENT | FLAG_CREATE, h, s, acc_async_sync);
+  return goacc_enter_data (h, s, GOMP_MAP_ALLOC, acc_async_sync);
 }
 
 void
 acc_create_async (void *h, size_t s, int async)
 {
-  present_create_copy (FLAG_PRESENT | FLAG_CREATE, h, s, async);
+  goacc_enter_data (h, s, GOMP_MAP_ALLOC, async);
 }
 
 /* acc_present_or_create used to be what acc_create is now.  */
@@ -624,14 +608,13 @@ acc_pcreate (void *h, size_t s)
 void *
 acc_copyin (void *h, size_t s)
 {
-  return present_create_copy (FLAG_PRESENT | FLAG_CREATE | FLAG_COPY, h, s,
-			      acc_async_sync);
+  return goacc_enter_data (h, s, GOMP_MAP_TO, acc_async_sync);
 }
 
 void
 acc_copyin_async (void *h, size_t s, int async)
 {
-  present_create_copy (FLAG_PRESENT | FLAG_CREATE | FLAG_COPY, h, s, async);
+  goacc_enter_data (h, s, GOMP_MAP_TO, async);
 }
 
 /* acc_present_or_copyin used to be what acc_copyin is now.  */
