@@ -1,3 +1,15 @@
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Maciej W. Rozycki  <macro@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* parser.c (cp_parser_omp_clause_name): Support no_create.
+	(cp_parser_oacc_data_clause): Likewise.
+	(cp_parser_oacc_all_clauses): Likewise.
+	(OACC_DATA_CLAUSE_MASK, OACC_KERNELS_CLAUSE_MASK)
+	(OACC_PARALLEL_CLAUSE_MASK): Add PRAGMA_OACC_CLAUSE_NO_CREATE.
+	* semantics.c (handle_omp_array_sections): Support no_create.
+
 2019-12-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* typeck.c (cxx_sizeof_or_alignof_type): Add location_t parameter

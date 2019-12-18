@@ -1,3 +1,11 @@
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Maciej W. Rozycki  <macro@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-low.c (lower_omp_target): Support GOMP_MAP_NO_ALLOC.
+	* tree-pretty-print.c (dump_omp_clause): Likewise.
+
 2019-12-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ira.c (ira): Use simple LRA algorithm when not optimizing.

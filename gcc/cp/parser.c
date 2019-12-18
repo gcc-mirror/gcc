@@ -33622,7 +33622,9 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_MERGEABLE;
 	  break;
 	case 'n':
-	  if (!strcmp ("nogroup", p))
+	  if (!strcmp ("no_create", p))
+	    result = PRAGMA_OACC_CLAUSE_NO_CREATE;
+	  else if (!strcmp ("nogroup", p))
 	    result = PRAGMA_OMP_CLAUSE_NOGROUP;
 	  else if (!strcmp ("nontemporal", p))
 	    result = PRAGMA_OMP_CLAUSE_NONTEMPORAL;
@@ -33988,7 +33990,10 @@ cp_parser_omp_var_list (cp_parser *parser, enum omp_clause_code kind, tree list)
    copyout ( variable-list )
    create ( variable-list )
    delete ( variable-list )
-   present ( variable-list ) */
+   present ( variable-list )
+
+   OpenACC 2.6:
+   no_create ( variable-list ) */
 
 static tree
 cp_parser_oacc_data_clause (cp_parser *parser, pragma_omp_clause c_kind,
@@ -34023,6 +34028,9 @@ cp_parser_oacc_data_clause (cp_parser *parser, pragma_omp_clause c_kind,
       break;
     case PRAGMA_OACC_CLAUSE_LINK:
       kind = GOMP_MAP_LINK;
+      break;
+    case PRAGMA_OACC_CLAUSE_NO_CREATE:
+      kind = GOMP_MAP_IF_PRESENT;
       break;
     case PRAGMA_OACC_CLAUSE_PRESENT:
       kind = GOMP_MAP_FORCE_PRESENT;
@@ -36585,6 +36593,10 @@ cp_parser_oacc_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OACC_CLAUSE_LINK:
 	  clauses = cp_parser_oacc_data_clause (parser, c_kind, clauses);
 	  c_name = "link";
+	  break;
+	case PRAGMA_OACC_CLAUSE_NO_CREATE:
+	  clauses = cp_parser_oacc_data_clause (parser, c_kind, clauses);
+	  c_name = "no_create";
 	  break;
 	case PRAGMA_OACC_CLAUSE_NUM_GANGS:
 	  code = OMP_CLAUSE_NUM_GANGS;
@@ -40391,6 +40403,7 @@ cp_parser_oacc_cache (cp_parser *parser, cp_token *pragma_tok)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_CREATE)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEVICEPTR)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF)			\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NO_CREATE)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT) )
 
 static tree
@@ -40712,6 +40725,7 @@ cp_parser_oacc_loop (cp_parser *parser, cp_token *pragma_tok, char *p_name,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEFAULT)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEVICEPTR)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF)			\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NO_CREATE)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NUM_GANGS)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NUM_WORKERS)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\
@@ -40726,8 +40740,9 @@ cp_parser_oacc_loop (cp_parser *parser, cp_token *pragma_tok, char *p_name,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_CREATE)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEFAULT)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEVICEPTR)		\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_FIRSTPRIVATE)       	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_FIRSTPRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF)			\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NO_CREATE)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NUM_GANGS)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NUM_WORKERS)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\
@@ -40745,6 +40760,7 @@ cp_parser_oacc_loop (cp_parser *parser, cp_token *pragma_tok, char *p_name,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEFAULT)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEVICEPTR)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF)			\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NO_CREATE)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRIVATE)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_FIRSTPRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\

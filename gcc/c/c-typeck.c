@@ -13422,6 +13422,7 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	switch (OMP_CLAUSE_MAP_KIND (c))
 	  {
 	  case GOMP_MAP_ALLOC:
+	  case GOMP_MAP_IF_PRESENT:
 	  case GOMP_MAP_TO:
 	  case GOMP_MAP_FROM:
 	  case GOMP_MAP_TOFROM:
