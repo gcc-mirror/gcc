@@ -1,3 +1,9 @@
+2019-12-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/92971
+	* ipa-cp.c (cgraph_edge_brings_all_agg_vals_for_node): Fix
+          definition of values, release memory on exit.
+
 2019-12-17  Jan Hubicka  <hubicka@ucw.cz>
 	    Martin Jambor  <mjambor@suse.cz>
 
