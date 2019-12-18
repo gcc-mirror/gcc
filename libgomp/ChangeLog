@@ -1,3 +1,9 @@
+2019-12-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/86416
+	* testsuite/libgomp.c/pr86416-1.c: New.
+	* testsuite/libgomp.c/pr86416-2.c: New.
+
 2019-12-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	* config/accel/openacc.f90 (module openacc_kinds): Use 'PUBLIC' to mark
