@@ -59,7 +59,6 @@ static tree get_delta_difference (tree, tree, bool, bool, tsubst_flags_t);
 static void casts_away_constness_r (tree *, tree *, tsubst_flags_t);
 static bool casts_away_constness (tree, tree, tsubst_flags_t);
 static bool maybe_warn_about_returning_address_of_local (tree);
-static tree lookup_destructor (tree, tree, tree, tsubst_flags_t);
 static void error_args_num (location_t, tree, bool);
 static int convert_arguments (tree, vec<tree, va_gc> **, tree, int,
                               tsubst_flags_t);
@@ -2696,7 +2695,7 @@ build_class_member_access_expr (cp_expr object, tree member,
 /* Return the destructor denoted by OBJECT.SCOPE::DTOR_NAME, or, if
    SCOPE is NULL, by OBJECT.DTOR_NAME, where DTOR_NAME is ~type.  */
 
-static tree
+tree
 lookup_destructor (tree object, tree scope, tree dtor_name,
 		   tsubst_flags_t complain)
 {

@@ -7500,6 +7500,7 @@ extern tree build_class_member_access_expr      (cp_expr, tree, tree, bool,
 						 tsubst_flags_t);
 extern tree finish_class_member_access_expr     (cp_expr, tree, bool,
 						 tsubst_flags_t);
+extern tree lookup_destructor			(tree, tree, tree, tsubst_flags_t);
 extern tree build_x_indirect_ref		(location_t, tree,
 						 ref_operator,
 						 tsubst_flags_t);
