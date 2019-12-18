@@ -1225,7 +1225,15 @@ gomp_unmap_vars_internal (struct target_mem_desc *tgt, bool do_copyfrom,
 				      + tgt->list[i].offset),
 			    tgt->list[i].length);
       if (do_unmap)
-	gomp_remove_var (devicep, k);
+	{
+	  struct target_mem_desc *k_tgt = k->tgt;
+	  bool is_tgt_unmapped = gomp_remove_var (devicep, k);
+	  /* It would be bad if TGT got unmapped while we're still iterating
+	     over its LIST_COUNT, and also expect to use it in the following
+	     code.  */
+	  assert (!is_tgt_unmapped
+		  || k_tgt != tgt);
+	}
     }
 
   if (aq)
