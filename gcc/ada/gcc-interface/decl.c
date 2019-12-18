@@ -3054,6 +3054,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		if (max_align < BIGGEST_ALIGNMENT)
 		  TYPE_MAX_ALIGN (gnu_type) = max_align;
 	      }
+
+	    /* Similarly if an Object_Size clause has been specified.  */
+	    else if (Known_Esize (gnat_entity))
+	      {
+		unsigned int max_size = UI_To_Int (Esize (gnat_entity));
+		unsigned int max_align = max_size & -max_size;
+		if (max_align < BIGGEST_ALIGNMENT)
+		  TYPE_MAX_ALIGN (gnu_type) = max_align;
+	      }
 	  }
 
 	/* If we have a Parent_Subtype, make a field for the parent.  If
@@ -4241,11 +4250,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	 non-constant).  */
       if (!gnu_size && kind != E_String_Literal_Subtype)
 	{
-	  Uint gnat_size = Known_Esize (gnat_entity)
-			   ? Esize (gnat_entity) : RM_Size (gnat_entity);
-	  gnu_size
-	    = validate_size (gnat_size, gnu_type, gnat_entity, TYPE_DECL,
-			     false, Has_Size_Clause (gnat_entity), NULL, NULL);
+	  if (Known_Esize (gnat_entity))
+	    gnu_size
+	      = validate_size (Esize (gnat_entity), gnu_type, gnat_entity,
+			       VAR_DECL, false, false, NULL, NULL);
+	  else
+	    gnu_size
+	      = validate_size (RM_Size (gnat_entity), gnu_type, gnat_entity,
+			       TYPE_DECL, false, Has_Size_Clause (gnat_entity),
+			       NULL, NULL);
 	}
 
       /* If a size was specified, see if we can make a new type of that size
@@ -8872,6 +8885,8 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
     gnat_error_node = Last_Bit (Component_Clause (gnat_object));
   else if (Present (Size_Clause (gnat_object)))
     gnat_error_node = Expression (Size_Clause (gnat_object));
+  else if (Has_Object_Size_Clause (gnat_object))
+    gnat_error_node = Expression (Object_Size_Clause (gnat_object));
   else
     gnat_error_node = gnat_object;
 

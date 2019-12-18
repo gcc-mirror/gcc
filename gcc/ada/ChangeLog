@@ -1,5 +1,16 @@
 2019-12-18  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* layout.adb (Layout_Type): In the case of composite types, do
+	not copy the Esize onto the RM_Size if the latter is not set.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>:
+	Also cap the alignment if an Object_Size clause has been
+	specified.  Pass VAR_DECL in the call to validate_size for the
+	Esize of a type.
+	(validate_size): Be prepared to give an error on an Object_Size
+	clause.
+
+2019-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* einfo.ads (Handling of Type'Size Value): Add references to the
 	introduction of Object_Size in Ada 2020.
 	* sem_eval.adb (Subtypes_Statically_Match): Likewise.
