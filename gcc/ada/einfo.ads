@@ -2667,7 +2667,7 @@ package Einfo is
 --       Applies to all entities. Yields True for abstract states, [generic]
 --       packages, [generic] subprograms, components, discriminants, formal
 --       parameters, objects, package bodies, subprogram bodies, and [sub]types
---       subject to pragma Ghost or those that inherit the Ghost propery from
+--       subject to pragma Ghost or those that inherit the Ghost property from
 --       an enclosing construct.
 
 --    Is_Hidden (Flag57)
