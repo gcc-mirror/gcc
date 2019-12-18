@@ -279,6 +279,7 @@ gomp_to_device_kind_p (int kind)
     case GOMP_MAP_ALLOC:
     case GOMP_MAP_FROM:
     case GOMP_MAP_FORCE_ALLOC:
+    case GOMP_MAP_FORCE_FROM:
     case GOMP_MAP_ALWAYS_FROM:
       return false;
     default:
