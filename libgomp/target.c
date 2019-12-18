@@ -1105,7 +1105,7 @@ gomp_map_vars_async (struct gomp_device_descr *devicep,
 				 sizes, kinds, short_mapkind, pragma_kind);
 }
 
-attribute_hidden void
+static void
 gomp_unmap_tgt (struct target_mem_desc *tgt)
 {
   /* Deallocate on target the tgt->tgt_start .. tgt->tgt_end region.  */
