@@ -493,18 +493,26 @@ acc_unmap_data (void *h)
 }
 
 
-/* Enter a dynamic mapping.
+/* Enter dynamic mappings.
 
-   Return the device pointer.  */
+   The handling for MAPNUM bigger than one is special handling for
+   'GOMP_MAP_POINTER', 'GOMP_MAP_TO_PSET'.  For these, only the first mapping
+   is considered in reference counting; the following ones implicitly follow
+   suit.
+
+   If there's just one mapping, return the device pointer.  */
 
 static void *
-goacc_enter_data (void *h, size_t s, unsigned short kind, int async)
+goacc_enter_data (size_t mapnum, void **hostaddrs, size_t *sizes, void *kinds,
+		  int async)
 {
   void *d;
   splay_tree_key n;
 
-  if (!h || !s)
-    gomp_fatal ("[%p,+%d] is a bad range", (void *)h, (int)s);
+  assert (mapnum > 0);
+  if (mapnum == 1
+      && (!hostaddrs[0] || !sizes[0]))
+    gomp_fatal ("[%p,+%d] is a bad range", hostaddrs[0], (int) sizes[0]);
 
   goacc_lazy_initialize ();
 
@@ -512,7 +520,12 @@ goacc_enter_data (void *h, size_t s, unsigned short kind, int async)
   struct gomp_device_descr *acc_dev = thr->dev;
 
   if (acc_dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
-    return h;
+    {
+      if (mapnum == 1)
+	return hostaddrs[0];
+      else
+	return /* n/a */ (void *) -1;
+    }
 
   acc_prof_info prof_info;
   acc_api_info api_info;
@@ -525,9 +538,13 @@ goacc_enter_data (void *h, size_t s, unsigned short kind, int async)
 
   gomp_mutex_lock (&acc_dev->lock);
 
-  n = lookup_host (acc_dev, h, s);
+  n = lookup_host (acc_dev, hostaddrs[0], sizes[0]);
   if (n)
     {
+      assert (mapnum == 1);
+      void *h = hostaddrs[0];
+      size_t s = sizes[0];
+
       /* Present. */
       d = (void *) (n->tgt->tgt_start + n->tgt_offset + h - n->host_start);
 
@@ -546,16 +563,13 @@ goacc_enter_data (void *h, size_t s, unsigned short kind, int async)
     }
   else
     {
-      struct target_mem_desc *tgt;
-      size_t mapnum = 1;
-      void *hostaddrs = h;
-
       gomp_mutex_unlock (&acc_dev->lock);
 
       goacc_aq aq = get_goacc_asyncqueue (async);
 
-      tgt = gomp_map_vars_async (acc_dev, aq, mapnum, &hostaddrs, NULL, &s,
-				 &kind, true, GOMP_MAP_VARS_ENTER_DATA);
+      struct target_mem_desc *tgt
+	= gomp_map_vars_async (acc_dev, aq, mapnum, hostaddrs, NULL, sizes,
+			       kinds, true, GOMP_MAP_VARS_ENTER_DATA);
       assert (tgt);
       n = tgt->list[0].key;
       assert (n->refcount == 1);
@@ -577,13 +591,15 @@ goacc_enter_data (void *h, size_t s, unsigned short kind, int async)
 void *
 acc_create (void *h, size_t s)
 {
-  return goacc_enter_data (h, s, GOMP_MAP_ALLOC, acc_async_sync);
+  unsigned short kinds[1] = { GOMP_MAP_ALLOC };
+  return goacc_enter_data (1, &h, &s, &kinds, acc_async_sync);
 }
 
 void
 acc_create_async (void *h, size_t s, int async)
 {
-  goacc_enter_data (h, s, GOMP_MAP_ALLOC, async);
+  unsigned short kinds[1] = { GOMP_MAP_ALLOC };
+  goacc_enter_data (1, &h, &s, &kinds, async);
 }
 
 /* acc_present_or_create used to be what acc_create is now.  */
@@ -608,13 +624,15 @@ acc_pcreate (void *h, size_t s)
 void *
 acc_copyin (void *h, size_t s)
 {
-  return goacc_enter_data (h, s, GOMP_MAP_TO, acc_async_sync);
+  unsigned short kinds[1] = { GOMP_MAP_TO };
+  return goacc_enter_data (1, &h, &s, &kinds, acc_async_sync);
 }
 
 void
 acc_copyin_async (void *h, size_t s, int async)
 {
-  goacc_enter_data (h, s, GOMP_MAP_TO, async);
+  unsigned short kinds[1] = { GOMP_MAP_TO };
+  goacc_enter_data (1, &h, &s, &kinds, async);
 }
 
 /* acc_present_or_copyin used to be what acc_copyin is now.  */
@@ -912,16 +930,7 @@ goacc_insert_pointer (size_t mapnum, void **hostaddrs, size_t *sizes,
       gomp_fatal ("Dynamic refcount incrementing failed for pointer/pset");
     }
 
-  gomp_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
-  goacc_aq aq = get_goacc_asyncqueue (async);
-  tgt = gomp_map_vars_async (acc_dev, aq, mapnum, hostaddrs,
-			     NULL, sizes, kinds, true, GOMP_MAP_VARS_ENTER_DATA);
-  assert (tgt);
-  splay_tree_key n = tgt->list[0].key;
-  assert (n->refcount == 1);
-  assert (n->dynamic_refcount == 0);
-  n->dynamic_refcount++;
-  gomp_debug (0, "  %s: mappings prepared\n", __FUNCTION__);
+  goacc_enter_data (mapnum, hostaddrs, sizes, kinds, async);
 }
 
 static void
@@ -1181,7 +1190,7 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
 		  break;
 		}
 
-	      goacc_enter_data (hostaddrs[i], sizes[i], kinds[i], async);
+	      goacc_enter_data (1, &hostaddrs[i], &sizes[i], &kinds[i], async);
 	    }
 	  else
 	    {

@@ -1,5 +1,9 @@
 2019-12-18  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* oacc-mem.c (goacc_enter_data): Refactor, so that it can be
+	called...
+	(goacc_insert_pointer): ... from here, "not present" case.
+
 	* oacc-mem.c (goacc_remove_pointer): Refactor interface.  Adjust
 	all users.
 
