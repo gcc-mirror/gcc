@@ -1,3 +1,9 @@
+2019-12-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/70853
+	* trans-expr.c (gfc_trans_pointer_assignment): Reject bounds
+	remapping if pointer target is NULL().
+
 2019-12-12  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/92898
