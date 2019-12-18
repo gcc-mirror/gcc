@@ -258,6 +258,9 @@ public:
   void get_surviving_params (vec<bool> *surviving_params);
   /* Fill a vector with new indices of surviving original parameters.  */
   void get_updated_indices (vec<int> *new_indices);
+  /* Return the original index for the given new parameter index.  Return a
+     negative number if not available.  */
+  int get_original_index (int newidx);
 
   void dump (FILE *f);
   void debug ();

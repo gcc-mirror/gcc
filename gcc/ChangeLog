@@ -1,3 +1,15 @@
+2019-12-17  Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-param-manipulation.h (get_original_index): Declare.
+	* ipa-param-manipulation.c (ipa_param_adjustments::get_original_index):
+	New member function.
+	* ipa-prop.c (ipcp_get_parm_bits): New function.
+	* ipa-prop.h (ipcp_get_parm_bits): Declare.
+	* tree-ssa-ccp.c: Include cgraph.h, alloc-pool.h, symbol-summary.h,
+	ipa-utils.h and ipa-prop.h
+	(get_default_value): Use ipcp_get_parm_bits.
+
 2019-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR lto/92972

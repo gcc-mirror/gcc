@@ -5480,6 +5480,43 @@ ipcp_modif_dom_walker::before_dom_children (basic_block bb)
   return NULL;
 }
 
+/* Return true if we have recorded VALUE and MASK about PARM.
+   Set VALUE and MASk accordingly.  */
+
+bool
+ipcp_get_parm_bits (tree parm, tree *value, widest_int *mask)
+{
+  cgraph_node *cnode = cgraph_node::get (current_function_decl);
+  ipcp_transformation *ts = ipcp_get_transformation_summary (cnode);
+  if (!ts || vec_safe_length (ts->bits) == 0)
+    return false;
+
+  int i = 0;
+  for (tree p = DECL_ARGUMENTS (current_function_decl);
+       p != parm; p = DECL_CHAIN (p))
+    {
+      i++;
+      /* Ignore static chain.  */
+      if (!p)
+	return false;
+    }
+
+  if (cnode->clone.param_adjustments)
+    {
+      i = cnode->clone.param_adjustments->get_original_index (i);
+      if (i < 0)
+	return false;
+    }
+
+  vec<ipa_bits *, va_gc> &bits = *ts->bits;
+  if (!bits[i])
+    return false;
+  *mask = bits[i]->mask;
+  *value = wide_int_to_tree (TREE_TYPE (parm), bits[i]->value);
+  return true;
+}
+
+
 /* Update bits info of formal parameters as described in
    ipcp_transformation.  */
 

@@ -1,3 +1,10 @@
+2019-12-17  Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/ipa-bit-cp.c: New testcase.
+	* gcc.dg/ipa/ipa-bit-cp-1.c: New testcase.
+	* gcc.dg/ipa/ipa-bit-cp-2.c: New testcase.
+
 2019-12-18  Andrew Stubbs  <ams@codesourcery.com>
 
 	* gcc.dg/vect/pr65947-8.c: Change pass conditions for amdgcn.
