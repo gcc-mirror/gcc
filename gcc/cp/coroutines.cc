@@ -2941,9 +2941,14 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	 a 'visited' hash_set.  */
       cp_walk_tree (&fnbody, register_param_uses, &param_data, NULL);
 
-      /* If no uses were seen, act as if there were no params.  */
+      /* If no uses for any param were seen, act as if there were no
+	 params (it could be that they are only used to construct the
+	 promise).  */
       if (!param_data.param_seen)
-	param_uses = NULL;
+	{
+	  delete param_uses;
+	  param_uses = NULL;
+	}
     }
 
   /* 4. Now make space for local vars, this is conservative again, and we
