@@ -16,7 +16,7 @@ __float128 foo(__float128 y)
 
 int main()
 {
-  __float128 v = foo (5.0L) - 20.0L;
-  if (v > 1.0e-5 || v < -1.0e-5) abort();
+  __float128 v = foo (5.0Q) - 20.0Q;
+  if (v > 1.0e-5Q || v < -1.0e-5Q) abort();
   return 0;
 }
