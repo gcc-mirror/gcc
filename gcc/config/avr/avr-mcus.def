@@ -23,7 +23,6 @@
 
    This will regenerate / update the following source files:
 
-   -  $(srcdir)/config/avr/t-multilib
    -  $(srcdir)/doc/avr-mmcu.texi
 
    After that, rebuild everything and check-in the new sources to the repo.
@@ -36,36 +35,37 @@
 
    Before including this file, define a macro:
 
-   AVR_MCU (NAME, ARCH, DEV_ATTRIBUTE, MACRO, DATA_SEC, N_FLASH)
+	AVR_MCU (NAME, ARCH, ATTR, MACRO, TDATA, TTEXT, FLASH_SIZE, PM_OFFSET)
 
    where the arguments are the fields of avr_mcu_t:
    
-       NAME          Name of the device as specified by -mmcu=<NAME>.  Also
-                     used by DRIVER_SELF_SPECS and gen-avr-mmcu-specs.c for
-                     - the name of the device specific specs file
-                       in -specs=device-specs/spec-<NAME>
-                     - the name of the startup file crt<NAME>.o
-                     - to link the device library by means of -l<NAME>
+	NAME	Name of the device as specified by -mmcu=<NAME>.  Also
+		used by DRIVER_SELF_SPECS and gen-avr-mmcu-specs.c for
+		- the name of the device specific specs file
+		  in -specs=device-specs/spec-<NAME>
+		- the name of the startup file crt<NAME>.o
+		- the name of the device library to be linked with -l<NAME>
 
-       ARCH          Specifies the multilib variant together with AVR_SHORT_SP
+	ARCH	Specifies the multilib variant together with AVR_SHORT_SP
 
-       DEV_ATTRIBUTE Specifies the device specific features
-                     - additional ISA, short SP, errata skip etc.,
+	ATTR	Specifies the device specific features
+		- additional ISA, short SP, errata skip etc.,
 
-       MACRO         If NULL, this is a core and not a device.  If non-NULL,
-                     supply respective built-in macro.
+	MACRO	If NULL, this is a core and not a device.  If non-NULL,
+		supply respective built-in macro.
 
-       DATA_START    First address of SRAM, used in  -Tdata=<DATA_START>.
+	TDATA	First address of SRAM, used in -Tdata=<DATA_START>.
 
-       TEXT_START    First address of Flash, used in -Ttext=<TEXT_START>.
+	TTEXT	First address of Flash, used in -Ttext=<TEXT_START>.
 
-       FLASH_SIZE    Flash size in bytes.
+	FLASH_SIZE
+		Flash size in bytes.
 
-       RODATA_PM_OFFSET
-		     Either 0x0 or the offset where flash memory is mirrored
-		     into the RAM address space accessible by LD and LDS.
-		     This is only needed if that value deviates from the
-		     value for the respective family.
+	PM_OFFSET
+		Either 0x0 or the offset where flash memory is mirrored
+		into the RAM address space accessible by LD, LDD and LDS.
+		This is only needed if that value deviates from the
+		value for the respective device family.
 
    "avr2" must be first for the "0" default to work as intended.  */
 
