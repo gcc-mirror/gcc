@@ -1,3 +1,12 @@
+2019-12-18  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64-cores.def: 
+	("cortex-a76ae"): Use neoversen1 tuning.
+	("cortex-a77"): Likewise.
+	("cortex-a65"): Use cortexa53 scheduler.
+	("cortex-a65ae"): Likewise.
+	("neoverse-e1"): Use cortexa73 tuning.
+
 2019-12-18  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/92971
