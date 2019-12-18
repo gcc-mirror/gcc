@@ -2,6 +2,12 @@
 
 	* oacc-mem.c (goacc_enter_data): Refactor, so that it can be
 	called...
+	(goacc_insert_pointer): ... from here, "present" case.
+	(goacc_insert_pointer): Inline function into...
+	(GOACC_enter_exit_data): ... here, and simplify.
+
+	* oacc-mem.c (goacc_enter_data): Refactor, so that it can be
+	called...
 	(goacc_insert_pointer): ... from here, "not present" case.
 
 	* oacc-mem.c (goacc_remove_pointer): Refactor interface.  Adjust

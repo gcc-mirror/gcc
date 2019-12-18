@@ -513,6 +513,9 @@ goacc_enter_data (size_t mapnum, void **hostaddrs, size_t *sizes, void *kinds,
   if (mapnum == 1
       && (!hostaddrs[0] || !sizes[0]))
     gomp_fatal ("[%p,+%d] is a bad range", hostaddrs[0], (int) sizes[0]);
+  else if (mapnum > 1
+	   && !hostaddrs[0])
+    return /* n/a */ (void *) -1;
 
   goacc_lazy_initialize ();
 
@@ -539,9 +542,8 @@ goacc_enter_data (size_t mapnum, void **hostaddrs, size_t *sizes, void *kinds,
   gomp_mutex_lock (&acc_dev->lock);
 
   n = lookup_host (acc_dev, hostaddrs[0], sizes[0]);
-  if (n)
+  if (n && mapnum == 1)
     {
-      assert (mapnum == 1);
       void *h = hostaddrs[0];
       size_t s = sizes[0];
 
@@ -560,6 +562,32 @@ goacc_enter_data (size_t mapnum, void **hostaddrs, size_t *sizes, void *kinds,
       n->dynamic_refcount++;
 
       gomp_mutex_unlock (&acc_dev->lock);
+    }
+  else if (n && mapnum > 1)
+    {
+      d = /* n/a */ (void *) -1;
+
+      assert (n->refcount != REFCOUNT_INFINITY
+	      && n->refcount != REFCOUNT_LINK);
+
+      bool processed = false;
+
+      struct target_mem_desc *tgt = n->tgt;
+      for (size_t i = 0; i < tgt->list_count; i++)
+	if (tgt->list[i].key == n)
+	  {
+	    for (size_t j = 0; j < mapnum; j++)
+	      if (i + j < tgt->list_count && tgt->list[i + j].key)
+		{
+		  tgt->list[i + j].key->refcount++;
+		  tgt->list[i + j].key->dynamic_refcount++;
+		}
+	    processed = true;
+	  }
+
+      gomp_mutex_unlock (&acc_dev->lock);
+      if (!processed)
+	gomp_fatal ("dynamic refcount incrementing failed for pointer/pset");
     }
   else
     {
@@ -895,45 +923,6 @@ acc_update_self_async (void *h, size_t s, int async)
    first mapping.  */
 
 static void
-goacc_insert_pointer (size_t mapnum, void **hostaddrs, size_t *sizes,
-		      void *kinds, int async)
-{
-  struct target_mem_desc *tgt;
-  struct goacc_thread *thr = goacc_thread ();
-  struct gomp_device_descr *acc_dev = thr->dev;
-
-  if (*hostaddrs == NULL)
-    return;
-
-  if (acc_is_present (*hostaddrs, *sizes))
-    {
-      splay_tree_key n;
-      gomp_mutex_lock (&acc_dev->lock);
-      n = lookup_host (acc_dev, *hostaddrs, *sizes);
-      assert (n->refcount != REFCOUNT_INFINITY
-	      && n->refcount != REFCOUNT_LINK);
-      gomp_mutex_unlock (&acc_dev->lock);
-
-      tgt = n->tgt;
-      for (size_t i = 0; i < tgt->list_count; i++)
-	if (tgt->list[i].key == n)
-	  {
-	    for (size_t j = 0; j < mapnum; j++)
-	      if (i + j < tgt->list_count && tgt->list[i + j].key)
-		{
-		  tgt->list[i + j].key->refcount++;
-		  tgt->list[i + j].key->dynamic_refcount++;
-		}
-	    return;
-	  }
-      /* Should not reach here.  */
-      gomp_fatal ("Dynamic refcount incrementing failed for pointer/pset");
-    }
-
-  goacc_enter_data (mapnum, hostaddrs, sizes, kinds, async);
-}
-
-static void
 goacc_remove_pointer (void *h, size_t s, unsigned short kind, int async)
 {
   kind &= 0xff;
@@ -1190,18 +1179,17 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
 		  break;
 		}
 
-	      goacc_enter_data (1, &hostaddrs[i], &sizes[i], &kinds[i], async);
+	      /* We actually have one mapping.  */
+	      pointer = 1;
 	    }
-	  else
-	    {
-	      goacc_insert_pointer (pointer, &hostaddrs[i], &sizes[i], &kinds[i],
-				    async);
-	      /* Increment 'i' by two because OpenACC requires fortran
-		 arrays to be contiguous, so each PSET is associated with
-		 one of MAP_FORCE_ALLOC/MAP_FORCE_PRESET/MAP_FORCE_TO, and
-		 one MAP_POINTER.  */
-	      i += pointer - 1;
-	    }
+
+	  goacc_enter_data (pointer, &hostaddrs[i], &sizes[i], &kinds[i],
+			    async);
+	  /* If applicable, increment 'i' further; OpenACC requires fortran
+	     arrays to be contiguous, so each PSET is associated with
+	     one of MAP_FORCE_ALLOC/MAP_FORCE_PRESET/MAP_FORCE_TO, and
+	     one MAP_POINTER.  */
+	  i += pointer - 1;
 	}
     }
   else
