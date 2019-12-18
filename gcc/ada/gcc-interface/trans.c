@@ -1975,7 +1975,21 @@ Pragma_to_gnu (Node_Id gnat_node)
 	        gnat_expr = Expression (Next (gnat_temp));
 	      }
 	    else
-	      gnat_expr = Empty;
+	      {
+		gnat_expr = Empty;
+
+		/* For pragma Warnings (Off), we save the current state...  */
+		if (kind == DK_IGNORED)
+		  diagnostic_push_diagnostics (global_dc, location);
+
+		/* ...so that, for pragma Warnings (On), we do not enable all
+		   the warnings but just restore the previous state.  */
+		else
+		  {
+		    diagnostic_pop_diagnostics (global_dc, location);
+		    break;
+		  }
+	      }
 
 	    imply = false;
 	  }
