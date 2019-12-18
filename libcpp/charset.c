@@ -2248,7 +2248,6 @@ _cpp_default_encoding (void)
 cpp_string_location_reader::
 cpp_string_location_reader (location_t src_loc,
 			    line_maps *line_table)
-: m_line_table (line_table)
 {
   src_loc = get_range_from_loc (line_table, src_loc).m_start;
 
