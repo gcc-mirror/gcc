@@ -507,7 +507,7 @@ expand_end_catch_block (void)
       && (DECL_CONSTRUCTOR_P (current_function_decl)
 	  || DECL_DESTRUCTOR_P (current_function_decl)))
     {
-      tree rethrow = build_throw (NULL_TREE);
+      tree rethrow = build_throw (input_location, NULL_TREE);
       TREE_NO_WARNING (rethrow) = true;
       finish_expr_stmt (rethrow);
     }
@@ -627,7 +627,7 @@ wrap_cleanups_r (tree *tp, int *walk_subtrees, void * /*data*/)
 /* Build a throw expression.  */
 
 tree
-build_throw (tree exp)
+build_throw (location_t loc, tree exp)
 {
   if (exp == error_mark_node)
     return exp;
@@ -637,12 +637,13 @@ build_throw (tree exp)
       if (cfun)
 	current_function_returns_abnormally = 1;
       exp = build_min (THROW_EXPR, void_type_node, exp);
-      SET_EXPR_LOCATION (exp, input_location);
+      SET_EXPR_LOCATION (exp, loc);
       return exp;
     }
 
   if (exp && null_node_p (exp))
-    warning (0, "throwing NULL, which has integral, not pointer type");
+    warning_at (loc, 0,
+		"throwing NULL, which has integral, not pointer type");
 
   if (exp != NULL_TREE)
     {
@@ -758,6 +759,7 @@ build_throw (tree exp)
 	{
 	  int flags = LOOKUP_NORMAL | LOOKUP_ONLYCONVERTING;
 	  bool converted = false;
+	  location_t exp_loc = cp_expr_loc_or_loc (exp, loc);
 
 	  /* Under C++0x [12.8/16 class.copy], a thrown lvalue is sometimes
 	     treated as an rvalue for the purposes of overload resolution
@@ -790,7 +792,7 @@ build_throw (tree exp)
 
 	  if (exp == error_mark_node)
 	    {
-	      error ("  in thrown expression");
+	      inform (exp_loc, "  in thrown expression");
 	      return error_mark_node;
 	    }
 	}
@@ -867,8 +869,7 @@ build_throw (tree exp)
       exp = cp_build_function_call_vec (rethrow_fn, NULL, tf_warning_or_error);
     }
 
-  exp = build1 (THROW_EXPR, void_type_node, exp);
-  SET_EXPR_LOCATION (exp, input_location);
+  exp = build1_loc (loc, THROW_EXPR, void_type_node, exp);
 
   return exp;
 }
@@ -948,8 +949,9 @@ is_admissible_throw_operand_or_catch_parameter (tree t, bool is_throw)
   else if (variably_modified_type_p (type, NULL_TREE))
     {
       if (is_throw)
-	error ("cannot throw expression of type %qT because it involves "
-	       "types of variable size", type);
+	error_at (cp_expr_loc_or_input_loc (expr),
+		  "cannot throw expression of type %qT because it involves "
+		  "types of variable size", type);
       else
 	error ("cannot catch type %qT because it involves types of "
 	       "variable size", type);
@@ -1319,24 +1321,6 @@ build_noexcept_spec (tree expr, tsubst_flags_t complain)
 	expr = strip_typedefs_expr (expr);
       return build_tree_list (expr, NULL_TREE);
     }
-}
-
-/* Returns a TRY_CATCH_EXPR that will put TRY_LIST and CATCH_LIST in the
-   TRY and CATCH locations.  CATCH_LIST must be a STATEMENT_LIST */
-
-tree
-create_try_catch_expr (tree try_expr, tree catch_list)
-{
-  location_t loc = EXPR_LOCATION (try_expr);
- 
-  append_to_statement_list (do_begin_catch (), &catch_list);
-  append_to_statement_list (build_throw (NULL_TREE), &catch_list);
-  tree catch_tf_expr = build_stmt (loc, TRY_FINALLY_EXPR, catch_list, 
-				   do_end_catch (NULL_TREE));
-  catch_list = build2 (CATCH_EXPR, void_type_node, NULL_TREE,
-		       catch_tf_expr);
-  tree try_catch_expr = build_stmt (loc, TRY_CATCH_EXPR, try_expr, catch_list);
-  return try_catch_expr;
 }
 
 #include "gt-cp-except.h"

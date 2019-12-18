@@ -1,3 +1,26 @@
+2019-12-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/alignof2.C: New.
+	* g++.dg/diagnostic/alignof3.C: Likewise.
+	* g++.dg/diagnostic/incomplete-type-1.C: Likewise.
+	* g++.dg/warn/Wcatch-value-3b.C: Likewise.
+	* g++.dg/cpp0x/alignof3.C: Check location(s) too.
+	* g++.dg/cpp1z/decomp-bitfield1.C: Likewise.
+	* g++.dg/cpp1z/has-unique-obj-representations2.C: Likewise.
+	* g++.dg/expr/sizeof3.C: Likewise.
+	* g++.dg/ext/flexary6.C: Likewise.
+	* g++.dg/ext/vla4.C: Likewise.
+	* g++.dg/template/sizeof11.C: Likewise.
+	* g++.dg/warn/Wcatch-value-1.C: Likewise.
+	* g++.dg/warn/Wcatch-value-2.C: Likewise.
+	* g++.dg/warn/Wcatch-value-3.C: Likewise.
+	* g++.old-deja/g++.brendan/sizeof1.C: Likewise.
+	* g++.old-deja/g++.brendan/sizeof3.C: Likewise.
+	* g++.old-deja/g++.brendan/sizeof4.C: Likewise.
+	* g++.old-deja/g++.eh/ctor1.C: Likewise.
+	* g++.old-deja/g++.jason/ambig1.C: Likewise.
+	* g++.old-deja/g++.other/sizeof4.C: Likewise.
+
 2019-12-18  Peter Bergner <bergner@linux.ibm.com>
 
 	PR bootstrap/92661

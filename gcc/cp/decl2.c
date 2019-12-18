@@ -698,7 +698,8 @@ check_classfn (tree ctype, tree function, tree template_parms)
   if (!matched)
     {
       if (!COMPLETE_TYPE_P (ctype))
-	cxx_incomplete_type_error (function, ctype);
+	cxx_incomplete_type_error (DECL_SOURCE_LOCATION (function),
+				   function, ctype);
       else
 	{
 	  if (DECL_CONV_FN_P (function))

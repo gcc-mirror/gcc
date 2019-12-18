@@ -8170,9 +8170,17 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	    /* Parse the operand.  */
 	    operand = cp_parser_sizeof_operand (parser, keyword);
 
+	    /* Construct a location e.g. :
+              alignof (expr)
+              ^~~~~~~~~~~~~~
+              with start == caret at the start of the "alignof"/"sizeof"
+              token, with the endpoint at the final closing paren.  */
+	    location_t compound_loc
+	      = make_location (start_loc, start_loc, parser->lexer);
+
 	    if (TYPE_P (operand))
-	      ret = cxx_sizeof_or_alignof_type (operand, op, std_alignof,
-						true);
+	      ret = cxx_sizeof_or_alignof_type (compound_loc, operand, op,
+						std_alignof, true);
 	    else
 	      {
 		/* ISO C++ defines alignof only with types, not with
@@ -8183,7 +8191,8 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 			   "ISO C++ does not allow %<alignof%> "
 			   "with a non-type");
 
-		ret = cxx_sizeof_or_alignof_expr (operand, op, true);
+		ret = cxx_sizeof_or_alignof_expr (compound_loc,
+						  operand, op, true);
 	      }
 	    /* For SIZEOF_EXPR, just issue diagnostics, but keep
 	       SIZEOF_EXPR with the original operand.  */
@@ -8202,19 +8211,11 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 		      ret = build_min (SIZEOF_EXPR, size_type_node, operand);
 		    TREE_SIDE_EFFECTS (ret) = 0;
 		    TREE_READONLY (ret) = 1;
+		    SET_EXPR_LOCATION (ret, compound_loc);
 		  }
 	      }
 
-	    /* Construct a location e.g. :
-	       alignof (expr)
-	       ^~~~~~~~~~~~~~
-	       with start == caret at the start of the "alignof"/"sizeof"
-	       token, with the endpoint at the final closing paren.  */
-	    location_t compound_loc
-	      = make_location (start_loc, start_loc, parser->lexer);
-
-	    cp_expr ret_expr (ret);
-	    ret_expr.set_location (compound_loc);
+	    cp_expr ret_expr (ret, compound_loc);
 	    ret_expr = ret_expr.maybe_add_location_wrapper ();
 	    return ret_expr;
 	  }
@@ -26066,8 +26067,7 @@ cp_parser_throw_expression (cp_parser* parser)
      the end at the end of the final token we consumed.  */
   location_t combined_loc = make_location (start_loc, start_loc,
 					   parser->lexer);
-  expression = build_throw (expression);
-  protected_set_expr_location (expression, combined_loc);
+  expression = build_throw (combined_loc, expression);
 
   return expression;
 }

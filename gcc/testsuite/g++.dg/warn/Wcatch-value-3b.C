@@ -8,32 +8,32 @@ struct D : C {};
 void foo()
 {
   try {}
-  catch (D)    {}  // { dg-warning "10:catching type" }
-  catch (C)    {}  // { dg-warning "10:catching type" }
-  catch (B)    {}  // { dg-warning "10:catching polymorphic type" }
-  catch (A)    {}  // { dg-warning "10:catching polymorphic type" }
-  catch (A*)   {}  // { dg-warning "catching non-reference type" }
-  catch (int)  {}  // { dg-warning "10:catching non-reference type" }
+  catch (D d)    {}  // { dg-warning "12:catching type" }
+  catch (C c)    {}  // { dg-warning "12:catching type" }
+  catch (B b)    {}  // { dg-warning "12:catching polymorphic type" }
+  catch (A a)    {}  // { dg-warning "12:catching polymorphic type" }
+  catch (A* a)   {}  // { dg-warning "13:catching non-reference type" }
+  catch (int i)  {}  // { dg-warning "14:catching non-reference type" }
 
   try {}
-  catch (D&)   {}
-  catch (C&)   {}
-  catch (B&)   {}
-  catch (A&)   {}
-  catch (A*)   {}  // { dg-warning "catching non-reference type" }
-  catch (int&) {}
+  catch (D& d)   {}
+  catch (C& c)   {}
+  catch (B& b)   {}
+  catch (A& a)   {}
+  catch (A* a)   {}  // { dg-warning "13:catching non-reference type" }
+  catch (int& i) {}
 }
 
 template<typename T> void foo1()
 {
   try {}
-  catch (T) {}  // { dg-warning "10:catching" }
+  catch (T t) {}  // { dg-warning "12:catching" }
 }
 
 template<typename T> void foo2()
 {
   try {}
-  catch (T*) {}  // { dg-warning "catching non-reference type" }
+  catch (T* t) {}  // { dg-warning "13:catching non-reference type" }
 
   try {}
   catch (T&) {}
