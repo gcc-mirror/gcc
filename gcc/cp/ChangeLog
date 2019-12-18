@@ -1,3 +1,31 @@
+2019-12-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (cxx_sizeof_or_alignof_type): Add location_t parameter
+	and use it throughout.
+	(cxx_sizeof_expr): Likewise.
+	(cxx_alignof_expr): Likewise.
+	(cxx_sizeof_or_alignof_expr): Likewise.
+	(cxx_alignas_expr): Update call.
+	* decl.c (fold_sizeof_expr): Likewise.
+	* pt.c (tsubst_copy): Likewise.
+	(tsubst_copy_and_build): Likewise.
+	* except.c (build_throw): Add location_t parameter and use it.
+	(expand_end_catch_block): Update call.
+	* parser.c (cp_parser_unary_expression): Update
+	cxx_sizeof_or_alignof_type and cxx_sizeof_or_alignof_expr calls,
+	pass the compound location.
+	(cp_parser_throw_expression): Likewise pass the combined location
+	to build_throw.
+	* cp-tree.h: Update declarations.
+
+	* semantics.c (finish_handler_parms): Use DECL_SOURCE_LOCATION.
+	* decl2.c (check_classfn): Likewise.
+
+	* except.c (is_admissible_throw_operand_or_catch_parameter):
+	Exploit cp_expr_loc_or_input_loc in one place.
+
+	* except.c (create_try_catch_expr): Remove, unused.
+
 2019-12-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/12333 - X::~X() with implicit this->.

@@ -6,7 +6,7 @@
 void f(int i) {
   try {
     int a[i];
-    throw &a; // { dg-error "int \\(\\*\\)\\\[i\\\]" }
+    throw &a; // { dg-error "11:cannot throw expression of type .int \\(\\*\\)\\\[i\\\]." }
   } catch (int (*)[i]) { // { dg-error "variable size" }
   }
 }
