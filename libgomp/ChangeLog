@@ -1,5 +1,8 @@
 2019-12-18  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* oacc-mem.c (goacc_remove_pointer): Refactor interface.  Adjust
+	all users.
+
 	* oacc-mem.c (GOACC_enter_exit_data): Refactor code to call
 	'goacc_enter_data', 'goacc_exit_data'.
 

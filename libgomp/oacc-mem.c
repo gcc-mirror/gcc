@@ -873,8 +873,8 @@ acc_update_self_async (void *h, size_t s, int async)
 /* Special handling for 'GOMP_MAP_POINTER', 'GOMP_MAP_TO_PSET'.
 
    Only the first mapping is considered in reference counting; the following
-   ones implicitly follow suit.  Similarly, 'copyout' ('force_copyfrom') is
-   done only for the first mapping.  */
+   ones implicitly follow suit.  Similarly, 'copyout' is done only for the
+   first mapping.  */
 
 static void
 goacc_insert_pointer (size_t mapnum, void **hostaddrs, size_t *sizes,
@@ -925,9 +925,10 @@ goacc_insert_pointer (size_t mapnum, void **hostaddrs, size_t *sizes,
 }
 
 static void
-goacc_remove_pointer (void *h, size_t s, bool force_copyfrom, int async,
-		      int finalize)
+goacc_remove_pointer (void *h, size_t s, unsigned short kind, int async)
 {
+  kind &= 0xff;
+
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
   splay_tree_key n;
@@ -958,6 +959,8 @@ goacc_remove_pointer (void *h, size_t s, bool force_copyfrom, int async,
       gomp_fatal ("Dynamic reference counting assert fail\n");
     }
 
+  bool finalize = (kind == GOMP_MAP_DELETE
+		   || kind == GOMP_MAP_FORCE_FROM);
   if (finalize)
     {
       n->refcount -= n->dynamic_refcount;
@@ -973,11 +976,12 @@ goacc_remove_pointer (void *h, size_t s, bool force_copyfrom, int async,
     {
       goacc_aq aq = get_goacc_asyncqueue (async);
 
-      if (force_copyfrom)
+      bool copyout = (kind == GOMP_MAP_FROM
+		      || kind == GOMP_MAP_FORCE_FROM);
+      if (copyout)
 	{
 	  void *d = (void *) (t->tgt_start + n->tgt_offset
 			      + (uintptr_t) h - n->host_start);
-
 	  gomp_copy_dev2host (acc_dev, aq, h, d, s);
 	}
 
@@ -1194,12 +1198,11 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
   else
     for (i = 0; i < mapnum; ++i)
       {
-	unsigned char kind = kinds[i] & 0xff;
-
 	int pointer = find_pointer (i, mapnum, kinds);
 
 	if (!pointer)
 	  {
+	    unsigned char kind = kinds[i] & 0xff;
 	    switch (kind)
 	      {
 	      case GOMP_MAP_RELEASE:
@@ -1217,12 +1220,7 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
 	  }
 	else
 	  {
-	    bool finalize = (kind == GOMP_MAP_DELETE
-			     || kind == GOMP_MAP_FORCE_FROM);
-	    bool copyfrom = (kind == GOMP_MAP_FORCE_FROM
-			     || kind == GOMP_MAP_FROM);
-	    goacc_remove_pointer (hostaddrs[i], sizes[i], copyfrom, async,
-				  finalize);
+	    goacc_remove_pointer (hostaddrs[i], sizes[i], kinds[i], async);
 	    /* See the above comment.  */
 	    i += pointer - 1;
 	  }
