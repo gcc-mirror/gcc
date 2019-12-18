@@ -2131,12 +2131,27 @@ package body Sem_Ch13 is
                      Aspect);
                end if;
 
-               --  Not allowed for formal type declarations
+               --  Not allowed for formal type declarations in previous
+               --  versions of the language. Allowed for them only for
+               --  shared variable control aspects.
 
                if Nkind (N) = N_Formal_Type_Declaration then
-                  Error_Msg_N
-                    ("aspect % not allowed for formal type declaration",
-                     Aspect);
+                  if Ada_Version < Ada_2020 then
+                     Error_Msg_N
+                       ("aspect % not allowed for formal type declaration",
+                        Aspect);
+
+                  elsif A_Id /= Aspect_Atomic
+                     and then A_Id /= Aspect_Volatile
+                     and then A_Id /= Aspect_Independent
+                     and then A_Id /= Aspect_Atomic_Components
+                     and then A_Id /= Aspect_Independent_Components
+                     and then A_Id /= Aspect_Volatile_Components
+                  then
+                     Error_Msg_N
+                       ("aspect % not allowed for formal type declaration",
+                        Aspect);
+                  end if;
                end if;
             end if;
 
@@ -12837,8 +12852,13 @@ package body Sem_Ch13 is
         and then (Nkind (N) /= N_Pragma
                    or else Get_Pragma_Id (N) /= Pragma_Convention)
       then
-         Error_Msg_N ("representation item not allowed for generic type", N);
-         return True;
+         if Ada_Version < Ada_2020 then
+            Error_Msg_N
+              ("representation item not allowed for generic type", N);
+            return True;
+         else
+            return False;
+         end if;
       end if;
 
       --  Otherwise check for incomplete type

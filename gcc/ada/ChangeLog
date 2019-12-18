@@ -1,3 +1,23 @@
+2019-12-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch12.adb (P_Formal_Derived_Type_Definition): In Ada_2020
+	the keyword WITH can indicate the start of aspect specifications
+	and not a private type extension.
+	* sem_ch12.adb (Analyze_Formal_Type): Indicate that it is a
+	first subtype.
+	(Instantiate_Type): New procedure
+	Check_Shared_Variable_Control_Aspects to verify matching rules
+	between formal and actual types. Note that an array type with
+	aspect Atomic_Components is considered compatible with an array
+	type whose component type is Atomic, even though the array types
+	do not carry the same aspect.
+	* sem_ch13.adb (Analyze_One_Aspect): Allow shared variable
+	control aspects to appear on formal types.
+	(Rep_Item_Too_Early): Exclude aspects on formal types.
+	* sem_prag.adb (Mark_Type): Handle properly pragmas that come
+	from aspects on formal types.
+	(Analyze_Pragma, case Atomic_Components): Handle formal types.
+
 2019-12-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cstand.adb (Create_Standard): Remove duplicate line and
