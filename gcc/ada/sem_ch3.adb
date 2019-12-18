@@ -15606,7 +15606,8 @@ package body Sem_Ch3 is
          Set_Derived_Name;
 
       --  Otherwise, the type is inheriting a private operation, so enter it
-      --  with a special name so it can't be overridden.
+      --  with a special name so it can't be overridden. See also below, where
+      --  we check for this case, and if so avoid setting Requires_Overriding.
 
       else
          Set_Chars (New_Subp, New_External_Name (Chars (Parent_Subp), 'P'));
@@ -15786,7 +15787,15 @@ package body Sem_Ch3 is
            or else Is_Abstract_Subprogram (Alias (New_Subp))
          then
             Set_Is_Abstract_Subprogram (New_Subp);
-         else
+
+         --  If the Chars of the new subprogram is different from that of the
+         --  parent's one, it means that we entered it with a special name so
+         --  it can't be overridden (see above). In that case we had better not
+         --  *require* it to be overridden. This is the case where the parent
+         --  type inherited the operation privately, so there's no danger of
+         --  dangling dispatching.
+
+         elsif Chars (New_Subp) = Chars (Alias (New_Subp)) then
             Set_Requires_Overriding (New_Subp);
          end if;
 
