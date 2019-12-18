@@ -912,7 +912,6 @@ class cpp_string_location_reader {
  private:
   location_t m_loc;
   int m_offset_per_column;
-  line_maps *m_line_table;
 };
 
 /* A class for storing the source ranges of all of the characters within
