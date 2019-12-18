@@ -694,69 +694,199 @@ package body Sem_Ch6 is
       R_Type : constant Entity_Id := Etype (Scope_Id);
       --  Function result subtype
 
-      procedure Check_Aggregate_Accessibility (Aggr : Node_Id);
-      --  Apply legality rule of 6.5 (5.8) to the access discriminants of an
+      procedure Check_Return_Obj_Accessibility (Return_Stmt : Node_Id);
+      --  Apply legality rule of 6.5 (5.9) to the access discriminants of an
       --  aggregate in a return statement.
 
       procedure Check_Return_Subtype_Indication (Obj_Decl : Node_Id);
       --  Check that the return_subtype_indication properly matches the result
       --  subtype of the function, as required by RM-6.5(5.1/2-5.3/2).
 
-      -----------------------------------
-      -- Check_Aggregate_Accessibility --
-      -----------------------------------
+      ------------------------------------
+      -- Check_Return_Obj_Accessibility --
+      ------------------------------------
 
-      procedure Check_Aggregate_Accessibility (Aggr : Node_Id) is
-         Typ   : constant Entity_Id := Etype (Aggr);
-         Assoc : Node_Id;
-         Discr : Entity_Id;
-         Expr  : Node_Id;
-         Obj   : Node_Id;
+      procedure Check_Return_Obj_Accessibility (Return_Stmt : Node_Id) is
+         Assoc         : Node_Id;
+         Agg           : Node_Id := Empty;
+         Discr         : Entity_Id;
+         Expr          : Node_Id;
+         Obj           : Node_Id;
+         Process_Exprs : Boolean := False;
+         Return_Obj    : Node_Id;
 
       begin
-         if Is_Record_Type (Typ) and then Has_Discriminants (Typ) then
-            Discr := First_Discriminant (Typ);
-            Assoc := First (Component_Associations (Aggr));
-            while Present (Discr) loop
-               if Ekind (Etype (Discr)) = E_Anonymous_Access_Type then
+         --  Only perform checks on record types with access discriminants
+
+         if not Is_Record_Type (R_Type)
+           or else not Has_Discriminants (R_Type)
+         then
+            return;
+         end if;
+
+         --  We are only interested in return statements
+
+         if not Nkind_In (Return_Stmt, N_Extended_Return_Statement,
+                                       N_Simple_Return_Statement)
+         then
+            return;
+         end if;
+
+         --  Fetch the object from the return statement, in the case of a
+         --  simple return statement the expression is part of the node.
+
+         if Nkind (Return_Stmt) = N_Extended_Return_Statement then
+            Return_Obj := Last (Return_Object_Declarations (Return_Stmt));
+
+            --  We could be looking at something that's been expanded with
+            --  an initialzation procedure which we can safely ignore.
+
+            if Nkind (Return_Obj) /= N_Object_Declaration then
+               return;
+            end if;
+         else
+            Return_Obj := Return_Stmt;
+         end if;
+
+         --  We may need to check an aggregate or a subtype indication
+         --  depending on how the discriminants were specified and whether
+         --  we are looking at an extended return statement.
+
+         if Nkind (Return_Obj) = N_Object_Declaration
+           and then Nkind (Object_Definition (Return_Obj))
+                      = N_Subtype_Indication
+         then
+            Assoc := First (Constraints
+                             (Constraint (Object_Definition (Return_Obj))));
+         else
+            --  Qualified expressions may be nested
+
+            Agg := Original_Node (Expression (Return_Obj));
+            while Nkind (Agg) = N_Qualified_Expression loop
+               Agg := Original_Node (Expression (Agg));
+            end loop;
+
+            --  If we are looking at an aggregate instead of a function call we
+            --  can continue checking accessibility for the supplied
+            --  discriminant associations.
+
+            if Nkind (Agg) = N_Aggregate then
+               if Present (Expressions (Agg)) then
+                  Assoc         := First (Expressions (Agg));
+                  Process_Exprs := True;
+               else
+                  Assoc := First (Component_Associations (Agg));
+               end if;
+
+            --  Otherwise the expression is not of interest ???
+
+            else
+               return;
+            end if;
+         end if;
+
+         --  Move through the discriminants checking the accessibility level
+         --  of each co-extension's associated expression.
+
+         Discr := First_Discriminant (R_Type);
+         while Present (Discr) loop
+            if Ekind (Etype (Discr)) = E_Anonymous_Access_Type then
+
+               if Nkind (Assoc) = N_Attribute_Reference then
+                  Expr := Assoc;
+               elsif Nkind_In (Assoc, N_Component_Association,
+                                      N_Discriminant_Association)
+               then
                   Expr := Expression (Assoc);
+               end if;
 
-                  if Nkind (Expr) = N_Attribute_Reference
-                    and then Attribute_Name (Expr) /= Name_Unrestricted_Access
-                  then
-                     Obj := Prefix (Expr);
-                     while Nkind_In (Obj, N_Indexed_Component,
-                                          N_Selected_Component)
-                     loop
-                        Obj := Prefix (Obj);
-                     end loop;
+               --  This anonymous access discriminant has an associated
+               --  expression which needs checking.
 
-                     --  Do not check aliased formals or function calls. A
-                     --  run-time check may still be needed ???
+               if Nkind (Expr) = N_Attribute_Reference
+                 and then Attribute_Name (Expr) /= Name_Unrestricted_Access
+               then
+                  --  Obtain the object to perform static checks on by moving
+                  --  up the prefixes in the expression taking into account
+                  --  named access types.
 
-                     if Is_Entity_Name (Obj)
-                       and then Comes_From_Source (Obj)
+                  Obj := Prefix (Expr);
+                  while Nkind_In (Obj, N_Indexed_Component,
+                                       N_Selected_Component)
+                  loop
+                     --  When we encounter a named access type then we can
+                     --  ignore accessibility checks on the dereference.
+
+                     if Ekind (Etype (Prefix (Obj)))
+                          in E_Access_Type ..
+                             E_Access_Protected_Subprogram_Type
                      then
-                        if Is_Formal (Entity (Obj))
-                           and then Is_Aliased (Entity (Obj))
-                        then
-                           null;
-
-                        elsif Object_Access_Level (Obj) >
-                                Scope_Depth (Scope (Scope_Id))
-                        then
-                           Error_Msg_N
-                             ("access discriminant in return aggregate would "
-                              & "be a dangling reference", Obj);
+                        if Nkind (Obj) = N_Selected_Component then
+                           Obj := Selector_Name (Obj);
                         end if;
+                        exit;
+                     end if;
+
+                     --  Skip over the explicit dereference
+
+                     if Nkind (Prefix (Obj)) = N_Explicit_Dereference then
+                        Obj := Prefix (Prefix (Obj));
+
+                     --  Otherwise move up to the next prefix
+
+                     else
+                        Obj := Prefix (Obj);
+                     end if;
+                  end loop;
+
+                  --  Do not check aliased formals or function calls. A
+                  --  run-time check may still be needed ???
+
+                  if Is_Entity_Name (Obj)
+                    and then Comes_From_Source (Obj)
+                  then
+                     --  Explicitly aliased formals are allowed
+
+                     if Is_Formal (Entity (Obj))
+                       and then Is_Aliased (Entity (Obj))
+                     then
+                        null;
+
+                     elsif Object_Access_Level (Obj) >
+                             Scope_Depth (Scope (Scope_Id))
+                     then
+                        Error_Msg_N
+                          ("access discriminant in return aggregate would "
+                           & "be a dangling reference", Obj);
                      end if;
                   end if;
                end if;
+            end if;
 
-               Next_Discriminant (Discr);
-            end loop;
-         end if;
-      end Check_Aggregate_Accessibility;
+            Next_Discriminant (Discr);
+
+            if not Is_List_Member (Assoc) then
+               Assoc := Empty;
+            else
+               Nlists.Next (Assoc);
+            end if;
+
+            --  After aggregate expressions, examine component associations if
+            --  present.
+
+            if No (Assoc) then
+               if Present (Agg)
+                 and then Process_Exprs
+                 and then Present (Component_Associations (Agg))
+               then
+                  Assoc         := First (Component_Associations (Agg));
+                  Process_Exprs := False;
+               else
+                  exit;
+               end if;
+            end if;
+         end loop;
+      end Check_Return_Obj_Accessibility;
 
       -------------------------------------
       -- Check_Return_Subtype_Indication --
@@ -963,9 +1093,7 @@ package body Sem_Ch6 is
             Resolve (Expr, R_Type);
             Check_Limited_Return (N, Expr, R_Type);
 
-            if Present (Expr) and then Nkind (Expr) = N_Aggregate then
-               Check_Aggregate_Accessibility (Expr);
-            end if;
+            Check_Return_Obj_Accessibility (N);
          end if;
 
          --  RETURN only allowed in SPARK as the last statement in function
@@ -1020,6 +1148,8 @@ package body Sem_Ch6 is
             Set_Referenced (Defining_Identifier (Obj_Decl));
 
             Check_References (Stm_Entity);
+
+            Check_Return_Obj_Accessibility (N);
 
             --  Check RM 6.5 (5.9/3)
 
