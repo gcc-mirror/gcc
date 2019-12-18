@@ -1,5 +1,8 @@
 2019-12-18  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* target.c (gomp_to_device_kind_p): Handle 'GOMP_MAP_FORCE_FROM'
+	like 'GOMP_MAP_FROM'.
+
 	PR libgomp/92726
 	PR libgomp/92970
 	PR libgomp/92984
