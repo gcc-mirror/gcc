@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "diagnostic.h"
+#include "diagnostic-metadata.h"
 #include "json.h"
 #include "selftest.h"
 
@@ -101,6 +102,20 @@ json_from_fixit_hint (const fixit_hint *hint)
   fixit_obj->set ("string", new json::string (hint->get_string ()));
 
   return fixit_obj;
+}
+
+/* Generate a JSON object for METADATA.  */
+
+static json::object *
+json_from_metadata (const diagnostic_metadata *metadata)
+{
+  json::object *metadata_obj = new json::object ();
+
+  if (metadata->get_cwe ())
+    metadata_obj->set ("cwe",
+		       new json::integer_number (metadata->get_cwe ()));
+
+  return metadata_obj;
 }
 
 /* No-op implementation of "begin_diagnostic" for JSON output.  */
@@ -211,6 +226,12 @@ json_end_diagnostic (diagnostic_context *context, diagnostic_info *diagnostic,
      TODO: functions
      TODO: inlining information
      TODO: macro expansion information.  */
+
+  if (diagnostic->metadata)
+    {
+      json::object *metadata_obj = json_from_metadata (diagnostic->metadata);
+      diag_obj->set ("metadata", metadata_obj);
+    }
 }
 
 /* No-op implementation of "begin_group_cb" for JSON output.  */
@@ -267,6 +288,9 @@ diagnostic_output_format_init (diagnostic_context *context,
 	context->begin_group_cb = json_begin_group;
 	context->end_group_cb =  json_end_group;
 	context->final_cb =  json_final_cb;
+
+	/* The metadata is handled in JSON format, rather than as text.  */
+	context->show_cwe = false;
 
 	/* The option is handled in JSON format, rather than as text.  */
 	context->show_option_requested = false;
