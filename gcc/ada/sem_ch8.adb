@@ -9607,15 +9607,16 @@ package body Sem_Ch8 is
                   Par : constant Entity_Id := Defining_Entity (Parent (Decl));
                   Spec : constant Node_Id  :=
                            Specification (Unit (Cunit (Current_Sem_Unit)));
-
+                  Cur_List : constant List_Id := List_Containing (Cur_Use);
                begin
                   if Is_Compilation_Unit (Par)
                     and then Par /= Cunit_Entity (Current_Sem_Unit)
-                    and then Parent (Cur_Use) = Spec
-                    and then List_Containing (Cur_Use) =
-                               Visible_Declarations (Spec)
                   then
-                     return;
+                     if Cur_List = Context_Items (Cunit (Current_Sem_Unit))
+                       or else Cur_List = Visible_Declarations (Spec)
+                     then
+                        return;
+                     end if;
                   end if;
                end;
             end if;
@@ -9629,7 +9630,6 @@ package body Sem_Ch8 is
          then
             Redundant := Clause;
             Prev_Use  := Cur_Use;
-
          end if;
 
          if Present (Redundant) and then Parent (Redundant) /= Prev_Use then
