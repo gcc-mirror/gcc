@@ -1,5 +1,8 @@
 2019-12-18  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* oacc-mem.c (present_create_copy): Refactor into...
+	(goacc_enter_data): ... this.  Adjust all users.
+
 	* target.c (gomp_unmap_vars_internal): Add a safeguard to
 	'gomp_remove_var'.
 
