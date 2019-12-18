@@ -5117,7 +5117,6 @@ cgraph_edge_brings_all_agg_vals_for_node (struct cgraph_edge *cs,
 
   for (i = 0; i < count; i++)
     {
-      static vec<ipa_agg_value> values = vNULL;
       class ipcp_param_lattices *plats;
       bool interesting = false;
       for (struct ipa_agg_replacement_value *av = aggval; av; av = av->next)
@@ -5133,7 +5132,7 @@ cgraph_edge_brings_all_agg_vals_for_node (struct cgraph_edge *cs,
       if (plats->aggs_bottom)
 	return false;
 
-      values = intersect_aggregates_with_edge (cs, i, values);
+      vec<ipa_agg_value> values = intersect_aggregates_with_edge (cs, i, vNULL);
       if (!values.exists ())
 	return false;
 
@@ -5157,6 +5156,7 @@ cgraph_edge_brings_all_agg_vals_for_node (struct cgraph_edge *cs,
 		return false;
 	      }
 	  }
+      values.release ();
     }
   return true;
 }
