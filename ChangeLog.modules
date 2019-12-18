@@ -1,3 +1,13 @@
+2019-12-18  Nathan Sidwell  <nathan@acm.org>
+
+	Installation of implicit member fns.
+	gcc/cp/
+	* module.cc (trees_in::install_implicit_member): New.
+	(trees_in::decl_value): Implicit member functions may be dups.
+	Call install_implicit_member.
+	gcc/testsuite/
+	* g++.dg/modules/imp-memner-1_[abcde].C: New.
+
 2019-12-17  Nathan Sidwell  <nathan@acm.org>
 
 	Out-of-class member function definitions

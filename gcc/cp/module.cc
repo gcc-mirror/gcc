@@ -2875,7 +2875,8 @@ public:
   bool read_definition (tree decl);
   
 private:
-  bool is_matching_decl (tree existing, tree node, tree inner);
+  static bool is_matching_decl (tree existing, tree node, tree inner);
+  static bool install_implicit_member (tree decl);
   bool read_function_def (tree decl, tree maybe_template);
   bool read_var_def (tree decl, tree maybe_template);
   bool read_class_def (tree decl, tree maybe_template);
@@ -7684,9 +7685,12 @@ trees_in::decl_value ()
 	      break;
 
 	    case TYPE_DECL:
-	      if (is_mod && !(state->is_primary () || state->is_partition ()))
-		// FIXME: This isn't right for implicitly declared
-		// member functions -- they can come from anywhere
+	      if (is_mod && !(state->is_primary () || state->is_partition ())
+		  /* Implicit member functions can come from
+		     anywhere.  */
+		  && !(DECL_ARTIFICIAL (decl)
+		       && TREE_CODE (decl) == FUNCTION_DECL
+		       && !DECL_THUNK_P (decl)))
 		kind = "unique";
 	      else if (COMPLETE_TYPE_P (TREE_TYPE (container)))
 		{
@@ -7876,6 +7880,26 @@ trees_in::decl_value ()
       if (inner_tag)
 	/* Set the TEMPLATE_DECL's type.  */
 	TREE_TYPE (decl) = TREE_TYPE (inner);
+
+      // FIXME: I am concerned we can get issues here where reading in
+      // this cluster caused us to read some other module's cluster
+      // that also instantiated this implicit member.  That loading
+      // will not have discovered this instance as we have not have
+      // inserted it yet.  If this is correct, then I think the
+      // solution is to preseed the imported decls needed by the
+      // cluster, before reading any trees of the cluster.  We know
+      // that set because they are in the dependencies of the depsets
+      // -- hey, horcruxes are back!
+      if (DECL_ARTIFICIAL (decl)
+	  && DECL_CONTEXT (decl) && TYPE_P (DECL_CONTEXT (decl))
+	  && TYPE_SIZE (DECL_CONTEXT (decl))
+	  && TREE_CODE (decl) == FUNCTION_DECL
+	  && !DECL_THUNK_P (decl))
+	/* A new implicit member function, when the class is
+	   complete.  This means the importee instantiated it, and
+	   we must now add it to the class.  */
+	if (!install_implicit_member (decl))
+	  set_overrun ();
     }
   else
     {
@@ -7925,7 +7949,6 @@ trees_in::decl_value ()
 
       if (is_new)
 	{
-	  gcc_checking_assert (!DECL_CHAIN (decl));
 	  bool cloned_p = flags & 1;
 	  dump (dumper::TREE) && dump ("CDTOR %N is %scloned",
 				       decl, cloned_p ? "" : "not ");
@@ -10040,6 +10063,72 @@ trees_in::is_matching_decl (tree existing, tree decl, tree inner)
     }
 
   // FIXME: Check default tmpl and fn parms here
+
+  return true;
+}
+
+/* FN is an implicit member function that we've discovered is new to
+   the class.  Add it to the TYPE_FIELDS chain and the method vector.
+   Reset the appropriate classtype lazy flag.   */
+
+bool
+trees_in::install_implicit_member (tree fn)
+{
+  tree ctx = DECL_CONTEXT (fn);
+  tree name = DECL_NAME (fn);
+  /* We know these are synthesized, so the set of expected prototypes
+     is quite restricted.  */
+  tree parm_type = FUNCTION_FIRST_USER_PARMTYPE (fn);
+  if (IDENTIFIER_CTOR_P (name))
+    {
+      if (CLASSTYPE_LAZY_DEFAULT_CTOR (ctx)
+	  && parm_type == void_list_node)
+	CLASSTYPE_LAZY_DEFAULT_CTOR (ctx) = false;
+      else if (!TYPE_REF_P (parm_type))
+	return false;
+      else if (CLASSTYPE_LAZY_COPY_CTOR (ctx)
+	       && !TYPE_REF_IS_RVALUE (parm_type))
+	CLASSTYPE_LAZY_COPY_CTOR (ctx) = false;
+      else if (CLASSTYPE_LAZY_MOVE_CTOR (ctx))
+	CLASSTYPE_LAZY_MOVE_CTOR (ctx) = false;
+      else
+	return false;
+    }
+  else if (IDENTIFIER_DTOR_P (name))
+    {
+      if (CLASSTYPE_LAZY_DESTRUCTOR (ctx))
+	CLASSTYPE_LAZY_DESTRUCTOR (ctx) = false;
+      else
+	return false;
+      if (DECL_VIRTUAL_P (fn))
+	/* A virtual dtor should have been created when the class
+	   became complete.  */
+	return false;
+    }
+  else if (name == assign_op_identifier)
+    {
+      if (!TYPE_REF_P (parm_type))
+	return false;
+      else if (CLASSTYPE_LAZY_COPY_ASSIGN (ctx)
+	       && !TYPE_REF_IS_RVALUE (parm_type))
+	CLASSTYPE_LAZY_COPY_ASSIGN (ctx) = false;
+      else if (CLASSTYPE_LAZY_MOVE_ASSIGN (ctx))
+	CLASSTYPE_LAZY_MOVE_ASSIGN (ctx) = false;
+      else
+	return false;
+    }
+  else
+    return false;
+
+  dump (dumper::MERGE) && dump ("Adding implicit member %N", fn);
+
+  DECL_CHAIN (fn) = TYPE_FIELDS (ctx);
+  TYPE_FIELDS (ctx) = fn;
+
+  add_method (ctx, fn, false);
+
+    /* Propagate TYPE_FIELDS.  */
+  fixup_type_variants (ctx);
 
   return true;
 }
@@ -14536,6 +14625,11 @@ module_state::write_pendings (elf_out *to, vec<depset *> depsets,
 	      key = TI_TEMPLATE (ti);
 	}
 
+      // FIXME: More than likely when there is one pending member,
+      // there will be others.  All written in the same section and
+      // keyed to the same class.  We only need to record one of
+      // them.  The same is not true for specializations
+
       if (key)
 	{
 	  gcc_checking_assert (!d->is_import ());
@@ -16609,6 +16703,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	    }
 
 	  /* Load all the entities of this partition.  */
+	  // FIXME: Perhaps do this when loading the partition itself?
+	  // hook into the no-lazy loading
 	  for (unsigned jx = 0; jx != imp->entity_num; jx++)
 	    {
 	      mc_slot *slot = &(*entity_ary)[imp->entity_lwm + jx];
