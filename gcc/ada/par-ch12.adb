@@ -971,9 +971,16 @@ package body Ch12 is
       end if;
 
       if Token = Tok_With then
-         Scan; -- past WITH
-         Set_Private_Present (Def_Node, True);
-         T_Private;
+
+         if Ada_Version >= Ada_2020 and Token /= Tok_Private then
+            --  Formal type has aspect specifications, parsed later.
+            return Def_Node;
+
+         else
+            Scan; -- past WITH
+            Set_Private_Present (Def_Node, True);
+            T_Private;
+         end if;
 
       elsif Token = Tok_Tagged then
          Scan;
