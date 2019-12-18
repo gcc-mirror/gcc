@@ -1,3 +1,8 @@
+2019-12-18  Javier Miranda  <miranda@adacore.com>
+
+	* debug.adb: Document -gnatd_K as a reserved switch for the
+	detection of known problem issues of previous releases.
+
 2019-12-18  Ghjuvan Lacambre  <lacambre@adacore.com>
 
 	* par-ch13.adb: Check if declarations allow aspect
