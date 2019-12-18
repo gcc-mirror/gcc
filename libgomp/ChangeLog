@@ -1,5 +1,25 @@
 2019-12-18  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR libgomp/92726
+	PR libgomp/92970
+	PR libgomp/92984
+	* oacc-mem.c (delete_copyout): No-op behavior if 'lookup_host'
+	fails.
+	(GOACC_enter_exit_data): Simplify accordingly.
+	* testsuite/libgomp.oacc-c-c++-common/pr92970-1.c: New file,
+	subsuming...
+	* testsuite/libgomp.oacc-c-c++-common/lib-17.c: ... this file...
+	* testsuite/libgomp.oacc-c-c++-common/lib-18.c: ..., and this
+	file.
+	* testsuite/libgomp.oacc-c-c++-common/pr92984-1.c: New file,
+	subsuming...
+	* testsuite/libgomp.oacc-c-c++-common/lib-21.c: ... this file...
+	* testsuite/libgomp.oacc-c-c++-common/lib-29.c: ..., and this
+	file.
+	* testsuite/libgomp.oacc-c-c++-common/pr92726-1.c: New file,
+	subsuming...
+	* testsuite/libgomp.oacc-c-c++-common/lib-28.c: ... this file.
+
 	* oacc-mem.c (GOACC_enter_exit_data): Simplify 'exit data'
 	'finalize' handling.
 
