@@ -1,3 +1,8 @@
+2019-12-18  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* par-ch13.adb: Check if declarations allow aspect
+	specifications.
+
 2019-12-18  Piotr Trojanek  <trojanek@adacore.com>
 
 	* einfo.ads (Is_Ghost_Entity): Fix typo in comment.
