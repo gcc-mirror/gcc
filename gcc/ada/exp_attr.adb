@@ -5246,7 +5246,7 @@ package body Exp_Attr is
                                 Rep_To_Pos_Flag (Ptyp, Loc))))));
 
             else
-               --  Add Boolean parameter True, to request program errror if
+               --  Add Boolean parameter True, to request program error if
                --  we have a bad representation on our hands. If checks are
                --  suppressed, then add False instead
 
@@ -6216,7 +6216,7 @@ package body Exp_Attr is
                                     Make_Integer_Literal (Loc, 1))),
                                 Rep_To_Pos_Flag (Ptyp, Loc))))));
             else
-               --  Add Boolean parameter True, to request program errror if
+               --  Add Boolean parameter True, to request program error if
                --  we have a bad representation on our hands. Add False if
                --  checks are suppressed.
 

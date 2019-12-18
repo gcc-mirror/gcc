@@ -676,7 +676,7 @@ package body Sem_Ch4 is
 
                --  In GNATprove mode we need to preserve the link between
                --  the original subtype indication and the anonymous subtype,
-               --  to extend proofs to constrained acccess types. We only do
+               --  to extend proofs to constrained access types. We only do
                --  that outside of spec expressions, otherwise the declaration
                --  cannot be inserted and analyzed. In such a case, GNATprove
                --  later rejects the allocator as it is not used here in

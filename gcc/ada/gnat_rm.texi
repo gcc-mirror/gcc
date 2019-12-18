@@ -2751,7 +2751,7 @@ pragma Postcondition (if C2 then Pred2);
 The precondition ensures that one and only one of the case guards is
 satisfied on entry to the subprogram.
 The postcondition ensures that for the case guard that was True on entry,
-the corrresponding consequence is True on exit. Other consequence expressions
+the corresponding consequence is True on exit. Other consequence expressions
 are not evaluated.
 
 A precondition @code{P} and postcondition @code{Q} can also be
@@ -28804,7 +28804,7 @@ this kind of implementation dependent addition.
 The functionality provided by pragma @code{Task_Info} is now part of the
 Ada language. The @code{CPU} aspect and the package
 @code{System.Multiprocessors} offer a less system-dependent way to specify
-task affinity or to query the number of processsors.
+task affinity or to query the number of processors.
 
 Syntax
 

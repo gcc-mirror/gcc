@@ -1564,7 +1564,7 @@ int __gl_heap_size = 64;
    operation, drivide by zero, and overflow. This will prevent the VMS runtime
    (specifically OTS$CHECK_FP_MODE) from complaining about inconsistent
    floating point settings in a mixed language program. Ideally the setting
-   would be determined at link time based on setttings in the object files,
+   would be determined at link time based on settings in the object files,
    however the VMS linker seems to take the setting from the first object
    in the link, e.g. pcrt0.o which is float representation neutral.  */
 char __gl_float_format = 'I';
