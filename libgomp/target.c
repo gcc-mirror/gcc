@@ -707,6 +707,21 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	{
 	  tgt->list[i].key = NULL;
 
+	  if ((kind & typemask) == GOMP_MAP_IF_PRESENT)
+	    {
+	      /* Not present, hence, skip entry - including its MAP_POINTER,
+		 when existing.  */
+	      tgt->list[i].offset = 0;
+	      if (i + 1 < mapnum
+		  && ((typemask & get_kind (short_mapkind, kinds, i + 1))
+		      == GOMP_MAP_POINTER))
+		{
+		  ++i;
+		  tgt->list[i].key = NULL;
+		  tgt->list[i].offset = 0;
+		}
+	      continue;
+	    }
 	  size_t align = (size_t) 1 << (kind >> rshift);
 	  not_found_cnt++;
 	  if (tgt_align < align)
@@ -892,6 +907,14 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 				    sizeof (void *), cbufp);
 		cur_node.tgt_offset = n->tgt->tgt_start + n->tgt_offset
 				      + cur_node.host_start - n->host_start;
+		continue;
+	      case GOMP_MAP_IF_PRESENT:
+		/* Not present - otherwise handled above. Skip over its
+		   MAP_POINTER as well.  */
+		if (i + 1 < mapnum
+		    && ((typemask & get_kind (short_mapkind, kinds, i + 1))
+			== GOMP_MAP_POINTER))
+		  ++i;
 		continue;
 	      default:
 		break;

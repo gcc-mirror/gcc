@@ -111,6 +111,27 @@ contains
   !$acc end data
 
 
+  !$acc parallel no_create (tip) ! { dg-error "POINTER" }
+  !$acc end parallel
+  !$acc parallel no_create (tia) ! { dg-error "ALLOCATABLE" }
+  !$acc end parallel
+  !$acc parallel deviceptr (i) no_create (i) ! { dg-error "multiple clauses" }
+  !$acc end parallel
+  !$acc parallel copy (i) no_create (i) ! { dg-error "multiple clauses" }
+  !$acc end parallel
+  !$acc parallel copyin (i) no_create (i) ! { dg-error "multiple clauses" }
+  !$acc end parallel
+  !$acc parallel copyout (i) no_create (i) ! { dg-error "multiple clauses" }
+  !$acc end parallel
+
+  !$acc parallel no_create (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
+  !$acc end parallel
+  !$acc kernels no_create (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
+  !$acc end kernels
+  !$acc data no_create (i, c, r, ia, ca, ra, asa, rp, ti, vi, aa)
+  !$acc end data
+
+
   !$acc parallel present (tip) ! { dg-error "POINTER" }
   !$acc end parallel
   !$acc parallel present (tia) ! { dg-error "ALLOCATABLE" }
