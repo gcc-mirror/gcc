@@ -1,5 +1,17 @@
 2019-12-18  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR libgomp/92848
+	* oacc-mem.c (acc_map_data, present_create_copy)
+	(goacc_insert_pointer): Use 'GOMP_MAP_VARS_ENTER_DATA'.
+	(acc_unmap_data, delete_copyout, goacc_remove_pointer): Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/lib-50.c: Remove.
+	* testsuite/libgomp.oacc-c-c++-common/pr92848-1-d-a.c: New file
+	* testsuite/libgomp.oacc-c-c++-common/pr92848-1-d-p.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pr92848-1-r-a.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pr92848-1-r-p.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/subset-subarray-mappings-1-r-p.c:
+	Remove "XFAIL"s.
+
 	* target.c (gomp_unmap_tgt): Make it 'static'.
 	* libgomp.h (gomp_unmap_tgt): Remove.
 

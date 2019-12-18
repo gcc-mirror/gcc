@@ -403,7 +403,8 @@ acc_map_data (void *h, void *d, size_t s)
       gomp_mutex_unlock (&acc_dev->lock);
 
       tgt = gomp_map_vars (acc_dev, mapnum, &hostaddrs, &devaddrs, &sizes,
-			   &kinds, true, GOMP_MAP_VARS_OPENACC);
+			   &kinds, true, GOMP_MAP_VARS_ENTER_DATA);
+      assert (tgt);
       splay_tree_key n = tgt->list[0].key;
       assert (n->refcount == 1);
       assert (n->dynamic_refcount == 0);
@@ -468,23 +469,21 @@ acc_unmap_data (void *h)
 		  (void *) h, (int) host_size);
     }
 
-  /* Mark for removal.  */
-  n->refcount = 1;
-
   t = n->tgt;
 
-  if (t->refcount == 2)
+  if (t->refcount == 1)
     {
       /* This is the last reference, so pull the descriptor off the
-         chain. This avoids gomp_unmap_vars via gomp_unmap_tgt from
+         chain.  This prevents 'gomp_unmap_tgt' via 'gomp_remove_var' from
          freeing the device memory. */
       t->tgt_end = 0;
       t->to_free = 0;
     }
 
-  gomp_mutex_unlock (&acc_dev->lock);
+  bool is_tgt_unmapped = gomp_remove_var (acc_dev, n);
+  assert (is_tgt_unmapped);
 
-  gomp_unmap_vars (t, true);
+  gomp_mutex_unlock (&acc_dev->lock);
 
   if (profiling_p)
     {
@@ -572,7 +571,8 @@ present_create_copy (unsigned f, void *h, size_t s, int async)
       goacc_aq aq = get_goacc_asyncqueue (async);
 
       tgt = gomp_map_vars_async (acc_dev, aq, mapnum, &hostaddrs, NULL, &s,
-				 &kinds, true, GOMP_MAP_VARS_OPENACC);
+				 &kinds, true, GOMP_MAP_VARS_ENTER_DATA);
+      assert (tgt);
       n = tgt->list[0].key;
       assert (n->refcount == 1);
       assert (n->dynamic_refcount == 0);
@@ -727,7 +727,18 @@ delete_copyout (unsigned f, void *h, size_t s, int async, const char *libfnname)
 			      + (uintptr_t) h - n->host_start);
 	  gomp_copy_dev2host (acc_dev, aq, h, d, s);
 	}
-      gomp_remove_var_async (acc_dev, n, aq);
+
+      if (aq)
+	/* TODO We can't do the 'is_tgt_unmapped' checking -- see the
+	   'gomp_unref_tgt' comment in
+	   <http://mid.mail-archive.com/878snl36eu.fsf@euler.schwinge.homeip.net>;
+	   PR92881.  */
+	gomp_remove_var_async (acc_dev, n, aq);
+      else
+	{
+	  bool is_tgt_unmapped = gomp_remove_var (acc_dev, n);
+	  assert (is_tgt_unmapped);
+	}
     }
 
   gomp_mutex_unlock (&acc_dev->lock);
@@ -877,7 +888,8 @@ acc_update_self_async (void *h, size_t s, int async)
 /* Special handling for 'GOMP_MAP_POINTER', 'GOMP_MAP_TO_PSET'.
 
    Only the first mapping is considered in reference counting; the following
-   ones implicitly follow suit.  */
+   ones implicitly follow suit.  Similarly, 'copyout' ('force_copyfrom') is
+   done only for the first mapping.  */
 
 static void
 goacc_insert_pointer (size_t mapnum, void **hostaddrs, size_t *sizes,
@@ -918,7 +930,8 @@ goacc_insert_pointer (size_t mapnum, void **hostaddrs, size_t *sizes,
   gomp_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
   goacc_aq aq = get_goacc_asyncqueue (async);
   tgt = gomp_map_vars_async (acc_dev, aq, mapnum, hostaddrs,
-			     NULL, sizes, kinds, true, GOMP_MAP_VARS_OPENACC);
+			     NULL, sizes, kinds, true, GOMP_MAP_VARS_ENTER_DATA);
+  assert (tgt);
   splay_tree_key n = tgt->list[0].key;
   assert (n->refcount == 1);
   assert (n->dynamic_refcount == 0);
@@ -928,13 +941,12 @@ goacc_insert_pointer (size_t mapnum, void **hostaddrs, size_t *sizes,
 
 static void
 goacc_remove_pointer (void *h, size_t s, bool force_copyfrom, int async,
-		      int finalize, int mapnum)
+		      int finalize)
 {
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
   splay_tree_key n;
   struct target_mem_desc *t;
-  int minrefs = (mapnum == 1) ? 2 : 3;
 
   if (!acc_is_present (h, s))
     return;
@@ -972,28 +984,40 @@ goacc_remove_pointer (void *h, size_t s, bool force_copyfrom, int async,
       n->dynamic_refcount--;
     }
 
-  gomp_mutex_unlock (&acc_dev->lock);
-
   if (n->refcount == 0)
     {
-      /* Set refcount to 1 to allow gomp_unmap_vars to unmap it.  */
-      n->refcount = 1;
-      t->refcount = minrefs;
-      for (size_t i = 0; i < t->list_count; i++)
-	if (t->list[i].key == n)
-	  {
-	    t->list[i].copy_from = force_copyfrom ? 1 : 0;
-	    break;
-	  }
+      goacc_aq aq = get_goacc_asyncqueue (async);
 
-      /* If running synchronously, unmap immediately.  */
-      if (async < acc_async_noval)
-	gomp_unmap_vars (t, true);
-      else
+      if (force_copyfrom)
 	{
-	  goacc_aq aq = get_goacc_asyncqueue (async);
-	  gomp_unmap_vars_async (t, true, aq);
+	  void *d = (void *) (t->tgt_start + n->tgt_offset
+			      + (uintptr_t) h - n->host_start);
+
+	  gomp_copy_dev2host (acc_dev, aq, h, d, s);
 	}
+
+      if (aq)
+	{
+	  /* TODO The way the following code is currently implemented, we need
+	     the 'is_tgt_unmapped' return value from 'gomp_remove_var', so
+	     can't use 'gomp_remove_var_async' here -- see the 'gomp_unref_tgt'
+	     comment in
+	     <http://mid.mail-archive.com/878snl36eu.fsf@euler.schwinge.homeip.net>;
+	     PR92881 -- so have to synchronize here.  */
+	  if (!acc_dev->openacc.async.synchronize_func (aq))
+	    {
+	      gomp_mutex_unlock (&acc_dev->lock);
+	      gomp_fatal ("synchronize failed");
+	    }
+	}
+      bool is_tgt_unmapped = false;
+      for (size_t i = 0; i < t->list_count; i++)
+	{
+	  is_tgt_unmapped = gomp_remove_var (acc_dev, t->list[i].key);
+	  if (is_tgt_unmapped)
+	    break;
+	}
+      assert (is_tgt_unmapped);
     }
 
   gomp_mutex_unlock (&acc_dev->lock);
@@ -1234,7 +1258,7 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
 	    bool copyfrom = (kind == GOMP_MAP_FORCE_FROM
 			     || kind == GOMP_MAP_FROM);
 	    goacc_remove_pointer (hostaddrs[i], sizes[i], copyfrom, async,
-				  finalize, pointer);
+				  finalize);
 	    /* See the above comment.  */
 	    i += pointer - 1;
 	  }
