@@ -1,3 +1,97 @@
+2019-12-18  Peter Bergner <bergner@linux.ibm.com>
+
+	PR bootstrap/92661
+	* gcc.target/powerpc/pr92661.c: New test.
+	* gcc.target/powerpc/dfp-dd.c: Add dg-require-effective-target hard_dfp.
+	Remove unneeded powerpc_fprs test.
+	* gcc.target/powerpc/dfp-td.c: Likewise.
+	* gcc.target/powerpc/dfp-dd-2.c: Add dg-require-effective-target dfp.
+	* gcc.target/powerpc/dfp-td-2.c: Likewise.
+	* gcc.target/powerpc/dfp-td-3.c: Likewise.
+	* gcc.target/powerpc/dfp/dfp.exp: Remove rs6000-*-* and
+	powerpc*-*-darwin* target tests.  Add check_effective_target_dfp test.
+	* gcc.target/powerpc/dfp/dtstsfi-0.c: Remove unneeded target test.
+	Remove unneeded dg-skip-if.
+	* gcc.target/powerpc/dfp/dtstsfi-1.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-10.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-11.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-12.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-13.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-14.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-15.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-16.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-17.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-18.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-19.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-2.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-20.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-21.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-22.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-23.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-24.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-25.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-26.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-27.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-28.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-29.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-3.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-30.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-31.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-32.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-33.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-34.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-35.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-36.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-37.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-38.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-39.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-4.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-40.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-41.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-42.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-43.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-44.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-45.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-46.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-47.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-48.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-49.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-5.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-50.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-51.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-52.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-53.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-54.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-55.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-56.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-57.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-58.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-59.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-6.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-60.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-61.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-62.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-63.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-64.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-65.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-66.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-67.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-68.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-69.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-7.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-70.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-71.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-72.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-73.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-74.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-75.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-76.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-77.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-78.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-79.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-8.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-9.c: Likewise.
+
 2019-12-18  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-c++-common/goacc/finalize-1.c: Extend.
