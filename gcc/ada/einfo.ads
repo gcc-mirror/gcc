@@ -132,19 +132,23 @@ package Einfo is
 --  default size of objects, creates chaos, and major incompatibilities in
 --  existing code.
 
+--  The Ada 2020 RM acknowledges it and adopts GNAT's Object_Size attribute
+--  for determining the default size of objects, but stops short of applying
+--  it universally like GNAT. Indeed the notable exceptions are nonaliased
+--  stand-alone objects, which are not covered by Object_Size in Ada 2020.
+
 --  We proceed as follows, for discrete and fixed-point subtypes, we have
 --  two separate sizes for each subtype:
 
 --    The Object_Size, which is used for determining the default size of
 --    objects and components. This size value can be referred to using the
 --    Object_Size attribute. The phrase "is used" here means that it is
---    the basis of the determination of the size. The backend is free to
+--    the basis of the determination of the size. The back end is free to
 --    pad this up if necessary for efficiency, e.g. an 8-bit stand-alone
 --    character might be stored in 32 bits on a machine with no efficient
 --    byte access instructions such as the Alpha.
 
---    The default rules for the value of Object_Size for fixed-point and
---    discrete types are as follows:
+--    The default rules for the value of Object_Size are as follows:
 
 --       The Object_Size for base subtypes reflect the natural hardware
 --       size in bits (see Ttypes and Cstand for integer types). For
@@ -158,9 +162,11 @@ package Einfo is
 --       base type, and the Object_Size of a derived first subtype is copied
 --       from the parent first subtype.
 
---    The Value_Size which is the number of bits required to store a value
+--    The Ada 2020 RM defined attribute Object_Size uses this implementation.
+
+--    The Value_Size, which is the number of bits required to store a value
 --    of the type. This size can be referred to using the Value_Size
---    attribute. This value is used to determine how tightly to pack
+--    attribute. This value is used for determining how tightly to pack
 --    records or arrays with components of this type, and also affects
 --    the semantics of unchecked conversion (unchecked conversions where
 --    the Value_Size values differ generate a warning, and are potentially
@@ -182,7 +188,7 @@ package Einfo is
 --       dynamic bounds, it is assumed that the value can range down or up
 --       to the corresponding bound of the ancestor.
 
---    The RM defined attribute Size corresponds to the Value_Size attribute.
+--    The Ada 95 RM defined attribute Size is identified with Value_Size.
 
 --    The Size attribute may be defined for a first-named subtype. This sets
 --    the Value_Size of the first-named subtype to the given value, and the
@@ -194,14 +200,15 @@ package Einfo is
 --    subtypes. The Value_Size of any other static subtypes is not affected.
 
 --    Value_Size and Object_Size may be explicitly set for any subtype using
---    an attribute definition clause. Note that the use of these attributes
---    can cause the RM 13.1(14) rule to be violated. If two access types
---    reference aliased objects whose subtypes have differing Object_Size
---    values as a result of explicit attribute definition clauses, then it
---    is erroneous to convert from one access subtype to the other.
+--    an attribute definition clause. Note that the use of such a clause can
+--    cause the RM 13.1(14) rule to be violated, in Ada 95 and 2020 for the
+--    Value_Size attribute, but only in Ada 95 for the Object_Size attribute.
+--    If access types reference aliased objects whose subtypes have differing
+--    Object_Size values as a result of explicit attribute definition clauses,
+--    then it is erroneous to convert from one access subtype to the other.
 
---    At the implementation level, Esize stores the Object_Size and the
---    RM_Size field stores the Value_Size (and hence the value of the
+--    At the implementation level, the Esize field stores the Object_Size
+--    and the RM_Size field stores the Value_Size (hence the value of the
 --    Size attribute, which, as noted above, is equivalent to Value_Size).
 
 --  To get a feel for the difference, consider the following examples (note
