@@ -1,3 +1,7 @@
+2019-12-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/vect/pr65947-8.c: Change pass conditions for amdgcn.
+
 2019-12-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/warn32.adb: New test.
