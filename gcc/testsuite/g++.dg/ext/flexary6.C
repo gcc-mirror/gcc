@@ -9,7 +9,7 @@ struct A {
   int n;
   int a[];
   enum {
-    e = sizeof a   // { dg-error "invalid application of .sizeof. to incomplete type" }
+    e = sizeof a   // { dg-error "9:invalid application of .sizeof. to incomplete type" }
   };
 };
 
@@ -18,6 +18,6 @@ struct B {
   typedef int A[];
   A a;
   enum {
-    e = sizeof a   // { dg-error "invalid application of .sizeof. to incomplete type" }
+    e = sizeof a   // { dg-error "9:invalid application of .sizeof. to incomplete type" }
   };
 };

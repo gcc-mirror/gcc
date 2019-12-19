@@ -397,10 +397,10 @@ package body Ch10 is
                or else Token in Token_Class_Deckn
             then
                Push_Scope_Stack;
-               Scope.Table (Scope.Last).Etyp := E_Name;
-               Scope.Table (Scope.Last).Sloc := SIS_Sloc;
-               Scope.Table (Scope.Last).Ecol := SIS_Ecol;
-               Scope.Table (Scope.Last).Lreq := False;
+               Scopes (Scope.Last).Etyp := E_Name;
+               Scopes (Scope.Last).Sloc := SIS_Sloc;
+               Scopes (Scope.Last).Ecol := SIS_Ecol;
+               Scopes (Scope.Last).Lreq := False;
                SIS_Entry_Active := False;
 
                --  If we had a missing semicolon in the declaration, then

@@ -1,3 +1,10 @@
+2019-12-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* libcp1plugin.cc (plugin_build_unary_expr): Update build_throw
+	and cxx_sizeof_or_alignof_expr calls.
+	(plugin_build_unary_type_expr): Likewise for
+	cxx_sizeof_or_alignof_type.
+
 2019-12-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* libcp1plugin.cc (plugin_build_cast_expr): Adjust build_cast

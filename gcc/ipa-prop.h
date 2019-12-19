@@ -1041,6 +1041,7 @@ ipa_agg_value_set ipa_agg_value_set_from_jfunc (ipa_node_params *,
 void ipa_dump_param (FILE *, class ipa_node_params *info, int i);
 void ipa_release_body_info (struct ipa_func_body_info *);
 tree ipa_get_callee_param_type (struct cgraph_edge *e, int i);
+bool ipcp_get_parm_bits (tree, tree *, widest_int *);
 
 /* From tree-sra.c:  */
 tree build_ref_for_offset (location_t, tree, poly_int64, bool, tree,

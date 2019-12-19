@@ -204,7 +204,7 @@ package body System.Val_Real is
 
          if Digit < 0 then
             if Digit = Underscore and Index + 1 <= Max then
-               --  Underscore is only alllowed if followed by a digit
+               --  Underscore is only allowed if followed by a digit
                Digit := As_Digit (Str (Index + 1));
                if Digit in Valid_Digit then
                   Index := Index + 1;

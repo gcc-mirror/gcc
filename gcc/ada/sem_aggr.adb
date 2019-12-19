@@ -602,6 +602,7 @@ package body Sem_Aggr is
       Set_Etype                  (Itype, Base_Type             (Typ));
       Set_Has_Alignment_Clause   (Itype, Has_Alignment_Clause  (Typ));
       Set_Is_Aliased             (Itype, Is_Aliased            (Typ));
+      Set_Is_Independent         (Itype, Is_Independent        (Typ));
       Set_Depends_On_Private     (Itype, Depends_On_Private    (Typ));
 
       Copy_Suppress_Status (Index_Check,  Typ, Itype);

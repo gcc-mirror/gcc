@@ -2797,7 +2797,7 @@ plugin_build_unary_expr (cc1_plugin::connection *self,
       break;
 
     case THROW_EXPR:
-      result = build_throw (op0);
+      result = build_throw (input_location, op0);
       break;
 
     case TYPEID_EXPR:
@@ -2806,7 +2806,8 @@ plugin_build_unary_expr (cc1_plugin::connection *self,
 
     case SIZEOF_EXPR:
     case ALIGNOF_EXPR:
-      result = cxx_sizeof_or_alignof_expr (op0, opcode, true);
+      result = cxx_sizeof_or_alignof_expr (input_location,
+					   op0, opcode, true);
       break;
 
     case DELETE_EXPR:
@@ -3048,7 +3049,8 @@ plugin_build_unary_type_expr (cc1_plugin::connection *self,
 
     default:
       /* Use the C++11 alignof semantics.  */
-      result = cxx_sizeof_or_alignof_type (type, opcode, true, true);
+      result = cxx_sizeof_or_alignof_type (input_location, type,
+					   opcode, true, true);
     }
 
   if (template_dependent_p)

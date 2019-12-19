@@ -1837,6 +1837,11 @@ package Sinfo is
    --      Refined_State
    --      Test_Case
 
+   --  Is_Homogeneous_Aggregate (Flag14)
+   --    A flag set on an Ada2020 aggregate that uses square brackets as
+   --    delimiters, and thus denotes an array or container aggregate, or
+   --    the prefix of a reduction attribute.
+
    --  Is_Ignored (Flag9-Sem)
    --    A flag set in an N_Aspect_Specification or N_Pragma node if there was
    --    a Check_Policy or Assertion_Policy (or in the case of a Debug_Pragma)
@@ -4163,6 +4168,7 @@ package Sinfo is
       --  Compile_Time_Known_Aggregate (Flag18-Sem)
       --  Expansion_Delayed (Flag11-Sem)
       --  Has_Self_Reference (Flag13-Sem)
+      --  Is_Homogeneous_Aggregate (Flag14)
       --  plus fields for expression
 
       --  Note: this structure is used for both record and array aggregates
@@ -9855,6 +9861,9 @@ package Sinfo is
    function Is_Generic_Contract_Pragma
      (N : Node_Id) return Boolean;    -- Flag2
 
+   function Is_Homogeneous_Aggregate
+     (N : Node_Id) return Boolean;    -- Flag14
+
    function Is_Ignored
      (N : Node_Id) return Boolean;    -- Flag9
 
@@ -10966,6 +10975,9 @@ package Sinfo is
 
    procedure Set_Is_Generic_Contract_Pragma
      (N : Node_Id; Val : Boolean := True);    -- Flag2
+
+   procedure Set_Is_Homogeneous_Aggregate
+     (N : Node_Id; Val : Boolean := True);    -- Flag14
 
    procedure Set_Is_Ignored
      (N : Node_Id; Val : Boolean := True);    -- Flag9
@@ -13521,6 +13533,7 @@ package Sinfo is
    pragma Inline (Is_Finalization_Wrapper);
    pragma Inline (Is_Folded_In_Parser);
    pragma Inline (Is_Generic_Contract_Pragma);
+   pragma Inline (Is_Homogeneous_Aggregate);
    pragma Inline (Is_Ignored);
    pragma Inline (Is_Ignored_Ghost_Pragma);
    pragma Inline (Is_In_Discriminant_Check);
@@ -13887,6 +13900,7 @@ package Sinfo is
    pragma Inline (Set_Is_Finalization_Wrapper);
    pragma Inline (Set_Is_Folded_In_Parser);
    pragma Inline (Set_Is_Generic_Contract_Pragma);
+   pragma Inline (Set_Is_Homogeneous_Aggregate);
    pragma Inline (Set_Is_Ignored);
    pragma Inline (Set_Is_Ignored_Ghost_Pragma);
    pragma Inline (Set_Is_In_Discriminant_Check);

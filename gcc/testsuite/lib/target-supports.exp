@@ -6974,7 +6974,8 @@ proc check_effective_target_vect_logical_reduc { } {
 # Return 1 if the target supports the fold_extract_last optab.
 
 proc check_effective_target_vect_fold_extract_last { } {
-    return [check_effective_target_aarch64_sve]
+    return [expr { [check_effective_target_aarch64_sve]
+		   || [istarget amdgcn*-*-*] }]
 }
 
 # Return 1 if the target supports section-anchors

@@ -1334,6 +1334,10 @@ fdiagnostics-show-option
 Common Var(flag_diagnostics_show_option) Init(1)
 Amend appropriate diagnostic messages with the command line option that controls them.
 
+fdiagnostics-show-cwe
+Common Var(flag_diagnostics_show_cwe) Init(1)
+Print CWE identifiers for diagnostic messages, where available.
+
 fdiagnostics-minimum-margin-width=
 Common Joined UInteger Var(diagnostics_minimum_margin_width) Init(6)
 Set minimum width of left margin of source code when showing source.

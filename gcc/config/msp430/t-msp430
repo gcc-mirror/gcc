@@ -24,7 +24,7 @@ driver-msp430.o: $(srcdir)/config/msp430/driver-msp430.c \
 
 msp430-devices.o: $(srcdir)/config/msp430/msp430-devices.c \
 	$(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) -DTARGET_SUBDIR=$(target_subdir) $(INCLUDES) $<
 
 # Enable multilibs:
 

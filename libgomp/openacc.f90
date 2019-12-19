@@ -27,6 +27,8 @@
 !  see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 !  <http://www.gnu.org/licenses/>.
 
+! Keep in sync with config/accel/openacc.f90 and openacc_lib.h.
+
 module openacc_kinds
   use iso_fortran_env, only: int32
   implicit none
@@ -34,7 +36,7 @@ module openacc_kinds
   public
   private :: int32
 
-  ! When adding items, also update 'public' setting in 'module openmp' below.
+  ! When adding items, also update 'public' setting in 'module openacc' below.
 
   integer, parameter :: acc_device_kind = int32
 
@@ -52,7 +54,7 @@ module openacc_kinds
   ! Keep in sync with include/gomp-constants.h.
   integer (acc_handle_kind), parameter :: acc_async_noval = -1
   integer (acc_handle_kind), parameter :: acc_async_sync = -2
-end module
+end module openacc_kinds
 
 module openacc_internal
   use openacc_kinds
@@ -704,7 +706,7 @@ module openacc_internal
       integer (c_int), value :: async
     end subroutine
   end interface
-end module
+end module openacc_internal
 
 module openacc
   use openacc_kinds
@@ -712,6 +714,7 @@ module openacc
   implicit none
 
   private
+
   ! From openacc_kinds
   public :: acc_device_kind, acc_handle_kind
   public :: acc_device_none, acc_device_default, acc_device_host
@@ -933,7 +936,7 @@ module openacc
     procedure :: acc_update_self_async_array_h
   end interface
 
-end module
+end module openacc
 
 function acc_get_num_devices_h (d)
   use openacc_internal, only: acc_get_num_devices_l

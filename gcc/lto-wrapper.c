@@ -408,7 +408,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
   /* Merge PIC options:
       -fPIC + -fpic = -fpic
       -fPIC + -fno-pic = -fno-pic
-      -fpic/-fPIC + nothin = nothing.  
+      -fpic/-fPIC + nothing = nothing.
      It is a common mistake to mix few -fPIC compiled objects into otherwise
      non-PIC code.  We do not want to build everything with PIC then.
 
@@ -438,9 +438,10 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 			   && pie_option->opt_index == OPT_fPIE;
 	        (*decoded_options)[j].opt_index = big ? OPT_fPIE : OPT_fpie;
 		if (pie_option->value)
-	          (*decoded_options)[j].canonical_option[0] = big ? "-fPIE" : "-fpie";
+	          (*decoded_options)[j].canonical_option[0]
+		    = big ? "-fPIE" : "-fpie";
 		else
-	          (*decoded_options)[j].canonical_option[0] = big ? "-fno-pie" : "-fno-pie";
+	          (*decoded_options)[j].canonical_option[0] = "-fno-pie";
 		(*decoded_options)[j].value = pie_option->value;
 	        j++;
 	      }
@@ -482,7 +483,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 		  {
 	            (*decoded_options)[j].opt_index = OPT_fpie;
 	            (*decoded_options)[j].canonical_option[0]
-			 = pic_option->value ? "-fpie" : "-fno-pie";
+		      = pic_option->value ? "-fpie" : "-fno-pie";
 		  }
 		else if (!pic_option->value)
 		  (*decoded_options)[j].canonical_option[0] = "-fno-pie";

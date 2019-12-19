@@ -4715,7 +4715,7 @@ package body Sem_Res is
                end if;
             end if;
 
-            --  Check bad case of atomic/volatile argument (RM C.6(12))
+            --  Check illegal cases of atomic/volatile actual (RM C.6(12,13))
 
             if (Is_By_Reference_Type (Etype (F)) or else Is_Aliased (F))
               and then Comes_From_Source (N)
@@ -4724,14 +4724,30 @@ package body Sem_Res is
                  and then not Is_Atomic (Etype (F))
                then
                   Error_Msg_NE
-                    ("cannot pass atomic argument to non-atomic formal&",
+                    ("cannot pass atomic object to nonatomic formal&",
                      A, F);
+                  Error_Msg_N
+                    ("\which is passed by reference (RM C.6(12))", A);
 
                elsif Is_Volatile_Object (A)
                  and then not Is_Volatile (Etype (F))
                then
                   Error_Msg_NE
-                    ("cannot pass volatile argument to non-volatile formal&",
+                    ("cannot pass volatile object to nonvolatile formal&",
+                     A, F);
+                  Error_Msg_N
+                    ("\which is passed by reference (RM C.6(12))", A);
+               end if;
+
+               if Ada_Version >= Ada_2020
+                 and then Is_Subcomponent_Of_Atomic_Object (A)
+                 and then not Is_Atomic_Object (A)
+               then
+                  Error_Msg_N
+                    ("cannot pass nonatomic subcomponent of atomic object",
+                     A);
+                  Error_Msg_NE
+                    ("\to formal & which is passed by reference (RM C.6(13))",
                      A, F);
                end if;
             end if;
@@ -6659,7 +6675,9 @@ package body Sem_Res is
                   --  checkable, the case of calling an immediately containing
                   --  subprogram is easy to catch.
 
-                  Check_Restriction (No_Recursion, N);
+                  if not Is_Ignored_Ghost_Entity (Nam) then
+                     Check_Restriction (No_Recursion, N);
+                  end if;
 
                   --  If the recursive call is to a parameterless subprogram,
                   --  then even if we can't statically detect infinite
@@ -6804,9 +6822,13 @@ package body Sem_Res is
       then
          null;
 
+      --  A return statement from an ignored Ghost function does not use the
+      --  secondary stack (or any other one).
+
       elsif Expander_Active
         and then Ekind_In (Nam, E_Function, E_Subprogram_Type)
         and then Requires_Transient_Scope (Etype (Nam))
+        and then not Is_Ignored_Ghost_Entity (Nam)
       then
          Establish_Transient_Scope (N, Manage_Sec_Stack => True);
 
@@ -11805,18 +11827,45 @@ package body Sem_Res is
                Set_Etype (Expression (N), Opnd);
             end if;
 
+            --  It seems that Non_Limited_View should also be applied for
+            --  Target when it has a limited view, but that leads to missing
+            --  error checks on interface conversions further below. ???
+
             if Is_Access_Type (Opnd) then
                Opnd := Designated_Type (Opnd);
+
+               --  If the type of the operand is a limited view, use nonlimited
+               --  view when available. If it is a class-wide type, recover the
+               --  class-wide type of the nonlimited view.
+
+               if From_Limited_With (Opnd)
+                 and then Has_Non_Limited_View (Opnd)
+               then
+                  Opnd := Non_Limited_View (Opnd);
+               end if;
             end if;
 
             if Is_Access_Type (Target_Typ) then
                Target := Designated_Type (Target);
+
+               --  If the target type is a limited view, use nonlimited view
+               --  when available.
+
+               if From_Limited_With (Target)
+                 and then Has_Non_Limited_View (Target)
+               then
+                  Target := Non_Limited_View (Target);
+               end if;
             end if;
 
             if Opnd = Target then
                null;
 
             --  Conversion from interface type
+
+            --  It seems that it would be better for the error checks below
+            --  to be performed as part of Validate_Conversion (and maybe some
+            --  of the error checks above could be moved as well?). ???
 
             elsif Is_Interface (Opnd) then
 

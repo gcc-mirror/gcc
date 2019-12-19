@@ -36,6 +36,7 @@ with Ada.Unchecked_Conversion;
 package System.Tasking.Task_Attributes is
 
    type Deallocator is access procedure (Ptr : Atomic_Address);
+   pragma Favor_Top_Level (Deallocator);
 
    type Attribute_Record is record
       Free : Deallocator;

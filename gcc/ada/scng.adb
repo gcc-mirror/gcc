@@ -182,6 +182,7 @@ package body Scng is
             | Tok_Integer_Literal
             | Tok_Interface
             | Tok_Is
+            | Tok_Left_Bracket
             | Tok_Left_Paren
             | Tok_Less
             | Tok_Less_Equal
@@ -204,6 +205,7 @@ package body Scng is
             | Tok_Rem
             | Tok_Renames
             | Tok_Reverse
+            | Tok_Right_Bracket
             | Tok_Right_Paren
             | Tok_Slash
             | Tok_String_Literal
@@ -324,6 +326,7 @@ package body Scng is
             | Tok_In
             | Tok_Integer_Literal
             | Tok_Is
+            | Tok_Left_Bracket
             | Tok_Left_Paren
             | Tok_Less
             | Tok_Less_Equal
@@ -340,6 +343,7 @@ package body Scng is
             | Tok_Range
             | Tok_Real_Literal
             | Tok_Rem
+            | Tok_Right_Bracket
             | Tok_Right_Paren
             | Tok_Slash
             | Tok_String_Literal
@@ -1697,6 +1701,11 @@ package body Scng is
             if Source (Scan_Ptr + 1) = '"' then
                goto Scan_Wide_Character;
 
+            elsif Ada_Version = Ada_2020 then
+               Scan_Ptr := Scan_Ptr + 1;
+               Token := Tok_Left_Bracket;
+               return;
+
             else
                Error_Msg_S ("illegal character, replaced by ""(""");
                Scan_Ptr := Scan_Ptr + 1;
@@ -2063,6 +2072,7 @@ package body Scng is
               or else Prev_Token = Tok_Identifier
               or else Prev_Token = Tok_Project
               or else Prev_Token = Tok_Right_Paren
+              or else Prev_Token = Tok_Right_Bracket
               or else Prev_Token in Token_Class_Literal
             then
                Token := Tok_Apostrophe;
@@ -2172,11 +2182,18 @@ package body Scng is
             return;
 
          --  Right bracket or right brace, treated as right paren
+         --  but proper aggregate delimiter in Ada_2020
 
          when ']' | '}' =>
-            Error_Msg_S ("illegal character, replaced by "")""");
+            if Ada_Version >= Ada_2020 then
+               Token := Tok_Right_Bracket;
+
+            else
+               Error_Msg_S ("illegal character, replaced by "")""");
+               Token := Tok_Right_Paren;
+            end if;
+
             Scan_Ptr := Scan_Ptr + 1;
-            Token := Tok_Right_Paren;
             return;
 
          --  Slash (can be division operator or first character of not equal)

@@ -2977,20 +2977,14 @@ redeclaration_error_message (tree newdecl, tree olddecl)
     {
       tree nt, ot;
 
-      if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == TYPE_DECL)
-	{
-	  if (COMPLETE_TYPE_P (TREE_TYPE (newdecl))
-	      && COMPLETE_TYPE_P (TREE_TYPE (olddecl)))
-	    return G_("redefinition of %q#D");
-	  return NULL;
-	}
-
       if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == CONCEPT_DECL)
         return G_("redefinition of %q#D");
 
-      if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) != FUNCTION_DECL
-	  || (DECL_TEMPLATE_RESULT (newdecl)
-	      == DECL_TEMPLATE_RESULT (olddecl)))
+      if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) != FUNCTION_DECL)
+	return redeclaration_error_message (DECL_TEMPLATE_RESULT (newdecl),
+					    DECL_TEMPLATE_RESULT (olddecl));
+
+      if (DECL_TEMPLATE_RESULT (newdecl) == DECL_TEMPLATE_RESULT (olddecl))
 	return NULL;
 
       nt = DECL_TEMPLATE_RESULT (newdecl);
@@ -10225,13 +10219,16 @@ fold_sizeof_expr (tree t)
 {
   tree r;
   if (SIZEOF_EXPR_TYPE_P (t))
-    r = cxx_sizeof_or_alignof_type (TREE_TYPE (TREE_OPERAND (t, 0)),
+    r = cxx_sizeof_or_alignof_type (EXPR_LOCATION (t),
+				    TREE_TYPE (TREE_OPERAND (t, 0)),
 				    SIZEOF_EXPR, false, false);
   else if (TYPE_P (TREE_OPERAND (t, 0)))
-    r = cxx_sizeof_or_alignof_type (TREE_OPERAND (t, 0), SIZEOF_EXPR,
+    r = cxx_sizeof_or_alignof_type (EXPR_LOCATION (t),
+				    TREE_OPERAND (t, 0), SIZEOF_EXPR,
 				    false, false);
   else
-    r = cxx_sizeof_or_alignof_expr (TREE_OPERAND (t, 0), SIZEOF_EXPR,
+    r = cxx_sizeof_or_alignof_expr (EXPR_LOCATION (t),
+				    TREE_OPERAND (t, 0), SIZEOF_EXPR,
 				    false);
   if (r == error_mark_node)
     r = size_one_node;

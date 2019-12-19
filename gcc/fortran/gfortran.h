@@ -1192,6 +1192,7 @@ enum gfc_omp_depend_op
 enum gfc_omp_map_op
 {
   OMP_MAP_ALLOC,
+  OMP_MAP_IF_PRESENT,
   OMP_MAP_TO,
   OMP_MAP_FROM,
   OMP_MAP_TOFROM,

@@ -39,6 +39,9 @@ program test
   !$acc data pcopyout(/blockA/, /blockB/, e, v, a) ! { dg-error "Symbol .a. present on multiple clauses" }
   !$acc end data
 
+  !$acc data no_create(/blockA/, /blockB/, e, v, a) ! { dg-error "Symbol .a. present on multiple clauses" }
+  !$acc end data
+
   !$acc parallel private(/blockA/, /blockB/, e, v, a) ! { dg-error "Symbol .a. present on multiple clauses" }
   !$acc end parallel
 

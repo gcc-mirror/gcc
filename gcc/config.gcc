@@ -2624,7 +2624,7 @@ mn10300-*-*)
 	use_collect2=no
 	use_gcc_stdint=wrap
 	;;
-msp430*-*-*)
+msp430-*-*)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
 	c_target_objs="msp430-c.o"
 	cxx_target_objs="msp430-c.o"
@@ -2637,6 +2637,18 @@ msp430*-*-*)
 	if test x${disable_initfini_array} != xyes; then
 		gcc_cv_initfini_array=yes
 	fi
+	case ${target} in
+	  msp430-*-elfbare)
+	    # __cxa_atexit increases code size, and we don't need to support
+	    # dynamic shared objects on MSP430, so regular Newlib atexit is a
+	    # fine replacement as it also supports registration of more than 32
+	    # functions.
+	    default_use_cxa_atexit=no
+	    # This target does not match the generic *-*-elf case above which
+	    # sets use_gcc_stdint=wrap, so explicitly set it here.
+	    use_gcc_stdint=wrap
+	    ;;
+	esac
 	;;
 nds32*-*-*)
 	target_cpu_default="0"

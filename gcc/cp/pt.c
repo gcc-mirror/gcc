@@ -10640,7 +10640,12 @@ push_tinst_level_loc (tree tldcl, tree targs, location_t loc)
      anything else.  Do allow deduction substitution and decls usable in
      constant expressions.  */
   if (!targs && limit_bad_template_recursion (tldcl))
-    return false;
+    {
+      /* Avoid no_linkage_errors and unused function warnings for this
+	 decl.  */
+      TREE_NO_WARNING (tldcl) = 1;
+      return false;
+    }
 
   /* When not -quiet, dump template instantiations other than functions, since
      announce_function will take care of those.  */
@@ -16395,11 +16400,13 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		expanded = make_argument_pack (expanded);
 
 	      if (TYPE_P (expanded))
-		return cxx_sizeof_or_alignof_type (expanded, SIZEOF_EXPR,
+		return cxx_sizeof_or_alignof_type (input_location,
+						   expanded, SIZEOF_EXPR,
 						   false,
 						   complain & tf_error);
 	      else
-		return cxx_sizeof_or_alignof_expr (expanded, SIZEOF_EXPR,
+		return cxx_sizeof_or_alignof_expr (input_location,
+						   expanded, SIZEOF_EXPR,
                                                    complain & tf_error);
 	    }
 	  else
@@ -19189,10 +19196,12 @@ tsubst_copy_and_build (tree t,
 	    --c_inhibit_evaluation_warnings;
 	  }
         if (TYPE_P (op1))
-	  r = cxx_sizeof_or_alignof_type (op1, TREE_CODE (t), std_alignof,
+	  r = cxx_sizeof_or_alignof_type (input_location,
+					  op1, TREE_CODE (t), std_alignof,
 					  complain & tf_error);
 	else
-	  r = cxx_sizeof_or_alignof_expr (op1, TREE_CODE (t),
+	  r = cxx_sizeof_or_alignof_expr (input_location,
+					  op1, TREE_CODE (t),
 					  complain & tf_error);
 	if (TREE_CODE (t) == SIZEOF_EXPR && r != error_mark_node)
 	  {
@@ -19954,7 +19963,7 @@ tsubst_copy_and_build (tree t,
 
     case THROW_EXPR:
       RETURN (build_throw
-	(RECUR (TREE_OPERAND (t, 0))));
+       (input_location, RECUR (TREE_OPERAND (t, 0))));
 
     case CONSTRUCTOR:
       {

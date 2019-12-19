@@ -75,6 +75,8 @@ enum gomp_map_kind
     GOMP_MAP_DEVICE_RESIDENT =		(GOMP_MAP_FLAG_SPECIAL_1 | 1),
     /* OpenACC link.  */
     GOMP_MAP_LINK =			(GOMP_MAP_FLAG_SPECIAL_1 | 2),
+    /* Use device data if present, fall back to host address otherwise.  */
+    GOMP_MAP_IF_PRESENT =			(GOMP_MAP_FLAG_SPECIAL_1 | 3),
     /* Do not map, copy bits for firstprivate instead.  */
     GOMP_MAP_FIRSTPRIVATE =		(GOMP_MAP_FLAG_SPECIAL | 0),
     /* Similarly, but store the value in the pointer rather than

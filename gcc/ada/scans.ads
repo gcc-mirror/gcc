@@ -87,11 +87,15 @@ package Scans is
       --  exception-name". This degrades error recovery slightly, and perhaps
       --  we could do better, but not worth the effort.
 
+      --  Ada2020 introduces square brackets as delimiters for array and
+      --  container aggregates.
+
       Tok_Raise,           -- RAISE
 
       Tok_Dot,             -- .            Namext
       Tok_Apostrophe,      -- '            Namext
 
+      Tok_Left_Bracket,    -- [            Namest
       Tok_Left_Paren,      -- (            Namext, Consk
 
       Tok_Delta,           -- DELTA        Atkwd, Sterm, Consk
@@ -99,6 +103,7 @@ package Scans is
       Tok_Range,           -- RANGE        Atkwd, Sterm, Consk
 
       Tok_Right_Paren,     -- )            Sterm
+      Tok_Right_Bracket,   -- ]            Sterm
       Tok_Comma,           -- ,            Sterm
 
       Tok_And,             -- AND          Logop, Sterm

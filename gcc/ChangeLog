@@ -1,3 +1,319 @@
+2019-12-19  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/92794
+	* ipa-cp.c (self_recursive_agg_pass_through_p): New function.
+	(intersect_with_plats): Use error_mark_node as place holder
+	when aggregate jump function is simple pass-through for
+	self-recursive call.
+	(intersect_with_agg_replacements): Likewise.
+	(intersect_aggregates_with_edge): Likewise.
+	(find_aggregate_values_for_callers_subset): Likewise.
+
+2019-12-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.opt (fdiagnostics-show-cwe): Add.
+	* diagnostic-core.h (class diagnostic_metadata): New forward decl.
+	(warning_at): Add overload taking a const diagnostic_metadata &.
+	(emit_diagnostic_valist): Add overload taking a
+	const diagnostic_metadata *.
+	* diagnostic-format-json.cc: Include "diagnostic-metadata.h".
+	(json_from_metadata): New function.
+	(json_end_diagnostic): Call it to add "metadata" child for
+	diagnostics with metadata.
+	(diagnostic_output_format_init): Clear context->show_cwe.
+	* diagnostic-metadata.h: New file.
+	* diagnostic.c: Include "diagnostic-metadata.h".
+	(diagnostic_impl): Add const diagnostic_metadata * param.
+	(diagnostic_n_impl): Likewise.
+	(diagnostic_initialize): Initialize context->show_cwe.
+	(diagnostic_set_info_translated): Initialize diagnostic->metadata.
+	(get_cwe_url): New function.
+	(print_any_cwe): New function.
+	(diagnostic_report_diagnostic): Call print_any_cwe if the
+	diagnostic has non-NULL metadata.
+	(emit_diagnostic): Pass NULL as the metadata in the call to
+	diagnostic_impl.
+	(emit_diagnostic_valist): Likewise.
+	(emit_diagnostic_valist): New overload taking a
+	const diagnostic_metadata *.
+	(inform): Pass NULL as the metadata in the call to
+	diagnostic_impl.
+	(inform_n): Likewise for diagnostic_n_impl.
+	(warning): Likewise.
+	(warning_at): Likewise.  Add overload that takes a
+	const diagnostic_metadata &.
+	(warning_n): Pass NULL as the metadata in the call to
+	diagnostic_n_impl.
+	(pedwarn): Likewise for diagnostic_impl.
+	(permerror): Likewise.
+	(error): Likewise.
+	(error_n): Likewise.
+	(error_at): Likewise.
+	(sorry): Likewise.
+	(sorry_at): Likewise.
+	(fatal_error): Likewise.
+	(internal_error): Likewise.
+	(internal_error_no_backtrace): Likewise.
+	* diagnostic.h (diagnostic_info::metadata): New field.
+	(diagnostic_context::show_cwe): New field.
+	* doc/invoke.texi (-fno-diagnostics-show-cwe): New option.
+	* opts.c (common_handle_option): Handle OPT_fdiagnostics_show_cwe.
+	* toplev.c (general_init): Initialize global_dc->show_cwe.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Maciej W. Rozycki  <macro@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-low.c (lower_omp_target): Support GOMP_MAP_NO_ALLOC.
+	* tree-pretty-print.c (dump_omp_clause): Likewise.
+
+2019-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ira.c (ira): Use simple LRA algorithm when not optimizing.
+
+2019-12-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gimplify.c (gimplify_omp_target_update): Elaborate 'exit data'
+	'finalize' handling.
+
+2019-12-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/86416
+	*  Makefile.in (CFLAGS-lto-streamer-in.o): Pass target_noncanonical on.
+	* lto-streamer-in.c (lto_input_mode_table): Improve unsupported-mode
+	diagnostic.
+
+2019-12-18  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64-cores.def: 
+	("cortex-a76ae"): Use neoversen1 tuning.
+	("cortex-a77"): Likewise.
+	("cortex-a65"): Use cortexa53 scheduler.
+	("cortex-a65ae"): Likewise.
+	("neoverse-e1"): Use cortexa73 tuning.
+
+2019-12-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/92971
+	* ipa-cp.c (cgraph_edge_brings_all_agg_vals_for_node): Fix
+	definition of values, release memory on exit.
+
+2019-12-17  Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-param-manipulation.h (get_original_index): Declare.
+	* ipa-param-manipulation.c (ipa_param_adjustments::get_original_index):
+	New member function.
+	* ipa-prop.c (ipcp_get_parm_bits): New function.
+	* ipa-prop.h (ipcp_get_parm_bits): Declare.
+	* tree-ssa-ccp.c: Include cgraph.h, alloc-pool.h, symbol-summary.h,
+	ipa-utils.h and ipa-prop.h
+	(get_default_value): Use ipcp_get_parm_bits.
+
+2019-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/92972
+	* lto-wrapper.c (merge_and_complain): Use just "-fno-pie" instead of
+	big ? "-fno-pie" : "-fno-pie".  Formatting fixes.  Fix comment typo.
+
+2019-12-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* doc/invoke.texi (-Wmismatched-tags, -Wredundant-tags): Document
+	new C++ options.
+
+2019-12-17  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (num_insns_constant_gpr): Return 1 if the
+	constant can be loaded with PLI if -mcpu=future.
+	* config/rs6000/rs6000.md (add<mode>3): Add alternative to
+	generate PADDI for 34-bit constants if -mcpu=future.
+	(movdi_internal64): Add alternative to use PLI to load up 34-bit
+	constants if -mcpu=future.
+	(movsi_internal1): Add alternative to use PLI to load up 32-bit
+	constants if -mcpu=future.
+	* config/rs6000/predicates.md (add_operand): Allow eI constants.
+
+2019-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92841
+	* config/i386/i386.md (@stack_protect_set_1_<mode>,
+	@stack_protect_test_1_<mode>): Use output_asm_insn.
+	(*stack_protect_set_2_<mode>, *stack_protect_set_3): New define_insns
+	and corresponding define_peephole2s.
+
+2019-12-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* symtab.c (symtab_node::get_partitioning_class): Aliases of external
+	symbols are external.
+
+2019-12-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-protos.h (thumb1_gen_const_int): Add new prototype.
+	* config/arm/arm.c (arm_option_check_internal): Remove restriction
+	on MOVT for -mpure-code.
+	(thumb1_gen_const_int): New function.
+	(thumb1_legitimate_address_p): Support -mpure-code.
+	(thumb1_rtx_costs): Likewise.
+	(thumb1_size_rtx_costs): Likewise.
+	(arm_thumb1_mi_thunk): Likewise.
+	* config/arm/arm.h (CASE_VECTOR_PC_RELATIVE): Likewise.
+	* config/arm/thumb1.md (thumb1_movsi_symbol_ref): New.
+	(*thumb1_movhf): Support -mpure-code.
+	* doc/invoke.texi (-mpure-code): Remove restriction on MOVT.
+
+2019-12-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Mention pr92772
+	in the comments.
+
+2019-12-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (extract_last_<mode>): New expander.
+	(fold_extract_last_<mode>): New expander.
+
+2019-12-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.h (CLZ_DEFINED_VALUE_AT_ZERO): Define.
+	(CTZ_DEFINED_VALUE_AT_ZERO): Define.
+	* config/gcn/gcn.md (s_mnemonic): Add clz and ctz.
+	(expander): Likewise.
+	(countzeros): New code iterator.
+	(<expander>si2): New insn pattern.
+	(<expander>di2): New insn pattern.
+
+2019-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92962
+	* common/config/i386/i386-common.c (processor_alias_table): Formatting
+	fixes.
+	* doc/invoke.texi (bdver3, bdver4, znver1): Add missing closing paren.
+	(znver2): Likewise.  Add RDPID and WBNOINVD, remove spurious comma
+	before CLWB.
+
+2019-12-17  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/92651
+	* config/i386/i386.h (TARGET_EXPAND_ABS): New macro.
+	* config/i386/x86-tune.def (X86_TUNE_EXPAND_ABS): New.
+	* config/i386/i386.md (abs<SWI48x>2): New define_expand.
+
+2019-12-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/92807
+	* config/i386/i386.c (ix86_lea_outperforms): Check !TARGET_BONNELL.
+	(ix86_avoid_lea_for_addr): When not optimizing for Bonnell, use add
+	for a = a + b and a = b + a.
+
+2019-12-16  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92952
+	* builtins.c (compute_objsize): Adjust offset by the array low bound.
+
+2019-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* pretty-print.c (pp_write_text_as_html_like_dot_to_stream): New
+	function.
+	* pretty-print.h (pp_write_text_as_html_like_dot_to_stream): New decl.
+
+2019-12-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (movsi_to_cr_one): Use CR0_REGNO instead of
+	hardcoding the (old, expired) register number.
+	(*mtcrfsi): Ditto.
+
+2019-12-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config.gcc: s/msp430*-*-*/msp430-*-*.
+	Handle msp430-*-elfbare.
+	* config/msp430/msp430-devices.c (TARGET_SUBDIR): Define.
+	(_MSPMKSTR): Define.
+	(__MSPMKSTR): Define.
+	(rest_of_devices_path): Use TARGET_SUBDIR value in string.
+	* config/msp430/msp430.c (msp430_option_override): Error if
+	-fuse-cxa-atexit is used when it has been disabled at configure time.
+	* config/msp430/t-msp430: Define TARGET_SUBDIR when building
+	msp430-devices.o.
+	* doc/install.texi: Document msp430-*-elf and msp430-*-elfbare.
+	* doc/invoke.texi: Update documentation about which path devices.csv is
+	searched for.
+
+2019-12-16  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/92950
+	* config/s390/vector.md ("mov<mode>" for V_8): Replace lh, lhy,
+	and lhrl with llc.
+
+2019-12-14  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (attribute access): Correct typos.
+
+2019-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/92357
+	* ipa-fnsummary.c (ipa_fn_summary_write): Use
+	lto_symtab_encoder_iterator with lsei_start_function_in_partition and
+	lsei_next_function_in_partition instead of walking all cgraph nodes
+	in encoder.
+
+	PR tree-optimization/92930
+	* ipa-pure-const.c (special_builtin_state): Don't handle
+	BUILT_IN_APPLY.  Formatting fixes.
+	(check_call): Formatting fixes.
+
+2019-12-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (DARWIN_EXTRA_SPECS): Add new
+	bundle spec. (DARWIN_BUNDLE1_SPEC): New.
+	(STARTFILE_SPEC): Use darwin bundle spec.
+	* config/rs6000/darwin.h (DARWIN_BUNDLE1_SPEC): New.
+	(DARWIN_DYLIB1_SPEC): Delete duplicate.
+
+2019-12-13  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/91582
+	PR middle-end/92868
+	* builtins.c (addr_decl_size): New function.
+	(gimple_call_alloc_size): Add arguments.
+	(compute_objsize): Add an argument.  Set *PDECL even for allocated
+	objects.
+	Correct checking for negative wide_int.
+	Correct handling of negative outer offsets into unknown regions
+	or with unknown inner offsets.
+	Extend offsets to at most sizetype precision.
+	Only handle constant subobject sizes.
+	* builtins.h (gimple_call_alloc_size): Add arguments.
+	* tree.c (component_ref_size): Always return sizetype.
+	* tree-ssa-strlen.c (strinfo::alloc): New member.
+	(get_addr_stridx): Add argument.
+	(get_stridx): Use ptrdiff_t.  Add argument.
+	(new_strinfo): Set new member.
+	(get_string_length): Handle alloca and VLA.
+	(dump_strlen_info): Dump more state.
+	(maybe_invalidate): Print more info.  Decrease indentation.
+	(unshare_strinfo): Set new member.
+	(valid_builtin_call): Handle alloca and VLA.
+	(maybe_warn_overflow): Check and set no-warning bit.  Improve
+	handling of offsets.  Print allocated objects.
+	(handle_builtin_strlen): Handle strinfo records with null lengths.
+	(handle_builtin_strcpy): Add argument.  Call maybe_warn_overflow.
+	(is_strlen_related_p): Handle dynamically allocated objects.
+	(get_range): Add argument.
+	(handle_builtin_malloc): Rename...
+	(handle_alloc): ...to this and handle all allocation functions.
+	(handle_builtin_memset): Call maybe_warn_overflow.
+	(count_nonzero_bytes): Handle more MEM_REF forms.
+	(strlen_check_and_optimize_call): Call handle_alloc_call.  Pass
+	arguments to more callees.
+	(handle_integral_assign): Add argument.  Create strinfo entries
+	for MEM_REF assignments.
+	(check_and_optimize_stmt): Handle more MEM_REF forms.
+
+2019-12-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h (DARWIN_DYLIB1_SPEC): New.
+
 2019-12-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-streamer-in.c (input_function): Add node parameter.

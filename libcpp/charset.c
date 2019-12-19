@@ -1970,6 +1970,17 @@ wide_str_to_charconst (cpp_reader *pfile, cpp_string str,
   size_t off, i;
   cppchar_t result = 0, c;
 
+  if (str.len <= nbwc)
+    {
+      /* Error recovery, if no errors have been diagnosed previously,
+	 there should be at least two wide characters.  Empty literals
+	 are diagnosed earlier and we can get just the zero terminator
+	 only if there were errors diagnosed during conversion.  */
+      *pchars_seen = 0;
+      *unsignedp = 0;
+      return 0;
+    }
+
   /* This is finicky because the string is in the target's byte order,
      which may not be our byte order.  Only the last character, ignoring
      the NUL terminator, is relevant.  */
@@ -2237,7 +2248,6 @@ _cpp_default_encoding (void)
 cpp_string_location_reader::
 cpp_string_location_reader (location_t src_loc,
 			    line_maps *line_table)
-: m_line_table (line_table)
 {
   src_loc = get_range_from_loc (line_table, src_loc).m_start;
 

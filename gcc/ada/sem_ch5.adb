@@ -2441,9 +2441,10 @@ package body Sem_Ch5 is
             Set_Etype (Def_Id, Component_Type (Typ));
 
             --  The loop variable is aliased if the array components are
-            --  aliased.
+            --  aliased. Likewise for the independent aspect.
 
-            Set_Is_Aliased (Def_Id, Has_Aliased_Components (Typ));
+            Set_Is_Aliased     (Def_Id, Has_Aliased_Components     (Typ));
+            Set_Is_Independent (Def_Id, Has_Independent_Components (Typ));
 
             --  AI12-0047 stipulates that the domain (array or container)
             --  cannot be a component that depends on a discriminant if the

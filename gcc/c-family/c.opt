@@ -755,6 +755,10 @@ Wmisleading-indentation
 C C++ Common Var(warn_misleading_indentation) Warning LangEnabledBy(C C++,Wall)
 Warn when the indentation of the code does not reflect the block structure.
 
+Wmismatched-tags
+C++ ObjC++ Var(warn_mismatched_tags) Warning
+Warn when a class is redeclared or referenced using a mismatched class-key.
+
 Wmissing-braces
 C ObjC C++ ObjC++ Var(warn_missing_braces) Warning LangEnabledBy(C ObjC,Wall)
 Warn about possibly missing braces around initializers.
@@ -782,6 +786,10 @@ Warn on namespace definition.
 Wpacked-not-aligned
 C ObjC C++ ObjC++ Var(warn_packed_not_aligned) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn when fields in a struct with the packed attribute are misaligned.
+
+Wredundant-tags
+C++ ObjC++ Var(warn_redundant_tags) Warning
+Warn when a class or enumerated type is referenced using a redundant class-key.
 
 Wsized-deallocation
 C++ ObjC++ Var(warn_sized_deallocation) Warning EnabledBy(Wextra)

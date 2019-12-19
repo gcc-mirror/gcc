@@ -331,7 +331,9 @@
 
 (define_code_attr s_mnemonic
   [(not "not%b")
-   (popcount "bcnt1_i32%b")])
+   (popcount "bcnt1_i32%b")
+   (clz "flbit_i32%b")
+   (ctz "ff1_i32%b")])
 
 (define_code_attr revmnemonic
   [(minus "subrev%i")
@@ -356,7 +358,9 @@
    (umin "umin")
    (umax "umax")
    (not "one_cmpl")
-   (popcount "popcount")])
+   (popcount "popcount")
+   (clz "clz")
+   (ctz "ctz")])
 
 ;; }}}
 ;; {{{ Miscellaneous instructions
@@ -1388,6 +1392,28 @@
    v_<mnemonic>0\t%0, %1<popcount_extra_op>"
   [(set_attr "type" "sop1,vop1")
    (set_attr "length" "8")])
+
+(define_code_iterator countzeros [clz ctz])
+
+(define_insn "<expander>si2"
+  [(set (match_operand:SI 0 "register_operand"  "=Sg,Sg")
+        (countzeros:SI
+	  (match_operand:SI 1 "gcn_alu_operand" "SgA, B")))]
+  ""
+  "s_<s_mnemonic>1\t%0, %1"
+  [(set_attr "type" "sop1")
+   (set_attr "length" "4,8")])
+
+; The truncate ensures that a constant passed to operand 1 is treated as DImode
+(define_insn "<expander>di2"
+  [(set (match_operand:SI 0 "register_operand"    "=Sg,Sg")
+	(truncate:SI
+	  (countzeros:DI
+	    (match_operand:DI 1 "gcn_alu_operand" "SgA, B"))))]
+  ""
+  "s_<s_mnemonic>1\t%0, %1"
+  [(set_attr "type" "sop1")
+   (set_attr "length" "4,8")])
 
 ;; }}}
 ;; {{{ ALU: generic 32-bit binop

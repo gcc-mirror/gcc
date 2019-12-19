@@ -1157,7 +1157,6 @@ extern struct target_mem_desc *gomp_map_vars_async (struct gomp_device_descr *,
 						    size_t, void **, void **,
 						    size_t *, void *, bool,
 						    enum gomp_map_vars_kind);
-extern void gomp_unmap_tgt (struct target_mem_desc *);
 extern void gomp_unmap_vars (struct target_mem_desc *, bool);
 extern void gomp_unmap_vars_async (struct target_mem_desc *, bool,
 				   struct goacc_asyncqueue *);
@@ -1166,6 +1165,8 @@ extern bool gomp_fini_device (struct gomp_device_descr *);
 extern void gomp_free_memmap (struct splay_tree_s *);
 extern void gomp_unload_device (struct gomp_device_descr *);
 extern bool gomp_remove_var (struct gomp_device_descr *, splay_tree_key);
+extern void gomp_remove_var_async (struct gomp_device_descr *, splay_tree_key,
+				   struct goacc_asyncqueue *);
 
 /* work.c */
 

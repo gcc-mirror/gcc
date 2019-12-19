@@ -81,6 +81,8 @@ package body Ch4 is
    function P_Primary                                 return Node_Id;
    function P_Relation                                return Node_Id;
    function P_Term                                    return Node_Id;
+   function P_Reduction_Attribute_Reference (S : Node_Id)
+      return Node_Id;
 
    function P_Binary_Adding_Operator                  return Node_Kind;
    function P_Logical_Operator                        return Node_Kind;
@@ -1202,11 +1204,47 @@ package body Ch4 is
       return Attr_Node;
    end P_Range_Attribute_Reference;
 
+   -------------------------------------
+   -- P_Reduction_Attribute_Reference --
+   -------------------------------------
+
+   function P_Reduction_Attribute_Reference (S : Node_Id)
+      return Node_Id
+   is
+      Attr_Node  : Node_Id;
+      Attr_Name  : Name_Id;
+
+   begin
+      Attr_Name := Token_Name;
+      Scan;   --  past Reduce
+      Attr_Node := New_Node (N_Attribute_Reference, Token_Ptr);
+      Set_Attribute_Name (Attr_Node, Attr_Name);
+      if Attr_Name /= Name_Reduce then
+         Error_Msg ("reduce attribute expected", Prev_Token_Ptr);
+      end if;
+
+      Set_Prefix (Attr_Node, S);
+      Set_Expressions (Attr_Node, New_List);
+      T_Left_Paren;
+      Append (P_Name, Expressions (Attr_Node));
+      T_Comma;
+      Append (P_Expression, Expressions (Attr_Node));
+      T_Right_Paren;
+
+      return Attr_Node;
+   end P_Reduction_Attribute_Reference;
+
    ---------------------------------------
    -- 4.1.4  Range Attribute Designator --
    ---------------------------------------
 
    --  Parsed by P_Range_Attribute_Reference (4.4)
+
+   ---------------------------------------------
+   -- 4.1.4 (2) Reduction_Attribute_Reference --
+   ---------------------------------------------
+
+   --  parsed by P_Reduction_Attribute_Reference
 
    --------------------
    -- 4.3  Aggregate --
@@ -1229,6 +1267,7 @@ package body Ch4 is
       if Nkind (Aggr_Node) /= N_Aggregate
            and then
          Nkind (Aggr_Node) /= N_Extension_Aggregate
+         and then Ada_Version < Ada_2020
       then
          Error_Msg
            ("aggregate may not have single positional component", Aggr_Sloc);
@@ -1343,7 +1382,21 @@ package body Ch4 is
 
    begin
       Lparen_Sloc := Token_Ptr;
-      T_Left_Paren;
+      if Token = Tok_Left_Bracket and then Ada_Version >= Ada_2020 then
+         Scan;
+
+         --  Special case for null aggregate in Ada2020.
+
+         if Token = Tok_Right_Bracket then
+            Scan;   --  past ]
+            Aggregate_Node := New_Node (N_Aggregate, Lparen_Sloc);
+            Set_Expressions (Aggregate_Node, New_List);
+            Set_Is_Homogeneous_Aggregate (Aggregate_Node);
+            return Aggregate_Node;
+         end if;
+      else
+         T_Left_Paren;
+      end if;
 
       --  Note on parentheses count. For cases like an if expression, the
       --  parens here really count as real parentheses for the paren count,
@@ -1577,6 +1630,14 @@ package body Ch4 is
 
             Append (Expr_Node, Expr_List);
 
+         elsif Token = Tok_Right_Bracket then
+            if No (Expr_List) then
+               Expr_List := New_List;
+            end if;
+
+            Append (Expr_Node, Expr_List);
+            exit;
+
          --  Anything else is assumed to be a named association
 
          else
@@ -1625,7 +1686,19 @@ package body Ch4 is
 
       --  All component associations (positional and named) have been scanned
 
-      T_Right_Paren;
+      if Token = Tok_Right_Bracket and then Ada_Version >= Ada_2020 then
+         Set_Component_Associations (Aggregate_Node, Assoc_List);
+         Set_Is_Homogeneous_Aggregate (Aggregate_Node);
+         Scan;  --  past right bracket
+         if Token = Tok_Apostrophe then
+            Scan;
+            if Token = Tok_Identifier then
+               return P_Reduction_Attribute_Reference (Aggregate_Node);
+            end if;
+         end if;
+      else
+         T_Right_Paren;
+      end if;
 
       if Nkind (Aggregate_Node) /= N_Delta_Aggregate then
          Set_Expressions (Aggregate_Node, Expr_List);
@@ -2623,6 +2696,7 @@ package body Ch4 is
    --  | STRING_LITERAL   | AGGREGATE
    --  | NAME             | QUALIFIED_EXPRESSION
    --  | ALLOCATOR        | (EXPRESSION) | QUANTIFIED_EXPRESSION
+   --  | REDUCTION_ATTRIBUTE_REFERENCE
 
    --  Error recovery: can raise Error_Resync
 
@@ -2714,6 +2788,9 @@ package body Ch4 is
 
                   return Expr;
                end;
+
+            when Tok_Left_Bracket =>
+               return P_Aggregate;
 
             --  Allocator
 

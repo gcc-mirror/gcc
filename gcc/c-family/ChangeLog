@@ -1,3 +1,16 @@
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Maciej W. Rozycki  <macro@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-pragma.h (pragma_omp_clause): Add
+	PRAGMA_OACC_CLAUSE_NO_CREATE.
+
+2019-12-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* c.opt (-Wmismatched-tags, -Wredundant-tags): New options.
+
 2019-12-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-pretty-print.c (c_pretty_printer::clone): New vfunc
