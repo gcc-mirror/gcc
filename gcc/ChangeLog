@@ -1,3 +1,16 @@
+2019-12-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_function_value_1): New function,
+	split out from...
+	(aarch64_function_value): ...here.  Handle partial SVE modes by
+	pretending that they have the associated/traditional integer mode,
+	then wrap the result in the real mode.
+	(aarch64_layout_arg): Take an orig_mode argument and pass it to
+	aarch64_function_arg_alignment.  Handle partial SVE modes analogously
+	to aarch64_function_value.
+	(aarch64_function_arg): Update call accordingly.
+	(aarch64_function_arg_advance): Likewise.
+
 2019-12-19  Jan Hubicka  <hubicka@ucw.cz>
 	    Xi Ruoyao  <xry111@mengyan1223.wang>
 
