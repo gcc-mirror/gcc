@@ -10047,6 +10047,8 @@ trees_in::is_matching_decl (tree existing, tree decl, tree inner)
   if (!comptypes (TREE_TYPE (existing), TREE_TYPE (decl),
 		  COMPARE_STRUCTURAL))
     {
+      // FIXME: Might be template specialization from a module, not
+      // necessarily global module
       error_at (DECL_SOURCE_LOCATION (decl),
 		"conflicting global module declaration %#qD", decl);
       inform (DECL_SOURCE_LOCATION (existing),

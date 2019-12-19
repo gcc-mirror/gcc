@@ -1,5 +1,12 @@
 2019-12-19  Nathan Sidwell  <nathan@acm.org>
 
+	Typeof merging
+	gcc/cp/
+	* ptree.c (cxx_print_type): Print TYPEOF_TYPE & BASES types.
+	* typeck.c (structural_comptypes): Add TYPEOF_TYPE.
+	gcc/testsuite/
+	* g++.dg/modules/merge-7{.h,_a.H,_b.C}: New.
+
 	Anonymous templates are a thing.
 	gcc/cp/
 	* module.cc (trees_out::key_mergeable): Deal with anon templatey

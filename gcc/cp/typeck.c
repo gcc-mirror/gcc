@@ -1453,6 +1453,11 @@ structural_comptypes (tree t1, tree t2, int strict)
       return same_type_p (UNDERLYING_TYPE_TYPE (t1), 
 			  UNDERLYING_TYPE_TYPE (t2));
 
+    case TYPEOF_TYPE:
+      if (!cp_tree_equal (TYPEOF_TYPE_EXPR (t1), TYPEOF_TYPE_EXPR (t2)))
+	return false;
+      break;
+
     default:
       return false;
     }
