@@ -841,9 +841,13 @@ package body Exp_Unst is
 
                --  If we marked this reachable because it's in a synchronized
                --  unit, we have to mark all enclosing subprograms as reachable
-               --  as well.
+               --  as well. We do the same for subprograms with Address_Taken,
+               --  because otherwise we can run into problems with looking at
+               --  enclosing subprograms in Subps.Table due to their being
+               --  unreachable (the Subp_Index of unreachable subps is later
+               --  set to zero and their entry in Subps.Table is removed).
 
-               if In_Synchronized_Unit (E) then
+               if In_Synchronized_Unit (E) or else Address_Taken (E) then
                   declare
                      S : Entity_Id := E;
 
