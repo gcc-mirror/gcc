@@ -1,3 +1,8 @@
+2019-12-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* mangle.c (write_CV_qualifiers_for_type): Don't mangle attributes
+	that contain a space.
+
 2019-12-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/91165 follow-on tweak

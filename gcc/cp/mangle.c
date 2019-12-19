@@ -2377,6 +2377,11 @@ write_CV_qualifiers_for_type (const tree type)
 	  tree name = get_attribute_name (a);
 	  const attribute_spec *as = lookup_attribute_spec (name);
 	  if (as && as->affects_type_identity
+	      /* Skip internal-only attributes, which are distinguished from
+		 others by having a space.  At present, all internal-only
+		 attributes that affect type identity are target-specific
+		 and are handled by targetm.mangle_type instead.  */
+	      && !strchr (IDENTIFIER_POINTER (name), ' ')
 	      && !is_attribute_p ("transaction_safe", name)
 	      && !is_attribute_p ("abi_tag", name))
 	    vec.safe_push (a);
