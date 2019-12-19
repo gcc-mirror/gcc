@@ -7692,28 +7692,33 @@ trees_in::decl_value ()
 		       && TREE_CODE (decl) == FUNCTION_DECL
 		       && !DECL_THUNK_P (decl)))
 		kind = "unique";
-	      else if (COMPLETE_TYPE_P (TREE_TYPE (container)))
+	      else
 		{
+		  /* We do not appear to set TYPE_SIZE for templated
+		     enums.  So, they always appear incomplete.
+		     Perhaps we should?  */
 		  tree ctx = TREE_TYPE (container);
-
-		  if (mk == MK_local_friend)
-		    {
-		      unsigned ix = TREE_INT_CST_LOW (fn_args);
-		      for (tree decls = CLASSTYPE_DECL_LIST (ctx);
-			   decls; decls = TREE_CHAIN (decls))
-			if (!TREE_PURPOSE (decls)
-			    && !ix--)
-			  {
-			    existing
-			      = friend_from_decl_list (TREE_VALUE (decls));
-			    break;
-			  }
-		    }
-		  else if (TREE_CODE (ctx) == ENUMERAL_TYPE)
+		  if (TREE_CODE (ctx) == ENUMERAL_TYPE)
 		    existing = find_enum_member (ctx, key);
-		  else
-		    existing = mergeable_class_member
-		      (decl, ctx, key, r_type, fn_args);
+		  else if (COMPLETE_TYPE_P (ctx))
+		    {
+		      if (mk == MK_local_friend)
+			{
+			  unsigned ix = TREE_INT_CST_LOW (fn_args);
+			  for (tree decls = CLASSTYPE_DECL_LIST (ctx);
+			       decls; decls = TREE_CHAIN (decls))
+			    if (!TREE_PURPOSE (decls)
+				&& !ix--)
+			      {
+				existing
+				  = friend_from_decl_list (TREE_VALUE (decls));
+				break;
+			      }
+			}
+		      else
+			existing = mergeable_class_member
+			  (decl, ctx, key, r_type, fn_args);
+		    }
 		}
 	      break;
 	    }

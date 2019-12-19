@@ -1,6 +1,11 @@
 2019-12-19  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_in::decl_value): Fix enum-context merging.
+	gcc/testsuite/
+	* g++.dg/modules/merge-5{.h,_a.H,_b.C}: New.
+
+	gcc/cp/
 	* module.cc (trees_out::key_mergeable): Fix indentation.
 
 	gcc/cp/
