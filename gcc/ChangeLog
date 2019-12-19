@@ -1,3 +1,14 @@
+2019-12-19  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/92794
+	* ipa-cp.c (self_recursive_agg_pass_through_p): New function.
+	(intersect_with_plats): Use error_mark_node as place holder
+	when aggregate jump function is simple pass-through for
+	self-recursive call.
+	(intersect_with_agg_replacements): Likewise.
+	(intersect_aggregates_with_edge): Likewise.
+	(find_aggregate_values_for_callers_subset): Likewise.
+
 2019-12-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* common.opt (fdiagnostics-show-cwe): Add.
