@@ -10077,12 +10077,13 @@ trees_in::install_implicit_member (tree fn)
   tree ctx = DECL_CONTEXT (fn);
   tree name = DECL_NAME (fn);
   /* We know these are synthesized, so the set of expected prototypes
-     is quite restricted.  */
-  tree parm_type = FUNCTION_FIRST_USER_PARMTYPE (fn);
+     is quite restricted.  We're not validating correctness, just
+     distinguishing beteeen the small set of possibilities.  */
+  tree parm_type = TREE_VALUE (FUNCTION_FIRST_USER_PARMTYPE (fn));
   if (IDENTIFIER_CTOR_P (name))
     {
       if (CLASSTYPE_LAZY_DEFAULT_CTOR (ctx)
-	  && parm_type == void_list_node)
+	  && VOID_TYPE_P (parm_type))
 	CLASSTYPE_LAZY_DEFAULT_CTOR (ctx) = false;
       else if (!TYPE_REF_P (parm_type))
 	return false;

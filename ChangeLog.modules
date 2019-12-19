@@ -1,3 +1,11 @@
+2019-12-19  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (trees_in::install_implicit_member): Fix parm type thinko.
+	gcc/testsuite/
+	* g++.dg/modules/imp-member-1_a.C: Fix scan.
+	* g++.dg/modules/imp-member-2_[abc].C: New.
+
 2019-12-18  Nathan Sidwell  <nathan@acm.org>
 
 	Installation of implicit member fns.
@@ -6,7 +14,7 @@
 	(trees_in::decl_value): Implicit member functions may be dups.
 	Call install_implicit_member.
 	gcc/testsuite/
-	* g++.dg/modules/imp-memner-1_[abcde].C: New.
+	* g++.dg/modules/imp-member-1_[abcde].C: New.
 
 2019-12-17  Nathan Sidwell  <nathan@acm.org>
 

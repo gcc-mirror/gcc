@@ -13,4 +13,4 @@ export struct C
   // lazy implicit ctor
 };
 
-// { dg-final { scan-lang-dump-not {\[.*\]=decl definition '::C@A:.::__ct '} module } }
+// { dg-final { scan-lang-dump-not {'::C::__ct '} module } }
