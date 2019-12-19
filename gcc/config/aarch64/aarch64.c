@@ -16826,11 +16826,27 @@ aarch64_simd_valid_immediate (rtx op, simd_immediate_info *info,
 	}
     }
 
-  unsigned int elt_size = GET_MODE_SIZE (elt_mode);
+  /* If all elements in an SVE vector have the same value, we have a free
+     choice between using the element mode and using the container mode.
+     Using the element mode means that unused parts of the vector are
+     duplicates of the used elements, while using the container mode means
+     that the unused parts are an extension of the used elements.  Using the
+     element mode is better for (say) VNx4HI 0x101, since 0x01010101 is valid
+     for its container mode VNx4SI while 0x00000101 isn't.
+
+     If not all elements in an SVE vector have the same value, we need the
+     transition from one element to the next to occur at container boundaries.
+     E.g. a fixed-length VNx4HI containing { 1, 2, 3, 4 } should be treated
+     in the same way as a VNx4SI containing { 1, 2, 3, 4 }.  */
+  scalar_int_mode elt_int_mode;
+  if ((vec_flags & VEC_SVE_DATA) && n_elts > 1)
+    elt_int_mode = aarch64_sve_container_int_mode (mode);
+  else
+    elt_int_mode = int_mode_for_mode (elt_mode).require ();
+
+  unsigned int elt_size = GET_MODE_SIZE (elt_int_mode);
   if (elt_size > 8)
     return false;
-
-  scalar_int_mode elt_int_mode = int_mode_for_mode (elt_mode).require ();
 
   /* Expand the vector constant out into a byte vector, with the least
      significant byte of the register first.  */

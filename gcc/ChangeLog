@@ -1,3 +1,11 @@
+2019-12-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_simd_valid_immediate): When
+	handling partial SVE vectors, use the container mode rather than
+	the element mode if the constant isn't a single-element duplicate.
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_reinterpret<mode>):
+	Check targetm.can_change_mode_class instead of BYTES_BIG_ENDIAN.
+
 2019-12-19  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (addv64si3<exec_clobber>): Rename to ...
