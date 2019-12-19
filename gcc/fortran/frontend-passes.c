@@ -4390,7 +4390,7 @@ call_external_blas (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   /* For now don't do anything in OpenMP workshare, it confuses
      its translation, which expects only the allowed statements in there. */
 
-  if (in_omp_workshare | in_omp_atomic)
+  if (in_omp_workshare || in_omp_atomic)
     return 0;
 
   expr1 = co->expr1;

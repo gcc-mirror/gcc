@@ -1,6 +1,11 @@
 2019-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/92977
+	* frontend-passes.c (call_external_blas): Use || instead of |.
+
+2019-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92977
 	* frontend-passes.c (in_omp_atomic): New variable.
 	(cfe_expr_0, matmul_to_var_expr, matmul_temp_args,
 	inline_matmul_assign, call_external_blas): Don't optimize in
