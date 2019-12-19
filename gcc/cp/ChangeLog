@@ -1,5 +1,9 @@
 2019-12-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/52320 - EH cleanups for partially constructed arrays.
+	* typeck2.c (split_nonconstant_init_1): Add nested parm.
+	Add cleanup for whole array if true.
+
 	PR c++/66139 - EH cleanups for partially constructed aggregates.
 	PR c++/57510
 	* cp-gimplify.c (cp_gimplify_init_expr): Use split_nonconstant_init.
