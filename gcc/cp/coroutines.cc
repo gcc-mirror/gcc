@@ -2321,43 +2321,61 @@ captures_temporary (tree *stmt, int *do_subtree, void *d)
 
       /* Fetch the value presented to the fn.  */
       tree parm = TREE_OPERAND (*stmt, anum + offset);
+
       while (TREE_CODE (parm) == NOP_EXPR)
 	parm = TREE_OPERAND (parm, 0);
 
       /* We only care if we're taking the addr of a temporary.  */
       if (TREE_CODE (parm) != ADDR_EXPR)
 	continue;
-      parm = TREE_OPERAND (parm, 0);
 
+      parm = TREE_OPERAND (parm, 0);
       if (TREE_CODE (parm) == VAR_DECL && !DECL_ARTIFICIAL (parm))
 	/* This isn't a temporary... */
 	continue;
+
       if (TREE_CODE (parm) == PARM_DECL)
 	/* .. nor is this... */
 	continue;
-      else if (TREE_CODE (parm) == TARGET_EXPR)
+
+      if (TREE_CODE (parm) == TARGET_EXPR)
 	{
 	  /* We're taking the address of a temporary and using it as a ref.  */
 	  tree tvar = TREE_OPERAND (parm, 0);
-	  if (DECL_ARTIFICIAL (tvar))
+	  gcc_checking_assert (DECL_ARTIFICIAL (tvar));
+
+	  struct __susp_frame_data *data = (struct __susp_frame_data *) d;
+	  data->captures_temporary = true;
+	  /* Record this one so we don't duplicate, and on the first
+	     occurrence note the target expr to be replaced.  */
+	  if (!data->captured_temps.add (tvar))
+	    vec_safe_push (data->to_replace, parm);
+	  /* Now see if the initializer contains any more cases.  */
+	  hash_set<tree> visited;
+	  tree res = cp_walk_tree (&TREE_OPERAND (parm, 1),
+				   captures_temporary, d, &visited);
+	  if (res)
+	    return res;
+	  /* Otherwise, we're done with sub-trees for this.  */
+	}
+      else if (TREE_CODE (parm) == CO_AWAIT_EXPR)
+	{
+	  /* CO_AWAIT expressions behave in a similar manner to target
+	     expressions when the await_resume call is contained in one.  */
+	  tree awr = TREE_OPERAND (parm, 3); /* call vector.  */
+	  awr = TREE_VEC_ELT (awr, 2); /* resume call.  */
+	  if (TREE_CODE (awr) == TARGET_EXPR)
 	    {
+	      tree tvar = TREE_OPERAND (awr, 0);
+	      gcc_checking_assert (DECL_ARTIFICIAL (tvar));
+
 	      struct __susp_frame_data *data = (struct __susp_frame_data *) d;
 	      data->captures_temporary = true;
-	      /* Record this one so we don't duplicate, and on the first
-		 occurrence note the target expr to be replaced.  */
+	      /* Use this as a place-holder.  */
 	      if (!data->captured_temps.add (tvar))
 		vec_safe_push (data->to_replace, parm);
-	      /* Now see if the initializer contains any more cases.  */
-	      hash_set<tree> visited;
-	      tree res = cp_walk_tree (&TREE_OPERAND (parm, 1),
-				       captures_temporary, d, &visited);
-	      if (res)
-		return res;
 	    }
-	  else
-	    /* This wouldn't be broken, and we assume no need to replace it
-	       but (ISTM) unexpected.  */
-	    fprintf (stderr, "target expr init var real?\n");
+	/* We will walk the sub-trees of this co_await separately.  */
 	}
       else
 	gcc_unreachable ();
@@ -2485,7 +2503,16 @@ maybe_promote_captured_temps (tree *stmt, void *d)
 	  char *buf = (char *) alloca (bufsize);
 	  snprintf (buf, bufsize, "__aw_%d.tmp.%d", awpts->count, vnum);
 	  tree to_replace = awpts->to_replace->pop ();
-	  tree orig_temp = TREE_OPERAND (to_replace, 0);
+	  tree orig_temp;
+	  if (TREE_CODE (to_replace) == CO_AWAIT_EXPR)
+	    {
+	      orig_temp = TREE_OPERAND (to_replace, 3);
+	      orig_temp = TREE_VEC_ELT (orig_temp, 2);
+	      orig_temp = TREE_OPERAND (orig_temp, 0);
+	    }
+	  else
+	    orig_temp = TREE_OPERAND (to_replace, 0);
+
 	  tree var_type = TREE_TYPE (orig_temp);
 	  gcc_assert (same_type_p (TREE_TYPE (to_replace), var_type));
 	  tree newvar

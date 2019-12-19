@@ -1,3 +1,11 @@
+2019-12-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (captures_temporary): Account for capture of
+	co_await expression results by reference in call argument
+	lists.
+	(maybe_promote_captured_temps): Likewise.
+
 2019-12-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
