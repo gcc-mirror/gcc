@@ -2079,7 +2079,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 		  /* Unshare args going into the hash table to separate them
 		     from the caller's context, for better GC and to avoid
 		     problems with verify_gimple.  */
-		  arg = unshare_expr (arg);
+		  arg = unshare_expr_without_location (arg);
 		  TREE_VEC_ELT (bound, i) = arg;
 		}
 	      /* Don't share a CONSTRUCTOR that might be changed.  This is not

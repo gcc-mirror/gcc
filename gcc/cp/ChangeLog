@@ -1,3 +1,9 @@
+2019-12-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91165 follow-on tweak
+	* constexpr.c (cxx_eval_call_expression): Use
+	unshare_expr_without_location.
+
 2019-12-19  Julian Brown  <julian@codesourcery.com>
 	    Maciej W. Rozycki  <macro@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
