@@ -2491,18 +2491,18 @@
 	(truncate "trunc")])
 
 (define_insn "<convop><VEC_ALL1REG_INT_ALT:mode><VEC_ALL1REG_INT_MODE:mode>2<exec>"
-  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand"  "=v")
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand" "=v")
         (zero_convert:VEC_ALL1REG_INT_MODE
-	  (match_operand:VEC_ALL1REG_INT_ALT 1 "register_operand" " v")))]
+	  (match_operand:VEC_ALL1REG_INT_ALT 1 "gcn_alu_operand" " v")))]
   ""
   "v_mov_b32_sdwa\t%0, %1 dst_sel:<VEC_ALL1REG_INT_MODE:sdwa> dst_unused:UNUSED_PAD src0_sel:<VEC_ALL1REG_INT_ALT:sdwa>"
   [(set_attr "type" "vop_sdwa")
    (set_attr "length" "8")])
 
 (define_insn "extend<VEC_ALL1REG_INT_ALT:mode><VEC_ALL1REG_INT_MODE:mode>2<exec>"
-  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand"  "=v")
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand" "=v")
         (sign_extend:VEC_ALL1REG_INT_MODE
-	  (match_operand:VEC_ALL1REG_INT_ALT 1 "register_operand" " v")))]
+	  (match_operand:VEC_ALL1REG_INT_ALT 1 "gcn_alu_operand" " v")))]
   ""
   "v_mov_b32_sdwa\t%0, sext(%1) src0_sel:<VEC_ALL1REG_INT_ALT:sdwa>"
   [(set_attr "type" "vop_sdwa")
@@ -2515,7 +2515,7 @@
 (define_insn_and_split "truncv64di<mode>2"
   [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand" "=v")
 	(truncate:VEC_ALL1REG_INT_MODE
-	  (match_operand:V64DI 1 "register_operand"              " v")))]
+	  (match_operand:V64DI 1 "gcn_alu_operand"		 " v")))]
   ""
   "#"
   "reload_completed"
@@ -2536,7 +2536,7 @@
   [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand"       "=v")
 	(vec_merge:VEC_ALL1REG_INT_MODE
 	  (truncate:VEC_ALL1REG_INT_MODE
-	    (match_operand:V64DI 1 "register_operand"		       " v"))
+	    (match_operand:V64DI 1 "gcn_alu_operand"		       " v"))
 	  (match_operand:VEC_ALL1REG_INT_MODE 2 "gcn_alu_or_unspec_operand" 
 								       "U0")
 	  (match_operand:DI 3 "gcn_exec_operand"		       " e")))]
@@ -2559,9 +2559,9 @@
    (set_attr "length" "4")])
 
 (define_insn_and_split "<convop><mode>v64di2"
-  [(set (match_operand:V64DI 0 "register_operand"		   "=v")
+  [(set (match_operand:V64DI 0 "register_operand"		  "=v")
 	(any_extend:V64DI
-	  (match_operand:VEC_ALL1REG_INT_MODE 1 "register_operand" " v")))]
+	  (match_operand:VEC_ALL1REG_INT_MODE 1 "gcn_alu_operand" " v")))]
   ""
   "#"
   "reload_completed"
@@ -2584,12 +2584,12 @@
    (set_attr "length" "12")])
 
 (define_insn_and_split "<convop><mode>v64di2_exec"
-  [(set (match_operand:V64DI 0 "register_operand"		     "=v")
+  [(set (match_operand:V64DI 0 "register_operand"		    "=v")
 	(vec_merge:V64DI
 	  (any_extend:V64DI
-	    (match_operand:VEC_ALL1REG_INT_MODE 1 "register_operand" " v"))
-	  (match_operand:V64DI 2 "gcn_alu_or_unspec_operand"	     "U0")
-	  (match_operand:DI 3 "gcn_exec_operand"		     " e")))]
+	    (match_operand:VEC_ALL1REG_INT_MODE 1 "gcn_alu_operand" " v"))
+	  (match_operand:V64DI 2 "gcn_alu_or_unspec_operand"	    "U0")
+	  (match_operand:DI 3 "gcn_exec_operand"		    " e")))]
   ""
   "#"
   "reload_completed"
