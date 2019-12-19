@@ -33,9 +33,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-event-id.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
-#include "diagnostic-event-id.h"
-#include "analyzer/sm.h"
 #include "analyzer/pending-diagnostic.h"
+#include "analyzer/function-set.h"
+#include "analyzer/analyzer-selftests.h"
 
 #if ENABLE_ANALYZER
 
@@ -218,6 +218,82 @@ fileptr_state_machine::fileptr_state_machine (logger *logger)
   m_stop = add_state ("stop");
 }
 
+/* Get a set of functions that are known to take a FILE * that must be open,
+   and are known to not close it.  */
+
+static function_set
+get_file_using_fns ()
+{
+  // TODO: populate this list more fully
+  static const char * const funcnames[] = {
+    /* This array must be kept sorted.  */
+    "__fbufsize",
+    "__flbf",
+    "__fpending",
+    "__fpurge"
+    "__freadable",
+    "__freading",
+    "__fsetlocking",
+    "__fwritable",
+    "__fwriting",
+    "clearerr",
+    "clearerr_unlocked",
+    "feof",
+    "feof_unlocked",
+    "ferror",
+    "ferror_unlocked",
+    "fflush", // safe to call with NULL
+    "fflush_unlocked",  // safe to call with NULL
+    "fgetc",
+    "fgetc_unlocked",
+    "fgetpos",
+    "fgets",
+    "fgets_unlocked",
+    "fgetwc_unlocked",
+    "fgetws_unlocked",
+    "fileno",
+    "fileno_unlocked",
+    "fprintf",
+    "fputc",
+    "fputc_unlocked",
+    "fputs",
+    "fputs_unlocked",
+    "fputwc_unlocked",
+    "fputws_unlocked",
+    "fread_unlocked",
+    "fseek",
+    "fsetpos",
+    "ftell",
+    "fwrite_unlocked",
+    "getc",
+    "getc_unlocked",
+    "getwc_unlocked",
+    "putc",
+    "putc_unlocked",
+    "rewind",
+    "setbuf",
+    "setbuffer",
+    "setlinebuf",
+    "setvbuf",
+    "ungetc",
+    "vfprintf"
+  };
+  const size_t count
+    = sizeof(funcnames) / sizeof (funcnames[0]);
+  function_set fs (funcnames, count);
+  return fs;
+}
+
+/* Return true if FNDECL is known to require an open FILE *, and is known
+   to not close it.  */
+
+static bool
+is_file_using_fn_p (tree fndecl)
+{
+  function_set fs = get_file_using_fns ();
+  return fs.contains_decl_p (fndecl);
+}
+
 /* Implementation of state_machine::on_stmt vfunc for fileptr_state_machine.  */
 
 bool
@@ -262,7 +338,11 @@ fileptr_state_machine::on_stmt (sm_context *sm_ctxt,
 	    return true;
 	  }
 
-	// TODO: operations on closed file
+	if (is_file_using_fn_p (callee_fndecl))
+	  {
+	    // TODO: operations on unchecked file
+	    return true;
+	  }
 	// etc
       }
 
@@ -335,5 +415,23 @@ make_fileptr_state_machine (logger *logger)
 {
   return new fileptr_state_machine (logger);
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Run all of the selftests within this file.  */
+
+void
+analyzer_sm_file_cc_tests ()
+{
+  function_set fs = get_file_using_fns ();
+  fs.assert_sorted ();
+  fs.assert_sane ();
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P */
 
 #endif /* #if ENABLE_ANALYZER */

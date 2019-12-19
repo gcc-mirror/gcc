@@ -1,3 +1,9 @@
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/58237
+	* gcc.dg/analyzer/file-1.c (test_4): New.
+	* gcc.dg/analyzer/file-pr58237.c: New test.
+
 2020-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/93262

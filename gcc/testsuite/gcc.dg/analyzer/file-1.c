@@ -35,3 +35,15 @@ test_3 (const char *path)
   FILE *f = fopen (path, "r"); /* { dg-message "opened here" } */
   return; /* { dg-warning "leak of FILE 'f'" } */ 
 }
+
+void
+test_4 (const char *path)
+{
+  FILE *f = fopen (path, "r"); /* { dg-message "opened here" } */
+
+  /* Ensure we know about common fns that are known to not close the
+     file (e.g. "fseek").  */
+  fseek (f, 1024, SEEK_SET);
+
+  return; /* { dg-warning "leak of FILE 'f'" } */ 
+}
