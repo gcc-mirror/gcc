@@ -3075,18 +3075,18 @@
 
 ; Special cases for addition.
 
-(define_insn "*plus_carry_dpp_shr_<mode>"
-  [(set (match_operand:VEC_1REG_INT_MODE 0 "register_operand"   "=v")
-	(unspec:VEC_1REG_INT_MODE
-	  [(match_operand:VEC_1REG_INT_MODE 1 "register_operand" "v")
-	   (match_operand:VEC_1REG_INT_MODE 2 "register_operand" "v")
-	   (match_operand:SI 3 "const_int_operand"		 "n")]
+(define_insn "*plus_carry_dpp_shr_v64si"
+  [(set (match_operand:V64SI 0 "register_operand"   "=v")
+	(unspec:V64SI
+	  [(match_operand:V64SI 1 "register_operand" "v")
+	   (match_operand:V64SI 2 "register_operand" "v")
+	   (match_operand:SI 3 "const_int_operand"   "n")]
 	  UNSPEC_PLUS_CARRY_DPP_SHR))
    (clobber (reg:DI VCC_REG))]
   ""
   {
     const char *insn = TARGET_GCN3 ? "v_add%u0" : "v_add_co%u0";
-    return gcn_expand_dpp_shr_insn (<MODE>mode, insn,
+    return gcn_expand_dpp_shr_insn (V64SImode, insn,
 				    UNSPEC_PLUS_CARRY_DPP_SHR,
 				    INTVAL (operands[3]));
   }
