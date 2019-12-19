@@ -21457,11 +21457,30 @@ static bool
 aarch64_can_change_mode_class (machine_mode from,
 			       machine_mode to, reg_class_t)
 {
+  unsigned int from_flags = aarch64_classify_vector_mode (from);
+  unsigned int to_flags = aarch64_classify_vector_mode (to);
+
+  bool from_sve_p = (from_flags & VEC_ANY_SVE);
+  bool to_sve_p = (to_flags & VEC_ANY_SVE);
+
+  bool from_partial_sve_p = from_sve_p && (from_flags & VEC_PARTIAL);
+  bool to_partial_sve_p = to_sve_p && (to_flags & VEC_PARTIAL);
+
+  /* Don't allow changes between partial SVE modes and other modes.
+     The contents of partial SVE modes are distributed evenly across
+     the register, whereas GCC expects them to be clustered together.  */
+  if (from_partial_sve_p != to_partial_sve_p)
+    return false;
+
+  /* Similarly reject changes between partial SVE modes that have
+     different patterns of significant and insignificant bits.  */
+  if (from_partial_sve_p
+      && (aarch64_sve_container_bits (from) != aarch64_sve_container_bits (to)
+	  || GET_MODE_UNIT_SIZE (from) != GET_MODE_UNIT_SIZE (to)))
+    return false;
+
   if (BYTES_BIG_ENDIAN)
     {
-      bool from_sve_p = aarch64_sve_data_mode_p (from);
-      bool to_sve_p = aarch64_sve_data_mode_p (to);
-
       /* Don't allow changes between SVE data modes and non-SVE modes.
 	 See the comment at the head of aarch64-sve.md for details.  */
       if (from_sve_p != to_sve_p)
