@@ -9894,90 +9894,90 @@ trees_out::key_mergeable (merge_kind mk, tree decl, depset *dep)
 	  gcc_assert (existing == decl);
 	}
     }
- else if (mk & MK_indirect_mask)
-   {
-     tree name = decl;
-     tree index = NULL_TREE;
+  else if (mk & MK_indirect_mask)
+    {
+      tree name = decl;
+      tree index = NULL_TREE;
 
-     if (mk == MK_enum)
-       {
-	 /* Anonymous enums are located by their first identifier.  */
-	 gcc_checking_assert (UNSCOPED_ENUM_P (TREE_TYPE (decl)));
-	 if (tree values = TYPE_VALUES (TREE_TYPE (decl)))
-	   name = DECL_NAME (TREE_VALUE (values));
-       }
-     else if (mk == MK_local_friend)
-       {
-	 /* Find by index on the class  */
-	 unsigned ix = 0;
-	 for (tree decls = CLASSTYPE_DECL_LIST (TREE_CHAIN (decl));
-	      decls; decls = TREE_CHAIN (decls))
-	   if (!TREE_PURPOSE (decls))
-	     {
-	       tree frnd = friend_from_decl_list (TREE_VALUE (decls));
-	       if (frnd == decl)
-		 break;
-	       ix++;
-	     }
-	 index = build_int_cst (unsigned_type_node, ix);
-       }
-     else
-       gcc_unreachable ();
+      if (mk == MK_enum)
+	{
+	  /* Anonymous enums are located by their first identifier.  */
+	  gcc_checking_assert (UNSCOPED_ENUM_P (TREE_TYPE (decl)));
+	  if (tree values = TYPE_VALUES (TREE_TYPE (decl)))
+	    name = DECL_NAME (TREE_VALUE (values));
+	}
+      else if (mk == MK_local_friend)
+	{
+	  /* Find by index on the class  */
+	  unsigned ix = 0;
+	  for (tree decls = CLASSTYPE_DECL_LIST (TREE_CHAIN (decl));
+	       decls; decls = TREE_CHAIN (decls))
+	    if (!TREE_PURPOSE (decls))
+	      {
+		tree frnd = friend_from_decl_list (TREE_VALUE (decls));
+		if (frnd == decl)
+		  break;
+		ix++;
+	      }
+	  index = build_int_cst (unsigned_type_node, ix);
+	}
+      else
+	gcc_unreachable ();
+      
+      tree_node (name);
+      if (index)
+	tree_node (index);
+    }
+  else if (mk != MK_unique)
+    {
+      /* Regular decls are located by their context, name, and
+	 additional disambiguating data.  */
+      tree name = DECL_NAME (decl);
+      if (!name)
+	{
+	  /* A field for an anonymous member type, or direct base, use
+	     the type as the name.  */
+	  gcc_checking_assert (TREE_CODE (decl) == FIELD_DECL);
+	  name = TYPE_NAME (TREE_TYPE (decl));
+	}
+      else if (IDENTIFIER_ANON_P (name))
+	{
+	  /* An anonymous member type.  Find its position in the
+	     (filtered) TYPE_FIELDS list and use that as an
+	     INTEGER_CST.  */
+	  // FIXME: Perhaps (unmergable) anonymous namespace-scope
+	  // types get here too?  We should have set those to MK_unique
+	  // earlier.
+	  gcc_checking_assert (TYPE_P (CP_DECL_CONTEXT (decl)));
+	  unsigned ix = 0;
+	  for (tree field = TYPE_FIELDS (CP_DECL_CONTEXT (decl));
+	       field; field = DECL_CHAIN (field))
+	    if (DECL_NAME (field) && IDENTIFIER_ANON_P (DECL_NAME (field)))
+	      {
+		if (field == decl)
+		  break;
+		ix++;
+	      }
+	  name = build_int_cst (unsigned_type_node, ix);
+	}
+      else if (IDENTIFIER_CONV_OP_P (name))
+	name = conv_op_identifier;
+      tree_node (name);
 
-     tree_node (name);
-     if (index)
-       tree_node (index);
-   }
- else if (mk != MK_unique)
-   {
-     /* Regular decls are located by their context, name, and
-	additional disambiguating data.  */
-     tree name = DECL_NAME (decl);
-     if (!name)
-       {
-	 /* A field for an anonymous member type, or direct base, use
-	    the type as the name.  */
-	 gcc_checking_assert (TREE_CODE (decl) == FIELD_DECL);
-	 name = TYPE_NAME (TREE_TYPE (decl));
-       }
-     else if (IDENTIFIER_ANON_P (name))
-       {
-	 /* An anonymous member type.  Find its position in the
-	    (filtered) TYPE_FIELDS list and use that as an
-	    INTEGER_CST.  */
-	 // FIXME: Perhaps (unmergable) anonymous namespace-scope
-	 // types get here too?  We should have set those to MK_unique
-	 // earlier.
-	 gcc_checking_assert (TYPE_P (CP_DECL_CONTEXT (decl)));
-	 unsigned ix = 0;
-	 for (tree field = TYPE_FIELDS (CP_DECL_CONTEXT (decl));
-	      field; field = DECL_CHAIN (field))
-	   if (DECL_NAME (field) && IDENTIFIER_ANON_P (DECL_NAME (field)))
-	     {
-	       if (field == decl)
-		 break;
-	       ix++;
-	   }
-	 name = build_int_cst (unsigned_type_node, ix);
-       }
-     else if (IDENTIFIER_CONV_OP_P (name))
-       name = conv_op_identifier;
-     tree_node (name);
+      if (TREE_CODE (inner) == FUNCTION_DECL)
+	{
+	  /* Functions are distinguished by parameter types.  */
+	  tree fn_type = TREE_TYPE (inner);
+	  fn_arg_types (TYPE_ARG_TYPES (fn_type));
 
-     if (TREE_CODE (inner) == FUNCTION_DECL)
-       {
-	 /* Functions are distinguished by parameter types.  */
-	 tree fn_type = TREE_TYPE (inner);
-	 fn_arg_types (TYPE_ARG_TYPES (fn_type));
-
-	 if (decl != inner || name == conv_op_identifier)
-	   /* And a function template, or conversion operator needs
-	      the return type.  */
-	   // FIXME: What if the return type is a voldemort?  We
-	   // should be using the declared return type.
-	   tree_node (TREE_TYPE (fn_type));
-       }
-   }
+	  if (decl != inner || name == conv_op_identifier)
+	    /* And a function template, or conversion operator needs
+	       the return type.  */
+	    // FIXME: What if the return type is a voldemort?  We
+	    // should be using the declared return type.
+	    tree_node (TREE_TYPE (fn_type));
+	}
+    }
 }
 
 /* DECL, INNER & TYPE are a skeleton set of nodes for a decl.  Only

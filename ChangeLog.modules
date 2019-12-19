@@ -1,6 +1,9 @@
 2019-12-19  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::key_mergeable): Fix indentation.
+
+	gcc/cp/
 	* name-lookup.c (mergeable_class_member): Get to class template
 	correctly.
 	gcc/testsuite/
