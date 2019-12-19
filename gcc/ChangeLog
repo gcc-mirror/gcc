@@ -1,3 +1,9 @@
+2019-12-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/92905
+	* lra-constraints.c (process_alt_operands): Check offmemok when
+	processing preferred_reload_class.
+
 2019-12-19  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md
