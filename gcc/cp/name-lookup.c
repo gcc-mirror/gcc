@@ -3913,6 +3913,9 @@ do_pushdecl (tree decl, bool is_friend)
 		  && !DECL_MODULE_EXPORT_P (level->this_entity))
 		implicitly_export_namespace (level->this_entity);
 
+	      // FIXME: Can we create this vector lazily?  Also
+	      // TREE_PUBLIC is insufficient, fns->!TREE_THIS_STATIC,
+	      // other's not so much
 	      if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION
 		  && TREE_PUBLIC (decl) && !not_module_p ())
 		record_mergeable_decl (slot, name, decl);
@@ -4028,7 +4031,14 @@ mergeable_class_member (tree decl, tree klass, tree name,
 	    found = check_mergeable_decl
 	      (MM_class_scope, inner, found, ret, args);
 	    if (found && inner != decl)
-	      found = DECL_TI_TEMPLATE (found);
+	      {
+		tree ti;
+		if (DECL_IMPLICIT_TYPEDEF_P (found))
+		  ti = TYPE_TEMPLATE_INFO (TREE_TYPE (found));
+		else
+		  ti = DECL_TEMPLATE_INFO (found);
+		found = TI_TEMPLATE (ti);
+	      }
 	  }
       }
       break;
@@ -4054,6 +4064,9 @@ extract_module_binding (tree &binding, tree ns, bitmap partitions)
       slot = reinterpret_cast <tree *> (&cluster->slots[MODULE_SLOT_CURRENT]);
       if (partitions)
 	{
+	  // FIXME: Comment out of date, we do stream templates
+	  // correctly now.  Are we still doing the extra deduping
+	  // mentioned?
 	  /* Lazy loading can cause nested lookups due to template
 	     instantiations (this isn't right, but it is what we
 	     currently do).  That means deduping needs nesting.  To
@@ -4084,6 +4097,8 @@ extract_module_binding (tree &binding, tree ns, bitmap partitions)
 
 	      found:;
 		/* Is it loaded?  */
+		// FIXME: module_state::write ensures this before we
+		// get here
 		if (cluster->slots[jx].is_lazy ())
 		  {
 		    gcc_assert (cluster->indices[jx].span == 1);

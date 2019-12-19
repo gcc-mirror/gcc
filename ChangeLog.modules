@@ -1,6 +1,12 @@
 2019-12-19  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.c (mergeable_class_member): Get to class template
+	correctly.
+	gcc/testsuite/
+	* g++.dg/modules/merge-4{.h,_a.H,_b.C}: New.
+
+	gcc/cp/
 	* module.cc (trees_in::install_implicit_member): Fix parm type thinko.
 	gcc/testsuite/
 	* g++.dg/modules/imp-member-1_a.C: Fix scan.
