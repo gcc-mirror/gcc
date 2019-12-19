@@ -1,4 +1,4 @@
-/* Selftests for the analyzer.
+/* Sets of function names.
    Copyright (C) 2019-2020 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
@@ -18,28 +18,29 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_ANALYZER_SELFTESTS_H
-#define GCC_ANALYZER_SELFTESTS_H
+#ifndef GCC_ANALYZER_FUNCTION_SET_H
+#define GCC_ANALYZER_FUNCTION_SET_H
 
-#if CHECKING_P
+/* A set of names.  */
 
-namespace selftest {
+class function_set
+{
+public:
+  /* Construct from a sorted array NAMES of size COUNT.  */
+  function_set (const char * const *names, size_t count)
+  : m_names (names), m_count (count)
+  {
+  }
 
-extern tree build_global_decl (const char *name, tree type);
+  bool contains_name_p (const char *name) const;
+  bool contains_decl_p (tree fndecl) const;
 
-extern void run_analyzer_selftests ();
+  void assert_sorted () const;
+  void assert_sane () const;
 
-/* Declarations for specific families of tests (by source file), in
-   alphabetical order.  */
-extern void analyzer_checker_script_cc_tests ();
-extern void analyzer_constraint_manager_cc_tests ();
-extern void analyzer_function_set_cc_tests ();
-extern void analyzer_program_point_cc_tests ();
-extern void analyzer_program_state_cc_tests ();
-extern void analyzer_region_model_cc_tests ();
+private:
+  const char * const *m_names; // must be sorted
+  size_t m_count;
+};
 
-} /* end of namespace selftest.  */
-
-#endif /* #if CHECKING_P */
-
-#endif /* GCC_ANALYZER_SELFTESTS_H */
+#endif /* GCC_ANALYZER_FUNCTION_SET_H */

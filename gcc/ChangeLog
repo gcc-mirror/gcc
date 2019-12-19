@@ -1,3 +1,7 @@
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/function-set.o.
+
 2020-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93009

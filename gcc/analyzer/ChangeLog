@@ -1,5 +1,14 @@
 2020-01-14  David Malcolm  <dmalcolm@redhat.com>
 
+	* analyzer-selftests.cc (selftest::run_analyzer_selftests): Call
+	selftest::analyzer_function_set_cc_tests.
+	* analyzer-selftests.h (selftest::analyzer_function_set_cc_tests):
+	New decl.
+	* function-set.cc: New file.
+	* function-set.h: New file.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
 	* analyzer.h (fndecl_has_gimple_body_p): New decl.
 	* engine.cc (impl_region_model_context::on_unknown_change): New
 	function.
