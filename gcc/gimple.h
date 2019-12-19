@@ -1018,6 +1018,14 @@ is_a_helper <gdebug *>::test (gimple *gs)
 template <>
 template <>
 inline bool
+is_a_helper <const gdebug *>::test (const gimple *gs)
+{
+  return gs->code == GIMPLE_DEBUG;
+}
+
+template <>
+template <>
+inline bool
 is_a_helper <ggoto *>::test (gimple *gs)
 {
   return gs->code == GIMPLE_GOTO;
@@ -1026,7 +1034,23 @@ is_a_helper <ggoto *>::test (gimple *gs)
 template <>
 template <>
 inline bool
+is_a_helper <const ggoto *>::test (const gimple *gs)
+{
+  return gs->code == GIMPLE_GOTO;
+}
+
+template <>
+template <>
+inline bool
 is_a_helper <glabel *>::test (gimple *gs)
+{
+  return gs->code == GIMPLE_LABEL;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <const glabel *>::test (const gimple *gs)
 {
   return gs->code == GIMPLE_LABEL;
 }
@@ -1058,6 +1082,14 @@ is_a_helper <geh_else *>::test (gimple *gs)
 template <>
 template <>
 inline bool
+is_a_helper <const geh_else *>::test (const gimple *gs)
+{
+  return gs->code == GIMPLE_EH_ELSE;
+}
+
+template <>
+template <>
+inline bool
 is_a_helper <geh_filter *>::test (gimple *gs)
 {
   return gs->code == GIMPLE_EH_FILTER;
@@ -1067,6 +1099,14 @@ template <>
 template <>
 inline bool
 is_a_helper <geh_mnt *>::test (gimple *gs)
+{
+  return gs->code == GIMPLE_EH_MUST_NOT_THROW;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <const geh_mnt *>::test (const gimple *gs)
 {
   return gs->code == GIMPLE_EH_MUST_NOT_THROW;
 }
@@ -1220,6 +1260,14 @@ is_a_helper <gswitch *>::test (gimple *gs)
 template <>
 template <>
 inline bool
+is_a_helper <const gswitch *>::test (const gimple *gs)
+{
+  return gs->code == GIMPLE_SWITCH;
+}
+
+template <>
+template <>
+inline bool
 is_a_helper <gtransaction *>::test (gimple *gs)
 {
   return gs->code == GIMPLE_TRANSACTION;
@@ -1229,6 +1277,14 @@ template <>
 template <>
 inline bool
 is_a_helper <gtry *>::test (gimple *gs)
+{
+  return gs->code == GIMPLE_TRY;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <const gtry *>::test (const gimple *gs)
 {
   return gs->code == GIMPLE_TRY;
 }
@@ -1425,6 +1481,14 @@ inline bool
 is_a_helper <const gphi *>::test (const gimple *gs)
 {
   return gs->code == GIMPLE_PHI;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <const greturn *>::test (const gimple *gs)
+{
+  return gs->code == GIMPLE_RETURN;
 }
 
 template <>
@@ -3255,7 +3319,7 @@ gimple_call_set_tail (gcall *s, bool tail_p)
 /* Return true if GIMPLE_CALL S is marked as a tail call.  */
 
 static inline bool
-gimple_call_tail_p (gcall *s)
+gimple_call_tail_p (const gcall *s)
 {
   return (s->subcode & GF_CALL_TAILCALL) != 0;
 }
@@ -3297,7 +3361,7 @@ gimple_call_set_return_slot_opt (gcall *s, bool return_slot_opt_p)
 /* Return true if S is marked for return slot optimization.  */
 
 static inline bool
-gimple_call_return_slot_opt_p (gcall *s)
+gimple_call_return_slot_opt_p (const gcall *s)
 {
   return (s->subcode & GF_CALL_RETURN_SLOT_OPT) != 0;
 }
@@ -3342,7 +3406,7 @@ gimple_call_set_va_arg_pack (gcall *s, bool pass_arg_pack_p)
    argument pack in its argument list.  */
 
 static inline bool
-gimple_call_va_arg_pack_p (gcall *s)
+gimple_call_va_arg_pack_p (const gcall *s)
 {
   return (s->subcode & GF_CALL_VA_ARG_PACK) != 0;
 }
@@ -3444,6 +3508,13 @@ gimple_call_use_set (gcall *call_stmt)
   return &call_stmt->call_used;
 }
 
+/* As above, but const.  */
+
+static inline const pt_solution *
+gimple_call_use_set (const gcall *call_stmt)
+{
+  return &call_stmt->call_used;
+}
 
 /* Return a pointer to the points-to solution for the set of call-used
    variables of the call CALL_STMT.  */
@@ -3454,16 +3525,24 @@ gimple_call_clobber_set (gcall *call_stmt)
   return &call_stmt->call_clobbered;
 }
 
+/* As above, but const.  */
+
+static inline const pt_solution *
+gimple_call_clobber_set (const gcall *call_stmt)
+{
+  return &call_stmt->call_clobbered;
+}
+
 
 /* Returns true if this is a GIMPLE_ASSIGN or a GIMPLE_CALL with a
    non-NULL lhs.  */
 
 static inline bool
-gimple_has_lhs (gimple *stmt)
+gimple_has_lhs (const gimple *stmt)
 {
   if (is_gimple_assign (stmt))
     return true;
-  if (gcall *call = dyn_cast <gcall *> (stmt))
+  if (const gcall *call = dyn_cast <const gcall *> (stmt))
     return gimple_call_lhs (call) != NULL_TREE;
   return false;
 }
@@ -3761,9 +3840,9 @@ gimple_bind_body_ptr (gbind *bind_stmt)
 /* Return the GIMPLE sequence contained in the GIMPLE_BIND statement GS.  */
 
 static inline gimple_seq
-gimple_bind_body (gbind *gs)
+gimple_bind_body (const gbind *gs)
 {
-  return *gimple_bind_body_ptr (gs);
+  return *gimple_bind_body_ptr (const_cast <gbind *> (gs));
 }
 
 
@@ -4035,9 +4114,9 @@ gimple_catch_handler_ptr (gcatch *catch_stmt)
    GIMPLE_CATCH statement CATCH_STMT.  */
 
 static inline gimple_seq
-gimple_catch_handler (gcatch *catch_stmt)
+gimple_catch_handler (const gcatch *catch_stmt)
 {
-  return *gimple_catch_handler_ptr (catch_stmt);
+  return *gimple_catch_handler_ptr (const_cast <gcatch *> (catch_stmt));
 }
 
 
@@ -4095,9 +4174,9 @@ gimple_eh_filter_failure_ptr (gimple *gs)
    statement fails.  */
 
 static inline gimple_seq
-gimple_eh_filter_failure (gimple *gs)
+gimple_eh_filter_failure (const gimple *gs)
 {
-  return *gimple_eh_filter_failure_ptr (gs);
+  return *gimple_eh_filter_failure_ptr (const_cast <gimple *> (gs));
 }
 
 
@@ -4124,7 +4203,7 @@ gimple_eh_filter_set_failure (geh_filter *eh_filter_stmt,
 /* Get the function decl to be called by the MUST_NOT_THROW region.  */
 
 static inline tree
-gimple_eh_must_not_throw_fndecl (geh_mnt *eh_mnt_stmt)
+gimple_eh_must_not_throw_fndecl (const geh_mnt *eh_mnt_stmt)
 {
   return eh_mnt_stmt->fndecl;
 }
@@ -4147,9 +4226,9 @@ gimple_eh_else_n_body_ptr (geh_else *eh_else_stmt)
 }
 
 static inline gimple_seq
-gimple_eh_else_n_body (geh_else *eh_else_stmt)
+gimple_eh_else_n_body (const geh_else *eh_else_stmt)
 {
-  return *gimple_eh_else_n_body_ptr (eh_else_stmt);
+  return *gimple_eh_else_n_body_ptr (const_cast <geh_else *> (eh_else_stmt));
 }
 
 static inline gimple_seq *
@@ -4159,9 +4238,9 @@ gimple_eh_else_e_body_ptr (geh_else *eh_else_stmt)
 }
 
 static inline gimple_seq
-gimple_eh_else_e_body (geh_else *eh_else_stmt)
+gimple_eh_else_e_body (const geh_else *eh_else_stmt)
 {
-  return *gimple_eh_else_e_body_ptr (eh_else_stmt);
+  return *gimple_eh_else_e_body_ptr (const_cast <geh_else *> (eh_else_stmt));
 }
 
 static inline void
@@ -4225,9 +4304,9 @@ gimple_try_eval_ptr (gimple *gs)
 /* Return the sequence of statements used as the body for GIMPLE_TRY GS.  */
 
 static inline gimple_seq
-gimple_try_eval (gimple *gs)
+gimple_try_eval (const gimple *gs)
 {
-  return *gimple_try_eval_ptr (gs);
+  return *gimple_try_eval_ptr (const_cast <gimple *> (gs));
 }
 
 
@@ -4246,9 +4325,9 @@ gimple_try_cleanup_ptr (gimple *gs)
    GIMPLE_TRY GS.  */
 
 static inline gimple_seq
-gimple_try_cleanup (gimple *gs)
+gimple_try_cleanup (const gimple *gs)
 {
-  return *gimple_try_cleanup_ptr (gs);
+  return *gimple_try_cleanup_ptr (const_cast <gimple *> (gs));
 }
 
 
@@ -4407,6 +4486,13 @@ gimple_phi_arg (gphi *gs, unsigned index)
   return &(gs->args[index]);
 }
 
+static inline const phi_arg_d *
+gimple_phi_arg (const gphi *gs, unsigned index)
+{
+  gcc_gimple_checking_assert (index < gs->nargs);
+  return &(gs->args[index]);
+}
+
 static inline struct phi_arg_d *
 gimple_phi_arg (gimple *gs, unsigned index)
 {
@@ -4446,7 +4532,7 @@ phi_nodes_ptr (basic_block bb)
 /* Return the tree operand for argument I of PHI node GS.  */
 
 static inline tree
-gimple_phi_arg_def (gphi *gs, size_t index)
+gimple_phi_arg_def (const gphi *gs, size_t index)
 {
   return gimple_phi_arg (gs, index)->def;
 }
@@ -4469,7 +4555,7 @@ gimple_phi_arg_def_ptr (gphi *phi, size_t index)
 /* Return the edge associated with argument I of phi node PHI.  */
 
 static inline edge
-gimple_phi_arg_edge (gphi *phi, size_t i)
+gimple_phi_arg_edge (const gphi *phi, size_t i)
 {
   return EDGE_PRED (gimple_bb (phi), i);
 }
@@ -4477,7 +4563,7 @@ gimple_phi_arg_edge (gphi *phi, size_t i)
 /* Return the source location of gimple argument I of phi node PHI.  */
 
 static inline location_t
-gimple_phi_arg_location (gphi *phi, size_t i)
+gimple_phi_arg_location (const gphi *phi, size_t i)
 {
   return gimple_phi_arg (phi, i)->locus;
 }
@@ -4501,7 +4587,7 @@ gimple_phi_arg_set_location (gphi *phi, size_t i, location_t loc)
 /* Return TRUE if argument I of phi node PHI has a location record.  */
 
 static inline bool
-gimple_phi_arg_has_location (gphi *phi, size_t i)
+gimple_phi_arg_has_location (const gphi *phi, size_t i)
 {
   return gimple_phi_arg_location (phi, i) != UNKNOWN_LOCATION;
 }
@@ -4669,7 +4755,7 @@ gimple_debug_bind_p (const gimple *s)
 /* Return the variable bound in a GIMPLE_DEBUG bind statement.  */
 
 static inline tree
-gimple_debug_bind_get_var (gimple *dbg)
+gimple_debug_bind_get_var (const gimple *dbg)
 {
   GIMPLE_CHECK (dbg, GIMPLE_DEBUG);
   gcc_gimple_checking_assert (gimple_debug_bind_p (dbg));
@@ -4680,7 +4766,7 @@ gimple_debug_bind_get_var (gimple *dbg)
    statement.  */
 
 static inline tree
-gimple_debug_bind_get_value (gimple *dbg)
+gimple_debug_bind_get_value (const gimple *dbg)
 {
   GIMPLE_CHECK (dbg, GIMPLE_DEBUG);
   gcc_gimple_checking_assert (gimple_debug_bind_p (dbg));
@@ -4761,7 +4847,7 @@ gimple_debug_source_bind_p (const gimple *s)
 /* Return the variable bound in a GIMPLE_DEBUG source bind statement.  */
 
 static inline tree
-gimple_debug_source_bind_get_var (gimple *dbg)
+gimple_debug_source_bind_get_var (const gimple *dbg)
 {
   GIMPLE_CHECK (dbg, GIMPLE_DEBUG);
   gcc_gimple_checking_assert (gimple_debug_source_bind_p (dbg));
@@ -4772,7 +4858,7 @@ gimple_debug_source_bind_get_var (gimple *dbg)
    statement.  */
 
 static inline tree
-gimple_debug_source_bind_get_value (gimple *dbg)
+gimple_debug_source_bind_get_value (const gimple *dbg)
 {
   GIMPLE_CHECK (dbg, GIMPLE_DEBUG);
   gcc_gimple_checking_assert (gimple_debug_source_bind_p (dbg));
@@ -4873,9 +4959,9 @@ gimple_omp_body_ptr (gimple *gs)
 /* Return the body for the OMP statement GS.  */
 
 static inline gimple_seq
-gimple_omp_body (gimple *gs)
+gimple_omp_body (const gimple *gs)
 {
-  return *gimple_omp_body_ptr (gs);
+  return *gimple_omp_body_ptr (const_cast <gimple *> (gs));
 }
 
 /* Set BODY to be the body for the OMP statement GS.  */
@@ -5140,9 +5226,9 @@ gimple_omp_for_set_clauses (gimple *gs, tree clauses)
 /* Get the collapse count of the OMP_FOR statement GS.  */
 
 static inline size_t
-gimple_omp_for_collapse (gimple *gs)
+gimple_omp_for_collapse (const gimple *gs)
 {
-  gomp_for *omp_for_stmt = as_a <gomp_for *> (gs);
+  const gomp_for *omp_for_stmt = as_a <const gomp_for *> (gs);
   return omp_for_stmt->collapse;
 }
 
@@ -5317,9 +5403,9 @@ gimple_omp_for_pre_body_ptr (gimple *gs)
    statement GS starts.  */
 
 static inline gimple_seq
-gimple_omp_for_pre_body (gimple *gs)
+gimple_omp_for_pre_body (const gimple *gs)
 {
-  return *gimple_omp_for_pre_body_ptr (gs);
+  return *gimple_omp_for_pre_body_ptr (const_cast <gimple *> (gs));
 }
 
 
@@ -6304,7 +6390,7 @@ gimple_transaction_body_ptr (gtransaction *transaction_stmt)
 /* Return the body for the GIMPLE_TRANSACTION statement TRANSACTION_STMT.  */
 
 static inline gimple_seq
-gimple_transaction_body (gtransaction *transaction_stmt)
+gimple_transaction_body (const gtransaction *transaction_stmt)
 {
   return transaction_stmt->body;
 }

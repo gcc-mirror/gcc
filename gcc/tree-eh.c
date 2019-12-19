@@ -139,19 +139,19 @@ remove_stmt_from_eh_lp (gimple *t)
    statement is not recorded in the region table.  */
 
 int
-lookup_stmt_eh_lp_fn (struct function *ifun, gimple *t)
+lookup_stmt_eh_lp_fn (struct function *ifun, const gimple *t)
 {
   if (ifun->eh->throw_stmt_table == NULL)
     return 0;
 
-  int *lp_nr = ifun->eh->throw_stmt_table->get (t);
+  int *lp_nr = ifun->eh->throw_stmt_table->get (const_cast <gimple *> (t));
   return lp_nr ? *lp_nr : 0;
 }
 
 /* Likewise, but always use the current function.  */
 
 int
-lookup_stmt_eh_lp (gimple *t)
+lookup_stmt_eh_lp (const gimple *t)
 {
   /* We can get called from initialized data when -fnon-call-exceptions
      is on; prevent crash.  */

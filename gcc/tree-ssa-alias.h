@@ -162,7 +162,7 @@ extern void dump_alias_stats (FILE *);
 
 /* In tree-ssa-structalias.c  */
 extern unsigned int compute_may_aliases (void);
-extern bool pt_solution_empty_p (struct pt_solution *);
+extern bool pt_solution_empty_p (const pt_solution *);
 extern bool pt_solution_singleton_or_null_p (struct pt_solution *, unsigned *);
 extern bool pt_solution_includes_global (struct pt_solution *);
 extern bool pt_solution_includes (struct pt_solution *, const_tree);
