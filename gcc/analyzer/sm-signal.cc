@@ -56,6 +56,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/diagnostic-manager.h"
 #include "shortest-paths.h"
 #include "analyzer/exploded-graph.h"
+#include "analyzer/function-set.h"
+#include "analyzer/analyzer-selftests.h"
 
 #if ENABLE_ANALYZER
 
@@ -246,16 +248,40 @@ public:
   tree m_fndecl;
 };
 
-/* Return true if CALL is known to be unsafe to call from a signal handler.  */
+/* Get a set of functions that are known to be unsafe to call from an
+   async signal handler.  */
+
+static function_set
+get_async_signal_unsafe_fns ()
+{
+  // TODO: populate this list more fully
+  static const char * const async_signal_unsafe_fns[] = {
+    /* This array must be kept sorted.  */
+    "fprintf",
+    "free",
+    "malloc",
+    "printf",
+    "snprintf",
+    "sprintf",
+    "vfprintf",
+    "vprintf",
+    "vsnprintf",
+    "vsprintf"
+  };
+  const size_t count
+    = sizeof(async_signal_unsafe_fns) / sizeof (async_signal_unsafe_fns[0]);
+  function_set fs (async_signal_unsafe_fns, count);
+  return fs;
+};
+
+/* Return true if FNDECL is known to be unsafe to call from a signal
+   handler.  */
 
 static bool
-signal_unsafe_p (tree callee_fndecl)
+signal_unsafe_p (tree fndecl)
 {
-  // TODO: maintain a list of known unsafe functions
-  if (is_named_call_p (callee_fndecl, "fprintf"))
-    return true;
-
-  return false;
+  function_set fs = get_async_signal_unsafe_fns ();
+  return fs.contains_decl_p (fndecl);
 }
 
 /* Implementation of state_machine::on_stmt vfunc for signal_state_machine.  */
@@ -325,4 +351,21 @@ make_signal_state_machine (logger *logger)
   return new signal_state_machine (logger);
 }
 
+#if CHECKING_P
+
+namespace selftest {
+
+/* Run all of the selftests within this file.  */
+
+void
+analyzer_sm_signal_cc_tests ()
+{
+  function_set fs = get_async_signal_unsafe_fns ();
+  fs.assert_sorted ();
+  fs.assert_sane ();
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P */
 #endif /* #if ENABLE_ANALYZER */

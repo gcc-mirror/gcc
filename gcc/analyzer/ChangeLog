@@ -1,6 +1,18 @@
 2020-01-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer-selftests.cc (selftest::run_analyzer_selftests): Call
+	selftest::analyzer_sm_signal_cc_tests.
+	* analyzer-selftests.h (selftest::analyzer_sm_signal_cc_tests):
+	New decl.
+	* sm-signal.cc: Include "analyzer/function-set.h" and
+	"analyzer/analyzer-selftests.h".
+	(get_async_signal_unsafe_fns): New function.
+	(signal_unsafe_p): Reimplement in terms of the above.
+	(selftest::analyzer_sm_signal_cc_tests): New function.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer-selftests.cc (selftest::run_analyzer_selftests): Call
 	selftest::analyzer_function_set_cc_tests.
 	* analyzer-selftests.h (selftest::analyzer_function_set_cc_tests):
 	New decl.

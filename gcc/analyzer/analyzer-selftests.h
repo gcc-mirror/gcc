@@ -37,6 +37,7 @@ extern void analyzer_function_set_cc_tests ();
 extern void analyzer_program_point_cc_tests ();
 extern void analyzer_program_state_cc_tests ();
 extern void analyzer_region_model_cc_tests ();
+extern void analyzer_sm_signal_cc_tests ();
 
 } /* end of namespace selftest.  */
 
