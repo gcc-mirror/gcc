@@ -6804,7 +6804,7 @@ pt_solution_ior_into (struct pt_solution *dest, struct pt_solution *src)
 /* Return true if the points-to solution *PT is empty.  */
 
 bool
-pt_solution_empty_p (struct pt_solution *pt)
+pt_solution_empty_p (const pt_solution *pt)
 {
   if (pt->anything
       || pt->nonlocal)

@@ -1,3 +1,95 @@
+2019-12-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* gimple-predict.h (gimple_predict_predictor): Make "gs" param
+	const.
+	(gimple_predict_outcome): Likewise.
+	* gimple-pretty-print.c (do_niy): Likewise.
+	(dump_unary_rhs): Likewise.
+	(dump_binary_rhs): Likewise.
+	(dump_ternary_rhs): Likewise.
+	(dump_gimple_assign): Likewise.
+	(dump_gimple_return): Likewise.
+	(dump_gimple_call_args): Likewise.
+	(pp_points_to_solution): Make "pt" param const.
+	(dump_gimple_call): Make "gs" param const.
+	(dump_gimple_switch): Likewise.
+	(dump_gimple_cond): Likewise.
+	(dump_gimple_label): Likewise.
+	(dump_gimple_goto): Likewise.
+	(dump_gimple_bind): Likewise.
+	(dump_gimple_try): Likewise.
+	(dump_gimple_catch): Likewise.
+	(dump_gimple_eh_filter): Likewise.
+	(dump_gimple_eh_must_not_throw): Likewise.
+	(dump_gimple_eh_else): Likewise.
+	(dump_gimple_resx): Likewise.
+	(dump_gimple_eh_dispatch): Likewise.
+	(dump_gimple_debug): Likewise.
+	(dump_gimple_omp_for): Likewise.
+	(dump_gimple_omp_continue): Likewise.
+	(dump_gimple_omp_single): Likewise.
+	(dump_gimple_omp_taskgroup): Likewise.
+	(dump_gimple_omp_target): Likewise.
+	(dump_gimple_omp_teams): Likewise.
+	(dump_gimple_omp_sections): Likewise.
+	(dump_gimple_omp_block): Likewise.
+	(dump_gimple_omp_critical): Likewise.
+	(dump_gimple_omp_ordered): Likewise.
+	(dump_gimple_omp_scan): Likewise.
+	(dump_gimple_omp_return): Likewise.
+	(dump_gimple_transaction): Likewise.
+	(dump_gimple_asm): Likewise.
+	(dump_gimple_phi): Make "phi" param const.
+	(dump_gimple_omp_parallel): Make "gs" param const.
+	(dump_gimple_omp_task): Likewise.
+	(dump_gimple_omp_atomic_load): Likewise.
+	(dump_gimple_omp_atomic_store): Likewise.
+	(dump_gimple_mem_ops): Likewise.
+	(pp_gimple_stmt_1): Likewise.  Add "const" to the various as_a <>
+	casts throughout.
+	* gimple-pretty-print.h (gimple_stmt_1): Make gimple * param const.
+	* gimple.h (is_a_helper <const gdebug *>::test): New.
+	(is_a_helper <const ggoto *>::test): New.
+	(is_a_helper <const glabel *>::test): New.
+	(is_a_helper <const geh_else *>::test): New.
+	(is_a_helper <const geh_mnt *>::test): New.
+	(is_a_helper <const gswitch *>::test): New.
+	(is_a_helper <const gtry *>::test): New.
+	(is_a_helper <const greturn *>::test): New.
+	(gimple_call_tail_p): Make param const.
+	(gimple_call_return_slot_opt_p): Likewise.
+	(gimple_call_va_arg_pack_p): Likewise.
+	(gimple_call_use_set): Add const overload.
+	(gimple_call_clobber_set): Likewise.
+	(gimple_has_lhs): Make param const.
+	(gimple_bind_body): Likewise.
+	(gimple_catch_handler): Likewise.
+	(gimple_eh_filter_failure): Likewise.
+	(gimple_eh_must_not_throw_fndecl): Likewise.
+	(gimple_eh_else_n_body): Likewise.
+	(gimple_eh_else_e_body): Likewise.
+	(gimple_try_eval): Likewise.
+	(gimple_try_cleanup): Likewise.
+	(gimple_phi_arg): Add const overload.
+	(gimple_phi_arg_def): Make param const.
+	(gimple_phi_arg_edge): Likewise.
+	(gimple_phi_arg_location): Likewise.
+	(gimple_phi_arg_has_location): Likewise.
+	(gimple_debug_bind_get_var): Likewise.
+	(gimple_debug_bind_get_value): Likewise.
+	(gimple_debug_source_bind_get_var): Likewise.
+	(gimple_debug_source_bind_get_value): Likewise.
+	(gimple_omp_body): Likewise.
+	(gimple_omp_for_collapse): Likewise.
+	(gimple_omp_for_pre_body): Likewise.
+	(gimple_transaction_body): Likewise.
+	* tree-eh.c (lookup_stmt_eh_lp_fn): Make param "t" const.
+	(lookup_stmt_eh_lp): Likewise.
+	* tree-eh.h (lookup_stmt_eh_lp_fn): Make param const.
+	(lookup_stmt_eh_lp): Likewise.
+	* tree-ssa-alias.h (pt_solution_empty_p): Make param const.
+	* tree-ssa-structalias.c (pt_solution_empty_p): Likewise.
+
 2019-12-19  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_simd_valid_immediate): When
