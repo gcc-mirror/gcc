@@ -126,6 +126,9 @@ typedef struct
 
   /* Flash size in bytes.  */
   int flash_size;
+
+  /* Offset where flash is seen in the RAM address space.  */
+  int flash_pm_offset;
 } avr_mcu_t;
 
 /* AVR device specific features.
