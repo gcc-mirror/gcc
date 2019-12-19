@@ -1,3 +1,9 @@
+2019-12-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (*plus_carry_dpp_shr_<mode>): Rename to ...
+	(*plus_carry_dpp_shr_v64si): ... this, and replace all
+	VEC_1REG_INT_MODE with V64SI.
+
 2019-12-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* hash-map-tests.c (selftest::test_map_of_int_to_strings): New
