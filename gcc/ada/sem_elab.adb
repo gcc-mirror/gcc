@@ -3594,12 +3594,6 @@ package body Sem_Elab is
       if Legacy_Elaboration_Checks then
          return;
 
-      --  Nothing to do for ASIS because ABE checks and diagnostics are not
-      --  performed in this mode.
-
-      elsif ASIS_Mode then
-         return;
-
       --  Nothing to do when the call is being preanalyzed as the marker will
       --  be inserted in the wrong place.
 
@@ -3934,13 +3928,6 @@ package body Sem_Elab is
       --  to carry out this action.
 
       if Legacy_Elaboration_Checks then
-         Finalize_All_Data_Structures;
-         return;
-
-      --  Nothing to do for ASIS because ABE checks and diagnostics are not
-      --  performed in this mode.
-
-      elsif ASIS_Mode then
          Finalize_All_Data_Structures;
          return;
 
@@ -14028,12 +14015,6 @@ package body Sem_Elab is
       --  to carry out this action.
 
       if Legacy_Elaboration_Checks then
-         return;
-
-      --  Nothing to do for ASIS because ABE checks and diagnostics are not
-      --  performed in this mode.
-
-      elsif ASIS_Mode then
          return;
 
       --  Nothing to do when the scenario is being preanalyzed

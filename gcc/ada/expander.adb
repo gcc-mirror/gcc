@@ -545,10 +545,10 @@ package body Expander is
 
    procedure Expander_Mode_Restore is
    begin
-      --  Not active (has no effect) in ASIS and GNATprove modes (see comments
+      --  Not active (has no effect) in GNATprove mode (see comments
       --  in spec of Expander_Mode_Save_And_Set).
 
-      if ASIS_Mode or GNATprove_Mode then
+      if GNATprove_Mode then
          return;
       end if;
 
@@ -572,10 +572,10 @@ package body Expander is
 
    procedure Expander_Mode_Save_And_Set (Status : Boolean) is
    begin
-      --  Not active (has no effect) in ASIS and GNATprove modes (see comments
+      --  Not active (has no effect) in GNATprove modes (see comments
       --  in spec of Expander_Mode_Save_And_Set).
 
-      if ASIS_Mode or GNATprove_Mode then
+      if GNATprove_Mode then
          return;
       end if;
 

@@ -1206,22 +1206,6 @@ package body Sem_Ch3 is
          begin
             F := First (Formals);
 
-            --  In ASIS mode, the access_to_subprogram may be analyzed twice,
-            --  when it is part of an unconstrained type and subtype expansion
-            --  is disabled. To avoid back-end problems with shared profiles,
-            --  use previous subprogram type as the designated type, and then
-            --  remove scope added above.
-
-            if ASIS_Mode and then Present (Scope (Defining_Identifier (F)))
-            then
-               Set_Etype                    (T_Name, T_Name);
-               Init_Size_Align              (T_Name);
-               Set_Directly_Designated_Type (T_Name,
-                 Scope (Defining_Identifier (F)));
-               End_Scope;
-               return;
-            end if;
-
             while Present (F) loop
                if No (Parent (Defining_Identifier (F))) then
                   Set_Parent (Defining_Identifier (F), F);
@@ -1808,13 +1792,9 @@ package body Sem_Ch3 is
                --  of locally defined tagged types (or compiling with static
                --  dispatch tables generation disabled) the corresponding
                --  entry of the secondary dispatch table is filled when such
-               --  an entity is frozen. This is an expansion activity that must
-               --  be suppressed for ASIS because it leads to gigi elaboration
-               --  issues in annotate mode.
+               --  an entity is frozen.
 
-               if not ASIS_Mode then
-                  Set_Has_Delayed_Freeze (New_Subp);
-               end if;
+               Set_Has_Delayed_Freeze (New_Subp);
             end if;
 
             <<Continue>>
@@ -2711,14 +2691,7 @@ package body Sem_Ch3 is
 
                else
                   --  For declarations in a subprogram body there is no issue
-                  --  with name resolution in aspect specifications, but in
-                  --  ASIS mode we need to preanalyze aspect specifications
-                  --  that may otherwise only be analyzed during expansion
-                  --  (e.g. during generation of a related subprogram).
-
-                  if ASIS_Mode then
-                     Resolve_Aspects;
-                  end if;
+                  --  with name resolution in aspect specifications.
 
                   Freeze_All (First_Entity (Current_Scope), Decl);
                   Freeze_From := Last_Entity (Current_Scope);
@@ -2743,16 +2716,6 @@ package body Sem_Ch3 is
                Adjust_Decl;
 
                --  End of a package declaration
-
-               --  In compilation mode the expansion of freeze node takes care
-               --  of resolving expressions of all aspects in the list. In ASIS
-               --  mode this must be done explicitly.
-
-               if ASIS_Mode
-                 and then Scope (Current_Scope) = Standard_Standard
-               then
-                  Resolve_Aspects;
-               end if;
 
                --  This is a freeze point because it is the end of a
                --  compilation unit.
@@ -2815,18 +2778,10 @@ package body Sem_Ch3 is
             --  to examine Next_Decl as the late primitive idiom can only apply
             --  to the first encountered body.
 
-            --  The spec of the late primitive is not generated in ASIS mode to
-            --  ensure a consistent list of primitives that indicates the true
-            --  semantic structure of the program (which is not relevant when
-            --  generating executable code).
-
             --  ??? A cleaner approach may be possible and/or this solution
             --  could be extended to general-purpose late primitives, TBD.
 
-            if not ASIS_Mode
-              and then not Body_Seen
-              and then not Is_Body (Decl)
-            then
+            if not Body_Seen and then not Is_Body (Decl) then
                Body_Seen := True;
 
                if Nkind (Next_Decl) = N_Subprogram_Body then
@@ -2836,6 +2791,7 @@ package body Sem_Ch3 is
             else
                --  In ASIS mode, if the next declaration is a body, complete
                --  the analysis of declarations so far.
+               --  Is this still needed???
 
                Resolve_Aspects;
             end if;
@@ -6541,61 +6497,6 @@ package body Sem_Ch3 is
 
       Mark_Rewrite_Insertion (Decl);
 
-      --  In ASIS mode, analyze the profile on the original node, because
-      --  the separate copy does not provide enough links to recover the
-      --  original tree. Analysis is limited to type annotations, within
-      --  a temporary scope that serves as an anonymous subprogram to collect
-      --  otherwise useless temporaries and itypes.
-
-      if ASIS_Mode then
-         declare
-            Typ : constant Entity_Id := Make_Temporary (Loc, 'S');
-
-         begin
-            if Nkind (Spec) = N_Access_Function_Definition then
-               Set_Ekind (Typ, E_Function);
-            else
-               Set_Ekind (Typ, E_Procedure);
-            end if;
-
-            Set_Parent (Typ, N);
-            Set_Scope  (Typ, Current_Scope);
-            Push_Scope (Typ);
-
-            --  Nothing to do if procedure is parameterless
-
-            if Present (Parameter_Specifications (Spec)) then
-               Process_Formals (Parameter_Specifications (Spec), Spec);
-            end if;
-
-            if Nkind (Spec) = N_Access_Function_Definition then
-               declare
-                  Def : constant Node_Id := Result_Definition (Spec);
-
-               begin
-                  --  The result might itself be an anonymous access type, so
-                  --  have to recurse.
-
-                  if Nkind (Def) = N_Access_Definition then
-                     if Present (Access_To_Subprogram_Definition (Def)) then
-                        Set_Etype
-                          (Def,
-                           Replace_Anonymous_Access_To_Protected_Subprogram
-                            (Spec));
-                     else
-                        Find_Type (Subtype_Mark (Def));
-                     end if;
-
-                  else
-                     Find_Type (Def);
-                  end if;
-               end;
-            end if;
-
-            End_Scope;
-         end;
-      end if;
-
       --  Insert the new declaration in the nearest enclosing scope. If the
       --  parent is a body and N is its return type, the declaration belongs
       --  in the enclosing scope. Likewise if N is the type of a parameter.
@@ -9662,10 +9563,6 @@ package body Sem_Ch3 is
       elsif not Private_Extension then
          Expand_Record_Extension (Derived_Type, Type_Def);
 
-         --  Note : previously in ASIS mode we set the Parent_Subtype of the
-         --  derived type to propagate some semantic information. This led
-         --  to other ASIS failures and has been removed.
-
          --  Ada 2005 (AI-251): Addition of the Tag corresponding to all the
          --  implemented interfaces if we are in expansion mode
 
@@ -11497,6 +11394,7 @@ package body Sem_Ch3 is
 
             --  If an access to object, preserve entity of designated type,
             --  for ASIS use, before rewriting the component definition.
+            --  Is this still needed???
 
             else
                declare
@@ -11505,16 +11403,16 @@ package body Sem_Ch3 is
                begin
                   Desig := Entity (Subtype_Indication (Type_Def));
 
-                  --  If the access definition is to the current  record,
-                  --  the visible entity at this point is an  incomplete
-                  --  type. Retrieve the full view to simplify  ASIS queries
+                  --  If the access definition is to the current record,
+                  --  the visible entity at this point is an incomplete
+                  --  type. Retrieve the full view to simplify ASIS queries
 
                   if Ekind (Desig) = E_Incomplete_Type then
                      Desig := Full_View (Desig);
                   end if;
 
                   Set_Entity
-                    (Subtype_Mark (Access_Definition  (Comp_Def)), Desig);
+                    (Subtype_Mark (Access_Definition (Comp_Def)), Desig);
                end;
             end if;
 
@@ -17852,19 +17750,6 @@ package body Sem_Ch3 is
 
       else
          T := Process_Subtype (Obj_Def, Related_Nod);
-
-         --  If expansion is disabled an object definition that is an aggregate
-         --  will not get expanded and may lead to scoping problems in the back
-         --  end, if the object is referenced in an inner scope. In that case
-         --  create an itype reference for the object definition now. This
-         --  may be redundant in some cases, but harmless.
-
-         if Is_Itype (T)
-           and then Nkind (Related_Nod) = N_Object_Declaration
-           and then ASIS_Mode
-         then
-            Build_Itype_Reference (T, Related_Nod);
-         end if;
       end if;
 
       return T;

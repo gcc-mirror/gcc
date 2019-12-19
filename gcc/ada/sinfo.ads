@@ -381,7 +381,8 @@ package Sinfo is
    --  subprogram instance, and the other is an anonymous subprogram nested
    --  within a wrapper package that contains the renamings for the actuals.
    --  Both of these entities have the Sloc of the defining entity in the
-   --  instantiation node. This simplifies some ASIS queries.
+   --  instantiation node. This simplified for instance in the past some ASIS
+   --  queries.
 
    -----------------------
    -- Field Definitions --
@@ -457,72 +458,6 @@ package Sinfo is
    --  Note that most of these restrictions apply only to trees generated when
    --  code is being generated, since they involved expander actions that
    --  destroy the tree.
-
-   ---------------
-   -- ASIS Mode --
-   ---------------
-
-   --  When a file is compiled in ASIS mode (-gnatct), expansion is skipped,
-   --  and the analysis must generate a tree in a form that meets all ASIS
-   --  requirements.
-
-   --  ASIS must be able to recover the original tree that corresponds to the
-   --  source. It relies heavily on Original_Node for this purpose, which as
-   --  described in Atree, records the history when a node is rewritten. ASIS
-   --  uses Original_Node to recover the original node before the Rewrite.
-
-   --  At least in ASIS mode (not really important in non-ASIS mode), when
-   --  N1 is rewritten as N2:
-
-   --    The subtree rooted by the original node N1 should be fully decorated,
-   --    i.e. all semantic fields noted in sinfo.ads should be set properly
-   --    and any referenced entities should be complete (with exceptions for
-   --    representation information, noted below).
-
-   --    For all the direct descendants of N1 (original node) their Parent
-   --    links should point not to N1, but to N2 (rewriting node).
-
-   --    The Parent links of rewritten nodes (N1 in this example) are set in
-   --    some cases (to point to the rewritten parent), but in other cases
-   --    they are set to Empty. This needs sorting out ??? It would be much
-   --    cleaner if they could always be set in the original node ???
-
-   --  There are a few cases when ASIS has to use not the original, but the
-   --  rewritten tree structures. This happens when because of some important
-   --  technical reasons it is impossible or very hard to have the original
-   --  structure properly decorated by semantic information, and the rewritten
-   --  structure fully reproduces the original source. Below is the (incomplete
-   --  for the moment???) list of such exceptions:
-   --
-   --    Generic specifications and generic bodies
-   --    Function calls that use prefixed notation (Operand.Operation [(...)])
-
-   --  Representation Information
-
-   --    For the purposes of the data description annex, the representation
-   --    information for source declared entities must be complete in the
-   --    ASIS tree.
-
-   --    This requires that the front end call the back end (gigi/gcc) in
-   --    a special "back annotate only" mode to obtain information on layout
-   --    from the back end.
-
-   --    For the purposes of this special "back annotate only" mode, the
-   --    requirements that would normally need to be met to generate code
-   --    are relaxed as follows:
-
-   --      Anonymous types need not have full representation information (e.g.
-   --      sizes need not be set for types where the front end would normally
-   --      set the sizes), since anonymous types can be ignored in this mode.
-
-   --      In this mode, gigi will see at least fragments of a fully annotated
-   --      unexpanded tree. This means that it will encounter nodes it does
-   --      not normally handle (such as stubs, task bodies etc). It should
-   --      simply ignore these nodes, since they are not relevant to the task
-   --      of back annotating representation information.
-
-   --  Some other ASIS-specific issues are covered in specific comments in
-   --  sections for particular nodes or flags.
 
    ----------------
    -- Ghost Mode --
@@ -750,15 +685,15 @@ package Sinfo is
    --  These three flags are always set by the front end during semantic
    --  analysis, on expression nodes that may trigger the corresponding
    --  check. The front end then inserts or not the check during expansion. In
-   --  particular, these flags should also be correctly set in ASIS mode and
-   --  GNATprove mode. As a special case, the front end does not insert a
-   --  Do_Division_Check flag on float exponentiation expressions, for the case
-   --  where the value is 0.0 and the exponent is negative, although this case
-   --  does lead to a division check failure. As another special case,
-   --  the front end does not insert a Do_Range_Check on an allocator where
-   --  the designated type is scalar, and the designated type is more
-   --  constrained than the type of the initialized allocator value or the type
-   --  of the default value for an uninitialized allocator.
+   --  particular, these flags should also be correctly set in GNATprove mode.
+   --  As a special case, the front end does not insert a Do_Division_Check
+   --  flag on float exponentiation expressions, for the case where the value
+   --  is 0.0 and the exponent is negative, although this case does lead to a
+   --  division check failure. As another special case, the front end does not
+   --  insert a Do_Range_Check on an allocator where the designated type is
+   --  scalar, and the designated type is more constrained than the type of the
+   --  initialized allocator value or the type of the default value for an
+   --  uninitialized allocator.
 
    --  Note that the expander always takes care of the Do_Range_Check case, so
    --  this flag will never be set in the expanded tree passed to the back end.
@@ -1120,8 +1055,7 @@ package Sinfo is
    --    map generic formals to their actuals. If set, the field points either
    --    to a copy of a default expression for an actual of mode IN or to a
    --    generic_association which is the original parent of the expression or
-   --    name appearing in the declaration. This simplifies ASIS and GNATprove
-   --    queries.
+   --    name appearing in the declaration. This simplifies GNATprove queries.
 
    --  Corresponding_Integer_Value (Uint4-Sem)
    --    This field is set in real literals of fixed-point types (it is not
@@ -1487,8 +1421,7 @@ package Sinfo is
    --    attribute is a function call (possibly dereferenced) that corresponds
    --    to the proper expansion of the source indexing operation. Before
    --    expansion, the source node is rewritten as the resolved generalized
-   --    indexing. In ASIS mode, the expansion does not take place, so that
-   --    the source is preserved and properly annotated with types.
+   --    indexing.
 
    --  Generic_Parent (Node5-Sem)
    --    Generic_Parent is defined on declaration nodes that are instances. The
@@ -2028,10 +1961,9 @@ package Sinfo is
    --  Label_Construct (Node2-Sem)
    --    Used in an N_Implicit_Label_Declaration node. Refers to an N_Label,
    --    N_Block_Statement or N_Loop_Statement node to which the label
-   --    declaration applies. This attribute is used both in the compiler and
-   --    in the implementation of ASIS queries. The field is left empty for the
-   --    special labels generated as part of expanding raise statements with a
-   --    local exception handler.
+   --    declaration applies. The field is left empty for the special labels
+   --    generated as part of expanding raise statements with a local exception
+   --    handler.
 
    --  Library_Unit (Node4-Sem)
    --    In a stub node, Library_Unit points to the compilation unit node of
@@ -2251,7 +2183,7 @@ package Sinfo is
    --    Original_Entity is empty. This field is needed to handle properly
    --    named numbers in generic units, where the Associated_Node field
    --    interferes with the Entity field, making it impossible to preserve the
-   --    original entity at the point of instantiation (ASIS problem).
+   --    original entity at the point of instantiation.
 
    --  Others_Discrete_Choices (List1-Sem)
    --    When a case statement or variant is analyzed, the semantic checks
@@ -2289,8 +2221,8 @@ package Sinfo is
    --    values, this expression evaluates to False (zero) if variant is not
    --    present, and True (non-zero) if it is present. See unit Repinfo for
    --    further details on gigi back annotation. This field is used during
-   --    ASIS processing (data decomposition annex) to determine if a field is
-   --    present or not.
+   --    back-annotation processing (for -gnatR -gnatc) to determine if a field
+   --    is present or not.
 
    --  Prev_Use_Clause (Node1-Sem)
    --    Present in both N_Use_Package_Clause and N_Use_Type_Clause. Used in
@@ -2502,10 +2434,7 @@ package Sinfo is
    --  Was_Expression_Function (Flag18-Sem)
    --    Present in N_Subprogram_Body. True if the original source had an
    --    N_Expression_Function, which was converted to the N_Subprogram_Body
-   --    by Analyze_Expression_Function. This is needed by ASIS to correctly
-   --    recreate the expression function (for the instance body) when the
-   --    completion of a generic function declaration is an expression
-   --    function.
+   --    by Analyze_Expression_Function.
 
    --  Was_Originally_Stub (Flag13-Sem)
    --    This flag is set in the node for a proper body that replaces stub.
@@ -3697,9 +3626,7 @@ package Sinfo is
       --  Note: in the list of Discrete_Choices, the tree passed to the back
       --  end does not have choice entries corresponding to names of statically
       --  predicated subtypes. Such entries are always expanded out to the list
-      --  of equivalent values or ranges. The ASIS tree generated in -gnatct
-      --  mode also has this expansion, but done with a proper Rewrite call on
-      --  the N_Variant node so that ASIS can properly retrieve the original.
+      --  of equivalent values or ranges.
 
       ---------------------------------
       -- 3.8.1  Discrete Choice List --
@@ -5091,8 +5018,7 @@ package Sinfo is
       --  Note: in the list of Discrete_Choices, the tree passed to the back
       --  end does not have choice entries corresponding to names of statically
       --  predicated subtypes. Such entries are always expanded out to the list
-      --  of equivalent values or ranges. The ASIS tree generated in -gnatct
-      --  mode does not have this expansion, and has the original choices.
+      --  of equivalent values or ranges.
 
       -------------------------
       -- 5.5  Loop Statement --
@@ -6769,8 +6695,7 @@ package Sinfo is
       --  limited with clause is changed into a normal with clause, because we
       --  are not prepared to deal with limited with in the context of Rtsfind.
       --  So in this case, the Limited_Present flag will be False in the final
-      --  tree. However, we do NOT do this transformation in ASIS mode, so for
-      --  ASIS the flag will remain set in this situation.
+      --  tree.
 
       ----------------------
       -- With_Type clause --

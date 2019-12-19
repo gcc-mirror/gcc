@@ -1899,12 +1899,6 @@ package body Sem_Util is
       if Present (Elaboration_Entity (Spec_Id)) then
          return;
 
-      --  Ignore in ASIS mode, elaboration entity is not in source and plays
-      --  no role in analysis.
-
-      elsif ASIS_Mode then
-         return;
-
       --  Do not generate an elaboration entity in GNATprove move because the
       --  elaboration counter is a form of expansion.
 
@@ -20119,12 +20113,6 @@ package body Sem_Util is
       --  does not use markers.
 
       if Legacy_Elaboration_Checks then
-         return False;
-
-      --  No marker needs to be created for ASIS because ABE diagnostics and
-      --  checks are not performed in this mode.
-
-      elsif ASIS_Mode then
          return False;
 
       --  No marker needs to be created when the reference is preanalyzed

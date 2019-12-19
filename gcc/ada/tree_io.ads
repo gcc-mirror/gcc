@@ -34,6 +34,8 @@
 --  create and close routines are elsewhere (in Osint in the compiler, and in
 --  the tree read driver for the tree read interface).
 
+--  Should we remove this package altogether???
+
 with Types;  use Types;
 with System; use System;
 
@@ -46,27 +48,6 @@ package Tree_IO is
 
    Tree_Format_Error : exception;
    --  Raised if a format error is detected in the input file
-
-   ASIS_Version_Number : constant := 34;
-   --  ASIS Version. This is used to check for consistency between the compiler
-   --  used to generate trees and an ASIS application that is reading the
-   --  trees. It must be incremented whenever a change is made to the tree
-   --  format that would result in the compiler being incompatible with an
-   --  older version of ASIS.
-   --
-   --  27  Changes in the tree structures for expression functions
-   --  28  Changes in Snames
-   --  29  Changes in Sem_Ch3 (tree copying in case of discriminant constraint
-   --      for concurrent types).
-   --  30  Add Check_Float_Overflow boolean to tree file
-   --  31  Remove read/write of Debug_Pragmas_Disabled/Debug_Pragmas_Enabled
-   --  32  Change the way entities are changed through Next_Entity field in
-   --      the hierarchy of child units
-   --  33  Add copying subtrees for rewriting infix calls of operator
-   --      functions for the corresponding original nodes.
-   --  34  Add read/write of Address_Is_Private, Ignore_Rep_Clauses,
-   --      Ignore_Style_Check_Pragmas, Multiple_Unit_Index. Also this
-   --      is the version where rep clauses are removed by -gnatI.
 
    procedure Tree_Read_Initialize (Desc : File_Descriptor);
    --  Called to initialize reading of a tree file. This call must be made

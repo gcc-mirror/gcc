@@ -1157,11 +1157,11 @@ begin
             return Nkind (Arg1) = N_Identifier
 
               --  Return True if the tool name is GNAT, and we're not in
-              --  GNATprove or CodePeer or ASIS mode...
+              --  GNATprove or CodePeer mode...
 
               and then ((Chars (Arg1) = Name_Gnat
                           and then not
-                            (CodePeer_Mode or GNATprove_Mode or ASIS_Mode))
+                            (CodePeer_Mode or GNATprove_Mode))
 
               --  or if the tool name is GNATprove, and we're in GNATprove
               --  mode.

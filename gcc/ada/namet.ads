@@ -415,9 +415,7 @@ package Namet is
    --  also the suffixes used to indicate package body entities and to
    --  distinguish between overloaded entities). Note that names are not
    --  qualified until just before the call to gigi, so this routine is only
-   --  needed by processing that occurs after gigi has been called. This
-   --  includes all ASIS processing, since ASIS works on the tree written
-   --  after gigi has been called.
+   --  needed by processing that occurs after gigi has been called.
 
    procedure Append_Unqualified_Decoded
      (Buf : in out Bounded_String;

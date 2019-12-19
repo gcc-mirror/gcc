@@ -412,14 +412,15 @@ begin
 
             --  Cleanup processing after completing main analysis
 
-            --  Comment needed for ASIS mode test and GNATprove mode test???
+            --  In GNATprove_Mode we do not perform most expansions but body
+            --  instantiation is needed.
 
             pragma Assert
               (Operating_Mode = Generate_Code
                 or else Operating_Mode = Check_Semantics);
 
             if Operating_Mode = Generate_Code
-              or else (ASIS_Mode or GNATprove_Mode)
+              or else GNATprove_Mode
             then
                Instantiate_Bodies;
             end if;
