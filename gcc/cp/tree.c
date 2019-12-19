@@ -539,6 +539,16 @@ build_local_temp (tree type)
   return slot;
 }
 
+/* Return whether DECL is such a local temporary.  */
+
+bool
+is_local_temp (tree decl)
+{
+  return (VAR_P (decl) && DECL_ARTIFICIAL (decl)
+	  && !TREE_STATIC (decl)
+	  && DECL_FUNCTION_SCOPE_P (decl));
+}
+
 /* Set various status flags when building an AGGR_INIT_EXPR object T.  */
 
 static void
