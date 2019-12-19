@@ -4,9 +4,9 @@
 
 @c This file is generated automatically using
 @c gcc/config/avr/gen-avr-mmcu-texi.c from:
-@c    gcc/config/avr/avr-arch.h
-@c    gcc/config/avr/avr-devices.c
-@c    gcc/config/avr/avr-mcus.def
+@c	 gcc/config/avr/avr-arch.h
+@c	 gcc/config/avr/avr-devices.c
+@c	 gcc/config/avr/avr-mcus.def
 
 @c Please do not edit manually.
 
@@ -14,15 +14,15 @@
 
 @item avr2
 ``Classic'' devices with up to 8@tie{}KiB of program memory.
-@*@var{mcu}@tie{}= @code{attiny22}, @code{attiny26}, @code{at90c8534}, @code{at90s2313}, @code{at90s2323}, @code{at90s2333}, @code{at90s2343}, @code{at90s4414}, @code{at90s4433}, @code{at90s4434}, @code{at90s8515}, @code{at90s8535}.
+@*@var{mcu}@tie{}= @code{attiny22}, @code{attiny26}, @code{at90s2313}, @code{at90s2323}, @code{at90s2333}, @code{at90s2343}, @code{at90s4414}, @code{at90s4433}, @code{at90s4434}, @code{at90c8534}, @code{at90s8515}, @code{at90s8535}.
 
 @item avr25
 ``Classic'' devices with up to 8@tie{}KiB of program memory and with the @code{MOVW} instruction.
-@*@var{mcu}@tie{}= @code{ata5272}, @code{ata6616c}, @code{attiny13}, @code{attiny13a}, @code{attiny2313}, @code{attiny2313a}, @code{attiny24}, @code{attiny24a}, @code{attiny25}, @code{attiny261}, @code{attiny261a}, @code{attiny43u}, @code{attiny4313}, @code{attiny44}, @code{attiny44a}, @code{attiny441}, @code{attiny45}, @code{attiny461}, @code{attiny461a}, @code{attiny48}, @code{attiny828}, @code{attiny84}, @code{attiny84a}, @code{attiny841}, @code{attiny85}, @code{attiny861}, @code{attiny861a}, @code{attiny87}, @code{attiny88}, @code{at86rf401}.
+@*@var{mcu}@tie{}= @code{attiny13}, @code{attiny13a}, @code{attiny24}, @code{attiny24a}, @code{attiny25}, @code{attiny261}, @code{attiny261a}, @code{attiny2313}, @code{attiny2313a}, @code{attiny43u}, @code{attiny44}, @code{attiny44a}, @code{attiny45}, @code{attiny48}, @code{attiny441}, @code{attiny461}, @code{attiny461a}, @code{attiny4313}, @code{attiny84}, @code{attiny84a}, @code{attiny85}, @code{attiny87}, @code{attiny88}, @code{attiny828}, @code{attiny841}, @code{attiny861}, @code{attiny861a}, @code{ata5272}, @code{ata6616c}, @code{at86rf401}.
 
 @item avr3
-``Classic'' devices with 16@tie{}KiB up to 64@tie{}KiB of  program memory.
-@*@var{mcu}@tie{}= @code{at43usb355}, @code{at76c711}.
+``Classic'' devices with 16@tie{}KiB up to 64@tie{}KiB of program memory.
+@*@var{mcu}@tie{}= @code{at76c711}, @code{at43usb355}.
 
 @item avr31
 ``Classic'' devices with 128@tie{}KiB of program memory.
@@ -30,15 +30,15 @@
 
 @item avr35
 ``Classic'' devices with 16@tie{}KiB up to 64@tie{}KiB of program memory and with the @code{MOVW} instruction.
-@*@var{mcu}@tie{}= @code{ata5505}, @code{ata6617c}, @code{ata664251}, @code{atmega16u2}, @code{atmega32u2}, @code{atmega8u2}, @code{attiny1634}, @code{attiny167}, @code{at90usb162}, @code{at90usb82}.
+@*@var{mcu}@tie{}= @code{attiny167}, @code{attiny1634}, @code{atmega8u2}, @code{atmega16u2}, @code{atmega32u2}, @code{ata5505}, @code{ata6617c}, @code{ata664251}, @code{at90usb82}, @code{at90usb162}.
 
 @item avr4
 ``Enhanced'' devices with up to 8@tie{}KiB of program memory.
-@*@var{mcu}@tie{}= @code{ata6285}, @code{ata6286}, @code{ata6289}, @code{ata6612c}, @code{atmega48}, @code{atmega48a}, @code{atmega48p}, @code{atmega48pa}, @code{atmega48pb}, @code{atmega8}, @code{atmega8a}, @code{atmega8hva}, @code{atmega8515}, @code{atmega8535}, @code{atmega88}, @code{atmega88a}, @code{atmega88p}, @code{atmega88pa}, @code{atmega88pb}, @code{at90pwm1}, @code{at90pwm2}, @code{at90pwm2b}, @code{at90pwm3}, @code{at90pwm3b}, @code{at90pwm81}.
+@*@var{mcu}@tie{}= @code{atmega48}, @code{atmega48a}, @code{atmega48p}, @code{atmega48pa}, @code{atmega48pb}, @code{atmega8}, @code{atmega8a}, @code{atmega8hva}, @code{atmega88}, @code{atmega88a}, @code{atmega88p}, @code{atmega88pa}, @code{atmega88pb}, @code{atmega8515}, @code{atmega8535}, @code{ata6285}, @code{ata6286}, @code{ata6289}, @code{ata6612c}, @code{at90pwm1}, @code{at90pwm2}, @code{at90pwm2b}, @code{at90pwm3}, @code{at90pwm3b}, @code{at90pwm81}.
 
 @item avr5
 ``Enhanced'' devices with 16@tie{}KiB up to 64@tie{}KiB of program memory.
-@*@var{mcu}@tie{}= @code{ata5702m322}, @code{ata5782}, @code{ata5790}, @code{ata5790n}, @code{ata5791}, @code{ata5795}, @code{ata5831}, @code{ata6613c}, @code{ata6614q}, @code{ata8210}, @code{ata8510}, @code{atmega16}, @code{atmega16a}, @code{atmega16hva}, @code{atmega16hva2}, @code{atmega16hvb}, @code{atmega16hvbrevb}, @code{atmega16m1}, @code{atmega16u4}, @code{atmega161}, @code{atmega162}, @code{atmega163}, @code{atmega164a}, @code{atmega164p}, @code{atmega164pa}, @code{atmega165}, @code{atmega165a}, @code{atmega165p}, @code{atmega165pa}, @code{atmega168}, @code{atmega168a}, @code{atmega168p}, @code{atmega168pa}, @code{atmega168pb}, @code{atmega169}, @code{atmega169a}, @code{atmega169p}, @code{atmega169pa}, @code{atmega32}, @code{atmega32a}, @code{atmega32c1}, @code{atmega32hvb}, @code{atmega32hvbrevb}, @code{atmega32m1}, @code{atmega32u4}, @code{atmega32u6}, @code{atmega323}, @code{atmega324a}, @code{atmega324p}, @code{atmega324pa}, @code{atmega325}, @code{atmega325a}, @code{atmega325p}, @code{atmega325pa}, @code{atmega3250}, @code{atmega3250a}, @code{atmega3250p}, @code{atmega3250pa}, @code{atmega328}, @code{atmega328p}, @code{atmega328pb}, @code{atmega329}, @code{atmega329a}, @code{atmega329p}, @code{atmega329pa}, @code{atmega3290}, @code{atmega3290a}, @code{atmega3290p}, @code{atmega3290pa}, @code{atmega406}, @code{atmega64}, @code{atmega64a}, @code{atmega64c1}, @code{atmega64hve}, @code{atmega64hve2}, @code{atmega64m1}, @code{atmega64rfr2}, @code{atmega640}, @code{atmega644}, @code{atmega644a}, @code{atmega644p}, @code{atmega644pa}, @code{atmega644rfr2}, @code{atmega645}, @code{atmega645a}, @code{atmega645p}, @code{atmega6450}, @code{atmega6450a}, @code{atmega6450p}, @code{atmega649}, @code{atmega649a}, @code{atmega649p}, @code{atmega6490}, @code{atmega6490a}, @code{atmega6490p}, @code{at90can32}, @code{at90can64}, @code{at90pwm161}, @code{at90pwm216}, @code{at90pwm316}, @code{at90scr100}, @code{at90usb646}, @code{at90usb647}, @code{at94k}, @code{m3000}.
+@*@var{mcu}@tie{}= @code{atmega16}, @code{atmega16a}, @code{atmega16hva}, @code{atmega16hva2}, @code{atmega16hvb}, @code{atmega16hvbrevb}, @code{atmega16m1}, @code{atmega16u4}, @code{atmega161}, @code{atmega162}, @code{atmega163}, @code{atmega164a}, @code{atmega164p}, @code{atmega164pa}, @code{atmega165}, @code{atmega165a}, @code{atmega165p}, @code{atmega165pa}, @code{atmega168}, @code{atmega168a}, @code{atmega168p}, @code{atmega168pa}, @code{atmega168pb}, @code{atmega169}, @code{atmega169a}, @code{atmega169p}, @code{atmega169pa}, @code{atmega32}, @code{atmega32a}, @code{atmega32c1}, @code{atmega32hvb}, @code{atmega32hvbrevb}, @code{atmega32m1}, @code{atmega32u4}, @code{atmega32u6}, @code{atmega323}, @code{atmega324a}, @code{atmega324p}, @code{atmega324pa}, @code{atmega325}, @code{atmega325a}, @code{atmega325p}, @code{atmega325pa}, @code{atmega328}, @code{atmega328p}, @code{atmega328pb}, @code{atmega329}, @code{atmega329a}, @code{atmega329p}, @code{atmega329pa}, @code{atmega3250}, @code{atmega3250a}, @code{atmega3250p}, @code{atmega3250pa}, @code{atmega3290}, @code{atmega3290a}, @code{atmega3290p}, @code{atmega3290pa}, @code{atmega406}, @code{atmega64}, @code{atmega64a}, @code{atmega64c1}, @code{atmega64hve}, @code{atmega64hve2}, @code{atmega64m1}, @code{atmega64rfr2}, @code{atmega640}, @code{atmega644}, @code{atmega644a}, @code{atmega644p}, @code{atmega644pa}, @code{atmega644rfr2}, @code{atmega645}, @code{atmega645a}, @code{atmega645p}, @code{atmega649}, @code{atmega649a}, @code{atmega649p}, @code{atmega6450}, @code{atmega6450a}, @code{atmega6450p}, @code{atmega6490}, @code{atmega6490a}, @code{atmega6490p}, @code{ata5795}, @code{ata5790}, @code{ata5790n}, @code{ata5791}, @code{ata6613c}, @code{ata6614q}, @code{ata5782}, @code{ata5831}, @code{ata8210}, @code{ata8510}, @code{ata5702m322}, @code{at90pwm161}, @code{at90pwm216}, @code{at90pwm316}, @code{at90can32}, @code{at90can64}, @code{at90scr100}, @code{at90usb646}, @code{at90usb647}, @code{at94k}, @code{m3000}.
 
 @item avr51
 ``Enhanced'' devices with 128@tie{}KiB of program memory.
@@ -50,11 +50,11 @@
 
 @item avrxmega2
 ``XMEGA'' devices with more than 8@tie{}KiB and up to 64@tie{}KiB of program memory.
-@*@var{mcu}@tie{}= @code{atxmega16a4}, @code{atxmega16a4u}, @code{atxmega16c4}, @code{atxmega16d4}, @code{atxmega16e5}, @code{atxmega32a4}, @code{atxmega32a4u}, @code{atxmega32c3}, @code{atxmega32c4}, @code{atxmega32d3}, @code{atxmega32d4}, @code{atxmega32e5}, @code{atxmega8e5}.
+@*@var{mcu}@tie{}= @code{atxmega8e5}, @code{atxmega16a4}, @code{atxmega16a4u}, @code{atxmega16c4}, @code{atxmega16d4}, @code{atxmega16e5}, @code{atxmega32a4}, @code{atxmega32a4u}, @code{atxmega32c3}, @code{atxmega32c4}, @code{atxmega32d3}, @code{atxmega32d4}, @code{atxmega32e5}.
 
 @item avrxmega3
 ``XMEGA'' devices with up to 64@tie{}KiB of combined program memory and RAM, and with program memory visible in the RAM address space.
-@*@var{mcu}@tie{}= @code{attiny1614}, @code{attiny1616}, @code{attiny1617}, @code{attiny212}, @code{attiny214}, @code{attiny3214}, @code{attiny3216}, @code{attiny3217}, @code{attiny412}, @code{attiny414}, @code{attiny416}, @code{attiny417}, @code{attiny814}, @code{attiny816}, @code{attiny817}.
+@*@var{mcu}@tie{}= @code{attiny202}, @code{attiny204}, @code{attiny212}, @code{attiny214}, @code{attiny402}, @code{attiny404}, @code{attiny406}, @code{attiny412}, @code{attiny414}, @code{attiny416}, @code{attiny417}, @code{attiny804}, @code{attiny806}, @code{attiny807}, @code{attiny814}, @code{attiny816}, @code{attiny817}, @code{attiny1604}, @code{attiny1606}, @code{attiny1607}, @code{attiny1614}, @code{attiny1616}, @code{attiny1617}, @code{attiny3214}, @code{attiny3216}, @code{attiny3217}, @code{atmega808}, @code{atmega809}, @code{atmega1608}, @code{atmega1609}, @code{atmega3208}, @code{atmega3209}, @code{atmega4808}, @code{atmega4809}.
 
 @item avrxmega4
 ``XMEGA'' devices with more than 64@tie{}KiB and up to 128@tie{}KiB of program memory.
@@ -74,7 +74,7 @@
 
 @item avrtiny
 ``TINY'' Tiny core devices with 512@tie{}B up to 4@tie{}KiB of program memory.
-@*@var{mcu}@tie{}= @code{attiny10}, @code{attiny20}, @code{attiny4}, @code{attiny40}, @code{attiny5}, @code{attiny9}.
+@*@var{mcu}@tie{}= @code{attiny4}, @code{attiny5}, @code{attiny9}, @code{attiny10}, @code{attiny20}, @code{attiny40}.
 
 @item avr1
 This ISA is implemented by the minimal AVR core and supported for assembler only.
