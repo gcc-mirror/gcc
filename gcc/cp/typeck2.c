@@ -749,6 +749,7 @@ split_nonconstant_init_1 (tree dest, tree init)
 
   /* The rest of the initializer is now a constant. */
   TREE_CONSTANT (init) = 1;
+  TREE_SIDE_EFFECTS (init) = 0;
 
   /* We didn't split out anything.  */
   if (num_split_elts == 0)
@@ -777,8 +778,16 @@ split_nonconstant_init (tree dest, tree init)
       if (split_nonconstant_init_1 (dest, init))
 	init = NULL_TREE;
       code = pop_stmt_list (code);
-      DECL_INITIAL (dest) = init;
-      TREE_READONLY (dest) = 0;
+      if (VAR_P (dest) && !is_local_temp (dest))
+	{
+	  DECL_INITIAL (dest) = init;
+	  TREE_READONLY (dest) = 0;
+	}
+      else if (init)
+	{
+	  tree ie = build2 (INIT_EXPR, void_type_node, dest, init);
+	  code = add_stmt_to_compound (ie, code);
+	}
     }
   else if (TREE_CODE (init) == STRING_CST
 	   && array_of_runtime_bound_p (TREE_TYPE (dest)))

@@ -1,3 +1,12 @@
+2019-12-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/66139 - EH cleanups for partially constructed aggregates.
+	PR c++/57510
+	* cp-gimplify.c (cp_gimplify_init_expr): Use split_nonconstant_init.
+	* typeck2.c (split_nonconstant_init): Handle non-variable dest.
+	(split_nonconstant_init_1): Clear TREE_SIDE_EFFECTS.
+	* tree.c (is_local_temp): New.
+
 2019-12-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/91165 follow-on tweak
