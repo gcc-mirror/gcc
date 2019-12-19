@@ -539,7 +539,8 @@ build_local_temp (tree type)
   return slot;
 }
 
-/* Return whether DECL is such a local temporary.  */
+/* Return whether DECL is such a local temporary (or one from
+   create_tmp_var_raw).  */
 
 bool
 is_local_temp (tree decl)
