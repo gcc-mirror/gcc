@@ -47,3 +47,11 @@ test_4 (const char *path)
 
   return; /* { dg-warning "leak of FILE 'f'" } */ 
 }
+
+void
+test_5 (FILE *f, const char *msg)
+{
+  fclose (f); /* { dg-message "\\(1\\) file closed here" } */
+  fprintf (f, "foo: %s", msg); /* { dg-warning "use of closed FILE 'f'" } */
+  /* { dg-message "\\(2\\) use of closed FILE 'f'; closed at \\(1\\)" "" { target *-*-* } .-1 } */
+}

@@ -161,6 +161,46 @@ private:
   diagnostic_event_id_t m_first_fclose_event;
 };
 
+class use_of_closed_file : public file_diagnostic
+{
+public:
+  use_of_closed_file (const fileptr_state_machine &sm, tree arg)
+    : file_diagnostic (sm, arg)
+  {}
+
+  const char *get_kind () const FINAL OVERRIDE { return "use_of_closed_file"; }
+
+  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  {
+    // FIXME: CWE?
+    return warning_at (rich_loc, OPT_Wanalyzer_use_of_closed_file,
+		       "use of closed FILE %qE",
+		       m_arg);
+  }
+
+  label_text describe_state_change (const evdesc::state_change &change)
+    OVERRIDE
+  {
+    if (change.m_new_state == m_sm.m_closed)
+      {
+	m_fclose_event = change.m_event_id;
+	return change.formatted_print ("file closed here");
+      }
+    return file_diagnostic::describe_state_change (change);
+  }
+
+  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  {
+    if (m_fclose_event.known_p ())
+      return ev.formatted_print ("use of closed FILE %qE; closed at %@",
+				 ev.m_expr, &m_fclose_event);
+    return ev.formatted_print ("use of closed FILE %qE", ev.m_expr);
+  }
+
+private:
+  diagnostic_event_id_t m_fclose_event;
+};
+
 class file_leak : public file_diagnostic
 {
 public:
@@ -294,6 +334,41 @@ is_file_using_fn_p (tree fndecl)
   return fs.contains_decl_p (fndecl);
 }
 
+/* If FNDECL takes a FILE * param, write the 0-based index of the first
+   such param to *OUT_IDX and return true.  */
+
+static bool
+find_file_param (tree fndecl, int *out_idx)
+{
+  int idx = 0;
+  for (tree iter_param_types = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+       iter_param_types;
+       iter_param_types = TREE_CHAIN (iter_param_types), idx++)
+    {
+      tree param_type = TREE_VALUE (iter_param_types);
+
+      /* Looks like we can't rely on fileptr_type_node being set up;
+	 instead, look for a ptr to record called "FILE".  */
+
+      if (!POINTER_TYPE_P (param_type))
+	continue;
+      tree type = TREE_TYPE (param_type);
+      if (TREE_CODE (type) == RECORD_TYPE
+	  && TYPE_NAME (type)
+	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL)
+	{
+	  tree tdecl = TYPE_NAME (type);
+	  if (DECL_NAME (tdecl)
+	      && strcmp (IDENTIFIER_POINTER (DECL_NAME (tdecl)), "FILE") == 0)
+	    {
+	      *out_idx = idx;
+	      return true;
+	    }
+	}
+    }
+  return false;
+}
+
 /* Implementation of state_machine::on_stmt vfunc for fileptr_state_machine.  */
 
 bool
@@ -340,11 +415,26 @@ fileptr_state_machine::on_stmt (sm_context *sm_ctxt,
 
 	if (is_file_using_fn_p (callee_fndecl))
 	  {
-	    // TODO: operations on unchecked file
+	    int param_idx;
+	    if (find_file_param (callee_fndecl, &param_idx))
+	      {
+		/* Look up FILE * param.  */
+		tree arg = gimple_call_arg (call, param_idx);
+		arg = sm_ctxt->get_readable_tree (arg);
+
+		// TODO: operations on unchecked file
+
+		/* Complain about operations on closed files.  */
+		sm_ctxt->warn_for_state (node, stmt, arg, m_closed,
+					 new use_of_closed_file (*this, arg));
+		sm_ctxt->on_transition (node, stmt, arg, m_closed, m_stop);
+	      }
 	    return true;
 	  }
 	// etc
       }
+
+  // TODO: fcloseall() (a GNU extension)
 
   return false;
 }

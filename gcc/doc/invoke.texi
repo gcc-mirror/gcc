@@ -309,6 +309,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-tainted-array-index @gol
 -Wno-analyzer-unsafe-call-within-signal-handler @gol
 -Wno-analyzer-use-after-free @gol
+-Wno-analyzer-use-of-closed-file @gol
 -Wno-analyzer-use-of-pointer-in-stale-stack-frame @gol
 -Wno-analyzer-use-of-uninitialized-value @gol
 -Wanalyzer-too-complex @gol
@@ -409,6 +410,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wanalyzer-tainted-array-index @gol
 -Wanalyzer-unsafe-call-within-signal-handler @gol
 -Wanalyzer-use-after-free @gol
+-Wanalyzer-use-of-closed-file @gol
 -Wanalyzer-use-of-pointer-in-stale-stack-frame @gol
 -Wanalyzer-use-of-uninitialized-value @gol
 -Wanalyzer-too-complex  @gol
@@ -6615,6 +6617,16 @@ This warning requires @option{-fanalyzer}, which enables it; use
 This diagnostic warns for paths through the code in which a
 pointer is used after @code{free} is called on it.
 
+@item -Wno-analyzer-use-of-closed-file
+@opindex Wanalyzer-use-of-closed-file
+@opindex Wno-analyzer-use-of-closed-file
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-use-of-closed-file} to disable it.
+
+This diagnostic warns for paths through the code in which a
+@code{<stdio.h>} @code{FILE *} stream object is used after
+@code{fclose} is called on it.
+
 @item -Wno-analyzer-use-of-pointer-in-stale-stack-frame
 @opindex Wanalyzer-use-of-pointer-in-stale-stack-frame
 @opindex Wno-analyzer-use-of-pointer-in-stale-stack-frame
@@ -8330,6 +8342,7 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-tainted-array-index @gol
 -Wanalyzer-unsafe-call-within-signal-handler @gol
 -Wanalyzer-use-after-free @gol
+-Wanalyzer-use-of-closed-file @gol
 -Wanalyzer-use-of-uninitialized-value @gol
 -Wanalyzer-use-of-pointer-in-stale-stack-frame @gol
 }
