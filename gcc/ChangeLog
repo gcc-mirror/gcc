@@ -1,5 +1,12 @@
 2019-12-19  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_can_change_mode_class):
+	Don't allow changes between partial SVE modes and other kinds
+	of mode.  Don't allow changes between two partial SVE modes
+	if they have different container or element sizes.
+
+2019-12-19  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_function_value_1): New function,
 	split out from...
 	(aarch64_function_value): ...here.  Handle partial SVE modes by
