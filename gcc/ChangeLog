@@ -1,5 +1,11 @@
 2019-12-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* hash-map-tests.c (selftest::test_map_of_int_to_strings): New
+	selftest.
+	(selftest::hash_map_tests_c_tests): Call it.
+
+2019-12-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* gimple-predict.h (gimple_predict_predictor): Make "gs" param
 	const.
 	(gimple_predict_outcome): Likewise.
