@@ -3189,7 +3189,8 @@ void gfc_intrinsic_done_1 (void);
 char gfc_type_letter (bt, bool logical_equals_int = false);
 gfc_symbol * gfc_get_intrinsic_sub_symbol (const char *);
 bool gfc_convert_type (gfc_expr *, gfc_typespec *, int);
-bool gfc_convert_type_warn (gfc_expr *, gfc_typespec *, int, int);
+bool gfc_convert_type_warn (gfc_expr *, gfc_typespec *, int, int,
+			    bool array = false);
 bool gfc_convert_chartype (gfc_expr *, gfc_typespec *);
 int gfc_generic_intrinsic (const char *);
 int gfc_specific_intrinsic (const char *);

@@ -1,3 +1,17 @@
+2019-12-19 Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/92896
+	* array.c (walk_array_constructor): Replace call to gfc_convert_type
+	with call to gfc_convert_type_warn with new argument set to true.
+	(check_element_type): Replace call to cfg_convert_type with call to
+	gfc_convert_type_warn with new argument set to true.
+	* gfortran.h: Add argument "array" to gfc_convert_type_warn default
+	value set to false.
+	*intrinsic.c (gfc_convert_type_warn): Update description of arguments.
+	Add new argument to argument list. Add check for conversion to numeric
+	or logical from character and array set to true, i.e. if conversion
+	from character is in an array constructor reject it, goto bad.
+
 2019-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/92977
