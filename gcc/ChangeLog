@@ -1,4 +1,14 @@
 2019-12-19  Jan Hubicka  <hubicka@ucw.cz>
+	    Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* cgraph.c (cgraph_node_cannot_be_local_p_1): Prevent targets of
+	symver attributes to be localized.
+	* ipa-visibility.c (cgraph_externally_visible_p,
+	varpool_node::externally_visible_p): Likewise.
+	* symtab.c (symtab_node::verify_base): Check visibility of symbol
+	versions.
+
+2019-12-19  Jan Hubicka  <hubicka@ucw.cz>
 	    Luo Xiong Hu  <luoxhu@linux.ibm.com
 
 	* ipa-fnsummary.h (ipa_size_summary): Remove copy consturctor.

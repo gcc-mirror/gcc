@@ -1156,6 +1156,22 @@ symtab_node::verify_base (void)
       error ("node is symver but not alias");
       error_found = true;
     }
+  /* Limitation of gas requires us to output targets of symver aliases as
+     global symbols.  This is binutils PR 25295.  */
+  if (symver
+      && (!TREE_PUBLIC (get_alias_target ()->decl)
+	  || DECL_VISIBILITY (get_alias_target ()->decl) != VISIBILITY_DEFAULT))
+    {
+      error ("symver target is not exported with default visibility");
+      error_found = true;
+    }
+  if (symver
+      && (!TREE_PUBLIC (decl)
+	  || DECL_VISIBILITY (decl) != VISIBILITY_DEFAULT))
+    {
+      error ("symver is not exported with default visibility");
+      error_found = true;
+    }
   if (same_comdat_group)
     {
       symtab_node *n = same_comdat_group;
