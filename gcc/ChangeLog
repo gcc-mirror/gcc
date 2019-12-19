@@ -1,3 +1,10 @@
+2019-12-19  Jan Hubicka  <hubicka@ucw.cz>
+	    Luo Xiong Hu  <luoxhu@linux.ibm.com
+
+	* ipa-fnsummary.h (ipa_size_summary): Remove copy consturctor.
+	(ipa_size_summary_t): Add duplicate method; move to heap.
+	* ipa-fnsumary.c (ipa_fn_summary_alloc): Fix allocation.
+
 2019-12-19  Feng Xue  <fxue@os.amperecomputing.com>
 
 	PR ipa/92794

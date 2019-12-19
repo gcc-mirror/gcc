@@ -99,11 +99,6 @@ public:
   : estimated_self_stack_size (0), self_size (0), size (0)
   {
   }
-  /* Copy constructor.  */
-  ipa_size_summary (const ipa_size_summary &s)
-  : estimated_self_stack_size (0), self_size (s.self_size), size (s.size)
-  {
-  }
 };
 
 /* Function inlining information.  */
@@ -226,18 +221,20 @@ extern GTY(()) fast_function_summary <ipa_fn_summary *, va_gc>
   *ipa_fn_summaries;
 
 class ipa_size_summary_t:
-  public fast_function_summary <ipa_size_summary *, va_gc>
+  public fast_function_summary <ipa_size_summary *, va_heap>
 {
 public:
   ipa_size_summary_t (symbol_table *symtab):
-    fast_function_summary <ipa_size_summary *, va_gc> (symtab) {}
-
-  static ipa_size_summary_t *create_ggc (symbol_table *symtab)
+    fast_function_summary <ipa_size_summary *, va_heap> (symtab)
   {
-    class ipa_size_summary_t *summary = new (ggc_alloc <ipa_size_summary_t> ())
-      ipa_size_summary_t (symtab);
-    summary->disable_insertion_hook ();
-    return summary;
+    disable_insertion_hook ();
+  }
+
+  virtual void duplicate (cgraph_node *, cgraph_node *,
+			  ipa_size_summary *src_data,
+			  ipa_size_summary *dst_data)
+  {
+    *dst_data = *src_data;
   }
 };
 extern fast_function_summary <ipa_size_summary *, va_heap>
