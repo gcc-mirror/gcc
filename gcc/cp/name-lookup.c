@@ -4019,31 +4019,35 @@ mergeable_class_member (tree decl, tree klass, tree name,
 	  // in-TU class that is being merged.
 	  found = fields_linear_search (klass, name,
 					TREE_CODE (decl) == TYPE_DECL);
-
-	if (found)
-	  {
-	    if (name == conv_op_identifier)
-	      found = OVL_CHAIN (found);
-	    tree inner = decl;
-	    if (TREE_CODE (inner) == TEMPLATE_DECL
-		&& !DECL_MEMBER_TEMPLATE_P (inner))
-	      inner = DECL_TEMPLATE_RESULT (inner);
-	    found = check_mergeable_decl
-	      (MM_class_scope, inner, found, ret, args);
-	    if (found && inner != decl)
-	      {
-		tree ti;
-		if (DECL_IMPLICIT_TYPEDEF_P (found))
-		  ti = TYPE_TEMPLATE_INFO (TREE_TYPE (found));
-		else
-		  ti = DECL_TEMPLATE_INFO (found);
-		found = TI_TEMPLATE (ti);
-	      }
-	  }
       }
       break;
     }
 
+  if (found)
+    {
+      tree inner = decl;
+      if (TREE_CODE (inner) == TEMPLATE_DECL
+	  && !DECL_MEMBER_TEMPLATE_P (inner))
+	inner = DECL_TEMPLATE_RESULT (inner);
+
+      if (TREE_CODE (name) == IDENTIFIER_NODE)
+	{
+	  if (name == conv_op_identifier)
+	    found = OVL_CHAIN (found);
+	  found = check_mergeable_decl
+	    (MM_class_scope, inner, found, ret, args);
+	}
+
+      if (found && inner != decl)
+	{
+	  tree ti;
+	  if (DECL_IMPLICIT_TYPEDEF_P (found))
+	    ti = TYPE_TEMPLATE_INFO (TREE_TYPE (found));
+	  else
+	    ti = DECL_TEMPLATE_INFO (found);
+	  found = TI_TEMPLATE (ti);
+	}
+    }
   return found;
 }
 

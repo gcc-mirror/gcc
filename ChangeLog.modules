@@ -1,5 +1,13 @@
 2019-12-19  Nathan Sidwell  <nathan@acm.org>
 
+	Anonymous templates are a thing.
+	gcc/cp/
+	* module.cc (trees_out::key_mergeable): Deal with anon templatey
+	members.
+	* name-lookup.c (mergeable_class_member): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/merge-6{.h,_a.H,_b.C}: New.
+
 	gcc/cp/
 	* module.cc (trees_in::decl_value): Fix enum-context merging.
 	gcc/testsuite/

@@ -9953,17 +9953,23 @@ trees_out::key_mergeable (merge_kind mk, tree decl, depset *dep)
 	  // FIXME: Perhaps (unmergable) anonymous namespace-scope
 	  // types get here too?  We should have set those to MK_unique
 	  // earlier.
-	  gcc_checking_assert (TYPE_P (CP_DECL_CONTEXT (decl)));
+	  gcc_checking_assert (TYPE_P (CP_DECL_CONTEXT (decl))
+			       && (TREE_CODE (decl) != TEMPLATE_DECL
+				   || !DECL_MEMBER_TEMPLATE_P (decl)));
 	  unsigned ix = 0;
 	  for (tree field = TYPE_FIELDS (CP_DECL_CONTEXT (decl));
 	       field; field = DECL_CHAIN (field))
 	    if (DECL_NAME (field) && IDENTIFIER_ANON_P (DECL_NAME (field)))
 	      {
-		if (field == decl)
-		  break;
+		if (field == inner)
+		  {
+		    name = build_int_cst (unsigned_type_node, ix);
+		    break;
+		  }
 		ix++;
 	      }
-	  name = build_int_cst (unsigned_type_node, ix);
+	  /* Make sure we found it.  */
+	  gcc_checking_assert (name != DECL_NAME (decl));
 	}
       else if (IDENTIFIER_CONV_OP_P (name))
 	name = conv_op_identifier;
