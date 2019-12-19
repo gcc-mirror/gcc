@@ -9564,10 +9564,9 @@ package body Exp_Ch3 is
                begin
                   --  Build equality code with a user-defined operator, if
                   --  available, and with the predefined "=" otherwise. For
-                  --  compatibility with older Ada versions, and preserve the
-                  --  workings of some ASIS tools, we also use the predefined
-                  --  operation if the component-type equality is abstract,
-                  --  rather than raising Program_Error.
+                  --  compatibility with older Ada versions, we also use the
+                  --  predefined operation if the component-type equality is
+                  --  abstract, rather than raising Program_Error.
 
                   if Ada_Version < Ada_2012 then
                      Next_Test := Make_Op_Ne (Loc, Lhs, Rhs);
@@ -10221,15 +10220,13 @@ package body Exp_Ch3 is
       New_Ref  : Node_Id;
 
    begin
-      --  This expansion activity is called during analysis, but cannot
-      --  be applied in ASIS mode when other expansion is disabled.
+      --  This expansion activity is called during analysis.
 
       if Is_Tagged_Type (Typ)
        and then not Is_Class_Wide_Type (Typ)
        and then not Is_CPP_Class (Typ)
        and then Tagged_Type_Expansion
        and then Nkind (Expr) /= N_Aggregate
-       and then not ASIS_Mode
        and then (Nkind (Expr) /= N_Qualified_Expression
                   or else Nkind (Expression (Expr)) /= N_Aggregate)
       then

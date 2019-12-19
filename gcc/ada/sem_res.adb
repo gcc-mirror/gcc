@@ -1751,78 +1751,6 @@ package body Sem_Res is
       else
          Resolve (N, Typ);
       end if;
-
-      --  If in ASIS_Mode, propagate operand types to original actuals of
-      --  function call, which would otherwise not be fully resolved. If
-      --  the call has already been constant-folded, nothing to do. We
-      --  relocate the operand nodes rather than copy them, to preserve
-      --  original_node pointers, given that the operands themselves may
-      --  have been rewritten. If the call was itself a rewriting of an
-      --  operator node, nothing to do.
-
-      if ASIS_Mode
-        and then Nkind (N) in N_Op
-        and then Nkind (Original_Node (N)) = N_Function_Call
-      then
-         declare
-            L : Node_Id;
-            R : constant Node_Id := Right_Opnd (N);
-
-            Old_First : constant Node_Id :=
-                          First (Parameter_Associations (Original_Node (N)));
-            Old_Sec   : Node_Id;
-
-         begin
-            if Is_Binary then
-               L       := Left_Opnd (N);
-               Old_Sec := Next (Old_First);
-
-               --  If the original call has named associations, replace the
-               --  explicit actual parameter in the association with the proper
-               --  resolved operand.
-
-               if Nkind (Old_First) = N_Parameter_Association then
-                  if Chars (Selector_Name (Old_First)) =
-                     Chars (First_Entity (Op_Id))
-                  then
-                     Rewrite (Explicit_Actual_Parameter (Old_First),
-                       Relocate_Node (L));
-                  else
-                     Rewrite (Explicit_Actual_Parameter (Old_First),
-                       Relocate_Node (R));
-                  end if;
-
-               else
-                  Rewrite (Old_First, Relocate_Node (L));
-               end if;
-
-               if Nkind (Old_Sec) = N_Parameter_Association then
-                  if Chars (Selector_Name (Old_Sec)) =
-                     Chars (First_Entity (Op_Id))
-                  then
-                     Rewrite (Explicit_Actual_Parameter (Old_Sec),
-                       Relocate_Node (L));
-                  else
-                     Rewrite (Explicit_Actual_Parameter (Old_Sec),
-                       Relocate_Node (R));
-                  end if;
-
-               else
-                  Rewrite (Old_Sec, Relocate_Node (R));
-               end if;
-
-            else
-               if Nkind (Old_First) = N_Parameter_Association then
-                  Rewrite (Explicit_Actual_Parameter (Old_First),
-                    Relocate_Node (R));
-               else
-                  Rewrite (Old_First, Relocate_Node (R));
-               end if;
-            end if;
-         end;
-
-         Set_Parent (Original_Node (N), Parent (N));
-      end if;
    end Make_Call_Into_Operator;
 
    -------------------
@@ -8847,47 +8775,9 @@ package body Sem_Res is
 
    procedure Resolve_Generalized_Indexing (N : Node_Id; Typ : Entity_Id) is
       Indexing : constant Node_Id := Generalized_Indexing (N);
-      Call     : Node_Id;
-      Indexes  : List_Id;
-      Pref     : Node_Id;
-
    begin
-      --  In ASIS mode, propagate the information about the indexes back to
-      --  to the original indexing node. The generalized indexing is either
-      --  a function call, or a dereference of one. The actuals include the
-      --  prefix of the original node, which is the container expression.
-
-      if ASIS_Mode then
-         Resolve (Indexing, Typ);
-         Set_Etype  (N, Etype (Indexing));
-         Set_Is_Overloaded (N, False);
-
-         Call := Indexing;
-         while Nkind_In (Call, N_Explicit_Dereference, N_Selected_Component)
-         loop
-            Call := Prefix (Call);
-         end loop;
-
-         if Nkind (Call) = N_Function_Call then
-            Indexes := New_Copy_List (Parameter_Associations (Call));
-            Pref := Remove_Head (Indexes);
-            Set_Expressions (N, Indexes);
-
-            --  If expression is to be reanalyzed, reset Generalized_Indexing
-            --  to recreate call node, as is the case when the expression is
-            --  part of an expression function.
-
-            if In_Spec_Expression then
-               Set_Generalized_Indexing (N, Empty);
-            end if;
-
-            Set_Prefix (N, Pref);
-         end if;
-
-      else
-         Rewrite (N, Indexing);
-         Resolve (N, Typ);
-      end if;
+      Rewrite (N, Indexing);
+      Resolve (N, Typ);
    end Resolve_Generalized_Indexing;
 
    ---------------------------

@@ -30,8 +30,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Package containing utility procedures used throughout the compiler,
---  and also by ASIS so dependencies are limited to ASIS included packages.
+--  Package containing utility procedures used throughout the compiler.
 
 --  Historical note. Many of the routines here were originally in Einfo, but
 --  Einfo is supposed to be a relatively low level package dealing with the

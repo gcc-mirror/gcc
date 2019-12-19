@@ -2294,26 +2294,13 @@ package body Sem_Ch13 is
                   --  Construct the attribute_definition_clause. The expression
                   --  in the aspect specification is simply shared with the
                   --  constructed attribute, because it will be fully analyzed
-                  --  when the attribute is processed. However, in ASIS mode
-                  --  the aspect expression itself is preanalyzed and resolved
-                  --  to catch visibility errors that are otherwise caught
-                  --  later, and we create a separate copy of the expression
-                  --  to prevent analysis of a malformed tree (e.g. a function
-                  --  call with parameter associations).
+                  --  when the attribute is processed.
 
-                  if ASIS_Mode then
-                     Aitem :=
-                       Make_Attribute_Definition_Clause (Loc,
-                         Name       => Ent,
-                         Chars      => Chars (Id),
-                         Expression => New_Copy_Tree (Expr));
-                  else
-                     Aitem :=
-                       Make_Attribute_Definition_Clause (Loc,
-                         Name       => Ent,
-                         Chars      => Chars (Id),
-                         Expression => Relocate_Node (Expr));
-                  end if;
+                  Aitem :=
+                    Make_Attribute_Definition_Clause (Loc,
+                      Name       => Ent,
+                      Chars      => Chars (Id),
+                      Expression => Relocate_Node (Expr));
 
                   --  If the address is specified, then we treat the entity as
                   --  referenced, to avoid spurious warnings. This is analogous
@@ -3488,17 +3475,14 @@ package body Sem_Ch13 is
                   --  We do not do this for Pre'Class, since we have to put
                   --  these conditions together in a complex OR expression.
 
-                  --  We do not do this in ASIS mode, as ASIS relies on the
-                  --  original node representing the complete expression, when
-                  --  retrieving it through the source aspect table. Also, we
-                  --  don't do this in GNATprove mode, because it brings no
-                  --  benefit for proof and causes annoynace for flow analysis,
+                  --  We don't do this in GNATprove mode, because it brings no
+                  --  benefit for proof and causes annoyance for flow analysis,
                   --  which prefers to be as close to the original source code
                   --  as possible. Also we don't do this when analyzing generic
                   --  units since it causes spurious visibility errors in the
                   --  preanalysis of instantiations.
 
-                  if not (ASIS_Mode or GNATprove_Mode)
+                  if not GNATprove_Mode
                     and then (Pname = Name_Postcondition
                                or else not Class_Present (Aspect))
                     and then not Inside_A_Generic
@@ -3521,16 +3505,16 @@ package body Sem_Ch13 is
                   --  because subsequent visibility analysis of the aspect
                   --  depends on this sharing. This should be cleaned up???
 
-                  --  If the context is generic or involves ASIS, we want
-                  --  to preserve the original tree, and simply share it
-                  --  between aspect and generated attribute. This parallels
-                  --  what is done in sem_prag.adb (see Get_Argument).
+                  --  If the context is generic, we want to preserve the
+                  --  original tree, and simply share it between aspect and
+                  --  generated attribute. This parallels what is done in
+                  --  sem_prag.adb (see Get_Argument).
 
                   declare
                      New_Expr : Node_Id;
 
                   begin
-                     if ASIS_Mode or else Inside_A_Generic then
+                     if Inside_A_Generic then
                         New_Expr := Expr;
                      else
                         New_Expr := Relocate_Node (Expr);
@@ -3599,6 +3583,7 @@ package body Sem_Ch13 is
                   --  expressions through the Original_Node link. This is used
                   --  in semantic analysis for ASIS mode, so that the original
                   --  expression also gets analyzed.
+                  --  Is this still needed???
 
                   Comp_Expr := First (Expressions (Expr));
                   while Present (Comp_Expr) loop
@@ -5375,14 +5360,9 @@ package body Sem_Ch13 is
                Set_Has_Alignment_Clause (U_Ent);
 
                --  Tagged type case, check for attempt to set alignment to a
-               --  value greater than Max_Align, and reset if so. This error
-               --  is suppressed in ASIS mode to allow for different ASIS
-               --  back ends or ASIS-based tools to query the illegal clause.
+               --  value greater than Max_Align, and reset if so.
 
-               if Is_Tagged_Type (U_Ent)
-                 and then Align > Max_Align
-                 and then not ASIS_Mode
-               then
+               if Is_Tagged_Type (U_Ent) and then Align > Max_Align then
                   Error_Msg_N
                     ("alignment for & set to Maximum_Aligment??", Nam);
                   Set_Alignment (U_Ent, Max_Align);
@@ -5816,11 +5796,7 @@ package body Sem_Ch13 is
                elsif Radix = 10 then
                   Set_Machine_Radix_10 (U_Ent);
 
-               --  The following error is suppressed in ASIS mode to allow for
-               --  different ASIS back ends or ASIS-based tools to query the
-               --  illegal clause.
-
-               elsif not ASIS_Mode then
+               else
                   Error_Msg_N ("machine radix value must be 2 or 10", Expr);
                end if;
             end if;
@@ -5848,14 +5824,7 @@ package body Sem_Ch13 is
             else
                Check_Size (Expr, U_Ent, Size, Biased);
 
-               --  The following errors are suppressed in ASIS mode to allow
-               --  for different ASIS back ends or ASIS-based tools to query
-               --  the illegal clause.
-
-               if ASIS_Mode then
-                  null;
-
-               elsif Size <= 0 then
+               if Size <= 0 then
                   Error_Msg_N ("Object_Size must be positive", Expr);
 
                elsif Is_Scalar_Type (U_Ent) then
@@ -6065,16 +6034,11 @@ package body Sem_Ch13 is
                --  For objects, set Esize only
 
                else
-                  --  The following error is suppressed in ASIS mode to allow
-                  --  for different ASIS back ends or ASIS-based tools to query
-                  --  the illegal clause.
-
                   if Is_Elementary_Type (Etyp)
                     and then Size /= System_Storage_Unit
                     and then Size /= System_Storage_Unit * 2
                     and then Size /= System_Storage_Unit * 4
                     and then Size /= System_Storage_Unit * 8
-                    and then not ASIS_Mode
                   then
                      Error_Msg_Uint_1 := UI_From_Int (System_Storage_Unit);
                      Error_Msg_Uint_2 := Error_Msg_Uint_1 * 8;
@@ -6396,15 +6360,7 @@ package body Sem_Ch13 is
                null;
 
             elsif Is_Elementary_Type (U_Ent) then
-
-               --  The following errors are suppressed in ASIS mode to allow
-               --  for different ASIS back ends or ASIS-based tools to query
-               --  the illegal clause.
-
-               if ASIS_Mode then
-                  null;
-
-               elsif Size /= System_Storage_Unit
+               if Size /= System_Storage_Unit
                  and then Size /= System_Storage_Unit * 2
                  and then Size /= System_Storage_Unit * 4
                  and then Size /= System_Storage_Unit * 8
@@ -7064,13 +7020,9 @@ package body Sem_Ch13 is
 
       if Present (Mod_Clause (N)) then
          declare
-            Loc     : constant Source_Ptr := Sloc (N);
-            M       : constant Node_Id := Mod_Clause (N);
-            P       : constant List_Id := Pragmas_Before (M);
-            AtM_Nod : Node_Id;
-
-            Mod_Val : Uint;
-            pragma Warnings (Off, Mod_Val);
+            M      : constant Node_Id := Mod_Clause (N);
+            P      : constant List_Id := Pragmas_Before (M);
+            Ignore : Uint;
 
          begin
             Check_Restriction (No_Obsolescent_Features, Mod_Clause (N));
@@ -7086,31 +7038,9 @@ package body Sem_Ch13 is
                Analyze_List (P);
             end if;
 
-            --  In ASIS_Mode mode, expansion is disabled, but we must convert
-            --  the Mod clause into an alignment clause anyway, so that the
-            --  back end can compute and back-annotate properly the size and
-            --  alignment of types that may include this record.
+            --  Get the alignment value to perform error checking
 
-            --  This seems dubious, this destroys the source tree in a manner
-            --  not detectable by ASIS ???
-
-            if Operating_Mode = Check_Semantics and then ASIS_Mode then
-               AtM_Nod :=
-                 Make_Attribute_Definition_Clause (Loc,
-                   Name       => New_Occurrence_Of (Base_Type (Rectype), Loc),
-                   Chars      => Name_Alignment,
-                   Expression => Relocate_Node (Expression (M)));
-
-               Set_From_At_Mod (AtM_Nod);
-               Insert_After (N, AtM_Nod);
-               Mod_Val := Get_Alignment_Value (Expression (AtM_Nod));
-               Set_Mod_Clause (N, Empty);
-
-            else
-               --  Get the alignment value to perform error checking
-
-               Mod_Val := Get_Alignment_Value (Expression (M));
-            end if;
+            Ignore := Get_Alignment_Value (Expression (M));
          end;
       end if;
 
@@ -8649,11 +8579,6 @@ package body Sem_Ch13 is
 
                Set_Etype (N, Typ);
                Set_Entity (N, Object_Entity);
-
-               --  We want to treat the node as if it comes from source, so
-               --  that ASIS will not ignore it.
-
-               Set_Comes_From_Source (N, True);
             end Replace_Type_Reference;
 
             --  Local variables
@@ -8672,6 +8597,7 @@ package body Sem_Ch13 is
             --  Extract the arguments of the pragma. The expression itself
             --  is copied for use in the predicate function, to preserve the
             --  original version for ASIS use.
+            --  Is this still needed???
 
             Arg1 := First (Pragma_Argument_Associations (Prag));
             Arg2 := Next (Arg1);
@@ -11012,13 +10938,8 @@ package body Sem_Ch13 is
 
       procedure Size_Too_Small_Error (Min_Siz : Uint) is
       begin
-         --  This error is suppressed in ASIS mode to allow for different ASIS
-         --  back ends or ASIS-based tools to query the illegal clause.
-
-         if not ASIS_Mode then
-            Error_Msg_Uint_1 := Min_Siz;
-            Error_Msg_NE (Size_Too_Small_Message, N, T);
-         end if;
+         Error_Msg_Uint_1 := Min_Siz;
+         Error_Msg_NE (Size_Too_Small_Message, N, T);
       end Size_Too_Small_Error;
 
       --  Local variables
@@ -11302,6 +11223,7 @@ package body Sem_Ch13 is
       --  between interface primitives and tagged type primitives. They are
       --  also used to locate primitives covering interfaces when processing
       --  generics (see Derive_Subprograms).
+      --  ??? Revisit now that ASIS mode is gone.
 
       --  This is not needed in the generic case
 
@@ -11583,9 +11505,11 @@ package body Sem_Ch13 is
                   --  for aggregates, requires the expanded list of choices.
 
                   --  If the expander is not active, then we can't just clobber
-                  --  the list since it would invalidate the ASIS -gnatct tree.
+                  --  the list since it would invalidate the tree.
                   --  So we have to rewrite the variant part with a Rewrite
                   --  call that replaces it with a copy and clobber the copy.
+                  --  This is no longer needed for ASIS, but possibly for
+                  --  GNATprove???
 
                   if not Expander_Active then
                      declare
@@ -11654,7 +11578,9 @@ package body Sem_Ch13 is
                --  to the others choice (it's the list we're replacing).
 
                --  We only want to do this if the expander is active, since
-               --  we do not want to clobber the ASIS tree.
+               --  we do not want to clobber the tree.
+               --  This is no longer needed for ASIS, is this needed for
+               --  GNATprove_Mode???
 
                if Expander_Active then
                   declare
@@ -11692,14 +11618,7 @@ package body Sem_Ch13 is
          return No_Uint;
 
       elsif Align < 0 then
-
-         --  This error is suppressed in ASIS mode to allow for different ASIS
-         --  back ends or ASIS-based tools to query the illegal clause.
-
-         if not ASIS_Mode then
-            Error_Msg_N ("alignment value must be positive", Expr);
-         end if;
-
+         Error_Msg_N ("alignment value must be positive", Expr);
          return No_Uint;
 
       --  If Alignment is specified to be 0, we treat it the same as 1
@@ -11716,15 +11635,7 @@ package body Sem_Ch13 is
                exit when M = Align;
 
                if M > Align then
-
-                  --  This error is suppressed in ASIS mode to allow for
-                  --  different ASIS back ends or ASIS-based tools to query the
-                  --  illegal clause.
-
-                  if not ASIS_Mode then
-                     Error_Msg_N ("alignment value must be power of 2", Expr);
-                  end if;
-
+                  Error_Msg_N ("alignment value must be power of 2", Expr);
                   return No_Uint;
                end if;
             end;
@@ -12374,13 +12285,13 @@ package body Sem_Ch13 is
       pragma Assert (Ignore_Rep_Clauses);
 
       --  Note: we use Replace rather than Rewrite, because we don't want
-      --  ASIS to be able to use Original_Node to dig out the (undecorated)
+      --  tools to be able to use Original_Node to dig out the (undecorated)
       --  rep clause that is being replaced.
 
       Replace (N, Make_Null_Statement (Sloc (N)));
 
       --  The null statement must be marked as not coming from source. This is
-      --  so that ASIS ignores it, and also the back end does not expect bogus
+      --  so that tools ignore it, and also the back end does not expect bogus
       --  "from source" null statements in weird places (e.g. in declarative
       --  regions where such null statements are not allowed).
 
@@ -13369,9 +13280,6 @@ package body Sem_Ch13 is
       --  introduce a local identifier that would require proper expansion to
       --  handle properly.
 
-      --  In ASIS_Mode we preserve the entity in the source because there is
-      --  no subsequent expansion to decorate the tree.
-
       ------------------
       -- Resolve_Name --
       ------------------
@@ -13398,19 +13306,7 @@ package body Sem_Ch13 is
                       or else N /= Selector_Name (Parent (N)))
          then
             Find_Direct_Name (N);
-
-            --  In ASIS mode we must analyze overloaded identifiers to ensure
-            --  their correct decoration because expansion is disabled (and
-            --  the expansion of freeze nodes takes care of resolving aspect
-            --  expressions).
-
-            if ASIS_Mode then
-               if Is_Overloaded (N) then
-                  Analyze (Parent (N));
-               end if;
-            else
-               Set_Entity (N, Empty);
-            end if;
+            Set_Entity (N, Empty);
 
          --  The name is component association needs no resolution.
 

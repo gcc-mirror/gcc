@@ -958,32 +958,7 @@ package body Sem_Type is
             --  Note: test for presence of E is defense against previous error.
 
             if No (E) then
-
-               --  If expansion is disabled the Corresponding_Record_Type may
-               --  not be available yet, so use the interface list in the
-               --  declaration directly.
-
-               if ASIS_Mode
-                 and then Nkind (Parent (BT2)) = N_Protected_Type_Declaration
-                 and then Present (Interface_List (Parent (BT2)))
-               then
-                  declare
-                     Intf : Node_Id := First (Interface_List (Parent (BT2)));
-                  begin
-                     while Present (Intf) loop
-                        if Is_Ancestor (Etype (T1), Entity (Intf)) then
-                           return True;
-                        else
-                           Next (Intf);
-                        end if;
-                     end loop;
-                  end;
-
-                  return False;
-
-               else
-                  Check_Error_Detected;
-               end if;
+               Check_Error_Detected;
 
             --  Here we have a corresponding record type
 

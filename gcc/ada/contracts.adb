@@ -541,7 +541,6 @@ package body Contracts is
 
       Skip_Assert_Exprs : constant Boolean :=
                             Ekind_In (Subp_Id, E_Entry, E_Entry_Family)
-                              and then not ASIS_Mode
                               and then not GNATprove_Mode;
 
       Depends  : Node_Id := Empty;
@@ -2541,11 +2540,6 @@ package body Contracts is
       --  Do not perform expansion activity when it is not needed
 
       if not Expander_Active then
-         return;
-
-      --  ASIS requires an unaltered tree
-
-      elsif ASIS_Mode then
          return;
 
       --  GNATprove does not need the executable semantics of a contract

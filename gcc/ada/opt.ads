@@ -223,21 +223,6 @@ package Opt is
    --  Set to non-null when Bind_Alternate_Main_Name is True. This value
    --  is modified as needed by Gnatbind.Scan_Bind_Arg.
 
-   ASIS_GNSA_Mode : Boolean := False;
-   --  GNAT
-   --  Enable GNSA back-end processing assuming ASIS_Mode is already set to
-   --  True. ASIS_GNSA mode suppresses the call to gigi.
-
-   ASIS_Mode : Boolean := False;
-   --  GNAT
-   --  Enable semantic checks and tree transformations that are important
-   --  for ASIS but that are usually skipped if Operating_Mode is set to
-   --  Check_Semantics. This flag does not have the corresponding option to set
-   --  it ON. It is set ON when Tree_Output is set ON, it can also be set ON
-   --  from the code of GNSA-based tool (a client may need to set ON the
-   --  Back_Annotate_Rep_Info flag in this case. At the moment this does not
-   --  make very much sense, because GNSA cannot do back annotation).
-
    Assertions_Enabled : Boolean := False;
    --  GNAT
    --  Indicates default policy (True = Check, False = Ignore) to be applied
@@ -854,7 +839,7 @@ package Opt is
    Ignore_Rep_Clauses : Boolean := False;
    --  GNAT
    --  Set True to ignore all representation clauses. Useful when compiling
-   --  code from foreign compilers for checking or ASIS purposes. Can be
+   --  code from foreign compilers for checking purposes. Can be
    --  set True by use of -gnatI.
 
    Ignore_SPARK_Mode_Pragmas_In_Instance : Boolean := False;
@@ -1072,6 +1057,7 @@ package Opt is
    --  to the three corresponding procedures in Osint-C. The reason for this
    --  slightly strange interface is to stop Repinfo from dragging in Osint in
    --  ASIS mode, which would include lots of unwanted units in the ASIS build.
+   --  ??? Revisit this now that ASIS mode is gone.
 
    type Create_List_File_Proc is access procedure (S : String);
    type Write_List_Info_Proc  is access procedure (S : String);
@@ -2256,31 +2242,9 @@ package Opt is
    procedure Tree_Write;
    --  Writes out switch settings to current tree file using Tree_Write
 
-   --------------------------
-   -- ASIS Version Control --
-   --------------------------
-
-   --  These two variables (Tree_Version_String and Tree_ASIS_Version_Number)
-   --  are supposed to be used in the GNAT/ASIS version check performed in
-   --  the ASIS code (this package is also a part of the ASIS implementation).
-   --  They are set by Tree_Read procedure, so they represent the version
-   --  number (and the version string) of the compiler which has created the
-   --  tree, and they are supposed to be compared with the corresponding values
-   --  from the Tree_IO and Gnatvsn packages which also are a part of ASIS
-   --  implementation.
-
    Tree_Version_String : String_Access;
    --  Used to store the compiler version string read from a tree file to check
    --  if it is from the same date as stored in the version string in Gnatvsn.
-   --  We require that ASIS Pro can be used only with GNAT Pro, but we allow
-   --  non-Pro ASIS and ASIS-based tools to be used with any version of the
-   --  GNAT compiler. Therefore, we need the possibility to compare the dates
-   --  of the corresponding source sets, using version strings that may be
-   --  of different lengths.
-
-   Tree_ASIS_Version_Number : Int;
-   --  Used to store the ASIS version number read from a tree file to check if
-   --  it is the same as stored in the ASIS version number in Tree_IO.
 
    -----------------------------------
    -- Modes for Formal Verification --

@@ -52,7 +52,7 @@ package Stand is
 
       --  Types and subtypes defined in package Standard (in the order in which
       --  they appear in the RM, so that the declarations are in the right
-      --  order for the purposes of ASIS traversals
+      --  order for the purposes of e.g. ASIS traversals
 
       S_Boolean,
 

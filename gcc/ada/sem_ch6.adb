@@ -425,6 +425,7 @@ package body Sem_Ch6 is
 
          --  Once the aspects of the generated body have been analyzed, create
          --  a copy for ASIS purposes and associate it with the original node.
+         --  Is this still needed???
 
          if Has_Aspects (N) then
             Set_Aspect_Specifications (Orig_N,
@@ -486,6 +487,7 @@ package body Sem_Ch6 is
 
          --  Once the aspects of the generated spec have been analyzed, create
          --  a copy for ASIS purposes and associate it with the original node.
+         --  Is this still needed???
 
          if Has_Aspects (N) then
             Set_Aspect_Specifications (Orig_N,
@@ -3836,8 +3838,8 @@ package body Sem_Ch6 is
          --  the freeze actions that include the bodies. In particular, extra
          --  formals for accessibility or for return-in-place may need to be
          --  generated. Freeze nodes, if any, are inserted before the current
-         --  body. These freeze actions are also needed in ASIS mode and in
-         --  Compile_Only mode to enable the proper back-end type annotations.
+         --  body. These freeze actions are also needed in Compile_Only mode to
+         --  enable the proper back-end type annotations.
          --  They are necessary in any case to ensure proper elaboration order
          --  in gigi.
 
@@ -3846,7 +3848,6 @@ package body Sem_Ch6 is
            and then not Has_Completion (Spec_Id)
            and then Serious_Errors_Detected = 0
            and then (Expander_Active
-                      or else ASIS_Mode
                       or else Operating_Mode = Check_Semantics
                       or else Is_Ignored_Ghost_Entity (Spec_Id))
          then
@@ -4037,9 +4038,7 @@ package body Sem_Ch6 is
 
             --  Within an instance, add local renaming declarations so that
             --  gdb can retrieve the values of actuals more easily. This is
-            --  only relevant if generating code (and indeed we definitely
-            --  do not want these definitions -gnatc mode, because that would
-            --  confuse ASIS).
+            --  only relevant if generating code.
 
             if Is_Generic_Instance (Spec_Id)
               and then Is_Wrapper_Package (Current_Scope)

@@ -8064,7 +8064,7 @@ package body Checks is
       --  Do not generate an elaboration check in compilation modes where
       --  expansion is not desirable.
 
-      if ASIS_Mode or GNATprove_Mode then
+      if GNATprove_Mode then
          return;
 
       --  Do not generate an elaboration check if all checks have been

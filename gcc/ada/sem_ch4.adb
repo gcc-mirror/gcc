@@ -2821,18 +2821,6 @@ package body Sem_Ch4 is
            and then Is_Overloadable (Entity (Selector_Name (P)))
          then
             Process_Function_Call;
-
-         --  In ASIS mode within a generic, a prefixed call is analyzed and
-         --  partially rewritten but the original indexed component has not
-         --  yet been rewritten as a call. Perform the replacement now.
-
-         elsif Nkind (P) = N_Selected_Component
-           and then Nkind (Parent (P)) = N_Function_Call
-           and then ASIS_Mode
-         then
-            Rewrite (N, Parent (P));
-            Analyze (N);
-
          else
             --  Indexed component, slice, or a call to a member of a family
             --  entry, which will be converted to an entry call later.
@@ -4189,6 +4177,7 @@ package body Sem_Ch4 is
                --  reflect the right kind. This is needed for proper ASIS
                --  navigation. If expansion is enabled, the transformation is
                --  performed when the expression is rewritten as a loop.
+               --  Is this still needed???
 
                Set_Iterator_Specification (N,
                  New_Copy_Tree (Iterator_Specification (Parent (Loop_Par))));
@@ -5308,6 +5297,7 @@ package body Sem_Ch4 is
                --  In ASIS mode the generic parent type may be absent. Examine
                --  the parent type directly for a component that may have been
                --  visible in a parent generic unit.
+               --  ??? Revisit now that ASIS mode is gone
 
                elsif Is_Derived_Type (Prefix_Type) then
                   Par := Etype (Prefix_Type);
@@ -6703,8 +6693,8 @@ package body Sem_Ch4 is
          --  in Standard to be chosen, and the "/=" will be rewritten as a
          --  negation of "=" (see the end of Analyze_Equality_Op). This ensures
          --  that rewriting happens during analysis rather than being
-         --  delayed until expansion (this is needed for ASIS, which only sees
-         --  the unexpanded tree). Note that if the node is N_Op_Ne, but Op_Id
+         --  delayed until expansion (is this still needed now that ASIS mode
+         --  is gone???). Note that if the node is N_Op_Ne, but Op_Id
          --  is Name_Op_Eq then we still proceed with the interpretation,
          --  because that indicates the potential rewriting case where the
          --  interpretation to consider is actually "=" and the node may be
@@ -8866,14 +8856,6 @@ package body Sem_Ch4 is
          Actuals : List_Id;
 
       begin
-         --  Obj may already have been rewritten if it involves an implicit
-         --  dereference (e.g. if it is an access to a limited view). Preserve
-         --  a link to the original node for ASIS use.
-
-         if not Comes_From_Source (Obj) then
-            Set_Original_Node (Dummy, Original_Node (Obj));
-         end if;
-
          --  Common case covering 1) Call to a procedure and 2) Call to a
          --  function that has some additional actuals.
 

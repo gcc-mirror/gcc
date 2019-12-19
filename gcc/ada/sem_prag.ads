@@ -426,7 +426,7 @@ package Sem_Prag is
    --  of the pragma. The argument is extracted in the following manner:
    --
    --    When the pragma is generated from an aspect, return the corresponding
-   --    aspect for ASIS or when Context_Id denotes a generic unit.
+   --    aspect when Context_Id denotes a generic unit.
    --
    --    Otherwise return the first argument of Prag
    --
