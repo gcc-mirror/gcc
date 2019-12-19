@@ -1036,23 +1036,23 @@
 ;; }}}
 ;; {{{ ALU special case: add/sub
 
-(define_insn "addv64si3<exec_clobber>"
-  [(set (match_operand:V64SI 0 "register_operand"   "=  v")
-	(plus:V64SI
-	  (match_operand:V64SI 1 "register_operand" "%  v")
-	  (match_operand:V64SI 2 "gcn_alu_operand"  "vSvB")))
+(define_insn "add<mode>3<exec_clobber>"
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand"   "=  v")
+	(plus:VEC_ALL1REG_INT_MODE
+	  (match_operand:VEC_ALL1REG_INT_MODE 1 "register_operand" "%  v")
+	  (match_operand:VEC_ALL1REG_INT_MODE 2 "gcn_alu_operand"  "vSvB")))
    (clobber (reg:DI VCC_REG))]
   ""
   "v_add%^_u32\t%0, vcc, %2, %1"
   [(set_attr "type" "vop2")
    (set_attr "length" "8")])
 
-(define_insn "addv64si3_dup<exec_clobber>"
-  [(set (match_operand:V64SI 0 "register_operand"   "= v")
-	(plus:V64SI
-	  (vec_duplicate:V64SI
-	    (match_operand:SI 2 "gcn_alu_operand"   "SvB"))
-	  (match_operand:V64SI 1 "register_operand" "  v")))
+(define_insn "add<mode>3_dup<exec_clobber>"
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand"   "= v")
+	(plus:VEC_ALL1REG_INT_MODE
+	  (vec_duplicate:VEC_ALL1REG_INT_MODE
+	    (match_operand:<SCALAR_MODE> 2 "gcn_alu_operand"       "SvB"))
+	  (match_operand:VEC_ALL1REG_INT_MODE 1 "register_operand" "  v")))
    (clobber (reg:DI VCC_REG))]
   ""
   "v_add%^_u32\t%0, vcc, %2, %1"
@@ -1158,11 +1158,11 @@
   [(set_attr "type" "vop2,vop3b")
    (set_attr "length" "4,8")])
 
-(define_insn "subv64si3<exec_clobber>"
-  [(set (match_operand:V64SI 0 "register_operand"  "=  v,   v")
-	(minus:V64SI
-	  (match_operand:V64SI 1 "gcn_alu_operand" "vSvB,   v")
-	  (match_operand:V64SI 2 "gcn_alu_operand" "   v,vSvB")))
+(define_insn "sub<mode>3<exec_clobber>"
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand"  "=  v,   v")
+	(minus:VEC_ALL1REG_INT_MODE
+	  (match_operand:VEC_ALL1REG_INT_MODE 1 "gcn_alu_operand" "vSvB,   v")
+	  (match_operand:VEC_ALL1REG_INT_MODE 2 "gcn_alu_operand" "   v,vSvB")))
    (clobber (reg:DI VCC_REG))]
   ""
   "@

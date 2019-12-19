@@ -1,3 +1,12 @@
+2019-12-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (addv64si3<exec_clobber>): Rename to ...
+	(add<mode>3<exec_clobber>): ... this, and use VEC_ALL1REG_INT_MODE.
+	(addv64si3_dup<exec_clobber>): Rename to ...
+	(add<mode>3_dup<exec_clobber>): ... this, and use VEC_ALL1REG_INT_MODE.
+	(subv64si3<exec_clobber>): Rename to ...
+	(sub<mode>3<exec_clobber>): ... this, and use VEC_ALL1REG_INT_MODE.
+
 2019-12-19  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_can_change_mode_class):
