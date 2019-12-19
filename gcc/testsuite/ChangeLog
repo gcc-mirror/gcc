@@ -1,3 +1,8 @@
+2019-12-19 Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/92896
+	* gfortran.dg/no_char_conversion_in_array_constructor.f90: New test.
+
 2019-12-19  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/mixed_size_9.c: New test.
