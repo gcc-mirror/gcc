@@ -537,8 +537,10 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
   struct target_mem_desc *tgt
     = gomp_malloc (sizeof (*tgt) + sizeof (tgt->list[0]) * mapnum);
   tgt->list_count = mapnum;
-  tgt->refcount = pragma_kind == GOMP_MAP_VARS_ENTER_DATA ? 0 : 1;
+  tgt->refcount = (pragma_kind == GOMP_MAP_VARS_ENTER_DATA
+		   || pragma_kind == GOMP_MAP_VARS_OPENACC_ENTER_DATA) ? 0 : 1;
   tgt->device_descr = devicep;
+  tgt->prev = NULL;
   struct gomp_coalesce_buf cbuf, *cbufp = NULL;
 
   if (mapnum == 0)
@@ -963,7 +965,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		tgt->list[i].offset = 0;
 		tgt->list[i].length = k->host_end - k->host_start;
 		k->refcount = 1;
-		k->dynamic_refcount = 0;
+		k->virtual_refcount = 0;
 		tgt->refcount++;
 		array->left = NULL;
 		array->right = NULL;
@@ -1101,8 +1103,20 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
   /* If the variable from "omp target enter data" map-list was already mapped,
      tgt is not needed.  Otherwise tgt will be freed by gomp_unmap_vars or
      gomp_exit_data.  */
-  if (pragma_kind == GOMP_MAP_VARS_ENTER_DATA && tgt->refcount == 0)
+  if ((pragma_kind == GOMP_MAP_VARS_ENTER_DATA
+       || pragma_kind == GOMP_MAP_VARS_OPENACC_ENTER_DATA)
+      && tgt->refcount == 0)
     {
+      /* If we're about to discard a target_mem_desc with no "structural"
+	 references (tgt->refcount == 0), any splay keys linked in the tgt's
+	 list must have their virtual refcount incremented to represent that
+	 "lost" reference in order to implement the semantics of the OpenACC
+	 "present increment" operation properly.  */
+      if (pragma_kind == GOMP_MAP_VARS_OPENACC_ENTER_DATA)
+	for (i = 0; i < tgt->list_count; i++)
+	  if (tgt->list[i].key)
+	    tgt->list[i].key->virtual_refcount++;
+
       free (tgt);
       tgt = NULL;
     }
@@ -1240,7 +1254,14 @@ gomp_unmap_vars_internal (struct target_mem_desc *tgt, bool do_copyfrom,
 	continue;
 
       bool do_unmap = false;
-      if (k->refcount > 1 && k->refcount != REFCOUNT_INFINITY)
+      if (k->tgt == tgt
+	  && k->virtual_refcount > 0
+	  && k->refcount != REFCOUNT_INFINITY)
+	{
+	  k->virtual_refcount--;
+	  k->refcount--;
+	}
+      else if (k->refcount > 1 && k->refcount != REFCOUNT_INFINITY)
 	k->refcount--;
       else if (k->refcount == 1)
 	{
@@ -1405,7 +1426,7 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
       k->tgt = tgt;
       k->tgt_offset = target_table[i].start;
       k->refcount = REFCOUNT_INFINITY;
-      k->dynamic_refcount = 0;
+      k->virtual_refcount = 0;
       k->aux = NULL;
       array->left = NULL;
       array->right = NULL;
@@ -1438,7 +1459,7 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
       k->tgt = tgt;
       k->tgt_offset = target_var->start;
       k->refcount = target_size & link_bit ? REFCOUNT_LINK : REFCOUNT_INFINITY;
-      k->dynamic_refcount = 0;
+      k->virtual_refcount = 0;
       k->aux = NULL;
       array->left = NULL;
       array->right = NULL;
@@ -1670,22 +1691,6 @@ gomp_unload_device (struct gomp_device_descr *devicep)
 					   image->host_table,
 					   image->target_data);
 	}
-    }
-}
-
-/* Free address mapping tables.  MM must be locked on entry, and remains locked
-   on return.  */
-
-attribute_hidden void
-gomp_free_memmap (struct splay_tree_s *mem_map)
-{
-  while (mem_map->root)
-    {
-      struct target_mem_desc *tgt = mem_map->root->key.tgt;
-
-      splay_tree_remove (mem_map, &mem_map->root->key);
-      free (tgt->array);
-      free (tgt);
     }
 }
 
@@ -2700,7 +2705,7 @@ omp_target_associate_ptr (const void *host_ptr, const void *device_ptr,
       k->tgt = tgt;
       k->tgt_offset = (uintptr_t) device_ptr + device_offset;
       k->refcount = REFCOUNT_INFINITY;
-      k->dynamic_refcount = 0;
+      k->virtual_refcount = 0;
       k->aux = NULL;
       array->left = NULL;
       array->right = NULL;
