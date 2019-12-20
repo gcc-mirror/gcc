@@ -8139,7 +8139,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 	 making the packing and unpacking operation visible to the
 	 optimizers.  */
 
-      if (g77 && optimize && !optimize_size && expr->expr_type == EXPR_VARIABLE
+      if (g77 && flag_inline_arg_packing && expr->expr_type == EXPR_VARIABLE
 	  && !is_pointer (expr) && ! gfc_has_dimen_vector_ref (expr)
 	  && !(expr->symtree->n.sym->as
 	       && expr->symtree->n.sym->as->type == AS_ASSUMED_RANK)
