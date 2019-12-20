@@ -1410,7 +1410,7 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
           [#include <features.h>],
           [
           #if ! __GLIBC_PREREQ(2, 17)
-          #error 
+          #error
           #endif
           ],
           [glibcxx_glibc217=yes], [glibcxx_glibc217=no])
@@ -2163,7 +2163,7 @@ AC_DEFUN([GLIBCXX_CHECK_STDIO_PROTO], [
   AC_CACHE_VAL(glibcxx_cv_gets, [
   AC_COMPILE_IFELSE([AC_LANG_SOURCE(
 	  [#include <stdio.h>
-	   namespace test 
+	   namespace test
 	   {
               using ::gets;
 	   }
@@ -2780,9 +2780,9 @@ AC_DEFUN([GLIBCXX_ENABLE_VTABLE_VERIFY], [
     esac
     VTV_PCH_CXXFLAGS="-fvtable-verify=std"
   else
-    VTV_CXXFLAGS= 
+    VTV_CXXFLAGS=
     VTV_PCH_CXXFLAGS=
-    VTV_CXXLINKFLAGS= 
+    VTV_CXXLINKFLAGS=
   fi
 
   AC_SUBST(VTV_CXXFLAGS)
@@ -3964,7 +3964,7 @@ dnl
 AC_DEFUN([GLIBCXX_CHECK_GTHREADS], [
   GLIBCXX_ENABLE(libstdcxx-threads,auto,,[enable C++11 threads support])
 
-  if test x$enable_libstdcxx_threads = xauto || 
+  if test x$enable_libstdcxx_threads = xauto ||
      test x$enable_libstdcxx_threads = xyes; then
 
   AC_LANG_SAVE
@@ -4017,11 +4017,23 @@ AC_DEFUN([GLIBCXX_CHECK_GTHREADS], [
 	      [Define if gthreads library is available.])
 
     # Also check for pthread_rwlock_t for std::shared_timed_mutex in C++14
-    AC_CHECK_TYPE([pthread_rwlock_t],
-            [AC_DEFINE([_GLIBCXX_USE_PTHREAD_RWLOCK_T], 1,
-            [Define if POSIX read/write locks are available in <gthr.h>.])],
-            [],
-            [#include "gthr.h"])
+    # but only do so if we're using pthread in the gthread library.
+    # On VxWorks for example, pthread_rwlock_t is defined in sys/types.h
+    # but the pthread library is not there by default and the gthread library
+    # does not use it.
+    AC_TRY_COMPILE([#include "gthr.h"],
+    [
+      #if (!defined(_PTHREADS))
+      #error
+      #endif
+    ], [ac_gthread_use_pthreads=yes], [ac_gthread_use_pthreads=no])
+    if test x"$ac_gthread_use_pthreads" = x"yes"; then
+      AC_CHECK_TYPE([pthread_rwlock_t],
+             [AC_DEFINE([_GLIBCXX_USE_PTHREAD_RWLOCK_T], 1,
+             [Define if POSIX read/write locks are available in <gthr.h>.])],
+             [],
+             [#include "gthr.h"])
+    fi
   fi
 
   CXXFLAGS="$ac_save_CXXFLAGS"

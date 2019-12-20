@@ -74654,7 +74654,33 @@ $as_echo "#define _GLIBCXX_HAS_GTHREADS 1" >>confdefs.h
 
 
     # Also check for pthread_rwlock_t for std::shared_timed_mutex in C++14
-    ac_fn_cxx_check_type "$LINENO" "pthread_rwlock_t" "ac_cv_type_pthread_rwlock_t" "#include \"gthr.h\"
+    # but only do so if we're using pthread in the gthread library.
+    # On VxWorks for example, pthread_rwlock_t is defined in sys/types.h
+    # but the pthread library is not there by default and the gthread library
+    # does not use it.
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include "gthr.h"
+int
+main ()
+{
+
+      #if (!defined(_PTHREADS))
+      #error
+      #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_gthread_use_pthreads=yes
+else
+  ac_gthread_use_pthreads=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    if test x"$ac_gthread_use_pthreads" = x"yes"; then
+      ac_fn_cxx_check_type "$LINENO" "pthread_rwlock_t" "ac_cv_type_pthread_rwlock_t" "#include \"gthr.h\"
 "
 if test "x$ac_cv_type_pthread_rwlock_t" = xyes; then :
 
@@ -74662,6 +74688,7 @@ $as_echo "#define _GLIBCXX_USE_PTHREAD_RWLOCK_T 1" >>confdefs.h
 
 fi
 
+    fi
   fi
 
   CXXFLAGS="$ac_save_CXXFLAGS"
