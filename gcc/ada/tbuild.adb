@@ -116,10 +116,19 @@ package body Tbuild is
       Result : Node_Id;
 
    begin
-      if Present (Etype (Expr))
-        and then (Etype (Expr)) = Typ
-      then
+      if Present (Etype (Expr)) and then Etype (Expr) = Typ then
          return Relocate_Node (Expr);
+
+      --  Case where the expression is a conversion to universal integer of
+      --  an expression with an integer type, and we can thus eliminate the
+      --  intermediate conversion to universal integer.
+
+      elsif Nkind (Expr) = N_Type_Conversion
+        and then Entity (Subtype_Mark (Expr)) = Universal_Integer
+        and then Is_Integer_Type (Etype (Expression (Expr)))
+      then
+         return Convert_To (Typ, Expression (Expr));
+
       else
          Result :=
            Make_Type_Conversion (Sloc (Expr),
@@ -853,8 +862,8 @@ package body Tbuild is
       then
          return Relocate_Node (Expr);
 
-      --  Cases where the inner expression is itself an unchecked conversion
-      --  to the same type, and we can thus eliminate the outer conversion.
+      --  Case where the expression is itself an unchecked conversion to
+      --  the same type, and we can thus eliminate the outer conversion.
 
       elsif Nkind (Expr) = N_Unchecked_Type_Conversion
         and then Entity (Subtype_Mark (Expr)) = Typ
