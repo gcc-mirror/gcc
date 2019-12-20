@@ -1,5 +1,8 @@
 2019-12-19  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/92745 - bogus error when initializing array of vectors.
+	* g++.dg/cpp0x/initlist118.C: New test.
+
 	PR c++/92974 - bogus location for enum and non-enum in ?: warning.
 	* g++.dg/diagnostic/enum1.C: New test.
 	* g++.dg/gomp/loop-2.C: Adjust dg-error.
