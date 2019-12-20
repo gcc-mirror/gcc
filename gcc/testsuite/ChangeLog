@@ -1,3 +1,11 @@
+2019-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90842
+	* g++.dg/cpp1y/lambda-generic-90842.C: New test.
+
 2019-12-20  Roman Zhuykov  <zhroma@ispras.ru>
 
 	* gcc.dg/pr92951-1.c: Rename to ...
