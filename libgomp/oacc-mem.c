@@ -867,6 +867,90 @@ acc_update_self_async (void *h, size_t s, int async)
   update_dev_host (0, h, s, async);
 }
 
+void
+acc_attach_async (void **hostaddr, int async)
+{
+  struct goacc_thread *thr = goacc_thread ();
+  struct gomp_device_descr *acc_dev = thr->dev;
+  goacc_aq aq = get_goacc_asyncqueue (async);
+
+  struct splay_tree_key_s cur_node;
+  splay_tree_key n;
+
+  if (thr->dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+    return;
+
+  gomp_mutex_lock (&acc_dev->lock);
+
+  cur_node.host_start = (uintptr_t) hostaddr;
+  cur_node.host_end = cur_node.host_start + sizeof (void *);
+  n = splay_tree_lookup (&acc_dev->mem_map, &cur_node);
+
+  if (n == NULL)
+    gomp_fatal ("struct not mapped for acc_attach");
+
+  gomp_attach_pointer (acc_dev, aq, &acc_dev->mem_map, n, (uintptr_t) hostaddr,
+		       0, NULL);
+
+  gomp_mutex_unlock (&acc_dev->lock);
+}
+
+void
+acc_attach (void **hostaddr)
+{
+  acc_attach_async (hostaddr, acc_async_sync);
+}
+
+static void
+goacc_detach_internal (void **hostaddr, int async, bool finalize)
+{
+  struct goacc_thread *thr = goacc_thread ();
+  struct gomp_device_descr *acc_dev = thr->dev;
+  struct splay_tree_key_s cur_node;
+  splay_tree_key n;
+  struct goacc_asyncqueue *aq = get_goacc_asyncqueue (async);
+
+  if (thr->dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+    return;
+
+  gomp_mutex_lock (&acc_dev->lock);
+
+  cur_node.host_start = (uintptr_t) hostaddr;
+  cur_node.host_end = cur_node.host_start + sizeof (void *);
+  n = splay_tree_lookup (&acc_dev->mem_map, &cur_node);
+
+  if (n == NULL)
+    gomp_fatal ("struct not mapped for acc_detach");
+
+  gomp_detach_pointer (acc_dev, aq, n, (uintptr_t) hostaddr, finalize, NULL);
+
+  gomp_mutex_unlock (&acc_dev->lock);
+}
+
+void
+acc_detach (void **hostaddr)
+{
+  goacc_detach_internal (hostaddr, acc_async_sync, false);
+}
+
+void
+acc_detach_async (void **hostaddr, int async)
+{
+  goacc_detach_internal (hostaddr, async, false);
+}
+
+void
+acc_detach_finalize (void **hostaddr)
+{
+  goacc_detach_internal (hostaddr, acc_async_sync, true);
+}
+
+void
+acc_detach_finalize_async (void **hostaddr, int async)
+{
+  goacc_detach_internal (hostaddr, async, true);
+}
+
 /* Some types of (pointer) variables use several consecutive mappings, which
    must be treated as a group for enter/exit data directives.  This function
    returns the last mapping in such a group (inclusive), or POS for singleton

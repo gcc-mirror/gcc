@@ -1,4 +1,23 @@
 2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* libgomp.h (struct splay_tree_aux): Add attach_count field.
+	(gomp_attach_pointer, gomp_detach_pointer): Add prototypes.
+	* libgomp.map (OACC_2.6): New section. Add acc_attach,
+	acc_attach_async, acc_detach, acc_detach_async, acc_detach_finalize,
+	acc_detach_finalize_async.
+	* oacc-mem.c (acc_attach_async, acc_attach, goacc_detach_internal,
+	acc_detach, acc_detach_async, acc_detach_finalize,
+	acc_detach_finalize_async): New functions.
+	* openacc.h (acc_attach, acc_attach_async, acc_detach,
+	(acc_detach_async, acc_detach_finalize, acc_detach_finalize_async): Add
+	prototypes.
+	* target.c (gomp_attach_pointer, gomp_detach_pointer): New functions.
+	(gomp_remove_var_internal): Free attachment counts if present.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-3.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-5.c: New test.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
 	* libgomp.h (gomp_map_val): Add prototype.

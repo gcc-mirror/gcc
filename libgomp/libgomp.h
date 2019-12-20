@@ -994,6 +994,9 @@ struct target_mem_desc {
 struct splay_tree_aux {
   /* Pointer to the original mapping of "omp declare target link" object.  */
   splay_tree_key link_key;
+  /* For a block with attached pointers, the attachment counters for each.
+     Only used for OpenACC.  */
+  uintptr_t *attach_count;
 };
 
 struct splay_tree_key_s {
@@ -1158,6 +1161,13 @@ extern void gomp_copy_dev2host (struct gomp_device_descr *,
 				struct goacc_asyncqueue *, void *, const void *,
 				size_t);
 extern uintptr_t gomp_map_val (struct target_mem_desc *, void **, size_t);
+extern void gomp_attach_pointer (struct gomp_device_descr *,
+				 struct goacc_asyncqueue *, splay_tree,
+				 splay_tree_key, uintptr_t, size_t,
+				 struct gomp_coalesce_buf *);
+extern void gomp_detach_pointer (struct gomp_device_descr *,
+				 struct goacc_asyncqueue *, splay_tree_key,
+				 uintptr_t, bool, struct gomp_coalesce_buf *);
 
 extern struct target_mem_desc *gomp_map_vars (struct gomp_device_descr *,
 					      size_t, void **, void **,
