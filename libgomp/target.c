@@ -493,7 +493,7 @@ gomp_map_fields_existing (struct target_mem_desc *tgt,
 	      (void *) cur_node.host_end);
 }
 
-static inline uintptr_t
+attribute_hidden uintptr_t
 gomp_map_val (struct target_mem_desc *tgt, void **hostaddrs, size_t i)
 {
   if (tgt->list[i].key != NULL)
@@ -713,7 +713,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	    {
 	      /* Not present, hence, skip entry - including its MAP_POINTER,
 		 when existing.  */
-	      tgt->list[i].offset = 0;
+	      tgt->list[i].offset = OFFSET_POINTER;
 	      if (i + 1 < mapnum
 		  && ((typemask & get_kind (short_mapkind, kinds, i + 1))
 		      == GOMP_MAP_POINTER))
