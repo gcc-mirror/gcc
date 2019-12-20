@@ -1,5 +1,10 @@
 2020-01-14  David Malcolm  <dmalcolm@redhat.com>
 
+	* supergraph.cc (supernode::dump_dot): Ensure that the TABLE
+	element has at least one TR.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/58237
 	* engine.cc (leak_stmt_finder::find_stmt): Use get_pure_location
 	when comparing against UNKNOWN_LOCATION.
