@@ -3041,6 +3041,16 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
       }
       break;
     case GIMPLE_OMP_TEAMS:
+      if ((ctx == NULL
+           || gimple_code (ctx->stmt) != GIMPLE_OMP_TARGET
+           || gimple_omp_target_kind (ctx->stmt) != GF_OMP_TARGET_KIND_REGION)
+	  && lang_GNU_Fortran ())
+	{
+	  error_at (gimple_location (stmt),
+		    "%<teams%> construct not closely nested inside of "
+		    "%<target%> construct");
+	  return false;
+	}
       if (ctx == NULL)
 	break;
       else if (gimple_code (ctx->stmt) != GIMPLE_OMP_TARGET
