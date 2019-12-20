@@ -1,6 +1,12 @@
 2019-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92695
+	* decl2.c (mark_used): Don't call note_vague_linkage_fn for pure
+	virtual functions, even if they are declared inline.
+
 	2019-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/92524
