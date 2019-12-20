@@ -1,5 +1,11 @@
 2019-12-20  François Dumont  <fdumont@gcc.gnu.org>
 
+	* testsuite/23_containers/map/48101_neg.cc: Add versioned namespace
+	pattern to tested error message.
+	* testsuite/23_containers/multimap/48101_neg.cc: Likewise.
+	* testsuite/30_threads/headers/stop_token/synopsis.cc: Add
+	dg-require-normal-namepace.
+
 	* python/libstdcxx/v6/printers.py (lookup_node_type): Remove redundant
 	call to lookup_node_type.
 	* testsuite/libstdc++-prettyprinters/80276.cc: Define

@@ -29,8 +29,8 @@ test01()
   c2.find(2); // { dg-error "here" }
 }
 
-// { dg-error "_Compare = std::less<int.>" "" { target *-*-* } 0 }
-// { dg-error "_Compare = std::allocator<int>" "" { target *-*-* } 0 }
+// { dg-error "_Compare = std::(__8::)?less<int.>" "" { target *-*-* } 0 }
+// { dg-error "_Compare = std::(__8::)?allocator<int>" "" { target *-*-* } 0 }
 // { dg-error "comparison object must be invocable" "" { target *-*-* } 0 }
 // { dg-prune-output "no match for call" }
 // { dg-prune-output "invalid conversion" }
