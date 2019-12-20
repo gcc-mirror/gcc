@@ -1,5 +1,22 @@
 2019-12-19  Julian Brown  <julian@codesourcery.com>
 
+	* gimplify.c (gimplify_omp_var_data): Add GOVD_MAP_HAS_ATTACHMENTS.
+	(insert_struct_comp_map): Support derived-type member mappings
+	for arrays with descriptors which use GOMP_MAP_TO_PSET.  Support
+	GOMP_MAP_ATTACH_DETACH.
+	(gimplify_scan_omp_clauses): Tidy up OACC_ENTER_DATA/OACC_EXIT_DATA
+	mappings.  Handle attach/detach clauses and component references.
+	(gimplify_adjust_omp_clauses_1): Skip adjustments for explicit
+	attach/detach clauses.
+	(gimplify_omp_target_update): Handle struct mappings and finalize for
+	detach operations.
+	* omp-low.c (lower_omp_target): Support GOMP_MAP_ATTACH,
+	GOMP_MAP_DETACH, GOMP_MAP_FORCE_DETACH.
+	* tree-pretty-print.c (dump_omp_clause): Likewise, plus
+	GOMP_MAP_ATTACH_DETACH.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+
 	* gimplify.c (insert_struct_comp_map, extract_base_bit_offset): New.
 	(gimplify_scan_omp_clauses): Outline duplicated code into calls to
 	above two functions.
