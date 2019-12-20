@@ -493,6 +493,134 @@ gomp_map_fields_existing (struct target_mem_desc *tgt,
 	      (void *) cur_node.host_end);
 }
 
+attribute_hidden void
+gomp_attach_pointer (struct gomp_device_descr *devicep,
+		     struct goacc_asyncqueue *aq, splay_tree mem_map,
+		     splay_tree_key n, uintptr_t attach_to, size_t bias,
+		     struct gomp_coalesce_buf *cbufp)
+{
+  struct splay_tree_key_s s;
+  size_t size, idx;
+
+  if (n == NULL)
+    {
+      gomp_mutex_unlock (&devicep->lock);
+      gomp_fatal ("enclosing struct not mapped for attach");
+    }
+
+  size = (n->host_end - n->host_start + sizeof (void *) - 1) / sizeof (void *);
+  /* We might have a pointer in a packed struct: however we cannot have more
+     than one such pointer in each pointer-sized portion of the struct, so
+     this is safe.  */
+  idx = (attach_to - n->host_start) / sizeof (void *);
+
+  if (!n->aux)
+    n->aux = gomp_malloc_cleared (sizeof (struct splay_tree_aux));
+
+  if (!n->aux->attach_count)
+    n->aux->attach_count
+      = gomp_malloc_cleared (sizeof (*n->aux->attach_count) * size);
+
+  if (n->aux->attach_count[idx] < UINTPTR_MAX)
+    n->aux->attach_count[idx]++;
+  else
+    {
+      gomp_mutex_unlock (&devicep->lock);
+      gomp_fatal ("attach count overflow");
+    }
+
+  if (n->aux->attach_count[idx] == 1)
+    {
+      uintptr_t devptr = n->tgt->tgt_start + n->tgt_offset + attach_to
+			 - n->host_start;
+      uintptr_t target = (uintptr_t) *(void **) attach_to;
+      splay_tree_key tn;
+      uintptr_t data;
+
+      if ((void *) target == NULL)
+	{
+	  gomp_mutex_unlock (&devicep->lock);
+	  gomp_fatal ("attempt to attach null pointer");
+	}
+
+      s.host_start = target + bias;
+      s.host_end = s.host_start + 1;
+      tn = splay_tree_lookup (mem_map, &s);
+
+      if (!tn)
+	{
+	  gomp_mutex_unlock (&devicep->lock);
+	  gomp_fatal ("pointer target not mapped for attach");
+	}
+
+      data = tn->tgt->tgt_start + tn->tgt_offset + target - tn->host_start;
+
+      gomp_debug (1,
+		  "%s: attaching host %p, target %p (struct base %p) to %p\n",
+		  __FUNCTION__, (void *) attach_to, (void *) devptr,
+		  (void *) (n->tgt->tgt_start + n->tgt_offset), (void *) data);
+
+      gomp_copy_host2dev (devicep, aq, (void *) devptr, (void *) &data,
+			  sizeof (void *), cbufp);
+    }
+  else
+    gomp_debug (1, "%s: attach count for %p -> %u\n", __FUNCTION__,
+		(void *) attach_to, (int) n->aux->attach_count[idx]);
+}
+
+attribute_hidden void
+gomp_detach_pointer (struct gomp_device_descr *devicep,
+		     struct goacc_asyncqueue *aq, splay_tree_key n,
+		     uintptr_t detach_from, bool finalize,
+		     struct gomp_coalesce_buf *cbufp)
+{
+  size_t idx;
+
+  if (n == NULL)
+    {
+      gomp_mutex_unlock (&devicep->lock);
+      gomp_fatal ("enclosing struct not mapped for detach");
+    }
+
+  idx = (detach_from - n->host_start) / sizeof (void *);
+
+  if (!n->aux || !n->aux->attach_count)
+    {
+      gomp_mutex_unlock (&devicep->lock);
+      gomp_fatal ("no attachment counters for struct");
+    }
+
+  if (finalize)
+    n->aux->attach_count[idx] = 1;
+
+  if (n->aux->attach_count[idx] == 0)
+    {
+      gomp_mutex_unlock (&devicep->lock);
+      gomp_fatal ("attach count underflow");
+    }
+  else
+    n->aux->attach_count[idx]--;
+
+  if (n->aux->attach_count[idx] == 0)
+    {
+      uintptr_t devptr = n->tgt->tgt_start + n->tgt_offset + detach_from
+			 - n->host_start;
+      uintptr_t target = (uintptr_t) *(void **) detach_from;
+
+      gomp_debug (1,
+		  "%s: detaching host %p, target %p (struct base %p) to %p\n",
+		  __FUNCTION__, (void *) detach_from, (void *) devptr,
+		  (void *) (n->tgt->tgt_start + n->tgt_offset),
+		  (void *) target);
+
+      gomp_copy_host2dev (devicep, aq, (void *) devptr, (void *) &target,
+			  sizeof (void *), cbufp);
+    }
+  else
+    gomp_debug (1, "%s: attach count for %p -> %u\n", __FUNCTION__,
+		(void *) detach_from, (int) n->aux->attach_count[idx]);
+}
+
 attribute_hidden uintptr_t
 gomp_map_val (struct target_mem_desc *tgt, void **hostaddrs, size_t i)
 {
@@ -1191,6 +1319,8 @@ gomp_remove_var_internal (struct gomp_device_descr *devicep, splay_tree_key k,
       if (k->aux->link_key)
 	splay_tree_insert (&devicep->mem_map,
 			   (splay_tree_node) k->aux->link_key);
+      if (k->aux->attach_count)
+	free (k->aux->attach_count);
       free (k->aux);
       k->aux = NULL;
     }
