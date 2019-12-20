@@ -1,6 +1,16 @@
 2020-01-14  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/58237
+	* engine.cc (leak_stmt_finder::find_stmt): Use get_pure_location
+	when comparing against UNKNOWN_LOCATION.
+	(stmt_requires_new_enode_p): Likewise.
+	(exploded_graph::dump_exploded_nodes): Likewise.
+	* supergraph.cc (supernode::get_start_location): Likewise.
+	(supernode::get_end_location): Likewise.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/58237
 	* analyzer-selftests.cc (selftest::run_analyzer_selftests): Call
 	selftest::analyzer_sm_file_cc_tests.
 	* analyzer-selftests.h (selftest::analyzer_sm_file_cc_tests): New

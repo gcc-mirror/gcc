@@ -531,13 +531,14 @@ supernode::dump_dot_id (pretty_printer *pp) const
 location_t
 supernode::get_start_location () const
 {
-  if (m_returning_call && m_returning_call->location != UNKNOWN_LOCATION)
+  if (m_returning_call
+      && get_pure_location (m_returning_call->location) != UNKNOWN_LOCATION)
     return m_returning_call->location;
 
   int i;
   gimple *stmt;
   FOR_EACH_VEC_ELT (m_stmts, i, stmt)
-    if (stmt->location != UNKNOWN_LOCATION)
+    if (get_pure_location (stmt->location) != UNKNOWN_LOCATION)
       return stmt->location;
 
   if (entry_p ())
@@ -561,10 +562,11 @@ supernode::get_end_location () const
   int i;
   gimple *stmt;
   FOR_EACH_VEC_ELT_REVERSE (m_stmts, i, stmt)
-    if (stmt->location != UNKNOWN_LOCATION)
+    if (get_pure_location (stmt->location) != UNKNOWN_LOCATION)
       return stmt->location;
 
-  if (m_returning_call && m_returning_call->location != UNKNOWN_LOCATION)
+  if (m_returning_call
+      && get_pure_location (m_returning_call->location) != UNKNOWN_LOCATION)
     return m_returning_call->location;
 
   if (entry_p ())

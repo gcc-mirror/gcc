@@ -417,7 +417,7 @@ public:
 	const program_point &dst_point = dst_node->get_point ();
 	const gimple *stmt = dst_point.get_stmt ();
 	if (stmt)
-	  if (stmt->location != UNKNOWN_LOCATION)
+	  if (get_pure_location (stmt->location) != UNKNOWN_LOCATION)
 	    return stmt;
       }
 
@@ -2300,8 +2300,8 @@ stmt_requires_new_enode_p (const gimple *stmt,
      could be consolidated into PREV_STMT, giving us an event with
      no location.  Ensure that STMT gets its own exploded_node to
      avoid this.  */
-  if (prev_stmt->location == UNKNOWN_LOCATION
-      && stmt->location != UNKNOWN_LOCATION)
+  if (get_pure_location (prev_stmt->location) == UNKNOWN_LOCATION
+      && get_pure_location (stmt->location) != UNKNOWN_LOCATION)
     return true;
 
   return false;
@@ -3098,7 +3098,7 @@ exploded_graph::dump_exploded_nodes () const
 	{
 	  if (const gimple *stmt = enode->get_stmt ())
 	    {
-	      if (richloc.get_loc () == UNKNOWN_LOCATION)
+	      if (get_pure_location (richloc.get_loc ()) == UNKNOWN_LOCATION)
 		richloc.set_range (0, stmt->location, SHOW_RANGE_WITH_CARET);
 	      else
 		richloc.add_range (stmt->location,
