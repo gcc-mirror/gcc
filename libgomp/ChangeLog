@@ -1,4 +1,46 @@
 2019-12-19  Julian Brown  <julian@codesourcery.com>
+
+	* libgomp.h (struct splay_tree_key_s): Substitute dynamic_refcount
+	field for virtual_refcount.
+	(enum gomp_map_vars_kind): Add GOMP_MAP_VARS_OPENACC_ENTER_DATA.
+	(gomp_free_memmap): Remove prototype.
+	* oacc-init.c (acc_shutdown_1): Iteratively call gomp_remove_var
+	instead of calling gomp_free_memmap.
+	* oacc-mem.c (acc_map_data): Use virtual_refcount instead of
+	dynamic_refcount.
+	(acc_unmap_data): Open code instead of forcing target_mem_desc's
+	to_free field to NULL then calling gomp_unmap_vars.  Handle
+	REFCOUNT_INFINITY on target blocks.
+	(goacc_enter_data): Rename to...
+	(goacc_enter_datum): ...this.  Remove MAPNUM parameter and special
+	handling for mapping groups.  Use virtual_refcount instead of
+	dynamic_refcount.  Use GOMP_MAP_VARS_OPENACC_ENTER_DATA for
+	map_map_vars_async call.  Re-do lookup for target pointer return value.
+	(acc_create, acc_create_async, acc_copyin, acc_copyin_async): Call
+	renamed goacc_enter_datum function.
+	(goacc_exit_data): Rename to...
+	(goacc_exit_datum): ...this.  Update for virtual_refcount semantics.
+	(acc_delete, acc_delete_async, acc_delete_finalize,
+	acc_delete_finalize_async, acc_copyout, acc_copyout_async,
+	acc_copyout_finalize, acc_copyout_finalize_async): Call renamed
+	goacc_exit_datum function.
+	(gomp_acc_remove_pointer, find_pointer): Remove functions.
+	(find_group_last, goacc_enter_data_internal, goacc_exit_data_internal):
+	New functions.
+	(GOACC_enter_exit_data): Use goacc_enter_data_internal and
+	goacc_exit_data_internal helper functions.
+	* target.c (gomp_map_vars_internal): Handle
+	GOMP_MAP_VARS_OPENACC_ENTER_DATA.  Update for virtual_refcount
+	semantics.
+	(gomp_unmap_vars_internal): Update for virtual_refcount semantics.
+	(gomp_load_image_to_device, omp_target_associate_ptr): Zero-initialise
+	virtual_refcount field instead of dynamic_refcount.
+	(gomp_free_memmap): Remove function.
+	* testsuite/libgomp.oacc-c-c++-common/unmap-infinity-1.c: New test.
+	* testsuite/libgomp.c-c++-common/unmap-infinity-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/pr92843-1.c: Add XFAIL.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 
 	* libgomp.h (struct splay_tree_aux): New.
