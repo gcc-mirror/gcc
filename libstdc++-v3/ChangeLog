@@ -1,3 +1,9 @@
+2019-12-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92927
+	* include/bits/alloc_traits.h (__alloc_on_copy, __alloc_on_move)
+	(__alloc_on_swap): Add inline specifier.
+
 2019-12-20  Jerome Lambourg  <lambourg@adacore.com>
 
 	* acinclude.m4 (GLIBCXX_CHECK_SETRLIMIT): Test with AC_LANG_CPLUSPLUS.
