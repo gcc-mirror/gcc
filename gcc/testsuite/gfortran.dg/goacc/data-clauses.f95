@@ -111,9 +111,9 @@ contains
   !$acc end data
 
 
-  !$acc parallel no_create (tip) ! { dg-error "POINTER" }
+  !$acc parallel no_create (tip)
   !$acc end parallel
-  !$acc parallel no_create (tia) ! { dg-error "ALLOCATABLE" }
+  !$acc parallel no_create (tia)
   !$acc end parallel
   !$acc parallel deviceptr (i) no_create (i) ! { dg-error "multiple clauses" }
   !$acc end parallel
@@ -132,7 +132,7 @@ contains
   !$acc end data
 
 
-  !$acc parallel present (tip) ! { dg-error "POINTER" }
+  !$acc parallel present (tip)
   !$acc end parallel
   !$acc parallel present (tia)
   !$acc end parallel
