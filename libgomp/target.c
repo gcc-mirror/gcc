@@ -360,6 +360,7 @@ gomp_map_vars_existing (struct gomp_device_descr *devicep,
   tgt_var->key = oldn;
   tgt_var->copy_from = GOMP_MAP_COPY_FROM_P (kind);
   tgt_var->always_copy_from = GOMP_MAP_ALWAYS_FROM_P (kind);
+  tgt_var->do_detach = kind == GOMP_MAP_ATTACH;
   tgt_var->offset = newn->host_start - oldn->host_start;
   tgt_var->length = newn->host_end - newn->host_start;
 
@@ -798,8 +799,15 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	  has_firstprivate = true;
 	  continue;
 	}
+      else if ((kind & typemask) == GOMP_MAP_ATTACH)
+	{
+	  tgt->list[i].key = NULL;
+	  has_firstprivate = true;
+	  continue;
+	}
       cur_node.host_start = (uintptr_t) hostaddrs[i];
-      if (!GOMP_MAP_POINTER_P (kind & typemask))
+      if (!GOMP_MAP_POINTER_P (kind & typemask)
+	  && (kind & typemask) != GOMP_MAP_ATTACH)
 	cur_node.host_end = cur_node.host_start + sizes[i];
       else
 	cur_node.host_end = cur_node.host_start + sizeof (void *);
@@ -1046,6 +1054,32 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 			== GOMP_MAP_POINTER))
 		  ++i;
 		continue;
+	      case GOMP_MAP_ATTACH:
+		{
+		  cur_node.host_start = (uintptr_t) hostaddrs[i];
+		  cur_node.host_end = cur_node.host_start + sizeof (void *);
+		  splay_tree_key n = splay_tree_lookup (mem_map, &cur_node);
+		  if (n != NULL)
+		    {
+		      tgt->list[i].key = n;
+		      tgt->list[i].offset = cur_node.host_start - n->host_start;
+		      tgt->list[i].length = n->host_end - n->host_start;
+		      tgt->list[i].copy_from = false;
+		      tgt->list[i].always_copy_from = false;
+		      tgt->list[i].do_detach
+			= (pragma_kind != GOMP_MAP_VARS_OPENACC_ENTER_DATA);
+		      n->refcount++;
+		    }
+		  else
+		    {
+		      gomp_mutex_unlock (&devicep->lock);
+		      gomp_fatal ("outer struct not mapped for attach");
+		    }
+		  gomp_attach_pointer (devicep, aq, mem_map, n,
+				       (uintptr_t) hostaddrs[i], sizes[i],
+				       cbufp);
+		  continue;
+		}
 	      default:
 		break;
 	      }
@@ -1090,10 +1124,12 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		tgt->list[i].copy_from = GOMP_MAP_COPY_FROM_P (kind & typemask);
 		tgt->list[i].always_copy_from
 		  = GOMP_MAP_ALWAYS_FROM_P (kind & typemask);
+		tgt->list[i].do_detach = false;
 		tgt->list[i].offset = 0;
 		tgt->list[i].length = k->host_end - k->host_start;
 		k->refcount = 1;
 		k->virtual_refcount = 0;
+		k->aux = NULL;
 		tgt->refcount++;
 		array->left = NULL;
 		array->right = NULL;
@@ -1144,6 +1180,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 			  tgt->list[j].key = k;
 			  tgt->list[j].copy_from = false;
 			  tgt->list[j].always_copy_from = false;
+			  tgt->list[j].do_detach = false;
 			  if (k->refcount != REFCOUNT_INFINITY)
 			    k->refcount++;
 			  gomp_map_pointer (tgt, aq,
@@ -1377,6 +1414,18 @@ gomp_unmap_vars_internal (struct target_mem_desc *tgt, bool do_copyfrom,
     }
 
   size_t i;
+
+  /* We must perform detachments before any copies back to the host.  */
+  for (i = 0; i < tgt->list_count; i++)
+    {
+      splay_tree_key k = tgt->list[i].key;
+
+      if (k != NULL && tgt->list[i].do_detach)
+	gomp_detach_pointer (devicep, aq, k, tgt->list[i].key->host_start
+					     + tgt->list[i].offset,
+			     k->refcount == 1, NULL);
+    }
+
   for (i = 0; i < tgt->list_count; i++)
     {
       splay_tree_key k = tgt->list[i].key;

@@ -957,33 +957,48 @@ acc_detach_finalize_async (void **hostaddr, int async)
    mappings.  */
 
 static int
-find_group_last (int pos, size_t mapnum, unsigned short *kinds)
+find_group_last (int pos, size_t mapnum, size_t *sizes, unsigned short *kinds)
 {
   unsigned char kind0 = kinds[pos] & 0xff;
-  int first_pos = pos, last_pos = pos;
+  int first_pos = pos;
 
-  if (kind0 == GOMP_MAP_TO_PSET)
+  switch (kind0)
     {
+    case GOMP_MAP_TO_PSET:
       while (pos + 1 < mapnum && (kinds[pos + 1] & 0xff) == GOMP_MAP_POINTER)
-	last_pos = ++pos;
+	pos++;
       /* We expect at least one GOMP_MAP_POINTER after a GOMP_MAP_TO_PSET.  */
-      assert (last_pos > first_pos);
-    }
-  else
-    {
+      assert (pos > first_pos);
+      break;
+
+    case GOMP_MAP_STRUCT:
+      pos += sizes[pos];
+      break;
+
+    case GOMP_MAP_POINTER:
+    case GOMP_MAP_ALWAYS_POINTER:
+      /* These mappings are only expected after some other mapping.  If we
+	 see one by itself, something has gone wrong.  */
+      gomp_fatal ("unexpected mapping");
+      break;
+
+    default:
       /* GOMP_MAP_ALWAYS_POINTER can only appear directly after some other
 	 mapping.  */
-      if (pos + 1 < mapnum
-	  && (kinds[pos + 1] & 0xff) == GOMP_MAP_ALWAYS_POINTER)
-	return pos + 1;
+      if (pos + 1 < mapnum)
+	{
+	  unsigned char kind1 = kinds[pos + 1] & 0xff;
+	  if (kind1 == GOMP_MAP_ALWAYS_POINTER)
+	    return pos + 1;
+	}
 
-      /* We can have one or several GOMP_MAP_POINTER mappings after a to/from
+      /* We can have zero or more GOMP_MAP_POINTER mappings after a to/from
 	 (etc.) mapping.  */
       while (pos + 1 < mapnum && (kinds[pos + 1] & 0xff) == GOMP_MAP_POINTER)
-	last_pos = ++pos;
+	pos++;
     }
 
-  return last_pos;
+  return pos;
 }
 
 /* Map variables for OpenACC "enter data".  We can't just call
@@ -997,7 +1012,7 @@ goacc_enter_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 {
   for (size_t i = 0; i < mapnum; i++)
     {
-      int group_last = find_group_last (i, mapnum, kinds);
+      int group_last = find_group_last (i, mapnum, sizes, kinds);
 
       gomp_map_vars_async (acc_dev, aq,
 			   (group_last - i) + 1,
@@ -1018,6 +1033,37 @@ goacc_exit_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 {
   gomp_mutex_lock (&acc_dev->lock);
 
+  /* Handle "detach" before copyback/deletion of mapped data.  */
+  for (size_t i = 0; i < mapnum; ++i)
+    {
+      unsigned char kind = kinds[i] & 0xff;
+      bool finalize = false;
+      switch (kind)
+	{
+	case GOMP_MAP_FORCE_DETACH:
+	  finalize = true;
+	  /* Fallthrough.  */
+
+	case GOMP_MAP_DETACH:
+	  {
+	    struct splay_tree_key_s cur_node;
+	    uintptr_t hostaddr = (uintptr_t) hostaddrs[i];
+	    cur_node.host_start = hostaddr;
+	    cur_node.host_end = cur_node.host_start + sizeof (void *);
+	    splay_tree_key n
+	      = splay_tree_lookup (&acc_dev->mem_map, &cur_node);
+
+	    if (n == NULL)
+	      gomp_fatal ("struct not mapped for detach operation");
+
+	    gomp_detach_pointer (acc_dev, aq, n, hostaddr, finalize, NULL);
+	  }
+	  break;
+	default:
+	  ;
+	}
+    }
+
   for (size_t i = 0; i < mapnum; ++i)
     {
       unsigned char kind = kinds[i] & 0xff;
@@ -1025,7 +1071,8 @@ goacc_exit_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
       bool finalize = false;
 
       if (kind == GOMP_MAP_FORCE_FROM
-	  || kind == GOMP_MAP_DELETE)
+	  || kind == GOMP_MAP_DELETE
+	  || kind == GOMP_MAP_FORCE_DETACH)
 	finalize = true;
 
       switch (kind)
@@ -1040,10 +1087,14 @@ goacc_exit_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 	case GOMP_MAP_POINTER:
 	case GOMP_MAP_DELETE:
 	case GOMP_MAP_RELEASE:
+	case GOMP_MAP_DETACH:
+	case GOMP_MAP_FORCE_DETACH:
 	  {
 	    struct splay_tree_key_s cur_node;
 	    size_t size;
-	    if (kind == GOMP_MAP_POINTER)
+	    if (kind == GOMP_MAP_POINTER
+		|| kind == GOMP_MAP_DETACH
+		|| kind == GOMP_MAP_FORCE_DETACH)
 	      size = sizeof (void *);
 	    else
 	      size = sizes[i];
@@ -1083,6 +1134,42 @@ goacc_exit_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 	      gomp_remove_var_async (acc_dev, n, aq);
 	  }
 	  break;
+
+	case GOMP_MAP_STRUCT:
+	  {
+	    int elems = sizes[i];
+	    for (int j = 1; j <= elems; j++)
+	      {
+		struct splay_tree_key_s k;
+		k.host_start = (uintptr_t) hostaddrs[i + j];
+		k.host_end = k.host_start + sizes[i + j];
+		splay_tree_key str;
+		str = splay_tree_lookup (&acc_dev->mem_map, &k);
+		if (str)
+		  {
+		    if (finalize)
+		      {
+			if (str->refcount != REFCOUNT_INFINITY)
+			  str->refcount -= str->virtual_refcount;
+			str->virtual_refcount = 0;
+		      }
+		    if (str->virtual_refcount > 0)
+		      {
+			if (str->refcount != REFCOUNT_INFINITY)
+			  str->refcount--;
+			str->virtual_refcount--;
+		      }
+		    else if (str->refcount > 0
+			     && str->refcount != REFCOUNT_INFINITY)
+		      str->refcount--;
+		    if (str->refcount == 0)
+		      gomp_remove_var_async (acc_dev, str, aq);
+		  }
+	      }
+	    i += elems;
+	  }
+	  break;
+
 	default:
 	  gomp_fatal (">>>> goacc_exit_data_internal UNHANDLED kind 0x%.2x",
 			  kind);
@@ -1114,11 +1201,14 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
     {
       unsigned char kind = kinds[i] & 0xff;
 
-      if (kind == GOMP_MAP_POINTER || kind == GOMP_MAP_TO_PSET)
+      if (kind == GOMP_MAP_POINTER
+	  || kind == GOMP_MAP_TO_PSET
+	  || kind == GOMP_MAP_STRUCT)
 	continue;
 
       if (kind == GOMP_MAP_FORCE_ALLOC
 	  || kind == GOMP_MAP_FORCE_PRESENT
+	  || kind == GOMP_MAP_ATTACH
 	  || kind == GOMP_MAP_FORCE_TO
 	  || kind == GOMP_MAP_TO
 	  || kind == GOMP_MAP_ALLOC)
@@ -1129,6 +1219,8 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
 
       if (kind == GOMP_MAP_RELEASE
 	  || kind == GOMP_MAP_DELETE
+	  || kind == GOMP_MAP_DETACH
+	  || kind == GOMP_MAP_FORCE_DETACH
 	  || kind == GOMP_MAP_FROM
 	  || kind == GOMP_MAP_FORCE_FROM)
 	break;
