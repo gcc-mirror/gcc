@@ -931,13 +931,15 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 				      kind & typemask, cbufp);
 	    else
 	      {
-		k->link_key = NULL;
+		k->aux = NULL;
 		if (n && n->refcount == REFCOUNT_LINK)
 		  {
 		    /* Replace target address of the pointer with target address
 		       of mapped object in the splay tree.  */
 		    splay_tree_remove (mem_map, n);
-		    k->link_key = n;
+		    k->aux
+		      = gomp_malloc_cleared (sizeof (struct splay_tree_aux));
+		    k->aux->link_key = n;
 		  }
 		size_t align = (size_t) 1 << (kind >> rshift);
 		tgt->list[i].key = k;
@@ -1055,7 +1057,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 				kind);
 		  }
 
-		if (k->link_key)
+		if (k->aux && k->aux->link_key)
 		  {
 		    /* Set link pointer on target to the device address of the
 		       mapped object.  */
@@ -1170,8 +1172,14 @@ gomp_remove_var_internal (struct gomp_device_descr *devicep, splay_tree_key k,
 {
   bool is_tgt_unmapped = false;
   splay_tree_remove (&devicep->mem_map, k);
-  if (k->link_key)
-    splay_tree_insert (&devicep->mem_map, (splay_tree_node) k->link_key);
+  if (k->aux)
+    {
+      if (k->aux->link_key)
+	splay_tree_insert (&devicep->mem_map,
+			   (splay_tree_node) k->aux->link_key);
+      free (k->aux);
+      k->aux = NULL;
+    }
   if (aq)
     devicep->openacc.async.queue_callback_func (aq, gomp_unref_tgt_void,
 						(void *) k->tgt);
@@ -1398,7 +1406,7 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
       k->tgt_offset = target_table[i].start;
       k->refcount = REFCOUNT_INFINITY;
       k->dynamic_refcount = 0;
-      k->link_key = NULL;
+      k->aux = NULL;
       array->left = NULL;
       array->right = NULL;
       splay_tree_insert (&devicep->mem_map, array);
@@ -1431,7 +1439,7 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
       k->tgt_offset = target_var->start;
       k->refcount = target_size & link_bit ? REFCOUNT_LINK : REFCOUNT_INFINITY;
       k->dynamic_refcount = 0;
-      k->link_key = NULL;
+      k->aux = NULL;
       array->left = NULL;
       array->right = NULL;
       splay_tree_insert (&devicep->mem_map, array);
@@ -2693,6 +2701,7 @@ omp_target_associate_ptr (const void *host_ptr, const void *device_ptr,
       k->tgt_offset = (uintptr_t) device_ptr + device_offset;
       k->refcount = REFCOUNT_INFINITY;
       k->dynamic_refcount = 0;
+      k->aux = NULL;
       array->left = NULL;
       array->right = NULL;
       splay_tree_insert (&devicep->mem_map, array);

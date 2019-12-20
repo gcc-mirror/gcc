@@ -989,6 +989,13 @@ struct target_mem_desc {
 #define OFFSET_POINTER (~(uintptr_t) 1)
 #define OFFSET_STRUCT (~(uintptr_t) 2)
 
+/* Auxiliary structure for infrequently-used or API-specific data.  */
+
+struct splay_tree_aux {
+  /* Pointer to the original mapping of "omp declare target link" object.  */
+  splay_tree_key link_key;
+};
+
 struct splay_tree_key_s {
   /* Address of the host object.  */
   uintptr_t host_start;
@@ -1002,8 +1009,7 @@ struct splay_tree_key_s {
   uintptr_t refcount;
   /* Dynamic reference count.  */
   uintptr_t dynamic_refcount;
-  /* Pointer to the original mapping of "omp declare target link" object.  */
-  splay_tree_key link_key;
+  struct splay_tree_aux *aux;
 };
 
 /* The comparison function.  */
