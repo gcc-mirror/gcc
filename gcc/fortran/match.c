@@ -3073,7 +3073,8 @@ gfc_match_stopcode (gfc_statement st)
 
   if (e != NULL)
     {
-      gfc_simplify_expr (e, 0);
+      if (!gfc_simplify_expr (e, 0))
+	goto cleanup;
 
       /* Test for F95 and F2003 style STOP stop-code.  */
       if (e->expr_type != EXPR_CONSTANT && (f95 || f03))
@@ -3085,9 +3086,7 @@ gfc_match_stopcode (gfc_statement st)
 
       /* Use the machinery for an initialization expression to reduce the
 	 stop-code to a constant.  */
-      gfc_init_expr_flag = true;
       gfc_reduce_init_expr (e);
-      gfc_init_expr_flag = false;
 
       /* Test for F2008 style STOP stop-code.  */
       if (e->expr_type != EXPR_CONSTANT && f08)

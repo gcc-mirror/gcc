@@ -2044,6 +2044,15 @@ simplify_parameter_variable (gfc_expr *p, int type)
   gfc_expr *e;
   bool t;
 
+  /* Set rank and check array ref; as resolve_variable calls
+     gfc_simplify_expr, call gfc_resolve_ref + gfc_expression_rank instead.  */
+  if (!gfc_resolve_ref (p))
+    {
+      gfc_error_check ();
+      return false;
+    }
+  gfc_expression_rank (p);
+
   if (gfc_is_size_zero_array (p))
     {
       if (p->expr_type == EXPR_ARRAY)
@@ -2073,6 +2082,7 @@ simplify_parameter_variable (gfc_expr *p, int type)
   if (e->expr_type != EXPR_CONSTANT && p->ref != NULL)
     e->ref = gfc_copy_ref (p->ref);
   t = gfc_simplify_expr (e, type);
+  e->where = p->where;
 
   /* Only use the simplification if it eliminated all subobject references.  */
   if (t && !e->ref)

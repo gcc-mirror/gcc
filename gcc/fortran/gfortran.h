@@ -3352,6 +3352,8 @@ void gfc_free_statements (gfc_code *);
 void gfc_free_association_list (gfc_association_list *);
 
 /* resolve.c */
+void gfc_expression_rank (gfc_expr *);
+bool gfc_resolve_ref (gfc_expr *);
 bool gfc_resolve_expr (gfc_expr *);
 void gfc_resolve (gfc_namespace *);
 void gfc_resolve_code (gfc_code *, gfc_namespace *);
