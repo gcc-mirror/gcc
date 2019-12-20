@@ -1,5 +1,9 @@
 2019-12-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/92666
+	* call.c (convert_arg_to_ellipsis): For floating point or
+	decltype(nullptr) arguments call mark_rvalue_use.
+
 	PR c++/92992
 	* call.c (convert_arg_to_ellipsis): For decltype(nullptr) arguments
 	that have side-effects use cp_build_compound_expr.
