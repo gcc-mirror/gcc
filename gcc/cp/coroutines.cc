@@ -2308,14 +2308,8 @@ captures_temporary (tree *stmt, int *do_subtree, void *d)
   for (unsigned anum = 0; arg != NULL; arg = TREE_CHAIN (arg), anum++)
     {
       tree parm_type = TREE_VALUE (arg);
-      if (anum == 0 && is_meth && INDIRECT_TYPE_P (parm_type))
-	{
-	  /* Account for 'this' when the fn is a method.  Unless it
-	     belongs to a CTOR or DTOR.  */
-	  if (DECL_CONSTRUCTOR_P (fn) || DECL_DESTRUCTOR_P (fn))
-	    continue;
-	}
-      else if (!TYPE_REF_P (parm_type))
+
+      if (!TYPE_REF_P (parm_type))
 	/* If it's not a reference, we don't care.  */
 	continue;
 
