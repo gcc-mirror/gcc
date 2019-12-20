@@ -274,6 +274,11 @@ gfc_match_omp_variable_list (const char *str, gfc_omp_namelist **list,
 		default:
 		  break;
 		}
+	      if (gfc_is_coindexed (expr))
+		{
+		  gfc_error ("List item shall not be coindexed at %C");
+		  goto cleanup;
+		}
 	    }
 	  gfc_set_sym_referenced (sym);
 	  p = gfc_get_omp_namelist ();
@@ -4544,9 +4549,6 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		      gfc_error ("%qs in %s clause at %L is not a proper "
 				 "array section", n->sym->name, name,
 				 &n->where);
-		    else if (gfc_is_coindexed (n->expr))
-		      gfc_error ("Entry shall not be coindexed in %s "
-				 "clause at %L", name, &n->where);
 		    else
 		      {
 			int i;

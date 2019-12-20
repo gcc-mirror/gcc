@@ -1,3 +1,8 @@
+2019-12-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.c (resolve_omp_clauses): Move is-coindexed check from here ...
+	(gfc_match_omp_variable_list): ... to here.
+
 2019-12-19  Julian Brown  <julian@codesourcery.com>
 
 	* openmp.c (resolve_oacc_data_clauses): Don't disallow allocatable
