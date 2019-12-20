@@ -1,3 +1,8 @@
+2019-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93002
+	* gcc.target/i386/pr93002.c: New test.
+
 2019-12-19  Julian Brown  <julian@codesourcery.com>
 
         * gfortran.dg/goacc/derived-types.f90: New test.
