@@ -51,12 +51,7 @@
 
 	PR middle-end/91512
 	PR fortran/92738
-	* invoke.texi: Document -finline-arg-packing.
-	* lang.opt: Add -finline-arg-packing.
-	* options.c (gfc_post_options): Handle -finline-arg-packing.
-	* trans-array.c (gfc_conv_array_parameter): Use
-	flag_inline_arg_packing instead of checking for optimize and
-	optimize_size.
+	* gfortran.dg/inline_pack_25.f90: New test.
 
 2019-12-20  Tobias Burnus  <tobias@codesourcery.com>
 
