@@ -1,5 +1,8 @@
 2019-12-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/92973
+	* g++.dg/cpp0x/spaceship-eq1.C: New test.
+
 	PR c++/92666
 	* g++.dg/warn/Wunused-var-36.C: New test.
 
