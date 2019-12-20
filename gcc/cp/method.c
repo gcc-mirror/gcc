@@ -1153,7 +1153,7 @@ early_check_defaulted_comparison (tree fn)
     }
 
   /* We still need to deduce deleted/constexpr/noexcept and maybe return. */
-  DECL_MAYBE_DELETED (fn) = true;
+  DECL_MAYBE_DELETED (fn) = ok;
 
   return ok;
 }

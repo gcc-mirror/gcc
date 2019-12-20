@@ -1,5 +1,9 @@
 2019-12-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/92966
+	* method.c (early_check_defaulted_comparison): Don't set
+	DECL_MAYBE_DELETED when returning false.
+
 	PR c++/92973
 	* method.c (early_check_defaulted_comparison): For C++17 and earlier
 	diagnose defaulted comparison operators.
