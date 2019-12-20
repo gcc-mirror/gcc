@@ -9941,6 +9941,20 @@ identifier_global_value	(tree t)
   return NULL_TREE;
 }
 
+/* Return the global value of tag T as a symbol.  */
+
+tree
+identifier_global_tag (tree t)
+{
+  struct c_binding *b;
+
+  for (b = I_TAG_BINDING (t); b; b = b->shadowed)
+    if (B_IN_FILE_SCOPE (b) || B_IN_EXTERNAL_SCOPE (b))
+      return b->decl;
+
+  return NULL_TREE;
+}
+
 /* In C, the only C-linkage public declaration is at file scope.  */
 
 tree

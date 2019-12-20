@@ -1,6 +1,11 @@
 2019-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/90677
+	* cp-objcp-common.c (identifier_global_tag): Define.
+
 	2019-11-21  Jakub Jelinek  <jakub@redhat.com>
 		    Jason Merrill  <jason@redhat.com>
 
