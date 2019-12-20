@@ -4816,9 +4816,8 @@ c_parse_final_cleanups (void)
   /* Handle -fdump-ada-spec[-slim] */
   if (flag_dump_ada_spec || flag_dump_ada_spec_slim)
     {
-      if (flag_dump_ada_spec_slim)
-	collect_source_ref (main_input_filename);
-      else
+      collect_source_ref (main_input_filename);
+      if (!flag_dump_ada_spec_slim)
 	collect_source_refs (global_namespace);
 
       dump_ada_specs (collect_all_refs, cpp_check);
