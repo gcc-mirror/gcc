@@ -1,5 +1,20 @@
 2019-12-20  Tobias Burnus  <tobias@codesourcery.com>
 
+	PR fortran/92996
+	* expr.c (simplify_parameter_variable): Call gfc_resolve_ref and
+	gfc_expression_rank; fix location info.
+	* gfortran.h (gfc_resolve_ref, gfc_expression_rank): Declare.
+	* match.c (gfc_match_stopcode): Remove redundant setting of
+	gfc_init_expr_flag; early return if gfc_simplify_expr has an error.
+	* resolve.c (gfc_expression_rank): Renamed from expression_rank;
+	minor cleanup.
+	(gfc_resolve_ref): Removed static and renamed from resolve_ref.
+	(resolve_variable, resolve_typebound_function,
+	resolve_typebound_subroutine, resolve_ppc_call, resolve_expr_ppc,
+	gfc_resolve_expr, resolve_procedure): Update calls.
+
+2019-12-20  Tobias Burnus  <tobias@codesourcery.com>
+
 	* openmp.c (resolve_omp_clauses): Move is-coindexed check from here ...
 	(gfc_match_omp_variable_list): ... to here.
 

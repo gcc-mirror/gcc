@@ -1,5 +1,12 @@
 2019-12-20  Tobias Burnus  <tobias@codesourcery.com>
 
+	PR fortran/92996
+	* gfortran.dg/array_simplify_4.f90: New.
+	* gfortran.dg/pr91565.f90: Update dg-error.
+	* gfortran.dg/pr91801.f90: Likewise.
+
+2019-12-20  Tobias Burnus  <tobias@codesourcery.com>
+
 	* gfortran.dg/goacc/coindexed-1.f90: New.
 
 2019-12-20  Tobias Burnus  <tobias@codesourcery.com>
