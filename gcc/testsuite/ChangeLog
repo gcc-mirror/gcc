@@ -1,3 +1,10 @@
+2020-02-26  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92745 - bogus error when initializing array of vectors.
+	* g++.dg/cpp0x/initlist118.C: New test.
+	* g++.dg/cpp0x/initlist118.C: Add -Wno-psabi -w to dg-options.
+
 2020-02-26  Jiufu Guo  <guojiufu@linux.ibm.com>
 
 	PR target/93047
