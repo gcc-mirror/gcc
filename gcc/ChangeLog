@@ -1,3 +1,9 @@
+2019-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93002
+	* config/i386/i386.md (dec reg; cmp $-1, reg; jne lab): New
+	define_peephole2.
+
 2019-12-19  Julian Brown  <julian@codesourcery.com>
 
 	* gimplify.c (gimplify_omp_var_data): Add GOVD_MAP_HAS_ATTACHMENTS.
