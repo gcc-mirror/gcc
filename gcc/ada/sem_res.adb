@@ -266,7 +266,8 @@ package body Sem_Res is
    procedure Simplify_Type_Conversion (N : Node_Id);
    --  Called after N has been resolved and evaluated, but before range checks
    --  have been applied. Currently simplifies a combination of floating-point
-   --  to integer conversion and Rounding or Truncation attribute.
+   --  to integer conversion and Rounding or Truncation attribute, and also the
+   --  conversion of an integer literal to a dynamic integer type.
 
    function Unique_Fixed_Point_Type (N : Node_Id) return Entity_Id;
    --  A universal_fixed expression in an universal context is unambiguous if
@@ -12477,37 +12478,51 @@ package body Sem_Res is
 
       --  If the lower bound is not static we create a range for the string
       --  literal, using the index type and the known length of the literal.
-      --  The index type is not necessarily Positive, so the upper bound is
-      --  computed as T'Val (T'Pos (Low_Bound) + L - 1).
+      --  If the length is 1, then the upper bound is set to a mere copy of
+      --  the lower bound; or else, if the index type is a signed integer,
+      --  then the upper bound is computed as Low_Bound + L - 1; otherwise,
+      --  the upper bound is computed as T'Val (T'Pos (Low_Bound) + L - 1).
 
       else
          declare
-            Index_List : constant List_Id   := New_List;
-            Index_Type : constant Entity_Id := Etype (First_Index (Typ));
-            High_Bound : constant Node_Id   :=
-                           Make_Attribute_Reference (Loc,
-                             Attribute_Name => Name_Val,
-                             Prefix         =>
-                               New_Occurrence_Of (Index_Type, Loc),
-                             Expressions    => New_List (
-                               Make_Op_Add (Loc,
-                                 Left_Opnd  =>
-                                   Make_Attribute_Reference (Loc,
-                                     Attribute_Name => Name_Pos,
-                                     Prefix         =>
-                                       New_Occurrence_Of (Index_Type, Loc),
-                                     Expressions    =>
-                                       New_List (New_Copy_Tree (Low_Bound))),
-                                 Right_Opnd =>
-                                   Make_Integer_Literal (Loc,
-                                     String_Length (Strval (N)) - 1))));
-
+            Length        : constant Nat := String_Length (Strval (N));
+            Index_List    : constant List_Id   := New_List;
+            Index_Type    : constant Entity_Id := Etype (First_Index (Typ));
             Array_Subtype : Entity_Id;
             Drange        : Node_Id;
+            High_Bound    : Node_Id;
             Index         : Node_Id;
             Index_Subtype : Entity_Id;
 
          begin
+            if Length = 1 then
+               High_Bound := New_Copy_Tree (Low_Bound);
+
+            elsif Is_Signed_Integer_Type (Index_Type) then
+               High_Bound :=
+                 Make_Op_Add (Loc,
+                   Left_Opnd  => New_Copy_Tree (Low_Bound),
+                   Right_Opnd => Make_Integer_Literal (Loc, Length - 1));
+
+            else
+               High_Bound :=
+                 Make_Attribute_Reference (Loc,
+                   Attribute_Name => Name_Val,
+                   Prefix         =>
+                     New_Occurrence_Of (Index_Type, Loc),
+                   Expressions    => New_List (
+                     Make_Op_Add (Loc,
+                       Left_Opnd  =>
+                         Make_Attribute_Reference (Loc,
+                           Attribute_Name => Name_Pos,
+                           Prefix         =>
+                             New_Occurrence_Of (Index_Type, Loc),
+                           Expressions    =>
+                             New_List (New_Copy_Tree (Low_Bound))),
+                       Right_Opnd =>
+                         Make_Integer_Literal (Loc, Length - 1))));
+            end if;
+
             if Is_Integer_Type (Index_Type) then
                Set_String_Literal_Low_Bound
                  (Subtype_Id, Make_Integer_Literal (Loc, 1));
@@ -12522,10 +12537,10 @@ package body Sem_Res is
                     Attribute_Name => Name_First,
                     Prefix         =>
                       New_Occurrence_Of (Base_Type (Index_Type), Loc)));
-               Set_Etype (String_Literal_Low_Bound (Subtype_Id), Index_Type);
             end if;
 
-            Analyze_And_Resolve (String_Literal_Low_Bound (Subtype_Id));
+            Analyze_And_Resolve
+              (String_Literal_Low_Bound (Subtype_Id), Base_Type (Index_Type));
 
             --  Build bona fide subtype for the string, and wrap it in an
             --  unchecked conversion, because the back end expects the
@@ -12611,6 +12626,19 @@ package body Sem_Res is
                     Relocate_Node (First (Expressions (Operand))));
                   Set_Float_Truncate (N, Truncate);
                end;
+
+            --  Special processing for the conversion of an integer literal to
+            --  a dynamic type: we first convert the literal to the root type
+            --  and then convert the result to the target type, the goal being
+            --  to avoid doing range checks in Universal_Integer type.
+
+            elsif Is_Integer_Type (Target_Typ)
+              and then not Is_Generic_Type (Root_Type (Target_Typ))
+              and then Nkind (Operand) = N_Integer_Literal
+              and then Opnd_Typ = Universal_Integer
+            then
+               Convert_To_And_Rewrite (Root_Type (Target_Typ), Operand);
+               Analyze_And_Resolve (Operand);
             end if;
          end;
       end if;

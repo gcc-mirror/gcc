@@ -2459,12 +2459,20 @@ package body Exp_Attr is
 
             New_Node := Build_Get_Alignment (Loc, New_Node);
 
+            --  Case where the context is an unchecked conversion to a specific
+            --  integer type. We directly convert from the alignment's type.
+
+            if Nkind (Parent (N)) = N_Unchecked_Type_Conversion then
+               Rewrite (N, New_Node);
+               Analyze_And_Resolve (N);
+               return;
+
             --  Case where the context is a specific integer type with which
             --  the original attribute was compatible. But the alignment has a
             --  specific type in a-tags.ads (Standard.Natural) so, in order to
             --  preserve type compatibility, we must convert explicitly.
 
-            if Typ /= Standard_Natural then
+            elsif Typ /= Standard_Natural then
                New_Node := Convert_To (Typ, New_Node);
             end if;
 
