@@ -1,3 +1,13 @@
+2019-12-20  Roman Zhuykov  <zhroma@ispras.ru>
+
+	Backport from mainline
+	2019-12-13  Roman Zhuykov  <zhroma@ispras.ru>
+
+	PR rtl-optimization/92591
+	* modulo-sched.c (ps_add_node_check_conflicts): Improve checking
+	for history > 0 case.
+	* params.def (sms-dfa-history): Limit to 16.
+
 2019-12-19  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport support for some AVR devices from avrxmega3 family
