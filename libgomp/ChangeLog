@@ -1,4 +1,21 @@
 2019-12-19  Julian Brown  <julian@codesourcery.com>
+
+	* libgomp.h (struct target_var_desc): Add do_detach flag.
+	* oacc-init.c (acc_shutdown_1): Free aux block if present.
+	* oacc-mem.c (find_group_last): Add SIZES parameter. Support
+	struct components.  Tidy up and add some new checks.
+	(goacc_enter_data_internal): Update call to find_group_last.
+	(goacc_exit_data_internal): Support detach operations and
+	GOMP_MAP_STRUCT.
+	(GOACC_enter_exit_data): Handle initial GOMP_MAP_STRUCT or
+	GOMP_MAP_FORCE_PRESENT in finalization detection code.  Handle
+	attach/detach in enter/exit data detection code.
+	* target.c (gomp_map_vars_existing): Initialise do_detach field of
+	tgt_var_desc.
+	(gomp_map_vars_internal): Support attach.
+	(gomp_unmap_vars_internal): Support detach.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 
 	* libgomp.h (struct splay_tree_aux): Add attach_count field.
