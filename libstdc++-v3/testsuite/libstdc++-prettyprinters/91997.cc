@@ -41,7 +41,7 @@ int main()
   // { dg-final { note-test mit {{first = 1, second = 2}} } }
 
   std::any a = m;
-  // { dg-final { note-test a {std::any containing std::map with 1 element = {[1] = 2}} } }
+  // { dg-final { regexp-test a {std::any containing std::(__debug::)?map with 1 element = {\[1\] = 2}} } }
 
   std::set<int> s{1, 2};
   auto sit = s.begin();

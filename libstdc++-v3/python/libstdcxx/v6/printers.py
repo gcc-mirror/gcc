@@ -146,7 +146,6 @@ def lookup_node_type(nodename, containertype):
             if is_member_of_namespace(containertype, 'std::__cxx1998',
                                       'std::__debug', '__gnu_debug'):
                 nodename = nodename.replace('::', '::__cxx1998::', 1)
-                return lookup_templ_spec(nodename, valtype)
                 try:
                     return lookup_templ_spec(nodename, valtype)
                 except gdb.error:
