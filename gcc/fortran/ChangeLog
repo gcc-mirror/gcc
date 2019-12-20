@@ -1,3 +1,19 @@
+2020-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92775
+	* trans.h (struct lang_type, struct lang_decl): Remove span member.
+	(GFC_DECL_SPAN, GFC_TYPE_ARRAY_SPAN): Remove macros.
+	* trans-array.h (gfc_get_descriptor_offsets_for_info): Add another
+	argument.
+	* trans-array.c (gfc_get_descriptor_offsets_for_info): Add SPAN_OFF
+	argument and initialize *SPAN_OFF to the offset of span field.
+	* trans-types.c (gfc_get_array_descr_info): Adjust
+	gfc_get_descriptor_offsets_for_info caller.  Compute elem_size
+	as base->span instead of TYPE_SIZE_UNIT (etype) constant.
+
 2020-03-25  Mark Eggleston <markeggleston@gcc.gnu.org>
 
 	Backport from master

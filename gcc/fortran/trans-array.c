@@ -503,9 +503,10 @@ gfc_conv_shift_descriptor_lbound (stmtblock_t* block, tree desc,
 
 void
 gfc_get_descriptor_offsets_for_info (const_tree desc_type, tree *data_off,
-				     tree *dtype_off, tree *dim_off,
-				     tree *dim_size, tree *stride_suboff,
-				     tree *lower_suboff, tree *upper_suboff)
+				     tree *dtype_off, tree *span_off,
+				     tree *dim_off, tree *dim_size,
+				     tree *stride_suboff, tree *lower_suboff,
+				     tree *upper_suboff)
 {
   tree field;
   tree type;
@@ -515,6 +516,8 @@ gfc_get_descriptor_offsets_for_info (const_tree desc_type, tree *data_off,
   *data_off = byte_position (field);
   field = gfc_advance_chain (TYPE_FIELDS (type), DTYPE_FIELD);
   *dtype_off = byte_position (field);
+  field = gfc_advance_chain (TYPE_FIELDS (type), SPAN_FIELD);
+  *span_off = byte_position (field);
   field = gfc_advance_chain (TYPE_FIELDS (type), DIMENSION_FIELD);
   *dim_off = byte_position (field);
   type = TREE_TYPE (TREE_TYPE (field));
