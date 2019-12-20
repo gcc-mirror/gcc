@@ -1,3 +1,11 @@
+2019-12-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-decl.c (collect_source_ref_cb): Delete.
+	(for_each_global_decl): Rename into...
+	(collect_source_refs): ...this.  Call collect_source_ref directly.
+	(c_parse_final_cleanups): Always call collect_source_ref on the main
+	input filename.
+
 2019-12-19  Julian Brown  <julian@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 

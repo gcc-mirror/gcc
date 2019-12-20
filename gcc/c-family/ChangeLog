@@ -1,3 +1,8 @@
+2019-12-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.h (decl_sloc): Delete.
+	* c-ada-spec.c (decl_sloc): Make static.
+
 2019-12-19  Julian Brown  <julian@codesourcery.com>
 
 	* c-common.h (c_omp_map_clause_name): Add prototype.

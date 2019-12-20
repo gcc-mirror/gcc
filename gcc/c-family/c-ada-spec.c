@@ -630,7 +630,7 @@ static const char *current_source_file;
 
 /* Return sloc of DECL, using sloc of last field if LAST is true.  */
 
-location_t
+static location_t
 decl_sloc (const_tree decl, bool last)
 {
   tree field;
