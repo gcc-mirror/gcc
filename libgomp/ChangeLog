@@ -1,5 +1,20 @@
 2019-12-19  Julian Brown  <julian@codesourcery.com>
 
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-4.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-6.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-7.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-8.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-9.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-10.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-11.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-14.c: New test.
+	* testsuite/libgomp.oacc-c++/deep-copy-12.C: New test.
+	* testsuite/libgomp.oacc-c++/deep-copy-13.C: New test.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+
 	* libgomp.h (struct target_var_desc): Add do_detach flag.
 	* oacc-init.c (acc_shutdown_1): Free aux block if present.
 	* oacc-mem.c (find_group_last): Add SIZES parameter. Support
