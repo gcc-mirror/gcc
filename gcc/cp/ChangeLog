@@ -3,6 +3,11 @@
 	Backported from mainline
 	2019-11-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/92648
+	* parser.c (cp_parser_std_attribute): For unknown attributes,
+	skip balanced token seq instead of trying to parse
+	attribute-argument-clause as expression list.
+
 	PR c++/61414
 	* class.c (enum_to_min_precision): New hash_map.
 	(enum_min_precision): New function.
