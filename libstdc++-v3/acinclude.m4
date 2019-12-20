@@ -316,6 +316,8 @@ AC_DEFUN([GLIBCXX_CHECK_SETRLIMIT_ancilliary], [
 ])
 
 AC_DEFUN([GLIBCXX_CHECK_SETRLIMIT], [
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
   setrlimit_have_headers=yes
   AC_CHECK_HEADERS(unistd.h sys/time.h sys/resource.h,
 		   [],
@@ -352,6 +354,7 @@ AC_DEFUN([GLIBCXX_CHECK_SETRLIMIT], [
   else
     ac_res_limits=no
   fi
+  AC_LANG_RESTORE
   AC_MSG_RESULT($ac_res_limits)
 ])
 

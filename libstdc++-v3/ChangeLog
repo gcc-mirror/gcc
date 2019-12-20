@@ -1,3 +1,8 @@
+2019-12-20  Jerome Lambourg  <lambourg@adacore.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_SETRLIMIT): Test with AC_LANG_CPLUSPLUS.
+	* configure: Regenerate.
+
 2019-12-20  François Dumont  <fdumont@gcc.gnu.org>
 
 	* testsuite/23_containers/map/48101_neg.cc: Add versioned namespace
