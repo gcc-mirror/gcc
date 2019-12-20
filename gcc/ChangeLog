@@ -1,5 +1,9 @@
 2019-12-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/92841
+	* config/i386/i386.md (*stack_protect_set_3): For pic_32bit_operand
+	always use lea{q}, no matter what value which_alternative has.
+
 	PR target/93002
 	* config/i386/i386.md (dec reg; cmp $-1, reg; jne lab): New
 	define_peephole2.
