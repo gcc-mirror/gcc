@@ -1,3 +1,13 @@
+2019-12-20  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* lib/target-supports.exp 
+	(check_effective_target_arm_v8_2a_i8mm_ok_nocache): New.
+	(check_effective_target_arm_v8_2a_i8mm_ok): New.
+	(add_options_for_arm_v8_2a_i8mm): New.
+	(check_effective_target_arm_v8_2a_bf16_neon_ok_nocache): New.
+	(check_effective_target_arm_v8_2a_bf16_neon_ok): New.
+	(add_options_for_arm_v8_2a_bf16_neon): New.
+
 2019-12-20  Roman Zhuykov  <zhroma@ispras.ru>
 
 	* gcc.dg/pr92951-1.c: Rename to ...
