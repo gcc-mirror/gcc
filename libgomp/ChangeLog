@@ -1,3 +1,15 @@
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* libgomp.h (struct splay_tree_aux): New.
+	(struct splay_tree_key_s): Replace link_key field with aux pointer.
+	* target.c (gomp_map_vars_internal): Adjust for link_key being moved
+	to aux struct.
+	(gomp_remove_var_internal): Free aux block if present.
+	(gomp_load_image_to_device): Zero-initialise aux field instead of
+	link_key field.
+	(omp_target_associate_pointer): Zero-initialise aux field.
+
 2019-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/86416
