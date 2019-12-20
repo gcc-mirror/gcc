@@ -1,3 +1,17 @@
+2019-12-20   Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/predicates.md (cint34_operand): Use
+	SIGNED_INTEGER_34BIT_P macro.
+	* config/rs6000/rs6000.c (num_insns_constant_gpr): Use the
+	SIGNED_INTEGER_16BIT_P and SIGNED_INTEGER_34BIT_P macros.
+	(address_to_insn_form): Use the SIGNED_INTEGER_16BIT_P and
+	SIGNED_INTEGER_34BIT_P macros.
+	* config/rs6000/rs6000.h (SIGNED_INTEGER_NBIT_P): New macro.
+	(SIGNED_INTEGER_16BIT_P): Rename SIGNED_16BIT_OFFSET_P to be
+	SIGNED_INTEGER_34BIT_P.
+	(SIGNED_INTEGER_34BIT_P): Rename SIGNED_34BIT_OFFSET_P to be
+	SIGNED_INTEGER_34BIT_P.
+
 2019-12-20  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	* doc/sourcebuild.texi

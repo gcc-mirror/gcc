@@ -2529,18 +2529,16 @@ typedef struct GTY(()) machine_function
 #pragma GCC poison TARGET_FLOAT128 OPTION_MASK_FLOAT128 MASK_FLOAT128
 #endif
 
-/* Whether a given VALUE is a valid 16 or 34-bit signed offset.  */
-#define SIGNED_16BIT_OFFSET_P(VALUE)					\
+/* Whether a given VALUE is a valid 16 or 34-bit signed integer.  */
+#define SIGNED_INTEGER_NBIT_P(VALUE, N)					\
   IN_RANGE ((VALUE),							\
-	    -(HOST_WIDE_INT_1 << 15),					\
-	    (HOST_WIDE_INT_1 << 15) - 1)
+	    -(HOST_WIDE_INT_1 << ((N)-1)),				\
+	    (HOST_WIDE_INT_1 << ((N)-1)) - 1)
 
-#define SIGNED_34BIT_OFFSET_P(VALUE)					\
-  IN_RANGE ((VALUE),							\
-	    -(HOST_WIDE_INT_1 << 33),					\
-	    (HOST_WIDE_INT_1 << 33) - 1)
+#define SIGNED_INTEGER_16BIT_P(VALUE)	SIGNED_INTEGER_NBIT_P (VALUE, 16)
+#define SIGNED_INTEGER_34BIT_P(VALUE)	SIGNED_INTEGER_NBIT_P (VALUE, 34)
 
-/* Like SIGNED_16BIT_OFFSET_P and SIGNED_34BIT_OFFSET_P, but with an extra
+/* Like SIGNED_INTEGER_16BIT_P and SIGNED_INTEGER_34BIT_P, but with an extra
    argument that gives a length to validate a range of addresses, to allow for
    splitting insns into several insns, each of which has an offsettable
    address.  */
