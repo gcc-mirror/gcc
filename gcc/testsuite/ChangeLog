@@ -1,5 +1,8 @@
 2019-12-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/92965
+	* g++.dg/cpp2a/nontype-class27.C: New test.
+
 	PR c++/92966
 	* g++.dg/cpp2a/spaceship-eq8.C: New test.
 
