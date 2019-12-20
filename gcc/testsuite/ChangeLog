@@ -1,3 +1,10 @@
+2019-12-20  Roman Zhuykov  <zhroma@ispras.ru>
+
+	* gcc.dg/pr92951-1.c: Rename to ...
+	* gcc.dg/pr92591-1.c: ... this.
+	* gcc.dg/pr92951-2.c: Rename to ...
+	* gcc.dg/pr92591-2.c: ... this.
+
 2019-12-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR middle-end/91512
