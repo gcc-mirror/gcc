@@ -1,3 +1,8 @@
+2019-12-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR fortran/69497
+	* gfortran.dg/pr69497.f90: Fix PR number in comment.
+
 2019-12-20  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	* lib/target-supports.exp 
