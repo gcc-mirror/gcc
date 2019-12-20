@@ -1,5 +1,9 @@
 2019-12-20  Tobias Burnus  <tobias@codesourcery.com>
 
+	* gfortran.dg/goacc/coindexed-1.f90: New.
+
+2019-12-20  Tobias Burnus  <tobias@codesourcery.com>
+
 	* gfortran.dg/goacc/data-clauses.f95: Remove now
 	obsolete dg-error.
 
