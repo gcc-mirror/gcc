@@ -1,3 +1,11 @@
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-c++-common/goacc/deep-copy-arrayofstruct.c: New test.
+	* c-c++-common/goacc/mdc-1.c: New test.
+	* c-c++-common/goacc/mdc-2.c: New test.
+	* gcc.dg/goacc/mdc.C: New test.
+
 2019-12-19  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/92905
