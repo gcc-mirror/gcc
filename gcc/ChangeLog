@@ -1,3 +1,9 @@
+2020-02-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_emit_set_long_const): Handle the case
+	where the low and the high 32 bits are equal to each other specially,
+	with an rldimi instruction.
+
 2020-02-06  Mihail Ionescu  <mihail.ionescu@arm.com>
 
 	* config/arm/arm-cpus.in: Set profile M for armv8.1-m.main.
