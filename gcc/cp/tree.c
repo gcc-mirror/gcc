@@ -3356,6 +3356,7 @@ build_min_non_dep (enum tree_code code, tree non_dep, ...)
     non_dep = TREE_OPERAND (non_dep, 0);
 
   t = make_node (code);
+  SET_EXPR_LOCATION (t, cp_expr_loc_or_input_loc (non_dep));
   length = TREE_CODE_LENGTH (code);
   TREE_TYPE (t) = unlowered_expr_type (non_dep);
   TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (non_dep);
