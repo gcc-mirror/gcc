@@ -1,3 +1,9 @@
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* tree-diagnostic-path.cc (path_summary::event_range::print):
+	When testing for UNKNOWN_LOCATION, look through ad-hoc wrappers
+	using get_pure_location.
+
 2020-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/93262
