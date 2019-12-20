@@ -1,6 +1,11 @@
 2019-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/90677
+	* c-c++-common/pr90677.c: New test.
+
 	2019-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/90842
