@@ -1877,6 +1877,16 @@ ARM target supports extensions to generate the @code{VFMAL} and @code{VFMLS}
 half-precision floating-point instructions available from ARMv8.2-A and
 onwards.  Some multilibs may be incompatible with these options.
 
+@item arm_v8_2a_bf16_neon_ok
+ARM target supports options to generate instructions from ARMv8.2-A with
+the BFloat16 extension (bf16). Some multilibs may be incompatible with these
+options.
+
+@item arm_v8_2a_i8mm_ok
+ARM target supports options to generate instructions from ARMv8.2-A with
+the 8-Bit Integer Matrix Multiply extension (i8mm). Some multilibs may be
+incompatible with these options.
+
 @item arm_prefer_ldrd_strd
 ARM target prefers @code{LDRD} and @code{STRD} instructions over
 @code{LDM} and @code{STM} instructions.

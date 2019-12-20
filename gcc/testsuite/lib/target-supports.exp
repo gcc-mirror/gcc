@@ -4781,6 +4781,49 @@ proc add_options_for_arm_v8_2a_dotprod_neon { flags } {
     return "$flags $et_arm_v8_2a_dotprod_neon_flags"
 }
 
+# Return 1 if the target supports ARMv8.2+i8mm Adv.SIMD Dot Product
+# instructions, 0 otherwise.  The test is valid for ARM and for AArch64.
+# Record the command line options needed.
+
+proc check_effective_target_arm_v8_2a_i8mm_ok_nocache { } {
+    global et_arm_v8_2a_i8mm_flags
+    set et_arm_v8_2a_i8mm_flags ""
+
+    if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
+        return 0;
+    }
+
+    # Iterate through sets of options to find the compiler flags that
+    # need to be added to the -march option.
+    foreach flags {"" "-mfloat-abi=hard -mfpu=neon-fp-armv8" "-mfloat-abi=softfp -mfpu=neon-fp-armv8" } {
+        if { [check_no_compiler_messages_nocache \
+                  arm_v8_2a_i8mm_ok object {
+            #include <arm_neon.h>
+            #if !defined (__ARM_FEATURE_MATMUL_INT8)
+            #error "__ARM_FEATURE_MATMUL_INT8 not defined"
+            #endif
+        } "$flags -march=armv8.2-a+i8mm"] } {
+            set et_arm_v8_2a_i8mm_flags "$flags -march=armv8.2-a+i8mm"
+            return 1
+        }
+    }
+
+    return 0;
+}
+
+proc check_effective_target_arm_v8_2a_i8mm_ok { } {
+    return [check_cached_effective_target arm_v8_2a_i8mm_ok \
+                check_effective_target_arm_v8_2a_i8mm_ok_nocache]
+}
+
+proc add_options_for_arm_v8_2a_i8mm { flags } {
+    if { ! [check_effective_target_arm_v8_2a_i8mm_ok] } {
+        return "$flags"
+    }
+    global et_arm_v8_2a_i8mm_flags
+    return "$flags $et_arm_v8_2a_i8mm_flags"
+}
+
 # Return 1 if the target supports FP16 VFMAL and VFMSL
 # instructions, 0 otherwise.
 # Record the command line options needed.
@@ -4824,6 +4867,45 @@ proc add_options_for_arm_fp16fml_neon { flags } {
     }
     global et_arm_fp16fml_neon_flags
     return "$flags $et_arm_fp16fml_neon_flags"
+}
+
+# Return 1 if the target supports BFloat16 SIMD instructions, 0 otherwise.
+# The test is valid for ARM and for AArch64.
+
+proc check_effective_target_arm_v8_2a_bf16_neon_ok_nocache { } {
+    global et_arm_v8_2a_bf16_neon_flags
+    set et_arm_v8_2a_bf16_neon_flags ""
+
+    if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
+        return 0;
+    }
+
+    foreach flags {"" "-mfloat-abi=hard -mfpu=neon-fp-armv8" "-mfloat-abi=softfp -mfpu=neon-fp-armv8" } {
+        if { [check_no_compiler_messages_nocache arm_v8_2a_bf16_neon_ok object {
+            #include <arm_neon.h>
+            #if !defined (__ARM_FEATURE_BF16_VECTOR_ARITHMETIC)
+            #error "__ARM_FEATURE_BF16_VECTOR_ARITHMETIC not defined"
+            #endif
+        } "$flags -march=armv8.2-a+bf16"] } {
+            set et_arm_v8_2a_bf16_neon_flags "$flags -march=armv8.2-a+bf16"
+            return 1
+        }
+    }
+
+    return 0;
+}
+
+proc check_effective_target_arm_v8_2a_bf16_neon_ok { } {
+    return [check_cached_effective_target arm_v8_2a_bf16_neon_ok \
+                check_effective_target_arm_v8_2a_bf16_neon_ok_nocache]
+}
+
+proc add_options_for_arm_v8_2a_bf16_neon { flags } {
+    if { ! [check_effective_target_arm_v8_2a_bf16_neon_ok] } {
+        return "$flags"
+    }
+    global et_arm_v8_2a_bf16_neon_flags
+    return "$flags $et_arm_v8_2a_bf16_neon_flags"
 }
 
 # Return 1 if the target supports executing ARMv8 NEON instructions, 0
