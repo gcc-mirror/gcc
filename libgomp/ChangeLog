@@ -1,4 +1,13 @@
 2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* libgomp.h (gomp_map_val): Add prototype.
+	* oacc-parallel.c (GOACC_parallel_keyed): Use gomp_map_val instead of
+	open-coding device-address calculation.
+	* target.c (gomp_map_val): Make global. Use OFFSET_POINTER in
+	non-present case.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
 
 	* libgomp.h (struct splay_tree_key_s): Substitute dynamic_refcount
 	field for virtual_refcount.
