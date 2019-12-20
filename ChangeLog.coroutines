@@ -1,6 +1,12 @@
 2019-12-20  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (morph_fn_to_coro): Check for LAZY move ctors
+	and assigns.
+
+2019-12-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (captures_temporary): Consider CTORs and
 	DTORs.
 

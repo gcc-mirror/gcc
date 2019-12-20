@@ -3217,8 +3217,11 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  if (TYPE_NEEDS_CONSTRUCTING (parm.frame_type))
 	    {
 	      vec<tree, va_gc> *p_in;
-	      if (classtype_has_move_assign_or_move_ctor_p (
-		    parm.frame_type, true /* user-declared */))
+	      if (TYPE_REF_P (DECL_ARG_TYPE (arg))
+		  && (CLASSTYPE_LAZY_MOVE_CTOR (parm.frame_type)
+		      || CLASSTYPE_LAZY_MOVE_ASSIGN (parm.frame_type)
+		      || classtype_has_move_assign_or_move_ctor_p
+			    (parm.frame_type, /* user-declared */ true)))
 		p_in = make_tree_vector_single (rvalue (arg));
 	      else
 		p_in = make_tree_vector_single (arg);
@@ -3234,7 +3237,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	    }
 	  else
 	    {
-	      if (!same_type_p (parm.frame_type, TREE_TYPE (arg)))
+	      if (!same_type_p (parm.frame_type, DECL_ARG_TYPE (arg)))
 		r = build1_loc (DECL_SOURCE_LOCATION (arg), CONVERT_EXPR,
 				parm.frame_type, arg);
 	      else
@@ -3272,8 +3275,11 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       if (TYPE_NEEDS_CONSTRUCTING (cap_type))
 	{
 	  vec<tree, va_gc> *p_in;
-	  if (classtype_has_move_assign_or_move_ctor_p
-		(cap_type, true /* user-declared */))
+	      if (TYPE_REF_P (cap_type)
+		  && (CLASSTYPE_LAZY_MOVE_CTOR (cap_type)
+		      || CLASSTYPE_LAZY_MOVE_ASSIGN (cap_type)
+		      || classtype_has_move_assign_or_move_ctor_p
+			    (cap_type, /* user-declared */ true)))
 	    p_in = make_tree_vector_single (rvalue (cap.captured));
 	  else
 	    p_in = make_tree_vector_single (cap.captured);
