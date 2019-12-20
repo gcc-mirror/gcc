@@ -1,5 +1,12 @@
 2019-12-19  Julian Brown  <julian@codesourcery.com>
 
+	* openmp.c (resolve_oacc_data_clauses): Don't disallow allocatable
+	polymorphic types for OpenACC.
+	* trans-openmp.c (gfc_trans_omp_clauses): Support polymorphic class
+	types.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+
 	* gfortran.h (gfc_omp_map_op): Add OMP_MAP_ATTACH, OMP_MAP_DETACH.
 	* openmp.c (gfc_match_omp_variable_list): Add allow_derived parameter.
 	Parse derived-type member accesses if true.
