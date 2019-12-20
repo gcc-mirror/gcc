@@ -1,4 +1,10 @@
 2019-12-19  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/class-ptr-param.f95: New test.
+	* testsuite/libgomp.oacc-fortran/classtypes-1.f95: New test.
+	* testsuite/libgomp.oacc-fortran/classtypes-2.f95: New test.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/deep-copy-1.f90: New test.

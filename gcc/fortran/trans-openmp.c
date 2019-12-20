@@ -2471,14 +2471,42 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  tree present = (gfc_omp_is_optional_argument (decl)
 				  ? gfc_omp_check_optional_argument (decl, true)
 				  : NULL_TREE);
-		  if (POINTER_TYPE_P (TREE_TYPE (decl))
-		      && (gfc_omp_privatize_by_reference (decl)
-			  || GFC_DECL_GET_SCALAR_POINTER (decl)
-			  || GFC_DECL_GET_SCALAR_ALLOCATABLE (decl)
-			  || GFC_DECL_CRAY_POINTEE (decl)
-			  || GFC_DESCRIPTOR_TYPE_P
-					(TREE_TYPE (TREE_TYPE (decl)))
-			  || n->sym->ts.type == BT_DERIVED))
+		  if (n->sym->ts.type == BT_CLASS)
+		    {
+		      tree type = TREE_TYPE (decl);
+		      if (n->sym->attr.optional)
+			sorry ("optional class parameter");
+		      if (POINTER_TYPE_P (type))
+			{
+			  node4 = build_omp_clause (input_location,
+						    OMP_CLAUSE_MAP);
+			  OMP_CLAUSE_SET_MAP_KIND (node4, GOMP_MAP_POINTER);
+			  OMP_CLAUSE_DECL (node4) = decl;
+			  OMP_CLAUSE_SIZE (node4) = size_int (0);
+			  decl = build_fold_indirect_ref (decl);
+			}
+		      tree ptr = gfc_class_data_get (decl);
+		      ptr = build_fold_indirect_ref (ptr);
+		      OMP_CLAUSE_DECL (node) = ptr;
+		      OMP_CLAUSE_SIZE (node) = gfc_class_vtab_size_get (decl);
+		      node2 = build_omp_clause (input_location, OMP_CLAUSE_MAP);
+		      OMP_CLAUSE_SET_MAP_KIND (node2, GOMP_MAP_TO_PSET);
+		      OMP_CLAUSE_DECL (node2) = decl;
+		      OMP_CLAUSE_SIZE (node2) = TYPE_SIZE_UNIT (type);
+		      node3 = build_omp_clause (input_location, OMP_CLAUSE_MAP);
+		      OMP_CLAUSE_SET_MAP_KIND (node3, GOMP_MAP_ATTACH_DETACH);
+		      OMP_CLAUSE_DECL (node3) = gfc_class_data_get (decl);
+		      OMP_CLAUSE_SIZE (node3) = size_int (0);
+		      goto finalize_map_clause;
+		    }
+		  else if (POINTER_TYPE_P (TREE_TYPE (decl))
+			   && (gfc_omp_privatize_by_reference (decl)
+			       || GFC_DECL_GET_SCALAR_POINTER (decl)
+			       || GFC_DECL_GET_SCALAR_ALLOCATABLE (decl)
+			       || GFC_DECL_CRAY_POINTEE (decl)
+			       || GFC_DESCRIPTOR_TYPE_P
+					     (TREE_TYPE (TREE_TYPE (decl)))
+			       || n->sym->ts.type == BT_DERIVED))
 		    {
 		      tree orig_decl = decl;
 		      node4 = build_omp_clause (input_location,
@@ -2645,11 +2673,15 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 
 		  symbol_attribute sym_attr;
 
-		  sym_attr = lastcomp->u.c.component->attr;
+		  if (lastcomp->u.c.component->ts.type == BT_CLASS)
+		    sym_attr = CLASS_DATA (lastcomp->u.c.component)->attr;
+		  else
+		    sym_attr = lastcomp->u.c.component->attr;
 
 		  gfc_init_se (&se, NULL);
 
 		  if (!sym_attr.dimension
+		      && lastcomp->u.c.component->ts.type != BT_CLASS
 		      && lastcomp->u.c.component->ts.type != BT_DERIVED)
 		    {
 		      /* Last component is a scalar.  */
@@ -2679,13 +2711,24 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 
 		  tree inner = se.expr;
 
-		  /* Last component is a derived type.  */
-		  if (lastcomp->u.c.component->ts.type == BT_DERIVED)
+		  /* Last component is a derived type or class pointer.  */
+		  if (lastcomp->u.c.component->ts.type == BT_DERIVED
+		      || lastcomp->u.c.component->ts.type == BT_CLASS)
 		    {
 		      if (sym_attr.allocatable || sym_attr.pointer)
 			{
-			  tree data = inner;
-			  tree size = TYPE_SIZE_UNIT (TREE_TYPE (inner));
+			  tree data, size;
+
+			  if (lastcomp->u.c.component->ts.type == BT_CLASS)
+			    {
+			      data = gfc_class_data_get (inner);
+			      size = gfc_class_vtab_size_get (inner);
+			    }
+			  else  /* BT_DERIVED.  */
+			    {
+			      data = inner;
+			      size = TYPE_SIZE_UNIT (TREE_TYPE (inner));
+			    }
 
 			  OMP_CLAUSE_DECL (node)
 			    = build_fold_indirect_ref (data);
