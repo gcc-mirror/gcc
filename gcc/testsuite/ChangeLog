@@ -1,6 +1,11 @@
 2019-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92831 - CWG 1299, not extending temporary lifetime for ?:
+	* g++.dg/cpp0x/temp-extend2.C: New test.
+
 	2019-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/92781

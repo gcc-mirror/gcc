@@ -6229,7 +6229,9 @@ extern tree convert_for_arg_passing		(tree, tree, tsubst_flags_t);
 extern bool is_properly_derived_from		(tree, tree);
 extern tree initialize_reference		(tree, tree, int,
 						 tsubst_flags_t);
-extern tree extend_ref_init_temps		(tree, tree, vec<tree, va_gc>**);
+extern tree extend_ref_init_temps		(tree, tree,
+						 vec<tree, va_gc>**,
+						 tree * = NULL);
 extern tree make_temporary_var_for_ref_to_temp	(tree, tree);
 extern bool type_has_extended_temps		(tree);
 extern tree strip_top_quals			(tree);
