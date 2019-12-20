@@ -1,3 +1,12 @@
+2019-12-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (lookup_node_type): Remove redundant
+	call to lookup_node_type.
+	* testsuite/libstdc++-prettyprinters/80276.cc: Define
+	_GLIBCXX_USE_CXX11_ABI to 0.
+	* testsuite/libstdc++-prettyprinters/91997.cc: Use regexp-test to check
+	'a' content.
+
 2019-12-20  Jerome Lambourg  <lambourg@adacore.com>
 
 	* acinclude.m4 (_GLIBCXX_USE_PTHREAD_RWLOCK_T): Checks that _PTHREADS
