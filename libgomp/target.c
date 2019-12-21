@@ -1129,7 +1129,6 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		tgt->list[i].length = k->host_end - k->host_start;
 		k->refcount = 1;
 		k->virtual_refcount = 0;
-		k->aux = NULL;
 		tgt->refcount++;
 		array->left = NULL;
 		array->right = NULL;
