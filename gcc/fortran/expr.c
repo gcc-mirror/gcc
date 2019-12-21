@@ -1787,11 +1787,15 @@ find_inquiry_ref (gfc_expr *p, gfc_expr **newp)
 	  if (!gfc_notify_std (GFC_STD_F2003, "LEN part_ref at %C"))
 	    goto cleanup;
 
-	  if (!tmp->ts.u.cl->length
-	      || tmp->ts.u.cl->length->expr_type != EXPR_CONSTANT)
+	  if (tmp->ts.u.cl->length
+	      && tmp->ts.u.cl->length->expr_type == EXPR_CONSTANT)
+	    *newp = gfc_copy_expr (tmp->ts.u.cl->length);
+	  else if (tmp->expr_type == EXPR_CONSTANT)
+	    *newp = gfc_get_int_expr (gfc_default_integer_kind,
+				      NULL, tmp->value.character.length);
+	  else
 	    goto cleanup;
 
-	  *newp = gfc_copy_expr (tmp->ts.u.cl->length);
 	  break;
 
 	case INQUIRY_KIND:
@@ -1814,7 +1818,7 @@ find_inquiry_ref (gfc_expr *p, gfc_expr **newp)
 
 	  *newp = gfc_get_constant_expr (BT_REAL, tmp->ts.kind, &tmp->where);
 	  mpfr_set ((*newp)->value.real,
-		    mpc_realref (p->value.complex), GFC_RND_MODE);
+		    mpc_realref (tmp->value.complex), GFC_RND_MODE);
 	  break;
 
 	case INQUIRY_IM:
@@ -1826,7 +1830,7 @@ find_inquiry_ref (gfc_expr *p, gfc_expr **newp)
 
 	  *newp = gfc_get_constant_expr (BT_REAL, tmp->ts.kind, &tmp->where);
 	  mpfr_set ((*newp)->value.real,
-		    mpc_imagref (p->value.complex), GFC_RND_MODE);
+		    mpc_imagref (tmp->value.complex), GFC_RND_MODE);
 	  break;
 	}
       tmp = gfc_copy_expr (*newp);
