@@ -1,3 +1,8 @@
+2019-12-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* target.c (gomp_map_vars_internal): Restore 'omp declare target
+	link' handling.
+
 2019-12-19  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/class-ptr-param.f95: New test.
