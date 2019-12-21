@@ -7615,7 +7615,10 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
   location_t start_loc = postfix_expression.get_start ();
 
   /* If this is a `->' operator, dereference the pointer.  */
-  if (token_type == CPP_DEREF)
+  if (token_type == CPP_DEREF
+      || ((token_type == CPP_DOT)
+	  && (cxx_dialect >= cxx2a)
+	  && (TYPE_PTR_P (TREE_TYPE (postfix_expression)))))
     postfix_expression = build_x_arrow (location, postfix_expression,
 					tf_warning_or_error);
   /* Check to see whether or not the expression is type-dependent and
