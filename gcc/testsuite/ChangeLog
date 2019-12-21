@@ -1,3 +1,9 @@
+2019-12-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/93026
+	PR middle-end/92929
+	* gfortran.dg/goacc/finalize-1.f: Adjust.
+
 2019-12-21  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/91661
