@@ -5728,7 +5728,7 @@ ipcp_store_vr_results (void)
       ipa_node_params *info = IPA_NODE_REF (node);
       bool found_useful_result = false;
 
-      if (!opt_for_fn (node->decl, flag_ipa_vrp))
+      if (!info || !opt_for_fn (node->decl, flag_ipa_vrp))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "Not considering %s for VR discovery "
