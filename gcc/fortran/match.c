@@ -4588,6 +4588,23 @@ gfc_match_nullify (void)
 	  goto cleanup;
 	}
 
+      /* Check for valid array pointer object.  Bounds remapping is not
+	 allowed with NULLIFY.  */
+      if (p->ref)
+	{
+	  gfc_ref *remap = p->ref;
+	  for (; remap; remap = remap->next)
+	    if (!remap->next && remap->type == REF_ARRAY
+		&& remap->u.ar.type != AR_FULL)
+	      break;
+	  if (remap)
+	    {
+	      gfc_error ("NULLIFY does not allow bounds remapping for "
+			 "pointer object at %C");
+	      goto cleanup;
+	    }
+	}
+
       /* build ' => NULL() '.  */
       e = gfc_get_null_expr (&gfc_current_locus);
 
