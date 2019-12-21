@@ -1,3 +1,9 @@
+2019-12-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from mainline
+	PR fortran/92753
+	* gfortran.dg/inquiry_type_ref_5.f90 : New test.
+
 2019-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
