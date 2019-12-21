@@ -1,3 +1,12 @@
+2019-12-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/92753
+	* expr.c (find_inquiry_ref): Catch INQUIRY_LEN case, where the
+	temporary expression has been converted to a constant and make
+	the new expression accordingly. Correct the error in INQUIRY_RE
+	and INQUIRY_IM cases. The original rather than the resolved
+	expression was being used as the source in mpfr_set.
+
 2019-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/91512
