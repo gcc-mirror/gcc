@@ -1,3 +1,8 @@
+2019-12-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/93015
+	* ipa-cp.c (ipcp_store_vr_results): Check that info exists
+
 2019-12-20   Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/predicates.md (cint34_operand): Use
