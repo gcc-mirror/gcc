@@ -1,5 +1,12 @@
 2020-01-14  David Malcolm  <dmalcolm@redhat.com>
 
+	* program-state.cc (sm_state_map::clone_with_remapping): Copy
+	m_global_state.
+	(selftest::test_program_state_merging_2): New selftest.
+	(selftest::analyzer_program_state_cc_tests): Call it.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
 	* checker-path.h (checker_path::get_checker_event): New function.
 	(checker_path): Add DISABLE_COPY_AND_ASSIGN; make fields private.
 	* diagnostic-manager.cc

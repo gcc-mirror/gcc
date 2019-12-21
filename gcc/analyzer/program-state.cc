@@ -84,6 +84,7 @@ sm_state_map *
 sm_state_map::clone_with_remapping (const one_way_svalue_id_map &id_map) const
 {
   sm_state_map *result = new sm_state_map ();
+  result->m_global_state = m_global_state;
   for (typename map_t::iterator iter = m_map.begin ();
        iter != m_map.end ();
        ++iter)
@@ -1348,6 +1349,39 @@ test_program_state_merging ()
   ASSERT_EQ (s0, merged);
 }
 
+/* Verify that program_states with different global-state in an sm-state
+   can't be merged.  */
+
+static void
+test_program_state_merging_2 ()
+{
+  auto_delete_vec <state_machine> checkers;
+  checkers.safe_push (make_signal_state_machine (NULL));
+  extrinsic_state ext_state (checkers);
+
+  program_state s0 (ext_state);
+  {
+    sm_state_map *smap0 = s0.m_checker_states[0];
+    const state_machine::state_t TEST_STATE_0 = 0;
+    smap0->set_global_state (TEST_STATE_0);
+    ASSERT_EQ (smap0->get_global_state (), TEST_STATE_0);
+  }
+
+  program_state s1 (ext_state);
+  {
+    sm_state_map *smap1 = s1.m_checker_states[0];
+    const state_machine::state_t TEST_STATE_1 = 1;
+    smap1->set_global_state (TEST_STATE_1);
+    ASSERT_EQ (smap1->get_global_state (), TEST_STATE_1);
+  }
+
+  ASSERT_NE (s0, s1);
+
+  /* They ought to not be mergeable.  */
+  program_state merged (ext_state);
+  ASSERT_FALSE (s0.can_merge_with_p (s1, ext_state, &merged));
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -1355,6 +1389,7 @@ analyzer_program_state_cc_tests ()
 {
   test_sm_state_map ();
   test_program_state_merging ();
+  test_program_state_merging_2 ();
 }
 
 } // namespace selftest
