@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mlittle-endian" } */
+/* { dg-options "-O2" } */
+/* { dg-require-effective-target aarch64_little_endian } */
 
 #include <arm_sve.h>
 

@@ -1,3 +1,11 @@
+2019-12-21  Andrew Pinski  <apinski@marvell.com>
+
+	PR testsuite/92998
+	* gcc.target/aarch64/sve/acle/general/dupq_1.c:
+	Restrict to aarch64_little_endian only.
+	* gcc.target/aarch64/torture/simd-abi-8.c:
+	Likewise.
+
 2019-12-22  Maciej W. Rozycki  <macro@wdc.com>
 
 	* lib/gcc-defs.exp (gcc-set-multilib-library-path): Use
