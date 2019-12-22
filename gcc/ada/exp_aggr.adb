@@ -5853,26 +5853,51 @@ package body Exp_Aggr is
          --       raise Constraint_Error;
          --    end if;
 
-         elsif Nb_Elements > Uint_0 then
-            Cond :=
-              Make_Op_Gt (Loc,
-                Left_Opnd  =>
-                  Make_Op_Add (Loc,
-                    Left_Opnd  =>
-                      Make_Attribute_Reference (Loc,
-                        Prefix         => New_Occurrence_Of (Ind_Typ, Loc),
-                        Attribute_Name => Name_Pos,
-                        Expressions    =>
-                          New_List
-                            (Duplicate_Subexpr_Move_Checks (Aggr_Lo))),
-                Right_Opnd => Make_Integer_Literal (Loc, Nb_Elements - 1)),
+         --  in the general case, but the following simpler test:
 
-                Right_Opnd =>
-                  Make_Attribute_Reference (Loc,
-                    Prefix         => New_Occurrence_Of (Ind_Typ, Loc),
-                    Attribute_Name => Name_Pos,
-                    Expressions    => New_List (
-                      Duplicate_Subexpr_Move_Checks (Aggr_Hi))));
+         --    [constraint_error when
+         --      Aggr_Lo + (Nb_Elements - 1) > Aggr_Hi];
+
+         --  instead if the index type is a signed integer.
+
+         elsif Nb_Elements > Uint_0 then
+            if Nb_Elements = Uint_1 then
+               Cond :=
+                 Make_Op_Gt (Loc,
+                   Left_Opnd  => Duplicate_Subexpr_Move_Checks (Aggr_Lo),
+                   Right_Opnd => Duplicate_Subexpr_Move_Checks (Aggr_Hi));
+
+            elsif Is_Signed_Integer_Type (Ind_Typ) then
+               Cond :=
+                 Make_Op_Gt (Loc,
+                   Left_Opnd  =>
+                     Make_Op_Add (Loc,
+                       Left_Opnd  => Duplicate_Subexpr_Move_Checks (Aggr_Lo),
+                       Right_Opnd =>
+                         Make_Integer_Literal (Loc, Nb_Elements - 1)),
+                   Right_Opnd => Duplicate_Subexpr_Move_Checks (Aggr_Hi));
+
+            else
+               Cond :=
+                 Make_Op_Gt (Loc,
+                   Left_Opnd  =>
+                     Make_Op_Add (Loc,
+                       Left_Opnd  =>
+                         Make_Attribute_Reference (Loc,
+                           Prefix         => New_Occurrence_Of (Ind_Typ, Loc),
+                           Attribute_Name => Name_Pos,
+                           Expressions    =>
+                             New_List
+                               (Duplicate_Subexpr_Move_Checks (Aggr_Lo))),
+                   Right_Opnd => Make_Integer_Literal (Loc, Nb_Elements - 1)),
+
+                   Right_Opnd =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => New_Occurrence_Of (Ind_Typ, Loc),
+                       Attribute_Name => Name_Pos,
+                       Expressions    => New_List (
+                         Duplicate_Subexpr_Move_Checks (Aggr_Hi))));
+            end if;
 
          --  If we are dealing with an aggregate containing an others choice
          --  and discrete choices we generate the following test:
