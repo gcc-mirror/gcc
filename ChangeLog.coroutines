@@ -1,3 +1,18 @@
+2019-12-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/co-yield-0-triv.C: Rename to...
+	* g++.dg/coroutines/torture/co-yield-00-triv.C: ... this.
+	* g++.dg/coroutines/torture/co-yield-1-multi.C: Rename to...
+	* g++.dg/coroutines/torture/co-yield-01-multi.C: ... this.
+	* g++.dg/coroutines/torture/co-yield-2-loop.C: Rename to...
+	* g++.dg/coroutines/torture/co-yield-02-loop.C: ... this.
+	* g++.dg/coroutines/torture/co-yield-3-tmpl.C: Rename to...
+	* g++.dg/coroutines/torture/co-yield-03-tmpl.C: ... this.
+	* g++.dg/coroutines/torture/co-yield-strings.C: Rename to...
+	* g++.dg/coroutines/torture/co-yield-04-complex-local-state.C:
+	... this..
+
 2019-12-21  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/testsuite/
