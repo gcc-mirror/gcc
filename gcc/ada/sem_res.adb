@@ -265,9 +265,7 @@ package body Sem_Res is
 
    procedure Simplify_Type_Conversion (N : Node_Id);
    --  Called after N has been resolved and evaluated, but before range checks
-   --  have been applied. Currently simplifies a combination of floating-point
-   --  to integer conversion and Rounding or Truncation attribute, and also the
-   --  conversion of an integer literal to a dynamic integer type.
+   --  have been applied. This rewrites the conversion into a simpler form.
 
    function Unique_Fixed_Point_Type (N : Node_Id) return Entity_Id;
    --  A universal_fixed expression in an universal context is unambiguous if
@@ -12630,7 +12628,7 @@ package body Sem_Res is
             --  Special processing for the conversion of an integer literal to
             --  a dynamic type: we first convert the literal to the root type
             --  and then convert the result to the target type, the goal being
-            --  to avoid doing range checks in Universal_Integer type.
+            --  to avoid doing range checks in universal integer.
 
             elsif Is_Integer_Type (Target_Typ)
               and then not Is_Generic_Type (Root_Type (Target_Typ))
@@ -12638,6 +12636,17 @@ package body Sem_Res is
               and then Opnd_Typ = Universal_Integer
             then
                Convert_To_And_Rewrite (Root_Type (Target_Typ), Operand);
+               Analyze_And_Resolve (Operand);
+
+            --  If the expression is a conversion to universal integer of an
+            --  an expression with an integer type, then we can eliminate the
+            --  intermediate conversion to universal integer.
+
+            elsif Nkind (Operand) = N_Type_Conversion
+              and then Entity (Subtype_Mark (Operand)) = Universal_Integer
+              and then Is_Integer_Type (Etype (Expression (Operand)))
+            then
+               Rewrite (Operand, Relocate_Node (Expression (Operand)));
                Analyze_And_Resolve (Operand);
             end if;
          end;

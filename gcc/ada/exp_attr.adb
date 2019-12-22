@@ -1096,12 +1096,10 @@ package body Exp_Attr is
           Selector_Name => Make_Identifier (Loc, Nam));
 
       --  The generated call is given the provided set of parameters, and then
-      --  wrapped in a conversion which converts the result to the target type
-      --  We use the base type as the target because a range check may be
-      --  required.
+      --  wrapped in a conversion which converts the result to the target type.
 
       Rewrite (N,
-        Unchecked_Convert_To (Base_Type (Etype (N)),
+        Convert_To (Typ,
           Make_Function_Call (Loc,
             Name                   => Fnm,
             Parameter_Associations => Args)));
@@ -6011,12 +6009,13 @@ package body Exp_Attr is
          if Is_Access_Type (Ptyp) then
             if Present (Storage_Size_Variable (Root_Type (Ptyp))) then
                Rewrite (N,
-                 Make_Attribute_Reference (Loc,
-                   Prefix => New_Occurrence_Of (Typ, Loc),
-                   Attribute_Name => Name_Max,
-                   Expressions => New_List (
-                     Make_Integer_Literal (Loc, 0),
-                     Convert_To (Typ,
+                 Convert_To (Typ,
+                   Make_Attribute_Reference (Loc,
+                     Prefix => New_Occurrence_Of
+                       (Etype (Storage_Size_Variable (Root_Type (Ptyp))), Loc),
+                     Attribute_Name => Name_Max,
+                     Expressions => New_List (
+                       Make_Integer_Literal (Loc, 0),
                        New_Occurrence_Of
                          (Storage_Size_Variable (Root_Type (Ptyp)), Loc)))));
 
@@ -6069,7 +6068,7 @@ package body Exp_Attr is
 
                else
                   Rewrite (N,
-                    OK_Convert_To (Typ,
+                    Convert_To (Typ,
                       Make_Function_Call (Loc,
                         Name =>
                           New_Occurrence_Of (Alloc_Op, Loc),

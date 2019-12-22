@@ -119,16 +119,6 @@ package body Tbuild is
       if Present (Etype (Expr)) and then Etype (Expr) = Typ then
          return Relocate_Node (Expr);
 
-      --  Case where the expression is a conversion to universal integer of
-      --  an expression with an integer type, and we can thus eliminate the
-      --  intermediate conversion to universal integer.
-
-      elsif Nkind (Expr) = N_Type_Conversion
-        and then Entity (Subtype_Mark (Expr)) = Universal_Integer
-        and then Is_Integer_Type (Etype (Expression (Expr)))
-      then
-         return Convert_To (Typ, Expression (Expr));
-
       else
          Result :=
            Make_Type_Conversion (Sloc (Expr),
