@@ -189,6 +189,10 @@ cuda_error (CUresult r)
   return fallback;
 }
 
+/* Version of the CUDA Toolkit in the same MAJOR.MINOR format that is used by
+   Nvidia, such as in the 'deviceQuery' program (Nvidia's CUDA samples). */
+static char cuda_driver_version_s[30];
+
 static unsigned int instantiated_devices = 0;
 static pthread_mutex_t ptx_dev_lock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -284,7 +288,7 @@ struct ptx_device
   bool map;
   bool concur;
   bool mkern;
-  int  mode;
+  int mode;
   int clock_khz;
   int num_sms;
   int regs_per_block;
@@ -293,6 +297,9 @@ struct ptx_device
   int max_threads_per_block;
   int max_threads_per_multiprocessor;
   int default_dims[GOMP_DIM_MAX];
+
+  /* Length as used by the CUDA Runtime API ('struct cudaDeviceProp').  */
+  char name[256];
 
   struct ptx_image_data *images;  /* Images loaded on device.  */
   pthread_mutex_t image_lock;     /* Lock for above list.  */
@@ -327,9 +334,16 @@ nvptx_init (void)
 
   CUDA_CALL (cuInit, 0);
 
+  int cuda_driver_version;
+  CUDA_CALL_ERET (NULL, cuDriverGetVersion, &cuda_driver_version);
+  snprintf (cuda_driver_version_s, sizeof cuda_driver_version_s,
+	    "CUDA Driver %u.%u",
+	    cuda_driver_version / 1000, cuda_driver_version % 1000 / 10);
+
   CUDA_CALL (cuDeviceGetCount, &ndevs);
   ptx_devices = GOMP_PLUGIN_malloc_cleared (sizeof (struct ptx_device *)
 					    * ndevs);
+
   return true;
 }
 
@@ -490,6 +504,9 @@ nvptx_open_device (int n)
 
   for (int i = 0; i != GOMP_DIM_MAX; i++)
     ptx_dev->default_dims[i] = 0;
+
+  CUDA_CALL_ERET (NULL, cuDeviceGetName, ptx_dev->name, sizeof ptx_dev->name,
+		  dev);
 
   ptx_dev->images = NULL;
   pthread_mutex_init (&ptx_dev->image_lock, NULL);
@@ -1102,6 +1119,74 @@ int
 GOMP_OFFLOAD_get_num_devices (void)
 {
   return nvptx_get_num_devices ();
+}
+
+union gomp_device_property_value
+GOMP_OFFLOAD_get_property (int n, int prop)
+{
+  union gomp_device_property_value propval = { .val = 0 };
+
+  pthread_mutex_lock (&ptx_dev_lock);
+
+  if (n >= nvptx_get_num_devices () || n < 0 || ptx_devices[n] == NULL)
+    {
+      pthread_mutex_unlock (&ptx_dev_lock);
+      return propval;
+    }
+
+  struct ptx_device *ptx_dev = ptx_devices[n];
+  switch (prop)
+    {
+    case GOMP_DEVICE_PROPERTY_MEMORY:
+      {
+	size_t total_mem;
+
+	CUDA_CALL_ERET (propval, cuDeviceTotalMem, &total_mem, ptx_dev->dev);
+	propval.val = total_mem;
+      }
+      break;
+    case GOMP_DEVICE_PROPERTY_FREE_MEMORY:
+      {
+	size_t total_mem;
+	size_t free_mem;
+	CUdevice ctxdev;
+
+	CUDA_CALL_ERET (propval, cuCtxGetDevice, &ctxdev);
+	if (ptx_dev->dev == ctxdev)
+	  CUDA_CALL_ERET (propval, cuMemGetInfo, &free_mem, &total_mem);
+	else if (ptx_dev->ctx)
+	  {
+	    CUcontext old_ctx;
+
+	    CUDA_CALL_ERET (propval, cuCtxPushCurrent, ptx_dev->ctx);
+	    CUDA_CALL_ERET (propval, cuMemGetInfo, &free_mem, &total_mem);
+	    CUDA_CALL_ASSERT (cuCtxPopCurrent, &old_ctx);
+	  }
+	else
+	  {
+	    CUcontext new_ctx;
+
+	    CUDA_CALL_ERET (propval, cuCtxCreate, &new_ctx, CU_CTX_SCHED_AUTO,
+			    ptx_dev->dev);
+	    CUDA_CALL_ERET (propval, cuMemGetInfo, &free_mem, &total_mem);
+	    CUDA_CALL_ASSERT (cuCtxDestroy, new_ctx);
+	  }
+	propval.val = free_mem;
+      }
+      break;
+    case GOMP_DEVICE_PROPERTY_NAME:
+      propval.ptr = ptx_dev->name;
+      break;
+    case GOMP_DEVICE_PROPERTY_VENDOR:
+      propval.ptr = "Nvidia";
+      break;
+    case GOMP_DEVICE_PROPERTY_DRIVER:
+      propval.ptr = cuda_driver_version_s;
+      break;
+    }
+
+  pthread_mutex_unlock (&ptx_dev_lock);
+  return propval;
 }
 
 bool

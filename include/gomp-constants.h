@@ -195,6 +195,21 @@ enum gomp_map_kind
 #define GOMP_DEVICE_ICV			-1
 #define GOMP_DEVICE_HOST_FALLBACK	-2
 
+/* Device property codes.  Keep in sync with
+   libgomp/{openacc.h,openacc.f90}:acc_device_property_t */
+/* Start from 1 to catch uninitialized use.  */
+enum gomp_device_property
+  {
+   GOMP_DEVICE_PROPERTY_MEMORY =	1,
+   GOMP_DEVICE_PROPERTY_FREE_MEMORY = 	2,
+   GOMP_DEVICE_PROPERTY_NAME =		0x10001,
+   GOMP_DEVICE_PROPERTY_VENDOR =	0x10002,
+   GOMP_DEVICE_PROPERTY_DRIVER =	0x10003
+  };
+
+/* Internal property mask to tell numeric and string values apart.  */
+#define GOMP_DEVICE_PROPERTY_STRING_MASK	0x10000
+
 /* GOMP_task/GOMP_taskloop* flags argument.  */
 #define GOMP_TASK_FLAG_UNTIED		(1 << 0)
 #define GOMP_TASK_FLAG_FINAL		(1 << 1)

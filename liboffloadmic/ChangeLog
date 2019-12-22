@@ -1,3 +1,11 @@
+2019-12-22  Maciej W. Rozycki  <macro@codesourcery.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+	    Thomas Schwinge  <tschwinge@codesourcery.com>
+
+	liboffloadmic/
+	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_get_property):
+	New function.
+
 2019-10-01  Maciej W. Rozycki  <macro@wdc.com>
 
 	* plugin/configure: Regenerate.
