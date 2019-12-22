@@ -1,3 +1,10 @@
+2019-12-22  Maciej W. Rozycki  <macro@wdc.com>
+
+	* lib/gcc-defs.exp (gcc-set-multilib-library-path): Use
+	`-print-file-name=' to determine the multilib root directory.
+	Use `remote_exec host' rather than `exec' to invoke the
+	compiler.
+
 2019-12-21  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR fortran/93026
