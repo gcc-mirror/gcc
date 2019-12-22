@@ -880,6 +880,12 @@ b_gnatm.o : b_gnatm.adb
 	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) -gnatws -gnatyN \
 	    $< $(OUTPUT_OPTION)
 
+# Provide a `toolexeclibdir' definition for when `gnat-install-lib' is
+# wired through gcc/ in a configuration with top-level libada disabled.
+# It will be overridden with the value configured when `gnat-install-lib'
+# is invoked through libada/.
+toolexeclibdir = $(ADA_RTL_OBJ_DIR)
+
 ADA_INCLUDE_DIR = $(libsubdir)/adainclude
 ADA_RTL_OBJ_DIR = $(libsubdir)/adalib
 ADA_RTL_DSO_DIR = $(toolexeclibdir)
