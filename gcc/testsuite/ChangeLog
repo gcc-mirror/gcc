@@ -1,5 +1,16 @@
 2019-12-23  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR c++/92789
+	* g++.dg/ext/sve-sizeless-2.C (statements): Expect pointer
+	difference and comparisons between GNU and non-GNU types
+	to be rejected.  Expect __is_same to be false for such pairs.
+	* g++.target/aarch64/sve/acle/general-c++/gnu_vectors_1.C: Remove
+	XFAILs.  Expect conversions between SVE vector pointers and
+	GNU vector pointers to be rejected.  Test references.
+	* g++.target/aarch64/sve/acle/general-c++/gnu_vectors_2.C: Likewise.
+
+2019-12-23  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* g++.dg/ext/vector39.C: New test.
 
 2019-12-21  Andrew Pinski  <apinski@marvell.com>

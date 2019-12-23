@@ -183,8 +183,8 @@ statements (int n)
 
   // Pointer assignment.
 
-  gnu_sc_ptr = sve_sc_ptr;
-  sve_sc_ptr = gnu_sc_ptr;
+  gnu_sc_ptr = sve_sc_ptr; // { dg-error {invalid conversion from 'svint8_t\*' to 'int8x32_t\*'} }
+  sve_sc_ptr = gnu_sc_ptr; // { dg-error {invalid conversion from 'int8x32_t\*'[^\n]* to 'svint8_t\*'} }
 
   // Pointer arithmetic.
 
@@ -197,8 +197,8 @@ statements (int n)
   sve_sc_ptr -= 0; // { dg-error {arithmetic on pointer to SVE type 'svint8_t'} }
   sve_sc_ptr -= 1; // { dg-error {arithmetic on pointer to SVE type 'svint8_t'} }
   sve_sc_ptr - sve_sc_ptr; // { dg-error {arithmetic on pointer to SVE type 'svint8_t'} }
-  gnu_sc_ptr - sve_sc_ptr; // { dg-error {arithmetic on pointer to SVE type 'svint8_t'} }
-  sve_sc_ptr - gnu_sc_ptr; // { dg-error {arithmetic on pointer to SVE type 'svint8_t'} }
+  gnu_sc_ptr - sve_sc_ptr; // { dg-error {invalid operands of types 'int8x32_t\*'[^\n]* and 'svint8_t\*' to binary 'operator-'} }
+  sve_sc_ptr - gnu_sc_ptr; // { dg-error {invalid operands of types 'svint8_t\*' and 'int8x32_t\*'[^\n]* to binary 'operator-'} }
   sve_sc1 = sve_sc_ptr[0]; // { dg-error {arithmetic on pointer to SVE type 'svint8_t'} }
   sve_sc1 = sve_sc_ptr[1]; // { dg-error {arithmetic on pointer to SVE type 'svint8_t'} }
 
@@ -210,18 +210,18 @@ statements (int n)
   sve_sc_ptr <= &sve_sc1;
   sve_sc_ptr > &sve_sc1;
   sve_sc_ptr >= &sve_sc1;
-  gnu_sc_ptr == sve_sc_ptr;
-  gnu_sc_ptr != sve_sc_ptr;
-  gnu_sc_ptr < sve_sc_ptr;
-  gnu_sc_ptr <= sve_sc_ptr;
-  gnu_sc_ptr > sve_sc_ptr;
-  gnu_sc_ptr >= sve_sc_ptr;
-  sve_sc_ptr == gnu_sc_ptr;
-  sve_sc_ptr != gnu_sc_ptr;
-  sve_sc_ptr < gnu_sc_ptr;
-  sve_sc_ptr <= gnu_sc_ptr;
-  sve_sc_ptr > gnu_sc_ptr;
-  sve_sc_ptr >= gnu_sc_ptr;
+  gnu_sc_ptr == sve_sc_ptr; // { dg-error {comparison between distinct pointer types [^\n]*lacks a cast} }
+  gnu_sc_ptr != sve_sc_ptr; // { dg-error {comparison between distinct pointer types [^\n]*lacks a cast} }
+  gnu_sc_ptr < sve_sc_ptr; // { dg-error {comparison between distinct pointer types [^\n]*lacks a cast} }
+  gnu_sc_ptr <= sve_sc_ptr; // { dg-error {comparison between distinct pointer types [^\n]*lacks a cast} }
+  gnu_sc_ptr > sve_sc_ptr; // { dg-error {comparison between distinct pointer types [^\n]*lacks a cast} }
+  gnu_sc_ptr >= sve_sc_ptr; // { dg-error {comparison between distinct pointer types [^\n]*lacks a cast} }
+  sve_sc_ptr == gnu_sc_ptr; // { dg-error {comparison between distinct pointer types [^\n]*lacks a cast} }
+  sve_sc_ptr != gnu_sc_ptr; // { dg-error {comparison between distinct pointer types [^\n]*lacks a cast} }
+  sve_sc_ptr < gnu_sc_ptr; // { dg-error {comparison between distinct pointer types [^\n]*lacks a cast} }
+  sve_sc_ptr <= gnu_sc_ptr; // { dg-error {comparison between distinct pointer types [^\n]*lacks a cast} }
+  sve_sc_ptr > gnu_sc_ptr; // { dg-error {comparison between distinct pointer types [^\n]*lacks a cast} }
+  sve_sc_ptr >= gnu_sc_ptr; // { dg-error {comparison between distinct pointer types [^\n]*lacks a cast} }
 
   // New and delete.
 
@@ -243,8 +243,8 @@ statements (int n)
   0 ? 0 : sve_sc1; // { dg-error {different types 'int' and 'svint8_t'} }
   0 ? sve_sc1 : sve_sc1;
   0 ? sve_sc_ptr : sve_sc_ptr;
-  0 ? sve_sc_ptr : gnu_sc_ptr;
-  0 ? gnu_sc_ptr : sve_sc_ptr;
+  0 ? sve_sc_ptr : gnu_sc_ptr; // { dg-error {conditional expression between distinct pointer types [^\n]*lacks a cast} }
+  0 ? gnu_sc_ptr : sve_sc_ptr; // { dg-error {conditional expression between distinct pointer types [^\n]*lacks a cast} }
 
   // Function arguments.
 
@@ -321,11 +321,11 @@ statements (int n)
   { typedef int f[__is_pod (svint8_t) ? 1 : -1]; }
   { typedef int f[!__is_polymorphic (svint8_t) ? 1 : -1]; }
   { typedef int f[__is_same_as (svint8_t, svint8_t) ? 1 : -1]; }
-  { typedef int f[__is_same_as (svint8_t, int8x32_t) ? 1 : -1]; }
-  { typedef int f[__is_same_as (int8x32_t, svint8_t) ? 1 : -1]; }
+  { typedef int f[!__is_same_as (svint8_t, int8x32_t) ? 1 : -1]; }
+  { typedef int f[!__is_same_as (int8x32_t, svint8_t) ? 1 : -1]; }
   { typedef int f[__is_same_as (svint8_t *, svint8_t *) ? 1 : -1]; }
-  { typedef int f[__is_same_as (svint8_t *, int8x32_t *) ? 1 : -1]; }
-  { typedef int f[__is_same_as (int8x32_t *, svint8_t *) ? 1 : -1]; }
+  { typedef int f[!__is_same_as (svint8_t *, int8x32_t *) ? 1 : -1]; }
+  { typedef int f[!__is_same_as (int8x32_t *, svint8_t *) ? 1 : -1]; }
   { typedef int f[!__is_same_as (svint8_t, int) ? 1 : -1]; }
   { typedef int f[!__is_same_as (svint8_t, svint16_t) ? 1 : -1]; }
   { typedef int f[__is_trivial (svint8_t) ? 1 : -1]; }
