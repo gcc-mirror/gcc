@@ -1,7 +1,8 @@
 /* Test OpenACC's support for manual deep copy, including the attach
    and detach clauses.  */
 
-/* { dg-do compile { target int32 } } */
+/* TODO The tree dump scanning has certain expectations.
+   { dg-do compile { target { lp64 || llp64 } } } */
 /* { dg-additional-options "-fdump-tree-omplower" } */
 
 void
