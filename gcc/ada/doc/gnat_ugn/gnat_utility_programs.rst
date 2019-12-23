@@ -2790,7 +2790,7 @@ Alternatively, you may run the script using the following command line:
     Use the specified subdirectory of the project objects file (or of the
     project file directory if the project does not specify an object directory)
     for tool output files. Has no effect if no project is specified as
-    tool argument r if :switch:`--no_objects_dir` is specified.
+    tool argument r if :switch:`--no-objects-dir` is specified.
 
 
   .. index:: --files (gnatmetric)
@@ -3413,6 +3413,33 @@ Alternatively, you may run the script using the following command line:
    :switch:`--RM-style-spacing`
      Do not insert an extra blank before various occurrences of
      '(' and ':'. This also turns off alignment.
+
+
+   .. index:: --compact (gnatpp)
+   .. index:: --no-compact (gnatpp)
+
+   :switch:`--compact`
+     This is the default. In calls and similar, this packs as many
+     subexpressions on the same line as possible. Example:
+
+     .. code-block:: ada
+
+        Some_Procedure
+          (Short_One, Another_Short_One,
+           A_Very_Very_Very_Very_Very_Very_Very_Very_Long_One);
+
+   :switch:`--no-compact`
+     Turns off --compact mode. In calls and similar, if it is necessary
+     to split a line between two subexpressions (because otherwise the
+     construct would exceed --max-line-length), then all such subexpressions
+     are placed on separate lines. Example:
+
+     .. code-block:: ada
+
+        Some_Procedure
+          (Short_One,
+           Another_Short_One,
+           A_Very_Very_Very_Very_Very_Very_Very_Very_Long_One);
 
 
    .. index:: --call_threshold (gnatpp)
@@ -4246,7 +4273,7 @@ Alternatively, you may run the script using the following command line:
   (See :ref:`Using_Project_Files_with_GNAT_Tools` for a description of
   the project-related switches but note that ``gnatstub`` does not support
   the :switch:`-U`, :switch:`-U {main_unit}`, :switch:`--subdirs={dir}`, or
-  :switch:`--no_objects_dir` switches.)
+  :switch:`--no-objects-dir` switches.)
   The project file package that can specify
   ``gnatstub`` switches is named ``gnatstub``.
 
@@ -4543,7 +4570,7 @@ Alternatively, you may run the script using the following command line:
   (See :ref:`Using_Project_Files_with_GNAT_Tools` for a description of
   the project-related switches but note that ``gnattest`` does not support
   the :switch:`-U`, :switch:`-eL`, :switch:`--subdirs={dir}`, or
-  :switch:`--no_objects_dir` switches.)
+  :switch:`--no-objects-dir` switches.)
   The project file package that can specify
   ``gnattest`` switches is named ``gnattest``.
 
@@ -5634,9 +5661,9 @@ Alternatively, you may run the script using the following command line:
       Use the ``dir`` subdirectory of the project's object directory (or the ``dir``
       subdirectory of the project file directory if the project does not specify
       an object directory) for tool output files. Has no effect if no project
-      has been specified or if :switch:`--no_objects_dir` is specified.
+      has been specified or if :switch:`--no-objects-dir` is specified.
 
-   :switch:`--no_objects_dir`
+   :switch:`--no-objects-dir`
       Place all the result files into the current directory (i.e., the directory
       from which the tool invocation command is issued) instead of the project's
       object directory. Has no effect if no project has been specified.
