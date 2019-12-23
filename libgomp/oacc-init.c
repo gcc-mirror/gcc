@@ -370,7 +370,15 @@ acc_shutdown_1 (acc_device_t d)
       if (walk->dev)
 	{
 	  gomp_mutex_lock (&walk->dev->lock);
-	  gomp_free_memmap (&walk->dev->mem_map);
+
+	  while (walk->dev->mem_map.root)
+	    {
+	      splay_tree_key k = &walk->dev->mem_map.root->key;
+	      if (k->aux)
+		k->aux->link_key = NULL;
+	      gomp_remove_var (walk->dev, k);
+	    }
+
 	  gomp_mutex_unlock (&walk->dev->lock);
 
 	  walk->dev = NULL;
@@ -662,7 +670,8 @@ acc_get_device_type (void)
     }
 
   assert (res != acc_device_default
-	  && res != acc_device_not_host);
+	  && res != acc_device_not_host
+	  && res != acc_device_current);
 
   return res;
 }
@@ -750,6 +759,66 @@ acc_set_device_num (int ord, acc_device_t d)
 }
 
 ialias (acc_set_device_num)
+
+static union gomp_device_property_value
+get_property_any (int ord, acc_device_t d, acc_device_property_t prop)
+{
+  goacc_lazy_initialize ();
+  struct goacc_thread *thr = goacc_thread ();
+
+  if (d == acc_device_current && thr && thr->dev)
+    return thr->dev->get_property_func (thr->dev->target_id, prop);
+
+  gomp_mutex_lock (&acc_device_lock);
+
+  struct gomp_device_descr *dev = resolve_device (d, true);
+
+  int num_devices = dev->get_num_devices_func ();
+
+  if (num_devices <= 0 || ord >= num_devices)
+    acc_dev_num_out_of_range (d, ord, num_devices);
+
+  dev += ord;
+
+  gomp_mutex_lock (&dev->lock);
+  if (dev->state == GOMP_DEVICE_UNINITIALIZED)
+    gomp_init_device (dev);
+  gomp_mutex_unlock (&dev->lock);
+
+  gomp_mutex_unlock (&acc_device_lock);
+
+  assert (dev);
+
+  return dev->get_property_func (dev->target_id, prop);
+}
+
+size_t
+acc_get_property (int ord, acc_device_t d, acc_device_property_t prop)
+{
+  if (!known_device_type_p (d))
+    unknown_device_type_error(d);
+
+  if (prop & GOMP_DEVICE_PROPERTY_STRING_MASK)
+    return 0;
+  else
+    return get_property_any (ord, d, prop).val;
+}
+
+ialias (acc_get_property)
+
+const char *
+acc_get_property_string (int ord, acc_device_t d, acc_device_property_t prop)
+{
+  if (!known_device_type_p (d))
+    unknown_device_type_error(d);
+
+  if (prop & GOMP_DEVICE_PROPERTY_STRING_MASK)
+    return get_property_any (ord, d, prop).ptr;
+  else
+    return NULL;
+}
+
+ialias (acc_get_property_string)
 
 /* For -O and higher, the compiler always attempts to expand acc_on_device, but
    if the user disables the builtin, or calls it via a pointer, we'll need this

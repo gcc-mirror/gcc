@@ -162,7 +162,7 @@ package body Util is
    procedure Check_Bad_Layout is
    begin
       if RM_Column_Check and then Token_Is_At_Start_Of_Line
-        and then Start_Column <= Scope.Table (Scope.Last).Ecol
+        and then Start_Column <= Scopes (Scope.Last).Ecol
       then
          Error_Msg_BC -- CODEFIX
            ("(style) incorrect layout");
@@ -276,8 +276,11 @@ package body Util is
 
       --  If we have a right paren, then that is taken as ending the list
       --  i.e. no comma is present.
+      --  Ditto for a right bracket in Ada2020.
 
-      elsif Token = Tok_Right_Paren then
+      elsif Token = Tok_Right_Paren
+        or else (Token = Tok_Right_Bracket and then Ada_Version >= Ada_2020)
+      then
          return False;
 
       --  If pragmas, then get rid of them and make a recursive call
@@ -668,9 +671,9 @@ package body Util is
       Scope.Decrement_Last;
 
       if Include_Subprogram_In_Messages
-        and then Scope.Table (Scope.Last).Labl /= Error
+        and then Scopes (Scope.Last).Labl /= Error
       then
-         Current_Node := Scope.Table (Scope.Last).Labl;
+         Current_Node := Scopes (Scope.Last).Labl;
       end if;
 
       if Debug_Flag_P then
@@ -695,8 +698,8 @@ package body Util is
             First_Non_Blank_Location);
       end if;
 
-      Scope.Table (Scope.Last).Junk := False;
-      Scope.Table (Scope.Last).Node := Empty;
+      Scopes (Scope.Last).Junk := False;
+      Scopes (Scope.Last).Node := Empty;
 
       if Debug_Flag_P then
          Error_Msg_Uint_1 := UI_From_Int (Scope.Last);

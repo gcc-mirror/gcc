@@ -567,7 +567,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   template<typename _Alloc>
-    _GLIBCXX14_CONSTEXPR void
+    _GLIBCXX14_CONSTEXPR inline void
     __alloc_on_copy(_Alloc& __one, const _Alloc& __two)
     {
       typedef allocator_traits<_Alloc> __traits;
@@ -599,7 +599,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   template<typename _Alloc>
-    _GLIBCXX14_CONSTEXPR void
+    _GLIBCXX14_CONSTEXPR inline void
     __alloc_on_move(_Alloc& __one, _Alloc& __two)
     {
       typedef allocator_traits<_Alloc> __traits;
@@ -626,7 +626,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   template<typename _Alloc>
-    _GLIBCXX14_CONSTEXPR void
+    _GLIBCXX14_CONSTEXPR inline void
     __alloc_on_swap(_Alloc& __one, _Alloc& __two)
     {
       typedef allocator_traits<_Alloc> __traits;

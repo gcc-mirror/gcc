@@ -146,6 +146,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "tree-vector-builder.h"
+#include "cgraph.h"
+#include "alloc-pool.h"
+#include "symbol-summary.h"
+#include "ipa-utils.h"
+#include "ipa-prop.h"
 
 /* Possible lattice values.  */
 typedef enum
@@ -292,11 +297,26 @@ get_default_value (tree var)
 	  if (flag_tree_bit_ccp)
 	    {
 	      wide_int nonzero_bits = get_nonzero_bits (var);
-	      if (nonzero_bits != -1)
+	      tree value;
+	      widest_int mask;
+
+	      if (SSA_NAME_VAR (var)
+		  && TREE_CODE (SSA_NAME_VAR (var)) == PARM_DECL
+		  && ipcp_get_parm_bits (SSA_NAME_VAR (var), &value, &mask))
+		{
+		  val.lattice_val = CONSTANT;
+		  val.value = value;
+		  val.mask = mask;
+		  if (nonzero_bits != -1)
+		    val.mask &= extend_mask (nonzero_bits,
+					     TYPE_SIGN (TREE_TYPE (var)));
+		}
+	      else if (nonzero_bits != -1)
 		{
 		  val.lattice_val = CONSTANT;
 		  val.value = build_zero_cst (TREE_TYPE (var));
-		  val.mask = extend_mask (nonzero_bits, TYPE_SIGN (TREE_TYPE (var)));
+		  val.mask = extend_mask (nonzero_bits,
+					  TYPE_SIGN (TREE_TYPE (var)));
 		}
 	    }
 	}

@@ -4948,22 +4948,12 @@ aarch64_return_in_msb (const_tree valtype)
   return true;
 }
 
-/* Implement TARGET_FUNCTION_VALUE.
-   Define how to find the value returned by a function.  */
-
+/* Subroutine of aarch64_function_value.  MODE is the mode of the argument
+   after promotion, and after partial SVE types have been replaced by
+   their integer equivalents.  */
 static rtx
-aarch64_function_value (const_tree type, const_tree func,
-			bool outgoing ATTRIBUTE_UNUSED)
+aarch64_function_value_1 (const_tree type, machine_mode mode)
 {
-  machine_mode mode;
-  int unsignedp;
-  int count;
-  machine_mode ag_mode;
-
-  mode = TYPE_MODE (type);
-  if (INTEGRAL_TYPE_P (type))
-    mode = promote_function_mode (type, mode, &unsignedp, func, 1);
-
   unsigned int num_zr, num_pr;
   if (type && aarch64_sve_argument_p (type, &num_zr, &num_pr))
     {
@@ -4998,6 +4988,8 @@ aarch64_function_value (const_tree type, const_tree func,
 	}
     }
 
+  int count;
+  machine_mode ag_mode;
   if (aarch64_vfp_is_call_or_return_candidate (mode, type,
 					       &ag_mode, &count, NULL))
     {
@@ -5024,6 +5016,42 @@ aarch64_function_value (const_tree type, const_tree func,
     }
   else
     return gen_rtx_REG (mode, R0_REGNUM);
+}
+
+/* Implement TARGET_FUNCTION_VALUE.
+   Define how to find the value returned by a function.  */
+
+static rtx
+aarch64_function_value (const_tree type, const_tree func,
+			bool outgoing ATTRIBUTE_UNUSED)
+{
+  machine_mode mode;
+  int unsignedp;
+
+  mode = TYPE_MODE (type);
+  if (INTEGRAL_TYPE_P (type))
+    mode = promote_function_mode (type, mode, &unsignedp, func, 1);
+
+  /* Vector types can acquire a partial SVE mode using things like
+     __attribute__((vector_size(N))), and this is potentially useful.
+     However, the choice of mode doesn't affect the type's ABI identity,
+     so we should treat the types as though they had the associated
+     integer mode, just like they did before SVE was introduced.
+
+     We know that the vector must be 128 bits or smaller, otherwise we'd
+     have returned it in memory instead.  */
+  unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+  if ((vec_flags & VEC_ANY_SVE) && (vec_flags & VEC_PARTIAL))
+    {
+      scalar_int_mode int_mode = int_mode_for_mode (mode).require ();
+      rtx reg = aarch64_function_value_1 (type, int_mode);
+      /* Vector types are never returned in the MSB and are never split.  */
+      gcc_assert (REG_P (reg) && GET_MODE (reg) == int_mode);
+      rtx pair = gen_rtx_EXPR_LIST (VOIDmode, reg, const0_rtx);
+      return gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, pair));
+    }
+
+  return aarch64_function_value_1 (type, mode);
 }
 
 /* Implements TARGET_FUNCTION_VALUE_REGNO_P.
@@ -5151,10 +5179,14 @@ aarch64_function_arg_alignment (machine_mode mode, const_tree type,
 }
 
 /* Layout a function argument according to the AAPCS64 rules.  The rule
-   numbers refer to the rule numbers in the AAPCS64.  */
+   numbers refer to the rule numbers in the AAPCS64.  ORIG_MODE is the
+   mode that was originally given to us by the target hook, whereas the
+   mode in ARG might be the result of replacing partial SVE modes with
+   the equivalent integer mode.  */
 
 static void
-aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
+aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg,
+		    machine_mode orig_mode)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
   tree type = arg.type;
@@ -5167,6 +5199,29 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
   /* We need to do this once per argument.  */
   if (pcum->aapcs_arg_processed)
     return;
+
+  /* Vector types can acquire a partial SVE mode using things like
+     __attribute__((vector_size(N))), and this is potentially useful.
+     However, the choice of mode doesn't affect the type's ABI identity,
+     so we should treat the types as though they had the associated
+     integer mode, just like they did before SVE was introduced.
+
+     We know that the vector must be 128 bits or smaller, otherwise we'd
+     have passed it by reference instead.  */
+  unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+  if ((vec_flags & VEC_ANY_SVE) && (vec_flags & VEC_PARTIAL))
+    {
+      function_arg_info tmp_arg = arg;
+      tmp_arg.mode = int_mode_for_mode (mode).require ();
+      aarch64_layout_arg (pcum_v, tmp_arg, orig_mode);
+      if (rtx reg = pcum->aapcs_reg)
+	{
+	  gcc_assert (REG_P (reg) && GET_MODE (reg) == tmp_arg.mode);
+	  rtx pair = gen_rtx_EXPR_LIST (VOIDmode, reg, const0_rtx);
+	  pcum->aapcs_reg = gen_rtx_PARALLEL (mode, gen_rtvec (1, pair));
+	}
+      return;
+    }
 
   pcum->aapcs_arg_processed = true;
 
@@ -5289,7 +5344,7 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 	     comparison is there because for > 16 * BITS_PER_UNIT
 	     alignment nregs should be > 2 and therefore it should be
 	     passed by reference rather than value.  */
-	  && (aarch64_function_arg_alignment (mode, type, &abi_break)
+	  && (aarch64_function_arg_alignment (orig_mode, type, &abi_break)
 	      == 16 * BITS_PER_UNIT))
 	{
 	  if (abi_break && warn_psabi && currently_expanding_gimple_stmt)
@@ -5332,7 +5387,7 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 on_stack:
   pcum->aapcs_stack_words = size / UNITS_PER_WORD;
 
-  if (aarch64_function_arg_alignment (mode, type, &abi_break)
+  if (aarch64_function_arg_alignment (orig_mode, type, &abi_break)
       == 16 * BITS_PER_UNIT)
     {
       int new_size = ROUND_UP (pcum->aapcs_stack_size, 16 / UNITS_PER_WORD);
@@ -5360,7 +5415,7 @@ aarch64_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
   if (arg.end_marker_p ())
     return gen_int_mode (pcum->pcs_variant, DImode);
 
-  aarch64_layout_arg (pcum_v, arg);
+  aarch64_layout_arg (pcum_v, arg, arg.mode);
   return pcum->aapcs_reg;
 }
 
@@ -5425,7 +5480,7 @@ aarch64_function_arg_advance (cumulative_args_t pcum_v,
       || pcum->pcs_variant == ARM_PCS_SIMD
       || pcum->pcs_variant == ARM_PCS_SVE)
     {
-      aarch64_layout_arg (pcum_v, arg);
+      aarch64_layout_arg (pcum_v, arg, arg.mode);
       gcc_assert ((pcum->aapcs_reg != NULL_RTX)
 		  != (pcum->aapcs_stack_words != 0));
       pcum->aapcs_arg_processed = false;
@@ -16771,11 +16826,27 @@ aarch64_simd_valid_immediate (rtx op, simd_immediate_info *info,
 	}
     }
 
-  unsigned int elt_size = GET_MODE_SIZE (elt_mode);
+  /* If all elements in an SVE vector have the same value, we have a free
+     choice between using the element mode and using the container mode.
+     Using the element mode means that unused parts of the vector are
+     duplicates of the used elements, while using the container mode means
+     that the unused parts are an extension of the used elements.  Using the
+     element mode is better for (say) VNx4HI 0x101, since 0x01010101 is valid
+     for its container mode VNx4SI while 0x00000101 isn't.
+
+     If not all elements in an SVE vector have the same value, we need the
+     transition from one element to the next to occur at container boundaries.
+     E.g. a fixed-length VNx4HI containing { 1, 2, 3, 4 } should be treated
+     in the same way as a VNx4SI containing { 1, 2, 3, 4 }.  */
+  scalar_int_mode elt_int_mode;
+  if ((vec_flags & VEC_SVE_DATA) && n_elts > 1)
+    elt_int_mode = aarch64_sve_container_int_mode (mode);
+  else
+    elt_int_mode = int_mode_for_mode (elt_mode).require ();
+
+  unsigned int elt_size = GET_MODE_SIZE (elt_int_mode);
   if (elt_size > 8)
     return false;
-
-  scalar_int_mode elt_int_mode = int_mode_for_mode (elt_mode).require ();
 
   /* Expand the vector constant out into a byte vector, with the least
      significant byte of the register first.  */
@@ -21402,11 +21473,30 @@ static bool
 aarch64_can_change_mode_class (machine_mode from,
 			       machine_mode to, reg_class_t)
 {
+  unsigned int from_flags = aarch64_classify_vector_mode (from);
+  unsigned int to_flags = aarch64_classify_vector_mode (to);
+
+  bool from_sve_p = (from_flags & VEC_ANY_SVE);
+  bool to_sve_p = (to_flags & VEC_ANY_SVE);
+
+  bool from_partial_sve_p = from_sve_p && (from_flags & VEC_PARTIAL);
+  bool to_partial_sve_p = to_sve_p && (to_flags & VEC_PARTIAL);
+
+  /* Don't allow changes between partial SVE modes and other modes.
+     The contents of partial SVE modes are distributed evenly across
+     the register, whereas GCC expects them to be clustered together.  */
+  if (from_partial_sve_p != to_partial_sve_p)
+    return false;
+
+  /* Similarly reject changes between partial SVE modes that have
+     different patterns of significant and insignificant bits.  */
+  if (from_partial_sve_p
+      && (aarch64_sve_container_bits (from) != aarch64_sve_container_bits (to)
+	  || GET_MODE_UNIT_SIZE (from) != GET_MODE_UNIT_SIZE (to)))
+    return false;
+
   if (BYTES_BIG_ENDIAN)
     {
-      bool from_sve_p = aarch64_sve_data_mode_p (from);
-      bool to_sve_p = aarch64_sve_data_mode_p (to);
-
       /* Don't allow changes between SVE data modes and non-SVE modes.
 	 See the comment at the head of aarch64-sve.md for details.  */
       if (from_sve_p != to_sve_p)

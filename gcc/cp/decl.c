@@ -2977,20 +2977,14 @@ redeclaration_error_message (tree newdecl, tree olddecl)
     {
       tree nt, ot;
 
-      if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == TYPE_DECL)
-	{
-	  if (COMPLETE_TYPE_P (TREE_TYPE (newdecl))
-	      && COMPLETE_TYPE_P (TREE_TYPE (olddecl)))
-	    return G_("redefinition of %q#D");
-	  return NULL;
-	}
-
       if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == CONCEPT_DECL)
         return G_("redefinition of %q#D");
 
-      if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) != FUNCTION_DECL
-	  || (DECL_TEMPLATE_RESULT (newdecl)
-	      == DECL_TEMPLATE_RESULT (olddecl)))
+      if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) != FUNCTION_DECL)
+	return redeclaration_error_message (DECL_TEMPLATE_RESULT (newdecl),
+					    DECL_TEMPLATE_RESULT (olddecl));
+
+      if (DECL_TEMPLATE_RESULT (newdecl) == DECL_TEMPLATE_RESULT (olddecl))
 	return NULL;
 
       nt = DECL_TEMPLATE_RESULT (newdecl);
@@ -6405,14 +6399,13 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
 	       by the front end.  Here we have e.g. {.__pfn=0B, .__delta=0},
 	       which is missing outermost braces.  We should warn below, and
 	       one of the routines below will wrap it in additional { }.  */;
-	  /* For a nested compound literal, there is no need to reshape since
-	     we called reshape_init in finish_compound_literal, before calling
-	     digest_init.  */
-	  else if (COMPOUND_LITERAL_P (stripped_init)
-		   /* Similarly, a CONSTRUCTOR of the target's type is a
-		      previously digested initializer.  */
-		   || same_type_ignoring_top_level_qualifiers_p (type,
-								 init_type))
+	  /* For a nested compound literal, proceed to specialized routines,
+	     to handle initialization of arrays and similar.  */
+	  else if (COMPOUND_LITERAL_P (stripped_init))
+	    gcc_assert (!BRACE_ENCLOSED_INITIALIZER_P (stripped_init));
+	  /* A CONSTRUCTOR of the target's type is a previously
+	     digested initializer.  */
+	  else if (same_type_ignoring_top_level_qualifiers_p (type, init_type))
 	    {
 	      ++d->cur;
 	      gcc_assert (!BRACE_ENCLOSED_INITIALIZER_P (stripped_init));
@@ -10225,13 +10218,16 @@ fold_sizeof_expr (tree t)
 {
   tree r;
   if (SIZEOF_EXPR_TYPE_P (t))
-    r = cxx_sizeof_or_alignof_type (TREE_TYPE (TREE_OPERAND (t, 0)),
+    r = cxx_sizeof_or_alignof_type (EXPR_LOCATION (t),
+				    TREE_TYPE (TREE_OPERAND (t, 0)),
 				    SIZEOF_EXPR, false, false);
   else if (TYPE_P (TREE_OPERAND (t, 0)))
-    r = cxx_sizeof_or_alignof_type (TREE_OPERAND (t, 0), SIZEOF_EXPR,
+    r = cxx_sizeof_or_alignof_type (EXPR_LOCATION (t),
+				    TREE_OPERAND (t, 0), SIZEOF_EXPR,
 				    false, false);
   else
-    r = cxx_sizeof_or_alignof_expr (TREE_OPERAND (t, 0), SIZEOF_EXPR,
+    r = cxx_sizeof_or_alignof_expr (EXPR_LOCATION (t),
+				    TREE_OPERAND (t, 0), SIZEOF_EXPR,
 				    false);
   if (r == error_mark_node)
     r = size_one_node;

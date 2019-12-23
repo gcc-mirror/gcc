@@ -5557,12 +5557,16 @@ static int
 num_insns_constant_gpr (HOST_WIDE_INT value)
 {
   /* signed constant loadable with addi */
-  if (((unsigned HOST_WIDE_INT) value + 0x8000) < 0x10000)
+  if (SIGNED_INTEGER_16BIT_P (value))
     return 1;
 
   /* constant loadable with addis */
   else if ((value & 0xffff) == 0
 	   && (value >> 31 == -1 || value >> 31 == 0))
+    return 1;
+
+  /* PADDI can support up to 34 bit signed integers.  */
+  else if (TARGET_PREFIXED_ADDR && SIGNED_INTEGER_34BIT_P (value))
     return 1;
 
   else if (TARGET_POWERPC64)
@@ -24766,7 +24770,7 @@ address_to_insn_form (rtx addr,
     return INSN_FORM_BAD;
 
   HOST_WIDE_INT offset = INTVAL (op1);
-  if (!SIGNED_34BIT_OFFSET_P (offset))
+  if (!SIGNED_INTEGER_34BIT_P (offset))
     return INSN_FORM_BAD;
 
   /* Check for local and external PC-relative addresses.  Labels are always
@@ -24785,7 +24789,7 @@ address_to_insn_form (rtx addr,
     return INSN_FORM_BAD;
 
   /* Large offsets must be prefixed.  */
-  if (!SIGNED_16BIT_OFFSET_P (offset))
+  if (!SIGNED_INTEGER_16BIT_P (offset))
     {
       if (TARGET_PREFIXED_ADDR)
 	return INSN_FORM_PREFIXED_NUMERIC;

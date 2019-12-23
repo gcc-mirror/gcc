@@ -1,3 +1,27 @@
+2019-12-22  Maciej W. Rozycki  <macro@codesourcery.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+	    Thomas Schwinge  <tschwinge@codesourcery.com>
+
+	* gomp-constants.h (gomp_device_property): New enum.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+
+	* gomp-constants.h (gomp_map_kind): Add GOMP_MAP_ATTACH_DETACH.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+
+	* gomp-constants.h (GOMP_MAP_FLAG_SPECIAL_4, GOMP_MAP_DEEP_COPY):
+	Define.
+	(gomp_map_kind): Add GOMP_MAP_ATTACH, GOMP_MAP_DETACH,
+	GOMP_MAP_FORCE_DETACH.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Maciej W. Rozycki  <macro@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gomp-constants.h (gomp_map_kind): Support GOMP_MAP_NO_ALLOC.
+
 2019-11-16  Tim Ruehsen  <tim.ruehsen@gmx.de>
 
 	* demangle.h (struct demangle_component): Add member

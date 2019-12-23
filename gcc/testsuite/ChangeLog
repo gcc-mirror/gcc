@@ -1,3 +1,420 @@
+2019-12-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c++/92789
+	* g++.dg/ext/sve-sizeless-2.C (statements): Expect pointer
+	difference and comparisons between GNU and non-GNU types
+	to be rejected.  Expect __is_same to be false for such pairs.
+	* g++.target/aarch64/sve/acle/general-c++/gnu_vectors_1.C: Remove
+	XFAILs.  Expect conversions between SVE vector pointers and
+	GNU vector pointers to be rejected.  Test references.
+	* g++.target/aarch64/sve/acle/general-c++/gnu_vectors_2.C: Likewise.
+
+2019-12-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.dg/ext/vector39.C: New test.
+
+2019-12-21  Andrew Pinski  <apinski@marvell.com>
+
+	PR testsuite/92998
+	* gcc.target/aarch64/sve/acle/general/dupq_1.c:
+	Restrict to aarch64_little_endian only.
+	* gcc.target/aarch64/torture/simd-abi-8.c:
+	Likewise.
+
+2019-12-22  Maciej W. Rozycki  <macro@wdc.com>
+
+	* lib/gcc-defs.exp (gcc-set-multilib-library-path): Use
+	`-print-file-name=' to determine the multilib root directory.
+	Use `remote_exec host' rather than `exec' to invoke the
+	compiler.
+
+2019-12-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/93026
+	PR middle-end/92929
+	* gfortran.dg/goacc/finalize-1.f: Adjust.
+
+2019-12-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/91661
+	* gfortran.dg/pr91661.f90: New test.
+
+2019-12-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/92990
+	* gfortran.dg/pr92990.f90: New test.
+
+2019-12-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/92753
+	* gfortran.dg/inquiry_type_ref_5.f90 : New test.
+
+2019-12-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/93015
+	* gcc.dg/lto/pr93015_0.c: New test.
+
+2019-12-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92745 - bogus error when initializing array of vectors.
+	* g++.dg/cpp0x/initlist118.C: New test.
+
+	PR c++/92974 - bogus location for enum and non-enum in ?: warning.
+	* g++.dg/diagnostic/enum1.C: New test.
+	* g++.dg/gomp/loop-2.C: Adjust dg-error.
+	* g++.dg/gomp/for-21.C: Likewise.
+
+2019-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92965
+	* g++.dg/cpp2a/nontype-class27.C: New test.
+
+	PR c++/92966
+	* g++.dg/cpp2a/spaceship-eq8.C: New test.
+
+	PR c++/92973
+	* g++.dg/cpp0x/spaceship-eq1.C: New test.
+
+	PR c++/92666
+	* g++.dg/warn/Wunused-var-36.C: New test.
+
+	PR c++/92992
+	* g++.dg/cpp0x/nullptr45.C: New test.
+
+2019-12-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR fortran/69497
+	* gfortran.dg/pr69497.f90: Fix PR number in comment.
+
+2019-12-20  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_v8_2a_i8mm_ok_nocache): New.
+	(check_effective_target_arm_v8_2a_i8mm_ok): New.
+	(add_options_for_arm_v8_2a_i8mm): New.
+	(check_effective_target_arm_v8_2a_bf16_neon_ok_nocache): New.
+	(check_effective_target_arm_v8_2a_bf16_neon_ok): New.
+	(add_options_for_arm_v8_2a_bf16_neon): New.
+
+2019-12-20  Roman Zhuykov  <zhroma@ispras.ru>
+
+	* gcc.dg/pr92951-1.c: Rename to ...
+	* gcc.dg/pr92591-1.c: ... this.
+	* gcc.dg/pr92951-2.c: Rename to ...
+	* gcc.dg/pr92591-2.c: ... this.
+
+2019-12-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR middle-end/91512
+	PR fortran/92738
+	* gfortran.dg/inline_pack_25.f90: New test.
+
+2019-12-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92996
+	* gfortran.dg/array_simplify_4.f90: New.
+	* gfortran.dg/pr91565.f90: Update dg-error.
+	* gfortran.dg/pr91801.f90: Likewise.
+
+2019-12-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/coindexed-1.f90: New.
+
+2019-12-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/data-clauses.f95: Remove now
+	obsolete dg-error.
+
+2019-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92841
+	* gcc.target/i386/pr92841-2.c: New test.
+
+	PR target/93002
+	* gcc.target/i386/pr93002.c: New test.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.dg/goacc/derived-types.f90: New test.
+	* gfortran.dg/goacc/derived-types-2.f90: New test.
+	* gfortran.dg/goacc/derived-types-3.f90: New test.
+	* gfortran.dg/goacc/data-clauses.f95: Adjust for expected errors.
+	* gfortran.dg/goacc/enter-exit-data.f95: Likewise.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-c++-common/goacc/deep-copy-arrayofstruct.c: New test.
+	* c-c++-common/goacc/mdc-1.c: New test.
+	* c-c++-common/goacc/mdc-2.c: New test.
+	* gcc.dg/goacc/mdc.C: New test.
+
+2019-12-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/92905
+	* gcc.target/i386/pr92905.c: New test.
+
+2019-12-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.dg/ext/sve-sizeless-2.C: Don't expect an error for
+	alias templates.
+
+2019-12-19 Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/92896
+	* gfortran.dg/no_char_conversion_in_array_constructor.f90: New test.
+
+2019-12-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/mixed_size_9.c: New test.
+
+2019-12-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/mixed_size_8.c: New test.
+
+2019-12-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/pcs/gnu_vectors_3.c: New test.
+
+2019-12-19  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/92794
+	* gcc.dg/ipa/92794.c: New test.
+
+2019-12-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic-test-metadata.c: New test.
+	* gcc.dg/plugin/diagnostic_plugin_test_metadata.c: New test plugin.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add them.
+
+2019-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92977
+	* gfortran.dg/gomp/pr92977.f90: New test.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Maciej W. Rozycki  <macro@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/goacc/common-block-1.f90: Add no_create-clause tests.
+	* gfortran.dg/goacc/common-block-1.f90: Likewise.
+	* gfortran.dg/goacc/data-clauses.f95: Likewise.
+	* gfortran.dg/goacc/data-tree.f95: Likewise.
+	* gfortran.dg/goacc/kernels-tree.f95: Likewise.
+	* gfortran.dg/goacc/parallel-tree.f95: Likewise.
+
+2019-12-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/alignof2.C: New.
+	* g++.dg/diagnostic/alignof3.C: Likewise.
+	* g++.dg/diagnostic/incomplete-type-1.C: Likewise.
+	* g++.dg/warn/Wcatch-value-3b.C: Likewise.
+	* g++.dg/cpp0x/alignof3.C: Check location(s) too.
+	* g++.dg/cpp1z/decomp-bitfield1.C: Likewise.
+	* g++.dg/cpp1z/has-unique-obj-representations2.C: Likewise.
+	* g++.dg/expr/sizeof3.C: Likewise.
+	* g++.dg/ext/flexary6.C: Likewise.
+	* g++.dg/ext/vla4.C: Likewise.
+	* g++.dg/template/sizeof11.C: Likewise.
+	* g++.dg/warn/Wcatch-value-1.C: Likewise.
+	* g++.dg/warn/Wcatch-value-2.C: Likewise.
+	* g++.dg/warn/Wcatch-value-3.C: Likewise.
+	* g++.old-deja/g++.brendan/sizeof1.C: Likewise.
+	* g++.old-deja/g++.brendan/sizeof3.C: Likewise.
+	* g++.old-deja/g++.brendan/sizeof4.C: Likewise.
+	* g++.old-deja/g++.eh/ctor1.C: Likewise.
+	* g++.old-deja/g++.jason/ambig1.C: Likewise.
+	* g++.old-deja/g++.other/sizeof4.C: Likewise.
+
+2019-12-18  Peter Bergner <bergner@linux.ibm.com>
+
+	PR bootstrap/92661
+	* gcc.target/powerpc/pr92661.c: New test.
+	* gcc.target/powerpc/dfp-dd.c: Add dg-require-effective-target hard_dfp.
+	Remove unneeded powerpc_fprs test.
+	* gcc.target/powerpc/dfp-td.c: Likewise.
+	* gcc.target/powerpc/dfp-dd-2.c: Add dg-require-effective-target dfp.
+	* gcc.target/powerpc/dfp-td-2.c: Likewise.
+	* gcc.target/powerpc/dfp-td-3.c: Likewise.
+	* gcc.target/powerpc/dfp/dfp.exp: Remove rs6000-*-* and
+	powerpc*-*-darwin* target tests.  Add check_effective_target_dfp test.
+	* gcc.target/powerpc/dfp/dtstsfi-0.c: Remove unneeded target test.
+	Remove unneeded dg-skip-if.
+	* gcc.target/powerpc/dfp/dtstsfi-1.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-10.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-11.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-12.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-13.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-14.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-15.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-16.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-17.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-18.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-19.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-2.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-20.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-21.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-22.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-23.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-24.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-25.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-26.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-27.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-28.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-29.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-3.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-30.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-31.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-32.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-33.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-34.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-35.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-36.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-37.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-38.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-39.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-4.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-40.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-41.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-42.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-43.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-44.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-45.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-46.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-47.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-48.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-49.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-5.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-50.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-51.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-52.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-53.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-54.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-55.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-56.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-57.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-58.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-59.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-6.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-60.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-61.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-62.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-63.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-64.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-65.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-66.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-67.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-68.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-69.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-7.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-70.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-71.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-72.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-73.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-74.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-75.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-76.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-77.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-78.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-79.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-8.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-9.c: Likewise.
+
+2019-12-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/finalize-1.c: Extend.
+	* gfortran.dg/goacc/finalize-1.f: Likewise.
+
+2019-12-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/70853
+	* gfortran.dg/pr70853.f90: New test.
+
+2019-12-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/92971
+	* gcc.dg/ipa/ipcp-agg-12.c: New test.
+
+2019-12-17  Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/ipa-bit-cp.c: New testcase.
+	* gcc.dg/ipa/ipa-bit-cp-1.c: New testcase.
+	* gcc.dg/ipa/ipa-bit-cp-2.c: New testcase.
+
+2019-12-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/vect/pr65947-8.c: Change pass conditions for amdgcn.
+
+2019-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/warn32.adb: New test.
+
+2019-12-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* g++.dg/warn/Wmismatched-tags.C: New test.
+	* g++.dg/warn/Wredundant-tags.C: New test.
+	* g++.dg/pch/Wmismatched-tags.C: New test.
+	* g++.dg/pch/Wmismatched-tags.Hs: New test header.
+
+2019-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/59655
+	* g++.dg/cpp0x/diag3.C: New test.
+
+	PR target/92841
+	* gcc.target/i386/pr92841.c: New test.
+
+2019-12-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/pr45701-1.c: Adjust for -mpure-code.
+	* gcc.target/arm/pr45701-2.c: Likewise.
+	* gcc.target/arm/pure-code/no-literal-pool.c: Add tests for
+	__fp16.
+	* gcc.target/arm/pure-code/pure-code.exp: Remove thumb2 and movt
+	conditions.
+	* gcc.target/arm/thumb1-Os-mult.c: Skip if -mpure-code is used.
+
+2019-12-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_vect_fold_extract_last): Add amdgcn.
+
+2019-12-17  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/pr92651.c: New testcase.
+
+2019-12-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/92807
+	* gcc.target/i386/pr92807-1.c: New test.
+
+2019-12-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* g++.dg/init/dso_handle1.C: Require cxa_atexit support.
+	* g++.dg/init/dso_handle2.C: Likewise.
+	* g++.dg/other/cxa-atexit1.C: Likewise.
+	* gcc.target/msp430/msp430.exp: Update csv-using-installed.c test to
+	handle msp430-elfbare configuration.
+
+2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/clause_on_volatile.ads,
+	gnat.dg/specs/size_clause3.ads: Update expected diagnostics.
+
+2019-12-16  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/92950
+	* gcc.target/s390/vector/pr92950.c: New test.
+
+2019-12-15  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.c-torture/compile/bitfield-1.c: New test.
+	* gcc.c-torture/compile/bitfield-endian-1.c: New test.
+	* gcc.c-torture/compile/bitfield-endian-2.c: New test.
+
 2019-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/92930

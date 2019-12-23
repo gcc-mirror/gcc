@@ -5189,8 +5189,8 @@ gfc_resolve_substring_charlen (gfc_expr *e)
 
 /* Resolve subtype references.  */
 
-static bool
-resolve_ref (gfc_expr *expr)
+bool
+gfc_resolve_ref (gfc_expr *expr)
 {
   int current_part_dimension, n_components, seen_part_dimension;
   gfc_ref *ref, **prev;
@@ -5359,7 +5359,7 @@ fail:
    examining the base symbol and any reference structures it may have.  */
 
 void
-expression_rank (gfc_expr *e)
+gfc_expression_rank (gfc_expr *e)
 {
   gfc_ref *ref;
   int i, rank;
@@ -5374,14 +5374,8 @@ expression_rank (gfc_expr *e)
 	goto done;
       /* Constructors can have a rank different from one via RESHAPE().  */
 
-      if (e->symtree == NULL)
-	{
-	  e->rank = 0;
-	  goto done;
-	}
-
-      e->rank = (e->symtree->n.sym->as == NULL)
-		? 0 : e->symtree->n.sym->as->rank;
+      e->rank = ((e->symtree == NULL || e->symtree->n.sym->as == NULL)
+		 ? 0 : e->symtree->n.sym->as->rank);
       goto done;
     }
 
@@ -5406,7 +5400,7 @@ expression_rank (gfc_expr *e)
 	{
 	  /* Figure out the rank of the section.  */
 	  if (rank != 0)
-	    gfc_internal_error ("expression_rank(): Two array specs");
+	    gfc_internal_error ("gfc_expression_rank(): Two array specs");
 
 	  for (i = 0; i < ref->u.ar.dimen; i++)
 	    if (ref->u.ar.dimen_type[i] == DIMEN_RANGE
@@ -5686,7 +5680,7 @@ resolve_variable (gfc_expr *e)
 	}
     }
 
-  if (e->ref && !resolve_ref (e))
+  if (e->ref && !gfc_resolve_ref (e))
     return false;
 
   if (sym->attr.flavor == FL_PROCEDURE
@@ -5848,7 +5842,7 @@ resolve_procedure:
     }
 
   if (t)
-    expression_rank (e);
+    gfc_expression_rank (e);
 
   if (t && flag_coarray == GFC_FCOARRAY_LIB && gfc_is_coindexed (e))
     add_caf_get_intrinsic (e);
@@ -6642,7 +6636,7 @@ resolve_typebound_function (gfc_expr* e)
   if (st == NULL)
     return resolve_compcall (e, NULL);
 
-  if (!resolve_ref (e))
+  if (!gfc_resolve_ref (e))
     return false;
 
   /* Get the CLASS declared type.  */
@@ -6775,7 +6769,7 @@ resolve_typebound_subroutine (gfc_code *code)
   if (st == NULL)
     return resolve_typebound_call (code, NULL, NULL);
 
-  if (!resolve_ref (code->expr1))
+  if (!gfc_resolve_ref (code->expr1))
     return false;
 
   /* Get the CLASS declared type.  */
@@ -6838,7 +6832,7 @@ resolve_ppc_call (gfc_code* c)
   if (!comp->attr.subroutine)
     gfc_add_subroutine (&comp->attr, comp->name, &c->expr1->where);
 
-  if (!resolve_ref (c->expr1))
+  if (!gfc_resolve_ref (c->expr1))
     return false;
 
   if (!update_ppc_arglist (c->expr1))
@@ -6881,7 +6875,7 @@ resolve_expr_ppc (gfc_expr* e)
   if (!comp->attr.function)
     gfc_add_function (&comp->attr, comp->name, &e->where);
 
-  if (!resolve_ref (e))
+  if (!gfc_resolve_ref (e))
     return false;
 
   if (!resolve_actual_arglist (e->value.function.actual, comp->attr.proc,
@@ -7011,7 +7005,7 @@ gfc_resolve_expr (gfc_expr *e)
       break;
 
     case EXPR_SUBSTRING:
-      t = resolve_ref (e);
+      t = gfc_resolve_ref (e);
       break;
 
     case EXPR_CONSTANT:
@@ -7025,14 +7019,14 @@ gfc_resolve_expr (gfc_expr *e)
 
     case EXPR_ARRAY:
       t = false;
-      if (!resolve_ref (e))
+      if (!gfc_resolve_ref (e))
 	break;
 
       t = gfc_resolve_array_constructor (e);
       /* Also try to expand a constructor.  */
       if (t)
 	{
-	  expression_rank (e);
+	  gfc_expression_rank (e);
 	  if (gfc_is_constant_expr (e) || gfc_is_expandable_expr (e))
 	    gfc_expand_constructor (e, false);
 	}
@@ -7051,7 +7045,7 @@ gfc_resolve_expr (gfc_expr *e)
       break;
 
     case EXPR_STRUCTURE:
-      t = resolve_ref (e);
+      t = gfc_resolve_ref (e);
       if (!t)
 	break;
 

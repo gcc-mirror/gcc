@@ -5905,7 +5905,8 @@ package body Sem_Eval is
    --  In addition, in GNAT, the object size (Esize) values of the types must
    --  match if they are set (unless checking an actual for a formal derived
    --  type). The use of 'Object_Size can cause this to be false even if the
-   --  types would otherwise match in the RM sense.
+   --  types would otherwise match in the Ada 95 RM sense, but this deviation
+   --  is adopted by AI12-059 which introduces Object_Size in Ada 2020.
 
    function Subtypes_Statically_Match
      (T1                      : Entity_Id;
@@ -5921,8 +5922,6 @@ package body Sem_Eval is
       --  No match if sizes different (from use of 'Object_Size). This test
       --  is excluded if Formal_Derived_Matching is True, as the base types
       --  can be different in that case and typically have different sizes.
-      --  ??? Frontend_Layout_On_Target used to set Esizes but this is no
-      --  longer the case, consider removing the last test below.
 
       elsif not Formal_Derived_Matching
         and then Known_Static_Esize (T1)

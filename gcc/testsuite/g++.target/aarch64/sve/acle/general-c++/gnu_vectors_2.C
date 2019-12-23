@@ -36,14 +36,14 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
 
   gnu_uint8_t init_gnu_u1 = 0; // { dg-error {cannot convert 'int' to 'gnu_uint8_t'[^\n]* in initialization} }
   gnu_uint8_t init_gnu_u2 = {};
-  gnu_uint8_t init_gnu_u3 = { sve_u1 };
+  gnu_uint8_t init_gnu_u3 = { sve_u1 }; // { dg-error {cannot convert 'svuint8_t' to 'unsigned char' in initialization} }
   gnu_uint8_t init_gnu_u4 = { gnu_u1 };
   gnu_uint8_t init_gnu_u5 = { sve_s1 }; // { dg-error {cannot convert 'svint8_t' to 'unsigned char' in initialization} }
   gnu_uint8_t init_gnu_u6 = { gnu_s1 }; // { dg-error {cannot convert 'gnu_int8_t'[^\n]* to 'unsigned char' in initialization} }
   gnu_uint8_t init_gnu_u7 = { 0 };
   gnu_uint8_t init_gnu_u8 = { sve_u1, sve_u1 }; // { dg-error {cannot convert 'svuint8_t' to 'unsigned char' in initialization} }
   gnu_uint8_t init_gnu_u9 = { gnu_u1, gnu_u1 }; // { dg-error {cannot convert 'gnu_uint8_t'[^\n]* to 'unsigned char' in initialization} }
-  gnu_uint8_t init_gnu_u10 { sve_u1 };
+  gnu_uint8_t init_gnu_u10 { sve_u1 }; // { dg-error {cannot convert 'svuint8_t' to 'unsigned char' in initialization} }
   gnu_uint8_t init_gnu_u11 { gnu_u1 };
   gnu_uint8_t init_gnu_u12 { sve_s1 }; // { dg-error {cannot convert 'svint8_t' to 'unsigned char' in initialization} }
   gnu_uint8_t init_gnu_u13 { gnu_s1 }; // { dg-error {cannot convert 'gnu_int8_t'[^\n]* to 'unsigned char' in initialization} }
@@ -69,7 +69,7 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
 
   (gnu_uint8_t) {};
   (gnu_uint8_t) { 0 };
-  (gnu_uint8_t) { sve_u1 };
+  (gnu_uint8_t) { sve_u1 }; // { dg-error {cannot convert 'svuint8_t' to 'unsigned char' in initialization} }
   (gnu_uint8_t) { gnu_u1 };
   (gnu_uint8_t) { sve_s1 }; // { dg-error {cannot convert 'svint8_t' to 'unsigned char' in initialization} }
   (gnu_uint8_t) { gnu_s1 }; // { dg-error {cannot convert 'gnu_int8_t'[^\n]* to 'unsigned char' in initialization} }
@@ -434,8 +434,8 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
   // Conditional expressions.
 
   uc ? sve_u1 : sve_u1;
-  uc ? gnu_u1 : sve_u1; // { dg-error {operands to '\?:' have different types 'gnu_uint8_t'[^\n]* and 'svuint8_t'} "" { xfail *-*-* } }
-  uc ? sve_u1 : gnu_u1; // { dg-error {operands to '\?:' have different types 'svuint8_t' and 'gnu_uint8_t'} "" { xfail *-*-* } }
+  uc ? gnu_u1 : sve_u1; // { dg-error {operands to '\?:' have different types 'gnu_uint8_t'[^\n]* and 'svuint8_t'} }
+  uc ? sve_u1 : gnu_u1; // { dg-error {operands to '\?:' have different types 'svuint8_t' and 'gnu_uint8_t'} }
   uc ? gnu_u1 : gnu_u1;
 
   sve_u1 ? sve_u1 : sve_u1; // { dg-error {could not convert 'sve_u1' from 'svuint8_t' to 'bool'} }
@@ -474,15 +474,29 @@ f (svuint8_t sve_u1, svint8_t sve_s1,
   static_assert(__is_literal_type(svuint8_t));
   static_assert(__is_literal_type(gnu_uint8_t));
 
+  // Pointers.
+
   svuint8_t *sve_ptr1 = &sve_u1;
-  svuint8_t *sve_ptr2 = &gnu_u1;
+  svuint8_t *sve_ptr2 = &gnu_u1; // { dg-error {invalid conversion} }
   svuint8_t *sve_ptr3 = &sve_s1; // { dg-error {invalid conversion from 'svint8_t\*' to 'svuint8_t\*'} }
   svuint8_t *sve_ptr4 = &gnu_s1; // { dg-error {invalid conversion from 'gnu_int8_t\*'[^\n]* to 'svuint8_t\*'} }
 
-  gnu_uint8_t *gnu_ptr1 = &sve_u1;
+  gnu_uint8_t *gnu_ptr1 = &sve_u1; // { dg-error {invalid conversion} }
   gnu_uint8_t *gnu_ptr2 = &gnu_u1;
   gnu_uint8_t *gnu_ptr3 = &sve_s1; // { dg-error {invalid conversion from 'svint8_t\*' to 'gnu_uint8_t\*'} }
   gnu_uint8_t *gnu_ptr4 = &gnu_s1; // { dg-error {invalid conversion from 'gnu_int8_t\*'[^\n]* to 'gnu_uint8_t\*'} }
+
+  // References.
+
+  svuint8_t &sve_ref1 = sve_u1;
+  svuint8_t &sve_ref2 = gnu_u1; // { dg-error {cannot bind non-const lvalue reference} }
+  svuint8_t &sve_ref3 = sve_s1; // { dg-error {cannot bind non-const lvalue reference} }
+  svuint8_t &sve_ref4 = gnu_s1; // { dg-error {cannot bind non-const lvalue reference} }
+
+  gnu_uint8_t &gnu_ref1 = sve_u1; // { dg-error {cannot bind non-const lvalue reference} }
+  gnu_uint8_t &gnu_ref2 = gnu_u1;
+  gnu_uint8_t &gnu_ref3 = sve_s1; // { dg-error {cannot bind non-const lvalue reference} }
+  gnu_uint8_t &gnu_ref4 = gnu_s1; // { dg-error {cannot bind non-const lvalue reference} }
 }
 
 constexpr svuint8_t const1 (svuint8_t x) { return x; }

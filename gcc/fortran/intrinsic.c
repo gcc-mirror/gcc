@@ -5096,10 +5096,15 @@ gfc_convert_type (gfc_expr *expr, gfc_typespec *ts, int eflag)
      1 Generate a gfc_error()
      2 Generate a gfc_internal_error().
 
-   'wflag' controls the warning related to conversion.  */
+   'wflag' controls the warning related to conversion.
+
+   'array' indicates whether the conversion is in an array constructor.
+   Non-standard conversion from character to numeric not allowed if true.
+*/
 
 bool
-gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
+gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag,
+		       bool array)
 {
   gfc_intrinsic_sym *sym;
   gfc_typespec from_ts;
@@ -5141,6 +5146,12 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
   if (expr->ts.type == BT_DERIVED && ts->type == BT_DERIVED
       && gfc_compare_types (&expr->ts, ts))
     return true;
+
+  /* If array is true then conversion is in an array constructor where
+     non-standard conversion is not allowed.  */
+  if (array && from_ts.type == BT_CHARACTER
+      && (gfc_numeric_ts (ts) || ts->type == BT_LOGICAL))
+    goto bad;
 
   sym = find_conv (&expr->ts, ts);
   if (sym == NULL)

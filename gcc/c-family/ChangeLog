@@ -1,3 +1,28 @@
+2019-12-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.h (decl_sloc): Delete.
+	* c-ada-spec.c (decl_sloc): Make static.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+
+	* c-common.h (c_omp_map_clause_name): Add prototype.
+	* c-omp.c (c_omp_map_clause_name): New function.
+	* c-pragma.h (pragma_omp_clause): Add PRAGMA_OACC_CLAUSE_ATTACH and
+	PRAGMA_OACC_CLAUSE_DETACH.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Maciej W. Rozycki  <macro@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-pragma.h (pragma_omp_clause): Add
+	PRAGMA_OACC_CLAUSE_NO_CREATE.
+
+2019-12-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* c.opt (-Wmismatched-tags, -Wredundant-tags): New options.
+
 2019-12-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-pretty-print.c (c_pretty_printer::clone): New vfunc

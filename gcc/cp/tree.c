@@ -539,6 +539,17 @@ build_local_temp (tree type)
   return slot;
 }
 
+/* Return whether DECL is such a local temporary (or one from
+   create_tmp_var_raw).  */
+
+bool
+is_local_temp (tree decl)
+{
+  return (VAR_P (decl) && DECL_ARTIFICIAL (decl)
+	  && !TREE_STATIC (decl)
+	  && DECL_FUNCTION_SCOPE_P (decl));
+}
+
 /* Set various status flags when building an AGGR_INIT_EXPR object T.  */
 
 static void
@@ -3345,6 +3356,7 @@ build_min_non_dep (enum tree_code code, tree non_dep, ...)
     non_dep = TREE_OPERAND (non_dep, 0);
 
   t = make_node (code);
+  SET_EXPR_LOCATION (t, cp_expr_loc_or_input_loc (non_dep));
   length = TREE_CODE_LENGTH (code);
   TREE_TYPE (t) = unlowered_expr_type (non_dep);
   TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (non_dep);

@@ -1092,6 +1092,13 @@ early_check_defaulted_comparison (tree fn)
     ctx = DECL_FRIEND_CONTEXT (fn);
   bool ok = true;
 
+  if (cxx_dialect < cxx2a)
+    {
+      error_at (loc, "defaulted %qD only available with %<-std=c++2a%> or "
+		     "%<-std=gnu++2a%>", fn);
+      return false;
+    }
+
   if (!DECL_OVERLOADED_OPERATOR_IS (fn, SPACESHIP_EXPR)
       && !same_type_p (TREE_TYPE (TREE_TYPE (fn)), boolean_type_node))
     {
@@ -1146,7 +1153,7 @@ early_check_defaulted_comparison (tree fn)
     }
 
   /* We still need to deduce deleted/constexpr/noexcept and maybe return. */
-  DECL_MAYBE_DELETED (fn) = true;
+  DECL_MAYBE_DELETED (fn) = ok;
 
   return ok;
 }

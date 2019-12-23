@@ -1344,7 +1344,7 @@ are equivalent to
 The precondition ensures that one and only one of the case guards is
 satisfied on entry to the subprogram.
 The postcondition ensures that for the case guard that was True on entry,
-the corrresponding consequence is True on exit. Other consequence expressions
+the corresponding consequence is True on exit. Other consequence expressions
 are not evaluated.
 
 A precondition ``P`` and postcondition ``Q`` can also be
@@ -7443,7 +7443,7 @@ It is not permissible to specify ``Atomic`` and ``Volatile_Full_Access`` for
 the same type or object.
 
 It is not permissible to specify ``Volatile_Full_Access`` for a composite
-(record or array) type or object that has at least one ``Aliased`` component.
+(record or array) type or object that has an ``Aliased`` subcomponent.
 
 .. _Pragma-Volatile_Function:
 

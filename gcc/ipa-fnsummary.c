@@ -672,8 +672,7 @@ static void
 ipa_fn_summary_alloc (void)
 {
   gcc_checking_assert (!ipa_fn_summaries);
-  ipa_size_summaries = new fast_function_summary <ipa_size_summary *, va_heap>
-							 (symtab);
+  ipa_size_summaries = new ipa_size_summary_t (symtab);
   ipa_fn_summaries = ipa_fn_summary_t::create_ggc (symtab);
   ipa_call_summaries = new ipa_call_summary_t (symtab);
 }

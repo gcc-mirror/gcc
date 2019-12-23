@@ -694,7 +694,8 @@
 	  UNSPEC_REINTERPRET))]
   "TARGET_SVE"
   {
-    if (!BYTES_BIG_ENDIAN)
+    machine_mode src_mode = GET_MODE (operands[1]);
+    if (targetm.can_change_mode_class (<MODE>mode, src_mode, FP_REGS))
       {
 	emit_move_insn (operands[0], gen_lowpart (<MODE>mode, operands[1]));
 	DONE;

@@ -5192,8 +5192,6 @@ ira (FILE *f)
   int ira_max_point_before_emit;
   bool saved_flag_caller_saves = flag_caller_saves;
   enum ira_region saved_flag_ira_region = flag_ira_region;
-  unsigned int i;
-  int num_used_regs = 0;
 
   clear_bb_flags ();
 
@@ -5207,18 +5205,28 @@ ira (FILE *f)
   /* Perform target specific PIC register initialization.  */
   targetm.init_pic_reg ();
 
-  ira_conflicts_p = optimize > 0;
+  if (optimize)
+    {
+      ira_conflicts_p = true;
 
-  /* Determine the number of pseudos actually requiring coloring.  */
-  for (i = FIRST_PSEUDO_REGISTER; i < DF_REG_SIZE (df); i++)
-    num_used_regs += !!(DF_REG_USE_COUNT (i) + DF_REG_DEF_COUNT (i));
+      /* Determine the number of pseudos actually requiring coloring.  */
+      unsigned int num_used_regs = 0;
+      for (unsigned int i = FIRST_PSEUDO_REGISTER; i < DF_REG_SIZE (df); i++)
+	if (DF_REG_DEF_COUNT (i) || DF_REG_USE_COUNT (i))
+	  num_used_regs++;
 
-  /* If there are too many pseudos and/or basic blocks (e.g. 10K
-     pseudos and 10K blocks or 100K pseudos and 1K blocks), we will
-     use simplified and faster algorithms in LRA.  */
-  lra_simple_p
-    = (ira_use_lra_p
-       && num_used_regs >= (1 << 26) / last_basic_block_for_fn (cfun));
+      /* If there are too many pseudos and/or basic blocks (e.g. 10K
+	 pseudos and 10K blocks or 100K pseudos and 1K blocks), we will
+	 use simplified and faster algorithms in LRA.  */
+      lra_simple_p
+	= ira_use_lra_p
+	  && num_used_regs >= (1U << 26) / last_basic_block_for_fn (cfun);
+    }
+  else
+    {
+      ira_conflicts_p = false;
+      lra_simple_p = ira_use_lra_p;
+    }
 
   if (lra_simple_p)
     {

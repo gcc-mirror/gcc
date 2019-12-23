@@ -788,6 +788,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	case GOMP_MAP_POINTER:
 	  pp_string (pp, "alloc");
 	  break;
+	case GOMP_MAP_IF_PRESENT:
+	  pp_string (pp, "no_alloc");
+	  break;
 	case GOMP_MAP_TO:
 	case GOMP_MAP_TO_PSET:
 	  pp_string (pp, "to");
@@ -849,6 +852,18 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	case GOMP_MAP_LINK:
 	  pp_string (pp, "link");
 	  break;
+	case GOMP_MAP_ATTACH:
+	  pp_string (pp, "attach");
+	  break;
+	case GOMP_MAP_DETACH:
+	  pp_string (pp, "detach");
+	  break;
+	case GOMP_MAP_FORCE_DETACH:
+	  pp_string (pp, "force_detach");
+	  break;
+	case GOMP_MAP_ATTACH_DETACH:
+	  pp_string (pp, "attach_detach");
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -869,6 +884,12 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	      break;
 	    case GOMP_MAP_TO_PSET:
 	      pp_string (pp, " [pointer set, len: ");
+	      break;
+	    case GOMP_MAP_ATTACH:
+	    case GOMP_MAP_DETACH:
+	    case GOMP_MAP_FORCE_DETACH:
+	    case GOMP_MAP_ATTACH_DETACH:
+	      pp_string (pp, " [bias: ");
 	      break;
 	    default:
 	      pp_string (pp, " [len: ");

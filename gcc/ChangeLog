@@ -1,3 +1,488 @@
+2019-12-22  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (-flto): Use "compile time" as a noun.
+
+2019-12-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/93015
+	* ipa-cp.c (ipcp_store_vr_results): Check that info exists
+
+2019-12-20   Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/predicates.md (cint34_operand): Use
+	SIGNED_INTEGER_34BIT_P macro.
+	* config/rs6000/rs6000.c (num_insns_constant_gpr): Use the
+	SIGNED_INTEGER_16BIT_P and SIGNED_INTEGER_34BIT_P macros.
+	(address_to_insn_form): Use the SIGNED_INTEGER_16BIT_P and
+	SIGNED_INTEGER_34BIT_P macros.
+	* config/rs6000/rs6000.h (SIGNED_INTEGER_NBIT_P): New macro.
+	(SIGNED_INTEGER_16BIT_P): Rename SIGNED_16BIT_OFFSET_P to be
+	SIGNED_INTEGER_34BIT_P.
+	(SIGNED_INTEGER_34BIT_P): Rename SIGNED_34BIT_OFFSET_P to be
+	SIGNED_INTEGER_34BIT_P.
+
+2019-12-20  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* doc/sourcebuild.texi
+	(arm_v8_2a_bf16_neon_ok): Document new target supports option.
+	(arm_v8_2a_i8mm_ok): Likewise.
+
+2019-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92841
+	* config/i386/i386.md (*stack_protect_set_3): For pic_32bit_operand
+	always use lea{q}, no matter what value which_alternative has.
+
+	PR target/93002
+	* config/i386/i386.md (dec reg; cmp $-1, reg; jne lab): New
+	define_peephole2.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.c (gimplify_omp_var_data): Add GOVD_MAP_HAS_ATTACHMENTS.
+	(insert_struct_comp_map): Support derived-type member mappings
+	for arrays with descriptors which use GOMP_MAP_TO_PSET.  Support
+	GOMP_MAP_ATTACH_DETACH.
+	(gimplify_scan_omp_clauses): Tidy up OACC_ENTER_DATA/OACC_EXIT_DATA
+	mappings.  Handle attach/detach clauses and component references.
+	(gimplify_adjust_omp_clauses_1): Skip adjustments for explicit
+	attach/detach clauses.
+	(gimplify_omp_target_update): Handle struct mappings and finalize for
+	detach operations.
+	* omp-low.c (lower_omp_target): Support GOMP_MAP_ATTACH,
+	GOMP_MAP_DETACH, GOMP_MAP_FORCE_DETACH.
+	* tree-pretty-print.c (dump_omp_clause): Likewise, plus
+	GOMP_MAP_ATTACH_DETACH.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.c (insert_struct_comp_map, extract_base_bit_offset): New.
+	(gimplify_scan_omp_clauses): Outline duplicated code into calls to
+	above two functions.
+
+2019-12-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/92905
+	* lra-constraints.c (process_alt_operands): Check offmemok when
+	processing preferred_reload_class.
+
+2019-12-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md
+	(<convop><VEC_ALL1REG_INT_ALT:mode><VEC_ALL1REG_INT_MODE:mode>2<exec>):
+	Change input predcate to gcn_alu_operand.
+	(extend<VEC_ALL1REG_INT_ALT:mode><VEC_ALL1REG_INT_MODE:mode>2<exec>):
+	Likewise.
+	(truncv64di<mode>2): Likewise.
+	(truncv64di<mode>2_exec): Likewise.
+	(<convop><mode>v64di2): Likewise.
+	(<convop><mode>v64di2_exec): Likewise.
+
+2019-12-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (*plus_carry_dpp_shr_<mode>): Rename to ...
+	(*plus_carry_dpp_shr_v64si): ... this, and replace all
+	VEC_1REG_INT_MODE with V64SI.
+
+2019-12-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* hash-map-tests.c (selftest::test_map_of_int_to_strings): New
+	selftest.
+	(selftest::hash_map_tests_c_tests): Call it.
+
+2019-12-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* gimple-predict.h (gimple_predict_predictor): Make "gs" param
+	const.
+	(gimple_predict_outcome): Likewise.
+	* gimple-pretty-print.c (do_niy): Likewise.
+	(dump_unary_rhs): Likewise.
+	(dump_binary_rhs): Likewise.
+	(dump_ternary_rhs): Likewise.
+	(dump_gimple_assign): Likewise.
+	(dump_gimple_return): Likewise.
+	(dump_gimple_call_args): Likewise.
+	(pp_points_to_solution): Make "pt" param const.
+	(dump_gimple_call): Make "gs" param const.
+	(dump_gimple_switch): Likewise.
+	(dump_gimple_cond): Likewise.
+	(dump_gimple_label): Likewise.
+	(dump_gimple_goto): Likewise.
+	(dump_gimple_bind): Likewise.
+	(dump_gimple_try): Likewise.
+	(dump_gimple_catch): Likewise.
+	(dump_gimple_eh_filter): Likewise.
+	(dump_gimple_eh_must_not_throw): Likewise.
+	(dump_gimple_eh_else): Likewise.
+	(dump_gimple_resx): Likewise.
+	(dump_gimple_eh_dispatch): Likewise.
+	(dump_gimple_debug): Likewise.
+	(dump_gimple_omp_for): Likewise.
+	(dump_gimple_omp_continue): Likewise.
+	(dump_gimple_omp_single): Likewise.
+	(dump_gimple_omp_taskgroup): Likewise.
+	(dump_gimple_omp_target): Likewise.
+	(dump_gimple_omp_teams): Likewise.
+	(dump_gimple_omp_sections): Likewise.
+	(dump_gimple_omp_block): Likewise.
+	(dump_gimple_omp_critical): Likewise.
+	(dump_gimple_omp_ordered): Likewise.
+	(dump_gimple_omp_scan): Likewise.
+	(dump_gimple_omp_return): Likewise.
+	(dump_gimple_transaction): Likewise.
+	(dump_gimple_asm): Likewise.
+	(dump_gimple_phi): Make "phi" param const.
+	(dump_gimple_omp_parallel): Make "gs" param const.
+	(dump_gimple_omp_task): Likewise.
+	(dump_gimple_omp_atomic_load): Likewise.
+	(dump_gimple_omp_atomic_store): Likewise.
+	(dump_gimple_mem_ops): Likewise.
+	(pp_gimple_stmt_1): Likewise.  Add "const" to the various as_a <>
+	casts throughout.
+	* gimple-pretty-print.h (gimple_stmt_1): Make gimple * param const.
+	* gimple.h (is_a_helper <const gdebug *>::test): New.
+	(is_a_helper <const ggoto *>::test): New.
+	(is_a_helper <const glabel *>::test): New.
+	(is_a_helper <const geh_else *>::test): New.
+	(is_a_helper <const geh_mnt *>::test): New.
+	(is_a_helper <const gswitch *>::test): New.
+	(is_a_helper <const gtry *>::test): New.
+	(is_a_helper <const greturn *>::test): New.
+	(gimple_call_tail_p): Make param const.
+	(gimple_call_return_slot_opt_p): Likewise.
+	(gimple_call_va_arg_pack_p): Likewise.
+	(gimple_call_use_set): Add const overload.
+	(gimple_call_clobber_set): Likewise.
+	(gimple_has_lhs): Make param const.
+	(gimple_bind_body): Likewise.
+	(gimple_catch_handler): Likewise.
+	(gimple_eh_filter_failure): Likewise.
+	(gimple_eh_must_not_throw_fndecl): Likewise.
+	(gimple_eh_else_n_body): Likewise.
+	(gimple_eh_else_e_body): Likewise.
+	(gimple_try_eval): Likewise.
+	(gimple_try_cleanup): Likewise.
+	(gimple_phi_arg): Add const overload.
+	(gimple_phi_arg_def): Make param const.
+	(gimple_phi_arg_edge): Likewise.
+	(gimple_phi_arg_location): Likewise.
+	(gimple_phi_arg_has_location): Likewise.
+	(gimple_debug_bind_get_var): Likewise.
+	(gimple_debug_bind_get_value): Likewise.
+	(gimple_debug_source_bind_get_var): Likewise.
+	(gimple_debug_source_bind_get_value): Likewise.
+	(gimple_omp_body): Likewise.
+	(gimple_omp_for_collapse): Likewise.
+	(gimple_omp_for_pre_body): Likewise.
+	(gimple_transaction_body): Likewise.
+	* tree-eh.c (lookup_stmt_eh_lp_fn): Make param "t" const.
+	(lookup_stmt_eh_lp): Likewise.
+	* tree-eh.h (lookup_stmt_eh_lp_fn): Make param const.
+	(lookup_stmt_eh_lp): Likewise.
+	* tree-ssa-alias.h (pt_solution_empty_p): Make param const.
+	* tree-ssa-structalias.c (pt_solution_empty_p): Likewise.
+
+2019-12-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_simd_valid_immediate): When
+	handling partial SVE vectors, use the container mode rather than
+	the element mode if the constant isn't a single-element duplicate.
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_reinterpret<mode>):
+	Check targetm.can_change_mode_class instead of BYTES_BIG_ENDIAN.
+
+2019-12-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (addv64si3<exec_clobber>): Rename to ...
+	(add<mode>3<exec_clobber>): ... this, and use VEC_ALL1REG_INT_MODE.
+	(addv64si3_dup<exec_clobber>): Rename to ...
+	(add<mode>3_dup<exec_clobber>): ... this, and use VEC_ALL1REG_INT_MODE.
+	(subv64si3<exec_clobber>): Rename to ...
+	(sub<mode>3<exec_clobber>): ... this, and use VEC_ALL1REG_INT_MODE.
+
+2019-12-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_can_change_mode_class):
+	Don't allow changes between partial SVE modes and other kinds
+	of mode.  Don't allow changes between two partial SVE modes
+	if they have different container or element sizes.
+
+2019-12-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_function_value_1): New function,
+	split out from...
+	(aarch64_function_value): ...here.  Handle partial SVE modes by
+	pretending that they have the associated/traditional integer mode,
+	then wrap the result in the real mode.
+	(aarch64_layout_arg): Take an orig_mode argument and pass it to
+	aarch64_function_arg_alignment.  Handle partial SVE modes analogously
+	to aarch64_function_value.
+	(aarch64_function_arg): Update call accordingly.
+	(aarch64_function_arg_advance): Likewise.
+
+2019-12-19  Jan Hubicka  <hubicka@ucw.cz>
+	    Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* cgraph.c (cgraph_node_cannot_be_local_p_1): Prevent targets of
+	symver attributes to be localized.
+	* ipa-visibility.c (cgraph_externally_visible_p,
+	varpool_node::externally_visible_p): Likewise.
+	* symtab.c (symtab_node::verify_base): Check visibility of symbol
+	versions.
+
+2019-12-19  Jan Hubicka  <hubicka@ucw.cz>
+	    Luo Xiong Hu  <luoxhu@linux.ibm.com
+
+	* ipa-fnsummary.h (ipa_size_summary): Remove copy consturctor.
+	(ipa_size_summary_t): Add duplicate method; move to heap.
+	* ipa-fnsumary.c (ipa_fn_summary_alloc): Fix allocation.
+
+2019-12-19  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/92794
+	* ipa-cp.c (self_recursive_agg_pass_through_p): New function.
+	(intersect_with_plats): Use error_mark_node as place holder
+	when aggregate jump function is simple pass-through for
+	self-recursive call.
+	(intersect_with_agg_replacements): Likewise.
+	(intersect_aggregates_with_edge): Likewise.
+	(find_aggregate_values_for_callers_subset): Likewise.
+
+2019-12-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.opt (fdiagnostics-show-cwe): Add.
+	* diagnostic-core.h (class diagnostic_metadata): New forward decl.
+	(warning_at): Add overload taking a const diagnostic_metadata &.
+	(emit_diagnostic_valist): Add overload taking a
+	const diagnostic_metadata *.
+	* diagnostic-format-json.cc: Include "diagnostic-metadata.h".
+	(json_from_metadata): New function.
+	(json_end_diagnostic): Call it to add "metadata" child for
+	diagnostics with metadata.
+	(diagnostic_output_format_init): Clear context->show_cwe.
+	* diagnostic-metadata.h: New file.
+	* diagnostic.c: Include "diagnostic-metadata.h".
+	(diagnostic_impl): Add const diagnostic_metadata * param.
+	(diagnostic_n_impl): Likewise.
+	(diagnostic_initialize): Initialize context->show_cwe.
+	(diagnostic_set_info_translated): Initialize diagnostic->metadata.
+	(get_cwe_url): New function.
+	(print_any_cwe): New function.
+	(diagnostic_report_diagnostic): Call print_any_cwe if the
+	diagnostic has non-NULL metadata.
+	(emit_diagnostic): Pass NULL as the metadata in the call to
+	diagnostic_impl.
+	(emit_diagnostic_valist): Likewise.
+	(emit_diagnostic_valist): New overload taking a
+	const diagnostic_metadata *.
+	(inform): Pass NULL as the metadata in the call to
+	diagnostic_impl.
+	(inform_n): Likewise for diagnostic_n_impl.
+	(warning): Likewise.
+	(warning_at): Likewise.  Add overload that takes a
+	const diagnostic_metadata &.
+	(warning_n): Pass NULL as the metadata in the call to
+	diagnostic_n_impl.
+	(pedwarn): Likewise for diagnostic_impl.
+	(permerror): Likewise.
+	(error): Likewise.
+	(error_n): Likewise.
+	(error_at): Likewise.
+	(sorry): Likewise.
+	(sorry_at): Likewise.
+	(fatal_error): Likewise.
+	(internal_error): Likewise.
+	(internal_error_no_backtrace): Likewise.
+	* diagnostic.h (diagnostic_info::metadata): New field.
+	(diagnostic_context::show_cwe): New field.
+	* doc/invoke.texi (-fno-diagnostics-show-cwe): New option.
+	* opts.c (common_handle_option): Handle OPT_fdiagnostics_show_cwe.
+	* toplev.c (general_init): Initialize global_dc->show_cwe.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Maciej W. Rozycki  <macro@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-low.c (lower_omp_target): Support GOMP_MAP_NO_ALLOC.
+	* tree-pretty-print.c (dump_omp_clause): Likewise.
+
+2019-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ira.c (ira): Use simple LRA algorithm when not optimizing.
+
+2019-12-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gimplify.c (gimplify_omp_target_update): Elaborate 'exit data'
+	'finalize' handling.
+
+2019-12-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/86416
+	*  Makefile.in (CFLAGS-lto-streamer-in.o): Pass target_noncanonical on.
+	* lto-streamer-in.c (lto_input_mode_table): Improve unsupported-mode
+	diagnostic.
+
+2019-12-18  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64-cores.def: 
+	("cortex-a76ae"): Use neoversen1 tuning.
+	("cortex-a77"): Likewise.
+	("cortex-a65"): Use cortexa53 scheduler.
+	("cortex-a65ae"): Likewise.
+	("neoverse-e1"): Use cortexa73 tuning.
+
+2019-12-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/92971
+	* ipa-cp.c (cgraph_edge_brings_all_agg_vals_for_node): Fix
+	definition of values, release memory on exit.
+
+2019-12-17  Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-param-manipulation.h (get_original_index): Declare.
+	* ipa-param-manipulation.c (ipa_param_adjustments::get_original_index):
+	New member function.
+	* ipa-prop.c (ipcp_get_parm_bits): New function.
+	* ipa-prop.h (ipcp_get_parm_bits): Declare.
+	* tree-ssa-ccp.c: Include cgraph.h, alloc-pool.h, symbol-summary.h,
+	ipa-utils.h and ipa-prop.h
+	(get_default_value): Use ipcp_get_parm_bits.
+
+2019-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/92972
+	* lto-wrapper.c (merge_and_complain): Use just "-fno-pie" instead of
+	big ? "-fno-pie" : "-fno-pie".  Formatting fixes.  Fix comment typo.
+
+2019-12-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* doc/invoke.texi (-Wmismatched-tags, -Wredundant-tags): Document
+	new C++ options.
+
+2019-12-17  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (num_insns_constant_gpr): Return 1 if the
+	constant can be loaded with PLI if -mcpu=future.
+	* config/rs6000/rs6000.md (add<mode>3): Add alternative to
+	generate PADDI for 34-bit constants if -mcpu=future.
+	(movdi_internal64): Add alternative to use PLI to load up 34-bit
+	constants if -mcpu=future.
+	(movsi_internal1): Add alternative to use PLI to load up 32-bit
+	constants if -mcpu=future.
+	* config/rs6000/predicates.md (add_operand): Allow eI constants.
+
+2019-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92841
+	* config/i386/i386.md (@stack_protect_set_1_<mode>,
+	@stack_protect_test_1_<mode>): Use output_asm_insn.
+	(*stack_protect_set_2_<mode>, *stack_protect_set_3): New define_insns
+	and corresponding define_peephole2s.
+
+2019-12-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* symtab.c (symtab_node::get_partitioning_class): Aliases of external
+	symbols are external.
+
+2019-12-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-protos.h (thumb1_gen_const_int): Add new prototype.
+	* config/arm/arm.c (arm_option_check_internal): Remove restriction
+	on MOVT for -mpure-code.
+	(thumb1_gen_const_int): New function.
+	(thumb1_legitimate_address_p): Support -mpure-code.
+	(thumb1_rtx_costs): Likewise.
+	(thumb1_size_rtx_costs): Likewise.
+	(arm_thumb1_mi_thunk): Likewise.
+	* config/arm/arm.h (CASE_VECTOR_PC_RELATIVE): Likewise.
+	* config/arm/thumb1.md (thumb1_movsi_symbol_ref): New.
+	(*thumb1_movhf): Support -mpure-code.
+	* doc/invoke.texi (-mpure-code): Remove restriction on MOVT.
+
+2019-12-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Mention pr92772
+	in the comments.
+
+2019-12-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (extract_last_<mode>): New expander.
+	(fold_extract_last_<mode>): New expander.
+
+2019-12-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.h (CLZ_DEFINED_VALUE_AT_ZERO): Define.
+	(CTZ_DEFINED_VALUE_AT_ZERO): Define.
+	* config/gcn/gcn.md (s_mnemonic): Add clz and ctz.
+	(expander): Likewise.
+	(countzeros): New code iterator.
+	(<expander>si2): New insn pattern.
+	(<expander>di2): New insn pattern.
+
+2019-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92962
+	* common/config/i386/i386-common.c (processor_alias_table): Formatting
+	fixes.
+	* doc/invoke.texi (bdver3, bdver4, znver1): Add missing closing paren.
+	(znver2): Likewise.  Add RDPID and WBNOINVD, remove spurious comma
+	before CLWB.
+
+2019-12-17  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/92651
+	* config/i386/i386.h (TARGET_EXPAND_ABS): New macro.
+	* config/i386/x86-tune.def (X86_TUNE_EXPAND_ABS): New.
+	* config/i386/i386.md (abs<SWI48x>2): New define_expand.
+
+2019-12-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/92807
+	* config/i386/i386.c (ix86_lea_outperforms): Check !TARGET_BONNELL.
+	(ix86_avoid_lea_for_addr): When not optimizing for Bonnell, use add
+	for a = a + b and a = b + a.
+
+2019-12-16  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92952
+	* builtins.c (compute_objsize): Adjust offset by the array low bound.
+
+2019-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* pretty-print.c (pp_write_text_as_html_like_dot_to_stream): New
+	function.
+	* pretty-print.h (pp_write_text_as_html_like_dot_to_stream): New decl.
+
+2019-12-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (movsi_to_cr_one): Use CR0_REGNO instead of
+	hardcoding the (old, expired) register number.
+	(*mtcrfsi): Ditto.
+
+2019-12-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config.gcc: s/msp430*-*-*/msp430-*-*.
+	Handle msp430-*-elfbare.
+	* config/msp430/msp430-devices.c (TARGET_SUBDIR): Define.
+	(_MSPMKSTR): Define.
+	(__MSPMKSTR): Define.
+	(rest_of_devices_path): Use TARGET_SUBDIR value in string.
+	* config/msp430/msp430.c (msp430_option_override): Error if
+	-fuse-cxa-atexit is used when it has been disabled at configure time.
+	* config/msp430/t-msp430: Define TARGET_SUBDIR when building
+	msp430-devices.o.
+	* doc/install.texi: Document msp430-*-elf and msp430-*-elfbare.
+	* doc/invoke.texi: Update documentation about which path devices.csv is
+	searched for.
+
+2019-12-16  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/92950
+	* config/s390/vector.md ("mov<mode>" for V_8): Replace lh, lhy,
+	and lhrl with llc.
+
 2019-12-14  Martin Sebor  <msebor@redhat.com>
 
 	* doc/extend.texi (attribute access): Correct typos.

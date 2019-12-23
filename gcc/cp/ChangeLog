@@ -1,3 +1,185 @@
+2019-12-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c++/92789
+	* typeck.c (structural_comptypes): Make sure that two vector types
+	agree on gnu_vector_type_p.
+
+2019-12-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cvt.c (ocp_convert): Apply rvalue to the source of vector
+	conversions.
+	* typeck.c (build_reinterpret_cast_1): Likewise.
+
+2019-12-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92745 - bogus error when initializing array of vectors.
+	* decl.c (reshape_init_r): For a nested compound literal, do
+	call reshape_init_{class,array,vector}.
+
+	PR c++/92974 - bogus location for enum and non-enum in ?: warning.
+	* tree.c (build_min_non_dep): Use the location of NON_DEP when
+	building the expression.
+
+2019-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92965
+	* pt.c (invalid_nontype_parm_type_p): Call structural_type_p with
+	explain=true only if emitting error.
+
+	PR c++/92966
+	* method.c (early_check_defaulted_comparison): Don't set
+	DECL_MAYBE_DELETED when returning false.
+
+	PR c++/92973
+	* method.c (early_check_defaulted_comparison): For C++17 and earlier
+	diagnose defaulted comparison operators.
+
+	PR c++/92666
+	* call.c (convert_arg_to_ellipsis): For floating point or
+	decltype(nullptr) arguments call mark_rvalue_use.
+
+	PR c++/92992
+	* call.c (convert_arg_to_ellipsis): For decltype(nullptr) arguments
+	that have side-effects use cp_build_compound_expr.
+
+2019-12-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl2.c (c_parse_final_cleanups): Always call collect_source_ref on
+	the main input filename.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* parser.c (cp_parser_omp_clause_name): Support attach and detach
+	clauses.
+	(cp_parser_omp_var_list_no_open): Add ALLOW_DEREF optional parameter.
+	Parse deref if true.
+	(cp_parser_omp_var_list): Add ALLOW_DEREF optional parameter.  Pass to
+	cp_parser_omp_var_list_no_open.
+	(cp_parser_oacc_data_clause): Support attach and detach clauses.
+	Update call to cp_parser_omp_var_list_no_open.
+	(cp_parser_oacc_all_clauses): Support attach and detach.
+	(OACC_DATA_CLAUSE_MASK, OACC_ENTER_DATA_CLAUSE_MASK,
+	OACC_KERNELS_CLAUSE_MASK, OACC_PARALLEL_CLAUSE_MASK,
+	OACC_SERIAL_CLAUSE_MASK): Add PRAGMA_OACC_CLAUSE_ATTACH.
+	(OACC_EXIT_DATA_CLAUSE_MASK): Add PRAGMA_OACC_CLAUSE_DETACH.
+	* semantics.c (handle_omp_array_sections_1): Reject subarrays for
+	attach and detach.
+	(handle_omp_array_sections): Use GOMP_MAP_ATTACH_DETACH instead of
+	GOMP_MAP_ALWAYS_POINTER for OpenACC.
+	(cp_oacc_check_attachments): New function.
+	(finish_omp_clauses): Use above function.  Allow structure fields and
+	class members to appear in OpenACC data clauses.  Support
+	GOMP_MAP_ATTACH_DETACH.  Support deref.
+
+2019-12-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52320 - EH cleanups for partially constructed arrays.
+	* typeck2.c (split_nonconstant_init_1): Add nested parm.
+	Add cleanup for whole array if true.
+
+	PR c++/66139 - EH cleanups for partially constructed aggregates.
+	PR c++/57510
+	* cp-gimplify.c (cp_gimplify_init_expr): Use split_nonconstant_init.
+	* typeck2.c (split_nonconstant_init): Handle non-variable dest.
+	(split_nonconstant_init_1): Clear TREE_SIDE_EFFECTS.
+	* tree.c (is_local_temp): New.
+
+2019-12-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91165 follow-on tweak
+	* constexpr.c (cxx_eval_call_expression): Use
+	unshare_expr_without_location.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Maciej W. Rozycki  <macro@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* parser.c (cp_parser_omp_clause_name): Support no_create.
+	(cp_parser_oacc_data_clause): Likewise.
+	(cp_parser_oacc_all_clauses): Likewise.
+	(OACC_DATA_CLAUSE_MASK, OACC_KERNELS_CLAUSE_MASK)
+	(OACC_PARALLEL_CLAUSE_MASK): Add PRAGMA_OACC_CLAUSE_NO_CREATE.
+	* semantics.c (handle_omp_array_sections): Support no_create.
+
+2019-12-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (cxx_sizeof_or_alignof_type): Add location_t parameter
+	and use it throughout.
+	(cxx_sizeof_expr): Likewise.
+	(cxx_alignof_expr): Likewise.
+	(cxx_sizeof_or_alignof_expr): Likewise.
+	(cxx_alignas_expr): Update call.
+	* decl.c (fold_sizeof_expr): Likewise.
+	* pt.c (tsubst_copy): Likewise.
+	(tsubst_copy_and_build): Likewise.
+	* except.c (build_throw): Add location_t parameter and use it.
+	(expand_end_catch_block): Update call.
+	* parser.c (cp_parser_unary_expression): Update
+	cxx_sizeof_or_alignof_type and cxx_sizeof_or_alignof_expr calls,
+	pass the compound location.
+	(cp_parser_throw_expression): Likewise pass the combined location
+	to build_throw.
+	* cp-tree.h: Update declarations.
+
+	* semantics.c (finish_handler_parms): Use DECL_SOURCE_LOCATION.
+	* decl2.c (check_classfn): Likewise.
+
+	* except.c (is_admissible_throw_operand_or_catch_parameter):
+	Exploit cp_expr_loc_or_input_loc in one place.
+
+	* except.c (create_try_catch_expr): Remove, unused.
+
+2019-12-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/12333 - X::~X() with implicit this->.
+	* parser.c (cp_parser_lookup_name): Use lookup_destructor.
+	* typeck.c (lookup_destructor): No longer static.
+
+2019-12-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* parser.c (cp_parser_maybe_warn_enum_key): New function.
+	(class_decl_loc_t): New class.
+	(cp_parser_elaborated_type_specifier): Call
+	cp_parser_maybe_warn_enum_key.
+	(cp_parser_class_head): Call cp_parser_check_class_key.
+	(cp_parser_check_class_key): Add arguments.  Call class_decl_loc_t::add.
+	(c_parse_file): Call class_decl_loc_t::diag_mismatched_tags.
+
+2019-12-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/79592 - missing explanation of invalid constexpr.
+	* constexpr.c (register_constexpr_fundef): Do store the body of a
+	template instantiation that is not potentially constant.
+	(explain_invalid_constexpr_fn): Look it up.
+	(cxx_eval_call_expression): Check fundef->result.
+
+2019-12-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92576 - redeclaration of variable template.
+	* decl.c (redeclaration_error_message): Recurse for variable
+	templates.
+
+2019-12-17  Jason Merrill  <jason@redhat.com>
+
+	* name-lookup.c (get_std_name_hint): Add std::byte.
+
+2019-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/59655
+	* pt.c (push_tinst_level_loc): If limit_bad_template_recursion,
+	set TREE_NO_WARNING on tldcl.
+	* decl2.c (no_linkage_error): Treat templates with TREE_NO_WARNING
+	as defined during error recovery.
+
+2019-12-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91165 - verify_gimple ICE with cached constexpr.
+	* constexpr.c (cxx_bind_parameters_in_call): Don't unshare.
+	(cxx_eval_call_expression): Unshare all args if we're caching.
+
 2019-12-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92496 - ICE with <=> and no #include <compare>.

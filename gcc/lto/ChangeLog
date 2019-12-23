@@ -1,3 +1,9 @@
+2019-12-19  Jan Hubicka  <hubicka@ucw.cz>
+	    Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* lto-common.c (read_cgraph_and_symbols): Work around binutils
+	PR25424
+
 2019-12-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-partition.c (lto_balanced_map): Fix printing of tp_first_run.

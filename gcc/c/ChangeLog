@@ -1,3 +1,49 @@
+2019-12-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-decl.c (collect_source_ref_cb): Delete.
+	(for_each_global_decl): Rename into...
+	(collect_source_refs): ...this.  Call collect_source_ref directly.
+	(c_parse_final_cleanups): Always call collect_source_ref on the main
+	input filename.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Add parsing of attach and
+	detach clauses.
+	(c_parser_omp_variable_list): Add ALLOW_DEREF optional parameter.
+	Allow deref (->) in variable lists if true.
+	(c_parser_omp_var_list_parens): Add ALLOW_DEREF optional parameter.
+	Pass to c_parser_omp_variable_list.
+	(c_parser_oacc_data_clause): Support attach and detach clauses.  Update
+	call to c_parser_omp_variable_list.
+	(c_parser_oacc_all_clauses): Support attach and detach clauses.
+	(OACC_DATA_CLAUSE_MASK, OACC_ENTER_DATA_CLAUSE_MASK,
+	OACC_KERNELS_CLAUSE_MASK, OACC_PARALLEL_CLAUSE_MASK,
+	OACC_SERIAL_CLAUSE_MASK): Add PRAGMA_OACC_CLAUSE_ATTACH.
+	(OACC_EXIT_DATA_CLAUSE_MASK): Add PRAGMA_OACC_CLAUSE_DETACH.
+	* c-typeck.c (handle_omp_array_sections_1): Reject subarrays for attach
+	and detach.  Support deref.
+	(handle_omp_array_sections): Use GOMP_MAP_ATTACH_DETACH instead of
+	GOMP_MAP_ALWAYS_POINTER for OpenACC.
+	(c_oacc_check_attachments): New function.
+	(c_finish_omp_clauses): Check attach/detach arguments for being
+	pointers using above.  Support deref.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Maciej W. Rozycki  <macro@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Support no_create.
+	(c_parser_oacc_data_clause): Likewise.
+	(c_parser_oacc_all_clauses): Likewise.
+	(OACC_DATA_CLAUSE_MASK, OACC_KERNELS_CLAUSE_MASK)
+	(OACC_PARALLEL_CLAUSE_MASK, OACC_SERIAL_CLAUSE_MASK): Add
+	PRAGMA_OACC_CLAUSE_NO_CREATE.
+	* c-typeck.c (handle_omp_array_sections): Support
+	GOMP_MAP_NO_ALLOC.
+
 2019-12-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-objc-common.c (range_label_for_type_mismatch::get_text):

@@ -11787,15 +11787,6 @@ c_write_global_declarations_1 (tree globals)
   while (reconsider);
 }
 
-/* Callback to collect a source_ref from a DECL.  */
-
-static void
-collect_source_ref_cb (tree decl)
-{
-  if (!DECL_IS_BUILTIN (decl))
-    collect_source_ref (LOCATION_FILE (decl_sloc (decl, false)));
-}
-
 /* Preserve the external declarations scope across a garbage collect.  */
 static GTY(()) tree ext_block;
 
@@ -11813,10 +11804,10 @@ collect_all_refs (const char *source_file)
   collect_ada_nodes (BLOCK_VARS (ext_block), source_file);
 }
 
-/* Iterate over all global declarations and call CALLBACK.  */
+/* Collect source file references at global level.  */
 
 static void
-for_each_global_decl (void (*callback) (tree decl))
+collect_source_refs (void)
 {
   tree t;
   tree decls;
@@ -11827,11 +11818,13 @@ for_each_global_decl (void (*callback) (tree decl))
     { 
       decls = DECL_INITIAL (t);
       for (decl = BLOCK_VARS (decls); decl; decl = TREE_CHAIN (decl))
-	callback (decl);
+	if (!DECL_IS_BUILTIN (decl))
+	  collect_source_ref (DECL_SOURCE_FILE (decl));
     }
 
   for (decl = BLOCK_VARS (ext_block); decl; decl = TREE_CHAIN (decl))
-    callback (decl);
+    if (!DECL_IS_BUILTIN (decl))
+      collect_source_ref (DECL_SOURCE_FILE (decl));
 }
 
 /* Perform any final parser cleanups and generate initial debugging
@@ -11865,10 +11858,9 @@ c_parse_final_cleanups (void)
   if (flag_dump_ada_spec || flag_dump_ada_spec_slim)
     {
       /* Build a table of files to generate specs for */
-      if (flag_dump_ada_spec_slim)
-	collect_source_ref (main_input_filename);
-      else
-	for_each_global_decl (collect_source_ref_cb);
+      collect_source_ref (main_input_filename);
+      if (!flag_dump_ada_spec_slim)
+	collect_source_refs ();
 
       dump_ada_specs (collect_all_refs, NULL);
     }

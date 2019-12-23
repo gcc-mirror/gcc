@@ -303,12 +303,8 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
   
   devaddrs = gomp_alloca (sizeof (void *) * mapnum);
   for (i = 0; i < mapnum; i++)
-    if (tgt->list[i].key != NULL)
-      devaddrs[i] = (void *) (tgt->list[i].key->tgt->tgt_start
-			      + tgt->list[i].key->tgt_offset
-			      + tgt->list[i].offset);
-    else
-      devaddrs[i] = NULL;
+    devaddrs[i] = (void *) gomp_map_val (tgt, hostaddrs, i);
+
   if (aq == NULL)
     acc_dev->openacc.exec_func (tgt_fn, mapnum, hostaddrs, devaddrs, dims,
 				tgt);

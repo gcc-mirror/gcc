@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-require-effective-target cxa_atexit }
 // { dg-options "-O2 -fuse-cxa-atexit" }
 
 # 1 "cxa-atexit1.C"

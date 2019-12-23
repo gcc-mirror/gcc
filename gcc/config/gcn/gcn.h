@@ -644,6 +644,10 @@ enum gcn_builtin_codes
 /* This needs to match gcn_function_value.  */
 #define LIBCALL_VALUE(MODE) gen_rtx_REG (MODE, SGPR_REGNO (RETURN_VALUE_REG))
 
+/* The s_ff0 and s_flbit instructions return -1 if no input bits are set.  */
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = -1, 2)
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = -1, 2)
+
 
 /* Costs.  */
 

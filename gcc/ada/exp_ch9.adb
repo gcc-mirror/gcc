@@ -363,7 +363,7 @@ package body Exp_Ch9 is
    --  a null trailing statement with the given Loc (which is the sloc of
    --  the accept, delay, or entry call statement). There might not be any
    --  generated code for the accept, delay, or entry call itself (the effect
-   --  of these statements is part of the general processsing done for the
+   --  of these statements is part of the general processing done for the
    --  enclosing selective accept, timed entry call, or asynchronous select),
    --  and the null statement is there to carry the sloc of that statement to
    --  the back-end for trace-based coverage analysis purposes.
@@ -13721,9 +13721,10 @@ package body Exp_Ch9 is
                         Set_Ekind (Decl_Id, E_Variable);
                      end if;
 
-                     Set_Prival      (Comp_Id, Decl_Id);
-                     Set_Prival_Link (Decl_Id, Comp_Id);
-                     Set_Is_Aliased  (Decl_Id, Is_Aliased (Comp_Id));
+                     Set_Prival         (Comp_Id, Decl_Id);
+                     Set_Prival_Link    (Decl_Id, Comp_Id);
+                     Set_Is_Aliased     (Decl_Id, Is_Aliased     (Comp_Id));
+                     Set_Is_Independent (Decl_Id, Is_Independent (Comp_Id));
 
                      --  Generate:
                      --    comp_name : comp_typ renames _object.comp_name;

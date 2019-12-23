@@ -205,6 +205,8 @@ GNATRTL_NONTASKING_OBJS= \
   a-lliwti$(objext) \
   a-llizti$(objext) \
   a-locale$(objext) \
+  a-nbnbin$(objext) \
+  a-nbnbre$(objext) \
   a-ncelfu$(objext) \
   a-ngcefu$(objext) \
   a-ngcoar$(objext) \
@@ -224,6 +226,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-nscefu$(objext) \
   a-nscoty$(objext) \
   a-nselfu$(objext) \
+  a-nubinu$(objext) \
   a-nucoar$(objext) \
   a-nucoty$(objext) \
   a-nudira$(objext) \
@@ -495,10 +498,14 @@ GNATRTL_NONTASKING_OBJS= \
   machcode$(objext) \
   s-addima$(objext) \
   s-addope$(objext) \
+  s-aotase$(objext) \
   s-arit64$(objext) \
   s-assert$(objext) \
   s-atacco$(objext) \
   s-atocou$(objext) \
+  s-atoope$(objext) \
+  s-atopar$(objext) \
+  s-atopex$(objext) \
   s-atopri$(objext) \
   s-auxdec$(objext) \
   s-bignum$(objext) \
@@ -570,6 +577,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-flocon$(objext) \
   s-fore$(objext)   \
   s-gearop$(objext) \
+  s-genbig$(objext) \
   s-geveop$(objext) \
   s-gloloc$(objext) \
   s-htable$(objext) \

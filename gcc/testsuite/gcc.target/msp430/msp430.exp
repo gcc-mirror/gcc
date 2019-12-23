@@ -141,18 +141,20 @@ proc msp430_device_permutations_runtest { tests } {
 }
 
 
-# Return $TOOLCHAIN_ROOT/msp430-elf/include/devices/
+# Return $TOOLCHAIN_ROOT/$target_alias/include/devices/
+# target_alias is expected to be either msp430-elf or msp430-elfbare.
 proc get_installed_device_data_path { } {
+    global target_alias
     set compiler [lindex [regexp -all -inline {\S+} \
 	[board_info [target_info name] compiler]] 0]
     # $compiler is actually a file, but normalize will still get us the desired
     # result.
     return [file normalize \
-	"$compiler/../../msp430-elf/include/devices/devices.csv"]
+	"$compiler/../../$target_alias/include/devices/devices.csv"]
 }
 
 # If the devices.csv is installed in
-# $TOOLCHAIN_ROOT/msp430-elf/include/devices/, rename it so it doesn't
+# $TOOLCHAIN_ROOT/$target_alias/include/devices/, rename it so it doesn't
 # interfere with the hard-coded device data tests.
 proc msp430_hide_installed_devices_data { } {
     set devices_path [get_installed_device_data_path]

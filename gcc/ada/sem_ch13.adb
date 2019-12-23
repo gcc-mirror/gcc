@@ -2131,12 +2131,27 @@ package body Sem_Ch13 is
                      Aspect);
                end if;
 
-               --  Not allowed for formal type declarations
+               --  Not allowed for formal type declarations in previous
+               --  versions of the language. Allowed for them only for
+               --  shared variable control aspects.
 
                if Nkind (N) = N_Formal_Type_Declaration then
-                  Error_Msg_N
-                    ("aspect % not allowed for formal type declaration",
-                     Aspect);
+                  if Ada_Version < Ada_2020 then
+                     Error_Msg_N
+                       ("aspect % not allowed for formal type declaration",
+                        Aspect);
+
+                  elsif A_Id /= Aspect_Atomic
+                     and then A_Id /= Aspect_Volatile
+                     and then A_Id /= Aspect_Independent
+                     and then A_Id /= Aspect_Atomic_Components
+                     and then A_Id /= Aspect_Independent_Components
+                     and then A_Id /= Aspect_Volatile_Components
+                  then
+                     Error_Msg_N
+                       ("aspect % not allowed for formal type declaration",
+                        Aspect);
+                  end if;
                end if;
             end if;
 
@@ -5476,7 +5491,7 @@ package body Sem_Ch13 is
                   Analyze (Decl, Suppress => All_Checks);
 
                   Set_Has_Delayed_Freeze        (New_Ctyp, False);
-                  Set_Esize                     (New_Ctyp, Csize);
+                  Init_Esize                    (New_Ctyp);
                   Set_RM_Size                   (New_Ctyp, Csize);
                   Init_Alignment                (New_Ctyp);
                   Set_Is_Itype                  (New_Ctyp, True);
@@ -10937,9 +10952,9 @@ package body Sem_Ch13 is
       end if;
 
       --  For records that have component clauses for all components, and whose
-      --  size is less than or equal to 32, we need to know the size in the
-      --  front end to activate possible packed array processing where the
-      --  component type is a record.
+      --  size is less than or equal to 32, and which can be fully packed, we
+      --  need to know the size in the front end to activate possible packed
+      --  array processing where the component type is a record.
 
       --  At this stage Hbit + 1 represents the first unused bit from all the
       --  component clauses processed, so if the component clauses are
@@ -10950,7 +10965,10 @@ package body Sem_Ch13 is
       --  length (it may for example be appropriate to round up the size
       --  to some convenient boundary, based on alignment considerations, etc).
 
-      if Unknown_RM_Size (Rectype) and then Hbit + 1 <= 32 then
+      if Unknown_RM_Size (Rectype)
+        and then Hbit + 1 <= 32
+        and then not Strict_Alignment (Rectype)
+      then
 
          --  Nothing to do if at least one component has no component clause
 
@@ -12834,8 +12852,13 @@ package body Sem_Ch13 is
         and then (Nkind (N) /= N_Pragma
                    or else Get_Pragma_Id (N) /= Pragma_Convention)
       then
-         Error_Msg_N ("representation item not allowed for generic type", N);
-         return True;
+         if Ada_Version < Ada_2020 then
+            Error_Msg_N
+              ("representation item not allowed for generic type", N);
+            return True;
+         else
+            return False;
+         end if;
       end if;
 
       --  Otherwise check for incomplete type

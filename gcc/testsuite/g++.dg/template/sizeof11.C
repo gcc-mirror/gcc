@@ -9,6 +9,6 @@ template < int> void g()
 template < class T > struct B;
 template < int> void f()
 {
-  sizeof (B<int>); // { dg-error "incomplete" }
+  sizeof (B<int>); // { dg-error "3:invalid application of .sizeof. to incomplete type" }
 }
 

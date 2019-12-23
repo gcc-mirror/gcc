@@ -40,8 +40,11 @@
 #define GOMP_MAP_FLAG_SPECIAL_0		(1 << 2)
 #define GOMP_MAP_FLAG_SPECIAL_1		(1 << 3)
 #define GOMP_MAP_FLAG_SPECIAL_2		(1 << 4)
+#define GOMP_MAP_FLAG_SPECIAL_4		(1 << 6)
 #define GOMP_MAP_FLAG_SPECIAL		(GOMP_MAP_FLAG_SPECIAL_1 \
 					 | GOMP_MAP_FLAG_SPECIAL_0)
+#define GOMP_MAP_DEEP_COPY		(GOMP_MAP_FLAG_SPECIAL_4 \
+					 | GOMP_MAP_FLAG_SPECIAL_2)
 /* Flag to force a specific behavior (or else, trigger a run-time error).  */
 #define GOMP_MAP_FLAG_FORCE		(1 << 7)
 
@@ -75,6 +78,8 @@ enum gomp_map_kind
     GOMP_MAP_DEVICE_RESIDENT =		(GOMP_MAP_FLAG_SPECIAL_1 | 1),
     /* OpenACC link.  */
     GOMP_MAP_LINK =			(GOMP_MAP_FLAG_SPECIAL_1 | 2),
+    /* Use device data if present, fall back to host address otherwise.  */
+    GOMP_MAP_IF_PRESENT =			(GOMP_MAP_FLAG_SPECIAL_1 | 3),
     /* Do not map, copy bits for firstprivate instead.  */
     GOMP_MAP_FIRSTPRIVATE =		(GOMP_MAP_FLAG_SPECIAL | 0),
     /* Similarly, but store the value in the pointer rather than
@@ -127,12 +132,23 @@ enum gomp_map_kind
     /* Decrement usage count and deallocate if zero.  */
     GOMP_MAP_RELEASE =			(GOMP_MAP_FLAG_SPECIAL_2
 					 | GOMP_MAP_DELETE),
+    /* In OpenACC, attach a pointer to a mapped struct field.  */
+    GOMP_MAP_ATTACH =			(GOMP_MAP_DEEP_COPY | 0),
+    /* In OpenACC, detach a pointer to a mapped struct field.  */
+    GOMP_MAP_DETACH =			(GOMP_MAP_DEEP_COPY | 1),
+    /* In OpenACC, detach a pointer to a mapped struct field.  */
+    GOMP_MAP_FORCE_DETACH =		(GOMP_MAP_DEEP_COPY
+					 | GOMP_MAP_FLAG_FORCE | 1),
 
     /* Internal to GCC, not used in libgomp.  */
     /* Do not map, but pointer assign a pointer instead.  */
     GOMP_MAP_FIRSTPRIVATE_POINTER =	(GOMP_MAP_LAST | 1),
     /* Do not map, but pointer assign a reference instead.  */
-    GOMP_MAP_FIRSTPRIVATE_REFERENCE =	(GOMP_MAP_LAST | 2)
+    GOMP_MAP_FIRSTPRIVATE_REFERENCE =	(GOMP_MAP_LAST | 2),
+    /* An attach or detach operation.  Rewritten to the appropriate type during
+       gimplification, depending on directive (i.e. "enter data" or
+       parallel/kernels region vs. "exit data").  */
+    GOMP_MAP_ATTACH_DETACH =		(GOMP_MAP_LAST | 3)
   };
 
 #define GOMP_MAP_COPY_TO_P(X) \
@@ -178,6 +194,21 @@ enum gomp_map_kind
 
 #define GOMP_DEVICE_ICV			-1
 #define GOMP_DEVICE_HOST_FALLBACK	-2
+
+/* Device property codes.  Keep in sync with
+   libgomp/{openacc.h,openacc.f90}:acc_device_property_t */
+/* Start from 1 to catch uninitialized use.  */
+enum gomp_device_property
+  {
+   GOMP_DEVICE_PROPERTY_MEMORY =	1,
+   GOMP_DEVICE_PROPERTY_FREE_MEMORY = 	2,
+   GOMP_DEVICE_PROPERTY_NAME =		0x10001,
+   GOMP_DEVICE_PROPERTY_VENDOR =	0x10002,
+   GOMP_DEVICE_PROPERTY_DRIVER =	0x10003
+  };
+
+/* Internal property mask to tell numeric and string values apart.  */
+#define GOMP_DEVICE_PROPERTY_STRING_MASK	0x10000
 
 /* GOMP_task/GOMP_taskloop* flags argument.  */
 #define GOMP_TASK_FLAG_UNTIED		(1 << 0)

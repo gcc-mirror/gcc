@@ -1698,7 +1698,31 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
 		}
 	      /* FALLTHRU */
 	    default:
-	      fatal_error (UNKNOWN_LOCATION, "unsupported mode %qs", mname);
+	      /* This is only used for offloading-target compilations and
+		 is a user-facing error.  Give a better error message for
+		 the common modes; see also mode-classes.def.   */
+	      if (mclass == MODE_FLOAT)
+		fatal_error (UNKNOWN_LOCATION,
+			     "%s - %u-bit-precision floating-point numbers "
+			     "unsupported (mode %qs)", TARGET_MACHINE,
+			     prec.to_constant (), mname);
+	      else if (mclass == MODE_DECIMAL_FLOAT)
+		fatal_error (UNKNOWN_LOCATION,
+			     "%s - %u-bit-precision decimal floating-point "
+			     "numbers unsupported (mode %qs)", TARGET_MACHINE,
+			     prec.to_constant (), mname);
+	      else if (mclass == MODE_COMPLEX_FLOAT)
+		fatal_error (UNKNOWN_LOCATION,
+			     "%s - %u-bit-precision complex floating-point "
+			     "numbers unsupported (mode %qs)", TARGET_MACHINE,
+			     prec.to_constant (), mname);
+	      else if (mclass == MODE_INT)
+		fatal_error (UNKNOWN_LOCATION,
+			     "%s - %u-bit integer numbers unsupported (mode "
+			     "%qs)", TARGET_MACHINE, prec.to_constant (), mname);
+	      else
+		fatal_error (UNKNOWN_LOCATION, "%s - unsupported mode %qs",
+			     TARGET_MACHINE, mname);
 	      break;
 	    }
 	}

@@ -5641,6 +5641,8 @@ get_std_name_hint (const char *name)
     /* <condition_variable>. */
     {"condition_variable", "<condition_variable>", cxx11},
     {"condition_variable_any", "<condition_variable>", cxx11},
+    /* <cstddef>.  */
+    {"byte", "<cstddef>", cxx17},
     /* <deque>.  */
     {"deque", "<deque>", cxx98},
     /* <forward_list>.  */

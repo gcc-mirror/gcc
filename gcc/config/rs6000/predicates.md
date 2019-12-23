@@ -309,7 +309,7 @@
   if (!TARGET_PREFIXED_ADDR)
     return 0;
 
-  return SIGNED_34BIT_OFFSET_P (INTVAL (op));
+  return SIGNED_INTEGER_34BIT_P (INTVAL (op));
 })
 
 ;; Return 1 if op is a register that is not special.
@@ -839,7 +839,8 @@
 (define_predicate "add_operand"
   (if_then_else (match_code "const_int")
     (match_test "satisfies_constraint_I (op)
-		 || satisfies_constraint_L (op)")
+		 || satisfies_constraint_L (op)
+		 || satisfies_constraint_eI (op)")
     (match_operand 0 "gpc_reg_operand")))
 
 ;; Return 1 if the operand is either a non-special register, or 0, or -1.

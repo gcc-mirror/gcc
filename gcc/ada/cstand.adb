@@ -717,6 +717,7 @@ package body CStand is
 
       Build_Signed_Integer_Type
         (Standard_Short_Short_Integer, Standard_Short_Short_Integer_Size);
+      Set_Is_Implementation_Defined (Standard_Short_Short_Integer);
 
       Build_Signed_Integer_Type
         (Standard_Short_Integer, Standard_Short_Integer_Size);
@@ -734,7 +735,6 @@ package body CStand is
 
       Create_Unconstrained_Base_Type
         (Standard_Short_Short_Integer, E_Signed_Integer_Subtype);
-      Set_Is_Implementation_Defined (Standard_Short_Short_Integer);
 
       Create_Unconstrained_Base_Type
         (Standard_Short_Integer, E_Signed_Integer_Subtype);
@@ -747,7 +747,6 @@ package body CStand is
 
       Create_Unconstrained_Base_Type
         (Standard_Long_Long_Integer, E_Signed_Integer_Subtype);
-      Set_Is_Implementation_Defined (Standard_Short_Short_Integer);
 
       Create_Float_Types;
 

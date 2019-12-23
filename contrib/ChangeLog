@@ -1,3 +1,7 @@
+2019-12-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config-list.mk: Add msp430-elfbare.
+
 2019-12-09  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/49973

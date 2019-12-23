@@ -2067,7 +2067,16 @@ package body Checks is
             Apply_Float_Conversion_Check (Ck_Node, Target_Base);
             Set_Etype (Temp, Target_Base);
 
-            Insert_Action (Parent (Par),
+            --  Note: Previously the declaration was inserted above the parent
+            --  of the conversion, apparently as a small optimization for the
+            --  subequent traversal in Insert_Actions. Unfortunately a similar
+            --  optimization takes place in Insert_Actions, assuming that the
+            --  insertion point must be above the expression that creates
+            --  actions. This is not correct in the presence of conditional
+            --  expressions, where the insertion must be in the list of actions
+            --  attached to the current alternative.
+
+            Insert_Action (Par,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Temp,
                 Object_Definition => New_Occurrence_Of (Target_Typ, Loc),

@@ -1192,10 +1192,13 @@ enum gfc_omp_depend_op
 enum gfc_omp_map_op
 {
   OMP_MAP_ALLOC,
+  OMP_MAP_IF_PRESENT,
+  OMP_MAP_ATTACH,
   OMP_MAP_TO,
   OMP_MAP_FROM,
   OMP_MAP_TOFROM,
   OMP_MAP_DELETE,
+  OMP_MAP_DETACH,
   OMP_MAP_FORCE_ALLOC,
   OMP_MAP_FORCE_TO,
   OMP_MAP_FORCE_FROM,
@@ -3188,7 +3191,8 @@ void gfc_intrinsic_done_1 (void);
 char gfc_type_letter (bt, bool logical_equals_int = false);
 gfc_symbol * gfc_get_intrinsic_sub_symbol (const char *);
 bool gfc_convert_type (gfc_expr *, gfc_typespec *, int);
-bool gfc_convert_type_warn (gfc_expr *, gfc_typespec *, int, int);
+bool gfc_convert_type_warn (gfc_expr *, gfc_typespec *, int, int,
+			    bool array = false);
 bool gfc_convert_chartype (gfc_expr *, gfc_typespec *);
 int gfc_generic_intrinsic (const char *);
 int gfc_specific_intrinsic (const char *);
@@ -3348,6 +3352,8 @@ void gfc_free_statements (gfc_code *);
 void gfc_free_association_list (gfc_association_list *);
 
 /* resolve.c */
+void gfc_expression_rank (gfc_expr *);
+bool gfc_resolve_ref (gfc_expr *);
 bool gfc_resolve_expr (gfc_expr *);
 void gfc_resolve (gfc_namespace *);
 void gfc_resolve_code (gfc_code *, gfc_namespace *);

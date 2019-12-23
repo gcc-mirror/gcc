@@ -1043,9 +1043,9 @@ moxie-*-elf | moxie-*-moxiebox* | moxie-*-uclinux* | moxie-*-rtems*)
 	tmake_file="$tmake_file moxie/t-moxie t-softfp-sfdf t-softfp-excl t-softfp"
 	extra_parts="$extra_parts crti.o crtn.o crtbegin.o crtend.o"
 	;;
-msp430*-*-elf)
+msp430-*-elf*)
 	tmake_file="$tm_file t-crtstuff t-fdpbit msp430/t-msp430"
-	extra_parts="$extra_parts crtbegin_no_eh.o crtend_no_eh.o"
+	extra_parts="crtbegin.o crtend.o crtbegin_no_eh.o crtend_no_eh.o"
 	extra_parts="$extra_parts libmul_none.a libmul_16.a libmul_32.a libmul_f5.a"
 	;;
 nds32*-linux*)

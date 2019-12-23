@@ -1,6 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99 -mlittle-endian" } */
+/* { dg-options "-std=gnu99" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
+/* { dg-require-effective-target aarch64_little_endian } */
 
 #include <arm_neon.h>
 

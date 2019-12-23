@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! PR89497
+! PR69497
 program p
    block
    do

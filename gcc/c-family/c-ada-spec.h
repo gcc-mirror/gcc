@@ -36,7 +36,6 @@ enum cpp_operation {
   IS_TRIVIAL
 };
 
-extern location_t decl_sloc (const_tree, bool);
 extern void collect_ada_nodes (tree, const char *);
 extern void collect_source_ref (const char *);
 extern void dump_ada_specs (void (*)(const char *),

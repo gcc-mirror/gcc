@@ -698,7 +698,8 @@ check_classfn (tree ctype, tree function, tree template_parms)
   if (!matched)
     {
       if (!COMPLETE_TYPE_P (ctype))
-	cxx_incomplete_type_error (function, ctype);
+	cxx_incomplete_type_error (DECL_SOURCE_LOCATION (function),
+				   function, ctype);
       else
 	{
 	  if (DECL_CONV_FN_P (function))
@@ -4414,7 +4415,14 @@ decl_maybe_constant_var_p (tree decl)
 void
 no_linkage_error (tree decl)
 {
-  if (cxx_dialect >= cxx11 && decl_defined_p (decl))
+  if (cxx_dialect >= cxx11
+      && (decl_defined_p (decl)
+	  /* Treat templates which limit_bad_template_recursion decided
+	     not to instantiate as if they were defined.  */
+	  || (errorcount + sorrycount > 0
+	      && DECL_LANG_SPECIFIC (decl)
+	      && DECL_TEMPLATE_INFO (decl)
+	      && TREE_NO_WARNING (decl))))
     /* In C++11 it's ok if the decl is defined.  */
     return;
   tree t = no_linkage_check (TREE_TYPE (decl), /*relaxed_p=*/false);
@@ -4808,9 +4816,8 @@ c_parse_final_cleanups (void)
   /* Handle -fdump-ada-spec[-slim] */
   if (flag_dump_ada_spec || flag_dump_ada_spec_slim)
     {
-      if (flag_dump_ada_spec_slim)
-	collect_source_ref (main_input_filename);
-      else
+      collect_source_ref (main_input_filename);
+      if (!flag_dump_ada_spec_slim)
 	collect_source_refs (global_namespace);
 
       dump_ada_specs (collect_all_refs, cpp_check);

@@ -192,8 +192,9 @@ and warnings}.
 -ffrontend-loop-interchange -ffrontend-optimize @gol
 -finit-character=@var{n} -finit-integer=@var{n} -finit-local-zero @gol
 -finit-derived -finit-logical=@var{<true|false>} @gol
--finit-real=@var{<zero|inf|-inf|nan|snan>} @gol
--finline-matmul-limit=@var{n} -fmax-array-constructor=@var{n} @gol
+-finit-real=@var{<zero|inf|-inf|nan|snan>}
+-finline-matmul-limit=@var{n} @gol
+-finline-arg-packing -fmax-array-constructor=@var{n} @gol
 -fmax-stack-var-size=@var{n} -fno-align-commons -fno-automatic @gol
 -fno-protect-parens -fno-underscoring -fsecond-underscore @gol
 -fpack-derived -frealloc-lhs -frecursive -frepack-arrays @gol
@@ -1778,6 +1779,34 @@ This option is provided for interoperability with C code that was
 compiled with the @option{-fshort-enums} option.  It will make
 GNU Fortran choose the smallest @code{INTEGER} kind a given
 enumerator set will fit in, and give all its enumerators this kind.
+
+@item -finline-arg-packing
+@opindex @code{finline-arg-packing}
+When passing an assumed-shape argument of a procedure as actual
+argument to an assumed-size or explicit size or as argument to a
+procedure that does not have an explicit interface, the argument may
+have to be packed, that is put into contiguous memory. An example is
+the call to @code{foo} in
+@smallexample
+  subroutine foo(a)
+     real, dimension(*) :: a
+  end subroutine foo
+  subroutine bar(b)
+     real, dimension(:) :: b
+     call foo(b)
+  end subroutine bar
+@end smallexample
+
+When @option{-finline-arg-packing} is in effect, this packing will be
+performed by inline code. This allows for more optimization while
+increasing code size.
+
+@option{-finline-arg-packing} is implied by any of the @option{-O} options
+except when optimizing for size via @option{-Os}.  If the code
+contains a very large number of argument that have to be packed, code
+size and also compilation time may become excessive.  If that is the
+case, it may be better to disable this option.  Instances of packing
+can be found by using by using @option{-Warray-temporaries}.
 
 @item -fexternal-blas
 @opindex @code{fexternal-blas}

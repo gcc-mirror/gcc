@@ -11431,6 +11431,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case GOMP_MAP_STRUCT:
 	  case GOMP_MAP_ALWAYS_POINTER:
 	    break;
+	  case GOMP_MAP_IF_PRESENT:
 	  case GOMP_MAP_FORCE_ALLOC:
 	  case GOMP_MAP_FORCE_TO:
 	  case GOMP_MAP_FORCE_FROM:
@@ -11439,6 +11440,9 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case GOMP_MAP_FORCE_DEVICEPTR:
 	  case GOMP_MAP_DEVICE_RESIDENT:
 	  case GOMP_MAP_LINK:
+	  case GOMP_MAP_ATTACH:
+	  case GOMP_MAP_DETACH:
+	  case GOMP_MAP_FORCE_DETACH:
 	    gcc_assert (is_gimple_omp_oacc (stmt));
 	    break;
 	  default:
@@ -11842,6 +11846,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		  switch (tkind)
 		    {
 		    case GOMP_MAP_ALLOC:
+		    case GOMP_MAP_IF_PRESENT:
 		    case GOMP_MAP_TO:
 		    case GOMP_MAP_FROM:
 		    case GOMP_MAP_TOFROM:

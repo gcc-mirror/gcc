@@ -182,7 +182,7 @@ package body Debug is
    --  d_H
    --  d_I
    --  d_J
-   --  d_K
+   --  d_K  (Reserved) Enable reporting a warning on known-problem issues
    --  d_L  Output trace information on elaboration checking
    --  d_M
    --  d_N
@@ -1006,6 +1006,9 @@ package body Debug is
    --  d_F  The compiler encodes the full path from an invocation construct to
    --       an external target, offering additional information to GNATBIND for
    --       purposes of error diagnostics.
+
+   --  d_K  (Reserved) Enable reporting a warning on known-problem issues of
+   --       previous releases. No action performed in the wavefront.
 
    --  d_L  Output trace information on elaboration checking. This debug switch
    --       causes output to be generated showing each call or instantiation as

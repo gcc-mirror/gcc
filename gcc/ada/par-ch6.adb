@@ -229,12 +229,13 @@ package body Ch6 is
       --  Set up scope stack entry. Note that the Labl field will be set later
 
       SIS_Entry_Active := False;
+      SIS_Aspect_Import_Seen := False;
       SIS_Missing_Semicolon_Message := No_Error_Msg;
       Push_Scope_Stack;
-      Scope.Table (Scope.Last).Sloc := Token_Ptr;
-      Scope.Table (Scope.Last).Etyp := E_Name;
-      Scope.Table (Scope.Last).Ecol := Start_Column;
-      Scope.Table (Scope.Last).Lreq := False;
+      Scopes (Scope.Last).Sloc := Token_Ptr;
+      Scopes (Scope.Last).Etyp := E_Name;
+      Scopes (Scope.Last).Ecol := Start_Column;
+      Scopes (Scope.Last).Lreq := False;
 
       Aspects := Empty_List;
 
@@ -335,7 +336,7 @@ package body Ch6 is
          Name_Node := P_Defining_Program_Unit_Name;
       end if;
 
-      Scope.Table (Scope.Last).Labl := Name_Node;
+      Scopes (Scope.Last).Labl := Name_Node;
       Current_Node := Name_Node;
       Ignore (Tok_Colon);
 
@@ -533,7 +534,7 @@ package body Ch6 is
          --  i.e. that the terminating semicolon should have been IS.
 
          elsif Token = Tok_Begin
-            and then Start_Column >= Scope.Table (Scope.Last).Ecol
+            and then Start_Column >= Scopes (Scope.Last).Ecol
          then
             Error_Msg_SP -- CODEFIX
               ("|"";"" should be IS!");
@@ -764,7 +765,7 @@ package body Ch6 is
 
                            Spec_Node : constant Node_Id :=
                                          Parent
-                                           (Scope.Table (Scope.Last).Labl);
+                                           (Scopes (Scope.Last).Labl);
                            Lib_Node : Node_Id := Spec_Node;
 
                         begin
@@ -773,7 +774,7 @@ package body Ch6 is
 
                            if Scope.Last > 1 then
                               Lib_Node  :=
-                                Parent (Scope.Table (Scope.Last - 1).Labl);
+                                Parent (Scopes (Scope.Last - 1).Labl);
                            end if;
 
                            if Ada_Version >= Ada_2012
@@ -917,11 +918,11 @@ package body Ch6 is
                   if (Token in Token_Class_Declk
                         or else
                       Token = Tok_Identifier)
-                    and then Start_Column <= Scope.Table (Scope.Last).Ecol
+                    and then Start_Column <= Scopes (Scope.Last).Ecol
                     and then Scope.Last /= 1
                   then
-                     Scope.Table (Scope.Last).Etyp := E_Suspicious_Is;
-                     Scope.Table (Scope.Last).S_Is := Prev_Token_Ptr;
+                     Scopes (Scope.Last).Etyp := E_Suspicious_Is;
+                     Scopes (Scope.Last).S_Is := Prev_Token_Ptr;
                   end if;
 
                   --  Build and return subprogram body, parsing declarations
@@ -998,18 +999,23 @@ package body Ch6 is
 
          if Pf_Flags.Pbod
 
-           --  Disconnnect this processing if we have scanned a null procedure
+           --  Disconnect this processing if we have scanned a null procedure
            --  because in this case the spec is complete anyway with no body.
 
            and then (Nkind (Specification_Node) /= N_Procedure_Specification
                       or else not Null_Present (Specification_Node))
          then
-            SIS_Labl := Scope.Table (Scope.Last).Labl;
-            SIS_Sloc := Scope.Table (Scope.Last).Sloc;
-            SIS_Ecol := Scope.Table (Scope.Last).Ecol;
+            SIS_Labl := Scopes (Scope.Last).Labl;
+            SIS_Sloc := Scopes (Scope.Last).Sloc;
+            SIS_Ecol := Scopes (Scope.Last).Ecol;
             SIS_Declaration_Node := Decl_Node;
             SIS_Semicolon_Sloc := Prev_Token_Ptr;
-            SIS_Entry_Active := True;
+
+            --  Do not activate the entry if we have "with Import"
+
+            if not SIS_Aspect_Import_Seen then
+               SIS_Entry_Active := True;
+            end if;
          end if;
 
          Pop_Scope_Stack;
@@ -1946,10 +1952,10 @@ package body Ch6 is
 
             if Token = Tok_Do then
                Push_Scope_Stack;
-               Scope.Table (Scope.Last).Ecol := Ret_Strt;
-               Scope.Table (Scope.Last).Etyp := E_Return;
-               Scope.Table (Scope.Last).Labl := Error;
-               Scope.Table (Scope.Last).Sloc := Ret_Sloc;
+               Scopes (Scope.Last).Ecol := Ret_Strt;
+               Scopes (Scope.Last).Etyp := E_Return;
+               Scopes (Scope.Last).Labl := Error;
+               Scopes (Scope.Last).Sloc := Ret_Sloc;
 
                Scan; -- past DO
                Set_Handled_Statement_Sequence
