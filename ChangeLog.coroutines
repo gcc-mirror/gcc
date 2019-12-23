@@ -1,5 +1,13 @@
 2019-12-23  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/co-ret-03-different GRO-type.C:
+	Rename to...
+	* g++.dg/coroutines/torture/co-ret-03-different-GRO-type.C:
+	... this.
+
+2019-12-23  Iain Sandoe  <iain@sandoe.co.uk>
+
 	Merge trunk r279715.
 
 2019-12-22  Iain Sandoe  <iain@sandoe.co.uk>
