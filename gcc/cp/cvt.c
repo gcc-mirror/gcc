@@ -744,7 +744,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
       else if (TREE_CODE (type) == COMPLEX_TYPE)
 	return convert_to_complex_maybe_fold (type, e, dofold);
       else if (VECTOR_TYPE_P (type))
-	return convert_to_vector (type, e);
+	return convert_to_vector (type, rvalue (e));
       else if (TREE_CODE (e) == TARGET_EXPR)
 	{
 	  /* Don't build a NOP_EXPR of class type.  Instead, change the
@@ -881,7 +881,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 		      in_vtype, type);
 	  return error_mark_node;
 	}
-      return convert_to_vector (type, e);
+      return convert_to_vector (type, rvalue (e));
     }
   if (code == REAL_TYPE || code == COMPLEX_TYPE)
     {

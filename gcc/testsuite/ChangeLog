@@ -1,3 +1,7 @@
+2019-12-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.dg/ext/vector39.C: New test.
+
 2019-12-21  Andrew Pinski  <apinski@marvell.com>
 
 	PR testsuite/92998

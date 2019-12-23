@@ -1,3 +1,9 @@
+2019-12-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cvt.c (ocp_convert): Apply rvalue to the source of vector
+	conversions.
+	* typeck.c (build_reinterpret_cast_1): Likewise.
+
 2019-12-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/92745 - bogus error when initializing array of vectors.
