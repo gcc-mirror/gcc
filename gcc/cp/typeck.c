@@ -7858,7 +7858,7 @@ build_reinterpret_cast_1 (location_t loc, tree type, tree expr,
       return build_nop_reinterpret (type, expr);
     }
   else if (gnu_vector_type_p (type))
-    return convert_to_vector (type, expr);
+    return convert_to_vector (type, rvalue (expr));
   else if (gnu_vector_type_p (intype)
 	   && INTEGRAL_OR_ENUMERATION_TYPE_P (type))
     return convert_to_integer_nofold (type, expr);
