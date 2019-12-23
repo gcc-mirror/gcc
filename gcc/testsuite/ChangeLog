@@ -1,3 +1,7 @@
+2019-12-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/mdc-1.c: Restrict to LP64, LLP64.
+
 2019-12-23  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR c++/92789
