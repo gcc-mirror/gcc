@@ -3412,7 +3412,8 @@ Alternatively, you may run the script using the following command line:
 
    :switch:`--RM-style-spacing`
      Do not insert an extra blank before various occurrences of
-     '(' and ':'. This also turns off alignment.
+     '(' and ':'. Alignment is off by default in this mode;
+     use :switch:`--alignment` to turn it on.
 
 
    .. index:: --compact (gnatpp)
