@@ -1,3 +1,8 @@
+2019-12-24  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Enable
+	-fweb and -frename-registers with -funroll-loops
+
 2019-12-22  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/invoke.texi (-flto): Use "compile time" as a noun.
