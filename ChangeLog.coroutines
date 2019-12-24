@@ -1,5 +1,10 @@
 2019-12-24  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/
+	* coroutines.cc (captures_temporary): Remove unused var.
+
+2019-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/
 	* coroutine-passes.cc (execute_early_expand_coro_ifns): Use
 	a worklist to contain and process the IFN_CO_ACTORs.

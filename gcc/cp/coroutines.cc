@@ -2302,7 +2302,6 @@ captures_temporary (tree *stmt, int *do_subtree, void *d)
   /* Does this call capture references?
      Strip the ADDRESS_EXPR to get the fn decl and inspect it.  */
   tree fn = TREE_OPERAND (CALL_EXPR_FN (*stmt), 0);
-  bool is_meth = TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE;
   tree arg = TYPE_ARG_TYPES (TREE_TYPE (fn));
   unsigned offset = 3;
   for (unsigned anum = 0; arg != NULL; arg = TREE_CHAIN (arg), anum++)
