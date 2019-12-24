@@ -17,8 +17,6 @@ void wrapped_free (void *ptr)
 {
   free (ptr); /* { dg-warning "double-free of 'ptr' \\\[CWE-415\\]" } */
   /* { dg-begin-multiline-output "" }
-   free (ptr);
-   ^~~~~~~~~~
   'test': events 1-2
     |
     | {

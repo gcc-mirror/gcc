@@ -2565,6 +2565,13 @@ diagnostic_show_locus (diagnostic_context * context,
 
   context->last_location = loc;
 
+  /* If we have a path that which when printed would make printing
+     RICHLOC redundant, then print that now instead.  */
+  if (context->m_path_printer)
+    if (context->m_path_printer->maybe_print_path_rather_than_richloc
+	  (context, *richloc))
+      return;
+
   layout layout (context, richloc, diagnostic_kind);
   for (int line_span_idx = 0; line_span_idx < layout.get_num_line_spans ();
        line_span_idx++)

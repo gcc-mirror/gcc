@@ -210,6 +210,8 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->get_option_url = NULL;
   context->last_location = UNKNOWN_LOCATION;
   context->last_module = 0;
+  context->m_path_printer = NULL;
+  context->make_json_for_path = NULL;
   context->x_data = NULL;
   context->lock = 0;
   context->inhibit_notes_p = false;
@@ -285,6 +287,9 @@ diagnostic_finish (diagnostic_context *context)
   context->printer->~pretty_printer ();
   XDELETE (context->printer);
   context->printer = NULL;
+
+  delete context->m_path_printer;
+  context->m_path_printer = NULL;
 
   if (context->edit_context_ptr)
     {
@@ -672,8 +677,8 @@ diagnostic_show_any_path (diagnostic_context *context,
   if (!path)
     return;
 
-  if (context->print_path)
-    context->print_path (context, path);
+  if (context->m_path_printer)
+    context->m_path_printer->print_path (context, *diagnostic->richloc);
 }
 
 /* Return true if the events in this path involve more than one
@@ -690,6 +695,40 @@ diagnostic_path::interprocedural_p () const
       if (get_event (i).get_stack_depth () != get_event (0).get_stack_depth ())
 	return true;
     }
+  return false;
+}
+
+/* Return true if it would be redundant to print this rich_location with
+   diagnostic_show_locus if we were to also then print the path of this
+   rich_location.
+
+   Specifically return true if this rich_location has a single location,
+   and a path, no fix-it hints or labels, and the single location is
+   within the path.
+
+   Implemented here as libcpp has only a forward decl of diagnostic_path.  */
+
+bool
+rich_location::path_makes_location_redundant_p () const
+{
+  if (m_path == NULL)
+    return false;
+  if (get_num_locations () != 1)
+    return false;
+
+  /* Must be no fix-it hints or labels. */
+  if (get_num_fixit_hints () > 0)
+    return false;
+  const location_range *lr = get_range (0);
+  if (lr->m_label)
+    return false;
+
+  /* Check if primary location is within path.  */
+  location_t loc = get_loc ();
+  const unsigned num = m_path->num_events ();
+  for (unsigned i = 0; i < num; i++)
+    if (m_path->get_event (i).get_location () == loc)
+      return true;
   return false;
 }
 

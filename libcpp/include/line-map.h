@@ -1732,6 +1732,8 @@ class rich_location
   const diagnostic_path *get_path () const { return m_path; }
   void set_path (const diagnostic_path *path) { m_path = path; }
 
+  bool path_makes_location_redundant_p () const;
+
 private:
   bool reject_impossible_fixit (location_t where);
   void stop_supporting_fixits ();

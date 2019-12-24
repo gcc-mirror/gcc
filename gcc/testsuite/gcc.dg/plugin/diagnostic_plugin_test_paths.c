@@ -57,7 +57,7 @@ const pass_data pass_data_test_show_path =
 class pass_test_show_path : public ipa_opt_pass_d
 {
 public:
-  pass_test_show_path(gcc::context *ctxt)
+  pass_test_show_path(gcc::context *ctxt, bool dummy_label)
     : ipa_opt_pass_d (pass_data_test_show_path, ctxt,
 		      NULL, /* generate_summary */
 		      NULL, /* write_summary */
@@ -67,12 +67,15 @@ public:
 		      NULL, /* stmt_fixup */
 		      0, /* function_transform_todo_flags_start */
 		      NULL, /* function_transform */
-		      NULL) /* variable_transform */
+		      NULL), /* variable_transform */
+    m_dummy_label (dummy_label)
   {}
 
   /* opt_pass methods: */
   bool gate (function *) { return true; }
   virtual unsigned int execute (function *);
+
+  bool m_dummy_label;
 
 }; // class pass_test_show_path
 
@@ -110,7 +113,7 @@ check_for_named_call (gimple *stmt,
 /* Example 1: a purely intraprocedural path.  */
 
 static void
-example_1 ()
+example_1 (bool dummy_label)
 {
   gimple_stmt_iterator gsi;
   basic_block bb;
@@ -146,6 +149,13 @@ example_1 ()
     {
       auto_diagnostic_group d;
       gcc_rich_location richloc (gimple_location (call_to_PyList_Append));
+
+      text_range_label label ("dummy label");
+      if (dummy_label)
+	richloc.add_range (gimple_location (call_to_PyList_Append),
+			   SHOW_RANGE_WITHOUT_CARET,
+			   &label);
+
       simple_diagnostic_path path (global_dc->printer);
       diagnostic_event_id_t alloc_event_id
 	= path.add_event (gimple_location (call_to_PyList_New),
@@ -424,17 +434,11 @@ example_3 ()
 unsigned int
 pass_test_show_path::execute (function *)
 {
-  example_1 ();
+  example_1 (m_dummy_label);
   example_2 ();
   example_3 ();
 
   return 0;
-}
-
-static opt_pass *
-make_pass_test_show_path (gcc::context *ctxt)
-{
-  return new pass_test_show_path (ctxt);
 }
 
 int
@@ -449,7 +453,14 @@ plugin_init (struct plugin_name_args *plugin_info,
   if (!plugin_default_version_check (version, &gcc_version))
     return 1;
 
-  pass_info.pass = make_pass_test_show_path (g);
+  bool dummy_label = false;
+  for (int i = 0; i < argc; i++)
+    {
+      if (strcmp (argv[i].key, "dummy_label") == 0)
+	dummy_label = true;
+    }
+
+  pass_info.pass = new pass_test_show_path (g, dummy_label);
   pass_info.reference_pass_name = "whole-program";
   pass_info.ref_pass_instance_number = 1;
   pass_info.pos_op = PASS_POS_INSERT_BEFORE;

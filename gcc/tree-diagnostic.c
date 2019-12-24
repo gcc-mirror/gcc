@@ -312,6 +312,6 @@ tree_diagnostics_defaults (diagnostic_context *context)
   diagnostic_starter (context) = default_tree_diagnostic_starter;
   diagnostic_finalizer (context) = default_diagnostic_finalizer;
   diagnostic_format_decoder (context) = default_tree_printer;
-  context->print_path = default_tree_diagnostic_path_printer;
+  context->m_path_printer = path_printer::make_tree_default ();
   context->make_json_for_path = default_tree_make_json_for_path;
 }

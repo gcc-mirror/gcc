@@ -4209,27 +4209,24 @@ test.c:29:5: note: (3) when calling 'PyList_Append', passing NULL from (1) as ar
 @samp{inline-events} means to print the events ``inline'' within the source
 code.  This view attempts to consolidate the events into runs of
 sufficiently-close events, printing them as labelled ranges within the source.
-
 For example, the same events as above might be printed as:
 
 @smallexample
-  'test': events 1-3
-    |
-    |   25 |   list = PyList_New(0);
-    |      |          ^~~~~~~~~~~~~
-    |      |          |
-    |      |          (1) when 'PyList_New' fails, returning NULL
-    |   26 |
-    |   27 |   for (i = 0; i < count; i++) @{
-    |      |   ~~~
-    |      |   |
-    |      |   (2) when 'i < count'
-    |   28 |     item = PyLong_FromLong(random());
-    |   29 |     PyList_Append(list, item);
-    |      |     ~~~~~~~~~~~~~~~~~~~~~~~~~
-    |      |     |
-    |      |     (3) when calling 'PyList_Append', passing NULL from (1) as argument 1
-    |
+test.c:29:5: error: passing NULL as argument 1 to 'PyList_Append' which requires a non-NULL parameter
+   25 |   list = PyList_New(0);
+      |          ^~~~~~~~~~~~~
+      |          |
+      |          (1) when 'PyList_New' fails, returning NULL
+   26 |
+   27 |   for (i = 0; i < count; i++) @{
+      |   ~~~
+      |   |
+      |   (2) when 'i < count'
+   28 |     item = PyLong_FromLong(random());
+   29 |     PyList_Append(list, item);
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~
+      |     |
+      |     (3) when calling 'PyList_Append', passing NULL from (1) as argument 1
 @end smallexample
 
 Interprocedural control flow is shown by grouping the events by stack frame,
@@ -4283,13 +4280,17 @@ For example:
 (etc)
 @end smallexample
 
+If the location of the diagnostic is contained within the path and there are
+no fix-it hints or other complications, the source code for the location
+is elided and just the path is printed.
+
 @item -fdiagnostics-show-path-depths
 @opindex fdiagnostics-show-path-depths
 This option provides additional information when printing control-flow paths
 associated with a diagnostic.
 
 If this is option is provided then the stack depth will be printed for
-each run of events within @option{-fdiagnostics-path-format=separate-events}.
+each run of events within @option{-fdiagnostics-path-format=inline-events}.
 
 This is intended for use by GCC developers and plugin developers when
 debugging diagnostics that report interprocedural control flow.

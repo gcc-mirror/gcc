@@ -211,11 +211,13 @@ class path_summary
  public:
   path_summary (const diagnostic_path &path, bool check_rich_locations);
 
-  void print (diagnostic_context *dc, bool show_depths) const;
+  void print (diagnostic_context *dc, bool show_depths,
+	      bool need_event_header = true) const;
 
   unsigned get_num_ranges () const { return m_ranges.length (); }
 
  private:
+  const diagnostic_path &m_path;
   auto_delete_vec <event_range> m_ranges;
 };
 
@@ -223,6 +225,7 @@ class path_summary
 
 path_summary::path_summary (const diagnostic_path &path,
 			    bool check_rich_locations)
+: m_path (path)
 {
   const unsigned num_events = path.num_events ();
 
@@ -272,34 +275,42 @@ print_fndecl (pretty_printer *pp, tree fndecl, bool quoted)
    descriptions within calls to diagnostic_show_locus, using labels to
    show the events:
 
-   'foo' (events 1-2)
+   'foo': events 1-2
      | NN |
      |    |
-     +--> 'bar' (events 3-4)
+     +--> 'bar': events 3-4
             | NN |
             |    |
-            +--> 'baz' (events 5-6)
+            +--> 'baz': events 5-6
                    | NN |
                    |    |
      <------------ +
      |
-   'foo' (events 7-8)
+   'foo': events 7-8
      | NN |
      |    |
-     +--> 'bar' (events 9-10)
+     +--> 'bar': events 9-10
             | NN |
             |    |
-            +--> 'baz' (events 11-12)
+            +--> 'baz': events 11-12
                    | NN |
                    |    |
 
    If SHOW_DEPTHS is true, append " (depth N)" to the header of each run
    of events.
 
-   For events with UNKNOWN_LOCATION, print a summary of each the event.  */
+   For events with UNKNOWN_LOCATION, print a summary of each the event.
+
+   If the path is purely intraprocedural, don't print the function name
+   or the left-hand stack-depth lines.
+
+   If NEED_EVENT_HEADER is true, then a header is printed for every run
+   of events.  Otherwise, headers are only printed if there is more than
+   one run of events.  */
 
 void
-path_summary::print (diagnostic_context *dc, bool show_depths) const
+path_summary::print (diagnostic_context *dc,  bool show_depths,
+		     bool need_event_header) const
 {
   pretty_printer *pp = dc->printer;
 
@@ -317,6 +328,8 @@ path_summary::print (diagnostic_context *dc, bool show_depths) const
   typedef int_hash <int, EMPTY, DELETED> vbar_hash;
   hash_map <vbar_hash, int> vbar_column_for_depth;
 
+  const bool interprocedural = m_path.interprocedural_p ();
+
   /* Print the ranges.  */
   const int base_indent = 2;
   int cur_indent = base_indent;
@@ -324,67 +337,77 @@ path_summary::print (diagnostic_context *dc, bool show_depths) const
   event_range *range;
   FOR_EACH_VEC_ELT (m_ranges, i, range)
     {
-      write_indent (pp, cur_indent);
-      if (i > 0)
+      /* Write the header line for a run of events.  */
+      if (m_ranges.length () > 1 || need_event_header)
 	{
-	  const path_summary::event_range *prev_range
-	    = m_ranges[i - 1];
-	  if (range->m_stack_depth > prev_range->m_stack_depth)
+	  write_indent (pp, cur_indent);
+	  if (i > 0)
 	    {
-	      /* Show pushed stack frame(s).  */
-	      const char *push_prefix = "+--> ";
-	      pp_string (pp, start_line_color);
-	      pp_string (pp, push_prefix);
-	      pp_string (pp, end_line_color);
-	      cur_indent += strlen (push_prefix);
+	      const path_summary::event_range *prev_range
+		= m_ranges[i - 1];
+	      if (range->m_stack_depth > prev_range->m_stack_depth)
+		{
+		  /* Show pushed stack frame(s).  */
+		  const char *push_prefix = "+--> ";
+		  pp_string (pp, start_line_color);
+		  pp_string (pp, push_prefix);
+		  pp_string (pp, end_line_color);
+		  cur_indent += strlen (push_prefix);
+		}
 	    }
+	  if (interprocedural && range->m_fndecl)
+	    {
+	      print_fndecl (pp, range->m_fndecl, true);
+	      pp_string (pp, ": ");
+	    }
+	  if (range->m_start_idx == range->m_end_idx)
+	    pp_printf (pp, "event %i",
+		       range->m_start_idx + 1);
+	  else
+	    pp_printf (pp, "events %i-%i",
+		       range->m_start_idx + 1, range->m_end_idx + 1);
+	  if (show_depths)
+	    pp_printf (pp, " (depth %i)", range->m_stack_depth);
+	  pp_newline (pp);
 	}
-      if (range->m_fndecl)
-	{
-	  print_fndecl (pp, range->m_fndecl, true);
-	  pp_string (pp, ": ");
-	}
-      if (range->m_start_idx == range->m_end_idx)
-	pp_printf (pp, "event %i",
-		   range->m_start_idx + 1);
-      else
-	pp_printf (pp, "events %i-%i",
-		   range->m_start_idx + 1, range->m_end_idx + 1);
-      if (show_depths)
-	pp_printf (pp, " (depth %i)", range->m_stack_depth);
-      pp_newline (pp);
 
       /* Print a run of events.  */
       {
-	write_indent (pp, cur_indent + per_frame_indent);
-	pp_string (pp, start_line_color);
-	pp_string (pp, "|");
-	pp_string (pp, end_line_color);
-	pp_newline (pp);
+	if (interprocedural)
+	  {
+	    write_indent (pp, cur_indent + per_frame_indent);
+	    pp_string (pp, start_line_color);
+	    pp_string (pp, "|");
+	    pp_string (pp, end_line_color);
+	    pp_newline (pp);
+	  }
 
 	char *saved_prefix = pp_take_prefix (pp);
 	char *prefix;
-	{
-	  pretty_printer tmp_pp;
-	  write_indent (&tmp_pp, cur_indent + per_frame_indent);
-	  pp_string (&tmp_pp, start_line_color);
-	  pp_string (&tmp_pp, "|");
-	  pp_string (&tmp_pp, end_line_color);
-	  prefix = xstrdup (pp_formatted_text (&tmp_pp));
-	}
-	pp_set_prefix (pp, prefix);
-	pp_prefixing_rule (pp) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
+	if (interprocedural)
+	  {
+	    pretty_printer tmp_pp;
+	    write_indent (&tmp_pp, cur_indent + per_frame_indent);
+	    pp_string (&tmp_pp, start_line_color);
+	    pp_string (&tmp_pp, "|");
+	    pp_string (&tmp_pp, end_line_color);
+	    prefix = xstrdup (pp_formatted_text (&tmp_pp));
+	    pp_set_prefix (pp, prefix);
+	    pp_prefixing_rule (pp) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
+	  }
 	range->print (dc);
-	pp_set_prefix (pp, saved_prefix);
-
-	write_indent (pp, cur_indent + per_frame_indent);
-	pp_string (pp, start_line_color);
-	pp_string (pp, "|");
-	pp_string (pp, end_line_color);
-	pp_newline (pp);
+	if (interprocedural)
+	  {
+	    pp_set_prefix (pp, saved_prefix);
+	    write_indent (pp, cur_indent + per_frame_indent);
+	    pp_string (pp, start_line_color);
+	    pp_string (pp, "|");
+	    pp_string (pp, end_line_color);
+	    pp_newline (pp);
+	  }
       }
 
-      if (i < m_ranges.length () - 1)
+      if (interprocedural && i < m_ranges.length () - 1)
 	{
 	  const path_summary::event_range *next_range
 	    = m_ranges[i + 1];
@@ -441,51 +464,116 @@ path_summary::print (diagnostic_context *dc, bool show_depths) const
     }
 }
 
+/* Concrete implementation of path_printer.
+
+   Putting this here isolates the path-printing code (which uses tree and
+   thus is in OBJS) from the core diagnostic machinery (which is in
+   OBJS-libcommon).  */
+
+class impl_path_printer : public path_printer
+{
+public:
+  bool maybe_print_path_rather_than_richloc (diagnostic_context *context,
+					     const rich_location &richloc)
+    FINAL OVERRIDE
+  {
+    switch (context->path_format)
+      {
+      default:
+	gcc_unreachable ();
+      case DPF_NONE:
+      case DPF_SEPARATE_EVENTS:
+	return false;
+
+      case DPF_INLINE_EVENTS:
+	{
+	  /* If we can, then print the path here, rather than RICHLOC. */
+	  if (richloc.path_makes_location_redundant_p ())
+	    {
+	      impl_print_path (context, richloc, false);
+	      return true;
+	    }
+	  return false;
+	}
+      }
+  }
+
+  void print_path (diagnostic_context *context,
+		   const rich_location &richloc) FINAL OVERRIDE
+  {
+    switch (context->path_format)
+      {
+      default:
+	gcc_unreachable ();
+      case DPF_NONE:
+	break;
+      case DPF_SEPARATE_EVENTS:
+	{
+	  const diagnostic_path *path = richloc.get_path ();
+	  gcc_assert (path);
+
+	  const unsigned num_events = path->num_events ();
+
+	  /* A note per event.  */
+	  for (unsigned i = 0; i < num_events; i++)
+	    {
+	      const diagnostic_event &event = path->get_event (i);
+	      label_text event_text (event.get_desc (false));
+	      gcc_assert (event_text.m_buffer);
+	      diagnostic_event_id_t event_id (i);
+	      inform (event.get_location (),
+		      "%@ %s", &event_id, event_text.m_buffer);
+	      event_text.maybe_free ();
+	    }
+	}
+	break;
+
+      case DPF_INLINE_EVENTS:
+	{
+	  if (richloc.path_makes_location_redundant_p ())
+	    {
+	      /* Then we already printed the path during diagnostic_show_locus
+		 on RICHLOC; nothing left to do.  */
+	      return;
+	    }
+	  /* Otherwise, print the path.  We have also printed RICHLOC
+	     via diagnostic_show_locus, so we must print event headers, to
+	     stop the path following on directly from the diagnostic_show_locus
+	     call.  */
+	  impl_print_path (context, richloc, true);
+	}
+      }
+  }
+
+  void impl_print_path (diagnostic_context *context,
+			const rich_location &richloc,
+			bool need_event_header)
+  {
+    const diagnostic_path *path = richloc.get_path ();
+    gcc_assert (path);
+
+    /* Consolidate related events.  */
+    path_summary summary (*path, true);
+    char *saved_prefix = pp_take_prefix (context->printer);
+    pp_set_prefix (context->printer, NULL);
+    summary.print (context, context->show_path_depths,
+		   need_event_header);
+    pp_flush (context->printer);
+    pp_set_prefix (context->printer, saved_prefix);
+  }
+};
+
 } /* end of anonymous namespace for path-printing code.  */
 
-/* Print PATH to CONTEXT, according to CONTEXT's path_format.  */
+/* class path_printer.  */
 
-void
-default_tree_diagnostic_path_printer (diagnostic_context *context,
-				      const diagnostic_path *path)
+/* Make a concrete path_printer instance.
+   The caller is reponsible for deleting it.  */
+
+path_printer *
+path_printer::make_tree_default ()
 {
-  gcc_assert (path);
-
-  const unsigned num_events = path->num_events ();
-
-  switch (context->path_format)
-    {
-    case DPF_NONE:
-      /* Do nothing.  */
-      return;
-
-    case DPF_SEPARATE_EVENTS:
-      {
-	/* A note per event.  */
-	for (unsigned i = 0; i < num_events; i++)
-	  {
-	    const diagnostic_event &event = path->get_event (i);
-	    label_text event_text (event.get_desc (false));
-	    gcc_assert (event_text.m_buffer);
-	    diagnostic_event_id_t event_id (i);
-	    inform (event.get_location (),
-		    "%@ %s", &event_id, event_text.m_buffer);
-	    event_text.maybe_free ();
-	  }
-      }
-      break;
-
-    case DPF_INLINE_EVENTS:
-      {
-	/* Consolidate related events.  */
-	path_summary summary (*path, true);
-	char *saved_prefix = pp_take_prefix (context->printer);
-	pp_set_prefix (context->printer, NULL);
-	summary.print (context, context->show_path_depths);
-	pp_flush (context->printer);
-	pp_set_prefix (context->printer, saved_prefix);
-      }
-    }
+  return new impl_path_printer ();
 }
 
 /* This has to be here, rather than diagnostic-format-json.cc,
@@ -591,14 +679,21 @@ test_intraprocedural_path (pretty_printer *event_pp)
   path_summary summary (path, false);
   ASSERT_EQ (summary.get_num_ranges (), 1);
 
-  test_diagnostic_context dc;
-  summary.print (&dc, true);
-  ASSERT_STREQ ("  `foo': events 1-2 (depth 0)\n"
-		"    |\n"
-		"    | (1): first `free'\n"
-		"    | (2): double `free'\n"
-		"    |\n",
-		pp_formatted_text (dc.printer));
+  {
+    test_diagnostic_context dc;
+    summary.print (&dc, true, false);
+    ASSERT_STREQ (" (1): first `free'\n"
+		  " (2): double `free'\n",
+		  pp_formatted_text (dc.printer));
+  }
+  {
+    test_diagnostic_context dc;
+    summary.print (&dc, true, true);
+    ASSERT_STREQ ("  events 1-2 (depth 0)\n"
+		  " (1): first `free'\n"
+		  " (2): double `free'\n",
+		  pp_formatted_text (dc.printer));
+  }
 }
 
 /* Verify that print_path_summary works on an interprocedural path.  */

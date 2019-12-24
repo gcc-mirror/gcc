@@ -99,6 +99,38 @@ typedef void (*diagnostic_finalizer_fn) (diagnostic_context *,
 class edit_context;
 namespace json { class value; }
 
+/* Abstract base class for printing diagnostic_paths, to isolate
+   the path-printing code (which uses tree and thus is in OBJS) from the
+   core diagnostic machinery (which is in OBJS-libcommon).
+
+   Concrete implementation is in tree-diagnostic-path.cc.
+
+   Implemented as a pair of calls, and thus as a pair of vfuncs, rather than
+   a pair of callbacks.
+
+   This is done to allow -fdiagnostics-path-format=inline-events to
+   consolidate and print less for, the common case where the path contains the
+   rich_location, and hence the rich_location can be elided when it is
+   redundant.  */
+
+class path_printer
+{
+public:
+  static path_printer *make_tree_default ();
+  virtual ~path_printer () {}
+
+  /* Vfunc called by diagnostic_show_locus: potentially print the path
+     as inline events if the rest of the rich_location is redundant,
+     returning true if this is the case.  */
+  virtual bool maybe_print_path_rather_than_richloc (diagnostic_context *,
+						     const rich_location &) = 0;
+
+  /* Vfunc called after the call to diagnostic_show_locus: print the path, if
+     it wasn't printed already.  */
+  virtual void print_path (diagnostic_context *,
+			   const rich_location &) = 0;
+};
+
 /* This data structure bundles altogether any information relevant to
    the context of a diagnostic message.  */
 struct diagnostic_context
@@ -232,8 +264,10 @@ struct diagnostic_context
      particular option.  */
   char *(*get_option_url) (diagnostic_context *, int);
 
-  void (*print_path) (diagnostic_context *, const diagnostic_path *);
-  json::value *(*make_json_for_path) (diagnostic_context *, const diagnostic_path *);
+  /* Client hooks for working with diagnostic_paths.  */
+  path_printer *m_path_printer;
+  json::value *(*make_json_for_path) (diagnostic_context *,
+				      const diagnostic_path *);
 
   /* Auxiliary data for client.  */
   void *x_data;

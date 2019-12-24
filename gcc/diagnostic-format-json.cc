@@ -295,7 +295,9 @@ diagnostic_output_format_init (diagnostic_context *context,
 	context->begin_group_cb = json_begin_group;
 	context->end_group_cb =  json_end_group;
 	context->final_cb =  json_final_cb;
-	context->print_path = NULL; /* handled in json_end_diagnostic.  */
+	/* Handled in json_end_diagnostic:  */
+	delete context->m_path_printer;
+	context->m_path_printer = NULL;
 
 	/* The metadata is handled in JSON format, rather than as text.  */
 	context->show_cwe = false;

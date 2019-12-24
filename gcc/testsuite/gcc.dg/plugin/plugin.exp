@@ -98,6 +98,7 @@ set plugin_test_list [list \
     { diagnostic_plugin_test_paths.c \
 	  diagnostic-test-paths-1.c \
 	  diagnostic-test-paths-2.c \
+	  diagnostic-test-paths-2a.c \
 	  diagnostic-test-paths-3.c \
 	  diagnostic-test-paths-4.c \
 	  diagnostic-path-format-default.c \
