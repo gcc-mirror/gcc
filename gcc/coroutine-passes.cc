@@ -289,20 +289,23 @@ execute_early_expand_coro_ifns (void)
 {
   /* Don't rebuild stuff unless we have to. */
   unsigned int todoflags = 0;
-
-  /* Some of the possible YIELD points will hopefully have been removed by
-     earlier optimisations, record the ones that are present.  */
-  hash_map<int_hash<HOST_WIDE_INT, -1, -2>, tree> destinations;
-  hash_set<tree> to_remove;
   bool changed = false;
-
+  /* Some of the possible YIELD points will hopefully have been removed by
+     earlier optimisations; record the ones that are still present.  */
+  hash_map<int_hash<HOST_WIDE_INT, -1, -2>, tree> destinations;
+  /* Labels we added to carry the CFG changes, we need to remove these to
+     avoid confusing EH.  */
+  hash_set<tree> to_remove;
+  /* List of dispatch points to update.  */
+  auto_vec<gimple_stmt_iterator, 16> actor_worklist;
   basic_block bb;
-
   gimple_stmt_iterator gsi;
+
   FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
       {
 	gimple *stmt = gsi_stmt (gsi);
+
 	if (!is_gimple_call (stmt) || !gimple_call_internal_p (stmt))
 	  {
 	    gsi_next (&gsi);
@@ -327,18 +330,19 @@ execute_early_expand_coro_ifns (void)
 	    break;
 	  case IFN_CO_ACTOR:
 	    changed = true;
+	    actor_worklist.safe_push (gsi); /* Save for later.  */
 	    gsi_next (&gsi);
 	    break;
 	  case IFN_CO_YIELD:
 	    {
+	      changed = true;
 	      /* .CO_YIELD (NUM, FINAL, RES_LAB, DEST_LAB, FRAME_PTR);
-		 NUM = await number.
-		 FINAL = 1 if this is the final_suspend() await.
-		 RES_LAB = resume point label.
-		 DEST_LAB = destroy point label.
-		 FRAME_PTR = is a null pointer with the type of the coro
-			     frame, so that we can resize, if needed.
-	      */
+		  NUM = await number.
+		  FINAL = 1 if this is the final_suspend() await.
+		  RES_LAB = resume point label.
+		  DEST_LAB = destroy point label.
+		  FRAME_PTR = is a null pointer with the type of the coro
+			      frame, so that we can resize, if needed.  */
 	      if (dump_file)
 		fprintf (dump_file, "saw CO_YIELD in BB %u\n", bb->index);
 	      tree num = gimple_call_arg (stmt, 0); /* yield point.  */
@@ -353,7 +357,7 @@ execute_early_expand_coro_ifns (void)
 		    "duplicate YIELD RESUME point (" HOST_WIDE_INT_PRINT_DEC
 		    ") ?\n",
 		    idx);
-		  debug_gimple_stmt (stmt);
+		  print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS);
 		}
 	      else
 		res_dest = res_tgt;
@@ -366,7 +370,7 @@ execute_early_expand_coro_ifns (void)
 		    "duplicate YIELD DESTROY point (" HOST_WIDE_INT_PRINT_DEC
 		    ") ?\n",
 		    idx + 1);
-		  debug_gimple_stmt (stmt);
+		  print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS);
 		}
 	      else
 		dst_dest = dst_tgt;
@@ -395,9 +399,8 @@ execute_early_expand_coro_ifns (void)
 		    gimple_cond_make_false (gif);
 		  fold_stmt (&gsi);
 		}
-	      else
-		debug_gimple_stmt (stmt);
-	      changed = true;
+	      else if (dump_file)
+		print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS);
 	      if (gsi_end_p (gsi))
 		break;
 	      continue;
@@ -415,61 +418,50 @@ execute_early_expand_coro_ifns (void)
       return todoflags;
     }
 
-  FOR_EACH_BB_FN (bb, cfun)
-    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
-      {
-	gimple *stmt = gsi_stmt (gsi);
-	if (!is_gimple_call (stmt) || !gimple_call_internal_p (stmt))
-	  {
-	    gsi_next (&gsi);
-	    continue;
-	  }
-	if (gimple_call_internal_fn (stmt) != IFN_CO_ACTOR)
-	  gsi_next (&gsi);
-	else
-	  {
-	    if (dump_file)
-	      fprintf (dump_file, "saw CO_ACTOR in BB %u\n", bb->index);
-	    /* get yield point.  */
-	    HOST_WIDE_INT idx = TREE_INT_CST_LOW (gimple_call_arg (stmt, 0));
-	    tree *seen = destinations.get (idx);
-	    if (!seen)
-	      {
-		/* If we never saw this index, it means that the CO_YIELD
-		   associated was elided during earlier optimisations, so we
-		    don't need to fix up the switch targets.  */
-		if (dump_file)
-		  fprintf (dump_file,
-			   "yield point " HOST_WIDE_INT_PRINT_DEC
-			   " not used, removing it .. \n",
-			   idx);
-		gsi_remove (&gsi, true);
-		release_defs (stmt);
-	      }
-	    else
-	      {
-		/* So we need to switch the target of this switch case to
-		   the relevant BB.  */
-		basic_block new_bb = label_to_block (cfun, *seen);
-		/* We expect the block we're modifying to contain a single
-		   CO_ACTOR() followed by a goto <switch default bb>.  */
-		gcc_checking_assert (EDGE_COUNT (bb->succs) == 1);
-		edge e;
-		edge_iterator ei;
-		FOR_EACH_EDGE (e, ei, bb->succs)
-		  {
-		    basic_block old_bb = e->dest;
-		    move_edge_and_update (e, old_bb, new_bb);
-		  }
-		gsi_remove (&gsi, true);
-		changed = true;
-	      }
-	    /* The remove advances the iterator.  */
-	    if (gsi_end_p (gsi))
-	      break;
-	    continue;
-	  }
-      }
+  while (!actor_worklist.is_empty ())
+    {
+      gsi = actor_worklist.pop ();
+      gimple *stmt = gsi_stmt (gsi);
+      gcc_checking_assert (is_gimple_call (stmt)
+			   && gimple_call_internal_p (stmt)
+			   && gimple_call_internal_fn (stmt) == IFN_CO_ACTOR);
+      bb = gsi_bb (gsi);
+      HOST_WIDE_INT idx = TREE_INT_CST_LOW (gimple_call_arg (stmt, 0));
+      tree *seen = destinations.get (idx);
+      changed = true;
+
+      if (dump_file)
+	fprintf (dump_file, "saw CO_ACTOR in BB %u\n", bb->index);
+
+      if (!seen)
+	{
+	  /* If we never saw this index, it means that the CO_YIELD
+	  associated was elided during earlier optimisations, so we
+	  don't need to fix up the switch targets.  */
+	  if (dump_file)
+	    fprintf (dump_file, "yield point " HOST_WIDE_INT_PRINT_DEC
+		     " not used, removing it .. \n",  idx);
+	  gsi_remove (&gsi, true);
+	  release_defs (stmt);
+	}
+      else
+	{
+	  /* So we need to switch the target of this switch case to the
+	     relevant BB.  */
+	  basic_block new_bb = label_to_block (cfun, *seen);
+	  /* We expect the block we're modifying to contain a single
+	     CO_ACTOR() followed by a goto <switch default bb>.  */
+	  gcc_checking_assert (EDGE_COUNT (bb->succs) == 1);
+	  edge e;
+	  edge_iterator ei;
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    {
+	      basic_block old_bb = e->dest;
+	      move_edge_and_update (e, old_bb, new_bb);
+	    }
+	  gsi_remove (&gsi, true);
+	}
+    }
 
   if (changed)
     {

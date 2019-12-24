@@ -1,3 +1,9 @@
+2019-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/
+	* coroutine-passes.cc (execute_early_expand_coro_ifns): Use
+	a worklist to contain and process the IFN_CO_ACTORs.
+
 2019-12-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/testsuite/
