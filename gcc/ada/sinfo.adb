@@ -3411,17 +3411,6 @@ package body Sinfo is
       return List2 (N);
    end Then_Statements;
 
-   function Treat_Fixed_As_Integer
-      (N : Node_Id) return Boolean is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Op_Divide
-        or else NT (N).Nkind = N_Op_Mod
-        or else NT (N).Nkind = N_Op_Multiply
-        or else NT (N).Nkind = N_Op_Rem);
-      return Flag14 (N);
-   end Treat_Fixed_As_Integer;
-
    function Triggering_Alternative
       (N : Node_Id) return Node_Id is
    begin
@@ -6915,17 +6904,6 @@ package body Sinfo is
         or else NT (N).Nkind = N_If_Statement);
       Set_List2_With_Parent (N, Val);
    end Set_Then_Statements;
-
-   procedure Set_Treat_Fixed_As_Integer
-      (N : Node_Id; Val : Boolean := True) is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Op_Divide
-        or else NT (N).Nkind = N_Op_Mod
-        or else NT (N).Nkind = N_Op_Multiply
-        or else NT (N).Nkind = N_Op_Rem);
-      Set_Flag14 (N, Val);
-   end Set_Treat_Fixed_As_Integer;
 
    procedure Set_Triggering_Alternative
       (N : Node_Id; Val : Node_Id) is
