@@ -935,16 +935,8 @@ package body Sem_Ch4 is
 
       if Present (Op_Id) then
          if Ekind (Op_Id) = E_Operator then
-
-            if Nkind_In (N, N_Op_Divide, N_Op_Mod, N_Op_Multiply, N_Op_Rem)
-              and then Treat_Fixed_As_Integer (N)
-            then
-               null;
-            else
-               Set_Etype (N, Any_Type);
-               Find_Arithmetic_Types (L, R, Op_Id, N);
-            end if;
-
+            Set_Etype (N, Any_Type);
+            Find_Arithmetic_Types (L, R, Op_Id, N);
          else
             Set_Etype (N, Any_Type);
             Add_One_Interp (N, Op_Id, Etype (Op_Id));
@@ -5915,25 +5907,15 @@ package body Sem_Ch4 is
          if Is_Fixed_Point_Type (T1)
            and then (Is_Fixed_Point_Type (T2) or else T2 = Universal_Real)
          then
-            --  If Treat_Fixed_As_Integer is set then the Etype is already set
-            --  and no further processing is required (this is the case of an
-            --  operator constructed by Exp_Fixd for a fixed point operation)
-            --  Otherwise add one interpretation with universal fixed result
-            --  If the operator is given in functional notation, it comes
-            --  from source and Fixed_As_Integer cannot apply.
+            --  Add one interpretation with universal fixed result
 
-            if (Nkind (N) not in N_Op
-                 or else not Treat_Fixed_As_Integer (N))
-              and then
-                (not Has_Fixed_Op (T1, Op_Id)
-                  or else Nkind (Parent (N)) = N_Type_Conversion)
+            if not Has_Fixed_Op (T1, Op_Id)
+              or else Nkind (Parent (N)) = N_Type_Conversion
             then
                Add_One_Interp (N, Op_Id, Universal_Fixed);
             end if;
 
          elsif Is_Fixed_Point_Type (T2)
-           and then (Nkind (N) not in N_Op
-                      or else not Treat_Fixed_As_Integer (N))
            and then T1 = Universal_Real
            and then
              (not Has_Fixed_Op (T1, Op_Id)
@@ -5984,10 +5966,6 @@ package body Sem_Ch4 is
          end if;
 
       elsif Op_Name = Name_Op_Mod or else Op_Name = Name_Op_Rem then
-
-         --  Note: The fixed-point operands case with Treat_Fixed_As_Integer
-         --  set does not require any special processing, since the Etype is
-         --  already set (case of operation constructed by Exp_Fixed).
 
          if Is_Integer_Type (T1)
            and then (Covers (T1 => T1, T2 => T2)

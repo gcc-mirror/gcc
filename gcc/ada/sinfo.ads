@@ -2451,20 +2451,6 @@ package Sinfo is
    --    need for this field, so in the tree passed to Gigi, this field is
    --    always set to No_List.
 
-   --  Treat_Fixed_As_Integer (Flag14-Sem)
-   --    This flag appears in operator nodes for divide, multiply, mod, and rem
-   --    on fixed-point operands. It indicates that the operands are to be
-   --    treated as integer values, ignoring small values. This flag is only
-   --    set as a result of expansion of fixed-point operations. Typically a
-   --    fixed-point multiplication in the source generates subsidiary
-   --    multiplication and division operations that work with the underlying
-   --    integer values and have this flag set. Note that this flag is not
-   --    needed on other arithmetic operations (add, neg, subtract etc.) since
-   --    in these cases it is always the case that fixed is treated as integer.
-   --    The Etype field MUST be set if this flag is set. The analyzer knows to
-   --    leave such nodes alone, and whoever makes them must set the correct
-   --    Etype value.
-
    --  TSS_Elist (Elist3-Sem)
    --    Present in N_Freeze_Entity nodes. Holds an element list containing
    --    entries for each TSS (type support subprogram) associated with the
@@ -4527,20 +4513,13 @@ package Sinfo is
 
       --  HIGHEST_PRECEDENCE_OPERATOR  ::=  **  | abs | not
 
-      --  Sprint syntax if Treat_Fixed_As_Integer is set:
-
-      --     x #* y
-      --     x #/ y
-      --     x #mod y
-      --     x #rem y
-
-      --  Gigi restriction: For * / mod rem with fixed-point operands, Gigi
-      --  will only be given nodes with the Treat_Fixed_As_Integer flag set.
-      --  All handling of smalls for multiplication and division is handled
-      --  by the front end (mod and rem result only from expansion). Gigi
-      --  thus never needs to worry about small values (for other operators
-      --  operating on fixed-point, e.g. addition, the small value does not
-      --  have any semantic effect anyway, these are always integer operations.
+      --  Gigi restriction: Gigi will never be given * / mod rem nodes with
+      --  fixed-point operands. All handling of smalls for multiplication and
+      --  division is handled by the front end (mod and rem result only from
+      --  expansion). Gigi thus never needs to worry about small values (for
+      --  other operators operating on fixed-point, e.g. addition, the small
+      --  value does not have any semantic effect anyway, these are always
+      --  integer operations.
 
       --  Gigi restriction: For all operators taking Boolean operands, the
       --  type is always Standard.Boolean. The expander inserts the required
@@ -4613,14 +4592,12 @@ package Sinfo is
 
       --  N_Op_Multiply
       --  Sloc points to *
-      --  Treat_Fixed_As_Integer (Flag14-Sem)
       --  Rounded_Result (Flag18-Sem)
       --  plus fields for binary operator
       --  plus fields for expression
 
       --  N_Op_Divide
       --  Sloc points to /
-      --  Treat_Fixed_As_Integer (Flag14-Sem)
       --  Do_Division_Check (Flag13-Sem)
       --  Rounded_Result (Flag18-Sem)
       --  plus fields for binary operator
@@ -4628,14 +4605,12 @@ package Sinfo is
 
       --  N_Op_Mod
       --  Sloc points to MOD
-      --  Treat_Fixed_As_Integer (Flag14-Sem)
       --  Do_Division_Check (Flag13-Sem)
       --  plus fields for binary operator
       --  plus fields for expression
 
       --  N_Op_Rem
       --  Sloc points to REM
-      --  Treat_Fixed_As_Integer (Flag14-Sem)
       --  Do_Division_Check (Flag13-Sem)
       --  plus fields for binary operator
       --  plus fields for expression
@@ -4672,9 +4647,7 @@ package Sinfo is
       --  the semantics is to treat these simply as integer operations, with
       --  the small values being ignored (the bounds are already stored in
       --  units of small, so that constraint checking works as usual). For the
-      --  case of multiply/divide/rem/mod operations, Gigi will only see fixed
-      --  point operands if the Treat_Fixed_As_Integer flag is set and will
-      --  thus treat these nodes in identical manner, ignoring small values.
+      --  case of multiply/divide/rem/mod operations, Gigi will never see them.
 
       --  Note on equality/inequality tests for records. In the expanded tree,
       --  record comparisons are always expanded to be a series of component
@@ -8707,7 +8680,7 @@ package Sinfo is
       N_Op_Expon,
       N_Op_Subtract,
 
-      --  N_Binary_Op, N_Op, N_Subexpr, N_Has_Treat_Fixed_As_Integer
+      --  N_Binary_Op, N_Op, N_Subexpr,
       --  N_Has_Etype, N_Has_Chars, N_Has_Entity, N_Multiplying_Operator
 
       N_Op_Divide,
@@ -9114,10 +9087,6 @@ package Sinfo is
    subtype N_Has_Etype is Node_Kind range
      N_Error ..
      N_Subtype_Indication;
-
-   subtype N_Has_Treat_Fixed_As_Integer is Node_Kind range
-      N_Op_Divide ..
-      N_Op_Rem;
 
    subtype N_Multiplying_Operator is Node_Kind range
       N_Op_Divide ..
@@ -10296,9 +10265,6 @@ package Sinfo is
    function Then_Statements
      (N : Node_Id) return List_Id;    -- List2
 
-   function Treat_Fixed_As_Integer
-     (N : Node_Id) return Boolean;    -- Flag14
-
    function Triggering_Alternative
      (N : Node_Id) return Node_Id;    -- Node1
 
@@ -11410,9 +11376,6 @@ package Sinfo is
 
    procedure Set_Then_Statements
      (N : Node_Id; Val : List_Id);            -- List2
-
-   procedure Set_Treat_Fixed_As_Integer
-     (N : Node_Id; Val : Boolean := True);    -- Flag14
 
    procedure Set_Triggering_Alternative
      (N : Node_Id; Val : Node_Id);            -- Node1
@@ -13679,7 +13642,6 @@ package Sinfo is
    pragma Inline (Then_Statements);
    pragma Inline (Triggering_Alternative);
    pragma Inline (Triggering_Statement);
-   pragma Inline (Treat_Fixed_As_Integer);
    pragma Inline (TSS_Elist);
    pragma Inline (Type_Definition);
    pragma Inline (Uneval_Old_Accept);
@@ -14044,7 +14006,6 @@ package Sinfo is
    pragma Inline (Set_Task_Present);
    pragma Inline (Set_Then_Actions);
    pragma Inline (Set_Then_Statements);
-   pragma Inline (Set_Treat_Fixed_As_Integer);
    pragma Inline (Set_Triggering_Alternative);
    pragma Inline (Set_Triggering_Statement);
    pragma Inline (Set_Type_Definition);

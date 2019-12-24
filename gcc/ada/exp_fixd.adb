@@ -56,8 +56,8 @@ package body Exp_Fixd is
    --  set the Etype values correctly. In addition, setting the Etype ensures
    --  that the analyzer does not try to redetermine the type when the node
    --  is analyzed (which would be wrong, since in the case where we set the
-   --  Treat_Fixed_As_Integer or Conversion_OK flags, it would think it was
-   --  still dealing with a normal fixed-point operation and mess it up).
+   --  Conversion_OK flag, it would think it was still dealing with a normal
+   --  fixed-point operation and mess it up).
 
    function Build_Conversion
      (N     : Node_Id;
@@ -79,12 +79,13 @@ package body Exp_Fixd is
    --  expressions, using the source location from Sloc (N). The operands are
    --  either both Universal_Real, in which case Build_Divide differs from
    --  Make_Op_Divide only in that the Etype of the resulting node is set (to
-   --  Universal_Real), or they can be integer types. In this case the integer
-   --  types need not be the same, and Build_Divide converts the operand with
-   --  the smaller sized type to match the type of the other operand and sets
-   --  this as the result type. The Rounded_Result flag of the result in this
-   --  case is set from the Rounded_Result flag of node N. On return, the
-   --  resulting node is analyzed, and has its Etype set.
+   --  Universal_Real), or they can be integer or fixed-point types. In this
+   --  case the types need not be the same, and Build_Divide chooses a type
+   --  long enough to hold both operands (i.e. the size of the longer of the
+   --  two operand types), and both operands are converted to this type. The
+   --  Etype of the result is also set to this value. The Rounded_Result flag
+   --  of the result in this case is set from the Rounded_Result flag of node
+   --  N. On return, the resulting node is analyzed and has its Etype set.
 
    function Build_Double_Divide
      (N       : Node_Id;
@@ -111,13 +112,13 @@ package body Exp_Fixd is
    --  expressions, using the source location from Sloc (N). The operands are
    --  either both Universal_Real, in which case Build_Multiply differs from
    --  Make_Op_Multiply only in that the Etype of the resulting node is set (to
-   --  Universal_Real), or they can be integer types. In this case the integer
-   --  types need not be the same, and Build_Multiply chooses a type long
-   --  enough to hold the product (i.e. twice the size of the longer of the two
-   --  operand types), and both operands are converted to this type. The Etype
-   --  of the result is also set to this value. However, the result can never
-   --  overflow Integer_64, so this is the largest type that is ever generated.
-   --  On return, the resulting node is analyzed and has its Etype set.
+   --  Universal_Real), or they can be integer or fixed-point types. In this
+   --  case the types need not be the same, and Build_Multiply chooses a type
+   --  long enough to hold the product (i.e. twice the size of the longer of
+   --  the two operand types), and both operands are converted to this type.
+   --  The Etype of the result is also set to this value. However, the result
+   --  can never overflow Integer_64, so this is the largest type that is ever
+   --  generated. On return, the resulting node is analyzed and has Etype set.
 
    function Build_Rem (N : Node_Id; L, R : Node_Id) return Node_Id;
    --  Builds an N_Op_Rem node from the given left and right operand
@@ -317,6 +318,9 @@ package body Exp_Fixd is
       Loc         : constant Source_Ptr := Sloc (N);
       Left_Type   : constant Entity_Id  := Base_Type (Etype (L));
       Right_Type  : constant Entity_Id  := Base_Type (Etype (R));
+      Left_Size   : Int;
+      Right_Size  : Int;
+      Rsize       : Int;
       Result_Type : Entity_Id;
       Rnode       : Node_Id;
 
@@ -341,47 +345,67 @@ package body Exp_Fixd is
             return L;
          end if;
 
-         --  If left and right types are the same, no conversion needed
+         --  First figure out the effective sizes of the operands. Normally
+         --  the effective size of an operand is the RM_Size of the operand.
+         --  But a special case arises with operands whose size is known at
+         --  compile time. In this case, we can use the actual value of the
+         --  operand to get its size if it would fit signed in 8 or 16 bits.
 
-         if Left_Type = Right_Type then
-            Result_Type := Left_Type;
-            Rnode :=
-              Make_Op_Divide (Loc,
-                Left_Opnd  => L,
-                Right_Opnd => R);
+         Left_Size := UI_To_Int (RM_Size (Left_Type));
 
-         --  Use left type if it is the larger of the two
+         if Compile_Time_Known_Value (L) then
+            declare
+               Val : constant Uint := Expr_Value (L);
+            begin
+               if Val < Int'(2 ** 7) then
+                  Left_Size := 8;
+               elsif Val < Int'(2 ** 15) then
+                  Left_Size := 16;
+               end if;
+            end;
+         end if;
 
-         elsif Esize (Left_Type) >= Esize (Right_Type) then
-            Result_Type := Left_Type;
-            Rnode :=
-              Make_Op_Divide (Loc,
-                Left_Opnd  => L,
-                Right_Opnd => Build_Conversion (N, Left_Type, R));
+         Right_Size := UI_To_Int (RM_Size (Right_Type));
 
-         --  Otherwise right type is larger of the two, us it
+         if Compile_Time_Known_Value (R) then
+            declare
+               Val : constant Uint := Expr_Value (R);
+            begin
+               if Val <= Int'(2 ** 7) then
+                  Right_Size := 8;
+               elsif Val <= Int'(2 ** 15) then
+                  Right_Size := 16;
+               end if;
+            end;
+         end if;
+
+         --  Do the operation using the longer of the two sizes
+
+         Rsize := Int'Max (Left_Size, Right_Size);
+
+         if Rsize <= 8 then
+            Result_Type := Standard_Integer_8;
+
+         elsif Rsize <= 16 then
+            Result_Type := Standard_Integer_16;
+
+         elsif Rsize <= 32 then
+            Result_Type := Standard_Integer_32;
 
          else
-            Result_Type := Right_Type;
-            Rnode :=
-              Make_Op_Divide (Loc,
-                Left_Opnd => Build_Conversion (N, Right_Type, L),
-                Right_Opnd => R);
+            Result_Type := Standard_Integer_64;
          end if;
+
+         Rnode :=
+            Make_Op_Divide (Loc,
+              Left_Opnd  => Build_Conversion (N, Result_Type, L),
+              Right_Opnd => Build_Conversion (N, Result_Type, R));
       end if;
 
       --  We now have a divide node built with Result_Type set. First
       --  set Etype of result, as required for all Build_xxx routines
 
       Set_Etype (Rnode, Base_Type (Result_Type));
-
-      --  Set Treat_Fixed_As_Integer if operation on fixed-point type
-      --  since this is a literal arithmetic operation, to be performed
-      --  by Gigi without any consideration of small values.
-
-      if Is_Fixed_Point_Type (Result_Type) then
-         Set_Treat_Fixed_As_Integer (Rnode);
-      end if;
 
       --  The result is rounded if the target of the operation is decimal
       --  and Rounded_Result is set, or if the target of the operation
@@ -391,6 +415,17 @@ package body Exp_Fixd is
         or else Rounded_Result_Set (N)
       then
          Set_Rounded_Result (Rnode);
+      end if;
+
+      --  One more check. We did the divide operation using the longer of
+      --  the two sizes, which is reasonable. However, in the case where the
+      --  two types have unequal sizes, it is impossible for the result of
+      --  a divide operation to be larger than the dividend, so we can put
+      --  a conversion round the result to keep the evolving operation size
+      --  as small as possible.
+
+      if not Is_Floating_Point_Type (Left_Type) then
+         Rnode := Build_Conversion (N, Left_Type, Rnode);
       end if;
 
       return Rnode;
@@ -696,14 +731,6 @@ package body Exp_Fixd is
 
       Set_Etype (Rnode, Base_Type (Result_Type));
 
-      --  Set Treat_Fixed_As_Integer if operation on fixed-point type
-      --  since this is a literal arithmetic operation, to be performed
-      --  by Gigi without any consideration of small values.
-
-      if Is_Fixed_Point_Type (Result_Type) then
-         Set_Treat_Fixed_As_Integer (Rnode);
-      end if;
-
       return Rnode;
    end Build_Multiply;
 
@@ -751,14 +778,6 @@ package body Exp_Fixd is
       --  set Etype of result, as required for all Build_xxx routines
 
       Set_Etype (Rnode, Base_Type (Result_Type));
-
-      --  Set Treat_Fixed_As_Integer if operation on fixed-point type
-      --  since this is a literal arithmetic operation, to be performed
-      --  by Gigi without any consideration of small values.
-
-      if Is_Fixed_Point_Type (Result_Type) then
-         Set_Treat_Fixed_As_Integer (Rnode);
-      end if;
 
       --  One more check. We did the rem operation using the larger of the
       --  two types, which is reasonable. However, in the case where the
@@ -2387,9 +2406,7 @@ package body Exp_Fixd is
 
       --  We really need to set Analyzed here because we may be creating a
       --  very strange beast, namely an integer literal typed as fixed-point
-      --  and the analyzer won't like that. Probably we should allow the
-      --  Treat_Fixed_As_Integer flag to appear on integer literal nodes
-      --  and teach the analyzer how to handle them ???
+      --  and the analyzer won't like that.
 
       Set_Analyzed (L);
       return L;

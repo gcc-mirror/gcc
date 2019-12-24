@@ -7432,16 +7432,10 @@ package body Exp_Ch4 is
 
       if Is_Fixed_Point_Type (Typ) then
 
-         --  No special processing if Treat_Fixed_As_Integer is set, since
-         --  from a semantic point of view such operations are simply integer
-         --  operations and will be treated that way.
-
-         if not Treat_Fixed_As_Integer (N) then
-            if Is_Integer_Type (Rtyp) then
-               Expand_Divide_Fixed_By_Integer_Giving_Fixed (N);
-            else
-               Expand_Divide_Fixed_By_Fixed_Giving_Fixed (N);
-            end if;
+         if Is_Integer_Type (Rtyp) then
+            Expand_Divide_Fixed_By_Integer_Giving_Fixed (N);
+         else
+            Expand_Divide_Fixed_By_Fixed_Giving_Fixed (N);
          end if;
 
          --  Deal with divide-by-zero check if back end cannot handle them
@@ -7465,12 +7459,9 @@ package body Exp_Ch4 is
                   Reason  => CE_Divide_By_Zero));
          end if;
 
-      --  Other cases of division of fixed-point operands. Again we exclude the
-      --  case where Treat_Fixed_As_Integer is set.
+      --  Other cases of division of fixed-point operands
 
-      elsif (Is_Fixed_Point_Type (Ltyp) or else Is_Fixed_Point_Type (Rtyp))
-        and then not Treat_Fixed_As_Integer (N)
-      then
+      elsif Is_Fixed_Point_Type (Ltyp) or else Is_Fixed_Point_Type (Rtyp) then
          if Is_Integer_Type (Typ) then
             Expand_Divide_Fixed_By_Fixed_Giving_Integer (N);
          else
@@ -9574,35 +9565,25 @@ package body Exp_Ch4 is
 
       if Is_Fixed_Point_Type (Typ) then
 
-         --  No special processing if Treat_Fixed_As_Integer is set, since from
-         --  a semantic point of view such operations are simply integer
-         --  operations and will be treated that way.
+         --  Case of fixed * integer => fixed
 
-         if not Treat_Fixed_As_Integer (N) then
+         if Is_Integer_Type (Rtyp) then
+            Expand_Multiply_Fixed_By_Integer_Giving_Fixed (N);
 
-            --  Case of fixed * integer => fixed
+         --  Case of integer * fixed => fixed
 
-            if Is_Integer_Type (Rtyp) then
-               Expand_Multiply_Fixed_By_Integer_Giving_Fixed (N);
+         elsif Is_Integer_Type (Ltyp) then
+            Expand_Multiply_Integer_By_Fixed_Giving_Fixed (N);
 
-            --  Case of integer * fixed => fixed
+         --  Case of fixed * fixed => fixed
 
-            elsif Is_Integer_Type (Ltyp) then
-               Expand_Multiply_Integer_By_Fixed_Giving_Fixed (N);
-
-            --  Case of fixed * fixed => fixed
-
-            else
-               Expand_Multiply_Fixed_By_Fixed_Giving_Fixed (N);
-            end if;
+         else
+            Expand_Multiply_Fixed_By_Fixed_Giving_Fixed (N);
          end if;
 
-      --  Other cases of multiplication of fixed-point operands. Again we
-      --  exclude the cases where Treat_Fixed_As_Integer flag is set.
+      --  Other cases of multiplication of fixed-point operands
 
-      elsif (Is_Fixed_Point_Type (Ltyp) or else Is_Fixed_Point_Type (Rtyp))
-        and then not Treat_Fixed_As_Integer (N)
-      then
+      elsif Is_Fixed_Point_Type (Ltyp) or else Is_Fixed_Point_Type (Rtyp) then
          if Is_Integer_Type (Typ) then
             Expand_Multiply_Fixed_By_Fixed_Giving_Integer (N);
          else
