@@ -1,3 +1,8 @@
+2019-12-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92438
+	* g++.dg/ext/attrib61.C: New test.
+
 2019-12-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-c++-common/goacc/mdc-1.c: Restrict to LP64, LLP64.
