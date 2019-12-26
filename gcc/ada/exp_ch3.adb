@@ -6610,9 +6610,13 @@ package body Exp_Ch3 is
             --  An aggregate that must be built in place is not resolved and
             --  expanded until the enclosing construct is expanded. This will
             --  happen when the aggregate is limited and the declared object
-            --  has a following address clause.
+            --  has a following address clause; it happens also when generating
+            --  C code for an aggregate that has an alignment or address clause
+            --  (see Analyze_Object_Declaration).
 
-            if Is_Limited_Type (Typ) and then not Analyzed (Expr) then
+            if (Is_Limited_Type (Typ) or else Modify_Tree_For_C)
+              and then not Analyzed (Expr)
+            then
                Resolve (Expr, Typ);
             end if;
 
