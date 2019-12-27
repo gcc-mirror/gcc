@@ -56,8 +56,8 @@ lower_coro_builtin (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 		    struct walk_stmt_info *wi ATTRIBUTE_UNUSED)
 {
   gimple *stmt = gsi_stmt (*gsi);
-
   *handled_ops_p = !gimple_has_substatements (stmt);
+
   if (gimple_code (stmt) != GIMPLE_CALL)
     return NULL_TREE;
 
@@ -73,103 +73,104 @@ lower_coro_builtin (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       return NULL_TREE;
     }
 
+  tree decl = gimple_call_fndecl (stmt);
+  if (!decl || !fndecl_built_in_p (decl, BUILT_IN_NORMAL))
+    return NULL_TREE;
+
   /* The remaining builtins implement the library interfaces to the coro
      frame.  */
-  tree decl = gimple_call_fndecl (stmt);
-  if (decl && fndecl_built_in_p (decl, BUILT_IN_NORMAL))
+  unsigned call_idx = 0;
+
+  switch (DECL_FUNCTION_CODE (decl))
     {
-      unsigned call_idx = 0;
-      switch (DECL_FUNCTION_CODE (decl))
-	{
-	default:
-	  break;
-	case BUILT_IN_CORO_PROMISE:
+    default:
+      break;
+    case BUILT_IN_CORO_PROMISE:
+      {
+	/* If we are discarding this, then skip it; the function has no
+	   side-effects.  */
+	tree lhs = gimple_call_lhs (stmt);
+	if (!lhs)
 	  {
-	    /* If we are discarding this, then skip it; the function has no
-	       side-effects.  */
-	    tree lhs = gimple_call_lhs (stmt);
-	    if (!lhs)
-	      {
-		gsi_remove (gsi, true);
-		*handled_ops_p = true;
-		return NULL_TREE;
-	      }
-	    /* The coro frame starts with two pointers (to the resume and
-	       destroy() functions).  These are followed by the promise which
-	       is aligned as per type [or user attribute].
-	       The input pointer is the first argument.
-	       The promise alignment is the second and the third is a bool
-	       that is true when we are converting from a promise ptr to a
-	       frame pointer, and false for the inverse.  */
-	    tree ptr = gimple_call_arg (stmt, 0);
-	    tree align_t = gimple_call_arg (stmt, 1);
-	    tree from = gimple_call_arg (stmt, 2);
-	    gcc_assert (TREE_CODE (align_t) == INTEGER_CST);
-	    gcc_assert (TREE_CODE (from) == INTEGER_CST);
-	    bool dir = wi::to_wide (from) != 0;
-	    HOST_WIDE_INT promise_align = TREE_INT_CST_LOW (align_t);
-	    HOST_WIDE_INT psize =
-	      TREE_INT_CST_LOW (TYPE_SIZE_UNIT (ptr_type_node));
-	    HOST_WIDE_INT align = TYPE_ALIGN_UNIT (ptr_type_node);
-	    align = MAX (align, promise_align);
-	    psize *= 2; /* Start with two pointers.  */
-	    psize = ROUND_UP (psize, align);
-	    HOST_WIDE_INT offs = dir ? -psize : psize;
-	    tree repl = build2 (POINTER_PLUS_EXPR, ptr_type_node, ptr,
-				size_int (offs));
-	    gassign *grpl = gimple_build_assign (lhs, repl);
-	    gsi_replace (gsi, grpl, true);
+	    gsi_remove (gsi, true);
 	    *handled_ops_p = true;
+	    return NULL_TREE;
 	  }
-	  break;
-	case BUILT_IN_CORO_DESTROY:
-	  call_idx = 1;
-	  /* FALLTHROUGH */
-	case BUILT_IN_CORO_RESUME:
+	/* The coro frame starts with two pointers (to the resume and
+	   destroy() functions).  These are followed by the promise which
+	   is aligned as per type [or user attribute].
+	   The input pointer is the first argument.
+	   The promise alignment is the second and the third is a bool
+	   that is true when we are converting from a promise ptr to a
+	   frame pointer, and false for the inverse.  */
+	tree ptr = gimple_call_arg (stmt, 0);
+	tree align_t = gimple_call_arg (stmt, 1);
+	tree from = gimple_call_arg (stmt, 2);
+	gcc_checking_assert (TREE_CODE (align_t) == INTEGER_CST);
+	gcc_checking_assert (TREE_CODE (from) == INTEGER_CST);
+	bool dir = wi::to_wide (from) != 0;
+	HOST_WIDE_INT promise_align = TREE_INT_CST_LOW (align_t);
+	HOST_WIDE_INT psize =
+	  TREE_INT_CST_LOW (TYPE_SIZE_UNIT (ptr_type_node));
+	HOST_WIDE_INT align = TYPE_ALIGN_UNIT (ptr_type_node);
+	align = MAX (align, promise_align);
+	psize *= 2; /* Start with two pointers.  */
+	psize = ROUND_UP (psize, align);
+	HOST_WIDE_INT offs = dir ? -psize : psize;
+	tree repl = build2 (POINTER_PLUS_EXPR, ptr_type_node, ptr,
+			    size_int (offs));
+	gassign *grpl = gimple_build_assign (lhs, repl);
+	gsi_replace (gsi, grpl, true);
+	*handled_ops_p = true;
+      }
+      break;
+    case BUILT_IN_CORO_DESTROY:
+      call_idx = 1;
+      /* FALLTHROUGH */
+    case BUILT_IN_CORO_RESUME:
+      {
+	tree ptr = gimple_call_arg (stmt, 0); /* frame ptr.  */
+	HOST_WIDE_INT psize =
+	  TREE_INT_CST_LOW (TYPE_SIZE_UNIT (ptr_type_node));
+	HOST_WIDE_INT offset = call_idx * psize;
+	tree fntype = TREE_TYPE (decl);
+	tree fntype_ptr = build_pointer_type (fntype);
+	tree fntype_ppp = build_pointer_type (fntype_ptr);
+	tree indirect = fold_build2 (MEM_REF, fntype_ptr, ptr,
+				     build_int_cst (fntype_ppp, offset));
+	tree f_ptr_tmp = make_ssa_name (TYPE_MAIN_VARIANT (fntype_ptr));
+	gassign *get_fptr = gimple_build_assign (f_ptr_tmp, indirect);
+	gsi_insert_before (gsi, get_fptr, GSI_SAME_STMT);
+	gimple_call_set_fn (static_cast<gcall *> (stmt), f_ptr_tmp);
+	*handled_ops_p = true;
+      }
+      break;
+    case BUILT_IN_CORO_DONE:
+      {
+	/* If we are discarding this, then skip it; the function has no
+	   side-effects.  */
+	tree lhs = gimple_call_lhs (stmt);
+	if (!lhs)
 	  {
-	    tree ptr = gimple_call_arg (stmt, 0); /* frame ptr.  */
-	    HOST_WIDE_INT psize =
-	      TREE_INT_CST_LOW (TYPE_SIZE_UNIT (ptr_type_node));
-	    HOST_WIDE_INT offset = call_idx * psize;
-	    tree fntype = TREE_TYPE (decl);
-	    tree fntype_ptr = build_pointer_type (fntype);
-	    tree fntype_ppp = build_pointer_type (fntype_ptr);
-	    tree indirect = fold_build2 (MEM_REF, fntype_ptr, ptr,
-					 build_int_cst (fntype_ppp, offset));
-	    tree f_ptr_tmp = make_ssa_name (TYPE_MAIN_VARIANT (fntype_ptr));
-	    gassign *get_fptr = gimple_build_assign (f_ptr_tmp, indirect);
-	    gsi_insert_before (gsi, get_fptr, GSI_SAME_STMT);
-	    gimple_call_set_fn (static_cast<gcall *> (stmt), f_ptr_tmp);
+	    gsi_remove (gsi, true);
 	    *handled_ops_p = true;
+	    return NULL_TREE;
 	  }
-	  break;
-	case BUILT_IN_CORO_DONE:
-	  {
-	    /* If we are discarding this, then skip it; the function has no
-	       side-effects.  */
-	    tree lhs = gimple_call_lhs (stmt);
-	    if (!lhs)
-	      {
-		gsi_remove (gsi, true);
-		*handled_ops_p = true;
-		return NULL_TREE;
-	      }
-	    /* When we're done, the resume fn is set to NULL.  */
-	    tree ptr = gimple_call_arg (stmt, 0); /* frame ptr.  */
-	    tree vpp = build_pointer_type (ptr_type_node);
-	    tree indirect
-	      = fold_build2 (MEM_REF, vpp, ptr, build_int_cst (vpp, 0));
-	    tree d_ptr_tmp = make_ssa_name (ptr_type_node);
-	    gassign *get_dptr = gimple_build_assign (d_ptr_tmp, indirect);
-	    gsi_insert_before (gsi, get_dptr, GSI_SAME_STMT);
-	    tree done = fold_build2 (EQ_EXPR, boolean_type_node, d_ptr_tmp,
-				     null_pointer_node);
-	    gassign *get_res = gimple_build_assign (lhs, done);
-	    gsi_replace (gsi, get_res, true);
-	    *handled_ops_p = true;
-	  }
-	  break;
-	}
+	/* When we're done, the resume fn is set to NULL.  */
+	tree ptr = gimple_call_arg (stmt, 0); /* frame ptr.  */
+	tree vpp = build_pointer_type (ptr_type_node);
+	tree indirect
+	  = fold_build2 (MEM_REF, vpp, ptr, build_int_cst (vpp, 0));
+	tree d_ptr_tmp = make_ssa_name (ptr_type_node);
+	gassign *get_dptr = gimple_build_assign (d_ptr_tmp, indirect);
+	gsi_insert_before (gsi, get_dptr, GSI_SAME_STMT);
+	tree done = fold_build2 (EQ_EXPR, boolean_type_node, d_ptr_tmp,
+				 null_pointer_node);
+	gassign *get_res = gimple_build_assign (lhs, done);
+	gsi_replace (gsi, get_res, true);
+	*handled_ops_p = true;
+      }
+      break;
     }
   return NULL_TREE;
 }
@@ -229,7 +230,7 @@ make_pass_coroutine_lower_builtins (gcc::context *ctxt)
   return new pass_coroutine_lower_builtins (ctxt);
 }
 
-/* Expand the renaming coroutine IFNs.
+/* Expand the remaining coroutine IFNs.
 
    In the front end we construct a single actor function that contains
    the coroutine state machine.
@@ -266,8 +267,7 @@ make_pass_coroutine_lower_builtins (gcc::context *ctxt)
    profitable by the optimisers.
 
    Once we have remade the connections to their correct postions, we elide
-   the labels that the front end inserted.
-*/
+   the labels that the front end inserted.  */
 
 static void
 move_edge_and_update (edge e, basic_block old_bb, basic_block new_bb)
