@@ -6718,6 +6718,18 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
 			     " conditional operation is available.\n");
 	  LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
 	}
+      else if (reduction_type == FOLD_LEFT_REDUCTION
+	       && reduc_fn == IFN_LAST
+	       && !expand_vec_cond_expr_p (vectype_in,
+					   truth_type_for (vectype_in),
+					   SSA_NAME))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "can't use a fully-masked loop because no"
+			     " conditional operation is available.\n");
+	  LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
+	}
       else
 	vect_record_loop_mask (loop_vinfo, masks, ncopies * vec_num,
 			       vectype_in, NULL);

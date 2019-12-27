@@ -1,3 +1,9 @@
+2019-12-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (vectorizable_reduction): Check whether the
+	target supports the required VEC_COND_EXPR operation before
+	allowing the fallback handling of masked fold-left reductions.
+
 2019-12-24  Jiufu Guo  <guojiufu@linux.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_option_override_internal): Enable
