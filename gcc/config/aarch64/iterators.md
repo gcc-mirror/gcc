@@ -1151,7 +1151,7 @@
 				   (VNx2DI "VNx2DI")
 				   (VNx8HF "VNx8HI") (VNx4HF "VNx4SI")
 				   (VNx2HF "VNx2DI")
-				   (VNx4SF "VNx4SI") (VNx2SF "VNx2SI")
+				   (VNx4SF "VNx4SI") (VNx2SF "VNx2DI")
 				   (VNx2DF "VNx2DI")])
 
 ;; Lower-case version of V_INT_CONTAINER.
