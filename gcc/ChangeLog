@@ -1,5 +1,9 @@
 2019-12-27  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/iterators.md (V_INT_CONTAINER): Fix VNx2SF entry.
+
+2019-12-27  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-loop.c (vectorizable_reduction): Check whether the
 	target supports the required VEC_COND_EXPR operation before
 	allowing the fallback handling of masked fold-left reductions.
