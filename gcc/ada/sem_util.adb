@@ -24370,10 +24370,63 @@ package body Sem_Util is
    function Requires_Transient_Scope (Id : Entity_Id) return Boolean is
       Old_Result : constant Boolean := Old_Requires_Transient_Scope (Id);
 
+      procedure Ensure_Minimum_Decoration (Typ : Entity_Id);
+      --  If Typ is not frozen then add to Typ the minimum decoration required
+      --  by Requires_Transient_Scope to reliably provide its functionality;
+      --  otherwise no action is performed.
+
+      -------------------------------
+      -- Ensure_Minimum_Decoration --
+      -------------------------------
+
+      procedure Ensure_Minimum_Decoration (Typ : Entity_Id) is
+      begin
+         --  Do not set Has_Controlled_Component on a class-wide equivalent
+         --  type. See Make_CW_Equivalent_Type.
+
+         if Present (Typ)
+           and then not Is_Frozen (Typ)
+           and then (Is_Record_Type (Typ)
+                       or else Is_Concurrent_Type (Typ)
+                       or else Is_Incomplete_Or_Private_Type (Typ))
+           and then not Is_Class_Wide_Equivalent_Type (Typ)
+         then
+            declare
+               Comp : Entity_Id;
+
+            begin
+               Comp := First_Component (Typ);
+               while Present (Comp) loop
+                  if Has_Controlled_Component (Etype (Comp))
+                    or else
+                      (Chars (Comp) /= Name_uParent
+                         and then Is_Controlled (Etype (Comp)))
+                    or else
+                      (Is_Protected_Type (Etype (Comp))
+                         and then
+                           Present (Corresponding_Record_Type (Etype (Comp)))
+                         and then
+                           Has_Controlled_Component
+                             (Corresponding_Record_Type (Etype (Comp))))
+                  then
+                     Set_Has_Controlled_Component (Typ);
+                     exit;
+                  end if;
+
+                  Next_Component (Comp);
+               end loop;
+            end;
+         end if;
+      end Ensure_Minimum_Decoration;
+
+   --  Start of processing for Requires_Transient_Scope
+
    begin
       if Debug_Flag_QQ then
          return Old_Result;
       end if;
+
+      Ensure_Minimum_Decoration (Id);
 
       declare
          New_Result : constant Boolean := New_Requires_Transient_Scope (Id);
