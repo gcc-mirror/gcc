@@ -463,32 +463,29 @@ execute_early_expand_coro_ifns (void)
 	}
     }
 
-  if (changed)
-    {
-      /* Remove the labels we inserted to map our hidden CFG, this
-	 avoids confusing block merges when there are also EH labels.  */
-      FOR_EACH_BB_FN (bb, cfun)
-	for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
+  /* Remove the labels we inserted to map our hidden CFG, this
+     avoids confusing block merges when there are also EH labels.  */
+  FOR_EACH_BB_FN (bb, cfun)
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
+      {
+	gimple *stmt = gsi_stmt (gsi);
+	if (glabel *glab = dyn_cast<glabel *> (stmt))
 	  {
-	    gimple *stmt = gsi_stmt (gsi);
-	    if (glabel *glab = dyn_cast<glabel *> (stmt))
+	    tree rem = gimple_label_label (glab);
+	    if (to_remove.contains (rem))
 	      {
-		tree rem = gimple_label_label (glab);
-		if (to_remove.contains (rem))
-		  {
-		    gsi_remove (&gsi, true);
-		    to_remove.remove (rem);
-		    continue; /* We already moved to the next insn.  */
-		  }
+		gsi_remove (&gsi, true);
+		to_remove.remove (rem);
+		continue; /* We already moved to the next insn.  */
 	      }
-	    else
-	      break;
-	    gsi_next (&gsi);
 	  }
+	else
+	  break;
+	gsi_next (&gsi);
+      }
 
-      /* Changed the CFG.  */
-      todoflags |= TODO_cleanup_cfg;
-    }
+  /* Changed the CFG.  */
+  todoflags |= TODO_cleanup_cfg;
   return todoflags;
 }
 
