@@ -156,6 +156,18 @@
    %:version-compare(!> 10.4 mmacosx-version-min= crt3_2.o%s) \
   }}"
 
+/* As for crt1, we need to force the dylib crt for 10.6.  */
+#undef DARWIN_DYLIB1_SPEC
+#define DARWIN_DYLIB1_SPEC						\
+  "%:version-compare(!> 10.5 mmacosx-version-min= -ldylib1.o)		\
+   %:version-compare(>< 10.5 10.7 mmacosx-version-min= -ldylib1.10.5.o)"
+
+/* Likewise, the bundle crt.  */
+#undef DARWIN_BUNDLE1_SPEC
+#define DARWIN_BUNDLE1_SPEC \
+"%{!static:%:version-compare(< 10.7 mmacosx-version-min= -lbundle1.o)	\
+	   %{fgnu-tm: -lcrttms.o}}"
+
 /* The PPC regs save/restore functions are leaves and could, conceivably
    be used by the tm destructor.  */
 #undef ENDFILE_SPEC
