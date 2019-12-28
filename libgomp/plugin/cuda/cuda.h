@@ -126,8 +126,11 @@ CUresult cuCtxPopCurrent (CUcontext *);
 CUresult cuCtxPushCurrent (CUcontext);
 CUresult cuCtxSynchronize (void);
 CUresult cuDeviceGet (CUdevice *, int);
+#define cuDeviceTotalMem cuDeviceTotalMem_v2
+CUresult cuDeviceTotalMem (size_t *, CUdevice);
 CUresult cuDeviceGetAttribute (int *, CUdevice_attribute, CUdevice);
 CUresult cuDeviceGetCount (int *);
+CUresult cuDeviceGetName (char *, int, CUdevice);
 CUresult cuEventCreate (CUevent *, unsigned);
 #define cuEventDestroy cuEventDestroy_v2
 CUresult cuEventDestroy (CUevent);
@@ -138,6 +141,7 @@ CUresult cuEventSynchronize (CUevent);
 CUresult cuFuncGetAttribute (int *, CUfunction_attribute, CUfunction);
 CUresult cuGetErrorString (CUresult, const char **);
 CUresult cuInit (unsigned);
+CUresult cuDriverGetVersion (int *);
 CUresult cuLaunchKernel (CUfunction, unsigned, unsigned, unsigned, unsigned,
 			 unsigned, unsigned, unsigned, CUstream, void **, void **);
 #define cuLinkAddData cuLinkAddData_v2
@@ -147,6 +151,8 @@ CUresult cuLinkComplete (CUlinkState, void **, size_t *);
 #define cuLinkCreate cuLinkCreate_v2
 CUresult cuLinkCreate (unsigned, CUjit_option *, void **, CUlinkState *);
 CUresult cuLinkDestroy (CUlinkState);
+#define cuMemGetInfo cuMemGetInfo_v2
+CUresult cuMemGetInfo (size_t *, size_t *);
 #define cuMemAlloc cuMemAlloc_v2
 CUresult cuMemAlloc (CUdeviceptr *, size_t);
 #define cuMemAllocHost cuMemAllocHost_v2
