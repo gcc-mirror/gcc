@@ -1,3 +1,7 @@
+2019-12-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/vect-cond-12.c: New test.
+
 2019-12-27  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/mixed_size_11.c: New test.
