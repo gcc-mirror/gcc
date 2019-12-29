@@ -1,5 +1,10 @@
 2019-12-29  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-stmts.c (vect_get_strided_load_store_ops): Copy
+	DR_STEP before gimplifying it.
+
+2019-12-29  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-stmts.c (vectorizable_condition): For extract-last
 	reductions, check that the target supports the required comparison
 	operation.

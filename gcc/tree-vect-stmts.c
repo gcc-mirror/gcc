@@ -2993,7 +2993,7 @@ vect_get_strided_load_store_ops (stmt_vec_info stmt_info,
   gimple_seq stmts;
 
   tree bump = size_binop (MULT_EXPR,
-			  fold_convert (sizetype, DR_STEP (dr)),
+			  fold_convert (sizetype, unshare_expr (DR_STEP (dr))),
 			  size_int (TYPE_VECTOR_SUBPARTS (vectype)));
   *dataref_bump = force_gimple_operand (bump, &stmts, true, NULL_TREE);
   if (stmts)
@@ -3005,7 +3005,7 @@ vect_get_strided_load_store_ops (stmt_vec_info stmt_info,
   offset_type = TREE_TYPE (gs_info->offset_vectype);
 
   /* Calculate X = DR_STEP / SCALE and convert it to the appropriate type.  */
-  tree step = size_binop (EXACT_DIV_EXPR, DR_STEP (dr),
+  tree step = size_binop (EXACT_DIV_EXPR, unshare_expr (DR_STEP (dr)),
 			  ssize_int (gs_info->scale));
   step = fold_convert (offset_type, step);
   step = force_gimple_operand (step, &stmts, true, NULL_TREE);
