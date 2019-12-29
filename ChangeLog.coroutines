@@ -1,3 +1,12 @@
+2019-12-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/
+	* builtin-types.def (BT_CONST_SIZE): New.
+	(BT_FN_PTR_PTR_SIZE_BOOL): Update this...
+	(BT_FN_PTR_PTR_CONST_SIZE_BOOL): ... to this.
+	* coroutine-builtins.def (BUILT_IN_CORO_PROMISE): Use revised
+	builtin signature.
+
 2019-12-27  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/
