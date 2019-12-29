@@ -1,3 +1,17 @@
+2019-12-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88337 - Implement P1327R1: Allow dynamic_cast in constexpr.
+	* constexpr.c (cxx_dynamic_cast_fn_p): New function.
+	(extract_obj_from_addr_offset): New function.
+	(get_component_with_type): New function.
+	(cxx_eval_dynamic_cast_fn): New function.
+	(cxx_eval_call_expression): Call cxx_eval_dynamic_cast_fn for a call
+	to __dynamic_cast.
+	(potential_constant_expression_1): Don't give up on
+	cxx_dynamic_cast_fn_p.
+	* rtti.c (build_dynamic_cast_1): When creating a call to
+	__dynamic_cast, use the location of the original expression.
+
 2019-12-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/92438

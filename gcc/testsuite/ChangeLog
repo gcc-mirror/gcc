@@ -1,3 +1,24 @@
+2019-12-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88337 - Implement P1327R1: Allow dynamic_cast in constexpr.
+	* g++.dg/cpp2a/constexpr-dynamic1.C: New test.
+	* g++.dg/cpp2a/constexpr-dynamic10.C: New test.
+	* g++.dg/cpp2a/constexpr-dynamic11.C: New test.
+	* g++.dg/cpp2a/constexpr-dynamic12.C: New test.
+	* g++.dg/cpp2a/constexpr-dynamic13.C: New test.
+	* g++.dg/cpp2a/constexpr-dynamic14.C: New test.
+	* g++.dg/cpp2a/constexpr-dynamic15.C: New test.
+	* g++.dg/cpp2a/constexpr-dynamic16.C: New test.
+	* g++.dg/cpp2a/constexpr-dynamic17.C: New test.
+	* g++.dg/cpp2a/constexpr-dynamic2.C: New test.
+	* g++.dg/cpp2a/constexpr-dynamic3.C: New test.
+	* g++.dg/cpp2a/constexpr-dynamic4.C: New test.
+	* g++.dg/cpp2a/constexpr-dynamic5.C: New test.
+	* g++.dg/cpp2a/constexpr-dynamic6.C: New test.
+	* g++.dg/cpp2a/constexpr-dynamic7.C: New test.
+	* g++.dg/cpp2a/constexpr-dynamic8.C: New test.
+	* g++.dg/cpp2a/constexpr-dynamic9.C: New test.
+
 2019-12-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93078

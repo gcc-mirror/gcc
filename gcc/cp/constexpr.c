@@ -1699,6 +1699,238 @@ is_std_allocator_allocate (tree fndecl)
   return decl_in_std_namespace_p (decl);
 }
 
+/* Return true if FNDECL is __dynamic_cast.  */
+
+static inline bool
+cxx_dynamic_cast_fn_p (tree fndecl)
+{
+  return (cxx_dialect >= cxx2a
+	  && id_equal (DECL_NAME (fndecl), "__dynamic_cast")
+	  && CP_DECL_CONTEXT (fndecl) == global_namespace);
+}
+
+/* Often, we have an expression in the form of address + offset, e.g.
+   "&_ZTV1A + 16".  Extract the object from it, i.e. "_ZTV1A".  */
+
+static tree
+extract_obj_from_addr_offset (tree expr)
+{
+  if (TREE_CODE (expr) == POINTER_PLUS_EXPR)
+    expr = TREE_OPERAND (expr, 0);
+  STRIP_NOPS (expr);
+  if (TREE_CODE (expr) == ADDR_EXPR)
+    expr = TREE_OPERAND (expr, 0);
+  return expr;
+}
+
+/* Given a PATH like
+
+     g.D.2181.D.2154.D.2102.D.2093
+
+   find a component with type TYPE.  Return NULL_TREE if not found, and
+   error_mark_node if the component is not accessible.  If STOP is non-null,
+   this function will return NULL_TREE if STOP is found before TYPE.  */
+
+static tree
+get_component_with_type (tree path, tree type, tree stop)
+{
+  while (true)
+    {
+      if (same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (path), type))
+	/* Found it.  */
+	return path;
+      else if (stop
+	       && (same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (path),
+							      stop)))
+	return NULL_TREE;
+      else if (TREE_CODE (path) == COMPONENT_REF
+	       && DECL_FIELD_IS_BASE (TREE_OPERAND (path, 1)))
+	{
+	  /* We need to check that the component we're accessing is in fact
+	     accessible.  */
+	  if (TREE_PRIVATE (TREE_OPERAND (path, 1))
+	      || TREE_PROTECTED (TREE_OPERAND (path, 1)))
+	    return error_mark_node;
+	  path = TREE_OPERAND (path, 0);
+	}
+      else
+	return NULL_TREE;
+    }
+}
+
+/* Evaluate a call to __dynamic_cast (permitted by P1327R1).
+
+   The declaration of __dynamic_cast is:
+
+   void* __dynamic_cast (const void* __src_ptr,
+			 const __class_type_info* __src_type,
+			 const __class_type_info* __dst_type,
+			 ptrdiff_t __src2dst);
+
+   where src2dst has the following possible values
+
+   >-1: src_type is a unique public non-virtual base of dst_type
+	dst_ptr + src2dst == src_ptr
+   -1: unspecified relationship
+   -2: src_type is not a public base of dst_type
+   -3: src_type is a multiple public non-virtual base of dst_type
+
+  Since literal types can't have virtual bases, we only expect hint >=0,
+  -2, or -3.  */
+
+static tree
+cxx_eval_dynamic_cast_fn (const constexpr_ctx *ctx, tree call,
+			  bool *non_constant_p, bool *overflow_p)
+{
+  /* T will be something like
+      __dynamic_cast ((B*) b, &_ZTI1B, &_ZTI1D, 8)
+     dismantle it.  */
+  gcc_assert (call_expr_nargs (call) == 4);
+  tsubst_flags_t complain = ctx->quiet ? tf_none : tf_warning_or_error;
+  tree obj = CALL_EXPR_ARG (call, 0);
+  tree type = CALL_EXPR_ARG (call, 2);
+  HOST_WIDE_INT hint = int_cst_value (CALL_EXPR_ARG (call, 3));
+  location_t loc = cp_expr_loc_or_input_loc (call);
+
+  /* Get the target type of the dynamic_cast.  */
+  gcc_assert (TREE_CODE (type) == ADDR_EXPR);
+  type = TREE_OPERAND (type, 0);
+  type = TREE_TYPE (DECL_NAME (type));
+
+  /* TYPE can only be either T* or T&.  We can't know which of these it
+     is by looking at TYPE, but OBJ will be "(T*) x" in the first case,
+     and something like "(T*)(T&)(T*) x" in the second case.  */
+  bool reference_p = false;
+  while (CONVERT_EXPR_P (obj) || TREE_CODE (obj) == SAVE_EXPR)
+    {
+      reference_p |= TYPE_REF_P (TREE_TYPE (obj));
+      obj = TREE_OPERAND (obj, 0);
+    }
+
+  /* Evaluate the object so that we know its dynamic type.  */
+  obj = cxx_eval_constant_expression (ctx, obj, /*lval*/false, non_constant_p,
+				      overflow_p);
+  if (*non_constant_p)
+    return call;
+
+  /* We expect OBJ to be in form of &d.D.2102 when HINT == 0,
+     but when HINT is > 0, it can also be something like
+     &d.D.2102 + 18446744073709551608, which includes the BINFO_OFFSET.  */
+  obj = extract_obj_from_addr_offset (obj);
+  const tree objtype = TREE_TYPE (obj);
+  /* If OBJ doesn't refer to a base field, we're done.  */
+  if (tree t = (TREE_CODE (obj) == COMPONENT_REF
+		? TREE_OPERAND (obj, 1) : obj))
+    if (TREE_CODE (t) != FIELD_DECL || !DECL_FIELD_IS_BASE (t))
+      return integer_zero_node;
+
+  /* [class.cdtor] When a dynamic_cast is used in a constructor ...
+     or in a destructor ... if the operand of the dynamic_cast refers
+     to the object under construction or destruction, this object is
+     considered to be a most derived object that has the type of the
+     constructor or destructor's class.  */
+  tree vtable = build_vfield_ref (obj, TREE_TYPE (obj));
+  vtable = cxx_eval_constant_expression (ctx, vtable, /*lval*/false,
+					 non_constant_p, overflow_p);
+  if (*non_constant_p)
+    return call;
+  /* VTABLE will be &_ZTV1A + 16 or similar, get _ZTV1A.  */
+  vtable = extract_obj_from_addr_offset (vtable);
+  const tree mdtype = DECL_CONTEXT (vtable);
+
+  /* Given dynamic_cast<T>(v),
+
+     [expr.dynamic.cast] If C is the class type to which T points or refers,
+     the runtime check logically executes as follows:
+
+     If, in the most derived object pointed (referred) to by v, v points
+     (refers) to a public base class subobject of a C object, and if only
+     one object of type C is derived from the subobject pointed (referred)
+     to by v the result points (refers) to that C object.
+
+     In this case, HINT >= 0 or -3.  */
+  if (hint >= 0 || hint == -3)
+    {
+      /* Look for a component with type TYPE.  */
+      tree t = get_component_with_type (obj, type, mdtype);
+      /* If not accessible, give an error.  */
+      if (t == error_mark_node)
+	{
+	  if (reference_p)
+	    {
+	      if (!ctx->quiet)
+		{
+		  error_at (loc, "reference %<dynamic_cast%> failed");
+		  inform (loc, "static type %qT of its operand is a "
+			  "non-public base class of dynamic type %qT",
+			  objtype, type);
+
+		}
+	      *non_constant_p = true;
+	    }
+	  return integer_zero_node;
+	}
+      else if (t)
+	/* The result points to the TYPE object.  */
+	return cp_build_addr_expr (t, complain);
+      /* Else, TYPE was not found, because the HINT turned out to be wrong.
+	 Fall through to the normal processing.  */
+    }
+
+  /* Otherwise, if v points (refers) to a public base class subobject of the
+     most derived object, and the type of the most derived object has a base
+     class, of type C, that is unambiguous and public, the result points
+     (refers) to the C subobject of the most derived object.
+
+     But it can also be an invalid case.  */
+      
+  /* Get the most derived object.  */
+  obj = get_component_with_type (obj, mdtype, NULL_TREE);
+  if (obj == error_mark_node)
+    {
+      if (reference_p)
+	{
+	  if (!ctx->quiet)
+	    {
+	      error_at (loc, "reference %<dynamic_cast%> failed");
+	      inform (loc, "static type %qT of its operand is a non-public"
+		      " base class of dynamic type %qT", objtype, mdtype);
+	    }
+	  *non_constant_p = true;
+	}
+      return integer_zero_node;
+    }
+  else
+    gcc_assert (obj);
+
+  /* Check that the type of the most derived object has a base class
+     of type TYPE that is unambiguous and public.  */
+  base_kind b_kind;
+  tree binfo = lookup_base (mdtype, type, ba_check, &b_kind, tf_none);
+  if (!binfo || binfo == error_mark_node)
+    {
+      if (reference_p)
+	{
+	  if (!ctx->quiet)
+	    {
+	      error_at (loc, "reference %<dynamic_cast%> failed");
+	      if (b_kind == bk_ambig)
+		inform (loc, "%qT is an ambiguous base class of dynamic "
+			"type %qT of its operand", type, mdtype);
+	      else
+		inform (loc, "dynamic type %qT of its operand does not "
+			"have an unambiguous public base class %qT",
+			mdtype, type);
+	    }
+	  *non_constant_p = true;
+	}
+      return integer_zero_node;
+    }
+  /* If so, return the TYPE subobject of the most derived object.  */
+  obj = convert_to_base_statically (obj, binfo);
+  return cp_build_addr_expr (obj, complain);
+}
+
 /* Subroutine of cxx_eval_constant_expression.
    Evaluate the call expression tree T in the context of OLD_CALL expression
    evaluation.  */
@@ -1864,6 +2096,9 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	  gcc_assert (arg1);
 	  return arg1;
 	}
+      else if (cxx_dynamic_cast_fn_p (fun))
+	return cxx_eval_dynamic_cast_fn (ctx, t, non_constant_p, overflow_p);
+
       if (!ctx->quiet)
 	{
 	  if (!lambda_static_thunk_p (fun))
@@ -6740,7 +6975,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		    && (!cxx_placement_new_fn (fun)
 			|| TREE_CODE (t) != CALL_EXPR
 			|| current_function_decl == NULL_TREE
-			|| !is_std_construct_at (current_function_decl)))
+			|| !is_std_construct_at (current_function_decl))
+		    && !cxx_dynamic_cast_fn_p (fun))
 		  {
 		    if (flags & tf_error)
 		      {

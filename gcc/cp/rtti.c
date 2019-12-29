@@ -777,6 +777,7 @@ build_dynamic_cast_1 (location_t loc, tree type, tree expr,
 	      dynamic_cast_node = dcast_fn;
 	    }
 	  result = build_cxx_call (dcast_fn, 4, elems, complain);
+	  SET_EXPR_LOCATION (result, loc);
 
 	  if (tc == REFERENCE_TYPE)
 	    {
