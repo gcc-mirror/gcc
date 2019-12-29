@@ -1661,27 +1661,6 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
 	}
       break;
 
-    CASE_CFN_RINT:
-      /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_SSE4_1)
-	break;
-
-      if (out_mode == DFmode && in_mode == DFmode)
-	{
-	  if (out_n == 2 && in_n == 2)
-	    return ix86_get_builtin (IX86_BUILTIN_RINTPD);
-	  else if (out_n == 4 && in_n == 4)
-	    return ix86_get_builtin (IX86_BUILTIN_RINTPD256);
-	}
-      if (out_mode == SFmode && in_mode == SFmode)
-	{
-	  if (out_n == 4 && in_n == 4)
-	    return ix86_get_builtin (IX86_BUILTIN_RINTPS);
-	  else if (out_n == 8 && in_n == 8)
-	    return ix86_get_builtin (IX86_BUILTIN_RINTPS256);
-	}
-      break;
-
     CASE_CFN_FMA:
       if (out_mode == DFmode && in_mode == DFmode)
 	{

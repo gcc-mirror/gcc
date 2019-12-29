@@ -1,3 +1,10 @@
+2019-12-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93078
+	* gcc.target/i386/sse4_1-pr93078.c: New test.
+	* gcc.target/i386/avx-pr93078.c: New test.
+	* gcc.target/i386/avx512f-pr93078.c: New test.
+
 2019-12-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.dg/vect/vect-strided-epilogue-1.c: New test.
