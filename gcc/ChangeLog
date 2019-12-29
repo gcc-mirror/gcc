@@ -1,3 +1,14 @@
+2019-12-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93078
+	* config/i386/i386-builtins.c (ix86_builtin_vectorized_function):
+	Remove CASE_CFN_RINT handling.
+	* config/i386/i386-builtin.def (IX86_BUILTIN_RINTPD,
+	IX86_BUILTIN_RINTPS, IX86_BUILTIN_RINTPD256, IX86_BUILTIN_RINTPS256):
+	Remove.
+	* config/i386/sse.md (nearbyint<mode>2, rint<mode>2): New expanders
+	with VF iterator.
+
 2019-12-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-stmts.c (vect_get_strided_load_store_ops): Copy

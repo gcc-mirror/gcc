@@ -17977,6 +17977,24 @@
    (set_attr "prefix" "orig,orig,vex")
    (set_attr "mode" "TI")])
 
+(define_expand "nearbyint<mode>2"
+  [(set (match_operand:VF 0 "register_operand")
+	(unspec:VF
+	  [(match_operand:VF 1 "vector_operand")
+	   (match_dup 2)]
+	  UNSPEC_ROUND))]
+  "TARGET_SSE4_1"
+  "operands[2] = GEN_INT (ROUND_MXCSR | ROUND_NO_EXC);")
+
+(define_expand "rint<mode>2"
+  [(set (match_operand:VF 0 "register_operand")
+	(unspec:VF
+	  [(match_operand:VF 1 "vector_operand")
+	   (match_dup 2)]
+	  UNSPEC_ROUND))]
+  "TARGET_SSE4_1"
+  "operands[2] = GEN_INT (ROUND_MXCSR);")
+
 (define_insn "<sse4_1>_round<ssemodesuffix><avxsizesuffix>"
   [(set (match_operand:VF_128_256 0 "register_operand" "=Yr,*x,x")
 	(unspec:VF_128_256
