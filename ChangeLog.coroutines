@@ -1,5 +1,13 @@
 2019-12-29  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/
+	* call.c (build_new_function_call): Validate coroutine builtins
+	arguments.
+	* coroutines.cc (coro_validate_builtin_call): New.
+	* cp-tree.h (coro_validate_builtin_call): New.
+
+2019-12-29  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/
 	* builtin-types.def (BT_CONST_SIZE): New.
 	(BT_FN_PTR_PTR_SIZE_BOOL): Update this...

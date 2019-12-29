@@ -7943,6 +7943,8 @@ extern void cp_ubsan_maybe_initialize_vtbl_ptrs (tree);
 extern tree finish_co_return_stmt		(location_t, tree);
 extern tree finish_co_await_expr		(location_t, tree);
 extern tree finish_co_yield_expr		(location_t, tree);
+extern tree coro_validate_builtin_call		(tree,
+						 tsubst_flags_t = tf_warning_or_error);
 extern bool morph_fn_to_coro			(tree, tree *, tree *);
 
 /* Inline bodies.  */

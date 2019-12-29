@@ -4584,6 +4584,14 @@ build_new_function_call (tree fn, vec<tree, va_gc> **args,
       result = build_over_call (cand, flags, complain);
     }
 
+  if (flag_coroutines
+      && result
+      && result != error_mark_node
+      && TREE_CODE (result) == CALL_EXPR
+      && DECL_BUILT_IN_CLASS (TREE_OPERAND (CALL_EXPR_FN (result), 0))
+	  == BUILT_IN_NORMAL)
+   result = coro_validate_builtin_call (result);
+
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);
 

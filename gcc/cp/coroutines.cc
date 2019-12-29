@@ -949,6 +949,56 @@ finish_co_return_stmt (location_t kw, tree expr)
   return expr;
 }
 
+/* We need to validate the arguments to __builtin_coro_promise, since the
+   second two must be constant, and the builtins machinery doesn't seem to
+   deal with that properly.  */
+
+tree
+coro_validate_builtin_call (tree call, tsubst_flags_t complain)
+{
+  tree fn = TREE_OPERAND (CALL_EXPR_FN (call), 0);
+
+  gcc_checking_assert (DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL);
+  switch (DECL_FUNCTION_CODE (fn))
+    {
+    default:
+      return call;
+
+    case BUILT_IN_CORO_PROMISE:
+      {
+	/* Argument 0 is already checked by the normal built-in machinery
+	   Argument 1 must be a constant of size type.  It probably makes
+	   little sense if it's not a power of 2, but that isn't specified
+	   formally.  */
+	tree arg = CALL_EXPR_ARG (call, 1);
+	location_t loc = EXPR_LOCATION (arg);
+
+	/* We expect alignof expressions in templates.  */
+	if (TREE_CODE (arg) == NON_DEPENDENT_EXPR
+	    && TREE_CODE (TREE_OPERAND (arg, 0)) == ALIGNOF_EXPR)
+	  ;
+	else if (!TREE_CONSTANT (arg))
+	  {
+	    error_at (loc, "the align argument to %<__builtin_coro_promise%>"
+			   " must be a constant");
+	    return error_mark_node;
+	  }
+	/* Argument 2 is the direction - to / from handle address to promise
+	   address.  */
+	arg = CALL_EXPR_ARG (call, 2);
+	loc = EXPR_LOCATION (arg);
+	if (!TREE_CONSTANT (arg))
+	  {
+	    error_at (loc, "the direction argument to"
+			   " %<__builtin_coro_promise%> must be a constant");
+	    return error_mark_node;
+	  }
+	return call;
+	break;
+      }
+    }
+}
+
 /* ================= Morph and Expand. =================
 
    The entry point here is morph_fn_to_coro () which is called from
