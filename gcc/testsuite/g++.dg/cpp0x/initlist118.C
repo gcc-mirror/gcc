@@ -1,5 +1,6 @@
 // PR c++/92745 - bogus error when initializing array of vectors.
 // { dg-do compile { target c++11 } }
+// { dg-options "-Wno-psabi -w" }
 
 template <typename a, int b> struct c {
   typedef a d[b];
