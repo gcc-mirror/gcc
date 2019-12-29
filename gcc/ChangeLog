@@ -1,3 +1,9 @@
+2019-12-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-stmts.c (vectorizable_condition): For extract-last
+	reductions, check that the target supports the required comparison
+	operation.
+
 2019-12-27  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/iterators.md (V_INT_CONTAINER): Fix VNx2SF entry.

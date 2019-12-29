@@ -10081,6 +10081,16 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       cond_code = SSA_NAME;
     }
 
+  if (TREE_CODE_CLASS (cond_code) == tcc_comparison
+      && reduction_type == EXTRACT_LAST_REDUCTION
+      && !expand_vec_cmp_expr_p (comp_vectype, vec_cmp_type, cond_code))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "reduction comparison operation not supported.\n");
+      return false;
+    }
+
   if (!vec_stmt)
     {
       if (bitop1 != NOP_EXPR)
