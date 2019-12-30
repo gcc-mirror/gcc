@@ -1,6 +1,6 @@
 2019-12-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
-	PR fortran/91541
+	PR fortran/91651
 	* intrinsic.c (add_sym_4ind): New function.
 	(add_functions): Use it for INDEX.
 	(resolve_intrinsic): Also call f1m for INDEX.
