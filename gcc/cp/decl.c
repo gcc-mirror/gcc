@@ -17310,7 +17310,7 @@ cxx_maybe_build_cleanup (tree decl, tsubst_flags_t complain)
       else
 	addr = build_address (decl);
 
-      call = build_delete (TREE_TYPE (addr), addr,
+      call = build_delete (input_location, TREE_TYPE (addr), addr,
 			   sfk_complete_destructor, flags, 0, complain);
       if (call == error_mark_node)
 	cleanup = error_mark_node;
