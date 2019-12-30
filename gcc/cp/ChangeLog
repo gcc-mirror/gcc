@@ -1,3 +1,7 @@
+2019-12-30  Marek Polacek  <polacek@redhat.com>
+
+	* decl.c (reshape_init_r): Remove assert.
+
 2019-12-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl2.c (delete_sanity): Add location_t parameter and use
