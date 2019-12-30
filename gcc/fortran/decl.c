@@ -2511,6 +2511,8 @@ variable_decl (int elem)
 	  goto cleanup;
 	}
 
+      gfc_seen_div0 = false;
+      
       /* F2018:C830 (R816) An explicit-shape-spec whose bounds are not
 	 constant expressions shall appear only in a subprogram, derived
 	 type definition, BLOCK construct, or interface body.  */
@@ -2527,7 +2529,12 @@ variable_decl (int elem)
 	  for (int i = 0; i < as->rank; i++)
 	    {
 	      e = gfc_copy_expr (as->lower[i]);
-	      gfc_resolve_expr (e);
+	      if (!gfc_resolve_expr (e) && gfc_seen_div0)
+		{
+		  m = MATCH_ERROR;
+		  goto cleanup;
+		}
+
 	      gfc_simplify_expr (e, 0);
 	      if (e && (e->expr_type != EXPR_CONSTANT))
 		{
@@ -2537,7 +2544,12 @@ variable_decl (int elem)
 	      gfc_free_expr (e);
 
 	      e = gfc_copy_expr (as->upper[i]);
-	      gfc_resolve_expr (e);
+	      if (!gfc_resolve_expr (e)  && gfc_seen_div0)
+		{
+		  m = MATCH_ERROR;
+		  goto cleanup;
+		}
+
 	      gfc_simplify_expr (e, 0);
 	      if (e && (e->expr_type != EXPR_CONSTANT))
 		{
@@ -2563,7 +2575,12 @@ variable_decl (int elem)
 	      if (e->expr_type != EXPR_CONSTANT)
 		{
 		  n = gfc_copy_expr (e);
-		  gfc_simplify_expr (n, 1);
+		  if (!gfc_simplify_expr (n, 1)  && gfc_seen_div0) 
+		    {
+		      m = MATCH_ERROR;
+		      goto cleanup;
+		    }
+
 		  if (n->expr_type == EXPR_CONSTANT)
 		    gfc_replace_expr (e, n);
 		  else
@@ -2573,7 +2590,12 @@ variable_decl (int elem)
 	      if (e->expr_type != EXPR_CONSTANT)
 		{
 		  n = gfc_copy_expr (e);
-		  gfc_simplify_expr (n, 1);
+		  if (!gfc_simplify_expr (n, 1)  && gfc_seen_div0) 
+		    {
+		      m = MATCH_ERROR;
+		      goto cleanup;
+		    }
+		  
 		  if (n->expr_type == EXPR_CONSTANT)
 		    gfc_replace_expr (e, n);
 		  else
@@ -2910,6 +2932,7 @@ variable_decl (int elem)
 
 cleanup:
   /* Free stuff up and return.  */
+  gfc_seen_div0 = false;
   gfc_free_expr (initializer);
   gfc_free_array_spec (as);
 

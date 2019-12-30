@@ -32,6 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-memory.h"
 #include "constructor.h"
 
+bool gfc_seen_div0;
+
 /* MPFR does not have a direct replacement for mpz_set_f() from GMP.
    It's easily implemented with a few calls though.  */
 
@@ -1620,6 +1622,10 @@ eval_intrinsic (gfc_intrinsic_op op,
       gfc_error (gfc_arith_error (rc), &op1->where);
       if (rc == ARITH_OVERFLOW)
 	goto done;
+
+      if (rc == ARITH_DIV0 && op2->ts.type == BT_INTEGER)
+	gfc_seen_div0 = true;
+
       return NULL;
     }
 
