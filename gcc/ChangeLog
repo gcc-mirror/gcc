@@ -1,3 +1,7 @@
+2019-12-30  Doug Rupp  <rupp@adacore.com>
+
+	* config/rs6000/vxworks.h (STARTFILE_PREFIX_SPEC): Define.
+
 2019-12-30  Olivier Hainque  <hainque@adacore.com>
             Jerome Lambourg  <labourg@adacore.com>
 
