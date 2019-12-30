@@ -1,3 +1,22 @@
+2019-12-30  Jerome Lambourg  <lambourg@adacore.com>
+            Olivier Hainque  <hainque@adacore.com>
+
+	* config/os/vxworks/os_defines.h
+	(NOMINMAX): Always redefine to 1.
+	(_NO_CPP_INLINES): Likewise.
+	(_GLIBCXX_USE_WEAK_REF): Define to 1 for RTP on
+	VxWorks >= 7, to 0 otherwise.
+	(_GLIBCXX_HAVE_TLS): Define to 1.
+	For VxWorks >= 7:
+	(_GLIBCXX_USE_C99_MATH): Define to 1.
+	(_GLIBCXX_USE_C99_MATH_FP_MACROS_DYNAMIC): Define to 0.
+	(_HAS_TR1_DECLARATIONS): Redefine to 0.
+	For VxWorks < 7, RTP:
+	(_GLIBCXX_INCLUDE_NEXT_C_HEADERS): Define to 1.
+	(_GLIBCXX_USE_C99_FP_MACROS_DYNAMIC): Redefine to 1.
+	(__CORRECT_ISO_CPP11_MATH_H_PROTO_FP): Define.
+	For VxWorks < 7, kernel: #include <vxWorks.h>
+
 2019-12-25  Alexandre Oliva <oliva@adacore.com>
 
 	* crossconfig.m4 (GLIBCXX_CROSSCONFIG) [*-vxworks*]: Define
