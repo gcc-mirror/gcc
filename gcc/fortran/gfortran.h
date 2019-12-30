@@ -2967,6 +2967,8 @@ void gfc_arith_done_1 (void);
 arith gfc_check_integer_range (mpz_t p, int kind);
 bool gfc_check_character_range (gfc_char_t, int);
 
+extern bool gfc_seen_div0;
+
 /* trans-types.c */
 bool gfc_check_any_c_kind (gfc_typespec *);
 int gfc_validate_kind (bt, int, bool);
