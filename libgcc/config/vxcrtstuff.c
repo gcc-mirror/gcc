@@ -38,7 +38,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    Otherwise, we may rely on ctors/dtors sections for RTPs or expect munch to
    be involved for kernel modules.  */
 
-#if !defined(USE_INIT_FINI_ARRAY) && defined(__RTP__)
+#if !defined(USE_INITFINI_ARRAY) && defined(__RTP__)
 #define USE_CDTORS_SECTIONS
 #endif
 
@@ -77,7 +77,7 @@ __attribute__((section(__LIBGCC_EH_FRAME_SECTION_NAME__), aligned(4)))
 #define EH_CTOR_ATTRIBUTE __attribute__((constructor (101)))
 #define EH_DTOR_ATTRIBUTE __attribute__((destructor (101)))
 
-#else /* USE_INITFINI_ARRAY  */
+#else /* !USE_INITFINI_ARRAY  */
 
 /* Note: Even in case of .ctors/.dtors sections, we can't use the attribute
    (constructor (15)) here as gcc may have been configured with constructors
