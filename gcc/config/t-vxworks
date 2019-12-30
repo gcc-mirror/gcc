@@ -16,9 +16,9 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-vxworks.o: $(srcdir)/config/vxworks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-	$(TARGET_H) output.h $(TM_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+vxworks.o: $(srcdir)/config/vxworks.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
 
 vxworks-c.o: $(srcdir)/config/vxworks-c.c
 	$(COMPILE) $<
