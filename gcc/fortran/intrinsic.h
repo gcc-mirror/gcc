@@ -517,8 +517,7 @@ void gfc_resolve_ibits (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_ibset (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_image_index (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_image_status (gfc_expr *, gfc_expr *, gfc_expr *);
-void gfc_resolve_index_func (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
-			     gfc_expr *);
+void gfc_resolve_index_func (gfc_expr *, gfc_actual_arglist *);
 void gfc_resolve_ierrno (gfc_expr *);
 void gfc_resolve_ieor (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_ichar (gfc_expr *, gfc_expr *, gfc_expr *);

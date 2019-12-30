@@ -1,5 +1,10 @@
 2019-12-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/91541
+	* gfortran.dg/index_3.f90: New test.
+
+2019-12-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/92961
 	* gfortran.dg/arith_divide_2.f90: New test.
 

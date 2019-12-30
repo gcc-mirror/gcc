@@ -1,5 +1,19 @@
 2019-12-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/91541
+	* intrinsic.c (add_sym_4ind): New function.
+	(add_functions): Use it for INDEX.
+	(resolve_intrinsic): Also call f1m for INDEX.
+	* intrinsic.h (gfc_resolve_index_func): Adjust prototype to
+	take a gfc_arglist instead of individual arguments.
+	* iresolve.c (gfc_resolve_index_func): Adjust arguments.
+	Remove KIND argument if present, and make sure this is
+	not done twice.
+	* trans-decl.c: Include "intrinsic.h".
+	(gfc_get_extern_function_decl): Special case for resolving INDEX.
+
+2019-12-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/92961
 	* gfortran.h (gfc_seen_div0): Add declaration.
 	* arith.h (gfc_seen_div0): Add definition.
