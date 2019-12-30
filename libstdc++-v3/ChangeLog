@@ -1,3 +1,8 @@
+2019-12-30  Corentin Gay  <gay@adacore.com>
+
+	* acinclude.m4 (vxworks*): New entry. Set ac_has_nanosleep=yes.
+	* configure: Regenerate.
+
 2019-12-30  Jerome Lambourg  <lambourg@adacore.com>
             Olivier Hainque  <hainque@adacore.com>
 
