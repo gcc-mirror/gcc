@@ -18,6 +18,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* ------------------------- Common SPEC strings -------------------------  */
+
 /* Most of these will probably be overridden by subsequent headers.  We
    undefine them here just in case, and define VXWORKS_ versions of each,
    to be used in port-specific vxworks.h.  */
@@ -39,12 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #define VXWORKS_ENDFILE_SPEC ""
 #define VXWORKS_CC1_SPEC ""
 
-/* VxWorks cannot have dots in constructor labels, because it uses a
-   mutant variation of collect2 that generates C code instead of
-   assembly.  Thus each constructor label must be a legitimate C
-   symbol.  FIXME: Have VxWorks use real collect2 instead.  */
-#undef NO_DOLLAR_IN_LABEL
-#define NO_DOT_IN_LABEL
+/* ----------------------- Common type descriptions -----------------------  */
 
 /* VxWorks uses wchar_t == unsigned short (UCS2) on all architectures.  */
 #undef WCHAR_TYPE
@@ -57,6 +54,8 @@ along with GCC; see the file COPYING3.  If not see
 #define WINT_TYPE "short unsigned int"
 #undef WINT_TYPE_SIZE
 #define WINT_TYPE_SIZE 16
+
+/* ---------------------- Debug and unwind info formats ------------------  */
 
 /* Dwarf2 unwind info is supported, unless overriden by a request for a target
    specific format.
@@ -82,6 +81,15 @@ along with GCC; see the file COPYING3.  If not see
 #undef DBX_DEBUGGING_INFO
 #undef XCOFF_DEBUGGING_INFO
 #undef VMS_DEBUGGING_INFO
+
+/* ------------------------ Misc configuration bits ----------------------  */
+
+/* VxWorks cannot have dots in constructor labels, because it uses a
+   mutant variation of collect2 that generates C code instead of
+   assembly.  Thus each constructor label must be a legitimate C
+   symbol.  FIXME: Have VxWorks use real collect2 instead.  */
+#undef NO_DOLLAR_IN_LABEL
+#define NO_DOT_IN_LABEL
 
 /* Kernel mode doesn't have ctors/dtors, but RTP mode does.  */
 #define TARGET_HAVE_CTORS_DTORS false
