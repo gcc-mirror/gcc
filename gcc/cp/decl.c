@@ -6408,7 +6408,6 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
 	  else if (same_type_ignoring_top_level_qualifiers_p (type, init_type))
 	    {
 	      ++d->cur;
-	      gcc_assert (!BRACE_ENCLOSED_INITIALIZER_P (stripped_init));
 	      return init;
 	    }
 	  else
