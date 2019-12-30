@@ -1407,6 +1407,11 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
         ac_has_nanosleep=yes
         ac_has_sched_yield=yes
         ;;
+      # VxWorks has nanosleep as soon as the kernel is configured with
+      # INCLUDE_POSIX_TIMERS, which is normally/most-often the case.
+      vxworks*)
+        ac_has_nanosleep=yes
+        ;;
       gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
         AC_MSG_CHECKING([for at least GNU libc 2.17])
         AC_TRY_COMPILE(
