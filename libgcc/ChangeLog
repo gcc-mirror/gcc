@@ -1,3 +1,8 @@
+2019-12-30  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxcrtstuff.c: Fix incorrect spelling of
+	USE_INITFINI_ARRAY in guard.
+
 2019-12-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config.host: s/msp430*-*-elf/msp430-*-elf*.
