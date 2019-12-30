@@ -293,7 +293,7 @@ __gthread_getspecific (__gthread_key_t key)
   if (key >= MAX_KEYS)
     return 0;
 
-  data = GET_VX_TLS_DATA();
+  data = VX_GET_TLS_DATA();
 
   if (!data)
     return 0;
