@@ -215,7 +215,7 @@ typedef struct
 #endif
 } __gthread_once_t;
 
-#define __GTHREAD_ONCE_INIT { 0 }
+#define __GTHREAD_ONCE_INIT {}
 
 extern int __gthread_once (__gthread_once_t *__once, void (*__func)(void));
 
