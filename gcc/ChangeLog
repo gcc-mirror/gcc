@@ -1,3 +1,12 @@
+2019-12-30  Joel Brobecker  <brobecker@adacore.com>
+
+	* config.gcc <*-*-vxworks*>: Add vxworks-c.o to c_target_objs
+	and cxx_target_objs. Set target_has_targetcm to "yes". Add
+	vxworks-predef.h to extra_headers.
+	* config/t-vxworks (vxworks-c.o): New target.
+	* config/vxworks-c.c: New file.
+	* config/vxworks/vxworks-predef.h: New file.
+
 2019-12-30  Alexandre Oliva  <oliva@adacore.com>
             Olivier Hainque  <hainque@adacore.com>
 
