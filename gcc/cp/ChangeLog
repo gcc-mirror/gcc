@@ -1,3 +1,19 @@
+2019-12-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl2.c (delete_sanity): Add location_t parameter and use
+	it throughout.
+	* init.c (build_vec_delete_1): Likewise.
+	(build_delete): Likewise.
+	(build_vec_delete): Likewise.
+	(perform_target_ctor): Adjust call.
+	(perform_member_init): Likewise.
+	(build_vec_init): Likewise.
+	* decl.c (cxx_maybe_build_cleanup): Likewise.
+	* pt.c (tsubst_copy_and_build): Likewise.
+	* parser.c (cp_parser_delete_expression): Likewise, pass the
+	combined_loc.
+	* cp-tree.h: Update declarations.
+
 2019-12-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88337 - Implement P1327R1: Allow dynamic_cast in constexpr.

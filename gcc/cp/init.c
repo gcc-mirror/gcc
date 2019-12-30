@@ -535,7 +535,8 @@ perform_target_ctor (tree init)
 				     tf_warning_or_error));
   if (type_build_dtor_call (type))
     {
-      tree expr = build_delete (type, decl, sfk_complete_destructor,
+      tree expr = build_delete (input_location,
+				type, decl, sfk_complete_destructor,
 				LOOKUP_NORMAL
 				|LOOKUP_NONVIRTUAL
 				|LOOKUP_DESTRUCTOR,
@@ -980,7 +981,8 @@ perform_member_init (tree member, tree init)
 					     /*access_path=*/NULL_TREE,
 					     /*preserve_reference=*/false,
 					     tf_warning_or_error);
-      expr = build_delete (type, expr, sfk_complete_destructor,
+      expr = build_delete (input_location,
+			   type, expr, sfk_complete_destructor,
 			   LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR, 0,
 			   tf_warning_or_error);
 
@@ -3924,7 +3926,7 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
 }
 
 static tree
-build_vec_delete_1 (tree base, tree maxindex, tree type,
+build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
 		    special_function_kind auto_delete_vec,
 		    int use_global_delete, tsubst_flags_t complain)
 {
@@ -3958,7 +3960,7 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
   if (base == error_mark_node || maxindex == error_mark_node)
     return error_mark_node;
 
-  if (!verify_type_context (input_location, TCTX_DEALLOCATION, type,
+  if (!verify_type_context (loc, TCTX_DEALLOCATION, type,
 			    !(complain & tf_error)))
     return error_mark_node;
 
@@ -3967,14 +3969,14 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
       if (complain & tf_warning)
 	{
 	  auto_diagnostic_group d;
-	  if (warning (OPT_Wdelete_incomplete,
-			 "possible problem detected in invocation of "
-			 "operator %<delete []%>"))
+	  if (warning_at (loc, OPT_Wdelete_incomplete,
+			  "possible problem detected in invocation of "
+			  "operator %<delete []%>"))
 	    {
 	      cxx_incomplete_type_diagnostic (base, type, DK_WARNING);
-	      inform (input_location, "neither the destructor nor the "
-			"class-specific operator %<delete []%> will be called, "
-			"even if they are declared when the class is defined");
+	      inform (loc, "neither the destructor nor the "
+		      "class-specific operator %<delete []%> will be called, "
+		      "even if they are declared when the class is defined");
 	    }
 	}
       /* This size won't actually be used.  */
@@ -3991,7 +3993,7 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
       /* Make sure the destructor is callable.  */
       if (type_build_dtor_call (type))
 	{
-	  tmp = build_delete (ptype, base, sfk_complete_destructor,
+	  tmp = build_delete (loc, ptype, base, sfk_complete_destructor,
 			      LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 1,
 			      complain);
 	  if (tmp == error_mark_node)
@@ -4006,30 +4008,30 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 
   tbase = create_temporary_var (ptype);
   DECL_INITIAL (tbase)
-    = fold_build_pointer_plus_loc (input_location, fold_convert (ptype, base),
+    = fold_build_pointer_plus_loc (loc, fold_convert (ptype, base),
 				   virtual_size);
-  tbase_init = build_stmt (input_location, DECL_EXPR, tbase);
+  tbase_init = build_stmt (loc, DECL_EXPR, tbase);
   controller = build3 (BIND_EXPR, void_type_node, tbase, NULL_TREE, NULL_TREE);
   TREE_SIDE_EFFECTS (controller) = 1;
 
   body = build1 (EXIT_EXPR, void_type_node,
 		 build2 (EQ_EXPR, boolean_type_node, tbase,
 			 fold_convert (ptype, base)));
-  tmp = fold_build1_loc (input_location, NEGATE_EXPR, sizetype, size_exp);
+  tmp = fold_build1_loc (loc, NEGATE_EXPR, sizetype, size_exp);
   tmp = fold_build_pointer_plus (tbase, tmp);
-  tmp = cp_build_modify_expr (input_location, tbase, NOP_EXPR, tmp, complain);
+  tmp = cp_build_modify_expr (loc, tbase, NOP_EXPR, tmp, complain);
   if (tmp == error_mark_node)
     return error_mark_node;
-  body = build_compound_expr (input_location, body, tmp);
-  tmp = build_delete (ptype, tbase, sfk_complete_destructor,
+  body = build_compound_expr (loc, body, tmp);
+  tmp = build_delete (loc, ptype, tbase, sfk_complete_destructor,
 		      LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 1,
 		      complain);
   if (tmp == error_mark_node)
     return error_mark_node;
-  body = build_compound_expr (input_location, body, tmp);
+  body = build_compound_expr (loc, body, tmp);
 
   loop = build1 (LOOP_EXPR, void_type_node, body);
-  loop = build_compound_expr (input_location, tbase_init, loop);
+  loop = build_compound_expr (loc, tbase_init, loop);
 
  no_destructor:
   /* Delete the storage if appropriate.  */
@@ -4049,7 +4051,7 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 	  tree cookie_size;
 
 	  cookie_size = targetm.cxx.get_cookie_size (type);
-	  base_tbd = cp_build_binary_op (input_location,
+	  base_tbd = cp_build_binary_op (loc,
 					 MINUS_EXPR,
 					 cp_convert (string_type_node,
 						     base, complain),
@@ -4088,12 +4090,12 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
     body = integer_zero_node;
 
   /* Outermost wrapper: If pointer is null, punt.  */
-  tree cond = build2_loc (input_location, NE_EXPR, boolean_type_node, base,
+  tree cond = build2_loc (loc, NE_EXPR, boolean_type_node, base,
 			  fold_convert (TREE_TYPE (base), nullptr_node));
   /* This is a compiler generated comparison, don't emit
      e.g. -Wnonnull-compare warning for it.  */
   TREE_NO_WARNING (cond) = 1;
-  body = build3_loc (input_location, COND_EXPR, void_type_node,
+  body = build3_loc (loc, COND_EXPR, void_type_node,
 		     cond, body, integer_zero_node);
   COND_EXPR_IS_VEC_DELETE (body) = true;
   body = build1 (NOP_EXPR, void_type_node, body);
@@ -4714,7 +4716,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 				complain);
 
       finish_cleanup_try_block (try_block);
-      e = build_vec_delete_1 (rval, m,
+      e = build_vec_delete_1 (input_location, rval, m,
 			      inner_elt_type, sfk_complete_destructor,
 			      /*use_global_delete=*/0, complain);
       if (e == error_mark_node)
@@ -4801,7 +4803,8 @@ build_dtor_call (tree exp, special_function_kind dtor_kind, int flags,
    flags.  See cp-tree.h for more info.  */
 
 tree
-build_delete (tree otype, tree addr, special_function_kind auto_delete,
+build_delete (location_t loc, tree otype, tree addr,
+	      special_function_kind auto_delete,
 	      int flags, int use_global_delete, tsubst_flags_t complain)
 {
   tree expr;
@@ -4824,10 +4827,10 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
       if (TYPE_DOMAIN (type) == NULL_TREE)
 	{
 	  if (complain & tf_error)
-	    error ("unknown array size in delete");
+	    error_at (loc, "unknown array size in delete");
 	  return error_mark_node;
 	}
-      return build_vec_delete (addr, array_type_nelts (type),
+      return build_vec_delete (loc, addr, array_type_nelts (type),
 			       auto_delete, use_global_delete, complain);
     }
 
@@ -4848,7 +4851,7 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 	{
 	  complete_type (type);
 	  if (deleting
-	      && !verify_type_context (input_location, TCTX_DEALLOCATION, type,
+	      && !verify_type_context (loc, TCTX_DEALLOCATION, type,
 				       !(complain & tf_error)))
 	    return error_mark_node;
 
@@ -4857,12 +4860,12 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 	      if (complain & tf_warning)
 		{
 		  auto_diagnostic_group d;
-		  if (warning (OPT_Wdelete_incomplete,
-			       "possible problem detected in invocation of "
-			       "%<operator delete%>"))
+		  if (warning_at (loc, OPT_Wdelete_incomplete,
+				  "possible problem detected in invocation of "
+				  "%<operator delete%>"))
 		    {
 		      cxx_incomplete_type_diagnostic (addr, type, DK_WARNING);
-		      inform (input_location,
+		      inform (loc,
 			      "neither the destructor nor the class-specific "
 			      "%<operator delete%> will be called, even if "
 			      "they are declared when the class is defined");
@@ -4877,15 +4880,15 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 	      if (!dtor || !DECL_VINDEX (dtor))
 		{
 		  if (CLASSTYPE_PURE_VIRTUALS (type))
-		    warning (OPT_Wdelete_non_virtual_dtor,
-			     "deleting object of abstract class type %qT"
-			     " which has non-virtual destructor"
-			     " will cause undefined behavior", type);
+		    warning_at (loc, OPT_Wdelete_non_virtual_dtor,
+				"deleting object of abstract class type %qT"
+				" which has non-virtual destructor"
+				" will cause undefined behavior", type);
 		  else
-		    warning (OPT_Wdelete_non_virtual_dtor,
-			     "deleting object of polymorphic class type %qT"
-			     " which has non-virtual destructor"
-			     " might cause undefined behavior", type);
+		    warning_at (loc, OPT_Wdelete_non_virtual_dtor,
+				"deleting object of polymorphic class type %qT"
+				" which has non-virtual destructor"
+				" might cause undefined behavior", type);
 		}
 	    }
 	}
@@ -4984,7 +4987,10 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
     return error_mark_node;
 
   if (!deleting)
-    return expr;
+    {
+      protected_set_expr_location (expr, loc);
+      return expr;
+    }
 
   if (do_delete)
     {
@@ -5010,7 +5016,7 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 
   /* Handle deleting a null pointer.  */
   warning_sentinel s (warn_address);
-  tree ifexp = cp_build_binary_op (input_location, NE_EXPR, addr,
+  tree ifexp = cp_build_binary_op (loc, NE_EXPR, addr,
 				   nullptr_node, complain);
   ifexp = cp_fully_fold (ifexp);
 
@@ -5024,6 +5030,7 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
   if (!integer_nonzerop (ifexp))
     expr = build3 (COND_EXPR, void_type_node, ifexp, expr, void_node);
 
+  protected_set_expr_location (expr, loc);
   return expr;
 }
 
@@ -5112,7 +5119,7 @@ push_base_cleanups (void)
 			       /*access_path=*/NULL_TREE,
 			       /*preserve_reference=*/false,
 			       tf_warning_or_error));
-	  expr = build_delete (this_type, this_member,
+	  expr = build_delete (input_location, this_type, this_member,
 			       sfk_complete_destructor,
 			       LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR|LOOKUP_NORMAL,
 			       0, tf_warning_or_error);
@@ -5139,7 +5146,7 @@ push_base_cleanups (void)
    be worth bothering.)  */
 
 tree
-build_vec_delete (tree base, tree maxindex,
+build_vec_delete (location_t loc, tree base, tree maxindex,
 		  special_function_kind auto_delete_vec,
 		  int use_global_delete, tsubst_flags_t complain)
 {
@@ -5162,7 +5169,7 @@ build_vec_delete (tree base, tree maxindex,
 	  base = TARGET_EXPR_SLOT (base_init);
 	}
       type = strip_array_types (TREE_TYPE (type));
-      cookie_addr = fold_build1_loc (input_location, NEGATE_EXPR,
+      cookie_addr = fold_build1_loc (loc, NEGATE_EXPR,
 				 sizetype, TYPE_SIZE_UNIT (sizetype));
       cookie_addr = fold_build_pointer_plus (fold_convert (size_ptr_type, base),
 					     cookie_addr);
@@ -5186,15 +5193,17 @@ build_vec_delete (tree base, tree maxindex,
   else
     {
       if (base != error_mark_node && !(complain & tf_error))
-	error ("type to vector delete is neither pointer or array type");
+	error_at (loc,
+		  "type to vector delete is neither pointer or array type");
       return error_mark_node;
     }
 
-  rval = build_vec_delete_1 (base, maxindex, type, auto_delete_vec,
+  rval = build_vec_delete_1 (loc, base, maxindex, type, auto_delete_vec,
 			     use_global_delete, complain);
   if (base_init && rval != error_mark_node)
     rval = build2 (COMPOUND_EXPR, TREE_TYPE (rval), base_init, rval);
 
+  protected_set_expr_location (rval, loc);
   return rval;
 }
 

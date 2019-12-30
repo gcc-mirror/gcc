@@ -9046,9 +9046,8 @@ cp_parser_delete_expression (cp_parser* parser)
      the end at the end of the final token we consumed.  */
   location_t combined_loc = make_location (start_loc, start_loc,
 					   parser->lexer);
-  expression = delete_sanity (expression, NULL_TREE, array_p,
+  expression = delete_sanity (combined_loc, expression, NULL_TREE, array_p,
 			      global_scope_p, tf_warning_or_error);
-  protected_set_expr_location (expression, combined_loc);
 
   return expression;
 }

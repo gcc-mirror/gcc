@@ -19336,7 +19336,7 @@ tsubst_copy_and_build (tree t,
       {
 	tree op0 = RECUR (TREE_OPERAND (t, 0));
 	tree op1 = RECUR (TREE_OPERAND (t, 1));
-	RETURN (delete_sanity (op0, op1,
+	RETURN (delete_sanity (input_location, op0, op1,
 			       DELETE_EXPR_USE_VEC (t),
 			       DELETE_EXPR_USE_GLOBAL (t),
 			       complain));
