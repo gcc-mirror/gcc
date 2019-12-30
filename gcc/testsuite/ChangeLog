@@ -1,4 +1,9 @@
 2019-12-20  Olivier Hainque  <hainque@adacore.com>
+
+	* testsuite/gcc.dg/cpp/ucs.c: Prevent redefinition
+	of WCHAR_MAX if already exposed by limits.h.
+
+2019-12-20  Olivier Hainque  <hainque@adacore.com>
            Jerome Lambourg  <lambourg@adacore.com>
 
 	* c-c++-common/pr56493.c: Allow '$' in addition to '.'
