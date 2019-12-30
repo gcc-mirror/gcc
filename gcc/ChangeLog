@@ -1,5 +1,18 @@
 2019-12-30  Olivier Hainque  <hainque@adacore.com>
 
+	* config/vxworks/_yvals.h: New file.
+	* config/vxworks/_yvals-wrapper.h: New file.
+	* gcc/config/vxworks/math.h: Use it to wrap the VxWorks
+	math.h header.
+	* gcc/config/vxworks/complex.h: Likewise.
+	* gcc/config/vxworks/setjmp.h: Likewise.
+	* gcc/config/vxworks/inttypes.h: Likewise.
+	* config.gcc (*-*-vxworks*): Add system header wrappers
+	to extra_headers.
+	(powerpc-*-vxworks*): Reuse the common extra_headers.
+
+2019-12-30  Olivier Hainque  <hainque@adacore.com>
+
 	* config/vxworks/_vxworks-versions.h: New file.
 	* config.gcc (*-*-vxworks*): Add it to extra_headers.
 
