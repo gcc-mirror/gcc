@@ -1,3 +1,7 @@
+2019-12-30  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc.dg/vect/tree-vect.h: #undef OFFSET.
+
 2019-12-20  Olivier Hainque  <hainque@adacore.com>
 
 	* testsuite/gcc.dg/cpp/ucs.c: Prevent redefinition
