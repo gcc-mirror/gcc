@@ -1,3 +1,9 @@
+2019-12-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/92961
+	* gfortran.dg/arith_divide_2.f90: New test.
+
 2019-12-20  Roman Zhuykov  <zhroma@ispras.ru>
 
 	* gcc.dg/pr92951-1.c: Rename to ...
