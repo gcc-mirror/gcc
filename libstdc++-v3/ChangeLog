@@ -1,3 +1,10 @@
+2019-12-25  Alexandre Oliva <oliva@adacore.com>
+
+	* crossconfig.m4 (GLIBCXX_CROSSCONFIG) [*-vxworks*]: Define
+	long double functions as available if declared by math.h.
+	(GLIBCXX_CHECK_MATH_DECL, GLIBCXX_CHECK_MATH_DECLS): New.
+	* configure: Rebuild.
+
 2019-12-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/92927

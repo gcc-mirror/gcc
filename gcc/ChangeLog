@@ -1,3 +1,40 @@
+2019-12-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93078
+	* config/i386/i386-builtins.c (ix86_builtin_vectorized_function):
+	Remove CASE_CFN_RINT handling.
+	* config/i386/i386-builtin.def (IX86_BUILTIN_RINTPD,
+	IX86_BUILTIN_RINTPS, IX86_BUILTIN_RINTPD256, IX86_BUILTIN_RINTPS256):
+	Remove.
+	* config/i386/sse.md (nearbyint<mode>2, rint<mode>2): New expanders
+	with VF iterator.
+
+2019-12-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-stmts.c (vect_get_strided_load_store_ops): Copy
+	DR_STEP before gimplifying it.
+
+2019-12-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-stmts.c (vectorizable_condition): For extract-last
+	reductions, check that the target supports the required comparison
+	operation.
+
+2019-12-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (V_INT_CONTAINER): Fix VNx2SF entry.
+
+2019-12-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (vectorizable_reduction): Check whether the
+	target supports the required VEC_COND_EXPR operation before
+	allowing the fallback handling of masked fold-left reductions.
+
+2019-12-24  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Enable
+	-fweb and -frename-registers with -funroll-loops
+
 2019-12-22  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/invoke.texi (-flto): Use "compile time" as a noun.

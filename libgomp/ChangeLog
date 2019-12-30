@@ -1,3 +1,9 @@
+2019-12-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/93074
+	* plugin/cuda/cuda.h (cuDeviceGetName, cuDriverGetVersion): Declare.
+	(cuDeviceTotalMem, cuMemGetInfo): Likewise.  Define to *_v2.
+
 2019-12-22  Maciej W. Rozycki  <macro@codesourcery.com>
 	    Frederik Harwath  <frederik@codesourcery.com>
 	    Thomas Schwinge  <tschwinge@codesourcery.com>

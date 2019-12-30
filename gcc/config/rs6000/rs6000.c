@@ -4538,12 +4538,19 @@ rs6000_option_override_internal (bool global_init_p)
 			   param_sched_pressure_algorithm,
 			   SCHED_PRESSURE_MODEL);
 
-      /* Explicit -funroll-loops turns -munroll-only-small-loops off.  */
-      if (((global_options_set.x_flag_unroll_loops && flag_unroll_loops)
+      /* Explicit -funroll-loops turns -munroll-only-small-loops off, and
+	 turns -fweb and -frename-registers on.  */
+      if ((global_options_set.x_flag_unroll_loops && flag_unroll_loops)
 	   || (global_options_set.x_flag_unroll_all_loops
 	       && flag_unroll_all_loops))
-	  && !global_options_set.x_unroll_only_small_loops)
-	unroll_only_small_loops = 0;
+	{
+	  if (!global_options_set.x_unroll_only_small_loops)
+	    unroll_only_small_loops = 0;
+	  if (!global_options_set.x_flag_rename_registers)
+	    flag_rename_registers = 1;
+	  if (!global_options_set.x_flag_web)
+	    flag_web = 1;
+	}
 
       /* If using typedef char *va_list, signal that
 	 __builtin_va_start (&ap, 0) can be optimized to
