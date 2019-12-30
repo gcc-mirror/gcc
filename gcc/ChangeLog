@@ -1,3 +1,10 @@
+2019-12-30  Olivier Hainque  <hainque@adacore.com>
+            Jerome Lambourg  <labourg@adacore.com>
+
+	* config/t-vxworks: Arrange to alter/restore glimits.h
+	before/after stmp-int-hdrs, so it uses a different macro
+	name to protect itself against recursive inclusions.
+
 2019-12-30  Peter Bergner <bergner@linux.ibm.com>
 
 	PR target/92923
