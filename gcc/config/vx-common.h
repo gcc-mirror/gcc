@@ -43,17 +43,32 @@ along with GCC; see the file COPYING3.  If not see
 
 /* ----------------------- Common type descriptions -----------------------  */
 
-/* VxWorks uses wchar_t == unsigned short (UCS2) on all architectures.  */
+/* Regardless of the target architecture, VxWorks uses a signed 32bit
+   integer for wchar_t starting with vx7 SR06xx.  An unsigned short
+   otherwise.  */
+#if TARGET_VXWORKS7
+
+#undef WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE 32
 #undef WCHAR_TYPE
-#define WCHAR_TYPE "short unsigned int"
+#define WCHAR_TYPE (TARGET_VXWORKS64 ? "int" : "long int")
+
+#else
+
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 16
+#undef WCHAR_TYPE
+#define WCHAR_TYPE "short unsigned int"
 
-/* Likewise wint_t.  */
-#undef WINT_TYPE
-#define WINT_TYPE "short unsigned int"
+#endif
+
+/* The VxWorks headers base wint_t on the definitions used for wchar_t.
+   Do the same here to make sure they remain in sync, in case WCHAR_TYPE
+   gets redefined for a specific CPU architecture.  */
 #undef WINT_TYPE_SIZE
-#define WINT_TYPE_SIZE 16
+#define WINT_TYPE_SIZE WCHAR_TYPE_SIZE
+#undef WINT_TYPE
+#define WINT_TYPE WCHAR_TYPE
 
 /* ---------------------- Debug and unwind info formats ------------------  */
 

@@ -1,3 +1,11 @@
+2019-12-30  Alexandre Oliva  <oliva@adacore.com>
+            Olivier Hainque  <hainque@adacore.com>
+
+	* config/vx-common.h (WCHAR_TYPE_SIZE): 32 on VxWorks 7.
+	(WCHAR_TYPE): Pick accordingly.
+	(WINT_TYPE_SIZE): Define in terms of WCHAR_TYPE_SIZE.
+	(WINT_TYPE): Define in terms of WCHAR_TYPE.
+
 2019-12-30  Olivier Hainque  <hainque@adacore.com>
 
 	* config/vx-common.h: Minor reorganization and add
