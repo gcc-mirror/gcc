@@ -1,5 +1,10 @@
 2019-12-30  Olivier Hainque  <hainque@adacore.com>
 
+	* config/gthr-vxworks.h: Use _vxworks-versions.h.
+	* config/gthr-vxworks-tls.c: Likewise.
+
+2019-12-30  Olivier Hainque  <hainque@adacore.com>
+
 	* config/gthr-vxworks.h (GTHREAD_ONCE_INIT): Use
 	standard zero-initializer syntax.
 

@@ -961,6 +961,13 @@ case ${target} in
   target_has_targetcm="yes"
   use_gcc_stdint=provide
   tm_file="${tm_file} vxworks-stdint.h"
+
+  # This private header exposes a consistent interface for checks on
+  # the VxWorks version our runtime header files need to perform, based on
+  # what the system headers adverstise:
+
+  extra_headers="${extra_headers} ../vxworks/_vxworks-versions.h"
+
   case ${enable_threads} in
     no) ;;
     "" | yes | vxworks) thread_file='vxworks' ;;
