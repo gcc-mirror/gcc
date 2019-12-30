@@ -1,6 +1,6 @@
 2019-12-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
-	PR fortran/91541
+	PR fortran/91651
 	* gfortran.dg/index_3.f90: New test.
 
 2019-12-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
