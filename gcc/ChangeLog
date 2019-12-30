@@ -1,5 +1,10 @@
 2019-12-30  Olivier Hainque  <hainque@adacore.com>
 
+	* config/vxworks/_vxworks-versions.h: New file.
+	* config.gcc (*-*-vxworks*): Add it to extra_headers.
+
+2019-12-30  Olivier Hainque  <hainque@adacore.com>
+
 	* config/t-vxworks: Rework the vxworks.o compilation
 	rules to use $(COMPILE).
 
