@@ -20,6 +20,10 @@ vxworks.o: $(srcdir)/config/vxworks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TARGET_H) output.h $(TM_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
+vxworks-c.o: $(srcdir)/config/vxworks-c.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
 # Both the kernel and RTP headers provide limits.h.  They embed VxWorks
 # specificities and are dated on some configurations so we both need to
 # provide our own version and make sure the system one gets exposed.

@@ -955,6 +955,10 @@ case ${target} in
   xm_defines=POSIX
   extra_options="${extra_options} vxworks.opt"
   extra_objs="$extra_objs vxworks.o"
+  c_target_objs="${c_target_objs} vxworks-c.o"
+  cxx_target_objs="${cxx_target_objs} vxworks-c.o"
+  extra_headers="${extra_headers} ../vxworks/vxworks-predef.h"
+  target_has_targetcm="yes"
   use_gcc_stdint=provide
   tm_file="${tm_file} vxworks-stdint.h"
   case ${enable_threads} in
