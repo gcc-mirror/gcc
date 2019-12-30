@@ -962,9 +962,6 @@ case ${target} in
   extra_headers="${extra_headers} ../vxworks/vxworks-predef.h"
   target_has_targetcm="yes"
 
-  use_gcc_stdint=provide
-  tm_file="${tm_file} vxworks-stdint.h"
-
   # This private header exposes a consistent interface for checks on
   # the VxWorks version our runtime header files need to perform, based on
   # what the system headers adverstise:
@@ -981,6 +978,17 @@ case ${target} in
 
   extra_headers="${extra_headers} ../vxworks/math.h ../vxworks/complex.h"
   extra_headers="${extra_headers} ../vxworks/inttypes.h ../vxworks/setjmp.h"
+
+  # We provide stdint.h ...
+
+  tm_file="${tm_file} vxworks-stdint.h"
+
+  # .. only through the yvals conditional wrapping mentioned above
+  # to abide by the VxWorks 7 expectations.  The final copy is performed
+  # explicitly by a t-vxworks Makefile rule.
+
+  use_gcc_stdint=none
+  extra_headers="${extra_headers} ../../ginclude/stdint-gcc.h"
 
   case ${enable_threads} in
     no) ;;
