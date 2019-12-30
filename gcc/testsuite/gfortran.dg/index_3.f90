@@ -1,5 +1,5 @@
 ! { dg-do run }
-! PR 91541 - this used to give an ICE.
+! PR 91651 - this used to give an ICE.
 ! Bug report by Gerhard Steinmetz.
 program p
    integer :: z(2)
