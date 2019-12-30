@@ -1,3 +1,11 @@
+2019-12-20  Olivier Hainque  <hainque@adacore.com>
+           Jerome Lambourg  <lambourg@adacore.com>
+
+	* c-c++-common/pr56493.c: Allow '$' in addition to '.'
+	scan-tree-dump expressions matching symbol names.
+	* gcc.dg/tree-ssa/sra-17.c: Likewise.
+	* gcc.dg/tree-ssa/sra-18.c: Likewise.
+
 2019-12-30  Joel Brobecker  <brobecker@adacore.com>
             Olivier Hainque  <hainque@adacore.com>
 
