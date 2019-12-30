@@ -1,3 +1,9 @@
+2019-12-30  Peter Bergner <bergner@linux.ibm.com>
+
+       PR target/92923
+       * gcc.target/powerpc/pr92923-1.c: New test.
+       * gcc.target/powerpc/pr92923-2.c: Likewise.
+
 2019-12-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/init/delete1.C: Check locations too.
