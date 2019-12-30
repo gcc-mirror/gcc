@@ -43,6 +43,13 @@ along with GCC; see the file COPYING3.  If not see
     }		\
   while (0)
 
+/* vx6 library path.  */
+#if !TARGET_VXWORKS7
+#undef  STARTFILE_PREFIX_SPEC
+#define STARTFILE_PREFIX_SPEC						\
+ "%{mrtp:%{!shared:%:getenv(WIND_BASE /target/lib/usr/lib/ppc/PPC32/common)}}"
+#endif
+
 /* Only big endian PPC is supported by VxWorks.  */
 #undef BYTES_BIG_ENDIAN
 #define BYTES_BIG_ENDIAN 1
