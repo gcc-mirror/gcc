@@ -1,3 +1,13 @@
+2019-12-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92961
+	* gfortran.h (gfc_seen_div0): Add declaration.
+	* arith.h (gfc_seen_div0): Add definition.
+	(eval_intrinsic): For integer division by zero, set gfc_seen_div0.
+	* decl.c (variable_decl):  If resolution resp. simplification
+	fails for array spec and a division of zero error has been
+	seen, return MATCH_ERROR.
+
 2019-12-21  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/92990
