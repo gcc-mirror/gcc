@@ -1,5 +1,9 @@
 2020-12-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.dg/vect/vect-cond-reduc-6.c: New test.
+
+2020-12-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.dg/vect/vect-epilogues-2.c: New test.
 
 2019-12-30  Olivier Hainque  <hainque@adacore.com>

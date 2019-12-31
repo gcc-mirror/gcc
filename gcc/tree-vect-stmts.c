@@ -10033,10 +10033,12 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  if (new_code == ERROR_MARK)
 	    must_invert_cmp_result = true;
 	  else
-	    cond_code = new_code;
+	    {
+	      cond_code = new_code;
+	      /* Make sure we don't accidentally use the old condition.  */
+	      cond_expr = NULL_TREE;
+	    }
 	}
-      /* Make sure we don't accidentally use the old condition.  */
-      cond_expr = NULL_TREE;
       std::swap (then_clause, else_clause);
     }
 
