@@ -1,3 +1,12 @@
+2020-12-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop-manip.c (create_lcssa_for_virtual_phi): Return
+	the incoming virtual operand definition.
+	(vect_do_peeling): When vectorizing an epilogue loop, handle the
+	case in which the main loop has a virtual phi and the epilogue
+	and scalar loops don't.  Restore an earlier comment about the
+	update_ssa call.
+
 2019-12-30  Olivier Hainque  <hainque@adacore.com>
 
 	* config/vxworks/stdint.h: New file.  Include _yvals.h
