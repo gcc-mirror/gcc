@@ -11144,6 +11144,51 @@ package body Exp_Ch4 is
          Expr : Node_Id;
          Ityp : Entity_Id;
 
+         procedure Generate_Temporary;
+         --  Generate a temporary to facilitate in the C backend the code
+         --  generation of the unchecked conversion since the size of the
+         --  source type may differ from the size of the target type.
+
+         ------------------------
+         -- Generate_Temporary --
+         ------------------------
+
+         procedure Generate_Temporary is
+         begin
+            if Esize (Etype (Expr)) < Esize (Etype (Ityp)) then
+               declare
+                  Exp_Type : constant Entity_Id := Ityp;
+                  Def_Id   : constant Entity_Id :=
+                               Make_Temporary (Loc, 'R', Expr);
+                  E        : Node_Id;
+                  Res      : Node_Id;
+
+               begin
+                  Set_Is_Internal (Def_Id);
+                  Set_Etype (Def_Id, Exp_Type);
+                  Res := New_Occurrence_Of (Def_Id, Loc);
+
+                  E :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Def_Id,
+                      Object_Definition   => New_Occurrence_Of
+                                               (Exp_Type, Loc),
+                      Constant_Present    => True,
+                      Expression          => Relocate_Node (Expr));
+
+                  Set_Assignment_OK (E);
+                  Insert_Action (Expr, E);
+
+                  Set_Assignment_OK (Res, Assignment_OK (Expr));
+
+                  Rewrite (Expr, Res);
+                  Analyze_And_Resolve (Expr, Exp_Type);
+               end;
+            end if;
+         end Generate_Temporary;
+
+      --  Start of processing for Discrete_Range_Check
+
       begin
          --  Nothing to do if conversion was rewritten
 
@@ -11178,6 +11223,13 @@ package body Exp_Ch4 is
                Ityp := Standard_Long_Long_Integer;
             else
                Ityp := Standard_Integer;
+            end if;
+
+            --  Generate a temporary with the large type to facilitate in the C
+            --  backend the code generation for the unchecked conversion.
+
+            if Modify_Tree_For_C then
+               Generate_Temporary;
             end if;
 
             Set_Do_Range_Check (Expr, False);
