@@ -1,3 +1,16 @@
+2019-12-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/testsuite/
+	* g++.dg/coroutines/co-await-syntax-01-outside-fn.C: Use coro
+	namespace;
+	* g++.dg/coroutines/co-await-syntax-02-outside-fn.C: Likewise.
+	* g++.dg/coroutines/co-await-syntax-04-ctor-dtor.C: Likewise.
+	* g++.dg/coroutines/co-await-syntax-05-constexpr.C: Likewise.
+	* g++.dg/coroutines/co-await-syntax-06-main.C: Likewise.
+	* g++.dg/coroutines/co-await-syntax-07-varargs.C: Likewise.
+	* g++.dg/coroutines/coro.h: Check for the coroutines header in
+	the top level before trying the experimental case.
+
 2019-12-30  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Merge trunk r279761.

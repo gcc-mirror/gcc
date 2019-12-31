@@ -2,4 +2,4 @@
 
 #include "coro.h"
 
-int x = co_await std::experimental::suspend_always{}; // { dg-error {'co_await' cannot be used outside a function} }
+int x = co_await coro::suspend_always{}; // { dg-error {'co_await' cannot be used outside a function} }

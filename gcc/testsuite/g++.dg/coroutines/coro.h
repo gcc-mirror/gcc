@@ -1,4 +1,14 @@
-#if __has_include(<experimental/coroutine>)
+#if __has_include(<coroutine>)
+
+#include <coroutine>
+
+#  if __clang__
+#    include <utility>
+#  endif
+
+namespace coro = std;
+
+#elif __has_include(<experimental/coroutine>)
 
 #include <experimental/coroutine>
 
@@ -6,7 +16,11 @@
 #    include <utility>
 #  endif
 
+namespace coro = std::experimental;
+
 #else
+
+#warning "no installed coroutine headers found, using test-suite local one"
 
 /* Dummy version to allow tests without an installed header.  */
 #  ifndef __TESTSUITE_CORO_H_n4835
@@ -18,7 +32,6 @@
 #  if __cpp_coroutines
 
 namespace std {
-namespace experimental {
 inline namespace __n4835 {
 
 // 21.11.1 coroutine traits
@@ -112,7 +125,10 @@ struct suspend_never {
   void await_resume() {}
 };
 
-}}} // namespace std::experimental::__n4835
+} // namespace __n4835
+} // namespace std
+
+namespace coro = std;
 
 #  else
 #    error "coro.h requires support for coroutines, add -fcoroutines"
@@ -120,8 +136,6 @@ struct suspend_never {
 #  endif // __TESTSUITE_CORO_H_n4835
 
 #endif // __has_include(<experimental/coroutine>)
-
-namespace coro = std::experimental;
 
 /* just to avoid cluttering dump files. */
 extern "C" int puts (const char *);

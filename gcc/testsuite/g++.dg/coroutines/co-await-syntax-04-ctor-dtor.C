@@ -3,6 +3,6 @@
 #include "coro.h"
 
 struct Foo {
-  Foo ()  { co_await std::experimental::suspend_always{}; } // { dg-error "cannot be used in a constructor" }
-  ~Foo () { co_await std::experimental::suspend_always{}; } // { dg-error "cannot be used in a destructor" }
+  Foo ()  { co_await coro::suspend_always{}; } // { dg-error "cannot be used in a constructor" }
+  ~Foo () { co_await coro::suspend_always{}; } // { dg-error "cannot be used in a destructor" }
 };
