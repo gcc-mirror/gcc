@@ -1,5 +1,11 @@
 2020-12-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-stmts.c (vectorizable_condition): Only nullify cond_expr
+	if we've created a new condition.  Don't nullify it if we've decided
+	to keep it and then invert the result.
+
+2020-12-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-loop-manip.c (create_lcssa_for_virtual_phi): Return
 	the incoming virtual operand definition.
 	(vect_do_peeling): When vectorizing an epilogue loop, handle the
