@@ -1,3 +1,18 @@
+2020-01-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/
+	* coroutine-builtins.def: Update copyright year.
+	* coroutine-passes.cc: Likewise.
+
+	gcc/cp/
+	* coroutines.cc: Likewise.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/coroutines.exp: Likewise.
+
+	libstdc++-v3/
+	* include/experimental/coroutine: Likewise.
+
 2019-12-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/testsuite/
