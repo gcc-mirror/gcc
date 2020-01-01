@@ -1,0 +1,331 @@
+2019-11-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* d-codegen.cc (build_boolop): Use truth_type_for instead of
+	build_same_sized_truth_vector_type.
+
+2019-11-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* d-target.cc (define_float_constants): Update call to
+	get_max_float.
+
+2019-11-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* d-builtins.cc (build_frontend_type): Cope with variable
+	TYPE_VECTOR_SUBPARTS.
+
+2019-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91283
+	* d-lang.cc (d_post_options): Set flag_excess_precision instead of
+	flag_excess_precision_cmdline.
+
+2019-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/88722
+	* modules.cc: Include diagnostic.h.
+	(register_moduleinfo): Use sorry instead of gcc_assert for targets
+	without named sections.
+
+2019-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-target.cc: Include diagnostic.h.
+	(Target::_init): Set Tsize_t and Tptrdiff_t as D ushort and short if
+	the target pointer size is 2.  Add sorry if the pointer size is not
+	either 2, 4, or 8.
+
+2019-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90446
+	* d-lang.cc (d_type_for_mode): Check for all internal __intN types.
+	(d_type_for_size): Likewise.
+
+2019-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90445
+	* d-builtins.cc (d_build_c_type_nodes): Test UINTMAX_TYPE for setting
+	uintmax_type_node.  Set signed_size_type_node as the signed_type_for
+	size_type_node.
+
+2019-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90444
+	* d-builtins.cc (build_frontend_type): Build anonymous RECORD_TYPE
+	nodes as well, push all fields to the struct members.
+	(d_build_builtins_module): Push anonymous va_list structs to the
+	builtins module, naming them __builtin_va_list.
+	(d_init_builtins): Use sorry instead of gcc_unreachable if va_list did
+	not succeed in being represented as a D type.
+
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/91421
+	* intrinsics.cc (maybe_set_intrinsic): Use set_decl_built_in_function.
+
+2019-08-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90601
+	* d-convert.cc (convert_expr): Don't convert an expression to its
+	original front-end type before converting to its target type.
+
+2019-08-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/91238
+	* d-codegen.cc (build_address): If taking the address of a CALL_EXPR,
+	wrap it in a TARGET_EXPR.
+
+2019-08-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90893
+	* runtime.cc (enum libcall_type): Rename to...
+	(enum d_libcall_type): ...this.
+	(get_libcall_type): Use d_libcall_type.
+	(build_libcall_decl): Likewise.
+
+2019-06-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90559
+	* d-target.cc (Target::_init): Reduce max static data size to INT_MAX.
+
+2019-06-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90651
+	* typeinfo.cc (object_module): New variable.
+	(make_frontend_typeinfo): Update signature.  Set temporary on
+	generated TypeInfo classes.
+	(create_tinfo_types): Set object_module.  Move generation of front-end
+	typeinfo into ...
+	(create_frontend_tinfo_types): ... New function.
+	(layout_typeinfo): Call create_frontend_tinfo_types.
+	(layout_classinfo): Likewise.
+	(layout_cpp_typeinfo): Likewise.
+	(create_typeinfo): Likewise.
+
+2019-06-11  Richard Biener  <rguenthe@suse.de>
+
+	d/90778
+	* toir.cc (pop_label): Only queue labels in a vector.
+	(cmp_labels): Label decl comparator.
+	(pop_binding_level): Pop labels in DECL_UID order to avoid
+	debug info differences.
+
+2019-05-24  Nathan Sidwell  <nathan@acm.org>
+
+	* types.cc (fixup_anonymous_offset): Use IDENTIFIER_ANON_P.
+	(layout_aggregate_members): Use make_anon_name.
+
+2019-05-16  Martin Sebor  <msebor@redhat.com>
+
+	* d-builtins.cc (d_init_builtins): Quote keywords, operators,
+	and types in diagnostics.
+	* d-codegen.cc (get_array_length): Same.  Replace can't with cannot.
+	* d-convert.cc (convert_expr): Same.
+	* d-frontend.cc (getTypeInfoType): Quote an option name in
+	a diagnostic.
+	* d-lang.cc (d_handle_option): Same.
+	(d_parse_file): Same.
+	* decl.cc: Remove a trailing period from a diagnostic.
+	* expr.cc: Use a directive for an apostrophe.
+	* toir.cc: Quote keywords, operators, and types in diagnostics.
+	* typeinfo.cc (build_typeinfo): Quote an option name in a diagnostic.
+
+2019-04-25  Johannes Pfau  <johannespfau@gmail.com>
+
+	* config-lang.in: Do not add target_libs if phobos is disabled.
+
+2019-04-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+	    Robin Dapp  <rdapp@linux.ibm.com>
+
+	* typeinfo.cc (create_typeinfo): Write typeinfo flags as uint.
+
+2019-04-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (d_init_versions): Add D_BetterC, D_ModuleInfo,
+	D_Exceptions, D_TypeInfo as predefined version conditions.
+	* d-codegen.cc (build_bounds_condition): Generate trap if D asserts
+	are turned off.
+	* d-frontend.cc (getTypeInfoType): Add error when -fno-rtti is set.
+	* d-lang.cc (d_init_options): Initialize new front-end options.
+	(d_handle_option): Handle -fdruntime, -fexceptions, and -frtti.
+	(d_post_options): Turn off D runtime features if -fno-druntime is set.
+	* d-spec.cc (lang_specific_driver): Handle -fdruntime.
+	* d-tree.h (have_typeinfo_p): Add prototype.
+	(build_typeinfo): Update prototype.
+	* decl.cc (DeclVisitor::visit(StructDeclaration)): Create typeinfo
+	only if TypeInfo exists.
+	(DeclVisitor::visit(ClassDeclaration)): Likewise.
+	(DeclVisitor::visit(InterfaceDeclaration)): Likewise.
+	(DeclVisitor::visit(EnumDeclaration)): Likewise.
+	* expr.cc: Update all calls to build_typeinfo.
+	* gdc.texi (Runtime Options): Document -fdruntime and -frtti.
+	* lang.opt: Add -fdruntime and -frtti.
+	* modules.cc (build_module_tree): Create module info only if
+	ModuleInfo exists.
+	* toir.cc (IRVisitor::visit(ThrowStatement)): Update test for
+	-fno-exceptions.
+	* typeinfo.cc (create_tinfo_types): Build internal typeinfo classes
+	only if Object exists.
+	(have_typeinfo_p): New function.
+	(class TypeInfoVisitor): Update all calls to build_typeinfo.
+	(build_typeinfo): Add error when -fno-rtti is set.
+
+2019-04-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* decl.cc (DeclVisitor::visit(Import)): Set semanticRun after
+	completion, guard against being called more than once.
+	(DeclVisitor::visit(StructDeclaration)): Likewise.
+	(DeclVisitor::visit(ClassDeclaration)): Likewise.
+	(DeclVisitor::visit(InterfaceDeclaration)): Likewise.
+	(DeclVisitor::visit(VarDeclaration)): Likewise.
+	(DeclVisitor::visit(TypeInfoDeclaration)): Likewise.
+
+2019-04-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* modules.cc (register_module_decl): Don't register unittests against
+	the ModuleInfo symbol for -fbuilding-libphobos-tests.
+
+2019-04-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-system.h (POSIX): Define unix as POSIX.
+	(INT32_MAX, INT32_MIN, INT64_MIN, UINT32_MAX, UINT64_MAX): Provide
+	fallback definitions.
+
+2019-04-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (d.mostyclean): Clean idgen and impcvgen.
+	(d/idgen): Rename to d/idgen$(build_exeext), add BUILD_LIBDEPS.
+	(d/impcvgen): Rename to d/impcvgen$(build_exeext), add BUILD_LIBDEPS.
+	(d/id.c): Call idgen$(build_exeext).
+	(d/impcnvtab.c): Call impcvgen$(build_exeext).
+
+2019-04-14  Johannes Pfau  <johannespfau@gmail.com>
+	PR d/87799
+	* d-system.h (_mkdir): Forward _mkdir on MinGW to mkdir in system.h.
+
+2019-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-tree.h (DECL_IN_UNITTEST_CONDITION_P): Define.
+	* decl.cc (DeclVisitor): Add in_version_unittest_ field.
+	(DeclVisitor::visit(ConditionalDeclaration)): New override.
+	(DeclVisitor::visit(FuncDeclaration)): Set
+	DECL_IN_UNITTEST_CONDITION_P.
+	* lang.opt (-fbuilding-libphobos-tests): Add option.
+	* modules.cc (current_testing_module): New static variable.
+	(build_module_tree): Generate second moduleinfo symbol to hold
+	reference to unittests if flag_building_libphobos_tests.
+	(register_module_decl): Check DECL_IN_UNITTEST_CONDITION_P to decide
+	which moduleinfo the decl should be registered against.
+
+2019-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/88462
+	* modules.cc (layout_moduleinfo_fields): Properly align ModuleInfo,
+	instead of forcing alignment to be 1.
+
+2019-03-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/89017
+	* d-codegen.cc (d_decl_context): Skip over template instances when
+	finding the context.
+	* decl.cc (DeclVisitor::visit(TemplateDeclaration)): New override.
+	(build_type_decl): Include parameters in name of template types.
+
+2019-03-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/88957
+	* expr.cc (ExprVisitor::visit(VectorArrayExp)): New override.
+
+2019-03-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/87866
+	* d-system.h (realpath): Redefine as lrealpath.
+
+2019-03-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (d_init_options): Set global.params.cplusplus to C++14.
+	* d-target.cc (Target::cppFundamentalType): New method.
+
+2019-03-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/89041
+	* d-codegen.cc (get_frame_for_symbol): Delegate literals defined in
+	global scope don't have a frame pointer.
+
+2019-03-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (d_init_versions): Add CppRuntime_Gcc as predefined
+	version condition.
+
+2019-02-14  Maya Rashish  <coypu@sdf.org>
+
+	* d-system.h: NetBSD is POSIX.
+
+2019-02-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR d/87864
+	* lang.opt (dstartfiles): New option.
+	* d-spec.cc (need_spec): New variable.
+	(lang_specific_driver) <OPT_dstartfiles>: Enable need_spec.
+	(lang_specific_pre_link): Also load libgphobos.spec if need_spec.
+
+2019-01-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/89042
+	* decl.cc (DeclVisitor::visit(VarDeclaration)): Don't assert if
+	handling a void initialized manifest constant.
+
+2019-01-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-frontend.cc (Compiler::paintAsType): Update for new signature.
+
+2019-01-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (d_init_versions): Check value of
+	STACK_GROWS_DOWNWARD.
+
+2019-01-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (identity_compare_p): Return false if seen built-in
+	type with padding.
+	(build_float_identity): Moved here from expr.cc.
+	(lower_struct_comparison): Handle real and complex types.
+	* d-tree.h (build_float_identity): New.
+	* expr.cc (build_float_identity): Move to d-codegen.cc.
+
+2019-01-20  Johannes Pfau  <johannespfau@gmail.com>
+
+	* expr.cc (build_float_identity): New function.
+	(ExprVisitor::visit(IdentityExp)): Add support for complex types.
+
+2019-01-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/87824
+	* d-lang.cc (d_post_options): Disable implicit
+	-forder-blocks-and-partition.
+
+2019-01-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_typeof_null_value): New function.
+	* d-tree.h (build_typeof_null_value): Declare.
+	* d-convert.cc (convert_expr): Use build_typeof_null_value.
+	* expr.cc (ExprVisitor::visit(NullExp)): Likewise.
+
+2019-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR inline-asm/52813
+	* lang.opt (Wdeprecated): Reference common.opt instead of c.opt.
+
+2019-01-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* README.gcc: New file.
+
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+	* gdc.texi: Bump @copyrights-d year.
+
+Copyright (C) 2019 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
