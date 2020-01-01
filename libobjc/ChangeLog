@@ -1,3 +1,9 @@
+2020-01-01  Andrew Pinski  <pinskia@gmail.com>
+
+	PR libobjc/93099
+	* objc/objc-decls.h (objc_EXPORT): Define it to
+	extern for DLL_EXPORT define case.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
