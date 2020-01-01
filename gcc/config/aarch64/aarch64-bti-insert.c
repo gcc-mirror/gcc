@@ -1,5 +1,5 @@
 /* Branch Target Identification for AArch64 architecture.
-   Copyright (C) 2019 Free Software Foundation, Inc.
+   Copyright (C) 2019-2020 Free Software Foundation, Inc.
    Contributed by Arm Ltd.
 
    This file is part of GCC.

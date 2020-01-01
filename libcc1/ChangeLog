@@ -1,3 +1,7 @@
+2020-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2019-12-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* libcp1plugin.cc (plugin_build_unary_expr): Update delete_sanity

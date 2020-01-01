@@ -1,0 +1,459 @@
+2019-12-01  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
+
+	PR fortran/90374
+	* io/format.c (parse_format_list): Add braces to disambiguate
+	conditional.
+
+2019-11-28  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
+
+	PR fortran/90374
+	* io/format.c (parse_format_list): Relax format checking to allow
+	e0 exponent specifier.
+
+2019-11-24  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
+
+	PR fortran/92100
+	* io/transfer.c (data_transfer_init_worker): Use fbuf_reset
+	instead of fbuf_flush before the seek. Note that fbuf_reset
+	calls fbuf_flush and adjusts fbuf pointers.
+
+2019-11-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	Harald Anlauf <anlauf@gmx.de>
+
+	PR fortran/92569
+	* io/transfer.c (transfer_array_inner):  If position is
+	at AFTER_ENDFILE in current unit, return from data loop.
+
+2019-11-18  Maciej W. Rozycki  <macro@wdc.com>
+
+	* Makefile.in: Regenerate.
+
+2019-11-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92470
+	* runtime/ISO_Fortran_binding.c (CFI_establish): Set lower_bound to 0
+	also for CFI_attribute_other.
+
+2019-11-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92470
+	* runtime/ISO_Fortran_binding.c (CFI_address): Handle non-zero
+	lower_bound; update error message.
+	(CFI_allocate): Fix comment typo.
+	(CFI_establish): Fix identation, fix typos, don't check values of 'dv'
+	argument.
+
+2019-11-11  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/92142
+	* runtime/ISO_Fortran_binding.c (CFI_setpointer): Don't
+	override descriptor attribute; with -fcheck, check that
+	it is a pointer.
+
+2019-11-06  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
+
+	PR fortran/90374
+	io/format.c (parse_format_list): Relax format checking for
+	zero width as default and when -std=f2018.
+	io/format.h (format_token): Move definition to io.h.
+	io/io.h (format_token): Add definition here to allow access to
+	this definition at higher levels. Rename the declaration of
+	write_real_g0 to write_real_w0 and add a new format_token
+	argument, allowing higher level functions to pass in the
+	token for handling of g0 vs the other zero width specifiers.
+	io/transfer.c (formatted_transfer_scalar_write): Add checks for
+	zero width and call write_real_w0 to handle it.
+	io/write.c (write_real_g0): Remove.
+	(write_real_w0): Add new, same as previous write_real_g0 except
+	check format token to handle the g0 case.
+
+2019-10-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92284.
+	* runtime/ISO_Fortran_binding.c (gfc_desc_to_cfi_desc):
+
+2019-10-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91926
+	* runtime/ISO_Fortran_binding.c (cfi_desc_to_gfc_desc): Revert
+	the change made on 2019-10-05.
+
+2019-10-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/68401
+	* runtime/minimal.c (os_error_at): New function.
+	* runtime/minimal.c: Revise.
+
+2019-10-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91926
+	* runtime/ISO_Fortran_binding.c (cfi_desc_to_gfc_desc): Do not
+	modify the bounds and offset for CFI_other.
+
+2019-10-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/91593
+	* io/read.c (read_decimal): Cast constant to size_t to turn off
+	a bogus warning.
+	* io/write.c (btoa_big): Use memset in lieu of setting the null
+	byte in a string buffer to turn off a bogus warning.
+
+2019-09-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/91593
+	* io/io.h: Add gcc_unreachable().
+	* io/transfer.c (file_mode, current_mode,
+	formatted_transfer_scalar_read, formatted_transfer_scalar_write,
+	pre_position, next_record_r, next_record_w): Add and use
+	FORMATTED_UNSPECIFIED to enumeration.
+
+2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure: Regenerate.
+
+2019-09-05  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/random.c (master_init): Replace with
+	master_state.init.
+	(njumps): Remove variable.
+	(master_state): Make instance of struct prng_state.
+	(init_rand_state): When jumping, update the master_state once
+	instead of keeping track of how many jumps need to be done.
+	(SZU64): Modify to handle new master_state.
+	(SZ): Likewise.
+	(random_seed_i4): Likewise.
+	(random_seed_i8): Likewise.
+
+2019-08-17  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/68401
+	* gfortran.map: Add GFORTRAN_10 node, add _gfortran_os_error_at
+	symbol.
+	* libgfortran.h (os_error_at): New prototype.
+	* runtime/error.c (os_error_at): New function.
+
+2019-08-13  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR fortran/91414
+        * intrinsics/random.c (prng_state): Update state struct.
+        (master_state): Update to match new size.
+        (get_rand_state): Update to match new PRNG.
+        (rotl): New function.
+        (xorshift1024star): Replace with prng_next.
+        (prng_next): New function.
+        (jump): Update for new PRNG.
+        (lcg_parkmiller): Replace with splitmix64.
+        (splitmix64): New function.
+        (getosrandom): Fix return value, simplify.
+        (init_rand_state): Use getosrandom only to get 8 bytes, splitmix64
+        to fill rest of state.
+        (random_r4): Update to new function and struct names.
+        (random_r8): Likewise.
+        (random_r10): Likewise.
+        (random_r16): Likewise.
+        (arandom_r4): Liekwise.
+        (arandom_r8): Likewise.
+        (arandom_r10): Likwewise.
+        (arandom_r16): Likewise.
+        (xor_keys): Reduce size to match new PRNG.
+        (random_seed_i4): Update to new function and struct names, remove
+        special handling of variable p used in previous PRNG.
+        (random_seed_i8): Likewise.
+
+2019-08-07  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/53796
+	* io/inquire.c (inquire_via_filename): Set recl to -1 for
+	unconnected units.
+
+2019-07-21  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/91030
+	* io/unix.c (BUFFER_SIZE): Delete.
+	(BUFFER_FORMATTED_SIZE_DEFAULT): New variable.
+	(BUFFER_UNFORMATTED_SIZE_DEFAULT): New variable.
+	(unix_stream): Add buffer_size.
+	(buf_read): Use s->buffer_size instead of BUFFER_SIZE.
+	(buf_write): Likewise.
+	(buf_init): Add argument unformatted.  Handle block sizes
+	for unformatted vs. formatted, using defaults if provided.
+	(fd_to_stream): Add argument unformatted in call to buf_init.
+	* libgfortran.h (options_t): Add buffer_size_formatted and
+	buffer_size_unformatted.
+	* runtime/environ.c (variable_table): Add
+	GFORTRAN_UNFORMATTED_BUFFER_SIZE and
+	GFORTRAN_FORMATTED_BUFFER_SIZE.
+
+2019-06-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+            Andrew Stubbs  <ams@codesourcery.com>
+
+	* configure: Regenerate.
+	* configure.ac (LIBGFOR_MINIMAL): Do not use on AMD GCN.
+
+2019-06-14  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/65921
+	* runtime/memory.c (SIZE_MAX):Remove macro definition.
+	(xmallocarray): Use __builtin_mul_overflow.
+
+2019-05-22  Jeff Law  <law@redhat.com>
+
+	PR fortran/89100
+	* io/format.c (parse_format_list): set default width when the
+	IOPARM_DT_DEC_EXT flag is set for i, f and g.
+	* io/io.h: add default_width_for_integer, default_width_for_float
+	and default_precision_for_float.
+	* io/write.c (write_boz): extra parameter giving length of data
+	corresponding to the type's kind.
+	(write_b): pass data length as extra parameter in calls to
+	write_boz.
+	(write_o): pass data length as extra parameter in calls to
+	write_boz.
+	(write_z): pass data length as extra parameter in calls to
+	write_boz.
+	(size_from_kind): also set size is default width is set.
+	* io/write_float.def (build_float_string): new paramter inserted
+	before result parameter. If default width use values passed
+	instead of the values in fnode.
+	(FORMAT_FLOAT): macro modified to check for default width and
+	calls to build_float_string to pass in default width.
+	(get_float_string): set width and precision to defaults when
+	needed.
+
+2019-05-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR libfortran/90038
+        * intrinsics/execute_command_line (sigchld_handler): New function.
+        (execute_command_line): Install handler for SIGCHLD.
+        * configure.ac: Check for presence of sigaction and waitpid.
+        * config.h.in: Regenerated.
+        * configure: Regenerated.
+
+2019-05-17  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/90038
+	* configure.ac (AC_CHECK_FUNCS_ONCE): Check for posix_spawn.
+	* intrinsics/execute_command_line (execute_command_line): Use
+	posix_spawn.
+	* Makefile.in: Regenerated.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+
+2019-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/54613
+	* gfortran.map (GFORTRAN_9.2): Export _gfortran_{,m,s}findloc{0,1}_r10.
+	* Makefile.am (i_findloc0_c): Add $(srcdir)/generated/findloc0_r10.c.
+	(i_findloc1_c): Add $(srcdir)/generated/findloc1_r10.c.
+	* Makefile.in: Regenerated.
+	* generated/findloc0_r10.c: Generated.
+	* generated/findloc1_r10.c: Generated.
+
+	PR fortran/54613
+	* gfortran.map (GFORTRAN_9.2): New symbol version, export
+	_gfortran_{,m,s}findloc0_i2 in it.
+
+2019-05-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/90461
+        * io/open.c (new_unit): Don't check if the file is already open
+	for F2018.
+
+2019-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am (gfor_cdir): Remove $(MULTISUBDIR).
+	* Makefile.in: Regenerated.
+
+2019-04-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89843
+	* runtime/ISO_Fortran_binding.c (cfi_desc_to_gfc_desc): Only
+	return immediately if the source pointer is null. Bring
+	forward the extraction of the gfc type. Extract the kind so
+	that the element size can be correctly computed for sections
+	and components of derived type arrays. Remove the free of the
+	CFI descriptor since this is now done in trans-expr.c.
+	(gfc_desc_to_cfi_desc): Only allocate the CFI descriptor if it
+	is not null.
+	(CFI_section): Normalise the difference between the upper and
+	lower bounds by the stride to correctly calculate the extents
+	of the section.
+
+	PR fortran/89846
+	* runtime/ISO_Fortran_binding.c (cfi_desc_to_gfc_desc): Use
+	the stride measure for the gfc span if it is not a multiple
+	of the element length. Otherwise use the element length.
+
+	PR fortran/90022
+	* runtime/ISO_Fortran_binding.c (CFI_is_contiguous) : Return
+	1 for true and 0 otherwise to comply with the standard. Correct
+	the contiguity check for rank 3 and greater by using the stride
+	measure of the lower dimension rather than the element length.
+
+2019-03-25  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libgfortran/79540
+	* io/write_float.def (build_float_string): Don't copy digits when
+	ndigits is negative.
+
+2019-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgfortran/89593
+	* caf/single.c (_gfortran_caf_sendget_by_ref): Cast &temp to
+	gfc_descriptor_t * to avoid warning.
+
+2019-02-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* io/transfer.c (transfer_array_inner): Do not
+	cast charlen to index_type.
+
+2019-02-25  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR libfortran/89274
+	* io/write.c (write_integer): Add width for INTEGER(16).
+
+2019-02-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89385
+	PR fortran/89366
+	* runtime/ISO_Fortran_binding.c (cfi_desc_to_gfc_desc) : In the
+	interchange between character and derived, the character type
+	was being set incorrectly.
+	(gfc_desc_to_cfi_desc) : Eliminate the interchange of types in
+	this function. Do not add the kind and length information to
+	the type field of structures. Lbounds were incorrectly being
+	set to zero for allocatable and pointer descriptors. Should
+	have been non-pointer, non-allocatables that received this
+	treatment.
+
+2019-01-30  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR libfortran/88678
+	Revert:
+	2016-11-16  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR libfortran/78314
+	* config/fpu-glibc.h (support_fpu_trap): Use feenableexcept.
+
+2019-01-30  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR libfortran/88678
+	* config/fpu-glibc.h (set_fpu_trap_exceptions): Clear stalled
+	exception flags before changing trap mode.  Optimize to call
+	feenableexcept and fedisableexcept only once.
+
+2019-01-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* io/async.c (init_adv_cond): Use __GTHREAD_COND_INIT_FUNCTION().
+
+2019-01-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/89020
+	* io/close.c (st_close): Simplify text of error message to not
+	presume a specific cause of failure to remove file.
+
+2019-01-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/89020
+	* io/close.c (st_close): Fix typo.
+
+2019-01-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/89020
+	* io/close.c (st_close): Generate error if calls to 'remove' return
+	an error.
+
+2019-01-17  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	* configure.ac: Use minimal mode for amdgcn.
+	* configure: Regenerate.
+
+2019-01-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/88776
+	* io/open.c (newunit): Free format buffer if the unit specified is for
+	stdin, stdout, or stderr.
+
+2019-01-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/88776
+	* io/list_read.c (namelist_read): Use nml_err_ret path on read error
+	not based on stdin_unit.
+
+2019-01-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	* ISO_Fortran_binding.h : New file.
+	* Makefile.am : Include ISO_Fortran_binding.c in the list of
+	files to compile.
+	* Makefile.in : Regenerated.
+	* gfortran.map : Add _gfortran_cfi_desc_to_gfc_desc,
+	_gfortran_gfc_desc_to_cfi_desc and the CFI API functions.
+	* runtime/ISO_Fortran_binding.c : New file containing the new
+	functions added to the map.
+
+2019-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/88807
+	* m4/minloc0.m4: Reindent to avoid -Wmisleading-indentation warnings.
+	* generated/minloc0_4_i1.c: Regenerated.
+	* generated/minloc0_4_i2.c: Regenerated.
+	* generated/minloc0_4_i4.c: Regenerated.
+	* generated/minloc0_4_i8.c: Regenerated.
+	* generated/minloc0_4_i16.c: Regenerated.
+	* generated/minloc0_4_r4.c: Regenerated.
+	* generated/minloc0_4_r8.c: Regenerated.
+	* generated/minloc0_4_r10.c: Regenerated.
+	* generated/minloc0_4_r16.c: Regenerated.
+	* generated/minloc0_8_i1.c: Regenerated.
+	* generated/minloc0_8_i2.c: Regenerated.
+	* generated/minloc0_8_i4.c: Regenerated.
+	* generated/minloc0_8_i8.c: Regenerated.
+	* generated/minloc0_8_i16.c: Regenerated.
+	* generated/minloc0_8_r4.c: Regenerated.
+	* generated/minloc0_8_r8.c: Regenerated.
+	* generated/minloc0_8_r10.c: Regenerated.
+	* generated/minloc0_8_r16.c: Regenerated.
+	* generated/minloc0_16_i1.c: Regenerated.
+	* generated/minloc0_16_i2.c: Regenerated.
+	* generated/minloc0_16_i4.c: Regenerated.
+	* generated/minloc0_16_i8.c: Regenerated.
+	* generated/minloc0_16_i16.c: Regenerated.
+	* generated/minloc0_16_r4.c: Regenerated.
+	* generated/minloc0_16_r8.c: Regenerated.
+	* generated/minloc0_16_r10.c: Regenerated.
+	* generated/minloc0_16_r16.c: Regenerated.
+
+2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/16615
+	* caf/single.c: Mechanically replace "can not" with "cannot".
+	* io/unit.c: Likewise.
+
+2019-01-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	    Harald Anlauf <anlauf@gmx.de>
+	    Tobias Burnus <burnus@gcc.gnu.org>
+
+	PR fortran/45424
+	* Makefile.am: Add intrinsics/is_contiguous.c.
+	* Makefile.in: Regenerated.
+	* gfortran.map: Add _gfortran_is_contiguous0.
+	* intrinsics/is_contiguous.c: New file.
+	* libgfortran.h: Add prototype for is_contiguous0.
+
+2019-01-07  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* gfortran.map (GFORTRAN_9): Make GFORTRAN_9 node depend on
+	GFORTRAN_8.
+
+2019-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+Copyright (C) 2019-2020 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
