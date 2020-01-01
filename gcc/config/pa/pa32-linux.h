@@ -76,3 +76,8 @@ call_ ## FUNC (void)					\
    rodata when generating non-PIC code.  */
 #undef JUMP_TABLES_IN_TEXT_SECTION
 #define JUMP_TABLES_IN_TEXT_SECTION (flag_pic)
+
+/* We need to override default selection to put references to functions
+   in COMDAT groups in .data.rel.ro.local.  */
+#undef TARGET_ASM_SELECT_RTX_SECTION
+#define TARGET_ASM_SELECT_RTX_SECTION pa_elf_select_rtx_section
