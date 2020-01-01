@@ -1,5 +1,10 @@
 2020-01-01  John David Anglin  <danglin@gcc.gnu.org>
 
+	PR target/67834
+	* config/pa/pa.c (pa_elf_select_rtx_section): New.  Put references to
+	COMDAT group function labels in .data.rel.ro.local section.
+	* config/pa/pa32-linux.h (TARGET_ASM_SELECT_RTX_SECTION): Define.
+
 	PR target/93111
 	* config/pa/pa.md (scc): Use ordered_comparison_operator instead of
 	comparison_operator in B and S integer comparisons.  Likewise, use
