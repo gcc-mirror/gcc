@@ -70,16 +70,7 @@ package Sem_Aux is
 
    procedure Initialize;
    --  Called at the start of compilation of each new main source file to
-   --  initialize the allocation of the Obsolescent_Warnings table. Note that
-   --  Initialize must not be called if Tree_Read is used.
-
-   procedure Tree_Read;
-   --  Initializes Obsolescent_Warnings table from current tree file using the
-   --  relevant Table.Tree_Read routine.
-
-   procedure Tree_Write;
-   --  Writes out Obsolescent_Warnings table to current tree file using the
-   --  relevant Table.Tree_Write routine.
+   --  initialize the allocation of the Obsolescent_Warnings table.
 
    -----------------
    -- Subprograms --

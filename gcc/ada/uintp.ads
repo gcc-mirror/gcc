@@ -107,19 +107,9 @@ package Uintp is
    -----------------
 
    procedure Initialize;
-   --  Initialize Uint tables. Note that Initialize must not be called if
-   --  Tree_Read is used. Note also that there is no lock routine in this
+   --  Initialize Uint tables. Note also that there is no lock routine in this
    --  unit, these are among the few tables that can be expanded during
    --  gigi processing.
-
-   procedure Tree_Read;
-   --  Initializes internal tables from current tree file using the relevant
-   --  Table.Tree_Read routines. Note that Initialize should not be called if
-   --  Tree_Read is used. Tree_Read includes all necessary initialization.
-
-   procedure Tree_Write;
-   --  Writes out internal tables to current tree file using the relevant
-   --  Table.Tree_Write routines.
 
    function UI_Abs (Right : Uint) return Uint;
    pragma Inline (UI_Abs);

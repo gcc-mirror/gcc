@@ -221,13 +221,6 @@ package Table is
       --  Given a Saved_Table value returned by a prior call to Save, restores
       --  the table to the state it was in at the time of the Save call.
 
-      procedure Tree_Write;
-      --  Writes out contents of table using Tree_IO
-
-      procedure Tree_Read;
-      --  Initializes table by reading contents previously written with the
-      --  Tree_Write call (also using Tree_IO).
-
    private
 
       Last_Val : Int;

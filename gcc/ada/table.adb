@@ -33,7 +33,6 @@ with Debug;   use Debug;
 with Opt;     use Opt;
 with Output;  use Output;
 with System;  use System;
-with Tree_IO; use Tree_IO;
 
 with System.Memory; use System.Memory;
 
@@ -59,10 +58,6 @@ package body Table is
       --  Reallocate the existing table according to the current value stored
       --  in Max. Works correctly to do an initial allocation if the table
       --  is currently null.
-
-      function Tree_Get_Table_Address return Address;
-      --  Return Null_Address if the table length is zero,
-      --  Table (First)'Address if not.
 
       pragma Warnings (Off);
       --  Turn off warnings. The following unchecked conversions are only used
@@ -399,60 +394,6 @@ package body Table is
             end if;
          end if;
       end Set_Last;
-
-      ----------------------------
-      -- Tree_Get_Table_Address --
-      ----------------------------
-
-      function Tree_Get_Table_Address return Address is
-      begin
-         if Length = 0 then
-            return Null_Address;
-         else
-            return Table (First)'Address;
-         end if;
-      end Tree_Get_Table_Address;
-
-      ---------------
-      -- Tree_Read --
-      ---------------
-
-      --  Note: we allocate only the space required to accommodate the data
-      --  actually written, which means that a Tree_Write/Tree_Read sequence
-      --  does an implicit Release.
-
-      procedure Tree_Read is
-      begin
-         Tree_Read_Int (Max);
-         Last_Val := Max;
-         Length := Max - Min + 1;
-         Reallocate;
-
-         Tree_Read_Data
-           (Tree_Get_Table_Address,
-             (Last_Val - Int (First) + 1) *
-
-               --  Note the importance of parenthesizing the following division
-               --  to avoid the possibility of intermediate overflow.
-
-               (Table_Type'Component_Size / Storage_Unit));
-      end Tree_Read;
-
-      ----------------
-      -- Tree_Write --
-      ----------------
-
-      --  Note: we write out only the currently valid data, not the entire
-      --  contents of the allocated array. See note above on Tree_Read.
-
-      procedure Tree_Write is
-      begin
-         Tree_Write_Int (Int (Last));
-         Tree_Write_Data
-           (Tree_Get_Table_Address,
-            (Last_Val - Int (First) + 1) *
-              (Table_Type'Component_Size / Storage_Unit));
-      end Tree_Write;
 
    begin
       Init;

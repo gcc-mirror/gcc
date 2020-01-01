@@ -337,8 +337,7 @@ package Nlists is
 
    procedure Initialize;
    --  Called at the start of compilation of each new main source file to
-   --  initialize the allocation of the list table. Note that Initialize
-   --  must not be called if Tree_Read is used.
+   --  initialize the allocation of the list table.
 
    procedure Lock;
    --  Called to lock tables before back end is called
@@ -354,15 +353,6 @@ package Nlists is
    procedure Unlock_Lists;
    --  Called to unlock list contents when assertions are enabled; if
    --  assertions are not enabled calling this subprogram has no effect.
-
-   procedure Tree_Read;
-   --  Initializes internal tables from current tree file using the relevant
-   --  Table.Tree_Read routines. Note that Initialize should not be called if
-   --  Tree_Read is used. Tree_Read includes all necessary initialization.
-
-   procedure Tree_Write;
-   --  Writes out internal tables to current tree file using the relevant
-   --  Table.Tree_Write routines.
 
    function Parent (List : List_Id) return Node_Or_Entity_Id;
    pragma Inline (Parent);
