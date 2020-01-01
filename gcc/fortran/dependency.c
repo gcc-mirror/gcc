@@ -2286,6 +2286,12 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse,
 	     subsequent references also overlap.  */
 	  break;
 
+	case REF_INQUIRY:
+	  if (lref->u.i != rref->u.i)
+	    return 0;
+
+	  break;
+
 	default:
 	  gcc_unreachable ();
 	}
