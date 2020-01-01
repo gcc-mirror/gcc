@@ -1,3 +1,9 @@
+2020-01-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/93113
+	* dependency.c (gfc_dep_resolver): Handle REF_INQUIRY in switch
+	for ref types.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

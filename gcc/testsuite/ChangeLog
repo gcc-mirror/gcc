@@ -1,3 +1,8 @@
+2020-01-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/93113
+	* gfortran.dg/dependency_58.f90: New test.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
