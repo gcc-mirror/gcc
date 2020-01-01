@@ -1910,10 +1910,6 @@ Alphabetical List of All Switches
   Note that this option should be used only for compiling -- the
   code is likely to malfunction at run time.
 
-  Note that when :switch:`-gnatct` is used to generate trees for input
-  into ASIS tools, these representation clauses are removed
-  from the tree and ignored. This means that the tool will not see them.
-
 
 .. index:: -gnatjnn  (gcc)
 
@@ -2110,12 +2106,6 @@ Alphabetical List of All Switches
 
 :switch:`-gnatS`
   Print package Standard.
-
-
-.. index:: -gnatt  (gcc)
-
-:switch:`-gnatt`
-  Generate tree output file.
 
 
 .. index:: -gnatT  (gcc)
@@ -2599,14 +2589,6 @@ format:
   environments) that are driven from the :file:`ALI` file. This switch
   implies :switch:`-gnatq`, since the semantic phase must be run to get a
   meaningful ALI file.
-
-  In addition, if :switch:`-gnatt` is also specified, then the tree file is
-  generated even if there are illegalities. It may be useful in this case
-  to also specify :switch:`-gnatq` to ensure that full semantic processing
-  occurs. The resulting tree file can be processed by ASIS, for the purpose
-  of providing partial information about illegal units, but if the error
-  causes the tree to be badly malformed, then ASIS may crash during the
-  analysis.
 
   When :switch:`-gnatQ` is used and the generated :file:`ALI` file is marked as
   being in error, ``gnatmake`` will attempt to recompile the source when it
@@ -5694,21 +5676,6 @@ Subprogram Inlining Control
 
 Auxiliary Output Control
 ------------------------
-
-.. index:: -gnatt  (gcc)
-.. index:: Writing internal trees
-.. index:: Internal trees, writing to file
-
-:switch:`-gnatt`
-  Causes GNAT to write the internal tree for a unit to a file (with the
-  extension :file:`.adt`.
-  This not normally required, but is used by separate analysis tools.
-  Typically
-  these tools do the necessary compilations automatically, so you should
-  not have to specify this switch in normal operation.
-  Note that the combination of switches :switch:`-gnatct`
-  generates a tree in the form required by ASIS applications.
-
 
 .. index:: -gnatu  (gcc)
 

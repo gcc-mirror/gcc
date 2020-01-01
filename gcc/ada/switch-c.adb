@@ -1170,7 +1170,7 @@ package body Switch.C is
 
             when 'Q' =>
                Ptr := Ptr + 1;
-               Force_ALI_Tree_File := True;
+               Force_ALI_File := True;
                Try_Semantics := True;
 
             --  -gnatr (restrictions as warnings)

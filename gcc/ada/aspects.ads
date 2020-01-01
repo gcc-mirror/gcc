@@ -959,10 +959,4 @@ package Aspects is
    --  node that has its Has_Aspects flag set True on entry, or with L being an
    --  empty list or No_List.
 
-   procedure Tree_Read;
-   --  Reads contents of Aspect_Specifications hash table from the tree file
-
-   procedure Tree_Write;
-   --  Writes contents of Aspect_Specifications hash table to the tree file
-
 end Aspects;

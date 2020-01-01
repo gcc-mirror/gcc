@@ -406,8 +406,7 @@ package Atree is
    procedure Initialize;
    --  Called at the start of compilation to initialize the allocation of
    --  the node and list tables and make the standard entries for Empty,
-   --  Error and Error_List. Note that Initialize must not be called if
-   --  Tree_Read is used.
+   --  Error and Error_List.
 
    procedure Lock;
    --  Called before the back end is invoked to lock the nodes table
@@ -424,15 +423,6 @@ package Atree is
    procedure Unlock_Nodes;
    --  Called to unlock entity modifications when assertions are enabled; if
    --  assertions are not enabled calling this subprogram has no effect.
-
-   procedure Tree_Read;
-   --  Initializes internal tables from current tree file using the relevant
-   --  Table.Tree_Read routines. Note that Initialize should not be called if
-   --  Tree_Read is used. Tree_Read includes all necessary initialization.
-
-   procedure Tree_Write;
-   --  Writes out internal tables to current tree file using the relevant
-   --  Table.Tree_Write routines.
 
    function New_Node
      (New_Node_Kind : Node_Kind;

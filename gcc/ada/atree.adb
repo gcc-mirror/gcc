@@ -42,7 +42,6 @@ with Nlists;  use Nlists;
 with Opt;     use Opt;
 with Output;  use Output;
 with Sinput;  use Sinput;
-with Tree_IO; use Tree_IO;
 
 with GNAT.Heap_Sort_G;
 
@@ -2685,32 +2684,6 @@ package body Atree is
    begin
       Discard := Traverse (Node);
    end Traverse_Proc;
-
-   ---------------
-   -- Tree_Read --
-   ---------------
-
-   procedure Tree_Read is
-   begin
-      Tree_Read_Int (Node_Count);
-      Nodes.Tree_Read;
-      Flags.Tree_Read;
-      Orig_Nodes.Tree_Read;
-      Paren_Counts.Tree_Read;
-   end Tree_Read;
-
-   ----------------
-   -- Tree_Write --
-   ----------------
-
-   procedure Tree_Write is
-   begin
-      Tree_Write_Int (Node_Count);
-      Nodes.Tree_Write;
-      Flags.Tree_Write;
-      Orig_Nodes.Tree_Write;
-      Paren_Counts.Tree_Write;
-   end Tree_Write;
 
    ------------------------------
    -- Unchecked Access Package --

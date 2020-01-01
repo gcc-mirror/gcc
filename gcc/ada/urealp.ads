@@ -135,19 +135,9 @@ package Urealp is
    -----------------
 
    procedure Initialize;
-   --  Initialize Ureal tables. Note that Initialize must not be called if
-   --  Tree_Read is used. Note also that there is no Lock routine in this
+   --  Initialize Ureal tables. Note that there is no Lock routine in this
    --  unit. These tables are among the few tables that can be expanded
    --  during Gigi processing.
-
-   procedure Tree_Read;
-   --  Initializes internal tables from current tree file using the relevant
-   --  Table.Tree_Read routines. Note that Initialize should not be called if
-   --  Tree_Read is used. Tree_Read includes all necessary initialization.
-
-   procedure Tree_Write;
-   --  Writes out internal tables to current tree file using the relevant
-   --  Table.Tree_Write routines.
 
    function Rbase (Real : Ureal) return Nat;
    --  Return the base of the universal real

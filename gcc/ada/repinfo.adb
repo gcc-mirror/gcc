@@ -64,8 +64,7 @@ package body Repinfo is
    ---------------------------------------
 
    --    A table internal to this unit is used to hold the values of back
-   --    annotated expressions. This table is written out by -gnatt and read
-   --    back in for ASIS processing.
+   --    annotated expressions.
 
    --    Node values are stored as Uint values using the negative of the node
    --    index in this table. Constants appear as non-negative Uint values.
@@ -79,7 +78,7 @@ package body Repinfo is
 
    --  The following representation clause ensures that the above record
    --  has no holes. We do this so that when instances of this record are
-   --  written by Tree_Gen, we do not write uninitialized values to the file.
+   --  written, we do not write uninitialized values to the file.
 
    for Exp_Node use record
       Expr at  0 range 0 .. 31;
@@ -2335,24 +2334,6 @@ package body Repinfo is
          Write_Char (' ');
       end loop;
    end Spaces;
-
-   ---------------
-   -- Tree_Read --
-   ---------------
-
-   procedure Tree_Read is
-   begin
-      Rep_Table.Tree_Read;
-   end Tree_Read;
-
-   ----------------
-   -- Tree_Write --
-   ----------------
-
-   procedure Tree_Write is
-   begin
-      Rep_Table.Tree_Write;
-   end Tree_Write;
 
    ---------------------
    -- Write_Info_Line --

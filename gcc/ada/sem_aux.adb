@@ -1650,24 +1650,6 @@ package body Sem_Aux is
       return N;
    end Subprogram_Specification;
 
-   ---------------
-   -- Tree_Read --
-   ---------------
-
-   procedure Tree_Read is
-   begin
-      Obsolescent_Warnings.Tree_Read;
-   end Tree_Read;
-
-   ----------------
-   -- Tree_Write --
-   ----------------
-
-   procedure Tree_Write is
-   begin
-      Obsolescent_Warnings.Tree_Write;
-   end Tree_Write;
-
    --------------------
    -- Ultimate_Alias --
    --------------------
