@@ -1,3 +1,8 @@
+2020-01-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa.c (walk_polymorphic_call_targets): Fix updating of overall
+	summary.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/93098
