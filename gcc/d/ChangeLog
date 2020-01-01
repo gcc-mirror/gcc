@@ -1,5 +1,7 @@
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
+	Update copyright years.
+
 	* gdc.texi: Bump @copyrights-d year.
 
 Copyright (C) 2020 Free Software Foundation, Inc.

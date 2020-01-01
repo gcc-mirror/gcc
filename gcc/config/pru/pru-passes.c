@@ -1,5 +1,5 @@
 /* PRU target specific passes
-   Copyright (C) 2017-2019 Free Software Foundation, Inc.
+   Copyright (C) 2017-2020 Free Software Foundation, Inc.
    Dimitar Dimitrov <dimitar@dinux.eu>
 
    This file is part of GCC.

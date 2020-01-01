@@ -1,3 +1,7 @@
+2020-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2019-11-29  Julian Brown  <julian@codesourcery.com>
 
 	* jit-builtins.c (BT_DFLOAT32_PTR, BT_DFLOAT64_PTR, BT_DFLOAT128_PTR):
@@ -2714,7 +2718,7 @@
 
 	* Initial creation
 
-Copyright (C) 2013-2019 Free Software Foundation, Inc.
+Copyright (C) 2013-2020 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

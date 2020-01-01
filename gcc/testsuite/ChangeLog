@@ -1,5 +1,7 @@
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
+	Update copyright years.
+
 	PR tree-optimization/93098
 	* gcc.c-torture/compile/pr93098.c: New test.
 

@@ -1,3 +1,7 @@
+2020-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2019-12-30  Olivier Hainque  <hainque@adacore.com>
 
 	* config/gthr-vxworks.h: Use _vxworks-versions.h.
@@ -10438,7 +10442,7 @@
 	shared-object.mk, siditi-object.mk, static-object.mk: New files.
 	* configure: Generated.
 
-Copyright (C) 2007-2019 Free Software Foundation, Inc.
+Copyright (C) 2007-2020 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

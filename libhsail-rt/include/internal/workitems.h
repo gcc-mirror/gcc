@@ -1,7 +1,7 @@
 /* workitems.h -- Types for context data passed as hidden parameters to special
    built-ins.
 
-   Copyright (C) 2015-2019 Free Software Foundation, Inc.
+   Copyright (C) 2015-2020 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
