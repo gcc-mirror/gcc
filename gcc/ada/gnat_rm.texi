@@ -25,7 +25,7 @@ GNAT Reference Manual , Dec 10, 2019
 
 AdaCore
 
-Copyright @copyright{} 2008-2019, Free Software Foundation
+Copyright @copyright{} 2008-2020, Free Software Foundation
 @end quotation
 
 @end copying
