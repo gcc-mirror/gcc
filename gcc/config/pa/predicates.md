@@ -662,12 +662,6 @@
   (and (match_code "symbol_ref")
        (match_test "SYMBOL_REF_TLS_MODEL (op) == TLS_MODEL_LOCAL_EXEC")))
 
-;; True iff this is a comparison operator.  This allows the use of
-;; MATCH_OPERATOR to recognize all the branch insns.
-
-(define_predicate "cmpib_comparison_operator"
-  (match_code "eq,ne,lt,le,leu,gt,gtu,ge"))
-
 ;; True iff OP is an operator suitable for use in a movb instruction.
 
 (define_predicate "movb_comparison_operator"
