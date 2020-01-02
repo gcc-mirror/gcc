@@ -1,3 +1,8 @@
+2020-01-02  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.c-torture/execute/bitfld-8.c: New testcase.
+	* gcc.c-torture/execute/bitfld-9.c: New testcase.
+
 2020-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/90677
