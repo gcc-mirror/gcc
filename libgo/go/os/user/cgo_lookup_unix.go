@@ -118,10 +118,6 @@ func buildUser(pwd *syscall.Passwd) *User {
 	return u
 }
 
-func currentGroup() (*Group, error) {
-	return lookupUnixGid(syscall.Getgid())
-}
-
 func lookupGroup(groupname string) (*Group, error) {
 	var grp syscall.Group
 	var result *syscall.Group

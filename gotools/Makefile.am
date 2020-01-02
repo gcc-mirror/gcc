@@ -116,7 +116,7 @@ man_MANS = go.1 gofmt.1
 go$(EXEEXT): $(go_cmd_go_files) $(LIBGOTOOL) $(LIBGODEP)
 	$(GOLINK) $(go_cmd_go_files) $(LIBGOTOOL) $(LIBS) $(NET_LIBS)
 gofmt$(EXEEXT): $(go_cmd_gofmt_files) $(LIBGODEP)
-	$(GOLINK) $(go_cmd_gofmt_files) $(LIBS) $(NET_LIBS)
+	$(GOLINK) $(go_cmd_gofmt_files) $(LIBGOTOOL) $(LIBS) $(NET_LIBS)
 cgo$(EXEEXT): $(go_cmd_cgo_files) zdefaultcc.go $(LIBGOTOOL) $(LIBGODEP)
 	$(GOLINK) $(go_cmd_cgo_files) zdefaultcc.go $(LIBGOTOOL) $(LIBS) $(NET_LIBS)
 vet$(EXEEXT): $(go_cmd_vet_files) $(LIBGOTOOL) $(LIBGODEP)
@@ -215,6 +215,10 @@ check-go-tool: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 	cp $(libgodir)/zdefaultcc.go check-go-dir/src/cmd/go/internal/cfg/
 	cp -r $(cmdsrcdir)/go/testdata check-go-dir/src/cmd/go/
 	cp -r $(cmdsrcdir)/internal check-go-dir/src/cmd/
+	$(MKDIR_P) check-go-dir/src/cmd/vendor/golang.org/x
+	cp -r $(libgosrcdir)/golang.org/x/mod check-go-dir/src/cmd/vendor/golang.org/x/
+	cp -r $(libgosrcdir)/golang.org/x/crypto check-go-dir/src/cmd/vendor/golang.org/x/
+	cp -r $(libgosrcdir)/golang.org/x/xerrors check-go-dir/src/cmd/vendor/golang.org/x/
 	cp $(libgodir)/objabi.go check-go-dir/src/cmd/internal/objabi/
 	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
 	abs_checkdir=`cd check-go-dir && $(PWD_COMMAND)`; \

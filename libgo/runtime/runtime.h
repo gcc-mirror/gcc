@@ -283,8 +283,11 @@ void	runtime_entersyscallblock()
   __asm__ (GOSYM_PREFIX "runtime.entersyscallblock");
 G*	__go_go(uintptr, void*);
 int32	runtime_callers(int32, Location*, int32, bool keep_callers);
-int64	runtime_nanotime(void)	// monotonic time
-  __asm__(GOSYM_PREFIX "runtime.nanotime");
+struct callers_data;
+bool	runtime_skipInCallback(const char *, struct callers_data *)
+  __asm__ (GOSYM_PREFIX "runtime.skipInCallback");
+int64	runtime_nanotime1(void)	// monotonic time
+  __asm__(GOSYM_PREFIX "runtime.nanotime1");
 void	runtime_dopanic(int32) __attribute__ ((noreturn));
 void	runtime_startpanic(void)
   __asm__ (GOSYM_PREFIX "runtime.startpanic");
@@ -464,7 +467,7 @@ struct funcfileline_return
 };
 
 struct funcfileline_return
-runtime_funcfileline (uintptr targetpc, int32 index)
+runtime_funcfileline (uintptr targetpc, int32 index, bool more)
   __asm__ (GOSYM_PREFIX "runtime.funcfileline");
 
 /*

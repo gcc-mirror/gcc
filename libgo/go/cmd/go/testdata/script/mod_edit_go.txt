@@ -1,6 +1,6 @@
 # Test support for go mod -edit to set language version.
 
-[gccgo] stop
+[gccgo] skip
 
 env GO111MODULE=on
 ! go build

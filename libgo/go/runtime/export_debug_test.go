@@ -21,7 +21,7 @@ import (
 //
 // On success, InjectDebugCall returns the panic value of fn or nil.
 // If fn did not panic, its results will be available in args.
-func InjectDebugCall(gp *g, fn, args interface{}, tkill func(tid int) error) (interface{}, error) {
+func InjectDebugCall(gp *g, fn, args interface{}, tkill func(tid int) error, returnOnUnsafePoint bool) (interface{}, error) {
 	if gp.lockedm == 0 {
 		return nil, plainError("goroutine not locked to thread")
 	}
@@ -65,9 +65,16 @@ func InjectDebugCall(gp *g, fn, args interface{}, tkill func(tid int) error) (in
 		notetsleepg(&h.done, -1)
 		if h.err != "" {
 			switch h.err {
-			case "retry _Grunnable", "executing on Go runtime stack":
+			case "call not at safe point":
+				if returnOnUnsafePoint {
+					// This is for TestDebugCallUnsafePoint.
+					return nil, h.err
+				}
+				fallthrough
+			case "retry _Grunnable", "executing on Go runtime stack", "call from within the Go runtime":
 				// These are transient states. Try to get out of them.
 				if i < 100 {
+					usleep(100)
 					Gosched()
 					continue
 				}

@@ -13,6 +13,12 @@ import "internal/oserror"
 //	if errno != 0 {
 //		err = errno
 //	}
+//
+// Errno values can be tested against error values from the os package
+// using errors.Is. For example:
+//
+//	_, _, err := syscall.Syscall(...)
+//	if errors.Is(err, os.ErrNotExist) ...
 type Errno uintptr
 
 func (e Errno) Error() string {
@@ -32,7 +38,7 @@ func (e Errno) Is(target error) bool {
 }
 
 func (e Errno) Temporary() bool {
-	return e == EINTR || e == EMFILE || e.Timeout()
+	return e == EINTR || e == EMFILE || e == ENFILE || e.Timeout()
 }
 
 func (e Errno) Timeout() bool {

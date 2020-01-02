@@ -884,7 +884,7 @@ func (v Value) IsNil() bool {
 // IsValid reports whether v represents a value.
 // It returns false if v is the zero Value.
 // If IsValid returns false, all other methods except String panic.
-// Most functions and methods never return an invalid value.
+// Most functions and methods never return an invalid Value.
 // If one does, its documentation states the conditions explicitly.
 func (v Value) IsValid() bool {
 	return v.flag != 0
@@ -1224,6 +1224,11 @@ func (v Value) OverflowUint(x uint64) bool {
 	}
 	panic(&ValueError{"reflect.Value.OverflowUint", v.kind()})
 }
+
+//go:nocheckptr
+// This prevents inlining Value.Pointer when -d=checkptr is enabled,
+// which ensures cmd/compile can recognize unsafe.Pointer(v.Pointer())
+// and make an exception.
 
 // Pointer returns v's value as a uintptr.
 // It returns uintptr instead of unsafe.Pointer so that
@@ -1721,6 +1726,11 @@ func (v Value) Uint() uint64 {
 	}
 	panic(&ValueError{"reflect.Value.Uint", v.kind()})
 }
+
+//go:nocheckptr
+// This prevents inlining Value.UnsafeAddr when -d=checkptr is enabled,
+// which ensures cmd/compile can recognize unsafe.Pointer(v.UnsafeAddr())
+// and make an exception.
 
 // UnsafeAddr returns a pointer to v's data.
 // It is for advanced clients that also import the "unsafe" package.
@@ -2273,6 +2283,11 @@ func convertOp(dst, src *rtype) func(Value, Type) Value {
 			case Int32:
 				return cvtRunesString
 			}
+		}
+
+	case Chan:
+		if dst.Kind() == Chan && specialChannelAssignability(dst, src) {
+			return cvtDirect
 		}
 	}
 

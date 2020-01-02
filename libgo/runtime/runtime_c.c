@@ -134,16 +134,22 @@ int32 go_read(int32, void *, int32)
 int32
 go_read(int32 fd, void *p, int32 n)
 {
-  return runtime_read(fd, p, n);
+  ssize_t r = runtime_read(fd, p, n);
+  if (r < 0)
+    r = - errno;
+  return (int32)r;
 }
 
-int32 go_write(uintptr, void *, int32)
-  __asm__ (GOSYM_PREFIX "runtime.write");
+int32 go_write1(uintptr, void *, int32)
+  __asm__ (GOSYM_PREFIX "runtime.write1");
 
 int32
-go_write(uintptr fd, void *p, int32 n)
+go_write1(uintptr fd, void *p, int32 n)
 {
-  return runtime_write(fd, p, n);
+  ssize_t r = runtime_write(fd, p, n);
+  if (r < 0)
+    r = - errno;
+  return (int32)r;
 }
 
 int32 go_closefd(int32)
