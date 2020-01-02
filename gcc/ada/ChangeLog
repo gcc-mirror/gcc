@@ -1,3 +1,124 @@
+2019-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Pragma_to_gnu) <Pragma_Warnings>: Push a
+	diagnostics state for pragma Warnings (Off) before turning off all
+	the warnings and only pop it for pragma Warnings (On).
+
+2019-12-18  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch6.adb (Analyze_Function_Return): Modify handling of
+	extended return statements to check accessibility of access
+	discriminants.
+	(Check_Aggregate_Accessibility): Removed.
+	(Check_Return_Obj_Accessibility): Added to centralize checking
+	of return aggregates and subtype indications in the case of an
+	extended return statement.
+
+2019-12-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-regpat.adb (Parse_Literal, Parse_Piece): Ensure
+	Expr_Flags is always fully initialized.
+
+2019-12-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-atopar.ads, libgnat/s-atopex.ads (Atomic_Type): Can
+	now be marked Atomic. This requires marking the unit Ada 202x.
+
+2019-12-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/a-nbnbin.ads, libgnat/a-nbnbin.adb,
+	libgnat/a-nbnbre.ads, libgnat/a-nbnbre.adb: Replace
+	Optional_Big_* types by a simple check and exception raise in
+	Get_Bignum.
+	(Set_Bignum): Arg should be 'out' and not 'in out'.
+	(Invalid_Big_Integer, No_Big_Real): Removed.
+	(Is_Valid): Now convention Intrinsic.
+
+2019-12-18  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst,
+	doc/gnat_rm/obsolescent_features.rst,
+	doc/gnat_ugn/gnat_and_program_execution.rst, exp_attr.adb,
+	exp_ch9.adb, init.c, libgnat/s-valrea.adb, par-ch6.adb,
+	sem_attr.adb, sem_ch4.adb, sem_util.ads: Fix trivial typos.
+	* gnat_rm.texi, gnat_ugn.texi: Regenerate.
+
+2019-12-18  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_res.adb (Resolve_Type_Conversion): Add handling for access
+	types with designated operand and target types that are
+	referenced in places that have a limited view of an interface
+	type by retrieving the nonlimited view when it exists.  Add ???
+	comments related to missing limited_with_clause handling for
+	Target (in the non-access case).
+
+2019-12-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch12.adb (P_Formal_Derived_Type_Definition): In Ada_2020
+	the keyword WITH can indicate the start of aspect specifications
+	and not a private type extension.
+	* sem_ch12.adb (Analyze_Formal_Type): Indicate that it is a
+	first subtype.
+	(Instantiate_Type): New procedure
+	Check_Shared_Variable_Control_Aspects to verify matching rules
+	between formal and actual types. Note that an array type with
+	aspect Atomic_Components is considered compatible with an array
+	type whose component type is Atomic, even though the array types
+	do not carry the same aspect.
+	* sem_ch13.adb (Analyze_One_Aspect): Allow shared variable
+	control aspects to appear on formal types.
+	(Rep_Item_Too_Early): Exclude aspects on formal types.
+	* sem_prag.adb (Mark_Type): Handle properly pragmas that come
+	from aspects on formal types.
+	(Analyze_Pragma, case Atomic_Components): Handle formal types.
+
+2019-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cstand.adb (Create_Standard): Remove duplicate line and
+	adjust.
+
+2019-12-18  Javier Miranda  <miranda@adacore.com>
+
+	* debug.adb: Document -gnatd_K as a reserved switch for the
+	detection of known problem issues of previous releases.
+
+2019-12-18  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* par-ch13.adb: Check if declarations allow aspect
+	specifications.
+
+2019-12-18  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.ads (Is_Ghost_Entity): Fix typo in comment.
+
+2019-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* layout.adb (Layout_Type): In the case of composite types, do
+	not copy the Esize onto the RM_Size if the latter is not set.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>:
+	Also cap the alignment if an Object_Size clause has been
+	specified.  Pass VAR_DECL in the call to validate_size for the
+	Esize of a type.
+	(validate_size): Be prepared to give an error on an Object_Size
+	clause.
+
+2019-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Handling of Type'Size Value): Add references to the
+	introduction of Object_Size in Ada 2020.
+	* sem_eval.adb (Subtypes_Statically_Match): Likewise.
+
+2019-12-18  Bob Duff  <duff@adacore.com>
+
+	* sem_ch3.adb (Derive_Subprogram): Do not set the
+	Requires_Overriding flag in the above-mentioned case.
+
+2019-12-18  Bob Duff  <duff@adacore.com>
+
+	* sem_ch8.adb (Note_Redundant_Use): It was already checking for
+	a use clause in the visible part of the child. Add an additional
+	check for a use clause in the context clause of the child.
+
 2019-12-16  Bob Duff  <duff@adacore.com>
 
 	* errout.adb (Handle_Serious_Error): Disable the above-mentioned

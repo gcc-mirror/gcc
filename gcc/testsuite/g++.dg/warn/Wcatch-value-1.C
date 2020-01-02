@@ -10,8 +10,8 @@ void foo()
   try {}
   catch (D)    {}
   catch (C)    {}
-  catch (B)    {}  // { dg-warning "catching polymorphic type" }
-  catch (A)    {}  // { dg-warning "catching polymorphic type" }
+  catch (B)    {}  // { dg-warning "10:catching polymorphic type" }
+  catch (A)    {}  // { dg-warning "10:catching polymorphic type" }
   catch (A*)   {}
   catch (int)  {}
 
@@ -27,7 +27,7 @@ void foo()
 template<typename T> void foo1()
 {
   try {}
-  catch (T) {}  // { dg-warning "catching polymorphic type" }
+  catch (T) {}  // { dg-warning "10:catching polymorphic type" }
 }
 
 template<typename T> void foo2()

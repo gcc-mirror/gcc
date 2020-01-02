@@ -324,6 +324,18 @@ ipa_param_adjustments::get_updated_indices (vec<int> *new_indices)
     }
 }
 
+/* Return the original index for the given new parameter index.  Return a
+   negative number if not available.  */
+
+int
+ipa_param_adjustments::get_original_index (int newidx)
+{
+  const ipa_adjusted_param *adj = &(*m_adj_params)[newidx];
+  if (adj->op != IPA_PARAM_OP_COPY)
+    return -1;
+  return adj->base_index;
+}
+
 /* Return true if the first parameter (assuming there was one) survives the
    transformation intact and remains the first one.  */
 

@@ -1,3 +1,12 @@
+2019-12-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/92982
+	* charset.c
+	(cpp_string_location_reader::cpp_string_location_reader): Delete
+	initialization of m_line_table.
+	* include/cpplib.h (cpp_string_location_reader::m_line_table):
+	Delete unused member.
+
 2019-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/92919

@@ -956,7 +956,9 @@ package body Ch13 is
 
          --  If Decl is Error, we ignore the aspects, and issue a message
 
-         elsif Decl = Error then
+         elsif Decl = Error
+            or else not Permits_Aspect_Specifications (Decl)
+         then
             Error_Msg ("aspect specifications not allowed here", Ptr);
 
          --  Here aspects are allowed, and we store them

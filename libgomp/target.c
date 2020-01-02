@@ -279,6 +279,7 @@ gomp_to_device_kind_p (int kind)
     case GOMP_MAP_ALLOC:
     case GOMP_MAP_FROM:
     case GOMP_MAP_FORCE_ALLOC:
+    case GOMP_MAP_FORCE_FROM:
     case GOMP_MAP_ALWAYS_FROM:
       return false;
     default:
@@ -706,6 +707,21 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	{
 	  tgt->list[i].key = NULL;
 
+	  if ((kind & typemask) == GOMP_MAP_IF_PRESENT)
+	    {
+	      /* Not present, hence, skip entry - including its MAP_POINTER,
+		 when existing.  */
+	      tgt->list[i].offset = 0;
+	      if (i + 1 < mapnum
+		  && ((typemask & get_kind (short_mapkind, kinds, i + 1))
+		      == GOMP_MAP_POINTER))
+		{
+		  ++i;
+		  tgt->list[i].key = NULL;
+		  tgt->list[i].offset = 0;
+		}
+	      continue;
+	    }
 	  size_t align = (size_t) 1 << (kind >> rshift);
 	  not_found_cnt++;
 	  if (tgt_align < align)
@@ -891,6 +907,14 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 				    sizeof (void *), cbufp);
 		cur_node.tgt_offset = n->tgt->tgt_start + n->tgt_offset
 				      + cur_node.host_start - n->host_start;
+		continue;
+	      case GOMP_MAP_IF_PRESENT:
+		/* Not present - otherwise handled above. Skip over its
+		   MAP_POINTER as well.  */
+		if (i + 1 < mapnum
+		    && ((typemask & get_kind (short_mapkind, kinds, i + 1))
+			== GOMP_MAP_POINTER))
+		  ++i;
 		continue;
 	      default:
 		break;
@@ -1105,7 +1129,7 @@ gomp_map_vars_async (struct gomp_device_descr *devicep,
 				 sizes, kinds, short_mapkind, pragma_kind);
 }
 
-attribute_hidden void
+static void
 gomp_unmap_tgt (struct target_mem_desc *tgt)
 {
   /* Deallocate on target the tgt->tgt_start .. tgt->tgt_end region.  */
@@ -1224,7 +1248,15 @@ gomp_unmap_vars_internal (struct target_mem_desc *tgt, bool do_copyfrom,
 				      + tgt->list[i].offset),
 			    tgt->list[i].length);
       if (do_unmap)
-	gomp_remove_var (devicep, k);
+	{
+	  struct target_mem_desc *k_tgt = k->tgt;
+	  bool is_tgt_unmapped = gomp_remove_var (devicep, k);
+	  /* It would be bad if TGT got unmapped while we're still iterating
+	     over its LIST_COUNT, and also expect to use it in the following
+	     code.  */
+	  assert (!is_tgt_unmapped
+		  || k_tgt != tgt);
+	}
     }
 
   if (aq)

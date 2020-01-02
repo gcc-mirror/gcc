@@ -1558,7 +1558,8 @@ package body System.Regpat is
          Has_Special_Operator : Boolean := False;
 
       begin
-         Parse_Pos := Parse_Pos - 1;      --  Look at current character
+         Expr_Flags := Worst_Expression;  --  Ensure Expr_Flags is initialized
+         Parse_Pos  := Parse_Pos - 1;     --  Look at current character
 
          IP :=
            Emit_Node
@@ -1684,11 +1685,8 @@ package body System.Regpat is
       begin
          Parse_Atom (New_Flags, IP);
 
-         if IP = 0 then
-            return;
-         end if;
-
-         if Parse_Pos > Parse_End
+         if IP = 0
+           or else Parse_Pos > Parse_End
            or else not Is_Mult (Parse_Pos)
          then
             Expr_Flags := New_Flags;

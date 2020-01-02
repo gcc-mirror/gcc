@@ -156,20 +156,16 @@ f1 (void)
 
       assert (acc_is_present (&myblock[i], SUBSET));
       assert (acc_is_present (myblock, SIZE));
-#if 0 //TODO PR92848
       if (last)
 	cb_ev_free_expected = true;
-#endif
 #if OPENACC_RUNTIME
       acc_delete (&myblock[i], SUBSET);
 #else
 # pragma acc exit data delete (myblock[i:SUBSET])
 #endif
-#if 0 //TODO PR92848
       assert (!cb_ev_free_expected);
       if (last)
 	assert (cb_ev_free_device_ptr == cb_ev_alloc_device_ptr);
-#endif
       assert (acc_is_present (&myblock[i], SUBSET) != last);
       assert (acc_is_present (myblock, SIZE) != last);
     }
@@ -331,9 +327,7 @@ f3 ()
   assert (acc_is_present (h, SIZE));
   assert (acc_is_present (&h[2], SIZE - 2));
 
-#if 0 //TODO PR92848
   cb_ev_free_expected = true;
-#endif
 #if OPENACC_RUNTIME
   acc_delete (h, SIZE);
 #else
@@ -343,10 +337,8 @@ f3 ()
 #  pragma acc exit data delete (h)
 # endif
 #endif
-#if 0 //TODO PR92848
   assert (!cb_ev_free_expected);
   assert (cb_ev_free_device_ptr == cb_ev_alloc_device_ptr);
-#endif
 
   assert (!acc_is_present (h, SIZE));
   assert (!acc_is_present (&h[2], SIZE - 2));
@@ -401,19 +393,15 @@ f_lib_22 (void)
   memset (h, c1, SIZE);
   /* Now 'copyout' not the whole but only a "subset" subarray, missing one
      SUBSET at the beginning, and half a SUBSET at the end...  */
-#if 0 //TODO PR92848
   cb_ev_free_expected = true;
-#endif
 #if OPENACC_RUNTIME
   acc_copyout (h + SUBSET, SIZE - SUBSET - SUBSET / 2);
 #else
 # pragma acc exit data copyout (h[SUBSET:SIZE - SUBSET - SUBSET / 2])
 #endif
-#if 0 //TODO PR92848
   /* ..., yet, expect the device memory object to be 'free'd...  */
   assert (!cb_ev_free_expected);
   assert (cb_ev_free_device_ptr == cb_ev_alloc_device_ptr);
-#endif
   /* ..., and the mapping to be removed...  */
   assert (!acc_is_present (h, SIZE));
   assert (!acc_is_present (&h[SUBSET], SIZE - SUBSET - SUBSET / 2));
@@ -474,19 +462,15 @@ f_lib_30 (void)
   assert (aligned_address (cb_ev_alloc_device_ptr) == d);
 
   /* We 'delete' not the whole but only a "subset" subarray...  */
-#if 0 //TODO PR92848
   cb_ev_free_expected = true;
-#endif
 #if OPENACC_RUNTIME
   acc_delete (h, SIZE - SUBSET);
 #else
 # pragma acc exit data delete (h[0:SIZE - SUBSET])
 #endif
-#if 0 //TODO PR92848
   /* ..., yet, expect the device memory object to be 'free'd...  */
   assert (!cb_ev_free_expected);
   assert (cb_ev_free_device_ptr == cb_ev_alloc_device_ptr);
-#endif
   /* ..., and the mapping to be removed.  */
   assert (!acc_is_present (h, SIZE));
   assert (!acc_is_present (h, SIZE - SUBSET));

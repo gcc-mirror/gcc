@@ -2244,6 +2244,8 @@ version.o: $(REVISION) $(DATESTAMP) $(BASEVER) $(DEVPHASE)
 # lto-compress.o needs $(ZLIBINC) added to the include flags.
 CFLAGS-lto-compress.o += $(ZLIBINC)
 
+CFLAGS-lto-streamer-in.o += -DTARGET_MACHINE=\"$(target_noncanonical)\"
+
 bversion.h: s-bversion; @true
 s-bversion: BASE-VER
 	echo "#define BUILDING_GCC_MAJOR `echo $(BASEVER_c) | sed -e 's/^\([0-9]*\).*$$/\1/'`" > bversion.h

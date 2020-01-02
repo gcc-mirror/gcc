@@ -1,3 +1,100 @@
+2019-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/86416
+	* testsuite/libgomp.c/pr86416-1.c (main): Use L suffixes rather than
+	q or none.
+	* testsuite/libgomp.c/pr86416-2.c (main): Use Q suffixes rather than
+	L or none.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Maciej W. Rozycki  <macro@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* target.c (gomp_map_vars_async): Support GOMP_MAP_NO_ALLOC.
+	* testsuite/libgomp.oacc-c-c++-common/no_create-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/no_create-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/no_create-3.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/no_create-4.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/no_create-5.c: New test.
+	* testsuite/libgomp.oacc-fortran/no_create-1.f90: New test.
+	* testsuite/libgomp.oacc-fortran/no_create-2.f90: New test.
+	* testsuite/libgomp.oacc-fortran/no_create-3.F90: New test.
+
+2019-12-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-mem.c (goacc_enter_data): Refactor, so that it can be
+	called...
+	(goacc_insert_pointer): ... from here, "present" case.
+	(goacc_insert_pointer): Inline function into...
+	(GOACC_enter_exit_data): ... here, and simplify.
+
+	* oacc-mem.c (goacc_enter_data): Refactor, so that it can be
+	called...
+	(goacc_insert_pointer): ... from here, "not present" case.
+
+	* oacc-mem.c (goacc_remove_pointer): Refactor interface.  Adjust
+	all users.
+
+	* oacc-mem.c (GOACC_enter_exit_data): Refactor code to call
+	'goacc_enter_data', 'goacc_exit_data'.
+
+	* oacc-mem.c (delete_copyout): Refactor into...
+	(goacc_exit_data): ... this.  Adjust all users.
+
+	* oacc-mem.c (present_create_copy): Refactor into...
+	(goacc_enter_data): ... this.  Adjust all users.
+
+	* target.c (gomp_unmap_vars_internal): Add a safeguard to
+	'gomp_remove_var'.
+
+	* target.c (gomp_to_device_kind_p): Handle 'GOMP_MAP_FORCE_FROM'
+	like 'GOMP_MAP_FROM'.
+
+	PR libgomp/92726
+	PR libgomp/92970
+	PR libgomp/92984
+	* oacc-mem.c (delete_copyout): No-op behavior if 'lookup_host'
+	fails.
+	(GOACC_enter_exit_data): Simplify accordingly.
+	* testsuite/libgomp.oacc-c-c++-common/pr92970-1.c: New file,
+	subsuming...
+	* testsuite/libgomp.oacc-c-c++-common/lib-17.c: ... this file...
+	* testsuite/libgomp.oacc-c-c++-common/lib-18.c: ..., and this
+	file.
+	* testsuite/libgomp.oacc-c-c++-common/pr92984-1.c: New file,
+	subsuming...
+	* testsuite/libgomp.oacc-c-c++-common/lib-21.c: ... this file...
+	* testsuite/libgomp.oacc-c-c++-common/lib-29.c: ..., and this
+	file.
+	* testsuite/libgomp.oacc-c-c++-common/pr92726-1.c: New file,
+	subsuming...
+	* testsuite/libgomp.oacc-c-c++-common/lib-28.c: ... this file.
+
+	* oacc-mem.c (GOACC_enter_exit_data): Simplify 'exit data'
+	'finalize' handling.
+
+	PR libgomp/92848
+	* oacc-mem.c (acc_map_data, present_create_copy)
+	(goacc_insert_pointer): Use 'GOMP_MAP_VARS_ENTER_DATA'.
+	(acc_unmap_data, delete_copyout, goacc_remove_pointer): Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/lib-50.c: Remove.
+	* testsuite/libgomp.oacc-c-c++-common/pr92848-1-d-a.c: New file
+	* testsuite/libgomp.oacc-c-c++-common/pr92848-1-d-p.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pr92848-1-r-a.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pr92848-1-r-p.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/subset-subarray-mappings-1-r-p.c:
+	Remove "XFAIL"s.
+
+	* target.c (gomp_unmap_tgt): Make it 'static'.
+	* libgomp.h (gomp_unmap_tgt): Remove.
+
+2019-12-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/86416
+	* testsuite/libgomp.c/pr86416-1.c: New.
+	* testsuite/libgomp.c/pr86416-2.c: New.
+
 2019-12-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	* config/accel/openacc.f90 (module openacc_kinds): Use 'PUBLIC' to mark

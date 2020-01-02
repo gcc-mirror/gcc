@@ -1,3 +1,175 @@
+2019-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/92977
+	* gfortran.dg/gomp/pr92977.f90: New test.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Maciej W. Rozycki  <macro@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/goacc/common-block-1.f90: Add no_create-clause tests.
+	* gfortran.dg/goacc/common-block-1.f90: Likewise.
+	* gfortran.dg/goacc/data-clauses.f95: Likewise.
+	* gfortran.dg/goacc/data-tree.f95: Likewise.
+	* gfortran.dg/goacc/kernels-tree.f95: Likewise.
+	* gfortran.dg/goacc/parallel-tree.f95: Likewise.
+
+2019-12-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/alignof2.C: New.
+	* g++.dg/diagnostic/alignof3.C: Likewise.
+	* g++.dg/diagnostic/incomplete-type-1.C: Likewise.
+	* g++.dg/warn/Wcatch-value-3b.C: Likewise.
+	* g++.dg/cpp0x/alignof3.C: Check location(s) too.
+	* g++.dg/cpp1z/decomp-bitfield1.C: Likewise.
+	* g++.dg/cpp1z/has-unique-obj-representations2.C: Likewise.
+	* g++.dg/expr/sizeof3.C: Likewise.
+	* g++.dg/ext/flexary6.C: Likewise.
+	* g++.dg/ext/vla4.C: Likewise.
+	* g++.dg/template/sizeof11.C: Likewise.
+	* g++.dg/warn/Wcatch-value-1.C: Likewise.
+	* g++.dg/warn/Wcatch-value-2.C: Likewise.
+	* g++.dg/warn/Wcatch-value-3.C: Likewise.
+	* g++.old-deja/g++.brendan/sizeof1.C: Likewise.
+	* g++.old-deja/g++.brendan/sizeof3.C: Likewise.
+	* g++.old-deja/g++.brendan/sizeof4.C: Likewise.
+	* g++.old-deja/g++.eh/ctor1.C: Likewise.
+	* g++.old-deja/g++.jason/ambig1.C: Likewise.
+	* g++.old-deja/g++.other/sizeof4.C: Likewise.
+
+2019-12-18  Peter Bergner <bergner@linux.ibm.com>
+
+	PR bootstrap/92661
+	* gcc.target/powerpc/pr92661.c: New test.
+	* gcc.target/powerpc/dfp-dd.c: Add dg-require-effective-target hard_dfp.
+	Remove unneeded powerpc_fprs test.
+	* gcc.target/powerpc/dfp-td.c: Likewise.
+	* gcc.target/powerpc/dfp-dd-2.c: Add dg-require-effective-target dfp.
+	* gcc.target/powerpc/dfp-td-2.c: Likewise.
+	* gcc.target/powerpc/dfp-td-3.c: Likewise.
+	* gcc.target/powerpc/dfp/dfp.exp: Remove rs6000-*-* and
+	powerpc*-*-darwin* target tests.  Add check_effective_target_dfp test.
+	* gcc.target/powerpc/dfp/dtstsfi-0.c: Remove unneeded target test.
+	Remove unneeded dg-skip-if.
+	* gcc.target/powerpc/dfp/dtstsfi-1.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-10.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-11.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-12.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-13.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-14.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-15.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-16.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-17.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-18.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-19.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-2.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-20.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-21.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-22.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-23.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-24.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-25.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-26.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-27.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-28.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-29.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-3.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-30.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-31.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-32.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-33.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-34.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-35.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-36.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-37.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-38.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-39.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-4.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-40.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-41.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-42.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-43.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-44.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-45.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-46.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-47.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-48.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-49.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-5.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-50.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-51.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-52.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-53.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-54.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-55.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-56.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-57.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-58.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-59.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-6.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-60.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-61.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-62.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-63.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-64.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-65.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-66.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-67.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-68.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-69.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-7.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-70.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-71.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-72.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-73.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-74.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-75.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-76.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-77.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-78.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-79.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-8.c: Likewise.
+	* gcc.target/powerpc/dfp/dtstsfi-9.c: Likewise.
+
+2019-12-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/finalize-1.c: Extend.
+	* gfortran.dg/goacc/finalize-1.f: Likewise.
+
+2019-12-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/70853
+	* gfortran.dg/pr70853.f90: New test.
+
+2019-12-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/92971
+	* gcc.dg/ipa/ipcp-agg-12.c: New test.
+
+2019-12-17  Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/ipa-bit-cp.c: New testcase.
+	* gcc.dg/ipa/ipa-bit-cp-1.c: New testcase.
+	* gcc.dg/ipa/ipa-bit-cp-2.c: New testcase.
+
+2019-12-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/vect/pr65947-8.c: Change pass conditions for amdgcn.
+
+2019-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/warn32.adb: New test.
+
+2019-12-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* g++.dg/warn/Wmismatched-tags.C: New test.
+	* g++.dg/warn/Wredundant-tags.C: New test.
+	* g++.dg/pch/Wmismatched-tags.C: New test.
+	* g++.dg/pch/Wmismatched-tags.Hs: New test header.
+
 2019-12-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/59655

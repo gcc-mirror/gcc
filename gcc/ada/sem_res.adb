@@ -11827,18 +11827,45 @@ package body Sem_Res is
                Set_Etype (Expression (N), Opnd);
             end if;
 
+            --  It seems that Non_Limited_View should also be applied for
+            --  Target when it has a limited view, but that leads to missing
+            --  error checks on interface conversions further below. ???
+
             if Is_Access_Type (Opnd) then
                Opnd := Designated_Type (Opnd);
+
+               --  If the type of the operand is a limited view, use nonlimited
+               --  view when available. If it is a class-wide type, recover the
+               --  class-wide type of the nonlimited view.
+
+               if From_Limited_With (Opnd)
+                 and then Has_Non_Limited_View (Opnd)
+               then
+                  Opnd := Non_Limited_View (Opnd);
+               end if;
             end if;
 
             if Is_Access_Type (Target_Typ) then
                Target := Designated_Type (Target);
+
+               --  If the target type is a limited view, use nonlimited view
+               --  when available.
+
+               if From_Limited_With (Target)
+                 and then Has_Non_Limited_View (Target)
+               then
+                  Target := Non_Limited_View (Target);
+               end if;
             end if;
 
             if Opnd = Target then
                null;
 
             --  Conversion from interface type
+
+            --  It seems that it would be better for the error checks below
+            --  to be performed as part of Validate_Conversion (and maybe some
+            --  of the error checks above could be moved as well?). ???
 
             elsif Is_Interface (Opnd) then
 

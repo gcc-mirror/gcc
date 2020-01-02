@@ -1,3 +1,78 @@
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Maciej W. Rozycki  <macro@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-low.c (lower_omp_target): Support GOMP_MAP_NO_ALLOC.
+	* tree-pretty-print.c (dump_omp_clause): Likewise.
+
+2019-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ira.c (ira): Use simple LRA algorithm when not optimizing.
+
+2019-12-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gimplify.c (gimplify_omp_target_update): Elaborate 'exit data'
+	'finalize' handling.
+
+2019-12-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/86416
+	*  Makefile.in (CFLAGS-lto-streamer-in.o): Pass target_noncanonical on.
+	* lto-streamer-in.c (lto_input_mode_table): Improve unsupported-mode
+	diagnostic.
+
+2019-12-18  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64-cores.def: 
+	("cortex-a76ae"): Use neoversen1 tuning.
+	("cortex-a77"): Likewise.
+	("cortex-a65"): Use cortexa53 scheduler.
+	("cortex-a65ae"): Likewise.
+	("neoverse-e1"): Use cortexa73 tuning.
+
+2019-12-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/92971
+	* ipa-cp.c (cgraph_edge_brings_all_agg_vals_for_node): Fix
+	definition of values, release memory on exit.
+
+2019-12-17  Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-param-manipulation.h (get_original_index): Declare.
+	* ipa-param-manipulation.c (ipa_param_adjustments::get_original_index):
+	New member function.
+	* ipa-prop.c (ipcp_get_parm_bits): New function.
+	* ipa-prop.h (ipcp_get_parm_bits): Declare.
+	* tree-ssa-ccp.c: Include cgraph.h, alloc-pool.h, symbol-summary.h,
+	ipa-utils.h and ipa-prop.h
+	(get_default_value): Use ipcp_get_parm_bits.
+
+2019-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/92972
+	* lto-wrapper.c (merge_and_complain): Use just "-fno-pie" instead of
+	big ? "-fno-pie" : "-fno-pie".  Formatting fixes.  Fix comment typo.
+
+2019-12-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* doc/invoke.texi (-Wmismatched-tags, -Wredundant-tags): Document
+	new C++ options.
+
+2019-12-17  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (num_insns_constant_gpr): Return 1 if the
+	constant can be loaded with PLI if -mcpu=future.
+	* config/rs6000/rs6000.md (add<mode>3): Add alternative to
+	generate PADDI for 34-bit constants if -mcpu=future.
+	(movdi_internal64): Add alternative to use PLI to load up 34-bit
+	constants if -mcpu=future.
+	(movsi_internal1): Add alternative to use PLI to load up 32-bit
+	constants if -mcpu=future.
+	* config/rs6000/predicates.md (add_operand): Allow eI constants.
+
 2019-12-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/92841

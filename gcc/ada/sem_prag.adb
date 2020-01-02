@@ -7562,13 +7562,19 @@ package body Sem_Prag is
             --  Attribute belongs on the base type. If the view of the type is
             --  currently private, it also belongs on the underlying type.
 
+            --  In Ada_2020, the pragma can apply to a formal type, for which
+            --  there may be no underlying type.
+
             if Prag_Id = Pragma_Atomic
               or else Prag_Id = Pragma_Shared
               or else Prag_Id = Pragma_Volatile_Full_Access
             then
                Set_Atomic_VFA (Ent);
                Set_Atomic_VFA (Base_Type (Ent));
-               Set_Atomic_VFA (Underlying_Type (Ent));
+
+               if not Is_Generic_Type (Ent) then
+                  Set_Atomic_VFA (Underlying_Type (Ent));
+               end if;
             end if;
 
             --  Atomic/Shared/Volatile_Full_Access imply Independent
@@ -7576,10 +7582,13 @@ package body Sem_Prag is
             if Prag_Id /= Pragma_Volatile then
                Set_Is_Independent (Ent);
                Set_Is_Independent (Base_Type (Ent));
-               Set_Is_Independent (Underlying_Type (Ent));
 
-               if Prag_Id = Pragma_Independent then
-                  Record_Independence_Check (N, Base_Type (Ent));
+               if not Is_Generic_Type (Ent) then
+                  Set_Is_Independent (Underlying_Type (Ent));
+
+                  if Prag_Id = Pragma_Independent then
+                     Record_Independence_Check (N, Base_Type (Ent));
+                  end if;
                end if;
             end if;
 
@@ -7588,10 +7597,13 @@ package body Sem_Prag is
             if Prag_Id /= Pragma_Independent then
                Set_Is_Volatile (Ent);
                Set_Is_Volatile (Base_Type (Ent));
-               Set_Is_Volatile (Underlying_Type (Ent));
+
+               if not Is_Generic_Type (Ent) then
+                  Set_Is_Volatile (Underlying_Type (Ent));
+                  Set_Treat_As_Volatile (Underlying_Type (Ent));
+               end if;
 
                Set_Treat_As_Volatile (Ent);
-               Set_Treat_As_Volatile (Underlying_Type (Ent));
             end if;
 
             --  Apply Volatile to the composite type's individual components,
@@ -14076,6 +14088,9 @@ package body Sem_Prag is
                              Ekind (E) = E_Variable)
                    and then Nkind (Object_Definition (D)) =
                                        N_Constrained_Array_Definition)
+              or else
+                 (Ada_Version >= Ada_2020
+                   and then Nkind (D) = N_Formal_Type_Declaration)
             then
                --  The flag is set on the base type, or on the object
 
@@ -14090,6 +14105,7 @@ package body Sem_Prag is
                      Check_Atomic_VFA
                        (Component_Type (Etype (E)), VFA => False);
                   end if;
+
                   Set_Has_Atomic_Components (E);
                   Set_Has_Independent_Components (E);
                end if;

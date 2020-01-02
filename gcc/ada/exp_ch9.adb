@@ -363,7 +363,7 @@ package body Exp_Ch9 is
    --  a null trailing statement with the given Loc (which is the sloc of
    --  the accept, delay, or entry call statement). There might not be any
    --  generated code for the accept, delay, or entry call itself (the effect
-   --  of these statements is part of the general processsing done for the
+   --  of these statements is part of the general processing done for the
    --  enclosing selective accept, timed entry call, or asynchronous select),
    --  and the null statement is there to carry the sloc of that statement to
    --  the back-end for trace-based coverage analysis purposes.

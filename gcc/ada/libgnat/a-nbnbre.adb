@@ -45,22 +45,15 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- Is_Valid --
    --------------
 
-   function Is_Valid (Arg : Optional_Big_Real) return Boolean is
+   function Is_Valid (Arg : Big_Real) return Boolean is
      (Is_Valid (Arg.Num) and then Is_Valid (Arg.Den));
-
-   -----------------
-   -- No_Big_Real --
-   -----------------
-
-   function No_Big_Real return Optional_Big_Real is
-     (Num => Invalid_Big_Integer, Den => Invalid_Big_Integer);
 
    ---------
    -- "/" --
    ---------
 
    function "/" (Num, Den : Big_Integer) return Big_Real is
-      Result : Optional_Big_Real;
+      Result : Big_Real;
    begin
       if Den = To_Big_Integer (0) then
          raise Constraint_Error with "divide by zero";
@@ -323,7 +316,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
 
    function From_String (Arg : String) return Big_Real is
       Ten   : constant Big_Integer := To_Big_Integer (10);
-      Frac  : Optional_Big_Integer;
+      Frac  : Big_Integer;
       Exp   : Integer := 0;
       Pow   : Natural := 0;
       Index : Natural := 0;
@@ -353,7 +346,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
       end if;
 
       declare
-         Result : Optional_Big_Real;
+         Result : Big_Real;
       begin
          Result.Den := Ten ** Pow;
          Result.Num := From_String (Arg (Arg'First .. Index)) * Result.Den;
@@ -414,7 +407,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    ---------
 
    function "+" (L : Big_Real) return Big_Real is
-      Result : Optional_Big_Real;
+      Result : Big_Real;
    begin
       Result.Num := L.Num;
       Result.Den := L.Den;
@@ -440,7 +433,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    ---------
 
    function "+" (L, R : Big_Real) return Big_Real is
-      Result : Optional_Big_Real;
+      Result : Big_Real;
    begin
       Result.Num := L.Num * R.Den + R.Num * L.Den;
       Result.Den := L.Den * R.Den;
@@ -453,7 +446,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    ---------
 
    function "-" (L, R : Big_Real) return Big_Real is
-      Result : Optional_Big_Real;
+      Result : Big_Real;
    begin
       Result.Num := L.Num * R.Den - R.Num * L.Den;
       Result.Den := L.Den * R.Den;
@@ -466,7 +459,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    ---------
 
    function "*" (L, R : Big_Real) return Big_Real is
-      Result : Optional_Big_Real;
+      Result : Big_Real;
    begin
       Result.Num := L.Num * R.Num;
       Result.Den := L.Den * R.Den;
@@ -479,7 +472,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    ---------
 
    function "/" (L, R : Big_Real) return Big_Real is
-      Result : Optional_Big_Real;
+      Result : Big_Real;
    begin
       Result.Num := L.Num * R.Den;
       Result.Den := L.Den * R.Num;
@@ -492,7 +485,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    ----------
 
    function "**" (L : Big_Real; R : Integer) return Big_Real is
-      Result : Optional_Big_Real;
+      Result : Big_Real;
    begin
       if R = 0 then
          Result.Num := To_Big_Integer (1);

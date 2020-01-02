@@ -6809,7 +6809,7 @@ extern void init_exception_processing		(void);
 extern tree expand_start_catch_block		(tree);
 extern void expand_end_catch_block		(void);
 extern tree build_exc_ptr			(void);
-extern tree build_throw				(tree);
+extern tree build_throw				(location_t, tree);
 extern int nothrow_libfn_p			(const_tree);
 extern void check_handlers			(tree);
 extern tree finish_noexcept_expr		(tree, tsubst_flags_t);
@@ -6826,7 +6826,6 @@ extern tree begin_eh_spec_block			(void);
 extern void finish_eh_spec_block		(tree, tree);
 extern tree build_eh_type_type			(tree);
 extern tree cp_protect_cleanup_actions		(void);
-extern tree create_try_catch_expr               (tree, tree);
 extern tree template_parms_to_args		(tree);
 extern tree template_parms_level_to_args	(tree);
 extern tree generic_targs_for			(tree);
@@ -7737,8 +7736,10 @@ extern bool compparms				(const_tree, const_tree);
 extern int comp_cv_qualification		(const_tree, const_tree);
 extern int comp_cv_qualification		(int, int);
 extern int comp_cv_qual_signature		(tree, tree);
-extern tree cxx_sizeof_or_alignof_expr		(tree, enum tree_code, bool);
-extern tree cxx_sizeof_or_alignof_type		(tree, enum tree_code, bool, bool);
+extern tree cxx_sizeof_or_alignof_expr		(location_t, tree,
+						 enum tree_code, bool);
+extern tree cxx_sizeof_or_alignof_type		(location_t, tree,
+						 enum tree_code, bool, bool);
 extern tree cxx_alignas_expr                    (tree);
 extern tree cxx_sizeof_nowarn                   (tree);
 extern tree is_bitfield_expr_with_lowered_type  (const_tree);
@@ -7750,6 +7751,7 @@ extern tree build_class_member_access_expr      (cp_expr, tree, tree, bool,
 						 tsubst_flags_t);
 extern tree finish_class_member_access_expr     (cp_expr, tree, bool,
 						 tsubst_flags_t);
+extern tree lookup_destructor			(tree, tree, tree, tsubst_flags_t);
 extern tree build_x_indirect_ref		(location_t, tree,
 						 ref_operator,
 						 tsubst_flags_t);
@@ -7853,7 +7855,7 @@ extern tree cp_build_binary_op                  (const op_location_t &,
 extern tree build_x_vec_perm_expr               (location_t,
 						 tree, tree, tree,
 						 tsubst_flags_t);
-#define cxx_sizeof(T)  cxx_sizeof_or_alignof_type (T, SIZEOF_EXPR, false, true)
+#define cxx_sizeof(T)  cxx_sizeof_or_alignof_type (input_location, T, SIZEOF_EXPR, false, true)
 extern tree build_simple_component_ref		(tree, tree);
 extern tree build_ptrmemfunc_access_expr	(tree, tree);
 extern tree build_address			(tree);

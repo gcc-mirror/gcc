@@ -59,7 +59,6 @@ static tree get_delta_difference (tree, tree, bool, bool, tsubst_flags_t);
 static void casts_away_constness_r (tree *, tree *, tsubst_flags_t);
 static bool casts_away_constness (tree, tree, tsubst_flags_t);
 static bool maybe_warn_about_returning_address_of_local (tree);
-static tree lookup_destructor (tree, tree, tree, tsubst_flags_t);
 static void error_args_num (location_t, tree, bool);
 static int convert_arguments (tree, vec<tree, va_gc> **, tree, int,
                               tsubst_flags_t);
@@ -1668,8 +1667,8 @@ compparms (const_tree parms1, const_tree parms2)
    SIZEOF_EXPR.  */
 
 tree
-cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool std_alignof,
-			    bool complain)
+cxx_sizeof_or_alignof_type (location_t loc, tree type, enum tree_code op,
+			    bool std_alignof, bool complain)
 {
   gcc_assert (op == SIZEOF_EXPR || op == ALIGNOF_EXPR);
   if (type == error_mark_node)
@@ -1680,7 +1679,7 @@ cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool std_alignof,
     {
       if (complain)
 	{
-	  pedwarn (input_location, OPT_Wpointer_arith,
+	  pedwarn (loc, OPT_Wpointer_arith,
 		   "invalid application of %qs to a member function",
 		   OVL_OP_INFO (false, op)->name);
 	  return size_one_node;
@@ -1707,10 +1706,11 @@ cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool std_alignof,
       TREE_READONLY (value) = 1;
       if (op == ALIGNOF_EXPR && std_alignof)
 	ALIGNOF_EXPR_STD_P (value) = true;
+      SET_EXPR_LOCATION (value, loc);
       return value;
     }
 
-  return c_sizeof_or_alignof_type (input_location, complete_type (type),
+  return c_sizeof_or_alignof_type (loc, complete_type (type),
 				   op == SIZEOF_EXPR, std_alignof,
 				   complain);
 }
@@ -1729,13 +1729,14 @@ cxx_sizeof_nowarn (tree type)
   else if (!COMPLETE_TYPE_P (type))
     return size_zero_node;
   else
-    return cxx_sizeof_or_alignof_type (type, SIZEOF_EXPR, false, false);
+    return cxx_sizeof_or_alignof_type (input_location, type,
+				       SIZEOF_EXPR, false, false);
 }
 
 /* Process a sizeof expression where the operand is an expression.  */
 
 static tree
-cxx_sizeof_expr (tree e, tsubst_flags_t complain)
+cxx_sizeof_expr (location_t loc, tree e, tsubst_flags_t complain)
 {
   if (e == error_mark_node)
     return error_mark_node;
@@ -1745,10 +1746,12 @@ cxx_sizeof_expr (tree e, tsubst_flags_t complain)
       e = build_min (SIZEOF_EXPR, size_type_node, e);
       TREE_SIDE_EFFECTS (e) = 0;
       TREE_READONLY (e) = 1;
+      SET_EXPR_LOCATION (e, loc);
 
       return e;
     }
 
+  location_t e_loc = cp_expr_loc_or_loc (e, loc);
   STRIP_ANY_LOCATION_WRAPPER (e);
 
   /* To get the size of a static data member declared as an array of
@@ -1763,8 +1766,9 @@ cxx_sizeof_expr (tree e, tsubst_flags_t complain)
       && (complain & tf_warning))
     {
       auto_diagnostic_group d;
-      if (warning (OPT_Wsizeof_array_argument, "%<sizeof%> on array function "
-		   "parameter %qE will return size of %qT", e, TREE_TYPE (e)))
+      if (warning_at (e_loc, OPT_Wsizeof_array_argument,
+		      "%<sizeof%> on array function parameter %qE "
+		      "will return size of %qT", e, TREE_TYPE (e)))
 	inform (DECL_SOURCE_LOCATION (e), "declared here");
     }
 
@@ -1773,7 +1777,7 @@ cxx_sizeof_expr (tree e, tsubst_flags_t complain)
   if (bitfield_p (e))
     {
       if (complain & tf_error)
-	error_at (cp_expr_loc_or_input_loc (e),
+	error_at (e_loc,
 		  "invalid application of %<sizeof%> to a bit-field");
       else
         return error_mark_node;
@@ -1782,9 +1786,8 @@ cxx_sizeof_expr (tree e, tsubst_flags_t complain)
   else if (is_overloaded_fn (e))
     {
       if (complain & tf_error)
-	permerror (cp_expr_loc_or_input_loc (e),
-		   "ISO C++ forbids applying %<sizeof%> to an expression "
-		   "of function type");
+	permerror (e_loc, "ISO C++ forbids applying %<sizeof%> to "
+		   "an expression of function type");
       else
         return error_mark_node;
       e = char_type_node;
@@ -1792,7 +1795,7 @@ cxx_sizeof_expr (tree e, tsubst_flags_t complain)
   else if (type_unknown_p (e))
     {
       if (complain & tf_error)
-        cxx_incomplete_type_error (e, TREE_TYPE (e));
+        cxx_incomplete_type_error (e_loc, e, TREE_TYPE (e));
       else
         return error_mark_node;
       e = char_type_node;
@@ -1800,7 +1803,8 @@ cxx_sizeof_expr (tree e, tsubst_flags_t complain)
   else
     e = TREE_TYPE (e);
 
-  return cxx_sizeof_or_alignof_type (e, SIZEOF_EXPR, false, complain & tf_error);
+  return cxx_sizeof_or_alignof_type (loc, e, SIZEOF_EXPR, false,
+				     complain & tf_error);
 }
 
 /* Implement the __alignof keyword: Return the minimum required
@@ -1809,7 +1813,7 @@ cxx_sizeof_expr (tree e, tsubst_flags_t complain)
    "aligned" __attribute__ specification).  */
 
 static tree
-cxx_alignof_expr (tree e, tsubst_flags_t complain)
+cxx_alignof_expr (location_t loc, tree e, tsubst_flags_t complain)
 {
   tree t;
 
@@ -1821,15 +1825,17 @@ cxx_alignof_expr (tree e, tsubst_flags_t complain)
       e = build_min (ALIGNOF_EXPR, size_type_node, e);
       TREE_SIDE_EFFECTS (e) = 0;
       TREE_READONLY (e) = 1;
+      SET_EXPR_LOCATION (e, loc);
 
       return e;
     }
 
+  location_t e_loc = cp_expr_loc_or_loc (e, loc);
   STRIP_ANY_LOCATION_WRAPPER (e);
 
   e = mark_type_use (e);
 
-  if (!verify_type_context (input_location, TCTX_ALIGNOF, TREE_TYPE (e),
+  if (!verify_type_context (loc, TCTX_ALIGNOF, TREE_TYPE (e),
 			    !(complain & tf_error)))
     {
       if (!(complain & tf_error))
@@ -1841,7 +1847,7 @@ cxx_alignof_expr (tree e, tsubst_flags_t complain)
   else if (bitfield_p (e))
     {
       if (complain & tf_error)
-	error_at (cp_expr_loc_or_input_loc (e),
+	error_at (e_loc,
 		  "invalid application of %<__alignof%> to a bit-field");
       else
         return error_mark_node;
@@ -1853,9 +1859,8 @@ cxx_alignof_expr (tree e, tsubst_flags_t complain)
   else if (is_overloaded_fn (e))
     {
       if (complain & tf_error)
-	permerror (cp_expr_loc_or_input_loc (e),
-		   "ISO C++ forbids applying %<__alignof%> to an expression "
-		   "of function type");
+	permerror (e_loc, "ISO C++ forbids applying %<__alignof%> to "
+		   "an expression of function type");
       else
         return error_mark_node;
       if (TREE_CODE (e) == FUNCTION_DECL)
@@ -1866,28 +1871,30 @@ cxx_alignof_expr (tree e, tsubst_flags_t complain)
   else if (type_unknown_p (e))
     {
       if (complain & tf_error)
-        cxx_incomplete_type_error (e, TREE_TYPE (e));
+        cxx_incomplete_type_error (e_loc, e, TREE_TYPE (e));
       else
         return error_mark_node;
       t = size_one_node;
     }
   else
-    return cxx_sizeof_or_alignof_type (TREE_TYPE (e), ALIGNOF_EXPR, false,
+    return cxx_sizeof_or_alignof_type (loc, TREE_TYPE (e),
+				       ALIGNOF_EXPR, false,
                                        complain & tf_error);
 
-  return fold_convert (size_type_node, t);
+  return fold_convert_loc (loc, size_type_node, t);
 }
 
 /* Process a sizeof or alignof expression E with code OP where the operand
    is an expression.  */
 
 tree
-cxx_sizeof_or_alignof_expr (tree e, enum tree_code op, bool complain)
+cxx_sizeof_or_alignof_expr (location_t loc, tree e, enum tree_code op,
+			    bool complain)
 {
   if (op == SIZEOF_EXPR)
-    return cxx_sizeof_expr (e, complain? tf_warning_or_error : tf_none);
+    return cxx_sizeof_expr (loc, e, complain? tf_warning_or_error : tf_none);
   else
-    return cxx_alignof_expr (e, complain? tf_warning_or_error : tf_none);
+    return cxx_alignof_expr (loc, e, complain? tf_warning_or_error : tf_none);
 }
 
 /*  Build a representation of an expression 'alignas(E).'  Return the
@@ -1911,7 +1918,8 @@ cxx_alignas_expr (tree e)
 	   alignas(type-id ), it shall have the same effect as
 	   alignas(alignof(type-id )).  */
 
-    return cxx_sizeof_or_alignof_type (e, ALIGNOF_EXPR, true, false);
+    return cxx_sizeof_or_alignof_type (input_location,
+				       e, ALIGNOF_EXPR, true, false);
   
   /* If we reach this point, it means the alignas expression if of
      the form "alignas(assignment-expression)", so we should follow
@@ -2701,7 +2709,7 @@ build_class_member_access_expr (cp_expr object, tree member,
 /* Return the destructor denoted by OBJECT.SCOPE::DTOR_NAME, or, if
    SCOPE is NULL, by OBJECT.DTOR_NAME, where DTOR_NAME is ~type.  */
 
-static tree
+tree
 lookup_destructor (tree object, tree scope, tree dtor_name,
 		   tsubst_flags_t complain)
 {

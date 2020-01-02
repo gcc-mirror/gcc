@@ -5565,6 +5565,10 @@ num_insns_constant_gpr (HOST_WIDE_INT value)
 	   && (value >> 31 == -1 || value >> 31 == 0))
     return 1;
 
+  /* PADDI can support up to 34 bit signed integers.  */
+  else if (TARGET_PREFIXED_ADDR && SIGNED_34BIT_OFFSET_P (value))
+    return 1;
+
   else if (TARGET_POWERPC64)
     {
       HOST_WIDE_INT low  = ((value & 0xffffffff) ^ 0x80000000) - 0x80000000;

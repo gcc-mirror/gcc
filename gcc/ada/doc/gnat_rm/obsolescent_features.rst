@@ -49,7 +49,7 @@ pragma Task_Info
 The functionality provided by pragma ``Task_Info`` is now part of the
 Ada language. The ``CPU`` aspect and the package
 ``System.Multiprocessors`` offer a less system-dependent way to specify
-task affinity or to query the number of processsors.
+task affinity or to query the number of processors.
 
 Syntax
 

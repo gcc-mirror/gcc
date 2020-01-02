@@ -16,11 +16,9 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# Exit immediately if this isn't a PowerPC target, also exit if we
-# are on Darwin which doesn't support decimal float.
-if { (![istarget powerpc*-*-*] && ![istarget rs6000-*-*])
-    || [istarget "powerpc*-*-darwin*"]
-} then {
+# Exit immediately if this isn't a PowerPC target, or if the
+# target doesn't support decimal float.
+if { ![istarget powerpc*-*-*] || ![check_effective_target_dfp] } then {
   return
 }
 

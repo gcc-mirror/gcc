@@ -1,3 +1,10 @@
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Maciej W. Rozycki  <macro@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gomp-constants.h (gomp_map_kind): Support GOMP_MAP_NO_ALLOC.
+
 2019-11-16  Tim Ruehsen  <tim.ruehsen@gmx.de>
 
 	* demangle.h (struct demangle_component): Add member
