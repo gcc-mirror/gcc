@@ -2717,23 +2717,40 @@ Gogo::clear_file_scope()
   this->current_file_imported_unsafe_ = false;
 }
 
-// Queue up a type specific function for later writing.  These are
-// written out in write_specific_type_functions, called after the
+// Queue up a type-specific hash function for later writing.  These
+// are written out in write_specific_type_functions, called after the
 // parse tree is lowered.
 
 void
-Gogo::queue_specific_type_function(Type* type, Named_type* name, int64_t size,
-				   const std::string& hash_name,
-				   Function_type* hash_fntype,
-				   const std::string& equal_name,
-				   Function_type* equal_fntype)
+Gogo::queue_hash_function(Type* type, Named_type* name, int64_t size,
+			  const std::string& hash_name,
+			  Function_type* hash_fntype)
 {
   go_assert(!this->specific_type_functions_are_written_);
   go_assert(!this->in_global_scope());
+  Specific_type_function::Specific_type_function_kind kind =
+    Specific_type_function::SPECIFIC_HASH;
   Specific_type_function* tsf = new Specific_type_function(type, name, size,
-							   hash_name,
-							   hash_fntype,
-							   equal_name,
+							   kind, hash_name,
+							   hash_fntype);
+  this->specific_type_functions_.push_back(tsf);
+}
+
+// Queue up a type-specific equal function for later writing.  These
+// are written out in write_specific_type_functions, called after the
+// parse tree is lowered.
+
+void
+Gogo::queue_equal_function(Type* type, Named_type* name, int64_t size,
+			   const std::string& equal_name,
+			   Function_type* equal_fntype)
+{
+  go_assert(!this->specific_type_functions_are_written_);
+  go_assert(!this->in_global_scope());
+  Specific_type_function::Specific_type_function_kind kind =
+    Specific_type_function::SPECIFIC_EQUAL;
+  Specific_type_function* tsf = new Specific_type_function(type, name, size,
+							   kind, equal_name,
 							   equal_fntype);
   this->specific_type_functions_.push_back(tsf);
 }
@@ -2758,8 +2775,6 @@ class Specific_type_functions : public Traverse
 int
 Specific_type_functions::type(Type* t)
 {
-  Named_object* hash_fn;
-  Named_object* equal_fn;
   switch (t->classification())
     {
     case Type::TYPE_NAMED:
@@ -2768,7 +2783,10 @@ Specific_type_functions::type(Type* t)
 	if (nt->is_alias())
 	  return TRAVERSE_CONTINUE;
 	if (t->needs_specific_type_functions(this->gogo_))
-	  t->type_functions(this->gogo_, nt, NULL, NULL, &hash_fn, &equal_fn);
+	  {
+	    t->equal_function(this->gogo_, nt, NULL);
+	    t->hash_function(this->gogo_, nt, NULL);
+	  }
 
 	// If this is a struct type, we don't want to make functions
 	// for the unnamed struct.
@@ -2802,7 +2820,10 @@ Specific_type_functions::type(Type* t)
     case Type::TYPE_STRUCT:
     case Type::TYPE_ARRAY:
       if (t->needs_specific_type_functions(this->gogo_))
-	t->type_functions(this->gogo_, NULL, NULL, NULL, &hash_fn, &equal_fn);
+	{
+	  t->equal_function(this->gogo_, NULL, NULL);
+	  t->hash_function(this->gogo_, NULL, NULL);
+	}
       break;
 
     default:
@@ -2824,11 +2845,12 @@ Gogo::write_specific_type_functions()
     {
       Specific_type_function* tsf = this->specific_type_functions_.back();
       this->specific_type_functions_.pop_back();
-      tsf->type->write_specific_type_functions(this, tsf->name, tsf->size,
-					       tsf->hash_name,
-					       tsf->hash_fntype,
-					       tsf->equal_name,
-					       tsf->equal_fntype);
+      if (tsf->kind == Specific_type_function::SPECIFIC_HASH)
+	tsf->type->write_hash_function(this, tsf->name, tsf->size,
+				       tsf->fnname, tsf->fntype);
+      else
+	tsf->type->write_equal_function(this, tsf->name, tsf->size,
+					tsf->fnname, tsf->fntype);
       delete tsf;
     }
   this->specific_type_functions_are_written_ = true;
