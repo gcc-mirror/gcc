@@ -942,7 +942,7 @@ internal_proto(write_o);
 extern void write_real (st_parameter_dt *, const char *, int);
 internal_proto(write_real);
 
-extern void write_real_w0 (st_parameter_dt *, const char *, int, format_token, int);
+extern void write_real_w0 (st_parameter_dt *, const char *, int, const fnode*);
 internal_proto(write_real_w0);
 
 extern void write_x (st_parameter_dt *, int, int);
