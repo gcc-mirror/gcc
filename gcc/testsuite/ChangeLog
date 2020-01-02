@@ -1,3 +1,9 @@
+2019-12-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic-test-metadata.c: New test.
+	* gcc.dg/plugin/diagnostic_plugin_test_metadata.c: New test plugin.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add them.
+
 2019-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/92977
