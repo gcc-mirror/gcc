@@ -25,8 +25,6 @@ make_boxed_int (int i)
 
 /* "dereference of possibly-NULL 'result' [CWE-690]".  */
 /* { dg-begin-multiline-output "" }
-   NN |   result->i = i;
-      |   ~~~~~~~~~~^~~
   'make_boxed_int': events 1-2
     |
     |   NN | make_boxed_int (int i)

@@ -29,8 +29,6 @@ void test (void *ptr)
 }
 
 /* { dg-begin-multiline-output "" }
-   NN |   free (victim);
-      |   ^~~~~~~~~~~~~
   'test': events 1-2
     |
     |   NN | void test (void *ptr)

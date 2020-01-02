@@ -18,29 +18,21 @@ int test (void *ptr)
   /* { dg-regexp "\[^|\]+/malloc-macro.h:\[0-9\]+:\[0-9\]+:" } */
 
   /* { dg-begin-multiline-output "" }
+  event 1
+
    NN | #define WRAPPED_FREE(PTR) free(PTR)
       |                           ^~~~~~~~~
+      |                           |
+      |                           (1) first 'free' here
    NN |   WRAPPED_FREE (ptr);
       |   ^~~~~~~~~~~~
-  'test': event 1
-    |
-    |
-    |   NN | #define WRAPPED_FREE(PTR) free(PTR)
-    |      |                           ^~~~~~~~~
-    |      |                           |
-    |      |                           (1) first 'free' here
-    |   NN |   WRAPPED_FREE (ptr);
-    |      |   ^~~~~~~~~~~~
-    |
-  'test': event 2
-    |
-    |
-    |   NN | #define WRAPPED_FREE(PTR) free(PTR)
-    |      |                           ^~~~~~~~~
-    |      |                           |
-    |      |                           (2) second 'free' here; first 'free' was at (1)
-    |   NN |   WRAPPED_FREE (ptr);
-    |      |   ^~~~~~~~~~~~
-    |
+  event 2
+
+   NN | #define WRAPPED_FREE(PTR) free(PTR)
+      |                           ^~~~~~~~~
+      |                           |
+      |                           (2) second 'free' here; first 'free' was at (1)
+   NN |   WRAPPED_FREE (ptr);
+      |   ^~~~~~~~~~~~
      { dg-end-multiline-output "" } */
 }

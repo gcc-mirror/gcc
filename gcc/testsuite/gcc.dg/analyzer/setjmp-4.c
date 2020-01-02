@@ -31,8 +31,6 @@ int main (void)
 }
 
 /* { dg-begin-multiline-output "" }
-   NN |     __analyzer_dump_path ();
-      |     ^~~~~~~~~~~~~~~~~~~~~~~
   'main': event 1
     |
     |   NN | int main (void)

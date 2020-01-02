@@ -36,8 +36,6 @@ void outer (void)
 }
 
 /* { dg-begin-multiline-output "" }
-   NN |       __analyzer_dump_path ();
-      |       ^~~~~~~~~~~~~~~~~~~~~~~
   'outer': event 1
     |
     |   NN | void outer (void)

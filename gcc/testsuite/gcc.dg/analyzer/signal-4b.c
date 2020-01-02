@@ -32,8 +32,6 @@ void test (void)
 
 /* "call to 'fprintf' from within signal handler [CWE-479]".  */
 /* { dg-begin-multiline-output "" }
-   NN |   fprintf(stderr, "LOG: %s", msg);
-      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   'test': events 1-2
     |
     |   NN | void test (void)
