@@ -1,3 +1,22 @@
+2020-01-02  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config/arm/arm-c.c (arm_cpu_builtins): Define
+	__ARM_FEATURE_MATMUL_INT8, __ARM_FEATURE_BF16_VECTOR_ARITHMETIC,
+	__ARM_FEATURE_BF16_SCALAR_ARITHMETIC, and
+	__ARM_BF16_FORMAT_ALTERNATIVE when enabled.
+	* config/arm/arm-cpus.in (armv8_6, i8mm, bf16): New features.
+	* config/arm/arm-tables.opt: Regenerated.
+	* config/arm/arm.c (arm_option_reconfigure_globals): Initialize
+	arm_arch_i8mm and arm_arch_bf16 when enabled.
+	* config/arm/arm.h (TARGET_I8MM): New macro.
+	(TARGET_BF16_FP, TARGET_BF16_SIMD): Likewise.
+	* config/arm/t-aprofile: Add matching rules for -march=armv8.6-a.
+	* config/arm/t-arm-elf (all_v8_archs): Add armv8.6-a.
+	* config/arm/t-multilib: Add matching rules for -march=armv8.6-a.
+	(v8_6_a_simd_variants): New.
+	(v8_*_a_simd_variants): Add i8mm and bf16.
+	* doc/invoke.texi (armv8.6-a, i8mm, bf16): Document new options.
+
 2020-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/93087
