@@ -1061,7 +1061,7 @@ class Type
   // Get the hash function for a type.  Returns NULL if the type is
   // not comparable.
   Named_object*
-  hash_function(Gogo*, Named_type* name, Function_type* hash_fntype);
+  hash_function(Gogo*, Function_type* hash_fntype);
 
   // Write the equal function for a type.
   void
@@ -1071,8 +1071,7 @@ class Type
 
   // Write the hash function for a type.
   void
-  write_hash_function(Gogo*, Named_type*, int64_t size,
-		      const std::string& hash_name,
+  write_hash_function(Gogo*, int64_t size, const std::string& hash_name,
 		      Function_type* hash_fntype);
 
   // Return the alignment required by the memequalN function.
@@ -1284,8 +1283,7 @@ class Type
 
   // Build the hash function for a type that needs specific functions.
   Named_object*
-  build_hash_function(Gogo*, Named_type*, int64_t size,
-		      Function_type* hash_fntype);
+  build_hash_function(Gogo*, int64_t size, Function_type* hash_fntype);
 
   // Build the equal function for a type that needs specific functions.
   Named_object*
@@ -1297,9 +1295,6 @@ class Type
 
   void
   write_identity_equal(Gogo*, int64_t size);
-
-  void
-  write_named_hash(Gogo*, Named_type*, Function_type* hash_fntype);
 
   void
   write_named_equal(Gogo*, Named_type*);
@@ -2628,7 +2623,7 @@ class Struct_type : public Type
 
   // Write the hash function for this type.
   void
-  write_hash_function(Gogo*, Named_type*, Function_type*);
+  write_hash_function(Gogo*, Function_type*);
 
   // Write the equality function for this type.
   void
@@ -2815,7 +2810,7 @@ class Array_type : public Type
 
   // Write the hash function for this type.
   void
-  write_hash_function(Gogo*, Named_type*, Function_type*);
+  write_hash_function(Gogo*, Function_type*);
 
   // Write the equality function for this type.
   void

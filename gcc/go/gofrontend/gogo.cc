@@ -2722,7 +2722,7 @@ Gogo::clear_file_scope()
 // parse tree is lowered.
 
 void
-Gogo::queue_hash_function(Type* type, Named_type* name, int64_t size,
+Gogo::queue_hash_function(Type* type, int64_t size,
 			  const std::string& hash_name,
 			  Function_type* hash_fntype)
 {
@@ -2730,7 +2730,7 @@ Gogo::queue_hash_function(Type* type, Named_type* name, int64_t size,
   go_assert(!this->in_global_scope());
   Specific_type_function::Specific_type_function_kind kind =
     Specific_type_function::SPECIFIC_HASH;
-  Specific_type_function* tsf = new Specific_type_function(type, name, size,
+  Specific_type_function* tsf = new Specific_type_function(type, NULL, size,
 							   kind, hash_name,
 							   hash_fntype);
   this->specific_type_functions_.push_back(tsf);
@@ -2783,10 +2783,7 @@ Specific_type_functions::type(Type* t)
 	if (nt->is_alias())
 	  return TRAVERSE_CONTINUE;
 	if (t->needs_specific_type_functions(this->gogo_))
-	  {
-	    t->equal_function(this->gogo_, nt, NULL);
-	    t->hash_function(this->gogo_, nt, NULL);
-	  }
+	  t->equal_function(this->gogo_, nt, NULL);
 
 	// If this is a struct type, we don't want to make functions
 	// for the unnamed struct.
@@ -2820,10 +2817,15 @@ Specific_type_functions::type(Type* t)
     case Type::TYPE_STRUCT:
     case Type::TYPE_ARRAY:
       if (t->needs_specific_type_functions(this->gogo_))
-	{
-	  t->equal_function(this->gogo_, NULL, NULL);
-	  t->hash_function(this->gogo_, NULL, NULL);
-	}
+	t->equal_function(this->gogo_, NULL, NULL);
+      break;
+
+    case Type::TYPE_MAP:
+      {
+	Type* key_type = t->map_type()->key_type();
+	if (key_type->needs_specific_type_functions(this->gogo_))
+	  key_type->hash_function(this->gogo_, NULL);
+      }
       break;
 
     default:
@@ -2846,8 +2848,8 @@ Gogo::write_specific_type_functions()
       Specific_type_function* tsf = this->specific_type_functions_.back();
       this->specific_type_functions_.pop_back();
       if (tsf->kind == Specific_type_function::SPECIFIC_HASH)
-	tsf->type->write_hash_function(this, tsf->name, tsf->size,
-				       tsf->fnname, tsf->fntype);
+	tsf->type->write_hash_function(this, tsf->size, tsf->fnname,
+				       tsf->fntype);
       else
 	tsf->type->write_equal_function(this, tsf->name, tsf->size,
 					tsf->fnname, tsf->fntype);
