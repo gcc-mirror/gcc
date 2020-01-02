@@ -1,3 +1,9 @@
+2020-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/68020
+	* gfortran.dg/impled_shape_5.f90: Use dg-do compile rather than dg-do
+	run.
+
 2020-01-02  Andrew Pinski  <apinski@marvell.com>
 
 	* gcc.c-torture/execute/bitfld-8.c: New testcase.
