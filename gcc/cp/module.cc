@@ -2794,16 +2794,20 @@ static char const *const merge_kind_name[MK_hwm] =
     "decl spec", "decl tmpl spec", "both spec", "both tmpl spec" /* 12...15  */
   };
 
-struct nodel_decl_hash : nodel_ptr_hash<tree_node>
+struct duplicate_hash : nodel_ptr_hash<tree_node>
 {
-  inline static hashval_t hash (const value_type decl)
+  inline static hashval_t hash (value_type decl)
   {
+    if (TREE_CODE (decl) == TREE_BINFO)
+      decl = TYPE_NAME (BINFO_TYPE (decl));
     return hashval_t (DECL_UID (decl));
   }
 };
 
+/* Hashmap of merged duplicates.  Usually decls, but can contain
+   BINFOs.  */
 typedef hash_map<tree,uintptr_t,
-		 simple_hashmap_traits<nodel_decl_hash,uintptr_t> >
+		 simple_hashmap_traits<duplicate_hash,uintptr_t> >
 duplicate_hash_map;
 
 /* Tree stream reader.  Note that reading a stream doesn't mark the
@@ -2884,6 +2888,7 @@ private:
 public:
   bool key_mergeable (merge_kind, tree, tree, tree,
 		      tree *, tree *, tree *, tree *);
+  unsigned binfo_mergeable (tree *);
 
 private:
   uintptr_t *find_duplicate (tree existing);
@@ -3012,6 +3017,7 @@ public:
   merge_kind get_merge_kind (tree decl, depset *maybe_dep);
   tree get_container (tree decl);
   void key_mergeable (merge_kind, tree decl, depset *maybe_dep);
+  void binfo_mergeable (tree binfo);
 
 private:
   bool decl_node (tree, walk_kind ref);
@@ -8511,17 +8517,25 @@ trees_out::tree_value (tree t)
 			      || (!DECL_NAME (t) && !DECL_CONTEXT (t)))
 			  && TREE_CODE (t) != FUNCTION_DECL));
 
-  int tag = insert (t, WK_value);
   if (streaming_p ())
     {
       /* A new node -> tt_node.  */
       tree_val_count++;
       i (tt_node);
-      dump (dumper::TREE)
-	&& dump ("Writing tree:%d %C:%N", tag, TREE_CODE (t), t);
       start (t);
       tree_node_bools (t);
     }
+
+  if  (TREE_CODE (t) == TREE_BINFO)
+    // FIXME: We could elide this when we know the dominating type
+    // must be unique.  See how we do so for regular key_mergeable.
+    /* Binfos are decl-like and need merging information.  */
+    binfo_mergeable (t);
+
+  int tag = insert (t, WK_value);
+  if (streaming_p ())
+    dump (dumper::TREE)
+      && dump ("Writing tree:%d %C:%N", tag, TREE_CODE (t), t);
 
   tree_node_vals (t);
 
@@ -8536,8 +8550,30 @@ trees_in::tree_value ()
   if (!t || !tree_node_bools (t))
     return NULL_TREE;
 
+  tree existing = t;
+  if (TREE_CODE (t) == TREE_BINFO)
+    {
+      tree type;
+      unsigned ix = binfo_mergeable (&type);
+      if (TYPE_BINFO (type))
+	{
+	  /* We already have a definition, this must be a duplicate.  */
+	  dump (dumper::MERGE)
+	    && dump ("Deduping binfo %N[%u]", type, ix);
+	  existing = TYPE_BINFO (type);
+	  while (existing && ix)
+	    existing = TREE_CHAIN (existing);
+	  if (existing)
+	    register_duplicate (t, existing);
+	  else
+	    /* Error, mismatch -- diagnose in read_class_def's
+	       checking.  */
+	    existing = t;
+	}
+    }
+
   /* Insert into map.  */
-  int tag = insert (t);
+  int tag = insert (existing);
   dump (dumper::TREE)
     && dump ("Reading tree:%d %C", tag, TREE_CODE (t));
 
@@ -8618,24 +8654,11 @@ trees_out::tree_node (tree t)
 	 here means the dominating type is not in this SCC.  */
       if (streaming_p ())
 	i (tt_binfo);
-      tree dom = t;
-      while (tree parent = BINFO_INHERITANCE_CHAIN (dom))
-	dom = parent;
-      tree type = BINFO_TYPE (dom);
-      gcc_checking_assert (TYPE_BINFO (type) == dom);
-      tree_node (type);
-      if (streaming_p ())
-	{
-	  unsigned ix = 0;
-	  for (; dom != t; dom = TREE_CHAIN (dom))
-	    ix++;
-	  u (ix);
-	}
-
+      binfo_mergeable (t);
       gcc_checking_assert (!TREE_VISITED (t));
       int tag = insert (t);
       if (streaming_p ())
-	dump (dumper::TREE) && dump ("Inserting binfo:%d %N->%N", tag, type, t);
+	dump (dumper::TREE) && dump ("Inserting binfo:%d %N", tag, t);
       goto done;
     }
 
@@ -9178,13 +9201,13 @@ trees_in::tree_node ()
     case tt_binfo:
       /* A BINFO.  Walk the tree of the dominating type.  */
       {
-	tree type = tree_node ();
+	tree type;
+	unsigned ix = binfo_mergeable (&type);
 	if (type)
 	  {
 	    res = TYPE_BINFO (type);
-	    for (unsigned ix = u (); res && ix; ix--)
-	      res = TREE_CHAIN (res);
-
+	    for (; ix && res; res = TREE_CHAIN (res))
+	      ix--;
 	    if (!res)
 	      set_overrun ();
 	  }
@@ -9194,7 +9217,7 @@ trees_in::tree_node ()
 
 	/* Insert binfo into backreferences.  */
 	tag = insert (res);
-	dump (dumper::TREE) && dump ("Read binfo:%d %N->%N", tag, type, res);
+	dump (dumper::TREE) && dump ("Read binfo:%d %N", tag, res);
       }
       break;
 
@@ -9976,6 +9999,31 @@ trees_in::key_mergeable (merge_kind mk, tree decl, tree inner, tree,
     }
 
   return !get_overrun ();
+}
+
+void
+trees_out::binfo_mergeable (tree binfo)
+{
+  tree dom = binfo;
+  while (tree parent = BINFO_INHERITANCE_CHAIN (dom))
+    dom = parent;
+  tree type = BINFO_TYPE (dom);
+  gcc_checking_assert (TYPE_BINFO (type) == dom);
+  tree_node (type);
+  if (streaming_p ())
+    {
+      unsigned ix = 0;
+      for (; dom != binfo; dom = TREE_CHAIN (dom))
+	ix++;
+      u (ix);
+    }
+}
+
+unsigned
+trees_in::binfo_mergeable (tree *type)
+{
+  *type = tree_node ();
+  return u ();
 }
 
 /* DECL is a just streamed mergeable decl that should match EXISTING.  Check
