@@ -1,5 +1,5 @@
 /* C++ modules.  Experimental!
-   Copyright (C) 2018-2019 Free Software Foundation, Inc.
+   Copyright (C) 2018-2020 Free Software Foundation, Inc.
    Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
 
    This file is part of GCC.
@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 /* The C++ module mapper server.  
 
    stdin/out
+   bidirectional or pair of unidirectional fds
    local socket
    ipv6 socket
  */
