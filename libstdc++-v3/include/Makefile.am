@@ -38,6 +38,7 @@ std_headers = \
 	${std_srcdir}/complex \
 	${std_srcdir}/concepts \
 	${std_srcdir}/condition_variable \
+	${std_srcdir}/coroutine \
 	${std_srcdir}/deque \
 	${std_srcdir}/execution \
 	${std_srcdir}/filesystem \
@@ -709,7 +710,6 @@ experimental_headers = \
 	${experimental_srcdir}/array \
 	${experimental_srcdir}/buffer \
 	${experimental_srcdir}/chrono \
-	${experimental_srcdir}/coroutine \
 	${experimental_srcdir}/deque \
 	${experimental_srcdir}/executor \
 	${experimental_srcdir}/forward_list \

@@ -238,7 +238,6 @@ coro_init_identifiers ()
 
 /* Trees we only need to set up once.  */
 
-static tree std_experimental; /* Will be removed when we move the header.  */
 static tree void_coro_handle_type;
 
 /* ================= Parse, Semantics and Type checking ================= */
@@ -249,24 +248,6 @@ static tree void_coro_handle_type;
    At the completion of this, we will have completed trees for each of the
    keywords, but making use of proxy variables for the self-handle and the
    promise class instance.  */
-
-/* TODO: Remove this when the coroutine header is moved to std::
-   Lookup std::experimental.  */
-
-static tree
-find_std_experimental (location_t loc)
-{
-  /* we want std::experimental::coroutine_traits class template decl.  */
-  tree exp_name = get_identifier ("experimental");
-  tree exp_ns = lookup_qualified_name (std_node, exp_name, 0, false, false);
-
-  if (exp_ns == error_mark_node || exp_ns == NULL_TREE)
-    {
-      error_at (loc, "%<std::experimental%> not found");
-      return NULL_TREE;
-    }
-  return exp_ns;
-}
 
 /* [coroutine.traits]
    Lookup the coroutine_traits template class instance.
@@ -301,7 +282,7 @@ find_coro_traits_template_class (tree fndecl, location_t kw)
   tree traits_class
     = lookup_template_class (coro_traits_identifier, targ,
 			     /* in_decl */ NULL_TREE,
-			     /* context */ std_experimental,
+			     /* context */ std_node,
 			     /* entering scope */ false, tf_warning_or_error);
 
   if (traits_class == error_mark_node || traits_class == NULL_TREE)
@@ -324,7 +305,7 @@ find_coro_handle_type (location_t kw, tree promise_type)
   tree handle_type
     = lookup_template_class (coro_handle_identifier, targ,
 			     /* in_decl */ NULL_TREE,
-			     /* context */ std_experimental,
+			     /* context */ std_node,
 			     /* entering scope */ false, tf_warning_or_error);
 
   if (handle_type == error_mark_node)
@@ -374,8 +355,6 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
       gcc_checking_assert (coro_traits_identifier == NULL);
       coro_init_identifiers ();
       /* Trees we only need to create once.  */
-      std_experimental = find_std_experimental (loc);
-      gcc_checking_assert (std_experimental != NULL);
       /*  coroutine_handle<>  */
       void_coro_handle_type = find_coro_handle_type (loc, NULL_TREE);
       gcc_checking_assert (void_coro_handle_type != NULL);

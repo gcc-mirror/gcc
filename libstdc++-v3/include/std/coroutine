@@ -55,20 +55,18 @@ namespace std _GLIBCXX_VISIBILITY (default)
   _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cpp_coroutines
-
-  namespace experimental {
   inline namespace __n4835 {
 
-  // [coroutine.traits]
-  // [coroutine.traits.primary]
   // 17.12.2 coroutine traits
+  /// [coroutine.traits]
+  /// [coroutine.traits.primary]
   template <typename _R, typename...> struct coroutine_traits
   {
     using promise_type = typename _R::promise_type;
   };
 
   // 17.12.3 Class template coroutine_handle
-  // [coroutine.handle]
+  /// [coroutine.handle]
   template <typename _Promise = void> struct coroutine_handle;
 
   template <> struct coroutine_handle<void>
@@ -111,8 +109,8 @@ namespace std _GLIBCXX_VISIBILITY (default)
     void *_M_fr_ptr;
   };
 
-  // [coroutine.handle.compare]
   // 17.12.3.6 Comparison operators
+  /// [coroutine.handle.compare]
   constexpr bool operator== (coroutine_handle<> __a,
 			     coroutine_handle<> __b) noexcept
   {
@@ -123,7 +121,7 @@ namespace std _GLIBCXX_VISIBILITY (default)
   constexpr strong_ordering
   operator<=> (coroutine_handle<> __a, coroutine_handle<> __b) noexcept;
 #else
-  // These are from the TS.
+  // These are from the TS to enable operation with std=c++14,17.
   constexpr bool operator!= (coroutine_handle<> __a,
 			     coroutine_handle<> __b) noexcept
   {
@@ -187,7 +185,7 @@ namespace std _GLIBCXX_VISIBILITY (default)
     }
   };
 
-  // [coroutine.noop]
+  /// [coroutine.noop]
   struct noop_coroutine_promise
   {
   };
@@ -202,15 +200,15 @@ namespace std _GLIBCXX_VISIBILITY (default)
     struct noop_coroutine_promise __p;
   } __noop_coro_fr __attribute__ ((__weak__));
 
-  // [coroutine.promise.noop]
   // 17.12.4.1 Class noop_coroutine_promise
+  /// [coroutine.promise.noop]
   template <>
   class coroutine_handle<noop_coroutine_promise> : public coroutine_handle<>
   {
     using _Promise = noop_coroutine_promise;
 
   public:
-    // // 17.12.4.2.1, observers
+    // 17.12.4.2.1, observers
     constexpr explicit operator bool () const noexcept { return true; }
     constexpr bool done () const noexcept { return false; }
 
@@ -241,9 +239,8 @@ namespace std _GLIBCXX_VISIBILITY (default)
     return noop_coroutine_handle ();
   }
 
-  // [coroutine.trivial.awaitables]
   // 17.12.5 Trivial awaitables
-
+  /// [coroutine.trivial.awaitables]
   struct suspend_always
   {
     bool await_ready () { return false; }
@@ -259,7 +256,6 @@ namespace std _GLIBCXX_VISIBILITY (default)
   };
 
   } // namespace __n4835
-  } // namespace experimental
 
 #else
 #error "the coroutine header requires -fcoroutines"
@@ -268,6 +264,6 @@ namespace std _GLIBCXX_VISIBILITY (default)
   _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std_GLIBCXX_VISIBILITY(default)
 
-#endif // C++14
+#endif // C++14 (we are allowing use from at least this)
 
 #endif // _GLIBCXX_EXPERIMENTAL_COROUTINE

@@ -1,3 +1,15 @@
+2020-01-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (find_std_experimental): Remove unneeded code.
+
+	libstdc++-v3/
+	* include/Makefile.am: Move coroutine header source from
+	experimental to std.
+	* include/Makefile.in: Regenerated.
+	* include/experimental/coroutine: Move from here..
+	* include/std/coroutine: ... to here.
+
 2020-01-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/
