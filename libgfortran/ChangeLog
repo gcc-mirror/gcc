@@ -1,3 +1,20 @@
+2020-01-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/90374
+	* io/format.c (parse_format_list): Implement the E0 exponent
+	width to provide smallest possible width for exponent fields.
+	Refactor code for correct parsing and better readability of the
+	code.
+	* io/io.h (write_real_w0): Change interface to pass in pointer
+	to fnode.
+	* io/transfer.c: Update all calls to write_real_w0 to use the
+	new interface.
+	* io/write.c ((write_real_w0): Use the new interface with fnode
+	to access both the decimal precision and exponent widths used in
+	build_float_string.
+	* io/write_float.def (build_float_string): Use the passed in
+	exponent width to calculate the used width in the case of E0.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

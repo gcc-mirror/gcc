@@ -1,3 +1,8 @@
+2020-01-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/90374
+	* gfortran.dg/fmt_zero_width.f90: Update test case.
+
 2020-01-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/93113
