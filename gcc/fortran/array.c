@@ -599,7 +599,7 @@ gfc_match_array_spec (gfc_array_spec **asp, bool match_dim, bool match_codim)
 	    goto cleanup;
 
 	  case AS_IMPLIED_SHAPE:
-	    if (current_type != AS_ASSUMED_SHAPE)
+	    if (current_type != AS_ASSUMED_SIZE)
 	      {
 		gfc_error ("Bad array specification for implied-shape"
 			   " array at %C");
