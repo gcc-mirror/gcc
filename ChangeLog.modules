@@ -1,5 +1,7 @@
 2020-01-02  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r279473.
+
 	Apply trunk r279473.
 	gcc/cp/
 	* constexpr.cc (check_constexpr_fundef): Clear non-potential
