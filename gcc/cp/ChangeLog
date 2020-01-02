@@ -1,3 +1,9 @@
+2020-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/90677
+	* cp-objcp-common.c (identifier_global_tag): Return NULL_TREE if name
+	has not been found, rather than error_mark_node.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
