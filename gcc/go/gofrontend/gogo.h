@@ -602,8 +602,7 @@ class Gogo
   // is used when a type-specific hash function is needed when not at
   // top level.
   void
-  queue_hash_function(Type* type, Named_type* name, int64_t size,
-		      const std::string& hash_name,
+  queue_hash_function(Type* type, int64_t size, const std::string& hash_name,
 		      Function_type* hash_fntype);
 
   // Queue up a type-specific equal function to be written out.  This
@@ -879,7 +878,7 @@ class Gogo
 
   // Return the name of the hash function for TYPE.
   std::string
-  hash_function_name(const Type*, const Named_type*);
+  hash_function_name(const Type*);
 
   // Return the name of the equal function for TYPE.
   std::string

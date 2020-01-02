@@ -287,16 +287,12 @@ Gogo::stub_method_name(const Package* package, const std::string& mname)
   return ret;
 }
 
-// Return the name of the hash function for TYPE.  If NAME is not NULL
-// it is the name of the type.
+// Return the name of the hash function for TYPE.
 
 std::string
-Gogo::hash_function_name(const Type* type, const Named_type* name)
+Gogo::hash_function_name(const Type* type)
 {
-  const Type* rtype = type;
-  if (name != NULL)
-    rtype = name;
-  std::string tname = rtype->mangled_name(this);
+  std::string tname = type->mangled_name(this);
   return tname + "..hash";
 }
 

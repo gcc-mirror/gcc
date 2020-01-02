@@ -1540,6 +1540,11 @@ Type::convert_builtin_named_types(Gogo* gogo)
     }
 }
 
+// Values to store in the tflag field of a type descriptor.  This must
+// match the definitions in libgo/go/runtime/type.go.
+
+const int TFLAG_REGULAR_MEMORY = 1 << 3;
+
 // Return the type of a type descriptor.  We should really tie this to
 // runtime.Type rather than copying it.  This must match the struct "_type"
 // declared in libgo/go/runtime/type.go.
@@ -1566,21 +1571,11 @@ Type::make_type_descriptor_type()
       Type* void_type = Type::make_void_type();
       Type* unsafe_pointer_type = Type::make_pointer_type(void_type);
 
-      Typed_identifier_list *params = new Typed_identifier_list();
-      params->push_back(Typed_identifier("key", unsafe_pointer_type, bloc));
-      params->push_back(Typed_identifier("seed", uintptr_type, bloc));
-
-      Typed_identifier_list* results = new Typed_identifier_list();
-      results->push_back(Typed_identifier("", uintptr_type, bloc));
-
-      Type* hash_fntype = Type::make_function_type(NULL, params, results,
-						   bloc);
-
-      params = new Typed_identifier_list();
+      Typed_identifier_list* params = new Typed_identifier_list();
       params->push_back(Typed_identifier("key1", unsafe_pointer_type, bloc));
       params->push_back(Typed_identifier("key2", unsafe_pointer_type, bloc));
 
-      results = new Typed_identifier_list();
+      Typed_identifier_list* results = new Typed_identifier_list();
       results->push_back(Typed_identifier("", Type::lookup_bool_type(), bloc));
 
       Type* equal_fntype = Type::make_function_type(NULL, params, results,
@@ -1624,11 +1619,11 @@ Type::make_type_descriptor_type()
 				       "size", uintptr_type,
 				       "ptrdata", uintptr_type,
 				       "hash", uint32_type,
-				       "kind", uint8_type,
+				       "tflag", uint8_type,
 				       "align", uint8_type,
 				       "fieldAlign", uint8_type,
-				       "hashfn", hash_fntype,
-				       "equalfn", equal_fntype,
+				       "kind", uint8_type,
+				       "equal", equal_fntype,
 				       "gcdata", pointer_uint8_type,
 				       "string", pointer_string_type,
 				       "", pointer_uncommon_type,
@@ -1741,18 +1736,13 @@ Type::needs_specific_type_functions(Gogo* gogo)
 }
 
 // Return the runtime function that computes the hash of this type.
-// If NAME is not NULL it is the name of this type.  HASH_FNTYPE is
-// the type of the hash function function, for convenience; it may be
-// NULL.  This returns NULL if the type is not comparable.
+// HASH_FNTYPE is the type of the hash function function, for
+// convenience; it may be NULL.  This returns NULL if the type is not
+// comparable.
 
 Named_object*
-Type::hash_function(Gogo* gogo, Named_type* name, Function_type* hash_fntype)
+Type::hash_function(Gogo* gogo, Function_type* hash_fntype)
 {
-  // If the unaliased type is not a named type, then the type does not
-  // have a name after all.
-  if (name != NULL)
-    name = name->unalias()->named_type();
-
   if (!this->is_comparable())
     return NULL;
 
@@ -1803,7 +1793,7 @@ Type::hash_function(Gogo* gogo, Named_type* name, Function_type* hash_fntype)
 	  // We don't have a built-in function for a type of this
 	  // size.  Build a function to use that calls the generic
 	  // hash functions for identity, passing the size.
-	  return this->build_hash_function(gogo, name, size, hash_fntype);
+	  return this->build_hash_function(gogo, size, hash_fntype);
 	}
     }
   else
@@ -1861,7 +1851,7 @@ Type::hash_function(Gogo* gogo, Named_type* name, Function_type* hash_fntype)
 	  // This is a struct which can not be compared using a simple
 	  // identity function.  We need to build a function to
 	  // compute the hash.
-	  return this->build_hash_function(gogo, name, -1, hash_fntype);
+	  return this->build_hash_function(gogo, -1, hash_fntype);
 
 	case Type::TYPE_ARRAY:
 	  if (this->is_slice_type())
@@ -1875,7 +1865,7 @@ Type::hash_function(Gogo* gogo, Named_type* name, Function_type* hash_fntype)
 	      // This is an array which can not be compared using a
 	      // simple identity function.  We need to build a
 	      // function to compute the hash.
-	      return this->build_hash_function(gogo, name, -1, hash_fntype);
+	      return this->build_hash_function(gogo, -1, hash_fntype);
 	    }
 	  break;
 
@@ -1895,7 +1885,6 @@ Type::hash_function(Gogo* gogo, Named_type* name, Function_type* hash_fntype)
 	}
     }
 
-
   Location bloc = Linemap::predeclared_location();
   Named_object *hash_fn = Named_object::make_function_declaration(hash_fnname,
 								  NULL,
@@ -1913,12 +1902,20 @@ Type::Type_function Type::type_hash_functions_table;
 // this is a struct or array type that cannot use an identity
 // comparison.  Otherwise, it is a type that uses an identity
 // comparison but is not one of the standard supported sizes.
+//
+// Unlike an equality function, hash functions are not in type
+// descriptors, so we can't assume that a named type has defined a
+// hash function in the package that defines the type.  So hash
+// functions are always defined locally.  FIXME: It would be better to
+// define hash functions with comdat linkage so that duplicate hash
+// functions can be coalesced at link time.
 
 Named_object*
-Type::build_hash_function(Gogo* gogo, Named_type* name, int64_t size,
-			  Function_type* hash_fntype)
+Type::build_hash_function(Gogo* gogo, int64_t size, Function_type* hash_fntype)
 {
-  std::pair<Type*, Named_object*> val(name != NULL ? name : this, NULL);
+  Type* type = this->base();
+
+  std::pair<Type*, Named_object*> val(type, NULL);
   std::pair<Type_function::iterator, bool> ins =
     Type::type_hash_functions_table.insert(val);
   if (!ins.second)
@@ -1927,30 +1924,19 @@ Type::build_hash_function(Gogo* gogo, Named_type* name, int64_t size,
       return ins.first->second;
     }
 
-  std::string hash_name = gogo->hash_function_name(this, name);
+  std::string hash_name = gogo->hash_function_name(type);
 
   Location bloc = Linemap::predeclared_location();
 
-  const Package* package = NULL;
-  bool is_defined_elsewhere =
-    this->type_descriptor_defined_elsewhere(name, &package);
-
-  Named_object* hash_fn;
-  if (is_defined_elsewhere)
-    hash_fn = Named_object::make_function_declaration(hash_name, package,
-						      hash_fntype, bloc);
-  else
-    hash_fn = gogo->declare_package_function(hash_name, hash_fntype, bloc);
+  Named_object* hash_fn = gogo->declare_package_function(hash_name,
+							 hash_fntype, bloc);
 
   ins.first->second = hash_fn;
 
-  if (!is_defined_elsewhere)
-    {
-      if (gogo->in_global_scope())
-	this->write_hash_function(gogo, name, size, hash_name, hash_fntype);
-      else
-	gogo->queue_hash_function(this, name, size, hash_name, hash_fntype);
-    }
+  if (gogo->in_global_scope())
+    type->write_hash_function(gogo, size, hash_name, hash_fntype);
+  else
+    gogo->queue_hash_function(type, size, hash_name, hash_fntype);
 
   return hash_fn;
 }
@@ -1958,7 +1944,7 @@ Type::build_hash_function(Gogo* gogo, Named_type* name, int64_t size,
 // Write the hash function for a type that needs it written specially.
 
 void
-Type::write_hash_function(Gogo* gogo, Named_type* name, int64_t size,
+Type::write_hash_function(Gogo* gogo, int64_t size,
 			  const std::string& hash_name,
 			  Function_type* hash_fntype)
 {
@@ -1979,12 +1965,10 @@ Type::write_hash_function(Gogo* gogo, Named_type* name, int64_t size,
 
   if (size != -1)
     this->write_identity_hash(gogo, size);
-  else if (name != NULL && name->real_type()->named_type() != NULL)
-    this->write_named_hash(gogo, name, hash_fntype);
   else if (this->struct_type() != NULL)
-    this->struct_type()->write_hash_function(gogo, name, hash_fntype);
+    this->struct_type()->write_hash_function(gogo, hash_fntype);
   else if (this->array_type() != NULL)
-    this->array_type()->write_hash_function(gogo, name, hash_fntype);
+    this->array_type()->write_hash_function(gogo, hash_fntype);
   else
     go_unreachable();
 
@@ -2046,54 +2030,6 @@ Type::write_identity_hash(Gogo* gogo, int64_t size)
   Expression* func = Expression::make_func_reference(memhash, NULL, bloc);
   Expression* call = Expression::make_call(func, args, false, bloc);
 
-  Expression_list* vals = new Expression_list();
-  vals->push_back(call);
-  Statement* s = Statement::make_return_statement(vals, bloc);
-  gogo->add_statement(s);
-}
-
-// Write a hash function that simply calls the hash function for a
-// named type.  This is used when one named type is defined as
-// another.  This ensures that this case works when the other named
-// type is defined in another package and relies on calling hash
-// functions defined only in that package.
-
-void
-Type::write_named_hash(Gogo* gogo, Named_type* name,
-		       Function_type* hash_fntype)
-{
-  Location bloc = Linemap::predeclared_location();
-
-  Named_type* base_type = name->real_type()->named_type();
-  while (base_type->is_alias())
-    {
-      base_type = base_type->real_type()->named_type();
-      go_assert(base_type != NULL);
-    }
-  go_assert(base_type != NULL);
-
-  // The pointer to the type we are going to hash.  This is an
-  // unsafe.Pointer.
-  Named_object* key_arg = gogo->lookup("key", NULL);
-  go_assert(key_arg != NULL);
-
-  // The seed argument to the hash function.
-  Named_object* seed_arg = gogo->lookup("seed", NULL);
-  go_assert(seed_arg != NULL);
-
-  Named_object* hash_fn = name->real_type()->hash_function(gogo, base_type,
-							   hash_fntype);
-
-  // Call the hash function for the base type.
-  Expression* key_ref = Expression::make_var_reference(key_arg, bloc);
-  Expression* seed_ref = Expression::make_var_reference(seed_arg, bloc);
-  Expression_list* args = new Expression_list();
-  args->push_back(key_ref);
-  args->push_back(seed_ref);
-  Expression* func = Expression::make_func_reference(hash_fn, NULL, bloc);
-  Expression* call = Expression::make_call(func, args, false, bloc);
-
-  // Return the hash of the base type.
   Expression_list* vals = new Expression_list();
   vals->push_back(call);
   Statement* s = Statement::make_return_statement(vals, bloc);
@@ -2572,9 +2508,11 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   vals->push_back(Expression::make_integer_ul(h, p->type(), bloc));
 
   ++p;
-  go_assert(p->is_field_name("kind"));
-  vals->push_back(Expression::make_integer_ul(runtime_type_kind, p->type(),
-					      bloc));
+  go_assert(p->is_field_name("tflag"));
+  unsigned long tflag = 0;
+  if (this->compare_is_identity(gogo))
+    tflag |= TFLAG_REGULAR_MEMORY;
+  vals->push_back(Expression::make_integer_ul(tflag, p->type(), bloc));
 
   ++p;
   go_assert(p->is_field_name("align"));
@@ -2587,18 +2525,12 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   vals->push_back(Expression::make_type_info(this, type_info));
 
   ++p;
-  go_assert(p->is_field_name("hashfn"));
-  Function_type* hash_fntype = p->type()->function_type();
-  Named_object* hash_fn = this->hash_function(gogo, name, hash_fntype);
-  if (hash_fn == NULL)
-    vals->push_back(Expression::make_cast(hash_fntype,
-					  Expression::make_nil(bloc),
-					  bloc));
-  else
-    vals->push_back(Expression::make_func_reference(hash_fn, NULL, bloc));
+  go_assert(p->is_field_name("kind"));
+  vals->push_back(Expression::make_integer_ul(runtime_type_kind, p->type(),
+					      bloc));
 
   ++p;
-  go_assert(p->is_field_name("equalfn"));
+  go_assert(p->is_field_name("equal"));
   Function_type* equal_fntype = p->type()->function_type();
   Named_object* equal_fn = this->equal_function(gogo, name, equal_fntype);
   if (equal_fn == NULL)
@@ -6603,8 +6535,7 @@ Struct_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 // function.
 
 void
-Struct_type::write_hash_function(Gogo* gogo, Named_type*,
-				 Function_type* hash_fntype)
+Struct_type::write_hash_function(Gogo* gogo, Function_type* hash_fntype)
 {
   Location bloc = Linemap::predeclared_location();
 
@@ -6650,8 +6581,7 @@ Struct_type::write_hash_function(Gogo* gogo, Named_type*,
       subkey = Expression::make_cast(key_arg_type, subkey, bloc);
 
       // Get the hash function to use for the type of this field.
-      Named_object* hash_fn =
-	pf->type()->hash_function(gogo, pf->type()->named_type(), hash_fntype);
+      Named_object* hash_fn = pf->type()->hash_function(gogo, hash_fntype);
 
       // Call the hash function for the field, passing retval as the seed.
       ref = Expression::make_temporary_reference(retval, bloc);
@@ -7447,8 +7377,7 @@ Array_type::do_hash_for_method(Gogo* gogo, int flags) const
 // function.
 
 void
-Array_type::write_hash_function(Gogo* gogo, Named_type* name,
-				Function_type* hash_fntype)
+Array_type::write_hash_function(Gogo* gogo, Function_type* hash_fntype)
 {
   Location bloc = Linemap::predeclared_location();
 
@@ -7485,9 +7414,7 @@ Array_type::write_hash_function(Gogo* gogo, Named_type* name,
 
   Expression* iref = Expression::make_temporary_reference(index, bloc);
   Expression* aref = Expression::make_var_reference(key_arg, bloc);
-  Type* pt = Type::make_pointer_type(name != NULL
-				     ? static_cast<Type*>(name)
-				     : static_cast<Type*>(this));
+  Type* pt = Type::make_pointer_type(static_cast<Type*>(this));
   aref = Expression::make_cast(pt, aref, bloc);
   For_range_statement* for_range = Statement::make_for_range_statement(iref,
 								       NULL,
@@ -7497,9 +7424,8 @@ Array_type::write_hash_function(Gogo* gogo, Named_type* name,
   gogo->start_block(bloc);
 
   // Get the hash function for the element type.
-  Named_object* hash_fn =
-    this->element_type_->hash_function(gogo, this->element_type_->named_type(),
-				       hash_fntype);
+  Named_object* hash_fn = this->element_type_->hash_function(gogo,
+							     hash_fntype);
 
   // Get a pointer to this element in the loop.
   Expression* subkey = Expression::make_temporary_reference(key, bloc);
@@ -8291,13 +8217,28 @@ Map_type::make_map_type_descriptor_type()
       Type* uint8_type = Type::lookup_integer_type("uint8");
       Type* uint16_type = Type::lookup_integer_type("uint16");
       Type* uint32_type = Type::lookup_integer_type("uint32");
+      Type* uintptr_type = Type::lookup_integer_type("uintptr");
+      Type* void_type = Type::make_void_type();
+      Type* unsafe_pointer_type = Type::make_pointer_type(void_type);
+
+      Location bloc = Linemap::predeclared_location();
+      Typed_identifier_list *params = new Typed_identifier_list();
+      params->push_back(Typed_identifier("key", unsafe_pointer_type, bloc));
+      params->push_back(Typed_identifier("seed", uintptr_type, bloc));
+
+      Typed_identifier_list* results = new Typed_identifier_list();
+      results->push_back(Typed_identifier("", uintptr_type, bloc));
+
+      Type* hasher_fntype = Type::make_function_type(NULL, params, results,
+						     bloc);
 
       Struct_type* sf =
-	Type::make_builtin_struct_type(8,
+	Type::make_builtin_struct_type(9,
 				       "", tdt,
 				       "key", ptdt,
 				       "elem", ptdt,
 				       "bucket", ptdt,
+				       "hasher", hasher_fntype,
 				       "keysize", uint8_type,
 				       "valuesize", uint8_type,
 				       "bucketsize", uint16_type,
@@ -8378,6 +8319,18 @@ Map_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   ++p;
   go_assert(p->is_field_name("bucket"));
   vals->push_back(Expression::make_type_descriptor(bucket_type, bloc));
+
+  ++p;
+  go_assert(p->is_field_name("hasher"));
+  Function_type* hasher_fntype = p->type()->function_type();
+  Named_object* hasher_fn = this->key_type_->hash_function(gogo,
+							   hasher_fntype);
+  if (hasher_fn == NULL)
+    vals->push_back(Expression::make_cast(hasher_fntype,
+					  Expression::make_nil(bloc),
+					  bloc));
+  else
+    vals->push_back(Expression::make_func_reference(hasher_fn, NULL, bloc));
 
   ++p;
   go_assert(p->is_field_name("keysize"));
