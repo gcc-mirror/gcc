@@ -302,7 +302,7 @@ package body Ch12 is
 
       elsif Token /= Tok_Left_Paren
         and then Token_Is_At_Start_Of_Line
-        and then Start_Column <= Scope.Table (Scope.Last).Ecol
+        and then Start_Column <= Scopes (Scope.Last).Ecol
       then
          return No_List;
 

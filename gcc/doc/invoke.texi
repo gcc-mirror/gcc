@@ -18286,8 +18286,7 @@ provided for use in debugging the compiler.
 Do not allow constant data to be placed in code sections.
 Additionally, when compiling for ELF object format give all text sections the
 ELF processor-specific section attribute @code{SHF_ARM_PURECODE}.  This option
-is only available when generating non-pic code for M-profile targets with the
-MOVT instruction.
+is only available when generating non-pic code for M-profile targets.
 
 @item -mcmse
 @opindex mcmse
@@ -23370,8 +23369,8 @@ this directory for devices.csv.  If devices.csv is found, this directory will
 also be registered as an include path, and linker library path.  Header files
 and linker scripts in this directory can therefore be used without manually
 specifying @code{-I} and @code{-L} on the command line.
-@item The @samp{msp430-elf/include/devices} directory
-Finally, GCC will examine @samp{msp430-elf/include/devices} from the
+@item The @samp{msp430-elf@{,bare@}/include/devices} directory
+Finally, GCC will examine @samp{msp430-elf@{,bare@}/include/devices} from the
 toolchain root directory.  This directory does not exist in a default
 installation, but if the user has created it and copied @samp{devices.csv}
 there, then the MCU data will be read.  As above, this directory will
@@ -27826,35 +27825,38 @@ instruction set extensions.)
 CPUs based on AMD Family 15h cores with x86-64 instruction set support.  (This
 supersets FMA4, AVX, XOP, LWP, AES, PCLMUL, CX16, MMX, SSE, SSE2, SSE3, SSE4A,
 SSSE3, SSE4.1, SSE4.2, ABM and 64-bit instruction set extensions.)
+
 @item bdver2
 AMD Family 15h core based CPUs with x86-64 instruction set support.  (This
 supersets BMI, TBM, F16C, FMA, FMA4, AVX, XOP, LWP, AES, PCLMUL, CX16, MMX,
 SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1, SSE4.2, ABM and 64-bit instruction set 
 extensions.)
+
 @item bdver3
 AMD Family 15h core based CPUs with x86-64 instruction set support.  (This
 supersets BMI, TBM, F16C, FMA, FMA4, FSGSBASE, AVX, XOP, LWP, AES, 
 PCLMUL, CX16, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1, SSE4.2, ABM and
-64-bit instruction set extensions.
+64-bit instruction set extensions.)
+
 @item bdver4
 AMD Family 15h core based CPUs with x86-64 instruction set support.  (This
 supersets BMI, BMI2, TBM, F16C, FMA, FMA4, FSGSBASE, AVX, AVX2, XOP, LWP, 
 AES, PCLMUL, CX16, MOVBE, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1,
-SSE4.2, ABM and 64-bit instruction set extensions.
+SSE4.2, ABM and 64-bit instruction set extensions.)
 
 @item znver1
 AMD Family 17h core based CPUs with x86-64 instruction set support.  (This
 supersets BMI, BMI2, F16C, FMA, FSGSBASE, AVX, AVX2, ADCX, RDSEED, MWAITX,
 SHA, CLZERO, AES, PCLMUL, CX16, MOVBE, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3,
 SSE4.1, SSE4.2, ABM, XSAVEC, XSAVES, CLFLUSHOPT, POPCNT, and 64-bit
-instruction set extensions.
-@item znver2
-AMD Family 17h core based CPUs with x86-64 instruction set support. (This
-supersets BMI, BMI2, ,CLWB, F16C, FMA, FSGSBASE, AVX, AVX2, ADCX, RDSEED,
-MWAITX, SHA, CLZERO, AES, PCLMUL, CX16, MOVBE, MMX, SSE, SSE2, SSE3, SSE4A,
-SSSE3, SSE4.1, SSE4.2, ABM, XSAVEC, XSAVES, CLFLUSHOPT, POPCNT, and 64-bit
 instruction set extensions.)
 
+@item znver2
+AMD Family 17h core based CPUs with x86-64 instruction set support. (This
+supersets BMI, BMI2, CLWB, F16C, FMA, FSGSBASE, AVX, AVX2, ADCX, RDSEED,
+MWAITX, SHA, CLZERO, AES, PCLMUL, CX16, MOVBE, MMX, SSE, SSE2, SSE3, SSE4A,
+SSSE3, SSE4.1, SSE4.2, ABM, XSAVEC, XSAVES, CLFLUSHOPT, POPCNT, RDPID,
+WBNOINVD, and 64-bit instruction set extensions.)
 
 @item btver1
 CPUs based on AMD Family 14h cores with x86-64 instruction set support.  (This

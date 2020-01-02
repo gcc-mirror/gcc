@@ -11654,6 +11654,11 @@ package body Sem_Ch6 is
               and then Aliased_Present (Param_Spec)
             then
                Set_Is_Aliased (Formal);
+
+               --  AI12-001: All aliased objects are considered to be specified
+               --  as independently addressable (RM C.6(8.1/4)).
+
+               Set_Is_Independent (Formal);
             end if;
 
             --  Ada 2005 (AI-231): Create and decorate an internal subtype

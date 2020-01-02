@@ -151,8 +151,17 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 
    SIS_Entry_Active : Boolean := False;
    --  Set True to indicate that an entry is active (i.e. that a subprogram
-   --  declaration has been encountered, and no body for this subprogram has
-   --  been encountered). The remaining fields are valid only if this is True.
+   --  declaration has been encountered, and no body for this subprogram
+   --  has been encountered). The remaining variables other than
+   --  SIS_Aspect_Import_Seen are valid only if this is True.
+
+   SIS_Aspect_Import_Seen : Boolean := False;
+   --  If this is True when a subprogram declaration has been encountered, we
+   --  do not set SIS_Entry_Active, because the Import means there is no body.
+   --  Set False at the start of P_Subprogram, set True when an Import aspect
+   --  specification is seen, and used when P_Subprogram finds a subprogram
+   --  declaration.  This is necessary because the aspects are parsed before
+   --  we know we have a subprogram declaration.
 
    SIS_Labl : Node_Id;
    --  Subprogram designator
@@ -534,6 +543,20 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
      Table_Initial        => 50,
      Table_Increment      => 100,
      Table_Name           => "Scope");
+
+   type Scope_Table_Entry_Ptr is access all Scope_Table_Entry;
+
+   function Scopes (Index : Int) return Scope_Table_Entry_Ptr;
+   --  Return the indicated Scope_Table_Entry. We use a pointer for
+   --  efficiency. Callers should not save the pointer, but should do things
+   --  like Scopes (Scope.Last).Something. Note that there is one place in
+   --  Par.Ch5 that indexes the stack out of bounds, and can't call this.
+
+   function Scopes (Index : Int) return Scope_Table_Entry_Ptr is
+   begin
+      pragma Assert (Index in Scope.First .. Scope.Last);
+      return Scope.Table (Index)'Unrestricted_Access;
+   end Scopes;
 
    ------------------------------------------
    -- Table for Handling Suspicious Labels --
@@ -1332,7 +1355,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  Push a new entry onto the scope stack. Scope.Last (the stack pointer)
       --  is incremented. The Junk field is preinitialized to False. The caller
       --  is expected to fill in all remaining entries of the new top stack
-      --  entry at Scope.Table (Scope.Last).
+      --  entry at Scopes (Scope.Last).
 
       procedure Pop_Scope_Stack;
       --  Pop an entry off the top of the scope stack. Scope_Last (the scope
@@ -1534,7 +1557,7 @@ begin
          Compiler_State := Parsing;
          Scope.Init;
          Scope.Increment_Last;
-         Scope.Table (0).Etyp := E_Dummy;
+         Scopes (0).Etyp := E_Dummy;
          SIS_Entry_Active := False;
          Last_Resync_Point := No_Location;
 

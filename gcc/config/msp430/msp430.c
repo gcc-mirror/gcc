@@ -288,6 +288,16 @@ msp430_option_override (void)
   if (TARGET_OPT_SPACE && optimize < 3)
     optimize_size = 1;
 
+#if !DEFAULT_USE_CXA_ATEXIT
+  /* For some configurations, we use atexit () instead of __cxa_atexit () by
+     default to save on code size and remove the declaration of __dso_handle
+     from the CRT library.
+     Configuring GCC with --enable-__cxa-atexit re-enables it by defining
+     DEFAULT_USE_CXA_ATEXIT to 1.  */
+  if (flag_use_cxa_atexit)
+    error ("%<-fuse-cxa-atexit%> is not supported for msp430-elf");
+#endif
+
 #ifndef HAVE_NEWLIB_NANO_FORMATTED_IO
   if (TARGET_TINY_PRINTF)
     error ("GCC must be configured with %<--enable-newlib-nano-formatted-io%> "

@@ -1,3 +1,353 @@
+2019-12-16  Bob Duff  <duff@adacore.com>
+
+	* errout.adb (Handle_Serious_Error): Disable the above-mentioned
+	warnings.
+
+2019-12-16  Bob Duff  <duff@adacore.com>
+
+	* errout.adb, errout.ads: Improve comments.
+
+2019-12-16  Bob Duff  <duff@adacore.com>
+
+	* sem_util.ads: Minor comment fix.
+
+2019-12-16  Bob Duff  <duff@adacore.com>
+
+	* errout.ads, errout.adb (Is_Size_Too_Small_Message): Check for
+	"size for" instead of "size for& too small, minimum allowed is
+	^".
+
+2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Set only
+	the RM_Size on the subtype built for a Component_Size clause
+	when the component type is a biased integer type.
+
+2019-12-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* socket.c: Shutdown warning.
+
+2019-12-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnarl/s-tataat.ads (Deallocator): Mark as Favor_Top_Level.
+
+2019-12-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-aotase.adb, libgnat/s-aotase.ads,
+	libgnat/s-atoope.ads, libgnat/s-atopar.adb,
+	libgnat/s-atopar.ads, libgnat/s-atopex.adb,
+	libgnat/s-atopex.ads: New files.
+	* libgnat/s-atopri.ads: Add new intrinsics.
+	* Makefile.rtl: Add new runtime files.
+	* impunit.adb: Add new units to Ada 2020 list.
+
+2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Check_Strict_Alignment): Remove new check on
+	Has_Aliased_Components for array types.
+
+2019-12-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Try_Container_Indexing): In the case of a derived
+	container type, use the base type to look for candidate indexing
+	operations, because the object may be a constrained subtype or
+	itype with no explicit declaration.  Candidate indexing
+	operations are found in the same scope and list of declarations
+	as the declaration of the base type.
+
+2019-12-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* scng.adb (Scan): In Ada2020, a left-bracket indicates the
+	start of an homogenous aggregate.
+	* par-ch4.adb (P_Reduction_Attribute_Reference): New procedure.
+	(P_Aggregate): Recognize Ada2020 bracket-delimited aggregates.
+	(P_Primary): Ditto.
+	* par-util.adb (Comma_Present): Return false on a right bracket
+	in Ada2020, indicating the end of an aggregate.
+	* snames.ads-tmpl: Introduce Name_Reduce and Attribute Reduce.
+	* sinfo.ads, sinfo.adb (Is_Homogeneous_Aggregate): New flag on
+	aggregates, to designate an Ada2020 array or container aggregate
+	that is bracket-delimited in the source.
+	* sem_attr.adb (Analyze_Attribute): For attribute Reduce, verify
+	that two arguments are present, and verify that the prefix is a
+	stream or an object that is iterable (array or contrainer).
+	(Resolve_Attribute): For attribute Reduce, resolve initial value
+	with the type of the context. Type-checking of element type of
+	prefix is performed after expansion.
+	* exp_attr.adb (Expand_N_Attribute_Reference): For attribute
+	Reduce, expand into a loop: a) If prefix is an aggregate with a
+	single iterated component association, use its iterator
+	specification to construct a loop, b) If prefix is a name, build
+	a loop using an element iterator loop.
+	* scans.ads: Add brackets tokens.
+
+2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Adjust calls to
+	validate_size.
+	(gnat_to_gnu_component_type): Likewise.
+	(gnat_to_gnu_field): Likewise and pass string for error messages.
+	(components_need_strict_alignment): Remove test on Is_Aliased and
+	add test for the independence of the component.
+	(validate_size): Add S1 and S2 string parameters and use them to
+	give better error messages for fields.  Tweak a couple of messages.
+	* einfo.ads (Has_Independent_Components): Document more cases.
+	(Is_Independent): Likewise.
+	(Strict_Alignment): Document new semantics.
+	* exp_ch9.adb (Install_Private_Data_Declarations): Also set the
+	Is_Independent flag along with Is_Aliased on the renaming
+	entity.
+	* freeze.adb (Size_Known): Remove always-false test and add test
+	for the strict-alignment on the record type.  Remove redundant
+	tests and add test for the strict-alignment on the component
+	type.
+	(Check_Strict_Alignment): Set the flag if the type is by-ref and
+	remove now redundant conditions.  Set the flag on an array type
+	if it has aliased components.  In the record type case, do not
+	set type for C_Pass_By_Copy convention.
+	(Freeze_Array_Type): Move code checking for conflicts between
+	representation aspects and clauses to before specific handling
+	of packed array types. Give a warnind instead of an error for a
+	conflict with pragma Pack.  Do not test Has_Pragma_Pack for the
+	specific handling of packed array types.
+	(Freeze_Record_Type): Move error checking of representation
+	clause to...
+	(Freeze_Entity): ...here after Check_Strict_Alignment is called.
+	* sem_aggr.adb (Array_Aggr_Subtype): Also set the Is_Independent
+	flag along with Is_Aliased on the Itype.
+	* sem_ch13.adb (Check_Record_Representation_Clause): Do not set
+	the RM size for a strict-alignment type.
+	* sem_ch3.adb (Add_Interface_Tag_Components): Also set the
+	Is_Independent flag along with Is_Aliased on the tag.
+	(Add_Interface_Tag_Components): Likewise on the offset.
+	(Analyze_Component_Declaration): Likewise on the component.
+	(Analyze_Object_Declaration): Likewise on the object.
+	(Constrain_Array): Likewise on the array.
+	(Record_Type_Declaration: Likewise on the tag.
+	(Array_Type_Declaration): Also set the
+	Has_Independent_Components flag along with
+	Has_Aliased_Components on the array.
+	(Copy_Array_Base_Type_Attributes): Copy
+	Has_Independent_Components.
+	(Copy_Array_Subtype_Attributes): Copy Is_Atomic, Is_Independent
+	and Is_Volatile_Full_Access.
+	(Analyze_Iterator_Specification): Set Is_Independent on the loop
+	variable according to Independent_Components on the array.
+	* sem_ch5.adb: Likewise.
+	* sem_ch6.adb (Process_Formals): Also set the Is_Independent
+	flag along with Is_Aliased on the formal.
+
+2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch8.adb (Analyze_Object_Renaming): Set Atomic, Independent
+	and Volatile_Full_Access aspects on the entity of the renaming
+	the same way as the Volatile aspect is set.
+	* sem_util.ads (Is_Atomic_Object_Entity): Move declaration to...
+	(Is_Independent_Object): New function.
+	(Is_Volatile_Full_Access_Object): Likewise.
+	* sem_util.adb (Is_Atomic_Object_Entity): ...here.
+	(Prefix_Has_Atomic_Components): Minor tweak.
+	(Is_Atomic_Object): Test Is_Atomic on the Etype uniformly.
+	(Is_Atomic_Or_VFA_Object): Call Is_Volatile_Full_Access_Object.
+	(Is_Independent_Object): New predicate.
+	(Is_Subcomponent_Of_Atomic_Object): Remove redundant test.
+	(Is_Volatile_Full_Access_Object): New predicate.
+	(Is_Volatile_Prefix): Rename into...
+	(Prefix_Has_Volatile_Components): ... and call
+	Is_Volatile_Object.
+	(Object_Has_Volatile_Components): Delete.
+	(Is_Volatile_Object): Simplify.
+	* gcc-interface/trans.c (node_is_volatile_full_access): Adjust
+	comment.
+
+2019-12-16  Bob Duff  <duff@adacore.com>
+
+	* par.adb: Add Scopes function to do range checking on the scope
+	stack.  Call Scopes all over the parser.  Add
+	SIS_Aspect_Import_Seen flag.
+	* par-ch6.adb (P_Subprogram): Initialize SIS_Aspect_Import_Seen
+	to False at the start, and check it at the end.
+	* par-ch13.adb (Get_Aspect_Specifications): Set
+	SIS_Aspect_Import_Seen to True when appropriate.
+	* par-ch10.adb, par-ch12.adb, par-ch2.adb, par-ch3.adb,
+	par-ch5.adb, par-ch7.adb, par-ch9.adb, par-endh.adb,
+	par-util.adb: Call Scopes.
+
+2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_prag.adb (Atomic_Components): Remove local variable and
+	fix consistency issues.  Call Component_Type on the Etype of E.
+	(Independent_Components): Remove local variable.
+	* sem_util.adb (Is_Subcomponent_Of_Atomic_Object): Properly deal
+	with prefixes that are access values.
+	* gcc-interface/trans.c (atomic_acces_t): New enumeral type.
+	(node_is_atomic) <N_Indexed_Component>: Test the prefix.
+	(node_has_volatile_full_access): Rename into...
+	(node_is_volatile_full_access): ...this.
+	(node_is_component): New predicare.
+	(gnat_strip_type_conversion): Delete.
+	(outer_atomic_access_required_p): Likewise.
+	(atomic_access_required_p): Rename into...
+	(get_atomic_access): ...this.  Implement the 3 different semantics
+	of Atomic and Volatile_Full_Access.
+	(simple_atomic_access_required_p): New predicate.
+	(Call_to_gnu): Remove outer_atomic_access parameter and change the
+	type of atomic_access parameter to atomic_acces_t.  Replace call to
+	atomic_access_required_p with simple_atomic_access_required_p for
+	the in direction and call get_atomic_access for the out direction
+	instead of [outer_]atomic_access_required_p.
+	(lhs_or_actual_p): Constify local variables.
+	(present_in_lhs_or_actual_p): Likewise.
+	(gnat_to_gnu) <N_Identifier>: Replace call to atomic_access_required_p
+	with simple_atomic_access_required_p.
+	<N_Explicit_Dereference>: Likewise.
+	<N_Indexed_Component>: Likewise.
+	<N_Selected_Component>: Likewise.
+	<N_Assignment_Statement>: Call get_atomic_access for the name instead
+	of [outer_]atomic_access_required_p.  Adjust call to Call_to_gnu.
+	<N_Function_Call>: Adjust call to Call_to_gnu.
+	(get_controlling_type): Fix typo in comment.
+
+2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fe.h (Ada_Version_Type): New typedef.
+	(Ada_Version): Declare.
+	* opt.ads (Ada_Version_Type): Add Convention C and WARNING line.
+	(Ada_Version): Add WARNING line.
+	(Exception_Mechanism_Type): Likewise.
+
+2019-12-16  Gary Dismukes  <dismukes@adacore.com>
+
+	* checks.adb, sem_util.adb: Minor reformatting and U.S. spelling
+	adjustment.
+
+2019-12-16  Bob Duff  <duff@adacore.com>
+
+	* sem_ch10.adb (Analyze_Subunit): Give an error if the subunit
+	is not a proper body. This hides the confusing "duplicate body"
+	message that was previously given.
+
+2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch8.adb (Expand_N_Object_Renaming_Declaration): Document
+	third special case of renamings requiring special handling.
+	(Evaluation_Required): Return true for an atomic or VFA prefix.
+
+2019-12-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Apply_Float_Conversion_Check): Use node of type
+	conversion and not its parent, when inserting the declaration
+	for the temporary that hold the result of the conversion.
+	Previously the declaration was inserted above the parent of the
+	conversion, apparently as a small optimization for the
+	subsequent traversal in Insert_Actions.  Unfortunately a similar
+	optimization takes place in Insert_Actions, assuming that the
+	insertion point must be above the expression that creates the
+	actions to insert.  This is not correct in the presence of
+	conditional expressions (i.e.  since Ada2012), where the
+	insertion must be in the list of actions attached to the current
+	alternative.
+
+2019-12-16  Bob Duff  <duff@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Use Known_RM_Size. But we
+	still need Size_Known_At_Compile_Time, because when the size
+	really is known, sometimes only one or the other of these is
+	True.
+
+2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.adb (Is_Atomic_Or_VFA_Object): Also return true for
+	components whose type is Volatile_Full_Access or which are
+	subject to the aspect/pragma individually.
+	* sem_util.ads (Is_Atomic_Object_Entity): Small comment fix.
+
+2019-12-16  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch6.adb: Fix comment.
+	* sem_res.adb (Resolve_Call): Do not check No_Recursion
+	restriction or indirectly No_Secondary_Stack restriction, when
+	inside an ignored ghost subprogram.
+
+2019-12-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* impunit.adb: Add a-nbnbin, a-nbnbre, a-nubinu to Ada 2020
+	units.
+	* Makefile.rtl: Enable new file.
+	* libgnat/a-nbnbin.adb, libgnat/a-nbnbin.ads,
+	libgnat/a-nbnbre.adb, libgnat/a-nbnbre.ads,
+	libgnat/a-nubinu.ads: New files. Provide default standalone
+	implementation of Ada.Numerics.Big_Numbers.Big_* based on
+	System.Generic_Bignum.
+	* libgnat/a-nbnbin__gmp.adb: Alternate implementation of
+	Ada.Numerics.Big_Numbers.Big_Integers based on GMP. Not enabled
+	for now.
+	* libgnat/s-bignum.ads, libgnat/s-bignum.adb: Now a simple
+	wrapper on top of s-genbig.ads.
+	* libgnat/s-genbig.ads, libgnat/s-genbig.adb: New files, making
+	s-bignum generic for reuse in Ada.Numerics.Big_Numbers.
+
+2019-12-16  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Correct documentation of -gnatw_C switch
+	* gnat_ugn.texi: Regenerate.
+
+2019-12-16  Joel Brobecker  <brobecker@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst
+	(_Switches_for_gnatbind): Reword the section explaining the
+	impact of -minimal on debugging.
+	* gnat_ugn.texi: Regenerate.
+
+2019-12-16  Gary Dismukes  <dismukes@adacore.com>
+
+	* libgnat/g-exptty.adb, libgnat/g-exptty.ads: Typo fixes and
+	minor reformatting.
+
+2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Requires_Atomic_Or_Volatile_Copy): New predicate.
+	(Expand_Actuals): Use it to decide whether to add call by copy
+	code as per the RM C.6(19) clause.
+	* fe.h (Is_Atomic_Object): Remove.
+	(Is_Volatile_Object): Likewise.
+	* sem_util.ads (Is_Atomic_Object): Remove WARNING note.
+	(Is_Volatile_Object): Likewise.
+	* gcc-interface/trans.c (atomic_or_volatile_copy_required_p): Delete.
+	(Call_to_gnu): Do not implement the  RM C.6(19) clause.
+
+2019-12-16  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_ch12.adb (Validate_Access_Subprogram_Instance): Add
+	Can_Never_Be_Null checks.
+
+2019-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst (VFA): Document
+	extension of the no-aliasing rule to any subcomponent.
+	* freeze.adb (Freeze_Object_Declaration): Small comment tweak.
+	(Freeze_Record_Type): Do not deal with delayed aspect
+	specifications for components here but...
+	(Freeze_Entity): ...here instead.
+	* sem_ch12.adb (Instantiate_Object): Improve wording of errors
+	given for legality rules in C.6(12) and implement the new rule
+	in C.6(13).
+	* sem_res.adb (Resolve_Actuals): Likewise.
+	* sem_prag.adb (Check_Atomic_VFA): New procedure implementing
+	the new legality rules in C.6(13).
+	(Process_Atomic_Independent_Shared_Volatile): Call
+	Check_Atomic_VFA to check the legality rules.  Factor out code
+	marking types into...
+	(Mark_Type): ...this new procedure.
+	(Check_VFA_Conflicts): Do not check the legality rules here.
+	(Pragma_Atomic_Components): Call Check_Atomic_VFA on component
+	type.
+	* sem_util.ads (Is_Subcomponent_Of_Atomic_Object): Declare.
+	* sem_util.adb (Is_Subcomponent_Of_Atomic_Object): New
+	predicate.
+	* gnat_rm.texi: Regenerate.
+
 2019-12-13  Gary Dismukes  <dismukes@adacore.com>
 
 	* doc/gnat_rm/implementation_defined_pragmas.rst: Minor

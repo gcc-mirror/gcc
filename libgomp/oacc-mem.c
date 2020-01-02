@@ -660,7 +660,6 @@ static void
 delete_copyout (unsigned f, void *h, size_t s, int async, const char *libfnname)
 {
   splay_tree_key n;
-  void *d;
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
 
@@ -688,9 +687,6 @@ delete_copyout (unsigned f, void *h, size_t s, int async, const char *libfnname)
       gomp_mutex_unlock (&acc_dev->lock);
       gomp_fatal ("[%p,%d] is not mapped", (void *)h, (int)s);
     }
-
-  d = (void *) (n->tgt->tgt_start + n->tgt_offset
-		+ (uintptr_t) h - n->host_start);
 
   if ((uintptr_t) h < n->host_start || (uintptr_t) h + s > n->host_end)
     {
@@ -723,12 +719,15 @@ delete_copyout (unsigned f, void *h, size_t s, int async, const char *libfnname)
 
   if (n->refcount == 0)
     {
+      goacc_aq aq = get_goacc_asyncqueue (async);
+
       if (f & FLAG_COPYOUT)
 	{
-	  goacc_aq aq = get_goacc_asyncqueue (async);
+	  void *d = (void *) (n->tgt->tgt_start + n->tgt_offset
+			      + (uintptr_t) h - n->host_start);
 	  gomp_copy_dev2host (acc_dev, aq, h, d, s);
 	}
-      gomp_remove_var (acc_dev, n);
+      gomp_remove_var_async (acc_dev, n, aq);
     }
 
   gomp_mutex_unlock (&acc_dev->lock);

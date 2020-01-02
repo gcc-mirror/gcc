@@ -110,7 +110,7 @@ void test_memop_warn_alloc (const void *src)
 
   struct A *a = __builtin_malloc (sizeof *a * 2);
 
-  memcpy (a, src, n);   /* { dg-warning "writing between 8 and 32 bytes into a region of size 4 overflows the destination" "memcpy into allocated" } */
+  memcpy (a, src, n);   /* { dg-warning "writing between 8 and 32 bytes into a region of size 4 " "memcpy into allocated" } */
   escape (a, src);
 
   /* At -Wstringop-overflow=1 the destination is considered to be
@@ -127,7 +127,7 @@ void test_memop_warn_alloc (const void *src)
 
   struct B *b = __builtin_malloc (sizeof *b * 2);
 
-  memcpy (&b[0], src, n);   /* { dg-warning "writing between 12 and 32 bytes into a region of size 8 overflows the destination" "memcpy into allocated" } */
+  memcpy (&b[0], src, n);   /* { dg-warning "writing between 12 and 32 bytes into a region of size 8 " "memcpy into allocated" } */
   escape (b);
 
   /* The following idiom of clearing multiple members of a struct is

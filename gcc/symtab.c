@@ -1952,6 +1952,11 @@ symtab_node::get_partitioning_class (void)
   if (DECL_EXTERNAL (decl))
     return SYMBOL_EXTERNAL;
 
+  /* Even static aliases of external functions as external.  Those can happen
+     when COMDAT got resolved to non-IL implementation.  */
+  if (alias && DECL_EXTERNAL (ultimate_alias_target ()->decl))
+    return SYMBOL_EXTERNAL;
+
   if (varpool_node *vnode = dyn_cast <varpool_node *> (this))
     {
       if (alias && definition && !ultimate_alias_target ()->definition)

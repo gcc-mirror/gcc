@@ -393,8 +393,11 @@ extern void pp_indent (pretty_printer *);
 extern void pp_newline (pretty_printer *);
 extern void pp_character (pretty_printer *, int);
 extern void pp_string (pretty_printer *, const char *);
+
 extern void pp_write_text_to_stream (pretty_printer *);
 extern void pp_write_text_as_dot_label_to_stream (pretty_printer *, bool);
+extern void pp_write_text_as_html_like_dot_to_stream (pretty_printer *pp);
+
 extern void pp_maybe_space (pretty_printer *);
 
 extern void pp_begin_quote (pretty_printer *, bool);

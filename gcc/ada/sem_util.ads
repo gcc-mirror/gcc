@@ -1531,13 +1531,7 @@ package Sem_Util is
 
    function Is_Atomic_Object (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N denotes a reference to an atomic
-   --  object as per Ada RM C.6(7) and the crucial remark in C.6(8).
-
-   --  WARNING: There is a matching C declaration of this subprogram in fe.h
-
-   function Is_Atomic_Object_Entity (Id : Entity_Id) return Boolean;
-   --  Determine whether arbitrary entity Id denotes an atomic object as per
-   --  Ada RM C.6(12).
+   --  object as per RM C.6(7) and the crucial remark in RM C.6(8).
 
    function Is_Atomic_Or_VFA_Object (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N denotes a reference to an object
@@ -1750,6 +1744,10 @@ package Sem_Util is
    function Is_Generic_Declaration_Or_Body (Decl : Node_Id) return Boolean;
    --  Determine whether arbitrary declaration Decl denotes a generic package,
    --  a generic subprogram or a generic body.
+
+   function Is_Independent_Object (N : Node_Id) return Boolean;
+   --  Determine whether arbitrary node N denotes a reference to an independent
+   --  object as per RM C.6(8).
 
    function Is_Inherited_Operation (E : Entity_Id) return Boolean;
    --  E is a subprogram. Return True is E is an implicit operation inherited
@@ -1996,6 +1994,10 @@ package Sem_Util is
    --  the N_Statement_Other_Than_Procedure_Call subtype from Sinfo).
    --  Note that a label is *not* a statement, and will return False.
 
+   function Is_Subcomponent_Of_Atomic_Object (N : Node_Id) return Boolean;
+   --  Determine whether arbitrary node N denotes a reference to a subcomponent
+   --  of an atomic object as per RM C.6(7).
+
    function Is_Subprogram_Contract_Annotation (Item : Node_Id) return Boolean;
    --  Determine whether aspect specification or pragma Item is one of the
    --  following subprogram contract annotations:
@@ -2093,18 +2095,20 @@ package Sem_Util is
    --  Initialize/Adjust/Finalize subprogram does not override the inherited
    --  one.
 
+   function Is_Volatile_Full_Access_Object (N : Node_Id) return Boolean;
+   --  Determine whether arbitrary node N denotes a reference to an object
+   --  which is Volatile_Full_Access.
+
    function Is_Volatile_Function (Func_Id : Entity_Id) return Boolean;
    --  Determine whether [generic] function Func_Id is subject to enabled
    --  pragma Volatile_Function. Protected functions are treated as volatile
    --  (SPARK RM 7.1.2).
 
    function Is_Volatile_Object (N : Node_Id) return Boolean;
-   --  Determines if the given node denotes an volatile object in the sense of
-   --  the legality checks described in RM C.6(12). Note that the test here is
-   --  for something actually declared as volatile, not for an object that gets
-   --  treated as volatile (see Einfo.Treat_As_Volatile).
-
-   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+   --  Determine whether arbitrary node N denotes a reference to a volatile
+   --  object as per RM C.6(8). Note that the test here is for something that
+   --  is actually declared as volatile, not for an object that gets treated
+   --  as volatile (see Einfo.Treat_As_Volatile).
 
    generic
       with procedure Handle_Parameter (Formal : Entity_Id; Actual : Node_Id);
@@ -2682,7 +2686,7 @@ package Sem_Util is
    function Scope_Within_Or_Same
      (Inner : Entity_Id;
       Outer : Entity_Id) return Boolean;
-   --  Determine whether scope Inner appears within scope Outer or both renote
+   --  Determine whether scope Inner appears within scope Outer or both denote
    --  the same scope. Note that scopes are partially ordered, so Scope_Within
    --  (A, B) and Scope_Within (B, A) may both return False.
 

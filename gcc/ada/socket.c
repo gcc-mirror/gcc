@@ -34,7 +34,9 @@
 #define ATTRIBUTE_UNUSED __attribute__((unused))
 
 /* Ensure access to errno is thread safe.  */
+#ifndef _REENTRANT
 #define _REENTRANT
+#endif
 #define _THREAD_SAFE
 
 #include "gsocket.h"

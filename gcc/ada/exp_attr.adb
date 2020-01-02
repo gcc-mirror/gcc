@@ -5463,6 +5463,97 @@ package body Exp_Attr is
             Apply_Universal_Integer_Attribute_Checks (N);
          end if;
 
+      ------------
+      -- Reduce --
+      ------------
+
+      when Attribute_Reduce =>
+         declare
+            Loc     : constant Source_Ptr := Sloc (N);
+            E1      : constant Node_Id := First (Expressions (N));
+            E2      : constant Node_Id := Next (E1);
+            Bnn     : constant Entity_Id := Make_Temporary (Loc, 'B', N);
+            Typ     : constant Entity_Id := Etype (N);
+            New_Loop : Node_Id;
+
+         --  If the prefix is an aggregwte, its unique component is sn
+         --  Iterated_Element, and we create a loop out of its itertor.
+
+         begin
+            if Nkind (Prefix (N)) = N_Aggregate then
+               declare
+                  Stream  : constant Node_Id :=
+                     First (Component_Associations (Prefix (N)));
+                  Id      : constant Node_Id := Defining_Identifier (Stream);
+                  Expr    : constant Node_Id := Expression (Stream);
+                  Ch      : constant Node_Id :=
+                               First (Discrete_Choices (Stream));
+               begin
+                  New_Loop := Make_Loop_Statement (Loc,
+                    Iteration_Scheme =>
+                      Make_Iteration_Scheme (Loc,
+                        Iterator_Specification => Empty,
+                        Loop_Parameter_Specification =>
+                          Make_Loop_Parameter_Specification  (Loc,
+                            Defining_Identifier => New_Copy (Id),
+                            Discrete_Subtype_Definition =>
+                              Relocate_Node (Ch))),
+                      End_Label => Empty,
+                      Statements => New_List (
+                        Make_Assignment_Statement (Loc,
+                          Name => New_Occurrence_Of (Bnn, Loc),
+                          Expression => Make_Function_Call (Loc,
+                            Name => New_Occurrence_Of (Entity (E1), Loc),
+                            Parameter_Associations => New_List (
+                              New_Occurrence_Of (Bnn, Loc),
+                              Relocate_Node (Expr))))));
+               end;
+            else
+               --  If the prefix is a name we construct an element iterwtor
+               --  over it. Its expansion will verify that it is an array
+               --  or a container with the proper aspects.
+
+               declare
+                  Iter : Node_Id;
+                  Elem : constant Entity_Id := Make_Temporary (Loc, 'E', N);
+
+               begin
+                  Iter :=
+                    Make_Iterator_Specification (Loc,
+                    Defining_Identifier => Elem,
+                    Name => Relocate_Node (Prefix (N)),
+                    Subtype_Indication => Empty);
+                  Set_Of_Present (Iter);
+
+                  New_Loop := Make_Loop_Statement (Loc,
+                    Iteration_Scheme =>
+                      Make_Iteration_Scheme (Loc,
+                        Iterator_Specification => Iter,
+                        Loop_Parameter_Specification => Empty),
+                      End_Label => Empty,
+                      Statements => New_List (
+                        Make_Assignment_Statement (Loc,
+                          Name => New_Occurrence_Of (Bnn, Loc),
+                          Expression => Make_Function_Call (Loc,
+                            Name => New_Occurrence_Of (Entity (E1), Loc),
+                            Parameter_Associations => New_List (
+                              New_Occurrence_Of (Bnn, Loc),
+                              New_Occurrence_Of (Elem, Loc))))));
+               end;
+            end if;
+
+            Rewrite (N,
+               Make_Expression_With_Actions (Loc,
+                 Actions    => New_List (
+                   Make_Object_Declaration (Loc,
+                     Defining_Identifier => Bnn,
+                     Object_Definition   =>
+                       New_Occurrence_Of (Typ, Loc),
+                     Expression => Relocate_Node (E2)), New_Loop),
+                 Expression => New_Occurrence_Of (Bnn, Loc)));
+            Analyze_And_Resolve (N, Typ);
+         end;
+
       ----------
       -- Read --
       ----------

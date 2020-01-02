@@ -596,6 +596,8 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_USE_XCHG_FOR_ATOMIC_STORE]
 #define TARGET_EMIT_VZEROUPPER \
 	ix86_tune_features[X86_TUNE_EMIT_VZEROUPPER]
+#define TARGET_EXPAND_ABS \
+	ix86_tune_features[X86_TUNE_EXPAND_ABS]
 
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {

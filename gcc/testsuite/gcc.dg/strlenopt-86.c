@@ -9,11 +9,11 @@
 unsigned n0, n1;
 
 void*
-keep_strlen_calloc_store_cst_memset (unsigned a, unsigned b)
+keep_strlen_calloc_store_cst_memset (int i, unsigned a, unsigned b)
 {
   char *p = __builtin_calloc (a, 1);
 
-  p[1] = 'x';
+  p[i] = 'x';
 
   __builtin_memset (p, 0, b);
 
@@ -23,11 +23,11 @@ keep_strlen_calloc_store_cst_memset (unsigned a, unsigned b)
 }
 
 void*
-keep_strlen_calloc_store_var_memset (int x, unsigned a, unsigned b)
+keep_strlen_calloc_store_var_memset (int i, int x, unsigned a, unsigned b)
 {
   char *p = __builtin_calloc (a, 1);
 
-  p[1] = x;
+  p[i] = x;
 
   __builtin_memset (p, 0, b);
 
@@ -37,11 +37,11 @@ keep_strlen_calloc_store_var_memset (int x, unsigned a, unsigned b)
 }
 
 void*
-keep_strlen_calloc_store_memset_2 (int x, unsigned a, unsigned b, unsigned c)
+keep_strlen_calloc_store_memset_2 (int i, int x, unsigned a, unsigned b, unsigned c)
 {
   char *p = __builtin_calloc (a, 1);
 
-  p[1] = x;
+  p[i] = x;
   __builtin_memset (p, 0, b);
 
   n0 = __builtin_strlen (p);

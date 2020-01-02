@@ -511,35 +511,34 @@ worse_state (enum pure_const_state_e *state, bool *looping,
    but function using them is.  */
 static bool
 special_builtin_state (enum pure_const_state_e *state, bool *looping,
-			tree callee)
+		       tree callee)
 {
   if (DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
     switch (DECL_FUNCTION_CODE (callee))
       {
-	case BUILT_IN_RETURN:
-	case BUILT_IN_UNREACHABLE:
-	CASE_BUILT_IN_ALLOCA:
-	case BUILT_IN_STACK_SAVE:
-	case BUILT_IN_STACK_RESTORE:
-	case BUILT_IN_EH_POINTER:
-	case BUILT_IN_EH_FILTER:
-	case BUILT_IN_UNWIND_RESUME:
-	case BUILT_IN_CXA_END_CLEANUP:
-	case BUILT_IN_EH_COPY_VALUES:
-	case BUILT_IN_FRAME_ADDRESS:
-	case BUILT_IN_APPLY:
-	case BUILT_IN_APPLY_ARGS:
-	case BUILT_IN_ASAN_BEFORE_DYNAMIC_INIT:
-	case BUILT_IN_ASAN_AFTER_DYNAMIC_INIT:
-	  *looping = false;
-	  *state = IPA_CONST;
-	  return true;
-	case BUILT_IN_PREFETCH:
-	  *looping = true;
-	  *state = IPA_CONST;
-	  return true;
-	default:
-	  break;
+      case BUILT_IN_RETURN:
+      case BUILT_IN_UNREACHABLE:
+      CASE_BUILT_IN_ALLOCA:
+      case BUILT_IN_STACK_SAVE:
+      case BUILT_IN_STACK_RESTORE:
+      case BUILT_IN_EH_POINTER:
+      case BUILT_IN_EH_FILTER:
+      case BUILT_IN_UNWIND_RESUME:
+      case BUILT_IN_CXA_END_CLEANUP:
+      case BUILT_IN_EH_COPY_VALUES:
+      case BUILT_IN_FRAME_ADDRESS:
+      case BUILT_IN_APPLY_ARGS:
+      case BUILT_IN_ASAN_BEFORE_DYNAMIC_INIT:
+      case BUILT_IN_ASAN_AFTER_DYNAMIC_INIT:
+	*looping = false;
+	*state = IPA_CONST;
+	return true;
+      case BUILT_IN_PREFETCH:
+	*looping = true;
+	*state = IPA_CONST;
+	return true;
+      default:
+	break;
       }
   return false;
 }
@@ -624,9 +623,10 @@ check_call (funct_state local, gcall *call, bool ipa)
 	  case BUILT_IN_LONGJMP:
 	  case BUILT_IN_NONLOCAL_GOTO:
 	    if (dump_file)
-	      fprintf (dump_file, "    longjmp and nonlocal goto is not const/pure\n");
+	      fprintf (dump_file,
+		       "    longjmp and nonlocal goto is not const/pure\n");
 	    local->pure_const_state = IPA_NEITHER;
-            local->looping = true;
+	    local->looping = true;
 	    break;
 	  default:
 	    break;
@@ -1532,7 +1532,7 @@ propagate_pure_const (void)
 		    }
 		}
 	      else if (special_builtin_state (&edge_state, &edge_looping,
-					       y->decl))
+					      y->decl))
 		;
 	      else
 		state_from_flags (&edge_state, &edge_looping,

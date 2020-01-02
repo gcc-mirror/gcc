@@ -4534,7 +4534,10 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
      containing the last time the condition passed for that vector lane.
      The first match will be a 1 to allow 0 to be used for non-matching
      indexes.  If there are no matches at all then the vector will be all
-     zeroes.  */
+     zeroes.
+   
+     PR92772: This algorithm is broken for architectures that support
+     masked vectors, but do not provide fold_extract_last.  */
   if (STMT_VINFO_REDUC_TYPE (reduc_info) == COND_REDUCTION)
     {
       auto_vec<std::pair<tree, bool>, 2> ccompares;

@@ -1,3 +1,178 @@
+2019-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92841
+	* config/i386/i386.md (@stack_protect_set_1_<mode>,
+	@stack_protect_test_1_<mode>): Use output_asm_insn.
+	(*stack_protect_set_2_<mode>, *stack_protect_set_3): New define_insns
+	and corresponding define_peephole2s.
+
+2019-12-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* symtab.c (symtab_node::get_partitioning_class): Aliases of external
+	symbols are external.
+
+2019-12-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-protos.h (thumb1_gen_const_int): Add new prototype.
+	* config/arm/arm.c (arm_option_check_internal): Remove restriction
+	on MOVT for -mpure-code.
+	(thumb1_gen_const_int): New function.
+	(thumb1_legitimate_address_p): Support -mpure-code.
+	(thumb1_rtx_costs): Likewise.
+	(thumb1_size_rtx_costs): Likewise.
+	(arm_thumb1_mi_thunk): Likewise.
+	* config/arm/arm.h (CASE_VECTOR_PC_RELATIVE): Likewise.
+	* config/arm/thumb1.md (thumb1_movsi_symbol_ref): New.
+	(*thumb1_movhf): Support -mpure-code.
+	* doc/invoke.texi (-mpure-code): Remove restriction on MOVT.
+
+2019-12-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Mention pr92772
+	in the comments.
+
+2019-12-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (extract_last_<mode>): New expander.
+	(fold_extract_last_<mode>): New expander.
+
+2019-12-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.h (CLZ_DEFINED_VALUE_AT_ZERO): Define.
+	(CTZ_DEFINED_VALUE_AT_ZERO): Define.
+	* config/gcn/gcn.md (s_mnemonic): Add clz and ctz.
+	(expander): Likewise.
+	(countzeros): New code iterator.
+	(<expander>si2): New insn pattern.
+	(<expander>di2): New insn pattern.
+
+2019-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92962
+	* common/config/i386/i386-common.c (processor_alias_table): Formatting
+	fixes.
+	* doc/invoke.texi (bdver3, bdver4, znver1): Add missing closing paren.
+	(znver2): Likewise.  Add RDPID and WBNOINVD, remove spurious comma
+	before CLWB.
+
+2019-12-17  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/92651
+	* config/i386/i386.h (TARGET_EXPAND_ABS): New macro.
+	* config/i386/x86-tune.def (X86_TUNE_EXPAND_ABS): New.
+	* config/i386/i386.md (abs<SWI48x>2): New define_expand.
+
+2019-12-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/92807
+	* config/i386/i386.c (ix86_lea_outperforms): Check !TARGET_BONNELL.
+	(ix86_avoid_lea_for_addr): When not optimizing for Bonnell, use add
+	for a = a + b and a = b + a.
+
+2019-12-16  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92952
+	* builtins.c (compute_objsize): Adjust offset by the array low bound.
+
+2019-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* pretty-print.c (pp_write_text_as_html_like_dot_to_stream): New
+	function.
+	* pretty-print.h (pp_write_text_as_html_like_dot_to_stream): New decl.
+
+2019-12-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (movsi_to_cr_one): Use CR0_REGNO instead of
+	hardcoding the (old, expired) register number.
+	(*mtcrfsi): Ditto.
+
+2019-12-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config.gcc: s/msp430*-*-*/msp430-*-*.
+	Handle msp430-*-elfbare.
+	* config/msp430/msp430-devices.c (TARGET_SUBDIR): Define.
+	(_MSPMKSTR): Define.
+	(__MSPMKSTR): Define.
+	(rest_of_devices_path): Use TARGET_SUBDIR value in string.
+	* config/msp430/msp430.c (msp430_option_override): Error if
+	-fuse-cxa-atexit is used when it has been disabled at configure time.
+	* config/msp430/t-msp430: Define TARGET_SUBDIR when building
+	msp430-devices.o.
+	* doc/install.texi: Document msp430-*-elf and msp430-*-elfbare.
+	* doc/invoke.texi: Update documentation about which path devices.csv is
+	searched for.
+
+2019-12-16  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/92950
+	* config/s390/vector.md ("mov<mode>" for V_8): Replace lh, lhy,
+	and lhrl with llc.
+
+2019-12-14  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (attribute access): Correct typos.
+
+2019-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/92357
+	* ipa-fnsummary.c (ipa_fn_summary_write): Use
+	lto_symtab_encoder_iterator with lsei_start_function_in_partition and
+	lsei_next_function_in_partition instead of walking all cgraph nodes
+	in encoder.
+
+	PR tree-optimization/92930
+	* ipa-pure-const.c (special_builtin_state): Don't handle
+	BUILT_IN_APPLY.  Formatting fixes.
+	(check_call): Formatting fixes.
+
+2019-12-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (DARWIN_EXTRA_SPECS): Add new
+	bundle spec. (DARWIN_BUNDLE1_SPEC): New.
+	(STARTFILE_SPEC): Use darwin bundle spec.
+	* config/rs6000/darwin.h (DARWIN_BUNDLE1_SPEC): New.
+	(DARWIN_DYLIB1_SPEC): Delete duplicate.
+
+2019-12-13  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/91582
+	PR middle-end/92868
+	* builtins.c (addr_decl_size): New function.
+	(gimple_call_alloc_size): Add arguments.
+	(compute_objsize): Add an argument.  Set *PDECL even for allocated
+	objects.
+	Correct checking for negative wide_int.
+	Correct handling of negative outer offsets into unknown regions
+	or with unknown inner offsets.
+	Extend offsets to at most sizetype precision.
+	Only handle constant subobject sizes.
+	* builtins.h (gimple_call_alloc_size): Add arguments.
+	* tree.c (component_ref_size): Always return sizetype.
+	* tree-ssa-strlen.c (strinfo::alloc): New member.
+	(get_addr_stridx): Add argument.
+	(get_stridx): Use ptrdiff_t.  Add argument.
+	(new_strinfo): Set new member.
+	(get_string_length): Handle alloca and VLA.
+	(dump_strlen_info): Dump more state.
+	(maybe_invalidate): Print more info.  Decrease indentation.
+	(unshare_strinfo): Set new member.
+	(valid_builtin_call): Handle alloca and VLA.
+	(maybe_warn_overflow): Check and set no-warning bit.  Improve
+	handling of offsets.  Print allocated objects.
+	(handle_builtin_strlen): Handle strinfo records with null lengths.
+	(handle_builtin_strcpy): Add argument.  Call maybe_warn_overflow.
+	(is_strlen_related_p): Handle dynamically allocated objects.
+	(get_range): Add argument.
+	(handle_builtin_malloc): Rename...
+	(handle_alloc): ...to this and handle all allocation functions.
+	(handle_builtin_memset): Call maybe_warn_overflow.
+	(count_nonzero_bytes): Handle more MEM_REF forms.
+	(strlen_check_and_optimize_call): Call handle_alloc_call.  Pass
+	arguments to more callees.
+	(handle_integral_assign): Add argument.  Create strinfo entries
+	for MEM_REF assignments.
+	(check_and_optimize_stmt): Handle more MEM_REF forms.
+
 2019-12-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/rs6000/darwin.h (DARWIN_DYLIB1_SPEC): New.
