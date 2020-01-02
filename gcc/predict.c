@@ -3937,10 +3937,7 @@ compute_function_frequency (void)
       int flags = flags_from_decl_or_type (current_function_decl);
       if (lookup_attribute ("cold", DECL_ATTRIBUTES (current_function_decl))
 	  != NULL)
-	{
-          node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
-	  warn_function_cold (current_function_decl);
-	}
+	node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
       else if (lookup_attribute ("hot", DECL_ATTRIBUTES (current_function_decl))
 	       != NULL)
         node->frequency = NODE_FREQUENCY_HOT;

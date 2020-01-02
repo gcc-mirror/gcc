@@ -1,3 +1,9 @@
+2020-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/93087
+	* predict.c (compute_function_frequency): Don't call
+	warn_function_cold on functions that already have cold attribute.
+
 2020-01-01  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/67834
