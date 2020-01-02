@@ -1,3 +1,8 @@
+2019-12-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* libcp1plugin.cc (plugin_build_unary_expr): Update delete_sanity
+	call.
+
 2019-12-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* libcp1plugin.cc (plugin_build_unary_expr): Update build_throw

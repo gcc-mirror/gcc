@@ -2993,7 +2993,7 @@ vect_get_strided_load_store_ops (stmt_vec_info stmt_info,
   gimple_seq stmts;
 
   tree bump = size_binop (MULT_EXPR,
-			  fold_convert (sizetype, DR_STEP (dr)),
+			  fold_convert (sizetype, unshare_expr (DR_STEP (dr))),
 			  size_int (TYPE_VECTOR_SUBPARTS (vectype)));
   *dataref_bump = force_gimple_operand (bump, &stmts, true, NULL_TREE);
   if (stmts)
@@ -3005,7 +3005,7 @@ vect_get_strided_load_store_ops (stmt_vec_info stmt_info,
   offset_type = TREE_TYPE (gs_info->offset_vectype);
 
   /* Calculate X = DR_STEP / SCALE and convert it to the appropriate type.  */
-  tree step = size_binop (EXACT_DIV_EXPR, DR_STEP (dr),
+  tree step = size_binop (EXACT_DIV_EXPR, unshare_expr (DR_STEP (dr)),
 			  ssize_int (gs_info->scale));
   step = fold_convert (offset_type, step);
   step = force_gimple_operand (step, &stmts, true, NULL_TREE);
@@ -10033,10 +10033,12 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  if (new_code == ERROR_MARK)
 	    must_invert_cmp_result = true;
 	  else
-	    cond_code = new_code;
+	    {
+	      cond_code = new_code;
+	      /* Make sure we don't accidentally use the old condition.  */
+	      cond_expr = NULL_TREE;
+	    }
 	}
-      /* Make sure we don't accidentally use the old condition.  */
-      cond_expr = NULL_TREE;
       std::swap (then_clause, else_clause);
     }
 
@@ -10079,6 +10081,16 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  return false;
 	}
       cond_code = SSA_NAME;
+    }
+
+  if (TREE_CODE_CLASS (cond_code) == tcc_comparison
+      && reduction_type == EXTRACT_LAST_REDUCTION
+      && !expand_vec_cmp_expr_p (comp_vectype, vec_cmp_type, cond_code))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "reduction comparison operation not supported.\n");
+      return false;
     }
 
   if (!vec_stmt)

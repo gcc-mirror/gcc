@@ -948,6 +948,8 @@ struct target_var_desc {
   bool copy_from;
   /* True if data always should be copied from device to host at the end.  */
   bool always_copy_from;
+  /* True if variable should be detached at end of region.  */
+  bool do_detach;
   /* Relative offset against key host_start.  */
   uintptr_t offset;
   /* Actual length.  */
@@ -989,6 +991,16 @@ struct target_mem_desc {
 #define OFFSET_POINTER (~(uintptr_t) 1)
 #define OFFSET_STRUCT (~(uintptr_t) 2)
 
+/* Auxiliary structure for infrequently-used or API-specific data.  */
+
+struct splay_tree_aux {
+  /* Pointer to the original mapping of "omp declare target link" object.  */
+  splay_tree_key link_key;
+  /* For a block with attached pointers, the attachment counters for each.
+     Only used for OpenACC.  */
+  uintptr_t *attach_count;
+};
+
 struct splay_tree_key_s {
   /* Address of the host object.  */
   uintptr_t host_start;
@@ -1000,10 +1012,12 @@ struct splay_tree_key_s {
   uintptr_t tgt_offset;
   /* Reference count.  */
   uintptr_t refcount;
-  /* Dynamic reference count.  */
-  uintptr_t dynamic_refcount;
-  /* Pointer to the original mapping of "omp declare target link" object.  */
-  splay_tree_key link_key;
+  /* Reference counts beyond those that represent genuine references in the
+     linked splay tree key/target memory structures, e.g. for multiple OpenACC
+     "present increment" operations (via "acc enter data") referring to the same
+     host-memory block.  */
+  uintptr_t virtual_refcount;
+  struct splay_tree_aux *aux;
 };
 
 /* The comparison function.  */
@@ -1099,6 +1113,7 @@ struct gomp_device_descr
   __typeof (GOMP_OFFLOAD_get_caps) *get_caps_func;
   __typeof (GOMP_OFFLOAD_get_type) *get_type_func;
   __typeof (GOMP_OFFLOAD_get_num_devices) *get_num_devices_func;
+  __typeof (GOMP_OFFLOAD_get_property) *get_property_func;
   __typeof (GOMP_OFFLOAD_init_device) *init_device_func;
   __typeof (GOMP_OFFLOAD_fini_device) *fini_device_func;
   __typeof (GOMP_OFFLOAD_version) *version_func;
@@ -1133,6 +1148,7 @@ struct gomp_device_descr
 enum gomp_map_vars_kind
 {
   GOMP_MAP_VARS_OPENACC,
+  GOMP_MAP_VARS_OPENACC_ENTER_DATA,
   GOMP_MAP_VARS_TARGET,
   GOMP_MAP_VARS_DATA,
   GOMP_MAP_VARS_ENTER_DATA
@@ -1147,6 +1163,14 @@ extern void gomp_copy_host2dev (struct gomp_device_descr *,
 extern void gomp_copy_dev2host (struct gomp_device_descr *,
 				struct goacc_asyncqueue *, void *, const void *,
 				size_t);
+extern uintptr_t gomp_map_val (struct target_mem_desc *, void **, size_t);
+extern void gomp_attach_pointer (struct gomp_device_descr *,
+				 struct goacc_asyncqueue *, splay_tree,
+				 splay_tree_key, uintptr_t, size_t,
+				 struct gomp_coalesce_buf *);
+extern void gomp_detach_pointer (struct gomp_device_descr *,
+				 struct goacc_asyncqueue *, splay_tree_key,
+				 uintptr_t, bool, struct gomp_coalesce_buf *);
 
 extern struct target_mem_desc *gomp_map_vars (struct gomp_device_descr *,
 					      size_t, void **, void **,
@@ -1162,7 +1186,6 @@ extern void gomp_unmap_vars_async (struct target_mem_desc *, bool,
 				   struct goacc_asyncqueue *);
 extern void gomp_init_device (struct gomp_device_descr *);
 extern bool gomp_fini_device (struct gomp_device_descr *);
-extern void gomp_free_memmap (struct splay_tree_s *);
 extern void gomp_unload_device (struct gomp_device_descr *);
 extern bool gomp_remove_var (struct gomp_device_descr *, splay_tree_key);
 extern void gomp_remove_var_async (struct gomp_device_descr *, splay_tree_key,

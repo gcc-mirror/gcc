@@ -1,5 +1,8 @@
 2020-01-02  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r279809.
+	That's 2019 done.
+
 	Merge trunk r279556.
 	gcc/
 	* diagnostic-core.h (progname): Resolve conflict.

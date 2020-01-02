@@ -1249,9 +1249,12 @@ slpeel_can_duplicate_loop_p (const class loop *loop, const_edge e)
    the *guard[12] routines, which assume loop closed SSA form for all PHIs
    (but normally loop closed SSA form doesn't require virtual PHIs to be
    in the same form).  Doing this early simplifies the checking what
-   uses should be renamed.  */
+   uses should be renamed.
 
-static void
+   If we create a new phi after the loop, return the definition that
+   applies on entry to the loop, otherwise return null.  */
+
+static tree
 create_lcssa_for_virtual_phi (class loop *loop)
 {
   gphi_iterator gsi;
@@ -1283,10 +1286,12 @@ create_lcssa_for_virtual_phi (class loop *loop)
 		  && !flow_bb_inside_loop_p (loop, gimple_bb (stmt)))
 		FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
 		  SET_USE (use_p, new_vop);
+
+	    return PHI_ARG_DEF_FROM_EDGE (phi, loop_preheader_edge (loop));
 	  }
 	break;
       }
-
+  return NULL_TREE;
 }
 
 /* Function vect_get_loop_location.
@@ -2483,8 +2488,41 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   class loop *prolog, *epilog = NULL, *loop = LOOP_VINFO_LOOP (loop_vinfo);
   class loop *first_loop = loop;
   bool irred_flag = loop_preheader_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP;
-  create_lcssa_for_virtual_phi (loop);
+
+  /* We might have a queued need to update virtual SSA form.  As we
+     delete the update SSA machinery below after doing a regular
+     incremental SSA update during loop copying make sure we don't
+     lose that fact.
+     ???  Needing to update virtual SSA form by renaming is unfortunate
+     but not all of the vectorizer code inserting new loads / stores
+     properly assigns virtual operands to those statements.  */
   update_ssa (TODO_update_ssa_only_virtuals);
+
+  create_lcssa_for_virtual_phi (loop);
+
+  /* If we're vectorizing an epilogue loop, the update_ssa above will
+     have ensured that the virtual operand is in SSA form throughout the
+     vectorized main loop.  Normally it is possible to trace the updated
+     vector-stmt vdefs back to scalar-stmt vdefs and vector-stmt vuses
+     back to scalar-stmt vuses, meaning that the effect of the SSA update
+     remains local to the main loop.  However, there are rare cases in
+     which the vectorized loop has vdefs even when the original scalar
+     loop didn't.  For example, vectorizing a load with IFN_LOAD_LANES
+     introduces clobbers of the temporary vector array, which in turn
+     needs new vdefs.  If the scalar loop doesn't write to memory, these
+     new vdefs will be the only ones in the vector loop.
+
+     In that case, update_ssa will have added a new virtual phi to the
+     main loop, which previously didn't need one.  Ensure that we (locally)
+     maintain LCSSA form for the virtual operand, just as we would have
+     done if the virtual phi had existed from the outset.  This makes it
+     easier to duplicate the scalar epilogue loop below.  */
+  tree vop_to_rename = NULL_TREE;
+  if (loop_vec_info orig_loop_vinfo = LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo))
+    {
+      class loop *orig_loop = LOOP_VINFO_LOOP (orig_loop_vinfo);
+      vop_to_rename = create_lcssa_for_virtual_phi (orig_loop);
+    }
 
   if (MAY_HAVE_DEBUG_BIND_STMTS)
     {
@@ -2706,6 +2744,26 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	 as the transformations mentioned above make less or no sense when not
 	 vectorizing.  */
       epilog = vect_epilogues ? get_loop_copy (loop) : scalar_loop;
+      if (vop_to_rename)
+	{
+	  /* Vectorizing the main loop can sometimes introduce a vdef to
+	     a loop that previously didn't have one; see the comment above
+	     the definition of VOP_TO_RENAME for details.  The definition
+	     D that holds on E will then be different from the definition
+	     VOP_TO_RENAME that holds during SCALAR_LOOP, so we need to
+	     rename VOP_TO_RENAME to D when copying the loop.
+
+	     The virtual operand is in LCSSA form for the main loop,
+	     and no stmt between the main loop and E needs a vdef,
+	     so we know that D is provided by a phi rather than by a
+	     vdef on a normal gimple stmt.  */
+	  basic_block vdef_bb = e->src;
+	  gphi *vphi;
+	  while (!(vphi = get_virtual_phi (vdef_bb)))
+	    vdef_bb = get_immediate_dominator (CDI_DOMINATORS, vdef_bb);
+	  gcc_assert (vop_to_rename != gimple_phi_result (vphi));
+	  set_current_def (vop_to_rename, gimple_phi_result (vphi));
+	}
       epilog = slpeel_tree_duplicate_loop_to_edge_cfg (loop, epilog, e);
       if (!epilog)
 	{

@@ -103,6 +103,46 @@ test_map_of_strings_to_int ()
   ASSERT_EQ (1, string_map.elements ());
 }
 
+/* Construct a hash_map using int_hash and verify that
+   various operations work correctly.  */
+
+static void
+test_map_of_int_to_strings ()
+{
+  const int EMPTY = -1;
+  const int DELETED = -2;
+  typedef int_hash <int, EMPTY, DELETED> int_hash_t;
+  hash_map <int_hash_t, const char *> m;
+
+  const char *ostrich = "ostrich";
+  const char *elephant = "elephant";
+  const char *ant = "ant";
+  const char *spider = "spider";
+  const char *millipede = "Illacme plenipes";
+  const char *eric = "half a bee";
+
+  /* A fresh hash_map should be empty.  */
+  ASSERT_EQ (0, m.elements ());
+  ASSERT_EQ (NULL, m.get (2));
+
+  /* Populate the hash_map.  */
+  ASSERT_EQ (false, m.put (2, ostrich));
+  ASSERT_EQ (false, m.put (4, elephant));
+  ASSERT_EQ (false, m.put (6, ant));
+  ASSERT_EQ (false, m.put (8, spider));
+  ASSERT_EQ (false, m.put (750, millipede));
+  ASSERT_EQ (false, m.put (3, eric));
+
+  /* Verify that we can recover the stored values.  */
+  ASSERT_EQ (6, m.elements ());
+  ASSERT_EQ (*m.get (2), ostrich);
+  ASSERT_EQ (*m.get (4), elephant);
+  ASSERT_EQ (*m.get (6), ant);
+  ASSERT_EQ (*m.get (8), spider);
+  ASSERT_EQ (*m.get (750), millipede);
+  ASSERT_EQ (*m.get (3), eric);
+}
+
 typedef class hash_map_test_val_t
 {
 public:
@@ -244,6 +284,7 @@ void
 hash_map_tests_c_tests ()
 {
   test_map_of_strings_to_int ();
+  test_map_of_int_to_strings ();
   test_map_of_type_with_ctor_and_dtor ();
 }
 

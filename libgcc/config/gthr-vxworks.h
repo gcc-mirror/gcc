@@ -35,13 +35,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #else
 
 #include <vxWorks.h>
-#include <version.h>
-
-/* Conditional compilation directives are easier to read when they fit on a
-   single line, which is helped by macros with shorter names.  */
-#define _VXW_MAJOR _WRS_VXWORKS_MAJOR
-#define _VXW_MINOR _WRS_VXWORKS_MINOR
-#define _VXW_PRE_69 (_VXW_MAJOR  < 6 || (_VXW_MAJOR == 6 && _VXW_MINOR < 9))
+#include <_vxworks-versions.h>
 
 /* Some VxWorks headers profusely use typedefs of a pointer to a function with
    undefined number of arguments.  */
@@ -62,7 +56,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* RTP, pre 6.9.  */
 
-#if defined(__RTP__) && _VXW_PRE_69
+#if defined(__RTP__) && _VXWORKS_PRE(6,9)
 
 #define __TAS(x) vxCas ((x), 0, 1)
 typedef volatile unsigned char __vx_tas_t;
@@ -71,7 +65,7 @@ typedef volatile unsigned char __vx_tas_t;
 
 /* RTP, 6.9 and beyond.  */
 
-#if defined(__RTP__) && !_VXW_PRE_69
+#if defined(__RTP__) && !_VXWORKS_PRE(6,9)
 
 #define __TAS(x) vxAtomicCas ((x), 0, 1)
 typedef atomic_t __vx_tas_t;
@@ -215,7 +209,7 @@ typedef struct
 #endif
 } __gthread_once_t;
 
-#define __GTHREAD_ONCE_INIT { 0 }
+#define __GTHREAD_ONCE_INIT {}
 
 extern int __gthread_once (__gthread_once_t *__once, void (*__func)(void));
 

@@ -1,3 +1,137 @@
+2019-12-30  Marek Polacek  <polacek@redhat.com>
+
+	* decl.c (reshape_init_r): Remove assert.
+
+2019-12-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl2.c (delete_sanity): Add location_t parameter and use
+	it throughout.
+	* init.c (build_vec_delete_1): Likewise.
+	(build_delete): Likewise.
+	(build_vec_delete): Likewise.
+	(perform_target_ctor): Adjust call.
+	(perform_member_init): Likewise.
+	(build_vec_init): Likewise.
+	* decl.c (cxx_maybe_build_cleanup): Likewise.
+	* pt.c (tsubst_copy_and_build): Likewise.
+	* parser.c (cp_parser_delete_expression): Likewise, pass the
+	combined_loc.
+	* cp-tree.h: Update declarations.
+
+2019-12-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88337 - Implement P1327R1: Allow dynamic_cast in constexpr.
+	* constexpr.c (cxx_dynamic_cast_fn_p): New function.
+	(extract_obj_from_addr_offset): New function.
+	(get_component_with_type): New function.
+	(cxx_eval_dynamic_cast_fn): New function.
+	(cxx_eval_call_expression): Call cxx_eval_dynamic_cast_fn for a call
+	to __dynamic_cast.
+	(potential_constant_expression_1): Don't give up on
+	cxx_dynamic_cast_fn_p.
+	* rtti.c (build_dynamic_cast_1): When creating a call to
+	__dynamic_cast, use the location of the original expression.
+
+2019-12-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92438
+	* parser.c (cp_parser_constructor_declarator_p): If open paren
+	is followed by RID_ATTRIBUTE, skip over the attribute tokens and
+	try to parse type specifier.
+
+2019-12-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c++/92789
+	* typeck.c (structural_comptypes): Make sure that two vector types
+	agree on gnu_vector_type_p.
+
+2019-12-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cvt.c (ocp_convert): Apply rvalue to the source of vector
+	conversions.
+	* typeck.c (build_reinterpret_cast_1): Likewise.
+
+2019-12-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92745 - bogus error when initializing array of vectors.
+	* decl.c (reshape_init_r): For a nested compound literal, do
+	call reshape_init_{class,array,vector}.
+
+	PR c++/92974 - bogus location for enum and non-enum in ?: warning.
+	* tree.c (build_min_non_dep): Use the location of NON_DEP when
+	building the expression.
+
+2019-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92965
+	* pt.c (invalid_nontype_parm_type_p): Call structural_type_p with
+	explain=true only if emitting error.
+
+	PR c++/92966
+	* method.c (early_check_defaulted_comparison): Don't set
+	DECL_MAYBE_DELETED when returning false.
+
+	PR c++/92973
+	* method.c (early_check_defaulted_comparison): For C++17 and earlier
+	diagnose defaulted comparison operators.
+
+	PR c++/92666
+	* call.c (convert_arg_to_ellipsis): For floating point or
+	decltype(nullptr) arguments call mark_rvalue_use.
+
+	PR c++/92992
+	* call.c (convert_arg_to_ellipsis): For decltype(nullptr) arguments
+	that have side-effects use cp_build_compound_expr.
+
+2019-12-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl2.c (c_parse_final_cleanups): Always call collect_source_ref on
+	the main input filename.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* parser.c (cp_parser_omp_clause_name): Support attach and detach
+	clauses.
+	(cp_parser_omp_var_list_no_open): Add ALLOW_DEREF optional parameter.
+	Parse deref if true.
+	(cp_parser_omp_var_list): Add ALLOW_DEREF optional parameter.  Pass to
+	cp_parser_omp_var_list_no_open.
+	(cp_parser_oacc_data_clause): Support attach and detach clauses.
+	Update call to cp_parser_omp_var_list_no_open.
+	(cp_parser_oacc_all_clauses): Support attach and detach.
+	(OACC_DATA_CLAUSE_MASK, OACC_ENTER_DATA_CLAUSE_MASK,
+	OACC_KERNELS_CLAUSE_MASK, OACC_PARALLEL_CLAUSE_MASK,
+	OACC_SERIAL_CLAUSE_MASK): Add PRAGMA_OACC_CLAUSE_ATTACH.
+	(OACC_EXIT_DATA_CLAUSE_MASK): Add PRAGMA_OACC_CLAUSE_DETACH.
+	* semantics.c (handle_omp_array_sections_1): Reject subarrays for
+	attach and detach.
+	(handle_omp_array_sections): Use GOMP_MAP_ATTACH_DETACH instead of
+	GOMP_MAP_ALWAYS_POINTER for OpenACC.
+	(cp_oacc_check_attachments): New function.
+	(finish_omp_clauses): Use above function.  Allow structure fields and
+	class members to appear in OpenACC data clauses.  Support
+	GOMP_MAP_ATTACH_DETACH.  Support deref.
+
+2019-12-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52320 - EH cleanups for partially constructed arrays.
+	* typeck2.c (split_nonconstant_init_1): Add nested parm.
+	Add cleanup for whole array if true.
+
+	PR c++/66139 - EH cleanups for partially constructed aggregates.
+	PR c++/57510
+	* cp-gimplify.c (cp_gimplify_init_expr): Use split_nonconstant_init.
+	* typeck2.c (split_nonconstant_init): Handle non-variable dest.
+	(split_nonconstant_init_1): Clear TREE_SIDE_EFFECTS.
+	* tree.c (is_local_temp): New.
+
+2019-12-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91165 follow-on tweak
+	* constexpr.c (cxx_eval_call_expression): Use
+	unshare_expr_without_location.
+
 2019-12-19  Julian Brown  <julian@codesourcery.com>
 	    Maciej W. Rozycki  <macro@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>

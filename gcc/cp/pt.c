@@ -19393,7 +19393,7 @@ tsubst_copy_and_build (tree t,
       {
 	tree op0 = RECUR (TREE_OPERAND (t, 0));
 	tree op1 = RECUR (TREE_OPERAND (t, 1));
-	RETURN (delete_sanity (op0, op1,
+	RETURN (delete_sanity (input_location, op0, op1,
 			       DELETE_EXPR_USE_VEC (t),
 			       DELETE_EXPR_USE_GLOBAL (t),
 			       complain));
@@ -25914,11 +25914,13 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
 	return true;
       if (!structural_type_p (type))
 	{
-	  auto_diagnostic_group d;
 	  if (complain & tf_error)
-	    error ("%qT is not a valid type for a template non-type parameter "
-		   "because it is not structural", type);
-	  structural_type_p (type, true);
+	    {
+	      auto_diagnostic_group d;
+	      error ("%qT is not a valid type for a template non-type "
+		     "parameter because it is not structural", type);
+	      structural_type_p (type, true);
+	    }
 	  return true;
 	}
       return false;

@@ -309,7 +309,7 @@
   if (!TARGET_PREFIXED_ADDR)
     return 0;
 
-  return SIGNED_34BIT_OFFSET_P (INTVAL (op));
+  return SIGNED_INTEGER_34BIT_P (INTVAL (op));
 })
 
 ;; Return 1 if op is a register that is not special.

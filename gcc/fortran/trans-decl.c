@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-types.h"
 #include "trans-array.h"
 #include "trans-const.h"
+#include "intrinsic.h" 		/* For gfc_resolve_index_func.  */
 /* Only for gfc_trans_code.  Shouldn't need to include this.  */
 #include "trans-stmt.h"
 #include "gomp-constants.h"
@@ -2210,7 +2211,28 @@ module_sym:
 		{
 		  /* All specific intrinsics take less than 5 arguments.  */
 		  gcc_assert (isym->formal->next->next->next->next == NULL);
-		  isym->resolve.f4 (&e, &argexpr, NULL, NULL, NULL);
+		  if (isym->resolve.f1m == gfc_resolve_index_func)
+		    {
+		      /* gfc_resolve_index_func is special because it takes a
+			 gfc_actual_arglist instead of individual arguments.  */
+		      gfc_actual_arglist *a, *n;
+		      int i;
+		      a = gfc_get_actual_arglist();
+		      n = a;
+
+		      for (i = 0; i < 4; i++)
+			{
+			  n->next = gfc_get_actual_arglist();
+			  n = n->next;
+			}
+
+		      a->expr = &argexpr;
+		      isym->resolve.f1m (&e, a);
+		      a->expr = NULL;
+		      gfc_free_actual_arglist (a);
+		    }
+		  else
+		    isym->resolve.f4 (&e, &argexpr, NULL, NULL, NULL);
 		}
 	    }
 	}

@@ -953,10 +953,43 @@ case ${target} in
 *-*-vxworks*)
   tmake_file=t-vxworks
   xm_defines=POSIX
+
   extra_options="${extra_options} vxworks.opt"
   extra_objs="$extra_objs vxworks.o"
-  use_gcc_stdint=provide
+
+  c_target_objs="${c_target_objs} vxworks-c.o"
+  cxx_target_objs="${cxx_target_objs} vxworks-c.o"
+  extra_headers="${extra_headers} ../vxworks/vxworks-predef.h"
+  target_has_targetcm="yes"
+
+  # This private header exposes a consistent interface for checks on
+  # the VxWorks version our runtime header files need to perform, based on
+  # what the system headers adverstise:
+
+  extra_headers="${extra_headers} ../vxworks/_vxworks-versions.h"
+
+  # Starting from VxWorks 7, the system comes with a Dinkumware
+  # environment which requires the inclusion of "yvals.h" before other
+  # system headers.  We provide wrapped versions of a few headers to
+  # accomodate such constraints:
+
+  extra_headers="${extra_headers} ../vxworks/_yvals.h"
+  extra_headers="${extra_headers} ../vxworks/_yvals-wrapper.h"
+
+  extra_headers="${extra_headers} ../vxworks/math.h ../vxworks/complex.h"
+  extra_headers="${extra_headers} ../vxworks/inttypes.h ../vxworks/setjmp.h"
+
+  # We provide stdint.h ...
+
   tm_file="${tm_file} vxworks-stdint.h"
+
+  # .. only through the yvals conditional wrapping mentioned above
+  # to abide by the VxWorks 7 expectations.  The final copy is performed
+  # explicitly by a t-vxworks Makefile rule.
+
+  use_gcc_stdint=none
+  extra_headers="${extra_headers} ../../ginclude/stdint-gcc.h"
+
   case ${enable_threads} in
     no) ;;
     "" | yes | vxworks) thread_file='vxworks' ;;
@@ -2919,7 +2952,7 @@ powerpc-wrs-vxworks*)
 	tm_file="${tm_file} elfos.h gnu-user.h freebsd-spec.h rs6000/sysv4.h"
 	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-ppccomm rs6000/t-vxworks"
 	extra_options="${extra_options} rs6000/sysv4.opt"
-	extra_headers=ppc-asm.h
+	extra_headers="${extra_headers} ppc-asm.h"
 	case ${target} in
           *-vxworksmils*)
             tm_file="${tm_file} vx-common.h vxworksae.h rs6000/vxworks.h rs6000/vxworksmils.h"

@@ -6452,17 +6452,15 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
 	       by the front end.  Here we have e.g. {.__pfn=0B, .__delta=0},
 	       which is missing outermost braces.  We should warn below, and
 	       one of the routines below will wrap it in additional { }.  */;
-	  /* For a nested compound literal, there is no need to reshape since
-	     we called reshape_init in finish_compound_literal, before calling
-	     digest_init.  */
-	  else if (COMPOUND_LITERAL_P (stripped_init)
-		   /* Similarly, a CONSTRUCTOR of the target's type is a
-		      previously digested initializer.  */
-		   || same_type_ignoring_top_level_qualifiers_p (type,
-								 init_type))
+	  /* For a nested compound literal, proceed to specialized routines,
+	     to handle initialization of arrays and similar.  */
+	  else if (COMPOUND_LITERAL_P (stripped_init))
+	    gcc_assert (!BRACE_ENCLOSED_INITIALIZER_P (stripped_init));
+	  /* A CONSTRUCTOR of the target's type is a previously
+	     digested initializer.  */
+	  else if (same_type_ignoring_top_level_qualifiers_p (type, init_type))
 	    {
 	      ++d->cur;
-	      gcc_assert (!BRACE_ENCLOSED_INITIALIZER_P (stripped_init));
 	      return init;
 	    }
 	  else
@@ -17404,7 +17402,7 @@ cxx_maybe_build_cleanup (tree decl, tsubst_flags_t complain)
       else
 	addr = build_address (decl);
 
-      call = build_delete (TREE_TYPE (addr), addr,
+      call = build_delete (input_location, TREE_TYPE (addr), addr,
 			   sfk_complete_destructor, flags, 0, complain);
       if (call == error_mark_node)
 	cleanup = error_mark_node;

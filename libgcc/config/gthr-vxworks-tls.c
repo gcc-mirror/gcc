@@ -45,6 +45,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <errno.h>
 #endif
 
+#include <_vxworks-versions.h>
+
 /* Thread-local storage.
 
    A gthread TLS key is simply an offset in an array, the address of which
@@ -91,10 +93,10 @@ static int self_owner;
    it is only removed when unloading this module.  */
 static volatile int delete_hook_installed;
 
-/* TLS data access internal API.  A straight __thread variable on VxWorks 7,
-   a pointer returned by kernel provided routines otherwise.  */
+/* TLS data access internal API.  A straight __thread variable starting with
+   VxWorks 7, a pointer returned by kernel provided routines otherwise.  */
 
-#ifdef __VXWORKS7__
+#if _VXWORKS_MAJOR_GE(7)
 
 static __thread struct tls_data *__gthread_tls_data;
 
@@ -118,7 +120,7 @@ extern void __gthread_leave_tls_dtor_context (void);
 #define VX_ENTER_TLS_DTOR() __gthread_enter_tls_dtor_context ()
 #define VX_LEAVE_TLS_DTOR() __gthread_leave_tls_dtor_context ()
 
-#endif /* __VXWORKS7__ */
+#endif
 
 /* This is a global structure which records all of the active keys.
 
@@ -293,7 +295,7 @@ __gthread_getspecific (__gthread_key_t key)
   if (key >= MAX_KEYS)
     return 0;
 
-  data = GET_VX_TLS_DATA();
+  data = VX_GET_TLS_DATA();
 
   if (!data)
     return 0;

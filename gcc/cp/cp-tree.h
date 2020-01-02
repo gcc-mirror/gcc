@@ -6735,7 +6735,8 @@ extern bool vague_linkage_p			(tree);
 extern void grokclassfn				(tree, tree,
 						 enum overload_flags);
 extern tree grok_array_decl			(location_t, tree, tree, bool);
-extern tree delete_sanity			(tree, tree, bool, int, tsubst_flags_t);
+extern tree delete_sanity			(location_t, tree, tree, bool,
+						 int, tsubst_flags_t);
 extern tree check_classfn			(tree, tree, tree);
 extern void check_member_template		(tree);
 extern tree grokfield (const cp_declarator *, cp_decl_specifier_seq *,
@@ -6877,11 +6878,11 @@ extern tree build_new				(vec<tree, va_gc> **, tree, tree,
 extern tree get_temp_regvar			(tree, tree);
 extern tree build_vec_init			(tree, tree, tree, bool, int,
                                                  tsubst_flags_t);
-extern tree build_delete			(tree, tree,
+extern tree build_delete			(location_t, tree, tree,
 						 special_function_kind,
 						 int, int, tsubst_flags_t);
 extern void push_base_cleanups			(void);
-extern tree build_vec_delete			(tree, tree,
+extern tree build_vec_delete			(location_t, tree, tree,
 						 special_function_kind, int,
 						 tsubst_flags_t);
 extern tree create_temporary_var		(tree);
@@ -7608,6 +7609,7 @@ extern tree build_min_non_dep_call_vec		(tree, tree, vec<tree, va_gc> *);
 extern vec<tree, va_gc>* vec_copy_and_insert    (vec<tree, va_gc>*, tree, unsigned);
 extern tree build_cplus_new			(tree, tree, tsubst_flags_t);
 extern tree build_local_temp			(tree);
+extern bool is_local_temp			(tree);
 extern tree build_aggr_init_expr		(tree, tree);
 extern tree get_target_expr			(tree);
 extern tree get_target_expr_sfinae		(tree, tsubst_flags_t);

@@ -3073,7 +3073,8 @@ gfc_match_stopcode (gfc_statement st)
 
   if (e != NULL)
     {
-      gfc_simplify_expr (e, 0);
+      if (!gfc_simplify_expr (e, 0))
+	goto cleanup;
 
       /* Test for F95 and F2003 style STOP stop-code.  */
       if (e->expr_type != EXPR_CONSTANT && (f95 || f03))
@@ -3085,9 +3086,7 @@ gfc_match_stopcode (gfc_statement st)
 
       /* Use the machinery for an initialization expression to reduce the
 	 stop-code to a constant.  */
-      gfc_init_expr_flag = true;
       gfc_reduce_init_expr (e);
-      gfc_init_expr_flag = false;
 
       /* Test for F2008 style STOP stop-code.  */
       if (e->expr_type != EXPR_CONSTANT && f08)
@@ -4587,6 +4586,23 @@ gfc_match_nullify (void)
 	{
 	  gfc_error ("Pointer object at %C shall not be coindexed");
 	  goto cleanup;
+	}
+
+      /* Check for valid array pointer object.  Bounds remapping is not
+	 allowed with NULLIFY.  */
+      if (p->ref)
+	{
+	  gfc_ref *remap = p->ref;
+	  for (; remap; remap = remap->next)
+	    if (!remap->next && remap->type == REF_ARRAY
+		&& remap->u.ar.type != AR_FULL)
+	      break;
+	  if (remap)
+	    {
+	      gfc_error ("NULLIFY does not allow bounds remapping for "
+			 "pointer object at %C");
+	      goto cleanup;
+	    }
 	}
 
       /* build ' => NULL() '.  */

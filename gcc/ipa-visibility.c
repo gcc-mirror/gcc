@@ -220,6 +220,14 @@ cgraph_externally_visible_p (struct cgraph_node *node,
       && lookup_attribute ("dllexport",
 			   DECL_ATTRIBUTES (node->decl)))
     return true;
+
+  /* Limitation of gas requires us to output targets of symver aliases as
+     global symbols.  This is binutils PR 25295.  */
+  ipa_ref *ref;
+  FOR_EACH_ALIAS (node, ref)
+    if (ref->referring->symver)
+      return true;
+
   if (node->resolution == LDPR_PREVAILING_DEF_IRONLY)
     return false;
   /* When doing LTO or whole program, we can bring COMDAT functoins static.
@@ -284,14 +292,13 @@ varpool_node::externally_visible_p (void)
 			   DECL_ATTRIBUTES (decl)))
     return true;
 
-  /* See if we have linker information about symbol not being used or
-     if we need to make guess based on the declaration.
+  /* Limitation of gas requires us to output targets of symver aliases as
+     global symbols.  This is binutils PR 25295.  */
+  ipa_ref *ref;
+  FOR_EACH_ALIAS (this, ref)
+    if (ref->referring->symver)
+      return true;
 
-     Even if the linker clams the symbol is unused, never bring internal
-     symbols that are declared by user as used or externally visible.
-     This is needed for i.e. references from asm statements.   */
-  if (used_from_object_file_p ())
-    return true;
   if (resolution == LDPR_PREVAILING_DEF_IRONLY)
     return false;
 

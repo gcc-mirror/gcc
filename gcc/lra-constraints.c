@@ -2722,11 +2722,24 @@ process_alt_operands (int only_alternative)
 			  && (targetm.preferred_output_reload_class
 			      (op, this_alternative) == NO_REGS))))
 		{
-		  if (lra_dump_file != NULL)
-		    fprintf (lra_dump_file,
-			     "            %d Non-prefered reload: reject+=%d\n",
-			     nop, LRA_MAX_REJECT);
-		  reject += LRA_MAX_REJECT;
+		  if (offmemok && REG_P (op))
+		    {
+		      if (lra_dump_file != NULL)
+			fprintf
+			  (lra_dump_file,
+			   "            %d Spill pseudo into memory: reject+=3\n",
+			   nop);
+		      reject += 3;
+		    }
+		  else
+		    {
+		      if (lra_dump_file != NULL)
+			fprintf
+			  (lra_dump_file,
+			   "            %d Non-prefered reload: reject+=%d\n",
+			   nop, LRA_MAX_REJECT);
+		      reject += LRA_MAX_REJECT;
+		    }
 		}
 
 	      if (! (MEM_P (op) && offmemok)

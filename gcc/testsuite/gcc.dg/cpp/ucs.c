@@ -16,6 +16,8 @@
 #define short           +2 
 #define long            +3
 
+#if !defined(WCHAR_MAX)
+
 #if __WCHAR_TYPE__ == 0
 # define WCHAR_MAX      INT_MAX
 #elif __WCHAR_TYPE__ == 1
@@ -26,6 +28,8 @@
 # define WCHAR_MAX      LONG_MAX
 #else
 # error wacky wchar_t
+#endif
+
 #endif
 
 #undef unsigned

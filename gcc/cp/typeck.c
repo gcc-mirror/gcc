@@ -1425,7 +1425,8 @@ structural_comptypes (tree t1, tree t2, int strict)
       break;
 
     case VECTOR_TYPE:
-      if (maybe_ne (TYPE_VECTOR_SUBPARTS (t1), TYPE_VECTOR_SUBPARTS (t2))
+      if (gnu_vector_type_p (t1) != gnu_vector_type_p (t2)
+	  || maybe_ne (TYPE_VECTOR_SUBPARTS (t1), TYPE_VECTOR_SUBPARTS (t2))
 	  || !same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
 	return false;
       break;
@@ -7863,7 +7864,7 @@ build_reinterpret_cast_1 (location_t loc, tree type, tree expr,
       return build_nop_reinterpret (type, expr);
     }
   else if (gnu_vector_type_p (type))
-    return convert_to_vector (type, expr);
+    return convert_to_vector (type, rvalue (expr));
   else if (gnu_vector_type_p (intype)
 	   && INTEGRAL_OR_ENUMERATION_TYPE_P (type))
     return convert_to_integer_nofold (type, expr);

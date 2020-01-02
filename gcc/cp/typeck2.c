@@ -602,7 +602,7 @@ cxx_incomplete_type_error (location_t loc, const_tree value, const_tree type)
    generated statements.  */
 
 static bool
-split_nonconstant_init_1 (tree dest, tree init)
+split_nonconstant_init_1 (tree dest, tree init, bool nested)
 {
   unsigned HOST_WIDE_INT idx, tidx = HOST_WIDE_INT_M1U;
   tree field_index, value;
@@ -626,6 +626,12 @@ split_nonconstant_init_1 (tree dest, tree init)
 	  tree code = build_vec_init (dest, NULL_TREE, init, false, 1,
 				      tf_warning_or_error);
 	  add_stmt (code);
+	  if (nested)
+	    /* Also clean up the whole array if something later in an enclosing
+	       init-list throws.  */
+	    if (tree cleanup = cxx_maybe_build_cleanup (dest,
+							tf_warning_or_error))
+	    finish_eh_cleanup (cleanup);
 	  return true;
 	}
       /* FALLTHRU */
@@ -655,7 +661,7 @@ split_nonconstant_init_1 (tree dest, tree init)
 		sub = build3 (COMPONENT_REF, inner_type, dest, field_index,
 			      NULL_TREE);
 
-	      if (!split_nonconstant_init_1 (sub, value))
+	      if (!split_nonconstant_init_1 (sub, value, true))
 		complete_p = false;
 	      else
 		{
@@ -749,6 +755,7 @@ split_nonconstant_init_1 (tree dest, tree init)
 
   /* The rest of the initializer is now a constant. */
   TREE_CONSTANT (init) = 1;
+  TREE_SIDE_EFFECTS (init) = 0;
 
   /* We didn't split out anything.  */
   if (num_split_elts == 0)
@@ -774,11 +781,19 @@ split_nonconstant_init (tree dest, tree init)
     {
       init = cp_fully_fold_init (init);
       code = push_stmt_list ();
-      if (split_nonconstant_init_1 (dest, init))
+      if (split_nonconstant_init_1 (dest, init, false))
 	init = NULL_TREE;
       code = pop_stmt_list (code);
-      DECL_INITIAL (dest) = init;
-      TREE_READONLY (dest) = 0;
+      if (VAR_P (dest) && !is_local_temp (dest))
+	{
+	  DECL_INITIAL (dest) = init;
+	  TREE_READONLY (dest) = 0;
+	}
+      else if (init)
+	{
+	  tree ie = build2 (INIT_EXPR, void_type_node, dest, init);
+	  code = add_stmt_to_compound (ie, code);
+	}
     }
   else if (TREE_CODE (init) == STRING_CST
 	   && array_of_runtime_bound_p (TREE_TYPE (dest)))

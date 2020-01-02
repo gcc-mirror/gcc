@@ -18,6 +18,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* ------------------------- Common SPEC strings -------------------------  */
+
 /* Most of these will probably be overridden by subsequent headers.  We
    undefine them here just in case, and define VXWORKS_ versions of each,
    to be used in port-specific vxworks.h.  */
@@ -39,24 +41,36 @@ along with GCC; see the file COPYING3.  If not see
 #define VXWORKS_ENDFILE_SPEC ""
 #define VXWORKS_CC1_SPEC ""
 
-/* VxWorks cannot have dots in constructor labels, because it uses a
-   mutant variation of collect2 that generates C code instead of
-   assembly.  Thus each constructor label must be a legitimate C
-   symbol.  FIXME: Have VxWorks use real collect2 instead.  */
-#undef NO_DOLLAR_IN_LABEL
-#define NO_DOT_IN_LABEL
+/* ----------------------- Common type descriptions -----------------------  */
 
-/* VxWorks uses wchar_t == unsigned short (UCS2) on all architectures.  */
+/* Regardless of the target architecture, VxWorks uses a signed 32bit
+   integer for wchar_t starting with vx7 SR06xx.  An unsigned short
+   otherwise.  */
+#if TARGET_VXWORKS7
+
+#undef WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE 32
 #undef WCHAR_TYPE
-#define WCHAR_TYPE "short unsigned int"
+#define WCHAR_TYPE (TARGET_VXWORKS64 ? "int" : "long int")
+
+#else
+
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 16
+#undef WCHAR_TYPE
+#define WCHAR_TYPE "short unsigned int"
 
-/* Likewise wint_t.  */
-#undef WINT_TYPE
-#define WINT_TYPE "short unsigned int"
+#endif
+
+/* The VxWorks headers base wint_t on the definitions used for wchar_t.
+   Do the same here to make sure they remain in sync, in case WCHAR_TYPE
+   gets redefined for a specific CPU architecture.  */
 #undef WINT_TYPE_SIZE
-#define WINT_TYPE_SIZE 16
+#define WINT_TYPE_SIZE WCHAR_TYPE_SIZE
+#undef WINT_TYPE
+#define WINT_TYPE WCHAR_TYPE
+
+/* ---------------------- Debug and unwind info formats ------------------  */
 
 /* Dwarf2 unwind info is supported, unless overriden by a request for a target
    specific format.
@@ -82,6 +96,15 @@ along with GCC; see the file COPYING3.  If not see
 #undef DBX_DEBUGGING_INFO
 #undef XCOFF_DEBUGGING_INFO
 #undef VMS_DEBUGGING_INFO
+
+/* ------------------------ Misc configuration bits ----------------------  */
+
+/* VxWorks cannot have dots in constructor labels, because it uses a
+   mutant variation of collect2 that generates C code instead of
+   assembly.  Thus each constructor label must be a legitimate C
+   symbol.  FIXME: Have VxWorks use real collect2 instead.  */
+#undef NO_DOLLAR_IN_LABEL
+#define NO_DOT_IN_LABEL
 
 /* Kernel mode doesn't have ctors/dtors, but RTP mode does.  */
 #define TARGET_HAVE_CTORS_DTORS false

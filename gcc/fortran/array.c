@@ -1185,9 +1185,10 @@ walk_array_constructor (gfc_typespec *ts, gfc_constructor_base head)
 	  if (m == MATCH_ERROR)
 	    return m;
 	}
-      else if (!gfc_convert_type (e, ts, 1) && e->ts.type != BT_UNKNOWN)
+      else if (!gfc_convert_type_warn (e, ts, 1, 1, true)
+	       && e->ts.type != BT_UNKNOWN)
 	return MATCH_ERROR;
-  }
+    }
   return MATCH_YES;
 }
 
@@ -1386,7 +1387,7 @@ check_element_type (gfc_expr *expr, bool convert)
     return 0;
 
   if (convert)
-    return gfc_convert_type(expr, &constructor_ts, 1) ? 0 : 1;
+    return gfc_convert_type_warn (expr, &constructor_ts, 1, 1, true) ? 0 : 1;
 
   gfc_error ("Element in %s array constructor at %L is %s",
 	     gfc_typename (&constructor_ts), &expr->where,

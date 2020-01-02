@@ -1,3 +1,23 @@
+2019-12-30  Olivier Hainque  <hainque@adacore.com>
+
+	* config/gthr-vxworks.h: Use _vxworks-versions.h.
+	* config/gthr-vxworks-tls.c: Likewise.
+
+2019-12-30  Olivier Hainque  <hainque@adacore.com>
+
+	* config/gthr-vxworks.h (GTHREAD_ONCE_INIT): Use
+	standard zero-initializer syntax.
+
+2019-12-30  Olivier Hainque  <hainque@adacore.com>
+
+	* config/gthr-vxworks-tls.c (__gthread_getspecific): Fix
+	reference to the internal VX_GET_TLS_DATA interface.
+
+2019-12-30  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxcrtstuff.c: Fix incorrect spelling of
+	USE_INITFINI_ARRAY in guard.
+
 2019-12-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config.host: s/msp430*-*-elf/msp430-*-elf*.
