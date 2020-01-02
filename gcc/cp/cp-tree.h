@@ -185,8 +185,6 @@ enum cp_tree_index
     CPTI_NULLPTR,
     CPTI_NULLPTR_TYPE,
 
-    CPTI_ALIGN_TYPE,
-
     CPTI_ANY_TARG,
 
     CPTI_MODULE_HWM,
@@ -196,6 +194,8 @@ enum cp_tree_index
     /* We must find these via the global namespace.  */
     CPTI_STD,
     CPTI_ABI,
+
+    CPTI_ALIGN_TYPE,
 
     /* These are lazily inited.  */
     CPTI_TERMINATE_FN,

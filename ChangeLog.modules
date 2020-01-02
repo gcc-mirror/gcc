@@ -1,6 +1,11 @@
 2020-01-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (CPTI_ALIGN_TYPE): Not a global tree.
+	gcc/testsuite/
+	* g++.dg/modules/merge-9{.h,_a.H,_b.C}: New.
+
+	gcc/cp/
 	* module.cc (nodel_decl_has): Rename to ...
 	(duplicate_hash): ... here.  Allow binfos.
 	(trees_{in,out}::binfo_mergeable): New.

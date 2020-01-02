@@ -14407,7 +14407,7 @@ module_state::read_namespaces (unsigned num)
       bool inline_p = flags & 2;
       bool export_p = flags & 1;
 
-      dump () && dump ("Read namespace:%u %P%s%s%s, %u",
+      dump () && dump ("Read namespace:%u %P%s%s%s",
 		       entity_index, parent, id, export_p ? ", export" : "",
 		       public_p ? ", public" : "",
 		       inline_p ? ", inline" : "");
