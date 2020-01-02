@@ -1,5 +1,10 @@
 2020-01-02  Nathan Sidwell  <nathan@acm.org>
 
+	Apply trunk r279473.
+	gcc/cp/
+	* constexpr.cc (check_constexpr_fundef): Clear non-potential
+	result before registering.
+
 	Merge trunk r279472.
 
 2019-12-19  Nathan Sidwell  <nathan@acm.org>
