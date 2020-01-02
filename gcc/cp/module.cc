@@ -2843,7 +2843,6 @@ private:
   bool lang_decl_bools (tree);
   bool lang_decl_vals (tree);
   bool lang_vals (tree);
-  tree tree_binfo ();
   bool tree_node_bools (tree);
   bool tree_node_vals (tree);
   tree tree_value ();
@@ -2983,7 +2982,6 @@ private:
   void lang_decl_bools (tree);
   void lang_decl_vals (tree);
   void lang_vals (tree);
-  tree tree_binfo (tree, int, bool);
   void tree_node_bools (tree);
   void tree_node_vals (tree);
 
@@ -6656,82 +6654,6 @@ trees_in::lang_type_vals (tree t)
   return !get_overrun ();
 }
 
-tree
-trees_out::tree_binfo (tree binfo, int depth, bool via_virt)
-{
-  tree dom;
-
-  if (tree inh = BINFO_INHERITANCE_CHAIN (binfo))
-    {
-      bool is_virt = BINFO_VIRTUAL_P (binfo);
-      dom = tree_binfo (inh, depth + !via_virt, is_virt || via_virt);
-      if (!via_virt && streaming_p ())
-	{
-	  vec<tree, va_gc> *binfo_vec;
-	  if (is_virt)
-	    /* A virtual base.  Look on the CLASSTYPE_VIRTUALS.  */
-	    binfo_vec = CLASSTYPE_VBASECLASSES (dom);
-	  else
-	    /* Look along BINFO_BASE_BINFOS (inh).  */
-	    binfo_vec = BINFO_BASE_BINFOS (inh);
-	  unsigned ix;
-	  for (ix = 0; (*binfo_vec)[ix] != binfo; ix++)
-	    ;
-	  dump (dumper::TREE)
-	    && dump ("Wrote derived %sBINFO %u %N of %N",
-		     is_virt ? "virtual " : "", ix, binfo, inh);
-	  u (ix);
-	}
-    }
-  else
-    {
-      dom = BINFO_TYPE (binfo);
-      tree_node (dom);
-
-      if (streaming_p ())
-	{
-	  dump (dumper::TREE) && dump ("Wrote dominating BINFO %N", dom);
-	  i (via_virt ? -depth : depth);
-	}
-    }
-  return dom;
-}
-
-tree
-trees_in::tree_binfo ()
-{
-  tree dom = tree_node ();
-  dump (dumper::TREE) && dump ("Read dominating binfo %N", dom);
-  int depth = i ();
-  tree binfo = TYPE_BINFO (dom);
-  if (depth)
-    {
-      vec<tree, va_gc> *binfo_vec = NULL;
-      if (depth < 0)
-	{
-	  /* A virtual base.  Look on the CLASSTYPE_VIRTUALS.  */
-	  binfo_vec = CLASSTYPE_VBASECLASSES (dom);
-	  depth = -depth;
-	}
-      for (; depth--; binfo_vec = NULL)
-	{
-	  if (!binfo_vec)
-	    binfo_vec = BINFO_BASE_BINFOS (binfo);
-	  unsigned ix = u ();
-	  if (vec_safe_length (binfo_vec) < ix)
-	    {
-	      set_overrun ();
-	      binfo = NULL_TREE;
-	      break;
-	    }
-	  else
-	    binfo = (*binfo_vec)[ix];
-	  dump (dumper::TREE) && dump ("Read derived BINFO %N", binfo);
-	}
-    }
-  return binfo;
-}
-
 /* Write out the bools of T, including information about any
    LANG_SPECIFIC information.  Including allocation of any lang
    specific object.  */
@@ -8696,12 +8618,24 @@ trees_out::tree_node (tree t)
 	 here means the dominating type is not in this SCC.  */
       if (streaming_p ())
 	i (tt_binfo);
-      tree_binfo (t, 0, false);
+      tree dom = t;
+      while (tree parent = BINFO_INHERITANCE_CHAIN (dom))
+	dom = parent;
+      tree type = BINFO_TYPE (dom);
+      gcc_checking_assert (TYPE_BINFO (type) == dom);
+      tree_node (type);
+      if (streaming_p ())
+	{
+	  unsigned ix = 0;
+	  for (; dom != t; dom = TREE_CHAIN (dom))
+	    ix++;
+	  u (ix);
+	}
 
       gcc_checking_assert (!TREE_VISITED (t));
       int tag = insert (t);
       if (streaming_p ())
-	dump (dumper::TREE) && dump ("Inserting binfo:%d %N", tag, t);
+	dump (dumper::TREE) && dump ("Inserting binfo:%d %N->%N", tag, type, t);
       goto done;
     }
 
@@ -9244,13 +9178,23 @@ trees_in::tree_node ()
     case tt_binfo:
       /* A BINFO.  Walk the tree of the dominating type.  */
       {
-	res = tree_binfo ();
+	tree type = tree_node ();
+	if (type)
+	  {
+	    res = TYPE_BINFO (type);
+	    for (unsigned ix = u (); res && ix; ix--)
+	      res = TREE_CHAIN (res);
+
+	    if (!res)
+	      set_overrun ();
+	  }
+
 	if (get_overrun ())
 	  break;
 
 	/* Insert binfo into backreferences.  */
 	tag = insert (res);
-	dump (dumper::TREE) && dump ("Read binfo:%d %N", tag, res);
+	dump (dumper::TREE) && dump ("Read binfo:%d %N->%N", tag, type, res);
       }
       break;
 

@@ -1,5 +1,9 @@
 2020-01-02  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_{in,out}::tree_binfo): Delete.
+	(trees_{in,out}::tree_node): Use binfo chain to find binfo.
+
 	Merge trunk r279811.
 	Update all the years!
 
