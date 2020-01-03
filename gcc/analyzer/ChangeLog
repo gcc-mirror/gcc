@@ -1,5 +1,17 @@
 2020-01-14  David Malcolm  <dmalcolm@redhat.com>
 
+	* checker-path.h (checker_path::get_checker_event): New function.
+	(checker_path): Add DISABLE_COPY_AND_ASSIGN; make fields private.
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_for_sm_diagnostic): Replace direct
+	access to checker_path::m_events with accessor functions.  Fix
+	overlong line.
+	(diagnostic_manager::prune_interproc_events): Replace direct
+	access to checker_path::m_events with accessor functions.
+	(diagnostic_manager::finish_pruning): Likewise.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
 	* checker-path.h (checker_event::clone): Delete vfunc decl.
 	(debug_event::clone): Delete vfunc impl.
 	(custom_event::clone): Delete vfunc impl.

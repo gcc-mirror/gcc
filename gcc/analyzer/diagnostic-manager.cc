@@ -961,10 +961,10 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 					     tree var,
 					     state_machine::state_t state) const
 {
-  int idx = path->m_events.length () - 1;
-  while (idx >= 0 && idx < (signed)path->m_events.length ())
+  int idx = path->num_events () - 1;
+  while (idx >= 0 && idx < (signed)path->num_events ())
     {
-      checker_event *base_event = path->m_events[idx];
+      checker_event *base_event = path->get_checker_event (idx);
       if (get_logger ())
 	{
 	  if (sm)
@@ -1096,7 +1096,8 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		log ("filtering event %i: CFG edge", idx);
 		path->delete_event (idx);
 		/* Also delete the corresponding EK_END_CFG_EDGE.  */
-		gcc_assert (path->m_events[idx]->m_kind == EK_END_CFG_EDGE);
+		gcc_assert (path->get_checker_event (idx)->m_kind
+			    == EK_END_CFG_EDGE);
 		path->delete_event (idx);
 	      }
 	  }
@@ -1193,18 +1194,19 @@ diagnostic_manager::prune_interproc_events (checker_path *path) const
   do
     {
       changed = false;
-      int idx = path->m_events.length () - 1;
+      int idx = path->num_events () - 1;
       while (idx >= 0)
 	{
 	  /* Prune [..., call, function-entry, return, ...] triples.  */
-	  if (idx + 2 < (signed)path->m_events.length ()
-	      && path->m_events[idx]->is_call_p ()
-	      && path->m_events[idx + 1]->is_function_entry_p ()
-	      && path->m_events[idx + 2]->is_return_p ())
+	  if (idx + 2 < (signed)path->num_events ()
+	      && path->get_checker_event (idx)->is_call_p ()
+	      && path->get_checker_event (idx + 1)->is_function_entry_p ()
+	      && path->get_checker_event (idx + 2)->is_return_p ())
 	    {
 	      if (get_logger ())
 		{
-		  label_text desc (path->m_events[idx]->get_desc (false));
+		  label_text desc
+		    (path->get_checker_event (idx)->get_desc (false));
 		  log ("filtering events %i-%i:"
 		       " irrelevant call/entry/return: %s",
 		       idx, idx + 2, desc.m_buffer);
@@ -1220,13 +1222,14 @@ diagnostic_manager::prune_interproc_events (checker_path *path) const
 
 	  /* Prune [..., call, return, ...] pairs
 	     (for -fanalyzer-verbosity=0).  */
-	  if (idx + 1 < (signed)path->m_events.length ()
-	      && path->m_events[idx]->is_call_p ()
-	      && path->m_events[idx + 1]->is_return_p ())
+	  if (idx + 1 < (signed)path->num_events ()
+	      && path->get_checker_event (idx)->is_call_p ()
+	      && path->get_checker_event (idx + 1)->is_return_p ())
 	    {
 	      if (get_logger ())
 		{
-		  label_text desc (path->m_events[idx]->get_desc (false));
+		  label_text desc
+		    (path->get_checker_event (idx)->get_desc (false));
 		  log ("filtering events %i-%i:"
 		       " irrelevant call/return: %s",
 		       idx, idx + 1, desc.m_buffer);
@@ -1256,10 +1259,10 @@ diagnostic_manager::finish_pruning (checker_path *path) const
 {
   if (!path->interprocedural_p ())
     {
-      int idx = path->m_events.length () - 1;
-      while (idx >= 0 && idx < (signed)path->m_events.length ())
+      int idx = path->num_events () - 1;
+      while (idx >= 0 && idx < (signed)path->num_events ())
 	{
-	  checker_event *base_event = path->m_events[idx];
+	  checker_event *base_event = path->get_checker_event (idx);
 	  if (base_event->m_kind == EK_FUNCTION_ENTRY)
 	    {
 	      log ("filtering event %i:"

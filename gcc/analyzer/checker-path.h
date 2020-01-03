@@ -452,6 +452,11 @@ public:
     return *m_events[idx];
   }
 
+  checker_event *get_checker_event (int idx)
+  {
+    return m_events[idx];
+  }
+
   void dump (pretty_printer *pp) const;
   void debug () const;
 
@@ -501,6 +506,9 @@ public:
       }
     return false;
   }
+
+private:
+  DISABLE_COPY_AND_ASSIGN(checker_path);
 
   /* The events that have occurred along this path.  */
   auto_delete_vec<checker_event> m_events;
