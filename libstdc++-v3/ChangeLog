@@ -1,3 +1,8 @@
+2020-01-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algobase.h (lexicographical_compare_three_way):
+	Only define four-argument overload when __cpp_lib_concepts is defined.
+
 2020-01-01  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
