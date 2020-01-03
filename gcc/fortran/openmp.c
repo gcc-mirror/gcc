@@ -4248,6 +4248,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
     for (n = omp_clauses->lists[list]; n; n = n->next)
       {
 	n->sym->mark = 0;
+	n->sym->comp_mark = 0;
 	if (n->sym->attr.flavor == FL_VARIABLE
 	    || n->sym->attr.proc_pointer
 	    || (!code && (!n->sym->attr.dummy || n->sym->ns != ns)))
@@ -4313,23 +4314,25 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	&& (list != OMP_LIST_REDUCTION || !openacc))
       for (n = omp_clauses->lists[list]; n; n = n->next)
 	{
-	  bool array_only_p = true;
-	  /* Disallow duplicate bare variable references and multiple
-	     subarrays of the same array here, but allow multiple components of
-	     the same (e.g. derived-type) variable.  For the latter, duplicate
-	     components are detected elsewhere.  */
-	  if (openacc && n->expr && n->expr->expr_type == EXPR_VARIABLE)
+	  bool component_ref_p = false;
+
+	  /* Allow multiple components of the same (e.g. derived-type)
+	     variable here.  Duplicate components are detected elsewhere.  */
+	  if (n->expr && n->expr->expr_type == EXPR_VARIABLE)
 	    for (gfc_ref *ref = n->expr->ref; ref; ref = ref->next)
-	      if (ref->type != REF_ARRAY)
-		{
-		  array_only_p = false;
-		  break;
-		}
-	  if (array_only_p)
+	      if (ref->type == REF_COMPONENT)
+		component_ref_p = true;
+	  if ((!component_ref_p && n->sym->comp_mark)
+	      || (component_ref_p && n->sym->mark))
+	    gfc_error ("Symbol %qs has mixed component and non-component "
+		       "accesses at %L", n->sym->name, &n->where);
+	  else if (n->sym->mark)
+	    gfc_error ("Symbol %qs present on multiple clauses at %L",
+		       n->sym->name, &n->where);
+	  else
 	    {
-	      if (n->sym->mark)
-		gfc_error ("Symbol %qs present on multiple clauses at %L",
-			   n->sym->name, &n->where);
+	      if (component_ref_p)
+		n->sym->comp_mark = 1;
 	      else
 		n->sym->mark = 1;
 	    }

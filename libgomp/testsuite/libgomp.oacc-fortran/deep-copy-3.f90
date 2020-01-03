@@ -16,12 +16,14 @@ program dtype
   allocate(var%a(1:n))
   allocate(var%b(1:n))
 
-!$acc parallel loop copy(var) copy(var%a(1:n)) copy(var%b(1:n))
+!$acc data copy(var)
+!$acc parallel loop copy(var%a(1:n)) copy(var%b(1:n))
   do i = 1,n
     var%a(i) = i
     var%b(i) = i
   end do
 !$acc end parallel loop
+!$acc end data
 
   do i = 1,n
     if (i .ne. var%a(i)) stop 1

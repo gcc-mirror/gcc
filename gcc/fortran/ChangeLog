@@ -1,3 +1,10 @@
+2020-01-28  Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.h (gfc_symbol): Add comp_mark bitfield.
+	* openmp.c (resolve_omp_clauses): Disallow mixed component and
+	full-derived-type accesses to the same variable within a single
+	directive.
+
 2020-01-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/93464
