@@ -25811,7 +25811,16 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
   else if (TYPE_PTRMEM_P (type))
     return false;
   else if (TREE_CODE (type) == TEMPLATE_TYPE_PARM)
-    return false;
+    {
+      if (CLASS_PLACEHOLDER_TEMPLATE (type) && cxx_dialect < cxx2a)
+	{
+	  if (complain & tf_error)
+	    error ("non-type template parameters of deduced class type only "
+		   "available with %<-std=c++2a%> or %<-std=gnu++2a%>");
+	  return true;
+	}
+      return false;
+    }
   else if (TREE_CODE (type) == TYPENAME_TYPE)
     return false;
   else if (TREE_CODE (type) == DECLTYPE_TYPE)
