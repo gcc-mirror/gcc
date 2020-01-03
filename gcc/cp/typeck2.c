@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "gcc-rich-location.h"
 #include "target.h"
+#include "gimplify.h"
 
 static tree
 process_init_constructor (tree type, tree init, int nested, int flags,
@@ -791,7 +792,8 @@ split_nonconstant_init (tree dest, tree init)
 	}
       else if (init)
 	{
-	  tree ie = build2 (INIT_EXPR, void_type_node, dest, init);
+	  tree ie = build2 (INIT_EXPR, void_type_node,
+			    unshare_expr (dest), init);
 	  code = add_stmt_to_compound (ie, code);
 	}
     }
