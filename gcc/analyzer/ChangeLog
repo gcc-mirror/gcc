@@ -1,5 +1,22 @@
 2020-01-14  David Malcolm  <dmalcolm@redhat.com>
 
+	* checker-path.h (checker_event::clone): Delete vfunc decl.
+	(debug_event::clone): Delete vfunc impl.
+	(custom_event::clone): Delete vfunc impl.
+	(statement_event::clone): Delete vfunc impl.
+	(function_entry_event::clone): Delete vfunc impl.
+	(state_change_event::clone): Delete vfunc impl.
+	(start_cfg_edge_event::clone): Delete vfunc impl.
+	(end_cfg_edge_event::clone): Delete vfunc impl.
+	(call_event::clone): Delete vfunc impl.
+	(return_event::clone): Delete vfunc impl.
+	(setjmp_event::clone): Delete vfunc impl.
+	(rewind_from_longjmp_event::clone): Delete vfunc impl.
+	(rewind_to_setjmp_event::clone): Delete vfunc impl.
+	(warning_event::clone): Delete vfunc impl.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
 	* supergraph.cc (supernode::dump_dot): Ensure that the TABLE
 	element has at least one TR.
 
