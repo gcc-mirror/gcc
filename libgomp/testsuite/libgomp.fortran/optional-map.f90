@@ -1,10 +1,23 @@
 ! { dg-do run }
 !
 implicit none (type, external)
+integer, allocatable :: a_ii, a_ival, a_iarr(:)
+integer, pointer :: p_ii, p_ival, p_iarr(:)
+
+nullify (p_ii, p_ival, p_iarr)
+
 call sub()
 call sub2()
 call call_present_1()
 call call_present_2()
+
+! unallocated/disassociated actual arguments to nonallocatable, nonpointer
+! dummy arguments are regarded as absent
+! Skipping 'ival' dummy argument due to PR fortran/92887
+call sub(ii=a_ii, iarr=a_iarr)
+call sub(ii=p_ii, iarr=p_iarr)
+call sub2(ii=a_ii, iarr=a_iarr)
+call sub2(ii=p_ii, iarr=p_iarr)
 
 contains
 

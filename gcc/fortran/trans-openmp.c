@@ -90,11 +90,16 @@ gfc_omp_check_optional_argument (tree decl, bool for_present_check)
   if (!DECL_LANG_SPECIFIC (decl))
     return NULL_TREE;
 
+  bool is_array_type = false;
+
   /* For assumed-shape arrays, a local decl with arg->data is used.  */
   if (TREE_CODE (decl) != PARM_DECL
       && (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl))
 	  || GFC_ARRAY_TYPE_P (TREE_TYPE (decl))))
-    decl = GFC_DECL_SAVED_DESCRIPTOR (decl);
+    {
+      is_array_type = true;
+      decl = GFC_DECL_SAVED_DESCRIPTOR (decl);
+    }
 
   if (TREE_CODE (decl) != PARM_DECL
       || !DECL_LANG_SPECIFIC (decl)
@@ -126,7 +131,23 @@ gfc_omp_check_optional_argument (tree decl, bool for_present_check)
       return decl;
     }
 
-  return decl;
+  tree cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+			       decl, null_pointer_node);
+
+  /* Fortran regards unallocated allocatables/disassociated pointer which
+     are passed to a nonallocatable, nonpointer argument as not associated;
+     cf. F2018, 15.5.2.12, Paragraph 1.  */
+  if (is_array_type)
+    {
+      tree cond2 = build_fold_indirect_ref_loc (input_location, decl);
+      cond2 = gfc_conv_array_data (cond2);
+      cond2 = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+			       cond2, null_pointer_node);
+      cond = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
+			      boolean_type_node, cond, cond2);
+    }
+
+  return cond;
 }
 
 
@@ -1192,7 +1213,7 @@ gfc_build_cond_assign (stmtblock_t *block, tree val, tree cond_val,
 		       tree then_b, tree else_val)
 {
   stmtblock_t cond_block;
-  tree cond, else_b = NULL_TREE;
+  tree else_b = NULL_TREE;
   tree val_ty = TREE_TYPE (val);
 
   if (else_val)
@@ -1201,15 +1222,9 @@ gfc_build_cond_assign (stmtblock_t *block, tree val, tree cond_val,
       gfc_add_modify (&cond_block, val, fold_convert (val_ty, else_val));
       else_b = gfc_finish_block (&cond_block);
     }
-  cond = fold_build2_loc (input_location, NE_EXPR,
-			  logical_type_node,
-			  cond_val, null_pointer_node);
   gfc_add_expr_to_block (block,
-			 build3_loc (input_location,
-				     COND_EXPR,
-				     void_type_node,
-				     cond, then_b,
-				     else_b));
+			 build3_loc (input_location, COND_EXPR, void_type_node,
+				     cond_val, then_b, else_b));
 }
 
 /* Build a conditional expression in BLOCK, returning a temporary
@@ -1260,8 +1275,7 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p)
     }
 
   tree c2 = NULL_TREE, c3 = NULL_TREE, c4 = NULL_TREE;
-  tree present = (gfc_omp_is_optional_argument (decl)
-		  ? gfc_omp_check_optional_argument (decl, true) : NULL_TREE);
+  tree present = gfc_omp_check_optional_argument (decl, true);
   if (POINTER_TYPE_P (TREE_TYPE (decl)))
     {
       if (!gfc_omp_privatize_by_reference (decl)
@@ -1271,6 +1285,23 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p)
 	  && !GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (TREE_TYPE (decl))))
 	return;
       tree orig_decl = decl;
+
+      /* For nonallocatable, nonpointer arrays, a temporary variable is
+	 generated, but this one is only defined if the variable is present;
+	 hence, we now set it to NULL to avoid accessing undefined variables.
+	 We cannot use a temporary variable here as otherwise the replacement
+	 of the variables in omp-low.c will not work.  */
+      if (present && GFC_ARRAY_TYPE_P (TREE_TYPE (decl)))
+	{
+	  tree tmp = fold_build2_loc (input_location, MODIFY_EXPR,
+				      void_type_node, decl, null_pointer_node);
+	  tree cond = fold_build1_loc (input_location, TRUTH_NOT_EXPR,
+				       boolean_type_node, present);
+	  tmp = build3_loc (input_location, COND_EXPR, void_type_node,
+			    cond, tmp, NULL_TREE);
+	  gimplify_and_add (tmp, pre_p);
+	}
+
       c4 = build_omp_clause (OMP_CLAUSE_LOCATION (c), OMP_CLAUSE_MAP);
       OMP_CLAUSE_SET_MAP_KIND (c4, GOMP_MAP_POINTER);
       OMP_CLAUSE_DECL (c4) = decl;
@@ -1378,10 +1409,8 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p)
 				  boolean_type_node, tem, null_pointer_node);
 	  if (present)
 	    {
-	      tem = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
-				     present, null_pointer_node);
 	      cond = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
-				      boolean_type_node, tem, cond);
+				      boolean_type_node, present, cond);
 	    }
 	  gfc_add_expr_to_block (&block, build3_loc (input_location, COND_EXPR,
 						     void_type_node, cond,
@@ -2468,9 +2497,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		TREE_ADDRESSABLE (decl) = 1;
 	      if (n->expr == NULL || n->expr->ref->u.ar.type == AR_FULL)
 		{
-		  tree present = (gfc_omp_is_optional_argument (decl)
-				  ? gfc_omp_check_optional_argument (decl, true)
-				  : NULL_TREE);
+		  tree present = gfc_omp_check_optional_argument (decl, true);
 		  if (n->sym->ts.type == BT_CLASS)
 		    {
 		      tree type = TREE_TYPE (decl);
@@ -2509,6 +2536,30 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			       || n->sym->ts.type == BT_DERIVED))
 		    {
 		      tree orig_decl = decl;
+
+		      /* For nonallocatable, nonpointer arrays, a temporary
+			 variable is generated, but this one is only defined if
+			 the variable is present; hence, we now set it to NULL
+			 to avoid accessing undefined variables.  We cannot use
+			 a temporary variable here as otherwise the replacement
+			 of the variables in omp-low.c will not work.  */
+		      if (present && GFC_ARRAY_TYPE_P (TREE_TYPE (decl)))
+			{
+			  tree tmp = fold_build2_loc (input_location,
+						      MODIFY_EXPR,
+						      void_type_node, decl,
+						      null_pointer_node);
+			  tree cond = fold_build1_loc (input_location,
+						       TRUTH_NOT_EXPR,
+						       boolean_type_node,
+						       present);
+			  gfc_add_expr_to_block (block,
+						 build3_loc (input_location,
+							     COND_EXPR,
+							     void_type_node,
+							     cond, tmp,
+							     NULL_TREE));
+			}
 		      node4 = build_omp_clause (input_location,
 						OMP_CLAUSE_MAP);
 		      OMP_CLAUSE_SET_MAP_KIND (node4, GOMP_MAP_POINTER);
@@ -2588,17 +2639,10 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 						  boolean_type_node,
 						  tem, null_pointer_node);
 			  if (present)
-			    {
-			      tree tmp = fold_build2_loc (input_location,
-							  NE_EXPR,
-							  boolean_type_node,
-							  present,
-							  null_pointer_node);
-			      cond = fold_build2_loc (input_location,
-						      TRUTH_ANDIF_EXPR,
-						      boolean_type_node,
-						      tmp, cond);
-			    }
+			    cond = fold_build2_loc (input_location,
+						    TRUTH_ANDIF_EXPR,
+						    boolean_type_node,
+						    present, cond);
 			  gfc_add_expr_to_block (block,
 						 build3_loc (input_location,
 							     COND_EXPR,
@@ -2617,16 +2661,11 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			    {
 			      tree var = gfc_create_var (gfc_array_index_type,
 							 NULL);
-			      tree cond = fold_build2_loc (input_location,
-							   NE_EXPR,
-							   boolean_type_node,
-							   present,
-							   null_pointer_node);
 			      gfc_add_modify (&cond_block, var, size);
-			      cond = build3_loc (input_location, COND_EXPR,
-						 void_type_node, cond,
-						 gfc_finish_block (&cond_block),
-						 NULL_TREE);
+			      tree cond_body = gfc_finish_block (&cond_block);
+			      tree cond = build3_loc (input_location, COND_EXPR,
+						      void_type_node, present,
+						      cond_body, NULL_TREE);
 			      gfc_add_expr_to_block (block, cond);
 			      OMP_CLAUSE_SIZE (node) = var;
 			    }

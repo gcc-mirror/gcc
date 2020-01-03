@@ -1,5 +1,15 @@
 2020-01-03  Tobias Burnus  <tobias@codesourcery.com>
 
+	* trans-openmp.c (gfc_omp_check_optional_argument): Always return a
+	Boolean expression; handle unallocated/disassociated actual arguments
+	as absent if passed to nonallocatable/nonpointer dummy array arguments.
+	(gfc_build_cond_assign): Change to assume a Boolean expr not a pointer.
+	(gfc_omp_finish_clause, gfc_trans_omp_clauses): Assign NULL to generated
+	array-data variable if the argument is absent. Simplify code as
+	'present' is now a Boolean expression.
+
+2020-01-03  Tobias Burnus  <tobias@codesourcery.com>
+
 	PR fortran/92994
 	* primary.c (gfc_match_rvalue): Add some flavor checks
 	gfc_matching_procptr_assignment.
