@@ -224,6 +224,10 @@ package body Exp_Util is
    --  level, and False otherwise. Nested_Constructs is True when any nested
    --  packages declared in L must be processed, and False otherwise.
 
+   function Side_Effect_Free_Attribute (Name : Name_Id) return Boolean;
+   --  Return True if the evaluation of the given attribute is considered
+   --  side-effect free, independently of its prefix and expressions.
+
    -------------------------------------
    -- Activate_Atomic_Synchronization --
    -------------------------------------
@@ -11306,6 +11310,21 @@ package body Exp_Util is
 
       Scope_Suppress.Suppress := (others => True);
 
+      --  If this is a side-effect free attribute reference whose expressions
+      --  are also side-effect free and whose prefix is not a name, remove the
+      --  side effects of the prefix. A copy of the prefix is required in this
+      --  case and it is better not to make an additional one for the attribute
+      --  itself, because the return type of many of them is universal integer,
+      --  which is a very large type for a temporary.
+
+      if Nkind (Exp) = N_Attribute_Reference
+        and then Side_Effect_Free_Attribute (Attribute_Name (Exp))
+        and then Side_Effect_Free (Expressions (Exp), Name_Req, Variable_Ref)
+        and then not Is_Name_Reference (Prefix (Exp))
+      then
+         Remove_Side_Effects (Prefix (Exp), Name_Req, Variable_Ref);
+         goto Leave;
+
       --  If this is an elementary or a small not-by-reference record type, and
       --  we need to capture the value, just make a constant; this is cheap and
       --  objects of both kinds of types can be bit aligned, so it might not be
@@ -11316,12 +11335,12 @@ package body Exp_Util is
       --  anyway, see below). Also do it if we have a volatile reference and
       --  Name_Req is not set (see comments for Side_Effect_Free).
 
-      if (Is_Elementary_Type (Exp_Type)
-           or else (Is_Record_Type (Exp_Type)
-                     and then Known_Static_RM_Size (Exp_Type)
-                     and then RM_Size (Exp_Type) <= 64
-                     and then not Has_Discriminants (Exp_Type)
-                     and then not Is_By_Reference_Type (Exp_Type)))
+      elsif (Is_Elementary_Type (Exp_Type)
+              or else (Is_Record_Type (Exp_Type)
+                        and then Known_Static_RM_Size (Exp_Type)
+                        and then RM_Size (Exp_Type) <= 64
+                        and then not Has_Discriminants (Exp_Type)
+                        and then not Is_By_Reference_Type (Exp_Type)))
         and then (Variable_Ref
                    or else (not Is_Name_Reference (Exp)
                              and then Nkind (Exp) /= N_Type_Conversion)
@@ -13173,58 +13192,18 @@ package body Exp_Util is
 
       case Nkind (N) is
 
-         --  An attribute reference is side effect free if its expressions
-         --  are side effect free and its prefix is side effect free or
-         --  is an entity reference.
-
-         --  Is this right? what about x'first where x is a variable???
+         --  An attribute reference is side-effect free if its expressions
+         --  are side-effect free and its prefix is side-effect free or is
+         --  an entity reference.
 
          when N_Attribute_Reference =>
-            Attribute_Reference : declare
-
-               function Side_Effect_Free_Attribute
-                 (Attribute_Name : Name_Id) return Boolean;
-               --  Returns True if evaluation of the given attribute is
-               --  considered side-effect free (independent of prefix and
-               --  arguments).
-
-               --------------------------------
-               -- Side_Effect_Free_Attribute --
-               --------------------------------
-
-               function Side_Effect_Free_Attribute
-                 (Attribute_Name : Name_Id) return Boolean
-               is
-               begin
-                  case Attribute_Name is
-                     when Name_Input =>
-                        return False;
-
-                     when Name_Image
-                        | Name_Img
-                        | Name_Wide_Image
-                        | Name_Wide_Wide_Image
-                     =>
-                        --  CodePeer doesn't want to see replicated copies of
-                        --  'Image calls.
-
-                        return not CodePeer_Mode;
-
-                     when others =>
-                        return True;
-                  end case;
-               end Side_Effect_Free_Attribute;
-
-            --  Start of processing for Attribute_Reference
-
-            begin
-               return
-                 Side_Effect_Free (Expressions (N), Name_Req, Variable_Ref)
-                   and then Side_Effect_Free_Attribute (Attribute_Name (N))
-                   and then (Is_Entity_Name (Prefix (N))
-                              or else Side_Effect_Free
-                                        (Prefix (N), Name_Req, Variable_Ref));
-            end Attribute_Reference;
+            return Side_Effect_Free_Attribute (Attribute_Name (N))
+                     and then
+                   Side_Effect_Free (Expressions (N), Name_Req, Variable_Ref)
+                     and then
+                   (Is_Entity_Name (Prefix (N))
+                      or else
+                    Side_Effect_Free (Prefix (N), Name_Req, Variable_Ref));
 
          --  A binary operator is side effect free if and both operands are
          --  side effect free. For this purpose binary operators include
@@ -13382,6 +13361,30 @@ package body Exp_Util is
          return True;
       end if;
    end Side_Effect_Free;
+
+   --------------------------------
+   -- Side_Effect_Free_Attribute --
+   --------------------------------
+
+   function Side_Effect_Free_Attribute (Name : Name_Id) return Boolean is
+   begin
+      case Name is
+         when Name_Input =>
+            return False;
+
+         when Name_Image
+            | Name_Img
+            | Name_Wide_Image
+            | Name_Wide_Wide_Image
+         =>
+            --  CodePeer doesn't want to see replicated copies of 'Image calls
+
+            return not CodePeer_Mode;
+
+         when others =>
+            return True;
+      end case;
+   end Side_Effect_Free_Attribute;
 
    ----------------------------------
    -- Silly_Boolean_Array_Not_Test --

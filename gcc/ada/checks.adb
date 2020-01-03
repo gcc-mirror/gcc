@@ -6875,6 +6875,10 @@ package body Checks is
       --  given Suppress argument. Then check the converted value against the
       --  range of the target subtype.
 
+      function Is_Single_Attribute_Reference (N : Node_Id) return Boolean;
+      --  Return True if N is an expression that contains a single attribute
+      --  reference, possibly as operand among only integer literal operands.
+
       -----------------------------
       -- Convert_And_Check_Range --
       -----------------------------
@@ -6934,6 +6938,31 @@ package body Checks is
          Set_Etype (N, Target_Base_Type);
       end Convert_And_Check_Range;
 
+      -------------------------------------
+      --  Is_Single_Attribute_Reference  --
+      -------------------------------------
+
+      function Is_Single_Attribute_Reference (N : Node_Id) return Boolean is
+      begin
+         if Nkind (N) = N_Attribute_Reference then
+            return True;
+
+         elsif Nkind (N) in N_Binary_Op then
+            if Nkind (Right_Opnd (N)) = N_Integer_Literal then
+               return Is_Single_Attribute_Reference (Left_Opnd (N));
+
+            elsif Nkind (Left_Opnd (N)) = N_Integer_Literal then
+               return Is_Single_Attribute_Reference (Right_Opnd (N));
+
+            else
+               return False;
+            end if;
+
+         else
+            return False;
+         end if;
+      end Is_Single_Attribute_Reference;
+
    --  Start of processing for Generate_Range_Check
 
    begin
@@ -6982,9 +7011,10 @@ package body Checks is
       --  We skip the evaluation of attribute references because, after these
       --  runtime checks are generated, the expander may need to rewrite this
       --  node (for example, see Attribute_Max_Size_In_Storage_Elements in
-      --  Expand_N_Attribute_Reference).
+      --  Expand_N_Attribute_Reference) and, in many cases, their return type
+      --  is universal integer, which is a very large type for a temporary.
 
-      if Nkind (N) /= N_Attribute_Reference
+      if not Is_Single_Attribute_Reference (N)
         and then (not Is_Entity_Name (N)
                    or else Treat_As_Volatile (Entity (N)))
       then
