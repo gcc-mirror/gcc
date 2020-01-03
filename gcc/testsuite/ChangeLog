@@ -1,3 +1,9 @@
+2020-01-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/avx512bw-pr92686-vpcmp-intelasm-1.c: Require
+	effective target masm_intel.
+	* gcc.target/i386/avx512vl-pr92686-vpcmp-intelasm-1.c: Likewise.
+
 2020-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93089
