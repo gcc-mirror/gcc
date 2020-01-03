@@ -14241,6 +14241,12 @@ module_state::read_cluster (unsigned snum)
 	}
       else
 	{
+	  bool aggr = aggregate_value_p (DECL_RESULT (decl), decl);
+#ifdef PCC_STATIC_STRUCT_RETURN
+	  cfun->returns_pcc_struct = aggr;
+#endif
+	  cfun->returns_struct = aggr;
+
 	  if (DECL_COMDAT (decl))
 	    comdat_linkage (decl);
 	  note_vague_linkage_fn (decl);

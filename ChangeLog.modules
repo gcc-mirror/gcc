@@ -1,6 +1,10 @@
 2020-01-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::read_cluster): Set cfun->returns_struct
+	approprately.
+
+	gcc/cp/
 	* module.cc (import_entity_module): Cope with exported entities.
 
 2020-01-02  Nathan Sidwell  <nathan@acm.org>
