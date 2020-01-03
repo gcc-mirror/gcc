@@ -1,3 +1,8 @@
+2020-01-03  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (import_entity_module): Cope with exported entities.
+
 2020-01-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
@@ -6,7 +11,7 @@
 	* g++.dg/modules/merge-9{.h,_a.H,_b.C}: New.
 
 	gcc/cp/
-	* module.cc (nodel_decl_has): Rename to ...
+	* module.cc (nodel_decl_hash): Rename to ...
 	(duplicate_hash): ... here.  Allow binfos.
 	(trees_{in,out}::binfo_mergeable): New.
 	(trees_{in,out}::tree_node): Use it for tt_binfo.

@@ -3969,6 +3969,10 @@ import_entity_index (tree decl, bool null_ok = false)
 static module_state *
 import_entity_module (unsigned index)
 {
+  if (index > ~(~0u >> 1))
+    /* This is an index for an exported entity.  */
+    return (*modules)[0];
+
   unsigned pos = 1;
   unsigned len = modules->length () - pos;
   while (len)
