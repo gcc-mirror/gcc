@@ -1,6 +1,12 @@
 2020-01-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_in::decl_value): Disambiguate entity_ary slots
+	from entuty_hash slots.
+	(trees_out::get_merge_kind): Check of
+	uninstantiated_template_friend even when there's a depset.
+
+	gcc/cp/
 	* module.cc (trees_in::tree_value): Return existing.
 	gcc/testsuite/
 	* g++.dg/modules/merge-11{.h,_a.H,_b.C}: New.

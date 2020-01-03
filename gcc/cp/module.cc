@@ -7419,7 +7419,7 @@ trees_in::decl_value ()
       inner_tag = insert (inner);
       if (decl)
 	dump (dumper::TREE)
-	  && dump ("Reading%d %C", inner_tag, TREE_CODE (inner));
+	  && dump ("Reading:%d %C", inner_tag, TREE_CODE (inner));
     }
 
   tree type = NULL_TREE;
@@ -7732,14 +7732,14 @@ trees_in::decl_value ()
   else
     {
       /* Insert the real decl into the entity ary.  */
-      mc_slot &slot = (*entity_ary)[state->entity_lwm + entity_index - 1];
+      unsigned ident = state->entity_lwm + entity_index - 1;
+      mc_slot &elt = (*entity_ary)[ident];
 
       /* See module_state::read_pendings for how this got set, at most
 	 one bit will be set.  */
-      int pending = slot.get_lazy () & 3;
+      int pending = elt.get_lazy () & 3;
 
-      slot = existing;
-      unsigned ident = state->entity_lwm + entity_index - 1;
+      elt = existing;
 
       /* And into the entity map, if it's not already there.  */
       if (!DECL_LANG_SPECIFIC (existing)
@@ -7915,7 +7915,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	  i (tt_entity);
 	  u (dep->is_import () ? dep->section : 0);
 	  i (dep->cluster);
-	  add_indirects (decl);
 	}
       else
 	{
@@ -7938,6 +7937,8 @@ trees_out::decl_node (tree decl, walk_kind ref)
       if (streaming_p ())
 	dump (dumper::TREE)
 	  && dump ("Wrote namespace:%d %C:%N", tag, TREE_CODE (decl), decl);
+
+      add_indirects (decl);
 
       return false;
     }
@@ -9739,7 +9740,10 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 	    break;
 
 	  case NAMESPACE_DECL:
-	    if (IDENTIFIER_ANON_P (DECL_NAME (decl)))
+	    if (TREE_CODE (decl) == TEMPLATE_DECL
+		&& DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
+	      mk = MK_local_friend;
+	    else if (IDENTIFIER_ANON_P (DECL_NAME (decl)))
 	      {
 		/* Usually no way to merge it.  */
 		mk = MK_unique;
