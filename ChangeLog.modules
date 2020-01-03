@@ -1,5 +1,19 @@
 2020-01-03  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* tree.h (DECL_ALIGN_RAW): New, use it in accessors.
+	(DCL_WARN_IF_NOT_ALIGN): Likewise.
+	gcc/cp/
+	* cp-tree.h (CPTI_CONST_TYPE_INFO_TYPE,CPTI_TYPE_INFO_PTR_TYPE):
+	Move to after module hwm.
+	* module.cc (trees_out::write_class_def): Don't write empty thunk
+	lists.
+	(trees_in::read_class_def): Merge fields from a duplicate.
+	gcc/testsuite/
+	* g++.dg/modules/tinfo-2_{a.h,b.C}: New.
+	* g++.dg/modules/member-def-1_c.C: Adjust scan.
+	* g++.dg/modules/merge-9.h: Add another builtin.
+
 	gcc/cp/
 	* module.cc (module_state::read_cluster): Set cfun->returns_struct
 	approprately.

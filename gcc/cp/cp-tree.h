@@ -126,8 +126,6 @@ enum cp_tree_index
     CPTI_VTBL_PTR_TYPE,
     CPTI_GLOBAL,
     CPTI_GLOBAL_TYPE,
-    CPTI_CONST_TYPE_INFO_TYPE,
-    CPTI_TYPE_INFO_PTR_TYPE,
     CPTI_ABORT_FNDECL,
     CPTI_AGGR_TAG,
     CPTI_CONV_OP_MARKER,
@@ -195,11 +193,15 @@ enum cp_tree_index
     CPTI_STD,
     CPTI_ABI,
 
+    /* These are created at init time, but the library/headers provide
+       definitions.  */
     CPTI_ALIGN_TYPE,
-
-    /* These are lazily inited.  */
+    CPTI_CONST_TYPE_INFO_TYPE,
+    CPTI_TYPE_INFO_PTR_TYPE,
     CPTI_TERMINATE_FN,
     CPTI_CALL_UNEXPECTED_FN,
+
+    /* These are lazily inited.  */
     CPTI_GET_EXCEPTION_PTR_FN,
     CPTI_BEGIN_CATCH_FN,
     CPTI_END_CATCH_FN,

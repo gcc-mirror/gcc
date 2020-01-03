@@ -10500,7 +10500,9 @@ trees_out::write_class_def (tree defn)
       for (tree decls = CLASSTYPE_DECL_LIST (type); decls;
 	   decls = TREE_CHAIN (decls))
 	{
-	  tree_node (TREE_VALUE (decls));
+	  tree value = TREE_VALUE (decls);
+	  gcc_checking_assert (value);
+	  tree_node (value);
 	  tree_node (TREE_PURPOSE (decls));
 	}
       /* End of decls.  */
@@ -10512,7 +10514,8 @@ trees_out::write_class_def (tree defn)
 	  for (tree decls = TYPE_FIELDS (type);
 	       decls; decls = DECL_CHAIN (decls))
 	    if (TREE_CODE (decls) == FUNCTION_DECL
-		&& DECL_VIRTUAL_P (decls))
+		&& DECL_VIRTUAL_P (decls)
+		&& DECL_THUNKS (decls))
 	      {
 		tree_node (decls);
 		// FIXME: perhaps not chained here?
@@ -10637,6 +10640,44 @@ trees_in::read_class_def (tree defn, tree maybe_template)
   bool installing = maybe_dup && !TYPE_SIZE (type);
   if (installing)
     {
+      if (maybe_dup != defn)
+	{
+	  // FIXME: This is needed on other defns too, almost
+	  // duplicate-decl like?
+	  /* Copy flags from the duplicate.  */
+	  tree type_dup = TREE_TYPE (maybe_dup);
+
+	  /* Core pieces.  */
+	  TYPE_MODE_RAW (type) = TYPE_MODE_RAW (type_dup);
+	  SET_DECL_MODE (defn, DECL_MODE (maybe_dup));
+	  TREE_ADDRESSABLE (type) = TREE_ADDRESSABLE (type_dup);
+	  DECL_SIZE (defn) = DECL_SIZE (maybe_dup);
+	  DECL_SIZE_UNIT (defn) = DECL_SIZE_UNIT (maybe_dup);
+	  DECL_ALIGN_RAW (defn) = DECL_ALIGN_RAW (maybe_dup);
+	  DECL_WARN_IF_NOT_ALIGN_RAW (defn)
+	    = DECL_WARN_IF_NOT_ALIGN_RAW (maybe_dup);
+	  DECL_USER_ALIGN (defn) = DECL_USER_ALIGN (maybe_dup);
+
+	  /* C++ pieces.  */
+	  TYPE_POLYMORPHIC_P (type) = TYPE_POLYMORPHIC_P (type_dup);
+	  TYPE_HAS_USER_CONSTRUCTOR (type)
+	    = TYPE_HAS_USER_CONSTRUCTOR (type_dup);
+	  TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
+	    = TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type_dup);
+
+	  if (TYPE_LANG_SPECIFIC (type_dup))
+	    {
+	      if (TYPE_LANG_SPECIFIC (type))
+		{
+		  CLASSTYPE_BEFRIENDING_CLASSES (type_dup)
+		    = CLASSTYPE_BEFRIENDING_CLASSES (type);
+		  CLASSTYPE_TYPEINFO_VAR (type_dup)
+		    = CLASSTYPE_TYPEINFO_VAR (type);
+		}
+	      TYPE_LANG_SPECIFIC (type) = TYPE_LANG_SPECIFIC (type_dup);
+	    }
+	}
+
       TYPE_SIZE (type) = size;
       TYPE_SIZE_UNIT (type) = size_unit;
 
@@ -10772,7 +10813,8 @@ trees_in::read_class_def (tree defn, tree maybe_template)
   /* IS_FAKE_BASE_TYPE is inaccurate at this point, because if this is
      the fake base, we've not hooked it into the containing class's
      data structure yet.  Fortunately it has a unique name.  */
-  if (DECL_NAME (defn) != as_base_identifier
+  if (installing
+      && DECL_NAME (defn) != as_base_identifier
       && (!CLASSTYPE_TEMPLATE_INFO (type)
 	  || !uses_template_parms (TI_ARGS (CLASSTYPE_TEMPLATE_INFO (type)))))
     /* Emit debug info.  It'd be nice to know if the interface TU

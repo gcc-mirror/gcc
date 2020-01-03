@@ -2497,25 +2497,28 @@ extern machine_mode vector_type_mode (const_tree);
 #define DECL_SIZE(NODE) (DECL_COMMON_CHECK (NODE)->decl_common.size)
 /* Likewise for the size in bytes.  */
 #define DECL_SIZE_UNIT(NODE) (DECL_COMMON_CHECK (NODE)->decl_common.size_unit)
+#define DECL_ALIGN_RAW(NODE) (DECL_COMMON_CHECK (NODE)->decl_common.align)
 /* Returns the alignment required for the datum, in bits.  It must
    be a power of two, but an "alignment" of zero is supported
    (e.g. as "uninitialized" sentinel).  */
-#define DECL_ALIGN(NODE) \
-    (DECL_COMMON_CHECK (NODE)->decl_common.align \
-     ? ((unsigned)1) << ((NODE)->decl_common.align - 1) : 0)
+#define DECL_ALIGN(NODE)					\
+  (DECL_ALIGN_RAW (NODE)					\
+   ? ((unsigned)1) << (DECL_ALIGN_RAW (NODE) - 1) : 0)
 /* Specify that DECL_ALIGN(NODE) is X.  */
 #define SET_DECL_ALIGN(NODE, X) \
-    (DECL_COMMON_CHECK (NODE)->decl_common.align = ffs_hwi (X))
+  (DECL_ALIGN_RAW (NODE) = ffs_hwi (X))
 
 /* The minimum alignment necessary for the datum, in bits, without
    warning.  */
-#define DECL_WARN_IF_NOT_ALIGN(NODE) \
-    (DECL_COMMON_CHECK (NODE)->decl_common.warn_if_not_align \
-     ? ((unsigned)1) << ((NODE)->decl_common.warn_if_not_align - 1) : 0)
+#define DECL_WARN_IF_NOT_ALIGN_RAW(NODE)			\
+  (DECL_COMMON_CHECK (NODE)->decl_common.warn_if_not_align)
+#define DECL_WARN_IF_NOT_ALIGN(NODE)					\
+  (DECL_WARN_IF_NOT_ALIGN_RAW (NODE)					\
+   ? ((unsigned)1) << (DECL_WARN_IF_NOT_ALIGN_RAW (NODE) - 1) : 0)
 
 /* Specify that DECL_WARN_IF_NOT_ALIGN(NODE) is X.  */
-#define SET_DECL_WARN_IF_NOT_ALIGN(NODE, X) \
-    (DECL_COMMON_CHECK (NODE)->decl_common.warn_if_not_align = ffs_hwi (X))
+#define SET_DECL_WARN_IF_NOT_ALIGN(NODE, X)		\
+  (DECL_WARN_IF_NOT_ALIGN_RAW (NODE) = ffs_hwi (X))
 
 /* The alignment of NODE, in bytes.  */
 #define DECL_ALIGN_UNIT(NODE) (DECL_ALIGN (NODE) / BITS_PER_UNIT)
