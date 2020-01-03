@@ -8591,13 +8591,13 @@ trees_in::tree_value ()
 
   dump (dumper::TREE) && dump ("Read tree:%d %C:%N", tag, TREE_CODE (t), t);
 
-  if (TREE_CODE (t) == INTEGER_CST && !TREE_OVERFLOW (t))
+  if (TREE_CODE (existing) == INTEGER_CST && !TREE_OVERFLOW (existing))
     {
-      t = cache_integer_cst (t, true);
-      back_refs[~tag] = t;
+      existing = cache_integer_cst (t, true);
+      back_refs[~tag] = existing;
     }
 
-  return t;
+  return existing;
 }
 
 /* Stream out tree node T.  We automatically create local back

@@ -1,6 +1,11 @@
 2020-01-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_in::tree_value): Return existing.
+	gcc/testsuite/
+	* g++.dg/modules/merge-11{.h,_a.H,_b.C}: New.
+
+	gcc/cp/
 	* module.cc (trees_out::get_merge_kind): Detect bitfield storage
 	unit.
 	(trees_out::key_mergeable): Deal with anonymous bitfields.
