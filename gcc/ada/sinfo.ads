@@ -399,10 +399,6 @@ package Sinfo is
    --  (defined in Tree_Print_Strings) used to print trees. The following
    --  abbreviations are used:
 
-   --  Note: the utility program that creates the Treeprs spec (in the file
-   --  xtreeprs.adb) knows about the special fields here, so it must be
-   --  modified if any change is made to these fields.
-
    --    "plus fields for binary operator"
    --       Chars                    (Name1)      Name_Id for the operator
    --       Left_Opnd                (Node2)      left operand expression
@@ -432,6 +428,10 @@ package Sinfo is
    --       Has_Dynamic_Range_Check  (Flag12-Sem) set if range check inserted
    --       Assignment_OK            (Flag15-Sem) set if modification is OK
    --       Is_Controlling_Actual    (Flag16-Sem) set for controlling argument
+
+   --  Note: the utility program that creates the Treeprs spec (in the file
+   --  xtreeprs.adb) knows about the special fields here, so it must be
+   --  modified if any change is made to these fields.
 
    --  Note: see under (EXPRESSION) for further details on the use of
    --  the Paren_Count field to record the number of parentheses levels.
@@ -4446,7 +4446,7 @@ package Sinfo is
       --  expansion). Gigi thus never needs to worry about small values (for
       --  other operators operating on fixed-point, e.g. addition, the small
       --  value does not have any semantic effect anyway, these are always
-      --  integer operations.
+      --  integer operations).
 
       --  Gigi restriction: For all operators taking Boolean operands, the
       --  type is always Standard.Boolean. The expander inserts the required
