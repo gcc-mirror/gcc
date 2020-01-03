@@ -1,3 +1,8 @@
+2020-01-02  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (invalid_nontype_parm_type_p): Reject class placeholder in
+	C++17.
+
 2020-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/90677
