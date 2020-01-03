@@ -3,8 +3,19 @@
 program main
  use iso_c_binding, only: c_ptr, c_loc, c_associated
  implicit none (type, external)
+ integer, allocatable :: a_w, a_x(:)
+ integer, pointer :: p_w, p_x(:)
+
+ nullify (p_w, p_x)
  call foo()
+
+ ! unallocated/disassociated actual arguments to nonallocatable, nonpointer
+ ! dummy arguments are regarded as absent
+ call foo (w=a_w, x=a_x)
+ call foo (w=p_w, x=p_x)
+
 contains
+
   subroutine foo(v, w, x, y, z, cptr, cptr_in)
     integer, target, optional, value :: v
     integer, target, optional :: w
