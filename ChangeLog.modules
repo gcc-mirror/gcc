@@ -1,5 +1,13 @@
 2020-01-03  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_out::get_merge_kind): Detect bitfield storage
+	unit.
+	(trees_out::key_mergeable): Deal with anonymous bitfields.
+	* name-lookup.c (mergeable_class_member): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/merge-10{.h,_a.H,_b.C}: New.
+
 	gcc/
 	* tree.h (DECL_ALIGN_RAW): New, use it in accessors.
 	(DCL_WARN_IF_NOT_ALIGN): Likewise.

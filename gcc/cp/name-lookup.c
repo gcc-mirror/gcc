@@ -3982,16 +3982,16 @@ mergeable_class_member (tree decl, tree klass, tree name,
       break;
 
     case INTEGER_CST:
-      /* An anonymous member type.  */
+      /* An anonymous member type, or unnamed bitfield.  */
       {
 	unsigned ix = TREE_INT_CST_LOW (name);
 	for (tree field = TYPE_FIELDS (klass); field; field = DECL_CHAIN (field))
-	  if (DECL_NAME (field) && IDENTIFIER_ANON_P (DECL_NAME (field))
-	      && !ix--)
-	    {
-	      found = field;
-	      break;
-	    }
+	  if (!DECL_NAME (field) || IDENTIFIER_ANON_P (DECL_NAME (field)))
+	    if (!ix--)
+	      {
+		found = field;
+		break;
+	      }
       }
       break;
 

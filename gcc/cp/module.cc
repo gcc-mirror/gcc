@@ -9693,6 +9693,22 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 	return MK_unique;
 
       gcc_checking_assert (TYPE_P (ctx));
+      if (TREE_CODE (decl) == FIELD_DECL
+	  && !DECL_NAME (decl)
+	  && !RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl))
+	  && !DECL_BIT_FIELD_REPRESENTATIVE (decl))
+	{
+	  /* The underlying storage unit for a bitfield.  We do not
+	     need to dedup these, because it's only reachable through
+	     the bitfields it represents.  And those are deduped.  */
+	  // FIXME: Is that assertion correct -- do we ever fish it
+	  // out and put it in an expr?
+	  gcc_checking_assert ((TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
+				? TREE_CODE (TREE_TYPE (TREE_TYPE (decl)))
+				: TREE_CODE (TREE_TYPE (decl))) == INTEGER_TYPE);
+	  return MK_unique;
+	}
+
       return MK_via_ctx;
     }
 
@@ -9909,28 +9925,33 @@ trees_out::key_mergeable (merge_kind mk, tree decl, depset *dep)
       /* Regular decls are located by their context, name, and
 	 additional disambiguating data.  */
       tree name = DECL_NAME (decl);
-      if (!name)
+      if (!name && RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl)))
 	{
 	  /* A field for an anonymous member type, or direct base, use
 	     the type as the name.  */
 	  gcc_checking_assert (TREE_CODE (decl) == FIELD_DECL);
 	  name = TYPE_NAME (TREE_TYPE (decl));
 	}
-      else if (IDENTIFIER_ANON_P (name))
+      else if (!name || IDENTIFIER_ANON_P (name))
 	{
-	  /* An anonymous member type.  Find its position in the
-	     (filtered) TYPE_FIELDS list and use that as an
-	     INTEGER_CST.  */
+	  /* An anonymous member type, or anonymous bitfield.  Find
+	     its position in the (filtered) TYPE_FIELDS list and use
+	     that as an INTEGER_CST.  */
 	  // FIXME: Perhaps (unmergable) anonymous namespace-scope
-	  // types get here too?  We should have set those to MK_unique
-	  // earlier.
+	  // types get here too?  We should have set those to
+	  // MK_unique earlier.
+	  // FIXME: What about anonymous bitfields (of dependent type?)
+	  // in templates?
 	  gcc_checking_assert (TYPE_P (CP_DECL_CONTEXT (decl))
 			       && (TREE_CODE (decl) != TEMPLATE_DECL
 				   || !DECL_MEMBER_TEMPLATE_P (decl)));
+	  gcc_checking_assert (name ? TREE_CODE (inner) == TYPE_DECL
+			       : (TREE_CODE (inner) == FIELD_DECL
+				  && DECL_BIT_FIELD_REPRESENTATIVE (inner)));
 	  unsigned ix = 0;
 	  for (tree field = TYPE_FIELDS (CP_DECL_CONTEXT (decl));
 	       field; field = DECL_CHAIN (field))
-	    if (DECL_NAME (field) && IDENTIFIER_ANON_P (DECL_NAME (field)))
+	    if (!DECL_NAME (field) || IDENTIFIER_ANON_P (DECL_NAME (field)))
 	      {
 		if (field == inner)
 		  {
