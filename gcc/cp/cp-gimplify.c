@@ -529,6 +529,7 @@ cp_gimplify_init_expr (tree *expr_p, gimple_seq *pre_p)
   /* If we might need to clean up a partially constructed object, break down
      the CONSTRUCTOR with split_nonconstant_init.  */
   if (TREE_CODE (from) == CONSTRUCTOR
+      && flag_exceptions
       && TREE_SIDE_EFFECTS (from)
       && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (to)))
     {

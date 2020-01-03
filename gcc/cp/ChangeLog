@@ -1,3 +1,9 @@
+2020-01-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93033 - incorrect tree node sharing with array init.
+	* typeck2.c (split_nonconstant_init): Unshare non-decl.
+	* cp-gimplify.c (cp_gimplify_init_expr): Only split if -fexceptions.
+
 2020-01-02  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (invalid_nontype_parm_type_p): Reject class placeholder in
