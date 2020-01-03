@@ -1,5 +1,9 @@
 2020-01-03  Nathan Sidwell  <nathan@acm.org>
 
+	Header unit deduplication milestone
+	gcc/testsuite/
+	* g++.dg/modules/string-1_{a.H,b.C}: New.
+
 	gcc/cp/
 	* module.cc (trees_in::decl_value): Disambiguate entity_ary slots
 	from entuty_hash slots.
