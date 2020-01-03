@@ -198,6 +198,8 @@ package System.Aux_DEC is
    type Unsigned_Quadword_Array is
       array (Integer range <>) of Unsigned_Quadword;
 
+   subtype Address_Int is Integer;
+
    function To_Address (X : Integer) return Address;
    pragma Pure_Function (To_Address);
 
