@@ -418,11 +418,6 @@ begin
    Write_Switch_Char ("S");
    Write_Line ("Print listing of package Standard");
 
-   --  Line for -gnatt switch
-
-   Write_Switch_Char ("t");
-   Write_Line ("Tree output file to be generated");
-
    --  Line for -gnatTnn switch
 
    Write_Switch_Char ("Tnn");

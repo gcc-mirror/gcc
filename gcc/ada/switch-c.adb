@@ -1250,13 +1250,6 @@ package body Switch.C is
                Print_Standard := True;
                Ptr := Ptr + 1;
 
-            --  -gnatt (output tree)
-
-            when 't' =>
-               Ptr := Ptr + 1;
-               Tree_Output := True;
-               Back_Annotate_Rep_Info := True;
-
             --  -gnatT (change start of internal table sizes)
 
             when 'T' =>
