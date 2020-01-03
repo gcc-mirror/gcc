@@ -2950,15 +2950,36 @@ ix86_simd_clone_adjust (struct cgraph_node *node)
 	str = "sse2";
       break;
     case 'c':
-      if (!TARGET_AVX)
+      if (TARGET_PREFER_AVX128)
+	{
+	  if (!TARGET_AVX)
+	    str = "avx,prefer-vector-width=256";
+	  else
+	    str = "prefer-vector-width=256";
+	}
+      else if (!TARGET_AVX)
 	str = "avx";
       break;
     case 'd':
-      if (!TARGET_AVX2)
+      if (TARGET_PREFER_AVX128)
+	{
+	  if (!TARGET_AVX2)
+	    str = "avx2,prefer-vector-width=256";
+	  else
+	    str = "prefer-vector-width=256";
+	}
+      else if (!TARGET_AVX2)
 	str = "avx2";
       break;
     case 'e':
-      if (!TARGET_AVX512F)
+      if (TARGET_PREFER_AVX256)
+	{
+	  if (!TARGET_AVX512F)
+	    str = "avx512f,prefer-vector-width=512";
+	  else
+	    str = "prefer-vector-width=512";
+	}
+      else if (!TARGET_AVX512F)
 	str = "avx512f";
       break;
     default:

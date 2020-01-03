@@ -1,6 +1,12 @@
 2020-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93089
+	* config/i386/i386-options.c (ix86_simd_clone_adjust): If
+	TARGET_PREFER_AVX128, use prefer-vector-width=256 for 'c' and 'd'
+	simd clones.  If TARGET_PREFER_AVX256, use prefer-vector-width=512
+	for 'e' simd clones.
+
+	PR target/93089
 	* config/i386/i386.opt (x_prefer_vector_width_type): Remove TargetSave
 	entry.
 	(mprefer-vector-width=): Add Save.
