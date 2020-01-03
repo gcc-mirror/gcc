@@ -1,5 +1,10 @@
 2020-01-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/93110
+	* config/i386/i386.md (abs<mode>2): Use expand_simple_binop instead of
+	emitting ASHIFTRT, XOR and MINUS by hand.  Use gen_int_mode with QImode
+	instead of gen_int_shift_amount + convert_modes.
+
 	PR rtl-optimization/93088
 	* loop-iv.c (find_single_def_src): Punt after looking through
 	128 reg copies for regs with single definitions.  Move definitions
