@@ -1,3 +1,9 @@
+2020-01-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92994
+	* gfortran.dg/associate_50.f90: Update dg-error.
+	* gfortran.dg/associate_51.f90: New.
+
 2020-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/68020
