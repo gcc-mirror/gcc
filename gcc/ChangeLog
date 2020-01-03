@@ -1,5 +1,19 @@
 2020-01-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/93089
+	* config/i386/i386.opt (x_prefer_vector_width_type): Remove TargetSave
+	entry.
+	(mprefer-vector-width=): Add Save.
+	* config/i386/i386-options.c (ix86_target_string): Add PVW argument, print
+	-mprefer-vector-width= if non-zero.  Fix up -mfpmath= comment.
+	(ix86_debug_options, ix86_function_specific_print): Adjust
+	ix86_target_string callers.
+	(ix86_valid_target_attribute_inner_p): Handle prefer-vector-width=.
+	(ix86_valid_target_attribute_tree): Likewise.
+	* config/i386/i386-options.h (ix86_target_string): Add PVW argument.
+	* config/i386/i386-expand.c (ix86_expand_builtin): Adjust
+	ix86_target_string caller.
+
 	PR target/93110
 	* config/i386/i386.md (abs<mode>2): Use expand_simple_binop instead of
 	emitting ASHIFTRT, XOR and MINUS by hand.  Use gen_int_mode with QImode
