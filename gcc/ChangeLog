@@ -1,3 +1,8 @@
+2020-01-03  Konstantin Kharlamov  <Hi-Angel@yandex.ru>
+
+	* gdbinit.in (pr, prl, pt, pct, pgg, pgq, pgs, pge, pmz, pdd, pbs, pbm):
+	Use "call" instead of "set".
+
 2020-01-03  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/92917
