@@ -1,3 +1,8 @@
+2020-01-28  Tobias Burnus  <tobias@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.dg/goacc/strided-alloc-ptr.f90: New test.
+
 2020-01-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/93439
