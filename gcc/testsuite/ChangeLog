@@ -1,3 +1,10 @@
+2020-01-28  Tobias Burnus  <tobias@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.dg/goacc/mapping-tests-2.f90: New test.
+	* gfortran.dg/goacc/subarrays.f95: Expect rejection of non-contiguous
+	array.
+
 2020-01-28  Julian Brown  <julian@codesourcery.com>
 
 	* gfortran.dg/goacc/deep-copy-2.f90: Move test here (from libgomp

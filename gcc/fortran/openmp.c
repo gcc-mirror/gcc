@@ -4536,13 +4536,28 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		    /* Look through component refs to find last array
 		       reference.  */
 		    if (openacc && resolved)
-		      while (array_ref
-			     && (array_ref->type == REF_COMPONENT
-				 || (array_ref->type == REF_ARRAY
-				     && array_ref->next
-				     && (array_ref->next->type
-					 == REF_COMPONENT))))
-			array_ref = array_ref->next;
+		      {
+			/* The "!$acc cache" directive allows rectangular
+			   subarrays to be specified, with some restrictions
+			   on the form of bounds (not implemented).
+			   Only raise an error here if we're really sure the
+			   array isn't contiguous.  An expression such as
+			   arr(-n:n,-n:n) could be contiguous even if it looks
+			   like it may not be.  */
+			if (list != OMP_LIST_CACHE
+			    && !gfc_is_simply_contiguous (n->expr, false, true)
+			    && gfc_is_not_contiguous (n->expr))
+			  gfc_error ("Array is not contiguous at %L",
+				     &n->where);
+
+			while (array_ref
+			       && (array_ref->type == REF_COMPONENT
+				   || (array_ref->type == REF_ARRAY
+				       && array_ref->next
+				       && (array_ref->next->type
+					   == REF_COMPONENT))))
+			  array_ref = array_ref->next;
+		      }
 		  }
 		if (array_ref
 		    || (n->expr
