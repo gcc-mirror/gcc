@@ -1,4 +1,7 @@
-2010-01-05  Jakub Jelinek  <jakub@redhat.com>
+2020-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93138
+	* g++.dg/warn/Wredundant-tags-2.C: New test.
 
 	PR c++/93046
 	* g++.dg/ext/cond4.C: New test.
