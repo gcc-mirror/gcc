@@ -1,3 +1,8 @@
+2020-01-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/darwin-version-1.c: Adjust test to use different
+	options for Darwin4-9 and Darwin10+.
+
 2020-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93141
