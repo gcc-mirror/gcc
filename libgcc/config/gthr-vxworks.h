@@ -70,7 +70,14 @@ typedef volatile unsigned char __vx_tas_t;
 #define __TAS(x) vxAtomicCas ((x), 0, 1)
 typedef atomic_t __vx_tas_t;
 
+/* Our implementation will need the system headers to use the vxAtomic
+   primitives.  Other includers won't and could actually be incompatible
+   with this inclusion, for instance libstdc++ sources compiled in C++
+   98 mode while AtomicLib for C++ requires C++ 11 at least.  */
+
+#if defined(IN_LIBGCC2)
 #include <vxAtomicLib.h>
+#endif
 
 #endif
 

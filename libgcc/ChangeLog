@@ -1,3 +1,8 @@
+2020-01-05  Olivier Hainque  <hainque@adacore.com>
+
+	* config/gthr-vxworks.h: Guard #include vxAtomicLib.h
+	by IN_LIBGCC2.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
