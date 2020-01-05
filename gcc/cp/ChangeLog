@@ -1,3 +1,9 @@
+2010-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93046
+	* cp-gimplify.c (cp_gimplify_init_expr): Don't look through
+	TARGET_EXPR if it has been gimplified already.
+
 2020-01-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/93033 - incorrect tree node sharing with array init.

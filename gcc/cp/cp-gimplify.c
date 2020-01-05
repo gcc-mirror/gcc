@@ -523,7 +523,7 @@ cp_gimplify_init_expr (tree *expr_p, gimple_seq *pre_p)
      think that such code never uses the TARGET_EXPR as an initializer.  If
      I'm wrong, we'll abort because the temp won't have any RTL.  In that
      case, I guess we'll need to replace references somehow.  */
-  if (TREE_CODE (from) == TARGET_EXPR)
+  if (TREE_CODE (from) == TARGET_EXPR && TARGET_EXPR_INITIAL (from))
     from = TARGET_EXPR_INITIAL (from);
 
   /* If we might need to clean up a partially constructed object, break down
