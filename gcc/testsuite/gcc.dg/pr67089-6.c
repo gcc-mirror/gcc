@@ -56,7 +56,6 @@ T (24, unsigned long long, x + y, if (d || y > r) foo (0))
 T (25, unsigned short, 2U - x, if (r > 2U) foo (0))
 T (26, unsigned char, 2U - x, if (r <= 2U) foo (0))
 
-/* { dg-final { scan-tree-dump-times "ADD_OVERFLOW" 16 "widening_mul" { target { { i?86-*-* x86_64-*-* } && { ! ia32 } } } } } */
+/* { dg-final { scan-tree-dump-times "ADD_OVERFLOW" 16 "widening_mul" { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-tree-dump-times "SUB_OVERFLOW" 11 "widening_mul" { target { { i?86-*-* x86_64-*-* } && { ! ia32 } } } } } */
-/* { dg-final { scan-tree-dump-times "ADD_OVERFLOW" 12 "widening_mul" { target { { i?86-*-* x86_64-*-* } && ia32 } } } } */
 /* { dg-final { scan-tree-dump-times "SUB_OVERFLOW" 9 "widening_mul" { target { { i?86-*-* x86_64-*-* } && ia32 } } } } */

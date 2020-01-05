@@ -1,5 +1,9 @@
 2020-01-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/93141
+	* gcc.target/i386/pr93141-1.c: New test.
+	* gcc.dg/pr67089-6.c: Expect 16 ADD_OVERFLOW calls even on ia32.
+
 	PR c++/93138
 	* g++.dg/warn/Wredundant-tags-2.C: New test.
 
