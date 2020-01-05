@@ -652,7 +652,7 @@ package body Freeze is
                   while Present (Rep)
                     and then Next_Rep_Item (Rep) /= Addr
                   loop
-                     Rep := Next_Rep_Item (Rep);
+                     Next_Rep_Item (Rep);
                   end loop;
                end if;
 
@@ -1957,7 +1957,7 @@ package body Freeze is
                         Check_Aspect_At_End_Of_Declarations (Ritem);
                      end if;
 
-                     Ritem := Next_Rep_Item (Ritem);
+                     Next_Rep_Item (Ritem);
                   end loop;
                end;
             end if;

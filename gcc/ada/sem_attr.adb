@@ -6418,7 +6418,7 @@ package body Sem_Attr is
                      end if;
                   end if;
 
-                  Rep := Next_Rep_Item (Rep);
+                  Next_Rep_Item (Rep);
                end loop;
             end if;
          end Compute_Type_Key;
@@ -6760,7 +6760,7 @@ package body Sem_Attr is
                   exit;
                end if;
 
-               Comp_Or_Discr := Next_Entity (Comp_Or_Discr);
+               Next_Entity (Comp_Or_Discr);
             end loop;
 
             --  Diagnose an illegal reference

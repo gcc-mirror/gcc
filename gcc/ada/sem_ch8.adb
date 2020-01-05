@@ -2605,7 +2605,7 @@ package body Sem_Ch8 is
                   exit;
                end if;
 
-               F := Next_Formal (F);
+               Next_Formal (F);
             end loop;
 
             if Ekind (Formal_Spec) = E_Function
@@ -2643,7 +2643,7 @@ package body Sem_Ch8 is
                      end if;
                   end if;
 
-                  F := Next_Formal (F);
+                  Next_Formal (F);
                end loop;
             end if;
          end if;
@@ -5337,7 +5337,7 @@ package body Sem_Ch8 is
                      return;
                   end if;
 
-                  Lit := Next_Literal (Lit);
+                  Next_Literal (Lit);
                end if;
             end;
          end if;
@@ -8526,7 +8526,7 @@ package body Sem_Ch8 is
          while Present (Curr) loop
             Mark_Use_Type (Curr);
 
-            Curr := Next_Formal (Curr);
+            Next_Formal (Curr);
          end loop;
 
          --  Handle the return type
@@ -9407,7 +9407,7 @@ package body Sem_Ch8 is
                Set_Current_Use_Clause (Entity (N), Prev_Use_Clause (Curr));
             end if;
 
-            Curr := Next_Use_Clause (Curr);
+            Next_Use_Clause (Curr);
          end loop;
       end Update_Chain_In_Scope;
 

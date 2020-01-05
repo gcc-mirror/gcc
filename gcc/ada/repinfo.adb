@@ -600,7 +600,7 @@ package body Repinfo is
                end if;
             end if;
 
-            E := Next_Entity (E);
+            Next_Entity (E);
          end loop;
 
          --  For a package body, the entities of the visible subprograms are

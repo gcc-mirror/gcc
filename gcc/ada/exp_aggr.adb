@@ -7227,7 +7227,7 @@ package body Exp_Aggr is
 
                   Comp := First_Component (Typ);
                   while Chars (Comp) /= Name_uParent loop
-                     Comp := Next_Component (Comp);
+                     Next_Component (Comp);
                   end loop;
 
                   Parent_Name := New_Occurrence_Of (Comp, Loc);
@@ -7364,7 +7364,7 @@ package body Exp_Aggr is
                         return False;
                      end if;
 
-                     Indx := Next_Index (Indx);
+                     Next_Index (Indx);
                   end loop;
                end if;
             end;
@@ -8888,12 +8888,12 @@ package body Exp_Aggr is
                   Comp_Val := Comp_Val mod Uint_2 ** Comp_Size;
                   Val := UI_To_Int (Val + Comp_Val * Uint_2 ** Shift);
                   Shift := Shift + Incr;
-                  One_Comp := Next (One_Comp);
+                  Next (One_Comp);
                   Packed_Num := Packed_Num + 1;
                end if;
             end loop;
 
-            One_Dim := Next (One_Dim);
+            Next (One_Dim);
          end loop;
 
          if Packed_Num > 0 then

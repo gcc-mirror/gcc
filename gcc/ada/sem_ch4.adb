@@ -6019,7 +6019,7 @@ package body Sem_Ch4 is
          return;
       end if;
 
-      Comp  := First_Entity (Prefix);
+      Comp := First_Entity (Prefix);
       while Nr_Of_Suggestions <= Max_Suggestions and then Present (Comp) loop
          if Is_Visible_Component (Comp, Sel) then
             if Is_Bad_Spelling_Of (Chars (Comp), Chars (Sel)) then
@@ -6033,7 +6033,7 @@ package body Sem_Ch4 is
             end if;
          end if;
 
-         Comp := Next_Entity (Comp);
+         Next_Entity (Comp);
       end loop;
 
       --  Report at most two suggestions
@@ -7531,7 +7531,7 @@ package body Sem_Ch4 is
                Formal := First_Entity (It.Nam);
 
                if Op = Second_Op then
-                  Formal := Next_Entity (Formal);
+                  Next_Entity (Formal);
                end if;
 
                if Is_Descendant_Of_Address (Etype (Formal)) then

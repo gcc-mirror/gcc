@@ -10601,7 +10601,7 @@ package body Sem_Res is
                               while Present (Comp1)
                                 and then Chars (Comp1) /= Chars (S)
                               loop
-                                 Comp1 := Next_Entity (Comp1);
+                                 Next_Entity (Comp1);
                               end loop;
                            end if;
 
@@ -10610,7 +10610,7 @@ package body Sem_Res is
                      end if;
                   end if;
 
-                  Comp := Next_Entity (Comp);
+                  Next_Entity (Comp);
                end loop;
             end if;
 

@@ -9549,7 +9549,7 @@ package body Exp_Util is
                       (Next (First (Pragma_Argument_Associations (Item))));
                end if;
 
-               Item := Next_Rep_Item (Item);
+               Next_Rep_Item (Item);
             end loop;
 
             return Empty;
@@ -9834,7 +9834,7 @@ package body Exp_Util is
                 Low_Bound  => New_Occurrence_Of (Low_Bound,  Loc),
                 High_Bound => New_Occurrence_Of (High_Bound, Loc)));
 
-            Index_Typ := Next_Index (Index_Typ);
+            Next_Index (Index_Typ);
          end loop;
 
       elsif Is_Class_Wide_Type (Unc_Typ) then

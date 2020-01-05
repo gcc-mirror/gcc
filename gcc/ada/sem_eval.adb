@@ -954,7 +954,7 @@ package body Sem_Eval is
                Subs := UI_To_Int (Expr_Value (First (Expressions (N))));
 
                for J in 2 .. Subs loop
-                  Indx := Next_Index (Indx);
+                  Next_Index (Indx);
                end loop;
             end if;
 
