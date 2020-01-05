@@ -1,5 +1,5 @@
 -- { dg-do compile }
--- { dg-options "-gnat12 -gnatct" }
+-- { dg-options "-gnatc" }
 
 with Ada.Containers.Vectors;
 with Limited_With4_Pkg;
