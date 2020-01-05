@@ -30663,11 +30663,15 @@ static void
 cp_parser_maybe_warn_enum_key (cp_parser *parser, location_t key_loc,
 			       tree type, rid scoped_key)
 {
+  if (!warn_redundant_tags)
+    return;
+
   tree type_decl = TYPE_MAIN_DECL (type);
   tree name = DECL_NAME (type_decl);
-  /* Look up the NAME to see if it unambiguously refers to the TYPE
-     and set KEY_REDUNDANT if so.  */
+  /* Look up the NAME to see if it unambiguously refers to the TYPE.  */
+  push_deferring_access_checks (dk_no_check);
   tree decl = cp_parser_lookup_name_simple (parser, name, input_location);
+  pop_deferring_access_checks ();
 
   /* The enum-key is redundant for uses of the TYPE that are not
      declarations and for which name lookup returns just the type
@@ -30837,7 +30841,9 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
   tree name = DECL_NAME (type_decl);
   /* Look up the NAME to see if it unambiguously refers to the TYPE
      and set KEY_REDUNDANT if so.  */
+  push_deferring_access_checks (dk_no_check);
   tree decl = cp_parser_lookup_name_simple (parser, name, input_location);
+  pop_deferring_access_checks ();
 
   /* The class-key is redundant for uses of the CLASS_TYPE that are
      neither definitions of it nor declarations, and for which name

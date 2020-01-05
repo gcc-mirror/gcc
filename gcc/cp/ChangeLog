@@ -1,3 +1,11 @@
+2020-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93138
+	* parser.c (cp_parser_check_class_key): Disable access checks for the
+	simple name lookup.
+	(cp_parser_maybe_warn_enum_key): Likewise.  Return early if
+	!warn_redundant_tags.
+
 2010-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/93046
