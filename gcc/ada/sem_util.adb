@@ -8060,8 +8060,8 @@ package body Sem_Util is
                   return;
 
                else
-                  Actual := Next_Actual (Actual);
-                  Formal := Next_Formal (Formal);
+                  Next_Actual (Actual);
+                  Next_Formal (Formal);
                end if;
             end loop;
          end if;
@@ -12331,7 +12331,7 @@ package body Sem_Util is
                return True;
             end if;
 
-            Comp := Next_Component (Comp);
+            Next_Component (Comp);
          end loop;
       end if;
 
@@ -13033,7 +13033,7 @@ package body Sem_Util is
                   return Ent;
                end if;
 
-               Ent := Next_Entity (Ent);
+               Next_Entity (Ent);
             end loop;
          end;
       end if;
@@ -18276,7 +18276,7 @@ package body Sem_Util is
             end if;
          end if;
 
-         Idx := Next_Index (Idx);
+         Next_Index (Idx);
       end loop;
 
       return False;
@@ -25141,7 +25141,7 @@ package body Sem_Util is
             begin
                while Present (Indx) loop
                   Set_Debug_Info_Needed_If_Not_Set (Etype (Indx));
-                  Indx := Next_Index (Indx);
+                  Next_Index (Indx);
                end loop;
             end;
 

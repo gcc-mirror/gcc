@@ -234,7 +234,7 @@ package body Sem_Aux is
       --  either because the tag must be ahead of them.
 
       if Chars (Ent) = Name_uTag then
-         Ent := Next_Entity (Ent);
+         Next_Entity (Ent);
       end if;
 
       --  Skip all hidden stored discriminants if any
@@ -243,7 +243,7 @@ package body Sem_Aux is
          exit when Ekind (Ent) = E_Discriminant
            and then not Is_Completely_Hidden (Ent);
 
-         Ent := Next_Entity (Ent);
+         Next_Entity (Ent);
       end loop;
 
       --  Call may be on a private type with unknown discriminants, in which
@@ -297,7 +297,7 @@ package body Sem_Aux is
                return True;
             end if;
 
-            Ent := Next_Entity (Ent);
+            Next_Entity (Ent);
          end loop;
 
          return False;
@@ -313,14 +313,14 @@ package body Sem_Aux is
       Ent := First_Entity (Typ);
 
       if Chars (Ent) = Name_uTag then
-         Ent := Next_Entity (Ent);
+         Next_Entity (Ent);
       end if;
 
       if Has_Completely_Hidden_Discriminant (Ent) then
          while Present (Ent) loop
             exit when Ekind (Ent) = E_Discriminant
               and then Is_Completely_Hidden (Ent);
-            Ent := Next_Entity (Ent);
+            Next_Entity (Ent);
          end loop;
       end if;
 
@@ -423,7 +423,7 @@ package body Sem_Aux is
             return Comp;
          end if;
 
-         Comp := Next_Entity (Comp);
+         Next_Entity (Comp);
       end loop;
 
       --  No tag component found
@@ -735,7 +735,7 @@ package body Sem_Aux is
             return True;
          end if;
 
-         Item := Next_Rep_Item (Item);
+         Next_Rep_Item (Item);
       end loop;
 
       return False;
@@ -984,7 +984,7 @@ package body Sem_Aux is
                      return True;
                   end if;
 
-                  C := Next_Component (C);
+                  Next_Component (C);
                end loop;
             end;
 
@@ -1216,7 +1216,7 @@ package body Sem_Aux is
                      return True;
                   end if;
 
-                  C := Next_Component (C);
+                  Next_Component (C);
                end loop;
             end;
 
@@ -1315,7 +1315,7 @@ package body Sem_Aux is
                      return True;
                   end if;
 
-                  C := Next_Component (C);
+                  Next_Component (C);
                end loop;
             end;
 
@@ -1427,7 +1427,7 @@ package body Sem_Aux is
             return Comp;
          end if;
 
-         Comp := Next_Entity (Comp);
+         Next_Entity (Comp);
       end loop;
 
       --  No tag component found
@@ -1456,7 +1456,7 @@ package body Sem_Aux is
 
       while Present (Comp) loop
          N := N + 1;
-         Comp := Next_Component_Or_Discriminant (Comp);
+         Next_Component_Or_Discriminant (Comp);
       end loop;
 
       return N;
@@ -1473,7 +1473,7 @@ package body Sem_Aux is
    begin
       while Present (Discr) loop
          N := N + 1;
-         Discr := Next_Discriminant (Discr);
+         Next_Discriminant (Discr);
       end loop;
 
       return N;

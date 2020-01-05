@@ -3014,7 +3014,7 @@ package body Sem_Aggr is
                return Etype (Comp);
             end if;
 
-            Comp := Next_Entity (Comp);
+            Next_Entity (Comp);
          end loop;
 
          Error_Msg_NE ("type& has no component with this name", Nam, Typ);

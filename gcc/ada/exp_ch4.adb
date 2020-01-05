@@ -7904,7 +7904,7 @@ package body Exp_Ch4 is
                if Is_Equality (E, Typ) then
                   return E;
                end if;
-               E := Next_Entity (E);
+               Next_Entity (E);
             end loop;
          end loop;
 

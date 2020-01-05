@@ -18794,7 +18794,7 @@ package body Sem_Elab is
             Comp := First_Component (Typ);
             while Present (Comp) loop
                Add_Task_Proc (Etype (Comp));
-               Comp := Next_Component (Comp);
+               Next_Component (Comp);
             end loop;
          end if;
 

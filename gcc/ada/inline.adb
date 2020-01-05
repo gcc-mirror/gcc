@@ -852,7 +852,7 @@ package body Inline is
             return;
          end if;
 
-         Elmt := Next_Elmt (Elmt);
+         Next_Elmt (Elmt);
       end loop;
 
       Append_Elmt (Scop, To_Clean);
@@ -2787,7 +2787,7 @@ package body Inline is
          Expand_Cleanup_Actions (Decl);
          End_Scope;
 
-         Elmt := Next_Elmt (Elmt);
+         Next_Elmt (Elmt);
       end loop;
    end Cleanup_Scopes;
 

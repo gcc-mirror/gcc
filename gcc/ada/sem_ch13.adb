@@ -1085,7 +1085,7 @@ package body Sem_Ch13 is
                end if;
             end if;
 
-            N := Next_Rep_Item (N);
+            Next_Rep_Item (N);
          end loop;
       end Inherit_Delayed_Rep_Aspects;
 
@@ -4657,7 +4657,7 @@ package body Sem_Ch13 is
 
             --  False if any subsequent formal has no default expression
 
-            Formal := Next_Formal (Formal);
+            Next_Formal (Formal);
             while Present (Formal) loop
                if No (Expression (Parent (Formal))) then
                   return False;
@@ -10203,7 +10203,7 @@ package body Sem_Ch13 is
                end if;
 
                Prev_Bit_Offset := Component_Bit_Offset (Comp);
-               Comp := Next_Component (Comp);
+               Next_Component (Comp);
             end if;
 
             Next (Clause);
@@ -13437,7 +13437,7 @@ package body Sem_Ch13 is
             end;
          end if;
 
-         ASN := Next_Rep_Item (ASN);
+         Next_Rep_Item (ASN);
       end loop;
    end Resolve_Aspect_Expressions;
 

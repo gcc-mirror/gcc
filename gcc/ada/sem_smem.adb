@@ -126,7 +126,7 @@ package body Sem_Smem is
                if Is_Access_Type (Etype (C)) then
                   return True;
                else
-                  C := Next_Discriminant (C);
+                  Next_Discriminant (C);
                end if;
             end loop;
          end if;
@@ -145,7 +145,7 @@ package body Sem_Smem is
             then
                return True;
             else
-               C := Next_Component (C);
+               Next_Component (C);
             end if;
          end loop;
 

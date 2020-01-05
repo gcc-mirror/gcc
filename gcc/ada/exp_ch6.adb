@@ -9636,7 +9636,7 @@ package body Exp_Ch6 is
 
       Last_Formal := First_Formal (Proc_Id);
       while Present (Next_Formal (Last_Formal)) loop
-         Last_Formal := Next_Formal (Last_Formal);
+         Next_Formal (Last_Formal);
       end loop;
 
       Actuals := Parameter_Associations (N);

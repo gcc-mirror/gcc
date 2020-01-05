@@ -20510,7 +20510,7 @@ package body Sem_Prag is
                            exit;
 
                         else
-                           Ent := Next_Literal (Ent);
+                           Next_Literal (Ent);
                         end if;
                      end loop;
                   end if;

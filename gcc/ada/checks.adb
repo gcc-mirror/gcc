@@ -4889,7 +4889,7 @@ package body Checks is
 
                      Indx := First_Index (Atyp);
                      for J in 2 .. Inum loop
-                        Indx := Next_Index (Indx);
+                        Next_Index (Indx);
                      end loop;
 
                      --  If the index type is a formal type or derived from
@@ -6847,7 +6847,7 @@ package body Checks is
                       Reason => CE_Index_Check_Failed));
                end if;
 
-               A_Idx := Next_Index (A_Idx);
+               Next_Index (A_Idx);
                Ind := Ind + 1;
                Next (Sub);
             end loop;
