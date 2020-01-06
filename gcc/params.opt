@@ -375,7 +375,7 @@ Common Joined UInteger Var(param_max_average_unrolled_insns) Init(80) Param
 The maximum number of instructions to consider to unroll in a loop on average.
 
 -param=max-combine-insns=
-Common Joined UInteger Var(param_max_combine_insns) Init(4) IntegerRange(2, 4) Param
+Common Joined UInteger Var(param_max_combine_insns) Init(4) IntegerRange(2, 4) Param Optimization
 The maximum number of insns combine tries to combine.
 
 -param=max-completely-peel-loop-nest-depth=
