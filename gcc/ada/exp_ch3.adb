@@ -4806,7 +4806,7 @@ package body Exp_Ch3 is
          if Esize (Typ) <= Standard_Integer_Size then
             Ityp := Standard_Integer;
          else
-            Ityp := Universal_Integer;
+            Ityp := Standard_Long_Long_Integer;
          end if;
 
       --  Representations are unsigned
