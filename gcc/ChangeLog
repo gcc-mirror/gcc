@@ -1,5 +1,10 @@
 2020-01-06  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-slp.c (vect_build_slp_tree_1): Require all shifts
+	in an IFN_DIV_POW2 node to be equal.
+
+2020-01-06  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-stmts.c (vect_check_load_store_mask): Rename to...
 	(vect_check_scalar_mask): ...this.
 	(vectorizable_store, vectorizable_load): Update call accordingly.
