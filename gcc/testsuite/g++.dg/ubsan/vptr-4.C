@@ -35,7 +35,7 @@ struct W : V<U> {
   int b;
   int g() { return 0; }
   virtual int v() { return 1; }
-  constexpr const W<U> *foo() { return (const W<U> *) reinterpret_cast<const V<U> *> (this); }
+  constexpr const W<U> *foo() { return (const W<U> *) reinterpret_cast<const V<U> *> (this); } // { dg-error "is not a constant expression" }
 };
 
 constexpr W<int> w;
