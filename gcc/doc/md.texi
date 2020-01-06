@@ -6287,7 +6287,7 @@ destination and source strings are operands 1 and 2, and both are
 the expansion of this pattern should store in operand 0 the address in
 which the @code{NUL} terminator was stored in the destination string.
 
-This patern has also several optional operands that are same as in
+This pattern has also several optional operands that are same as in
 @code{setmem}.
 
 @cindex @code{setmem@var{m}} instruction pattern

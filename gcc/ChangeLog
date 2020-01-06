@@ -1,3 +1,8 @@
+2020-01-06  Bryan Stenson  <bryan@siliconvortex.com>
+
+	* config/mips/mips.c (vr4130_align_insns): Fix typo.
+	* doc/md.texi (movstr): Likewise.
+
 2020-01-06  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (vec_extract<mode><scalar_mode>): Add early
