@@ -1292,10 +1292,10 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "subv64di3"
-  [(set (match_operand:V64DI 0 "register_operand"  "=  &v,   &v")
-	(minus:V64DI
-	  (match_operand:V64DI 1 "gcn_alu_operand" "vSvB0,   v0")
-	  (match_operand:V64DI 2 "gcn_alu_operand" "   v0,vSvB0")))
+  [(set (match_operand:V64DI 0 "register_operand"  "= &v,   &v,   &v,  &v")
+	(minus:V64DI                                                 
+	  (match_operand:V64DI 1 "gcn_alu_operand" "vSvB,vSvB0,    v,  v0")
+	  (match_operand:V64DI 2 "gcn_alu_operand" "  v0,    v,vSvB0,vSvB")))
    (clobber (reg:DI VCC_REG))]
   ""
   "#"
@@ -1318,17 +1318,17 @@
     DONE;
   }
   [(set_attr "type" "vmult")
-   (set_attr "length" "8,8")])
+   (set_attr "length" "8")])
 
 (define_insn_and_split "subv64di3_exec"
-  [(set (match_operand:V64DI 0 "register_operand"	       "=  &v,   &v")
-	(vec_merge:V64DI
-	  (minus:V64DI
-	    (match_operand:V64DI 1 "gcn_alu_operand"	       "vSvB0,   v0")
-	    (match_operand:V64DI 2 "gcn_alu_operand"	       "   v0,vSvB0"))
+  [(set (match_operand:V64DI 0 "register_operand"    "= &v,   &v,   &v,  &v")
+	(vec_merge:V64DI                                                         
+	  (minus:V64DI                                                           
+	    (match_operand:V64DI 1 "gcn_alu_operand" "vSvB,vSvB0,    v,  v0")
+	    (match_operand:V64DI 2 "gcn_alu_operand" "  v0,    v,vSvB0,vSvB"))
 	  (match_operand:V64DI 3 "gcn_register_or_unspec_operand"
-							       "   U0,   U0")
-	  (match_operand:DI 4 "gcn_exec_reg_operand"	       "    e,    e")))
+						     "  U0,   U0,   U0,  U0")
+	  (match_operand:DI 4 "gcn_exec_reg_operand" "   e,    e,    e,   e")))
    (clobber (reg:DI VCC_REG))]
   "register_operand (operands[1], VOIDmode)
    || register_operand (operands[2], VOIDmode)"
@@ -1357,7 +1357,7 @@
     DONE;
   }
   [(set_attr "type" "vmult")
-   (set_attr "length" "8,8")])
+   (set_attr "length" "8")])
 
 (define_insn_and_split "addv64di3_dup"
   [(set (match_operand:V64DI 0 "register_operand"   "= &v")
