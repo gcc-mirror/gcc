@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for HPPA.
-   Copyright (C) 1992-2019 Free Software Foundation, Inc.
+   Copyright (C) 1992-2020 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.c
 
 This file is part of GCC.
@@ -203,6 +203,7 @@ static bool pa_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool pa_modes_tieable_p (machine_mode, machine_mode);
 static bool pa_can_change_mode_class (machine_mode, machine_mode, reg_class_t);
 static HOST_WIDE_INT pa_starting_frame_offset (void);
+static section* pa_elf_select_rtx_section(machine_mode, rtx, unsigned HOST_WIDE_INT) ATTRIBUTE_UNUSED;
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -9836,6 +9837,26 @@ pa_select_section (tree exp, int reloc,
     return som_one_only_data_section;
   else
     return data_section;
+}
+
+/* Implement pa_elf_select_rtx_section.  If X is a function label operand
+   and the function is in a COMDAT group, place the plabel reference in the
+   .data.rel.ro.local section.  The linker ignores references to symbols in
+   discarded sections from this section.  */
+   
+static section *
+pa_elf_select_rtx_section (machine_mode mode, rtx x,
+			   unsigned HOST_WIDE_INT align)
+{
+  if (function_label_operand (x, VOIDmode))
+    {
+      tree decl = SYMBOL_REF_DECL (x);
+
+      if (DECL_P (decl) && DECL_COMDAT_GROUP (decl))
+	return get_named_section (NULL, ".data.rel.ro.local", 1);
+    }
+
+  return default_elf_select_rtx_section (mode, x, align);
 }
 
 /* Implement pa_reloc_rw_mask.  */

@@ -36,8 +36,6 @@ static const String reflection_string =
 
 const byte unsafe_Pointer_gc[] = { 1 };
 
-extern const FuncVal runtime_pointerhash_descriptor
-  __asm__ (GOSYM_PREFIX "runtime.pointerhash..f");
 extern const FuncVal runtime_pointerequal_descriptor
   __asm__ (GOSYM_PREFIX "runtime.pointerequal..f");
 
@@ -49,17 +47,15 @@ const struct _type unsafe_Pointer =
   sizeof (void *),
   /* hash */
   78501163U,
-  /* kind */
-  kindUnsafePointer | kindDirectIface,
+  /* tflag */
+  tflagRegularMemory,
   /* align */
   __alignof (void *),
   /* fieldAlign */
   offsetof (struct field_align, p) - 1,
-  /* _ */
-  0,
-  /* hashfn */
-  &runtime_pointerhash_descriptor,
-  /* equalfn */
+  /* kind */
+  kindUnsafePointer | kindDirectIface,
+  /* equal */
   &runtime_pointerequal_descriptor,
   /* gcdata */
   unsafe_Pointer_gc,
@@ -101,16 +97,14 @@ const struct ptrtype pointer_unsafe_Pointer =
     sizeof (void *),
     /* hash */
     1256018616U,
-    /* kind */
-    kindPtr | kindDirectIface,
+    /* tflag */
+    tflagRegularMemory,
     /* align */
     __alignof (void *),
     /* fieldAlign */
     offsetof (struct field_align, p) - 1,
-    /* _ */
-    0,
-    /*_hashfn */
-    &runtime_pointerhash_descriptor,
+    /* kind */
+    kindPtr | kindDirectIface,
     /* equalfn */
     &runtime_pointerequal_descriptor,
     /* gcdata */

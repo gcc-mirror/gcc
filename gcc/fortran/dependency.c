@@ -1,5 +1,5 @@
 /* Dependency analysis
-   Copyright (C) 2000-2019 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of GCC.
@@ -2284,6 +2284,12 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse,
 
 	  /* Keep checking.  We only have a dependency if
 	     subsequent references also overlap.  */
+	  break;
+
+	case REF_INQUIRY:
+	  if (lref->u.i != rref->u.i)
+	    return 0;
+
 	  break;
 
 	default:

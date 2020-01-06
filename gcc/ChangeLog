@@ -1,4 +1,87 @@
+2020-01-03  Konstantin Kharlamov  <Hi-Angel@yandex.ru>
+
+	* gdbinit.in (pr, prl, pt, pct, pgg, pgq, pgs, pge, pmz, pdd, pbs, pbm):
+	Use "call" instead of "set".
+
+2020-01-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/92917
+	* ipa-cp.c (print_all_lattices): Skip functions without info.
+
+2020-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93089
+	* config/i386/i386-options.c (ix86_simd_clone_adjust): If
+	TARGET_PREFER_AVX128, use prefer-vector-width=256 for 'c' and 'd'
+	simd clones.  If TARGET_PREFER_AVX256, use prefer-vector-width=512
+	for 'e' simd clones.
+
+	PR target/93089
+	* config/i386/i386.opt (x_prefer_vector_width_type): Remove TargetSave
+	entry.
+	(mprefer-vector-width=): Add Save.
+	* config/i386/i386-options.c (ix86_target_string): Add PVW argument, print
+	-mprefer-vector-width= if non-zero.  Fix up -mfpmath= comment.
+	(ix86_debug_options, ix86_function_specific_print): Adjust
+	ix86_target_string callers.
+	(ix86_valid_target_attribute_inner_p): Handle prefer-vector-width=.
+	(ix86_valid_target_attribute_tree): Likewise.
+	* config/i386/i386-options.h (ix86_target_string): Add PVW argument.
+	* config/i386/i386-expand.c (ix86_expand_builtin): Adjust
+	ix86_target_string caller.
+
+	PR target/93110
+	* config/i386/i386.md (abs<mode>2): Use expand_simple_binop instead of
+	emitting ASHIFTRT, XOR and MINUS by hand.  Use gen_int_mode with QImode
+	instead of gen_int_shift_amount + convert_modes.
+
+	PR rtl-optimization/93088
+	* loop-iv.c (find_single_def_src): Punt after looking through
+	128 reg copies for regs with single definitions.  Move definitions
+	to first uses.
+
+2020-01-02  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config/arm/arm-c.c (arm_cpu_builtins): Define
+	__ARM_FEATURE_MATMUL_INT8, __ARM_FEATURE_BF16_VECTOR_ARITHMETIC,
+	__ARM_FEATURE_BF16_SCALAR_ARITHMETIC, and
+	__ARM_BF16_FORMAT_ALTERNATIVE when enabled.
+	* config/arm/arm-cpus.in (armv8_6, i8mm, bf16): New features.
+	* config/arm/arm-tables.opt: Regenerated.
+	* config/arm/arm.c (arm_option_reconfigure_globals): Initialize
+	arm_arch_i8mm and arm_arch_bf16 when enabled.
+	* config/arm/arm.h (TARGET_I8MM): New macro.
+	(TARGET_BF16_FP, TARGET_BF16_SIMD): Likewise.
+	* config/arm/t-aprofile: Add matching rules for -march=armv8.6-a.
+	* config/arm/t-arm-elf (all_v8_archs): Add armv8.6-a.
+	* config/arm/t-multilib: Add matching rules for -march=armv8.6-a.
+	(v8_6_a_simd_variants): New.
+	(v8_*_a_simd_variants): Add i8mm and bf16.
+	* doc/invoke.texi (armv8.6-a, i8mm, bf16): Document new options.
+
+2020-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/93087
+	* predict.c (compute_function_frequency): Don't call
+	warn_function_cold on functions that already have cold attribute.
+
+2020-01-01  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/67834
+	* config/pa/pa.c (pa_elf_select_rtx_section): New.  Put references to
+	COMDAT group function labels in .data.rel.ro.local section.
+	* config/pa/pa32-linux.h (TARGET_ASM_SELECT_RTX_SECTION): Define.
+
+	PR target/93111
+	* config/pa/pa.md (scc): Use ordered_comparison_operator instead of
+	comparison_operator in B and S integer comparisons.  Likewise, use
+	ordered_comparison_operator instead of cmpib_comparison_operator in
+	cmpib patterns.
+	* config/pa/predicates.md (cmpib_comparison_operator): Remove.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
 
 	* gcc.c (process_command): Update copyright notice dates.
 	* gcov-dump.c (print_version): Ditto.

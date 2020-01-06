@@ -1,4 +1,4 @@
-# Copyright (C) 2001-2019 Free Software Foundation, Inc.
+# Copyright (C) 2001-2020 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -26,7 +26,7 @@ Works only when an inferior is executing.
 end
 
 define pr
-set debug_rtx ($)
+call debug_rtx ($)
 end
 
 document pr
@@ -35,7 +35,7 @@ Works only when an inferior is executing.
 end
 
 define prl
-set debug_rtx_list ($, debug_rtx_count)
+call debug_rtx_list ($, debug_rtx_count)
 end
 
 document prl
@@ -50,7 +50,7 @@ it using debug_rtx_list. Usage example: set $foo=debug_rtx_find(first, 42)
 end
 
 define pt
-set debug_tree ($)
+call debug_tree ($)
 end
 
 document pt
@@ -59,7 +59,7 @@ Works only when an inferior is executing.
 end
 
 define pct
-set debug_c_tree ($)
+call debug_c_tree ($)
 end
 
 document pct
@@ -68,7 +68,7 @@ Works only when an inferior is executing.
 end
 
 define pgg
-set debug_gimple_stmt ($)
+call debug_gimple_stmt ($)
 end
 
 document pgg
@@ -77,7 +77,7 @@ Works only when an inferior is executing.
 end
 
 define pgq
-set debug_gimple_seq ($)
+call debug_gimple_seq ($)
 end
 
 document pgq
@@ -86,7 +86,7 @@ Works only when an inferior is executing.
 end
 
 define pgs
-set debug_generic_stmt ($)
+call debug_generic_stmt ($)
 end
 
 document pgs
@@ -95,7 +95,7 @@ Works only when an inferior is executing.
 end
 
 define pge
-set debug_generic_expr ($)
+call debug_generic_expr ($)
 end
 
 document pge
@@ -104,7 +104,7 @@ Works only when an inferior is executing.
 end
 
 define pmz
-set mpz_out_str(stderr, 10, $)
+call mpz_out_str(stderr, 10, $)
 end
 
 document pmz
@@ -140,7 +140,7 @@ Print the name of the type-node that is $.
 end
 
 define pdd
-set debug_dwarf_die ($)
+call debug_dwarf_die ($)
 end
 
 document pdd
@@ -167,7 +167,7 @@ Print the fields of an instruction that is $.
 end
 
 define pbs
-set print_binding_stack ()
+call print_binding_stack ()
 end
 
 document pbs
@@ -176,7 +176,7 @@ including the global binding level.
 end
 
 define pbm
-set bitmap_print (stderr, $, "", "\n")
+call bitmap_print (stderr, $, "", "\n")
 end
 
 document pbm

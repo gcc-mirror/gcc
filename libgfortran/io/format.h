@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2019 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2020 Free Software Foundation, Inc.
    Contributed by Janne Blomqvist
 
 This file is part of the GNU Fortran runtime library (libgfortran).

@@ -1,6 +1,6 @@
 // Core algorithmic facilities -*- C++ -*-
 
-// Copyright (C) 2001-2019 Free Software Foundation, Inc.
+// Copyright (C) 2001-2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1751,6 +1751,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	: __first2 != __last2 ? strong_ordering::less : strong_ordering::equal;
     }
 
+#if __cpp_lib_concepts
   template<typename _InputIter1, typename _InputIter2>
     constexpr auto
     lexicographical_compare_three_way(_InputIter1 __first1,
@@ -1762,6 +1763,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 						    __first2, __last2,
 						    compare_three_way{});
     }
+#endif // concepts
 #endif // three_way_comparison
 
   template<typename _InputIterator1, typename _InputIterator2,

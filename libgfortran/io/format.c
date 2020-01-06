@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2019 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2020 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -38,7 +38,7 @@ static const fnode colon_node = { FMT_COLON, 0, NULL, NULL, {{ 0, 0, 0 }}, 0,
 
 /* Error messages. */
 
-static const char posint_required[] = "Positive width required in format",
+static const char posint_required[] = "Positive integer required in format",
   period_required[] = "Period required in format",
   nonneg_required[] = "Nonnegative width required in format",
   unexpected_element[] = "Unexpected element '%c' in format\n",
@@ -925,9 +925,10 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
       tail->repeat = repeat;
 
       u = format_lex (fmt);
+      
+      /* Processing for zero width formats.  */
       if (u == FMT_ZERO)
 	{
-	  *seen_dd = true;
 	  if (notification_std (GFC_STD_F2008) == NOTIFICATION_ERROR
 	      || dtp->u.p.mode == READING)
 	    {
@@ -935,6 +936,8 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 	      goto finished;
 	    }
 	  tail->u.real.w = 0;
+
+	  /* Look for the dot seperator.  */
 	  u = format_lex (fmt);
 	  if (u != FMT_PERIOD)
 	    {
@@ -942,108 +945,119 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 	      break;
 	    }
 
+	  /* Look for the precision.  */
 	  u = format_lex (fmt);
-	  if (u != FMT_POSINT)
-	    notify_std (&dtp->common, GFC_STD_F2003,
-			"Positive width required");
-	  tail->u.real.d = fmt->value;
-	  break;
-	}
-      if (t == FMT_F && dtp->u.p.mode == WRITING)
-	{
-	  *seen_dd = true;
-	  if (u != FMT_POSINT && u != FMT_ZERO)
+	  if (u != FMT_ZERO && u != FMT_POSINT)
 	    {
-	      if (dtp->common.flags & IOPARM_DT_DEC_EXT)
-		{
-		  tail->u.real.w = DEFAULT_WIDTH;
-		  tail->u.real.d = 0;
-		  tail->u.real.e = -1;
-		  fmt->saved_token = u;
-		  break;
-		}
 	      fmt->error = nonneg_required;
 	      goto finished;
 	    }
-	}
-      else if (u == FMT_ZERO)
-	{
-	  fmt->error = posint_required;
-	  goto finished;
-	}
-      else if (u != FMT_POSINT)
-	{
-	  if (dtp->common.flags & IOPARM_DT_DEC_EXT)
+	  tail->u.real.d = fmt->value;
+	  
+	  /* Look for optional exponent */
+	  u = format_lex (fmt);
+	  if (u != FMT_E)
+	    fmt->saved_token = u;
+	  else
 	    {
-	      tail->u.real.w = DEFAULT_WIDTH;
-	      tail->u.real.d = 0;
-	      tail->u.real.e = -1;
-	      fmt->saved_token = u;
-	      break;
-	    }
-	  fmt->error = posint_required;
-	  goto finished;
-	}
-
-      tail->u.real.w = fmt->value;
-      t2 = t;
-      t = format_lex (fmt);
-      if (t != FMT_PERIOD)
-	{
-	  /* We treat a missing decimal descriptor as 0.  Note: This is only
-	     allowed if -std=legacy, otherwise an error occurs.  */
-	  if (compile_options.warn_std != 0)
-	    {
-	      fmt->error = period_required;
-	      goto finished;
-	    }
-	  fmt->saved_token = t;
-	  tail->u.real.d = 0;
-	  tail->u.real.e = -1;
-	  break;
-	}
-
-      t = format_lex (fmt);
-      if (t != FMT_ZERO && t != FMT_POSINT)
-	{
-	  fmt->error = nonneg_required;
-	  goto finished;
-	}
-
-      tail->u.real.d = fmt->value;
-      tail->u.real.e = -1;
-
-      if (t2 == FMT_D || t2 == FMT_F)
-	{
-	  *seen_dd = true;
-	  break;
-	}
-
-      /* Look for optional exponent */
-      t = format_lex (fmt);
-      if (t != FMT_E)
-	fmt->saved_token = t;
-      else
-	{
-	  t = format_lex (fmt);
-	  if (t != FMT_POSINT)
-	    {
-	      if (t == FMT_ZERO)
+	      u = format_lex (fmt);
+	      if (u != FMT_POSINT)
 		{
-		  notify_std (&dtp->common, GFC_STD_F2018,
-			      "Positive exponent width required");
+		  if (u == FMT_ZERO)
+		    {
+		      notify_std (&dtp->common, GFC_STD_F2018,
+				  "Positive exponent width required");
+		    }
+		  else
+		    {
+		      fmt->error = "Positive exponent width required in "
+				   "format string at %L";
+		      goto finished;
+		    }
 		}
-	      else
+	      tail->u.real.e = fmt->value;
+	    }
+	  break;
+	}
+
+      /* Processing for positive width formats.  */
+      if (u == FMT_POSINT)
+	{
+	  tail->u.real.w = fmt->value;
+
+	  /* Look for the dot separator. Because of legacy behaviors
+	     we do some look ahead for missing things.  */
+	  t2 = t;
+	  t = format_lex (fmt);
+	  if (t != FMT_PERIOD)
+	    {
+	      /* We treat a missing decimal descriptor as 0.  Note: This is only
+		 allowed if -std=legacy, otherwise an error occurs.  */
+	      if (compile_options.warn_std != 0)
 		{
-		  fmt->error = "Positive exponent width required in "
-			       "format string at %L";
+		  fmt->error = period_required;
 		  goto finished;
 		}
+	      fmt->saved_token = t;
+	      tail->u.real.d = 0;
+	      tail->u.real.e = -1;
+	      break;
 	    }
-	  tail->u.real.e = fmt->value;
+
+	  /* If we made it here, we should have the dot so look for the
+	     precision.  */
+	  t = format_lex (fmt);
+	  if (t != FMT_ZERO && t != FMT_POSINT)
+	    {
+	      fmt->error = nonneg_required;
+	      goto finished;
+	    }
+	  tail->u.real.d = fmt->value;
+	  tail->u.real.e = -1;
+
+	  /* Done with D and F formats.  */
+	  if (t2 == FMT_D || t2 == FMT_F)
+	    {
+	      *seen_dd = true;
+	      break;
+	    }
+
+	  /* Look for optional exponent */
+	  u = format_lex (fmt);
+	  if (u != FMT_E)
+	    fmt->saved_token = u;
+	  else
+	    {
+	      u = format_lex (fmt);
+	      if (u != FMT_POSINT)
+		{
+		  if (u == FMT_ZERO)
+		    {
+		      notify_std (&dtp->common, GFC_STD_F2018,
+				  "Positive exponent width required");
+		    }
+		  else
+		    {
+		      fmt->error = "Positive exponent width required in "
+				   "format string at %L";
+		      goto finished;
+		    }
+		}
+	      tail->u.real.e = fmt->value;
+	    }
+	  break;
 	}
 
+      /* Old DEC codes may not have width or precision specified.  */
+      if (dtp->u.p.mode == WRITING && (dtp->common.flags & IOPARM_DT_DEC_EXT))
+	{
+	  tail->u.real.w = DEFAULT_WIDTH;
+	  tail->u.real.d = 0;
+	  tail->u.real.e = -1;
+	  fmt->saved_token = u;
+	}
       break;
+
     case FMT_DT:
       *seen_dd = true;
       get_fnode (fmt, &head, &tail, t);

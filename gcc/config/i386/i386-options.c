@@ -1,4 +1,4 @@
-/* Copyright (C) 1988-2019 Free Software Foundation, Inc.
+/* Copyright (C) 1988-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -339,7 +339,9 @@ char *
 ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
 		    int flags, int flags2,
 		    const char *arch, const char *tune,
-		    enum fpmath_unit fpmath, bool add_nl_p, bool add_abi_p)
+		    enum fpmath_unit fpmath,
+		    enum prefer_vector_width pvw,
+		    bool add_nl_p, bool add_abi_p)
 {
   /* Flag options.  */
   static struct ix86_target_opts flag_opts[] =
@@ -493,7 +495,7 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
       sprintf (flags2_other, "(other flags2: %#x)", flags2);
     }
 
-  /* Add -fpmath= option.  */
+  /* Add -mfpmath= option.  */
   if (fpmath)
     {
       opts[num][0] = "-mfpmath=";
@@ -509,6 +511,29 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
 
 	case FPMATH_387 | FPMATH_SSE:
 	  opts[num++][1] = "sse+387";
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
+  /* Add -mprefer-vector-width= option.  */
+  if (pvw)
+    {
+      opts[num][0] = "-mprefer-vector-width=";
+      switch ((int) pvw)
+	{
+	case PVW_AVX128:
+	  opts[num++][1] = "128";
+	  break;
+
+	case PVW_AVX256:
+	  opts[num++][1] = "256";
+	  break;
+
+	case PVW_AVX512:
+	  opts[num++][1] = "512";
 	  break;
 
 	default:
@@ -579,8 +604,9 @@ ix86_debug_options (void)
 {
   char *opts = ix86_target_string (ix86_isa_flags, ix86_isa_flags2,
 				   target_flags, ix86_target_flags,
-				   ix86_arch_string,ix86_tune_string,
-				   ix86_fpmath, true, true);
+				   ix86_arch_string, ix86_tune_string,
+				   ix86_fpmath, prefer_vector_width_type,
+				   true, true);
 
   if (opts)
     {
@@ -847,7 +873,8 @@ ix86_function_specific_print (FILE *file, int indent,
   char *target_string
     = ix86_target_string (ptr->x_ix86_isa_flags, ptr->x_ix86_isa_flags2,
 			  ptr->x_target_flags, ptr->x_ix86_target_flags,
-			  NULL, NULL, ptr->x_ix86_fpmath, false, true);
+			  NULL, NULL, ptr->x_ix86_fpmath,
+			  ptr->x_prefer_vector_width_type, false, true);
 
   gcc_assert (ptr->arch < PROCESSOR_max);
   fprintf (file, "%*sarch = %d (%s)\n",
@@ -992,6 +1019,7 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
+    IX86_ATTR_ENUM ("prefer-vector-width=", OPT_mprefer_vector_width_),
 
     /* string options */
     IX86_ATTR_STR ("arch=",	IX86_FUNCTION_SPECIFIC_ARCH),
@@ -1213,6 +1241,7 @@ ix86_valid_target_attribute_tree (tree fndecl, tree args,
   const char *orig_arch_string = opts->x_ix86_arch_string;
   const char *orig_tune_string = opts->x_ix86_tune_string;
   enum fpmath_unit orig_fpmath_set = opts_set->x_ix86_fpmath;
+  enum prefer_vector_width orig_pvw_set = opts_set->x_prefer_vector_width_type;
   int orig_tune_defaulted = ix86_tune_defaulted;
   int orig_arch_specified = ix86_arch_specified;
   char *option_strings[IX86_FUNCTION_SPECIFIC_MAX] = { NULL, NULL };
@@ -1238,7 +1267,8 @@ ix86_valid_target_attribute_tree (tree fndecl, tree args,
       || opts->x_target_flags != def->x_target_flags
       || option_strings[IX86_FUNCTION_SPECIFIC_ARCH]
       || option_strings[IX86_FUNCTION_SPECIFIC_TUNE]
-      || enum_opts_set.x_ix86_fpmath)
+      || enum_opts_set.x_ix86_fpmath
+      || enum_opts_set.x_prefer_vector_width_type)
     {
       /* If we are using the default tune= or arch=, undo the string assigned,
 	 and use the default.  */
@@ -1257,6 +1287,8 @@ ix86_valid_target_attribute_tree (tree fndecl, tree args,
       /* If fpmath= is not set, and we now have sse2 on 32-bit, use it.  */
       if (enum_opts_set.x_ix86_fpmath)
 	opts_set->x_ix86_fpmath = (enum fpmath_unit) 1;
+      if (enum_opts_set.x_prefer_vector_width_type)
+	opts_set->x_prefer_vector_width_type = (enum prefer_vector_width) 1;
 
       /* Do any overrides, such as arch=xxx, or tune=xxx support.  */
       bool r = ix86_option_override_internal (false, opts, opts_set);
@@ -1276,6 +1308,7 @@ ix86_valid_target_attribute_tree (tree fndecl, tree args,
       opts->x_ix86_arch_string = orig_arch_string;
       opts->x_ix86_tune_string = orig_tune_string;
       opts_set->x_ix86_fpmath = orig_fpmath_set;
+      opts_set->x_prefer_vector_width_type = orig_pvw_set;
 
       release_options_strings (option_strings);
     }
@@ -2917,15 +2950,36 @@ ix86_simd_clone_adjust (struct cgraph_node *node)
 	str = "sse2";
       break;
     case 'c':
-      if (!TARGET_AVX)
+      if (TARGET_PREFER_AVX128)
+	{
+	  if (!TARGET_AVX)
+	    str = "avx,prefer-vector-width=256";
+	  else
+	    str = "prefer-vector-width=256";
+	}
+      else if (!TARGET_AVX)
 	str = "avx";
       break;
     case 'd':
-      if (!TARGET_AVX2)
+      if (TARGET_PREFER_AVX128)
+	{
+	  if (!TARGET_AVX2)
+	    str = "avx2,prefer-vector-width=256";
+	  else
+	    str = "prefer-vector-width=256";
+	}
+      else if (!TARGET_AVX2)
 	str = "avx2";
       break;
     case 'e':
-      if (!TARGET_AVX512F)
+      if (TARGET_PREFER_AVX256)
+	{
+	  if (!TARGET_AVX512F)
+	    str = "avx512f,prefer-vector-width=512";
+	  else
+	    str = "prefer-vector-width=512";
+	}
+      else if (!TARGET_AVX512F)
 	str = "avx512f";
       break;
     default:

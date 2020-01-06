@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2019 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2020 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Write float code factoring to this file by Jerry DeLisle   
    F2003 I/O support contributed by Jerry DeLisle
@@ -266,7 +266,7 @@ build_float_string (st_parameter_dt *dtp, const fnode *f, char *buffer,
     case FMT_E:
     case FMT_D:
       i = dtp->u.p.scale_factor;
-      if (d <= 0 && p == 0)
+      if (d < 0 && p == 0)
 	{
 	  generate_error (&dtp->common, LIBERROR_FORMAT, "Precision not "
 			  "greater than zero in format specifier 'E' or 'D'");
@@ -482,7 +482,7 @@ build_float_string (st_parameter_dt *dtp, const fnode *f, char *buffer,
       for (i = abs (e); i >= 10; i /= 10)
 	edigits++;
 
-      if (f->u.real.e <= 0)
+      if (f->u.real.e < 0)
 	{
 	  /* Width not specified.  Must be no more than 3 digits.  */
 	  if (e > 999 || e < -999)
@@ -493,6 +493,16 @@ build_float_string (st_parameter_dt *dtp, const fnode *f, char *buffer,
 	      if (e > 99 || e < -99)
 		expchar = ' ';
 	    }
+	}
+      else if (f->u.real.e == 0)
+	{
+	  /* Zero width specified, no leading zeros in exponent  */
+	  if (e > 99 || e < -99)
+	    edigits = 5;
+	  else if (e > 9 || e < -9)
+	    edigits = 4;
+	  else
+	    edigits = 3;
 	}
       else
 	{

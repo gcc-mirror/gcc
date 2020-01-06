@@ -1,3 +1,7 @@
+2020-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2019-12-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.h (decl_sloc): Delete.
@@ -10782,7 +10786,7 @@
 	* c-common.c: Include gt-c-family-c-common.h.
 	* c-pragma.c: Include gt-c-family-c-pragma.h.
 
-Copyright (C) 2010-2019 Free Software Foundation, Inc.
+Copyright (C) 2010-2020 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

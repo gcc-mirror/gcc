@@ -1,3 +1,7 @@
+2020-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2019-12-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* fi.po: Update.
@@ -2802,7 +2806,7 @@ Sun Oct 31 17:17:18 1999  Jeffrey A Law  (law@cygnus.com)
 	libiberty/include directories.
 
 
-Copyright (C) 1999-2019 Free Software Foundation, Inc.
+Copyright (C) 1999-2020 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
@@ -4852,7 +4856,7 @@ Sun Oct 31 17:17:18 1999  Jeffrey A Law  (law@cygnus.com)
 	libiberty/include directories.
 
 
-Copyright (C) 1999-2019 Free Software Foundation, Inc.
+Copyright (C) 1999-2020 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

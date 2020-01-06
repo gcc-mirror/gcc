@@ -3,6 +3,6 @@
 ! Test case by Gerhard Steinmetz.
 
 program p
-  associate (y => p) ! { dg-error "is a PROGRAM" }
-  end associate
+  associate (y => p) ! { dg-error "Invalid association target" }
+  end associate  ! { dg-error "Expecting END PROGRAM statement" }
 end program p

@@ -1,4 +1,68 @@
+2020-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93089
+	* gcc.target/i386/pr93089-2.c: New test.
+	* gcc.target/i386/pr93089-3.c: New test.
+
+	PR target/93089
+	* gcc.target/i386/pr93089-1.c: New test.
+
+	PR target/93110
+	* gcc.dg/torture/pr93110.c: New test.
+
+	PR rtl-optimization/93088
+	* gcc.target/i386/pr93088.c: New test.
+
+2020-01-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92994
+	* gfortran.dg/associate_50.f90: Update dg-error.
+	* gfortran.dg/associate_51.f90: New.
+
+2020-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/68020
+	* gfortran.dg/impled_shape_5.f90: Use dg-do compile rather than dg-do
+	run.
+
+2020-01-02  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.c-torture/execute/bitfld-8.c: New testcase.
+	* gcc.c-torture/execute/bitfld-9.c: New testcase.
+
+2020-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/90677
+	* c-c++-common/pr90677-2.c: New test.
+
+2020-01-02  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/arm/multilib.exp: Add combination tests for armv8.6-a.
+
+2020-01-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/68020
+	* gfortran.dg/implied_shape_4.f90: New.
+	* gfortran.dg/implied_shape_5.f90: New.
+
+2020-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/93087
+	* c-c++-common/cold-1.c: New test.
+
+2020-01-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/90374
+	* gfortran.dg/fmt_zero_width.f90: Update test case.
+
+2020-01-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/93113
+	* gfortran.dg/dependency_58.f90: New test.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
 
 	PR tree-optimization/93098
 	* gcc.c-torture/compile/pr93098.c: New test.

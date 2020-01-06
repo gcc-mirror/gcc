@@ -1,5 +1,5 @@
 /* Interprocedural constant propagation
-   Copyright (C) 2005-2019 Free Software Foundation, Inc.
+   Copyright (C) 2005-2020 Free Software Foundation, Inc.
 
    Contributed by Razya Ladelsky <RAZYA@il.ibm.com> and Martin Jambor
    <mjambor@suse.cz>
@@ -543,8 +543,9 @@ print_all_lattices (FILE * f, bool dump_sources, bool dump_benefits)
       class ipa_node_params *info;
 
       info = IPA_NODE_REF (node);
-      /* Skip constprop clones since we don't make lattices for them.  */
-      if (info->ipcp_orig_node)
+      /* Skip unoptimized functions and constprop clones since we don't make
+	 lattices for them.  */
+      if (!info || info->ipcp_orig_node)
 	continue;
       fprintf (f, "  Node: %s:\n", node->dump_name ());
       count = ipa_get_param_count (info);

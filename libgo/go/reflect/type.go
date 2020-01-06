@@ -261,6 +261,20 @@ const (
 	UnsafePointer
 )
 
+// tflag is used by an rtype to signal what extra type information is
+// available in the memory directly following the rtype value.
+//
+// tflag values must be kept in sync with copies in:
+//	go/types.cc
+//	runtime/type.go
+type tflag uint8
+
+const (
+	// tflagRegularMemory means that equal and hash functions can treat
+	// this type as a single region of t.size bytes.
+	tflagRegularMemory tflag = 1 << 3
+)
+
 // rtype is the common implementation of most values.
 // It is embedded in other struct types.
 //
@@ -269,16 +283,15 @@ type rtype struct {
 	size       uintptr
 	ptrdata    uintptr // size of memory prefix holding all pointers
 	hash       uint32  // hash of type; avoids computation in hash tables
-	kind       uint8   // enumeration for C
-	align      int8    // alignment of variable with this type
+	tflag      tflag   // extra type information flags
+	align      uint8   // alignment of variable with this type
 	fieldAlign uint8   // alignment of struct field with this type
-	_          uint8   // unused/padding
-
-	hashfn  func(unsafe.Pointer, uintptr) uintptr     // hash function
-	equalfn func(unsafe.Pointer, unsafe.Pointer) bool // equality function
-
+	kind       uint8   // enumeration for C
+	// function for comparing objects of this type
+	// (ptr to object A, ptr to object B) -> ==?
+	equal         func(unsafe.Pointer, unsafe.Pointer) bool
 	gcdata        *byte   // garbage collection data
-	string        *string // string form; unnecessary  but undeniably useful
+	string        *string // string form; unnecessary but undeniably useful
 	*uncommonType         // (relatively) uncommon fields
 	ptrToThis     *rtype  // type for pointer to this type, if used in binary or has methods
 }
@@ -350,9 +363,11 @@ type interfaceType struct {
 // mapType represents a map type.
 type mapType struct {
 	rtype
-	key        *rtype // map key type
-	elem       *rtype // map element (value) type
-	bucket     *rtype // internal bucket structure
+	key    *rtype // map key type
+	elem   *rtype // map element (value) type
+	bucket *rtype // internal bucket structure
+	// function for hashing keys (ptr to key, seed) -> hash
+	hasher     func(unsafe.Pointer, uintptr) uintptr
 	keysize    uint8  // size of key slot
 	valuesize  uint8  // size of value slot
 	bucketsize uint16 // size of bucket
@@ -1178,31 +1193,7 @@ func (t *rtype) ConvertibleTo(u Type) bool {
 }
 
 func (t *rtype) Comparable() bool {
-	switch t.Kind() {
-	case Bool, Int, Int8, Int16, Int32, Int64,
-		Uint, Uint8, Uint16, Uint32, Uint64, Uintptr,
-		Float32, Float64, Complex64, Complex128,
-		Chan, Interface, Ptr, String, UnsafePointer:
-		return true
-
-	case Func, Map, Slice:
-		return false
-
-	case Array:
-		return (*arrayType)(unsafe.Pointer(t)).elem.Comparable()
-
-	case Struct:
-		tt := (*structType)(unsafe.Pointer(t))
-		for i := range tt.fields {
-			if !tt.fields[i].typ.Comparable() {
-				return false
-			}
-		}
-		return true
-
-	default:
-		panic("reflect: impossible")
-	}
+	return t.equal != nil
 }
 
 // implements reports whether the type V implements the interface type T.
@@ -1457,6 +1448,7 @@ func ChanOf(dir ChanDir, t Type) Type {
 	var ichan interface{} = (chan unsafe.Pointer)(nil)
 	prototype := *(**chanType)(unsafe.Pointer(&ichan))
 	ch := *prototype
+	ch.tflag = tflagRegularMemory
 	ch.dir = uintptr(dir)
 	ch.string = &s
 
@@ -1481,8 +1473,6 @@ func ChanOf(dir ChanDir, t Type) Type {
 	return ti.(Type)
 }
 
-func ismapkey(*rtype) bool // implemented in runtime
-
 // MapOf returns the map type with the given key and element types.
 // For example, if k represents int and e represents string,
 // MapOf(k, e) represents map[int]string.
@@ -1493,7 +1483,7 @@ func MapOf(key, elem Type) Type {
 	ktyp := key.(*rtype)
 	etyp := elem.(*rtype)
 
-	if !ismapkey(ktyp) {
+	if ktyp.equal == nil {
 		panic("reflect.MapOf: invalid key type " + ktyp.String())
 	}
 
@@ -1530,6 +1520,9 @@ func MapOf(key, elem Type) Type {
 	mt.ptrToThis = nil
 
 	mt.bucket = bucketOf(ktyp, etyp)
+	mt.hasher = func(p unsafe.Pointer, seed uintptr) uintptr {
+		return typehash(ktyp, p, seed)
+	}
 	mt.flags = 0
 	if ktyp.size > maxKeySize {
 		mt.keysize = uint8(ptrSize)
@@ -1851,7 +1844,7 @@ func bucketOf(ktyp, etyp *rtype) *rtype {
 	}
 
 	b := &rtype{
-		align:      int8(maxAlign),
+		align:      uint8(maxAlign),
 		fieldAlign: uint8(maxAlign),
 		size:       size,
 		kind:       uint8(Struct),
@@ -1949,9 +1942,8 @@ func StructOf(fields []StructField) Type {
 	var (
 		hash       = uint32(12)
 		size       uintptr
-		typalign   int8
+		typalign   uint8
 		comparable = true
-		hashable   = true
 
 		fs   = make([]structField, len(fields))
 		repr = make([]byte, 0, 64)
@@ -2036,12 +2028,11 @@ func StructOf(fields []StructField) Type {
 			repr = append(repr, ';')
 		}
 
-		comparable = comparable && (ft.equalfn != nil)
-		hashable = hashable && (ft.hashfn != nil)
+		comparable = comparable && (ft.equal != nil)
 
 		offset := align(size, uintptr(ft.fieldAlign))
-		if int8(ft.fieldAlign) > typalign {
-			typalign = int8(ft.fieldAlign)
+		if ft.fieldAlign > typalign {
+			typalign = ft.fieldAlign
 		}
 		size = offset + ft.size
 		f.offsetEmbed |= offset << 1
@@ -2118,11 +2109,12 @@ func StructOf(fields []StructField) Type {
 	}
 
 	typ.string = &str
+	typ.tflag = 0 // TODO: set tflagRegularMemory
 	typ.hash = hash
 	typ.size = size
 	typ.ptrdata = typeptrdata(typ.common())
 	typ.align = typalign
-	typ.fieldAlign = uint8(typalign)
+	typ.fieldAlign = typalign
 
 	if hasGCProg {
 		lastPtrField := 0
@@ -2189,32 +2181,18 @@ func StructOf(fields []StructField) Type {
 	}
 	typ.ptrdata = typeptrdata(typ.common())
 
-	if hashable {
-		typ.hashfn = func(p unsafe.Pointer, seed uintptr) uintptr {
-			o := seed
-			for _, ft := range typ.fields {
-				pi := add(p, ft.offset(), "&x.field safe")
-				o = ft.typ.hashfn(pi, o)
-			}
-			return o
-		}
-	} else {
-		typ.hashfn = nil
-	}
-
+	typ.equal = nil
 	if comparable {
-		typ.equalfn = func(p, q unsafe.Pointer) bool {
+		typ.equal = func(p, q unsafe.Pointer) bool {
 			for _, ft := range typ.fields {
 				pi := add(p, ft.offset(), "&x.field safe")
 				qi := add(q, ft.offset(), "&x.field safe")
-				if !ft.typ.equalfn(pi, qi) {
+				if !ft.typ.equal(pi, qi) {
 					return false
 				}
 			}
 			return true
 		}
-	} else {
-		typ.equalfn = nil
 	}
 
 	switch {
@@ -2322,6 +2300,7 @@ func ArrayOf(count int, elem Type) Type {
 	var iarray interface{} = [1]unsafe.Pointer{}
 	prototype := *(**arrayType)(unsafe.Pointer(&iarray))
 	array := *prototype
+	array.tflag = typ.tflag & tflagRegularMemory
 	array.string = &s
 
 	// gccgo uses a different hash.
@@ -2427,21 +2406,12 @@ func ArrayOf(count int, elem Type) Type {
 		array.ptrdata = array.size // overestimate but ok; must match program
 	}
 
-	switch {
-	case count == 1 && !ifaceIndir(typ):
-		// array of 1 direct iface type can be direct
-		array.kind |= kindDirectIface
-	default:
-		array.kind &^= kindDirectIface
-	}
-
+	etyp := typ.common()
 	esize := typ.size
 
-	if typ.equalfn == nil {
-		array.equalfn = nil
-	} else {
-		eequal := typ.equalfn
-		array.equalfn = func(p, q unsafe.Pointer) bool {
+	array.equal = nil
+	if eequal := etyp.equal; eequal != nil {
+		array.equal = func(p, q unsafe.Pointer) bool {
 			for i := 0; i < count; i++ {
 				pi := arrayAt(p, i, esize, "i < count")
 				qi := arrayAt(q, i, esize, "i < count")
@@ -2453,17 +2423,12 @@ func ArrayOf(count int, elem Type) Type {
 		}
 	}
 
-	if typ.hashfn == nil {
-		array.hashfn = nil
-	} else {
-		ehash := typ.hashfn
-		array.hashfn = func(ptr unsafe.Pointer, seed uintptr) uintptr {
-			o := seed
-			for i := 0; i < count; i++ {
-				o = ehash(arrayAt(ptr, i, esize, "i < count"), o)
-			}
-			return o
-		}
+	switch {
+	case count == 1 && !ifaceIndir(typ):
+		// array of 1 direct iface type can be direct
+		array.kind |= kindDirectIface
+	default:
+		array.kind &^= kindDirectIface
 	}
 
 	ti, _ := lookupCache.LoadOrStore(ckey, &array.rtype)

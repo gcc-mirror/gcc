@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2019 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2020 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -226,6 +226,14 @@ arm_cpu_builtins (struct cpp_reader* pfile)
 
       builtin_define_with_int_value ("__ARM_FEATURE_COPROC", coproc_level);
     }
+
+  def_or_undef_macro (pfile, "__ARM_FEATURE_MATMUL_INT8", TARGET_I8MM);
+  def_or_undef_macro (pfile, "__ARM_FEATURE_BF16_SCALAR_ARITHMETIC",
+		      TARGET_BF16_FP);
+  def_or_undef_macro (pfile, "__ARM_FEATURE_BF16_VECTOR_ARITHMETIC",
+		      TARGET_BF16_SIMD);
+  def_or_undef_macro (pfile, "__ARM_BF16_FORMAT_ALTERNATIVE",
+		      TARGET_BF16_FP || TARGET_BF16_SIMD);
 }
 
 void
