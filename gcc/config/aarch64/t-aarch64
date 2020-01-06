@@ -24,11 +24,15 @@ OPTIONS_H_EXTRA += $(srcdir)/config/aarch64/aarch64-cores.def \
 		   $(srcdir)/config/aarch64/aarch64-fusion-pairs.def \
 		   $(srcdir)/config/aarch64/aarch64-tuning-flags.def
 
-$(srcdir)/config/aarch64/aarch64-tune.md: $(srcdir)/config/aarch64/gentune.sh \
+$(srcdir)/config/aarch64/aarch64-tune.md: s-aarch64-tune-md; @true
+s-aarch64-tune-md: $(srcdir)/config/aarch64/gentune.sh \
 	$(srcdir)/config/aarch64/aarch64-cores.def
 	$(SHELL) $(srcdir)/config/aarch64/gentune.sh \
 		$(srcdir)/config/aarch64/aarch64-cores.def > \
+		tmp-aarch64-tune.md
+	$(SHELL) $(srcdir)/../move-if-change tmp-aarch64-tune.md \
 		$(srcdir)/config/aarch64/aarch64-tune.md
+	$(STAMP) s-aarch64-tune-md
 
 aarch64-builtins.o: $(srcdir)/config/aarch64/aarch64-builtins.c $(CONFIG_H) \
   $(SYSTEM_H) coretypes.h $(TM_H) \

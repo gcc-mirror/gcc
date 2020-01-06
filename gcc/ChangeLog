@@ -1,5 +1,13 @@
 2020-01-06  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/t-aarch64 ($(srcdir)/config/aarch64/aarch64-tune.md):
+	Depend on...
+	(s-aarch64-tune-md): ...this new stamp file.  Pipe the new contents
+	to a temporary file and use move-if-change to update the real
+	file where necessary.
+
+2020-01-06  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-sve.md (@aarch64_sel_dup<mode>): Use Upl
 	rather than Upa for CPY /M.
 
