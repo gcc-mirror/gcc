@@ -492,6 +492,15 @@ package Opt is
    --  PROJECT MANAGER
    --  Set to False with switch -f of gnatclean and gprclean
 
+   Disable_FE_Inline        : Boolean := False;
+   Disable_FE_Inline_Always : Boolean := False;
+   --  GNAT
+   --  Request to disable front end inlining from pragma Inline or pragma
+   --  Inline_Always out of the presence of the -fno-inline back end flag
+   --  on the command line, regardless of any other switches that are set.
+   --  It remains the back end's reponsibility to honor -fno-inline at the
+   --  back end level.
+
    Display_Compilation_Progress : Boolean := False;
    --  GNATMAKE, GPRBUILD
    --  Set True (-d switch) to display information on progress while compiling
@@ -1513,15 +1522,6 @@ package Opt is
    --  enable style checks for units in the main extended source that get
    --  with'ed indirectly. It is set True by use of either the -gnatg or
    --  -gnaty switches, but not by use of the Style_Checks pragma.
-
-   Disable_FE_Inline        : Boolean := False;
-   Disable_FE_Inline_Always : Boolean := False;
-   --  GNAT
-   --  Request to disable front end inlining from pragma Inline or pragma
-   --  Inline_Always out of the presence of the -fno-inline back end flag
-   --  on the command line, regardless of any other switches that are set.
-   --  It remains the back end's reponsibility to honor -fno-inline at the
-   --  back end level.
 
    Suppress_Control_Flow_Optimizations : Boolean := False;
    --  GNAT
