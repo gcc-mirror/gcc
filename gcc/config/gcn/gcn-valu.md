@@ -580,10 +580,10 @@
    (set_attr "laneselect" "yes")])
 
 (define_insn "vec_extract<mode><scalar_mode>"
-  [(set (match_operand:<SCALAR_MODE> 0 "register_operand"   "=Sg")
+  [(set (match_operand:<SCALAR_MODE> 0 "register_operand"   "=&Sg")
 	(vec_select:<SCALAR_MODE>
-	  (match_operand:VEC_2REG_MODE 1 "register_operand" "  v")
-	  (parallel [(match_operand:SI 2 "gcn_alu_operand"  "SvB")])))]
+	  (match_operand:VEC_2REG_MODE 1 "register_operand" "   v")
+	  (parallel [(match_operand:SI 2 "gcn_alu_operand"  " SvB")])))]
   ""
   "v_readlane_b32 %L0, %L1, %2\;v_readlane_b32 %H0, %H1, %2"
   [(set_attr "type" "vmult")
