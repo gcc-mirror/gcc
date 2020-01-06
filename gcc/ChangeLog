@@ -1,3 +1,11 @@
+2020-01-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-stmts.c (vect_check_load_store_mask): Rename to...
+	(vect_check_scalar_mask): ...this.
+	(vectorizable_store, vectorizable_load): Update call accordingly.
+	(vectorizable_call): Use vect_check_scalar_mask to check the mask
+	argument in calls to conditional internal functions.
+
 2020-01-06  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (subv64di3): Use separate alternatives for
