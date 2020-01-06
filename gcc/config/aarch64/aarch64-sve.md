@@ -6523,7 +6523,7 @@
 (define_insn "@aarch64_sel_dup<mode>"
   [(set (match_operand:SVE_FULL 0 "register_operand" "=?w, w, ??w, ?&w, ??&w, ?&w")
 	(unspec:SVE_FULL
-	  [(match_operand:<VPRED> 3 "register_operand" "Upa, Upa, Upl, Upl, Upl, Upl")
+	  [(match_operand:<VPRED> 3 "register_operand" "Upl, Upl, Upl, Upl, Upl, Upl")
 	   (vec_duplicate:SVE_FULL
 	     (match_operand:<VEL> 1 "register_operand" "r, w, r, w, r, w"))
 	   (match_operand:SVE_FULL 2 "aarch64_simd_reg_or_zero" "0, 0, Dz, Dz, w, w")]
