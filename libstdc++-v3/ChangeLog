@@ -1,5 +1,10 @@
 2020-01-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/stop_token (stop_token): Remove operator!= (LWG 3254).
+	(stop_source): Likewise (LWG 3362).
+	* testsuite/30_threads/stop_token/stop_source.cc: Test equality
+	comparisons.
+
 	* include/bits/stl_algobase.h (__is_byte_iter, __min_cmp)
 	(lexicographical_compare_three_way): Do not depend on
 	__cpp_lib_concepts.
