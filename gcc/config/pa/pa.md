@@ -1524,7 +1524,7 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (match_operator 3 "ordered_comparison_operator"
+	 (match_operator 3 "cmpib_comparison_operator"
 			 [(match_operand:DI 1 "reg_or_0_operand" "rM")
 			  (match_operand:DI 2 "arith5_operand" "rL")])
 	 (label_ref (match_operand 0 "" ""))
@@ -1553,7 +1553,7 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (match_operator 3 "ordered_comparison_operator"
+	 (match_operator 3 "cmpib_comparison_operator"
 			 [(match_operand:DI 1 "reg_or_0_operand" "rM")
 			  (match_operand:DI 2 "arith5_operand" "rL")])
 	 (pc)
