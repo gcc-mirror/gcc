@@ -1,3 +1,9 @@
+2020-01-05  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.c-torture/compile/20200105-1.c: New testcase.
+	* gcc.c-torture/compile/20200105-2.c: New testcase.
+	* gcc.c-torture/compile/20200105-3.c: New testcase.
+
 2020-01-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.dg/darwin-version-1.c: Adjust test to use different
