@@ -1,3 +1,7 @@
+2020-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2019-12-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/92982
@@ -6036,7 +6040,7 @@
 	* include/symtab.h: Moved from gcc/hashtable.h.  Change header
 	guard name.
 
-Copyright (C) 2004-2019 Free Software Foundation, Inc.
+Copyright (C) 2004-2020 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

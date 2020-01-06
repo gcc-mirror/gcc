@@ -21060,6 +21060,11 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
         ac_has_nanosleep=yes
         ac_has_sched_yield=yes
         ;;
+      # VxWorks has nanosleep as soon as the kernel is configured with
+      # INCLUDE_POSIX_TIMERS, which is normally/most-often the case.
+      vxworks*)
+        ac_has_nanosleep=yes
+        ;;
       gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for at least GNU libc 2.17" >&5
 $as_echo_n "checking for at least GNU libc 2.17... " >&6; }

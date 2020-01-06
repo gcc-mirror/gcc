@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2019 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2020 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -8,7 +8,7 @@
 @c man end
 
 @c man begin COPYRIGHT
-Copyright @copyright{} 1988-2019 Free Software Foundation, Inc.
+Copyright @copyright{} 1988-2020 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -17488,6 +17488,7 @@ Permissible names are:
 @samp{armv8-a}, @samp{armv8.1-a}, @samp{armv8.2-a}, @samp{armv8.3-a},
 @samp{armv8.4-a},
 @samp{armv8.5-a},
+@samp{armv8.6-a},
 @samp{armv7-r},
 @samp{armv8-r},
 @samp{armv6-m}, @samp{armv6s-m},
@@ -17731,6 +17732,14 @@ Speculation Barrier Instruction.
 
 @item +predres
 Execution and Data Prediction Restriction Instructions.
+
+@item +i8mm
+8-bit Integer Matrix Multiply instructions.
+This also enables Advanced SIMD and floating-point instructions.
+
+@item +bf16
+Brain half-precision floating-point instructions.
+This also enables Advanced SIMD and floating-point instructions.
 @end table
 
 @item armv8.4-a
@@ -17760,6 +17769,14 @@ Speculation Barrier Instruction.
 
 @item +predres
 Execution and Data Prediction Restriction Instructions.
+
+@item +i8mm
+8-bit Integer Matrix Multiply instructions.
+This also enables Advanced SIMD and floating-point instructions.
+
+@item +bf16
+Brain half-precision floating-point instructions.
+This also enables Advanced SIMD and floating-point instructions.
 @end table
 
 @item armv8.5-a
@@ -17783,6 +17800,45 @@ Disable the cryptographic extension.
 
 @item +nofp
 Disable the floating-point, Advanced SIMD and cryptographic instructions.
+
+@item +i8mm
+8-bit Integer Matrix Multiply instructions.
+This also enables Advanced SIMD and floating-point instructions.
+
+@item +bf16
+Brain half-precision floating-point instructions.
+This also enables Advanced SIMD and floating-point instructions.
+@end table
+
+@item armv8.6-a
+@table @samp
+@item +fp16
+The half-precision floating-point data processing instructions.
+This also enables the Advanced SIMD and floating-point instructions as well
+as the Dot Product extension and the half-precision floating-point fmla
+extension.
+
+@item +simd
+The ARMv8.3-A Advanced SIMD and floating-point instructions as well as the
+Dot Product extension.
+
+@item +crypto
+The cryptographic instructions.  This also enables the Advanced SIMD and
+floating-point instructions as well as the Dot Product extension.
+
+@item +nocrypto
+Disable the cryptographic extension.
+
+@item +nofp
+Disable the floating-point, Advanced SIMD and cryptographic instructions.
+
+@item +i8mm
+8-bit Integer Matrix Multiply instructions.
+This also enables Advanced SIMD and floating-point instructions.
+
+@item +bf16
+Brain half-precision floating-point instructions.
+This also enables Advanced SIMD and floating-point instructions.
 @end table
 
 @item armv7-r

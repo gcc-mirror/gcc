@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 1991-2019 Free Software Foundation, Inc.
+   Copyright (C) 1991-2020 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -245,6 +245,15 @@ emission of floating point pcs attributes.  */
 
 /* FPU supports the AdvSIMD FP16 instructions for ARMv8.2 and later.  */
 #define TARGET_NEON_FP16INST (TARGET_VFP_FP16INST && TARGET_NEON_RDMA)
+
+/* FPU supports 8-bit Integer Matrix Multiply (I8MM) AdvSIMD extensions.  */
+#define TARGET_I8MM (TARGET_NEON && arm_arch8_2 && arm_arch_i8mm)
+
+/* FPU supports Brain half-precision floating-point (BFloat16) extension.  */
+#define TARGET_BF16_FP (TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP5 \
+			&& arm_arch8_2 && arm_arch_bf16)
+#define TARGET_BF16_SIMD (TARGET_NEON && TARGET_VFP5 \
+			  && arm_arch8_2 && arm_arch_bf16)
 
 /* Q-bit is present.  */
 #define TARGET_ARM_QBIT \
@@ -516,6 +525,12 @@ extern int arm_arch_crc;
 
 /* Nonzero if chip supports the ARMv8-M Security Extensions.  */
 extern int arm_arch_cmse;
+
+/* Nonzero if chip supports the I8MM instructions.  */
+extern int arm_arch_i8mm;
+
+/* Nonzero if chip supports the BFloat16 instructions.  */
+extern int arm_arch_bf16;
 
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT  (MASK_APCS_FRAME)

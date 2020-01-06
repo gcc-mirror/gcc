@@ -2543,6 +2543,9 @@ func typedmemmove(t *rtype, dst, src unsafe.Pointer)
 //go:noescape
 func typedslicecopy(elemType *rtype, dst, src sliceHeader) int
 
+//go:noescape
+func typehash(t *rtype, p unsafe.Pointer, h uintptr) uintptr
+
 // Dummy annotation marking that the value x escapes,
 // for use in cases where the reflect code is so clever that
 // the compiler cannot follow.

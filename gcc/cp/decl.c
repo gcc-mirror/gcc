@@ -1,5 +1,5 @@
 /* Process declarations and variables for -*- C++ -*- compiler.
-   Copyright (C) 1988-2019 Free Software Foundation, Inc.
+   Copyright (C) 1988-2020 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -6408,7 +6408,6 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
 	  else if (same_type_ignoring_top_level_qualifiers_p (type, init_type))
 	    {
 	      ++d->cur;
-	      gcc_assert (!BRACE_ENCLOSED_INITIALIZER_P (stripped_init));
 	      return init;
 	    }
 	  else
@@ -17366,7 +17365,7 @@ cxx_maybe_build_cleanup (tree decl, tsubst_flags_t complain)
       else
 	addr = build_address (decl);
 
-      call = build_delete (TREE_TYPE (addr), addr,
+      call = build_delete (input_location, TREE_TYPE (addr), addr,
 			   sfk_complete_destructor, flags, 0, complain);
       if (call == error_mark_node)
 	cleanup = error_mark_node;

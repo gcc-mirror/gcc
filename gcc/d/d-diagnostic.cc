@@ -1,5 +1,5 @@
 /* d-diagnostics.cc -- D frontend interface to gcc diagnostics.
-   Copyright (C) 2017-2019 Free Software Foundation, Inc.
+   Copyright (C) 2017-2020 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

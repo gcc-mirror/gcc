@@ -1,5 +1,5 @@
 /* Some code common to C++ and ObjC++ front ends.
-   Copyright (C) 2004-2019 Free Software Foundation, Inc.
+   Copyright (C) 2004-2020 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -354,8 +354,11 @@ identifier_global_value (tree name)
 tree
 identifier_global_tag (tree name)
 {
-  return lookup_qualified_name (global_namespace, name, /*prefer_type*/2,
-				/*complain*/false);
+  tree ret = lookup_qualified_name (global_namespace, name, /*prefer_type*/2,
+				    /*complain*/false);
+  if (ret == error_mark_node)
+    return NULL_TREE;
+  return ret;
 }
 
 /* Returns true if NAME refers to a built-in function or function-like

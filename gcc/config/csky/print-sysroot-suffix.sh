@@ -2,7 +2,7 @@
 # Script to generate SYSROOT_SUFFIX_SPEC equivalent to MULTILIB_OSDIRNAMES
 # Arguments are MULTILIB_OSDIRNAMES, MULTILIB_OPTIONS and MULTILIB_MATCHES.
 
-# Copyright (C) 2018-2019 Free Software Foundation, Inc.
+# Copyright (C) 2018-2020 Free Software Foundation, Inc.
 # Contributed by C-SKY Microsystems and Mentor Graphics.
 
 # This file is part of GCC.

@@ -421,18 +421,16 @@ func mapaccess1(t *maptype, h *hmap, key unsafe.Pointer) unsafe.Pointer {
 	if msanenabled && h != nil {
 		msanread(key, t.key.size)
 	}
-	hashfn := t.key.hashfn
-	equalfn := t.key.equalfn
 	if h == nil || h.count == 0 {
 		if t.hashMightPanic() {
-			hashfn(key, 0) // see issue 23734
+			t.hasher(key, 0) // see issue 23734
 		}
 		return unsafe.Pointer(&zeroVal[0])
 	}
 	if h.flags&hashWriting != 0 {
 		throw("concurrent map read and map write")
 	}
-	hash := hashfn(key, uintptr(h.hash0))
+	hash := t.hasher(key, uintptr(h.hash0))
 	m := bucketMask(h.B)
 	b := (*bmap)(add(h.buckets, (hash&m)*uintptr(t.bucketsize)))
 	if c := h.oldbuckets; c != nil {
@@ -459,7 +457,7 @@ bucketloop:
 			if t.indirectkey() {
 				k = *((*unsafe.Pointer)(k))
 			}
-			if equalfn(key, k) {
+			if t.key.equal(key, k) {
 				e := add(unsafe.Pointer(b), dataOffset+bucketCnt*uintptr(t.keysize)+i*uintptr(t.elemsize))
 				if t.indirectelem() {
 					e = *((*unsafe.Pointer)(e))
@@ -486,18 +484,16 @@ func mapaccess2(t *maptype, h *hmap, key unsafe.Pointer) (unsafe.Pointer, bool) 
 	if msanenabled && h != nil {
 		msanread(key, t.key.size)
 	}
-	hashfn := t.key.hashfn
-	equalfn := t.key.equalfn
 	if h == nil || h.count == 0 {
 		if t.hashMightPanic() {
-			hashfn(key, 0) // see issue 23734
+			t.hasher(key, 0) // see issue 23734
 		}
 		return unsafe.Pointer(&zeroVal[0]), false
 	}
 	if h.flags&hashWriting != 0 {
 		throw("concurrent map read and map write")
 	}
-	hash := hashfn(key, uintptr(h.hash0))
+	hash := t.hasher(key, uintptr(h.hash0))
 	m := bucketMask(h.B)
 	b := (*bmap)(unsafe.Pointer(uintptr(h.buckets) + (hash&m)*uintptr(t.bucketsize)))
 	if c := h.oldbuckets; c != nil {
@@ -524,7 +520,7 @@ bucketloop:
 			if t.indirectkey() {
 				k = *((*unsafe.Pointer)(k))
 			}
-			if equalfn(key, k) {
+			if t.key.equal(key, k) {
 				e := add(unsafe.Pointer(b), dataOffset+bucketCnt*uintptr(t.keysize)+i*uintptr(t.elemsize))
 				if t.indirectelem() {
 					e = *((*unsafe.Pointer)(e))
@@ -546,9 +542,7 @@ func mapaccessK(t *maptype, h *hmap, key unsafe.Pointer) (unsafe.Pointer, unsafe
 	if h == nil || h.count == 0 {
 		return nil, nil
 	}
-	hashfn := t.key.hashfn
-	equalfn := t.key.equalfn
-	hash := hashfn(key, uintptr(h.hash0))
+	hash := t.hasher(key, uintptr(h.hash0))
 	m := bucketMask(h.B)
 	b := (*bmap)(unsafe.Pointer(uintptr(h.buckets) + (hash&m)*uintptr(t.bucketsize)))
 	if c := h.oldbuckets; c != nil {
@@ -575,7 +569,7 @@ bucketloop:
 			if t.indirectkey() {
 				k = *((*unsafe.Pointer)(k))
 			}
-			if equalfn(key, k) {
+			if t.key.equal(key, k) {
 				e := add(unsafe.Pointer(b), dataOffset+bucketCnt*uintptr(t.keysize)+i*uintptr(t.elemsize))
 				if t.indirectelem() {
 					e = *((*unsafe.Pointer)(e))
@@ -625,11 +619,9 @@ func mapassign(t *maptype, h *hmap, key unsafe.Pointer) unsafe.Pointer {
 	if h.flags&hashWriting != 0 {
 		throw("concurrent map writes")
 	}
-	hashfn := t.key.hashfn
-	equalfn := t.key.equalfn
-	hash := hashfn(key, uintptr(h.hash0))
+	hash := t.hasher(key, uintptr(h.hash0))
 
-	// Set hashWriting after calling alg.hash, since alg.hash may panic,
+	// Set hashWriting after calling t.hasher, since t.hasher may panic,
 	// in which case we have not actually done a write.
 	h.flags ^= hashWriting
 
@@ -666,7 +658,7 @@ bucketloop:
 			if t.indirectkey() {
 				k = *((*unsafe.Pointer)(k))
 			}
-			if !equalfn(key, k) {
+			if !t.key.equal(key, k) {
 				continue
 			}
 			// already have a mapping for key. Update it.
@@ -735,11 +727,9 @@ func mapdelete(t *maptype, h *hmap, key unsafe.Pointer) {
 	if msanenabled && h != nil {
 		msanread(key, t.key.size)
 	}
-	hashfn := t.key.hashfn
-	equalfn := t.key.equalfn
 	if h == nil || h.count == 0 {
 		if t.hashMightPanic() {
-			hashfn(key, 0) // see issue 23734
+			t.hasher(key, 0) // see issue 23734
 		}
 		return
 	}
@@ -747,9 +737,9 @@ func mapdelete(t *maptype, h *hmap, key unsafe.Pointer) {
 		throw("concurrent map writes")
 	}
 
-	hash := hashfn(key, uintptr(h.hash0))
+	hash := t.hasher(key, uintptr(h.hash0))
 
-	// Set hashWriting after calling alg.hash, since alg.hash may panic,
+	// Set hashWriting after calling t.hasher, since t.hasher may panic,
 	// in which case we have not actually done a write (delete).
 	h.flags ^= hashWriting
 
@@ -774,7 +764,7 @@ search:
 			if t.indirectkey() {
 				k2 = *((*unsafe.Pointer)(k2))
 			}
-			if !equalfn(key, k2) {
+			if !t.key.equal(key, k2) {
 				continue
 			}
 			// Only clear key if there are pointers in it.
@@ -925,8 +915,6 @@ func mapiternext(it *hiter) {
 	b := it.bptr
 	i := it.i
 	checkBucket := it.checkBucket
-	hashfn := t.key.hashfn
-	equalfn := t.key.equalfn
 
 next:
 	if b == nil {
@@ -980,10 +968,10 @@ next:
 			// through the oldbucket, skipping any keys that will go
 			// to the other new bucket (each oldbucket expands to two
 			// buckets during a grow).
-			if t.reflexivekey() || equalfn(k, k) {
+			if t.reflexivekey() || t.key.equal(k, k) {
 				// If the item in the oldbucket is not destined for
 				// the current new bucket in the iteration, skip it.
-				hash := hashfn(k, uintptr(h.hash0))
+				hash := t.hasher(k, uintptr(h.hash0))
 				if hash&bucketMask(it.B) != checkBucket {
 					continue
 				}
@@ -1001,7 +989,7 @@ next:
 			}
 		}
 		if (b.tophash[offi] != evacuatedX && b.tophash[offi] != evacuatedY) ||
-			!(t.reflexivekey() || equalfn(k, k)) {
+			!(t.reflexivekey() || t.key.equal(k, k)) {
 			// This is the golden data, we can return it.
 			// OR
 			// key!=key, so the entry can't be deleted or updated, so we can just return it.
@@ -1238,8 +1226,8 @@ func evacuate(t *maptype, h *hmap, oldbucket uintptr) {
 				if !h.sameSizeGrow() {
 					// Compute hash to make our evacuation decision (whether we need
 					// to send this key/elem to bucket x or bucket y).
-					hash := t.key.hashfn(k2, uintptr(h.hash0))
-					if h.flags&iterator != 0 && !t.reflexivekey() && !t.key.equalfn(k2, k2) {
+					hash := t.hasher(k2, uintptr(h.hash0))
+					if h.flags&iterator != 0 && !t.reflexivekey() && !t.key.equal(k2, k2) {
 						// If key != key (NaNs), then the hash could be (and probably
 						// will be) entirely different from the old hash. Moreover,
 						// it isn't reproducible. Reproducibility is required in the
@@ -1333,16 +1321,12 @@ func advanceEvacuationMark(h *hmap, t *maptype, newbit uintptr) {
 	}
 }
 
-func ismapkey(t *_type) bool {
-	return t.hashfn != nil
-}
-
 // Reflect stubs. Called from ../reflect/asm_*.s
 
 //go:linkname reflect_makemap reflect.makemap
 func reflect_makemap(t *maptype, cap int) *hmap {
 	// Check invariants and reflects math.
-	if !ismapkey(t.key) {
+	if t.key.equal == nil {
 		throw("runtime.reflect_makemap: unsupported map key type")
 	}
 	if t.key.size > maxKeySize && (!t.indirectkey() || t.keysize != uint8(sys.PtrSize)) ||
@@ -1443,11 +1427,6 @@ func reflectlite_maplen(h *hmap) int {
 		racereadpc(unsafe.Pointer(h), callerpc, funcPC(reflect_maplen))
 	}
 	return h.count
-}
-
-//go:linkname reflect_ismapkey reflect.ismapkey
-func reflect_ismapkey(t *_type) bool {
-	return ismapkey(t)
 }
 
 const maxZero = 1024 // must match value in cmd/compile/internal/gc/walk.go

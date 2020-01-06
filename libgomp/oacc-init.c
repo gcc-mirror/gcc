@@ -1,6 +1,6 @@
 /* OpenACC Runtime initialization routines
 
-   Copyright (C) 2013-2019 Free Software Foundation, Inc.
+   Copyright (C) 2013-2020 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -856,6 +856,15 @@ goacc_runtime_initialize (void)
 
   /* Initialize and register the 'host' device type.  */
   goacc_host_init ();
+}
+
+static void __attribute__((destructor))
+goacc_runtime_deinitialize (void)
+{
+#if !(defined HAVE_TLS || defined USE_EMUTLS)
+  pthread_key_delete (goacc_tls_key);
+#endif
+  pthread_key_delete (goacc_cleanup_key);
 }
 
 /* Compiler helper functions */

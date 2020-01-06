@@ -1,3 +1,11 @@
+2019-12-30  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libgomp/93066
+	* inclhack.def (hpux_c99_inttypes3): Fix defines for INTPTR_MAX
+	and UINTPTR_MAX, and missing define for SIZE_MAX.
+	* fixincl.x: Regenerate.
+	* tests/base/inttypes.h: Update for above fix.
+
 2019-08-18  C.G. Dogan <gcc+cgdogan.00@gmail.com>
 	    Iain Sandoe  <iain@sandoe.co.uk>
 

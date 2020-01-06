@@ -1,5 +1,5 @@
 -- { dg-do compile }
--- { dg-options "-gnatct" }
+-- { dg-options "-gnatc" }
 
 package Private1.Sub is
 

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Vxworks PowerPC version.
-   Copyright (C) 1996-2019 Free Software Foundation, Inc.
+   Copyright (C) 1996-2020 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
 
 This file is part of GCC.
@@ -42,6 +42,13 @@ along with GCC; see the file COPYING3.  If not see
       VXWORKS_OS_CPP_BUILTINS ();		\
     }		\
   while (0)
+
+/* vx6 library path.  */
+#if !TARGET_VXWORKS7
+#undef  STARTFILE_PREFIX_SPEC
+#define STARTFILE_PREFIX_SPEC						\
+ "%{mrtp:%{!shared:%:getenv(WIND_BASE /target/lib/usr/lib/ppc/PPC32/common)}}"
+#endif
 
 /* Only big endian PPC is supported by VxWorks.  */
 #undef BYTES_BIG_ENDIAN

@@ -1,5 +1,5 @@
 /* Output routines for GCC for ARM.
-   Copyright (C) 1991-2019 Free Software Foundation, Inc.
+   Copyright (C) 1991-2020 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com).
@@ -998,6 +998,12 @@ int arm_arch_cmse = 0;
 
 /* Nonzero if the core has a very small, high-latency, multiply unit.  */
 int arm_m_profile_small_mul = 0;
+
+/* Nonzero if chip supports the AdvSIMD I8MM instructions.  */
+int arm_arch_i8mm = 0;
+
+/* Nonzero if chip supports the BFloat16 instructions.  */
+int arm_arch_bf16 = 0;
 
 /* The condition codes of the ARM, and the inverse function.  */
 static const char * const arm_condition_codes[] =
@@ -3677,8 +3683,11 @@ arm_option_reconfigure_globals (void)
   arm_arch_arm_hwdiv = bitmap_bit_p (arm_active_target.isa, isa_bit_adiv);
   arm_arch_crc = bitmap_bit_p (arm_active_target.isa, isa_bit_crc32);
   arm_arch_cmse = bitmap_bit_p (arm_active_target.isa, isa_bit_cmse);
-  arm_fp16_inst = bitmap_bit_p (arm_active_target.isa, isa_bit_fp16);
   arm_arch_lpae = bitmap_bit_p (arm_active_target.isa, isa_bit_lpae);
+  arm_arch_i8mm = bitmap_bit_p (arm_active_target.isa, isa_bit_i8mm);
+  arm_arch_bf16 = bitmap_bit_p (arm_active_target.isa, isa_bit_bf16);
+
+  arm_fp16_inst = bitmap_bit_p (arm_active_target.isa, isa_bit_fp16);
   if (arm_fp16_inst)
     {
       if (arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE)

@@ -1,5 +1,5 @@
 /* Handle parameterized types (templates) for GNU -*- C++ -*-.
-   Copyright (C) 1992-2019 Free Software Foundation, Inc.
+   Copyright (C) 1992-2020 Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com) while at Watchmaker Computing.
    Rewritten by Jason Merrill (jason@cygnus.com).
 
@@ -19357,7 +19357,7 @@ tsubst_copy_and_build (tree t,
       {
 	tree op0 = RECUR (TREE_OPERAND (t, 0));
 	tree op1 = RECUR (TREE_OPERAND (t, 1));
-	RETURN (delete_sanity (op0, op1,
+	RETURN (delete_sanity (input_location, op0, op1,
 			       DELETE_EXPR_USE_VEC (t),
 			       DELETE_EXPR_USE_GLOBAL (t),
 			       complain));
@@ -25832,7 +25832,16 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
   else if (TYPE_PTRMEM_P (type))
     return false;
   else if (TREE_CODE (type) == TEMPLATE_TYPE_PARM)
-    return false;
+    {
+      if (CLASS_PLACEHOLDER_TEMPLATE (type) && cxx_dialect < cxx2a)
+	{
+	  if (complain & tf_error)
+	    error ("non-type template parameters of deduced class type only "
+		   "available with %<-std=c++2a%> or %<-std=gnu++2a%>");
+	  return true;
+	}
+      return false;
+    }
   else if (TREE_CODE (type) == TYPENAME_TYPE)
     return false;
   else if (TREE_CODE (type) == DECLTYPE_TYPE)

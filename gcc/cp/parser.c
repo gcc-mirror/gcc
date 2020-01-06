@@ -1,5 +1,5 @@
 /* -*- C++ -*- Parser.
-   Copyright (C) 2000-2019 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
    This file is part of GCC.
@@ -9071,9 +9071,8 @@ cp_parser_delete_expression (cp_parser* parser)
      the end at the end of the final token we consumed.  */
   location_t combined_loc = make_location (start_loc, start_loc,
 					   parser->lexer);
-  expression = delete_sanity (expression, NULL_TREE, array_p,
+  expression = delete_sanity (combined_loc, expression, NULL_TREE, array_p,
 			      global_scope_p, tf_warning_or_error);
-  protected_set_expr_location (expression, combined_loc);
 
   return expression;
 }
@@ -30741,11 +30740,15 @@ static void
 cp_parser_maybe_warn_enum_key (cp_parser *parser, location_t key_loc,
 			       tree type, rid scoped_key)
 {
+  if (!warn_redundant_tags)
+    return;
+
   tree type_decl = TYPE_MAIN_DECL (type);
   tree name = DECL_NAME (type_decl);
-  /* Look up the NAME to see if it unambiguously refers to the TYPE
-     and set KEY_REDUNDANT if so.  */
+  /* Look up the NAME to see if it unambiguously refers to the TYPE.  */
+  push_deferring_access_checks (dk_no_check);
   tree decl = cp_parser_lookup_name_simple (parser, name, input_location);
+  pop_deferring_access_checks ();
 
   /* The enum-key is redundant for uses of the TYPE that are not
      declarations and for which name lookup returns just the type
@@ -30915,7 +30918,9 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
   tree name = DECL_NAME (type_decl);
   /* Look up the NAME to see if it unambiguously refers to the TYPE
      and set KEY_REDUNDANT if so.  */
+  push_deferring_access_checks (dk_no_check);
   tree decl = cp_parser_lookup_name_simple (parser, name, input_location);
+  pop_deferring_access_checks ();
 
   /* The class-key is redundant for uses of the CLASS_TYPE that are
      neither definitions of it nor declarations, and for which name

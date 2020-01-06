@@ -1,3 +1,8 @@
+2020-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py: Add Mentor Graphics Corporation and Yoshinori
+	Sato as external authors.  Skip LICENSE.txt files.
+
 2019-12-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config-list.mk: Add msp430-elfbare.

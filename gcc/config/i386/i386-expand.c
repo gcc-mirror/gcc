@@ -1,4 +1,4 @@
-/* Copyright (C) 1988-2019 Free Software Foundation, Inc.
+/* Copyright (C) 1988-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -11009,7 +11009,9 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       else
 	bisa |= OPTION_MASK_ABI_64;
       char *opts = ix86_target_string (bisa, bisa2, 0, 0, NULL, NULL,
-				       (enum fpmath_unit) 0, false, add_abi_p);
+				       (enum fpmath_unit) 0,
+				       (enum prefer_vector_width) 0,
+				       false, add_abi_p);
       if (!opts)
 	error ("%qE needs unknown isa option", fndecl);
       else

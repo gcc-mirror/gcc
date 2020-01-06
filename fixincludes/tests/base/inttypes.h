@@ -16,3 +16,20 @@
 #define UINT32_C(__c) __CONCAT__(__c,u)
 
 #endif  /* HPUX_C99_INTTYPES_CHECK */
+
+
+#if defined( HPUX_C99_INTTYPES3_CHECK )
+#undef SIZE_MAX
+#define SIZE_MAX __SIZE_MAX__
+#ifdef __INTPTR_MAX__
+# undef INTPTR_MAX
+# define INTPTR_MAX __INTPTR_MAX__
+# undef INTPTR_MIN
+# define INTPTR_MIN (-INTPTR_MAX - 1)
+#endif
+#ifdef __UINTPTR_MAX__
+# undef UINTPTR_MAX
+# define UINTPTR_MAX __UINTPTR_MAX__
+#endif
+
+#endif  /* HPUX_C99_INTTYPES3_CHECK */

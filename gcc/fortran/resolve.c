@@ -1,5 +1,5 @@
 /* Perform type resolution on the various structures.
-   Copyright (C) 2001-2019 Free Software Foundation, Inc.
+   Copyright (C) 2001-2020 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -8836,9 +8836,20 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 
       gcc_assert (target->symtree);
       tsym = target->symtree->n.sym;
-      if (tsym->attr.flavor == FL_PROGRAM)
+
+      if (tsym->attr.subroutine
+	  || tsym->attr.external
+	  || (tsym->attr.function
+	      && (tsym->result != tsym || tsym->attr.recursive)))
 	{
-	  gfc_error ("Associating entity %qs at %L is a PROGRAM",
+	  gfc_error ("Associating entity %qs at %L is a procedure name",
+		     tsym->name, &target->where);
+	  return;
+	}
+
+      if (gfc_expr_attr (target).proc_pointer)
+	{
+	  gfc_error ("Associating entity %qs at %L is a procedure pointer",
 		     tsym->name, &target->where);
 	  return;
 	}
@@ -8850,6 +8861,12 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 			 || gfc_expr_attr (target).pointer;
       if (is_subref_array (target))
 	sym->attr.subref_array_pointer = 1;
+    }
+  else if (target->ts.type == BT_PROCEDURE)
+    {
+      gfc_error ("Associating selector-expression at %L yields a procedure",
+		 &target->where);
+      return;
     }
 
   if (target->expr_type == EXPR_NULL)

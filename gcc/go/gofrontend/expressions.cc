@@ -6238,10 +6238,8 @@ Binary_expression::lower_array_comparison(Gogo* gogo,
     return this->lower_compare_to_memcmp(gogo, inserter);
 
   // Call the array comparison function.
-  Named_object* hash_fn;
-  Named_object* equal_fn;
-  at->type_functions(gogo, this->left_->type()->named_type(), NULL, NULL,
-		     &hash_fn, &equal_fn);
+  Named_object* equal_fn =
+    at->equal_function(gogo, this->left_->type()->named_type(), NULL);
 
   Location loc = this->location();
 

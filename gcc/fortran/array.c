@@ -1,5 +1,5 @@
 /* Array things
-   Copyright (C) 2000-2019 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -599,7 +599,7 @@ gfc_match_array_spec (gfc_array_spec **asp, bool match_dim, bool match_codim)
 	    goto cleanup;
 
 	  case AS_IMPLIED_SHAPE:
-	    if (current_type != AS_ASSUMED_SHAPE)
+	    if (current_type != AS_ASSUMED_SIZE)
 	      {
 		gfc_error ("Bad array specification for implied-shape"
 			   " array at %C");

@@ -1,6 +1,6 @@
 ; Options for the IA-32 and AMD64 ports of the compiler.
 
-; Copyright (C) 2005-2019 Free Software Foundation, Inc.
+; Copyright (C) 2005-2020 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -181,10 +181,6 @@ int x_ix86_tune_no_default
 ;; -mveclibabi=
 TargetSave
 enum ix86_veclibabi x_ix86_veclibabi_type
-
-;; -mprefer-vector-width=
-TargetSave
-enum prefer_vector_width x_prefer_vector_width_type
 
 ;; x86 options
 m128bit-long-double
@@ -595,7 +591,7 @@ Target Alias(mprefer-vector-width=, 128, 256)
 Use 128-bit AVX instructions instead of 256-bit AVX instructions in the auto-vectorizer.
 
 mprefer-vector-width=
-Target Report RejectNegative Joined Var(prefer_vector_width_type) Enum(prefer_vector_width) Init(PVW_NONE)
+Target Report RejectNegative Joined Var(prefer_vector_width_type) Enum(prefer_vector_width) Init(PVW_NONE) Save
 Use given register vector width instructions instead of maximum register width in the auto-vectorizer.
 
 Enum

@@ -1,3 +1,9 @@
+2020-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+	* libitm.texi: Bump @copying's copyright year.
+
 2019-12-03  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	PR libgomp/91938
@@ -2199,7 +2205,7 @@
 
 	* Initial commit.
 
-Copyright (C) 2008-2019 Free Software Foundation, Inc.
+Copyright (C) 2008-2020 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

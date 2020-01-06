@@ -1,3 +1,13 @@
+2020-01-01  Andrew Pinski  <pinskia@gmail.com>
+
+	PR libobjc/93099
+	* objc/objc-decls.h (objc_EXPORT): Define it to
+	extern for DLL_EXPORT define case.
+
+2020-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2019-11-26  Tobias Burnus  <tobias@codesourcery.com>
 
 	* Makefile.in (aclocal_deps): Fix path to cet.m4.
@@ -3550,7 +3560,7 @@ Mon Sep 21 23:27:10 1998  Ovidiu Predescu <ovidiu@slip.net>
 
 	* New directory.  Moved files from ../gcc/objc.
 
-Copyright (C) 1998-2019 Free Software Foundation, Inc.
+Copyright (C) 1998-2020 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

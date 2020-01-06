@@ -1053,19 +1053,26 @@ class Type
   bool
   needs_specific_type_functions(Gogo*);
 
-  // Get the hash and equality functions for a type.
-  void
-  type_functions(Gogo*, Named_type* name, Function_type* hash_fntype,
-		 Function_type* equal_fntype, Named_object** hash_fn,
-		 Named_object** equal_fn);
+  // Get the equality function for a type.  Returns NULL if the type
+  // is not comparable.
+  Named_object*
+  equal_function(Gogo*, Named_type* name, Function_type* equal_fntype);
 
-  // Write the hash and equality type functions.
+  // Get the hash function for a type.  Returns NULL if the type is
+  // not comparable.
+  Named_object*
+  hash_function(Gogo*, Function_type* hash_fntype);
+
+  // Write the equal function for a type.
   void
-  write_specific_type_functions(Gogo*, Named_type*, int64_t size,
-				const std::string& hash_name,
-				Function_type* hash_fntype,
-				const std::string& equal_name,
-				Function_type* equal_fntype);
+  write_equal_function(Gogo*, Named_type*, int64_t size,
+		       const std::string& equal_name,
+		       Function_type* equal_fntype);
+
+  // Write the hash function for a type.
+  void
+  write_hash_function(Gogo*, int64_t size, const std::string& hash_name,
+		      Function_type* hash_fntype);
 
   // Return the alignment required by the memequalN function.
   static int64_t memequal_align(Gogo*, int size);
@@ -1274,23 +1281,20 @@ class Type
   Expression*
   gcprog_constructor(Gogo*, int64_t ptrsize, int64_t ptrdata);
 
-  // Build the hash and equality type functions for a type which needs
-  // specific functions.
-  void
-  specific_type_functions(Gogo*, Named_type*, int64_t size,
-			  Function_type* hash_fntype,
-			  Function_type* equal_fntype, Named_object** hash_fn,
-			  Named_object** equal_fn);
+  // Build the hash function for a type that needs specific functions.
+  Named_object*
+  build_hash_function(Gogo*, int64_t size, Function_type* hash_fntype);
+
+  // Build the equal function for a type that needs specific functions.
+  Named_object*
+  build_equal_function(Gogo*, Named_type*, int64_t size,
+		       Function_type* equal_fntype);
 
   void
   write_identity_hash(Gogo*, int64_t size);
 
   void
   write_identity_equal(Gogo*, int64_t size);
-
-  void
-  write_named_hash(Gogo*, Named_type*, Function_type* hash_fntype,
-		   Function_type* equal_fntype);
 
   void
   write_named_equal(Gogo*, Named_type*);
@@ -1394,13 +1398,13 @@ class Type
   // A list of builtin named types.
   static std::vector<Named_type*> named_builtin_types;
 
-  // A map from types which need specific type functions to the type
-  // functions themselves.
-  typedef std::pair<Named_object*, Named_object*> Hash_equal_fn;
-  typedef Unordered_map_hash(const Type*, Hash_equal_fn, Type_hash_identical,
-			     Type_identical) Type_functions;
+  // A map from types that need a specific hash or equality function
+  // to the hash or equality function.
+  typedef Unordered_map_hash(const Type*, Named_object*, Type_hash_identical,
+			     Type_identical) Type_function;
 
-  static Type_functions type_functions_table;
+  static Type_function type_hash_functions_table;
+  static Type_function type_equal_functions_table;
 
   // Cache for reusing existing pointer types; maps from pointed-to-type
   // to pointer type.
@@ -2619,7 +2623,7 @@ class Struct_type : public Type
 
   // Write the hash function for this type.
   void
-  write_hash_function(Gogo*, Named_type*, Function_type*, Function_type*);
+  write_hash_function(Gogo*, Function_type*);
 
   // Write the equality function for this type.
   void
@@ -2806,7 +2810,7 @@ class Array_type : public Type
 
   // Write the hash function for this type.
   void
-  write_hash_function(Gogo*, Named_type*, Function_type*, Function_type*);
+  write_hash_function(Gogo*, Function_type*);
 
   // Write the equality function for this type.
   void

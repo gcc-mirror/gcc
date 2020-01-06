@@ -1,5 +1,5 @@
 /* Expression translation
-   Copyright (C) 2002-2019 Free Software Foundation, Inc.
+   Copyright (C) 2002-2020 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -6178,7 +6178,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 				fsym && fsym->attr.pointer);
 
 	      else if (gfc_is_class_array_ref (e, NULL)
-			 && fsym && fsym->ts.type == BT_DERIVED)
+		       && fsym && fsym->ts.type == BT_DERIVED)
 		/* The actual argument is a component reference to an
 		   array of derived types.  In this case, the argument
 		   is converted to a temporary, which is passed and then
@@ -6187,26 +6187,26 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		   the same as the declared type, copy-in/copy-out does
 		   not occur.  */
 		gfc_conv_subref_array_arg (&parmse, e, nodesc_arg,
-				fsym ? fsym->attr.intent : INTENT_INOUT,
-				fsym && fsym->attr.pointer);
+					   fsym->attr.intent,
+					   fsym->attr.pointer);
 
 	      else if (gfc_is_class_array_function (e)
-			 && fsym && fsym->ts.type == BT_DERIVED)
+		       && fsym && fsym->ts.type == BT_DERIVED)
 		/* See previous comment.  For function actual argument,
 		   the write out is not needed so the intent is set as
 		   intent in.  */
 		{
 		  e->must_finalize = 1;
 		  gfc_conv_subref_array_arg (&parmse, e, nodesc_arg,
-					     INTENT_IN,
-					     fsym && fsym->attr.pointer);
+					     INTENT_IN, fsym->attr.pointer);
 		}
 	      else if (fsym && fsym->attr.contiguous
-		       && !gfc_is_simply_contiguous (e, false, true))
+		       && !gfc_is_simply_contiguous (e, false, true)
+		       && gfc_expr_is_variable (e))
 		{
 		  gfc_conv_subref_array_arg (&parmse, e, nodesc_arg,
-				fsym ? fsym->attr.intent : INTENT_INOUT,
-				fsym && fsym->attr.pointer);
+					     fsym->attr.intent,
+					     fsym->attr.pointer);
 		}
 	      else
 		gfc_conv_array_parameter (&parmse, e, nodesc_arg, fsym,

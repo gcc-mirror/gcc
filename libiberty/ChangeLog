@@ -1,3 +1,7 @@
+2020-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2019-12-06  Tim Ruehsen  <tim.ruehsen@gmx.de>
 
 	* make-relative-prefix.c (split_directories):

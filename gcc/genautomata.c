@@ -1,5 +1,5 @@
 /* Pipeline hazard description translator.
-   Copyright (C) 2000-2019 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
 
    Written by Vladimir Makarov <vmakarov@redhat.com>
 

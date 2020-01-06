@@ -1,5 +1,5 @@
 /* Branch prediction routines for the GNU compiler.
-   Copyright (C) 2000-2019 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3937,10 +3937,7 @@ compute_function_frequency (void)
       int flags = flags_from_decl_or_type (current_function_decl);
       if (lookup_attribute ("cold", DECL_ATTRIBUTES (current_function_decl))
 	  != NULL)
-	{
-          node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
-	  warn_function_cold (current_function_decl);
-	}
+	node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
       else if (lookup_attribute ("hot", DECL_ATTRIBUTES (current_function_decl))
 	       != NULL)
         node->frequency = NODE_FREQUENCY_HOT;

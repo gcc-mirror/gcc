@@ -2,7 +2,7 @@
 ; Generated automatically by parsecpu.awk from arm-cpus.in.
 ; Do not edit.
 
-; Copyright (C) 2011-2019 Free Software Foundation, Inc.
+; Copyright (C) 2011-2020 Free Software Foundation, Inc.
 
 ; This file is part of GCC.
 
@@ -344,19 +344,22 @@ EnumValue
 Enum(arm_arch) String(armv8.5-a) Value(25)
 
 EnumValue
-Enum(arm_arch) String(armv8-m.base) Value(26)
+Enum(arm_arch) String(armv8.6-a) Value(26)
 
 EnumValue
-Enum(arm_arch) String(armv8-m.main) Value(27)
+Enum(arm_arch) String(armv8-m.base) Value(27)
 
 EnumValue
-Enum(arm_arch) String(armv8-r) Value(28)
+Enum(arm_arch) String(armv8-m.main) Value(28)
 
 EnumValue
-Enum(arm_arch) String(iwmmxt) Value(29)
+Enum(arm_arch) String(armv8-r) Value(29)
 
 EnumValue
-Enum(arm_arch) String(iwmmxt2) Value(30)
+Enum(arm_arch) String(iwmmxt) Value(30)
+
+EnumValue
+Enum(arm_arch) String(iwmmxt2) Value(31)
 
 Enum
 Name(arm_fpu) Type(enum fpu_type)

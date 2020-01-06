@@ -1,5 +1,5 @@
 -- { dg-do compile }
--- { dg-options "-gnatct" }
+-- { dg-options "-gnatc" }
 
 with Discr1_Pkg; use Discr1_Pkg;
 

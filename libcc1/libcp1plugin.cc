@@ -1,5 +1,5 @@
 /* Library interface to C++ front end.
-   Copyright (C) 2014-2019 Free Software Foundation, Inc.
+   Copyright (C) 2014-2020 Free Software Foundation, Inc.
 
    This file is part of GCC.  As it interacts with GDB through libcc1,
    they all become a single program as regards the GNU GPL's requirements.
@@ -2812,7 +2812,8 @@ plugin_build_unary_expr (cc1_plugin::connection *self,
 
     case DELETE_EXPR:
     case VEC_DELETE_EXPR:
-      result = delete_sanity (op0, NULL_TREE, opcode == VEC_DELETE_EXPR,
+      result = delete_sanity (input_location, op0, NULL_TREE,
+			      opcode == VEC_DELETE_EXPR,
 			      global_scope_p, tf_error);
       break;
 

@@ -1,5 +1,5 @@
 /* gfortran header file
-   Copyright (C) 2000-2019 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -2994,6 +2994,8 @@ void gfc_arith_init_1 (void);
 void gfc_arith_done_1 (void);
 arith gfc_check_integer_range (mpz_t p, int kind);
 bool gfc_check_character_range (gfc_char_t, int);
+
+extern bool gfc_seen_div0;
 
 /* trans-types.c */
 bool gfc_check_any_c_kind (gfc_typespec *);

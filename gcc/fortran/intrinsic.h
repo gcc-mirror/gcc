@@ -1,6 +1,6 @@
 /* Header file for intrinsics check, resolve and simplify function
    prototypes.
-   Copyright (C) 2000-2019 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -517,8 +517,7 @@ void gfc_resolve_ibits (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_ibset (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_image_index (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_image_status (gfc_expr *, gfc_expr *, gfc_expr *);
-void gfc_resolve_index_func (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
-			     gfc_expr *);
+void gfc_resolve_index_func (gfc_expr *, gfc_actual_arglist *);
 void gfc_resolve_ierrno (gfc_expr *);
 void gfc_resolve_ieor (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_ichar (gfc_expr *, gfc_expr *, gfc_expr *);

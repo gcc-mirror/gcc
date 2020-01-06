@@ -1,3 +1,7 @@
+2020-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2019-12-19  Jan Hubicka  <hubicka@ucw.cz>
 	    Xi Ruoyao  <xry111@mengyan1223.wang>
 
@@ -6332,7 +6336,7 @@
 	* lto-tree.h: Likewise.
 	* lto-lang.c: Likewise.
 
-Copyright (C) 2006-2019 Free Software Foundation, Inc.
+Copyright (C) 2006-2020 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

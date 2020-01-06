@@ -1,3 +1,7 @@
+2020-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
 
 	* configure: Regenerate.
@@ -133,7 +137,7 @@
 	* rt/segment.c: Likewise.
 	* rt/workitems.c: Likewise.
 
-Copyright (C) 2017-2019 Free Software Foundation, Inc.
+Copyright (C) 2017-2020 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

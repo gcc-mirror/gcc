@@ -1,5 +1,5 @@
 /* brig-cvt-inst-handler.cc -- brig cvt (convert) instruction handling
-   Copyright (C) 2016-2019 Free Software Foundation, Inc.
+   Copyright (C) 2016-2020 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 

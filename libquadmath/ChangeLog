@@ -1,3 +1,9 @@
+2020-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+	* libquadmath.texi: Bump @copying's copyright year.
+
 2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
 
 	* configure: Regenerate.
