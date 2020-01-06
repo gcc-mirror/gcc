@@ -842,7 +842,7 @@ bool
 gcn_inline_constant_p (rtx x)
 {
   if (GET_CODE (x) == CONST_INT)
-    return INTVAL (x) >= -16 && INTVAL (x) < 64;
+    return INTVAL (x) >= -16 && INTVAL (x) <= 64;
   if (GET_CODE (x) == CONST_DOUBLE)
     return gcn_inline_fp_constant_p (x, false);
   if (GET_CODE (x) == CONST_VECTOR)
