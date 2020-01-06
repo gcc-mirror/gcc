@@ -87,16 +87,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     [[nodiscard]]
     friend bool
     operator==(const stop_token& __a, const stop_token& __b)
-    {
-      return __a._M_state == __b._M_state;
-    }
-
-    [[nodiscard]]
-    friend bool
-    operator!=(const stop_token& __a, const stop_token& __b)
-    {
-      return __a._M_state != __b._M_state;
-    }
+    { return __a._M_state == __b._M_state; }
 
     friend void
     swap(stop_token& __lhs, stop_token& __rhs) noexcept
@@ -299,13 +290,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator==(const stop_source& __a, const stop_source& __b) noexcept
     {
       return __a._M_state == __b._M_state;
-    }
-
-    [[nodiscard]]
-    friend bool
-    operator!=(const stop_source& __a, const stop_source& __b) noexcept
-    {
-      return __a._M_state != __b._M_state;
     }
 
     friend void
