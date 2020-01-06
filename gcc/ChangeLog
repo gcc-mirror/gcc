@@ -1,3 +1,8 @@
+2020-01-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (vec_extract<mode><scalar_mode>): Add early
+	clobber.
+
 2020-01-06  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/t-aarch64 ($(srcdir)/config/aarch64/aarch64-tune.md):
