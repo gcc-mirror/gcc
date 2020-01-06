@@ -6924,7 +6924,7 @@ package body Exp_Attr is
             if Esize (Ptyp) <= Esize (Standard_Integer) then
                PBtyp := Standard_Integer;
             else
-               PBtyp := Universal_Integer;
+               PBtyp := Standard_Long_Long_Integer;
             end if;
 
             Rewrite (N, Make_Range_Test);
