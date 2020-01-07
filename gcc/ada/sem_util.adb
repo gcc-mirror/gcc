@@ -1618,6 +1618,13 @@ package body Sem_Util is
       --  wrapper call to inherited operation.
 
       Set_Class_Wide_Clone (Spec_Id, Clone_Id);
+
+      --  Inherit debug info flag from Spec_Id to Clone_Id to allow debugging
+      --  of the class-wide clone subprogram.
+
+      if Needs_Debug_Info (Spec_Id) then
+         Set_Debug_Info_Needed (Clone_Id);
+      end if;
    end Build_Class_Wide_Clone_Decl;
 
    -----------------------------
