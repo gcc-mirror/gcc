@@ -1,6 +1,11 @@
 2020-01-07  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/92860
+	* gcc.dg/pr92860-2.c: New test.
+
+2020-01-07  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/92860
 	* gcc.dg/pr92860.c: New test. 
 
 2020-01-07  Jakub Jelinek  <jakub@redhat.com>

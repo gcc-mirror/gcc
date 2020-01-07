@@ -4009,7 +4009,7 @@ tree_inlinable_function_p (tree fn)
     return false;
 
   /* We only warn for functions declared `inline' by the user.  */
-  do_warning = (warn_inline
+  do_warning = (opt_for_fn (fn, warn_inline)
 		&& DECL_DECLARED_INLINE_P (fn)
 		&& !DECL_NO_INLINE_WARNING_P (fn)
 		&& !DECL_IN_SYSTEM_HEADER (fn));
@@ -4714,7 +4714,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
 	    inform (DECL_SOURCE_LOCATION (cfun->decl),
                    "called from this function");
 	}
-      else if (warn_inline
+      else if (opt_for_fn (fn, warn_inline)
 	       && DECL_DECLARED_INLINE_P (fn)
 	       && !DECL_NO_INLINE_WARNING_P (fn)
 	       && !DECL_IN_SYSTEM_HEADER (fn)

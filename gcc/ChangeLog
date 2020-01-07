@@ -1,6 +1,16 @@
 2020-01-07  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/92860
+	* common.opt: Make in Optimization option
+	as it is affected by -O0, which is an Optimization
+	option.
+	* tree-inline.c (tree_inlinable_function_p):
+	Use opt_for_fn for warn_inline.
+	(expand_call_inline): Likewise.
+
+2020-01-07  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/92860
 	* common.opt: Make flag_ree as optimization
 	attribute. 
 
