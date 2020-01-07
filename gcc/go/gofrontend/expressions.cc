@@ -11766,10 +11766,17 @@ Call_expression::do_add_conversions()
   Typed_identifier_list::const_iterator pp = fntype->parameters()->begin();
   bool is_interface_method =
     this->fn_->interface_field_reference_expression() != NULL;
+  size_t argcount = this->args_->size();
   if (!is_interface_method && fntype->is_method())
     {
       // Skip the receiver argument, which cannot be interface.
       pa++;
+      argcount--;
+    }
+  if (argcount != fntype->parameters()->size())
+    {
+      go_assert(saw_errors());
+      return;
     }
   for (; pa != this->args_->end(); ++pa, ++pp)
     {
@@ -11895,6 +11902,8 @@ Call_expression::is_erroneous_call()
 Type*
 Call_expression::do_type()
 {
+  if (this->is_error_expression())
+    return Type::make_error_type();
   if (this->type_ != NULL)
     return this->type_;
 
