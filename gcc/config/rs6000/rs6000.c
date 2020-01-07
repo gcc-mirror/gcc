@@ -6729,6 +6729,30 @@ rs6000_expand_vector_extract (rtx target, rtx vec, rtx elt)
     }
 }
 
+/* Helper function to return an address mask based on a physical register.  */
+
+static addr_mask_type
+hard_reg_and_mode_to_addr_mask (rtx reg, machine_mode mode)
+{
+  unsigned int r = reg_or_subregno (reg);
+  addr_mask_type addr_mask;
+
+  gcc_assert (HARD_REGISTER_NUM_P (r));
+  if (INT_REGNO_P (r))
+    addr_mask = reg_addr[mode].addr_mask[RELOAD_REG_GPR];
+
+  else if (FP_REGNO_P (r))
+    addr_mask = reg_addr[mode].addr_mask[RELOAD_REG_FPR];
+
+  else if (ALTIVEC_REGNO_P (r))
+    addr_mask = reg_addr[mode].addr_mask[RELOAD_REG_VMX];
+
+  else
+    gcc_unreachable ();
+
+  return addr_mask;
+}
+
 /* Adjust a memory address (MEM) of a vector type to point to a scalar field
    within the vector (ELEMENT) with a mode (SCALAR_MODE).  Use a base register
    temporary (BASE_TMP) to fixup the address.  Return the new memory address
@@ -6865,21 +6889,8 @@ rs6000_adjust_vec_address (rtx scalar_reg,
   if (GET_CODE (new_addr) == PLUS)
     {
       rtx op1 = XEXP (new_addr, 1);
-      addr_mask_type addr_mask;
-      unsigned int scalar_regno = reg_or_subregno (scalar_reg);
-
-      gcc_assert (HARD_REGISTER_NUM_P (scalar_regno));
-      if (INT_REGNO_P (scalar_regno))
-	addr_mask = reg_addr[scalar_mode].addr_mask[RELOAD_REG_GPR];
-
-      else if (FP_REGNO_P (scalar_regno))
-	addr_mask = reg_addr[scalar_mode].addr_mask[RELOAD_REG_FPR];
-
-      else if (ALTIVEC_REGNO_P (scalar_regno))
-	addr_mask = reg_addr[scalar_mode].addr_mask[RELOAD_REG_VMX];
-
-      else
-	gcc_unreachable ();
+      addr_mask_type addr_mask
+	= hard_reg_and_mode_to_addr_mask (scalar_reg, scalar_mode);
 
       if (REG_P (op1) || SUBREG_P (op1))
 	valid_addr_p = (addr_mask & RELOAD_REG_INDEXED) != 0;
