@@ -183,6 +183,24 @@ Expression::is_same_variable(Expression* a, Expression* b)
 					      bu->operand()));
     }
 
+  Array_index_expression* aie = a->array_index_expression();
+  if (aie != NULL)
+    {
+      Array_index_expression* bie = b->array_index_expression();
+      return (aie->end() == NULL
+	      && bie->end() == NULL
+	      && Expression::is_same_variable(aie->array(), bie->array())
+	      && Expression::is_same_variable(aie->start(), bie->start()));
+    }
+
+  Numeric_constant aval;
+  if (a->numeric_constant_value(&aval))
+    {
+      Numeric_constant bval;
+      if (b->numeric_constant_value(&bval))
+	return aval.equals(bval);
+    }
+
   return false;
 }
 
