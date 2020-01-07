@@ -3381,8 +3381,7 @@ allowed when @samp{<} or @samp{>} is used, @samp{es} is basically the same
 as @samp{m} without @samp{<} and @samp{>}.
 
 @item Q
-Memory operand that is an offset from a register (it is usually better
-to use @samp{m} or @samp{es} in @code{asm} statements)
+A memory operand addressed by just a base register.
 
 @item Z
 Memory operand that is an indexed or indirect from a register (it is
