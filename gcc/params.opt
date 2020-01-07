@@ -667,7 +667,7 @@ Common Joined UInteger Var(param_max_vrp_switch_assertions) Init(10) Param
 Maximum number of assertions to add along the default edge of a switch statement during VRP.
 
 -param=min-crossjump-insns=
-Common Joined UInteger Var(param_min_crossjump_insns) Init(5) IntegerRange(1, 65536) Param
+Common Joined UInteger Var(param_min_crossjump_insns) Init(5) IntegerRange(1, 65536) Param Optimization
 The minimum number of matching instructions to consider for crossjumping.
 
 -param=min-inline-recursive-probability=
