@@ -1,3 +1,7 @@
+2020-01-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/vect/vect-epilogues.c: XFAIL for arm big endian.
+
 2020-01-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/pcs/asm_4.c: New test.
