@@ -1,3 +1,10 @@
+2020-01-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/acle/general-c++/mangle_5.C: New test.
+	* gcc.target/aarch64/sve/pcs/asm_1.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/asm_2.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/asm_3.c: Likewise.
+
 2020-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/93156

@@ -1246,6 +1246,7 @@ static const struct attribute_spec aarch64_attribute_table[] =
        affects_type_identity, handler, exclude } */
   { "aarch64_vector_pcs", 0, 0, false, true,  true,  true,
 			  handle_aarch64_vector_pcs_attribute, NULL },
+  { "SVE type",		  3, 3, false, true,  false, true,  NULL, NULL },
   { NULL,                 0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -2042,37 +2043,15 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
    true, set *NUM_ZR and *NUM_PR to the number of required Z and P registers
    respectively.  */
 
-static bool
-aarch64_sve_argument_p (const_tree type, unsigned int *num_zr,
-			unsigned int *num_pr)
-{
-  if (aarch64_sve::svbool_type_p (type))
-    {
-      *num_pr = 1;
-      *num_zr = 0;
-      return true;
-    }
-
-  if (unsigned int nvectors = aarch64_sve::nvectors_if_data_type (type))
-    {
-      *num_pr = 0;
-      *num_zr = nvectors;
-      return true;
-    }
-
-  return false;
-}
-
 /* Return true if a function with type FNTYPE returns its value in
    SVE vector or predicate registers.  */
 
 static bool
 aarch64_returns_value_in_sve_regs_p (const_tree fntype)
 {
-  unsigned int num_zr, num_pr;
   tree return_type = TREE_TYPE (fntype);
   return (return_type != error_mark_node
-	  && aarch64_sve_argument_p (return_type, &num_zr, &num_pr));
+	  && aarch64_sve::builtin_type_p (return_type));
 }
 
 /* Return true if a function with type FNTYPE takes arguments in
@@ -2096,8 +2075,7 @@ aarch64_takes_arguments_in_sve_regs_p (const_tree fntype)
 
       function_arg_info arg (arg_type, /*named=*/true);
       apply_pass_by_reference_rules (&args_so_far_v, arg);
-      unsigned int num_zr, num_pr;
-      if (aarch64_sve_argument_p (arg.type, &num_zr, &num_pr))
+      if (aarch64_sve::builtin_type_p (arg.type))
 	return true;
 
       targetm.calls.function_arg_advance (args_so_far, arg);
@@ -4876,7 +4854,7 @@ aarch64_pass_by_reference (cumulative_args_t pcum_v,
   int nregs;
 
   unsigned int num_zr, num_pr;
-  if (arg.type && aarch64_sve_argument_p (arg.type, &num_zr, &num_pr))
+  if (arg.type && aarch64_sve::builtin_type_p (arg.type, &num_zr, &num_pr))
     {
       if (pcum && !pcum->silent_p && !TARGET_SVE)
 	/* We can't gracefully recover at this point, so make this a
@@ -4955,7 +4933,7 @@ static rtx
 aarch64_function_value_1 (const_tree type, machine_mode mode)
 {
   unsigned int num_zr, num_pr;
-  if (type && aarch64_sve_argument_p (type, &num_zr, &num_pr))
+  if (type && aarch64_sve::builtin_type_p (type, &num_zr, &num_pr))
     {
       /* Don't raise an error here if we're called when SVE is disabled,
 	 since this is really just a query function.  Other code must
@@ -5098,7 +5076,7 @@ aarch64_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
     return false;
 
   unsigned int num_zr, num_pr;
-  if (type && aarch64_sve_argument_p (type, &num_zr, &num_pr))
+  if (type && aarch64_sve::builtin_type_p (type, &num_zr, &num_pr))
     {
       /* All SVE types we support fit in registers.  For example, it isn't
 	 yet possible to define an aggregate of 9+ SVE vectors or 5+ SVE
@@ -5226,7 +5204,7 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg,
   pcum->aapcs_arg_processed = true;
 
   unsigned int num_zr, num_pr;
-  if (type && aarch64_sve_argument_p (type, &num_zr, &num_pr))
+  if (type && aarch64_sve::builtin_type_p (type, &num_zr, &num_pr))
     {
       /* The PCS says that it is invalid to pass an SVE value to an
 	 unprototyped function.  There is no ABI-defined location we

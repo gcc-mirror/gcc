@@ -1,3 +1,27 @@
+2020-01-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_sve::svbool_type_p)
+	(aarch64_sve::nvectors_if_data_type): Replace with...
+	(aarch64_sve::builtin_type_p): ...this.
+	* config/aarch64/aarch64-sve-builtins.cc: Include attribs.h.
+	(find_vector_type): Delete.
+	(add_sve_type_attribute): New function.
+	(lookup_sve_type_attribute): Likewise.
+	(register_builtin_types): Add an "SVE type" attribute to each type.
+	(register_tuple_type): Likewise.
+	(svbool_type_p, nvectors_if_data_type): Delete.
+	(mangle_builtin_type): Use lookup_sve_type_attribute.
+	(builtin_type_p): Likewise.  Add an overload that returns the
+	number of constituent vector and predicate registers.
+	* config/aarch64/aarch64.c (aarch64_sve_argument_p): Delete.
+	(aarch64_returns_value_in_sve_regs_p): Use aarch64_sve::builtin_type_p
+	instead of aarch64_sve_argument_p.
+	(aarch64_takes_arguments_in_sve_regs_p): Likewise.
+	(aarch64_pass_by_reference): Likewise.
+	(aarch64_function_value_1): Likewise.
+	(aarch64_return_in_memory): Likewise.
+	(aarch64_layout_arg): Likewise.
+
 2020-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/93156
