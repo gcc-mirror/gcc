@@ -1,3 +1,12 @@
+2020-01-07  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/92124
+	* include/bits/stl_tree.h
+	(_Rb_tree<>::_M_move_assign(_Rb_tree&, false_type)): Replace
+	std::move_if_noexcept by std::move.
+	* testsuite/23_containers/map/92124.cc: New.
+	* testsuite/23_containers/set/92124.cc: New.
+
 2020-01-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/stop_token (stop_token): Remove operator!= (LWG 3254).
