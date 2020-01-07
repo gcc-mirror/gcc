@@ -1,5 +1,9 @@
 2020-01-07  Martin Liska  <mliska@suse.cz>
 
+	* params.opt: Add Optimization for various parameters.
+
+2020-01-07  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/83411
 	* doc/extend.texi: Explain cloning for target_clone
 	attribute.
