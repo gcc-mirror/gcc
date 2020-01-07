@@ -462,7 +462,7 @@ offline_size (struct cgraph_node *node, ipa_size_summary *info)
   return 0;
 }
 
-/* Estimate the growth caused by inlining NODE into all callees.  */
+/* Estimate the growth caused by inlining NODE into all callers.  */
 
 int
 estimate_growth (struct cgraph_node *node)

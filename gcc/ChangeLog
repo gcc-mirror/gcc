@@ -1,3 +1,8 @@
+2020-01-07  Luo Xiong Hu  <luoxhu@linux.ibm.com>
+
+	* ipa-inline-analysis.c (estimate_growth): Fix typo.
+	* ipa-inline.c (caller_growth_limits): Use OR instead of AND.
+
 2020-01-06  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/rs6000.c (hard_reg_and_mode_to_addr_mask): New
