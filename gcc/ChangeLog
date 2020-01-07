@@ -1,3 +1,9 @@
+2020-01-07  Martin Liska  <mliska@suse.cz>
+
+    PR optimization/92860
+    * params.opt: Mark param_min_crossjump_insns with Optimization
+    keyword.
+
 2020-01-07  Luo Xiong Hu  <luoxhu@linux.ibm.com>
 
 	* ipa-inline-analysis.c (estimate_growth): Fix typo.
