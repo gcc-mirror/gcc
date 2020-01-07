@@ -1,5 +1,31 @@
 2020-01-07  Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/gcn/gcn-valu.md (VEC_1REG_INT_ALT): Delete iterator.
+	(VEC_ALLREG_ALT): New iterator.
+	(VEC_ALLREG_INT_MODE): New iterator.
+	(VCMP_MODE): New iterator.
+	(VCMP_MODE_INT): New iterator.
+	(vec_cmpu<mode>di): Use VCMP_MODE_INT.
+	(vec_cmp<u>v64qidi): New define_expand.
+	(vec_cmp<mode>di_exec): Use VCMP_MODE.
+	(vec_cmpu<mode>di_exec): New define_expand.
+	(vec_cmp<u>v64qidi_exec): New define_expand.
+	(vec_cmp<mode>di_dup): Use VCMP_MODE.
+	(vec_cmp<mode>di_dup_exec): Use VCMP_MODE.
+	(vcond<VEC_ALL1REG_MODE:mode><VEC_1REG_ALT:mode>): Rename ...
+	(vcond<VEC_ALLREG_MODE:mode><VEC_ALLREG_ALT:mode>): ... to this.
+	(vcond<VEC_ALL1REG_MODE:mode><VEC_1REG_ALT:mode>_exec): Rename ...
+	(vcond<VEC_ALLREG_MODE:mode><VEC_ALLREG_ALT:mode>_exec): ... to this.
+	(vcondu<VEC_ALL1REG_MODE:mode><VEC_1REG_INT_ALT:mode>): Rename ...
+	(vcondu<VEC_ALLREG_MODE:mode><VEC_ALLREG_INT_MODE:mode>): ... to this.
+	(vcondu<VEC_ALL1REG_MODE:mode><VEC_1REG_INT_ALT:mode>_exec): Rename ...
+	(vcondu<VEC_ALLREG_MODE:mode><VEC_ALLREG_INT_MODE:mode>_exec): ... to
+	this.
+	* config/gcn/gcn.c (print_operand): Fix 8 and 16 bit suffixes.
+	* config/gcn/gcn.md (expander): Add sign_extend and zero_extend.
+
+2020-01-07  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/gcn/constraints.md (DA): Update description and match.
 	(DB): Likewise.
 	(Db): New constraint.

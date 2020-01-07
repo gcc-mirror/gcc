@@ -360,7 +360,9 @@
    (not "one_cmpl")
    (popcount "popcount")
    (clz "clz")
-   (ctz "ctz")])
+   (ctz "ctz")
+   (sign_extend "extend")
+   (zero_extend "zero_extend")])
 
 ;; }}}
 ;; {{{ Miscellaneous instructions

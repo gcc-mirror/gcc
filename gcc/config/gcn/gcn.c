@@ -5939,10 +5939,10 @@ print_operand (FILE *file, rtx x, int code)
 	switch (GET_MODE_SIZE (mode))
 	  {
 	  case 1:
-	    s = "32";
-	    break;
+	    output_operand_lossage ("operand %%xn code invalid for QImode");
+	    return;
 	  case 2:
-	    s = float_p ? "16" : "32";
+	    s = "16";
 	    break;
 	  case 4:
 	    s = "32";
