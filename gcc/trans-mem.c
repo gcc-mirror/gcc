@@ -2085,6 +2085,9 @@ gate_tm_init (void)
   if (!flag_tm)
     return false;
 
+  if (!cfun->cfg)
+    return false;
+
   calculate_dominance_info (CDI_DOMINATORS);
   bitmap_obstack_initialize (&tm_obstack);
 
