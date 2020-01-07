@@ -1,5 +1,11 @@
 2020-01-07  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/83411
+	* doc/extend.texi: Explain cloning for target_clone
+	attribute.
+
+2020-01-07  Martin Liska  <mliska@suse.cz>
+
 	PR tree-optimization/92860
 	* common.opt: Make in Optimization option
 	as it is affected by -O0, which is an Optimization
