@@ -27256,6 +27256,14 @@ cp_parser_constraint_requires_parens (cp_parser *parser, bool lambda_p)
 	  gcc_fallthrough ();
 	}
       case CPP_OPEN_SQUARE:
+	{
+	  /* A primary-constraint-expression followed by a '[[' is not a
+	     postfix expression.  */
+	  if (cp_lexer_nth_token_is (parser->lexer, 2, CPP_OPEN_SQUARE))
+	    return pce_ok;
+
+	  gcc_fallthrough ();
+	}
       case CPP_PLUS_PLUS:
       case CPP_MINUS_MINUS:
       case CPP_DOT:
