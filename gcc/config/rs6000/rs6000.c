@@ -6753,90 +6753,6 @@ hard_reg_and_mode_to_addr_mask (rtx reg, machine_mode mode)
   return addr_mask;
 }
 
-/* Helper function to adjust a vector address (ADDR) to point to a given
-   element offset (ELEMENT_OFFSET).  This function handles updating addresses
-   that use PLUS (i.e. a D_FORM address with an integer constant or an X_FORM
-   address adding two registers).  If we can't update the address directly, we
-   can use the base register temporary (BASE_TMP) to form a valid address.  The
-   mode of the element within the vector is SCALAR_MODE.  */
-
-rtx
-adjust_vec_address_plus (rtx addr,
-			 rtx element_offset,
-			 rtx base_tmp,
-			 machine_mode scalar_mode)
-{
-  gcc_assert (GET_CODE (addr) == PLUS);
-
-  rtx new_addr = NULL;
-  rtx op0 = XEXP (addr, 0);
-  rtx op1 = XEXP (addr, 1);
-  rtx insn;
-
-  gcc_assert (REG_P (op0) || SUBREG_P (op0));
-
-  if (CONST_INT_P (op1) && CONST_INT_P (element_offset))
-    {
-      HOST_WIDE_INT offset = INTVAL (op1) + INTVAL (element_offset);
-      rtx offset_rtx = GEN_INT (offset);
-      new_addr = gen_rtx_PLUS (Pmode, op0, offset_rtx);
-
-      enum insn_form iform = address_to_insn_form (new_addr, scalar_mode,
-						   NON_PREFIXED_DEFAULT);
-
-      /* If the address isn't valid, change REG+OFFSET into REG+REG.  */
-      if (iform == INSN_FORM_BAD)
-	{
-	  /* The offset either overflowed or it might not be a valid DS/DQ
-	     offset, move offset to the temporary (which will likely be split),
-	     and do X-FORM addressing.  */
-	  emit_move_insn (base_tmp, offset_rtx);
-	  new_addr = gen_rtx_PLUS (Pmode, op0, base_tmp);
-	}
-    }
-
-  else
-    {
-      bool op1_reg_p = (REG_P (op1) || SUBREG_P (op1));
-      bool ele_reg_p = (REG_P (element_offset) || SUBREG_P (element_offset));
-
-      /* Note, ADDI requires the register being added to be a base
-	 register.  If the register was R0, load it up into the temporary
-	 and do the add.  */
-      if (op1_reg_p
-	  && (ele_reg_p || reg_or_subregno (op1) != FIRST_GPR_REGNO))
-	{
-	  insn = gen_add3_insn (base_tmp, op1, element_offset);
-	  gcc_assert (insn != NULL_RTX);
-	  emit_insn (insn);
-	}
-
-      else if (ele_reg_p
-	       && reg_or_subregno (element_offset) != FIRST_GPR_REGNO)
-	{
-	  insn = gen_add3_insn (base_tmp, element_offset, op1);
-	  gcc_assert (insn != NULL_RTX);
-	  emit_insn (insn);
-	}
-
-      /* Make sure we don't overwrite the temporary if the element being
-	 extracted is variable, and we've put the offset into base_tmp
-	 previously.  */
-      else if (reg_mentioned_p (base_tmp, element_offset))
-	emit_insn (gen_add2_insn (base_tmp, op1));
-
-      else
-	{
-	  emit_move_insn (base_tmp, op1);
-	  emit_insn (gen_add2_insn (base_tmp, element_offset));
-	}
-
-      new_addr = gen_rtx_PLUS (Pmode, op0, base_tmp);
-    }
-
-  return new_addr;
-}
-
 /* Adjust a memory address (MEM) of a vector type to point to a scalar field
    within the vector (ELEMENT) with a mode (SCALAR_MODE).  Use a base register
    temporary (BASE_TMP) to fixup the address.  Return the new memory address
@@ -6982,8 +6898,6 @@ rs6000_adjust_vec_address (rtx scalar_reg,
 	valid_addr_p = (addr_mask & RELOAD_REG_OFFSET) != 0;
     }
 
-  /* An address that is a single register is always valid for either indexed or
-     offsettable loads.  */
   else if (REG_P (new_addr) || SUBREG_P (new_addr))
     valid_addr_p = true;
 
