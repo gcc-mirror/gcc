@@ -2396,8 +2396,8 @@ decl_constant_value (tree decl)
    creates and returns a NEW_EXPR.  */
 
 static tree
-build_raw_new_expr (vec<tree, va_gc> *placement, tree type, tree nelts,
-		    vec<tree, va_gc> *init, int use_global_new)
+build_raw_new_expr (location_t loc, vec<tree, va_gc> *placement, tree type,
+		    tree nelts, vec<tree, va_gc> *init, int use_global_new)
 {
   tree init_list;
   tree new_expr;
@@ -2413,9 +2413,9 @@ build_raw_new_expr (vec<tree, va_gc> *placement, tree type, tree nelts,
   else
     init_list = build_tree_list_vec (init);
 
-  new_expr = build4 (NEW_EXPR, build_pointer_type (type),
-		     build_tree_list_vec (placement), type, nelts,
-		     init_list);
+  new_expr = build4_loc (loc, NEW_EXPR, build_pointer_type (type),
+			 build_tree_list_vec (placement), type, nelts,
+			 init_list);
   NEW_EXPR_USE_GLOBAL (new_expr) = use_global_new;
   TREE_SIDE_EFFECTS (new_expr) = 1;
 
@@ -3775,8 +3775,9 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
    rather than just "new".  This may change PLACEMENT and INIT.  */
 
 tree
-build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
-	   vec<tree, va_gc> **init, int use_global_new, tsubst_flags_t complain)
+build_new (location_t loc, vec<tree, va_gc> **placement, tree type,
+	   tree nelts, vec<tree, va_gc> **init, int use_global_new,
+	   tsubst_flags_t complain)
 {
   tree rval;
   vec<tree, va_gc> *orig_placement = NULL;
@@ -3826,7 +3827,7 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
 	  || (nelts && type_dependent_expression_p (nelts))
 	  || (nelts && *init)
 	  || any_type_dependent_arguments_p (*init))
-	return build_raw_new_expr (*placement, type, nelts, *init,
+	return build_raw_new_expr (loc, *placement, type, nelts, *init,
 				   use_global_new);
 
       orig_placement = make_tree_vector_copy (*placement);
@@ -3852,10 +3853,11 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
 
   if (nelts)
     {
+      location_t nelts_loc = cp_expr_loc_or_loc (nelts, loc);
       if (!build_expr_type_conversion (WANT_INT | WANT_ENUM, nelts, false))
         {
           if (complain & tf_error)
-	    permerror (cp_expr_loc_or_input_loc (nelts),
+	    permerror (nelts_loc,
 		       "size in array new must have integral type");
           else
             return error_mark_node;
@@ -3871,8 +3873,7 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
 	 less than zero. ... If the expression is a constant expression,
 	 the program is ill-fomed.  */
       if (TREE_CODE (cst_nelts) == INTEGER_CST
-	  && !valid_array_size_p (cp_expr_loc_or_input_loc (nelts),
-				  cst_nelts, NULL_TREE,
+	  && !valid_array_size_p (nelts_loc, cst_nelts, NULL_TREE,
 				  complain & tf_error))
 	return error_mark_node;
 
@@ -3886,7 +3887,7 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
   if (TYPE_REF_P (type))
     {
       if (complain & tf_error)
-        error ("new cannot be applied to a reference type");
+        error_at (loc, "new cannot be applied to a reference type");
       else
         return error_mark_node;
       type = TREE_TYPE (type);
@@ -3895,7 +3896,7 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
   if (TREE_CODE (type) == FUNCTION_TYPE)
     {
       if (complain & tf_error)
-        error ("new cannot be applied to a function type");
+        error_at (loc, "new cannot be applied to a function type");
       return error_mark_node;
     }
 
@@ -3911,7 +3912,7 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
 
   if (processing_template_decl)
     {
-      tree ret = build_raw_new_expr (orig_placement, type, orig_nelts,
+      tree ret = build_raw_new_expr (loc, orig_placement, type, orig_nelts,
 				     orig_init, use_global_new);
       release_tree_vector (orig_placement);
       release_tree_vector (orig_init);
@@ -3919,7 +3920,7 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
     }
 
   /* Wrap it in a NOP_EXPR so warn_if_unused_value doesn't complain.  */
-  rval = build1 (NOP_EXPR, TREE_TYPE (rval), rval);
+  rval = build1_loc (loc, NOP_EXPR, TREE_TYPE (rval), rval);
   TREE_NO_WARNING (rval) = 1;
 
   return rval;

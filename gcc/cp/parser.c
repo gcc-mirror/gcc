@@ -8750,11 +8750,9 @@ cp_parser_new_expression (cp_parser* parser)
          at the end of the final token we consumed.  */
       location_t combined_loc = make_location (start_loc, start_loc,
 					       parser->lexer);
-
       /* Create a representation of the new-expression.  */
-      ret = build_new (&placement, type, nelts, &initializer, global_scope_p,
-		       tf_warning_or_error);
-      protected_set_expr_location (ret, combined_loc);
+      ret = build_new (combined_loc, &placement, type, nelts, &initializer,
+		       global_scope_p, tf_warning_or_error);
     }
 
   if (placement != NULL)

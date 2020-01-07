@@ -1,3 +1,8 @@
+2020-01-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.old-deja/g++.bugs/900208_03.C: Check locations too.
+	* g++.old-deja/g++.bugs/900519_06.C: Likewise.
+
 2020-01-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.dg/vect/vect-epilogues.c: XFAIL for arm big endian.
@@ -29,7 +34,7 @@
 2020-01-07  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/92860
-	* gcc.dg/pr92860.c: New test. 
+	* gcc.dg/pr92860.c: New test.
 
 2020-01-07  Jakub Jelinek  <jakub@redhat.com>
 

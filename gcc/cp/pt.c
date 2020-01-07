@@ -18821,12 +18821,12 @@ tsubst_copy_and_build (tree t,
 			 integral_constant_expression_p)
 
   tree retval, op1;
-  location_t loc;
+  location_t save_loc;
 
   if (t == NULL_TREE || t == error_mark_node)
     return t;
 
-  loc = input_location;
+  save_loc = input_location;
   if (location_t eloc = cp_expr_location (t))
     input_location = eloc;
 
@@ -19286,6 +19286,7 @@ tsubst_copy_and_build (tree t,
 	vec<tree, va_gc> *placement_vec;
 	vec<tree, va_gc> *init_vec;
 	tree ret;
+	location_t loc = EXPR_LOCATION (t);
 
 	if (placement == NULL_TREE)
 	  placement_vec = NULL;
@@ -19321,8 +19322,8 @@ tsubst_copy_and_build (tree t,
 
 	tree op1 = tsubst (TREE_OPERAND (t, 1), args, complain, in_decl);
 	tree op2 = RECUR (TREE_OPERAND (t, 2));
-	ret = build_new (&placement_vec, op1, op2, &init_vec,
-			 NEW_EXPR_USE_GLOBAL (t),
+	ret = build_new (loc, &placement_vec, op1, op2,
+			 &init_vec, NEW_EXPR_USE_GLOBAL (t),
 			 complain);
 
 	if (placement_vec != NULL)
@@ -20232,7 +20233,7 @@ tsubst_copy_and_build (tree t,
 #undef RECUR
 #undef RETURN
  out:
-  input_location = loc;
+  input_location = save_loc;
   return retval;
 }
 

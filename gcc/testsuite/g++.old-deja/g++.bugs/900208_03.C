@@ -13,7 +13,7 @@ typedef void (func_type) ();
 
 void global_function_0 ()
 {
-  new func_type;	// { dg-error "" } missed by both cfront 2.0 and g++ 1.36.1
+  new func_type;	// { dg-error "3:new cannot be applied to a function type" } missed by both cfront 2.0 and g++ 1.36.1
 }
 
 int main () { return 0; }

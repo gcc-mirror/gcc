@@ -12,12 +12,12 @@ typedef int& int_ref;
 
 void test (int n)
 {
-  new int&;		// { dg-error "" } missed
-  new int_ref;		// { dg-error "" } missed
+  new int&;		// { dg-error "3:new cannot be applied to a reference type" } missed
+  new int_ref;		// { dg-error "3:new cannot be applied to a reference type" } missed
   new int&[n];		// { dg-error "" } missed
-  new int_ref[n];	// { dg-error "" } missed
+  new int_ref[n];	// { dg-error "3:new cannot be applied to a reference type" } missed
   new int&[3];		// { dg-error "" } missed
-  new int_ref[3];	// { dg-error "" } missed
+  new int_ref[3];	// { dg-error "3:new cannot be applied to a reference type" } missed
 }
 
 int main () { return 0; }
