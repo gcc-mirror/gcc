@@ -1,5 +1,10 @@
 2020-01-06  Michael Meissner  <meissner@linux.ibm.com>
 
+	* config/rs6000/rs6000.c (hard_reg_and_mode_to_addr_mask): New
+	helper function to return the valid addressing formats for a given
+	hard register and mode.
+	(rs6000_adjust_vec_address): Call hard_reg_and_mode_to_addr_mask.
+
 	* config/rs6000/constraints.md (Q constraint): Update
 	documentation.
 	* doc/md.texi (RS/6000 constraints): Update 'Q' cosntraint
