@@ -1,3 +1,7 @@
+2020-01-07  Richard Biener  <rguenther@suse.de>
+
+	* doc/install.texi: Bump minimal supported MPC version.
+
 2020-01-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* langhooks-def.h (lhd_simulate_enum_decl): Declare.

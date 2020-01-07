@@ -396,7 +396,7 @@ but it is not in your default library search path, the
 The in-tree build is only supported with the MPFR version that
 download_prerequisites installs.
 
-@item MPC Library version 0.8.1 (or later)
+@item MPC Library version 1.0.1 (or later)
 
 Necessary to build GCC@.  It can be downloaded from
 @uref{http://www.multiprecision.org/mpc/}.  If an MPC source distribution
