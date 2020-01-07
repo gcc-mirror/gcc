@@ -1,3 +1,29 @@
+2020-01-07  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/constraints.md (DA): Update description and match.
+	(DB): Likewise.
+	(Db): New constraint.
+	* config/gcn/gcn-protos.h (gcn_inline_constant64_p): Add second
+	parameter.
+	* config/gcn/gcn.c (gcn_inline_constant64_p): Add 'mixed' parameter.
+	Implement 'Db' mixed immediate type.
+	* config/gcn/gcn-valu.md (addcv64si3<exec_vcc>): Rework constraints.
+	(addcv64si3_dup<exec_vcc>): Delete.
+	(subcv64si3<exec_vcc>): Rework constraints.
+	(addv64di3): Rework constraints.
+	(addv64di3_exec): Rework constraints.
+	(subv64di3): Rework constraints.
+	(addv64di3_dup): Delete.
+	(addv64di3_dup_exec): Delete.
+	(addv64di3_zext): Rework constraints.
+	(addv64di3_zext_exec): Rework constraints.
+	(addv64di3_zext_dup): Rework constraints.
+	(addv64di3_zext_dup_exec): Rework constraints.
+	(addv64di3_zext_dup2): Rework constraints.
+	(addv64di3_zext_dup2_exec): Rework constraints.
+	(addv64di3_sext_dup2): Rework constraints.
+	(addv64di3_sext_dup2_exec): Rework constraints.
+
 2020-01-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* doc/sourcebuild.texi (arm_little_endian, arm_nothumb): Documented
