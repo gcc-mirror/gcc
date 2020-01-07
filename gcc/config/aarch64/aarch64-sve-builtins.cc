@@ -3044,6 +3044,8 @@ init_builtins ()
 {
   sve_switcher sve;
   register_builtin_types ();
+  if (in_lto_p)
+    handle_arm_sve_h ();
 }
 
 /* Register vector type TYPE under its arm_sve.h name.  */
@@ -3060,7 +3062,8 @@ register_vector_type (vector_type_index type)
      right form, even if it doesn't have the right name.  This should give
      better error recovery behavior than installing error_mark_node or
      installing an incorrect type.  */
-  if (TREE_CODE (decl) == TYPE_DECL
+  if (decl
+      && TREE_CODE (decl) == TYPE_DECL
       && TYPE_MAIN_VARIANT (TREE_TYPE (decl)) == vectype)
     vectype = TREE_TYPE (decl);
   acle_vector_types[0][type] = vectype;
