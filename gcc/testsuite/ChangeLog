@@ -1,3 +1,10 @@
+2020-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91369
+	* g++.dg/cpp1y/constexpr-new.C: Expect an error explaining why
+	static_assert failed for C++2a.
+	* g++.dg/cpp2a/constexpr-new9.C: New test.
+
 2020-01-06  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/asrdiv_1.c: Remove trailing %s.
