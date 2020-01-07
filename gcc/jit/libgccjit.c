@@ -136,70 +136,70 @@ struct gcc_jit_timer : public timer
 #define RETURN_VAL_IF_FAIL(TEST_EXPR, RETURN_EXPR, CTXT, LOC, ERR_MSG)	\
   JIT_BEGIN_STMT							\
     if (!(TEST_EXPR))							\
-      {								\
+      {									\
 	jit_error ((CTXT), (LOC), "%s: %s", __func__, (ERR_MSG));	\
 	return (RETURN_EXPR);						\
-      }								\
+      }									\
   JIT_END_STMT
 
 #define RETURN_VAL_IF_FAIL_PRINTF1(TEST_EXPR, RETURN_EXPR, CTXT, LOC, ERR_FMT, A0) \
   JIT_BEGIN_STMT							\
     if (!(TEST_EXPR))							\
-      {								\
+      {									\
 	jit_error ((CTXT), (LOC), "%s: " ERR_FMT,			\
-		   __func__, (A0));				\
+		   __func__, (A0));					\
 	return (RETURN_EXPR);						\
-      }								\
+      }									\
   JIT_END_STMT
 
 #define RETURN_VAL_IF_FAIL_PRINTF2(TEST_EXPR, RETURN_EXPR, CTXT, LOC, ERR_FMT, A0, A1) \
   JIT_BEGIN_STMT							\
     if (!(TEST_EXPR))							\
-      {								\
-	jit_error ((CTXT), (LOC), "%s: " ERR_FMT,				\
+      {									\
+	jit_error ((CTXT), (LOC), "%s: " ERR_FMT,			\
 		   __func__, (A0), (A1));				\
 	return (RETURN_EXPR);						\
-      }								\
+      }									\
   JIT_END_STMT
 
 #define RETURN_VAL_IF_FAIL_PRINTF3(TEST_EXPR, RETURN_EXPR, CTXT, LOC, ERR_FMT, A0, A1, A2) \
   JIT_BEGIN_STMT							\
     if (!(TEST_EXPR))							\
-      {								\
-	jit_error ((CTXT), (LOC), "%s: " ERR_FMT,				\
-		   __func__, (A0), (A1), (A2));			\
+      {									\
+	jit_error ((CTXT), (LOC), "%s: " ERR_FMT,			\
+		   __func__, (A0), (A1), (A2));				\
 	return (RETURN_EXPR);						\
-      }								\
+      }									\
   JIT_END_STMT
 
 #define RETURN_VAL_IF_FAIL_PRINTF4(TEST_EXPR, RETURN_EXPR, CTXT, LOC, ERR_FMT, A0, A1, A2, A3) \
   JIT_BEGIN_STMT							\
     if (!(TEST_EXPR))							\
-      {								\
-	jit_error ((CTXT), (LOC), "%s: " ERR_FMT,				\
+      {									\
+	jit_error ((CTXT), (LOC), "%s: " ERR_FMT,			\
 		   __func__, (A0), (A1), (A2), (A3));			\
 	return (RETURN_EXPR);						\
-      }								\
+      }									\
   JIT_END_STMT
 
 #define RETURN_VAL_IF_FAIL_PRINTF5(TEST_EXPR, RETURN_EXPR, CTXT, LOC, ERR_FMT, A0, A1, A2, A3, A4) \
   JIT_BEGIN_STMT							\
     if (!(TEST_EXPR))							\
-      {								\
-	jit_error ((CTXT), (LOC), "%s: " ERR_FMT,				\
-		   __func__, (A0), (A1), (A2), (A3), (A4));	\
+      {									\
+	jit_error ((CTXT), (LOC), "%s: " ERR_FMT,			\
+		   __func__, (A0), (A1), (A2), (A3), (A4));		\
 	return (RETURN_EXPR);						\
-      }								\
+      }									\
   JIT_END_STMT
 
 #define RETURN_VAL_IF_FAIL_PRINTF6(TEST_EXPR, RETURN_EXPR, CTXT, LOC, ERR_FMT, A0, A1, A2, A3, A4, A5) \
   JIT_BEGIN_STMT							\
     if (!(TEST_EXPR))							\
-      {								\
-	jit_error ((CTXT), (LOC), "%s: " ERR_FMT,				\
+      {									\
+	jit_error ((CTXT), (LOC), "%s: " ERR_FMT,			\
 		   __func__, (A0), (A1), (A2), (A3), (A4), (A5));	\
 	return (RETURN_EXPR);						\
-      }								\
+      }									\
   JIT_END_STMT
 
 #define RETURN_NULL_IF_FAIL(TEST_EXPR, CTXT, LOC, ERR_MSG) \
@@ -226,40 +226,40 @@ struct gcc_jit_timer : public timer
 #define RETURN_IF_FAIL(TEST_EXPR, CTXT, LOC, ERR_MSG)			\
   JIT_BEGIN_STMT							\
     if (!(TEST_EXPR))							\
-      {								\
-	jit_error ((CTXT), (LOC), "%s: %s", __func__, (ERR_MSG));		\
-	return;							\
-      }								\
+      {									\
+	jit_error ((CTXT), (LOC), "%s: %s", __func__, (ERR_MSG));	\
+	return;								\
+      }									\
   JIT_END_STMT
 
 #define RETURN_IF_FAIL_PRINTF1(TEST_EXPR, CTXT, LOC, ERR_FMT, A0) \
   JIT_BEGIN_STMT							\
     if (!(TEST_EXPR))							\
-      {								\
-	jit_error ((CTXT), (LOC), "%s: " ERR_FMT,				\
+      {									\
+	jit_error ((CTXT), (LOC), "%s: " ERR_FMT,			\
 		   __func__, (A0));					\
-	return;							\
-      }								\
+	return;								\
+      }									\
   JIT_END_STMT
 
 #define RETURN_IF_FAIL_PRINTF2(TEST_EXPR, CTXT, LOC, ERR_FMT, A0, A1) \
   JIT_BEGIN_STMT							\
     if (!(TEST_EXPR))							\
-      {								\
-	jit_error ((CTXT), (LOC), "%s: " ERR_FMT,				\
+      {									\
+	jit_error ((CTXT), (LOC), "%s: " ERR_FMT,			\
 		   __func__, (A0), (A1));				\
-	return;							\
-      }								\
+	return;								\
+      }									\
   JIT_END_STMT
 
 #define RETURN_IF_FAIL_PRINTF4(TEST_EXPR, CTXT, LOC, ERR_FMT, A0, A1, A2, A3) \
   JIT_BEGIN_STMT							\
     if (!(TEST_EXPR))							\
-      {								\
-	jit_error ((CTXT), (LOC), "%s: " ERR_FMT,				\
+      {									\
+	jit_error ((CTXT), (LOC), "%s: " ERR_FMT,			\
 		   __func__, (A0), (A1), (A2), (A3));			\
-	return;							\
-      }								\
+	return;								\
+      }									\
   JIT_END_STMT
 
 /* Check that BLOCK is non-NULL, and that it's OK to add statements to
@@ -269,7 +269,7 @@ struct gcc_jit_timer : public timer
   JIT_BEGIN_STMT							\
     RETURN_IF_FAIL ((BLOCK), NULL, (LOC), "NULL block");		\
     RETURN_IF_FAIL_PRINTF2 (						\
-      !(BLOCK)->has_been_terminated (),				\
+      !(BLOCK)->has_been_terminated (),					\
       (BLOCK)->get_context (),						\
       (LOC),								\
       "adding to terminated block: %s (already terminated by: %s)",	\
@@ -283,7 +283,7 @@ struct gcc_jit_timer : public timer
   JIT_BEGIN_STMT							\
     RETURN_NULL_IF_FAIL ((BLOCK), NULL, (LOC), "NULL block");		\
     RETURN_NULL_IF_FAIL_PRINTF2 (					\
-      !(BLOCK)->has_been_terminated (),				\
+      !(BLOCK)->has_been_terminated (),					\
       (BLOCK)->get_context (),						\
       (LOC),								\
       "adding to terminated block: %s (already terminated by: %s)",	\
