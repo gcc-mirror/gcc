@@ -1,4 +1,8 @@
-2019-01-07  Jakub Jelinek  <jakub@redhat.com>
+2020-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93156
+	* tree-ssa-ccp.c (bit_value_binop): For x * x note that the second
+	least significant bit is always clear.
 
 	PR tree-optimization/93118
 	* match.pd ((x >> c) << c -> x & (-1<<c)): Add nop_convert?.  Add new

@@ -1,4 +1,7 @@
-2019-01-07  Jakub Jelinek  <jakub@redhat.com>
+2020-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93156
+	* gcc.dg/tree-ssa/pr93156.c: New test.
 
 	PR tree-optimization/93118
 	* gcc.dg/tree-ssa/pr93118.c: New test.
