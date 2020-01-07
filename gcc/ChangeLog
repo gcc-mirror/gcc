@@ -1,3 +1,8 @@
+2020-01-06  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_adjust_vec_address): Add support
+	for the offset being 34-bits when -mcpu=future is used.
+
 2020-01-06  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md: Revert change to use ordered_comparison_operator
