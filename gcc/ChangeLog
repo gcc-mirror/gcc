@@ -1,5 +1,14 @@
 2020-01-06  Michael Meissner  <meissner@linux.ibm.com>
 
+	* config/rs6000/vsx.md (vsx_extract_<mode>_var, VSX_D iterator):
+	Use 'Q' for doing vector extract from memory.
+	(vsx_extract_v4sf_var): Use 'Q' for doing vector extract from
+	memory.
+	(vsx_extract_<mode>_var, VSX_EXTRACT_I iterator): Use 'Q' for
+	doing vector extract from memory.
+	(vsx_extract_<mode>_<VS_scalar>mode_var): Use 'Q' for doing vector
+	extract from memory.
+
 	* config/rs6000/rs6000.c (rs6000_adjust_vec_address): Add support
 	for the offset being 34-bits when -mcpu=future is used.
 
