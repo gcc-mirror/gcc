@@ -706,8 +706,7 @@ namespace aarch64_sve {
   void handle_arm_sve_h ();
   tree builtin_decl (unsigned, bool);
   bool builtin_type_p (const_tree);
-  bool svbool_type_p (const_tree);
-  unsigned int nvectors_if_data_type (const_tree);
+  bool builtin_type_p (const_tree, unsigned int *, unsigned int *);
   const char *mangle_builtin_type (const_tree);
   tree resolve_overloaded_builtin (location_t, unsigned int,
 				   vec<tree, va_gc> *);
