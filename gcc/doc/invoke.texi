@@ -312,6 +312,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-use-of-pointer-in-stale-stack-frame @gol
 -Wno-analyzer-use-of-uninitialized-value @gol
 -Wanalyzer-too-complex @gol
+-Warith-conversion @gol
 -Warray-bounds  -Warray-bounds=@var{n} @gol
 -Wno-attributes  -Wattribute-alias=@var{n}  @gol
 -Wbool-compare  -Wbool-operation @gol
@@ -6637,6 +6638,24 @@ This warning requires @option{-fanalyzer}, which enables it; use
 This diagnostic warns for paths through the code in which an uninitialized
 value is used.
 
+@item -Warith-conversion
+@opindex Warith-conversion
+@opindex Wno-arith-conversion
+Do warn about implicit conversions from arithmetic operations even
+when conversion of the operands to the same type cannot change their
+values.  This affects warnings from @option{-Wconversion},
+@option{-Wfloat-conversion}, and @option{-Wsign-conversion}.
+
+@smallexample
+@group
+void f (char c, int i)
+@{
+  c = c + i; // warns with @option{-Wconversion}
+  c = c + 1; // only warns with @option{-Warith-conversion}
+@}
+@end group
+@end smallexample
+
 @item -Warray-bounds
 @itemx -Warray-bounds=@var{n}
 @opindex Wno-array-bounds
@@ -7424,6 +7443,9 @@ operator: conversions to @code{void}, the same type, a base class or a
 reference to them. Warnings about conversions between signed and
 unsigned integers are disabled by default in C++ unless
 @option{-Wsign-conversion} is explicitly enabled.
+
+Warnings about conversion from arithmetic on a small type back to that
+type are only given with @option{-Warith-conversion}.
 
 @item -Wno-conversion-null @r{(C++ and Objective-C++ only)}
 @opindex Wconversion-null
