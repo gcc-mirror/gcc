@@ -9,10 +9,10 @@ template<typename T>
   };
 
 template<typename T>
-  struct S2 : S1<T> { // { dg-error "matching" }
+  struct S2 : S1<T> {
     using S1<T>::S1;
   };
 
 int main() {
-  S2<int> s; // { dg-error "deleted function" }
+  S2<int> s; // { dg-error "no matching function" }
 }

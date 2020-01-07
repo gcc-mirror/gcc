@@ -3141,7 +3141,6 @@ one_inherited_ctor (tree ctor, tree t, tree using_decl)
       ctor = implicitly_declare_fn (sfk_inheriting_constructor,
 				    t, /*const*/false, ctor, parms);
       add_method (t, ctor, using_decl != NULL_TREE);
-      TYPE_HAS_USER_CONSTRUCTOR (t) = true;
       return;
     }
 
