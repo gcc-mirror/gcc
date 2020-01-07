@@ -1,5 +1,15 @@
 2020-01-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* langhooks-def.h (lhd_simulate_enum_decl): Declare.
+	(LANG_HOOKS_SIMULATE_ENUM_DECL): Use it.
+	* langhooks.c: Include stor-layout.h.
+	(lhd_simulate_enum_decl): New function.
+	* config/aarch64/aarch64-sve-builtins.cc (init_builtins): Call
+	handle_arm_sve_h for the LTO frontend.
+	(register_vector_type): Cope with null returns from pushdecl.
+
+2020-01-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-protos.h (aarch64_sve::svbool_type_p)
 	(aarch64_sve::nvectors_if_data_type): Replace with...
 	(aarch64_sve::builtin_type_p): ...this.
