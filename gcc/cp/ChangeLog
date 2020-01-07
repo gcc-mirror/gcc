@@ -1,3 +1,9 @@
+2020-01-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* mangle.c (mangle_type_attribute_p): New function, split out from...
+	(write_CV_qualifiers_for_type): ...here.  Don't mangle attributes
+	that contain a space.
+
 2020-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/91369
