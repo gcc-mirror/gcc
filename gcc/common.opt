@@ -2426,7 +2426,7 @@ Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
 free
-Common Report Var(flag_ree) Init(0)
+Common Report Var(flag_ree) Init(0) Optimization
 Turn on Redundant Extensions Elimination pass.
 
 fshow-column
