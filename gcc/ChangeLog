@@ -1,8 +1,14 @@
 2020-01-07  Martin Liska  <mliska@suse.cz>
 
-    PR optimization/92860
-    * params.opt: Mark param_min_crossjump_insns with Optimization
-    keyword.
+	PR tree-optimization/92860
+	* common.opt: Make flag_ree as optimization
+	attribute. 
+
+2020-01-07  Martin Liska  <mliska@suse.cz>
+
+	PR optimization/92860
+	* params.opt: Mark param_min_crossjump_insns with Optimization
+	keyword.
 
 2020-01-07  Luo Xiong Hu  <luoxhu@linux.ibm.com>
 
