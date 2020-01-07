@@ -2495,7 +2495,9 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	      tree decl = gfc_trans_omp_variable (n->sym, false);
 	      if (DECL_P (decl))
 		TREE_ADDRESSABLE (decl) = 1;
-	      if (n->expr == NULL || n->expr->ref->u.ar.type == AR_FULL)
+	      if (n->expr == NULL
+		  || (n->expr->ref->type == REF_ARRAY
+		      && n->expr->ref->u.ar.type == AR_FULL))
 		{
 		  tree present = gfc_omp_check_optional_argument (decl, true);
 		  if (n->sym->ts.type == BT_CLASS)

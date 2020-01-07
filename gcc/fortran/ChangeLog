@@ -1,3 +1,9 @@
+2020-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/93162
+	* trans-openmp.c (gfc_trans_omp_clauses): Check for REF_ARRAY type
+	before testing u.ar.type == AR_FULL.
+
 2020-01-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/91640
