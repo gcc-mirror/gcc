@@ -2597,13 +2597,14 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
   // nil` we get a backtrace from the go statement, rather than a
   // useless backtrace from the brand new goroutine.
   Expression* param = constructor;
-  if (!is_constant_function)
+  if (!is_constant_function && this->classification() == STATEMENT_GO)
     {
       fn = Expression::make_temporary_reference(fn_temp, location);
       Expression* nil = Expression::make_nil(location);
       Expression* isnil = Expression::make_binary(OPERATOR_EQEQ, fn, nil,
 						  location);
-      Expression* crash = gogo->runtime_error(RUNTIME_ERROR_GO_NIL, location);
+      Expression* crash = Runtime::make_call(Runtime::PANIC_GO_NIL,
+					     location, 0);
       crash = Expression::make_conditional(isnil, crash,
 					   Expression::make_nil(location),
 					   location);

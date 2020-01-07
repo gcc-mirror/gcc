@@ -3157,6 +3157,14 @@ func syscall_runtime_AfterExec() {
 	execLock.unlock()
 }
 
+// panicgonil is used for gccgo as we need to use a compiler check for
+// a nil func, in case we have to build a thunk.
+//go:linkname panicgonil
+func panicgonil() {
+	getg().m.throwing = -1 // do not dump full stacks
+	throw("go of nil func value")
+}
+
 // Create a new g running fn passing arg as the single argument.
 // Put it on the queue of g's waiting to run.
 // The compiler turns a go statement into a call to this.

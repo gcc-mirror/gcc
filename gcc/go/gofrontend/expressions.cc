@@ -5270,13 +5270,13 @@ Unary_expression::do_get_backend(Translate_context* context)
                 Bexpression* compare =
                     gogo->backend()->binary_expression(OPERATOR_EQEQ, tbexpr,
                                                        nil, loc);
-                Bexpression* crash =
-                    gogo->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE,
-                                        loc)->get_backend(context);
+		Expression* crash = Runtime::make_call(Runtime::PANIC_MEM,
+						       loc, 0);
+		Bexpression* bcrash = crash->get_backend(context);
                 Bfunction* bfn = context->function()->func_value()->get_decl();
                 bexpr = gogo->backend()->conditional_expression(bfn, btype,
                                                                 compare,
-                                                                crash, ubexpr,
+                                                                bcrash, ubexpr,
                                                                 loc);
                 known_valid = true;
                 break;
@@ -7060,12 +7060,12 @@ Binary_expression::do_get_backend(Translate_context* context)
 	  Bexpression* compare =
 	    gogo->backend()->binary_expression(OPERATOR_LT, right, zero_expr,
 					       loc);
-	  const int errcode = RUNTIME_ERROR_SHIFT_BY_NEGATIVE;
-	  Bexpression* crash =
-	    gogo->runtime_error(errcode, loc)->get_backend(context);
+	  Expression* crash = Runtime::make_call(Runtime::PANIC_SHIFT,
+						 loc, 0);
+	  Bexpression* bcrash = crash->get_backend(context);
 	  Bfunction* bfn = context->function()->func_value()->get_decl();
 	  ret = gogo->backend()->conditional_expression(bfn, btype, compare,
-							crash, ret, loc);
+							bcrash, ret, loc);
 	}
     }
 
@@ -7081,15 +7081,14 @@ Binary_expression::do_get_backend(Translate_context* context)
               gogo->backend()->binary_expression(OPERATOR_EQEQ,
                                                  right, zero_expr, loc);
 
-	  // __go_runtime_error(RUNTIME_ERROR_DIVISION_BY_ZERO)
-	  int errcode = RUNTIME_ERROR_DIVISION_BY_ZERO;
-	  Bexpression* crash = gogo->runtime_error(errcode,
-						   loc)->get_backend(context);
+	  Expression* crash = Runtime::make_call(Runtime::PANIC_DIVIDE,
+						 loc, 0);
+	  Bexpression* bcrash = crash->get_backend(context);
 
-	  // right == 0 ? (__go_runtime_error(...), 0) : ret
+	  // right == 0 ? (panicdivide(), 0) : ret
           Bfunction* bfn = context->function()->func_value()->get_decl();
           ret = gogo->backend()->conditional_expression(bfn, btype,
-                                                        check, crash,
+                                                        check, bcrash,
 							ret, loc);
 	}
 
@@ -8071,8 +8070,7 @@ Bound_method_expression::do_flatten(Gogo* gogo, Named_object*,
 
   if (nil_check != NULL)
     {
-      Expression* crash = gogo->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE,
-					      loc);
+      Expression* crash = Runtime::make_call(Runtime::PANIC_MEM, loc, 0);
       // Fix the type of the conditional expression by pretending to
       // evaluate to RET either way through the conditional.
       crash = Expression::make_compound(crash, ret, loc);
@@ -8886,11 +8884,8 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
           Expression* zero = Expression::make_integer_ul(0, int_type, loc);
           Expression* cond = Expression::make_binary(OPERATOR_LT, len2,
                                                      zero, loc);
-          Expression* arg =
-            Expression::make_integer_ul(RUNTIME_ERROR_MAKE_SLICE_LEN_OUT_OF_BOUNDS,
-                                        NULL, loc);
-          Expression* call = Runtime::make_call(Runtime::RUNTIME_ERROR,
-                                                loc, 1, arg);
+	  Expression* call = Runtime::make_call(Runtime::PANIC_MAKE_SLICE_LEN,
+						loc, 0);
           cond = Expression::make_conditional(cond, call, zero->copy(), loc);
           gogo->lower_expression(function, inserter, &cond);
           gogo->flatten_expression(function, inserter, &cond);
@@ -8901,9 +8896,7 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
           Expression* cap2 = Expression::make_temporary_reference(c2tmp, loc);
           cond = Expression::make_binary(OPERATOR_LT, cap2,
                                          zero->copy(), loc);
-          arg = Expression::make_integer_ul(RUNTIME_ERROR_MAKE_SLICE_CAP_OUT_OF_BOUNDS,
-                                            NULL, loc);
-          call = Runtime::make_call(Runtime::RUNTIME_ERROR, loc, 1, arg);
+	  call = Runtime::make_call(Runtime::PANIC_MAKE_SLICE_CAP, loc, 0);
           cond = Expression::make_conditional(cond, call, zero->copy(), loc);
           gogo->lower_expression(function, inserter, &cond);
           gogo->flatten_expression(function, inserter, &cond);
@@ -14416,8 +14409,8 @@ Interface_field_reference_expression::do_get_backend(Translate_context* context)
                               Expression::make_nil(loc), loc);
   Bexpression* bnil_check = nil_check->get_backend(context);
 
-  Bexpression* bcrash = gogo->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE,
-					    loc)->get_backend(context);
+  Expression* crash = Runtime::make_call(Runtime::PANIC_MEM, loc, 0);
+  Bexpression* bcrash = crash->get_backend(context);
 
   Bfunction* bfn = context->function()->func_value()->get_decl();
   Bexpression* bcond =

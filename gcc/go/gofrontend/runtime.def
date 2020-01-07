@@ -243,9 +243,6 @@ DEF_GO_RUNTIME(CHECKDEFER, "runtime.checkdefer", P1(BOOLPTR), R0())
 // Run deferred functions.
 DEF_GO_RUNTIME(DEFERRETURN, "runtime.deferreturn", P1(BOOLPTR), R0())
 
-// Panic with a runtime error.
-DEF_GO_RUNTIME(RUNTIME_ERROR, "__go_runtime_error", P1(INT32), R0())
-
 
 // Close.
 DEF_GO_RUNTIME(CLOSE, "runtime.closechan", P1(CHAN), R0())
@@ -498,6 +495,24 @@ DEF_GO_RUNTIME(ATOMIC_AND_FETCH_1, "__atomic_and_fetch_1",
 DEF_GO_RUNTIME(ATOMIC_OR_FETCH_1, "__atomic_or_fetch_1",
                P3(POINTER, UINT8, INT32),
                R1(UINT8))
+
+// Panic reporting a division by zero.
+DEF_GO_RUNTIME(PANIC_DIVIDE, "runtime.panicdivide", P0(), R0())
+
+// Panic reporting a shift by negative count.
+DEF_GO_RUNTIME(PANIC_SHIFT, "runtime.panicshift", P0(), R0())
+
+// Panic reporting a nil dereference.
+DEF_GO_RUNTIME(PANIC_MEM, "runtime.panicmem", P0(), R0())
+
+// Panic reporting that make's slice len argument is out of range.
+DEF_GO_RUNTIME(PANIC_MAKE_SLICE_LEN, "runtime.panicmakeslicelen", P0(), R0())
+
+// Panic reporting that make's slice cap argument is out of range.
+DEF_GO_RUNTIME(PANIC_MAKE_SLICE_CAP, "runtime.panicmakeslicecap", P0(), R0())
+
+// Panic reporting using go with a nil function.
+DEF_GO_RUNTIME(PANIC_GO_NIL, "runtime.panicgonil", P0(), R0())
 
 // Panics reporting an index or slice out of bounds error.
 DEF_GO_RUNTIME(PANIC_INDEX, "runtime.goPanicIndex",
