@@ -12,6 +12,8 @@ import (
 
 // For gccgo, use go:linkname to export compiler-called functions.
 //
+//go:linkname panicmakeslicelen
+//go:linkname panicmakeslicecap
 //go:linkname makeslice
 //go:linkname makeslice64
 //go:linkname growslice
