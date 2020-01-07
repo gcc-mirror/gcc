@@ -1041,8 +1041,11 @@ struct constexpr_global_ctx {
   auto_vec<tree, 16> heap_vars;
   /* Cleanups that need to be evaluated at the end of CLEANUP_POINT_EXPR.  */
   vec<tree> *cleanups;
+  /* Number of heap VAR_DECL deallocations.  */
+  unsigned heap_dealloc_count;
   /* Constructor.  */
-  constexpr_global_ctx () : constexpr_ops_count (0), cleanups (NULL) {}
+  constexpr_global_ctx ()
+    : constexpr_ops_count (0), cleanups (NULL), heap_dealloc_count (0) {}
 };
 
 /* The constexpr expansion context.  CALL is the current function
@@ -2056,6 +2059,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 		    {
 		      DECL_NAME (var) = heap_deleted_identifier;
 		      ctx->global->values.remove (var);
+		      ctx->global->heap_dealloc_count++;
 		      return void_node;
 		    }
 		  else if (DECL_NAME (var) == heap_deleted_identifier)
@@ -2281,6 +2285,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
     }
   else
     {
+      bool cacheable = true;
       if (result && result != error_mark_node)
 	/* OK */;
       else if (!DECL_SAVED_TREE (fun))
@@ -2346,6 +2351,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	  auto_vec<tree, 10> save_exprs;
 	  ctx_with_save_exprs.save_exprs = &save_exprs;
 	  ctx_with_save_exprs.call = &new_call;
+	  unsigned save_heap_alloc_count = ctx->global->heap_vars.length ();
+	  unsigned save_heap_dealloc_count = ctx->global->heap_dealloc_count;
 
 	  tree jump_target = NULL_TREE;
 	  cxx_eval_constant_expression (&ctx_with_save_exprs, body,
@@ -2417,6 +2424,33 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 
 	  /* Make the unshared function copy we used available for re-use.  */
 	  save_fundef_copy (fun, copy);
+
+	  /* If the call allocated some heap object that hasn't been
+	     deallocated during the call, or if it deallocated some heap
+	     object it has not allocated, the call isn't really stateless
+	     for the constexpr evaluation and should not be cached.
+	     It is fine if the call allocates something and deallocates it
+	     too.  */
+	  if (entry
+	      && (save_heap_alloc_count != ctx->global->heap_vars.length ()
+		  || (save_heap_dealloc_count
+		      != ctx->global->heap_dealloc_count)))
+	    {
+	      tree heap_var;
+	      unsigned int i;
+	      if ((ctx->global->heap_vars.length ()
+		   - ctx->global->heap_dealloc_count)
+		  != save_heap_alloc_count - save_heap_dealloc_count)
+		cacheable = false;
+	      else
+		FOR_EACH_VEC_ELT_FROM (ctx->global->heap_vars, i, heap_var,
+				       save_heap_alloc_count)
+		  if (DECL_NAME (heap_var) != heap_deleted_identifier)
+		    {
+		      cacheable = false;
+		      break;
+		    }
+	    }
 	}
 
       if (result == error_mark_node)
@@ -2426,7 +2460,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       else if (!result)
 	result = void_node;
       if (entry)
-	entry->result = result;
+	entry->result = cacheable ? result : error_mark_node;
     }
 
   /* The result of a constexpr function must be completely initialized.
