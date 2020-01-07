@@ -1,3 +1,9 @@
+2020-01-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/47877 - -fvisibility-inlines-hidden and member templates.
+	* decl2.c (determine_visibility): -fvisibility-inlines-hidden beats
+	explicit class visibility for a template.
+
 2020-01-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* mangle.c (mangle_type_attribute_p): New function, split out from...
