@@ -4103,7 +4103,15 @@ package body Inline is
 
                Reset_Dispatching_Calls (Blk);
 
-               Analyze (Blk, Suppress => All_Checks);
+               --  In GNATprove mode, always consider checks on, even for
+               --  predefined units.
+
+               if GNATprove_Mode then
+                  Analyze (Blk);
+               else
+                  Analyze (Blk, Suppress => All_Checks);
+               end if;
+
                Style_Check := Style;
             end;
 
