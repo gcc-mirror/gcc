@@ -1575,7 +1575,7 @@ package Einfo is
 --       in sem_aux is used to test for this case.
 
 --    Has_Contiguous_Rep (Flag181)
---       Defined in enumeration types. Set if the type as a representation
+--       Defined in enumeration types. Set if the type has a representation
 --       clause whose entries are successive integers.
 
 --    Has_Controlled_Component (Flag43) [base type only]
