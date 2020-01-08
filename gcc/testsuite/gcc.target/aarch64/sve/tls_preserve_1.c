@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fpic" } */
+/* { dg-require-effective-target fpic } */
 
 /* Clobber highs do not need to be spilled around tls usage.  */
 

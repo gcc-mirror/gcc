@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target tls } */
 /* { dg-options "-O2 -fPIC -msve-vector-bits=256" } */
+/* { dg-require-effective-target fpic } */
 
 #include <stdint.h>
 
