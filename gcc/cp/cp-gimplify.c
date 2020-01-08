@@ -925,6 +925,13 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	}
       break;
 
+    case TARGET_EXPR:
+      /* A TARGET_EXPR that expresses direct-initialization should have been
+	 elided by cp_gimplify_init_expr.  */
+      gcc_checking_assert (!TARGET_EXPR_DIRECT_INIT_P (*expr_p));
+      ret = GS_UNHANDLED;
+      break;
+
     case RETURN_EXPR:
       if (TREE_OPERAND (*expr_p, 0)
 	  && (TREE_CODE (TREE_OPERAND (*expr_p, 0)) == INIT_EXPR

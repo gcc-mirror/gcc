@@ -5312,6 +5312,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  *non_constant_p = true;
 	  break;
 	}
+      gcc_checking_assert (!TARGET_EXPR_DIRECT_INIT_P (t));
       /* Avoid evaluating a TARGET_EXPR more than once.  */
       if (tree *p = ctx->global->values.get (TARGET_EXPR_SLOT (t)))
 	{
