@@ -107,6 +107,9 @@ FIXME: DRIVER_SELF_SPECS has changed.
 #define BYTES_BIG_ENDIAN 0
 #define WORDS_BIG_ENDIAN 0
 
+#define FLOAT_LIB_COMPARE_RETURNS_BOOL(mode, comparison) \
+  avr_float_lib_compare_returns_bool (mode, comparison)
+
 #ifdef IN_LIBGCC2
 /* This is to get correct SI and DI modes in libgcc2.c (32 and 64 bits).  */
 #define UNITS_PER_WORD 4

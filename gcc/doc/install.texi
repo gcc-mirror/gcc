@@ -2309,9 +2309,10 @@ as a multilib option.
 If @option{--with-long-double=double} is specified, @samp{double} and
 @samp{long double} will have the same layout.
 @item
-If the configure option is not set, it defaults to @samp{32} which
-is compatible with older versions of the compiler that use non-standard
-32-bit types for @samp{double} and @samp{long double}.
+The defaults are @option{--with-long-double=64,32} and
+@option{--with-double=32,64}.  The default @samp{double} layout imposed by
+the latter is compatible with older versions of the compiler that implement
+@samp{double} as a 32-bit type, which does not comply to the language standard.
 @end itemize
 Not all combinations of @option{--with-double=} and
 @option{--with-long-double=} are valid.  For example, the combination
@@ -2320,6 +2321,28 @@ rejected because the first option specifies the availability of
 multilibs for @samp{double}, whereas the second option implies
 that @samp{long double} --- and hence also @samp{double} --- is always
 32@tie{}bits wide.
+
+@item --with-double-comparison=@{tristate|3|bool|2|libf7@}
+Only supported for the AVR target since version@tie{}10.
+Specify what result format is returned by library functions that
+compare 64-bit floating point values (@code{DFmode}).
+The GCC default is @samp{tristate}.  If the floating point
+implementation returns a boolean instead, set it to @samp{bool}.
+
+@item --with-libf7=@{libgcc|math|math-symbols|no@}
+Only supported for the AVR target since version@tie{}10.
+Specify to which degree code from LibF7 is included in libgcc.
+LibF7 is an ad-hoc, AVR-specific, 64-bit floating point emulation
+written in C and (inline) assembly. @samp{libgcc} adds support
+for functions that one would usually expect in libgcc like double addition,
+double comparisons and double conversions. @samp{math} also adds routines
+that one would expect in @file{libm.a}, but with @code{__} (two underscores)
+prepended to the symbol names as specified by @file{math.h}.
+@samp{math-symbols} also defines weak aliases for the functions
+declared in @file{math.h}.  However, @code{--with-libf7} won't
+install no @file{math.h} header file whatsoever, this file must come
+from elsewhere.  This option sets @option{--with-double-comparison}
+to @samp{bool}.
 
 @item --with-nds32-lib=@var{library}
 Specifies that @var{library} setting is used for building @file{libgcc.a}.

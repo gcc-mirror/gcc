@@ -1,0 +1,1664 @@
+;; Copyright (C) 2019-2020 Free Software Foundation, Inc.
+;;
+;; This file is part of LIBF7, which is part of GCC.
+;;
+;; GCC is free software; you can redistribute it and/or modify it under
+;; the terms of the GNU General Public License as published by the Free
+;; Software Foundation; either version 3, or (at your option) any later
+;; version.
+;;
+;; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+;; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+;; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+;; for more details.
+;;
+;; Under Section 7 of GPL version 3, you are granted additional
+;; permissions described in the GCC Runtime Library Exception, version
+;; 3.1, as published by the Free Software Foundation.
+;;
+;; You should have received a copy of the GNU General Public License and
+;; a copy of the GCC Runtime Library Exception along with this program;
+;; see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+;; <http://www.gnu.org/licenses/>.  */
+
+#ifndef __AVR_TINY__
+
+#define ASM_DEFS_HAVE_DEFUN
+
+#include "asm-defs.h"
+#include "libf7.h"
+
+#define ZERO __zero_reg__
+#define TMP  __tmp_reg__
+
+#define F7(name)   F7_(name##_asm)
+
+.macro F7call name
+    .global F7(\name\())
+    XCALL   F7(\name\())
+.endm
+
+.macro F7jmp name
+    .global F7(\name\())
+    XJMP    F7(\name\())
+.endm
+
+;; Just for visibility in disassembly.
+.macro LLL name
+    .global LLL.\name
+    LLL.\name:
+    nop
+.endm
+
+.macro DEFUN name
+    .section .text.libf7.asm.\name, "ax", @progbits
+    .global F7(\name\())
+    .func F7(\name\())
+    F7(\name\()) :
+.endm
+
+.macro ENDF name
+    .size F7(\name\()), . - F7(\name\())
+    .endfunc
+.endm
+
+.macro LABEL name
+    .global F7(\name\())
+    F7(\name\()) :
+.endm
+
+.macro _DEFUN name
+    .section .text.libf7.asm.\name, "ax", @progbits
+    .weak \name
+    .type \name, @function
+    \name :
+.endm
+
+.macro _ENDF name
+    .size \name, . - \name
+.endm
+
+.macro _LABEL name
+    .weak \name
+    .type \name, @function
+    \name :
+.endm
+
+#define F7_NAME(X)   F7_(X)
+
+;; Make a weak alias.
+.macro  ALIAS  sym
+    .weak \sym
+    .type \sym, @function
+    \sym:
+.endm
+
+;; Make a weak alias if double is 64 bits wide.
+.macro  DALIAS  sym
+#if defined (WITH_LIBF7_MATH_SYMBOLS) && __SIZEOF_DOUBLE__ == 8
+ALIAS \sym
+#endif
+.endm
+
+;; Make a weak alias if long double is 64 bits wide.
+.macro  LALIAS  sym
+#if defined (WITH_LIBF7_MATH_SYMBOLS) && __SIZEOF_LONG_DOUBLE__ == 8
+ALIAS \sym
+#endif
+.endm
+
+#define     Off 1
+#define     Expo (Off + F7_MANT_BYTES)
+
+#ifdef F7MOD_classify_
+;;  r24 = classify (*Z)
+;;  NaN  ->  F7_FLAG_nan
+;;  INF  ->  F7_FLAG_inf [ | F7_FLAG_sign ]
+;;  ==0  ->  F7_FLAG_zero
+;;  ...  ->  0 [ | F7_FLAG_sign ]
+
+;; Clobbers:  None (no TMP, no T).
+DEFUN classify
+
+    ld      r24,    Z
+    lsr     r24
+    brne .Lnan_or_inf
+
+    ldd     r24,    Z+6+Off
+    tst     r24
+    brpl 0f
+    sbc     r24,    r24
+    andi    r24,    F7_FLAG_sign
+    ret
+
+0:  ldi     r24,    F7_FLAG_zero
+    ret
+
+.Lnan_or_inf:
+    rol     r24
+    ret
+
+ENDF classify
+#endif /* F7MOD_classify_ */
+
+#ifdef F7MOD_clr_
+DEFUN clr
+    std     Z+0,     ZERO
+    std     Z+0+Off, ZERO
+    std     Z+1+Off, ZERO
+    std     Z+2+Off, ZERO
+    std     Z+3+Off, ZERO
+    std     Z+4+Off, ZERO
+    std     Z+5+Off, ZERO
+    std     Z+6+Off, ZERO
+    std     Z+0+Expo, ZERO
+    std     Z+1+Expo, ZERO
+    ret
+ENDF clr
+
+#endif /* F7MOD_clr_ */
+
+#ifdef F7MOD_clz_
+;; The libcc CLZ implementations like __clzsi2 aka. __builtin_clzl are
+;; not very well suited for out purpose, so implement our own.
+
+#define ZBITS   r26
+.macro  .test.byte  reg
+    or      ZERO,   \reg
+    brne    .Loop_bit
+    subi    ZBITS, -8
+.endm
+
+;; R26 = CLZ (uint64_t R18);  CLZ (0) = 64.
+;; Unchanged: T
+DEFUN clzdi2
+    clr     ZBITS
+    ;; Catch the common case of normalized .mant for speed-up.
+    tst     r25
+    brmi 9f
+    .test.byte  r25
+    .test.byte  r24
+    .test.byte  r23
+    .test.byte  r22
+    .test.byte  r21
+    .test.byte  r20
+    .test.byte  r19
+    .test.byte  r18
+.Ldone:
+    clr     ZERO
+9:  ret
+
+.Loop_bit:
+    lsl     ZERO
+    brcs .Ldone
+    inc     ZBITS
+    rjmp .Loop_bit
+
+ENDF clzdi2
+#undef  ZBITS
+#endif /* F7MOD_clz_ */
+
+#ifdef F7MOD_cmp_mant_
+DEFUN cmp_mant
+
+    adiw    X,   6 + Off
+    ld      r24, X      $ ldd   TMP, Z+6+Off    $ SUB   r24, TMP
+    brne .Lunequal
+
+    sbiw    X,  6
+    ld      r24, X+     $ ldd   TMP, Z+0+Off    $ SUB   r24, TMP
+    ld      r24, X+     $ ldd   TMP, Z+1+Off    $ sbc   r24, TMP
+    ld      r24, X+     $ ldd   TMP, Z+2+Off    $ sbc   r24, TMP
+    ld      r24, X+     $ ldd   TMP, Z+3+Off    $ sbc   r24, TMP
+    ld      r24, X+     $ ldd   TMP, Z+4+Off    $ sbc   r24, TMP
+    ld      r24, X+     $ ldd   TMP, Z+5+Off    $ sbc   r24, TMP
+    ;; MSBs are already known to be equal
+    breq 9f
+.Lunequal:
+    sbc     r24,    r24
+    sbci    r24,    -1
+9:  sbiw    X,      6 + Off
+    ret
+ENDF cmp_mant
+#endif /* F7MOD_cmp_mant_ */
+
+#define     CA      18
+#define     C0      CA+1
+#define     C1      C0+1
+#define     C2      C0+2
+#define     C3      C0+3
+#define     C4      C0+4
+#define     C5      C0+5
+#define     C6      C0+6
+#define     Carry   r16
+#define     Flags   18
+
+#ifdef F7MOD_store_
+;; Z->flags = CA.
+;; Z->mant  = C[7].
+DEFUN store_mant.with_flags
+    st      Z,      CA
+
+;; Z->mant = C[7].
+LABEL store_mant
+    std     Z+0+Off, C0
+    std     Z+1+Off, C1
+    std     Z+2+Off, C2
+    std     Z+3+Off, C3
+    std     Z+4+Off, C4
+    std     Z+5+Off, C5
+    std     Z+6+Off, C6
+    ret
+ENDF store_mant.with_flags
+#endif /* F7MOD_store_ */
+
+#ifdef F7MOD_load_
+;; CA   = Z->flags
+;; C[7] = Z->mant
+DEFUN load_mant.with_flags
+    ld      CA,     Z
+    skipnext
+
+;; CA   = 0
+;; C[7] = Z->mant
+LABEL load_mant.clr_CA
+LABEL load_mant.clr_flags
+    clr     CA      ; May be skipped
+
+;; C[7] = Z->mant
+LABEL load_mant
+    ldd     C0,     Z+0+Off
+    ldd     C1,     Z+1+Off
+    ldd     C2,     Z+2+Off
+    ldd     C3,     Z+3+Off
+    ldd     C4,     Z+4+Off
+    ldd     C5,     Z+5+Off
+    ldd     C6,     Z+6+Off
+    ret
+ENDF load_mant.with_flags
+#endif /* F7MOD_load_ */
+
+#ifdef F7MOD_copy_
+DEFUN copy
+    cp      XL,     ZL
+    cpc     XH,     ZH
+    breq 9f
+    adiw    XL,     10
+    adiw    ZL,     10
+    set
+    bld     ZERO,   1
+    bld     ZERO,   3   ; ZERO = 0b1010 = 10.
+.Loop:
+    ld      TMP,    -X
+    st      -Z,     TMP
+    dec     ZERO
+    brne .Loop
+9:  ret
+ENDF copy
+#endif /* F7MOD_copy_ */
+
+#ifdef F7MOD_copy_P_
+DEFUN copy_P
+    set
+    bld     ZERO,   1
+    bld     ZERO,   3   ; ZERO = 0b1010 = 10.
+.Loop:
+#ifdef __AVR_HAVE_LPMX__
+    lpm     TMP,    Z+
+#else
+    lpm
+    adiw    Z,      1
+#endif /* Have LPMx */
+    st      X+,     TMP
+    dec     ZERO
+    brne .Loop
+    sbiw    X,      10
+    sbiw    Z,      10
+    ret
+ENDF copy_P
+#endif /* F7MOD_copy_P_ */
+
+#ifdef F7MOD_copy_mant_
+DEFUN copy_mant
+    cp      XL,     ZL
+    cpc     XH,     ZH
+    breq 9f
+    adiw    XL,     1
+    adiw    ZL,     1
+    set
+    bld     ZERO,   3
+    dec     ZERO        ; ZERO = 7
+.Loop:
+    ld      TMP,    X+
+    st      Z+,     TMP
+    dec     ZERO
+    brne    .Loop
+    sbiw    XL,     8
+    sbiw    ZL,     8
+9:  ret
+ENDF copy_mant
+#endif /* F7MOD_copy_mant_ */
+
+
+#ifdef F7MOD_clr_mant_lsbs_
+DEFUN clr_mant_lsbs
+    push    r16
+    mov     r16,    r20
+    wmov    XL,     r24
+
+    wmov    ZL,     r22
+    F7call  load_mant
+
+    F7call  lshrdi3
+
+    clr     CA
+
+    F7call   ashldi3
+
+    pop     r16
+
+    wmov    ZL,     XL
+    F7jmp  store_mant
+
+ENDF clr_mant_lsbs
+#endif /* F7MOD_clr_mant_lsbs_ */
+
+
+#ifdef F7MOD_normalize_with_carry_
+;; Z = &f7_t
+;; C[] = .mant may be not normalized
+;; Carry === r16 = Addend to Z->expo in [-64, 128).
+;; Normalize C[], set Flags, and adjust Z->expo.
+;; Return CA (after normalization) in TMP.
+;; Unchanged: T
+#define Addend  r17
+#define Zbits   r26
+#define expL    r26
+#define expH    r27
+DEFUN normalize_with_carry
+    mov     Addend, Carry
+    tst     C6
+    brmi .Lshift.0
+    ;; r26 = CLZ (uint64_t R18)
+    F7call  clzdi2
+    cpi     Zbits,  64
+    breq .Lclr
+    sub     Addend, Zbits
+    mov     r16,    Zbits
+
+    F7call  ashldi3
+    ;; Assert (R25.7 == 1)
+.Lshift.0:
+    mov     TMP,    CA
+    ld      Flags,  Z
+
+    ;; .expo += Addend
+    ldd     expL,   Z+0+Expo
+    ldd     expH,   Z+1+Expo
+    ;; Sign-extend Addend
+    clr     r16
+    sbrc    Addend, 7
+    com     r16
+
+    ;; exp += (int8_t) Addend, i.e. sign-extend Addend.
+    add     expL,   Addend
+    adc     expH,   r16
+    brvc .Lnormal
+    tst     r16
+    brmi .Lclr
+    ;; Overflow
+#if F7_HAVE_Inf == 1
+    ori     Flags,  F7_FLAG_inf
+#else
+    ldi     Flags,  F7_FLAG_nan
+#endif /* Have Inf */
+    ret
+
+.Lnormal:
+    std     Z+0+Expo,   expL
+    std     Z+1+Expo,   expH
+    ret
+
+.Lclr:
+    ;; Underflow or Zero.
+    clr     TMP
+    .global __clr_8
+    XJMP    __clr_8
+
+LABEL normalize.store_with_flags
+    ;; no rounding
+    set
+    skipnext
+LABEL normalize.round.store_with_flags
+    ;; with rounding
+    clt     ; skipped ?
+LABEL normalize.maybe_round.store_with_flags
+    F7call  normalize_with_carry
+    ;; We have:
+    ;; Z   = &f7_t
+    ;; X   = .expo
+    ;; C[] = .mant
+    ;; R18 = .flags
+    ;; TMP = byte below .mant after normalization
+    ;; T = 1  =>  no rounding.
+    brts .Lstore
+    lsl     TMP
+    adc     C0,     ZERO
+    brcc .Lstore
+    adc     C1,     ZERO
+    adc     C2,     ZERO
+    adc     C3,     ZERO
+    adc     C4,     ZERO
+    adc     C5,     ZERO
+    adc     C6,     ZERO
+    brcc .Lstore
+    ;; We only come here if C6 overflowed, i.e. C[] is 0 now.
+    ;; .mant = 1.0 by restoring the MSbit.
+    ror     C6
+    ;; .expo += 1 and override the .expo stored during normalize.
+    adiw    expL,   1
+    std     Z+0+Expo,   expL
+    std     Z+1+Expo,   expH
+
+.Lstore:
+    F7call  store_mant.with_flags
+
+    ;; Return the byte below .mant after normalization.
+    ;; This is only useful without rounding; the caller will know.
+    mov     R24,    TMP
+    ret
+ENDF normalize_with_carry
+#endif /* F7MOD_normalize_with_carry_ */
+
+
+#ifdef F7MOD_normalize_
+;; Using above functionality from C.
+;; f7_t* normalize (f7_t *cc)
+;; Adjusts cc->expo
+;; Clears cc->flags
+DEFUN normalize
+    push    r17
+    push    r16
+    wmov    ZL,     r24
+    F7call  load_mant.clr_CA
+    clr     Carry
+    st      Z,      ZERO
+    F7call  normalize.store_with_flags
+    wmov    r24,    Z
+    pop     r16
+    pop     r17
+    ret
+ENDF normalize
+#endif /* F7MOD_normalize_ */
+
+
+#ifdef F7MOD_store_expo_
+#define Done    r24
+#define expLO   r24
+#define expHI   r25
+;; expo == INT16_MAX  =>  *Z = Inf,         return Done = true.
+;; expo == INT16_MIN  =>  *Z = 0x0,         return Done = true.
+;; else               =>  Z->expo = expo,   return Done = false.
+DEFUN store_expo
+    cpi     expHI,   0x80
+    cpc     expLO,  ZERO
+    breq .Ltiny
+    adiw    expLO,  1
+    brvs .Lhuge
+    sbiw    expLO,  1
+    std     Z+0+Expo,   expLO
+    std     Z+1+Expo,   expHI
+    ldi     Done,   0
+    ret
+
+.Lhuge:
+#if F7_HAVE_Inf == 1
+    ld      Done,   Z
+    andi    Done,   F7_FLAG_sign
+    ori     Done,   F7_FLAG_inf
+#else
+    ldi     Done,   F7_FLAG_nan
+#endif /* Have Inf */
+    st      Z,      Done
+    ldi     Done,   1
+    ret
+
+.Ltiny:
+    ldi     Done,   1
+    F7jmp   clr
+ENDF store_expo
+#endif /* F7MOD_store_expo_ */
+
+
+#ifdef F7MOD_set_u64_
+DEFUN set_s64
+    set
+    skipnext
+    ;; ...
+LABEL set_u64
+    clt     ; Skipped?
+    wmov    Zl,     r16
+    ;; TMP holds .flags.
+    clr     TMP
+    brtc .Lnot.negative
+
+    bst     C6,     7
+    brtc .Lnot.negative
+    bld     TMP,    F7_FLAGNO_sign
+    .global __negdi2
+    XCALL   __negdi2
+
+.Lnot.negative:
+    st      Z,          TMP
+    std     Z+0+Expo,   ZERO
+    std     Z+1+Expo,   ZERO
+    ldi     Carry,      63
+    F7call  normalize.round.store_with_flags
+    wmov    r24,        Z
+    wmov    r16,        Z   ; Unclobber r16.
+    ret
+ENDF set_s64
+#endif /* F7MOD_set_u64_ */
+
+
+#ifdef F7MOD_to_integer_
+#define Mask    r26
+DEFUN to_integer
+    wmov    ZL,     r24
+    mov     Mask,   r22
+
+    F7call  load_mant.with_flags
+
+    sbrc    Flags, F7_FLAGNO_nan
+    rjmp .Lset_0x8000
+
+    sbrc    Flags, F7_FLAGNO_inf
+    rjmp .Lsaturate
+
+    sbrs    C6, 7
+    rjmp .Lset_0x0000
+
+    bst     Flags, F7_FLAGNO_sign
+    ldd     r27,    Z+0+Expo
+    ;; Does .expo have bits outside Mask? ...
+    mov     TMP,    Mask
+    com     TMP
+    and     TMP,    r27
+    ldd     r27,    Z+1+Expo
+    tst     r27
+    brmi .Lset_0x0000       ; ...yes: .expo is < 0  =>  return 0
+    or      TMP,    r27
+    brne .Lsaturate.T       ; ...yes: .expo > Mask  =>  saturate
+
+    ;; ...no:  Shift right to meet .expo = 0.
+    PUSH    r16
+    ldd     r16,    Z+0+Expo
+    eor     r16,    Mask
+    and     r16,    Mask
+    clr     CA
+    F7call  lshrdi3
+    POP     r16
+    tst     C6
+    brmi    .Lsaturate.T    ;   > INTxx_MAX  =>  saturate
+
+    rcall   .Lround
+    brmi    .Lsaturate.T    ;   > INTxx_MAX  =>  saturate
+
+    brtc 9f                 ;   >= 0         =>  return
+    sbrc    Mask,   5
+    .global __negdi2
+    XJMP    __negdi2
+    sbrc    Mask,   4
+    .global __negsi2
+    XJMP    __negsi2
+    neg     C6
+    neg     C5
+    sbci    C6,     0
+9:  ret
+
+.Lsaturate:
+    bst     Flags, F7_FLAGNO_sign
+.Lsaturate.T:
+
+#if F7_HAVE_Inf
+    brtc .Lset_0x7fff
+    ;; -Inf  =>  return 1 + INTxx_MIN
+    mov     ZL,     Flags
+    .global __clr_8
+    XCALL   __clr_8
+    ldi     C6,     0x80
+
+    ldi     CA+0,   0x01
+
+    sbrs    Mask,   5
+    ldi     CA+4,   0x01
+
+    sbrs    Mask,   4
+    ldi     CA+6,   0x01
+    ret
+
+.Lset_0x7fff:
+    ;; +Inf  =>  return INTxx_MAX
+    sec
+    .global __sbc_8
+    XCALL   __sbc_8
+    ldi     C6,     0x7f
+    ret
+#endif /* F7_HAVE_Inf */
+
+.Lset_0x8000:
+    ;; NaN  =>  return INTxx_MIN
+    .global __clr_8
+    XCALL   __clr_8
+    ldi     C6,     0x80
+    ret
+
+.Lset_0x0000:
+    ;; Small value  =>  return 0x0
+    .global __clr_8
+    XJMP    __clr_8
+
+.Lround:
+    ;; C6.7 is known to be 0 here.
+    ;; Return N = 1 iff we have to saturate.
+    cpi     Mask,   0xf
+    breq .Lround16
+    cpi     Mask,   0x1f
+    breq .Lround32
+
+    ;; For now, no rounding in the 64-bit case.  This rounding
+    ;; would have to be integrated into the right-shift.
+    cln
+    ret
+
+.Lround32:
+    rol     C2
+    adc     C3,     ZERO
+    adc     C4,     ZERO
+    rjmp 2f
+
+.Lround16:
+    rol     C4
+2:  adc     C5,     ZERO
+    adc     C6,     ZERO
+    ret
+ENDF to_integer
+#endif /* F7MOD_to_integer_ */
+
+
+#ifdef F7MOD_to_unsigned_
+#define Mask    r26
+DEFUN to_unsigned
+    wmov    ZL,     r24
+    mov     Mask,   r22
+
+    F7call  load_mant.with_flags
+
+    sbrc    Flags, F7_FLAGNO_nan
+    rjmp .Lset_0xffff
+
+    sbrc    Flags, F7_FLAGNO_sign
+    rjmp .Lset_0x0000
+
+    sbrc    Flags, F7_FLAGNO_inf
+    rjmp .Lset_0xffff
+
+    sbrs    C6, 7
+    rjmp .Lset_0x0000
+
+    ldd     r27,    Z+0+Expo
+    ;; Does .expo have bits outside Mask? ...
+    mov     TMP,    Mask
+    com     TMP
+    and     TMP,    r27
+    ldd     r27,    Z+1+Expo
+    tst     r27
+    brmi .Lset_0x0000       ; ...yes: .expo is < 0  =>  return 0
+    or      TMP,    r27
+    brne .Lset_0xffff       ; ...yes: .expo > Mask  =>  saturate
+
+    ;; ...no:  Shift right to meet .expo = 0.
+    PUSH    r16
+    ldd     r16,    Z+0+Expo
+    eor     r16,    Mask
+    and     r16,    Mask
+    clr     CA
+    F7call  lshrdi3
+    POP     r16
+
+    ;; Rounding
+    ;; ??? C6.7 is known to be 0 here.
+    cpi     Mask,   0xf
+    breq .Lround16
+    cpi     Mask,   0x1f
+    breq .Lround32
+
+    ;; For now, no rounding in the 64-bit case.  This rounding
+    ;; would have to be integrated into the right-shift.
+    ret
+
+.Lround32:
+    rol     C2
+    adc     C3,     ZERO
+    adc     C4,     ZERO
+    rjmp 2f
+
+.Lround16:
+    rol     C4
+2:  adc     C5,     ZERO
+    adc     C6,     ZERO
+    brcs    .Lset_0xffff    ; Rounding overflow  =>  saturate
+    ret
+
+.Lset_0xffff:
+    ;; return UINTxx_MAX
+    sec
+    .global __sbc_8
+    XJMP    __sbc_8
+
+.Lset_0x0000:
+    ;; Small value  =>  return 0x0
+    .global __clr_8
+    XJMP    __clr_8
+
+ENDF to_unsigned
+#endif /* F7MOD_to_unsigned_ */
+
+
+#ifdef F7MOD_addsub_mant_scaled_
+;; int8_t f7_addsub_mant_scaled_asm (f7_t *r24, const f7_t *r22, const f7_t 20*,
+;;                                   uint8_t r18);
+;; R18.0 = 1 : ADD
+;; R18.0 = 0 : SUB
+;; R18[7..1] : Scale
+;; Compute *R24 = *R22 + *R20 >> R18[7..1].
+
+#define     BA      10
+#define     B0      BA+1
+#define     B1      B0+1
+#define     B2      B0+2
+#define     B3      B0+3
+#define     B4      B0+4
+#define     B5      B0+5
+#define     B6      B0+6
+
+DEFUN addsub_mant_scaled
+    do_prologue_saves  10
+
+    bst     r18,    0  ;; ADD ?
+    lsr     r18
+    mov     r16,    r18
+
+    wmov    ZL,     r20
+    wmov    YL,     r22
+    ;; C[] = bb >> shift
+    wmov    XL,     r24
+
+    F7call  load_mant.clr_CA
+    F7call  lshrdi3
+
+    wmov    BA,     CA
+    wmov    B1,     C1
+    wmov    B3,     C3
+    wmov    B5,     C5
+    wmov    ZL,     YL
+    F7call  load_mant.clr_CA
+
+    wmov    ZL,     XL
+
+    brts .Ladd
+
+    .global __subdi3
+    XCALL   __subdi3
+
+    breq .Lzero
+    brcc .Lround
+    ;; C = 1: Can underflow happen at all ?
+.Lzero:
+    F7call  clr
+    rjmp .Lepilogue
+
+.Ladd:
+    .global __adddi3
+    XCALL   __adddi3
+    brcc .Lround
+    ldi     Carry,  1
+    .global __lshrdi3
+    XCALL   __lshrdi3
+    ori     C6, 1 << 7
+    skipnext
+.Lround:
+    clr     Carry   ; skipped?
+    F7call  normalize.round.store_with_flags
+
+.Lepilogue:
+    do_epilogue_restores 10
+
+ENDF addsub_mant_scaled
+
+#if !defined (__AVR_HAVE_MOVW__) || !defined (__AVR_HAVE_JMP_CALL__)
+DEFUN lshrdi3
+    .global __lshrdi3
+    XJMP    __lshrdi3
+ENDF lshrdi3
+DEFUN ashldi3
+    .global __ashldi3
+    XJMP    __ashldi3
+ENDF ashldi3
+#else
+
+# Basically just a wrapper around libgcc's __lshrdi3.
+DEFUN lshrdi3
+    ;; Handle bit 5 of shift offset.
+    sbrs    r16,    5
+    rjmp 4f
+    wmov    CA,     C3
+    wmov    C1,     C5
+    clr     C6          $   clr     C5  $   wmov    C3, C5
+4:
+    ;; Handle bit 4 of shift offset.
+    sbrs    r16,    4
+    rjmp 3f
+    wmov CA, C1
+    wmov C1, C3
+    wmov C3, C5
+    clr     C6          $   clr     C5
+3:
+    ;; Handle bits 3...0 of shift offset.
+    push    r16
+    andi    r16,    0xf
+    breq 0f
+
+    .global __lshrdi3
+    XCALL   __lshrdi3
+0:
+    pop     r16
+    ret
+ENDF lshrdi3
+
+# Basically just a wrapper around libgcc's __ashldi3.
+DEFUN ashldi3
+    ;; Handle bit 5 of shift offset.
+    sbrs    r16,    5
+    rjmp 4f
+    wmov    C5,     C1
+    wmov    C3,     CA
+    clr     C2          $   clr     C1  $   wmov    CA, C1
+4:
+    ;; Handle bit 4 of shift offset.
+    sbrs    r16,    4
+    rjmp 3f
+    wmov C5, C3
+    wmov C3, C1
+    wmov C1, CA
+    clr     CA          $   clr     C0
+3:
+    ;; Handle bits 3...0 of shift offset.
+    push    r16
+    andi    r16,    0xf
+    breq 0f
+
+    .global __ashldi3
+    XCALL   __ashldi3
+0:
+    pop     r16
+    ret
+ENDF ashldi3
+#endif /* Small device */
+
+#endif /* F7MOD_addsub_mant_scaled_ */
+
+#if defined F7MOD_mul_mant_ && defined (__AVR_HAVE_MUL__)
+    #define     A0      11
+    #define     A1      A0+1
+    #define     A2      A0+2
+    #define     A3      A0+3
+    #define     A4      A0+4
+    #define     A5      A0+5
+    #define     A6      A0+6
+
+    #define     TT0     26
+    #define     TT1     TT0+1
+    #define     TT2     28
+    #define     TT3     TT2+1
+
+    #define     BB      10
+
+;; R18.0 = 1: No rounding.
+
+DEFUN mul_mant
+    do_prologue_saves 10
+    bst     r18,    0
+    push    r25
+    push    r24
+    movw    ZL,     r22
+    LDD     A0,     Z+0+Off
+    LDD     A1,     Z+1+Off
+    LDD     A2,     Z+2+Off
+    LDD     A3,     Z+3+Off
+    LDD     A4,     Z+4+Off
+    LDD     A5,     Z+5+Off
+    LDD     A6,     Z+6+Off
+    movw    ZL,     r20
+
+    ;; 6 * 6 -> 6:5
+    ;; 4 * 6 -> 4:3
+    ;; 2 * 6 -> 2:1
+    ;; 0 * 6 -> 0:a
+    ldd     BB, Z+6+Off
+    mul     A6, BB      $   movw    C5, r0
+    mul     A4, BB      $   movw    C3, r0
+    mul     A2, BB      $   movw    C1, r0
+    mul     A0, BB      $   movw    CA, r0
+
+    ;; 5 * 6 -> 5:4
+    ;; 3 * 6 -> 3:2
+    ;; 1 * 6 -> 1:0
+    mul     A5, BB      $   movw    TT2, r0
+    mul     A3, BB      $   movw    TT0, r0
+    mul     A1, BB
+    ADD     C0, r0      $   adc     C1, r1
+    adc     C2, TT0     $   adc     C3, TT1
+    adc     C4, TT2     $   adc     C5, TT3     $   clr ZERO
+    adc     C6, ZERO
+    ;; Done B6
+
+    ;; 3 * 3 -> 0:a
+    ;; 4 * 4 -> 2:1
+    ;; 5 * 5 -> 4:3
+    ldd     BB, Z+3+Off $   mul     A3, BB      $   movw    TT0, r0
+    ldd     BB, Z+4+Off $   mul     A4, BB      $   movw    TT2, r0
+    ldd     BB, Z+5+Off $   mul     A5, BB
+
+    ADD     CA, TT0     $   adc     C0, TT1
+    adc     C1, TT2     $   adc     C2, TT3
+    adc     C3, r0      $   adc     C4, r1
+    brcc .+2
+    adiw    C5, 1
+
+    ;; 6 * 5 -> 5:4
+    ;; 4 * 5 -> 3:2
+    ;; 2 * 5 -> 1:0
+    ;; 0 * 5 -> a:-
+    mul     A0, BB
+    ;; A0 done
+#define Atmp A0
+
+    mov     Atmp, r1
+    mul     A6, BB      $   movw    TT2, r0
+    mul     A4, BB      $   movw    TT0, r0
+    mul     A2, BB
+
+    ADD     CA, Atmp
+    adc     C0, r0      $   adc     C1, r1
+    adc     C2, TT0     $   adc     C3, TT1
+    adc     C4, TT2     $   adc     C5, TT3     $   clr ZERO
+    adc     C6, ZERO
+
+    ;; 1 * 5 -> 0:a
+    ;; 3 * 5 -> 2:1
+    ;; 6 * 4 -> 4:3
+    mul     A1, BB      $   movw    TT0, r0
+    mul     A3, BB      $   movw    TT2, r0
+    ldd     BB, Z+4+Off
+    mul     A6, BB
+
+    ADD     CA, TT0     $   adc     C0, TT1
+    adc     C1, TT2     $   adc     C2, TT3
+    adc     C3, r0      $   adc     C4, r1      $   clr ZERO
+    adc     C5, ZERO    $   adc     C6, ZERO
+    ;; B5 done
+
+    ;; 6 * 3 -> 3:2
+    ;; 6 * 1 -> 1:0
+    ;; 4 * 1 -> a:-
+    mov     TT0, A6     $   ldd TMP,  Z+3+Off
+    mov     BB,  A4     $   ldd Atmp, Z+1+Off
+    rcall   .Lmul.help.3
+
+    ;; 5 * 4 -> 3:2
+    ;; 5 * 2 -> 1:0
+    ;; 3 * 2 -> a:-
+    mov     TT0, A5     $   ldd TMP,  Z+4+Off
+    mov     BB,  A3     $   ldd Atmp, Z+2+Off
+    rcall   .Lmul.help.3
+
+    ;; 4 *   -> 3:2 (=0)
+    ;; 4 * 3 -> 1:0
+    ;; 2 * 3 -> a:-
+    mov     TT0, A4     $   clr TMP
+    mov     BB,  A2     $   ldd Atmp, Z+3+Off
+    rcall   .Lmul.help.3
+
+    ;; 3 * . -> 3:2 (=0)
+    ;; 3 * 4 -> 1:0
+    ;; 1 * 4 -> a:-
+    mov     TT0, A3     $   clr TMP
+    mov     BB,  A1     $   ldd Atmp, Z+4+Off
+    rcall   .Lmul.help.3
+
+    ;; . * ? -> 3:2 (=0)
+    ;; . * 0 -> 1:0 (=0)
+    ;; 5 * 0 -> a:-
+    clr     TT0
+    mov     BB,  A5     $   ldd Atmp, Z+0+Off
+    rcall   .Lmul.help.3
+
+    clr TT3  ;; Asserted by .Lmul.help.2
+    ;; 6 * 2 -> 2:1
+    ;; 6 * 0 -> 0:a
+                        $   ldd TMP,  Z+2+Off
+    mov     BB, A6     ;$   ldd Atmp, Z+0+Off
+    rcall   .Lmul.help.2
+
+    ;; 5 * 3 -> 2:1
+    ;; 5 * 1 -> 0:a
+                        $   ldd TMP,  Z+3+Off
+    mov     BB, A5      $   ldd Atmp, Z+1+Off
+    rcall   .Lmul.help.2
+
+    ;; 4 * . -> 2:1 (=0)
+    ;; 4 * 2 -> 0:a
+                        $   clr TMP
+    mov     BB, A4      $   ldd Atmp, Z+2+Off
+    rcall   .Lmul.help.2
+
+    ;; 2 * . -> 2:1 (=0)
+    ;; 2 * 4 -> 0:a
+                        $   clr TMP
+    mov     BB, A2      $   ldd Atmp, Z+4+Off
+    rcall   .Lmul.help.2
+
+    ;; Finally...
+
+    pop     ZL
+    pop     ZH
+    ;; The high byte is at least 0x40 and at most 0xfe.
+    ;; The result has to be left-shifted by one in order to scale it
+    ;; correctly.
+
+    ldi     Carry,  1
+    F7call  normalize.maybe_round.store_with_flags
+
+    do_epilogue_restores 10
+
+;; TT0 * Tmp  -> 3:2
+;; TT0 * Atmp -> 1:0
+;; BB  * Atmp -> a:-
+;;
+;; Clobbers : TMP, TT0...TT3.
+;; Sets     : ZERO = 0.
+.Lmul.help.3:
+    mul     TT0, TMP    $   movw    TT2, r0
+    mul     TT0, Atmp   $   movw    TT0, r0
+    mul     BB,  Atmp
+
+    ADD     CA, r1
+    adc     C0, TT0     $   adc     C1, TT1
+    adc     C2, TT2
+.Lmul.help.3.C3:        $   adc     C3, TT3     $ clr ZERO
+    adc     C4, ZERO    $   adc     C5, ZERO
+    adc     C6, ZERO
+    ret
+
+;; BB * TMP  -> 2:1
+;; BB * Atmp -> 0:a
+;;
+;; Asserts  : TT3 = 0
+;; Clobbers : TMP, TT0, TT1.
+;; Sets     : ZERO = 0.
+.Lmul.help.2:
+    mul     BB, TMP     $   movw    TT0, r0
+    mul     BB, Atmp
+    ADD     CA, r0      $   adc     C0, r1
+    adc     C1, TT0     $   adc     C2, TT1
+    rjmp .Lmul.help.3.C3
+
+ENDF mul_mant
+#endif /* F7MOD_mul_mant_ && MUL */
+
+
+#if defined (F7MOD_div_)
+
+;; Dividend is C[]
+
+;; Divisor
+#define A0       9
+#define A1      10
+#define A2      11
+#define A3      12
+#define A4      13
+#define A5      14
+#define A6      15
+
+;; Quotient
+#define Q0      0       /* === TMP  */
+#define Q1      Q0+1    /* === ZERO */
+#define Q2      26
+#define Q3      Q2+1
+#define Q4      28
+#define Q5      Q4+1
+#define Q6      16
+#define Q7      Q6+1
+
+#define Cnt     CA
+#define QBits   r8
+
+DEFUN div
+    do_prologue_saves 12
+
+    ;; Number of bits requested for the quotient.
+    ;; This is usually 2 + F7_MANT_BITS.
+    mov     QBits,  r20
+    wmov    ZL,     r22
+    LDD     A0,     Z+0+Off
+    LDD     A1,     Z+1+Off
+    LDD     A2,     Z+2+Off
+    LDD     A3,     Z+3+Off
+    LDD     A4,     Z+4+Off
+    LDD     A5,     Z+5+Off
+    LDD     A6,     Z+6+Off
+    wmov    ZL,     r24
+    F7call  load_mant
+
+    ;; Clear quotient Q[].
+    clr     Q0      ; === TMP
+    ;clr    Q1      ; === ZERO
+    wmov    Q2,     Q0
+    wmov    Q4,     Q0
+    wmov    Q6,     Q0
+
+    ;; C[] and A[] are valid mantissae, i.e. their MSBit is set.  Therefore,
+    ;; quotient Q[] will be in  [0x0.ff..., 0x0.40...]  and to adjust Q[] we
+    ;; need at most 1 left-shift.  Compute F7_MANT_BITS + 2 bits of the
+    ;; quotient:  One bit is used for rounding, and one bit might be consumed
+    ;; by the mentioned left-shift.
+    mov     Cnt,    QBits
+    rjmp .Loop_start
+
+.Loop:
+    ;; Shift dividend.
+    LSL     C0
+    rol     C1
+    rol     C2
+    rol     C3
+    rol     C4
+    rol     C5
+    rol     C6
+    brcs .Lfits
+    ;; Compare dividend against divisor.
+.Loop_start:
+    CP      C0,     A0
+    cpc     C1,     A1
+    cpc     C2,     A2
+    cpc     C3,     A3
+    cpc     C4,     A4
+    cpc     C5,     A5
+    cpc     C6,     A6
+    ;; Shift 0 into quotient.
+    brlo 1f
+.Lfits:
+    ;; Divisor fits into dividend.
+    SUB     C0,     A0
+    sbc     C1,     A1
+    sbc     C2,     A2
+    sbc     C3,     A3
+    sbc     C4,     A4
+    sbc     C5,     A5
+    sbc     C6,     A6
+    ;; Shift 1 into quotient.
+    sec
+    rol     Q0
+    skipnext
+1:  lsl     Q0
+    rol     Q1
+    rol     Q2
+    rol     Q3
+    rol     Q4
+    rol     Q5
+    rol     Q6
+    rol     Q7
+    dec     Cnt
+    brne .Loop
+
+    wmov    CA,     Q0
+    wmov    C1,     Q2
+    wmov    C3,     Q4
+    wmov    C5,     Q6
+    clr     ZERO
+
+    ldi     Carry,  64
+    sub     Carry,  QBits
+    F7call  normalize.round.store_with_flags
+
+    do_epilogue_restores 12
+ENDF div
+
+#endif /* F7MOD_div_ */
+
+
+#if defined (F7MOD_sqrt16_) && defined (__AVR_HAVE_MUL__)
+
+#define     Mask    C6
+#define     Q0      C3      /*  = R22  */
+#define     Q1      C4      /*  = R23  */
+
+;; uint16_t R24 = sqrt16_XXX (uint16_t R24);
+;; Clobbers:   R22, R23, TMP.
+;;
+;; XXX = floor:  Return integral part of square-root of R25:R24 with R25 = 0.
+;;               Error is in [0, -1 LSB).
+;; XXX = round:  Return quare-root of R25:R24 rounded to nearest integer.
+;;               R25 = (Q[] >= 65281) = (Q > 0xff00),  i.e. if Q[] is not
+;;               bigger than 0xff00, then the result fits in 8 bits.
+;;               Return C = 0 if the result is the same as for XXX = floor,
+;;               error in [0, -1/2 LSB)
+;;               Return C = 1 if the result is one higher than for XXX = floor,
+;;               error in [1/2 LSB, 0).
+DEFUN sqrt16_round
+    set
+    skipnext
+    ;; ...
+LABEL sqrt16_floor
+    clt ; Skipped?
+    movw    Q0,     r24
+    clr     C5
+    ldi     Mask,   1 << 7
+
+.Loop_mask:
+    add     C5,     Mask
+    mul     C5,     C5
+    cp      Q0,     R0
+    cpc     Q1,     R1
+    brsh 1f
+    sub     C5,     Mask
+1:  lsr     Mask
+    brne .Loop_mask
+
+    brtc .Ldone             ; No rounding  =>  C6 will be 0.
+
+    ;; Rounding:  (X + 1/2)^2  =  X^2 + X + 1/4,  thus probing
+    ;; for bit -1 is testing Q[] against  C5^2 + C5.
+    mul     C5,     C5
+    add     R0,     C5
+    adc     R1,     C6      ; Exploit C6 === Mask = 0.
+    cp      R0,     Q0
+    cpc     R1,     Q1
+    brcc .Ldone
+    ;; If  C5^2 + C5 + 1/4  fits into Q[], then round up and C = 1.
+    adiw    C5,     1       ; Exploit C6 === Mask = 0.
+    sec
+
+.Ldone:
+    clr     __zero_reg__
+    ret
+ENDF sqrt16_round
+#undef Mask
+#undef Q0
+#undef Q1
+#endif /* F7MOD_sqrt16_ && MUL */
+
+#ifdef F7MOD_sqrt_approx_
+DEFUN sqrt_approx
+    push    r17
+    push    r16
+    wmov    XL,     r24
+    wmov    ZL,     r22
+
+    ;; C[] = 0.
+    .global __clr_8
+    XCALL   __clr_8
+
+    ldd     C5,     Z+5+Off
+    ldd     C6,     Z+6+Off
+
+    ldd     Carry,  Z+0+Expo
+    ldd     TMP,    Z+1+Expo
+    wmov    ZL,     XL
+
+    st      Z,      ZERO
+
+    asr     TMP
+    ror     Carry
+    std     Z+1+Expo,   TMP
+    std     Z+0+Expo,   Carry
+
+    ;; Re-interpreting our Q-format 1.xx mantissa as Q2.yy, we have to shift
+    ;; the mantissa to the right by 1.  As we need an even exponent, multiply
+    ;; the mantissa by 2 for odd exponents, i.e. only right-shift if .expo
+    ;; is even.
+
+    brcs 1f
+    lsr     C6
+    ror     C5
+
+1:
+    F7call  sqrt16_round
+
+    ;; sqrt16_round() returns:   C = 0:  error in [0, -1/2 LSB).
+    ;;                           C = 1:  error in [1/2 LSB, 0)
+
+    brcc 2f
+    ;; Undo the round-up from sqrt16_round(); this will transform to
+    ;; error in [-1/2 LSB, -1 LSB).
+    sbiw    C5,     1
+    ;; Together with the correct bit C4.7, the error is in  [0, -1/2 LSB).
+    ori     C4,     1 << 7
+
+2:  ;; Setting C4.6 adds 1/4 LSB and the error is now in [1/4 LSB, -1/4 LSB)
+    ;; in either case.
+    ori     C4,     1 << 6
+
+    ;; ????????????
+    ;; sqrt16_round() runs on integers which means that it computes the
+    ;; square root of  mant * 2^14  if we regard  mant as Q-format 2.yy,
+    ;; i.e. 2 integral bits.  The result is  sqrt(mant) * 2^7,
+    ;; and in order to get the same scaling like the input, .expo has to
+    ;; be adjusted by 7. ???????????????
+
+    ldi     Carry,  8
+    F7call  normalize.store_with_flags
+
+    pop     r16
+    pop     r17
+    ret
+
+ENDF sqrt_approx
+#endif /* F7MOD_sqrt_approx_ */
+
+
+#undef CA
+#undef C0
+#undef C1
+#undef C2
+#undef C3
+#undef C4
+#undef C5
+#undef C6
+#undef Carry
+
+
+#ifdef F7MOD_D_fabs_
+_DEFUN __fabs
+    DALIAS fabs
+    LALIAS fabsl
+    andi    R25,    0b01111111
+    ret
+_ENDF __fabs
+#endif /* F7MOD_D_fabs_ */
+
+
+#ifdef F7MOD_D_neg_
+_DEFUN __neg
+_LABEL __negdf2
+    subi    R25,    0b10000000
+    ret
+_ENDF __neg
+#endif /* F7MOD_D_neg_ */
+
+
+#ifdef F7MOD_D_signbit_
+_DEFUN __signbit
+    DALIAS signbit
+    LALIAS signbitl
+    bst     R25,    7
+    clr     R25
+    clr     R24
+    bld     R24,    0
+    ret
+_ENDF __signbit
+#endif /* F7MOD_D_signbit_ */
+
+
+#ifdef F7MOD_D_copysign_
+_DEFUN __copysign
+    DALIAS copysign
+    LALIAS copysignl
+    bst     R17,    7
+    bld     R25,    7
+    ret
+_ENDF __copysign
+#endif /* F7MOD_D_copysign_ */
+
+
+#ifdef F7MOD_D_isinf_
+_DEFUN __isinf
+    DALIAS isinf
+    LALIAS isinfl
+    F7call  class_D
+    ;; Inf: T = Z = 1.
+    brtc 0f
+    ldi     R24,    1
+    breq 1f
+0:
+    clr     R24
+1:
+    clr     R25
+    ret
+_ENDF __isinf
+#endif /* F7MOD_D_isinf_ */
+
+
+#ifdef F7MOD_D_isnan_
+_DEFUN __isnan
+    DALIAS isnan
+    LALIAS isnanl
+    F7call  class_D
+    ;; NaN: T = 1, Z = 0.
+    brtc 0f
+    ldi     R24,    1
+    brne 1f
+0:
+    clr     R24
+1:
+    clr     R25
+    ret
+_ENDF __isnan
+#endif /* F7MOD_D_isnan_ */
+
+
+#ifdef F7MOD_D_isfinite_
+_DEFUN __isfinite
+    DALIAS isfinite
+    LALIAS isfinitel
+    F7call  class_D
+    ;; Number <=> T = 0.
+    bld     R24,    0
+    com     R24
+    andi    R24,    1
+    clr     R25
+    ret
+_ENDF __isfinite
+#endif /* F7MOD_D_isfinite_ */
+
+
+#ifdef F7MOD_D_class_
+;; The encoded exponent has 11 Bits.
+#define MAX_BIASED_EXPO 0b0111111111110000
+
+;; Classify a double in R18[]
+;; Number: T-Flag = 0.
+;; +-Inf : T-Flag = 1, Z-Flag = 1.
+;; NaN   : T-Flag = 1, Z-Flag = 0.
+DEFUN class_D
+    wmov    R26,    R24
+    andi    R26,    lo8 (MAX_BIASED_EXPO)
+    andi    R27,    hi8 (MAX_BIASED_EXPO)
+    subi    R26,    lo8 (MAX_BIASED_EXPO)
+    sbci    R27,    hi8 (MAX_BIASED_EXPO)
+    clt
+    brne .L.number
+    set
+    ;; Set sign and expo to 0.
+    clr     R25
+    andi    R24,    lo8 (~MAX_BIASED_EXPO)
+    ;; What remains is the mantissa.
+    ;; Mantissa == 0  =>  +/-Inf.
+    ;; Mantissa != 0  =>  NaN.
+    ;; Compare R18[] against sign_extend(R26) with R26 = 0.
+    .global __cmpdi2_s8
+    XJMP    __cmpdi2_s8
+.L.number:
+    ret
+
+ENDF class_D
+#endif /* F7MOD_D_class_ */
+
+
+#ifdef F7MOD_call_dd_
+
+;; Provide double wrappers for functions that operate on f7_t and get f7_t*.
+;;
+;; We set up a frame of sizeof(f7_t), convert the input double in R18[] to
+;; f7_t in that frame location, then call *Z and finally convert the result f7_t
+;; to double R18[] if that's requested.
+;;
+;; call_dd:     double func (double A)
+;;              void (*Z) (f7_t *aa, const f7_t *aa)
+;;
+;; call_dx:     double func (type_t A)  , sizeof(type_t) <= 4
+;;              void (*Z) (f7_t *aa, type_t)
+;;
+;; call_xd:     type_t func (double A)
+;;              type_t (*Z) (const f7_t *aa)
+;;
+;; call_ddx:    double func (double A, word_t)  , sizeof (word_t) <= 2
+;;              void (*Z) (f7_t *aa, const f7_t *aa, word_t)
+
+#define WHAT    R13
+
+DEFUN call_dd   ; WHAT = R13 = 3
+    inc     ZERO
+LABEL call_xd   ; WHAT = R13 = 2
+    inc     ZERO
+LABEL call_ddx  ; WHAT = R13 = 1
+    inc     ZERO
+LABEL call_dx   ; WHAT = R13 = 0
+    push    WHAT
+    mov     WHAT,   ZERO
+    clr     ZERO
+    ;; R14/R15 hold Z, the address of the f7_worker function, until we need it.
+    push    r14
+    push    r15
+    wmov    r14,     Z
+
+#define n_pushed    4
+#define n_frame     10
+
+    do_prologue_saves n_pushed, n_frame
+    ;; Y = FramePointer + 1
+    adiw    Y,      1
+    dec     WHAT
+    brmi .Ldx                   ; WHAT was initially 0.
+    ;; FP + 1 = (f7_t) arg1
+    wmov    r16,    Y
+    ;; The double argument is in R18[].
+    XCALL   F7_NAME (set_double_impl)
+    tst     WHAT
+    brne .Lno.ddx               ; WHAT was initially != 1.
+    ;; call_ddx: Set R20/21 to the 2-byte scalar / pointer argument.
+    ;; Fetch it from where prologue_saves put it.
+    ldd     r20,    Y + n_frame + 3     ; Saved R16
+    ldd     r21,    Y + n_frame + 2     ; Saved R17
+.Lno.ddx:
+    wmov    r22,    Y           ; &arg1 (input)
+.Ldo.dx:
+    wmov    r24,    Y           ; &arg1 (output)
+    wmov    Z,      r14
+    XICALL
+    dec     WHAT
+    breq .Lepilogue             ; WHAT was initially 2: Return non-double.
+    wmov    r24,    Y           ; &arg1
+    XCALL   F7_NAME (get_double)
+.Lepilogue:
+    ;; + 3 to account for R13...R15 pushed prior to do_prologue_saves.
+    do_epilogue_restores n_pushed + 3, n_frame
+
+.Ldx:
+    ;; call_dx: Copy the 4-byte input scalar from R22[4] to R20[4].
+    wmov    r20,    r22
+    wmov    r22,    r24
+    rjmp .Ldo.dx
+
+ENDF call_dd
+#endif /* F7MOD_call_dd_ */
+
+
+#ifdef F7MOD_call_ddd_
+
+;; Provide double wrappers for functions that operate on f7_t and get f7_t*.
+;;
+;; We set up a frame of 2 * sizeof(f7_t), convert the input doubles in R18[]
+;; and R10[] to f7_t in these frame locations, then call *Z and finally
+;; convert the result f7_t to double R18[] if that's requested.
+;;
+;; call_ddd:    double func (double A, double B)
+;;              void (*Z) (f7_t *aa, const f7_t *aa, const f7_t *bb)
+;;
+;; call_xdd:    type_t func (double A, double B)
+;;              type_t (*Z) (const f7_t *aa, const f7_t *bb)
+
+DEFUN call_ddd
+    inc     ZERO
+LABEL call_xdd
+    ;; R8/R9 hold Z, the address of the f7_worker function, until we need it.
+    push    r9
+    push    r8
+    wmov    r8,     Z
+    ;; This is an argument to call.2 and will be accessed by the arg pointer.
+    push    ZERO
+    clr     ZERO
+    rcall   call.2
+    pop     TMP
+    pop     r8
+    pop     r9
+    ret
+
+#define n_pushed    4
+#define n_frame     20
+
+call.2:
+    do_prologue_saves n_pushed, n_frame
+    ;; Y = FramePointer + 1
+    adiw    Y,      1
+    ;; FP + 1 = (f7_t) arg1
+    wmov    r16,    Y
+    ;; First double argument is already in R18[].
+    XCALL   F7_NAME (set_double_impl)
+    ;; FP + 11 = (f7_t) arg2
+    wmov    r16,    Y
+    subi    r16,    lo8 (-10)
+    sbci    r17,    hi8 (-10)
+    ;; Move second double argument to R18[].
+    wmov    r18,    r10
+    wmov    r20,    r12
+    wmov    r22,    r14
+    ;; Get high word of arg2 from where prologue_saves put it.
+    ldd     r24,    Y + n_frame + 3     ; Saved R16
+    ldd     r25,    Y + n_frame + 2     ; Saved R17
+    XCALL   F7_NAME (set_double_impl)
+    ;; Z (f7_t *arg1, const f7_t *arg1, const f7_t *arg2)
+    wmov    Z,      r8
+    wmov    r24,    Y                   ; &arg1
+    ;; WHAT == 0  =>  call_xdd
+    ;; WHAT != 0  =>  call_ddd
+    ldd     TMP,    Y + n_frame + n_pushed + PC_SIZE
+    tst     TMP
+    breq .Lxdd
+    wmov    r22,    Y                   ; &arg1
+    wmov    r20,    r16                 ; &arg2
+    XICALL
+    wmov    r24,    Y                   ; &arg1
+    XCALL   F7_NAME (get_double)
+.Lepilogue:
+    do_epilogue_restores n_pushed, n_frame
+.Lxdd:
+    wmov    r22,    r16                 ; &arg2
+    XICALL
+    rjmp .Lepilogue
+ENDF call_ddd
+#endif /* F7MOD_call_ddd_ */
+
+#include "f7-wraps.h"
+
+#endif /* !AVR_TINY */

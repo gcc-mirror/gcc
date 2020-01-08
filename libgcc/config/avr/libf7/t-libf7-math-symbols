@@ -1,0 +1,11 @@
+# Triggered by --with-libf7=math-symbols
+#
+# We have at least one module in libgcc that depends on __SIZEOF_DOUBLE__
+# or __SIZEOF_LONG_DOUBLE__ which means that t-avrlibc must not copy
+# double32/64 or long-double32/64 variants from the vanilla one.
+# This occurs when some module(s) define(s) weak aliases for functions
+# that usually live in libm.
+
+WITH_LIBF7_MATH_SYMBOLS = 1
+
+F7_FLAGS += -DWITH_LIBF7_MATH_SYMBOLS

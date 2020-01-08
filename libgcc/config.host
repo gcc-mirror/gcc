@@ -514,6 +514,29 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 avr-*-*)
 	# Make HImode functions for AVR
 	tmake_file="${cpu_type}/t-avr t-fpbit"
+	# Make some DFmode functions from libf7, part of avr-libgcc.
+	# This must be prior to adding t-avrlibc.
+	case "y${with_libf7}" in
+	    yno)
+	        # No libf7 support.
+	        ;;
+	    ylibgcc)
+		tmake_file="$tmake_file ${cpu_type}/libf7/t-libf7"
+		;;
+	    ymath)
+		tmake_file="$tmake_file ${cpu_type}/libf7/t-libf7-math"
+		tmake_file="$tmake_file ${cpu_type}/libf7/t-libf7"
+		;;
+	    ymath-symbols | yyes | y)
+		tmake_file="$tmake_file ${cpu_type}/libf7/t-libf7-math-symbols"
+		tmake_file="$tmake_file ${cpu_type}/libf7/t-libf7-math"
+		tmake_file="$tmake_file ${cpu_type}/libf7/t-libf7"
+		;;
+	    *)
+		echo "Error: --with-libf7=${with_libf7} but can only be used with: 'libgcc', 'math', 'math-symbols', 'yes', 'no'" 1>&2
+		exit 1
+		;;
+	esac
 	if test x${with_avrlibc} != xno; then
 	    tmake_file="$tmake_file ${cpu_type}/t-avrlibc"
 	fi

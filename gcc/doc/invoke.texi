@@ -18421,9 +18421,9 @@ subroutines.  Code size is smaller.
 @opindex mdouble
 @opindex mlong-double
 Set the size (in bits) of the @code{double} or @code{long double} type,
-respectively.  Possible values for @var{bits} are 32 an 64.
+respectively.  Possible values for @var{bits} are 32 and 64.
 Whether or not a specific value for @var{bits} is allowed depends on
-the @code{--with--double=} and @code{--with-long-double=}
+the @code{--with-double=} and @code{--with-long-double=}
 @w{@uref{https://gcc.gnu.org/install/configure.html#avr,configure options}},
 and the same applies for the default values of the options.
 
@@ -18885,6 +18885,36 @@ features like attribute @code{progmem} and @code{pgm_read_*}.
 @item __WITH_AVRLIBC__
 The compiler is configured to be used together with AVR-Libc.
 See the @option{--with-avrlibc} configure option.
+
+@item __HAVE_DOUBLE_MULTILIB__
+Defined if @option{-mdouble=} acts as a multilib option.
+
+@item __HAVE_DOUBLE32__
+@itemx __HAVE_DOUBLE64__
+Defined if the compiler supports 32-bit double resp. 64-bit double.
+The actual layout is specified by option @option{-mdouble=}.
+
+@item __DEFAULT_DOUBLE__
+The size in bits of @code{double} if @option{-mdouble=} is not set.
+To test the layout of @code{double} in a program, use the built-in
+macro @code{__SIZEOF_DOUBLE__}.
+
+@item __HAVE_LONG_DOUBLE32__
+@itemx __HAVE_LONG_DOUBLE64__
+@itemx __HAVE_LONG_DOUBLE_MULTILIB__
+@itemx __DEFAULT_LONG_DOUBLE__
+Same as above, but for @code{long double} instead of @code{double}.
+
+@item __WITH_DOUBLE_COMPARISON__
+Reflects the @code{--with-double-comparison=@{tristate|bool|libf7@}}
+@w{@uref{https://gcc.gnu.org/install/configure.html#avr,configure option}}
+and is defined to @code{2} or @code{3}.
+
+@item __WITH_LIBF7_LIBGCC__
+@itemx __WITH_LIBF7_MATH__
+@itemx __WITH_LIBF7_MATH_SYMBOLS__
+Reflects the @code{--with-libf7=@{libgcc|math|math-symbols@}}
+@w{@uref{https://gcc.gnu.org/install/configure.html#avr,configure option}}.
 
 @end table
 

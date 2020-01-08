@@ -1,0 +1,22 @@
+2020-01-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	Implement 64-bit double functions.
+
+	PR target/92055
+	* t-libf7: New file.
+	* t-libf7-math: New file.
+	* t-libf7-math-symbols: New file.
+	* libf7-common.mk: New file.
+	* libf7-asm-object.mk: New file.
+	* libf7-c-object.mk: New file.
+	* asm-defs.h: New file.
+	* libf7.h: New file.
+	* libf7.c: New file.
+	* libf7-asm.sx: New file.
+	* libf7-array.def: New file.
+	* libf7-const.def: New file.
+	* libf7-constdef.h: New file.
+	* f7renames.sh: New script.
+	* f7wraps.sh: New script.
+	* f7-renames.h: New generated file.
+	* f7-wraps.h: New generated file.
