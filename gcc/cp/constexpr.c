@@ -2333,17 +2333,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	      remapped = DECL_CHAIN (remapped);
 	    }
 	  /* Add the RESULT_DECL to the values map, too.  */
-	  tree slot = NULL_TREE;
-	  if (DECL_BY_REFERENCE (res))
-	    {
-	      slot = AGGR_INIT_EXPR_SLOT (t);
-	      tree addr = build_address (slot);
-	      addr = build_nop (TREE_TYPE (res), addr);
-	      ctx->global->values.put (res, addr);
-	      ctx->global->values.put (slot, NULL_TREE);
-	    }
-	  else
-	    ctx->global->values.put (res, NULL_TREE);
+	  gcc_assert (!DECL_BY_REFERENCE (res));
+	  ctx->global->values.put (res, NULL_TREE);
 
 	  /* Track the callee's evaluated SAVE_EXPRs and TARGET_EXPRs so that
 	     we can forget their values after the call.  */
@@ -2370,7 +2361,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	    result = void_node;
 	  else
 	    {
-	      result = *ctx->global->values.get (slot ? slot : res);
+	      result = *ctx->global->values.get (res);
 	      if (result == NULL_TREE && !*non_constant_p)
 		{
 		  if (!ctx->quiet)
@@ -2409,8 +2400,6 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	     one constexpr evaluation?  If so, maybe also clear out
 	     other vars from call, maybe in BIND_EXPR handling?  */
 	  ctx->global->values.remove (res);
-	  if (slot)
-	    ctx->global->values.remove (slot);
 	  for (tree parm = parms; parm; parm = TREE_CHAIN (parm))
 	    ctx->global->values.remove (parm);
 
