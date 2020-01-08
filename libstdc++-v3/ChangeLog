@@ -1,3 +1,14 @@
+2020-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93201
+	* src/c++17/fs_ops.cc (remove_all(const path&, error_code&)): Check
+	result of recursive call before incrementing iterator.
+	* src/filesystem/ops.cc (remove_all(const path&, error_code&)):
+	Likewise.
+	* testsuite/27_io/filesystem/operations/remove_all.cc: Check errors
+	are reported correctly.
+	* testsuite/experimental/filesystem/operations/remove_all.cc: Likewise.
+
 2019-12-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
