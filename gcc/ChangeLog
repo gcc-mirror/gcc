@@ -1,6 +1,16 @@
 2020-01-08  Georg-Johann Lay  <avr@gjlay.de>
 
-	Implement 64-bit double functions.
+	Add -nodevicespecs option for avr.
+
+	PR target/93182
+	* config/avr/avr.opt (-nodevicespecs): New driver option.
+	* config/avr/driver-avr.c (avr_devicespecs_file): Only issue
+	"-specs=device-specs/..." if that option is not set.
+	* doc/invoke.texi (AVR Options) <-nodevicespecs>: Document.
+
+2020-01-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	Implement 64-bit double functions for avr.
 
 	PR target/92055
 	* config.gcc (tm_defines) [target=avr]: Support --with-libf7,

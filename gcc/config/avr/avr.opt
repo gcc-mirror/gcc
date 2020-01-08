@@ -127,6 +127,10 @@ nodevicelib
 Driver Target Report RejectNegative
 Do not link against the device-specific library lib<MCU>.a.
 
+nodevicespecs
+Driver Target Report RejectNegative
+Do not use the device-specific specs file device-specs/specs-<MCU>.
+
 Enum
 Name(avr_bits_e) Type(int)
 Available BITS selections:
