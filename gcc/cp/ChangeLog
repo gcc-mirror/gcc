@@ -1,5 +1,11 @@
 2020-01-08  Jason Merrill  <jason@redhat.com>
 
+	* cp-gimplify.c (cp_gimplify_expr) [TARGET_EXPR]: Check
+	TARGET_EXPR_DIRECT_INIT_P.
+	* constexpr.c (cxx_eval_constant_expression): Likewise.
+
+2020-01-08  Jason Merrill  <jason@redhat.com>
+
 	PR c++/91369 - constexpr destructor and member initializer.
 	* constexpr.c (cxx_eval_store_expression): Look through TARGET_EXPR
 	when not preevaluating.
