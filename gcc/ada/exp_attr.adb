@@ -1434,22 +1434,36 @@ package body Exp_Attr is
                Insert_Action (Loop_Stmt, Func_Decl);
                Pop_Scope;
 
-               --  The analysis of the condition may have generated itypes
-               --  that are now used within the function: Adjust their
-               --  scopes accordingly so that their use appears in their
-               --  scope of definition.
+               --  The analysis of the condition may have generated entities
+               --  (such as itypes) that are now used within the function.
+               --  Adjust their scopes accordingly so that their use appears
+               --  in their scope of definition.
 
                declare
-                  Ityp : Entity_Id;
+                  Ent : Entity_Id;
 
                begin
-                  Ityp := First_Entity (Loop_Id);
+                  Ent := First_Entity (Loop_Id);
 
-                  while Present (Ityp) loop
-                     if Is_Itype (Ityp) then
-                        Set_Scope (Ityp, Func_Id);
+                  while Present (Ent) loop
+                     --  Various entities that now occur within the function
+                     --  need to have their scope reset, but not all entities
+                     --  associated with Loop_Id are now inside the function.
+                     --  The function entity itself and loop parameters can
+                     --  be outside the function, and there may be others.
+                     --  It's not clear how the determination of what entity
+                     --  scopes need to be adjusted can be made accurately.
+                     --  Perhaps it will be necessary to traverse the function
+                     --  body to find the exact entities whose scopes need to
+                     --  be reset to the function's Entity_Id. ???
+
+                     if Ekind (Ent) /= E_Loop_Parameter
+                       and then Ent /= Func_Id
+                     then
+                        Set_Scope (Ent, Func_Id);
                      end if;
-                     Next_Entity (Ityp);
+
+                     Next_Entity (Ent);
                   end loop;
                end;
 
