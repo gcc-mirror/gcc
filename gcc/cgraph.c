@@ -2036,7 +2036,7 @@ cgraph_node::dump (FILE *f)
   profile_count sum = profile_count::zero ();
   for (edge = callers; edge; edge = edge->next_caller)
     {
-      fprintf (f, "%s ", edge->caller->dump_name ());
+      fprintf (f, "%s ", edge->caller->dump_asm_name ());
       edge->dump_edge_flags (f);
       if (edge->count.initialized_p ())
 	sum += edge->count.ipa ();
@@ -2045,7 +2045,7 @@ cgraph_node::dump (FILE *f)
   fprintf (f, "\n  Calls: ");
   for (edge = callees; edge; edge = edge->next_callee)
     {
-      fprintf (f, "%s ", edge->callee->dump_name ());
+      fprintf (f, "%s ", edge->callee->dump_asm_name ());
       edge->dump_edge_flags (f);
     }
   fprintf (f, "\n");
