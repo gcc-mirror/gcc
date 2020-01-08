@@ -83,8 +83,10 @@ package System.Regexp is
    --     regexp ::= term
 
    --     term   ::= elmt
-   --     term   ::= elmt elmt ...     -- concatenation (elmt then elmt)
-   --     term   ::= {elmt, elmt, ...} -- alternation (matches any of elmt)
+   --     term   ::= seq
+   --     term   ::= {seq, seq, ...}   -- alternation (matches any of seq)
+
+   --     seq    ::= elmt elmt ...     -- concatenation (sequence of elmts)
 
    --     elmt   ::= *                 -- any string of 0 or more characters
    --     elmt   ::= ?                 -- matches any character
