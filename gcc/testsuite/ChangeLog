@@ -1,3 +1,34 @@
+2020-01-08  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/ipa/ipa-icf-1.c: Update expected scanned output.
+	* gcc.dg/ipa/ipa-icf-10.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-11.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-12.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-13.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-16.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-18.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-2.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-20.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-21.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-23.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-25.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-26.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-27.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-3.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-35.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-36.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-37.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-38.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-5.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-7.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-8.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-merge-1.c: Likewise.
+	* gcc.dg/ipa/pr64307.c: Likewise.
+	* gcc.dg/ipa/pr90555.c: Likewise.
+	* gcc.dg/ipa/propmalloc-1.c: Likewise.
+	* gcc.dg/ipa/propmalloc-2.c: Likewise.
+	* gcc.dg/ipa/propmalloc-3.c: Likewise.
+
 2020-01-08  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/92997

@@ -1,5 +1,14 @@
 2020-01-08  Martin Liska  <mliska@suse.cz>
 
+	* lto-partition.c (add_symbol_to_partition_1): Use ::dump_name or
+	::dump_asm_name instead of (::name or ::asm_name).
+	(lto_balanced_map): Likewise.
+	(promote_symbol): Likewise.
+	(rename_statics): Likewise.
+	* lto.c (lto_wpa_write_files): Likewise.
+
+2020-01-08  Martin Liska  <mliska@suse.cz>
+
 	* lto-partition.c (lto_balanced_map): Use symtab_node::dump_name.
 
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>

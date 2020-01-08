@@ -27,5 +27,5 @@ int main()
   return r1 - r2;
 }
 
-/* { dg-final { scan-ipa-dump "Semantic equality hit:real_part->real_part_2" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:real_part/\[0-9+\]+->real_part_2/\[0-9+\]+" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Equal symbols: 1" "icf"  } } */

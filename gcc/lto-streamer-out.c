@@ -2137,7 +2137,7 @@ output_function (struct cgraph_node *node)
 
   if (streamer_dump_file)
     fprintf (streamer_dump_file, "\nStreaming body of %s\n",
-	     node->name ());
+	     node->dump_name ());
 
   function = node->decl;
   fn = DECL_STRUCT_FUNCTION (function);
@@ -2211,7 +2211,7 @@ output_function (struct cgraph_node *node)
   destroy_output_block (ob);
   if (streamer_dump_file)
     fprintf (streamer_dump_file, "Finished streaming %s\n",
-	     node->name ());
+	     node->dump_name ());
 }
 
 /* Output the body of function NODE->DECL.  */
@@ -2224,7 +2224,7 @@ output_constructor (struct varpool_node *node)
 
   if (streamer_dump_file)
     fprintf (streamer_dump_file, "\nStreaming constructor of %s\n",
-	     node->name ());
+	     node->dump_name ());
 
   timevar_push (TV_IPA_LTO_CTORS_OUT);
   ob = create_output_block (LTO_section_function_body);
@@ -2245,7 +2245,7 @@ output_constructor (struct varpool_node *node)
   destroy_output_block (ob);
   if (streamer_dump_file)
     fprintf (streamer_dump_file, "Finished streaming %s\n",
-	     node->name ());
+	     node->dump_name ());
   timevar_pop (TV_IPA_LTO_CTORS_OUT);
 }
 

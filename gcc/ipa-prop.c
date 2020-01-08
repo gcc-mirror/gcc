@@ -3294,7 +3294,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
     {
       dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, ie->call_stmt,
 		       "converting indirect call in %s to direct call to %s\n",
-		       ie->caller->name (), callee->name ());
+		       ie->caller->dump_name (), callee->dump_name ());
     }
   if (!speculative)
     {
@@ -3489,7 +3489,7 @@ remove_described_reference (symtab_node *symbol, struct ipa_cst_ref_desc *rdesc)
   to_del->remove_reference ();
   if (dump_file)
     fprintf (dump_file, "ipa-prop: Removed a reference from %s to %s.\n",
-	     origin->caller->dump_name (), xstrdup_for_dump (symbol->name ()));
+	     origin->caller->dump_name (), symbol->dump_name ());
   return true;
 }
 

@@ -1020,7 +1020,8 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
             {
 	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, edge->call_stmt,
 			       "devirtualizing call in %s to %s\n",
-			       edge->caller->name (), target->name ());
+			       edge->caller->dump_name (),
+			       target->dump_name ());
 	    }
 
 	  edge->make_direct (target);
@@ -1167,7 +1168,7 @@ analyze_functions (bool first_time)
 		fprintf (symtab->dump_file, "Trivially needed symbols:");
 	      changed = true;
 	      if (symtab->dump_file)
-		fprintf (symtab->dump_file, " %s", node->asm_name ());
+		fprintf (symtab->dump_file, " %s", node->dump_asm_name ());
 	      if (!changed && symtab->dump_file)
 		fprintf (symtab->dump_file, "\n");
 	    }
@@ -1324,7 +1325,7 @@ analyze_functions (bool first_time)
       if (!node->aux && !node->referred_to_p ())
 	{
 	  if (symtab->dump_file)
-	    fprintf (symtab->dump_file, " %s", node->name ());
+	    fprintf (symtab->dump_file, " %s", node->dump_name ());
 
 	  /* See if the debugger can use anything before the DECL
 	     passes away.  Perhaps it can notice a DECL that is now a
@@ -2436,7 +2437,7 @@ expand_all_functions (void)
 	  if (symtab->dump_file)
 	    fprintf (symtab->dump_file,
 		     "Time profile order in expand_all_functions:%s:%d\n",
-		     node->asm_name (), node->tp_first_run);
+		     node->dump_asm_name (), node->tp_first_run);
 	  node->process = 0;
 	  node->expand ();
 	}

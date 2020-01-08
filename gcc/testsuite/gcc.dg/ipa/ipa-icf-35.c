@@ -25,6 +25,6 @@ int main()
 }
 
 /* { dg-final { scan-ipa-dump "Equal symbols: 3" "icf"  } } */
-/* { dg-final { scan-ipa-dump "Semantic equality hit:f1->f2" "icf"  } } */
-/* { dg-final { scan-ipa-dump "Semantic equality hit:c->d" "icf"  } } */
-/* { dg-final { scan-ipa-dump "Semantic equality hit:a->b" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:f1/\[0-9+\]+->f2/\[0-9+\]+" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:c/\[0-9+\]+->d/\[0-9+\]+" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:a/\[0-9+\]+->b/\[0-9+\]+" "icf"  } } */

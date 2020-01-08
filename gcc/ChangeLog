@@ -1,3 +1,48 @@
+2020-01-08  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.c (cgraph_node::dump): Use ::dump_name or
+	::dump_asm_name instead of (::name or ::asm_name).
+	* cgraphclones.c (symbol_table::materialize_all_clones): Likewise.
+	* cgraphunit.c (walk_polymorphic_call_targets): Likewise.
+	(analyze_functions): Likewise.
+	(expand_all_functions): Likewise.
+	* ipa-cp.c (ipcp_cloning_candidate_p): Likewise.
+	(propagate_bits_across_jump_function): Likewise.
+	(dump_profile_updates): Likewise.
+	(ipcp_store_bits_results): Likewise.
+	(ipcp_store_vr_results): Likewise.
+	* ipa-devirt.c (dump_targets): Likewise.
+	* ipa-fnsummary.c (analyze_function_body): Likewise.
+	* ipa-hsa.c (check_warn_node_versionable): Likewise.
+	(process_hsa_functions): Likewise.
+	* ipa-icf.c (sem_item_optimizer::merge_classes): Likewise.
+	(set_alias_uids): Likewise.
+	* ipa-inline-transform.c (save_inline_function_body): Likewise.
+	* ipa-inline.c (recursive_inlining): Likewise.
+	(inline_to_all_callers_1): Likewise.
+	(ipa_inline): Likewise.
+	* ipa-profile.c (ipa_propagate_frequency_1): Likewise.
+	(ipa_propagate_frequency): Likewise.
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Likewise.
+	(remove_described_reference): Likewise.
+	* ipa-pure-const.c (worse_state): Likewise.
+	(check_retval_uses): Likewise.
+	(analyze_function): Likewise.
+	(propagate_pure_const): Likewise.
+	(propagate_nothrow): Likewise.
+	(dump_malloc_lattice): Likewise.
+	(propagate_malloc): Likewise.
+	(pass_local_pure_const::execute): Likewise.
+	* ipa-visibility.c (optimize_weakref): Likewise.
+	(function_and_variable_visibility): Likewise.
+	* ipa.c (symbol_table::remove_unreachable_nodes): Likewise.
+	(ipa_discover_variable_flags): Likewise.
+	* lto-streamer-out.c (output_function): Likewise.
+	(output_constructor): Likewise.
+	* tree-inline.c (copy_bb): Likewise.
+	* tree-ssa-structalias.c (ipa_pta_execute): Likewise.
+	* varpool.c (symbol_table::remove_unreferenced_decls): Likewise.
+
 2020-01-08  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/93199
