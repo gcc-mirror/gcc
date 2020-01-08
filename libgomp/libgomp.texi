@@ -1727,9 +1727,9 @@ the stack size is system dependent.
 @ref{OMP_STACKSIZE}
 
 @item @emph{Reference}: 
-@uref{http://gcc.gnu.org/ml/gcc-patches/2006-06/msg00493.html, 
+@uref{https://gcc.gnu.org/ml/gcc-patches/2006-06/msg00493.html,
 GCC Patches Mailinglist}, 
-@uref{http://gcc.gnu.org/ml/gcc-patches/2006-06/msg00496.html,
+@uref{https://gcc.gnu.org/ml/gcc-patches/2006-06/msg00496.html,
 GCC Patches Mailinglist}
 @end table
 
@@ -1811,7 +1811,7 @@ pools available and their worker threads run at priority four.
 
 To activate the OpenACC extensions for C/C++ and Fortran, the compile-time 
 flag @option{-fopenacc} must be specified.  This enables the OpenACC directive
-@code{#pragma acc} in C/C++ and @code{!$accp} directives in free form,
+@code{#pragma acc} in C/C++ and @code{!$acc} directives in free form,
 @code{c$acc}, @code{*$acc} and @code{!$acc} directives in fixed form,
 @code{!$} conditional compilation sentinels in free form and @code{c$},
 @code{*$} and @code{!$} sentinels in fixed form, for Fortran.  The flag also
@@ -1852,11 +1852,11 @@ acceleration device.
 * acc_get_property::            Get device property.
 * acc_async_test::              Tests for completion of a specific asynchronous
                                 operation.
-* acc_async_test_all::          Tests for completion of all asychronous
+* acc_async_test_all::          Tests for completion of all asynchronous
                                 operations.
 * acc_wait::                    Wait for completion of a specific asynchronous
                                 operation.
-* acc_wait_all::                Waits for completion of all asyncrhonous
+* acc_wait_all::                Waits for completion of all asynchronous
                                 operations.
 * acc_wait_all_async::          Wait for completion of all asynchronous
                                 operations.
@@ -1939,7 +1939,7 @@ for the device type specified in @var{devicetype}.
 @section @code{acc_set_device_type} -- Set type of device accelerator to use.
 @table @asis
 @item @emph{Description}
-This function indicates to the runtime library which device typr, specified
+This function indicates to the runtime library which device type, specified
 in @var{devicetype}, to use when executing a parallel or kernels region. 
 
 @item @emph{C/C++}:
@@ -1990,7 +1990,7 @@ parallel or kernels region.
 @table @asis
 @item @emph{Description}
 This function will indicate to the runtime which device number,
-specified by @var{num}, associated with the specifed device
+specified by @var{num}, associated with the specified device
 type @var{devicetype}.
 
 @item @emph{C/C++}:
@@ -2393,7 +2393,7 @@ variable or array element and @var{len} specifies the length in bytes.
 @section @code{acc_present_or_copyin} -- If the data is not present on the device, allocate device memory and copy from host memory.
 @table @asis
 @item @emph{Description}
-This function tests if the host data specifed by @var{a} and of length
+This function tests if the host data specified by @var{a} and of length
 @var{len} is present or not. If it is not present, then device memory
 will be allocated and the host memory copied. The device address of
 the newly allocated device memory is returned.
@@ -2466,7 +2466,7 @@ array element and @var{len} specifies the length in bytes.
 @section @code{acc_present_or_create} -- If the data is not present on the device, allocate device memory and map it to host memory.
 @table @asis
 @item @emph{Description}
-This function tests if the host data specifed by @var{a} and of length
+This function tests if the host data specified by @var{a} and of length
 @var{len} is present or not. If it is not present, then device memory
 will be allocated and mapped to host memory. In C/C++, the device address
 of the newly allocated device memory is returned.
@@ -3033,7 +3033,7 @@ asynchronous functionality is implemented by making use of CUDA
 streams@footnote{See "Stream Management" in "CUDA Driver API",
 TRM-06703-001, Version 5.5, for additional information}.
 
-The primary means by that the asychronous functionality is accessed
+The primary means by that the asynchronous functionality is accessed
 is through the use of those OpenACC directives which make use of the
 @code{async} and @code{wait} clauses.  When the @code{async} clause is
 first used with a directive, it creates a CUDA stream.  If an
@@ -3935,7 +3935,7 @@ becomes
 @chapter Reporting Bugs
 
 Bugs in the GNU Offloading and Multi Processing Runtime Library should
-be reported via @uref{http://gcc.gnu.org/bugzilla/, Bugzilla}.  Please add
+be reported via @uref{https://gcc.gnu.org/bugzilla/, Bugzilla}.  Please add
 "openacc", or "openmp", or both to the keywords field in the bug
 report, as appropriate.
 
