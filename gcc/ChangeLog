@@ -1,3 +1,8 @@
+2020-01-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/93182
+	* doc/invoke.texi (AVR Options) <-nodevicespecs>: Document.
+
 2019-01-08  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/93199
