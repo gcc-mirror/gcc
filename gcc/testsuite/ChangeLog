@@ -1,3 +1,27 @@
+2020-01-08  Joel Brobecker  <brobecker@adacore.com>
+            Olivier Hainque  <hainque@adacore.com>
+
+	* g++.target/aarch64/sve/tls_2.C: Add missing
+	{ dg-require-effective-target fpic } directive.
+	* gcc.target/aarch64/noplt_2.c: Likewise.
+	* gcc.target/aarch64/noplt_3.c: Likewise.
+	* gcc.target/aarch64/pic-constantpool1.c: Likewise.
+	* gcc.target/aarch64/pic-small.c: Likewise.
+	* gcc.target/aarch64/pic-symrefplus.c: Likewise.
+	* gcc.target/aarch64/pr66912.c: Likewise.
+	* gcc.target/aarch64/sve/tls_1.c: Likewise.
+	* gcc.target/aarch64/sve/tls_preserve_1.c: Likewise.
+	* gcc.target/aarch64/sve/tls_preserve_2.c: Likewise.
+	* gcc.target/aarch64/sve/tls_preserve_3.c: Likewise.
+	* gcc.target/aarch64/tlsie_tiny_1.c: Likewise.
+	* gcc.target/aarch64/tlsle12_1.c: Likewise.
+	* gcc.target/aarch64/tlsle12_tiny_1.c: Likewise.
+	* gcc.target/aarch64/tlsle24_1.c: Likewise.
+	* gcc.target/aarch64/tlsle24_tiny_1.c: Likewise.
+	* gcc.target/aarch64/tlsle32_1.c: Likewise.
+	* gcc.target/aarch64/tlsle_sizeadj_small_1.c: Likewise.
+	* gcc.target/aarch64/tlsle_sizeadj_tiny_1.c: Likewise.
+
 2020-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93187

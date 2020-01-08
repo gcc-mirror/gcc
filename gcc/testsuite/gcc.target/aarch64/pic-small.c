@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target fpic } */
 /* { dg-require-effective-target aarch64_small_fpic } */
 /* { dg-options "-O2 -fpic -fno-inline --save-temps" } */
 /* { dg-skip-if "-fpic for AArch64 small code model" { aarch64*-*-* }  { "-mcmodel=tiny" "-mcmodel=large" } { "" } } */

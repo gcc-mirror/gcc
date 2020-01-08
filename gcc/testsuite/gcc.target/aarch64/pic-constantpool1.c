@@ -1,5 +1,6 @@
 /* { dg-options "-O2 -mcmodel=small -fPIC" }  */
 /* { dg-do compile } */
+/* { dg-require-effective-target fpic } */
 
 extern int __finite (double __value) __attribute__ ((__nothrow__)) __attribute__ ((__const__));
 extern int __finitef (float __value) __attribute__ ((__nothrow__)) __attribute__ ((__const__));
