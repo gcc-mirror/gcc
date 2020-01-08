@@ -1,3 +1,8 @@
+2020-01-08  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.c (cgraph_node::dump): Use systematically
+	dump_asm_name.
+
 2020-01-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	Add -nodevicespecs option for avr.
