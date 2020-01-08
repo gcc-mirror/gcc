@@ -1,5 +1,8 @@
 2020-01-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/93187
+	* g++.dg/opt/pr93187.C: New test.
+
 	PR target/93174
 	* gcc.c-torture/compile/pr93174.c: New test.
 

@@ -1,5 +1,10 @@
 2020-01-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/93187
+	* config/i386/i386.md (*stack_protect_set_2_<mode> peephole2,
+	*stack_protect_set_3 peephole2): Also check that the second
+	insns source is general_operand.
+
 	PR target/93174
 	* config/i386/i386.md (addcarry<mode>_0): Use nonimmediate_operand
 	predicate for output operand instead of register_operand.
