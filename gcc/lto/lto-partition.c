@@ -162,7 +162,7 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
       if (dump_file)
 	fprintf (dump_file,
 		 "Symbol node %s now used in multiple partitions\n",
-		 node->name ());
+		 node->dump_name ());
     }
   node->aux = (void *)((size_t)node->aux + 1);
 
@@ -515,10 +515,10 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
     {
       for (unsigned i = 0; i < order.length (); i++)
 	fprintf (dump_file, "Balanced map symbol order:%s:%u\n",
-		 order[i]->name (), order[i]->tp_first_run);
+		 order[i]->dump_name (), order[i]->tp_first_run);
       for (unsigned i = 0; i < noreorder.length (); i++)
 	fprintf (dump_file, "Balanced map symbol no_reorder:%s:%u\n",
-		 noreorder[i]->name (), noreorder[i]->tp_first_run);
+		 noreorder[i]->dump_name (), noreorder[i]->tp_first_run);
     }
 
   /* Collect all variables that should not be reordered.  */
@@ -995,7 +995,7 @@ promote_symbol (symtab_node *node)
   DECL_VISIBILITY_SPECIFIED (node->decl) = true;
   if (dump_file)
     fprintf (dump_file,
-	     "Promoting as hidden: %s (%s)\n", node->name (),
+	     "Promoting as hidden: %s (%s)\n", node->dump_name (),
 	     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl)));
 
   /* Promoting a symbol also promotes all transparent aliases with exception
@@ -1079,7 +1079,7 @@ rename_statics (lto_symtab_encoder_t encoder, symtab_node *node)
 
   if (dump_file)
     fprintf (dump_file,
-	    "Renaming statics with asm name: %s\n", node->name ());
+	    "Renaming statics with asm name: %s\n", node->dump_name ());
 
   /* Assign every symbol in the set that shares the same ASM name an unique
      mangled name.  */

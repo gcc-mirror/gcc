@@ -1948,7 +1948,7 @@ cgraph_node::dump (FILE *f)
   if (tp_first_run > 0)
     fprintf (f, " first_run:%" PRId64, (int64_t) tp_first_run);
   if (origin)
-    fprintf (f, " nested in:%s", origin->asm_name ());
+    fprintf (f, " nested in:%s", origin->dump_asm_name ());
   if (gimple_has_body_p (decl))
     fprintf (f, " body");
   if (process)

@@ -2263,7 +2263,7 @@ copy_bb (copy_body_data *id, basic_block bb,
 		  if (dump_file)
 		    {
 		      fprintf (dump_file, "Created new direct edge to %s\n",
-			       dest->name ());
+			       dest->dump_name ());
 		    }
 		}
 

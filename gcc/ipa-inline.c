@@ -1611,8 +1611,7 @@ recursive_inlining (struct cgraph_edge *edge,
 
   if (dump_file)
     fprintf (dump_file,
-	     "  Performing recursive inlining on %s\n",
-	     node->name ());
+	     "  Performing recursive inlining on %s\n", node->dump_name ());
 
   /* Do the inlining and update list of recursive call during process.  */
   while (!heap.empty ())
@@ -2396,11 +2395,11 @@ inline_to_all_callers_1 (struct cgraph_node *node, void *data,
 	  cgraph_node *ultimate = node->ultimate_alias_target ();
 	  fprintf (dump_file,
 		   "\nInlining %s size %i.\n",
-		   ultimate->name (),
+		   ultimate->dump_name (),
 		   ipa_size_summaries->get (ultimate)->size);
 	  fprintf (dump_file,
 		   " Called once from %s %i insns.\n",
-		   node->callers->caller->name (),
+		   node->callers->caller->dump_name (),
 		   ipa_size_summaries->get (node->callers->caller)->size);
 	}
 
@@ -2411,7 +2410,7 @@ inline_to_all_callers_1 (struct cgraph_node *node, void *data,
       if (dump_file)
 	fprintf (dump_file,
 		 " Inlined into %s which now has %i size\n",
-		 caller->name (),
+		 caller->dump_name (),
 		 ipa_size_summaries->get (caller)->size);
       if (!(*num_calls)--)
 	{
@@ -2671,7 +2670,7 @@ ipa_inline (void)
 	 try to flatten itself turning it into a self-recursive
 	 function.  */
       if (dump_file)
-	fprintf (dump_file, "Flattening %s\n", node->name ());
+	fprintf (dump_file, "Flattening %s\n", node->dump_name ());
       flatten_function (node, false, true);
     }
 

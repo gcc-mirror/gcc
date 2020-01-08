@@ -717,7 +717,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
       if (dump_file)
 	fprintf (dump_file, "Not considering %s for cloning; "
 		 "-fipa-cp-clone disabled.\n",
- 		 node->name ());
+		 node->dump_name ());
       return false;
     }
 
@@ -726,7 +726,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
       if (dump_file)
 	fprintf (dump_file, "Not considering %s for cloning; "
 		 "optimizing it for size.\n",
- 		 node->name ());
+		 node->dump_name ());
       return false;
     }
 
@@ -737,7 +737,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
     {
       if (dump_file)
 	fprintf (dump_file, "Considering %s for cloning; code might shrink.\n",
- 		 node->name ());
+		 node->dump_name ());
       return true;
     }
 
@@ -751,7 +751,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
 	  if (dump_file)
 	    fprintf (dump_file, "Considering %s for cloning; "
 		     "usually called directly.\n",
-		     node->name ());
+		     node->dump_name ());
 	  return true;
 	}
     }
@@ -759,12 +759,12 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
     {
       if (dump_file)
 	fprintf (dump_file, "Not considering %s for cloning; no hot calls.\n",
-		 node->name ());
+		 node->dump_name ());
       return false;
     }
   if (dump_file)
     fprintf (dump_file, "Considering %s for cloning.\n",
-	     node->name ());
+	     node->dump_name ());
   return true;
 }
 
@@ -2292,7 +2292,7 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Setting dest_lattice to bottom, because type of "
 		 "param %i of %s is NULL or unsuitable for bits propagation\n",
-		 idx, cs->callee->name ());
+		 idx, cs->callee->dump_name ());
 
       return dest_lattice->set_to_bottom ();
     }
@@ -4246,7 +4246,7 @@ dump_profile_updates (struct cgraph_node *orig_node,
   for (cs = new_node->callees; cs; cs = cs->next_callee)
     {
       fprintf (dump_file, "      edge to %s has count ",
-	       cs->callee->name ());
+	       cs->callee->dump_name ());
       cs->count.dump (dump_file);
       fprintf (dump_file, "\n");
     }
@@ -4257,7 +4257,7 @@ dump_profile_updates (struct cgraph_node *orig_node,
   for (cs = orig_node->callees; cs; cs = cs->next_callee)
     {
       fprintf (dump_file, "      edge to %s is left with ",
-	       cs->callee->name ());
+	       cs->callee->dump_name ());
       cs->count.dump (dump_file);
       fprintf (dump_file, "\n");
     }
@@ -5675,7 +5675,7 @@ ipcp_store_bits_results (void)
 	  if (dump_file)
 	    fprintf (dump_file, "Not considering %s for ipa bitwise propagation "
 				"; -fipa-bit-cp: disabled.\n",
-				node->name ());
+				node->dump_name ());
 	  continue;
 	}
 
@@ -5751,7 +5751,7 @@ ipcp_store_vr_results (void)
 	  if (dump_file)
 	    fprintf (dump_file, "Not considering %s for VR discovery "
 		     "and propagate; -fipa-ipa-vrp: disabled.\n",
-		     node->name ());
+		     node->dump_name ());
 	  continue;
 	}
 

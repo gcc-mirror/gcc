@@ -616,7 +616,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	  if (vnode->definition)
 	    {
 	      if (file)
-		fprintf (file, " %s", vnode->name ());
+		fprintf (file, " %s", vnode->dump_name ());
 	      changed = true;
 	    }
 	  /* Keep body if it may be useful for constant folding.  */
@@ -649,7 +649,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	    (has_addr_references_p, NULL, true))
 	  {
 	    if (file)
-	      fprintf (file, " %s", node->name ());
+	      fprintf (file, " %s", node->dump_name ());
 	    node->address_taken = false;
 	    changed = true;
 	    if (node->local_p ()
@@ -794,7 +794,8 @@ ipa_discover_variable_flags (void)
 	if (!address_taken)
 	  {
 	    if (TREE_ADDRESSABLE (vnode->decl) && dump_file)
-	      fprintf (dump_file, " %s (non-addressable)", vnode->name ());
+	      fprintf (dump_file, " %s (non-addressable)",
+		       vnode->dump_name ());
 	    vnode->call_for_symbol_and_aliases (clear_addressable_bit, NULL,
 					        true);
 	  }
@@ -805,13 +806,13 @@ ipa_discover_variable_flags (void)
 	    && vnode->get_section () == NULL)
 	  {
 	    if (!TREE_READONLY (vnode->decl) && dump_file)
-	      fprintf (dump_file, " %s (read-only)", vnode->name ());
+	      fprintf (dump_file, " %s (read-only)", vnode->dump_name ());
 	    vnode->call_for_symbol_and_aliases (set_readonly_bit, NULL, true);
 	  }
 	if (!vnode->writeonly && !read && !address_taken && written)
 	  {
 	    if (dump_file)
-	      fprintf (dump_file, " %s (write-only)", vnode->name ());
+	      fprintf (dump_file, " %s (write-only)", vnode->dump_name ());
 	    vnode->call_for_symbol_and_aliases (set_writeonly_bit, &remove_p, 
 					        true);
 	  }

@@ -509,7 +509,7 @@ optimize_weakref (symtab_node *node)
 
   if (dump_file)
     fprintf (dump_file, "Optimizing weakref %s %s\n",
-	     node->name(),
+	     node->dump_name (),
 	     static_alias ? "as static alias" : "as transparent alias");
 
   if (static_alias)
@@ -876,17 +876,17 @@ function_and_variable_visibility (bool whole_program)
       fprintf (dump_file, "\nMarking local functions:");
       FOR_EACH_DEFINED_FUNCTION (node)
 	if (node->local)
-	  fprintf (dump_file, " %s", node->name ());
+	  fprintf (dump_file, " %s", node->dump_name ());
       fprintf (dump_file, "\n\n");
       fprintf (dump_file, "\nMarking externally visible functions:");
       FOR_EACH_DEFINED_FUNCTION (node)
 	if (node->externally_visible)
-	  fprintf (dump_file, " %s", node->name ());
+	  fprintf (dump_file, " %s", node->dump_name ());
       fprintf (dump_file, "\n\n");
       fprintf (dump_file, "\nMarking externally visible variables:");
       FOR_EACH_DEFINED_VARIABLE (vnode)
 	if (vnode->externally_visible)
-	  fprintf (dump_file, " %s", vnode->name ());
+	  fprintf (dump_file, " %s", vnode->dump_name ());
       fprintf (dump_file, "\n\n");
     }
   symtab->function_flags_ready = true;
