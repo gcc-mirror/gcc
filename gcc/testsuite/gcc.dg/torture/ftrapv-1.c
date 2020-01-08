@@ -13,7 +13,7 @@
 /* Disallow inlining/cloning which would constant propagate and trigger
    unrelated bugs.  */
 
-int __attribute__((noinline,noclone))
+int __attribute__((noipa))
 iaddv (int a, int b)
 {
   return a + b;
