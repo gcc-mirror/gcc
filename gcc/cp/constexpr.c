@@ -4577,6 +4577,12 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	}
       new_ctx.ctor = *valp;
       new_ctx.object = target;
+      /* Avoid temporary materialization when initializing from a TARGET_EXPR.
+	 We don't need to mess with AGGR_EXPR_SLOT/VEC_INIT_EXPR_SLOT because
+	 expansion of those trees uses ctx instead.  */
+      if (TREE_CODE (init) == TARGET_EXPR)
+	if (tree tinit = TARGET_EXPR_INITIAL (init))
+	  init = tinit;
       init = cxx_eval_constant_expression (&new_ctx, init, false,
 					   non_constant_p, overflow_p);
       if (ctors->is_empty())
