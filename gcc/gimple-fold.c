@@ -7380,6 +7380,7 @@ rewrite_to_defined_overflow (gimple *stmt)
   gimple_assign_set_lhs (stmt, make_ssa_name (type, stmt));
   if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
     gimple_assign_set_rhs_code (stmt, PLUS_EXPR);
+  gimple_set_modified (stmt, true);
   gimple_seq_add_stmt (&stmts, stmt);
   gimple *cvt = gimple_build_assign (lhs, NOP_EXPR, gimple_assign_lhs (stmt));
   gimple_seq_add_stmt (&stmts, cvt);

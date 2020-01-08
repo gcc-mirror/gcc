@@ -1231,7 +1231,8 @@ move_computations_worker (basic_block bb)
 	      gphi *phi = gsi2.phi ();
 	      if (virtual_operand_p (gimple_phi_result (phi)))
 		{
-		  gimple_set_vuse (stmt, PHI_ARG_DEF_FROM_EDGE (phi, e));
+		  SET_USE (gimple_vuse_op (stmt),
+			   PHI_ARG_DEF_FROM_EDGE (phi, e));
 		  break;
 		}
 	    }
