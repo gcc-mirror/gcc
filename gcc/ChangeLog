@@ -1,3 +1,10 @@
+2020-01-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/93188
+	* config/arm/t-multilib (MULTILIB_MATCHES): Add rules to match
+	armv7-a{+mp,+sec,+mp+sec} to appropriate armv7 multilib variants
+	when only building rm-profile multilibs.
+
 2020-01-08  Feng Xue  <fxue@os.amperecomputing.com>
 
 	PR ipa/93084
