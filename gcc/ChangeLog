@@ -1,3 +1,19 @@
+2020-01-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	Implement 64-bit double functions.
+
+	PR target/92055
+	* config.gcc (tm_defines) [target=avr]: Support --with-libf7,
+	--with-double-comparison.
+	* doc/install.texi: Document them.
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins)
+	<WITH_LIBF7_LIBGCC, WITH_LIBF7_MATH, WITH_LIBF7_MATH_SYMBOLS>
+	<WITH_DOUBLE_COMPARISON>: New built-in defines.
+	* doc/invoke.texi (AVR Built-in Macros): Document them.
+	* config/avr/avr-protos.h (avr_float_lib_compare_returns_bool): New.
+	* config/avr/avr.c (avr_float_lib_compare_returns_bool): New function.
+	* config/avr/avr.h (FLOAT_LIB_COMPARE_RETURNS_BOOL): New macro.
+
 2020-01-08  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/93188
