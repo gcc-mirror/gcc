@@ -1789,7 +1789,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   if (first && TREE_CODE (first) == BIND_EXPR)
     {
       /* We will discard this, since it's connected to the original scope
-	 nest... ??? CHECKME, this might be overly cautious.  */
+	 nest.  */
       tree block = BIND_EXPR_BLOCK (first);
       if (block) // For this to be missing is probably a bug.
 	{
@@ -2068,11 +2068,34 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
     }
 
   tree delname = ovl_op_identifier (false, DELETE_EXPR);
-  tree fns = lookup_name_real (delname, 0, 1, /*block_p=*/true, 0, 0);
-  vec<tree, va_gc> *arglist = make_tree_vector_single (actor_fp);
-  tree del_coro_fr = lookup_arg_dependent (delname, fns, arglist);
-  del_coro_fr
-    = build_new_function_call (del_coro_fr, &arglist, true /*complain*/);
+  tree arg = build1 (CONVERT_EXPR, ptr_type_node, actor_fp);
+  vec<tree, va_gc> *arglist = make_tree_vector_single (arg);
+
+  /* The user can (optionally) provide a delete function in the promise
+      type, it's not a failure for it to be absent.  */
+  tree fns = lookup_promise_method (orig, delname, loc, false);
+  tree del_coro_fr = NULL_TREE;
+  if (fns && fns != error_mark_node)
+    {
+      del_coro_fr = lookup_arg_dependent (delname, fns, arglist);
+      if (OVL_P (del_coro_fr))
+	del_coro_fr = OVL_FIRST (del_coro_fr);
+      else
+	del_coro_fr = BASELINK_FUNCTIONS (del_coro_fr);
+
+      gcc_checking_assert (DECL_STATIC_FUNCTION_P (del_coro_fr));
+      TREE_USED (del_coro_fr) = 1;
+      del_coro_fr = build_call_expr_loc_vec (loc, del_coro_fr, arglist);
+    }
+
+  /* If that fails, then fall back to the global delete operator.  */
+  if (del_coro_fr == NULL_TREE || del_coro_fr == error_mark_node)
+    {
+      fns =lookup_name_real (delname, 0, 1, /*block_p=*/true, 0, 0);
+      del_coro_fr = lookup_arg_dependent (del_coro_fr, fns, arglist);
+      del_coro_fr = build_new_function_call (del_coro_fr, &arglist, true);
+    }
+
   del_coro_fr = coro_build_cvt_void_expr_stmt (del_coro_fr, loc);
   add_stmt (del_coro_fr);
   finish_then_clause (need_free_if);
@@ -3073,17 +3096,17 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
     = lookup_promise_method (orig, coro_gro_on_allocation_fail_identifier,
 			     fn_start, false /*musthave*/);
 
-  /* Allocate the frame.  This is a place-holder which we might alter or lower
-     in some special way after the full contents of the frame are known.  As
-     noted above we pass the frame pointer, so that the internal function can
-     get access to the frame type info.  */
+  /* The CO_FRAME internal function is a mechanism to allow the middle end
+     to adjust the allocation in response to optimisations.  We provide the
+     current conservative estimate of the frame size (as per the current)
+     computed layout.  */
   tree resizeable
     = build_call_expr_internal_loc (fn_start, IFN_CO_FRAME, size_type_node, 2,
 				    TYPE_SIZE_UNIT (coro_frame_type), coro_fp);
+
+  /* We need to adjust the operator new call as per the description above when
+     there is a return on allocation fail function provided in the promise.  */
   tree grooaf = NULL_TREE;
-  tree new_fn = NULL_TREE;
-  tree nwname = ovl_op_identifier (false, NEW_EXPR);
-  tree fns = lookup_name_real (nwname, 0, 1, /*block_p=*/true, 0, 0);
   vec<tree, va_gc> *arglist;
   vec_alloc (arglist, 2);
   arglist->quick_push (resizeable);
@@ -3098,12 +3121,36 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       tree nth_ns = lookup_qualified_name (std_node, get_identifier ("nothrow"),
 					   0, true /*complain*/, false);
       arglist->quick_push (nth_ns);
-      new_fn = lookup_arg_dependent (nwname, fns, arglist);
     }
-  else
-    new_fn = lookup_arg_dependent (nwname, fns, arglist);
 
-  new_fn = build_new_function_call (new_fn, &arglist, true /*complain*/);
+  /* Allocate the frame.  */
+
+  tree nwname = ovl_op_identifier (false, NEW_EXPR);
+  /* The user can (optionally) provide an allocation function in the promise
+      type, it's not a failure for it to be absent.  */
+  tree fns = lookup_promise_method (orig, nwname, fn_start, /*musthave*/ false);
+  tree new_fn = NULL_TREE;
+  if (fns && fns != error_mark_node)
+    {
+      new_fn = lookup_arg_dependent (nwname, fns, arglist);
+      if (OVL_P (new_fn))
+	new_fn = OVL_FIRST (new_fn);
+      else
+	new_fn = BASELINK_FUNCTIONS (new_fn);
+
+	gcc_checking_assert (DECL_STATIC_FUNCTION_P (new_fn));
+	TREE_USED (new_fn) = 1;
+	new_fn = build_call_expr_loc_vec (fn_start, new_fn, arglist);
+    }
+
+  /* If that fails, then fall back to the global operator new.  */
+  if (new_fn == NULL_TREE || new_fn == error_mark_node)
+    {
+      fns =lookup_name_real (nwname, 0, 1, /*block_p=*/true, 0, 0);
+      new_fn = lookup_arg_dependent (nwname, fns, arglist);
+      new_fn = build_new_function_call (new_fn, &arglist, /*complain*/ true);
+    }
+
   tree allocated = build1 (CONVERT_EXPR, coro_frame_ptr, new_fn);
   r = build2 (INIT_EXPR, TREE_TYPE (coro_fp), coro_fp, allocated);
   r = coro_build_cvt_void_expr_stmt (r, fn_start);

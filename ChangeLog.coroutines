@@ -1,3 +1,15 @@
+2020-01-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (build_actor_fn): Handle use of overloaded
+	operator delete.
+	(morph_fn_to_coro): Handle use of overloaded operator new.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/gro_on_alloc_fail_0.C: Rename...
+	* g++.dg/coroutines/torture/alloc-00-gro-on-alloc-fail.C: ... to this.
+	* g++.dg/coroutines/torture/alloc-01-overload-newdel.C: New test.
+
 2020-01-06  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Merge trunk r279893.
