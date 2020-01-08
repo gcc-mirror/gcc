@@ -2817,7 +2817,7 @@ package body Exp_Attr is
          --  If the prefix is an access to object, the attribute applies to
          --  the designated object, so rewrite with an explicit dereference.
 
-         elsif Is_Access_Type (Etype (Pref))
+         elsif Is_Access_Type (Ptyp)
            and then
              (not Is_Entity_Name (Pref) or else Is_Object (Entity (Pref)))
          then
@@ -3133,6 +3133,8 @@ package body Exp_Attr is
 
       when Attribute_Enum_Rep => Enum_Rep : declare
          Expr : Node_Id;
+         Ityp : Entity_Id;
+         Psiz : Uint;
 
       begin
          --  Get the expression, which is X for Enum_Type'Enum_Rep (X) or
@@ -3180,11 +3182,34 @@ package body Exp_Attr is
          --  make sure that the analyzer does not complain about what otherwise
          --  might be an illegal conversion.
 
+         --  However the target type is universal integer in most cases, which
+         --  is a very large type, so in the case of an enumeration type, we
+         --  first convert to a small signed integer type in order not to lose
+         --  the size information.
+
+         elsif Is_Enumeration_Type (Ptyp) then
+            Psiz := RM_Size (Base_Type (Ptyp));
+
+            if Psiz < 8 then
+               Ityp := Standard_Integer_8;
+
+            elsif Psiz < 16 then
+               Ityp := Standard_Integer_16;
+
+            elsif Psiz < 32 then
+               Ityp := Standard_Integer_32;
+
+            else
+               Ityp := Standard_Integer_64;
+            end if;
+
+            Rewrite (N, OK_Convert_To (Ityp, Expr));
+            Convert_To_And_Rewrite (Typ, N);
+
          else
-            Rewrite (N, OK_Convert_To (Typ, Relocate_Node (Expr)));
+            Rewrite (N, OK_Convert_To (Typ, Expr));
          end if;
 
-         Set_Etype (N, Typ);
          Analyze_And_Resolve (N, Typ);
       end Enum_Rep;
 
@@ -3275,11 +3300,10 @@ package body Exp_Attr is
          function Calculate_Header_Size return Node_Id is
          begin
             --  Generate:
-            --    Universal_Integer
-            --      (Header_Size_With_Padding (Pref'Alignment))
+            --    Typ (Header_Size_With_Padding (Pref'Alignment))
 
             return
-              Convert_To (Universal_Integer,
+              Convert_To (Typ,
                 Make_Function_Call (Loc,
                   Name                   =>
                     New_Occurrence_Of (RTE (RE_Header_Size_With_Padding), Loc),
@@ -3307,9 +3331,7 @@ package body Exp_Attr is
          --    Size : Integer := 0;
          --
          --    if Needs_Finalization (Pref'Tag) then
-         --       Size :=
-         --         Universal_Integer
-         --           (Header_Size_With_Padding (Pref'Alignment));
+         --       Size := Integer (Header_Size_With_Padding (Pref'Alignment));
          --    end if;
          --
          --  and the attribute reference is replaced with a reference to Size.
@@ -3331,8 +3353,7 @@ package body Exp_Attr is
               --  Generate:
               --    if Needs_Finalization (Pref'Tag) then
               --       Size :=
-              --         Universal_Integer
-              --           (Header_Size_With_Padding (Pref'Alignment));
+              --         Integer (Header_Size_With_Padding (Pref'Alignment));
               --    end if;
 
               Make_If_Statement (Loc,
@@ -3349,7 +3370,9 @@ package body Exp_Attr is
                 Then_Statements        => New_List (
                    Make_Assignment_Statement (Loc,
                      Name       => New_Occurrence_Of (Size, Loc),
-                     Expression => Calculate_Header_Size)))));
+                     Expression =>
+                       Convert_To
+                         (Standard_Integer, Calculate_Header_Size))))));
 
             Rewrite (N, New_Occurrence_Of (Size, Loc));
 
@@ -3556,16 +3579,15 @@ package body Exp_Attr is
       --------------
 
       when Attribute_From_Any => From_Any : declare
-         P_Type : constant Entity_Id := Etype (Pref);
          Decls  : constant List_Id   := New_List;
 
       begin
          Rewrite (N,
-           Build_From_Any_Call (P_Type,
+           Build_From_Any_Call (Ptyp,
              Relocate_Node (First (Exprs)),
              Decls));
          Insert_Actions (N, Decls);
-         Analyze_And_Resolve (N, P_Type);
+         Analyze_And_Resolve (N, Ptyp);
       end From_Any;
 
       ----------------------
@@ -4417,6 +4439,7 @@ package body Exp_Attr is
       when Attribute_Max_Size_In_Storage_Elements => declare
          Typ  : constant Entity_Id := Etype (N);
          Attr : Node_Id;
+         Atyp : Entity_Id;
 
          Conversion_Added : Boolean := False;
          --  A flag which tracks whether the original attribute has been
@@ -4457,16 +4480,17 @@ package body Exp_Attr is
          then
             Set_Header_Size_Added (Attr);
 
+            Atyp := Etype (Attr);
+
             --  Generate:
             --    P'Max_Size_In_Storage_Elements +
-            --      Universal_Integer
-            --        (Header_Size_With_Padding (Ptyp'Alignment))
+            --      Atyp (Header_Size_With_Padding (Ptyp'Alignment))
 
             Rewrite (Attr,
               Make_Op_Add (Loc,
                 Left_Opnd  => Relocate_Node (Attr),
                 Right_Opnd =>
-                  Convert_To (Universal_Integer,
+                  Convert_To (Atyp,
                     Make_Function_Call (Loc,
                       Name                   =>
                         New_Occurrence_Of
@@ -4478,16 +4502,14 @@ package body Exp_Attr is
                             New_Occurrence_Of (Ptyp, Loc),
                           Attribute_Name => Name_Alignment))))));
 
+            Analyze_And_Resolve (Attr, Atyp);
+
             --  Add a conversion to the target type
 
             if not Conversion_Added then
-               Rewrite (Attr,
-                 Make_Type_Conversion (Loc,
-                   Subtype_Mark => New_Occurrence_Of (Typ, Loc),
-                   Expression   => Relocate_Node (Attr)));
+               Convert_To_And_Rewrite (Typ, Attr);
             end if;
 
-            Analyze (Attr);
             return;
          end if;
       end;
@@ -5097,12 +5119,12 @@ package body Exp_Attr is
       -- Pos --
       ---------
 
-      --  For enumeration types with a standard representation, Pos is
-      --  handled by the back end.
+      --  For enumeration types with a standard representation, Pos is handled
+      --  by the back end.
 
       --  For enumeration types, with a non-standard representation we generate
       --  a call to the _Rep_To_Pos function created when the type was frozen.
-      --  The call has the form
+      --  The call has the form:
 
       --    _rep_to_pos (expr, flag)
 
@@ -5110,11 +5132,11 @@ package body Exp_Attr is
       --  Program_Error to be raised if the expression has an invalid
       --  representation, and False if range checks are suppressed.
 
-      --  For integer types, Pos is equivalent to a simple integer
-      --  conversion and we rewrite it as such
+      --  For integer types, Pos is equivalent to a simple integer conversion
+      --  and we rewrite it as such.
 
       when Attribute_Pos => Pos : declare
-         Etyp : Entity_Id := Base_Type (Entity (Pref));
+         Etyp : Entity_Id := Base_Type (Ptyp);
 
       begin
          --  Deal with zero/non-zero boolean values
@@ -6420,13 +6442,12 @@ package body Exp_Attr is
       ------------
 
       when Attribute_To_Any => To_Any : declare
-         P_Type : constant Entity_Id := Etype (Pref);
          Decls  : constant List_Id   := New_List;
       begin
          Rewrite (N,
            Build_To_Any_Call
              (Loc,
-              Convert_To (P_Type,
+              Convert_To (Ptyp,
               Relocate_Node (First (Exprs))), Decls));
          Insert_Actions (N, Decls);
          Analyze_And_Resolve (N, RTE (RE_Any));
@@ -6450,10 +6471,9 @@ package body Exp_Attr is
       --------------
 
       when Attribute_TypeCode => TypeCode : declare
-         P_Type : constant Entity_Id := Etype (Pref);
          Decls  : constant List_Id   := New_List;
       begin
-         Rewrite (N, Build_TypeCode_Call (Loc, P_Type, Decls));
+         Rewrite (N, Build_TypeCode_Call (Loc, Ptyp, Decls));
          Insert_Actions (N, Decls);
          Analyze_And_Resolve (N, RTE (RE_TypeCode));
       end TypeCode;
@@ -6489,63 +6509,91 @@ package body Exp_Attr is
       -- Val --
       ---------
 
-      --  For enumeration types with a standard representation, and for all
-      --  other types, Val is handled by the back end. For enumeration types
-      --  with a non-standard representation we use the _Pos_To_Rep array that
-      --  was created when the type was frozen.
+      --  For enumeration types with a standard representation, Val is handled
+      --  by the back end.
+
+      --  For enumeration types with a non-standard representation we use the
+      --  _Pos_To_Rep array that was created when the type was frozen, unless
+      --  the representation is contiguous in which case we use an addition.
+
+      --  For integer types, Val is equivalent to a simple integer conversion
+      --  and we rewrite it as such.
 
       when Attribute_Val => Val : declare
-         Etyp : constant Entity_Id := Base_Type (Entity (Pref));
+         Etyp : constant Entity_Id := Base_Type (Ptyp);
+         Expr : constant Node_Id := First (Exprs);
 
       begin
-         if Is_Enumeration_Type (Etyp)
-           and then Present (Enum_Pos_To_Rep (Etyp))
-         then
-            if Has_Contiguous_Rep (Etyp) then
-               declare
-                  Rep_Node : constant Node_Id :=
-                    Unchecked_Convert_To (Etyp,
-                       Make_Op_Add (Loc,
-                         Left_Opnd =>
-                            Make_Integer_Literal (Loc,
-                              Enumeration_Rep (First_Literal (Etyp))),
-                         Right_Opnd =>
-                          (Convert_To (Standard_Integer,
-                             Relocate_Node (First (Exprs))))));
+         --  Case of enumeration type
 
-               begin
+         if Is_Enumeration_Type (Etyp) then
+
+            --  Non-standard enumeration type
+
+            if Present (Enum_Pos_To_Rep (Etyp)) then
+               if Has_Contiguous_Rep (Etyp) then
+                  declare
+                     Rep_Node : constant Node_Id :=
+                       Unchecked_Convert_To (Etyp,
+                          Make_Op_Add (Loc,
+                            Left_Opnd =>
+                              Make_Integer_Literal (Loc,
+                                Enumeration_Rep (First_Literal (Etyp))),
+                            Right_Opnd =>
+                               Convert_To (Standard_Integer, Expr)));
+
+                  begin
+                     Rewrite (N,
+                        Unchecked_Convert_To (Etyp,
+                            Make_Op_Add (Loc,
+                              Left_Opnd =>
+                                Make_Integer_Literal (Loc,
+                                  Enumeration_Rep (First_Literal (Etyp))),
+                              Right_Opnd =>
+                                Make_Function_Call (Loc,
+                                  Name =>
+                                    New_Occurrence_Of
+                                      (TSS (Etyp, TSS_Rep_To_Pos), Loc),
+                                  Parameter_Associations => New_List (
+                                    Rep_Node,
+                                    Rep_To_Pos_Flag (Etyp, Loc))))));
+                  end;
+
+               else
                   Rewrite (N,
-                     Unchecked_Convert_To (Etyp,
-                         Make_Op_Add (Loc,
-                           Left_Opnd =>
-                             Make_Integer_Literal (Loc,
-                               Enumeration_Rep (First_Literal (Etyp))),
-                           Right_Opnd =>
-                             Make_Function_Call (Loc,
-                               Name =>
-                                 New_Occurrence_Of
-                                   (TSS (Etyp, TSS_Rep_To_Pos), Loc),
-                               Parameter_Associations => New_List (
-                                 Rep_Node,
-                                 Rep_To_Pos_Flag (Etyp, Loc))))));
-               end;
+                    Make_Indexed_Component (Loc,
+                      Prefix =>
+                        New_Occurrence_Of (Enum_Pos_To_Rep (Etyp), Loc),
+                      Expressions => New_List (
+                        Convert_To (Standard_Integer, Expr))));
+               end if;
 
-            else
-               Rewrite (N,
-                 Make_Indexed_Component (Loc,
-                   Prefix => New_Occurrence_Of (Enum_Pos_To_Rep (Etyp), Loc),
-                   Expressions => New_List (
-                     Convert_To (Standard_Integer,
-                       Relocate_Node (First (Exprs))))));
+               Analyze_And_Resolve (N, Typ);
+
+            --  Standard enumeration type
+
+            --  If the argument is marked as requiring a range check then
+            --  generate it here, after looking through a conversion to
+            --  universal integer, if any.
+
+            elsif Do_Range_Check (Expr) then
+               if Nkind (Expr) = N_Type_Conversion
+                  and then Entity (Subtype_Mark (Expr)) = Universal_Integer
+               then
+                  Generate_Range_Check
+                    (Expression (Expr), Etyp, CE_Range_Check_Failed);
+                  Set_Do_Range_Check (Expr, False);
+
+               else
+                  Generate_Range_Check (Expr, Etyp, CE_Range_Check_Failed);
+               end if;
             end if;
 
+         --  Deal with integer types
+
+         elsif Is_Integer_Type (Etyp) then
+            Rewrite (N, Convert_To (Typ, Expr));
             Analyze_And_Resolve (N, Typ);
-
-         --  If the argument is marked as requiring a range check then generate
-         --  it here.
-
-         elsif Do_Range_Check (First (Exprs)) then
-            Generate_Range_Check (First (Exprs), Etyp, CE_Range_Check_Failed);
          end if;
       end Val;
 
