@@ -1328,7 +1328,7 @@ unsafe_conversion_p (location_t loc, tree type, tree expr, tree result,
   bool cstresult = (result
 		    && TREE_CODE_CLASS (TREE_CODE (result)) == tcc_constant);
 
-    loc = expansion_point_location_if_in_system_header (loc);
+  loc = expansion_point_location_if_in_system_header (loc);
 
   expr = fold_for_warn (expr);
 
