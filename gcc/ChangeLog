@@ -1,3 +1,12 @@
+2020-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/93199
+	* tree-eh.c (sink_clobbers): Update virtual operands for
+	the first and last stmt only.  Add a dry-run capability.
+	(pass_lower_eh_dispatch::execute): Perform clobber sinking
+	after CFG manipulations and in RPO order to catch all
+	secondary opportunities reliably.
+
 2020-01-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/93182
