@@ -1,3 +1,21 @@
+2020-01-08  Olivier Hainque  <hainque@adacore.com>
+            Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/aarch64/stack-check-alloca.h: Remove
+	#include alloca.h. #define alloca __builtin_alloca
+	instead.
+	* gcc.target/aarch64/stack-check-alloca-1.c: Add
+	{ dg-require-effective-target alloca }.
+	* gcc.target/aarch64/stack-check-alloca-2.c: Likewise.
+	* gcc.target/aarch64/stack-check-alloca-3.c: Likewise.
+	* gcc.target/aarch64/stack-check-alloca-4.c: Likewise.
+	* gcc.target/aarch64/stack-check-alloca-5.c: Likewise.
+	* gcc.target/aarch64/stack-check-alloca-6.c: Likewise.
+	* gcc.target/aarch64/stack-check-alloca-7.c: Likewise.
+	* gcc.target/aarch64/stack-check-alloca-8.c: Likewise.
+	* gcc.target/aarch64/stack-check-alloca-9.c: Likewise.
+	* gcc.target/aarch64/stack-check-alloca-10.c: Likewise.
+
 2020-01-08  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/ipa/ipa-icf-1.c: Update expected scanned output.
