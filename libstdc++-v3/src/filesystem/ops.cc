@@ -1099,12 +1099,17 @@ fs::remove_all(const path& p, error_code& ec) noexcept
   uintmax_t count = 0;
   if (s.type() == file_type::directory)
     {
-      for (directory_iterator d(p, ec), end; !ec && d != end; d.increment(ec))
-	count += fs::remove_all(d->path(), ec);
-      if (ec.value() == ENOENT)
-	ec.clear();
-      else if (ec)
-	return -1;
+      directory_iterator d(p, ec), end;
+      while (!ec && d != end)
+	{
+	  const auto removed = fs::remove_all(d->path(), ec);
+	  if (removed == numeric_limits<uintmax_t>::max())
+	    return -1;
+	  count += removed;
+	  d.increment(ec);
+	  if (ec)
+	    return -1;
+	}
     }
 
   if (fs::remove(p, ec))

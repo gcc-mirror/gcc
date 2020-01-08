@@ -1,3 +1,17 @@
+2020-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93201
+	* src/c++17/fs_ops.cc (do_remove_all): New function implementing more
+	detailed error reporting for remove_all. Check result of recursive
+	call before incrementing iterator.
+	(remove_all(const path&), remove_all(const path&, error_code&)): Use
+	do_remove_all.
+	* src/filesystem/ops.cc (remove_all(const path&, error_code&)): Check
+	result of recursive call before incrementing iterator.
+	* testsuite/27_io/filesystem/operations/remove_all.cc: Check errors
+	are reported correctly.
+	* testsuite/experimental/filesystem/operations/remove_all.cc: Likewise.
+
 2020-01-07  Thomas Rodgers  <trodgers@redhat.com>
 
 	* include/std/condition_variable
