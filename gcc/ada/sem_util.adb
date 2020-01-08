@@ -17885,6 +17885,44 @@ package body Sem_Util is
       end if;
    end Is_SPARK_05_Object_Reference;
 
+   --------------------------------------
+   -- Is_Special_Aliased_Formal_Access --
+   --------------------------------------
+
+   function Is_Special_Aliased_Formal_Access
+     (Exp  : Node_Id;
+      Scop : Entity_Id) return Boolean is
+   begin
+      --  Verify the expression is an access reference to 'Access within a
+      --  return statement as this is the only time an explicitly aliased
+      --  formal has different semantics.
+
+      if Nkind (Exp) /= N_Attribute_Reference
+        or else Get_Attribute_Id (Attribute_Name (Exp)) /= Attribute_Access
+        or else Nkind (Parent (Exp)) /= N_Simple_Return_Statement
+      then
+         return False;
+      end if;
+
+      --  Check if the prefix of the reference is indeed an explicitly aliased
+      --  formal parameter for the function Scop. Additionally, we must check
+      --  that Scop returns an anonymous access type, otherwise the special
+      --  rules dictating a need for a dynamic check are not in effect.
+
+      declare
+         P_Ult : constant Node_Id := Ultimate_Prefix (Prefix (Exp));
+      begin
+         return Is_Entity_Name (P_Ult)
+           and then Is_Aliased (Entity (P_Ult))
+           and then Is_Formal  (Entity (P_Ult))
+           and then Scope (Entity (P_Ult)) = Scop
+           and then Ekind_In (Scop, E_Function,
+                                    E_Operator,
+                                    E_Subprogram_Type)
+           and then Present (Extra_Accessibility_Of_Result (Scop));
+      end;
+   end Is_Special_Aliased_Formal_Access;
+
    -----------------------------
    -- Is_Specific_Tagged_Type --
    -----------------------------
@@ -23099,20 +23137,7 @@ package body Sem_Util is
             return Type_Access_Level (Scope (E)) + 1;
 
          else
-            --  Aliased formals of functions take their access level from the
-            --  point of call, i.e. require a dynamic check. For static check
-            --  purposes, this is smaller than the level of the subprogram
-            --  itself. For procedures the aliased makes no difference.
-
-            if Is_Formal (E)
-               and then Is_Aliased (E)
-               and then Ekind (Scope (E)) = E_Function
-            then
-               return Type_Access_Level (Etype (E));
-
-            else
-               return Scope_Depth (Enclosing_Dynamic_Scope (E));
-            end if;
+            return Scope_Depth (Enclosing_Dynamic_Scope (E));
          end if;
 
       elsif Nkind_In (Obj, N_Indexed_Component, N_Selected_Component) then

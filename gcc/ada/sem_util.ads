@@ -1985,6 +1985,17 @@ package Sem_Util is
    --  constants, formal parameters, and selected_components of those are
    --  valid objects in SPARK 2005.
 
+   function Is_Special_Aliased_Formal_Access
+     (Exp  : Node_Id;
+      Scop : Entity_Id) return Boolean;
+   --  Determines whether a dynamic check must be generated for explicitly
+   --  aliased formals within a function Scop for the expression Exp.
+
+   --  More specially, Is_Special_Aliased_Formal_Access checks that Exp is a
+   --  'Access attribute reference within a return statement where the ultimate
+   --  prefix is an aliased formal of Scop and that Scop returns an anonymous
+   --  access type. See RM 3.10.2 for more details.
+
    function Is_Specific_Tagged_Type (Typ : Entity_Id) return Boolean;
    --  Determine whether an arbitrary [private] type is specifically tagged
 

@@ -2227,7 +2227,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
                           Control =>
                             (Controlled with
                               HT.TC'Unrestricted_Access,
-                              Container => Container'Access,
+                              Container => Container'Unchecked_Access,
                               Index     => HT_Ops.Index (HT, Position.Node),
                               Old_Pos   => Position,
                               Old_Hash  => Hash (Key (Position))))
@@ -2261,7 +2261,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
                           Control =>
                             (Controlled with
                               HT.TC'Unrestricted_Access,
-                              Container => Container'Access,
+                              Container => Container'Unchecked_Access,
                               Index     => HT_Ops.Index (HT, P.Node),
                               Old_Pos   => P,
                               Old_Hash  => Hash (Key)))
