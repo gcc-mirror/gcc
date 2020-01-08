@@ -1,3 +1,7 @@
+2020-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/92997
+
 2020-01-08  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/93188
