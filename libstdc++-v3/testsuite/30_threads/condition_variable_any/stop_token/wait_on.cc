@@ -28,7 +28,7 @@
 
 using namespace::std::literals;
 
-void test_wait_on_stop()
+void test_wait_stop()
 {
   bool ready = false;
   std::mutex mtx;
@@ -40,7 +40,7 @@ void test_wait_on_stop()
   std::thread t([&ready, &mtx, &cv, tok]
                 {
                   std::unique_lock lck(mtx);
-                  auto res = cv.wait_on(lck, tok, [&ready] { return ready; });
+                  auto res = cv.wait(lck, tok, [&ready] { return ready; });
                   if (!res)
                     {
                       VERIFY(tok.stop_requested());
@@ -54,7 +54,7 @@ void test_wait_on_stop()
   VERIFY(src.stop_requested());
 }
 
-void test_wait_on_until(bool ck = true)
+void test_wait_until(bool ck = true)
 {
   bool ready = false;
   std::mutex mtx;
@@ -67,7 +67,7 @@ void test_wait_on_until(bool ck = true)
   std::thread t([ck, &ready, &mtx, &cv, abst, tok]
                 {
                   std::unique_lock lck(mtx);
-                  auto res = cv.wait_on_until(lck, tok, abst, [&ready] { return ready; });
+                  auto res = cv.wait_until(lck, tok, abst, [&ready] { return ready; });
                   if (!res && ck)
                     {
                       VERIFY(tok.stop_requested());
@@ -90,7 +90,7 @@ void test_wait_on_until(bool ck = true)
     }
 }
 
-void test_wait_on_for(bool ck = true)
+void test_wait_for(bool ck = true)
 {
   bool ready = false;
   std::mutex mtx;
@@ -102,7 +102,7 @@ void test_wait_on_for(bool ck = true)
   std::thread t([ck, &ready, &mtx, &cv, tok]
                 {
                   std::unique_lock lck(mtx);
-                  auto res = cv.wait_on_for(lck, tok, 1.0s, [&ready] { return ready; });
+                  auto res = cv.wait_for(lck, tok, 1.0s, [&ready] { return ready; });
                   if (!res && ck)
                     {
                       VERIFY(tok.stop_requested());
@@ -127,10 +127,10 @@ void test_wait_on_for(bool ck = true)
 
 int main()
 {
-  test_wait_on_stop();
-  test_wait_on_until(false);
-  test_wait_on_until();
-  test_wait_on_for();
-  test_wait_on_for(false);
+  test_wait_stop();
+  test_wait_until(false);
+  test_wait_until();
+  test_wait_for();
+  test_wait_for(false);
   return 0;
 }
