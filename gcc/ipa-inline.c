@@ -184,8 +184,8 @@ caller_growth_limits (struct cgraph_edge *e)
      the function to shrink if it went over the limits by forced inlining.  */
   newsize = estimate_size_after_inlining (to, e);
   if (newsize >= ipa_size_summaries->get (what)->size
-      && (newsize > opt_for_fn (to->decl, param_large_function_insns)
-	  || newsize > limit))
+      && newsize > opt_for_fn (to->decl, param_large_function_insns)
+      && newsize > limit)
     {
       e->inline_failed = CIF_LARGE_FUNCTION_GROWTH_LIMIT;
       return false;

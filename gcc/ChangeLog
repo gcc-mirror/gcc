@@ -1,3 +1,7 @@
+2020-01-08  Luo Xiong Hu  <luoxhu@linux.ibm.com>
+
+	* ipa-inline.c (caller_growth_limits): Restore the AND.
+
 2020-01-07  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (VEC_1REG_INT_ALT): Delete iterator.
