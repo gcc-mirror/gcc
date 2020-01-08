@@ -1,3 +1,7 @@
+2020-01-08  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/Wstringop-overflow-27.c: Make testnames unique.
+
 2020-01-08  Joel Brobecker  <brobecker@adacore.com>
             Olivier Hainque  <hainque@adacore.com>
 
