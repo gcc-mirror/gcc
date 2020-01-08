@@ -1275,42 +1275,105 @@ fs::remove(const path& p, error_code& ec) noexcept
   return false;
 }
 
+namespace std::filesystem
+{
+namespace
+{
+  struct ErrorReporter
+  {
+    explicit
+    ErrorReporter(error_code& ec) : code(&ec)
+    { }
+
+    explicit
+    ErrorReporter(const char* s, const path& p)
+    : code(nullptr), msg(s), path1(&p)
+    { }
+
+    error_code* code;
+    const char* msg;
+    const path* path1;
+
+    void
+    report(const error_code& ec) const
+    {
+      if (code)
+	*code = ec;
+      else
+	_GLIBCXX_THROW_OR_ABORT(filesystem_error(msg, *path1, ec));
+    }
+
+    void
+    report(const error_code& ec, const path& path2) const
+    {
+      if (code)
+	*code = ec;
+      else if (path2 != *path1)
+	_GLIBCXX_THROW_OR_ABORT(filesystem_error(msg, *path1, path2, ec));
+      else
+	_GLIBCXX_THROW_OR_ABORT(filesystem_error(msg, *path1, ec));
+    }
+  };
+
+  uintmax_t
+  do_remove_all(const path& p, const ErrorReporter& err)
+  {
+    error_code ec;
+    const auto s = symlink_status(p, ec);
+    if (!status_known(s))
+      {
+	if (ec)
+	  err.report(ec, p);
+	return -1;
+      }
+
+    ec.clear();
+    if (s.type() == file_type::not_found)
+      return 0;
+
+    uintmax_t count = 0;
+    if (s.type() == file_type::directory)
+      {
+	directory_iterator d(p, ec), end;
+	while (d != end)
+	  {
+	    const auto removed = fs::do_remove_all(d->path(), err);
+	    if (removed == numeric_limits<uintmax_t>::max())
+	      return -1;
+	    count += removed;
+
+	    d.increment(ec);
+	    if (ec)
+	      {
+		err.report(ec, p);
+		return -1;
+	      }
+	  }
+      }
+
+    if (fs::remove(p, ec))
+      ++count;
+    if (ec)
+      {
+	err.report(ec, p);
+	return -1;
+      }
+    return count;
+  }
+}
+}
 
 std::uintmax_t
 fs::remove_all(const path& p)
 {
-  error_code ec;
-  const auto result = remove_all(p, ec);
-  if (ec)
-    _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot remove all", p, ec));
-  return result;
+  return fs::do_remove_all(p, ErrorReporter{"cannot remove all", p});
 }
 
 std::uintmax_t
 fs::remove_all(const path& p, error_code& ec)
 {
-  const auto s = symlink_status(p, ec);
-  if (!status_known(s))
-    return -1;
-
   ec.clear();
-  if (s.type() == file_type::not_found)
-    return 0;
-
-  uintmax_t count = 0;
-  if (s.type() == file_type::directory)
-    {
-      for (directory_iterator d(p, ec), end; !ec && d != end; d.increment(ec))
-	count += fs::remove_all(d->path(), ec);
-      if (ec.value() == ENOENT)
-	ec.clear();
-      else if (ec)
-	return -1;
-    }
-
-  if (fs::remove(p, ec))
-    ++count;
-  return ec ? -1 : count;
+  return fs::do_remove_all(p, ErrorReporter{ec});
 }
 
 void
