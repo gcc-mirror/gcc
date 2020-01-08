@@ -907,8 +907,8 @@ dump_ipa_call_summary (FILE *f, int indent, struct cgraph_node *node,
       int i;
 
       fprintf (f,
-	       "%*s%s/%i %s\n%*s  freq:%4.2f",
-	       indent, "", callee->name (), callee->order,
+	       "%*s%s %s\n%*s  freq:%4.2f",
+	       indent, "", callee->dump_name (),
 	       !edge->inline_failed
 	       ? "inlined" : cgraph_inline_failed_string (edge-> inline_failed),
 	       indent, "", edge->sreal_frequency ().to_double ());
@@ -3505,9 +3505,8 @@ ipa_call_context::estimate_size_and_time (int *ret_size,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       bool found = false;
-      fprintf (dump_file, "   Estimating body: %s/%i\n"
-	       "   Known to be false: ", m_node->name (),
-	       m_node->order);
+      fprintf (dump_file, "   Estimating body: %s\n"
+	       "   Known to be false: ", m_node->dump_name ());
 
       for (i = predicate::not_inlined_condition;
 	   i < (predicate::first_dynamic_condition
@@ -4034,8 +4033,7 @@ inline_analyze_function (struct cgraph_node *node)
   push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 
   if (dump_file)
-    fprintf (dump_file, "\nAnalyzing function: %s/%u\n",
-	     node->name (), node->order);
+    fprintf (dump_file, "\nAnalyzing function: %s\n", node->dump_name ());
   if (opt_for_fn (node->decl, optimize) && !node->thunk.thunk_p)
     inline_indirect_intraprocedural_analysis (node);
   compute_fn_summary (node, false);

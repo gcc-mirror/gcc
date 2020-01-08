@@ -1,5 +1,11 @@
 2020-01-08  Martin Liska  <mliska@suse.cz>
 
+	* ipa-fnsummary.c (dump_ipa_call_summary): Use symtab_node::dump_name.
+	(ipa_call_context::estimate_size_and_time): Likewise.
+	(inline_analyze_function): Likewise.
+
+2020-01-08  Martin Liska  <mliska@suse.cz>
+
 	* cgraph.c (cgraph_node::dump): Use systematically
 	dump_asm_name.
 

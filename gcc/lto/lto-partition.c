@@ -734,10 +734,10 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 	  best_varpool_pos = varpool_pos;
 	}
       if (dump_file)
-	fprintf (dump_file, "Step %i: added %s/%i, size %i, "
+	fprintf (dump_file, "Step %i: added %s, size %i, "
 		 "cost %" PRId64 "/%" PRId64 " "
 		 "best %" PRId64 "/%" PRId64", step %i\n", i,
-		 order[i]->name (), order[i]->order,
+		 order[i]->dump_name (),
 		 partition->insns, cost, internal,
 		 best_cost, best_internal, best_i);
       /* Partition is too large, unwind into step when best cost was reached and
