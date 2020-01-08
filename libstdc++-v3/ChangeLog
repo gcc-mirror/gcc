@@ -1,3 +1,13 @@
+2020-01-07  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/std/condition_variable
+	(condition_variable_any::wait_on): Rename to match current draft
+	standard.
+	(condition_variable_any::wait_on_until): Likewise.
+	(condition_variable_any::wait_on_for): Likewise.
+	* testsuite/30_threads/condition_variable_any/stop_token/wait_on.cc:
+	Adjust tests to account for renamed methods.
+
 2020-01-07  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/92124
