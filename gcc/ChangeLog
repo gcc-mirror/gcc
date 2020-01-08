@@ -1,3 +1,11 @@
+2020-01-08  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/93084
+	* ipa-cp.c (self_recursively_generated_p): Find matched aggregate
+	lattice for a value to check.
+	(propagate_vals_across_arith_jfunc): Add an assertion to ensure
+	finite propagation in self-recursive scc.
+
 2020-01-08  Luo Xiong Hu  <luoxhu@linux.ibm.com>
 
 	* ipa-inline.c (caller_growth_limits): Restore the AND.

@@ -1917,9 +1917,24 @@ self_recursively_generated_p (ipcp_value<tree> *val)
 
       class ipcp_param_lattices *plats = ipa_get_parm_lattices (info,
 								src->index);
-      ipcp_lattice<tree> *src_lat = src->offset == -1 ? &plats->itself
-						      : plats->aggs;
+      ipcp_lattice<tree> *src_lat;
       ipcp_value<tree> *src_val;
+
+      if (src->offset == -1)
+	src_lat = &plats->itself;
+      else
+	{
+	  struct ipcp_agg_lattice *src_aglat;
+
+	  for (src_aglat = plats->aggs; src_aglat; src_aglat = src_aglat->next)
+	    if (src_aglat->offset == src->offset)
+	      break;
+
+	  if (!src_aglat)
+	    return false;
+
+	  src_lat = src_aglat;
+	}
 
       for (src_val = src_lat->values; src_val; src_val = src_val->next)
 	if (src_val == val)
@@ -2016,6 +2031,8 @@ propagate_vals_across_arith_jfunc (cgraph_edge *cs,
 	  else
 	    val_seeds.safe_push (src_val);
 	}
+
+      gcc_assert ((int) val_seeds.length () <= param_ipa_cp_value_list_size);
 
       /* Recursively generate lattice values with a limited count.  */
       FOR_EACH_VEC_ELT (val_seeds, i, src_val)
