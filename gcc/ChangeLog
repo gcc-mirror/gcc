@@ -1,3 +1,9 @@
+2020-01-20  Fangrui Song  <maskray@google.com>
+
+	PR middle-end/93194
+	* targhooks.c (default_print_patchable_function_entry): Align to
+	POINTER_SIZE.
+
 2020-01-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/93319

@@ -1812,6 +1812,7 @@ default_print_patchable_function_entry (FILE *file,
 
       switch_to_section (get_section ("__patchable_function_entries",
 				      SECTION_WRITE | SECTION_RELRO, NULL));
+      assemble_align (POINTER_SIZE);
       fputs (asm_op, file);
       assemble_name_raw (file, buf);
       fputc ('\n', file);
