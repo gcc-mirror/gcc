@@ -2322,7 +2322,7 @@ multilibs for @samp{double}, whereas the second option implies
 that @samp{long double} --- and hence also @samp{double} --- is always
 32@tie{}bits wide.
 
-@item --with-double-comparison=@{tristate|3|bool|2|libf7@}
+@item --with-double-comparison=@{tristate|bool|libf7@}
 Only supported for the AVR target since version@tie{}10.
 Specify what result format is returned by library functions that
 compare 64-bit floating point values (@code{DFmode}).
