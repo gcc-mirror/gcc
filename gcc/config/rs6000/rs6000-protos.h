@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 2000-2019 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -112,6 +112,7 @@ extern const char *rs6000_pltseq_template (rtx *, int);
 extern enum rtx_code rs6000_reverse_condition (machine_mode,
 					       enum rtx_code);
 extern rtx rs6000_emit_eqne (machine_mode, rtx, rtx, rtx);
+extern rtx rs6000_emit_fp_cror (rtx_code, machine_mode, rtx);
 extern void rs6000_emit_sCOND (machine_mode, rtx[]);
 extern void rs6000_emit_cbranch (machine_mode, rtx[]);
 extern char * output_cbranch (rtx, const char *, int, rtx_insn *);

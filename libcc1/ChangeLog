@@ -1,3 +1,38 @@
+2020-01-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* libcp1plugin.cc (plugin_build_new_expr): Update build_new call.
+
+2020-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2019-12-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* libcp1plugin.cc (plugin_build_unary_expr): Update delete_sanity
+	call.
+
+2019-12-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* libcp1plugin.cc (plugin_build_unary_expr): Update build_throw
+	and cxx_sizeof_or_alignof_expr calls.
+	(plugin_build_unary_type_expr): Likewise for
+	cxx_sizeof_or_alignof_type.
+
+2019-12-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* libcp1plugin.cc (plugin_build_cast_expr): Adjust build_cast
+	declaration.
+
+2019-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* libcp1plugin.cc (plugin_build_expression_list_expr): Adjust
+	build_functional_cast call.
+
+2019-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* libcp1plugin.cc (plugin_pragma_push_user_expression): Update
+	cp_build_indirect_ref call.
+
 2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
 
 	* configure: Regenerate.

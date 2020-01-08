@@ -1,6 +1,7 @@
 /* Test the valid @cc<cc> asm flag outputs.  */
 /* { dg-do compile } */
 /* { dg-options "-O" } */
+/* { dg-skip-if "" { arm_thumb1 } } */
 
 #ifndef __GCC_ASM_FLAG_OUTPUTS__
 #error "missing preprocessor define"

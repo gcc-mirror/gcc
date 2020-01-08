@@ -35,6 +35,9 @@
 --  package Elists which provides another form of lists that are not threaded
 --  through the nodes (and therefore allow nodes to be on multiple lists).
 
+--  WARNING: There is a C version of this package. Any changes to this
+--  source file must be properly reflected in the C header file nlists.h
+
 with System;
 with Types; use Types;
 

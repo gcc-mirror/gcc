@@ -1,5 +1,5 @@
 /* Backend function setup
-   Copyright (C) 2002-2019 Free Software Foundation, Inc.
+   Copyright (C) 2002-2020 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-types.h"
 #include "trans-array.h"
 #include "trans-const.h"
+#include "intrinsic.h" 		/* For gfc_resolve_index_func.  */
 /* Only for gfc_trans_code.  Shouldn't need to include this.  */
 #include "trans-stmt.h"
 #include "gomp-constants.h"
@@ -307,7 +308,7 @@ gfc_build_label_decl (tree label_id)
 void
 gfc_set_decl_location (tree decl, locus * loc)
 {
-  DECL_SOURCE_LOCATION (decl) = loc->lb->location;
+  DECL_SOURCE_LOCATION (decl) = gfc_get_location (loc);
 }
 
 
@@ -1631,15 +1632,18 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	      /* Add the string length to the same context as the symbol.  */
 	      if (DECL_CONTEXT (length) == NULL_TREE)
 		{
-		  if (DECL_CONTEXT (sym->backend_decl)
-		      == current_function_decl)
+		  if (sym->backend_decl == current_function_decl
+		      || (DECL_CONTEXT (sym->backend_decl)
+			  == current_function_decl))
 		    gfc_add_decl_to_function (length);
 		  else
 		    gfc_add_decl_to_parent_function (length);
 		}
 
-	      gcc_assert (DECL_CONTEXT (sym->backend_decl)
-			  == DECL_CONTEXT (length));
+	      gcc_assert (sym->backend_decl == current_function_decl
+			  ? DECL_CONTEXT (length) == current_function_decl
+			  : (DECL_CONTEXT (sym->backend_decl)
+			     == DECL_CONTEXT (length)));
 
 	      gfc_defer_symbol_init (sym);
 	    }
@@ -1757,7 +1761,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
     }
 
   /* Create the decl for the variable.  */
-  decl = build_decl (sym->declared_at.lb->location,
+  decl = build_decl (gfc_get_location (&sym->declared_at),
 		     VAR_DECL, gfc_sym_identifier (sym), gfc_sym_type (sym));
 
   /* Add attributes to variables.  Functions are handled elsewhere.  */
@@ -2207,7 +2211,28 @@ module_sym:
 		{
 		  /* All specific intrinsics take less than 5 arguments.  */
 		  gcc_assert (isym->formal->next->next->next->next == NULL);
-		  isym->resolve.f4 (&e, &argexpr, NULL, NULL, NULL);
+		  if (isym->resolve.f1m == gfc_resolve_index_func)
+		    {
+		      /* gfc_resolve_index_func is special because it takes a
+			 gfc_actual_arglist instead of individual arguments.  */
+		      gfc_actual_arglist *a, *n;
+		      int i;
+		      a = gfc_get_actual_arglist();
+		      n = a;
+
+		      for (i = 0; i < 4; i++)
+			{
+			  n->next = gfc_get_actual_arglist();
+			  n = n->next;
+			}
+
+		      a->expr = &argexpr;
+		      isym->resolve.f1m (&e, a);
+		      a->expr = NULL;
+		      gfc_free_actual_arglist (a);
+		    }
+		  else
+		    isym->resolve.f4 (&e, &argexpr, NULL, NULL, NULL);
 		}
 	    }
 	}

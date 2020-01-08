@@ -57,7 +57,8 @@ void f(X &x, bool b)
   h (b ? x.i : x.k);
   h (b ? x.j : x.k);
 
-  (long &)(b ? x.i : x.j); // { dg-error "address of bit-field" }
-  (long &)(b ? x.i : x.k); // { dg-error "address of bit-field" }
-  (long &)(b ? x.j : x.k); // { dg-error "address of bit-field" }
+  (long &)(b ? x.i : x.j); // { dg-error "18:attempt to take address of bit-field" }
+  (long &)(b ? x.i : x.k); // { dg-error "18:attempt to take address of bit-field" }
+  // { dg-error "24:attempt to take address of bit-field" "" { target *-*-* } .-1 }
+  (long &)(b ? x.j : x.k); // { dg-error "24:attempt to take address of bit-field" }
 }

@@ -302,7 +302,7 @@ package body Ch12 is
 
       elsif Token /= Tok_Left_Paren
         and then Token_Is_At_Start_Of_Line
-        and then Start_Column <= Scope.Table (Scope.Last).Ecol
+        and then Start_Column <= Scopes (Scope.Last).Ecol
       then
          return No_List;
 
@@ -971,9 +971,16 @@ package body Ch12 is
       end if;
 
       if Token = Tok_With then
-         Scan; -- past WITH
-         Set_Private_Present (Def_Node, True);
-         T_Private;
+
+         if Ada_Version >= Ada_2020 and Token /= Tok_Private then
+            --  Formal type has aspect specifications, parsed later.
+            return Def_Node;
+
+         else
+            Scan; -- past WITH
+            Set_Private_Present (Def_Node, True);
+            T_Private;
+         end if;
 
       elsif Token = Tok_Tagged then
          Scan;

@@ -1,5 +1,5 @@
 /* Basic block reordering routines for the GNU compiler.
-   Copyright (C) 2000-2019 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -112,6 +112,7 @@
 #include "cfgcleanup.h"
 #include "bb-reorder.h"
 #include "except.h"
+#include "alloc-pool.h"
 #include "fibonacci_heap.h"
 #include "stringpool.h"
 #include "attribs.h"
@@ -2661,6 +2662,8 @@ pass_reorder_blocks::execute (function *fun)
       bb->aux = bb->next_bb;
   cfg_layout_finalize ();
 
+  FOR_EACH_BB_FN (bb, fun)
+    df_recompute_luids (bb);
   return 0;
 }
 

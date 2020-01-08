@@ -1,5 +1,5 @@
 /* IPA reference lists.
-   Copyright (C) 2010-2019 Free Software Foundation, Inc.
+   Copyright (C) 2010-2020 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -46,7 +46,7 @@ public:
      function.  */
   bool cannot_lead_to_return ();
 
-  /* Return true if refernece may be used in address compare.  */
+  /* Return true if reference may be used in address compare.  */
   bool address_matters_p ();
 
   /* Return reference list this reference is in.  */

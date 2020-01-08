@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC for Motorola 680x0/ColdFire.
-   Copyright (C) 1987-2019 Free Software Foundation, Inc.
+   Copyright (C) 1987-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -671,36 +671,6 @@ __transfer_from_trampoline ()					\
 #define FUNCTION_MODE QImode
 
 
-/* Tell final.c how to eliminate redundant test instructions.  */
-
-/* Here we define machine-dependent flags and fields in cc_status
-   (see `conditions.h').  */
-
-/* Set if the cc value is actually in the 68881, so a floating point
-   conditional branch must be output.  */
-#define CC_IN_68881 04000
-
-/* On the 68000, all the insns to store in an address register fail to
-   set the cc's.  However, in some cases these instructions can make it
-   possibly invalid to use the saved cc's.  In those cases we clear out
-   some or all of the saved cc's so they won't be used.  */
-#define NOTICE_UPDATE_CC(EXP,INSN) notice_update_cc (EXP, INSN)
-
-/* The shift instructions always clear the overflow bit.  */
-#define CC_OVERFLOW_UNUSABLE 01000
-
-/* The shift instructions use the carry bit in a way not compatible with
-   conditional branches.  conditions.h uses CC_NO_OVERFLOW for this purpose.
-   Rename it to something more understandable.  */
-#define CC_NO_CARRY CC_NO_OVERFLOW
-
-#define OUTPUT_JUMP(NORMAL, FLOAT, NO_OV)  \
-do { if (cc_prev_status.flags & CC_IN_68881)			\
-    return FLOAT;						\
-  if (cc_prev_status.flags & CC_NO_OVERFLOW)			\
-    return NO_OV;						\
-  return NORMAL; } while (0)
-
 /* Control the assembler format that we output.  */
 
 #define ASM_APP_ON "#APP\n"
@@ -899,6 +869,8 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
 #define PRINT_OPERAND(FILE, X, CODE) print_operand (FILE, X, CODE)
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
+
+#define CC_STATUS_INIT m68k_init_cc ()
 
 #include "config/m68k/m68k-opts.h"
 

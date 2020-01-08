@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2019 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2020 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -4163,8 +4163,6 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_VECTORIZE_VEC_PERM_CONST
 
-@hook TARGET_VECTORIZE_BUILTIN_CONVERSION
-
 @hook TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
 
 @hook TARGET_VECTORIZE_BUILTIN_MD_VECTORIZED_FUNCTION
@@ -7998,22 +7996,6 @@ object files that are not referenced from @code{main} and uses export
 lists.
 @end defmac
 
-@defmac MODIFY_JNI_METHOD_CALL (@var{mdecl})
-Define this macro to a C expression representing a variant of the
-method call @var{mdecl}, if Java Native Interface (JNI) methods
-must be invoked differently from other methods on your target.
-For example, on 32-bit Microsoft Windows, JNI methods must be invoked using
-the @code{stdcall} calling convention and this macro is then
-defined as this expression:
-
-@smallexample
-build_type_attribute_variant (@var{mdecl},
-                              build_tree_list
-                              (get_identifier ("stdcall"),
-                               NULL))
-@end smallexample
-@end defmac
-
 @hook TARGET_CANNOT_MODIFY_JUMPS_P
 
 @hook TARGET_HAVE_CONDITIONAL_EXECUTION
@@ -8104,6 +8086,8 @@ and scanf formatter settings.
 @hook TARGET_PROMOTED_TYPE
 
 @hook TARGET_CONVERT_TO_TYPE
+
+@hook TARGET_VERIFY_TYPE_CONTEXT
 
 @defmac OBJC_JBLEN
 This macro determines the size of the objective C jump buffer for the

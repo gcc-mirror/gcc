@@ -1,5 +1,5 @@
 /* Interprocedural scalar replacement of aggregates
-   Copyright (C) 2008-2019 Free Software Foundation, Inc.
+   Copyright (C) 2008-2020 Free Software Foundation, Inc.
 
    Contributed by Martin Jambor <mjambor@suse.cz>
 
@@ -3167,7 +3167,7 @@ isra_mark_caller_param_used (isra_func_summary *from_ifs, int input_idx,
 
 
 /* Propagate information that any parameter is not used only locally within a
-   SCC accross CS to the caller, which must be in the same SCC as the
+   SCC across CS to the caller, which must be in the same SCC as the
    callee. Push any callers that need to be re-processed to STACK.  */
 
 static void
@@ -3397,7 +3397,7 @@ param_splitting_across_edge (cgraph_edge *cs)
        : 0);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "Splitting accross %s->%s:\n",
+    fprintf (dump_file, "Splitting across %s->%s:\n",
 	     cs->caller->dump_name (), callee->dump_name ());
 
   unsigned i;
@@ -3759,6 +3759,9 @@ process_isra_node_results (cgraph_node *node,
     = node->create_virtual_clone (callers, NULL, new_adjustments, "isra",
 				  suffix_counter);
   suffix_counter++;
+  if (node->same_comdat_group)
+    new_node->add_to_same_comdat_group (node);
+  new_node->calls_comdat_local = node->calls_comdat_local;
 
   if (dump_file)
     fprintf (dump_file, "  Created new node %s\n", new_node->dump_name ());
@@ -3873,9 +3876,9 @@ ipa_sra_analysis (void)
 	      param_removal_cross_scc_edge (cs);
 	}
 
-      /* Look at edges within the current SCC and propagate used-ness accross
-          them, pushing onto the stack all notes which might need to be
-          revisited.  */
+      /* Look at edges within the current SCC and propagate used-ness across
+	 them, pushing onto the stack all notes which might need to be
+	 revisited.  */
       FOR_EACH_VEC_ELT (cycle_nodes, j, v)
 	v->call_for_symbol_thunks_and_aliases (propagate_used_to_scc_callers,
 					       &stack, true);

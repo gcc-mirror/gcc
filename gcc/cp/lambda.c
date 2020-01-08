@@ -3,7 +3,7 @@
    building RTL.  These routines are used both during actual parsing
    and during the instantiation of template functions.
 
-   Copyright (C) 1998-2019 Free Software Foundation, Inc.
+   Copyright (C) 1998-2020 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "toplev.h"
 #include "gimplify.h"
+#include "target.h"
 
 /* Constructor for a lambda expression.  */
 
@@ -579,6 +580,9 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 	      cxx_incomplete_type_inform (type);
 	      return error_mark_node;
 	    }
+	  else if (!verify_type_context (input_location,
+					 TCTX_CAPTURE_BY_COPY, type))
+	    return error_mark_node;
 	}
     }
 

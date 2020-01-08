@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for ATMEL AVR micro controllers
-   Copyright (C) 1998-2019 Free Software Foundation, Inc.
+   Copyright (C) 1998-2020 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
    This file is part of GCC.
@@ -14573,6 +14573,23 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
     }
 
   return NULL_TREE;
+}
+
+
+/* Worker function for `FLOAT_LIB_COMPARE_RETURNS_BOOL'.  */
+
+bool
+avr_float_lib_compare_returns_bool (machine_mode mode, enum rtx_code)
+{
+  if (mode == DFmode)
+    {
+#if WITH_DOUBLE_COMPARISON == 2
+      return true;
+#endif
+    }
+
+  // This is the GCC default and also what AVR-LibC implements.
+  return false;
 }
 
 

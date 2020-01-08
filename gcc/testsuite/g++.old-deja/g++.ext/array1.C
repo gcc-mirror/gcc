@@ -19,5 +19,5 @@ void
 ccBgaInspection::reinspect (unsigned long diag_flags) 
 {
   ct2d_rigid physTdev;		 
-  _dev2phys = physTdev; // { dg-error "" } 
+  _dev2phys = physTdev; // { dg-error "13:incompatible types in assignment" } 
 }

@@ -889,7 +889,7 @@ get_call_site_action_for (_Unwind_Ptr ip,
    argument, and PROPAGATED_EXCEPTION a pointer to the currently propagated
    occurrence, return true if the latter matches the former, that is, if
    PROPAGATED_EXCEPTION is caught by the handling code controlled by CHOICE.
-   This takes care of the special Non_Ada_Error case on VMS.  */
+*/
 
 #define Is_Handled_By_Others  __gnat_is_handled_by_others
 #define Language_For          __gnat_language_for
@@ -905,11 +905,6 @@ extern Exception_Id EID_For (_GNAT_Exception * e);
 
 #define Foreign_Exception system__exceptions__foreign_exception
 extern struct Exception_Data Foreign_Exception;
-
-#ifdef VMS
-#define Non_Ada_Error system__aux_dec__non_ada_error
-extern struct Exception_Data Non_Ada_Error;
-#endif
 
 /* Return true iff the exception class of EXCEPT is EC.  */
 
@@ -950,23 +945,6 @@ is_handled_by (_Unwind_Ptr choice, _GNAT_Exception *propagated_exception)
          unless explicitly stated otherwise in the propagated occurrence.  */
       if (choice == E || (choice == GNAT_OTHERS && Is_Handled_By_Others (E)))
 	return handler;
-
-#ifdef VMS
-      /* In addition, on OpenVMS, Non_Ada_Error matches VMS exceptions, and we
-         may have different exception data pointers that should match for the
-         same condition code, if both an export and an import have been
-         registered.  The import code for both the choice and the propagated
-         occurrence are expected to have been masked off regarding severity
-         bits already (at registration time for the former and from within the
-         low level exception vector for the latter).  */
-      if ((Language_For (E) == 'V'
-	   && choice != GNAT_OTHERS
-	   && ((Language_For (choice) == 'V'
-		&& Foreign_Data_For (choice) != 0
-		&& Foreign_Data_For (choice) == Foreign_Data_For (E))
-	       || choice == (_Unwind_Ptr)&Non_Ada_Error)))
-	return handler;
-#endif
 
       /* Otherwise, it doesn't match an Ada choice.  */
       return nothing;
@@ -1271,36 +1249,8 @@ personality_body (_Unwind_Action uw_phases,
 }
 
 #ifndef __ARM_EABI_UNWINDER__
-/* Major tweak for ia64-vms : the CHF propagation phase calls this personality
-   routine with sigargs/mechargs arguments and has very specific expectations
-   on possible return values.
-
-   We handle this with a number of specific tricks:
-
-   1. We tweak the personality routine prototype to have the "version" and
-      "phases" two first arguments be void * instead of int and _Unwind_Action
-      as nominally expected in the GCC context.
-
-      This allows us to access the full range of bits passed in every case and
-      has no impact on the callers side since each argument remains assigned
-      the same single 64bit slot.
-
-   2. We retrieve the corresponding int and _Unwind_Action values within the
-      routine for regular use with truncating conversions. This is a noop when
-      called from the libgcc unwinder.
-
-   3. We assume we're called by the VMS CHF when unexpected bits are set in
-      both those values. The incoming arguments are then real sigargs and
-      mechargs pointers, which we then redirect to __gnat_handle_vms_condition
-      for proper processing.
-*/
-#if defined (VMS) && defined (__IA64)
-typedef void * version_arg_t;
-typedef void * phases_arg_t;
-#else
 typedef int version_arg_t;
 typedef _Unwind_Action phases_arg_t;
-#endif
 
 PERSONALITY_STORAGE _Unwind_Reason_Code
 PERSONALITY_FUNCTION (version_arg_t, phases_arg_t,
@@ -1321,28 +1271,9 @@ PERSONALITY_FUNCTION (version_arg_t version_arg,
   int uw_version = (int) version_arg;
   _Unwind_Action uw_phases = (_Unwind_Action) phases_arg;
 
-  /* Check that we're called from the ABI context we expect, with a major
-     possible variation on VMS for IA64.  */
+  /* Check that we're called from the ABI context we expect.  */
   if (uw_version != 1)
-    {
-#if defined (VMS) && defined (__IA64)
-
-      /* Assume we're called with sigargs/mechargs arguments if really
-	 unexpected bits are set in our first two formals.  Redirect to the
-	 GNAT condition handling code in this case.  */
-
-      extern long __gnat_handle_vms_condition (void *, void *);
-
-      unsigned int version_unexpected_bits_mask = 0xffffff00U;
-      unsigned int phases_unexpected_bits_mask  = 0xffffff00U;
-
-      if ((unsigned int)uw_version & version_unexpected_bits_mask
-	  && (unsigned int)uw_phases & phases_unexpected_bits_mask)
-	return __gnat_handle_vms_condition (version_arg, phases_arg);
-#endif
-
-      return _URC_FATAL_PHASE1_ERROR;
-    }
+    return _URC_FATAL_PHASE1_ERROR;
 
   return personality_body (uw_phases, uw_exception, uw_context);
 }
@@ -1666,6 +1597,19 @@ __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
   return
     _GCC_specific_handler (ms_exc, this_frame, ms_orig_context, ms_disp,
 			   __gnat_personality_imp);
+}
+
+/* Define __gnat_personality_v0 for convenience */
+
+PERSONALITY_STORAGE _Unwind_Reason_Code
+__gnat_personality_v0 (version_arg_t version_arg,
+		       phases_arg_t phases_arg,
+		       _Unwind_Exception_Class uw_exception_class,
+		       _Unwind_Exception *uw_exception,
+		       _Unwind_Context *uw_context)
+{
+  return PERSONALITY_FUNCTION
+    (version_arg, phases_arg, uw_exception_class, uw_exception, uw_context);
 }
 
 #endif /* SEH */

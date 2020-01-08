@@ -10,5 +10,5 @@ struct B: public A { void f () { } };
 int main()
 {
   B* bp;
-  A& ar = (A&)bp;		// { dg-warning "" } 
+  A& ar = (A&)bp;		// { dg-warning "11:casting .B\\*. to .A&. does not dereference pointer" } 
 }

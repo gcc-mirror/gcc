@@ -1,5 +1,5 @@
 /* Declarations for interface to insn recognizer and insn-output.c.
-   Copyright (C) 1987-2019 Free Software Foundation, Inc.
+   Copyright (C) 1987-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -112,7 +112,6 @@ extern void validate_replace_rtx_group (rtx, rtx, rtx_insn *);
 extern void validate_replace_src_group (rtx, rtx, rtx_insn *);
 extern bool validate_simplify_insn (rtx_insn *insn);
 extern int num_changes_pending (void);
-extern int next_insn_tests_no_inequality (rtx_insn *);
 extern bool reg_fits_class_p (const_rtx, reg_class_t, int, machine_mode);
 
 extern int offsettable_memref_p (rtx);

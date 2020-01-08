@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for ATMEL AVR at90s8515, ATmega103/103L, ATmega603/603L microcontrollers.
-   Copyright (C) 1998-2019 Free Software Foundation, Inc.
+   Copyright (C) 1998-2020 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
 This file is part of GCC.
@@ -106,6 +106,9 @@ FIXME: DRIVER_SELF_SPECS has changed.
 #define BITS_BIG_ENDIAN 0
 #define BYTES_BIG_ENDIAN 0
 #define WORDS_BIG_ENDIAN 0
+
+#define FLOAT_LIB_COMPARE_RETURNS_BOOL(mode, comparison) \
+  avr_float_lib_compare_returns_bool (mode, comparison)
 
 #ifdef IN_LIBGCC2
 /* This is to get correct SI and DI modes in libgcc2.c (32 and 64 bits).  */

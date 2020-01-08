@@ -1,5 +1,5 @@
 /* Scanning of rtl for dataflow analysis.
-   Copyright (C) 2007-2019 Free Software Foundation, Inc.
+   Copyright (C) 2007-2020 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck (zadeck@naturalbridge.com).
 
 This file is part of GCC.
@@ -324,11 +324,12 @@ regstat_bb_compute_calls_crossed (unsigned int bb_index, bitmap live)
 
   FOR_BB_INSNS_REVERSE (bb, insn)
     {
-      struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
-      unsigned int regno;
-
       if (!NONDEBUG_INSN_P (insn))
 	continue;
+
+      gcc_assert (INSN_UID (insn) < (int) DF_INSN_SIZE ());
+      struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+      unsigned int regno;
 
       /* Process the defs.  */
       if (CALL_P (insn))

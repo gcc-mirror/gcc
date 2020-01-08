@@ -14,5 +14,5 @@ A* f();
 
 int main()
 {
-   B* b = dynamic_cast<B*>(f()); // { dg-error "" }
+   B* b = dynamic_cast<B*>(f()); // { dg-error "11:.dynamic_cast. not permitted" }
 }

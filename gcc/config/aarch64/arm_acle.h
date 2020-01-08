@@ -1,6 +1,6 @@
 /* AArch64 Non-NEON ACLE intrinsics include file.
 
-   Copyright (C) 2014-2019 Free Software Foundation, Inc.
+   Copyright (C) 2014-2020 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -206,6 +206,29 @@ __rndrrs (uint64_t *__res)
 {
   return __builtin_aarch64_rndrrs (__res);
 }
+
+#pragma GCC pop_options
+
+#pragma GCC push_options
+#pragma GCC target ("arch=armv8.5-a+memtag")
+
+#define __arm_mte_create_random_tag(__ptr, __u64_mask) \
+  __builtin_aarch64_memtag_irg(__ptr, __u64_mask)
+
+#define __arm_mte_exclude_tag(__ptr, __u64_excluded) \
+  __builtin_aarch64_memtag_gmi(__ptr, __u64_excluded)
+
+#define __arm_mte_ptrdiff(__ptr_a, __ptr_b) \
+  __builtin_aarch64_memtag_subp(__ptr_a, __ptr_b)
+
+#define __arm_mte_increment_tag(__ptr, __u_offset) \
+  __builtin_aarch64_memtag_inc_tag(__ptr, __u_offset)
+
+#define __arm_mte_set_tag(__tagged_address) \
+  __builtin_aarch64_memtag_set_tag(__tagged_address)
+
+#define __arm_mte_get_tag(__address) \
+  __builtin_aarch64_memtag_get_tag(__address)
 
 #pragma GCC pop_options
 

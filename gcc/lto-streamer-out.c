@@ -1,6 +1,6 @@
 /* Write the GIMPLE representation to a file stream.
 
-   Copyright (C) 2009-2019 Free Software Foundation, Inc.
+   Copyright (C) 2009-2020 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
    Re-implemented by Diego Novillo <dnovillo@google.com>
 
@@ -514,7 +514,7 @@ public:
     tree t;
     hashval_t hash;
   };
-  vec<scc_entry> sccstack;
+  auto_vec<scc_entry,32> sccstack;
 
 private:
   struct sccs
@@ -544,7 +544,7 @@ private:
 	    bool ref_p, bool this_ref_p);
 
   hash_map<tree, sccs *> sccstate;
-  vec<worklist> worklist_vec;
+  auto_vec<worklist, 32> worklist_vec;
   struct obstack sccstate_obstack;
 };
 
@@ -558,9 +558,7 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 	  bool single_p)
 {
   unsigned int next_dfs_num = 1;
-  sccstack.create (0);
   gcc_obstack_init (&sccstate_obstack);
-  worklist_vec = vNULL;
   DFS_write_tree (ob, NULL, expr, ref_p, this_ref_p);
   while (!worklist_vec.is_empty ())
     {
@@ -735,12 +733,10 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 	from_state->low = MIN (cstate->dfsnum, from_state->low);
       worklist_vec.pop ();
     }
-  worklist_vec.release ();
 }
 
 DFS::~DFS ()
 {
-  sccstack.release ();
   obstack_free (&sccstate_obstack, NULL);
 }
 

@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2019 Free Software Foundation, Inc.
+   Copyright (C) 2003-2020 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -133,10 +133,8 @@ symbol_table::call_varpool_insertion_hooks (varpool_node *node)
 
 varpool_node *
 varpool_node::create_empty (void)
-{   
-  varpool_node *node = ggc_cleared_alloc<varpool_node> ();
-  node->type = SYMTAB_VARIABLE;
-  return node;
+{
+  return new (ggc_alloc<varpool_node> ()) varpool_node ();
 }   
 
 /* Return varpool node assigned to DECL.  Create new one when needed.  */
@@ -540,7 +538,10 @@ varpool_node::assemble_aliases (void)
   FOR_EACH_ALIAS (this, ref)
     {
       varpool_node *alias = dyn_cast <varpool_node *> (ref->referring);
-      if (!alias->transparent_alias)
+      if (alias->symver)
+	do_assemble_symver (alias->decl,
+			    DECL_ASSEMBLER_NAME (decl));
+      else if (!alias->transparent_alias)
 	do_assemble_alias (alias->decl,
 			   DECL_ASSEMBLER_NAME (decl));
       alias->assemble_aliases ();

@@ -174,6 +174,20 @@ proc libgomp_init { args } {
     # For build-tree testing, also consider the library paths used for builing.
     # For installed testing, we assume all that to be provided in the sysroot.
     if { $blddir != "" } {
+	# The `-fopenacc' and `-fopenmp' options imply `-pthread', and
+	# that implies `-latomic' on some hosts, so wire in libatomic
+	# build directories.
+	if [ishost "riscv*-*-linux*"] {
+	    set shlib_ext [get_shlib_extension]
+	    set atomic_library_path "${blddir}/../libatomic/.libs"
+	    if { [file exists "${atomic_library_path}/libatomic.a"]
+		 || [file exists \
+		     "${atomic_library_path}/libatomic.${shlib_ext}"] } {
+		lappend ALWAYS_CFLAGS \
+		    "additional_flags=-L${atomic_library_path}"
+		append always_ld_library_path ":${atomic_library_path}"
+	    }
+	}
 	global cuda_driver_include
 	global cuda_driver_lib
 	if { $cuda_driver_include != "" } {
@@ -304,6 +318,9 @@ proc libgomp_option_proc { option } {
 # not supported, and 'host' for offload target 'disable'.
 proc offload_target_to_openacc_device_type { offload_target } {
     switch -glob $offload_target {
+	amdgcn* {
+	    return "gcn"
+	}
 	disable {
 	    return "host"
 	}
@@ -320,6 +337,27 @@ proc offload_target_to_openacc_device_type { offload_target } {
 	    error "Unknown offload target: $offload_target"
 	}
     }
+}
+
+# Return 1 if compiling for offload target nvptx.
+proc check_effective_target_offload_target_nvptx { } {
+    # Consider all actual options, including the flags passed to
+    # 'gcc-dg-runtest', or 'gfortran-dg-runtest' (see the 'libgomp.*/*.exp'
+    # files; in particular, '-foffload', 'libgomp.oacc-*/*.exp'), which don't
+    # get passed on to 'check_effective_target_*' functions.  (Not caching the
+    # result due to that.)
+    set options [current_compiler_flags]
+    # Instead of inspecting command-line options, look what the compiler driver
+    # decides.  This is somewhat modelled after
+    # 'gcc/testsuite/lib/target-supports.exp:check_configured_with'.
+    set gcc_output [libgomp_target_compile "-v $options" "" "none" ""]
+    if [regexp "(?n)^OFFLOAD_TARGET_NAMES=(.*)" $gcc_output dummy offload_targets] {
+	verbose "compiling for offload targets: $offload_targets"
+	return [string match "*:nvptx*:*" ":$offload_targets:"]
+    }
+
+    verbose "not compiling for any offload targets"
+    return 0
 }
 
 # Return 1 if offload device is available.
@@ -444,3 +482,29 @@ proc check_effective_target_hsa_offloading_selected {} {
 	check_effective_target_hsa_offloading_selected_nocache
     }]
 }
+
+# Return 1 if at least one AMD GCN board is present.
+
+proc check_effective_target_openacc_amdgcn_accel_present { } {
+    return [check_runtime openacc_amdgcn_accel_present {
+	#include <openacc.h>
+	int main () {
+	return !(acc_get_num_devices (acc_device_gcn) > 0);
+	}
+    } "" ]
+}
+
+# Return 1 if at least one AMD GCN board is present, and the AMD GCN device
+# type is selected by default.
+
+proc check_effective_target_openacc_amdgcn_accel_selected { } {
+    if { ![check_effective_target_openacc_amdgcn_accel_present] } {
+	return 0;
+    }
+    global offload_target
+    if { [string match "amdgcn*" $offload_target] } {
+        return 1;
+    }
+    return 0;
+}
+

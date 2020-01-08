@@ -1,5 +1,5 @@
 /* Perform type resolution on the various structures.
-   Copyright (C) 2001-2019 Free Software Foundation, Inc.
+   Copyright (C) 2001-2020 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -3900,6 +3900,42 @@ impure_function_callback (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
   return 0;
 }
 
+/* Return true if TYPE is character based, false otherwise.  */
+
+static int
+is_character_based (bt type)
+{
+  return type == BT_CHARACTER || type == BT_HOLLERITH;
+}
+
+
+/* If expression is a hollerith, convert it to character and issue a warning
+   for the conversion.  */
+
+static void
+convert_hollerith_to_character (gfc_expr *e)
+{
+  if (e->ts.type == BT_HOLLERITH)
+    {
+      gfc_typespec t;
+      gfc_clear_ts (&t);
+      t.type = BT_CHARACTER;
+      t.kind = e->ts.kind;
+      gfc_convert_type_warn (e, &t, 2, 1);
+    }
+}
+
+/* Convert to numeric and issue a warning for the conversion.  */
+
+static void
+convert_to_numeric (gfc_expr *a, gfc_expr *b)
+{
+  gfc_typespec t;
+  gfc_clear_ts (&t);
+  t.type = b->ts.type;
+  t.kind = b->ts.kind;
+  gfc_convert_type_warn (a, &t, 2, 1);
+}
 
 /* Resolve an operator expression node.  This can involve replacing the
    operation with a user defined function call.  */
@@ -4100,6 +4136,15 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_EQ_OS:
     case INTRINSIC_NE:
     case INTRINSIC_NE_OS:
+
+      if (flag_dec
+	  && is_character_based (op1->ts.type)
+	  && is_character_based (op2->ts.type))
+	{
+	  convert_hollerith_to_character (op1);
+	  convert_hollerith_to_character (op2);
+	}
+
       if (op1->ts.type == BT_CHARACTER && op2->ts.type == BT_CHARACTER
 	  && op1->ts.kind == op2->ts.kind)
 	{
@@ -4137,6 +4182,13 @@ resolve_operator (gfc_expr *e)
 	  if (op1->ts.type == BT_REAL && !gfc_boz2real (op2, op1->ts.kind))
 	    return false;
 	}
+      if (flag_dec
+	  && op1->ts.type == BT_HOLLERITH && gfc_numeric_ts (&op2->ts))
+	convert_to_numeric (op1, op2);
+
+      if (flag_dec
+	  && gfc_numeric_ts (&op1->ts) && op2->ts.type == BT_HOLLERITH)
+	convert_to_numeric (op2, op1);
 
       if (gfc_numeric_ts (&op1->ts) && gfc_numeric_ts (&op2->ts))
 	{
@@ -5137,8 +5189,8 @@ gfc_resolve_substring_charlen (gfc_expr *e)
 
 /* Resolve subtype references.  */
 
-static bool
-resolve_ref (gfc_expr *expr)
+bool
+gfc_resolve_ref (gfc_expr *expr)
 {
   int current_part_dimension, n_components, seen_part_dimension;
   gfc_ref *ref, **prev;
@@ -5307,7 +5359,7 @@ fail:
    examining the base symbol and any reference structures it may have.  */
 
 void
-expression_rank (gfc_expr *e)
+gfc_expression_rank (gfc_expr *e)
 {
   gfc_ref *ref;
   int i, rank;
@@ -5322,14 +5374,8 @@ expression_rank (gfc_expr *e)
 	goto done;
       /* Constructors can have a rank different from one via RESHAPE().  */
 
-      if (e->symtree == NULL)
-	{
-	  e->rank = 0;
-	  goto done;
-	}
-
-      e->rank = (e->symtree->n.sym->as == NULL)
-		? 0 : e->symtree->n.sym->as->rank;
+      e->rank = ((e->symtree == NULL || e->symtree->n.sym->as == NULL)
+		 ? 0 : e->symtree->n.sym->as->rank);
       goto done;
     }
 
@@ -5354,7 +5400,7 @@ expression_rank (gfc_expr *e)
 	{
 	  /* Figure out the rank of the section.  */
 	  if (rank != 0)
-	    gfc_internal_error ("expression_rank(): Two array specs");
+	    gfc_internal_error ("gfc_expression_rank(): Two array specs");
 
 	  for (i = 0; i < ref->u.ar.dimen; i++)
 	    if (ref->u.ar.dimen_type[i] == DIMEN_RANGE
@@ -5634,7 +5680,7 @@ resolve_variable (gfc_expr *e)
 	}
     }
 
-  if (e->ref && !resolve_ref (e))
+  if (e->ref && !gfc_resolve_ref (e))
     return false;
 
   if (sym->attr.flavor == FL_PROCEDURE
@@ -5796,7 +5842,7 @@ resolve_procedure:
     }
 
   if (t)
-    expression_rank (e);
+    gfc_expression_rank (e);
 
   if (t && flag_coarray == GFC_FCOARRAY_LIB && gfc_is_coindexed (e))
     add_caf_get_intrinsic (e);
@@ -6590,7 +6636,7 @@ resolve_typebound_function (gfc_expr* e)
   if (st == NULL)
     return resolve_compcall (e, NULL);
 
-  if (!resolve_ref (e))
+  if (!gfc_resolve_ref (e))
     return false;
 
   /* Get the CLASS declared type.  */
@@ -6723,7 +6769,7 @@ resolve_typebound_subroutine (gfc_code *code)
   if (st == NULL)
     return resolve_typebound_call (code, NULL, NULL);
 
-  if (!resolve_ref (code->expr1))
+  if (!gfc_resolve_ref (code->expr1))
     return false;
 
   /* Get the CLASS declared type.  */
@@ -6786,7 +6832,7 @@ resolve_ppc_call (gfc_code* c)
   if (!comp->attr.subroutine)
     gfc_add_subroutine (&comp->attr, comp->name, &c->expr1->where);
 
-  if (!resolve_ref (c->expr1))
+  if (!gfc_resolve_ref (c->expr1))
     return false;
 
   if (!update_ppc_arglist (c->expr1))
@@ -6829,7 +6875,7 @@ resolve_expr_ppc (gfc_expr* e)
   if (!comp->attr.function)
     gfc_add_function (&comp->attr, comp->name, &e->where);
 
-  if (!resolve_ref (e))
+  if (!gfc_resolve_ref (e))
     return false;
 
   if (!resolve_actual_arglist (e->value.function.actual, comp->attr.proc,
@@ -6959,7 +7005,7 @@ gfc_resolve_expr (gfc_expr *e)
       break;
 
     case EXPR_SUBSTRING:
-      t = resolve_ref (e);
+      t = gfc_resolve_ref (e);
       break;
 
     case EXPR_CONSTANT:
@@ -6973,14 +7019,14 @@ gfc_resolve_expr (gfc_expr *e)
 
     case EXPR_ARRAY:
       t = false;
-      if (!resolve_ref (e))
+      if (!gfc_resolve_ref (e))
 	break;
 
       t = gfc_resolve_array_constructor (e);
       /* Also try to expand a constructor.  */
       if (t)
 	{
-	  expression_rank (e);
+	  gfc_expression_rank (e);
 	  if (gfc_is_constant_expr (e) || gfc_is_expandable_expr (e))
 	    gfc_expand_constructor (e, false);
 	}
@@ -6999,7 +7045,7 @@ gfc_resolve_expr (gfc_expr *e)
       break;
 
     case EXPR_STRUCTURE:
-      t = resolve_ref (e);
+      t = gfc_resolve_ref (e);
       if (!t)
 	break;
 
@@ -8791,6 +8837,23 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       gcc_assert (target->symtree);
       tsym = target->symtree->n.sym;
 
+      if (tsym->attr.subroutine
+	  || tsym->attr.external
+	  || (tsym->attr.function
+	      && (tsym->result != tsym || tsym->attr.recursive)))
+	{
+	  gfc_error ("Associating entity %qs at %L is a procedure name",
+		     tsym->name, &target->where);
+	  return;
+	}
+
+      if (gfc_expr_attr (target).proc_pointer)
+	{
+	  gfc_error ("Associating entity %qs at %L is a procedure pointer",
+		     tsym->name, &target->where);
+	  return;
+	}
+
       sym->attr.asynchronous = tsym->attr.asynchronous;
       sym->attr.volatile_ = tsym->attr.volatile_;
 
@@ -8798,6 +8861,12 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 			 || gfc_expr_attr (target).pointer;
       if (is_subref_array (target))
 	sym->attr.subref_array_pointer = 1;
+    }
+  else if (target->ts.type == BT_PROCEDURE)
+    {
+      gfc_error ("Associating selector-expression at %L yields a procedure",
+		 &target->where);
+      return;
     }
 
   if (target->expr_type == EXPR_NULL)
@@ -10693,7 +10762,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 
   if ((gfc_numeric_ts (&lhs->ts) || lhs->ts.type == BT_LOGICAL)
       && rhs->ts.type == BT_CHARACTER
-      && rhs->expr_type != EXPR_CONSTANT)
+      && (rhs->expr_type != EXPR_CONSTANT || !flag_dec_char_conversions))
     {
       /* Use of -fdec-char-conversions allows assignment of character data
 	 to non-character variables.  This not permited for nonconstant

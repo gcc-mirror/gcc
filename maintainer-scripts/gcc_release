@@ -430,7 +430,7 @@ announce_snapshot() {
   changedir "${SNAPSHOTS_DIR}"
   echo \
 "Snapshot gcc-"${RELEASE}" is now available on
-  ftp://gcc.gnu.org/pub/gcc/snapshots/"${RELEASE}"/
+  https://gcc.gnu.org/pub/gcc/snapshots/"${RELEASE}"/
 and on various mirrors, see http://gcc.gnu.org/mirrors.html for details.
 
 This snapshot has been generated from the GCC "${BRANCH}" SVN branch

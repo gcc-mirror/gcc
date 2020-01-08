@@ -36,8 +36,6 @@ void bar(int n, float *a, float *b)
     a[i] = b[i];
 }
 
-/* { dg-final { scan-tree-dump-times "Function void omp declare reduction operator\\+" 1 "original" } } */
-/* { dg-final { scan-tree-dump-times "Function void omp declare reduction foo" 2 "original" } } */
 /* { dg-final { scan-tree-dump-times "pragma omp simd reduction\\(u\\) reduction\\(t\\) reduction\\(\\+:s\\) aligned\\(a:32\\)" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "pragma omp simd safelen\\(64\\)" 1 "original" } } */
 /* { dg-final { scan-tree-dump-not "omp parallel" "original" } } */

@@ -1,6 +1,6 @@
 /* Plugin for HSAIL execution.
 
-   Copyright (C) 2013-2019 Free Software Foundation, Inc.
+   Copyright (C) 2013-2020 Free Software Foundation, Inc.
 
    Contributed by Martin Jambor <mjambor@suse.cz> and
    Martin Liska <mliska@suse.cz>.
@@ -697,6 +697,32 @@ GOMP_OFFLOAD_get_num_devices (void)
   if (!init_hsa_context ())
     return 0;
   return hsa_context.agent_count;
+}
+
+/* Part of the libgomp plugin interface.  Return the value of property
+   PROP of agent number N.  */
+
+union gomp_device_property_value
+GOMP_OFFLOAD_get_property (int n, int prop)
+{
+  union gomp_device_property_value nullval = { .val = 0 };
+
+  if (!init_hsa_context ())
+    return nullval;
+  if (n >= hsa_context.agent_count)
+    {
+      GOMP_PLUGIN_error
+	("Request for a property of a non-existing HSA device %i", n);
+      return nullval;
+    }
+
+  switch (prop)
+    {
+    case GOMP_DEVICE_PROPERTY_VENDOR:
+      return (union gomp_device_property_value) { .ptr = "HSA" };
+    default:
+      return nullval;
+    }
 }
 
 /* Part of the libgomp plugin interface.  Initialize agent number N so that it

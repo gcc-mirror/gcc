@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC for
    hosting on Windows32, using a Unix style C library and tools.
-   Copyright (C) 1995-2019 Free Software Foundation, Inc.
+   Copyright (C) 1995-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -384,14 +384,6 @@ do {						\
 		     gen_rtx_SYMBOL_REF (Pmode, "_monstartup")),	\
 	const0_rtx));							\
     }
-
-/* Java Native Interface (JNI) methods on Win32 are invoked using the
-   stdcall calling convention.  */
-#undef MODIFY_JNI_METHOD_CALL
-#define MODIFY_JNI_METHOD_CALL(MDECL)					      \
-  build_type_attribute_variant ((MDECL),				      \
-			       build_tree_list (get_identifier ("stdcall"),   \
-						NULL))
 
 /* For Win32 ABI compatibility */
 #undef DEFAULT_PCC_STRUCT_RETURN

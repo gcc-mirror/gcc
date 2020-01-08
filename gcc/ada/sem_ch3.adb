@@ -1505,6 +1505,7 @@ package body Sem_Ch3 is
          Set_Ekind               (Tag, E_Component);
          Set_Is_Tag              (Tag);
          Set_Is_Aliased          (Tag);
+         Set_Is_Independent      (Tag);
          Set_Related_Type        (Tag, Iface);
          Init_Component_Location (Tag);
 
@@ -1544,6 +1545,7 @@ package body Sem_Ch3 is
             Set_Analyzed (Decl);
             Set_Ekind               (Offset, E_Component);
             Set_Is_Aliased          (Offset);
+            Set_Is_Independent      (Offset);
             Set_Related_Type        (Offset, Iface);
             Init_Component_Location (Offset);
             Insert_After (Last_Tag, Decl);
@@ -2083,7 +2085,15 @@ package body Sem_Ch3 is
       end if;
 
       Set_Etype (Id, T);
-      Set_Is_Aliased (Id, Aliased_Present (Component_Definition (N)));
+
+      if Aliased_Present (Component_Definition (N)) then
+         Set_Is_Aliased (Id);
+
+         --  AI12-001: All aliased objects are considered to be specified as
+         --  independently addressable (RM C.6(8.1/4)).
+
+         Set_Is_Independent (Id);
+      end if;
 
       --  The component declaration may have a per-object constraint, set
       --  the appropriate flag in the defining identifier of the subtype.
@@ -4846,6 +4856,11 @@ package body Sem_Ch3 is
       if Aliased_Present (N) then
          Set_Is_Aliased (Id);
 
+         --  AI12-001: All aliased objects are considered to be specified as
+         --  independently addressable (RM C.6(8.1/4)).
+
+         Set_Is_Independent (Id);
+
          --  If the object is aliased and the type is unconstrained with
          --  defaulted discriminants and there is no expression, then the
          --  object is constrained by the defaults, so it is worthwhile
@@ -6346,6 +6361,11 @@ package body Sem_Ch3 is
          Check_SPARK_05_Restriction
            ("aliased is not allowed", Component_Definition (Def));
          Set_Has_Aliased_Components (Etype (T));
+
+         --  AI12-001: All aliased objects are considered to be specified as
+         --  independently addressable (RM C.6(8.1/4)).
+
+         Set_Has_Independent_Components (Etype (T));
       end if;
 
       --  Ada 2005 (AI-231): Propagate the null-excluding attribute to the
@@ -9741,9 +9761,17 @@ package body Sem_Ch3 is
            (Derived_Type, No_Tagged_Streams_Pragma (Parent_Type));
       end if;
 
-      --  If the parent has primitive routines, set the derived type link
+      --  If the parent has primitive routines and may have not-seen-yet aspect
+      --  specifications (e.g., a Pack pragma), then set the derived type link
+      --  in order to later diagnose "early derivation" issues. If in different
+      --  compilation units, then "early derivation" cannot be an issue (and we
+      --  don't like interunit references that go in the opposite direction of
+      --  semantic dependencies).
 
-      if Has_Primitive_Operations (Parent_Type) then
+      if Has_Primitive_Operations (Parent_Type)
+         and then Enclosing_Comp_Unit_Node (Parent_Type) =
+           Enclosing_Comp_Unit_Node (Derived_Type)
+      then
          Set_Derived_Type_Link (Parent_Base, Derived_Type);
       end if;
 
@@ -12971,25 +12999,33 @@ package body Sem_Ch3 is
               or else Is_Incomplete_Or_Private_Type (Desig_Type))
         and then not Is_Constrained (Desig_Type)
       then
-         --  ??? The following code is a temporary bypass to ignore a
-         --  discriminant constraint on access type if it is constraining
-         --  the current record. Avoid creating the implicit subtype of the
-         --  record we are currently compiling since right now, we cannot
-         --  handle these. For now, just return the access type itself.
+         --  If this is a constrained access definition for a record
+         --  component, we leave the type as an unconstrained access,
+         --  and mark the component so that its actual type is built
+         --  at a point of use (e.g., an assignment statement). This
+         --  is handled in Sem_Util.Build_Actual_Subtype_Of_Component.
 
          if Desig_Type = Current_Scope
            and then No (Def_Id)
          then
-            Error_Msg_Warn := SPARK_Mode /= On;
-            Error_Msg_N ("<<constraint is ignored on component that is "
-                         & "access to current record", S);
-
+            Desig_Subtype :=
+              Create_Itype
+                (E_Void, Related_Nod, Scope_Id => Scope (Desig_Type));
             Set_Ekind (Desig_Subtype, E_Record_Subtype);
             Def_Id := Entity (Subtype_Mark (S));
 
+            --  We indicate that the component has a per-object constraint
+            --  for treatment at a point of use, even though the constraint
+            --  may be independent of discriminants of the enclosing type.
+
+            if Nkind (Related_Nod) = N_Component_Declaration then
+               Set_Has_Per_Object_Constraint
+                 (Defining_Identifier (Related_Nod));
+            end if;
+
             --  This call added to ensure that the constraint is analyzed
             --  (needed for a B test). Note that we still return early from
-            --  this procedure to avoid recursive processing. ???
+            --  this procedure to avoid recursive processing.
 
             Constrain_Discriminated_Type
               (Desig_Subtype, S, Related_Nod, For_Access => True);
@@ -13221,6 +13257,7 @@ package body Sem_Ch3 is
 
       Set_Is_Constrained     (Def_Id, True);
       Set_Is_Aliased         (Def_Id, Is_Aliased (T));
+      Set_Is_Independent     (Def_Id, Is_Independent (T));
       Set_Depends_On_Private (Def_Id, Has_Private_Component (Def_Id));
 
       Set_Is_Private_Composite (Def_Id, Is_Private_Composite (T));
@@ -14563,16 +14600,17 @@ package body Sem_Ch3 is
 
    procedure Copy_Array_Base_Type_Attributes (T1, T2 : Entity_Id) is
    begin
-      Set_Component_Alignment      (T1, Component_Alignment      (T2));
-      Set_Component_Type           (T1, Component_Type           (T2));
-      Set_Component_Size           (T1, Component_Size           (T2));
-      Set_Has_Controlled_Component (T1, Has_Controlled_Component (T2));
-      Set_Has_Non_Standard_Rep     (T1, Has_Non_Standard_Rep     (T2));
-      Propagate_Concurrent_Flags   (T1, T2);
-      Set_Is_Packed                (T1, Is_Packed                (T2));
-      Set_Has_Aliased_Components   (T1, Has_Aliased_Components   (T2));
-      Set_Has_Atomic_Components    (T1, Has_Atomic_Components    (T2));
-      Set_Has_Volatile_Components  (T1, Has_Volatile_Components  (T2));
+      Set_Component_Alignment        (T1, Component_Alignment        (T2));
+      Set_Component_Type             (T1, Component_Type             (T2));
+      Set_Component_Size             (T1, Component_Size             (T2));
+      Set_Has_Controlled_Component   (T1, Has_Controlled_Component   (T2));
+      Set_Has_Non_Standard_Rep       (T1, Has_Non_Standard_Rep       (T2));
+      Propagate_Concurrent_Flags     (T1,                             T2);
+      Set_Is_Packed                  (T1, Is_Packed                  (T2));
+      Set_Has_Aliased_Components     (T1, Has_Aliased_Components     (T2));
+      Set_Has_Atomic_Components      (T1, Has_Atomic_Components      (T2));
+      Set_Has_Independent_Components (T1, Has_Independent_Components (T2));
+      Set_Has_Volatile_Components    (T1, Has_Volatile_Components    (T2));
    end Copy_Array_Base_Type_Attributes;
 
    -----------------------------------
@@ -14583,17 +14621,20 @@ package body Sem_Ch3 is
    begin
       Set_Size_Info (T1, T2);
 
-      Set_First_Index            (T1, First_Index            (T2));
-      Set_Is_Aliased             (T1, Is_Aliased             (T2));
-      Set_Is_Volatile            (T1, Is_Volatile            (T2));
-      Set_Treat_As_Volatile      (T1, Treat_As_Volatile      (T2));
-      Set_Is_Constrained         (T1, Is_Constrained         (T2));
-      Set_Depends_On_Private     (T1, Has_Private_Component  (T2));
-      Inherit_Rep_Item_Chain     (T1,                         T2);
-      Set_Convention             (T1, Convention             (T2));
-      Set_Is_Limited_Composite   (T1, Is_Limited_Composite   (T2));
-      Set_Is_Private_Composite   (T1, Is_Private_Composite   (T2));
-      Set_Packed_Array_Impl_Type (T1, Packed_Array_Impl_Type (T2));
+      Set_First_Index             (T1, First_Index             (T2));
+      Set_Is_Aliased              (T1, Is_Aliased              (T2));
+      Set_Is_Atomic               (T1, Is_Atomic               (T2));
+      Set_Is_Independent          (T1, Is_Independent          (T2));
+      Set_Is_Volatile             (T1, Is_Volatile             (T2));
+      Set_Is_Volatile_Full_Access (T1, Is_Volatile_Full_Access (T2));
+      Set_Treat_As_Volatile       (T1, Treat_As_Volatile       (T2));
+      Set_Is_Constrained          (T1, Is_Constrained          (T2));
+      Set_Depends_On_Private      (T1, Has_Private_Component   (T2));
+      Inherit_Rep_Item_Chain      (T1,                          T2);
+      Set_Convention              (T1, Convention              (T2));
+      Set_Is_Limited_Composite    (T1, Is_Limited_Composite    (T2));
+      Set_Is_Private_Composite    (T1, Is_Private_Composite    (T2));
+      Set_Packed_Array_Impl_Type  (T1, Packed_Array_Impl_Type  (T2));
    end Copy_Array_Subtype_Attributes;
 
    -----------------------------------
@@ -15565,7 +15606,8 @@ package body Sem_Ch3 is
          Set_Derived_Name;
 
       --  Otherwise, the type is inheriting a private operation, so enter it
-      --  with a special name so it can't be overridden.
+      --  with a special name so it can't be overridden. See also below, where
+      --  we check for this case, and if so avoid setting Requires_Overriding.
 
       else
          Set_Chars (New_Subp, New_External_Name (Chars (Parent_Subp), 'P'));
@@ -15745,7 +15787,15 @@ package body Sem_Ch3 is
            or else Is_Abstract_Subprogram (Alias (New_Subp))
          then
             Set_Is_Abstract_Subprogram (New_Subp);
-         else
+
+         --  If the Chars of the new subprogram is different from that of the
+         --  parent's one, it means that we entered it with a special name so
+         --  it can't be overridden (see above). In that case we had better not
+         --  *require* it to be overridden. This is the case where the parent
+         --  type inherited the operation privately, so there's no danger of
+         --  dangling dispatching.
+
+         elsif Chars (New_Subp) = Chars (Alias (New_Subp)) then
             Set_Requires_Overriding (New_Subp);
          end if;
 
@@ -22053,6 +22103,7 @@ package body Sem_Ch3 is
             Set_Ekind                     (Tag_Comp, E_Component);
             Set_Is_Tag                    (Tag_Comp);
             Set_Is_Aliased                (Tag_Comp);
+            Set_Is_Independent            (Tag_Comp);
             Set_Etype                     (Tag_Comp, RTE (RE_Tag));
             Set_DT_Entry_Count            (Tag_Comp, No_Uint);
             Set_Original_Record_Component (Tag_Comp, Tag_Comp);

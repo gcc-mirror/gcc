@@ -1,5 +1,5 @@
 /* Process declarations and variables for C++ compiler.
-   Copyright (C) 1988-2019 Free Software Foundation, Inc.
+   Copyright (C) 1988-2020 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -475,8 +475,8 @@ grok_array_decl (location_t loc, tree array_expr, tree index_exp,
    Implements ARM $5.3.4.  This is called from the parser.  */
 
 tree
-delete_sanity (tree exp, tree size, bool doing_vec, int use_global_delete,
-	       tsubst_flags_t complain)
+delete_sanity (location_t loc, tree exp, tree size, bool doing_vec,
+	       int use_global_delete, tsubst_flags_t complain)
 {
   tree t, type;
 
@@ -489,21 +489,23 @@ delete_sanity (tree exp, tree size, bool doing_vec, int use_global_delete,
       DELETE_EXPR_USE_GLOBAL (t) = use_global_delete;
       DELETE_EXPR_USE_VEC (t) = doing_vec;
       TREE_SIDE_EFFECTS (t) = 1;
+      SET_EXPR_LOCATION (t, loc);
       return t;
     }
+
+  location_t exp_loc = cp_expr_loc_or_loc (exp, loc);
 
   /* An array can't have been allocated by new, so complain.  */
   if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
       && (complain & tf_warning))
-    warning_at (cp_expr_loc_or_input_loc (exp), 0,
-		"deleting array %q#E", exp);
+    warning_at (exp_loc, 0, "deleting array %q#E", exp);
 
   t = build_expr_type_conversion (WANT_POINTER, exp, true);
 
   if (t == NULL_TREE || t == error_mark_node)
     {
       if (complain & tf_error)
-	error_at (cp_expr_loc_or_input_loc (exp),
+	error_at (exp_loc,
 		  "type %q#T argument given to %<delete%>, expected pointer",
 		  TREE_TYPE (exp));
       return error_mark_node;
@@ -517,7 +519,7 @@ delete_sanity (tree exp, tree size, bool doing_vec, int use_global_delete,
   if (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
     {
       if (complain & tf_error)
-	error_at (cp_expr_loc_or_input_loc (exp),
+	error_at (exp_loc,
 		  "cannot delete a function.  Only pointer-to-objects are "
 		  "valid arguments to %<delete%>");
       return error_mark_node;
@@ -527,21 +529,21 @@ delete_sanity (tree exp, tree size, bool doing_vec, int use_global_delete,
   if (VOID_TYPE_P (TREE_TYPE (type)))
     {
       if (complain & tf_warning)
-	warning_at (cp_expr_loc_or_input_loc (exp), OPT_Wdelete_incomplete,
+	warning_at (exp_loc, OPT_Wdelete_incomplete,
 		    "deleting %qT is undefined", type);
       doing_vec = 0;
     }
 
   /* Deleting a pointer with the value zero is valid and has no effect.  */
   if (integer_zerop (t))
-    return build1 (NOP_EXPR, void_type_node, t);
+    return build1_loc (loc, NOP_EXPR, void_type_node, t);
 
   if (doing_vec)
-    return build_vec_delete (t, /*maxindex=*/NULL_TREE,
+    return build_vec_delete (loc, t, /*maxindex=*/NULL_TREE,
 			     sfk_deleting_destructor,
 			     use_global_delete, complain);
   else
-    return build_delete (type, t, sfk_deleting_destructor,
+    return build_delete (loc, type, t, sfk_deleting_destructor,
 			 LOOKUP_NORMAL, use_global_delete,
 			 complain);
 }
@@ -698,7 +700,8 @@ check_classfn (tree ctype, tree function, tree template_parms)
   if (!matched)
     {
       if (!COMPLETE_TYPE_P (ctype))
-	cxx_incomplete_type_error (function, ctype);
+	cxx_incomplete_type_error (DECL_SOURCE_LOCATION (function),
+				   function, ctype);
       else
 	{
 	  if (DECL_CONV_FN_P (function))
@@ -2626,6 +2629,7 @@ determine_visibility (tree decl)
       tree attribs = (TREE_CODE (decl) == TYPE_DECL
 		      ? TYPE_ATTRIBUTES (TREE_TYPE (decl))
 		      : DECL_ATTRIBUTES (decl));
+      tree attr = lookup_attribute ("visibility", attribs);
       
       if (args != error_mark_node)
 	{
@@ -2633,7 +2637,7 @@ determine_visibility (tree decl)
 
 	  if (!DECL_VISIBILITY_SPECIFIED (decl))
 	    {
-	      if (!DECL_VISIBILITY_SPECIFIED (pattern)
+	      if (!attr
 		  && determine_hidden_inline (decl))
 		DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
 	      else
@@ -2647,7 +2651,7 @@ determine_visibility (tree decl)
 	  if (args
 	      /* Template argument visibility outweighs #pragma or namespace
 		 visibility, but not an explicit attribute.  */
-	      && !lookup_attribute ("visibility", attribs))
+	      && !attr)
 	    {
 	      int depth = TMPL_ARGS_DEPTH (args);
 	      if (DECL_VISIBILITY_SPECIFIED (decl))
@@ -4414,7 +4418,14 @@ decl_maybe_constant_var_p (tree decl)
 void
 no_linkage_error (tree decl)
 {
-  if (cxx_dialect >= cxx11 && decl_defined_p (decl))
+  if (cxx_dialect >= cxx11
+      && (decl_defined_p (decl)
+	  /* Treat templates which limit_bad_template_recursion decided
+	     not to instantiate as if they were defined.  */
+	  || (errorcount + sorrycount > 0
+	      && DECL_LANG_SPECIFIC (decl)
+	      && DECL_TEMPLATE_INFO (decl)
+	      && TREE_NO_WARNING (decl))))
     /* In C++11 it's ok if the decl is defined.  */
     return;
   tree t = no_linkage_check (TREE_TYPE (decl), /*relaxed_p=*/false);
@@ -4808,9 +4819,8 @@ c_parse_final_cleanups (void)
   /* Handle -fdump-ada-spec[-slim] */
   if (flag_dump_ada_spec || flag_dump_ada_spec_slim)
     {
-      if (flag_dump_ada_spec_slim)
-	collect_source_ref (main_input_filename);
-      else
+      collect_source_ref (main_input_filename);
+      if (!flag_dump_ada_spec_slim)
 	collect_source_refs (global_namespace);
 
       dump_ada_specs (collect_all_refs, cpp_check);
@@ -5596,8 +5606,11 @@ mark_used (tree decl, tsubst_flags_t complain)
 	vec_safe_push (no_linkage_decls, decl);
     }
 
-  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl)
-      && !DECL_INITIAL (decl) && !DECL_ARTIFICIAL (decl))
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_DECLARED_INLINE_P (decl)
+      && !DECL_INITIAL (decl)
+      && !DECL_ARTIFICIAL (decl)
+      && !DECL_PURE_VIRTUAL_P (decl))
     /* Remember it, so we can check it was defined.  */
     note_vague_linkage_fn (decl);
 

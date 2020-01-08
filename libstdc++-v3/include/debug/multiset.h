@@ -1,6 +1,6 @@
 // Debugging multiset implementation -*- C++ -*-
 
-// Copyright (C) 2003-2019 Free Software Foundation, Inc.
+// Copyright (C) 2003-2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -635,7 +635,7 @@ namespace __debug
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 namespace ranges::__detail
 {
-  template<typename _Tp> inline constexpr bool __enable_view_impl;
+  template<typename _Tp> extern inline const bool __enable_view_impl;
   template<typename _Key, typename _Compare, typename _Alloc>
     inline constexpr bool
       __enable_view_impl<std::__debug::multiset<_Key, _Compare, _Alloc>>

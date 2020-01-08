@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2019 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2020 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -5959,18 +5959,6 @@ instruction pattern.  There is no need for the hook to handle these two
 implementation approaches itself.
 @end deftypefn
 
-@deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_CONVERSION (unsigned @var{code}, tree @var{dest_type}, tree @var{src_type})
-This hook should return the DECL of a function that implements conversion of the
-input vector of type @var{src_type} to type @var{dest_type}.
-The value of @var{code} is one of the enumerators in @code{enum tree_code} and
-specifies how the conversion is to be applied
-(truncation, rounding, etc.).
-
-If this hook is defined, the autovectorizer will use the
-@code{TARGET_VECTORIZE_BUILTIN_CONVERSION} target hook when vectorizing
-conversion. Otherwise, it will return @code{NULL_TREE}.
-@end deftypefn
-
 @deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION (unsigned @var{code}, tree @var{vec_type_out}, tree @var{vec_type_in})
 This hook should return the decl of a function that implements the
 vectorized variant of the function with the @code{combined_fn} code
@@ -11820,22 +11808,6 @@ object files that are not referenced from @code{main} and uses export
 lists.
 @end defmac
 
-@defmac MODIFY_JNI_METHOD_CALL (@var{mdecl})
-Define this macro to a C expression representing a variant of the
-method call @var{mdecl}, if Java Native Interface (JNI) methods
-must be invoked differently from other methods on your target.
-For example, on 32-bit Microsoft Windows, JNI methods must be invoked using
-the @code{stdcall} calling convention and this macro is then
-defined as this expression:
-
-@smallexample
-build_type_attribute_variant (@var{mdecl},
-                              build_tree_list
-                              (get_identifier ("stdcall"),
-                               NULL))
-@end smallexample
-@end defmac
-
 @deftypefn {Target Hook} bool TARGET_CANNOT_MODIFY_JUMPS_P (void)
 This target hook returns @code{true} past the point in which new jump
 instructions could be created.  On machines that require a register for
@@ -12002,6 +11974,19 @@ or @code{NULL_TREE} to apply the front end's normal conversion rules.
 This hook is useful when there are target-specific types with special
 conversion rules.
 This is currently used only by the C and C++ front ends.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_VERIFY_TYPE_CONTEXT (location_t @var{loc}, type_context_kind @var{context}, const_tree @var{type}, bool @var{silent_p})
+If defined, this hook returns false if there is a target-specific reason
+why type @var{type} cannot be used in the source language context described
+by @var{context}.  When @var{silent_p} is false, the hook also reports an
+error against @var{loc} for invalid uses of @var{type}.
+
+Calls to this hook should be made through the global function
+@code{verify_type_context}, which makes the @var{silent_p} parameter
+default to false and also handles @code{error_mark_node}.
+
+The default implementation always returns true.
 @end deftypefn
 
 @defmac OBJC_JBLEN

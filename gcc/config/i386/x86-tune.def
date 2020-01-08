@@ -1,5 +1,5 @@
 /* Definitions of x86 tunable features.
-   Copyright (C) 2013-2019 Free Software Foundation, Inc.
+   Copyright (C) 2013-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -316,6 +316,13 @@ DEF_TUNE (X86_TUNE_ONE_IF_CONV_INSN, "one_if_conv_insn",
 /* X86_TUNE_USE_XCHG_FOR_ATOMIC_STORE: Use xchg instead of mov+mfence.  */
 DEF_TUNE (X86_TUNE_USE_XCHG_FOR_ATOMIC_STORE, "use_xchg_for_atomic_store",
 	 m_CORE_ALL | m_BDVER | m_ZNVER | m_GENERIC)
+
+/* X86_TUNE_EXPAND_ABS: This enables a new abs pattern by
+   generating instructions for abs (x) = (((signed) x >> (W-1) ^ x) -
+   (signed) x >> (W-1)) instead of cmove or SSE max/abs instructions.  */
+DEF_TUNE (X86_TUNE_EXPAND_ABS, "expand_abs",
+	  m_CORE_ALL | m_SILVERMONT | m_KNL | m_KNM | m_GOLDMONT
+	  | m_GOLDMONT_PLUS | m_TREMONT )
 
 /*****************************************************************************/
 /* 387 instruction selection tuning                                          */

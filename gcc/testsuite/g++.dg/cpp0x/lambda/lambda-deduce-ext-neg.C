@@ -11,7 +11,7 @@ template <class T> int f (T t) {
     if (b)
       return t.fn1();
     else
-      return t.fn2();		// { dg-error "inconsistent types" }
+      return t.fn2();		// { dg-error "19:inconsistent types" }
   }(t);
 }
 

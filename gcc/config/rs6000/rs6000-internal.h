@@ -1,6 +1,6 @@
 /* Internal to rs6000 type, variable, and function declarations and
    definitons shared between the various rs6000 source files.
-   Copyright (C) 1991-2019 Free Software Foundation, Inc.
+   Copyright (C) 1991-2020 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -138,7 +138,6 @@ extern void rs6000_output_mi_thunk (FILE *file,
 				    tree function);
 extern bool rs6000_output_addr_const_extra (FILE *file, rtx x);
 extern bool rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi);
-extern void rs6000_invalid_builtin (enum rs6000_builtins fncode);
 extern tree rs6000_build_builtin_va_list (void);
 extern void rs6000_va_start (tree valist, rtx nextarg);
 extern tree rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,

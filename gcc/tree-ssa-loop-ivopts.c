@@ -1,5 +1,5 @@
 /* Induction variable optimizations.
-   Copyright (C) 2003-2019 Free Software Foundation, Inc.
+   Copyright (C) 2003-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -7977,7 +7977,8 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, class loop *loop,
   data->body_includes_call = loop_body_includes_call (body, loop->num_nodes);
   renumber_gimple_stmt_uids_in_blocks (body, loop->num_nodes);
 
-  data->loop_single_exit_p = exit != NULL && loop_only_exit_p (loop, exit);
+  data->loop_single_exit_p
+    = exit != NULL && loop_only_exit_p (loop, body, exit);
 
   /* For each ssa name determines whether it behaves as an induction variable
      in some loop.  */

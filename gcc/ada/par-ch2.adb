@@ -247,11 +247,8 @@ package body Ch2 is
 
       --  Local variables
 
-      Interface_Check_Required : Boolean := False;
-      --  Set True if check of pragma INTERFACE is required
-
       Import_Check_Required : Boolean := False;
-      --  Set True if check of pragma IMPORT is required
+      --  Set True if check of pragma IMPORT or INTERFACE is required
 
       Arg_Count : Nat := 0;
       --  Number of argument associations processed
@@ -295,11 +292,10 @@ package body Ch2 is
       --  See if special INTERFACE/IMPORT check is required
 
       if SIS_Entry_Active then
-         Interface_Check_Required := (Prag_Name = Name_Interface);
-         Import_Check_Required    := (Prag_Name = Name_Import);
+         Import_Check_Required :=
+           (Prag_Name = Name_Import) or else (Prag_Name = Name_Interface);
       else
-         Interface_Check_Required := False;
-         Import_Check_Required    := False;
+         Import_Check_Required := False;
       end if;
 
       --  Set global to indicate if we are within a Depends pragma
@@ -331,9 +327,7 @@ package body Ch2 is
                  Nam_In (Prag_Name, Name_Restriction_Warnings,
                                     Name_Restrictions));
 
-            if Arg_Count = 2
-              and then (Interface_Check_Required or else Import_Check_Required)
-            then
+            if Arg_Count = 2 and then Import_Check_Required then
                --  Here is where we cancel the SIS active status if this pragma
                --  supplies a body for the currently active subprogram spec.
 

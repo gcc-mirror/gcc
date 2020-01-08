@@ -1,5 +1,5 @@
 /* Definitions of floating-point access for GNU compiler.
-   Copyright (C) 1989-2019 Free Software Foundation, Inc.
+   Copyright (C) 1989-2020 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -368,6 +368,7 @@ extern const struct real_format decimal_double_format;
 extern const struct real_format decimal_quad_format;
 extern const struct real_format ieee_half_format;
 extern const struct real_format arm_half_format;
+extern const struct real_format arm_bfloat_half_format;
 
 
 /* ====================================================================== */

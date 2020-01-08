@@ -1,6 +1,6 @@
 /* Declarations for insn-output.c and other code to write to asm_out_file.
    These functions are defined in final.c, and varasm.c.
-   Copyright (C) 1987-2019 Free Software Foundation, Inc.
+   Copyright (C) 1987-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -167,6 +167,7 @@ extern int decode_reg_name (const char *);
 extern int decode_reg_name_and_count (const char *, int *);
 
 extern void do_assemble_alias (tree, tree);
+extern void do_assemble_symver (tree, tree);
 
 extern void default_assemble_visibility (tree, int);
 

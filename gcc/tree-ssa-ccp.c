@@ -1,5 +1,5 @@
 /* Conditional constant propagation pass for the GNU compiler.
-   Copyright (C) 2000-2019 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
    Adapted from original RTL SSA-CCP by Daniel Berlin <dberlin@dberlin.org>
    Adapted to GIMPLE trees by Diego Novillo <dnovillo@redhat.com>
 
@@ -146,6 +146,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "tree-vector-builder.h"
+#include "cgraph.h"
+#include "alloc-pool.h"
+#include "symbol-summary.h"
+#include "ipa-utils.h"
+#include "ipa-prop.h"
 
 /* Possible lattice values.  */
 typedef enum
@@ -292,11 +297,26 @@ get_default_value (tree var)
 	  if (flag_tree_bit_ccp)
 	    {
 	      wide_int nonzero_bits = get_nonzero_bits (var);
-	      if (nonzero_bits != -1)
+	      tree value;
+	      widest_int mask;
+
+	      if (SSA_NAME_VAR (var)
+		  && TREE_CODE (SSA_NAME_VAR (var)) == PARM_DECL
+		  && ipcp_get_parm_bits (SSA_NAME_VAR (var), &value, &mask))
+		{
+		  val.lattice_val = CONSTANT;
+		  val.value = value;
+		  val.mask = mask;
+		  if (nonzero_bits != -1)
+		    val.mask &= extend_mask (nonzero_bits,
+					     TYPE_SIGN (TREE_TYPE (var)));
+		}
+	      else if (nonzero_bits != -1)
 		{
 		  val.lattice_val = CONSTANT;
 		  val.value = build_zero_cst (TREE_TYPE (var));
-		  val.mask = extend_mask (nonzero_bits, TYPE_SIGN (TREE_TYPE (var)));
+		  val.mask = extend_mask (nonzero_bits,
+					  TYPE_SIGN (TREE_TYPE (var)));
 		}
 	    }
 	}
@@ -1630,6 +1650,17 @@ bit_value_binop (enum tree_code code, tree type, tree rhs1, tree rhs2)
 		   TYPE_SIGN (TREE_TYPE (rhs2)), TYPE_PRECISION (TREE_TYPE (rhs2)),
 		   value_to_wide_int (r2val), r2val.mask);
 
+  /* (x * x) & 2 == 0.  */
+  if (code == MULT_EXPR && rhs1 == rhs2 && TYPE_PRECISION (type) > 1)
+    {
+      widest_int m = 2;
+      if (wi::sext (mask, TYPE_PRECISION (type)) != -1)
+	value = wi::bit_and_not (value, m);
+      else
+	value = 0;
+      mask = wi::bit_and_not (mask, m);
+    }
+
   if (wi::sext (mask, TYPE_PRECISION (type)) != -1)
     {
       val.lattice_val = CONSTANT;
@@ -2114,8 +2145,6 @@ insert_clobber_before_stack_restore (tree saved_val, tree var,
     else if (gimple_assign_ssa_name_copy_p (stmt))
       insert_clobber_before_stack_restore (gimple_assign_lhs (stmt), var,
 					   visited);
-    else
-      gcc_assert (is_gimple_debug (stmt));
 }
 
 /* Advance the iterator to the previous non-debug gimple statement in the same
@@ -2140,9 +2169,9 @@ gsi_prev_dom_bb_nondebug (gimple_stmt_iterator *i)
 /* Find a BUILT_IN_STACK_SAVE dominating gsi_stmt (I), and insert
    a clobber of VAR before each matching BUILT_IN_STACK_RESTORE.
 
-   It is possible that BUILT_IN_STACK_SAVE cannot be find in a dominator when a
-   previous pass (such as DOM) duplicated it along multiple paths to a BB.  In
-   that case the function gives up without inserting the clobbers.  */
+   It is possible that BUILT_IN_STACK_SAVE cannot be found in a dominator when
+   a previous pass (such as DOM) duplicated it along multiple paths to a BB.
+   In that case the function gives up without inserting the clobbers.  */
 
 static void
 insert_clobbers_for_var (gimple_stmt_iterator i, tree var)

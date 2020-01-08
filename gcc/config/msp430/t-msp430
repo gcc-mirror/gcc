@@ -1,5 +1,5 @@
 # Makefile fragment for building GCC for the TI MSP430 target.
-# Copyright (C) 2012-2019 Free Software Foundation, Inc.
+# Copyright (C) 2012-2020 Free Software Foundation, Inc.
 # Contributed by Red Hat.
 #
 # This file is part of GCC.
@@ -24,12 +24,12 @@ driver-msp430.o: $(srcdir)/config/msp430/driver-msp430.c \
 
 msp430-devices.o: $(srcdir)/config/msp430/msp430-devices.c \
 	$(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) -DTARGET_SUBDIR=$(target_subdir) $(INCLUDES) $<
 
 # Enable multilibs:
 
-MULTILIB_OPTIONS    = mcpu=msp430 mlarge  mdata-region=none
-MULTILIB_DIRNAMES   = 430	   large  full-memory-range
+MULTILIB_OPTIONS    = mcpu=msp430 mlarge  mdata-region=none fno-exceptions
+MULTILIB_DIRNAMES   = 430	   large  full-memory-range no-exceptions
 
 # Match -mcpu=430
 MULTILIB_MATCHES    = mcpu?msp430=mcpu?430
@@ -41,9 +41,10 @@ MULTILIB_MATCHES   += mdata-region?none=mdata-region?either
 # hard-coded data here, because DRIVER_SELF_SPECS will place the correct
 # -mcpu option for a given mcu onto the command line.
 
-MULTILIB_REQUIRED = mcpu=msp430
-MULTILIB_REQUIRED += mlarge
+MULTILIB_REQUIRED =		    mcpu=msp430		       mlarge
+MULTILIB_REQUIRED += fno-exceptions mcpu=msp430/fno-exceptions mlarge/fno-exceptions
 MULTILIB_REQUIRED += mlarge/mdata-region=none
+MULTILIB_REQUIRED += mlarge/mdata-region=none/fno-exceptions
 
 
 MULTILIB_EXTRA_OPTS =

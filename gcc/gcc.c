@@ -1,5 +1,5 @@
 /* Compiler driver program that can handle many languages.
-   Copyright (C) 1987-2019 Free Software Foundation, Inc.
+   Copyright (C) 1987-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -4741,7 +4741,7 @@ process_command (unsigned int decoded_options_count,
   /* More prefixes are enabled in main, after we read the specs file
      and determine whether this is cross-compilation or not.  */
 
-  if (n_infiles == last_language_n_infiles && spec_lang != 0)
+  if (n_infiles != 0 && n_infiles == last_language_n_infiles && spec_lang != 0)
     warning (0, "%<-x %s%> after last input file has no effect", spec_lang);
 
   /* Synthesize -fcompare-debug flag from the GCC_COMPARE_DEBUG
@@ -8008,7 +8008,7 @@ driver::maybe_print_and_exit () const
     {
       printf (_("%s %s%s\n"), progname, pkgversion_string,
 	      version_string);
-      printf ("Copyright %s 2019 Free Software Foundation, Inc.\n",
+      printf ("Copyright %s 2020 Free Software Foundation, Inc.\n",
 	      _("(C)"));
       fputs (_("This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"),

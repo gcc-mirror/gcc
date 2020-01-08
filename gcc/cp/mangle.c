@@ -1,5 +1,5 @@
 /* Name mangling for the 3.0 -*- C++ -*- ABI.
-   Copyright (C) 2000-2019 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
    Written by Alex Samuel <samuel@codesourcery.com>
 
    This file is part of GCC.
@@ -873,7 +873,16 @@ decl_mangling_context (tree decl)
   else if (template_type_parameter_p (decl))
      /* template type parms have no mangling context.  */
       return NULL_TREE;
-  return CP_DECL_CONTEXT (decl);
+
+  tcontext = CP_DECL_CONTEXT (decl);
+
+  /* Ignore the artificial declare reduction functions.  */
+  if (tcontext
+      && TREE_CODE (tcontext) == FUNCTION_DECL
+      && DECL_OMP_DECLARE_REDUCTION_P (tcontext))
+    return decl_mangling_context (tcontext);
+
+  return tcontext;
 }
 
 /* <name> ::= <unscoped-name>
@@ -2339,6 +2348,34 @@ attr_strcmp (const void *p1, const void *p2)
   return strcmp (as1->name, as2->name);
 }
 
+/* Return true if we should mangle a type attribute with name NAME.  */
+
+static bool
+mangle_type_attribute_p (tree name)
+{
+  const attribute_spec *as = lookup_attribute_spec (name);
+  if (!as || !as->affects_type_identity)
+    return false;
+
+  /* Skip internal-only attributes, which are distinguished from others
+     by having a space.  At present, all internal-only attributes that
+     affect type identity are target-specific and are handled by
+     targetm.mangle_type instead.
+
+     Another reason to do this is that a space isn't a valid identifier
+     character for most file formats.  */
+  if (strchr (IDENTIFIER_POINTER (name), ' '))
+    return false;
+
+  /* The following attributes are mangled specially.  */
+  if (is_attribute_p ("transaction_safe", name))
+    return false;
+  if (is_attribute_p ("abi_tag", name))
+    return false;
+
+  return true;
+}
+
 /* Non-terminal <CV-qualifiers> for type nodes.  Returns the number of
    CV-qualifiers written for TYPE.
 
@@ -2364,14 +2401,8 @@ write_CV_qualifiers_for_type (const tree type)
     {
       auto_vec<tree> vec;
       for (tree a = TYPE_ATTRIBUTES (type); a; a = TREE_CHAIN (a))
-	{
-	  tree name = get_attribute_name (a);
-	  const attribute_spec *as = lookup_attribute_spec (name);
-	  if (as && as->affects_type_identity
-	      && !is_attribute_p ("transaction_safe", name)
-	      && !is_attribute_p ("abi_tag", name))
-	    vec.safe_push (a);
-	}
+	if (mangle_type_attribute_p (get_attribute_name (a)))
+	  vec.safe_push (a);
       if (abi_warn_or_compat_version_crosses (10) && !vec.is_empty ())
 	G.need_abi_warning = true;
       if (abi_version_at_least (10))

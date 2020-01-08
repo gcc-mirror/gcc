@@ -1,5 +1,5 @@
 /* Various declarations for language-independent diagnostics subroutines.
-   Copyright (C) 2000-2019 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -45,6 +45,10 @@ struct diagnostic_info
 
   /* The location at which the diagnostic is to be reported.  */
   rich_location *richloc;
+
+  /* An optional bundle of metadata associated with the diagnostic
+     (or NULL).  */
+  const diagnostic_metadata *metadata;
 
   /* Auxiliary data for client.  */
   void *x_data;
@@ -125,6 +129,10 @@ struct diagnostic_context
 
   /* Character used for caret diagnostics.  */
   char caret_chars[rich_location::STATICALLY_ALLOCATED_RANGES];
+
+  /* True if we should print any CWE identifiers associated with
+     diagnostics.  */
+  bool show_cwe;
 
   /* True if we should print the command line option which controls
      each diagnostic, if known.  */

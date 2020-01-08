@@ -4,7 +4,7 @@
 
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
-   Copyright (C) 2005-2019 Free Software Foundation, Inc.
+   Copyright (C) 2005-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2473,7 +2473,7 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
 	      tree_code outer_op = OMP_CLAUSE_REDUCTION_CODE (outer_clause);
 	      if (outer_var == local_var && outer_op != local_op)
 		{
-		  warning_at (gimple_location (stmt), 0,
+		  warning_at (OMP_CLAUSE_LOCATION (local_clause), 0,
 			      "conflicting reduction operations for %qE",
 			      local_var);
 		  inform (OMP_CLAUSE_LOCATION (outer_clause),
@@ -4086,8 +4086,8 @@ omp_clause_aligned_alignment (tree clause)
 	if (type == NULL_TREE || TYPE_MODE (type) != mode)
 	  continue;
 	type = build_vector_type_for_mode (type, vmode);
-	/* The functions above are not allowed to return invalid modes.  */
-	gcc_assert (TYPE_MODE (type) == vmode);
+	if (TYPE_MODE (type) != vmode)
+	  continue;
 	if (TYPE_ALIGN_UNIT (type) > al)
 	  al = TYPE_ALIGN_UNIT (type);
       }
@@ -11431,6 +11431,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case GOMP_MAP_STRUCT:
 	  case GOMP_MAP_ALWAYS_POINTER:
 	    break;
+	  case GOMP_MAP_IF_PRESENT:
 	  case GOMP_MAP_FORCE_ALLOC:
 	  case GOMP_MAP_FORCE_TO:
 	  case GOMP_MAP_FORCE_FROM:
@@ -11439,6 +11440,9 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case GOMP_MAP_FORCE_DEVICEPTR:
 	  case GOMP_MAP_DEVICE_RESIDENT:
 	  case GOMP_MAP_LINK:
+	  case GOMP_MAP_ATTACH:
+	  case GOMP_MAP_DETACH:
+	  case GOMP_MAP_FORCE_DETACH:
 	    gcc_assert (is_gimple_omp_oacc (stmt));
 	    break;
 	  default:
@@ -11817,7 +11821,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      {
 		gcc_checking_assert (is_gimple_omp_oacc (ctx->stmt));
 		s = TREE_TYPE (ovar);
-		if (TREE_CODE (s) == REFERENCE_TYPE)
+		if (TREE_CODE (s) == REFERENCE_TYPE
+		    || omp_check_optional_argument (ovar, false))
 		  s = TREE_TYPE (s);
 		s = TYPE_SIZE_UNIT (s);
 	      }
@@ -11841,6 +11846,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		  switch (tkind)
 		    {
 		    case GOMP_MAP_ALLOC:
+		    case GOMP_MAP_IF_PRESENT:
 		    case GOMP_MAP_TO:
 		    case GOMP_MAP_FROM:
 		    case GOMP_MAP_TOFROM:
@@ -11981,8 +11987,6 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case OMP_CLAUSE_USE_DEVICE_PTR:
 	  case OMP_CLAUSE_USE_DEVICE_ADDR:
 	  case OMP_CLAUSE_IS_DEVICE_PTR:
-	    bool do_optional_check;
-	    do_optional_check = false;
 	    ovar = OMP_CLAUSE_DECL (c);
 	    var = lookup_decl_in_outer_ctx (ovar, ctx);
 
@@ -12004,10 +12008,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      }
 	    type = TREE_TYPE (ovar);
 	    if (lang_hooks.decls.omp_array_data (ovar, true))
-	      {
-		var = lang_hooks.decls.omp_array_data (ovar, false);
-		do_optional_check = true;
-	      }
+	      var = lang_hooks.decls.omp_array_data (ovar, false);
 	    else if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
 		      && !omp_is_reference (ovar)
 		      && !omp_is_allocatable_or_ptr (ovar))
@@ -12025,16 +12026,12 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 			    && !omp_is_allocatable_or_ptr (ovar))
 			   || (omp_is_reference (ovar)
 			       && omp_is_allocatable_or_ptr (ovar))))
-		      {
-			var = build_simple_mem_ref (var);
-			do_optional_check = true;
-		      }
+		      var = build_simple_mem_ref (var);
 		    var = fold_convert (TREE_TYPE (x), var);
 		  }
 	      }
 	    tree present;
-	    present = (do_optional_check
-		       ? omp_check_optional_argument (ovar, true) : NULL_TREE);
+	    present = omp_check_optional_argument (ovar, true);
 	    if (present)
 	      {
 		tree null_label = create_artificial_label (UNKNOWN_LOCATION);

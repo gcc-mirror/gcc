@@ -1,5 +1,5 @@
 /* Read and write coverage files, and associated functionality.
-   Copyright (C) 1990-2019 Free Software Foundation, Inc.
+   Copyright (C) 1990-2020 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -1071,8 +1071,7 @@ build_init_ctor (tree gcov_info_type)
 static void
 build_gcov_exit_decl (void)
 {
-  tree init_fn = build_function_type_list (void_type_node, void_type_node,
-					   NULL);
+  tree init_fn = build_function_type_list (void_type_node, NULL);
   init_fn = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
 			get_identifier ("__gcov_exit"), init_fn);
   TREE_PUBLIC (init_fn) = 1;
@@ -1228,7 +1227,7 @@ coverage_init (const char *filename)
       else
 	profile_data_prefix = getpwd ();
     }
-  else
+  else if (profile_data_prefix != NULL)
     {
       /* when filename is a absolute path, we also need to mangle the full
       path of filename to prevent the profiling data being stored into a

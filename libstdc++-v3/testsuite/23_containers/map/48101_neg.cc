@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2019 Free Software Foundation, Inc.
+// Copyright (C) 2017-2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,8 +29,8 @@ test01()
   c2.find(2); // { dg-error "here" }
 }
 
-// { dg-error "_Compare = std::less<int.>" "" { target *-*-* } 0 }
-// { dg-error "_Compare = std::allocator<int>" "" { target *-*-* } 0 }
+// { dg-error "_Compare = std::(__8::)?less<int.>" "" { target *-*-* } 0 }
+// { dg-error "_Compare = std::(__8::)?allocator<int>" "" { target *-*-* } 0 }
 // { dg-error "comparison object must be invocable" "" { target *-*-* } 0 }
 // { dg-prune-output "no match for call" }
 // { dg-prune-output "invalid conversion" }

@@ -1,5 +1,5 @@
 /* Definitions of target machine for Altera Nios II.
-   Copyright (C) 2012-2019 Free Software Foundation, Inc.
+   Copyright (C) 2012-2020 Free Software Foundation, Inc.
    Contributed by Jonah Graham (jgraham@altera.com), 
    Will Reece (wreece@altera.com), and Jeff DaSilva (jdasilva@altera.com).
    Contributed by Mentor Graphics, Inc.
@@ -467,10 +467,10 @@ while (0)
    the linker seems to want the alignment of data objects
    to depend on their types.  We do exactly that here.  */
 
-#undef  ASM_OUTPUT_ALIGNED_LOCAL
-#define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)               \
+#undef  ASM_OUTPUT_ALIGNED_DECL_LOCAL
+#define ASM_OUTPUT_ALIGNED_DECL_LOCAL(FILE, DECL, NAME, SIZE, ALIGN)	\
 do {                                                                    \
-  if ((SIZE) <= nios2_section_threshold)                                \
+ if (targetm.in_small_data_p (DECL))					\
     switch_to_section (sbss_section);					\
   else                                                                  \
     switch_to_section (bss_section);					\

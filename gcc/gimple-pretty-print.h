@@ -1,6 +1,6 @@
 /* Various declarations for pretty formatting of GIMPLE statements and
    expressions.
-   Copyright (C) 2000-2019 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,7 +31,8 @@ extern void print_gimple_stmt (FILE *, gimple *, int, dump_flags_t = TDF_NONE);
 extern void debug (gimple &ref);
 extern void debug (gimple *ptr);
 extern void print_gimple_expr (FILE *, gimple *, int, dump_flags_t = TDF_NONE);
-extern void pp_gimple_stmt_1 (pretty_printer *, gimple *, int, dump_flags_t);
+extern void pp_gimple_stmt_1 (pretty_printer *, const gimple *, int,
+			      dump_flags_t);
 extern void gimple_dump_bb (FILE *, basic_block, int, dump_flags_t);
 extern void gimple_dump_bb_for_graph (pretty_printer *, basic_block);
 extern void dump_ssaname_info_to_file (FILE *, tree, int);

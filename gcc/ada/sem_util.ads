@@ -547,7 +547,7 @@ package Sem_Util is
    function Deepest_Type_Access_Level (Typ : Entity_Id) return Uint;
    --  Same as Type_Access_Level, except that if the type is the type of an Ada
    --  2012 stand-alone object of an anonymous access type, then return the
-   --  static accesssibility level of the object. In that case, the dynamic
+   --  static accessibility level of the object. In that case, the dynamic
    --  accessibility level of the object may take on values in a range. The low
    --  bound of that range is returned by Type_Access_Level; this function
    --  yields the high bound of that range. Also differs from Type_Access_Level
@@ -565,6 +565,8 @@ package Sem_Util is
    --  local entities declared during loop expansion. These entities need
    --  debugging information, generated through Qualify_Entity_Names, and
    --  the loop declaration must be placed in the table Name_Qualify_Units.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    function Denotes_Discriminant
      (N                : Node_Id;
@@ -900,6 +902,8 @@ package Sem_Util is
    --  then use Next_Actual to obtain the next actual in declaration order.
    --  Note that the value returned is always the expression (not the
    --  N_Parameter_Association nodes, even if named association is used).
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    function First_Global
      (Subp        : Entity_Id;
@@ -1442,6 +1446,9 @@ package Sem_Util is
    --  package specification. The package must be on the scope stack, and the
    --  corresponding private part must not.
 
+   function In_While_Loop_Condition (N : Node_Id) return Boolean;
+   --  Returns true if the expression N occurs within the condition of a while
+
    function Incomplete_Or_Partial_View (Id : Entity_Id) return Entity_Id;
    --  Given the entity of a constant or a type, retrieve the incomplete or
    --  partial view of the same entity. Note that Id may not have a partial
@@ -1524,11 +1531,7 @@ package Sem_Util is
 
    function Is_Atomic_Object (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N denotes a reference to an atomic
-   --  object as per Ada RM C.6(12).
-
-   function Is_Atomic_Object_Entity (Id : Entity_Id) return Boolean;
-   --  Determine whether arbitrary entity Id denotes an atomic object as per
-   --  Ada RM C.6(12).
+   --  object as per RM C.6(7) and the crucial remark in RM C.6(8).
 
    function Is_Atomic_Or_VFA_Object (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N denotes a reference to an object
@@ -1741,6 +1744,10 @@ package Sem_Util is
    function Is_Generic_Declaration_Or_Body (Decl : Node_Id) return Boolean;
    --  Determine whether arbitrary declaration Decl denotes a generic package,
    --  a generic subprogram or a generic body.
+
+   function Is_Independent_Object (N : Node_Id) return Boolean;
+   --  Determine whether arbitrary node N denotes a reference to an independent
+   --  object as per RM C.6(8).
 
    function Is_Inherited_Operation (E : Entity_Id) return Boolean;
    --  E is a subprogram. Return True is E is an implicit operation inherited
@@ -1987,6 +1994,10 @@ package Sem_Util is
    --  the N_Statement_Other_Than_Procedure_Call subtype from Sinfo).
    --  Note that a label is *not* a statement, and will return False.
 
+   function Is_Subcomponent_Of_Atomic_Object (N : Node_Id) return Boolean;
+   --  Determine whether arbitrary node N denotes a reference to a subcomponent
+   --  of an atomic object as per RM C.6(7).
+
    function Is_Subprogram_Contract_Annotation (Item : Node_Id) return Boolean;
    --  Determine whether aspect specification or pragma Item is one of the
    --  following subprogram contract annotations:
@@ -2062,6 +2073,8 @@ package Sem_Util is
    function Is_Variable_Size_Record (E : Entity_Id) return Boolean;
    --  Returns true if E has variable size components
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Is_Variable
      (N                 : Node_Id;
       Use_Original_Node : Boolean := True) return Boolean;
@@ -2082,16 +2095,20 @@ package Sem_Util is
    --  Initialize/Adjust/Finalize subprogram does not override the inherited
    --  one.
 
+   function Is_Volatile_Full_Access_Object (N : Node_Id) return Boolean;
+   --  Determine whether arbitrary node N denotes a reference to an object
+   --  which is Volatile_Full_Access.
+
    function Is_Volatile_Function (Func_Id : Entity_Id) return Boolean;
    --  Determine whether [generic] function Func_Id is subject to enabled
    --  pragma Volatile_Function. Protected functions are treated as volatile
    --  (SPARK RM 7.1.2).
 
    function Is_Volatile_Object (N : Node_Id) return Boolean;
-   --  Determines if the given node denotes an volatile object in the sense of
-   --  the legality checks described in RM C.6(12). Note that the test here is
-   --  for something actually declared as volatile, not for an object that gets
-   --  treated as volatile (see Einfo.Treat_As_Volatile).
+   --  Determine whether arbitrary node N denotes a reference to a volatile
+   --  object as per RM C.6(8). Note that the test here is for something that
+   --  is actually declared as volatile, not for an object that gets treated
+   --  as volatile (see Einfo.Treat_As_Volatile).
 
    generic
       with procedure Handle_Parameter (Formal : Entity_Id; Actual : Node_Id);
@@ -2361,11 +2378,6 @@ package Sem_Util is
    --  when the resulting entity does not have to be referenced as a
    --  public entity (and in this case Is_Public is not set).
 
-   procedure Next_Actual (Actual_Id : in out Node_Id);
-   pragma Inline (Next_Actual);
-   --  Next_Actual (N) is equivalent to N := Next_Actual (N). Note that we
-   --  inline this procedural form, but not the functional form that follows.
-
    function Next_Actual (Actual_Id : Node_Id) return Node_Id;
    --  Find next actual parameter in declaration order. As described for
    --  First_Actual, this is the next actual in the declaration order, not
@@ -2375,15 +2387,22 @@ package Sem_Util is
    --  Note that the result produced is always an expression, not a parameter
    --  association node, even if named notation was used.
 
-   procedure Next_Global (Node : in out Node_Id);
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
+   procedure Next_Actual (Actual_Id : in out Node_Id);
    pragma Inline (Next_Actual);
-   --  Next_Global (N) is equivalent to N := Next_Global (N). Note that we
-   --  inline this procedural form, but not the functional form that follows.
+   --  Next_Actual (N) is equivalent to N := Next_Actual (N). Note that we
+   --  inline this procedural form, but not the functional form above.
 
    function Next_Global (Node : Node_Id) return Node_Id;
    --  Node is a global item from a list, obtained through calling First_Global
    --  and possibly Next_Global a number of times. Returns the next global item
    --  with the same mode.
+
+   procedure Next_Global (Node : in out Node_Id);
+   pragma Inline (Next_Actual);
+   --  Next_Global (N) is equivalent to N := Next_Global (N). Note that we
+   --  inline this procedural form, but not the functional form above.
 
    function No_Caching_Enabled (Id : Entity_Id) return Boolean;
    --  Given the entity of a variable, determine whether Id is subject to
@@ -2588,6 +2607,8 @@ package Sem_Util is
    --  controlled types and variable-sized types including unconstrained
    --  arrays.
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    procedure Reset_Analyzed_Flags (N : Node_Id);
    --  Reset the Analyzed flags in all nodes of the tree whose root is N
 
@@ -2665,7 +2686,7 @@ package Sem_Util is
    function Scope_Within_Or_Same
      (Inner : Entity_Id;
       Outer : Entity_Id) return Boolean;
-   --  Determine whether scope Inner appears within scope Outer or both renote
+   --  Determine whether scope Inner appears within scope Outer or both denote
    --  the same scope. Note that scopes are partially ordered, so Scope_Within
    --  (A, B) and Scope_Within (B, A) may both return False.
 

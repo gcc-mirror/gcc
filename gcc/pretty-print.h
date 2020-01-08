@@ -1,5 +1,5 @@
 /* Various declarations for language-independent pretty-print subroutines.
-   Copyright (C) 2002-2019 Free Software Foundation, Inc.
+   Copyright (C) 2002-2020 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -192,6 +192,7 @@ class format_postprocessor
 {
  public:
   virtual ~format_postprocessor () {}
+  virtual format_postprocessor *clone() const = 0;
   virtual void handle (pretty_printer *) = 0;
 };
 
@@ -221,8 +222,11 @@ public:
   /* Default construct a pretty printer with specified
      maximum line length cut off limit.  */
   explicit pretty_printer (int = 0);
+  explicit pretty_printer (const pretty_printer &other);
 
   virtual ~pretty_printer ();
+
+  virtual pretty_printer *clone () const;
 
   /* Where we print external representation of ENTITY.  */
   output_buffer *buffer;
@@ -389,8 +393,11 @@ extern void pp_indent (pretty_printer *);
 extern void pp_newline (pretty_printer *);
 extern void pp_character (pretty_printer *, int);
 extern void pp_string (pretty_printer *, const char *);
+
 extern void pp_write_text_to_stream (pretty_printer *);
 extern void pp_write_text_as_dot_label_to_stream (pretty_printer *, bool);
+extern void pp_write_text_as_html_like_dot_to_stream (pretty_printer *pp);
+
 extern void pp_maybe_space (pretty_printer *);
 
 extern void pp_begin_quote (pretty_printer *, bool);

@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GCC.
-   Copyright (C) 1987-2019 Free Software Foundation, Inc.
+   Copyright (C) 1987-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -6406,9 +6406,6 @@ rest_of_handle_thread_prologue_and_epilogue (void)
 void
 record_final_call (tree callee, location_t location)
 {
-  if (!callee || CALLEE_FROM_CGRAPH_P (callee))
-    return;
-
   struct callinfo_callee datum = { location, callee };
   vec_safe_push (cfun->su->callees, datum);
 }

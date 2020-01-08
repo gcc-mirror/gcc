@@ -1,4 +1,4 @@
-/* Copyright (C) 2016-2019 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2020 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -160,7 +160,7 @@
 
 #define FIXED_REGISTERS {			    \
     /* Scalars.  */				    \
-    1, 1, 0, 0, 1, 1, 0, 0, 1, 1,		    \
+    1, 1, 0, 0, 1, 1, 1, 1, 1, 1,		    \
 /*		fp    sp    lr.  */		    \
     1, 1, 0, 0, 0, 0, 1, 1, 0, 0,		    \
 /*  exec_save, cc_save */			    \
@@ -643,6 +643,10 @@ enum gcn_builtin_codes
 
 /* This needs to match gcn_function_value.  */
 #define LIBCALL_VALUE(MODE) gen_rtx_REG (MODE, SGPR_REGNO (RETURN_VALUE_REG))
+
+/* The s_ff0 and s_flbit instructions return -1 if no input bits are set.  */
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = -1, 2)
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = -1, 2)
 
 
 /* Costs.  */

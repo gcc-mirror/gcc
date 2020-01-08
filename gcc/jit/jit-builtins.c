@@ -1,5 +1,5 @@
 /* jit-builtins.c -- Handling of builtin functions during JIT-compilation.
-   Copyright (C) 2014-2019 Free Software Foundation, Inc.
+   Copyright (C) 2014-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -434,9 +434,6 @@ builtins_manager::make_primitive_type (enum jit_builtin_type type_id)
     // case BT_DFLOAT32:
     // case BT_DFLOAT64:
     // case BT_DFLOAT128:
-    // case BT_DFLOAT32_PTR:
-    // case BT_DFLOAT64_PTR:
-    // case BT_DFLOAT128_PTR:
     // case BT_VALIST_REF:
     // case BT_VALIST_ARG:
     // case BT_I1:

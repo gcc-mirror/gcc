@@ -1,5 +1,5 @@
 /* Functions related to building classes and their related objects.
-   Copyright (C) 1987-2019 Free Software Foundation, Inc.
+   Copyright (C) 1987-2020 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -134,7 +134,6 @@ static void build_vtbl_initializer (tree, tree, tree, tree, int *,
 static bool check_bitfield_decl (tree);
 static bool check_field_decl (tree, tree, int *, int *);
 static void check_field_decls (tree, tree *, int *, int *);
-static tree *build_base_field (record_layout_info, tree, splay_tree, tree *);
 static void build_base_fields (record_layout_info, splay_tree, tree *);
 static void check_methods (tree);
 static void remove_zero_width_bit_fields (tree);
@@ -3142,7 +3141,6 @@ one_inherited_ctor (tree ctor, tree t, tree using_decl)
       ctor = implicitly_declare_fn (sfk_inheriting_constructor,
 				    t, /*const*/false, ctor, parms);
       add_method (t, ctor, using_decl != NULL_TREE);
-      TYPE_HAS_USER_CONSTRUCTOR (t) = true;
       return;
     }
 
@@ -3265,6 +3263,60 @@ add_implicitly_declared_members (tree t, tree* access_decls,
     }
 }
 
+/* Cache of enum_min_precision values.  */
+static GTY((deletable)) hash_map<tree, int> *enum_to_min_precision;
+
+/* Return the minimum precision of a bit-field needed to store all
+   enumerators of ENUMERAL_TYPE TYPE.  */
+
+static int
+enum_min_precision (tree type)
+{
+  type = TYPE_MAIN_VARIANT (type);
+  /* For unscoped enums without fixed underlying type and without mode
+     attribute we can just use precision of the underlying type.  */
+  if (UNSCOPED_ENUM_P (type)
+      && !ENUM_FIXED_UNDERLYING_TYPE_P (type)
+      && !lookup_attribute ("mode", TYPE_ATTRIBUTES (type)))
+    return TYPE_PRECISION (ENUM_UNDERLYING_TYPE (type));
+
+  if (enum_to_min_precision == NULL)
+    enum_to_min_precision = hash_map<tree, int>::create_ggc (37);
+
+  bool existed;
+  int prec = enum_to_min_precision->get_or_insert (type, &existed);
+  if (existed)
+    return prec;
+
+  tree minnode, maxnode;
+  if (TYPE_VALUES (type))
+    {
+      minnode = maxnode = NULL_TREE;
+      for (tree values = TYPE_VALUES (type);
+	   values; values = TREE_CHAIN (values))
+	{
+	  tree decl = TREE_VALUE (values);
+	  tree value = DECL_INITIAL (decl);
+	  if (value == error_mark_node)
+	    value = integer_zero_node;
+	  if (!minnode)
+	    minnode = maxnode = value;
+	  else if (tree_int_cst_lt (maxnode, value))
+	    maxnode = value;
+	  else if (tree_int_cst_lt (value, minnode))
+	    minnode = value;
+	}
+    }
+  else
+    minnode = maxnode = integer_zero_node;
+
+  signop sgn = tree_int_cst_sgn (minnode) >= 0 ? UNSIGNED : SIGNED;
+  int lowprec = tree_int_cst_min_precision (minnode, sgn);
+  int highprec = tree_int_cst_min_precision (maxnode, sgn);
+  prec = MAX (lowprec, highprec);
+  return prec;
+}
+
 /* FIELD is a bit-field.  We are finishing the processing for its
    enclosing type.  Issue any appropriate messages and set appropriate
    flags.  Returns false if an error has been diagnosed.  */
@@ -3326,7 +3378,7 @@ check_bitfield_decl (tree field)
 		    "width of %qD exceeds its type", field);
       else if (TREE_CODE (type) == ENUMERAL_TYPE)
 	{
-	  int prec = TYPE_PRECISION (ENUM_UNDERLYING_TYPE (type));
+	  int prec = enum_min_precision (type);
 	  if (compare_tree_int (w, prec) < 0)
 	    warning_at (DECL_SOURCE_LOCATION (field), 0,
 			"%qD is too small to hold all values of %q#T",
@@ -4353,7 +4405,7 @@ layout_empty_base_or_field (record_layout_info rli, tree binfo_or_decl,
    fields at NEXT_FIELD, and return it.  */
 
 static tree
-build_base_field_1 (tree t, tree binfo, tree *&next_field)
+build_base_field_1 (tree t, tree binfo, tree access, tree *&next_field)
 {
   /* Create the FIELD_DECL.  */
   tree basetype = BINFO_TYPE (binfo);
@@ -4363,8 +4415,6 @@ build_base_field_1 (tree t, tree binfo, tree *&next_field)
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
   DECL_FIELD_CONTEXT (decl) = t;
-  TREE_PRIVATE (decl) = TREE_PRIVATE (binfo);
-  TREE_PROTECTED (decl) = TREE_PROTECTED (binfo);
   if (is_empty_class (basetype))
     /* CLASSTYPE_SIZE is one byte, but the field needs to have size zero.  */
     DECL_SIZE (decl) = DECL_SIZE_UNIT (decl) = size_zero_node;
@@ -4377,6 +4427,11 @@ build_base_field_1 (tree t, tree binfo, tree *&next_field)
   DECL_USER_ALIGN (decl) = CLASSTYPE_USER_ALIGN (basetype);
   SET_DECL_MODE (decl, TYPE_MODE (basetype));
   DECL_FIELD_IS_BASE (decl) = 1;
+
+  if (access == access_private_node)
+    TREE_PRIVATE (decl) = true;
+  else if (access == access_protected_node)
+    TREE_PROTECTED (decl) = true;
 
   /* Add the new FIELD_DECL to the list of fields for T.  */
   DECL_CHAIN (decl) = *next_field;
@@ -4396,7 +4451,7 @@ build_base_field_1 (tree t, tree binfo, tree *&next_field)
    Returns the location at which the next field should be inserted.  */
 
 static tree *
-build_base_field (record_layout_info rli, tree binfo,
+build_base_field (record_layout_info rli, tree binfo, tree access,
 		  splay_tree offsets, tree *next_field)
 {
   tree t = rli->t;
@@ -4417,7 +4472,7 @@ build_base_field (record_layout_info rli, tree binfo,
       CLASSTYPE_EMPTY_P (t) = 0;
 
       /* Create the FIELD_DECL.  */
-      decl = build_base_field_1 (t, binfo, next_field);
+      decl = build_base_field_1 (t, binfo, access, next_field);
 
       /* Try to place the field.  It may take more than one try if we
 	 have a hard time placing the field without putting two
@@ -4451,7 +4506,7 @@ build_base_field (record_layout_info rli, tree binfo,
 	 aggregate bases.  */
       if (cxx_dialect >= cxx17 && !BINFO_VIRTUAL_P (binfo))
 	{
-	  tree decl = build_base_field_1 (t, binfo, next_field);
+	  tree decl = build_base_field_1 (t, binfo, access, next_field);
 	  DECL_FIELD_OFFSET (decl) = BINFO_OFFSET (binfo);
 	  DECL_FIELD_BIT_OFFSET (decl) = bitsize_zero_node;
 	  SET_DECL_OFFSET_ALIGN (decl, BITS_PER_UNIT);
@@ -4482,25 +4537,39 @@ build_base_fields (record_layout_info rli,
   /* Chain to hold all the new FIELD_DECLs which stand in for base class
      subobjects.  */
   tree t = rli->t;
-  int n_baseclasses = BINFO_N_BASE_BINFOS (TYPE_BINFO (t));
-  int i;
+  tree binfo = TYPE_BINFO (t);
+  int n_baseclasses = BINFO_N_BASE_BINFOS (binfo);
 
   /* The primary base class is always allocated first.  */
-  if (CLASSTYPE_HAS_PRIMARY_BASE_P (t))
-    next_field = build_base_field (rli, CLASSTYPE_PRIMARY_BINFO (t),
-				   offsets, next_field);
+  const tree primary_binfo = CLASSTYPE_PRIMARY_BINFO (t);
+  if (primary_binfo)
+    {
+      /* We need to walk BINFO_BASE_BINFO to find the access of the primary
+	 base, if it is direct.  Indirect base fields are private.  */
+      tree primary_access = access_private_node;
+      for (int i = 0; i < n_baseclasses; ++i)
+	{
+	  tree base_binfo = BINFO_BASE_BINFO (binfo, i);
+	  if (base_binfo == primary_binfo)
+	    {
+	      primary_access = BINFO_BASE_ACCESS (binfo, i);
+	      break;
+	    }
+	}
+      next_field = build_base_field (rli, primary_binfo,
+				     primary_access,
+				     offsets, next_field);
+    }
 
   /* Now allocate the rest of the bases.  */
-  for (i = 0; i < n_baseclasses; ++i)
+  for (int i = 0; i < n_baseclasses; ++i)
     {
-      tree base_binfo;
-
-      base_binfo = BINFO_BASE_BINFO (TYPE_BINFO (t), i);
+      tree base_binfo = BINFO_BASE_BINFO (binfo, i);
 
       /* The primary base was already allocated above, so we don't
 	 need to allocate it again here.  */
-      if (base_binfo == CLASSTYPE_PRIMARY_BINFO (t))
-	continue;
+      if (base_binfo == primary_binfo)
+       continue;
 
       /* Virtual bases are added at the end (a primary virtual base
 	 will have already been added).  */
@@ -4508,6 +4577,7 @@ build_base_fields (record_layout_info rli,
 	continue;
 
       next_field = build_base_field (rli, base_binfo,
+				     BINFO_BASE_ACCESS (binfo, i),
 				     offsets, next_field);
     }
 }
@@ -5234,8 +5304,14 @@ trivial_default_constructor_is_constexpr (tree t)
   /* A defaulted trivial default constructor is constexpr
      if there is nothing to initialize.  */
   gcc_assert (!TYPE_HAS_COMPLEX_DFLT (t));
-  /* A class with a vptr doesn't have a trivial default ctor.  */
-  return is_really_empty_class (t, /*ignore_vptr*/true);
+  /* A class with a vptr doesn't have a trivial default ctor.
+     In C++20, a class can have transient uninitialized members, e.g.:
+
+       struct S { int i; constexpr S() = default; };
+
+     should work.  */
+  return (cxx_dialect >= cxx2a
+	  || is_really_empty_class (t, /*ignore_vptr*/true));
 }
 
 /* Returns true iff class T has a constexpr default constructor.  */
@@ -6081,6 +6157,7 @@ layout_virtual_bases (record_layout_info rli, splay_tree offsets)
 	  /* This virtual base is not a primary base of any class in the
 	     hierarchy, so we have to add space for it.  */
 	  next_field = build_base_field (rli, vbase,
+					 access_private_node,
 					 offsets, next_field);
 	}
     }
@@ -7396,7 +7473,13 @@ finish_struct (tree t, tree attributes)
       /* Remember current #pragma pack value.  */
       TYPE_PRECISION (t) = maximum_field_alignment;
 
-      if (TYPE_HAS_USER_CONSTRUCTOR (t))
+      if (cxx_dialect < cxx2a)
+	{
+	  if (!CLASSTYPE_NON_AGGREGATE (t)
+	      && type_has_user_provided_or_explicit_constructor (t))
+	    CLASSTYPE_NON_AGGREGATE (t) = 1;
+	}
+      else if (TYPE_HAS_USER_CONSTRUCTOR (t))
 	CLASSTYPE_NON_AGGREGATE (t) = 1;
 
       /* Fix up any variants we've already built.  */

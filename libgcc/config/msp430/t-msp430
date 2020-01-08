@@ -1,5 +1,5 @@
 # Makefile fragment for building LIBGCC for the TI MSP430 processor.
-# Copyright (C) 2011-2019 Free Software Foundation, Inc.
+# Copyright (C) 2011-2020 Free Software Foundation, Inc.
 # Contributed by Red Hat.
 #
 # This file is part of GCC.
@@ -41,6 +41,12 @@ LIB2ADD = \
 	$(srcdir)/config/msp430/cmpd.c
 
 HOST_LIBGCC2_CFLAGS += -Os -ffunction-sections -fdata-sections -mhwmult=none
+
+crtbegin_no_eh.o: $(srcdir)/crtstuff.c
+	$(crt_compile) -U__LIBGCC_EH_FRAME_SECTION_NAME__ -c $< -DCRT_BEGIN
+
+crtend_no_eh.o: $(srcdir)/crtstuff.c
+	$(crt_compile) -U__LIBGCC_EH_FRAME_SECTION_NAME__ -c $< -DCRT_END
 
 mpy.o: $(srcdir)/config/msp430/mpy.c
 	$(gcc_compile) $< -c

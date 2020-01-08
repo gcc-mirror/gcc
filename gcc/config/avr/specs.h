@@ -1,6 +1,6 @@
 /* Specs definitions for Atmel AVR back end.
 
-   Copyright (C) 2012-2019 Free Software Foundation, Inc.
+   Copyright (C) 2012-2020 Free Software Foundation, Inc.
    Contributed by Georg-Johann Lay (avr@gjlay.de)
 
 This file is part of GCC.
@@ -68,7 +68,6 @@ along with GCC; see the file COPYING3.  If not see
   "%(link_text_start) "                         \
   "%(link_relax) "                              \
   "%(link_pmem_wrap) "                          \
-  "%(link_pm_base_address) "                    \
   "%{shared:%eshared is not supported} "
 
 #undef  LIB_SPEC

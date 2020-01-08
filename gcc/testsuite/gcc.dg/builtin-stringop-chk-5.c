@@ -1,4 +1,4 @@
-/* Test exercising -Wrawmem-overflow and -Wstringop-overflow warnings.  */
+/* Test exercising -Wstringop-overflow warnings.  */
 /* { dg-do compile } */
 /* { dg-options "-O2 -Wstringop-overflow=1" } */
 
@@ -49,7 +49,7 @@ void test_memop_warn_local (const void *src)
   memcpy (a, src, n);   /* { dg-warning "writing between 8 and 32 bytes into a region of size 4 overflows the destination" } */
   escape (a, src);
 
-  /* At -Wrawmem-overflow=1 the destination is considered to be
+  /* At -Wstringop-overflow=1 the destination is considered to be
      the whole array and its size is therefore sizeof a.  */
   memcpy (&a[0], src, n);   /* { dg-warning "writing between 8 and 32 bytes into a region of size 4 overflows the destination" } */
   escape (a, src);
@@ -110,12 +110,12 @@ void test_memop_warn_alloc (const void *src)
 
   struct A *a = __builtin_malloc (sizeof *a * 2);
 
-  memcpy (a, src, n);   /* { dg-warning "writing between 8 and 32 bytes into a region of size 4 overflows the destination" "memcpy into allocated" { xfail *-*-*} } */
+  memcpy (a, src, n);   /* { dg-warning "writing between 8 and 32 bytes into a region of size 4 " "memcpy into allocated" } */
   escape (a, src);
 
-  /* At -Wrawmem-overflow=1 the destination is considered to be
+  /* At -Wstringop-overflow=1 the destination is considered to be
      the whole array and its size is therefore sizeof a.  */
-  memcpy (&a[0], src, n);   /* { dg-warning "writing between 8 and 32 bytes into a region of size 4 overflows the destination" "memcpy into allocated" { xfail *-*-*} } */
+  memcpy (&a[0], src, n);   /* { dg-warning "writing between 8 and 32 bytes into a region of size 4 overflows the destination" "memcpy into allocated" } */
   escape (a, src);
 
   /* Verify the same as above but by writing into the first mmeber
@@ -127,7 +127,7 @@ void test_memop_warn_alloc (const void *src)
 
   struct B *b = __builtin_malloc (sizeof *b * 2);
 
-  memcpy (&b[0], src, n);   /* { dg-warning "writing between 12 and 32 bytes into a region of size 8 overflows the destination" "memcpy into allocated" { xfail *-*-*} } */
+  memcpy (&b[0], src, n);   /* { dg-warning "writing between 12 and 32 bytes into a region of size 8 " "memcpy into allocated" } */
   escape (b);
 
   /* The following idiom of clearing multiple members of a struct is

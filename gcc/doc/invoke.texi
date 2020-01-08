@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2019 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2020 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -8,7 +8,7 @@
 @c man end
 
 @c man begin COPYRIGHT
-Copyright @copyright{} 1988-2019 Free Software Foundation, Inc.
+Copyright @copyright{} 1988-2020 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -233,10 +233,10 @@ in the following sections.
 -Wabi=@var{n}  -Wabi-tag  -Wcomma-subscript  -Wconversion-null @gol
 -Wctor-dtor-privacy @gol
 -Wdelete-non-virtual-dtor  -Wdeprecated-copy  -Wdeprecated-copy-dtor @gol
--Wliteral-suffix @gol
+-Wliteral-suffix -Wmismatched-tags @gol
 -Wmultiple-inheritance  -Wno-init-list-lifetime @gol
 -Wnamespaces  -Wnarrowing @gol
--Wpessimizing-move  -Wredundant-move @gol
+-Wpessimizing-move  -Wredundant-move -Wredundant-tags @gol
 -Wnoexcept  -Wnoexcept-type  -Wclass-memaccess @gol
 -Wnon-virtual-dtor  -Wreorder  -Wregister @gol
 -Weffc++  -Wstrict-null-sentinel  -Wtemplates @gol
@@ -277,6 +277,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdiagnostics-format=@r{[}text@r{|}json@r{]}  @gol
 -fno-diagnostics-show-option  -fno-diagnostics-show-caret @gol
 -fno-diagnostics-show-labels  -fno-diagnostics-show-line-numbers @gol
+-fno-diagnostics-show-cwe  @gol
 -fdiagnostics-minimum-margin-width=@var{width} @gol
 -fdiagnostics-parseable-fixits  -fdiagnostics-generate-patch @gol
 -fdiagnostics-show-template-tree  -fno-elide-type @gol
@@ -295,6 +296,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wbool-compare  -Wbool-operation @gol
 -Wno-builtin-declaration-mismatch @gol
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
+-Wc11-c2x-compat @gol
 -Wc++-compat  -Wc++11-compat  -Wc++14-compat  -Wc++17-compat  @gol
 -Wc++20-compat  @gol
 -Wcast-align  -Wcast-align=strict  -Wcast-function-type  -Wcast-qual  @gol
@@ -452,8 +454,8 @@ Objective-C and Objective-C++ Dialects}.
 -fpartial-inlining  -fpeel-loops  -fpredictive-commoning @gol
 -fprefetch-loop-arrays @gol
 -fprofile-correction @gol
--fprofile-use  -fprofile-use=@var{path}  -fprofile-values @gol
--fprofile-reorder-functions @gol
+-fprofile-use  -fprofile-use=@var{path} -fprofile-partial-training @gol
+-fprofile-values -fprofile-reorder-functions @gol
 -freciprocal-math  -free  -frename-registers  -freorder-blocks @gol
 -freorder-blocks-algorithm=@var{algorithm} @gol
 -freorder-blocks-and-partition  -freorder-functions @gol
@@ -569,7 +571,7 @@ Objective-C and Objective-C++ Dialects}.
 -fnon-call-exceptions  -fdelete-dead-exceptions  -funwind-tables @gol
 -fasynchronous-unwind-tables @gol
 -fno-gnu-unique @gol
--finhibit-size-directive  -fno-common  -fno-ident @gol
+-finhibit-size-directive  -fcommon  -fno-ident @gol
 -fpcc-struct-return  -fpic  -fPIC  -fpie  -fPIE  -fno-plt @gol
 -fno-jump-tables @gol
 -frecord-gcc-switches @gol
@@ -3322,6 +3324,21 @@ treats the return value as if it were designated by an rvalue.
 
 This warning is enabled by @option{-Wextra}.
 
+@item -Wredundant-tags @r{(C++ and Objective-C++ only)}
+@opindex Wredundant-tags
+@opindex Wno-redundant-tags
+Warn about redundant class-key and enum-key in references to class types
+and enumerated types in contexts where the key can be eliminated without
+causing an ambiguity.  For example
+
+@smallexample
+struct foo;
+struct foo *p;   // -Wredundant-tags, keyword struct can be eliminated
+
+void foo ();   // "hides" struct foo
+void bar (struct foo&);   // no warning, keyword struct cannot be eliminated
+@end smallexample
+
 @item -fext-numeric-literals @r{(C++ and Objective-C++ only)}
 @opindex fext-numeric-literals
 @opindex fno-ext-numeric-literals
@@ -3456,6 +3473,32 @@ rules disallow templates, and this may be used to enforce that rule.
 The warning is inactive inside a system header file, such as the STL, so
 one can still use the STL.  One may also instantiate or specialize
 templates.
+
+@item -Wmismatched-tags @r{(C++ and Objective-C++ only)}
+@opindex Wmismatched-tags
+@opindex Wno-mismatched-tags
+Warn for declarations of structs, classes, and class templates and their
+specializations with a class-key that does not match either the definition
+or the first declaration if no definition is provided.
+
+For example, the declaration of @code{struct Object} in the argument list
+of @code{draw} triggers the warning.  To avoid it, either remove the redundant
+class-key @code{struct} or replace it with @code{class} to match its definition.
+@smallexample
+class Object @{
+public:
+  virtual ~Object () = 0;
+@};
+void draw (struct Object*);
+@end smallexample
+
+It is not wrong to declare a class with the class-key @code{struct} as
+the example above shows.  The @option{-Wmismatched-tags} option is intended
+to help achieve a consistent style of class declarations.  In code that is
+intended to be portable to Windows-based compilers the warning helps prevent
+unresolved references due to the difference in the mangling of symbols
+declared with different class-keys.  The option can be used either on its
+own or in conjunction with @option{-Wredundant-tags}.
 
 @item -Wmultiple-inheritance @r{(C++ and Objective-C++ only)}
 @opindex Wmultiple-inheritance
@@ -3962,6 +4005,15 @@ as the types of expressions:
 
 This option suppresses the printing of these labels (in the example above,
 the vertical bars and the ``char *'' and ``long int'' text).
+
+@item -fno-diagnostics-show-cwe
+@opindex fno-diagnostics-show-cwe
+@opindex fdiagnostics-show-cwe
+Diagnostic messages can optionally have an associated
+@url{https://cwe.mitre.org/index.html, CWE} identifier.
+GCC itself does not do this for any of its diagnostics, but plugins may do so.
+By default, if this information is present, it will be printed with
+the diagnostic.  This option suppresses the printing of this metadata.
 
 @item -fno-diagnostics-show-line-numbers
 @opindex fno-diagnostics-show-line-numbers
@@ -6830,6 +6882,16 @@ For instance, warn about use of anonymous structures and unions,
 and so on.  This option is independent of the standards mode.  Warnings are
 disabled in the expression that follows @code{__extension__}.
 
+@item -Wc11-c2x-compat @r{(C and Objective-C only)}
+@opindex Wc11-c2x-compat
+@opindex Wno-c11-c2x-compat
+Warn about features not present in ISO C11, but present in ISO C2X.
+For instance, warn about omitting the string in @code{_Static_assert},
+use of @samp{[[]]} syntax for attributes, use of decimal
+floating-point types, and so on.  This option is independent of the
+standards mode.  Warnings are disabled in the expression that follows
+@code{__extension__}.
+
 @item -Wc++-compat @r{(C and Objective-C only)}
 @opindex Wc++-compat
 @opindex Wno-c++-compat
@@ -8175,7 +8237,7 @@ consumers are not expected to support this extended format, and they
 would be rendered unable to decode location lists using it.
 
 @item -ginternal-reset-location-views
-@itemx -gnointernal-reset-location-views
+@itemx -gno-internal-reset-location-views
 @opindex ginternal-reset-location-views
 @opindex gno-internal-reset-location-views
 Attempt to determine location views that can be omitted from location
@@ -9771,8 +9833,8 @@ It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 @item -ftree-loop-distribute-patterns
 @opindex ftree-loop-distribute-patterns
 Perform loop distribution of patterns that can be code generated with
-calls to a library.  This flag is enabled by default at @option{-O3}, and
-by @option{-fprofile-use} and @option{-fauto-profile}.
+calls to a library.  This flag is enabled by default at @option{-O2} and
+higher, and by @option{-fprofile-use} and @option{-fauto-profile}.
 
 This pass distributes the initialization loops and generates a call to
 memset zero.  For example, the loop
@@ -10436,7 +10498,7 @@ precedence; and for example @option{-ffp-contract=off} takes precedence
 over @option{-ffp-contract=fast}.  You can override them at link time.
 
 To enable debug info generation you need to supply @option{-g} at
-compile-time.  If any of the input files at link time were built
+compile time.  If any of the input files at link time were built
 with debug info generation enabled the link will enable debug info
 generation as well.  Any elaborate debug info settings
 like the dwarf level @option{-gdwarf-5} need to be explicitly repeated
@@ -10622,6 +10684,19 @@ GCC uses heuristics to correct or smooth out such inconsistencies. By
 default, GCC emits an error message when an inconsistent profile is detected.
 
 This option is enabled by @option{-fauto-profile}.
+
+@item -fprofile-partial-training
+@opindex fprofile-use
+With @code{-fprofile-use} all portions of programs not executed during train
+run are optimized agressively for size rather than speed.  In some cases it is
+not practical to train all possible hot paths in the program. (For
+example, program may contain functions specific for a given hardware and
+trianing may not cover all hardware configurations program is run on.)  With
+@code{-fprofile-partial-training} profile feedback will be ignored for all
+functions not executed during the train run leading them to be optimized as if
+they were compiled without profile feedback. This leads to better performance
+when train run is not representative but also leads to significantly bigger
+code.
 
 @item -fprofile-use
 @itemx -fprofile-use=@var{path}
@@ -11270,16 +11345,11 @@ when modulo scheduling a loop.  Larger values can exponentially increase
 compilation time.
 
 @item max-inline-insns-single
-@item max-inline-insns-single-O2
 Several parameters control the tree inliner used in GCC@.  This number sets the
 maximum number of instructions (counted in GCC's internal representation) in a
 single function that the tree inliner considers for inlining.  This only
 affects functions declared inline and methods implemented in a class
 declaration (C++). 
-
-For functions compiled with optimization levels
-@option{-O3} and @option{-Ofast} parameter @option{max-inline-insns-single} is
-applied. In other cases @option{max-inline-insns-single-O2} is applied.
 
 
 @item max-inline-insns-auto
@@ -11306,16 +11376,10 @@ Extra time accounted by inliner for function overhead such as time needed to
 execute function prologue and epilogue
 
 @item inline-heuristics-hint-percent
-@item inline-heuristics-hint-percent-O2
 The scale (in percents) applied to @option{inline-insns-single},
 @option{inline-insns-single-O2}, @option{inline-insns-auto}
 when inline heuristics hints that inlining is
 very profitable (will enable later optimizations).
-
-For functions compiled with optimization levels
-@option{-O3} and @option{-Ofast} parameter
-@option{inline-heuristics-hint-percent} is applied. In other cases
-@option{inline-heuristics-hint-percent-O2} is applied.
 
 @item uninlined-thunk-insns
 @item uninlined-thunk-time
@@ -11323,15 +11387,10 @@ Same as @option{--param uninlined-function-insns} and
 @option{--param uninlined-function-time} but applied to function thunks
 
 @item inline-min-speedup
-@item inline-min-speedup-O2
 When estimated performance improvement of caller + callee runtime exceeds this
 threshold (in percent), the function can be inlined regardless of the limit on
 @option{--param max-inline-insns-single} and @option{--param
 max-inline-insns-auto}.
-
-For functions compiled with optimization levels
-@option{-O3} and @option{-Ofast} parameter @option{inline-min-speedup} is
-applied. In other cases @option{inline-min-speedup-O2} is applied.
 
 @item large-function-insns
 The limit specifying really large functions.  For functions larger than this
@@ -11410,13 +11469,8 @@ via a given call expression.  This parameter limits inlining only to call
 expressions whose probability exceeds the given threshold (in percents).
 
 @item early-inlining-insns
-@item early-inlining-insns-O2
 Specify growth that the early inliner can make.  In effect it increases
 the amount of inlining for code having a large abstraction penalty.
-
-For functions compiled with optimization levels
-@option{-O3} and @option{-Ofast} parameter @option{early-inlining-insns} is
-applied. In other cases @option{early-inlining-insns-O2} is applied.
 
 @item max-early-inliner-iterations
 Limit of iterations of the early inliner.  This basically bounds
@@ -12044,6 +12098,13 @@ stores per one formal parameter of a function.
 IPA-CP calculates its own score of cloning profitability heuristics
 and performs those cloning opportunities with scores that exceed
 @option{ipa-cp-eval-threshold}.
+
+@item ipa-cp-max-recursive-depth
+Maximum depth of recursive cloning for self-recursive function.
+
+@item ipa-cp-min-recursive-probability
+Recursive cloning only when the probability of call being executed exceeds
+the parameter.
 
 @item ipa-cp-recursion-penalty
 Percentage penalty the recursive functions will receive when they
@@ -12996,9 +13057,12 @@ on Intel Control-flow Enforcement Technology (CET).
 Emit extra code to check for buffer overflows, such as stack smashing
 attacks.  This is done by adding a guard variable to functions with
 vulnerable objects.  This includes functions that call @code{alloca}, and
-functions with buffers larger than 8 bytes.  The guards are initialized
-when a function is entered and then checked when the function exits.
-If a guard check fails, an error message is printed and the program exits.
+functions with buffers larger than or equal to 8 bytes.  The guards are
+initialized when a function is entered and then checked when the function
+exits.  If a guard check fails, an error message is printed and the program
+exits.  Only variables that are actually allocated on the stack are
+considered, optimized away variables or variables allocated in registers
+don't count.
 
 @item -fstack-protector-all
 @opindex fstack-protector-all
@@ -13008,7 +13072,9 @@ Like @option{-fstack-protector} except that all functions are protected.
 @opindex fstack-protector-strong
 Like @option{-fstack-protector} but includes additional functions to
 be protected --- those that have local array definitions, or have
-references to local frame addresses.
+references to local frame addresses.  Only variables that are actually
+allocated on the stack are considered, optimized away variables or variables
+allocated in registers don't count.
 
 @item -fstack-protector-explicit
 @opindex fstack-protector-explicit
@@ -14112,35 +14178,27 @@ useful for building programs to run under WINE@.
 code that is not binary compatible with code generated without that switch.
 Use it to conform to a non-default application binary interface.
 
-@item -fno-common
-@opindex fno-common
+@item -fcommon
 @opindex fcommon
+@opindex fno-common
 @cindex tentative definitions
-In C code, this option controls the placement of global variables 
-defined without an initializer, known as @dfn{tentative definitions} 
-in the C standard.  Tentative definitions are distinct from declarations 
+In C code, this option controls the placement of global variables
+defined without an initializer, known as @dfn{tentative definitions}
+in the C standard.  Tentative definitions are distinct from declarations
 of a variable with the @code{extern} keyword, which do not allocate storage.
 
-Unix C compilers have traditionally allocated storage for
-uninitialized global variables in a common block.  This allows the
-linker to resolve all tentative definitions of the same variable
-in different compilation units to the same object, or to a non-tentative
-definition.  
-This is the behavior specified by @option{-fcommon}, and is the default for 
-GCC on most targets.  
-On the other hand, this behavior is not required by ISO
-C, and on some targets may carry a speed or code size penalty on
-variable references.
+The default is @option{-fno-common}, which specifies that the compiler places
+uninitialized global variables in the BSS section of the object file.
+This inhibits the merging of tentative definitions by the linker so you get a
+multiple-definition error if the same variable is accidentally defined in more
+than one compilation unit.
 
-The @option{-fno-common} option specifies that the compiler should instead
-place uninitialized global variables in the BSS section of the object file.
-This inhibits the merging of tentative definitions by the linker so
-you get a multiple-definition error if the same 
-variable is defined in more than one compilation unit.
-Compiling with @option{-fno-common} is useful on targets for which
-it provides better performance, or if you wish to verify that the
-program will work on other systems that always treat uninitialized
-variable definitions this way.
+The @option{-fcommon} places uninitialized global variables in a common block.
+This allows the linker to resolve all tentative definitions of the same variable
+in different compilation units to the same object, or to a non-tentative
+definition.  This behavior is inconsistent with C++, and on many targets implies
+a speed and code size penalty on global variable references.  It is mainly
+useful to enable legacy code to link without errors.
 
 @item -fno-ident
 @opindex fno-ident
@@ -16061,25 +16119,19 @@ Specify the name of the target architecture and, optionally, one or
 more feature modifiers.  This option has the form
 @option{-march=@var{arch}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}.
 
-The permissible values for @var{arch} are @samp{armv8-a},
-@samp{armv8.1-a}, @samp{armv8.2-a}, @samp{armv8.3-a}, @samp{armv8.4-a},
-@samp{armv8.5-a} or @var{native}.
+The table below summarizes the permissible values for @var{arch}
+and the features that they enable by default:
 
-The value @samp{armv8.5-a} implies @samp{armv8.4-a} and enables compiler
-support for the ARMv8.5-A architecture extensions.
-
-The value @samp{armv8.4-a} implies @samp{armv8.3-a} and enables compiler
-support for the ARMv8.4-A architecture extensions.
-
-The value @samp{armv8.3-a} implies @samp{armv8.2-a} and enables compiler
-support for the ARMv8.3-A architecture extensions.
-
-The value @samp{armv8.2-a} implies @samp{armv8.1-a} and enables compiler
-support for the ARMv8.2-A architecture extensions.
-
-The value @samp{armv8.1-a} implies @samp{armv8-a} and enables compiler
-support for the ARMv8.1-A architecture extension.  In particular, it
-enables the @samp{+crc}, @samp{+lse}, and @samp{+rdma} features.
+@multitable @columnfractions 0.20 0.20 0.60
+@headitem @var{arch} value @tab Architecture @tab Includes by default
+@item @samp{armv8-a} @tab Armv8-A @tab @samp{+fp}, @samp{+simd}
+@item @samp{armv8.1-a} @tab Armv8.1-A @tab @samp{armv8-a}, @samp{+crc}, @samp{+lse}, @samp{+rdma}
+@item @samp{armv8.2-a} @tab Armv8.2-A @tab @samp{armv8.1-a}
+@item @samp{armv8.3-a} @tab Armv8.3-A @tab @samp{armv8.2-a}
+@item @samp{armv8.4-a} @tab Armv8.4-A @tab @samp{armv8.3-a}, @samp{+fp16fml}, @samp{+dotprod}
+@item @samp{armv8.5-a} @tab Armv8.5-A @tab @samp{armv8.4-a}, @samp{+sb}, @samp{+ssbs}, @samp{+predres}
+@item @samp{armv8.6-a} @tab Armv8.6-A @tab @samp{armv8.5-a}, @samp{+bf16}, @samp{+i8mm}
+@end multitable
 
 The value @samp{native} is available on native AArch64 GNU/Linux and
 causes the compiler to pick the architecture of the host system.  This
@@ -16280,9 +16332,8 @@ Enable the Armv8.5-a Random Number instructions.  This option is only to
 enable the extension at the assembler level and does not affect code
 generation.
 @item memtag
-Enable the Armv8.5-a Memory Tagging Extensions.  This option is only to
-enable the extension at the assembler level and does not affect code
-generation.
+Enable the Armv8.5-a Memory Tagging Extensions.
+Use of this option with architectures prior to Armv8.5-A is not supported.
 @item sb
 Enable the Armv8-a Speculation Barrier instruction.  This option is only to
 enable the extension at the assembler level and does not affect code
@@ -16295,6 +16346,7 @@ generation.  This option is enabled by default for @option{-march=armv8.5-a}.
 Enable the Armv8-a Execution and Data Prediction Restriction instructions.
 This option is only to enable the extension at the assembler level and does
 not affect code generation.  This option is enabled by default for
+@option{-march=armv8.5-a}.
 @item sve2
 Enable the Armv8-a Scalable Vector Extension 2.  This also enables SVE
 instructions.
@@ -16306,9 +16358,18 @@ Enable SVE2 sm4 instructions.  This also enables SVE2 instructions.
 Enable SVE2 aes instructions.  This also enables SVE2 instructions.
 @item sve2-sha3
 Enable SVE2 sha3 instructions.  This also enables SVE2 instructions.
-@option{-march=armv8.5-a}.
 @item tme
 Enable the Transactional Memory Extension.
+@item i8mm
+Enable 8-bit Integer Matrix Multiply instructions.  This also enables
+Advanced SIMD and floating-point instructions.  This option is enabled by
+default for @option{-march=armv8.6-a}.  Use of this option with architectures
+prior to Armv8.2-A is not supported.
+@item bf16
+Enable brain half-precision floating-point instructions.  This also enables
+Advanced SIMD and floating-point instructions.  This option is enabled by
+default for @option{-march=armv8.6-a}.  Use of this option with architectures
+prior to Armv8.2-A is not supported.
 
 @end table
 
@@ -17423,6 +17484,7 @@ Permissible names are:
 @samp{armv8-a}, @samp{armv8.1-a}, @samp{armv8.2-a}, @samp{armv8.3-a},
 @samp{armv8.4-a},
 @samp{armv8.5-a},
+@samp{armv8.6-a},
 @samp{armv7-r},
 @samp{armv8-r},
 @samp{armv6-m}, @samp{armv6s-m},
@@ -17666,6 +17728,14 @@ Speculation Barrier Instruction.
 
 @item +predres
 Execution and Data Prediction Restriction Instructions.
+
+@item +i8mm
+8-bit Integer Matrix Multiply instructions.
+This also enables Advanced SIMD and floating-point instructions.
+
+@item +bf16
+Brain half-precision floating-point instructions.
+This also enables Advanced SIMD and floating-point instructions.
 @end table
 
 @item armv8.4-a
@@ -17695,6 +17765,14 @@ Speculation Barrier Instruction.
 
 @item +predres
 Execution and Data Prediction Restriction Instructions.
+
+@item +i8mm
+8-bit Integer Matrix Multiply instructions.
+This also enables Advanced SIMD and floating-point instructions.
+
+@item +bf16
+Brain half-precision floating-point instructions.
+This also enables Advanced SIMD and floating-point instructions.
 @end table
 
 @item armv8.5-a
@@ -17718,6 +17796,45 @@ Disable the cryptographic extension.
 
 @item +nofp
 Disable the floating-point, Advanced SIMD and cryptographic instructions.
+
+@item +i8mm
+8-bit Integer Matrix Multiply instructions.
+This also enables Advanced SIMD and floating-point instructions.
+
+@item +bf16
+Brain half-precision floating-point instructions.
+This also enables Advanced SIMD and floating-point instructions.
+@end table
+
+@item armv8.6-a
+@table @samp
+@item +fp16
+The half-precision floating-point data processing instructions.
+This also enables the Advanced SIMD and floating-point instructions as well
+as the Dot Product extension and the half-precision floating-point fmla
+extension.
+
+@item +simd
+The ARMv8.3-A Advanced SIMD and floating-point instructions as well as the
+Dot Product extension.
+
+@item +crypto
+The cryptographic instructions.  This also enables the Advanced SIMD and
+floating-point instructions as well as the Dot Product extension.
+
+@item +nocrypto
+Disable the cryptographic extension.
+
+@item +nofp
+Disable the floating-point, Advanced SIMD and cryptographic instructions.
+
+@item +i8mm
+8-bit Integer Matrix Multiply instructions.
+This also enables Advanced SIMD and floating-point instructions.
+
+@item +bf16
+Brain half-precision floating-point instructions.
+This also enables Advanced SIMD and floating-point instructions.
 @end table
 
 @item armv7-r
@@ -18217,8 +18334,7 @@ provided for use in debugging the compiler.
 Do not allow constant data to be placed in code sections.
 Additionally, when compiling for ELF object format give all text sections the
 ELF processor-specific section attribute @code{SHF_ARM_PURECODE}.  This option
-is only available when generating non-pic code for M-profile targets with the
-MOVT instruction.
+is only available when generating non-pic code for M-profile targets.
 
 @item -mcmse
 @opindex mcmse
@@ -18305,9 +18421,9 @@ subroutines.  Code size is smaller.
 @opindex mdouble
 @opindex mlong-double
 Set the size (in bits) of the @code{double} or @code{long double} type,
-respectively.  Possible values for @var{bits} are 32 an 64.
+respectively.  Possible values for @var{bits} are 32 and 64.
 Whether or not a specific value for @var{bits} is allowed depends on
-the @code{--with--double=} and @code{--with-long-double=}
+the @code{--with-double=} and @code{--with-long-double=}
 @w{@uref{https://gcc.gnu.org/install/configure.html#avr,configure options}},
 and the same applies for the default values of the options.
 
@@ -18769,6 +18885,36 @@ features like attribute @code{progmem} and @code{pgm_read_*}.
 @item __WITH_AVRLIBC__
 The compiler is configured to be used together with AVR-Libc.
 See the @option{--with-avrlibc} configure option.
+
+@item __HAVE_DOUBLE_MULTILIB__
+Defined if @option{-mdouble=} acts as a multilib option.
+
+@item __HAVE_DOUBLE32__
+@itemx __HAVE_DOUBLE64__
+Defined if the compiler supports 32-bit double resp. 64-bit double.
+The actual layout is specified by option @option{-mdouble=}.
+
+@item __DEFAULT_DOUBLE__
+The size in bits of @code{double} if @option{-mdouble=} is not set.
+To test the layout of @code{double} in a program, use the built-in
+macro @code{__SIZEOF_DOUBLE__}.
+
+@item __HAVE_LONG_DOUBLE32__
+@itemx __HAVE_LONG_DOUBLE64__
+@itemx __HAVE_LONG_DOUBLE_MULTILIB__
+@itemx __DEFAULT_LONG_DOUBLE__
+Same as above, but for @code{long double} instead of @code{double}.
+
+@item __WITH_DOUBLE_COMPARISON__
+Reflects the @code{--with-double-comparison=@{tristate|bool|libf7@}}
+@w{@uref{https://gcc.gnu.org/install/configure.html#avr,configure option}}
+and is defined to @code{2} or @code{3}.
+
+@item __WITH_LIBF7_LIBGCC__
+@itemx __WITH_LIBF7_MATH__
+@itemx __WITH_LIBF7_MATH_SYMBOLS__
+Reflects the @code{--with-libf7=@{libgcc|math|math-symbols@}}
+@w{@uref{https://gcc.gnu.org/install/configure.html#avr,configure option}}.
 
 @end table
 
@@ -23301,8 +23447,8 @@ this directory for devices.csv.  If devices.csv is found, this directory will
 also be registered as an include path, and linker library path.  Header files
 and linker scripts in this directory can therefore be used without manually
 specifying @code{-I} and @code{-L} on the command line.
-@item The @samp{msp430-elf/include/devices} directory
-Finally, GCC will examine @samp{msp430-elf/include/devices} from the
+@item The @samp{msp430-elf@{,bare@}/include/devices} directory
+Finally, GCC will examine @samp{msp430-elf@{,bare@}/include/devices} from the
 toolchain root directory.  This directory does not exist in a default
 installation, but if the user has created it and copied @samp{devices.csv}
 there, then the MCU data will be read.  As above, this directory will
@@ -27757,35 +27903,38 @@ instruction set extensions.)
 CPUs based on AMD Family 15h cores with x86-64 instruction set support.  (This
 supersets FMA4, AVX, XOP, LWP, AES, PCLMUL, CX16, MMX, SSE, SSE2, SSE3, SSE4A,
 SSSE3, SSE4.1, SSE4.2, ABM and 64-bit instruction set extensions.)
+
 @item bdver2
 AMD Family 15h core based CPUs with x86-64 instruction set support.  (This
 supersets BMI, TBM, F16C, FMA, FMA4, AVX, XOP, LWP, AES, PCLMUL, CX16, MMX,
 SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1, SSE4.2, ABM and 64-bit instruction set 
 extensions.)
+
 @item bdver3
 AMD Family 15h core based CPUs with x86-64 instruction set support.  (This
 supersets BMI, TBM, F16C, FMA, FMA4, FSGSBASE, AVX, XOP, LWP, AES, 
 PCLMUL, CX16, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1, SSE4.2, ABM and
-64-bit instruction set extensions.
+64-bit instruction set extensions.)
+
 @item bdver4
 AMD Family 15h core based CPUs with x86-64 instruction set support.  (This
 supersets BMI, BMI2, TBM, F16C, FMA, FMA4, FSGSBASE, AVX, AVX2, XOP, LWP, 
 AES, PCLMUL, CX16, MOVBE, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1,
-SSE4.2, ABM and 64-bit instruction set extensions.
+SSE4.2, ABM and 64-bit instruction set extensions.)
 
 @item znver1
 AMD Family 17h core based CPUs with x86-64 instruction set support.  (This
 supersets BMI, BMI2, F16C, FMA, FSGSBASE, AVX, AVX2, ADCX, RDSEED, MWAITX,
 SHA, CLZERO, AES, PCLMUL, CX16, MOVBE, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3,
 SSE4.1, SSE4.2, ABM, XSAVEC, XSAVES, CLFLUSHOPT, POPCNT, and 64-bit
-instruction set extensions.
-@item znver2
-AMD Family 17h core based CPUs with x86-64 instruction set support. (This
-supersets BMI, BMI2, ,CLWB, F16C, FMA, FSGSBASE, AVX, AVX2, ADCX, RDSEED,
-MWAITX, SHA, CLZERO, AES, PCLMUL, CX16, MOVBE, MMX, SSE, SSE2, SSE3, SSE4A,
-SSSE3, SSE4.1, SSE4.2, ABM, XSAVEC, XSAVES, CLFLUSHOPT, POPCNT, and 64-bit
 instruction set extensions.)
 
+@item znver2
+AMD Family 17h core based CPUs with x86-64 instruction set support. (This
+supersets BMI, BMI2, CLWB, F16C, FMA, FSGSBASE, AVX, AVX2, ADCX, RDSEED,
+MWAITX, SHA, CLZERO, AES, PCLMUL, CX16, MOVBE, MMX, SSE, SSE2, SSE3, SSE4A,
+SSSE3, SSE4.1, SSE4.2, ABM, XSAVEC, XSAVES, CLFLUSHOPT, POPCNT, RDPID,
+WBNOINVD, and 64-bit instruction set extensions.)
 
 @item btver1
 CPUs based on AMD Family 14h cores with x86-64 instruction set support.  (This

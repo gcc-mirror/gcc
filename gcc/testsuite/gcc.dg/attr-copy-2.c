@@ -2,7 +2,7 @@
    Exercise attribute copy for functions.
    { dg-do compile }
    { dg-require-alias "" }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-O2 -Wall -Wno-array-bounds" } */
 
 #define Assert(expr)   typedef char AssertExpr[2 * !!(expr) - 1]
 
@@ -99,7 +99,7 @@ void* xref12 (int);
 void* call_xref12 (void)
 {
   void *p = xref12 (3);
-  __builtin___strcpy_chk (p, "123", __builtin_object_size (p, 0));   /* { dg-warning "\\\[-Wstringop-overflow=]" } */
+  __builtin___strcpy_chk (p, "123", __builtin_object_size (p, 0));   /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" } */
   return p;
 }
 
@@ -197,7 +197,7 @@ void* falias_malloc (void);
 void* call_falias_malloc (void)
 {
   char *p = falias_malloc ();
-  __builtin___strcpy_chk (p, "123", __builtin_object_size (p, 0));   /* { dg-warning "\\\[-Wstringop-overflow=]" } */
+  __builtin___strcpy_chk (p, "123", __builtin_object_size (p, 0));   /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" } */
   return p;
 }
 

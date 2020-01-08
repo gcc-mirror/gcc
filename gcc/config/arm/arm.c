@@ -1,5 +1,5 @@
 /* Output routines for GCC for ARM.
-   Copyright (C) 1991-2019 Free Software Foundation, Inc.
+   Copyright (C) 1991-2020 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com).
@@ -325,6 +325,9 @@ static unsigned int arm_hard_regno_nregs (unsigned int, machine_mode);
 static bool arm_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool arm_modes_tieable_p (machine_mode, machine_mode);
 static HOST_WIDE_INT arm_constant_alignment (const_tree, HOST_WIDE_INT);
+static rtx_insn * thumb1_md_asm_adjust (vec<rtx> &, vec<rtx> &,
+					vec<const char *> &, vec<rtx> &,
+					HARD_REG_SET &);
 
 /* Table of machine attributes.  */
 static const struct attribute_spec arm_attribute_table[] =
@@ -995,6 +998,12 @@ int arm_arch_cmse = 0;
 
 /* Nonzero if the core has a very small, high-latency, multiply unit.  */
 int arm_m_profile_small_mul = 0;
+
+/* Nonzero if chip supports the AdvSIMD I8MM instructions.  */
+int arm_arch_i8mm = 0;
+
+/* Nonzero if chip supports the BFloat16 instructions.  */
+int arm_arch_bf16 = 0;
 
 /* The condition codes of the ARM, and the inverse function.  */
 static const char * const arm_condition_codes[] =
@@ -2890,12 +2899,17 @@ arm_option_check_internal (struct gcc_options *opts)
     {
       const char *flag = (target_pure_code ? "-mpure-code" :
 					     "-mslow-flash-data");
+      bool common_unsupported_modes = arm_arch_notm || flag_pic || TARGET_NEON;
 
-      /* We only support -mpure-code and -mslow-flash-data on M-profile targets
-	 with MOVT.  */
-      if (!TARGET_HAVE_MOVT || arm_arch_notm || flag_pic || TARGET_NEON)
+      /* We only support -mslow-flash-data on M-profile targets with
+	 MOVT.  */
+      if (target_slow_flash_data && (!TARGET_HAVE_MOVT || common_unsupported_modes))
 	error ("%s only supports non-pic code on M-profile targets with the "
 	       "MOVT instruction", flag);
+
+      /* We only support -mpure-code on M-profile targets.  */
+      if (target_pure_code && common_unsupported_modes)
+	error ("%s only supports non-pic code on M-profile targets", flag);
 
       /* Cannot load addresses: -mslow-flash-data forbids literal pool and
 	 -mword-relocations forbids relocation of MOVT/MOVW.  */
@@ -2941,6 +2955,11 @@ arm_option_params_internal (void)
   /* For THUMB2, we limit the conditional sequence to one IT block.  */
   if (TARGET_THUMB2)
     max_insns_skipped = MIN (max_insns_skipped, MAX_INSN_PER_IT_BLOCK);
+
+  if (TARGET_THUMB1)
+    targetm.md_asm_adjust = thumb1_md_asm_adjust;
+  else
+    targetm.md_asm_adjust = arm_md_asm_adjust;
 }
 
 /* True if -mflip-thumb should next add an attribute for the default
@@ -3036,6 +3055,11 @@ arm_option_override_internal (struct gcc_options *opts,
   if (!TARGET_THUMB2_P (opts->x_target_flags) || !arm_arch_notm)
     opts->x_arm_restrict_it = 0;
 
+  /* Use the IT size from CPU specific tuning unless -mrestrict-it is used.  */
+  if (!opts_set->x_arm_restrict_it
+      && (opts_set->x_arm_cpu_string || opts_set->x_arm_tune_string))
+    opts->x_arm_restrict_it = 0;
+
   /* Enable -munaligned-access by default for
      - all ARMv6 architecture-based processors when compiling for a 32-bit ISA
      i.e. Thumb2 and ARM state only.
@@ -3096,7 +3120,8 @@ arm_option_override_internal (struct gcc_options *opts,
 #endif
 }
 
-static sbitmap isa_all_fpubits;
+static sbitmap isa_all_fpubits_internal;
+static sbitmap isa_all_fpbits;
 static sbitmap isa_quirkbits;
 
 /* Configure a build target TARGET from the user-specified options OPTS and
@@ -3163,7 +3188,12 @@ arm_configure_build_target (struct arm_build_target *target,
 	  /* Ignore any bits that are quirk bits.  */
 	  bitmap_and_compl (isa_delta, isa_delta, isa_quirkbits);
 	  /* Ignore (for now) any bits that might be set by -mfpu.  */
-	  bitmap_and_compl (isa_delta, isa_delta, isa_all_fpubits);
+	  bitmap_and_compl (isa_delta, isa_delta, isa_all_fpubits_internal);
+
+	  /* And if the target ISA lacks floating point, ignore any
+	     extensions that depend on that.  */
+	  if (!bitmap_bit_p (target->isa, isa_bit_vfpv2))
+	    bitmap_and_compl (isa_delta, isa_delta, isa_all_fpbits);
 
 	  if (!bitmap_empty_p (isa_delta))
 	    {
@@ -3322,7 +3352,7 @@ arm_configure_build_target (struct arm_build_target *target,
       auto_sbitmap fpu_bits (isa_num_bits);
 
       arm_initialize_isa (fpu_bits, arm_selected_fpu->isa_bits);
-      bitmap_and_compl (target->isa, target->isa, isa_all_fpubits);
+      bitmap_and_compl (target->isa, target->isa, isa_all_fpubits_internal);
       bitmap_ior (target->isa, target->isa, fpu_bits);
     }
 
@@ -3348,16 +3378,20 @@ arm_configure_build_target (struct arm_build_target *target,
 static void
 arm_option_override (void)
 {
-  static const enum isa_feature fpu_bitlist[]
+  static const enum isa_feature fpu_bitlist_internal[]
     = { ISA_ALL_FPU_INTERNAL, isa_nobit };
+  static const enum isa_feature fp_bitlist[]
+    = { ISA_ALL_FP, isa_nobit };
   static const enum isa_feature quirk_bitlist[] = { ISA_ALL_QUIRKS, isa_nobit};
   cl_target_option opts;
 
   isa_quirkbits = sbitmap_alloc (isa_num_bits);
   arm_initialize_isa (isa_quirkbits, quirk_bitlist);
 
-  isa_all_fpubits = sbitmap_alloc (isa_num_bits);
-  arm_initialize_isa (isa_all_fpubits, fpu_bitlist);
+  isa_all_fpubits_internal = sbitmap_alloc (isa_num_bits);
+  isa_all_fpbits = sbitmap_alloc (isa_num_bits);
+  arm_initialize_isa (isa_all_fpubits_internal, fpu_bitlist_internal);
+  arm_initialize_isa (isa_all_fpbits, fp_bitlist);
 
   arm_active_target.isa = sbitmap_alloc (isa_num_bits);
 
@@ -3649,8 +3683,11 @@ arm_option_reconfigure_globals (void)
   arm_arch_arm_hwdiv = bitmap_bit_p (arm_active_target.isa, isa_bit_adiv);
   arm_arch_crc = bitmap_bit_p (arm_active_target.isa, isa_bit_crc32);
   arm_arch_cmse = bitmap_bit_p (arm_active_target.isa, isa_bit_cmse);
-  arm_fp16_inst = bitmap_bit_p (arm_active_target.isa, isa_bit_fp16);
   arm_arch_lpae = bitmap_bit_p (arm_active_target.isa, isa_bit_lpae);
+  arm_arch_i8mm = bitmap_bit_p (arm_active_target.isa, isa_bit_i8mm);
+  arm_arch_bf16 = bitmap_bit_p (arm_active_target.isa, isa_bit_bf16);
+
+  arm_fp16_inst = bitmap_bit_p (arm_active_target.isa, isa_bit_fp16);
   if (arm_fp16_inst)
     {
       if (arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE)
@@ -4396,6 +4433,38 @@ const_ok_for_dimode_op (HOST_WIDE_INT i, enum rtx_code code)
     default:
       return 0;
     }
+}
+
+/* Emit a sequence of movs/adds/shift to produce a 32-bit constant.
+   Avoid generating useless code when one of the bytes is zero.  */
+void
+thumb1_gen_const_int (rtx op0, HOST_WIDE_INT op1)
+{
+  bool mov_done_p = false;
+  int i;
+
+  /* Emit upper 3 bytes if needed.  */
+  for (i = 0; i < 3; i++)
+    {
+      int byte = (op1 >> (8 * (3 - i))) & 0xff;
+
+      if (byte)
+	{
+	  emit_set_insn (op0, mov_done_p
+			 ? gen_rtx_PLUS (SImode,op0, GEN_INT (byte))
+			 : GEN_INT (byte));
+	  mov_done_p = true;
+	}
+
+      if (mov_done_p)
+	emit_set_insn (op0, gen_rtx_ASHIFT (SImode, op0, GEN_INT (8)));
+    }
+
+  /* Emit lower byte if needed.  */
+  if (!mov_done_p)
+    emit_set_insn (op0, GEN_INT (op1 & 0xff));
+  else if (op1 & 0xff)
+    emit_set_insn (op0, gen_rtx_PLUS (SImode, op0, GEN_INT (op1 & 0xff)));
 }
 
 /* Emit a sequence of insns to handle a large constant.
@@ -8553,7 +8622,8 @@ thumb1_legitimate_address_p (machine_mode mode, rtx x, int strict_p)
   /* This is PC relative data before arm_reorg runs.  */
   else if (GET_MODE_SIZE (mode) >= 4 && CONSTANT_P (x)
 	   && GET_CODE (x) == SYMBOL_REF
-           && CONSTANT_POOL_ADDRESS_P (x) && !flag_pic)
+	   && CONSTANT_POOL_ADDRESS_P (x) && !flag_pic
+	   && !arm_disable_literal_pool)
     return 1;
 
   /* This is PC relative data after arm_reorg runs.  */
@@ -8621,6 +8691,7 @@ thumb1_legitimate_address_p (machine_mode mode, rtx x, int strict_p)
 	   && GET_MODE_SIZE (mode) == 4
 	   && GET_CODE (x) == SYMBOL_REF
 	   && CONSTANT_POOL_ADDRESS_P (x)
+	   && !arm_disable_literal_pool
 	   && ! (flag_pic
 		 && symbol_mentioned_p (get_pool_constant (x))
 		 && ! pcrel_constant_p (get_pool_constant (x))))
@@ -9299,7 +9370,9 @@ thumb1_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
 	    return 0;
 	  if (thumb_shiftable_const (INTVAL (x)))
 	    return COSTS_N_INSNS (2);
-	  return COSTS_N_INSNS (3);
+	  return arm_disable_literal_pool
+	    ? COSTS_N_INSNS (8)
+	    : COSTS_N_INSNS (3);
 	}
       else if ((outer == PLUS || outer == COMPARE)
 	       && INTVAL (x) < 256 && INTVAL (x) > -256)
@@ -9456,7 +9529,9 @@ thumb1_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
 	  /* See split "TARGET_THUMB1 && satisfies_constraint_K".  */
           if (thumb_shiftable_const (INTVAL (x)))
             return COSTS_N_INSNS (2);
-          return COSTS_N_INSNS (3);
+	  return arm_disable_literal_pool
+	    ? COSTS_N_INSNS (8)
+	    : COSTS_N_INSNS (3);
         }
       else if ((outer == PLUS || outer == COMPARE)
                && INTVAL (x) < 256 && INTVAL (x) > -256)
@@ -27245,7 +27320,7 @@ arm_print_asm_arch_directives ()
 	     don't print anything if all the bits are part of the
 	     FPU specification.  */
 	  if (bitmap_subset_p (opt_bits, arm_active_target.isa)
-	      && !bitmap_subset_p (opt_bits, isa_all_fpubits))
+	      && !bitmap_subset_p (opt_bits, isa_all_fpubits_internal))
 	    asm_fprintf (asm_out_file, "\t.arch_extension %s\n", opt->name);
 	}
     }
@@ -27442,14 +27517,41 @@ arm_thumb1_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
 	  /* push r3 so we can use it as a temporary.  */
 	  /* TODO: Omit this save if r3 is not used.  */
 	  fputs ("\tpush {r3}\n", file);
-	  fputs ("\tldr\tr3, ", file);
+
+	  /* With -mpure-code, we cannot load the address from the
+	     constant pool: we build it explicitly.  */
+	  if (target_pure_code)
+	    {
+	      fputs ("\tmovs\tr3, #:upper8_15:#", file);
+	      assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
+	      fputc ('\n', file);
+	      fputs ("\tlsls r3, #8\n", file);
+	      fputs ("\tadds\tr3, #:upper0_7:#", file);
+	      assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
+	      fputc ('\n', file);
+	      fputs ("\tlsls r3, #8\n", file);
+	      fputs ("\tadds\tr3, #:lower8_15:#", file);
+	      assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
+	      fputc ('\n', file);
+	      fputs ("\tlsls r3, #8\n", file);
+	      fputs ("\tadds\tr3, #:lower0_7:#", file);
+	      assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
+	      fputc ('\n', file);
+	    }
+	  else
+	    fputs ("\tldr\tr3, ", file);
 	}
       else
 	{
 	  fputs ("\tldr\tr12, ", file);
 	}
-      assemble_name (file, label);
-      fputc ('\n', file);
+
+      if (!target_pure_code)
+	{
+	  assemble_name (file, label);
+	  fputc ('\n', file);
+	}
+
       if (flag_pic)
 	{
 	  /* If we are generating PIC, the ldr instruction below loads
@@ -31758,7 +31860,7 @@ arm_identify_fpu_from_isa (sbitmap isa)
   auto_sbitmap fpubits (isa_num_bits);
   auto_sbitmap cand_fpubits (isa_num_bits);
 
-  bitmap_and (fpubits, isa, isa_all_fpubits);
+  bitmap_and (fpubits, isa, isa_all_fpubits_internal);
 
   /* If there are no ISA feature bits relating to the FPU, we must be
      doing soft-float.  */
@@ -31818,7 +31920,7 @@ arm_declare_function_name (FILE *stream, const char *name, tree decl)
 		{
 		  arm_initialize_isa (opt_bits, opt->isa_bits);
 		  if (bitmap_subset_p (opt_bits, arm_active_target.isa)
-		      && !bitmap_subset_p (opt_bits, isa_all_fpubits))
+		      && !bitmap_subset_p (opt_bits, isa_all_fpubits_internal))
 		    asm_fprintf (asm_out_file, "\t.arch_extension %s\n",
 				 opt->name);
 		}
@@ -32491,28 +32593,28 @@ arm_test_cpu_arch_data (void)
 static void
 arm_test_fpu_data (void)
 {
-  auto_sbitmap isa_all_fpubits (isa_num_bits);
+  auto_sbitmap isa_all_fpubits_internal (isa_num_bits);
   auto_sbitmap fpubits (isa_num_bits);
   auto_sbitmap tmpset (isa_num_bits);
 
-  static const enum isa_feature fpu_bitlist[]
+  static const enum isa_feature fpu_bitlist_internal[]
     = { ISA_ALL_FPU_INTERNAL, isa_nobit };
-  arm_initialize_isa (isa_all_fpubits, fpu_bitlist);
+  arm_initialize_isa (isa_all_fpubits_internal, fpu_bitlist_internal);
 
   for (unsigned int i = 0; i < TARGET_FPU_auto; i++)
   {
     arm_initialize_isa (fpubits, all_fpus[i].isa_bits);
-    bitmap_and_compl (tmpset, isa_all_fpubits, fpubits);
-    bitmap_clear (isa_all_fpubits);
-    bitmap_copy (isa_all_fpubits, tmpset);
+    bitmap_and_compl (tmpset, isa_all_fpubits_internal, fpubits);
+    bitmap_clear (isa_all_fpubits_internal);
+    bitmap_copy (isa_all_fpubits_internal, tmpset);
   }
 
-  if (!bitmap_empty_p (isa_all_fpubits))
+  if (!bitmap_empty_p (isa_all_fpubits_internal))
     {
 	fprintf (stderr, "Error: found feature bits in the ALL_FPU_INTERAL"
 			 " group that are not defined by any FPU.\n"
 			 "       Check your arm-cpus.in.\n");
-	ASSERT_TRUE (bitmap_empty_p (isa_all_fpubits));
+	ASSERT_TRUE (bitmap_empty_p (isa_all_fpubits_internal));
     }
 }
 
@@ -32527,6 +32629,23 @@ arm_run_selftests (void)
 #undef TARGET_RUN_TARGET_SELFTESTS
 #define TARGET_RUN_TARGET_SELFTESTS selftest::arm_run_selftests
 #endif /* CHECKING_P */
+
+/* Worker function for TARGET_MD_ASM_ADJUST, while in thumb1 mode.
+   Unlike the arm version, we do NOT implement asm flag outputs.  */
+
+rtx_insn *
+thumb1_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
+		      vec<const char *> &constraints,
+		      vec<rtx> &/*clobbers*/, HARD_REG_SET &/*clobbered_regs*/)
+{
+  for (unsigned i = 0, n = outputs.length (); i < n; ++i)
+    if (strncmp (constraints[i], "=@cc", 4) == 0)
+      {
+	sorry ("asm flags not supported in thumb1 mode");
+	break;
+      }
+  return NULL;
+}
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

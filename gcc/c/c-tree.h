@@ -1,5 +1,5 @@
 /* Definitions for C parsing and type checking.
-   Copyright (C) 1987-2019 Free Software Foundation, Inc.
+   Copyright (C) 1987-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -54,9 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Record whether a type is defined inside a struct or union type.
    This is used for -Wc++-compat. */
 #define C_TYPE_DEFINED_IN_STRUCT(TYPE) TYPE_LANG_FLAG_2 (TYPE)
-
-/* Record whether an "incomplete type" error was given for the type.  */
-#define C_TYPE_ERROR_REPORTED(TYPE) TYPE_LANG_FLAG_3 (TYPE)
 
 /* Record whether a typedef for type `int' was actually `signed int'.  */
 #define C_TYPEDEF_EXPLICITLY_SIGNED(EXP) DECL_LANG_FLAG_1 (EXP)
@@ -460,9 +457,15 @@ struct c_declarator {
   /* Except for cdk_id, the contained declarator.  For cdk_id, NULL.  */
   struct c_declarator *declarator;
   union {
-    /* For identifiers, an IDENTIFIER_NODE or NULL_TREE if an abstract
-       declarator.  */
-    tree id;
+    /* For identifiers.  */
+    struct {
+      /* An IDENTIFIER_NODE, or NULL_TREE if an abstract
+	 declarator.  */
+      tree id;
+      /* Any attributes (which apply to the declaration rather than to
+	 the type described by the outer declarators).  */
+      tree attrs;
+    } id;
     /* For functions.  */
     struct c_arg_info *arg_info;
     /* For arrays.  */
@@ -596,6 +599,7 @@ extern tree c_builtin_function (tree);
 extern tree c_builtin_function_ext_scope (tree);
 extern tree c_simulate_builtin_function_decl (tree);
 extern void c_warn_unused_attributes (tree);
+extern tree c_warn_type_attributes (tree);
 extern void shadow_tag (const struct c_declspecs *);
 extern void shadow_tag_warned (const struct c_declspecs *, int);
 extern tree start_enum (location_t, struct c_enum_contents *, tree);

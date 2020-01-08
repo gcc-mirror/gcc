@@ -1,5 +1,5 @@
 /* Calculate branch probabilities, and basic block execution counts.
-   Copyright (C) 1990-2019 Free Software Foundation, Inc.
+   Copyright (C) 1990-2020 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -785,7 +785,8 @@ tree_profiling (void)
       if (flag_branch_probabilities
 	  && !thunk
 	  && flag_profile_values
-	  && flag_value_profile_transformations)
+	  && flag_value_profile_transformations
+	  && profile_status_for_fn (cfun) == PROFILE_READ)
 	gimple_value_profile_transformations ();
 
       /* The above could hose dominator info.  Currently there is

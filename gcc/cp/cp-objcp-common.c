@@ -1,5 +1,5 @@
 /* Some code common to C++ and ObjC++ front ends.
-   Copyright (C) 2004-2019 Free Software Foundation, Inc.
+   Copyright (C) 2004-2020 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -123,7 +123,7 @@ cxx_types_compatible_p (tree x, tree y)
   return same_type_ignoring_top_level_qualifiers_p (x, y);
 }
 
-static GTY((cache)) tree_cache_map *debug_type_map;
+static GTY((cache)) type_tree_cache_map *debug_type_map;
 
 /* Return a type to use in the debug info instead of TYPE, or NULL_TREE to
    keep TYPE.  */
@@ -347,6 +347,18 @@ tree
 identifier_global_value (tree name)
 {
   return get_global_binding (name);
+}
+
+/* Similarly, but return struct/class/union NAME instead.  */
+
+tree
+identifier_global_tag (tree name)
+{
+  tree ret = lookup_qualified_name (global_namespace, name, /*prefer_type*/2,
+				    /*complain*/false);
+  if (ret == error_mark_node)
+    return NULL_TREE;
+  return ret;
 }
 
 /* Returns true if NAME refers to a built-in function or function-like

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Synopsys DesignWare ARC cpu.
-   Copyright (C) 2000-2019 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -111,3 +111,6 @@ extern void arc_eh_return_address_location (rtx);
 extern bool arc_is_jli_call_p (rtx);
 extern void arc_file_end (void);
 extern bool arc_is_secure_call_p (rtx);
+
+rtl_opt_pass * make_pass_arc_ifcvt (gcc::context *ctxt);
+rtl_opt_pass * make_pass_arc_predicate_delay_insns (gcc::context *ctxt);

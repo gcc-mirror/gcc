@@ -1,6 +1,6 @@
 // -*- C++ -*- operator<=> three-way comparison support.
 
-// Copyright (C) 2019 Free Software Foundation, Inc.
+// Copyright (C) 2019-2020 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -38,10 +38,12 @@
 
 #include <concepts>
 
+#if __cpp_lib_concepts
+# define __cpp_lib_three_way_comparison 201711L
+#endif
+
 namespace std
 {
-#define __cpp_lib_three_way_comparison 201711L
-
   // [cmp.categories], comparison category types
 
   namespace __cmp_cat
@@ -385,53 +387,43 @@ namespace std
   is_gteq(partial_ordering __cmp) noexcept
   { return __cmp >= 0; }
 
-#if __cpp_lib_concepts
   namespace __detail
   {
     template<typename _Tp>
       inline constexpr unsigned __cmp_cat_id = 1;
     template<>
-      inline constexpr unsigned __cmp_cat_id<strong_ordering> = 2;
+      inline constexpr unsigned __cmp_cat_id<partial_ordering> = 2;
     template<>
       inline constexpr unsigned __cmp_cat_id<weak_ordering> = 4;
     template<>
-      inline constexpr unsigned __cmp_cat_id<partial_ordering> = 8;
+      inline constexpr unsigned __cmp_cat_id<strong_ordering> = 8;
 
     template<typename... _Ts>
-      constexpr unsigned __cmp_cat_ids()
-      { return (__cmp_cat_id<_Ts> | ...); }
-
-    template<unsigned>
-      struct __common_cmp_cat;
-
-    // If any Ti is not a comparison category type, U is void.
-    template<unsigned _Bits>
-      requires ((_Bits & 1) == 1)
-      struct __common_cmp_cat<_Bits> { using type = void; };
-
-    // Otherwise, if at least one Ti is std::partial_ordering,
-    // U is std::partial_ordering.
-    template<unsigned _Bits>
-      requires ((_Bits & 0b1001) == 0b1000)
-      struct __common_cmp_cat<_Bits> { using type = partial_ordering; };
-
-    // Otherwise, if at least one Ti is std::weak_ordering,
-    // U is std::weak_ordering.
-    template<unsigned _Bits>
-      requires ((_Bits & 0b1101) == 0b0100)
-      struct __common_cmp_cat<_Bits> { using type = weak_ordering; };
-
-    // Otherwise, U is std::strong_ordering.
-    template<>
-      struct __common_cmp_cat<0b0010> { using type = strong_ordering; };
+      constexpr auto __common_cmp_cat()
+      {
+	constexpr unsigned __cats = (__cmp_cat_id<_Ts> | ...);
+	// If any Ti is not a comparison category type, U is void.
+	if constexpr (__cats & 1)
+	  return;
+	// Otherwise, if at least one Ti is std::partial_ordering,
+	// U is std::partial_ordering.
+	else if constexpr (bool(__cats & __cmp_cat_id<partial_ordering>))
+	  return partial_ordering::equivalent;
+	// Otherwise, if at least one Ti is std::weak_ordering,
+	// U is std::weak_ordering.
+	else if constexpr (bool(__cats & __cmp_cat_id<weak_ordering>))
+	  return weak_ordering::equivalent;
+	// Otherwise, U is std::strong_ordering.
+	else
+	  return strong_ordering::equivalent;
+      }
   } // namespace __detail
 
   // [cmp.common], common comparison category type
   template<typename... _Ts>
     struct common_comparison_category
     {
-      using type
-	= __detail::__common_cmp_cat<__detail::__cmp_cat_ids<_Ts...>()>::type;
+      using type = decltype(__detail::__common_cmp_cat<_Ts...>());
     };
 
   // Partial specializations for one and zero argument cases.
@@ -460,6 +452,7 @@ namespace std
     using common_comparison_category_t
       = typename common_comparison_category<_Ts...>::type;
 
+#if __cpp_lib_concepts
   namespace __detail
   {
     template<typename _Tp, typename _Cat>
@@ -509,34 +502,41 @@ namespace std
 	{ __t <=> __u } -> __detail::__compares_as<_Cat>;
 	{ __u <=> __t } -> __detail::__compares_as<_Cat>;
       };
-#endif
 
-  template<typename _Tp, typename _Up>
-    using __cmp2way_res_t
-      = decltype(std::declval<_Tp&>() <=> std::declval<_Up&>());
+  namespace __detail
+  {
+    template<typename _Tp, typename _Up>
+      using __cmp3way_res_t
+	= decltype(std::declval<_Tp>() <=> std::declval<_Up>());
 
-  template<typename _Tp, typename _Up = _Tp, typename = void>
-    struct __cmp3way_helper
-    { };
+    // Implementation of std::compare_three_way_result.
+    // It is undefined for a program to add specializations of
+    // std::compare_three_way_result, so the std::compare_three_way_result_t
+    // alias ignores std::compare_three_way_result and uses
+    // __detail::__cmp3way_res_impl directly instead.
+    template<typename _Tp, typename _Up>
+      struct __cmp3way_res_impl
+      { };
 
-  template<typename _Tp, typename _Up>
-    struct __cmp3way_helper<_Tp, _Up, void_t<__cmp2way_res_t<_Tp, _Up>>>
-    {
-      using type = __cmp2way_res_t<_Tp, _Up>;
-      using __type = type;
-    };
+    template<typename _Tp, typename _Up>
+      requires requires { typename __cmp3way_res_t<__cref<_Tp>, __cref<_Up>>; }
+      struct __cmp3way_res_impl<_Tp, _Up>
+      {
+	using type = __cmp3way_res_t<__cref<_Tp>, __cref<_Up>>;
+      };
+  } // namespace __detail
 
   /// [cmp.result], result of three-way comparison
   template<typename _Tp, typename _Up = _Tp>
     struct compare_three_way_result
-    : __cmp3way_helper<_Tp, _Up>
+    : __detail::__cmp3way_res_impl<_Tp, _Up>
     { };
 
+  /// [cmp.result], result of three-way comparison
   template<typename _Tp, typename _Up = _Tp>
     using compare_three_way_result_t
-      = typename compare_three_way_result<_Tp, _Up>::__type;
+      = typename __detail::__cmp3way_res_impl<_Tp, _Up>::type;
 
-#if __cpp_lib_concepts
   namespace __detail
   {
     // BUILTIN-PTR-THREE-WAY(T, U)
@@ -548,13 +548,17 @@ namespace std
 	     { operator<=>(static_cast<_Tp&&>(__t), static_cast<_Up&&>(__u)); }
 	  && ! requires(_Tp&& __t, _Up&& __u)
 	     { static_cast<_Tp&&>(__t).operator<=>(static_cast<_Up&&>(__u)); };
+
+    // FIXME: workaround for PR c++/91073
+    template<typename _Tp, typename _Up>
+      concept __3way_cmp_with = three_way_comparable_with<_Tp, _Up>;
   } // namespace __detail
 
   // [cmp.object], typename compare_three_way
   struct compare_three_way
   {
     template<typename _Tp, typename _Up>
-      requires (three_way_comparable_with<_Tp, _Up>
+      requires (__detail::__3way_cmp_with<_Tp, _Up>
 	  || __detail::__3way_builtin_ptr_cmp<_Tp, _Up>)
       constexpr auto
       operator()(_Tp&& __t, _Up&& __u) const noexcept
@@ -915,6 +919,40 @@ namespace std
     inline constexpr __cmp_cust::_Partial_fallback
     compare_partial_order_fallback{};
   }
+
+  namespace __detail
+  {
+    // [expos.only.func]
+    inline constexpr struct _Synth3way
+    {
+      template<typename _Tp, typename _Up>
+	constexpr auto
+	operator()(const _Tp& __t, const _Up& __u) const
+	requires requires
+	{
+	  { __t < __u } -> convertible_to<bool>;
+	  { __u < __t } -> convertible_to<bool>;
+	}
+	{
+	  if constexpr (__3way_cmp_with<_Tp, _Up>)
+	    return __t <=> __u;
+	  else
+	    {
+	      if (__t < __u)
+		return weak_ordering::less;
+	      else if (__u < __t)
+		return weak_ordering::greater;
+	      else
+		return weak_ordering::equivalent;
+	    }
+	}
+    } __synth3way = {};
+
+    template<typename _Tp, typename _Up = _Tp>
+      using __synth3way_t
+	= decltype(__detail::__synth3way(std::declval<_Tp&>(),
+					 std::declval<_Up&>()));
+  } // namespace __detail
 #endif // concepts
 } // namespace std
 

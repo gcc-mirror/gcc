@@ -1344,7 +1344,7 @@ are equivalent to
 The precondition ensures that one and only one of the case guards is
 satisfied on entry to the subprogram.
 The postcondition ensures that for the case guard that was True on entry,
-the corrresponding consequence is True on exit. Other consequence expressions
+the corresponding consequence is True on exit. Other consequence expressions
 are not evaluated.
 
 A precondition ``P`` and postcondition ``Q`` can also be
@@ -3057,7 +3057,9 @@ different ways:
   particular family of scalar types using the optional arguments of the pragma.
 
   The compile-time approach is intended to optimize the generated code for the
-  pragma, by possibly using fast operations such as ``memset``.
+  pragma, by possibly using fast operations such as ``memset``. Note that such
+  optimizations require using values where the bytes all have the same binary
+  representation.
 
 * At bind time, the programmer has several options:
 
@@ -3077,7 +3079,7 @@ different ways:
   The bind-time approach is intended to provide fast turnaround for testing
   with different values, without having to recompile the program.
 
-* At execution time, the programmer can speify the invalid values using an
+* At execution time, the programmer can specify the invalid values using an
   environment variable. See the GNAT User's Guide for details.
 
   The execution-time approach is intended to provide fast turnaround for
@@ -7425,8 +7427,8 @@ Syntax:
 This is similar in effect to pragma Volatile, except that any reference to the
 object is guaranteed to be done only with instructions that read or write all
 the bits of the object. Furthermore, if the object is of a composite type,
-then any reference to a component of the object is guaranteed to read and/or
-write all the bits of the object.
+then any reference to a subcomponent of the object is guaranteed to read
+and/or write all the bits of the object.
 
 The intention is that this be suitable for use with memory-mapped I/O devices
 on some machines. Note that there are two important respects in which this is
@@ -7438,10 +7440,10 @@ is not to the whole object; the compiler is allowed (and generally will)
 access only part of the object in this case.
 
 It is not permissible to specify ``Atomic`` and ``Volatile_Full_Access`` for
-the same object.
+the same type or object.
 
 It is not permissible to specify ``Volatile_Full_Access`` for a composite
-(record or array) type or object that has at least one ``Aliased`` component.
+(record or array) type or object that has an ``Aliased`` subcomponent.
 
 .. _Pragma-Volatile_Function:
 

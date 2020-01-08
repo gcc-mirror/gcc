@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 SVE.
-;; Copyright (C) 2009-2019 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2020 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -694,7 +694,8 @@
 	  UNSPEC_REINTERPRET))]
   "TARGET_SVE"
   {
-    if (!BYTES_BIG_ENDIAN)
+    machine_mode src_mode = GET_MODE (operands[1]);
+    if (targetm.can_change_mode_class (<MODE>mode, src_mode, FP_REGS))
       {
 	emit_move_insn (operands[0], gen_lowpart (<MODE>mode, operands[1]));
 	DONE;
@@ -2541,9 +2542,9 @@
 	  (match_operand:<VEL> 2 "aarch64_sve_index_operand" "r, Usi, r")))]
   "TARGET_SVE"
   "@
-   index\t%0.<Vctype>, #%1, %<vwcore>2
-   index\t%0.<Vctype>, %<vwcore>1, #%2
-   index\t%0.<Vctype>, %<vwcore>1, %<vwcore>2"
+   index\t%0.<Vctype>, #%1, %<vccore>2
+   index\t%0.<Vctype>, %<vccore>1, #%2
+   index\t%0.<Vctype>, %<vccore>1, %<vccore>2"
 )
 
 ;; Optimize {x, x, x, x, ...} + {0, n, 2*n, 3*n, ...} if n is in range
@@ -2557,7 +2558,7 @@
   "TARGET_SVE && aarch64_check_zero_based_sve_index_immediate (operands[2])"
   {
     operands[2] = aarch64_check_zero_based_sve_index_immediate (operands[2]);
-    return "index\t%0.<Vctype>, %<vwcore>1, #%2";
+    return "index\t%0.<Vctype>, %<vccore>1, #%2";
   }
 )
 
@@ -6522,7 +6523,7 @@
 (define_insn "@aarch64_sel_dup<mode>"
   [(set (match_operand:SVE_FULL 0 "register_operand" "=?w, w, ??w, ?&w, ??&w, ?&w")
 	(unspec:SVE_FULL
-	  [(match_operand:<VPRED> 3 "register_operand" "Upa, Upa, Upl, Upl, Upl, Upl")
+	  [(match_operand:<VPRED> 3 "register_operand" "Upl, Upl, Upl, Upl, Upl, Upl")
 	   (vec_duplicate:SVE_FULL
 	     (match_operand:<VEL> 1 "register_operand" "r, w, r, w, r, w"))
 	   (match_operand:SVE_FULL 2 "aarch64_simd_reg_or_zero" "0, 0, Dz, Dz, w, w")]

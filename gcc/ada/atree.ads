@@ -309,6 +309,8 @@ package Atree is
    --  switch -gnatQ is set. Initialized to zero at the start of compilation.
    --  Initialized for -gnatVa use, see comment above.
 
+   --  WARNING: There is a matching C declaration of this variable in fe.h
+
    Total_Errors_Detected : Nat := 0;
    --  Number of errors detected so far. Includes count of serious errors and
    --  non-serious errors, so this value is always greater than or equal to the

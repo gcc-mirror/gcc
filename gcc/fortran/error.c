@@ -1,5 +1,5 @@
 /* Handle errors.
-   Copyright (C) 2000-2019 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Niels Kristian Bech Jensen
 
 This file is part of GCC.
@@ -1147,6 +1147,7 @@ gfc_diagnostic_starter (diagnostic_context *context,
       /* Fortran uses an empty line between locus and caret line.  */
       pp_newline (context->printer);
       pp_set_prefix (context->printer, NULL);
+      pp_newline (context->printer);
       diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind);
       /* If the caret line was shown, the prefix does not contain the
 	 locus.  */

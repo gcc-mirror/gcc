@@ -441,6 +441,8 @@ package Exp_Dbug is
    --  generating code, since the necessary information for computing the
    --  proper external name is not available in this case.
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    -------------------------------------
    -- Encoding for translation into C --
    -------------------------------------
@@ -926,6 +928,8 @@ package Exp_Dbug is
    --  if we are not generating code, since the necessary information for
    --  computing the proper encoded name is not available in this case.
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    --------------
    -- Renaming --
    --------------
@@ -1390,6 +1394,8 @@ package Exp_Dbug is
    --  corresponding encoding string is returned in Name_Buffer with the length
    --  of the string in Name_Len, and an ASCII.NUL character stored following
    --  the name.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    ---------------------------------
    -- Subtypes of Variant Records --

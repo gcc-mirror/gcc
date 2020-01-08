@@ -734,6 +734,8 @@ package Errout is
    --  suppressed if the node N already has a message posted, or if it is a
    --  warning and N is an entity node for which warnings are suppressed.
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    procedure Error_Msg_F (Msg : String; N : Node_Id);
    --  Similar to Error_Msg_N except that the message is placed on the first
    --  node of the construct N (First_Node (N)). Note that this procedure uses
@@ -749,6 +751,8 @@ package Errout is
    --  routines, where this is a common error message situation. The Msg text
    --  will contain a & or } as usual to mark the insertion point. This
    --  routine can be called from the parser or the analyzer.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    procedure Error_Msg_FE
      (Msg : String;
@@ -948,10 +952,14 @@ package Errout is
    --  This name is the identifier name as passed, cased according to the
    --  default identifier casing for the given file.
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
+   function Is_Size_Too_Small_Message (S : String) return Boolean;
    Size_Too_Small_Message : constant String :=
      "size for& too small, minimum allowed is ^";
-   --  This message is explicitly tested in Special_Msg_Delete in the package
-   --  body, which is somewhat questionable, but at least by using a constant
-   --  we are obeying the DRY principle.
+   --  This message is printed in Freeze and Sem_Ch13. We also test for it in
+   --  the body of this package (see Special_Msg_Delete) ???which is somewhat
+   --  questionable. The Is_Size_Too_Small_Message function tests for it by
+   --  testing a prefix. The function and constant should be kept in synch.
 
 end Errout;

@@ -3,7 +3,7 @@
 
 char a[1];
 
-int foo(a = "") // { dg-error "invalid array assignment" }
+int foo(a = "") // { dg-error "11:invalid array assignment" }
 {
   return 0;
 }

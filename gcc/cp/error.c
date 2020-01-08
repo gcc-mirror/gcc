@@ -1,6 +1,6 @@
 /* Call-backs for C++ error reporting.
    This code is non-reentrant.
-   Copyright (C) 1993-2019 Free Software Foundation, Inc.
+   Copyright (C) 1993-2020 Free Software Foundation, Inc.
    This file is part of GCC.
 
 GCC is free software; you can redistribute it and/or modify
@@ -142,6 +142,11 @@ class cxx_format_postprocessor : public format_postprocessor
   cxx_format_postprocessor ()
   : m_type_a (), m_type_b ()
   {}
+
+  format_postprocessor *clone() const FINAL OVERRIDE
+  {
+    return new cxx_format_postprocessor ();
+  }
 
   void handle (pretty_printer *pp) FINAL OVERRIDE;
 
@@ -421,7 +426,7 @@ dump_template_bindings (cxx_pretty_printer *pp, tree parms, tree args,
 static void
 dump_alias_template_specialization (cxx_pretty_printer *pp, tree t, int flags)
 {
-  gcc_assert (alias_template_specialization_p (t));
+  gcc_assert (alias_template_specialization_p (t, nt_opaque));
 
   tree decl = TYPE_NAME (t);
   if (!(flags & TFF_UNQUALIFIED_NAME))
@@ -454,7 +459,7 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
 				    ? STF_USER_VISIBLE : 0);
 	  t = strip_typedefs (t, NULL, stf_flags);
 	}
-      else if (alias_template_specialization_p (t))
+      else if (alias_template_specialization_p (t, nt_opaque))
 	{
 	  dump_alias_template_specialization (pp, t, flags);
 	  return;
@@ -711,7 +716,7 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
       typdef = (!DECL_ARTIFICIAL (name)
 		/* An alias specialization is not considered to be a
 		   typedef.  */
-		&& !alias_template_specialization_p (t));
+		&& !alias_template_specialization_p (t, nt_opaque));
 
       if ((typdef
 	   && ((flags & TFF_CHASE_TYPEDEF)
@@ -3358,6 +3363,9 @@ cp_print_error_function (diagnostic_context *context,
      to be wrong, so just rely on print_instantiation_full_context.  */
   if (current_instantiation ())
     return;
+  /* The above is true for constraint satisfaction also.  */
+  if (current_failed_constraint)
+    return;
   if (diagnostic_last_function_changed (context, diagnostic))
     {
       char *old_prefix = pp_take_prefix (context->printer);
@@ -4525,7 +4533,7 @@ label_text
 range_label_for_type_mismatch::get_text (unsigned /*range_idx*/) const
 {
   if (m_labelled_type == NULL_TREE)
-    return label_text (NULL, false);
+    return label_text::borrow (NULL);
 
   const bool verbose = false;
   const bool show_color = false;
@@ -4540,5 +4548,5 @@ range_label_for_type_mismatch::get_text (unsigned /*range_idx*/) const
 
   /* Both of the above return GC-allocated buffers, so the caller mustn't
      free them.  */
-  return label_text (const_cast <char *> (result), false);
+  return label_text::borrow (result);
 }

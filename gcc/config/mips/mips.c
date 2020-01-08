@@ -1,5 +1,5 @@
 /* Subroutines used for MIPS code generation.
-   Copyright (C) 1989-2019 Free Software Foundation, Inc.
+   Copyright (C) 1989-2020 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
    Changes by Michael Meissner, meissner@osf.org.
    64-bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -18627,7 +18627,7 @@ vr4130_align_insns (void)
       if (length > 0)
 	{
 	  /* If the instruction is an asm statement or multi-instruction
-	     mips.md patern, the length is only an estimate.  Insert an
+	     mips.md pattern, the length is only an estimate.  Insert an
 	     8 byte alignment after it so that the following instructions
 	     can be handled correctly.  */
 	  if (NONJUMP_INSN_P (SEQ_BEGIN (insn))

@@ -1,5 +1,5 @@
 /* Natural loop analysis code for GNU compiler.
-   Copyright (C) 2002-2019 Free Software Foundation, Inc.
+   Copyright (C) 2002-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -467,16 +467,14 @@ mark_loop_exit_edges (void)
    to noreturn call.  */
 
 edge
-single_likely_exit (class loop *loop)
+single_likely_exit (class loop *loop, vec<edge> exits)
 {
   edge found = single_exit (loop);
-  vec<edge> exits;
   unsigned i;
   edge ex;
 
   if (found)
     return found;
-  exits = get_loop_exit_edges (loop);
   FOR_EACH_VEC_ELT (exits, i, ex)
     {
       if (probably_never_executed_edge_p (cfun, ex)
@@ -489,12 +487,8 @@ single_likely_exit (class loop *loop)
       if (!found)
 	found = ex;
       else
-	{
-	  exits.release ();
-	  return NULL;
-	}
+	return NULL;
     }
-  exits.release ();
   return found;
 }
 

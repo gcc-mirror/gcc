@@ -1,6 +1,6 @@
 ;; Instruction Classification for ARM for GNU compiler.
 
-;; Copyright (C) 1991-2019 Free Software Foundation, Inc.
+;; Copyright (C) 1991-2020 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.
@@ -1096,7 +1096,8 @@
   crypto_sm3,\
   crypto_sm4,\
   coproc,\
-  tme"
+  tme,\
+  memtag"
    (const_string "untyped"))
 
 ; Is this an (integer side) multiply with a 32-bit (or smaller) result?

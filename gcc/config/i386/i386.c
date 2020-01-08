@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IA-32.
-   Copyright (C) 1988-2019 Free Software Foundation, Inc.
+   Copyright (C) 1988-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -4277,6 +4277,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   tree ptrtype;
   machine_mode nat_mode;
   unsigned int arg_boundary;
+  unsigned int type_align;
 
   /* Only 64bit target needs something special.  */
   if (is_va_list_char_pointer (TREE_TYPE (valist)))
@@ -4334,6 +4335,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   /* Pull the value out of the saved registers.  */
 
   addr = create_tmp_var (ptr_type_node, "addr");
+  type_align = TYPE_ALIGN (type);
 
   if (container)
     {
@@ -4504,6 +4506,9 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 	  t = build2 (PLUS_EXPR, TREE_TYPE (gpr), gpr,
 		      build_int_cst (TREE_TYPE (gpr), needed_intregs * 8));
 	  gimplify_assign (gpr, t, pre_p);
+	  /* The GPR save area guarantees only 8-byte alignment.  */
+	  if (!need_temp)
+	    type_align = MIN (type_align, 64);
 	}
 
       if (needed_sseregs)
@@ -4548,6 +4553,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   if (container)
     gimple_seq_add_stmt (pre_p, gimple_build_label (lab_over));
 
+  type = build_aligned_type (type, type_align);
   ptrtype = build_pointer_type_for_mode (type, ptr_mode, true);
   addr = fold_convert (ptrtype, addr);
 
@@ -12468,6 +12474,40 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	    }
 	  return;
 
+	case 'I':
+	  if (ASSEMBLER_DIALECT == ASM_ATT)
+	    putc ('$', file);
+	  switch (GET_CODE (x))
+	    {
+	    case EQ:
+	      putc ('0', file);
+	      break;
+	    case NE:
+	      putc ('4', file);
+	      break;
+	    case GE:
+	    case GEU:
+	      putc ('5', file);
+	      break;
+	    case GT:
+	    case GTU:
+	      putc ('6', file);
+	      break;
+	    case LE:
+	    case LEU:
+	      putc ('2', file);
+	      break;
+	    case LT:
+	    case LTU:
+	      putc ('1', file);
+	      break;
+	    default:
+	      output_operand_lossage ("operand is not a condition code, "
+				      "invalid operand code 'I'");
+	      return;
+	    }
+	  return;
+
 	case 'Y':
 	  switch (GET_CODE (x))
 	    {
@@ -14377,10 +14417,10 @@ distance_agu_use (unsigned int regno0, rtx_insn *insn)
 }
 
 /* Define this macro to tune LEA priority vs ADD, it take effect when
-   there is a dilemma of choicing LEA or ADD
+   there is a dilemma of choosing LEA or ADD
    Negative value: ADD is more preferred than LEA
-   Zero: Netrual
-   Positive value: LEA is more preferred than ADD*/
+   Zero: Neutral
+   Positive value: LEA is more preferred than ADD.  */
 #define IX86_LEA_PRIORITY 0
 
 /* Return true if usage of lea INSN has performance advantage
@@ -14393,11 +14433,10 @@ ix86_lea_outperforms (rtx_insn *insn, unsigned int regno0, unsigned int regno1,
 {
   int dist_define, dist_use;
 
-  /* For Silvermont if using a 2-source or 3-source LEA for
-     non-destructive destination purposes, or due to wanting
-     ability to use SCALE, the use of LEA is justified.  */
-  if (TARGET_SILVERMONT || TARGET_GOLDMONT || TARGET_GOLDMONT_PLUS
-      || TARGET_TREMONT || TARGET_INTEL)
+  /* For Atom processors newer than Bonnell, if using a 2-source or
+     3-source LEA for non-destructive destination purposes, or due to
+     wanting ability to use SCALE, the use of LEA is justified.  */
+  if (!TARGET_BONNELL)
     {
       if (has_scale)
 	return true;
@@ -14532,10 +14571,6 @@ ix86_avoid_lea_for_addr (rtx_insn *insn, rtx operands[])
   struct ix86_address parts;
   int ok;
 
-  /* Check we need to optimize.  */
-  if (!TARGET_AVOID_LEA_FOR_ADDR || optimize_function_for_size_p (cfun))
-    return false;
-
   /* The "at least two components" test below might not catch simple
      move or zero extension insns if parts.base is non-NULL and parts.disp
      is const0_rtx as the only components in the address, e.g. if the
@@ -14571,6 +14606,20 @@ ix86_avoid_lea_for_addr (rtx_insn *insn, rtx operands[])
     regno1 = true_regnum (parts.base);
   if (parts.index)
     regno2 = true_regnum (parts.index);
+
+  /* Use add for a = a + b and a = b + a since it is faster and shorter
+     than lea for most processors.  For the processors like BONNELL, if
+     the destination register of LEA holds an actual address which will
+     be used soon, LEA is better and otherwise ADD is better.  */
+  if (!TARGET_BONNELL
+      && parts.scale == 1
+      && (!parts.disp || parts.disp == const0_rtx)
+      && (regno0 == regno1 || regno0 == regno2))
+    return true;
+
+  /* Check we need to optimize.  */
+  if (!TARGET_AVOID_LEA_FOR_ADDR || optimize_function_for_size_p (cfun))
+    return false;
 
   split_cost = 0;
 
@@ -19501,6 +19550,15 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	  return true;
 	}
 
+      if (GET_CODE (XEXP (x, 0)) == PLUS
+	  && rtx_equal_p (XEXP (XEXP (x, 0), 0), XEXP (x, 1)))
+	{
+	  /* This is an overflow detection, count it as a normal compare.  */
+	  *total = rtx_cost (XEXP (x, 0), GET_MODE (XEXP (x, 0)),
+			     COMPARE, 0, speed);
+	  return true;
+	}
+
       /* The embedded comparison operand is completely free.  */
       if (!general_operand (XEXP (x, 0), GET_MODE (XEXP (x, 0)))
 	  && XEXP (x, 1) == const0_rtx)
@@ -20819,11 +20877,15 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
 	    {
 	      x = force_reg (dest_mode, const0_rtx);
 
-	      emit_insn (gen_movstrictqi
-			 (gen_lowpart (QImode, x), destqi));
+	      emit_insn (gen_movstrictqi (gen_lowpart (QImode, x), destqi));
 	    }
 	  else
-	    x = gen_rtx_ZERO_EXTEND (dest_mode, destqi);
+	    {
+	      x = gen_rtx_ZERO_EXTEND (dest_mode, destqi);
+	      if (dest_mode == GET_MODE (dest)
+		  && !register_operand (dest, GET_MODE (dest)))
+		x = force_reg (dest_mode, x);
+	    }
 	}
 
       if (dest_mode != GET_MODE (dest))

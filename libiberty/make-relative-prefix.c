@@ -1,5 +1,5 @@
 /* Relative (relocatable) prefix support.
-   Copyright (C) 1987-2019 Free Software Foundation, Inc.
+   Copyright (C) 1987-2020 Free Software Foundation, Inc.
 
 This file is part of libiberty.
 
@@ -121,6 +121,9 @@ split_directories (const char *name, int *ptr_num_dirs)
   char **dirs;
   const char *p, *q;
   int ch;
+
+  if (!*name)
+    return NULL;
 
   /* Count the number of directories.  Special case MSDOS disk names as part
      of the initial directory.  */

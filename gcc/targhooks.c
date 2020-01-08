@@ -1,5 +1,5 @@
 /* Default target hook functions.
-   Copyright (C) 2003-2019 Free Software Foundation, Inc.
+   Copyright (C) 2003-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -684,16 +684,6 @@ default_builtin_vectorized_function (unsigned int, tree, tree)
 
 tree
 default_builtin_md_vectorized_function (tree, tree, tree)
-{
-  return NULL_TREE;
-}
-
-/* Vectorized conversion.  */
-
-tree
-default_builtin_vectorized_conversion (unsigned int code ATTRIBUTE_UNUSED,
-				       tree dest_type ATTRIBUTE_UNUSED,
-				       tree src_type ATTRIBUTE_UNUSED)
 {
   return NULL_TREE;
 }

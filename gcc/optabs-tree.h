@@ -1,5 +1,5 @@
 /* Tree-based target query functions relating to optabs
-   Copyright (C) 2001-2019 Free Software Foundation, Inc.
+   Copyright (C) 2001-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -36,7 +36,7 @@ enum optab_subtype
    the second argument.  The third argument distinguishes between the types of
    vector shifts and rotates.  */
 optab optab_for_tree_code (enum tree_code, const_tree, enum optab_subtype);
-bool supportable_convert_operation (enum tree_code, tree, tree, tree *,
+bool supportable_convert_operation (enum tree_code, tree, tree,
 				    enum tree_code *);
 bool expand_vec_cmp_expr_p (tree, tree, enum tree_code);
 bool expand_vec_cond_expr_p (tree, tree, enum tree_code);

@@ -1,6 +1,6 @@
 /* Gimple prediction routines.
 
-   Copyright (C) 2007-2019 Free Software Foundation, Inc.
+   Copyright (C) 2007-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Return the predictor of GIMPLE_PREDICT statement GS.  */
 
 static inline enum br_predictor
-gimple_predict_predictor (gimple *gs)
+gimple_predict_predictor (const gimple *gs)
 {
   GIMPLE_CHECK (gs, GIMPLE_PREDICT);
   return (enum br_predictor) (gs->subcode & ~GF_PREDICT_TAKEN);
@@ -47,7 +47,7 @@ gimple_predict_set_predictor (gimple *gs, enum br_predictor predictor)
 /* Return the outcome of GIMPLE_PREDICT statement GS.  */
 
 static inline enum prediction
-gimple_predict_outcome (gimple *gs)
+gimple_predict_outcome (const gimple *gs)
 {
   GIMPLE_CHECK (gs, GIMPLE_PREDICT);
   return (gs->subcode & GF_PREDICT_TAKEN) ? TAKEN : NOT_TAKEN;

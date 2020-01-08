@@ -1,5 +1,5 @@
 /* Parser for C and Objective-C.
-   Copyright (C) 1987-2019 Free Software Foundation, Inc.
+   Copyright (C) 1987-2020 Free Software Foundation, Inc.
 
    Parser actions based on the old Bison parser; structure somewhat
    influenced by and fragments based on the C++ parser.
@@ -176,6 +176,12 @@ struct GTY(()) c_parser {
   /* How many look-ahead tokens are available (0 - 4, or
      more if parsing from pre-lexed tokens).  */
   unsigned int tokens_avail;
+  /* Raw look-ahead tokens, used only for checking in Objective-C
+     whether '[[' starts attributes.  */
+  vec<c_token, va_gc> *raw_tokens;
+  /* The number of raw look-ahead tokens that have since been fully
+     lexed.  */
+  unsigned int raw_tokens_used;
   /* True if a syntax error is being recovered from; false otherwise.
      c_parser_error sets this flag.  It should clear this flag when
      enough tokens have been consumed to recover from the error.  */
@@ -251,20 +257,39 @@ c_parser_set_error (c_parser *parser, bool err)
 
 static GTY (()) c_parser *the_parser;
 
-/* Read in and lex a single token, storing it in *TOKEN.  */
+/* Read in and lex a single token, storing it in *TOKEN.  If RAW,
+   context-sensitive postprocessing of the token is not done.  */
 
 static void
-c_lex_one_token (c_parser *parser, c_token *token)
+c_lex_one_token (c_parser *parser, c_token *token, bool raw = false)
 {
   timevar_push (TV_LEX);
 
-  token->type = c_lex_with_flags (&token->value, &token->location,
-				  &token->flags,
-				  (parser->lex_joined_string
-				   ? 0 : C_LEX_STRING_NO_JOIN));
-  token->id_kind = C_ID_NONE;
-  token->keyword = RID_MAX;
-  token->pragma_kind = PRAGMA_NONE;
+  if (raw || vec_safe_length (parser->raw_tokens) == 0)
+    {
+      token->type = c_lex_with_flags (&token->value, &token->location,
+				      &token->flags,
+				      (parser->lex_joined_string
+				       ? 0 : C_LEX_STRING_NO_JOIN));
+      token->id_kind = C_ID_NONE;
+      token->keyword = RID_MAX;
+      token->pragma_kind = PRAGMA_NONE;
+    }
+  else
+    {
+      /* Use a token previously lexed as a raw look-ahead token, and
+	 complete the processing on it.  */
+      *token = (*parser->raw_tokens)[parser->raw_tokens_used];
+      ++parser->raw_tokens_used;
+      if (parser->raw_tokens_used == vec_safe_length (parser->raw_tokens))
+	{
+	  vec_free (parser->raw_tokens);
+	  parser->raw_tokens_used = 0;
+	}
+    }
+
+  if (raw)
+    goto out;
 
   switch (token->type)
     {
@@ -434,6 +459,7 @@ c_lex_one_token (c_parser *parser, c_token *token)
     default:
       break;
     }
+ out:
   timevar_pop (TV_LEX);
 }
 
@@ -482,6 +508,32 @@ c_parser_peek_nth_token (c_parser *parser, unsigned int n)
   c_lex_one_token (parser, &parser->tokens[n - 1]);
   parser->tokens_avail = n;
   return &parser->tokens[n - 1];
+}
+
+/* Return a pointer to the Nth token from PARSER, reading it in as a
+   raw look-ahead token if necessary.  The N-1th token is already read
+   in.  Raw look-ahead tokens remain available for when the non-raw
+   functions above are called.  */
+
+c_token *
+c_parser_peek_nth_token_raw (c_parser *parser, unsigned int n)
+{
+  /* N is 1-based, not zero-based.  */
+  gcc_assert (n > 0);
+
+  if (parser->tokens_avail >= n)
+    return &parser->tokens[n - 1];
+  unsigned int raw_len = vec_safe_length (parser->raw_tokens);
+  unsigned int raw_avail
+    = parser->tokens_avail + raw_len - parser->raw_tokens_used;
+  gcc_assert (raw_avail >= n - 1);
+  if (raw_avail >= n)
+    return &(*parser->raw_tokens)[parser->raw_tokens_used
+				  + n - 1 - parser->tokens_avail];
+  vec_safe_reserve (parser->raw_tokens, 1);
+  parser->raw_tokens->quick_grow (raw_len + 1);
+  c_lex_one_token (parser, &(*parser->raw_tokens)[raw_len], true);
+  return &(*parser->raw_tokens)[raw_len];
 }
 
 bool
@@ -3857,11 +3909,7 @@ c_parser_direct_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
       inner->id_loc = c_parser_peek_token (parser)->location;
       c_parser_consume_token (parser);
       if (c_parser_nth_token_starts_std_attributes (parser, 1))
-	{
-	  tree std_attrs = c_parser_std_attribute_specifier_sequence (parser);
-	  if (std_attrs)
-	    inner = build_attrs_declarator (std_attrs, inner);
-	}
+	inner->u.id.attrs = c_parser_std_attribute_specifier_sequence (parser);
       return c_parser_direct_declarator_inner (parser, *seen_id, inner);
     }
 
@@ -3898,9 +3946,7 @@ c_parser_direct_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
 	    return NULL;
 	  else
 	    {
-	      inner
-		= build_function_declarator (args,
-					     build_id_declarator (NULL_TREE));
+	      inner = build_id_declarator (NULL_TREE);
 	      if (!(args->types
 		    && args->types != error_mark_node
 		    && TREE_CODE (TREE_VALUE (args->types)) == IDENTIFIER_NODE)
@@ -3911,6 +3957,7 @@ c_parser_direct_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
 		  if (std_attrs)
 		    inner = build_attrs_declarator (std_attrs, inner);
 		}
+	      inner = build_function_declarator (args, inner);
 	      return c_parser_direct_declarator_inner (parser, *seen_id,
 						       inner);
 	    }
@@ -4028,7 +4075,6 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
 					   static_seen, star_seen);
       if (declarator == NULL)
 	return NULL;
-      inner = set_array_declarator_inner (declarator, inner);
       if (c_parser_nth_token_starts_std_attributes (parser, 1))
 	{
 	  tree std_attrs
@@ -4036,6 +4082,7 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
 	  if (std_attrs)
 	    inner = build_attrs_declarator (std_attrs, inner);
 	}
+      inner = set_array_declarator_inner (declarator, inner);
       return c_parser_direct_declarator_inner (parser, id_present, inner);
     }
   else if (c_parser_next_token_is (parser, CPP_OPEN_PAREN))
@@ -4052,7 +4099,6 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
 	return NULL;
       else
 	{
-	  inner = build_function_declarator (args, inner);
 	  if (!(args->types
 		&& args->types != error_mark_node
 		&& TREE_CODE (TREE_VALUE (args->types)) == IDENTIFIER_NODE)
@@ -4063,6 +4109,7 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
 	      if (std_attrs)
 		inner = build_attrs_declarator (std_attrs, inner);
 	    }
+	  inner = build_function_declarator (args, inner);
 	  return c_parser_direct_declarator_inner (parser, id_present, inner);
 	}
     }
@@ -4352,7 +4399,7 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs,
   c_declarator *id_declarator = declarator;
   while (id_declarator && id_declarator->kind != cdk_id)
     id_declarator = id_declarator->declarator;
-  location_t caret_loc = (id_declarator->u.id
+  location_t caret_loc = (id_declarator->u.id.id
 			  ? id_declarator->id_loc
 			  : start_loc);
   location_t param_loc = make_location (caret_loc, start_loc, end_loc);
@@ -4803,7 +4850,7 @@ c_parser_balanced_token_sequence (c_parser *parser)
 */
 
 static tree
-c_parser_std_attribute (c_parser *parser)
+c_parser_std_attribute (c_parser *parser, bool for_tm)
 {
   c_token *token = c_parser_peek_token (parser);
   tree ns, name, attribute;
@@ -4834,39 +4881,53 @@ c_parser_std_attribute (c_parser *parser)
   attribute = build_tree_list (build_tree_list (ns, name), NULL_TREE);
 
   /* Parse the arguments, if any.  */
-  if (c_parser_next_token_is_not (parser, CPP_OPEN_PAREN))
-    return attribute;
-  location_t open_loc = c_parser_peek_token (parser)->location;
-  matching_parens parens;
-  parens.consume_open (parser);
   const attribute_spec *as = lookup_attribute_spec (TREE_PURPOSE (attribute));
-  if ((as && as->max_length == 0)
-      /* Special-case the transactional-memory attribute "outer",
-	 which is specially handled but not registered as an
-	 attribute, to avoid allowing arbitrary balanced token
-	 sequences as arguments.  */
-      || is_attribute_p ("outer", name))
+  if (c_parser_next_token_is_not (parser, CPP_OPEN_PAREN))
+    goto out;
+  {
+    location_t open_loc = c_parser_peek_token (parser)->location;
+    matching_parens parens;
+    parens.consume_open (parser);
+    if ((as && as->max_length == 0)
+	/* Special-case the transactional-memory attribute "outer",
+	   which is specially handled but not registered as an
+	   attribute, to avoid allowing arbitrary balanced token
+	   sequences as arguments.  */
+	|| is_attribute_p ("outer", name))
+      {
+	error_at (open_loc, "%qE attribute does not take any arguments", name);
+	parens.skip_until_found_close (parser);
+	return error_mark_node;
+      }
+    if (as)
+      {
+	bool takes_identifier
+	  = (ns != NULL_TREE
+	     && strcmp (IDENTIFIER_POINTER (ns), "gnu") == 0
+	     && attribute_takes_identifier_p (name));
+	bool require_string
+	  = (ns == NULL_TREE
+	     && strcmp (IDENTIFIER_POINTER (name), "deprecated") == 0);
+	TREE_VALUE (attribute)
+	  = c_parser_attribute_arguments (parser, takes_identifier,
+					  require_string, false);
+      }
+    else
+      c_parser_balanced_token_sequence (parser);
+    parens.require_close (parser);
+  }
+ out:
+  if (ns == NULL_TREE && !for_tm && !as && !is_attribute_p ("nodiscard", name))
     {
-      error_at (open_loc, "%qE attribute does not take any arguments", name);
-      parens.skip_until_found_close (parser);
+      /* An attribute with standard syntax and no namespace specified
+	 is a constraint violation if it is not one of the known
+	 standard attributes (of which nodiscard is the only one
+	 without a handler in GCC).  Diagnose it here with a pedwarn
+	 and then discard it to prevent a duplicate warning later.  */
+      pedwarn (input_location, OPT_Wattributes, "%qE attribute ignored",
+	       name);
       return error_mark_node;
     }
-  if (as)
-    {
-      bool takes_identifier
-	= (ns != NULL_TREE
-	   && strcmp (IDENTIFIER_POINTER (ns), "gnu") == 0
-	   && attribute_takes_identifier_p (name));
-      bool require_string
-	= (ns == NULL_TREE
-	   && strcmp (IDENTIFIER_POINTER (name), "deprecated") == 0);
-      TREE_VALUE (attribute)
-	= c_parser_attribute_arguments (parser, takes_identifier,
-					require_string, false);
-    }
-  else
-    c_parser_balanced_token_sequence (parser);
-  parens.require_close (parser);
   return attribute;
 }
 
@@ -4898,7 +4959,7 @@ c_parser_std_attribute_specifier (c_parser *parser, bool for_tm)
 	  c_parser_consume_token (parser);
 	  continue;
 	}
-      tree attribute = c_parser_std_attribute (parser);
+      tree attribute = c_parser_std_attribute (parser, for_tm);
       if (attribute != error_mark_node)
 	{
 	  bool duplicate = false;
@@ -4959,6 +5020,80 @@ c_parser_std_attribute_specifier (c_parser *parser, bool for_tm)
   return nreverse (attributes);
 }
 
+/* Look past an optional balanced token sequence of raw look-ahead
+   tokens starting with the *Nth token.  *N is updated to point to the
+   following token.  Return true if such a sequence was found, false
+   if the tokens parsed were not balanced.  */
+
+static bool
+c_parser_check_balanced_raw_token_sequence (c_parser *parser, unsigned int *n)
+{
+  while (true)
+    {
+      c_token *token = c_parser_peek_nth_token_raw (parser, *n);
+      switch (token->type)
+	{
+	case CPP_OPEN_BRACE:
+	  {
+	    ++*n;
+	    if (c_parser_check_balanced_raw_token_sequence (parser, n))
+	      {
+		token = c_parser_peek_nth_token_raw (parser, *n);
+		if (token->type == CPP_CLOSE_BRACE)
+		  ++*n;
+		else
+		  return false;
+	      }
+	    else
+	      return false;
+	    break;
+	  }
+
+	case CPP_OPEN_PAREN:
+	  {
+	    ++*n;
+	    if (c_parser_check_balanced_raw_token_sequence (parser, n))
+	      {
+		token = c_parser_peek_nth_token_raw (parser, *n);
+		if (token->type == CPP_CLOSE_PAREN)
+		  ++*n;
+		else
+		  return false;
+	      }
+	    else
+	      return false;
+	    break;
+	  }
+
+	case CPP_OPEN_SQUARE:
+	  {
+	    ++*n;
+	    if (c_parser_check_balanced_raw_token_sequence (parser, n))
+	      {
+		token = c_parser_peek_nth_token_raw (parser, *n);
+		if (token->type == CPP_CLOSE_SQUARE)
+		  ++*n;
+		else
+		  return false;
+	      }
+	    else
+	      return false;
+	    break;
+	  }
+
+	case CPP_CLOSE_BRACE:
+	case CPP_CLOSE_PAREN:
+	case CPP_CLOSE_SQUARE:
+	case CPP_EOF:
+	  return true;
+
+	default:
+	  ++*n;
+	  break;
+	}
+    }
+}
+
 /* Return whether standard attributes start with the Nth token.  */
 
 static bool
@@ -4967,10 +5102,18 @@ c_parser_nth_token_starts_std_attributes (c_parser *parser, unsigned int n)
   if (!(c_parser_peek_nth_token (parser, n)->type == CPP_OPEN_SQUARE
 	&& c_parser_peek_nth_token (parser, n + 1)->type == CPP_OPEN_SQUARE))
     return false;
-  /* In C, '[[' must start attributes.  In Objective-C, identifying
-     whether those tokens start attributes requires unbounded
-     lookahead, which is not yet implemented.  */
-  return !c_dialect_objc ();
+  /* In C, '[[' must start attributes.  In Objective-C, we need to
+     check whether '[[' is matched by ']]'.  */
+  if (!c_dialect_objc ())
+    return true;
+  n += 2;
+  if (!c_parser_check_balanced_raw_token_sequence (parser, &n))
+    return false;
+  c_token *token = c_parser_peek_nth_token_raw (parser, n);
+  if (token->type != CPP_CLOSE_SQUARE)
+    return false;
+  token = c_parser_peek_nth_token_raw (parser, n + 1);
+  return token->type == CPP_CLOSE_SQUARE;
 }
 
 static tree
@@ -12421,6 +12564,8 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_ALIGNED;
 	  else if (!strcmp ("async", p))
 	    result = PRAGMA_OACC_CLAUSE_ASYNC;
+	  else if (!strcmp ("attach", p))
+	    result = PRAGMA_OACC_CLAUSE_ATTACH;
 	  break;
 	case 'b':
 	  if (!strcmp ("bind", p))
@@ -12447,6 +12592,8 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OACC_CLAUSE_DELETE;
 	  else if (!strcmp ("depend", p))
 	    result = PRAGMA_OMP_CLAUSE_DEPEND;
+	  else if (!strcmp ("detach", p))
+	    result = PRAGMA_OACC_CLAUSE_DETACH;
 	  else if (!strcmp ("device", p))
 	    result = PRAGMA_OMP_CLAUSE_DEVICE;
 	  else if (!strcmp ("deviceptr", p))
@@ -12507,7 +12654,9 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_MERGEABLE;
 	  break;
 	case 'n':
-	  if (!strcmp ("nogroup", p))
+	  if (!strcmp ("no_create", p))
+	    result = PRAGMA_OACC_CLAUSE_NO_CREATE;
+	  else if (!strcmp ("nogroup", p))
 	    result = PRAGMA_OMP_CLAUSE_NOGROUP;
 	  else if (!strcmp ("nontemporal", p))
 	    result = PRAGMA_OMP_CLAUSE_NONTEMPORAL;
@@ -12690,12 +12839,16 @@ c_parser_oacc_wait_list (c_parser *parser, location_t clause_loc, tree list)
    If KIND is nonzero, CLAUSE_LOC is the location of the clause.
 
    If KIND is zero, create a TREE_LIST with the decl in TREE_PURPOSE;
-   return the list created.  */
+   return the list created.
+
+   The optional ALLOW_DEREF argument is true if list items can use the deref
+   (->) operator.  */
 
 static tree
 c_parser_omp_variable_list (c_parser *parser,
 			    location_t clause_loc,
-			    enum omp_clause_code kind, tree list)
+			    enum omp_clause_code kind, tree list,
+			    bool allow_deref = false)
 {
   auto_vec<c_token> tokens;
   unsigned int tokens_avail = 0;
@@ -12822,9 +12975,13 @@ c_parser_omp_variable_list (c_parser *parser,
 	    case OMP_CLAUSE_MAP:
 	    case OMP_CLAUSE_FROM:
 	    case OMP_CLAUSE_TO:
-	      while (c_parser_next_token_is (parser, CPP_DOT))
+	      while (c_parser_next_token_is (parser, CPP_DOT)
+		     || (allow_deref
+			 && c_parser_next_token_is (parser, CPP_DEREF)))
 		{
 		  location_t op_loc = c_parser_peek_token (parser)->location;
+		  if (c_parser_next_token_is (parser, CPP_DEREF))
+		    t = build_simple_mem_ref (t);
 		  c_parser_consume_token (parser);
 		  if (!c_parser_next_token_is (parser, CPP_NAME))
 		    {
@@ -12946,11 +13103,12 @@ c_parser_omp_variable_list (c_parser *parser,
 }
 
 /* Similarly, but expect leading and trailing parenthesis.  This is a very
-   common case for OpenACC and OpenMP clauses.  */
+   common case for OpenACC and OpenMP clauses.  The optional ALLOW_DEREF
+   argument is true if list items can use the deref (->) operator.  */
 
 static tree
 c_parser_omp_var_list_parens (c_parser *parser, enum omp_clause_code kind,
-			      tree list)
+			      tree list, bool allow_deref = false)
 {
   /* The clauses location.  */
   location_t loc = c_parser_peek_token (parser)->location;
@@ -12958,7 +13116,7 @@ c_parser_omp_var_list_parens (c_parser *parser, enum omp_clause_code kind,
   matching_parens parens;
   if (parens.require_open (parser))
     {
-      list = c_parser_omp_variable_list (parser, loc, kind, list);
+      list = c_parser_omp_variable_list (parser, loc, kind, list, allow_deref);
       parens.skip_until_found_close (parser);
     }
   return list;
@@ -12970,7 +13128,12 @@ c_parser_omp_var_list_parens (c_parser *parser, enum omp_clause_code kind,
    copyout ( variable-list )
    create ( variable-list )
    delete ( variable-list )
-   present ( variable-list ) */
+   present ( variable-list )
+
+   OpenACC 2.6:
+   no_create ( variable-list )
+   attach ( variable-list )
+   detach ( variable-list ) */
 
 static tree
 c_parser_oacc_data_clause (c_parser *parser, pragma_omp_clause c_kind,
@@ -12979,6 +13142,9 @@ c_parser_oacc_data_clause (c_parser *parser, pragma_omp_clause c_kind,
   enum gomp_map_kind kind;
   switch (c_kind)
     {
+    case PRAGMA_OACC_CLAUSE_ATTACH:
+      kind = GOMP_MAP_ATTACH;
+      break;
     case PRAGMA_OACC_CLAUSE_COPY:
       kind = GOMP_MAP_TOFROM;
       break;
@@ -12994,6 +13160,9 @@ c_parser_oacc_data_clause (c_parser *parser, pragma_omp_clause c_kind,
     case PRAGMA_OACC_CLAUSE_DELETE:
       kind = GOMP_MAP_RELEASE;
       break;
+    case PRAGMA_OACC_CLAUSE_DETACH:
+      kind = GOMP_MAP_DETACH;
+      break;
     case PRAGMA_OACC_CLAUSE_DEVICE:
       kind = GOMP_MAP_FORCE_TO;
       break;
@@ -13006,6 +13175,9 @@ c_parser_oacc_data_clause (c_parser *parser, pragma_omp_clause c_kind,
     case PRAGMA_OACC_CLAUSE_LINK:
       kind = GOMP_MAP_LINK;
       break;
+    case PRAGMA_OACC_CLAUSE_NO_CREATE:
+      kind = GOMP_MAP_IF_PRESENT;
+      break;
     case PRAGMA_OACC_CLAUSE_PRESENT:
       kind = GOMP_MAP_FORCE_PRESENT;
       break;
@@ -13013,7 +13185,7 @@ c_parser_oacc_data_clause (c_parser *parser, pragma_omp_clause c_kind,
       gcc_unreachable ();
     }
   tree nl, c;
-  nl = c_parser_omp_var_list_parens (parser, OMP_CLAUSE_MAP, list);
+  nl = c_parser_omp_var_list_parens (parser, OMP_CLAUSE_MAP, list, true);
 
   for (c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
     OMP_CLAUSE_SET_MAP_KIND (c, kind);
@@ -15728,6 +15900,10 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 						 clauses);
 	  c_name = "auto";
 	  break;
+	case PRAGMA_OACC_CLAUSE_ATTACH:
+	  clauses = c_parser_oacc_data_clause (parser, c_kind, clauses);
+	  c_name = "attach";
+	  break;
 	case PRAGMA_OACC_CLAUSE_COLLAPSE:
 	  clauses = c_parser_omp_clause_collapse (parser, clauses);
 	  c_name = "collapse";
@@ -15755,6 +15931,10 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OMP_CLAUSE_DEFAULT:
 	  clauses = c_parser_omp_clause_default (parser, clauses, true);
 	  c_name = "default";
+	  break;
+	case PRAGMA_OACC_CLAUSE_DETACH:
+	  clauses = c_parser_oacc_data_clause (parser, c_kind, clauses);
+	  c_name = "detach";
 	  break;
 	case PRAGMA_OACC_CLAUSE_DEVICE:
 	  clauses = c_parser_oacc_data_clause (parser, c_kind, clauses);
@@ -15803,6 +15983,10 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OACC_CLAUSE_LINK:
 	  clauses = c_parser_oacc_data_clause (parser, c_kind, clauses);
 	  c_name = "link";
+	  break;
+	case PRAGMA_OACC_CLAUSE_NO_CREATE:
+	  clauses = c_parser_oacc_data_clause (parser, c_kind, clauses);
+	  c_name = "no_create";
 	  break;
 	case PRAGMA_OACC_CLAUSE_NUM_GANGS:
 	  clauses = c_parser_oacc_single_int_clause (parser,
@@ -16266,12 +16450,14 @@ c_parser_oacc_cache (location_t loc, c_parser *parser)
 */
 
 #define OACC_DATA_CLAUSE_MASK						\
-	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPY)		\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ATTACH)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPY)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYIN)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYOUT)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_CREATE)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEVICEPTR)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF)			\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NO_CREATE)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT))
 
 static tree
@@ -16449,6 +16635,7 @@ c_parser_oacc_declare (c_parser *parser)
 #define OACC_ENTER_DATA_CLAUSE_MASK					\
 	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF)			\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ASYNC)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ATTACH)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYIN)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_CREATE)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
@@ -16458,6 +16645,7 @@ c_parser_oacc_declare (c_parser *parser)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ASYNC)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYOUT)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DELETE) 		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DETACH) 		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_FINALIZE) 		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
@@ -16597,6 +16785,7 @@ c_parser_oacc_loop (location_t loc, c_parser *parser, char *p_name,
 
 #define OACC_KERNELS_CLAUSE_MASK					\
 	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ASYNC)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ATTACH)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPY)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYIN)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYOUT)		\
@@ -16604,6 +16793,7 @@ c_parser_oacc_loop (location_t loc, c_parser *parser, char *p_name,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEFAULT)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEVICEPTR)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF)			\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NO_CREATE)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NUM_GANGS)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NUM_WORKERS)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\
@@ -16612,6 +16802,7 @@ c_parser_oacc_loop (location_t loc, c_parser *parser, char *p_name,
 
 #define OACC_PARALLEL_CLAUSE_MASK					\
 	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ASYNC)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ATTACH)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPY)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYIN)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYOUT)		\
@@ -16619,6 +16810,7 @@ c_parser_oacc_loop (location_t loc, c_parser *parser, char *p_name,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEFAULT)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEVICEPTR)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF)			\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NO_CREATE)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRIVATE)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_FIRSTPRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NUM_GANGS)		\
@@ -16630,6 +16822,7 @@ c_parser_oacc_loop (location_t loc, c_parser *parser, char *p_name,
 
 #define OACC_SERIAL_CLAUSE_MASK					\
 	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ASYNC)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ATTACH)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPY)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYIN)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYOUT)		\
@@ -16637,6 +16830,7 @@ c_parser_oacc_loop (location_t loc, c_parser *parser, char *p_name,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEFAULT)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEVICEPTR)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF)			\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NO_CREATE)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRIVATE)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_FIRSTPRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\
@@ -21574,11 +21768,9 @@ c_parser_parse_rtl_body (c_parser *parser, char *start_with_pass)
       return;
     }
 
- /*  If a pass name was provided for START_WITH_PASS, run the backend
-     accordingly now, on the cfun created above, transferring
-     ownership of START_WITH_PASS.  */
-  if (start_with_pass)
-    run_rtl_passes (start_with_pass);
+ /*  Run the backend on the cfun created above, transferring ownership of
+     START_WITH_PASS.  */
+  run_rtl_passes (start_with_pass);
 }
 
 #include "gt-c-c-parser.h"

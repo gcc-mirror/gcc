@@ -1,5 +1,5 @@
 /* Definitions for C++ name lookup routines.
-   Copyright (C) 2003-2019 Free Software Foundation, Inc.
+   Copyright (C) 2003-2020 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -908,7 +908,7 @@ name_lookup::adl_expr (tree expr)
 
   if (TREE_TYPE (expr) != unknown_type_node)
     {
-      adl_type (TREE_TYPE (expr));
+      adl_type (unlowered_expr_type (expr));
       return;
     }
 
@@ -2769,8 +2769,8 @@ check_local_shadow (tree decl)
 		      (now) doing the shadow checking too
 		      early.  */
 		   && !type_uses_auto (TREE_TYPE (decl))
-		   && can_convert (TREE_TYPE (old), TREE_TYPE (decl),
-				   tf_none)))
+		   && can_convert_arg (TREE_TYPE (old), TREE_TYPE (decl),
+				       decl, LOOKUP_IMPLICIT, tf_none)))
 	warning_code = OPT_Wshadow_compatible_local;
       else
 	warning_code = OPT_Wshadow_local;
@@ -5641,6 +5641,8 @@ get_std_name_hint (const char *name)
     /* <condition_variable>. */
     {"condition_variable", "<condition_variable>", cxx11},
     {"condition_variable_any", "<condition_variable>", cxx11},
+    /* <cstddef>.  */
+    {"byte", "<cstddef>", cxx17},
     /* <deque>.  */
     {"deque", "<deque>", cxx98},
     /* <forward_list>.  */
@@ -5747,6 +5749,8 @@ get_std_name_hint (const char *name)
     {"shared_lock", "<shared_mutex>", cxx14},
     {"shared_mutex", "<shared_mutex>", cxx17},
     {"shared_timed_mutex", "<shared_mutex>", cxx14},
+    /* <source_location>.  */
+    {"source_location", "<source_location>", cxx2a},
     /* <sstream>.  */
     {"basic_stringbuf", "<sstream>", cxx98},
     {"basic_istringstream", "<sstream>", cxx98},

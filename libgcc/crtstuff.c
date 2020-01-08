@@ -1,6 +1,6 @@
 /* Specialized bits of code needed to support construction and
    destruction of file-scope objects in C++ code.
-   Copyright (C) 1991-2019 Free Software Foundation, Inc.
+   Copyright (C) 1991-2020 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GCC.
@@ -325,11 +325,14 @@ register_tm_clones (void)
 
 #ifdef OBJECT_FORMAT_ELF
 
+#if DEFAULT_USE_CXA_ATEXIT
 /* Declare the __dso_handle variable.  It should have a unique value
    in every shared-object; in a main program its value is zero.  The
    object should in any case be protected.  This means the instance
    in one DSO or the main program is not used in another object.  The
-   dynamic linker takes care of this.  */
+   dynamic linker takes care of this.
+   If __cxa_atexit is not being used, __dso_handle will not be used and
+   doesn't need to be defined.  */
 
 #ifdef TARGET_LIBGCC_SDATA_SECTION
 extern void *__dso_handle __attribute__ ((__section__ (TARGET_LIBGCC_SDATA_SECTION)));
@@ -342,6 +345,7 @@ void *__dso_handle = &__dso_handle;
 #else
 void *__dso_handle = 0;
 #endif
+#endif /* DEFAULT_USE_CXA_ATEXIT */
 
 /* The __cxa_finalize function may not be available so we use only a
    weak declaration.  */
@@ -364,8 +368,12 @@ extern void __cxa_finalize (void *) TARGET_ATTRIBUTE_WEAK;
    On some systems, this routine is run more than once from the .fini,
    when exit is called recursively, so we arrange to remember where in
    the list we left off processing, and we resume at that point,
-   should we be re-invoked.  */
+   should we be re-invoked.
 
+   This routine does not need to be run if none of the following clauses are
+   true, as it will not do anything, so can be removed.  */
+#if defined(CRTSTUFFS_O) || !defined(FINI_ARRAY_SECTION_ASM_OP) \
+  || USE_TM_CLONE_REGISTRY || defined(USE_EH_FRAME_REGISTRY)
 static void __attribute__((used))
 __do_global_dtors_aux (void)
 {
@@ -451,6 +459,8 @@ __do_global_dtors_aux_1 (void)
 CRT_CALL_STATIC_FUNCTION (__LIBGCC_INIT_SECTION_ASM_OP__,
 			  __do_global_dtors_aux_1)
 #endif
+#endif /* defined(CRTSTUFFS_O) || !defined(FINI_ARRAY_SECTION_ASM_OP)
+  || USE_TM_CLONE_REGISTRY || defined(USE_EH_FRAME_REGISTRY) */
 
 #if defined(USE_EH_FRAME_REGISTRY) || USE_TM_CLONE_REGISTRY
 /* Stick a call to __register_frame_info into the .init section.  For some

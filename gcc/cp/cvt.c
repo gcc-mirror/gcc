@@ -1,5 +1,5 @@
 /* Language-level data type conversion for GNU C++.
-   Copyright (C) 1987-2019 Free Software Foundation, Inc.
+   Copyright (C) 1987-2020 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -744,7 +744,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
       else if (TREE_CODE (type) == COMPLEX_TYPE)
 	return convert_to_complex_maybe_fold (type, e, dofold);
       else if (VECTOR_TYPE_P (type))
-	return convert_to_vector (type, e);
+	return convert_to_vector (type, rvalue (e));
       else if (TREE_CODE (e) == TARGET_EXPR)
 	{
 	  /* Don't build a NOP_EXPR of class type.  Instead, change the
@@ -836,6 +836,14 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	      return error_mark_node;
 	    }
 
+	  if (VECTOR_TYPE_P (intype) && !gnu_vector_type_p (intype))
+	    {
+	      if (complain & tf_error)
+		error_at (loc, "could not convert %qE from %qH to %qI", expr,
+			  TREE_TYPE (expr), type);
+	      return error_mark_node;
+	    }
+
 	  /* We can't implicitly convert a scoped enum to bool, so convert
 	     to the underlying type first.  */
 	  if (SCOPED_ENUM_P (intype) && (convtype & CONV_STATIC))
@@ -847,6 +855,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	      /* Prevent bogus -Wint-in-bool-context warnings coming
 		 from c_common_truthvalue_conversion down the line.  */
 	      warning_sentinel w (warn_int_in_bool_context);
+	      warning_sentinel c (warn_sign_compare);
 	      return cp_truthvalue_conversion (e, complain);
 	    }
 	}
@@ -872,7 +881,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 		      in_vtype, type);
 	  return error_mark_node;
 	}
-      return convert_to_vector (type, e);
+      return convert_to_vector (type, rvalue (e));
     }
   if (code == REAL_TYPE || code == COMPLEX_TYPE)
     {
@@ -1035,12 +1044,13 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
       tree args = TREE_VALUE (attr);
       if (args)
 	msg.escape (TREE_STRING_POINTER (TREE_VALUE (args)));
-      const char* format = (msg ?
-	G_("ignoring return value of %qD, "
-	   "declared with attribute %<nodiscard%>: %<%s%>") :
-	G_("ignoring return value of %qD, "
-	   "declared with attribute %<nodiscard%>%s"));
-      const char* raw_msg = msg ? msg : "";
+      const char *format
+	= (msg
+	   ? G_("ignoring return value of %qD, "
+		"declared with attribute %<nodiscard%>: %<%s%>")
+	   : G_("ignoring return value of %qD, "
+		"declared with attribute %<nodiscard%>%s"));
+      const char *raw_msg = msg ? (const char *) msg : "";
       auto_diagnostic_group d;
       if (warning_at (loc, OPT_Wunused_result, format, fn, raw_msg))
 	inform (DECL_SOURCE_LOCATION (fn), "declared here");
@@ -1052,12 +1062,13 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
       tree args = TREE_VALUE (attr);
       if (args)
 	msg.escape (TREE_STRING_POINTER (TREE_VALUE (args)));
-      const char* format = msg ?
-	G_("ignoring returned value of type %qT, "
-	   "declared with attribute %<nodiscard%>: %<%s%>") :
-	G_("ignoring returned value of type %qT, "
-	   "declared with attribute %<nodiscard%>%s");
-      const char* raw_msg = msg ? msg : "";
+      const char *format
+	= (msg
+	   ? G_("ignoring returned value of type %qT, "
+		"declared with attribute %<nodiscard%>: %<%s%>")
+	   : G_("ignoring returned value of type %qT, "
+		"declared with attribute %<nodiscard%>%s"));
+      const char *raw_msg = msg ? (const char *) msg : "";
       auto_diagnostic_group d;
       if (warning_at (loc, OPT_Wunused_result, format, rettype, raw_msg))
 	{
@@ -1134,6 +1145,12 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
         error_at (loc, "pseudo-destructor is not called");
       return error_mark_node;
     }
+
+  /* Explicitly evaluate void-converted concept checks since their
+     satisfaction may produce ill-formed programs.  */
+   if (concept_check_p (expr))
+     expr = evaluate_concept_check (expr, tf_warning_or_error);
+
   if (VOID_TYPE_P (TREE_TYPE (expr)))
     return expr;
   switch (TREE_CODE (expr))
@@ -1756,8 +1773,11 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
 							    tf_warning_or_error)
 					: NULL_TREE;
 
-      case COMPLEX_TYPE:
       case VECTOR_TYPE:
+	if (!gnu_vector_type_p (basetype))
+	  return NULL_TREE;
+	/* FALLTHROUGH */
+      case COMPLEX_TYPE:
 	if ((desires & WANT_VECTOR_OR_COMPLEX) == 0)
 	  return NULL_TREE;
 	switch (TREE_CODE (TREE_TYPE (basetype)))

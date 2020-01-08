@@ -1,5 +1,5 @@
 /* Symbol table.
-   Copyright (C) 2012-2019 Free Software Foundation, Inc.
+   Copyright (C) 2012-2020 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -489,6 +489,8 @@ symtab_node::dissolve_same_comdat_group_list (void)
     {
       next = n->same_comdat_group;
       n->same_comdat_group = NULL;
+      if (dyn_cast <cgraph_node *> (n))
+	dyn_cast <cgraph_node *> (n)->calls_comdat_local = false;
       /* Clear comdat_group for comdat locals, since
          make_decl_local doesn't.  */
       if (!TREE_PUBLIC (n->decl))
@@ -848,6 +850,8 @@ symtab_node::dump_base (FILE *f)
     fprintf (f, " transparent_alias");
   if (weakref)
     fprintf (f, " weakref");
+  if (symver)
+    fprintf (f, " symver");
   if (cpp_implicit_alias)
     fprintf (f, " cpp_implicit_alias");
   if (alias_target)
@@ -914,8 +918,10 @@ symtab_node::dump_base (FILE *f)
       if (DECL_STATIC_DESTRUCTOR (decl))
 	fprintf (f, " destructor");
     }
+  if (ifunc_resolver)
+    fprintf (f, " ifunc_resolver");
   fprintf (f, "\n");
-  
+
   if (same_comdat_group)
     fprintf (f, "  Same comdat group as: %s\n",
 	     same_comdat_group->dump_asm_name ());
@@ -1143,6 +1149,27 @@ symtab_node::verify_base (void)
   if (transparent_alias && !alias)
     {
       error ("node is transparent_alias but not an alias");
+      error_found = true;
+    }
+  if (symver && !alias)
+    {
+      error ("node is symver but not alias");
+      error_found = true;
+    }
+  /* Limitation of gas requires us to output targets of symver aliases as
+     global symbols.  This is binutils PR 25295.  */
+  if (symver
+      && (!TREE_PUBLIC (get_alias_target ()->decl)
+	  || DECL_VISIBILITY (get_alias_target ()->decl) != VISIBILITY_DEFAULT))
+    {
+      error ("symver target is not exported with default visibility");
+      error_found = true;
+    }
+  if (symver
+      && (!TREE_PUBLIC (decl)
+	  || DECL_VISIBILITY (decl) != VISIBILITY_DEFAULT))
+    {
+      error ("symver is not exported with default visibility");
       error_found = true;
     }
   if (same_comdat_group)
@@ -1780,7 +1807,9 @@ symtab_node::resolve_alias (symtab_node *target, bool transparent)
 	  if (target->get_comdat_group ())
 	    alias_alias->add_to_same_comdat_group (target);
 	}
-      if (!alias_alias->transparent_alias || transparent)
+      if ((!alias_alias->transparent_alias
+	   && !alias_alias->symver)
+	  || transparent)
 	{
 	  alias_alias->remove_all_references ();
 	  alias_alias->create_reference (target, IPA_REF_ALIAS, NULL);
@@ -1861,6 +1890,13 @@ symtab_node::noninterposable_alias (void)
       DECL_STATIC_CONSTRUCTOR (new_decl) = 0;
       DECL_STATIC_DESTRUCTOR (new_decl) = 0;
       new_node = cgraph_node::create_alias (new_decl, node->decl);
+
+      cgraph_node *new_cnode = dyn_cast <cgraph_node *> (new_node),
+		   *cnode = dyn_cast <cgraph_node *> (node);
+
+      new_cnode->unit_id = cnode->unit_id;
+      new_cnode->merged_comdat = cnode->merged_comdat;
+      new_cnode->merged_extern_inline = cnode->merged_extern_inline;
     }
   else
     {
@@ -1930,6 +1966,11 @@ symtab_node::get_partitioning_class (void)
 
   /* External declarations are external.  */
   if (DECL_EXTERNAL (decl))
+    return SYMBOL_EXTERNAL;
+
+  /* Even static aliases of external functions as external.  Those can happen
+     when COMDAT got resolved to non-IL implementation.  */
+  if (alias && DECL_EXTERNAL (ultimate_alias_target ()->decl))
     return SYMBOL_EXTERNAL;
 
   if (varpool_node *vnode = dyn_cast <varpool_node *> (this))

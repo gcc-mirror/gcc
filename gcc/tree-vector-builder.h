@@ -1,5 +1,5 @@
 /* A class for building vector tree constants.
-   Copyright (C) 2017-2019 Free Software Foundation, Inc.
+   Copyright (C) 2017-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -88,7 +88,7 @@ tree_vector_builder::new_vector (tree type, unsigned int npatterns,
 inline bool
 tree_vector_builder::equal_p (const_tree elt1, const_tree elt2) const
 {
-  return operand_equal_p (elt1, elt2, 0);
+  return operand_equal_p (elt1, elt2, OEP_BITWISE);
 }
 
 /* Return true if a stepped representation is OK.  We don't allow

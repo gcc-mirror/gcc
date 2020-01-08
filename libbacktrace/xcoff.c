@@ -1,5 +1,5 @@
 /* xcoff.c -- Get debug data from an XCOFF file for backtraces.
-   Copyright (C) 2012-2019 Free Software Foundation, Inc.
+   Copyright (C) 2012-2020 Free Software Foundation, Inc.
    Adapted from elf.c.
 
 Redistribution and use in source and binary forms, with or without
@@ -385,18 +385,6 @@ struct xcoff_fileline_data
   uint64_t lnnoptr0;
   /* Loader address.  */
   uintptr_t base_address;
-};
-
-/* An index of DWARF sections we care about.  */
-
-enum dwarf_section
-{
-  DWSECT_INFO,
-  DWSECT_LINE,
-  DWSECT_ABBREV,
-  DWSECT_RANGES,
-  DWSECT_STR,
-  DWSECT_MAX
 };
 
 /* Information we gather for the DWARF sections we care about.  */
@@ -1100,7 +1088,7 @@ xcoff_add (struct backtrace_state *state, int descriptor, off_t offset,
   off_t str_off;
   off_t min_offset;
   off_t max_offset;
-  struct dwsect_info dwsect[DWSECT_MAX];
+  struct dwsect_info dwsect[DEBUG_MAX];
   size_t sects_size;
   size_t syms_size;
   int32_t str_size;
@@ -1111,6 +1099,7 @@ xcoff_add (struct backtrace_state *state, int descriptor, off_t offset,
   int dwarf_view_valid;
   int magic_ok;
   int i;
+  struct dwarf_sections dwarf_sections;
 
   *found_sym = 0;
 
@@ -1255,19 +1244,19 @@ xcoff_add (struct backtrace_state *state, int descriptor, off_t offset,
       switch (sects[i].s_flags & 0xffff0000)
 	{
 	  case SSUBTYP_DWINFO:
-	    idx = DWSECT_INFO;
+	    idx = DEBUG_INFO;
 	    break;
 	  case SSUBTYP_DWLINE:
-	    idx = DWSECT_LINE;
+	    idx = DEBUG_LINE;
 	    break;
 	  case SSUBTYP_DWABREV:
-	    idx = DWSECT_ABBREV;
+	    idx = DEBUG_ABBREV;
 	    break;
 	  case SSUBTYP_DWARNGE:
-	    idx = DWSECT_RANGES;
+	    idx = DEBUG_RANGES;
 	    break;
 	  case SSUBTYP_DWSTR:
-	    idx = DWSECT_STR;
+	    idx = DEBUG_STR;
 	    break;
 	  default:
 	    continue;
@@ -1288,7 +1277,7 @@ xcoff_add (struct backtrace_state *state, int descriptor, off_t offset,
 	goto fail;
       dwarf_view_valid = 1;
 
-      for (i = 0; i < (int) DWSECT_MAX; ++i)
+      for (i = 0; i < (int) DEBUG_MAX; ++i)
 	{
 	  if (dwsect[i].offset == 0)
 	    dwsect[i].data = NULL;
@@ -1297,27 +1286,30 @@ xcoff_add (struct backtrace_state *state, int descriptor, off_t offset,
 			      + (dwsect[i].offset - min_offset));
 	}
 
-      if (!backtrace_dwarf_add (state, 0,
-				dwsect[DWSECT_INFO].data,
-				dwsect[DWSECT_INFO].size,
+      memset (&dwarf_sections, 0, sizeof dwarf_sections);
+
+      dwarf_sections.data[DEBUG_INFO] = dwsect[DEBUG_INFO].data;
+      dwarf_sections.size[DEBUG_INFO] = dwsect[DEBUG_INFO].size;
 #if BACKTRACE_XCOFF_SIZE == 32
-				/* XXX workaround for broken lineoff */
-				dwsect[DWSECT_LINE].data - 4,
+      /* XXX workaround for broken lineoff */
+      dwarf_sections.data[DEBUG_LINE] = dwsect[DEBUG_LINE].data - 4;
 #else
-				/* XXX workaround for broken lineoff */
-				dwsect[DWSECT_LINE].data - 12,
+      /* XXX workaround for broken lineoff */
+      dwarf_sections.data[DEBUG_LINE] = dwsect[DEBUG_LINE].data - 12;
 #endif
-				dwsect[DWSECT_LINE].size,
-				dwsect[DWSECT_ABBREV].data,
-				dwsect[DWSECT_ABBREV].size,
-				dwsect[DWSECT_RANGES].data,
-				dwsect[DWSECT_RANGES].size,
-				dwsect[DWSECT_STR].data,
-				dwsect[DWSECT_STR].size,
+      dwarf_sections.size[DEBUG_LINE] = dwsect[DEBUG_LINE].size;
+      dwarf_sections.data[DEBUG_ABBREV] = dwsect[DEBUG_ABBREV].data;
+      dwarf_sections.size[DEBUG_ABBREV] = dwsect[DEBUG_ABBREV].size;
+      dwarf_sections.data[DEBUG_RANGES] = dwsect[DEBUG_RANGES].data;
+      dwarf_sections.size[DEBUG_RANGES] = dwsect[DEBUG_RANGES].size;
+      dwarf_sections.data[DEBUG_STR] = dwsect[DEBUG_STR].data;
+      dwarf_sections.size[DEBUG_STR] = dwsect[DEBUG_STR].size;
+
+      if (!backtrace_dwarf_add (state, 0, &dwarf_sections,
 				1, /* big endian */
-				NULL,
+				NULL, /* altlink */
 				error_callback, data, fileline_fn,
-				NULL))
+				NULL /* returned fileline_entry */))
 	goto fail;
     }
 

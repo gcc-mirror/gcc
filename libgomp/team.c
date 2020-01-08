@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2019 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2020 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -23,7 +23,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-/* This file handles the maintainence of threads in response to team
+/* This file handles the maintenance of threads in response to team
    creation and termination.  */
 
 #include "libgomp.h"

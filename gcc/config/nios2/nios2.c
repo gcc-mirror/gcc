@@ -1,5 +1,5 @@
 /* Target machine subroutines for Altera Nios II.
-   Copyright (C) 2012-2019 Free Software Foundation, Inc.
+   Copyright (C) 2012-2020 Free Software Foundation, Inc.
    Contributed by Jonah Graham (jgraham@altera.com), 
    Will Reece (wreece@altera.com), and Jeff DaSilva (jdasilva@altera.com).
    Contributed by Mentor Graphics, Inc.
@@ -2372,6 +2372,22 @@ nios2_in_small_data_p (const_tree exp)
 	  const char *section = DECL_SECTION_NAME (exp);
 	  if (nios2_small_section_name_p (section))
 	    return true;
+	}
+      else if (flexible_array_type_p (TREE_TYPE (exp))
+	       && (!TREE_PUBLIC (exp) || DECL_EXTERNAL (exp)))
+	{
+	  /* We really should not consider any objects of any flexibly-sized
+	     type to be small data, but pre-GCC 10 did not test
+	     for this and just fell through to the next case.  Thus older
+	     code compiled with -mgpopt=global could contain GP-relative
+	     accesses to objects defined in this compilation unit with
+	     external linkage.  We retain the possible small-data treatment
+	     of such definitions for backward ABI compatibility, but
+	     no longer generate GP-relative accesses for external
+	     references (so that the ABI could be changed in the future
+	     with less potential impact), or objects with internal
+	     linkage.  */
+	  return false;
 	}
       else
 	{

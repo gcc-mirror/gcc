@@ -1,6 +1,6 @@
 /* Handle the hair of processing (but not expanding) inline functions.
    Also manage function and variable name overloading.
-   Copyright (C) 1987-2019 Free Software Foundation, Inc.
+   Copyright (C) 1987-2020 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -474,7 +474,8 @@ forward_parm (tree parm)
   if (!TYPE_REF_P (type))
     type = cp_build_reference_type (type, /*rval=*/true);
   warning_sentinel w (warn_useless_cast);
-  exp = build_static_cast (type, exp, tf_warning_or_error);
+  exp = build_static_cast (input_location, type, exp,
+			   tf_warning_or_error);
   if (DECL_PACK_P (parm))
     exp = make_pack_expansion (exp);
   return exp;
@@ -1091,6 +1092,13 @@ early_check_defaulted_comparison (tree fn)
     ctx = DECL_FRIEND_CONTEXT (fn);
   bool ok = true;
 
+  if (cxx_dialect < cxx2a)
+    {
+      error_at (loc, "defaulted %qD only available with %<-std=c++2a%> or "
+		     "%<-std=gnu++2a%>", fn);
+      return false;
+    }
+
   if (!DECL_OVERLOADED_OPERATOR_IS (fn, SPACESHIP_EXPR)
       && !same_type_p (TREE_TYPE (TREE_TYPE (fn)), boolean_type_node))
     {
@@ -1145,7 +1153,7 @@ early_check_defaulted_comparison (tree fn)
     }
 
   /* We still need to deduce deleted/constexpr/noexcept and maybe return. */
-  DECL_MAYBE_DELETED (fn) = true;
+  DECL_MAYBE_DELETED (fn) = ok;
 
   return ok;
 }
@@ -1243,6 +1251,21 @@ struct comp_info
     if (noex && !expr_noexcept_p (expr, tf_none))
       noex = false;
   }
+
+  ~comp_info ()
+  {
+    if (first_time)
+      {
+	DECL_DECLARED_CONSTEXPR_P (fndecl) = constexp || was_constexp;
+	tree raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fndecl));
+	if (!raises || UNEVALUATED_NOEXCEPT_SPEC_P (raises))
+	  {
+	    raises = noex ? noexcept_true_spec : noexcept_false_spec;
+	    TREE_TYPE (fndecl) = build_exception_variant (TREE_TYPE (fndecl),
+							  raises);
+	  }
+      }
+  }
 };
 
 /* Build up the definition of a defaulted comparison operator.  Unlike other
@@ -1281,6 +1304,7 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
       if (complain & tf_error)
 	inform (info.loc, "cannot default compare union %qT", ctype);
       DECL_DELETED_FN (fndecl) = true;
+      return;
     }
 
   tree compound_stmt = NULL_TREE;
@@ -1334,6 +1358,11 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 				 NULL_TREE);
 	  tree comp = build_new_op (info.loc, code, flags, lhs_mem, rhs_mem,
 				    NULL_TREE, NULL, complain);
+	  if (comp == error_mark_node)
+	    {
+	      DECL_DELETED_FN (fndecl) = true;
+	      continue;
+	    }
 	  comps.safe_push (comp);
 	}
       if (code == SPACESHIP_EXPR && is_auto (rettype))
@@ -1361,7 +1390,8 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 	      if (TREE_CODE (comp) == SPACESHIP_EXPR)
 		TREE_TYPE (comp) = rettype;
 	      else
-		comp = build_static_cast (rettype, comp, complain);
+		comp = build_static_cast (input_location, rettype, comp,
+					  complain);
 	      info.check (comp);
 	      if (info.defining)
 		{
@@ -1395,7 +1425,8 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 	    {
 	      tree seql = lookup_comparison_result (cc_strong_ordering,
 						    "equal", complain);
-	      val = build_static_cast (rettype, seql, complain);
+	      val = build_static_cast (input_location, rettype, seql,
+				       complain);
 	    }
 	  finish_return_stmt (val);
 	}
@@ -1427,18 +1458,6 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
     finish_compound_stmt (compound_stmt);
   else
     --cp_unevaluated_operand;
-
-  if (info.first_time)
-    {
-      DECL_DECLARED_CONSTEXPR_P (fndecl) = info.constexp || info.was_constexp;
-      tree raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fndecl));
-      if (!raises || UNEVALUATED_NOEXCEPT_SPEC_P (raises))
-	{
-	  raises = info.noex ? noexcept_true_spec : noexcept_false_spec;
-	  TREE_TYPE (fndecl) = build_exception_variant (TREE_TYPE (fndecl),
-							raises);
-	}
-    }
 }
 
 /* Synthesize FNDECL, a non-static member function.   */
@@ -1985,10 +2004,12 @@ walk_field_subobs (tree fields, special_function_kind sfk, tree fnname,
 	  if (bad && deleted_p)
 	    *deleted_p = true;
 
-	  /* For an implicitly-defined default constructor to be constexpr,
-	     every member must have a user-provided default constructor or
-	     an explicit initializer.  */
-	  if (constexpr_p && !CLASS_TYPE_P (mem_type)
+	  /* Before C++20, for an implicitly-defined default constructor to
+	     be constexpr, every member must have a user-provided default
+	     constructor or an explicit initializer.  */
+	  if (constexpr_p
+	      && cxx_dialect < cxx2a
+	      && !CLASS_TYPE_P (mem_type)
 	      && TREE_CODE (DECL_CONTEXT (field)) != UNION_TYPE)
 	    {
 	      *constexpr_p = false;

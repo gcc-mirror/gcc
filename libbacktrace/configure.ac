@@ -1,5 +1,5 @@
 # configure.ac -- Backtrace configure script.
-# Copyright (C) 2012-2019 Free Software Foundation, Inc.
+# Copyright (C) 2012-2020 Free Software Foundation, Inc.
 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -419,6 +419,17 @@ fi
 AC_SUBST(PTHREAD_CFLAGS)
 
 AM_CONDITIONAL(HAVE_PTHREAD, test "$libgo_cv_lib_pthread" = yes)
+
+dnl Test whether the compiler supports the -gdwarf-5 option.
+AC_CACHE_CHECK([whether -gdwarf-5 is supported],
+[libbacktrace_cv_lib_dwarf5],
+[CFLAGS_hold=$CFLAGS
+CFLAGS="$CFLAGS -gdwarf-5"
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([int i;])],
+[libbacktrace_cv_lib_dwarf5=yes],
+[libbacktrace_cv_lib_dwarf5=no])
+CFLAGS=$CFLAGS_hold])
+AM_CONDITIONAL(HAVE_DWARF5, test "$libbacktrace_cv_lib_dwarf5" = yes)
 
 AC_CHECK_LIB([z], [compress],
     [AC_DEFINE(HAVE_ZLIB, 1, [Define if -lz is available.])])

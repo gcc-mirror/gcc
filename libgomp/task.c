@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2019 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2020 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -23,7 +23,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-/* This file handles the maintainence of tasks in response to task
+/* This file handles the maintenance of tasks in response to task
    creation and termination.  */
 
 #include "libgomp.h"
@@ -1157,7 +1157,7 @@ gomp_task_run_post_handle_dependers (struct gomp_task *child_task,
 
       /* CHILD_TASK satisfies a dependency for TASK.  Keep track of
 	 TASK's remaining dependencies.  Once TASK has no other
-	 depenencies, put it into the various queues so it will get
+	 dependencies, put it into the various queues so it will get
 	 scheduled for execution.  */
       if (--task->num_dependees != 0)
 	continue;
@@ -1674,7 +1674,7 @@ gomp_task_maybe_wait_for_dependencies (void **depend)
 	      {
 		tsk->parent_depends_on = true;
 		++num_awaited;
-		/* If depenency TSK itself has no dependencies and is
+		/* If dependency TSK itself has no dependencies and is
 		   ready to run, move it up front so that we run it as
 		   soon as possible.  */
 		if (tsk->num_dependees == 0 && tsk->kind == GOMP_TASK_WAITING)

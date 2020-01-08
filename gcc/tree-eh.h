@@ -1,5 +1,5 @@
 /* Header file for exception handling.
-   Copyright (C) 2013-2019 Free Software Foundation, Inc.
+   Copyright (C) 2013-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,8 +27,8 @@ extern void using_eh_for_cleanups (void);
 extern void add_stmt_to_eh_lp (gimple *, int);
 extern bool remove_stmt_from_eh_lp_fn (struct function *, gimple *);
 extern bool remove_stmt_from_eh_lp (gimple *);
-extern int lookup_stmt_eh_lp_fn (struct function *, gimple *);
-extern int lookup_stmt_eh_lp (gimple *);
+extern int lookup_stmt_eh_lp_fn (struct function *, const gimple *);
+extern int lookup_stmt_eh_lp (const gimple *);
 extern bool make_eh_dispatch_edges (geh_dispatch *);
 extern void make_eh_edges (gimple *);
 extern edge redirect_eh_edge (edge, basic_block);

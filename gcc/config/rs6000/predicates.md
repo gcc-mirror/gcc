@@ -1,5 +1,5 @@
 ;; Predicate definitions for POWER and PowerPC.
-;; Copyright (C) 2005-2019 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2020 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -309,7 +309,7 @@
   if (!TARGET_PREFIXED_ADDR)
     return 0;
 
-  return SIGNED_34BIT_OFFSET_P (INTVAL (op));
+  return SIGNED_INTEGER_34BIT_P (INTVAL (op));
 })
 
 ;; Return 1 if op is a register that is not special.
@@ -839,7 +839,8 @@
 (define_predicate "add_operand"
   (if_then_else (match_code "const_int")
     (match_test "satisfies_constraint_I (op)
-		 || satisfies_constraint_L (op)")
+		 || satisfies_constraint_L (op)
+		 || satisfies_constraint_eI (op)")
     (match_operand 0 "gpc_reg_operand")))
 
 ;; Return 1 if the operand is either a non-special register, or 0, or -1.
@@ -1139,6 +1140,16 @@
 				   && !flag_finite_math_only")
 		      (match_code "lt,gt,eq,unordered,unge,unle,ne,ordered")
 		      (match_code "lt,ltu,le,leu,gt,gtu,ge,geu,eq,ne"))
+	(match_test "validate_condition_mode (GET_CODE (op),
+					      GET_MODE (XEXP (op, 0))),
+		     1")))
+
+;; Return 1 if OP is a comparison that needs an extra instruction to do (a
+;; crlogical or an extra branch).
+(define_predicate "extra_insn_branch_comparison_operator"
+   (and (match_operand 0 "comparison_operator")
+	(match_test "GET_MODE (XEXP (op, 0)) == CCFPmode")
+	(match_code "ltgt,le,ge,unlt,ungt,uneq")
 	(match_test "validate_condition_mode (GET_CODE (op),
 					      GET_MODE (XEXP (op, 0))),
 		     1")))

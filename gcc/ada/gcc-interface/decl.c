@@ -233,7 +233,8 @@ static vec<subst_pair> build_subst_list (Entity_Id, Entity_Id, bool);
 static vec<variant_desc> build_variant_list (tree, vec<subst_pair>,
 					     vec<variant_desc>);
 static tree maybe_saturate_size (tree);
-static tree validate_size (Uint, tree, Entity_Id, enum tree_code, bool, bool);
+static tree validate_size (Uint, tree, Entity_Id, enum tree_code, bool, bool,
+			   const char *, const char *);
 static void set_rm_size (Uint, tree, Entity_Id);
 static unsigned int validate_alignment (Uint, Entity_Id, unsigned int);
 static unsigned int promote_object_alignment (tree, Entity_Id);
@@ -780,7 +781,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	if (Known_Esize (gnat_entity))
 	  gnu_size
 	    = validate_size (Esize (gnat_entity), gnu_type, gnat_entity,
-			     VAR_DECL, false, Has_Size_Clause (gnat_entity));
+			     VAR_DECL, false, Has_Size_Clause (gnat_entity),
+			     NULL, NULL);
 	if (gnu_size)
 	  {
 	    gnu_type
@@ -3052,6 +3054,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		if (max_align < BIGGEST_ALIGNMENT)
 		  TYPE_MAX_ALIGN (gnu_type) = max_align;
 	      }
+
+	    /* Similarly if an Object_Size clause has been specified.  */
+	    else if (Known_Esize (gnat_entity))
+	      {
+		unsigned int max_size = UI_To_Int (Esize (gnat_entity));
+		unsigned int max_align = max_size & -max_size;
+		if (max_align < BIGGEST_ALIGNMENT)
+		  TYPE_MAX_ALIGN (gnu_type) = max_align;
+	      }
 	  }
 
 	/* If we have a Parent_Subtype, make a field for the parent.  If
@@ -4239,11 +4250,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	 non-constant).  */
       if (!gnu_size && kind != E_String_Literal_Subtype)
 	{
-	  Uint gnat_size = Known_Esize (gnat_entity)
-			   ? Esize (gnat_entity) : RM_Size (gnat_entity);
-	  gnu_size
-	    = validate_size (gnat_size, gnu_type, gnat_entity, TYPE_DECL,
-			     false, Has_Size_Clause (gnat_entity));
+	  if (Known_Esize (gnat_entity))
+	    gnu_size
+	      = validate_size (Esize (gnat_entity), gnu_type, gnat_entity,
+			       VAR_DECL, false, false, NULL, NULL);
+	  else
+	    gnu_size
+	      = validate_size (RM_Size (gnat_entity), gnu_type, gnat_entity,
+			       TYPE_DECL, false, Has_Size_Clause (gnat_entity),
+			       NULL, NULL);
 	}
 
       /* If a size was specified, see if we can make a new type of that size
@@ -5090,8 +5105,8 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
   /* Get and validate any specified Component_Size.  */
   gnu_comp_size
     = validate_size (Component_Size (gnat_array), gnu_type, gnat_array,
-		     has_packed_components ? TYPE_DECL : VAR_DECL,
-		     true, Has_Component_Size_Clause (gnat_array));
+		     has_packed_components ? TYPE_DECL : VAR_DECL, true,
+		     Has_Component_Size_Clause (gnat_array), NULL, NULL);
 
   /* If the component type is a RECORD_TYPE that has a self-referential size,
      then use the maximum size for the component size.  */
@@ -5620,6 +5635,32 @@ gnat_to_gnu_profile_type (Entity_Id gnat_type)
   return gnu_type;
 }
 
+/* Return true if TYPE contains only integral data, recursively if need be.  */
+
+static bool
+type_contains_only_integral_data (tree type)
+{
+  switch (TREE_CODE (type))
+    {
+    case RECORD_TYPE:
+    case UNION_TYPE:
+    case QUAL_UNION_TYPE:
+      for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+	if (!type_contains_only_integral_data (TREE_TYPE (field)))
+	  return false;
+      return true;
+
+    case ARRAY_TYPE:
+    case COMPLEX_TYPE:
+      return type_contains_only_integral_data (TREE_TYPE (type));
+
+    default:
+      return INTEGRAL_TYPE_P (type);
+    }
+
+  gcc_unreachable ();
+}
+
 /* Return a GCC tree for a subprogram type corresponding to GNAT_SUBPROG.
    DEFINITION is true if this is for a subprogram being defined.  DEBUG_INFO_P
    is true if we need to write debug information for other types that we may
@@ -5649,8 +5690,8 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
      the TYPE_CI_CO_LIST field of the FUNCTION_TYPE node we create.  */
   tree gnu_cico_list = NULL_TREE;
   tree gnu_cico_return_type = NULL_TREE;
-  /* Fields in return type of procedure with copy-in copy-out parameters.  */
-  tree gnu_field_list = NULL_TREE;
+  tree gnu_cico_field_list = NULL_TREE;
+  bool gnu_cico_only_integral_type = true;
   /* The semantics of "pure" in Ada essentially matches that of "const"
      or "pure" in GCC.  In particular, both properties are orthogonal
      to the "nothrow" property if the EH circuitry is explicit in the
@@ -5976,9 +6017,11 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 				         NULL_TREE, 0, 0);
 		  Sloc_to_locus (Sloc (gnat_subprog),
 			         &DECL_SOURCE_LOCATION (gnu_field));
-		  gnu_field_list = gnu_field;
+		  gnu_cico_field_list = gnu_field;
 		  gnu_cico_list
 		    = tree_cons (gnu_field, void_type_node, NULL_TREE);
+		  if (!type_contains_only_integral_data (gnu_return_type))
+		    gnu_cico_only_integral_type = false;
 		}
 
 	      TYPE_NAME (gnu_cico_return_type) = get_identifier ("RETURN");
@@ -5995,9 +6038,11 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 				 0, 0);
 	  Sloc_to_locus (Sloc (gnat_param),
 			 &DECL_SOURCE_LOCATION (gnu_field));
-	  DECL_CHAIN (gnu_field) = gnu_field_list;
-	  gnu_field_list = gnu_field;
+	  DECL_CHAIN (gnu_field) = gnu_cico_field_list;
+	  gnu_cico_field_list = gnu_field;
 	  gnu_cico_list = tree_cons (gnu_field, gnu_param, gnu_cico_list);
+	  if (!type_contains_only_integral_data (gnu_param_type))
+	    gnu_cico_only_integral_type = false;
 	}
     }
 
@@ -6014,12 +6059,14 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	 since structures are incomplete for the back-end.  */
       else if (Convention (gnat_subprog) != Convention_Stubbed)
 	{
-	  finish_record_type (gnu_cico_return_type, nreverse (gnu_field_list),
+	  finish_record_type (gnu_cico_return_type,
+			      nreverse (gnu_cico_field_list),
 			      0, false);
 
-	  /* Try to promote the mode of the return type if it is passed
-	     in registers, again to speed up accesses.  */
+	  /* Try to promote the mode if the return type is fully returned
+	     in integer registers, again to speed up accesses.  */
 	  if (TYPE_MODE (gnu_cico_return_type) == BLKmode
+	      && gnu_cico_only_integral_type
 	      && !targetm.calls.return_in_memory (gnu_cico_return_type,
 						  NULL_TREE))
 	    {
@@ -6041,6 +6088,17 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 		    = size_int (GET_MODE_SIZE (mode));
 		}
 	    }
+
+	  /* But demote the mode if the return type is partly returned in FP
+	     registers to avoid creating problematic paradoxical subregs.
+	     Note that we need to cater to historical 32-bit architectures
+	     that incorrectly use the mode to select the return mechanism.  */
+	  else if (INTEGRAL_MODE_P (TYPE_MODE (gnu_cico_return_type))
+		   && !gnu_cico_only_integral_type
+		   && BITS_PER_WORD >= 64
+		   && !targetm.calls.return_in_memory (gnu_cico_return_type,
+						       NULL_TREE))
+	    SET_TYPE_MODE (gnu_cico_return_type, BLKmode);
 
 	  if (debug_info_p)
 	    rest_of_record_type_compilation (gnu_cico_return_type);
@@ -6956,6 +7014,8 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   const Node_Id gnat_clause = Component_Clause (gnat_field);
   const Entity_Id gnat_record_type = Underlying_Type (Scope (gnat_field));
   const Entity_Id gnat_field_type = Etype (gnat_field);
+  tree gnu_field_type = gnat_to_gnu_type (gnat_field_type);
+  tree gnu_field_id = get_entity_name (gnat_field);
   const bool is_atomic
     = (Is_Atomic_Or_VFA (gnat_field) || Is_Atomic_Or_VFA (gnat_field_type));
   const bool is_aliased = Is_Aliased (gnat_field);
@@ -6963,6 +7023,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
     = (Is_Independent (gnat_field) || Is_Independent (gnat_field_type));
   const bool is_volatile
     = (Treat_As_Volatile (gnat_field) || Treat_As_Volatile (gnat_field_type));
+  const bool is_by_ref = TYPE_IS_BY_REFERENCE_P (gnu_field_type);
   const bool is_strict_alignment = Strict_Alignment (gnat_field_type);
   /* We used to consider that volatile fields also require strict alignment,
      but that was an interpolation and would cause us to reject a pragma
@@ -6971,16 +7032,36 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
      involve load-modify-store sequences, but that's OK for volatile.  The
      only constraint is the implementation advice whereby only the bits of
      the components should be accessed if they both start and end on byte
-     boundaries, but that should be guaranteed by the GCC memory model.  */
-  const bool needs_strict_alignment
-    = (is_atomic || is_aliased || is_independent || is_strict_alignment);
-  bool is_bitfield;
-  tree gnu_field_type = gnat_to_gnu_type (gnat_field_type);
-  tree gnu_field_id = get_entity_name (gnat_field);
+     boundaries, but that should be guaranteed by the GCC memory model.
+     Note that we have some redundancies (is_atomic => is_independent,
+     is_aliased => is_independent and is_by_ref => is_strict_alignment)
+     so the following formula is sufficient.  */
+  const bool needs_strict_alignment = (is_independent || is_strict_alignment);
+  const char *field_s, *size_s;
   tree gnu_field, gnu_size, gnu_pos;
+  bool is_bitfield;
 
-  /* If this field requires strict alignment, we cannot pack it because
-     it would very likely be under-aligned in the record.  */
+  /* The qualifier to be used in messages.  */
+  if (is_atomic)
+    field_s = "atomic&";
+  else if (is_aliased)
+    field_s = "aliased&";
+  else if (is_independent)
+    field_s = "independent&";
+  else if (is_by_ref)
+    field_s = "& with by-reference type";
+  else if (is_strict_alignment)
+    field_s = "& with aliased part";
+  else
+    field_s = "&";
+
+  /* The message to be used for incompatible size.  */
+  if (is_atomic || is_aliased)
+    size_s = "size for %s must be ^";
+  else if (field_s)
+    size_s = "size for %s too small{, minimum allowed is ^}";
+
+  /* If a field requires strict alignment, we cannot pack it (RM 13.2(7)).  */
   if (needs_strict_alignment)
     packed = 0;
   else
@@ -6991,7 +7072,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
      for further details.  */
   if (Present (gnat_clause) || Known_Esize (gnat_field))
     gnu_size = validate_size (Esize (gnat_field), gnu_field_type, gnat_field,
-			      FIELD_DECL, false, true);
+			      FIELD_DECL, false, true, size_s, field_s);
   else if (packed == 1)
     {
       gnu_size = rm_size (gnu_field_type);
@@ -7109,22 +7190,10 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 	  && !(type_annotate_only && Is_Tagged_Type (gnat_field_type)))
 	{
 	  const unsigned int type_align = TYPE_ALIGN (gnu_field_type);
-	  const char *field_s;
 
 	  if (TYPE_ALIGN (gnu_record_type)
 	      && TYPE_ALIGN (gnu_record_type) < type_align)
 	    SET_TYPE_ALIGN (gnu_record_type, type_align);
-
-	  if (is_atomic)
-	    field_s = "atomic &";
-	  else if (is_aliased)
-	    field_s = "aliased &";
-	  else if (is_independent)
-	    field_s = "independent &";
-	  else if (is_strict_alignment)
-	    field_s = "& with aliased or tagged part";
-	  else
-	    gcc_unreachable ();
 
 	  /* If the position is not a multiple of the storage unit, then error
 	     out and reset the position.  */
@@ -7178,11 +7247,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 		       || (cmp > 0 && (is_atomic || is_aliased)))
 		{
 		  char s[128];
-		  if (is_atomic || is_aliased)
-		    snprintf (s, sizeof (s), "size for %s must be ^", field_s);
-		  else
-  		    snprintf (s, sizeof (s), "size for %s must be at least ^",
-			      field_s);
+		  snprintf (s, sizeof (s), size_s, field_s);
 		  post_error_ne_tree (s, Last_Bit (gnat_clause), gnat_field,
 				      type_size);
 		  gnu_size = NULL_TREE;
@@ -7319,7 +7384,7 @@ components_need_strict_alignment (Node_Id component_list)
     {
       Entity_Id gnat_field = Defining_Entity (component_decl);
 
-      if (Is_Aliased (gnat_field))
+      if (Is_Independent (gnat_field) || Is_Independent (Etype (gnat_field)))
 	return true;
 
       if (Strict_Alignment (Etype (gnat_field)))
@@ -8795,11 +8860,12 @@ maybe_saturate_size (tree size)
    true if we are being called to process the Component_Size of GNAT_OBJECT;
    this is used only for error messages.  ZERO_OK is true if a size of zero
    is permitted; if ZERO_OK is false, it means that a size of zero should be
-   treated as an unspecified size.  */
+   treated as an unspecified size.  S1 and S2 are used for error messages.  */
 
 static tree
 validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
-	       enum tree_code kind, bool component_p, bool zero_ok)
+	       enum tree_code kind, bool component_p, bool zero_ok,
+	       const char *s1, const char *s2)
 {
   Node_Id gnat_error_node;
   tree old_size, size;
@@ -8819,6 +8885,8 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
     gnat_error_node = Last_Bit (Component_Clause (gnat_object));
   else if (Present (Size_Clause (gnat_object)))
     gnat_error_node = Expression (Size_Clause (gnat_object));
+  else if (Has_Object_Size_Clause (gnat_object))
+    gnat_error_node = Expression (Object_Size_Clause (gnat_object));
   else
     gnat_error_node = gnat_object;
 
@@ -8845,10 +8913,10 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
       && !integer_zerop (size_binop (TRUNC_MOD_EXPR, size, bitsize_unit_node)))
     {
       if (component_p)
-	post_error_ne ("component size for& is not a multiple of Storage_Unit",
+	post_error_ne ("component size for& must be multiple of Storage_Unit",
 		       gnat_error_node, gnat_object);
       else
-	post_error_ne ("size for& is not a multiple of Storage_Unit",
+	post_error_ne ("size for& must be multiple of Storage_Unit",
 		       gnat_error_node, gnat_object);
       return NULL_TREE;
     }
@@ -8889,14 +8957,20 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
       || TREE_OVERFLOW (old_size)
       || tree_int_cst_lt (size, old_size))
     {
-      if (component_p)
-	post_error_ne_tree
-	  ("component size for& too small{, minimum allowed is ^}",
-	   gnat_error_node, gnat_object, old_size);
+      char buf[128];
+      const char *s;
+
+      if (kind == FIELD_DECL)
+	{
+	  snprintf (buf, sizeof (buf), s1, s2);
+	  s = buf;
+	}
+      else if (component_p)
+	s = "component size for& too small{, minimum allowed is ^}";
       else
-	post_error_ne_tree
-	  ("size for& too small{, minimum allowed is ^}",
-	   gnat_error_node, gnat_object, old_size);
+	s = "size for& too small{, minimum allowed is ^}";
+      post_error_ne_tree (s, gnat_error_node, gnat_object, old_size);
+
       return NULL_TREE;
     }
 

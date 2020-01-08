@@ -1,6 +1,6 @@
 /* Prototypes for exported functions defined in avr.c
    
-   Copyright (C) 2000-2019 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
    This file is part of GCC.
@@ -127,6 +127,8 @@ extern bool avr_load_libgcc_p (rtx);
 extern bool avr_xload_libgcc_p (machine_mode);
 extern rtx avr_eval_addr_attrib (rtx x);
 extern bool avr_casei_sequence_check_operands (rtx *xop);
+
+extern bool avr_float_lib_compare_returns_bool (machine_mode, enum rtx_code);
 
 static inline unsigned
 regmask (machine_mode mode, unsigned regno)

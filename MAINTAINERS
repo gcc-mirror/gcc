@@ -44,7 +44,6 @@ docs, and the testsuite related to that.
 			CPU Port Maintainers	(CPU alphabetical order)
 
 aarch64 port		Richard Earnshaw	<richard.earnshaw@arm.com>
-aarch64 port		James Greenhalgh	<james.greenhalgh@arm.com>
 aarch64 port		Richard Sandiford	<richard.sandiford@arm.com>
 aarch64 port		Marcus Shawcroft	<marcus.shawcroft@arm.com>
 aarch64 port		Kyrylo Tkachov		<kyrylo.tkachov@arm.com>
@@ -399,6 +398,7 @@ Jan-Benedict Glaw				<jbglaw@lug-owl.de>
 Marc Glisse					<marc.glisse@inria.fr>
 Prachi Godbole					<prachi.godbole@imgtec.com>
 Torbjorn Granlund				<tege@swox.com>
+James Greenhalgh				<james.greenhalgh@arm.com>
 Doug Gregor					<doug.gregor@gmail.com>
 Matthew Gretton-Dann				<matthew.gretton-dann@arm.com>
 Yury Gribov					<tetra2005@gmail.com>
@@ -429,10 +429,12 @@ Falk Hueffner					<falk@debian.org>
 Andrew John Hughes				<gnu_andrew@member.fsf.org>
 Dominique d'Humieres				<dominiq@lps.ens.fr>
 Andy Hutchinson					<hutchinsonandy@aim.com>
+Lewis Hyatt					<lhyatt@gmail.com>
 Naveen H.S					<naveenh@marvell.com>
 Roland Illig					<roland.illig@gmx.de>
 Meador Inge					<meadori@codesourcery.com>
 Bernardo Innocenti				<bernie@develer.com>
+Mihail Ionescu					<mihail.ionescu@arm.com>
 Vladislav Ivanishin				<vlad@ispras.ru>
 Alexander Ivchenko				<aivchenk@gmail.com>
 Balaji V. Iyer					<bviyer@gmail.com>
@@ -467,6 +469,7 @@ Razya Ladelsky					<razya@gcc.gnu.org>
 Thierry Lafage					<thierry.lafage@inria.fr>
 Aaron W. LaFramboise				<aaronavay62@aaronwl.com>
 Rask Ingemann Lambertsen			<ccc94453@vip.cybercity.dk>
+Jerome Lambourg                                 <lambourg@adacore.com>
 Asher Langton					<langton2@llnl.gov>
 Chris Lattner					<sabre@nondot.org>
 Terry Laurenzo					<tlaurenzo@gmail.com>
@@ -497,6 +500,7 @@ Luis Machado					<luisgpm@br.ibm.com>
 Ziga Mahkovec					<ziga.mahkovec@klika.si>
 Matthew Malcomson				<matthew.malcomson@arm.com>
 Mikhail Maltsev					<maltsevm@gmail.com>
+Stamatis Markianos-Wright			<stam.markianos-wright@arm.com>
 Patrick Marlier					<patrick.marlier@gmail.com>
 Simon Martin					<simartin@users.sourceforge.net>
 Alejandro Martinez				<alejandro.martinezvicente@arm.com>
@@ -646,6 +650,7 @@ Kwok Cheung Yeung				<kcy@codesourcery.com>
 Greta Yorsh					<greta.yorsh@arm.com>
 David Yuste					<david.yuste@gmail.com>
 Adhemerval Zanella				<azanella@linux.vnet.ibm.com>
+Dennis Zhang					<dennis.zhang@arm.com>
 Yufeng Zhang					<yufeng.zhang@arm.com>
 Qing Zhao					<qing.zhao@oracle.com>
 Shujing Zhao					<pearly.zhao@oracle.com>

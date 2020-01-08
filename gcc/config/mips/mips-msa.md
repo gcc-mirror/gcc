@@ -1,7 +1,7 @@
 ;; Machine Description for MIPS MSA ASE
 ;; Based on the MIPS MSA spec Revision 1.11 8/4/2014
 ;;
-;; Copyright (C) 2015-2019 Free Software Foundation, Inc.
+;; Copyright (C) 2015-2020 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -2719,7 +2719,8 @@
 }
  [(set_attr "type" "simd_branch")
   (set_attr "mode" "<MODE>")
-  (set_attr "compact_form" "never")])
+  (set_attr "compact_form" "never")
+  (set_attr "branch_likely" "no")])
 
 (define_insn "msa_<msabr>_v_<msafmt_f>"
  [(set (pc) (if_then_else
@@ -2738,4 +2739,5 @@
 }
  [(set_attr "type" "simd_branch")
   (set_attr "mode" "TI")
-  (set_attr "compact_form" "never")])
+  (set_attr "compact_form" "never")
+  (set_attr "branch_likely" "no")])

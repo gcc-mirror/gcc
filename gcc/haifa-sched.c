@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.
-   Copyright (C) 1992-2019 Free Software Foundation, Inc.
+   Copyright (C) 1992-2020 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -5432,6 +5432,7 @@ reemit_notes (rtx_insn *insn)
 
 	  last = emit_note_before (note_type, last);
 	  remove_note (insn, note);
+	  df_insn_create_insn_record (last);
 	}
     }
 }

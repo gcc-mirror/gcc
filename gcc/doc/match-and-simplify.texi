@@ -1,4 +1,4 @@
-@c Copyright (C) 2014-2019 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2020 Free Software Foundation, Inc.
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -379,6 +379,9 @@ to be all either present or not, thus
 patterns only.  If you want to match all four combinations you
 have access to two additional conditional converts as in
 @code{(eq (convert1@? @@1) (convert2@? @@2))}.
+
+The support for @code{?} marking extends to all unary operations
+including predicates you declare yourself with @code{match}.
 
 Predicates available from the GCC middle-end need to be made
 available explicitely via @code{define_predicates}:

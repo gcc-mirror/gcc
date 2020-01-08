@@ -1,6 +1,6 @@
 /* Lower GIMPLE_SWITCH expressions to something more efficient than
    a jump table.
-   Copyright (C) 2006-2019 Free Software Foundation, Inc.
+   Copyright (C) 2006-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1829,6 +1829,7 @@ switch_decision_tree::try_switch_expansion (vec<cluster *> &clusters)
     if (clusters[i]->get_type () != SIMPLE_CASE)
       {
 	clusters[i]->m_case_bb = create_empty_bb (bb);
+	clusters[i]->m_case_bb->count = bb->count;
 	clusters[i]->m_case_bb->loop_father = bb->loop_father;
       }
 

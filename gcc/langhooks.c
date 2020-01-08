@@ -1,5 +1,5 @@
 /* Default language-specific hooks.
-   Copyright (C) 2001-2019 Free Software Foundation, Inc.
+   Copyright (C) 2001-2020 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-diagnostic.h"
 #include "output.h"
 #include "timevar.h"
+#include "stor-layout.h"
 
 /* Do nothing; in many cases the default hook.  */
 
@@ -471,6 +472,44 @@ tree
 lhd_make_node (enum tree_code code)
 {
   return make_node (code);
+}
+
+/* Default implementation of LANG_HOOKS_SIMULATE_ENUM_DECL.  Assume a
+   simple int-based enumerator (which is all the hook can be used for
+   at present) and push each decl individually without any decoration.
+
+   This definition is suitable for LTO and is generic enough that it
+   might be reusable elsewhere.  */
+tree
+lhd_simulate_enum_decl (location_t loc, const char *name,
+			vec<string_int_pair> values)
+{
+  tree enumtype = lang_hooks.types.make_type (ENUMERAL_TYPE);
+  tree enumdecl = build_decl (loc, TYPE_DECL, get_identifier (name), enumtype);
+  TYPE_STUB_DECL (enumtype) = enumdecl;
+
+  tree value_chain = NULL_TREE;
+  string_int_pair *value;
+  unsigned int i;
+  FOR_EACH_VEC_ELT (values, i, value)
+    {
+      tree value_decl = build_decl (loc, CONST_DECL,
+				    get_identifier (value->first), enumtype);
+      DECL_INITIAL (value_decl) = build_int_cst (integer_type_node,
+						 value->second);
+      lang_hooks.decls.pushdecl (value_decl);
+      value_chain = tree_cons (value_decl, DECL_INITIAL (value_decl),
+			       value_chain);
+    }
+
+  TYPE_MIN_VALUE (enumtype) = TYPE_MIN_VALUE (integer_type_node);
+  TYPE_MAX_VALUE (enumtype) = TYPE_MAX_VALUE (integer_type_node);
+  SET_TYPE_ALIGN (enumtype, TYPE_ALIGN (integer_type_node));
+  TYPE_PRECISION (enumtype) = TYPE_PRECISION (integer_type_node);
+  layout_type (enumtype);
+  lang_hooks.decls.pushdecl (enumdecl);
+
+  return enumtype;
 }
 
 /* Default implementation of LANG_HOOKS_TYPE_FOR_SIZE.

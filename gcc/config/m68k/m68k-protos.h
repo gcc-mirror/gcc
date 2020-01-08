@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Sun 68000/68020 version.
-   Copyright (C) 2000-2019 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -42,7 +42,23 @@ extern const char *output_iorsi3 (rtx *);
 extern const char *output_xorsi3 (rtx *);
 extern const char *output_call (rtx);
 extern const char *output_sibcall (rtx);
-extern void output_dbcc_and_branch (rtx *);
+extern void m68k_init_cc ();
+extern void output_dbcc_and_branch (rtx *, rtx_code);
+extern rtx_code m68k_output_compare_di (rtx, rtx, rtx, rtx, rtx_insn *, rtx_code);
+extern rtx_code m68k_output_compare_si (rtx, rtx, rtx_code);
+extern rtx_code m68k_output_compare_hi (rtx, rtx, rtx_code);
+extern rtx_code m68k_output_compare_qi (rtx, rtx, rtx_code);
+extern rtx_code m68k_output_compare_fp (rtx, rtx, rtx_code);
+extern rtx_code m68k_output_btst (rtx, rtx, rtx_code, int);
+extern rtx_code m68k_output_bftst (rtx, rtx, rtx, rtx_code);
+extern rtx_code m68k_find_flags_value (rtx, rtx, rtx_code);
+
+extern const char *m68k_output_scc (rtx_code);
+extern const char *m68k_output_scc_float (rtx_code);
+extern const char *m68k_output_branch_integer (rtx_code);
+extern const char *m68k_output_branch_integer_rev (rtx_code);
+extern const char *m68k_output_branch_float (rtx_code);
+extern const char *m68k_output_branch_float_rev (rtx_code);
 extern int floating_exact_log2 (rtx);
 extern bool strict_low_part_peephole_ok (machine_mode mode,
 					 rtx_insn *first_insn, rtx target);
@@ -88,7 +104,6 @@ extern enum attr_op_mem m68k_sched_attr_op_mem (rtx_insn *);
 extern enum reg_class m68k_secondary_reload_class (enum reg_class,
 						   machine_mode, rtx);
 extern enum reg_class m68k_preferred_reload_class (rtx, enum reg_class);
-extern int flags_in_68881 (void);
 extern void m68k_expand_prologue (void);
 extern bool m68k_use_return_insn (void);
 extern void m68k_expand_epilogue (bool);

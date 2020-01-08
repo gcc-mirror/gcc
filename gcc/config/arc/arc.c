@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Synopsys DesignWare ARC cpu.
-   Copyright (C) 1994-2019 Free Software Foundation, Inc.
+   Copyright (C) 1994-2020 Free Software Foundation, Inc.
 
    Sources derived from work done by Sankhya Technologies (www.sankhya.com) on
    behalf of Synopsys Inc.
@@ -962,14 +962,24 @@ const pass_data pass_data_arc_ifcvt =
 
 class pass_arc_ifcvt : public rtl_opt_pass
 {
-public:
-  pass_arc_ifcvt(gcc::context *ctxt)
-  : rtl_opt_pass(pass_data_arc_ifcvt, ctxt)
-  {}
+ public:
+ pass_arc_ifcvt (gcc::context *ctxt)
+   : rtl_opt_pass (pass_data_arc_ifcvt, ctxt)
+    {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_arc_ifcvt (m_ctxt); }
-  virtual unsigned int execute (function *) { return arc_ifcvt (); }
+  opt_pass * clone ()
+    {
+      return new pass_arc_ifcvt (m_ctxt);
+    }
+  virtual unsigned int execute (function *)
+  {
+    return arc_ifcvt ();
+  }
+  virtual bool gate (function *)
+  {
+    return (optimize > 1 && !TARGET_NO_COND_EXEC);
+  }
 };
 
 } // anon namespace
@@ -999,16 +1009,20 @@ const pass_data pass_data_arc_predicate_delay_insns =
 
 class pass_arc_predicate_delay_insns : public rtl_opt_pass
 {
-public:
-  pass_arc_predicate_delay_insns(gcc::context *ctxt)
-  : rtl_opt_pass(pass_data_arc_predicate_delay_insns, ctxt)
-  {}
+ public:
+ pass_arc_predicate_delay_insns(gcc::context *ctxt)
+   : rtl_opt_pass(pass_data_arc_predicate_delay_insns, ctxt)
+    {}
 
   /* opt_pass methods: */
   virtual unsigned int execute (function *)
-    {
-      return arc_predicate_delay_insns ();
-    }
+  {
+    return arc_predicate_delay_insns ();
+  }
+  virtual bool gate (function *)
+  {
+    return flag_delayed_branch;
+  }
 };
 
 } // anon namespace
@@ -1101,30 +1115,6 @@ arc_init (void)
   arc_punct_chars['&'] = 1;
   arc_punct_chars['+'] = 1;
   arc_punct_chars['_'] = 1;
-
-  if (optimize > 1 && !TARGET_NO_COND_EXEC)
-    {
-      /* There are two target-independent ifcvt passes, and arc_reorg may do
-	 one or more arc_ifcvt calls.  */
-      opt_pass *pass_arc_ifcvt_4 = make_pass_arc_ifcvt (g);
-      struct register_pass_info arc_ifcvt4_info
-	= { pass_arc_ifcvt_4, "dbr", 1, PASS_POS_INSERT_AFTER };
-      struct register_pass_info arc_ifcvt5_info
-	= { pass_arc_ifcvt_4->clone (), "shorten", 1, PASS_POS_INSERT_BEFORE };
-
-      register_pass (&arc_ifcvt4_info);
-      register_pass (&arc_ifcvt5_info);
-    }
-
-  if (flag_delayed_branch)
-    {
-      opt_pass *pass_arc_predicate_delay_insns
-	= make_pass_arc_predicate_delay_insns (g);
-      struct register_pass_info arc_predicate_delay_info
-	= { pass_arc_predicate_delay_insns, "dbr", 1, PASS_POS_INSERT_AFTER };
-
-      register_pass (&arc_predicate_delay_info);
-    }
 }
 
 /* Parse -mirq-ctrl-saved=RegisterRange, blink, lp_copunt.  The
@@ -1574,6 +1564,7 @@ get_arc_condition_code (rtx comparison)
 	default : gcc_unreachable ();
 	}
     case E_CC_FPUmode:
+    case E_CC_FPUEmode:
       switch (GET_CODE (comparison))
 	{
 	case EQ	       : return ARC_CC_EQ;
@@ -1696,11 +1687,13 @@ arc_select_cc_mode (enum rtx_code op, rtx x, rtx y)
       case UNLE:
       case UNGT:
       case UNGE:
+	return CC_FPUmode;
+
       case LT:
       case LE:
       case GT:
       case GE:
-	return CC_FPUmode;
+	return CC_FPUEmode;
 
       case LTGT:
       case UNEQ:
@@ -1854,7 +1847,7 @@ arc_init_reg_tables (void)
 	  if (i == (int) CCmode || i == (int) CC_ZNmode || i == (int) CC_Zmode
 	      || i == (int) CC_Cmode
 	      || i == CC_FP_GTmode || i == CC_FP_GEmode || i == CC_FP_ORDmode
-	      || i == CC_FPUmode || i == CC_FPU_UNEQmode)
+	      || i == CC_FPUmode || i == CC_FPUEmode || i == CC_FPU_UNEQmode)
 	    arc_mode_class[i] = 1 << (int) C_MODE;
 	  else
 	    arc_mode_class[i] = 0;
@@ -8411,6 +8404,7 @@ arc_reorg (void)
 
 	  /* Avoid FPU instructions.  */
 	  if ((GET_MODE (XEXP (XEXP (pc_target, 0), 0)) == CC_FPUmode)
+	      || (GET_MODE (XEXP (XEXP (pc_target, 0), 0)) == CC_FPUEmode)
 	      || (GET_MODE (XEXP (XEXP (pc_target, 0), 0)) == CC_FPU_UNEQmode))
 	    continue;
 

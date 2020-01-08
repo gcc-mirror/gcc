@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997-2019 Free Software Foundation, Inc.
+// Copyright (C) 1997-2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -445,7 +445,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /// Open for output.  Default for @c ofstream and fstream.
     static const openmode out =		_S_out;
 
-    /// Open for input.  Default for @c ofstream.
+    /// Truncate an existing stream when opening.  Default for @c ofstream.
     static const openmode trunc =	_S_trunc;
 
     // 27.4.2.1.5  Type ios_base::seekdir

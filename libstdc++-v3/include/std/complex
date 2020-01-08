@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- complex number classes.
 
-// Copyright (C) 1997-2019 Free Software Foundation, Inc.
+// Copyright (C) 1997-2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,6 +46,10 @@
 
 // Get rid of a macro possibly defined in <complex.h>
 #undef complex
+
+#if __cplusplus > 201703L
+# define __cpp_lib_constexpr_complex 201711L
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

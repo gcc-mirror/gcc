@@ -1,5 +1,5 @@
 /* Top-level LTO routines.
-   Copyright (C) 2009-2019 Free Software Foundation, Inc.
+   Copyright (C) 2009-2020 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -2818,6 +2818,11 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 			   IDENTIFIER_POINTER
 			     (DECL_ASSEMBLER_NAME (snode->decl)));
 	  }
+	/* Symbol versions are always used externally, but linker does not
+	   report that correctly.
+	   This is binutils PR25924.  */
+	else if (snode->symver && *res == LDPR_PREVAILING_DEF_IRONLY)
+	  snode->resolution = LDPR_PREVAILING_DEF_IRONLY_EXP;
 	else
 	  snode->resolution = *res;
       }

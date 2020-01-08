@@ -1,5 +1,5 @@
 /* Subroutines shared by all languages that are variants of C.
-   Copyright (C) 1992-2019 Free Software Foundation, Inc.
+   Copyright (C) 1992-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -418,6 +418,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__is_literal_type", RID_IS_LITERAL_TYPE, D_CXXONLY },
   { "__is_pod",		RID_IS_POD,	D_CXXONLY },
   { "__is_polymorphic",	RID_IS_POLYMORPHIC, D_CXXONLY },
+  { "__is_same",     RID_IS_SAME_AS, D_CXXONLY },
   { "__is_same_as",     RID_IS_SAME_AS, D_CXXONLY },
   { "__is_standard_layout", RID_IS_STD_LAYOUT, D_CXXONLY },
   { "__is_trivial",     RID_IS_TRIVIAL, D_CXXONLY },
@@ -1327,7 +1328,7 @@ unsafe_conversion_p (location_t loc, tree type, tree expr, tree result,
   bool cstresult = (result
 		    && TREE_CODE_CLASS (TREE_CODE (result)) == tcc_constant);
 
-    loc = expansion_point_location_if_in_system_header (loc);
+  loc = expansion_point_location_if_in_system_header (loc);
 
   expr = fold_for_warn (expr);
 
@@ -2321,11 +2322,14 @@ c_common_type_for_mode (machine_mode mode, int unsignedp)
 	return build_vector_type_for_mode (inner_type, mode);
     }
 
-  if (mode == TYPE_MODE (dfloat32_type_node))
+  if (dfloat32_type_node != NULL_TREE
+      && mode == TYPE_MODE (dfloat32_type_node))
     return dfloat32_type_node;
-  if (mode == TYPE_MODE (dfloat64_type_node))
+  if (dfloat64_type_node != NULL_TREE
+      && mode == TYPE_MODE (dfloat64_type_node))
     return dfloat64_type_node;
-  if (mode == TYPE_MODE (dfloat128_type_node))
+  if (dfloat128_type_node != NULL_TREE
+      && mode == TYPE_MODE (dfloat128_type_node))
     return dfloat128_type_node;
 
   if (ALL_SCALAR_FIXED_POINT_MODE_P (mode))
@@ -3143,6 +3147,9 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
 	return error_mark_node;
       size_exp = integer_one_node;
     }
+  else if (!verify_type_context (loc, TCTX_POINTER_ARITH,
+				 TREE_TYPE (result_type)))
+    size_exp = integer_one_node;
   else
     size_exp = size_in_bytes_loc (loc, TREE_TYPE (result_type));
 
@@ -3688,6 +3695,13 @@ c_sizeof_or_alignof_type (location_t loc,
 		  "incomplete element type", op_name, type);
       return error_mark_node;
     }
+  else if (!verify_type_context (loc, is_sizeof ? TCTX_SIZEOF : TCTX_ALIGNOF,
+				 type, !complain))
+    {
+      if (!complain)
+	return error_mark_node;
+      value = size_one_node;
+    }
   else
     {
       if (is_sizeof)
@@ -3720,7 +3734,10 @@ c_alignof_expr (location_t loc, tree expr)
 {
   tree t;
 
-  if (VAR_OR_FUNCTION_DECL_P (expr))
+  if (!verify_type_context (loc, TCTX_ALIGNOF, TREE_TYPE (expr)))
+    t = size_one_node;
+
+  else if (VAR_OR_FUNCTION_DECL_P (expr))
     t = size_int (DECL_ALIGN_UNIT (expr));
 
   else if (TREE_CODE (expr) == COMPONENT_REF
@@ -5483,7 +5500,7 @@ nonnull_check_p (tree args, unsigned HOST_WIDE_INT param_num)
 
   for (; args; args = TREE_CHAIN (args))
     {
-      bool found = get_nonnull_operand (TREE_VALUE (args), &arg_num);
+      bool found = get_attribute_operand (TREE_VALUE (args), &arg_num);
 
       gcc_assert (found);
 
@@ -5518,11 +5535,11 @@ check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
     }
 }
 
-/* Helper for nonnull attribute handling; fetch the operand number
-   from the attribute argument list.  */
+/* Helper for attribute handling; fetch the operand number from
+   the attribute argument list.  */
 
 bool
-get_nonnull_operand (tree arg_num_expr, unsigned HOST_WIDE_INT *valp)
+get_attribute_operand (tree arg_num_expr, unsigned HOST_WIDE_INT *valp)
 {
   /* Verify the arg number is a small constant.  */
   if (tree_fits_uhwi_p (arg_num_expr))
@@ -5702,7 +5719,15 @@ attribute_fallthrough_p (tree attr)
     {
       tree name = get_attribute_name (t);
       if (!is_attribute_p ("fallthrough", name))
-	warning (OPT_Wattributes, "%qE attribute ignored", name);
+	{
+	  if (!c_dialect_cxx () && get_attribute_namespace (t) == NULL_TREE)
+	    /* The specifications of standard attributes in C mean
+	       this is a constraint violation.  */
+	    pedwarn (input_location, OPT_Wattributes, "%qE attribute ignored",
+		     get_attribute_name (t));
+	  else
+	    warning (OPT_Wattributes, "%qE attribute ignored", name);
+	}
     }
   return true;
 }

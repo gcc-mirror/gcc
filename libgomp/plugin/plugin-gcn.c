@@ -1,6 +1,6 @@
 /* Plugin for AMD GCN execution.
 
-   Copyright (C) 2013-2019 Free Software Foundation, Inc.
+   Copyright (C) 2013-2020 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded
 
@@ -107,7 +107,7 @@ secure_getenv (const char *name)
 /* }}}  */
 /* {{{ Types  */
 
-/* GCN-specific implmentation of the GOMP_PLUGIN_acc_thread data.  */
+/* GCN-specific implementation of the GOMP_PLUGIN_acc_thread data.  */
 
 struct gcn_thread
 {
@@ -408,7 +408,7 @@ struct agent_info
   /* Whether the agent has been initialized.  The fields below are usable only
      if it has been.  */
   bool initialized;
-  /* Precomuted check for problem architectures.  */
+  /* Precomputed check for problem architectures.  */
   bool gfx900_p;
 
   /* Command queues of the agent.  */
@@ -2725,20 +2725,17 @@ drain_queue_synchronous (struct goacc_asyncqueue *aq)
   pthread_mutex_unlock (&aq->mutex);
 }
 
-/* Block the current thread until an async queue is writable.  */
+/* Block the current thread until an async queue is writable.  The aq->mutex
+   lock should be held on entry, and remains locked on exit.  */
 
 static void
 wait_for_queue_nonfull (struct goacc_asyncqueue *aq)
 {
   if (aq->queue_n == ASYNC_QUEUE_SIZE)
     {
-      pthread_mutex_lock (&aq->mutex);
-
       /* Queue is full.  Wait for it to not be full.  */
       while (aq->queue_n == ASYNC_QUEUE_SIZE)
 	pthread_cond_wait (&aq->queue_cond_out, &aq->mutex);
-
-      pthread_mutex_unlock (&aq->mutex);
     }
 }
 
@@ -2752,9 +2749,9 @@ queue_push_launch (struct goacc_asyncqueue *aq, struct kernel_info *kernel,
 {
   assert (aq->agent == kernel->agent);
 
-  wait_for_queue_nonfull (aq);
-
   pthread_mutex_lock (&aq->mutex);
+
+  wait_for_queue_nonfull (aq);
 
   int queue_last = ((aq->queue_first + aq->queue_n)
 		    % ASYNC_QUEUE_SIZE);
@@ -2785,9 +2782,9 @@ static void
 queue_push_callback (struct goacc_asyncqueue *aq, void (*fn)(void *),
 		     void *data)
 {
-  wait_for_queue_nonfull (aq);
-
   pthread_mutex_lock (&aq->mutex);
+
+  wait_for_queue_nonfull (aq);
 
   int queue_last = ((aq->queue_first + aq->queue_n)
 		    % ASYNC_QUEUE_SIZE);
@@ -2818,9 +2815,9 @@ static void
 queue_push_asyncwait (struct goacc_asyncqueue *aq,
 		      struct placeholder *placeholderp)
 {
-  wait_for_queue_nonfull (aq);
-
   pthread_mutex_lock (&aq->mutex);
+
+  wait_for_queue_nonfull (aq);
 
   int queue_last = ((aq->queue_first + aq->queue_n) % ASYNC_QUEUE_SIZE);
   if (DEBUG_QUEUES)
@@ -2849,9 +2846,9 @@ queue_push_placeholder (struct goacc_asyncqueue *aq)
 {
   struct placeholder *placeholderp;
 
-  wait_for_queue_nonfull (aq);
-
   pthread_mutex_lock (&aq->mutex);
+
+  wait_for_queue_nonfull (aq);
 
   int queue_last = ((aq->queue_first + aq->queue_n) % ASYNC_QUEUE_SIZE);
   if (DEBUG_QUEUES)
@@ -2940,6 +2937,32 @@ maybe_init_omp_async (struct agent_info *agent)
       = GOMP_OFFLOAD_openacc_async_construct (agent->device_id);
 }
 
+/* A wrapper that works around an issue in the HSA runtime with host-to-device
+   copies from read-only pages.  */
+
+static void
+hsa_memory_copy_wrapper (void *dst, const void *src, size_t len)
+{
+  hsa_status_t status = hsa_fns.hsa_memory_copy_fn (dst, src, len);
+
+  if (status == HSA_STATUS_SUCCESS)
+    return;
+
+  /* It appears that the copy fails if the source data is in a read-only page.
+     We can't detect that easily, so try copying the data to a temporary buffer
+     and doing the copy again if we got an error above.  */
+
+  GCN_WARNING ("Read-only data transfer bug workaround triggered for "
+	       "[%p:+%d]\n", (void *) src, (int) len);
+
+  void *src_copy = malloc (len);
+  memcpy (src_copy, src, len);
+  status = hsa_fns.hsa_memory_copy_fn (dst, (const void *) src_copy, len);
+  free (src_copy);
+  if (status != HSA_STATUS_SUCCESS)
+    GOMP_PLUGIN_error ("memory copy failed");
+}
+
 /* Copy data to or from a device.  This is intended for use as an async
    callback event.  */
 
@@ -2950,7 +2973,7 @@ copy_data (void *data_)
   GCN_DEBUG ("Async thread %d:%d: Copying %zu bytes from (%p) to (%p)\n",
 	     data->aq->agent->device_id, data->aq->id, data->len, data->src,
 	     data->dst);
-  hsa_fns.hsa_memory_copy_fn (data->dst, data->src, data->len);
+  hsa_memory_copy_wrapper (data->dst, data->src, data->len);
   if (data->free_src)
     free ((void *) data->src);
   free (data);
@@ -3211,6 +3234,17 @@ GOMP_OFFLOAD_get_num_devices (void)
   if (!init_hsa_context ())
     return 0;
   return hsa_context.agent_count;
+}
+
+union gomp_device_property_value
+GOMP_OFFLOAD_get_property (int device, int prop)
+{
+  /* Stub. Check device and return default value for unsupported properties. */
+  /* TODO: Implement this function. */
+  get_agent_info (device);
+
+  union gomp_device_property_value nullval = { .val = 0 };
+  return nullval;
 }
 
 /* Initialize device (agent) number N so that it can be used for computation.
@@ -3643,7 +3677,9 @@ GOMP_OFFLOAD_dev2host (int device, void *dst, const void *src, size_t n)
 {
   GCN_DEBUG ("Copying %zu bytes from device %d (%p) to host (%p)\n", n, device,
 	     src, dst);
-  hsa_fns.hsa_memory_copy_fn (dst, src, n);
+  hsa_status_t status = hsa_fns.hsa_memory_copy_fn (dst, src, n);
+  if (status != HSA_STATUS_SUCCESS)
+    GOMP_PLUGIN_error ("memory copy failed");
   return true;
 }
 
@@ -3654,7 +3690,7 @@ GOMP_OFFLOAD_host2dev (int device, void *dst, const void *src, size_t n)
 {
   GCN_DEBUG ("Copying %zu bytes from host (%p) to device %d (%p)\n", n, src,
 	     device, dst);
-  hsa_fns.hsa_memory_copy_fn (dst, src, n);
+  hsa_memory_copy_wrapper (dst, src, n);
   return true;
 }
 
@@ -3675,7 +3711,9 @@ GOMP_OFFLOAD_dev2dev (int device, void *dst, const void *src, size_t n)
 
   GCN_DEBUG ("Copying %zu bytes from device %d (%p) to device %d (%p)\n", n,
 	     device, src, device, dst);
-  hsa_fns.hsa_memory_copy_fn (dst, src, n);
+  hsa_status_t status = hsa_fns.hsa_memory_copy_fn (dst, src, n);
+  if (status != HSA_STATUS_SUCCESS)
+    GOMP_PLUGIN_error ("memory copy failed");
   return true;
 }
 
@@ -3831,7 +3869,7 @@ GOMP_OFFLOAD_openacc_async_construct (int device)
   return aq;
 }
 
-/* Destroy an exisiting asynchronous thread and queue.  Waits for any
+/* Destroy an existing asynchronous thread and queue.  Waits for any
    currently-running task to complete, but cancels any queued tasks.  */
 
 bool

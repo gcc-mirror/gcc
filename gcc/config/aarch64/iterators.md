@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 architecture.
-;; Copyright (C) 2009-2019 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2020 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -1093,6 +1093,12 @@
 			  (VNx2DI "x")
 			  (VNx2DF "x")])
 
+;; Like vwcore, but for the container mode rather than the element mode.
+(define_mode_attr vccore [(VNx16QI "w") (VNx8QI "w") (VNx4QI "w") (VNx2QI "x")
+			  (VNx8HI "w") (VNx4HI "w") (VNx2HI "x")
+			  (VNx4SI "w") (VNx2SI "x")
+			  (VNx2DI "x")])
+
 ;; Double vector types for ALLX.
 (define_mode_attr Vallxd [(QI "8b") (HI "4h") (SI "2s")])
 
@@ -1145,7 +1151,7 @@
 				   (VNx2DI "VNx2DI")
 				   (VNx8HF "VNx8HI") (VNx4HF "VNx4SI")
 				   (VNx2HF "VNx2DI")
-				   (VNx4SF "VNx4SI") (VNx2SF "VNx2SI")
+				   (VNx4SF "VNx4SI") (VNx2SF "VNx2DI")
 				   (VNx2DF "VNx2DI")])
 
 ;; Lower-case version of V_INT_CONTAINER.
@@ -2077,6 +2083,8 @@
 (define_int_iterator SVE_WHILE [UNSPEC_WHILE_LE UNSPEC_WHILE_LO
 				UNSPEC_WHILE_LS UNSPEC_WHILE_LT])
 
+(define_int_iterator SVE2_WHILE_PTR [UNSPEC_WHILERW UNSPEC_WHILEWR])
+
 (define_int_iterator SVE_SHIFT_WIDE [UNSPEC_ASHIFT_WIDE
 				     UNSPEC_ASHIFTRT_WIDE
 				     UNSPEC_LSHIFTRT_WIDE])
@@ -2157,6 +2165,8 @@
 			(UNSPEC_FEXPA "fexpa")
 			(UNSPEC_FTSMUL "ftsmul")
 			(UNSPEC_FTSSEL "ftssel")
+			(UNSPEC_WHILERW "vec_check_raw_alias")
+			(UNSPEC_WHILEWR "vec_check_war_alias")
 			(UNSPEC_COND_FABS "abs")
 			(UNSPEC_COND_FADD "add")
 			(UNSPEC_COND_FCADD90 "cadd90")
@@ -2480,12 +2490,17 @@
 			 (UNSPEC_WHILE_LE "le")
 			 (UNSPEC_WHILE_LO "lo")
 			 (UNSPEC_WHILE_LS "ls")
-			 (UNSPEC_WHILE_LT "lt")])
+			 (UNSPEC_WHILE_LT "lt")
+			 (UNSPEC_WHILERW "rw")
+			 (UNSPEC_WHILEWR "wr")])
 
 (define_int_attr while_optab_cmp [(UNSPEC_WHILE_LE "le")
 				  (UNSPEC_WHILE_LO "ult")
 				  (UNSPEC_WHILE_LS "ule")
 				  (UNSPEC_WHILE_LT "lt")])
+
+(define_int_attr raw_war [(UNSPEC_WHILERW "raw")
+			  (UNSPEC_WHILEWR "war")])
 
 (define_int_attr brk_op [(UNSPEC_BRKA "a") (UNSPEC_BRKB "b")
 			 (UNSPEC_BRKN "n")
@@ -2630,3 +2645,6 @@
 				(UNSPEC_REVB "16")
 				(UNSPEC_REVH "32")
 				(UNSPEC_REVW "64")])
+
+(define_int_attr unspec [(UNSPEC_WHILERW "UNSPEC_WHILERW")
+			 (UNSPEC_WHILEWR "UNSPEC_WHILEWR")])

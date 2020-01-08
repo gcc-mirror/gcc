@@ -1,5 +1,5 @@
 /* Interprocedural Identical Code Folding pass
-   Copyright (C) 2014-2019 Free Software Foundation, Inc.
+   Copyright (C) 2014-2020 Free Software Foundation, Inc.
 
    Contributed by Jan Hubicka <hubicka@ucw.cz> and Martin Liska <mliska@suse.cz>
 
@@ -619,6 +619,13 @@ func_checker::compare_gimple_assign (gimple *s1, gimple *s2)
     {
       arg1 = gimple_op (s1, i);
       arg2 = gimple_op (s2, i);
+
+      /* LHS types of NOP_EXPR must be compatible.  */
+      if (CONVERT_EXPR_CODE_P (code1) && i == 0)
+	{
+	  if (!compatible_types_p (TREE_TYPE (arg1), TREE_TYPE (arg2)))
+	    return return_false_with_msg ("GIMPLE NOP LHS type mismatch");
+	}
 
       if (!compare_operand (arg1, arg2))
 	return return_false_with_msg ("GIMPLE assignment operands "

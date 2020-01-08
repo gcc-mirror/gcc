@@ -1,3 +1,34 @@
+2020-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2019-12-19  Jan Hubicka  <hubicka@ucw.cz>
+	    Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* lto-common.c (read_cgraph_and_symbols): Work around binutils
+	PR25424
+
+2019-12-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-partition.c (lto_balanced_map): Fix printing of tp_first_run.
+
+2019-12-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-partition.c (node_cmp): Turn into simple order comparsions.
+	(varpool_node_cmp): Remove.
+	(add_sorted_nodes): Use node_cmp.
+	(lto_balanced_map): Use tp_first_run_node_cmp.
+
+2019-11-25  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/91985
+	* lto-lang.c (lto_type_for_mode): Handle decimal floating-point
+	types being NULL_TREE.
+
+2019-11-22  Jan Hubicka  <jh@suse.cz>
+	
+	* lto.c (lto_wpa_write_files): Call memory_block_pool::trim.
+
 2019-11-14  Martin Liska  <mliska@suse.cz>
 
 	* Make-lang.in: Remove wrong dependency
@@ -6305,7 +6336,7 @@
 	* lto-tree.h: Likewise.
 	* lto-lang.c: Likewise.
 
-Copyright (C) 2006-2019 Free Software Foundation, Inc.
+Copyright (C) 2006-2020 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

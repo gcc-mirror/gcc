@@ -2343,6 +2343,27 @@ package body Sem_Ch5 is
                Check_Reverse_Iteration (Typ);
             end if;
 
+            --  For an element iteration over a slice, we must complete
+            --  the resolution and expansion of the slice bounds. These
+            --  can be arbitrary expressions, and the preanalysis that
+            --  was performed in preparation for the iteration may have
+            --  generated an itype whose bounds must be fully expanded.
+            --  We set the parent node to provide a proper insertion
+            --  point for generated actions, if any.
+
+            if Nkind (Iter_Name) = N_Slice
+              and then Nkind (Discrete_Range (Iter_Name)) = N_Range
+              and then not Analyzed (Discrete_Range (Iter_Name))
+            then
+               declare
+                  Indx : constant Node_Id :=
+                     Entity (First_Index (Etype (Iter_Name)));
+               begin
+                  Set_Parent (Indx, Iter_Name);
+                  Resolve (Scalar_Range (Indx), Etype (Indx));
+               end;
+            end if;
+
             --  The name in the renaming declaration may be a function call.
             --  Indicate that it does not come from source, to suppress
             --  spurious warnings on renamings of parameterless functions,
@@ -2420,9 +2441,10 @@ package body Sem_Ch5 is
             Set_Etype (Def_Id, Component_Type (Typ));
 
             --  The loop variable is aliased if the array components are
-            --  aliased.
+            --  aliased. Likewise for the independent aspect.
 
-            Set_Is_Aliased (Def_Id, Has_Aliased_Components (Typ));
+            Set_Is_Aliased     (Def_Id, Has_Aliased_Components     (Typ));
+            Set_Is_Independent (Def_Id, Has_Independent_Components (Typ));
 
             --  AI12-0047 stipulates that the domain (array or container)
             --  cannot be a component that depends on a discriminant if the

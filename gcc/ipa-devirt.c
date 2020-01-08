@@ -1,6 +1,6 @@
 /* Basic IPA utilities for type inheritance graph construction and
    devirtualization.
-   Copyright (C) 2013-2019 Free Software Foundation, Inc.
+   Copyright (C) 2013-2020 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -216,7 +216,7 @@ struct GTY(()) odr_type_d
   bool all_derivations_known;
   /* Did we report ODR violation here?  */
   bool odr_violated;
-  /* Set when virtual table without RTTI previaled table with.  */
+  /* Set when virtual table without RTTI prevailed table with.  */
   bool rtti_broken;
   /* Set when the canonical type is determined using the type name.  */
   bool tbaa_enabled;
@@ -356,6 +356,13 @@ types_same_for_odr (const_tree type1, const_tree type2)
       || (type_with_linkage_p (type2) && type_in_anonymous_namespace_p (type2)))
     return false;
 
+  /* If both type has mangled defined check if they are same.
+     Watch for anonymous types which are all mangled as "<anon">.  */
+  if (!type_with_linkage_p (type1) || !type_with_linkage_p (type2))
+    return false;
+  if (type_in_anonymous_namespace_p (type1)
+      || type_in_anonymous_namespace_p (type2))
+    return false;
   return (DECL_ASSEMBLER_NAME (TYPE_NAME (type1))
 	  == DECL_ASSEMBLER_NAME (TYPE_NAME (type2)));
 }
@@ -655,7 +662,7 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
       end2 = !vtable->iterate_reference (n2, ref2);
 
       /* !DECL_VIRTUAL_P means RTTI entry;
-	 We warn when RTTI is lost because non-RTTI previals; we silently
+	 We warn when RTTI is lost because non-RTTI prevails; we silently
 	 accept the other case.  */
       while (!end2
 	     && (end1
@@ -767,7 +774,7 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
 
       class_type->odr_violated = true;
 
-      /* Complain about size mismatch.  Either we have too many virutal
+      /* Complain about size mismatch.  Either we have too many virtual
  	 functions or too many virtual table pointers.  */
       if (end1 || end2)
 	{
@@ -861,7 +868,7 @@ warn_odr (tree t1, tree t2, tree st1, tree st2,
   if (!warn || !TYPE_NAME(TYPE_MAIN_VARIANT (t1)))
     return;
 
-  /* ODR warnings are output druing LTO streaming; we must apply location
+  /* ODR warnings are output during LTO streaming; we must apply location
      cache for potential warnings to be output correctly.  */
   if (lto_location_cache::current_cache)
     lto_location_cache::current_cache->apply_location_cache ();
@@ -920,7 +927,7 @@ warn_odr (tree t1, tree t2, tree st1, tree st2,
     *warned = true;
 }
 
-/* Return ture if T1 and T2 are incompatible and we want to recusively
+/* Return true if T1 and T2 are incompatible and we want to recursively
    dive into them from warn_type_mismatch to give sensible answer.  */
 
 static bool
@@ -941,7 +948,7 @@ type_mismatch_p (tree t1, tree t2)
    This is hard to do in general.  We basically handle the common cases.
 
    If LOC1 and LOC2 are meaningful locations, use it in the case the types
-   themselves do no thave one.*/
+   themselves do not have one.  */
 
 void
 warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
@@ -986,27 +993,30 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
 
   /* It is a quite common bug to reference anonymous namespace type in
      non-anonymous namespace class.  */
-  if ((type_with_linkage_p (TYPE_MAIN_VARIANT (t1))
-       && type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t1)))
-      || (type_with_linkage_p (TYPE_MAIN_VARIANT (t2))
-	  && type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t2))))
+  tree mt1 = TYPE_MAIN_VARIANT (t1);
+  tree mt2 = TYPE_MAIN_VARIANT (t2);
+  if ((type_with_linkage_p (mt1)
+       && type_in_anonymous_namespace_p (mt1))
+      || (type_with_linkage_p (mt2)
+	  && type_in_anonymous_namespace_p (mt2)))
     {
-      if (!type_with_linkage_p (TYPE_MAIN_VARIANT (t1))
-	  || !type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t1)))
+      if (!type_with_linkage_p (mt1)
+	  || !type_in_anonymous_namespace_p (mt1))
 	{
 	  std::swap (t1, t2);
+	  std::swap (mt1, mt2);
 	  std::swap (loc_t1, loc_t2);
 	}
-      gcc_assert (TYPE_NAME (t1)
-		  && TREE_CODE (TYPE_NAME (t1)) == TYPE_DECL);
-      tree n1 = TYPE_NAME (t1);
-      tree n2 = TYPE_NAME (t2) ? TYPE_NAME (t2) : NULL;
+      gcc_assert (TYPE_NAME (mt1)
+		  && TREE_CODE (TYPE_NAME (mt1)) == TYPE_DECL);
+      tree n1 = TYPE_NAME (mt1);
+      tree n2 = TYPE_NAME (mt2) ? TYPE_NAME (mt2) : NULL;
 
       if (TREE_CODE (n1) == TYPE_DECL)
 	n1 = DECL_NAME (n1);
       if (n2 && TREE_CODE (n2) == TYPE_DECL)
 	n2 = DECL_NAME (n2);
-      /* Most of the time, the type names will match, do not be unnecesarily
+      /* Most of the time, the type names will match, do not be unnecessarily
          verbose.  */
       if (n1 != n2)
         inform (loc_t1,
@@ -1023,25 +1033,16 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
 	        "the incompatible type defined in another translation unit");
       return;
     }
-  tree mt1 = TYPE_MAIN_VARIANT (t1);
-  tree mt2 = TYPE_MAIN_VARIANT (t2);
   /* If types have mangled ODR names and they are different, it is most
      informative to output those.
      This also covers types defined in different namespaces.  */
-  if (TYPE_NAME (mt1) && TYPE_NAME (mt2)
-      && TREE_CODE (TYPE_NAME (mt1)) == TYPE_DECL
-      && TREE_CODE (TYPE_NAME (mt2)) == TYPE_DECL
-      && DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (mt1))
-      && DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (mt2))
-      && DECL_ASSEMBLER_NAME (TYPE_NAME (mt1))
-	 != DECL_ASSEMBLER_NAME (TYPE_NAME (mt2)))
+  const char *odr1 = get_odr_name_for_type (mt1);
+  const char *odr2 = get_odr_name_for_type (mt2);
+  if (odr1 != NULL && odr2 != NULL && odr1 != odr2)
     {
-      char *name1 = xstrdup (cplus_demangle
-	 (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (TYPE_NAME (mt1))),
-	  DMGL_PARAMS | DMGL_ANSI | DMGL_TYPES));
-      char *name2 = cplus_demangle
-	 (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (TYPE_NAME (mt2))),
-	  DMGL_PARAMS | DMGL_ANSI | DMGL_TYPES);
+      const int opts = DMGL_PARAMS | DMGL_ANSI | DMGL_TYPES;
+      char *name1 = xstrdup (cplus_demangle (odr1, opts));
+      char *name2 = cplus_demangle (odr2, opts);
       if (name1 && name2 && strcmp (name1, name2))
 	{
 	  inform (loc_t1,
@@ -1132,7 +1133,7 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
   if (types_odr_comparable (t1, t2)
       /* We make assign integers mangled names to be able to handle
 	 signed/unsigned chars.  Accepting them here would however lead to
-	 confussing message like
+	 confusing message like
 	 "type ‘const int’ itself violates the C++ One Definition Rule"  */
       && TREE_CODE (t1) != INTEGER_TYPE
       && types_same_for_odr (t1, t2))
@@ -1149,7 +1150,7 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
     inform (loc_t2, "the incompatible type is defined here");
 }
 
-/* Return true if T should be ignored in TYPE_FIELDS for ODR comparsion.  */
+/* Return true if T should be ignored in TYPE_FIELDS for ODR comparison.  */
 
 static bool
 skip_in_fields_list_p (tree t)
@@ -2047,7 +2048,7 @@ odr_type_violation_reported_p (tree type)
   return get_odr_type (type, false)->odr_violated;
 }
 
-/* Add TYPE od ODR type hash.  */
+/* Add TYPE of ODR type hash.  */
 
 void
 register_odr_type (tree type)
@@ -2056,7 +2057,7 @@ register_odr_type (tree type)
     odr_hash = new odr_hash_type (23);
   if (type == TYPE_MAIN_VARIANT (type))
     {
-      /* To get ODR warings right, first register all sub-types.  */
+      /* To get ODR warnings right, first register all sub-types.  */
       if (RECORD_OR_UNION_TYPE_P (type)
 	  && COMPLETE_TYPE_P (type))
 	{
@@ -2157,7 +2158,7 @@ dump_type_inheritance_graph (FILE *f)
 	continue;
 
       /* To aid ODR warnings we also mangle integer constants but do
-	 not consinder duplicates there.  */
+	 not consider duplicates there.  */
       if (TREE_CODE (odr_types[i]->type) == INTEGER_TYPE)
 	continue;
 
@@ -2987,7 +2988,7 @@ class final_warning_record *final_warning_records;
    If INCLUDE_BASES is true, walk also base types of OUTER_TYPES containing
    OTR_TYPE and include their virtual method.  This is useful for types
    possibly in construction or destruction where the virtual table may
-   temporarily change to one of base types.  INCLUDE_DERIVER_TYPES make
+   temporarily change to one of base types.  INCLUDE_DERIVED_TYPES make
    us to walk the inheritance graph for all derivations.
 
    If COMPLETEP is non-NULL, store true if the list is complete. 
@@ -3672,7 +3673,7 @@ ipa_devirt (void)
 	       itself.
 
 	       This may need to be revisited once we add further ways to use
-	       the may edges, but it is a resonable thing to do right now.  */
+	       the may edges, but it is a reasonable thing to do right now.  */
 
 	    if ((e->indirect_info->param_index == -1
 		|| (!opt_for_fn (n->decl, flag_devirtualize_speculatively)
@@ -3979,6 +3980,22 @@ ipa_opt_pass_d *
 make_pass_ipa_devirt (gcc::context *ctxt)
 {
   return new pass_ipa_devirt (ctxt);
+}
+
+/* Print ODR name of a TYPE if available.
+   Use demangler when option DEMANGLE is used.  */
+
+DEBUG_FUNCTION void
+debug_tree_odr_name (tree type, bool demangle)
+{
+  const char *odr = get_odr_name_for_type (type);
+  if (demangle)
+    {
+      const int opts = DMGL_PARAMS | DMGL_ANSI | DMGL_TYPES;
+      odr = cplus_demangle (odr, opts);
+    }
+
+  fprintf (stderr, "%s\n", odr);
 }
 
 #include "gt-ipa-devirt.h"

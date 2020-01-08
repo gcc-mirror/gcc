@@ -731,10 +731,16 @@ void test_strcpy_range (void)
 
   r = SR (3, DIFF_MAX - 3);
   T (8, "01",  a + r, a);
-  T (8, "012", a + r, a);            /* { dg-warning "accessing 4 bytes at offsets \\\[3, \[0-9\]+] and 0 may overlap 1 byte at offset 3" "strcpy" } */
+
+  /* The accesses below might trigger either
+       -Wrestrict: accessing 4 bytes at offsets [3, \[0-9\]+] and 0 may overlap 1 byte at offset 3
+     or
+       -Wstringop-overflow: writing 4 bytes into a region of size 0
+     Either of the two is appropriate.  */
+  T (8, "012", a + r, a);            /* { dg-warning "\\\[-Wrestrict|-Wstringop-overflow" } */
 
   r = SR (DIFF_MAX - 2, DIFF_MAX - 1);
-  T (8, "012", a + r, a);            /* { dg-warning "accessing 4 bytes at offsets \\\[\[0-9\]+, \[0-9\]+] and 0 overlaps" "strcpy" } */
+  T (8, "012", a + r, a);            /* { dg-warning "\\\[-Wrestrict|-Wstringop-overflow" } */
 
   /* Exercise the full range of ptrdiff_t.  */
   r = signed_value ();

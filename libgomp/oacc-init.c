@@ -1,6 +1,6 @@
 /* OpenACC Runtime initialization routines
 
-   Copyright (C) 2013-2019 Free Software Foundation, Inc.
+   Copyright (C) 2013-2020 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -82,6 +82,18 @@ goacc_register (struct gomp_device_descr *disp)
   gomp_mutex_unlock (&acc_device_lock);
 }
 
+static bool
+known_device_type_p (acc_device_t d)
+{
+  return d >= 0 && d < _ACC_device_hwm;
+}
+
+static void
+unknown_device_type_error (acc_device_t invalid_type)
+{
+  gomp_fatal ("unknown device type %u", invalid_type);
+}
+
 /* OpenACC names some things a little differently.  */
 
 static const char *
@@ -103,8 +115,9 @@ name_of_acc_device_t (enum acc_device_t type)
     case acc_device_host: return "host";
     case acc_device_not_host: return "not_host";
     case acc_device_nvidia: return "nvidia";
-    default: gomp_fatal ("unknown device type %u", (unsigned) type);
+    default: unknown_device_type_error (type);
     }
+  __builtin_unreachable ();
 }
 
 /* ACC_DEVICE_LOCK must be held before calling this function.  If FAIL_IS_ERROR
@@ -123,7 +136,7 @@ resolve_device (acc_device_t d, bool fail_is_error)
 	if (goacc_device_type)
 	  {
 	    /* Lookup the named device.  */
-	    while (++d != _ACC_device_hwm)
+	    while (known_device_type_p (++d))
 	      if (dispatchers[d]
 		  && !strcasecmp (goacc_device_type,
 				  get_openacc_name (dispatchers[d]->name))
@@ -147,7 +160,7 @@ resolve_device (acc_device_t d, bool fail_is_error)
 
     case acc_device_not_host:
       /* Find the first available device after acc_device_not_host.  */
-      while (++d != _ACC_device_hwm)
+      while (known_device_type_p (++d))
 	if (dispatchers[d] && dispatchers[d]->get_num_devices_func () > 0)
 	  goto found;
       if (d_arg == acc_device_default)
@@ -168,7 +181,7 @@ resolve_device (acc_device_t d, bool fail_is_error)
       break;
 
     default:
-      if (d > _ACC_device_hwm)
+      if (!known_device_type_p (d))
 	{
 	  if (fail_is_error)
 	    goto unsupported_device;
@@ -357,7 +370,15 @@ acc_shutdown_1 (acc_device_t d)
       if (walk->dev)
 	{
 	  gomp_mutex_lock (&walk->dev->lock);
-	  gomp_free_memmap (&walk->dev->mem_map);
+
+	  while (walk->dev->mem_map.root)
+	    {
+	      splay_tree_key k = &walk->dev->mem_map.root->key;
+	      if (k->aux)
+		k->aux->link_key = NULL;
+	      gomp_remove_var (walk->dev, k);
+	    }
+
 	  gomp_mutex_unlock (&walk->dev->lock);
 
 	  walk->dev = NULL;
@@ -505,6 +526,9 @@ goacc_attach_host_thread_to_device (int ord)
 void
 acc_init (acc_device_t d)
 {
+  if (!known_device_type_p (d))
+    unknown_device_type_error (d);
+
   gomp_init_targets_once ();
 
   gomp_mutex_lock (&acc_device_lock);
@@ -519,6 +543,9 @@ ialias (acc_init)
 void
 acc_shutdown (acc_device_t d)
 {
+  if (!known_device_type_p (d))
+    unknown_device_type_error (d);
+
   gomp_init_targets_once ();
 
   gomp_mutex_lock (&acc_device_lock);
@@ -533,6 +560,9 @@ ialias (acc_shutdown)
 int
 acc_get_num_devices (acc_device_t d)
 {
+  if (!known_device_type_p (d))
+    unknown_device_type_error (d);
+
   int n = 0;
   struct gomp_device_descr *acc_dev;
 
@@ -564,6 +594,9 @@ ialias (acc_get_num_devices)
 void
 acc_set_device_type (acc_device_t d)
 {
+  if (!known_device_type_p (d))
+    unknown_device_type_error (d);
+
   struct gomp_device_descr *base_dev, *acc_dev;
   struct goacc_thread *thr = goacc_thread ();
 
@@ -637,7 +670,8 @@ acc_get_device_type (void)
     }
 
   assert (res != acc_device_default
-	  && res != acc_device_not_host);
+	  && res != acc_device_not_host
+	  && res != acc_device_current);
 
   return res;
 }
@@ -647,11 +681,11 @@ ialias (acc_get_device_type)
 int
 acc_get_device_num (acc_device_t d)
 {
+  if (!known_device_type_p (d))
+    unknown_device_type_error (d);
+
   const struct gomp_device_descr *dev;
   struct goacc_thread *thr = goacc_thread ();
-
-  if (d >= _ACC_device_hwm)
-    gomp_fatal ("unknown device type %u", (unsigned) d);
 
   acc_prof_info prof_info;
   acc_api_info api_info;
@@ -682,6 +716,9 @@ ialias (acc_get_device_num)
 void
 acc_set_device_num (int ord, acc_device_t d)
 {
+  if (!known_device_type_p (d))
+    unknown_device_type_error (d);
+
   struct gomp_device_descr *base_dev, *acc_dev;
   int num_devices;
 
@@ -723,12 +760,75 @@ acc_set_device_num (int ord, acc_device_t d)
 
 ialias (acc_set_device_num)
 
+static union gomp_device_property_value
+get_property_any (int ord, acc_device_t d, acc_device_property_t prop)
+{
+  goacc_lazy_initialize ();
+  struct goacc_thread *thr = goacc_thread ();
+
+  if (d == acc_device_current && thr && thr->dev)
+    return thr->dev->get_property_func (thr->dev->target_id, prop);
+
+  gomp_mutex_lock (&acc_device_lock);
+
+  struct gomp_device_descr *dev = resolve_device (d, true);
+
+  int num_devices = dev->get_num_devices_func ();
+
+  if (num_devices <= 0 || ord >= num_devices)
+    acc_dev_num_out_of_range (d, ord, num_devices);
+
+  dev += ord;
+
+  gomp_mutex_lock (&dev->lock);
+  if (dev->state == GOMP_DEVICE_UNINITIALIZED)
+    gomp_init_device (dev);
+  gomp_mutex_unlock (&dev->lock);
+
+  gomp_mutex_unlock (&acc_device_lock);
+
+  assert (dev);
+
+  return dev->get_property_func (dev->target_id, prop);
+}
+
+size_t
+acc_get_property (int ord, acc_device_t d, acc_device_property_t prop)
+{
+  if (!known_device_type_p (d))
+    unknown_device_type_error(d);
+
+  if (prop & GOMP_DEVICE_PROPERTY_STRING_MASK)
+    return 0;
+  else
+    return get_property_any (ord, d, prop).val;
+}
+
+ialias (acc_get_property)
+
+const char *
+acc_get_property_string (int ord, acc_device_t d, acc_device_property_t prop)
+{
+  if (!known_device_type_p (d))
+    unknown_device_type_error(d);
+
+  if (prop & GOMP_DEVICE_PROPERTY_STRING_MASK)
+    return get_property_any (ord, d, prop).ptr;
+  else
+    return NULL;
+}
+
+ialias (acc_get_property_string)
+
 /* For -O and higher, the compiler always attempts to expand acc_on_device, but
    if the user disables the builtin, or calls it via a pointer, we'll need this
    version.
 
    Compile this with optimization, so that the compiler expands
-   this, rather than generating infinitely recursive code.  */
+   this, rather than generating infinitely recursive code.
+
+   The function just forwards its argument to __builtin_acc_on_device.  It does
+   not verify that the argument is a valid acc_device_t enumeration value.  */
 
 int __attribute__ ((__optimize__ ("O2")))
 acc_on_device (acc_device_t dev)
@@ -756,6 +856,15 @@ goacc_runtime_initialize (void)
 
   /* Initialize and register the 'host' device type.  */
   goacc_host_init ();
+}
+
+static void __attribute__((destructor))
+goacc_runtime_deinitialize (void)
+{
+#if !(defined HAVE_TLS || defined USE_EMUTLS)
+  pthread_key_delete (goacc_tls_key);
+#endif
+  pthread_key_delete (goacc_cleanup_key);
 }
 
 /* Compiler helper functions */

@@ -1,5 +1,5 @@
 /* Structure for saving state for a nested function.
-   Copyright (C) 1989-2019 Free Software Foundation, Inc.
+   Copyright (C) 1989-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -192,15 +192,12 @@ public:
   poly_int64 length;
 };
 
-/* Describe emitted builtin calls for -fcallgraph-info.  Those that
-   are not builtin are taken from cgraph edges.  */
+/* Describe emitted calls for -fcallgraph-info.  */
 struct GTY(()) callinfo_callee
 {
   location_t location;
   tree decl;
 };
-#define CALLEE_FROM_CGRAPH_P(T)				\
-  (!fndecl_built_in_p (T) && !DECL_IS_BUILTIN (T))
 
 /* Describe dynamic allocation for -fcallgraph-info=da.  */
 struct GTY(()) callinfo_dalloc

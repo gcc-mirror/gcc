@@ -12,18 +12,32 @@ import (
 	"unsafe"
 )
 
+// tflag is documented in reflect/type.go.
+//
+// tflag values must be kept in sync with copies in:
+//	go/types.cc
+//	reflect/type.go
+//      internal/reflectlite/type.go
+type tflag uint8
+
+const (
+	tflagRegularMemory tflag = 1 << 3 // equal and hash can treat values of this type as a single region of t.size bytes
+)
+
 type _type struct {
 	size       uintptr
 	ptrdata    uintptr
 	hash       uint32
-	kind       uint8
-	align      int8
+	tflag      tflag
+	align      uint8
 	fieldAlign uint8
-	_          uint8
-
-	hashfn  func(unsafe.Pointer, uintptr) uintptr
-	equalfn func(unsafe.Pointer, unsafe.Pointer) bool
-
+	kind       uint8
+	// function for comparing objects of this type
+	// (ptr to object A, ptr to object B) -> ==?
+	equal func(unsafe.Pointer, unsafe.Pointer) bool
+	// gcdata stores the GC type data for the garbage collector.
+	// If the KindGCProg bit is set in kind, gcdata is a GC program.
+	// Otherwise it is a ptrmask bitmap. See mbitmap.go for details.
 	gcdata  *byte
 	_string *string
 	*uncommontype
@@ -74,10 +88,12 @@ type interfacetype struct {
 }
 
 type maptype struct {
-	typ        _type
-	key        *_type
-	elem       *_type
-	bucket     *_type // internal type representing a hash bucket
+	typ    _type
+	key    *_type
+	elem   *_type
+	bucket *_type // internal type representing a hash bucket
+	// function for hashing keys (ptr to key, seed) -> hash
+	hasher     func(unsafe.Pointer, uintptr) uintptr
 	keysize    uint8  // size of key slot
 	elemsize   uint8  // size of elem slot
 	bucketsize uint16 // size of bucket

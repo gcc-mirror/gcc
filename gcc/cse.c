@@ -1,5 +1,5 @@
 /* Common subexpression elimination for GNU compiler.
-   Copyright (C) 1987-2019 Free Software Foundation, Inc.
+   Copyright (C) 1987-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -7701,7 +7701,7 @@ rest_of_handle_cse2 (void)
       cse_cfg_altered |= cleanup_cfg (CLEANUP_CFG_CHANGED);
       timevar_pop (TV_JUMP);
     }
-  else if (tem == 1)
+  else if (tem == 1 || cse_cfg_altered)
     cse_cfg_altered |= cleanup_cfg (0);
 
   cse_not_expected = 1;
@@ -7775,7 +7775,7 @@ rest_of_handle_cse_after_global_opts (void)
       cse_cfg_altered |= cleanup_cfg (CLEANUP_CFG_CHANGED);
       timevar_pop (TV_JUMP);
     }
-  else if (tem == 1)
+  else if (tem == 1 || cse_cfg_altered)
     cse_cfg_altered |= cleanup_cfg (0);
 
   flag_cse_follow_jumps = save_cfj;

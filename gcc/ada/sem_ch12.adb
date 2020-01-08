@@ -3410,7 +3410,11 @@ package body Sem_Ch12 is
             raise Program_Error;
       end case;
 
+      --  A formal type declaration declares a type and its first
+      --  subtype.
+
       Set_Is_Generic_Type (T);
+      Set_Is_First_Subtype (T);
 
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, T);
@@ -4501,7 +4505,7 @@ package body Sem_Ch12 is
          --  the case of nested instances for the time being.
 
          --  When we generate a nested instance body, calling stubs for any
-         --  relevant subprogram will be be inserted immediately after the
+         --  relevant subprogram will be inserted immediately after the
          --  subprogram declarations, and will take precedence over the
          --  subsequent (original) body. (The stub and original body will be
          --  complete homographs, but this is permitted in an instance).
@@ -5431,8 +5435,8 @@ package body Sem_Ch12 is
                   Instantiating => True),
              Name          => New_Occurrence_Of (Anon_Id, Loc));
 
-         --  The generic may be a a child unit. The renaming needs an
-         --  identifier with the proper name.
+         --  The generic may be a child unit. The renaming needs an identifier
+         --  with the proper name.
 
          Set_Defining_Unit_Name (Specification (Unit_Renaming),
             Make_Defining_Identifier (Loc, Chars (Gen_Unit)));
@@ -11111,19 +11115,36 @@ package body Sem_Ch12 is
 
          Note_Possible_Modification (Actual, Sure => True);
 
-         --  Check for instantiation of atomic/volatile actual for
-         --  non-atomic/volatile formal (RM C.6 (12)).
+         --  Check for instantiation with atomic/volatile object actual for
+         --  nonatomic/nonvolatile formal (RM C.6 (12)).
 
          if Is_Atomic_Object (Actual) and then not Is_Atomic (Orig_Ftyp) then
-            Error_Msg_N
-              ("cannot instantiate non-atomic formal object "
-               & "with atomic actual", Actual);
+            Error_Msg_NE
+              ("cannot instantiate nonatomic formal & of mode in out",
+               Actual, Gen_Obj);
+            Error_Msg_N ("\with atomic object actual (RM C.6(12))", Actual);
 
          elsif Is_Volatile_Object (Actual) and then not Is_Volatile (Orig_Ftyp)
          then
+            Error_Msg_NE
+              ("cannot instantiate nonvolatile formal & of mode in out",
+               Actual, Gen_Obj);
+            Error_Msg_N ("\with volatile object actual (RM C.6(12))", Actual);
+         end if;
+
+         --  Check for instantiation on nonatomic subcomponent of an atomic
+         --  object in Ada 2020 (RM C.6 (13)).
+
+         if Ada_Version >= Ada_2020
+            and then Is_Subcomponent_Of_Atomic_Object (Actual)
+            and then not Is_Atomic_Object (Actual)
+         then
+            Error_Msg_NE
+              ("cannot instantiate formal & of mode in out with actual",
+               Actual, Gen_Obj);
             Error_Msg_N
-              ("cannot instantiate non-volatile formal object "
-               & "with volatile actual", Actual);
+              ("\nonatomic subcomponent of atomic object (RM C.6(13))",
+               Actual);
          end if;
 
       --  Formal in-parameter
@@ -12161,6 +12182,10 @@ package body Sem_Ch12 is
       Loc        : Source_Ptr;
       Subt       : Entity_Id;
 
+      procedure Check_Shared_Variable_Control_Aspects;
+      --  Ada_2020: Verify that shared variable control aspects (RM C.6)
+      --  that may be specified for a formal type are obeyed by the actual.
+
       procedure Diagnose_Predicated_Actual;
       --  There are a number of constructs in which a discrete type with
       --  predicates is illegal, e.g. as an index in an array type declaration.
@@ -12184,6 +12209,79 @@ package body Sem_Ch12 is
       function Subtypes_Match (Gen_T, Act_T : Entity_Id) return Boolean;
       --  Check that base types are the same and that the subtypes match
       --  statically. Used in several of the above.
+
+      --------------------------------------------
+      --  Check_Shared_Variable_Control_Aspects --
+      --------------------------------------------
+
+      --  Ada_2020: Verify that shared variable control aspects (RM C.6)
+      --  that may be specified for the formal are obeyed by the actual.
+
+      procedure Check_Shared_Variable_Control_Aspects is
+      begin
+         if Ada_Version >= Ada_2020 then
+            if Is_Atomic (A_Gen_T) and then not Is_Atomic (Act_T) then
+               Error_Msg_NE
+                  ("actual for& must be an atomic type", Actual, A_Gen_T);
+            end if;
+
+            if Is_Volatile (A_Gen_T) and then not Is_Volatile (Act_T) then
+               Error_Msg_NE
+                  ("actual for& must be a Volatile type", Actual, A_Gen_T);
+            end if;
+
+            if
+              Is_Independent (A_Gen_T) and then not Is_Independent (Act_T)
+            then
+               Error_Msg_NE
+                 ("actual for& must be an Independent type", Actual, A_Gen_T);
+            end if;
+
+            --  We assume that an array type whose atomic component type
+            --  is Atomic is equivalent to an array type with the explicit
+            --  aspect Has_Atomic_Components. This is a reasonable inference
+            --  from the intent of AI12-0282, and makes it legal to use an
+            --  actual that does not have the identical aspect as the formal.
+
+            if Has_Atomic_Components (A_Gen_T)
+               and then not Has_Atomic_Components (Act_T)
+            then
+               if Is_Array_Type (Act_T)
+                 and then Is_Atomic (Component_Type (Act_T))
+               then
+                  null;
+
+               else
+                  Error_Msg_NE
+                    ("actual for& must have atomic components",
+                       Actual, A_Gen_T);
+               end if;
+            end if;
+
+            if Has_Independent_Components (A_Gen_T)
+               and then not Has_Independent_Components (Act_T)
+            then
+               Error_Msg_NE
+                 ("actual for& must have independent components",
+                    Actual, A_Gen_T);
+            end if;
+
+            if Has_Volatile_Components (A_Gen_T)
+               and then not Has_Volatile_Components (Act_T)
+            then
+               if Is_Array_Type (Act_T)
+                 and then Is_Volatile (Component_Type (Act_T))
+               then
+                  null;
+
+               else
+                  Error_Msg_NE
+                    ("actual for& must have volatile components",
+                       Actual, A_Gen_T);
+               end if;
+            end if;
+         end if;
+      end Check_Shared_Variable_Control_Aspects;
 
       ---------------------------------
       --  Diagnose_Predicated_Actual --
@@ -12285,6 +12383,12 @@ package body Sem_Ch12 is
             Error_Msg_Name_1 := Get_Convention_Name (Convention (A_Gen_T));
             Error_Msg_NE
               ("actual for formal & must have convention %", Actual, Gen_T);
+         end if;
+
+         if Can_Never_Be_Null (A_Gen_T) /= Can_Never_Be_Null (Act_T) then
+            Error_Msg_NE
+               ("non null exclusion of actual and formal & do not match",
+               Actual, Gen_T);
          end if;
       end Validate_Access_Subprogram_Instance;
 
@@ -12797,12 +12901,21 @@ package body Sem_Ch12 is
          --  Perform atomic/volatile checks (RM C.6(12)). Note that AI05-0218-1
          --  removes the second instance of the phrase "or allow pass by copy".
 
-         if Is_Atomic (Act_T) and then not Is_Atomic (Ancestor) then
+         --  In Ada_2020 the aspect may be specified explicitly for the formal
+         --  regardless of whether an ancestor obeys it.
+
+         if Is_Atomic (Act_T)
+             and then not Is_Atomic (Ancestor)
+             and then not Is_Atomic (A_Gen_T)
+         then
             Error_Msg_N
               ("cannot have atomic actual type for non-atomic formal type",
                Actual);
 
-         elsif Is_Volatile (Act_T) and then not Is_Volatile (Ancestor) then
+         elsif Is_Volatile (Act_T)
+           and then not Is_Volatile (Ancestor)
+           and then not Is_Volatile (A_Gen_T)
+         then
             Error_Msg_N
               ("cannot have volatile actual type for non-volatile formal type",
                Actual);
@@ -13166,6 +13279,35 @@ package body Sem_Ch12 is
                Abandon_Instantiation (Actual);
             end if;
          end if;
+
+         --  Don't check Ada_Version here (for now) because AI12-0036 is
+         --  a binding interpretation; this decision may be reversed if
+         --  the situation turns out to be similar to that of the preceding
+         --  Is_Limited_Type test (see preceding comment).
+
+         declare
+            Formal_Is_Private_Extension : constant Boolean :=
+              Nkind (Parent (A_Gen_T)) = N_Private_Extension_Declaration;
+
+            Actual_Is_Tagged : constant Boolean := Is_Tagged_Type (Act_T);
+         begin
+            if Actual_Is_Tagged /= Formal_Is_Private_Extension then
+               if In_Instance then
+                  null;
+               else
+                  if Actual_Is_Tagged then
+                     Error_Msg_NE
+                       ("actual for & cannot be a tagged type",
+                        Actual, Gen_T);
+                  else
+                     Error_Msg_NE
+                       ("actual for & must be a tagged type",
+                        Actual, Gen_T);
+                  end if;
+                  Abandon_Instantiation (Actual);
+               end if;
+            end if;
+         end;
       end Validate_Derived_Type_Instance;
 
       ----------------------------------------
@@ -13451,6 +13593,8 @@ package body Sem_Ch12 is
             Set_Instance_Of (Etype (A_Gen_T), Etype (Act_T));
          end if;
       end if;
+
+      Check_Shared_Variable_Control_Aspects;
 
       if Error_Posted (Act_T) then
          null;

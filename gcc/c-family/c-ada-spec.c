@@ -1,6 +1,6 @@
 /* Print GENERIC declaration (functions, variables, types) trees coming from
    the C and C++ front-ends as well as macros in Ada syntax.
-   Copyright (C) 2010-2019 Free Software Foundation, Inc.
+   Copyright (C) 2010-2020 Free Software Foundation, Inc.
    Adapted from tree-pretty-print.c by Arnaud Charlet  <charlet@adacore.com>
 
 This file is part of GCC.
@@ -630,7 +630,7 @@ static const char *current_source_file;
 
 /* Return sloc of DECL, using sloc of last field if LAST is true.  */
 
-location_t
+static location_t
 decl_sloc (const_tree decl, bool last)
 {
   tree field;

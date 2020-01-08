@@ -1,5 +1,5 @@
 /* C/ObjC/C++ command line option handling.
-   Copyright (C) 2002-2019 Free Software Foundation, Inc.
+   Copyright (C) 2002-2020 Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
 This file is part of GCC.
@@ -170,6 +170,7 @@ c_diagnostic_finalizer (diagnostic_context *context,
 {
   char *saved_prefix = pp_take_prefix (context->printer);
   pp_set_prefix (context->printer, NULL);
+  pp_newline (context->printer);
   diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind);
   /* By default print macro expansion contexts in the diagnostic
      finalizer -- for tokens resulting from macro expansion.  */

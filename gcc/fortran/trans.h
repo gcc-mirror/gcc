@@ -1,5 +1,5 @@
 /* Header for code translation functions
-   Copyright (C) 2002-2019 Free Software Foundation, Inc.
+   Copyright (C) 2002-2020 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -565,6 +565,14 @@ tree gfc_conv_expr_present (gfc_symbol *);
 /* Convert a missing, dummy argument into a null or zero.  */
 void gfc_conv_missing_dummy (gfc_se *, gfc_expr *, gfc_typespec, int);
 
+/* Lowering of component references.  */
+void gfc_conv_component_ref (gfc_se * se, gfc_ref * ref);
+void conv_parent_component_references (gfc_se * se, gfc_ref * ref);
+
+/* Automatically dereference var.  */
+tree gfc_maybe_dereference_var (gfc_symbol *, tree, bool desc_only = false,
+				bool is_classarray = false);
+
 /* Generate code to allocate a string temporary.  */
 tree gfc_conv_string_tmp (gfc_se *, tree, tree);
 /* Get the string length variable belonging to an expression.  */
@@ -657,6 +665,10 @@ void gfc_finish_decl_attrs (tree, symbol_attribute *);
 
 /* Allocate the lang-specific part of a decl node.  */
 void gfc_allocate_lang_decl (tree);
+
+/* Get the location suitable for the ME from a gfortran locus; required to get
+   the column number right.  */
+location_t gfc_get_location (locus *);
 
 /* Advance along a TREE_CHAIN.  */
 tree gfc_advance_chain (tree, int);
@@ -981,7 +993,6 @@ struct GTY(())	lang_type	 {
   tree offset;
   tree dtype;
   tree dataptr_type;
-  tree span;
   tree base_decl[2];
   tree nonrestricted_type;
   tree caf_token;
@@ -997,7 +1008,6 @@ struct GTY(()) lang_decl {
      address of target label.  */
   tree stringlen;
   tree addr;
-  tree span;
   /* For assumed-shape coarrays.  */
   tree token, caf_offset;
   unsigned int scalar_allocatable : 1;
@@ -1008,7 +1018,6 @@ struct GTY(()) lang_decl {
 
 #define GFC_DECL_ASSIGN_ADDR(node) DECL_LANG_SPECIFIC(node)->addr
 #define GFC_DECL_STRING_LEN(node) DECL_LANG_SPECIFIC(node)->stringlen
-#define GFC_DECL_SPAN(node) DECL_LANG_SPECIFIC(node)->span
 #define GFC_DECL_TOKEN(node) DECL_LANG_SPECIFIC(node)->token
 #define GFC_DECL_CAF_OFFSET(node) DECL_LANG_SPECIFIC(node)->caf_offset
 #define GFC_DECL_SAVED_DESCRIPTOR(node) \
@@ -1059,7 +1068,6 @@ struct GTY(()) lang_decl {
 #define GFC_TYPE_ARRAY_DTYPE(node) (TYPE_LANG_SPECIFIC(node)->dtype)
 #define GFC_TYPE_ARRAY_DATAPTR_TYPE(node) \
   (TYPE_LANG_SPECIFIC(node)->dataptr_type)
-#define GFC_TYPE_ARRAY_SPAN(node) (TYPE_LANG_SPECIFIC(node)->span)
 #define GFC_TYPE_ARRAY_BASE_DECL(node, internal) \
   (TYPE_LANG_SPECIFIC(node)->base_decl[(internal)])
 

@@ -1,5 +1,5 @@
 /* Loop unswitching.
-   Copyright (C) 2004-2019 Free Software Foundation, Inc.
+   Copyright (C) 2004-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -586,7 +586,7 @@ find_loop_guard (class loop *loop)
 	next = single_succ (header);
       else
 	{
-	  cond = dyn_cast <gcond *> (last_stmt (header));
+	  cond = safe_dyn_cast <gcond *> (last_stmt (header));
 	  if (! cond)
 	    return NULL;
 	  extract_true_false_edges_from_block (header, &te, &fe);

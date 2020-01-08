@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2019 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2020 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist output contributed by Paul Thomas
    F2003 I/O support contributed by Jerry DeLisle
@@ -1721,42 +1721,46 @@ write_real (st_parameter_dt *dtp, const char *source, int kind)
 
 void
 write_real_w0 (st_parameter_dt *dtp, const char *source, int kind,
-	       format_token fmt, int d)
+	       const fnode* f)
 {
-  fnode f;
+  fnode ff;
   char buf_stack[BUF_STACK_SZ];
   char str_buf[BUF_STACK_SZ];
   char *buffer, *result;
   size_t buf_size, res_len, flt_str_len;
   int comp_d = 0;
-  set_fnode_default (dtp, &f, kind);
 
-  if (d > 0)
-    f.u.real.d = d;
-  f.format = fmt;
+  set_fnode_default (dtp, &ff, kind);
+
+  if (f->u.real.d > 0)
+    ff.u.real.d = f->u.real.d;
+  ff.format = f->format;
 
   /* For FMT_G, Compensate for extra digits when using scale factor, d
      is not specified, and the magnitude is such that E editing
      is used.  */
-  if (fmt == FMT_G)
+  if (f->format == FMT_G)
     {
-      if (dtp->u.p.scale_factor > 0 && d == 0)
+      if (dtp->u.p.scale_factor > 0 && f->u.real.d == 0)
 	comp_d = 1;
       else
 	comp_d = 0;
     }
 
+  if (f->u.real.e >= 0)
+    ff.u.real.e = f->u.real.e;
+
   dtp->u.p.g0_no_blanks = 1;
 
   /* Precision for snprintf call.  */
-  int precision = get_precision (dtp, &f, source, kind);
+  int precision = get_precision (dtp, &ff, source, kind);
 
   /* String buffer to hold final result.  */
-  result = select_string (dtp, &f, str_buf, &res_len, kind);
+  result = select_string (dtp, &ff, str_buf, &res_len, kind);
 
-  buffer = select_buffer (dtp, &f, precision, buf_stack, &buf_size, kind);
+  buffer = select_buffer (dtp, &ff, precision, buf_stack, &buf_size, kind);
 
-  get_float_string (dtp, &f, source , kind, comp_d, buffer,
+  get_float_string (dtp, &ff, source , kind, comp_d, buffer,
 		    precision, buf_size, result, &flt_str_len);
   write_float_string (dtp, result, flt_str_len);
 

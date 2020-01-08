@@ -1,5 +1,5 @@
 /* Top level of GCC compilers (cc1, cc1plus, etc.)
-   Copyright (C) 1987-2019 Free Software Foundation, Inc.
+   Copyright (C) 1987-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1093,14 +1093,6 @@ dump_final_node_vcg (FILE *f)
     dump_final_callee_vcg (f, c->location, c->decl);
   vec_free (cfun->su->callees);
   cfun->su->callees = NULL;
-
-  cgraph_node *cnode = cgraph_node::get (current_function_decl);
-  for (cgraph_edge *e = cnode->callees; e; e = e->next_callee)
-    if (CALLEE_FROM_CGRAPH_P (e->callee->decl))
-      dump_final_callee_vcg (f, gimple_location (e->call_stmt),
-			     e->callee->decl);
-  for (cgraph_edge *e = cnode->indirect_calls; e; e = e->next_callee)
-    dump_final_callee_vcg (f, gimple_location (e->call_stmt), NULL);
 }
 
 /* Output stack usage and callgraph info, as requested.  */
@@ -1187,6 +1179,8 @@ general_init (const char *argv0, bool init_signals)
     = global_options_init.x_flag_diagnostics_show_labels;
   global_dc->show_line_numbers_p
     = global_options_init.x_flag_diagnostics_show_line_numbers;
+  global_dc->show_cwe
+    = global_options_init.x_flag_diagnostics_show_cwe;
   global_dc->show_option_requested
     = global_options_init.x_flag_diagnostics_show_option;
   global_dc->min_margin_width
@@ -1239,10 +1233,6 @@ general_init (const char *argv0, bool init_signals)
 
   /* Initialize register usage now so switches may override.  */
   init_reg_sets ();
-
-  /* This must be done after global_init_params but before argument
-     processing.  */
-  init_ggc_heuristics ();
 
   /* Create the singleton holder for global state.  This creates the
      dump manager.  */
@@ -2377,6 +2367,10 @@ toplev::main (int argc, char **argv)
      each structure used for parsing options.  */
   init_options_struct (&global_options, &global_options_set);
   lang_hooks.init_options_struct (&global_options);
+
+  /* Init GGC heuristics must be caller after we initialize
+     options.  */
+  init_ggc_heuristics ();
 
   /* Convert the options to an array.  */
   decode_cmdline_options_to_array_default_mask (argc,

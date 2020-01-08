@@ -1,5 +1,5 @@
 /* A type-safe hash table template.
-   Copyright (C) 2012-2019 Free Software Foundation, Inc.
+   Copyright (C) 2012-2020 Free Software Foundation, Inc.
    Contributed by Lawrence Crowl <crowl@google.com>
 
 This file is part of GCC.
@@ -818,8 +818,7 @@ hash_table<Descriptor, Lazy, Allocator>::expand ()
       if (!is_empty (x) && !is_deleted (x))
         {
           value_type *q = find_empty_slot_for_expand (Descriptor::hash (x));
-
-          *q = x;
+	  new ((void*) q) value_type (x);
         }
 
       p++;
@@ -869,14 +868,8 @@ hash_table<Descriptor, Lazy, Allocator>::empty_slow ()
       m_size_prime_index = nindex;
     }
   else
-    {
-#ifndef BROKEN_VALUE_INITIALIZATION
-      for ( ; size; ++entries, --size)
-	*entries = value_type ();
-#else
-      memset (entries, 0, size * sizeof (value_type));
-#endif
-    }
+    memset ((void *) entries, 0, size * sizeof (value_type));
+
   m_n_deleted = 0;
   m_n_elements = 0;
 }

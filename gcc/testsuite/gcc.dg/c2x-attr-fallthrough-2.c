@@ -4,16 +4,19 @@
 
 [[fallthrough]]; /* { dg-error "'fallthrough' attribute at top level" } */
 
-int [[fallthrough]] x; /* { dg-warning "ignored" } */
-/* { dg-message "that appertains to a type-specifier" "appertains" { target *-*-* } .-1 } */
+int [[fallthrough]] x; /* { dg-error "ignored" } */
 
-int g () [[fallthrough]]; /* { dg-warning "ignored" } */
-/* { dg-message "that appertains to a type-specifier" "appertains" { target *-*-* } .-1 } */
+int g () [[fallthrough]]; /* { dg-error "ignored" } */
+
+int array[2] [[fallthrough]]; /* { dg-error "ignored" } */
+
+int z = sizeof (int [[fallthrough]]); /* { dg-error "ignored" } */
 
 int
 f (int a)
 {
-  [[fallthrough]] int b = 2; /* { dg-warning "not followed by|ignored" } */
+  [[fallthrough]] int b = 2; /* { dg-warning "not followed by" } */
+  /* { dg-error "ignored" "ignored" { target *-*-* } .-1 } */
   switch (a)
     {
     case 1:
@@ -31,5 +34,5 @@ f (int a)
       b += 5;
       break;
     }
-  [[fallthrough]] return b; /* { dg-warning "ignored" } */
+  [[fallthrough]] return b; /* { dg-error "ignored" } */
 }

@@ -8,10 +8,10 @@ struct D : C {};
 void foo()
 {
   try {}
-  catch (D)    {}  // { dg-warning "catching type" }
-  catch (C)    {}  // { dg-warning "catching type" }
-  catch (B)    {}  // { dg-warning "catching polymorphic type" }
-  catch (A)    {}  // { dg-warning "catching polymorphic type" }
+  catch (D)    {}  // { dg-warning "10:catching type" }
+  catch (C)    {}  // { dg-warning "10:catching type" }
+  catch (B)    {}  // { dg-warning "10:catching polymorphic type" }
+  catch (A)    {}  // { dg-warning "10:catching polymorphic type" }
   catch (A*)   {}
   catch (int)  {}
 
@@ -27,7 +27,7 @@ void foo()
 template<typename T> void foo1()
 {
   try {}
-  catch (T) {}  // { dg-warning "catching" }
+  catch (T) {}  // { dg-warning "10:catching" }
 }
 
 template<typename T> void foo2()

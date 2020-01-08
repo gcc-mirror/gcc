@@ -1,6 +1,6 @@
 /* Offload image generation tool for AMD GCN.
 
-   Copyright (C) 2014-2019 Free Software Foundation, Inc.
+   Copyright (C) 2014-2020 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -35,17 +35,6 @@
 #include "gomp-constants.h"
 
 const char tool_name[] = "gcn mkoffload";
-
-#define COMMENT_PREFIX "#"
-
-struct id_map
-{
-  id_map *next;
-  char *gcn_name;
-};
-
-static id_map *func_ids, **funcs_tail = &func_ids;
-static id_map *var_ids, **vars_tail = &var_ids;
 
 /* Files to unlink.  */
 static const char *gcn_s1_name;

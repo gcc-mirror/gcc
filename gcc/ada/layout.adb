@@ -435,14 +435,6 @@ package body Layout is
             end;
          end if;
 
-         --  If Esize is set, and RM_Size is not, RM_Size is copied from Esize.
-         --  At least for now this seems reasonable, and is in any case needed
-         --  for compatibility with old versions of gigi.
-
-         if Known_Esize (E) and then Unknown_RM_Size (E) then
-            Set_RM_Size (E, Esize (E));
-         end if;
-
          --  For array base types, set the component size if object size of the
          --  component type is known and is a small power of 2 (8, 16, 32, 64),
          --  since this is what will always be used, except if a very large
@@ -764,9 +756,9 @@ package body Layout is
          end if;
 
          --  Check components. If any component requires a higher alignment,
-         --  then we set that higher alignment in any case. Don't do this if
-         --  we have Optimize_Alignment set to Space. Note that that covers
-         --  the case of packed records, where we already set alignment to 1.
+         --  then we set that higher alignment in any case. Don't do this if we
+         --  have Optimize_Alignment set to Space. Note that covers the case of
+         --  packed records, where we already set alignment to 1.
 
          if not Optimize_Alignment_Space (E) then
             declare

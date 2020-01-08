@@ -1,6 +1,6 @@
 // Types used in iterator implementation -*- C++ -*-
 
-// Copyright (C) 2001-2019 Free Software Foundation, Inc.
+// Copyright (C) 2001-2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -249,10 +249,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using _RequireInputIter =
       __enable_if_t<is_convertible<__iterator_category_t<_InIter>,
 				   input_iterator_tag>::value>;
+
+  template<typename _It,
+	   typename _Cat = __iterator_category_t<_It>>
+    struct __is_random_access_iter
+      : is_base_of<random_access_iterator_tag, _Cat>
+    {
+      typedef is_base_of<random_access_iterator_tag, _Cat> _Base;
+      enum { __value = _Base::value };
+    };
+#else
+  template<typename _It, typename _Traits = iterator_traits<_It>,
+	   typename _Cat = typename _Traits::iterator_category>
+    struct __is_random_access_iter
+    { enum { __value = __is_base_of(random_access_iterator_tag, _Cat) }; };
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
 #endif /* _STL_ITERATOR_BASE_TYPES_H */
-

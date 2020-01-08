@@ -383,6 +383,19 @@ mips*-*-*)
 	  done
 	fi
 	;;
+msp430-*-*)
+	if [ x$enable_no_exceptions = xno ]
+	then
+	  old_multidirs="${multidirs}"
+	  multidirs=""
+	  for x in ${old_multidirs}; do
+	    case "$x" in
+	      *no-exceptions* ) : ;;
+	      *) multidirs="${multidirs} ${x}" ;;
+	    esac
+	  done
+	fi
+	;;
 powerpc*-*-* | rs6000*-*-*)
 	if [ x$enable_aix64 = xno ]
 	then

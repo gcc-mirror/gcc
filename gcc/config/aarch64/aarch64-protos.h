@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009-2019 Free Software Foundation, Inc.
+   Copyright (C) 2009-2020 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -706,8 +706,7 @@ namespace aarch64_sve {
   void handle_arm_sve_h ();
   tree builtin_decl (unsigned, bool);
   bool builtin_type_p (const_tree);
-  bool svbool_type_p (const_tree);
-  unsigned int nvectors_if_data_type (const_tree);
+  bool builtin_type_p (const_tree, unsigned int *, unsigned int *);
   const char *mangle_builtin_type (const_tree);
   tree resolve_overloaded_builtin (location_t, unsigned int,
 				   vec<tree, va_gc> *);
@@ -715,6 +714,9 @@ namespace aarch64_sve {
 			   tree, unsigned int, tree *);
   gimple *gimple_fold_builtin (unsigned int, gimple_stmt_iterator *, gcall *);
   rtx expand_builtin (unsigned int, tree, rtx);
+#ifdef GCC_TARGET_H
+  bool verify_type_context (location_t, type_context_kind, const_tree, bool);
+#endif
 }
 
 extern void aarch64_split_combinev16qi (rtx operands[3]);
@@ -772,5 +774,7 @@ extern const atomic_ool_names aarch64_ool_ldadd_names;
 extern const atomic_ool_names aarch64_ool_ldset_names;
 extern const atomic_ool_names aarch64_ool_ldclr_names;
 extern const atomic_ool_names aarch64_ool_ldeor_names;
+
+tree aarch64_resolve_overloaded_builtin_general (location_t, tree, void *);
 
 #endif /* GCC_AARCH64_PROTOS_H */

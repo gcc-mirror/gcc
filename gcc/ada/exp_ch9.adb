@@ -48,6 +48,7 @@ with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
+with Sem_Ch5;  use Sem_Ch5;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch9;  use Sem_Ch9;
@@ -362,7 +363,7 @@ package body Exp_Ch9 is
    --  a null trailing statement with the given Loc (which is the sloc of
    --  the accept, delay, or entry call statement). There might not be any
    --  generated code for the accept, delay, or entry call itself (the effect
-   --  of these statements is part of the general processsing done for the
+   --  of these statements is part of the general processing done for the
    --  enclosing selective accept, timed entry call, or asynchronous select),
    --  and the null statement is there to carry the sloc of that statement to
    --  the back-end for trace-based coverage analysis purposes.
@@ -3721,6 +3722,17 @@ package body Exp_Ch9 is
           Make_Block_Statement (Loc,
             Declarations               => Decls,
             Handled_Statement_Sequence => Handled_Statement_Sequence (N)));
+
+      --  Analyze now and reset scopes for declarations so that Scope fields
+      --  currently denoting the entry will now denote the block scope, and
+      --  the block's scope will be set to the new procedure entity.
+
+      Analyze_Statements (Bod_Stmts);
+
+      Set_Scope (Entity (Identifier (First (Bod_Stmts))), Bod_Id);
+
+      Reset_Scopes_To
+        (First (Bod_Stmts), Entity (Identifier (First (Bod_Stmts))));
 
       case Corresponding_Runtime_Package (Pid) is
          when System_Tasking_Protected_Objects_Entries =>
@@ -13709,9 +13721,10 @@ package body Exp_Ch9 is
                         Set_Ekind (Decl_Id, E_Variable);
                      end if;
 
-                     Set_Prival      (Comp_Id, Decl_Id);
-                     Set_Prival_Link (Decl_Id, Comp_Id);
-                     Set_Is_Aliased  (Decl_Id, Is_Aliased (Comp_Id));
+                     Set_Prival         (Comp_Id, Decl_Id);
+                     Set_Prival_Link    (Decl_Id, Comp_Id);
+                     Set_Is_Aliased     (Decl_Id, Is_Aliased     (Comp_Id));
+                     Set_Is_Independent (Decl_Id, Is_Independent (Comp_Id));
 
                      --  Generate:
                      --    comp_name : comp_typ renames _object.comp_name;
@@ -14977,7 +14990,27 @@ package body Exp_Ch9 is
                Next (Decl);
             end loop;
 
+         elsif Nkind (N) = N_Freeze_Entity then
+
+            --  Scan the actions associated with a freeze node, which may
+            --  actually be declarations with entities that need to have
+            --  their scopes reset.
+
+            Decl := First (Actions (N));
+            while Present (Decl) loop
+               Reset_Scopes (Decl);
+               Next (Decl);
+            end loop;
+
          elsif N /= Bod and then Nkind (N) in N_Proper_Body then
+
+            --  A subprogram without a separate declaration may be encountered,
+            --  and we need to reset the subprogram's entity's scope.
+
+            if Nkind (N) = N_Subprogram_Body then
+               Set_Scope (Defining_Entity (Specification (N)), E);
+            end if;
+
             return Skip;
          end if;
 

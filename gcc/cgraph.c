@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2019 Free Software Foundation, Inc.
+   Copyright (C) 2003-2020 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "selftest.h"
+#include "tree-into-ssa.h"
 
 /* FIXME: Only for PROP_loops, but cgraph shouldn't have to know about this.  */
 #include "tree-pass.h"
@@ -282,14 +283,8 @@ symbol_table::initialize (void)
 cgraph_node *
 symbol_table::create_empty (void)
 {
-  cgraph_node *node = allocate_cgraph_symbol ();
-
-  node->type = SYMTAB_FUNCTION;
-  node->frequency = NODE_FREQUENCY_NORMAL;
-  node->count_materialization_scale = REG_BR_PROB_BASE;
   cgraph_count++;
-
-  return node;
+  return new (ggc_alloc<cgraph_node> ()) cgraph_node (cgraph_max_uid++);
 }
 
 /* Register HOOK to be called with DATA on each removed edge.  */
@@ -508,8 +503,6 @@ cgraph_node::create (tree decl)
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
 
   node->decl = decl;
-
-  node->count = profile_count::uninitialized ();
 
   if ((flag_openacc || flag_openmp)
       && lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl)))
@@ -1923,6 +1916,9 @@ cgraph_node::dump (FILE *f)
   if (profile_id)
     fprintf (f, "  Profile id: %i\n",
 	     profile_id);
+  if (unit_id)
+    fprintf (f, "  Unit id: %i\n",
+	     unit_id);
   cgraph_function_version_info *vi = function_version ();
   if (vi != NULL)
     {
@@ -1950,7 +1946,7 @@ cgraph_node::dump (FILE *f)
       count.dump (f);
     }
   if (tp_first_run > 0)
-    fprintf (f, " first_run:%i", tp_first_run);
+    fprintf (f, " first_run:%" PRId64, (int64_t) tp_first_run);
   if (origin)
     fprintf (f, " nested in:%s", origin->asm_name ());
   if (gimple_has_body_p (decl))
@@ -1973,6 +1969,8 @@ cgraph_node::dump (FILE *f)
     fprintf (f, " icf_merged");
   if (merged_comdat)
     fprintf (f, " merged_comdat");
+  if (merged_extern_inline)
+    fprintf (f, " merged_extern_inline");
   if (split_part)
     fprintf (f, " split_part");
   if (indirect_call_target)
@@ -2227,6 +2225,10 @@ static bool
 cgraph_node_cannot_be_local_p_1 (cgraph_node *node, void *)
 {
   return !(!node->force_output
+	   && !node->ifunc_resolver
+	   /* Limitation of gas requires us to output targets of symver aliases
+	      as global symbols.  This is binutils PR 25295.  */
+	   && !node->symver
 	   && ((DECL_COMDAT (node->decl)
 		&& !node->forced_by_abi
 		&& !node->used_from_object_file_p ()
@@ -3060,6 +3062,18 @@ cgraph_node::verify_node (void)
       error ("inline clone in same comdat group list");
       error_found = true;
     }
+  if (inlined_to && !count.compatible_p (inlined_to->count))
+    {
+      error ("inline clone count is not compatible");
+      count.debug ();
+      inlined_to->count.debug ();
+      error_found = true;
+    }
+  if (tp_first_run < 0)
+    {
+      error ("tp_first_run must be non-negative");
+      error_found = true;
+    }
   if (!definition && !in_other_partition && local)
     {
       error ("local symbols must be defined");
@@ -3080,12 +3094,24 @@ cgraph_node::verify_node (void)
       error ("inline clone is forced to output");
       error_found = true;
     }
+  if (calls_comdat_local && !same_comdat_group)
+    {
+      error ("calls_comdat_local is set outside of a comdat group");
+      error_found = true;
+    }
   for (e = indirect_calls; e; e = e->next_callee)
     {
       if (e->aux)
 	{
 	  error ("aux field set for indirect edge from %s",
 		 identifier_to_locale (e->caller->name ()));
+	  error_found = true;
+	}
+      if (!e->count.compatible_p (count))
+	{
+	  error ("edge count is not compatible with function count");
+	  e->count.debug ();
+	  count.debug ();
 	  error_found = true;
 	}
       if (!e->indirect_unknown_callee
@@ -3136,6 +3162,13 @@ cgraph_node::verify_node (void)
     {
       if (e->verify_count ())
 	error_found = true;
+      if (!e->count.compatible_p (count))
+	{
+	  error ("edge count is not compatible with function count");
+	  e->count.debug ();
+	  count.debug ();
+	  error_found = true;
+	}
       if (gimple_has_body_p (e->caller->decl)
 	  && !e->caller->inlined_to
 	  && !e->speculative
@@ -3572,6 +3605,8 @@ cgraph_node::get_body (void)
       set_dump_file (NULL);
 
       push_cfun (DECL_STRUCT_FUNCTION (decl));
+
+      update_ssa (TODO_update_ssa_only_virtuals);
       execute_all_ipa_transforms (true);
       cgraph_edge::rebuild_edges ();
       free_dominance_info (CDI_DOMINATORS);
@@ -3715,7 +3750,7 @@ symbol_table_test::symbol_table_test ()
 {
   gcc_assert (saved_symtab == NULL);
   saved_symtab = symtab;
-  symtab = new (ggc_alloc <symbol_table> ()) symbol_table ();
+  symtab = new (ggc_alloc<symbol_table> ()) symbol_table ();
 }
 
 /* Destructor.  Restore the old value of symtab.  */

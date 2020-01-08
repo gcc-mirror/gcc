@@ -1,5 +1,5 @@
 /* Subroutines used for code generation for RISC-V.
-   Copyright (C) 2011-2019 Free Software Foundation, Inc.
+   Copyright (C) 2011-2020 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
    Based on MIPS target for GNU compiler.
 
@@ -857,7 +857,7 @@ riscv_legitimate_address_p (machine_mode mode, rtx x, bool strict_p)
 int
 riscv_address_insns (rtx x, machine_mode mode, bool might_split_p)
 {
-  struct riscv_address_info addr;
+  struct riscv_address_info addr = {};
   int n = 1;
 
   if (!riscv_classify_address (&addr, x, mode, false))

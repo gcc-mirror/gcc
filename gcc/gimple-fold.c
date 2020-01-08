@@ -1,5 +1,5 @@
 /* Statement simplification on GIMPLE.
-   Copyright (C) 2010-2019 Free Software Foundation, Inc.
+   Copyright (C) 2010-2020 Free Software Foundation, Inc.
    Split out from tree-ssa-ccp.c.
 
 This file is part of GCC.
@@ -986,36 +986,33 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 
       src_align = get_pointer_alignment (src);
       dest_align = get_pointer_alignment (dest);
-      if (dest_align < TYPE_ALIGN (desttype)
-	  || src_align < TYPE_ALIGN (srctype))
-	return false;
 
+      /* Choose between src and destination type for the access based
+         on alignment, whether the access constitutes a register access
+	 and whether it may actually expose a declaration for SSA rewrite
+	 or SRA decomposition.  */
       destvar = NULL_TREE;
+      srcvar = NULL_TREE;
       if (TREE_CODE (dest) == ADDR_EXPR
 	  && var_decl_component_p (TREE_OPERAND (dest, 0))
-	  && tree_int_cst_equal (TYPE_SIZE_UNIT (desttype), len))
+	  && tree_int_cst_equal (TYPE_SIZE_UNIT (desttype), len)
+	  && dest_align >= TYPE_ALIGN (desttype)
+	  && (is_gimple_reg_type (desttype)
+	      || src_align >= TYPE_ALIGN (desttype)))
 	destvar = fold_build2 (MEM_REF, desttype, dest, off0);
-
-      srcvar = NULL_TREE;
-      if (TREE_CODE (src) == ADDR_EXPR
-	  && var_decl_component_p (TREE_OPERAND (src, 0))
-	  && tree_int_cst_equal (TYPE_SIZE_UNIT (srctype), len))
-	{
-	  if (!destvar
-	      || src_align >= TYPE_ALIGN (desttype))
-	    srcvar = fold_build2 (MEM_REF, destvar ? desttype : srctype,
-				  src, off0);
-	  else if (!STRICT_ALIGNMENT)
-	    {
-	      srctype = build_aligned_type (TYPE_MAIN_VARIANT (desttype),
-					    src_align);
-	      srcvar = fold_build2 (MEM_REF, srctype, src, off0);
-	    }
-	}
-
+      else if (TREE_CODE (src) == ADDR_EXPR
+	       && var_decl_component_p (TREE_OPERAND (src, 0))
+	       && tree_int_cst_equal (TYPE_SIZE_UNIT (srctype), len)
+	       && src_align >= TYPE_ALIGN (srctype)
+	       && (is_gimple_reg_type (srctype)
+		   || dest_align >= TYPE_ALIGN (srctype)))
+	srcvar = fold_build2 (MEM_REF, srctype, src, off0);
       if (srcvar == NULL_TREE && destvar == NULL_TREE)
 	return false;
 
+      /* Now that we chose an access type express the other side in
+         terms of it if the target allows that with respect to alignment
+	 constraints.  */
       if (srcvar == NULL_TREE)
 	{
 	  if (src_align >= TYPE_ALIGN (desttype))
@@ -1899,6 +1896,11 @@ gimple_fold_builtin_strchr (gimple_stmt_iterator *gsi, bool is_strrchr)
   if (!gimple_call_lhs (stmt))
     return false;
 
+  /* Avoid folding if the first argument is not a nul-terminated array.
+     Defer warning until later.  */
+  if (!check_nul_terminated_array (NULL_TREE, str))
+    return false;
+
   if ((p = c_getstr (str)) && target_char_cst_p (c, &ch))
     {
       const char *p1 = is_strrchr ? strrchr (p, ch) : strchr (p, ch);
@@ -1973,18 +1975,23 @@ static bool
 gimple_fold_builtin_strstr (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
-  tree haystack = gimple_call_arg (stmt, 0);
-  tree needle = gimple_call_arg (stmt, 1);
-  const char *p, *q;
-
   if (!gimple_call_lhs (stmt))
     return false;
 
-  q = c_getstr (needle);
+  tree haystack = gimple_call_arg (stmt, 0);
+  tree needle = gimple_call_arg (stmt, 1);
+
+  /* Avoid folding if either argument is not a nul-terminated array.
+     Defer warning until later.  */
+  if (!check_nul_terminated_array (NULL_TREE, haystack)
+      || !check_nul_terminated_array (NULL_TREE, needle))
+    return false;
+
+  const char *q = c_getstr (needle);
   if (q == NULL)
     return false;
 
-  if ((p = c_getstr (haystack)))
+  if (const char *p = c_getstr (haystack))
     {
       const char *r = strstr (p, q);
 
@@ -2323,8 +2330,7 @@ gimple_load_first_char (location_t loc, tree str, gimple_seq *stmts)
   return var;
 }
 
-/* Fold a call to the str{n}{case}cmp builtin pointed by GSI iterator.
-   FCODE is the name of the builtin.  */
+/* Fold a call to the str{n}{case}cmp builtin pointed by GSI iterator.  */
 
 static bool
 gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
@@ -2337,18 +2343,20 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
   tree str1 = gimple_call_arg (stmt, 0);
   tree str2 = gimple_call_arg (stmt, 1);
   tree lhs = gimple_call_lhs (stmt);
-  HOST_WIDE_INT length = -1;
+
+  tree bound_node = NULL_TREE;
+  unsigned HOST_WIDE_INT bound = HOST_WIDE_INT_M1U;
 
   /* Handle strncmp and strncasecmp functions.  */
   if (gimple_call_num_args (stmt) == 3)
     {
-      tree len = gimple_call_arg (stmt, 2);
-      if (tree_fits_uhwi_p (len))
-	length = tree_to_uhwi (len);
+      bound_node = gimple_call_arg (stmt, 2);
+      if (tree_fits_uhwi_p (bound_node))
+	bound = tree_to_uhwi (bound_node);
     }
 
-  /* If the LEN parameter is zero, return zero.  */
-  if (length == 0)
+  /* If the BOUND parameter is zero, return zero.  */
+  if (bound == 0)
     {
       replace_call_with_value (gsi, integer_zero_node);
       return true;
@@ -2361,8 +2369,32 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
       return true;
     }
 
-  const char *p1 = c_getstr (str1);
-  const char *p2 = c_getstr (str2);
+  /* Initially set to the number of characters, including the terminating
+     nul if each array has one.   LENx == strnlen (Sx, LENx) implies that
+     the array Sx is not terminated by a nul.
+     For nul-terminated strings then adjusted to their length so that
+     LENx == NULPOSx holds.  */
+  unsigned HOST_WIDE_INT len1 = HOST_WIDE_INT_MAX, len2 = len1;
+  const char *p1 = c_getstr (str1, &len1);
+  const char *p2 = c_getstr (str2, &len2);
+
+  /* The position of the terminating nul character if one exists, otherwise
+     a value greater than LENx.  */
+  unsigned HOST_WIDE_INT nulpos1 = HOST_WIDE_INT_MAX, nulpos2 = nulpos1;
+
+  if (p1)
+    {
+      size_t n = strnlen (p1, len1);
+      if (n < len1)
+	len1 = nulpos1 = n;
+    }
+
+  if (p2)
+    {
+      size_t n = strnlen (p2, len2);
+      if (n < len2)
+	len2 = nulpos2 = n;
+    }
 
   /* For known strings, return an immediate value.  */
   if (p1 && p2)
@@ -2374,17 +2406,33 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
 	{
 	case BUILT_IN_STRCMP:
 	case BUILT_IN_STRCMP_EQ:
-	  {
-	    r = strcmp (p1, p2);
-	    known_result = true;
+	  if (len1 != nulpos1 || len2 != nulpos2)
 	    break;
-	  }
+
+	  r = strcmp (p1, p2);
+	  known_result = true;
+	  break;
+
 	case BUILT_IN_STRNCMP:
 	case BUILT_IN_STRNCMP_EQ:
 	  {
-	    if (length == -1)
+	    if (bound == HOST_WIDE_INT_M1U)
 	      break;
-	    r = strncmp (p1, p2, length);
+
+	    /* Reduce the bound to be no more than the length
+	       of the shorter of the two strings, or the sizes
+	       of the unterminated arrays.  */
+	    unsigned HOST_WIDE_INT n = bound;
+
+	    if (len1 == nulpos1 && len1 < n)
+	      n = len1 + 1;
+	    if (len2 == nulpos2 && len2 < n)
+	      n = len2 + 1;
+
+	    if (MIN (nulpos1, nulpos2) + 1 < n)
+	      break;
+
+	    r = strncmp (p1, p2, n);
 	    known_result = true;
 	    break;
 	  }
@@ -2394,9 +2442,9 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
 	  break;
 	case BUILT_IN_STRNCASECMP:
 	  {
-	    if (length == -1)
+	    if (bound == HOST_WIDE_INT_M1U)
 	      break;
-	    r = strncmp (p1, p2, length);
+	    r = strncmp (p1, p2, bound);
 	    if (r == 0)
 	      known_result = true;
 	    break;
@@ -2412,7 +2460,7 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
 	}
     }
 
-  bool nonzero_length = length >= 1
+  bool nonzero_bound = (bound >= 1 && bound < HOST_WIDE_INT_M1U)
     || fcode == BUILT_IN_STRCMP
     || fcode == BUILT_IN_STRCMP_EQ
     || fcode == BUILT_IN_STRCASECMP;
@@ -2420,7 +2468,7 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
   location_t loc = gimple_location (stmt);
 
   /* If the second arg is "", return *(const unsigned char*)arg1.  */
-  if (p2 && *p2 == '\0' && nonzero_length)
+  if (p2 && *p2 == '\0' && nonzero_bound)
     {
       gimple_seq stmts = NULL;
       tree var = gimple_load_first_char (loc, str1, &stmts);
@@ -2435,7 +2483,7 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
     }
 
   /* If the first arg is "", return -*(const unsigned char*)arg2.  */
-  if (p1 && *p1 == '\0' && nonzero_length)
+  if (p1 && *p1 == '\0' && nonzero_bound)
     {
       gimple_seq stmts = NULL;
       tree var = gimple_load_first_char (loc, str2, &stmts);
@@ -2454,9 +2502,9 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
       return true;
     }
 
-  /* If len parameter is one, return an expression corresponding to
+  /* If BOUND is one, return an expression corresponding to
      (*(const unsigned char*)arg2 - *(const unsigned char*)arg1).  */
-  if (fcode == BUILT_IN_STRNCMP && length == 1)
+  if (fcode == BUILT_IN_STRNCMP && bound == 1)
     {
       gimple_seq stmts = NULL;
       tree temp1 = gimple_load_first_char (loc, str1, &stmts);
@@ -2480,12 +2528,13 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
       return true;
     }
 
-  /* If length is larger than the length of one constant string, 
-     replace strncmp with corresponding strcmp */ 
-  if (fcode == BUILT_IN_STRNCMP 
-      && length > 0
-      && ((p2 && (size_t) length > strlen (p2)) 
-          || (p1 && (size_t) length > strlen (p1))))
+  /* If BOUND is greater than the length of one constant string,
+     and the other argument is also a nul-terminated string, replace
+     strncmp with strcmp.  */
+  if (fcode == BUILT_IN_STRNCMP
+      && bound > 0 && bound < HOST_WIDE_INT_M1U
+      && ((p2 && len2 < bound && len2 == nulpos2)
+	  || (p1 && len1 < bound && len1 == nulpos1)))
     {
       tree fn = builtin_decl_implicit (BUILT_IN_STRCMP);
       if (!fn)

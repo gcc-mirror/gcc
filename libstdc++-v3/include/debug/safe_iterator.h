@@ -1,6 +1,6 @@
 // Safe iterator implementation  -*- C++ -*-
 
-// Copyright (C) 2003-2019 Free Software Foundation, Inc.
+// Copyright (C) 2003-2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -139,6 +139,10 @@ namespace __gnu_debug
       typedef typename _Traits::difference_type		difference_type;
       typedef typename _Traits::reference		reference;
       typedef typename _Traits::pointer			pointer;
+
+#if __cplusplus > 201703L && __cpp_lib_concepts
+      using iterator_concept = std::__detail::__iter_concept<_Iterator>;
+#endif
 
       /// @post the iterator is singular and unattached
       _Safe_iterator() _GLIBCXX_NOEXCEPT : _Iter_base() { }
@@ -396,7 +400,7 @@ namespace __gnu_debug
 
       // Can we advance the iterator @p __n steps (@p __n may be negative)
       bool
-      _M_can_advance(difference_type __n) const;
+      _M_can_advance(difference_type __n, bool __strict = false) const;
 
       // Is the iterator range [*this, __rhs) valid?
       bool

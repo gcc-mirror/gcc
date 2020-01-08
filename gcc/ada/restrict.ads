@@ -307,6 +307,8 @@ package Restrict is
    --  elaboration routine. If elaboration code is not allowed, an error
    --  message is posted on the node given as argument.
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    procedure Check_SPARK_05_Restriction
      (Msg   : String;
       N     : Node_Id;
@@ -337,18 +339,26 @@ package Restrict is
    --  that generates a trampoline. If not allowed, an error message is posted
    --  on the node given as argument.
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    procedure Check_No_Implicit_Heap_Alloc (N : Node_Id);
    --  Equivalent to Check_Restriction (No_Implicit_Heap_Allocations, N).
    --  Provided for easy use by back end, which has to check this restriction.
 
-   procedure Check_No_Implicit_Task_Alloc (N : Node_Id);
-   --  Equivalent to Check_Restriction (No_Implicit_Task_Allocations, N).
-   --  Provided for easy use by back end, which has to check this restriction.
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    procedure Check_No_Implicit_Protected_Alloc (N : Node_Id);
    --  Equivalent to:
    --    Check_Restriction (No_Implicit_Protected_Object_Allocations, N)
    --  Provided for easy use by back end, which has to check this restriction.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
+   procedure Check_No_Implicit_Task_Alloc (N : Node_Id);
+   --  Equivalent to Check_Restriction (No_Implicit_Task_Allocations, N).
+   --  Provided for easy use by back end, which has to check this restriction.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    procedure Check_Obsolescent_2005_Entity (E : Entity_Id; N : Node_Id);
    --  This routine checks if the entity E is one of the obsolescent entries
@@ -393,6 +403,8 @@ package Restrict is
    --  of the restrictions No_Exception_Handlers or No_Exception_Propagation is
    --  set. In the latter case, the source may contain handlers but they either
    --  get converted using the local goto transformation or deleted.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    function No_Exception_Propagation_Active return Boolean;
    --  Test to see if current restrictions settings specify that no

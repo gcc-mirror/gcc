@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wall -ftrack-macro-expansion=0" } */
+/* { dg-options "-O2 -Wall -Wno-array-bounds -ftrack-macro-expansion=0" } */
 
 extern void abort (void);
 
@@ -22,15 +22,15 @@ test (void)
   strcpy (p, "Hello");
   p = malloc1 (6);
   strcpy (p, "Hello");
-  strcpy (p, "Hello World"); /* { dg-warning "writing" "strcpy" } */
+  strcpy (p, "Hello World"); /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "strcpy" } */
   p = malloc2 (__INT_MAX__ >= 1700000 ? 424242 : __INT_MAX__ / 4, 6);
   strcpy (p, "World");
-  strcpy (p, "Hello World"); /* { dg-warning "writing" "strcpy" } */
+  strcpy (p, "Hello World"); /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "strcpy" } */
   p = calloc1 (2, 5);
   strcpy (p, "World");
-  strcpy (p, "Hello World"); /* { dg-warning "writing" "strcpy" } */
+  strcpy (p, "Hello World"); /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "strcpy" } */
   p = calloc2 (2, __INT_MAX__ >= 1700000 ? 424242 : __INT_MAX__ / 4, 5);
   strcpy (p, "World");
-  strcpy (p, "Hello World"); /* { dg-warning "writing" "strcpy" } */
+  strcpy (p, "Hello World"); /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "strcpy" } */
 }
 

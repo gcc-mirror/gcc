@@ -316,6 +316,8 @@ AC_DEFUN([GLIBCXX_CHECK_SETRLIMIT_ancilliary], [
 ])
 
 AC_DEFUN([GLIBCXX_CHECK_SETRLIMIT], [
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
   setrlimit_have_headers=yes
   AC_CHECK_HEADERS(unistd.h sys/time.h sys/resource.h,
 		   [],
@@ -352,6 +354,7 @@ AC_DEFUN([GLIBCXX_CHECK_SETRLIMIT], [
   else
     ac_res_limits=no
   fi
+  AC_LANG_RESTORE
   AC_MSG_RESULT($ac_res_limits)
 ])
 
@@ -1404,13 +1407,18 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
         ac_has_nanosleep=yes
         ac_has_sched_yield=yes
         ;;
+      # VxWorks has nanosleep as soon as the kernel is configured with
+      # INCLUDE_POSIX_TIMERS, which is normally/most-often the case.
+      vxworks*)
+        ac_has_nanosleep=yes
+        ;;
       gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
         AC_MSG_CHECKING([for at least GNU libc 2.17])
         AC_TRY_COMPILE(
           [#include <features.h>],
           [
           #if ! __GLIBC_PREREQ(2, 17)
-          #error 
+          #error
           #endif
           ],
           [glibcxx_glibc217=yes], [glibcxx_glibc217=no])
@@ -2163,7 +2171,7 @@ AC_DEFUN([GLIBCXX_CHECK_STDIO_PROTO], [
   AC_CACHE_VAL(glibcxx_cv_gets, [
   AC_COMPILE_IFELSE([AC_LANG_SOURCE(
 	  [#include <stdio.h>
-	   namespace test 
+	   namespace test
 	   {
               using ::gets;
 	   }
@@ -2780,9 +2788,9 @@ AC_DEFUN([GLIBCXX_ENABLE_VTABLE_VERIFY], [
     esac
     VTV_PCH_CXXFLAGS="-fvtable-verify=std"
   else
-    VTV_CXXFLAGS= 
+    VTV_CXXFLAGS=
     VTV_PCH_CXXFLAGS=
-    VTV_CXXLINKFLAGS= 
+    VTV_CXXLINKFLAGS=
   fi
 
   AC_SUBST(VTV_CXXFLAGS)
@@ -3964,7 +3972,7 @@ dnl
 AC_DEFUN([GLIBCXX_CHECK_GTHREADS], [
   GLIBCXX_ENABLE(libstdcxx-threads,auto,,[enable C++11 threads support])
 
-  if test x$enable_libstdcxx_threads = xauto || 
+  if test x$enable_libstdcxx_threads = xauto ||
      test x$enable_libstdcxx_threads = xyes; then
 
   AC_LANG_SAVE
@@ -4017,11 +4025,23 @@ AC_DEFUN([GLIBCXX_CHECK_GTHREADS], [
 	      [Define if gthreads library is available.])
 
     # Also check for pthread_rwlock_t for std::shared_timed_mutex in C++14
-    AC_CHECK_TYPE([pthread_rwlock_t],
-            [AC_DEFINE([_GLIBCXX_USE_PTHREAD_RWLOCK_T], 1,
-            [Define if POSIX read/write locks are available in <gthr.h>.])],
-            [],
-            [#include "gthr.h"])
+    # but only do so if we're using pthread in the gthread library.
+    # On VxWorks for example, pthread_rwlock_t is defined in sys/types.h
+    # but the pthread library is not there by default and the gthread library
+    # does not use it.
+    AC_TRY_COMPILE([#include "gthr.h"],
+    [
+      #if (!defined(_PTHREADS))
+      #error
+      #endif
+    ], [ac_gthread_use_pthreads=yes], [ac_gthread_use_pthreads=no])
+    if test x"$ac_gthread_use_pthreads" = x"yes"; then
+      AC_CHECK_TYPE([pthread_rwlock_t],
+             [AC_DEFINE([_GLIBCXX_USE_PTHREAD_RWLOCK_T], 1,
+             [Define if POSIX read/write locks are available in <gthr.h>.])],
+             [],
+             [#include "gthr.h"])
+    fi
   fi
 
   CXXFLAGS="$ac_save_CXXFLAGS"
@@ -4221,6 +4241,70 @@ AC_DEFUN([GLIBCXX_CHECK_PTHREAD_COND_CLOCKWAIT], [
     AC_DEFINE(_GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT, 1, [Define if pthread_cond_clockwait is available in <pthread.h>.])
   fi
   AC_MSG_RESULT($glibcxx_cv_PTHREAD_COND_CLOCKWAIT)
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  LIBS="$ac_save_LIBS"
+  AC_LANG_RESTORE
+])
+
+dnl
+dnl Check whether pthread_mutex_clocklock is available in <pthread.h> for std::timed_mutex to use,
+dnl and define _GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_PTHREAD_MUTEX_CLOCKLOCK], [
+
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+  ac_save_LIBS="$LIBS"
+  LIBS="$LIBS -lpthread"
+
+  AC_MSG_CHECKING([for pthread_mutex_clocklock])
+  AC_CACHE_VAL(glibcxx_cv_PTHREAD_MUTEX_CLOCKLOCK, [
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <pthread.h>],
+      [pthread_mutex_t mutex; struct timespec ts; int n = pthread_mutex_clocklock(&mutex, CLOCK_REALTIME, &ts);],
+      [glibcxx_cv_PTHREAD_MUTEX_CLOCKLOCK=yes],
+      [glibcxx_cv_PTHREAD_MUTEX_CLOCKLOCK=no])
+  ])
+  if test $glibcxx_cv_PTHREAD_MUTEX_CLOCKLOCK = yes; then
+    AC_DEFINE(_GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK, 1, [Define if pthread_mutex_clocklock is available in <pthread.h>.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_PTHREAD_MUTEX_CLOCKLOCK)
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  LIBS="$ac_save_LIBS"
+  AC_LANG_RESTORE
+])
+
+dnl
+dnl Check whether pthread_mutex_clocklock is available in <pthread.h> for std::timed_mutex to use,
+dnl and define _GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_PTHREAD_RWLOCK_CLOCKLOCK], [
+
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+  ac_save_LIBS="$LIBS"
+  LIBS="$LIBS -lpthread"
+
+  AC_MSG_CHECKING([for pthread_rwlock_clockrdlock, pthread_wlock_clockwrlock])
+  AC_CACHE_VAL(glibcxx_cv_PTHREAD_RWLOCK_CLOCKLOCK, [
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <pthread.h>],
+      [pthread_rwlock_t rwl; struct timespec ts;]
+      [int n = pthread_rwlock_clockrdlock(&rwl, CLOCK_REALTIME, &ts);]
+      [int m = pthread_rwlock_clockwrlock(&rwl, CLOCK_REALTIME, &ts);],
+      [glibcxx_cv_PTHREAD_RWLOCK_CLOCKLOCK=yes],
+      [glibcxx_cv_PTHREAD_RWLOCK_CLOCKLOCK=no])
+  ])
+  if test $glibcxx_cv_PTHREAD_RWLOCK_CLOCKLOCK = yes; then
+    AC_DEFINE(_GLIBCXX_USE_PTHREAD_RWLOCK_CLOCKLOCK, 1, [Define if pthread_rwlock_clockrdlock and pthread_rwlock_clockwrlock are available in <pthread.h>.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_PTHREAD_RWLOCK_CLOCKLOCK)
 
   CXXFLAGS="$ac_save_CXXFLAGS"
   LIBS="$ac_save_LIBS"
@@ -4434,6 +4518,9 @@ AC_DEFUN([GLIBCXX_ENABLE_FILESYSTEM_TS], [
         enable_libstdcxx_filesystem_ts=yes
         ;;
       solaris*)
+        enable_libstdcxx_filesystem_ts=yes
+        ;;
+      mingw*)
         enable_libstdcxx_filesystem_ts=yes
         ;;
       *)

@@ -1,5 +1,5 @@
 /* Debug counter for debugging support
-   Copyright (C) 2006-2019 Free Software Foundation, Inc.
+   Copyright (C) 2006-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,6 +25,7 @@ See dbgcnt.def for usage information.  */
 #include "diagnostic-core.h"
 #include "dumpfile.h"
 #include "selftest.h"
+#include "intl.h"
 
 #include "dbgcnt.h"
 
@@ -150,7 +151,11 @@ dbg_cnt_set_limit_by_name (const char *name, unsigned int low,
       break;
 
   if (i < 0)
-    return false;
+    {
+      error ("cannot find a valid counter name %qs of %<-fdbg-cnt=%> option",
+	     name);
+      return false;
+    }
 
   return dbg_cnt_set_limit_by_index ((enum debug_counter) i, name, low, high);
 }
@@ -172,8 +177,9 @@ dbg_cnt_process_single_pair (char *name, char *str)
 
   if (value2 == NULL)
     {
-      low = 1;
       high = strtol (value1, NULL, 10);
+      /* Let's allow 0:0.  */
+      low = high == 0 ? 0 : 1;
     }
   else
     {
@@ -209,15 +215,6 @@ dbg_cnt_process_opt (const char *arg)
 	}
       start += strlen (tokens[i]) + 1;
     }
-
-   if (i != tokens.length ())
-     {
-       char *buffer = XALLOCAVEC (char, start + 2);
-       sprintf (buffer, "%*c", start + 1, '^');
-       error ("cannot find a valid counter:value pair:");
-       error ("%<-fdbg-cnt=%s%>", arg);
-       error ("           %s", buffer);
-     }
 }
 
 /* Print name, limit and count of all counters.   */
@@ -226,7 +223,7 @@ void
 dbg_cnt_list_all_counters (void)
 {
   int i;
-  printf ("  %-30s %s\n", "counter name", "closed intervals");
+  printf ("  %-30s %s\n", G_("counter name"), G_("closed intervals"));
   printf ("-----------------------------------------------------------------\n");
   for (i = 0; i < debug_counter_number_of_counters; i++)
     {

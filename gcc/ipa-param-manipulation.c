@@ -1,6 +1,6 @@
 /* Manipulation of formal and actual parameters of functions and function
    calls.
-   Copyright (C) 2017-2019 Free Software Foundation, Inc.
+   Copyright (C) 2017-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -322,6 +322,18 @@ ipa_param_adjustments::get_updated_indices (vec<int> *new_indices)
       if (apm->op == IPA_PARAM_OP_COPY)
 	(*new_indices)[apm->base_index] = i;
     }
+}
+
+/* Return the original index for the given new parameter index.  Return a
+   negative number if not available.  */
+
+int
+ipa_param_adjustments::get_original_index (int newidx)
+{
+  const ipa_adjusted_param *adj = &(*m_adj_params)[newidx];
+  if (adj->op != IPA_PARAM_OP_COPY)
+    return -1;
+  return adj->base_index;
 }
 
 /* Return true if the first parameter (assuming there was one) survives the
@@ -895,7 +907,7 @@ ipa_param_adjustments::debug ()
 }
 
 /* Register that REPLACEMENT should replace parameter described in APM and
-   optionally as DUMMY to mark transitive splits accross calls.  */
+   optionally as DUMMY to mark transitive splits across calls.  */
 
 void
 ipa_param_body_adjustments::register_replacement (ipa_adjusted_param *apm,

@@ -27134,7 +27134,7 @@ $as_echo "$gcc_cv_as_machine_directive" >&6; }
 
 	if test x$gcc_cv_as_machine_directive != xyes; then
 	  echo "*** This target requires an assembler supporting \".machine\"" >&2
-	  echo you can get it from: ftp://gcc.gnu.org/pub/gcc/infrastructure/cctools-528.5.dmg >&2
+	  echo you can get it from: https://gcc.gnu.org/pub/gcc/infrastructure/cctools-528.5.dmg >&2
 	  test x$build = x$target && exit 1
 	fi
         ;;
@@ -29690,6 +29690,15 @@ if test "${with_long_double_128+set}" = set; then :
   withval=$with_long_double_128; gcc_cv_target_ldbl128="$with_long_double_128"
 else
 
+      case "$target" in
+	s390*-*-linux-musl*)
+	  gcc_cv_target_ldbl128=yes
+	  ;;
+	powerpc*-*-linux-musl*)
+	  gcc_cv_target_ldbl128=no
+	  ;;
+	*)
+
 if test $glibc_version_major -gt 2 \
   || ( test $glibc_version_major -eq 2 && test $glibc_version_minor -ge 4 ); then :
   gcc_cv_target_ldbl128=yes
@@ -29701,6 +29710,10 @@ else
       && gcc_cv_target_ldbl128=yes
 
 fi
+
+	  ;;
+      esac
+
 fi
 
     ;;

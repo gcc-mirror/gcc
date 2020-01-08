@@ -1,6 +1,6 @@
 ;;   Machine description for GNU compiler,
 ;;   for ATMEL AVR micro controllers.
-;;   Copyright (C) 1998-2019 Free Software Foundation, Inc.
+;;   Copyright (C) 1998-2020 Free Software Foundation, Inc.
 ;;   Contributed by Denis Chertykov (chertykov@gmail.com)
 
 ;; This file is part of GCC.
@@ -399,7 +399,7 @@
    SI CSI SA USA SQ USQ
    DI CDI DA UDA DQ UDQ
    TA UTA
-   SF SC
+   SF DF SC DC
    PSI])
 
 (define_expand "push<mode>1"

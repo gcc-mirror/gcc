@@ -1,5 +1,5 @@
 # -*- shell-script -*-
-#   Copyright (C) 2011-2019 Free Software Foundation, Inc.
+#   Copyright (C) 2011-2020 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,6 +30,9 @@
 # Optimize TLS usage by avoiding the overhead of dynamic allocation.
 if test "$gcc_cv_have_tls" = yes ; then
   case "${target}" in
+
+    *-*-musl*)
+	;;
 
     # For x86, we use slots in the TCB head for most of our TLS.
     # The setup of those slots in beginTransaction can afford to

@@ -1,6 +1,6 @@
 /* Manipulation of formal and actual parameters of functions and function
    calls.
-   Copyright (C) 2017-2019 Free Software Foundation, Inc.
+   Copyright (C) 2017-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -258,6 +258,9 @@ public:
   void get_surviving_params (vec<bool> *surviving_params);
   /* Fill a vector with new indices of surviving original parameters.  */
   void get_updated_indices (vec<int> *new_indices);
+  /* Return the original index for the given new parameter index.  Return a
+     negative number if not available.  */
+  int get_original_index (int newidx);
 
   void dump (FILE *f);
   void debug ();

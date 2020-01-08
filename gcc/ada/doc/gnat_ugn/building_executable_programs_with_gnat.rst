@@ -3000,7 +3000,7 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 .. index:: -gnatw_C  (gcc)
 
 :switch:`-gnatw_C`
-  *Suppress warnings on missing component clauses.*
+  *Suppress warnings on unknown condition in Compile_Time_Warning.*
 
   This switch supresses warnings on a pragma Compile_Time_Warning
   or Compile_Time_Error whose condition has a value that is not
@@ -6540,7 +6540,10 @@ be presented in subsequent sections.
   longer generated. **Warning:** this option comes with the following
   limitations:
 
-  * Debugging will not work;
+  * Starting the program's execution in the debugger will cause it to
+    stop at the start of the ``main`` function instead of the main subprogram. 
+    This can be worked around by manually inserting a breakpoint on that 
+    subprogram and resuming the program's execution until reaching that breakpoint.
   * Programs using GNAT.Compiler_Version will not link.
 
   .. index:: -n  (gnatbind)

@@ -44,6 +44,5 @@ main ()
 
 }
 
-/* See that we vectorize an SLP instance.  */
-/* { dg-final { scan-tree-dump "Found vectorizable constructor" "slp1" { target { ! vect_fully_masked } } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 4 "slp1" { target { ! vect_fully_masked } } } } */
+/* See that we do not try to vectorize the uniform CTORs.  */
+/* { dg-final { scan-tree-dump-not "Analyzing vectorizable constructor" "slp1" } } */

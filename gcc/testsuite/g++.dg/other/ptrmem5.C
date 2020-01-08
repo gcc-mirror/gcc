@@ -8,5 +8,5 @@ struct a
 int main()
 {
   int a::*n[8];
-  n = &a::x;                    // { dg-error "int \\(a::\\*\\)" }
+  n = &a::x; // { dg-error "5:incompatible types in assignment of .int \\(a::\\*\\)" }
 }   

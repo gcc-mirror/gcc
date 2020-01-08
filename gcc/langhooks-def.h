@@ -1,5 +1,5 @@
 /* Default macros to initialize the lang_hooks data structure.
-   Copyright (C) 2001-2019 Free Software Foundation, Inc.
+   Copyright (C) 2001-2020 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -54,6 +54,8 @@ extern void lhd_print_error_function (diagnostic_context *,
 extern void lhd_set_decl_assembler_name (tree decl);
 extern void lhd_overwrite_decl_assembler_name (tree decl, tree name);
 extern bool lhd_warn_unused_global_decl (const_tree);
+extern tree lhd_simulate_enum_decl (location_t, const char *,
+				    vec<string_int_pair>);
 extern tree lhd_type_for_size (unsigned precision, int unsignedp);
 extern void lhd_incomplete_type_error (location_t, const_tree, const_tree);
 extern tree lhd_type_promotes_to (tree);
@@ -171,7 +173,7 @@ extern tree lhd_make_node (enum tree_code);
 extern tree lhd_unit_size_without_reusable_padding (tree);
 
 #define LANG_HOOKS_MAKE_TYPE lhd_make_node
-#define LANG_HOOKS_SIMULATE_ENUM_DECL	NULL
+#define LANG_HOOKS_SIMULATE_ENUM_DECL	lhd_simulate_enum_decl
 #define LANG_HOOKS_CLASSIFY_RECORD	NULL
 #define LANG_HOOKS_TYPE_FOR_SIZE	lhd_type_for_size
 #define LANG_HOOKS_INCOMPLETE_TYPE_ERROR lhd_incomplete_type_error

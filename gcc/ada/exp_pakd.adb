@@ -1564,7 +1564,7 @@ package body Exp_Pakd is
          Silly_Boolean_Array_Xor_Test (N, R, Rtyp);
       end if;
 
-      --  Now that that silliness is taken care of, get packed array type
+      --  Now that silliness is taken care of, get packed array type
 
       Convert_To_PAT_Type (L);
       Convert_To_PAT_Type (R);

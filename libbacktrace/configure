@@ -643,6 +643,8 @@ HAVE_COMPRESSED_DEBUG_FALSE
 HAVE_COMPRESSED_DEBUG_TRUE
 HAVE_ZLIB_FALSE
 HAVE_ZLIB_TRUE
+HAVE_DWARF5_FALSE
+HAVE_DWARF5_TRUE
 HAVE_PTHREAD_FALSE
 HAVE_PTHREAD_TRUE
 PTHREAD_CFLAGS
@@ -11497,7 +11499,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11500 "configure"
+#line 11502 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11603,7 +11605,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11606 "configure"
+#line 11608 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13280,6 +13282,36 @@ else
 fi
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether -gdwarf-5 is supported" >&5
+$as_echo_n "checking whether -gdwarf-5 is supported... " >&6; }
+if ${libbacktrace_cv_lib_dwarf5+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  CFLAGS_hold=$CFLAGS
+CFLAGS="$CFLAGS -gdwarf-5"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int i;
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libbacktrace_cv_lib_dwarf5=yes
+else
+  libbacktrace_cv_lib_dwarf5=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+CFLAGS=$CFLAGS_hold
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libbacktrace_cv_lib_dwarf5" >&5
+$as_echo "$libbacktrace_cv_lib_dwarf5" >&6; }
+ if test "$libbacktrace_cv_lib_dwarf5" = yes; then
+  HAVE_DWARF5_TRUE=
+  HAVE_DWARF5_FALSE='#'
+else
+  HAVE_DWARF5_TRUE='#'
+  HAVE_DWARF5_FALSE=
+fi
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for compress in -lz" >&5
 $as_echo_n "checking for compress in -lz... " >&6; }
 if ${ac_cv_lib_z_compress+:} false; then :
@@ -13663,6 +13695,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_PTHREAD_TRUE}" && test -z "${HAVE_PTHREAD_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_PTHREAD\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_DWARF5_TRUE}" && test -z "${HAVE_DWARF5_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_DWARF5\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_ZLIB_TRUE}" && test -z "${HAVE_ZLIB_FALSE}"; then

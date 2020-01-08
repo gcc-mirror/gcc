@@ -21,11 +21,11 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Oct 09, 2019
+GNAT User's Guide for Native Platforms , Dec 10, 2019
 
 AdaCore
 
-Copyright @copyright{} 2008-2019, Free Software Foundation
+Copyright @copyright{} 2008-2020, Free Software Foundation
 @end quotation
 
 @end copying
@@ -11250,7 +11250,7 @@ The default is that such warnings are generated.
 
 @item @code{-gnatw_C}
 
-@emph{Suppress warnings on missing component clauses.}
+@emph{Suppress warnings on unknown condition in Compile_Time_Warning.}
 
 This switch supresses warnings on a pragma Compile_Time_Warning
 or Compile_Time_Error whose condition has a value that is not
@@ -15968,7 +15968,10 @@ limitations:
 @itemize *
 
 @item 
-Debugging will not work;
+Starting the program's execution in the debugger will cause it to
+stop at the start of the @code{main} function instead of the main subprogram.
+This can be worked around by manually inserting a breakpoint on that
+subprogram and resuming the program's execution until reaching that breakpoint.
 
 @item 
 Programs using GNAT.Compiler_Version will not link.
@@ -20730,8 +20733,7 @@ for more information.
 @section Profiling
 
 
-This section describes how to use the the @code{gprof} profiler tool on Ada
-programs.
+This section describes how to use the @code{gprof} profiler tool on Ada programs.
 
 @geindex gprof
 
@@ -22793,7 +22795,7 @@ integer arithmetic package. The compiler will make calls
 to this package, though only in cases where it cannot be
 sure that @code{Long_Long_Integer} is sufficient to guard against
 intermediate overflows. This package does not use dynamic
-alllocation, but it does use the secondary stack, so an
+allocation, but it does use the secondary stack, so an
 appropriate secondary stack package must be present (this
 is always true for standard full Ada, but may require
 specific steps for restricted run times such as ZFP).

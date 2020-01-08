@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-fvect-cost-model=dynamic" } */
-/* { dg-require-effective-target vect_int } */
+/* { dg-require-effective-target vect_char_add } */
 
 char g_d[1024], g_s1[1024], g_s2[1024];
 void foo(void)
@@ -30,5 +30,5 @@ void foo(void)
 }
 
 /* See that we vectorize an SLP instance.  */
-/* { dg-final { scan-tree-dump "Found vectorizable constructor" "slp1" } } */
+/* { dg-final { scan-tree-dump "Analyzing vectorizable constructor" "slp1" } } */
 /* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "slp1" } } */

@@ -1,5 +1,5 @@
 /* Function splitting pass
-   Copyright (C) 2010-2019 Free Software Foundation, Inc.
+   Copyright (C) 2010-2020 Free Software Foundation, Inc.
    Contributed by Jan Hubicka  <jh@suse.cz>
 
 This file is part of GCC.
@@ -168,7 +168,7 @@ test_nonssa_use (gimple *, tree t, tree, void *data)
       || (VAR_P (t)
 	  && auto_var_in_fn_p (t, current_function_decl))
       || TREE_CODE (t) == RESULT_DECL
-	 /* Normal labels are part of CFG and will be handled gratefuly.
+	 /* Normal labels are part of CFG and will be handled gratefully.
 	    Forced labels however can be used directly by statements and
 	    need to stay in one partition along with their uses.  */
       || (TREE_CODE (t) == LABEL_DECL
@@ -455,7 +455,7 @@ consider_split (class split_point *current, bitmap non_ssa_vars,
 	   (param_partial_inlining_entry_probability, 100))))
     {
       /* When profile is guessed, we cannot expect it to give us
-	 realistic estimate on likelyness of function taking the
+	 realistic estimate on likeliness of function taking the
 	 complex path.  As a special case, when tail of the function is
 	 a loop, enable splitting since inlining code skipping the loop
 	 is likely noticeable win.  */
@@ -1369,7 +1369,8 @@ split_function (basic_block return_bb, class split_point *split_point,
 
 
   /* Let's take a time profile for splitted function.  */
-  node->tp_first_run = cur_node->tp_first_run + 1;
+  if (cur_node->tp_first_run)
+    node->tp_first_run = cur_node->tp_first_run + 1;
 
   /* For usual cloning it is enough to clear builtin only when signature
      changes.  For partial inlining we however cannot expect the part

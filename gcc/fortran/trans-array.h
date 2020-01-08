@@ -1,5 +1,5 @@
 /* Header for array handling functions
-   Copyright (C) 2002-2019 Free Software Foundation, Inc.
+   Copyright (C) 2002-2020 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -163,7 +163,7 @@ void gfc_trans_array_cobounds (tree, stmtblock_t *, const gfc_symbol *);
 
 /* Build expressions for accessing components of an array descriptor.  */
 void gfc_get_descriptor_offsets_for_info (const_tree, tree *, tree *, tree *, tree *,
-					  tree *, tree *, tree *);
+					  tree *, tree *, tree *, tree *);
 
 tree gfc_conv_descriptor_data_get (tree);
 tree gfc_conv_descriptor_data_addr (tree);

@@ -1,5 +1,5 @@
 /* Implementation of subroutines for the GNU C++ pretty-printer.
-   Copyright (C) 2003-2019 Free Software Foundation, Inc.
+   Copyright (C) 2003-2020 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -172,11 +172,11 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
     case TYPENAME_TYPE:
     case UNBOUND_CLASS_TEMPLATE:
       pp_cxx_unqualified_id (pp, TYPE_NAME (t));
-      if (CLASS_TYPE_P (t) && CLASSTYPE_USE_TEMPLATE (t))
+      if (tree ti = TYPE_TEMPLATE_INFO_MAYBE_ALIAS (t))
 	{
 	  pp_cxx_begin_template_argument_list (pp);
-	  pp_cxx_template_argument_list (pp, INNERMOST_TEMPLATE_ARGS
-                                                 (CLASSTYPE_TI_ARGS (t)));
+	  tree args = INNERMOST_TEMPLATE_ARGS (TI_ARGS (ti));
+	  pp_cxx_template_argument_list (pp, args);
 	  pp_cxx_end_template_argument_list (pp);
 	}
       break;
@@ -2661,7 +2661,7 @@ pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
       pp_cxx_ws_string (pp, "__is_polymorphic");
       break;
     case CPTK_IS_SAME_AS:
-      pp_cxx_ws_string (pp, "__is_same_as");
+      pp_cxx_ws_string (pp, "__is_same");
       break;
     case CPTK_IS_STD_LAYOUT:
       pp_cxx_ws_string (pp, "__is_std_layout");
@@ -2967,4 +2967,12 @@ cxx_pretty_printer::cxx_pretty_printer ()
 {
   type_specifier_seq = (pp_fun) pp_cxx_type_specifier_seq;
   parameter_list = (pp_fun) pp_cxx_parameter_declaration_clause;
+}
+
+/* cxx_pretty_printer's implementation of pretty_printer::clone vfunc.  */
+
+pretty_printer *
+cxx_pretty_printer::clone () const
+{
+  return new cxx_pretty_printer (*this);
 }

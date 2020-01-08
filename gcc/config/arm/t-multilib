@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2019 Free Software Foundation, Inc.
+# Copyright (C) 2016-2020 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -73,9 +73,10 @@ v7ve_vfpv4_simd_variants := +simd
 v8_a_nosimd_variants	:= +crc
 v8_a_simd_variants	:= $(call all_feat_combs, simd crypto)
 v8_1_a_simd_variants	:= $(call all_feat_combs, simd crypto)
-v8_2_a_simd_variants	:= $(call all_feat_combs, simd fp16 fp16fml crypto dotprod)
-v8_4_a_simd_variants	:= $(call all_feat_combs, simd fp16 crypto)
-v8_5_a_simd_variants	:= $(call all_feat_combs, simd fp16 crypto)
+v8_2_a_simd_variants	:= $(call all_feat_combs, simd fp16 fp16fml crypto dotprod i8mm bf16)
+v8_4_a_simd_variants	:= $(call all_feat_combs, simd fp16 crypto i8mm bf16)
+v8_5_a_simd_variants	:= $(call all_feat_combs, simd fp16 crypto i8mm bf16)
+v8_6_a_simd_variants	:= $(call all_feat_combs, simd fp16 crypto i8mm bf16)
 v8_r_nosimd_variants	:= +crc
 
 ifneq (,$(HAS_APROFILE))
@@ -132,9 +133,18 @@ MULTILIB_MATCHES	+= march?armv7-r+fp.sp=march?armv8-r+crc+fp.sp
 
 ifeq (,$(HAS_APROFILE))
 # Map all v7-a
+
 MULTILIB_MATCHES	+= march?armv7=march?armv7-a
+
+MULTILIB_MATCHES	+= $(foreach ARCH, $(v7_a_arch_variants), \
+			     march?armv7=march?armv7-a$(ARCH))
+
 MULTILIB_MATCHES	+= $(foreach ARCH, $(v7_a_nosimd_variants) $(v7_a_simd_variants), \
 			     march?armv7+fp=march?armv7-a$(ARCH))
+
+MULTILIB_MATCHES	+= $(foreach ARCHVAR, $(v7_a_arch_variants), \
+			     $(foreach ARCH, $(v7_a_nosimd_variants) $(v7_a_simd_variants), \
+			       march?armv7+fp=march?armv7-a$(ARCHVAR)$(ARCH)))
 
 MULTILIB_MATCHES	+= march?armv7=march?armv7ve
 
@@ -185,6 +195,15 @@ MULTILIB_MATCHES	+= march?armv7=march?armv8.5-a
 MULTILIB_MATCHES	+= $(foreach ARCH, $(v8_5_a_simd_variants), \
 			     march?armv7+fp=march?armv8.5-a$(ARCH))
 
+# Baseline v8.6-a: map down to baseline v8-a
+MULTILIB_MATCHES	+= march?armv7=march?armv8.6-a
+
+# Map all v8.6-a SIMD variants
+MULTILIB_MATCHES	+= $(foreach ARCH, $(v8_6_a_simd_variants), \
+			     march?armv7+fp=march?armv8.6-a$(ARCH))
+
+endif		# Not APROFILE.
+
 # Use Thumb libraries for everything.
 
 MULTILIB_REUSE		+= mthumb/march.armv7/mfloat-abi.soft=marm/march.armv7/mfloat-abi.soft
@@ -198,4 +217,3 @@ MULTILIB_REUSE		+= $(foreach MODE, arm thumb, \
 			     $(foreach ARCH, armv7, \
 			       mthumb/march.$(ARCH)/mfloat-abi.soft=m$(MODE)/march.$(ARCH)/mfloat-abi.softfp))
 
-endif		# Not APROFILE.

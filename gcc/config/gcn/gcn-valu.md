@@ -1,4 +1,4 @@
-;; Copyright (C) 2016-2019 Free Software Foundation, Inc.
+;; Copyright (C) 2016-2020 Free Software Foundation, Inc.
 
 ;; This file is free software; you can redistribute it and/or modify it under
 ;; the terms of the GNU General Public License as published by the Free
@@ -18,13 +18,17 @@
 
 ; Vector modes for one vector register
 (define_mode_iterator VEC_1REG_MODE
-		      [V64QI V64HI V64SI V64HF V64SF])
+		      [V64SI V64HF V64SF])
 (define_mode_iterator VEC_1REG_ALT
+		      [V64SI V64HF V64SF])
+(define_mode_iterator VEC_ALL1REG_MODE
 		      [V64QI V64HI V64SI V64HF V64SF])
 
 (define_mode_iterator VEC_1REG_INT_MODE
+		      [V64SI])
+(define_mode_iterator VEC_ALL1REG_INT_MODE
 		      [V64QI V64HI V64SI])
-(define_mode_iterator VEC_1REG_INT_ALT
+(define_mode_iterator VEC_ALL1REG_INT_ALT
 		      [V64QI V64HI V64SI])
 
 ; Vector modes for two vector registers
@@ -33,8 +37,17 @@
 
 ; All of above
 (define_mode_iterator VEC_REG_MODE
+		      [V64SI V64HF V64SF	        ; Single reg
+		       V64DI V64DF])		        ; Double reg
+(define_mode_iterator VEC_ALLREG_MODE
 		      [V64QI V64HI V64SI V64HF V64SF    ; Single reg
 		       V64DI V64DF])		        ; Double reg
+(define_mode_iterator VEC_ALLREG_ALT
+		      [V64QI V64HI V64SI V64HF V64SF    ; Single reg
+		       V64DI V64DF])		        ; Double reg
+(define_mode_iterator VEC_ALLREG_INT_MODE
+		      [V64QI V64HI V64SI	        ; Single reg
+		       V64DI])			        ; Double reg
 
 (define_mode_attr scalar_mode
   [(V64QI "qi") (V64HI "hi") (V64SI "si")
@@ -43,6 +56,8 @@
 (define_mode_attr SCALAR_MODE
   [(V64QI "QI") (V64HI "HI") (V64SI "SI")
    (V64HF "HF") (V64SF "SF") (V64DI "DI") (V64DF "DF")])
+
+(define_mode_attr sdwa [(V64QI "BYTE_0") (V64HI "WORD_0") (V64SI "DWORD")])
 
 ;; }}}
 ;; {{{ Substitutions
@@ -57,38 +72,40 @@
 		   "" "_exec")
 
 (define_subst "vec_merge"
-  [(set (match_operand:VEC_REG_MODE 0)
-	(match_operand:VEC_REG_MODE 1))]
+  [(set (match_operand:VEC_ALLREG_MODE 0)
+	(match_operand:VEC_ALLREG_MODE 1))]
   ""
   [(set (match_dup 0)
-	(vec_merge:VEC_REG_MODE
+	(vec_merge:VEC_ALLREG_MODE
 	  (match_dup 1)
-	  (match_operand:VEC_REG_MODE 3 "gcn_register_or_unspec_operand" "U0")
+	  (match_operand:VEC_ALLREG_MODE 3
+					 "gcn_register_or_unspec_operand" "U0")
 	  (match_operand:DI 4 "gcn_exec_reg_operand" "e")))])
 
 (define_subst "vec_merge_with_clobber"
-  [(set (match_operand:VEC_REG_MODE 0)
-	(match_operand:VEC_REG_MODE 1))
+  [(set (match_operand:VEC_ALLREG_MODE 0)
+	(match_operand:VEC_ALLREG_MODE 1))
    (clobber (match_operand 2))]
   ""
   [(set (match_dup 0)
-	(vec_merge:VEC_REG_MODE
+	(vec_merge:VEC_ALLREG_MODE
 	  (match_dup 1)
-	  (match_operand:VEC_REG_MODE 3 "gcn_register_or_unspec_operand" "U0")
+	  (match_operand:VEC_ALLREG_MODE 3
+					 "gcn_register_or_unspec_operand" "U0")
 	  (match_operand:DI 4 "gcn_exec_reg_operand" "e")))
    (clobber (match_dup 2))])
 
 (define_subst "vec_merge_with_vcc"
-  [(set (match_operand:VEC_REG_MODE 0)
-	(match_operand:VEC_REG_MODE 1))
+  [(set (match_operand:VEC_ALLREG_MODE 0)
+	(match_operand:VEC_ALLREG_MODE 1))
    (set (match_operand:DI 2)
 	(match_operand:DI 3))]
   ""
   [(parallel
      [(set (match_dup 0)
-	   (vec_merge:VEC_REG_MODE
+	   (vec_merge:VEC_ALLREG_MODE
 	     (match_dup 1)
-	     (match_operand:VEC_REG_MODE 4
+	     (match_operand:VEC_ALLREG_MODE 4
 					 "gcn_register_or_unspec_operand" "U0")
 	     (match_operand:DI 5 "gcn_exec_reg_operand" "e")))
       (set (match_dup 2)
@@ -121,8 +138,8 @@
 ; gather/scatter, maskload/store, etc.
 
 (define_expand "mov<mode>"
-  [(set (match_operand:VEC_REG_MODE 0 "nonimmediate_operand")
-	(match_operand:VEC_REG_MODE 1 "general_operand"))]
+  [(set (match_operand:VEC_ALLREG_MODE 0 "nonimmediate_operand")
+	(match_operand:VEC_ALLREG_MODE 1 "general_operand"))]
   ""
   {
     if (MEM_P (operands[0]) && !lra_in_progress && !reload_completed)
@@ -160,28 +177,28 @@
 ; A pseudo instruction that helps LRA use the "U0" constraint.
 
 (define_insn "mov<mode>_unspec"
-  [(set (match_operand:VEC_REG_MODE 0 "nonimmediate_operand" "=v")
-	(match_operand:VEC_REG_MODE 1 "gcn_unspec_operand"   " U"))]
+  [(set (match_operand:VEC_ALLREG_MODE 0 "nonimmediate_operand" "=v")
+	(match_operand:VEC_ALLREG_MODE 1 "gcn_unspec_operand"   " U"))]
   ""
   ""
   [(set_attr "type" "unknown")
    (set_attr "length" "0")])
 
 (define_insn "*mov<mode>"
-  [(set (match_operand:VEC_1REG_MODE 0 "nonimmediate_operand" "=v,v")
-	(match_operand:VEC_1REG_MODE 1 "general_operand"      "vA,B"))]
+  [(set (match_operand:VEC_ALL1REG_MODE 0 "nonimmediate_operand" "=v,v")
+	(match_operand:VEC_ALL1REG_MODE 1 "general_operand"      "vA,B"))]
   ""
   "v_mov_b32\t%0, %1"
   [(set_attr "type" "vop1,vop1")
    (set_attr "length" "4,8")])
 
 (define_insn "mov<mode>_exec"
-  [(set (match_operand:VEC_1REG_MODE 0 "nonimmediate_operand"
+  [(set (match_operand:VEC_ALL1REG_MODE 0 "nonimmediate_operand"
 							 "=v, v, v, v, v, m")
-	(vec_merge:VEC_1REG_MODE
-	  (match_operand:VEC_1REG_MODE 1 "general_operand"
+	(vec_merge:VEC_ALL1REG_MODE
+	  (match_operand:VEC_ALL1REG_MODE 1 "general_operand"
 							 "vA, B, v,vA, m, v")
-	  (match_operand:VEC_1REG_MODE 3 "gcn_alu_or_unspec_operand"
+	  (match_operand:VEC_ALL1REG_MODE 3 "gcn_alu_or_unspec_operand"
 							 "U0,U0,vA,vA,U0,U0")
 	  (match_operand:DI 2 "register_operand"	 " e, e,cV,Sv, e, e")))
    (clobber (match_scratch:V64DI 4			 "=X, X, X, X,&v,&v"))]
@@ -200,9 +217,10 @@
 ; read/modify/write which is necessary for maskstore.
 
 ;(define_insn "*mov<mode>_exec_match"
-;  [(set (match_operand:VEC_1REG_MODE 0 "nonimmediate_operand" "=v,v, v, m")
-;	(vec_merge:VEC_1REG_MODE
-;	  (match_operand:VEC_1REG_MODE 1 "general_operand"    "vA,B, m, v")
+;  [(set (match_operand:VEC_ALL1REG_MODE 0 "nonimmediate_operand"
+;							      "=v,v, v, m")
+;	(vec_merge:VEC_ALL1REG_MODE
+;	  (match_operand:VEC_ALL1REG_MODE 1 "general_operand" "vA,B, m, v")
 ;	  (match_dup 0)
 ;	  (match_operand:DI 2 "gcn_exec_reg_operand"	      " e,e, e, e")))
 ;   (clobber (match_scratch:V64DI 3			      "=X,X,&v,&v"))]
@@ -304,9 +322,11 @@
 ;   flat_load v, vT
 
 (define_insn "mov<mode>_sgprbase"
-  [(set (match_operand:VEC_1REG_MODE 0 "nonimmediate_operand" "= v, v, v, m")
-	(unspec:VEC_1REG_MODE
-	  [(match_operand:VEC_1REG_MODE 1 "general_operand"   " vA,vB, m, v")]
+  [(set (match_operand:VEC_ALL1REG_MODE 0 "nonimmediate_operand"
+							      "= v, v, v, m")
+	(unspec:VEC_ALL1REG_MODE
+	  [(match_operand:VEC_ALL1REG_MODE 1 "general_operand"
+							      " vA,vB, m, v")]
 	  UNSPEC_SGPRBASE))
    (clobber (match_operand:V64DI 2 "register_operand"	      "=&v,&v,&v,&v"))]
   "lra_in_progress || reload_completed"
@@ -339,8 +359,8 @@
 ; gcn_secondary_reload.  It allows a reload with a scratch register.
 
 (define_expand "reload_in<mode>"
-  [(set (match_operand:VEC_REG_MODE 0 "register_operand" "= v")
-	(match_operand:VEC_REG_MODE 1 "memory_operand"   "  m"))
+  [(set (match_operand:VEC_ALLREG_MODE 0 "register_operand" "= v")
+	(match_operand:VEC_ALLREG_MODE 1 "memory_operand"   "  m"))
    (clobber (match_operand:V64DI 2 "register_operand"    "=&v"))]
   ""
   {
@@ -351,8 +371,8 @@
 ; reload_out is similar to reload_in, above.
 
 (define_expand "reload_out<mode>"
-  [(set (match_operand:VEC_REG_MODE 0 "memory_operand"   "= m")
-	(match_operand:VEC_REG_MODE 1 "register_operand" "  v"))
+  [(set (match_operand:VEC_ALLREG_MODE 0 "memory_operand"   "= m")
+	(match_operand:VEC_ALLREG_MODE 1 "register_operand" "  v"))
    (clobber (match_operand:V64DI 2 "register_operand"    "=&v"))]
   ""
   {
@@ -363,9 +383,9 @@
 ; Expand scalar addresses into gather/scatter patterns
 
 (define_split
-  [(set (match_operand:VEC_REG_MODE 0 "memory_operand")
-	(unspec:VEC_REG_MODE
-	  [(match_operand:VEC_REG_MODE 1 "general_operand")]
+  [(set (match_operand:VEC_ALLREG_MODE 0 "memory_operand")
+	(unspec:VEC_ALLREG_MODE
+	  [(match_operand:VEC_ALLREG_MODE 1 "general_operand")]
 	  UNSPEC_SGPRBASE))
    (clobber (match_scratch:V64DI 2))]
   ""
@@ -381,10 +401,10 @@
   })
 
 (define_split
-  [(set (match_operand:VEC_REG_MODE 0 "memory_operand")
-	(vec_merge:VEC_REG_MODE
-	  (match_operand:VEC_REG_MODE 1 "general_operand")
-	  (match_operand:VEC_REG_MODE 2 "")
+  [(set (match_operand:VEC_ALLREG_MODE 0 "memory_operand")
+	(vec_merge:VEC_ALLREG_MODE
+	  (match_operand:VEC_ALLREG_MODE 1 "general_operand")
+	  (match_operand:VEC_ALLREG_MODE 2 "")
 	  (match_operand:DI 3 "gcn_exec_reg_operand")))
    (clobber (match_scratch:V64DI 4))]
   ""
@@ -402,14 +422,14 @@
   })
 
 (define_split
-  [(set (match_operand:VEC_REG_MODE 0 "nonimmediate_operand")
-	(unspec:VEC_REG_MODE
-	  [(match_operand:VEC_REG_MODE 1 "memory_operand")]
+  [(set (match_operand:VEC_ALLREG_MODE 0 "nonimmediate_operand")
+	(unspec:VEC_ALLREG_MODE
+	  [(match_operand:VEC_ALLREG_MODE 1 "memory_operand")]
 	  UNSPEC_SGPRBASE))
    (clobber (match_scratch:V64DI 2))]
   ""
   [(set (match_dup 0)
-	(unspec:VEC_REG_MODE [(match_dup 5) (match_dup 6) (match_dup 7)
+	(unspec:VEC_ALLREG_MODE [(match_dup 5) (match_dup 6) (match_dup 7)
 			      (mem:BLK (scratch))]
 			     UNSPEC_GATHER))]
   {
@@ -421,18 +441,18 @@
   })
 
 (define_split
-  [(set (match_operand:VEC_REG_MODE 0 "nonimmediate_operand")
-	(vec_merge:VEC_REG_MODE
-	  (match_operand:VEC_REG_MODE 1 "memory_operand")
-	  (match_operand:VEC_REG_MODE 2 "")
+  [(set (match_operand:VEC_ALLREG_MODE 0 "nonimmediate_operand")
+	(vec_merge:VEC_ALLREG_MODE
+	  (match_operand:VEC_ALLREG_MODE 1 "memory_operand")
+	  (match_operand:VEC_ALLREG_MODE 2 "")
 	  (match_operand:DI 3 "gcn_exec_reg_operand")))
    (clobber (match_scratch:V64DI 4))]
   ""
   [(set (match_dup 0)
-	(vec_merge:VEC_REG_MODE
-	  (unspec:VEC_REG_MODE [(match_dup 5) (match_dup 6) (match_dup 7)
-				(mem:BLK (scratch))]
-			       UNSPEC_GATHER)
+	(vec_merge:VEC_ALLREG_MODE
+	  (unspec:VEC_ALLREG_MODE [(match_dup 5) (match_dup 6) (match_dup 7)
+				   (mem:BLK (scratch))]
+				  UNSPEC_GATHER)
 	  (match_dup 2)
 	  (match_dup 3)))]
   {
@@ -455,11 +475,11 @@
 ; FIXME these should take A immediates
 
 (define_insn "*vec_set<mode>"
-  [(set (match_operand:VEC_1REG_MODE 0 "register_operand"            "= v")
-	(vec_merge:VEC_1REG_MODE
-	  (vec_duplicate:VEC_1REG_MODE
+  [(set (match_operand:VEC_ALL1REG_MODE 0 "register_operand"         "= v")
+	(vec_merge:VEC_ALL1REG_MODE
+	  (vec_duplicate:VEC_ALL1REG_MODE
 	    (match_operand:<SCALAR_MODE> 1 "register_operand"	     " Sv"))
-	  (match_operand:VEC_1REG_MODE 3 "gcn_register_or_unspec_operand"
+	  (match_operand:VEC_ALL1REG_MODE 3 "gcn_register_or_unspec_operand"
 								     " U0")
 	  (ashift (const_int 1)
 		  (match_operand:SI 2 "gcn_alu_operand"		     "SvB"))))]
@@ -489,20 +509,20 @@
    (set_attr "laneselect" "yes")])
 
 (define_expand "vec_set<mode>"
-  [(set (match_operand:VEC_REG_MODE 0 "register_operand")
-	(vec_merge:VEC_REG_MODE
-	  (vec_duplicate:VEC_REG_MODE
+  [(set (match_operand:VEC_ALLREG_MODE 0 "register_operand")
+	(vec_merge:VEC_ALLREG_MODE
+	  (vec_duplicate:VEC_ALLREG_MODE
 	    (match_operand:<SCALAR_MODE> 1 "register_operand"))
 	  (match_dup 0)
 	  (ashift (const_int 1) (match_operand:SI 2 "gcn_alu_operand"))))]
   "")
 
 (define_insn "*vec_set<mode>_1"
-  [(set (match_operand:VEC_1REG_MODE 0 "register_operand"	       "=v")
-	(vec_merge:VEC_1REG_MODE
-	  (vec_duplicate:VEC_1REG_MODE
+  [(set (match_operand:VEC_ALL1REG_MODE 0 "register_operand"	       "=v")
+	(vec_merge:VEC_ALL1REG_MODE
+	  (vec_duplicate:VEC_ALL1REG_MODE
 	    (match_operand:<SCALAR_MODE> 1 "register_operand"	       "Sv"))
-	  (match_operand:VEC_1REG_MODE 3 "gcn_register_or_unspec_operand"
+	  (match_operand:VEC_ALL1REG_MODE 3 "gcn_register_or_unspec_operand"
 								       "U0")
 	  (match_operand:SI 2 "const_int_operand"	               " i")))]
   "((unsigned) exact_log2 (INTVAL (operands[2])) < 64)"
@@ -534,9 +554,9 @@
    (set_attr "laneselect" "yes")])
 
 (define_insn "vec_duplicate<mode><exec>"
-  [(set (match_operand:VEC_1REG_MODE 0 "register_operand"  "=v")
-	(vec_duplicate:VEC_1REG_MODE
-	  (match_operand:<SCALAR_MODE> 1 "gcn_alu_operand" "SvB")))]
+  [(set (match_operand:VEC_ALL1REG_MODE 0 "register_operand"  "=v")
+	(vec_duplicate:VEC_ALL1REG_MODE
+	  (match_operand:<SCALAR_MODE> 1 "gcn_alu_operand"    "SvB")))]
   ""
   "v_mov_b32\t%0, %1"
   [(set_attr "type" "vop3a")
@@ -554,8 +574,8 @@
 (define_insn "vec_extract<mode><scalar_mode>"
   [(set (match_operand:<SCALAR_MODE> 0 "register_operand"   "=Sg")
 	(vec_select:<SCALAR_MODE>
-	  (match_operand:VEC_1REG_MODE 1 "register_operand" "  v")
-	  (parallel [(match_operand:SI 2 "gcn_alu_operand"  "SvB")])))]
+	  (match_operand:VEC_ALL1REG_MODE 1 "register_operand" "  v")
+	  (parallel [(match_operand:SI 2 "gcn_alu_operand"     "SvB")])))]
   ""
   "v_readlane_b32 %0, %1, %2"
   [(set_attr "type" "vop3a")
@@ -564,10 +584,10 @@
    (set_attr "laneselect" "yes")])
 
 (define_insn "vec_extract<mode><scalar_mode>"
-  [(set (match_operand:<SCALAR_MODE> 0 "register_operand"   "=Sg")
+  [(set (match_operand:<SCALAR_MODE> 0 "register_operand"   "=&Sg")
 	(vec_select:<SCALAR_MODE>
-	  (match_operand:VEC_2REG_MODE 1 "register_operand" "  v")
-	  (parallel [(match_operand:SI 2 "gcn_alu_operand"  "SvB")])))]
+	  (match_operand:VEC_2REG_MODE 1 "register_operand" "   v")
+	  (parallel [(match_operand:SI 2 "gcn_alu_operand"  " SvB")])))]
   ""
   "v_readlane_b32 %L0, %L1, %2\;v_readlane_b32 %H0, %H1, %2"
   [(set_attr "type" "vmult")
@@ -575,8 +595,50 @@
    (set_attr "exec" "none")
    (set_attr "laneselect" "yes")])
 
+(define_expand "extract_last_<mode>"
+  [(match_operand:<SCALAR_MODE> 0 "register_operand")
+   (match_operand:DI 1 "gcn_alu_operand")
+   (match_operand:VEC_ALLREG_MODE 2 "register_operand")]
+  "can_create_pseudo_p ()"
+  {
+    rtx dst = operands[0];
+    rtx mask = operands[1];
+    rtx vect = operands[2];
+    rtx tmpreg = gen_reg_rtx (SImode);
+
+    emit_insn (gen_clzdi2 (tmpreg, mask));
+    emit_insn (gen_subsi3 (tmpreg, GEN_INT (63), tmpreg));
+    emit_insn (gen_vec_extract<mode><scalar_mode> (dst, vect, tmpreg));
+    DONE;
+  })
+
+(define_expand "fold_extract_last_<mode>"
+  [(match_operand:<SCALAR_MODE> 0 "register_operand")
+   (match_operand:<SCALAR_MODE> 1 "gcn_alu_operand")
+   (match_operand:DI 2 "gcn_alu_operand")
+   (match_operand:VEC_ALLREG_MODE 3 "register_operand")]
+  "can_create_pseudo_p ()"
+  {
+    rtx dst = operands[0];
+    rtx default_value = operands[1];
+    rtx mask = operands[2];
+    rtx vect = operands[3];
+    rtx else_label = gen_label_rtx ();
+    rtx end_label = gen_label_rtx ();
+
+    rtx cond = gen_rtx_EQ (VOIDmode, mask, const0_rtx);
+    emit_jump_insn (gen_cbranchdi4 (cond, mask, const0_rtx, else_label));
+    emit_insn (gen_extract_last_<mode> (dst, mask, vect));
+    emit_jump_insn (gen_jump (end_label));
+    emit_barrier ();
+    emit_label (else_label);
+    emit_move_insn (dst, default_value);
+    emit_label (end_label);
+    DONE;
+  })
+
 (define_expand "vec_init<mode><scalar_mode>"
-  [(match_operand:VEC_REG_MODE 0 "register_operand")
+  [(match_operand:VEC_ALLREG_MODE 0 "register_operand")
    (match_operand 1)]
   ""
   {
@@ -618,7 +680,7 @@
 ;; - Multiple forms of address expression are supported, below.
 
 (define_expand "gather_load<mode>"
-  [(match_operand:VEC_REG_MODE 0 "register_operand")
+  [(match_operand:VEC_ALLREG_MODE 0 "register_operand")
    (match_operand:DI 1 "register_operand")
    (match_operand 2 "register_operand")
    (match_operand 3 "immediate_operand")
@@ -640,7 +702,7 @@
   })
 
 (define_expand "gather<mode>_exec"
-  [(match_operand:VEC_REG_MODE 0 "register_operand")
+  [(match_operand:VEC_ALLREG_MODE 0 "register_operand")
    (match_operand:DI 1 "register_operand")
    (match_operand:V64SI 2 "register_operand")
    (match_operand 3 "immediate_operand")
@@ -669,8 +731,8 @@
 
 ; Allow any address expression
 (define_expand "gather<mode>_expr<exec>"
-  [(set (match_operand:VEC_REG_MODE 0 "register_operand")
-	(unspec:VEC_REG_MODE
+  [(set (match_operand:VEC_ALLREG_MODE 0 "register_operand")
+	(unspec:VEC_ALLREG_MODE
 	  [(match_operand 1 "")
 	   (match_operand 2 "immediate_operand")
 	   (match_operand 3 "immediate_operand")
@@ -680,8 +742,8 @@
     {})
 
 (define_insn "gather<mode>_insn_1offset<exec>"
-  [(set (match_operand:VEC_REG_MODE 0 "register_operand"	 "=v")
-	(unspec:VEC_REG_MODE
+  [(set (match_operand:VEC_ALLREG_MODE 0 "register_operand"	 "=v")
+	(unspec:VEC_ALLREG_MODE
 	  [(plus:V64DI (match_operand:V64DI 1 "register_operand" " v")
 		       (vec_duplicate:V64DI
 			 (match_operand 2 "immediate_operand"	 " n")))
@@ -702,13 +764,13 @@
     if (AS_FLAT_P (as))
       {
 	if (TARGET_GCN5_PLUS)
-	  sprintf (buf, "flat_load%%s0\t%%0, %%1 offset:%%2%s\;s_waitcnt\t0",
+	  sprintf (buf, "flat_load%%o0\t%%0, %%1 offset:%%2%s\;s_waitcnt\t0",
 		   glc);
 	else
-	  sprintf (buf, "flat_load%%s0\t%%0, %%1%s\;s_waitcnt\t0", glc);
+	  sprintf (buf, "flat_load%%o0\t%%0, %%1%s\;s_waitcnt\t0", glc);
       }
     else if (AS_GLOBAL_P (as))
-      sprintf (buf, "global_load%%s0\t%%0, %%1, off offset:%%2%s\;"
+      sprintf (buf, "global_load%%o0\t%%0, %%1, off offset:%%2%s\;"
 	       "s_waitcnt\tvmcnt(0)", glc);
     else
       gcc_unreachable ();
@@ -719,8 +781,8 @@
    (set_attr "length" "12")])
 
 (define_insn "gather<mode>_insn_1offset_ds<exec>"
-  [(set (match_operand:VEC_REG_MODE 0 "register_operand"	 "=v")
-	(unspec:VEC_REG_MODE
+  [(set (match_operand:VEC_ALLREG_MODE 0 "register_operand"	 "=v")
+	(unspec:VEC_ALLREG_MODE
 	  [(plus:V64SI (match_operand:V64SI 1 "register_operand" " v")
 		       (vec_duplicate:V64SI
 			 (match_operand 2 "immediate_operand"	 " n")))
@@ -741,8 +803,8 @@
    (set_attr "length" "12")])
 
 (define_insn "gather<mode>_insn_2offsets<exec>"
-  [(set (match_operand:VEC_REG_MODE 0 "register_operand"	       "=v")
-	(unspec:VEC_REG_MODE
+  [(set (match_operand:VEC_ALLREG_MODE 0 "register_operand"	       "=v")
+	(unspec:VEC_ALLREG_MODE
 	  [(plus:V64DI
 	     (plus:V64DI
 	       (vec_duplicate:V64DI
@@ -766,7 +828,7 @@
 	/* Work around assembler bug in which a 64-bit register is expected,
 	but a 32-bit value would be correct.  */
 	int reg = REGNO (operands[2]) - FIRST_VGPR_REG;
-	sprintf (buf, "global_load%%s0\t%%0, v[%d:%d], %%1 offset:%%3%s\;"
+	sprintf (buf, "global_load%%o0\t%%0, v[%d:%d], %%1 offset:%%3%s\;"
 		      "s_waitcnt\tvmcnt(0)", reg, reg + 1, glc);
       }
     else
@@ -782,7 +844,7 @@
    (match_operand 1 "register_operand")
    (match_operand 2 "immediate_operand")
    (match_operand:SI 3 "gcn_alu_operand")
-   (match_operand:VEC_REG_MODE 4 "register_operand")]
+   (match_operand:VEC_ALLREG_MODE 4 "register_operand")]
   ""
   {
     rtx addr = gcn_expand_scaled_offsets (DEFAULT_ADDR_SPACE, operands[0],
@@ -804,7 +866,7 @@
    (match_operand 1 "register_operand")
    (match_operand 2 "immediate_operand")
    (match_operand:SI 3 "gcn_alu_operand")
-   (match_operand:VEC_REG_MODE 4 "register_operand")
+   (match_operand:VEC_ALLREG_MODE 4 "register_operand")
    (match_operand:DI 5 "gcn_exec_reg_operand")]
   ""
   {
@@ -832,7 +894,7 @@
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 	  [(match_operand:V64DI 0 "")
-	   (match_operand:VEC_REG_MODE 1 "register_operand")
+	   (match_operand:VEC_ALLREG_MODE 1 "register_operand")
 	   (match_operand 2 "immediate_operand")
 	   (match_operand 3 "immediate_operand")]
 	  UNSPEC_SCATTER))]
@@ -845,7 +907,7 @@
 	  [(plus:V64DI (match_operand:V64DI 0 "register_operand" "v")
 		       (vec_duplicate:V64DI
 			 (match_operand 1 "immediate_operand"	 "n")))
-	   (match_operand:VEC_REG_MODE 2 "register_operand"	 "v")
+	   (match_operand:VEC_ALLREG_MODE 2 "register_operand"	 "v")
 	   (match_operand 3 "immediate_operand"			 "n")
 	   (match_operand 4 "immediate_operand"			 "n")]
 	  UNSPEC_SCATTER))]
@@ -883,7 +945,7 @@
 	  [(plus:V64SI (match_operand:V64SI 0 "register_operand" "v")
 		       (vec_duplicate:V64SI
 			 (match_operand 1 "immediate_operand"	 "n")))
-	   (match_operand:VEC_REG_MODE 2 "register_operand"	 "v")
+	   (match_operand:VEC_ALLREG_MODE 2 "register_operand"	 "v")
 	   (match_operand 3 "immediate_operand"			 "n")
 	   (match_operand 4 "immediate_operand"			 "n")]
 	  UNSPEC_SCATTER))]
@@ -910,7 +972,7 @@
 		 (match_operand:V64SI 1 "register_operand"	    " v")))
 	     (vec_duplicate:V64DI (match_operand 2 "immediate_operand"
 								    " n")))
-	   (match_operand:VEC_REG_MODE 3 "register_operand"	    " v")
+	   (match_operand:VEC_ALLREG_MODE 3 "register_operand"	    " v")
 	   (match_operand 4 "immediate_operand"			    " n")
 	   (match_operand 5 "immediate_operand"			    " n")]
 	  UNSPEC_SCATTER))]
@@ -941,11 +1003,11 @@
 ;; {{{ Permutations
 
 (define_insn "ds_bpermute<mode>"
-  [(set (match_operand:VEC_1REG_MODE 0 "register_operand"    "=v")
-	(unspec:VEC_1REG_MODE
-	  [(match_operand:VEC_1REG_MODE 2 "register_operand" " v")
-	   (match_operand:V64SI 1 "register_operand"	     " v")
-	   (match_operand:DI 3 "gcn_exec_reg_operand"	     " e")]
+  [(set (match_operand:VEC_ALL1REG_MODE 0 "register_operand"	"=v")
+	(unspec:VEC_ALL1REG_MODE
+	  [(match_operand:VEC_ALL1REG_MODE 2 "register_operand" " v")
+	   (match_operand:V64SI 1 "register_operand"		" v")
+	   (match_operand:DI 3 "gcn_exec_reg_operand"		" e")]
 	  UNSPEC_BPERMUTE))]
   ""
   "ds_bpermute_b32\t%0, %1, %2\;s_waitcnt\tlgkmcnt(0)"
@@ -978,23 +1040,23 @@
 ;; }}}
 ;; {{{ ALU special case: add/sub
 
-(define_insn "addv64si3<exec_clobber>"
-  [(set (match_operand:V64SI 0 "register_operand"   "=  v")
-	(plus:V64SI
-	  (match_operand:V64SI 1 "register_operand" "%  v")
-	  (match_operand:V64SI 2 "gcn_alu_operand"  "vSvB")))
+(define_insn "add<mode>3<exec_clobber>"
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand"   "=  v")
+	(plus:VEC_ALL1REG_INT_MODE
+	  (match_operand:VEC_ALL1REG_INT_MODE 1 "register_operand" "%  v")
+	  (match_operand:VEC_ALL1REG_INT_MODE 2 "gcn_alu_operand"  "vSvB")))
    (clobber (reg:DI VCC_REG))]
   ""
   "v_add%^_u32\t%0, vcc, %2, %1"
   [(set_attr "type" "vop2")
    (set_attr "length" "8")])
 
-(define_insn "addv64si3_dup<exec_clobber>"
-  [(set (match_operand:V64SI 0 "register_operand"   "= v")
-	(plus:V64SI
-	  (vec_duplicate:V64SI
-	    (match_operand:SI 2 "gcn_alu_operand"   "SvB"))
-	  (match_operand:V64SI 1 "register_operand" "  v")))
+(define_insn "add<mode>3_dup<exec_clobber>"
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand"   "= v")
+	(plus:VEC_ALL1REG_INT_MODE
+	  (vec_duplicate:VEC_ALL1REG_INT_MODE
+	    (match_operand:<SCALAR_MODE> 2 "gcn_alu_operand"       "SvB"))
+	  (match_operand:VEC_ALL1REG_INT_MODE 1 "register_operand" "  v")))
    (clobber (reg:DI VCC_REG))]
   ""
   "v_add%^_u32\t%0, vcc, %2, %1"
@@ -1032,20 +1094,21 @@
   [(set_attr "type" "vop2,vop3b")
    (set_attr "length" "8,8")])
 
-; This pattern does not accept SGPR because VCC read already counts as an
-; SGPR use and number of SGPR operands is limited to 1.
+; v_addc does not accept an SGPR because the VCC read already counts as an
+; SGPR use and the number of SGPR operands is limited to 1.  It does not
+; accept "B" immediate constants due to a related bus conflict.
 
 (define_insn "addcv64si3<exec_vcc>"
-  [(set (match_operand:V64SI 0 "register_operand" "=v,v")
+  [(set (match_operand:V64SI 0 "register_operand"    "=v,   v")
 	(plus:V64SI
 	  (plus:V64SI
 	    (vec_merge:V64SI
 	      (vec_duplicate:V64SI (const_int 1))
 	      (vec_duplicate:V64SI (const_int 0))
-	      (match_operand:DI 3 "register_operand" " cV,Sv"))
-	    (match_operand:V64SI 1 "gcn_alu_operand" "%vA,vA"))
-	  (match_operand:V64SI 2 "gcn_alu_operand"   " vB,vB")))
-   (set (match_operand:DI 4 "register_operand"	     "=cV,Sg")
+	      (match_operand:DI 3 "register_operand" " cV,cVSv"))
+	    (match_operand:V64SI 1 "gcn_alu_operand" "% v,  vA"))
+	  (match_operand:V64SI 2 "gcn_alu_operand"   " vA,  vA")))
+   (set (match_operand:DI 4 "register_operand"	     "=cV,cVSg")
 	(ior:DI (ltu:DI (plus:V64SI
 			  (plus:V64SI
 			    (vec_merge:V64SI
@@ -1063,48 +1126,15 @@
 			  (match_dup 1))
 			(match_dup 1))))]
   ""
-  "v_addc%^_u32\t%0, %4, %1, %2, %3"
+  "v_addc%^_u32\t%0, %4, %2, %1, %3"
   [(set_attr "type" "vop2,vop3b")
    (set_attr "length" "4,8")])
 
-(define_insn "addcv64si3_dup<exec_vcc>"
-  [(set (match_operand:V64SI 0 "register_operand" "=v,v")
-	(plus:V64SI
-	  (plus:V64SI
-	    (vec_merge:V64SI
-	      (vec_duplicate:V64SI (const_int 1))
-	      (vec_duplicate:V64SI (const_int 0))
-	      (match_operand:DI 3 "register_operand" " cV, Sv"))
-	    (match_operand:V64SI 1 "gcn_alu_operand" "%vA, vA"))
-	  (vec_duplicate:V64SI
-	    (match_operand:SI 2 "gcn_alu_operand"    "SvB,SvB"))))
-   (set (match_operand:DI 4 "register_operand"  "=cV, Sg")
-	(ior:DI (ltu:DI (plus:V64SI (plus:V64SI
-				      (vec_merge:V64SI
-					(vec_duplicate:V64SI (const_int 1))
-					(vec_duplicate:V64SI (const_int 0))
-					(match_dup 3))
-				      (match_dup 1))
-				    (vec_duplicate:V64SI
-				      (match_dup 2)))
-			(vec_duplicate:V64SI
-			  (match_dup 2)))
-		(ltu:DI (plus:V64SI (vec_merge:V64SI
-				      (vec_duplicate:V64SI (const_int 1))
-				      (vec_duplicate:V64SI (const_int 0))
-				      (match_dup 3))
-				    (match_dup 1))
-			(match_dup 1))))]
-  ""
-  "v_addc%^_u32\t%0, %4, %1, %2, %3"
-  [(set_attr "type" "vop2,vop3b")
-   (set_attr "length" "4,8")])
-
-(define_insn "subv64si3<exec_clobber>"
-  [(set (match_operand:V64SI 0 "register_operand"  "=  v,   v")
-	(minus:V64SI
-	  (match_operand:V64SI 1 "gcn_alu_operand" "vSvB,   v")
-	  (match_operand:V64SI 2 "gcn_alu_operand" "   v,vSvB")))
+(define_insn "sub<mode>3<exec_clobber>"
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand"  "=  v,   v")
+	(minus:VEC_ALL1REG_INT_MODE
+	  (match_operand:VEC_ALL1REG_INT_MODE 1 "gcn_alu_operand" "vSvB,   v")
+	  (match_operand:VEC_ALL1REG_INT_MODE 2 "gcn_alu_operand" "   v,vSvB")))
    (clobber (reg:DI VCC_REG))]
   ""
   "@
@@ -1130,8 +1160,9 @@
   [(set_attr "type" "vop2,vop3b,vop2,vop3b")
    (set_attr "length" "8")])
 
-; This pattern does not accept SGPR because VCC read already counts
-; as a SGPR use and number of SGPR operands is limited to 1.
+; v_subb does not accept an SGPR because the VCC read already counts as an
+; SGPR use and the number of SGPR operands is limited to 1.  It does not
+; accept "B" immediate constants due to a related bus conflict.
 
 (define_insn "subcv64si3<exec_vcc>"
   [(set (match_operand:V64SI 0 "register_operand"    "= v, v, v, v")
@@ -1140,10 +1171,10 @@
 	    (vec_merge:V64SI
 	      (vec_duplicate:V64SI (const_int 1))
 	      (vec_duplicate:V64SI (const_int 0))
-	      (match_operand:DI 3 "gcn_alu_operand"  " cV,Sv,cV,Sv"))
-	    (match_operand:V64SI 1 "gcn_alu_operand" " vA,vA,vB,vB"))
-	  (match_operand:V64SI 2 "gcn_alu_operand"   " vB,vB,vA,vA")))
-   (set (match_operand:DI 4 "register_operand"	     "=cV,Sg,cV,Sg")
+	      (match_operand:DI 3 "gcn_alu_operand"  " cV,cVSv,cV,cVSv"))
+	    (match_operand:V64SI 1 "gcn_alu_operand" " vA,  vA, v,  vA"))
+	  (match_operand:V64SI 2 "gcn_alu_operand"   "  v,  vA,vA,  vA")))
+   (set (match_operand:DI 4 "register_operand"	     "=cV,cVSg,cV,cVSg")
 	(ior:DI (gtu:DI (minus:V64SI (minus:V64SI
 				       (vec_merge:V64SI
 					 (vec_duplicate:V64SI (const_int 1))
@@ -1165,13 +1196,13 @@
    v_subbrev%^_u32\t%0, %4, %2, %1, %3
    v_subbrev%^_u32\t%0, %4, %2, %1, %3"
   [(set_attr "type" "vop2,vop3b,vop2,vop3b")
-   (set_attr "length" "8")])
+   (set_attr "length" "4,8,4,8")])
 
 (define_insn_and_split "addv64di3"
-  [(set (match_operand:V64DI 0 "register_operand"   "=  &v")
+  [(set (match_operand:V64DI 0 "register_operand"   "= &v,  &v")
 	(plus:V64DI
-	  (match_operand:V64DI 1 "register_operand" "%  v0")
-	  (match_operand:V64DI 2 "gcn_alu_operand"  "vSvB0")))
+	  (match_operand:V64DI 1 "register_operand" "%vDb,vDb0")
+	  (match_operand:V64DI 2 "gcn_alu_operand"  "vDb0, vDb")))
    (clobber (reg:DI VCC_REG))]
   ""
   "#"
@@ -1197,13 +1228,13 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "addv64di3_exec"
-  [(set (match_operand:V64DI 0 "register_operand"		  "=  &v")
+  [(set (match_operand:V64DI 0 "register_operand"		 "= &v,  &v")
 	(vec_merge:V64DI
 	  (plus:V64DI
-	    (match_operand:V64DI 1 "register_operand"		  "%  v0")
-	    (match_operand:V64DI 2 "gcn_alu_operand"		  "vSvB0"))
-	  (match_operand:V64DI 3 "gcn_register_or_unspec_operand" "   U0")
-	  (match_operand:DI 4 "gcn_exec_reg_operand"		  "    e")))
+	    (match_operand:V64DI 1 "register_operand"		 "%vDb,vDb0")
+	    (match_operand:V64DI 2 "gcn_alu_operand"		 "vDb0, vDb"))
+	  (match_operand:V64DI 3 "gcn_register_or_unspec_operand" " U0,  U0")
+	  (match_operand:DI 4 "gcn_exec_reg_operand"		 "   e,   e")))
    (clobber (reg:DI VCC_REG))]
   ""
   "#"
@@ -1234,10 +1265,10 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "subv64di3"
-  [(set (match_operand:V64DI 0 "register_operand"  "=  &v,   &v")
-	(minus:V64DI
-	  (match_operand:V64DI 1 "gcn_alu_operand" "vSvB0,   v0")
-	  (match_operand:V64DI 2 "gcn_alu_operand" "   v0,vSvB0")))
+  [(set (match_operand:V64DI 0 "register_operand"  "=&v,  &v,  &v, &v")
+	(minus:V64DI                                                 
+	  (match_operand:V64DI 1 "gcn_alu_operand" "vDb,vDb0,   v, v0")
+	  (match_operand:V64DI 2 "gcn_alu_operand" " v0,   v,vDb0,vDb")))
    (clobber (reg:DI VCC_REG))]
   ""
   "#"
@@ -1260,17 +1291,17 @@
     DONE;
   }
   [(set_attr "type" "vmult")
-   (set_attr "length" "8,8")])
+   (set_attr "length" "8")])
 
 (define_insn_and_split "subv64di3_exec"
-  [(set (match_operand:V64DI 0 "register_operand"	       "=  &v,   &v")
-	(vec_merge:V64DI
-	  (minus:V64DI
-	    (match_operand:V64DI 1 "gcn_alu_operand"	       "vSvB0,   v0")
-	    (match_operand:V64DI 2 "gcn_alu_operand"	       "   v0,vSvB0"))
+  [(set (match_operand:V64DI 0 "register_operand"    "= &v,   &v,   &v,  &v")
+	(vec_merge:V64DI                                                         
+	  (minus:V64DI                                                           
+	    (match_operand:V64DI 1 "gcn_alu_operand" "vSvB,vSvB0,    v,  v0")
+	    (match_operand:V64DI 2 "gcn_alu_operand" "  v0,    v,vSvB0,vSvB"))
 	  (match_operand:V64DI 3 "gcn_register_or_unspec_operand"
-							       "   U0,   U0")
-	  (match_operand:DI 4 "gcn_exec_reg_operand"	       "    e,    e")))
+						     "  U0,   U0,   U0,  U0")
+	  (match_operand:DI 4 "gcn_exec_reg_operand" "   e,    e,    e,   e")))
    (clobber (reg:DI VCC_REG))]
   "register_operand (operands[1], VOIDmode)
    || register_operand (operands[2], VOIDmode)"
@@ -1299,82 +1330,14 @@
     DONE;
   }
   [(set_attr "type" "vmult")
-   (set_attr "length" "8,8")])
-
-(define_insn_and_split "addv64di3_dup"
-  [(set (match_operand:V64DI 0 "register_operand"   "= &v")
-	(plus:V64DI
-	  (match_operand:V64DI 1 "register_operand" "  v0")
-	  (vec_duplicate:V64DI
-	    (match_operand:DI 2 "gcn_alu_operand"   "SvDB"))))
-   (clobber (reg:DI VCC_REG))]
-  ""
-  "#"
-  "gcn_can_split_p  (V64DImode, operands[0])
-   && gcn_can_split_p (V64DImode, operands[1])
-   && gcn_can_split_p (V64DImode, operands[2])"
-  [(const_int 0)]
-  {
-    rtx vcc = gen_rtx_REG (DImode, VCC_REG);
-    emit_insn (gen_addv64si3_vcc_dup
-		(gcn_operand_part (V64DImode, operands[0], 0),
-		 gcn_operand_part (DImode, operands[2], 0),
-		 gcn_operand_part (V64DImode, operands[1], 0),
-		 vcc));
-    emit_insn (gen_addcv64si3_dup
-		(gcn_operand_part (V64DImode, operands[0], 1),
-		 gcn_operand_part (V64DImode, operands[1], 1),
-		 gcn_operand_part (DImode, operands[2], 1),
-		 vcc, vcc));
-    DONE;
-  }
-  [(set_attr "type" "vmult")
-   (set_attr "length" "8")])
-
-(define_insn_and_split "addv64di3_dup_exec"
-  [(set (match_operand:V64DI 0 "register_operand"		  "= &v")
-	(vec_merge:V64DI
-	  (plus:V64DI
-	    (match_operand:V64DI 1 "register_operand"		  "  v0")
-	    (vec_duplicate:V64DI
-	      (match_operand:DI 2 "gcn_alu_operand"		  "SvDB")))
-	  (match_operand:V64DI 3 "gcn_register_or_unspec_operand" "  U0")
-	  (match_operand:DI 4 "gcn_exec_reg_operand"		  "   e")))
-   (clobber (reg:DI VCC_REG))]
-  ""
-  "#"
-  "gcn_can_split_p  (V64DImode, operands[0])
-   && gcn_can_split_p (V64DImode, operands[1])
-   && gcn_can_split_p (V64DImode, operands[2])
-   && gcn_can_split_p (V64DImode, operands[3])"
-  [(const_int 0)]
-  {
-    rtx vcc = gen_rtx_REG (DImode, VCC_REG);
-    emit_insn (gen_addv64si3_vcc_dup_exec
-		(gcn_operand_part (V64DImode, operands[0], 0),
-		 gcn_operand_part (DImode, operands[2], 0),
-		 gcn_operand_part (V64DImode, operands[1], 0),
-		 vcc,
-		 gcn_operand_part (V64DImode, operands[3], 0),
-		 operands[4]));
-    emit_insn (gen_addcv64si3_dup_exec
-		(gcn_operand_part (V64DImode, operands[0], 1),
-		 gcn_operand_part (V64DImode, operands[1], 1),
-		 gcn_operand_part (DImode, operands[2], 1),
-		 vcc, vcc,
-		 gcn_operand_part (V64DImode, operands[3], 1),
-		 operands[4]));
-    DONE;
-  }
-  [(set_attr "type" "vmult")
    (set_attr "length" "8")])
 
 (define_insn_and_split "addv64di3_zext"
-  [(set (match_operand:V64DI 0 "register_operand"    "=&v,&v")
+  [(set (match_operand:V64DI 0 "register_operand"    "=&v, &v,  &v,  &v")
 	(plus:V64DI
 	  (zero_extend:V64DI
-	    (match_operand:V64SI 1 "gcn_alu_operand" "0vA,0vB"))
-	  (match_operand:V64DI 2 "gcn_alu_operand"   "0vB,0vA")))
+	    (match_operand:V64SI 1 "gcn_alu_operand" "0vA,0vB,  vA,  vB"))
+	  (match_operand:V64DI 2 "gcn_alu_operand"   "vDb,vDA,0vDb,0vDA")))
    (clobber (reg:DI VCC_REG))]
   ""
   "#"
@@ -1395,17 +1358,18 @@
     DONE;
   }
   [(set_attr "type" "vmult")
-   (set_attr "length" "8,8")])
+   (set_attr "length" "8")])
 
 (define_insn_and_split "addv64di3_zext_exec"
-  [(set (match_operand:V64DI 0 "register_operand"		  "=&v,&v")
+  [(set (match_operand:V64DI 0 "register_operand"	 "=&v,  &v, &v,  &v")
 	(vec_merge:V64DI
 	  (plus:V64DI
 	    (zero_extend:V64DI
-	      (match_operand:V64SI 1 "gcn_alu_operand"		  "0vA,0vB"))
-	    (match_operand:V64DI 2 "gcn_alu_operand"		  "0vB,0vA"))
-	  (match_operand:V64DI 3 "gcn_register_or_unspec_operand" " U0, U0")
-	  (match_operand:DI 4 "gcn_exec_reg_operand"		  "  e,  e")))
+	      (match_operand:V64SI 1 "gcn_alu_operand"	 "0vA,  vA,0vB,  vB"))
+	    (match_operand:V64DI 2 "gcn_alu_operand"	 "vDb,0vDb,vDA,0vDA"))
+	  (match_operand:V64DI 3 "gcn_register_or_unspec_operand"
+							 " U0,  U0, U0,  U0")
+	  (match_operand:DI 4 "gcn_exec_reg_operand"	 "  e,   e,  e,   e")))
    (clobber (reg:DI VCC_REG))]
   ""
   "#"
@@ -1431,15 +1395,15 @@
     DONE;
   }
   [(set_attr "type" "vmult")
-   (set_attr "length" "8,8")])
+   (set_attr "length" "8")])
 
 (define_insn_and_split "addv64di3_zext_dup"
-  [(set (match_operand:V64DI 0 "register_operand"   "=&v")
+  [(set (match_operand:V64DI 0 "register_operand"   "= &v,  &v")
 	(plus:V64DI
 	  (zero_extend:V64DI
 	    (vec_duplicate:V64SI
-	      (match_operand:SI 1 "gcn_alu_operand" "BSv")))
-	  (match_operand:V64DI 2 "gcn_alu_operand"  "vA0")))
+	      (match_operand:SI 1 "gcn_alu_operand" " BSv, ASv")))
+	  (match_operand:V64DI 2 "gcn_alu_operand"  "vDA0,vDb0")))
    (clobber (reg:DI VCC_REG))]
   ""
   "#"
@@ -1463,15 +1427,15 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "addv64di3_zext_dup_exec"
-  [(set (match_operand:V64DI 0 "register_operand"		  "=&v")
+  [(set (match_operand:V64DI 0 "register_operand"		 "= &v,  &v")
 	(vec_merge:V64DI
 	  (plus:V64DI
 	    (zero_extend:V64DI
 	      (vec_duplicate:V64SI
-		(match_operand:SI 1 "gcn_alu_operand"		  "BSv")))
-	    (match_operand:V64DI 2 "gcn_alu_operand"		  "vA0"))
-	  (match_operand:V64DI 3 "gcn_register_or_unspec_operand" " U0")
-	  (match_operand:DI 4 "gcn_exec_reg_operand"		  "  e")))
+		(match_operand:SI 1 "gcn_alu_operand"		 " ASv, BSv")))
+	    (match_operand:V64DI 2 "gcn_alu_operand"		 "vDb0,vDA0"))
+	  (match_operand:V64DI 3 "gcn_register_or_unspec_operand" " U0,  U0")
+	  (match_operand:DI 4 "gcn_exec_reg_operand"		 "   e,   e")))
    (clobber (reg:DI VCC_REG))]
   ""
   "#"
@@ -1500,10 +1464,10 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "addv64di3_zext_dup2"
-  [(set (match_operand:V64DI 0 "register_operand"		      "= v")
+  [(set (match_operand:V64DI 0 "register_operand"		     "= &v")
 	(plus:V64DI
 	  (zero_extend:V64DI (match_operand:V64SI 1 "gcn_alu_operand" " vA"))
-	  (vec_duplicate:V64DI (match_operand:DI 2 "gcn_alu_operand"  "BSv"))))
+	  (vec_duplicate:V64DI (match_operand:DI 2 "gcn_alu_operand" "DbSv"))))
    (clobber (reg:DI VCC_REG))]
   ""
   "#"
@@ -1526,7 +1490,7 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "addv64di3_zext_dup2_exec"
-  [(set (match_operand:V64DI 0 "register_operand"		       "= v")
+  [(set (match_operand:V64DI 0 "register_operand"		       "=&v")
 	(vec_merge:V64DI
 	  (plus:V64DI
 	    (zero_extend:V64DI (match_operand:V64SI 1 "gcn_alu_operand"
@@ -1563,7 +1527,7 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "addv64di3_sext_dup2"
-  [(set (match_operand:V64DI 0 "register_operand"		      "= v")
+  [(set (match_operand:V64DI 0 "register_operand"		      "=&v")
 	(plus:V64DI
 	  (sign_extend:V64DI (match_operand:V64SI 1 "gcn_alu_operand" " vA"))
 	  (vec_duplicate:V64DI (match_operand:DI 2 "gcn_alu_operand"  "BSv"))))
@@ -1591,7 +1555,7 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "addv64di3_sext_dup2_exec"
-  [(set (match_operand:V64DI 0 "register_operand"		       "= v")
+  [(set (match_operand:V64DI 0 "register_operand"		       "=&v")
 	(vec_merge:V64DI
 	  (plus:V64DI
 	    (sign_extend:V64DI (match_operand:V64SI 1 "gcn_alu_operand"
@@ -1724,22 +1688,22 @@
   [(set_attr "type" "vop3a")
    (set_attr "length" "8")])
 
-(define_insn "mulv64si3<exec>"
-  [(set (match_operand:V64SI 0 "register_operand"  "=   v")
-	(mult:V64SI
-	  (match_operand:V64SI 1 "gcn_alu_operand" "%vSvA")
-	  (match_operand:V64SI 2 "gcn_alu_operand" " vSvA")))]
+(define_insn "mul<mode>3<exec>"
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand"  "=   v")
+	(mult:VEC_ALL1REG_INT_MODE
+	  (match_operand:VEC_ALL1REG_INT_MODE 1 "gcn_alu_operand" "%vSvA")
+	  (match_operand:VEC_ALL1REG_INT_MODE 2 "gcn_alu_operand" " vSvA")))]
   ""
   "v_mul_lo_u32\t%0, %1, %2"
   [(set_attr "type" "vop3a")
    (set_attr "length" "8")])
 
-(define_insn "mulv64si3_dup<exec>"
-  [(set (match_operand:V64SI 0 "register_operand"  "=   v")
-	(mult:V64SI
-	  (match_operand:V64SI 1 "gcn_alu_operand" "%vSvA")
-	  (vec_duplicate:V64SI
-	    (match_operand:SI 2 "gcn_alu_operand"  "  SvA"))))]
+(define_insn "mul<mode>3_dup<exec>"
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand"  "=   v")
+	(mult:VEC_ALL1REG_INT_MODE
+	  (match_operand:VEC_ALL1REG_INT_MODE 1 "gcn_alu_operand" "%vSvA")
+	  (vec_duplicate:VEC_ALL1REG_INT_MODE
+	    (match_operand:<SCALAR_MODE> 2 "gcn_alu_operand"	  "  SvA"))))]
   ""
   "v_mul_lo_u32\t%0, %1, %2"
   [(set_attr "type" "vop3a")
@@ -1968,7 +1932,7 @@
 ;; }}}
 ;; {{{ ALU generic case
 
-(define_mode_iterator VEC_INT_MODE [V64QI V64HI V64SI V64DI])
+(define_mode_iterator VEC_INT_MODE [V64SI V64DI])
 
 (define_code_iterator bitop [and ior xor])
 (define_code_iterator shiftop [ashift lshiftrt ashiftrt])
@@ -2378,8 +2342,9 @@
 (define_mode_iterator CVT_FROM_MODE [HI SI HF SF DF])
 (define_mode_iterator CVT_TO_MODE [HI SI HF SF DF])
 
-(define_mode_iterator VCVT_FROM_MODE [V64HI V64SI V64HF V64SF V64DF])
-(define_mode_iterator VCVT_TO_MODE [V64HI V64SI V64HF V64SF V64DF])
+(define_mode_iterator VCVT_MODE [V64HI V64SI V64HF V64SF V64DF])
+(define_mode_iterator VCVT_FMODE [V64HF V64SF V64DF])
+(define_mode_iterator VCVT_IMODE [V64HI V64SI])
 
 (define_code_iterator cvt_op [fix unsigned_fix
 			      float unsigned_float
@@ -2402,11 +2367,21 @@
   [(set_attr "type" "vop1")
    (set_attr "length" "8")])
 
-(define_insn "<cvt_name><VCVT_FROM_MODE:mode><VCVT_TO_MODE:mode>2<exec>"
-  [(set (match_operand:VCVT_TO_MODE 0 "register_operand"    "=  v")
-	(cvt_op:VCVT_TO_MODE
-	  (match_operand:VCVT_FROM_MODE 1 "gcn_alu_operand" "vSvB")))]
-  "gcn_valid_cvt_p (<VCVT_FROM_MODE:MODE>mode, <VCVT_TO_MODE:MODE>mode,
+(define_insn "<cvt_name><VCVT_MODE:mode><VCVT_FMODE:mode>2<exec>"
+  [(set (match_operand:VCVT_FMODE 0 "register_operand" "=  v")
+	(cvt_op:VCVT_FMODE
+	  (match_operand:VCVT_MODE 1 "gcn_alu_operand" "vSvB")))]
+  "gcn_valid_cvt_p (<VCVT_MODE:MODE>mode, <VCVT_FMODE:MODE>mode,
+		    <cvt_name>_cvt)"
+  "v_cvt<cvt_operands>\t%0, %1"
+  [(set_attr "type" "vop1")
+   (set_attr "length" "8")])
+
+(define_insn "<cvt_name><VCVT_FMODE:mode><VCVT_IMODE:mode>2<exec>"
+  [(set (match_operand:VCVT_IMODE 0 "register_operand"  "=  v")
+	(cvt_op:VCVT_IMODE
+	  (match_operand:VCVT_FMODE 1 "gcn_alu_operand" "vSvB")))]
+  "gcn_valid_cvt_p (<VCVT_FMODE:MODE>mode, <VCVT_IMODE:MODE>mode,
 		    <cvt_name>_cvt)"
   "v_cvt<cvt_operands>\t%0, %1"
   [(set_attr "type" "vop1")
@@ -2415,52 +2390,150 @@
 ;; }}}
 ;; {{{ Int/int conversions
 
+(define_code_iterator zero_convert [truncate zero_extend])
+(define_code_attr convop [
+	(sign_extend "extend")
+	(zero_extend "zero_extend")
+	(truncate "trunc")])
+
+(define_insn "<convop><VEC_ALL1REG_INT_ALT:mode><VEC_ALL1REG_INT_MODE:mode>2<exec>"
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand" "=v")
+        (zero_convert:VEC_ALL1REG_INT_MODE
+	  (match_operand:VEC_ALL1REG_INT_ALT 1 "gcn_alu_operand" " v")))]
+  ""
+  "v_mov_b32_sdwa\t%0, %1 dst_sel:<VEC_ALL1REG_INT_MODE:sdwa> dst_unused:UNUSED_PAD src0_sel:<VEC_ALL1REG_INT_ALT:sdwa>"
+  [(set_attr "type" "vop_sdwa")
+   (set_attr "length" "8")])
+
+(define_insn "extend<VEC_ALL1REG_INT_ALT:mode><VEC_ALL1REG_INT_MODE:mode>2<exec>"
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand" "=v")
+        (sign_extend:VEC_ALL1REG_INT_MODE
+	  (match_operand:VEC_ALL1REG_INT_ALT 1 "gcn_alu_operand" " v")))]
+  ""
+  "v_mov_b32_sdwa\t%0, sext(%1) src0_sel:<VEC_ALL1REG_INT_ALT:sdwa>"
+  [(set_attr "type" "vop_sdwa")
+   (set_attr "length" "8")])
+
 ;; GCC can already do these for scalar types, but not for vector types.
 ;; Unfortunately you can't just do SUBREG on a vector to select the low part,
 ;; so there must be a few tricks here.
 
-(define_insn_and_split "vec_truncatev64div64si"
-  [(set (match_operand:V64SI 0 "register_operand"   "=v,&v")
-	(truncate:V64SI
-	  (match_operand:V64DI 1 "register_operand" " 0, v")))]
+(define_insn_and_split "truncv64di<mode>2"
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand" "=v")
+	(truncate:VEC_ALL1REG_INT_MODE
+	  (match_operand:V64DI 1 "gcn_alu_operand"		 " v")))]
   ""
   "#"
   "reload_completed"
-  [(set (match_dup 0) (match_dup 1))]
+  [(const_int 0)]
   {
-    operands[1] = gcn_operand_part (V64SImode, operands[1], 0);
-  }
-  [(set_attr "type" "vop2")
-   (set_attr "length" "0,4")])
+    rtx inlo = gcn_operand_part (V64DImode, operands[1], 0);
+    rtx out = operands[0];
 
-(define_insn_and_split "vec_truncatev64div64si_exec"
-  [(set (match_operand:V64SI 0 "register_operand"	     "=v,&v")
-	(vec_merge:V64SI
-	  (truncate:V64SI
-	    (match_operand:V64DI 1 "register_operand"        " 0, v"))
-	  (match_operand:V64SI 2 "gcn_alu_or_unspec_operand" "U0,U0")
-	  (match_operand:DI 3 "gcn_exec_operand"	     " e, e")))]
+    if (<MODE>mode != V64SImode)
+      emit_insn (gen_truncv64si<mode>2 (out, inlo));
+    else
+      emit_move_insn (out, inlo);
+  }
+  [(set_attr "type" "vop2")
+   (set_attr "length" "4")])
+
+(define_insn_and_split "truncv64di<mode>2_exec"
+  [(set (match_operand:VEC_ALL1REG_INT_MODE 0 "register_operand"       "=v")
+	(vec_merge:VEC_ALL1REG_INT_MODE
+	  (truncate:VEC_ALL1REG_INT_MODE
+	    (match_operand:V64DI 1 "gcn_alu_operand"		       " v"))
+	  (match_operand:VEC_ALL1REG_INT_MODE 2 "gcn_alu_or_unspec_operand" 
+								       "U0")
+	  (match_operand:DI 3 "gcn_exec_operand"		       " e")))]
   ""
   "#"
   "reload_completed"
-  [(parallel [(set (match_dup 0)
-		   (vec_merge:V64SI (match_dup 1) (match_dup 2) (match_dup 3)))
-	      (clobber (scratch:V64DI))])]
+  [(const_int 0)]
   {
-    operands[1] = gcn_operand_part (V64SImode, operands[1], 0);
+    rtx out = operands[0];
+    rtx inlo = gcn_operand_part (V64DImode, operands[1], 0);
+    rtx merge = operands[2];
+    rtx exec = operands[3];
+
+    if (<MODE>mode != V64SImode)
+      emit_insn (gen_truncv64si<mode>2_exec (out, inlo, merge, exec));
+    else
+      emit_insn (gen_mov<mode>_exec (out, inlo, exec, merge));
   }
   [(set_attr "type" "vop2")
-   (set_attr "length" "0,4")])
+   (set_attr "length" "4")])
+
+(define_insn_and_split "<convop><mode>v64di2"
+  [(set (match_operand:V64DI 0 "register_operand"		  "=v")
+	(any_extend:V64DI
+	  (match_operand:VEC_ALL1REG_INT_MODE 1 "gcn_alu_operand" " v")))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  {
+    rtx outlo = gcn_operand_part (V64DImode, operands[0], 0);
+    rtx outhi = gcn_operand_part (V64DImode, operands[0], 1);
+    rtx in = operands[1];
+      
+    if (<MODE>mode != V64SImode)
+      emit_insn (gen_<convop><mode>v64si2 (outlo, in));
+    else
+      emit_move_insn (outlo, in);
+    if ('<su>' == 's')
+      emit_insn (gen_ashrv64si3 (outhi, outlo, GEN_INT (31)));
+    else
+      emit_insn (gen_vec_duplicatev64si (outhi, const0_rtx));
+  }
+  [(set_attr "type" "mult")
+   (set_attr "length" "12")])
+
+(define_insn_and_split "<convop><mode>v64di2_exec"
+  [(set (match_operand:V64DI 0 "register_operand"		    "=v")
+	(vec_merge:V64DI
+	  (any_extend:V64DI
+	    (match_operand:VEC_ALL1REG_INT_MODE 1 "gcn_alu_operand" " v"))
+	  (match_operand:V64DI 2 "gcn_alu_or_unspec_operand"	    "U0")
+	  (match_operand:DI 3 "gcn_exec_operand"		    " e")))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  {
+    rtx outlo = gcn_operand_part (V64DImode, operands[0], 0);
+    rtx outhi = gcn_operand_part (V64DImode, operands[0], 1);
+    rtx in = operands[1];
+    rtx mergelo = gcn_operand_part (V64DImode, operands[2], 0);
+    rtx mergehi = gcn_operand_part (V64DImode, operands[2], 1);
+    rtx exec = operands[3];
+      
+    if (<MODE>mode != V64SImode)
+      emit_insn (gen_<convop><mode>v64si2_exec (outlo, in, mergelo, exec));
+    else
+      emit_insn (gen_mov<mode>_exec (outlo, in, exec, mergelo));
+    if ('<su>' == 's')
+      emit_insn (gen_ashrv64si3_exec (outhi, outlo, GEN_INT (31), mergehi,
+				      exec));
+    else
+      emit_insn (gen_vec_duplicatev64si_exec (outhi, const0_rtx, mergehi,
+					      exec));
+  }
+  [(set_attr "type" "mult")
+   (set_attr "length" "12")])
 
 ;; }}}
 ;; {{{ Vector comparison/merge
 
+(define_mode_iterator VCMP_MODE [V64HI V64SI V64DI V64HF V64SF V64DF])
+(define_mode_iterator VCMP_MODE_INT [V64HI V64SI V64DI])
+
 (define_insn "vec_cmp<mode>di"
   [(set (match_operand:DI 0 "register_operand"	      "=cV,cV,  e, e,Sg,Sg")
 	(match_operator 1 "comparison_operator"
-	  [(match_operand:VEC_1REG_MODE 2 "gcn_alu_operand"
+	  [(match_operand:VCMP_MODE 2 "gcn_alu_operand"
 						      "vSv, B,vSv, B, v,vA")
-	   (match_operand:VEC_1REG_MODE 3 "gcn_vop3_operand"
+	   (match_operand:VCMP_MODE 3 "gcn_vop3_operand"
 						      "  v, v,  v, v,vA, v")]))
    (clobber (match_scratch:DI 4			      "= X, X, cV,cV, X, X"))]
   ""
@@ -2477,8 +2550,8 @@
 (define_expand "vec_cmpu<mode>di"
   [(match_operand:DI 0 "register_operand")
    (match_operator 1 "comparison_operator"
-     [(match_operand:VEC_1REG_INT_MODE 2 "gcn_alu_operand")
-      (match_operand:VEC_1REG_INT_MODE 3 "gcn_vop3_operand")])]
+     [(match_operand:VCMP_MODE_INT 2 "gcn_alu_operand")
+      (match_operand:VCMP_MODE_INT 3 "gcn_vop3_operand")])]
   ""
   {
     /* Unsigned comparisons use the same patterns as signed comparisons,
@@ -2489,13 +2562,30 @@
     DONE;
   })
 
+; There's no instruction for 8-bit vector comparison, so we need to extend.
+(define_expand "vec_cmp<u>v64qidi"
+  [(match_operand:DI 0 "register_operand")
+   (match_operator 1 "comparison_operator"
+     [(any_extend:V64SI (match_operand:V64QI 2 "gcn_alu_operand"))
+      (any_extend:V64SI (match_operand:V64QI 3 "gcn_vop3_operand"))])]
+  "can_create_pseudo_p ()"
+  {
+    rtx sitmp1 = gen_reg_rtx (V64SImode);
+    rtx sitmp2 = gen_reg_rtx (V64SImode);
+
+    emit_insn (gen_<expander>v64qiv64si2 (sitmp1, operands[2]));
+    emit_insn (gen_<expander>v64qiv64si2 (sitmp2, operands[3]));
+    emit_insn (gen_vec_cmpv64sidi (operands[0], operands[1], sitmp1, sitmp2));
+    DONE;
+  })
+
 (define_insn "vec_cmp<mode>di_exec"
   [(set (match_operand:DI 0 "register_operand"	       "=cV,cV,  e, e,Sg,Sg")
 	(and:DI
 	  (match_operator 1 "comparison_operator"
-	    [(match_operand:VEC_1REG_MODE 2 "gcn_alu_operand"
+	    [(match_operand:VCMP_MODE 2 "gcn_alu_operand"
 						       "vSv, B,vSv, B, v,vA")
-	     (match_operand:VEC_1REG_MODE 3 "gcn_vop3_operand"
+	     (match_operand:VCMP_MODE 3 "gcn_vop3_operand"
 						       "  v, v,  v, v,vA, v")])
 	  (match_operand:DI 4 "gcn_exec_reg_operand"   "  e, e,  e, e, e, e")))
    (clobber (match_scratch:DI 5			       "= X, X, cV,cV, X, X"))]
@@ -2510,14 +2600,50 @@
   [(set_attr "type" "vopc,vopc,vopc,vopc,vop3a,vop3a")
    (set_attr "length" "4,8,4,8,8,8")])
 
+(define_expand "vec_cmpu<mode>di_exec"
+  [(match_operand:DI 0 "register_operand")
+   (match_operator 1 "comparison_operator"
+     [(match_operand:VCMP_MODE_INT 2 "gcn_alu_operand")
+      (match_operand:VCMP_MODE_INT 3 "gcn_vop3_operand")])
+   (match_operand:DI 4 "gcn_exec_reg_operand")]
+  ""
+  {
+    /* Unsigned comparisons use the same patterns as signed comparisons,
+       except that they use unsigned operators (e.g. LTU vs LT).
+       The '%E1' directive then does the Right Thing.  */
+    emit_insn (gen_vec_cmpu<mode>di_exec (operands[0], operands[1],
+					  operands[2], operands[3],
+					  operands[4]));
+    DONE;
+  })
+
+(define_expand "vec_cmp<u>v64qidi_exec"
+  [(match_operand:DI 0 "register_operand")
+   (match_operator 1 "comparison_operator"
+     [(any_extend:V64SI (match_operand:V64QI 2 "gcn_alu_operand"))
+      (any_extend:V64SI (match_operand:V64QI 3 "gcn_vop3_operand"))])
+   (match_operand:DI 4 "gcn_exec_reg_operand")]
+  "can_create_pseudo_p ()"
+  {
+    rtx sitmp1 = gen_reg_rtx (V64SImode);
+    rtx sitmp2 = gen_reg_rtx (V64SImode);
+
+    emit_insn (gen_<expander>v64qiv64si2_exec (sitmp1, operands[2],
+					       operands[2], operands[4]));
+    emit_insn (gen_<expander>v64qiv64si2_exec (sitmp2, operands[3],
+					       operands[3], operands[4]));
+    emit_insn (gen_vec_cmpv64sidi_exec (operands[0], operands[1], sitmp1,
+					sitmp2, operands[4]));
+    DONE;
+  })
+
 (define_insn "vec_cmp<mode>di_dup"
   [(set (match_operand:DI 0 "register_operand"		   "=cV,cV, e,e,Sg")
 	(match_operator 1 "comparison_operator"
-	  [(vec_duplicate:VEC_1REG_MODE
+	  [(vec_duplicate:VCMP_MODE
 	     (match_operand:<SCALAR_MODE> 2 "gcn_alu_operand"
 							   " Sv, B,Sv,B, A"))
-	   (match_operand:VEC_1REG_MODE 3 "gcn_vop3_operand"
-							   "  v, v, v,v, v")]))
+	   (match_operand:VCMP_MODE 3 "gcn_vop3_operand"   "  v, v, v,v, v")]))
    (clobber (match_scratch:DI 4				   "= X,X,cV,cV, X"))]
   ""
   "@
@@ -2533,11 +2659,10 @@
   [(set (match_operand:DI 0 "register_operand"		    "=cV,cV, e,e,Sg")
 	(and:DI
 	  (match_operator 1 "comparison_operator"
-	    [(vec_duplicate:VEC_1REG_MODE
+	    [(vec_duplicate:VCMP_MODE
 	       (match_operand:<SCALAR_MODE> 2 "gcn_alu_operand"
 							    " Sv, B,Sv,B, A"))
-	     (match_operand:VEC_1REG_MODE 3 "gcn_vop3_operand"
-							    "  v, v, v,v, v")])
+	     (match_operand:VCMP_MODE 3 "gcn_vop3_operand"  "  v, v, v,v, v")])
 	  (match_operand:DI 4 "gcn_exec_reg_operand"	    "  e, e, e,e, e")))
    (clobber (match_scratch:DI 5				    "= X,X,cV,cV, X"))]
   ""
@@ -2552,81 +2677,81 @@
 
 (define_expand "vcond_mask_<mode>di"
   [(parallel
-    [(set (match_operand:VEC_REG_MODE 0 "register_operand" "")
-	  (vec_merge:VEC_REG_MODE
-	    (match_operand:VEC_REG_MODE 1 "gcn_vop3_operand" "")
-	    (match_operand:VEC_REG_MODE 2 "gcn_alu_operand" "")
-	    (match_operand:DI 3 "register_operand" "")))
+    [(set (match_operand:VEC_ALLREG_MODE 0   "register_operand" "")
+	  (vec_merge:VEC_ALLREG_MODE
+	    (match_operand:VEC_ALLREG_MODE 1 "gcn_vop3_operand" "")
+	    (match_operand:VEC_ALLREG_MODE 2 "gcn_alu_operand" "")
+	    (match_operand:DI 3		     "register_operand" "")))
      (clobber (scratch:V64DI))])]
   ""
   "")
 
-(define_expand "vcond<VEC_1REG_MODE:mode><VEC_1REG_ALT:mode>"
-  [(match_operand:VEC_1REG_MODE 0 "register_operand")
-   (match_operand:VEC_1REG_MODE 1 "gcn_vop3_operand")
-   (match_operand:VEC_1REG_MODE 2 "gcn_alu_operand")
+(define_expand "vcond<VEC_ALLREG_MODE:mode><VEC_ALLREG_ALT:mode>"
+  [(match_operand:VEC_ALLREG_MODE 0 "register_operand")
+   (match_operand:VEC_ALLREG_MODE 1 "gcn_vop3_operand")
+   (match_operand:VEC_ALLREG_MODE 2 "gcn_alu_operand")
    (match_operator 3 "comparison_operator"
-     [(match_operand:VEC_1REG_ALT 4 "gcn_alu_operand")
-      (match_operand:VEC_1REG_ALT 5 "gcn_vop3_operand")])]
+     [(match_operand:VEC_ALLREG_ALT 4 "gcn_alu_operand")
+      (match_operand:VEC_ALLREG_ALT 5 "gcn_vop3_operand")])]
   ""
   {
     rtx tmp = gen_reg_rtx (DImode);
-    emit_insn (gen_vec_cmp<VEC_1REG_ALT:mode>di
+    emit_insn (gen_vec_cmp<VEC_ALLREG_ALT:mode>di
 	       (tmp, operands[3], operands[4], operands[5]));
-    emit_insn (gen_vcond_mask_<VEC_1REG_MODE:mode>di
+    emit_insn (gen_vcond_mask_<VEC_ALLREG_MODE:mode>di
 	       (operands[0], operands[1], operands[2], tmp));
     DONE;
   })
 
-(define_expand "vcond<VEC_1REG_MODE:mode><VEC_1REG_ALT:mode>_exec"
-  [(match_operand:VEC_1REG_MODE 0 "register_operand")
-   (match_operand:VEC_1REG_MODE 1 "gcn_vop3_operand")
-   (match_operand:VEC_1REG_MODE 2 "gcn_alu_operand")
+(define_expand "vcond<VEC_ALLREG_MODE:mode><VEC_ALLREG_ALT:mode>_exec"
+  [(match_operand:VEC_ALLREG_MODE 0 "register_operand")
+   (match_operand:VEC_ALLREG_MODE 1 "gcn_vop3_operand")
+   (match_operand:VEC_ALLREG_MODE 2 "gcn_alu_operand")
    (match_operator 3 "comparison_operator"
-     [(match_operand:VEC_1REG_ALT 4 "gcn_alu_operand")
-      (match_operand:VEC_1REG_ALT 5 "gcn_vop3_operand")])
+     [(match_operand:VEC_ALLREG_ALT 4 "gcn_alu_operand")
+      (match_operand:VEC_ALLREG_ALT 5 "gcn_vop3_operand")])
    (match_operand:DI 6 "gcn_exec_reg_operand" "e")]
   ""
   {
     rtx tmp = gen_reg_rtx (DImode);
-    emit_insn (gen_vec_cmp<VEC_1REG_ALT:mode>di_exec
+    emit_insn (gen_vec_cmp<VEC_ALLREG_ALT:mode>di_exec
 	       (tmp, operands[3], operands[4], operands[5], operands[6]));
-    emit_insn (gen_vcond_mask_<VEC_1REG_MODE:mode>di
+    emit_insn (gen_vcond_mask_<VEC_ALLREG_MODE:mode>di
 	       (operands[0], operands[1], operands[2], tmp));
     DONE;
   })
 
-(define_expand "vcondu<VEC_1REG_INT_MODE:mode><VEC_1REG_INT_ALT:mode>"
-  [(match_operand:VEC_1REG_INT_MODE 0 "register_operand")
-   (match_operand:VEC_1REG_INT_MODE 1 "gcn_vop3_operand")
-   (match_operand:VEC_1REG_INT_MODE 2 "gcn_alu_operand")
+(define_expand "vcondu<VEC_ALLREG_MODE:mode><VEC_ALLREG_INT_MODE:mode>"
+  [(match_operand:VEC_ALLREG_MODE 0 "register_operand")
+   (match_operand:VEC_ALLREG_MODE 1 "gcn_vop3_operand")
+   (match_operand:VEC_ALLREG_MODE 2 "gcn_alu_operand")
    (match_operator 3 "comparison_operator"
-     [(match_operand:VEC_1REG_INT_ALT 4 "gcn_alu_operand")
-      (match_operand:VEC_1REG_INT_ALT 5 "gcn_vop3_operand")])]
+     [(match_operand:VEC_ALLREG_INT_MODE 4 "gcn_alu_operand")
+      (match_operand:VEC_ALLREG_INT_MODE 5 "gcn_vop3_operand")])]
   ""
   {
     rtx tmp = gen_reg_rtx (DImode);
-    emit_insn (gen_vec_cmp<VEC_1REG_INT_ALT:mode>di
+    emit_insn (gen_vec_cmpu<VEC_ALLREG_INT_MODE:mode>di
 	       (tmp, operands[3], operands[4], operands[5]));
-    emit_insn (gen_vcond_mask_<VEC_1REG_INT_MODE:mode>di
+    emit_insn (gen_vcond_mask_<VEC_ALLREG_MODE:mode>di
 	       (operands[0], operands[1], operands[2], tmp));
     DONE;
   })
 
-(define_expand "vcondu<VEC_1REG_INT_MODE:mode><VEC_1REG_INT_ALT:mode>_exec"
-  [(match_operand:VEC_1REG_INT_MODE 0 "register_operand")
-   (match_operand:VEC_1REG_INT_MODE 1 "gcn_vop3_operand")
-   (match_operand:VEC_1REG_INT_MODE 2 "gcn_alu_operand")
+(define_expand "vcondu<VEC_ALLREG_MODE:mode><VEC_ALLREG_INT_MODE:mode>_exec"
+  [(match_operand:VEC_ALLREG_MODE 0 "register_operand")
+   (match_operand:VEC_ALLREG_MODE 1 "gcn_vop3_operand")
+   (match_operand:VEC_ALLREG_MODE 2 "gcn_alu_operand")
    (match_operator 3 "comparison_operator"
-     [(match_operand:VEC_1REG_INT_ALT 4 "gcn_alu_operand")
-      (match_operand:VEC_1REG_INT_ALT 5 "gcn_vop3_operand")])
+     [(match_operand:VEC_ALLREG_INT_MODE 4 "gcn_alu_operand")
+      (match_operand:VEC_ALLREG_INT_MODE 5 "gcn_vop3_operand")])
    (match_operand:DI 6 "gcn_exec_reg_operand" "e")]
   ""
   {
     rtx tmp = gen_reg_rtx (DImode);
-    emit_insn (gen_vec_cmp<VEC_1REG_INT_ALT:mode>di_exec
+    emit_insn (gen_vec_cmpu<VEC_ALLREG_INT_MODE:mode>di_exec
 	       (tmp, operands[3], operands[4], operands[5], operands[6]));
-    emit_insn (gen_vcond_mask_<VEC_1REG_INT_MODE:mode>di
+    emit_insn (gen_vcond_mask_<VEC_ALLREG_MODE:mode>di
 	       (operands[0], operands[1], operands[2], tmp));
     DONE;
   })
@@ -2666,8 +2791,8 @@
   })
 
 (define_expand "maskload<mode>di"
-  [(match_operand:VEC_REG_MODE 0 "register_operand")
-   (match_operand:VEC_REG_MODE 1 "memory_operand")
+  [(match_operand:VEC_ALLREG_MODE 0 "register_operand")
+   (match_operand:VEC_ALLREG_MODE 1 "memory_operand")
    (match_operand 2 "")]
   ""
   {
@@ -2683,8 +2808,8 @@
   })
 
 (define_expand "maskstore<mode>di"
-  [(match_operand:VEC_REG_MODE 0 "memory_operand")
-   (match_operand:VEC_REG_MODE 1 "register_operand")
+  [(match_operand:VEC_ALLREG_MODE 0 "memory_operand")
+   (match_operand:VEC_ALLREG_MODE 1 "register_operand")
    (match_operand 2 "")]
   ""
   {
@@ -2698,7 +2823,7 @@
   })
 
 (define_expand "mask_gather_load<mode>"
-  [(match_operand:VEC_REG_MODE 0 "register_operand")
+  [(match_operand:VEC_ALLREG_MODE 0 "register_operand")
    (match_operand:DI 1 "register_operand")
    (match_operand 2 "register_operand")
    (match_operand 3 "immediate_operand")
@@ -2712,9 +2837,9 @@
     if (GET_MODE (operands[2]) == V64DImode)
       {
 	rtx tmp = gen_reg_rtx (V64SImode);
-	emit_insn (gen_vec_truncatev64div64si_exec (tmp, operands[2],
-						    gcn_gen_undef (V64SImode),
-						    exec));
+	emit_insn (gen_truncv64div64si2_exec (tmp, operands[2],
+					      gcn_gen_undef (V64SImode),
+					      exec));
 	operands[2] = tmp;
       }
 
@@ -2728,7 +2853,7 @@
    (match_operand 1 "register_operand")
    (match_operand 2 "immediate_operand")
    (match_operand:SI 3 "gcn_alu_operand")
-   (match_operand:VEC_REG_MODE 4 "register_operand")
+   (match_operand:VEC_ALLREG_MODE 4 "register_operand")
    (match_operand:DI 5 "")]
   ""
   {
@@ -2738,9 +2863,9 @@
     if (GET_MODE (operands[1]) == V64DImode)
       {
 	rtx tmp = gen_reg_rtx (V64SImode);
-	emit_insn (gen_vec_truncatev64div64si_exec (tmp, operands[1],
-						    gcn_gen_undef (V64SImode),
-						    exec));
+	emit_insn (gen_truncv64div64si2_exec (tmp, operands[1],
+					      gcn_gen_undef (V64SImode),
+					      exec));
 	operands[1] = tmp;
       }
 
@@ -2911,18 +3036,18 @@
 
 ; Special cases for addition.
 
-(define_insn "*plus_carry_dpp_shr_<mode>"
-  [(set (match_operand:VEC_1REG_INT_MODE 0 "register_operand"   "=v")
-	(unspec:VEC_1REG_INT_MODE
-	  [(match_operand:VEC_1REG_INT_MODE 1 "register_operand" "v")
-	   (match_operand:VEC_1REG_INT_MODE 2 "register_operand" "v")
-	   (match_operand:SI 3 "const_int_operand"		 "n")]
+(define_insn "*plus_carry_dpp_shr_v64si"
+  [(set (match_operand:V64SI 0 "register_operand"   "=v")
+	(unspec:V64SI
+	  [(match_operand:V64SI 1 "register_operand" "v")
+	   (match_operand:V64SI 2 "register_operand" "v")
+	   (match_operand:SI 3 "const_int_operand"   "n")]
 	  UNSPEC_PLUS_CARRY_DPP_SHR))
    (clobber (reg:DI VCC_REG))]
   ""
   {
     const char *insn = TARGET_GCN3 ? "v_add%u0" : "v_add_co%u0";
-    return gcn_expand_dpp_shr_insn (<MODE>mode, insn,
+    return gcn_expand_dpp_shr_insn (V64SImode, insn,
 				    UNSPEC_PLUS_CARRY_DPP_SHR,
 				    INTVAL (operands[3]));
   }
@@ -2982,9 +3107,9 @@
 
 ; Instructions to move a scalar value from lane 63 of a vector register.
 (define_insn "mov_from_lane63_<mode>"
-  [(set (match_operand:<SCALAR_MODE> 0 "register_operand"  "=Sg,v")
+  [(set (match_operand:<SCALAR_MODE> 0 "register_operand"	"=Sg,v")
 	(unspec:<SCALAR_MODE>
-	  [(match_operand:VEC_1REG_MODE 1 "register_operand" "v,v")]
+	  [(match_operand:VEC_ALL1REG_MODE 1 "register_operand" "v,v")]
 	  UNSPEC_MOV_FROM_LANE63))]
   ""
   "@
@@ -3037,9 +3162,11 @@
   {
     rtx tmp = gen_reg_rtx (V64DImode);
     rtx v1 = gen_rtx_REG (V64SImode, VGPR_REGNO (1));
+    rtx op1vec = gen_reg_rtx (V64DImode);
 
     emit_insn (gen_mulv64di3_zext_dup2 (tmp, v1, operands[2]));
-    emit_insn (gen_addv64di3_dup (operands[0], tmp, operands[1]));
+    emit_insn (gen_vec_duplicatev64si (op1vec, operands[1]));
+    emit_insn (gen_addv64di3 (operands[0], tmp, op1vec));
     DONE;
   })
 

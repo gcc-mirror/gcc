@@ -1,6 +1,6 @@
 // Concepts and traits for use with iterators -*- C++ -*-
 
-// Copyright (C) 2019 Free Software Foundation, Inc.
+// Copyright (C) 2019-2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -474,18 +474,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       struct __iter_common_ref
       : common_reference<iter_reference_t<_Tp>, iter_value_t<_Tp>&>
       { };
-
-    // FIXME: needed due to PR c++/67704
-    template<typename _Fn, typename... _Is>
-      struct __indirect_result
-      { };
-
-    template<typename _Fn, typename... _Is>
-      requires (readable<_Is> && ...)
-	&& invocable<_Fn, iter_reference_t<_Is>...>
-      struct __indirect_result<_Fn, _Is...>
-      : invoke_result<_Fn, iter_reference_t<_Is>...>
-      { };
   } // namespace __detail
 
   template<typename _Tp>
@@ -653,15 +641,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       && strict_weak_order<_Fn&, iter_common_reference_t<_I1>,
 			   iter_common_reference_t<_I2>>;
 
+  namespace __detail
+  {
+    // FIXME: needed due to PR c++/67704
+    template<typename _Fn, typename... _Is>
+      struct __indirect_result
+      { };
+
+    template<typename _Fn, typename... _Is>
+      requires (readable<_Is> && ...)
+	&& invocable<_Fn, iter_reference_t<_Is>...>
+      struct __indirect_result<_Fn, _Is...>
+      : invoke_result<_Fn, iter_reference_t<_Is>...>
+      { };
+  } // namespace __detail
+
   template<typename _Fn, typename... _Is>
     using indirect_result_t = typename
-      __detail::__indirect_result<_Fn, iter_reference_t<_Is>...>::type;
+      __detail::__indirect_result<_Fn, _Is...>::type;
 
   /// [projected], projected
   template<readable _Iter, indirectly_regular_unary_invocable<_Iter> _Proj>
     struct projected
     {
       using value_type = remove_cvref_t<indirect_result_t<_Proj&, _Iter>>;
+
       indirect_result_t<_Proj&, _Iter> operator*() const; // not defined
     };
 
@@ -700,7 +704,7 @@ namespace ranges
   namespace __cust_iswap
   {
     template<typename _It1, typename _It2>
-      void iter_swap(_It1&, _It2&) = delete;
+      void iter_swap(_It1, _It2) = delete;
 
     template<typename _Tp, typename _Up>
       concept __adl_iswap
@@ -744,7 +748,8 @@ namespace ranges
     public:
       template<typename _Tp, typename _Up>
 	requires __adl_iswap<_Tp, _Up>
-	|| (readable<_Tp> && readable<_Up>
+	|| (readable<remove_reference_t<_Tp>>
+	    && readable<remove_reference_t<_Up>>
 	    && swappable_with<iter_reference_t<_Tp>, iter_reference_t<_Up>>)
 	|| (indirectly_movable_storable<_Tp, _Up>
 	    && indirectly_movable_storable<_Up, _Tp>)

@@ -9,5 +9,6 @@ struct A
 struct B
 {
   A a;
-    constexpr B() : a(0) {} // { dg-error "no matching function" }
+  // P0960R3 allows paren-init.
+  constexpr B() : a(0) {} // { dg-error "no matching function" "" { target c++17_down } }
 };

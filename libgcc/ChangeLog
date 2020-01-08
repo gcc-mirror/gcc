@@ -1,3 +1,83 @@
+2020-01-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	Implement 64-bit double functions.
+
+	PR target/92055
+	* config.host (tmake_file) [target=avr]: Add t-libf7,
+	t-libf7-math, t-libf7-math-symbols as specified by --with-libf7=.
+	* config/avr/t-avrlibc: Don't copy libgcc.a if there are modules
+	depending on sizeof (double) or sizeof (long double).
+	* config/avr/libf7: New folder.
+
+2020-01-05  Olivier Hainque  <hainque@adacore.com>
+
+	* config/gthr-vxworks.h: Guard #include vxAtomicLib.h
+	by IN_LIBGCC2.
+
+2020-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2019-12-30  Olivier Hainque  <hainque@adacore.com>
+
+	* config/gthr-vxworks.h: Use _vxworks-versions.h.
+	* config/gthr-vxworks-tls.c: Likewise.
+
+2019-12-30  Olivier Hainque  <hainque@adacore.com>
+
+	* config/gthr-vxworks.h (GTHREAD_ONCE_INIT): Use
+	standard zero-initializer syntax.
+
+2019-12-30  Olivier Hainque  <hainque@adacore.com>
+
+	* config/gthr-vxworks-tls.c (__gthread_getspecific): Fix
+	reference to the internal VX_GET_TLS_DATA interface.
+
+2019-12-30  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxcrtstuff.c: Fix incorrect spelling of
+	USE_INITFINI_ARRAY in guard.
+
+2019-12-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config.host: s/msp430*-*-elf/msp430-*-elf*.
+	Override default "extra_parts" variable.
+	* configure: Regenerate.
+	* configure.ac: Disable TM clone registry by default for
+	msp430-elfbare.
+
+2019-12-11  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config.host (msp430*-*-elf): Add crt{begin,end}_no_eh.o to
+	"extra_parts".
+	* config/msp430/t-msp430: Add rules to build crt{begin,end}_no_eh.o.
+
+2019-12-11  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* crtstuff.c: Declare __dso_handle only if DEFAULT_USE_CXA_ATEXIT is
+	true.
+
+2019-12-09  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* crtstuff.c (__do_global_dtors_aux): Check if USE_EH_FRAME_REGISTRY is
+	defined instead of its value.
+
+2019-12-09  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* crtstuff.c (__do_global_dtors_aux): Wrap in #if so it's only defined
+	if it will have contents.
+
+2019-12-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/92055
+	* config/avr/t-avrlibc (MULTISUBDIR): Search for double, not double64.
+
+2019-11-18  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR libgcc/91737
+	* config.host: Add t-gthr-noweak on *-*-musl*.
+	* config/t-gthr-noweak: New file.
+
 2019-11-17  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/linux-atomic.c (__kernel_cmpxchg): Change argument 1 to
@@ -10378,7 +10458,7 @@
 	shared-object.mk, siditi-object.mk, static-object.mk: New files.
 	* configure: Generated.
 
-Copyright (C) 2007-2019 Free Software Foundation, Inc.
+Copyright (C) 2007-2020 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

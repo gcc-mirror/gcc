@@ -167,7 +167,7 @@ void tiled_sgemm_tt(const int M, const int N, const int K, const float alpha, co
 
 // -------------------------------------------------------------------
 //      The rest of this code forms the HSAIL kernel with the
-//      pairs of "paralell for collapse(2)" loops repalced with a barrier.
+//      pairs of "parallel for collapse(2)" loops replaced with a barrier.
 //      The kernel initializes these values
 //      C_row_start = get_group_id(0) * BLOCK_SIZE
 //      C_col_start = get_group_id(1) * BLOCK_SIZE

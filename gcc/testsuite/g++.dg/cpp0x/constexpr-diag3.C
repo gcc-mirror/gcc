@@ -48,7 +48,7 @@ struct Def
 {
   int _M_i;			// { dg-message "does not initialize" }
 
-  constexpr Def() = default;	// { dg-error "implicit declaration is not .constexpr." }
+  constexpr Def() = default;	// { dg-error "implicit declaration is not .constexpr." "" { target c++17_down } }
 };
 
 constexpr Def defobj;		// { dg-error "uninitialized" }

@@ -1,6 +1,6 @@
 /* Declarations for variables relating to reading the source file.
    Used by parsers, lexical analyzers, and error message routines.
-   Copyright (C) 1993-2019 Free Software Foundation, Inc.
+   Copyright (C) 1993-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -38,6 +38,7 @@ STATIC_ASSERT (BUILTINS_LOCATION < RESERVED_LOCATION_COUNT);
 
 extern bool is_location_from_builtin_token (location_t);
 extern expanded_location expand_location (location_t);
+extern int location_compute_display_column (expanded_location);
 
 /* A class capturing the bounds of a buffer, to allow for run-time
    bounds-checking in a checked build.  */

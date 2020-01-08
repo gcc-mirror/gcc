@@ -1,5 +1,5 @@
 /* Subroutines used for reading MCU data on TI MSP430 processors.
-   Copyright (C) 2019 Free Software Foundation, Inc.
+   Copyright (C) 2019-2020 Free Software Foundation, Inc.
    Contributed by Jozef Lawrynowicz  <jozef.l@mittosystems.com>.
 
    This file is part of GCC.
@@ -71,8 +71,23 @@ msp430_dirname (char *path)
   return path;
 }
 
+/* We need to support both the msp430-elf and msp430-elfbare target aliases.
+   gcc/config/msp430/t-msp430 will define TARGET_SUBDIR to the target_subdir
+   Makefile variable, which will evaluate to the correct subdirectory that
+   needs to be searched for devices.csv.  */
+#ifndef TARGET_SUBDIR
+#define TARGET_SUBDIR msp430-elf
+#endif
+
+#define _MSPMKSTR(x) __MSPMKSTR(x)
+#define __MSPMKSTR(x) #x
+
 /* devices.csv path from the toolchain root.  */
-static const char rest_of_devices_path[] = "/msp430-elf/include/devices/";
+static const char rest_of_devices_path[] =
+  "/" _MSPMKSTR (TARGET_SUBDIR) "/include/devices/";
+
+#undef _MSPMKSTR
+#undef __MSPMKSTR
 
 /* "The default value of GCC_EXEC_PREFIX is prefix/lib/gcc". Strip lib/gcc
    from GCC_EXEC_PREFIX to get the path to the installed toolchain.  */

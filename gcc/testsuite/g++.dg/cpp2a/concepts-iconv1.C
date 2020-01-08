@@ -7,16 +7,16 @@ int foo(int x)
 {
     return x;
 }
- 
+
 template <typename T>
 concept C1 = requires (T x) {
-    {foo(x)} -> Same<int&>;
+    {foo(x)} -> Same<int&>; // { dg-error "placeholder constraints" }
 };
 
 template <typename T>
 concept C2 = requires (T x) {
-    {foo(x)} -> Same<void>;
+    {foo(x)} -> Same<void>; // { dg-error "placeholder constraints" }
 };
- 
+
 static_assert( C1<int> );	// { dg-error "assert" }
 static_assert( C2<int> );	// { dg-error "assert" }

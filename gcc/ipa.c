@@ -1,5 +1,5 @@
 /* Basic IPA optimizations and utilities.
-   Copyright (C) 2003-2019 Free Software Foundation, Inc.
+   Copyright (C) 2003-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -244,7 +244,8 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 	    }
 	  edge = edge->make_direct (target);
 	  if (ipa_fn_summaries)
-	    ipa_update_overall_fn_summary (node);
+	    ipa_update_overall_fn_summary (node->inlined_to
+					   ? node->inlined_to : node);
 	  else if (edge->call_stmt)
 	    edge->redirect_call_stmt_to_callee ();
 	}
@@ -520,9 +521,14 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	     reliably.  */
 	  if (node->alias || node->thunk.thunk_p)
 	    ;
-	  else if (!body_needed_for_clonning.contains (node->decl)
-	      && !node->alias && !node->thunk.thunk_p)
-	    node->release_body ();
+	  else if (!body_needed_for_clonning.contains (node->decl))
+	    {
+	      /* Make the node a non-clone so that we do not attempt to
+		 materialize it later.  */
+	      if (node->clone_of)
+		node->remove_from_clone_tree ();
+	      node->release_body ();
+	    }
 	  else if (!node->clone_of)
 	    gcc_assert (in_lto_p || DECL_RESULT (node->decl));
 	  if (node->definition && !node->alias && !node->thunk.thunk_p)

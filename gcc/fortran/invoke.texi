@@ -1,10 +1,10 @@
-@c Copyright (C) 2004-2019 Free Software Foundation, Inc.
+@c Copyright (C) 2004-2020 Free Software Foundation, Inc.
 @c This is part of the GNU Fortran manual.   
 @c For copying conditions, see the file gfortran.texi.
 
 @ignore
 @c man begin COPYRIGHT
-Copyright @copyright{} 2004-2019 Free Software Foundation, Inc.
+Copyright @copyright{} 2004-2020 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -117,17 +117,17 @@ by type.  Explanations are in the following sections.
 @item Fortran Language Options
 @xref{Fortran Dialect Options,,Options controlling Fortran dialect}.
 @gccoptlist{-fall-intrinsics -fallow-argument-mismatch -fallow-invalid-boz @gol
--fbackslash -fcray-pointer -fd-lines-as-code -fd-lines-as-comments -fdec @gol
--fdec-char-conversions -fdec-structure -fdec-intrinsic-ints -fdec-static @gol
--fdec-math -fdec-include -fdec-format-defaults -fdec-blank-format-item @gol
--fdefault-double-8 -fdefault-integer-8 -fdefault-real-8 -fdefault-real-10 @gol
--fdefault-real-16 -fdollar-ok -ffixed-line-length-@var{n} @gol
--ffixed-line-length-none -fpad-source -ffree-form @gol
--ffree-line-length-@var{n} -ffree-line-length-none -fimplicit-none @gol
--finteger-4-integer-8 -fmax-identifier-length -fmodule-private @gol
--ffixed-form -fno-range-check -fopenacc -fopenmp -freal-4-real-10 @gol
--freal-4-real-16 -freal-4-real-8 -freal-8-real-10 -freal-8-real-16 @gol
--freal-8-real-4 -std=@var{std} -ftest-forall-temp
+-fbackslash -fcray-pointer -fd-lines-as-code -fd-lines-as-comments @gol
+-fdec -fdec-char-conversions -fdec-structure -fdec-intrinsic-ints @gol
+-fdec-static -fdec-math -fdec-include -fdec-format-defaults @gol
+-fdec-blank-format-item -fdefault-double-8 -fdefault-integer-8 @gol
+-fdefault-real-8 -fdefault-real-10 -fdefault-real-16 -fdollar-ok @gol
+-ffixed-line-length-@var{n} -ffixed-line-length-none -fpad-source @gol
+-ffree-form -ffree-line-length-@var{n} -ffree-line-length-none @gol
+-fimplicit-none -finteger-4-integer-8 -fmax-identifier-length @gol
+-fmodule-private -ffixed-form -fno-range-check -fopenacc -fopenmp @gol
+-freal-4-real-10 -freal-4-real-16 -freal-4-real-8 -freal-8-real-10 @gol
+-freal-8-real-16 -freal-8-real-4 -std=@var{std} -ftest-forall-temp
 }
 
 @item Preprocessing Options
@@ -192,8 +192,9 @@ and warnings}.
 -ffrontend-loop-interchange -ffrontend-optimize @gol
 -finit-character=@var{n} -finit-integer=@var{n} -finit-local-zero @gol
 -finit-derived -finit-logical=@var{<true|false>} @gol
--finit-real=@var{<zero|inf|-inf|nan|snan>} @gol
--finline-matmul-limit=@var{n} -fmax-array-constructor=@var{n} @gol
+-finit-real=@var{<zero|inf|-inf|nan|snan>}
+-finline-matmul-limit=@var{n} @gol
+-finline-arg-packing -fmax-array-constructor=@var{n} @gol
 -fmax-stack-var-size=@var{n} -fno-align-commons -fno-automatic @gol
 -fno-protect-parens -fno-underscoring -fsecond-underscore @gol
 -fpack-derived -frealloc-lhs -frecursive -frepack-arrays @gol
@@ -283,7 +284,7 @@ If @option{-fd-lines-as-code}/@option{-fd-lines-as-comments} are unset, then
 
 @item -fdec-char-conversions
 @opindex @code{fdec-char-conversions}
-Enable the use of character literals in assignments and data statements
+Enable the use of character literals in assignments and @code{DATA} statements
 for non-character variables.
 
 @item -fdec-structure
@@ -1778,6 +1779,34 @@ This option is provided for interoperability with C code that was
 compiled with the @option{-fshort-enums} option.  It will make
 GNU Fortran choose the smallest @code{INTEGER} kind a given
 enumerator set will fit in, and give all its enumerators this kind.
+
+@item -finline-arg-packing
+@opindex @code{finline-arg-packing}
+When passing an assumed-shape argument of a procedure as actual
+argument to an assumed-size or explicit size or as argument to a
+procedure that does not have an explicit interface, the argument may
+have to be packed, that is put into contiguous memory. An example is
+the call to @code{foo} in
+@smallexample
+  subroutine foo(a)
+     real, dimension(*) :: a
+  end subroutine foo
+  subroutine bar(b)
+     real, dimension(:) :: b
+     call foo(b)
+  end subroutine bar
+@end smallexample
+
+When @option{-finline-arg-packing} is in effect, this packing will be
+performed by inline code. This allows for more optimization while
+increasing code size.
+
+@option{-finline-arg-packing} is implied by any of the @option{-O} options
+except when optimizing for size via @option{-Os}.  If the code
+contains a very large number of argument that have to be packed, code
+size and also compilation time may become excessive.  If that is the
+case, it may be better to disable this option.  Instances of packing
+can be found by using by using @option{-Warray-temporaries}.
 
 @item -fexternal-blas
 @opindex @code{fexternal-blas}

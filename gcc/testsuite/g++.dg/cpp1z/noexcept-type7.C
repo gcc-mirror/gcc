@@ -10,5 +10,5 @@ void f()
   NP np;
 
   static_cast<P>(np);
-  static_cast<NP>(p);		// { dg-error "" }
+  static_cast<NP>(p);		// { dg-error "3:invalid .static_cast." }
 }

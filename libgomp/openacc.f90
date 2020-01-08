@@ -1,6 +1,6 @@
 !  OpenACC Runtime Library Definitions.
 
-!  Copyright (C) 2014-2019 Free Software Foundation, Inc.
+!  Copyright (C) 2014-2020 Free Software Foundation, Inc.
 
 !  Contributed by Tobias Burnus <burnus@net-b.de>
 !              and Mentor Embedded.
@@ -27,19 +27,22 @@
 !  see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 !  <http://www.gnu.org/licenses/>.
 
+! Keep in sync with config/accel/openacc.f90 and openacc_lib.h.
+
 module openacc_kinds
   use iso_fortran_env, only: int32
+  use iso_c_binding, only: c_size_t
   implicit none
 
-  private :: int32
-  public :: acc_device_kind
+  public
+  private :: int32, c_size_t
+
+  ! When adding items, also update 'public' setting in 'module openacc' below.
 
   integer, parameter :: acc_device_kind = int32
 
-  public :: acc_device_none, acc_device_default, acc_device_host
-  public :: acc_device_not_host, acc_device_nvidia
-
   ! Keep in sync with include/gomp-constants.h.
+  integer (acc_device_kind), parameter :: acc_device_current = -3
   integer (acc_device_kind), parameter :: acc_device_none = 0
   integer (acc_device_kind), parameter :: acc_device_default = 1
   integer (acc_device_kind), parameter :: acc_device_host = 2
@@ -48,17 +51,21 @@ module openacc_kinds
   integer (acc_device_kind), parameter :: acc_device_nvidia = 5
   integer (acc_device_kind), parameter :: acc_device_gcn = 8
 
-  public :: acc_handle_kind
+  integer, parameter :: acc_device_property = c_size_t
+
+  ! Keep in sync with include/gomp-constants.h.
+  integer (acc_device_property), parameter :: acc_property_memory = 1
+  integer (acc_device_property), parameter :: acc_property_free_memory = 2
+  integer (acc_device_property), parameter :: acc_property_name = int(Z'10001')
+  integer (acc_device_property), parameter :: acc_property_vendor = int(Z'10002')
+  integer (acc_device_property), parameter :: acc_property_driver = int(Z'10003')
 
   integer, parameter :: acc_handle_kind = int32
-
-  public :: acc_async_noval, acc_async_sync
 
   ! Keep in sync with include/gomp-constants.h.
   integer (acc_handle_kind), parameter :: acc_async_noval = -1
   integer (acc_handle_kind), parameter :: acc_async_sync = -2
-
-end module
+end module openacc_kinds
 
 module openacc_internal
   use openacc_kinds
@@ -92,6 +99,24 @@ module openacc_internal
       integer acc_get_device_num_h
       integer (acc_device_kind) d
     end function
+
+    function acc_get_property_h (n, d, p)
+      import
+      implicit none (type, external)
+      integer (acc_device_property) :: acc_get_property_h
+      integer, value :: n
+      integer (acc_device_kind), value :: d
+      integer (acc_device_property), value :: p
+    end function
+
+    subroutine acc_get_property_string_h (n, d, p, s)
+      import
+      implicit none (type, external)
+      integer, value :: n
+      integer (acc_device_kind), value :: d
+      integer (acc_device_property), value :: p
+      character (*) :: s
+    end subroutine
 
     function acc_async_test_h (a)
       logical acc_async_test_h
@@ -512,6 +537,26 @@ module openacc_internal
       integer (c_int), value :: d
     end function
 
+    function acc_get_property_l (n, d, p) &
+        bind (C, name = "acc_get_property")
+      use iso_c_binding, only: c_int, c_size_t
+      implicit none (type, external)
+      integer (c_size_t) :: acc_get_property_l
+      integer (c_int), value :: n
+      integer (c_int), value :: d
+      integer (c_int), value :: p
+    end function
+
+    function acc_get_property_string_l (n, d, p) &
+        bind (C, name = "acc_get_property_string")
+      use iso_c_binding, only: c_int, c_ptr
+      implicit none (type, external)
+      type (c_ptr) :: acc_get_property_string_l
+      integer (c_int), value :: n
+      integer (c_int), value :: d
+      integer (c_int), value :: p
+    end function
+
     function acc_async_test_l (a) &
         bind (C, name = "acc_async_test")
       use iso_c_binding, only: c_int
@@ -710,18 +755,33 @@ module openacc_internal
       integer (c_int), value :: async
     end subroutine
   end interface
-end module
+end module openacc_internal
 
 module openacc
   use openacc_kinds
   use openacc_internal
   implicit none
 
+  private
+
+  ! From openacc_kinds
+  public :: acc_device_kind
+  public :: acc_device_none, acc_device_default, acc_device_host
+  public :: acc_device_not_host, acc_device_nvidia, acc_device_gcn
+
+  public :: acc_device_property
+  public :: acc_property_memory, acc_property_free_memory
+  public :: acc_property_name, acc_property_vendor, acc_property_driver
+
+  public :: acc_handle_kind
+  public :: acc_async_noval, acc_async_sync
+
   public :: openacc_version
 
   public :: acc_get_num_devices, acc_set_device_type, acc_get_device_type
-  public :: acc_set_device_num, acc_get_device_num, acc_async_test
-  public :: acc_async_test_all
+  public :: acc_set_device_num, acc_get_device_num
+  public :: acc_get_property, acc_get_property_string
+  public :: acc_async_test, acc_async_test_all
   public :: acc_wait, acc_async_wait, acc_wait_async
   public :: acc_wait_all, acc_async_wait_all, acc_wait_all_async
   public :: acc_init, acc_shutdown, acc_on_device
@@ -730,6 +790,7 @@ module openacc
   public :: acc_update_device, acc_update_self, acc_is_present
   public :: acc_copyin_async, acc_create_async, acc_copyout_async
   public :: acc_delete_async, acc_update_device_async, acc_update_self_async
+  public :: acc_copyout_finalize, acc_delete_finalize
 
   integer, parameter :: openacc_version = 201306
 
@@ -751,6 +812,14 @@ module openacc
 
   interface acc_get_device_num
     procedure :: acc_get_device_num_h
+  end interface
+
+  interface acc_get_property
+    procedure :: acc_get_property_h
+  end interface
+
+  interface acc_get_property_string
+    procedure :: acc_get_property_string_h
   end interface
 
   interface acc_async_test
@@ -931,7 +1000,7 @@ module openacc
     procedure :: acc_update_self_async_array_h
   end interface
 
-end module
+end module openacc
 
 function acc_get_num_devices_h (d)
   use openacc_internal, only: acc_get_num_devices_l
@@ -970,6 +1039,63 @@ function acc_get_device_num_h (d)
   integer (acc_device_kind) d
   acc_get_device_num_h = acc_get_device_num_l (d)
 end function
+
+function acc_get_property_h (n, d, p)
+  use iso_c_binding, only: c_int, c_size_t
+  use openacc_internal, only: acc_get_property_l
+  use openacc_kinds
+  implicit none (type, external)
+  integer (acc_device_property) :: acc_get_property_h
+  integer, value :: n
+  integer (acc_device_kind), value :: d
+  integer (acc_device_property), value :: p
+
+  integer (c_int) :: pint
+
+  pint = int (p, c_int)
+  acc_get_property_h = acc_get_property_l (n, d, pint)
+end function
+
+subroutine acc_get_property_string_h (n, d, p, s)
+  use iso_c_binding, only: c_char, c_int, c_ptr, c_f_pointer, c_associated
+  use openacc_internal, only: acc_get_property_string_l
+  use openacc_kinds
+  implicit none (type, external)
+  integer, value :: n
+  integer (acc_device_kind), value :: d
+  integer (acc_device_property), value :: p
+  character (*) :: s
+
+  integer (c_int) :: pint
+  type (c_ptr) :: cptr
+  integer :: clen
+  character (kind=c_char, len=1), pointer, contiguous :: sptr (:)
+  integer :: slen
+  integer :: i
+
+  interface
+     function strlen (s) bind (C, name = "strlen")
+       use iso_c_binding, only: c_ptr, c_size_t
+       type (c_ptr), intent(in), value :: s
+       integer (c_size_t) :: strlen
+     end function strlen
+  end interface
+
+  pint = int (p, c_int)
+  cptr = acc_get_property_string_l (n, d, pint)
+  s = ""
+  if (.not. c_associated (cptr)) then
+     return
+  end if
+
+  clen = int (strlen (cptr))
+  call c_f_pointer (cptr, sptr, [clen])
+
+  slen = min (clen, len (s))
+  do i = 1, slen
+    s (i:i) = sptr (i)
+  end do
+end subroutine
 
 function acc_async_test_h (a)
   use openacc_internal, only: acc_async_test_l

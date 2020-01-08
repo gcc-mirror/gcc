@@ -1,5 +1,5 @@
 /* Language-dependent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987-2019 Free Software Foundation, Inc.
+   Copyright (C) 1987-2020 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -425,7 +425,8 @@ cp_stabilize_reference (tree ref)
 	  /* This inhibits warnings in, eg, cxx_mark_addressable
 	     (c++/60955).  */
 	  warning_sentinel s (extra_warnings);
-	  ref = build_static_cast (type, ref, tf_error);
+	  ref = build_static_cast (input_location, type, ref,
+				   tf_error);
 	}
     }
 
@@ -445,7 +446,9 @@ builtin_valid_in_constant_expr_p (const_tree decl)
   if (DECL_BUILT_IN_CLASS (decl) != BUILT_IN_NORMAL)
     {
       if (fndecl_built_in_p (decl, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
-			   BUILT_IN_FRONTEND))
+			     BUILT_IN_FRONTEND)
+	  || fndecl_built_in_p (decl, CP_BUILT_IN_SOURCE_LOCATION,
+				BUILT_IN_FRONTEND))
 	return true;
       /* Not a built-in.  */
       return false;
@@ -534,6 +537,17 @@ build_local_temp (tree type)
   DECL_CONTEXT (slot) = current_function_decl;
   layout_decl (slot, 0);
   return slot;
+}
+
+/* Return whether DECL is such a local temporary (or one from
+   create_tmp_var_raw).  */
+
+bool
+is_local_temp (tree decl)
+{
+  return (VAR_P (decl) && DECL_ARTIFICIAL (decl)
+	  && !TREE_STATIC (decl)
+	  && DECL_FUNCTION_SCOPE_P (decl));
 }
 
 /* Set various status flags when building an AGGR_INIT_EXPR object T.  */
@@ -669,6 +683,15 @@ build_aggr_init_expr (tree type, tree init)
 tree
 build_cplus_new (tree type, tree init, tsubst_flags_t complain)
 {
+  /* This function should cope with what build_special_member_call
+     can produce.  When performing parenthesized aggregate initialization,
+     it can produce a { }.  */
+  if (BRACE_ENCLOSED_INITIALIZER_P (init))
+    {
+      gcc_assert (cxx_dialect >= cxx2a);
+      return finish_compound_literal (type, init, complain);
+    }
+
   tree rval = build_aggr_init_expr (type, init);
   tree slot;
 
@@ -1211,7 +1234,8 @@ move (tree expr)
   tree type = TREE_TYPE (expr);
   gcc_assert (!TYPE_REF_P (type));
   type = cp_build_reference_type (type, /*rval*/true);
-  return build_static_cast (type, expr, tf_warning_or_error);
+  return build_static_cast (input_location, type, expr,
+			    tf_warning_or_error);
 }
 
 /* Used by the C++ front end to build qualified array types.  However,
@@ -1489,7 +1513,7 @@ strip_typedefs (tree t, bool *remove_attributes, unsigned int flags)
     return t;
 
   if (!(flags & STF_STRIP_DEPENDENT)
-      && dependent_alias_template_spec_p (t))
+      && dependent_alias_template_spec_p (t, nt_opaque))
     /* DR 1558: However, if the template-id is dependent, subsequent
        template argument substitution still applies to the template-id.  */
     return t;
@@ -1673,16 +1697,21 @@ strip_typedefs (tree t, bool *remove_attributes, unsigned int flags)
 	  if ((flags & STF_USER_VISIBLE)
 	      && !user_facing_original_type_p (t))
 	    return t;
+	  /* If T is a non-template alias or typedef, we can assume that
+	     instantiating its definition will hit any substitution failure,
+	     so we don't need to retain it here as well.  */
+	  if (!alias_template_specialization_p (t, nt_opaque))
+	    flags |= STF_STRIP_DEPENDENT;
 	  result = strip_typedefs (DECL_ORIGINAL_TYPE (TYPE_NAME (t)),
-				   remove_attributes,
-				   flags | STF_STRIP_DEPENDENT);
+				   remove_attributes, flags);
 	}
       else
 	result = TYPE_MAIN_VARIANT (t);
     }
-  gcc_assert (!typedef_variant_p (result)
+  /*gcc_assert (!typedef_variant_p (result)
+	      || dependent_alias_template_spec_p (result, nt_opaque)
 	      || ((flags & STF_USER_VISIBLE)
-		  && !user_facing_original_type_p (result)));
+		  && !user_facing_original_type_p (result)));*/
 
   if (COMPLETE_TYPE_P (result) && !COMPLETE_TYPE_P (t))
   /* If RESULT is complete and T isn't, it's likely the case that T
@@ -2333,6 +2362,9 @@ lookup_mark (tree ovl, bool val)
 tree
 lookup_add (tree fns, tree lookup)
 {
+  if (fns == error_mark_node || lookup == error_mark_node)
+    return error_mark_node;
+
   if (lookup || TREE_CODE (fns) == TEMPLATE_DECL)
     {
       lookup = ovl_make (fns, lookup);
@@ -3144,6 +3176,11 @@ replace_placeholders_r (tree* t, int* walk_subtrees, void* data_)
 	    tree type = TREE_TYPE (*valp);
 	    tree subob = obj;
 
+	    /* Elements with RANGE_EXPR index shouldn't have any
+	       placeholders in them.  */
+	    if (ce->index && TREE_CODE (ce->index) == RANGE_EXPR)
+	      continue;
+
 	    if (TREE_CODE (*valp) == CONSTRUCTOR
 		&& AGGREGATE_TYPE_P (type))
 	      {
@@ -3319,6 +3356,7 @@ build_min_non_dep (enum tree_code code, tree non_dep, ...)
     non_dep = TREE_OPERAND (non_dep, 0);
 
   t = make_node (code);
+  SET_EXPR_LOCATION (t, cp_expr_loc_or_input_loc (non_dep));
   length = TREE_CODE_LENGTH (code);
   TREE_TYPE (t) = unlowered_expr_type (non_dep);
   TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (non_dep);
@@ -4421,7 +4459,13 @@ structural_type_p (tree t, bool explain)
       if (TREE_PRIVATE (m) || TREE_PROTECTED (m))
 	{
 	  if (explain)
-	    inform (location_of (m), "%qD is not public", m);
+	    {
+	      if (DECL_FIELD_IS_BASE (m))
+		inform (location_of (m), "base class %qT is not public",
+			TREE_TYPE (m));
+	      else
+		inform (location_of (m), "%qD is not public", m);
+	    }
 	  return false;
 	}
       if (!structural_type_p (TREE_TYPE (m)))

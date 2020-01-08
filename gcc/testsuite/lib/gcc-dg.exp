@@ -1,4 +1,4 @@
-#   Copyright (C) 1997-2019 Free Software Foundation, Inc.
+#   Copyright (C) 1997-2020 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -415,6 +415,18 @@ proc gcc-dg-prune { system text } {
     	  && ![check_effective_target_large_return_values] } {
 	# The format here is important.  See dg.exp.
 	return "::unsupported::large return values"
+    }
+
+    # If exceptions are disabled, mark tests expecting exceptions to be enabled
+    # as unsupported.
+    if { ![check_effective_target_exceptions_enabled] } {
+	if [regexp "(^|\n)\[^\n\]*: error: exception handling disabled" $text] {
+	    return "::unsupported::exception handling disabled"
+	}
+
+	if [regexp "(^|\n)\[^\n\]*: error: #error .__cpp_exceptions." $text] {
+	    return "::unsupported::exception handling disabled"
+	}
     }
 
     return $text

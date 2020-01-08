@@ -1,5 +1,5 @@
 /* Discovery of auto-inc and auto-dec instructions.
-   Copyright (C) 2006-2019 Free Software Foundation, Inc.
+   Copyright (C) 2006-2020 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -1441,10 +1441,9 @@ merge_in_block (int max_reg, basic_block bb)
 	  continue;
 	}
 
-      /* This continue is deliberate.  We do not want the uses of the
-	 jump put into reg_next_use because it is not considered safe to
-	 combine a preincrement with a jump.  */
-      if (JUMP_P (insn))
+      /* Reload should handle auto-inc within a jump correctly, while LRA
+	 is known to have issues with autoinc.  */
+      if (JUMP_P (insn) && targetm.lra_p ())
 	continue;
 
       if (dump_file)

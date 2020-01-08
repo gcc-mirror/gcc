@@ -1,4 +1,4 @@
-/* Copyright (C) 2016-2019 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2020 Free Software Foundation, Inc.
    Contributed by Martin Sebor <msebor@redhat.com>.
 
 This file is part of GCC.
@@ -1606,7 +1606,7 @@ format_floating_max (tree type, char spec, HOST_WIDE_INT prec)
      round-to-nearest mode.  */
   mpfr_t x;
   mpfr_init2 (x, rfmt->p);
-  mpfr_from_real (x, &rv, GMP_RNDN);
+  mpfr_from_real (x, &rv, MPFR_RNDN);
 
   /* Return a value one greater to account for the leading minus sign.  */
   unsigned HOST_WIDE_INT r
@@ -1953,7 +1953,7 @@ format_floating (const directive &dir, tree arg, const vr_values *)
 	   rounding in either direction can result in longer output.  */
 	mpfr_t mpfrval;
 	mpfr_init2 (mpfrval, rfmt->p);
-	mpfr_from_real (mpfrval, rvp, i ? GMP_RNDU : GMP_RNDD);
+	mpfr_from_real (mpfrval, rvp, i ? MPFR_RNDU : MPFR_RNDD);
 
 	/* Use the MPFR rounding specifier to round down in the first
 	   iteration and then up.  In most but not all cases this will
@@ -2346,7 +2346,6 @@ get_origin_and_offset (tree x, HOST_WIDE_INT *fldoff, HOST_WIDE_INT *off)
 	    {
 	      *fldoff += index;
 	      *off -= index;
-	      fldoff = NULL;
 	    }
 	}
 

@@ -287,21 +287,26 @@ Gogo::stub_method_name(const Package* package, const std::string& mname)
   return ret;
 }
 
-// Return the names of the hash and equality functions for TYPE.  If
-// NAME is not NULL it is the name of the type.  Set *HASH_NAME and
-// *EQUAL_NAME.
+// Return the name of the hash function for TYPE.
 
-void
-Gogo::specific_type_function_names(const Type* type, const Named_type* name,
-				   std::string *hash_name,
-				   std::string *equal_name)
+std::string
+Gogo::hash_function_name(const Type* type)
+{
+  std::string tname = type->mangled_name(this);
+  return tname + "..hash";
+}
+
+// Return the name of the equal function for TYPE.  If NAME is not
+// NULL it is the name of the type.
+
+std::string
+Gogo::equal_function_name(const Type* type, const Named_type* name)
 {
   const Type* rtype = type;
   if (name != NULL)
     rtype = name;
   std::string tname = rtype->mangled_name(this);
-  *hash_name = tname + "..hash";
-  *equal_name = tname + "..eq";
+  return tname + "..eq";
 }
 
 // Return the assembler name to use for a global variable.  GO_NAME is

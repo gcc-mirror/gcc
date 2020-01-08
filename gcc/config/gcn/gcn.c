@@ -1,4 +1,4 @@
-/* Copyright (C) 2016-2019 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2020 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -70,10 +70,15 @@ int gcn_isa = 3;		/* Default to GCN3.  */
    worker-single mode to worker-partitioned mode), per workgroup.  Global
    analysis could calculate an exact bound, but we don't do that yet.
  
-   We reserve the whole LDS, which also prevents any other workgroup
-   sharing the Compute Unit.  */
+   We want to permit full occupancy, so size accordingly.  */
 
-#define LDS_SIZE 65536
+#define OMP_LDS_SIZE 0x600    /* 0x600 is 1/40 total, rounded down.  */
+#define ACC_LDS_SIZE 32768    /* Half of the total should be fine.  */
+#define OTHER_LDS_SIZE 65536  /* If in doubt, reserve all of it.  */
+
+#define LDS_SIZE (flag_openacc ? ACC_LDS_SIZE \
+		  : flag_openmp ? OMP_LDS_SIZE \
+		  : OTHER_LDS_SIZE)
 
 /* The number of registers usable by normal non-kernel functions.
    The SGPR count includes any special extra registers such as VCC.  */
@@ -837,7 +842,7 @@ bool
 gcn_inline_constant_p (rtx x)
 {
   if (GET_CODE (x) == CONST_INT)
-    return INTVAL (x) >= -16 && INTVAL (x) < 64;
+    return INTVAL (x) >= -16 && INTVAL (x) <= 64;
   if (GET_CODE (x) == CONST_DOUBLE)
     return gcn_inline_fp_constant_p (x, false);
   if (GET_CODE (x) == CONST_VECTOR)
@@ -897,16 +902,17 @@ gcn_constant_p (rtx x)
 
 /* Return true if X is a constant representable as two inline immediate
    constants in a 64-bit instruction that is split into two 32-bit
-   instructions.  */
+   instructions.
+   When MIXED is set, the low-part is permitted to use the full 32-bits.  */
 
 bool
-gcn_inline_constant64_p (rtx x)
+gcn_inline_constant64_p (rtx x, bool mixed)
 {
   if (GET_CODE (x) == CONST_VECTOR)
     {
       if (!vgpr_vector_mode_p (GET_MODE (x)))
 	return false;
-      if (!gcn_inline_constant64_p (CONST_VECTOR_ELT (x, 0)))
+      if (!gcn_inline_constant64_p (CONST_VECTOR_ELT (x, 0), mixed))
 	return false;
       for (int i = 1; i < 64; i++)
 	if (CONST_VECTOR_ELT (x, i) != CONST_VECTOR_ELT (x, 0))
@@ -920,7 +926,8 @@ gcn_inline_constant64_p (rtx x)
 
   rtx val_lo = gcn_operand_part (DImode, x, 0);
   rtx val_hi = gcn_operand_part (DImode, x, 1);
-  return gcn_inline_constant_p (val_lo) && gcn_inline_constant_p (val_hi);
+  return ((mixed || gcn_inline_constant_p (val_lo))
+	  && gcn_inline_constant_p (val_hi));
 }
 
 /* Return true if X is a constant representable as an immediate constant
@@ -1778,7 +1785,6 @@ gcn_expand_scalar_to_vector_address (machine_mode mode, rtx exec, rtx mem,
 	  /* tmp[:] += zext (mem_base)  */
 	  if (exec)
 	    {
-	      rtx undef_di = gcn_gen_undef (DImode);
 	      emit_insn (gen_addv64si3_vcc_dup_exec (tmplo, mem_base_lo, tmplo,
 						     vcc, undef_v64si, exec));
 	      emit_insn (gen_addcv64si3_exec (tmphi, tmphi, const0_rtx,
@@ -1842,7 +1848,7 @@ gcn_expand_scaled_offsets (addr_space_t as, rtx base, rtx offsets, rtx scale,
   if (GET_MODE (offsets) == V64DImode)
     {
       rtx tmp = gen_reg_rtx (V64SImode);
-      emit_insn (gen_vec_truncatev64div64si (tmp, offsets));
+      emit_insn (gen_truncv64div64si2 (tmp, offsets));
       offsets = tmp;
     }
 
@@ -2876,8 +2882,11 @@ gcn_expand_prologue ()
   /* Ensure that the scheduler doesn't do anything unexpected.  */
   emit_insn (gen_blockage ());
 
+  /* m0 is initialized for the usual LDS DS and FLAT memory case.
+     The low-part is the address of the topmost addressable byte, which is
+     size-1.  The high-part is an offset and should be zero.  */
   emit_move_insn (gen_rtx_REG (SImode, M0_REG),
-		  gen_int_mode (LDS_SIZE, SImode));
+		  gen_int_mode (LDS_SIZE-1, SImode));
 
   emit_insn (gen_prologue_use (gen_rtx_REG (SImode, M0_REG)));
 
@@ -3205,6 +3214,7 @@ tree
 gcn_emutls_var_init (tree, tree decl, tree)
 {
   sorry_at (DECL_SOURCE_LOCATION (decl), "TLS is not implemented for GCN.");
+  return NULL_TREE;
 }
 
 /* }}}  */
@@ -3989,12 +3999,8 @@ gcn_vectorize_vec_perm_const (machine_mode vmode, rtx dst,
 static bool
 gcn_vector_mode_supported_p (machine_mode mode)
 {
-  /* FIXME: Enable V64QImode and V64HImode.
-	    We should support these modes, but vector operations are usually
-	    assumed to automatically truncate types, and GCN does not.  We
-	    need to add explicit truncates and/or use SDWA for QI/HI insns.  */
-  return (/* mode == V64QImode || mode == V64HImode
-	  ||*/ mode == V64SImode || mode == V64DImode
+  return (mode == V64QImode || mode == V64HImode
+	  || mode == V64SImode || mode == V64DImode
 	  || mode == V64SFmode || mode == V64DFmode);
 }
 
@@ -4022,6 +4028,25 @@ gcn_vectorize_preferred_simd_mode (scalar_mode mode)
     default:
       return word_mode;
     }
+}
+
+/* Implement TARGET_VECTORIZE_RELATED_MODE.
+
+   All GCN vectors are 64-lane, so this is simpler than other architectures.
+   In particular, we do *not* want to match vector bit-size.  */
+
+static opt_machine_mode
+gcn_related_vector_mode (machine_mode vector_mode, scalar_mode element_mode,
+			 poly_uint64 nunits)
+{
+  if (known_ne (nunits, 0U) && known_ne (nunits, 64U))
+    return VOIDmode;
+
+  machine_mode pref_mode = gcn_vectorize_preferred_simd_mode (element_mode);
+  if (!VECTOR_MODE_P (pref_mode))
+    return VOIDmode;
+
+  return pref_mode;
 }
 
 /* Implement TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT.
@@ -4332,8 +4357,6 @@ gcn_md_reorg (void)
 {
   basic_block bb;
   rtx exec_reg = gen_rtx_REG (DImode, EXEC_REG);
-  rtx exec_lo_reg = gen_rtx_REG (SImode, EXEC_LO_REG);
-  rtx exec_hi_reg = gen_rtx_REG (SImode, EXEC_HI_REG);
   regset_head live;
 
   INIT_REG_SET (&live);
@@ -4922,6 +4945,16 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 	sgpr = MAX_NORMAL_SGPR_COUNT - extra_regs;
     }
 
+  /* GFX8 allocates SGPRs in blocks of 8.
+     GFX9 uses blocks of 16.  */
+  int granulated_sgprs;
+  if (TARGET_GCN3)
+    granulated_sgprs = (sgpr + extra_regs + 7) / 8 - 1;
+  else if (TARGET_GCN5)
+    granulated_sgprs = 2 * ((sgpr + extra_regs + 15) / 16 - 1);
+  else
+    gcc_unreachable ();
+
   fputs ("\t.align\t256\n", file);
   fputs ("\t.type\t", file);
   assemble_name (file, name);
@@ -4960,7 +4993,7 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 	   "\t\tcompute_pgm_rsrc2_excp_en = 0\n",
 	   (vgpr - 1) / 4,
 	   /* Must match wavefront_sgpr_count */
-	   (sgpr + extra_regs + 7) / 8 - 1,
+	   granulated_sgprs,
 	   /* The total number of SGPR user data registers requested.  This
 	      number must match the number of user data registers enabled.  */
 	   cfun->machine->args.nsgprs);
@@ -5215,7 +5248,8 @@ void
 gcn_asm_output_symbol_ref (FILE *file, rtx x)
 {
   tree decl;
-  if ((decl = SYMBOL_REF_DECL (x)) != 0
+  if (cfun
+      && (decl = SYMBOL_REF_DECL (x)) != 0
       && TREE_CODE (decl) == VAR_DECL
       && AS_LDS_P (TYPE_ADDR_SPACE (TREE_TYPE (decl))))
     {
@@ -5230,7 +5264,8 @@ gcn_asm_output_symbol_ref (FILE *file, rtx x)
     {
       assemble_name (file, XSTR (x, 0));
       /* FIXME: See above -- this condition is unreachable.  */
-      if ((decl = SYMBOL_REF_DECL (x)) != 0
+      if (cfun
+	  && (decl = SYMBOL_REF_DECL (x)) != 0
 	  && TREE_CODE (decl) == VAR_DECL
 	  && AS_LDS_P (TYPE_ADDR_SPACE (TREE_TYPE (decl))))
 	fputs ("@abs32", file);
@@ -5904,10 +5939,10 @@ print_operand (FILE *file, rtx x, int code)
 	switch (GET_MODE_SIZE (mode))
 	  {
 	  case 1:
-	    s = "32";
-	    break;
+	    output_operand_lossage ("operand %%xn code invalid for QImode");
+	    return;
 	  case 2:
-	    s = float_p ? "16" : "32";
+	    s = "16";
 	    break;
 	  case 4:
 	    s = "32";
@@ -6144,6 +6179,8 @@ print_operand (FILE *file, rtx x, int code)
 #undef  TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT
 #define TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT \
   gcn_preferred_vector_alignment
+#undef  TARGET_VECTORIZE_RELATED_MODE
+#define TARGET_VECTORIZE_RELATED_MODE gcn_related_vector_mode
 #undef  TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT
 #define TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT \
   gcn_vectorize_support_vector_misalignment

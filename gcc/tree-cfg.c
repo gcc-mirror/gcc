@@ -1,5 +1,5 @@
 /* Control flow functions for trees.
-   Copyright (C) 2001-2019 Free Software Foundation, Inc.
+   Copyright (C) 2001-2020 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -9551,6 +9551,7 @@ execute_fixup_cfg (void)
   gimple_stmt_iterator gsi;
   int todo = 0;
   cgraph_node *node = cgraph_node::get (current_function_decl);
+  /* Same scaling is also done by ipa_merge_profiles.  */
   profile_count num = node->count;
   profile_count den = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
   bool scale = num.initialized_p () && !(num == den);
@@ -9664,7 +9665,10 @@ execute_fixup_cfg (void)
 	}
     }
   if (scale)
-    compute_function_frequency ();
+    {
+      update_max_bb_count ();
+      compute_function_frequency ();
+    }
 
   if (current_loops
       && (todo & TODO_cleanup_cfg))

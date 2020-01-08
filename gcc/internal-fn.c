@@ -1,5 +1,5 @@
 /* Internal functions.
-   Copyright (C) 2011-2019 Free Software Foundation, Inc.
+   Copyright (C) 2011-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -118,6 +118,7 @@ init_internal_fns ()
 #define fold_extract_direct { 2, 2, false }
 #define fold_left_direct { 1, 1, false }
 #define mask_fold_left_direct { 1, 1, false }
+#define check_ptrs_direct { 0, 0, false }
 
 const direct_internal_fn_info direct_internal_fn_array[IFN_LAST + 1] = {
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) not_direct,
@@ -1408,7 +1409,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
   /* s1 * s2 -> ur  */
   if (!uns0_p && !uns1_p && unsr_p)
     {
-      rtx tem, tem2;
+      rtx tem;
       switch (pos_neg0 | pos_neg1)
 	{
 	case 1: /* Both operands known to be non-negative.  */
@@ -1438,10 +1439,8 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	      ops.op2 = NULL_TREE;
 	      ops.location = loc;
 	      res = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
-	      tem = expand_binop (mode, and_optab, op0, op1, NULL_RTX, false,
-				  OPTAB_LIB_WIDEN);
-	      do_compare_rtx_and_jump (tem, const0_rtx, EQ, true, mode,
-				       NULL_RTX, NULL, done_label,
+	      do_compare_rtx_and_jump (pos_neg0 == 1 ? op0 : op1, const0_rtx, EQ,
+				       true, mode, NULL_RTX, NULL, done_label,
 				       profile_probability::very_likely ());
 	      goto do_error_label;
 	    }
@@ -1472,16 +1471,23 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	  arg1 = error_mark_node;
 	  emit_jump (do_main_label);
 	  emit_label (after_negate_label);
-	  tem2 = expand_binop (mode, xor_optab, op0, op1, NULL_RTX, false,
-			       OPTAB_LIB_WIDEN);
-	  do_compare_rtx_and_jump (tem2, const0_rtx, GE, false, mode, NULL_RTX,
-				   NULL, do_main_label, profile_probability::very_likely ());
+	  tem = expand_binop (mode, xor_optab, op0, op1, NULL_RTX, false,
+			      OPTAB_LIB_WIDEN);
+	  do_compare_rtx_and_jump (tem, const0_rtx, GE, false, mode, NULL_RTX,
+				   NULL, do_main_label,
+				   profile_probability::very_likely ());
 	  /* One argument is negative here, the other positive.  This
 	     overflows always, unless one of the arguments is 0.  But
 	     if e.g. s2 is 0, (U) s1 * 0 doesn't overflow, whatever s1
 	     is, thus we can keep do_main code oring in overflow as is.  */
-	  do_compare_rtx_and_jump (tem, const0_rtx, EQ, true, mode, NULL_RTX,
-				   NULL, do_main_label, profile_probability::very_likely ());
+	  if (pos_neg0 != 2)
+	    do_compare_rtx_and_jump (op0, const0_rtx, EQ, true, mode, NULL_RTX,
+				     NULL, do_main_label,
+				     profile_probability::very_unlikely ());
+	  if (pos_neg1 != 2)
+	    do_compare_rtx_and_jump (op1, const0_rtx, EQ, true, mode, NULL_RTX,
+				     NULL, do_main_label,
+				     profile_probability::very_unlikely ());
 	  expand_arith_set_overflow (lhs, target);
 	  emit_label (do_main_label);
 	  goto do_main;
@@ -3006,6 +3012,9 @@ expand_while_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 #define expand_mask_fold_left_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 3)
 
+#define expand_check_ptrs_optab_fn(FN, STMT, OPTAB) \
+  expand_direct_optab_fn (FN, STMT, OPTAB, 4)
+
 /* RETURN_TYPE and ARGS are a return type and argument list that are
    in principle compatible with FN (which satisfies direct_internal_fn_p).
    Return the types that should be used to determine whether the
@@ -3095,6 +3104,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_fold_extract_optab_supported_p direct_optab_supported_p
 #define direct_fold_left_optab_supported_p direct_optab_supported_p
 #define direct_mask_fold_left_optab_supported_p direct_optab_supported_p
+#define direct_check_ptrs_optab_supported_p direct_optab_supported_p
 
 /* Return the optab used by internal function FN.  */
 
@@ -3570,6 +3580,24 @@ internal_gather_scatter_fn_supported_p (internal_fn ifn, tree vector_type,
   return (icode != CODE_FOR_nothing
 	  && insn_operand_matches (icode, 2 + output_ops, GEN_INT (unsigned_p))
 	  && insn_operand_matches (icode, 3 + output_ops, GEN_INT (scale)));
+}
+
+/* Return true if the target supports IFN_CHECK_{RAW,WAR}_PTRS function IFN
+   for pointers of type TYPE when the accesses have LENGTH bytes and their
+   common byte alignment is ALIGN.  */
+
+bool
+internal_check_ptrs_fn_supported_p (internal_fn ifn, tree type,
+				    poly_uint64 length, unsigned int align)
+{
+  machine_mode mode = TYPE_MODE (type);
+  optab optab = direct_internal_fn_optab (ifn);
+  insn_code icode = direct_optab_handler (optab, mode);
+  if (icode == CODE_FOR_nothing)
+    return false;
+  rtx length_rtx = immed_wide_int_const (length, mode);
+  return (insn_operand_matches (icode, 3, length_rtx)
+	  && insn_operand_matches (icode, 4, GEN_INT (align)));
 }
 
 /* Expand STMT as though it were a call to internal function FN.  */

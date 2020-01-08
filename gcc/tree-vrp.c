@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2005-2019 Free Software Foundation, Inc.
+   Copyright (C) 2005-2020 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>.
 
 This file is part of GCC.
@@ -3520,7 +3520,6 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 	  tree ptrdiff_max = TYPE_MAX_VALUE (ptrdiff_type_node);
 	  tree maxbound = ptrdiff_max;
 	  tree arg = TREE_OPERAND (ref, 0);
-	  poly_int64 off;
 
 	  const bool compref = TREE_CODE (arg) == COMPONENT_REF;
 	  if (compref)
@@ -3539,19 +3538,22 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 		 size wouldn't necessarily be correct if the reference is
 		 to its flexible array member initialized in a different
 		 translation unit.  */
-	      tree base = get_addr_base_and_unit_offset (arg, &off);
-	      if (!compref && base && DECL_P (base))
-		if (tree basesize = DECL_SIZE_UNIT (base))
-		  if (TREE_CODE (basesize) == INTEGER_CST)
-		    {
-		      maxbound = basesize;
-		      decl = base;
-		    }
+	      poly_int64 off;
+	      if (tree base = get_addr_base_and_unit_offset (arg, &off))
+		{
+		  if (!compref && DECL_P (base))
+		    if (tree basesize = DECL_SIZE_UNIT (base))
+		      if (TREE_CODE (basesize) == INTEGER_CST)
+			{
+			  maxbound = basesize;
+			  decl = base;
+			}
 
-	      if (known_gt (off, 0))
-		maxbound = wide_int_to_tree (sizetype,
-					     wi::sub (wi::to_wide (maxbound),
-						      off));
+		  if (known_gt (off, 0))
+		    maxbound = wide_int_to_tree (sizetype,
+						 wi::sub (wi::to_wide (maxbound),
+							  off));
+		}
 	    }
 	  else
 	    maxbound = fold_convert (sizetype, maxbound);

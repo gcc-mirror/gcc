@@ -14056,6 +14056,9 @@ case ${host} in
   aarch64-*-*)
     GOARCH=arm64
     ;;
+  aarch64_be-*-*)
+    GOARCH=arm64be
+    ;;
   arm*-*-* | strongarm*-*-* | ep9312*-*-* | xscale-*-*)
     GOARCH=arm
     case ${host} in

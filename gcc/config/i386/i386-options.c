@@ -1,4 +1,4 @@
-/* Copyright (C) 1988-2019 Free Software Foundation, Inc.
+/* Copyright (C) 1988-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -187,25 +187,25 @@ struct ix86_target_opts
    ISAs come first.  Target string will be displayed in the same order.  */
 static struct ix86_target_opts isa2_opts[] =
 {
-  { "-mcx16",		OPTION_MASK_ISA_CX16 },
-  { "-mvaes",		OPTION_MASK_ISA_VAES },
-  { "-mrdpid",		OPTION_MASK_ISA_RDPID },
-  { "-mpconfig",	OPTION_MASK_ISA_PCONFIG },
-  { "-mwbnoinvd",	OPTION_MASK_ISA_WBNOINVD },
-  { "-mavx512vp2intersect", OPTION_MASK_ISA_AVX512VP2INTERSECT },
-  { "-msgx",		OPTION_MASK_ISA_SGX },
-  { "-mavx5124vnniw",	OPTION_MASK_ISA_AVX5124VNNIW },
-  { "-mavx5124fmaps",	OPTION_MASK_ISA_AVX5124FMAPS },
-  { "-mhle",		OPTION_MASK_ISA_HLE },
-  { "-mmovbe",		OPTION_MASK_ISA_MOVBE },
-  { "-mclzero",		OPTION_MASK_ISA_CLZERO },
-  { "-mmwaitx",		OPTION_MASK_ISA_MWAITX },
-  { "-mmovdir64b",	OPTION_MASK_ISA_MOVDIR64B },
-  { "-mwaitpkg",	OPTION_MASK_ISA_WAITPKG },
-  { "-mcldemote",	OPTION_MASK_ISA_CLDEMOTE },
-  { "-mptwrite",	OPTION_MASK_ISA_PTWRITE },
-  { "-mavx512bf16",	OPTION_MASK_ISA_AVX512BF16 },
-  { "-menqcmd",		OPTION_MASK_ISA_ENQCMD }
+  { "-mcx16",		OPTION_MASK_ISA2_CX16 },
+  { "-mvaes",		OPTION_MASK_ISA2_VAES },
+  { "-mrdpid",		OPTION_MASK_ISA2_RDPID },
+  { "-mpconfig",	OPTION_MASK_ISA2_PCONFIG },
+  { "-mwbnoinvd",	OPTION_MASK_ISA2_WBNOINVD },
+  { "-mavx512vp2intersect", OPTION_MASK_ISA2_AVX512VP2INTERSECT },
+  { "-msgx",		OPTION_MASK_ISA2_SGX },
+  { "-mavx5124vnniw",	OPTION_MASK_ISA2_AVX5124VNNIW },
+  { "-mavx5124fmaps",	OPTION_MASK_ISA2_AVX5124FMAPS },
+  { "-mhle",		OPTION_MASK_ISA2_HLE },
+  { "-mmovbe",		OPTION_MASK_ISA2_MOVBE },
+  { "-mclzero",		OPTION_MASK_ISA2_CLZERO },
+  { "-mmwaitx",		OPTION_MASK_ISA2_MWAITX },
+  { "-mmovdir64b",	OPTION_MASK_ISA2_MOVDIR64B },
+  { "-mwaitpkg",	OPTION_MASK_ISA2_WAITPKG },
+  { "-mcldemote",	OPTION_MASK_ISA2_CLDEMOTE },
+  { "-mptwrite",	OPTION_MASK_ISA2_PTWRITE },
+  { "-mavx512bf16",	OPTION_MASK_ISA2_AVX512BF16 },
+  { "-menqcmd",		OPTION_MASK_ISA2_ENQCMD }
 };
 static struct ix86_target_opts isa_opts[] =
 {
@@ -339,7 +339,9 @@ char *
 ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
 		    int flags, int flags2,
 		    const char *arch, const char *tune,
-		    enum fpmath_unit fpmath, bool add_nl_p, bool add_abi_p)
+		    enum fpmath_unit fpmath,
+		    enum prefer_vector_width pvw,
+		    bool add_nl_p, bool add_abi_p)
 {
   /* Flag options.  */
   static struct ix86_target_opts flag_opts[] =
@@ -493,7 +495,7 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
       sprintf (flags2_other, "(other flags2: %#x)", flags2);
     }
 
-  /* Add -fpmath= option.  */
+  /* Add -mfpmath= option.  */
   if (fpmath)
     {
       opts[num][0] = "-mfpmath=";
@@ -509,6 +511,29 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
 
 	case FPMATH_387 | FPMATH_SSE:
 	  opts[num++][1] = "sse+387";
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
+  /* Add -mprefer-vector-width= option.  */
+  if (pvw)
+    {
+      opts[num][0] = "-mprefer-vector-width=";
+      switch ((int) pvw)
+	{
+	case PVW_AVX128:
+	  opts[num++][1] = "128";
+	  break;
+
+	case PVW_AVX256:
+	  opts[num++][1] = "256";
+	  break;
+
+	case PVW_AVX512:
+	  opts[num++][1] = "512";
 	  break;
 
 	default:
@@ -579,8 +604,9 @@ ix86_debug_options (void)
 {
   char *opts = ix86_target_string (ix86_isa_flags, ix86_isa_flags2,
 				   target_flags, ix86_target_flags,
-				   ix86_arch_string,ix86_tune_string,
-				   ix86_fpmath, true, true);
+				   ix86_arch_string, ix86_tune_string,
+				   ix86_fpmath, prefer_vector_width_type,
+				   true, true);
 
   if (opts)
     {
@@ -847,7 +873,8 @@ ix86_function_specific_print (FILE *file, int indent,
   char *target_string
     = ix86_target_string (ptr->x_ix86_isa_flags, ptr->x_ix86_isa_flags2,
 			  ptr->x_target_flags, ptr->x_ix86_target_flags,
-			  NULL, NULL, ptr->x_ix86_fpmath, false, true);
+			  NULL, NULL, ptr->x_ix86_fpmath,
+			  ptr->x_prefer_vector_width_type, false, true);
 
   gcc_assert (ptr->arch < PROCESSOR_max);
   fprintf (file, "%*sarch = %d (%s)\n",
@@ -992,6 +1019,7 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
+    IX86_ATTR_ENUM ("prefer-vector-width=", OPT_mprefer_vector_width_),
 
     /* string options */
     IX86_ATTR_STR ("arch=",	IX86_FUNCTION_SPECIFIC_ARCH),
@@ -1147,7 +1175,25 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
 	      ret = false;
 	    }
 	  else
-	    p_strings[opt] = xstrdup (p + opt_len);
+	    {
+	      p_strings[opt] = xstrdup (p + opt_len);
+	      if (opt == IX86_FUNCTION_SPECIFIC_ARCH)
+		{
+		  /* If arch= is set,  clear all bits in x_ix86_isa_flags,
+		     except for ISA_64BIT, ABI_64, ABI_X32, and CODE16
+		     and all bits in x_ix86_isa_flags2.  */
+		  opts->x_ix86_isa_flags &= (OPTION_MASK_ISA_64BIT
+					     | OPTION_MASK_ABI_64
+					     | OPTION_MASK_ABI_X32
+					     | OPTION_MASK_CODE16);
+		  opts->x_ix86_isa_flags_explicit &= (OPTION_MASK_ISA_64BIT
+						      | OPTION_MASK_ABI_64
+						      | OPTION_MASK_ABI_X32
+						      | OPTION_MASK_CODE16);
+		  opts->x_ix86_isa_flags2 = 0;
+		  opts->x_ix86_isa_flags2_explicit = 0;
+		}
+	    }
 	}
 
       else if (type == ix86_opt_enum)
@@ -1195,6 +1241,7 @@ ix86_valid_target_attribute_tree (tree fndecl, tree args,
   const char *orig_arch_string = opts->x_ix86_arch_string;
   const char *orig_tune_string = opts->x_ix86_tune_string;
   enum fpmath_unit orig_fpmath_set = opts_set->x_ix86_fpmath;
+  enum prefer_vector_width orig_pvw_set = opts_set->x_prefer_vector_width_type;
   int orig_tune_defaulted = ix86_tune_defaulted;
   int orig_arch_specified = ix86_arch_specified;
   char *option_strings[IX86_FUNCTION_SPECIFIC_MAX] = { NULL, NULL };
@@ -1220,23 +1267,14 @@ ix86_valid_target_attribute_tree (tree fndecl, tree args,
       || opts->x_target_flags != def->x_target_flags
       || option_strings[IX86_FUNCTION_SPECIFIC_ARCH]
       || option_strings[IX86_FUNCTION_SPECIFIC_TUNE]
-      || enum_opts_set.x_ix86_fpmath)
+      || enum_opts_set.x_ix86_fpmath
+      || enum_opts_set.x_prefer_vector_width_type)
     {
       /* If we are using the default tune= or arch=, undo the string assigned,
 	 and use the default.  */
       if (option_strings[IX86_FUNCTION_SPECIFIC_ARCH])
-	{
-	  opts->x_ix86_arch_string
-	    = ggc_strdup (option_strings[IX86_FUNCTION_SPECIFIC_ARCH]);
-
-	  /* If arch= is set,  clear all bits in x_ix86_isa_flags,
-	     except for ISA_64BIT, ABI_64, ABI_X32, and CODE16.  */
-	  opts->x_ix86_isa_flags &= (OPTION_MASK_ISA_64BIT
-				     | OPTION_MASK_ABI_64
-				     | OPTION_MASK_ABI_X32
-				     | OPTION_MASK_CODE16);
-	  opts->x_ix86_isa_flags2 = 0;
-	}
+	opts->x_ix86_arch_string
+	  = ggc_strdup (option_strings[IX86_FUNCTION_SPECIFIC_ARCH]);
       else if (!orig_arch_specified)
 	opts->x_ix86_arch_string = NULL;
 
@@ -1249,6 +1287,8 @@ ix86_valid_target_attribute_tree (tree fndecl, tree args,
       /* If fpmath= is not set, and we now have sse2 on 32-bit, use it.  */
       if (enum_opts_set.x_ix86_fpmath)
 	opts_set->x_ix86_fpmath = (enum fpmath_unit) 1;
+      if (enum_opts_set.x_prefer_vector_width_type)
+	opts_set->x_prefer_vector_width_type = (enum prefer_vector_width) 1;
 
       /* Do any overrides, such as arch=xxx, or tune=xxx support.  */
       bool r = ix86_option_override_internal (false, opts, opts_set);
@@ -1268,6 +1308,7 @@ ix86_valid_target_attribute_tree (tree fndecl, tree args,
       opts->x_ix86_arch_string = orig_arch_string;
       opts->x_ix86_tune_string = orig_tune_string;
       opts_set->x_ix86_fpmath = orig_fpmath_set;
+      opts_set->x_prefer_vector_width_type = orig_pvw_set;
 
       release_options_strings (option_strings);
     }
@@ -2022,8 +2063,8 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_BMI2))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_BMI2;
 	if (((processor_alias_table[i].flags & PTA_CX16) != 0)
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_CX16))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_CX16;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_CX16))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_CX16;
 	if (((processor_alias_table[i].flags & (PTA_POPCNT | PTA_ABM)) != 0)
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_POPCNT))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_POPCNT;
@@ -2032,8 +2073,8 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_SAHF))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SAHF;
 	if (((processor_alias_table[i].flags & PTA_MOVBE) != 0)
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_MOVBE))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_MOVBE;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_MOVBE))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_MOVBE;
 	if (((processor_alias_table[i].flags & PTA_AES) != 0)
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_AES))
 	  ix86_isa_flags |= OPTION_MASK_ISA_AES;
@@ -2056,8 +2097,8 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_RTM))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_RTM;
 	if (((processor_alias_table[i].flags & PTA_HLE) != 0)
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_HLE))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_HLE;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_HLE))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_HLE;
 	if (((processor_alias_table[i].flags & PTA_PRFCHW) != 0)
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_PRFCHW))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PRFCHW;
@@ -2098,8 +2139,8 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_CLFLUSHOPT))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_CLFLUSHOPT;
 	if (((processor_alias_table[i].flags & PTA_CLZERO) != 0)
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_CLZERO))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_CLZERO;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_CLZERO))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_CLZERO;
 	if (((processor_alias_table[i].flags & PTA_XSAVEC) != 0)
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_XSAVEC))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_XSAVEC;
@@ -2141,55 +2182,55 @@ ix86_option_override_internal (bool main_args_p,
 
 	if (((processor_alias_table[i].flags & PTA_AVX512VP2INTERSECT) != 0)
 	    && !(opts->x_ix86_isa_flags2_explicit
-		 & OPTION_MASK_ISA_AVX512VP2INTERSECT))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_AVX512VP2INTERSECT;
+		 & OPTION_MASK_ISA2_AVX512VP2INTERSECT))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AVX512VP2INTERSECT;
 	if (((processor_alias_table[i].flags & PTA_AVX5124VNNIW) != 0)
 	    && !(opts->x_ix86_isa_flags2_explicit
-		 & OPTION_MASK_ISA_AVX5124VNNIW))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_AVX5124VNNIW;
+		 & OPTION_MASK_ISA2_AVX5124VNNIW))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AVX5124VNNIW;
 	if (((processor_alias_table[i].flags & PTA_AVX5124FMAPS) != 0)
 	    && !(opts->x_ix86_isa_flags2_explicit
-		 & OPTION_MASK_ISA_AVX5124FMAPS))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_AVX5124FMAPS;
+		 & OPTION_MASK_ISA2_AVX5124FMAPS))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AVX5124FMAPS;
 	if (((processor_alias_table[i].flags & PTA_AVX512VPOPCNTDQ) != 0)
 	    && !(opts->x_ix86_isa_flags_explicit
 		 & OPTION_MASK_ISA_AVX512VPOPCNTDQ))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512VPOPCNTDQ;
 	if (((processor_alias_table[i].flags & PTA_AVX512BF16) != 0)
 	    && !(opts->x_ix86_isa_flags2_explicit
-		 & OPTION_MASK_ISA_AVX512BF16))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_AVX512BF16;
+		 & OPTION_MASK_ISA2_AVX512BF16))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AVX512BF16;
         if (((processor_alias_table[i].flags & PTA_MOVDIRI) != 0)
             && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_MOVDIRI))
           opts->x_ix86_isa_flags |= OPTION_MASK_ISA_MOVDIRI;
         if (((processor_alias_table[i].flags & PTA_MOVDIR64B) != 0)
-            && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_MOVDIR64B))
-          opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_MOVDIR64B;
+            && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_MOVDIR64B))
+          opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_MOVDIR64B;
 	if (((processor_alias_table[i].flags & PTA_SGX) != 0)
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_SGX))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_SGX;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_SGX))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_SGX;
 	if (((processor_alias_table[i].flags & PTA_VAES) != 0)
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_VAES))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_VAES;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_VAES))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_VAES;
 	if (((processor_alias_table[i].flags & PTA_RDPID) != 0)
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_RDPID))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_RDPID;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_RDPID))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_RDPID;
 	if (((processor_alias_table[i].flags & PTA_PCONFIG) != 0)
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_PCONFIG))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_PCONFIG;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_PCONFIG))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_PCONFIG;
 	if (((processor_alias_table[i].flags & PTA_WBNOINVD) != 0)
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_WBNOINVD))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_WBNOINVD;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_WBNOINVD))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_WBNOINVD;
 	if (((processor_alias_table[i].flags & PTA_PTWRITE) != 0)
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_PTWRITE))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_PTWRITE;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_PTWRITE))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_PTWRITE;
 
 	if ((processor_alias_table[i].flags
 	   & (PTA_PREFETCH_SSE | PTA_SSE)) != 0)
 	  x86_prefetch_sse = true;
 	if (((processor_alias_table[i].flags & PTA_MWAITX) != 0)
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_MWAITX))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_MWAITX;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_MWAITX))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_MWAITX;
 	if (((processor_alias_table[i].flags & PTA_PKU) != 0)
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_PKU))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PKU;
@@ -2909,15 +2950,36 @@ ix86_simd_clone_adjust (struct cgraph_node *node)
 	str = "sse2";
       break;
     case 'c':
-      if (!TARGET_AVX)
+      if (TARGET_PREFER_AVX128)
+	{
+	  if (!TARGET_AVX)
+	    str = "avx,prefer-vector-width=256";
+	  else
+	    str = "prefer-vector-width=256";
+	}
+      else if (!TARGET_AVX)
 	str = "avx";
       break;
     case 'd':
-      if (!TARGET_AVX2)
+      if (TARGET_PREFER_AVX128)
+	{
+	  if (!TARGET_AVX2)
+	    str = "avx2,prefer-vector-width=256";
+	  else
+	    str = "prefer-vector-width=256";
+	}
+      else if (!TARGET_AVX2)
 	str = "avx2";
       break;
     case 'e':
-      if (!TARGET_AVX512F)
+      if (TARGET_PREFER_AVX256)
+	{
+	  if (!TARGET_AVX512F)
+	    str = "avx512f,prefer-vector-width=512";
+	  else
+	    str = "prefer-vector-width=512";
+	}
+      else if (!TARGET_AVX512F)
 	str = "avx512f";
       break;
     default:

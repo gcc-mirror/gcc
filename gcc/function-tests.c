@@ -1,5 +1,5 @@
 /* Unit tests for function-handling.
-   Copyright (C) 2015-2019 Free Software Foundation, Inc.
+   Copyright (C) 2015-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -82,11 +82,11 @@ namespace selftest {
 
 /* Helper function for selftests of function-creation.  */
 
-static tree
+tree
 make_fndecl (tree return_type,
 	     const char *name,
 	     vec <tree> &param_types,
-	     bool is_variadic = false)
+	     bool is_variadic)
 {
   tree fn_type;
   if (is_variadic)

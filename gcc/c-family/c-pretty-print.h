@@ -1,5 +1,5 @@
 /* Various declarations for the C and C++ pretty-printers.
-   Copyright (C) 2002-2019 Free Software Foundation, Inc.
+   Copyright (C) 2002-2020 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -51,6 +51,7 @@ class c_pretty_printer : public pretty_printer
 {
 public:
   c_pretty_printer ();
+  pretty_printer *clone () const OVERRIDE;
 
   // Format string, possibly translated.
   void translate_string (const char *);

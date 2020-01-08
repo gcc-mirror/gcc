@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 1992-2019 Free Software Foundation, Inc.
+   Copyright (C) 1992-2020 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -2365,6 +2365,18 @@ enum rs6000_builtins
 #undef RS6000_BUILTIN_P
 #undef RS6000_BUILTIN_X
 
+/* Mappings for overloaded builtins.  */
+struct altivec_builtin_types
+{
+  enum rs6000_builtins code;
+  enum rs6000_builtins overloaded_code;
+  signed char ret_type;
+  signed char op1;
+  signed char op2;
+  signed char op3;
+};
+extern const struct altivec_builtin_types altivec_overloaded_builtins[];
+
 enum rs6000_builtin_type_index
 {
   RS6000_BTI_NOT_OPAQUE,
@@ -2517,18 +2529,16 @@ typedef struct GTY(()) machine_function
 #pragma GCC poison TARGET_FLOAT128 OPTION_MASK_FLOAT128 MASK_FLOAT128
 #endif
 
-/* Whether a given VALUE is a valid 16 or 34-bit signed offset.  */
-#define SIGNED_16BIT_OFFSET_P(VALUE)					\
+/* Whether a given VALUE is a valid 16 or 34-bit signed integer.  */
+#define SIGNED_INTEGER_NBIT_P(VALUE, N)					\
   IN_RANGE ((VALUE),							\
-	    -(HOST_WIDE_INT_1 << 15),					\
-	    (HOST_WIDE_INT_1 << 15) - 1)
+	    -(HOST_WIDE_INT_1 << ((N)-1)),				\
+	    (HOST_WIDE_INT_1 << ((N)-1)) - 1)
 
-#define SIGNED_34BIT_OFFSET_P(VALUE)					\
-  IN_RANGE ((VALUE),							\
-	    -(HOST_WIDE_INT_1 << 33),					\
-	    (HOST_WIDE_INT_1 << 33) - 1)
+#define SIGNED_INTEGER_16BIT_P(VALUE)	SIGNED_INTEGER_NBIT_P (VALUE, 16)
+#define SIGNED_INTEGER_34BIT_P(VALUE)	SIGNED_INTEGER_NBIT_P (VALUE, 34)
 
-/* Like SIGNED_16BIT_OFFSET_P and SIGNED_34BIT_OFFSET_P, but with an extra
+/* Like SIGNED_INTEGER_16BIT_P and SIGNED_INTEGER_34BIT_P, but with an extra
    argument that gives a length to validate a range of addresses, to allow for
    splitting insns into several insns, each of which has an offsettable
    address.  */

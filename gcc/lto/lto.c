@@ -1,5 +1,5 @@
 /* Top-level LTO routines.
-   Copyright (C) 2009-2019 Free Software Foundation, Inc.
+   Copyright (C) 2009-2020 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -387,6 +387,7 @@ lto_wpa_write_files (void)
       temp_priority.safe_push (part->insns);
       temp_filenames.safe_push (xstrdup (temp_filename));
     }
+  memory_block_pool::trim (0);
 
   for (int set = 0; set < MAX (lto_parallelism, 1); set++)
     {

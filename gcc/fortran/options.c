@@ -1,5 +1,5 @@
 /* Parse and display command line options.
-   Copyright (C) 2000-2019 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -466,6 +466,11 @@ gfc_post_options (const char **pfilename)
 
   if (flag_frontend_loop_interchange == -1)
     flag_frontend_loop_interchange = optimize;
+
+  /* Do inline packing by default if optimizing, but not if
+     optimizing for size.  */
+  if (flag_inline_arg_packing == -1)
+    flag_inline_arg_packing = optimize && !optimize_size;
 
   if (flag_max_array_constructor < 65535)
     flag_max_array_constructor = 65535;

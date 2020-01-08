@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Free Software Foundation, Inc.
+// Copyright (C) 2019-2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,6 +35,14 @@ test01()
 
   p = fs::u8path("\xf0\x9d\x84\x9e");
   VERIFY( p.u8string() == u8"\U0001D11E" );
+
+  std::string s1 = "filename2";
+  p = fs::u8path(s1);
+  VERIFY( p.u8string() == u8"filename2" );
+
+  std::string s2 = "filename3";
+  p = fs::u8path(s2.begin(), s2.end());
+  VERIFY( p.u8string() == u8"filename3" );
 }
 
 void

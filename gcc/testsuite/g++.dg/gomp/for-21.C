@@ -34,8 +34,8 @@ void
 f4 (int a[10][10])
 {
   #pragma omp for collapse (2)
-  for (int i = 0; i < 10; ++i)		// { dg-error "initializer expression refers to iteration variable 'i'" }
-    for (auto j : a[i])
+  for (int i = 0; i < 10; ++i)
+    for (auto j : a[i])		// { dg-error "initializer expression refers to iteration variable 'i'" }
       ;
 }
 

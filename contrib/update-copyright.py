@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (C) 2013-2018 Free Software Foundation, Inc.
+# Copyright (C) 2013-2020 Free Software Foundation, Inc.
 #
 # This script is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -75,6 +75,7 @@ class GenericFilter:
                 'COPYING3',
                 'COPYING3.LIB',
                 'LICENSE',
+                'LICENSE.txt',
                 'fdl.texi',
                 'gpl_v3.texi',
                 'fdl-1.3.xml',
@@ -693,6 +694,7 @@ class GCCCopyright (Copyright):
         self.add_external_author ('Information Technology Industry Council.')
         self.add_external_author ('James Theiler, Brian Gough')
         self.add_external_author ('Makoto Matsumoto and Takuji Nishimura,')
+        self.add_external_author ('Mentor Graphics Corporation')
         self.add_external_author ('National Research Council of Canada.')
         self.add_external_author ('NVIDIA Corporation')
         self.add_external_author ('Peter Dimov and Multi Media Ltd.')
@@ -710,6 +712,7 @@ class GCCCopyright (Copyright):
         self.add_external_author ('The Regents of the University of California.')
         self.add_external_author ('Unicode, Inc.')
         self.add_external_author ('University of Toronto.')
+        self.add_external_author ('Yoshinori Sato')
 
 class GCCCmdLine (CmdLine):
     def __init__ (self):

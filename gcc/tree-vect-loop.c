@@ -1,5 +1,5 @@
 /* Loop Vectorization
-   Copyright (C) 2003-2019 Free Software Foundation, Inc.
+   Copyright (C) 2003-2020 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com> and
    Ira Rosen <irar@il.ibm.com>
 
@@ -163,8 +163,7 @@ static stmt_vec_info vect_is_simple_reduction (loop_vec_info, stmt_vec_info,
 static opt_result
 vect_determine_vf_for_stmt_1 (stmt_vec_info stmt_info,
 			      bool vectype_maybe_set_p,
-			      poly_uint64 *vf,
-			      vec<stmt_vec_info > *mask_producers)
+			      poly_uint64 *vf)
 {
   gimple *stmt = stmt_info->stmt;
 
@@ -192,8 +191,6 @@ vect_determine_vf_for_stmt_1 (stmt_vec_info stmt_info,
 	gcc_assert ((STMT_VINFO_DATA_REF (stmt_info)
 		     || vectype_maybe_set_p)
 		    && STMT_VINFO_VECTYPE (stmt_info) == stmt_vectype);
-      else if (stmt_vectype == boolean_type_node)
-	mask_producers->safe_push (stmt_info);
       else
 	STMT_VINFO_VECTYPE (stmt_info) = stmt_vectype;
     }
@@ -206,21 +203,17 @@ vect_determine_vf_for_stmt_1 (stmt_vec_info stmt_info,
 
 /* Subroutine of vect_determine_vectorization_factor.  Set the vector
    types of STMT_INFO and all attached pattern statements and update
-   the vectorization factor VF accordingly.  If some of the statements
-   produce a mask result whose vector type can only be calculated later,
-   add them to MASK_PRODUCERS.  Return true on success or false if
-   something prevented vectorization.  */
+   the vectorization factor VF accordingly.  Return true on success
+   or false if something prevented vectorization.  */
 
 static opt_result
-vect_determine_vf_for_stmt (stmt_vec_info stmt_info, poly_uint64 *vf,
-			    vec<stmt_vec_info > *mask_producers)
+vect_determine_vf_for_stmt (stmt_vec_info stmt_info, poly_uint64 *vf)
 {
   vec_info *vinfo = stmt_info->vinfo;
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "==> examining statement: %G",
 		     stmt_info->stmt);
-  opt_result res
-    = vect_determine_vf_for_stmt_1 (stmt_info, false, vf, mask_producers);
+  opt_result res = vect_determine_vf_for_stmt_1 (stmt_info, false, vf);
   if (!res)
     return res;
 
@@ -239,10 +232,7 @@ vect_determine_vf_for_stmt (stmt_vec_info stmt_info, poly_uint64 *vf,
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "==> examining pattern def stmt: %G",
 			     def_stmt_info->stmt);
-	  if (!vect_determine_vf_for_stmt_1 (def_stmt_info, true,
-					     vf, mask_producers))
-	  res = vect_determine_vf_for_stmt_1 (def_stmt_info, true,
-					      vf, mask_producers);
+	  res = vect_determine_vf_for_stmt_1 (def_stmt_info, true, vf);
 	  if (!res)
 	    return res;
 	}
@@ -251,7 +241,7 @@ vect_determine_vf_for_stmt (stmt_vec_info stmt_info, poly_uint64 *vf,
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "==> examining pattern statement: %G",
 			 stmt_info->stmt);
-      res = vect_determine_vf_for_stmt_1 (stmt_info, true, vf, mask_producers);
+      res = vect_determine_vf_for_stmt_1 (stmt_info, true, vf);
       if (!res)
 	return res;
     }
@@ -296,7 +286,6 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
   tree vectype;
   stmt_vec_info stmt_info;
   unsigned i;
-  auto_vec<stmt_vec_info> mask_producers;
 
   DUMP_VECT_SCOPE ("vect_determine_vectorization_factor");
 
@@ -354,8 +343,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	{
 	  stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
 	  opt_result res
-	    = vect_determine_vf_for_stmt (stmt_info, &vectorization_factor,
-					  &mask_producers);
+	    = vect_determine_vf_for_stmt (stmt_info, &vectorization_factor);
 	  if (!res)
 	    return res;
         }
@@ -373,16 +361,6 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
     return opt_result::failure_at (vect_location,
 				   "not vectorized: unsupported data-type\n");
   LOOP_VINFO_VECT_FACTOR (loop_vinfo) = vectorization_factor;
-
-  for (i = 0; i < mask_producers.length (); i++)
-    {
-      stmt_info = mask_producers[i];
-      opt_tree mask_type = vect_get_mask_type_for_stmt (stmt_info);
-      if (!mask_type)
-	return opt_result::propagate_failure (mask_type);
-      STMT_VINFO_VECTYPE (stmt_info) = mask_type;
-    }
-
   return opt_result::success ();
 }
 
@@ -665,6 +643,8 @@ vect_fixup_reduc_chain (stmt_vec_info stmt_info)
   do
     {
       stmtp = STMT_VINFO_RELATED_STMT (stmt_info);
+      gcc_checking_assert (STMT_VINFO_DEF_TYPE (stmtp)
+			   == STMT_VINFO_DEF_TYPE (stmt_info));
       REDUC_GROUP_FIRST_ELEMENT (stmtp) = firstp;
       stmt_info = REDUC_GROUP_NEXT_ELEMENT (stmt_info);
       if (stmt_info)
@@ -672,7 +652,6 @@ vect_fixup_reduc_chain (stmt_vec_info stmt_info)
 	  = STMT_VINFO_RELATED_STMT (stmt_info);
     }
   while (stmt_info);
-  STMT_VINFO_DEF_TYPE (stmtp) = vect_reduction_def;
 }
 
 /* Fixup scalar cycles that now have their stmts detected as patterns.  */
@@ -1398,6 +1377,18 @@ vect_update_vf_for_slp (loop_vec_info loop_vinfo)
   for (i = 0; i < nbbs; i++)
     {
       basic_block bb = bbs[i];
+      for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
+	   gsi_next (&si))
+	{
+	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (si.phi ());
+	  if (!stmt_info)
+	    continue;
+	  if ((STMT_VINFO_RELEVANT_P (stmt_info)
+	       || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info)))
+	      && !PURE_SLP_STMT (stmt_info))
+	    /* STMT needs both SLP and loop-based vectorization.  */
+	    only_slp_in_loop = false;
+	}
       for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
 	   gsi_next (&si))
 	{
@@ -1839,7 +1830,10 @@ vect_dissolve_slp_only_groups (loop_vec_info loop_vinfo)
 		  DR_GROUP_FIRST_ELEMENT (vinfo) = vinfo;
 		  DR_GROUP_NEXT_ELEMENT (vinfo) = NULL;
 		  DR_GROUP_SIZE (vinfo) = 1;
-		  DR_GROUP_GAP (vinfo) = group_size - 1;
+		  if (STMT_VINFO_STRIDED_P (first_element))
+		    DR_GROUP_GAP (vinfo) = 0;
+		  else
+		    DR_GROUP_GAP (vinfo) = group_size - 1;
 		  vinfo = next;
 		}
 	    }
@@ -3912,13 +3906,16 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, internal_fn reduc_fn,
 
   code = gimple_assign_rhs_code (orig_stmt_info->stmt);
 
-  if (reduction_type == EXTRACT_LAST_REDUCTION
-      || reduction_type == FOLD_LEFT_REDUCTION)
+  if (reduction_type == EXTRACT_LAST_REDUCTION)
+    /* No extra instructions are needed in the prologue.  The loop body
+       operations are costed in vectorizable_condition.  */
+    inside_cost = 0;
+  else if (reduction_type == FOLD_LEFT_REDUCTION)
     {
       /* No extra instructions needed in the prologue.  */
       prologue_cost = 0;
 
-      if (reduction_type == EXTRACT_LAST_REDUCTION || reduc_fn != IFN_LAST)
+      if (reduc_fn != IFN_LAST)
 	/* Count one reduction-like operation per vector.  */
 	inside_cost = record_stmt_cost (cost_vec, ncopies, vec_to_scalar,
 					stmt_info, 0, vect_body);
@@ -4537,15 +4534,35 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
      containing the last time the condition passed for that vector lane.
      The first match will be a 1 to allow 0 to be used for non-matching
      indexes.  If there are no matches at all then the vector will be all
-     zeroes.  */
+     zeroes.
+   
+     PR92772: This algorithm is broken for architectures that support
+     masked vectors, but do not provide fold_extract_last.  */
   if (STMT_VINFO_REDUC_TYPE (reduc_info) == COND_REDUCTION)
     {
+      auto_vec<std::pair<tree, bool>, 2> ccompares;
+      stmt_vec_info cond_info = STMT_VINFO_REDUC_DEF (reduc_info);
+      cond_info = vect_stmt_to_vectorize (cond_info);
+      while (cond_info != reduc_info)
+	{
+	  if (gimple_assign_rhs_code (cond_info->stmt) == COND_EXPR)
+	    {
+	      gimple *vec_stmt = STMT_VINFO_VEC_STMT (cond_info)->stmt;
+	      gcc_assert (gimple_assign_rhs_code (vec_stmt) == VEC_COND_EXPR);
+	      ccompares.safe_push
+		(std::make_pair (unshare_expr (gimple_assign_rhs1 (vec_stmt)),
+				 STMT_VINFO_REDUC_IDX (cond_info) == 2));
+	    }
+	  cond_info
+	    = loop_vinfo->lookup_def (gimple_op (cond_info->stmt,
+						 1 + STMT_VINFO_REDUC_IDX
+							(cond_info)));
+	  cond_info = vect_stmt_to_vectorize (cond_info);
+	}
+      gcc_assert (ccompares.length () != 0);
+
       tree indx_before_incr, indx_after_incr;
       poly_uint64 nunits_out = TYPE_VECTOR_SUBPARTS (vectype);
-
-      gimple *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info)->stmt;
-      gcc_assert (gimple_assign_rhs_code (vec_stmt) == VEC_COND_EXPR);
-
       int scalar_precision
 	= GET_MODE_PRECISION (SCALAR_TYPE_MODE (TREE_TYPE (vectype)));
       tree cr_index_scalar_type = make_unsigned_type (scalar_precision);
@@ -4584,37 +4601,35 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
       add_phi_arg (as_a <gphi *> (new_phi), vec_zero,
 		   loop_preheader_edge (loop), UNKNOWN_LOCATION);
 
-      /* Now take the condition from the loops original cond_expr
-	 (VEC_STMT) and produce a new cond_expr (INDEX_COND_EXPR) which for
+      /* Now take the condition from the loops original cond_exprs
+	 and produce a new cond_exprs (INDEX_COND_EXPR) which for
 	 every match uses values from the induction variable
 	 (INDEX_BEFORE_INCR) otherwise uses values from the phi node
 	 (NEW_PHI_TREE).
 	 Finally, we update the phi (NEW_PHI_TREE) to take the value of
 	 the new cond_expr (INDEX_COND_EXPR).  */
-
-      /* Duplicate the condition from vec_stmt.  */
-      tree ccompare = unshare_expr (gimple_assign_rhs1 (vec_stmt));
-
-      /* Create a conditional, where the condition is taken from vec_stmt
-	 (CCOMPARE).  The then and else values mirror the main VEC_COND_EXPR:
-	 the reduction phi corresponds to NEW_PHI_TREE and the new values
-	 correspond to INDEX_BEFORE_INCR.  */
-      gcc_assert (STMT_VINFO_REDUC_IDX (stmt_info) >= 1);
-      tree index_cond_expr;
-      if (STMT_VINFO_REDUC_IDX (stmt_info) == 2)
-	index_cond_expr = build3 (VEC_COND_EXPR, cr_index_vector_type,
-				  ccompare, indx_before_incr, new_phi_tree);
-      else
-	index_cond_expr = build3 (VEC_COND_EXPR, cr_index_vector_type,
-				  ccompare, new_phi_tree, indx_before_incr);
-      induction_index = make_ssa_name (cr_index_vector_type);
-      gimple *index_condition = gimple_build_assign (induction_index,
-						     index_cond_expr);
-      gsi_insert_before (&incr_gsi, index_condition, GSI_SAME_STMT);
-      stmt_vec_info index_vec_info = loop_vinfo->add_stmt (index_condition);
+      gimple_seq stmts = NULL;
+      for (int i = ccompares.length () - 1; i != -1; --i)
+	{
+	  tree ccompare = ccompares[i].first;
+	  if (ccompares[i].second)
+	    new_phi_tree = gimple_build (&stmts, VEC_COND_EXPR,
+					 cr_index_vector_type,
+					 ccompare,
+					 indx_before_incr, new_phi_tree);
+	  else
+	    new_phi_tree = gimple_build (&stmts, VEC_COND_EXPR,
+					 cr_index_vector_type,
+					 ccompare,
+					 new_phi_tree, indx_before_incr);
+	}
+      gsi_insert_seq_before (&incr_gsi, stmts, GSI_SAME_STMT);
+      stmt_vec_info index_vec_info
+	= loop_vinfo->add_stmt (SSA_NAME_DEF_STMT (new_phi_tree));
       STMT_VINFO_VECTYPE (index_vec_info) = cr_index_vector_type;
 
       /* Update the phi with the vec cond.  */
+      induction_index = new_phi_tree;
       add_phi_arg (as_a <gphi *> (new_phi), induction_index,
 		   loop_latch_edge (loop), UNKNOWN_LOCATION);
     }
@@ -4797,10 +4812,11 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
 	 be zero.  */
 
       /* Vector of {0, 0, 0,...}.  */
-      tree zero_vec = make_ssa_name (vectype);
-      tree zero_vec_rhs = build_zero_cst (vectype);
-      gimple *zero_vec_stmt = gimple_build_assign (zero_vec, zero_vec_rhs);
-      gsi_insert_before (&exit_gsi, zero_vec_stmt, GSI_SAME_STMT);
+      tree zero_vec = build_zero_cst (vectype);
+
+      gimple_seq stmts = NULL;
+      new_phi_result = gimple_convert (&stmts, vectype, new_phi_result);
+      gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
 
       /* Find maximum value from the vector of found indexes.  */
       tree max_index = make_ssa_name (index_scalar_type);
@@ -4868,7 +4884,7 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
 
       /* Convert the reduced value back to the result type and set as the
 	 result.  */
-      gimple_seq stmts = NULL;
+      stmts = NULL;
       new_temp = gimple_build (&stmts, VIEW_CONVERT_EXPR, scalar_type,
 			       data_reduc);
       gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
@@ -5041,6 +5057,8 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
 	      tree scalar_value
 		= PHI_ARG_DEF_FROM_EDGE (orig_phis[i]->stmt,
 					 loop_preheader_edge (loop));
+	      scalar_value = gimple_convert (&seq, TREE_TYPE (vectype),
+					     scalar_value);
 	      vector_identity = gimple_build_vector_from_val (&seq, vectype,
 							      scalar_value);
 	    }
@@ -5198,6 +5216,7 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
 	  new_temp = make_ssa_name (vectype1);
 	  epilog_stmt = gimple_build_assign (new_temp, code, dst1, dst2);
 	  gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
+	  new_phis[0] = epilog_stmt;
 	}
 
       if (reduce_with_shift && !slp_reduc)
@@ -6182,8 +6201,9 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
 	  return false;
 	}
 
-      if (direct_internal_fn_supported_p (IFN_FOLD_EXTRACT_LAST,
-					  vectype_in, OPTIMIZE_FOR_SPEED))
+      if (reduc_chain_length == 1
+	  && direct_internal_fn_supported_p (IFN_FOLD_EXTRACT_LAST,
+					     vectype_in, OPTIMIZE_FOR_SPEED))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6691,6 +6711,18 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
 	  && (cond_fn == IFN_LAST
 	      || !direct_internal_fn_supported_p (cond_fn, vectype_in,
 						  OPTIMIZE_FOR_SPEED)))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "can't use a fully-masked loop because no"
+			     " conditional operation is available.\n");
+	  LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
+	}
+      else if (reduction_type == FOLD_LEFT_REDUCTION
+	       && reduc_fn == IFN_LAST
+	       && !expand_vec_cond_expr_p (vectype_in,
+					   truth_type_for (vectype_in),
+					   SSA_NAME))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

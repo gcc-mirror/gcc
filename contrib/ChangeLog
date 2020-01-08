@@ -1,3 +1,33 @@
+2020-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py: Add Mentor Graphics Corporation and Yoshinori
+	Sato as external authors.  Skip LICENSE.txt files.
+
+2019-12-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config-list.mk: Add msp430-elfbare.
+
+2019-12-09  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/49973
+	* unicode/from_glibc/unicode_utils.py: Support script from
+	glibc (commit 464cd3) to extract character widths from Unicode data
+	files.
+	* unicode/from_glibc/utf8_gen.py: Likewise.
+	* unicode/UnicodeData.txt: Unicode v. 12.1.0 data file.
+	* unicode/EastAsianWidth.txt: Likewise.
+	* unicode/PropList.txt: Likewise.
+	* unicode/gen_wcwidth.py: New utility to generate
+	libcpp/generated_cpp_wcwidth.h with help from the glibc support
+	scripts and the Unicode data files.
+	* unicode/unicode-license.txt: Added.
+	* unicode/README: New explanatory file.
+
+2019-12-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* texi2pod.pl: Handle @headitems in @multitables, printing them
+	in italics.  Push an empty item code onto the stack.
+
 2019-11-13  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* download_prerequisites: Use http instead of ftp for downloading.

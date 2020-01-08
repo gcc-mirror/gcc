@@ -1,5 +1,5 @@
 /* Primary expression subroutines
-   Copyright (C) 2000-2019 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -3447,7 +3447,19 @@ gfc_match_rvalue (gfc_expr **result)
     }
 
   if (gfc_matching_procptr_assignment)
-    goto procptr0;
+    {
+      /* It can be a procedure or a derived-type procedure or a not-yet-known
+	 type.  */
+      if (sym->attr.flavor != FL_UNKNOWN
+	  && sym->attr.flavor != FL_PROCEDURE
+	  && sym->attr.flavor != FL_PARAMETER
+	  && sym->attr.flavor != FL_VARIABLE)
+	{
+	  gfc_error ("Symbol at %C is not appropriate for an expression");
+	  return MATCH_ERROR;
+	}
+      goto procptr0;
+    }
 
   if (sym->attr.function || sym->attr.external || sym->attr.intrinsic)
     goto function0;

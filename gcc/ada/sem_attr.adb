@@ -25,6 +25,7 @@
 
 with Ada.Characters.Latin_1; use Ada.Characters.Latin_1;
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Casing;   use Casing;
 with Checks;   use Checks;
@@ -5414,6 +5415,7 @@ package body Sem_Attr is
             Spec_Id := Entity (P);
 
          elsif not Legal then
+            Error_Attr ("prefix of % attribute must be a function", P);
             return;
          end if;
 
@@ -5495,6 +5497,55 @@ package body Sem_Attr is
          Check_E0;
          Check_Discrete_Type;
          Set_Etype (N, Universal_Integer);
+
+      ------------
+      -- Reduce --
+      ------------
+
+      when Attribute_Reduce =>
+         Check_E2;
+
+         declare
+            Stream : constant Node_Id := Prefix (N);
+            Typ    : Entity_Id;
+         begin
+            if Nkind (Stream) /= N_Aggregate then
+               --  Prefix is a name, as for other attributes.
+
+               --  If the object is a function we asume that it is not
+               --  overloaded. AI12-242 does not suggest an name resulution
+               --  rule for that case, but can suppose that the expected
+               --  type of the reduction is the expected type of the
+               --  component of the prefix.
+
+               Analyze_And_Resolve (Stream);
+               Typ := Etype (Stream);
+
+               --  Verify that prefix can be iterated upon.
+
+               if Is_Array_Type (Typ)
+                 or else Present (Find_Aspect (Typ, Aspect_Default_Iterator))
+                 or else Present (Find_Aspect (Typ, Aspect_Iterable))
+               then
+                  null;
+               else
+                  Error_Msg_NE
+                    ("cannot apply reduce to object of type$", N, Typ);
+               end if;
+
+            elsif Present (Expressions (Stream))
+              or else No (Component_Associations (Stream))
+              or else Nkind (First (Component_Associations (Stream))) /=
+                N_Iterated_Component_Association
+            then
+               Error_Msg_N
+                 ("Prefix of reduce must be an iterated component", N);
+            end if;
+
+            Analyze (E1);
+            Analyze (E2);
+            Set_Etype (N, Etype (E2));
+         end;
 
       ----------
       -- Read --
@@ -5840,13 +5891,16 @@ package body Sem_Attr is
          --  Time_Errors after the back end has been called and this occurrence
          --  of 'Size is known at compile time then it is safe to perform this
          --  evaluation. Needed to perform the static evaluation of the full
-         --  boolean expression of these pragmas.
+         --  boolean expression of these pragmas. Note that Known_RM_Size is
+         --  sometimes True when Size_Known_At_Compile_Time is False, when the
+         --  back end has computed it.
 
          if In_Compile_Time_Warning_Or_Error
            and then Is_Entity_Name (P)
            and then (Is_Type (Entity (P))
                       or else Ekind (Entity (P)) = E_Enumeration_Literal)
-           and then Size_Known_At_Compile_Time (Entity (P))
+           and then (Known_RM_Size (Entity (P))
+                       or else Size_Known_At_Compile_Time (Entity (P)))
          then
             declare
                Siz : Uint;
@@ -7852,6 +7906,8 @@ package body Sem_Attr is
 
       --  is legal, since here this expression appears in a statically
       --  unevaluated position, so it does not actually raise an exception.
+      --
+      --  T'Descriptor_Size is never static, even if T is static.
 
       if Is_Scalar_Type (P_Entity)
         and then (not Is_Generic_Type (P_Entity))
@@ -7865,6 +7921,7 @@ package body Sem_Attr is
           (No (E2)
             or else (Is_Static_Expression (E2)
                       and then Is_Scalar_Type (Etype (E1))))
+        and then Id /= Attribute_Descriptor_Size
       then
          Static := True;
          Set_Is_Static_Expression (N, True);
@@ -8234,6 +8291,7 @@ package body Sem_Attr is
          | Attribute_Implicit_Dereference
          | Attribute_Iterator_Element
          | Attribute_Iterable
+         | Attribute_Reduce
          | Attribute_Variable_Indexing
       =>
          null;
@@ -10445,7 +10503,7 @@ package body Sem_Attr is
                   --  to a missed warning (the Valid check does not really
                   --  modify!) If this case, Note will be reset to False.
 
-                  --  Skip it as well if the type is an Acccess_To_Constant,
+                  --  Skip it as well if the type is an Access_To_Constant,
                   --  given that no use of the value can modify the prefix.
 
                begin
@@ -11643,6 +11701,70 @@ package body Sem_Attr is
 
             return;
          end Range_Attribute;
+
+         -------------
+         -- Reduce --
+         -------------
+
+         when Attribute_Reduce =>
+            declare
+               E1 : constant Node_Id := First (Expressions (N));
+               E2 : constant Node_Id := Next (E1);
+               Op : Entity_Id := Empty;
+
+               Index : Interp_Index;
+               It    : Interp;
+               function Proper_Op (Op : Entity_Id) return Boolean;
+
+               ---------------
+               -- Proper_Op --
+               ---------------
+
+               function Proper_Op (Op : Entity_Id) return Boolean is
+                  F1, F2 : Entity_Id;
+
+               begin
+                  F1 := First_Formal (Op);
+                  if No (F1) then
+                     return False;
+                  else
+                     F2 := Next_Formal (F1);
+                     if No (F2)
+                       or else Present (Next_Formal (F2))
+                     then
+                        return False;
+                     else
+                        return
+                          (Ekind (Op) = E_Operator
+                            and then Scope (Op) = Standard_Standard)
+                            or else  Covers (Typ, Etype (Op));
+                     end if;
+                  end if;
+               end Proper_Op;
+
+            begin
+               Resolve (E2, Typ);
+               if Is_Overloaded (E1) then
+                  Get_First_Interp (E1, Index, It);
+                  while Present (It.Nam) loop
+                     if Proper_Op (It.Nam) then
+                        Op := It.Nam;
+                        Set_Entity (E1, Op);
+                        exit;
+                     end if;
+
+                     Get_Next_Interp (Index, It);
+                  end loop;
+
+               elsif Proper_Op (Entity (E1)) then
+                  Op := Entity (E1);
+                  Set_Etype (N, Typ);
+               end if;
+
+               if No (Op) then
+                  Error_Msg_N ("No visible function for reduction", E1);
+               end if;
+            end;
 
          ------------
          -- Result --

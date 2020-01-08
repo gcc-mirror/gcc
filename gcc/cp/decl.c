@@ -1,5 +1,5 @@
 /* Process declarations and variables for -*- C++ -*- compiler.
-   Copyright (C) 1988-2019 Free Software Foundation, Inc.
+   Copyright (C) 1988-2020 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -2977,20 +2977,14 @@ redeclaration_error_message (tree newdecl, tree olddecl)
     {
       tree nt, ot;
 
-      if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == TYPE_DECL)
-	{
-	  if (COMPLETE_TYPE_P (TREE_TYPE (newdecl))
-	      && COMPLETE_TYPE_P (TREE_TYPE (olddecl)))
-	    return G_("redefinition of %q#D");
-	  return NULL;
-	}
-
       if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == CONCEPT_DECL)
         return G_("redefinition of %q#D");
 
-      if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) != FUNCTION_DECL
-	  || (DECL_TEMPLATE_RESULT (newdecl)
-	      == DECL_TEMPLATE_RESULT (olddecl)))
+      if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) != FUNCTION_DECL)
+	return redeclaration_error_message (DECL_TEMPLATE_RESULT (newdecl),
+					    DECL_TEMPLATE_RESULT (olddecl));
+
+      if (DECL_TEMPLATE_RESULT (newdecl) == DECL_TEMPLATE_RESULT (olddecl))
 	return NULL;
 
       nt = DECL_TEMPLATE_RESULT (newdecl);
@@ -4290,6 +4284,12 @@ cxx_init_decl_processing (void)
 			    BUILT_IN_FRONTEND, NULL, NULL_TREE);
   set_call_expr_flags (decl, ECF_CONST | ECF_NOTHROW | ECF_LEAF);
 
+  tree cptr_ftype = build_function_type_list (const_ptr_type_node, NULL_TREE);
+  decl = add_builtin_function ("__builtin_source_location",
+			       cptr_ftype, CP_BUILT_IN_SOURCE_LOCATION,
+			       BUILT_IN_FRONTEND, NULL, NULL_TREE);
+  set_call_expr_flags (decl, ECF_CONST | ECF_NOTHROW | ECF_LEAF);
+
   integer_two_node = build_int_cst (NULL_TREE, 2);
 
   /* Guess at the initial static decls size.  */
@@ -5464,6 +5464,13 @@ start_decl_1 (tree decl, bool initialized)
       cp_apply_type_quals_to_decl (cp_type_quals (type), decl);
     }
 
+  if (is_global_var (decl))
+    {
+      type_context_kind context = (DECL_THREAD_LOCAL_P (decl)
+				   ? TCTX_THREAD_STORAGE
+				   : TCTX_STATIC_STORAGE);
+      verify_type_context (input_location, context, TREE_TYPE (decl));
+    }
   if (initialized)
     /* Is it valid for this decl to have an initializer at all?  */
     {
@@ -5531,11 +5538,28 @@ grok_reference_init (tree decl, tree type, tree init, int flags)
       return NULL_TREE;
     }
 
-  if (TREE_CODE (init) == TREE_LIST)
-    init = build_x_compound_expr_from_list (init, ELK_INIT,
-					    tf_warning_or_error);
-
   tree ttype = TREE_TYPE (type);
+  if (TREE_CODE (init) == TREE_LIST)
+    {
+      /* This handles (C++20 only) code like
+
+	   const A& r(1, 2, 3);
+
+	 where we treat the parenthesized list as a CONSTRUCTOR.  */
+      if (TREE_TYPE (init) == NULL_TREE
+	  && CP_AGGREGATE_TYPE_P (ttype)
+	  && !DECL_DECOMPOSITION_P (decl)
+	  && (cxx_dialect >= cxx2a))
+	{
+	  init = build_constructor_from_list (init_list_type_node, init);
+	  CONSTRUCTOR_IS_DIRECT_INIT (init) = true;
+	  CONSTRUCTOR_IS_PAREN_INIT (init) = true;
+	}
+      else
+	init = build_x_compound_expr_from_list (init, ELK_INIT,
+						tf_warning_or_error);
+    }
+
   if (TREE_CODE (ttype) != ARRAY_TYPE
       && TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE)
     /* Note: default conversion is only called in very special cases.  */
@@ -5835,8 +5859,12 @@ check_for_uninitialized_const_var (tree decl, bool constexpr_context_p,
      7.1.6 */
   if (VAR_P (decl)
       && !TYPE_REF_P (type)
-      && (constexpr_context_p
-	  || CP_TYPE_CONST_P (type) || var_in_constexpr_fn (decl))
+      && (CP_TYPE_CONST_P (type)
+	  /* C++20 permits trivial default initialization in constexpr
+	     context (P1331R2).  */
+	  || (cxx_dialect < cxx2a
+	      && (constexpr_context_p
+		  || var_in_constexpr_fn (decl))))
       && !DECL_NONTRIVIALLY_INITIALIZED_P (decl))
     {
       tree field = default_init_uninitialized_part (type);
@@ -5845,7 +5873,7 @@ check_for_uninitialized_const_var (tree decl, bool constexpr_context_p,
 
       bool show_notes = true;
 
-      if (!constexpr_context_p)
+      if (!constexpr_context_p || cxx_dialect >= cxx2a)
 	{
 	  if (CP_TYPE_CONST_P (type))
 	    {
@@ -5915,7 +5943,11 @@ next_initializable_field (tree field)
 	 && (TREE_CODE (field) != FIELD_DECL
 	     || DECL_UNNAMED_BIT_FIELD (field)
 	     || (DECL_ARTIFICIAL (field)
-		 && !(cxx_dialect >= cxx17 && DECL_FIELD_IS_BASE (field)))))
+		 /* In C++17, don't skip base class fields.  */
+		 && !(cxx_dialect >= cxx17 && DECL_FIELD_IS_BASE (field))
+		 /* Don't skip vptr fields.  We might see them when we're
+		    called from reduced_constant_expression_p.  */
+		 && !DECL_VIRTUAL_P (field))))
     field = DECL_CHAIN (field);
 
   return field;
@@ -6367,17 +6399,15 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
 	       by the front end.  Here we have e.g. {.__pfn=0B, .__delta=0},
 	       which is missing outermost braces.  We should warn below, and
 	       one of the routines below will wrap it in additional { }.  */;
-	  /* For a nested compound literal, there is no need to reshape since
-	     we called reshape_init in finish_compound_literal, before calling
-	     digest_init.  */
-	  else if (COMPOUND_LITERAL_P (stripped_init)
-		   /* Similarly, a CONSTRUCTOR of the target's type is a
-		      previously digested initializer.  */
-		   || same_type_ignoring_top_level_qualifiers_p (type,
-								 init_type))
+	  /* For a nested compound literal, proceed to specialized routines,
+	     to handle initialization of arrays and similar.  */
+	  else if (COMPOUND_LITERAL_P (stripped_init))
+	    gcc_assert (!BRACE_ENCLOSED_INITIALIZER_P (stripped_init));
+	  /* A CONSTRUCTOR of the target's type is a previously
+	     digested initializer.  */
+	  else if (same_type_ignoring_top_level_qualifiers_p (type, init_type))
 	    {
 	      ++d->cur;
-	      gcc_assert (!BRACE_ENCLOSED_INITIALIZER_P (stripped_init));
 	      return init;
 	    }
 	  else
@@ -6437,6 +6467,11 @@ reshape_init (tree type, tree init, tsubst_flags_t complain)
   if (vec_safe_is_empty (v))
     return init;
 
+  /* Brace elision is not performed for a CONSTRUCTOR representing
+     parenthesized aggregate initialization.  */
+  if (CONSTRUCTOR_IS_PAREN_INIT (init))
+    return init;
+
   /* Handle [dcl.init.list] direct-list-initialization from
      single element of enumeration with a fixed underlying type.  */
   if (is_direct_enum_init (type, init))
@@ -6447,7 +6482,8 @@ reshape_init (tree type, tree init, tsubst_flags_t complain)
 	{
 	  warning_sentinel w (warn_useless_cast);
 	  warning_sentinel w2 (warn_ignored_qualifiers);
-	  return cp_build_c_cast (type, elt, tf_warning_or_error);
+	  return cp_build_c_cast (input_location, type, elt,
+				  tf_warning_or_error);
 	}
       else
 	return error_mark_node;
@@ -6499,6 +6535,11 @@ check_array_initializer (tree decl, tree type, tree init)
 	error ("elements of array %q#T have incomplete type", type);
       return true;
     }
+
+  location_t loc = (decl ? location_of (decl) : input_location);
+  if (!verify_type_context (loc, TCTX_ARRAY_ELEMENT, element_type))
+    return true;
+
   /* A compound literal can't have variable size.  */
   if (init && !decl
       && ((COMPLETE_TYPE_P (type) && !TREE_CONSTANT (TYPE_SIZE (type)))
@@ -6640,6 +6681,41 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	      flags |= LOOKUP_NO_NARROWING;
 	    }
 	}
+      /* [dcl.init] "Otherwise, if the destination type is an array, the object
+	 is initialized as follows..."  So handle things like
+
+	  int a[](1, 2, 3);
+
+	 which is permitted in C++20 by P0960.  */
+      else if (TREE_CODE (init) == TREE_LIST
+	       && TREE_TYPE (init) == NULL_TREE
+	       && TREE_CODE (type) == ARRAY_TYPE
+	       && !DECL_DECOMPOSITION_P (decl)
+	       && (cxx_dialect >= cxx2a))
+	{
+	  /* [dcl.init.string] "An array of ordinary character type [...]
+	     can be initialized by an ordinary string literal [...] by an
+	     appropriately-typed string literal enclosed in braces" only
+	     talks about braces, but GCC has always accepted
+
+	       char a[]("foobar");
+
+	     so we continue to do so.  */
+	  tree val = TREE_VALUE (init);
+	  if (TREE_CHAIN (init) == NULL_TREE
+	      && char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (type)))
+	      && TREE_CODE (tree_strip_any_location_wrapper (val))
+		 == STRING_CST)
+	    /* If the list has a single element and it's a string literal,
+	       then it's the initializer for the array as a whole.  */
+	    init = val;
+	  else
+	    {
+	      init = build_constructor_from_list (init_list_type_node, init);
+	      CONSTRUCTOR_IS_DIRECT_INIT (init) = true;
+	      CONSTRUCTOR_IS_PAREN_INIT (init) = true;
+	    }
+	}
       else if (TREE_CODE (init) == TREE_LIST
 	       && TREE_TYPE (init) != unknown_type_node
 	       && !MAYBE_CLASS_TYPE_P (type))
@@ -6683,6 +6759,9 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	    init_code = TREE_OPERAND (init_code, 0);
 	  if (TREE_CODE (init_code) == INIT_EXPR)
 	    {
+	      /* In C++20, the call to build_aggr_init could have created
+		 an INIT_EXPR with a CONSTRUCTOR as the RHS to handle
+		 A(1, 2).  */
 	      init = TREE_OPERAND (init_code, 1);
 	      init_code = NULL_TREE;
 	      /* Don't call digest_init; it's unnecessary and will complain
@@ -6698,7 +6777,8 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	      if (CLASS_TYPE_P (type)
 		  && (!init || TREE_CODE (init) == TREE_LIST))
 		{
-		  init = build_functional_cast (type, init, tf_none);
+		  init = build_functional_cast (input_location, type,
+						init, tf_none);
 		  if (TREE_CODE (init) == TARGET_EXPR)
 		    TARGET_EXPR_DIRECT_INIT_P (init) = true;
 		}
@@ -6736,7 +6816,7 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 			0, "array %qD initialized by parenthesized "
 			"string literal %qE",
 			decl, DECL_INITIAL (decl));
-	  init = NULL;
+	  init = NULL_TREE;
 	}
     }
   else
@@ -7407,6 +7487,8 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
   if (VAR_P (decl)
       && DECL_CLASS_SCOPE_P (decl)
+      && verify_type_context (DECL_SOURCE_LOCATION (decl),
+			      TCTX_STATIC_STORAGE, type)
       && DECL_INITIALIZED_IN_CLASS_P (decl))
     check_static_variable_definition (decl, type);
 
@@ -7998,7 +8080,7 @@ get_tuple_decomp_init (tree decl, unsigned i)
 /* It's impossible to recover the decltype of a tuple decomposition variable
    based on the actual type of the variable, so store it in a hash table.  */
 
-static GTY((cache)) tree_cache_map *decomp_type_table;
+static GTY((cache)) decl_tree_cache_map *decomp_type_table;
 
 tree
 lookup_decomp_type (tree v)
@@ -10135,13 +10217,16 @@ fold_sizeof_expr (tree t)
 {
   tree r;
   if (SIZEOF_EXPR_TYPE_P (t))
-    r = cxx_sizeof_or_alignof_type (TREE_TYPE (TREE_OPERAND (t, 0)),
+    r = cxx_sizeof_or_alignof_type (EXPR_LOCATION (t),
+				    TREE_TYPE (TREE_OPERAND (t, 0)),
 				    SIZEOF_EXPR, false, false);
   else if (TYPE_P (TREE_OPERAND (t, 0)))
-    r = cxx_sizeof_or_alignof_type (TREE_OPERAND (t, 0), SIZEOF_EXPR,
+    r = cxx_sizeof_or_alignof_type (EXPR_LOCATION (t),
+				    TREE_OPERAND (t, 0), SIZEOF_EXPR,
 				    false, false);
   else
-    r = cxx_sizeof_or_alignof_expr (TREE_OPERAND (t, 0), SIZEOF_EXPR,
+    r = cxx_sizeof_or_alignof_expr (EXPR_LOCATION (t),
+				    TREE_OPERAND (t, 0), SIZEOF_EXPR,
 				    false);
   if (r == error_mark_node)
     r = size_one_node;
@@ -10474,6 +10559,10 @@ create_array_type_for_decl (tree name, tree type, tree size, location_t loc)
     default:
       break;
     }
+
+  if (!verify_type_context (name ? loc : input_location,
+			    TCTX_ARRAY_ELEMENT, type))
+    return error_mark_node;
 
   /* [dcl.array]
 
@@ -13179,6 +13268,14 @@ grokdeclarator (const cp_declarator *declarator,
 		decl = NULL_TREE;
 	      }
 	  }
+	else if (!verify_type_context (input_location,
+				       staticp
+				       ? TCTX_STATIC_STORAGE
+				       : TCTX_FIELD, type))
+	  {
+	    type = error_mark_node;
+	    decl = NULL_TREE;
+	  }
 	else
 	  {
 	    if (friendp)
@@ -14548,7 +14645,7 @@ check_elaborated_type_specifier (enum tag_types tag_code,
 	   && !DECL_SELF_REFERENCE_P (decl)
 	   && tag_code != typename_type)
     {
-      if (alias_template_specialization_p (type))
+      if (alias_template_specialization_p (type, nt_opaque))
 	error ("using alias template specialization %qT after %qs",
 	       type, tag_name (tag_code));
       else
@@ -16318,7 +16415,8 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
       && !implicit_default_ctor_p (decl1))
     cp_ubsan_maybe_initialize_vtbl_ptrs (current_class_ptr);
 
-  start_lambda_scope (decl1);
+  if (!DECL_OMP_DECLARE_REDUCTION_P (decl1))
+    start_lambda_scope (decl1);
 
   return true;
 }
@@ -16703,7 +16801,8 @@ finish_function (bool inline_p)
   if (fndecl == NULL_TREE)
     return error_mark_node;
 
-  finish_lambda_scope ();
+  if (!DECL_OMP_DECLARE_REDUCTION_P (fndecl))
+    finish_lambda_scope ();
 
   if (c_dialect_objc ())
     objc_finish_function ();
@@ -16845,7 +16944,9 @@ finish_function (bool inline_p)
     invoke_plugin_callbacks (PLUGIN_PRE_GENERICIZE, fndecl);
 
   /* Perform delayed folding before NRV transformation.  */
-  if (!processing_template_decl && !DECL_IMMEDIATE_FUNCTION_P (fndecl))
+  if (!processing_template_decl
+      && !DECL_IMMEDIATE_FUNCTION_P (fndecl)
+      && !DECL_OMP_DECLARE_REDUCTION_P (fndecl))
     cp_fold_function (fndecl);
 
   /* Set up the named return value optimization, if we can.  Candidate
@@ -16958,7 +17059,9 @@ finish_function (bool inline_p)
     do_warn_unused_parameter (fndecl);
 
   /* Genericize before inlining.  */
-  if (!processing_template_decl && !DECL_IMMEDIATE_FUNCTION_P (fndecl))
+  if (!processing_template_decl
+      && !DECL_IMMEDIATE_FUNCTION_P (fndecl)
+      && !DECL_OMP_DECLARE_REDUCTION_P (fndecl))
     cp_genericize (fndecl);
 
  cleanup:
@@ -17206,7 +17309,7 @@ cxx_maybe_build_cleanup (tree decl, tsubst_flags_t complain)
       else
 	addr = build_address (decl);
 
-      call = build_delete (TREE_TYPE (addr), addr,
+      call = build_delete (input_location, TREE_TYPE (addr), addr,
 			   sfk_complete_destructor, flags, 0, complain);
       if (call == error_mark_node)
 	cleanup = error_mark_node;

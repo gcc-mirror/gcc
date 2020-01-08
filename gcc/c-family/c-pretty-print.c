@@ -1,5 +1,5 @@
 /* Subroutines common to both C and C++ pretty-printers.
-   Copyright (C) 2002-2019 Free Software Foundation, Inc.
+   Copyright (C) 2002-2020 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -2372,6 +2372,13 @@ c_pretty_printer::c_pretty_printer ()
   parameter_list            = pp_c_parameter_type_list;
 }
 
+/* c_pretty_printer's implementation of pretty_printer::clone vfunc.  */
+
+pretty_printer *
+c_pretty_printer::clone () const
+{
+  return new c_pretty_printer (*this);
+}
 
 /* Print the tree T in full, on file FILE.  */
 

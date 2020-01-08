@@ -1,6 +1,6 @@
 /* OpenACC Runtime - internal declarations
 
-   Copyright (C) 2013-2019 Free Software Foundation, Inc.
+   Copyright (C) 2013-2020 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -113,6 +113,7 @@ void goacc_restore_bind (void);
 void goacc_lazy_initialize (void);
 void goacc_host_init (void);
 
+void goacc_wait (int, int, va_list *);
 void goacc_init_asyncqueues (struct gomp_device_descr *);
 bool goacc_fini_asyncqueues (struct gomp_device_descr *);
 void goacc_async_free (struct gomp_device_descr *, struct goacc_asyncqueue *,

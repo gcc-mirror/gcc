@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2019 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2020 Free Software Foundation, Inc.
    Contributed by Alexander Monakov <amonakov@ispras.ru>
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -23,7 +23,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-/* This file handles maintainance of threads on NVPTX.  */
+/* This file handles maintenance of threads on NVPTX.  */
 
 #if defined __nvptx_softstack__ && defined __nvptx_unisimt__
 

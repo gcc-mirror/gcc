@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009-2019 Free Software Foundation, Inc.
+   Copyright (C) 2009-2020 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -447,7 +447,7 @@ static const struct cpu_vector_cost generic_vector_cost =
   1, /* vec_int_stmt_cost  */
   1, /* vec_fp_stmt_cost  */
   2, /* vec_permute_cost  */
-  1, /* vec_to_scalar_cost  */
+  2, /* vec_to_scalar_cost  */
   1, /* scalar_to_vec_cost  */
   1, /* vec_align_load_cost  */
   1, /* vec_unalign_load_cost  */
@@ -915,7 +915,7 @@ static const struct tune_params thunderxt88_tunings =
   SVE_NOT_IMPLEMENTED, /* sve_width  */
   6, /* memmov_cost  */
   2, /* issue_rate  */
-  AARCH64_FUSE_CMP_BRANCH, /* fusible_ops  */
+  AARCH64_FUSE_ALU_BRANCH, /* fusible_ops  */
   "8",	/* function_align.  */
   "8",	/* jump_align.  */
   "8",	/* loop_align.  */
@@ -941,7 +941,7 @@ static const struct tune_params thunderx_tunings =
   SVE_NOT_IMPLEMENTED, /* sve_width  */
   6, /* memmov_cost  */
   2, /* issue_rate  */
-  AARCH64_FUSE_CMP_BRANCH, /* fusible_ops  */
+  AARCH64_FUSE_ALU_BRANCH, /* fusible_ops  */
   "8",	/* function_align.  */
   "8",	/* jump_align.  */
   "8",	/* loop_align.  */
@@ -968,8 +968,8 @@ static const struct tune_params tsv110_tunings =
   SVE_NOT_IMPLEMENTED, /* sve_width  */
   4,    /* memmov_cost  */
   4,    /* issue_rate  */
-  (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH
-   | AARCH64_FUSE_ALU_BRANCH), /* fusible_ops  */
+  (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_ALU_BRANCH
+   | AARCH64_FUSE_ALU_CBZ), /* fusible_ops  */
   "16", /* function_align.  */
   "4",  /* jump_align.  */
   "8",  /* loop_align.  */
@@ -1103,8 +1103,8 @@ static const struct tune_params thunderx2t99_tunings =
   SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost.  */
   4, /* issue_rate.  */
-  (AARCH64_FUSE_CMP_BRANCH | AARCH64_FUSE_AES_AESMC
-   | AARCH64_FUSE_ALU_BRANCH), /* fusible_ops  */
+  (AARCH64_FUSE_ALU_BRANCH | AARCH64_FUSE_AES_AESMC
+   | AARCH64_FUSE_ALU_CBZ), /* fusible_ops  */
   "16",	/* function_align.  */
   "8",	/* jump_align.  */
   "16",	/* loop_align.  */
@@ -1246,6 +1246,7 @@ static const struct attribute_spec aarch64_attribute_table[] =
        affects_type_identity, handler, exclude } */
   { "aarch64_vector_pcs", 0, 0, false, true,  true,  true,
 			  handle_aarch64_vector_pcs_attribute, NULL },
+  { "SVE type",		  3, 3, false, true,  false, true,  NULL, NULL },
   { NULL,                 0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -1471,6 +1472,25 @@ aarch64_err_no_fpadvsimd (machine_mode mode)
     else
       error ("%qs feature modifier is incompatible with the use of"
 	     " vector types", "+nofp");
+}
+
+/* Report when we try to do something that requires SVE when SVE is disabled.
+   This is an error of last resort and isn't very high-quality.  It usually
+   involves attempts to measure the vector length in some way.  */
+static void
+aarch64_report_sve_required (void)
+{
+  static bool reported_p = false;
+
+  /* Avoid reporting a slew of messages for a single oversight.  */
+  if (reported_p)
+    return;
+
+  error ("this operation requires the SVE ISA extension");
+  inform (input_location, "you can enable SVE using the command-line"
+	  " option %<-march%>, or by using the %<target%>"
+	  " attribute or pragma");
+  reported_p = true;
 }
 
 /* Return true if REGNO is P0-P15 or one of the special FFR-related
@@ -2000,9 +2020,11 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
 
   if (GP_REGNUM_P (regno))
     {
+      if (vec_flags & VEC_ANY_SVE)
+	return false;
       if (known_le (GET_MODE_SIZE (mode), 8))
 	return true;
-      else if (known_le (GET_MODE_SIZE (mode), 16))
+      if (known_le (GET_MODE_SIZE (mode), 16))
 	return (regno & 1) == 0;
     }
   else if (FP_REGNUM_P (regno))
@@ -2021,37 +2043,15 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
    true, set *NUM_ZR and *NUM_PR to the number of required Z and P registers
    respectively.  */
 
-static bool
-aarch64_sve_argument_p (const_tree type, unsigned int *num_zr,
-			unsigned int *num_pr)
-{
-  if (aarch64_sve::svbool_type_p (type))
-    {
-      *num_pr = 1;
-      *num_zr = 0;
-      return true;
-    }
-
-  if (unsigned int nvectors = aarch64_sve::nvectors_if_data_type (type))
-    {
-      *num_pr = 0;
-      *num_zr = nvectors;
-      return true;
-    }
-
-  return false;
-}
-
 /* Return true if a function with type FNTYPE returns its value in
    SVE vector or predicate registers.  */
 
 static bool
 aarch64_returns_value_in_sve_regs_p (const_tree fntype)
 {
-  unsigned int num_zr, num_pr;
   tree return_type = TREE_TYPE (fntype);
   return (return_type != error_mark_node
-	  && aarch64_sve_argument_p (return_type, &num_zr, &num_pr));
+	  && aarch64_sve::builtin_type_p (return_type));
 }
 
 /* Return true if a function with type FNTYPE takes arguments in
@@ -2075,8 +2075,7 @@ aarch64_takes_arguments_in_sve_regs_p (const_tree fntype)
 
       function_arg_info arg (arg_type, /*named=*/true);
       apply_pass_by_reference_rules (&args_so_far_v, arg);
-      unsigned int num_zr, num_pr;
-      if (aarch64_sve_argument_p (arg.type, &num_zr, &num_pr))
+      if (aarch64_sve::builtin_type_p (arg.type))
 	return true;
 
       targetm.calls.function_arg_advance (args_so_far, arg);
@@ -4525,6 +4524,11 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	 folding it into the relocation.  */
       if (!offset.is_constant (&const_offset))
 	{
+	  if (!TARGET_SVE)
+	    {
+	      aarch64_report_sve_required ();
+	      return;
+	    }
 	  if (base == const0_rtx && aarch64_sve_cnt_immediate_p (offset))
 	    emit_insn (gen_rtx_SET (dest, imm));
 	  else
@@ -4850,7 +4854,7 @@ aarch64_pass_by_reference (cumulative_args_t pcum_v,
   int nregs;
 
   unsigned int num_zr, num_pr;
-  if (arg.type && aarch64_sve_argument_p (arg.type, &num_zr, &num_pr))
+  if (arg.type && aarch64_sve::builtin_type_p (arg.type, &num_zr, &num_pr))
     {
       if (pcum && !pcum->silent_p && !TARGET_SVE)
 	/* We can't gracefully recover at this point, so make this a
@@ -4922,24 +4926,14 @@ aarch64_return_in_msb (const_tree valtype)
   return true;
 }
 
-/* Implement TARGET_FUNCTION_VALUE.
-   Define how to find the value returned by a function.  */
-
+/* Subroutine of aarch64_function_value.  MODE is the mode of the argument
+   after promotion, and after partial SVE types have been replaced by
+   their integer equivalents.  */
 static rtx
-aarch64_function_value (const_tree type, const_tree func,
-			bool outgoing ATTRIBUTE_UNUSED)
+aarch64_function_value_1 (const_tree type, machine_mode mode)
 {
-  machine_mode mode;
-  int unsignedp;
-  int count;
-  machine_mode ag_mode;
-
-  mode = TYPE_MODE (type);
-  if (INTEGRAL_TYPE_P (type))
-    mode = promote_function_mode (type, mode, &unsignedp, func, 1);
-
   unsigned int num_zr, num_pr;
-  if (type && aarch64_sve_argument_p (type, &num_zr, &num_pr))
+  if (type && aarch64_sve::builtin_type_p (type, &num_zr, &num_pr))
     {
       /* Don't raise an error here if we're called when SVE is disabled,
 	 since this is really just a query function.  Other code must
@@ -4972,6 +4966,8 @@ aarch64_function_value (const_tree type, const_tree func,
 	}
     }
 
+  int count;
+  machine_mode ag_mode;
   if (aarch64_vfp_is_call_or_return_candidate (mode, type,
 					       &ag_mode, &count, NULL))
     {
@@ -4998,6 +4994,42 @@ aarch64_function_value (const_tree type, const_tree func,
     }
   else
     return gen_rtx_REG (mode, R0_REGNUM);
+}
+
+/* Implement TARGET_FUNCTION_VALUE.
+   Define how to find the value returned by a function.  */
+
+static rtx
+aarch64_function_value (const_tree type, const_tree func,
+			bool outgoing ATTRIBUTE_UNUSED)
+{
+  machine_mode mode;
+  int unsignedp;
+
+  mode = TYPE_MODE (type);
+  if (INTEGRAL_TYPE_P (type))
+    mode = promote_function_mode (type, mode, &unsignedp, func, 1);
+
+  /* Vector types can acquire a partial SVE mode using things like
+     __attribute__((vector_size(N))), and this is potentially useful.
+     However, the choice of mode doesn't affect the type's ABI identity,
+     so we should treat the types as though they had the associated
+     integer mode, just like they did before SVE was introduced.
+
+     We know that the vector must be 128 bits or smaller, otherwise we'd
+     have returned it in memory instead.  */
+  unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+  if ((vec_flags & VEC_ANY_SVE) && (vec_flags & VEC_PARTIAL))
+    {
+      scalar_int_mode int_mode = int_mode_for_mode (mode).require ();
+      rtx reg = aarch64_function_value_1 (type, int_mode);
+      /* Vector types are never returned in the MSB and are never split.  */
+      gcc_assert (REG_P (reg) && GET_MODE (reg) == int_mode);
+      rtx pair = gen_rtx_EXPR_LIST (VOIDmode, reg, const0_rtx);
+      return gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, pair));
+    }
+
+  return aarch64_function_value_1 (type, mode);
 }
 
 /* Implements TARGET_FUNCTION_VALUE_REGNO_P.
@@ -5044,7 +5076,7 @@ aarch64_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
     return false;
 
   unsigned int num_zr, num_pr;
-  if (type && aarch64_sve_argument_p (type, &num_zr, &num_pr))
+  if (type && aarch64_sve::builtin_type_p (type, &num_zr, &num_pr))
     {
       /* All SVE types we support fit in registers.  For example, it isn't
 	 yet possible to define an aggregate of 9+ SVE vectors or 5+ SVE
@@ -5125,10 +5157,14 @@ aarch64_function_arg_alignment (machine_mode mode, const_tree type,
 }
 
 /* Layout a function argument according to the AAPCS64 rules.  The rule
-   numbers refer to the rule numbers in the AAPCS64.  */
+   numbers refer to the rule numbers in the AAPCS64.  ORIG_MODE is the
+   mode that was originally given to us by the target hook, whereas the
+   mode in ARG might be the result of replacing partial SVE modes with
+   the equivalent integer mode.  */
 
 static void
-aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
+aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg,
+		    machine_mode orig_mode)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
   tree type = arg.type;
@@ -5142,10 +5178,33 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
   if (pcum->aapcs_arg_processed)
     return;
 
+  /* Vector types can acquire a partial SVE mode using things like
+     __attribute__((vector_size(N))), and this is potentially useful.
+     However, the choice of mode doesn't affect the type's ABI identity,
+     so we should treat the types as though they had the associated
+     integer mode, just like they did before SVE was introduced.
+
+     We know that the vector must be 128 bits or smaller, otherwise we'd
+     have passed it by reference instead.  */
+  unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+  if ((vec_flags & VEC_ANY_SVE) && (vec_flags & VEC_PARTIAL))
+    {
+      function_arg_info tmp_arg = arg;
+      tmp_arg.mode = int_mode_for_mode (mode).require ();
+      aarch64_layout_arg (pcum_v, tmp_arg, orig_mode);
+      if (rtx reg = pcum->aapcs_reg)
+	{
+	  gcc_assert (REG_P (reg) && GET_MODE (reg) == tmp_arg.mode);
+	  rtx pair = gen_rtx_EXPR_LIST (VOIDmode, reg, const0_rtx);
+	  pcum->aapcs_reg = gen_rtx_PARALLEL (mode, gen_rtvec (1, pair));
+	}
+      return;
+    }
+
   pcum->aapcs_arg_processed = true;
 
   unsigned int num_zr, num_pr;
-  if (type && aarch64_sve_argument_p (type, &num_zr, &num_pr))
+  if (type && aarch64_sve::builtin_type_p (type, &num_zr, &num_pr))
     {
       /* The PCS says that it is invalid to pass an SVE value to an
 	 unprototyped function.  There is no ABI-defined location we
@@ -5263,7 +5322,7 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 	     comparison is there because for > 16 * BITS_PER_UNIT
 	     alignment nregs should be > 2 and therefore it should be
 	     passed by reference rather than value.  */
-	  && (aarch64_function_arg_alignment (mode, type, &abi_break)
+	  && (aarch64_function_arg_alignment (orig_mode, type, &abi_break)
 	      == 16 * BITS_PER_UNIT))
 	{
 	  if (abi_break && warn_psabi && currently_expanding_gimple_stmt)
@@ -5306,7 +5365,7 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 on_stack:
   pcum->aapcs_stack_words = size / UNITS_PER_WORD;
 
-  if (aarch64_function_arg_alignment (mode, type, &abi_break)
+  if (aarch64_function_arg_alignment (orig_mode, type, &abi_break)
       == 16 * BITS_PER_UNIT)
     {
       int new_size = ROUND_UP (pcum->aapcs_stack_size, 16 / UNITS_PER_WORD);
@@ -5334,7 +5393,7 @@ aarch64_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
   if (arg.end_marker_p ())
     return gen_int_mode (pcum->pcs_variant, DImode);
 
-  aarch64_layout_arg (pcum_v, arg);
+  aarch64_layout_arg (pcum_v, arg, arg.mode);
   return pcum->aapcs_reg;
 }
 
@@ -5399,7 +5458,7 @@ aarch64_function_arg_advance (cumulative_args_t pcum_v,
       || pcum->pcs_variant == ARM_PCS_SIMD
       || pcum->pcs_variant == ARM_PCS_SVE)
     {
-      aarch64_layout_arg (pcum_v, arg);
+      aarch64_layout_arg (pcum_v, arg, arg.mode);
       gcc_assert ((pcum->aapcs_reg != NULL_RTX)
 		  != (pcum->aapcs_stack_words != 0));
       pcum->aapcs_arg_processed = false;
@@ -16200,6 +16259,15 @@ aarch64_mangle_type (const_tree type)
   return NULL;
 }
 
+/* Implement TARGET_VERIFY_TYPE_CONTEXT.  */
+
+static bool
+aarch64_verify_type_context (location_t loc, type_context_kind context,
+			     const_tree type, bool silent_p)
+{
+  return aarch64_sve::verify_type_context (loc, context, type, silent_p);
+}
+
 /* Find the first rtx_insn before insn that will generate an assembly
    instruction.  */
 
@@ -16736,11 +16804,27 @@ aarch64_simd_valid_immediate (rtx op, simd_immediate_info *info,
 	}
     }
 
-  unsigned int elt_size = GET_MODE_SIZE (elt_mode);
+  /* If all elements in an SVE vector have the same value, we have a free
+     choice between using the element mode and using the container mode.
+     Using the element mode means that unused parts of the vector are
+     duplicates of the used elements, while using the container mode means
+     that the unused parts are an extension of the used elements.  Using the
+     element mode is better for (say) VNx4HI 0x101, since 0x01010101 is valid
+     for its container mode VNx4SI while 0x00000101 isn't.
+
+     If not all elements in an SVE vector have the same value, we need the
+     transition from one element to the next to occur at container boundaries.
+     E.g. a fixed-length VNx4HI containing { 1, 2, 3, 4 } should be treated
+     in the same way as a VNx4SI containing { 1, 2, 3, 4 }.  */
+  scalar_int_mode elt_int_mode;
+  if ((vec_flags & VEC_SVE_DATA) && n_elts > 1)
+    elt_int_mode = aarch64_sve_container_int_mode (mode);
+  else
+    elt_int_mode = int_mode_for_mode (elt_mode).require ();
+
+  unsigned int elt_size = GET_MODE_SIZE (elt_int_mode);
   if (elt_size > 8)
     return false;
-
-  scalar_int_mode elt_int_mode = int_mode_for_mode (elt_mode).require ();
 
   /* Expand the vector constant out into a byte vector, with the least
      significant byte of the register first.  */
@@ -16855,7 +16939,7 @@ aarch64_mov_operand_p (rtx x, machine_mode mode)
   if (GET_CODE (x) == SYMBOL_REF && mode == DImode && CONSTANT_ADDRESS_P (x))
     return true;
 
-  if (aarch64_sve_cnt_immediate_p (x))
+  if (TARGET_SVE && aarch64_sve_cnt_immediate_p (x))
     return true;
 
   return aarch64_classify_symbolic_expression (x)
@@ -20363,7 +20447,16 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
         }
     }
 
+  /* Fuse compare (CMP/CMN/TST/BICS) and conditional branch.  */
   if (aarch64_fusion_enabled_p (AARCH64_FUSE_CMP_BRANCH)
+      && prev_set && curr_set && any_condjump_p (curr)
+      && GET_CODE (SET_SRC (prev_set)) == COMPARE
+      && SCALAR_INT_MODE_P (GET_MODE (XEXP (SET_SRC (prev_set), 0)))
+      && reg_referenced_p (SET_DEST (prev_set), PATTERN (curr)))
+    return true;
+
+  /* Fuse flag-setting ALU instructions and conditional branch.  */
+  if (aarch64_fusion_enabled_p (AARCH64_FUSE_ALU_BRANCH)
       && any_condjump_p (curr))
     {
       unsigned int condreg1, condreg2;
@@ -20387,9 +20480,10 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	}
     }
 
+  /* Fuse ALU instructions and CBZ/CBNZ.  */
   if (prev_set
       && curr_set
-      && aarch64_fusion_enabled_p (AARCH64_FUSE_ALU_BRANCH)
+      && aarch64_fusion_enabled_p (AARCH64_FUSE_ALU_CBZ)
       && any_condjump_p (curr))
     {
       /* We're trying to match:
@@ -21357,11 +21451,30 @@ static bool
 aarch64_can_change_mode_class (machine_mode from,
 			       machine_mode to, reg_class_t)
 {
+  unsigned int from_flags = aarch64_classify_vector_mode (from);
+  unsigned int to_flags = aarch64_classify_vector_mode (to);
+
+  bool from_sve_p = (from_flags & VEC_ANY_SVE);
+  bool to_sve_p = (to_flags & VEC_ANY_SVE);
+
+  bool from_partial_sve_p = from_sve_p && (from_flags & VEC_PARTIAL);
+  bool to_partial_sve_p = to_sve_p && (to_flags & VEC_PARTIAL);
+
+  /* Don't allow changes between partial SVE modes and other modes.
+     The contents of partial SVE modes are distributed evenly across
+     the register, whereas GCC expects them to be clustered together.  */
+  if (from_partial_sve_p != to_partial_sve_p)
+    return false;
+
+  /* Similarly reject changes between partial SVE modes that have
+     different patterns of significant and insignificant bits.  */
+  if (from_partial_sve_p
+      && (aarch64_sve_container_bits (from) != aarch64_sve_container_bits (to)
+	  || GET_MODE_UNIT_SIZE (from) != GET_MODE_UNIT_SIZE (to)))
+    return false;
+
   if (BYTES_BIG_ENDIAN)
     {
-      bool from_sve_p = aarch64_sve_data_mode_p (from);
-      bool to_sve_p = aarch64_sve_data_mode_p (to);
-
       /* Don't allow changes between SVE data modes and non-SVE modes.
 	 See the comment at the head of aarch64-sve.md for details.  */
       if (from_sve_p != to_sve_p)
@@ -21859,6 +21972,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE aarch64_mangle_type
+
+#undef TARGET_VERIFY_TYPE_CONTEXT
+#define TARGET_VERIFY_TYPE_CONTEXT aarch64_verify_type_context
 
 #undef TARGET_MEMORY_MOVE_COST
 #define TARGET_MEMORY_MOVE_COST aarch64_memory_move_cost

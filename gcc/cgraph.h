@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2019 Free Software Foundation, Inc.
+   Copyright (C) 2003-2020 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -108,6 +108,23 @@ struct GTY((desc ("%h.type"), tag ("SYMTAB_SYMBOL"),
 {
 public:
   friend class symbol_table;
+
+  /* Constructor.  */
+  explicit symtab_node (symtab_type t)
+    : type (t), resolution (LDPR_UNKNOWN), definition (false), alias (false),
+      transparent_alias (false), weakref (false), cpp_implicit_alias (false),
+      symver (false), analyzed (false), writeonly (false),
+      refuse_visibility_changes (false), externally_visible (false),
+      no_reorder (false), force_output (false), forced_by_abi (false),
+      unique_name (false), implicit_section (false), body_removed (false),
+      used_from_other_partition (false), in_other_partition (false),
+      address_taken (false), in_init_priority_hash (false),
+      need_lto_streaming (false), offloadable (false), ifunc_resolver (false),
+      order (false), next_sharing_asm_name (NULL),
+      previous_sharing_asm_name (NULL), same_comdat_group (NULL), ref_list (),
+      alias_target (NULL), lto_file_data (NULL), aux (NULL),
+      x_comdat_group (NULL_TREE), x_section (NULL)
+  {}
 
   /* Return name.  */
   const char *name () const;
@@ -497,6 +514,8 @@ public:
      and their visibility needs to be copied from their "masters" at
      the end of parsing.  */
   unsigned cpp_implicit_alias : 1;
+  /* The alias is a symbol version.  */
+  unsigned symver : 1;
   /* Set once the definition was analyzed.  The list of references and
      other properties are built during analysis.  */
   unsigned analyzed : 1;
@@ -899,6 +918,28 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 {
   friend class symbol_table;
 
+  /* Constructor.  */
+  explicit cgraph_node (int uid)
+    : symtab_node (SYMTAB_FUNCTION), callees (NULL), callers (NULL),
+      indirect_calls (NULL), origin (NULL), nested (NULL), next_nested (NULL),
+      next_sibling_clone (NULL), prev_sibling_clone (NULL), clones (NULL),
+      clone_of (NULL), call_site_hash (NULL), former_clone_of (NULL),
+      simdclone (NULL), simd_clones (NULL), ipa_transforms_to_apply (vNULL),
+      inlined_to (NULL), rtl (NULL), clone (), thunk (),
+      count (profile_count::uninitialized ()),
+      count_materialization_scale (REG_BR_PROB_BASE), profile_id (0),
+      unit_id (0), tp_first_run (0), used_as_abstract_origin (false),
+      lowered (false), process (false), frequency (NODE_FREQUENCY_NORMAL),
+      only_called_at_startup (false), only_called_at_exit (false),
+      tm_clone (false), dispatcher_function (false), calls_comdat_local (false),
+      icf_merged (false), nonfreeing_fn (false), merged_comdat (false),
+      merged_extern_inline (false), parallelized_function (false),
+      split_part (false), indirect_call_target (false), local (false),
+      versionable (false), can_change_signature (false),
+      redefined_extern_inline (false), tm_may_enter_irr (false),
+      ipcp_clone (false), m_uid (uid), m_summary_id (-1)
+  {}
+
   /* Remove the node from cgraph and all inline clones inlined into it.
      Skip however removal of FORBIDDEN_NODE and return true if it needs to be
      removed.  This allows to call the function from outer loop walking clone
@@ -966,6 +1007,10 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 				     vec<ipa_replace_map *, va_gc> *tree_map,
 				     ipa_param_adjustments *param_adjustments,
 				     const char * suffix, unsigned num_suffix);
+
+  /* Remove the node from the tree of virtual and inline clones and make it a
+     standalone node - not a clone any more.  */
+  void remove_from_clone_tree ();
 
   /* cgraph node being removed from symbol table; see if its entry can be
    replaced by other inline clone.  */
@@ -1429,6 +1474,8 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   int count_materialization_scale;
   /* ID assigned by the profiling.  */
   unsigned int profile_id;
+  /* ID of the translation unit.  */
+  int unit_id;
   /* Time profiler: first run of function.  */
   int tp_first_run;
 
@@ -1465,6 +1512,8 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   unsigned nonfreeing_fn : 1;
   /* True if there was multiple COMDAT bodies merged by lto-symtab.  */
   unsigned merged_comdat : 1;
+  /* True if this def was merged with extern inlines.  */
+  unsigned merged_extern_inline : 1;
   /* True if function was created to be executed in parallel.  */
   unsigned parallelized_function : 1;
   /* True if function is part split out by ipa-split.  */
@@ -1867,6 +1916,12 @@ private:
 
 struct GTY((tag ("SYMTAB_VARIABLE"))) varpool_node : public symtab_node
 {
+  /* Constructor.  */
+  explicit varpool_node ()
+    : symtab_node (SYMTAB_VARIABLE), output (0), dynamically_initialized (0),
+      tls_model (TLS_MODEL_NONE), used_by_single_function (0)
+  {}
+
   /* Dump given varpool node to F.  */
   void dump (FILE *f);
 
@@ -2086,7 +2141,7 @@ public:
   edges_count (0), edges_max_uid (1), edges_max_summary_id (0),
   cgraph_released_summary_ids (), edge_released_summary_ids (),
   nodes (NULL), asmnodes (NULL), asm_last_node (NULL),
-  order (0), global_info_ready (false), state (PARSING),
+  order (0), max_unit (0), global_info_ready (false), state (PARSING),
   function_flags_ready (false), cpp_implicit_aliases_done (false),
   section_hash (NULL), assembler_name_hash (NULL), init_priority_hash (NULL),
   dump_file (NULL), ipa_clones_dump_file (NULL), cloned_nodes (),
@@ -2351,6 +2406,9 @@ public:
      them, to support -fno-toplevel-reorder.  */
   int order;
 
+  /* Maximal unit ID used.  */
+  int max_unit;
+
   /* Set when whole unit has been analyzed so we can access global info.  */
   bool global_info_ready;
   /* What state callgraph is in right now.  */
@@ -2376,9 +2434,6 @@ public:
   hash_set <const cgraph_node *> GTY ((skip)) cloned_nodes;
 
 private:
-  /* Allocate new callgraph node.  */
-  inline cgraph_node * allocate_cgraph_symbol (void);
-
   /* Allocate a cgraph_edge structure and fill it with data according to the
      parameters of which only CALLEE can be NULL (when creating an indirect
      call edge).  CLONING_P should be set if properties that are copied from an
@@ -2450,6 +2505,7 @@ cgraph_inline_failed_type_t cgraph_inline_failed_type (cgraph_inline_failed_t);
 
 /* In cgraphunit.c  */
 void cgraphunit_c_finalize (void);
+int tp_first_run_node_cmp (const void *pa, const void *pb);
 
 /*  Initialize datastructures so DECL is a function in lowered gimple form.
     IN_SSA is true if the gimple is in SSA.  */
@@ -2702,21 +2758,6 @@ symbol_table::release_symbol (cgraph_node *node)
     cgraph_released_summary_ids.safe_push (node->m_summary_id);
   ggc_free (node);
 }
-
-/* Allocate new callgraph node.  */
-
-inline cgraph_node *
-symbol_table::allocate_cgraph_symbol (void)
-{
-  cgraph_node *node;
-
-  node = ggc_cleared_alloc<cgraph_node> ();
-  node->type = SYMTAB_FUNCTION;
-  node->m_summary_id = -1;
-  node->m_uid = cgraph_max_uid++;
-  return node;
-}
-
 
 /* Return first static symbol with definition.  */
 inline symtab_node *

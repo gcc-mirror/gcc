@@ -1,5 +1,5 @@
 /* GNU Objective-C Extern helpers for Win32.
-   Copyright (C) 2004-2019 Free Software Foundation, Inc.
+   Copyright (C) 2004-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,7 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined (_WIN32) || defined (__WIN32__) || defined (WIN32)
 
 #  ifdef DLL_EXPORT /* defined by libtool (if required) */
-#    define objc_EXPORT 
+#    define objc_EXPORT extern
 #    define objc_DECLARE
 #  else
 #    define objc_EXPORT  extern __declspec(dllimport)

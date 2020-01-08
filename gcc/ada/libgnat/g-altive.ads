@@ -494,7 +494,7 @@ end GNAT.Altivec;
 
 --  The central idea for the Ada bindings is to leverage on the existing GCC
 --  architecture, with the introduction of a Low_Level_Vectors abstraction.
---  This abstaction acts as a representative of the vector-types and builtins
+--  This abstraction acts as a representative of the vector-types and builtins
 --  compiler interface for either the Hard or the Soft case.
 
 --  For the Hard binding, Low_Level_Vectors exposes data types with a GCC

@@ -2226,9 +2226,18 @@ package body Sem_Ch10 is
 
          --  If the subunit occurs within a child unit, we must restore the
          --  immediate visibility of any siblings that may occur in context.
+         --  In addition, we must reset the previous visibility of the
+         --  parent unit which is now on the scope stack. This is because
+         --  the Previous_Visibility was previously set when removing the
+         --  context. This is necessary to prevent the parent entity from
+         --  remaining visible after the subunit is compiled. This only
+         --  has an effect if a homonym exists in a body to be processed
+         --  later if inlining is enabled.
 
          if Present (Enclosing_Child) then
             Install_Siblings (Enclosing_Child, L);
+            Scope_Stack.Table (Scope_Stack.Last).Previous_Visibility :=
+              False;
          end if;
 
          Push_Scope (Scop);
@@ -2423,6 +2432,20 @@ package body Sem_Ch10 is
       --  because it applies to all parts of the unit.
 
       Install_Elaboration_Model (Par_Unit);
+
+      --  The syntax rules require a proper body for a subprogram subunit
+
+      if Nkind (Proper_Body (Sinfo.Unit (N))) = N_Subprogram_Declaration then
+         if Null_Present (Specification (Proper_Body (Sinfo.Unit (N)))) then
+            Error_Msg_N
+              ("null procedure not allowed as subunit",
+               Proper_Body (Unit (N)));
+         else
+            Error_Msg_N
+              ("subprogram declaration not allowed as subunit",
+               Defining_Unit_Name (Specification (Proper_Body (Unit (N)))));
+         end if;
+      end if;
 
       Analyze (Proper_Body (Unit (N)));
       Remove_Context (N);
@@ -2657,12 +2680,8 @@ package body Sem_Ch10 is
            and then not Implicit_With (N)
            and then not Restriction_Violation
          then
-            declare
-               U_Kind : constant Kind_Of_Unit :=
-                          Get_Kind_Of_Unit (Get_Source_Unit (U));
-
-            begin
-               if U_Kind = Implementation_Unit then
+            case Get_Kind_Of_Unit (Get_Source_Unit (U)) is
+               when Implementation_Unit =>
                   Error_Msg_F ("& is an internal 'G'N'A'T unit?i?", Name (N));
 
                   --  Add alternative name if available, otherwise issue a
@@ -2676,19 +2695,30 @@ package body Sem_Ch10 is
                         & "version-dependent?i?", Name (N));
                   end if;
 
-               elsif U_Kind = Ada_2005_Unit
-                 and then Ada_Version < Ada_2005
-                 and then Warn_On_Ada_2005_Compatibility
-               then
-                  Error_Msg_N ("& is an Ada 2005 unit?i?", Name (N));
+               when Not_Predefined_Unit | Ada_95_Unit =>
+                  null; -- no checks needed
 
-               elsif U_Kind = Ada_2012_Unit
-                 and then Ada_Version < Ada_2012
-                 and then Warn_On_Ada_2012_Compatibility
-               then
-                  Error_Msg_N ("& is an Ada 2012 unit?i?", Name (N));
-               end if;
-            end;
+               when Ada_2005_Unit =>
+                  if Ada_Version < Ada_2005
+                    and then Warn_On_Ada_2005_Compatibility
+                  then
+                     Error_Msg_N ("& is an Ada 2005 unit?i?", Name (N));
+                  end if;
+
+               when Ada_2012_Unit =>
+                  if Ada_Version < Ada_2012
+                    and then Warn_On_Ada_2012_Compatibility
+                  then
+                     Error_Msg_N ("& is an Ada 2012 unit?i?", Name (N));
+                  end if;
+
+               when Ada_202X_Unit =>
+                  if Ada_Version < Ada_2020
+                    and then Warn_On_Ada_202X_Compatibility
+                  then
+                     Error_Msg_N ("& is an Ada 202X unit?i?", Name (N));
+                  end if;
+            end case;
          end if;
       end if;
 
@@ -5326,6 +5356,20 @@ package body Sem_Ch10 is
          then
             Error_Msg_N
               ("instantiation depends on itself", Name (With_Clause));
+
+         elsif not Analyzed (Uname)
+           and then Is_Internal_Unit (Current_Sem_Unit)
+           and then not Is_Visible_Lib_Unit (Uname)
+           and then No (Scope (Uname))
+         then
+            if Is_Predefined_Unit (Current_Sem_Unit) then
+               Error_Msg_N
+                 ("predefined unit depends on itself", Name (With_Clause));
+            else
+               Error_Msg_N
+                 ("GNAT-defined unit depends on itself", Name (With_Clause));
+            end if;
+            return;
 
          elsif not Is_Visible_Lib_Unit (Uname) then
 

@@ -44,12 +44,24 @@ struct data
   template<typename U>
   constexpr bool test()
   {
-    if constexpr (requires { requires subst<U&>; }) // { dg-error "forming reference" }
+    if constexpr (requires { requires subst<U&>; })
       return true;
     else
       return false;
   }
 };
+
+template<typename T>
+constexpr bool check_for_resize(T &v, unsigned const n)
+{
+  if constexpr (requires { v.resize(n); })
+    return true;
+  else
+    return false;
+}
+
+struct array { };
+struct vector { void resize(int n); };
 
 void test()
 {
@@ -74,4 +86,9 @@ void test()
   data<int> t;
   static_assert(t.test<int>());
   static_assert(t.test<void>()); // { dg-error "static assertion failed" }
+
+  vector v;
+  static_assert(check_for_resize(v, 10));
+  array a;
+  static_assert(!check_for_resize(a, 10));
 }

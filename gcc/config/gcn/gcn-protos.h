@@ -1,4 +1,4 @@
-/* Copyright (C) 2016-2019 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2020 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -51,7 +51,7 @@ extern int gcn_hard_regno_nregs (int regno, machine_mode mode);
 extern void gcn_hsa_declare_function_name (FILE *file, const char *name,
 					   tree decl);
 extern HOST_WIDE_INT gcn_initial_elimination_offset (int, int);
-extern bool gcn_inline_constant64_p (rtx);
+extern bool gcn_inline_constant64_p (rtx, bool);
 extern bool gcn_inline_constant_p (rtx);
 extern int gcn_inline_fp_constant_p (rtx, bool);
 extern reg_class gcn_mode_code_base_reg_class (machine_mode, addr_space_t,

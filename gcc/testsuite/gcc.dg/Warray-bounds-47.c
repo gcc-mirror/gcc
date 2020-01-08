@@ -1,7 +1,7 @@
 /* PR middle-end/91830 - Bogus -Warray-bounds on strcpy into a member
    of a subobject compiling binutils
    { dg-do compile }
-   { dg-options "-O2 -Wall -ftrack-macro-expansion=0" } */
+   { dg-options "-O2 -Wall -Wno-stringop-overflow -ftrack-macro-expansion=0" } */
 
 extern char* strcpy (char*, const char*);
 extern void sink (void*);

@@ -85,3 +85,9 @@ check_vect (void)
 #else
 #  define VECTOR_BITS 128
 #endif
+
+/* Which most of our tests are going to #define for internal use, and
+   which might be exposed by system headers related to signal.h on some
+   targets, notably VxWorks.  */
+#undef OFFSET
+   

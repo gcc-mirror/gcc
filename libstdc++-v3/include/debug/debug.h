@@ -1,6 +1,6 @@
 // Debugging support implementation -*- C++ -*-
 
-// Copyright (C) 2003-2019 Free Software Foundation, Inc.
+// Copyright (C) 2003-2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -56,6 +56,9 @@ namespace std
 namespace __gnu_debug
 {
   using namespace std::__debug;
+
+  template<typename _Ite, typename _Seq, typename _Cat>
+    struct _Safe_iterator;
 }
 
 #ifndef _GLIBCXX_DEBUG

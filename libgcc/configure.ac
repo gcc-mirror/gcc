@@ -268,6 +268,14 @@ use_tm_clone_registry=
 if test "$enable_tm_clone_registry" = no; then
   use_tm_clone_registry=-DUSE_TM_CLONE_REGISTRY=0
 fi
+],
+[
+use_tm_clone_registry=
+case $target in
+  msp430*elfbare)
+   use_tm_clone_registry=-DUSE_TM_CLONE_REGISTRY=0
+   ;;
+esac
 ])
 AC_SUBST([use_tm_clone_registry])
 

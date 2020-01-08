@@ -1,5 +1,5 @@
 /* Diagnostic routines shared by all languages that are variants of C.
-   Copyright (C) 1992-2019 Free Software Foundation, Inc.
+   Copyright (C) 1992-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1221,7 +1221,7 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
 	break;
       }
     case COND_EXPR:
-	  {
+      {
 	/* In case of COND_EXPR, we do not care about the type of
 	   COND_EXPR, only about the conversion of each operand.  */
 	tree op1 = TREE_OPERAND (expr, 1);

@@ -1,5 +1,5 @@
 /* Various declarations for language-independent pretty-print subroutines.
-   Copyright (C) 2003-2019 Free Software Foundation, Inc.
+   Copyright (C) 2003-2020 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -699,6 +699,8 @@ mingw_ansi_fputs (const char *str, FILE *fp)
 
 #endif /* __MINGW32__ */
 
+static int
+decode_utf8_char (const unsigned char *, size_t len, unsigned int *);
 static void pp_quoted_string (pretty_printer *, const char *, size_t = -1);
 
 /* Overwrite the given location/range within this text_info's rich_location.
@@ -900,6 +902,54 @@ pp_write_text_as_dot_label_to_stream (pretty_printer *pp, bool for_record)
 	fputc ('\\', fp);
 
       fputc (*p, fp);
+    }
+
+  pp_clear_output_area (pp);
+}
+
+/* As pp_write_text_to_stream, but for GraphViz HTML-like strings.
+
+   Flush the formatted text of pretty-printer PP onto the attached stream,
+   escaping these characters
+     " & < >
+   using XML escape sequences.
+
+   http://www.graphviz.org/doc/info/lang.html#html states:
+      special XML escape sequences for ", &, <, and > may be necessary in
+      order to embed these characters in attribute values or raw text
+   This doesn't list "'" (which would normally be escaped in XML
+   as "&apos;" or in HTML as "&#39;");.
+
+   Experiments show that escaping "'" doesn't seem to be necessary.  */
+
+void
+pp_write_text_as_html_like_dot_to_stream (pretty_printer *pp)
+{
+  const char *text = pp_formatted_text (pp);
+  const char *p = text;
+  FILE *fp = pp_buffer (pp)->stream;
+
+  for (;*p; p++)
+    {
+      switch (*p)
+	{
+	case '"':
+	  fputs ("&quot;", fp);
+	  break;
+	case '&':
+	  fputs ("&amp;", fp);
+	  break;
+	case '<':
+	  fputs ("&lt;", fp);
+	  break;
+	case '>':
+	  fputs ("&gt;",fp);
+	  break;
+
+	default:
+	  fputc (*p, fp);
+	  break;
+	}
     }
 
   pp_clear_output_area (pp);
@@ -1588,6 +1638,32 @@ pretty_printer::pretty_printer (int maximum_length)
   pp_set_prefix (this, NULL);
 }
 
+/* Copy constructor for pretty_printer.  */
+
+pretty_printer::pretty_printer (const pretty_printer &other)
+: buffer (new (XCNEW (output_buffer)) output_buffer ()),
+  prefix (),
+  padding (other.padding),
+  maximum_length (other.maximum_length),
+  indent_skip (other.indent_skip),
+  wrapping (other.wrapping),
+  format_decoder (other.format_decoder),
+  m_format_postprocessor (NULL),
+  emitted_prefix (other.emitted_prefix),
+  need_newline (other.need_newline),
+  translate_identifiers (other.translate_identifiers),
+  show_color (other.show_color),
+  show_urls (other.show_urls)
+{
+  pp_line_cutoff (this) = maximum_length;
+  /* By default, we emit prefixes once per message.  */
+  pp_prefixing_rule (this) = pp_prefixing_rule (&other);
+  pp_set_prefix (this, NULL);
+
+  if (other.m_format_postprocessor)
+    m_format_postprocessor = other.m_format_postprocessor->clone ();
+}
+
 pretty_printer::~pretty_printer ()
 {
   if (m_format_postprocessor)
@@ -1595,6 +1671,14 @@ pretty_printer::~pretty_printer ()
   buffer->~output_buffer ();
   XDELETE (buffer);
   free (prefix);
+}
+
+/* Base class implementation of pretty_printer::clone vfunc.  */
+
+pretty_printer *
+pretty_printer::clone () const
+{
+  return new pretty_printer (*this);
 }
 
 /* Append a string delimited by START and END to the output area of
@@ -1689,6 +1773,8 @@ void
 pp_character (pretty_printer *pp, int c)
 {
   if (pp_is_wrapping_line (pp)
+      /* If printing UTF-8, don't wrap in the middle of a sequence.  */
+      && (((unsigned int) c) & 0xC0) != 0x80
       && pp_remaining_character_count_for_line (pp) <= 0)
     {
       pp_newline (pp);
@@ -1729,8 +1815,22 @@ pp_quoted_string (pretty_printer *pp, const char *str, size_t n /* = -1 */)
       if (ISPRINT (*ps))
 	  continue;
 
+      /* Don't escape a valid UTF-8 extended char.  */
+      const unsigned char *ups = (const unsigned char *) ps;
+      if (*ups & 0x80)
+	{
+	  unsigned int extended_char;
+	  const int valid_utf8_len = decode_utf8_char (ups, n, &extended_char);
+	  if (valid_utf8_len > 0)
+	    {
+	      ps += valid_utf8_len - 1;
+	      n -= valid_utf8_len - 1;
+	      continue;
+	    }
+	}
+
       if (last < ps)
-	pp_maybe_wrap_text (pp, last, ps - 1);
+	pp_maybe_wrap_text (pp, last, ps);
 
       /* Append the hexadecimal value of the character.  Allocate a buffer
 	 that's large enough for a 32-bit char plus the hex prefix.  */
@@ -2043,7 +2143,10 @@ identifier_to_locale (const char *ident)
    >
    > OSC 8 ; ; ST
    >
-   > OSC (operating system command) is typically ESC ].  */
+   > OSC (operating system command) is typically ESC ].
+
+   Use BEL instead of ST, as that is currently rendered better in some
+   terminal emulators that don't support OSC 8, like konsole.  */
 
 /* If URL-printing is enabled, write an "open URL" escape sequence to PP
    for the given URL.  */
@@ -2052,7 +2155,7 @@ void
 pp_begin_url (pretty_printer *pp, const char *url)
 {
   if (pp->show_urls)
-    pp_printf (pp, "\33]8;;%s\33\\", url);
+    pp_printf (pp, "\33]8;;%s\a", url);
 }
 
 /* If URL-printing is enabled, write a "close URL" escape sequence to PP.  */
@@ -2061,7 +2164,7 @@ void
 pp_end_url (pretty_printer *pp)
 {
   if (pp->show_urls)
-    pp_string (pp, "\33]8;;\33\\");
+    pp_string (pp, "\33]8;;\a");
 }
 
 #if CHECKING_P
@@ -2369,9 +2472,49 @@ test_urls ()
     pp_begin_url (&pp, "http://example.com");
     pp_string (&pp, "This is a link");
     pp_end_url (&pp);
-    ASSERT_STREQ ("\33]8;;http://example.com\33\\This is a link\33]8;;\33\\",
+    ASSERT_STREQ ("\33]8;;http://example.com\aThis is a link\33]8;;\a",
 		  pp_formatted_text (&pp));
   }
+}
+
+/* Test multibyte awareness.  */
+static void test_utf8 ()
+{
+
+  /* Check that pp_quoted_string leaves valid UTF-8 alone.  */
+  {
+    pretty_printer pp;
+    const char *s = "\xf0\x9f\x98\x82";
+    pp_quoted_string (&pp, s);
+    ASSERT_STREQ (pp_formatted_text (&pp), s);
+  }
+
+  /* Check that pp_quoted_string escapes non-UTF-8 nonprintable bytes.  */
+  {
+    pretty_printer pp;
+    pp_quoted_string (&pp, "\xf0!\x9f\x98\x82");
+    ASSERT_STREQ (pp_formatted_text (&pp),
+		  "\\xf0!\\x9f\\x98\\x82");
+  }
+
+  /* Check that pp_character will line-wrap at the beginning of a UTF-8
+     sequence, but not in the middle.  */
+  {
+      pretty_printer pp (3);
+      const char s[] = "---\xf0\x9f\x98\x82";
+      for (int i = 0; i != sizeof (s) - 1; ++i)
+	pp_character (&pp, s[i]);
+      pp_newline (&pp);
+      for (int i = 1; i != sizeof (s) - 1; ++i)
+	pp_character (&pp, s[i]);
+      pp_character (&pp, '-');
+      ASSERT_STREQ (pp_formatted_text (&pp),
+		    "---\n"
+		    "\xf0\x9f\x98\x82\n"
+		    "--\xf0\x9f\x98\x82\n"
+		    "-");
+  }
+
 }
 
 /* Run all of the selftests within this file.  */
@@ -2383,6 +2526,7 @@ pretty_print_c_tests ()
   test_pp_format ();
   test_prefixes_and_wrapping ();
   test_urls ();
+  test_utf8 ();
 }
 
 } // namespace selftest

@@ -23,8 +23,9 @@
  *                                                                          *
  ****************************************************************************/
 
-/* This is the C file that corresponds to the Ada package spec Types. It was
-   created manually from the files types.ads and types.adb.
+/* This is the C header that corresponds to the Ada package specification for
+   Types.  It was created manually from types.ads and must be kept synchronized
+   with changes in this file.
 
    This package contains host independent type definitions which are used
    throughout the compiler modules. The comments in the C version are brief
@@ -305,6 +306,9 @@ typedef Int Unit_Number_Type;
 
 /* Unit number value for main unit.  */
 #define Main_Unit 0
+
+/* Type used to index the source file table.  */
+typedef Nat Source_File_Index;
 
 /* Type used for lines table.  */
 typedef Source_Ptr *Lines_Table_Type;

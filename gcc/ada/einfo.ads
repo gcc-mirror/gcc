@@ -132,19 +132,23 @@ package Einfo is
 --  default size of objects, creates chaos, and major incompatibilities in
 --  existing code.
 
+--  The Ada 2020 RM acknowledges it and adopts GNAT's Object_Size attribute
+--  for determining the default size of objects, but stops short of applying
+--  it universally like GNAT. Indeed the notable exceptions are nonaliased
+--  stand-alone objects, which are not covered by Object_Size in Ada 2020.
+
 --  We proceed as follows, for discrete and fixed-point subtypes, we have
 --  two separate sizes for each subtype:
 
 --    The Object_Size, which is used for determining the default size of
 --    objects and components. This size value can be referred to using the
 --    Object_Size attribute. The phrase "is used" here means that it is
---    the basis of the determination of the size. The backend is free to
+--    the basis of the determination of the size. The back end is free to
 --    pad this up if necessary for efficiency, e.g. an 8-bit stand-alone
 --    character might be stored in 32 bits on a machine with no efficient
 --    byte access instructions such as the Alpha.
 
---    The default rules for the value of Object_Size for fixed-point and
---    discrete types are as follows:
+--    The default rules for the value of Object_Size are as follows:
 
 --       The Object_Size for base subtypes reflect the natural hardware
 --       size in bits (see Ttypes and Cstand for integer types). For
@@ -158,9 +162,11 @@ package Einfo is
 --       base type, and the Object_Size of a derived first subtype is copied
 --       from the parent first subtype.
 
---    The Value_Size which is the number of bits required to store a value
+--    The Ada 2020 RM defined attribute Object_Size uses this implementation.
+
+--    The Value_Size, which is the number of bits required to store a value
 --    of the type. This size can be referred to using the Value_Size
---    attribute. This value is used to determine how tightly to pack
+--    attribute. This value is used for determining how tightly to pack
 --    records or arrays with components of this type, and also affects
 --    the semantics of unchecked conversion (unchecked conversions where
 --    the Value_Size values differ generate a warning, and are potentially
@@ -182,7 +188,7 @@ package Einfo is
 --       dynamic bounds, it is assumed that the value can range down or up
 --       to the corresponding bound of the ancestor.
 
---    The RM defined attribute Size corresponds to the Value_Size attribute.
+--    The Ada 95 RM defined attribute Size is identified with Value_Size.
 
 --    The Size attribute may be defined for a first-named subtype. This sets
 --    the Value_Size of the first-named subtype to the given value, and the
@@ -194,14 +200,15 @@ package Einfo is
 --    subtypes. The Value_Size of any other static subtypes is not affected.
 
 --    Value_Size and Object_Size may be explicitly set for any subtype using
---    an attribute definition clause. Note that the use of these attributes
---    can cause the RM 13.1(14) rule to be violated. If two access types
---    reference aliased objects whose subtypes have differing Object_Size
---    values as a result of explicit attribute definition clauses, then it
---    is erroneous to convert from one access subtype to the other.
+--    an attribute definition clause. Note that the use of such a clause can
+--    cause the RM 13.1(14) rule to be violated, in Ada 95 and 2020 for the
+--    Value_Size attribute, but only in Ada 95 for the Object_Size attribute.
+--    If access types reference aliased objects whose subtypes have differing
+--    Object_Size values as a result of explicit attribute definition clauses,
+--    then it is erroneous to convert from one access subtype to the other.
 
---    At the implementation level, Esize stores the Object_Size and the
---    RM_Size field stores the Value_Size (and hence the value of the
+--    At the implementation level, the Esize field stores the Object_Size
+--    and the RM_Size field stores the Value_Size (hence the value of the
 --    Size attribute, which, as noted above, is equivalent to Value_Size).
 
 --  To get a feel for the difference, consider the following examples (note
@@ -929,12 +936,12 @@ package Einfo is
 --
 --       In this case, if primitive operations have been declared for R, at
 --       the point of declaration of G, then the Derived_Type_Link of R is set
---       to point to the entity for G. This is used to generate warnings for
---       rep clauses that appear later on for R, which might result in an
---       unexpected implicit conversion operation.
+--       to point to the entity for G. This is used to generate warnings and
+--       errors for rep clauses that appear later on for R, which might result
+--       in an unexpected (or illegal) implicit conversion operation.
 --
 --       Note: if there is more than one such derived type, the link will point
---       to the last one (this is only used in generating warning messages).
+--       to the last one.
 
 --    Designated_Type (synthesized)
 --       Applies to access types. Returns the designated type. Differs from
@@ -1725,7 +1732,8 @@ package Einfo is
 --       has independent components is to see if either the object or its base
 --       type has this flag set. Note that in the case of a type, the pragma
 --       will be chained to the rep item chain of the first subtype in the
---       usual manner.
+--       usual manner. Also set if a pragma Has_Atomic_Components or pragma
+--       Has_Aliased_Components applies to the type or object.
 
 --    Has_Inheritable_Invariants (Flag248) [base type only]
 --       Defined in all type entities. Set on private types and interface types
@@ -2659,7 +2667,7 @@ package Einfo is
 --       Applies to all entities. Yields True for abstract states, [generic]
 --       packages, [generic] subprograms, components, discriminants, formal
 --       parameters, objects, package bodies, subprogram bodies, and [sub]types
---       subject to pragma Ghost or those that inherit the Ghost propery from
+--       subject to pragma Ghost or those that inherit the Ghost property from
 --       an enclosing construct.
 
 --    Is_Hidden (Flag57)
@@ -2720,13 +2728,14 @@ package Einfo is
 --       Applies to all entities, true for incomplete types and subtypes
 
 --    Is_Independent (Flag268)
---       Defined in all type entities, and also in constants, components and
---       variables. Set if a valid pragma or aspect Independent applies to the
---       entity, or if a valid pragma or aspect Independent_Components applies
---       to the enclosing record type for a component. Also set if a pragma
---       Shared or pragma Atomic applies to the entity. In the case of private
---       and incomplete types, this flag is set in both the partial view and
---       the full view.
+--       Defined in all types and objects. Set if a valid pragma or aspect
+--       Independent applies to the entity, or for a component if a valid
+--       pragma or aspect Independent_Components applies to the enclosing
+--       record type. Also set if a pragma Shared or pragma Atomic applies to
+--       the entity, or if the declaration of the entity carries the Aliased
+--       keyword. For Ada 2012, also applies to formal parameters. In the
+--       case of private and incomplete types, this flag is set in both the
+--       partial view and the full view.
 
 --    Is_Initial_Condition_Procedure (Flag302)
 --       Defined in functions and procedures. Set for a generated procedure
@@ -4448,9 +4457,10 @@ package Einfo is
 --       the value of attribute 'Old's prefix.
 
 --    Strict_Alignment (Flag145) [implementation base type only]
---       Defined in all type entities. Indicates that some containing part
---       is either aliased or tagged. This prohibits packing the object
---       tighter than its natural size and alignment.
+--       Defined in all type entities. Indicates that the type is by-reference
+--       or contains an aliased part. This forbids packing a component of this
+--       type tighter than the alignment and size of the type, as specified by
+--       RM 13.2(7) modified by AI12-001 as a Binding Interpretation.
 
 --    String_Literal_Length (Uint16)
 --       Defined in string literal subtypes (which are created to correspond
@@ -7751,6 +7761,8 @@ package Einfo is
    -- Attribute Set Procedures --
    ------------------------------
 
+   --  WARNING: There is a matching C declaration of a few subprograms in fe.h
+
    procedure Set_Abstract_States                 (Id : E; V : L);
    procedure Set_Accept_Address                  (Id : E; V : L);
    procedure Set_Access_Disp_Table               (Id : E; V : L);
@@ -8430,6 +8442,8 @@ package Einfo is
    --  value returned is the N_Attribute_Definition_Clause node, otherwise
    --  Empty is returned.
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Get_Pragma (E : Entity_Id; Id : Pragma_Id) return Node_Id;
    --  Searches the Rep_Item chain of entity E, for an instance of a pragma
    --  with the given pragma Id. If found, the value returned is the N_Pragma
@@ -8499,6 +8513,8 @@ package Einfo is
    function Is_Entity_Name (N : Node_Id) return Boolean;
    --  Test if the node N is the name of an entity (i.e. is an identifier,
    --  expanded name, or an attribute reference that returns an entity).
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    procedure Link_Entities (First : Entity_Id; Second : Entity_Id);
    --  Link entities First and Second in one entity chain.

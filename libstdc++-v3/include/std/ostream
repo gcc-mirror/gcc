@@ -1,6 +1,6 @@
 // Output streams -*- C++ -*-
 
-// Copyright (C) 1997-2019 Free Software Foundation, Inc.
+// Copyright (C) 1997-2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -512,21 +512,62 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return (__out << __out.widen(__c)); }
 
   // Specialization
-  template <class _Traits>
+  template<typename _Traits>
     inline basic_ostream<char, _Traits>&
     operator<<(basic_ostream<char, _Traits>& __out, char __c)
     { return __ostream_insert(__out, &__c, 1); }
 
   // Signed and unsigned
-  template<class _Traits>
+  template<typename _Traits>
     inline basic_ostream<char, _Traits>&
     operator<<(basic_ostream<char, _Traits>& __out, signed char __c)
     { return (__out << static_cast<char>(__c)); }
 
-  template<class _Traits>
+  template<typename _Traits>
     inline basic_ostream<char, _Traits>&
     operator<<(basic_ostream<char, _Traits>& __out, unsigned char __c)
     { return (__out << static_cast<char>(__c)); }
+
+#if __cplusplus > 201703L
+  // The following deleted overloads prevent formatting character values as
+  // numeric values.
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  template<typename _Traits>
+    basic_ostream<char, _Traits>&
+    operator<<(basic_ostream<char, _Traits>&, wchar_t) = delete;
+#endif // _GLIBCXX_USE_WCHAR_T
+
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<typename _Traits>
+    basic_ostream<char, _Traits>&
+    operator<<(basic_ostream<char, _Traits>&, char8_t) = delete;
+#endif
+
+  template<typename _Traits>
+    basic_ostream<char, _Traits>&
+    operator<<(basic_ostream<char, _Traits>&, char16_t) = delete;
+
+  template<typename _Traits>
+    basic_ostream<char, _Traits>&
+    operator<<(basic_ostream<char, _Traits>&, char32_t) = delete;
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<typename _Traits>
+    basic_ostream<wchar_t, _Traits>&
+    operator<<(basic_ostream<wchar_t, _Traits>&, char8_t) = delete;
+#endif // _GLIBCXX_USE_CHAR8_T
+
+  template<typename _Traits>
+    basic_ostream<wchar_t, _Traits>&
+    operator<<(basic_ostream<wchar_t, _Traits>&, char16_t) = delete;
+
+  template<typename _Traits>
+    basic_ostream<wchar_t, _Traits>&
+    operator<<(basic_ostream<wchar_t, _Traits>&, char32_t) = delete;
+#endif // _GLIBCXX_USE_WCHAR_T
+#endif // C++20
   //@}
 
   //@{
@@ -560,7 +601,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator<<(basic_ostream<_CharT, _Traits>& __out, const char* __s);
 
   // Partial specializations
-  template<class _Traits>
+  template<typename _Traits>
     inline basic_ostream<char, _Traits>&
     operator<<(basic_ostream<char, _Traits>& __out, const char* __s)
     {
@@ -573,15 +614,56 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   // Signed and unsigned
-  template<class _Traits>
+  template<typename _Traits>
     inline basic_ostream<char, _Traits>&
     operator<<(basic_ostream<char, _Traits>& __out, const signed char* __s)
     { return (__out << reinterpret_cast<const char*>(__s)); }
 
-  template<class _Traits>
+  template<typename _Traits>
     inline basic_ostream<char, _Traits> &
     operator<<(basic_ostream<char, _Traits>& __out, const unsigned char* __s)
     { return (__out << reinterpret_cast<const char*>(__s)); }
+
+#if __cplusplus > 201703L
+   // The following deleted overloads prevent formatting strings as
+   // pointer values.
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  template<typename _Traits>
+    basic_ostream<char, _Traits>&
+    operator<<(basic_ostream<char, _Traits>&, const wchar_t*) = delete;
+#endif // _GLIBCXX_USE_WCHAR_T
+
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<typename _Traits>
+    basic_ostream<char, _Traits>&
+    operator<<(basic_ostream<char, _Traits>&, const char8_t*) = delete;
+#endif // _GLIBCXX_USE_CHAR8_T
+
+  template<typename _Traits>
+    basic_ostream<char, _Traits>&
+    operator<<(basic_ostream<char, _Traits>&, const char16_t*) = delete;
+
+  template<typename _Traits>
+    basic_ostream<char, _Traits>&
+    operator<<(basic_ostream<char, _Traits>&, const char32_t*) = delete;
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<typename _Traits>
+    basic_ostream<wchar_t, _Traits>&
+    operator<<(basic_ostream<wchar_t, _Traits>&, const char8_t*) = delete;
+#endif
+
+  template<typename _Traits>
+    basic_ostream<wchar_t, _Traits>&
+    operator<<(basic_ostream<wchar_t, _Traits>&, const char16_t*) = delete;
+
+  template<typename _Traits>
+    basic_ostream<wchar_t, _Traits>&
+    operator<<(basic_ostream<wchar_t, _Traits>&, const char32_t*) = delete;
+#endif // _GLIBCXX_USE_WCHAR_T
+#endif // C++20
   //@}
 
   // Standard basic_ostream manipulators

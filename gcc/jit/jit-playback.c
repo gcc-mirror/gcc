@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for playing back recorded API calls.
-   Copyright (C) 2013-2019 Free Software Foundation, Inc.
+   Copyright (C) 2013-2020 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -2273,10 +2273,8 @@ make_fake_args (vec <char *> *argvec,
   /* Aggressively garbage-collect, to shake out bugs: */
   if (get_bool_option (GCC_JIT_BOOL_OPTION_SELFCHECK_GC))
     {
-      ADD_ARG ("--param");
-      ADD_ARG ("ggc-min-expand=0");
-      ADD_ARG ("--param");
-      ADD_ARG ("ggc-min-heapsize=0");
+      ADD_ARG ("--param=ggc-min-expand=0");
+      ADD_ARG ("--param=ggc-min-heapsize=0");
     }
 
   if (get_bool_option (GCC_JIT_BOOL_OPTION_DUMP_EVERYTHING))

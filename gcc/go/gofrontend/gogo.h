@@ -598,15 +598,20 @@ class Gogo
     return p != this->var_deps_.end() ? p->second : NULL;
   }
 
-  // Queue up a type-specific function to be written out.  This is
-  // used when a type-specific function is needed when not at the top
-  // level.
+  // Queue up a type-specific hash function to be written out.  This
+  // is used when a type-specific hash function is needed when not at
+  // top level.
   void
-  queue_specific_type_function(Type* type, Named_type* name, int64_t size,
-			       const std::string& hash_name,
-			       Function_type* hash_fntype,
-			       const std::string& equal_name,
-			       Function_type* equal_fntype);
+  queue_hash_function(Type* type, int64_t size, const std::string& hash_name,
+		      Function_type* hash_fntype);
+
+  // Queue up a type-specific equal function to be written out.  This
+  // is used when a type-specific equal function is needed when not at
+  // top level.
+  void
+  queue_equal_function(Type* type, Named_type* name, int64_t size,
+		       const std::string& equal_name,
+		       Function_type* equal_fntype);
 
   // Write out queued specific type functions.
   void
@@ -845,10 +850,6 @@ class Gogo
   void
   write_globals();
 
-  // Build a call to the runtime error function.
-  Expression*
-  runtime_error(int code, Location);
-
   // Build required interface method tables.
   void
   build_interface_method_tables();
@@ -871,11 +872,13 @@ class Gogo
   std::string
   stub_method_name(const Package*, const std::string& method_name);
 
-  // Return the names of the hash and equality functions for TYPE.
-  void
-  specific_type_function_names(const Type*, const Named_type*,
-			       std::string* hash_name,
-			       std::string* equal_name);
+  // Return the name of the hash function for TYPE.
+  std::string
+  hash_function_name(const Type*);
+
+  // Return the name of the equal function for TYPE.
+  std::string
+  equal_function_name(const Type*, const Named_type*);
 
   // Return the assembler name to use for a global variable.
   std::string
@@ -1059,22 +1062,21 @@ class Gogo
   // Type used to queue writing a type specific function.
   struct Specific_type_function
   {
+    enum Specific_type_function_kind { SPECIFIC_HASH, SPECIFIC_EQUAL };
+
     Type* type;
     Named_type* name;
     int64_t size;
-    std::string hash_name;
-    Function_type* hash_fntype;
-    std::string equal_name;
-    Function_type* equal_fntype;
+    Specific_type_function_kind kind;
+    std::string fnname;
+    Function_type* fntype;
 
     Specific_type_function(Type* atype, Named_type* aname, int64_t asize,
-			   const std::string& ahash_name,
-			   Function_type* ahash_fntype,
-			   const std::string& aequal_name,
-			   Function_type* aequal_fntype)
-      : type(atype), name(aname), size(asize), hash_name(ahash_name),
-	hash_fntype(ahash_fntype), equal_name(aequal_name),
-	equal_fntype(aequal_fntype)
+			   Specific_type_function_kind akind,
+			   const std::string afnname,
+			   Function_type* afntype)
+      : type(atype), name(aname), size(asize), kind(akind),
+	fnname(afnname), fntype(afntype)
     { }
   };
 
@@ -3720,57 +3722,6 @@ class Translate_context
   // used for type descriptor initializers.
   bool is_const_;
 };
-
-// Runtime error codes.  These must match the values in
-// libgo/runtime/go-runtime-error.c.
-
-// Slice index out of bounds: negative or larger than the length of
-// the slice.
-static const int RUNTIME_ERROR_SLICE_INDEX_OUT_OF_BOUNDS = 0;
-
-// Array index out of bounds.
-static const int RUNTIME_ERROR_ARRAY_INDEX_OUT_OF_BOUNDS = 1;
-
-// String index out of bounds.
-static const int RUNTIME_ERROR_STRING_INDEX_OUT_OF_BOUNDS = 2;
-
-// Slice slice out of bounds: negative or larger than the length of
-// the slice or high bound less than low bound.
-static const int RUNTIME_ERROR_SLICE_SLICE_OUT_OF_BOUNDS = 3;
-
-// Array slice out of bounds.
-static const int RUNTIME_ERROR_ARRAY_SLICE_OUT_OF_BOUNDS = 4;
-
-// String slice out of bounds.
-static const int RUNTIME_ERROR_STRING_SLICE_OUT_OF_BOUNDS = 5;
-
-// Dereference of nil pointer.  This is used when there is a
-// dereference of a pointer to a very large struct or array, to ensure
-// that a gigantic array is not used a proxy to access random memory
-// locations.
-static const int RUNTIME_ERROR_NIL_DEREFERENCE = 6;
-
-// Slice length out of bounds in make: negative or overflow
-// or length greater than capacity.
-static const int RUNTIME_ERROR_MAKE_SLICE_LEN_OUT_OF_BOUNDS = 7;
-
-// Slice capacity out of bounds in make: negative.
-static const int RUNTIME_ERROR_MAKE_SLICE_CAP_OUT_OF_BOUNDS = 8;
-
-// Map capacity out of bounds in make: negative or overflow.
-static const int RUNTIME_ERROR_MAKE_MAP_OUT_OF_BOUNDS = 9;
-
-// Channel capacity out of bounds in make: negative or overflow.
-static const int RUNTIME_ERROR_MAKE_CHAN_OUT_OF_BOUNDS = 10;
-
-// Division by zero.
-static const int RUNTIME_ERROR_DIVISION_BY_ZERO = 11;
-
-// Go statement with nil function.
-static const int RUNTIME_ERROR_GO_NIL = 12;
-
-// Shift by negative value.
-static const int RUNTIME_ERROR_SHIFT_BY_NEGATIVE = 13;
 
 // This is used by some of the langhooks.
 extern Gogo* go_get_gogo();

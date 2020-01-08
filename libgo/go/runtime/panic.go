@@ -38,6 +38,8 @@ import (
 //go:linkname goPanicSlice3BU
 //go:linkname goPanicSlice3C
 //go:linkname goPanicSlice3CU
+//go:linkname panicshift
+//go:linkname panicdivide
 //go:linkname panicmem
 // Temporary for C code to call:
 //go:linkname throw

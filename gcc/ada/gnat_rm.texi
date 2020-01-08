@@ -21,11 +21,11 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Sep 14, 2019
+GNAT Reference Manual , Dec 10, 2019
 
 AdaCore
 
-Copyright @copyright{} 2008-2019, Free Software Foundation
+Copyright @copyright{} 2008-2020, Free Software Foundation
 @end quotation
 
 @end copying
@@ -2751,7 +2751,7 @@ pragma Postcondition (if C2 then Pred2);
 The precondition ensures that one and only one of the case guards is
 satisfied on entry to the subprogram.
 The postcondition ensures that for the case guard that was True on entry,
-the corrresponding consequence is True on exit. Other consequence expressions
+the corresponding consequence is True on exit. Other consequence expressions
 are not evaluated.
 
 A precondition @code{P} and postcondition @code{Q} can also be
@@ -4508,7 +4508,9 @@ At compile time, the programmer can specify the invalid value for a
 particular family of scalar types using the optional arguments of the pragma.
 
 The compile-time approach is intended to optimize the generated code for the
-pragma, by possibly using fast operations such as @code{memset}.
+pragma, by possibly using fast operations such as @code{memset}. Note that such
+optimizations require using values where the bytes all have the same binary
+representation.
 
 @item 
 At bind time, the programmer has several options:
@@ -4538,7 +4540,7 @@ The bind-time approach is intended to provide fast turnaround for testing
 with different values, without having to recompile the program.
 
 @item 
-At execution time, the programmer can speify the invalid values using an
+At execution time, the programmer can specify the invalid values using an
 environment variable. See the GNAT User's Guide for details.
 
 The execution-time approach is intended to provide fast turnaround for
@@ -8931,8 +8933,8 @@ pragma Volatile_Full_Access (LOCAL_NAME);
 This is similar in effect to pragma Volatile, except that any reference to the
 object is guaranteed to be done only with instructions that read or write all
 the bits of the object. Furthermore, if the object is of a composite type,
-then any reference to a component of the object is guaranteed to read and/or
-write all the bits of the object.
+then any reference to a subcomponent of the object is guaranteed to read
+and/or write all the bits of the object.
 
 The intention is that this be suitable for use with memory-mapped I/O devices
 on some machines. Note that there are two important respects in which this is
@@ -8944,10 +8946,10 @@ is not to the whole object; the compiler is allowed (and generally will)
 access only part of the object in this case.
 
 It is not permissible to specify @code{Atomic} and @code{Volatile_Full_Access} for
-the same object.
+the same type or object.
 
 It is not permissible to specify @code{Volatile_Full_Access} for a composite
-(record or array) type or object that has at least one @code{Aliased} component.
+(record or array) type or object that has an @code{Aliased} subcomponent.
 
 @node Pragma Volatile_Function,Pragma Warning_As_Error,Pragma Volatile_Full_Access,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas id56}@anchor{11e}@anchor{gnat_rm/implementation_defined_pragmas pragma-volatile-function}@anchor{11f}
@@ -28802,7 +28804,7 @@ this kind of implementation dependent addition.
 The functionality provided by pragma @code{Task_Info} is now part of the
 Ada language. The @code{CPU} aspect and the package
 @code{System.Multiprocessors} offer a less system-dependent way to specify
-task affinity or to query the number of processsors.
+task affinity or to query the number of processors.
 
 Syntax
 

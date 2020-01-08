@@ -7,16 +7,16 @@
 #define TEST(e) assert (e)
 #define TESTNOT(e) assert (!(e))
 
-volatile __fp16 h0 = 0.0;
-volatile __fp16 h1 = 1.0;
-volatile __fp16 h42 = 42.0;
-volatile __fp16 hm2 = -2.0;
-volatile __fp16 temp;
+__fp16 h0 = 0.0;
+__fp16 h1 = 1.0;
+__fp16 h42 = 42.0;
+__fp16 hm2 = -2.0;
+__fp16 temp;
 
-volatile float f0 = 0.0;
-volatile float f1 = 1.0;
-volatile float f42 = 42.0;
-volatile float fm2 = -2.0;
+float f0 = 0.0;
+float f1 = 1.0;
+float f42 = 42.0;
+float fm2 = -2.0;
 
 int main (void)
 {

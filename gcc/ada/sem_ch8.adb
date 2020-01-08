@@ -1358,19 +1358,13 @@ package body Sem_Ch8 is
       end if;
 
       --  The entity of the renaming declaration needs to reflect whether the
-      --  renamed object is volatile. Is_Volatile is set if the renamed object
-      --  is volatile in the RM legality sense.
+      --  renamed object is atomic, independent, volatile or VFA. These flags
+      --  are set on the renamed object in the RM legality sense.
 
-      Set_Is_Volatile (Id, Is_Volatile_Object (Nam));
-
-      --  Also copy settings of Atomic/Independent/Volatile_Full_Access
-
-      if Is_Entity_Name (Nam) then
-         Set_Is_Atomic               (Id, Is_Atomic      (Entity (Nam)));
-         Set_Is_Independent          (Id, Is_Independent (Entity (Nam)));
-         Set_Is_Volatile_Full_Access (Id,
-           Is_Volatile_Full_Access (Entity (Nam)));
-      end if;
+      Set_Is_Atomic               (Id, Is_Atomic_Object (Nam));
+      Set_Is_Independent          (Id, Is_Independent_Object (Nam));
+      Set_Is_Volatile             (Id, Is_Volatile_Object (Nam));
+      Set_Is_Volatile_Full_Access (Id, Is_Volatile_Full_Access_Object (Nam));
 
       --  Treat as volatile if we just set the Volatile flag
 
@@ -3453,9 +3447,14 @@ package body Sem_Ch8 is
                   if Old_S_Ctrl_Type /= New_S_Ctrl_Type
                     or else No (New_S_Ctrl_Type)
                   then
-                     Error_Msg_NE
-                       ("actual must be dispatching subprogram for type&",
-                        Nam, New_S_Ctrl_Type);
+                     if No (New_S_Ctrl_Type) then
+                        Error_Msg_N
+                          ("actual must be dispatching subprogram", Nam);
+                     else
+                        Error_Msg_NE
+                          ("actual must be dispatching subprogram for type&",
+                           Nam, New_S_Ctrl_Type);
+                     end if;
 
                   else
                      Set_Is_Dispatching_Operation (New_S);
@@ -9608,15 +9607,16 @@ package body Sem_Ch8 is
                   Par : constant Entity_Id := Defining_Entity (Parent (Decl));
                   Spec : constant Node_Id  :=
                            Specification (Unit (Cunit (Current_Sem_Unit)));
-
+                  Cur_List : constant List_Id := List_Containing (Cur_Use);
                begin
                   if Is_Compilation_Unit (Par)
                     and then Par /= Cunit_Entity (Current_Sem_Unit)
-                    and then Parent (Cur_Use) = Spec
-                    and then List_Containing (Cur_Use) =
-                               Visible_Declarations (Spec)
                   then
-                     return;
+                     if Cur_List = Context_Items (Cunit (Current_Sem_Unit))
+                       or else Cur_List = Visible_Declarations (Spec)
+                     then
+                        return;
+                     end if;
                   end if;
                end;
             end if;
@@ -9630,7 +9630,6 @@ package body Sem_Ch8 is
          then
             Redundant := Clause;
             Prev_Use  := Cur_Use;
-
          end if;
 
          if Present (Redundant) and then Parent (Redundant) /= Prev_Use then

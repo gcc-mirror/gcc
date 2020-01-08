@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on TI MSP430 processors.
-   Copyright (C) 2012-2019 Free Software Foundation, Inc.
+   Copyright (C) 2012-2020 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -287,6 +287,16 @@ msp430_option_override (void)
      possible to build newlib with -Os enabled.  Until now...  */
   if (TARGET_OPT_SPACE && optimize < 3)
     optimize_size = 1;
+
+#if !DEFAULT_USE_CXA_ATEXIT
+  /* For some configurations, we use atexit () instead of __cxa_atexit () by
+     default to save on code size and remove the declaration of __dso_handle
+     from the CRT library.
+     Configuring GCC with --enable-__cxa-atexit re-enables it by defining
+     DEFAULT_USE_CXA_ATEXIT to 1.  */
+  if (flag_use_cxa_atexit)
+    error ("%<-fuse-cxa-atexit%> is not supported for msp430-elf");
+#endif
 
 #ifndef HAVE_NEWLIB_NANO_FORMATTED_IO
   if (TARGET_TINY_PRINTF)

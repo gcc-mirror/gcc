@@ -1,4 +1,4 @@
-/* Copyright (C) 1988-2019 Free Software Foundation, Inc.
+/* Copyright (C) 1988-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1169,25 +1169,25 @@ ix86_init_mmx_sse_builtins (void)
 	       VOID_FTYPE_PCVOID, IX86_BUILTIN_CLWB);
 
   /* MONITORX and MWAITX.  */
-  def_builtin (0, OPTION_MASK_ISA_MWAITX, "__builtin_ia32_monitorx",
+  def_builtin (0, OPTION_MASK_ISA2_MWAITX, "__builtin_ia32_monitorx",
 		VOID_FTYPE_PCVOID_UNSIGNED_UNSIGNED, IX86_BUILTIN_MONITORX);
-  def_builtin (0, OPTION_MASK_ISA_MWAITX, "__builtin_ia32_mwaitx",
+  def_builtin (0, OPTION_MASK_ISA2_MWAITX, "__builtin_ia32_mwaitx",
 		VOID_FTYPE_UNSIGNED_UNSIGNED_UNSIGNED, IX86_BUILTIN_MWAITX);
 
   /* CLZERO.  */
-  def_builtin (0, OPTION_MASK_ISA_CLZERO, "__builtin_ia32_clzero",
+  def_builtin (0, OPTION_MASK_ISA2_CLZERO, "__builtin_ia32_clzero",
 		VOID_FTYPE_PCVOID, IX86_BUILTIN_CLZERO);
 
   /* WAITPKG.  */
-  def_builtin (0, OPTION_MASK_ISA_WAITPKG, "__builtin_ia32_umonitor",
+  def_builtin (0, OPTION_MASK_ISA2_WAITPKG, "__builtin_ia32_umonitor",
 	       VOID_FTYPE_PVOID, IX86_BUILTIN_UMONITOR);
-  def_builtin (0, OPTION_MASK_ISA_WAITPKG, "__builtin_ia32_umwait",
+  def_builtin (0, OPTION_MASK_ISA2_WAITPKG, "__builtin_ia32_umwait",
 	       UINT8_FTYPE_UNSIGNED_UINT64, IX86_BUILTIN_UMWAIT);
-  def_builtin (0, OPTION_MASK_ISA_WAITPKG, "__builtin_ia32_tpause",
+  def_builtin (0, OPTION_MASK_ISA2_WAITPKG, "__builtin_ia32_tpause",
 	       UINT8_FTYPE_UNSIGNED_UINT64, IX86_BUILTIN_TPAUSE);
 
   /* CLDEMOTE.  */
-  def_builtin (0, OPTION_MASK_ISA_CLDEMOTE, "__builtin_ia32_cldemote",
+  def_builtin (0, OPTION_MASK_ISA2_CLDEMOTE, "__builtin_ia32_cldemote",
 	       VOID_FTYPE_PCVOID, IX86_BUILTIN_CLDEMOTE);
 
   /* Add FMA4 multi-arg argument instructions */
@@ -1658,27 +1658,6 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
 	    return ix86_get_builtin (IX86_BUILTIN_TRUNCPS256);
 	  else if (out_n == 16 && in_n == 16)
 	    return ix86_get_builtin (IX86_BUILTIN_TRUNCPS512);
-	}
-      break;
-
-    CASE_CFN_RINT:
-      /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_SSE4_1)
-	break;
-
-      if (out_mode == DFmode && in_mode == DFmode)
-	{
-	  if (out_n == 2 && in_n == 2)
-	    return ix86_get_builtin (IX86_BUILTIN_RINTPD);
-	  else if (out_n == 4 && in_n == 4)
-	    return ix86_get_builtin (IX86_BUILTIN_RINTPD256);
-	}
-      if (out_mode == SFmode && in_mode == SFmode)
-	{
-	  if (out_n == 4 && in_n == 4)
-	    return ix86_get_builtin (IX86_BUILTIN_RINTPS);
-	  else if (out_n == 8 && in_n == 8)
-	    return ix86_get_builtin (IX86_BUILTIN_RINTPS256);
 	}
       break;
 

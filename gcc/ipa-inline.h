@@ -1,5 +1,5 @@
 /* Inlining decision heuristics.
-   Copyright (C) 2003-2019 Free Software Foundation, Inc.
+   Copyright (C) 2003-2020 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -77,6 +77,16 @@ estimate_edge_size (struct cgraph_edge *edge)
       || entry->size == 0)
     return do_estimate_edge_size (edge);
   return entry->size - (entry->size > 0);
+}
+
+/* Return lower bound on estimated callee growth after inlining EDGE.  */
+
+static inline int
+estimate_min_edge_growth (struct cgraph_edge *edge)
+{
+  ipa_call_summary *s = ipa_call_summaries->get (edge);
+  struct cgraph_node *callee = edge->callee->ultimate_alias_target ();
+  return (ipa_fn_summaries->get (callee)->min_size - s->call_stmt_size);
 }
 
 /* Return estimated callee growth after inlining EDGE.  */

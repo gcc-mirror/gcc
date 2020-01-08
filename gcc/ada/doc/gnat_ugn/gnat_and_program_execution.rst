@@ -1214,8 +1214,7 @@ for more information.
 Profiling
 =========
 
-This section describes how to use the the ``gprof`` profiler tool on Ada
-programs.
+This section describes how to use the ``gprof`` profiler tool on Ada programs.
 
 .. index:: !  gprof
 .. index:: Profiling
@@ -2965,7 +2964,7 @@ integer arithmetic package. The compiler will make calls
 to this package, though only in cases where it cannot be
 sure that ``Long_Long_Integer`` is sufficient to guard against
 intermediate overflows. This package does not use dynamic
-alllocation, but it does use the secondary stack, so an
+allocation, but it does use the secondary stack, so an
 appropriate secondary stack package must be present (this
 is always true for standard full Ada, but may require
 specific steps for restricted run times such as ZFP).

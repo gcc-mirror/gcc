@@ -1,5 +1,5 @@
 /* Backend support for Fortran 95 basic types and derived types.
-   Copyright (C) 2002-2019 Free Software Foundation, Inc.
+   Copyright (C) 2002-2020 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -3266,7 +3266,7 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
   int rank, dim;
   bool indirect = false;
   tree etype, ptype, t, base_decl;
-  tree data_off, dim_off, dtype_off, dim_size, elem_size;
+  tree data_off, span_off, dim_off, dtype_off, dim_size, elem_size;
   tree lower_suboff, upper_suboff, stride_suboff;
   tree dtype, field, rank_off;
 
@@ -3323,11 +3323,12 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
   if (indirect)
     base_decl = build1 (INDIRECT_REF, ptype, base_decl);
 
-  elem_size = fold_convert (gfc_array_index_type, TYPE_SIZE_UNIT (etype));
-
-  gfc_get_descriptor_offsets_for_info (type, &data_off, &dtype_off, &dim_off,
-				       &dim_size, &stride_suboff,
+  gfc_get_descriptor_offsets_for_info (type, &data_off, &dtype_off, &span_off,
+				       &dim_off, &dim_size, &stride_suboff,
 				       &lower_suboff, &upper_suboff);
+
+  t = fold_build_pointer_plus (base_decl, span_off);
+  elem_size = build1 (INDIRECT_REF, gfc_array_index_type, t);
 
   t = base_decl;
   if (!integer_zerop (data_off))

@@ -3,7 +3,7 @@
 /* { dg-skip-if "" { *-*-* } { "-O0" "-fno-fat-lto-objects" } { "" } } */
 
 extern void abort (void);
-int *glob;
+int *g;
 int dummy;
 
 int * __attribute__((noinline,const))
@@ -13,7 +13,7 @@ int * __attribute__((noinline,pure))
 foo_pure(int *p) { return p + dummy; }
 
 int * __attribute__((noinline))
-foo_normal(int *p) { glob = p; return p; }
+foo_normal(int *p) { g = p; return p; }
 
 void test_const(void)
 {

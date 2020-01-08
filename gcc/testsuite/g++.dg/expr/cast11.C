@@ -13,22 +13,22 @@ struct B { int i; const char c; } b = {};
 void f1()
 {
   int i = 0;
-  f((long const)i);			// { dg-warning "qualifiers ignored" }
-  f((int* const)&i);			// { dg-warning "qualifiers ignored" }
-  f((int const* const)&i);		// { dg-warning "qualifiers ignored" }
-  f((long* const)&i);			// { dg-warning "qualifiers ignored" }
+  f((long const)i);			// { dg-warning "5:type qualifiers ignored" }
+  f((int* const)&i);			// { dg-warning "5:type qualifiers ignored" }
+  f((int const* const)&i);		// { dg-warning "5:type qualifiers ignored" }
+  f((long* const)&i);			// { dg-warning "5:type qualifiers ignored" }
 
-  f(static_cast<long const>(i));	// { dg-warning "qualifiers ignored" }
-  f(reinterpret_cast<long const>(&i));	// { dg-warning "qualifiers ignored" }
+  f(static_cast<long const>(i));	// { dg-warning "5:type qualifiers ignored" }
+  f(reinterpret_cast<long const>(&i));	// { dg-warning "5:type qualifiers ignored" }
 
-  f(static_cast<int* const>(&i));	// { dg-warning "qualifiers ignored" }
-  f(const_cast<int* const>(&i));	// { dg-warning "qualifiers ignored" }
-  f(reinterpret_cast<long* const>(&i));	// { dg-warning "qualifiers ignored" }
+  f(static_cast<int* const>(&i));	// { dg-warning "5:type qualifiers ignored" }
+  f(const_cast<int* const>(&i));	// { dg-warning "5:type qualifiers ignored" }
+  f(reinterpret_cast<long* const>(&i));	// { dg-warning "5:type qualifiers ignored" }
 
   using ptrmem = int B::*;
-  f(static_cast<ptrmem const>(&B::i));	// { dg-warning "qualifiers ignored" }
-  f(const_cast<ptrmem const>(&B::i));	// { dg-warning "qualifiers ignored" }
-  f(reinterpret_cast<ptrmem const>(&B::i)); // { dg-warning "qualifiers ignored" }
+  f(static_cast<ptrmem const>(&B::i));	// { dg-warning "5:type qualifiers ignored" }
+  f(const_cast<ptrmem const>(&B::i));	// { dg-warning "5:type qualifiers ignored" }
+  f(reinterpret_cast<ptrmem const>(&B::i)); // { dg-warning "5:type qualifiers ignored" }
 
   // No warnings, not a cv-qualified type:
   using ptrmem2 = const char B::*;

@@ -1,5 +1,5 @@
 # Makefile.am -- Backtrace Makefile.
-# Copyright (C) 2012-2019 Free Software Foundation, Inc.
+# Copyright (C) 2012-2020 Free Software Foundation, Inc.
 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -385,11 +385,32 @@ BUILDTESTS += ctestg_alloc ctesta_alloc
 
 endif
 
+if HAVE_DWARF5
+
+dwarf5_SOURCES = btest.c testlib.c
+dwarf5_CFLAGS = $(AM_CFLAGS) -gdwarf-5
+dwarf5_LDADD = libbacktrace.la
+
+BUILDTESTS += dwarf5
+
+dwarf5_alloc_SOURCES = $(dwarf5_SOURCES)
+dwarf5_alloc_CFLAGS = $(dwarf5_CFLAGS)
+dwarf5_alloc_LDADD = libbacktrace_alloc.la
+
+BUILDTESTS += dwarf5_alloc
+
+endif
+
 endif NATIVE
 
 check_PROGRAMS += $(BUILDTESTS)
 
 TESTS += $(BUILDTESTS)
+
+CLEANFILES = $(TESTS) *.debug elf_for_test.c edtest2_build.c gen_edtest2_build
+
+clean-local:
+	-rm -rf usr
 
 # We can't use automake's automatic dependency tracking, because it
 # breaks when using bootstrap-lean.  Automatic dependency tracking

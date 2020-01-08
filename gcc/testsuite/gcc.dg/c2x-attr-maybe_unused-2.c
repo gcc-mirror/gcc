@@ -5,21 +5,20 @@
 /* This attribute is not valid in most cases on types other than their
    definitions, or on statements, or as an attribute-declaration.  */
 
-[[maybe_unused]]; /* { dg-warning "ignored" } */
+[[maybe_unused]]; /* { dg-error "ignored" } */
 
-int [[maybe_unused]] var; /* { dg-warning "ignored" } */
-/* { dg-message "that appertains to a type-specifier" "appertains" { target *-*-* } .-1 } */
+int [[maybe_unused]] var; /* { dg-error "ignored" } */
 
-int array_with_dep_type[2] [[maybe_unused]]; /* { dg-warning "ignored" } */
-/* { dg-message "that appertains to a type-specifier" "appertains" { target *-*-* } .-1 } */
+int array_with_dep_type[2] [[maybe_unused]]; /* { dg-error "ignored" } */
 
-void fn_with_dep_type () [[maybe_unused]]; /* { dg-warning "ignored" } */
-/* { dg-message "that appertains to a type-specifier" "appertains" { target *-*-* } .-1 } */
+void fn_with_dep_type () [[maybe_unused]]; /* { dg-error "ignored" } */
+
+int z = sizeof (int [[__maybe_unused__]]); /* { dg-error "ignored" } */
 
 void
 f (void)
 {
   int a;
-  [[maybe_unused]]; /* { dg-warning "ignored" } */
-  [[maybe_unused]] a = 1; /* { dg-warning "ignored" } */
+  [[maybe_unused]]; /* { dg-error "ignored" } */
+  [[maybe_unused]] a = 1; /* { dg-error "ignored" } */
 }

@@ -1,6 +1,6 @@
 /* Read the GIMPLE representation from a file stream.
 
-   Copyright (C) 2009-2019 Free Software Foundation, Inc.
+   Copyright (C) 2009-2020 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
    Re-implemented by Diego Novillo <dnovillo@google.com>
 
@@ -1022,13 +1022,13 @@ input_struct_function_base (struct function *fn, class data_in *data_in,
 
 static void
 input_function (tree fn_decl, class data_in *data_in,
-		class lto_input_block *ib, class lto_input_block *ib_cfg)
+		class lto_input_block *ib, class lto_input_block *ib_cfg,
+		cgraph_node *node)
 {
   struct function *fn;
   enum LTO_tags tag;
   gimple **stmts;
   basic_block bb;
-  struct cgraph_node *node;
 
   tag = streamer_read_record_start (ib);
   lto_tag_check (tag, LTO_function);
@@ -1064,9 +1064,6 @@ input_function (tree fn_decl, class data_in *data_in,
 
   gimple_register_cfg_hooks ();
 
-  node = cgraph_node::get (fn_decl);
-  if (!node)
-    node = cgraph_node::create (fn_decl);
   input_struct_function_base (fn, data_in, ib);
   input_cfg (ib_cfg, data_in, fn);
 
@@ -1223,7 +1220,6 @@ input_function (tree fn_decl, class data_in *data_in,
   fixup_call_stmt_edges (node, stmts);
   execute_all_ipa_stmt_fixups (node, stmts);
 
-  update_ssa (TODO_update_ssa_only_virtuals);
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
   free (stmts);
@@ -1294,7 +1290,8 @@ lto_read_body_or_constructor (struct lto_file_decl_data *file_data, struct symta
 	{
 	  lto_input_block ib_cfg (data + cfg_offset, header->cfg_size,
 				  file_data->mode_table);
-	  input_function (fn_decl, data_in, &ib_main, &ib_cfg);
+	  input_function (fn_decl, data_in, &ib_main, &ib_cfg,
+			  dyn_cast <cgraph_node *>(node));
 	}
       else
         input_constructor (fn_decl, data_in, &ib_main);
@@ -1701,7 +1698,31 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
 		}
 	      /* FALLTHRU */
 	    default:
-	      fatal_error (UNKNOWN_LOCATION, "unsupported mode %qs", mname);
+	      /* This is only used for offloading-target compilations and
+		 is a user-facing error.  Give a better error message for
+		 the common modes; see also mode-classes.def.   */
+	      if (mclass == MODE_FLOAT)
+		fatal_error (UNKNOWN_LOCATION,
+			     "%s - %u-bit-precision floating-point numbers "
+			     "unsupported (mode %qs)", TARGET_MACHINE,
+			     prec.to_constant (), mname);
+	      else if (mclass == MODE_DECIMAL_FLOAT)
+		fatal_error (UNKNOWN_LOCATION,
+			     "%s - %u-bit-precision decimal floating-point "
+			     "numbers unsupported (mode %qs)", TARGET_MACHINE,
+			     prec.to_constant (), mname);
+	      else if (mclass == MODE_COMPLEX_FLOAT)
+		fatal_error (UNKNOWN_LOCATION,
+			     "%s - %u-bit-precision complex floating-point "
+			     "numbers unsupported (mode %qs)", TARGET_MACHINE,
+			     prec.to_constant (), mname);
+	      else if (mclass == MODE_INT)
+		fatal_error (UNKNOWN_LOCATION,
+			     "%s - %u-bit integer numbers unsupported (mode "
+			     "%qs)", TARGET_MACHINE, prec.to_constant (), mname);
+	      else
+		fatal_error (UNKNOWN_LOCATION, "%s - unsupported mode %qs",
+			     TARGET_MACHINE, mname);
 	      break;
 	    }
 	}

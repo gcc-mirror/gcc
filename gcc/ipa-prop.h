@@ -1,5 +1,5 @@
 /* Interprocedural analyses.
-   Copyright (C) 2005-2019 Free Software Foundation, Inc.
+   Copyright (C) 2005-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -264,14 +264,16 @@ ipa_copy_agg_values (const vec<ipa_agg_value_set> &aggs)
    whole vector.  */
 
 static inline void
-ipa_release_agg_values (vec<ipa_agg_value_set> &aggs)
+ipa_release_agg_values (vec<ipa_agg_value_set> &aggs,
+			bool release_vector = true)
 {
   ipa_agg_value_set *agg;
   int i;
 
   FOR_EACH_VEC_ELT (aggs, i, agg)
     agg->release ();
-  aggs.release ();
+  if (release_vector)
+    aggs.release ();
 }
 
 /* Information about zero/non-zero bits.  */
@@ -497,6 +499,8 @@ public:
   unsigned node_dead : 1;
   /* Node is involved in a recursion, potentionally indirect.  */
   unsigned node_within_scc : 1;
+  /* Node contains only direct recursion.  */
+  unsigned node_is_self_scc : 1;
   /* Node is calling a private function called only once.  */
   unsigned node_calling_single_call : 1;
   /* False when there is something makes versioning impossible.  */
@@ -1039,6 +1043,7 @@ ipa_agg_value_set ipa_agg_value_set_from_jfunc (ipa_node_params *,
 void ipa_dump_param (FILE *, class ipa_node_params *info, int i);
 void ipa_release_body_info (struct ipa_func_body_info *);
 tree ipa_get_callee_param_type (struct cgraph_edge *e, int i);
+bool ipcp_get_parm_bits (tree, tree *, widest_int *);
 
 /* From tree-sra.c:  */
 tree build_ref_for_offset (location_t, tree, poly_int64, bool, tree,

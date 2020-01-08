@@ -1,6 +1,6 @@
 // RB tree implementation -*- C++ -*-
 
-// Copyright (C) 2001-2019 Free Software Foundation, Inc.
+// Copyright (C) 2001-2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1695,7 +1695,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    [&__roan](const value_type& __cval)
 	    {
 	      auto& __val = const_cast<value_type&>(__cval);
-	      return __roan(std::move_if_noexcept(__val));
+	      return __roan(std::move(__val));
 	    };
 	  _M_root() = _M_copy(__x, __lbd);
 	  __x.clear();

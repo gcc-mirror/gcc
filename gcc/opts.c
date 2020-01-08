@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2002-2019 Free Software Foundation, Inc.
+   Copyright (C) 2002-2020 Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
 This file is part of GCC.
@@ -508,6 +508,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_2_PLUS, OPT_ftree_vrp, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fvect_cost_model_, NULL, VECT_COST_MODEL_CHEAP },
     { OPT_LEVELS_2_PLUS, OPT_finline_functions, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_ftree_loop_distribute_patterns, NULL, 1 },
 
     /* -O2 and above optimizations, but not -Os or -Og.  */
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_falign_functions, NULL, 1 },
@@ -533,7 +534,6 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_3_PLUS, OPT_fpredictive_commoning, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fsplit_loops, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fsplit_paths, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_ftree_loop_distribute_patterns, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_ftree_loop_distribution, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_ftree_loop_vectorize, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_ftree_partial_pre, NULL, 1 },
@@ -544,6 +544,10 @@ static const struct default_options default_options_table[] =
 
     /* -O3 parameters.  */
     { OPT_LEVELS_3_PLUS, OPT__param_max_inline_insns_auto_, NULL, 30 },
+    { OPT_LEVELS_3_PLUS, OPT__param_early_inlining_insns_, NULL, 14 },
+    { OPT_LEVELS_3_PLUS, OPT__param_inline_heuristics_hint_percent_, NULL, 600 },
+    { OPT_LEVELS_3_PLUS, OPT__param_inline_min_speedup_, NULL, 15 },
+    { OPT_LEVELS_3_PLUS, OPT__param_max_inline_insns_single_, NULL, 200 },
 
     /* -Ofast adds optimizations to -O3.  */
     { OPT_LEVELS_FAST, OPT_ffast_math, NULL, 1 },
@@ -2403,6 +2407,10 @@ common_handle_option (struct gcc_options *opts,
       dc->parseable_fixits_p = value;
       break;
 
+    case OPT_fdiagnostics_show_cwe:
+      dc->show_cwe = value;
+      break;
+
     case OPT_fdiagnostics_show_option:
       dc->show_option_requested = value;
       break;
@@ -2546,10 +2554,6 @@ common_handle_option (struct gcc_options *opts,
       SET_OPTION_IF_UNSET (opts, opts_set, flag_profile_values, value);
       SET_OPTION_IF_UNSET (opts, opts_set, flag_inline_functions, value);
       SET_OPTION_IF_UNSET (opts, opts_set, flag_ipa_bit_cp, value);
-      /* FIXME: Instrumentation we insert makes ipa-reference bitmaps
-	 quadratic.  Disable the pass until better memory representation
-	 is done.  */
-      SET_OPTION_IF_UNSET (opts, opts_set, flag_ipa_reference, false);
       break;
 
     case OPT_fpatchable_function_entry_:

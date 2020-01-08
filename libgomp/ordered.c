@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2019 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2020 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -214,7 +214,7 @@ gomp_ordered_sync (void)
      Either way we get correct results.
      However, there is an implicit flush on entry to an ordered region,
      so we do need to have a barrier here.  If we were taking a lock
-     this could be MEMMODEL_RELEASE since the acquire would be coverd
+     this could be MEMMODEL_RELEASE since the acquire would be covered
      by the lock.  */
 
   __atomic_thread_fence (MEMMODEL_ACQ_REL);
@@ -246,7 +246,7 @@ GOMP_ordered_start (void)
 
    However, the current implementation has a flaw in that it does not allow
    the next thread into the ORDERED section immediately after the current
-   thread exits the ORDERED section in its last iteration.  The existance
+   thread exits the ORDERED section in its last iteration.  The existence
    of this function allows the implementation to change.  */
 
 void

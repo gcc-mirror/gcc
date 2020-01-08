@@ -1,6 +1,6 @@
 /* Pass to detect and issue warnings for violations of the restrict
    qualifier.
-   Copyright (C) 2017-2019 Free Software Foundation, Inc.
+   Copyright (C) 2017-2020 Free Software Foundation, Inc.
    Contributed by Martin Sebor <msebor@redhat.com>.
 
    This file is part of GCC.
@@ -966,7 +966,6 @@ builtin_access::generic_overlap ()
   const offset_int maxobjsize = acs.dstref->maxobjsize;
 
   offset_int maxsize = dstref->basesize < 0 ? maxobjsize : dstref->basesize;
-  gcc_assert (maxsize <= maxobjsize);
 
   /* Adjust the larger bounds of the offsets (which may be the first
      element if the lower bound is larger than the upper bound) to
@@ -1193,7 +1192,6 @@ builtin_access::strcat_overlap ()
   acs.dstsiz[1] = 1;
 
   offset_int maxsize = dstref->basesize < 0 ? maxobjsize : dstref->basesize;
-  gcc_assert (maxsize <= maxobjsize);
 
   /* For references to the same base object, determine if there's a pair
      of valid offsets into the two references such that access between

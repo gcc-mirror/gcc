@@ -1,5 +1,5 @@
 /* A self-testing framework, for use by -fself-test.
-   Copyright (C) 2015-2019 Free Software Foundation, Inc.
+   Copyright (C) 2015-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -170,6 +170,13 @@ class line_table_test
   /* Destructor.  Restore the saved line_table.  */
   ~line_table_test ();
 };
+
+/* Helper function for selftests that need a function decl.  */
+
+extern tree make_fndecl (tree return_type,
+			 const char *name,
+			 vec <tree> &param_types,
+			 bool is_variadic = false);
 
 /* Run TESTCASE multiple times, once for each case in our test matrix.  */
 

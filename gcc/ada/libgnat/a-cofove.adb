@@ -379,7 +379,7 @@ is
       Index     : Index_Type := Index_Type'First) return Extended_Index
    is
       K    : Count_Type;
-      Last : constant Index_Type := Last_Index (Container);
+      Last : constant Extended_Index := Last_Index (Container);
 
    begin
       K := Capacity_Range (Int (Index) - Int (No_Index));

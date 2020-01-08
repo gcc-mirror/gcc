@@ -1,3 +1,160 @@
+2020-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2019-12-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-decl.c (collect_source_ref_cb): Delete.
+	(for_each_global_decl): Rename into...
+	(collect_source_refs): ...this.  Call collect_source_ref directly.
+	(c_parse_final_cleanups): Always call collect_source_ref on the main
+	input filename.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Add parsing of attach and
+	detach clauses.
+	(c_parser_omp_variable_list): Add ALLOW_DEREF optional parameter.
+	Allow deref (->) in variable lists if true.
+	(c_parser_omp_var_list_parens): Add ALLOW_DEREF optional parameter.
+	Pass to c_parser_omp_variable_list.
+	(c_parser_oacc_data_clause): Support attach and detach clauses.  Update
+	call to c_parser_omp_variable_list.
+	(c_parser_oacc_all_clauses): Support attach and detach clauses.
+	(OACC_DATA_CLAUSE_MASK, OACC_ENTER_DATA_CLAUSE_MASK,
+	OACC_KERNELS_CLAUSE_MASK, OACC_PARALLEL_CLAUSE_MASK,
+	OACC_SERIAL_CLAUSE_MASK): Add PRAGMA_OACC_CLAUSE_ATTACH.
+	(OACC_EXIT_DATA_CLAUSE_MASK): Add PRAGMA_OACC_CLAUSE_DETACH.
+	* c-typeck.c (handle_omp_array_sections_1): Reject subarrays for attach
+	and detach.  Support deref.
+	(handle_omp_array_sections): Use GOMP_MAP_ATTACH_DETACH instead of
+	GOMP_MAP_ALWAYS_POINTER for OpenACC.
+	(c_oacc_check_attachments): New function.
+	(c_finish_omp_clauses): Check attach/detach arguments for being
+	pointers using above.  Support deref.
+
+2019-12-19  Julian Brown  <julian@codesourcery.com>
+	    Maciej W. Rozycki  <macro@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Support no_create.
+	(c_parser_oacc_data_clause): Likewise.
+	(c_parser_oacc_all_clauses): Likewise.
+	(OACC_DATA_CLAUSE_MASK, OACC_KERNELS_CLAUSE_MASK)
+	(OACC_PARALLEL_CLAUSE_MASK, OACC_SERIAL_CLAUSE_MASK): Add
+	PRAGMA_OACC_CLAUSE_NO_CREATE.
+	* c-typeck.c (handle_omp_array_sections): Support
+	GOMP_MAP_NO_ALLOC.
+
+2019-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-objc-common.c (range_label_for_type_mismatch::get_text):
+	Replace label_text ctor calls.
+
+2019-12-04  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/36941
+	PR c/88827
+	* c-typeck.c (convert_lvalue_to_rvalue): Call
+	require_complete_type for arguments not of void types.
+	(build_indirect_ref): Do not diagnose dereferencing pointers to
+	incomplete types.
+	* c-tree.h (C_TYPE_ERROR_REPORTED): Remove.
+
+2019-12-03  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/88704
+	* c-decl.c (store_parm_decls_oldstyle): Diagnose use of [*] in
+	old-style parameter definitions.
+
+2019-12-01  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR target/92499
+
+	* c-decl.c (flexible_array_type_p): Move to common code.
+
+2019-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-decl.c (start_decl): Allow initialization of variables whose
+	size is a POLY_INT_CST.
+	(finish_decl): Use verify_type_context to check whether the target
+	allows variables with a particular type to have static or thread-local
+	storage duration.  Don't raise a second error if such variables do
+	not have a constant size.
+	(grokdeclarator): Use verify_type_context to check whether the
+	target allows fields or array elements to have a particular type.
+	* c-typeck.c (pointer_diff): Use verify_type_context to test whether
+	the target allows pointer difference for the types involved.
+	(build_unary_op): Likewise for pointer increment and decrement.
+
+2019-11-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (struct c_parser): Add members raw_tokens and
+	raw_tokens_used.
+	(c_lex_one_token): Add argument raw.  Handle lexing raw tokens and
+	using previously-lexed raw tokens.
+	(c_parser_peek_nth_token_raw)
+	(c_parser_check_balanced_raw_token_sequence): New functions.
+	(c_parser_nth_token_starts_std_attributes): Use
+	c_parser_check_balanced_raw_token_sequence for Objective-C.
+
+2019-11-25  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/91985
+	* c-decl.c (finish_declspecs): Use int instead of decimal
+	floating-point types if decimal floating-point not supported.
+
+2019-11-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-tree.h (struct c_declarator): Use a structure for id member.
+	* c-decl.c (grokdeclarator): Extract attributes from cdk_id
+	declarators at the start, not when handling individual declarators
+	later.  Use u.id.id instead of u.id.
+	(grokfield): Use u.id.id instead of u.id.
+	(build_id_declarator): Set u.id.id and u.id.attrs.
+	(finish_declspecs): Handle postfix attributes in case of typedef
+	name or typeof used.
+	* c-parser.c (c_parser_direct_declarator)
+	(c_parser_direct_declarator_inner): Place declarator for
+	attributes inside that for function or array, not outside.  Set
+	u.id.attrs for identifiers.
+	(c_parser_parameter_declaration): Use u.id.id instead of u.id.
+	* gimple-parser.c (c_parser_gimple_declaration): Use u.id.id
+	instead of u.id.
+
+2019-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/90677
+	* c-decl.c (identifier_global_tag): Define.
+
+2019-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR c/92088
+	* c-decl.c (grokdeclarator): Prevent inlining of nested
+	function with VLA arguments.
+
+2019-11-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (c_warn_type_attributes): New function.
+	(groktypename, grokdeclarator, finish_declspecs): Call
+	c_warn_type_attributes before applying attributes to types.
+	* c-tree.h (c_warn_type_attributes): Declare.
+
+2019-11-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (c_warn_unused_attributes): Use pedwarn not warning for
+	standard attributes.
+	* c-parser.c (c_parser_std_attribute): Take argument for_tm.  Use
+	pedwarn for unknown standard attributes and return error_mark_node
+	for them.
+
+2019-11-18  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* c-parser.c (c_parser_parse_rtl_body): Always call
+	run_rtl_passes, even if startwith pass is not provided.
+
 2019-11-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-parser.c (c_parser_std_attribute_specifier): Diagnose
@@ -6705,7 +6862,7 @@
 	* c-decl.c: Likewise.  Include gt-c-c-decl.h, not gt-c-decl.h.
 	* c-parser.c: Likewise.  Include gt-c-c-parser.h, not gt-c-parser.h.
 
-Copyright (C) 2012-2019 Free Software Foundation, Inc.
+Copyright (C) 2012-2020 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

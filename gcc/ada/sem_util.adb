@@ -122,6 +122,10 @@ package body Sem_Util is
    --  T is a derived tagged type. Check whether the type extension is null.
    --  If the parent type is fully initialized, T can be treated as such.
 
+   function Is_Atomic_Object_Entity (Id : Entity_Id) return Boolean;
+   --  Determine whether arbitrary entity Id denotes an atomic object as per
+   --  RM C.6(7).
+
    function Is_Fully_Initialized_Variant (Typ : Entity_Id) return Boolean;
    --  Subsidiary to Is_Fully_Initialized_Type. For an unconstrained type
    --  with discriminants whose default values are static, examine only the
@@ -1187,18 +1191,28 @@ package body Sem_Util is
    is
       Loc       : constant Source_Ptr := Sloc (N);
       P         : constant Node_Id    := Prefix (N);
+
       D         : Elmt_Id;
       Id        : Node_Id;
       Index_Typ : Entity_Id;
+      Sel       : Entity_Id  := Empty;
 
       Desig_Typ : Entity_Id;
       --  This is either a copy of T, or if T is an access type, then it is
       --  the directly designated type of this access type.
 
+      function Build_Access_Record_Constraint (C : List_Id) return List_Id;
+      --  If the record component is a constrained access to the current
+      --  record, the subtype has not been constructed during analysis of
+      --  the enclosing record type (see Analyze_Access). In that case, build
+      --  a constrained access subtype after replacing references to the
+      --  enclosing discriminants with the corresponding discriminant values
+      --  of the prefix.
+
       function Build_Actual_Array_Constraint return List_Id;
       --  If one or more of the bounds of the component depends on
       --  discriminants, build  actual constraint using the discriminants
-      --  of the prefix.
+      --  of the prefix, as above.
 
       function Build_Actual_Record_Constraint return List_Id;
       --  Similar to previous one, for discriminated components constrained
@@ -1286,10 +1300,53 @@ package body Sem_Util is
          return Constraints;
       end Build_Actual_Record_Constraint;
 
+      ------------------------------------
+      -- Build_Access_Record_Constraint --
+      ------------------------------------
+
+      function Build_Access_Record_Constraint (C : List_Id) return List_Id is
+         Constraints : constant List_Id := New_List;
+         D           : Node_Id;
+         D_Val       : Node_Id;
+
+      begin
+         --  Retrieve the constraint from the component declaration, because
+         --  the component subtype has not been constructed and the component
+         --  type is an unconstrained access.
+
+         D := First (C);
+         while Present (D) loop
+            if Nkind (D) = N_Discriminant_Association
+              and then Denotes_Discriminant (Expression (D))
+            then
+               D_Val := New_Copy_Tree (D);
+               Set_Expression (D_Val,
+                 Make_Selected_Component (Loc,
+                   Prefix => New_Copy_Tree (P),
+                   Selector_Name =>
+                     New_Occurrence_Of (Entity (Expression (D)), Loc)));
+
+            elsif Denotes_Discriminant (D) then
+               D_Val := Make_Selected_Component (Loc,
+                 Prefix => New_Copy_Tree (P),
+                 Selector_Name => New_Occurrence_Of (Entity (D), Loc));
+
+            else
+               D_Val := New_Copy_Tree (D);
+            end if;
+
+            Append (D_Val, Constraints);
+            Next (D);
+         end loop;
+
+         return Constraints;
+      end Build_Access_Record_Constraint;
+
    --  Start of processing for Build_Actual_Subtype_Of_Component
 
    begin
-      --  Why the test for Spec_Expression mode here???
+      --  The subtype does not need to be created for a selected component
+      --  in a Spec_Expression.
 
       if In_Spec_Expression then
          return Empty;
@@ -1314,19 +1371,33 @@ package body Sem_Util is
                Remove_Side_Effects (P);
                return Build_Actual_Subtype (T, N);
             end if;
+
          else
+            return Empty;
+         end if;
+
+      elsif Nkind (N) = N_Selected_Component then
+         --  The entity of the selected component allows us to retrieve
+         --  the original constraint from its component declaration.
+
+         Sel := Entity (Selector_Name (N));
+         if Nkind (Parent (Sel)) /= N_Component_Declaration then
             return Empty;
          end if;
       end if;
 
-      if Ekind (T) = E_Access_Subtype then
+      if Is_Access_Type (T) then
          Desig_Typ := Designated_Type (T);
+
       else
          Desig_Typ := T;
       end if;
 
       if Ekind (Desig_Typ) = E_Array_Subtype then
          Id := First_Index (Desig_Typ);
+
+         --  Check whether an index bound is constrained by a discriminant.
+
          while Present (Id) loop
             Index_Typ := Underlying_Type (Etype (Id));
 
@@ -1345,6 +1416,7 @@ package body Sem_Util is
 
       elsif Is_Composite_Type (Desig_Typ)
         and then Has_Discriminants (Desig_Typ)
+        and then not Is_Empty_Elmt_List (Discriminant_Constraint (Desig_Typ))
         and then not Has_Unknown_Discriminants (Desig_Typ)
       then
          if Is_Private_Type (Desig_Typ)
@@ -1364,6 +1436,37 @@ package body Sem_Util is
 
             Next_Elmt (D);
          end loop;
+
+      --  Special processing for an access record component that is
+      --  the target of an assignment. If the designated type is an
+      --  unconstrained discriminated record we create its actual
+      --  subtype now.
+
+      elsif Ekind (T) = E_Access_Type
+        and then Present (Sel)
+        and then Has_Per_Object_Constraint (Sel)
+        and then Nkind (Parent (N)) = N_Assignment_Statement
+        and then N = Name (Parent (N))
+        --  and then not Inside_Init_Proc
+        --  and then Has_Discriminants (Desig_Typ)
+        --  and then not Is_Constrained (Desig_Typ)
+      then
+         declare
+            S_Indic : constant Node_Id :=
+              (Subtype_Indication
+                    (Component_Definition (Parent (Sel))));
+            Discs : List_Id;
+         begin
+            if Nkind (S_Indic) = N_Subtype_Indication then
+               Discs := Constraints (Constraint (S_Indic));
+
+               Remove_Side_Effects (P);
+               return Build_Component_Subtype
+                  (Build_Access_Record_Constraint (Discs), Loc, T);
+            else
+               return Empty;
+            end if;
+         end;
       end if;
 
       --  If none of the above, the actual and nominal subtypes are the same
@@ -6488,7 +6591,7 @@ package body Sem_Util is
 
       --  Local variables
 
-      Expr : constant Node_Id := Original_Node (N);
+      Expr : Node_Id := Original_Node (N);
       --  Expr references the original node because at this stage N may be the
       --  reference to a variable internally created by the frontend to remove
       --  side effects of an expression.
@@ -6513,9 +6616,31 @@ package body Sem_Util is
          end if;
       end if;
 
+      --  Handle a constant-folded conditional expression by avoiding use of
+      --  the original node.
+
+      if Nkind_In (Expr, N_Case_Expression, N_If_Expression) then
+         Expr := N;
+      end if;
+
       --  Unimplemented: Ptr.all'Access, where Ptr has Extra_Accessibility ???
 
       case Nkind (Expr) is
+         --  It may be possible that we have an access object denoted by an
+         --  attribute reference for 'Loop_Entry which may, in turn, have an
+         --  indexed component representing a loop identifier.
+
+         --  In this case we must climb up the indexed component and set expr
+         --  to the attribute reference so the rest of the machinery can
+         --  operate as expected.
+
+         when N_Indexed_Component =>
+            if Nkind (Prefix (Expr)) = N_Attribute_Reference
+              and then Get_Attribute_Id (Attribute_Name (Prefix (Expr)))
+                         = Attribute_Loop_Entry
+            then
+               Expr := Prefix (Expr);
+            end if;
 
          --  For access discriminant, the level of the enclosing object
 
@@ -6529,6 +6654,13 @@ package body Sem_Util is
 
          when N_Attribute_Reference =>
             case Get_Attribute_Id (Attribute_Name (Expr)) is
+
+               --  Ignore 'Loop_Entry, 'Result, and 'Old as they can be used to
+               --  identify access objects and do not have an effect on
+               --  accessibility level.
+
+               when Attribute_Loop_Entry | Attribute_Old | Attribute_Result =>
+                  null;
 
                --  For X'Access, the level of the prefix X
 
@@ -12727,6 +12859,30 @@ package body Sem_Util is
         and then not In_Private_Part (Scope_Id);
    end In_Visible_Part;
 
+   -----------------------------
+   -- In_While_Loop_Condition --
+   -----------------------------
+
+   function In_While_Loop_Condition (N : Node_Id) return Boolean is
+      Prev : Node_Id := N;
+      P    : Node_Id := Parent (N);
+      --  P and Prev will be used for traversing the AST, while maintaining an
+      --  invariant that P = Parent (Prev).
+   begin
+      loop
+         if No (P) then
+            return False;
+         elsif Nkind (P) = N_Iteration_Scheme
+           and then Prev = Condition (P)
+         then
+            return True;
+         else
+            Prev := P;
+            P := Parent (P);
+         end if;
+      end loop;
+   end In_While_Loop_Condition;
+
    --------------------------------
    -- Incomplete_Or_Partial_View --
    --------------------------------
@@ -13572,54 +13728,33 @@ package body Sem_Util is
    ----------------------
 
    function Is_Atomic_Object (N : Node_Id) return Boolean is
-      function Is_Atomic_Entity (Id : Entity_Id) return Boolean;
-      pragma Inline (Is_Atomic_Entity);
-      --  Determine whether arbitrary entity Id is either atomic or has atomic
-      --  components.
+      function Prefix_Has_Atomic_Components (P : Node_Id) return Boolean;
+      --  Determine whether prefix P has atomic components. This requires the
+      --  presence of an Atomic_Components aspect/pragma.
 
-      function Is_Atomic_Prefix (Pref : Node_Id) return Boolean;
-      --  Determine whether prefix Pref of an indexed or selected component is
-      --  an atomic object.
+      ---------------------------------
+      -- Prefix_Has_Atomic_Components --
+      ---------------------------------
 
-      ----------------------
-      -- Is_Atomic_Entity --
-      ----------------------
-
-      function Is_Atomic_Entity (Id : Entity_Id) return Boolean is
-      begin
-         return Is_Atomic (Id) or else Has_Atomic_Components (Id);
-      end Is_Atomic_Entity;
-
-      ----------------------
-      -- Is_Atomic_Prefix --
-      ----------------------
-
-      function Is_Atomic_Prefix (Pref : Node_Id) return Boolean is
-         Typ : constant Entity_Id := Etype (Pref);
+      function Prefix_Has_Atomic_Components (P : Node_Id) return Boolean is
+         Typ : constant Entity_Id := Etype (P);
 
       begin
          if Is_Access_Type (Typ) then
             return Has_Atomic_Components (Designated_Type (Typ));
 
-         elsif Is_Atomic_Entity (Typ) then
+         elsif Has_Atomic_Components (Typ) then
             return True;
 
-         elsif Is_Entity_Name (Pref)
-           and then Is_Atomic_Entity (Entity (Pref))
+         elsif Is_Entity_Name (P)
+           and then Has_Atomic_Components (Entity (P))
          then
             return True;
 
-         elsif Nkind (Pref) = N_Indexed_Component then
-            return Is_Atomic_Prefix (Prefix (Pref));
-
-         elsif Nkind (Pref) = N_Selected_Component then
-            return
-              Is_Atomic_Prefix (Prefix (Pref))
-                or else Is_Atomic (Entity (Selector_Name (Pref)));
+         else
+            return False;
          end if;
-
-         return False;
-      end Is_Atomic_Prefix;
+      end Prefix_Has_Atomic_Components;
 
    --  Start of processing for Is_Atomic_Object
 
@@ -13627,17 +13762,18 @@ package body Sem_Util is
       if Is_Entity_Name (N) then
          return Is_Atomic_Object_Entity (Entity (N));
 
+      elsif Is_Atomic (Etype (N)) then
+         return True;
+
       elsif Nkind (N) = N_Indexed_Component then
-         return Is_Atomic (Etype (N)) or else Is_Atomic_Prefix (Prefix (N));
+         return Prefix_Has_Atomic_Components (Prefix (N));
 
       elsif Nkind (N) = N_Selected_Component then
-         return
-           Is_Atomic (Etype (N))
-             or else Is_Atomic_Prefix (Prefix (N))
-             or else Is_Atomic (Entity (Selector_Name (N)));
-      end if;
+         return Is_Atomic (Entity (Selector_Name (N)));
 
-      return False;
+      else
+         return False;
+      end if;
    end Is_Atomic_Object;
 
    -----------------------------
@@ -13657,12 +13793,7 @@ package body Sem_Util is
 
    function Is_Atomic_Or_VFA_Object (N : Node_Id) return Boolean is
    begin
-      return Is_Atomic_Object (N)
-        or else (Is_Object_Reference (N)
-                   and then Is_Entity_Name (N)
-                   and then (Is_Volatile_Full_Access (Entity (N))
-                                or else
-                             Is_Volatile_Full_Access (Etype (Entity (N)))));
+      return Is_Atomic_Object (N) or else Is_Volatile_Full_Access_Object (N);
    end Is_Atomic_Or_VFA_Object;
 
    ----------------------
@@ -15309,6 +15440,78 @@ package body Sem_Util is
         Nkind_In (Spec_Decl, N_Generic_Package_Declaration,
                              N_Generic_Subprogram_Declaration);
    end Is_Generic_Declaration_Or_Body;
+
+   ---------------------------
+   -- Is_Independent_Object --
+   ---------------------------
+
+   function Is_Independent_Object (N : Node_Id) return Boolean is
+      function Is_Independent_Object_Entity (Id : Entity_Id) return Boolean;
+      --  Determine whether arbitrary entity Id denotes an object that is
+      --  Independent.
+
+      function Prefix_Has_Independent_Components (P : Node_Id) return Boolean;
+      --  Determine whether prefix P has independent components. This requires
+      --  the presence of an Independent_Components aspect/pragma.
+
+      ------------------------------------
+      --  Is_Independent_Object_Entity  --
+      ------------------------------------
+
+      function Is_Independent_Object_Entity (Id : Entity_Id) return Boolean is
+      begin
+         return
+           Is_Object (Id)
+             and then (Is_Independent (Id)
+                        or else
+                      Is_Independent (Etype (Id)));
+      end Is_Independent_Object_Entity;
+
+      -------------------------------------
+      -- Prefix_Has_Independent_Components --
+      -------------------------------------
+
+      function Prefix_Has_Independent_Components (P : Node_Id) return Boolean
+      is
+         Typ : constant Entity_Id := Etype (P);
+
+      begin
+         if Is_Access_Type (Typ) then
+            return Has_Independent_Components (Designated_Type (Typ));
+
+         elsif Has_Independent_Components (Typ) then
+            return True;
+
+         elsif Is_Entity_Name (P)
+           and then Has_Independent_Components (Entity (P))
+         then
+            return True;
+
+         else
+            return False;
+         end if;
+      end Prefix_Has_Independent_Components;
+
+   --  Start of processing for Is_Independent_Object
+
+   begin
+      if Is_Entity_Name (N) then
+         return Is_Independent_Object_Entity (Entity (N));
+
+      elsif Is_Independent (Etype (N)) then
+         return True;
+
+      elsif Nkind (N) = N_Indexed_Component then
+         return Prefix_Has_Independent_Components (Prefix (N));
+
+      elsif Nkind (N) = N_Selected_Component then
+         return Prefix_Has_Independent_Components (Prefix (N))
+           or else Is_Independent (Entity (Selector_Name (N)));
+
+      else
+         return False;
+      end if;
+   end Is_Independent_Object;
 
    ----------------------------
    -- Is_Inherited_Operation --
@@ -17712,6 +17915,37 @@ package body Sem_Util is
           or else Nkind (N) = N_Procedure_Call_Statement;
    end Is_Statement;
 
+   ----------------------------------------
+   --  Is_Subcomponent_Of_Atomic_Object  --
+   ----------------------------------------
+
+   function Is_Subcomponent_Of_Atomic_Object (N : Node_Id) return Boolean is
+      R : Node_Id;
+
+   begin
+      R := Get_Referenced_Object (N);
+
+      while Nkind_In (R, N_Indexed_Component, N_Selected_Component, N_Slice)
+      loop
+         R := Get_Referenced_Object (Prefix (R));
+
+         --  If the prefix is an access value, only the designated type matters
+
+         if Is_Access_Type (Etype (R)) then
+            if Is_Atomic (Designated_Type (Etype (R))) then
+               return True;
+            end if;
+
+         else
+            if Is_Atomic_Object (R) then
+               return True;
+            end if;
+         end if;
+      end loop;
+
+      return False;
+   end Is_Subcomponent_Of_Atomic_Object;
+
    ---------------------------------------
    -- Is_Subprogram_Contract_Annotation --
    ---------------------------------------
@@ -18345,6 +18579,45 @@ package body Sem_Util is
         and then Scope (Scope (Scope (Root))) = Standard_Standard;
    end Is_Visibly_Controlled;
 
+   --------------------------------------
+   --  Is_Volatile_Full_Access_Object  --
+   --------------------------------------
+
+   function Is_Volatile_Full_Access_Object (N : Node_Id) return Boolean is
+      function Is_VFA_Object_Entity (Id : Entity_Id) return Boolean;
+      --  Determine whether arbitrary entity Id denotes an object that is
+      --  Volatile_Full_Access.
+
+      ----------------------------
+      --  Is_VFA_Object_Entity  --
+      ----------------------------
+
+      function Is_VFA_Object_Entity (Id : Entity_Id) return Boolean is
+      begin
+         return
+           Is_Object (Id)
+             and then (Is_Volatile_Full_Access (Id)
+                         or else
+                       Is_Volatile_Full_Access (Etype (Id)));
+      end Is_VFA_Object_Entity;
+
+   --  Start of processing for Is_Volatile_Full_Access_Object
+
+   begin
+      if Is_Entity_Name (N) then
+         return Is_VFA_Object_Entity (Entity (N));
+
+      elsif Is_Volatile_Full_Access (Etype (N)) then
+         return True;
+
+      elsif Nkind (N) = N_Selected_Component then
+         return Is_Volatile_Full_Access (Entity (Selector_Name (N)));
+
+      else
+         return False;
+      end if;
+   end Is_Volatile_Full_Access_Object;
+
    --------------------------
    -- Is_Volatile_Function --
    --------------------------
@@ -18380,18 +18653,32 @@ package body Sem_Util is
    ------------------------
 
    function Is_Volatile_Object (N : Node_Id) return Boolean is
-      function Is_Volatile_Prefix (N : Node_Id) return Boolean;
-      --  If prefix is an implicit dereference, examine designated type
+      function Is_Volatile_Object_Entity (Id : Entity_Id) return Boolean;
+      --  Determine whether arbitrary entity Id denotes an object that is
+      --  Volatile.
 
-      function Object_Has_Volatile_Components (N : Node_Id) return Boolean;
-      --  Determines if given object has volatile components
+      function Prefix_Has_Volatile_Components (P : Node_Id) return Boolean;
+      --  Determine whether prefix P has volatile components. This requires
+      --  the presence of a Volatile_Components aspect/pragma or that P be
+      --  itself a volatile object as per RM C.6(8).
 
-      ------------------------
-      -- Is_Volatile_Prefix --
-      ------------------------
+      ---------------------------------
+      --  Is_Volatile_Object_Entity  --
+      ---------------------------------
 
-      function Is_Volatile_Prefix (N : Node_Id) return Boolean is
-         Typ  : constant Entity_Id := Etype (N);
+      function Is_Volatile_Object_Entity (Id : Entity_Id) return Boolean is
+      begin
+         return
+           Is_Object (Id)
+             and then (Is_Volatile (Id) or else Is_Volatile (Etype (Id)));
+      end Is_Volatile_Object_Entity;
+
+      ------------------------------------
+      -- Prefix_Has_Volatile_Components --
+      ------------------------------------
+
+      function Prefix_Has_Volatile_Components (P : Node_Id) return Boolean is
+         Typ  : constant Entity_Id := Etype (P);
 
       begin
          if Is_Access_Type (Typ) then
@@ -18399,67 +18686,41 @@ package body Sem_Util is
                Dtyp : constant Entity_Id := Designated_Type (Typ);
 
             begin
-               return Is_Volatile (Dtyp)
-                 or else Has_Volatile_Components (Dtyp);
+               return Has_Volatile_Components (Dtyp)
+                 or else Is_Volatile (Dtyp);
             end;
 
-         else
-            return Object_Has_Volatile_Components (N);
-         end if;
-      end Is_Volatile_Prefix;
+         elsif Has_Volatile_Components (Typ) then
+            return True;
 
-      ------------------------------------
-      -- Object_Has_Volatile_Components --
-      ------------------------------------
-
-      function Object_Has_Volatile_Components (N : Node_Id) return Boolean is
-         Typ : constant Entity_Id := Etype (N);
-
-      begin
-         if Is_Volatile (Typ)
-           or else Has_Volatile_Components (Typ)
+         elsif Is_Entity_Name (P)
+           and then Has_Volatile_Component (Entity (P))
          then
             return True;
 
-         elsif Is_Entity_Name (N)
-           and then (Has_Volatile_Components (Entity (N))
-                      or else Is_Volatile (Entity (N)))
-         then
+         elsif Is_Volatile_Object (P) then
             return True;
-
-         elsif Nkind (N) = N_Indexed_Component
-           or else Nkind (N) = N_Selected_Component
-         then
-            return Is_Volatile_Prefix (Prefix (N));
 
          else
             return False;
          end if;
-      end Object_Has_Volatile_Components;
+      end Prefix_Has_Volatile_Components;
 
    --  Start of processing for Is_Volatile_Object
 
    begin
-      if Nkind (N) = N_Defining_Identifier then
-         return Is_Volatile (N) or else Is_Volatile (Etype (N));
+      if Is_Entity_Name (N) then
+         return Is_Volatile_Object_Entity (Entity (N));
 
-      elsif Nkind (N) = N_Expanded_Name then
-         return Is_Volatile_Object (Entity (N));
-
-      elsif Is_Volatile (Etype (N))
-        or else (Is_Entity_Name (N) and then Is_Volatile (Entity (N)))
-      then
+      elsif Is_Volatile (Etype (N)) then
          return True;
 
-      elsif Nkind_In (N, N_Indexed_Component, N_Selected_Component)
-        and then Is_Volatile_Prefix (Prefix (N))
-      then
-         return True;
+      elsif Nkind (N) = N_Indexed_Component then
+         return Prefix_Has_Volatile_Components (Prefix (N));
 
-      elsif Nkind (N) = N_Selected_Component
-        and then Is_Volatile (Entity (Selector_Name (N)))
-      then
-         return True;
+      elsif Nkind (N) = N_Selected_Component then
+         return Prefix_Has_Volatile_Components (Prefix (N))
+           or else Is_Volatile (Entity (Selector_Name (N)));
 
       else
          return False;
@@ -23174,13 +23435,16 @@ package body Sem_Util is
          Item := Corresponding_Aspect (Item);
       end if;
 
-      --  Retrieve the name of the aspect/pragma. Note that Pre, Pre_Class,
+      --  Retrieve the name of the aspect/pragma. As assertion pragmas from
+      --  a generic instantiation might have been rewritten into pragma Check,
+      --  we look at the original node for Item. Note also that Pre, Pre_Class,
       --  Post and Post_Class rewrite their pragma identifier to preserve the
-      --  original name.
+      --  original name, so we look at the original node for the identifier.
       --  ??? this is kludgey
 
       if Nkind (Item) = N_Pragma then
-         Item_Nam := Chars (Original_Node (Pragma_Identifier (Item)));
+         Item_Nam :=
+           Chars (Original_Node (Pragma_Identifier (Original_Node (Item))));
 
       else
          pragma Assert (Nkind (Item) = N_Aspect_Specification);
@@ -24593,8 +24857,9 @@ package body Sem_Util is
          --  A selective accept body appears within a task type, but the
          --  enclosing subprogram is the procedure of the task body.
 
-         elsif Ekind (Curr) = E_Task_Type
-           and then Outer = Task_Body_Procedure (Curr)
+         elsif Ekind (Implementation_Base_Type (Curr)) = E_Task_Type
+           and then
+             Outer = Task_Body_Procedure (Implementation_Base_Type (Curr))
          then
             return True;
 
@@ -24635,8 +24900,9 @@ package body Sem_Util is
          if Curr = Outer then
             return True;
 
-         elsif Ekind (Curr) = E_Task_Type
-           and then Outer = Task_Body_Procedure (Curr)
+         elsif Ekind (Implementation_Base_Type (Curr)) = E_Task_Type
+           and then
+             Outer = Task_Body_Procedure (Implementation_Base_Type (Curr))
          then
             return True;
 

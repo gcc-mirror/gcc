@@ -1,5 +1,5 @@
 /* ACLE support for AArch64 SVE
-   Copyright (C) 2018-2019 Free Software Foundation, Inc.
+   Copyright (C) 2018-2020 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -47,6 +47,7 @@
 #include "gimple-fold.h"
 #include "langhooks.h"
 #include "stringpool.h"
+#include "attribs.h"
 #include "aarch64-sve-builtins.h"
 #include "aarch64-sve-builtins-base.h"
 #include "aarch64-sve-builtins-shapes.h"
@@ -418,18 +419,31 @@ static hash_table<registered_function_hasher> *function_table;
    when the required extension is disabled.  */
 static bool reported_missing_extension_p;
 
-/* If TYPE is an ACLE vector type, return the associated vector_type,
-   otherwise return NUM_VECTOR_TYPES.  */
-static vector_type_index
-find_vector_type (const_tree type)
+/* Record that TYPE is an ABI-defined SVE type that contains NUM_ZR SVE vectors
+   and NUM_PR SVE predicates.  MANGLED_NAME, if nonnull, is the ABI-defined
+   mangling of the type.  */
+static void
+add_sve_type_attribute (tree type, unsigned int num_zr, unsigned int num_pr,
+			const char *mangled_name)
 {
-  /* A linear search should be OK here, since the code isn't hot and
-     the number of types is only small.  */
-  type = TYPE_MAIN_VARIANT (type);
-  for (unsigned int i = 0; i < NUM_VECTOR_TYPES; ++i)
-    if (type == abi_vector_types[i])
-      return vector_type_index (i);
-  return NUM_VECTOR_TYPES;
+  tree mangled_name_tree
+    = (mangled_name ? get_identifier (mangled_name) : NULL_TREE);
+
+  tree value = tree_cons (NULL_TREE, mangled_name_tree, NULL_TREE);
+  value = tree_cons (NULL_TREE, size_int (num_pr), value);
+  value = tree_cons (NULL_TREE, size_int (num_zr), value);
+  TYPE_ATTRIBUTES (type) = tree_cons (get_identifier ("SVE type"), value,
+				      TYPE_ATTRIBUTES (type));
+}
+
+/* If TYPE is an ABI-defined SVE type, return its attribute descriptor,
+   otherwise return null.  */
+static tree
+lookup_sve_type_attribute (const_tree type)
+{
+  if (type == error_mark_node)
+    return NULL_TREE;
+  return lookup_attribute ("SVE type", TYPE_ATTRIBUTES (type));
 }
 
 /* If TYPE is a valid SVE element type, return the corresponding type
@@ -2234,6 +2248,17 @@ gimple_folder::gimple_folder (const function_instance &instance, tree fndecl,
 {
 }
 
+/* VALUE might be a vector of type VECTYPE or a single scalar element.
+   Duplicate it into a vector of type VECTYPE in the latter case, adding any
+   new statements to STMTS.  */
+tree
+gimple_folder::force_vector (gimple_seq &stmts, tree vectype, tree value)
+{
+  if (!VECTOR_TYPE_P (TREE_TYPE (value)))
+    value = gimple_build_vector_from_val (&stmts, vectype, value);
+  return value;
+}
+
 /* Convert predicate argument ARGNO so that it has the type appropriate for
    an operation on VECTYPE.  Add any new statements to STMTS.  */
 tree
@@ -2975,6 +3000,7 @@ register_builtin_types ()
     {
       tree eltype = scalar_types[i];
       tree vectype;
+      unsigned int num_zr = 0, num_pr = 0;
       if (eltype == boolean_type_node)
 	{
 	  vectype = build_truth_vector_type_for_mode (BYTES_PER_SVE_VECTOR,
@@ -2984,6 +3010,7 @@ register_builtin_types ()
 		      && TYPE_ALIGN (vectype) == 16
 		      && known_eq (wi::to_poly_offset (TYPE_SIZE (vectype)),
 				   BYTES_PER_SVE_VECTOR));
+	  num_pr = 1;
 	}
       else
 	{
@@ -2995,12 +3022,15 @@ register_builtin_types ()
 		      && TYPE_ALIGN (vectype) == 128
 		      && known_eq (wi::to_poly_offset (TYPE_SIZE (vectype)),
 				   BITS_PER_SVE_VECTOR));
+	  num_zr = 1;
 	}
       vectype = build_distinct_type_copy (vectype);
       gcc_assert (vectype == TYPE_MAIN_VARIANT (vectype));
       SET_TYPE_STRUCTURAL_EQUALITY (vectype);
       TYPE_ARTIFICIAL (vectype) = 1;
       TYPE_INDIVISIBLE_P (vectype) = 1;
+      add_sve_type_attribute (vectype, num_zr, num_pr,
+			      vector_types[i].mangled_name);
       abi_vector_types[i] = vectype;
       lang_hooks.types.register_builtin_type (vectype,
 					      vector_types[i].abi_name);
@@ -3014,6 +3044,8 @@ init_builtins ()
 {
   sve_switcher sve;
   register_builtin_types ();
+  if (in_lto_p)
+    handle_arm_sve_h ();
 }
 
 /* Register vector type TYPE under its arm_sve.h name.  */
@@ -3030,7 +3062,8 @@ register_vector_type (vector_type_index type)
      right form, even if it doesn't have the right name.  This should give
      better error recovery behavior than installing error_mark_node or
      installing an incorrect type.  */
-  if (TREE_CODE (decl) == TYPE_DECL
+  if (decl
+      && TREE_CODE (decl) == TYPE_DECL
       && TYPE_MAIN_VARIANT (TREE_TYPE (decl)) == vectype)
     vectype = TREE_TYPE (decl);
   acle_vector_types[0][type] = vectype;
@@ -3065,6 +3098,7 @@ register_tuple_type (unsigned int num_vectors, vector_type_index type)
 			   get_identifier ("__val"), array_type);
   DECL_FIELD_CONTEXT (field) = tuple_type;
   TYPE_FIELDS (tuple_type) = field;
+  add_sve_type_attribute (tuple_type, num_vectors, 0, NULL);
   layout_type (tuple_type);
   gcc_assert (VECTOR_MODE_P (TYPE_MODE (tuple_type))
 	      && TYPE_MODE_RAW (tuple_type) == TYPE_MODE (tuple_type)
@@ -3236,64 +3270,114 @@ expand_builtin (unsigned int code, tree exp, rtx target)
   return function_expander (rfn.instance, rfn.decl, exp, target).expand ();
 }
 
-/* Return true if TYPE is the ABI-defined __SVBool_t type.  */
-bool
-svbool_type_p (const_tree type)
-{
-  tree abi_type = abi_vector_types[VECTOR_TYPE_svbool_t];
-  return type != error_mark_node && TYPE_MAIN_VARIANT (type) == abi_type;
-}
-
 /* If TYPE is a built-in type defined by the SVE ABI, return the mangled name,
    otherwise return NULL.  */
 const char *
 mangle_builtin_type (const_tree type)
 {
-  if (type == error_mark_node)
-    return NULL;
-
-  vector_type_index vtype = find_vector_type (type);
-  if (vtype != NUM_VECTOR_TYPES)
-    return vector_types[vtype].mangled_name;
-
+  /* ??? The C++ frontend normally strips qualifiers and attributes before
+     calling this hook, adding separate mangling for attributes that affect
+     type identity.  Fortunately the type copy will have the same TYPE_NAME
+     as the original, so we can get the attributes from there.  */
+  if (TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL)
+    type = TREE_TYPE (TYPE_NAME (type));
+  if (tree attr = lookup_sve_type_attribute (type))
+    if (tree id = TREE_VALUE (chain_index (2, TREE_VALUE (attr))))
+      return IDENTIFIER_POINTER (id);
   return NULL;
 }
 
-/* If TYPE is one of the ABI-defined SVE vector types, or an ACLE-defined
-   tuple of them, return the number of vectors it contains.  Return 0
-   otherwise.  */
-unsigned int
-nvectors_if_data_type (const_tree type)
-{
-  if (type == error_mark_node)
-    return 0;
-
-  type = TYPE_MAIN_VARIANT (type);
-  if (VECTOR_TYPE_P (type))
-    {
-      vector_type_index type_id = find_vector_type (type);
-      if (type_id != VECTOR_TYPE_svbool_t && type_id != NUM_VECTOR_TYPES)
-	return 1;
-    }
-  else if (TREE_CODE (type) == RECORD_TYPE)
-    {
-      for (unsigned int size_i = 1; size_i < MAX_TUPLE_SIZE; ++size_i)
-	for (unsigned int type_i = 0; type_i < NUM_VECTOR_TYPES; ++type_i)
-	  {
-	    tree tuple_type = acle_vector_types[size_i][type_i];
-	    if (tuple_type && type == TYPE_MAIN_VARIANT (tuple_type))
-	      return size_i + 1;
-	  }
-    }
-
-  return 0;
-}
-
-/* Return true if TYPE is a built-in type defined by the SVE ABI.  */
+/* Return true if TYPE is a built-in SVE type defined by the ABI or ACLE.  */
 bool
 builtin_type_p (const_tree type)
 {
-  return svbool_type_p (type) || nvectors_if_data_type (type) > 0;
+  return lookup_sve_type_attribute (type);
+}
+
+/* Return true if TYPE is a built-in SVE type defined by the ABI or ACLE.
+   If so, store the number of constituent SVE vectors in *NUM_ZR and the
+   number of constituent SVE predicates in *NUM_PR.  */
+bool
+builtin_type_p (const_tree type, unsigned int *num_zr, unsigned int *num_pr)
+{
+  if (tree attr = lookup_sve_type_attribute (type))
+    {
+      tree num_zr_node = TREE_VALUE (attr);
+      tree num_pr_node = TREE_CHAIN (num_zr_node);
+      *num_zr = tree_to_uhwi (TREE_VALUE (num_zr_node));
+      *num_pr = tree_to_uhwi (TREE_VALUE (num_pr_node));
+      return true;
+    }
+  return false;
+}
+
+/* Implement TARGET_VERIFY_TYPE_CONTEXT for SVE types.  */
+bool
+verify_type_context (location_t loc, type_context_kind context,
+		     const_tree type, bool silent_p)
+{
+  if (!builtin_type_p (type))
+    return true;
+
+  switch (context)
+    {
+    case TCTX_SIZEOF:
+    case TCTX_STATIC_STORAGE:
+      if (!silent_p)
+	error_at (loc, "SVE type %qT does not have a fixed size", type);
+      return false;
+
+    case TCTX_ALIGNOF:
+      if (!silent_p)
+	error_at (loc, "SVE type %qT does not have a defined alignment", type);
+      return false;
+
+    case TCTX_THREAD_STORAGE:
+      if (!silent_p)
+	error_at (loc, "variables of type %qT cannot have thread-local"
+		  " storage duration", type);
+      return false;
+
+    case TCTX_POINTER_ARITH:
+      if (!silent_p)
+	error_at (loc, "arithmetic on pointer to SVE type %qT", type);
+      return false;
+
+    case TCTX_FIELD:
+      if (silent_p)
+	;
+      else if (lang_GNU_CXX ())
+	error_at (loc, "member variables cannot have SVE type %qT", type);
+      else
+	error_at (loc, "fields cannot have SVE type %qT", type);
+      return false;
+
+    case TCTX_ARRAY_ELEMENT:
+      if (!silent_p)
+	error_at (loc, "array elements cannot have SVE type %qT", type);
+      return false;
+
+    case TCTX_ALLOCATION:
+      if (!silent_p)
+	error_at (loc, "cannot allocate objects with SVE type %qT", type);
+      return false;
+
+    case TCTX_DEALLOCATION:
+      if (!silent_p)
+	error_at (loc, "cannot delete objects with SVE type %qT", type);
+      return false;
+
+    case TCTX_EXCEPTIONS:
+      if (!silent_p)
+	error_at (loc, "cannot throw or catch SVE type %qT", type);
+      return false;
+
+    case TCTX_CAPTURE_BY_COPY:
+      if (!silent_p)
+	error_at (loc, "capture by copy of SVE type %qT", type);
+      return false;
+    }
+  gcc_unreachable ();
 }
 
 }

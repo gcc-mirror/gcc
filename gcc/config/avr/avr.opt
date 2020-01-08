@@ -1,6 +1,6 @@
 ; Options for the ATMEL AVR port of the compiler.
 
-; Copyright (C) 2005-2019 Free Software Foundation, Inc.
+; Copyright (C) 2005-2020 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -126,6 +126,10 @@ Target Report Joined RejectNegative Var(avr_long_double) Init(0) Enum(avr_bits_e
 nodevicelib
 Driver Target Report RejectNegative
 Do not link against the device-specific library lib<MCU>.a.
+
+nodevicespecs
+Driver Target Report RejectNegative
+Do not use the device-specific specs file device-specs/specs-<MCU>.
 
 Enum
 Name(avr_bits_e) Type(int)

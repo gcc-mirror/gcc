@@ -414,6 +414,13 @@ else
 rtems_task_variable_add_file =
 endif
 
+runtime_context_asm_file =
+if LIBGO_IS_X86
+if LIBGO_IS_LINUX
+runtime_context_asm_file += runtime/go-context.S
+endif
+endif
+
 runtime_files = \
 	runtime/aeshash.c \
 	runtime/go-assert.c \
@@ -431,7 +438,6 @@ runtime_files = \
 	runtime/go-now.c \
 	runtime/go-nosys.c \
 	runtime/go-reflect-call.c \
-	runtime/go-runtime-error.c \
 	runtime/go-setenv.c \
 	runtime/go-signal.c \
 	runtime/go-unsafe-pointer.c \
@@ -445,7 +451,7 @@ runtime_files = \
 	runtime/runtime_c.c \
 	runtime/stack.c \
 	runtime/yield.c \
-	runtime/go-context.S \
+	$(runtime_context_asm_file) \
 	$(rtems_task_variable_add_file)
 
 version.go: s-version; @true

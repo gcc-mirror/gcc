@@ -9,7 +9,7 @@ int
 main()
 {
   // sizeof may not be applied to a function
-  int i = sizeof( f);// { dg-error "" } .*
+  int i = sizeof( f);// { dg-error "19:ISO C\\+\\+ forbids applying .sizeof." } .*
 
   return 0;
 }

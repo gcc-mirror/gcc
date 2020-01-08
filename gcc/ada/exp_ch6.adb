@@ -1287,6 +1287,10 @@ package body Exp_Ch6 is
       --  the context of a call. Now we need to complete the expansion, so we
       --  unmark the analyzed bits in all prefixes.
 
+      function Requires_Atomic_Or_Volatile_Copy return Boolean;
+      --  Returns whether a copy is required as per RM C.6(19) and gives a
+      --  warning in this case.
+
       ---------------------------
       -- Add_Call_By_Copy_Code --
       ---------------------------
@@ -1938,6 +1942,43 @@ package body Exp_Ch6 is
          end loop;
       end Reset_Packed_Prefix;
 
+      ----------------------------------------
+      --  Requires_Atomic_Or_Volatile_Copy  --
+      ----------------------------------------
+
+      function Requires_Atomic_Or_Volatile_Copy return Boolean is
+      begin
+         --  If the formal is already passed by copy, no need to do anything
+
+         if Is_By_Copy_Type (E_Formal) then
+            return False;
+         end if;
+
+         --  Check for atomicity mismatch
+
+         if Is_Atomic_Object (Actual) and then not Is_Atomic (E_Formal)
+         then
+            if Comes_From_Source (N) then
+               Error_Msg_N
+                 ("?atomic actual passed by copy (RM C.6(19))", Actual);
+            end if;
+            return True;
+         end if;
+
+         --  Check for volatility mismatch
+
+         if Is_Volatile_Object (Actual) and then not Is_Volatile (E_Formal)
+         then
+            if Comes_From_Source (N) then
+               Error_Msg_N
+                 ("?volatile actual passed by copy (RM C.6(19))", Actual);
+            end if;
+            return True;
+         end if;
+
+         return False;
+      end Requires_Atomic_Or_Volatile_Copy;
+
    --  Start of processing for Expand_Actuals
 
    begin
@@ -2125,27 +2166,10 @@ package body Exp_Ch6 is
             then
                Add_Call_By_Copy_Code;
 
-            --  If the actual is not a scalar and is marked for volatile
-            --  treatment, whereas the formal is not volatile, then pass
-            --  by copy unless it is a by-reference type.
+            --  We may need to force a copy because of atomicity or volatility
+            --  considerations.
 
-            --  Note: we use Is_Volatile here rather than Treat_As_Volatile,
-            --  because this is the enforcement of a language rule that applies
-            --  only to "real" volatile variables, not e.g. to the address
-            --  clause overlay case.
-
-            elsif Is_Entity_Name (Actual)
-              and then Is_Volatile (Entity (Actual))
-              and then not Is_By_Reference_Type (E_Actual)
-              and then not Is_Scalar_Type (Etype (Entity (Actual)))
-              and then not Is_Volatile (E_Formal)
-            then
-               Add_Call_By_Copy_Code;
-
-            elsif Nkind (Actual) = N_Indexed_Component
-              and then Is_Entity_Name (Prefix (Actual))
-              and then Has_Volatile_Components (Entity (Prefix (Actual)))
-            then
+            elsif Requires_Atomic_Or_Volatile_Copy then
                Add_Call_By_Copy_Code;
 
             --  Add call-by-copy code for the case of scalar out parameters
@@ -2321,6 +2345,12 @@ package body Exp_Ch6 is
             --  expects an appropriately aligned argument.
 
             elsif Is_Possibly_Unaligned_Slice (Actual) then
+               Add_Call_By_Copy_Code;
+
+            --  We may need to force a copy because of atomicity or volatility
+            --  considerations.
+
+            elsif Requires_Atomic_Or_Volatile_Copy then
                Add_Call_By_Copy_Code;
 
             --  An unusual case: a current instance of an enclosing task can be
@@ -3389,6 +3419,15 @@ package body Exp_Ch6 is
                case Nkind (Prev_Orig) is
                   when N_Attribute_Reference =>
                      case Get_Attribute_Id (Attribute_Name (Prev_Orig)) is
+                        --  Ignore 'Result, 'Loop_Entry, and 'Old as they can
+                        --  be used to identify access objects and do not have
+                        --  an effect on accessibility level.
+
+                        when Attribute_Loop_Entry
+                           | Attribute_Old
+                           | Attribute_Result
+                        =>
+                           null;
 
                         --  For X'Access, pass on the level of the prefix X
 
@@ -6895,8 +6934,8 @@ package body Exp_Ch6 is
       elsif Is_Thunk (Current_Scope) and then Is_Incomplete_Type (Exptyp) then
          return;
 
-      --  A return statement from a Ghost function does not use the secondary
-      --  stack (or any other one).
+      --  A return statement from an ignored Ghost function does not use the
+      --  secondary stack (or any other one).
 
       elsif not Requires_Transient_Scope (R_Type)
         or else Is_Ignored_Ghost_Entity (Scope_Id)
@@ -7598,7 +7637,8 @@ package body Exp_Ch6 is
            and then Ekind (Node (Iface_DT_Ptr)) = E_Constant
          loop
             pragma Assert (Has_Thunks (Node (Iface_DT_Ptr)));
-            Expand_Interface_Thunk (Prim, Thunk_Id, Thunk_Code);
+            Expand_Interface_Thunk (Prim, Thunk_Id, Thunk_Code,
+              Iface => Related_Type (Node (Iface_DT_Ptr)));
 
             if Present (Thunk_Code) then
                Insert_Actions_After (N, New_List (

@@ -609,7 +609,25 @@ package body Impunit is
     ("a-cforse", F),  -- Ada.Containers.Formal_Ordered_Sets
     ("a-cforma", F),  -- Ada.Containers.Formal_Ordered_Maps
     ("a-cfhase", F),  -- Ada.Containers.Formal_Hashed_Sets
-    ("a-cfhama", F)); -- Ada.Containers.Formal_Hashed_Maps
+    ("a-cfhama", F),  -- Ada.Containers.Formal_Hashed_Maps
+    ("a-cvgpso", F)   -- Ada.Containers.Vectors.Generic_Parallel_Sorting from
+   );                 -- GNATCOLL.OMP
+
+   --------------------
+   -- Ada 202X Units --
+   --------------------
+
+   --  The following units should be used only in Ada 202X mode
+
+   Non_Imp_File_Names_2X : constant File_List := (
+    ("a-stteou", T),  -- Ada.Strings.Text_Output
+    ("a-nubinu", T),  -- Ada.Numerics.Big_Numbers
+    ("a-nbnbin", T),  -- Ada.Numerics.Big_Numbers.Big_Integers
+    ("a-nbnbre", T),  -- Ada.Numerics.Big_Numbers.Big_Reals
+    ("s-aotase", T),  -- System.Atomic_Operations.Test_And_Set
+    ("s-atoope", T),  -- System.Atomic_Operations
+    ("s-atopar", T),  -- System.Atomic_Operations.Arithmetic
+    ("s-atopex", T)); -- System.Atomic_Operations.Exchange
 
    -----------------------
    -- Alternative Units --
@@ -728,6 +746,14 @@ package body Impunit is
       for J in Non_Imp_File_Names_12'Range loop
          if Buffer = Non_Imp_File_Names_12 (J).Fname then
             return Ada_2012_Unit;
+         end if;
+      end loop;
+
+      --  See if name is in 202X list
+
+      for J in Non_Imp_File_Names_2X'Range loop
+         if Buffer = Non_Imp_File_Names_2X (J).Fname then
+            return Ada_202X_Unit;
          end if;
       end loop;
 

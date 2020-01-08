@@ -83,7 +83,7 @@ func mapaccess1_faststr(t *maptype, h *hmap, ky string) unsafe.Pointer {
 		return unsafe.Pointer(&zeroVal[0])
 	}
 dohash:
-	hash := t.key.hashfn(noescape(unsafe.Pointer(&ky)), uintptr(h.hash0))
+	hash := t.hasher(noescape(unsafe.Pointer(&ky)), uintptr(h.hash0))
 	m := bucketMask(h.B)
 	b := (*bmap)(add(h.buckets, (hash&m)*uintptr(t.bucketsize)))
 	if c := h.oldbuckets; c != nil {
@@ -178,7 +178,7 @@ func mapaccess2_faststr(t *maptype, h *hmap, ky string) (unsafe.Pointer, bool) {
 		return unsafe.Pointer(&zeroVal[0]), false
 	}
 dohash:
-	hash := t.key.hashfn(noescape(unsafe.Pointer(&ky)), uintptr(h.hash0))
+	hash := t.hasher(noescape(unsafe.Pointer(&ky)), uintptr(h.hash0))
 	m := bucketMask(h.B)
 	b := (*bmap)(add(h.buckets, (hash&m)*uintptr(t.bucketsize)))
 	if c := h.oldbuckets; c != nil {
@@ -218,9 +218,9 @@ func mapassign_faststr(t *maptype, h *hmap, s string) unsafe.Pointer {
 		throw("concurrent map writes")
 	}
 	key := stringStructOf(&s)
-	hash := t.key.hashfn(noescape(unsafe.Pointer(&s)), uintptr(h.hash0))
+	hash := t.hasher(noescape(unsafe.Pointer(&s)), uintptr(h.hash0))
 
-	// Set hashWriting after calling alg.hash for consistency with mapassign.
+	// Set hashWriting after calling t.hasher for consistency with mapassign.
 	h.flags ^= hashWriting
 
 	if h.buckets == nil {
@@ -314,9 +314,9 @@ func mapdelete_faststr(t *maptype, h *hmap, ky string) {
 	}
 
 	key := stringStructOf(&ky)
-	hash := t.key.hashfn(noescape(unsafe.Pointer(&ky)), uintptr(h.hash0))
+	hash := t.hasher(noescape(unsafe.Pointer(&ky)), uintptr(h.hash0))
 
-	// Set hashWriting after calling alg.hash for consistency with mapdelete
+	// Set hashWriting after calling t.hasher for consistency with mapdelete
 	h.flags ^= hashWriting
 
 	bucket := hash & bucketMask(h.B)
@@ -436,7 +436,7 @@ func evacuate_faststr(t *maptype, h *hmap, oldbucket uintptr) {
 				if !h.sameSizeGrow() {
 					// Compute hash to make our evacuation decision (whether we need
 					// to send this key/elem to bucket x or bucket y).
-					hash := t.key.hashfn(k, uintptr(h.hash0))
+					hash := t.hasher(k, uintptr(h.hash0))
 					if hash&newbit != 0 {
 						useY = 1
 					}

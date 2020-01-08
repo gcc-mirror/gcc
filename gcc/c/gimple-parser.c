@@ -1,5 +1,5 @@
 /* Parser for GIMPLE.
-   Copyright (C) 2016-2019 Free Software Foundation, Inc.
+   Copyright (C) 2016-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2040,13 +2040,13 @@ c_parser_gimple_declaration (gimple_parser &parser)
       unsigned version, ver_offset;
       if (declarator->kind == cdk_id
 	  && is_gimple_reg_type (specs->type)
-	  && c_parser_parse_ssa_name_id (declarator->u.id,
+	  && c_parser_parse_ssa_name_id (declarator->u.id.id,
 					 &version, &ver_offset)
 	  /* The following restricts it to unnamed anonymous SSA names
 	     which fails parsing of named ones in dumps (we could
 	     decide to not dump their name for -gimple).  */
 	  && ver_offset == 0)
-	c_parser_parse_ssa_name (parser, declarator->u.id, specs->type,
+	c_parser_parse_ssa_name (parser, declarator->u.id.id, specs->type,
 				 version, ver_offset);
       else
 	{

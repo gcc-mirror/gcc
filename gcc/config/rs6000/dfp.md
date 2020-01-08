@@ -1,5 +1,5 @@
 ;; Decimal Floating Point (DFP) patterns.
-;; Copyright (C) 2007-2019 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2020 Free Software Foundation, Inc.
 ;; Contributed by Ben Elliston (bje@au.ibm.com) and Peter Bergner
 ;; (bergner@vnet.ibm.com).
 
@@ -289,6 +289,12 @@
   ]
   "TARGET_P9_MISC"
 {
+  if (<CODE> == UNORDERED && !HONOR_NANS (<MODE>mode))
+    {
+      emit_move_insn (operands[0], const0_rtx);
+      DONE;
+    }
+
   operands[3] = gen_reg_rtx (CCFPmode);
 })
 

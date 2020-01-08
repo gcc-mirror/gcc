@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
 
-// Copyright (C) 2014-2019 Free Software Foundation, Inc.
+// Copyright (C) 2014-2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -55,6 +55,8 @@ test02()
     path x("//blah/di/blah");
     p += x;
     VERIFY( p.native() == prior_native + x.native() );
+    path copy(p);
+    compare_paths( copy, p );
   }
 }
 
@@ -66,10 +68,28 @@ test03()
   compare_paths(p, "a//b");
 }
 
+void
+test04()
+{
+  // Concat every test path onto every test path.
+  for (path p : __gnu_test::test_paths)
+  {
+    for (path x : __gnu_test::test_paths)
+    {
+      auto prior_native = p.native();
+      p += x;
+      VERIFY( p.native() == prior_native + x.native() );
+      path copy(p); // PR libstdc++/98523
+      compare_paths( copy, p );
+    }
+  }
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
+  test04();
 }

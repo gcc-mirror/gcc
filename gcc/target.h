@@ -1,5 +1,5 @@
 /* Data structure definitions for a generic GCC target.
-   Copyright (C) 2001-2019 Free Software Foundation, Inc.
+   Copyright (C) 2001-2020 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -225,6 +225,47 @@ enum omp_device_kind_arch_isa {
        pick the one with the lowest cost.  By default the vectorizer
        will choose the first mode that works.  */
 const unsigned int VECT_COMPARE_COSTS = 1U << 0;
+
+/* The contexts in which the use of a type T can be checked by
+   TARGET_VERIFY_TYPE_CONTEXT.  */
+enum type_context_kind {
+  /* Directly measuring the size of T.  */
+  TCTX_SIZEOF,
+
+  /* Directly measuring the alignment of T.  */
+  TCTX_ALIGNOF,
+
+  /* Creating objects of type T with static storage duration.  */
+  TCTX_STATIC_STORAGE,
+
+  /* Creating objects of type T with thread-local storage duration.  */
+  TCTX_THREAD_STORAGE,
+
+  /* Creating a field of type T.  */
+  TCTX_FIELD,
+
+  /* Creating an array with elements of type T.  */
+  TCTX_ARRAY_ELEMENT,
+
+  /* Adding to or subtracting from a pointer to T, or computing the
+     difference between two pointers when one of them is a pointer to T.  */
+  TCTX_POINTER_ARITH,
+
+  /* Dynamically allocating objects of type T.  */
+  TCTX_ALLOCATION,
+
+  /* Dynamically deallocating objects of type T.  */
+  TCTX_DEALLOCATION,
+
+  /* Throwing or catching an object of type T.  */
+  TCTX_EXCEPTIONS,
+
+  /* Capturing objects of type T by value in a closure.  */
+  TCTX_CAPTURE_BY_COPY
+};
+
+extern bool verify_type_context (location_t, type_context_kind, const_tree,
+				 bool = false);
 
 /* The target structure.  This holds all the backend hooks.  */
 #define DEFHOOKPOD(NAME, DOC, TYPE, INIT) TYPE NAME;

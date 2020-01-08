@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Free Software Foundation, Inc.
+// Copyright (C) 2019-2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,5 +31,5 @@ static_assert(e.end() == nullptr);
 static_assert(e.data() == nullptr);
 static_assert(e.empty());
 
-static_assert(begin(e) == nullptr);
-static_assert(end(e) == nullptr);
+static_assert(std::ranges::begin(e) == nullptr);
+static_assert(std::ranges::end(e) == nullptr);

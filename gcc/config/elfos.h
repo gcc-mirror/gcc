@@ -1,6 +1,6 @@
 /* elfos.h  --  operating system specific defines to be used when
    targeting GCC for some generic ELF system
-   Copyright (C) 1991-2019 Free Software Foundation, Inc.
+   Copyright (C) 1991-2020 Free Software Foundation, Inc.
    Based on svr4.h contributed by Ron Guilmette (rfg@netcom.com).
 
 This file is part of GCC.
@@ -246,6 +246,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
       assemble_name ((FILE), (NAME));	\
       fputc ('\n', (FILE));		\
     }					\
+  while (0)
+
+#define ASM_OUTPUT_SYMVER_DIRECTIVE(FILE, NAME, NAME2)		\
+  do								\
+    {								\
+      fputs ("\t.symver\t", (FILE));				\
+      assemble_name ((FILE), (NAME));				\
+      fputs (", ", (FILE));					\
+      assemble_name ((FILE), (NAME2));				\
+      fputc ('\n', (FILE));					\
+    }								\
   while (0)
 
 /* The following macro defines the format used to output the second

@@ -1,5 +1,5 @@
 /* Declarations relating to class gcc_rich_location
-   Copyright (C) 2014-2019 Free Software Foundation, Inc.
+   Copyright (C) 2014-2020 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -111,7 +111,7 @@ class text_range_label : public range_label
 
   label_text get_text (unsigned /*range_idx*/) const FINAL OVERRIDE
   {
-    return label_text (const_cast <char *> (m_text), false);
+    return label_text::borrow (m_text);
   }
 
  private:

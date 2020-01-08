@@ -1,12 +1,58 @@
+2020-01-02  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2019-12-20  Jerome Lambourg  <lambourg@adacore.com>
+
+	* MAINTAINERS (write_after_approval): Add myself.
+
+2019-12-19  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* MAINTAINERS (write_after_approval): Add myself.
+
+2019-12-17  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* MAINTAINERS (write_after_approval): Add myself.
+
+2019-12-11  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Factor out common cases for compare_exclusions.
+	* configure: Regenerate.
+
+2019-12-11  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config-ml.in (msp430-*-*): Support --disable-no-exceptions configure
+	flag.
+
+2019-12-10  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2019-11-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/92463
+	* configure.ac: Use MPFR_RNDN instead of GMP's MP_RNDN.
+	* configure: Regenerate
+
+2019-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* configure.ac: Use https for gcc.gnu.org.
+	* configure: Regenerated.
+
+2019-11-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* MAINTAINERS (aarch64 port): Remove my name, move to...
+	(Write After Approval): ...Here.
+
 2019-11-15  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* MAINTAINERS: Change my email address as maintainer.
 
 2019-11-11  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        PR fortran/91828
-        * configure.ac: Bump minimum MPFR to 3.1.0, recommended to 3.1.6+.
-        * configure: Regenerated.
+	PR fortran/91828
+	* configure.ac: Bump minimum MPFR to 3.1.0, recommended to 3.1.6+.
+	* configure: Regenerated.
 
 2019-10-21  Jason Merrill  <jason@redhat.com>
 

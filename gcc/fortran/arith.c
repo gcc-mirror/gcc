@@ -1,5 +1,5 @@
 /* Compiler arithmetic
-   Copyright (C) 2000-2019 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -32,13 +32,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-memory.h"
 #include "constructor.h"
 
+bool gfc_seen_div0;
+
 /* MPFR does not have a direct replacement for mpz_set_f() from GMP.
    It's easily implemented with a few calls though.  */
 
 void
 gfc_mpfr_to_mpz (mpz_t z, mpfr_t x, locus *where)
 {
-  mp_exp_t e;
+  mpfr_exp_t e;
 
   if (mpfr_inf_p (x) || mpfr_nan_p (x))
     {
@@ -376,7 +378,7 @@ gfc_check_real_range (mpfr_t p, int kind)
     }
   else if (mpfr_cmp (q, gfc_real_kinds[i].tiny) < 0)
     {
-      mp_exp_t emin, emax;
+      mpfr_exp_t emin, emax;
       int en;
 
       /* Save current values of emin and emax.  */
@@ -385,8 +387,8 @@ gfc_check_real_range (mpfr_t p, int kind)
 
       /* Set emin and emax for the current model number.  */
       en = gfc_real_kinds[i].min_exponent - gfc_real_kinds[i].digits + 1;
-      mpfr_set_emin ((mp_exp_t) en);
-      mpfr_set_emax ((mp_exp_t) gfc_real_kinds[i].max_exponent);
+      mpfr_set_emin ((mpfr_exp_t) en);
+      mpfr_set_emax ((mpfr_exp_t) gfc_real_kinds[i].max_exponent);
       mpfr_check_range (q, 0, GFC_RND_MODE);
       mpfr_subnormalize (q, 0, GFC_RND_MODE);
 
@@ -396,9 +398,9 @@ gfc_check_real_range (mpfr_t p, int kind)
 
       /* Copy sign if needed.  */
       if (mpfr_sgn (p) < 0)
-	mpfr_neg (p, q, GMP_RNDN);
+	mpfr_neg (p, q, MPFR_RNDN);
       else
-	mpfr_set (p, q, GMP_RNDN);
+	mpfr_set (p, q, MPFR_RNDN);
     }
 
   mpfr_clear (q);
@@ -1620,6 +1622,10 @@ eval_intrinsic (gfc_intrinsic_op op,
       gfc_error (gfc_arith_error (rc), &op1->where);
       if (rc == ARITH_OVERFLOW)
 	goto done;
+
+      if (rc == ARITH_DIV0 && op2->ts.type == BT_INTEGER)
+	gfc_seen_div0 = true;
+
       return NULL;
     }
 

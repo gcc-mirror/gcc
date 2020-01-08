@@ -1,5 +1,5 @@
 /* elf.c -- Get debug data from an ELF file for backtraces.
-   Copyright (C) 2012-2019 Free Software Foundation, Inc.
+   Copyright (C) 2012-2020 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 Redistribution and use in source and binary forms, with or without
@@ -337,41 +337,19 @@ typedef struct
 
 #define ELFCOMPRESS_ZLIB 1
 
-/* An index of ELF sections we care about.  */
+/* Names of sections, indexed by enum dwarf_section in internal.h.  */
 
-enum debug_section
-{
-  DEBUG_INFO,
-  DEBUG_LINE,
-  DEBUG_ABBREV,
-  DEBUG_RANGES,
-  DEBUG_STR,
-
-  /* The old style compressed sections.  This list must correspond to
-     the list of normal debug sections.  */
-  ZDEBUG_INFO,
-  ZDEBUG_LINE,
-  ZDEBUG_ABBREV,
-  ZDEBUG_RANGES,
-  ZDEBUG_STR,
-
-  DEBUG_MAX
-};
-
-/* Names of sections, indexed by enum elf_section.  */
-
-static const char * const debug_section_names[DEBUG_MAX] =
+static const char * const dwarf_section_names[DEBUG_MAX] =
 {
   ".debug_info",
   ".debug_line",
   ".debug_abbrev",
   ".debug_ranges",
   ".debug_str",
-  ".zdebug_info",
-  ".zdebug_line",
-  ".zdebug_abbrev",
-  ".zdebug_ranges",
-  ".zdebug_str"
+  ".debug_addr",
+  ".debug_str_offsets",
+  ".debug_line_str",
+  ".debug_rnglists"
 };
 
 /* Information we gather for the sections we care about.  */
@@ -2661,6 +2639,7 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
   unsigned int dynsym_shndx;
   unsigned int i;
   struct debug_section_info sections[DEBUG_MAX];
+  struct debug_section_info zsections[DEBUG_MAX];
   struct backtrace_view symtab_view;
   int symtab_view_valid;
   struct backtrace_view strtab_view;
@@ -2685,6 +2664,7 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
   unsigned int using_debug_view;
   uint16_t *zdebug_table;
   struct elf_ppc64_opd_data opd_data, *opd;
+  struct dwarf_sections dwarf_sections;
 
   if (!debuginfo)
     {
@@ -2825,6 +2805,7 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
   dynsym_shndx = 0;
 
   memset (sections, 0, sizeof sections);
+  memset (zsections, 0, sizeof zsections);
 
   /* Look for the symbol table.  */
   for (i = 1; i < shnum; ++i)
@@ -2852,12 +2833,25 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 
       for (j = 0; j < (int) DEBUG_MAX; ++j)
 	{
-	  if (strcmp (name, debug_section_names[j]) == 0)
+	  if (strcmp (name, dwarf_section_names[j]) == 0)
 	    {
 	      sections[j].offset = shdr->sh_offset;
 	      sections[j].size = shdr->sh_size;
 	      sections[j].compressed = (shdr->sh_flags & SHF_COMPRESSED) != 0;
 	      break;
+	    }
+	}
+
+      if (name[0] == '.' && name[1] == 'z')
+	{
+	  for (j = 0; j < (int) DEBUG_MAX; ++j)
+	    {
+	      if (strcmp (name + 2, dwarf_section_names[j] + 1) == 0)
+		{
+		  zsections[j].offset = shdr->sh_offset;
+		  zsections[j].size = shdr->sh_size;
+		  break;
+		}
 	    }
 	}
 
@@ -3132,7 +3126,8 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
     }
 
   /* Read all the debug sections in a single view, since they are
-     probably adjacent in the file.  We never release this view.  */
+     probably adjacent in the file.  If any of sections are
+     uncompressed, we never release this view.  */
 
   min_offset = 0;
   max_offset = 0;
@@ -3140,13 +3135,22 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
     {
       off_t end;
 
-      if (sections[i].size == 0)
-	continue;
-      if (min_offset == 0 || sections[i].offset < min_offset)
-	min_offset = sections[i].offset;
-      end = sections[i].offset + sections[i].size;
-      if (end > max_offset)
-	max_offset = end;
+      if (sections[i].size != 0)
+	{
+	  if (min_offset == 0 || sections[i].offset < min_offset)
+	    min_offset = sections[i].offset;
+	  end = sections[i].offset + sections[i].size;
+	  if (end > max_offset)
+	    max_offset = end;
+	}
+      if (zsections[i].size != 0)
+	{
+	  if (min_offset == 0 || zsections[i].offset < min_offset)
+	    min_offset = zsections[i].offset;
+	  end = zsections[i].offset + zsections[i].size;
+	  if (end > max_offset)
+	    max_offset = end;
+	}
     }
   if (min_offset == 0 || max_offset == 0)
     {
@@ -3175,20 +3179,22 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 	{
 	  sections[i].data = ((const unsigned char *) debug_view.data
 			      + (sections[i].offset - min_offset));
-	  if (i < ZDEBUG_INFO)
-	    ++using_debug_view;
+	  ++using_debug_view;
 	}
+
+      if (zsections[i].size == 0)
+	zsections[i].data = NULL;
+      else
+	zsections[i].data = ((const unsigned char *) debug_view.data
+			     + (zsections[i].offset - min_offset));
     }
 
   /* Uncompress the old format (--compress-debug-sections=zlib-gnu).  */
 
   zdebug_table = NULL;
-  for (i = 0; i < ZDEBUG_INFO; ++i)
+  for (i = 0; i < (int) DEBUG_MAX; ++i)
     {
-      struct debug_section_info *pz;
-
-      pz = &sections[i + ZDEBUG_INFO - DEBUG_INFO];
-      if (sections[i].size == 0 && pz->size > 0)
+      if (sections[i].size == 0 && zsections[i].size > 0)
 	{
 	  unsigned char *uncompressed_data;
 	  size_t uncompressed_size;
@@ -3204,7 +3210,8 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 
 	  uncompressed_data = NULL;
 	  uncompressed_size = 0;
-	  if (!elf_uncompress_zdebug (state, pz->data, pz->size, zdebug_table,
+	  if (!elf_uncompress_zdebug (state, zsections[i].data,
+				      zsections[i].size, zdebug_table,
 				      error_callback, data,
 				      &uncompressed_data, &uncompressed_size))
 	    goto fail;
@@ -3216,7 +3223,7 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 
   /* Uncompress the official ELF format
      (--compress-debug-sections=zlib-gabi).  */
-  for (i = 0; i < ZDEBUG_INFO; ++i)
+  for (i = 0; i < (int) DEBUG_MAX; ++i)
     {
       unsigned char *uncompressed_data;
       size_t uncompressed_size;
@@ -3256,17 +3263,13 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
       debug_view_valid = 0;
     }
 
-  if (!backtrace_dwarf_add (state, base_address,
-			    sections[DEBUG_INFO].data,
-			    sections[DEBUG_INFO].size,
-			    sections[DEBUG_LINE].data,
-			    sections[DEBUG_LINE].size,
-			    sections[DEBUG_ABBREV].data,
-			    sections[DEBUG_ABBREV].size,
-			    sections[DEBUG_RANGES].data,
-			    sections[DEBUG_RANGES].size,
-			    sections[DEBUG_STR].data,
-			    sections[DEBUG_STR].size,
+  for (i = 0; i < (int) DEBUG_MAX; ++i)
+    {
+      dwarf_sections.data[i] = sections[i].data;
+      dwarf_sections.size[i] = sections[i].size;
+    }
+
+  if (!backtrace_dwarf_add (state, base_address, &dwarf_sections,
 			    ehdr.e_ident[EI_DATA] == ELFDATA2MSB,
 			    fileline_altlink,
 			    error_callback, data, fileline_fn,

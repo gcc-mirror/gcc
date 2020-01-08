@@ -1,3 +1,7 @@
+2020-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2019-10-01  Maciej W. Rozycki  <macro@wdc.com>
 
 	* Makefile.in (toolexecdir, toolexeclibdir): New variables.
@@ -439,7 +443,7 @@
 
 	* New directory, new ChangeLog.
 
-Copyright (C) 2003-2019 Free Software Foundation, Inc.
+Copyright (C) 2003-2020 Free Software Foundation, Inc.
 
 This ChangeLog is free software; the Free Software Foundation gives
 unlimited permission to copy, distribute, and modify it.

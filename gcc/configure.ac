@@ -1,7 +1,7 @@
 # configure.ac for GCC
 # Process this file with autoconf to generate a configuration script.
 
-# Copyright (C) 1997-2019 Free Software Foundation, Inc.
+# Copyright (C) 1997-2020 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -4748,7 +4748,7 @@ gd:
 	  [	.machine ppc7400])
 	if test x$gcc_cv_as_machine_directive != xyes; then
 	  echo "*** This target requires an assembler supporting \".machine\"" >&2
-	  echo you can get it from: ftp://gcc.gnu.org/pub/gcc/infrastructure/cctools-528.5.dmg >&2
+	  echo you can get it from: https://gcc.gnu.org/pub/gcc/infrastructure/cctools-528.5.dmg >&2
 	  test x$build = x$target && exit 1
 	fi
         ;;
@@ -6159,13 +6159,25 @@ case "$target" in
     AC_ARG_WITH(long-double-128,
       [AS_HELP_STRING([--with-long-double-128],
 		      [use 128-bit long double by default])],
-      gcc_cv_target_ldbl128="$with_long_double_128",
+      gcc_cv_target_ldbl128="$with_long_double_128", [
+      case "$target" in
+	s390*-*-linux-musl*)
+	  gcc_cv_target_ldbl128=yes
+	  ;;
+	powerpc*-*-linux-musl*)
+	  gcc_cv_target_ldbl128=no
+	  ;;
+	*)]
       [GCC_GLIBC_VERSION_GTE_IFELSE([2], [4], [gcc_cv_target_ldbl128=yes], [
       [gcc_cv_target_ldbl128=no
       grep '^[ 	]*#[ 	]*define[ 	][ 	]*__LONG_DOUBLE_MATH_OPTIONAL' \
         $target_header_dir/bits/wordsize.h > /dev/null 2>&1 \
       && gcc_cv_target_ldbl128=yes
-      ]])])
+      ]])]
+      [
+	  ;;
+      esac
+      ])
     ;;
 esac
 if test x$gcc_cv_target_ldbl128 = xyes; then

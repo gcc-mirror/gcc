@@ -1,5 +1,6 @@
 /* Test generation of DFP instructions for POWER6.  */
 /* { dg-do compile { target { powerpc*-*-linux* && powerpc_fprs } } } */
+/* { dg-require-effective-target dfp } */
 /* { dg-options "-std=gnu99 -O1 -mdejagnu-cpu=power6" } */
 
 /* { dg-final { scan-assembler-times "fneg" 1 } } */

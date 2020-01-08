@@ -1,5 +1,5 @@
 /* pecoff.c -- Get debug data from a PE/COFFF file for backtraces.
-   Copyright (C) 2015-2019 Free Software Foundation, Inc.
+   Copyright (C) 2015-2020 Free Software Foundation, Inc.
    Adapted from elf.c by Tristan Gingold, AdaCore.
 
 Redistribution and use in source and binary forms, with or without
@@ -133,19 +133,7 @@ typedef struct {
   uint16_t sc;
 } b_coff_internal_symbol;
 
-/* An index of sections we care about.  */
-
-enum debug_section
-{
-  DEBUG_INFO,
-  DEBUG_LINE,
-  DEBUG_ABBREV,
-  DEBUG_RANGES,
-  DEBUG_STR,
-  DEBUG_MAX
-};
-
-/* Names of sections, indexed by enum debug_section.  */
+/* Names of sections, indexed by enum dwarf_section in internal.h.  */
 
 static const char * const debug_section_names[DEBUG_MAX] =
 {
@@ -153,7 +141,11 @@ static const char * const debug_section_names[DEBUG_MAX] =
   ".debug_line",
   ".debug_abbrev",
   ".debug_ranges",
-  ".debug_str"
+  ".debug_str",
+  ".debug_addr",
+  ".debug_str_offsets",
+  ".debug_line_str",
+  ".debug_rnglists"
 };
 
 /* Information we gather for the sections we care about.  */
@@ -164,8 +156,6 @@ struct debug_section_info
   off_t offset;
   /* Section size.  */
   size_t size;
-  /* Section contents, after read from file.  */
-  const unsigned char *data;
 };
 
 /* Information we keep for an coff symbol.  */
@@ -616,6 +606,7 @@ coff_add (struct backtrace_state *state, int descriptor,
   struct backtrace_view debug_view;
   int debug_view_valid;
   uintptr_t image_base;
+  struct dwarf_sections dwarf_sections;
 
   *found_sym = 0;
   *found_dwarf = 0;
@@ -848,28 +839,20 @@ coff_add (struct backtrace_state *state, int descriptor,
 
   for (i = 0; i < (int) DEBUG_MAX; ++i)
     {
-      if (sections[i].size == 0)
-	sections[i].data = NULL;
+      size_t size = sections[i].size;
+      dwarf_sections.size[i] = size;
+      if (size == 0)
+	dwarf_sections.data[i] = NULL;
       else
-	sections[i].data = ((const unsigned char *) debug_view.data
-			    + (sections[i].offset - min_offset));
+	dwarf_sections.data[i] = ((const unsigned char *) debug_view.data
+				  + (sections[i].offset - min_offset));
     }
 
-  if (!backtrace_dwarf_add (state, /* base_address */ 0,
-			    sections[DEBUG_INFO].data,
-			    sections[DEBUG_INFO].size,
-			    sections[DEBUG_LINE].data,
-			    sections[DEBUG_LINE].size,
-			    sections[DEBUG_ABBREV].data,
-			    sections[DEBUG_ABBREV].size,
-			    sections[DEBUG_RANGES].data,
-			    sections[DEBUG_RANGES].size,
-			    sections[DEBUG_STR].data,
-			    sections[DEBUG_STR].size,
-			    0, /* FIXME */
-			    NULL,
+  if (!backtrace_dwarf_add (state, /* base_address */ 0, &dwarf_sections,
+			    0, /* FIXME: is_bigendian */
+			    NULL, /* altlink */
 			    error_callback, data, fileline_fn,
-			    NULL))
+			    NULL /* returned fileline_entry */))
     goto fail;
 
   *found_dwarf = 1;
