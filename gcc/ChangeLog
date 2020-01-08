@@ -1,3 +1,11 @@
+2020-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93174
+	* config/i386/i386.md (addcarry<mode>_0): Use nonimmediate_operand
+	predicate for output operand instead of register_operand.
+	(addcarry<mode>, addcarry<mode>_1): Likewise.  Add alternative with
+	memory destination and non-memory operands[2].
+
 2020-01-08  Martin Liska  <mliska@suse.cz>
 
 	* cgraph.c (cgraph_node::dump): Use ::dump_name or
