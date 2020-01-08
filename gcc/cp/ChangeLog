@@ -1,5 +1,11 @@
 2020-01-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/91369 - constexpr destructor and member initializer.
+	* constexpr.c (cxx_eval_store_expression): Look through TARGET_EXPR
+	when not preevaluating.
+
+2020-01-08  Jason Merrill  <jason@redhat.com>
+
 	* constexpr.c (cxx_eval_call_expression): Remove DECL_BY_REFERENCE
 	support.
 
