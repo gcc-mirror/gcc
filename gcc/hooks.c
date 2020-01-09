@@ -313,6 +313,12 @@ hook_bool_const_tree_false (const_tree)
 }
 
 bool
+hook_bool_const_tree_const_tree_true (const_tree, const_tree)
+{
+  return true;
+}
+
+bool
 hook_bool_tree_true (tree)
 {
   return true;
