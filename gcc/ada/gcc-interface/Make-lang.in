@@ -481,6 +481,7 @@ GNAT_ADA_OBJS =	\
  ada/urealp.o	\
  ada/usage.o	\
  ada/validsw.o	\
+ ada/vast.o	\
  ada/warnsw.o	\
  ada/widechar.o
 
