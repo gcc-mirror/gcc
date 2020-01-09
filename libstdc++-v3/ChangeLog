@@ -1,3 +1,15 @@
+2020-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93208
+	* config/abi/pre/gnu.ver: Add new exports.
+	* include/std/memory_resource (memory_resource::~memory_resource()):
+	Do not define inline.
+	(monotonic_buffer_resource::~monotonic_buffer_resource()): Likewise.
+	* src/c++17/memory_resource.cc (memory_resource::~memory_resource()):
+	Define.
+	(monotonic_buffer_resource::~monotonic_buffer_resource()): Define.
+	* testsuite/20_util/monotonic_buffer_resource/93208.cc: New test.
+
 2020-01-09  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/92124
