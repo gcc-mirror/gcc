@@ -1,5 +1,25 @@
 2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/iterators.md (addsub): New code attribute.
+	* config/aarch64/aarch64-simd.md (aarch64_<su_optab><optab><mode>):
+	Re-express as...
+	(aarch64_<su_optab>q<addsub><mode>): ...this, making the same change
+	in the asm string and attributes.  Fix indentation.
+	* config/aarch64/aarch64-sve.md (@aarch64_<su_optab><optab><mode>):
+	Re-express as...
+	(@aarch64_sve_<optab><mode>): ...this.
+	* config/aarch64/aarch64-sve-builtins.h
+	(function_expander::expand_signed_unpred_op): Delete.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_expander::expand_signed_unpred_op): Likewise.
+	(function_expander::map_to_rtx_codes): If the optab isn't defined,
+	try using code_for_aarch64_sve instead.
+	* config/aarch64/aarch64-sve-builtins-base.cc (svqadd_impl): Delete.
+	(svqsub_impl): Likewise.
+	(svqadd, svqsub): Use rtx_code_function instead.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/iterators.md (SRHSUB, URHSUB): Delete.
 	(HADDSUB, sur, addsub): Remove them.
 

@@ -2871,13 +2871,19 @@ function_expander::use_contiguous_store_insn (insn_code icode)
    (3) a normal unpredicated optab for PRED_none and PRED_x functions,
        dropping the predicate in the latter case
 
-   (4) "cond_<optab><mode>" otherwise
+   (4) an unpredicated "aarch64_sve_<code_optab><mode>" for PRED_none and
+       PRED_x functions, again dropping the predicate for PRED_x
+
+   (5) "cond_<optab><mode>" otherwise
 
    where <optab> corresponds to:
 
    - CODE_FOR_SINT for signed integers
    - CODE_FOR_UINT for unsigned integers
    - UNSPEC_FOR_FP for floating-point values
+
+   and where <code_optab> is like <optab>, but uses CODE_FOR_SINT instead
+   of UNSPEC_FOR_FP for floating-point values.
 
    MERGE_ARGNO is the argument that provides the values of inactive lanes for
    _m functions, or DEFAULT_MERGE_ARGNO if we should apply the usual rules.  */
@@ -2913,7 +2919,12 @@ function_expander::map_to_rtx_codes (rtx_code code_for_sint,
   /* Otherwise expand PRED_none and PRED_x operations without a predicate.
      Floating-point operations conventionally use the signed rtx code.  */
   if (pred == PRED_none || pred == PRED_x)
-    return use_unpred_insn (direct_optab_handler (code_to_optab (code), 0));
+    {
+      icode = direct_optab_handler (code_to_optab (code), 0);
+      if (icode == CODE_FOR_nothing)
+	icode = code_for_aarch64_sve (code, mode);
+      return use_unpred_insn (icode);
+    }
 
   /* Don't use cond_*_optabs here, since not all codes have one yet.  */
   if (type_suffix (0).integer_p)
@@ -2962,22 +2973,6 @@ function_expander::map_to_unspecs (int unspec_for_sint, int unspec_for_uint,
 
   insn_code icode = code_for_cond (unspec, vector_mode (0));
   return use_cond_insn (icode, merge_argno);
-}
-
-/* Implement the call using an @aarch64 instruction and the
-   instructions are parameterized by an rtx_code.  CODE_FOR_SINT
-   is the rtx_code for signed integer operations, CODE_FOR_UINT
-   is the rtx_code for unsigned integer operations.  */
-rtx
-function_expander::expand_signed_unpred_op (rtx_code code_for_sint,
-					    rtx_code code_for_uint)
-{
-  insn_code icode;
-  if (type_suffix (0).unsigned_p)
-    icode = code_for_aarch64 (code_for_uint, code_for_uint, vector_mode (0));
-  else
-    icode = code_for_aarch64 (code_for_sint, code_for_sint, vector_mode (0));
-  return use_unpred_insn (icode);
 }
 
 /* Expand the call and return its lhs.  */

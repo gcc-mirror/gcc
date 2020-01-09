@@ -1727,16 +1727,6 @@ public:
   }
 };
 
-class svqadd_impl : public function_base
-{
-public:
-  rtx
-  expand (function_expander &e) const OVERRIDE
-  {
-    return e.expand_signed_unpred_op (SS_PLUS, US_PLUS);
-  }
-};
-
 /* Implements svqdec[bhwd]{,_pat} and svqinc[bhwd]{,_pat}.  */
 class svqdec_svqinc_bhwd_impl : public function_base
 {
@@ -1836,16 +1826,6 @@ public:
      unsigned values respectively.  */
   rtx_code m_code_for_sint;
   rtx_code m_code_for_uint;
-};
-
-class svqsub_impl : public function_base
-{
-public:
-  rtx
-  expand (function_expander &e) const OVERRIDE
-  {
-    return e.expand_signed_unpred_op (SS_MINUS, US_MINUS);
-  }
 };
 
 class svrdffr_impl : public function_base
@@ -2661,7 +2641,7 @@ FUNCTION (svptest_first, svptest_impl, (LT))
 FUNCTION (svptest_last, svptest_impl, (LTU))
 FUNCTION (svptrue, svptrue_impl,)
 FUNCTION (svptrue_pat, svptrue_pat_impl,)
-FUNCTION (svqadd, svqadd_impl,)
+FUNCTION (svqadd, rtx_code_function, (SS_PLUS, US_PLUS, -1))
 FUNCTION (svqdecb, svqdec_bhwd_impl, (QImode))
 FUNCTION (svqdecb_pat, svqdec_bhwd_impl, (QImode))
 FUNCTION (svqdecd, svqdec_bhwd_impl, (DImode))
@@ -2680,7 +2660,7 @@ FUNCTION (svqinch_pat, svqinc_bhwd_impl, (HImode))
 FUNCTION (svqincp, svqdecp_svqincp_impl, (SS_PLUS, US_PLUS))
 FUNCTION (svqincw, svqinc_bhwd_impl, (SImode))
 FUNCTION (svqincw_pat, svqinc_bhwd_impl, (SImode))
-FUNCTION (svqsub, svqsub_impl,)
+FUNCTION (svqsub, rtx_code_function, (SS_MINUS, US_MINUS, -1))
 FUNCTION (svrbit, unspec_based_function, (UNSPEC_RBIT, UNSPEC_RBIT, -1))
 FUNCTION (svrdffr, svrdffr_impl,)
 FUNCTION (svrecpe, unspec_based_function, (-1, -1, UNSPEC_FRECPE))

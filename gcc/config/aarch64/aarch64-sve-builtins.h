@@ -554,7 +554,6 @@ public:
   rtx map_to_rtx_codes (rtx_code, rtx_code, int,
 			unsigned int = DEFAULT_MERGE_ARGNO);
   rtx map_to_unspecs (int, int, int, unsigned int = DEFAULT_MERGE_ARGNO);
-  rtx expand_signed_unpred_op (rtx_code, rtx_code);
 
   /* The function call expression.  */
   tree call_expr;
