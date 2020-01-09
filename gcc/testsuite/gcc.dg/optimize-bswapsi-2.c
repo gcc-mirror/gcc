@@ -44,5 +44,16 @@ uint32_t read_be32_3 (unsigned char *data)
 	 | (*data << 24);
 }
 
-/* { dg-final { scan-tree-dump-times "32 bit load in target endianness found at" 3 "bswap" } } */
+static inline unsigned short
+get_unaligned_16 (unsigned char *p)
+{
+  return p[0] | (p[1] << 8);
+}
+unsigned int
+get_unaligned_32 (unsigned char *p)
+{
+  return get_unaligned_16 (p) | (get_unaligned_16 (p + 2) << 16);
+}
+
+/* { dg-final { scan-tree-dump-times "32 bit load in target endianness found at" 4 "bswap" } } */
 /* { dg-final { scan-tree-dump-times "32 bit bswap implementation found at" 3 "bswap" } } */

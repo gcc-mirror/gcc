@@ -1,3 +1,9 @@
+2020-01-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93040
+	* gcc.dg/optimize-bswaphi-1.c: Amend.
+	* gcc.dg/optimize-bswapsi-2.c: Likewise.
+
 2020-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/93202
