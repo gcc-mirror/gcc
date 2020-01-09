@@ -131,20 +131,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Up>
         inline bool
-        operator==(const _ExtPtr_allocator<_Up>& __rarg)
+        operator==(const _ExtPtr_allocator<_Up>& __rarg) const
         { return _M_real_alloc == __rarg._M_getUnderlyingImp(); }
 
       inline bool
-      operator==(const _ExtPtr_allocator& __rarg)
+      operator==(const _ExtPtr_allocator& __rarg) const
       { return _M_real_alloc == __rarg._M_real_alloc; }
 
       template<typename _Up>
         inline bool
-        operator!=(const _ExtPtr_allocator<_Up>& __rarg)
+        operator!=(const _ExtPtr_allocator<_Up>& __rarg) const
         { return _M_real_alloc != __rarg._M_getUnderlyingImp(); }
 
       inline bool
-      operator!=(const _ExtPtr_allocator& __rarg)
+      operator!=(const _ExtPtr_allocator& __rarg) const
       { return _M_real_alloc != __rarg._M_real_alloc; }
 
       template<typename _Up>
