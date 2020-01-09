@@ -147,7 +147,10 @@ MULTILIB_DIRNAMES   = $(subst $(comma), ,$(TM_MULTILIB_CONFIG))
 
 insn-conditions.md: s-check-sve-md
 s-check-sve-md: $(srcdir)/config/aarch64/check-sve-md.awk \
-		$(srcdir)/config/aarch64/aarch64-sve.md
+		$(srcdir)/config/aarch64/aarch64-sve.md \
+		$(srcdir)/config/aarch64/aarch64-sve2.md
 	$(AWK) -f $(srcdir)/config/aarch64/check-sve-md.awk \
 	  $(srcdir)/config/aarch64/aarch64-sve.md
+	$(AWK) -f $(srcdir)/config/aarch64/check-sve-md.awk \
+	  $(srcdir)/config/aarch64/aarch64-sve2.md
 	$(STAMP) s-check-sve-md

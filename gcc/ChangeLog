@@ -1,5 +1,13 @@
 2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-sve2.md: Add banner comments.
+	(<su>mulh<r>s<mode>3): Move further up file.
+	(<su>mull<bt><Vwide>, <r>shrnb<mode>, <r>shrnt<mode>)
+	(*aarch64_sve2_sra<mode>): Move further down file.
+	* config/aarch64/t-aarch64 (s-check-sve-md): Check aarch64-sve2.md too.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/iterators.md (SVE_WHILE): Add UNSPEC_WHILERW
 	and UNSPEC_WHILEWR.
 	(while_optab_cmp): Handle them.
