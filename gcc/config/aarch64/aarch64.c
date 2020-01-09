@@ -4272,7 +4272,7 @@ aarch64_sve_move_pred_via_while (rtx target, machine_mode mode,
 {
   rtx limit = force_reg (DImode, gen_int_mode (vl, DImode));
   target = aarch64_target_reg (target, mode);
-  emit_insn (gen_while (UNSPEC_WHILE_LO, DImode, mode,
+  emit_insn (gen_while (UNSPEC_WHILELO, DImode, mode,
 			target, const0_rtx, limit));
   return target;
 }
