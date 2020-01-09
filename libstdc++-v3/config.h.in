@@ -761,6 +761,9 @@
 /* Version number of package */
 #undef VERSION
 
+/* Number of bits in a file offset, on hosts where this is settable. */
+#undef _FILE_OFFSET_BITS
+
 /* Define if C99 functions in <complex.h> should be used in <complex> for
    C++11. Using compiler builtins for these functions requires corresponding
    C99 library functions to be present. */
@@ -988,6 +991,9 @@
 
 /* Define to 1 if mutex_timedlock is available. */
 #undef _GTHREAD_USE_MUTEX_TIMEDLOCK
+
+/* Define for large files, on AIX-style hosts. */
+#undef _LARGE_FILES
 
 /* Define if all C++11 floating point overloads are available in <math.h>.  */
 #if __cplusplus >= 201103L

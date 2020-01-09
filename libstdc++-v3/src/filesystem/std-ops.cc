@@ -27,6 +27,7 @@
 # define NEED_DO_COPY_FILE
 #endif
 
+#include <bits/largefile-config.h>
 #include <filesystem>
 #include <experimental/filesystem>
 #include <functional>
@@ -1034,7 +1035,7 @@ fs::file_size(const path& p, error_code& ec) noexcept
     S(const stat_type& st) : type(make_file_type(st)), size(st.st_size) { }
     S() : type(file_type::not_found) { }
     file_type type;
-    size_t size;
+    uintmax_t size;
   };
   auto s = do_stat(p, ec, [](const auto& st) { return S{st}; }, S{});
   if (s.type == file_type::regular)
