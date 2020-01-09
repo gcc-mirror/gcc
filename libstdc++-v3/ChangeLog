@@ -1,5 +1,11 @@
 2020-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/ext/extptr_allocator.h (_ExtPtr_allocator::operator==)
+	(_ExtPtr_allocator::operator!=): Add missing const qualifiers.
+	* include/ext/pointer.h (readable_traits<_Pointer_adapter<S>>): Add
+	partial specialization to disambiguate the two constrained
+	specializations.
+
 	* include/experimental/type_traits (experimental::is_pod_v): Disable
 	-Wdeprecated-declarations warnings around reference to std::is_pod.
 	* include/std/type_traits (is_pod_v): Likewise.
