@@ -1761,8 +1761,6 @@ Unknown_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
       real = no->unknown_value()->real_named_object();
       if (real == NULL)
 	{
-	  if (this->is_composite_literal_key_)
-	    return this;
 	  if (!this->no_error_message_)
 	    go_error_at(location, "reference to undefined name %qs",
 			this->named_object_->message_name().c_str());
@@ -1776,8 +1774,6 @@ Unknown_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
     case Named_object::NAMED_OBJECT_TYPE:
       return Expression::make_type(real->type_value(), location);
     case Named_object::NAMED_OBJECT_TYPE_DECLARATION:
-      if (this->is_composite_literal_key_)
-	return this;
       if (!this->no_error_message_)
 	go_error_at(location, "reference to undefined type %qs",
 		    real->message_name().c_str());
@@ -1789,8 +1785,6 @@ Unknown_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
     case Named_object::NAMED_OBJECT_FUNC_DECLARATION:
       return Expression::make_func_reference(real, NULL, location);
     case Named_object::NAMED_OBJECT_PACKAGE:
-      if (this->is_composite_literal_key_)
-	return this;
       if (!this->no_error_message_)
 	go_error_at(location, "unexpected reference to package");
       return Expression::make_error(location);
@@ -15992,6 +15986,77 @@ Map_construction_expression::do_dump_expression(
   ast_dump_context->ostream() << "}";
 }
 
+// A composite literal key.  This is seen during parsing, but is not
+// resolved to a named_object in case this is a composite literal of
+// struct type.
+
+class Composite_literal_key_expression : public Parser_expression
+{
+ public:
+  Composite_literal_key_expression(const std::string& name, Location location)
+    : Parser_expression(EXPRESSION_COMPOSITE_LITERAL_KEY, location),
+      name_(name)
+  { }
+
+  const std::string&
+  name() const
+  { return this->name_; }
+
+ protected:
+  Expression*
+  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+
+  Expression*
+  do_copy()
+  {
+    return new Composite_literal_key_expression(this->name_, this->location());
+  }
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
+ private:
+  // The name.
+  std::string name_;
+};
+
+// Lower a composite literal key.  We will never get here for keys in
+// composite literals of struct types, because that is prevented by
+// Composite_literal_expression::do_traverse.  So if we do get here,
+// this must be a regular name reference after all.
+
+Expression*
+Composite_literal_key_expression::do_lower(Gogo* gogo, Named_object*,
+					   Statement_inserter*, int)
+{
+  Named_object* no = gogo->lookup(this->name_, NULL);
+  if (no == NULL)
+    {
+      go_error_at(this->location(), "reference to undefined name %qs",
+		  Gogo::message_name(this->name_).c_str());
+      return Expression::make_error(this->location());
+    }
+  return Expression::make_unknown_reference(no, this->location());
+}
+
+// Dump a composite literal key.
+
+void
+Composite_literal_key_expression::do_dump_expression(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->ostream() << "_UnknownName_(" << this->name_ << ")";
+}
+
+// Make a composite literal key.
+
+Expression*
+Expression::make_composite_literal_key(const std::string& name,
+				       Location location)
+{
+  return new Composite_literal_key_expression(name, location);
+}
+
 // Class Composite_literal_expression.
 
 // Traversal.
@@ -16013,6 +16078,7 @@ Composite_literal_expression::do_traverse(Traverse* traverse)
 
       for (int depth = 0; depth < this->depth_; ++depth)
         {
+	  type = type->deref();
           if (type->array_type() != NULL)
             type = type->array_type()->element_type();
           else if (type->map_type() != NULL)
@@ -16028,6 +16094,7 @@ Composite_literal_expression::do_traverse(Traverse* traverse)
               return TRAVERSE_CONTINUE;
             }
         }
+      type = type->deref();
 
       while (true)
 	{
@@ -16186,6 +16253,11 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
       const Named_object* no = NULL;
       switch (name_expr->classification())
 	{
+	case EXPRESSION_COMPOSITE_LITERAL_KEY:
+	  name =
+	    static_cast<Composite_literal_key_expression*>(name_expr)->name();
+	  break;
+
 	case EXPRESSION_UNKNOWN_REFERENCE:
 	  name = name_expr->unknown_expression()->name();
 	  if (type->named_type() != NULL)
@@ -16593,7 +16665,6 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
 	  // literals.  Lower it now to get the right error message.
 	  if ((*p)->unknown_expression() != NULL)
 	    {
-	      (*p)->unknown_expression()->clear_is_composite_literal_key();
 	      gogo->lower_expression(function, inserter, &*p);
 	      go_assert((*p)->is_error_expression());
 	      return Expression::make_error(location);
