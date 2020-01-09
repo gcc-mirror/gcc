@@ -1,3 +1,11 @@
+2020-01-09  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-12-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-prop.c (read_ipcp_transformation_info): Fix undefined ordering
+	of execution of function call parameters.
+
 2020-01-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2020-01-08 trunk r279995.
