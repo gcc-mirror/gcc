@@ -436,8 +436,6 @@
     UNSPEC_URHADD	; Used in aarch64-simd.md.
     UNSPEC_SHSUB	; Used in aarch64-simd.md.
     UNSPEC_UHSUB	; Used in aarch64-simd.md.
-    UNSPEC_SRHSUB	; Used in aarch64-simd.md.
-    UNSPEC_URHSUB	; Used in aarch64-simd.md.
     UNSPEC_ADDHN	; Used in aarch64-simd.md.
     UNSPEC_RADDHN	; Used in aarch64-simd.md.
     UNSPEC_SUBHN	; Used in aarch64-simd.md.
@@ -1841,8 +1839,7 @@
 
 (define_int_iterator HADDSUB [UNSPEC_SHADD UNSPEC_UHADD
 			      UNSPEC_SRHADD UNSPEC_URHADD
-			      UNSPEC_SHSUB UNSPEC_UHSUB
-			      UNSPEC_SRHSUB UNSPEC_URHSUB])
+			      UNSPEC_SHSUB UNSPEC_UHSUB])
 
 (define_int_iterator HADD [UNSPEC_SHADD UNSPEC_UHADD])
 
@@ -2273,7 +2270,6 @@
 (define_int_attr sur [(UNSPEC_SHADD "s") (UNSPEC_UHADD "u")
 		      (UNSPEC_SRHADD "sr") (UNSPEC_URHADD "ur")
 		      (UNSPEC_SHSUB "s") (UNSPEC_UHSUB "u")
-		      (UNSPEC_SRHSUB "sr") (UNSPEC_URHSUB "ur")
 		      (UNSPEC_ADDHN "") (UNSPEC_RADDHN "r")
 		      (UNSPEC_SABAL "s") (UNSPEC_UABAL "u")
 		      (UNSPEC_SABDL2 "s") (UNSPEC_UABDL2 "u")
@@ -2336,8 +2332,6 @@
 			 (UNSPEC_URHADD "add")
 			 (UNSPEC_SHSUB "sub")
 			 (UNSPEC_UHSUB "sub")
-			 (UNSPEC_SRHSUB "sub")
-			 (UNSPEC_URHSUB "sub")
 			 (UNSPEC_ADDHN "add")
 			 (UNSPEC_SUBHN "sub")
 			 (UNSPEC_RADDHN "add")
