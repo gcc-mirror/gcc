@@ -1,3 +1,8 @@
+2020-01-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/84135
+	* gfortran.dg/coarray/codimension_3.f90: New.
+
 2020-01-09  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/93200
@@ -29,7 +34,7 @@
 	* gcc.dg/Wstringop-overflow-27.c: Make testnames unique.
 
 2020-01-08  Joel Brobecker  <brobecker@adacore.com>
-            Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
 
 	* g++.target/aarch64/sve/tls_2.C: Add missing
 	{ dg-require-effective-target fpic } directive.
@@ -61,7 +66,7 @@
 	* gcc.c-torture/compile/pr93174.c: New test.
 
 2020-01-08  Olivier Hainque  <hainque@adacore.com>
-            Alexandre Oliva  <oliva@adacore.com>
+	    Alexandre Oliva  <oliva@adacore.com>
 
 	* gcc.target/aarch64/stack-check-alloca.h: Remove
 	#include alloca.h. #define alloca __builtin_alloca

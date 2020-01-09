@@ -928,8 +928,6 @@ done:
 static bool
 merge_array_spec (gfc_array_spec *from, gfc_array_spec *to, bool copy)
 {
-  int i, j;
-
   if ((from->type == AS_ASSUMED_RANK && to->corank)
       || (to->type == AS_ASSUMED_RANK && from->corank))
     {
@@ -944,18 +942,18 @@ merge_array_spec (gfc_array_spec *from, gfc_array_spec *to, bool copy)
       to->cray_pointee = from->cray_pointee;
       to->cp_was_assumed = from->cp_was_assumed;
 
-      for (i = 0; i < to->corank; i++)
+      for (int i = to->corank - 1; i >= 0; i--)
 	{
 	  /* Do not exceed the limits on lower[] and upper[].  gfortran
 	     cleans up elsewhere.  */
-	  j = from->rank + i;
+	  int j = from->rank + i;
 	  if (j >= GFC_MAX_DIMENSIONS)
 	    break;
 
 	  to->lower[j] = to->lower[i];
 	  to->upper[j] = to->upper[i];
 	}
-      for (i = 0; i < from->rank; i++)
+      for (int i = 0; i < from->rank; i++)
 	{
 	  if (copy)
 	    {
@@ -974,23 +972,24 @@ merge_array_spec (gfc_array_spec *from, gfc_array_spec *to, bool copy)
       to->corank = from->corank;
       to->cotype = from->cotype;
 
-      for (i = 0; i < from->corank; i++)
+      for (int i = 0; i < from->corank; i++)
 	{
 	  /* Do not exceed the limits on lower[] and upper[].  gfortran
 	     cleans up elsewhere.  */
-	  j = to->rank + i;
+	  int k = from->rank + i;
+	  int j = to->rank + i;
 	  if (j >= GFC_MAX_DIMENSIONS)
 	    break;
 
 	  if (copy)
 	    {
-	      to->lower[j] = gfc_copy_expr (from->lower[i]);
-	      to->upper[j] = gfc_copy_expr (from->upper[i]);
+	      to->lower[j] = gfc_copy_expr (from->lower[k]);
+	      to->upper[j] = gfc_copy_expr (from->upper[k]);
 	    }
 	  else
 	    {
-	      to->lower[j] = from->lower[i];
-	      to->upper[j] = from->upper[i];
+	      to->lower[j] = from->lower[k];
+	      to->upper[j] = from->upper[k];
 	    }
 	}
     }
