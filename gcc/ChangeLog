@@ -1,5 +1,13 @@
 2020-01-08  David Malcolm  <dmalcolm@redhat.com>
 
+	* vec.c (class selftest::count_dtor): New class.
+	(selftest::test_auto_delete_vec): New test.
+	(selftest::vec_c_tests): Call it.
+	* vec.h (class auto_delete_vec): New class template.
+	(auto_delete_vec<T>::~auto_delete_vec): New dtor.
+
+2020-01-08  David Malcolm  <dmalcolm@redhat.com>
+
 	* sbitmap.h (auto_sbitmap): Add operator const_sbitmap.
 
 2020-01-08  Jim Wilson  <jimw@sifive.com>
