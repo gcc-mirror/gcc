@@ -1,5 +1,10 @@
 2020-01-09  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/93054
+	* gcc.dg/pr93054.c: New testcase.
+
+2020-01-09  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/93040
 	* gcc.dg/optimize-bswaphi-1.c: Amend.
 	* gcc.dg/optimize-bswapsi-2.c: Likewise.
