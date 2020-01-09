@@ -1,3 +1,15 @@
+2020-01-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/65428
+	* array.c (empty_constructor): New variable.
+	(empty_ts): New variable.
+	(expand_constructor): Save typespec in empty_ts.
+	Unset empty_constructor if there is an element.
+	(gfc_expand_constructor): Initialize empty_constructor
+	and empty_ts.  If there was no explicit constructor
+	type and the constructor is empty, take the type from
+	empty_ts.
+
 2020-01-09  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/84135
