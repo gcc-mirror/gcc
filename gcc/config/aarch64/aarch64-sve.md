@@ -6839,6 +6839,8 @@
 ;; - WHILELO
 ;; - WHILELS
 ;; - WHILELT
+;; - WHILERW (SVE2)
+;; - WHILEWR (SVE2)
 ;; -------------------------------------------------------------------------
 
 ;; Set element I of the result if (cmp (plus operand1 J) operand2) is
@@ -6883,7 +6885,7 @@
 )
 
 ;; Same, but handle the case in which only the flags result is useful.
-(define_insn_and_rewrite "*while_<while_optab_cmp><GPI:mode><PRED_ALL:mode>_ptest"
+(define_insn_and_rewrite "@while_<while_optab_cmp><GPI:mode><PRED_ALL:mode>_ptest"
   [(set (reg:CC_NZC CC_REGNUM)
 	(unspec:CC_NZC
 	  [(match_operand 3)

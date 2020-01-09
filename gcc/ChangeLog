@@ -1,5 +1,17 @@
 2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/iterators.md (SVE_WHILE): Add UNSPEC_WHILERW
+	and UNSPEC_WHILEWR.
+	(while_optab_cmp): Handle them.
+	* config/aarch64/aarch64-sve.md
+	(*while_<while_optab_cmp><GPI:mode><PRED_ALL:mode>_ptest): Make public
+	and add a "@" marker.
+	* config/aarch64/aarch64-sve2.md (check_<raw_war>_ptrs<mode>): Use it
+	instead of gen_aarch64_sve2_while_ptest.
+	(@aarch64_sve2_while<cmp_op><GPI:mode><PRED_ALL:mode>_ptest): Delete.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64.md (UNSPEC_WHILE_LE): Rename to...
 	(UNSPEC_WHILELE): ...this.
 	(UNSPEC_WHILE_LO): Rename to...

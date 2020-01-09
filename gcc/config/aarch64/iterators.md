@@ -2083,7 +2083,9 @@
 					   UNSPEC_FCMLA180 UNSPEC_FCMLA270])
 
 (define_int_iterator SVE_WHILE [UNSPEC_WHILELE UNSPEC_WHILELO
-				UNSPEC_WHILELS UNSPEC_WHILELT])
+				UNSPEC_WHILELS UNSPEC_WHILELT
+				(UNSPEC_WHILERW "TARGET_SVE2")
+				(UNSPEC_WHILEWR "TARGET_SVE2")])
 
 (define_int_iterator SVE2_WHILE_PTR [UNSPEC_WHILERW UNSPEC_WHILEWR])
 
@@ -2496,7 +2498,9 @@
 (define_int_attr while_optab_cmp [(UNSPEC_WHILELE "le")
 				  (UNSPEC_WHILELO "ult")
 				  (UNSPEC_WHILELS "ule")
-				  (UNSPEC_WHILELT "lt")])
+				  (UNSPEC_WHILELT "lt")
+				  (UNSPEC_WHILERW "rw")
+				  (UNSPEC_WHILEWR "wr")])
 
 (define_int_attr raw_war [(UNSPEC_WHILERW "raw")
 			  (UNSPEC_WHILEWR "war")])
