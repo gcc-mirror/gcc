@@ -295,6 +295,7 @@ public:
 
   /* Allow calling sbitmap functions on our bitmap.  */
   operator sbitmap () { return m_bitmap; }
+  operator const_sbitmap () const { return m_bitmap; }
 
 private:
   /* Prevent making a copy that refers to our sbitmap.  */
