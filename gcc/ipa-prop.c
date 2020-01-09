@@ -4715,9 +4715,10 @@ read_ipcp_transformation_info (lto_input_block *ib, cgraph_node *node,
 	  bool known = bp_unpack_value (&bp, 1);
 	  if (known)
 	    {
+	      const widest_int value = streamer_read_widest_int (ib);
+	      const widest_int mask = streamer_read_widest_int (ib);
 	      ipa_bits *bits
-		= ipa_get_ipa_bits_for_value (streamer_read_widest_int (ib),
-					      streamer_read_widest_int (ib));
+		= ipa_get_ipa_bits_for_value (value, mask);
 	      (*ts->bits)[i] = bits;
 	    }
 	}
