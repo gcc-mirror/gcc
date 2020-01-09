@@ -4,7 +4,7 @@
 	* configure: Regenerate.
 
 2019-12-30  Jerome Lambourg  <lambourg@adacore.com>
-            Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
 
 	* config/os/vxworks/os_defines.h
 	(NOMINMAX): Always redefine to 1.
