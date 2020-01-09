@@ -2966,7 +2966,8 @@ early_inliner (function *fun)
 	}
       /* We iterate incremental inlining to get trivial cases of indirect
 	 inlining.  */
-      while (iterations < param_early_inliner_max_iterations
+      while (iterations < opt_for_fn (node->decl,
+				      param_early_inliner_max_iterations)
 	     && early_inline_small_functions (node))
 	{
 	  timevar_push (TV_INTEGRATION);
@@ -2985,7 +2986,8 @@ early_inliner (function *fun)
 	      es->call_stmt_time
 		= estimate_num_insns (edge->call_stmt, &eni_time_weights);
 	    }
-	  if (iterations < param_early_inliner_max_iterations - 1)
+	  if (iterations < opt_for_fn (node->decl,
+				       param_early_inliner_max_iterations) - 1)
 	    ipa_update_overall_fn_summary (node);
 	  timevar_pop (TV_INTEGRATION);
 	  iterations++;

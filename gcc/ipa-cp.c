@@ -1860,7 +1860,8 @@ ipcp_lattice<valtype>::add_value (valtype newval, cgraph_edge *cs,
 	return false;
       }
 
-  if (!unlimited && values_count == param_ipa_cp_value_list_size)
+  if (!unlimited && values_count == opt_for_fn (cs->caller->decl,
+						param_ipa_cp_value_list_size))
     {
       /* We can only free sources, not the values themselves, because sources
 	 of other values in this SCC might point to them.   */
@@ -2002,12 +2003,15 @@ propagate_vals_across_arith_jfunc (cgraph_edge *cs,
     {
       int i;
 
-      if (src_lat != dest_lat || param_ipa_cp_max_recursive_depth < 1)
+      int max_recursive_depth = opt_for_fn(cs->caller->decl,
+					   param_ipa_cp_max_recursive_depth);
+      if (src_lat != dest_lat || max_recursive_depth < 1)
 	return dest_lat->set_contains_variable ();
 
       /* No benefit if recursive execution is in low probability.  */
       if (cs->sreal_frequency () * 100
-	  <= ((sreal) 1) * param_ipa_cp_min_recursive_probability)
+	  <= ((sreal) 1) * opt_for_fn (cs->caller->decl,
+				       param_ipa_cp_min_recursive_probability))
 	return dest_lat->set_contains_variable ();
 
       auto_vec<ipcp_value<tree> *, 8> val_seeds;
@@ -2037,7 +2041,7 @@ propagate_vals_across_arith_jfunc (cgraph_edge *cs,
       /* Recursively generate lattice values with a limited count.  */
       FOR_EACH_VEC_ELT (val_seeds, i, src_val)
 	{
-	  for (int j = 1; j < param_ipa_cp_max_recursive_depth; j++)
+	  for (int j = 1; j < max_recursive_depth; j++)
 	    {
 	      tree cstval = get_val_across_arith_op (opcode, opnd1_type, opnd2,
 						     src_val, res_type);
@@ -3173,11 +3177,11 @@ devirtualization_time_bonus (struct cgraph_node *node,
 /* Return time bonus incurred because of HINTS.  */
 
 static int
-hint_time_bonus (ipa_hints hints)
+hint_time_bonus (cgraph_node *node, ipa_hints hints)
 {
   int result = 0;
   if (hints & (INLINE_HINT_loop_iterations | INLINE_HINT_loop_stride))
-    result += param_ipa_cp_loop_hint_bonus;
+    result += opt_for_fn (node->decl, param_ipa_cp_loop_hint_bonus);
   return result;
 }
 
@@ -3185,15 +3189,18 @@ hint_time_bonus (ipa_hints hints)
    cloning goodness evaluation, do so.  */
 
 static inline int64_t
-incorporate_penalties (ipa_node_params *info, int64_t evaluation)
+incorporate_penalties (cgraph_node *node, ipa_node_params *info,
+		       int64_t evaluation)
 {
   if (info->node_within_scc && !info->node_is_self_scc)
     evaluation = (evaluation
-		  * (100 - param_ipa_cp_recursion_penalty)) / 100;
+		  * (100 - opt_for_fn (node->decl,
+				       param_ipa_cp_recursion_penalty))) / 100;
 
   if (info->node_calling_single_call)
     evaluation = (evaluation
-		  * (100 - param_ipa_cp_single_call_penalty))
+		  * (100 - opt_for_fn (node->decl,
+				       param_ipa_cp_single_call_penalty)))
       / 100;
 
   return evaluation;
@@ -3215,6 +3222,7 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
   gcc_assert (size_cost > 0);
 
   class ipa_node_params *info = IPA_NODE_REF (node);
+  int eval_threshold = opt_for_fn (node->decl, param_ipa_cp_eval_threshold);
   if (max_count > profile_count::zero ())
     {
       int factor = RDIV (count_sum.probability_in
@@ -3222,7 +3230,7 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
 		         * 1000, REG_BR_PROB_BASE);
       int64_t evaluation = (((int64_t) time_benefit * factor)
 				    / size_cost);
-      evaluation = incorporate_penalties (info, evaluation);
+      evaluation = incorporate_penalties (node, info, evaluation);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -3234,16 +3242,16 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
 		 info->node_within_scc
 		   ? (info->node_is_self_scc ? ", self_scc" : ", scc") : "",
 		 info->node_calling_single_call ? ", single_call" : "",
-		 evaluation, param_ipa_cp_eval_threshold);
+		 evaluation, eval_threshold);
 	}
 
-      return evaluation >= param_ipa_cp_eval_threshold;
+      return evaluation >= eval_threshold;
     }
   else
     {
       int64_t evaluation = (((int64_t) time_benefit * freq_sum)
 				    / size_cost);
-      evaluation = incorporate_penalties (info, evaluation);
+      evaluation = incorporate_penalties (node, info, evaluation);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "     good_cloning_opportunity_p (time: %i, "
@@ -3253,9 +3261,9 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
 		 info->node_within_scc
 		   ? (info->node_is_self_scc ? ", self_scc" : ", scc") : "",
 		 info->node_calling_single_call ? ", single_call" : "",
-		 evaluation, param_ipa_cp_eval_threshold);
+		 evaluation, eval_threshold);
 
-      return evaluation >= param_ipa_cp_eval_threshold;
+      return evaluation >= eval_threshold;
     }
 }
 
@@ -3393,7 +3401,7 @@ perform_estimation_of_a_value (cgraph_node *node, vec<tree> known_csts,
     time_benefit = base_time.to_int ()
       + devirtualization_time_bonus (node, known_csts, known_contexts,
 				     known_aggs)
-      + hint_time_bonus (hints)
+      + hint_time_bonus (node, hints)
       + removable_params_cost + est_move_cost;
 
   gcc_checking_assert (size >=0);
@@ -3448,7 +3456,7 @@ estimate_local_effects (struct cgraph_node *node)
 					 known_aggs, &size, &time,
 					 &base_time, &hints);
       time -= devirt_bonus;
-      time -= hint_time_bonus (hints);
+      time -= hint_time_bonus (node, hints);
       time -= removable_params_cost;
       size -= stats.n_calls * removable_params_cost;
 
@@ -3876,7 +3884,7 @@ ipcp_propagate_stage (class ipa_topo_info *topo)
   max_new_size = overall_size;
   if (max_new_size < param_large_unit_insns)
     max_new_size = param_large_unit_insns;
-  max_new_size += max_new_size * param_ipcp_unit_growth / 100 + 1;
+  max_new_size += max_new_size * param_ipa_cp_unit_growth / 100 + 1;
 
   if (dump_file)
     fprintf (dump_file, "\noverall_size: %li, max_new_size: %li\n",

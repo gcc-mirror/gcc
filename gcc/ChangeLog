@@ -1,3 +1,28 @@
+2020-01-09  Martin Liska  <mliska@suse.cz>
+
+	* auto-profile.c (auto_profile): Use opt_for_fn
+	for a parameter.
+	* ipa-cp.c (ipcp_lattice::add_value): Likewise.
+	(propagate_vals_across_arith_jfunc): Likewise.
+	(hint_time_bonus): Likewise.
+	(incorporate_penalties): Likewise.
+	(good_cloning_opportunity_p): Likewise.
+	(perform_estimation_of_a_value): Likewise.
+	(estimate_local_effects): Likewise.
+	(ipcp_propagate_stage): Likewise.
+	* ipa-fnsummary.c (decompose_param_expr): Likewise.
+	(set_switch_stmt_execution_predicate): Likewise.
+	(analyze_function_body): Likewise.
+	* ipa-inline-analysis.c (offline_size): Likewise.
+	* ipa-inline.c (early_inliner): Likewise.
+	* ipa-prop.c (ipa_analyze_node): Likewise.
+	(ipcp_transform_function): Likewise.
+	* ipa-sra.c (process_scan_results): Likewise.
+	(ipa_sra_summarize_function): Likewise.
+	* params.opt: Rename ipcp-unit-growth to
+	ipa-cp-unit-growth.  Add Optimization for various
+	IPA-related parameters.
+
 2020-01-09  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/93054

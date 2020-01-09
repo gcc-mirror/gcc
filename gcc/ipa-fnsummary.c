@@ -1324,7 +1324,7 @@ decompose_param_expr (struct ipa_func_body_info *fbi,
 		      struct agg_position_info *aggpos,
 		      expr_eval_ops *param_ops_p = NULL)
 {
-  int op_limit = param_ipa_max_param_expr_ops;
+  int op_limit = opt_for_fn (fbi->node->decl, param_ipa_max_param_expr_ops);
   int op_count = 0;
 
   if (param_ops_p)
@@ -1555,7 +1555,8 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 
   auto_vec<std::pair<tree, tree> > ranges;
   tree type = TREE_TYPE (op);
-  int bound_limit = param_ipa_max_switch_predicate_bounds;
+  int bound_limit = opt_for_fn (fbi->node->decl,
+				param_ipa_max_switch_predicate_bounds);
   int bound_count = 0;
   wide_int vr_wmin, vr_wmax;
   value_range_kind vr_type = get_range_info (op, &vr_wmin, &vr_wmax);
@@ -2451,7 +2452,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	  fbi.bb_infos = vNULL;
 	  fbi.bb_infos.safe_grow_cleared (last_basic_block_for_fn (cfun));
 	  fbi.param_count = count_formal_params (node->decl);
-	  fbi.aa_walk_budget = param_ipa_max_aa_steps;
+	  fbi.aa_walk_budget = opt_for_fn (node->decl, param_ipa_max_aa_steps);
 
 	  nonconstant_names.safe_grow_cleared
 	    (SSANAMES (my_function)->length ());
