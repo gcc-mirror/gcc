@@ -1,5 +1,16 @@
 2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-protos.h (aarch64_sve_arith_immediate_p)
+	(aarch64_sve_sqadd_sqsub_immediate_p): Add a machine_mode argument.
+	* config/aarch64/aarch64.c (aarch64_sve_arith_immediate_p)
+	(aarch64_sve_sqadd_sqsub_immediate_p): Likewise.  Handle scalar
+	immediates as well as vector ones.
+	* config/aarch64/predicates.md (aarch64_sve_arith_immediate)
+	(aarch64_sve_sub_arith_immediate, aarch64_sve_qadd_immediate)
+	(aarch64_sve_qsub_immediate): Update calls accordingly.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-sve2.md: Add banner comments.
 	(<su>mulh<r>s<mode>3): Move further up file.
 	(<su>mull<bt><Vwide>, <r>shrnb<mode>, <r>shrnt<mode>)
