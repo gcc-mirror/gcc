@@ -1,3 +1,10 @@
+2020-01-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/84135
+	* array.c (gfc_set_array_spec): Fix shifting of codimensions
+	when adding a dimension.
+	* decl.c (merge_array_spec): Ditto. Fix using correct codimensions.
+
 2020-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/93162
