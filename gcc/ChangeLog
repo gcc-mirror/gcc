@@ -1,5 +1,21 @@
 2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.md (UNSPEC_WHILE_LE): Rename to...
+	(UNSPEC_WHILELE): ...this.
+	(UNSPEC_WHILE_LO): Rename to...
+	(UNSPEC_WHILELO): ...this.
+	(UNSPEC_WHILE_LS): Rename to...
+	(UNSPEC_WHILELS): ...this.
+	(UNSPEC_WHILE_LT): Rename to...
+	(UNSPEC_WHILELT): ...this.
+	* config/aarch64/iterators.md (SVE_WHILE): Update accordingly.
+	(cmp_op, while_optab_cmp): Likewise.
+	* config/aarch64/aarch64.c (aarch64_sve_move_pred_via_while): Likewise.
+	* config/aarch64/aarch64-sve-builtins-base.cc (svwhilele): Likewise.
+	(svwhilelt): Likewise.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-sve-builtins-shapes.h (unary_count): Delete.
 	(unary_to_uint): Define.
 	* config/aarch64/aarch64-sve-builtins-shapes.cc (unary_count_def)

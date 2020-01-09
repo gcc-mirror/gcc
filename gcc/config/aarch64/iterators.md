@@ -2082,8 +2082,8 @@
 (define_int_iterator SVE_CFP_TERNARY_LANE [UNSPEC_FCMLA UNSPEC_FCMLA90
 					   UNSPEC_FCMLA180 UNSPEC_FCMLA270])
 
-(define_int_iterator SVE_WHILE [UNSPEC_WHILE_LE UNSPEC_WHILE_LO
-				UNSPEC_WHILE_LS UNSPEC_WHILE_LT])
+(define_int_iterator SVE_WHILE [UNSPEC_WHILELE UNSPEC_WHILELO
+				UNSPEC_WHILELS UNSPEC_WHILELT])
 
 (define_int_iterator SVE2_WHILE_PTR [UNSPEC_WHILERW UNSPEC_WHILEWR])
 
@@ -2486,17 +2486,17 @@
 			 (UNSPEC_COND_FCMLE "le")
 			 (UNSPEC_COND_FCMLT "lt")
 			 (UNSPEC_COND_FCMNE "ne")
-			 (UNSPEC_WHILE_LE "le")
-			 (UNSPEC_WHILE_LO "lo")
-			 (UNSPEC_WHILE_LS "ls")
-			 (UNSPEC_WHILE_LT "lt")
+			 (UNSPEC_WHILELE "le")
+			 (UNSPEC_WHILELO "lo")
+			 (UNSPEC_WHILELS "ls")
+			 (UNSPEC_WHILELT "lt")
 			 (UNSPEC_WHILERW "rw")
 			 (UNSPEC_WHILEWR "wr")])
 
-(define_int_attr while_optab_cmp [(UNSPEC_WHILE_LE "le")
-				  (UNSPEC_WHILE_LO "ult")
-				  (UNSPEC_WHILE_LS "ule")
-				  (UNSPEC_WHILE_LT "lt")])
+(define_int_attr while_optab_cmp [(UNSPEC_WHILELE "le")
+				  (UNSPEC_WHILELO "ult")
+				  (UNSPEC_WHILELS "ule")
+				  (UNSPEC_WHILELT "lt")])
 
 (define_int_attr raw_war [(UNSPEC_WHILERW "raw")
 			  (UNSPEC_WHILEWR "war")])
