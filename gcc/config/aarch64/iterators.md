@@ -1577,10 +1577,10 @@
 			 (mult "mul")
 			 (div "div")
 			 (udiv "udiv")
-			 (ss_plus "qadd")
-			 (us_plus "qadd")
-			 (ss_minus "qsub")
-			 (us_minus "qsub")
+			 (ss_plus "ssadd")
+			 (us_plus "usadd")
+			 (ss_minus "sssub")
+			 (us_minus "ussub")
 			 (ss_neg "qneg")
 			 (ss_abs "qabs")
 			 (smin "smin")
@@ -1598,6 +1598,11 @@
 			 (geu "geu")
 			 (gtu "gtu")
 			 (abs "abs")])
+
+(define_code_attr addsub [(ss_plus "add")
+			  (us_plus "add")
+			  (ss_minus "sub")
+			  (us_minus "sub")])
 
 ;; For comparison operators we use the FCM* and CM* instructions.
 ;; As there are no CMLE or CMLT instructions which act on 3 vector

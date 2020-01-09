@@ -3879,7 +3879,7 @@
 ;; -------------------------------------------------------------------------
 
 ;; Unpredicated saturating signed addition and subtraction.
-(define_insn "@aarch64_<su_optab><optab><mode>"
+(define_insn "@aarch64_sve_<optab><mode>"
   [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, w, ?&w, ?&w, w")
 	(SBINQOPS:SVE_FULL_I
 	  (match_operand:SVE_FULL_I 1 "register_operand" "0, 0, w, w, w")
@@ -3895,7 +3895,7 @@
 )
 
 ;; Unpredicated saturating unsigned addition and subtraction.
-(define_insn "@aarch64_<su_optab><optab><mode>"
+(define_insn "@aarch64_sve_<optab><mode>"
   [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?&w, w")
 	(UBINQOPS:SVE_FULL_I
 	  (match_operand:SVE_FULL_I 1 "register_operand" "0, w, w")

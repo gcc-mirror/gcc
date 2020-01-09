@@ -3696,13 +3696,13 @@
 )
 ;; <su>q<addsub>
 
-(define_insn "aarch64_<su_optab><optab><mode>"
+(define_insn "aarch64_<su_optab>q<addsub><mode>"
   [(set (match_operand:VSDQ_I 0 "register_operand" "=w")
 	(BINQOPS:VSDQ_I (match_operand:VSDQ_I 1 "register_operand" "w")
-			  (match_operand:VSDQ_I 2 "register_operand" "w")))]
+			(match_operand:VSDQ_I 2 "register_operand" "w")))]
   "TARGET_SIMD"
-  "<su_optab><optab>\\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
-  [(set_attr "type" "neon_<optab><q>")]
+  "<su_optab>q<addsub>\\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
+  [(set_attr "type" "neon_q<addsub><q>")]
 )
 
 ;; suqadd and usqadd
