@@ -1,3 +1,10 @@
+2020-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93141
+	* gcc.target/i386/pr93141-1.c: Add tests with constants that have MSB
+	of the low half of the constant set.
+	* gcc.target/i386/pr93141-2.c: New test.
+
 2020-01-08  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/Wstringop-overflow-27.c: Make testnames unique.
