@@ -599,7 +599,7 @@ Common Joined UInteger Var(param_max_slsr_candidate_scan) Init(50) IntegerRange(
 Maximum length of candidate scans for straight-line strength reduction.
 
 -param=max-speculative-devirt-maydefs=
-Common Joined UInteger Var(param_max_speculative_devirt_maydefs) Init(50) Param
+Common Joined UInteger Var(param_max_speculative_devirt_maydefs) Init(50) Param Optimization
 Maximum number of may-defs visited when devirtualizing speculatively.
 
 -param=max-ssa-name-query-depth=

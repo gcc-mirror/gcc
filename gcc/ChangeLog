@@ -1,3 +1,8 @@
+2020-01-09  Martin Liska  <mliska@suse.cz>
+
+	* params.opt: Set Optimization for
+	param_max_speculative_devirt_maydefs.
+
 2020-01-09  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/93200
