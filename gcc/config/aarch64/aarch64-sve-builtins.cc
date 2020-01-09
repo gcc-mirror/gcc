@@ -2265,9 +2265,13 @@ tree
 gimple_folder::convert_pred (gimple_seq &stmts, tree vectype,
 			     unsigned int argno)
 {
-  tree predtype = truth_type_for (vectype);
   tree pred = gimple_call_arg (call, argno);
-  return gimple_build (&stmts, VIEW_CONVERT_EXPR, predtype, pred);
+  if (known_eq (TYPE_VECTOR_SUBPARTS (TREE_TYPE (pred)),
+		TYPE_VECTOR_SUBPARTS (vectype)))
+    return pred;
+
+  return gimple_build (&stmts, VIEW_CONVERT_EXPR,
+		       truth_type_for (vectype), pred);
 }
 
 /* Return a pointer to the address in a contiguous load or store,

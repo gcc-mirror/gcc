@@ -1,3 +1,18 @@
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target.def (compatible_vector_types_p): New target hook.
+	* hooks.h (hook_bool_const_tree_const_tree_true): Declare.
+	* hooks.c (hook_bool_const_tree_const_tree_true): New function.
+	* doc/tm.texi.in (TARGET_COMPATIBLE_VECTOR_TYPES_P): New hook.
+	* doc/tm.texi: Regenerate.
+	* gimple-expr.c: Include target.h.
+	(useless_type_conversion_p): Use targetm.compatible_vector_types_p.
+	* config/aarch64/aarch64.c (aarch64_compatible_vector_types_p): New
+	function.
+	(TARGET_COMPATIBLE_VECTOR_TYPES_P): Define.
+	* config/aarch64/aarch64-sve-builtins.cc (gimple_folder::convert_pred):
+	Use the original predicate if it already has a suitable type.
+
 2020-01-09  Martin Jambor  <mjambor@suse.cz>
 
 	* cgraph.h (cgraph_edge): Make remove, set_call_stmt, make_direct,

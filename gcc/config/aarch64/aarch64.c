@@ -2098,6 +2098,15 @@ aarch64_fntype_abi (const_tree fntype)
   return default_function_abi;
 }
 
+/* Implement TARGET_COMPATIBLE_VECTOR_TYPES_P.  */
+
+static bool
+aarch64_compatible_vector_types_p (const_tree type1, const_tree type2)
+{
+  return (aarch64_sve::builtin_type_p (type1)
+	  == aarch64_sve::builtin_type_p (type2));
+}
+
 /* Return true if we should emit CFI for register REGNO.  */
 
 static bool
@@ -22098,6 +22107,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P aarch64_vector_mode_supported_p
+
+#undef TARGET_COMPATIBLE_VECTOR_TYPES_P
+#define TARGET_COMPATIBLE_VECTOR_TYPES_P aarch64_compatible_vector_types_p
 
 #undef TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT
 #define TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT \
