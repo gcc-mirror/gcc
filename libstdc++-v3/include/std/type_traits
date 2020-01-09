@@ -685,10 +685,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	"template argument must be a complete class or an unbounded array");
     };
 
-  /// is_pod
+  /// is_pod (deprecated in C++20)
   // Could use is_standard_layout && is_trivial instead of the builtin.
   template<typename _Tp>
-    struct is_pod
+    struct
+    _GLIBCXX20_DEPRECATED("use is_standard_layout && is_trivial instead")
+    is_pod
     : public integral_constant<bool, __is_pod(_Tp)>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
@@ -3078,6 +3080,7 @@ template <typename _Tp>
 template <typename _Tp>
   inline constexpr bool is_standard_layout_v = is_standard_layout<_Tp>::value;
 template <typename _Tp>
+  _GLIBCXX20_DEPRECATED("use is_standard_layout_v && is_trivial_v instead")
   inline constexpr bool is_pod_v = is_pod<_Tp>::value;
 template <typename _Tp>
   inline constexpr bool is_literal_type_v = is_literal_type<_Tp>::value;

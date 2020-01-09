@@ -1,3 +1,9 @@
+2020-01-09  JeanHeyd "ThePhD" Meneide  <phdofthehouse@gmail.com>
+
+	* include/bits/c++config (_GLIBCXX20_DEPRECATED): Add new macro.
+	* include/std/type_traits (is_pod, is_pod_v): Deprecate for C++20.
+	* testuite/20_util/is_pod/deprecated-2a.cc: New test.
+
 2020-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/93205
