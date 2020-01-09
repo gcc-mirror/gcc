@@ -1257,9 +1257,12 @@ riscv_legitimize_tls_address (rtx loc)
   rtx dest, tp, tmp;
   enum tls_model model = SYMBOL_REF_TLS_MODEL (loc);
 
+#if 0
+  /* TLS copy relocs are now deprecated and should not be used.  */
   /* Since we support TLS copy relocs, non-PIC TLS accesses may all use LE.  */
   if (!flag_pic)
     model = TLS_MODEL_LOCAL_EXEC;
+#endif
 
   switch (model)
     {
