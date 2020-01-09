@@ -516,6 +516,32 @@ test_reverse ()
   }
 }
 
+/* A test class that increments a counter every time its dtor is called.  */
+
+class count_dtor
+{
+ public:
+  count_dtor (int *counter) : m_counter (counter) {}
+  ~count_dtor () { (*m_counter)++; }
+
+ private:
+  int *m_counter;
+};
+
+/* Verify that auto_delete_vec deletes the elements within it.  */
+
+static void
+test_auto_delete_vec ()
+{
+  int dtor_count = 0;
+  {
+    auto_delete_vec <count_dtor> v;
+    v.safe_push (new count_dtor (&dtor_count));
+    v.safe_push (new count_dtor (&dtor_count));
+  }
+  ASSERT_EQ (dtor_count, 2);
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -533,6 +559,7 @@ vec_c_tests ()
   test_block_remove ();
   test_qsort ();
   test_reverse ();
+  test_auto_delete_vec ();
 }
 
 } // namespace selftest
