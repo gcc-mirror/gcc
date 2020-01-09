@@ -416,6 +416,8 @@ public:
 					     type_suffix_index);
   bool require_derived_scalar_type (unsigned int, type_class_index,
 				    unsigned int = SAME_SIZE);
+  bool require_matching_pointer_type (unsigned int, unsigned int,
+				      type_suffix_index);
   bool require_integer_immediate (unsigned int);
 
   vector_type_index infer_vector_base_type (unsigned int);
@@ -430,12 +432,13 @@ public:
   bool check_num_arguments (unsigned int);
   bool check_gp_argument (unsigned int, unsigned int &, unsigned int &);
   tree resolve_unary (type_class_index = SAME_TYPE_CLASS,
-		      unsigned int = SAME_SIZE);
+		      unsigned int = SAME_SIZE, bool = false);
   tree resolve_uniform (unsigned int, unsigned int = 0);
   tree resolve_uniform_opt_n (unsigned int);
   tree finish_opt_n_resolution (unsigned int, unsigned int, type_suffix_index,
 				type_class_index = SAME_TYPE_CLASS,
-				unsigned int = SAME_SIZE);
+				unsigned int = SAME_SIZE,
+				type_suffix_index = NUM_TYPE_SUFFIXES);
 
   tree resolve ();
 
@@ -493,6 +496,7 @@ public:
   tree fold_contiguous_base (gimple_seq &, tree);
   tree load_store_cookie (tree);
 
+  gimple *redirect_call (const function_instance &);
   gimple *fold_to_pfalse ();
   gimple *fold_to_ptrue ();
   gimple *fold_to_vl_pred (unsigned int);
@@ -536,7 +540,7 @@ public:
   void add_fixed_operand (rtx);
   rtx generate_insn (insn_code);
 
-  void prepare_gather_address_operands (unsigned int);
+  void prepare_gather_address_operands (unsigned int, bool = true);
   void prepare_prefetch_operands ();
   void add_ptrue_hint (unsigned int, machine_mode);
   void rotate_inputs_left (unsigned int, unsigned int);

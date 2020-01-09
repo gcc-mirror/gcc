@@ -79,6 +79,15 @@
     __asm volatile ("" :: "w" (z0));				\
   }
 
+#define TEST_TYPE_CHANGE_Z(NAME, TYPE1, TYPE2, CODE1, CODE2)	\
+  PROTO (NAME, TYPE1, (TYPE2 z0, TYPE2 z1, TYPE2 z2, TYPE2 z3,	\
+		       svbool_t p0, svbool_t p1))		\
+  {								\
+    TYPE1 z0_res;						\
+    INVOKE (CODE1, CODE2);					\
+    return z0_res;						\
+  }
+
 #define TEST_UNIFORM_ZX(NAME, ZTYPE, STYPE, CODE1, CODE2)	\
   PROTO (NAME, ZTYPE, (ZTYPE z0, ZTYPE z1, ZTYPE z2, ZTYPE z3,	\
 		       svbool_t p0, STYPE x0))			\
@@ -103,6 +112,16 @@
     return p0;							\
   }
 
+#define TEST_DUAL_ZD(NAME, ZTYPE1, ZTYPE2, STYPE, CODE1, CODE2)	\
+  PROTO (NAME, ZTYPE1, (ZTYPE1 z0, ZTYPE1 z1, ZTYPE1 z2,	\
+			ZTYPE1 z3, ZTYPE2 z4, ZTYPE2 z5,	\
+			ZTYPE2 z6, STYPE d7, svbool_t p0,	\
+			svbool_t p1))				\
+  {								\
+    INVOKE (CODE1, CODE2);					\
+    return z0;							\
+  }
+
 #define TEST_DUAL_ZX(NAME, ZTYPE1, ZTYPE2, STYPE, CODE1, CODE2)	\
   PROTO (NAME, ZTYPE1, (ZTYPE1 z0, ZTYPE1 z1, ZTYPE1 z2,	\
 			ZTYPE1 z3, ZTYPE2 z4, ZTYPE2 z5,	\
@@ -111,6 +130,16 @@
   {								\
     INVOKE (CODE1, CODE2);					\
     return z0;							\
+  }
+
+#define TEST_TYPE_CHANGE_ZX(NAME, ZTYPE1, ZTYPE2, STYPE, CODE1, CODE2) \
+  PROTO (NAME, ZTYPE1, (ZTYPE2 z0, ZTYPE2 z1, ZTYPE2 z2,	\
+			ZTYPE2 z3, svbool_t p0, svbool_t p1,	\
+			STYPE x0))				\
+  {								\
+    ZTYPE1 z0_res;						\
+    INVOKE (CODE1, CODE2);					\
+    return z0_res;						\
   }
 
 #define TEST_LOAD(NAME, ZTYPE, STYPE, CODE1, CODE2)	\
@@ -325,6 +354,22 @@
     register TTYPE z24 __asm ("z24");				\
     INVOKE (CODE1, CODE2);					\
     __asm volatile ("" :: "w" (z4), "w" (z24));			\
+  }
+
+#define TEST_TBL2(NAME, TTYPE, ZTYPE, UTYPE, CODE1, CODE2)	\
+  PROTO (NAME, ZTYPE, (TTYPE z0, TTYPE z2, UTYPE z4))		\
+  {								\
+    register ZTYPE z0_res __asm ("z0");				\
+    INVOKE (CODE1, CODE2);					\
+    return z0_res;						\
+  }
+
+#define TEST_TBL2_REV(NAME, TTYPE, ZTYPE, UTYPE, CODE1, CODE2)	\
+  PROTO (NAME, ZTYPE, (UTYPE z0, TTYPE z1, TTYPE z3))		\
+  {								\
+    register ZTYPE z0_res __asm ("z0");				\
+    INVOKE (CODE1, CODE2);					\
+    return z0_res;						\
   }
 
 #endif

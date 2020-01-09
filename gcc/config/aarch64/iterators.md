@@ -285,8 +285,10 @@
 (define_mode_iterator VMUL_CHANGE_NLANES [V4HI V8HI V2SI V4SI V2SF V4SF])
 
 ;; Iterators for single modes, for "@" patterns.
+(define_mode_iterator VNx16QI_ONLY [VNx16QI])
 (define_mode_iterator VNx8HI_ONLY [VNx8HI])
 (define_mode_iterator VNx4SI_ONLY [VNx4SI])
+(define_mode_iterator VNx4SF_ONLY [VNx4SF])
 (define_mode_iterator VNx2DI_ONLY [VNx2DI])
 (define_mode_iterator VNx2DF_ONLY [VNx2DF])
 
@@ -298,6 +300,10 @@
 				  VNx64QI VNx32HI VNx16SI VNx8DI
 				  VNx32HF VNx16SF VNx8DF])
 
+;; SVE_STRUCT restricted to 2-vector tuples.
+(define_mode_iterator SVE_STRUCT2 [VNx32QI VNx16HI VNx8SI VNx4DI
+				   VNx16HF VNx8SF VNx4DF])
+
 ;; All fully-packed SVE vector modes.
 (define_mode_iterator SVE_FULL [VNx16QI VNx8HI VNx4SI VNx2DI
 			        VNx8HF VNx4SF VNx2DF])
@@ -307,6 +313,9 @@
 
 ;; All fully-packed SVE floating-point vector modes.
 (define_mode_iterator SVE_FULL_F [VNx8HF VNx4SF VNx2DF])
+
+;; Fully-packed SVE integer vector modes that have 8-bit or 16-bit elements.
+(define_mode_iterator SVE_FULL_BHI [VNx16QI VNx8HI])
 
 ;; Fully-packed SVE integer vector modes that have 8-bit, 16-bit or 32-bit
 ;; elements.
@@ -319,9 +328,16 @@
 ;; elements.
 (define_mode_iterator SVE_FULL_HSDI [VNx8HI VNx4SI VNx2DI])
 
+;; Fully-packed SVE integer vector modes that have 16-bit or 32-bit
+;; elements.
+(define_mode_iterator SVE_FULL_HSI [VNx8HI VNx4SI])
+
 ;; Fully-packed SVE floating-point vector modes that have 16-bit or 32-bit
 ;; elements.
 (define_mode_iterator SVE_FULL_HSF [VNx8HF VNx4SF])
+
+;; Fully-packed SVE integer vector modes that have 16-bit or 64-bit elements.
+(define_mode_iterator SVE_FULL_HDI [VNx8HI VNx2DI])
 
 ;; Fully-packed SVE vector modes that have 32-bit or 64-bit elements.
 (define_mode_iterator SVE_FULL_SD [VNx4SI VNx2DI VNx4SF VNx2DF])
@@ -386,6 +402,10 @@
 ;; SVE integer modes with 4 elements, excluding the narrowest element.
 (define_mode_iterator SVE_4HSI [VNx4HI VNx4SI])
 
+;; SVE integer modes that can form the input to an SVE2 PMULL[BT] instruction.
+(define_mode_iterator SVE2_PMULL_PAIR_I [VNx16QI VNx4SI
+					 (VNx2DI "TARGET_SVE2_AES")])
+
 ;; Modes involved in extending or truncating SVE data, for 8 elements per
 ;; 128-bit block.
 (define_mode_iterator VNx8_NARROW [VNx8QI])
@@ -446,10 +466,6 @@
     UNSPEC_RSUBHN2	; Used in aarch64-simd.md.
     UNSPEC_SQDMULH	; Used in aarch64-simd.md.
     UNSPEC_SQRDMULH	; Used in aarch64-simd.md.
-    UNSPEC_SMULLB	; Used in aarch64-sve2.md.
-    UNSPEC_SMULLT	; Used in aarch64-sve2.md.
-    UNSPEC_UMULLB	; Used in aarch64-sve2.md.
-    UNSPEC_UMULLT	; Used in aarch64-sve2.md.
     UNSPEC_PMUL		; Used in aarch64-simd.md.
     UNSPEC_FMULX	; Used in aarch64-simd.md.
     UNSPEC_USQADD	; Used in aarch64-simd.md.
@@ -472,10 +488,6 @@
     UNSPEC_UQSHRN	; Used in aarch64-simd.md.
     UNSPEC_SQRSHRN	; Used in aarch64-simd.md.
     UNSPEC_UQRSHRN	; Used in aarch64-simd.md.
-    UNSPEC_SHRNB	; Used in aarch64-sve2.md.
-    UNSPEC_SHRNT	; Used in aarch64-sve2.md.
-    UNSPEC_RSHRNB	; Used in aarch64-sve2.md.
-    UNSPEC_RSHRNT	; Used in aarch64-sve2.md.
     UNSPEC_SSHL		; Used in aarch64-simd.md.
     UNSPEC_USHL		; Used in aarch64-simd.md.
     UNSPEC_SRSHL	; Used in aarch64-simd.md.
@@ -643,11 +655,129 @@
     UNSPEC_FCMLA90	; Used in aarch64-simd.md.
     UNSPEC_FCMLA180	; Used in aarch64-simd.md.
     UNSPEC_FCMLA270	; Used in aarch64-simd.md.
-    UNSPEC_SMULHS	; Used in aarch64-sve2.md.
-    UNSPEC_SMULHRS	; Used in aarch64-sve2.md.
-    UNSPEC_UMULHS	; Used in aarch64-sve2.md.
-    UNSPEC_UMULHRS	; Used in aarch64-sve2.md.
     UNSPEC_ASRD		; Used in aarch64-sve.md.
+    UNSPEC_ADCLB	; Used in aarch64-sve2.md.
+    UNSPEC_ADCLT	; Used in aarch64-sve2.md.
+    UNSPEC_ADDHNB	; Used in aarch64-sve2.md.
+    UNSPEC_ADDHNT	; Used in aarch64-sve2.md.
+    UNSPEC_BDEP		; Used in aarch64-sve2.md.
+    UNSPEC_BEXT		; Used in aarch64-sve2.md.
+    UNSPEC_BGRP		; Used in aarch64-sve2.md.
+    UNSPEC_CADD270	; Used in aarch64-sve2.md.
+    UNSPEC_CADD90	; Used in aarch64-sve2.md.
+    UNSPEC_CDOT		; Used in aarch64-sve2.md.
+    UNSPEC_CDOT180	; Used in aarch64-sve2.md.
+    UNSPEC_CDOT270	; Used in aarch64-sve2.md.
+    UNSPEC_CDOT90	; Used in aarch64-sve2.md.
+    UNSPEC_CMLA		; Used in aarch64-sve2.md.
+    UNSPEC_CMLA180	; Used in aarch64-sve2.md.
+    UNSPEC_CMLA270	; Used in aarch64-sve2.md.
+    UNSPEC_CMLA90	; Used in aarch64-sve2.md.
+    UNSPEC_COND_FCVTLT	; Used in aarch64-sve2.md.
+    UNSPEC_COND_FCVTNT	; Used in aarch64-sve2.md.
+    UNSPEC_COND_FCVTX	; Used in aarch64-sve2.md.
+    UNSPEC_COND_FCVTXNT	; Used in aarch64-sve2.md.
+    UNSPEC_COND_FLOGB	; Used in aarch64-sve2.md.
+    UNSPEC_EORBT	; Used in aarch64-sve2.md.
+    UNSPEC_EORTB	; Used in aarch64-sve2.md.
+    UNSPEC_FADDP	; Used in aarch64-sve2.md.
+    UNSPEC_FMAXNMP	; Used in aarch64-sve2.md.
+    UNSPEC_FMAXP	; Used in aarch64-sve2.md.
+    UNSPEC_FMINNMP	; Used in aarch64-sve2.md.
+    UNSPEC_FMINP	; Used in aarch64-sve2.md.
+    UNSPEC_FMLALB	; Used in aarch64-sve2.md.
+    UNSPEC_FMLALT	; Used in aarch64-sve2.md.
+    UNSPEC_FMLSLB	; Used in aarch64-sve2.md.
+    UNSPEC_FMLSLT	; Used in aarch64-sve2.md.
+    UNSPEC_HISTCNT	; Used in aarch64-sve2.md.
+    UNSPEC_HISTSEG	; Used in aarch64-sve2.md.
+    UNSPEC_MATCH	; Used in aarch64-sve2.md.
+    UNSPEC_NMATCH	; Used in aarch64-sve2.md.
+    UNSPEC_PMULLB	; Used in aarch64-sve2.md.
+    UNSPEC_PMULLB_PAIR	; Used in aarch64-sve2.md.
+    UNSPEC_PMULLT	; Used in aarch64-sve2.md.
+    UNSPEC_PMULLT_PAIR	; Used in aarch64-sve2.md.
+    UNSPEC_RADDHNB	; Used in aarch64-sve2.md.
+    UNSPEC_RADDHNT	; Used in aarch64-sve2.md.
+    UNSPEC_RSHRNB	; Used in aarch64-sve2.md.
+    UNSPEC_RSHRNT	; Used in aarch64-sve2.md.
+    UNSPEC_RSUBHNB	; Used in aarch64-sve2.md.
+    UNSPEC_RSUBHNT	; Used in aarch64-sve2.md.
+    UNSPEC_SABDLB	; Used in aarch64-sve2.md.
+    UNSPEC_SABDLT	; Used in aarch64-sve2.md.
+    UNSPEC_SADDLB	; Used in aarch64-sve2.md.
+    UNSPEC_SADDLBT	; Used in aarch64-sve2.md.
+    UNSPEC_SADDLT	; Used in aarch64-sve2.md.
+    UNSPEC_SADDWB	; Used in aarch64-sve2.md.
+    UNSPEC_SADDWT	; Used in aarch64-sve2.md.
+    UNSPEC_SBCLB	; Used in aarch64-sve2.md.
+    UNSPEC_SBCLT	; Used in aarch64-sve2.md.
+    UNSPEC_SHRNB	; Used in aarch64-sve2.md.
+    UNSPEC_SHRNT	; Used in aarch64-sve2.md.
+    UNSPEC_SLI		; Used in aarch64-sve2.md.
+    UNSPEC_SMAXP	; Used in aarch64-sve2.md.
+    UNSPEC_SMINP	; Used in aarch64-sve2.md.
+    UNSPEC_SMULHRS	; Used in aarch64-sve2.md.
+    UNSPEC_SMULHS	; Used in aarch64-sve2.md.
+    UNSPEC_SMULLB	; Used in aarch64-sve2.md.
+    UNSPEC_SMULLT	; Used in aarch64-sve2.md.
+    UNSPEC_SQCADD270	; Used in aarch64-sve2.md.
+    UNSPEC_SQCADD90	; Used in aarch64-sve2.md.
+    UNSPEC_SQDMULLB	; Used in aarch64-sve2.md.
+    UNSPEC_SQDMULLBT	; Used in aarch64-sve2.md.
+    UNSPEC_SQDMULLT	; Used in aarch64-sve2.md.
+    UNSPEC_SQRDCMLAH	; Used in aarch64-sve2.md.
+    UNSPEC_SQRDCMLAH180	; Used in aarch64-sve2.md.
+    UNSPEC_SQRDCMLAH270	; Used in aarch64-sve2.md.
+    UNSPEC_SQRDCMLAH90	; Used in aarch64-sve2.md.
+    UNSPEC_SQRSHRNB	; Used in aarch64-sve2.md.
+    UNSPEC_SQRSHRNT	; Used in aarch64-sve2.md.
+    UNSPEC_SQRSHRUNB	; Used in aarch64-sve2.md.
+    UNSPEC_SQRSHRUNT	; Used in aarch64-sve2.md.
+    UNSPEC_SQSHRNB	; Used in aarch64-sve2.md.
+    UNSPEC_SQSHRNT	; Used in aarch64-sve2.md.
+    UNSPEC_SQSHRUNB	; Used in aarch64-sve2.md.
+    UNSPEC_SQSHRUNT	; Used in aarch64-sve2.md.
+    UNSPEC_SQXTNB	; Used in aarch64-sve2.md.
+    UNSPEC_SQXTNT	; Used in aarch64-sve2.md.
+    UNSPEC_SQXTUNB	; Used in aarch64-sve2.md.
+    UNSPEC_SQXTUNT	; Used in aarch64-sve2.md.
+    UNSPEC_SRI		; Used in aarch64-sve2.md.
+    UNSPEC_SSHLLB	; Used in aarch64-sve2.md.
+    UNSPEC_SSHLLT	; Used in aarch64-sve2.md.
+    UNSPEC_SSUBLB	; Used in aarch64-sve2.md.
+    UNSPEC_SSUBLBT	; Used in aarch64-sve2.md.
+    UNSPEC_SSUBLT	; Used in aarch64-sve2.md.
+    UNSPEC_SSUBLTB	; Used in aarch64-sve2.md.
+    UNSPEC_SSUBWB	; Used in aarch64-sve2.md.
+    UNSPEC_SSUBWT	; Used in aarch64-sve2.md.
+    UNSPEC_SUBHNB	; Used in aarch64-sve2.md.
+    UNSPEC_SUBHNT	; Used in aarch64-sve2.md.
+    UNSPEC_TBL2		; Used in aarch64-sve2.md.
+    UNSPEC_UABDLB	; Used in aarch64-sve2.md.
+    UNSPEC_UABDLT	; Used in aarch64-sve2.md.
+    UNSPEC_UADDLB	; Used in aarch64-sve2.md.
+    UNSPEC_UADDLT	; Used in aarch64-sve2.md.
+    UNSPEC_UADDWB	; Used in aarch64-sve2.md.
+    UNSPEC_UADDWT	; Used in aarch64-sve2.md.
+    UNSPEC_UMAXP	; Used in aarch64-sve2.md.
+    UNSPEC_UMINP	; Used in aarch64-sve2.md.
+    UNSPEC_UMULHRS	; Used in aarch64-sve2.md.
+    UNSPEC_UMULHS	; Used in aarch64-sve2.md.
+    UNSPEC_UMULLB	; Used in aarch64-sve2.md.
+    UNSPEC_UMULLT	; Used in aarch64-sve2.md.
+    UNSPEC_UQRSHRNB	; Used in aarch64-sve2.md.
+    UNSPEC_UQRSHRNT	; Used in aarch64-sve2.md.
+    UNSPEC_UQSHRNB	; Used in aarch64-sve2.md.
+    UNSPEC_UQSHRNT	; Used in aarch64-sve2.md.
+    UNSPEC_UQXTNB	; Used in aarch64-sve2.md.
+    UNSPEC_UQXTNT	; Used in aarch64-sve2.md.
+    UNSPEC_USHLLB	; Used in aarch64-sve2.md.
+    UNSPEC_USHLLT	; Used in aarch64-sve2.md.
+    UNSPEC_USUBLB	; Used in aarch64-sve2.md.
+    UNSPEC_USUBLT	; Used in aarch64-sve2.md.
+    UNSPEC_USUBWB	; Used in aarch64-sve2.md.
+    UNSPEC_USUBWT	; Used in aarch64-sve2.md.
 ])
 
 ;; ------------------------------------------------------------------
@@ -1011,6 +1141,11 @@
 (define_mode_attr VNARROWQ2 [(V8HI "V16QI") (V4SI "V8HI")
 			     (V2DI "V4SI")])
 
+;; Narrowed modes of vector modes.
+(define_mode_attr VNARROW [(VNx8HI "VNx16QI")
+			   (VNx4SI "VNx8HI") (VNx4SF "VNx8HF")
+			   (VNx2DI "VNx4SI") (VNx2DF "VNx4SF")])
+
 ;; Register suffix narrowed modes for VQN.
 (define_mode_attr Vntype [(V8HI "8b") (V4SI "4h")
 			  (V2DI "2s")])
@@ -1049,10 +1184,16 @@
 			  (V8HI "4s") (V4SI "2d")
 			  (V8HF "4s") (V4SF "2d")])
 
-;; SVE vector after widening
+;; SVE vector after narrowing.
+(define_mode_attr Ventype [(VNx8HI "b")
+			   (VNx4SI "h") (VNx4SF "h")
+			   (VNx2DI "s") (VNx2DF "s")])
+
+;; SVE vector after widening.
 (define_mode_attr Vewtype [(VNx16QI "h")
 			   (VNx8HI  "s") (VNx8HF "s")
-			   (VNx4SI  "d") (VNx4SF "d")])
+			   (VNx4SI  "d") (VNx4SF "d")
+			   (VNx2DI  "q")])
 
 ;; Widened mode register suffixes for VDW/VQW.
 (define_mode_attr Vmwtype [(V8QI ".8h") (V4HI ".4s")
@@ -1401,6 +1542,11 @@
 			 (VNx16SI "vnx4bi") (VNx16SF "vnx4bi")
 			 (VNx8DI "vnx2bi") (VNx8DF "vnx2bi")])
 
+(define_mode_attr VDOUBLE [(VNx16QI "VNx32QI")
+			   (VNx8HI "VNx16HI") (VNx8HF "VNx16HF")
+			   (VNx4SI "VNx8SI") (VNx4SF "VNx8SF")
+			   (VNx2DI "VNx4DI") (VNx2DF "VNx4DF")])
+
 ;; On AArch64 the By element instruction doesn't have a 2S variant.
 ;; However because the instruction always selects a pair of values
 ;; The normal 3SAME instruction can be used here instead.
@@ -1427,7 +1573,7 @@
 				 (VNx2DI "0x27")])
 
 ;; The constraint to use for an SVE [SU]DOT, FMUL, FMLA or FMLS lane index.
-(define_mode_attr sve_lane_con [(VNx4SI "y") (VNx2DI "x")
+(define_mode_attr sve_lane_con [(VNx8HI "y") (VNx4SI "y") (VNx2DI "x")
 				(VNx8HF "y") (VNx4SF "y") (VNx2DF "x")])
 
 ;; The constraint to use for an SVE FCMLA lane index.
@@ -1529,12 +1675,18 @@
 (define_code_iterator FAC_COMPARISONS [lt le ge gt])
 
 ;; SVE integer unary operations.
-(define_code_iterator SVE_INT_UNARY [abs neg not clrsb clz popcount])
+(define_code_iterator SVE_INT_UNARY [abs neg not clrsb clz popcount
+				     (ss_abs "TARGET_SVE2")
+				     (ss_neg "TARGET_SVE2")])
 
 ;; SVE integer binary operations.
 (define_code_iterator SVE_INT_BINARY [plus minus mult smax umax smin umin
 				      ashift ashiftrt lshiftrt
-				      and ior xor])
+				      and ior xor
+				      (ss_plus "TARGET_SVE2")
+				      (us_plus "TARGET_SVE2")
+				      (ss_minus "TARGET_SVE2")
+				      (us_minus "TARGET_SVE2")])
 
 ;; SVE integer binary division operations.
 (define_code_iterator SVE_INT_BINARY_SD [div udiv])
@@ -1752,7 +1904,13 @@
 			      (not "not")
 			      (clrsb "cls")
 			      (clz "clz")
-			      (popcount "cnt")])
+			      (popcount "cnt")
+			      (ss_plus "sqadd")
+			      (us_plus "uqadd")
+			      (ss_minus "sqsub")
+			      (us_minus "uqsub")
+			      (ss_neg "sqneg")
+			      (ss_abs "sqabs")])
 
 (define_code_attr sve_int_op_rev [(plus "add")
 				  (minus "subr")
@@ -1768,7 +1926,11 @@
 				  (lshiftrt "lsrr")
 				  (and "and")
 				  (ior "orr")
-				  (xor "eor")])
+				  (xor "eor")
+				  (ss_plus "sqadd")
+				  (us_plus "uqadd")
+				  (ss_minus "sqsubr")
+				  (us_minus "uqsubr")])
 
 ;; The floating-point SVE instruction that implements an rtx code.
 (define_code_attr sve_fp_op [(plus "fadd")
@@ -1814,7 +1976,11 @@
    (lshiftrt "aarch64_sve_rshift_operand")
    (and "aarch64_sve_pred_and_operand")
    (ior "register_operand")
-   (xor "register_operand")])
+   (xor "register_operand")
+   (ss_plus "register_operand")
+   (us_plus "register_operand")
+   (ss_minus "register_operand")
+   (us_minus "register_operand")])
 
 (define_code_attr inc_dec [(minus "dec") (ss_minus "sqdec") (us_minus "uqdec")
 			   (plus "inc") (ss_plus "sqinc") (us_plus "uqinc")])
@@ -1849,13 +2015,6 @@
 (define_int_iterator HADD [UNSPEC_SHADD UNSPEC_UHADD])
 
 (define_int_iterator RHADD [UNSPEC_SRHADD UNSPEC_URHADD])
-
-(define_int_iterator MULLBT [UNSPEC_SMULLB UNSPEC_UMULLB
-                             UNSPEC_SMULLT UNSPEC_UMULLT])
-
-(define_int_iterator SHRNB [UNSPEC_SHRNB UNSPEC_RSHRNB])
-
-(define_int_iterator SHRNT [UNSPEC_SHRNT UNSPEC_RSHRNT])
 
 (define_int_iterator BSL_DUP [1 2])
 
@@ -1971,6 +2130,11 @@
 
 (define_int_iterator SVE_FP_UNARY_INT [UNSPEC_FEXPA])
 
+(define_int_iterator SVE_INT_SHIFT_IMM [UNSPEC_ASRD
+					(UNSPEC_SQSHLU "TARGET_SVE2")
+					(UNSPEC_SRSHR "TARGET_SVE2")
+					(UNSPEC_URSHR "TARGET_SVE2")])
+
 (define_int_iterator SVE_FP_BINARY [UNSPEC_FRECPS UNSPEC_RSQRTS])
 
 (define_int_iterator SVE_FP_BINARY_INT [UNSPEC_FTSMUL UNSPEC_FTSSEL])
@@ -2084,6 +2248,10 @@
 
 (define_int_iterator SVE_WHILE [UNSPEC_WHILELE UNSPEC_WHILELO
 				UNSPEC_WHILELS UNSPEC_WHILELT
+				(UNSPEC_WHILEGE "TARGET_SVE2")
+				(UNSPEC_WHILEGT "TARGET_SVE2")
+				(UNSPEC_WHILEHI "TARGET_SVE2")
+				(UNSPEC_WHILEHS "TARGET_SVE2")
 				(UNSPEC_WHILERW "TARGET_SVE2")
 				(UNSPEC_WHILEWR "TARGET_SVE2")])
 
@@ -2094,6 +2262,232 @@
 				     UNSPEC_LSHIFTRT_WIDE])
 
 (define_int_iterator SVE_LDFF1_LDNF1 [UNSPEC_LDFF1 UNSPEC_LDNF1])
+
+(define_int_iterator SVE2_U32_UNARY [UNSPEC_URECPE UNSPEC_RSQRTE])
+
+(define_int_iterator SVE2_INT_UNARY_NARROWB [UNSPEC_SQXTNB
+					     UNSPEC_SQXTUNB
+					     UNSPEC_UQXTNB])
+
+(define_int_iterator SVE2_INT_UNARY_NARROWT [UNSPEC_SQXTNT
+					     UNSPEC_SQXTUNT
+					     UNSPEC_UQXTNT])
+
+(define_int_iterator SVE2_INT_BINARY [UNSPEC_SQDMULH
+				      UNSPEC_SQRDMULH])
+
+(define_int_iterator SVE2_INT_BINARY_LANE [UNSPEC_SQDMULH
+					   UNSPEC_SQRDMULH])
+
+(define_int_iterator SVE2_INT_BINARY_LONG [UNSPEC_SABDLB
+					   UNSPEC_SABDLT
+					   UNSPEC_SADDLB
+					   UNSPEC_SADDLBT
+					   UNSPEC_SADDLT
+					   UNSPEC_SMULLB
+					   UNSPEC_SMULLT
+					   UNSPEC_SQDMULLB
+					   UNSPEC_SQDMULLT
+					   UNSPEC_SSUBLB
+					   UNSPEC_SSUBLBT
+					   UNSPEC_SSUBLT
+					   UNSPEC_SSUBLTB
+					   UNSPEC_UABDLB
+					   UNSPEC_UABDLT
+					   UNSPEC_UADDLB
+					   UNSPEC_UADDLT
+					   UNSPEC_UMULLB
+					   UNSPEC_UMULLT
+					   UNSPEC_USUBLB
+					   UNSPEC_USUBLT])
+
+(define_int_iterator SVE2_INT_BINARY_LONG_LANE [UNSPEC_SMULLB
+						UNSPEC_SMULLT
+						UNSPEC_SQDMULLB
+						UNSPEC_SQDMULLT
+						UNSPEC_UMULLB
+						UNSPEC_UMULLT])
+
+(define_int_iterator SVE2_INT_BINARY_NARROWB [UNSPEC_ADDHNB
+					      UNSPEC_RADDHNB
+					      UNSPEC_RSUBHNB
+					      UNSPEC_SUBHNB])
+
+(define_int_iterator SVE2_INT_BINARY_NARROWT [UNSPEC_ADDHNT
+					      UNSPEC_RADDHNT
+					      UNSPEC_RSUBHNT
+					      UNSPEC_SUBHNT])
+
+(define_int_iterator SVE2_INT_BINARY_PAIR [UNSPEC_ADDP
+					   UNSPEC_SMAXP
+					   UNSPEC_SMINP
+					   UNSPEC_UMAXP
+					   UNSPEC_UMINP])
+
+(define_int_iterator SVE2_FP_BINARY_PAIR [UNSPEC_FADDP
+					  UNSPEC_FMAXP
+					  UNSPEC_FMAXNMP
+					  UNSPEC_FMINP
+					  UNSPEC_FMINNMP])
+
+(define_int_iterator SVE2_INT_BINARY_PAIR_LONG [UNSPEC_SADALP UNSPEC_UADALP])
+
+(define_int_iterator SVE2_INT_BINARY_WIDE [UNSPEC_SADDWB
+					   UNSPEC_SADDWT
+					   UNSPEC_SSUBWB
+					   UNSPEC_SSUBWT
+					   UNSPEC_UADDWB
+					   UNSPEC_UADDWT
+					   UNSPEC_USUBWB
+					   UNSPEC_USUBWT])
+
+(define_int_iterator SVE2_INT_SHIFT_IMM_LONG [UNSPEC_SSHLLB
+					      UNSPEC_SSHLLT
+					      UNSPEC_USHLLB
+					      UNSPEC_USHLLT])
+
+(define_int_iterator SVE2_INT_SHIFT_IMM_NARROWB [UNSPEC_RSHRNB
+						 UNSPEC_SHRNB
+						 UNSPEC_SQRSHRNB
+						 UNSPEC_SQRSHRUNB
+						 UNSPEC_SQSHRNB
+						 UNSPEC_SQSHRUNB
+						 UNSPEC_UQRSHRNB
+						 UNSPEC_UQSHRNB])
+
+(define_int_iterator SVE2_INT_SHIFT_IMM_NARROWT [UNSPEC_RSHRNT
+						 UNSPEC_SHRNT
+						 UNSPEC_SQRSHRNT
+						 UNSPEC_SQRSHRUNT
+						 UNSPEC_SQSHRNT
+						 UNSPEC_SQSHRUNT
+						 UNSPEC_UQRSHRNT
+						 UNSPEC_UQSHRNT])
+
+(define_int_iterator SVE2_INT_SHIFT_INSERT [UNSPEC_SLI UNSPEC_SRI])
+
+(define_int_iterator SVE2_INT_CADD [UNSPEC_CADD90
+				    UNSPEC_CADD270
+				    UNSPEC_SQCADD90
+				    UNSPEC_SQCADD270])
+
+(define_int_iterator SVE2_INT_BITPERM [UNSPEC_BDEP UNSPEC_BEXT UNSPEC_BGRP])
+
+(define_int_iterator SVE2_INT_TERNARY [UNSPEC_ADCLB
+				       UNSPEC_ADCLT
+				       UNSPEC_EORBT
+				       UNSPEC_EORTB
+				       UNSPEC_SBCLB
+				       UNSPEC_SBCLT
+				       UNSPEC_SQRDMLAH
+				       UNSPEC_SQRDMLSH])
+
+(define_int_iterator SVE2_INT_TERNARY_LANE [UNSPEC_SQRDMLAH
+					    UNSPEC_SQRDMLSH])
+
+(define_int_iterator SVE2_FP_TERNARY_LONG [UNSPEC_FMLALB
+					   UNSPEC_FMLALT
+					   UNSPEC_FMLSLB
+					   UNSPEC_FMLSLT])
+
+(define_int_iterator SVE2_FP_TERNARY_LONG_LANE [UNSPEC_FMLALB
+						UNSPEC_FMLALT
+						UNSPEC_FMLSLB
+						UNSPEC_FMLSLT])
+
+(define_int_iterator SVE2_INT_CMLA [UNSPEC_CMLA
+				    UNSPEC_CMLA90
+				    UNSPEC_CMLA180
+				    UNSPEC_CMLA270
+				    UNSPEC_SQRDCMLAH
+				    UNSPEC_SQRDCMLAH90
+				    UNSPEC_SQRDCMLAH180
+				    UNSPEC_SQRDCMLAH270])
+
+(define_int_iterator SVE2_INT_CDOT [UNSPEC_CDOT
+				    UNSPEC_CDOT90
+				    UNSPEC_CDOT180
+				    UNSPEC_CDOT270])
+
+(define_int_iterator SVE2_INT_ADD_BINARY_LONG [UNSPEC_SABDLB
+					       UNSPEC_SABDLT
+					       UNSPEC_SMULLB
+					       UNSPEC_SMULLT
+					       UNSPEC_UABDLB
+					       UNSPEC_UABDLT
+					       UNSPEC_UMULLB
+					       UNSPEC_UMULLT])
+
+(define_int_iterator SVE2_INT_QADD_BINARY_LONG [UNSPEC_SQDMULLB
+					        UNSPEC_SQDMULLBT
+					        UNSPEC_SQDMULLT])
+
+(define_int_iterator SVE2_INT_SUB_BINARY_LONG [UNSPEC_SMULLB
+					       UNSPEC_SMULLT
+					       UNSPEC_UMULLB
+					       UNSPEC_UMULLT])
+
+(define_int_iterator SVE2_INT_QSUB_BINARY_LONG [UNSPEC_SQDMULLB
+					        UNSPEC_SQDMULLBT
+					        UNSPEC_SQDMULLT])
+
+(define_int_iterator SVE2_INT_ADD_BINARY_LONG_LANE [UNSPEC_SMULLB
+						    UNSPEC_SMULLT
+						    UNSPEC_UMULLB
+						    UNSPEC_UMULLT])
+
+(define_int_iterator SVE2_INT_QADD_BINARY_LONG_LANE [UNSPEC_SQDMULLB
+						     UNSPEC_SQDMULLT])
+
+(define_int_iterator SVE2_INT_SUB_BINARY_LONG_LANE [UNSPEC_SMULLB
+						    UNSPEC_SMULLT
+						    UNSPEC_UMULLB
+						    UNSPEC_UMULLT])
+
+(define_int_iterator SVE2_INT_QSUB_BINARY_LONG_LANE [UNSPEC_SQDMULLB
+						     UNSPEC_SQDMULLT])
+
+(define_int_iterator SVE2_COND_INT_UNARY_FP [UNSPEC_COND_FLOGB])
+
+(define_int_iterator SVE2_COND_FP_UNARY_LONG [UNSPEC_COND_FCVTLT])
+
+(define_int_iterator SVE2_COND_FP_UNARY_NARROWB [UNSPEC_COND_FCVTX])
+
+(define_int_iterator SVE2_COND_INT_BINARY [UNSPEC_SHADD
+					   UNSPEC_SHSUB
+					   UNSPEC_SQRSHL
+					   UNSPEC_SRHADD
+					   UNSPEC_SRSHL
+					   UNSPEC_SUQADD
+					   UNSPEC_UHADD
+					   UNSPEC_UHSUB
+					   UNSPEC_UQRSHL
+					   UNSPEC_URHADD
+					   UNSPEC_URSHL
+					   UNSPEC_USQADD])
+
+(define_int_iterator SVE2_COND_INT_BINARY_NOREV [UNSPEC_SUQADD
+						 UNSPEC_USQADD])
+
+(define_int_iterator SVE2_COND_INT_BINARY_REV [UNSPEC_SHADD
+					       UNSPEC_SHSUB
+					       UNSPEC_SQRSHL
+					       UNSPEC_SRHADD
+					       UNSPEC_SRSHL
+					       UNSPEC_UHADD
+					       UNSPEC_UHSUB
+					       UNSPEC_UQRSHL
+					       UNSPEC_URHADD
+					       UNSPEC_URSHL])
+
+(define_int_iterator SVE2_COND_INT_SHIFT [UNSPEC_SQSHL
+					  UNSPEC_UQSHL])
+
+(define_int_iterator SVE2_MATCH [UNSPEC_MATCH UNSPEC_NMATCH])
+
+(define_int_iterator SVE2_PMULL [UNSPEC_PMULLB UNSPEC_PMULLT])
+
+(define_int_iterator SVE2_PMULL_PAIR [UNSPEC_PMULLB_PAIR UNSPEC_PMULLT_PAIR])
 
 (define_int_iterator FCADD [UNSPEC_FCADD90
 			    UNSPEC_FCADD270])
@@ -2153,6 +2547,16 @@
 			(UNSPEC_UMINV "umin")
 			(UNSPEC_SMAXV "smax")
 			(UNSPEC_SMINV "smin")
+			(UNSPEC_CADD90 "cadd90")
+			(UNSPEC_CADD270 "cadd270")
+			(UNSPEC_CDOT "cdot")
+			(UNSPEC_CDOT90 "cdot90")
+			(UNSPEC_CDOT180 "cdot180")
+			(UNSPEC_CDOT270 "cdot270")
+			(UNSPEC_CMLA "cmla")
+			(UNSPEC_CMLA90 "cmla90")
+			(UNSPEC_CMLA180 "cmla180")
+			(UNSPEC_CMLA270 "cmla270")
 			(UNSPEC_FADDV "plus")
 			(UNSPEC_FMAXNMV "smax")
 			(UNSPEC_FMAXV "smax_nan")
@@ -2169,6 +2573,16 @@
 			(UNSPEC_FEXPA "fexpa")
 			(UNSPEC_FTSMUL "ftsmul")
 			(UNSPEC_FTSSEL "ftssel")
+			(UNSPEC_PMULLB "pmullb")
+			(UNSPEC_PMULLB_PAIR "pmullb_pair")
+			(UNSPEC_PMULLT "pmullt")
+			(UNSPEC_PMULLT_PAIR "pmullt_pair")
+			(UNSPEC_SQCADD90 "sqcadd90")
+			(UNSPEC_SQCADD270 "sqcadd270")
+			(UNSPEC_SQRDCMLAH "sqrdcmlah")
+			(UNSPEC_SQRDCMLAH90 "sqrdcmlah90")
+			(UNSPEC_SQRDCMLAH180 "sqrdcmlah180")
+			(UNSPEC_SQRDCMLAH270 "sqrdcmlah270")
 			(UNSPEC_WHILERW "vec_check_raw_alias")
 			(UNSPEC_WHILEWR "vec_check_war_alias")
 			(UNSPEC_COND_FABS "abs")
@@ -2269,8 +2683,6 @@
 		     (UNSPEC_COND_FCVTZU "u")
 		     (UNSPEC_COND_SCVTF "s")
 		     (UNSPEC_COND_UCVTF "u")
-		     (UNSPEC_SMULLB "s") (UNSPEC_UMULLB "u")
-		     (UNSPEC_SMULLT "s") (UNSPEC_UMULLT "u")
 		     (UNSPEC_SMULHS "s") (UNSPEC_UMULHS "u")
 		     (UNSPEC_SMULHRS "s") (UNSPEC_UMULHRS "u")])
 
@@ -2309,14 +2721,17 @@
                     (UNSPEC_SQRSHRN "r") (UNSPEC_UQRSHRN "r")
                     (UNSPEC_SQSHL   "")  (UNSPEC_UQSHL  "")
                     (UNSPEC_SQRSHL   "r")(UNSPEC_UQRSHL  "r")
-		    (UNSPEC_SHRNB "") (UNSPEC_SHRNT "")
-		    (UNSPEC_RSHRNB "r") (UNSPEC_RSHRNT "r")
 		    (UNSPEC_SMULHS "") (UNSPEC_UMULHS "")
 		    (UNSPEC_SMULHRS "r") (UNSPEC_UMULHRS "r")
 ])
 
 (define_int_attr lr [(UNSPEC_SSLI  "l") (UNSPEC_USLI  "l")
-		     (UNSPEC_SSRI  "r") (UNSPEC_USRI  "r")])
+		     (UNSPEC_SSRI  "r") (UNSPEC_USRI  "r")
+		     (UNSPEC_SQSHL "l") (UNSPEC_UQSHL "l")
+		     (UNSPEC_SQSHLU "l")
+		     (UNSPEC_SRSHR "r") (UNSPEC_URSHR "r")
+		     (UNSPEC_ASRD  "r")
+		     (UNSPEC_SLI   "l") (UNSPEC_SRI   "r")])
 
 (define_int_attr u [(UNSPEC_SQSHLU "u") (UNSPEC_SQSHL "") (UNSPEC_UQSHL "")
 		    (UNSPEC_SQSHRUN "u") (UNSPEC_SQRSHRUN "u")
@@ -2324,9 +2739,6 @@
 		    (UNSPEC_SQRSHRN "") (UNSPEC_UQRSHRN "")
 		    (UNSPEC_SHADD "") (UNSPEC_UHADD "u")
 		    (UNSPEC_SRHADD "") (UNSPEC_URHADD "u")])
-
-(define_int_attr bt [(UNSPEC_SMULLB "b") (UNSPEC_UMULLB "b")
-		     (UNSPEC_SMULLT "t") (UNSPEC_UMULLT "t")])
 
 (define_int_attr fn [(UNSPEC_LDFF1 "f") (UNSPEC_LDNF1 "n")])
 
@@ -2488,6 +2900,10 @@
 			 (UNSPEC_COND_FCMLE "le")
 			 (UNSPEC_COND_FCMLT "lt")
 			 (UNSPEC_COND_FCMNE "ne")
+			 (UNSPEC_WHILEGE "ge")
+			 (UNSPEC_WHILEGT "gt")
+			 (UNSPEC_WHILEHI "hi")
+			 (UNSPEC_WHILEHS "hs")
 			 (UNSPEC_WHILELE "le")
 			 (UNSPEC_WHILELO "lo")
 			 (UNSPEC_WHILELS "ls")
@@ -2495,7 +2911,11 @@
 			 (UNSPEC_WHILERW "rw")
 			 (UNSPEC_WHILEWR "wr")])
 
-(define_int_attr while_optab_cmp [(UNSPEC_WHILELE "le")
+(define_int_attr while_optab_cmp [(UNSPEC_WHILEGE "ge")
+				  (UNSPEC_WHILEGT "gt")
+				  (UNSPEC_WHILEHI "ugt")
+				  (UNSPEC_WHILEHS "uge")
+				  (UNSPEC_WHILELE "le")
 				  (UNSPEC_WHILELO "ult")
 				  (UNSPEC_WHILELS "ule")
 				  (UNSPEC_WHILELT "lt")
@@ -2511,40 +2931,213 @@
 
 (define_int_attr sve_pred_op [(UNSPEC_PFIRST "pfirst") (UNSPEC_PNEXT "pnext")])
 
-(define_int_attr sve_int_op [(UNSPEC_ANDV "andv")
-			     (UNSPEC_IORV "orv")
-			     (UNSPEC_XORV "eorv")
-			     (UNSPEC_UMAXV "umaxv")
-			     (UNSPEC_UMINV "uminv")
-			     (UNSPEC_SMAXV "smaxv")
-			     (UNSPEC_SMINV "sminv")
-			     (UNSPEC_SMUL_HIGHPART "smulh")
-			     (UNSPEC_UMUL_HIGHPART "umulh")
-			     (UNSPEC_ASHIFT_WIDE "lsl")
+(define_int_attr sve_int_op [(UNSPEC_ADCLB "adclb")
+			     (UNSPEC_ADCLT "adclt")
+			     (UNSPEC_ADDHNB "addhnb")
+			     (UNSPEC_ADDHNT "addhnt")
+			     (UNSPEC_ADDP "addp")
+			     (UNSPEC_ANDV "andv")
 			     (UNSPEC_ASHIFTRT_WIDE "asr")
+			     (UNSPEC_ASHIFT_WIDE "lsl")
+			     (UNSPEC_ASRD "asrd")
+			     (UNSPEC_BDEP "bdep")
+			     (UNSPEC_BEXT "bext")
+			     (UNSPEC_BGRP "bgrp")
+			     (UNSPEC_CADD90 "cadd")
+			     (UNSPEC_CADD270 "cadd")
+			     (UNSPEC_CDOT "cdot")
+			     (UNSPEC_CDOT90 "cdot")
+			     (UNSPEC_CDOT180 "cdot")
+			     (UNSPEC_CDOT270 "cdot")
+			     (UNSPEC_CMLA "cmla")
+			     (UNSPEC_CMLA90 "cmla")
+			     (UNSPEC_CMLA180 "cmla")
+			     (UNSPEC_CMLA270 "cmla")
+			     (UNSPEC_EORBT "eorbt")
+			     (UNSPEC_EORTB "eortb")
+			     (UNSPEC_IORV "orv")
 			     (UNSPEC_LSHIFTRT_WIDE "lsr")
+			     (UNSPEC_MATCH "match")
+			     (UNSPEC_NMATCH "nmatch")
+			     (UNSPEC_PMULLB "pmullb")
+			     (UNSPEC_PMULLB_PAIR "pmullb")
+			     (UNSPEC_PMULLT "pmullt")
+			     (UNSPEC_PMULLT_PAIR "pmullt")
+			     (UNSPEC_RADDHNB "raddhnb")
+			     (UNSPEC_RADDHNT "raddhnt")
 			     (UNSPEC_RBIT "rbit")
 			     (UNSPEC_REVB "revb")
 			     (UNSPEC_REVH "revh")
-			     (UNSPEC_REVW "revw")])
+			     (UNSPEC_REVW "revw")
+			     (UNSPEC_RSHRNB "rshrnb")
+			     (UNSPEC_RSHRNT "rshrnt")
+			     (UNSPEC_RSQRTE "ursqrte")
+			     (UNSPEC_RSUBHNB "rsubhnb")
+			     (UNSPEC_RSUBHNT "rsubhnt")
+			     (UNSPEC_SABDLB "sabdlb")
+			     (UNSPEC_SABDLT "sabdlt")
+			     (UNSPEC_SADALP "sadalp")
+			     (UNSPEC_SADDLB "saddlb")
+			     (UNSPEC_SADDLBT "saddlbt")
+			     (UNSPEC_SADDLT "saddlt")
+			     (UNSPEC_SADDWB "saddwb")
+			     (UNSPEC_SADDWT "saddwt")
+			     (UNSPEC_SBCLB "sbclb")
+			     (UNSPEC_SBCLT "sbclt")
+			     (UNSPEC_SHADD "shadd")
+			     (UNSPEC_SHRNB "shrnb")
+			     (UNSPEC_SHRNT "shrnt")
+			     (UNSPEC_SHSUB "shsub")
+			     (UNSPEC_SLI "sli")
+			     (UNSPEC_SMAXP "smaxp")
+			     (UNSPEC_SMAXV "smaxv")
+			     (UNSPEC_SMINP "sminp")
+			     (UNSPEC_SMINV "sminv")
+			     (UNSPEC_SMUL_HIGHPART "smulh")
+			     (UNSPEC_SMULLB "smullb")
+			     (UNSPEC_SMULLT "smullt")
+			     (UNSPEC_SQCADD90 "sqcadd")
+			     (UNSPEC_SQCADD270 "sqcadd")
+			     (UNSPEC_SQDMULH "sqdmulh")
+			     (UNSPEC_SQDMULLB "sqdmullb")
+			     (UNSPEC_SQDMULLBT "sqdmullbt")
+			     (UNSPEC_SQDMULLT "sqdmullt")
+			     (UNSPEC_SQRDCMLAH "sqrdcmlah")
+			     (UNSPEC_SQRDCMLAH90 "sqrdcmlah")
+			     (UNSPEC_SQRDCMLAH180 "sqrdcmlah")
+			     (UNSPEC_SQRDCMLAH270 "sqrdcmlah")
+			     (UNSPEC_SQRDMLAH "sqrdmlah")
+			     (UNSPEC_SQRDMLSH "sqrdmlsh")
+			     (UNSPEC_SQRDMULH "sqrdmulh")
+			     (UNSPEC_SQRSHL "sqrshl")
+			     (UNSPEC_SQRSHRNB "sqrshrnb")
+			     (UNSPEC_SQRSHRNT "sqrshrnt")
+			     (UNSPEC_SQRSHRUNB "sqrshrunb")
+			     (UNSPEC_SQRSHRUNT "sqrshrunt")
+			     (UNSPEC_SQSHL "sqshl")
+			     (UNSPEC_SQSHLU "sqshlu")
+			     (UNSPEC_SQSHRNB "sqshrnb")
+			     (UNSPEC_SQSHRNT "sqshrnt")
+			     (UNSPEC_SQSHRUNB "sqshrunb")
+			     (UNSPEC_SQSHRUNT "sqshrunt")
+			     (UNSPEC_SQXTNB "sqxtnb")
+			     (UNSPEC_SQXTNT "sqxtnt")
+			     (UNSPEC_SQXTUNB "sqxtunb")
+			     (UNSPEC_SQXTUNT "sqxtunt")
+			     (UNSPEC_SRHADD "srhadd")
+			     (UNSPEC_SRI "sri")
+			     (UNSPEC_SRSHL "srshl")
+			     (UNSPEC_SRSHR "srshr")
+			     (UNSPEC_SSHLLB "sshllb")
+			     (UNSPEC_SSHLLT "sshllt")
+			     (UNSPEC_SSUBLB "ssublb")
+			     (UNSPEC_SSUBLBT "ssublbt")
+			     (UNSPEC_SSUBLT "ssublt")
+			     (UNSPEC_SSUBLTB "ssubltb")
+			     (UNSPEC_SSUBWB "ssubwb")
+			     (UNSPEC_SSUBWT "ssubwt")
+			     (UNSPEC_SUBHNB "subhnb")
+			     (UNSPEC_SUBHNT "subhnt")
+			     (UNSPEC_SUQADD "suqadd")
+			     (UNSPEC_UABDLB "uabdlb")
+			     (UNSPEC_UABDLT "uabdlt")
+			     (UNSPEC_UADALP "uadalp")
+			     (UNSPEC_UADDLB "uaddlb")
+			     (UNSPEC_UADDLT "uaddlt")
+			     (UNSPEC_UADDWB "uaddwb")
+			     (UNSPEC_UADDWT "uaddwt")
+			     (UNSPEC_UHADD "uhadd")
+			     (UNSPEC_UHSUB "uhsub")
+			     (UNSPEC_UMAXP "umaxp")
+			     (UNSPEC_UMAXV "umaxv")
+			     (UNSPEC_UMINP "uminp")
+			     (UNSPEC_UMINV "uminv")
+			     (UNSPEC_UMUL_HIGHPART "umulh")
+			     (UNSPEC_UMULLB "umullb")
+			     (UNSPEC_UMULLT "umullt")
+			     (UNSPEC_UQRSHL "uqrshl")
+			     (UNSPEC_UQRSHRNB "uqrshrnb")
+			     (UNSPEC_UQRSHRNT "uqrshrnt")
+			     (UNSPEC_UQSHL "uqshl")
+			     (UNSPEC_UQSHRNB "uqshrnb")
+			     (UNSPEC_UQSHRNT "uqshrnt")
+			     (UNSPEC_UQXTNB "uqxtnb")
+			     (UNSPEC_UQXTNT "uqxtnt")
+			     (UNSPEC_URECPE "urecpe")
+			     (UNSPEC_URHADD "urhadd")
+			     (UNSPEC_URSHL "urshl")
+			     (UNSPEC_URSHR "urshr")
+			     (UNSPEC_USHLLB "ushllb")
+			     (UNSPEC_USHLLT "ushllt")
+			     (UNSPEC_USQADD "usqadd")
+			     (UNSPEC_USUBLB "usublb")
+			     (UNSPEC_USUBLT "usublt")
+			     (UNSPEC_USUBWB "usubwb")
+			     (UNSPEC_USUBWT "usubwt")
+			     (UNSPEC_XORV "eorv")])
+
+(define_int_attr sve_int_op_rev [(UNSPEC_SHADD "shadd")
+				 (UNSPEC_SHSUB "shsubr")
+				 (UNSPEC_SQRSHL "sqrshlr")
+				 (UNSPEC_SRHADD "srhadd")
+				 (UNSPEC_SRSHL "srshlr")
+				 (UNSPEC_UHADD "uhadd")
+				 (UNSPEC_UHSUB "uhsubr")
+				 (UNSPEC_UQRSHL "uqrshlr")
+				 (UNSPEC_URHADD "urhadd")
+				 (UNSPEC_URSHL "urshlr")])
+
+(define_int_attr sve_int_add_op [(UNSPEC_SABDLB "sabalb")
+				 (UNSPEC_SABDLT "sabalt")
+				 (UNSPEC_SMULLB "smlalb")
+				 (UNSPEC_SMULLT "smlalt")
+				 (UNSPEC_UABDLB "uabalb")
+				 (UNSPEC_UABDLT "uabalt")
+				 (UNSPEC_UMULLB "umlalb")
+				 (UNSPEC_UMULLT "umlalt")])
+
+(define_int_attr sve_int_qadd_op [(UNSPEC_SQDMULLB "sqdmlalb")
+				  (UNSPEC_SQDMULLBT "sqdmlalbt")
+				  (UNSPEC_SQDMULLT "sqdmlalt")])
+
+(define_int_attr sve_int_sub_op [(UNSPEC_SMULLB "smlslb")
+				 (UNSPEC_SMULLT "smlslt")
+				 (UNSPEC_UMULLB "umlslb")
+				 (UNSPEC_UMULLT "umlslt")])
+
+(define_int_attr sve_int_qsub_op [(UNSPEC_SQDMULLB "sqdmlslb")
+				  (UNSPEC_SQDMULLBT "sqdmlslbt")
+				  (UNSPEC_SQDMULLT "sqdmlslt")])
 
 (define_int_attr sve_fp_op [(UNSPEC_FRECPE "frecpe")
 			    (UNSPEC_FRECPS "frecps")
 			    (UNSPEC_RSQRTE "frsqrte")
 			    (UNSPEC_RSQRTS "frsqrts")
+			    (UNSPEC_FADDP "faddp")
 			    (UNSPEC_FADDV "faddv")
+			    (UNSPEC_FMAXNMP "fmaxnmp")
 			    (UNSPEC_FMAXNMV "fmaxnmv")
+			    (UNSPEC_FMAXP "fmaxp")
 			    (UNSPEC_FMAXV "fmaxv")
+			    (UNSPEC_FMINNMP "fminnmp")
 			    (UNSPEC_FMINNMV "fminnmv")
+			    (UNSPEC_FMINP "fminp")
 			    (UNSPEC_FMINV "fminv")
 			    (UNSPEC_FMLA "fmla")
+			    (UNSPEC_FMLALB "fmlalb")
+			    (UNSPEC_FMLALT "fmlalt")
 			    (UNSPEC_FMLS "fmls")
+			    (UNSPEC_FMLSLB "fmlslb")
+			    (UNSPEC_FMLSLT "fmlslt")
 			    (UNSPEC_FEXPA "fexpa")
 			    (UNSPEC_FTSMUL "ftsmul")
 			    (UNSPEC_FTSSEL "ftssel")
 			    (UNSPEC_COND_FABS "fabs")
 			    (UNSPEC_COND_FADD "fadd")
+			    (UNSPEC_COND_FCVTLT "fcvtlt")
+			    (UNSPEC_COND_FCVTX "fcvtx")
 			    (UNSPEC_COND_FDIV "fdiv")
+			    (UNSPEC_COND_FLOGB "flogb")
 			    (UNSPEC_COND_FMAX "fmax")
 			    (UNSPEC_COND_FMAXNM "fmaxnm")
 			    (UNSPEC_COND_FMIN "fmin")
@@ -2574,12 +3167,28 @@
 				(UNSPEC_COND_FMULX "fmulx")
 				(UNSPEC_COND_FSUB "fsubr")])
 
-(define_int_attr rot [(UNSPEC_FCADD90 "90")
+(define_int_attr rot [(UNSPEC_CADD90 "90")
+		      (UNSPEC_CADD270 "270")
+		      (UNSPEC_CDOT "0")
+		      (UNSPEC_CDOT90 "90")
+		      (UNSPEC_CDOT180 "180")
+		      (UNSPEC_CDOT270 "270")
+		      (UNSPEC_CMLA "0")
+		      (UNSPEC_CMLA90 "90")
+		      (UNSPEC_CMLA180 "180")
+		      (UNSPEC_CMLA270 "270")
+		      (UNSPEC_FCADD90 "90")
 		      (UNSPEC_FCADD270 "270")
 		      (UNSPEC_FCMLA "0")
 		      (UNSPEC_FCMLA90 "90")
 		      (UNSPEC_FCMLA180 "180")
 		      (UNSPEC_FCMLA270 "270")
+		      (UNSPEC_SQCADD90 "90")
+		      (UNSPEC_SQCADD270 "270")
+		      (UNSPEC_SQRDCMLAH "0")
+		      (UNSPEC_SQRDCMLAH90 "90")
+		      (UNSPEC_SQRDCMLAH180 "180")
+		      (UNSPEC_SQRDCMLAH270 "270")
 		      (UNSPEC_COND_FCADD90 "90")
 		      (UNSPEC_COND_FCADD270 "270")
 		      (UNSPEC_COND_FCMLA "0")

@@ -50,6 +50,7 @@
 #include "attribs.h"
 #include "aarch64-sve-builtins.h"
 #include "aarch64-sve-builtins-base.h"
+#include "aarch64-sve-builtins-sve2.h"
 #include "aarch64-sve-builtins-shapes.h"
 
 namespace aarch64_sve {
@@ -190,6 +191,24 @@ CONSTEXPR const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1] = {
 #define TYPES_b(S, D) \
   S (b)
 
+/* _u8.  */
+#define TYPES_b_unsigned(S, D) \
+  S (u8)
+
+/* _s8
+   _u8.  */
+#define TYPES_b_integer(S, D) \
+  S (s8), TYPES_b_unsigned (S, D)
+
+/* _s8 _s16
+   _u8 _u16.  */
+#define TYPES_bh_integer(S, D) \
+  S (s8), S (s16), S (u8), S (u16)
+
+/* _u8 _u32.  */
+#define TYPES_bs_unsigned(S, D) \
+  S (u8), S (u32)
+
 /* _s8 _s16 _s32.  */
 #define TYPES_bhs_signed(S, D) \
   S (s8), S (s16), S (s32)
@@ -208,23 +227,64 @@ CONSTEXPR const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1] = {
 #define TYPES_h_integer(S, D) \
   S (s16), S (u16)
 
+/* _s16 _s32.  */
+#define TYPES_hs_signed(S, D) \
+  S (s16), S (s32)
+
+/* _s16 _s32
+   _u16 _u32.  */
+#define TYPES_hs_integer(S, D) \
+  TYPES_hs_signed (S, D), S (u16), S (u32)
+
 /* _f16 _f32.  */
 #define TYPES_hs_float(S, D) \
   S (f16), S (f32)
 
+/* _u16 _u64.  */
+#define TYPES_hd_unsigned(S, D) \
+  S (u16), S (u64)
+
+/* _s16 _s32 _s64.  */
+#define TYPES_hsd_signed(S, D) \
+  S (s16), S (s32), S (s64)
+
 /* _s16 _s32 _s64
    _u16 _u32 _u64.  */
 #define TYPES_hsd_integer(S, D) \
-  S (s16), S (s32), S (s64), S (u16), S (u32), S (u64)
+  TYPES_hsd_signed (S, D), S (u16), S (u32), S (u64)
+
+/*      _f32
+   _s16 _s32 _s64
+   _u16 _u32 _u64.  */
+#define TYPES_s_float_hsd_integer(S, D) \
+  S (f32), TYPES_hsd_integer (S, D)
+
+/* _f32
+   _s32 _s64
+   _u32 _u64.  */
+#define TYPES_s_float_sd_integer(S, D) \
+  S (f32), TYPES_sd_integer (S, D)
+
+/* _u32.  */
+#define TYPES_s_unsigned(S, D) \
+  S (u32)
 
 /* _s32 _u32.  */
 #define TYPES_s_integer(S, D) \
-  S (s32), S (u32)
+  S (s32), TYPES_s_unsigned (S, D)
+
+/* _s32 _s64.  */
+#define TYPES_sd_signed(S, D) \
+  S (s32), S (s64)
+
+/* _u32 _u64.  */
+#define TYPES_sd_unsigned(S, D) \
+  S (u32), S (u64)
 
 /* _s32 _s64
    _u32 _u64.  */
 #define TYPES_sd_integer(S, D) \
-  S (s32), S (s64), S (u32), S (u64)
+  TYPES_sd_signed (S, D), TYPES_sd_unsigned (S, D)
 
 /* _f32 _f64
    _s32 _s64
@@ -238,10 +298,20 @@ CONSTEXPR const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1] = {
 #define TYPES_all_float_and_sd_integer(S, D) \
   TYPES_all_float (S, D), TYPES_sd_integer (S, D)
 
+/* _u64.  */
+#define TYPES_d_unsigned(S, D) \
+  S (u64)
+
 /* _s64
    _u64.  */
 #define TYPES_d_integer(S, D) \
-  S (s64), S (u64)
+  S (s64), TYPES_d_unsigned (S, D)
+
+/* _f64
+   _s64
+   _u64.  */
+#define TYPES_d_data(S, D) \
+  S (f64), TYPES_d_integer (S, D)
 
 /* All the type combinations allowed by svcvt.  */
 #define TYPES_cvt(S, D) \
@@ -264,6 +334,20 @@ CONSTEXPR const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1] = {
   D (u16, f16), \
   D (u32, f16), D (u32, f32), D (u32, f64), \
   D (u64, f16), D (u64, f32), D (u64, f64)
+
+/* _f32_f16
+   _f64_f32.  */
+#define TYPES_cvt_long(S, D) \
+  D (f32, f16), D (f64, f32)
+
+/* _f16_f32.  */
+#define TYPES_cvt_narrow_s(S, D) \
+  D (f32, f64)
+
+/* _f16_f32
+   _f32_f64.  */
+#define TYPES_cvt_narrow(S, D) \
+  D (f16, f32), TYPES_cvt_narrow_s (S, D)
 
 /* { _s32 _s64 } x { _b8 _b16 _b32 _b64 }
    { _u32 _u64 }.  */
@@ -334,18 +418,36 @@ DEF_SVE_TYPES_ARRAY (all_unsigned);
 DEF_SVE_TYPES_ARRAY (all_integer);
 DEF_SVE_TYPES_ARRAY (all_data);
 DEF_SVE_TYPES_ARRAY (b);
+DEF_SVE_TYPES_ARRAY (b_unsigned);
+DEF_SVE_TYPES_ARRAY (b_integer);
+DEF_SVE_TYPES_ARRAY (bh_integer);
+DEF_SVE_TYPES_ARRAY (bs_unsigned);
 DEF_SVE_TYPES_ARRAY (bhs_signed);
 DEF_SVE_TYPES_ARRAY (bhs_unsigned);
 DEF_SVE_TYPES_ARRAY (bhs_integer);
 DEF_SVE_TYPES_ARRAY (h_integer);
+DEF_SVE_TYPES_ARRAY (hs_signed);
+DEF_SVE_TYPES_ARRAY (hs_integer);
 DEF_SVE_TYPES_ARRAY (hs_float);
+DEF_SVE_TYPES_ARRAY (hd_unsigned);
+DEF_SVE_TYPES_ARRAY (hsd_signed);
 DEF_SVE_TYPES_ARRAY (hsd_integer);
+DEF_SVE_TYPES_ARRAY (s_float_hsd_integer);
+DEF_SVE_TYPES_ARRAY (s_float_sd_integer);
+DEF_SVE_TYPES_ARRAY (s_unsigned);
 DEF_SVE_TYPES_ARRAY (s_integer);
+DEF_SVE_TYPES_ARRAY (sd_signed);
+DEF_SVE_TYPES_ARRAY (sd_unsigned);
 DEF_SVE_TYPES_ARRAY (sd_integer);
 DEF_SVE_TYPES_ARRAY (sd_data);
 DEF_SVE_TYPES_ARRAY (all_float_and_sd_integer);
+DEF_SVE_TYPES_ARRAY (d_unsigned);
 DEF_SVE_TYPES_ARRAY (d_integer);
+DEF_SVE_TYPES_ARRAY (d_data);
 DEF_SVE_TYPES_ARRAY (cvt);
+DEF_SVE_TYPES_ARRAY (cvt_long);
+DEF_SVE_TYPES_ARRAY (cvt_narrow_s);
+DEF_SVE_TYPES_ARRAY (cvt_narrow);
 DEF_SVE_TYPES_ARRAY (inc_dec_n);
 DEF_SVE_TYPES_ARRAY (reinterpret);
 DEF_SVE_TYPES_ARRAY (while);
@@ -356,6 +458,12 @@ static const predication_index preds_none[] = { PRED_none, NUM_PREDS };
 /* Used by functions that have a governing predicate but do not have an
    explicit suffix.  */
 static const predication_index preds_implicit[] = { PRED_implicit, NUM_PREDS };
+
+/* Used by functions that allow merging and "don't care" predication,
+   but are not suitable for predicated MOVPRFX.  */
+static const predication_index preds_mx[] = {
+  PRED_m, PRED_x, NUM_PREDS
+};
 
 /* Used by functions that allow merging, zeroing and "don't care"
    predication.  */
@@ -854,8 +962,11 @@ function_builder::add_unique_function (const function_instance &instance,
    resolution.  REQUIRED_EXTENSIONS are the set of architecture extensions
    that the function requires.
 
-   For simplicity, deal with duplicate attempts to add the same
-   function.  */
+   For simplicity, deal with duplicate attempts to add the same function,
+   including cases in which the new function requires more features than
+   the original one did.  In that case we'll check whether the required
+   features are available as part of resolving the function to the
+   relevant unique function.  */
 void
 function_builder::add_overloaded_function (const function_instance &instance,
 					   uint64_t required_extensions)
@@ -863,7 +974,8 @@ function_builder::add_overloaded_function (const function_instance &instance,
   char *name = get_name (instance, true);
   if (registered_function **map_value = m_overload_names.get (name))
     gcc_assert ((*map_value)->instance == instance
-		&& (*map_value)->required_extensions == required_extensions);
+		&& ((*map_value)->required_extensions
+		    & ~required_extensions) == 0);
   else
     {
       registered_function &rfn
@@ -1079,7 +1191,7 @@ function_resolver::infer_pointer_type (unsigned int argno,
     {
       error_at (location, "passing %qT to argument %d of %qE, but %qT is not"
 		" a valid SVE element type", actual, argno + 1, fndecl,
-		target);
+		build_qualified_type (target, 0));
       return NUM_TYPE_SUFFIXES;
     }
   unsigned int bits = type_suffixes[type].element_bits;
@@ -1447,6 +1559,28 @@ require_derived_vector_type (unsigned int argno,
   return false;
 }
 
+/* Require argument ARGNO to match argument FIRST_ARGNO, which was inferred
+   to be a pointer to a scalar element of type TYPE.  */
+bool
+function_resolver::require_matching_pointer_type (unsigned int argno,
+						  unsigned int first_argno,
+						  type_suffix_index type)
+{
+  type_suffix_index new_type = infer_pointer_type (argno);
+  if (new_type == NUM_TYPE_SUFFIXES)
+    return false;
+
+  if (type != new_type)
+    {
+      error_at (location, "passing %qT to argument %d of %qE, but"
+		" argument %d had type %qT", get_argument_type (argno),
+		argno + 1, fndecl, first_argno + 1,
+		get_argument_type (first_argno));
+      return false;
+    }
+  return true;
+}
+
 /* Require argument ARGNO to be a (possibly variable) scalar, using EXPECTED
    as the name of its expected type.  Return true if the argument has the
    right form, otherwise report an appropriate error.  */
@@ -1641,6 +1775,31 @@ function_resolver::resolve_sv_displacement (unsigned int argno,
       return mode;
     }
 
+  unsigned int required_bits = type_suffixes[type].element_bits;
+  if (required_bits == 32
+      && displacement_units () == UNITS_elements
+      && !lookup_form (MODE_s32index, type)
+      && !lookup_form (MODE_u32index, type))
+    {
+      if (lookup_form (MODE_u32base_index, type))
+	{
+	  if (type_suffix_ids[0] == NUM_TYPE_SUFFIXES)
+	    {
+	      gcc_assert (!load_p);
+	      error_at (location, "when storing %qT, %qE requires a vector"
+			" base and a scalar index", get_vector_type (type),
+			fndecl);
+	    }
+	  else
+	    error_at (location, "%qE requires a vector base and a scalar"
+		      " index", fndecl);
+	}
+      else
+	error_at (location, "%qE does not support 32-bit vector type %qT",
+		  fndecl, get_vector_type (type));
+      return MODE_none;
+    }
+
   /* Check for some form of vector type, without naming any in particular
      as being expected.  */
   type_suffix_index displacement_type = infer_vector_type (argno);
@@ -1650,7 +1809,6 @@ function_resolver::resolve_sv_displacement (unsigned int argno,
   /* If the displacement type is consistent with the data vector type,
      try to find the associated mode suffix.  This will fall through
      for non-integral displacement types.  */
-  unsigned int required_bits = type_suffixes[type].element_bits;
   if (type_suffixes[displacement_type].element_bits == required_bits)
     {
       vector_type_index displacement_vector_type
@@ -1659,7 +1817,21 @@ function_resolver::resolve_sv_displacement (unsigned int argno,
 						 displacement_vector_type,
 						 displacement_units ());
       if (mode != MODE_none)
-	return mode;
+	{
+	  if (mode == MODE_s32offset
+	      && !lookup_form (mode, type)
+	      && lookup_form (MODE_u32offset, type))
+	    {
+	      if (type_suffix_ids[0] == NUM_TYPE_SUFFIXES)
+		error_at (location, "%qE does not support 32-bit sign-extended"
+			  " offsets", fndecl);
+	      else
+		error_at (location, "%qE does not support sign-extended"
+			  " offsets", fndecl);
+	      return MODE_none;
+	    }
+	  return mode;
+	}
     }
 
   if (type_suffix_ids[0] == NUM_TYPE_SUFFIXES)
@@ -1873,11 +2045,12 @@ function_resolver::check_gp_argument (unsigned int nops,
    in the latter case.  This "_n" form might only exist for certain
    type suffixes.
 
-   ARGNO is the index of the final argument.  The inferred type
-   suffix is FIRST_TYPE, which was obtained from argument FIRST_ARGNO.
+   ARGNO is the index of the final argument.  The inferred type suffix
+   was obtained from argument FIRST_ARGNO, which has type FIRST_TYPE.
    EXPECTED_TCLASS and EXPECTED_BITS describe the expected properties
    of the final vector or scalar argument, in the same way as for
-   require_derived_vector_type.
+   require_derived_vector_type.  INFERRED_TYPE is the inferred type
+   suffix itself, or NUM_TYPE_SUFFIXES if it's the same as FIRST_TYPE.
 
    Return the function decl of the resolved function on success,
    otherwise report a suitable error and return error_mark_node.  */
@@ -1885,9 +2058,12 @@ tree function_resolver::
 finish_opt_n_resolution (unsigned int argno, unsigned int first_argno,
 			 type_suffix_index first_type,
 			 type_class_index expected_tclass,
-			 unsigned int expected_bits)
+			 unsigned int expected_bits,
+			 type_suffix_index inferred_type)
 {
-  tree scalar_form = lookup_form (MODE_n, first_type);
+  if (inferred_type == NUM_TYPE_SUFFIXES)
+    inferred_type = first_type;
+  tree scalar_form = lookup_form (MODE_n, inferred_type);
 
   /* Allow the final argument to be scalar, if an _n form exists.  */
   if (scalar_argument_p (argno))
@@ -1897,7 +2073,7 @@ finish_opt_n_resolution (unsigned int argno, unsigned int first_argno,
 
       /* Check the vector form normally.  If that succeeds, raise an
 	 error about having no corresponding _n form.  */
-      tree res = resolve_to (mode_suffix_id, first_type);
+      tree res = resolve_to (mode_suffix_id, inferred_type);
       if (res != error_mark_node)
 	error_at (location, "passing %qT to argument %d of %qE, but its"
 		  " %qT form does not accept scalars",
@@ -1917,13 +2093,14 @@ finish_opt_n_resolution (unsigned int argno, unsigned int first_argno,
 				    expected_tclass, expected_bits))
     return error_mark_node;
 
-  return resolve_to (mode_suffix_id, first_type);
+  return resolve_to (mode_suffix_id, inferred_type);
 }
 
 /* Resolve a (possibly predicated) unary function.  If the function uses
-   merge predication, there is an extra vector argument before the
-   governing predicate that specifies the values of inactive elements.
-   This argument has the following properties:
+   merge predication or if TREAT_AS_MERGE_P is true, there is an extra
+   vector argument before the governing predicate that specifies the
+   values of inactive elements.  This argument has the following
+   properties:
 
    - the type class must be the same as for active elements if MERGE_TCLASS
      is SAME_TYPE_CLASS, otherwise it must be MERGE_TCLASS itself.
@@ -1935,10 +2112,11 @@ finish_opt_n_resolution (unsigned int argno, unsigned int first_argno,
    otherwise report a suitable error and return error_mark_node.  */
 tree
 function_resolver::resolve_unary (type_class_index merge_tclass,
-				  unsigned int merge_bits)
+				  unsigned int merge_bits,
+				  bool treat_as_merge_p)
 {
   type_suffix_index type;
-  if (pred == PRED_m)
+  if (pred == PRED_m || treat_as_merge_p)
     {
       if (!check_num_arguments (3))
 	return error_mark_node;
@@ -2302,6 +2480,19 @@ gimple_folder::load_store_cookie (tree type)
   return build_int_cst (build_pointer_type (type), TYPE_ALIGN_UNIT (type));
 }
 
+/* Fold the call to a call to INSTANCE, with the same arguments.  */
+gimple *
+gimple_folder::redirect_call (const function_instance &instance)
+{
+  registered_function *rfn
+    = function_table->find_with_hash (instance, instance.hash ());
+  if (!rfn)
+    return NULL;
+
+  gimple_call_set_fndecl (call, rfn->decl);
+  return call;
+}
+
 /* Fold the call to a PTRUE, taking the element size from type suffix 0.  */
 gimple *
 gimple_folder::fold_to_ptrue ()
@@ -2584,14 +2775,22 @@ function_expander::generate_insn (insn_code icode)
 
    - a scalar base
    - a vector displacement
+
+   If SCALED_P is true, it also expects:
+
    - a const_int that is 1 if the displacement is zero-extended from 32 bits
-   - a scaling multiplier (1 for bytes, 2 for .h indices, etc.).  */
+   - a scaling multiplier (1 for bytes, 2 for .h indices, etc.).
+
+   If SCALED_P is false, the displacement is implicitly zero-extended
+   and the scaling multiplier is implicitly 1.  */
 void
-function_expander::prepare_gather_address_operands (unsigned int argno)
+function_expander::prepare_gather_address_operands (unsigned int argno,
+						    bool scaled_p)
 {
   machine_mode mem_mode = memory_vector_mode ();
   tree vector_type = base_vector_type ();
   units_index units = displacement_units ();
+  int shift_idx = -1;
   if (units == UNITS_none)
     {
       /* Vector base, no displacement.  Convert to an integer zero base
@@ -2605,31 +2804,45 @@ function_expander::prepare_gather_address_operands (unsigned int argno)
 	 a vector byte offset.  */
       std::swap (args[argno], args[argno + 1]);
       if (units == UNITS_elements)
-	{
-	  /* Convert the original scalar array index to a byte offset.  */
-	  rtx size = gen_int_mode (GET_MODE_UNIT_SIZE (mem_mode), DImode);
-	  args[argno] = simplify_gen_binary (MULT, DImode, args[argno], size);
-	  units = UNITS_bytes;
-	}
+	shift_idx = argno;
     }
   else
     {
-      /* Scalar base, vector displacement.  This is what the md pattern wants,
-	 so we just need to make sure that the scalar base has DImode.  */
+      /* Scalar base, vector displacement.  This is the order that the md
+	 pattern wants.  */
       if (Pmode == SImode)
 	args[argno] = simplify_gen_unary (ZERO_EXTEND, DImode,
 					  args[argno], SImode);
       vector_type = displacement_vector_type ();
+      if (units == UNITS_elements && !scaled_p)
+	shift_idx = argno + 1;
     }
   tree scalar_displacement_type = TREE_TYPE (vector_type);
 
-  bool uxtw_p = (TYPE_PRECISION (scalar_displacement_type) < 64
-		 && TYPE_UNSIGNED (scalar_displacement_type));
+  if (shift_idx >= 0)
+    {
+      machine_mode arg_mode = GET_MODE (args[shift_idx]);
+      if (arg_mode == VOIDmode)
+	arg_mode = DImode;
+      unsigned int elt_bytes = GET_MODE_UNIT_SIZE (mem_mode);
+      rtx shift = gen_int_mode (exact_log2 (elt_bytes), DImode);
+      args[shift_idx] = simplify_gen_binary (ASHIFT, arg_mode,
+					     args[shift_idx], shift);
+      units = UNITS_bytes;
+    }
+
+  bool uxtw_p = (TYPE_PRECISION (scalar_displacement_type) == 64
+		 || TYPE_UNSIGNED (scalar_displacement_type));
   unsigned int scale = (units == UNITS_bytes
 			? 1 : GET_MODE_UNIT_SIZE (mem_mode));
 
-  args.quick_insert (argno + 2, GEN_INT (uxtw_p));
-  args.quick_insert (argno + 3, GEN_INT (scale));
+  if (scaled_p)
+    {
+      args.quick_insert (argno + 2, GEN_INT (uxtw_p));
+      args.quick_insert (argno + 3, GEN_INT (scale));
+    }
+  else
+    gcc_assert (uxtw_p && scale == 1);
 }
 
 /* The final argument is an immediate svprfop value.  Add two fake arguments
@@ -2969,7 +3182,11 @@ function_expander::map_to_unspecs (int unspec_for_sint, int unspec_for_uint,
     }
 
   if (pred == PRED_none || pred == PRED_x)
-    return use_unpred_insn (code_for_aarch64_sve (unspec, mode));
+    {
+      insn_code icode = maybe_code_for_aarch64_sve (unspec, mode);
+      if (icode != CODE_FOR_nothing)
+	return use_unpred_insn (icode);
+    }
 
   insn_code icode = code_for_cond (unspec, vector_mode (0));
   return use_cond_insn (icode, merge_argno);
