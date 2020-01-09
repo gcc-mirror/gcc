@@ -248,6 +248,10 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_F16		   (aarch64_isa_flags & AARCH64_FL_F16)
 #define AARCH64_ISA_SVE            (aarch64_isa_flags & AARCH64_FL_SVE)
 #define AARCH64_ISA_SVE2	   (aarch64_isa_flags & AARCH64_FL_SVE2)
+#define AARCH64_ISA_SVE2_AES	   (aarch64_isa_flags & AARCH64_FL_SVE2_AES)
+#define AARCH64_ISA_SVE2_BITPERM  (aarch64_isa_flags & AARCH64_FL_SVE2_BITPERM)
+#define AARCH64_ISA_SVE2_SHA3	   (aarch64_isa_flags & AARCH64_FL_SVE2_SHA3)
+#define AARCH64_ISA_SVE2_SM4	   (aarch64_isa_flags & AARCH64_FL_SVE2_SM4)
 #define AARCH64_ISA_V8_3	   (aarch64_isa_flags & AARCH64_FL_V8_3)
 #define AARCH64_ISA_DOTPROD	   (aarch64_isa_flags & AARCH64_FL_DOTPROD)
 #define AARCH64_ISA_AES	           (aarch64_isa_flags & AARCH64_FL_AES)
@@ -301,6 +305,18 @@ extern unsigned aarch64_architecture_version;
 
 /* SVE2 instructions, enabled through +sve2.  */
 #define TARGET_SVE2 (AARCH64_ISA_SVE2)
+
+/* SVE2 AES instructions, enabled through +sve2-aes.  */
+#define TARGET_SVE2_AES (AARCH64_ISA_SVE2_AES)
+
+/* SVE2 BITPERM instructions, enabled through +sve2-bitperm.  */
+#define TARGET_SVE2_BITPERM (AARCH64_ISA_SVE2_BITPERM)
+
+/* SVE2 SHA3 instructions, enabled through +sve2-sha3.  */
+#define TARGET_SVE2_SHA3 (AARCH64_ISA_SVE2_SHA3)
+
+/* SVE2 SM4 instructions, enabled through +sve2-sm4.  */
+#define TARGET_SVE2_SM4 (AARCH64_ISA_SVE2_SM4)
 
 /* ARMv8.3-A features.  */
 #define TARGET_ARMV8_3	(AARCH64_ISA_V8_3)

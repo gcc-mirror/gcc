@@ -1,5 +1,61 @@
 2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* g++.target/aarch64/sve/acle/general-c++/mul_lane_1.c: New test.
+	* g++.target/aarch64/sve2/acle: New directory.
+	* gcc.target/aarch64/pragma_cpp_predefs_3.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/test_sve_acle.h (TEST_TYPE_CHANGE_Z)
+	(TEST_DUAL_ZD, TEST_TYPE_CHANGE_ZX, TEST_TBL2, TEST_TBL2_REV): New
+	macros.
+	* gcc.target/aarch64/sve/acle/general-c/binary_lane_1.c: Do not
+	expect an error saying that the function has no f32 form, but instead
+	expect an error about SVE2 being required if the current target
+	doesn't support SVE2.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_lane_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_lane_rotate_1.c Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/binary_long_lane_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/binary_long_opt_n_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/binary_narrowb_opt_n_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/binary_narrowt_opt_n_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/binary_to_uint_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/binary_wide_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/binary_wide_opt_n_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/compare_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/compare_ptr_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_index_restricted_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_2.c,
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_3.c,
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_4.c,
+	* gcc.target/aarch64/sve/acle/general-c/load_gather_sv_restricted_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/load_gather_sv_restricted_2.c,
+	* gcc.target/aarch64/sve/acle/general-c/mul_lane_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/shift_left_imm_long_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/shift_left_imm_to_uint_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/shift_left_imm_to_uint_2.c,
+	* gcc.target/aarch64/sve/acle/general-c/shift_right_imm_narrowb_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/shift_right_imm_narrowb_to_uint_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/shift_right_imm_narrowt_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/shift_right_imm_narrowt_to_uint_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_index_restricted_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_offset_restricted_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/tbl_tuple_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/ternary_long_lane_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/ternary_long_opt_n_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/ternary_qq_lane_rotate_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/ternary_qq_rotate_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/ternary_shift_right_imm_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/ternary_uint_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/unary_convert_narrowt_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/unary_narrowb_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/unary_narrowb_to_uint_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/unary_narrowt_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/unary_narrowt_to_uint_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/unary_to_int_1.c: New tests.
+	* gcc.target/aarch64/sve2/bcax_1.c: Likewise.
+	* gcc.target/aarch64/sve2/acle: New directory.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/acle/general-c/unary_count_1.c: Rename to...
 	* gcc.target/aarch64/sve/acle/general-c/unary_to_uint_1.c: ...this.
 	* gcc.target/aarch64/sve/acle/general-c/unary_count_2.c: Rename to...
