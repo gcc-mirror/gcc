@@ -88,7 +88,7 @@ namespace pmr
   public:
     memory_resource() = default;
     memory_resource(const memory_resource&) = default;
-    virtual ~memory_resource() = default;
+    virtual ~memory_resource(); // key function
 
     memory_resource& operator=(const memory_resource&) = default;
 
@@ -600,7 +600,7 @@ namespace pmr
 
     monotonic_buffer_resource(const monotonic_buffer_resource&) = delete;
 
-    virtual ~monotonic_buffer_resource() { release(); }
+    virtual ~monotonic_buffer_resource(); // key function
 
     monotonic_buffer_resource&
     operator=(const monotonic_buffer_resource&) = delete;
