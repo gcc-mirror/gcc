@@ -16407,22 +16407,20 @@ aarch64_sve_index_immediate_p (rtx base_or_step)
 	  && IN_RANGE (INTVAL (base_or_step), -16, 15));
 }
 
-/* Return true if X is a valid immediate for the SVE ADD and SUB
-   instructions.  Negate X first if NEGATE_P is true.  */
+/* Return true if X is a valid immediate for the SVE ADD and SUB instructions
+   when applied to mode MODE.  Negate X first if NEGATE_P is true.  */
 
 bool
-aarch64_sve_arith_immediate_p (rtx x, bool negate_p)
+aarch64_sve_arith_immediate_p (machine_mode mode, rtx x, bool negate_p)
 {
-  rtx elt;
-
-  if (!const_vec_duplicate_p (x, &elt)
-      || !CONST_INT_P (elt))
+  rtx elt = unwrap_const_vec_duplicate (x);
+  if (!CONST_INT_P (elt))
     return false;
 
   HOST_WIDE_INT val = INTVAL (elt);
   if (negate_p)
     val = -val;
-  val &= GET_MODE_MASK (GET_MODE_INNER (GET_MODE (x)));
+  val &= GET_MODE_MASK (GET_MODE_INNER (mode));
 
   if (val & 0xff)
     return IN_RANGE (val, 0, 0xff);
@@ -16430,23 +16428,19 @@ aarch64_sve_arith_immediate_p (rtx x, bool negate_p)
 }
 
 /* Return true if X is a valid immediate for the SVE SQADD and SQSUB
-   instructions.  Negate X first if NEGATE_P is true.  */
+   instructions when applied to mode MODE.  Negate X first if NEGATE_P
+   is true.  */
 
 bool
-aarch64_sve_sqadd_sqsub_immediate_p (rtx x, bool negate_p)
+aarch64_sve_sqadd_sqsub_immediate_p (machine_mode mode, rtx x, bool negate_p)
 {
-  rtx elt;
-
-  if (!const_vec_duplicate_p (x, &elt)
-      || !CONST_INT_P (elt))
-    return false;
-
-  if (!aarch64_sve_arith_immediate_p (x, negate_p))
+  if (!aarch64_sve_arith_immediate_p (mode, x, negate_p))
     return false;
 
   /* After the optional negation, the immediate must be nonnegative.
      E.g. a saturating add of -127 must be done via SQSUB Zn.B, Zn.B, #127
      instead of SQADD Zn.B, Zn.B, #129.  */
+  rtx elt = unwrap_const_vec_duplicate (x);
   return negate_p == (INTVAL (elt) < 0);
 }
 
