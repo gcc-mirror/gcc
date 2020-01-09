@@ -5246,46 +5246,48 @@ package body Exp_Attr is
 
       when Attribute_Pred => Pred : declare
          Etyp : constant Entity_Id := Base_Type (Ptyp);
+         Ityp : Entity_Id;
 
       begin
-
          --  For enumeration types with non-standard representations, we
-         --  expand typ'Pred (x) into
+         --  expand typ'Pred (x) into:
 
          --    Pos_To_Rep (Rep_To_Pos (x) - 1)
 
-         --    If the representation is contiguous, we compute instead
-         --    Lit1 + Rep_to_Pos (x -1), to catch invalid representations.
-         --    The conversion function Enum_Pos_To_Rep is defined on the
-         --    base type, not the subtype, so we have to use the base type
-         --    explicitly for this and other enumeration attributes.
+         --  if the representation is non-contiguous, and just x - 1 if it is
+         --  after having dealt with constraint checking.
 
-         if Is_Enumeration_Type (Ptyp)
+         if Is_Enumeration_Type (Etyp)
            and then Present (Enum_Pos_To_Rep (Etyp))
          then
             if Has_Contiguous_Rep (Etyp) then
-               Rewrite (N,
-                  Unchecked_Convert_To (Ptyp,
-                     Make_Op_Add (Loc,
-                        Left_Opnd  =>
-                         Make_Integer_Literal (Loc,
-                           Enumeration_Rep (First_Literal (Ptyp))),
-                        Right_Opnd =>
-                          Make_Function_Call (Loc,
-                            Name =>
-                              New_Occurrence_Of
-                               (TSS (Etyp, TSS_Rep_To_Pos), Loc),
+               if not Range_Checks_Suppressed (Ptyp) then
+                  Set_Do_Range_Check (First (Exprs), False);
+                  Expand_Pred_Succ_Attribute (N);
+               end if;
 
-                            Parameter_Associations =>
-                              New_List (
-                                Unchecked_Convert_To (Ptyp,
-                                  Make_Op_Subtract (Loc,
-                                    Left_Opnd =>
-                                     Unchecked_Convert_To (Standard_Integer,
-                                       Relocate_Node (First (Exprs))),
-                                    Right_Opnd =>
-                                      Make_Integer_Literal (Loc, 1))),
-                                Rep_To_Pos_Flag (Ptyp, Loc))))));
+               if Is_Unsigned_Type (Etyp) then
+                  if Esize (Typ) <= Standard_Integer_Size then
+                     Ityp := RTE (RE_Unsigned);
+                  else
+                     Ityp := RTE (RE_Long_Long_Unsigned);
+                  end if;
+
+               else
+                  if Esize (Etyp) <= Standard_Integer_Size then
+                     Ityp := Standard_Integer;
+                  else
+                     Ityp := Standard_Long_Long_Integer;
+                  end if;
+               end if;
+
+               Rewrite (N,
+                 Unchecked_Convert_To (Etyp,
+                    Make_Op_Subtract (Loc,
+                       Left_Opnd  =>
+                         Unchecked_Convert_To (Ityp, First (Exprs)),
+                       Right_Opnd =>
+                         Make_Integer_Literal (Loc, 1))));
 
             else
                --  Add Boolean parameter True, to request program error if
@@ -5309,7 +5311,9 @@ package body Exp_Attr is
                     Right_Opnd => Make_Integer_Literal (Loc, 1)))));
             end if;
 
-            Analyze_And_Resolve (N, Typ);
+            --  Suppress checks since they have all been done above
+
+            Analyze_And_Resolve (N, Typ, Suppress => All_Checks);
 
          --  For floating-point, we transform 'Pred into a call to the Pred
          --  floating-point attribute function in Fat_xxx (xxx is root type).
@@ -6222,42 +6226,49 @@ package body Exp_Attr is
 
       when Attribute_Succ => Succ : declare
          Etyp : constant Entity_Id := Base_Type (Ptyp);
+         Ityp : Entity_Id;
 
       begin
          --  For enumeration types with non-standard representations, we
-         --  expand typ'Succ (x) into
+         --  expand typ'Pred (x) into:
 
          --    Pos_To_Rep (Rep_To_Pos (x) + 1)
 
-         --    If the representation is contiguous, we compute instead
-         --    Lit1 + Rep_to_Pos (x+1), to catch invalid representations.
+         --  if the representation is non-contiguous, and just x + 1 if it is
+         --  after having dealt with constraint checking.
 
-         if Is_Enumeration_Type (Ptyp)
+         if Is_Enumeration_Type (Etyp)
            and then Present (Enum_Pos_To_Rep (Etyp))
          then
             if Has_Contiguous_Rep (Etyp) then
-               Rewrite (N,
-                  Unchecked_Convert_To (Ptyp,
-                     Make_Op_Add (Loc,
-                        Left_Opnd  =>
-                         Make_Integer_Literal (Loc,
-                           Enumeration_Rep (First_Literal (Ptyp))),
-                        Right_Opnd =>
-                          Make_Function_Call (Loc,
-                            Name =>
-                              New_Occurrence_Of
-                               (TSS (Etyp, TSS_Rep_To_Pos), Loc),
+               if not Range_Checks_Suppressed (Ptyp) then
+                  Set_Do_Range_Check (First (Exprs), False);
+                  Expand_Pred_Succ_Attribute (N);
+               end if;
 
-                            Parameter_Associations =>
-                              New_List (
-                                Unchecked_Convert_To (Ptyp,
-                                  Make_Op_Add (Loc,
-                                  Left_Opnd =>
-                                    Unchecked_Convert_To (Standard_Integer,
-                                      Relocate_Node (First (Exprs))),
-                                  Right_Opnd =>
-                                    Make_Integer_Literal (Loc, 1))),
-                                Rep_To_Pos_Flag (Ptyp, Loc))))));
+               if Is_Unsigned_Type (Etyp) then
+                  if Esize (Typ) <= Standard_Integer_Size then
+                     Ityp := RTE (RE_Unsigned);
+                  else
+                     Ityp := RTE (RE_Long_Long_Unsigned);
+                  end if;
+
+               else
+                  if Esize (Etyp) <= Standard_Integer_Size then
+                     Ityp := Standard_Integer;
+                  else
+                     Ityp := Standard_Long_Long_Integer;
+                  end if;
+               end if;
+
+               Rewrite (N,
+                 Unchecked_Convert_To (Etyp,
+                    Make_Op_Add (Loc,
+                       Left_Opnd  =>
+                         Unchecked_Convert_To (Ityp, First (Exprs)),
+                       Right_Opnd =>
+                         Make_Integer_Literal (Loc, 1))));
+
             else
                --  Add Boolean parameter True, to request program error if
                --  we have a bad representation on our hands. Add False if
@@ -6280,7 +6291,9 @@ package body Exp_Attr is
                        Right_Opnd => Make_Integer_Literal (Loc, 1)))));
             end if;
 
-            Analyze_And_Resolve (N, Typ);
+            --  Suppress checks since they have all been done above
+
+            Analyze_And_Resolve (N, Typ, Suppress => All_Checks);
 
          --  For floating-point, we transform 'Succ into a call to the Succ
          --  floating-point attribute function in Fat_xxx (xxx is root type)
@@ -6536,70 +6549,86 @@ package body Exp_Attr is
       when Attribute_Val => Val : declare
          Etyp : constant Entity_Id := Base_Type (Ptyp);
          Expr : constant Node_Id := First (Exprs);
+         Ityp : Entity_Id;
+         Rtyp : Entity_Id;
 
       begin
          --  Case of enumeration type
 
          if Is_Enumeration_Type (Etyp) then
 
-            --  Non-standard enumeration type
+            --  Non-contiguous non-standard enumeration type
 
-            if Present (Enum_Pos_To_Rep (Etyp)) then
-               if Has_Contiguous_Rep (Etyp) then
-                  declare
-                     Rep_Node : constant Node_Id :=
-                       Unchecked_Convert_To (Etyp,
-                          Make_Op_Add (Loc,
-                            Left_Opnd =>
-                              Make_Integer_Literal (Loc,
-                                Enumeration_Rep (First_Literal (Etyp))),
-                            Right_Opnd =>
-                               Convert_To (Standard_Integer, Expr)));
-
-                  begin
-                     Rewrite (N,
-                        Unchecked_Convert_To (Etyp,
-                            Make_Op_Add (Loc,
-                              Left_Opnd =>
-                                Make_Integer_Literal (Loc,
-                                  Enumeration_Rep (First_Literal (Etyp))),
-                              Right_Opnd =>
-                                Make_Function_Call (Loc,
-                                  Name =>
-                                    New_Occurrence_Of
-                                      (TSS (Etyp, TSS_Rep_To_Pos), Loc),
-                                  Parameter_Associations => New_List (
-                                    Rep_Node,
-                                    Rep_To_Pos_Flag (Etyp, Loc))))));
-                  end;
-
-               else
-                  Rewrite (N,
-                    Make_Indexed_Component (Loc,
-                      Prefix =>
-                        New_Occurrence_Of (Enum_Pos_To_Rep (Etyp), Loc),
-                      Expressions => New_List (
-                        Convert_To (Standard_Integer, Expr))));
-               end if;
+            if Present (Enum_Pos_To_Rep (Etyp))
+              and then not Has_Contiguous_Rep (Etyp)
+            then
+               Rewrite (N,
+                 Make_Indexed_Component (Loc,
+                   Prefix =>
+                     New_Occurrence_Of (Enum_Pos_To_Rep (Etyp), Loc),
+                   Expressions => New_List (
+                     Convert_To (Standard_Integer, Expr))));
 
                Analyze_And_Resolve (N, Typ);
 
-            --  Standard enumeration type
+            --  Standard or contiguous non-standard enumeration type
 
-            --  If the argument is marked as requiring a range check then
-            --  generate it here, after looking through a conversion to
-            --  universal integer, if any.
+            else
+               --  If the argument is marked as requiring a range check then
+               --  generate it here, after looking through a conversion to
+               --  universal integer, if any.
 
-            elsif Do_Range_Check (Expr) then
-               if Nkind (Expr) = N_Type_Conversion
-                  and then Entity (Subtype_Mark (Expr)) = Universal_Integer
-               then
-                  Generate_Range_Check
-                    (Expression (Expr), Etyp, CE_Range_Check_Failed);
+               if Do_Range_Check (Expr) then
+                  if Present (Enum_Pos_To_Rep (Etyp)) then
+                     Rtyp := Enum_Pos_To_Rep (Etyp);
+                  else
+                     Rtyp := Etyp;
+                  end if;
+
+                  if Nkind (Expr) = N_Type_Conversion
+                     and then Entity (Subtype_Mark (Expr)) = Universal_Integer
+                  then
+                     Generate_Range_Check
+                       (Expression (Expr), Rtyp, CE_Range_Check_Failed);
+
+                  else
+                     Generate_Range_Check (Expr, Rtyp, CE_Range_Check_Failed);
+                  end if;
+
                   Set_Do_Range_Check (Expr, False);
+               end if;
 
-               else
-                  Generate_Range_Check (Expr, Etyp, CE_Range_Check_Failed);
+               --  Contiguous non-standard enumeration type
+
+               if Present (Enum_Pos_To_Rep (Etyp)) then
+                  if Is_Unsigned_Type (Etyp) then
+                     if Esize (Typ) <= Standard_Integer_Size then
+                        Ityp := RTE (RE_Unsigned);
+                     else
+                        Ityp := RTE (RE_Long_Long_Unsigned);
+                     end if;
+
+                  else
+                     if Esize (Etyp) <= Standard_Integer_Size then
+                        Ityp := Standard_Integer;
+                     else
+                        Ityp := Standard_Long_Long_Integer;
+                     end if;
+                  end if;
+
+                  Rewrite (N,
+                    Unchecked_Convert_To (Etyp,
+                      Make_Op_Add (Loc,
+                        Left_Opnd =>
+                          Make_Integer_Literal (Loc,
+                            Enumeration_Rep (First_Literal (Etyp))),
+                        Right_Opnd =>
+                          Convert_To (Ityp, Expr))));
+
+                  --  Suppress checks since the range check was done above
+                  --  and it guarantees that the addition cannot overflow.
+
+                  Analyze_And_Resolve (N, Typ, Suppress => All_Checks);
                end if;
             end if;
 
