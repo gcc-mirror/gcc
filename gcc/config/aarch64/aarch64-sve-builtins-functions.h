@@ -293,6 +293,29 @@ public:
   int m_unspec_for_fp;
 };
 
+/* A function_base that uses CODE_FOR_MODE (M) to get the associated
+   instruction code, where M is the vector mode associated with type
+   suffix N.  */
+template<insn_code (*CODE_FOR_MODE) (machine_mode), unsigned int N>
+class code_for_mode_function : public function_base
+{
+public:
+  rtx
+  expand (function_expander &e) const OVERRIDE
+  {
+    return e.use_exact_insn (CODE_FOR_MODE (e.vector_mode (N)));
+  }
+};
+
+/* A function that uses code_for_<PATTERN> (M), where M is the vector
+   mode associated with the first type suffix.  */
+#define CODE_FOR_MODE0(PATTERN) code_for_mode_function<code_for_##PATTERN, 0>
+
+/* Like CODE_FOR_MODE0, but the function doesn't raise exceptions when
+   operating on floating-point data.  */
+#define QUIET_CODE_FOR_MODE0(PATTERN) \
+  quiet< code_for_mode_function<code_for_##PATTERN, 0> >
+
 /* A function_base for functions that permute their arguments.  */
 class permute : public quiet<function_base>
 {

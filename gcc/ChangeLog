@@ -1,5 +1,15 @@
 2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-sve-builtins-functions.h
+	(code_for_mode_function): New class.
+	(CODE_FOR_MODE0, QUIET_CODE_FOR_MODE0): New macros.
+	* config/aarch64/aarch64-sve-builtins-base.cc (svcompact_impl)
+	(svext_impl, svmul_lane_impl, svsplice_impl, svtmad_impl): Delete.
+	(svcompact, svext, svsplice): Use QUIET_CODE_FOR_MODE0.
+	(svmul_lane, svtmad): Use CODE_FOR_MODE0.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/iterators.md (addsub): New code attribute.
 	* config/aarch64/aarch64-simd.md (aarch64_<su_optab><optab><mode>):
 	Re-express as...

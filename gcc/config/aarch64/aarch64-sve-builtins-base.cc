@@ -533,16 +533,6 @@ public:
   }
 };
 
-class svcompact_impl : public quiet<function_base>
-{
-public:
-  rtx
-  expand (function_expander &e) const OVERRIDE
-  {
-    return e.use_exact_insn (code_for_aarch64_sve_compact (e.vector_mode (0)));
-  }
-};
-
 /* Implements svcreate2, svcreate3 and svcreate4.  */
 class svcreate_impl : public quiet<multi_vector_function>
 {
@@ -906,16 +896,6 @@ public:
     e.args[0] = gen_lowpart (VNx2DImode, e.args[0]);
     e.args[1] = index;
     return e.use_exact_insn (CODE_FOR_aarch64_sve_tblvnx2di);
-  }
-};
-
-class svext_impl : public quiet<function_base>
-{
-public:
-  rtx
-  expand (function_expander &e) const OVERRIDE
-  {
-    return e.use_exact_insn (code_for_aarch64_sve_ext (e.vector_mode (0)));
   }
 };
 
@@ -1463,16 +1443,6 @@ public:
   }
 };
 
-class svmul_lane_impl : public function_base
-{
-public:
-  rtx
-  expand (function_expander &e) const OVERRIDE
-  {
-    return e.use_exact_insn (code_for_aarch64_mul_lane (e.vector_mode (0)));
-  }
-};
-
 class svnand_impl : public function_base
 {
 public:
@@ -2002,16 +1972,6 @@ public:
   }
 };
 
-class svsplice_impl : public quiet<function_base>
-{
-public:
-  rtx
-  expand (function_expander &e) const OVERRIDE
-  {
-    return e.use_exact_insn (code_for_aarch64_sve_splice (e.vector_mode (0)));
-  }
-};
-
 class svst1_impl : public full_width_access
 {
 public:
@@ -2193,16 +2153,6 @@ public:
   expand (function_expander &e) const OVERRIDE
   {
     return e.use_exact_insn (code_for_aarch64_sve_tbl (e.vector_mode (0)));
-  }
-};
-
-class svtmad_impl : public function_base
-{
-public:
-  rtx
-  expand (function_expander &e) const OVERRIDE
-  {
-    return e.use_exact_insn (code_for_aarch64_sve_tmad (e.vector_mode (0)));
   }
 };
 
@@ -2522,7 +2472,7 @@ FUNCTION (svcnth_pat, svcnt_bhwd_pat_impl, (VNx8HImode))
 FUNCTION (svcntp, svcntp_impl,)
 FUNCTION (svcntw, svcnt_bhwd_impl, (VNx4SImode))
 FUNCTION (svcntw_pat, svcnt_bhwd_pat_impl, (VNx4SImode))
-FUNCTION (svcompact, svcompact_impl,)
+FUNCTION (svcompact, QUIET_CODE_FOR_MODE0 (aarch64_sve_compact),)
 FUNCTION (svcreate2, svcreate_impl, (2))
 FUNCTION (svcreate3, svcreate_impl, (3))
 FUNCTION (svcreate4, svcreate_impl, (4))
@@ -2538,7 +2488,7 @@ FUNCTION (svdupq_lane, svdupq_lane_impl,)
 FUNCTION (sveor, rtx_code_function, (XOR, XOR, -1))
 FUNCTION (sveorv, reduction, (UNSPEC_XORV))
 FUNCTION (svexpa, unspec_based_function, (-1, -1, UNSPEC_FEXPA))
-FUNCTION (svext, svext_impl,)
+FUNCTION (svext, QUIET_CODE_FOR_MODE0 (aarch64_sve_ext),)
 FUNCTION (svextb, svext_bhw_impl, (QImode))
 FUNCTION (svexth, svext_bhw_impl, (HImode))
 FUNCTION (svextw, svext_bhw_impl, (SImode))
@@ -2610,7 +2560,7 @@ FUNCTION (svmls_lane, svmla_svmls_lane_impl, (UNSPEC_FMLS))
 FUNCTION (svmov, svmov_impl,)
 FUNCTION (svmsb, svmsb_impl,)
 FUNCTION (svmul, rtx_code_function, (MULT, MULT, UNSPEC_COND_FMUL))
-FUNCTION (svmul_lane, svmul_lane_impl,)
+FUNCTION (svmul_lane, CODE_FOR_MODE0 (aarch64_mul_lane),)
 FUNCTION (svmulh, unspec_based_function, (UNSPEC_SMUL_HIGHPART,
 					  UNSPEC_UMUL_HIGHPART, -1))
 FUNCTION (svmulx, unspec_based_function, (-1, -1, UNSPEC_COND_FMULX))
@@ -2686,7 +2636,7 @@ FUNCTION (svset2, svset_impl, (2))
 FUNCTION (svset3, svset_impl, (3))
 FUNCTION (svset4, svset_impl, (4))
 FUNCTION (svsetffr, svsetffr_impl,)
-FUNCTION (svsplice, svsplice_impl,)
+FUNCTION (svsplice, QUIET_CODE_FOR_MODE0 (aarch64_sve_splice),)
 FUNCTION (svsqrt, rtx_code_function, (SQRT, SQRT, UNSPEC_COND_FSQRT))
 FUNCTION (svst1, svst1_impl,)
 FUNCTION (svst1_scatter, svst1_scatter_impl,)
@@ -2703,7 +2653,7 @@ FUNCTION (svstnt1, svstnt1_impl,)
 FUNCTION (svsub, svsub_impl,)
 FUNCTION (svsubr, rtx_code_function_rotated, (MINUS, MINUS, UNSPEC_COND_FSUB))
 FUNCTION (svtbl, svtbl_impl,)
-FUNCTION (svtmad, svtmad_impl,)
+FUNCTION (svtmad, CODE_FOR_MODE0 (aarch64_sve_tmad),)
 FUNCTION (svtrn1, svtrn_impl, (0))
 FUNCTION (svtrn2, svtrn_impl, (1))
 FUNCTION (svtsmul, unspec_based_function, (-1, -1, UNSPEC_FTSMUL))
