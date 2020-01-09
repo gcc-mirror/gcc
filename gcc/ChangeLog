@@ -1,5 +1,10 @@
 2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/iterators.md (SRHSUB, URHSUB): Delete.
+	(HADDSUB, sur, addsub): Remove them.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-nrv.c (pass_return_slot::execute): Handle all internal
 	functions the same way, rather than singling out those that
 	aren't mapped directly to optabs.
