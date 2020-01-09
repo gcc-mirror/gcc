@@ -1,3 +1,9 @@
+2020-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.c (vectorize_slp_instance_root_stmt): Use a
+	VIEW_CONVERT_EXPR if the vectorized constructor has a diffeent
+	type from the lhs.
+
 2020-01-15  Martin Liska  <mliska@suse.cz>
 
 	* ipa-profile.c (ipa_profile_read_edge_summary): Do not allow

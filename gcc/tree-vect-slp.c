@@ -4307,6 +4307,10 @@ vectorize_slp_instance_root_stmt (slp_tree node, slp_instance instance)
 	{
 	  tree vect_lhs = gimple_get_lhs (child_stmt_info->stmt);
 	  tree root_lhs = gimple_get_lhs (instance->root_stmt->stmt);
+	  if (!useless_type_conversion_p (TREE_TYPE (root_lhs),
+					  TREE_TYPE (vect_lhs)))
+	    vect_lhs = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (root_lhs),
+			       vect_lhs);
 	  rstmt = gimple_build_assign (root_lhs, vect_lhs);
 	  break;
 	}
