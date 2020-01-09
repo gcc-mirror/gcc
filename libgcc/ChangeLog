@@ -1,3 +1,8 @@
+2020-01-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/atomic.c: New.
+	* config/gcn/t-amdgcn (LIB2ADD): Add atomic.c.
+
 2020-01-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	Implement 64-bit double functions.
