@@ -1,3 +1,8 @@
+2020-01-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* lto-streamer-in.c (input_function): Remove streamed-in inline debug
+	markers	if debug_inline_points is false.
+
 2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config.gcc (aarch64*-*-*): Add aarch64-sve-builtins-sve2.o to
