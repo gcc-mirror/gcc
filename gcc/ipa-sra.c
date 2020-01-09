@@ -2279,7 +2279,9 @@ process_scan_results (cgraph_node *node, struct function *fun,
       if (!desc->by_ref || optimize_function_for_size_p (fun))
 	param_size_limit = cur_param_size;
       else
-	param_size_limit = param_ipa_sra_ptr_growth_factor * cur_param_size;
+	  param_size_limit
+	    = opt_for_fn (node->decl,
+			  param_ipa_sra_ptr_growth_factor) * cur_param_size;
       if (nonarg_acc_size > param_size_limit
 	  || (!desc->by_ref && nonarg_acc_size == param_size_limit))
 	{
@@ -2499,7 +2501,7 @@ ipa_sra_summarize_function (cgraph_node *node)
 	  bb_dereferences = XCNEWVEC (HOST_WIDE_INT,
 				      by_ref_count
 				      * last_basic_block_for_fn (fun));
-	  aa_walking_limit = param_ipa_max_aa_steps;
+	  aa_walking_limit = opt_for_fn (node->decl, param_ipa_max_aa_steps);
 	  scan_function (node, fun);
 
 	  if (dump_file)

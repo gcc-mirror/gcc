@@ -2876,7 +2876,7 @@ ipa_analyze_node (struct cgraph_node *node)
   fbi.bb_infos = vNULL;
   fbi.bb_infos.safe_grow_cleared (last_basic_block_for_fn (cfun));
   fbi.param_count = ipa_get_param_count (info);
-  fbi.aa_walk_budget = param_ipa_max_aa_steps;
+  fbi.aa_walk_budget = opt_for_fn (node->decl, param_ipa_max_aa_steps);
 
   for (struct cgraph_edge *cs = node->callees; cs; cs = cs->next_callee)
     {
@@ -5756,7 +5756,7 @@ ipcp_transform_function (struct cgraph_node *node)
   fbi.bb_infos = vNULL;
   fbi.bb_infos.safe_grow_cleared (last_basic_block_for_fn (cfun));
   fbi.param_count = param_count;
-  fbi.aa_walk_budget = param_ipa_max_aa_steps;
+  fbi.aa_walk_budget = opt_for_fn (node->decl, param_ipa_max_aa_steps);
 
   vec_safe_grow_cleared (descriptors, param_count);
   ipa_populate_param_decls (node, *descriptors);
