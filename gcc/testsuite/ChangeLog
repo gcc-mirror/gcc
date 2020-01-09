@@ -1,5 +1,9 @@
 2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/acle/general/nrv_1.c: New test.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/pcs/gnu_vectors_1.c: New test.
 	* gcc.target/aarch64/sve/pcs/gnu_vectors_2.c: Likewise.
 
