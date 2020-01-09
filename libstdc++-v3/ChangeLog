@@ -1,3 +1,10 @@
+2020-01-09  Olivier Hainque  <hainque@adacore.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Document _C2
+	as a reserved identifier, by VxWorks.
+	* include/bits/stl_map.h: Rename _C2 template typenames	as _Cmp2.
+	* include/bits/stl_multimap.h: Likewise.
+
 2020-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/ext/extptr_allocator.h (_ExtPtr_allocator::operator==)
