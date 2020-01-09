@@ -353,7 +353,7 @@
 
   /* Emit a WHILERW or WHILEWR, setting the condition codes based on
      the result.  */
-  emit_insn (gen_aarch64_sve2_while_ptest
+  emit_insn (gen_while_ptest
 	     (<SVE2_WHILE_PTR:unspec>, <MODE>mode, pred_mode,
 	      gen_rtx_SCRATCH (pred_mode), operands[1], operands[2],
 	      CONSTM1_RTX (VNx16BImode), CONSTM1_RTX (pred_mode)));
@@ -365,27 +365,3 @@
   emit_insn (gen_aarch64_cstore<mode> (operands[0], cmp, cc_reg));
   DONE;
 })
-
-;; A WHILERW or WHILEWR in which only the flags result is interesting.
-(define_insn_and_rewrite "@aarch64_sve2_while<cmp_op><GPI:mode><PRED_ALL:mode>_ptest"
-  [(set (reg:CC_NZC CC_REGNUM)
-	(unspec:CC_NZC
-	  [(match_operand 3)
-	   (match_operand 4)
-	   (const_int SVE_KNOWN_PTRUE)
-	   (unspec:PRED_ALL
-	     [(match_operand:GPI 1 "register_operand" "r")
-	      (match_operand:GPI 2 "register_operand" "r")]
-	     SVE2_WHILE_PTR)]
-	  UNSPEC_PTEST))
-   (clobber (match_scratch:PRED_ALL 0 "=Upa"))]
-  "TARGET_SVE2"
-  "while<cmp_op>\t%0.<PRED_ALL:Vetype>, %x1, %x2"
-  ;; Force the compiler to drop the unused predicate operand, so that we
-  ;; don't have an unnecessary PTRUE.
-  "&& (!CONSTANT_P (operands[3]) || !CONSTANT_P (operands[4]))"
-  {
-    operands[3] = CONSTM1_RTX (VNx16BImode);
-    operands[4] = CONSTM1_RTX (<PRED_ALL:MODE>mode);
-  }
-)
