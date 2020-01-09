@@ -1,3 +1,8 @@
+2020-01-09  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/93200
+	* gcc.dg/Wstringop-overflow-30.c: New test.
+
 2020-01-09  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/93054

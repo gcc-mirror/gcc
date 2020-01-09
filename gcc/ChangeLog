@@ -1,3 +1,9 @@
+2020-01-09  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/93200
+	PR fortran/92956
+	* builtins.c (compute_objsize): Avoid handling MEM_REFs of vector type.
+
 2020-01-09  Martin Liska  <mliska@suse.cz>
 
 	* auto-profile.c (auto_profile): Use opt_for_fn
