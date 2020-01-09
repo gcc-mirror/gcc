@@ -637,30 +637,30 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename, typename>
 	friend class std::_Rb_tree_merge_helper;
 
-      template<typename _C2>
+      template<typename _Cmp2>
 	void
-	merge(map<_Key, _Tp, _C2, _Alloc>& __source)
+	merge(map<_Key, _Tp, _Cmp2, _Alloc>& __source)
 	{
-	  using _Merge_helper = _Rb_tree_merge_helper<map, _C2>;
+	  using _Merge_helper = _Rb_tree_merge_helper<map, _Cmp2>;
 	  _M_t._M_merge_unique(_Merge_helper::_S_get_tree(__source));
 	}
 
-      template<typename _C2>
+      template<typename _Cmp2>
 	void
-	merge(map<_Key, _Tp, _C2, _Alloc>&& __source)
+	merge(map<_Key, _Tp, _Cmp2, _Alloc>&& __source)
 	{ merge(__source); }
 
-      template<typename _C2>
+      template<typename _Cmp2>
 	void
-	merge(multimap<_Key, _Tp, _C2, _Alloc>& __source)
+	merge(multimap<_Key, _Tp, _Cmp2, _Alloc>& __source)
 	{
-	  using _Merge_helper = _Rb_tree_merge_helper<map, _C2>;
+	  using _Merge_helper = _Rb_tree_merge_helper<map, _Cmp2>;
 	  _M_t._M_merge_unique(_Merge_helper::_S_get_tree(__source));
 	}
 
-      template<typename _C2>
+      template<typename _Cmp2>
 	void
-	merge(multimap<_Key, _Tp, _C2, _Alloc>&& __source)
+	merge(multimap<_Key, _Tp, _Cmp2, _Alloc>&& __source)
 	{ merge(__source); }
 #endif // C++17
 
