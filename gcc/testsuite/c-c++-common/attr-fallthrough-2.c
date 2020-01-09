@@ -48,6 +48,13 @@ fn (int i)
   case 11:
     bar (1);
     __attribute__((fallthrough, unused)); /* { dg-warning "attribute ignored" } */
+  case 12:
+      { bar (1);
+        __attribute__((fallthrough));
+      }
+  case 13:
+      { bar (1);
+      } __attribute__((fallthrough));
   default:
     bar (99);
   }
