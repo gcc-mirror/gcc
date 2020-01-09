@@ -1759,6 +1759,11 @@ cleanup:
   return t;
 }
 
+/* Variables for noticing if all constructors are empty, and
+   if any of them had a type.  */
+
+static bool empty_constructor;
+static gfc_typespec empty_ts;
 
 /* Expand a constructor into constant constructors without any
    iterators, calling the work function for each of the expanded
@@ -1782,6 +1787,9 @@ expand_constructor (gfc_constructor_base base)
 
       e = c->expr;
 
+      if (empty_constructor)
+	empty_ts = e->ts;
+
       if (e->expr_type == EXPR_ARRAY)
 	{
 	  if (!expand_constructor (e->value.constructor))
@@ -1790,6 +1798,7 @@ expand_constructor (gfc_constructor_base base)
 	  continue;
 	}
 
+      empty_constructor = false;
       e = gfc_copy_expr (e);
       if (!gfc_simplify_expr (e, 1))
 	{
@@ -1873,6 +1882,8 @@ gfc_expand_constructor (gfc_expr *e, bool fatal)
 
   iter_stack = NULL;
 
+  empty_constructor = true;
+  gfc_clear_ts (&empty_ts);
   current_expand.expand_work_function = expand;
 
   if (!expand_constructor (e->value.constructor))
@@ -1881,6 +1892,13 @@ gfc_expand_constructor (gfc_expr *e, bool fatal)
       rc = false;
       goto done;
     }
+
+  /* If we don't have an explicit constructor type, and there
+     were only empty constructors, then take the type from
+     them.  */
+
+  if (constructor_ts.type == BT_UNKNOWN && empty_constructor)
+    e->ts = empty_ts;
 
   gfc_constructor_free (e->value.constructor);
   e->value.constructor = current_expand.base;

@@ -1,3 +1,9 @@
+2020-01-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/65428
+	* gfortran.dg/zero_sized_11.f90: New test.
+	* gfortran.dg/zero_sized_12.f90: New test.
+
 2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* g++.target/aarch64/sve/acle/general-c++/mul_lane_1.c: New test.
