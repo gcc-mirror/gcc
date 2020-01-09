@@ -1,3 +1,8 @@
+2020-01-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93040
+	* gimple-ssa-store-merging.c (find_bswap_or_nop): Raise search limit.
+
 2020-01-09  Georg-Johann Lay  <avr@gjlay.de>
 
 	* common/config/avr/avr-common.c (avr_option_optimization_table)
