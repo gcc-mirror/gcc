@@ -933,7 +933,7 @@ finish_co_return_stmt (location_t kw, tree expr)
    deal with that properly.  */
 
 tree
-coro_validate_builtin_call (tree call, tsubst_flags_t complain)
+coro_validate_builtin_call (tree call, tsubst_flags_t)
 {
   tree fn = TREE_OPERAND (CALL_EXPR_FN (call), 0);
 

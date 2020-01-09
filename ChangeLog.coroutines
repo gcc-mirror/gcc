@@ -1,3 +1,9 @@
+2020-01-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (coro_validate_builtin_call): Remove the name
+	of the currently unused argument.
+
 2020-01-08  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
