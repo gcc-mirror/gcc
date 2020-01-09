@@ -1,3 +1,22 @@
+2020-01-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/92124
+	* include/bits/hashtable.h (_Hashtable<>::__alloc_node_gen_t): New
+	template alias.
+	(_Hashtable<>::__fwd_value_for): New.
+	(_Hashtable<>::_M_assign_elements<>): Remove _NodeGenerator template
+	parameter.
+	(_Hashtable<>::_M_assign<>): Add _Ht template parameter.
+	(_Hashtable<>::operator=(const _Hashtable<>&)): Adapt.
+	(_Hashtable<>::_M_move_assign): Adapt. Replace std::move_if_noexcept
+	with std::move.
+	(_Hashtable<>::_Hashtable(const _Hashtable&)): Adapt.
+	(_Hashtable<>::_Hashtable(const _Hashtable&, const allocator_type&)):
+	Adapt.
+	(_Hashtable<>::_Hashtable(_Hashtable&&, const allocator_type&)):
+	Adapt.
+	* testsuite/23_containers/unordered_set/92124.cc: New.
+
 2020-01-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/93201
