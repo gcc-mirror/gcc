@@ -1,5 +1,12 @@
 2020-01-14  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93212
+	* region-model.cc (make_region_for_type): Use
+	FUNC_OR_METHOD_TYPE_P rather than comparing against FUNCTION_TYPE.
+	* region-model.h (function_region::function_region): Likewise.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
 	* program-state.cc (sm_state_map::clone_with_remapping): Copy
 	m_global_state.
 	(selftest::test_program_state_merging_2): New selftest.

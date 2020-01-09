@@ -5963,7 +5963,7 @@ make_region_for_type (region_id parent_rid, tree type)
   if (TREE_CODE (type) == UNION_TYPE)
     return new union_region (parent_rid, type);
 
-  if (TREE_CODE (type) == FUNCTION_TYPE)
+  if (FUNC_OR_METHOD_TYPE_P (type))
     return new function_region (parent_rid, type);
 
   /* If we have a void *, make a new symbolic region.  */

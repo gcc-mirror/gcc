@@ -1202,7 +1202,7 @@ public:
   function_region (region_id parent_rid, tree type)
   : map_region (parent_rid, type)
   {
-    gcc_assert (TREE_CODE (type) == FUNCTION_TYPE);
+    gcc_assert (FUNC_OR_METHOD_TYPE_P (type));
   }
   function_region (const function_region &other)
   : map_region (other)
