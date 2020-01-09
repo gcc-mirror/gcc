@@ -632,8 +632,10 @@ function_and_variable_visibility (bool whole_program)
 	continue;
 
       cgraph_node *alias = 0;
-      for (cgraph_edge *e = node->callees; e; e = e->next_callee)
+      cgraph_edge *next_edge;
+      for (cgraph_edge *e = node->callees; e; e = next_edge)
 	{
+	  next_edge = e->next_callee;
 	  /* Recursive function calls usually can't be interposed.  */
 
 	  if (!e->recursive_p ())
@@ -649,7 +651,7 @@ function_and_variable_visibility (bool whole_program)
 	  if (gimple_has_body_p (e->caller->decl))
 	    {
 	      push_cfun (DECL_STRUCT_FUNCTION (e->caller->decl));
-	      e->redirect_call_stmt_to_callee ();
+	      cgraph_edge::redirect_call_stmt_to_callee (e);
 	      pop_cfun ();
 	    }
 	}
@@ -780,7 +782,7 @@ function_and_variable_visibility (bool whole_program)
 		  if (gimple_has_body_p (e->caller->decl))
 		    {
 		      push_cfun (DECL_STRUCT_FUNCTION (e->caller->decl));
-		      e->redirect_call_stmt_to_callee ();
+		      cgraph_edge::redirect_call_stmt_to_callee (e);
 		      pop_cfun ();
 		    }
 		}

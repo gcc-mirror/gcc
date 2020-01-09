@@ -242,12 +242,12 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 			       edge->caller->dump_name (),
 			       target->dump_name ());
 	    }
-	  edge = edge->make_direct (target);
+	  edge = cgraph_edge::make_direct (edge, target);
 	  if (ipa_fn_summaries)
 	    ipa_update_overall_fn_summary (node->inlined_to
 					   ? node->inlined_to : node);
 	  else if (edge->call_stmt)
-	    edge->redirect_call_stmt_to_callee ();
+	    cgraph_edge::redirect_call_stmt_to_callee (edge);
 	}
     }
 }

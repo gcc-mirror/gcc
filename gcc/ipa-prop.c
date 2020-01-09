@@ -3299,7 +3299,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
   if (!speculative)
     {
       struct cgraph_edge *orig = ie;
-      ie = ie->make_direct (callee);
+      ie = cgraph_edge::make_direct (ie, callee);
       /* If we resolved speculative edge the cost is already up to date
 	 for direct call (adjusted by inline_edge_duplication_hook).  */
       if (ie == orig)

@@ -126,7 +126,7 @@ create_dispatcher_calls (struct cgraph_node *node)
       FOR_EACH_VEC_ELT (edges_to_redirect, i, e)
 	{
 	  e->redirect_callee (inode);
-	  e->redirect_call_stmt_to_callee ();
+	  cgraph_edge::redirect_call_stmt_to_callee (e);
 	}
 
       /* Redirect references.  */
@@ -501,7 +501,7 @@ redirect_to_specific_clone (cgraph_node *node)
 	      if (attribute_list_equal (attr_target, attr_target2))
 		{
 		  e->redirect_callee (callee);
-		  e->redirect_call_stmt_to_callee ();
+		  cgraph_edge::redirect_call_stmt_to_callee (e);
 		  break;
 		}
 	    }

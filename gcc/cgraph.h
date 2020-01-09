@@ -1736,13 +1736,15 @@ public:
   friend struct cgraph_node;
   friend class symbol_table;
 
-  /* Remove the edge in the cgraph.  */
-  void remove (void);
+  /* Remove EDGE from the cgraph.  */
+  static void remove (cgraph_edge *edge);
 
-  /* Change field call_stmt of edge to NEW_STMT.
-     If UPDATE_SPECULATIVE and E is any component of speculative
-     edge, then update all components.  */
-  void set_call_stmt (gcall *new_stmt, bool update_speculative = true);
+  /* Change field call_stmt of edge E to NEW_STMT.  If UPDATE_SPECULATIVE and E
+     is any component of speculative edge, then update all components.
+     Speculations can be resolved in the process and EDGE can be removed and
+     deallocated.  Return the edge that now represents the call.  */
+  static cgraph_edge *set_call_stmt (cgraph_edge *e, gcall *new_stmt,
+				     bool update_speculative = true);
 
   /* Redirect callee of the edge to N.  The function does not update underlying
      call expression.  */
@@ -1755,10 +1757,10 @@ public:
   void redirect_callee_duplicating_thunks (cgraph_node *n);
 
   /* Make an indirect edge with an unknown callee an ordinary edge leading to
-     CALLEE.  DELTA is an integer constant that is to be added to the this
-     pointer (first parameter) to compensate for skipping
-     a thunk adjustment.  */
-  cgraph_edge *make_direct (cgraph_node *callee);
+     CALLEE.  Speculations can be resolved in the process and EDGE can be
+     removed and deallocated.  Return the edge that now represents the
+     call.  */
+  static cgraph_edge *make_direct (cgraph_edge *edge, cgraph_node *callee);
 
   /* Turn edge into speculative call calling N2. Update
      the profile so the direct call is taken COUNT times
@@ -1769,14 +1771,19 @@ public:
   void speculative_call_info (cgraph_edge *&direct, cgraph_edge *&indirect,
 			      ipa_ref *&reference);
 
-  /* Speculative call edge turned out to be direct call to CALLEE_DECL.
-     Remove the speculative call sequence and return edge representing the call.
-     It is up to caller to redirect the call as appropriate. */
-  cgraph_edge *resolve_speculation (tree callee_decl = NULL);
+  /* Speculative call edge turned out to be direct call to CALLEE_DECL.  Remove
+     the speculative call sequence and return edge representing the call, the
+     original EDGE can be removed and deallocated.  It is up to caller to
+     redirect the call as appropriate.  Return the edge that now represents the
+     call.  */
+  static cgraph_edge *resolve_speculation (cgraph_edge *edge,
+					   tree callee_decl = NULL);
 
   /* If necessary, change the function declaration in the call statement
-     associated with the edge so that it corresponds to the edge callee.  */
-  gimple *redirect_call_stmt_to_callee (void);
+     associated with edge E so that it corresponds to the edge callee.
+     Speculations can be resolved in the process and EDGE can be removed and
+     deallocated.  */
+  static gimple *redirect_call_stmt_to_callee (cgraph_edge *e);
 
   /* Create clone of edge in the node N represented
      by CALL_EXPR the callgraph.  */

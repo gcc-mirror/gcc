@@ -1834,7 +1834,7 @@ resolve_noninline_speculation (edge_heap_t *edge_heap, struct cgraph_edge *edge)
 
       if (edge->count.ipa ().initialized_p ())
         spec_rem += edge->count.ipa ();
-      edge->resolve_speculation ();
+      cgraph_edge::resolve_speculation (edge);
       reset_edge_caches (where);
       ipa_update_overall_fn_summary (where);
       update_caller_keys (edge_heap, where,
@@ -1998,7 +1998,7 @@ inline_small_functions (void)
 	    if (edge->speculative
 		&& !speculation_useful_p (edge, edge->aux != NULL))
 	      {
-		edge->resolve_speculation ();
+		cgraph_edge::resolve_speculation (edge);
 		update = true;
 	      }
 	  }
@@ -2735,7 +2735,7 @@ ipa_inline (void)
 		{
 		  if (edge->count.ipa ().initialized_p ())
 		    spec_rem += edge->count.ipa ();
-		  edge->resolve_speculation ();
+		  cgraph_edge::resolve_speculation (edge);
 		  update = true;
 		  remove_functions = true;
 		}

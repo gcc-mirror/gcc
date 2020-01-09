@@ -1,3 +1,55 @@
+2020-01-09  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.h (cgraph_edge): Make remove, set_call_stmt, make_direct,
+	resolve_speculation and redirect_call_stmt_to_callee static.  Change
+	return type of set_call_stmt to cgraph_edge *.
+	* auto-profile.c (afdo_indirect_call): Adjust call to
+	redirect_call_stmt_to_callee.
+	* cgraph.c (cgraph_edge::set_call_stmt): Make return cgraph-edge *,
+	make the this pointer explicit, adjust self-recursive calls and the
+	call top make_direct.  Return the resulting edge.
+	(cgraph_edge::remove): Make this pointer explicit.
+	(cgraph_edge::resolve_speculation): Likewise, adjust call to remove.
+	(cgraph_edge::make_direct): Likewise, adjust call to
+	resolve_speculation.
+	(cgraph_edge::redirect_call_stmt_to_callee): Likewise, also adjust
+	call to set_call_stmt.
+	(cgraph_update_edges_for_call_stmt_node): Update call to
+	set_call_stmt and remove.
+	* cgraphclones.c (cgraph_node::set_call_stmt_including_clones):
+	Renamed edge to master_edge.  Adjusted calls to set_call_stmt.
+	(cgraph_node::create_edge_including_clones): Moved "first" definition
+	of edge to the block where it was used.  Adjusted calls to
+	set_call_stmt.
+	(cgraph_node::remove_symbol_and_inline_clones): Adjust call to
+	cgraph_edge::remove.
+	* cgraphunit.c (walk_polymorphic_call_targets): Adjusted calls to
+	make_direct and redirect_call_stmt_to_callee.
+	* ipa-fnsummary.c (redirect_to_unreachable): Adjust calls to
+	resolve_speculation and make_direct.
+	* ipa-inline-transform.c (inline_transform): Adjust call to
+	redirect_call_stmt_to_callee.
+	(check_speculations_1):: Adjust call to resolve_speculation.
+	* ipa-inline.c (resolve_noninline_speculation): Adjust call to
+	resolve-speculation.
+	(inline_small_functions): Adjust call to resolve_speculation.
+	(ipa_inline): Likewise.
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Adjust call to
+	make_direct.
+	* ipa-visibility.c (function_and_variable_visibility): Make iteration
+	safe with regards to edge removal, adjust calls to
+	redirect_call_stmt_to_callee.
+	* ipa.c (walk_polymorphic_call_targets): Adjust calls to make_direct
+	and redirect_call_stmt_to_callee.
+	* multiple_target.c (create_dispatcher_calls): Adjust call to
+	redirect_call_stmt_to_callee
+	(redirect_to_specific_clone): Likewise.
+	* tree-cfgcleanup.c (delete_unreachable_blocks_update_callgraph):
+	Adjust calls to cgraph_edge::remove.
+	* tree-inline.c (copy_bb): Adjust call to set_call_stmt.
+	(redirect_all_calls): Adjust call to redirect_call_stmt_to_callee.
+	(expand_call_inline): Adjust call to cgraph_edge::remove.
+
 2020-01-09  Martin Liska  <mliska@suse.cz>
 
 	* params.opt: Set Optimization for
