@@ -1,5 +1,14 @@
 2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-sve-builtins-shapes.h (unary_count): Delete.
+	(unary_to_uint): Define.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (unary_count_def)
+	(unary_count): Rename to...
+	(unary_to_uint_def, unary_to_uint): ...this.
+	* config/aarch64/aarch64-sve-builtins-base.def: Update accordingly.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-sve-builtins-functions.h
 	(code_for_mode_function): New class.
 	(CODE_FOR_MODE0, QUIET_CODE_FOR_MODE0): New macros.
