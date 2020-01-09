@@ -1024,16 +1024,13 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 			       target->dump_name ());
 	    }
 
-	  edge->make_direct (target);
-	  edge->redirect_call_stmt_to_callee ();
+	  edge = cgraph_edge::make_direct (edge, target);
+	  gimple *new_call = cgraph_edge::redirect_call_stmt_to_callee (edge);
 
 	  if (symtab->dump_file)
 	    {
-	      fprintf (symtab->dump_file,
-		       "Devirtualized as: ");
-	      print_gimple_stmt (symtab->dump_file,
-				 edge->call_stmt, 0,
-				 TDF_SLIM);
+	      fprintf (symtab->dump_file, "Devirtualized as: ");
+	      print_gimple_stmt (symtab->dump_file, new_call, 0, TDF_SLIM);
 	    }
 	}
     }

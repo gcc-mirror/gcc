@@ -767,41 +767,41 @@ cgraph_node::get_edge (gimple *call_stmt)
 }
 
 
-/* Change field call_stmt of edge to NEW_STMT.
-   If UPDATE_SPECULATIVE and E is any component of speculative
-   edge, then update all components.  */
+/* Change field call_stmt of edge E to NEW_STMT.  If UPDATE_SPECULATIVE and E
+   is any component of speculative edge, then update all components.
+   Speculations can be resolved in the process and EDGE can be removed and
+   deallocated.  Return the edge that now represents the call.  */
 
-void
-cgraph_edge::set_call_stmt (gcall *new_stmt, bool update_speculative)
+cgraph_edge *
+cgraph_edge::set_call_stmt (cgraph_edge *e, gcall *new_stmt,
+			    bool update_speculative)
 {
   tree decl;
 
   /* Speculative edges has three component, update all of them
      when asked to.  */
-  if (update_speculative && speculative)
+  if (update_speculative && e->speculative)
     {
       cgraph_edge *direct, *indirect;
       ipa_ref *ref;
+      bool e_indirect = e->indirect_unknown_callee;
 
-      speculative_call_info (direct, indirect, ref);
-      direct->set_call_stmt (new_stmt, false);
-      indirect->set_call_stmt (new_stmt, false);
+      e->speculative_call_info (direct, indirect, ref);
       ref->stmt = new_stmt;
-      return;
+      cgraph_edge *d2 = set_call_stmt (direct, new_stmt, false);
+      gcc_assert (direct == d2);
+      indirect = set_call_stmt (indirect, new_stmt, false);
+      return e_indirect ? indirect : direct;
     }
 
   /* Only direct speculative edges go to call_site_hash.  */
-  if (caller->call_site_hash
-      && (!speculative || !indirect_unknown_callee))
-    {
-      caller->call_site_hash->remove_elt_with_hash
-	(call_stmt, cgraph_edge_hasher::hash (call_stmt));
-    }
+  if (e->caller->call_site_hash
+      && (!e->speculative || !e->indirect_unknown_callee))
+    e->caller->call_site_hash->remove_elt_with_hash
+      (e->call_stmt, cgraph_edge_hasher::hash (e->call_stmt));
 
-  cgraph_edge *e = this;
-
-  call_stmt = new_stmt;
-  if (indirect_unknown_callee
+  e->call_stmt = new_stmt;
+  if (e->indirect_unknown_callee
       && (decl = gimple_call_fndecl (new_stmt)))
     {
       /* Constant propagation (and possibly also inlining?) can turn an
@@ -809,13 +809,14 @@ cgraph_edge::set_call_stmt (gcall *new_stmt, bool update_speculative)
       cgraph_node *new_callee = cgraph_node::get (decl);
 
       gcc_checking_assert (new_callee);
-      e = make_direct (new_callee);
+      e = make_direct (e, new_callee);
     }
 
   function *fun = DECL_STRUCT_FUNCTION (e->caller->decl);
   e->can_throw_external = stmt_can_throw_external (fun, new_stmt);
   if (e->caller->call_site_hash)
     cgraph_add_edge_to_call_site_hash (e);
+  return e;
 }
 
 /* Allocate a cgraph_edge structure and fill it with data according to the
@@ -1011,20 +1012,20 @@ symbol_table::free_edge (cgraph_edge *e)
 /* Remove the edge in the cgraph.  */
 
 void
-cgraph_edge::remove (void)
+cgraph_edge::remove (cgraph_edge *edge)
 {
   /* Call all edge removal hooks.  */
-  symtab->call_edge_removal_hooks (this);
+  symtab->call_edge_removal_hooks (edge);
 
-  if (!indirect_unknown_callee)
+  if (!edge->indirect_unknown_callee)
     /* Remove from callers list of the callee.  */
-    remove_callee ();
+    edge->remove_callee ();
 
   /* Remove from callees list of the callers.  */
-  remove_caller ();
+  edge->remove_caller ();
 
   /* Put the edge onto the free list.  */
-  symtab->free_edge (this);
+  symtab->free_edge (edge);
 }
 
 /* Turn edge into speculative call calling N2. Update
@@ -1135,14 +1136,15 @@ cgraph_edge::speculative_call_info (cgraph_edge *&direct,
   gcc_assert (e && e2 && ref);
 }
 
-/* Speculative call edge turned out to be direct call to CALLEE_DECL.
-   Remove the speculative call sequence and return edge representing the call.
-   It is up to caller to redirect the call as appropriate. */
+/* Speculative call EDGE turned out to be direct call to CALLEE_DECL.  Remove
+   the speculative call sequence and return edge representing the call, the
+   original EDGE can be removed and deallocated.  It is up to caller to
+   redirect the call as appropriate.  Return the edge that now represents the
+   call.  */
 
 cgraph_edge *
-cgraph_edge::resolve_speculation (tree callee_decl)
+cgraph_edge::resolve_speculation (cgraph_edge *edge, tree callee_decl)
 {
-  cgraph_edge *edge = this;
   cgraph_edge *e2;
   ipa_ref *ref;
 
@@ -1186,7 +1188,7 @@ cgraph_edge::resolve_speculation (tree callee_decl)
   e2->speculative = false;
   ref->remove_reference ();
   if (e2->indirect_unknown_callee || e2->inline_failed)
-    e2->remove ();
+    remove (e2);
   else
     e2->callee->remove_symbol_and_inline_clones ();
   if (edge->caller->call_site_hash)
@@ -1195,43 +1197,42 @@ cgraph_edge::resolve_speculation (tree callee_decl)
 }
 
 /* Make an indirect edge with an unknown callee an ordinary edge leading to
-   CALLEE.  DELTA is an integer constant that is to be added to the this
-   pointer (first parameter) to compensate for skipping a thunk adjustment.  */
+   CALLEE.  Speculations can be resolved in the process and EDGE can be removed
+   and deallocated.  Return the edge that now represents the call.  */
 
 cgraph_edge *
-cgraph_edge::make_direct (cgraph_node *callee)
+cgraph_edge::make_direct (cgraph_edge *edge, cgraph_node *callee)
 {
-  cgraph_edge *edge = this;
-  gcc_assert (indirect_unknown_callee);
+  gcc_assert (edge->indirect_unknown_callee);
 
   /* If we are redirecting speculative call, make it non-speculative.  */
-  if (indirect_unknown_callee && speculative)
+  if (edge->speculative)
     {
-      edge = edge->resolve_speculation (callee->decl);
+      edge = resolve_speculation (edge, callee->decl);
 
       /* On successful speculation just return the pre existing direct edge.  */
       if (!edge->indirect_unknown_callee)
         return edge;
     }
 
-  indirect_unknown_callee = 0;
-  ggc_free (indirect_info);
-  indirect_info = NULL;
+  edge->indirect_unknown_callee = 0;
+  ggc_free (edge->indirect_info);
+  edge->indirect_info = NULL;
 
   /* Get the edge out of the indirect edge list. */
-  if (prev_callee)
-    prev_callee->next_callee = next_callee;
-  if (next_callee)
-    next_callee->prev_callee = prev_callee;
-  if (!prev_callee)
-    caller->indirect_calls = next_callee;
+  if (edge->prev_callee)
+    edge->prev_callee->next_callee = edge->next_callee;
+  if (edge->next_callee)
+    edge->next_callee->prev_callee = edge->prev_callee;
+  if (!edge->prev_callee)
+    edge->caller->indirect_calls = edge->next_callee;
 
   /* Put it into the normal callee list */
-  prev_callee = NULL;
-  next_callee = caller->callees;
-  if (caller->callees)
-    caller->callees->prev_callee = edge;
-  caller->callees = edge;
+  edge->prev_callee = NULL;
+  edge->next_callee = edge->caller->callees;
+  if (edge->caller->callees)
+    edge->caller->callees->prev_callee = edge;
+  edge->caller->callees = edge;
 
   /* Insert to callers list of the new callee.  */
   edge->set_callee (callee);
@@ -1242,13 +1243,12 @@ cgraph_edge::make_direct (cgraph_node *callee)
 }
 
 /* If necessary, change the function declaration in the call statement
-   associated with E so that it corresponds to the edge callee.  */
+   associated with E so that it corresponds to the edge callee.  Speculations
+   can be resolved in the process and EDGE can be removed and deallocated.  */
 
 gimple *
-cgraph_edge::redirect_call_stmt_to_callee (void)
+cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
 {
-  cgraph_edge *e = this;
-
   tree decl = gimple_call_fndecl (e->call_stmt);
   gcall *new_stmt;
   gimple_stmt_iterator gsi;
@@ -1263,7 +1263,7 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
       /* If there already is an direct call (i.e. as a result of inliner's
 	 substitution), forget about speculating.  */
       if (decl)
-	e = e->resolve_speculation (decl);
+	e = resolve_speculation (e, decl);
       else
 	{
 	  /* Expand speculation into GIMPLE code.  */
@@ -1455,8 +1455,8 @@ cgraph_update_edges_for_call_stmt_node (cgraph_node *node,
 	  if (new_stmt && is_gimple_call (new_stmt) && e->callee
 	      && fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE))
 	    {
-              node->get_edge (old_stmt)->set_call_stmt
-		 (as_a <gcall *> (new_stmt));
+	      cgraph_edge::set_call_stmt (node->get_edge (old_stmt),
+					  as_a <gcall *> (new_stmt));
 	      return;
 	    }
 	  /* See if the edge is already there and has the correct callee.  It
@@ -1470,7 +1470,7 @@ cgraph_update_edges_for_call_stmt_node (cgraph_node *node,
 		  if (callee->decl == new_call
 		      || callee->former_clone_of == new_call)
 		    {
-		      e->set_call_stmt (as_a <gcall *> (new_stmt));
+		      cgraph_edge::set_call_stmt (e, as_a <gcall *> (new_stmt));
 		      return;
 		    }
 		  callee = callee->clone_of;
@@ -1482,7 +1482,7 @@ cgraph_update_edges_for_call_stmt_node (cgraph_node *node,
 	     attached to edge is invalid.  */
 	  count = e->count;
  	  if (e->indirect_unknown_callee || e->inline_failed)
-	    e->remove ();
+	    cgraph_edge::remove (e);
 	  else
 	    e->callee->remove_symbol_and_inline_clones ();
 	}
@@ -1502,7 +1502,8 @@ cgraph_update_edges_for_call_stmt_node (cgraph_node *node,
     }
   /* We only updated the call stmt; update pointer in cgraph edge..  */
   else if (old_stmt != new_stmt)
-    node->get_edge (old_stmt)->set_call_stmt (as_a <gcall *> (new_stmt));
+    cgraph_edge::set_call_stmt (node->get_edge (old_stmt),
+				as_a <gcall *> (new_stmt));
 }
 
 /* Update or remove the corresponding cgraph edge if a GIMPLE_CALL

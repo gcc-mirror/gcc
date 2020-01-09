@@ -245,9 +245,9 @@ redirect_to_unreachable (struct cgraph_edge *e)
 		      (builtin_decl_implicit (BUILT_IN_UNREACHABLE));
 
   if (e->speculative)
-    e = e->resolve_speculation (target->decl);
+    e = cgraph_edge::resolve_speculation (e, target->decl);
   else if (!e->callee)
-    e->make_direct (target);
+    e = cgraph_edge::make_direct (e, target);
   else
     e->redirect_callee (target);
   class ipa_call_summary *es = ipa_call_summaries->get (e);

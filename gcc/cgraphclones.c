@@ -744,10 +744,10 @@ cgraph_node::set_call_stmt_including_clones (gimple *old_stmt,
 					     bool update_speculative)
 {
   cgraph_node *node;
-  cgraph_edge *edge = get_edge (old_stmt);
+  cgraph_edge *master_edge = get_edge (old_stmt);
 
-  if (edge)
-    edge->set_call_stmt (new_stmt, update_speculative);
+  if (master_edge)
+    cgraph_edge::set_call_stmt (master_edge, new_stmt, update_speculative);
 
   node = clones;
   if (node)
@@ -756,7 +756,8 @@ cgraph_node::set_call_stmt_including_clones (gimple *old_stmt,
 	cgraph_edge *edge = node->get_edge (old_stmt);
 	if (edge)
 	  {
-	    edge->set_call_stmt (new_stmt, update_speculative);
+	    edge = cgraph_edge::set_call_stmt (edge, new_stmt,
+					       update_speculative);
 	    /* If UPDATE_SPECULATIVE is false, it means that we are turning
 	       speculative call into a real code sequence.  Update the
 	       callgraph edges.  */
@@ -800,11 +801,10 @@ cgraph_node::create_edge_including_clones (cgraph_node *callee,
 					   cgraph_inline_failed_t reason)
 {
   cgraph_node *node;
-  cgraph_edge *edge;
 
   if (!get_edge (stmt))
     {
-      edge = create_edge (callee, stmt, count);
+      cgraph_edge *edge = create_edge (callee, stmt, count);
       edge->inline_failed = reason;
     }
 
@@ -821,7 +821,7 @@ cgraph_node::create_edge_including_clones (cgraph_node *callee,
 	     call in the clone or we are processing clones of unreachable
 	     master where edges has been removed.  */
 	  if (edge)
-	    edge->set_call_stmt (stmt);
+	    edge = cgraph_edge::set_call_stmt (edge, stmt);
 	  else if (! node->get_edge (stmt))
 	    {
 	      edge = node->create_edge (callee, stmt, count);
@@ -855,7 +855,7 @@ cgraph_node::remove_symbol_and_inline_clones (cgraph_node *forbidden_node)
 
   if (this == forbidden_node)
     {
-      callers->remove ();
+      cgraph_edge::remove (callers);
       return true;
     }
   for (e = callees; e; e = next)

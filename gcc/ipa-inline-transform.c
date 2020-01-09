@@ -258,7 +258,7 @@ check_speculations_1 (cgraph_node *n, vec<cgraph_edge *> *new_edges,
 	    edge_set->add (new_edges->pop ());
 	  edge_set->remove (e);
 
-	  e->resolve_speculation (NULL);
+	  cgraph_edge::resolve_speculation (e, NULL);
 	  speculation_removed = true;
 	}
       else if (!e->inline_failed)
@@ -712,7 +712,7 @@ inline_transform (struct cgraph_node *node)
       if (!e->inline_failed)
 	has_inline = true;
       next = e->next_callee;
-      e->redirect_call_stmt_to_callee ();
+      cgraph_edge::redirect_call_stmt_to_callee (e);
     }
   node->remove_all_references ();
 
