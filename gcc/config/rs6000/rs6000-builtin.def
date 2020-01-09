@@ -1128,6 +1128,22 @@
 		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
 		     | RS6000_BTC_TERNARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P10_1(ENUM, NAME, ATTR, ICODE)			\
+  RS6000_BUILTIN_1 (P10_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vec" NAME,		/* NAME */	\
+		    RS6000_BTM_P10,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P10_2(ENUM, NAME, ATTR, ICODE)			\
+  RS6000_BUILTIN_2 (P10_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vec" NAME,		/* NAME */	\
+		    RS6000_BTM_P10,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
 #endif
 
 
@@ -2720,6 +2736,26 @@ BU_P10V_1 (VSTRIHR_P, "vstrihr_p", CONST, vstrir_p_v8hi)
 BU_P10V_1 (VSTRIBL_P, "vstribl_p", CONST, vstril_p_v16qi)
 BU_P10V_1 (VSTRIHL_P, "vstrihl_p", CONST, vstril_p_v8hi)
 
+BU_P10V_1 (MTVSRBM, "mtvsrbm", CONST, vec_mtvsr_v16qi)
+BU_P10V_1 (MTVSRHM, "mtvsrhm", CONST, vec_mtvsr_v8hi)
+BU_P10V_1 (MTVSRWM, "mtvsrwm", CONST, vec_mtvsr_v4si)
+BU_P10V_1 (MTVSRDM, "mtvsrdm", CONST, vec_mtvsr_v2di)
+BU_P10V_1 (MTVSRQM, "mtvsrqm", CONST, vec_mtvsr_v1ti)
+BU_P10V_2 (VCNTMBB, "cntmbb", CONST, vec_cntmb_v16qi)
+BU_P10V_2 (VCNTMBH, "cntmbh", CONST, vec_cntmb_v8hi)
+BU_P10V_2 (VCNTMBW, "cntmbw", CONST, vec_cntmb_v4si)
+BU_P10V_2 (VCNTMBD, "cntmbd", CONST, vec_cntmb_v2di)
+BU_P10V_1 (VEXPANDMB, "vexpandmb", CONST, vec_expand_v16qi)
+BU_P10V_1 (VEXPANDMH, "vexpandmh", CONST, vec_expand_v8hi)
+BU_P10V_1 (VEXPANDMW, "vexpandmw", CONST, vec_expand_v4si)
+BU_P10V_1 (VEXPANDMD, "vexpandmd", CONST, vec_expand_v2di)
+BU_P10V_1 (VEXPANDMQ, "vexpandmq", CONST, vec_expand_v1ti)
+BU_P10V_1 (VEXTRACTMB, "vextractmb", CONST, vec_extract_v16qi)
+BU_P10V_1 (VEXTRACTMH, "vextractmh", CONST, vec_extract_v8hi)
+BU_P10V_1 (VEXTRACTMW, "vextractmw", CONST, vec_extract_v4si)
+BU_P10V_1 (VEXTRACTMD, "vextractmd", CONST, vec_extract_v2di)
+BU_P10V_1 (VEXTRACTMQ, "vextractmq", CONST, vec_extract_v1ti)
+
 /* Overloaded vector builtins for ISA 3.1 (power10).  */
 BU_P10_OVERLOAD_2 (CLRL, "clrl")
 BU_P10_OVERLOAD_2 (CLRR, "clrr")
@@ -2736,6 +2772,15 @@ BU_P10_OVERLOAD_1 (VSTRIL, "stril")
 BU_P10_OVERLOAD_1 (VSTRIR_P, "strir_p")
 BU_P10_OVERLOAD_1 (VSTRIL_P, "stril_p")
 
+BU_P10_OVERLOAD_1 (MTVSRBM, "mtvsrbm")
+BU_P10_OVERLOAD_1 (MTVSRHM, "mtvsrhm")
+BU_P10_OVERLOAD_1 (MTVSRWM, "mtvsrwm")
+BU_P10_OVERLOAD_1 (MTVSRDM, "mtvsrdm")
+BU_P10_OVERLOAD_1 (MTVSRQM, "mtvsrqm")
+BU_P10_OVERLOAD_2 (VCNTM, "cntm")
+BU_P10_OVERLOAD_1 (VEXPANDM, "vexpandm")
+BU_P10_OVERLOAD_1 (VEXTRACTM, "vextractm")
+
 /* 1 argument crypto functions.  */
 BU_CRYPTO_1 (VSBOX,		"vsbox",	  CONST, crypto_vsbox_v2di)
 BU_CRYPTO_1 (VSBOX_BE,		"vsbox_be",	  CONST, crypto_vsbox_v16qi)
