@@ -66,6 +66,7 @@ with Sinput.L; use Sinput.L;
 with SCIL_LL;
 with Tbuild;   use Tbuild;
 with Types;    use Types;
+with VAST;
 
 procedure Frontend is
 begin
@@ -503,6 +504,12 @@ begin
    if Generate_SCIL then
       pragma Debug (Sem_SCIL.Check_SCIL_Nodes (Cunit (Main_Unit)));
       null;
+   end if;
+
+   --  Verify the validity of the tree
+
+   if Debug_Flag_Underscore_VV then
+      VAST.Check_Tree (Cunit (Main_Unit));
    end if;
 
    --  Dump the source now. Note that we do this as soon as the analysis

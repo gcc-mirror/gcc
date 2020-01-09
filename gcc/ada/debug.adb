@@ -193,7 +193,7 @@ package body Debug is
    --  d_S
    --  d_T  Output trace information on invocation path recording
    --  d_U
-   --  d_V
+   --  d_V  Enable verifications on the expanded tree
    --  d_W
    --  d_X
    --  d_Y
@@ -1012,8 +1012,11 @@ package body Debug is
    --       it is checked, and the progress of the recursive trace through
    --       elaboration calls at compile time.
 
-   --  d_T  The compiler outputs trance information to standard output whenever
+   --  d_T  The compiler outputs trace information to standard output whenever
    --       an invocation path is recorded.
+
+   --  d_V  Enable verification of the expanded code before calling the backend
+   --       and generate error messages on each inconsistency found.
 
    --  d1   Error messages have node numbers where possible. Normally error
    --       messages have only source locations. This option is useful when
