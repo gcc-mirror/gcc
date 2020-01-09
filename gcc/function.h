@@ -420,7 +420,7 @@ struct GTY(()) function {
   unsigned int debug_nonbind_markers : 1;
 
   /* Set if this is a coroutine-related function.  */
-  unsigned int coroutine_component : 1;    
+  unsigned int coroutine_component : 1;
 };
 
 /* Add the decl D to the local_decls list of FUN.  */
