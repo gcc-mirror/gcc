@@ -1,3 +1,16 @@
+2020-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/type_traits (experimental::is_pod_v): Disable
+	-Wdeprecated-declarations warnings around reference to std::is_pod.
+	* include/std/type_traits (is_pod_v): Likewise.
+	* testsuite/18_support/max_align_t/requirements/2.cc: Also check
+	is_standard_layout and is_trivial. Do not check is_pod for C++20.
+	* testsuite/20_util/is_pod/requirements/explicit_instantiation.cc:
+	Add -Wno-deprecated for C++20.
+	* testsuite/20_util/is_pod/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_pod/value.cc: Likewise.
+	* testsuite/experimental/type_traits/value.cc: Likewise.
+
 2020-01-09  JeanHeyd "ThePhD" Meneide  <phdofthehouse@gmail.com>
 
 	* include/bits/c++config (_GLIBCXX20_DEPRECATED): Add new macro.

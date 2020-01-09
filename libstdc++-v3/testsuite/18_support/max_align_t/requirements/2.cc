@@ -20,4 +20,8 @@
 #include <cstddef>
 #include <type_traits>
 
+#if __cplusplus <= 201703L
 static_assert (std::is_pod<std::max_align_t>::value, "");
+#endif
+static_assert (std::is_standard_layout<std::max_align_t>::value, "");
+static_assert (std::is_trivial<std::max_align_t>::value, "");
