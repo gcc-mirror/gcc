@@ -2104,27 +2104,6 @@ struct unary_convert_def : public overloaded_base<1>
 };
 SHAPE (unary_convert)
 
-/* sv<t0:uint>_t svfoo[_t0](sv<t0>_t)
-
-   i.e. a version of "unary" in which the returned vector contains
-   unsigned integers.  */
-struct unary_count_def : public overloaded_base<0>
-{
-  void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
-  {
-    b.add_overloaded_functions (group, MODE_none);
-    build_all (b, "vu0,v0", group, MODE_none);
-  }
-
-  tree
-  resolve (function_resolver &r) const OVERRIDE
-  {
-    return r.resolve_unary (TYPE_unsigned);
-  }
-};
-SHAPE (unary_count)
-
 /* sv<t0>_t svfoo[_n]_t0(<t0>_t).  */
 struct unary_n_def : public overloaded_base<1>
 {
@@ -2155,6 +2134,27 @@ struct unary_pred_def : public nonoverloaded_base
   }
 };
 SHAPE (unary_pred)
+
+/* sv<t0:uint>_t svfoo[_t0](sv<t0>_t)
+
+   i.e. a version of "unary" in which the returned vector contains
+   unsigned integers.  */
+struct unary_to_uint_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "vu0,v0", group, MODE_none);
+  }
+
+  tree
+  resolve (function_resolver &r) const OVERRIDE
+  {
+    return r.resolve_unary (TYPE_unsigned);
+  }
+};
+SHAPE (unary_to_uint)
 
 /* sv<t0>_t svfoo[_t0](sv<t0:uint>_t)
 

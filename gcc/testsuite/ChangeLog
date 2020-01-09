@@ -1,5 +1,14 @@
 2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/acle/general-c/unary_count_1.c: Rename to...
+	* gcc.target/aarch64/sve/acle/general-c/unary_to_uint_1.c: ...this.
+	* gcc.target/aarch64/sve/acle/general-c/unary_count_2.c: Rename to...
+	* gcc.target/aarch64/sve/acle/general-c/unary_to_uint_2.c: ...this.
+	* gcc.target/aarch64/sve/acle/general-c/unary_count_3.c: Rename to...
+	* gcc.target/aarch64/sve/acle/general-c/unary_to_uint_3.c: ...this.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/acle/general/nrv_1.c: New test.
 
 2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>

@@ -135,9 +135,9 @@ namespace aarch64_sve
     extern const function_shape *const tmad;
     extern const function_shape *const unary;
     extern const function_shape *const unary_convert;
-    extern const function_shape *const unary_count;
     extern const function_shape *const unary_n;
     extern const function_shape *const unary_pred;
+    extern const function_shape *const unary_to_uint;
     extern const function_shape *const unary_uint;
     extern const function_shape *const unary_widen;
   }
