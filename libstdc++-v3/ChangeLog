@@ -1,5 +1,14 @@
 2020-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/93205
+	* include/bits/random.h (operator>>): Check stream operation succeeds.
+	* include/bits/random.tcc (operator<<): Remove redundant __ostream_type
+	typedefs.
+	(operator>>): Remove redundant __istream_type typedefs. Check stream
+	operations succeed.
+	(__extract_params): New function to fill a vector from a stream.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error line.
+
 	PR libstdc++/93208
 	* config/abi/pre/gnu.ver: Add new exports.
 	* include/std/memory_resource (memory_resource::~memory_resource()):
