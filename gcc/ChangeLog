@@ -1,3 +1,8 @@
+2020-01-10  Richard Biener  <rguenther@suse.de>
+
+	* gimple-ssa-store-merging
+	(pass_store_merging::terminate_all_aliasing_chains): Cache alias info.
+
 2020-01-10  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/93217
