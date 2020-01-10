@@ -1,5 +1,14 @@
 2020-01-10  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* libgomp-plugin.h (enum goacc_property): New.  Adjust all users
+	to use this instead of 'enum gomp_device_property'.
+	(GOMP_OFFLOAD_get_property): Rename to...
+	(GOMP_OFFLOAD_openacc_get_property): ... this.  Adjust all users.
+	* libgomp.h (struct gomp_device_descr): Move
+	'GOMP_OFFLOAD_openacc_get_property'...
+	(struct acc_dispatch_t): ... here.  Adjust all users.
+	* plugin/plugin-hsa.c (GOMP_OFFLOAD_get_property): Remove.
+
 	* target.c (gomp_map_vars_internal)
 	<GOMP_MAP_USE_DEVICE_PTR_IF_PRESENT>: Clean up/elaborate code
 	paths.
