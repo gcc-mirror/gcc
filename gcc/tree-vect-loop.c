@@ -4566,8 +4566,9 @@ vect_create_epilog_for_reduction (stmt_vec_info stmt_info,
       int scalar_precision
 	= GET_MODE_PRECISION (SCALAR_TYPE_MODE (TREE_TYPE (vectype)));
       tree cr_index_scalar_type = make_unsigned_type (scalar_precision);
-      tree cr_index_vector_type = build_vector_type
-	(cr_index_scalar_type, TYPE_VECTOR_SUBPARTS (vectype));
+      tree cr_index_vector_type = get_related_vectype_for_scalar_type
+	(TYPE_MODE (vectype), cr_index_scalar_type,
+	 TYPE_VECTOR_SUBPARTS (vectype));
 
       /* First we create a simple vector induction variable which starts
 	 with the values {1,2,3,...} (SERIES_VECT) and increments by the

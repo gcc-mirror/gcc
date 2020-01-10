@@ -1,5 +1,11 @@
 2020-01-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Use
+	get_related_vectype_for_scalar_type rather than build_vector_type
+	to create the index type for a conditional reduction.
+
+2020-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-loop.c (update_epilogue_loop_vinfo): Update DR_REF
 	for any type of gather or scatter, including strided accesses.
 
