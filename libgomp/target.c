@@ -720,7 +720,8 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	  tgt->list[i].offset = OFFSET_INLINED;
 	  continue;
 	}
-      else if ((kind & typemask) == GOMP_MAP_USE_DEVICE_PTR)
+      else if ((kind & typemask) == GOMP_MAP_USE_DEVICE_PTR
+	       || (kind & typemask) == GOMP_MAP_USE_DEVICE_PTR_IF_PRESENT)
 	{
 	  tgt->list[i].key = NULL;
 	  if (!not_found_cnt)
@@ -741,6 +742,12 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	      splay_tree_key n = gomp_map_lookup (mem_map, &cur_node);
 	      if (n == NULL)
 		{
+		  if ((kind & typemask) == GOMP_MAP_USE_DEVICE_PTR_IF_PRESENT)
+		    {
+		      /* If not present, continue using the host address.  */
+		      tgt->list[i].offset = 0;
+		      continue;
+		    }
 		  gomp_mutex_unlock (&devicep->lock);
 		  gomp_fatal ("use_device_ptr pointer wasn't mapped");
 		}
@@ -974,6 +981,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	      case GOMP_MAP_ZERO_LEN_ARRAY_SECTION:
 		continue;
 	      case GOMP_MAP_USE_DEVICE_PTR:
+	      case GOMP_MAP_USE_DEVICE_PTR_IF_PRESENT:
 		if (tgt->list[i].offset == 0)
 		  {
 		    cur_node.host_start = (uintptr_t) hostaddrs[i];
@@ -981,6 +989,10 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		    n = gomp_map_lookup (mem_map, &cur_node);
 		    if (n == NULL)
 		      {
+			if ((kind & typemask)
+			    == GOMP_MAP_USE_DEVICE_PTR_IF_PRESENT)
+			  /* If not present, continue using the host address.  */
+			  continue;
 			gomp_mutex_unlock (&devicep->lock);
 			gomp_fatal ("use_device_ptr pointer wasn't mapped");
 		      }

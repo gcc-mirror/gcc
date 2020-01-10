@@ -12006,6 +12006,9 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		tkind = GOMP_MAP_FIRSTPRIVATE_INT;
 		x = build_sender_ref (ovar, ctx);
 	      }
+	    if (tkind == GOMP_MAP_USE_DEVICE_PTR
+		&& omp_find_clause (clauses, OMP_CLAUSE_IF_PRESENT))
+	      tkind = GOMP_MAP_USE_DEVICE_PTR_IF_PRESENT;
 	    type = TREE_TYPE (ovar);
 	    if (lang_hooks.decls.omp_array_data (ovar, true))
 	      var = lang_hooks.decls.omp_array_data (ovar, false);
