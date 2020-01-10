@@ -1922,7 +1922,8 @@ simplify_count_trailing_zeroes (gimple_stmt_iterator *gsi)
       tree type = TREE_TYPE (res_ops[0]);
       HOST_WIDE_INT ctzval;
       HOST_WIDE_INT type_size = tree_to_shwi (TYPE_SIZE (type));
-      bool zero_ok = CTZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (type), ctzval) == 2;
+      scalar_int_mode mode = SCALAR_INT_TYPE_MODE (type);
+      bool zero_ok = CTZ_DEFINED_VALUE_AT_ZERO (mode, ctzval) == 2;
 
       /* Skip if there is no value defined at zero, or if we can't easily
 	 return the correct value for zero.  */
