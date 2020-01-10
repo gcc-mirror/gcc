@@ -1952,6 +1952,13 @@ struct GTY(()) language_function {
 
 #define current_vtt_parm cp_function_chain->x_vtt_parm
 
+/* A boolean flag to control whether we need to clean up the return value if a
+   local destructor throws.  Only used in functions that return by value a
+   class with a destructor.  Which 'tors don't, so we can use the same
+   field as current_vtt_parm.  */
+
+#define current_retval_sentinel current_vtt_parm
+
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */
 

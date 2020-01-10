@@ -1,5 +1,10 @@
 2020-01-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/33799 - destroy return value if local cleanup throws.
+	* cp-tree.h (current_retval_sentinel): New macro.
+	* decl.c (start_preparsed_function): Set up cleanup for retval.
+	* typeck.c (check_return_expr): Set current_retval_sentinel.
+
 	PR c++/93238 - short right-shift with enum.
 	* typeck.c (cp_build_binary_op): Use folded op1 for short_shift.
 

@@ -1599,6 +1599,14 @@ gimplify_return_expr (tree stmt, gimple_seq *pre_p)
 
   if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))))
     result_decl = NULL_TREE;
+  else if (TREE_CODE (ret_expr) == COMPOUND_EXPR)
+    {
+      /* Used in C++ for handling EH cleanup of the return value if a local
+	 cleanup throws.  Assume the front-end knows what it's doing.  */
+      result_decl = DECL_RESULT (current_function_decl);
+      /* But crash if we end up trying to modify ret_expr below.  */
+      ret_expr = NULL_TREE;
+    }
   else
     {
       result_decl = TREE_OPERAND (ret_expr, 0);
