@@ -1,5 +1,11 @@
 2020-01-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_builtin_vectorized_function): Check for specific vector modes,
+	rather than checking the number of elements and the element mode.
+
+2020-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-loop.c (vect_create_epilog_for_reduction): Use
 	get_related_vectype_for_scalar_type rather than build_vector_type
 	to create the index type for a conditional reduction.

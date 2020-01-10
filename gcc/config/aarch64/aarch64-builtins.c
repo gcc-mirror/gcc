@@ -1942,17 +1942,13 @@ aarch64_builtin_vectorized_function (unsigned int fn, tree type_out,
 				     tree type_in)
 {
   machine_mode in_mode, out_mode;
-  unsigned HOST_WIDE_INT in_n, out_n;
 
   if (TREE_CODE (type_out) != VECTOR_TYPE
       || TREE_CODE (type_in) != VECTOR_TYPE)
     return NULL_TREE;
 
-  out_mode = TYPE_MODE (TREE_TYPE (type_out));
-  in_mode = TYPE_MODE (TREE_TYPE (type_in));
-  if (!TYPE_VECTOR_SUBPARTS (type_out).is_constant (&out_n)
-      || !TYPE_VECTOR_SUBPARTS (type_in).is_constant (&in_n))
-    return NULL_TREE;
+  out_mode = TYPE_MODE (type_out);
+  in_mode = TYPE_MODE (type_in);
 
 #undef AARCH64_CHECK_BUILTIN_MODE
 #define AARCH64_CHECK_BUILTIN_MODE(C, N) 1
@@ -1968,8 +1964,7 @@ aarch64_builtin_vectorized_function (unsigned int fn, tree type_out,
     {
 #undef AARCH64_CHECK_BUILTIN_MODE
 #define AARCH64_CHECK_BUILTIN_MODE(C, N) \
-  (out_mode == N##Fmode && out_n == C \
-   && in_mode == N##Fmode && in_n == C)
+  (out_mode == V##C##N##Fmode && in_mode == V##C##N##Fmode)
     CASE_CFN_FLOOR:
       return AARCH64_FIND_FRINT_VARIANT (floor);
     CASE_CFN_CEIL:
@@ -1984,8 +1979,7 @@ aarch64_builtin_vectorized_function (unsigned int fn, tree type_out,
       return AARCH64_FIND_FRINT_VARIANT (sqrt);
 #undef AARCH64_CHECK_BUILTIN_MODE
 #define AARCH64_CHECK_BUILTIN_MODE(C, N) \
-  (out_mode == SImode && out_n == C \
-   && in_mode == N##Imode && in_n == C)
+  (out_mode == V##C##SImode && in_mode == V##C##N##Imode)
     CASE_CFN_CLZ:
       {
 	if (AARCH64_CHECK_BUILTIN_MODE (4, S))
@@ -2002,8 +1996,7 @@ aarch64_builtin_vectorized_function (unsigned int fn, tree type_out,
       }
 #undef AARCH64_CHECK_BUILTIN_MODE
 #define AARCH64_CHECK_BUILTIN_MODE(C, N) \
-  (out_mode == N##Imode && out_n == C \
-   && in_mode == N##Fmode && in_n == C)
+  (out_mode == V##C##N##Imode && in_mode == V##C##N##Fmode)
     CASE_CFN_IFLOOR:
     CASE_CFN_LFLOOR:
     CASE_CFN_LLFLOOR:
