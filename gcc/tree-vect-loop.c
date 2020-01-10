@@ -8451,7 +8451,7 @@ update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
 	 updated offset we set using ADVANCE.  Instead we have to make sure the
 	 reference in the data references point to the corresponding copy of
 	 the original in the epilogue.  */
-      if (STMT_VINFO_GATHER_SCATTER_P (stmt_vinfo))
+      if (STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_vinfo) == VMAT_GATHER_SCATTER)
 	{
 	  DR_REF (dr)
 	    = simplify_replace_tree (DR_REF (dr), NULL_TREE, NULL_TREE,
