@@ -1,6 +1,11 @@
 2020-01-10  Vladimir Makarov  <vmakarov@redhat.com>
 
-	PR inline-asm/93207
+	PR inline-asm/93027
+	* gcc.target/i386/pr93207.c: Rename to pr93027.c.
+
+2020-01-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR inline-asm/93027
 	* gcc.target/i386/pr93207.c: Run it only for x86-64.
 
 2020-01-10  David Malcolm  <dmalcolm@redhat.com>
@@ -14,7 +19,7 @@
 
 2020-01-10  Vladimir Makarov  <vmakarov@redhat.com>
 
-	PR inline-asm/93207
+	PR inline-asm/93027
 	* gcc.target/i386/pr93207.c: New test.
 
 2020-01-10  Wilco Dijkstra  <wdijkstr@arm.com>
