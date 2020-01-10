@@ -1,3 +1,9 @@
+2020-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/93216
+	* gcc.dg/optimize-bswaphi-1.c: Split previously added
+	case into a LE and BE variant.
+
 2020-01-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/65428
