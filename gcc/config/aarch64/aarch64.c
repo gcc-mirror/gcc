@@ -21751,6 +21751,55 @@ aarch64_stack_protect_guard (void)
   return NULL_TREE;
 }
 
+/* Return the diagnostic message string if conversion from FROMTYPE to
+   TOTYPE is not allowed, NULL otherwise.  */
+
+static const char *
+aarch64_invalid_conversion (const_tree fromtype, const_tree totype)
+{
+  if (element_mode (fromtype) != element_mode (totype))
+    {
+      /* Do no allow conversions to/from BFmode scalar types.  */
+      if (TYPE_MODE (fromtype) == BFmode)
+	return N_("invalid conversion from type %<bfloat16_t%>");
+      if (TYPE_MODE (totype) == BFmode)
+	return N_("invalid conversion to type %<bfloat16_t%>");
+    }
+
+  /* Conversion allowed.  */
+  return NULL;
+}
+
+/* Return the diagnostic message string if the unary operation OP is
+   not permitted on TYPE, NULL otherwise.  */
+
+static const char *
+aarch64_invalid_unary_op (int op, const_tree type)
+{
+  /* Reject all single-operand operations on BFmode except for &.  */
+  if (element_mode (type) == BFmode && op != ADDR_EXPR)
+    return N_("operation not permitted on type %<bfloat16_t%>");
+
+  /* Operation allowed.  */
+  return NULL;
+}
+
+/* Return the diagnostic message string if the binary operation OP is
+   not permitted on TYPE1 and TYPE2, NULL otherwise.  */
+
+static const char *
+aarch64_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1,
+			   const_tree type2)
+{
+  /* Reject all 2-operand operations on BFmode.  */
+  if (element_mode (type1) == BFmode
+      || element_mode (type2) == BFmode)
+    return N_("operation not permitted on type %<bfloat16_t%>");
+
+  /* Operation allowed.  */
+  return NULL;
+}
+
 /* Implement TARGET_ASM_FILE_END for AArch64.  This adds the AArch64 GNU NOTE
    section at the end if needed.  */
 #define GNU_PROPERTY_AARCH64_FEATURE_1_AND	0xc0000000
@@ -22000,6 +22049,15 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE aarch64_mangle_type
+
+#undef TARGET_INVALID_CONVERSION
+#define TARGET_INVALID_CONVERSION aarch64_invalid_conversion
+
+#undef TARGET_INVALID_UNARY_OP
+#define TARGET_INVALID_UNARY_OP aarch64_invalid_unary_op
+
+#undef TARGET_INVALID_BINARY_OP
+#define TARGET_INVALID_BINARY_OP aarch64_invalid_binary_op
 
 #undef TARGET_VERIFY_TYPE_CONTEXT
 #define TARGET_VERIFY_TYPE_CONTEXT aarch64_verify_type_context

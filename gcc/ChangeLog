@@ -1,5 +1,12 @@
 2020-01-10  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_invalid_conversion): New function
+	for target hook.
+	(aarch64_invalid_unary_op): New function for target hook.
+	(aarch64_invalid_binary_op): New function for target hook.
+
+2020-01-10  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
 	* config.gcc: Add arm_bf16.h.
 	* config/aarch64/aarch64-builtins.c
 	(aarch64_simd_builtin_std_type): Add BFmode.

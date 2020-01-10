@@ -1,5 +1,12 @@
 2020-01-10  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
+	* g++.target/aarch64/bfloat_cpp_typecheck.C: New test.
+	* gcc.target/aarch64/bfloat16_scalar_typecheck.c: New test.
+	* gcc.target/aarch64/bfloat16_vector_typecheck_1.c: New test.
+	* gcc.target/aarch64/bfloat16_vector_typecheck_2.c: New test.
+
+2020-01-10  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
 	* g++.dg/abi/mangle-neon-aarch64.C: Add Bfloat SIMD types to test.
 	* g++.dg/ext/arm-bf16/bf16-mangle-aarch64-1.C: New test.
 	* gcc.target/aarch64/bfloat16_scalar_1.c: New test.
