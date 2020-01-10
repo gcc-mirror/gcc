@@ -2354,13 +2354,20 @@ captures_temporary (tree *stmt, int *do_subtree, void *d)
   /* Does this call capture references?
      Strip the ADDRESS_EXPR to get the fn decl and inspect it.  */
   tree fn = TREE_OPERAND (CALL_EXPR_FN (*stmt), 0);
+  bool is_meth = TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE;
   tree arg = TYPE_ARG_TYPES (TREE_TYPE (fn));
   unsigned offset = 3;
   for (unsigned anum = 0; arg != NULL; arg = TREE_CHAIN (arg), anum++)
     {
       tree parm_type = TREE_VALUE (arg);
-
-      if (!TYPE_REF_P (parm_type))
+      if (anum == 0 && is_meth && INDIRECT_TYPE_P (parm_type))
+	{
+	  /* Account for 'this' when the fn is a method.  Unless it
+	     belongs to a CTOR or DTOR.  */
+	  if (DECL_CONSTRUCTOR_P (fn) || DECL_DESTRUCTOR_P (fn))
+	    continue;
+	}
+      else if (!TYPE_REF_P (parm_type))
 	/* If it's not a reference, we don't care.  */
 	continue;
 
