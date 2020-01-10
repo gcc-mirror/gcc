@@ -538,8 +538,7 @@ symtogo() {
 # Takes an example name and puts any output into the file example.txt.
 # It strips comment markers but does not otherwise change the output.
 exampleoutput() {
-    local n=$(testname $1)
-    local f
+    n=$(testname $1)
     for f in $gofiles $xgofiles; do
 	if ! grep "^func $n(" $f >/dev/null 2>&1; then
 	    continue
