@@ -4452,6 +4452,10 @@ cp_build_binary_op (const op_location_t &location,
      Also implies COMMON.  */
   int short_compare = 0;
 
+  /* Nonzero if this is a right-shift operation, which can be computed on the
+     original short and then promoted if the operand is a promoted short.  */
+  int short_shift = 0;
+
   /* Nonzero means set RESULT_TYPE to the common type of the args.  */
   int common = 0;
 
@@ -4844,6 +4848,9 @@ cp_build_binary_op (const op_location_t &location,
 		}
 	      else
 		{
+		  if (!integer_zerop (op1))
+		    short_shift = 1;
+
 		  if (compare_tree_int (const_op1, TYPE_PRECISION (type0)) >= 0
 		      && (complain & tf_warning)
 		      && c_inhibit_evaluation_warnings == 0)
@@ -5584,6 +5591,37 @@ cp_build_binary_op (const op_location_t &location,
 	  final_type = result_type;
 	  result_type = shorten_binary_op (result_type, op0, op1,
 					   shorten == -1);
+	}
+
+      /* Shifts can be shortened if shifting right.  */
+
+      if (short_shift)
+	{
+	  int unsigned_arg;
+	  tree arg0 = get_narrower (op0, &unsigned_arg);
+
+	  final_type = result_type;
+
+	  if (arg0 == op0 && final_type == TREE_TYPE (op0))
+	    unsigned_arg = TYPE_UNSIGNED (TREE_TYPE (op0));
+
+	  if (TYPE_PRECISION (TREE_TYPE (arg0)) < TYPE_PRECISION (result_type)
+	      && tree_int_cst_sgn (op1) > 0
+	      /* We can shorten only if the shift count is less than the
+		 number of bits in the smaller type size.  */
+	      && compare_tree_int (op1, TYPE_PRECISION (TREE_TYPE (arg0))) < 0
+	      /* We cannot drop an unsigned shift after sign-extension.  */
+	      && (!TYPE_UNSIGNED (final_type) || unsigned_arg))
+	    {
+	      /* Do an unsigned shift if the operand was zero-extended.  */
+	      result_type
+		= c_common_signed_or_unsigned_type (unsigned_arg,
+						    TREE_TYPE (arg0));
+	      /* Convert value-to-be-shifted to that type.  */
+	      if (TREE_TYPE (op0) != result_type)
+		op0 = convert (result_type, op0);
+	      converted = 1;
+	    }
 	}
 
       /* Comparison operations are shortened too but differently.

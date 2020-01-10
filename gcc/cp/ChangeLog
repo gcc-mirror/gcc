@@ -1,5 +1,7 @@
 2020-01-10  Jason Merrill  <jason@redhat.com>
 
+	* typeck.c (cp_build_binary_op): Restore short_shift code.
+
 	PR c++/93143 - incorrect tree sharing with constexpr.
 	* constexpr.c (cxx_eval_outermost_constant_expr): Don't assume
 	CONSTRUCTORs are already unshared.
