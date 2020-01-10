@@ -1,3 +1,14 @@
+2020-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92285
+	* include/bits/streambuf_iterator.h (istreambuf_iterator): Make type
+	of base class independent of __cplusplus value.
+	[__cplusplus < 201103L] (istreambuf_iterator::reference): Override the
+	type defined in the base class
+	* testsuite/24_iterators/istreambuf_iterator/92285.cc: New test.
+	* testsuite/24_iterators/istreambuf_iterator/requirements/
+	base_classes.cc: Adjust expected base class for C++98.
+
 2020-01-09  Olivier Hainque  <hainque@adacore.com>
 
 	* doc/xml/manual/appendix_contributing.xml: Document _C2
