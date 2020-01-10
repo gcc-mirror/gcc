@@ -2310,7 +2310,7 @@ redirect_eh_edge_1 (edge edge_in, basic_block new_bb, bool change_region)
   old_lp = get_eh_landing_pad_from_number (old_lp_nr);
 
   throw_stmt = last_stmt (edge_in->src);
-  gcc_assert (lookup_stmt_eh_lp (throw_stmt) == old_lp_nr);
+  gcc_checking_assert (lookup_stmt_eh_lp (throw_stmt) == old_lp_nr);
 
   new_label = gimple_block_label (new_bb);
 
@@ -4307,9 +4307,10 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
 	|  | EH
 	<..>
      which CFG verification would choke on.  See PR45172 and PR51089.  */
-  FOR_EACH_EDGE (e, ei, old_bb->preds)
-    if (find_edge (e->src, new_bb))
-      return false;
+  if (!single_pred_p (new_bb))
+    FOR_EACH_EDGE (e, ei, old_bb->preds)
+      if (find_edge (e->src, new_bb))
+	return false;
 
   FOR_EACH_EDGE (e, ei, old_bb->preds)
     redirect_edge_var_map_clear (e);
@@ -4698,9 +4699,15 @@ cleanup_all_empty_eh (void)
   eh_landing_pad lp;
   int i;
 
-  for (i = 1; vec_safe_iterate (cfun->eh->lp_array, i, &lp); ++i)
-    if (lp)
-      changed |= cleanup_empty_eh (lp);
+  /* Ideally we'd walk the region tree and process LPs inner to outer
+     to avoid quadraticness in EH redirection.  Walking the LP array
+     in reverse seems to be an approximation of that.  */
+  for (i = vec_safe_length (cfun->eh->lp_array) - 1; i >= 1; --i)
+    {
+      lp = (*cfun->eh->lp_array)[i];
+      if (lp)
+	changed |= cleanup_empty_eh (lp);
+    }
 
   return changed;
 }

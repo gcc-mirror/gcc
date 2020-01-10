@@ -1,3 +1,10 @@
+2020-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/93199
+	* tree-eh.c (redirect_eh_edge_1): Avoid some work if possible.
+	(cleanup_all_empty_eh): Walk landing pads in reverse order to
+	avoid quadraticness.
+
 2020-01-10  Martin Jambor  <mjambor@suse.cz>
 
 	* params.opt (param_ipa_sra_max_replacements): Mark as Optimization.
