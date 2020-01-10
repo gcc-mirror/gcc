@@ -1,3 +1,8 @@
+2020-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (update_epilogue_loop_vinfo): Update DR_REF
+	for any type of gather or scatter, including strided accesses.
+
 2020-01-10  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* tree-vectorizer.h (get_dr_vinfo_offset): Add missing function
