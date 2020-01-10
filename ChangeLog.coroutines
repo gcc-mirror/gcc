@@ -1,6 +1,13 @@
 2020-01-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (finish_co_return_stmt): We should mark the
+	trees as TREE_NO_WARNING unconditionally (the actual check has
+	to be done separately).
+
+2020-01-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (get_or_insert_coroutine_info): Use a cleared
 	allocator.
 

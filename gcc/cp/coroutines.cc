@@ -875,8 +875,7 @@ finish_co_return_stmt (location_t kw, tree expr)
 
   /* Suppress -Wreturn-type for co_return, we need to check indirectly
      whether the promise type has a suitable return_void/return_value.  */
-  if (warn_return_type)
-    TREE_NO_WARNING (current_function_decl) = true;
+  TREE_NO_WARNING (current_function_decl) = true;
 
   if (!processing_template_decl && warn_sequence_point)
     verify_sequence_points (expr);
