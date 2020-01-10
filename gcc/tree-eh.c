@@ -3550,11 +3550,15 @@ optimize_clobbers (basic_block bb)
 }
 
 /* Try to sink var = {v} {CLOBBER} stmts followed just by
-   internal throw to successor BB.  If FOUND_OPPORTUNITY is not NULL
-   then do not perform the optimization but set *FOUND_OPPORTUNITY to true.  */
+   internal throw to successor BB.
+   SUNK, if not NULL, is an array of sequences indexed by basic-block
+   index to sink to and to pick up sinking opportunities from.
+   If FOUND_OPPORTUNITY is not NULL then do not perform the optimization
+   but set *FOUND_OPPORTUNITY to true.  */
 
 static int
-sink_clobbers (basic_block bb, bool *found_opportunity = NULL)
+sink_clobbers (basic_block bb,
+	       gimple_seq *sunk = NULL, bool *found_opportunity = NULL)
 {
   edge e;
   edge_iterator ei;
@@ -3589,7 +3593,7 @@ sink_clobbers (basic_block bb, bool *found_opportunity = NULL)
 	return 0;
       any_clobbers = true;
     }
-  if (!any_clobbers)
+  if (!any_clobbers && (!sunk || gimple_seq_empty_p (sunk[bb->index])))
     return 0;
 
   /* If this was a dry run, tell it we found clobbers to sink.  */
@@ -3618,7 +3622,10 @@ sink_clobbers (basic_block bb, bool *found_opportunity = NULL)
 
   gimple *first_sunk = NULL;
   gimple *last_sunk = NULL;
-  dgsi = gsi_after_labels (succbb);
+  if (sunk)
+    dgsi = gsi_start (sunk[succbb->index]);
+  else
+    dgsi = gsi_after_labels (succbb);
   gsi = gsi_last_bb (bb);
   for (gsi_prev (&gsi); !gsi_end_p (gsi); gsi_prev (&gsi))
     {
@@ -3652,6 +3659,15 @@ sink_clobbers (basic_block bb, bool *found_opportunity = NULL)
       if (!first_sunk)
 	first_sunk = stmt;
       last_sunk = stmt;
+    }
+  if (sunk && !gimple_seq_empty_p (sunk[bb->index]))
+    {
+      if (!first_sunk)
+	first_sunk = gsi_stmt (gsi_last (sunk[bb->index]));
+      last_sunk = gsi_stmt (gsi_start (sunk[bb->index]));
+      gsi_insert_seq_before_without_update (&dgsi,
+					    sunk[bb->index], GSI_NEW_STMT);
+      sunk[bb->index] = NULL;
     }
   if (first_sunk)
     {
@@ -3892,7 +3908,7 @@ pass_lower_eh_dispatch::execute (function *fun)
 	  if (stmt_can_throw_external (fun, last))
 	    optimize_clobbers (bb);
 	  else if (!any_resx_to_process)
-	    sink_clobbers (bb, &any_resx_to_process);
+	    sink_clobbers (bb, NULL, &any_resx_to_process);
 	}
     }
   if (redirected)
@@ -3908,6 +3924,7 @@ pass_lower_eh_dispatch::execute (function *fun)
 	 and unreachable block removal.  */
       int *rpo = XNEWVEC  (int, n_basic_blocks_for_fn (fun));
       int rpo_n = pre_and_rev_post_order_compute_fn (fun, NULL, rpo, false);
+      gimple_seq *sunk = XCNEWVEC (gimple_seq, last_basic_block_for_fn (fun));
       for (int i = 0; i < rpo_n; ++i)
 	{
 	  bb = BASIC_BLOCK_FOR_FN (fun, rpo[i]);
@@ -3915,9 +3932,17 @@ pass_lower_eh_dispatch::execute (function *fun)
 	  if (last
 	      && gimple_code (last) == GIMPLE_RESX
 	      && !stmt_can_throw_external (fun, last))
-	    flags |= sink_clobbers (bb);
+	    flags |= sink_clobbers (bb, sunk);
+	  /* If there were any clobbers sunk into this BB, insert them now.  */
+	  if (!gimple_seq_empty_p (sunk[bb->index]))
+	    {
+	      gimple_stmt_iterator gsi = gsi_after_labels (bb);
+	      gsi_insert_seq_before (&gsi, sunk[bb->index], GSI_NEW_STMT);
+	      sunk[bb->index] = NULL;
+	    }
 	}
       free (rpo);
+      free (sunk);
     }
 
   return flags;
