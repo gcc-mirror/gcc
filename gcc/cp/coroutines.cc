@@ -1072,7 +1072,7 @@ create_named_label_with_ctx (location_t loc, const char *name, tree ctx)
   return lab;
 }
 
-struct __proxy_replace
+struct proxy_replace
 {
   tree from, to;
 };
@@ -1080,7 +1080,7 @@ struct __proxy_replace
 static tree
 replace_proxy (tree *here, int *do_subtree, void *d)
 {
-  struct __proxy_replace *data = (struct __proxy_replace *) d;
+  proxy_replace *data = (proxy_replace *) d;
 
   if (*here == data->from)
     {
@@ -1094,7 +1094,7 @@ replace_proxy (tree *here, int *do_subtree, void *d)
 
 /* Support for expansion of co_return statements.  */
 
-struct __coro_ret_data
+struct coro_ret_data
 {
   tree promise_proxy;
   tree real_promise;
@@ -1105,7 +1105,7 @@ struct __coro_ret_data
    return the list of statements to replace it.  */
 
 static tree
-coro_maybe_expand_co_return (tree co_ret_expr, __coro_ret_data *data)
+coro_maybe_expand_co_return (tree co_ret_expr, coro_ret_data *data)
 {
   /* Look inside <(void) (expr)> cleanup */
   if (TREE_CODE (co_ret_expr) == CLEANUP_POINT_EXPR)
@@ -1128,7 +1128,7 @@ coro_maybe_expand_co_return (tree co_ret_expr, __coro_ret_data *data)
     }
 
   /* Now replace the promise proxy with its real value.  */
-  struct __proxy_replace p_data;
+  proxy_replace p_data;
   p_data.from = data->promise_proxy;
   p_data.to = data->real_promise;
   cp_walk_tree (&call, replace_proxy, &p_data, NULL);
@@ -1153,7 +1153,7 @@ coro_maybe_expand_co_return (tree co_ret_expr, __coro_ret_data *data)
 static tree
 co_return_expander (tree *stmt, int *do_subtree, void *d)
 {
-  struct __coro_ret_data *data = (struct __coro_ret_data *) d;
+  coro_ret_data *data = (coro_ret_data *) d;
 
   /* To avoid nesting statement lists, walk them and insert as needed.  */
   if (TREE_CODE (*stmt) == STATEMENT_LIST)
@@ -1200,14 +1200,14 @@ static tree
 expand_co_returns (tree *fnbody, tree promise_proxy, tree promise,
 		   tree fs_label)
 {
-  struct __coro_ret_data data = {promise_proxy, promise, fs_label};
+  coro_ret_data data = {promise_proxy, promise, fs_label};
   cp_walk_tree (fnbody, co_return_expander, &data, NULL);
   return *fnbody;
 }
 
 /* Support for expansion of co_await statements.  */
 
-struct __coro_aw_data
+struct coro_aw_data
 {
   tree actor_fn;   /* Decl for context.  */
   tree coro_fp;    /* Frame pointer var.  */
@@ -1247,7 +1247,7 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
   if (STATEMENT_CLASS_P (*stmt) || !EXPR_P (*stmt))
     return NULL_TREE;
 
-  struct __coro_aw_data *data = (struct __coro_aw_data *) d;
+  coro_aw_data *data = (coro_aw_data *) d;
 
   enum tree_code stmt_code = TREE_CODE (*stmt);
   tree stripped_stmt = *stmt;
@@ -1482,7 +1482,7 @@ static tree
 expand_co_awaits (tree fn, tree *fnbody, tree coro_fp, tree resume_idx,
 		  tree cleanup, tree cororet, tree self_h)
 {
-  struct __coro_aw_data data
+  coro_aw_data data
     = {fn, coro_fp, resume_idx, self_h, cleanup, cororet, 2};
   cp_walk_tree (fnbody, co_await_expander, &data, NULL);
   return *fnbody;
@@ -1502,9 +1502,9 @@ struct suspend_point_info
   tree susp_handle_id;
 };
 
-static hash_map<tree, struct suspend_point_info> *suspend_points;
+static hash_map<tree, suspend_point_info> *suspend_points;
 
-struct __await_xform_data
+struct await_xform_data
 {
   tree actor_frame;
   tree promise_proxy;
@@ -1518,9 +1518,9 @@ struct __await_xform_data
    the awaitables.  Now we know these things, fill them in.  */
 
 static tree
-transform_await_expr (tree await_expr, struct __await_xform_data *xform)
+transform_await_expr (tree await_expr, await_xform_data *xform)
 {
-  struct suspend_point_info *si = suspend_points->get (await_expr);
+  suspend_point_info *si = suspend_points->get (await_expr);
   location_t loc = EXPR_LOCATION (await_expr);
   if (!si)
     {
@@ -1562,7 +1562,7 @@ transform_await_expr (tree await_expr, struct __await_xform_data *xform)
 
   /* Replace references to the instance proxy with the frame entry now
      computed.  */
-  struct __proxy_replace data = {TREE_OPERAND (await_expr, 1), as};
+  proxy_replace data = {TREE_OPERAND (await_expr, 1), as};
   cp_walk_tree (&await_expr, replace_proxy, &data, NULL);
 
   /* .. and replace.  */
@@ -1591,7 +1591,7 @@ transform_await_wrapper (tree *stmt, int *do_subtree, void *d)
     return NULL_TREE;
 
   tree await_expr = *stmt;
-  struct __await_xform_data *xform = (struct __await_xform_data *) d;
+  await_xform_data *xform = (await_xform_data *) d;
 
   *stmt = transform_await_expr (await_expr, xform);
   if (*stmt == error_mark_node)
@@ -1599,36 +1599,36 @@ transform_await_wrapper (tree *stmt, int *do_subtree, void *d)
   return NULL_TREE;
 }
 
-typedef struct __param_info
+struct param_info
 {
   tree field_id;
   vec<tree *> *body_uses;
   tree frame_type;
-} __param_info_t;
+};
 
-typedef struct __local_var_info
+struct local_var_info
 {
   tree field_id;
   tree field_idx;
   tree frame_type;
   tree captured;
   location_t def_loc;
-} __local_var_info_t;
+};
 
 /* For figuring out what local variable usage we have.  */
-struct __local_vars_transform
+struct local_vars_transform
 {
   tree context;
   tree actor_frame;
   tree coro_frame_type;
   location_t loc;
-  hash_map<tree, __local_var_info_t> *local_var_uses;
+  hash_map<tree, local_var_info> *local_var_uses;
 };
 
 static tree
 transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 {
-  struct __local_vars_transform *lvd = (struct __local_vars_transform *) d;
+  local_vars_transform *lvd = (local_vars_transform *) d;
 
   /* For each var in this bind expr (that has a frame id, which means it was
      accessed), build a frame reference for each and then walk the bind expr
@@ -1641,7 +1641,7 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	   lvar = DECL_CHAIN (lvar))
 	{
 	  bool existed;
-	  __local_var_info_t &local_var
+	  local_var_info &local_var
 	    = lvd->local_var_uses->get_or_insert (lvar, &existed);
 	  gcc_checking_assert (existed);
 
@@ -1675,7 +1675,7 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
       for (tree *pvar = &BIND_EXPR_VARS (*stmt); *pvar != NULL;)
 	{
 	  bool existed;
-	  __local_var_info_t &local_var
+	  local_var_info &local_var
 	    = lvd->local_var_uses->get_or_insert (*pvar, &existed);
 	  gcc_checking_assert (existed);
 
@@ -1708,12 +1708,12 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
   /* VAR_DECLs that are not recorded can belong to the proxies we've placed
      for the promise and coroutine handle(s), to global vars or to compiler
      temporaries.  Skip past these, we will handle them later.  */
-  __local_var_info_t *local_var_info = lvd->local_var_uses->get (var_decl);
-  if (local_var_info == NULL)
+  local_var_info *local_var_i = lvd->local_var_uses->get (var_decl);
+  if (local_var_i == NULL)
     return NULL_TREE;
 
   /* This is our revised 'local' i.e. a frame slot.  */
-  tree revised = local_var_info->field_idx;
+  tree revised = local_var_i->field_idx;
   gcc_checking_assert (DECL_CONTEXT (var_decl) == lvd->context);
 
   if (decl_expr_p && DECL_INITIAL (var_decl))
@@ -1738,8 +1738,8 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 
 static void
 build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
-		tree orig, hash_map<tree, __param_info_t> *param_uses,
-		hash_map<tree, __local_var_info_t> *local_var_uses,
+		tree orig, hash_map<tree, param_info> *param_uses,
+		hash_map<tree, local_var_info> *local_var_uses,
 		vec<tree, va_gc> *param_dtor_list, tree initial_await,
 		tree final_await, unsigned body_count)
 {
@@ -1813,7 +1813,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
       for (arg = DECL_ARGUMENTS (orig); arg != NULL; arg = DECL_CHAIN (arg))
 	{
 	  bool existed;
-	  __param_info_t &parm = param_uses->get_or_insert (arg, &existed);
+	  param_info &parm = param_uses->get_or_insert (arg, &existed);
 	  if (parm.field_id == NULL_TREE)
 	    continue; /* Wasn't used.  */
 	  tree fld_ref = lookup_member (coro_frame_type, parm.field_id,
@@ -1831,7 +1831,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
     }
 
   /* Re-write local vars, similarly.  */
-  struct __local_vars_transform xform_vars_data
+  local_vars_transform xform_vars_data
     = {actor, actor_frame, coro_frame_type, loc, local_var_uses};
   cp_walk_tree (&fnbody, transform_local_var_uses, &xform_vars_data, NULL);
 
@@ -1948,7 +1948,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   /* Now we know the real promise, and enough about the frame layout to
      decide where to put things.  */
 
-  struct __await_xform_data xform
+  await_xform_data xform
     = {actor_frame, promise_proxy, ap, self_h_proxy, ash};
 
   /* Get a reference to the initial suspend var in the frame.  */
@@ -2272,7 +2272,7 @@ register_await_info (tree await_expr, tree aw_type, tree aw_nam, tree susp_type,
 		     tree susp_handle_nam)
 {
   bool seen;
-  struct suspend_point_info &s
+  suspend_point_info &s
     = suspend_points->get_or_insert (await_expr, &seen);
   if (seen)
     {
@@ -2301,7 +2301,7 @@ coro_make_frame_entry (tree *field_list, const char *name, tree fld_type,
   return id;
 }
 
-struct __susp_frame_data
+struct susp_frame_data
 {
   tree *field_list;
   tree handle_type;
@@ -2396,7 +2396,7 @@ captures_temporary (tree *stmt, int *do_subtree, void *d)
 	  tree tvar = TREE_OPERAND (parm, 0);
 	  gcc_checking_assert (DECL_ARTIFICIAL (tvar));
 
-	  struct __susp_frame_data *data = (struct __susp_frame_data *) d;
+	  susp_frame_data *data = (susp_frame_data *) d;
 	  data->captures_temporary = true;
 	  /* Record this one so we don't duplicate, and on the first
 	     occurrence note the target expr to be replaced.  */
@@ -2421,7 +2421,7 @@ captures_temporary (tree *stmt, int *do_subtree, void *d)
 	      tree tvar = TREE_OPERAND (awr, 0);
 	      gcc_checking_assert (DECL_ARTIFICIAL (tvar));
 
-	      struct __susp_frame_data *data = (struct __susp_frame_data *) d;
+	      susp_frame_data *data = (susp_frame_data *) d;
 	      data->captures_temporary = true;
 	      /* Use this as a place-holder.  */
 	      if (!data->captured_temps.add (tvar))
@@ -2446,7 +2446,7 @@ captures_temporary (tree *stmt, int *do_subtree, void *d)
 static tree
 register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
 {
-  struct __susp_frame_data *data = (struct __susp_frame_data *) d;
+  susp_frame_data *data = (susp_frame_data *) d;
 
   if (TREE_CODE (*stmt) != CO_AWAIT_EXPR && TREE_CODE (*stmt) != CO_YIELD_EXPR)
     return NULL_TREE;
@@ -2523,7 +2523,7 @@ register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
 static tree
 maybe_promote_captured_temps (tree *stmt, void *d)
 {
-  struct __susp_frame_data *awpts = (struct __susp_frame_data *) d;
+  susp_frame_data *awpts = (susp_frame_data *) d;
   hash_set<tree> visited;
   awpts->saw_awaits = 0;
 
@@ -2579,7 +2579,7 @@ maybe_promote_captured_temps (tree *stmt, void *d)
 	    = build2_loc (sloc, INIT_EXPR, var_type, newvar, to_replace);
 	  stmt = coro_build_cvt_void_expr_stmt (stmt, sloc);
 	  add_stmt (stmt);
-	  struct __proxy_replace pr = {to_replace, newvar};
+	  proxy_replace pr = {to_replace, newvar};
 	  /* Replace all instances of that temp in the original expr.  */
 	  cp_walk_tree (&aw_statement_current, replace_proxy, &pr, NULL);
 	}
@@ -2612,7 +2612,7 @@ static tree
 await_statement_walker (tree *stmt, int *do_subtree, void *d)
 {
   tree res = NULL_TREE;
-  struct __susp_frame_data *awpts = (struct __susp_frame_data *) d;
+  susp_frame_data *awpts = (susp_frame_data *) d;
 
   /* We might need to insert a new bind expression, and want to link it
      into the correct scope, so keep a note of the current block scope.  */
@@ -2658,10 +2658,10 @@ await_statement_walker (tree *stmt, int *do_subtree, void *d)
 
 /* For figuring out what param usage we have.  */
 
-struct __param_frame_data
+struct param_frame_data
 {
   tree *field_list;
-  hash_map<tree, __param_info_t> *param_uses;
+  hash_map<tree, param_info> *param_uses;
   location_t loc;
   bool param_seen;
 };
@@ -2669,13 +2669,13 @@ struct __param_frame_data
 static tree
 register_param_uses (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
 {
-  struct __param_frame_data *data = (struct __param_frame_data *) d;
+  param_frame_data *data = (param_frame_data *) d;
 
   if (TREE_CODE (*stmt) != PARM_DECL)
     return NULL_TREE;
 
   bool existed;
-  __param_info_t &parm = data->param_uses->get_or_insert (*stmt, &existed);
+  param_info &parm = data->param_uses->get_or_insert (*stmt, &existed);
   gcc_checking_assert (existed);
 
   if (parm.field_id == NULL_TREE)
@@ -2707,11 +2707,11 @@ register_param_uses (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
 
 /* For figuring out what local variable usage we have.  */
 
-struct __local_vars_frame_data
+struct local_vars_frame_data
 {
   tree *field_list;
-  hash_map<tree, __local_var_info_t> *local_var_uses;
-  vec<__local_var_info_t> *captures;
+  hash_map<tree, local_var_info> *local_var_uses;
+  vec<local_var_info> *captures;
   unsigned int nest_depth, bind_indx;
   location_t loc;
   bool saw_capture;
@@ -2721,7 +2721,7 @@ struct __local_vars_frame_data
 static tree
 register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 {
-  struct __local_vars_frame_data *lvd = (struct __local_vars_frame_data *) d;
+  local_vars_frame_data *lvd = (local_vars_frame_data *) d;
 
   /* As we enter a bind expression - record the vars there and then recurse.
      As we exit drop the nest depth.
@@ -2737,7 +2737,7 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	   lvar = DECL_CHAIN (lvar))
 	{
 	  bool existed;
-	  __local_var_info_t &local_var
+	  local_var_info &local_var
 	    = lvd->local_var_uses->get_or_insert (lvar, &existed);
 	  gcc_checking_assert (!existed);
 	  tree lvtype = TREE_TYPE (lvar);
@@ -2807,9 +2807,9 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
  declare a dummy coro frame.
  struct _R_frame {
   using handle_type = coro::coroutine_handle<coro1::promise_type>;
-  void (*__resume)(struct _R_frame *);
-  void (*__destroy)(struct _R_frame *);
-  struct coro1::promise_type __p;
+  void (*__resume)(_R_frame *);
+  void (*__destroy)(_R_frame *);
+  coro1::promise_type __p;
   bool frame_needs_free; // free the coro frame mem if set.
   short __resume_at; // this is where clang puts it - but it's a smaller entity.
   coro1::suspend_never_prt __is;
@@ -2884,7 +2884,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   /* 2. Types we need to define or look up.  */
 
-  suspend_points = hash_map<tree, struct suspend_point_info>::create_ggc (11);
+  suspend_points = hash_map<tree, suspend_point_info>::create_ggc (11);
 
   /* Initial and final suspend types are special in that the co_awaits for
      them are synthetic.  We need to find the type for each awaiter from
@@ -2963,7 +2963,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   /* Now insert the data for any body await points, at this time we also need
      to promote any temporaries that are captured by reference (to regular
      vars) they will get added to the coro frame along with other locals.  */
-  struct __susp_frame_data body_aw_points
+  susp_frame_data body_aw_points
     = {&field_list, handle_type, hash_set<tree> (), NULL, NULL, 0, 0, false};
   body_aw_points.to_replace = make_tree_vector ();
   body_aw_points.block_stack = make_tree_vector ();
@@ -2992,7 +2992,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
      to persist across any suspend points.  Of course, even if they don't
      persist across suspend points, when the actor is out of line the saved
      frame version is still needed.  */
-  hash_map<tree, __param_info_t> *param_uses = NULL;
+  hash_map<tree, param_info> *param_uses = NULL;
   if (DECL_ARGUMENTS (orig))
     {
       /* Build a hash map with an entry for each param.
@@ -3002,19 +3002,19 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  Then a tree list of the uses.
 	  The second two entries start out empty - and only get populated
 	  when we see uses.  */
-      param_uses = new hash_map<tree, __param_info_t>;
+      param_uses = new hash_map<tree, param_info>;
 
       for (tree arg = DECL_ARGUMENTS (orig); arg != NULL;
 	   arg = DECL_CHAIN (arg))
 	{
 	  bool existed;
-	  __param_info_t &parm = param_uses->get_or_insert (arg, &existed);
+	  param_info &parm = param_uses->get_or_insert (arg, &existed);
 	  gcc_checking_assert (!existed);
 	  parm.field_id = NULL_TREE;
 	  parm.body_uses = NULL;
 	}
 
-      struct __param_frame_data param_data
+      param_frame_data param_data
 	= {&field_list, param_uses, fn_start, false};
       /* We want to record every instance of param's use, so don't include
 	 a 'visited' hash_set.  */
@@ -3032,10 +3032,10 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   /* 4. Now make space for local vars, this is conservative again, and we
      would expect to delete unused entries later.  */
-  hash_map<tree, __local_var_info_t> local_var_uses;
-  auto_vec<__local_var_info_t> captures;
+  hash_map<tree, local_var_info> local_var_uses;
+  auto_vec<local_var_info> captures;
 
-  struct __local_vars_frame_data local_vars_data
+  local_vars_frame_data local_vars_data
     = {&field_list, &local_var_uses, &captures, 0, 0, fn_start, false, false};
   cp_walk_tree (&fnbody, register_local_var_uses, &local_vars_data, NULL);
 
@@ -3058,7 +3058,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree coro_fp = build_lang_decl (VAR_DECL, get_identifier ("coro.frameptr"),
 				  coro_frame_ptr);
   tree varlist = coro_fp;
-  __local_var_info_t *cap;
+  local_var_info *cap;
   if (!captures.is_empty())
     for (int ix = 0; captures.iterate (ix, &cap); ix++)
       {
@@ -3286,7 +3286,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       for (arg = DECL_ARGUMENTS (orig); arg != NULL; arg = DECL_CHAIN (arg))
 	{
 	  bool existed;
-	  __param_info_t &parm = param_uses->get_or_insert (arg, &existed);
+	  param_info &parm = param_uses->get_or_insert (arg, &existed);
 	  if (parm.field_id == NULL_TREE)
 	    continue; /* Wasn't used.  */
 
@@ -3337,7 +3337,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   vec<tree, va_gc> *captures_dtor_list = NULL;
   while (!captures.is_empty())
     {
-      __local_var_info_t cap = captures.pop();
+      local_var_info cap = captures.pop();
       if (cap.field_id == NULL_TREE)
 	continue;
 
