@@ -49,23 +49,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits>
     class istreambuf_iterator
     : public iterator<input_iterator_tag, _CharT, typename _Traits::off_type,
-		      _CharT*,
-#if __cplusplus >= 201103L
-    // LWG 445.
-		      _CharT>
-#else
-		      _CharT&>
-#endif
+		      _CharT*, _CharT>
     {
     public:
       // Types:
       //@{
       /// Public typedefs
-#if __cplusplus > 201703L
+#if __cplusplus < 201103L
+      typedef _CharT& reference; // Changed to _CharT by LWG 445
+#elif __cplusplus > 201703L
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 3188. istreambuf_iterator::pointer should not be unspecified
       using pointer = void;
 #endif
+
       typedef _CharT					char_type;
       typedef _Traits					traits_type;
       typedef typename _Traits::int_type		int_type;

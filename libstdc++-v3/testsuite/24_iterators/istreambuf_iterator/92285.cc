@@ -1,7 +1,4 @@
-// { dg-do compile }
-// 1999-06-28 bkoz
-
-// Copyright (C) 1999-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,25 +15,37 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 24.5.3 template class istreambuf_iterator
-
-#include <sstream>
 #include <iterator>
+#include <iostream>
 #include <testsuite_hooks.h>
 
-void test01()
+// PR libstdc++/92285
+// See https://gcc.gnu.org/ml/libstdc++/2019-10/msg00129.html
+
+typedef std::input_iterator_tag category;
+typedef std::char_traits<char>::off_type off_type;
+typedef std::iterator<category, char, off_type, char*, char> good;
+typedef std::iterator<category, char, off_type, char*, char&> bad;
+
+bool check(good&) { return true; }
+void check(bad&) { }
+
+void
+test01()
 {
-  using namespace std;
+  typedef std::istreambuf_iterator<char> I;
+  I it;
+  VERIFY( check(it) );
+#if __cplusplus < 201103L
+  char c = 'c';
+  I::reference r = c;
+  VERIFY( &r == &c );
+#else
+  static_assert( std::is_same<I::reference, char>::value, "LWG 445" );
+#endif
+}
 
-  // Check for required base class.
-  typedef istreambuf_iterator<char> test_iterator;
-  typedef char_traits<char>::off_type off_type;
-
-  // This is the base class required since LWG 445, which differs from C++03:
-  typedef iterator<input_iterator_tag, char, off_type, char*, char>
-    base_iterator;
-
-  istringstream isstream("this tag");
-  test_iterator  r_it(isstream);
-  base_iterator* base __attribute__((unused)) = &r_it;
+int main()
+{
+  test01();
 }
