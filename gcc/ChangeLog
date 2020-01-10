@@ -1,3 +1,9 @@
+2020-01-10  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/93217
+	* ipa-inline-analysis.c (offline_size): Make proper parenthesis
+	encapsulation that was there before r280040.
+
 2020-01-10  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/93199
