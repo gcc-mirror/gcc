@@ -1,5 +1,17 @@
 2020-01-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* doc/invoke.texi (-msve-vector-bits=): Document that
+	-msve-vector-bits=128 now generates VL-specific code for
+	little-endian targets.
+	* config/aarch64/aarch64-sve-builtins.cc (register_builtin_types): Use
+	build_vector_type_for_mode to construct the data vector types.
+	* config/aarch64/aarch64.c (aarch64_convert_sve_vector_bits): Generate
+	VL-specific code for -msve-vector-bits=128 on little-endian targets.
+	(aarch64_simd_container_mode): Always prefer Advanced SIMD modes
+	for 128-bit vectors.
+
+2020-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_evpc_sel): Fix gen_vcond_mask
 	invocation.
 

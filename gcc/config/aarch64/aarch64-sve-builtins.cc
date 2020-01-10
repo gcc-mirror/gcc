@@ -3230,11 +3230,15 @@ register_builtin_types ()
 	}
       else
 	{
-	  unsigned int elbytes = tree_to_uhwi (TYPE_SIZE_UNIT (eltype));
+	  scalar_mode elmode = SCALAR_TYPE_MODE (eltype);
+	  unsigned int elbytes = GET_MODE_SIZE (elmode);
 	  poly_uint64 nunits = exact_div (BYTES_PER_SVE_VECTOR, elbytes);
-	  vectype = build_vector_type (eltype, nunits);
+	  machine_mode mode
+	    = aarch64_sve_data_mode (elmode, nunits).require ();
+	  vectype = build_vector_type_for_mode (eltype, mode);
 	  gcc_assert (VECTOR_MODE_P (TYPE_MODE (vectype))
-		      && TYPE_MODE (vectype) == TYPE_MODE_RAW (vectype)
+		      && TYPE_MODE (vectype) == mode
+		      && TYPE_MODE_RAW (vectype) == mode
 		      && TYPE_ALIGN (vectype) == 128
 		      && known_eq (wi::to_poly_offset (TYPE_SIZE (vectype)),
 				   BITS_PER_SVE_VECTOR));

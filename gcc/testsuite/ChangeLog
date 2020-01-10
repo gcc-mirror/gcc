@@ -1,3 +1,16 @@
+2020-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/struct_vect_1.c (N): Protect with #ifndef.
+	* gcc.target/aarch64/sve/pcs/return_1_128.c: New test.
+	* gcc.target/aarch64/sve/pcs/return_4_128.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_5_128.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_6_128.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/stack_clash_1_128.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/stack_clash_2_128.c: Likewise.
+	* gcc.target/aarch64/sve/single_5.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_25.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_26.c: Likewise.
+
 2020-01-10  Martin Sebor  <msebor@redhat.com>
 
 	PR c/93132
