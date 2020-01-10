@@ -1,5 +1,8 @@
 2020-01-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/25_algorithms/equal/deque_iterators/1.cc: Don't use C++11
+	initialization syntax.
+
 	PR libstdc++/92285
 	* include/bits/streambuf_iterator.h (istreambuf_iterator): Make type
 	of base class independent of __cplusplus value.
