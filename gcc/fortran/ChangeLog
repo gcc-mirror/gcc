@@ -1,3 +1,13 @@
+2020-01-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline
+	2020-01-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/84135
+	* array.c (gfc_set_array_spec): Fix shifting of codimensions
+	when adding a dimension.
+	* decl.c (merge_array_spec): Ditto. Fix using correct codimensions.
+
 2019-12-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
@@ -24,7 +34,7 @@
 	Backported from mainline
 	2019-12-19  Jakub Jelinek  <jakub@redhat.com>
 
- 	PR fortran/92977
+	PR fortran/92977
 	* frontend-passes.c (call_external_blas): Use || instead of |.
 
 	PR fortran/92977
@@ -495,7 +505,7 @@
 
 	PR fortran/42546
 	* check.c(gfc_check_allocated): Add comment pointing to ...
- 	* intrinsic.c(sort_actual): ... the checking done here.
+	* intrinsic.c(sort_actual): ... the checking done here.
 
 2019-08-12  Release Manager
 
