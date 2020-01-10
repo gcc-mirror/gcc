@@ -1,3 +1,8 @@
+2020-01-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR inline-asm/93207
+	* gcc.target/i386/pr93207.c: New test.
+
 2020-01-10  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* testsuite/gcc.target/aarch64/pr90838.c: New test.

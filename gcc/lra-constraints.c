@@ -1054,12 +1054,15 @@ match_reload (signed char out, signed char *ins, signed char *outs,
   curr_insn_input_reloads[curr_insn_input_reloads_num].match_p = true;
   curr_insn_input_reloads[curr_insn_input_reloads_num++].reg = new_in_reg;
   for (i = 0; (in = ins[i]) >= 0; i++)
-    {
-      lra_assert
-	(GET_MODE (*curr_id->operand_loc[in]) == VOIDmode
-	 || GET_MODE (new_in_reg) == GET_MODE (*curr_id->operand_loc[in]));
+    if (GET_MODE (*curr_id->operand_loc[in]) == VOIDmode
+	|| GET_MODE (new_in_reg) == GET_MODE (*curr_id->operand_loc[in]))
       *curr_id->operand_loc[in] = new_in_reg;
-    }
+    else
+      {
+	lra_assert
+	  (GET_MODE (new_out_reg) == GET_MODE (*curr_id->operand_loc[in]));
+	*curr_id->operand_loc[in] = new_out_reg;
+      }
   lra_update_dups (curr_id, ins);
   if (out < 0)
     return;
