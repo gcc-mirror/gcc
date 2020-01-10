@@ -4592,6 +4592,15 @@ package body Sem_Ch6 is
          elsif Nkind (Parent (Parent (Spec_Id))) = N_Subprogram_Body_Stub then
             null;
 
+         --  SPARK_Mode Off could complete no SPARK_Mode in a generic, either
+         --  as specified in source code, or because SPARK_Mode On is ignored
+         --  in an instance where the context is SPARK_Mode Off/Auto.
+
+         elsif Get_SPARK_Mode_From_Annotation (SPARK_Pragma (Body_Id)) = Off
+           and then (Is_Generic_Unit (Spec_Id) or else In_Instance)
+         then
+            null;
+
          else
             Error_Msg_Sloc := Sloc (SPARK_Pragma (Body_Id));
             Error_Msg_N ("incorrect application of SPARK_Mode #", N);
