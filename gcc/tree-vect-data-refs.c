@@ -4597,7 +4597,7 @@ vect_create_addr_base_for_vector_ref (stmt_vec_info stmt_info,
   innermost_loop_behavior *drb = vect_dr_behavior (dr_info);
 
   tree data_ref_base = unshare_expr (drb->base_address);
-  tree base_offset = unshare_expr (drb->offset);
+  tree base_offset = unshare_expr (get_dr_vinfo_offset (dr_info, true));
   tree init = unshare_expr (drb->init);
 
   if (loop_vinfo)

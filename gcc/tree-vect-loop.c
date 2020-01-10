@@ -8333,8 +8333,7 @@ find_in_mapping (tree t, void *context)
    prologue of the main loop.  */
 
 static void
-update_epilogue_loop_vinfo (class loop *epilogue, tree advance,
-			    drs_init_vec &orig_drs_init)
+update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
 {
   loop_vec_info epilogue_vinfo = loop_vec_info_for_loop (epilogue);
   auto_vec<gimple *> stmt_worklist;
@@ -8344,15 +8343,9 @@ update_epilogue_loop_vinfo (class loop *epilogue, tree advance,
   gphi_iterator epilogue_phi_gsi;
   stmt_vec_info stmt_vinfo = NULL, related_vinfo;
   basic_block *epilogue_bbs = get_loop_body (epilogue);
+  unsigned i;
 
   LOOP_VINFO_BBS (epilogue_vinfo) = epilogue_bbs;
-
-  /* Restore original data_reference's offset, before the previous loop and its
-     prologue.  */
-  std::pair<data_reference*, tree> *dr_init;
-  unsigned i;
-  for (i = 0; orig_drs_init.iterate (i, &dr_init); i++)
-    DR_OFFSET (dr_init->first) = dr_init->second;
 
   /* Advance data_reference's with the number of iterations of the previous
      loop and its prologue.  */
@@ -8569,7 +8562,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   epilogue = vect_do_peeling (loop_vinfo, niters, nitersm1, &niters_vector,
 			      &step_vector, &niters_vector_mult_vf, th,
 			      check_profitability, niters_no_overflow,
-			      &advance, orig_drs_init);
+			      &advance);
 
   if (LOOP_VINFO_SCALAR_LOOP (loop_vinfo)
       && LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo).initialized_p ())
@@ -8828,7 +8821,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 
   if (epilogue)
     {
-      update_epilogue_loop_vinfo (epilogue, advance, orig_drs_init);
+      update_epilogue_loop_vinfo (epilogue, advance);
 
       epilogue->simduid = loop->simduid;
       epilogue->force_vectorize = loop->force_vectorize;

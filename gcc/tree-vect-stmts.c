@@ -6629,7 +6629,7 @@ check_scan_store (stmt_vec_info stmt_info, tree vectype,
       || loop_vinfo == NULL
       || LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
       || STMT_VINFO_GROUPED_ACCESS (stmt_info)
-      || !integer_zerop (DR_OFFSET (dr_info->dr))
+      || !integer_zerop (get_dr_vinfo_offset (dr_info))
       || !integer_zerop (DR_INIT (dr_info->dr))
       || !(ref_type = reference_alias_ptr_type (DR_REF (dr_info->dr)))
       || !alias_sets_conflict_p (get_alias_set (vectype),
@@ -7762,6 +7762,7 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       tree running_off;
       tree stride_base, stride_step, alias_off;
       tree vec_oprnd;
+      tree dr_offset;
       unsigned int g;
       /* Checked by get_load_store_type.  */
       unsigned int const_nunits = nunits.to_constant ();
@@ -7769,11 +7770,12 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       gcc_assert (!LOOP_VINFO_FULLY_MASKED_P (loop_vinfo));
       gcc_assert (!nested_in_vect_loop_p (loop, stmt_info));
 
+      dr_offset = get_dr_vinfo_offset (first_dr_info);
       stride_base
 	= fold_build_pointer_plus
 	    (DR_BASE_ADDRESS (first_dr_info->dr),
 	     size_binop (PLUS_EXPR,
-			 convert_to_ptrofftype (DR_OFFSET (first_dr_info->dr)),
+			 convert_to_ptrofftype (dr_offset),
 			 convert_to_ptrofftype (DR_INIT (first_dr_info->dr))));
       stride_step = fold_convert (sizetype, DR_STEP (first_dr_info->dr));
 
@@ -8136,7 +8138,7 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      && !loop_masks
 	      && TREE_CODE (DR_BASE_ADDRESS (first_dr_info->dr)) == ADDR_EXPR
 	      && VAR_P (TREE_OPERAND (DR_BASE_ADDRESS (first_dr_info->dr), 0))
-	      && integer_zerop (DR_OFFSET (first_dr_info->dr))
+	      && integer_zerop (get_dr_vinfo_offset (first_dr_info))
 	      && integer_zerop (DR_INIT (first_dr_info->dr))
 	      && alias_sets_conflict_p (get_alias_set (aggr_type),
 					get_alias_set (TREE_TYPE (ref_type))))
@@ -8830,6 +8832,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       /* Checked by get_load_store_type.  */
       unsigned int const_nunits = nunits.to_constant ();
       unsigned HOST_WIDE_INT cst_offset = 0;
+      tree dr_offset;
 
       gcc_assert (!LOOP_VINFO_FULLY_MASKED_P (loop_vinfo));
       gcc_assert (!nested_in_vect_loop);
@@ -8860,11 +8863,12 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  ref_type = reference_alias_ptr_type (DR_REF (dr_info->dr));
 	}
 
+      dr_offset = get_dr_vinfo_offset (first_dr_info);
       stride_base
 	= fold_build_pointer_plus
 	    (DR_BASE_ADDRESS (first_dr_info->dr),
 	     size_binop (PLUS_EXPR,
-			 convert_to_ptrofftype (DR_OFFSET (first_dr_info->dr)),
+			 convert_to_ptrofftype (dr_offset),
 			 convert_to_ptrofftype (DR_INIT (first_dr_info->dr))));
       stride_step = fold_convert (sizetype, DR_STEP (first_dr_info->dr));
 
@@ -9329,7 +9333,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  if (simd_lane_access_p
 	      && TREE_CODE (DR_BASE_ADDRESS (first_dr_info->dr)) == ADDR_EXPR
 	      && VAR_P (TREE_OPERAND (DR_BASE_ADDRESS (first_dr_info->dr), 0))
-	      && integer_zerop (DR_OFFSET (first_dr_info->dr))
+	      && integer_zerop (get_dr_vinfo_offset (first_dr_info))
 	      && integer_zerop (DR_INIT (first_dr_info->dr))
 	      && alias_sets_conflict_p (get_alias_set (aggr_type),
 					get_alias_set (TREE_TYPE (ref_type)))

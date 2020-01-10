@@ -910,6 +910,10 @@ public:
   /* If true the alignment of base_decl needs to be increased.  */
   bool base_misaligned;
   tree base_decl;
+
+  /* Stores current vectorized loop's offset.  To be added to the DR's
+     offset to calculate current offset of data reference.  */
+  tree offset;
 };
 
 typedef struct data_reference *dr_p;
@@ -1485,6 +1489,26 @@ vect_dr_behavior (dr_vec_info *dr_info)
     return &STMT_VINFO_DR_WRT_VEC_LOOP (stmt_info);
 }
 
+inline tree
+get_dr_vinfo_offset (dr_vec_info *dr_info, bool check_outer = false)
+{
+  innermost_loop_behavior *base;
+  if (check_outer)
+    base = vect_dr_behavior (dr_info);
+  else
+    base = &dr_info->dr->innermost;
+
+  tree offset = base->offset;
+
+  if (!dr_info->offset)
+    return offset;
+
+  offset = fold_convert (sizetype, offset);
+  return fold_build2 (PLUS_EXPR, TREE_TYPE (dr_info->offset), offset,
+		      dr_info->offset);
+}
+
+
 /* Return true if the vect cost model is unlimited.  */
 static inline bool
 unlimited_cost_model (loop_p loop)
@@ -1655,7 +1679,7 @@ class loop *slpeel_tree_duplicate_loop_to_edge_cfg (class loop *,
 class loop *vect_loop_versioning (loop_vec_info);
 extern class loop *vect_do_peeling (loop_vec_info, tree, tree,
 				    tree *, tree *, tree *, int, bool, bool,
-				    tree *, drs_init_vec &);
+				    tree *);
 extern void vect_prepare_for_masked_peels (loop_vec_info);
 extern dump_user_location_t find_loop_location (class loop *);
 extern bool vect_can_advance_ivs_p (loop_vec_info);
