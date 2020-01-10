@@ -1,3 +1,8 @@
+2020-01-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/host_data-1.c: Extend.
+	* gfortran.dg/goacc/host_data-tree.f95: Likewise.
+
 2020-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/93210

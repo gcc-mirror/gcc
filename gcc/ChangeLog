@@ -1,3 +1,14 @@
+2020-01-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* tree.h (OMP_CLAUSE_USE_DEVICE_PTR_IF_PRESENT): New definition.
+	* tree-core.h: Document it.
+	* gimplify.c (gimplify_omp_workshare): Set it.
+	* omp-low.c (lower_omp_target): Use it.
+	* tree-pretty-print.c (dump_omp_clause): Print it.
+
+	* omp-low.c (lower_omp_target) <OMP_CLAUSE_USE_DEVICE_PTR etc.>:
+	Assert that for OpenACC we always have 'GOMP_MAP_USE_DEVICE_PTR'.
+
 2020-01-10  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (OBJS): Add tree-diagnostic-path.o.

@@ -1,3 +1,9 @@
+2020-01-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* target.c (gomp_map_vars_internal)
+	<GOMP_MAP_USE_DEVICE_PTR_IF_PRESENT>: Clean up/elaborate code
+	paths.
+
 2020-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/93219

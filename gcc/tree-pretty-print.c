@@ -432,7 +432,7 @@ static void
 dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 {
   const char *name;
-
+  const char *modifier = NULL;
   switch (OMP_CLAUSE_CODE (clause))
     {
     case OMP_CLAUSE_PRIVATE:
@@ -446,13 +446,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       goto print_remap;
     case OMP_CLAUSE_LASTPRIVATE:
       name = "lastprivate";
-      if (!OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (clause))
-	goto print_remap;
-      pp_string (pp, "lastprivate(conditional:");
-      dump_generic_node (pp, OMP_CLAUSE_DECL (clause),
-			 spc, flags, false);
-      pp_right_paren (pp);
-      break;
+      if (OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (clause))
+	modifier = "conditional:";
+      goto print_remap;
     case OMP_CLAUSE_COPYIN:
       name = "copyin";
       goto print_remap;
@@ -464,6 +460,8 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       goto print_remap;
     case OMP_CLAUSE_USE_DEVICE_PTR:
       name = "use_device_ptr";
+      if (OMP_CLAUSE_USE_DEVICE_PTR_IF_PRESENT (clause))
+	modifier = "if_present:";
       goto print_remap;
     case OMP_CLAUSE_USE_DEVICE_ADDR:
       name = "use_device_addr";
@@ -501,6 +499,8 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
   print_remap:
       pp_string (pp, name);
       pp_left_paren (pp);
+      if (modifier)
+	pp_string (pp, modifier);
       dump_generic_node (pp, OMP_CLAUSE_DECL (clause),
 			 spc, flags, false);
       pp_right_paren (pp);
