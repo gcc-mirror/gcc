@@ -159,7 +159,7 @@ get_or_insert_coroutine_info (tree fn_decl)
 
   if (*slot == NULL)
     {
-      *slot = new (ggc_alloc<coroutine_info> ()) coroutine_info ();
+      *slot = new (ggc_cleared_alloc<coroutine_info> ()) coroutine_info ();
       (*slot)->function_decl = fn_decl;
     }
 
