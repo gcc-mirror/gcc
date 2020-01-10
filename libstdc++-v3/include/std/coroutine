@@ -26,8 +26,8 @@
  *  This is a Standard C++ Library header.
  */
 
-#ifndef _GLIBCXX_EXPERIMENTAL_COROUTINE
-#define _GLIBCXX_EXPERIMENTAL_COROUTINE 1
+#ifndef _GLIBCXX_COROUTINE
+#define _GLIBCXX_COROUTINE 1
 
 #pragma GCC system_header
 
@@ -46,7 +46,7 @@
 #  include <compare>
 #  define _COROUTINES_USE_SPACESHIP 1
 #else
-#  include <bits/stl_function.h>
+#  include <bits/stl_function.h> // for std::less
 #  define _COROUTINES_USE_SPACESHIP 0
 #endif
 
@@ -60,128 +60,144 @@ namespace std _GLIBCXX_VISIBILITY (default)
   // 17.12.2 coroutine traits
   /// [coroutine.traits]
   /// [coroutine.traits.primary]
-  template <typename _R, typename...> struct coroutine_traits
-  {
-    using promise_type = typename _R::promise_type;
-  };
+  template <typename _Result, typename...>
+    struct coroutine_traits
+    {
+       using promise_type = typename _Result::promise_type;
+    };
 
   // 17.12.3 Class template coroutine_handle
   /// [coroutine.handle]
-  template <typename _Promise = void> struct coroutine_handle;
+  template <typename _Promise = void>
+    struct coroutine_handle;
 
-  template <> struct coroutine_handle<void>
-  {
-  public:
-    // 17.12.3.1, construct/reset
-    constexpr coroutine_handle () noexcept : _M_fr_ptr (0) {}
-    constexpr coroutine_handle (decltype (nullptr) __h) noexcept
-      : _M_fr_ptr (__h)
-    {}
-    coroutine_handle &operator= (decltype (nullptr)) noexcept
+  template <> struct
+    coroutine_handle<void>
     {
-      _M_fr_ptr = nullptr;
-      return *this;
-    }
+    public:
+      // 17.12.3.1, construct/reset
+      constexpr coroutine_handle() noexcept : _M_fr_ptr(0) {}
 
-  public:
-    // 17.12.3.2, export/import
-    constexpr void *address () const noexcept { return _M_fr_ptr; }
-    constexpr static coroutine_handle from_address (void *__a) noexcept
-    {
-      coroutine_handle __self;
-      __self._M_fr_ptr = __a;
-      return __self;
-    }
+      constexpr coroutine_handle(std::nullptr_t __h) noexcept
+	: _M_fr_ptr(__h)
+      {}
 
-  public:
-    // 17.12.3.3, observers
-    constexpr explicit operator bool () const noexcept
-    {
-      return bool(_M_fr_ptr);
-    }
-    bool done () const noexcept { return __builtin_coro_done (_M_fr_ptr); }
-    // 17.12.3.4, resumption
-    void operator() () const { resume (); }
-    void resume () const { __builtin_coro_resume (_M_fr_ptr); }
-    void destroy () const { __builtin_coro_destroy (_M_fr_ptr); }
+      coroutine_handle& operator=(std::nullptr_t) noexcept
+      {
+	_M_fr_ptr = nullptr;
+	return *this;
+      }
 
-  protected:
-    void *_M_fr_ptr;
+    public:
+      // 17.12.3.2, export/import
+      constexpr void* address() const noexcept { return _M_fr_ptr; }
+
+      constexpr static coroutine_handle from_address(void* __a) noexcept
+      {
+	coroutine_handle __self;
+	__self._M_fr_ptr = __a;
+	return __self;
+      }
+
+    public:
+      // 17.12.3.3, observers
+      constexpr explicit operator bool() const noexcept
+      {
+	return bool(_M_fr_ptr);
+      }
+
+      bool done() const noexcept { return __builtin_coro_done(_M_fr_ptr); }
+
+      // 17.12.3.4, resumption
+      void operator()() const { resume(); }
+
+      void resume() const { __builtin_coro_resume(_M_fr_ptr); }
+
+      void destroy() const { __builtin_coro_destroy(_M_fr_ptr); }
+
+    protected:
+      void* _M_fr_ptr;
   };
 
   // 17.12.3.6 Comparison operators
   /// [coroutine.handle.compare]
-  constexpr bool operator== (coroutine_handle<> __a,
-			     coroutine_handle<> __b) noexcept
+  constexpr bool operator==(coroutine_handle<> __a,
+			    coroutine_handle<> __b) noexcept
   {
-    return __a.address () == __b.address ();
+    return __a.address() == __b.address();
   }
 
 #if _COROUTINES_USE_SPACESHIP
   constexpr strong_ordering
-  operator<=> (coroutine_handle<> __a, coroutine_handle<> __b) noexcept;
+  operator<=>(coroutine_handle<> __a, coroutine_handle<> __b) noexcept
+  { return std::compare_three_way()(__a.address(), __b.address()); }
 #else
-  // These are from the TS to enable operation with std=c++14,17.
-  constexpr bool operator!= (coroutine_handle<> __a,
-			     coroutine_handle<> __b) noexcept
+  // These are to enable operation with std=c++14,17.
+  constexpr bool operator!=(coroutine_handle<> __a,
+			    coroutine_handle<> __b) noexcept
   {
     return !(__a == __b);
   }
 
-  constexpr bool operator< (coroutine_handle<> __a,
-			    coroutine_handle<> __b) noexcept
+  constexpr bool operator<(coroutine_handle<> __a,
+			   coroutine_handle<> __b) noexcept
   {
-    return less<void *> () (__a.address (), __b.address ());
+    return less<void*>()(__a.address(), __b.address());
   }
 
-  constexpr bool operator> (coroutine_handle<> __a,
-			    coroutine_handle<> __b) noexcept
+  constexpr bool operator>(coroutine_handle<> __a,
+			   coroutine_handle<> __b) noexcept
   {
     return __b < __a;
   }
 
-  constexpr bool operator<= (coroutine_handle<> __a,
-			     coroutine_handle<> __b) noexcept
+  constexpr bool operator<=(coroutine_handle<> __a,
+			    coroutine_handle<> __b) noexcept
   {
     return !(__a > __b);
   }
 
-  constexpr bool operator>= (coroutine_handle<> __a,
-			     coroutine_handle<> __b) noexcept
+  constexpr bool operator>=(coroutine_handle<> __a,
+			    coroutine_handle<> __b) noexcept
   {
     return !(__a < __b);
   }
 #endif
 
-  template <class _Promise> struct coroutine_handle : coroutine_handle<>
-  {
-    // 17.12.3.1, construct/reset
-    using coroutine_handle<>::coroutine_handle;
-    static coroutine_handle from_promise (_Promise &p)
+  template <typename _Promise>
+    struct coroutine_handle : coroutine_handle<>
     {
-      coroutine_handle __self;
-      __self._M_fr_ptr
-	= __builtin_coro_promise ((char *) &p, __alignof(_Promise), true);
-      return __self;
-    }
-    coroutine_handle &operator= (decltype (nullptr)) noexcept
-    {
-      coroutine_handle<>::operator= (nullptr);
-      return *this;
-    }
+      // 17.12.3.1, construct/reset
+      using coroutine_handle<>::coroutine_handle;
+
+      static coroutine_handle from_promise(_Promise& p)
+      {
+	coroutine_handle __self;
+	__self._M_fr_ptr
+	  = __builtin_coro_promise((char*) &p, __alignof(_Promise), true);
+	return __self;
+      }
+
+      coroutine_handle& operator=(std::nullptr_t) noexcept
+      {
+	coroutine_handle<>::operator=(nullptr);
+	return *this;
+      }
+
     // 17.12.3.2, export/import
-    constexpr static coroutine_handle from_address (void *__a)
+    constexpr static coroutine_handle from_address(void* __a)
     {
       coroutine_handle __self;
       __self._M_fr_ptr = __a;
       return __self;
     }
+
     // 17.12.3.5, promise accesss
-    _Promise &promise () const
+    _Promise& promise() const
     {
-      void *__t
+      void* __t
 	= __builtin_coro_promise (this->_M_fr_ptr, __alignof(_Promise), false);
-      return *static_cast<_Promise *> (__t);
+      return *static_cast<_Promise*>(__t);
     }
   };
 
@@ -190,69 +206,75 @@ namespace std _GLIBCXX_VISIBILITY (default)
   {
   };
 
-  void __dummy_resume_destroy () __attribute__ ((__weak__));
-  void __dummy_resume_destroy () {}
+  void __dummy_resume_destroy() __attribute__((__weak__));
+  void __dummy_resume_destroy() {}
 
   struct __noop_coro_frame
   {
-    void (*__r) () = __dummy_resume_destroy;
-    void (*__d) () = __dummy_resume_destroy;
+    void (*__r)() = __dummy_resume_destroy;
+    void (*__d)() = __dummy_resume_destroy;
     struct noop_coroutine_promise __p;
-  } __noop_coro_fr __attribute__ ((__weak__));
+  } __noop_coro_fr __attribute__((__weak__));
 
   // 17.12.4.1 Class noop_coroutine_promise
   /// [coroutine.promise.noop]
   template <>
-  class coroutine_handle<noop_coroutine_promise> : public coroutine_handle<>
-  {
-    using _Promise = noop_coroutine_promise;
-
-  public:
-    // 17.12.4.2.1, observers
-    constexpr explicit operator bool () const noexcept { return true; }
-    constexpr bool done () const noexcept { return false; }
-
-    // 17.12.4.2.2, resumption
-    void operator() () const noexcept {}
-    void resume () const noexcept {}
-    void destroy () const noexcept {}
-
-    // 17.12.4.2.3, promise access
-    _Promise &promise () const
+    struct coroutine_handle<noop_coroutine_promise> : public coroutine_handle<>
     {
-      return *static_cast<_Promise *> (
-	__builtin_coro_promise (this->_M_fr_ptr, __alignof(_Promise), false));
-    }
+      using _Promise = noop_coroutine_promise;
 
-    // 17.12.4.2.4, address
-    // constexpr void* address() const noexcept;
-  private:
-    friend coroutine_handle<noop_coroutine_promise> noop_coroutine () noexcept;
+    public:
+      // 17.12.4.2.1, observers
+      constexpr explicit operator bool() const noexcept { return true; }
 
-    coroutine_handle () noexcept { this->_M_fr_ptr = (void *) &__noop_coro_fr; }
-  };
+      constexpr bool done() const noexcept { return false; }
+
+      // 17.12.4.2.2, resumption
+      void operator()() const noexcept {}
+
+      void resume() const noexcept {}
+
+      void destroy() const noexcept {}
+
+      // 17.12.4.2.3, promise access
+      _Promise& promise() const
+      {
+	return *static_cast<_Promise*>(
+	  __builtin_coro_promise(this->_M_fr_ptr, __alignof(_Promise), false));
+      }
+
+      // 17.12.4.2.4, address
+    private:
+      friend coroutine_handle<noop_coroutine_promise> noop_coroutine() noexcept;
+
+      coroutine_handle() noexcept { this->_M_fr_ptr = (void*) &__noop_coro_fr; }
+    };
 
   using noop_coroutine_handle = coroutine_handle<noop_coroutine_promise>;
 
-  inline noop_coroutine_handle noop_coroutine () noexcept
+  inline noop_coroutine_handle noop_coroutine() noexcept
   {
-    return noop_coroutine_handle ();
+    return noop_coroutine_handle();
   }
 
   // 17.12.5 Trivial awaitables
   /// [coroutine.trivial.awaitables]
   struct suspend_always
   {
-    bool await_ready () { return false; }
-    void await_suspend (coroutine_handle<>) {}
-    void await_resume () {}
+    bool await_ready() { return false; }
+
+    void await_suspend(coroutine_handle<>) {}
+
+    void await_resume() {}
   };
 
   struct suspend_never
   {
-    bool await_ready () { return true; }
-    void await_suspend (coroutine_handle<>) {}
-    void await_resume () {}
+    bool await_ready() { return true; }
+
+    void await_suspend(coroutine_handle<>) {}
+
+    void await_resume() {}
   };
 
   } // namespace __n4835
@@ -262,8 +284,8 @@ namespace std _GLIBCXX_VISIBILITY (default)
 #endif
 
   _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace std_GLIBCXX_VISIBILITY(default)
+} // namespace std
 
 #endif // C++14 (we are allowing use from at least this)
 
-#endif // _GLIBCXX_EXPERIMENTAL_COROUTINE
+#endif // _GLIBCXX_COROUTINE

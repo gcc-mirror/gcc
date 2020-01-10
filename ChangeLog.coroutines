@@ -1,3 +1,9 @@
+2020-01-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	libstdc++-v3/
+	* include/std/coroutine: Adjust whitespace.  Add a definition
+	for the spaceship operator on coroutine handles.
+
 2020-01-09  Iain Sandoe  <iain@sandoe.co.uk>
 
 	libstdc++-v3/
