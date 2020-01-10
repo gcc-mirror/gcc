@@ -1693,6 +1693,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_V2SImode:
     /* ...E_V1DImode doesn't exist.  */
     case E_V4HFmode:
+    case E_V4BFmode:
     case E_V2SFmode:
     case E_V1DFmode:
     /* 128-bit Advanced SIMD vectors.  */
@@ -1701,6 +1702,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_V4SImode:
     case E_V2DImode:
     case E_V8HFmode:
+    case E_V8BFmode:
     case E_V4SFmode:
     case E_V2DFmode:
       return TARGET_SIMD ? VEC_ADVSIMD : 0;
@@ -15596,6 +15598,10 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	  field_t = aarch64_fp16_type_node;
 	  field_ptr_t = aarch64_fp16_ptr_type_node;
 	  break;
+	case E_BFmode:
+	  field_t = aarch64_bf16_type_node;
+	  field_ptr_t = aarch64_bf16_ptr_type_node;
+	  break;
 	case E_V2SImode:
 	case E_V4SImode:
 	    {
@@ -16109,6 +16115,8 @@ aarch64_vq_mode (scalar_mode mode)
       return V4SFmode;
     case E_HFmode:
       return V8HFmode;
+    case E_BFmode:
+      return V8BFmode;
     case E_SImode:
       return V4SImode;
     case E_HImode:
@@ -16144,6 +16152,8 @@ aarch64_simd_container_mode (scalar_mode mode, poly_int64 width)
 	    return V2SFmode;
 	  case E_HFmode:
 	    return V4HFmode;
+	  case E_BFmode:
+	    return V4BFmode;
 	  case E_SImode:
 	    return V2SImode;
 	  case E_HImode:
@@ -16258,9 +16268,14 @@ aarch64_mangle_type (const_tree type)
   if (lang_hooks.types_compatible_p (CONST_CAST_TREE (type), va_list_type))
     return "St9__va_list";
 
-  /* Half-precision float.  */
+  /* Half-precision floating point types.  */
   if (TREE_CODE (type) == REAL_TYPE && TYPE_PRECISION (type) == 16)
-    return "Dh";
+    {
+      if (TYPE_MODE (type) == BFmode)
+	return "u6__bf16";
+      else
+	return "Dh";
+    }
 
   /* Mangle AArch64-specific internal types.  TYPE_NAME is non-NULL_TREE for
      builtin types.  */

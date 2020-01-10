@@ -68,6 +68,9 @@
 #define hi_UP    E_HImode
 #define hf_UP    E_HFmode
 #define qi_UP    E_QImode
+#define bf_UP    E_BFmode
+#define v4bf_UP  E_V4BFmode
+#define v8bf_UP  E_V8BFmode
 #define UP(X) X##_UP
 
 #define SIMD_MAX_BUILTIN_ARGS 5
@@ -568,6 +571,10 @@ static tree aarch64_simd_intXI_type_node = NULL_TREE;
 tree aarch64_fp16_type_node = NULL_TREE;
 tree aarch64_fp16_ptr_type_node = NULL_TREE;
 
+/* Back-end node type for brain float (bfloat) types.  */
+tree aarch64_bf16_type_node = NULL_TREE;
+tree aarch64_bf16_ptr_type_node = NULL_TREE;
+
 /* Wrapper around add_builtin_function.  NAME is the name of the built-in
    function, TYPE is the function type, and CODE is the function subcode
    (relative to AARCH64_BUILTIN_GENERAL).  */
@@ -659,6 +666,8 @@ aarch64_simd_builtin_std_type (machine_mode mode,
       return float_type_node;
     case E_DFmode:
       return double_type_node;
+    case E_BFmode:
+      return aarch64_bf16_type_node;
     default:
       gcc_unreachable ();
     }
@@ -749,6 +758,10 @@ aarch64_init_simd_builtin_types (void)
   aarch64_simd_types[Float32x4_t].eltype = float_type_node;
   aarch64_simd_types[Float64x1_t].eltype = double_type_node;
   aarch64_simd_types[Float64x2_t].eltype = double_type_node;
+
+  /* Init Bfloat vector types with underlying __bf16 type.  */
+  aarch64_simd_types[Bfloat16x4_t].eltype = aarch64_bf16_type_node;
+  aarch64_simd_types[Bfloat16x8_t].eltype = aarch64_bf16_type_node;
 
   for (i = 0; i < nelts; i++)
     {
@@ -1059,6 +1072,19 @@ aarch64_init_fp16_types (void)
   aarch64_fp16_ptr_type_node = build_pointer_type (aarch64_fp16_type_node);
 }
 
+/* Initialize the backend REAL_TYPE type supporting bfloat types.  */
+static void
+aarch64_init_bf16_types (void)
+{
+  aarch64_bf16_type_node = make_node (REAL_TYPE);
+  TYPE_PRECISION (aarch64_bf16_type_node) = 16;
+  SET_TYPE_MODE (aarch64_bf16_type_node, BFmode);
+  layout_type (aarch64_bf16_type_node);
+
+  lang_hooks.types.register_builtin_type (aarch64_bf16_type_node, "__bf16");
+  aarch64_bf16_ptr_type_node = build_pointer_type (aarch64_bf16_type_node);
+}
+
 /* Pointer authentication builtins that will become NOP on legacy platform.
    Currently, these builtins are for internal use only (libgcc EH unwinder).  */
 
@@ -1213,6 +1239,8 @@ aarch64_general_init_builtins (void)
 				   AARCH64_BUILTIN_SET_FPSR);
 
   aarch64_init_fp16_types ();
+
+  aarch64_init_bf16_types ();
 
   if (TARGET_SIMD)
     aarch64_init_simd_builtins ();

@@ -1310,8 +1310,8 @@
 })
 
 (define_expand "mov<mode>"
-  [(set (match_operand:GPF_TF_F16 0 "nonimmediate_operand")
-	(match_operand:GPF_TF_F16 1 "general_operand"))]
+  [(set (match_operand:GPF_TF_F16_MOV 0 "nonimmediate_operand")
+	(match_operand:GPF_TF_F16_MOV 1 "general_operand"))]
   ""
   {
     if (!TARGET_FLOAT)
@@ -1327,11 +1327,11 @@
   }
 )
 
-(define_insn "*movhf_aarch64"
-  [(set (match_operand:HF 0 "nonimmediate_operand" "=w,w  , w,?r,w,w  ,w  ,w,m,r,m ,r")
-	(match_operand:HF 1 "general_operand"      "Y ,?rY,?r, w,w,Ufc,Uvi,m,w,m,rY,r"))]
-  "TARGET_FLOAT && (register_operand (operands[0], HFmode)
-    || aarch64_reg_or_fp_zero (operands[1], HFmode))"
+(define_insn "*mov<mode>_aarch64"
+  [(set (match_operand:HFBF 0 "nonimmediate_operand" "=w,w  , w,?r,w,w  ,w  ,w,m,r,m ,r")
+	(match_operand:HFBF 1 "general_operand"      "Y ,?rY,?r, w,w,Ufc,Uvi,m,w,m,rY,r"))]
+  "TARGET_FLOAT && (register_operand (operands[0], <MODE>mode)
+    || aarch64_reg_or_fp_zero (operands[1], <MODE>mode))"
   "@
    movi\\t%0.4h, #0
    fmov\\t%h0, %w1

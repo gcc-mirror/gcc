@@ -1136,13 +1136,13 @@ extern enum aarch64_code_model aarch64_cmodel;
 #define AARCH64_VALID_SIMD_DREG_MODE(MODE) \
   ((MODE) == V2SImode || (MODE) == V4HImode || (MODE) == V8QImode \
    || (MODE) == V2SFmode || (MODE) == V4HFmode || (MODE) == DImode \
-   || (MODE) == DFmode)
+   || (MODE) == DFmode || (MODE) == V4BFmode)
 
 /* Modes valid for AdvSIMD Q registers.  */
 #define AARCH64_VALID_SIMD_QREG_MODE(MODE) \
   ((MODE) == V4SImode || (MODE) == V8HImode || (MODE) == V16QImode \
    || (MODE) == V4SFmode || (MODE) == V8HFmode || (MODE) == V2DImode \
-   || (MODE) == V2DFmode)
+   || (MODE) == V2DFmode || (MODE) == V8BFmode)
 
 #define ENDIAN_LANE_N(NUNITS, N) \
   (BYTES_BIG_ENDIAN ? NUNITS - 1 - N : N)
@@ -1189,6 +1189,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    need it in many places in the backend.  Defined in aarch64-builtins.c.  */
 extern tree aarch64_fp16_type_node;
 extern tree aarch64_fp16_ptr_type_node;
+
+/* This type is the user-visible __bf16, and a pointer to that type.  Defined
+   in aarch64-builtins.c.  */
+extern tree aarch64_bf16_type_node;
+extern tree aarch64_bf16_ptr_type_node;
 
 /* The generic unwind code in libgcc does not initialize the frame pointer.
    So in order to unwind a function using a frame pointer, the very first
