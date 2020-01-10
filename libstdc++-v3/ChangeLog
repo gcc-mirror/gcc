@@ -1,3 +1,91 @@
+2020-02-07  Patrick Palka  <ppalka@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	Implement C++20 constrained algorithms
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/std/algorithm: Include <bits/ranges_algo.h>.
+	* include/bits/ranges_algo.h: New file.
+	* testsuite/25_algorithms/adjacent_find/constrained.cc: New test.
+	* testsuite/25_algorithms/all_of/constrained.cc: New test.
+	* testsuite/25_algorithms/any_of/constrained.cc: New test.
+	* testsuite/25_algorithms/binary_search/constrained.cc: New test.
+	* testsuite/25_algorithms/copy/constrained.cc: New test.
+	* testsuite/25_algorithms/copy_backward/constrained.cc: New test.
+	* testsuite/25_algorithms/copy_if/constrained.cc: New test.
+	* testsuite/25_algorithms/copy_n/constrained.cc: New test.
+	* testsuite/25_algorithms/count/constrained.cc: New test.
+	* testsuite/25_algorithms/count_if/constrained.cc: New test.
+	* testsuite/25_algorithms/equal/constrained.cc: New test.
+	* testsuite/25_algorithms/equal_range/constrained.cc: New test.
+	* testsuite/25_algorithms/fill/constrained.cc: New test.
+	* testsuite/25_algorithms/fill_n/constrained.cc: New test.
+	* testsuite/25_algorithms/find/constrained.cc: New test.
+	* testsuite/25_algorithms/find_end/constrained.cc: New test.
+	* testsuite/25_algorithms/find_first_of/constrained.cc: New test.
+	* testsuite/25_algorithms/find_if/constrained.cc: New test.
+	* testsuite/25_algorithms/find_if_not/constrained.cc: New test.
+	* testsuite/25_algorithms/for_each/constrained.cc: New test.
+	* testsuite/25_algorithms/generate/constrained.cc: New test.
+	* testsuite/25_algorithms/generate_n/constrained.cc: New test.
+	* testsuite/25_algorithms/heap/constrained.cc: New test.
+	* testsuite/25_algorithms/includes/constrained.cc: New test.
+	* testsuite/25_algorithms/inplace_merge/constrained.cc: New test.
+	* testsuite/25_algorithms/is_partitioned/constrained.cc: New test.
+	* testsuite/25_algorithms/is_permutation/constrained.cc: New test.
+	* testsuite/25_algorithms/is_sorted/constrained.cc: New test.
+	* testsuite/25_algorithms/is_sorted_until/constrained.cc: New test.
+	* testsuite/25_algorithms/lexicographical_compare/constrained.cc: New
+	test.
+	* testsuite/25_algorithms/lower_bound/constrained.cc: New test.
+	* testsuite/25_algorithms/max/constrained.cc: New test.
+	* testsuite/25_algorithms/max_element/constrained.cc: New test.
+	* testsuite/25_algorithms/merge/constrained.cc: New test.
+	* testsuite/25_algorithms/min/constrained.cc: New test.
+	* testsuite/25_algorithms/min_element/constrained.cc: New test.
+	* testsuite/25_algorithms/minmax/constrained.cc: New test.
+	* testsuite/25_algorithms/minmax_element/constrained.cc: New test.
+	* testsuite/25_algorithms/mismatch/constrained.cc: New test.
+	* testsuite/25_algorithms/move/constrained.cc: New test.
+	* testsuite/25_algorithms/move_backward/constrained.cc: New test.
+	* testsuite/25_algorithms/next_permutation/constrained.cc: New test.
+	* testsuite/25_algorithms/none_of/constrained.cc: New test.
+	* testsuite/25_algorithms/nth_element/constrained.cc: New test.
+	* testsuite/25_algorithms/partial_sort/constrained.cc: New test.
+	* testsuite/25_algorithms/partial_sort_copy/constrained.cc: New test.
+	* testsuite/25_algorithms/partition/constrained.cc: New test.
+	* testsuite/25_algorithms/partition_copy/constrained.cc: New test.
+	* testsuite/25_algorithms/partition_point/constrained.cc: New test.
+	* testsuite/25_algorithms/prev_permutation/constrained.cc: New test.
+	* testsuite/25_algorithms/remove/constrained.cc: New test.
+	* testsuite/25_algorithms/remove_copy/constrained.cc: New test.
+	* testsuite/25_algorithms/remove_copy_if/constrained.cc: New test.
+	* testsuite/25_algorithms/remove_if/constrained.cc: New test.
+	* testsuite/25_algorithms/replace/constrained.cc: New test.
+	* testsuite/25_algorithms/replace_copy/constrained.cc: New test.
+	* testsuite/25_algorithms/replace_copy_if/constrained.cc: New test.
+	* testsuite/25_algorithms/replace_if/constrained.cc: New test.
+	* testsuite/25_algorithms/reverse/constrained.cc: New test.
+	* testsuite/25_algorithms/reverse_copy/constrained.cc: New test.
+	* testsuite/25_algorithms/rotate/constrained.cc: New test.
+	* testsuite/25_algorithms/rotate_copy/constrained.cc: New test.
+	* testsuite/25_algorithms/search/constrained.cc: New test.
+	* testsuite/25_algorithms/search_n/constrained.cc: New test.
+	* testsuite/25_algorithms/set_difference/constrained.cc: New test.
+	* testsuite/25_algorithms/set_intersection/constrained.cc: New test.
+	* testsuite/25_algorithms/set_symmetric_difference/constrained.cc: New
+	test.
+	* testsuite/25_algorithms/set_union/constrained.cc: New test.
+	* testsuite/25_algorithms/shuffle/constrained.cc: New test.
+	* testsuite/25_algorithms/sort/constrained.cc: New test.
+	* testsuite/25_algorithms/stable_partition/constrained.cc: New test.
+	* testsuite/25_algorithms/stable_sort/constrained.cc: New test.
+	* testsuite/25_algorithms/swap_ranges/constrained.cc: New test.
+	* testsuite/25_algorithms/transform/constrained.cc: New test.
+	* testsuite/25_algorithms/unique/constrained.cc: New test.
+	* testsuite/25_algorithms/unique_copy/constrained.cc: New test.
+	* testsuite/25_algorithms/upper_bound/constrained.cc: New test.
+
 2020-02-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_iterator.h (__detail::__common_iter_ptr): Fix PR
