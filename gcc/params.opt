@@ -227,7 +227,7 @@ Common Joined UInteger Var(param_ipa_max_aa_steps) Init(25000) Param Optimizatio
 Maximum number of statements that will be visited by IPA formal parameter analysis based on alias analysis in any given function.
 
 -param=ipa-max-agg-items=
-Common Joined UInteger Var(param_ipa_max_agg_items) Init(16) Param
+Common Joined UInteger Var(param_ipa_max_agg_items) Init(16) Param Optimization
 Maximum number of aggregate content items for a parameter in jump functions and lattices.
 
 -param=ipa-max-param-expr-ops=

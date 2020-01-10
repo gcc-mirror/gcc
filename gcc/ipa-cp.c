@@ -2479,13 +2479,13 @@ set_check_aggs_by_ref (class ipcp_param_lattices *dest_plats,
    unless there are too many already.  If there are two many, return false.  If
    there are overlaps turn whole DEST_PLATS to bottom and return false.  If any
    skipped lattices were newly marked as containing variable, set *CHANGE to
-   true.  */
+   true.  MAX_AGG_ITEMS is the maximum number of lattices.  */
 
 static bool
 merge_agg_lats_step (class ipcp_param_lattices *dest_plats,
 		     HOST_WIDE_INT offset, HOST_WIDE_INT val_size,
 		     struct ipcp_agg_lattice ***aglat,
-		     bool pre_existing, bool *change)
+		     bool pre_existing, bool *change, int max_agg_items)
 {
   gcc_checking_assert (offset >= 0);
 
@@ -2520,7 +2520,7 @@ merge_agg_lats_step (class ipcp_param_lattices *dest_plats,
 	  set_agg_lats_to_bottom (dest_plats);
 	  return false;
 	}
-      if (dest_plats->aggs_count == param_ipa_max_agg_items)
+      if (dest_plats->aggs_count == max_agg_items)
 	return false;
       dest_plats->aggs_count++;
       new_al = ipcp_agg_lattice_pool.allocate ();
@@ -2574,6 +2574,8 @@ merge_aggregate_lattices (struct cgraph_edge *cs,
     ret |= set_agg_lats_contain_variable (dest_plats);
   dst_aglat = &dest_plats->aggs;
 
+  int max_agg_items = opt_for_fn (cs->callee->function_symbol ()->decl,
+				  param_ipa_max_agg_items);
   for (struct ipcp_agg_lattice *src_aglat = src_plats->aggs;
        src_aglat;
        src_aglat = src_aglat->next)
@@ -2583,7 +2585,7 @@ merge_aggregate_lattices (struct cgraph_edge *cs,
       if (new_offset < 0)
 	continue;
       if (merge_agg_lats_step (dest_plats, new_offset, src_aglat->size,
-			       &dst_aglat, pre_existing, &ret))
+			       &dst_aglat, pre_existing, &ret, max_agg_items))
 	{
 	  struct ipcp_agg_lattice *new_al = *dst_aglat;
 
@@ -2763,6 +2765,8 @@ propagate_aggs_across_jump_function (struct cgraph_edge *cs,
       if (set_check_aggs_by_ref (dest_plats, jfunc->agg.by_ref))
 	return true;
 
+      int max_agg_items = opt_for_fn (cs->callee->function_symbol ()->decl,
+				      param_ipa_max_agg_items);
       FOR_EACH_VEC_ELT (*jfunc->agg.items, i, item)
 	{
 	  HOST_WIDE_INT val_size;
@@ -2772,7 +2776,7 @@ propagate_aggs_across_jump_function (struct cgraph_edge *cs,
 	  val_size = tree_to_shwi (TYPE_SIZE (item->type));
 
 	  if (merge_agg_lats_step (dest_plats, item->offset, val_size,
-				   &aglat, pre_existing, &ret))
+				   &aglat, pre_existing, &ret, max_agg_items))
 	    {
 	      ret |= propagate_aggregate_lattice (cs, item, *aglat);
 	      aglat = &(*aglat)->next;
