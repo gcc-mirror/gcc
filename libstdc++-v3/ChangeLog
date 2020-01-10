@@ -1,3 +1,21 @@
+2020-01-16  Kai-Uwe Eckhardt  <kuehro@gmx.de>
+	    Matthew Bauer  <mjbauer95@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR bootstrap/64271 (partial)
+	* config/os/bsd/netbsd/ctype_base.h (ctype_base::mask): Change type
+	to unsigned short.
+	(ctype_base::alpha, ctype_base::digit, ctype_base::xdigit)
+	(ctype_base::print, ctype_base::graph, ctype_base::alnum): Sync
+	definitions with NetBSD upstream.
+	(ctype_base::blank): Use _CTYPE_BL.
+	* config/os/bsd/netbsd/ctype_configure_char.cc (_C_ctype_): Remove
+	Declaration.
+	(ctype<char>::classic_table): Use _C_ctype_tab_ instead of _C_ctype_.
+	(ctype<char>::do_toupper, ctype<char>::do_tolower): Cast char
+	parameters to unsigned char.
+	* config/os/bsd/netbsd/ctype_inline.h (ctype<char>::is): Likewise.
+
 2020-01-16  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/91263
