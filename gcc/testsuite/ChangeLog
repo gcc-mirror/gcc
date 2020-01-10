@@ -21,6 +21,23 @@
 
 2020-01-10  David Malcolm  <dmalcolm@redhat.com>
 
+	* gcc.dg/format/gcc_diag-10.c (diagnostic_event_id_t): New
+	typedef.
+	(test_diag): Add coverage of "%@".
+	* gcc.dg/plugin/diagnostic-path-format-default.c: New test.
+	* gcc.dg/plugin/diagnostic-path-format-inline-events-1.c: New test.
+	* gcc.dg/plugin/diagnostic-path-format-inline-events-2.c: New test.
+	* gcc.dg/plugin/diagnostic-path-format-inline-events-3.c: New test.
+	* gcc.dg/plugin/diagnostic-path-format-none.c: New test.
+	* gcc.dg/plugin/diagnostic-test-paths-1.c: New test.
+	* gcc.dg/plugin/diagnostic-test-paths-2.c: New test.
+	* gcc.dg/plugin/diagnostic-test-paths-3.c: New test.
+	* gcc.dg/plugin/diagnostic-test-paths-4.c: New test.
+	* gcc.dg/plugin/diagnostic_plugin_test_paths.c: New.
+	* gcc.dg/plugin/plugin.exp: Add the new plugin and test cases.
+
+2020-01-10  David Malcolm  <dmalcolm@redhat.com>
+
 	* lib/gcc-dg.exp (cleanup-after-saved-dg-test): Reset global
 	nn_line_numbers_enabled.
 	* lib/multiline.exp (nn_line_numbers_enabled): New global.

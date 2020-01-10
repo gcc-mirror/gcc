@@ -96,6 +96,7 @@ selftest::run_tests ()
   spellcheck_c_tests ();
   spellcheck_tree_c_tests ();
   tree_cfg_c_tests ();
+  tree_diagnostic_path_cc_tests ();
   attribute_c_tests ();
 
   /* This one relies on most of the above.  */

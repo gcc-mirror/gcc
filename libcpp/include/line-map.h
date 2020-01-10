@@ -1432,6 +1432,7 @@ semi_embedded_vec<T, NUM_EMBEDDED>::truncate (int len)
 }
 
 class fixit_hint;
+class diagnostic_path;
 
 /* A "rich" source code location, for use when printing diagnostics.
    A rich_location has one or more carets&ranges, where the carets
@@ -1727,6 +1728,10 @@ class rich_location
     return !m_fixits_cannot_be_auto_applied;
   }
 
+  /* An optional path through the code.  */
+  const diagnostic_path *get_path () const { return m_path; }
+  void set_path (const diagnostic_path *path) { m_path = path; }
+
 private:
   bool reject_impossible_fixit (location_t where);
   void stop_supporting_fixits ();
@@ -1751,6 +1756,8 @@ protected:
 
   bool m_seen_impossible_fixit;
   bool m_fixits_cannot_be_auto_applied;
+
+  const diagnostic_path *m_path;
 };
 
 /* A struct for the result of range_label::get_text: a NUL-terminated buffer
