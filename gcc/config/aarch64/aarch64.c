@@ -19449,6 +19449,7 @@ aarch64_evpc_sel (struct expand_vec_perm_d *d)
 
   machine_mode pred_mode = aarch64_sve_pred_mode (vmode);
 
+  /* Build a predicate that is true when op0 elements should be used.  */
   rtx_vector_builder builder (pred_mode, n_patterns, 2);
   for (int i = 0; i < n_patterns * 2; i++)
     {
@@ -19459,7 +19460,8 @@ aarch64_evpc_sel (struct expand_vec_perm_d *d)
 
   rtx const_vec = builder.build ();
   rtx pred = force_reg (pred_mode, const_vec);
-  emit_insn (gen_vcond_mask (vmode, vmode, d->target, d->op1, d->op0, pred));
+  /* TARGET = PRED ? OP0 : OP1.  */
+  emit_insn (gen_vcond_mask (vmode, vmode, d->target, d->op0, d->op1, pred));
   return true;
 }
 

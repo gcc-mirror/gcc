@@ -1,5 +1,10 @@
 2020-01-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_evpc_sel): Fix gen_vcond_mask
+	invocation.
+
+2020-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-builtins.c
 	(aarch64_builtin_vectorized_function): Check for specific vector modes,
 	rather than checking the number of elements and the element mode.
