@@ -1,3 +1,8 @@
+2020-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/index_1_run.c: Require aarch64_sve256_hw
+	rather than aarch64_sve_hw.
+
 2020-01-10  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/93216

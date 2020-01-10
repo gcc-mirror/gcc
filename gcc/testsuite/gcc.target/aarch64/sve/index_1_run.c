@@ -1,4 +1,4 @@
-/* { dg-do run { target aarch64_sve_hw } } */
+/* { dg-do run { target aarch64_sve256_hw } } */
 /* { dg-options "-O2 -ftree-vectorize -msve-vector-bits=256" } */
 
 #include "index_1.c"
