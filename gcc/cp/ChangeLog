@@ -1,5 +1,9 @@
 2020-01-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/93143 - incorrect tree sharing with constexpr.
+	* constexpr.c (cxx_eval_outermost_constant_expr): Don't assume
+	CONSTRUCTORs are already unshared.
+
 	PR c++/93173 - incorrect tree sharing.
 	PR c++/93033
 	* cp-gimplify.c (cp_gimplify_init_expr, cp_gimplify_expr): Use
