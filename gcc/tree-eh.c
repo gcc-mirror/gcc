@@ -2310,7 +2310,7 @@ redirect_eh_edge_1 (edge edge_in, basic_block new_bb, bool change_region)
   old_lp = get_eh_landing_pad_from_number (old_lp_nr);
 
   throw_stmt = last_stmt (edge_in->src);
-  gcc_assert (lookup_stmt_eh_lp (throw_stmt) == old_lp_nr);
+  gcc_checking_assert (lookup_stmt_eh_lp (throw_stmt) == old_lp_nr);
 
   new_label = gimple_block_label (new_bb);
 
@@ -3550,10 +3550,15 @@ optimize_clobbers (basic_block bb)
 }
 
 /* Try to sink var = {v} {CLOBBER} stmts followed just by
-   internal throw to successor BB.  */
+   internal throw to successor BB.
+   SUNK, if not NULL, is an array of sequences indexed by basic-block
+   index to sink to and to pick up sinking opportunities from.
+   If FOUND_OPPORTUNITY is not NULL then do not perform the optimization
+   but set *FOUND_OPPORTUNITY to true.  */
 
 static int
-sink_clobbers (basic_block bb)
+sink_clobbers (basic_block bb,
+	       gimple_seq *sunk = NULL, bool *found_opportunity = NULL)
 {
   edge e;
   edge_iterator ei;
@@ -3588,8 +3593,15 @@ sink_clobbers (basic_block bb)
 	return 0;
       any_clobbers = true;
     }
-  if (!any_clobbers)
+  if (!any_clobbers && (!sunk || gimple_seq_empty_p (sunk[bb->index])))
     return 0;
+
+  /* If this was a dry run, tell it we found clobbers to sink.  */
+  if (found_opportunity)
+    {
+      *found_opportunity = true;
+      return 0;
+    }
 
   edge succe = single_succ_edge (bb);
   succbb = succe->dest;
@@ -3597,7 +3609,6 @@ sink_clobbers (basic_block bb)
   /* See if there is a virtual PHI node to take an updated virtual
      operand from.  */
   gphi *vphi = NULL;
-  tree vuse = NULL_TREE;
   for (gphi_iterator gpi = gsi_start_phis (succbb);
        !gsi_end_p (gpi); gsi_next (&gpi))
     {
@@ -3605,12 +3616,16 @@ sink_clobbers (basic_block bb)
       if (virtual_operand_p (res))
 	{
 	  vphi = gpi.phi ();
-	  vuse = res;
 	  break;
 	}
     }
 
-  dgsi = gsi_after_labels (succbb);
+  gimple *first_sunk = NULL;
+  gimple *last_sunk = NULL;
+  if (sunk)
+    dgsi = gsi_start (sunk[succbb->index]);
+  else
+    dgsi = gsi_after_labels (succbb);
   gsi = gsi_last_bb (bb);
   for (gsi_prev (&gsi); !gsi_end_p (gsi); gsi_prev (&gsi))
     {
@@ -3641,36 +3656,46 @@ sink_clobbers (basic_block bb)
          forwarder edge we can keep virtual operands in place.  */
       gsi_remove (&gsi, false);
       gsi_insert_before (&dgsi, stmt, GSI_NEW_STMT);
-
-      /* But adjust virtual operands if we sunk across a PHI node.  */
-      if (vuse)
+      if (!first_sunk)
+	first_sunk = stmt;
+      last_sunk = stmt;
+    }
+  if (sunk && !gimple_seq_empty_p (sunk[bb->index]))
+    {
+      if (!first_sunk)
+	first_sunk = gsi_stmt (gsi_last (sunk[bb->index]));
+      last_sunk = gsi_stmt (gsi_start (sunk[bb->index]));
+      gsi_insert_seq_before_without_update (&dgsi,
+					    sunk[bb->index], GSI_NEW_STMT);
+      sunk[bb->index] = NULL;
+    }
+  if (first_sunk)
+    {
+      /* Adjust virtual operands if we sunk across a virtual PHI.  */
+      if (vphi)
 	{
-	  gimple *use_stmt;
 	  imm_use_iterator iter;
 	  use_operand_p use_p;
-	  FOR_EACH_IMM_USE_STMT (use_stmt, iter, vuse)
+	  gimple *use_stmt;
+	  tree phi_def = gimple_phi_result (vphi);
+	  FOR_EACH_IMM_USE_STMT (use_stmt, iter, phi_def)
 	    FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-	      SET_USE (use_p, gimple_vdef (stmt));
-	  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (vuse))
+              SET_USE (use_p, gimple_vdef (first_sunk));
+	  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (phi_def))
 	    {
-	      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_vdef (stmt)) = 1;
-	      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (vuse) = 0;
+	      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_vdef (first_sunk)) = 1;
+	      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (phi_def) = 0;
 	    }
-	  /* Adjust the incoming virtual operand.  */
-	  SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE (vphi, succe), gimple_vuse (stmt));
-	  SET_USE (gimple_vuse_op (stmt), vuse);
+	  SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE (vphi, succe),
+		   gimple_vuse (last_sunk));
+	  SET_USE (gimple_vuse_op (last_sunk), phi_def);
 	}
       /* If there isn't a single predecessor but no virtual PHI node
          arrange for virtual operands to be renamed.  */
-      else if (gimple_vuse_op (stmt) != NULL_USE_OPERAND_P
-	       && !single_pred_p (succbb))
+      else if (!single_pred_p (succbb)
+	       && TREE_CODE (gimple_vuse (last_sunk)) == SSA_NAME)
 	{
-	  /* In this case there will be no use of the VDEF of this stmt. 
-	     ???  Unless this is a secondary opportunity and we have not
-	     removed unreachable blocks yet, so we cannot assert this.  
-	     Which also means we will end up renaming too many times.  */
-	  SET_USE (gimple_vuse_op (stmt), gimple_vop (cfun));
-	  mark_virtual_operands_for_renaming (cfun);
+	  mark_virtual_operand_for_renaming (gimple_vuse (last_sunk));
 	  todo |= TODO_update_ssa_only_virtuals;
 	}
     }
@@ -3863,6 +3888,7 @@ pass_lower_eh_dispatch::execute (function *fun)
   basic_block bb;
   int flags = 0;
   bool redirected = false;
+  bool any_resx_to_process = false;
 
   assign_filter_values ();
 
@@ -3879,18 +3905,46 @@ pass_lower_eh_dispatch::execute (function *fun)
 	}
       else if (gimple_code (last) == GIMPLE_RESX)
 	{
-	  if (stmt_can_throw_external (cfun, last))
+	  if (stmt_can_throw_external (fun, last))
 	    optimize_clobbers (bb);
-	  else
-	    flags |= sink_clobbers (bb);
+	  else if (!any_resx_to_process)
+	    sink_clobbers (bb, NULL, &any_resx_to_process);
 	}
     }
-
   if (redirected)
     {
       free_dominance_info (CDI_DOMINATORS);
       delete_unreachable_blocks ();
     }
+
+  if (any_resx_to_process)
+    {
+      /* Make sure to catch all secondary sinking opportunities by processing
+	 blocks in RPO order and after all CFG modifications from lowering
+	 and unreachable block removal.  */
+      int *rpo = XNEWVEC  (int, n_basic_blocks_for_fn (fun));
+      int rpo_n = pre_and_rev_post_order_compute_fn (fun, NULL, rpo, false);
+      gimple_seq *sunk = XCNEWVEC (gimple_seq, last_basic_block_for_fn (fun));
+      for (int i = 0; i < rpo_n; ++i)
+	{
+	  bb = BASIC_BLOCK_FOR_FN (fun, rpo[i]);
+	  gimple *last = last_stmt (bb);
+	  if (last
+	      && gimple_code (last) == GIMPLE_RESX
+	      && !stmt_can_throw_external (fun, last))
+	    flags |= sink_clobbers (bb, sunk);
+	  /* If there were any clobbers sunk into this BB, insert them now.  */
+	  if (!gimple_seq_empty_p (sunk[bb->index]))
+	    {
+	      gimple_stmt_iterator gsi = gsi_after_labels (bb);
+	      gsi_insert_seq_before (&gsi, sunk[bb->index], GSI_NEW_STMT);
+	      sunk[bb->index] = NULL;
+	    }
+	}
+      free (rpo);
+      free (sunk);
+    }
+
   return flags;
 }
 
@@ -4278,9 +4332,10 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
 	|  | EH
 	<..>
      which CFG verification would choke on.  See PR45172 and PR51089.  */
-  FOR_EACH_EDGE (e, ei, old_bb->preds)
-    if (find_edge (e->src, new_bb))
-      return false;
+  if (!single_pred_p (new_bb))
+    FOR_EACH_EDGE (e, ei, old_bb->preds)
+      if (find_edge (e->src, new_bb))
+	return false;
 
   FOR_EACH_EDGE (e, ei, old_bb->preds)
     redirect_edge_var_map_clear (e);
@@ -4669,9 +4724,15 @@ cleanup_all_empty_eh (void)
   eh_landing_pad lp;
   int i;
 
-  for (i = 1; vec_safe_iterate (cfun->eh->lp_array, i, &lp); ++i)
-    if (lp)
-      changed |= cleanup_empty_eh (lp);
+  /* Ideally we'd walk the region tree and process LPs inner to outer
+     to avoid quadraticness in EH redirection.  Walking the LP array
+     in reverse seems to be an approximation of that.  */
+  for (i = vec_safe_length (cfun->eh->lp_array) - 1; i >= 1; --i)
+    {
+      lp = (*cfun->eh->lp_array)[i];
+      if (lp)
+	changed |= cleanup_empty_eh (lp);
+    }
 
   return changed;
 }

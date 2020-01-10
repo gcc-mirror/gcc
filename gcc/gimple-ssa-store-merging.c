@@ -848,11 +848,11 @@ find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap)
 {
   /* The last parameter determines the depth search limit.  It usually
      correlates directly to the number n of bytes to be touched.  We
-     increase that number by log2(n) + 1 here in order to also
+     increase that number by 2 * (log2(n) + 1) here in order to also
      cover signed -> unsigned conversions of the src operand as can be seen
      in libgcc, and for initial shift/and operation of the src operand.  */
   int limit = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (gimple_expr_type (stmt)));
-  limit += 1 + (int) ceil_log2 ((unsigned HOST_WIDE_INT) limit);
+  limit += 2 * (1 + (int) ceil_log2 ((unsigned HOST_WIDE_INT) limit));
   gimple *ins_stmt = find_bswap_or_nop_1 (stmt, n, limit);
 
   if (!ins_stmt)
@@ -2219,6 +2219,8 @@ pass_store_merging::terminate_all_aliasing_chains (imm_store_chain_info
     return false;
 
   tree store_lhs = gimple_store_p (stmt) ? gimple_get_lhs (stmt) : NULL_TREE;
+  ao_ref store_lhs_ref;
+  ao_ref_init (&store_lhs_ref, store_lhs);
   for (imm_store_chain_info *next = m_stores_head, *cur = next; cur; cur = next)
     {
       next = cur->next;
@@ -2233,9 +2235,12 @@ pass_store_merging::terminate_all_aliasing_chains (imm_store_chain_info
       FOR_EACH_VEC_ELT (cur->m_store_info, i, info)
 	{
 	  tree lhs = gimple_assign_lhs (info->stmt);
-	  if (ref_maybe_used_by_stmt_p (stmt, lhs)
-	      || stmt_may_clobber_ref_p (stmt, lhs)
-	      || (store_lhs && refs_output_dependent_p (store_lhs, lhs)))
+	  ao_ref lhs_ref;
+	  ao_ref_init (&lhs_ref, lhs);
+	  if (ref_maybe_used_by_stmt_p (stmt, &lhs_ref)
+	      || stmt_may_clobber_ref_p_1 (stmt, &lhs_ref)
+	      || (store_lhs && refs_may_alias_p_1 (&store_lhs_ref,
+						   &lhs_ref, false)))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{

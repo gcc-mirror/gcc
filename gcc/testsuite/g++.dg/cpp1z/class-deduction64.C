@@ -3,7 +3,7 @@
 
 template <int> struct S;
 
-template <S> struct W {
+template <S> struct W {	  // { dg-error "class type" "" { target c++17_only } }
   template <typename> static int foo();
   bool b = foo<int>();
 };

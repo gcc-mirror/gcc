@@ -1,5 +1,6 @@
 /* PR target/92686 */
 /* { dg-do assemble } */
+/* { dg-require-effective-target masm_intel } */
 /* { dg-options "-O2 -mavx512bw -mno-avx512dq -mno-avx512vl -mno-xop -masm=intel" } */
 /* { dg-require-effective-target avx512bw } */
 

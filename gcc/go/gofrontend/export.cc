@@ -1231,7 +1231,7 @@ Export::write_name(const std::string& name)
   if (name.empty())
     this->write_c_string("?");
   else
-    this->write_string(Gogo::message_name(name));
+    this->write_string(Gogo::unpack_hidden_name(name));
 }
 
 // Write an integer value to the export stream.

@@ -53,12 +53,17 @@
 	(match_test "gcn_constant64_p (op)")))
 
 (define_constraint "DA"
-  "Splittable inline immediate 64-bit parameter"
+  "Immediate 64-bit parameter, low and high part match 'A'"
   (and (match_code "const_int,const_double,const_vector")
-       (match_test "gcn_inline_constant64_p (op)")))
+       (match_test "gcn_inline_constant64_p (op, 0)")))
+
+(define_constraint "Db"
+  "Immediate 64-bit parameter, low part matches 'B', high part matches 'A'"
+  (and (match_code "const_int,const_double,const_vector")
+       (match_test "gcn_inline_constant64_p (op, 1)")))
 
 (define_constraint "DB"
-  "Splittable immediate 64-bit parameter"
+  "Immediate 64-bit parameter, low and high part match 'B'"
   (match_code "const_int,const_double,const_vector"))
 
 (define_constraint "U"

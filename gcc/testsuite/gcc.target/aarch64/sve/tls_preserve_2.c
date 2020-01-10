@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fpic -msve-vector-bits=256 -fno-schedule-insns" } */
+/* { dg-require-effective-target fpic } */
 
 /* Clobber highs must be spilled around tls usage.  */
 

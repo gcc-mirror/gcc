@@ -211,8 +211,7 @@ several times, or that might not access it at all."
        (match_test "GET_RTX_CLASS (GET_CODE (XEXP (op, 0))) != RTX_AUTOINC")))
 
 (define_memory_constraint "Q"
-  "Memory operand that is an offset from a register (it is usually better
-to use @samp{m} or @samp{es} in @code{asm} statements)"
+  "A memory operand addressed by just a base register."
   (and (match_code "mem")
        (match_test "REG_P (XEXP (op, 0))")))
 

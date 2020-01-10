@@ -255,6 +255,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       using __reuse_or_alloc_node_gen_t =
 	__detail::_ReuseOrAllocNode<__node_alloc_type>;
+      using __alloc_node_gen_t =
+	__detail::_AllocNode<__node_alloc_type>;
 
       // Simple RAII type for managing a node containing an element
       struct _Scoped_node
@@ -279,6 +281,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__hashtable_alloc* _M_h;
 	__node_type* _M_node;
       };
+
+      template<typename _Ht>
+	static constexpr
+	typename conditional<std::is_lvalue_reference<_Ht>::value,
+			     const value_type&, value_type&&>::type
+	__fwd_value_for(value_type& __val) noexcept
+	{ return std::move(__val); }
 
       // Metaprogramming for picking apart hash caching.
       template<typename _Cond>
@@ -404,15 +413,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_begin() const
       { return static_cast<__node_type*>(_M_before_begin._M_nxt); }
 
-      // Assign *this using another _Hashtable instance. Either elements
-      // are copy or move depends on the _NodeGenerator.
+      // Assign *this using another _Hashtable instance. Whether elements
+      // are copied or moved depends on the _Ht reference.
+      template<typename _Ht>
+	void
+	_M_assign_elements(_Ht&&);
+
       template<typename _Ht, typename _NodeGenerator>
 	void
-	_M_assign_elements(_Ht&&, const _NodeGenerator&);
-
-      template<typename _NodeGenerator>
-	void
-	_M_assign(const _Hashtable&, const _NodeGenerator&);
+	_M_assign(_Ht&&, const _NodeGenerator&);
 
       void
       _M_move_assign(_Hashtable&&, true_type);
@@ -1051,11 +1060,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      _M_bucket_count = __ht._M_bucket_count;
 	      _M_element_count = __ht._M_element_count;
 	      _M_rehash_policy = __ht._M_rehash_policy;
+	      __alloc_node_gen_t __alloc_node_gen(*this);
 	      __try
 		{
-		  _M_assign(__ht,
-			    [this](const __node_type* __n)
-			    { return this->_M_allocate_node(__n->_M_v()); });
+		  _M_assign(__ht, __alloc_node_gen);
 		}
 	      __catch(...)
 		{
@@ -1070,9 +1078,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       // Reuse allocated buckets and nodes.
-      _M_assign_elements(__ht,
-	[](const __reuse_or_alloc_node_gen_t& __roan, const __node_type* __n)
-	{ return __roan(__n->_M_v()); });
+      _M_assign_elements(__ht);
       return *this;
     }
 
@@ -1080,11 +1086,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _Alloc, typename _ExtractKey, typename _Equal,
 	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
 	   typename _Traits>
-    template<typename _Ht, typename _NodeGenerator>
+    template<typename _Ht>
       void
       _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 		 _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-      _M_assign_elements(_Ht&& __ht, const _NodeGenerator& __node_gen)
+      _M_assign_elements(_Ht&& __ht)
       {
 	__bucket_type* __former_buckets = nullptr;
 	std::size_t __former_bucket_count = _M_bucket_count;
@@ -1107,9 +1113,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_rehash_policy = __ht._M_rehash_policy;
 	    __reuse_or_alloc_node_gen_t __roan(_M_begin(), *this);
 	    _M_before_begin._M_nxt = nullptr;
-	    _M_assign(__ht,
-		      [&__node_gen, &__roan](__node_type* __n)
-		      { return __node_gen(__roan, __n); });
+	    _M_assign(std::forward<_Ht>(__ht), __roan);
 	    if (__former_buckets)
 	      _M_deallocate_buckets(__former_buckets, __former_bucket_count);
 	  }
@@ -1133,11 +1137,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _Alloc, typename _ExtractKey, typename _Equal,
 	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
 	   typename _Traits>
-    template<typename _NodeGenerator>
+    template<typename _Ht, typename _NodeGenerator>
       void
       _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 		 _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-      _M_assign(const _Hashtable& __ht, const _NodeGenerator& __node_gen)
+      _M_assign(_Ht&& __ht, const _NodeGenerator& __node_gen)
       {
 	__bucket_type* __buckets = nullptr;
 	if (!_M_buckets)
@@ -1151,7 +1155,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    // First deal with the special first node pointed to by
 	    // _M_before_begin.
 	    __node_type* __ht_n = __ht._M_begin();
-	    __node_type* __this_n = __node_gen(__ht_n);
+	    __node_type* __this_n
+	      = __node_gen(__fwd_value_for<_Ht>(__ht_n->_M_v()));
 	    this->_M_copy_code(__this_n, __ht_n);
 	    _M_before_begin._M_nxt = __this_n;
 	    _M_buckets[_M_bucket_index(__this_n)] = &_M_before_begin;
@@ -1160,7 +1165,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __node_base* __prev_n = __this_n;
 	    for (__ht_n = __ht_n->_M_next(); __ht_n; __ht_n = __ht_n->_M_next())
 	      {
-		__this_n = __node_gen(__ht_n);
+		__this_n = __node_gen(__fwd_value_for<_Ht>(__ht_n->_M_v()));
 		__prev_n->_M_nxt = __this_n;
 		this->_M_copy_code(__this_n, __ht_n);
 		size_type __bkt = _M_bucket_index(__this_n);
@@ -1241,9 +1246,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       else
 	{
 	  // Can't move memory, move elements then.
-	  _M_assign_elements(std::move(__ht),
-		[](const __reuse_or_alloc_node_gen_t& __roan, __node_type* __n)
-		{ return __roan(std::move_if_noexcept(__n->_M_v())); });
+	  _M_assign_elements(std::move(__ht));
 	  __ht.clear();
 	}
     }
@@ -1265,9 +1268,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_element_count(__ht._M_element_count),
       _M_rehash_policy(__ht._M_rehash_policy)
     {
-      _M_assign(__ht,
-		[this](const __node_type* __n)
-		{ return this->_M_allocate_node(__n->_M_v()); });
+      __alloc_node_gen_t __alloc_node_gen(*this);
+      _M_assign(__ht, __alloc_node_gen);
     }
 
   template<typename _Key, typename _Value,
@@ -1318,9 +1320,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_element_count(__ht._M_element_count),
       _M_rehash_policy(__ht._M_rehash_policy)
     {
-      _M_assign(__ht,
-		[this](const __node_type* __n)
-		{ return this->_M_allocate_node(__n->_M_v()); });
+      __alloc_node_gen_t __alloc_node_gen(*this);
+      _M_assign(__ht, __alloc_node_gen);
     }
 
   template<typename _Key, typename _Value,
@@ -1358,12 +1359,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       else
 	{
-	  _M_assign(__ht,
-		    [this](__node_type* __n)
-		    {
-		      return this->_M_allocate_node(
-					std::move_if_noexcept(__n->_M_v()));
-		    });
+	  __alloc_node_gen_t __alloc_gen(*this);
+
+	  using _Fwd_Ht = typename
+	    conditional<__move_if_noexcept_cond<value_type>::value,
+			const _Hashtable&, _Hashtable&&>::type;
+	  _M_assign(forward<_Fwd_Ht>(__ht), __alloc_gen);
 	  __ht.clear();
 	}
     }

@@ -4324,6 +4324,27 @@ insns involving vector mode @var{mode}.  At the very least, it
 must have move patterns for this mode.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_COMPATIBLE_VECTOR_TYPES_P (const_tree @var{type1}, const_tree @var{type2})
+Return true if there is no target-specific reason for treating
+vector types @var{type1} and @var{type2} as distinct types.  The caller
+has already checked for target-independent reasons, meaning that the
+types are known to have the same mode, to have the same number of elements,
+and to have what the caller considers to be compatible element types.
+
+The main reason for defining this hook is to reject pairs of types
+that are handled differently by the target's calling convention.
+For example, when a new @var{N}-bit vector architecture is added
+to a target, the target may want to handle normal @var{N}-bit
+@code{VECTOR_TYPE} arguments and return values in the same way as
+before, to maintain backwards compatibility.  However, it may also
+provide new, architecture-specific @code{VECTOR_TYPE}s that are passed
+and returned in a more efficient way.  It is then important to maintain
+a distinction between the ``normal'' @code{VECTOR_TYPE}s and the new
+architecture-specific ones.
+
+The default implementation returns true, which is correct for most targets.
+@end deftypefn
+
 @deftypefn {Target Hook} opt_machine_mode TARGET_ARRAY_MODE (machine_mode @var{mode}, unsigned HOST_WIDE_INT @var{nelems})
 Return the mode that GCC should use for an array that has
 @var{nelems} elements, with each element having mode @var{mode}.

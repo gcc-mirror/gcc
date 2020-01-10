@@ -730,7 +730,7 @@ Objective-C and Objective-C++ Dialects}.
 -mn_flash=@var{size}  -mno-interrupts @gol
 -mmain-is-OS_task  -mrelax  -mrmw  -mstrict-X  -mtiny-stack @gol
 -mfract-convert-truncate @gol
--mshort-calls  -nodevicelib @gol
+-mshort-calls  -nodevicelib  -nodevicespecs @gol
 -Waddr-space-convert  -Wmisspelled-isr}
 
 @emph{Blackfin Options}
@@ -16321,10 +16321,11 @@ The possible values of @samp{bits} are: @samp{scalable}, @samp{128},
 @samp{256}, @samp{512}, @samp{1024} and @samp{2048}.
 Specifying @samp{scalable} selects vector-length agnostic
 output.  At present @samp{-msve-vector-bits=128} also generates vector-length
-agnostic output.  All other values generate vector-length specific code.
-The behavior of these values may change in future releases and no value except
-@samp{scalable} should be relied on for producing code that is portable across
-different hardware SVE vector lengths.
+agnostic output for big-endian targets.  All other values generate
+vector-length specific code.  The behavior of these values may change
+in future releases and no value except @samp{scalable} should be
+relied on for producing code that is portable across different
+hardware SVE vector lengths.
 
 The default is @samp{-msve-vector-bits=scalable}, which produces
 vector-length agnostic code.
@@ -18480,9 +18481,9 @@ subroutines.  Code size is smaller.
 @opindex mdouble
 @opindex mlong-double
 Set the size (in bits) of the @code{double} or @code{long double} type,
-respectively.  Possible values for @var{bits} are 32 an 64.
+respectively.  Possible values for @var{bits} are 32 and 64.
 Whether or not a specific value for @var{bits} is allowed depends on
-the @code{--with--double=} and @code{--with-long-double=}
+the @code{--with-double=} and @code{--with-long-double=}
 @w{@uref{https://gcc.gnu.org/install/configure.html#avr,configure options}},
 and the same applies for the default values of the options.
 
@@ -18595,6 +18596,20 @@ Allow to use truncation instead of rounding towards zero for fractional fixed-po
 @item -nodevicelib
 @opindex nodevicelib
 Don't link against AVR-LibC's device specific library @code{lib<mcu>.a}.
+
+@item -nodevicespecs
+@opindex nodevicespecs
+Don't add @option{-specs=device-specs/specs-@var{mcu}} to the compiler driver's
+command line.  The user takes responsibility for supplying the sub-processes
+like compiler proper, assembler and linker with appropriate command line
+options.  This means that the user has to supply her private device specs
+file by means of @option{-specs=@var{path-to-specs-file}}.  There is no
+more need for option @option{-mmcu=@var{mcu}}.
+
+This option can also serve as a replacement for the older way of
+specifying custom device-specs files that needed @option{-B @var{some-path}} to point to a directory
+which contains a folder named @code{device-specs} which contains a specs file named
+@code{specs-@var{mcu}}, where @var{mcu} was specified by @option{-mmcu=@var{mcu}}.
 
 @item -Waddr-space-convert
 @opindex Waddr-space-convert
@@ -18944,6 +18959,36 @@ features like attribute @code{progmem} and @code{pgm_read_*}.
 @item __WITH_AVRLIBC__
 The compiler is configured to be used together with AVR-Libc.
 See the @option{--with-avrlibc} configure option.
+
+@item __HAVE_DOUBLE_MULTILIB__
+Defined if @option{-mdouble=} acts as a multilib option.
+
+@item __HAVE_DOUBLE32__
+@itemx __HAVE_DOUBLE64__
+Defined if the compiler supports 32-bit double resp. 64-bit double.
+The actual layout is specified by option @option{-mdouble=}.
+
+@item __DEFAULT_DOUBLE__
+The size in bits of @code{double} if @option{-mdouble=} is not set.
+To test the layout of @code{double} in a program, use the built-in
+macro @code{__SIZEOF_DOUBLE__}.
+
+@item __HAVE_LONG_DOUBLE32__
+@itemx __HAVE_LONG_DOUBLE64__
+@itemx __HAVE_LONG_DOUBLE_MULTILIB__
+@itemx __DEFAULT_LONG_DOUBLE__
+Same as above, but for @code{long double} instead of @code{double}.
+
+@item __WITH_DOUBLE_COMPARISON__
+Reflects the @code{--with-double-comparison=@{tristate|bool|libf7@}}
+@w{@uref{https://gcc.gnu.org/install/configure.html#avr,configure option}}
+and is defined to @code{2} or @code{3}.
+
+@item __WITH_LIBF7_LIBGCC__
+@itemx __WITH_LIBF7_MATH__
+@itemx __WITH_LIBF7_MATH_SYMBOLS__
+Reflects the @code{--with-libf7=@{libgcc|math|math-symbols@}}
+@w{@uref{https://gcc.gnu.org/install/configure.html#avr,configure option}}.
 
 @end table
 

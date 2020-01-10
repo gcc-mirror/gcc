@@ -54,5 +54,18 @@ swap16 (HItype in)
 		| (((in >> 8) & 0xFF) << 0);
 }
 
-/* { dg-final { scan-tree-dump-times "16 bit load in target endianness found at" 3 "bswap" } } */
-/* { dg-final { scan-tree-dump-times "16 bit bswap implementation found at" 4 "bswap" } } */
+unsigned short
+get_unaligned_16_le (unsigned char *p)
+{
+  return p[0] | (p[1] << 8);
+}
+
+unsigned short
+get_unaligned_16_be (unsigned char *p)
+{
+  return p[1] | (p[0] << 8);
+}
+
+
+/* { dg-final { scan-tree-dump-times "16 bit load in target endianness found at" 4 "bswap" } } */
+/* { dg-final { scan-tree-dump-times "16 bit bswap implementation found at" 5 "bswap" } } */

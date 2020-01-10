@@ -31,8 +31,8 @@ int t(int tt)
 }
 
 /* { dg-final { scan-ipa-dump "Equal symbols: 5" "icf"  } } */
-/* { dg-final { scan-ipa-dump "Semantic equality hit:a->b" "icf"  } } */
-/* { dg-final { scan-ipa-dump "Semantic equality hit:c->d" "icf"  } } */
-/* { dg-final { scan-ipa-dump "Semantic equality hit:e->f" "icf"  } } */
-/* { dg-final { scan-ipa-dump "Semantic equality hit:g->h" "icf"  } } */
-/* { dg-final { scan-ipa-dump "Semantic equality hit:i->j" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:a/\[0-9+\]+->b/\[0-9+\]+" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:c/\[0-9+\]+->d/\[0-9+\]+" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:e/\[0-9+\]+->f/\[0-9+\]+" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:g/\[0-9+\]+->h/\[0-9+\]+" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:i/\[0-9+\]+->j/\[0-9+\]+" "icf"  } } */

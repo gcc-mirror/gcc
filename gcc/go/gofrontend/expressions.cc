@@ -183,6 +183,24 @@ Expression::is_same_variable(Expression* a, Expression* b)
 					      bu->operand()));
     }
 
+  Array_index_expression* aie = a->array_index_expression();
+  if (aie != NULL)
+    {
+      Array_index_expression* bie = b->array_index_expression();
+      return (aie->end() == NULL
+	      && bie->end() == NULL
+	      && Expression::is_same_variable(aie->array(), bie->array())
+	      && Expression::is_same_variable(aie->start(), bie->start()));
+    }
+
+  Numeric_constant aval;
+  if (a->numeric_constant_value(&aval))
+    {
+      Numeric_constant bval;
+      if (b->numeric_constant_value(&bval))
+	return aval.equals(bval);
+    }
+
   return false;
 }
 
@@ -1743,8 +1761,6 @@ Unknown_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
       real = no->unknown_value()->real_named_object();
       if (real == NULL)
 	{
-	  if (this->is_composite_literal_key_)
-	    return this;
 	  if (!this->no_error_message_)
 	    go_error_at(location, "reference to undefined name %qs",
 			this->named_object_->message_name().c_str());
@@ -1758,8 +1774,6 @@ Unknown_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
     case Named_object::NAMED_OBJECT_TYPE:
       return Expression::make_type(real->type_value(), location);
     case Named_object::NAMED_OBJECT_TYPE_DECLARATION:
-      if (this->is_composite_literal_key_)
-	return this;
       if (!this->no_error_message_)
 	go_error_at(location, "reference to undefined type %qs",
 		    real->message_name().c_str());
@@ -1771,8 +1785,6 @@ Unknown_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
     case Named_object::NAMED_OBJECT_FUNC_DECLARATION:
       return Expression::make_func_reference(real, NULL, location);
     case Named_object::NAMED_OBJECT_PACKAGE:
-      if (this->is_composite_literal_key_)
-	return this;
       if (!this->no_error_message_)
 	go_error_at(location, "unexpected reference to package");
       return Expression::make_error(location);
@@ -5252,13 +5264,13 @@ Unary_expression::do_get_backend(Translate_context* context)
                 Bexpression* compare =
                     gogo->backend()->binary_expression(OPERATOR_EQEQ, tbexpr,
                                                        nil, loc);
-                Bexpression* crash =
-                    gogo->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE,
-                                        loc)->get_backend(context);
+		Expression* crash = Runtime::make_call(Runtime::PANIC_MEM,
+						       loc, 0);
+		Bexpression* bcrash = crash->get_backend(context);
                 Bfunction* bfn = context->function()->func_value()->get_decl();
                 bexpr = gogo->backend()->conditional_expression(bfn, btype,
                                                                 compare,
-                                                                crash, ubexpr,
+                                                                bcrash, ubexpr,
                                                                 loc);
                 known_valid = true;
                 break;
@@ -7042,12 +7054,12 @@ Binary_expression::do_get_backend(Translate_context* context)
 	  Bexpression* compare =
 	    gogo->backend()->binary_expression(OPERATOR_LT, right, zero_expr,
 					       loc);
-	  const int errcode = RUNTIME_ERROR_SHIFT_BY_NEGATIVE;
-	  Bexpression* crash =
-	    gogo->runtime_error(errcode, loc)->get_backend(context);
+	  Expression* crash = Runtime::make_call(Runtime::PANIC_SHIFT,
+						 loc, 0);
+	  Bexpression* bcrash = crash->get_backend(context);
 	  Bfunction* bfn = context->function()->func_value()->get_decl();
 	  ret = gogo->backend()->conditional_expression(bfn, btype, compare,
-							crash, ret, loc);
+							bcrash, ret, loc);
 	}
     }
 
@@ -7063,15 +7075,14 @@ Binary_expression::do_get_backend(Translate_context* context)
               gogo->backend()->binary_expression(OPERATOR_EQEQ,
                                                  right, zero_expr, loc);
 
-	  // __go_runtime_error(RUNTIME_ERROR_DIVISION_BY_ZERO)
-	  int errcode = RUNTIME_ERROR_DIVISION_BY_ZERO;
-	  Bexpression* crash = gogo->runtime_error(errcode,
-						   loc)->get_backend(context);
+	  Expression* crash = Runtime::make_call(Runtime::PANIC_DIVIDE,
+						 loc, 0);
+	  Bexpression* bcrash = crash->get_backend(context);
 
-	  // right == 0 ? (__go_runtime_error(...), 0) : ret
+	  // right == 0 ? (panicdivide(), 0) : ret
           Bfunction* bfn = context->function()->func_value()->get_decl();
           ret = gogo->backend()->conditional_expression(bfn, btype,
-                                                        check, crash,
+                                                        check, bcrash,
 							ret, loc);
 	}
 
@@ -8053,8 +8064,7 @@ Bound_method_expression::do_flatten(Gogo* gogo, Named_object*,
 
   if (nil_check != NULL)
     {
-      Expression* crash = gogo->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE,
-					      loc);
+      Expression* crash = Runtime::make_call(Runtime::PANIC_MEM, loc, 0);
       // Fix the type of the conditional expression by pretending to
       // evaluate to RET either way through the conditional.
       crash = Expression::make_compound(crash, ret, loc);
@@ -8868,11 +8878,8 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
           Expression* zero = Expression::make_integer_ul(0, int_type, loc);
           Expression* cond = Expression::make_binary(OPERATOR_LT, len2,
                                                      zero, loc);
-          Expression* arg =
-            Expression::make_integer_ul(RUNTIME_ERROR_MAKE_SLICE_LEN_OUT_OF_BOUNDS,
-                                        NULL, loc);
-          Expression* call = Runtime::make_call(Runtime::RUNTIME_ERROR,
-                                                loc, 1, arg);
+	  Expression* call = Runtime::make_call(Runtime::PANIC_MAKE_SLICE_LEN,
+						loc, 0);
           cond = Expression::make_conditional(cond, call, zero->copy(), loc);
           gogo->lower_expression(function, inserter, &cond);
           gogo->flatten_expression(function, inserter, &cond);
@@ -8883,9 +8890,7 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
           Expression* cap2 = Expression::make_temporary_reference(c2tmp, loc);
           cond = Expression::make_binary(OPERATOR_LT, cap2,
                                          zero->copy(), loc);
-          arg = Expression::make_integer_ul(RUNTIME_ERROR_MAKE_SLICE_CAP_OUT_OF_BOUNDS,
-                                            NULL, loc);
-          call = Runtime::make_call(Runtime::RUNTIME_ERROR, loc, 1, arg);
+	  call = Runtime::make_call(Runtime::PANIC_MAKE_SLICE_CAP, loc, 0);
           cond = Expression::make_conditional(cond, call, zero->copy(), loc);
           gogo->lower_expression(function, inserter, &cond);
           gogo->flatten_expression(function, inserter, &cond);
@@ -11766,10 +11771,17 @@ Call_expression::do_add_conversions()
   Typed_identifier_list::const_iterator pp = fntype->parameters()->begin();
   bool is_interface_method =
     this->fn_->interface_field_reference_expression() != NULL;
+  size_t argcount = this->args_->size();
   if (!is_interface_method && fntype->is_method())
     {
       // Skip the receiver argument, which cannot be interface.
       pa++;
+      argcount--;
+    }
+  if (argcount != fntype->parameters()->size())
+    {
+      go_assert(saw_errors());
+      return;
     }
   for (; pa != this->args_->end(); ++pa, ++pp)
     {
@@ -11895,6 +11907,8 @@ Call_expression::is_erroneous_call()
 Type*
 Call_expression::do_type()
 {
+  if (this->is_error_expression())
+    return Type::make_error_type();
   if (this->type_ != NULL)
     return this->type_;
 
@@ -14389,8 +14403,8 @@ Interface_field_reference_expression::do_get_backend(Translate_context* context)
                               Expression::make_nil(loc), loc);
   Bexpression* bnil_check = nil_check->get_backend(context);
 
-  Bexpression* bcrash = gogo->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE,
-					    loc)->get_backend(context);
+  Expression* crash = Runtime::make_call(Runtime::PANIC_MEM, loc, 0);
+  Bexpression* bcrash = crash->get_backend(context);
 
   Bfunction* bfn = context->function()->func_value()->get_decl();
   Bexpression* bcond =
@@ -15972,6 +15986,77 @@ Map_construction_expression::do_dump_expression(
   ast_dump_context->ostream() << "}";
 }
 
+// A composite literal key.  This is seen during parsing, but is not
+// resolved to a named_object in case this is a composite literal of
+// struct type.
+
+class Composite_literal_key_expression : public Parser_expression
+{
+ public:
+  Composite_literal_key_expression(const std::string& name, Location location)
+    : Parser_expression(EXPRESSION_COMPOSITE_LITERAL_KEY, location),
+      name_(name)
+  { }
+
+  const std::string&
+  name() const
+  { return this->name_; }
+
+ protected:
+  Expression*
+  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+
+  Expression*
+  do_copy()
+  {
+    return new Composite_literal_key_expression(this->name_, this->location());
+  }
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
+ private:
+  // The name.
+  std::string name_;
+};
+
+// Lower a composite literal key.  We will never get here for keys in
+// composite literals of struct types, because that is prevented by
+// Composite_literal_expression::do_traverse.  So if we do get here,
+// this must be a regular name reference after all.
+
+Expression*
+Composite_literal_key_expression::do_lower(Gogo* gogo, Named_object*,
+					   Statement_inserter*, int)
+{
+  Named_object* no = gogo->lookup(this->name_, NULL);
+  if (no == NULL)
+    {
+      go_error_at(this->location(), "reference to undefined name %qs",
+		  Gogo::message_name(this->name_).c_str());
+      return Expression::make_error(this->location());
+    }
+  return Expression::make_unknown_reference(no, this->location());
+}
+
+// Dump a composite literal key.
+
+void
+Composite_literal_key_expression::do_dump_expression(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->ostream() << "_UnknownName_(" << this->name_ << ")";
+}
+
+// Make a composite literal key.
+
+Expression*
+Expression::make_composite_literal_key(const std::string& name,
+				       Location location)
+{
+  return new Composite_literal_key_expression(name, location);
+}
+
 // Class Composite_literal_expression.
 
 // Traversal.
@@ -15993,6 +16078,7 @@ Composite_literal_expression::do_traverse(Traverse* traverse)
 
       for (int depth = 0; depth < this->depth_; ++depth)
         {
+	  type = type->deref();
           if (type->array_type() != NULL)
             type = type->array_type()->element_type();
           else if (type->map_type() != NULL)
@@ -16008,6 +16094,7 @@ Composite_literal_expression::do_traverse(Traverse* traverse)
               return TRAVERSE_CONTINUE;
             }
         }
+      type = type->deref();
 
       while (true)
 	{
@@ -16166,6 +16253,11 @@ Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
       const Named_object* no = NULL;
       switch (name_expr->classification())
 	{
+	case EXPRESSION_COMPOSITE_LITERAL_KEY:
+	  name =
+	    static_cast<Composite_literal_key_expression*>(name_expr)->name();
+	  break;
+
 	case EXPRESSION_UNKNOWN_REFERENCE:
 	  name = name_expr->unknown_expression()->name();
 	  if (type->named_type() != NULL)
@@ -16573,7 +16665,6 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
 	  // literals.  Lower it now to get the right error message.
 	  if ((*p)->unknown_expression() != NULL)
 	    {
-	      (*p)->unknown_expression()->clear_is_composite_literal_key();
 	      gogo->lower_expression(function, inserter, &*p);
 	      go_assert((*p)->is_error_expression());
 	      return Expression::make_error(location);

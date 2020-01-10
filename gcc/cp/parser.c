@@ -9056,11 +9056,9 @@ cp_parser_new_expression (cp_parser* parser)
          at the end of the final token we consumed.  */
       location_t combined_loc = make_location (start_loc, start_loc,
 					       parser->lexer);
-
       /* Create a representation of the new-expression.  */
-      ret = build_new (&placement, type, nelts, &initializer, global_scope_p,
-		       tf_warning_or_error);
-      protected_set_expr_location (ret, combined_loc);
+      ret = build_new (combined_loc, &placement, type, nelts, &initializer,
+		       global_scope_p, tf_warning_or_error);
     }
 
   if (placement != NULL)
@@ -27785,6 +27783,14 @@ cp_parser_constraint_requires_parens (cp_parser *parser, bool lambda_p)
 	  gcc_fallthrough ();
 	}
       case CPP_OPEN_SQUARE:
+	{
+	  /* A primary-constraint-expression followed by a '[[' is not a
+	     postfix expression.  */
+	  if (cp_lexer_nth_token_is (parser->lexer, 2, CPP_OPEN_SQUARE))
+	    return pce_ok;
+
+	  gcc_fallthrough ();
+	}
       case CPP_PLUS_PLUS:
       case CPP_MINUS_MINUS:
       case CPP_DOT:
@@ -31195,11 +31201,15 @@ static void
 cp_parser_maybe_warn_enum_key (cp_parser *parser, location_t key_loc,
 			       tree type, rid scoped_key)
 {
+  if (!warn_redundant_tags)
+    return;
+
   tree type_decl = TYPE_MAIN_DECL (type);
   tree name = DECL_NAME (type_decl);
-  /* Look up the NAME to see if it unambiguously refers to the TYPE
-     and set KEY_REDUNDANT if so.  */
+  /* Look up the NAME to see if it unambiguously refers to the TYPE.  */
+  push_deferring_access_checks (dk_no_check);
   tree decl = cp_parser_lookup_name_simple (parser, name, input_location);
+  pop_deferring_access_checks ();
 
   /* The enum-key is redundant for uses of the TYPE that are not
      declarations and for which name lookup returns just the type
@@ -31369,7 +31379,9 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
   tree name = DECL_NAME (type_decl);
   /* Look up the NAME to see if it unambiguously refers to the TYPE
      and set KEY_REDUNDANT if so.  */
+  push_deferring_access_checks (dk_no_check);
   tree decl = cp_parser_lookup_name_simple (parser, name, input_location);
+  pop_deferring_access_checks ();
 
   /* The class-key is redundant for uses of the CLASS_TYPE that are
      neither definitions of it nor declarations, and for which name
@@ -41007,7 +41019,9 @@ cp_parser_oacc_data (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
   structured-block  */
 
 #define OACC_HOST_DATA_CLAUSE_MASK					\
-  ( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_USE_DEVICE) )
+  ( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_USE_DEVICE)                \
+   | (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF)                        \
+   | (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF_PRESENT) )
 
 static tree
 cp_parser_oacc_host_data (cp_parser *parser, cp_token *pragma_tok, bool *if_p)

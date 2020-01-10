@@ -1,0 +1,159 @@
+# Used except --with-libf7=no
+
+avrsrc := $(srcdir)/config/avr
+
+libf7 := $(avrsrc)/libf7
+
+F7_PREFIX = __f7_
+
+include $(libf7)/libf7-common.mk
+
+LIBF7_DF_CONV +=  floatundidf floatdidf # floatunsidf floatsidf
+
+# Wrappers like f7_lt_impl for f7_lt etc. because the latter is inline.
+LIBF7_DF_CMP  += lt le gt ge ne eq unord
+
+F7_C_PARTS += $(LIBF7_DF_CONV) $(LIBF7_DF_CMP)
+
+# -mcall-prologues
+CALL_PROLOGUES += $(LIBF7_DF_CONV)
+
+# -Wno-missing-prototypes
+NO_PROTO += $(LIBF7_DF_CONV)
+
+F7F += le_impl lt_impl gt_impl ge_impl ne_impl eq_impl unord_impl
+
+
+$(libf7)/f7-renames.h: $(libf7)/f7renames.sh $(libf7)/libf7-common.mk
+	$< head $(F7_PREFIX) t-libf7    > $@
+	$< c    $(F7_PREFIX) $(F7F)     >> $@
+	$< cst  $(F7_PREFIX) $(F7F_cst) >> $@
+	$< asm  $(F7_PREFIX) $(F7F_asm) >> $@
+	$< tail $(F7_PREFIX)            >> $@
+
+# The right-hand sides like g_ddd come from libf7-common.mk.
+# The _m_ wraps are added by t-libf7-math
+
+# __adddf3, ...
+F7_ASM_WRAPS_g_ddd += $(g_ddd)
+
+# __ltdf2, ...
+F7_ASM_WRAPS_g_xdd_cmp += $(g_xdd_cmp)
+
+# __floatsidf, ...
+F7_ASM_WRAPS_g_dx += $(g_dx)
+
+# __fixdfsi, ...
+F7_ASM_WRAPS_g_xd += $(g_xd)
+
+$(libf7)/f7-wraps.h: $(libf7)/f7wraps.sh \
+		$(libf7)/libf7-common.mk $(libf7)/t-libf7-math
+	$< header "WITH_LIBF7_MATH_FUNCTIONS=$(WITH_LIBF7_MATH_FUNCTIONS)" "WITH_LIBF7_MATH_SYMBOLS=$(WITH_LIBF7_MATH_SYMBOLS)" > $@
+	$< ddd_libgcc     $(F7_ASM_WRAPS_g_ddd)      >> $@
+	$< xdd_libgcc_cmp $(F7_ASM_WRAPS_g_xdd_cmp)  >> $@
+	$< xd_libgcc      $(F7_ASM_WRAPS_g_xd)       >> $@
+	$< dx_libgcc      $(F7_ASM_WRAPS_g_dx)       >> $@
+	$< ddd_math       $(F7_ASM_WRAPS_m_ddd)      >> $@
+	$< ddx_math       $(F7_ASM_WRAPS_m_ddx)      >> $@
+	$< dd_math        $(F7_ASM_WRAPS_m_dd)       >> $@
+	$< xd_math        $(F7_ASM_WRAPS_m_xd)       >> $@
+
+F7_ASM_WRAPS += $(F7_ASM_WRAPS_g_xd)
+F7_ASM_WRAPS += $(F7_ASM_WRAPS_g_dx)
+F7_ASM_WRAPS += $(F7_ASM_WRAPS_g_ddd)
+F7_ASM_WRAPS += $(F7_ASM_WRAPS_g_xdd_cmp)
+F7_ASM_WRAPS += $(F7_ASM_WRAPS_m_ddd)
+F7_ASM_WRAPS += $(F7_ASM_WRAPS_m_ddx)
+F7_ASM_WRAPS += $(F7_ASM_WRAPS_m_dd)
+F7_ASM_WRAPS += $(F7_ASM_WRAPS_m_xd)
+
+F7_ASM_PARTS += $(patsubst %, D_%, $(F7_ASM_WRAPS))
+
+# Options
+F7_FLAGS   += -I $(libf7) -save-temps=obj
+
+# t-avr::HOST_LIBGCC2_CFLAGS sets -mcall-prologues which will inhibits
+# tail-call optimizations.  The user could get it with -mrelax, but we
+# just switch it off here and then explicitly on again for the
+# CALL_PROLOGUES modules.
+
+F7_C_FLAGS +=   $(F7_FLAGS) \
+		-dp -g0 \
+		-mno-call-prologues \
+		-fno-lto -Os \
+		-fdata-sections -ffunction-sections \
+		-fno-reorder-blocks \
+		-fno-tree-loop-optimize \
+		-fno-tree-loop-im -fno-move-loop-invariants
+
+F7_ASM_FLAGS +=	$(F7_FLAGS)
+
+$(patsubst %, f7_c_%.o, $(CALL_PROLOGUES)) \
+	: F7_C_FLAGS += -mcall-prologues
+
+$(patsubst %, f7_c_%.o, $(STRICT_X)) \
+	: F7_C_FLAGS += -mstrict-X
+
+$(patsubst %, f7_c_%.o, $(NO_PROTO)) \
+	: F7_C_FLAGS += -Wno-missing-prototypes
+
+# Depends will be worked out by the libgcc build system.
+
+F7_C_OBJECTS   = $(patsubst %, f7_c_%$(objext),   $(F7_C_PARTS))
+F7_ASM_OBJECTS = $(patsubst %, f7_asm_%$(objext), $(F7_ASM_PARTS))
+
+$(F7_ASM_OBJECTS) $(F7_C_OBJECTS) : $(libf7)/t-libf7
+$(F7_ASM_OBJECTS) $(F7_C_OBJECTS) : $(libf7)/t-libf7-math
+$(F7_ASM_OBJECTS) $(F7_C_OBJECTS) : $(libf7)/t-libf7-math-symbols
+
+.PHONY: log_vars
+
+all: log_vars
+
+log_vars:
+	$(info # libf7: WITH_LIBF7_MATH_FUNCTIONS = $(WITH_LIBF7_MATH_FUNCTIONS))
+	$(info # libf7: WITH_LIBF7_MATH_SYMBOLS = $(WITH_LIBF7_MATH_SYMBOLS))
+	$(info # libf7: F7_C_PARTS = $(F7_C_PARTS))
+	$(info # libf7: F7_C_OBJECTS = $(F7_C_OBJECTS))
+	$(info # libf7: F7_ASM_PARTS = $(F7_ASM_PARTS))
+	$(info # libf7: F7_ASM_OBJECTS = $(F7_ASM_OBJECTS))
+
+# Build the libf7 C objects and add them to libgcc.a.
+
+f7_parts := $(F7_C_PARTS)
+
+iter-items  := $(f7_parts)
+iter-labels := $(f7_parts)
+
+include $(srcdir)/empty.mk $(patsubst %,$(libf7)/libf7-c-object.mk,$(iter-items))
+
+libgcc-objects += $(patsubst %,f7_c_%$(objext),$(F7_C_PARTS))
+
+# Build the libf7 ASM objects and add them to libgcc.a.
+
+f7_parts := $(F7_ASM_PARTS)
+
+iter-items  := $(f7_parts)
+iter-labels := $(f7_parts)
+
+include $(srcdir)/empty.mk $(patsubst %,$(libf7)/libf7-asm-object.mk,$(iter-items))
+
+libgcc-objects += $(patsubst %,f7_asm_%$(objext),$(F7_ASM_PARTS))
+
+.PHONY: clean-f7
+
+clean: clean-f7
+
+clean-f7:
+	rm -f $(wildcard f7_*.i f7_*.s f7_*.o)
+
+# Get rid if any DFmode remains.
+
+LIB2FUNCS_EXCLUDE +=	\
+	_sf_to_df	\
+	_fixdfdi	\
+	_fixunsdfsi	\
+	_floatundidf	\
+	_fixunsdfdi	\
+	_floatdidf	\
+	_powidf2

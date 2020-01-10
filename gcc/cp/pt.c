@@ -11577,6 +11577,7 @@ instantiate_class_template_1 (tree type)
   SET_TYPE_ALIGN (type, TYPE_ALIGN (pattern));
   TYPE_USER_ALIGN (type) = TYPE_USER_ALIGN (pattern);
   CLASSTYPE_NON_AGGREGATE (type) = CLASSTYPE_NON_AGGREGATE (pattern);
+  TYPE_HAS_USER_CONSTRUCTOR (type) = TYPE_HAS_USER_CONSTRUCTOR (pattern);
   if (ANON_AGGR_TYPE_P (pattern))
     SET_ANON_AGGR_TYPE_P (type);
   if (CLASSTYPE_VISIBILITY_SPECIFIED (pattern))
@@ -18877,12 +18878,12 @@ tsubst_copy_and_build (tree t,
 			 integral_constant_expression_p)
 
   tree retval, op1;
-  location_t loc;
+  location_t save_loc;
 
   if (t == NULL_TREE || t == error_mark_node)
     return t;
 
-  loc = input_location;
+  save_loc = input_location;
   if (location_t eloc = cp_expr_location (t))
     input_location = eloc;
 
@@ -19342,6 +19343,7 @@ tsubst_copy_and_build (tree t,
 	vec<tree, va_gc> *placement_vec;
 	vec<tree, va_gc> *init_vec;
 	tree ret;
+	location_t loc = EXPR_LOCATION (t);
 
 	if (placement == NULL_TREE)
 	  placement_vec = NULL;
@@ -19377,8 +19379,8 @@ tsubst_copy_and_build (tree t,
 
 	tree op1 = tsubst (TREE_OPERAND (t, 1), args, complain, in_decl);
 	tree op2 = RECUR (TREE_OPERAND (t, 2));
-	ret = build_new (&placement_vec, op1, op2, &init_vec,
-			 NEW_EXPR_USE_GLOBAL (t),
+	ret = build_new (loc, &placement_vec, op1, op2,
+			 &init_vec, NEW_EXPR_USE_GLOBAL (t),
 			 complain);
 
 	if (placement_vec != NULL)
@@ -20288,7 +20290,7 @@ tsubst_copy_and_build (tree t,
 #undef RECUR
 #undef RETURN
  out:
-  input_location = loc;
+  input_location = save_loc;
   return retval;
 }
 
@@ -25887,7 +25889,16 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
   else if (TYPE_PTRMEM_P (type))
     return false;
   else if (TREE_CODE (type) == TEMPLATE_TYPE_PARM)
-    return false;
+    {
+      if (CLASS_PLACEHOLDER_TEMPLATE (type) && cxx_dialect < cxx2a)
+	{
+	  if (complain & tf_error)
+	    error ("non-type template parameters of deduced class type only "
+		   "available with %<-std=c++2a%> or %<-std=gnu++2a%>");
+	  return true;
+	}
+      return false;
+    }
   else if (TREE_CODE (type) == TYPENAME_TYPE)
     return false;
   else if (TREE_CODE (type) == DECLTYPE_TYPE)

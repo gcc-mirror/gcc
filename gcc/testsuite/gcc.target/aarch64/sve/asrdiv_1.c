@@ -45,7 +45,7 @@ DIVMOD (64);
 /* { dg-final { scan-assembler-times {\tlsl\tz[0-9]+\.d, z[0-9]+\.d, #33\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tsub\tz[0-9]+\.d, z[0-9]+\.d, z[0-9]+\.d\n} 1 } } */
 
-/* { dg-final { scan-assembler-not {\tasr\t%} } } */
-/* { dg-final { scan-assembler-not {\tlsr\t%} } } */
-/* { dg-final { scan-assembler-not {\tcmplt\t%} } } */
-/* { dg-final { scan-assembler-not {\tand\t%} } } */
+/* { dg-final { scan-assembler-not {\tasr\t} } } */
+/* { dg-final { scan-assembler-not {\tlsr\t} } } */
+/* { dg-final { scan-assembler-not {\tcmplt\t} } } */
+/* { dg-final { scan-assembler-not {\tand\t} } } */

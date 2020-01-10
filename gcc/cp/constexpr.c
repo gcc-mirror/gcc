@@ -1040,8 +1040,11 @@ struct constexpr_global_ctx {
   auto_vec<tree, 16> heap_vars;
   /* Cleanups that need to be evaluated at the end of CLEANUP_POINT_EXPR.  */
   vec<tree> *cleanups;
+  /* Number of heap VAR_DECL deallocations.  */
+  unsigned heap_dealloc_count;
   /* Constructor.  */
-  constexpr_global_ctx () : constexpr_ops_count (0), cleanups (NULL) {}
+  constexpr_global_ctx ()
+    : constexpr_ops_count (0), cleanups (NULL), heap_dealloc_count (0) {}
 };
 
 /* The constexpr expansion context.  CALL is the current function
@@ -2055,6 +2058,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 		    {
 		      DECL_NAME (var) = heap_deleted_identifier;
 		      ctx->global->values.remove (var);
+		      ctx->global->heap_dealloc_count++;
 		      return void_node;
 		    }
 		  else if (DECL_NAME (var) == heap_deleted_identifier)
@@ -2280,6 +2284,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
     }
   else
     {
+      bool cacheable = true;
       if (result && result != error_mark_node)
 	/* OK */;
       else if (!DECL_SAVED_TREE (fun))
@@ -2327,17 +2332,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	      remapped = DECL_CHAIN (remapped);
 	    }
 	  /* Add the RESULT_DECL to the values map, too.  */
-	  tree slot = NULL_TREE;
-	  if (DECL_BY_REFERENCE (res))
-	    {
-	      slot = AGGR_INIT_EXPR_SLOT (t);
-	      tree addr = build_address (slot);
-	      addr = build_nop (TREE_TYPE (res), addr);
-	      ctx->global->values.put (res, addr);
-	      ctx->global->values.put (slot, NULL_TREE);
-	    }
-	  else
-	    ctx->global->values.put (res, NULL_TREE);
+	  gcc_assert (!DECL_BY_REFERENCE (res));
+	  ctx->global->values.put (res, NULL_TREE);
 
 	  /* Track the callee's evaluated SAVE_EXPRs and TARGET_EXPRs so that
 	     we can forget their values after the call.  */
@@ -2345,6 +2341,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	  auto_vec<tree, 10> save_exprs;
 	  ctx_with_save_exprs.save_exprs = &save_exprs;
 	  ctx_with_save_exprs.call = &new_call;
+	  unsigned save_heap_alloc_count = ctx->global->heap_vars.length ();
+	  unsigned save_heap_dealloc_count = ctx->global->heap_dealloc_count;
 
 	  tree jump_target = NULL_TREE;
 	  cxx_eval_constant_expression (&ctx_with_save_exprs, body,
@@ -2362,7 +2360,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	    result = void_node;
 	  else
 	    {
-	      result = *ctx->global->values.get (slot ? slot : res);
+	      result = *ctx->global->values.get (res);
 	      if (result == NULL_TREE && !*non_constant_p)
 		{
 		  if (!ctx->quiet)
@@ -2401,8 +2399,6 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	     one constexpr evaluation?  If so, maybe also clear out
 	     other vars from call, maybe in BIND_EXPR handling?  */
 	  ctx->global->values.remove (res);
-	  if (slot)
-	    ctx->global->values.remove (slot);
 	  for (tree parm = parms; parm; parm = TREE_CHAIN (parm))
 	    ctx->global->values.remove (parm);
 
@@ -2416,6 +2412,33 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 
 	  /* Make the unshared function copy we used available for re-use.  */
 	  save_fundef_copy (fun, copy);
+
+	  /* If the call allocated some heap object that hasn't been
+	     deallocated during the call, or if it deallocated some heap
+	     object it has not allocated, the call isn't really stateless
+	     for the constexpr evaluation and should not be cached.
+	     It is fine if the call allocates something and deallocates it
+	     too.  */
+	  if (entry
+	      && (save_heap_alloc_count != ctx->global->heap_vars.length ()
+		  || (save_heap_dealloc_count
+		      != ctx->global->heap_dealloc_count)))
+	    {
+	      tree heap_var;
+	      unsigned int i;
+	      if ((ctx->global->heap_vars.length ()
+		   - ctx->global->heap_dealloc_count)
+		  != save_heap_alloc_count - save_heap_dealloc_count)
+		cacheable = false;
+	      else
+		FOR_EACH_VEC_ELT_FROM (ctx->global->heap_vars, i, heap_var,
+				       save_heap_alloc_count)
+		  if (DECL_NAME (heap_var) != heap_deleted_identifier)
+		    {
+		      cacheable = false;
+		      break;
+		    }
+	    }
 	}
 
       if (result == error_mark_node)
@@ -2425,7 +2448,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       else if (!result)
 	result = void_node;
       if (entry)
-	entry->result = result;
+	entry->result = cacheable ? result : error_mark_node;
     }
 
   /* The result of a constexpr function must be completely initialized.
@@ -4553,6 +4576,12 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	}
       new_ctx.ctor = *valp;
       new_ctx.object = target;
+      /* Avoid temporary materialization when initializing from a TARGET_EXPR.
+	 We don't need to mess with AGGR_EXPR_SLOT/VEC_INIT_EXPR_SLOT because
+	 expansion of those trees uses ctx instead.  */
+      if (TREE_CODE (init) == TARGET_EXPR)
+	if (tree tinit = TARGET_EXPR_INITIAL (init))
+	  init = tinit;
       init = cxx_eval_constant_expression (&new_ctx, init, false,
 					   non_constant_p, overflow_p);
       if (ctors->is_empty())
@@ -5282,6 +5311,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  *non_constant_p = true;
 	  break;
 	}
+      gcc_checking_assert (!TARGET_EXPR_DIRECT_INIT_P (t));
       /* Avoid evaluating a TARGET_EXPR more than once.  */
       if (tree *p = ctx->global->values.get (TARGET_EXPR_SLOT (t)))
 	{
@@ -6316,10 +6346,10 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
   if (!non_constant_p && overflow_p)
     non_constant_p = true;
 
-  /* Unshare the result unless it's a CONSTRUCTOR in which case it's already
-     unshared.  */
+  /* Unshare the result.  */
   bool should_unshare = true;
-  if (r == t || TREE_CODE (r) == CONSTRUCTOR)
+  if (r == t || (TREE_CODE (t) == TARGET_EXPR
+		 && TARGET_EXPR_INITIAL (t) == r))
     should_unshare = false;
 
   if (non_constant_p && !allow_non_constant)

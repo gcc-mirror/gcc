@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-require-effective-target tls_native } */
 /* { dg-options "-O2 -fpic -ftls-model=local-exec -mtls-size=32 -mcmodel=tiny --save-temps" } */
+/* { dg-require-effective-target fpic } */
 /* { dg-skip-if "TLS size trunc for tiny" { aarch64*-*-* }  { "-mcmodel=small" "-mcmodel=large" } { "" } } */
 
 #include "tls_1.x"

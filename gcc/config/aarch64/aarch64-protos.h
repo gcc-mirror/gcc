@@ -550,8 +550,8 @@ bool aarch64_simd_valid_immediate (rtx, struct simd_immediate_info *,
 			enum simd_immediate_check w = AARCH64_CHECK_MOV);
 rtx aarch64_check_zero_based_sve_index_immediate (rtx);
 bool aarch64_sve_index_immediate_p (rtx);
-bool aarch64_sve_arith_immediate_p (rtx, bool);
-bool aarch64_sve_sqadd_sqsub_immediate_p (rtx, bool);
+bool aarch64_sve_arith_immediate_p (machine_mode, rtx, bool);
+bool aarch64_sve_sqadd_sqsub_immediate_p (machine_mode, rtx, bool);
 bool aarch64_sve_bitmask_immediate_p (rtx);
 bool aarch64_sve_dup_immediate_p (rtx);
 bool aarch64_sve_cmp_immediate_p (rtx, bool);
@@ -706,8 +706,7 @@ namespace aarch64_sve {
   void handle_arm_sve_h ();
   tree builtin_decl (unsigned, bool);
   bool builtin_type_p (const_tree);
-  bool svbool_type_p (const_tree);
-  unsigned int nvectors_if_data_type (const_tree);
+  bool builtin_type_p (const_tree, unsigned int *, unsigned int *);
   const char *mangle_builtin_type (const_tree);
   tree resolve_overloaded_builtin (location_t, unsigned int,
 				   vec<tree, va_gc> *);

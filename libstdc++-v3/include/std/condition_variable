@@ -369,9 +369,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef __cpp_lib_jthread
     template <class _Lock, class _Predicate>
-    bool wait_on(_Lock& __lock,
-                 stop_token __stoken,
-                 _Predicate __p)
+    bool wait(_Lock& __lock,
+              stop_token __stoken,
+              _Predicate __p)
     {
       if (__stoken.stop_requested())
         {
@@ -397,10 +397,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     template <class _Lock, class _Clock, class _Duration, class _Predicate>
-    bool wait_on_until(_Lock& __lock,
-                       stop_token __stoken,
-                       const chrono::time_point<_Clock, _Duration>& __abs_time,
-                       _Predicate __p)
+    bool wait_until(_Lock& __lock,
+                    stop_token __stoken,
+                    const chrono::time_point<_Clock, _Duration>& __abs_time,
+                    _Predicate __p)
     {
       if (__stoken.stop_requested())
         {
@@ -432,16 +432,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     template <class _Lock, class _Rep, class _Period, class _Predicate>
-    bool wait_on_for(_Lock& __lock,
-                     stop_token __stoken,
-                     const chrono::duration<_Rep, _Period>& __rel_time,
-                     _Predicate __p)
+    bool wait_for(_Lock& __lock,
+                  stop_token __stoken,
+                  const chrono::duration<_Rep, _Period>& __rel_time,
+                  _Predicate __p)
     {
       auto __abst = std::chrono::steady_clock::now() + __rel_time;
-      return wait_on_until(__lock,
-                           std::move(__stoken),
-                           __abst,
-                           std::move(__p));
+      return wait_until(__lock,
+                        std::move(__stoken),
+                        __abst,
+                        std::move(__p));
     }
 #endif
   };

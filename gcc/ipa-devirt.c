@@ -3350,8 +3350,7 @@ dump_targets (FILE *f, vec <cgraph_node *> targets, bool verbose)
       char *name = NULL;
       if (in_lto_p)
 	name = cplus_demangle_v3 (targets[i]->asm_name (), 0);
-      fprintf (f, " %s/%i", name ? name : targets[i]->name (),
-	       targets[i]->order);
+      fprintf (f, " %s", name ? name : targets[i]->dump_name ());
       if (in_lto_p)
 	free (name);
       if (!targets[i]->definition)

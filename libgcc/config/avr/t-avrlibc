@@ -65,6 +65,12 @@ LIB2FUNCS_EXCLUDE += \
 	_fixunssfdi \
 	_floatdisf _floatundisf
 
+ifeq (,$(WITH_LIBF7_MATH_SYMBOLS))
+
+# No modules depend on __SIZEOF_LONG_DOUBLE__ or __SIZEOF_DOUBLE__
+# which means we might have an opportunity to copy libgcc.a.
+# WITH_LIBF7_MATH_SYMBOLS is set by libf7/t-libf7-math-symbols.
+
 ifneq (,$(findstring avr,$(MULTISUBDIR)))
 
 # We are not in the avr2 (default) subdir, hence copying will work.
@@ -93,5 +99,6 @@ libgcc.a libgcov.a libgcc_tm.h: t-copy-libgcc.dep
 
 Makefile: t-copy-libgcc.dep
 
+endif
 endif
 endif

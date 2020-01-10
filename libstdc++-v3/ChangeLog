@@ -1,3 +1,136 @@
+2020-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/25_algorithms/equal/deque_iterators/1.cc: Don't use C++11
+	initialization syntax.
+
+	PR libstdc++/92285
+	* include/bits/streambuf_iterator.h (istreambuf_iterator): Make type
+	of base class independent of __cplusplus value.
+	[__cplusplus < 201103L] (istreambuf_iterator::reference): Override the
+	type defined in the base class
+	* testsuite/24_iterators/istreambuf_iterator/92285.cc: New test.
+	* testsuite/24_iterators/istreambuf_iterator/requirements/
+	base_classes.cc: Adjust expected base class for C++98.
+
+2020-01-09  Olivier Hainque  <hainque@adacore.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Document _C2
+	as a reserved identifier, by VxWorks.
+	* include/bits/stl_map.h: Rename _C2 template typenames	as _Cmp2.
+	* include/bits/stl_multimap.h: Likewise.
+
+2020-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/extptr_allocator.h (_ExtPtr_allocator::operator==)
+	(_ExtPtr_allocator::operator!=): Add missing const qualifiers.
+	* include/ext/pointer.h (readable_traits<_Pointer_adapter<S>>): Add
+	partial specialization to disambiguate the two constrained
+	specializations.
+
+	* include/experimental/type_traits (experimental::is_pod_v): Disable
+	-Wdeprecated-declarations warnings around reference to std::is_pod.
+	* include/std/type_traits (is_pod_v): Likewise.
+	* testsuite/18_support/max_align_t/requirements/2.cc: Also check
+	is_standard_layout and is_trivial. Do not check is_pod for C++20.
+	* testsuite/20_util/is_pod/requirements/explicit_instantiation.cc:
+	Add -Wno-deprecated for C++20.
+	* testsuite/20_util/is_pod/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_pod/value.cc: Likewise.
+	* testsuite/experimental/type_traits/value.cc: Likewise.
+
+2020-01-09  JeanHeyd "ThePhD" Meneide  <phdofthehouse@gmail.com>
+
+	* include/bits/c++config (_GLIBCXX20_DEPRECATED): Add new macro.
+	* include/std/type_traits (is_pod, is_pod_v): Deprecate for C++20.
+	* testuite/20_util/is_pod/deprecated-2a.cc: New test.
+
+2020-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93205
+	* include/bits/random.h (operator>>): Check stream operation succeeds.
+	* include/bits/random.tcc (operator<<): Remove redundant __ostream_type
+	typedefs.
+	(operator>>): Remove redundant __istream_type typedefs. Check stream
+	operations succeed.
+	(__extract_params): New function to fill a vector from a stream.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error line.
+
+	PR libstdc++/93208
+	* config/abi/pre/gnu.ver: Add new exports.
+	* include/std/memory_resource (memory_resource::~memory_resource()):
+	Do not define inline.
+	(monotonic_buffer_resource::~monotonic_buffer_resource()): Likewise.
+	* src/c++17/memory_resource.cc (memory_resource::~memory_resource()):
+	Define.
+	(monotonic_buffer_resource::~monotonic_buffer_resource()): Define.
+	* testsuite/20_util/monotonic_buffer_resource/93208.cc: New test.
+
+2020-01-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/92124
+	* include/bits/hashtable.h (_Hashtable<>::__alloc_node_gen_t): New
+	template alias.
+	(_Hashtable<>::__fwd_value_for): New.
+	(_Hashtable<>::_M_assign_elements<>): Remove _NodeGenerator template
+	parameter.
+	(_Hashtable<>::_M_assign<>): Add _Ht template parameter.
+	(_Hashtable<>::operator=(const _Hashtable<>&)): Adapt.
+	(_Hashtable<>::_M_move_assign): Adapt. Replace std::move_if_noexcept
+	with std::move.
+	(_Hashtable<>::_Hashtable(const _Hashtable&)): Adapt.
+	(_Hashtable<>::_Hashtable(const _Hashtable&, const allocator_type&)):
+	Adapt.
+	(_Hashtable<>::_Hashtable(_Hashtable&&, const allocator_type&)):
+	Adapt.
+	* testsuite/23_containers/unordered_set/92124.cc: New.
+
+2020-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93201
+	* src/c++17/fs_ops.cc (do_remove_all): New function implementing more
+	detailed error reporting for remove_all. Check result of recursive
+	call before incrementing iterator.
+	(remove_all(const path&), remove_all(const path&, error_code&)): Use
+	do_remove_all.
+	* src/filesystem/ops.cc (remove_all(const path&, error_code&)): Check
+	result of recursive call before incrementing iterator.
+	* testsuite/27_io/filesystem/operations/remove_all.cc: Check errors
+	are reported correctly.
+	* testsuite/experimental/filesystem/operations/remove_all.cc: Likewise.
+
+2020-01-07  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/std/condition_variable
+	(condition_variable_any::wait_on): Rename to match current draft
+	standard.
+	(condition_variable_any::wait_on_until): Likewise.
+	(condition_variable_any::wait_on_for): Likewise.
+	* testsuite/30_threads/condition_variable_any/stop_token/wait_on.cc:
+	Adjust tests to account for renamed methods.
+
+2020-01-07  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/92124
+	* include/bits/stl_tree.h
+	(_Rb_tree<>::_M_move_assign(_Rb_tree&, false_type)): Replace
+	std::move_if_noexcept by std::move.
+	* testsuite/23_containers/map/92124.cc: New.
+	* testsuite/23_containers/set/92124.cc: New.
+
+2020-01-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stop_token (stop_token): Remove operator!= (LWG 3254).
+	(stop_source): Likewise (LWG 3362).
+	* testsuite/30_threads/stop_token/stop_source.cc: Test equality
+	comparisons.
+
+	* include/bits/stl_algobase.h (__is_byte_iter, __min_cmp)
+	(lexicographical_compare_three_way): Do not depend on
+	__cpp_lib_concepts.
+	* include/std/version (__cpp_lib_three_way_comparison): Only define
+	when __cpp_lib_concepts is defined.
+	* libsupc++/compare (__cpp_lib_three_way_comparison): Likewise.
+
 2020-01-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_algobase.h (lexicographical_compare_three_way):

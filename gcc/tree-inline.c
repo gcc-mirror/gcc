@@ -2225,7 +2225,7 @@ copy_bb (copy_body_data *id, basic_block bb,
 		case CB_CGE_MOVE:
 		  edge = id->dst_node->get_edge (orig_stmt);
 		  if (edge)
-		    edge->set_call_stmt (call_stmt);
+		    edge = cgraph_edge::set_call_stmt (edge, call_stmt);
 		  break;
 
 		default:
@@ -2263,7 +2263,7 @@ copy_bb (copy_body_data *id, basic_block bb,
 		  if (dump_file)
 		    {
 		      fprintf (dump_file, "Created new direct edge to %s\n",
-			       dest->name ());
+			       dest->dump_name ());
 		    }
 		}
 
@@ -2899,7 +2899,8 @@ redirect_all_calls (copy_body_data * id, basic_block bb)
 	  struct cgraph_edge *edge = id->dst_node->get_edge (stmt);
 	  if (edge)
 	    {
-	      gimple *new_stmt = edge->redirect_call_stmt_to_callee ();
+	      gimple *new_stmt
+		= cgraph_edge::redirect_call_stmt_to_callee (edge);
 	      /* If IPA-SRA transformation, run as part of edge redirection,
 		 removed the LHS because it is unused, save it to
 		 killed_new_ssa_names so that we can prune it from debug
@@ -4009,7 +4010,7 @@ tree_inlinable_function_p (tree fn)
     return false;
 
   /* We only warn for functions declared `inline' by the user.  */
-  do_warning = (warn_inline
+  do_warning = (opt_for_fn (fn, warn_inline)
 		&& DECL_DECLARED_INLINE_P (fn)
 		&& !DECL_NO_INLINE_WARNING_P (fn)
 		&& !DECL_IN_SYSTEM_HEADER (fn));
@@ -4714,7 +4715,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
 	    inform (DECL_SOURCE_LOCATION (cfun->decl),
                    "called from this function");
 	}
-      else if (warn_inline
+      else if (opt_for_fn (fn, warn_inline)
 	       && DECL_DECLARED_INLINE_P (fn)
 	       && !DECL_NO_INLINE_WARNING_P (fn)
 	       && !DECL_IN_SYSTEM_HEADER (fn)
@@ -4750,7 +4751,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
       tree op;
       gimple_stmt_iterator iter = gsi_for_stmt (stmt);
 
-      cg_edge->remove ();
+      cgraph_edge::remove (cg_edge);
       edge = id->src_node->callees->clone (id->dst_node, call_stmt,
 		   		           gimple_uid (stmt),
 				   	   profile_count::one (),

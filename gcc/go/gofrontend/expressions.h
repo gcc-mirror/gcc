@@ -127,6 +127,7 @@ class Expression
     EXPRESSION_SLICE_CONSTRUCTION,
     EXPRESSION_MAP_CONSTRUCTION,
     EXPRESSION_COMPOSITE_LITERAL,
+    EXPRESSION_COMPOSITE_LITERAL_KEY,
     EXPRESSION_HEAP,
     EXPRESSION_RECEIVE,
     EXPRESSION_TYPE_DESCRIPTOR,
@@ -383,6 +384,10 @@ class Expression
   static Expression*
   make_composite_literal(Type*, int depth, bool has_keys, Expression_list*,
 			 bool all_are_names, Location);
+
+  // Make a composite literal key.
+  static Expression*
+  make_composite_literal_key(const std::string& name, Location);
 
   // Make a struct composite literal.
   static Expression*
@@ -2881,8 +2886,7 @@ class Unknown_expression : public Parser_expression
  public:
   Unknown_expression(Named_object* named_object, Location location)
     : Parser_expression(EXPRESSION_UNKNOWN_REFERENCE, location),
-      named_object_(named_object), no_error_message_(false),
-      is_composite_literal_key_(false)
+      named_object_(named_object), no_error_message_(false)
   { }
 
   // The associated named object.
@@ -2901,18 +2905,6 @@ class Unknown_expression : public Parser_expression
   set_no_error_message()
   { this->no_error_message_ = true; }
 
-  // Note that this expression is being used as the key in a composite
-  // literal, so it may be OK if it is not resolved.
-  void
-  set_is_composite_literal_key()
-  { this->is_composite_literal_key_ = true; }
-
-  // Note that this expression should no longer be treated as a
-  // composite literal key.
-  void
-  clear_is_composite_literal_key()
-  { this->is_composite_literal_key_ = false; }
-
  protected:
   Expression*
   do_lower(Gogo*, Named_object*, Statement_inserter*, int);
@@ -2930,8 +2922,6 @@ class Unknown_expression : public Parser_expression
   // True if we should not give errors if this is undefined.  This is
   // used if there was a parse failure.
   bool no_error_message_;
-  // True if this is the key in a composite literal.
-  bool is_composite_literal_key_;
 };
 
 // An index expression.  This is lowered to an array index, a string

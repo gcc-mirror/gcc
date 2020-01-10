@@ -242,13 +242,13 @@ am__objects_4 = runtime/aeshash.lo runtime/go-assert.lo \
 	runtime/go-matherr.lo runtime/go-memclr.lo \
 	runtime/go-memequal.lo runtime/go-nanotime.lo \
 	runtime/go-now.lo runtime/go-nosys.lo \
-	runtime/go-reflect-call.lo runtime/go-runtime-error.lo \
-	runtime/go-setenv.lo runtime/go-signal.lo \
-	runtime/go-unsafe-pointer.lo runtime/go-unsetenv.lo \
-	runtime/go-unwind.lo runtime/go-varargs.lo \
-	runtime/env_posix.lo runtime/panic.lo runtime/print.lo \
-	runtime/proc.lo runtime/runtime_c.lo runtime/stack.lo \
-	runtime/yield.lo $(am__objects_2) $(am__objects_3)
+	runtime/go-reflect-call.lo runtime/go-setenv.lo \
+	runtime/go-signal.lo runtime/go-unsafe-pointer.lo \
+	runtime/go-unsetenv.lo runtime/go-unwind.lo \
+	runtime/go-varargs.lo runtime/env_posix.lo runtime/panic.lo \
+	runtime/print.lo runtime/proc.lo runtime/runtime_c.lo \
+	runtime/stack.lo runtime/yield.lo $(am__objects_2) \
+	$(am__objects_3)
 am_libgo_llgo_la_OBJECTS = $(am__objects_4)
 libgo_llgo_la_OBJECTS = $(am_libgo_llgo_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -884,7 +884,6 @@ runtime_files = \
 	runtime/go-now.c \
 	runtime/go-nosys.c \
 	runtime/go-reflect-call.c \
-	runtime/go-runtime-error.c \
 	runtime/go-setenv.c \
 	runtime/go-signal.c \
 	runtime/go-unsafe-pointer.c \
@@ -1333,8 +1332,6 @@ runtime/go-nosys.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-reflect-call.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
-runtime/go-runtime-error.lo: runtime/$(am__dirstamp) \
-	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-setenv.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-signal.lo: runtime/$(am__dirstamp) \
@@ -1398,7 +1395,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-nosys.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-now.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-reflect-call.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-runtime-error.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-setenv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-signal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-unsafe-pointer.Plo@am__quote@

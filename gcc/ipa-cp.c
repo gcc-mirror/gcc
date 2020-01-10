@@ -375,7 +375,7 @@ static profile_count max_count;
 
 /* Original overall size of the program.  */
 
-static long overall_size, max_new_size;
+static long overall_size, orig_overall_size;
 
 /* Node name to unique clone suffix number map.  */
 static hash_map<const char *, unsigned> *clone_num_suffixes;
@@ -717,7 +717,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
       if (dump_file)
 	fprintf (dump_file, "Not considering %s for cloning; "
 		 "-fipa-cp-clone disabled.\n",
- 		 node->name ());
+		 node->dump_name ());
       return false;
     }
 
@@ -726,7 +726,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
       if (dump_file)
 	fprintf (dump_file, "Not considering %s for cloning; "
 		 "optimizing it for size.\n",
- 		 node->name ());
+		 node->dump_name ());
       return false;
     }
 
@@ -737,7 +737,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
     {
       if (dump_file)
 	fprintf (dump_file, "Considering %s for cloning; code might shrink.\n",
- 		 node->name ());
+		 node->dump_name ());
       return true;
     }
 
@@ -751,7 +751,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
 	  if (dump_file)
 	    fprintf (dump_file, "Considering %s for cloning; "
 		     "usually called directly.\n",
-		     node->name ());
+		     node->dump_name ());
 	  return true;
 	}
     }
@@ -759,12 +759,12 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
     {
       if (dump_file)
 	fprintf (dump_file, "Not considering %s for cloning; no hot calls.\n",
-		 node->name ());
+		 node->dump_name ());
       return false;
     }
   if (dump_file)
     fprintf (dump_file, "Considering %s for cloning.\n",
-	     node->name ());
+	     node->dump_name ());
   return true;
 }
 
@@ -1860,7 +1860,8 @@ ipcp_lattice<valtype>::add_value (valtype newval, cgraph_edge *cs,
 	return false;
       }
 
-  if (!unlimited && values_count == param_ipa_cp_value_list_size)
+  if (!unlimited && values_count == opt_for_fn (cs->caller->decl,
+						param_ipa_cp_value_list_size))
     {
       /* We can only free sources, not the values themselves, because sources
 	 of other values in this SCC might point to them.   */
@@ -1917,9 +1918,24 @@ self_recursively_generated_p (ipcp_value<tree> *val)
 
       class ipcp_param_lattices *plats = ipa_get_parm_lattices (info,
 								src->index);
-      ipcp_lattice<tree> *src_lat = src->offset == -1 ? &plats->itself
-						      : plats->aggs;
+      ipcp_lattice<tree> *src_lat;
       ipcp_value<tree> *src_val;
+
+      if (src->offset == -1)
+	src_lat = &plats->itself;
+      else
+	{
+	  struct ipcp_agg_lattice *src_aglat;
+
+	  for (src_aglat = plats->aggs; src_aglat; src_aglat = src_aglat->next)
+	    if (src_aglat->offset == src->offset)
+	      break;
+
+	  if (!src_aglat)
+	    return false;
+
+	  src_lat = src_aglat;
+	}
 
       for (src_val = src_lat->values; src_val; src_val = src_val->next)
 	if (src_val == val)
@@ -1987,12 +2003,15 @@ propagate_vals_across_arith_jfunc (cgraph_edge *cs,
     {
       int i;
 
-      if (src_lat != dest_lat || param_ipa_cp_max_recursive_depth < 1)
+      int max_recursive_depth = opt_for_fn(cs->caller->decl,
+					   param_ipa_cp_max_recursive_depth);
+      if (src_lat != dest_lat || max_recursive_depth < 1)
 	return dest_lat->set_contains_variable ();
 
       /* No benefit if recursive execution is in low probability.  */
       if (cs->sreal_frequency () * 100
-	  <= ((sreal) 1) * param_ipa_cp_min_recursive_probability)
+	  <= ((sreal) 1) * opt_for_fn (cs->caller->decl,
+				       param_ipa_cp_min_recursive_probability))
 	return dest_lat->set_contains_variable ();
 
       auto_vec<ipcp_value<tree> *, 8> val_seeds;
@@ -2017,10 +2036,12 @@ propagate_vals_across_arith_jfunc (cgraph_edge *cs,
 	    val_seeds.safe_push (src_val);
 	}
 
+      gcc_assert ((int) val_seeds.length () <= param_ipa_cp_value_list_size);
+
       /* Recursively generate lattice values with a limited count.  */
       FOR_EACH_VEC_ELT (val_seeds, i, src_val)
 	{
-	  for (int j = 1; j < param_ipa_cp_max_recursive_depth; j++)
+	  for (int j = 1; j < max_recursive_depth; j++)
 	    {
 	      tree cstval = get_val_across_arith_op (opcode, opnd1_type, opnd2,
 						     src_val, res_type);
@@ -2275,7 +2296,7 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Setting dest_lattice to bottom, because type of "
 		 "param %i of %s is NULL or unsuitable for bits propagation\n",
-		 idx, cs->callee->name ());
+		 idx, cs->callee->dump_name ());
 
       return dest_lattice->set_to_bottom ();
     }
@@ -2458,13 +2479,13 @@ set_check_aggs_by_ref (class ipcp_param_lattices *dest_plats,
    unless there are too many already.  If there are two many, return false.  If
    there are overlaps turn whole DEST_PLATS to bottom and return false.  If any
    skipped lattices were newly marked as containing variable, set *CHANGE to
-   true.  */
+   true.  MAX_AGG_ITEMS is the maximum number of lattices.  */
 
 static bool
 merge_agg_lats_step (class ipcp_param_lattices *dest_plats,
 		     HOST_WIDE_INT offset, HOST_WIDE_INT val_size,
 		     struct ipcp_agg_lattice ***aglat,
-		     bool pre_existing, bool *change)
+		     bool pre_existing, bool *change, int max_agg_items)
 {
   gcc_checking_assert (offset >= 0);
 
@@ -2499,7 +2520,7 @@ merge_agg_lats_step (class ipcp_param_lattices *dest_plats,
 	  set_agg_lats_to_bottom (dest_plats);
 	  return false;
 	}
-      if (dest_plats->aggs_count == param_ipa_max_agg_items)
+      if (dest_plats->aggs_count == max_agg_items)
 	return false;
       dest_plats->aggs_count++;
       new_al = ipcp_agg_lattice_pool.allocate ();
@@ -2553,6 +2574,8 @@ merge_aggregate_lattices (struct cgraph_edge *cs,
     ret |= set_agg_lats_contain_variable (dest_plats);
   dst_aglat = &dest_plats->aggs;
 
+  int max_agg_items = opt_for_fn (cs->callee->function_symbol ()->decl,
+				  param_ipa_max_agg_items);
   for (struct ipcp_agg_lattice *src_aglat = src_plats->aggs;
        src_aglat;
        src_aglat = src_aglat->next)
@@ -2562,7 +2585,7 @@ merge_aggregate_lattices (struct cgraph_edge *cs,
       if (new_offset < 0)
 	continue;
       if (merge_agg_lats_step (dest_plats, new_offset, src_aglat->size,
-			       &dst_aglat, pre_existing, &ret))
+			       &dst_aglat, pre_existing, &ret, max_agg_items))
 	{
 	  struct ipcp_agg_lattice *new_al = *dst_aglat;
 
@@ -2742,6 +2765,8 @@ propagate_aggs_across_jump_function (struct cgraph_edge *cs,
       if (set_check_aggs_by_ref (dest_plats, jfunc->agg.by_ref))
 	return true;
 
+      int max_agg_items = opt_for_fn (cs->callee->function_symbol ()->decl,
+				      param_ipa_max_agg_items);
       FOR_EACH_VEC_ELT (*jfunc->agg.items, i, item)
 	{
 	  HOST_WIDE_INT val_size;
@@ -2751,7 +2776,7 @@ propagate_aggs_across_jump_function (struct cgraph_edge *cs,
 	  val_size = tree_to_shwi (TYPE_SIZE (item->type));
 
 	  if (merge_agg_lats_step (dest_plats, item->offset, val_size,
-				   &aglat, pre_existing, &ret))
+				   &aglat, pre_existing, &ret, max_agg_items))
 	    {
 	      ret |= propagate_aggregate_lattice (cs, item, *aglat);
 	      aglat = &(*aglat)->next;
@@ -3156,11 +3181,11 @@ devirtualization_time_bonus (struct cgraph_node *node,
 /* Return time bonus incurred because of HINTS.  */
 
 static int
-hint_time_bonus (ipa_hints hints)
+hint_time_bonus (cgraph_node *node, ipa_hints hints)
 {
   int result = 0;
   if (hints & (INLINE_HINT_loop_iterations | INLINE_HINT_loop_stride))
-    result += param_ipa_cp_loop_hint_bonus;
+    result += opt_for_fn (node->decl, param_ipa_cp_loop_hint_bonus);
   return result;
 }
 
@@ -3168,15 +3193,18 @@ hint_time_bonus (ipa_hints hints)
    cloning goodness evaluation, do so.  */
 
 static inline int64_t
-incorporate_penalties (ipa_node_params *info, int64_t evaluation)
+incorporate_penalties (cgraph_node *node, ipa_node_params *info,
+		       int64_t evaluation)
 {
   if (info->node_within_scc && !info->node_is_self_scc)
     evaluation = (evaluation
-		  * (100 - param_ipa_cp_recursion_penalty)) / 100;
+		  * (100 - opt_for_fn (node->decl,
+				       param_ipa_cp_recursion_penalty))) / 100;
 
   if (info->node_calling_single_call)
     evaluation = (evaluation
-		  * (100 - param_ipa_cp_single_call_penalty))
+		  * (100 - opt_for_fn (node->decl,
+				       param_ipa_cp_single_call_penalty)))
       / 100;
 
   return evaluation;
@@ -3198,6 +3226,7 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
   gcc_assert (size_cost > 0);
 
   class ipa_node_params *info = IPA_NODE_REF (node);
+  int eval_threshold = opt_for_fn (node->decl, param_ipa_cp_eval_threshold);
   if (max_count > profile_count::zero ())
     {
       int factor = RDIV (count_sum.probability_in
@@ -3205,7 +3234,7 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
 		         * 1000, REG_BR_PROB_BASE);
       int64_t evaluation = (((int64_t) time_benefit * factor)
 				    / size_cost);
-      evaluation = incorporate_penalties (info, evaluation);
+      evaluation = incorporate_penalties (node, info, evaluation);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -3217,16 +3246,16 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
 		 info->node_within_scc
 		   ? (info->node_is_self_scc ? ", self_scc" : ", scc") : "",
 		 info->node_calling_single_call ? ", single_call" : "",
-		 evaluation, param_ipa_cp_eval_threshold);
+		 evaluation, eval_threshold);
 	}
 
-      return evaluation >= param_ipa_cp_eval_threshold;
+      return evaluation >= eval_threshold;
     }
   else
     {
       int64_t evaluation = (((int64_t) time_benefit * freq_sum)
 				    / size_cost);
-      evaluation = incorporate_penalties (info, evaluation);
+      evaluation = incorporate_penalties (node, info, evaluation);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "     good_cloning_opportunity_p (time: %i, "
@@ -3236,9 +3265,9 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
 		 info->node_within_scc
 		   ? (info->node_is_self_scc ? ", self_scc" : ", scc") : "",
 		 info->node_calling_single_call ? ", single_call" : "",
-		 evaluation, param_ipa_cp_eval_threshold);
+		 evaluation, eval_threshold);
 
-      return evaluation >= param_ipa_cp_eval_threshold;
+      return evaluation >= eval_threshold;
     }
 }
 
@@ -3376,7 +3405,7 @@ perform_estimation_of_a_value (cgraph_node *node, vec<tree> known_csts,
     time_benefit = base_time.to_int ()
       + devirtualization_time_bonus (node, known_csts, known_contexts,
 				     known_aggs)
-      + hint_time_bonus (hints)
+      + hint_time_bonus (node, hints)
       + removable_params_cost + est_move_cost;
 
   gcc_checking_assert (size >=0);
@@ -3389,6 +3418,23 @@ perform_estimation_of_a_value (cgraph_node *node, vec<tree> known_csts,
 
   val->local_time_benefit = time_benefit;
   val->local_size_cost = size;
+}
+
+/* Get the overall limit oof growth based on parameters extracted from growth.
+   it does not really make sense to mix functions with different overall growth
+   limits but it is possible and if it happens, we do not want to select one
+   limit at random.  */
+
+static long
+get_max_overall_size (cgraph_node *node)
+{
+  long max_new_size = orig_overall_size;
+  long large_unit = opt_for_fn (node->decl, param_large_unit_insns);
+  if (max_new_size < large_unit)
+    max_new_size = large_unit;
+  int unit_growth = opt_for_fn (node->decl, param_ipcp_unit_growth);
+  max_new_size += max_new_size * unit_growth / 100 + 1;
+  return max_new_size;
 }
 
 /* Iterate over known values of parameters of NODE and estimate the local
@@ -3431,7 +3477,7 @@ estimate_local_effects (struct cgraph_node *node)
 					 known_aggs, &size, &time,
 					 &base_time, &hints);
       time -= devirt_bonus;
-      time -= hint_time_bonus (hints);
+      time -= hint_time_bonus (node, hints);
       time -= removable_params_cost;
       size -= stats.n_calls * removable_params_cost;
 
@@ -3453,7 +3499,7 @@ estimate_local_effects (struct cgraph_node *node)
 					   stats.freq_sum, stats.count_sum,
 					   size))
 	{
-	  if (size + overall_size <= max_new_size)
+	  if (size + overall_size <= get_max_overall_size (node))
 	    {
 	      info->do_clone_for_all_contexts = true;
 	      overall_size += size;
@@ -3463,8 +3509,8 @@ estimate_local_effects (struct cgraph_node *node)
 			 "known contexts, growth deemed beneficial.\n");
 	    }
 	  else if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "   Not cloning for all contexts because "
-		     "max_new_size would be reached with %li.\n",
+	    fprintf (dump_file, "  Not cloning for all contexts because "
+		     "maximum unit size would be reached with %li.\n",
 		     size + overall_size);
 	}
       else if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3856,14 +3902,10 @@ ipcp_propagate_stage (class ipa_topo_info *topo)
     max_count = max_count.max (node->count.ipa ());
   }
 
-  max_new_size = overall_size;
-  if (max_new_size < param_large_unit_insns)
-    max_new_size = param_large_unit_insns;
-  max_new_size += max_new_size * param_ipcp_unit_growth / 100 + 1;
+  orig_overall_size = overall_size;
 
   if (dump_file)
-    fprintf (dump_file, "\noverall_size: %li, max_new_size: %li\n",
-	     overall_size, max_new_size);
+    fprintf (dump_file, "\noverall_size: %li\n", overall_size);
 
   propagate_constants_topo (topo);
   if (flag_checking)
@@ -4229,7 +4271,7 @@ dump_profile_updates (struct cgraph_node *orig_node,
   for (cs = new_node->callees; cs; cs = cs->next_callee)
     {
       fprintf (dump_file, "      edge to %s has count ",
-	       cs->callee->name ());
+	       cs->callee->dump_name ());
       cs->count.dump (dump_file);
       fprintf (dump_file, "\n");
     }
@@ -4240,7 +4282,7 @@ dump_profile_updates (struct cgraph_node *orig_node,
   for (cs = orig_node->callees; cs; cs = cs->next_callee)
     {
       fprintf (dump_file, "      edge to %s is left with ",
-	       cs->callee->name ());
+	       cs->callee->dump_name ());
       cs->count.dump (dump_file);
       fprintf (dump_file, "\n");
     }
@@ -5376,11 +5418,11 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
       perhaps_add_new_callers (node, val);
       return false;
     }
-  else if (val->local_size_cost + overall_size > max_new_size)
+  else if (val->local_size_cost + overall_size > get_max_overall_size (node))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "   Ignoring candidate value because "
-		 "max_new_size would be reached with %li.\n",
+		 "maximum unit size would be reached with %li.\n",
 		 val->local_size_cost + overall_size);
       return false;
     }
@@ -5658,7 +5700,7 @@ ipcp_store_bits_results (void)
 	  if (dump_file)
 	    fprintf (dump_file, "Not considering %s for ipa bitwise propagation "
 				"; -fipa-bit-cp: disabled.\n",
-				node->name ());
+				node->dump_name ());
 	  continue;
 	}
 
@@ -5734,7 +5776,7 @@ ipcp_store_vr_results (void)
 	  if (dump_file)
 	    fprintf (dump_file, "Not considering %s for VR discovery "
 		     "and propagate; -fipa-ipa-vrp: disabled.\n",
-		     node->name ());
+		     node->dump_name ());
 	  continue;
 	}
 
@@ -5924,6 +5966,6 @@ ipa_cp_c_finalize (void)
 {
   max_count = profile_count::uninitialized ();
   overall_size = 0;
-  max_new_size = 0;
+  orig_overall_size = 0;
   ipcp_free_transformation_sum ();
 }

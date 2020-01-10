@@ -1,3 +1,372 @@
+2020-01-10  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* g++.target/aarch64/bfloat_cpp_typecheck.C: New test.
+	* gcc.target/aarch64/bfloat16_scalar_typecheck.c: New test.
+	* gcc.target/aarch64/bfloat16_vector_typecheck_1.c: New test.
+	* gcc.target/aarch64/bfloat16_vector_typecheck_2.c: New test.
+
+2020-01-10  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* g++.dg/abi/mangle-neon-aarch64.C: Add Bfloat SIMD types to test.
+	* g++.dg/ext/arm-bf16/bf16-mangle-aarch64-1.C: New test.
+	* gcc.target/aarch64/bfloat16_scalar_1.c: New test.
+	* gcc.target/aarch64/bfloat16_scalar_2.c: New test.
+	* gcc.target/aarch64/bfloat16_scalar_3.c: New test.
+	* gcc.target/aarch64/bfloat16_scalar_4.c: New test.
+	* gcc.target/aarch64/bfloat16_simd_1.c: New test.
+	* gcc.target/aarch64/bfloat16_simd_2.c: New test.
+	* gcc.target/aarch64/bfloat16_simd_3.c: New test.
+
+2020-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/struct_vect_1.c (N): Protect with #ifndef.
+	* gcc.target/aarch64/sve/pcs/return_1_128.c: New test.
+	* gcc.target/aarch64/sve/pcs/return_4_128.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_5_128.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_6_128.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/stack_clash_1_128.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/stack_clash_2_128.c: Likewise.
+	* gcc.target/aarch64/sve/single_5.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_25.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_26.c: Likewise.
+
+2020-01-10  Martin Sebor  <msebor@redhat.com>
+
+	PR c/93132
+	* gcc.dg/attr-access-read-only-2.c: New test.
+
+2020-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/sel_1.c: Use SVE types for the arguments and
+	return values.  Use check-function-bodies instead of scan-assembler.
+	* gcc.target/aarch64/sve/sel_2.c: Likewise
+	* gcc.target/aarch64/sve/sel_3.c: Likewise.
+
+2020-01-10  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/ipa-clone-3.c: Replace struct initializer with
+	piecemeal initialization.
+
+2020-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/index_1_run.c: Require aarch64_sve256_hw
+	rather than aarch64_sve_hw.
+
+2020-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/93216
+	* gcc.dg/optimize-bswaphi-1.c: Split previously added
+	case into a LE and BE variant.
+
+2020-01-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/65428
+	* gfortran.dg/zero_sized_11.f90: New test.
+	* gfortran.dg/zero_sized_12.f90: New test.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/acle/general-c++/mul_lane_1.c: New test.
+	* g++.target/aarch64/sve2/acle: New directory.
+	* gcc.target/aarch64/pragma_cpp_predefs_3.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/test_sve_acle.h (TEST_TYPE_CHANGE_Z)
+	(TEST_DUAL_ZD, TEST_TYPE_CHANGE_ZX, TEST_TBL2, TEST_TBL2_REV): New
+	macros.
+	* gcc.target/aarch64/sve/acle/general-c/binary_lane_1.c: Do not
+	expect an error saying that the function has no f32 form, but instead
+	expect an error about SVE2 being required if the current target
+	doesn't support SVE2.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_lane_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_lane_rotate_1.c Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/binary_long_lane_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/binary_long_opt_n_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/binary_narrowb_opt_n_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/binary_narrowt_opt_n_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/binary_to_uint_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/binary_wide_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/binary_wide_opt_n_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/compare_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/compare_ptr_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_index_restricted_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_2.c,
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_3.c,
+	* gcc.target/aarch64/sve/acle/general-c/load_ext_gather_offset_restricted_4.c,
+	* gcc.target/aarch64/sve/acle/general-c/load_gather_sv_restricted_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/load_gather_sv_restricted_2.c,
+	* gcc.target/aarch64/sve/acle/general-c/mul_lane_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/shift_left_imm_long_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/shift_left_imm_to_uint_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/shift_left_imm_to_uint_2.c,
+	* gcc.target/aarch64/sve/acle/general-c/shift_right_imm_narrowb_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/shift_right_imm_narrowb_to_uint_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/shift_right_imm_narrowt_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/shift_right_imm_narrowt_to_uint_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_index_restricted_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_offset_restricted_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/tbl_tuple_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/ternary_long_lane_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/ternary_long_opt_n_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/ternary_qq_lane_rotate_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/ternary_qq_rotate_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/ternary_shift_right_imm_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/ternary_uint_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/unary_convert_narrowt_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/unary_narrowb_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/unary_narrowb_to_uint_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/unary_narrowt_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/unary_narrowt_to_uint_1.c,
+	* gcc.target/aarch64/sve/acle/general-c/unary_to_int_1.c: New tests.
+	* gcc.target/aarch64/sve2/bcax_1.c: Likewise.
+	* gcc.target/aarch64/sve2/acle: New directory.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general-c/unary_count_1.c: Rename to...
+	* gcc.target/aarch64/sve/acle/general-c/unary_to_uint_1.c: ...this.
+	* gcc.target/aarch64/sve/acle/general-c/unary_count_2.c: Rename to...
+	* gcc.target/aarch64/sve/acle/general-c/unary_to_uint_2.c: ...this.
+	* gcc.target/aarch64/sve/acle/general-c/unary_count_3.c: Rename to...
+	* gcc.target/aarch64/sve/acle/general-c/unary_to_uint_3.c: ...this.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/nrv_1.c: New test.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/pcs/gnu_vectors_1.c: New test.
+	* gcc.target/aarch64/sve/pcs/gnu_vectors_2.c: Likewise.
+
+2020-01-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/84135
+	* gfortran.dg/coarray/codimension_3.f90: New.
+
+2020-01-09  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/93200
+	* gcc.dg/Wstringop-overflow-30.c: New test.
+
+2020-01-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/93054
+	* gcc.dg/pr93054.c: New testcase.
+
+2020-01-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93040
+	* gcc.dg/optimize-bswaphi-1.c: Amend.
+	* gcc.dg/optimize-bswapsi-2.c: Likewise.
+
+2020-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/93202
+	* gcc.target/riscv/pr93202.c: New test.
+
+	PR target/93141
+	* gcc.target/i386/pr93141-1.c: Add tests with constants that have MSB
+	of the low half of the constant set.
+	* gcc.target/i386/pr93141-2.c: New test.
+
+2020-01-08  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/Wstringop-overflow-27.c: Make testnames unique.
+
+2020-01-08  Joel Brobecker  <brobecker@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* g++.target/aarch64/sve/tls_2.C: Add missing
+	{ dg-require-effective-target fpic } directive.
+	* gcc.target/aarch64/noplt_2.c: Likewise.
+	* gcc.target/aarch64/noplt_3.c: Likewise.
+	* gcc.target/aarch64/pic-constantpool1.c: Likewise.
+	* gcc.target/aarch64/pic-small.c: Likewise.
+	* gcc.target/aarch64/pic-symrefplus.c: Likewise.
+	* gcc.target/aarch64/pr66912.c: Likewise.
+	* gcc.target/aarch64/sve/tls_1.c: Likewise.
+	* gcc.target/aarch64/sve/tls_preserve_1.c: Likewise.
+	* gcc.target/aarch64/sve/tls_preserve_2.c: Likewise.
+	* gcc.target/aarch64/sve/tls_preserve_3.c: Likewise.
+	* gcc.target/aarch64/tlsie_tiny_1.c: Likewise.
+	* gcc.target/aarch64/tlsle12_1.c: Likewise.
+	* gcc.target/aarch64/tlsle12_tiny_1.c: Likewise.
+	* gcc.target/aarch64/tlsle24_1.c: Likewise.
+	* gcc.target/aarch64/tlsle24_tiny_1.c: Likewise.
+	* gcc.target/aarch64/tlsle32_1.c: Likewise.
+	* gcc.target/aarch64/tlsle_sizeadj_small_1.c: Likewise.
+	* gcc.target/aarch64/tlsle_sizeadj_tiny_1.c: Likewise.
+
+2020-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93187
+	* g++.dg/opt/pr93187.C: New test.
+
+	PR target/93174
+	* gcc.c-torture/compile/pr93174.c: New test.
+
+2020-01-08  Olivier Hainque  <hainque@adacore.com>
+	    Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/aarch64/stack-check-alloca.h: Remove
+	#include alloca.h. #define alloca __builtin_alloca
+	instead.
+	* gcc.target/aarch64/stack-check-alloca-1.c: Add
+	{ dg-require-effective-target alloca }.
+	* gcc.target/aarch64/stack-check-alloca-2.c: Likewise.
+	* gcc.target/aarch64/stack-check-alloca-3.c: Likewise.
+	* gcc.target/aarch64/stack-check-alloca-4.c: Likewise.
+	* gcc.target/aarch64/stack-check-alloca-5.c: Likewise.
+	* gcc.target/aarch64/stack-check-alloca-6.c: Likewise.
+	* gcc.target/aarch64/stack-check-alloca-7.c: Likewise.
+	* gcc.target/aarch64/stack-check-alloca-8.c: Likewise.
+	* gcc.target/aarch64/stack-check-alloca-9.c: Likewise.
+	* gcc.target/aarch64/stack-check-alloca-10.c: Likewise.
+
+2020-01-08  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/ipa/ipa-icf-1.c: Update expected scanned output.
+	* gcc.dg/ipa/ipa-icf-10.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-11.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-12.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-13.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-16.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-18.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-2.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-20.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-21.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-23.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-25.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-26.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-27.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-3.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-35.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-36.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-37.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-38.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-5.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-7.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-8.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-merge-1.c: Likewise.
+	* gcc.dg/ipa/pr64307.c: Likewise.
+	* gcc.dg/ipa/pr90555.c: Likewise.
+	* gcc.dg/ipa/propmalloc-1.c: Likewise.
+	* gcc.dg/ipa/propmalloc-2.c: Likewise.
+	* gcc.dg/ipa/propmalloc-3.c: Likewise.
+
+2020-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/92997
+
+2020-01-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/93188
+	* gcc.target/arm/multilib.exp: Add new tests for rm-profile only.
+
+2020-01-08  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/93084
+	* gcc.dg/ipa/ipa-clone-3.c: New test.
+
+2020-01-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.old-deja/g++.bugs/900208_03.C: Check locations too.
+	* g++.old-deja/g++.bugs/900519_06.C: Likewise.
+
+2020-01-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/vect/vect-epilogues.c: XFAIL for arm big endian.
+
+2020-01-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/pcs/asm_4.c: New test.
+
+2020-01-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/acle/general-c++/mangle_5.C: New test.
+	* gcc.target/aarch64/sve/pcs/asm_1.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/asm_2.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/asm_3.c: Likewise.
+
+2020-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93156
+	* gcc.dg/tree-ssa/pr93156.c: New test.
+
+	PR tree-optimization/93118
+	* gcc.dg/tree-ssa/pr93118.c: New test.
+
+2020-01-07  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/92860
+	* gcc.dg/pr92860-2.c: New test.
+
+2020-01-07  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/92860
+	* gcc.dg/pr92860.c: New test.
+
+2020-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91369
+	* g++.dg/cpp1y/constexpr-new.C: Expect an error explaining why
+	static_assert failed for C++2a.
+	* g++.dg/cpp2a/constexpr-new9.C: New test.
+
+2020-01-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/asrdiv_1.c: Remove trailing %s.
+	* gcc.target/aarch64/sve/asrdiv_2.c: New test.
+	* gcc.target/aarch64/sve/asrdiv_3.c: Likewise.
+
+2020-01-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/vect-cond-arith-8.c: New test.
+	* gcc.target/aarch64/sve/cond_fmul_5.c: Likewise.
+
+2020-01-06  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/79592
+	* g++.dg/ubsan/vptr-4.C: Add expected error.
+
+2020-01-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/cpy_1.c: New test.
+
+2020-01-05  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.c-torture/compile/20200105-1.c: New testcase.
+	* gcc.c-torture/compile/20200105-2.c: New testcase.
+	* gcc.c-torture/compile/20200105-3.c: New testcase.
+
+2020-01-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/darwin-version-1.c: Adjust test to use different
+	options for Darwin4-9 and Darwin10+.
+
+2020-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93141
+	* gcc.target/i386/pr93141-1.c: New test.
+	* gcc.dg/pr67089-6.c: Expect 16 ADD_OVERFLOW calls even on ia32.
+
+	PR c++/93138
+	* g++.dg/warn/Wredundant-tags-2.C: New test.
+
+	PR c++/93046
+	* g++.dg/ext/cond4.C: New test.
+
+2020-01-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/91640
+	* gfortran.dg/contiguous_10.f90: New.
+
+2020-01-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/avx512bw-pr92686-vpcmp-intelasm-1.c: Require
+	effective target masm_intel.
+	* gcc.target/i386/avx512vl-pr92686-vpcmp-intelasm-1.c: Likewise.
+
 2020-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93089

@@ -2534,14 +2534,14 @@ get_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
 }
 
 /* Return true if boolean argument MASK is suitable for vectorizing
-   conditional load or store STMT_INFO.  When returning true, store the type
+   conditional operation STMT_INFO.  When returning true, store the type
    of the definition in *MASK_DT_OUT and the type of the vectorized mask
    in *MASK_VECTYPE_OUT.  */
 
 static bool
-vect_check_load_store_mask (stmt_vec_info stmt_info, tree mask,
-			    vect_def_type *mask_dt_out,
-			    tree *mask_vectype_out)
+vect_check_scalar_mask (stmt_vec_info stmt_info, tree mask,
+			vect_def_type *mask_dt_out,
+			tree *mask_vectype_out)
 {
   vec_info *vinfo = stmt_info->vinfo;
   if (!VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (mask)))
@@ -3262,6 +3262,14 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   for (i = 0; i < nargs; i++)
     {
       op = gimple_call_arg (stmt, i);
+
+      if ((int) i == mask_opno)
+	{
+	  if (!vect_check_scalar_mask (stmt_info, op, &dt[i], &vectypes[i]))
+	    return false;
+	  continue;
+	}
+
       if (!vect_is_simple_use (op, vinfo, &dt[i], &vectypes[i]))
 	{
 	  if (dump_enabled_p ())
@@ -3269,11 +3277,6 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			     "use not simple.\n");
 	  return false;
 	}
-
-      /* Skip the mask argument to an internal function.  This operand
-	 has been converted via a pattern if necessary.  */
-      if ((int) i == mask_opno)
-	continue;
 
       /* We can only handle calls with arguments of the same type.  */
       if (rhs_type
@@ -3542,12 +3545,6 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		  vec_oprndsi.release ();
 		}
 	      continue;
-	    }
-
-	  if (mask_opno >= 0 && !vectypes[mask_opno])
-	    {
-	      gcc_assert (modifier != WIDEN);
-	      vectypes[mask_opno] = truth_type_for (vectype_in);
 	    }
 
 	  for (i = 0; i < nargs; i++)
@@ -6632,7 +6629,7 @@ check_scan_store (stmt_vec_info stmt_info, tree vectype,
       || loop_vinfo == NULL
       || LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
       || STMT_VINFO_GROUPED_ACCESS (stmt_info)
-      || !integer_zerop (DR_OFFSET (dr_info->dr))
+      || !integer_zerop (get_dr_vinfo_offset (dr_info))
       || !integer_zerop (DR_INIT (dr_info->dr))
       || !(ref_type = reference_alias_ptr_type (DR_REF (dr_info->dr)))
       || !alias_sets_conflict_p (get_alias_set (vectype),
@@ -7378,8 +7375,8 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       if (mask_index >= 0)
 	{
 	  mask = gimple_call_arg (call, mask_index);
-	  if (!vect_check_load_store_mask (stmt_info, mask, &mask_dt,
-					   &mask_vectype))
+	  if (!vect_check_scalar_mask (stmt_info, mask, &mask_dt,
+				       &mask_vectype))
 	    return false;
 	}
     }
@@ -7765,6 +7762,7 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       tree running_off;
       tree stride_base, stride_step, alias_off;
       tree vec_oprnd;
+      tree dr_offset;
       unsigned int g;
       /* Checked by get_load_store_type.  */
       unsigned int const_nunits = nunits.to_constant ();
@@ -7772,11 +7770,12 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       gcc_assert (!LOOP_VINFO_FULLY_MASKED_P (loop_vinfo));
       gcc_assert (!nested_in_vect_loop_p (loop, stmt_info));
 
+      dr_offset = get_dr_vinfo_offset (first_dr_info);
       stride_base
 	= fold_build_pointer_plus
 	    (DR_BASE_ADDRESS (first_dr_info->dr),
 	     size_binop (PLUS_EXPR,
-			 convert_to_ptrofftype (DR_OFFSET (first_dr_info->dr)),
+			 convert_to_ptrofftype (dr_offset),
 			 convert_to_ptrofftype (DR_INIT (first_dr_info->dr))));
       stride_step = fold_convert (sizetype, DR_STEP (first_dr_info->dr));
 
@@ -8139,7 +8138,7 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      && !loop_masks
 	      && TREE_CODE (DR_BASE_ADDRESS (first_dr_info->dr)) == ADDR_EXPR
 	      && VAR_P (TREE_OPERAND (DR_BASE_ADDRESS (first_dr_info->dr), 0))
-	      && integer_zerop (DR_OFFSET (first_dr_info->dr))
+	      && integer_zerop (get_dr_vinfo_offset (first_dr_info))
 	      && integer_zerop (DR_INIT (first_dr_info->dr))
 	      && alias_sets_conflict_p (get_alias_set (aggr_type),
 					get_alias_set (TREE_TYPE (ref_type))))
@@ -8598,8 +8597,8 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       if (mask_index >= 0)
 	{
 	  mask = gimple_call_arg (call, mask_index);
-	  if (!vect_check_load_store_mask (stmt_info, mask, &mask_dt,
-					   &mask_vectype))
+	  if (!vect_check_scalar_mask (stmt_info, mask, &mask_dt,
+				       &mask_vectype))
 	    return false;
 	}
     }
@@ -8833,6 +8832,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       /* Checked by get_load_store_type.  */
       unsigned int const_nunits = nunits.to_constant ();
       unsigned HOST_WIDE_INT cst_offset = 0;
+      tree dr_offset;
 
       gcc_assert (!LOOP_VINFO_FULLY_MASKED_P (loop_vinfo));
       gcc_assert (!nested_in_vect_loop);
@@ -8863,11 +8863,12 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  ref_type = reference_alias_ptr_type (DR_REF (dr_info->dr));
 	}
 
+      dr_offset = get_dr_vinfo_offset (first_dr_info);
       stride_base
 	= fold_build_pointer_plus
 	    (DR_BASE_ADDRESS (first_dr_info->dr),
 	     size_binop (PLUS_EXPR,
-			 convert_to_ptrofftype (DR_OFFSET (first_dr_info->dr)),
+			 convert_to_ptrofftype (dr_offset),
 			 convert_to_ptrofftype (DR_INIT (first_dr_info->dr))));
       stride_step = fold_convert (sizetype, DR_STEP (first_dr_info->dr));
 
@@ -9332,7 +9333,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  if (simd_lane_access_p
 	      && TREE_CODE (DR_BASE_ADDRESS (first_dr_info->dr)) == ADDR_EXPR
 	      && VAR_P (TREE_OPERAND (DR_BASE_ADDRESS (first_dr_info->dr), 0))
-	      && integer_zerop (DR_OFFSET (first_dr_info->dr))
+	      && integer_zerop (get_dr_vinfo_offset (first_dr_info))
 	      && integer_zerop (DR_INIT (first_dr_info->dr))
 	      && alias_sets_conflict_p (get_alias_set (aggr_type),
 					get_alias_set (TREE_TYPE (ref_type)))

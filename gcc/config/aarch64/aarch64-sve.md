@@ -3381,9 +3381,13 @@
 ;; - ORR    (merging form only)
 ;; - SMAX
 ;; - SMIN
+;; - SQADD  (SVE2 merging form only)
+;; - SQSUB  (SVE2 merging form only)
 ;; - SUB    (merging form only)
 ;; - UMAX
 ;; - UMIN
+;; - UQADD  (SVE2 merging form only)
+;; - UQSUB  (SVE2 merging form only)
 ;; -------------------------------------------------------------------------
 
 ;; Unpredicated integer binary operations that have an immediate form.
@@ -3879,7 +3883,7 @@
 ;; -------------------------------------------------------------------------
 
 ;; Unpredicated saturating signed addition and subtraction.
-(define_insn "@aarch64_<su_optab><optab><mode>"
+(define_insn "@aarch64_sve_<optab><mode>"
   [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, w, ?&w, ?&w, w")
 	(SBINQOPS:SVE_FULL_I
 	  (match_operand:SVE_FULL_I 1 "register_operand" "0, 0, w, w, w")
@@ -3895,7 +3899,7 @@
 )
 
 ;; Unpredicated saturating unsigned addition and subtraction.
-(define_insn "@aarch64_<su_optab><optab><mode>"
+(define_insn "@aarch64_sve_<optab><mode>"
   [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?&w, w")
 	(UBINQOPS:SVE_FULL_I
 	  (match_operand:SVE_FULL_I 1 "register_operand" "0, w, w")
@@ -4445,9 +4449,12 @@
 ;; -------------------------------------------------------------------------
 ;; Includes:
 ;; - ASRD
+;; - SQSHLU (SVE2)
+;; - SRSHR (SVE2)
+;; - URSHR (SVE2)
 ;; -------------------------------------------------------------------------
 
-;; Unpredicated ASRD.
+;; Unpredicated <SVE_INT_OP>.
 (define_expand "sdiv_pow2<mode>3"
   [(set (match_operand:SVE_FULL_I 0 "register_operand")
 	(unspec:SVE_FULL_I
@@ -4464,50 +4471,50 @@
   }
 )
 
-;; Predicated ASRD with merging.
-(define_expand "@cond_asrd<mode>"
+;; Predicated right shift with merging.
+(define_expand "@cond_<sve_int_op><mode>"
   [(set (match_operand:SVE_FULL_I 0 "register_operand")
 	(unspec:SVE_FULL_I
 	  [(match_operand:<VPRED> 1 "register_operand")
 	   (unspec:SVE_FULL_I
 	     [(match_operand:SVE_FULL_I 2 "register_operand")
-	      (match_operand:SVE_FULL_I 3 "aarch64_simd_rshift_imm")]
-	     UNSPEC_ASRD)
+	      (match_operand:SVE_FULL_I 3 "aarch64_simd_<lr>shift_imm")]
+	     SVE_INT_SHIFT_IMM)
 	   (match_operand:SVE_FULL_I 4 "aarch64_simd_reg_or_zero")]
 	  UNSPEC_SEL))]
   "TARGET_SVE"
 )
 
-;; Predicated ASRD, merging with the first input.
-(define_insn "*cond_asrd<mode>_2"
+;; Predicated right shift, merging with the first input.
+(define_insn "*cond_<sve_int_op><mode>_2"
   [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?&w")
 	(unspec:SVE_FULL_I
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (unspec:SVE_FULL_I
 	     [(match_operand:SVE_FULL_I 2 "register_operand" "0, w")
-	      (match_operand:SVE_FULL_I 3 "aarch64_simd_rshift_imm")]
-	     UNSPEC_ASRD)
+	      (match_operand:SVE_FULL_I 3 "aarch64_simd_<lr>shift_imm")]
+	     SVE_INT_SHIFT_IMM)
 	   (match_dup 2)]
 	  UNSPEC_SEL))]
   "TARGET_SVE"
   "@
-   asrd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
-   movprfx\t%0, %2\;asrd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3"
+   <sve_int_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
+   movprfx\t%0, %2\;<sve_int_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3"
   [(set_attr "movprfx" "*,yes")])
 
-;; Predicated ASRD, merging with zero.
-(define_insn "*cond_asrd<mode>_z"
+;; Predicated right shift, merging with zero.
+(define_insn "*cond_<sve_int_op><mode>_z"
   [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w")
 	(unspec:SVE_FULL_I
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
 	   (unspec:SVE_FULL_I
 	     [(match_operand:SVE_FULL_I 2 "register_operand" "w")
-	      (match_operand:SVE_FULL_I 3 "aarch64_simd_rshift_imm")]
-	     UNSPEC_ASRD)
+	      (match_operand:SVE_FULL_I 3 "aarch64_simd_<lr>shift_imm")]
+	     SVE_INT_SHIFT_IMM)
 	   (match_operand:SVE_FULL_I 4 "aarch64_simd_imm_zero")]
 	  UNSPEC_SEL))]
   "TARGET_SVE"
-  "movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;asrd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3"
+  "movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;<sve_int_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3"
   [(set_attr "movprfx" "yes")])
 
 ;; -------------------------------------------------------------------------
@@ -6523,7 +6530,7 @@
 (define_insn "@aarch64_sel_dup<mode>"
   [(set (match_operand:SVE_FULL 0 "register_operand" "=?w, w, ??w, ?&w, ??&w, ?&w")
 	(unspec:SVE_FULL
-	  [(match_operand:<VPRED> 3 "register_operand" "Upa, Upa, Upl, Upl, Upl, Upl")
+	  [(match_operand:<VPRED> 3 "register_operand" "Upl, Upl, Upl, Upl, Upl, Upl")
 	   (vec_duplicate:SVE_FULL
 	     (match_operand:<VEL> 1 "register_operand" "r, w, r, w, r, w"))
 	   (match_operand:SVE_FULL 2 "aarch64_simd_reg_or_zero" "0, 0, Dz, Dz, w, w")]
@@ -6835,10 +6842,16 @@
 ;; ---- [INT] While tests
 ;; -------------------------------------------------------------------------
 ;; Includes:
+;; - WHILEGE (SVE2)
+;; - WHILEGT (SVE2)
+;; - WHILEHI (SVE2)
+;; - WHILEHS (SVE2)
 ;; - WHILELE
 ;; - WHILELO
 ;; - WHILELS
 ;; - WHILELT
+;; - WHILERW (SVE2)
+;; - WHILEWR (SVE2)
 ;; -------------------------------------------------------------------------
 
 ;; Set element I of the result if (cmp (plus operand1 J) operand2) is
@@ -6883,7 +6896,7 @@
 )
 
 ;; Same, but handle the case in which only the flags result is useful.
-(define_insn_and_rewrite "*while_<while_optab_cmp><GPI:mode><PRED_ALL:mode>_ptest"
+(define_insn_and_rewrite "@while_<while_optab_cmp><GPI:mode><PRED_ALL:mode>_ptest"
   [(set (reg:CC_NZC CC_REGNUM)
 	(unspec:CC_NZC
 	  [(match_operand 3)

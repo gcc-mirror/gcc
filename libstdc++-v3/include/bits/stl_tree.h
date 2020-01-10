@@ -1695,7 +1695,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    [&__roan](const value_type& __cval)
 	    {
 	      auto& __val = const_cast<value_type&>(__cval);
-	      return __roan(std::move_if_noexcept(__val));
+	      return __roan(std::move(__val));
 	    };
 	  _M_root() = _M_copy(__x, __lbd);
 	  __x.clear();

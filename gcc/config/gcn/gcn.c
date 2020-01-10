@@ -842,7 +842,7 @@ bool
 gcn_inline_constant_p (rtx x)
 {
   if (GET_CODE (x) == CONST_INT)
-    return INTVAL (x) >= -16 && INTVAL (x) < 64;
+    return INTVAL (x) >= -16 && INTVAL (x) <= 64;
   if (GET_CODE (x) == CONST_DOUBLE)
     return gcn_inline_fp_constant_p (x, false);
   if (GET_CODE (x) == CONST_VECTOR)
@@ -902,16 +902,17 @@ gcn_constant_p (rtx x)
 
 /* Return true if X is a constant representable as two inline immediate
    constants in a 64-bit instruction that is split into two 32-bit
-   instructions.  */
+   instructions.
+   When MIXED is set, the low-part is permitted to use the full 32-bits.  */
 
 bool
-gcn_inline_constant64_p (rtx x)
+gcn_inline_constant64_p (rtx x, bool mixed)
 {
   if (GET_CODE (x) == CONST_VECTOR)
     {
       if (!vgpr_vector_mode_p (GET_MODE (x)))
 	return false;
-      if (!gcn_inline_constant64_p (CONST_VECTOR_ELT (x, 0)))
+      if (!gcn_inline_constant64_p (CONST_VECTOR_ELT (x, 0), mixed))
 	return false;
       for (int i = 1; i < 64; i++)
 	if (CONST_VECTOR_ELT (x, i) != CONST_VECTOR_ELT (x, 0))
@@ -925,7 +926,8 @@ gcn_inline_constant64_p (rtx x)
 
   rtx val_lo = gcn_operand_part (DImode, x, 0);
   rtx val_hi = gcn_operand_part (DImode, x, 1);
-  return gcn_inline_constant_p (val_lo) && gcn_inline_constant_p (val_hi);
+  return ((mixed || gcn_inline_constant_p (val_lo))
+	  && gcn_inline_constant_p (val_hi));
 }
 
 /* Return true if X is a constant representable as an immediate constant
@@ -5937,10 +5939,10 @@ print_operand (FILE *file, rtx x, int code)
 	switch (GET_MODE_SIZE (mode))
 	  {
 	  case 1:
-	    s = "32";
-	    break;
+	    output_operand_lossage ("operand %%xn code invalid for QImode");
+	    return;
 	  case 2:
-	    s = float_p ? "16" : "32";
+	    s = "16";
 	    break;
 	  case 4:
 	    s = "32";

@@ -1221,7 +1221,7 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
 	break;
       }
     case COND_EXPR:
-	  {
+      {
 	/* In case of COND_EXPR, we do not care about the type of
 	   COND_EXPR, only about the conversion of each operand.  */
 	tree op1 = TREE_OPERAND (expr, 1);

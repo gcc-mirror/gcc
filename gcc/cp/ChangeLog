@@ -1,3 +1,102 @@
+2020-01-10  Jason Merrill  <jason@redhat.com>
+
+	* typeck.c (cp_build_binary_op): Restore short_shift code.
+
+	PR c++/93143 - incorrect tree sharing with constexpr.
+	* constexpr.c (cxx_eval_outermost_constant_expr): Don't assume
+	CONSTRUCTORs are already unshared.
+
+	PR c++/93173 - incorrect tree sharing.
+	PR c++/93033
+	* cp-gimplify.c (cp_gimplify_init_expr, cp_gimplify_expr): Use
+	copy_if_shared after cp_genericize_tree.
+	* typeck2.c (split_nonconstant_init): Don't unshare here.
+
+2020-01-08  Jason Merrill  <jason@redhat.com>
+
+	* cp-gimplify.c (cp_gimplify_expr) [TARGET_EXPR]: Check
+	TARGET_EXPR_DIRECT_INIT_P.
+	* constexpr.c (cxx_eval_constant_expression): Likewise.
+
+2020-01-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91369 - constexpr destructor and member initializer.
+	* constexpr.c (cxx_eval_store_expression): Look through TARGET_EXPR
+	when not preevaluating.
+
+2020-01-08  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_eval_call_expression): Remove DECL_BY_REFERENCE
+	support.
+
+2020-01-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* init.c (build_new): Add location_t parameter and use it throughout.
+	(build_raw_new_expr): Likewise.
+	* parser.c (cp_parser_new_expression): Pass the combined_loc.
+	* pt.c (tsubst_copy_and_build): Adjust call.
+	* cp-tree.h: Update declarations.
+
+2020-01-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/47877 - -fvisibility-inlines-hidden and member templates.
+	* decl2.c (determine_visibility): -fvisibility-inlines-hidden beats
+	explicit class visibility for a template.
+
+2020-01-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* mangle.c (mangle_type_attribute_p): New function, split out from...
+	(write_CV_qualifiers_for_type): ...here.  Don't mangle attributes
+	that contain a space.
+
+2020-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91369
+	* constexpr.c (struct constexpr_global_ctx): Add heap_alloc_count
+	member, initialize it to zero in ctor.
+	(cxx_eval_call_expression): Bump heap_dealloc_count when deleting
+	a heap object.  Don't cache calls to functions which allocate some
+	heap objects and don't deallocate them or deallocate some heap
+	objects they didn't allocate.
+
+2020-01-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92552 - ICE with inherited constrained default ctor.
+	* pt.c (instantiate_class_template_1): Copy
+	TYPE_HAS_USER_CONSTRUCTOR.
+	* class.c (one_inherited_ctor): Don't set it here.
+
+2020-01-06  Andrew Sutton  <asutton@lock3software.com>
+
+	PR c++/92739 - parsing requires clause with attributes.
+	* parser.c (cp_parser_constraint_requires_parens): Exclude
+	attributes as postfix expressions.
+
+2020-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93138
+	* parser.c (cp_parser_check_class_key): Disable access checks for the
+	simple name lookup.
+	(cp_parser_maybe_warn_enum_key): Likewise.  Return early if
+	!warn_redundant_tags.
+
+2010-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93046
+	* cp-gimplify.c (cp_gimplify_init_expr): Don't look through
+	TARGET_EXPR if it has been gimplified already.
+
+2020-01-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93033 - incorrect tree node sharing with array init.
+	* typeck2.c (split_nonconstant_init): Unshare non-decl.
+	* cp-gimplify.c (cp_gimplify_init_expr): Only split if -fexceptions.
+
+2020-01-02  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (invalid_nontype_parm_type_p): Reject class placeholder in
+	C++17.
+
 2020-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/90677

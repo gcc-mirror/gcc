@@ -523,12 +523,13 @@ cp_gimplify_init_expr (tree *expr_p, gimple_seq *pre_p)
      think that such code never uses the TARGET_EXPR as an initializer.  If
      I'm wrong, we'll abort because the temp won't have any RTL.  In that
      case, I guess we'll need to replace references somehow.  */
-  if (TREE_CODE (from) == TARGET_EXPR)
+  if (TREE_CODE (from) == TARGET_EXPR && TARGET_EXPR_INITIAL (from))
     from = TARGET_EXPR_INITIAL (from);
 
   /* If we might need to clean up a partially constructed object, break down
      the CONSTRUCTOR with split_nonconstant_init.  */
   if (TREE_CODE (from) == CONSTRUCTOR
+      && flag_exceptions
       && TREE_SIDE_EFFECTS (from)
       && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (to)))
     {
@@ -536,6 +537,7 @@ cp_gimplify_init_expr (tree *expr_p, gimple_seq *pre_p)
       replace_placeholders (from, to);
       from = split_nonconstant_init (to, from);
       cp_genericize_tree (&from, false);
+      copy_if_shared (&from);
       *expr_p = from;
       return;
     }
@@ -711,6 +713,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	hash_set<tree> pset;
 	cp_walk_tree (expr_p, cp_fold_r, &pset, NULL);
 	cp_genericize_tree (expr_p, false);
+	copy_if_shared (expr_p);
 	ret = GS_OK;
 	input_location = loc;
       }
@@ -922,6 +925,13 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 					 BUILT_IN_FRONTEND))
 	    *expr_p = fold_builtin_source_location (EXPR_LOCATION (*expr_p));
 	}
+      break;
+
+    case TARGET_EXPR:
+      /* A TARGET_EXPR that expresses direct-initialization should have been
+	 elided by cp_gimplify_init_expr.  */
+      gcc_checking_assert (!TARGET_EXPR_DIRECT_INIT_P (*expr_p));
+      ret = GS_UNHANDLED;
       break;
 
     case RETURN_EXPR:

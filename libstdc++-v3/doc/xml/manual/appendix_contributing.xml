@@ -463,6 +463,9 @@ indicate a place that may require attention for multi-thread safety.
       _res_ext
       __tg_*
 
+      VxWorks adds:
+      _C2
+
       For GCC:
 
       [Note that this list is out of date. It applies to the old
