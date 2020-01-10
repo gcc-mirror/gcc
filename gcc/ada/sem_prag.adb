@@ -23448,6 +23448,11 @@ package body Sem_Prag is
                   --  pragma in which case the current pragma is illegal as
                   --  it cannot "complete".
 
+                  elsif Get_SPARK_Mode_From_Annotation (N) = Off
+                    and then (Is_Generic_Unit (Entity) or else In_Instance)
+                  then
+                     null;
+
                   else
                      Error_Msg_N ("incorrect use of SPARK_Mode", Err_N);
                      Error_Msg_Sloc := Sloc (Err_Id);
@@ -23773,16 +23778,6 @@ package body Sem_Prag is
          --  Start of processing for Do_SPARK_Mode
 
          begin
-            --  When a SPARK_Mode pragma appears inside an instantiation whose
-            --  enclosing context has SPARK_Mode set to "off", the pragma has
-            --  no semantic effect.
-
-            if Ignore_SPARK_Mode_Pragmas_In_Instance then
-               Rewrite (N, Make_Null_Statement (Loc));
-               Analyze (N);
-               return;
-            end if;
-
             GNAT_Pragma;
             Check_No_Identifiers;
             Check_At_Most_N_Arguments (1);
@@ -23798,6 +23793,18 @@ package body Sem_Prag is
 
             Mode_Id := Get_SPARK_Mode_Type (Mode);
             Context := Parent (N);
+
+            --  When a SPARK_Mode pragma appears inside an instantiation whose
+            --  enclosing context has SPARK_Mode set to "off", the pragma has
+            --  no semantic effect.
+
+            if Ignore_SPARK_Mode_Pragmas_In_Instance
+              and then Mode_Id /= Off
+            then
+               Rewrite (N, Make_Null_Statement (Loc));
+               Analyze (N);
+               return;
+            end if;
 
             --  The pragma appears in a configuration file
 
