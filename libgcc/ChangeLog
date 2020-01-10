@@ -1,3 +1,9 @@
+2020-01-10  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/atomic.c: Remove include of stdint.h.
+	(__sync_val_compare_and_swap_##SIZE): Replace uintptr_t with
+	__UINTPTR_TYPE__.
+
 2020-01-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* config/gcn/atomic.c: New.

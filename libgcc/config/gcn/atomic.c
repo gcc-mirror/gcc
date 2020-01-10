@@ -22,15 +22,14 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include <stdbool.h>
-#include <stdint.h>
 
 #define __SYNC_SUBWORD_COMPARE_AND_SWAP(TYPE, SIZE)			     \
 									     \
 TYPE									     \
 __sync_val_compare_and_swap_##SIZE (TYPE *ptr, TYPE oldval, TYPE newval)     \
 {									     \
-  unsigned int *wordptr = (unsigned int *)((uintptr_t) ptr & ~3UL);	     \
-  int shift = ((uintptr_t) ptr & 3UL) * 8;				     \
+  unsigned int *wordptr = (unsigned int *)((__UINTPTR_TYPE__ ) ptr & ~3UL);  \
+  int shift = ((__UINTPTR_TYPE__ ) ptr & 3UL) * 8;			     \
   unsigned int valmask = (1 << (SIZE * 8)) - 1;				     \
   unsigned int wordmask = ~(valmask << shift);				     \
   unsigned int oldword = *wordptr;					     \
