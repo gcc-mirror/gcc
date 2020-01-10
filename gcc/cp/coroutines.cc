@@ -460,8 +460,7 @@ lookup_promise_method (tree fndecl, tree member_id, location_t loc,
 		     /*protect*/ 1, /*want_type*/ 0, tf_warning_or_error);
   if (musthave && (pm_memb == NULL_TREE || pm_memb == error_mark_node))
     {
-      error_at (loc, "no member named %qs in %qT",
-		IDENTIFIER_POINTER (member_id), promise);
+      error_at (loc, "no member named %qE in %qT", member_id, promise);
       return error_mark_node;
     }
   return pm_memb;
@@ -545,8 +544,8 @@ coro_function_valid_p (tree fndecl)
   /* Since we think the function is a coroutine, that implies we parsed
      a keyword that triggered this.  Keywords check promise validity for
      their context and thus the promise type should be known at this point.  */
-  gcc_assert (get_coroutine_handle_type (fndecl) != NULL_TREE
-	      && get_coroutine_promise_type (fndecl) != NULL_TREE);
+  gcc_checking_assert (get_coroutine_handle_type (fndecl) != NULL_TREE
+		       && get_coroutine_promise_type (fndecl) != NULL_TREE);
 
   if (current_function_returns_value || current_function_returns_null)
     {
@@ -598,7 +597,7 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
   tree o_type = complete_type_or_else (TREE_TYPE (o), o);
   if (TREE_CODE (o_type) != RECORD_TYPE)
     {
-      error_at (loc, "awaitable type %qT is not a structure or union",
+      error_at (loc, "awaitable type %qT is not a structure",
 		o_type);
       return error_mark_node;
     }
@@ -733,7 +732,7 @@ finish_co_await_expr (location_t kw, tree expr)
   tree at_meth
     = lookup_promise_method (current_function_decl,
 			     coro_await_transform_identifier, kw,
-			     /*musthave*/ false);
+			     /*musthave=*/ false);
   if (at_meth == error_mark_node)
     return error_mark_node;
 
@@ -804,7 +803,7 @@ finish_co_yield_expr (location_t kw, tree expr)
      call for p.yield_value(e).  */
   tree y_meth = lookup_promise_method (current_function_decl,
 				       coro_yield_value_identifier, kw,
-				       true /*musthave*/);
+				        /*musthave=*/ true);
   if (!y_meth || y_meth == error_mark_node)
     return error_mark_node;
 
@@ -1284,9 +1283,7 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
       else if (tree r
 	       = cp_walk_tree (&TREE_OPERAND (stripped_stmt, 1),
 			       co_await_find_in_subtree, &buried_stmt, NULL))
-	{
-	  saved_co_await = r;
-	}
+	saved_co_await = r;
     }
   else if (stmt_code == CALL_EXPR)
     {
@@ -1403,8 +1400,8 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
   finish_switch_cond (r, sw);
   r = build_case_label (build_int_cst (integer_type_node, 0), NULL_TREE,
 			create_anon_label_with_ctx (loc, actor));
-  add_stmt (r); // case 0:
-  // Implement the suspend, a scope exit without clean ups.
+  add_stmt (r); /* case 0: */
+  /* Implement the suspend, a scope exit without clean ups.  */
   r = build_call_expr_internal_loc (loc, IFN_CO_SUSPN, void_type_node, 1, susp);
   r = coro_build_cvt_void_expr_stmt (r, loc);
   add_stmt (r); //   goto ret;
@@ -1635,8 +1632,8 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 
   /* For each var in this bind expr (that has a frame id, which means it was
      accessed), build a frame reference for each and then walk the bind expr
-     statements, substituting the frame ref for the original var.
-  */
+     statements, substituting the frame ref for the original var.  */
+
   if (TREE_CODE (*stmt) == BIND_EXPR)
     {
       tree lvar;
@@ -1968,7 +1965,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   tree return_void = NULL_TREE;
   tree rvm
     = lookup_promise_method (orig, coro_return_void_identifier, loc,
-			     /*musthave*/false);
+			     /*musthave=*/ false);
   if (rvm && rvm != error_mark_node)
     return_void
       = build_new_method_call (ap, rvm, NULL, NULL_TREE, LOOKUP_NORMAL, NULL,
@@ -2249,7 +2246,7 @@ build_init_or_final_await (location_t loc, bool is_final)
   tree suspend_alt = is_final ? coro_final_suspend_identifier
 			      : coro_initial_suspend_identifier;
   tree setup_meth = lookup_promise_method (current_function_decl, suspend_alt,
-					   loc, true /*musthave*/);
+					   loc, /*musthave=*/ true);
   if (!setup_meth || setup_meth == error_mark_node)
     return error_mark_node;
 
@@ -2266,6 +2263,9 @@ build_init_or_final_await (location_t loc, bool is_final)
   return build_co_await (loc, setup_call, (is_final ? FINAL_SUSPEND_POINT
 						    : INITIAL_SUSPEND_POINT));
 }
+
+/* Callback to record the essential data for each await point found in the
+   function.  */
 
 static bool
 register_await_info (tree await_expr, tree aw_type, tree aw_nam, tree susp_type,
@@ -3101,7 +3101,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   */
   tree grooaf_meth
     = lookup_promise_method (orig, coro_gro_on_allocation_fail_identifier,
-			     fn_start, false /*musthave*/);
+			     fn_start, /*musthave=*/ false);
 
   /* The CO_FRAME internal function is a mechanism to allow the middle end
      to adjust the allocation in response to optimisations.  We provide the
@@ -3126,7 +3126,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  TREE_USED (fn) = 1;
 	}
       tree nth_ns = lookup_qualified_name (std_node, get_identifier ("nothrow"),
-					   0, true /*complain*/, false);
+					   0, /*complain=*/ true, false);
       arglist->quick_push (nth_ns);
     }
 
@@ -3135,7 +3135,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree nwname = ovl_op_identifier (false, NEW_EXPR);
   /* The user can (optionally) provide an allocation function in the promise
       type, it's not a failure for it to be absent.  */
-  tree fns = lookup_promise_method (orig, nwname, fn_start, /*musthave*/ false);
+  tree fns = lookup_promise_method (orig, nwname, fn_start,
+				    /*musthave=*/ false);
   tree new_fn = NULL_TREE;
   if (fns && fns != error_mark_node)
     {
@@ -3155,7 +3156,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
     {
       fns =lookup_name_real (nwname, 0, 1, /*block_p=*/true, 0, 0);
       new_fn = lookup_arg_dependent (nwname, fns, arglist);
-      new_fn = build_new_function_call (new_fn, &arglist, /*complain*/ true);
+      new_fn = build_new_function_call (new_fn, &arglist, /*complain=*/ true);
     }
 
   tree allocated = build1 (CONVERT_EXPR, coro_frame_ptr, new_fn);
@@ -3400,7 +3401,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   tree gro_meth = lookup_promise_method (orig,
 					 coro_get_return_object_identifier,
-					 fn_start, /*musthave*/ true );
+					 fn_start, /*musthave=*/ true );
   tree get_ro
     = build_new_method_call (p, gro_meth, NULL, NULL_TREE, LOOKUP_NORMAL, NULL,
 			     tf_warning_or_error);
@@ -3514,7 +3515,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
     {
       tree ueh_meth
 	= lookup_promise_method (orig, coro_unhandled_exception_identifier,
-				 fn_start, /*musthave*/ true);
+				 fn_start, /*musthave=*/ true);
       /* Build promise.unhandled_exception();  */
       tree ueh
 	= build_new_method_call (p, ueh_meth, NULL, NULL_TREE, LOOKUP_NORMAL,
@@ -3555,10 +3556,10 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	 present.  */
       tree ueh_meth
 	= lookup_promise_method (orig, coro_unhandled_exception_identifier,
-				 fn_start, /*musthave*/ false);
+				 fn_start, /*musthave=*/ false);
       if (!ueh_meth || ueh_meth == error_mark_node)
-	warning_at (fn_start, 0, "no member named %qs in %qT",
-		    IDENTIFIER_POINTER (coro_unhandled_exception_identifier),
+	warning_at (fn_start, 0, "no member named %qE in %qT",
+		    coro_unhandled_exception_identifier,
 		    get_coroutine_promise_type (orig));
     }
   /* Else we don't check and don't care if the method is missing.  */

@@ -7752,7 +7752,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case ANNOTATE_EXPR:
       return RECUR (TREE_OPERAND (t, 0), rval);
 
-    /* coroutine await expressions are not.  */
+    /* Coroutine await, yield and return expressions are not.  */
     case CO_AWAIT_EXPR:
     case CO_YIELD_EXPR:
     case CO_RETURN_EXPR:

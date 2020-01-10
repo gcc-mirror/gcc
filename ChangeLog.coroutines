@@ -1,6 +1,14 @@
 2020-01-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* constexpr.c (potential_constant_expression_1): Update comment.
+	* coroutines.cc: Update comments and use of extended format print
+	options.
+	* decl.c (emit_coro_helper): Add a comment.
+
+2020-01-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (captures_temporary): Restore checks for and
 	skipping of, this pointers in ctors and dtors.
 

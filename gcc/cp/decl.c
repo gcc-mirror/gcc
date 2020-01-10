@@ -16783,6 +16783,10 @@ add_return_star_this_fixit (gcc_rich_location *richloc, tree fndecl)
 				       indent);
 }
 
+/* This function carries out the subset of finish_function operations needed
+   to emit the compiler-generated outlined helper functions used by the
+   coroutines implementation.  */
+
 static void
 emit_coro_helper (tree helper)
 {
@@ -16797,7 +16801,7 @@ emit_coro_helper (tree helper)
   cfun->language = ggc_cleared_alloc<language_function> ();
   poplevel (1, 0, 1);
   maybe_save_function_definition (helper);
-  /* Things get weird if we don't start fresh.  */
+  /* We must start each function with a clear fold cache.  */
   clear_fold_cache ();
   cp_fold_function (helper);
   DECL_CONTEXT (DECL_RESULT (helper)) = helper;
