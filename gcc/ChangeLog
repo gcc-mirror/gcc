@@ -1,3 +1,15 @@
+2020-01-13  Andrew Pinski  <apinski@marvell.com>
+
+	* config/aarch64/aarch64-cores.def (octeontx2): New define.
+	(octeontx2t98): New define.
+	(octeontx2t96): New define.
+	(octeontx2t93): New define.
+	(octeontx2f95): New define.
+	(octeontx2f95n): New define.
+	(octeontx2f95mm): New define.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi (-mcpu=): Document the new cpu types.
+
 2020-01-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/33799 - destroy return value if local cleanup throws.
