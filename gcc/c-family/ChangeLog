@@ -1,3 +1,9 @@
+2020-01-10  Martin Sebor  <msebor@redhat.com>
+
+	PR c/93132
+	* c-attribs.c (append_access_attrs): Validate against the translated
+	access string rather than the human-readable representation.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
