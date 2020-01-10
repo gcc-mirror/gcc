@@ -1852,8 +1852,9 @@ determine_known_aggregate_parts (struct ipa_func_body_info *fbi,
   tree arg_base;
   bool check_ref, by_ref;
   ao_ref r;
+  int max_agg_items = opt_for_fn (fbi->node->decl, param_ipa_max_agg_items);
 
-  if (param_ipa_max_agg_items == 0)
+  if (max_agg_items == 0)
     return;
 
   /* The function operates in three stages.  First, we prepare check_ref, r,
@@ -1951,14 +1952,14 @@ determine_known_aggregate_parts (struct ipa_func_body_info *fbi,
 		 operands, whose definitions can finally reach the call.  */
 	      add_to_agg_contents_list (&list, (*copy = *content, copy));
 
-	      if (++value_count == param_ipa_max_agg_items)
+	      if (++value_count == max_agg_items)
 		break;
 	    }
 
 	  /* Add to the list consisting of all dominating virtual operands.  */
 	  add_to_agg_contents_list (&all_list, content);
 
-	  if (++item_count == 2 * param_ipa_max_agg_items)
+	  if (++item_count == 2 * max_agg_items)
 	    break;
 	}
       dom_vuse = gimple_vuse (stmt);

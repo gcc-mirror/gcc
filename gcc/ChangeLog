@@ -1,3 +1,11 @@
+2020-01-10  Martin Jambor  <mjambor@suse.cz>
+
+	* params.opt (param_ipa_max_agg_items): Mark as Optimization
+	* ipa-cp.c (merge_agg_lats_step): New parameter max_agg_items, use
+	instead of param_ipa_max_agg_items.
+	(merge_aggregate_lattices): Extract param_ipa_max_agg_items from
+	optimization info for the callee.
+
 2020-01-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* lto-streamer-in.c (input_function): Remove streamed-in inline debug
