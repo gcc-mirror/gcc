@@ -1,3 +1,9 @@
+2020-01-10  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	Backport from trunk
+	* config/arm/t-multilib: Use arm->thumb multilib reuse rules
+	on a-profile.
+
 2020-01-09  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
