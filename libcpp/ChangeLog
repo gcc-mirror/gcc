@@ -1,3 +1,11 @@
+2020-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (class diagnostic_path): New forward decl.
+	(rich_location::get_path): New accessor.
+	(rich_location::set_path): New function.
+	(rich_location::m_path): New field.
+	* line-map.c (rich_location::rich_location): Initialize m_path.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

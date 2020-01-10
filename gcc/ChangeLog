@@ -1,3 +1,83 @@
+2020-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Add tree-diagnostic-path.o.
+	* common.opt (fdiagnostics-path-format=): New option.
+	(diagnostic_path_format): New enum.
+	(fdiagnostics-show-path-depths): New option.
+	* coretypes.h (diagnostic_event_id_t): New forward decl.
+	* diagnostic-color.c (color_dict): Add "path".
+	* diagnostic-event-id.h: New file.
+	* diagnostic-format-json.cc (json_from_expanded_location): Make
+	non-static.
+	(json_end_diagnostic): Call context->make_json_for_path if it
+	exists and the diagnostic has a path.
+	(diagnostic_output_format_init): Clear context->print_path.
+	* diagnostic-path.h: New file.
+	* diagnostic-show-locus.c (colorizer::set_range): Special-case
+	when printing a run of events in a diagnostic_path so that they
+	all get the same color.
+	(layout::m_diagnostic_path_p): New field.
+	(layout::layout): Initialize it.
+	(layout::print_any_labels): Don't colorize the label text for an
+	event in a diagnostic_path.
+	(gcc_rich_location::add_location_if_nearby): Add
+	"restrict_to_current_line_spans" and "label" params.  Pass the
+	former to layout.maybe_add_location_range; pass the latter
+	when calling add_range.
+	* diagnostic.c: Include "diagnostic-path.h".
+	(diagnostic_initialize): Initialize context->path_format and
+	context->show_path_depths.
+	(diagnostic_show_any_path): New function.
+	(diagnostic_path::interprocedural_p): New function.
+	(diagnostic_report_diagnostic): Call diagnostic_show_any_path.
+	(simple_diagnostic_path::num_events): New function.
+	(simple_diagnostic_path::get_event): New function.
+	(simple_diagnostic_path::add_event): New function.
+	(simple_diagnostic_event::simple_diagnostic_event): New ctor.
+	(simple_diagnostic_event::~simple_diagnostic_event): New dtor.
+	(debug): New overload taking a diagnostic_path *.
+	* diagnostic.def (DK_DIAGNOSTIC_PATH): New.
+	* diagnostic.h (enum diagnostic_path_format): New enum.
+	(json::value): New forward decl.
+	(diagnostic_context::path_format): New field.
+	(diagnostic_context::show_path_depths): New field.
+	(diagnostic_context::print_path): New callback field.
+	(diagnostic_context::make_json_for_path): New callback field.
+	(diagnostic_show_any_path): New decl.
+	(json_from_expanded_location): New decl.
+	* doc/invoke.texi (-fdiagnostics-path-format=): New option.
+	(-fdiagnostics-show-path-depths): New option.
+	(-fdiagnostics-color): Add "path" to description of default
+	GCC_COLORS; describe it.
+	(-fdiagnostics-format=json): Document how diagnostic paths are
+	represented in the JSON output format.
+	* gcc-rich-location.h (gcc_rich_location::add_location_if_nearby):
+	Add optional params "restrict_to_current_line_spans" and "label".
+	* opts.c (common_handle_option): Handle
+	OPT_fdiagnostics_path_format_ and
+	OPT_fdiagnostics_show_path_depths.
+	* pretty-print.c: Include "diagnostic-event-id.h".
+	(pp_format): Implement "%@" format code for printing
+	diagnostic_event_id_t *.
+	(selftest::test_pp_format): Add tests for "%@".
+	* selftest-run-tests.c (selftest::run_tests): Call
+	selftest::tree_diagnostic_path_cc_tests.
+	* selftest.h (selftest::tree_diagnostic_path_cc_tests): New decl.
+	* toplev.c (general_init): Initialize global_dc->path_format and
+	global_dc->show_path_depths.
+	* tree-diagnostic-path.cc: New file.
+	* tree-diagnostic.c (maybe_unwind_expanded_macro_loc): Make
+	non-static.  Drop "diagnostic" param in favor of storing the
+	original value of "where" and re-using it.
+	(virt_loc_aware_diagnostic_finalizer): Update for dropped param of
+	maybe_unwind_expanded_macro_loc.
+	(tree_diagnostics_defaults): Initialize context->print_path and
+	context->make_json_for_path.
+	* tree-diagnostic.h (default_tree_diagnostic_path_printer): New
+	decl.
+	(default_tree_make_json_for_path): New decl.
+	(maybe_unwind_expanded_macro_loc): New decl.
+
 2020-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/93210

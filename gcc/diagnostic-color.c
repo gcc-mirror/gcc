@@ -90,6 +90,7 @@ static struct color_cap color_dict[] =
   { "range2", SGR_SEQ (COLOR_FG_BLUE), 6, false },
   { "locus", SGR_SEQ (COLOR_BOLD), 5, false },
   { "quote", SGR_SEQ (COLOR_BOLD), 5, false },
+  { "path", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_CYAN), 4, false },
   { "fixit-insert", SGR_SEQ (COLOR_FG_GREEN), 12, false },
   { "fixit-delete", SGR_SEQ (COLOR_FG_RED), 12, false },
   { "diff-filename", SGR_SEQ (COLOR_BOLD), 13, false },
@@ -126,7 +127,7 @@ colorize_stop (bool show_color)
 
 /* Parse GCC_COLORS.  The default would look like:
    GCC_COLORS='error=01;31:warning=01;35:note=01;36:\
-   range1=32:range2=34:locus=01:quote=01:\
+   range1=32:range2=34:locus=01:quote=01:path=01;36:\
    fixit-insert=32:fixit-delete=31:'\
    diff-filename=01:diff-hunk=32:diff-delete=31:diff-insert=32:\
    type-diff=01;32'

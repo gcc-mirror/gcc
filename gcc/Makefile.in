@@ -1521,6 +1521,7 @@ OBJS = \
 	tree-data-ref.o \
 	tree-dfa.o \
 	tree-diagnostic.o \
+	tree-diagnostic-path.o \
 	tree-dump.o \
 	tree-eh.o \
 	tree-emutls.o \
