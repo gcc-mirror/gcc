@@ -1,3 +1,31 @@
+2020-01-10  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config.gcc: Add arm_bf16.h.
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_simd_builtin_std_type): Add BFmode.
+	(aarch64_init_simd_builtin_types): Define element types for vector
+	types.
+	(aarch64_init_bf16_types): New function.
+	(aarch64_general_init_builtins): Add arm_init_bf16_types function call.
+	* config/aarch64/aarch64-modes.def: Add BFmode and V4BF, V8BF vector
+	modes.
+	* config/aarch64/aarch64-simd-builtin-types.def: Add BF SIMD types.
+	* config/aarch64/aarch64-simd.md: Add BF vector types to NEON move
+	patterns.
+	* config/aarch64/aarch64.h (AARCH64_VALID_SIMD_DREG_MODE): Add V4BF.
+	(AARCH64_VALID_SIMD_QREG_MODE): Add V8BF.
+	* config/aarch64/aarch64.c
+	(aarch64_classify_vector_mode): Add support for BF types.
+	(aarch64_gimplify_va_arg_expr): Add support for BF types.
+	(aarch64_vq_mode): Add support for BF types.
+	(aarch64_simd_container_mode): Add support for BF types.
+	(aarch64_mangle_type): Add support for BF scalar type.
+	* config/aarch64/aarch64.md: Add BFmode to movhf pattern.
+	* config/aarch64/arm_bf16.h: New file.
+	* config/aarch64/arm_neon.h: Add arm_bf16.h and Bfloat vector types.
+	* config/aarch64/iterators.md: Add BF types to mode attributes.
+	(HFBF, GPF_TF_F16_MOV, VDMOV, VQMOV, VQMOV_NO2Em VALL_F16MOV): New.
+
 2020-01-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/93173 - incorrect tree sharing.
