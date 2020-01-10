@@ -12802,12 +12802,19 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
       stmt = gimple_build_omp_target (body, GF_OMP_TARGET_KIND_OACC_DATA,
 				      OMP_CLAUSES (expr));
       break;
-    case OACC_KERNELS:
-      stmt = gimple_build_omp_target (body, GF_OMP_TARGET_KIND_OACC_KERNELS,
+    case OACC_HOST_DATA:
+      if (omp_find_clause (OMP_CLAUSES (expr), OMP_CLAUSE_IF_PRESENT))
+	{
+	  for (tree c = OMP_CLAUSES (expr); c; c = OMP_CLAUSE_CHAIN (c))
+	    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_PTR)
+	      OMP_CLAUSE_USE_DEVICE_PTR_IF_PRESENT (c) = 1;
+	}
+
+      stmt = gimple_build_omp_target (body, GF_OMP_TARGET_KIND_OACC_HOST_DATA,
 				      OMP_CLAUSES (expr));
       break;
-    case OACC_HOST_DATA:
-      stmt = gimple_build_omp_target (body, GF_OMP_TARGET_KIND_OACC_HOST_DATA,
+    case OACC_KERNELS:
+      stmt = gimple_build_omp_target (body, GF_OMP_TARGET_KIND_OACC_KERNELS,
 				      OMP_CLAUSES (expr));
       break;
     case OACC_PARALLEL:
