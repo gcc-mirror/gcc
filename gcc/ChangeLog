@@ -1,3 +1,13 @@
+2020-01-10  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR tree-optimization/90838
+	* tree-ssa-forwprop.c (check_ctz_array): Add new function.
+	(check_ctz_string): Likewise.
+	(optimize_count_trailing_zeroes): Likewise.
+	(simplify_count_trailing_zeroes): Likewise.
+	(pass_forwprop::execute): Try ctz simplification.
+	* match.pd: Add matching for ctz idioms.
+
 2020-01-10  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_invalid_conversion): New function
