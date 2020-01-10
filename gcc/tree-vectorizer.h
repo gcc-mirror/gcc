@@ -1489,6 +1489,10 @@ vect_dr_behavior (dr_vec_info *dr_info)
     return &STMT_VINFO_DR_WRT_VEC_LOOP (stmt_info);
 }
 
+/* Return the offset calculated by adding the offset of this DR_INFO to the
+   corresponding data_reference's offset.  If CHECK_OUTER then use
+   vect_dr_behavior to select the appropriate data_reference to use.  */
+
 inline tree
 get_dr_vinfo_offset (dr_vec_info *dr_info, bool check_outer = false)
 {
