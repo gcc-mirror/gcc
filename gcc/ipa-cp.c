@@ -375,7 +375,7 @@ static profile_count max_count;
 
 /* Original overall size of the program.  */
 
-static long overall_size, max_new_size;
+static long overall_size, orig_overall_size;
 
 /* Node name to unique clone suffix number map.  */
 static hash_map<const char *, unsigned> *clone_num_suffixes;
@@ -3420,6 +3420,23 @@ perform_estimation_of_a_value (cgraph_node *node, vec<tree> known_csts,
   val->local_size_cost = size;
 }
 
+/* Get the overall limit oof growth based on parameters extracted from growth.
+   it does not really make sense to mix functions with different overall growth
+   limits but it is possible and if it happens, we do not want to select one
+   limit at random.  */
+
+static long
+get_max_overall_size (cgraph_node *node)
+{
+  long max_new_size = orig_overall_size;
+  long large_unit = opt_for_fn (node->decl, param_large_unit_insns);
+  if (max_new_size < large_unit)
+    max_new_size = large_unit;
+  int unit_growth = opt_for_fn (node->decl, param_ipcp_unit_growth);
+  max_new_size += max_new_size * unit_growth / 100 + 1;
+  return max_new_size;
+}
+
 /* Iterate over known values of parameters of NODE and estimate the local
    effects in terms of time and size they have.  */
 
@@ -3482,7 +3499,7 @@ estimate_local_effects (struct cgraph_node *node)
 					   stats.freq_sum, stats.count_sum,
 					   size))
 	{
-	  if (size + overall_size <= max_new_size)
+	  if (size + overall_size <= get_max_overall_size (node))
 	    {
 	      info->do_clone_for_all_contexts = true;
 	      overall_size += size;
@@ -3492,8 +3509,8 @@ estimate_local_effects (struct cgraph_node *node)
 			 "known contexts, growth deemed beneficial.\n");
 	    }
 	  else if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "   Not cloning for all contexts because "
-		     "max_new_size would be reached with %li.\n",
+	    fprintf (dump_file, "  Not cloning for all contexts because "
+		     "maximum unit size would be reached with %li.\n",
 		     size + overall_size);
 	}
       else if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3885,14 +3902,10 @@ ipcp_propagate_stage (class ipa_topo_info *topo)
     max_count = max_count.max (node->count.ipa ());
   }
 
-  max_new_size = overall_size;
-  if (max_new_size < param_large_unit_insns)
-    max_new_size = param_large_unit_insns;
-  max_new_size += max_new_size * param_ipa_cp_unit_growth / 100 + 1;
+  orig_overall_size = overall_size;
 
   if (dump_file)
-    fprintf (dump_file, "\noverall_size: %li, max_new_size: %li\n",
-	     overall_size, max_new_size);
+    fprintf (dump_file, "\noverall_size: %li\n", overall_size);
 
   propagate_constants_topo (topo);
   if (flag_checking)
@@ -5405,11 +5418,11 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
       perhaps_add_new_callers (node, val);
       return false;
     }
-  else if (val->local_size_cost + overall_size > max_new_size)
+  else if (val->local_size_cost + overall_size > get_max_overall_size (node))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "   Ignoring candidate value because "
-		 "max_new_size would be reached with %li.\n",
+		 "maximum unit size would be reached with %li.\n",
 		 val->local_size_cost + overall_size);
       return false;
     }
@@ -5953,6 +5966,6 @@ ipa_cp_c_finalize (void)
 {
   max_count = profile_count::uninitialized ();
   overall_size = 0;
-  max_new_size = 0;
+  orig_overall_size = 0;
   ipcp_free_transformation_sum ();
 }
