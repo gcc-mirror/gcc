@@ -1,3 +1,10 @@
+2020-01-10  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	Backport from trunk
+	PR target/93188
+	Backport from trunk
+	* gcc.target/arm/multilib.exp: Add new tests for rm-profile only.
+
 2020-01-10  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline

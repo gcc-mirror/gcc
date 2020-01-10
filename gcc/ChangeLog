@@ -1,6 +1,14 @@
 2020-01-10  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
 
 	Backport from trunk
+	PR target/93188
+	* config/arm/t-multilib (MULTILIB_MATCHES): Add rules to match
+	armv7-a{+mp,+sec,+mp+sec} to appropriate armv7 multilib variants
+	when only building rm-profile multilibs.
+
+2020-01-10  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	Backport from trunk
 	* config/arm/t-multilib: Use arm->thumb multilib reuse rules
 	on a-profile.
 
