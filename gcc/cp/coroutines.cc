@@ -185,29 +185,29 @@ get_coroutine_info (tree fn_decl)
 
 /* Identifiers that are used by all coroutines.  */
 
-static tree coro_traits_identifier;
-static tree coro_handle_identifier;
-static tree coro_promise_type_identifier;
+static GTY(()) tree coro_traits_identifier;
+static GTY(()) tree coro_handle_identifier;
+static GTY(()) tree coro_promise_type_identifier;
 
 /* Required promise method name identifiers.  */
 
-static tree coro_await_transform_identifier;
-static tree coro_initial_suspend_identifier;
-static tree coro_final_suspend_identifier;
-static tree coro_return_void_identifier;
-static tree coro_return_value_identifier;
-static tree coro_yield_value_identifier;
-static tree coro_resume_identifier;
-static tree coro_from_address_identifier;
-static tree coro_get_return_object_identifier;
-static tree coro_gro_on_allocation_fail_identifier;
-static tree coro_unhandled_exception_identifier;
+static GTY(()) tree coro_await_transform_identifier;
+static GTY(()) tree coro_initial_suspend_identifier;
+static GTY(()) tree coro_final_suspend_identifier;
+static GTY(()) tree coro_return_void_identifier;
+static GTY(()) tree coro_return_value_identifier;
+static GTY(()) tree coro_yield_value_identifier;
+static GTY(()) tree coro_resume_identifier;
+static GTY(()) tree coro_from_address_identifier;
+static GTY(()) tree coro_get_return_object_identifier;
+static GTY(()) tree coro_gro_on_allocation_fail_identifier;
+static GTY(()) tree coro_unhandled_exception_identifier;
 
 /* Awaitable methods.  */
 
-static tree coro_await_ready_identifier;
-static tree coro_await_suspend_identifier;
-static tree coro_await_resume_identifier;
+static GTY(()) tree coro_await_ready_identifier;
+static GTY(()) tree coro_await_suspend_identifier;
+static GTY(()) tree coro_await_resume_identifier;
 
 /* Create the identifiers used by the coroutines library interfaces.  */
 
@@ -238,7 +238,7 @@ coro_init_identifiers ()
 
 /* Trees we only need to set up once.  */
 
-static tree void_coro_handle_type;
+static GTY(()) tree void_coro_handle_type;
 
 /* ================= Parse, Semantics and Type checking ================= */
 

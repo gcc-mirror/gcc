@@ -1,6 +1,11 @@
 2020-01-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc: Mark static trees with GTY.
+
+2020-01-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* constexpr.c (potential_constant_expression_1): Update comment.
 	* coroutines.cc: Update comments and use of extended format print
 	options.
