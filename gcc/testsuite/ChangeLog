@@ -1,3 +1,7 @@
+2020-01-10  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* testsuite/gcc.target/aarch64/pr90838.c: New test.
+
 2020-01-10  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	* g++.target/aarch64/bfloat_cpp_typecheck.C: New test.

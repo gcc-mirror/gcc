@@ -48,6 +48,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs-tree.h"
 #include "tree-vector-builder.h"
 #include "vec-perm-indices.h"
+#include "internal-fn.h"
+#include "cgraph.h"
 
 /* This pass propagates the RHS of assignment statements into use
    sites of the LHS of the assignment.  It's basically a specialized
@@ -1778,6 +1780,188 @@ simplify_rotate (gimple_stmt_iterator *gsi)
   return true;
 }
 
+
+/* Check whether an array contains a valid ctz table.  */
+static bool
+check_ctz_array (tree ctor, unsigned HOST_WIDE_INT mulc,
+		 HOST_WIDE_INT &zero_val, unsigned shift, unsigned bits)
+{
+  tree elt, idx;
+  unsigned HOST_WIDE_INT i, mask;
+  unsigned matched = 0;
+
+  mask = ((HOST_WIDE_INT_1U << (bits - shift)) - 1) << shift;
+
+  zero_val = 0;
+
+  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), i, idx, elt)
+    {
+      if (TREE_CODE (idx) != INTEGER_CST || TREE_CODE (elt) != INTEGER_CST)
+	return false;
+      if (i > bits * 2)
+	return false;
+
+      unsigned HOST_WIDE_INT index = tree_to_shwi (idx);
+      HOST_WIDE_INT val = tree_to_shwi (elt);
+
+      if (index == 0)
+	{
+	  zero_val = val;
+	  matched++;
+	}
+
+      if (val >= 0 && val < bits && (((mulc << val) & mask) >> shift) == index)
+	matched++;
+
+      if (matched > bits)
+	return true;
+    }
+
+  return false;
+}
+
+/* Check whether a string contains a valid ctz table.  */
+static bool
+check_ctz_string (tree string, unsigned HOST_WIDE_INT mulc,
+		  HOST_WIDE_INT &zero_val, unsigned shift, unsigned bits)
+{
+  unsigned HOST_WIDE_INT len = TREE_STRING_LENGTH (string);
+  unsigned HOST_WIDE_INT mask;
+  unsigned matched = 0;
+  const unsigned char *p = (const unsigned char *) TREE_STRING_POINTER (string);
+
+  if (len < bits || len > bits * 2)
+    return false;
+
+  mask = ((HOST_WIDE_INT_1U << (bits - shift)) - 1) << shift;
+
+  zero_val = p[0];
+
+  for (unsigned i = 0; i < len; i++)
+    if (p[i] < bits && (((mulc << p[i]) & mask) >> shift) == i)
+      matched++;
+
+  return matched == bits;
+}
+
+/* Recognize count trailing zeroes idiom.
+   The canonical form is array[((x & -x) * C) >> SHIFT] where C is a magic
+   constant which when multiplied by a power of 2 creates a unique value
+   in the top 5 or 6 bits.  This is then indexed into a table which maps it
+   to the number of trailing zeroes.  Array[0] is returned so the caller can
+   emit an appropriate sequence depending on whether ctz (0) is defined on
+   the target.  */
+static bool
+optimize_count_trailing_zeroes (tree array_ref, tree x, tree mulc,
+				tree tshift, HOST_WIDE_INT &zero_val)
+{
+  tree type = TREE_TYPE (array_ref);
+  tree array = TREE_OPERAND (array_ref, 0);
+
+  gcc_assert (TREE_CODE (mulc) == INTEGER_CST);
+  gcc_assert (TREE_CODE (tshift) == INTEGER_CST);
+
+  tree input_type = TREE_TYPE (x);
+  unsigned input_bits = tree_to_shwi (TYPE_SIZE (input_type));
+
+  /* Check the array is not wider than integer type and the input is a 32-bit
+     or 64-bit type.  */
+  if (TYPE_PRECISION (type) > 32)
+    return false;
+  if (input_bits != 32 && input_bits != 64)
+    return false;
+
+  if (!direct_internal_fn_supported_p (IFN_CTZ, input_type, OPTIMIZE_FOR_BOTH))
+    return false;
+
+  /* Check the lower bound of the array is zero.  */
+  tree low = array_ref_low_bound (array_ref);
+  if (!low || !integer_zerop (low))
+    return false;
+
+  unsigned shiftval = tree_to_uhwi (tshift);
+
+  /* Check the shift extracts the top 5..7 bits.  */
+  if (shiftval < input_bits - 7 || shiftval > input_bits - 5)
+    return false;
+
+  tree ctor = ctor_for_folding (array);
+  if (!ctor)
+    return false;
+
+  unsigned HOST_WIDE_INT val = tree_to_uhwi (mulc);
+
+  if (TREE_CODE (ctor) == CONSTRUCTOR)
+    return check_ctz_array (ctor, val, zero_val, shiftval, input_bits);
+
+  if (TREE_CODE (ctor) == STRING_CST)
+    return check_ctz_string (ctor, val, zero_val, shiftval, input_bits);
+
+  return false;
+}
+
+/* Match.pd function to match the ctz expression.  */
+extern bool gimple_ctz_table_index (tree, tree *, tree (*)(tree));
+
+static bool
+simplify_count_trailing_zeroes (gimple_stmt_iterator *gsi)
+{
+  gimple *stmt = gsi_stmt (*gsi);
+  tree array_ref = gimple_assign_rhs1 (stmt);
+  tree res_ops[3];
+  HOST_WIDE_INT zero_val;
+
+  gcc_checking_assert (TREE_CODE (array_ref) == ARRAY_REF);
+
+  if (!gimple_ctz_table_index (TREE_OPERAND (array_ref, 1), &res_ops[0], NULL))
+    return false;
+
+  if (optimize_count_trailing_zeroes (array_ref, res_ops[0],
+				      res_ops[1], res_ops[2], zero_val))
+    {
+      tree type = TREE_TYPE (res_ops[0]);
+      HOST_WIDE_INT ctzval;
+      HOST_WIDE_INT type_size = tree_to_shwi (TYPE_SIZE (type));
+      bool zero_ok = CTZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (type), ctzval) == 2;
+
+      /* Skip if there is no value defined at zero, or if we can't easily
+	 return the correct value for zero.  */
+      if (!zero_ok)
+	return false;
+      if (zero_val != ctzval && !(zero_val == 0 && ctzval == type_size))
+	return false;
+
+      gimple_seq seq = NULL;
+      gimple *g;
+      gcall *call = gimple_build_call_internal (IFN_CTZ, 1, res_ops[0]);
+      gimple_set_location (call, gimple_location (stmt));
+      gimple_set_lhs (call, make_ssa_name (integer_type_node));
+      gimple_seq_add_stmt (&seq, call);
+
+      tree prev_lhs = gimple_call_lhs (call);
+
+      /* Emit ctz (x) & 31 if ctz (0) is 32 but we need to return 0.  */
+      if (zero_val == 0 && ctzval == type_size)
+	{
+	  g = gimple_build_assign (make_ssa_name (integer_type_node),
+				   BIT_AND_EXPR, prev_lhs,
+				   build_int_cst (integer_type_node,
+						  type_size - 1));
+	  gimple_set_location (g, gimple_location (stmt));
+	  gimple_seq_add_stmt (&seq, g);
+	  prev_lhs = gimple_assign_lhs (g);
+	}
+
+      g = gimple_build_assign (gimple_assign_lhs (stmt), NOP_EXPR, prev_lhs);
+      gimple_seq_add_stmt (&seq, g);
+      gsi_replace_with_seq (gsi, seq, true);
+      return true;
+    }
+
+  return false;
+}
+
+
 /* Combine an element access with a shuffle.  Returns true if there were
    any changes made, else it returns false.  */
  
@@ -2874,6 +3058,8 @@ pass_forwprop::execute (function *fun)
 		    else if (code == CONSTRUCTOR
 			     && TREE_CODE (TREE_TYPE (rhs1)) == VECTOR_TYPE)
 		      changed = simplify_vector_constructor (&gsi);
+		    else if (code == ARRAY_REF)
+		      changed = simplify_count_trailing_zeroes (&gsi);
 		    break;
 		  }
 
