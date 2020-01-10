@@ -1,3 +1,8 @@
+2020-01-10  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/ipa-clone-3.c: Replace struct initializer with
+	piecemeal initialization.
+
 2020-01-10  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/index_1_run.c: Require aarch64_sve256_hw
