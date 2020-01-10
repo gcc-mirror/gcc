@@ -1210,7 +1210,39 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
 	else
 	  break;
 
-	if (TREE_CODE_CLASS (TREE_CODE (result)) == tcc_constant)
+	if (conversion_kind == UNSAFE_SIGN)
+	  {
+	    bool cstresult
+	      = (result
+		 && TREE_CODE_CLASS (TREE_CODE (result)) == tcc_constant);
+	    if (TYPE_UNSIGNED (type))
+	      {
+		if (cstresult)
+		  warning_at (loc, OPT_Wsign_conversion,
+			      "unsigned conversion from %qT to %qT "
+			      "changes value from %qE to %qE",
+			      expr_type, type, expr, result);
+		else
+		  warning_at (loc, OPT_Wsign_conversion,
+			      "unsigned conversion from %qT to %qT "
+			      "changes the value of %qE",
+			      expr_type, type, expr);
+	      }
+	    else
+	      {
+		if (cstresult)
+		  warning_at (loc, OPT_Wsign_conversion,
+			      "signed conversion from %qT to %qT changes "
+			      "value from %qE to %qE",
+			      expr_type, type, expr, result);
+		else
+		  warning_at (loc, OPT_Wsign_conversion,
+			      "signed conversion from %qT to %qT changes "
+			      "the value of %qE",
+			      expr_type, type, expr);
+	      }
+	  }
+	else if (TREE_CODE_CLASS (TREE_CODE (result)) == tcc_constant)
 	  warning_at (loc, warnopt,
 		      "conversion from %qT to %qT changes value from %qE to %qE",
 		      expr_type, type, expr, result);
@@ -1234,23 +1266,29 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
 
     default: /* 'expr' is not a constant.  */
       conversion_kind = unsafe_conversion_p (loc, type, expr, result, true);
-      if (conversion_kind == UNSAFE_IMAGINARY)
-	warning_at (loc, OPT_Wconversion,
-		    "conversion from %qT to %qT discards imaginary component",
-		    expr_type, type);
-      else
-	{
-	  int warnopt;
-	  if (conversion_kind == UNSAFE_REAL)
-	    warnopt = OPT_Wfloat_conversion;
-	  else if (conversion_kind)
-	    warnopt = OPT_Wconversion;
-	  else
-	    break;
+      {
+	int warnopt;
+	if (conversion_kind == UNSAFE_REAL)
+	  warnopt = OPT_Wfloat_conversion;
+	else if (conversion_kind == UNSAFE_SIGN)
+	  warnopt = OPT_Wsign_conversion;
+	else if (conversion_kind)
+	  warnopt = OPT_Wconversion;
+	else
+	  break;
+	if (conversion_kind == UNSAFE_SIGN)
+	  warning_at (loc, warnopt, "conversion to %qT from %qT "
+		      "may change the sign of the result",
+		      type, expr_type);
+	else if (conversion_kind == UNSAFE_IMAGINARY)
+	  warning_at (loc, warnopt,
+		      "conversion from %qT to %qT discards imaginary component",
+		      expr_type, type);
+	else
 	  warning_at (loc, warnopt,
 		      "conversion from %qT to %qT may change value",
 		      expr_type, type);
-	}
+      }
     }
 }
 

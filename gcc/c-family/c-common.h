@@ -784,8 +784,7 @@ enum conversion_safety {
   SAFE_CONVERSION = 0,
   /* Another type of conversion with problems.  */
   UNSAFE_OTHER,
-  /* Conversion between signed and unsigned integers
-     which are all warned about immediately, so this is unused.  */
+  /* Conversion between signed and unsigned integers.  */
   UNSAFE_SIGN,
   /* Conversions that reduce the precision of reals including conversions
      from reals to integers.  */
