@@ -13937,11 +13937,17 @@ aarch64_get_arch (enum aarch64_arch arch)
 static poly_uint16
 aarch64_convert_sve_vector_bits (aarch64_sve_vector_bits_enum value)
 {
-  /* For now generate vector-length agnostic code for -msve-vector-bits=128.
-     This ensures we can clearly distinguish SVE and Advanced SIMD modes when
-     deciding which .md file patterns to use and when deciding whether
-     something is a legitimate address or constant.  */
-  if (value == SVE_SCALABLE || value == SVE_128)
+  /* 128-bit SVE and Advanced SIMD modes use different register layouts
+     on big-endian targets, so we would need to forbid subregs that convert
+     from one to the other.  By default a reinterpret sequence would then
+     involve a store to memory in one mode and a load back in the other.
+     Even if we optimize that sequence using reverse instructions,
+     it would still be a significant potential overhead.
+
+     For now, it seems better to generate length-agnostic code for that
+     case instead.  */
+  if (value == SVE_SCALABLE
+      || (value == SVE_128 && BYTES_BIG_ENDIAN))
     return poly_uint16 (2, 2);
   else
     return (int) value / 64;
@@ -16121,7 +16127,9 @@ aarch64_vq_mode (scalar_mode mode)
 static machine_mode
 aarch64_simd_container_mode (scalar_mode mode, poly_int64 width)
 {
-  if (TARGET_SVE && known_eq (width, BITS_PER_SVE_VECTOR))
+  if (TARGET_SVE
+      && maybe_ne (width, 128)
+      && known_eq (width, BITS_PER_SVE_VECTOR))
     return aarch64_full_sve_mode (mode).else_mode (word_mode);
 
   gcc_assert (known_eq (width, 64) || known_eq (width, 128));

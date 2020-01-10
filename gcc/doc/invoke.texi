@@ -16262,10 +16262,11 @@ The possible values of @samp{bits} are: @samp{scalable}, @samp{128},
 @samp{256}, @samp{512}, @samp{1024} and @samp{2048}.
 Specifying @samp{scalable} selects vector-length agnostic
 output.  At present @samp{-msve-vector-bits=128} also generates vector-length
-agnostic output.  All other values generate vector-length specific code.
-The behavior of these values may change in future releases and no value except
-@samp{scalable} should be relied on for producing code that is portable across
-different hardware SVE vector lengths.
+agnostic output for big-endian targets.  All other values generate
+vector-length specific code.  The behavior of these values may change
+in future releases and no value except @samp{scalable} should be
+relied on for producing code that is portable across different
+hardware SVE vector lengths.
 
 The default is @samp{-msve-vector-bits=scalable}, which produces
 vector-length agnostic code.
