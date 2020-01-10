@@ -1,3 +1,10 @@
+2020-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90838
+	* tree-ssa-forwprop.c (simplify_count_trailing_zeroes): Use
+	SCALAR_INT_TYPE_MODE instead of TYPE_MODE as operand of
+	CTZ_DEFINED_VALUE_AT_ZERO.
+
 2020-01-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR inline-asm/93027
