@@ -1,5 +1,7 @@
 2020-01-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/util/testsuite_iterators.h: Improve comment.
+
 	* testsuite/25_algorithms/equal/deque_iterators/1.cc: Don't use C++11
 	initialization syntax.
 
