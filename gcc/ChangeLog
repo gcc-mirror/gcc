@@ -1,3 +1,20 @@
+2020-01-10  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-vect-data-refs.c (vect_create_addr_base_for_vector_ref): Use
+	get_dr_vinfo_offset
+	* tree-vect-loop.c (update_epilogue_loop_vinfo):  Remove orig_drs_init
+	parameter and its use to reset DR_OFFSET's.
+	(vect_transform_loop): Remove orig_drs_init argument.
+	* tree-vect-loop-manip.c (vect_update_init_of_dr): Update the offset
+	member of dr_vec_info rather than the offset of the associated
+	data_reference's innermost_loop_behavior.
+	(vect_update_init_of_dr): Pass dr_vec_info instead of data_reference.
+	(vect_do_peeling): Remove orig_drs_init parameter and its construction.
+	* tree-vect-stmts.c (check_scan_store): Replace use of DR_OFFSET with
+	get_dr_vinfo_offset.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+
 2020-01-10  Richard Biener  <rguenther@suse.de>
 
 	* gimple-ssa-store-merging
