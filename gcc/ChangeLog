@@ -1,6 +1,6 @@
 2020-01-10  Vladimir Makarov  <vmakarov@redhat.com>
 
-	PR inline-asm/93207
+	PR inline-asm/93027
 	* lra-constraints.c (match_reload): Permit input operands have the
 	same mode as output while other input operands have a different
 	mode.
