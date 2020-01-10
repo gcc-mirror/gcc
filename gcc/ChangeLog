@@ -1,5 +1,17 @@
 2020-01-10  Martin Jambor  <mjambor@suse.cz>
 
+	* params.opt (param_ipcp_unit_growth): Mark as Optimization.
+	* ipa-cp.c (max_new_size): Removed.
+	(orig_overall_size): New variable.
+	(get_max_overall_size): New function.
+	(estimate_local_effects): Use it.  Adjust dump.
+	(decide_about_value): Likewise.
+	(ipcp_propagate_stage): Do not calculate max_new_size, just store
+	orig_overall_size.  Adjust dump.
+	(ipa_cp_c_finalize): Clear orig_overall_size instead of max_new_size.
+
+2020-01-10  Martin Jambor  <mjambor@suse.cz>
+
 	* params.opt (param_ipa_max_agg_items): Mark as Optimization
 	* ipa-cp.c (merge_agg_lats_step): New parameter max_agg_items, use
 	instead of param_ipa_max_agg_items.
