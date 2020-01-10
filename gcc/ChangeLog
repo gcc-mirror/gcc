@@ -1,5 +1,10 @@
 2020-01-10  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* tree-vectorizer.h (get_dr_vinfo_offset): Add missing function
+	 comment.
+
+2020-01-10  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* tree-vect-data-refs.c (vect_create_addr_base_for_vector_ref): Use
 	get_dr_vinfo_offset
 	* tree-vect-loop.c (update_epilogue_loop_vinfo):  Remove orig_drs_init
