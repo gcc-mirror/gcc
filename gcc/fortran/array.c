@@ -849,7 +849,7 @@ gfc_set_array_spec (gfc_symbol *sym, gfc_array_spec *as, locus *error_loc)
       sym->as->cray_pointee = as->cray_pointee;
       sym->as->cp_was_assumed = as->cp_was_assumed;
 
-      for (i = 0; i < sym->as->corank; i++)
+      for (i = sym->as->corank - 1; i >= 0; i--)
 	{
 	  sym->as->lower[as->rank + i] = sym->as->lower[i];
 	  sym->as->upper[as->rank + i] = sym->as->upper[i];

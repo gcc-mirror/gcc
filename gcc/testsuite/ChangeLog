@@ -1,3 +1,11 @@
+2020-01-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline
+	2020-01-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/84135
+	* gfortran.dg/coarray/codimension_3.f90: New.
+
 2019-12-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
@@ -1129,7 +1137,7 @@
 	Backport fom mainline
 	2019-06-21  Jeff Law  <law@redhat.com>
 
-        PR tree-optimization/90949
+	PR tree-optimization/90949
 	* gcc.c-torture/execute/pr90949.c: New test.
 
 2019-06-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
