@@ -1,3 +1,9 @@
+2020-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93210
+	* gcc.dg/pr93210.c: New test.
+	* g++.dg/opt/pr93210.C: New test.
+
 2020-01-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR inline-asm/93027

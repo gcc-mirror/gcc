@@ -7837,9 +7837,10 @@ native_encode_string (const_tree expr, unsigned char *ptr, int len, int off)
     return 0;
   if (off == -1)
     off = 0;
+  len = MIN (total_bytes - off, len);
   if (ptr == NULL)
     /* Dry run.  */;
-  else if (TREE_STRING_LENGTH (expr) - off < MIN (total_bytes, len))
+  else
     {
       int written = 0;
       if (off < TREE_STRING_LENGTH (expr))
@@ -7847,12 +7848,9 @@ native_encode_string (const_tree expr, unsigned char *ptr, int len, int off)
 	  written = MIN (len, TREE_STRING_LENGTH (expr) - off);
 	  memcpy (ptr, TREE_STRING_POINTER (expr) + off, written);
 	}
-      memset (ptr + written, 0,
-	      MIN (total_bytes - written, len - written));
+      memset (ptr + written, 0, len - written);
     }
-  else
-    memcpy (ptr, TREE_STRING_POINTER (expr) + off, MIN (total_bytes, len));
-  return MIN (total_bytes - off, len);
+  return len;
 }
 
 
@@ -7891,6 +7889,213 @@ native_encode_expr (const_tree expr, unsigned char *ptr, int len, int off)
       return native_encode_string (expr, ptr, len, off);
 
     default:
+      return 0;
+    }
+}
+
+/* Similar to native_encode_expr, but also handle CONSTRUCTORs, VCEs,
+   NON_LVALUE_EXPRs and nops.  */
+
+int
+native_encode_initializer (tree init, unsigned char *ptr, int len,
+			   int off)
+{
+  /* We don't support starting at negative offset and -1 is special.  */
+  if (off < -1 || init == NULL_TREE)
+    return 0;
+
+  STRIP_NOPS (init);
+  switch (TREE_CODE (init))
+    {
+    case VIEW_CONVERT_EXPR:
+    case NON_LVALUE_EXPR:
+      return native_encode_initializer (TREE_OPERAND (init, 0), ptr, len, off);
+    default:
+      return native_encode_expr (init, ptr, len, off);
+    case CONSTRUCTOR:
+      tree type = TREE_TYPE (init);
+      HOST_WIDE_INT total_bytes = int_size_in_bytes (type);
+      if (total_bytes < 0)
+	return 0;
+      if ((off == -1 && total_bytes > len) || off >= total_bytes)
+	return 0;
+      int o = off == -1 ? 0 : off;
+      if (TREE_CODE (type) == ARRAY_TYPE)
+	{
+	  HOST_WIDE_INT min_index;
+	  unsigned HOST_WIDE_INT cnt;
+	  HOST_WIDE_INT curpos = 0, fieldsize;
+	  constructor_elt *ce;
+
+	  if (TYPE_DOMAIN (type) == NULL_TREE
+	      || !tree_fits_shwi_p (TYPE_MIN_VALUE (TYPE_DOMAIN (type))))
+	    return 0;
+
+	  fieldsize = int_size_in_bytes (TREE_TYPE (type));
+	  if (fieldsize <= 0)
+	    return 0;
+
+	  min_index = tree_to_shwi (TYPE_MIN_VALUE (TYPE_DOMAIN (type)));
+	  if (ptr != NULL)
+	    memset (ptr, '\0', MIN (total_bytes - off, len));
+
+	  FOR_EACH_VEC_SAFE_ELT (CONSTRUCTOR_ELTS (init), cnt, ce)
+	    {
+	      tree val = ce->value;
+	      tree index = ce->index;
+	      HOST_WIDE_INT pos = curpos, count = 0;
+	      bool full = false;
+	      if (index && TREE_CODE (index) == RANGE_EXPR)
+		{
+		  if (!tree_fits_shwi_p (TREE_OPERAND (index, 0))
+		      || !tree_fits_shwi_p (TREE_OPERAND (index, 1)))
+		    return 0;
+		  pos = (tree_to_shwi (TREE_OPERAND (index, 0)) - min_index)
+			* fieldsize;
+		  count = (tree_to_shwi (TREE_OPERAND (index, 1))
+			   - tree_to_shwi (TREE_OPERAND (index, 0)));
+		}
+	      else if (index)
+		{
+		  if (!tree_fits_shwi_p (index))
+		    return 0;
+		  pos = (tree_to_shwi (index) - min_index) * fieldsize;
+		}
+
+	      curpos = pos;
+	      if (val)
+		do
+		  {
+		    if (off == -1
+			|| (curpos >= off
+			    && (curpos + fieldsize
+				<= (HOST_WIDE_INT) off + len)))
+		      {
+			if (full)
+			  {
+			    if (ptr)
+			      memcpy (ptr + (curpos - o), ptr + (pos - o),
+				      fieldsize);
+			  }
+			else if (!native_encode_initializer (val,
+							     ptr
+							     ? ptr + curpos - o
+							     : NULL,
+							     fieldsize,
+							     off == -1 ? -1
+								       : 0))
+			  return 0;
+			else
+			  {
+			    full = true;
+			    pos = curpos;
+			  }
+		      }
+		    else if (curpos + fieldsize > off
+			     && curpos < (HOST_WIDE_INT) off + len)
+		      {
+			/* Partial overlap.  */
+			unsigned char *p = NULL;
+			int no = 0;
+			int l;
+			if (curpos >= off)
+			  {
+			    if (ptr)
+			      p = ptr + curpos - off;
+			    l = MIN ((HOST_WIDE_INT) off + len - curpos,
+				     fieldsize);
+			  }
+			else
+			  {
+			    p = ptr;
+			    no = off - curpos;
+			    l = len;
+			  }
+			if (!native_encode_initializer (val, p, l, no))
+			  return 0;
+		      }
+		    curpos += fieldsize;
+		  }
+		while (count-- != 0);
+	    }
+	  return MIN (total_bytes - off, len);
+	}
+      else if (TREE_CODE (type) == RECORD_TYPE
+	       || TREE_CODE (type) == UNION_TYPE)
+	{
+	  unsigned HOST_WIDE_INT cnt;
+	  constructor_elt *ce;
+
+	  if (ptr != NULL)
+	    memset (ptr, '\0', MIN (total_bytes - off, len));
+	  FOR_EACH_VEC_SAFE_ELT (CONSTRUCTOR_ELTS (init), cnt, ce)
+	    {
+	      tree field = ce->index;
+	      tree val = ce->value;
+	      HOST_WIDE_INT pos, fieldsize;
+
+	      if (field == NULL_TREE)
+		return 0;
+
+	      pos = int_byte_position (field);
+	      if (off != -1 && (HOST_WIDE_INT) off + len <= pos)
+		continue;
+
+	      if (TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE
+		  && TYPE_DOMAIN (TREE_TYPE (field))
+		  && ! TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (field))))
+		return 0;
+	      if (DECL_SIZE_UNIT (field) == NULL_TREE
+		  || !tree_fits_shwi_p (DECL_SIZE_UNIT (field)))
+		return 0;
+	      fieldsize = tree_to_shwi (DECL_SIZE_UNIT (field));
+	      if (fieldsize == 0)
+		continue;
+
+	      if (off != -1 && pos + fieldsize <= off)
+		continue;
+
+	      if (DECL_BIT_FIELD (field))
+		return 0;
+
+	      if (val == NULL_TREE)
+		continue;
+
+	      if (off == -1
+		  || (pos >= off
+		      && (pos + fieldsize <= (HOST_WIDE_INT) off + len)))
+		{
+		  if (!native_encode_initializer (val, ptr ? ptr + pos - o
+							   : NULL,
+						  fieldsize,
+						  off == -1 ? -1 : 0))
+		    return 0;
+		}
+	      else
+		{
+		  /* Partial overlap.  */
+		  unsigned char *p = NULL;
+		  int no = 0;
+		  int l;
+		  if (pos >= off)
+		    {
+		      if (ptr)
+			p = ptr + pos - off;
+		      l = MIN ((HOST_WIDE_INT) off + len - pos,
+				fieldsize);
+		    }
+		  else
+		    {
+		      p = ptr;
+		      no = off - pos;
+		      l = len;
+		    }
+		  if (!native_encode_initializer (val, p, l, no))
+		    return 0;
+		}
+	    }
+	  return MIN (total_bytes - off, len);
+	}
       return 0;
     }
 }
@@ -8129,7 +8334,7 @@ native_interpret_expr (tree type, const unsigned char *ptr, int len)
 /* Returns true if we can interpret the contents of a native encoding
    as TYPE.  */
 
-static bool
+bool
 can_native_interpret_type_p (tree type)
 {
   switch (TREE_CODE (type))

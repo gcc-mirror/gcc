@@ -6919,8 +6919,10 @@ fold_ctor_reference (tree type, tree ctor, const poly_uint64 &poly_offset,
   if (CONSTANT_CLASS_P (ctor)
       && BITS_PER_UNIT == 8
       && offset % BITS_PER_UNIT == 0
+      && offset / BITS_PER_UNIT <= INT_MAX
       && size % BITS_PER_UNIT == 0
-      && size <= MAX_BITSIZE_MODE_ANY_MODE)
+      && size <= MAX_BITSIZE_MODE_ANY_MODE
+      && can_native_interpret_type_p (type))
     {
       unsigned char buf[MAX_BITSIZE_MODE_ANY_MODE / BITS_PER_UNIT];
       int len = native_encode_expr (ctor, buf, size / BITS_PER_UNIT,
@@ -6934,13 +6936,35 @@ fold_ctor_reference (tree type, tree ctor, const poly_uint64 &poly_offset,
       if (!suboff)
 	suboff = &dummy;
 
+      tree ret;
       if (TREE_CODE (TREE_TYPE (ctor)) == ARRAY_TYPE
 	  || TREE_CODE (TREE_TYPE (ctor)) == VECTOR_TYPE)
-	return fold_array_ctor_reference (type, ctor, offset, size,
-					  from_decl, suboff);
+	ret = fold_array_ctor_reference (type, ctor, offset, size,
+					 from_decl, suboff);
+      else
+	ret = fold_nonarray_ctor_reference (type, ctor, offset, size,
+					    from_decl, suboff);
 
-      return fold_nonarray_ctor_reference (type, ctor, offset, size,
-					   from_decl, suboff);
+      /* Fall back to native_encode_initializer.  Needs to be done
+	 only in the outermost fold_ctor_reference call (because it itself
+	 recurses into CONSTRUCTORs) and doesn't update suboff.  */
+      if (ret == NULL_TREE
+	  && suboff == &dummy
+	  && BITS_PER_UNIT == 8
+	  && offset % BITS_PER_UNIT == 0
+	  && offset / BITS_PER_UNIT <= INT_MAX
+	  && size % BITS_PER_UNIT == 0
+	  && size <= MAX_BITSIZE_MODE_ANY_MODE
+	  && can_native_interpret_type_p (type))
+	{
+	  unsigned char buf[MAX_BITSIZE_MODE_ANY_MODE / BITS_PER_UNIT];
+	  int len = native_encode_initializer (ctor, buf, size / BITS_PER_UNIT,
+					       offset / BITS_PER_UNIT);
+	  if (len > 0)
+	    return native_interpret_expr (type, buf, len);
+	}
+
+      return ret;
     }
 
   return NULL_TREE;
@@ -7049,7 +7073,7 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
 	tree c = fold_const_aggregate_ref_1 (TREE_OPERAND (t, 0), valueize);
 	if (c && TREE_CODE (c) == COMPLEX_CST)
 	  return fold_build1_loc (EXPR_LOCATION (t),
-			      TREE_CODE (t), TREE_TYPE (t), c);
+				  TREE_CODE (t), TREE_TYPE (t), c);
 	break;
       }
 

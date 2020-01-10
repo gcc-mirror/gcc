@@ -1,5 +1,23 @@
 2020-01-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/93210
+	* fold-const.h (native_encode_initializer,
+	can_native_interpret_type_p): Declare.
+	* fold-const.c (native_encode_string): Fix up handling with off != -1,
+	simplify.
+	(native_encode_initializer): New function, moved from dwarf2out.c.
+	Adjust to native_encode_expr compatible arguments, including dry-run
+	and partial extraction modes.  Don't handle STRING_CST.
+	(can_native_interpret_type_p): No longer static.
+	* gimple-fold.c (fold_ctor_reference): For native_encode_expr, verify
+	offset / BITS_PER_UNIT fits into int and don't call it if
+	can_native_interpret_type_p fails.  If suboff is NULL and for
+	CONSTRUCTOR fold_{,non}array_ctor_reference returns NULL, retry with
+	native_encode_initializer.
+	(fold_const_aggregate_ref_1): Formatting fix.
+	* dwarf2out.c (native_encode_initializer): Moved to fold-const.c.
+	(tree_add_const_value_attribute): Adjust caller.
+
 	PR tree-optimization/90838
 	* tree-ssa-forwprop.c (simplify_count_trailing_zeroes): Use
 	SCALAR_INT_TYPE_MODE instead of TYPE_MODE as operand of
