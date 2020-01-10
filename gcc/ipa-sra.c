@@ -3248,16 +3248,17 @@ all_callee_accesses_present_p (isra_param_desc *param_desc,
 enum acc_prop_kind {ACC_PROP_DONT, ACC_PROP_COPY, ACC_PROP_CERTAIN};
 
 
-/* Attempt to propagate all definite accesses from ARG_DESC to PARAM_DESC, if
-   they would not violate some constraint there.  If successful, return NULL,
-   otherwise return the string reason for failure (which can be written to the
-   dump file).  DELTA_OFFSET is the known offset of the actual argument withing
-   the formal parameter (so of ARG_DESCS within PARAM_DESCS), ARG_SIZE is the
-   size of the actual argument or zero, if not known. In case of success, set
-   *CHANGE_P to true if propagation actually changed anything.  */
+/* Attempt to propagate all definite accesses from ARG_DESC to PARAM_DESC,
+   (which belongs to CALLER) if they would not violate some constraint there.
+   If successful, return NULL, otherwise return the string reason for failure
+   (which can be written to the dump file).  DELTA_OFFSET is the known offset
+   of the actual argument withing the formal parameter (so of ARG_DESCS within
+   PARAM_DESCS), ARG_SIZE is the size of the actual argument or zero, if not
+   known. In case of success, set *CHANGE_P to true if propagation actually
+   changed anything.  */
 
 static const char *
-pull_accesses_from_callee (isra_param_desc *param_desc,
+pull_accesses_from_callee (cgraph_node *caller, isra_param_desc *param_desc,
 			   isra_param_desc *arg_desc,
 			   unsigned delta_offset, unsigned arg_size,
 			   bool *change_p)
@@ -3337,7 +3338,7 @@ pull_accesses_from_callee (isra_param_desc *param_desc,
       return NULL;
 
     if ((prop_count + pclen
-	 > (unsigned) param_ipa_sra_max_replacements)
+	 > (unsigned) opt_for_fn (caller->decl, param_ipa_sra_max_replacements))
 	|| size_would_violate_limit_p (param_desc,
 				       param_desc->size_reached + prop_size))
       return "propagating accesses would violate the count or size limit";
@@ -3457,7 +3458,8 @@ param_splitting_across_edge (cgraph_edge *cs)
 	  else
 	    {
 	      const char *pull_failure
-		= pull_accesses_from_callee (param_desc, arg_desc, 0, 0, &res);
+		= pull_accesses_from_callee (cs->caller, param_desc, arg_desc,
+					     0, 0, &res);
 	      if (pull_failure)
 		{
 		  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3518,7 +3520,7 @@ param_splitting_across_edge (cgraph_edge *cs)
 	  else
 	    {
 	      const char *pull_failure
-		= pull_accesses_from_callee (param_desc, arg_desc,
+		= pull_accesses_from_callee (cs->caller, param_desc, arg_desc,
 					     ipf->unit_offset,
 					     ipf->unit_size, &res);
 	      if (pull_failure)
