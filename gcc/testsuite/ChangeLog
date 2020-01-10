@@ -1,3 +1,9 @@
+2020-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR testsuite/93227
+	* g++.dg/cpp0x/std-layout1.C: Use -Wno-deprecated-declarations for
+	C++20, due to std::is_pod being deprecated.
+
 2020-01-17  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* gcc.target/aarch64/sve/acle/asm/ld1ro_f16.c: New test.
