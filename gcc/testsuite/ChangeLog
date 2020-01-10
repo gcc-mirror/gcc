@@ -1,3 +1,11 @@
+2020-01-10  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2019-12-17  Martin Jambor  <mjambor@suse.cz>
+
+        PR ipa/92971
+        * gcc.dg/ipa/ipcp-agg-12.c: New test.
+
 2020-01-10  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
 
 	Backport from trunk
