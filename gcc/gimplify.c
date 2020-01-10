@@ -937,7 +937,7 @@ copy_if_shared_r (tree *tp, int *walk_subtrees, void *data)
 /* Unshare most of the shared trees rooted at *TP.  DATA is passed to the
    copy_if_shared_r callback unmodified.  */
 
-static inline void
+void
 copy_if_shared (tree *tp, void *data)
 {
   walk_tree (tp, copy_if_shared_r, data, NULL);

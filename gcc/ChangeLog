@@ -1,3 +1,9 @@
+2020-01-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93173 - incorrect tree sharing.
+	* gimplify.c (copy_if_shared): No longer static.
+	* gimplify.h: Declare it.
+
 2020-01-10  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* doc/invoke.texi (-msve-vector-bits=): Document that
