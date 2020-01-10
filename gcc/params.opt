@@ -239,7 +239,7 @@ Common Joined UInteger Var(param_ipa_max_switch_predicate_bounds) Init(5) Param 
 Maximal number of boundary endpoints of case ranges of switch statement used during IPA functoin summary generation.
 
 -param=ipa-sra-max-replacements=
-Common Joined UInteger Var(param_ipa_sra_max_replacements) Init(8) IntegerRange(0, 16) Param
+Common Joined UInteger Var(param_ipa_sra_max_replacements) Optimization Init(8) IntegerRange(0, 16) Param
 Maximum pieces that IPA-SRA tracks per formal parameter, as a consequence, also the maximum number of replacements of a formal parameter.
 
 -param=ipa-sra-ptr-growth-factor=
