@@ -3028,7 +3028,6 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
   DLSYM (get_caps);
   DLSYM (get_type);
   DLSYM (get_num_devices);
-  DLSYM (get_property);
   DLSYM (init_device);
   DLSYM (fini_device);
   DLSYM (load_image);
@@ -3061,7 +3060,8 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
 			 openacc_async_queue_callback)
 	  || !DLSYM_OPT (openacc.async.exec, openacc_async_exec)
 	  || !DLSYM_OPT (openacc.async.dev2host, openacc_async_dev2host)
-	  || !DLSYM_OPT (openacc.async.host2dev, openacc_async_host2dev))
+	  || !DLSYM_OPT (openacc.async.host2dev, openacc_async_host2dev)
+	  || !DLSYM_OPT (openacc.get_property, openacc_get_property))
 	{
 	  /* Require all the OpenACC handlers if we have
 	     GOMP_OFFLOAD_CAP_OPENACC_200.  */

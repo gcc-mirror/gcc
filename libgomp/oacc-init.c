@@ -760,14 +760,14 @@ acc_set_device_num (int ord, acc_device_t d)
 
 ialias (acc_set_device_num)
 
-static union gomp_device_property_value
+static union goacc_property_value
 get_property_any (int ord, acc_device_t d, acc_device_property_t prop)
 {
   goacc_lazy_initialize ();
   struct goacc_thread *thr = goacc_thread ();
 
   if (d == acc_device_current && thr && thr->dev)
-    return thr->dev->get_property_func (thr->dev->target_id, prop);
+    return thr->dev->openacc.get_property_func (thr->dev->target_id, prop);
 
   gomp_mutex_lock (&acc_device_lock);
 
@@ -789,7 +789,7 @@ get_property_any (int ord, acc_device_t d, acc_device_property_t prop)
 
   assert (dev);
 
-  return dev->get_property_func (dev->target_id, prop);
+  return dev->openacc.get_property_func (dev->target_id, prop);
 }
 
 size_t
@@ -798,7 +798,7 @@ acc_get_property (int ord, acc_device_t d, acc_device_property_t prop)
   if (!known_device_type_p (d))
     unknown_device_type_error(d);
 
-  if (prop & GOMP_DEVICE_PROPERTY_STRING_MASK)
+  if (prop & GOACC_PROPERTY_STRING_MASK)
     return 0;
   else
     return get_property_any (ord, d, prop).val;
@@ -812,7 +812,7 @@ acc_get_property_string (int ord, acc_device_t d, acc_device_property_t prop)
   if (!known_device_type_p (d))
     unknown_device_type_error(d);
 
-  if (prop & GOMP_DEVICE_PROPERTY_STRING_MASK)
+  if (prop & GOACC_PROPERTY_STRING_MASK)
     return get_property_any (ord, d, prop).ptr;
   else
     return NULL;
