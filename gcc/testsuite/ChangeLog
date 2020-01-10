@@ -1,3 +1,10 @@
+2020-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/sel_1.c: Use SVE types for the arguments and
+	return values.  Use check-function-bodies instead of scan-assembler.
+	* gcc.target/aarch64/sve/sel_2.c: Likewise
+	* gcc.target/aarch64/sve/sel_3.c: Likewise.
+
 2020-01-10  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/ipa/ipa-clone-3.c: Replace struct initializer with
