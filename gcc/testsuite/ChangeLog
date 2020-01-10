@@ -1,6 +1,11 @@
 2020-01-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR inline-asm/93027
+	* gcc.target/i386/pr93027.c: Use the right PR number in the test.
+
+2020-01-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR inline-asm/93027
 	* gcc.target/i386/pr93207.c: Rename to pr93027.c.
 
 2020-01-10  Vladimir Makarov  <vmakarov@redhat.com>
