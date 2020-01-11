@@ -4586,7 +4586,6 @@ build_new_function_call (tree fn, vec<tree, va_gc> **args,
 
   if (flag_coroutines
       && result
-      && result != error_mark_node
       && TREE_CODE (result) == CALL_EXPR
       && DECL_BUILT_IN_CLASS (TREE_OPERAND (CALL_EXPR_FN (result), 0))
 	  == BUILT_IN_NORMAL)
