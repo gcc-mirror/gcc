@@ -33,8 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-rich-location.h"
 #include "hash-map.h"
 
-static tree find_coro_traits_template_class (tree, location_t);
-static tree find_coro_handle_type (location_t, tree);
 static tree find_promise_type (tree);
 static bool coro_promise_type_found_p (tree, location_t);
 
@@ -238,6 +236,8 @@ coro_init_identifiers ()
 
 /* Trees we only need to set up once.  */
 
+static GTY(()) tree coro_traits_templ;
+static GTY(()) tree coro_handle_templ;
 static GTY(()) tree void_coro_handle_type;
 
 /* ================= Parse, Semantics and Type checking ================= */
@@ -250,11 +250,26 @@ static GTY(()) tree void_coro_handle_type;
    promise class instance.  */
 
 /* [coroutine.traits]
-   Lookup the coroutine_traits template class instance.
-   Instantiate that for the function signature.  */
+   Lookup the coroutine_traits template decl.  */
 
 static tree
-find_coro_traits_template_class (tree fndecl, location_t kw)
+find_coro_traits_template_decl (location_t kw)
+{
+  tree traits_decl = lookup_qualified_name (std_node, coro_traits_identifier,
+					    0, true);
+  if (traits_decl == NULL_TREE || traits_decl == error_mark_node)
+    {
+      error_at (kw, "cannot find %<coroutine traits%> template");
+      return NULL_TREE;
+    }
+  else
+    return traits_decl;
+}
+
+/*  Instantiate Coroutine traits for the function signature.  */
+
+static tree
+instantiate_coro_traits (tree fndecl, location_t kw)
 {
   /* [coroutine.traits.primary]
      So now build up a type list for the template <typename _R, typename...>.
@@ -280,10 +295,10 @@ find_coro_traits_template_class (tree fndecl, location_t kw)
   TREE_VEC_ELT (targ, 1) = argtypepack;
 
   tree traits_class
-    = lookup_template_class (coro_traits_identifier, targ,
-			     /* in_decl */ NULL_TREE,
-			     /* context */ std_node,
-			     /* entering scope */ false, tf_warning_or_error);
+    = lookup_template_class (coro_traits_templ, targ,
+			     /*in_decl=*/ NULL_TREE,
+			     /*context=*/ NULL_TREE /*std_node*/,
+			     /*entering scope=*/ false, tf_warning_or_error);
 
   if (traits_class == error_mark_node || traits_class == NULL_TREE)
     {
@@ -297,7 +312,23 @@ find_coro_traits_template_class (tree fndecl, location_t kw)
 /* [coroutine.handle] */
 
 static tree
-find_coro_handle_type (location_t kw, tree promise_type)
+find_coro_handle_template_decl (location_t kw)
+{
+  tree handle_decl = lookup_qualified_name (std_node, coro_handle_identifier,
+					    0, true);
+  if (handle_decl == NULL_TREE || handle_decl == error_mark_node)
+    {
+      error_at (kw, "cannot find %<coroutine handle%> template");
+      return NULL_TREE;
+    }
+  else
+    return handle_decl;
+}
+
+/* Instantiate the handle template for a given promise type.  */
+
+static tree
+instantiate_coro_handle_for_promise_type (location_t kw, tree promise_type)
 {
   /* So now build up a type list for the template, one entry, the promise.  */
   tree targ = make_tree_vec (1);
@@ -318,7 +349,7 @@ find_coro_handle_type (location_t kw, tree promise_type)
   return handle_type;
 }
 
-/* Look for the promise_type in the instantiated.  */
+/* Look for the promise_type in the instantiated traits.  */
 
 static tree
 find_promise_type (tree traits_class)
@@ -355,8 +386,15 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
       gcc_checking_assert (coro_traits_identifier == NULL);
       coro_init_identifiers ();
       /* Trees we only need to create once.  */
-      /*  coroutine_handle<>  */
-      void_coro_handle_type = find_coro_handle_type (loc, NULL_TREE);
+      /* Coroutine traits template.  */
+      coro_traits_templ = find_coro_traits_template_decl (loc);
+      gcc_checking_assert (coro_traits_templ != NULL);
+      /*  coroutine_handle<> template.  */
+      coro_handle_templ = find_coro_handle_template_decl (loc);
+      gcc_checking_assert (coro_handle_templ != NULL);
+      /*  We can also instantiate the void coroutine_handle<>  */
+      void_coro_handle_type =
+	instantiate_coro_handle_for_promise_type (loc, NULL_TREE);
       gcc_checking_assert (void_coro_handle_type != NULL);
       coro_initialized = true;
     }
@@ -370,7 +408,7 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
     {
       /* Get the coroutine traits template class instance for the function
 	 signature we have - coroutine_traits <R, ...>  */
-      tree templ_class = find_coro_traits_template_class (fndecl, loc);
+      tree templ_class = instantiate_coro_traits (fndecl, loc);
 
       /* Find the promise type for that.  */
       coro_info->promise_type = find_promise_type (templ_class);
@@ -383,11 +421,12 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
 	}
 
       /* Try to find the handle type for the promise.  */
-      tree handle_type = find_coro_handle_type (loc, coro_info->promise_type);
+      tree handle_type =
+	instantiate_coro_handle_for_promise_type (loc, coro_info->promise_type);
       if (handle_type == NULL_TREE)
 	return false;
 
-      /* Instantiate this, we're going to use it.  */
+      /* Complete this, we're going to use it.  */
       coro_info->handle_type = complete_type_or_else (handle_type, fndecl);
       /* Diagnostic would be emitted by complete_type_or_else.  */
       if (coro_info->handle_type == error_mark_node)

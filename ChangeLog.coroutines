@@ -1,6 +1,22 @@
 2020-01-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (find_coro_traits_template_class): Delete forward
+	referenced.
+	(find_coro_handle_type): Likewise.
+	(coro_traits_templ, coro_handle_templ): New.
+	(find_coro_traits_template_decl): New.
+	(instantiate_coro_traits): Revised from
+	find_coro_traits_template_class.
+	(find_coro_handle_template_decl): New.
+	(instantiate_coro_handle_for_promise_type): Revised from
+	find_coro_handle_type.
+	(coro_promise_type_found_p): Look up the required coroutine
+	traits and handle templates, fail if they are not found.
+
+2020-01-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* call.c (build_new_function_call): Remove extraneous test.
 
 2020-01-10  Iain Sandoe  <iain@sandoe.co.uk>
