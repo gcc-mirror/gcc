@@ -1,3 +1,8 @@
+2020-01-24  Andrew Pinski  <apinski@marvell.com>
+
+	* config/arm/aarch-cost-tables.h (cortexa57_extra_costs): Change
+	alu.shift_reg to 0.
+
 2020-01-24  Jeff Law  <law@redhat.com>
 
 	PR target/13721
