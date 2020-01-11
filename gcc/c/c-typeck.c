@@ -2577,6 +2577,8 @@ build_indirect_ref (location_t loc, tree ptr, ref_operator errstring)
 	  return ref;
 	}
     }
+  else if (flag_isoc2x)
+    return ptr;
   else if (TREE_CODE (pointer) != ERROR_MARK)
     invalid_indirection_error (loc, type, errstring);
 
