@@ -1,6 +1,4 @@
-// { dg-do compile { target c++11 } }
-
-// Copyright (C) 2008-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,16 +15,23 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <atomic>
-#include <testsuite_common_types.h>
+// { dg-options "-std=gnu++2a" }
+// { dg-do run { target c++2a } }
 
-int main()
+#include <atomic>
+#include <testsuite_hooks.h>
+
+constexpr std::atomic<int> a;
+
+void
+test01()
 {
-  __gnu_test::copy_constructible test;
-  __gnu_cxx::typelist::apply_generator(test,
-				       __gnu_test::atomic_integrals::type());
-  return 0;
+  VERIFY(a.load() == 0);
+  static_assert(std::is_nothrow_default_constructible_v<std::atomic<int>>);
 }
 
-// { dg-error "deleted" "" { target *-*-* } 698 }
-// { dg-prune-output "include" }
+int
+main()
+{
+  test01();
+}

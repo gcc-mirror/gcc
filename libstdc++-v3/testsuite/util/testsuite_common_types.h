@@ -558,7 +558,6 @@ namespace __gnu_test
       }
   };
 
-  // Generator to test standard layout
   struct has_trivial_cons_dtor
   {
     template<typename _Tp>
@@ -582,6 +581,27 @@ namespace __gnu_test
       }
   };
 
+  struct has_trivial_dtor
+  {
+    template<typename _Tp>
+      void
+      operator()()
+      {
+	struct _Concept
+	{
+	  void __constraint()
+	  {
+	    typedef std::is_trivially_destructible<_Tp> dtor_p;
+	    static_assert(dtor_p::value, "destructor not trivial");
+	  }
+	};
+
+	void (_Concept::*__x)() __attribute__((unused))
+	  = &_Concept::__constraint;
+      }
+  };
+
+  // Generator to test standard layout
   struct standard_layout
   {
     template<typename _Tp>

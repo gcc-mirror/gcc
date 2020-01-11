@@ -164,6 +164,7 @@
 #if __cplusplus > 201703L
 // c++2a
 #define __cpp_lib_atomic_ref 201806L
+#define __cpp_lib_atomic_value_initialization 201911L
 #define __cpp_lib_bitops 201907L
 #define __cpp_lib_bounded_array_traits 201902L
 #if __cpp_concepts

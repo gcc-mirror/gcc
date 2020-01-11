@@ -1,3 +1,30 @@
+2020-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/58605
+	* include/bits/atomic_base.h (__cpp_lib_atomic_value_initialization):
+	Define.
+	(__atomic_flag_base, __atomic_base, __atomic_base<_PTp*>)
+	(__atomic_float): Add default member initializer for C++20.
+	* include/std/atomic (atomic): Likewise.
+	(atomic::atomic()): Remove noexcept-specifier on default constructor.
+	* include/std/version (__cpp_lib_atomic_value_initialization): Define.
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Adjust dg-error line
+	number.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic/cons/value_init.cc: New test.
+	* testsuite/29_atomics/atomic_flag/cons/value_init.cc: New test.
+	* testsuite/29_atomics/atomic_flag/requirements/trivial.cc: Adjust
+	expected result for is_trivially_default_constructible.
+	* testsuite/29_atomics/atomic_float/requirements.cc: Likewise.
+	* testsuite/29_atomics/atomic_float/value_init.cc: New test.
+	* testsuite/29_atomics/atomic_integral/cons/assign_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/cons/copy_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/cons/value_init.cc
+	* testsuite/29_atomics/atomic_integral/requirements/trivial.cc: Adjust
+	expected results for is_trivially_default_constructible.
+	* testsuite/util/testsuite_common_types.h (has_trivial_dtor): Add
+	new test generator.
+
 2020-01-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/util/testsuite_iterators.h: Improve comment.
