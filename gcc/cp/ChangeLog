@@ -1,3 +1,8 @@
+2020-01-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93238 - short right-shift with enum.
+	* typeck.c (cp_build_binary_op): Use folded op1 for short_shift.
+
 2020-01-10  Jason Merrill  <jason@redhat.com>
 
 	* typeck.c (cp_build_binary_op): Restore short_shift code.
