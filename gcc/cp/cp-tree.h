@@ -7865,7 +7865,7 @@ extern bool constraints_satisfied_p		(tree, tree);
 extern void clear_satisfaction_cache		();
 extern bool* lookup_subsumption_result          (tree, tree);
 extern bool save_subsumption_result             (tree, tree, bool);
-extern tree find_template_parameters		(tree, int);
+extern tree find_template_parameters		(tree, tree);
 extern bool equivalent_constraints              (tree, tree);
 extern bool equivalently_constrained            (tree, tree);
 extern bool subsumes_constraints                (tree, tree);

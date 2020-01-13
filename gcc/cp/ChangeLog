@@ -1,5 +1,11 @@
 2020-01-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/92582 - ICE with member template as requirement.
+	* pt.c (struct find_template_parameter_info): Add ctx_parms.
+	(any_template_parm_r): Handle TEMPLATE_DECL.
+	(find_template_parameters): Take parms instead of their depth.
+	* constraint.cc (build_parameter_mapping): Pass them.
+
 	PR c++/33799 - destroy return value if local cleanup throws.
 	* cp-tree.h (current_retval_sentinel): New macro.
 	* decl.c (start_preparsed_function): Set up cleanup for retval.

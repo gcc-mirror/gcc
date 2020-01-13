@@ -10364,12 +10364,14 @@ for_each_template_parm (tree t, tree_fn_t fn, void* data,
 
 struct find_template_parameter_info
 {
-  explicit find_template_parameter_info (int d)
-    : max_depth (d)
+  explicit find_template_parameter_info (tree ctx_parms)
+    : ctx_parms (ctx_parms),
+      max_depth (TMPL_PARMS_DEPTH (ctx_parms))
   {}
 
   hash_set<tree> visited;
   hash_set<tree> parms;
+  tree ctx_parms;
   int max_depth;
 };
 
@@ -10459,6 +10461,29 @@ any_template_parm_r (tree t, void *data)
       WALK_SUBTREE (TREE_TYPE (t));
       break;
 
+    case TEMPLATE_DECL:
+      {
+	/* If T is a member template that shares template parameters with
+	   ctx_parms, we need to mark all those parameters for mapping.  */
+	tree dparms = DECL_TEMPLATE_PARMS (t);
+	tree cparms = ftpi->ctx_parms;
+	while (TMPL_PARMS_DEPTH (dparms) > ftpi->max_depth)
+	  dparms = TREE_CHAIN (dparms);
+	while (dparms
+	       && (TREE_TYPE (TREE_VALUE (dparms))
+		   != TREE_TYPE (TREE_VALUE (cparms))))
+	  dparms = TREE_CHAIN (dparms),
+	    cparms = TREE_CHAIN (cparms);
+	if (dparms)
+	  {
+	    int ddepth = TMPL_PARMS_DEPTH (dparms);
+	    tree dargs = TI_ARGS (get_template_info (DECL_TEMPLATE_RESULT (t)));
+	    for (int i = 0; i < ddepth; ++i)
+	      WALK_SUBTREE (TMPL_ARGS_LEVEL (dargs, i+1));
+	  }
+      }
+      break;
+
     default:
       break;
     }
@@ -10467,12 +10492,16 @@ any_template_parm_r (tree t, void *data)
   return 0;
 }
 
-/* Returns a list of unique template parameters found within T.  */
+/* Returns a list of unique template parameters found within T, where CTX_PARMS
+   are the template parameters in scope.  */
 
 tree
-find_template_parameters (tree t, int depth)
+find_template_parameters (tree t, tree ctx_parms)
 {
-  find_template_parameter_info ftpi (depth);
+  if (!ctx_parms)
+    return NULL_TREE;
+
+  find_template_parameter_info ftpi (ctx_parms);
   for_each_template_parm (t, keep_template_parm, &ftpi, &ftpi.visited,
 			  /*include_nondeduced*/true, any_template_parm_r);
   tree list = NULL_TREE;
