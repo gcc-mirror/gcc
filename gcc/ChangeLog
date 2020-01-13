@@ -1,3 +1,9 @@
+2020-01-13  Martin Liska  <mliska@suse.cz>
+
+	* ipa-cp.c (get_max_overall_size): Use newly
+	renamed param param_ipa_cp_unit_growth.
+	* params.opt: Remove legacy param name.
+
 2020-01-13  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/93213
