@@ -1,5 +1,14 @@
 2010-01-13  Richard Earnshaw  <rearnsha@arm.com>
 
+	Revert:
+	2010-01-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc-git-customization.sh: Add back the default rule that
+	is lost by adding a custom push rule.
+	* git-fetch-vendor.sh: Likewise, also remove '+' from push specs.
+
+2010-01-13  Richard Earnshaw  <rearnsha@arm.com>
+
 	* gcc-git-customization.sh: Add back the default rule that
 	is lost by adding a custom push rule.
 	* git-fetch-vendor.sh: Likewise, also remove '+' from push specs.
