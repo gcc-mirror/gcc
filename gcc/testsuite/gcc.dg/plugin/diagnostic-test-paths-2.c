@@ -22,7 +22,7 @@ make_a_list_of_random_ints_badly(PyObject *self,
     return NULL;
   }
 
-  list = PyList_New(0); /* { dg-line PyList_New } */
+  list = PyList_New(0);
 	
   for (i = 0; i < count; i++) {
     item = PyLong_FromLong(random());
