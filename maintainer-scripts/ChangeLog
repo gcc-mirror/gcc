@@ -1,5 +1,10 @@
 2020-01-13  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc_release: Use git instead of SVN.
+	* crontab: Update gcc_release calls.
+
+2020-01-13  Joseph Myers  <joseph@codesourcery.com>
+
 	* update_version_git: New file.
 	* update_version:svn: Remove.
 	* crontab: Use update_version_git.
