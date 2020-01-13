@@ -11428,12 +11428,15 @@ package body Exp_Util is
          goto Leave;
 
       --  If this is a type conversion, leave the type conversion and remove
-      --  the side effects in the expression. This is important in several
-      --  circumstances: for change of representations, and also when this is a
-      --  view conversion to a smaller object, where gigi can end up creating
-      --  its own temporary of the wrong size.
+      --  side effects in the expression, unless it is of universal integer,
+      --  which is a very large type for a temporary. This is important in
+      --  several circumstances: for change of representations and also when
+      --  this is a view conversion to a smaller object, where gigi can end
+      --  up creating its own temporary of the wrong size.
 
-      elsif Nkind (Exp) = N_Type_Conversion then
+      elsif Nkind (Exp) = N_Type_Conversion
+        and then Etype (Expression (Exp)) /= Universal_Integer
+      then
          Remove_Side_Effects (Expression (Exp), Name_Req, Variable_Ref);
 
          --  Generating C code the type conversion of an access to constrained
