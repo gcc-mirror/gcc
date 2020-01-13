@@ -1920,10 +1920,10 @@ simplify_count_trailing_zeroes (gimple_stmt_iterator *gsi)
 				      res_ops[1], res_ops[2], zero_val))
     {
       tree type = TREE_TYPE (res_ops[0]);
-      HOST_WIDE_INT ctzval;
+      HOST_WIDE_INT ctzval = 0;
       HOST_WIDE_INT type_size = tree_to_shwi (TYPE_SIZE (type));
-      scalar_int_mode mode = SCALAR_INT_TYPE_MODE (type);
-      bool zero_ok = CTZ_DEFINED_VALUE_AT_ZERO (mode, ctzval) == 2;
+      bool zero_ok
+	= CTZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (type), ctzval) == 2;
 
       /* Skip if there is no value defined at zero, or if we can't easily
 	 return the correct value for zero.  */

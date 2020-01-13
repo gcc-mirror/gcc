@@ -1,3 +1,12 @@
+2020-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90838
+	* tree-ssa-forwprop.c (simplify_count_trailing_zeroes): Use
+	SCALAR_INT_TYPE_MODE directly in CTZ_DEFINED_VALUE_AT_ZERO macro
+	argument rather than to initialize temporary for targets that
+	don't use the mode argument at all.  Initialize ctzval to avoid
+	warning at -O0.
+
 2020-01-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* tree.h (OMP_CLAUSE_USE_DEVICE_PTR_IF_PRESENT): New definition.
