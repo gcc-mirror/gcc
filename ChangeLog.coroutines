@@ -1,6 +1,12 @@
 2020-01-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (morph_fn_to_coro): Use new and delete to
+	manage the suspend_points map.
+
+2020-01-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (find_coro_traits_template_class): Delete forward
 	referenced.
 	(find_coro_handle_type): Likewise.

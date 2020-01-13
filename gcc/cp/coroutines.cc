@@ -2922,7 +2922,10 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   /* 2. Types we need to define or look up.  */
 
-  suspend_points = hash_map<tree, suspend_point_info>::create_ggc (11);
+  /* We need to know, and inspect, each suspend point in the function
+     in several places.  It's convenient to place this map out of line
+     since it's used from tree walk callbacks.  */
+  suspend_points = new hash_map<tree, suspend_point_info>;
 
   /* Initial and final suspend types are special in that the co_awaits for
      them are synthetic.  We need to find the type for each awaiter from
@@ -3628,6 +3631,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   *resumer = actor;
   *destroyer = destroy;
 
+  delete suspend_points;
+  suspend_points = NULL;
   return true;
 }
 
