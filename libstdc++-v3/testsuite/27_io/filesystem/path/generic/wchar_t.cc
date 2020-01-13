@@ -28,22 +28,22 @@ using std::filesystem::path;
 void
 test01()
 {
-  VERIFY( path().generic_string() == "" );
-  VERIFY( path("/").generic_string() == "/" );
-  VERIFY( path("////").generic_string() == "/" );
+  VERIFY( path().generic_wstring() == L"" );
+  VERIFY( path("/").generic_wstring() == L"/" );
+  VERIFY( path("////").generic_wstring() == L"/" );
 #ifdef __CYGWIN__
-  VERIFY( path("//a").generic_string() == "//a" );
-  VERIFY( path("//a/").generic_string() == "//a/" );
-  VERIFY( path("//a/b").generic_string() == "//a/b" );
+  VERIFY( path("//a").generic_wstring() == L"//a" );
+  VERIFY( path("//a/").generic_wstring() == L"//a/" );
+  VERIFY( path("//a/b").generic_wstring() == L"//a/b" );
 #else
-  VERIFY( path("//a").generic_string() == "/a" );
-  VERIFY( path("//a/").generic_string() == "/a/" );
-  VERIFY( path("//a/b").generic_string() == "/a/b" );
+  VERIFY( path("//a").generic_wstring() == L"/a" );
+  VERIFY( path("//a/").generic_wstring() == L"/a/" );
+  VERIFY( path("//a/b").generic_wstring() == L"/a/b" );
 #endif
-  VERIFY( path("/a//b").generic_string() == "/a/b" );
-  VERIFY( path("/a//b/").generic_string() == "/a/b/" );
-  VERIFY( path("/a//b//").generic_string() == "/a/b/" );
-  VERIFY( path("/a//b//.").generic_string() == "/a/b/." );
+  VERIFY( path("/a//b").generic_wstring() == L"/a/b" );
+  VERIFY( path("/a//b/").generic_wstring() == L"/a/b/" );
+  VERIFY( path("/a//b//").generic_wstring() == L"/a/b/" );
+  VERIFY( path("/a//b//.").generic_wstring() == L"/a/b/." );
 }
 
 void
@@ -53,7 +53,7 @@ test02()
   path p("C:");
   p += path::preferred_separator;
   p += "foo/bar";
-  VERIFY( p.generic_string() == "C:/foo/bar" );
+  VERIFY( p.generic_wstring() == L"C:/foo/bar" );
 }
 
 int

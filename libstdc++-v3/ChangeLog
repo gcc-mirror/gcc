@@ -1,5 +1,13 @@
 2020-01-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/93244
+	* include/bits/fs_path.h (path::generic_string<C,A>)
+	[_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Convert root-dir to forward-slash.
+	* testsuite/27_io/filesystem/path/generic/generic_string.cc: Check
+	root-dir is converted to forward slash in generic pathname.
+	* testsuite/27_io/filesystem/path/generic/utf.cc: New test.
+	* testsuite/27_io/filesystem/path/generic/wchar_t.cc: New test.
+
 	PR libstdc++/58605
 	* include/bits/atomic_base.h (__cpp_lib_atomic_value_initialization):
 	Define.
