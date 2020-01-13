@@ -14,9 +14,13 @@ then
     exit 1
 fi
 
-echo "setting up git to fetch vendor ${vendor} to remotes/${upstream}/${vendor}"
+# This entry needs to come last, so unset it now, then reset it after the updates.
+git config --unset "remote.${upstream}.push" "refs/heads/\\*:refs/heads/\\*"
 
-git config --replace-all "remote.${upstream}.fetch" "+refs/vendors/${vendor}/heads/*:refs/remotes/${upstream}/${vendor}/*" ":refs/remotes/${upstream}/${vendor}/"
+echo "setting up git to fetch vendor ${vendor} to remotes/${upstream}/${vendor}"
+git config --replace-all "remote.${upstream}.fetch" "refs/vendors/${vendor}/heads/*:refs/remotes/${upstream}/${vendor}/*" ":refs/remotes/${upstream}/${vendor}/"
 git config --replace-all "remote.${upstream}.fetch" "+refs/vendors/${vendor}/tags/*:refs/tags/${vendor}/*" ":refs/tags/${vendor}/"
-git config --replace-all "remote.${upstream}.push" "+refs/heads/${vendor}/*:refs/vendors/${vendor}/heads/*" "^\+refs/heads/${vendor}/"
+git config --replace-all "remote.${upstream}.push" "refs/heads/${vendor}/*:refs/vendors/${vendor}/heads/*" "^\+?refs/heads/${vendor}/"
+# Re-add the line deleted above.
+git config --add "remote.${upstream}.push" "refs/heads/*:refs/heads/*"
 git fetch

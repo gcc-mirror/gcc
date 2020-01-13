@@ -68,7 +68,11 @@ echo "(local branches starting <prefix>/ can be pushed directly to your"
 ask "personal area on the gcc server)" $old_pfx new_pfx
 git config "gcc-config.userpfx" "$new_pfx"
 
+# This entry needs to come last, so unset it now, then reset it after the updates.
+git config --unset "remote.${upstream}.push" "refs/heads/\\*:refs/heads/\\*"
 echo "Setting up tracking for personal namespace $remote_id in remotes/$upstream/${new_pfx}"
 git config --replace-all "remote.${upstream}.fetch" "+refs/users/${remote_id}/heads/*:refs/remotes/${upstream}/${new_pfx}/*" ":refs/remotes/${upstream}/${old_pfx}/"
 git config --replace-all "remote.${upstream}.fetch" "+refs/users/${remote_id}/tags/*:refs/tags/${new_pfx}/*" ":refs/tags/${old_pfx}/"
 git config --replace-all "remote.${upstream}.push" "refs/heads/${new_pfx}/*:refs/users/${remote_id}/heads/*" "^\+?refs/heads/${old_pfx}/"
+# Re-add the line deleted above.
+git config --add "remote.${upstream}.push" "refs/heads/*:refs/heads/*"
