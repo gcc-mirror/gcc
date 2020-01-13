@@ -1,3 +1,7 @@
+2010-01-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc-git-customization.sh: New file.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* update-copyright.py: Add Mentor Graphics Corporation and Yoshinori
