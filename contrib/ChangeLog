@@ -1,3 +1,8 @@
+2020-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* contrib/gcc-git-customization.sh: Add git gcc-descr and gcc-undescr
+	aliases.
+
 2010-01-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc-git-customization.sh: New file.
