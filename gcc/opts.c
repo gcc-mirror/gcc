@@ -2137,6 +2137,11 @@ print_help (struct gcc_options *opts, unsigned int lang_mask,
       a = comma + 1;
     }
 
+  /* We started using PerFunction/Optimization for parameters and
+     a warning.  We should exclude these from optimization options.  */
+  if (include_flags & CL_OPTIMIZATION)
+    exclude_flags |= CL_WARNING | CL_PARAMS;
+
   if (include_flags)
     print_specific_help (include_flags, exclude_flags, 0, opts,
 			 lang_mask);
