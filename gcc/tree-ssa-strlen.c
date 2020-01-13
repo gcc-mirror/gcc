@@ -5239,10 +5239,10 @@ handle_store (gimple_stmt_iterator *gsi, bool *zero_write,
 	}
     }
 
-  if (si != NULL && offset == 0 && storing_all_zeros_p)
+  if (si != NULL && offset == 0 && storing_all_zeros_p && lenrange[2] == 1)
     {
-      /* Allow adjust_last_stmt to remove it if the stored '\0'
-	 is immediately overwritten.  */
+      /* For single-byte stores only, allow adjust_last_stmt to remove
+	 the statement if the stored '\0' is immediately overwritten.  */
       laststmt.stmt = stmt;
       laststmt.len = build_int_cst (size_type_node, 1);
       laststmt.stridx = si->idx;
