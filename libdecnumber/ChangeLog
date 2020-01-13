@@ -1,3 +1,14 @@
+2020-01-13  Joseph Myers  <joseph@codesourcery.com>
+
+	Backport from mainline:
+	2019-12-09  Joseph Myers  <joseph@codesourcery.com>
+
+	PR middle-end/91226
+	* bid/bid2dpd_dpd2bid.c (_bid_to_dpd64): Handle non-canonical
+	significands.
+	(_bid_to_dpd128): Likewise.  Check for case where combination
+	field starts 1100, 1101 or 1110.
+
 2019-08-12  Release Manager
 
 	* GCC 9.2.0 released.
