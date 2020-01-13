@@ -102,9 +102,17 @@ package body System.Img_WIU is
       begin
          if T >= 10 then
             Set_Digits (T / 10);
+            pragma Assert (P >= (S'First - 1) and P < S'Last and
+                           P < Natural'Last);
+            --  No check is done since, as documented in the specification,
+            --  the caller guarantees that S is long enough to hold the result.
             P := P + 1;
             S (P) := Character'Val (T mod 10 + Character'Pos ('0'));
          else
+            pragma Assert (P >= (S'First - 1) and P < S'Last and
+                           P < Natural'Last);
+            --  No check is done since, as documented in the specification,
+            --  the caller guarantees that S is long enough to hold the result.
             P := P + 1;
             S (P) := Character'Val (T + Character'Pos ('0'));
          end if;
@@ -123,12 +131,19 @@ package body System.Img_WIU is
          T := P;
 
          while F > Start loop
+            pragma Assert (T >= S'First and T <= S'Last and
+                           F >= S'First and F <= S'Last);
+            --  No check is done since, as documented in the specification,
+            --  the caller guarantees that S is long enough to hold the result.
             S (T) := S (F);
             T := T - 1;
             F := F - 1;
          end loop;
 
          for J in Start + 1 .. T loop
+            pragma Assert (J >= S'First and J <= S'Last);
+            --  No check is done since, as documented in the specification,
+            --  the caller guarantees that S is long enough to hold the result.
             S (J) := ' ';
          end loop;
       end if;

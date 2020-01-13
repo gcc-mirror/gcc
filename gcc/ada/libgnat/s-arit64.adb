@@ -214,6 +214,15 @@ package body System.Arith_64 is
 
       --  Perform the actual division
 
+      pragma Assert (Du /= 0);
+      --  Multiplication of 2-limbs arguments Yu and Zu leads to 4-limbs
+      --  result (where each limb is 32bits). Cases where 4 limbs are needed
+      --  require Yhi/=0 and Zhi/=0 and lead to early exit. Remaining cases
+      --  where 3 limbs are needed correspond to Hi(T2)/=0 and lead to
+      --  early exit. Thus at this point result fits in 2 limbs which are
+      --  exactly Lo(T2) and Lo(T1), which corresponds to the value of Du.
+      --  As the case where one of Yu or Zu is null also led to early exit,
+      --  Du/=0 here.
       Qu := Xu / Du;
       Ru := Xu rem Du;
 
@@ -305,12 +314,16 @@ package body System.Arith_64 is
       if X >= 0 then
          if Y >= 0 then
             return To_Pos_Int (T2);
+            pragma Annotate (CodePeer, Intentional, "precondition",
+                             "Intentional Unsigned->Signed conversion");
          else
             return To_Neg_Int (T2);
          end if;
       else -- X < 0
          if Y < 0 then
             return To_Pos_Int (T2);
+            pragma Annotate (CodePeer, Intentional, "precondition",
+                             "Intentional Unsigned->Signed conversion");
          else
             return To_Neg_Int (T2);
          end if;
@@ -475,6 +488,12 @@ package body System.Arith_64 is
 
          Zhi := Hi (Zu);
          Zlo := Lo (Zu);
+
+         pragma Assert (Zhi /= 0);
+         --  Hi(Zu)/=0 before normalization. The sequence of Shift_Left
+         --  operations results in the leading bit of Zu being 1 by moving
+         --  the leftmost 1-bit in Zu to leading position, thus Zhi=Hi(Zu)/=0
+         --  here.
 
          --  Note that when we scale up the dividend, it still fits in four
          --  digits, since we already tested for overflow, and scaling does

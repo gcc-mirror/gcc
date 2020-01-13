@@ -61,10 +61,18 @@ package body System.Img_LLU is
    begin
       if V >= 10 then
          Set_Image_Long_Long_Unsigned (V / 10, S, P);
+         pragma Assert (P >= (S'First - 1) and P < S'Last and
+                        P < Natural'Last);
+         --  No check is done since, as documented in the specification, the
+         --  caller guarantees that S is long enough to hold the result.
          P := P + 1;
          S (P) := Character'Val (48 + (V rem 10));
 
       else
+         pragma Assert (P >= (S'First - 1) and P < S'Last and
+                        P < Natural'Last);
+         --  No check is done since, as documented in the specification, the
+         --  caller guarantees that S is long enough to hold the result.
          P := P + 1;
          S (P) := Character'Val (48 + V);
       end if;

@@ -31,8 +31,11 @@
 
 package body System.Img_LLI is
 
+   subtype Non_Positive is Long_Long_Integer
+                        range Long_Long_Integer'First .. 0;
+
    procedure Set_Digits
-     (T : Long_Long_Integer;
+     (T : Non_Positive;
       S : in out String;
       P : in out Natural);
    --  Set digits of absolute value of T, which is zero or negative. We work
@@ -66,16 +69,26 @@ package body System.Img_LLI is
    ----------------
 
    procedure Set_Digits
-     (T : Long_Long_Integer;
+     (T : Non_Positive;
       S : in out String;
       P : in out Natural)
    is
    begin
       if T <= -10 then
          Set_Digits (T / 10, S, P);
+         pragma Assert (P >= (S'First - 1) and P < S'Last and
+                        P < Natural'Last);
+         --  No check is done as documented in the Set_Image_Long_Long_Integer
+         --  specification: The caller guarantees that S is long enough to
+         --  hold the result.
          P := P + 1;
          S (P) := Character'Val (48 - (T rem 10));
       else
+         pragma Assert (P >= (S'First - 1) and P < S'Last and
+                        P < Natural'Last);
+         --  No check is done as documented in the Set_Image_Long_Long_Integer
+         --  specification: The caller guarantees that S is long enough to
+         --  hold the result.
          P := P + 1;
          S (P) := Character'Val (48 - T);
       end if;
@@ -93,6 +106,10 @@ package body System.Img_LLI is
       if V >= 0 then
          Set_Digits (-V, S, P);
       else
+         pragma Assert (P >= (S'First - 1) and P < S'Last and
+                        P < Natural'Last);
+         --  No check is done as documented in the specification:
+         --  The caller guarantees that S is long enough to hold the result.
          P := P + 1;
          S (P) := '-';
          Set_Digits (V, S, P);

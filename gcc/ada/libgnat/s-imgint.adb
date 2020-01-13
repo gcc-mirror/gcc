@@ -31,8 +31,10 @@
 
 package body System.Img_Int is
 
+   subtype Non_Positive is Integer range Integer'First .. 0;
+
    procedure Set_Digits
-     (T : Integer;
+     (T : Non_Positive;
       S : in out String;
       P : in out Natural);
    --  Set digits of absolute value of T, which is zero or negative. We work
@@ -66,16 +68,26 @@ package body System.Img_Int is
    ----------------
 
    procedure Set_Digits
-     (T : Integer;
+     (T : Non_Positive;
       S : in out String;
       P : in out Natural)
    is
    begin
       if T <= -10 then
          Set_Digits (T / 10, S, P);
+         pragma Assert (P >= (S'First - 1) and P < S'Last and
+                        P < Natural'Last);
+         --  No check is done since, as documented in the Set_Image_Integer
+         --  specification, the caller guarantees that S is long enough to
+         --  hold the result.
          P := P + 1;
          S (P) := Character'Val (48 - (T rem 10));
       else
+         pragma Assert (P >= (S'First - 1) and P < S'Last and
+                        P < Natural'Last);
+         --  No check is done since, as documented in the Set_Image_Integer
+         --  specification, the caller guarantees that S is long enough to
+         --  hold the result.
          P := P + 1;
          S (P) := Character'Val (48 - T);
       end if;
@@ -94,6 +106,10 @@ package body System.Img_Int is
       if V >= 0 then
          Set_Digits (-V, S, P);
       else
+         pragma Assert (P >= (S'First - 1) and P < S'Last and
+                        P < Natural'Last);
+         --  No check is done since, as documented in the specification,
+         --  the caller guarantees that S is long enough to hold the result.
          P := P + 1;
          S (P) := '-';
          Set_Digits (V, S, P);
