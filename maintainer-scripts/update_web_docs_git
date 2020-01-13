@@ -3,14 +3,14 @@
 # Generate HTML documentation from GCC Texinfo docs.
 #
 # If you want to run this on a machine different from gcc.gnu.org, you
-# may need to adjust SVNROOT and WWWBASE below (or override them via the
+# may need to adjust GITROOT and WWWBASE below (or override them via the
 # environment).
 
 set -e
 
 # Run this from /tmp.
-SVNROOT=${SVNROOT:-"file:///svn/gcc"}
-export SVNROOT
+GITROOT=${GITROOT:-"/git/gcc.git"}
+export GITROOT
 
 PATH=/usr/local/bin:$PATH
 
@@ -104,7 +104,7 @@ if [ ! -d $DOCSDIR ]; then
 fi
 
 if [ -z "$RELEASE" ]; then
-  RELEASE=trunk
+  RELEASE=master
 fi
 
 WORKDIR=/tmp/gcc-doc-update.$$
@@ -112,11 +112,12 @@ WORKDIR=/tmp/gcc-doc-update.$$
 rm -rf $WORKDIR
 mkdir $WORKDIR
 cd $WORKDIR
-if [ "$RELEASE" = "trunk" ]; then
-  svn -q export $SVNROOT/$RELEASE gcc
+if [ "$RELEASE" = "master" ]; then
+  git clone -q $GITROOT gcc
 else
-  svn -q export $SVNROOT/tags/$RELEASE gcc
+  git clone -q -b releases/gcc-$RELEASE $GITROOT gcc
 fi
+rm -rf gcc/.git
 
 # Remove all unwanted files.  This is needed to avoid packaging all the
 # sources instead of only documentation sources.
@@ -259,7 +260,7 @@ find jit \
 cd $DOCSDIR
 
 # Finally, generate the installation documentation
-if [ "$RELEASE" = "trunk" ]; then
+if [ "$RELEASE" = "master" ]; then
   SOURCEDIR=$WORKDIR/gcc/gcc/doc
   DESTDIR=$WWWBASE_PREFORMATTED/install
   export SOURCEDIR
