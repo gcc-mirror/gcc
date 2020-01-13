@@ -1,3 +1,8 @@
+2020-01-13  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* Make-lang.in (MODULE_REVISION): SVN's dead, man.
+
 2020-01-10  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r280131.
@@ -13956,4 +13961,3 @@ Local Variables:
 mode: change-log
 change-log-default-name: "ChangeLog.modules"
 End:
-$Rev$
