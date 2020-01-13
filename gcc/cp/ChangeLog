@@ -1,5 +1,8 @@
 2020-01-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/92746 - ICE with noexcept of function concept check.
+	* except.c (check_noexcept_r): Handle concept-check.
+
 	PR c++/92582 - ICE with member template as requirement.
 	* pt.c (struct find_template_parameter_info): Add ctx_parms.
 	(any_template_parm_r): Handle TEMPLATE_DECL.
