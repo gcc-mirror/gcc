@@ -458,7 +458,12 @@ trivial_fn_p (tree fn)
   /* If fn is a clone, get the primary variant.  */
   if (tree prim = DECL_CLONED_FUNCTION (fn))
     fn = prim;
-  return type_has_trivial_fn (DECL_CONTEXT (fn), special_function_p (fn));
+  special_function_kind sfk = special_function_p (fn);
+  /* An inherited default constructor is equivalent to a non-inherited default
+     constructor, so let it be trivial.  */
+  if (sfk == sfk_inheriting_constructor && default_ctor_p (fn))
+    sfk = sfk_constructor;
+  return type_has_trivial_fn (DECL_CONTEXT (fn), sfk);
 }
 
 /* PARM is a PARM_DECL for a function which we want to forward to another

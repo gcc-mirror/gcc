@@ -1,5 +1,9 @@
 2020-01-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/92594 - ICE with inherited trivial default ctor.
+	* method.c (trivial_fn_p): Treat an inherited default constructor
+	like a normal default constructor.
+
 	PR c++/92009 - ICE with punning of typeid.
 	* rtti.c (get_tinfo_desc): Call xref_basetypes.
 	* constexpr.c (cxx_fold_indirect_ref): Don't strip
