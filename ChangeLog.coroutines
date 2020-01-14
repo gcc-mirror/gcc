@@ -1,3 +1,9 @@
+2020-01-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	libiberty/
+	* testsuite/demangle-expected: Add testcase for the co_await
+	operator mangling.
+
 2020-01-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
