@@ -1,3 +1,11 @@
+2020-01-14  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2020-01-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/93223
+	* g++.dg/ipa/pr93223.C: New test.
+
 2020-01-13  Joseph Myers  <joseph@codesourcery.com>
 
 	Backport from mainline:
