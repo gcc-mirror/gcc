@@ -1,3 +1,8 @@
+2020-01-14  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* cfgloopanal.c (average_num_loop_insns): Free bbs when early return,
+	fix typo on return value.
+
 2020-01-14  Xiong Hu Luo  <luoxhu@linux.ibm.com>
 
 	PR ipa/69678
