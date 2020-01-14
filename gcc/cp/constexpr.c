@@ -4023,7 +4023,16 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
   tree subtype;
   poly_uint64 const_op01;
 
-  STRIP_NOPS (sub);
+  /* STRIP_NOPS, but stop if REINTERPRET_CAST_P.  */
+  while (CONVERT_EXPR_P (sub) || TREE_CODE (sub) == NON_LVALUE_EXPR
+	 || TREE_CODE (sub) == VIEW_CONVERT_EXPR)
+    {
+      if (TREE_CODE (sub) == NOP_EXPR
+	  && REINTERPRET_CAST_P (sub))
+	return NULL_TREE;
+      sub = TREE_OPERAND (sub, 0);
+    }
+
   subtype = TREE_TYPE (sub);
   if (!INDIRECT_TYPE_P (subtype))
     return NULL_TREE;
