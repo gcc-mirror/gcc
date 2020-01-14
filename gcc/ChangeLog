@@ -1,3 +1,9 @@
+2020-01-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/93254
+	* config/i386/i386.md (*movsf_internal): Require SSE2 ISA for
+	alternatives 9 and 10.
+
 2020-01-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* attribs.c (excl_hash_traits::empty_zero_p): New static constant.
