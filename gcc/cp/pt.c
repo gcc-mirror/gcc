@@ -1252,9 +1252,7 @@ retrieve_specialization (tree tmpl, tree args, hashval_t hash)
       for (ovl_iterator iter (fns); iter; ++iter)
 	{
 	  tree fn = *iter;
-	  if (tree ti = (TREE_CODE (fn) == TYPE_DECL && !TYPE_DECL_ALIAS_P (fn)
-			 ? TYPE_TEMPLATE_INFO (TREE_TYPE (fn))
-			 : DECL_TEMPLATE_INFO (fn)))
+	  if (tree ti = get_template_info (fn))
 	    if (TI_TEMPLATE (ti) == tmpl
 		/* using-declarations can bring in a different
 		   instantiation of tmpl as a member of a different
