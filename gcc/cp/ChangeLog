@@ -14,6 +14,20 @@
 
 2020-01-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/92590 - wrong handling of inherited default ctor.
+	* class.c (add_method): A constrained inherited ctor doesn't hide an
+	implicit derived ctor.
+	Revert:
+	PR c++/92552 - ICE with inherited constrained default ctor.
+	* pt.c (instantiate_class_template_1): Copy
+	TYPE_HAS_USER_CONSTRUCTOR.
+	PR c++/91930 - ICE with constrained inherited default ctor.
+	* name-lookup.c (do_class_using_decl): Set TYPE_HAS_USER_CONSTRUCTOR
+	for inherited constructor.
+	PR c++/92594 - ICE with inherited trivial default ctor.
+	* method.c (trivial_fn_p): Treat an inherited default constructor
+	like a normal default constructor.
+
 	PR c++/92594 - ICE with inherited trivial default ctor.
 	* method.c (trivial_fn_p): Treat an inherited default constructor
 	like a normal default constructor.

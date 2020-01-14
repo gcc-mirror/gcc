@@ -4634,7 +4634,6 @@ lookup_using_decl (tree scope, name_lookup &lookup)
 	  maybe_warn_cpp0x (CPP0X_INHERITING_CTORS);
 	  lookup.name = ctor_identifier;
 	  CLASSTYPE_NON_AGGREGATE (current) = true;
-	  TYPE_HAS_USER_CONSTRUCTOR (current) = true;
     	}
 
       /* Cannot introduce a constructor name.  */
