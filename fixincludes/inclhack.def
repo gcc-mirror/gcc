@@ -5159,21 +5159,23 @@ fix = {
 };
 
 /*
- *  Wrap VxWorks mkdir to be posix compliant
+ *  mkdir's posix interface expects two arguments.  While the RTP VxWorks
+ *  API is fine, the kernel version handles only one.  We used to expose
+ *  a macro and this didn't play nice with uses such as posix:mkdir(x, y)
+ *  in libstdc++, so we expose a vararg prototype instead.
  */
 fix = {
-    hackname    = vxworks_mkdir_macro;
+    hackname    = vxworks_posix_mkdir;
     files       = sys/stat.h;
     mach        = "*-*-vxworks*";
 
     c_fix       = format;
-    c_fix_arg   = "%0\n"
-                "#define mkdir(dir, ...) ((void)0, ##__VA_ARGS__, (mkdir)(dir))\n";
+    c_fix_arg   = "extern STATUS mkdir(const char *dir, ...);";
     c_fix_arg   = "extern[\t ]+STATUS[\t ]+mkdir[\t ]*"
                 "\\([\t ]*const[\t ]+char[\t ]*\\*[\t ]*" /* arg type */
                 "(|[_[:alpha:]][_[:alnum:]]*)" /* arg name (optional) */
                 "\\)[\t ]*;";
-        
+
     test_text   = "extern STATUS mkdir (const char * _qwerty) ;";
 };
 
