@@ -1,3 +1,9 @@
+2020-01-20  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	PR middle-end/93246
+	* g++.dg/torture/pr93246.C: New testcase.
+
 2020-02-11  Tamar Christina  <tamar.christina@arm.com>
 
 	Backport from mainline
