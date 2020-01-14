@@ -1,5 +1,11 @@
 2020-01-15  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR tree-optimization/93247
+	* tree-vect-loop.c (update_epilogue_loop_vinfo): Check the access
+	type of the stmt that we're going to vectorize.
+
+2020-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-slp.c (vectorize_slp_instance_root_stmt): Use a
 	VIEW_CONVERT_EXPR if the vectorized constructor has a diffeent
 	type from the lhs.

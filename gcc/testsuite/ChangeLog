@@ -1,3 +1,9 @@
+2020-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/93247
+	* gcc.dg/vect/pr93247-1.c: New test.
+	* gcc.dg/vect/pr93247-2.c: Likewise.
+
 2020-01-15  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/Wstringop-overflow-17.c: Tweak test to avoid unrelated
