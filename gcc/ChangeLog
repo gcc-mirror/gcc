@@ -1,5 +1,10 @@
 2020-05-12  Richard Biener  <rguenther@suse.de>
 
+	* gimple-fold.c (maybe_canonicalize_mem_ref_addr): Canonicalize
+	literal constant &MEM[..] to a constant literal.
+
+2020-05-12  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/95045
 	* dbgcnt.def (lim): Add debug-counter.
 	* tree-ssa-loop-im.c: Include dbgcnt.h.
