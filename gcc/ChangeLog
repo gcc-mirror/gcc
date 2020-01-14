@@ -1,3 +1,9 @@
+2020-01-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR ipa/93315
+	* ipa-profile.c (ipa_profile): Delete call_sums and set it to
+	NULL on exit.
+
 2020-01-18  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/93318	
