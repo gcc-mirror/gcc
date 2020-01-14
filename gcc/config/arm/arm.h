@@ -465,6 +465,10 @@ extern int arm_arch8_3;
 /* Nonzero if this chip supports the ARM Architecture 8.4 extensions.  */
 extern int arm_arch8_4;
 
+/* Nonzero if this chip supports the ARM Architecture 8.1-M Mainline
+   extensions.  */
+extern int arm_arch8_1m_main;
+
 /* Nonzero if this chip supports the FP16 instructions extension of ARM
    Architecture 8.2.  */
 extern int arm_fp16_inst;

@@ -18095,6 +18095,7 @@ Permissible names are:
 @samp{armv6-m}, @samp{armv6s-m},
 @samp{armv7-m}, @samp{armv7e-m},
 @samp{armv8-m.base}, @samp{armv8-m.main},
+@samp{armv8.1-m.main},
 @samp{iwmmxt} and @samp{iwmmxt2}.
 
 Additionally, the following architectures, which lack support for the
@@ -18483,6 +18484,18 @@ The single- and double-precision FPv5 floating-point instructions.
 
 @item +nofp
 Disable the floating-point extensions.
+@end table
+
+@item  armv8.1-m.main
+@table @samp
+@item +fp
+The single-precision floating-point instructions.
+
+@item +fp.dp
+The single- and double-precision floating-point instructions.
+
+@item +nofp
+Disable the floating-point extension.
 @end table
 
 @item  armv8-m.main

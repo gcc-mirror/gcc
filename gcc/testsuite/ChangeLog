@@ -1,3 +1,11 @@
+2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
+2020-01-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_arch_v8_1m_main_ok): Define.
+	(add_options_for_arm_arch_v8_1m_main): Likewise.
+	(check_effective_target_arm_arch_v8_1m_main_multilib): Likewise.
+
 2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	* gcc.target/aarch64/advsimd-intrinsics/bfdot-1.c: New.

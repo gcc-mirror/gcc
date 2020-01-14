@@ -1,3 +1,20 @@
+2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
+2020-01-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
+
+	* config/arm/arm-cpus.in (armv8_1m_main): New feature.
+	(ARMv4, ARMv4t, ARMv5t, ARMv5te, ARMv5tej, ARMv6, ARMv6j, ARMv6k,
+	ARMv6z, ARMv6kz, ARMv6zk, ARMv6t2, ARMv6m, ARMv7, ARMv7a, ARMv7ve,
+	ARMv7r, ARMv7m, ARMv7em, ARMv8a, ARMv8_1a, ARMv8_2a, ARMv8_3a,
+	ARMv8_4a, ARMv8_5a, ARMv8m_base, ARMv8m_main, ARMv8r): Reindent.
+	(ARMv8_1m_main): New feature group.
+	(armv8.1-m.main): New architecture.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm.c (arm_arch8_1m_main): Define and default initialize.
+	(arm_option_reconfigure_globals): Initialize arm_arch8_1m_main.
+	(arm_options_perform_arch_sanity_checks): Error out when targeting
+	Armv8.1-M Mainline Security Extensions.
+	* config/arm/arm.h (arm_arch8_1m_main): Declare.
+
 2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def (aarch64_bfdot,

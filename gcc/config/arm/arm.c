@@ -914,6 +914,9 @@ int arm_arch8_3 = 0;
 
 /* Nonzero if this chip supports the ARM Architecture 8.4 extensions.  */
 int arm_arch8_4 = 0;
+/* Nonzero if this chip supports the ARM Architecture 8.1-M Mainline
+   extensions.  */
+int arm_arch8_1m_main = 0;
 
 /* Nonzero if this chip supports the FP16 instructions extension of ARM
    Architecture 8.2.  */
@@ -3674,6 +3677,8 @@ arm_option_reconfigure_globals (void)
   arm_arch8_2 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv8_2);
   arm_arch8_3 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv8_3);
   arm_arch8_4 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv8_4);
+  arm_arch8_1m_main = bitmap_bit_p (arm_active_target.isa,
+				    isa_bit_armv8_1m_main);
   arm_arch_thumb1 = bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
   arm_arch_thumb2 = bitmap_bit_p (arm_active_target.isa, isa_bit_thumb2);
   arm_arch_xscale = bitmap_bit_p (arm_active_target.isa, isa_bit_xscale);
@@ -3761,6 +3766,9 @@ arm_options_perform_arch_sanity_checks (void)
   /* __fp16 support currently assumes the core has ldrh.  */
   if (!arm_arch4 && arm_fp16_format != ARM_FP16_FORMAT_NONE)
     sorry ("__fp16 and no ldrh");
+
+  if (use_cmse && arm_arch8_1m_main)
+    error ("Armv8.1-M Mainline Security Extensions are unsupported");
 
   if (use_cmse && !arm_arch_cmse)
     error ("target CPU does not support ARMv8-M Security Extensions");
