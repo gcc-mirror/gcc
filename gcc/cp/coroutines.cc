@@ -701,10 +701,13 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
     ok = true;
   else if (same_type_p (susp_return_type, boolean_type_node))
     ok = true;
-  else if (TREE_CODE (susp_return_type) == RECORD_TYPE)
-    /* ???: perhaps we should have some way to check that this is actually
-	    a coroutine handle type.  */
-    ok = true;
+  else if (TREE_CODE (susp_return_type) == RECORD_TYPE
+	   && CLASS_TYPE_P (susp_return_type))
+    {
+      tree tt = CLASSTYPE_TI_TEMPLATE (susp_return_type);
+      if (tt == coro_handle_templ)
+	ok = true;
+    }
 
   if (!ok)
     {
