@@ -1186,15 +1186,14 @@ record_alias_subset (alias_set_type superset, alias_set_type subset)
     }
 }
 
-/* Record that component types of TYPE, if any, are part of that type for
+/* Record that component types of TYPE, if any, are part of SUPERSET for
    aliasing purposes.  For record types, we only record component types
    for fields that are not marked non-addressable.  For array types, we
    only record the component type if it is not marked non-aliased.  */
 
 void
-record_component_aliases (tree type)
+record_component_aliases (tree type, alias_set_type superset)
 {
-  alias_set_type superset = get_alias_set (type);
   tree field;
 
   if (superset == 0)
@@ -1244,7 +1243,21 @@ record_component_aliases (tree type)
 				       == get_alias_set (TREE_TYPE (field)));
 	      }
 
-	    record_alias_subset (superset, get_alias_set (t));
+	    alias_set_type set = get_alias_set (t);
+	    record_alias_subset (superset, set);
+	    /* If the field has alias-set zero make sure to still record
+	       any componets of it.  This makes sure that for
+		 struct A {
+		   struct B {
+		     int i;
+		     char c[4];
+		   } b;
+		 };
+	       in C++ even though 'B' has alias-set zero because
+	       TYPE_TYPELESS_STORAGE is set, 'A' has the alias-set of
+	       'int' as subset.  */
+	    if (set == 0)
+	      record_component_aliases (t, superset);
 	  }
       break;
 
@@ -1259,6 +1272,19 @@ record_component_aliases (tree type)
       break;
     }
 }
+
+/* Record that component types of TYPE, if any, are part of that type for
+   aliasing purposes.  For record types, we only record component types
+   for fields that are not marked non-addressable.  For array types, we
+   only record the component type if it is not marked non-aliased.  */
+
+void
+record_component_aliases (tree type)
+{
+  alias_set_type superset = get_alias_set (type);
+  record_component_aliases (type, superset);
+}
+
 
 /* Allocate an alias set for use in storing and reading from the varargs
    spill area.  */

@@ -1,3 +1,11 @@
+2020-01-20  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	PR middle-end/93246
+	* alias.c (record_component_aliases): Take superset to record
+	into, recurse for alias-set zero fields.
+	(record_component_aliases): New oveerload wrapping around the above.
+
 2020-01-19  Eric S. Raymond <esr@thyrsus.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
