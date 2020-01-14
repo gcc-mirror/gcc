@@ -1,3 +1,8 @@
+2020-01-15  Richard Biener  <rguenther@suse.de>
+
+	* alias.c (record_alias_subset): Avoid redundant work when
+	subset is already recorded.
+
 2020-01-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/invoke.texi (-fdiagnostics-show-cwe): Add note that some of
