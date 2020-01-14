@@ -1544,6 +1544,27 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
       return false;
     }
 
+  if (TREE_ADDRESSABLE (t1) != TREE_ADDRESSABLE (t2)
+      && COMPLETE_TYPE_P (t1) && COMPLETE_TYPE_P (t2))
+    {
+      warn_odr (t1, t2, NULL, NULL, warn, warned,
+		G_("one type needs to be constructed while other not"));
+      gcc_checking_assert (RECORD_OR_UNION_TYPE_P (t1));
+      return false;
+    }
+  /* There is no really good user facing warning for this.
+     Either the original reason for modes being different is lost during
+     streaming or we should catch earlier warnings.  We however must detect
+     the mismatch to avoid type verifier from cmplaining on mismatched
+     types between type and canonical type. See PR91576.  */
+  if (TYPE_MODE (t1) != TYPE_MODE (t2)
+      && COMPLETE_TYPE_P (t1) && COMPLETE_TYPE_P (t2))
+    {
+      warn_odr (t1, t2, NULL, NULL, warn, warned,
+		G_("memory layout mismatch"));
+      return false;
+    }
+
   gcc_assert (!TYPE_SIZE_UNIT (t1) || !TYPE_SIZE_UNIT (t2)
 	      || operand_equal_p (TYPE_SIZE_UNIT (t1),
 				  TYPE_SIZE_UNIT (t2), 0));

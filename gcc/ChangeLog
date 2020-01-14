@@ -1,3 +1,9 @@
+2020-01-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/91576
+	* ipa-devirt.c (odr_types_equivalent_p): Compare TREE_ADDRESSABLE and
+	TYPE_MODE.
+
 2020-01-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (lang_opt_files): Add analyzer.opt.
