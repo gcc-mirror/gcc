@@ -1,13 +1,16 @@
 2020-01-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR lto/91576
+	* g++.dg/lto/odr-8_1.C: Remove bogus initial lines.
+
 	PR target/93009
 	* gcc.target/i386/avx512vl-pr93009.c: New test.
 
 2020-01-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/91576
-	* testsuite/g++.dg/lto/odr-8_0.C: New testcase.
-	* testsuite/g++.dg/lto/odr-8_1.C: New testcase.
+	* g++.dg/lto/odr-8_0.C: New testcase.
+	* g++.dg/lto/odr-8_1.C: New testcase.
 
 2020-01-14  David Malcolm  <dmalcolm@redhat.com>
 
