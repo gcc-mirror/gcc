@@ -1,3 +1,8 @@
+2020-05-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_gimple_assign_unary): Adjust integer
+	to/from pointer conversion checking.
+
 2020-05-05  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def: Delete changes meant for a
