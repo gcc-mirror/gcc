@@ -1252,11 +1252,16 @@ retrieve_specialization (tree tmpl, tree args, hashval_t hash)
       for (ovl_iterator iter (fns); iter; ++iter)
 	{
 	  tree fn = *iter;
-	  if (DECL_TEMPLATE_INFO (fn) && DECL_TI_TEMPLATE (fn) == tmpl
-	      /* using-declarations can add base methods to the method vec,
-		 and we don't want those here.  */
-	      && DECL_CONTEXT (fn) == class_specialization)
-	    return fn;
+	  if (tree ti = (TREE_CODE (fn) == TYPE_DECL && !TYPE_DECL_ALIAS_P (fn)
+			 ? TYPE_TEMPLATE_INFO (TREE_TYPE (fn))
+			 : DECL_TEMPLATE_INFO (fn)))
+	    if (TI_TEMPLATE (ti) == tmpl
+		/* using-declarations can bring in a different
+		   instantiation of tmpl as a member of a different
+		   instantiation of tmpl's class.  We don't want those
+		   here.  */
+		&& DECL_CONTEXT (fn) == class_specialization)
+	      return fn;
 	}
       return NULL_TREE;
     }

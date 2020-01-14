@@ -1,3 +1,9 @@
+2020-01-14  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/90916
+	* pt.c (retrieve_specialization): Get the TI from the decl or the
+	classtype as appropriate.
+
 2020-01-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* cp-gimplify.c (source_location_table_entry_hash::empty_zero_p):
