@@ -27,7 +27,8 @@ is
 --   with Real_Literal => From_String,
 --        Put_Image    => Put_Image;
 
-   function Is_Valid (Arg : Big_Real) return Boolean;
+   function Is_Valid (Arg : Big_Real) return Boolean
+     with Convention => Intrinsic;
 
    function "/" (Num, Den : Big_Integers.Big_Integer) return Big_Real;
 --   with Pre => (if Big_Integers."=" (Den, Big_Integers.To_Big_Integer (0))
