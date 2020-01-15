@@ -1,3 +1,10 @@
+2020-01-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/93254
+	* config/i386/i386.md (*movsf_internal): Require SSE2 ISA for
+	alternatives 9 and 10.  Do not require SSE2 ISA for alternatives
+	14 and 15.
+
 2020-01-14  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
