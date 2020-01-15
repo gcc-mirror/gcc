@@ -197,6 +197,10 @@ define feature sb
 # v8-A architectures, added by default from v8.5-A
 define feature predres
 
+# M-profile Vector Extension feature bits
+define feature mve
+define feature mve_float
+
 # 8-bit Integer Matrix Multiply extension. Optional from v8.2-A.
 define feature i8mm
 
@@ -690,9 +694,12 @@ begin arch armv8.1-m.main
  base 8M_MAIN
  isa ARMv8_1m_main
 # fp => FPv5-sp-d16; fp.dp => FPv5-d16
+ option dsp add armv7em
  option fp add FPv5 fp16
  option fp.dp add FPv5 FP_DBL fp16
  option nofp remove ALL_FP
+ option mve add mve armv7em
+ option mve.fp add mve FPv5 fp16 mve_float armv7em
 end arch armv8.1-m.main
 
 begin arch iwmmxt

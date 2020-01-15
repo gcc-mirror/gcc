@@ -319,6 +319,12 @@ emission of floating point pcs attributes.  */
    instructions (most are floating-point related).  */
 #define TARGET_HAVE_FPCXT_CMSE	(arm_arch8_1m_main)
 
+#define TARGET_HAVE_MVE (bitmap_bit_p (arm_active_target.isa, \
+				       isa_bit_mve))
+
+#define TARGET_HAVE_MVE_FLOAT (bitmap_bit_p (arm_active_target.isa, \
+					     isa_bit_mve_float))
+
 /* Nonzero if integer division instructions supported.  */
 #define TARGET_IDIV	((TARGET_ARM && arm_arch_arm_hwdiv)	\
 			 || (TARGET_THUMB && arm_arch_thumb_hwdiv))

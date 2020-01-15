@@ -18488,6 +18488,17 @@ Disable the floating-point extensions.
 
 @item  armv8.1-m.main
 @table @samp
+
+@item +dsp
+The DSP instructions.
+
+@item +mve
+The M-Profile Vector Extension (MVE) integer instructions.
+
+@item +mve.fp
+The M-Profile Vector Extension (MVE) integer and single precision
+floating-point instructions.
+
 @item +fp
 The single-precision floating-point instructions.
 

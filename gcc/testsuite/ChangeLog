@@ -1,3 +1,8 @@
+2020-01-16  Mihail Ionescu  <mihail.ionescu@arm.com>
+2020-01-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* testsuite/gcc.target/arm/multilib.exp: Add v8.1-M entries.
+
 2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
 2020-01-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
 

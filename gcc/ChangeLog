@@ -1,3 +1,12 @@
+2020-01-16  Mihail Ionescu  <mihail.ionescu@arm.com>
+2020-01-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm-cpus.in (mve, mve_float): New features.
+	(dsp, mve, mve.fp): New options.
+	* config/arm/arm.h (TARGET_HAVE_MVE, TARGET_HAVE_MVE_FLOAT): Define.
+	* config/arm/t-rmprofile: Map v8.1-M multilibs to v8-M.
+	* doc/invoke.texi: Document the armv8.1-m mve and dps options.
+
 2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
 2020-01-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
 

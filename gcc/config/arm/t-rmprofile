@@ -54,7 +54,7 @@ MULTILIB_REQUIRED	+= mthumb/march=armv8-m.main+fp.dp/mfloat-abi=softfp
 # Arch Matches
 MULTILIB_MATCHES	+= march?armv6s-m=march?armv6-m
 
-# Map all v8-m.main+dsp FP variants down the the variant without DSP.
+# Map all v8-m.main+dsp FP variants down to the variant without DSP.
 MULTILIB_MATCHES	+= march?armv8-m.main=march?armv8-m.main+dsp \
 			   $(foreach FP, +fp +fp.dp, \
 			     march?armv8-m.main$(FP)=march?armv8-m.main+dsp$(FP))
@@ -66,3 +66,18 @@ MULTILIB_MATCHES	+= march?armv7e-m+fp=march?armv7e-m+fpv5
 MULTILIB_REUSE		+= $(foreach ARCH, armv6s-m armv7-m armv7e-m armv8-m\.base armv8-m\.main, \
 			     mthumb/march.$(ARCH)/mfloat-abi.soft=mthumb/march.$(ARCH)/mfloat-abi.softfp)
 
+# Map v8.1-M to v8-M.
+MULTILIB_MATCHES	+= march?armv8-m.main=march?armv8.1-m.main
+MULTILIB_MATCHES	+= march?armv8-m.main=march?armv8.1-m.main+dsp
+MULTILIB_MATCHES	+= march?armv8-m.main=march?armv8.1-m.main+mve
+
+v8_1m_sp_variants = +fp +dsp+fp +mve.fp
+v8_1m_dp_variants = +fp.dp +dsp+fp.dp +fp.dp+mve +fp.dp+mve.fp
+
+# Map all v8.1-m.main FP sp variants down to v8-m.
+MULTILIB_MATCHES += $(foreach FP, $(v8_1m_sp_variants), \
+			     march?armv8-m.main+fp=march?armv8.1-m.main$(FP))
+
+# Map all v8.1-m.main FP dp variants down to v8-m.
+MULTILIB_MATCHES += $(foreach FP, $(v8_1m_dp_variants), \
+			     march?armv8-m.main+fp.dp=march?armv8.1-m.main$(FP))
