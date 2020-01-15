@@ -29,8 +29,10 @@ main (void)
   return 0;
 }
 
+/* { dg-final { scan-assembler "vstr\tFPCXTNS, \\\[sp, #-4\\\]!" { target arm_cmse_clear_ok } } } */
 /* { dg-final { scan-assembler "movw\tr1, #1919" } } */
 /* { dg-final { scan-assembler "movt\tr1, 2047" } } */
 /* { dg-final { scan-assembler "ands\tr0(, r0)?, r1" } } */
+/* { dg-final { scan-assembler "vldr\tFPCXTNS, \\\[sp\\\], #4" { target arm_cmse_clear_ok } } } */
 /* { dg-final { scan-assembler "bxns" } } */
 

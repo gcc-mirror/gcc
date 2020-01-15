@@ -315,6 +315,10 @@ emission of floating point pcs attributes.  */
 /* Nonzero if this chip provides the CBZ and CBNZ instructions.  */
 #define TARGET_HAVE_CBZ		(arm_arch_thumb2 || arm_arch8)
 
+/* Nonzero if this chip provides Armv8.1-M Mainline Security extensions
+   instructions (most are floating-point related).  */
+#define TARGET_HAVE_FPCXT_CMSE	(arm_arch8_1m_main)
+
 /* Nonzero if integer division instructions supported.  */
 #define TARGET_IDIV	((TARGET_ARM && arm_arch_arm_hwdiv)	\
 			 || (TARGET_THUMB && arm_arch_thumb_hwdiv))
@@ -1180,6 +1184,22 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000000, 0x00000080 }, /* AFP_REG */	\
   { 0xFFFF7FFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x0000000F }  /* ALL_REGS */	\
 }
+
+#define FP_SYSREGS \
+  DEF_FP_SYSREG (FPSCR) \
+  DEF_FP_SYSREG (FPSCR_nzcvqc) \
+  DEF_FP_SYSREG (VPR) \
+  DEF_FP_SYSREG (P0) \
+  DEF_FP_SYSREG (FPCXTNS) \
+  DEF_FP_SYSREG (FPCXTS)
+
+#define DEF_FP_SYSREG(reg) reg ## _ENUM,
+enum vfp_sysregs_encoding {
+  FP_SYSREGS
+  NB_FP_SYSREGS
+};
+#undef DEF_FP_SYSREG
+extern const char *fp_sysreg_names[NB_FP_SYSREGS];
 
 /* Any of the VFP register classes.  */
 #define IS_VFP_CLASS(X) \

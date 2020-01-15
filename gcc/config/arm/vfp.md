@@ -1599,6 +1599,44 @@
    (set_attr "type" "f_flag")]
 )
 
+(define_insn "push_fpsysreg_insn"
+  [(set (mem:SI (post_dec:SI (match_operand:SI 0 "s_register_operand" "+&rk")))
+   (unspec_volatile:SI [(match_operand:SI 1 "const_int_operand" "n")]
+		       VUNSPEC_VSTR_VLDR))]
+  "TARGET_HAVE_FPCXT_CMSE && use_cmse"
+  {
+    static char buf[32];
+    int fp_sysreg_enum = INTVAL (operands[1]);
+
+    gcc_assert (IN_RANGE (fp_sysreg_enum, 0, NB_FP_SYSREGS - 1));
+
+    snprintf (buf, sizeof (buf), \"vstr%%?\\t%s, [%%0, #-4]!\",
+	      fp_sysreg_names[fp_sysreg_enum]);
+    return buf;
+  }
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "store_4")]
+)
+
+(define_insn "pop_fpsysreg_insn"
+  [(set (mem:SI (post_inc:SI (match_operand:SI 0 "s_register_operand" "+&rk")))
+   (unspec_volatile:SI [(match_operand:SI 1 "const_int_operand" "n")]
+		       VUNSPEC_VSTR_VLDR))]
+  "TARGET_HAVE_FPCXT_CMSE && use_cmse"
+  {
+    static char buf[32];
+    int fp_sysreg_enum = INTVAL (operands[1]);
+
+    gcc_assert (IN_RANGE (fp_sysreg_enum, 0, NB_FP_SYSREGS - 1));
+
+    snprintf (buf, sizeof (buf), \"vldr%%?\\t%s, [%%0], #4\",
+	      fp_sysreg_names[fp_sysreg_enum]);
+    return buf;
+  }
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "load_4")]
+)
+
 (define_insn_and_split "*cmpsf_split_vfp"
   [(set (reg:CCFP CC_REGNUM)
 	(compare:CCFP (match_operand:SF 0 "s_register_operand"  "t")

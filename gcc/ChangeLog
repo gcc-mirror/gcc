@@ -1,6 +1,30 @@
 2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
 2020-01-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
 
+	* config/arm/arm.c (fp_sysreg_names): Declare and define.
+	(use_return_insn): Also return false for Armv8.1-M Mainline.
+	(output_return_instruction): Skip FPSCR clearing if Armv8.1-M
+	Mainline instructions are available.
+	(arm_compute_frame_layout): Allocate space in frame for FPCXTNS
+	when targeting Armv8.1-M Mainline Security Extensions.
+	(arm_expand_prologue): Save FPCXTNS if this is an Armv8.1-M
+	Mainline entry function.
+	(cmse_nonsecure_entry_clear_before_return): Clear IP and r4 if
+	targeting Armv8.1-M Mainline or successor.
+	(arm_expand_epilogue): Fix indentation of caller-saved register
+	clearing.  Restore FPCXTNS if this is an Armv8.1-M Mainline
+	entry function.
+	* config/arm/arm.h (TARGET_HAVE_FP_CMSE): New macro.
+	(FP_SYSREGS): Likewise.
+	(enum vfp_sysregs_encoding): Define enum.
+	(fp_sysreg_names): Declare.
+	* config/arm/unspecs.md (VUNSPEC_VSTR_VLDR): New volatile unspec.
+	* config/arm/vfp.md (push_fpsysreg_insn): New define_insn.
+	(pop_fpsysreg_insn): Likewise.
+
+2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
+2020-01-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
+
 	* config/arm/arm-cpus.in (armv8_1m_main): New feature.
 	(ARMv4, ARMv4t, ARMv5t, ARMv5te, ARMv5tej, ARMv6, ARMv6j, ARMv6k,
 	ARMv6z, ARMv6kz, ARMv6zk, ARMv6t2, ARMv6m, ARMv7, ARMv7a, ARMv7ve,

@@ -4525,6 +4525,19 @@ proc check_effective_target_arm_cmse_ok {} {
     } "-mcmse"];
 }
 
+# Return 1 if this is an ARM target where ARMv8-M Security Extensions with
+# clearing instructions (clrm, vscclrm, vstr/vldr with FPCXT) is available.
+
+proc check_effective_target_arm_cmse_clear_ok {} {
+    return [check_no_compiler_messages arm_cmse_clear object {
+	int
+	foo (void)
+	{
+	  asm ("clrm {r1, r2}");
+	}
+    } "-mcmse"];
+}
+
 # Return 1 if this compilation turns on string_ops_prefer_neon on.
 
 proc check_effective_target_arm_tune_string_ops_prefer_neon { } {

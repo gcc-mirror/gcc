@@ -1,6 +1,124 @@
 2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
 2020-01-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
 
+	* gcc.target/arm/cmse/bitfield-1.c: add checks for VSTR and VLDR.
+	* gcc.target/arm/cmse/bitfield-2.c: Likewise.
+	* gcc.target/arm/cmse/bitfield-3.c: Likewise.
+	* gcc.target/arm/cmse/cmse-1.c: Likewise.
+	* gcc.target/arm/cmse/struct-1.c: Likewise.
+	* gcc.target/arm/cmse/cmse.exp: Run existing Armv8-M Mainline tests
+	from mainline/8m subdirectory and new Armv8.1-M Mainline tests from
+	mainline/8_1m subdirectory.
+	* gcc.target/arm/cmse/mainline/bitfield-4.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/bitfield-4.c: This.
+	* gcc.target/arm/cmse/mainline/bitfield-5.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/bitfield-5.c: This.
+	* gcc.target/arm/cmse/mainline/bitfield-6.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/bitfield-6.c: This.
+	* gcc.target/arm/cmse/mainline/bitfield-7.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/bitfield-7.c: This.
+	* gcc.target/arm/cmse/mainline/bitfield-8.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/bitfield-8.c: This.
+	* gcc.target/arm/cmse/mainline/bitfield-9.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/bitfield-9.c: This.
+	* gcc.target/arm/cmse/mainline/bitfield-and-union-1.c: Move and rename
+	into ...
+	* gcc.target/arm/cmse/mainline/8m/bitfield-and-union.c: This.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-13.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/hard-sp/cmse-13.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-5.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/hard-sp/cmse-5.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-7.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/hard-sp/cmse-7.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-8.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/hard-sp/cmse-8.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/hard/cmse-13.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/hard/cmse-13.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/hard/cmse-5.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/hard/cmse-5.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/hard/cmse-7.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/hard/cmse-7.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/hard/cmse-8.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/hard/cmse-8.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/soft/cmse-13.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/soft/cmse-13.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/soft/cmse-5.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/soft/cmse-5.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/soft/cmse-7.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/soft/cmse-7.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/soft/cmse-8.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/soft/cmse-8.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/softfp-sp/cmse-5.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/softfp-sp/cmse-5.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/softfp-sp/cmse-7.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/softfp-sp/cmse-7.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/softfp-sp/cmse-8.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/softfp-sp/cmse-8.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-13.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/softfp/cmse-13.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-5.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/softfp/cmse-5.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-7.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/softfp/cmse-7.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-8.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/softfp/cmse-8.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/union-1.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/union-1.c: This.
+	* gcc.target/arm/cmse/mainline/union-2.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/union-2.c: This.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-4.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-5.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-6.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-7.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-8.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-9.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-and-union.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-13.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-5.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-7.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-8.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-13.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-5.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-7.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-8.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-13.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-5.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-7.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-8.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-5.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-7.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-8.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-13.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-5.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-7.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-8.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/union-1.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/union-2.c: New file.
+	* lib/target-supports.exp (check_effective_target_arm_cmse_clear_ok):
+	New procedure.
+
+2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
+2020-01-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
+
 	* lib/target-supports.exp
 	(check_effective_target_arm_arch_v8_1m_main_ok): Define.
 	(add_options_for_arm_arch_v8_1m_main): Likewise.

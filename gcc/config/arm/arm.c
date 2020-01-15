@@ -1021,6 +1021,12 @@ int arm_regs_in_sequence[] =
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
 };
 
+#define DEF_FP_SYSREG(reg) #reg,
+const char *fp_sysreg_names[NB_FP_SYSREGS] = {
+  FP_SYSREGS
+};
+#undef DEF_FP_SYSREG
+
 #define ARM_LSL_NAME "lsl"
 #define streq(string1, string2) (strcmp (string1, string2) == 0)
 
@@ -4245,8 +4251,9 @@ use_return_insn (int iscond, rtx sibling)
     }
 
   /* ARMv8-M nonsecure entry function need to use bxns to return and thus need
-     several instructions if anything needs to be popped.  */
-  if (saved_int_regs && IS_CMSE_ENTRY (func_type))
+     several instructions if anything needs to be popped.  Armv8.1-M Mainline
+     also needs several instructions to save and restore FP context.  */
+  if (IS_CMSE_ENTRY (func_type) && (saved_int_regs || TARGET_HAVE_FPCXT_CMSE))
     return 0;
 
   /* If there are saved registers but the LR isn't saved, then we need
@@ -20705,7 +20712,9 @@ output_return_instruction (rtx operand, bool really_return, bool reverse,
 			  "msr%s\tAPSR_nzcvq, %%|lr", conditional);
 
 	      output_asm_insn (instr, & operand);
-	      if (TARGET_HARD_FLOAT)
+	      /* Do not clear FPSCR if targeting Armv8.1-M Mainline, VLDR takes
+		 care of it.  */
+	      if (TARGET_HARD_FLOAT && ! TARGET_HAVE_FPCXT_CMSE)
 		{
 		  /* Clear the cumulative exception-status bits (0-4,7) and the
 		     condition code bits (28-31) of the FPSCR.  We need to
@@ -21997,6 +22006,11 @@ arm_compute_frame_layout (void)
       if (! IS_VOLATILE (func_type)
 	  && TARGET_HARD_FLOAT)
 	saved += arm_get_vfp_saved_size ();
+
+      /* Allocate space for saving/restoring FPCXTNS in Armv8.1-M Mainline
+	 nonecure entry functions with VSTR/VLDR.  */
+      if (TARGET_HAVE_FPCXT_CMSE && IS_CMSE_ENTRY (func_type))
+	saved += 4;
     }
   else /* TARGET_THUMB1 */
     {
@@ -22695,6 +22709,15 @@ arm_expand_prologue (void)
       insn = emit_set_insn (ip_rtx,
 			    plus_constant (Pmode, stack_pointer_rtx,
 					   fp_offset));
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
+
+  /* Armv8.1-M Mainline nonsecure entry: save FPCXTNS on stack using VSTR.  */
+  if (TARGET_HAVE_FPCXT_CMSE && IS_CMSE_ENTRY (func_type))
+    {
+      saved_regs += 4;
+      insn = emit_insn (gen_push_fpsysreg_insn (stack_pointer_rtx,
+						GEN_INT (FPCXTNS_ENUM)));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
@@ -26261,12 +26284,15 @@ cmse_nonsecure_entry_clear_before_return (void)
 
       bitmap_set_range (to_clear_bitmap, FIRST_VFP_REGNUM, float_bits);
 
-      /* Make sure we don't clear the two scratch registers used to clear the
-	 relevant FPSCR bits in output_return_instruction.  */
-      emit_use (gen_rtx_REG (SImode, IP_REGNUM));
-      bitmap_clear_bit (to_clear_bitmap, IP_REGNUM);
-      emit_use (gen_rtx_REG (SImode, 4));
-      bitmap_clear_bit (to_clear_bitmap, 4);
+      if (!TARGET_HAVE_FPCXT_CMSE)
+	{
+	  /* Make sure we don't clear the two scratch registers used to clear
+	     the relevant FPSCR bits in output_return_instruction.  */
+	  emit_use (gen_rtx_REG (SImode, IP_REGNUM));
+	  bitmap_clear_bit (to_clear_bitmap, IP_REGNUM);
+	  emit_use (gen_rtx_REG (SImode, 4));
+	  bitmap_clear_bit (to_clear_bitmap, 4);
+	}
     }
 
   /* If the user has defined registers to be caller saved, these are no longer
@@ -26876,12 +26902,23 @@ arm_expand_epilogue (bool really_return)
 				   stack_pointer_rtx, stack_pointer_rtx);
     }
 
-    /* Clear all caller-saved regs that are not used to return.  */
-    if (IS_CMSE_ENTRY (arm_current_func_type ()))
-      {
-	/* CMSE_ENTRY always returns.  */
-	gcc_assert (really_return);
-	cmse_nonsecure_entry_clear_before_return ();
+  if (IS_CMSE_ENTRY (func_type))
+    {
+      /* CMSE_ENTRY always returns.  */
+      gcc_assert (really_return);
+      /* Clear all caller-saved regs that are not used to return.  */
+      cmse_nonsecure_entry_clear_before_return ();
+
+      /* Armv8.1-M Mainline nonsecure entry: restore FPCXTNS from stack using
+	 VLDR.  */
+      if (TARGET_HAVE_FPCXT_CMSE)
+	{
+	  rtx_insn *insn;
+
+	  insn = emit_insn (gen_pop_fpsysreg_insn (stack_pointer_rtx,
+						   GEN_INT (FPCXTNS_ENUM)));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
       }
 
   if (!really_return)

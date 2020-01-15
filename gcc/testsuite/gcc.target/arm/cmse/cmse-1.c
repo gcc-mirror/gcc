@@ -104,6 +104,8 @@ qux (int_nsfunc_t * callback)
 /* { dg-final { scan-assembler "__acle_se_qux:" } } */
 /* { dg-final { scan-assembler "bic" } } */
 /* { dg-final { scan-assembler "push\t\{r4, r5, r6" } } */
+/* { dg-final { scan-assembler "vstr\tFPCXTNS, \\\[sp, #-4\\\]!" { target arm_cmse_clear_ok } } } */
+/* { dg-final { scan-assembler "vldr\tFPCXTNS, \\\[sp\\\], #4" { target arm_cmse_clear_ok } } } */
 /* { dg-final { scan-assembler "msr\tAPSR_nzcvq" } } */
 
 int call_callback (void)

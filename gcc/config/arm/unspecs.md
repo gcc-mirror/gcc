@@ -239,6 +239,7 @@
   VUNSPEC_MRRC2		; Represent the coprocessor mrrc2 instruction.
   VUNSPEC_SPECULATION_BARRIER ; Represents an unconditional speculation barrier.
   VUNSPEC_APSR_WRITE     ; Represent writing the APSR.
+  VUNSPEC_VSTR_VLDR	; Represent the vstr/vldr instruction.
 ])
 
 ;; Enumerators for NEON unspecs.
