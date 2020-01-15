@@ -1,3 +1,10 @@
+2020-01-21  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/92424
+	* gcc.target/aarch64/pr92424-1.c: New test.
+	* gcc.target/aarch64/pr92424-2.c: New test.
+	* gcc.target/aarch64/pr92424-3.c: New test.
+
 2020-01-21  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* gcc.target/aarch64/sve/acle/asm/ld1ro_f16.c: Use require
