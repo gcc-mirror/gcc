@@ -1,3 +1,8 @@
+2020-01-15  Segher Boessenkool  <segher@kernel.crashing.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-git-customization.sh: Change uses to use in comment.
+
 2020-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-git-customization.sh: Handle output of older git which doesn't
