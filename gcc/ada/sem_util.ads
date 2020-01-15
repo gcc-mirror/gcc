@@ -1309,6 +1309,13 @@ package Sem_Util is
    function Has_Non_Null_Statements (L : List_Id) return Boolean;
    --  Return True if L has non-null statements
 
+   function Side_Effect_Free_Statements (L : List_Id) return Boolean;
+   --  Return True if L has no statements with side effects
+
+   function Side_Effect_Free_Loop (N : Node_Id) return Boolean;
+   --  Return True if the loop has no side effect and can therefore be
+   --  marked for removal. Return False if N is not a N_Loop_Statement.
+
    function Has_Overriding_Initialize (T : Entity_Id) return Boolean;
    --  Predicate to determine whether a controlled type has a user-defined
    --  Initialize primitive (and, in Ada 2012, whether that primitive is
