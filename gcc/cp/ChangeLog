@@ -1,5 +1,8 @@
 2020-01-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/93257 - consteval void function.
+	* constexpr.c (verify_constant): Allow void_node.
+
 	PR c++/92871 - bad code with xvalue and GNU ?: extension.
 	* call.c (prevent_lifetime_extension): New.
 	(build_conditional_expr_1): Use it.

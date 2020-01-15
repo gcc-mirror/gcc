@@ -2609,7 +2609,8 @@ static bool
 verify_constant (tree t, bool allow_non_constant, bool *non_constant_p,
 		 bool *overflow_p)
 {
-  if (!*non_constant_p && !reduced_constant_expression_p (t))
+  if (!*non_constant_p && !reduced_constant_expression_p (t)
+      && t != void_node)
     {
       if (!allow_non_constant)
 	error ("%q+E is not a constant expression", t);
