@@ -187,6 +187,7 @@ static int arm_memory_move_cost (machine_mode, reg_class_t, bool);
 static void emit_constant_insn (rtx cond, rtx pattern);
 static rtx_insn *emit_set_insn (rtx, rtx);
 static rtx emit_multi_reg_push (unsigned long, unsigned long);
+static void arm_emit_multi_reg_pop (unsigned long);
 static int arm_arg_partial_bytes (cumulative_args_t,
 				  const function_arg_info &);
 static rtx arm_function_arg (cumulative_args_t, const function_arg_info &);
@@ -18263,13 +18264,13 @@ cmse_clear_registers (sbitmap to_clear_bitmap, uint32_t *padding_bits_to_clear,
     }
 }
 
-/* Clears caller saved registers not used to pass arguments before a
-   cmse_nonsecure_call.  Saving, clearing and restoring of callee saved
-   registers is done in __gnu_cmse_nonsecure_call libcall.
-   See libgcc/config/arm/cmse_nonsecure_call.S.  */
+/* Clear core and caller-saved VFP registers not used to pass arguments before
+   a cmse_nonsecure_call.  Saving, clearing and restoring of VFP callee-saved
+   registers is done in the __gnu_cmse_nonsecure_call libcall.  See
+   libgcc/config/arm/cmse_nonsecure_call.S.  */
 
 static void
-cmse_nonsecure_call_clear_caller_saved (void)
+cmse_nonsecure_call_inline_register_clear (void)
 {
   basic_block bb;
 
@@ -18279,8 +18280,15 @@ cmse_nonsecure_call_clear_caller_saved (void)
 
       FOR_BB_INSNS (bb, insn)
 	{
-	  unsigned address_regnum, regno, maxregno =
-	    TARGET_HARD_FLOAT_ABI ? D7_VFP_REGNUM : NUM_ARG_REGS - 1;
+	  bool clear_callee_saved = TARGET_HAVE_FPCXT_CMSE;
+	  unsigned long callee_saved_mask
+	    = ((1 << (LAST_HI_REGNUM + 1)) - 1)
+	    & ~((1 << (LAST_ARG_REGNUM + 1)) - 1);
+	  unsigned address_regnum, regno;
+	  unsigned max_int_regno
+	    = clear_callee_saved ? IP_REGNUM : LAST_ARG_REGNUM;
+	  unsigned maxregno
+	    = TARGET_HARD_FLOAT_ABI ? D7_VFP_REGNUM : max_int_regno;
 	  auto_sbitmap to_clear_bitmap (maxregno + 1);
 	  rtx_insn *seq;
 	  rtx pat, call, unspec, clearing_reg, ip_reg, shift;
@@ -18312,9 +18320,11 @@ cmse_nonsecure_call_clear_caller_saved (void)
 	      || XINT (unspec, 1) != UNSPEC_NONSECURE_MEM)
 	    continue;
 
-	  /* Determine the caller-saved registers we need to clear.  */
+	  /* Mark registers that needs to be cleared.  Those that holds a
+	     parameter are removed from the set further below.  */
 	  bitmap_clear (to_clear_bitmap);
-	  bitmap_set_range (to_clear_bitmap, R0_REGNUM, NUM_ARG_REGS);
+	  bitmap_set_range (to_clear_bitmap, R0_REGNUM,
+			    max_int_regno - R0_REGNUM + 1);
 
 	  /* Only look at the caller-saved floating point registers in case of
 	     -mfloat-abi=hard.  For -mfloat-abi=softfp we will be using the
@@ -18336,7 +18346,7 @@ cmse_nonsecure_call_clear_caller_saved (void)
 	  gcc_assert (MEM_P (address));
 	  gcc_assert (REG_P (XEXP (address, 0)));
 	  address_regnum = REGNO (XEXP (address, 0));
-	  if (address_regnum < R0_REGNUM + NUM_ARG_REGS)
+	  if (address_regnum <= max_int_regno)
 	    bitmap_clear_bit (to_clear_bitmap, address_regnum);
 
 	  /* Set basic block of call insn so that df rescan is performed on
@@ -18396,6 +18406,15 @@ cmse_nonsecure_call_clear_caller_saved (void)
 	  shift = gen_rtx_ASHIFT (SImode, clearing_reg, const1_rtx);
 	  emit_insn (gen_rtx_SET (clearing_reg, shift));
 
+	  if (clear_callee_saved)
+	    {
+	      rtx push_insn =
+		emit_multi_reg_push (callee_saved_mask, callee_saved_mask);
+	      /* Disable frame debug info in push because it needs to be
+		 disabled for pop (see below).  */
+	      RTX_FRAME_RELATED_P (push_insn) = 0;
+	    }
+
 	  /* Clear caller-saved registers that leak before doing a non-secure
 	     call.  */
 	  ip_reg = gen_rtx_REG (SImode, IP_REGNUM);
@@ -18405,6 +18424,36 @@ cmse_nonsecure_call_clear_caller_saved (void)
 	  seq = get_insns ();
 	  end_sequence ();
 	  emit_insn_before (seq, insn);
+
+	  if (TARGET_HAVE_FPCXT_CMSE)
+	    {
+	      rtx_insn *next, *pop_insn, *after = insn;
+
+	      start_sequence ();
+	      arm_emit_multi_reg_pop (callee_saved_mask);
+	      pop_insn = get_last_insn ();
+
+	      /* Disable frame debug info in pop because they reset the state
+		 of popped registers to what it was at the beginning of the
+		 function, before the prologue.  This leads to incorrect state
+		 when doing the pop after the nonsecure call for registers that
+		 are pushed both in prologue and before the nonsecure call.
+
+		 It also occasionally triggers an assert failure in CFI note
+		 creation code when there are two codepaths to the epilogue,
+		 one of which does not go through the nonsecure call.
+		 Obviously this mean that debugging between the push and pop is
+		 not reliable.  */
+	      RTX_FRAME_RELATED_P (pop_insn) = 0;
+
+	      end_sequence ();
+
+	      emit_insn_after (pop_insn, after);
+
+	      /* Skip pop we have just inserted after nonsecure call, we know
+		 it does not contain a nonsecure call.  */
+	      insn = pop_insn;
+	    }
 	}
     }
 }
@@ -18710,7 +18759,7 @@ arm_reorg (void)
   Mfix * fix;
 
   if (use_cmse)
-    cmse_nonsecure_call_clear_caller_saved ();
+    cmse_nonsecure_call_inline_register_clear ();
 
   /* We cannot run the Thumb passes for thunks because there is no CFG.  */
   if (cfun->is_thunk)

@@ -109,7 +109,9 @@ qux (int_nsfunc_t * callback)
 /* { dg-final { scan-assembler "clrm\t\{r1, r2, r3, ip, APSR\}" { target arm_cmse_clear_ok } } } */
 /* { dg-final { scan-assembler "vldr\tFPCXTNS, \\\[sp\\\], #4" { target arm_cmse_clear_ok } } } */
 /* { dg-final { scan-assembler "msr\tAPSR_nzcvq" { target { ! arm_cmse_clear_ok } } } } */
-/* { dg-final { scan-assembler "clrm\t\{r0, r1, r2, r3, APSR\}" { target arm_cmse_clear_ok } } } */
+/* { dg-final { scan-assembler "push\t\{r4, r5, r6, r7, r8, r9, r10, fp\}" { target arm_cmse_clear_ok } } } */
+/* { dg-final { scan-assembler "clrm\t\{r0, r1, r2, r3, r5, r6, r7, r8, r9, r10, fp, ip, APSR\}" { target arm_cmse_clear_ok } } } */
+/* { dg-final { scan-assembler "pop\t\{r4, r5, r6, r7, r8, r9, r10, fp\}" { target arm_cmse_clear_ok } } } */
 
 int call_callback (void)
 {

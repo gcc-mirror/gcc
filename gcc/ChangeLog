@@ -1,6 +1,17 @@
 2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
 2020-01-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
 
+	* config/arm/arm.c (arm_emit_multi_reg_pop): Declare early.
+	(cmse_nonsecure_call_clear_caller_saved): Rename into ...
+	(cmse_nonsecure_call_inline_register_clear): This.  Save and clear
+	callee-saved GPRs as well as clear ip register before doing a nonsecure
+	call then restore callee-saved GPRs after it when targeting
+	Armv8.1-M Mainline.
+	(arm_reorg): Adapt to function rename.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* config/arm/arm-protos.h (clear_operation_p): Adapt prototype.
 	* config/arm/arm.c (clear_operation_p): Extend to be able to check a
 	clear_vfp_multiple pattern based on a new vfp parameter.

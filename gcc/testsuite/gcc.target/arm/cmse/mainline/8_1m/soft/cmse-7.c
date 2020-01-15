@@ -7,7 +7,9 @@
 /* Checks for saving and clearing prior to function call.  */
 /* { dg-final { scan-assembler "lsrs\tr4, r4, #1" } } */
 /* { dg-final { scan-assembler "lsls\tr4, r4, #1" } } */
-/* { dg-final { scan-assembler "clrm\t\{r0, r1, r2, r3, APSR\}" } } */
+/* { dg-final { scan-assembler "push\t\{r4, r5, r6, r7, r8, r9, r10, fp\}" } } */
+/* { dg-final { scan-assembler "clrm\t\{r0, r1, r2, r3, r5, r6, r7, r8, r9, r10, fp, ip, APSR\}" } } */
+/* { dg-final { scan-assembler "pop\t\{r4, r5, r6, r7, r8, r9, r10, fp\}" } } */
 /* { dg-final { scan-assembler-not "vmov" } } */
 /* { dg-final { scan-assembler-not "vmsr" } } */
 
