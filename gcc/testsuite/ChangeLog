@@ -1,3 +1,8 @@
+2020-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93094
+	* gcc.dg/vect/pr93094.c: New testcase.
+
 2020-01-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/analyzer/CVE-2005-1689-dedupe-issue.c: Ensure that all

@@ -1682,7 +1682,7 @@ extern void vect_set_loop_condition (class loop *, loop_vec_info,
 extern bool slpeel_can_duplicate_loop_p (const class loop *, const_edge);
 class loop *slpeel_tree_duplicate_loop_to_edge_cfg (class loop *,
 						     class loop *, edge);
-class loop *vect_loop_versioning (loop_vec_info);
+class loop *vect_loop_versioning (loop_vec_info, gimple *);
 extern class loop *vect_do_peeling (loop_vec_info, tree, tree,
 				    tree *, tree *, tree *, int, bool, bool,
 				    tree *);
@@ -1821,7 +1821,7 @@ extern tree vect_get_loop_mask (gimple_stmt_iterator *, vec_loop_masks *,
 extern stmt_vec_info info_for_reduction (stmt_vec_info);
 
 /* Drive for loop transformation stage.  */
-extern class loop *vect_transform_loop (loop_vec_info);
+extern class loop *vect_transform_loop (loop_vec_info, gimple *);
 extern opt_loop_vec_info vect_analyze_loop_form (class loop *,
 						 vec_info_shared *);
 extern bool vectorizable_live_operation (stmt_vec_info, gimple_stmt_iterator *,

@@ -1,3 +1,15 @@
+2020-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93094
+	* tree-vectorizer.h (vect_loop_versioning): Adjust.
+	(vect_transform_loop): Likewise.
+	* tree-vectorizer.c (try_vectorize_loop_1): Pass down
+	loop_vectorized_call to vect_transform_loop.
+	* tree-vect-loop.c (vect_transform_loop): Pass down
+	loop_vectorized_call to vect_loop_versioning.
+	* tree-vect-loop-manip.c (vect_loop_versioning): Use
+	the earlier discovered loop_vectorized_call.
+
 2020-01-19  Eric S. Raymond <esr@thyrsus.com>
 
 	* doc/contribute.texi: Update for SVN -> Git transition.

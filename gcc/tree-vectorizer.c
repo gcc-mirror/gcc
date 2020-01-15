@@ -986,7 +986,8 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 			 "loop vectorized using variable length vectors\n");
     }
 
-  loop_p new_loop = vect_transform_loop (loop_vinfo);
+  loop_p new_loop = vect_transform_loop (loop_vinfo,
+					 loop_vectorized_call);
   (*num_vectorized_loops)++;
   /* Now that the loop has been vectorized, allow it to be unrolled
      etc.  */
