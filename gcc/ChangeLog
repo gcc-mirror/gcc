@@ -1,3 +1,8 @@
+2020-01-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movsf_internal): Do not require
+	SSE2 ISA for alternatives 14 and 15.
+
 2020-01-15  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/93273
