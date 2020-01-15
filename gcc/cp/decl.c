@@ -16418,20 +16418,6 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   if (!DECL_OMP_DECLARE_REDUCTION_P (decl1))
     start_lambda_scope (decl1);
 
-  /* If cleaning up locals on return throws an exception, we need to destroy
-     the return value that we just constructed.  */
-  if (!processing_template_decl
-      && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (TREE_TYPE (decl1))))
-    {
-      tree retval = DECL_RESULT (decl1);
-      tree dtor = build_cleanup (retval);
-      current_retval_sentinel = get_temp_regvar (boolean_type_node,
-						 boolean_false_node);
-      dtor = build3 (COND_EXPR, void_type_node, current_retval_sentinel,
-		     dtor, void_node);
-      push_cleanup (retval, dtor, /*eh-only*/true);
-    }
-
   return true;
 }
 

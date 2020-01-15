@@ -10090,15 +10090,6 @@ check_return_expr (tree retval, bool *no_warning)
   if (retval && retval != result)
     retval = build2 (INIT_EXPR, TREE_TYPE (result), result, retval);
 
-  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (valtype)
-      /* FIXME doesn't work with deduced return type.  */
-      && current_retval_sentinel)
-    {
-      tree set = build2 (MODIFY_EXPR, boolean_type_node,
-			 current_retval_sentinel, boolean_true_node);
-      retval = build2 (COMPOUND_EXPR, void_type_node, retval, set);
-    }
-
   return retval;
 }
 

@@ -1,5 +1,5 @@
 // PR c++/33799
-// { dg-do run }
+// { dg-do run { xfail *-*-* } }
 
 extern "C" void abort();
 

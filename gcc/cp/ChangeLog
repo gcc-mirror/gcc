@@ -1,5 +1,11 @@
 2020-01-15  Jason Merrill  <jason@redhat.com>
 
+	Revert
+	PR c++/33799 - destroy return value if local cleanup throws.
+	* cp-tree.h (current_retval_sentinel): New macro.
+	* decl.c (start_preparsed_function): Set up cleanup for retval.
+	* typeck.c (check_return_expr): Set current_retval_sentinel.
+
 	PR c++/93257 - consteval void function.
 	* constexpr.c (verify_constant): Allow void_node.
 
