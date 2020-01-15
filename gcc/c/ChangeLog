@@ -1,3 +1,9 @@
+2020-01-15  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/93072
+	* c-decl.c (pushdecl): Use TREE_PUBLIC, not DECL_EXTERNAL, to
+	determine whether to set DECL_CONTEXT.
+
 2020-01-13  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/93241

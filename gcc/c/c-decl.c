@@ -3048,7 +3048,7 @@ pushdecl (tree x)
      unless they have initializers (which generate code).  */
   if (current_function_decl
       && (!VAR_OR_FUNCTION_DECL_P (x)
-	  || DECL_INITIAL (x) || !DECL_EXTERNAL (x)))
+	  || DECL_INITIAL (x) || !TREE_PUBLIC (x)))
     DECL_CONTEXT (x) = current_function_decl;
 
   /* Anonymous decls are just inserted in the scope.  */
