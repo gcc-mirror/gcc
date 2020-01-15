@@ -1,3 +1,8 @@
+2020-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/93273
+	* g++.dg/torture/pr93273.C: New testcase.
+
 2020-01-15  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/93247
