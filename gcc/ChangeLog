@@ -1,3 +1,8 @@
+2020-01-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/analyzer.texi (Overview): Add note about
+	-fdump-ipa-analyzer.
+
 2020-01-15  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR tree-optimization/93231
