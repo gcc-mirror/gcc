@@ -1,3 +1,12 @@
+2020-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93249
+	* tree-ssa-dse.c: Include builtins.h and gimple-fold.h.
+	(maybe_trim_memstar_call): Move head_trim and tail_trim vars to
+	function body scope, reindent.  For BUILTIN_IN_STRNCPY*, don't
+	perform head trim unless we can prove there are no '\0' chars
+	from the source among the first head_trim chars.
+
 2020-01-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (ANALYZER_OBJS): Add analyzer/function-set.o.

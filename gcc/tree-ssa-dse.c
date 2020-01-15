@@ -36,6 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 #include "tree-ssa-loop.h"
 #include "tree-ssa-dse.h"
+#include "builtins.h"
+#include "gimple-fold.h"
 
 /* This file implements dead store elimination.
 
@@ -456,56 +458,83 @@ increment_start_addr (gimple *stmt, tree *where, int increment)
 static void
 maybe_trim_memstar_call (ao_ref *ref, sbitmap live, gimple *stmt)
 {
+  int head_trim, tail_trim;
   switch (DECL_FUNCTION_CODE (gimple_call_fndecl (stmt)))
     {
+    case BUILT_IN_STRNCPY:
+    case BUILT_IN_STRNCPY_CHK:
+      compute_trims (ref, live, &head_trim, &tail_trim, stmt);
+      if (head_trim)
+	{
+	  /* Head trimming of strncpy is only possible if we can
+	     prove all bytes we would trim are non-zero (or we could
+	     turn the strncpy into memset if there must be zero
+	     among the head trimmed bytes).  If we don't know anything
+	     about those bytes, the presence or absence of '\0' bytes
+	     in there will affect whether it acts for the non-trimmed
+	     bytes as memset or memcpy/strncpy.  */
+	  c_strlen_data lendata = { };
+	  int orig_head_trim = head_trim;
+	  tree srcstr = gimple_call_arg (stmt, 1);
+	  if (!get_range_strlen (srcstr, &lendata, /*eltsize=*/1)
+	      || !tree_fits_uhwi_p (lendata.minlen))
+	    head_trim = 0;
+	  else if (tree_to_uhwi (lendata.minlen) < (unsigned) head_trim)
+	    {
+	      head_trim = tree_to_uhwi (lendata.minlen);
+	      if ((orig_head_trim & (UNITS_PER_WORD - 1)) == 0)
+		head_trim &= ~(UNITS_PER_WORD - 1);
+	    }
+	  if (orig_head_trim != head_trim
+	      && dump_file
+	      && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file,
+		     "  Adjusting strncpy trimming to (head = %d,"
+		     " tail = %d)\n", head_trim, tail_trim);
+	}
+      goto do_memcpy;
+
     case BUILT_IN_MEMCPY:
     case BUILT_IN_MEMMOVE:
-    case BUILT_IN_STRNCPY:
     case BUILT_IN_MEMCPY_CHK:
     case BUILT_IN_MEMMOVE_CHK:
-    case BUILT_IN_STRNCPY_CHK:
-      {
-	int head_trim, tail_trim;
-	compute_trims (ref, live, &head_trim, &tail_trim, stmt);
+      compute_trims (ref, live, &head_trim, &tail_trim, stmt);
 
-	/* Tail trimming is easy, we can just reduce the count.  */
-        if (tail_trim)
-	  decrement_count (stmt, tail_trim);
+    do_memcpy:
+      /* Tail trimming is easy, we can just reduce the count.  */
+      if (tail_trim)
+	decrement_count (stmt, tail_trim);
 
-	/* Head trimming requires adjusting all the arguments.  */
-        if (head_trim)
-          {
-	    tree *dst = gimple_call_arg_ptr (stmt, 0);
-	    increment_start_addr (stmt, dst, head_trim);
-	    tree *src = gimple_call_arg_ptr (stmt, 1);
-	    increment_start_addr (stmt, src, head_trim);
-	    decrement_count (stmt, head_trim);
-	  }
-        break;
-      }
+      /* Head trimming requires adjusting all the arguments.  */
+      if (head_trim)
+	{
+	  tree *dst = gimple_call_arg_ptr (stmt, 0);
+	  increment_start_addr (stmt, dst, head_trim);
+	  tree *src = gimple_call_arg_ptr (stmt, 1);
+	  increment_start_addr (stmt, src, head_trim);
+	  decrement_count (stmt, head_trim);
+	}
+      break;
 
     case BUILT_IN_MEMSET:
     case BUILT_IN_MEMSET_CHK:
-      {
-	int head_trim, tail_trim;
-	compute_trims (ref, live, &head_trim, &tail_trim, stmt);
+      compute_trims (ref, live, &head_trim, &tail_trim, stmt);
 
-	/* Tail trimming is easy, we can just reduce the count.  */
-        if (tail_trim)
-	  decrement_count (stmt, tail_trim);
+      /* Tail trimming is easy, we can just reduce the count.  */
+      if (tail_trim)
+	decrement_count (stmt, tail_trim);
 
-	/* Head trimming requires adjusting all the arguments.  */
-        if (head_trim)
-          {
-	    tree *dst = gimple_call_arg_ptr (stmt, 0);
-	    increment_start_addr (stmt, dst, head_trim);
-	    decrement_count (stmt, head_trim);
-	  }
-	break;
-      }
+      /* Head trimming requires adjusting all the arguments.  */
+      if (head_trim)
+	{
+	  tree *dst = gimple_call_arg_ptr (stmt, 0);
+	  increment_start_addr (stmt, dst, head_trim);
+	  decrement_count (stmt, head_trim);
+	}
+      break;
 
-      default:
-	break;
+    default:
+      break;
     }
 }
 
