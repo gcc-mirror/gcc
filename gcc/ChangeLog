@@ -1,3 +1,7 @@
+2020-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* BASE-VER: Bump to 10.0.1.
+
 2020-01-15  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/93247
