@@ -4827,8 +4827,8 @@ aarch64_split_sve_subreg_move (rtx dest, rtx ptrue, rtx src)
   /* Decide which REV operation we need.  The mode with wider elements
      determines the mode of the operands and the mode with the narrower
      elements determines the reverse width.  */
-  machine_mode mode_with_wider_elts = GET_MODE (dest);
-  machine_mode mode_with_narrower_elts = GET_MODE (src);
+  machine_mode mode_with_wider_elts = aarch64_sve_int_mode (GET_MODE (dest));
+  machine_mode mode_with_narrower_elts = aarch64_sve_int_mode (GET_MODE (src));
   if (GET_MODE_UNIT_SIZE (mode_with_wider_elts)
       < GET_MODE_UNIT_SIZE (mode_with_narrower_elts))
     std::swap (mode_with_wider_elts, mode_with_narrower_elts);

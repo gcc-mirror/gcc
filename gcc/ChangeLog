@@ -1,3 +1,8 @@
+2020-01-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_split_sve_subreg_move): Apply
+	aarch64_sve_int_mode to each mode.
+
 2020-01-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/analyzer.texi (Overview): Add note about
