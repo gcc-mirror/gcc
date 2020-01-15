@@ -1,3 +1,10 @@
+2010-01-15  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc-git-customization.sh: Explain why we want the user's
+	upstream account name.  Don't add push rules.  Check if push rules
+	have been added and suggest that they should be removed.
+	* git-fetch-vendor.sh: Don't add push rules.
+
 2010-01-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	Revert:

@@ -55,7 +55,7 @@ then
 	fi
     fi
 fi
-ask "Account name on gcc.gnu.org" $remote_id remote_id
+ask "Account name on gcc.gnu.org (for your personal branches area)" $remote_id remote_id
 git config "gcc-config.user" "$remote_id"
 
 old_pfx=`git config --get "gcc-config.userpfx"`
@@ -71,4 +71,19 @@ git config "gcc-config.userpfx" "$new_pfx"
 echo "Setting up tracking for personal namespace $remote_id in remotes/$upstream/${new_pfx}"
 git config --replace-all "remote.${upstream}.fetch" "+refs/users/${remote_id}/heads/*:refs/remotes/${upstream}/${new_pfx}/*" ":refs/remotes/${upstream}/${old_pfx}/"
 git config --replace-all "remote.${upstream}.fetch" "+refs/users/${remote_id}/tags/*:refs/tags/${new_pfx}/*" ":refs/tags/${old_pfx}/"
-git config --replace-all "remote.${upstream}.push" "refs/heads/${new_pfx}/*:refs/users/${remote_id}/heads/*" "^\+?refs/heads/${old_pfx}/"
+
+push_rule=`git config --get "remote.${upstream}.push"`
+if [ "x$push_rule" != "x" ]
+then
+    echo "***********************************************"
+    echo "                  Warning"
+    echo "***********************************************"
+    echo
+    echo "Old versions of this script used to add custom push"
+    echo "rules to simplify pushing to personal branches."
+    echo "Your configuration contains such rules, but we no-longer"
+    echo "recommend doing this."
+    echo
+    echo "To delete these rules run:"
+    echo "  git config --unset-all \"remote.${upstream}.push\""
+fi
