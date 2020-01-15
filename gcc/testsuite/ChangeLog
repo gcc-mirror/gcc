@@ -1,6 +1,19 @@
 2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
 2020-01-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
 
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-13.c: Add check for VLSTM and
+	VLLDM.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-8.c: Likewise.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-13.c: Add check for
 	VPUSH and VPOP and update expectation for VSCCLRM.
 	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-7.c: Likewise.

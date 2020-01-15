@@ -1673,6 +1673,30 @@
    (set_attr "type" "mov_reg")]
 )
 
+(define_insn "lazy_store_multiple_insn"
+  [(set (match_operand:SI 0 "s_register_operand" "+&rk")
+	(post_dec:SI (match_dup 0)))
+   (unspec_volatile [(const_int 0)
+		     (mem:SI (post_dec:SI (match_dup 0)))]
+		    VUNSPEC_VLSTM)]
+  "use_cmse && reload_completed"
+  "vlstm%?\\t%0"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "store_4")]
+)
+
+(define_insn "lazy_load_multiple_insn"
+  [(set (match_operand:SI 0 "s_register_operand" "+&rk")
+	(post_inc:SI (match_dup 0)))
+   (unspec_volatile:SI [(const_int 0)
+			(mem:SI (match_dup 0))]
+		       VUNSPEC_VLLDM)]
+  "use_cmse && reload_completed"
+  "vlldm%?\\t%0"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "load_4")]
+)
+
 (define_insn_and_split "*cmpsf_split_vfp"
   [(set (reg:CCFP CC_REGNUM)
 	(compare:CCFP (match_operand:SF 0 "s_register_operand"  "t")

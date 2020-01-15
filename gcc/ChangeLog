@@ -1,6 +1,20 @@
 2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
 2020-01-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
 
+	* config/arm/arm.c (arm_add_cfa_adjust_cfa_note): Declare early.
+	(cmse_nonsecure_call_inline_register_clear): Define new lazy_fpclear
+	variable as true when floating-point ABI is not hard.  Replace
+	check against TARGET_HARD_FLOAT_ABI by checks against lazy_fpclear.
+	Generate VLSTM and VLLDM instruction respectively before and
+	after a function call to cmse_nonsecure_call function.
+	* config/arm/unspecs.md (VUNSPEC_VLSTM): Define unspec.
+	(VUNSPEC_VLLDM): Likewise.
+	* config/arm/vfp.md (lazy_store_multiple_insn): New define_insn.
+	(lazy_load_multiple_insn): Likewise.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* config/arm/arm.c (vfp_emit_fstmd): Declare early.
 	(arm_emit_vfp_multi_reg_pop): Likewise.
 	(cmse_nonsecure_call_inline_register_clear): Abstract number of VFP

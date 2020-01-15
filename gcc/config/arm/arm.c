@@ -186,6 +186,7 @@ static int arm_register_move_cost (machine_mode, reg_class_t, reg_class_t);
 static int arm_memory_move_cost (machine_mode, reg_class_t, bool);
 static void emit_constant_insn (rtx cond, rtx pattern);
 static rtx_insn *emit_set_insn (rtx, rtx);
+static void arm_add_cfa_adjust_cfa_note (rtx, int, rtx, rtx);
 static rtx emit_multi_reg_push (unsigned long, unsigned long);
 static void arm_emit_multi_reg_pop (unsigned long);
 static int vfp_emit_fstmd (int, int);
@@ -18283,6 +18284,9 @@ cmse_nonsecure_call_inline_register_clear (void)
       FOR_BB_INSNS (bb, insn)
 	{
 	  bool clear_callee_saved = TARGET_HAVE_FPCXT_CMSE;
+	  /* frame = VFP regs + FPSCR + VPR.  */
+	  unsigned lazy_store_stack_frame_size
+	    = (LAST_VFP_REGNUM - FIRST_VFP_REGNUM + 1 + 2) * UNITS_PER_WORD;
 	  unsigned long callee_saved_mask
 	    = ((1 << (LAST_HI_REGNUM + 1)) - 1)
 	    & ~((1 << (LAST_ARG_REGNUM + 1)) - 1);
@@ -18300,7 +18304,7 @@ cmse_nonsecure_call_inline_register_clear (void)
 	  CUMULATIVE_ARGS args_so_far_v;
 	  cumulative_args_t args_so_far;
 	  tree arg_type, fntype;
-	  bool first_param = true;
+	  bool first_param = true, lazy_fpclear = !TARGET_HARD_FLOAT_ABI;
 	  function_args_iterator args_iter;
 	  uint32_t padding_bits_to_clear[4] = {0U, 0U, 0U, 0U};
 
@@ -18334,7 +18338,7 @@ cmse_nonsecure_call_inline_register_clear (void)
 	     -mfloat-abi=hard.  For -mfloat-abi=softfp we will be using the
 	     lazy store and loads which clear both caller- and callee-saved
 	     registers.  */
-	  if (TARGET_HARD_FLOAT_ABI)
+	  if (!lazy_fpclear)
 	    {
 	      auto_sbitmap float_bitmap (maxregno + 1);
 
@@ -18418,8 +18422,23 @@ cmse_nonsecure_call_inline_register_clear (void)
 		 disabled for pop (see below).  */
 	      RTX_FRAME_RELATED_P (push_insn) = 0;
 
+	      /* Lazy store multiple.  */
+	      if (lazy_fpclear)
+		{
+		  rtx imm;
+		  rtx_insn *add_insn;
+
+		  imm = gen_int_mode (- lazy_store_stack_frame_size, SImode);
+		  add_insn = emit_insn (gen_addsi3 (stack_pointer_rtx,
+						    stack_pointer_rtx, imm));
+		  arm_add_cfa_adjust_cfa_note (add_insn,
+					       - lazy_store_stack_frame_size,
+					       stack_pointer_rtx,
+					       stack_pointer_rtx);
+		  emit_insn (gen_lazy_store_multiple_insn (stack_pointer_rtx));
+		}
 	      /* Save VFP callee-saved registers.  */
-	      if (TARGET_HARD_FLOAT_ABI)
+	      else
 		{
 		  vfp_emit_fstmd (D7_VFP_REGNUM + 1,
 				  (max_fp_regno - D7_VFP_REGNUM) / 2);
@@ -18445,8 +18464,21 @@ cmse_nonsecure_call_inline_register_clear (void)
 
 	      start_sequence ();
 
+	      /* Lazy load multiple done as part of libcall in Armv8-M.  */
+	      if (lazy_fpclear)
+		{
+		  rtx imm = gen_int_mode (lazy_store_stack_frame_size, SImode);
+		  emit_insn (gen_lazy_load_multiple_insn (stack_pointer_rtx));
+		  rtx_insn *add_insn =
+		    emit_insn (gen_addsi3 (stack_pointer_rtx,
+					   stack_pointer_rtx, imm));
+		  arm_add_cfa_adjust_cfa_note (add_insn,
+					       lazy_store_stack_frame_size,
+					       stack_pointer_rtx,
+					       stack_pointer_rtx);
+		}
 	      /* Restore VFP callee-saved registers.  */
-	      if (TARGET_HARD_FLOAT_ABI)
+	      else
 		{
 		  int nb_callee_saved_vfp_regs =
 		    (max_fp_regno - D7_VFP_REGNUM) / 2;

@@ -10,7 +10,9 @@
 /* { dg-final { scan-assembler-not "mov\tr0, r4" } } */
 /* { dg-final { scan-assembler-not "mov\tr1, r4" } } */
 /* { dg-final { scan-assembler "push\t\{r4, r5, r6, r7, r8, r9, r10, fp\}" } } */
+/* { dg-final { scan-assembler "vlstm\tsp" } } */
 /* { dg-final { scan-assembler "clrm\t\{r2, r3, r5, r6, r7, r8, r9, r10, fp, ip, APSR\}" } } */
+/* { dg-final { scan-assembler "vlldm\tsp" } } */
 /* { dg-final { scan-assembler "pop\t\{r4, r5, r6, r7, r8, r9, r10, fp\}" } } */
 /* { dg-final { scan-assembler-not "vmov" } } */
 /* { dg-final { scan-assembler-not "vmsr" } } */
