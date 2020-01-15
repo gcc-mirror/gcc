@@ -8069,6 +8069,14 @@ concept_check_p (const_tree t)
   return false;
 }
 
+/* True if t is a "constrained auto" type-specifier.  */
+
+inline bool
+is_constrained_auto (const_tree t)
+{
+  return is_auto (t) && PLACEHOLDER_TYPE_CONSTRAINTS (t);
+}
+
 #if CHECKING_P
 namespace selftest {
   extern void run_cp_tests (void);

@@ -1,3 +1,9 @@
+2020-01-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/91073
+	* g++.dg/concepts/pr91073-1.C: New.
+	* g++.dg/concepts/pr91073-2.C: Likewise.
+
 2020-01-15  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.dg/pr90838.c: New test.

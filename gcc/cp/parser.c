@@ -12053,18 +12053,22 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 }
 
 /* Helper function for cp_parser_condition and cp_parser_simple_declaration.
-   If we have seen at least one decl-specifier, and the next token
-   is not a parenthesis, then we must be looking at a declaration.
-   (After "int (" we might be looking at a functional cast.)  */
+   If we have seen at least one decl-specifier, and the next token is not
+   a parenthesis (after "int (" we might be looking at a functional cast)
+   neither we are dealing with a concept-check expression then we must be
+   looking at a declaration.  */
 
 static void
 cp_parser_maybe_commit_to_declaration (cp_parser* parser,
-				       bool any_specifiers_p)
+				       cp_decl_specifier_seq *decl_specs)
 {
-  if (any_specifiers_p
+  if (decl_specs->any_specifiers_p
       && cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_PAREN)
       && cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE)
-      && !cp_parser_error_occurred (parser))
+      && !cp_parser_error_occurred (parser)
+      && !(decl_specs->type
+	   && TREE_CODE (decl_specs->type) == TYPE_DECL
+	   && is_constrained_auto (TREE_TYPE (decl_specs->type))))
     cp_parser_commit_to_tentative_parse (parser);
 }
 
@@ -12139,8 +12143,7 @@ cp_parser_condition (cp_parser* parser)
      decl-specifiers.  */
   tree prefix_attributes = type_specifiers.attributes;
 
-  cp_parser_maybe_commit_to_declaration (parser,
-					 type_specifiers.any_specifiers_p);
+  cp_parser_maybe_commit_to_declaration (parser, &type_specifiers);
 
   /* If all is well, we might be looking at a declaration.  */
   if (!cp_parser_error_occurred (parser))
@@ -13535,8 +13538,7 @@ cp_parser_simple_declaration (cp_parser* parser,
       goto done;
     }
 
-  cp_parser_maybe_commit_to_declaration (parser,
-					 decl_specifiers.any_specifiers_p);
+  cp_parser_maybe_commit_to_declaration (parser, &decl_specifiers);
 
   /* Look for C++17 decomposition declaration.  */
   for (size_t n = 1; ; n++)
@@ -18266,6 +18268,10 @@ cp_parser_placeholder_type_specifier (cp_parser *parser, location_t loc,
       && !parser->in_result_type_constraint_p
       && !placeholder)
     {
+      if (tentative)
+	/* Perhaps it's a concept-check expression (c++/91073).  */
+	return error_mark_node;
+
       tree id = build_nt (TEMPLATE_ID_EXPR, tmpl, args);
       tree expr = DECL_P (orig_tmpl) ? DECL_NAME (con) : id;
       error_at (input_location,

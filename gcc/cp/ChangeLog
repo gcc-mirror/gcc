@@ -1,3 +1,15 @@
+2020-01-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/91073
+	* cp-tree.h (is_constrained_auto): New.
+	* parser.c (cp_parser_maybe_commit_to_declaration): Correctly
+	handle concept-check expressions; take a cp_decl_specifier_seq*
+	instead of a bool.
+	(cp_parser_condition): Update call.
+	(cp_parser_simple_declaration): Likewise.
+	(cp_parser_placeholder_type_specifier): Correctly handle
+	concept-check expressions.
+
 2020-01-15  Jason Merrill  <jason@redhat.com>
 
 	Revert
