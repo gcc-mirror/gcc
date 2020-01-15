@@ -1,13 +1,10 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fdump-tree-forwprop2-details" } */
 
 int ctz1 (unsigned x)
 {
-  static const char table[32] =
-    {
-      0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
-      31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
-    };
+  static const char table[32] = "\x00\x01\x1c\x02\x1d\x0e\x18\x03\x1e\x16\x14"
+    "\x0f\x19\x11\x04\b\x1f\x1b\r\x17\x15\x13\x10\x07\x1a\f\x12\x06\v\x05\n\t";
 
   return table[((unsigned)((x & -x) * 0x077CB531U)) >> 27];
 }
@@ -59,6 +56,4 @@ int ctz4 (unsigned long x)
   return table[(lsb * magic) >> 58];
 }
 
-/* { dg-final { scan-assembler-times "clz\t" 4 } } */
-/* { dg-final { scan-assembler-times "and\t" 2 } } */
-/* { dg-final { scan-assembler-not "cmp\t.*0" } } */
+/* { dg-final { scan-tree-dump-times {= \.CTZ} 4 "forwprop2" { target aarch64*-*-* } } } */

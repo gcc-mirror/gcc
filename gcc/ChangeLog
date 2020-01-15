@@ -1,3 +1,12 @@
+2020-01-15  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR tree-optimization/93231
+	* tree-ssa-forwprop.c (optimize_count_trailing_zeroes): Check
+	input_type is unsigned.  Use tree_to_shwi for shift constant.
+	Check CST_STRING element size is CHAR_TYPE_SIZE bits.
+	(simplify_count_trailing_zeroes): Add test to handle known non-zero
+	inputs more efficiently.
+
 2020-01-15  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movsf_internal): Do not require

@@ -1,3 +1,9 @@
+2020-01-15  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.dg/pr90838.c: New test.
+	* gcc.dg/pr93231.c: New test.
+	* gcc.target/aarch64/pr90838.c: Use #define u 0.
+
 2020-01-15  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/93273
