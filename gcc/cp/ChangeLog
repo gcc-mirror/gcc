@@ -1,6 +1,6 @@
 2020-01-14  Nathan Sidwell  <nathan@acm.org>
 
-	PT c++/90916
+	PR c++/90916
 	* pt.c (retrieve_specialization): Use get_template_info, not open
 	coding access.
 
