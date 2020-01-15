@@ -1632,7 +1632,7 @@ gimplify_return_expr (tree stmt, gimple_seq *pre_p)
     result = NULL_TREE;
   else if (aggregate_value_p (result_decl, TREE_TYPE (current_function_decl)))
     {
-      if (TREE_CODE (DECL_SIZE (result_decl)) != INTEGER_CST)
+      if (!poly_int_tree_p (DECL_SIZE (result_decl)))
 	{
 	  if (!TYPE_SIZES_GIMPLIFIED (TREE_TYPE (result_decl)))
 	    gimplify_type_sizes (TREE_TYPE (result_decl), pre_p);
@@ -6714,7 +6714,7 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
       /* TARGET_EXPR temps aren't part of the enclosing block, so add it
 	 to the temps list.  Handle also variable length TARGET_EXPRs.  */
-      if (TREE_CODE (DECL_SIZE (temp)) != INTEGER_CST)
+      if (!poly_int_tree_p (DECL_SIZE (temp)))
 	{
 	  if (!TYPE_SIZES_GIMPLIFIED (TREE_TYPE (temp)))
 	    gimplify_type_sizes (TREE_TYPE (temp), pre_p);
@@ -7921,7 +7921,7 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
   tree type = build_array_type (ptr_type_node, build_index_type (totalpx));
   tree array = create_tmp_var_raw (type);
   TREE_ADDRESSABLE (array) = 1;
-  if (TREE_CODE (totalpx) != INTEGER_CST)
+  if (!poly_int_tree_p (totalpx))
     {
       if (!TYPE_SIZES_GIMPLIFIED (TREE_TYPE (array)))
 	gimplify_type_sizes (TREE_TYPE (array), pre_p);
