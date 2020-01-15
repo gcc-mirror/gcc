@@ -1259,28 +1259,76 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
   if (fndecl_built_in_p (fun, CP_BUILT_IN_SOURCE_LOCATION, BUILT_IN_FRONTEND))
     return fold_builtin_source_location (EXPR_LOCATION (t));
 
+  int strops = 0;
+  int strret = 0;
+  if (fndecl_built_in_p (fun, BUILT_IN_NORMAL))
+    switch (DECL_FUNCTION_CODE (fun))
+      {
+      case BUILT_IN_STRLEN:
+      case BUILT_IN_STRNLEN:
+	strops = 1;
+	break;
+      case BUILT_IN_MEMCHR:
+      case BUILT_IN_STRCHR:
+      case BUILT_IN_STRRCHR:
+	strops = 1;
+	strret = 1;
+	break;
+      case BUILT_IN_MEMCMP:
+      case BUILT_IN_STRCMP:
+	strops = 2;
+	break;
+      case BUILT_IN_STRSTR:
+	strops = 2;
+	strret = 1;
+      default:
+	break;
+      }
+
   /* Be permissive for arguments to built-ins; __builtin_constant_p should
      return constant false for a non-constant argument.  */
   constexpr_ctx new_ctx = *ctx;
   new_ctx.quiet = true;
   for (i = 0; i < nargs; ++i)
     {
-      args[i] = CALL_EXPR_ARG (t, i);
+      tree arg = CALL_EXPR_ARG (t, i);
+
+      /* To handle string built-ins we need to pass ADDR_EXPR<STRING_CST> since
+	 expand_builtin doesn't know how to look in the values table.  */
+      bool strop = i < strops;
+      if (strop)
+	{
+	  STRIP_NOPS (arg);
+	  if (TREE_CODE (arg) == ADDR_EXPR)
+	    arg = TREE_OPERAND (arg, 0);
+	  else
+	    strop = false;
+	}
+
       /* If builtin_valid_in_constant_expr_p is true,
 	 potential_constant_expression_1 has not recursed into the arguments
 	 of the builtin, verify it here.  */
       if (!builtin_valid_in_constant_expr_p (fun)
-	  || potential_constant_expression (args[i]))
+	  || potential_constant_expression (arg))
 	{
 	  bool dummy1 = false, dummy2 = false;
-	  args[i] = cxx_eval_constant_expression (&new_ctx, args[i], false,
-						  &dummy1, &dummy2);
+	  arg = cxx_eval_constant_expression (&new_ctx, arg, false,
+					      &dummy1, &dummy2);
 	}
 
       if (bi_const_p)
 	/* For __builtin_constant_p, fold all expressions with constant values
 	   even if they aren't C++ constant-expressions.  */
-	args[i] = cp_fold_rvalue (args[i]);
+	arg = cp_fold_rvalue (arg);
+      else if (strop)
+	{
+	  if (TREE_CODE (arg) == CONSTRUCTOR)
+	    arg = braced_lists_to_strings (TREE_TYPE (arg), arg);
+	  if (TREE_CODE (arg) == STRING_CST)
+	    arg = build_address (arg);
+	}
+
+      args[i] = arg;
     }
 
   bool save_ffbcp = force_folding_builtin_constant_p;
@@ -1322,6 +1370,18 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
 	error ("%q+E is not a constant expression", new_call);
       *non_constant_p = true;
       return t;
+    }
+
+  if (strret)
+    {
+      /* memchr returns a pointer into the first argument, but we replaced the
+	 argument above with a STRING_CST; put it back it now.  */
+      tree op = CALL_EXPR_ARG (t, strret-1);
+      STRIP_NOPS (new_call);
+      if (TREE_CODE (new_call) == POINTER_PLUS_EXPR)
+	TREE_OPERAND (new_call, 0) = op;
+      else if (TREE_CODE (new_call) == ADDR_EXPR)
+	new_call = op;
     }
 
   return cxx_eval_constant_expression (&new_ctx, new_call, lval,
@@ -3962,7 +4022,16 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
   tree subtype;
   poly_uint64 const_op01;
 
-  STRIP_NOPS (sub);
+  /* STRIP_NOPS, but stop if REINTERPRET_CAST_P.  */
+  while (CONVERT_EXPR_P (sub) || TREE_CODE (sub) == NON_LVALUE_EXPR
+	 || TREE_CODE (sub) == VIEW_CONVERT_EXPR)
+    {
+      if (TREE_CODE (sub) == NOP_EXPR
+	  && REINTERPRET_CAST_P (sub))
+	return NULL_TREE;
+      sub = TREE_OPERAND (sub, 0);
+    }
+
   subtype = TREE_TYPE (sub);
   if (!INDIRECT_TYPE_P (subtype))
     return NULL_TREE;

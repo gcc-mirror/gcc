@@ -129,6 +129,8 @@ struct sanopt_tree_triplet_hash : typed_noop_remove <sanopt_tree_triplet>
     ref.t1 = reinterpret_cast<tree> (1);
   }
 
+  static const bool empty_zero_p = true;
+
   static void
   mark_empty (sanopt_tree_triplet &ref)
   {
@@ -183,6 +185,8 @@ struct sanopt_tree_couple_hash : typed_noop_remove <sanopt_tree_couple>
   {
     ref.ptr = reinterpret_cast<tree> (1);
   }
+
+  static const bool empty_zero_p = true;
 
   static void
   mark_empty (sanopt_tree_couple &ref)

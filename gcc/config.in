@@ -76,6 +76,12 @@
 #endif
 
 
+/* Define 0/1 if static analyzer feature is enabled. */
+#ifndef USED_FOR_TARGET
+#undef ENABLE_ANALYZER
+#endif
+
+
 /* Define if you want assertions enabled. This is a cheap check. */
 #ifndef USED_FOR_TARGET
 #undef ENABLE_ASSERT_CHECKING

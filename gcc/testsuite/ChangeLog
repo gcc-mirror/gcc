@@ -1,3 +1,256 @@
+2020-01-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/91576
+	* testsuite/g++.dg/lto/odr-8_0.C: New testcase.
+	* testsuite/g++.dg/lto/odr-8_1.C: New testcase.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/CVE-2005-1689-minimal.c: New test.
+	* gcc.dg/analyzer/abort.c: New test.
+	* gcc.dg/analyzer/alloca-leak.c: New test.
+	* gcc.dg/analyzer/analyzer-decls.h: New header.
+	* gcc.dg/analyzer/analyzer-verbosity-0.c: New test.
+	* gcc.dg/analyzer/analyzer-verbosity-1.c: New test.
+	* gcc.dg/analyzer/analyzer-verbosity-2.c: New test.
+	* gcc.dg/analyzer/analyzer.exp: New suite.
+	* gcc.dg/analyzer/attribute-nonnull.c: New test.
+	* gcc.dg/analyzer/call-summaries-1.c: New test.
+	* gcc.dg/analyzer/conditionals-2.c: New test.
+	* gcc.dg/analyzer/conditionals-3.c: New test.
+	* gcc.dg/analyzer/conditionals-notrans.c: New test.
+	* gcc.dg/analyzer/conditionals-trans.c: New test.
+	* gcc.dg/analyzer/data-model-1.c: New test.
+	* gcc.dg/analyzer/data-model-2.c: New test.
+	* gcc.dg/analyzer/data-model-3.c: New test.
+	* gcc.dg/analyzer/data-model-4.c: New test.
+	* gcc.dg/analyzer/data-model-5.c: New test.
+	* gcc.dg/analyzer/data-model-5b.c: New test.
+	* gcc.dg/analyzer/data-model-5c.c: New test.
+	* gcc.dg/analyzer/data-model-5d.c: New test.
+	* gcc.dg/analyzer/data-model-6.c: New test.
+	* gcc.dg/analyzer/data-model-7.c: New test.
+	* gcc.dg/analyzer/data-model-8.c: New test.
+	* gcc.dg/analyzer/data-model-9.c: New test.
+	* gcc.dg/analyzer/data-model-11.c: New test.
+	* gcc.dg/analyzer/data-model-12.c: New test.
+	* gcc.dg/analyzer/data-model-13.c: New test.
+	* gcc.dg/analyzer/data-model-14.c: New test.
+	* gcc.dg/analyzer/data-model-15.c: New test.
+	* gcc.dg/analyzer/data-model-16.c: New test.
+	* gcc.dg/analyzer/data-model-17.c: New test.
+	* gcc.dg/analyzer/data-model-18.c: New test.
+	* gcc.dg/analyzer/data-model-19.c: New test.
+	* gcc.dg/analyzer/data-model-path-1.c: New test.
+	* gcc.dg/analyzer/disabling.c: New test.
+	* gcc.dg/analyzer/dot-output.c: New test.
+	* gcc.dg/analyzer/double-free-lto-1-a.c: New test.
+	* gcc.dg/analyzer/double-free-lto-1-b.c: New test.
+	* gcc.dg/analyzer/double-free-lto-1.h: New header.
+	* gcc.dg/analyzer/equivalence.c: New test.
+	* gcc.dg/analyzer/explode-1.c: New test.
+	* gcc.dg/analyzer/explode-2.c: New test.
+	* gcc.dg/analyzer/factorial.c: New test.
+	* gcc.dg/analyzer/fibonacci.c: New test.
+	* gcc.dg/analyzer/fields.c: New test.
+	* gcc.dg/analyzer/file-1.c: New test.
+	* gcc.dg/analyzer/file-2.c: New test.
+	* gcc.dg/analyzer/function-ptr-1.c: New test.
+	* gcc.dg/analyzer/function-ptr-2.c: New test.
+	* gcc.dg/analyzer/function-ptr-3.c: New test.
+	* gcc.dg/analyzer/gzio-2.c: New test.
+	* gcc.dg/analyzer/gzio-3.c: New test.
+	* gcc.dg/analyzer/gzio-3a.c: New test.
+	* gcc.dg/analyzer/gzio.c: New test.
+	* gcc.dg/analyzer/infinite-recursion.c: New test.
+	* gcc.dg/analyzer/loop-2.c: New test.
+	* gcc.dg/analyzer/loop-2a.c: New test.
+	* gcc.dg/analyzer/loop-3.c: New test.
+	* gcc.dg/analyzer/loop-4.c: New test.
+	* gcc.dg/analyzer/loop.c: New test.
+	* gcc.dg/analyzer/malloc-1.c: New test.
+	* gcc.dg/analyzer/malloc-2.c: New test.
+	* gcc.dg/analyzer/malloc-3.c: New test.
+	* gcc.dg/analyzer/malloc-callbacks.c: New test.
+	* gcc.dg/analyzer/malloc-dce.c: New test.
+	* gcc.dg/analyzer/malloc-dedupe-1.c: New test.
+	* gcc.dg/analyzer/malloc-ipa-1.c: New test.
+	* gcc.dg/analyzer/malloc-ipa-10.c: New test.
+	* gcc.dg/analyzer/malloc-ipa-11.c: New test.
+	* gcc.dg/analyzer/malloc-ipa-12.c: New test.
+	* gcc.dg/analyzer/malloc-ipa-13.c: New test.
+	* gcc.dg/analyzer/malloc-ipa-2.c: New test.
+	* gcc.dg/analyzer/malloc-ipa-3.c: New test.
+	* gcc.dg/analyzer/malloc-ipa-4.c: New test.
+	* gcc.dg/analyzer/malloc-ipa-5.c: New test.
+	* gcc.dg/analyzer/malloc-ipa-6.c: New test.
+	* gcc.dg/analyzer/malloc-ipa-7.c: New test.
+	* gcc.dg/analyzer/malloc-ipa-8-double-free.c: New test.
+	* gcc.dg/analyzer/malloc-ipa-8-lto-a.c: New test.
+	* gcc.dg/analyzer/malloc-ipa-8-lto-b.c: New test.
+	* gcc.dg/analyzer/malloc-ipa-8-lto-c.c: New test.
+	* gcc.dg/analyzer/malloc-ipa-8-lto.h: New test.
+	* gcc.dg/analyzer/malloc-ipa-8-unchecked.c: New test.
+	* gcc.dg/analyzer/malloc-ipa-9.c: New test.
+	* gcc.dg/analyzer/malloc-macro-inline-events.c: New test.
+	* gcc.dg/analyzer/malloc-macro-separate-events.c: New test.
+	* gcc.dg/analyzer/malloc-macro.h: New header.
+	* gcc.dg/analyzer/malloc-many-paths-1.c: New test.
+	* gcc.dg/analyzer/malloc-many-paths-2.c: New test.
+	* gcc.dg/analyzer/malloc-many-paths-3.c: New test.
+	* gcc.dg/analyzer/malloc-paths-1.c: New test.
+	* gcc.dg/analyzer/malloc-paths-10.c: New test.
+	* gcc.dg/analyzer/malloc-paths-2.c: New test.
+	* gcc.dg/analyzer/malloc-paths-3.c: New test.
+	* gcc.dg/analyzer/malloc-paths-4.c: New test.
+	* gcc.dg/analyzer/malloc-paths-5.c: New test.
+	* gcc.dg/analyzer/malloc-paths-6.c: New test.
+	* gcc.dg/analyzer/malloc-paths-7.c: New test.
+	* gcc.dg/analyzer/malloc-paths-8.c: New test.
+	* gcc.dg/analyzer/malloc-paths-9.c: New test.
+	* gcc.dg/analyzer/malloc-vs-local-1a.c: New test.
+	* gcc.dg/analyzer/malloc-vs-local-1b.c: New test.
+	* gcc.dg/analyzer/malloc-vs-local-2.c: New test.
+	* gcc.dg/analyzer/malloc-vs-local-3.c: New test.
+	* gcc.dg/analyzer/malloc-vs-local-4.c: New test.
+	* gcc.dg/analyzer/operations.c: New test.
+	* gcc.dg/analyzer/params-2.c: New test.
+	* gcc.dg/analyzer/params.c: New test.
+	* gcc.dg/analyzer/paths-1.c: New test.
+	* gcc.dg/analyzer/paths-1a.c: New test.
+	* gcc.dg/analyzer/paths-2.c: New test.
+	* gcc.dg/analyzer/paths-3.c: New test.
+	* gcc.dg/analyzer/paths-4.c: New test.
+	* gcc.dg/analyzer/paths-5.c: New test.
+	* gcc.dg/analyzer/paths-6.c: New test.
+	* gcc.dg/analyzer/paths-7.c: New test.
+	* gcc.dg/analyzer/pattern-test-1.c: New test.
+	* gcc.dg/analyzer/pattern-test-2.c: New test.
+	* gcc.dg/analyzer/pointer-merging.c: New test.
+	* gcc.dg/analyzer/pr61861.c: New test.
+	* gcc.dg/analyzer/pragma-1.c: New test.
+	* gcc.dg/analyzer/scope-1.c: New test.
+	* gcc.dg/analyzer/sensitive-1.c: New test.
+	* gcc.dg/analyzer/setjmp-1.c: New test.
+	* gcc.dg/analyzer/setjmp-2.c: New test.
+	* gcc.dg/analyzer/setjmp-3.c: New test.
+	* gcc.dg/analyzer/setjmp-4.c: New test.
+	* gcc.dg/analyzer/setjmp-5.c: New test.
+	* gcc.dg/analyzer/setjmp-6.c: New test.
+	* gcc.dg/analyzer/setjmp-7.c: New test.
+	* gcc.dg/analyzer/setjmp-7a.c: New test.
+	* gcc.dg/analyzer/setjmp-8.c: New test.
+	* gcc.dg/analyzer/setjmp-9.c: New test.
+	* gcc.dg/analyzer/signal-1.c: New test.
+	* gcc.dg/analyzer/signal-2.c: New test.
+	* gcc.dg/analyzer/signal-3.c: New test.
+	* gcc.dg/analyzer/signal-4a.c: New test.
+	* gcc.dg/analyzer/signal-4b.c: New test.
+	* gcc.dg/analyzer/strcmp-1.c: New test.
+	* gcc.dg/analyzer/switch.c: New test.
+	* gcc.dg/analyzer/taint-1.c: New test.
+	* gcc.dg/analyzer/zlib-1.c: New test.
+	* gcc.dg/analyzer/zlib-2.c: New test.
+	* gcc.dg/analyzer/zlib-3.c: New test.
+	* gcc.dg/analyzer/zlib-4.c: New test.
+	* gcc.dg/analyzer/zlib-5.c: New test.
+	* gcc.dg/analyzer/zlib-6.c: New test.
+	* lib/gcc-defs.exp (dg-check-dot): New procedure.
+	* lib/target-supports.exp (check_dot_available): New procedure.
+	(check_effective_target_analyzer): New.
+	* lib/target-supports-dg.exp (dg-require-dot): New procedure.
+
+2020-01-14  Jason Merrill  <jason@redhat.com>
+
+	* lib/prune.exp (prune_gcc_output): Adjust constexpr pattern.
+
+2020-01-14  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	PR ipa/69678
+	* gcc.dg/tree-prof/indir-call-prof-topn.c: New testcase.
+	* gcc.dg/tree-prof/crossmodule-indir-call-topn-1.c: New testcase.
+	* gcc.dg/tree-prof/crossmodule-indir-call-topn-1a.c: New testcase.
+	* gcc.dg/tree-prof/crossmodule-indir-call-topn-2.c: New testcase.
+	* lib/scandump.exp: Dump executable file name.
+	* lib/scanwpaipa.exp: New scan-pgo-wap-ipa-dump.
+
+2020-01-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic-test-paths-2.c: Remove unused dg-line
+	directive.
+
+2020-01-13  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/93241
+	* gcc.dg/c11-static-assert-10.c, gcc.dg/c99-const-expr-15.c: New
+	tests.
+
+2020-01-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/93213
+	* gcc.c-torture/execute/pr93213.c: New test.
+
+2020-01-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/host_data-1.c: Extend.
+	* gfortran.dg/goacc/host_data-tree.f95: Likewise.
+
+2020-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93210
+	* gcc.dg/pr93210.c: New test.
+	* g++.dg/opt/pr93210.C: New test.
+
+2020-01-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR inline-asm/93027
+	* gcc.target/i386/pr93027.c: Use the right PR number in the test.
+
+2020-01-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR inline-asm/93027
+	* gcc.target/i386/pr93207.c: Rename to pr93027.c.
+
+2020-01-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR inline-asm/93027
+	* gcc.target/i386/pr93207.c: Run it only for x86-64.
+
+2020-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/format/gcc_diag-10.c (diagnostic_event_id_t): New
+	typedef.
+	(test_diag): Add coverage of "%@".
+	* gcc.dg/plugin/diagnostic-path-format-default.c: New test.
+	* gcc.dg/plugin/diagnostic-path-format-inline-events-1.c: New test.
+	* gcc.dg/plugin/diagnostic-path-format-inline-events-2.c: New test.
+	* gcc.dg/plugin/diagnostic-path-format-inline-events-3.c: New test.
+	* gcc.dg/plugin/diagnostic-path-format-none.c: New test.
+	* gcc.dg/plugin/diagnostic-test-paths-1.c: New test.
+	* gcc.dg/plugin/diagnostic-test-paths-2.c: New test.
+	* gcc.dg/plugin/diagnostic-test-paths-3.c: New test.
+	* gcc.dg/plugin/diagnostic-test-paths-4.c: New test.
+	* gcc.dg/plugin/diagnostic_plugin_test_paths.c: New.
+	* gcc.dg/plugin/plugin.exp: Add the new plugin and test cases.
+
+2020-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* lib/gcc-dg.exp (cleanup-after-saved-dg-test): Reset global
+	nn_line_numbers_enabled.
+	* lib/multiline.exp (nn_line_numbers_enabled): New global.
+	(dg-enable-nn-line-numbers): New proc.
+	(maybe-handle-nn-line-numbers): New proc.
+	* lib/prune.exp (prune_gcc_output): Call maybe-handle-nn-line-numbers.
+
+2020-01-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR inline-asm/93027
+	* gcc.target/i386/pr93207.c: New test.
+
+2020-01-10  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* testsuite/gcc.target/aarch64/pr90838.c: New test.
+
 2020-01-10  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	* g++.target/aarch64/bfloat_cpp_typecheck.C: New test.

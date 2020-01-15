@@ -1079,9 +1079,10 @@ add_method (tree type, tree method, bool via_using)
 	    {
 	      special_function_kind sfk = special_memfn_p (method);
 
-	      if (sfk == sfk_none)
+	      if (sfk == sfk_none || DECL_INHERITED_CTOR (fn))
 		/* Non-special member functions coexist if they are not
-		   equivalently constrained.  */
+		   equivalently constrained.  A member function is not hidden
+		   by an inherited constructor.  */
 		continue;
 
 	      /* P0848: For special member functions, deleted, unsatisfied, or

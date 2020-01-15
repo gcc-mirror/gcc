@@ -1225,6 +1225,8 @@ struct function_start_pair_hash : typed_noop_remove <function_start>
     ref.start_line = ~1U;
   }
 
+  static const bool empty_zero_p = false;
+
   static void
   mark_empty (function_start &ref)
   {

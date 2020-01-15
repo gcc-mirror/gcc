@@ -1,3 +1,65 @@
+2020-01-14  Nathan Sidwell  <nathan@acm.org>
+
+	PT c++/90916
+	* pt.c (retrieve_specialization): Use get_template_info, not open
+	coding access.
+
+	PR c++/90916
+	* pt.c (retrieve_specialization): Get the TI from the decl or the
+	classtype as appropriate.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-gimplify.c (source_location_table_entry_hash::empty_zero_p):
+	New static constant.
+	* cp-tree.h (named_decl_hash::empty_zero_p): Likewise.
+	(struct named_label_hash::empty_zero_p): Likewise.
+	* decl2.c (mangled_decl_hash::empty_zero_p): Likewise.
+
+2020-01-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92590 - wrong handling of inherited default ctor.
+	* class.c (add_method): A constrained inherited ctor doesn't hide an
+	implicit derived ctor.
+	Revert:
+	PR c++/92552 - ICE with inherited constrained default ctor.
+	* pt.c (instantiate_class_template_1): Copy
+	TYPE_HAS_USER_CONSTRUCTOR.
+	PR c++/91930 - ICE with constrained inherited default ctor.
+	* name-lookup.c (do_class_using_decl): Set TYPE_HAS_USER_CONSTRUCTOR
+	for inherited constructor.
+	PR c++/92594 - ICE with inherited trivial default ctor.
+	* method.c (trivial_fn_p): Treat an inherited default constructor
+	like a normal default constructor.
+
+	PR c++/92594 - ICE with inherited trivial default ctor.
+	* method.c (trivial_fn_p): Treat an inherited default constructor
+	like a normal default constructor.
+
+	PR c++/92009 - ICE with punning of typeid.
+	* rtti.c (get_tinfo_desc): Call xref_basetypes.
+	* constexpr.c (cxx_fold_indirect_ref): Don't strip
+	REINTERPRET_CAST_P.
+
+2020-01-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92746 - ICE with noexcept of function concept check.
+	* except.c (check_noexcept_r): Handle concept-check.
+
+	PR c++/92582 - ICE with member template as requirement.
+	* pt.c (struct find_template_parameter_info): Add ctx_parms.
+	(any_template_parm_r): Handle TEMPLATE_DECL.
+	(find_template_parameters): Take parms instead of their depth.
+	* constraint.cc (build_parameter_mapping): Pass them.
+
+	PR c++/33799 - destroy return value if local cleanup throws.
+	* cp-tree.h (current_retval_sentinel): New macro.
+	* decl.c (start_preparsed_function): Set up cleanup for retval.
+	* typeck.c (check_return_expr): Set current_retval_sentinel.
+
+	PR c++/93238 - short right-shift with enum.
+	* typeck.c (cp_build_binary_op): Use folded op1 for short_shift.
+
 2020-01-10  Jason Merrill  <jason@redhat.com>
 
 	* typeck.c (cp_build_binary_op): Restore short_shift code.

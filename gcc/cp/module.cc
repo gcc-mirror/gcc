@@ -2442,6 +2442,8 @@ public:
     /* We lookup by container:maybe-identifier pair.  */
     typedef std::pair<tree,tree> compare_type;
 
+    static const bool empty_zero_p = true;
+
     /* hash and equality for compare_type.  */
     inline static hashval_t hash (const compare_type &p)
     {

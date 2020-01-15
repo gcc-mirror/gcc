@@ -95,6 +95,17 @@ set plugin_test_list [list \
 	  diagnostic-test-inlining-3.c \
 	  diagnostic-test-inlining-4.c } \
     { diagnostic_plugin_test_metadata.c diagnostic-test-metadata.c } \
+    { diagnostic_plugin_test_paths.c \
+	  diagnostic-test-paths-1.c \
+	  diagnostic-test-paths-2.c \
+	  diagnostic-test-paths-3.c \
+	  diagnostic-test-paths-4.c \
+	  diagnostic-path-format-default.c \
+	  diagnostic-path-format-none.c \
+	  diagnostic-path-format-separate-events.c \
+	  diagnostic-path-format-inline-events-1.c \
+	  diagnostic-path-format-inline-events-2.c \
+	  diagnostic-path-format-inline-events-3.c } \
     { location_overflow_plugin.c \
 	  location-overflow-test-1.c \
 	  location-overflow-test-2.c \

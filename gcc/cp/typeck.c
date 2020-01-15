@@ -4853,7 +4853,7 @@ cp_build_binary_op (const op_location_t &location,
 		}
 	      else
 		{
-		  if (!integer_zerop (op1))
+		  if (!integer_zerop (const_op1))
 		    short_shift = 1;
 
 		  if (compare_tree_int (const_op1, TYPE_PRECISION (type0)) >= 0
@@ -5604,6 +5604,7 @@ cp_build_binary_op (const op_location_t &location,
 	{
 	  int unsigned_arg;
 	  tree arg0 = get_narrower (op0, &unsigned_arg);
+	  tree const_op1 = cp_fold_rvalue (op1);
 
 	  final_type = result_type;
 
@@ -5611,10 +5612,11 @@ cp_build_binary_op (const op_location_t &location,
 	    unsigned_arg = TYPE_UNSIGNED (TREE_TYPE (op0));
 
 	  if (TYPE_PRECISION (TREE_TYPE (arg0)) < TYPE_PRECISION (result_type)
-	      && tree_int_cst_sgn (op1) > 0
+	      && tree_int_cst_sgn (const_op1) > 0
 	      /* We can shorten only if the shift count is less than the
 		 number of bits in the smaller type size.  */
-	      && compare_tree_int (op1, TYPE_PRECISION (TREE_TYPE (arg0))) < 0
+	      && compare_tree_int (const_op1,
+				   TYPE_PRECISION (TREE_TYPE (arg0))) < 0
 	      /* We cannot drop an unsigned shift after sign-extension.  */
 	      && (!TYPE_UNSIGNED (final_type) || unsigned_arg))
 	    {
@@ -10092,6 +10094,15 @@ check_return_expr (tree retval, bool *no_warning)
   /* Actually copy the value returned into the appropriate location.  */
   if (retval && retval != result)
     retval = build2 (INIT_EXPR, TREE_TYPE (result), result, retval);
+
+  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (valtype)
+      /* FIXME doesn't work with deduced return type.  */
+      && current_retval_sentinel)
+    {
+      tree set = build2 (MODIFY_EXPR, boolean_type_node,
+			 current_retval_sentinel, boolean_true_node);
+      retval = build2 (COMPOUND_EXPR, void_type_node, retval, set);
+    }
 
   return retval;
 }

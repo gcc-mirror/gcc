@@ -45,6 +45,29 @@ proc scan-wpa-ipa-dump { args } {
     }
 }
 
+# Argument 0 is the regexp to match
+# Argument 1 is the name of the dumped ipa pass
+# Argument 2 handles expected failures and the like
+proc scan-pgo-wpa-ipa-dump { args } {
+
+    if { [llength $args] < 2 } {
+	error "scan-pgo-wpa-ipa-dump: too few arguments"
+	return
+    }
+    if { [llength $args] > 3 } {
+	error "scan-pgo-wpa-ipa-dump: too many arguments"
+	return
+    }
+    if { [llength $args] >= 3 } {
+	scan-dump "pgo-wpa-ipa" [lindex $args 0] \
+		  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".x02.wpa" \
+		  [lindex $args 2]
+    } else {
+	scan-dump "pgo-wpa-ipa" [lindex $args 0] \
+		  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".x02.wpa"
+    }
+}
+
 # Call pass if pattern is present given number of times, otherwise fail.
 # Argument 0 is the regexp to match
 # Argument 1 is number of times the regexp must be found

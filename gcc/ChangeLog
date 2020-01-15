@@ -1,3 +1,377 @@
+2020-01-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/91576
+	* ipa-devirt.c (odr_types_equivalent_p): Compare TREE_ADDRESSABLE and
+	TYPE_MODE.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (lang_opt_files): Add analyzer.opt.
+	(ANALYZER_OBJS): New.
+	(OBJS): Add digraph.o, graphviz.o, ordered-hash-map-tests.o,
+	tristate.o and ANALYZER_OBJS.
+	(TEXI_GCCINT_FILES): Add analyzer.texi.
+	* common.opt (-fanalyzer): New driver option.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (--disable-analyzer, ENABLE_ANALYZER): New option.
+	(gccdepdir): Also create depdir for "analyzer" subdir.
+	* digraph.cc: New file.
+	* digraph.h: New file.
+	* doc/analyzer.texi: New file.
+	* doc/gccint.texi ("Static Analyzer") New menu item.
+	(analyzer.texi): Include it.
+	* doc/invoke.texi ("Static Analyzer Options"): New list and new section.
+	("Warning Options"): Add static analysis warnings to the list.
+	(-Wno-analyzer-double-fclose): New option.
+	(-Wno-analyzer-double-free): New option.
+	(-Wno-analyzer-exposure-through-output-file): New option.
+	(-Wno-analyzer-file-leak): New option.
+	(-Wno-analyzer-free-of-non-heap): New option.
+	(-Wno-analyzer-malloc-leak): New option.
+	(-Wno-analyzer-possible-null-argument): New option.
+	(-Wno-analyzer-possible-null-dereference): New option.
+	(-Wno-analyzer-null-argument): New option.
+	(-Wno-analyzer-null-dereference): New option.
+	(-Wno-analyzer-stale-setjmp-buffer): New option.
+	(-Wno-analyzer-tainted-array-index): New option.
+	(-Wno-analyzer-use-after-free): New option.
+	(-Wno-analyzer-use-of-pointer-in-stale-stack-frame): New option.
+	(-Wno-analyzer-use-of-uninitialized-value): New option.
+	(-Wanalyzer-too-complex): New option.
+	(-fanalyzer-call-summaries): New warning.
+	(-fanalyzer-checker=): New warning.
+	(-fanalyzer-fine-grained): New warning.
+	(-fno-analyzer-state-merge): New warning.
+	(-fno-analyzer-state-purge): New warning.
+	(-fanalyzer-transitivity): New warning.
+	(-fanalyzer-verbose-edges): New warning.
+	(-fanalyzer-verbose-state-changes): New warning.
+	(-fanalyzer-verbosity=): New warning.
+	(-fdump-analyzer): New warning.
+	(-fdump-analyzer-callgraph): New warning.
+	(-fdump-analyzer-exploded-graph): New warning.
+	(-fdump-analyzer-exploded-nodes): New warning.
+	(-fdump-analyzer-exploded-nodes-2): New warning.
+	(-fdump-analyzer-exploded-nodes-3): New warning.
+	(-fdump-analyzer-supergraph): New warning.
+	* doc/sourcebuild.texi (dg-require-dot): New.
+	(dg-check-dot): New.
+	* gdbinit.in (break-on-saved-diagnostic): New command.
+	* graphviz.cc: New file.
+	* graphviz.h: New file.
+	* ordered-hash-map-tests.cc: New file.
+	* ordered-hash-map.h: New file.
+	* passes.def (pass_analyzer): Add before
+	pass_ipa_whole_program_visibility.
+	* selftest-run-tests.c (selftest::run_tests): Call
+	selftest::ordered_hash_map_tests_cc_tests.
+	* selftest.h (selftest::ordered_hash_map_tests_cc_tests): New
+	decl.
+	* shortest-paths.h: New file.
+	* timevar.def (TV_ANALYZER): New timevar.
+	(TV_ANALYZER_SUPERGRAPH): Likewise.
+	(TV_ANALYZER_STATE_PURGE): Likewise.
+	(TV_ANALYZER_PLAN): Likewise.
+	(TV_ANALYZER_SCC): Likewise.
+	(TV_ANALYZER_WORKLIST): Likewise.
+	(TV_ANALYZER_DUMP): Likewise.
+	(TV_ANALYZER_DIAGNOSTICS): Likewise.
+	(TV_ANALYZER_SHORTEST_PATHS): Likewise.
+	* tree-pass.h (make_pass_analyzer): New decl.
+	* tristate.cc: New file.
+	* tristate.h: New file.
+
+2020-01-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/93254
+	* config/i386/i386.md (*movsf_internal): Require SSE2 ISA for
+	alternatives 9 and 10.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* attribs.c (excl_hash_traits::empty_zero_p): New static constant.
+	* gcov.c (function_start_pair_hash::empty_zero_p): Likewise.
+	* graphite.c (struct sese_scev_hash::empty_zero_p): Likewise.
+	* hash-map-tests.c (selftest::test_nonzero_empty_key): New selftest.
+	(selftest::hash_map_tests_c_tests): Call it.
+	* hash-map-traits.h (simple_hashmap_traits::empty_zero_p):
+	New static constant, using the value of = H::empty_zero_p.
+	(unbounded_hashmap_traits::empty_zero_p): Likewise, using the value
+	from default_hash_traits <Value>.
+	* hash-map.h (hash_map::empty_zero_p): Likewise, using the value
+	from Traits.
+	* hash-set-tests.c (value_hash_traits::empty_zero_p): Likewise.
+	* hash-table.h (hash_table::alloc_entries): Guard the loop of
+	calls to mark_empty with !Descriptor::empty_zero_p.
+	(hash_table::empty_slow): Conditionalize the memset call with a
+	check that Descriptor::empty_zero_p; otherwise, loop through the
+	entries calling mark_empty on them.
+	* hash-traits.h (int_hash::empty_zero_p): New static constant.
+	(pointer_hash::empty_zero_p): Likewise.
+	(pair_hash::empty_zero_p): Likewise.
+	* ipa-devirt.c (default_hash_traits <type_pair>::empty_zero_p):
+	Likewise.
+	* ipa-prop.c (ipa_bit_ggc_hash_traits::empty_zero_p): Likewise.
+	(ipa_vr_ggc_hash_traits::empty_zero_p): Likewise.
+	* profile.c (location_triplet_hash::empty_zero_p): Likewise.
+	* sanopt.c (sanopt_tree_triplet_hash::empty_zero_p): Likewise.
+	(sanopt_tree_couple_hash::empty_zero_p): Likewise.
+	* tree-hasher.h (int_tree_hasher::empty_zero_p): Likewise.
+	* tree-ssa-sccvn.c (vn_ssa_aux_hasher::empty_zero_p): Likewise.
+	* tree-vect-slp.c (bst_traits::empty_zero_p): Likewise.
+	* tree-vectorizer.h
+	(default_hash_traits<scalar_cond_masked_key>::empty_zero_p):
+	Likewise.
+
+2020-01-14  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* cfgloopanal.c (average_num_loop_insns): Free bbs when early return,
+	fix typo on return value.
+
+2020-01-14  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	PR ipa/69678
+	* cgraph.c (symbol_table::create_edge): Init speculative_id and
+	target_prob.
+	(cgraph_edge::make_speculative): Add param for setting speculative_id
+	and target_prob.
+	(cgraph_edge::speculative_call_info): Update comments and find reference
+	by speculative_id for multiple indirect targets.
+	(cgraph_edge::resolve_speculation): Decrease the speculations
+	for indirect edge, drop it's speculative if not direct target
+	left. Update comments.
+	(cgraph_edge::redirect_call_stmt_to_callee): Likewise.
+	(cgraph_node::dump): Print num_speculative_call_targets.
+	(cgraph_node::verify_node): Don't report error if speculative
+	edge not include statement.
+	(cgraph_edge::num_speculative_call_targets_p): New function.
+	* cgraph.h (int common_target_id): Remove.
+	(int common_target_probability): Remove.
+	(num_speculative_call_targets): New variable.
+	(make_speculative): Add param for setting speculative_id.
+	(cgraph_edge::num_speculative_call_targets_p): New declare.
+	(target_prob): New variable.
+	(speculative_id): New variable.
+	* ipa-fnsummary.c (analyze_function_body): Create and duplicate
+	  call summaries for multiple speculative call targets.
+	* cgraphclones.c (cgraph_node::create_clone): Clone speculative_id.
+	* ipa-profile.c (struct speculative_call_target): New struct.
+	(class speculative_call_summary): New class.
+	(class speculative_call_summaries): New class.
+	(call_sums): New variable.
+	(ipa_profile_generate_summary): Generate indirect multiple targets summaries.
+	(ipa_profile_write_edge_summary): New function.
+	(ipa_profile_write_summary): Stream out indirect multiple targets summaries.
+	(ipa_profile_dump_all_summaries): New function.
+	(ipa_profile_read_edge_summary): New function.
+	(ipa_profile_read_summary_section): New function.
+	(ipa_profile_read_summary): Stream in indirect multiple targets summaries.
+	(ipa_profile): Generate num_speculative_call_targets from
+	profile summaries.
+	* ipa-ref.h (speculative_id): New variable.
+	* ipa-utils.c (ipa_merge_profiles): Update with target_prob.
+	* lto-cgraph.c (lto_output_edge): Remove indirect common_target_id and
+	common_target_probability.   Stream out speculative_id and
+	num_speculative_call_targets.
+	(input_edge): Likewise.
+	* predict.c (dump_prediction): Remove edges count assert to be
+	precise.
+	* symtab.c (symtab_node::create_reference): Init speculative_id.
+	(symtab_node::clone_references): Clone speculative_id.
+	(symtab_node::clone_referring): Clone speculative_id.
+	(symtab_node::clone_reference): Clone speculative_id.
+	(symtab_node::clear_stmts_in_references): Clear speculative_id.
+	* tree-inline.c (copy_bb): Duplicate all the speculative edges
+	if indirect call contains multiple speculative targets.
+	* value-prof.h  (check_ic_target): Remove.
+	* value-prof.c  (gimple_value_profile_transformations):
+	Use void function gimple_ic_transform.
+	* value-prof.c  (gimple_ic_transform): Handle topn case.
+	Fix comment typos.  Change it to a void function.
+
+2020-01-13  Andrew Pinski  <apinski@marvell.com>
+
+	* config/aarch64/aarch64-cores.def (octeontx2): New define.
+	(octeontx2t98): New define.
+	(octeontx2t96): New define.
+	(octeontx2t93): New define.
+	(octeontx2f95): New define.
+	(octeontx2f95n): New define.
+	(octeontx2f95mm): New define.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi (-mcpu=): Document the new cpu types.
+
+2020-01-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/33799 - destroy return value if local cleanup throws.
+	* gimplify.c (gimplify_return_expr): Handle COMPOUND_EXPR.
+
+2020-01-13  Martin Liska  <mliska@suse.cz>
+
+	* ipa-cp.c (get_max_overall_size): Use newly
+	renamed param param_ipa_cp_unit_growth.
+	* params.opt: Remove legacy param name.
+
+2020-01-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/93213
+	* tree-ssa-strlen.c (handle_store): Only allow single-byte nul-over-nul
+	stores to be eliminated.
+
+2020-01-13  Martin Liska  <mliska@suse.cz>
+
+	* opts.c (print_help): Do not print CL_PARAM
+	and CL_WARNING for CL_OPTIMIZATION.
+
+2020-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR driver/92757
+	* doc/invoke.texi (Warning Options): Add caveat about some warnings
+	depending on optimization settings.
+
+2020-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90838
+	* tree-ssa-forwprop.c (simplify_count_trailing_zeroes): Use
+	SCALAR_INT_TYPE_MODE directly in CTZ_DEFINED_VALUE_AT_ZERO macro
+	argument rather than to initialize temporary for targets that
+	don't use the mode argument at all.  Initialize ctzval to avoid
+	warning at -O0.
+
+2020-01-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* tree.h (OMP_CLAUSE_USE_DEVICE_PTR_IF_PRESENT): New definition.
+	* tree-core.h: Document it.
+	* gimplify.c (gimplify_omp_workshare): Set it.
+	* omp-low.c (lower_omp_target): Use it.
+	* tree-pretty-print.c (dump_omp_clause): Print it.
+
+	* omp-low.c (lower_omp_target) <OMP_CLAUSE_USE_DEVICE_PTR etc.>:
+	Assert that for OpenACC we always have 'GOMP_MAP_USE_DEVICE_PTR'.
+
+2020-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Add tree-diagnostic-path.o.
+	* common.opt (fdiagnostics-path-format=): New option.
+	(diagnostic_path_format): New enum.
+	(fdiagnostics-show-path-depths): New option.
+	* coretypes.h (diagnostic_event_id_t): New forward decl.
+	* diagnostic-color.c (color_dict): Add "path".
+	* diagnostic-event-id.h: New file.
+	* diagnostic-format-json.cc (json_from_expanded_location): Make
+	non-static.
+	(json_end_diagnostic): Call context->make_json_for_path if it
+	exists and the diagnostic has a path.
+	(diagnostic_output_format_init): Clear context->print_path.
+	* diagnostic-path.h: New file.
+	* diagnostic-show-locus.c (colorizer::set_range): Special-case
+	when printing a run of events in a diagnostic_path so that they
+	all get the same color.
+	(layout::m_diagnostic_path_p): New field.
+	(layout::layout): Initialize it.
+	(layout::print_any_labels): Don't colorize the label text for an
+	event in a diagnostic_path.
+	(gcc_rich_location::add_location_if_nearby): Add
+	"restrict_to_current_line_spans" and "label" params.  Pass the
+	former to layout.maybe_add_location_range; pass the latter
+	when calling add_range.
+	* diagnostic.c: Include "diagnostic-path.h".
+	(diagnostic_initialize): Initialize context->path_format and
+	context->show_path_depths.
+	(diagnostic_show_any_path): New function.
+	(diagnostic_path::interprocedural_p): New function.
+	(diagnostic_report_diagnostic): Call diagnostic_show_any_path.
+	(simple_diagnostic_path::num_events): New function.
+	(simple_diagnostic_path::get_event): New function.
+	(simple_diagnostic_path::add_event): New function.
+	(simple_diagnostic_event::simple_diagnostic_event): New ctor.
+	(simple_diagnostic_event::~simple_diagnostic_event): New dtor.
+	(debug): New overload taking a diagnostic_path *.
+	* diagnostic.def (DK_DIAGNOSTIC_PATH): New.
+	* diagnostic.h (enum diagnostic_path_format): New enum.
+	(json::value): New forward decl.
+	(diagnostic_context::path_format): New field.
+	(diagnostic_context::show_path_depths): New field.
+	(diagnostic_context::print_path): New callback field.
+	(diagnostic_context::make_json_for_path): New callback field.
+	(diagnostic_show_any_path): New decl.
+	(json_from_expanded_location): New decl.
+	* doc/invoke.texi (-fdiagnostics-path-format=): New option.
+	(-fdiagnostics-show-path-depths): New option.
+	(-fdiagnostics-color): Add "path" to description of default
+	GCC_COLORS; describe it.
+	(-fdiagnostics-format=json): Document how diagnostic paths are
+	represented in the JSON output format.
+	* gcc-rich-location.h (gcc_rich_location::add_location_if_nearby):
+	Add optional params "restrict_to_current_line_spans" and "label".
+	* opts.c (common_handle_option): Handle
+	OPT_fdiagnostics_path_format_ and
+	OPT_fdiagnostics_show_path_depths.
+	* pretty-print.c: Include "diagnostic-event-id.h".
+	(pp_format): Implement "%@" format code for printing
+	diagnostic_event_id_t *.
+	(selftest::test_pp_format): Add tests for "%@".
+	* selftest-run-tests.c (selftest::run_tests): Call
+	selftest::tree_diagnostic_path_cc_tests.
+	* selftest.h (selftest::tree_diagnostic_path_cc_tests): New decl.
+	* toplev.c (general_init): Initialize global_dc->path_format and
+	global_dc->show_path_depths.
+	* tree-diagnostic-path.cc: New file.
+	* tree-diagnostic.c (maybe_unwind_expanded_macro_loc): Make
+	non-static.  Drop "diagnostic" param in favor of storing the
+	original value of "where" and re-using it.
+	(virt_loc_aware_diagnostic_finalizer): Update for dropped param of
+	maybe_unwind_expanded_macro_loc.
+	(tree_diagnostics_defaults): Initialize context->print_path and
+	context->make_json_for_path.
+	* tree-diagnostic.h (default_tree_diagnostic_path_printer): New
+	decl.
+	(default_tree_make_json_for_path): New decl.
+	(maybe_unwind_expanded_macro_loc): New decl.
+
+2020-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93210
+	* fold-const.h (native_encode_initializer,
+	can_native_interpret_type_p): Declare.
+	* fold-const.c (native_encode_string): Fix up handling with off != -1,
+	simplify.
+	(native_encode_initializer): New function, moved from dwarf2out.c.
+	Adjust to native_encode_expr compatible arguments, including dry-run
+	and partial extraction modes.  Don't handle STRING_CST.
+	(can_native_interpret_type_p): No longer static.
+	* gimple-fold.c (fold_ctor_reference): For native_encode_expr, verify
+	offset / BITS_PER_UNIT fits into int and don't call it if
+	can_native_interpret_type_p fails.  If suboff is NULL and for
+	CONSTRUCTOR fold_{,non}array_ctor_reference returns NULL, retry with
+	native_encode_initializer.
+	(fold_const_aggregate_ref_1): Formatting fix.
+	* dwarf2out.c (native_encode_initializer): Moved to fold-const.c.
+	(tree_add_const_value_attribute): Adjust caller.
+
+	PR tree-optimization/90838
+	* tree-ssa-forwprop.c (simplify_count_trailing_zeroes): Use
+	SCALAR_INT_TYPE_MODE instead of TYPE_MODE as operand of
+	CTZ_DEFINED_VALUE_AT_ZERO.
+
+2020-01-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR inline-asm/93027
+	* lra-constraints.c (match_reload): Permit input operands have the
+	same mode as output while other input operands have a different
+	mode.
+
+2020-01-10  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR tree-optimization/90838
+	* tree-ssa-forwprop.c (check_ctz_array): Add new function.
+	(check_ctz_string): Likewise.
+	(optimize_count_trailing_zeroes): Likewise.
+	(simplify_count_trailing_zeroes): Likewise.
+	(pass_forwprop::execute): Try ctz simplification.
+	* match.pd: Add matching for ctz idioms.
+
 2020-01-10  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_invalid_conversion): New function

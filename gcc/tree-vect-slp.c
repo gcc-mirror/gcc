@@ -1193,6 +1193,7 @@ struct bst_traits
   static inline bool equal (value_type existing, value_type candidate);
   static inline bool is_empty (value_type x) { return !x.exists (); }
   static inline bool is_deleted (value_type x) { return !x.exists (); }
+  static const bool empty_zero_p = true;
   static inline void mark_empty (value_type &x) { x.release (); }
   static inline void mark_deleted (value_type &x) { x.release (); }
   static inline void remove (value_type &x) { x.release (); }

@@ -1,3 +1,10 @@
+2020-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (local_event_ptr_node): New.
+	(PP_FORMAT_CHAR_TABLE): Add entry for "%@".
+	(init_dynamic_diag_info): Initialize local_event_ptr_node.
+	* c-format.h (T_EVENT_PTR): New define.
+
 2020-01-10  Martin Sebor  <msebor@redhat.com>
 
 	PR c/93132

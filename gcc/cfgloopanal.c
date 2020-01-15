@@ -219,7 +219,10 @@ average_num_loop_insns (const class loop *loop)
       ninsns += (sreal)binsns * bb->count.to_sreal_scale (loop->header->count);
       /* Avoid overflows.   */
       if (ninsns > 1000000)
-	return 100000;
+	{
+	  free (bbs);
+	  return 1000000;
+	}
     }
   free (bbs);
 

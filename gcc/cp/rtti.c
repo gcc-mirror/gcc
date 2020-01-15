@@ -1491,6 +1491,7 @@ get_tinfo_desc (unsigned ix)
   CLASSTYPE_AS_BASE (pseudo_type) = pseudo_type;
   DECL_CONTEXT (TYPE_NAME (pseudo_type)) = FROB_CONTEXT (global_namespace);
   DECL_TINFO_P (TYPE_NAME (pseudo_type)) = true;
+  xref_basetypes (pseudo_type, /*bases=*/NULL_TREE);
 
   res->type = cp_build_qualified_type (pseudo_type, TYPE_QUAL_CONST);
   res->name = get_identifier (real_name);

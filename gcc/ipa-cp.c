@@ -3158,7 +3158,7 @@ devirtualization_time_bonus (struct cgraph_node *node,
       if (avail < AVAIL_AVAILABLE)
 	continue;
       isummary = ipa_fn_summaries->get (callee);
-      if (!isummary->inlinable)
+      if (!isummary || !isummary->inlinable)
 	continue;
 
       int size = ipa_size_summaries->get (callee)->size;
@@ -3432,7 +3432,7 @@ get_max_overall_size (cgraph_node *node)
   long large_unit = opt_for_fn (node->decl, param_large_unit_insns);
   if (max_new_size < large_unit)
     max_new_size = large_unit;
-  int unit_growth = opt_for_fn (node->decl, param_ipcp_unit_growth);
+  int unit_growth = opt_for_fn (node->decl, param_ipa_cp_unit_growth);
   max_new_size += max_new_size * unit_growth / 100 + 1;
   return max_new_size;
 }

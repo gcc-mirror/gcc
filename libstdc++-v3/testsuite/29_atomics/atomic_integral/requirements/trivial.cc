@@ -22,7 +22,11 @@
 
 void test01()
 {
+#if __cplusplus <= 201703L
   __gnu_test::has_trivial_cons_dtor test;
+#else
+  __gnu_test::has_trivial_dtor test;
+#endif
   __gnu_cxx::typelist::apply_generator(test,
 				       __gnu_test::atomic_integrals::type());
 }

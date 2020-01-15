@@ -1,0 +1,56 @@
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* ChangeLog: New file.
+	* analyzer-selftests.cc: New file.
+	* analyzer-selftests.h: New file.
+	* analyzer.opt: New file.
+	* analysis-plan.cc: New file.
+	* analysis-plan.h: New file.
+	* analyzer-logging.cc: New file.
+	* analyzer-logging.h: New file.
+	* analyzer-pass.cc: New file.
+	* analyzer.cc: New file.
+	* analyzer.h: New file.
+	* call-string.cc: New file.
+	* call-string.h: New file.
+	* checker-path.cc: New file.
+	* checker-path.h: New file.
+	* constraint-manager.cc: New file.
+	* constraint-manager.h: New file.
+	* diagnostic-manager.cc: New file.
+	* diagnostic-manager.h: New file.
+	* engine.cc: New file.
+	* engine.h: New file.
+	* exploded-graph.h: New file.
+	* pending-diagnostic.cc: New file.
+	* pending-diagnostic.h: New file.
+	* program-point.cc: New file.
+	* program-point.h: New file.
+	* program-state.cc: New file.
+	* program-state.h: New file.
+	* region-model.cc: New file.
+	* region-model.h: New file.
+	* sm-file.cc: New file.
+	* sm-malloc.cc: New file.
+	* sm-malloc.dot: New file.
+	* sm-pattern-test.cc: New file.
+	* sm-sensitive.cc: New file.
+	* sm-signal.cc: New file.
+	* sm-taint.cc: New file.
+	* sm.cc: New file.
+	* sm.h: New file.
+	* state-purge.cc: New file.
+	* state-purge.h: New file.
+	* supergraph.cc: New file.
+	* supergraph.h: New file.
+
+2019-12-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* Initial creation
+
+
+Copyright (C) 2019-2020 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

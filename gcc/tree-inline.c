@@ -2187,9 +2187,10 @@ copy_bb (copy_body_data *id, basic_block bb,
 					  num, den,
 					  true);
 
-		      /* Speculative calls consist of two edges - direct and
-			 indirect.  Duplicate the whole thing and distribute
-			 frequencies accordingly.  */
+		      /* A speculative call is consist of edges - indirect edge
+			 and direct edges (one indirect edeg may has multiple
+			 direct edges).  Duplicate the whole thing and
+			 distribute frequencies accordingly.  */
 		      if (edge->speculative)
 			{
 			  struct cgraph_edge *direct, *indirect;
@@ -2197,8 +2198,33 @@ copy_bb (copy_body_data *id, basic_block bb,
 
 			  gcc_assert (!edge->indirect_unknown_callee);
 			  old_edge->speculative_call_info (direct, indirect, ref);
+			  while (old_edge->next_callee
+				 && old_edge->next_callee->speculative
+				 && indirect->num_speculative_call_targets_p ()
+				      > 1)
+			    {
+			      id->dst_node->clone_reference (ref, stmt);
+
+			      edge = old_edge->next_callee;
+			      edge = edge->clone (id->dst_node, call_stmt,
+						  gimple_uid (stmt), num, den,
+						  true);
+			      old_edge = old_edge->next_callee;
+			      gcc_assert (!edge->indirect_unknown_callee);
+
+			      /* If the indirect edge has multiple speculative
+				 calls, iterate through all direct calls
+				 associated to the speculative call and clone
+				 all related direct edges before cloning the
+				 related indirect edge.  */
+			      old_edge->speculative_call_info (direct, indirect,
+							       ref);
+			    }
 
 			  profile_count indir_cnt = indirect->count;
+
+			  /* Duplicate the indirect edge after all direct edges
+			     cloned.  */
 			  indirect = indirect->clone (id->dst_node, call_stmt,
 						      gimple_uid (stmt),
 						      num, den,

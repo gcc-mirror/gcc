@@ -219,6 +219,16 @@ is emitted (as opposed to those warnings that are suppressed by
 command-line options).
 end
 
+define break-on-saved-diagnostic
+break diagnostic_manager::add_diagnostic
+end
+
+document break-on-saved-diagnostic
+Put a breakpoint on diagnostic_manager::add_diagnostic, called within
+the analyzer whenever a diagnostic is saved for later de-duplication and
+possible emission.
+end
+
 define reload-gdbhooks
 python import imp; imp.reload(gdbhooks)
 end

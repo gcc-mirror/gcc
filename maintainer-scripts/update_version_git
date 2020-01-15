@@ -1,0 +1,85 @@
+#!/bin/sh
+#
+# Update the current version date in all files in the tree containing
+# it.  Consider all single-component-version release branches except
+# those matching the regular expression in $IGNORE_BRANCHES, and also
+# consider those branches listed in the space separated list in
+# $ADD_BRANCHES.
+
+GITROOT=${GITROOT:-"/git/gcc.git"}
+IGNORE_BRANCHES='releases/gcc-(.*\..*|5|6|7)'
+ADD_BRANCHES='master'
+
+# Run this from /tmp.
+export GITROOT
+BASEDIR=/tmp/$$
+/bin/rm -rf "$BASEDIR"
+/bin/mkdir "$BASEDIR"
+cd "$BASEDIR"
+
+GIT=${GIT:-/usr/local/bin/git}
+
+# Compute the branches which we should update.
+BRANCHES=`(cd $GITROOT \
+	   && ${GIT} for-each-ref --format='%(refname)' \
+		     'refs/heads/releases/gcc-*') \
+	  | sed -e 's/refs\/heads\///' \
+          | egrep -v $IGNORE_BRANCHES`
+# Always update the mainline.
+BRANCHES="${ADD_BRANCHES} ${BRANCHES}"
+
+# This is put into the datestamp files.
+CURR_DATE=`/bin/date +"%Y%m%d"`
+
+datestamp_FILES="gcc/DATESTAMP"
+
+
+# Assume all will go well.
+RESULT=0
+SUBDIR=$BASEDIR/gcc
+for BRANCH in $BRANCHES; do
+  echo "Working on \"$BRANCH\"."
+  # Check out the files on the branch.
+  if [ -d "$SUBDIR" ]; then
+    cd "$SUBDIR"
+    ${GIT} pull -q
+    ${GIT} checkout -q "$BRANCH"
+  else
+    ${GIT} clone -q -b "$BRANCH" "$GITROOT" "$SUBDIR"
+  fi
+
+  # There are no files to commit yet.
+  COMMIT_FILES=""
+
+  cd "$SUBDIR"
+  for file in $datestamp_FILES; do
+    if test -f $file; then
+      echo "${CURR_DATE}" > $file.new
+
+      if /usr/bin/cmp -s $file $file.new; then
+	rm -f $file.new
+      else
+	mv -f $file.new $file
+        COMMIT_FILES="$COMMIT_FILES $file"
+      fi
+    fi
+  done
+
+  if test -n "$COMMIT_FILES"; then
+    for i in $COMMIT_FILES; do
+    echo "Attempting to commit $i"
+    if ${GIT} commit -m "Daily bump." $i; then
+      if ! ${GIT} push origin "$BRANCH"; then
+        # If we could not push the files, indicate failure.
+        RESULT=1
+      fi
+    else
+      # If we could not commit the files, indicate failure.
+      RESULT=1
+    fi
+    done
+  fi
+done
+
+/bin/rm -rf $BASEDIR
+exit $RESULT

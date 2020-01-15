@@ -87,7 +87,17 @@ class colorizer
 	     diagnostic_t diagnostic_kind);
   ~colorizer ();
 
-  void set_range (int range_idx) { set_state (range_idx); }
+  void set_range (int range_idx)
+  {
+    /* Normally we emphasize the primary location, then alternate between
+       two colors for the secondary locations.
+       But if we're printing a run of events in a diagnostic path, that
+       makes no sense, so print all of them with the same colorization.  */
+    if (m_diagnostic_kind == DK_DIAGNOSTIC_PATH)
+      set_state (0);
+    else
+      set_state (range_idx);
+  }
   void set_normal_text () { set_state (STATE_NORMAL_TEXT); }
   void set_fixit_insert () { set_state (STATE_FIXIT_INSERT); }
   void set_fixit_delete () { set_state (STATE_FIXIT_DELETE); }
@@ -385,6 +395,7 @@ class layout
   bool m_colorize_source_p;
   bool m_show_labels_p;
   bool m_show_line_numbers_p;
+  bool m_diagnostic_path_p;
   auto_vec <layout_range> m_layout_ranges;
   auto_vec <const fixit_hint *> m_fixit_hints;
   auto_vec <line_span> m_line_spans;
@@ -958,6 +969,7 @@ layout::layout (diagnostic_context * context,
   m_colorize_source_p (context->colorize_source_p),
   m_show_labels_p (context->show_labels_p),
   m_show_line_numbers_p (context->show_line_numbers_p),
+  m_diagnostic_path_p (diagnostic_kind == DK_DIAGNOSTIC_PATH),
   m_layout_ranges (richloc->get_num_locations ()),
   m_fixit_hints (richloc->get_num_fixit_hints ()),
   m_line_spans (1 + richloc->get_num_locations ()),
@@ -1770,7 +1782,10 @@ layout::print_any_labels (linenum_type row)
 	      {
 		gcc_assert (column <= label->m_column);
 		move_to_column (&column, label->m_column, true);
-		m_colorizer.set_range (label->m_state_idx);
+		/* Colorize the text, unless it's for events in a
+		   diagnostic_path.  */
+		if (!m_diagnostic_path_p)
+		  m_colorizer.set_range (label->m_state_idx);
 		pp_string (m_pp, label->m_text.m_buffer);
 		m_colorizer.set_normal_text ();
 		column += label->m_display_width;
@@ -2506,7 +2521,9 @@ layout::print_line (linenum_type row)
    Otherwise return false.  */
 
 bool
-gcc_rich_location::add_location_if_nearby (location_t loc)
+gcc_rich_location::add_location_if_nearby (location_t loc,
+					   bool restrict_to_current_line_spans,
+					   const range_label *label)
 {
   /* Use the layout location-handling logic to sanitize LOC,
      filtering it to the current line spans within a temporary
@@ -2515,10 +2532,11 @@ gcc_rich_location::add_location_if_nearby (location_t loc)
   location_range loc_range;
   loc_range.m_loc = loc;
   loc_range.m_range_display_kind = SHOW_RANGE_WITHOUT_CARET;
-  if (!layout.maybe_add_location_range (&loc_range, 0, true))
+  if (!layout.maybe_add_location_range (&loc_range, 0,
+					restrict_to_current_line_spans))
     return false;
 
-  add_range (loc);
+  add_range (loc, SHOW_RANGE_WITHOUT_CARET, label);
   return true;
 }
 

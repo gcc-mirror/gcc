@@ -761,7 +761,6 @@ dump_prediction (FILE *file, enum br_predictor predictor, int probability,
       && bb->count.precise_p ()
       && reason == REASON_NONE)
     {
-      gcc_assert (e->count ().precise_p ());
       fprintf (file, ";;heuristics;%s;%" PRId64 ";%" PRId64 ";%.1f;\n",
 	       predictor_info[predictor].name,
 	       bb->count.to_gcov_type (), e->count ().to_gcov_type (),
