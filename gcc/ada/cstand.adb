@@ -1372,10 +1372,17 @@ package body CStand is
          "long_long_unsigned");
 
       --  Standard_Unsigned_64 is not user visible, but is used internally. It
-      --  is an unsigned type mod 2**64, 64-bits unsigned, size is 64.
+      --  is an unsigned type mod 2**64 with 64 bits size.
 
       Standard_Unsigned_64 := New_Standard_Entity;
       Build_Unsigned_Integer_Type (Standard_Unsigned_64, 64, "unsigned_64");
+
+      --  Standard_Address is not user visible, but is used internally. It is
+      --  an unsigned type mod 2**System_Address_Size with System.Address size.
+
+      Standard_Address := New_Standard_Entity;
+      Build_Unsigned_Integer_Type
+        (Standard_Address, System_Address_Size, "standard_address");
 
       --  Note: universal integer and universal real are constructed as fully
       --  formed signed numeric types, with parameters corresponding to the

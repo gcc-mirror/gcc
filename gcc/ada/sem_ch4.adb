@@ -7168,9 +7168,8 @@ package body Sem_Ch4 is
                                N_Op_Divide,
                                N_Op_Ge,
                                N_Op_Gt,
-                               N_Op_Le)
-              or else
-                  Nkind_In (N, N_Op_Lt,
+                               N_Op_Le,
+                               N_Op_Lt,
                                N_Op_Mod,
                                N_Op_Multiply,
                                N_Op_Rem,
@@ -7183,8 +7182,12 @@ package body Sem_Ch4 is
                  and then not Is_Numeric_Type (Etype (R))
                then
                   if Address_Integer_Convert_OK (Etype (R), Etype (L)) then
+                     Rewrite (L,
+                       Unchecked_Convert_To (
+                         Standard_Address, Relocate_Node (L)));
                      Rewrite (R,
-                       Unchecked_Convert_To (Etype (L), Relocate_Node (R)));
+                       Unchecked_Convert_To (
+                         Standard_Address, Relocate_Node (R)));
 
                      if Nkind_In (N, N_Op_Ge, N_Op_Gt, N_Op_Le, N_Op_Lt) then
                         Analyze_Comparison_Op (N);
@@ -7202,7 +7205,11 @@ package body Sem_Ch4 is
                then
                   if Address_Integer_Convert_OK (Etype (L), Etype (R)) then
                      Rewrite (L,
-                       Unchecked_Convert_To (Etype (R), Relocate_Node (L)));
+                       Unchecked_Convert_To (
+                         Standard_Address, Relocate_Node (L)));
+                     Rewrite (R,
+                       Unchecked_Convert_To (
+                         Standard_Address, Relocate_Node (R)));
 
                      if Nkind_In (N, N_Op_Ge, N_Op_Gt, N_Op_Le, N_Op_Lt) then
                         Analyze_Comparison_Op (N);
@@ -7229,10 +7236,10 @@ package body Sem_Ch4 is
                   begin
                      Rewrite (L,
                        Unchecked_Convert_To (
-                         Standard_Integer, Relocate_Node (L)));
+                         Standard_Address, Relocate_Node (L)));
                      Rewrite (R,
                        Unchecked_Convert_To (
-                         Standard_Integer, Relocate_Node (R)));
+                         Standard_Address, Relocate_Node (R)));
 
                      if Nkind_In (N, N_Op_Ge, N_Op_Gt, N_Op_Le, N_Op_Lt) then
                         Analyze_Comparison_Op (N);
@@ -7330,8 +7337,12 @@ package body Sem_Ch4 is
 
             elsif Nkind_In (N, N_Op_Eq, N_Op_Ne) then
                if Address_Integer_Convert_OK (Etype (R), Etype (L)) then
+                  Rewrite (L,
+                    Unchecked_Convert_To (
+                      Standard_Address, Relocate_Node (L)));
                   Rewrite (R,
-                    Unchecked_Convert_To (Etype (L), Relocate_Node (R)));
+                    Unchecked_Convert_To (
+                      Standard_Address, Relocate_Node (R)));
                   Analyze_Equality_Op (N);
                   return;
 

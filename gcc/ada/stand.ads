@@ -468,7 +468,11 @@ package Stand is
    --  Unsigned types with same Esize as corresponding signed integer types
 
    Standard_Unsigned_64 : Entity_Id;
-   --  An unsigned type, mod 2 ** 64, size of 64 bits.
+   --  Entity for an unsigned type mod 2 ** 64, size of 64 bits.
+
+   Standard_Address : Entity_Id;
+   --  Entity for an unsigned type mod 2 ** System_Address_Size, size of
+   --  System_Address_Size bits. Used for implementing Allow_Integer_Address.
 
    Abort_Signal : Entity_Id;
    --  Entity for abort signal exception
