@@ -5,15 +5,22 @@
 #include "../../../cmse-7.x"
 
 /* Checks for saving and clearing prior to function call.  */
-/* { dg-final { scan-assembler "lsrs\tr4, r4, #1" } } */
-/* { dg-final { scan-assembler "lsls\tr4, r4, #1" } } */
+/* Shift on the same register as blxns.  */
+/* { dg-final { scan-assembler "lsrs\t(r\[0-9\]|r10|fp|ip), \\1, #1.*blxns\t\\1" } } */
+/* { dg-final { scan-assembler "lsls\t(r\[0-9\]|r10|fp|ip), \\1, #1.*blxns\t\\1" } } */
 /* { dg-final { scan-assembler "push\t\{r4, r5, r6, r7, r8, r9, r10, fp\}" } } */
 /* { dg-final { scan-assembler "vlstm\tsp" } } */
-/* { dg-final { scan-assembler "clrm\t\{r0, r1, r2, r3, r5, r6, r7, r8, r9, r10, fp, ip, APSR\}" } } */
+/* Check the right registers are cleared and none appears twice.  */
+/* { dg-final { scan-assembler "clrm\t\{(r0, )?(r1, )?(r2, )?(r3, )?(r4, )?(r5, )?(r6, )?(r7, )?(r8, )?(r9, )?(r10, )?(fp, )?(ip, )?APSR\}" } } */
+/* Check that the right number of registers is cleared and thus only one
+   register is missing.  */
+/* { dg-final { scan-assembler "clrm\t\{((r\[0-9\]|r10|fp|ip), ){12}APSR\}" } } */
+/* Check that no cleared register is used for blxns.  */
+/* { dg-final { scan-assembler-not "clrm\t\{\[^\}\]\+(r\[0-9\]|r10|fp|ip),\[^\}\]\+\}.*blxns\t\\1" } } */
 /* { dg-final { scan-assembler "vlldm\tsp" } } */
 /* { dg-final { scan-assembler "pop\t\{r4, r5, r6, r7, r8, r9, r10, fp\}" } } */
 /* { dg-final { scan-assembler-not "vmov" } } */
 /* { dg-final { scan-assembler-not "vmsr" } } */
 
 /* Now we check that we use the correct intrinsic to call.  */
-/* { dg-final { scan-assembler "bl\t__gnu_cmse_nonsecure_call" } } */
+/* { dg-final { scan-assembler "blxns" } } */

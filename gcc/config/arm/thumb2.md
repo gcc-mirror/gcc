@@ -537,13 +537,18 @@
 )
 
 (define_insn "*nonsecure_call_reg_thumb2"
-  [(call (unspec:SI [(mem:SI (reg:SI R4_REGNUM))]
+  [(call (unspec:SI [(mem:SI (match_operand:SI 0 "s_register_operand" "l*r"))]
 		    UNSPEC_NONSECURE_MEM)
-	 (match_operand 0 "" ""))
-   (use (match_operand 1 "" ""))
+	 (match_operand 1 "" ""))
+   (use (match_operand 2 "" ""))
    (clobber (reg:SI LR_REGNUM))]
   "TARGET_THUMB2 && use_cmse"
-  "bl\\t__gnu_cmse_nonsecure_call"
+  {
+    if (TARGET_HAVE_FPCXT_CMSE)
+      return "blxns\\t%0";
+    else
+      return "bl\\t__gnu_cmse_nonsecure_call";
+  }
   [(set_attr "length" "4")
    (set_attr "type" "call")]
 )
@@ -562,13 +567,18 @@
 (define_insn "*nonsecure_call_value_reg_thumb2"
   [(set (match_operand 0 "" "")
 	(call
-	 (unspec:SI [(mem:SI (reg:SI R4_REGNUM))]
+	 (unspec:SI [(mem:SI (match_operand:SI 1 "register_operand" "l*r"))]
 		    UNSPEC_NONSECURE_MEM)
-	 (match_operand 1 "" "")))
-   (use (match_operand 2 "" ""))
+	 (match_operand 2 "" "")))
+   (use (match_operand 3 "" ""))
    (clobber (reg:SI LR_REGNUM))]
   "TARGET_THUMB2 && use_cmse"
-  "bl\t__gnu_cmse_nonsecure_call"
+  {
+    if (TARGET_HAVE_FPCXT_CMSE)
+      return "blxns\\t%1";
+    else
+      return "bl\\t__gnu_cmse_nonsecure_call";
+  }
   [(set_attr "length" "4")
    (set_attr "type" "call")]
 )

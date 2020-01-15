@@ -1,6 +1,17 @@
 2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
 2020-01-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
 
+	* config/arm/arm.md (nonsecure_call_internal): Do not force memory
+	address in r4 when targeting Armv8.1-M Mainline.
+	(nonsecure_call_value_internal): Likewise.
+	* config/arm/thumb2.md (nonsecure_call_reg_thumb2): Make memory address
+	a register match_operand again.  Emit BLXNS when targeting
+	Armv8.1-M Mainline.
+	(nonsecure_call_value_reg_thumb2): Likewise.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* config/arm/arm.c (arm_add_cfa_adjust_cfa_note): Declare early.
 	(cmse_nonsecure_call_inline_register_clear): Define new lazy_fpclear
 	variable as true when floating-point ABI is not hard.  Replace

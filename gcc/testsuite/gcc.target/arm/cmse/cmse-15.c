@@ -69,4 +69,9 @@ int secure5 (void)
 {
   return (*s_bar2) ();
 }
-/* { dg-final { scan-assembler-times "bl\\s+__gnu_cmse_nonsecure_call" 6 } } */
+
+/* ARMv8-M expectation.  */
+/* { dg-final { scan-assembler-times "bl\\s+__gnu_cmse_nonsecure_call" 6 { target { ! arm_cmse_clear_ok } } } } */
+
+/* ARMv8.1-M expectation.  */
+/* { dg-final { scan-assembler-times "blxns" 6 { target arm_cmse_clear_ok } } } */

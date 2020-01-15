@@ -8387,12 +8387,15 @@
   "use_cmse"
   "
   {
-    rtx tmp;
-    tmp = copy_to_suggested_reg (XEXP (operands[0], 0),
+    if (!TARGET_HAVE_FPCXT_CMSE)
+      {
+	rtx tmp =
+	  copy_to_suggested_reg (XEXP (operands[0], 0),
 				 gen_rtx_REG (SImode, R4_REGNUM),
 				 SImode);
 
-    operands[0] = replace_equiv_address (operands[0], tmp);
+	operands[0] = replace_equiv_address (operands[0], tmp);
+      }
   }")
 
 (define_insn "*call_reg_armv5"
@@ -8495,12 +8498,15 @@
   "use_cmse"
   "
   {
-    rtx tmp;
-    tmp = copy_to_suggested_reg (XEXP (operands[1], 0),
+    if (!TARGET_HAVE_FPCXT_CMSE)
+      {
+	rtx tmp =
+	  copy_to_suggested_reg (XEXP (operands[1], 0),
 				 gen_rtx_REG (SImode, R4_REGNUM),
 				 SImode);
 
-    operands[1] = replace_equiv_address (operands[1], tmp);
+	operands[1] = replace_equiv_address (operands[1], tmp);
+      }
   }")
 
 (define_insn "*call_value_reg_armv5"
