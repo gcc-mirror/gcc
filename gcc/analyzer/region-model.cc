@@ -6414,11 +6414,13 @@ region_model::convert_byte_offset_to_array_index (tree ptr_type,
       /* This might not be a constant.  */
       tree byte_size = size_in_bytes (elem_type);
 
+      /* Try to get a constant by dividing, ensuring that we're in a
+	 signed representation first.  */
       tree index
-	= fold_build2 (TRUNC_DIV_EXPR, integer_type_node,
-		       offset_cst, byte_size);
-
-      if (CONSTANT_CLASS_P (index))
+	= fold_binary (TRUNC_DIV_EXPR, ssizetype,
+		       fold_convert (ssizetype, offset_cst),
+		       fold_convert (ssizetype, byte_size));
+      if (index && TREE_CODE (index) == INTEGER_CST)
 	return get_or_create_constant_svalue (index);
     }
 

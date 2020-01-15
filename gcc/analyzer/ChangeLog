@@ -1,3 +1,12 @@
+2020-01-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93281
+	* region-model.cc
+	(region_model::convert_byte_offset_to_array_index): Convert to
+	ssizetype before dividing by byte_size.  Use fold_binary rather
+	than fold_build2 to avoid needlessly constructing a tree for the
+	non-const case.
+
 2020-01-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* engine.cc (class impl_region_model_context): Fix comment.
