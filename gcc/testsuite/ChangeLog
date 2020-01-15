@@ -1,3 +1,11 @@
+2020-01-15  Joseph Myers  <joseph@codesourcery.com>
+
+	Backport from mainline:
+	2020-01-15  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/93072
+	* gcc.dg/inline-42.c, gcc.dg/inline-43.c: New tests.
+
 2020-01-14  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
