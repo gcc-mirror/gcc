@@ -272,10 +272,7 @@ define fgroup ARMv8_6a    ARMv8_5a armv8_6
 define fgroup ARMv8m_base ARMv6m armv8 cmse tdiv
 define fgroup ARMv8m_main ARMv7m armv8 cmse
 define fgroup ARMv8r      ARMv8a
-# Feature cmse is omitted to disable Security Extensions support while secure
-# code compiled by GCC does not preserve FP context as allowed by Armv8.1-M
-# Mainline.
-define fgroup ARMv8_1m_main ARMv7m armv8 armv8_1m_main
+define fgroup ARMv8_1m_main ARMv8m_main armv8_1m_main
 
 # Useful combinations.
 define fgroup VFPv2	vfpv2

@@ -1,6 +1,14 @@
 2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
 2020-01-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
 
+	* config/arm/arm-cpus.in (ARMv8_1m_main): Redefine as an extension to
+	Armv8-M Mainline.
+	* config/arm/arm.c (arm_options_perform_arch_sanity_checks): Remove
+	error for using -mcmse when targeting Armv8.1-M Mainline.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* config/arm/arm.md (nonsecure_call_internal): Do not force memory
 	address in r4 when targeting Armv8.1-M Mainline.
 	(nonsecure_call_value_internal): Likewise.

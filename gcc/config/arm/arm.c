@@ -3777,9 +3777,6 @@ arm_options_perform_arch_sanity_checks (void)
   if (!arm_arch4 && arm_fp16_format != ARM_FP16_FORMAT_NONE)
     sorry ("__fp16 and no ldrh");
 
-  if (use_cmse && arm_arch8_1m_main)
-    error ("Armv8.1-M Mainline Security Extensions are unsupported");
-
   if (use_cmse && !arm_arch_cmse)
     error ("target CPU does not support ARMv8-M Security Extensions");
 
