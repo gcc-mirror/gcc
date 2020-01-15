@@ -1,6 +1,24 @@
 2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
 2020-01-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
 
+	* config/arm/arm-protos.h (clear_operation_p): Adapt prototype.
+	* config/arm/arm.c (clear_operation_p): Extend to be able to check a
+	clear_vfp_multiple pattern based on a new vfp parameter.
+	(cmse_clear_registers): Generate VSCCLRM to clear VFP registers when
+	targeting Armv8.1-M Mainline.
+	(cmse_nonsecure_entry_clear_before_return): Clear VFP registers
+	unconditionally when targeting Armv8.1-M Mainline architecture.  Check
+	whether VFP registers are available before looking call_used_regs for a
+	VFP register.
+	* config/arm/predicates.md (clear_multiple_operation): Adapt to change
+	of prototype of clear_operation_p.
+	(clear_vfp_multiple_operation): New predicate.
+	* config/arm/unspecs.md (VUNSPEC_VSCCLRM_VPR): New volatile unspec.
+	* config/arm/vfp.md (clear_vfp_multiple): New define_insn.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* config/arm/arm-protos.h (clear_operation_p): Declare.
 	* config/arm/arm.c (clear_operation_p): New function.
 	(cmse_clear_registers): Generate clear_multiple instruction pattern if

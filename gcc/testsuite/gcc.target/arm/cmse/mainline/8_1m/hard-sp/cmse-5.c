@@ -6,22 +6,7 @@
 #include "../../../cmse-5.x"
 
 /* { dg-final { scan-assembler "vstr\tFPCXTNS, \\\[sp, #-4\\\]!" } } */
-/* { dg-final { scan-assembler-not "vmov\.f32\ts0, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts1, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts2, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts3, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts4, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts5, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts6, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts7, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts8, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts9, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts10, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts11, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts12, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts13, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts14, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f32\ts15, #1\.0" } } */
+/* { dg-final { scan-assembler "vscclrm\t\{s1-s15, VPR\}" } } */
 /* { dg-final { scan-assembler "clrm\t\{r0, r1, r2, r3, ip, APSR\}" } } */
 /* { dg-final { scan-assembler "vldr\tFPCXTNS, \\\[sp\\\], #4" } } */
 /* { dg-final { scan-assembler "bxns" } } */

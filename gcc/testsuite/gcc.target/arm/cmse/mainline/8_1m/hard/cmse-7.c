@@ -9,14 +9,7 @@
 /* { dg-final { scan-assembler "lsrs\tr4, r4, #1" } } */
 /* { dg-final { scan-assembler "lsls\tr4, r4, #1" } } */
 /* { dg-final { scan-assembler "clrm\t\{r0, r1, r2, r3, APSR\}" } } */
-/* { dg-final { scan-assembler "vmov\.f64\td0, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f64\td1, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f64\td2, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f64\td3, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f64\td4, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f64\td5, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f64\td6, #1\.0" } } */
-/* { dg-final { scan-assembler "vmov\.f64\td7, #1\.0" } } */
+/* { dg-final { scan-assembler "vscclrm\t\{s0-s15, VPR\}" } } */
 
 /* Now we check that we use the correct intrinsic to call.  */
 /* { dg-final { scan-assembler "bl\t__gnu_cmse_nonsecure_call" } } */

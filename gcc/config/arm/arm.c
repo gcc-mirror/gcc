@@ -13709,8 +13709,9 @@ ldm_stm_operation_p (rtx op, bool load, machine_mode mode,
   return true;
 }
 
-/* Checks whether OP is a valid parallel pattern for a CLRM insn.  To be a
-   valid CLRM pattern, OP must have the following form:
+/* Checks whether OP is a valid parallel pattern for a CLRM (if VFP is false)
+   or VSCCLRM (otherwise) insn.  To be a valid CLRM pattern, OP must have the
+   following form:
 
    [(set (reg:SI <N>) (const_int 0))
     (set (reg:SI <M>) (const_int 0))
@@ -13722,22 +13723,35 @@ ldm_stm_operation_p (rtx op, bool load, machine_mode mode,
 
    Any number (including 0) of set expressions is valid, the volatile unspec is
    optional.  All registers but SP and PC are allowed and registers must be in
-   strict increasing order.  */
+   strict increasing order.
+
+   To be a valid VSCCLRM pattern, OP must have the following form:
+
+   [(unspec_volatile [(const_int 0)]
+		     VUNSPEC_VSCCLRM_VPR)
+    (set (reg:SF <N>) (const_int 0))
+    (set (reg:SF <M>) (const_int 0))
+    ...
+   ]
+
+   As with CLRM, any number (including 0) of set expressions is valid, however
+   the volatile unspec is mandatory here.  Any VFP single-precision register is
+   accepted but all registers must be consecutive and in increasing order.  */
 
 bool
-clear_operation_p (rtx op)
+clear_operation_p (rtx op, bool vfp)
 {
-  HOST_WIDE_INT i;
   unsigned regno, last_regno;
   rtx elt, reg, zero;
-  machine_mode mode;
   HOST_WIDE_INT count = XVECLEN (op, 0);
+  HOST_WIDE_INT i, first_set = vfp ? 1 : 0;
+  machine_mode expected_mode = vfp ? E_SFmode : E_SImode;
 
-  for (i = 0; i < count; i++)
+  for (i = first_set; i < count; i++)
     {
       elt = XVECEXP (op, 0, i);
 
-      if (GET_CODE (elt) == UNSPEC_VOLATILE)
+      if (!vfp && GET_CODE (elt) == UNSPEC_VOLATILE)
 	{
 	  if (XINT (elt, 1) != VUNSPEC_CLRM_APSR
 	      || XVECLEN (elt, 0) != 1
@@ -13756,16 +13770,25 @@ clear_operation_p (rtx op)
 
       reg = SET_DEST (elt);
       regno = REGNO (reg);
-      mode = GET_MODE (reg);
       zero = SET_SRC (elt);
 
       if (!REG_P (reg)
-	  || GET_MODE (reg) != SImode
-	  || regno == SP_REGNUM
-	  || regno == PC_REGNUM
-	  || (i != 0 && regno <= last_regno)
+	  || GET_MODE (reg) != expected_mode
 	  || zero != CONST0_RTX (SImode))
 	return false;
+
+      if (vfp)
+	{
+	  if (i != 1 && regno != last_regno + 1)
+	    return false;
+	}
+      else
+	{
+	  if (regno == SP_REGNUM || regno == PC_REGNUM)
+	    return false;
+	  if (i != 0 && regno <= last_regno)
+	    return false;
+	}
 
       last_regno = REGNO (reg);
     }
@@ -18112,6 +18135,43 @@ cmse_clear_registers (sbitmap to_clear_bitmap, uint32_t *padding_bits_to_clear,
       auto_sbitmap core_regs_bitmap (to_clear_bitmap_size);
       auto_sbitmap to_clear_core_bitmap (to_clear_bitmap_size);
 
+      for (i = FIRST_VFP_REGNUM; i <= maxregno; i += nb_regs)
+	{
+	  /* Find next register to clear and exit if none.  */
+	  for (; i <= maxregno && !bitmap_bit_p (to_clear_bitmap, i); i++);
+	  if (i > maxregno)
+	    break;
+
+	  /* Compute number of consecutive registers to clear.  */
+	  for (j = i; j <= maxregno && bitmap_bit_p (to_clear_bitmap, j);
+	       j++);
+	  nb_regs = j - i;
+
+	  /* Create VSCCLRM RTX pattern.  */
+	  par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (nb_regs + 1));
+	  vunspec_vec = gen_rtvec (1, gen_int_mode (0, SImode));
+	  vunspec = gen_rtx_UNSPEC_VOLATILE (SImode, vunspec_vec,
+					     VUNSPEC_VSCCLRM_VPR);
+	  XVECEXP (par, 0, 0) = vunspec;
+
+	  /* Insert VFP register clearing RTX in the pattern.  */
+	  start_sequence ();
+	  for (k = 1, j = i; j <= maxregno && k < nb_regs + 1; j++)
+	    {
+	      if (!bitmap_bit_p (to_clear_bitmap, j))
+		continue;
+
+	      reg = gen_rtx_REG (SFmode, j);
+	      set = gen_rtx_SET (reg, const0_rtx);
+	      XVECEXP (par, 0, k++) = set;
+	      emit_use (reg);
+	    }
+	  use_seq = get_insns ();
+	  end_sequence ();
+
+	  emit_insn_after (use_seq, emit_insn (par));
+	}
+
       /* Get set of core registers to clear.  */
       bitmap_clear (core_regs_bitmap);
       bitmap_set_range (core_regs_bitmap, R0_REGNUM,
@@ -18156,48 +18216,49 @@ cmse_clear_registers (sbitmap to_clear_bitmap, uint32_t *padding_bits_to_clear,
       end_sequence ();
 
       emit_insn_after (use_seq, emit_insn (par));
-      minregno = FIRST_VFP_REGNUM;
     }
-
-  /* If not marked for clearing, clearing_reg already does not contain
-     any secret.  */
-  if (clearing_regno <= maxregno
-      && bitmap_bit_p (to_clear_bitmap, clearing_regno))
+  else
     {
-      emit_move_insn (clearing_reg, const0_rtx);
-      emit_use (clearing_reg);
-      bitmap_clear_bit (to_clear_bitmap, clearing_regno);
-    }
-
-  for (regno = minregno; regno <= maxregno; regno++)
-    {
-      if (!bitmap_bit_p (to_clear_bitmap, regno))
-	continue;
-
-      if (IS_VFP_REGNUM (regno))
+      /* If not marked for clearing, clearing_reg already does not contain
+	 any secret.  */
+      if (clearing_regno <= maxregno
+	  && bitmap_bit_p (to_clear_bitmap, clearing_regno))
 	{
-	  /* If regno is an even vfp register and its successor is also to
-	     be cleared, use vmov.  */
-	  if (TARGET_VFP_DOUBLE
-	      && VFP_REGNO_OK_FOR_DOUBLE (regno)
-	      && bitmap_bit_p (to_clear_bitmap, regno + 1))
+	  emit_move_insn (clearing_reg, const0_rtx);
+	  emit_use (clearing_reg);
+	  bitmap_clear_bit (to_clear_bitmap, clearing_regno);
+	}
+
+      for (regno = minregno; regno <= maxregno; regno++)
+	{
+	  if (!bitmap_bit_p (to_clear_bitmap, regno))
+	    continue;
+
+	  if (IS_VFP_REGNUM (regno))
 	    {
-	      emit_move_insn (gen_rtx_REG (DFmode, regno),
-			      CONST1_RTX (DFmode));
-	      emit_use (gen_rtx_REG (DFmode, regno));
-	      regno++;
+	      /* If regno is an even vfp register and its successor is also to
+		 be cleared, use vmov.  */
+	      if (TARGET_VFP_DOUBLE
+		  && VFP_REGNO_OK_FOR_DOUBLE (regno)
+		  && bitmap_bit_p (to_clear_bitmap, regno + 1))
+		{
+		  emit_move_insn (gen_rtx_REG (DFmode, regno),
+				  CONST1_RTX (DFmode));
+		  emit_use (gen_rtx_REG (DFmode, regno));
+		  regno++;
+		}
+	      else
+		{
+		  emit_move_insn (gen_rtx_REG (SFmode, regno),
+				  CONST1_RTX (SFmode));
+		  emit_use (gen_rtx_REG (SFmode, regno));
+		}
 	    }
 	  else
 	    {
-	      emit_move_insn (gen_rtx_REG (SFmode, regno),
-			      CONST1_RTX (SFmode));
-	      emit_use (gen_rtx_REG (SFmode, regno));
+	      emit_move_insn (gen_rtx_REG (SImode, regno), clearing_reg);
+	      emit_use (gen_rtx_REG (SImode, regno));
 	    }
-	}
-      else
-	{
-	  emit_move_insn (gen_rtx_REG (SImode, regno), clearing_reg);
-	  emit_use (gen_rtx_REG (SImode, regno));
 	}
     }
 }
@@ -26397,7 +26458,8 @@ thumb1_expand_prologue (void)
 void
 cmse_nonsecure_entry_clear_before_return (void)
 {
-  int regno, maxregno = TARGET_HARD_FLOAT ? LAST_VFP_REGNUM : IP_REGNUM;
+  bool clear_vfpregs = TARGET_HARD_FLOAT || TARGET_HAVE_FPCXT_CMSE;
+  int regno, maxregno = clear_vfpregs ? LAST_VFP_REGNUM : IP_REGNUM;
   uint32_t padding_bits_to_clear = 0;
   auto_sbitmap to_clear_bitmap (maxregno + 1);
   rtx r1_reg, result_rtl, clearing_reg = NULL_RTX;
@@ -26409,7 +26471,7 @@ cmse_nonsecure_entry_clear_before_return (void)
 
   /* If we are not dealing with -mfloat-abi=soft we will need to clear VFP
      registers.  */
-  if (TARGET_HARD_FLOAT)
+  if (clear_vfpregs)
     {
       int float_bits = D7_VFP_REGNUM - FIRST_VFP_REGNUM + 1;
 
@@ -26438,7 +26500,9 @@ cmse_nonsecure_entry_clear_before_return (void)
 	continue;
       if (IN_RANGE (regno, IP_REGNUM, PC_REGNUM))
 	continue;
-      if (call_used_or_fixed_reg_p (regno))
+      if (call_used_or_fixed_reg_p (regno)
+	  && (!IN_RANGE (regno, FIRST_VFP_REGNUM, LAST_VFP_REGNUM)
+	      || TARGET_HARD_FLOAT))
 	bitmap_set_bit (to_clear_bitmap, regno);
     }
 

@@ -1637,6 +1637,42 @@
    (set_attr "type" "load_4")]
 )
 
+;; The operands are validated through the clear_multiple_operation
+;; match_parallel predicate rather than through constraints so enable it only
+;; after reload.
+(define_insn "*clear_vfp_multiple"
+  [(match_parallel 0 "clear_vfp_multiple_operation"
+     [(unspec_volatile [(const_int 0)]
+		       VUNSPEC_VSCCLRM_VPR)])]
+  "TARGET_HAVE_FPCXT_CMSE && use_cmse && reload_completed"
+  {
+    int num_regs = XVECLEN (operands[0], 0);
+    char pattern[30];
+    const char *regname;
+    rtx reg;
+
+    strcpy (pattern, \"vscclrm%?\\t{%|\");
+    if (num_regs > 1)
+      {
+	reg = XEXP (XVECEXP (operands[0], 0, 1), 0);
+	strcat (pattern, reg_names[REGNO (reg)]);
+	if (num_regs > 2)
+	  {
+	    strcat (pattern, \"-%|\");
+	    reg = XEXP (XVECEXP (operands[0], 0, num_regs - 1), 0);
+	    strcat (pattern, reg_names[REGNO (reg)]);
+	  }
+	strcat (pattern, \", \");
+      }
+
+    strcat (pattern, \"VPR}\");
+    output_asm_insn (pattern, operands);
+    return \"\";
+  }
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "mov_reg")]
+)
+
 (define_insn_and_split "*cmpsf_split_vfp"
   [(set (reg:CCFP CC_REGNUM)
 	(compare:CCFP (match_operand:SF 0 "s_register_operand"  "t")
