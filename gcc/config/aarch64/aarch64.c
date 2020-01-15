@@ -15343,6 +15343,34 @@ aarch64_declare_function_name (FILE *stream, const char* name,
   /* Don't forget the type directive for ELF.  */
   ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "function");
   ASM_OUTPUT_LABEL (stream, name);
+
+  cfun->machine->label_is_assembled = true;
+}
+
+/* Implement PRINT_PATCHABLE_FUNCTION_ENTRY.  Check if the patch area is after
+   the function label and emit a BTI if necessary.  */
+
+void
+aarch64_print_patchable_function_entry (FILE *file,
+					unsigned HOST_WIDE_INT patch_area_size,
+					bool record_p)
+{
+  if (cfun->machine->label_is_assembled
+      && aarch64_bti_enabled ()
+      && !cgraph_node::get (cfun->decl)->only_called_directly_p ())
+    {
+      /* Remove the BTI that follows the patch area and insert a new BTI
+	 before the patch area right after the function label.  */
+      rtx_insn *insn = next_real_nondebug_insn (get_insns ());
+      if (insn
+	  && INSN_P (insn)
+	  && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
+	  && XINT (PATTERN (insn), 1) == UNSPECV_BTI_C)
+	delete_insn (insn);
+      asm_fprintf (file, "\thint\t34 // bti c\n");
+    }
+
+  default_print_patchable_function_entry (file, patch_area_size, record_p);
 }
 
 /* Implement ASM_OUTPUT_DEF_FROM_DECLS.  Output .variant_pcs for aliases.  */
@@ -18952,6 +18980,9 @@ aarch64_run_selftests (void)
 
 #undef TARGET_ASM_TRAMPOLINE_TEMPLATE
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE aarch64_asm_trampoline_template
+
+#undef TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY
+#define TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY aarch64_print_patchable_function_entry
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST aarch64_build_builtin_va_list

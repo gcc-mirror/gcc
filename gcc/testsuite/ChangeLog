@@ -1,3 +1,12 @@
+2020-01-29  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backport from mainline
+	2020-01-21  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/92424
+	* gcc.target/aarch64/pr92424-2.c: New test.
+	* gcc.target/aarch64/pr92424-3.c: New test.
+
 2020-01-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/i386/pr91298-1.c: xfail on Solaris/x86 with native

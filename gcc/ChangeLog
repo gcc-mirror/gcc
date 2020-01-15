@@ -1,3 +1,16 @@
+2020-01-29  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backport from mainline
+	2020-01-21  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/92424
+	* config/aarch64/aarch64.c (aarch64_declare_function_name): Set
+	cfun->machine->label_is_assembled.
+	(aarch64_print_patchable_function_entry): New.
+	(TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY): Define.
+	* config/aarch64/aarch64.h (struct machine_function): New field,
+	label_is_assembled.
+
 2020-01-27  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR target/92692
