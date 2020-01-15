@@ -11536,7 +11536,7 @@ package body Sem_Util is
          Node := First (L);
 
          loop
-            if Nkind (Node) /= N_Null_Statement then
+            if not Nkind_In (Node, N_Null_Statement, N_Call_Marker) then
                return True;
             end if;
 
@@ -11547,6 +11547,91 @@ package body Sem_Util is
 
       return False;
    end Has_Non_Null_Statements;
+
+   ---------------------------------
+   -- Side_Effect_Free_Statements --
+   ---------------------------------
+
+   function Side_Effect_Free_Statements (L : List_Id) return Boolean is
+      Node : Node_Id;
+
+   begin
+      if Is_Non_Empty_List (L) then
+         Node := First (L);
+
+         loop
+            case Nkind (Node) is
+               when N_Null_Statement | N_Call_Marker | N_Raise_xxx_Error =>
+                  null;
+               when N_Object_Declaration =>
+                  if Present (Expression (Node))
+                    and then not Side_Effect_Free (Expression (Node))
+                  then
+                     return False;
+                  end if;
+
+               when others =>
+                  return False;
+            end case;
+
+            Next (Node);
+            exit when Node = Empty;
+         end loop;
+      end if;
+
+      return True;
+   end Side_Effect_Free_Statements;
+
+   ---------------------------
+   -- Side_Effect_Free_Loop --
+   ---------------------------
+
+   function Side_Effect_Free_Loop (N : Node_Id) return Boolean is
+      Scheme : Node_Id;
+      Spec   : Node_Id;
+      Subt   : Node_Id;
+
+   begin
+      --  If this is not a loop (e.g. because the loop has been rewritten),
+      --  then return false.
+
+      if Nkind (N) /= N_Loop_Statement then
+         return False;
+      end if;
+
+      --  First check the statements
+
+      if Side_Effect_Free_Statements (Statements (N)) then
+
+         --  Then check the loop condition/indexes
+
+         if Present (Iteration_Scheme (N)) then
+            Scheme := Iteration_Scheme (N);
+
+            if Present (Condition (Scheme))
+              or else Present (Iterator_Specification (Scheme))
+            then
+               return False;
+            elsif Present (Loop_Parameter_Specification (Scheme)) then
+               Spec := Loop_Parameter_Specification (Scheme);
+               Subt := Discrete_Subtype_Definition (Spec);
+
+               if Present (Subt) then
+                  if Nkind (Subt) = N_Range then
+                     return Side_Effect_Free (Low_Bound (Subt))
+                       and then Side_Effect_Free (High_Bound (Subt));
+                  else
+                     --  subtype indication
+
+                     return True;
+                  end if;
+               end if;
+            end if;
+         end if;
+      end if;
+
+      return False;
+   end Side_Effect_Free_Loop;
 
    ----------------------------------
    -- Has_Non_Trivial_Precondition --
