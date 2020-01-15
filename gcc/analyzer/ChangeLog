@@ -1,3 +1,7 @@
+2020-01-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (class impl_region_model_context): Fix comment.
+
 2020-01-14  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93212

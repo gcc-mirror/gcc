@@ -64,7 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static int readability_comparator (const void *p1, const void *p2);
 
-/* class impl_region_model_context : public region_model_context, public log_user.  */
+/* class impl_region_model_context : public region_model_context.  */
 
 impl_region_model_context::
 impl_region_model_context (exploded_graph &eg,
