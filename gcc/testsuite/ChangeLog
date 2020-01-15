@@ -1,6 +1,17 @@
 2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
 2020-01-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
 
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-13.c: Add check for
+	VPUSH and VPOP and update expectation for VSCCLRM.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-8.c: Likewise.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* gcc.target/arm/cmse/cmse-1.c: Add check for PUSH and POP and update
 	CLRM check.
 	* gcc.target/arm/cmse/cmse-14.c: Likewise.

@@ -9,9 +9,11 @@
 /* { dg-final { scan-assembler "lsrs\tr4, r4, #1" } } */
 /* { dg-final { scan-assembler "lsls\tr4, r4, #1" } } */
 /* { dg-final { scan-assembler "push\t\{r4, r5, r6, r7, r8, r9, r10, fp\}" } } */
+/* { dg-final { scan-assembler "vpush.64\t\{d8, d9, d10, d11, d12, d13, d14, d15\}" } } */
 /* { dg-final { scan-assembler "clrm\t\{r0, r1, r2, r3, r5, r6, r7, r8, r9, r10, fp, ip, APSR\}" } } */
 /* { dg-final { scan-assembler-not "vmov\.f64\td0, #1\.0" } } */
-/* { dg-final { scan-assembler "vscclrm\t\{s2-s15, VPR\}" } } */
+/* { dg-final { scan-assembler "vscclrm\t\{s2-s31, VPR\}" } } */
+/* { dg-final { scan-assembler "vldm\tsp!, \{d8-d15\}" } } */
 /* { dg-final { scan-assembler "pop\t\{r4, r5, r6, r7, r8, r9, r10, fp\}" } } */
 
 /* Now we check that we use the correct intrinsic to call.  */

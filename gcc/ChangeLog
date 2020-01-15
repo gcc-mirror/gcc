@@ -1,6 +1,15 @@
 2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
 2020-01-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
 
+	* config/arm/arm.c (vfp_emit_fstmd): Declare early.
+	(arm_emit_vfp_multi_reg_pop): Likewise.
+	(cmse_nonsecure_call_inline_register_clear): Abstract number of VFP
+	registers to clear in max_fp_regno.  Emit VPUSH and VPOP to save and
+	restore callee-saved VFP registers.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* config/arm/arm.c (arm_emit_multi_reg_pop): Declare early.
 	(cmse_nonsecure_call_clear_caller_saved): Rename into ...
 	(cmse_nonsecure_call_inline_register_clear): This.  Save and clear

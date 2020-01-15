@@ -188,6 +188,8 @@ static void emit_constant_insn (rtx cond, rtx pattern);
 static rtx_insn *emit_set_insn (rtx, rtx);
 static rtx emit_multi_reg_push (unsigned long, unsigned long);
 static void arm_emit_multi_reg_pop (unsigned long);
+static int vfp_emit_fstmd (int, int);
+static void arm_emit_vfp_multi_reg_pop (int, int, rtx);
 static int arm_arg_partial_bytes (cumulative_args_t,
 				  const function_arg_info &);
 static rtx arm_function_arg (cumulative_args_t, const function_arg_info &);
@@ -18287,8 +18289,10 @@ cmse_nonsecure_call_inline_register_clear (void)
 	  unsigned address_regnum, regno;
 	  unsigned max_int_regno
 	    = clear_callee_saved ? IP_REGNUM : LAST_ARG_REGNUM;
+	  unsigned max_fp_regno
+	    = TARGET_HAVE_FPCXT_CMSE ? LAST_VFP_REGNUM : D7_VFP_REGNUM;
 	  unsigned maxregno
-	    = TARGET_HARD_FLOAT_ABI ? D7_VFP_REGNUM : max_int_regno;
+	    = TARGET_HARD_FLOAT_ABI ? max_fp_regno : max_int_regno;
 	  auto_sbitmap to_clear_bitmap (maxregno + 1);
 	  rtx_insn *seq;
 	  rtx pat, call, unspec, clearing_reg, ip_reg, shift;
@@ -18336,7 +18340,7 @@ cmse_nonsecure_call_inline_register_clear (void)
 
 	      bitmap_clear (float_bitmap);
 	      bitmap_set_range (float_bitmap, FIRST_VFP_REGNUM,
-				D7_VFP_REGNUM - FIRST_VFP_REGNUM + 1);
+				max_fp_regno - FIRST_VFP_REGNUM + 1);
 	      bitmap_ior (to_clear_bitmap, to_clear_bitmap, float_bitmap);
 	    }
 
@@ -18413,6 +18417,16 @@ cmse_nonsecure_call_inline_register_clear (void)
 	      /* Disable frame debug info in push because it needs to be
 		 disabled for pop (see below).  */
 	      RTX_FRAME_RELATED_P (push_insn) = 0;
+
+	      /* Save VFP callee-saved registers.  */
+	      if (TARGET_HARD_FLOAT_ABI)
+		{
+		  vfp_emit_fstmd (D7_VFP_REGNUM + 1,
+				  (max_fp_regno - D7_VFP_REGNUM) / 2);
+		  /* Disable frame debug info in push because it needs to be
+		     disabled for vpop (see below).  */
+		  RTX_FRAME_RELATED_P (get_last_insn ()) = 0;
+		}
 	    }
 
 	  /* Clear caller-saved registers that leak before doing a non-secure
@@ -18427,9 +18441,25 @@ cmse_nonsecure_call_inline_register_clear (void)
 
 	  if (TARGET_HAVE_FPCXT_CMSE)
 	    {
-	      rtx_insn *next, *pop_insn, *after = insn;
+	      rtx_insn *next, *last, *pop_insn, *after = insn;
 
 	      start_sequence ();
+
+	      /* Restore VFP callee-saved registers.  */
+	      if (TARGET_HARD_FLOAT_ABI)
+		{
+		  int nb_callee_saved_vfp_regs =
+		    (max_fp_regno - D7_VFP_REGNUM) / 2;
+		  arm_emit_vfp_multi_reg_pop (D7_VFP_REGNUM + 1,
+					      nb_callee_saved_vfp_regs,
+					      stack_pointer_rtx);
+		  /* Disable frame debug info in vpop because the SP adjustment
+		     is made using a CFA adjustment note while CFA used is
+		     sometimes R7.  This then causes an assert failure in the
+		     CFI note creation code.  */
+		  RTX_FRAME_RELATED_P (get_last_insn ()) = 0;
+		}
+
 	      arm_emit_multi_reg_pop (callee_saved_mask);
 	      pop_insn = get_last_insn ();
 
@@ -18446,13 +18476,15 @@ cmse_nonsecure_call_inline_register_clear (void)
 		 not reliable.  */
 	      RTX_FRAME_RELATED_P (pop_insn) = 0;
 
+	      seq = get_insns ();
+	      last = get_last_insn ();
 	      end_sequence ();
 
-	      emit_insn_after (pop_insn, after);
+	      emit_insn_after (seq, after);
 
 	      /* Skip pop we have just inserted after nonsecure call, we know
 		 it does not contain a nonsecure call.  */
-	      insn = pop_insn;
+	      insn = last;
 	    }
 	}
     }
