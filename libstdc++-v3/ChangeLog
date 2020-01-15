@@ -1,3 +1,22 @@
+2020-01-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93267
+	* include/bits/iterator_concepts.h (__max_diff_type, __max_size_type):
+	Move here from <bits/range_access.h> and define using __int128 when
+	available.
+	(__is_integer_like, __is_signed_integer_like): Move here from
+	<bits/range_access.h>.
+	(weakly_incrementable): Use __is_signed_integer_like.
+	* include/bits/range_access.h (__max_diff_type, __max_size_type)
+	(__is_integer_like, __is_signed_integer_like): Move to
+	<bits/iterator_concepts.h>.
+	(__make_unsigned_like_t): Move here from <ranges>.
+	* include/std/ranges (__make_unsigned_like_t): Move to
+	<bits/range_access.h>.
+	(iota_view): Replace using-directive with using-declarations.
+	* testsuite/std/ranges/iota/93267.cc: New test.
+	* testsuite/std/ranges/iota_view.cc: Move to new 'iota' sub-directory.
+
 2020-01-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/93244
