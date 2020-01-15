@@ -1,5 +1,11 @@
 2020-01-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/93262
+	* tree-ssa-dse.c (maybe_trim_memstar_call): For *_chk builtins,
+	perform head trimming only if the last argument is constant,
+	either all ones, or larger or equal to head trim, in the latter
+	case decrease the last argument by head_trim.
+
 	PR tree-optimization/93249
 	* tree-ssa-dse.c: Include builtins.h and gimple-fold.h.
 	(maybe_trim_memstar_call): Move head_trim and tail_trim vars to

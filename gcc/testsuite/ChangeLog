@@ -1,5 +1,10 @@
 2020-01-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/93262
+	* gcc.c-torture/execute/builtins/pr93262-chk.c: New test.
+	* gcc.c-torture/execute/builtins/pr93262-chk-lib.c: New file.
+	* gcc.c-torture/execute/builtins/pr93262-chk.x: New file.
+
 	PR tree-optimization/93249
 	* gcc.c-torture/execute/pr93249.c: New test.
 

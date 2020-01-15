@@ -508,6 +508,22 @@ maybe_trim_memstar_call (ao_ref *ref, sbitmap live, gimple *stmt)
       /* Head trimming requires adjusting all the arguments.  */
       if (head_trim)
 	{
+	  /* For __*_chk need to adjust also the last argument.  */
+	  if (gimple_call_num_args (stmt) == 4)
+	    {
+	      tree size = gimple_call_arg (stmt, 3);
+	      if (!tree_fits_uhwi_p (size))
+		break;
+	      if (!integer_all_onesp (size))
+		{
+		  unsigned HOST_WIDE_INT sz = tree_to_uhwi (size);
+		  if (sz < (unsigned) head_trim)
+		    break;
+		  tree arg = wide_int_to_tree (TREE_TYPE (size),
+					       sz - head_trim);
+		  gimple_call_set_arg (stmt, 3, arg);
+		}
+	    }
 	  tree *dst = gimple_call_arg_ptr (stmt, 0);
 	  increment_start_addr (stmt, dst, head_trim);
 	  tree *src = gimple_call_arg_ptr (stmt, 1);
@@ -527,6 +543,22 @@ maybe_trim_memstar_call (ao_ref *ref, sbitmap live, gimple *stmt)
       /* Head trimming requires adjusting all the arguments.  */
       if (head_trim)
 	{
+	  /* For __*_chk need to adjust also the last argument.  */
+	  if (gimple_call_num_args (stmt) == 4)
+	    {
+	      tree size = gimple_call_arg (stmt, 3);
+	      if (!tree_fits_uhwi_p (size))
+		break;
+	      if (!integer_all_onesp (size))
+		{
+		  unsigned HOST_WIDE_INT sz = tree_to_uhwi (size);
+		  if (sz < (unsigned) head_trim)
+		    break;
+		  tree arg = wide_int_to_tree (TREE_TYPE (size),
+					       sz - head_trim);
+		  gimple_call_set_arg (stmt, 3, arg);
+		}
+	    }
 	  tree *dst = gimple_call_arg_ptr (stmt, 0);
 	  increment_start_addr (stmt, dst, head_trim);
 	  decrement_count (stmt, head_trim);
