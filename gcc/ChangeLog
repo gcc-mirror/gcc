@@ -1,3 +1,8 @@
+2020-01-15  Martin Liska  <mliska@suse.cz>
+
+	* ipa-profile.c (ipa_profile_read_edge_summary): Do not allow
+	2 calls of streamer_read_hwi in a function call.
+
 2020-01-15  Richard Biener  <rguenther@suse.de>
 
 	* alias.c (record_alias_subset): Avoid redundant work when
