@@ -1,3 +1,12 @@
+2020-01-15  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-04-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/89358
+	* ipa-devirt.c (skip_in_fields_list_p): New.
+	(odr_types_equivalent_p): Use it.
+
 2020-01-10  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline

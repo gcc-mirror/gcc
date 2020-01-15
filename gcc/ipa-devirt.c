@@ -1241,6 +1241,24 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
     inform (loc_t2, "the incompatible type is defined here");
 }
 
+/* Return true if T should be ignored in TYPE_FIELDS for ODR comparsion.  */
+
+static bool
+skip_in_fields_list_p (tree t)
+{
+  if (TREE_CODE (t) != FIELD_DECL)
+    return true;
+  /* C++ FE introduces zero sized fields depending on -std setting, see
+     PR89358.  */
+  if (DECL_SIZE (t)
+      && integer_zerop (DECL_SIZE (t))
+      && DECL_ARTIFICIAL (t)
+      && DECL_IGNORED_P (t)
+      && !DECL_NAME (t))
+    return true;
+  return false;
+}
+
 /* Compare T1 and T2, report ODR violations if WARN is true and set
    WARNED to true if anything is reported.  Return true if types match.
    If true is returned, the types are also compatible in the sense of
@@ -1525,9 +1543,9 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 		 f1 = TREE_CHAIN (f1), f2 = TREE_CHAIN (f2))
 	      {
 		/* Skip non-fields.  */
-		while (f1 && TREE_CODE (f1) != FIELD_DECL)
+		while (f1 && skip_in_fields_list_p (f1))
 		  f1 = TREE_CHAIN (f1);
-		while (f2 && TREE_CODE (f2) != FIELD_DECL)
+		while (f2 && skip_in_fields_list_p (f2))
 		  f2 = TREE_CHAIN (f2);
 		if (!f1 || !f2)
 		  break;

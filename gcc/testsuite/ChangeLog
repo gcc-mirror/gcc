@@ -1,3 +1,12 @@
+2020-01-15  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-04-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/89358
+	* g++.dg/lto/pr89358_0.C: New testcase.
+	* g++.dg/lto/pr89358_1.C: New testcase.
+
 2020-01-14  Joseph Myers  <joseph@codesourcery.com>
 
 	Backport from mainline:
