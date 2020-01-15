@@ -1,3 +1,8 @@
+2020-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-git-customization.sh: Handle output of older git which doesn't
+	print tags/ prefixes before branchpoint/gcc-.
+
 2010-01-15  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc-git-customization.sh: Explain why we want the user's
