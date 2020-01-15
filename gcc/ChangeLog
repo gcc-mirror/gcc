@@ -1,6 +1,21 @@
 2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
 2020-01-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
 
+	* config/arm/arm-protos.h (clear_operation_p): Declare.
+	* config/arm/arm.c (clear_operation_p): New function.
+	(cmse_clear_registers): Generate clear_multiple instruction pattern if
+	targeting Armv8.1-M Mainline or successor.
+	(output_return_instruction): Only output APSR register clearing if
+	Armv8.1-M Mainline instructions not available.
+	(thumb_exit): Likewise.
+	* config/arm/predicates.md (clear_multiple_operation): New predicate.
+	* config/arm/thumb2.md (clear_apsr): New define_insn.
+	(clear_multiple): Likewise.
+	* config/arm/unspecs.md (VUNSPEC_CLRM_APSR): New volatile unspec.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* config/arm/arm.c (fp_sysreg_names): Declare and define.
 	(use_return_insn): Also return false for Armv8.1-M Mainline.
 	(output_return_instruction): Skip FPSCR clearing if Armv8.1-M

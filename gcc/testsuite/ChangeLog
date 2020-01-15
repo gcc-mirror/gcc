@@ -1,6 +1,44 @@
 2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
 2020-01-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
 
+	* gcc.target/arm/cmse/bitfield-1.c: Add check for CLRM.
+	* gcc.target/arm/cmse/bitfield-2.c: Likewise.
+	* gcc.target/arm/cmse/bitfield-3.c: Likewise.
+	* gcc.target/arm/cmse/struct-1.c: Likewise.
+	* gcc.target/arm/cmse/cmse-14.c: Likewise.
+	* gcc.target/arm/cmse/cmse-1.c: Likewise.  Restrict checks for Armv8-M
+	GPR clearing when CLRM is not available.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-4.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-6.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-9.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-5.c: likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-7.c: likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-8.c: likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/union-1.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/union-2.c: Likewise.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* gcc.target/arm/cmse/bitfield-1.c: add checks for VSTR and VLDR.
 	* gcc.target/arm/cmse/bitfield-2.c: Likewise.
 	* gcc.target/arm/cmse/bitfield-3.c: Likewise.

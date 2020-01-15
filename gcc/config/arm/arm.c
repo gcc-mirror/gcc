@@ -13709,6 +13709,70 @@ ldm_stm_operation_p (rtx op, bool load, machine_mode mode,
   return true;
 }
 
+/* Checks whether OP is a valid parallel pattern for a CLRM insn.  To be a
+   valid CLRM pattern, OP must have the following form:
+
+   [(set (reg:SI <N>) (const_int 0))
+    (set (reg:SI <M>) (const_int 0))
+    ...
+    (unspec_volatile [(const_int 0)]
+		     VUNSPEC_CLRM_APSR)
+    (clobber (reg:CC CC_REGNUM))
+   ]
+
+   Any number (including 0) of set expressions is valid, the volatile unspec is
+   optional.  All registers but SP and PC are allowed and registers must be in
+   strict increasing order.  */
+
+bool
+clear_operation_p (rtx op)
+{
+  HOST_WIDE_INT i;
+  unsigned regno, last_regno;
+  rtx elt, reg, zero;
+  machine_mode mode;
+  HOST_WIDE_INT count = XVECLEN (op, 0);
+
+  for (i = 0; i < count; i++)
+    {
+      elt = XVECEXP (op, 0, i);
+
+      if (GET_CODE (elt) == UNSPEC_VOLATILE)
+	{
+	  if (XINT (elt, 1) != VUNSPEC_CLRM_APSR
+	      || XVECLEN (elt, 0) != 1
+	      || XVECEXP (elt, 0, 0) != CONST0_RTX (SImode)
+	      || i != count - 2)
+	    return false;
+
+	  continue;
+	}
+
+      if (GET_CODE (elt) == CLOBBER)
+	continue;
+
+      if (GET_CODE (elt) != SET)
+	return false;
+
+      reg = SET_DEST (elt);
+      regno = REGNO (reg);
+      mode = GET_MODE (reg);
+      zero = SET_SRC (elt);
+
+      if (!REG_P (reg)
+	  || GET_MODE (reg) != SImode
+	  || regno == SP_REGNUM
+	  || regno == PC_REGNUM
+	  || (i != 0 && regno <= last_regno)
+	  || zero != CONST0_RTX (SImode))
+	return false;
+
+      last_regno = REGNO (reg);
+    }
+
+  return true;
+}
+
 /* Return true iff it would be profitable to turn a sequence of NOPS loads
    or stores (depending on IS_STORE) into a load-multiple or store-multiple
    instruction.  ADD_OFFSET is nonzero if the base address register needs
@@ -18039,6 +18103,62 @@ cmse_clear_registers (sbitmap to_clear_bitmap, uint32_t *padding_bits_to_clear,
 
   /* Clear full registers.  */
 
+  if (TARGET_HAVE_FPCXT_CMSE)
+    {
+      rtvec vunspec_vec;
+      int i, j, k, nb_regs;
+      rtx use_seq, par, reg, set, vunspec;
+      int to_clear_bitmap_size = SBITMAP_SIZE (to_clear_bitmap);
+      auto_sbitmap core_regs_bitmap (to_clear_bitmap_size);
+      auto_sbitmap to_clear_core_bitmap (to_clear_bitmap_size);
+
+      /* Get set of core registers to clear.  */
+      bitmap_clear (core_regs_bitmap);
+      bitmap_set_range (core_regs_bitmap, R0_REGNUM,
+			IP_REGNUM - R0_REGNUM + 1);
+      bitmap_and (to_clear_core_bitmap, to_clear_bitmap,
+		  core_regs_bitmap);
+      gcc_assert (!bitmap_empty_p (to_clear_core_bitmap));
+
+      if (bitmap_empty_p (to_clear_core_bitmap))
+	return;
+
+      /* Create clrm RTX pattern.  */
+      nb_regs = bitmap_count_bits (to_clear_core_bitmap);
+      par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (nb_regs + 2));
+
+      /* Insert core register clearing RTX in the pattern.  */
+      start_sequence ();
+      for (j = 0, i = minregno; j < nb_regs; i++)
+	{
+	  if (!bitmap_bit_p (to_clear_core_bitmap, i))
+	    continue;
+
+	  reg = gen_rtx_REG (SImode, i);
+	  set = gen_rtx_SET (reg, const0_rtx);
+	  XVECEXP (par, 0, j++) = set;
+	  emit_use (reg);
+	}
+
+      /* Insert APSR register clearing RTX in the pattern
+       * along with clobbering CC.  */
+      vunspec_vec = gen_rtvec (1, gen_int_mode (0, SImode));
+      vunspec = gen_rtx_UNSPEC_VOLATILE (SImode, vunspec_vec,
+					 VUNSPEC_CLRM_APSR);
+
+      XVECEXP (par, 0, j++) = vunspec;
+
+      rtx ccreg = gen_rtx_REG (CCmode, CC_REGNUM);
+      rtx clobber = gen_rtx_CLOBBER (VOIDmode, ccreg);
+      XVECEXP (par, 0, j) = clobber;
+
+      use_seq = get_insns ();
+      end_sequence ();
+
+      emit_insn_after (use_seq, emit_insn (par));
+      minregno = FIRST_VFP_REGNUM;
+    }
+
   /* If not marked for clearing, clearing_reg already does not contain
      any secret.  */
   if (clearing_regno <= maxregno
@@ -20702,40 +20822,42 @@ output_return_instruction (rtx operand, bool really_return, bool reverse,
 	default:
 	  if (IS_CMSE_ENTRY (func_type))
 	    {
-	      /* Check if we have to clear the 'GE bits' which is only used if
-		 parallel add and subtraction instructions are available.  */
-	      if (TARGET_INT_SIMD)
-		snprintf (instr, sizeof (instr),
-			  "msr%s\tAPSR_nzcvqg, %%|lr", conditional);
-	      else
-		snprintf (instr, sizeof (instr),
-			  "msr%s\tAPSR_nzcvq, %%|lr", conditional);
-
-	      output_asm_insn (instr, & operand);
-	      /* Do not clear FPSCR if targeting Armv8.1-M Mainline, VLDR takes
-		 care of it.  */
-	      if (TARGET_HARD_FLOAT && ! TARGET_HAVE_FPCXT_CMSE)
+	      /* For Armv8.1-M, this is cleared as part of the CLRM instruction
+		 emitted by cmse_nonsecure_entry_clear_before_return () and the
+		 VSTR/VLDR instructions in the prologue and epilogue.  */
+	      if (!TARGET_HAVE_FPCXT_CMSE)
 		{
-		  /* Clear the cumulative exception-status bits (0-4,7) and the
-		     condition code bits (28-31) of the FPSCR.  We need to
-		     remember to clear the first scratch register used (IP) and
-		     save and restore the second (r4).  */
-		  snprintf (instr, sizeof (instr), "push\t{%%|r4}");
+		  /* Check if we have to clear the 'GE bits' which is only used if
+		     parallel add and subtraction instructions are available.  */
+		  if (TARGET_INT_SIMD)
+		    snprintf (instr, sizeof (instr),
+			      "msr%s\tAPSR_nzcvqg, %%|lr", conditional);
+		  else
+		    snprintf (instr, sizeof (instr),
+			      "msr%s\tAPSR_nzcvq, %%|lr", conditional);
+
 		  output_asm_insn (instr, & operand);
-		  snprintf (instr, sizeof (instr), "vmrs\t%%|ip, fpscr");
-		  output_asm_insn (instr, & operand);
-		  snprintf (instr, sizeof (instr), "movw\t%%|r4, #65376");
-		  output_asm_insn (instr, & operand);
-		  snprintf (instr, sizeof (instr), "movt\t%%|r4, #4095");
-		  output_asm_insn (instr, & operand);
-		  snprintf (instr, sizeof (instr), "and\t%%|ip, %%|r4");
-		  output_asm_insn (instr, & operand);
-		  snprintf (instr, sizeof (instr), "vmsr\tfpscr, %%|ip");
-		  output_asm_insn (instr, & operand);
-		  snprintf (instr, sizeof (instr), "pop\t{%%|r4}");
-		  output_asm_insn (instr, & operand);
-		  snprintf (instr, sizeof (instr), "mov\t%%|ip, %%|lr");
-		  output_asm_insn (instr, & operand);
+		  /* Do not clear FPSCR if targeting Armv8.1-M Mainline, VLDR takes
+		     care of it.  */
+		  if (TARGET_HARD_FLOAT)
+		    {
+		      /* Clear the cumulative exception-status bits (0-4,7) and
+			 the condition code bits (28-31) of the FPSCR.  We need
+			 to remember to clear the first scratch register used
+			 (IP) and save and restore the second (r4).
+
+			 Important note: the length of the
+			 thumb2_cmse_entry_return insn pattern must account for
+			 the size of the below instructions.  */
+		      output_asm_insn ("push\t{%|r4}", & operand);
+		      output_asm_insn ("vmrs\t%|ip, fpscr", & operand);
+		      output_asm_insn ("movw\t%|r4, #65376", & operand);
+		      output_asm_insn ("movt\t%|r4, #4095", & operand);
+		      output_asm_insn ("and\t%|ip, %|r4", & operand);
+		      output_asm_insn ("vmsr\tfpscr, %|ip", & operand);
+		      output_asm_insn ("pop\t{%|r4}", & operand);
+		      output_asm_insn ("mov\t%|ip, %|lr", & operand);
+		    }
 		}
 	      snprintf (instr, sizeof (instr), "bxns\t%%|lr");
 	    }
@@ -22718,6 +22840,9 @@ arm_expand_prologue (void)
       saved_regs += 4;
       insn = emit_insn (gen_push_fpsysreg_insn (stack_pointer_rtx,
 						GEN_INT (FPCXTNS_ENUM)));
+      rtx dwarf = gen_rtx_SET (stack_pointer_rtx,
+			  plus_constant (Pmode, stack_pointer_rtx, -4));
+      add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
@@ -25134,8 +25259,11 @@ thumb_exit (FILE *f, int reg_containing_return_addr)
 
       if (IS_CMSE_ENTRY (arm_current_func_type ()))
 	{
-	  asm_fprintf (f, "\tmsr\tAPSR_nzcvq, %r\n",
-		       reg_containing_return_addr);
+	  /* For Armv8.1-M, this is cleared as part of the CLRM instruction
+	     emitted by cmse_nonsecure_entry_clear_before_return ().  */
+	  if (!TARGET_HAVE_FPCXT_CMSE)
+	    asm_fprintf (f, "\tmsr\tAPSR_nzcvq, %r\n",
+			 reg_containing_return_addr);
 	  asm_fprintf (f, "\tbxns\t%r\n", reg_containing_return_addr);
 	}
       else
@@ -25375,11 +25503,14 @@ thumb_exit (FILE *f, int reg_containing_return_addr)
          address.  It may therefore contain information that we might not want
 	 to leak, hence it must be cleared.  The value in R0 will never be a
 	 secret at this point, so it is safe to use it, see the clearing code
-	 in 'cmse_nonsecure_entry_clear_before_return'.  */
+	 in cmse_nonsecure_entry_clear_before_return ().  */
       if (reg_containing_return_addr != LR_REGNUM)
 	asm_fprintf (f, "\tmov\tlr, r0\n");
 
-      asm_fprintf (f, "\tmsr\tAPSR_nzcvq, %r\n", reg_containing_return_addr);
+      /* For Armv8.1-M, this is cleared as part of the CLRM instruction emitted
+	 by cmse_nonsecure_entry_clear_before_return ().  */
+      if (!TARGET_HAVE_FPCXT_CMSE)
+	asm_fprintf (f, "\tmsr\tAPSR_nzcvq, %r\n", reg_containing_return_addr);
       asm_fprintf (f, "\tbxns\t%r\n", reg_containing_return_addr);
     }
   else
@@ -26917,6 +27048,9 @@ arm_expand_epilogue (bool really_return)
 
 	  insn = emit_insn (gen_pop_fpsysreg_insn (stack_pointer_rtx,
 						   GEN_INT (FPCXTNS_ENUM)));
+	  rtx dwarf = gen_rtx_SET (stack_pointer_rtx,
+				  plus_constant (Pmode, stack_pointer_rtx, 4));
+	  add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
       }

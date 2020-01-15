@@ -240,6 +240,7 @@
   VUNSPEC_SPECULATION_BARRIER ; Represents an unconditional speculation barrier.
   VUNSPEC_APSR_WRITE     ; Represent writing the APSR.
   VUNSPEC_VSTR_VLDR	; Represent the vstr/vldr instruction.
+  VUNSPEC_CLRM_APSR	; Represent the clearing of APSR with clrm instruction.
 ])
 
 ;; Enumerators for NEON unspecs.
