@@ -99,8 +99,56 @@ void test01()
   VERIFY( !(us1 != cus2) );
 }
 
+void test02()
+{
+  std::unordered_set<int> us1 { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+  std::unordered_set<int> us2 { 0, 2, 4, 6, 8, 1, 3, 5, 7, 9 };
+
+  VERIFY( us1 == us2 );
+}
+
+struct Hash
+{
+  std::size_t
+  operator()(const std::pair<int, int>& p) const
+  { return p.first; }
+};
+
+struct Equal
+{
+  bool
+  operator()(const std::pair<int, int>& lhs, const std::pair<int, int>& rhs) const
+  { return lhs.first == rhs.first; }
+};
+
+void test03()
+{
+  std::unordered_set<std::pair<int, int>, Hash, Equal> us1
+  {
+    { 0, 0 }, { 1, 1 }, { 2, 2 }, { 3, 3 }, { 4, 4 },
+    { 5, 5 }, { 6, 6 }, { 7, 7 }, { 8, 8 }, { 9, 9 }
+  };
+  std::unordered_set<std::pair<int, int>, Hash, Equal> us2
+  {
+    { 5, 5 }, { 6, 6 }, { 7, 7 }, { 8, 8 }, { 9, 9 },
+    { 0, 0 }, { 1, 1 }, { 2, 2 }, { 3, 3 }, { 4, 4 }
+  };
+
+  VERIFY( us1 == us2 );
+
+  std::unordered_set<std::pair<int, int>, Hash, Equal> us3
+  {
+    { 5, -5 }, { 6, 6 }, { 7, 7 }, { 8, 8 }, { 9, 9 },
+    { 0, 0  }, { 1, 1 }, { 2, 2 }, { 3, 3 }, { 4, 4 }
+  };
+
+  VERIFY( us1 != us3 );
+}
+
 int main()
 {
   test01();
+  test02();
+  test03();
   return 0;
 }

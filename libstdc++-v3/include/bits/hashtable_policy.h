@@ -34,6 +34,7 @@
 #include <tuple>		// for std::tuple, std::forward_as_tuple
 #include <limits>		// for std::numeric_limits
 #include <bits/stl_algobase.h>	// for std::min.
+#include <bits/stl_algo.h>	// for std::is_permutation.
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -1816,65 +1817,6 @@ namespace __detail
   };
 
   /**
-   *  struct _Equality_base.
-   *
-   *  Common types and functions for class _Equality.
-   */
-  struct _Equality_base
-  {
-  protected:
-    template<typename _Uiterator>
-      static bool
-      _S_is_permutation(_Uiterator, _Uiterator, _Uiterator);
-  };
-
-  // See std::is_permutation in N3068.
-  template<typename _Uiterator>
-    bool
-    _Equality_base::
-    _S_is_permutation(_Uiterator __first1, _Uiterator __last1,
-		      _Uiterator __first2)
-    {
-      for (; __first1 != __last1; ++__first1, ++__first2)
-	if (!(*__first1 == *__first2))
-	  break;
-
-      if (__first1 == __last1)
-	return true;
-
-      _Uiterator __last2 = __first2;
-      std::advance(__last2, std::distance(__first1, __last1));
-
-      for (_Uiterator __it1 = __first1; __it1 != __last1; ++__it1)
-	{
-	  _Uiterator __tmp =  __first1;
-	  while (__tmp != __it1 && !bool(*__tmp == *__it1))
-	    ++__tmp;
-
-	  // We've seen this one before.
-	  if (__tmp != __it1)
-	    continue;
-
-	  std::ptrdiff_t __n2 = 0;
-	  for (__tmp = __first2; __tmp != __last2; ++__tmp)
-	    if (*__tmp == *__it1)
-	      ++__n2;
-
-	  if (!__n2)
-	    return false;
-
-	  std::ptrdiff_t __n1 = 0;
-	  for (__tmp = __it1; __tmp != __last1; ++__tmp)
-	    if (*__tmp == *__it1)
-	      ++__n1;
-
-	  if (__n1 != __n2)
-	    return false;
-	}
-      return true;
-    }
-
-  /**
    *  Primary class template  _Equality.
    *
    *  This is for implementing equality comparison for unordered
@@ -1889,7 +1831,7 @@ namespace __detail
 	   bool _Unique_keys = _Traits::__unique_keys::value>
     struct _Equality;
 
-  /// Specialization.
+  /// unordered_map and unordered_set specializations.
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
 	   typename _H1, typename _H2, typename _Hash,
@@ -1913,28 +1855,41 @@ namespace __detail
 	      _H1, _H2, _Hash, _RehashPolicy, _Traits, true>::
     _M_equal(const __hashtable& __other) const
     {
+      using __node_base = typename __hashtable::__node_base;
+      using __node_type = typename __hashtable::__node_type;
       const __hashtable* __this = static_cast<const __hashtable*>(this);
-
       if (__this->size() != __other.size())
 	return false;
 
       for (auto __itx = __this->begin(); __itx != __this->end(); ++__itx)
 	{
-	  const auto __ity = __other.find(_ExtractKey()(*__itx));
-	  if (__ity == __other.end() || !bool(*__ity == *__itx))
+	  std::size_t __ybkt = __other._M_bucket_index(__itx._M_cur);
+	  __node_base* __prev_n = __other._M_buckets[__ybkt];
+	  if (!__prev_n)
 	    return false;
+
+	  for (__node_type* __n = static_cast<__node_type*>(__prev_n->_M_nxt);;
+	       __n = __n->_M_next())
+	    {
+	      if (__n->_M_v() == *__itx)
+		break;
+
+	      if (!__n->_M_nxt
+		  || __other._M_bucket_index(__n->_M_next()) != __ybkt)
+		return false;
+	    }
 	}
+
       return true;
     }
 
-  /// Specialization.
+  /// unordered_multiset and unordered_multimap specializations.
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
 	   typename _H1, typename _H2, typename _Hash,
 	   typename _RehashPolicy, typename _Traits>
     struct _Equality<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 		     _H1, _H2, _Hash, _RehashPolicy, _Traits, false>
-    : public _Equality_base
     {
       using __hashtable = _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 				     _H1, _H2, _Hash, _RehashPolicy, _Traits>;
@@ -1952,25 +1907,51 @@ namespace __detail
 	      _H1, _H2, _Hash, _RehashPolicy, _Traits, false>::
     _M_equal(const __hashtable& __other) const
     {
+      using __node_base = typename __hashtable::__node_base;
+      using __node_type = typename __hashtable::__node_type;
       const __hashtable* __this = static_cast<const __hashtable*>(this);
-
       if (__this->size() != __other.size())
 	return false;
 
       for (auto __itx = __this->begin(); __itx != __this->end();)
 	{
-	  const auto __xrange = __this->equal_range(_ExtractKey()(*__itx));
-	  const auto __yrange = __other.equal_range(_ExtractKey()(*__itx));
+	  std::size_t __x_count = 1;
+	  auto __itx_end = __itx;
+	  for (++__itx_end; __itx_end != __this->end()
+		 && __this->key_eq()(_ExtractKey()(*__itx),
+				     _ExtractKey()(*__itx_end));
+	       ++__itx_end)
+	    ++__x_count;
 
-	  if (std::distance(__xrange.first, __xrange.second)
-	      != std::distance(__yrange.first, __yrange.second))
+	  std::size_t __ybkt = __other._M_bucket_index(__itx._M_cur);
+	  __node_base* __y_prev_n = __other._M_buckets[__ybkt];
+	  if (!__y_prev_n)
 	    return false;
 
-	  if (!_S_is_permutation(__xrange.first, __xrange.second,
-				 __yrange.first))
+	  __node_type* __y_n = static_cast<__node_type*>(__y_prev_n->_M_nxt);
+	  for (;; __y_n = __y_n->_M_next())
+	    {
+	      if (__this->key_eq()(_ExtractKey()(__y_n->_M_v()),
+				   _ExtractKey()(*__itx)))
+		break;
+
+	      if (!__y_n->_M_nxt
+		  || __other._M_bucket_index(__y_n->_M_next()) != __ybkt)
+		return false;
+	    }
+
+	  typename __hashtable::const_iterator __ity(__y_n);
+	  for (auto __ity_end = __ity; __ity_end != __other.end(); ++__ity_end)
+	    if (--__x_count == 0)
+	      break;
+
+	  if (__x_count != 0)
 	    return false;
 
-	  __itx = __xrange.second;
+	  if (!std::is_permutation(__itx, __itx_end, __ity))
+	    return false;
+
+	  __itx = __itx_end;
 	}
       return true;
     }

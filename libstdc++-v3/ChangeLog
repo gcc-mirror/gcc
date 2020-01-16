@@ -1,3 +1,16 @@
+2020-01-16  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/91263
+	* include/bits/hashtable.h (_Hashtable<>): Make _Equality<> friend.
+	* include/bits/hashtable_policy.h: Include <bits/stl_algo.h>.
+	(_Equality_base): Remove.
+	(_Equality<>::_M_equal): Review implementation. Use
+	std::is_permutation.
+	* testsuite/23_containers/unordered_multiset/operators/1.cc
+	(Hash, Equal, test02, test03): New.
+	* testsuite/23_containers/unordered_set/operators/1.cc
+	(Hash, Equal, test02, test03): New.
+
 2020-01-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/93267
