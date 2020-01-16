@@ -3427,7 +3427,8 @@ estimate_loops (void)
 {
   auto_bitmap tovisit;
   basic_block bb;
-  sreal max_cyclic_prob = (sreal)1 - (sreal)1 / param_max_predicted_iterations;
+  sreal max_cyclic_prob = (sreal)1
+			   - (sreal)1 / (param_max_predicted_iterations + 1);
 
   /* Start by estimating the frequencies in the loops.  */
   if (number_of_loops (cfun) > 1)

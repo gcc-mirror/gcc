@@ -1,5 +1,10 @@
 2020-01-16  Jan Hubicka  <hubicka@ucw.cz>
 
+	* params.opt (-param=max-predicted-iterations): Increase range from 0.
+	* predict.c (estimate_loops): Add 1 to param_max_predicted_iterations.
+
+2020-01-16  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-fnsummary.c (estimate_calls_size_and_time): Fix formating of
 	dump.
 	* params.opt: (max-predicted-iterations): Set bounds.
