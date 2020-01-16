@@ -8021,7 +8021,7 @@ package body Sem_Ch8 is
             --  limited-with clauses
 
             if From_Limited_With (T_Name)
-              and then Ekind (T_Name) in Incomplete_Kind
+              and then Is_Incomplete_Type (T_Name)
               and then Present (Non_Limited_View (T_Name))
               and then Is_Interface (Non_Limited_View (T_Name))
             then

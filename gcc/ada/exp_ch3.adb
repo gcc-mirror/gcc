@@ -5524,7 +5524,7 @@ package body Exp_Ch3 is
          --  limited-with'ed package, we need to use the nonlimited view in
          --  case it has tasks.
 
-         if Ekind (Desig_Typ) in Incomplete_Kind
+         if Is_Incomplete_Type (Desig_Typ)
            and then Present (Non_Limited_View (Desig_Typ))
          then
             Desig_Typ := Non_Limited_View (Desig_Typ);
