@@ -3129,6 +3129,13 @@ resolve_function (gfc_expr *expr)
 	  || sym->intmod_sym_id == GFC_ISYM_CAF_SEND))
     return true;
 
+  if (expr->ref)
+    {
+      gfc_error ("Unexpected junk after %qs at %L", expr->symtree->n.sym->name,
+		 &expr->where);
+      return false;
+    }
+
   if (sym && sym->attr.intrinsic
       && !gfc_resolve_intrinsic (sym, &expr->where))
     return false;
