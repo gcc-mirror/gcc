@@ -1,6 +1,13 @@
 2020-01-16  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::write_macros): Always write a set of
+	defs.
+	(module_state::read_macros): Adjust.
+	(module_state::read): Only read preprocessor for header unit.
+	(module_state::read_preprocessor): Assert am header.
+
+	gcc/cp/
 	* module.cc (module_state::{read,write}_counts): New.  Broken out
 	of ...
 	(module_state::{read,write}_config): ... here.

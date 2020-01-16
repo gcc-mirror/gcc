@@ -15353,7 +15353,7 @@ module_state::write_ordinary_maps (elf_out *to, location_map_info &info,
 
   filenames.release ();
 
-  sec.end (to, to->name (MOD_SNAME_PFX ".om"), crc_p);
+  sec.end (to, to->name (MOD_SNAME_PFX ".olm"), crc_p);
   dump.outdent ();
 }
 
@@ -15442,7 +15442,7 @@ module_state::write_macro_maps (elf_out *to, location_map_info &info,
   sec.u (offset);
   gcc_assert (macro_num == info.num_maps.second);
 
-  sec.end (to, to->name (MOD_SNAME_PFX ".mm"), crc_p);
+  sec.end (to, to->name (MOD_SNAME_PFX ".mlm"), crc_p);
   dump.outdent ();
 }
 
@@ -15451,7 +15451,7 @@ module_state::read_ordinary_maps ()
 {
   bytes_in sec;
 
-  if (!sec.begin (loc, from (), MOD_SNAME_PFX ".om"))
+  if (!sec.begin (loc, from (), MOD_SNAME_PFX ".olm"))
     return false;
   dump () && dump ("Reading ordinary location maps");
   dump.indent ();
@@ -15554,7 +15554,7 @@ module_state::read_macro_maps ()
 {
   bytes_in sec;
 
-  if (!sec.begin (loc, from (), MOD_SNAME_PFX ".mm"))
+  if (!sec.begin (loc, from (), MOD_SNAME_PFX ".mlm"))
     return false;
   dump () && dump ("Reading macro location maps");
   dump.indent ();
@@ -16095,77 +16095,74 @@ module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
   macros.create (100);
   cpp_forall_identifiers (reader, maybe_add_macro, &macros);
 
+  dump (dumper::MACRO) && dump ("No more than %u macros", macros.length ());
+
+  macros.qsort (macro_loc_cmp);
+
+  /* Write the defs */
+  bytes_out sec (to);
+  sec.begin ();
+
   unsigned count = 0;
-  if (macros.length ())
+  for (unsigned ix = macros.length (); ix--;)
     {
-      dump (dumper::MACRO) && dump ("No more than %u macros", macros.length ());
+      cpp_hashnode *node = macros[ix];
+      macro_import::slot &slot = (*macro_imports)[node->deferred - 1][0];
+      gcc_assert (!slot.get_module () && slot.get_defness ());
 
-      macros.qsort (macro_loc_cmp);
+      macro_export &mac = (*macro_exports)[slot.offset];
+      gcc_assert (!!(slot.get_defness () & macro_import::slot::L_UNDEF)
+		  == (mac.undef_loc != UNKNOWN_LOCATION)
+		  && !!(slot.get_defness () & macro_import::slot::L_DEF)
+		  == (mac.def != NULL));
 
-      /* Write the defs */
+      if (IDENTIFIER_KEYWORD_P (identifier (node)))
+	{
+	  warning_at (mac.def->line, 0,
+		      "not exporting %<#define %E%> as it is a keyword",
+		      identifier (node));
+	  slot.offset = 0;
+	  continue;
+	}
+
+      count++;
+      slot.offset = sec.pos;
+      dump (dumper::MACRO)
+	&& dump ("Writing macro %s%s%s %I at %u",
+		 slot.get_defness () & macro_import::slot::L_UNDEF
+		 ? "#undef" : "",
+		 slot.get_defness () == macro_import::slot::L_BOTH
+		 ? " & " : "",
+		 slot.get_defness () & macro_import::slot::L_DEF
+		 ? "#define" : "",
+		 identifier (node), slot.offset);
+      if (mac.undef_loc != UNKNOWN_LOCATION)
+	write_location (sec, mac.undef_loc);
+      if (mac.def)
+	write_define (sec, mac.def);
+    }
+  sec.end (to, to->name (MOD_SNAME_PFX ".def"), crc_p);
+
+  if (count)
+    {
+      /* Write the table.  */
       bytes_out sec (to);
       sec.begin ();
+      sec.u (count);
 
       for (unsigned ix = macros.length (); ix--;)
 	{
-	  cpp_hashnode *node = macros[ix];
+	  const cpp_hashnode *node = macros[ix];
 	  macro_import::slot &slot = (*macro_imports)[node->deferred - 1][0];
-	  gcc_assert (!slot.get_module () && slot.get_defness ());
 
-	  macro_export &mac = (*macro_exports)[slot.offset];
-	  gcc_assert (!!(slot.get_defness () & macro_import::slot::L_UNDEF)
-		      == (mac.undef_loc != UNKNOWN_LOCATION)
-		      && !!(slot.get_defness () & macro_import::slot::L_DEF)
-		      == (mac.def != NULL));
-
-	  if (IDENTIFIER_KEYWORD_P (identifier (node)))
+	  if (slot.offset)
 	    {
-	      warning_at (mac.def->line, 0,
-			  "not exporting %<#define %E%> as it is a keyword",
-			  identifier (node));
-	      slot.offset = 0;
-	      continue;
+	      sec.cpp_node (node);
+	      sec.u (slot.get_defness ());
+	      sec.u (slot.offset);
 	    }
-
-	  count++;
-	  slot.offset = sec.pos;
-	  dump (dumper::MACRO)
-	    && dump ("Writing macro %s%s%s %I at %u",
-		     slot.get_defness () & macro_import::slot::L_UNDEF
-		     ? "#undef" : "",
-		     slot.get_defness () == macro_import::slot::L_BOTH
-		     ? " & " : "",
-		     slot.get_defness () & macro_import::slot::L_DEF
-		     ? "#define" : "",
-		     identifier (node), slot.offset);
-	  if (mac.undef_loc != UNKNOWN_LOCATION)
-	    write_location (sec, mac.undef_loc);
-	  if (mac.def)
-	    write_define (sec, mac.def);
 	}
-      sec.end (to, to->name (MOD_SNAME_PFX ".def"), crc_p);
-
-      if (count)
-	{
-	  /* Write the table.  */
-	  bytes_out sec (to);
-	  sec.begin ();
-	  sec.u (count);
-
-	  for (unsigned ix = macros.length (); ix--;)
-	    {
-	      const cpp_hashnode *node = macros[ix];
-	      macro_import::slot &slot = (*macro_imports)[node->deferred - 1][0];
-
-	      if (slot.offset)
-		{
-		  sec.cpp_node (node);
-		  sec.u (slot.get_defness ());
-		  sec.u (slot.offset);
-		}
-	    }
-	  sec.end (to, to->name (MOD_SNAME_PFX ".mac"), crc_p);
-	}
+      sec.end (to, to->name (MOD_SNAME_PFX ".mac"), crc_p);
     }
 
   macros.release ();
@@ -16180,12 +16177,13 @@ module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
 bool
 module_state::read_macros ()
 {
-  /* Get the tbl section.  */
-  if (!slurp->macro_tbl.begin (loc, from (), MOD_SNAME_PFX ".mac"))
-    return false;
-
   /* Get the def section.  */
   if (!slurp->macro_defs.begin (loc, from (), MOD_SNAME_PFX ".def"))
+    return false;
+
+  /* Get the tbl section, if there are defs. */
+  if (slurp->macro_defs.more_p ()
+      && !slurp->macro_tbl.begin (loc, from (), MOD_SNAME_PFX ".mac"))
     return false;
 
   return true;
@@ -16754,8 +16752,8 @@ module_state::read_config (module_state_config &config)
      MOD_SNAME_PFX.imp      : import table
      MOD_SNAME_PFX.ent      : entity table
      MOD_SNAME_PFX.prt      : partitions table
-     MOD_SNAME_PFX.om       : ordinary locations
-     MOD_SNAME_PFX.mm       : macro locations
+     MOD_SNAME_PFX.olm      : ordinary line maps
+     MOD_SNAME_PFX.mlm      : macro line maps
      MOD_SNAME_PFX.def      : macro definitions
      MOD_SNAME_PFX.mac      : macro index
      MOD_SNAME_PFX.ini      : inits
@@ -17018,8 +17016,10 @@ module_state::read (int fd, int e, cpp_reader *reader)
   gcc_checking_assert (!slurp);
   if (read_initial (fd, e, reader))
     {
-      if (!cpp_get_options (reader)->preprocessed)
+      if (is_header ()
+	  && !cpp_get_options (reader)->preprocessed)
 	read_preprocessor ();
+
       if (!flag_preprocess_only)
 	read_language ();
     }
@@ -17104,18 +17104,14 @@ bool
 module_state::read_preprocessor ()
 {
   bool ok = true;
-  unsigned counts[MSC_HWM];
-
-  if (ok && !read_counts (counts))
-    ok = false;
+  gcc_assert (is_header ());
 
   // FIXME: Read imports' preprocessor
 
-  if (is_header ())
-    /* Record as a direct header.  */
-    bitmap_set_bit (slurp->headers, mod);
+  /* Record as a direct header.  */
+  bitmap_set_bit (slurp->headers, mod);
 
-  if (ok && counts[MSC_macros] && !read_macros ())
+  if (ok && !read_macros ())
     ok = false;
 
   return ok;
