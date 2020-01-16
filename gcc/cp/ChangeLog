@@ -1,3 +1,10 @@
+2020-01-22  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (get_mapped_args): Avoid using auto_vec
+	as a vector element.  Release the vectors inside the lists
+	vector.
+	* parser.c (cp_literal_operator_id): Free the buffer.
+
 2020-01-22  Jun Ma  <JunMa@linux.alibaba.com>
 
 	* coroutines.cc (finish_co_await_expr): Add error check on return

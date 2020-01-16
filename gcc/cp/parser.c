@@ -15372,6 +15372,7 @@ cp_literal_operator_id (const char* name)
 			      + strlen (name) + 10);
   sprintf (buffer, UDLIT_OP_ANSI_FORMAT, name);
   identifier = get_identifier (buffer);
+  XDELETEVEC (buffer);
 
   return identifier;
 }
