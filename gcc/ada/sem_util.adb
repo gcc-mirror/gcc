@@ -11288,17 +11288,16 @@ package body Sem_Util is
          --  Inspect all entities defined in the scope of the type, looking for
          --  uninitialized components.
 
-         Comp := First_Entity (Typ);
+         Comp := First_Component (Typ);
          while Present (Comp) loop
-            if Ekind (Comp) = E_Component
-              and then Comes_From_Source (Comp)
+            if Comes_From_Source (Comp)
               and then No (Expression (Parent (Comp)))
               and then not Has_Full_Default_Initialization (Etype (Comp))
             then
                return False;
             end if;
 
-            Next_Entity (Comp);
+            Next_Component (Comp);
          end loop;
 
          --  Ensure that the parent type of a type extension is fully default
@@ -16966,7 +16965,7 @@ package body Sem_Util is
 
          else
             declare
-               Ent : Entity_Id;
+               Comp : Entity_Id;
 
                Component_Present : Boolean := False;
                --  Set True if at least one component is present. If no
@@ -16976,30 +16975,28 @@ package body Sem_Util is
             begin
                --  Loop through components
 
-               Ent := First_Entity (Typ);
-               while Present (Ent) loop
-                  if Ekind (Ent) = E_Component then
-                     Component_Present := True;
+               Comp := First_Component (Typ);
+               while Present (Comp) loop
+                  Component_Present := True;
 
-                     --  If a component has an initialization expression then
-                     --  the enclosing record type is partially initialized
+                  --  If a component has an initialization expression then the
+                  --  enclosing record type is partially initialized
 
-                     if Present (Parent (Ent))
-                       and then Present (Expression (Parent (Ent)))
-                     then
-                        return True;
+                  if Present (Parent (Comp))
+                    and then Present (Expression (Parent (Comp)))
+                  then
+                     return True;
 
-                     --  If a component is of a type which is itself partially
-                     --  initialized, then the enclosing record type is also.
+                  --  If a component is of a type which is itself partially
+                  --  initialized, then the enclosing record type is also.
 
-                     elsif Is_Partially_Initialized_Type
-                             (Etype (Ent), Include_Implicit)
-                     then
-                        return True;
-                     end if;
+                  elsif Is_Partially_Initialized_Type
+                          (Etype (Comp), Include_Implicit)
+                  then
+                     return True;
                   end if;
 
-                  Next_Entity (Ent);
+                  Next_Component (Comp);
                end loop;
 
                --  No initialized components found. If we found any components
@@ -22067,36 +22064,34 @@ package body Sem_Util is
             Comp : Entity_Id;
 
          begin
-            Comp := First_Entity (Typ);
+            Comp := First_Component (Typ);
             while Present (Comp) loop
 
                --  Only look at E_Component entities. No need to look at
                --  E_Discriminant entities, and we must ignore internal
                --  subtypes generated for constrained components.
 
-               if Ekind (Comp) = E_Component then
-                  declare
-                     Comp_Type : constant Entity_Id :=
-                                   Underlying_Type (Etype (Comp));
+               declare
+                  Comp_Type : constant Entity_Id :=
+                                Underlying_Type (Etype (Comp));
 
-                  begin
-                     if Is_Record_Type (Comp_Type)
-                           or else
-                        Is_Protected_Type (Comp_Type)
-                     then
-                        if not Caller_Known_Size_Record (Comp_Type) then
-                           return False;
-                        end if;
-
-                     elsif Is_Array_Type (Comp_Type) then
-                        if Size_Depends_On_Discriminant (Comp_Type) then
-                           return False;
-                        end if;
+               begin
+                  if Is_Record_Type (Comp_Type)
+                        or else
+                     Is_Protected_Type (Comp_Type)
+                  then
+                     if not Caller_Known_Size_Record (Comp_Type) then
+                        return False;
                      end if;
-                  end;
-               end if;
 
-               Next_Entity (Comp);
+                  elsif Is_Array_Type (Comp_Type) then
+                     if Size_Depends_On_Discriminant (Comp_Type) then
+                        return False;
+                     end if;
+                  end if;
+               end;
+
+               Next_Component (Comp);
             end loop;
          end;
 
@@ -22143,41 +22138,39 @@ package body Sem_Util is
                Comp : Entity_Id;
 
             begin
-               Comp := First_Entity (Typ);
+               Comp := First_Component (Typ);
                while Present (Comp) loop
-                  if Ekind (Comp) = E_Component then
-                     declare
-                        Comp_Type : constant Entity_Id :=
-                                      Underlying_Type (Etype (Comp));
+                  declare
+                     Comp_Type : constant Entity_Id :=
+                                   Underlying_Type (Etype (Comp));
 
-                        Hi   : Node_Id;
-                        Indx : Node_Id;
-                        Ityp : Entity_Id;
+                     Hi   : Node_Id;
+                     Indx : Node_Id;
+                     Ityp : Entity_Id;
 
-                     begin
-                        if Is_Array_Type (Comp_Type) then
-                           Indx := First_Index (Comp_Type);
+                  begin
+                     if Is_Array_Type (Comp_Type) then
+                        Indx := First_Index (Comp_Type);
 
-                           while Present (Indx) loop
-                              Ityp := Etype (Indx);
-                              Hi := Type_High_Bound (Ityp);
+                        while Present (Indx) loop
+                           Ityp := Etype (Indx);
+                           Hi := Type_High_Bound (Ityp);
 
-                              if Nkind (Hi) = N_Identifier
-                                and then Ekind (Entity (Hi)) = E_Discriminant
-                                and then Is_Large_Discrete_Type (Ityp)
-                                and then Is_Large_Discrete_Type
-                                           (Etype (Entity (Hi)))
-                              then
-                                 return True;
-                              end if;
+                           if Nkind (Hi) = N_Identifier
+                             and then Ekind (Entity (Hi)) = E_Discriminant
+                             and then Is_Large_Discrete_Type (Ityp)
+                             and then Is_Large_Discrete_Type
+                                        (Etype (Entity (Hi)))
+                           then
+                              return True;
+                           end if;
 
-                              Next_Index (Indx);
-                           end loop;
-                        end if;
-                     end;
-                  end if;
+                           Next_Index (Indx);
+                        end loop;
+                     end if;
+                  end;
 
-                  Next_Entity (Comp);
+                  Next_Component (Comp);
                end loop;
             end;
          end if;
