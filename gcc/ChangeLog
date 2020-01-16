@@ -1,3 +1,7 @@
+2020-01-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/analyzer.texi (Limitations): Add note about NaN.
+
 2020-01-17  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
 	    Sudakshina Das  <sudi.das@arm.com>
 

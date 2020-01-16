@@ -5189,13 +5189,11 @@ region_model::eval_condition_without_cm (svalue_id lhs_sid,
     {
       if (lhs == rhs)
 	{
-	  /* If we have the same svalue, then we have equality.
+	  /* If we have the same svalue, then we have equality
+	     (apart from NaN-handling).
 	     TODO: should this definitely be the case for poisoned values?  */
 	  switch (op)
 	    {
-	    default:
-	      gcc_unreachable ();
-
 	    case EQ_EXPR:
 	    case GE_EXPR:
 	    case LE_EXPR:
@@ -5205,6 +5203,10 @@ region_model::eval_condition_without_cm (svalue_id lhs_sid,
 	    case GT_EXPR:
 	    case LT_EXPR:
 	      return tristate::TS_FALSE;
+
+	    default:
+	      /* For other ops, use the logic below.  */
+	      break;
 	    }
 	}
 
