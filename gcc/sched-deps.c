@@ -101,6 +101,7 @@ init_dep_1 (dep_t dep, rtx_insn *pro, rtx_insn *con, enum reg_note type, ds_t ds
   DEP_NONREG (dep) = 0;
   DEP_MULTIPLE (dep) = 0;
   DEP_REPLACE (dep) = NULL;
+  dep->unused = 0;
 }
 
 /* Init DEP with the arguments.
