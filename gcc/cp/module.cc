@@ -3232,9 +3232,7 @@ slurping::slurping (elf_in *from)
   : remap (NULL), from (from),
     headers (BITMAP_GGC_ALLOC ()), macro_defs (), macro_tbl (),
     loc_deltas (0, 0),
-    /* Start CURRENT with a non-terminator value, so we don't close
-       the input during the initial import.  */
-    current (~0u - 1), remaining (0), lru (0)
+    current (~0u), remaining (0), lru (0)
 {
 }
 
@@ -3429,15 +3427,21 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   void write (elf_out *to, cpp_reader *);
   void read (int fd, int e, cpp_reader *);
 
+ public:
+  bool read_initial (int fd, int e, cpp_reader *);
+  bool read_preprocessor ();
+  bool read_language ();
+
+ public:
   /* Read a section.  */
   void load_section (unsigned snum);
+  /* Lazily read a section.  */
+  bool lazy_load (unsigned index, mc_slot *mslot, unsigned diags = 0);
 
+ public:
   /* Juggle a limited number of file numbers.  */
   static void freeze_an_elf ();
   void maybe_defrost ();
-
-  /* Lazily read a section.  */
-  bool lazy_load (unsigned index, mc_slot *mslot, unsigned diags = 0);
 
  public:
   /* Check or complete a read.  */
@@ -3461,7 +3465,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  private:
   void write_config (elf_out *to, struct module_state_config &, unsigned crc);
-  bool read_config (struct module_state_config &);
+  bool read_config (struct module_state_config &, bool init);
 
  public:
   void note_cmi_name ();
@@ -16450,7 +16454,6 @@ module_state::read_inits (unsigned count)
       dump ("Initializer:%u for %N", count, decl);
       static_aggregates = tree_cons (init, decl, static_aggregates);
     }
-
   dump.outdent ();
   if (!sec.end (from ()))
     return false;  
@@ -16540,8 +16543,9 @@ module_state::note_cmi_name ()
     }
 }
 
+// FIXME: Break into two
 bool
-module_state::read_config (module_state_config &config)
+module_state::read_config (module_state_config &config, bool initial)
 {
   bytes_in cfg;
 
@@ -16693,9 +16697,6 @@ module_state::read_config (module_state_config &config)
 
   config.num_imports = cfg.u ();
   config.num_partitions = cfg.u ();
-
-  /* Allocate the REMAP vector.  */
-  slurp->alloc_remap (config.num_imports);
 
   /* Random config data.  */
   config.sec_range.first = cfg.u ();
@@ -17000,118 +17001,184 @@ void
 module_state::read (int fd, int e, cpp_reader *reader)
 {
   gcc_checking_assert (!slurp);
+  if (read_initial (fd, e, reader))
+    {
+      if (!cpp_get_options (reader)->preprocessed)
+	read_preprocessor ();
+      if (!flag_preprocess_only)
+	read_language ();
+    }
+
+  /* We're done with the string and non-decl sections now.  */
+  from ()->release ();
+  slurp->lru = ++lazy_lru;
+  
+  gcc_assert (slurp->current == ~0u);
+}
+
+/* Initial read of a CMI from FD. E is errno from its fopen.  Checks
+   config, loads up imports and line maps.  */
+
+bool
+module_state::read_initial (int fd, int e, cpp_reader *reader)
+{
+  module_state_config config;
+  bool ok = true;
+
+  gcc_checking_assert (!slurp);
   slurp = new slurping (new elf_in (fd, e));
 
-  /* Stop GC during reading.  */
-  function_depth++;
+  if (ok && !from ()->begin (loc))
+    ok = false;
 
-  {
-    if (!from ()->begin (loc))
-      goto bail;
+  if (ok && !read_config (config, true))
+    ok = false;
 
-    module_state_config config;
+  /* Ordinary maps before the imports.  */
+  if (ok && !read_ordinary_maps ())
+    ok = false;
 
-    if (!read_config (config))
-      goto bail;
+  /* Allocate the REMAP vector.  */
+  slurp->alloc_remap (config.num_imports);
 
-    if (!read_ordinary_maps ())
-      goto bail;
+  // FIXME: break import reading into phases too.
+  if (ok)
+    {
+      /* Read the import table.  Decrement current to stop this CMI
+	 from being evicted during the import. */
+      slurp->current--;
+      if (config.num_imports > 1 && !read_imports (reader, line_table))
+	ok = false;
+      slurp->current++;
+    }
 
-    /* Read the import table.  */
-    if (config.num_imports > 1 && !read_imports (reader, line_table))
-      goto bail;
+  /* Read the elided partition table, if we're the primary partition.  */
+  // FIXME: Likewise as with imports
+  if (ok && config.num_partitions && is_primary ()
+      && !read_partitions (config.num_partitions))
+    ok = false;
 
-    /* Read the elided partition table, if we're the primary partition.  */
-    if (config.num_partitions && is_primary ()
-	&& !read_partitions (config.num_partitions))
-      goto bail;
+  /* Determine the module's number.  */
+  gcc_checking_assert (mod == MODULE_UNKNOWN);
+  gcc_checking_assert (this != (*modules)[0]);
 
-    /* Determine the module's number.  */
-    gcc_checking_assert (mod == MODULE_UNKNOWN);
-    gcc_checking_assert (this != (*modules)[0]);
+  /* We'll run out of other resources before we run out of module
+     indices.  */
+  mod = modules->length ();
+  vec_safe_push (modules, this);
 
-    /* We'll run out of other resources before we run out of module
-       indices.  */
-    unsigned ix = modules->length ();
-
-    vec_safe_push (modules, this);
-    /* We always import and export ourselves. */
-    bitmap_set_bit (imports, ix);
-    bitmap_set_bit (exports, ix);
-    if (is_header ())
-      bitmap_set_bit (slurp->headers, ix);
-    mod = remap = ix;
-
+  if (ok)
     (*slurp->remap)[0] = mod;
-    dump () && dump ("Assigning %M module number %u", this, mod);
+  dump () && dump ("Assigning %M module number %u", this, mod);
 
-    /* We should not have been frozen during the importing done by
-       read_config.  */
-    gcc_assert (!from ()->is_frozen ());
+  /* We should not have been frozen during the importing done by
+     read_config.  */
+  gcc_assert (!from ()->is_frozen ());
 
-    if (!read_macro_maps ())
-      goto bail;
+  /* Macro maps after the imports.  */
+  if (ok && !read_macro_maps ())
+    ok = false;
 
-    cpp_options *cpp_opts = cpp_get_options (reader);
-    if (config.num_macros && !cpp_opts->preprocessed)
-      if (!read_macros ())
-	goto bail;
-
-    if (!flag_preprocess_only)
-      {
-	available_clusters += config.sec_range.second - config.sec_range.first;
-
-	/* Read the entity table.  */
-	entity_lwm = vec_safe_length (entity_ary);
-	if (config.num_entities
-	    && !read_entities (config.num_entities, config.sec_range))
-	  goto bail;
-
-	/* Read the namespace hierarchy. */
-	if (config.num_namespaces && !read_namespaces (config.num_namespaces))
-	  goto bail;
-
-	if (!read_bindings (config.num_bindings, config.sec_range))
-	  goto bail;
-
-	/* And unnamed.  */
-	if (config.num_pendings && !read_pendings (config.num_pendings))
-	  goto bail;
-
-	if (!flag_module_lazy)
-	  {
-	    /* Read the sections in forward order, so that dependencies are read
-	       first.  See note about tarjan_connect.  */
-	    ggc_collect ();
-
-	    unsigned hwm = config.sec_range.second;
-	    for (unsigned ix = config.sec_range.first; ix != hwm; ix++)
-	      {
-		load_section (ix);
-		if (from ()->get_error ())
-		  goto bail;
-		ggc_collect ();
-	      }
-	    if (CHECKING_P)
-	      for (unsigned ix = 0; ix != entity_num; ix++)
-		gcc_assert (!(*entity_ary)[ix + entity_lwm].is_lazy ());
-	  }
-
-	// FIXME: Belfast order-of-initialization means this may be inadequate.
-	if (!read_inits (config.num_inits))
-	  goto bail;
-      }
-
-    /* We're done with the string and non-decl sections now.  */
-    from ()->release ();
-    slurp->remaining = config.sec_range.second - config.sec_range.first;
-    slurp->lru = ++lazy_lru;
-  }
-  
- bail:
-  function_depth--;
-  slurp->current++;
   gcc_assert (slurp->current == ~0u);
+  return ok;
+}
+
+/* Read a preprocessor state.  */
+
+bool
+module_state::read_preprocessor ()
+{
+  bool ok = true;
+  module_state_config config;
+
+  if (ok && !read_config (config, false))
+    ok = false;
+
+  // FIXME: Read imports' preprocessor
+
+  if (is_header ())
+    /* Record as a direct header.  */
+    bitmap_set_bit (slurp->headers, mod);
+
+  if (ok && config.num_macros && !read_macros ())
+    ok = false;
+
+  return ok;
+}
+
+/* Read language state.  */
+
+bool
+module_state::read_language ()
+{
+  bool ok = true;
+  module_state_config config;
+
+  if (ok && !read_config (config, false))
+    ok = false;
+
+  // FIXME: Read imports' language
+
+  /* We always import and export ourselves. */
+  bitmap_set_bit (imports, mod);
+  bitmap_set_bit (exports, mod);
+
+  function_depth++; /* Prevent unexpected GCs.  */
+
+  /* Read the entity table.  */
+  entity_lwm = vec_safe_length (entity_ary);
+  if (ok && config.num_entities
+      && !read_entities (config.num_entities, config.sec_range))
+    ok = false;
+
+  /* Read the namespace hierarchy. */
+  if (ok && config.num_namespaces && !read_namespaces (config.num_namespaces))
+    ok = false;
+
+  if (ok && !read_bindings (config.num_bindings, config.sec_range))
+    ok = false;
+
+  /* And unnamed.  */
+  if (ok && config.num_pendings && !read_pendings (config.num_pendings))
+    ok = false;
+
+  if (ok)
+    {
+      slurp->remaining = config.sec_range.second - config.sec_range.first;
+      available_clusters += config.sec_range.second - config.sec_range.first;
+    }
+
+  if (ok && !flag_module_lazy)
+    {
+      /* Read the sections in forward order, so that dependencies are read
+	 first.  See note about tarjan_connect.  */
+      ggc_collect ();
+
+      unsigned hwm = config.sec_range.second;
+      for (unsigned ix = config.sec_range.first; ix != hwm; ix++)
+	{
+	  load_section (ix);
+	  if (from ()->get_error ())
+	    {
+	      ok = false;
+	      break;
+	    }
+	  ggc_collect ();
+	}
+
+      if (CHECKING_P)
+	for (unsigned ix = 0; ix != entity_num; ix++)
+	  gcc_assert (!(*entity_ary)[ix + entity_lwm].is_lazy ());
+    }
+
+  // FIXME: Belfast order-of-initialization means this may be inadequate.
+  if (ok && !read_inits (config.num_inits))
+    ok = false;
+
+  function_depth--;
+  gcc_assert (slurp->current == ~0u);
+
+  return ok;
 }
 
 void

@@ -1,3 +1,11 @@
+2020-01-16  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* (slurping::slurping): Set current to ~0u.
+	(module_state::read_{initial,preprocessor,language}): New, broken
+	out of ...
+	(module_state::read): ... here.  Call them.
+
 2020-01-15  Nathan Sidwell  <nathan@acm.org>
 
 	Merge master.
