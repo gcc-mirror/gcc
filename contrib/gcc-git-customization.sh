@@ -11,9 +11,9 @@ ask () {
     read answer
     if [ "x$answer" = "x" ]
     then
-	eval $var=\"$default\"
+	eval $var=\$default
     else
-	eval $var=\"$answer\"
+	eval $var=\$answer
     fi
 }
 
