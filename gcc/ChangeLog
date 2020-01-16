@@ -1,3 +1,21 @@
+2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/aarch64/aarch64-builtins.c: (enum aarch64_type_qualifiers):
+	New qualifier_lane_quadtup_index, TYPES_TERNOP_SSUS,
+	TYPES_QUADOPSSUS_LANE_QUADTUP, TYPES_QUADOPSSSU_LANE_QUADTUP.
+	(aarch64_simd_expand_args): Add case SIMD_ARG_LANE_QUADTUP_INDEX.
+	(aarch64_simd_expand_builtin): Add qualifier_lane_quadtup_index.
+	* config/aarch64/aarch64-simd-builtins.def (usdot, usdot_lane,
+	usdot_laneq, sudot_lane,sudot_laneq): New.
+	* config/aarch64/aarch64-simd.md (aarch64_usdot): New.
+	(aarch64_<sur>dot_lane): New.
+	* config/aarch64/arm_neon.h (vusdot_s32): New.
+	(vusdotq_s32): New.
+	(vusdot_lane_s32): New.
+	(vsudot_lane_s32): New.
+	* config/aarch64/iterators.md (DOTPROD_I8MM): New iterator.
+	(UNSPEC_USDOT, UNSPEC_SUDOT): New unspecs.
+
 2020-01-16  Martin Liska  <mliska@suse.cz>
 
 	* value-prof.c (dump_histogram_value): Fix

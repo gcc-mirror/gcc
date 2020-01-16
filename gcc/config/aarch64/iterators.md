@@ -799,6 +799,8 @@
     UNSPEC_USUBLT	; Used in aarch64-sve2.md.
     UNSPEC_USUBWB	; Used in aarch64-sve2.md.
     UNSPEC_USUBWT	; Used in aarch64-sve2.md.
+    UNSPEC_USDOT	; Used in aarch64-simd.md.
+    UNSPEC_SUDOT	; Used in aarch64-simd.md.
 ])
 
 ;; ------------------------------------------------------------------
@@ -1463,6 +1465,8 @@
 
 (define_mode_attr f16quad [(V2SF "") (V4SF "q")])
 
+(define_mode_attr isquadop [(V8QI "") (V16QI "q")])
+
 (define_code_attr f16mac [(plus "a") (minus "s")])
 
 ;; Map smax to smin and umax to umin.
@@ -2044,6 +2048,8 @@
 (define_int_iterator BSL_DUP [1 2])
 
 (define_int_iterator DOTPROD [UNSPEC_SDOT UNSPEC_UDOT])
+
+(define_int_iterator DOTPROD_I8MM [UNSPEC_USDOT UNSPEC_SUDOT])
 
 (define_int_iterator ADDSUBHN [UNSPEC_ADDHN UNSPEC_RADDHN
 			       UNSPEC_SUBHN UNSPEC_RSUBHN])
@@ -2738,6 +2744,7 @@
 		      (UNSPEC_URSHL  "ur") (UNSPEC_SRSHL  "sr")
 		      (UNSPEC_UQRSHL  "u") (UNSPEC_SQRSHL  "s")
 		      (UNSPEC_SDOT "s") (UNSPEC_UDOT "u")
+		      (UNSPEC_USDOT "us") (UNSPEC_SUDOT "su")
 ])
 
 (define_int_attr r [(UNSPEC_SQDMULH "") (UNSPEC_SQRDMULH "r")
