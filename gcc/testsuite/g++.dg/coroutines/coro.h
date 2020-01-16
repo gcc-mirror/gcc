@@ -140,7 +140,8 @@ namespace coro = std;
 /* just to avoid cluttering dump files. */
 extern "C" int puts (const char *);
 extern "C" int printf (const char *, ...);
-extern "C" void abort (void) __attribute__((__noreturn__));
+
+#include <cstdlib> /* for abort () */
 
 #ifndef OUTPUT
 #  define PRINT(X)

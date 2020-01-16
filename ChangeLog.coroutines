@@ -1,3 +1,9 @@
+2020-01-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/testsuite/
+	* g++.dg/coroutines/coro.h: Use <cstdlib> instead of a local
+	declaration for abort ().
+
 2020-01-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
