@@ -1,3 +1,20 @@
+2020-01-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-fnsummary.c (estimate_calls_size_and_time): Fix formating of
+	dump.
+	* params.opt: (max-predicted-iterations): Set bounds.
+	* predict.c (real_almost_one, real_br_prob_base,
+	real_inv_br_prob_base, real_one_half, real_bb_freq_max): Remove.
+	(propagate_freq): Add max_cyclic_prob parameter; cap cyclic
+	probabilities; do not truncate to reg_br_prob_bases.
+	(estimate_loops_at_level): Pass max_cyclic_prob.
+	(estimate_loops): Compute max_cyclic_prob.
+	(estimate_bb_frequencies): Do not initialize real_*; update calculation
+	of back edge prob.
+	* profile-count.c (profile_probability::to_sreal): New.
+	* profile-count.h (class sreal): Move up in file.
+	(profile_probability::to_sreal): Declare.
+
 2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	* config/arm/arm.c
