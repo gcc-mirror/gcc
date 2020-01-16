@@ -1,3 +1,7 @@
+2020-01-16  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc-git-customization.sh: Avoid double expansion.
+
 2020-01-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc-git-customization.sh: Check that user.name and user.email
