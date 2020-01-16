@@ -1,5 +1,12 @@
 2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
+	* config/arm/arm.c
+	(arm_invalid_conversion): New function for target hook.
+	(arm_invalid_unary_op): New function for target hook.
+	(arm_invalid_binary_op): New function for target hook.
+
+2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
 	* config.gcc: Add arm_bf16.h.
 	* config/arm/arm-builtins.c (arm_mangle_builtin_type): Fix comment.
 	(arm_simd_builtin_std_type): Add BFmode.

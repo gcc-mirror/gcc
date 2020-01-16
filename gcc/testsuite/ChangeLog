@@ -1,5 +1,12 @@
 2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
+	* g++.target/arm/bfloat_cpp_typecheck.C: New test.
+	* gcc.target/arm/bfloat16_scalar_typecheck.c: New test.
+	* gcc.target/arm/bfloat16_vector_typecheck_1.c: New test.
+	* gcc.target/arm/bfloat16_vector_typecheck_2.c: New test.
+
+2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
 	* g++.dg/abi/mangle-neon.C: Add BF16 SIMD types.
 	* g++.dg/ext/arm-bf16/bf16-mangle-1.C: New test.
 	* gcc.target/arm/bfloat16_scalar_1_1.c: New test.
