@@ -1,5 +1,10 @@
 2020-01-16  Andrew Pinski  <apinski@marvell.com>
 
+	* tree-ssa-sccvn.c(vn_reference_lookup_3): Check lhs for
+	!storage_order_barrier_p.
+
+2020-01-16  Andrew Pinski  <apinski@marvell.com>
+
 	* sched-int.h (_dep): Add unused bit-field field for the padding.
 	* sched-deps.c (init_dep_1): Init unused field.
 
