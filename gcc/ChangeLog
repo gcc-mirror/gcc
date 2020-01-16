@@ -1,3 +1,8 @@
+2020-01-16  Martin Liska  <mliska@suse.cz>
+
+	* value-prof.c (dump_histogram_value): Fix
+	obvious spacing issue.
+
 2020-01-16  Andrew Pinski  <apinski@marvell.com>
 
 	* tree-ssa-sccvn.c(vn_reference_lookup_3): Check lhs for
