@@ -1,3 +1,9 @@
+2020-01-16  Kerem Kat  <keremkat@gmail.com>
+
+	PR c/92833
+	* c-c++-common/pr92833-1.c, c-c++-common/pr92833-2.c,
+	c-c++-common/pr92833-3.c, c-c++-common/pr92833-4.c: New tests.
+
 2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	* g++.target/arm/bfloat_cpp_typecheck.C: New test.
