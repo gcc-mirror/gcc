@@ -1,3 +1,9 @@
+2020-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-git-customization.sh: Verify the id to be printed is ancestor of
+	the corresponding remote release branch (or master), otherwise print
+	nothing.
+
 2020-01-15  Segher Boessenkool  <segher@kernel.crashing.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 
