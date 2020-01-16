@@ -1,3 +1,7 @@
+2020-01-16  Andrew Pinski  <apinski@marvell.com>
+
+	* optabs.h (create_expand_operand): Initialize target field also.
+
 2020-01-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	PR tree-optimization/92429
