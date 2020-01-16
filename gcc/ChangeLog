@@ -1,3 +1,12 @@
+2020-01-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/92429
+	* tree-ssa-loop-niter.h (simplify_replace_tree): Add parameter.
+	* tree-ssa-loop-niter.c (simplify_replace_tree): Add parameter to
+	control folding.
+	* tree-vect-loop.c (update_epilogue_vinfo): Do not fold when replacing
+	tree.
+
 2020-01-16  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_split_sve_subreg_move): Apply

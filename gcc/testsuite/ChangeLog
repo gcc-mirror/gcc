@@ -1,3 +1,8 @@
+2020-01-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/92429
+	* gcc.dg/vect/pr92429.c: New test.
+
 2020-01-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/93253
