@@ -1,7 +1,17 @@
 2020-01-16  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
-	* (slurping::slurping): Set current to ~0u.
+	* module.cc (module_state::{read,write}_counts): New.  Broken out
+	of ...
+	(module_state::{read,write}_config): ... here.
+	(enum module_state_counts): New.
+	(module_state::write_cluster): Take lwm,hwm pair.
+	(module_state::read_{bindings,entities,inits}): Adjust.
+	(module_state::write): Write counts.
+	(module_state::read_{preprocessor,language}): Read counts.
+
+	gcc/cp/
+	* module.cc (slurping::slurping): Set current to ~0u.
 	(module_state::read_{initial,preprocessor,language}): New, broken
 	out of ...
 	(module_state::read): ... here.  Call them.

@@ -3307,6 +3307,8 @@ enum streamed_extensions {
 };
 
 /********************************************************************/
+struct module_state_config;
+
 /* State of a particular module. */
 
 class GTY((chain_next ("%h.parent"), for_user)) module_state {
@@ -3465,7 +3467,9 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  private:
   void write_config (elf_out *to, struct module_state_config &, unsigned crc);
-  bool read_config (struct module_state_config &, bool init);
+  bool read_config (struct module_state_config &);
+  static void write_counts (elf_out *to, unsigned [], unsigned *crc_ptr);
+  bool read_counts (unsigned []);
 
  public:
   void note_cmi_name ();
@@ -3473,7 +3477,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
  private:
   static unsigned write_bindings (elf_out *to, vec<depset *> depsets,
 				  unsigned *crc_ptr);
-  bool read_bindings (unsigned, const range_t &range);
+  bool read_bindings (unsigned count, unsigned lwm, unsigned hwm);
 
   static void write_namespace (bytes_out &sec, depset *ns_dep);
   tree read_namespace (bytes_in &sec);
@@ -3483,8 +3487,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool read_namespaces (unsigned);
 
   unsigned write_cluster (elf_out *to, depset *depsets[], unsigned size,
-			  depset::hash &, struct module_state_config &,
-			  unsigned *crc_ptr);
+			  depset::hash &, unsigned *counts, unsigned *crc_ptr);
   bool read_cluster (unsigned snum);
 
  private:
@@ -3499,7 +3502,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
  private:
   void write_entities (elf_out *to, vec<depset *> depsets,
 		       unsigned count, unsigned *crc_ptr);
-  bool read_entities (unsigned count, const range_t &range);
+  bool read_entities (unsigned count, unsigned lwm, unsigned hwm);
 
  private:
   location_map_info prepare_maps ();
@@ -13830,25 +13833,30 @@ module_state::read_partitions (unsigned count)
   return true;
 }
 
+/* Counter indices.  */
+enum module_state_counts
+{
+  MSC_sec_lwm,
+  MSC_sec_hwm,
+  MSC_pendings,
+  MSC_entities,
+  MSC_namespaces,
+  MSC_bindings,
+  MSC_macros,
+  MSC_inits,
+  MSC_HWM
+};
+
 /* Data for config reading and writing.  */
 struct module_state_config {
   const char *dialect_str;
-  range_t sec_range;
-  unsigned num_pendings;
-  unsigned num_entities;
-  unsigned num_namespaces;
   unsigned num_imports;
   unsigned num_partitions;
-  unsigned num_bindings;
-  unsigned num_macros;
-  unsigned num_inits;
 
 public:
   module_state_config ()
     :dialect_str (get_dialect ()),
-     sec_range (0,0), num_pendings (0), num_entities (0),
-     num_namespaces (0), num_imports (0), num_partitions (0),
-     num_bindings (0), num_macros (0), num_inits (0)
+     num_imports (0), num_partitions (0)
   {
   }
 
@@ -13910,7 +13918,7 @@ enum ct_bind_flags
 
 unsigned
 module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
-			     depset::hash &table, module_state_config &config,
+			     depset::hash &table, unsigned *counts,
 			     unsigned *crc_ptr)
 {
   dump () && dump ("Writing section:%u %u depsets", table.section, size);
@@ -13947,14 +13955,13 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	    }
 	  break;
 
-	case depset::EK_SPECIALIZATION:
-	  config.num_pendings++;
-	  /* FALLTHROUGH  */
-
 	case depset::EK_DECL:
 	  if (b->is_member ())
-	    config.num_pendings++;
-	  b->cluster = config.num_entities++;
+	    {
+	    case depset::EK_SPECIALIZATION:  /* Yowzer! */
+	      counts[MSC_pendings]++;
+	    }
+	  b->cluster = counts[MSC_entities]++;
 	  sec.mark_declaration (b->get_entity (), b->has_defn ());
 	  /* FALLTHROUGH  */
 
@@ -14561,7 +14568,7 @@ module_state::write_bindings (elf_out *to, vec<depset *> sccs, unsigned *crc_p)
 /* Read the binding table from MOD_SNAME_PFX.bind.  */
 
 bool
-module_state::read_bindings (unsigned num, const range_t &range)
+module_state::read_bindings (unsigned num, unsigned lwm, unsigned hwm)
 {
   bytes_in sec;
 
@@ -14576,7 +14583,7 @@ module_state::read_bindings (unsigned num, const range_t &range)
       tree ns = read_namespace (sec);
       unsigned snum = sec.u ();
 
-      if (!ns || !name || snum < range.first || snum >= range.second)
+      if (!ns || !name || (snum - lwm) >= (hwm - lwm))
 	sec.set_overrun ();
       if (!sec.get_overrun ())
 	{
@@ -14643,7 +14650,7 @@ module_state::write_entities (elf_out *to, vec<depset *> depsets,
 }
 
 bool
-module_state::read_entities (unsigned count, const range_t &range)
+module_state::read_entities (unsigned count, unsigned lwm, unsigned hwm)
 {
   trees_in sec (this);
 
@@ -14658,7 +14665,7 @@ module_state::read_entities (unsigned count, const range_t &range)
   for (ix = 0; ix != count; ix++)
     {
       unsigned snum = sec.u ();
-      if (snum && (snum < range.first || snum >= range.second))
+      if (snum && (snum - lwm) >= (hwm - lwm))
 	sec.set_overrun ();
       if (sec.get_overrun ())
 	break;
@@ -16166,6 +16173,10 @@ module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
   return count;
 }
 
+// FIXME: Once we have importin phases done, we probably don't need
+// this so early.  Remember, with mmap, all this is doing is setting
+// pointers.
+
 bool
 module_state::read_macros ()
 {
@@ -16436,9 +16447,6 @@ module_state::write_inits (elf_out *to, depset::hash &table, unsigned *crc_ptr)
 bool
 module_state::read_inits (unsigned count)
 {
-  if (!count)
-    return true;
-
   trees_in sec (this);
   if (!sec.begin (loc, from (), from ()->find (MOD_SNAME_PFX ".ini")))
     return false;
@@ -16458,6 +16466,58 @@ module_state::read_inits (unsigned count)
   if (!sec.end (from ()))
     return false;  
   return true;
+}
+
+void
+module_state::write_counts (elf_out *to, unsigned counts[MSC_HWM],
+			    unsigned *crc_ptr)
+{
+  bytes_out cfg (to);
+
+  cfg.begin ();
+
+  for (unsigned ix = MSC_HWM; ix--;)
+    cfg.u (counts[ix]);
+
+  if (dump ())
+    {
+      dump ("Cluster sections are [%u,%u)",
+	    counts[MSC_sec_lwm], counts[MSC_sec_hwm]);
+      dump ("Bindings %u", counts[MSC_bindings]);
+      dump ("Pendings %u", counts[MSC_pendings]);
+      dump ("Entities %u", counts[MSC_entities]);
+      dump ("Namespaces %u", counts[MSC_namespaces]);
+      dump ("Macros %u", counts[MSC_macros]);
+      dump ("Initializers %u", counts[MSC_inits]);
+    }
+
+  cfg.end (to, to->name (MOD_SNAME_PFX ".cnt"), crc_ptr);
+}
+
+bool
+module_state::read_counts (unsigned counts[MSC_HWM])
+{
+  bytes_in cfg;
+
+  if (!cfg.begin (loc, from (), MOD_SNAME_PFX ".cnt"))
+    return false;
+
+  for (unsigned ix = MSC_HWM; ix--;)
+    counts[ix] = cfg.u ();
+
+  if (dump ())
+    {
+      dump ("Declaration sections are [%u,%u)",
+	    counts[MSC_sec_lwm], counts[MSC_sec_hwm]);
+      dump ("Bindings %u", counts[MSC_bindings]);
+      dump ("Pendings %u", counts[MSC_pendings]);
+      dump ("Entities %u", counts[MSC_entities]);
+      dump ("Namespaces %u", counts[MSC_namespaces]);
+      dump ("Macros %u", counts[MSC_macros]);
+      dump ("Initializers %u", counts[MSC_inits]);
+    }
+
+  return cfg.end (from ());
 }
 
 /* Tool configuration:  MOD_SNAME_PFX .config
@@ -16508,24 +16568,6 @@ module_state::write_config (elf_out *to, module_state_config &config,
   cfg.u (config.num_imports);
   cfg.u (config.num_partitions);
 
-  cfg.u (config.sec_range.first);
-  cfg.u (config.sec_range.second);
-  dump () && dump ("Cluster sections are [%u,%u)",
-		   config.sec_range.first, config.sec_range.second);
-
-  cfg.u (config.num_bindings);
-  dump () && dump ("Bindings %u", config.num_bindings);
-  cfg.u (config.num_pendings);
-  dump () && dump ("Pendings %u", config.num_pendings);
-  cfg.u (config.num_entities);
-  dump () && dump ("Entities %u", config.num_entities);
-  cfg.u (config.num_namespaces);
-  dump () && dump ("Namespaces %u", config.num_namespaces);
-  cfg.u (config.num_macros);
-  dump () && dump ("Macros %u", config.num_macros);
-  cfg.u (config.num_inits);
-  dump () && dump ("Initializers %u", config.num_inits);
-
   /* Now generate CRC, we'll have incorporated the inner CRC because
      of its serialization above.  */
   cfg.end (to, to->name (MOD_SNAME_PFX ".cfg"), &crc);
@@ -16543,9 +16585,8 @@ module_state::note_cmi_name ()
     }
 }
 
-// FIXME: Break into two
 bool
-module_state::read_config (module_state_config &config, bool initial)
+module_state::read_config (module_state_config &config)
 {
   bytes_in cfg;
 
@@ -16698,37 +16739,6 @@ module_state::read_config (module_state_config &config, bool initial)
   config.num_imports = cfg.u ();
   config.num_partitions = cfg.u ();
 
-  /* Random config data.  */
-  config.sec_range.first = cfg.u ();
-  config.sec_range.second = cfg.u ();
-  dump () && dump ("Declaration sections are [%u,%u)",
-		   config.sec_range.first, config.sec_range.second);
-
-  config.num_bindings = cfg.u ();
-  dump () && dump ("Bindings %u", config.num_bindings);
-
-  config.num_pendings = cfg.u ();
-  dump () && dump ("Pendings %u", config.num_pendings);
-
-  config.num_entities = cfg.u ();
-  dump () && dump ("Entities %u", config.num_entities);
-
-  config.num_namespaces = cfg.u ();
-  dump () && dump ("Namespaces %u", config.num_namespaces);
-
-  config.num_macros = cfg.u ();
-  dump () && dump ("Macros %u", config.num_macros);
-
-  config.num_inits = cfg.u ();
-  dump () && dump ("Initializers %u", config.num_inits);
-
-  if (config.sec_range.first > config.sec_range.second
-      || config.sec_range.second > from ()->get_section_limit ())
-    {
-      error_at (loc, "paradoxical declaration section range");
-      cfg.set_overrun ();
-      goto done;
-    }
 
  done:
   return cfg.end (from ());
@@ -16749,6 +16759,7 @@ module_state::read_config (module_state_config &config, bool initial)
      MOD_SNAME_PFX.def      : macro definitions
      MOD_SNAME_PFX.mac      : macro index
      MOD_SNAME_PFX.ini      : inits
+     MOD_SNAME_PFX.cnt      : counts
      MOD_SNAME_PFX.cfg      : config data
 */
 
@@ -16842,9 +16853,11 @@ module_state::write (elf_out *to, cpp_reader *reader)
   unsigned crc = 0;
   location_map_info map_info = prepare_maps ();
   module_state_config config;
+  unsigned counts[MSC_HWM];
 
   config.num_imports = mod_hwm;
   config.num_partitions = modules->length () - mod_hwm;
+  memset (counts, 0, sizeof (counts));
 
   /* depset::cluster is the cluster number,
      depset::section is unspecified scratch value.
@@ -16860,7 +16873,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
      depset::section -> section number of cluster (if !namespace). */
 
   unsigned n_spaces = 0;
-  config.sec_range.first = config.sec_range.second = to->get_section_limit ();
+  counts[MSC_sec_lwm] = counts[MSC_sec_hwm] = to->get_section_limit ();
   for (unsigned size, ix = 0; ix < sccs.length (); ix += size)
     {
       depset **base = &sccs[ix];
@@ -16885,13 +16898,13 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	    {
 	      /* Set the section number.  */
 	      base[jx]->cluster = ~(~0u >> 1); /* A bad value.  */
-	      base[jx]->section = config.sec_range.second;
+	      base[jx]->section = counts[MSC_sec_hwm];
 	    }
 
 	  /* Save the size in the first member's cluster slot.  */
 	  base[0]->cluster = size;
 
-	  config.sec_range.second++;
+	  counts[MSC_sec_hwm]++;
 	}
     }
 
@@ -16914,9 +16927,9 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	    base[0]->cluster = 0;
 	  else if (!base[0]->is_import ())
 	    {
-	      base[0]->cluster = config.num_entities++;
+	      base[0]->cluster = counts[MSC_entities]++;
 	      spaces.quick_push (base[0]);
-	      config.num_namespaces++;
+	      counts[MSC_namespaces]++;
 	      dump (dumper::CLUSTER) && dump ("Cluster namespace %N", decl);
 	    }
 	  size = 1;
@@ -16931,31 +16944,31 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	     out -- we don't want to start writing decls in different
 	     sections.  */
 	  table.section = base[0]->section;
-	  bytes += write_cluster (to, base, size, table, config, &crc);
+	  bytes += write_cluster (to, base, size, table, counts, &crc);
 	  table.section = 0;
 	}
     }
 
   /* We'd better have written as many sections and found as many
      namespaces as we predicted.  */
-  gcc_assert (config.sec_range.second == to->get_section_limit ()
-	      && spaces.length () == config.num_namespaces);
+  gcc_assert (counts[MSC_sec_hwm] == to->get_section_limit ()
+	      && spaces.length () == counts[MSC_namespaces]);
 
   /* Write the entitites.  None happens if we contain namespaces or
      nothing. */
-  if (config.num_entities)
-    write_entities (to, sccs, config.num_entities, &crc);
+  if (counts[MSC_entities])
+    write_entities (to, sccs, counts[MSC_entities], &crc);
 
   /* Write the namespaces.  */
-  if (config.num_namespaces)
-    write_namespaces (to, spaces, config.num_namespaces, &crc);
+  if (counts[MSC_namespaces])
+    write_namespaces (to, spaces, counts[MSC_namespaces], &crc);
 
   /* Write the bindings themselves.  */
-  config.num_bindings = write_bindings (to, sccs, &crc);
+  counts[MSC_bindings] = write_bindings (to, sccs, &crc);
 
   /* Write the unnamed.  */
-  if (config.num_pendings)
-    write_pendings (to, sccs, table, config.num_pendings, &crc);
+  if (counts[MSC_pendings])
+    write_pendings (to, sccs, table, counts[MSC_pendings], &crc);
 
   /* Write the import table.  */
   if (config.num_imports > 1)
@@ -16969,15 +16982,17 @@ module_state::write (elf_out *to, cpp_reader *reader)
   write_ordinary_maps (to, map_info, config.num_partitions, &crc);
   write_macro_maps (to, map_info, &crc);
 
-  config.num_macros = header_module_p () ? write_macros (to, reader, &crc) : 0;
-
-  /* Write initializers that header units might contain.  */
   if (is_header ())
-    config.num_inits = write_inits (to, table, &crc);
+    {
+      counts[MSC_macros] = write_macros (to, reader, &crc);
+      counts[MSC_inits] = write_inits (to, table, &crc);
+    }
 
-  unsigned clusters = config.sec_range.second - config.sec_range.first;
+  unsigned clusters = counts[MSC_sec_hwm] - counts[MSC_sec_lwm];
   dump () && dump ("Wrote %u clusters, average %u bytes/cluster",
 		   clusters, (bytes + clusters / 2) / (clusters + !clusters));
+
+  write_counts (to, counts, &crc);
 
   /* And finish up.  */
   write_config (to, config, crc);
@@ -17031,7 +17046,7 @@ module_state::read_initial (int fd, int e, cpp_reader *reader)
   if (ok && !from ()->begin (loc))
     ok = false;
 
-  if (ok && !read_config (config, true))
+  if (ok && !read_config (config))
     ok = false;
 
   /* Ordinary maps before the imports.  */
@@ -17089,9 +17104,9 @@ bool
 module_state::read_preprocessor ()
 {
   bool ok = true;
-  module_state_config config;
+  unsigned counts[MSC_HWM];
 
-  if (ok && !read_config (config, false))
+  if (ok && !read_counts (counts))
     ok = false;
 
   // FIXME: Read imports' preprocessor
@@ -17100,7 +17115,7 @@ module_state::read_preprocessor ()
     /* Record as a direct header.  */
     bitmap_set_bit (slurp->headers, mod);
 
-  if (ok && config.num_macros && !read_macros ())
+  if (ok && counts[MSC_macros] && !read_macros ())
     ok = false;
 
   return ok;
@@ -17112,9 +17127,9 @@ bool
 module_state::read_language ()
 {
   bool ok = true;
-  module_state_config config;
+  unsigned counts[MSC_HWM];
 
-  if (ok && !read_config (config, false))
+  if (ok && !read_counts (counts))
     ok = false;
 
   // FIXME: Read imports' language
@@ -17127,25 +17142,27 @@ module_state::read_language ()
 
   /* Read the entity table.  */
   entity_lwm = vec_safe_length (entity_ary);
-  if (ok && config.num_entities
-      && !read_entities (config.num_entities, config.sec_range))
+  if (ok && counts[MSC_entities]
+      && !read_entities (counts[MSC_entities],
+			 counts[MSC_sec_lwm], counts[MSC_sec_hwm]))
     ok = false;
 
   /* Read the namespace hierarchy. */
-  if (ok && config.num_namespaces && !read_namespaces (config.num_namespaces))
+  if (ok && counts[MSC_namespaces] && !read_namespaces (counts[MSC_namespaces]))
     ok = false;
 
-  if (ok && !read_bindings (config.num_bindings, config.sec_range))
+  if (ok && !read_bindings (counts[MSC_bindings],
+			    counts[MSC_sec_lwm], counts[MSC_sec_hwm]))
     ok = false;
 
   /* And unnamed.  */
-  if (ok && config.num_pendings && !read_pendings (config.num_pendings))
+  if (ok && counts[MSC_pendings] && !read_pendings (counts[MSC_pendings]))
     ok = false;
 
   if (ok)
     {
-      slurp->remaining = config.sec_range.second - config.sec_range.first;
-      available_clusters += config.sec_range.second - config.sec_range.first;
+      slurp->remaining = counts[MSC_sec_hwm] - counts[MSC_sec_lwm];
+      available_clusters += counts[MSC_sec_hwm] - counts[MSC_sec_lwm];
     }
 
   if (ok && !flag_module_lazy)
@@ -17154,8 +17171,8 @@ module_state::read_language ()
 	 first.  See note about tarjan_connect.  */
       ggc_collect ();
 
-      unsigned hwm = config.sec_range.second;
-      for (unsigned ix = config.sec_range.first; ix != hwm; ix++)
+      unsigned hwm = counts[MSC_sec_hwm];
+      for (unsigned ix = counts[MSC_sec_lwm]; ix != hwm; ix++)
 	{
 	  load_section (ix);
 	  if (from ()->get_error ())
@@ -17172,7 +17189,7 @@ module_state::read_language ()
     }
 
   // FIXME: Belfast order-of-initialization means this may be inadequate.
-  if (ok && !read_inits (config.num_inits))
+  if (ok && counts[MSC_inits] && !read_inits (counts[MSC_inits]))
     ok = false;
 
   function_depth--;
@@ -17781,6 +17798,9 @@ try_increase_lazy (unsigned want)
 }
 
 /* Pick a victim module to freeze its reader.  */
+// FIXME: Verify this works across reading phases.  If there's a phase
+// left to do, we must preserve the whole elf file.  Not just the tree
+// sections.
 
 void
 module_state::freeze_an_elf ()
