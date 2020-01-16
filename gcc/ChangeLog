@@ -1,3 +1,8 @@
+2020-01-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* dojump.c (split_comparison): Use HONOR_NANS rather than
+	HONOR_SNANS when splitting LTGT.
+
 2020-01-27  Martin Liska  <mliska@suse.cz>
 
 	PR driver/91220
