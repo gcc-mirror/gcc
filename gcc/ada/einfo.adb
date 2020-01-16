@@ -9599,7 +9599,7 @@ package body Einfo is
             return Empty;
          end if;
 
-      --  For non-incomplete, non-private types, return the type itself Also
+      --  For non-incomplete, non-private types, return the type itself. Also
       --  for entities that are not types at all return the entity itself.
 
       else
