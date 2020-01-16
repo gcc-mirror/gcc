@@ -11,9 +11,9 @@ ask () {
     read answer
     if [ "x$answer" = "x" ]
     then
-	eval $var=$default
+	eval $var=\"$default\"
     else
-	eval $var=$answer
+	eval $var=\"$answer\"
     fi
 }
 
@@ -30,7 +30,52 @@ git config alias.gcc-undescr \!"f() { o=\$(git config --get gcc-config.upstream)
 # *.md    diff=md
 git config diff.md.xfuncname '^\(define.*$'
 
-upstream=`git config --get "gcc-config.upstream"`
+set_user=$(git config --get "user.name")
+set_email=$(git config --get "user.email")
+
+if [ "x$set_user" = "x" ]
+then
+    # Try to guess the user's name by looking it up in the password file
+    new_user=$(getent passwd $(whoami) | awk -F: '{ print $5 }')
+    if [ "x$new_user" = "x" ]
+    then
+       new_user="(no default)"
+    fi
+else
+    new_user=$set_user
+fi
+ask "Your name" "${new_user}" new_user
+if [ "x$new_user" = "x(no default)" ]
+then
+    echo "Cannot continue, git needs to record your name against commits"
+    exit 1
+fi
+
+if [ "x$set_email" = "x" ]
+then
+    new_email="(no_default)"
+else
+    new_email=$set_email
+fi
+
+ask "Your email address (for git commits)" "${new_email}" new_email
+if [ "x$new_email" = "x(no default)" ]
+then
+    echo "Cannot continue, git needs to record your email address against commits"
+    exit 1
+fi
+
+if [ "x$set_user" != "x$new_user" ]
+then
+    git config "user.name" "$new_user"
+fi
+
+if [ "x$set_email" != "x$new_email" ]
+then
+    git config "user.email" "$new_email"
+fi
+
+upstream=$(git config --get "gcc-config.upstream")
 if [ "x$upstream" = "x" ]
 then
     upstream="origin"
@@ -38,27 +83,27 @@ fi
 ask "Local name for upstream repository" "origin" upstream
 git config "gcc-config.upstream" "$upstream"
 
-remote_id=`git config --get "gcc-config.user"`
+remote_id=$(git config --get "gcc-config.user")
 if [ "x$remote_id" = "x" ]
 then
     # See if the url specifies the remote user name.
-    url=`git config --get "remote.$upstream.url"`
+    url=$(git config --get "remote.$upstream.url")
     if [ "x$url" = "x" ]
     then
 	# This is a pure guess, but for many people it might be OK.
-	remote_id=`whoami`
+	remote_id=$(whoami)
     else
-	remote_id=`echo $url | sed -r "s|^.*ssh://(.+)@gcc.gnu.org.*$|\1|"`
+	remote_id=$(echo $url | sed -r "s|^.*ssh://(.+)@gcc.gnu.org.*$|\1|")
 	if [ x$remote_id = x$url ]
 	then
-	    remote_id=`whoami`
+	    remote_id=$(whoami)
 	fi
     fi
 fi
 ask "Account name on gcc.gnu.org (for your personal branches area)" $remote_id remote_id
 git config "gcc-config.user" "$remote_id"
 
-old_pfx=`git config --get "gcc-config.userpfx"`
+old_pfx=$(git config --get "gcc-config.userpfx")
 if [ "x$old_pfx" = "x" ]
 then
     old_pfx="me"
@@ -72,7 +117,7 @@ echo "Setting up tracking for personal namespace $remote_id in remotes/$upstream
 git config --replace-all "remote.${upstream}.fetch" "+refs/users/${remote_id}/heads/*:refs/remotes/${upstream}/${new_pfx}/*" ":refs/remotes/${upstream}/${old_pfx}/"
 git config --replace-all "remote.${upstream}.fetch" "+refs/users/${remote_id}/tags/*:refs/tags/${new_pfx}/*" ":refs/tags/${old_pfx}/"
 
-push_rule=`git config --get "remote.${upstream}.push"`
+push_rule=$(git config --get "remote.${upstream}.push")
 if [ "x$push_rule" != "x" ]
 then
     echo "***********************************************"

@@ -1,3 +1,9 @@
+2020-01-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc-git-customization.sh: Check that user.name and user.email
+	are set.  Use $(cmd) instead of `cmd`.  Fix variable quoting when
+	using eval.
+
 2020-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-git-customization.sh: Verify the id to be printed is ancestor of
