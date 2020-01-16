@@ -687,3 +687,8 @@
   BUILTIN_VSFDF (UNOP, frint32x, 0)
   BUILTIN_VSFDF (UNOP, frint64z, 0)
   BUILTIN_VSFDF (UNOP, frint64x, 0)
+
+  /* Implemented by aarch64_bfdot{_lane}{q}<mode>.  */
+  VAR2 (TERNOP, bfdot, 0, v2sf, v4sf)
+  VAR2 (QUADOP_LANE_PAIR, bfdot_lane, 0, v2sf, v4sf)
+  VAR2 (QUADOP_LANE_PAIR, bfdot_laneq, 0, v2sf, v4sf)

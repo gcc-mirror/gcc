@@ -34611,6 +34611,57 @@ vrnd64xq_f64 (float64x2_t __a)
 
 #include "arm_bf16.h"
 
+#pragma GCC push_options
+#pragma GCC target ("arch=armv8.2-a+bf16")
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfdot_f32 (float32x2_t __r, bfloat16x4_t __a, bfloat16x4_t __b)
+{
+  return __builtin_aarch64_bfdotv2sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfdotq_f32 (float32x4_t __r, bfloat16x8_t __a, bfloat16x8_t __b)
+{
+  return __builtin_aarch64_bfdotv4sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfdot_lane_f32 (float32x2_t __r, bfloat16x4_t __a, bfloat16x4_t __b,
+		 const int __index)
+{
+  return __builtin_aarch64_bfdot_lanev2sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfdotq_lane_f32 (float32x4_t __r, bfloat16x8_t __a, bfloat16x4_t __b,
+		  const int __index)
+{
+  return __builtin_aarch64_bfdot_lanev4sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfdot_laneq_f32 (float32x2_t __r, bfloat16x4_t __a, bfloat16x8_t __b,
+		  const int __index)
+{
+  return __builtin_aarch64_bfdot_laneqv2sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfdotq_laneq_f32 (float32x4_t __r, bfloat16x8_t __a, bfloat16x8_t __b,
+		   const int __index)
+{
+  return __builtin_aarch64_bfdot_laneqv4sf (__r, __a, __b, __index);
+}
+
+#pragma GCC pop_options
+
 /* AdvSIMD 8-bit Integer Matrix Multiply (I8MM) intrinsics.  */
 
 #pragma GCC push_options

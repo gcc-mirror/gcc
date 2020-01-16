@@ -1,5 +1,18 @@
 2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
+	* config/aarch64/aarch64-simd-builtins.def (aarch64_bfdot,
+	aarch64_bfdot_lane, aarch64_bfdot_laneq): New.
+	* config/aarch64/aarch64-simd.md (aarch64_bfdot, aarch64_bfdot_lane,
+	aarch64_bfdot_laneq): New.
+	* config/aarch64/arm_bf16.h (vbfdot_f32, vbfdotq_f32,
+	vbfdot_lane_f32, vbfdotq_lane_f32, vbfdot_laneq_f32,
+	vbfdotq_laneq_f32): New.
+	* config/aarch64/iterators.md (UNSPEC_BFDOT, Vbfdottype,
+	VBFMLA_W, VBF): New.
+	(isquadop): Add V4BF, V8BF.
+
+2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
 	* config/aarch64/aarch64-builtins.c: (enum aarch64_type_qualifiers):
 	New qualifier_lane_quadtup_index, TYPES_TERNOP_SSUS,
 	TYPES_QUADOPSSUS_LANE_QUADTUP, TYPES_QUADOPSSSU_LANE_QUADTUP.

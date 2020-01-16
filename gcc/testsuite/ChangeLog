@@ -1,9 +1,15 @@
 2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
-	* gcc.target/aarch64/advsimd-intrinsics/vdot-compile-3-1.c: New test.
-	* gcc.target/aarch64/advsimd-intrinsics/vdot-compile-3-2.c: New test.
-	* gcc.target/aarch64/advsimd-intrinsics/vdot-compile-3-3.c: New test.
-	* gcc.target/aarch64/advsimd-intrinsics/vdot-compile-3-4.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/bfdot-1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/bfdot-2.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/bfdot-3.c: New.
+
+2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-3-1.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-3-2.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-3-3.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-3-4.c: New test.
 
 2020-01-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 

@@ -7059,3 +7059,35 @@
   "xtn\t%0.<Vntype>, %1.<Vtype>"
   [(set_attr "type" "neon_shift_imm_narrow_q")]
 )
+
+(define_insn "aarch64_bfdot<mode>"
+  [(set (match_operand:VDQSF 0 "register_operand" "=w")
+	(plus:VDQSF
+	  (unspec:VDQSF
+	   [(match_operand:<VBFMLA_W> 2 "register_operand" "w")
+	    (match_operand:<VBFMLA_W> 3 "register_operand" "w")]
+	    UNSPEC_BFDOT)
+	  (match_operand:VDQSF 1 "register_operand" "0")))]
+  "TARGET_BF16_SIMD"
+  "bfdot\t%0.<Vtype>, %2.<Vbfdottype>, %3.<Vbfdottype>"
+  [(set_attr "type" "neon_dot<q>")]
+)
+
+(define_insn "aarch64_bfdot_lane<VBF:isquadop><VDQSF:mode>"
+  [(set (match_operand:VDQSF 0 "register_operand" "=w")
+	(plus:VDQSF
+	  (unspec:VDQSF
+	   [(match_operand:<VDQSF:VBFMLA_W> 2 "register_operand" "w")
+	    (match_operand:VBF 3 "register_operand" "w")
+	    (match_operand:SI 4 "const_int_operand" "n")]
+	    UNSPEC_BFDOT)
+	  (match_operand:VDQSF 1 "register_operand" "0")))]
+  "TARGET_BF16_SIMD"
+{
+  int nunits = GET_MODE_NUNITS (<VBF:MODE>mode).to_constant ();
+  int lane = INTVAL (operands[4]);
+  operands[4] = gen_int_mode (ENDIAN_LANE_N (nunits / 2, lane), SImode);
+  return "bfdot\t%0.<VDQSF:Vtype>, %2.<VDQSF:Vbfdottype>, %3.2h[%4]";
+}
+  [(set_attr "type" "neon_dot<VDQSF:q>")]
+)
