@@ -39,6 +39,7 @@ extern "C" {
 #endif
 
 #include <arm_fp16.h>
+#include <arm_bf16.h>
 #include <stdint.h>
 
 typedef __simd64_int8_t int8x8_t;
@@ -82,6 +83,9 @@ typedef __simd128_uint32_t uint32x4_t;
 typedef __simd128_uint64_t uint64x2_t;
 
 typedef float float32_t;
+
+typedef __simd128_bfloat16_t bfloat16x8_t;
+typedef __simd64_bfloat16_t bfloat16x4_t;
 
 /* The Poly types are user visible and live in their own world,
    keep them that way.  */

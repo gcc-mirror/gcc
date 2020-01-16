@@ -1,3 +1,29 @@
+2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config.gcc: Add arm_bf16.h.
+	* config/arm/arm-builtins.c (arm_mangle_builtin_type): Fix comment.
+	(arm_simd_builtin_std_type): Add BFmode.
+	(arm_init_simd_builtin_types): Define element types for vector types.
+	(arm_init_bf16_types): New function.
+	(arm_init_builtins): Add arm_init_bf16_types function call.
+	* config/arm/arm-modes.def: Add BFmode and V4BF, V8BF vector modes.
+	* config/arm/arm-simd-builtin-types.def: Add V4BF, V8BF.
+	* config/arm/arm.c (aapcs_vfp_sub_candidate):  Add BFmode.
+	(arm_hard_regno_mode_ok): Add BFmode and tidy up statements.
+	(arm_vector_mode_supported_p): Add V4BF, V8BF.
+	(arm_mangle_type):  Add __bf16.
+	* config/arm/arm.h: Add V4BF, V8BF to VALID_NEON_DREG_MODE, 
+	VALID_NEON_QREG_MODE respectively. Add export arm_bf16_type_node,
+	arm_bf16_ptr_type_node.
+	* config/arm/arm.md: Add BFmode to movhf expand, mov pattern and
+	define_split between ARM registers.
+	* config/arm/arm_bf16.h: New file.
+	* config/arm/arm_neon.h: Add arm_bf16.h and Bfloat vector types.
+	* config/arm/iterators.md: (ANY64_BF, VDXMOV, VHFBF, HFBF, fporbf): New.
+	(VQXMOV): Add V8BF.
+	* config/arm/neon.md: Add BF vector types to movhf NEON move patterns.
+	* config/arm/vfp.md: Add BFmode to movhf patterns.
+
 2020-01-16  Mihail Ionescu  <mihail.ionescu@arm.com>
 2020-01-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 

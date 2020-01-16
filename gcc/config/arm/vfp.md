@@ -363,32 +363,32 @@
    (set_attr "arch"           "t2,any,any,any,a,t2,any,any,any,any,any,any")]
 )
 
-;; HFmode moves
+;; HFmode and BFmode moves
 
-(define_insn "*movhf_vfp_fp16"
-  [(set (match_operand:HF 0 "nonimmediate_operand"
-			  "= r,m,t,r,t,r,t,t,Um,r")
-	(match_operand:HF 1 "general_operand"
-			  "  m,r,t,r,r,t,Dv,Um,t,F"))]
+(define_insn "*mov<mode>_vfp_<mode>16"
+  [(set (match_operand:HFBF 0 "nonimmediate_operand"
+			  "= ?r,?m,t,r,t,r,t, t, Um,r")
+	(match_operand:HFBF 1 "general_operand"
+			  "  m,r,t,r,r,t,Dv,Um,t, F"))]
   "TARGET_32BIT
    && TARGET_VFP_FP16INST
-   && (s_register_operand (operands[0], HFmode)
-       || s_register_operand (operands[1], HFmode))"
+   && (s_register_operand (operands[0], <MODE>mode)
+       || s_register_operand (operands[1], <MODE>mode))"
  {
   switch (which_alternative)
     {
     case 0: /* ARM register from memory.  */
-      return \"ldrh%?\\t%0, %1\\t%@ __fp16\";
+      return \"ldrh%?\\t%0, %1\\t%@ __<fporbf>\";
     case 1: /* Memory from ARM register.  */
-      return \"strh%?\\t%1, %0\\t%@ __fp16\";
+      return \"strh%?\\t%1, %0\\t%@ __<fporbf>\";
     case 2: /* S register from S register.  */
-      return \"vmov\\t%0, %1\t%@ __fp16\";
+      return \"vmov\\t%0, %1\t%@ __<fporbf>\";
     case 3: /* ARM register from ARM register.  */
-      return \"mov%?\\t%0, %1\\t%@ __fp16\";
+      return \"mov%?\\t%0, %1\\t%@ __<fporbf>\";
     case 4: /* S register from ARM register.  */
     case 5: /* ARM register from S register.  */
     case 6: /* S register from immediate.  */
-      return \"vmov.f16\\t%0, %1\t%@ __fp16\";
+      return \"vmov.f16\\t%0, %1\t%@ __<fporbf>\";
     case 7: /* S register from memory.  */
       return \"vld1.16\\t{%z0}, %A1\";
     case 8: /* Memory from S register.  */
@@ -399,7 +399,7 @@
 	rtx ops[4];
 
 	bits = real_to_target (NULL, CONST_DOUBLE_REAL_VALUE (operands[1]),
-			       HFmode);
+			       <MODE>mode);
 	ops[0] = operands[0];
 	ops[1] = GEN_INT (bits);
 	ops[2] = GEN_INT (bits & 0xff00);
@@ -442,14 +442,14 @@
       (const_int 8))])]
 )
 
-(define_insn "*movhf_vfp_neon"
-  [(set (match_operand:HF 0 "nonimmediate_operand" "= t,Um,r,m,t,r,t,r,r")
-	(match_operand:HF 1 "general_operand"	   " Um, t,m,r,t,r,r,t,F"))]
+(define_insn "*mov<mode>_vfp_neon"
+  [(set (match_operand:HFBF 0 "nonimmediate_operand" "= t,Um,?r,?m,t,r,t,r,r")
+	(match_operand:HFBF 1 "general_operand"	     " Um, t, m, r,t,r,r,t,F"))]
   "TARGET_32BIT
    && TARGET_HARD_FLOAT && TARGET_NEON_FP16
    && !TARGET_VFP_FP16INST
-   && (   s_register_operand (operands[0], HFmode)
-       || s_register_operand (operands[1], HFmode))"
+   && (   s_register_operand (operands[0], <MODE>mode)
+       || s_register_operand (operands[1], <MODE>mode))"
   "*
   switch (which_alternative)
     {
@@ -458,13 +458,13 @@
     case 1:     /* memory from S register */
       return \"vst1.16\\t{%z1}, %A0\";
     case 2:     /* ARM register from memory */
-      return \"ldrh\\t%0, %1\\t%@ __fp16\";
+      return \"ldrh\\t%0, %1\\t%@ __<fporbf>\";
     case 3:     /* memory from ARM register */
-      return \"strh\\t%1, %0\\t%@ __fp16\";
+      return \"strh\\t%1, %0\\t%@ __<fporbf>\";
     case 4:	/* S register from S register */
       return \"vmov.f32\\t%0, %1\";
     case 5:	/* ARM register from ARM register */
-      return \"mov\\t%0, %1\\t%@ __fp16\";
+      return \"mov\\t%0, %1\\t%@ __<fporbf>\";
     case 6:	/* S register from ARM register */
       return \"vmov\\t%0, %1\";
     case 7:	/* ARM register from S register */
@@ -475,7 +475,7 @@
 	rtx ops[4];
 
 	bits = real_to_target (NULL, CONST_DOUBLE_REAL_VALUE (operands[1]),
-			       HFmode);
+			       <MODE>mode);
 	ops[0] = operands[0];
 	ops[1] = GEN_INT (bits);
 	ops[2] = GEN_INT (bits & 0xff00);
@@ -498,26 +498,26 @@
 )
 
 ;; FP16 without element load/store instructions.
-(define_insn "*movhf_vfp"
-  [(set (match_operand:HF 0 "nonimmediate_operand" "=r,m,t,r,t,r,r")
-	(match_operand:HF 1 "general_operand"	   " m,r,t,r,r,t,F"))]
+(define_insn "*mov<mode>_vfp"
+  [(set (match_operand:HFBF 0 "nonimmediate_operand" "=r,m,t,r,t,r,r")
+	(match_operand:HFBF 1 "general_operand"	   " m,r,t,r,r,t,F"))]
   "TARGET_32BIT
    && TARGET_HARD_FLOAT
    && !TARGET_NEON_FP16
    && !TARGET_VFP_FP16INST
-   && (   s_register_operand (operands[0], HFmode)
-       || s_register_operand (operands[1], HFmode))"
+   && (   s_register_operand (operands[0], <MODE>mode)
+       || s_register_operand (operands[1], <MODE>mode))"
   "*
   switch (which_alternative)
     {
     case 0:     /* ARM register from memory */
-      return \"ldrh\\t%0, %1\\t%@ __fp16\";
+      return \"ldrh\\t%0, %1\\t%@ __<fporbf>\";
     case 1:     /* memory from ARM register */
-      return \"strh\\t%1, %0\\t%@ __fp16\";
+      return \"strh\\t%1, %0\\t%@ __<fporbf>\";
     case 2:	/* S register from S register */
       return \"vmov.f32\\t%0, %1\";
     case 3:	/* ARM register from ARM register */
-      return \"mov\\t%0, %1\\t%@ __fp16\";
+      return \"mov\\t%0, %1\\t%@ __<fporbf>\";
     case 4:	/* S register from ARM register */
       return \"vmov\\t%0, %1\";
     case 5:	/* ARM register from S register */
@@ -528,7 +528,7 @@
 	rtx ops[4];
 
 	bits = real_to_target (NULL, CONST_DOUBLE_REAL_VALUE (operands[1]),
-			       HFmode);
+			       <MODE>mode);
 	ops[0] = operands[0];
 	ops[1] = GEN_INT (bits);
 	ops[2] = GEN_INT (bits & 0xff00);

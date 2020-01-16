@@ -81,6 +81,11 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
    the backend.  Defined in arm-builtins.c.  */
 extern tree arm_fp16_type_node;
 
+/* This type is the user-visible __bf16.  We need it in a few places in
+   the backend.  Defined in arm-builtins.c.  */
+extern tree arm_bf16_type_node;
+extern tree arm_bf16_ptr_type_node;
+
 
 #undef  CPP_SPEC
 #define CPP_SPEC "%(subtarget_cpp_spec)					\
@@ -1033,12 +1038,14 @@ extern int arm_arch_bf16;
 /* Modes valid for Neon D registers.  */
 #define VALID_NEON_DREG_MODE(MODE) \
   ((MODE) == V2SImode || (MODE) == V4HImode || (MODE) == V8QImode \
-   || (MODE) == V4HFmode || (MODE) == V2SFmode || (MODE) == DImode)
+   || (MODE) == V4HFmode || (MODE) == V2SFmode || (MODE) == DImode \
+   || (MODE) == V4BFmode)
 
 /* Modes valid for Neon Q registers.  */
 #define VALID_NEON_QREG_MODE(MODE) \
   ((MODE) == V4SImode || (MODE) == V8HImode || (MODE) == V16QImode \
-   || (MODE) == V8HFmode || (MODE) == V4SFmode || (MODE) == V2DImode)
+   || (MODE) == V8HFmode || (MODE) == V4SFmode || (MODE) == V2DImode \
+   || (MODE) == V8BFmode)
 
 /* Structure modes valid for Neon registers.  */
 #define VALID_NEON_STRUCT_MODE(MODE) \

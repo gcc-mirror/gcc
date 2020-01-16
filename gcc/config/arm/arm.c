@@ -6081,7 +6081,7 @@ aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep)
     {
     case REAL_TYPE:
       mode = TYPE_MODE (type);
-      if (mode != DFmode && mode != SFmode && mode != HFmode)
+      if (mode != DFmode && mode != SFmode && mode != HFmode && mode != BFmode)
 	return -1;
 
       if (*modep == VOIDmode)
@@ -24866,17 +24866,11 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 
   if (TARGET_HARD_FLOAT && IS_VFP_REGNUM (regno))
     {
-      if (mode == SFmode || mode == SImode)
-	return VFP_REGNO_OK_FOR_SINGLE (regno);
-
       if (mode == DFmode)
 	return VFP_REGNO_OK_FOR_DOUBLE (regno);
 
-      if (mode == HFmode)
-	return VFP_REGNO_OK_FOR_SINGLE (regno);
-
-      /* VFP registers can hold HImode values.  */
-      if (mode == HImode)
+      if (mode == HFmode || mode == BFmode || mode == HImode
+	  || mode == SFmode || mode == SImode)
 	return VFP_REGNO_OK_FOR_SINGLE (regno);
 
       if (TARGET_NEON)
@@ -28462,7 +28456,8 @@ arm_vector_mode_supported_p (machine_mode mode)
   /* Neon also supports V2SImode, etc. listed in the clause below.  */
   if (TARGET_NEON && (mode == V2SFmode || mode == V4SImode || mode == V8HImode
       || mode == V4HFmode || mode == V16QImode || mode == V4SFmode
-      || mode == V2DImode || mode == V8HFmode))
+      || mode == V2DImode || mode == V8HFmode || mode == V4BFmode
+      || mode == V8BFmode))
     return true;
 
   if ((TARGET_NEON || TARGET_IWMMXT)
@@ -29366,9 +29361,14 @@ arm_mangle_type (const_tree type)
       && lang_hooks.types_compatible_p (CONST_CAST_TREE (type), va_list_type))
     return "St9__va_list";
 
-  /* Half-precision float.  */
+  /* Half-precision floating point types.  */
   if (TREE_CODE (type) == REAL_TYPE && TYPE_PRECISION (type) == 16)
-    return "Dh";
+    {
+      if (TYPE_MODE (type) == BFmode)
+	return "u6__bf16";
+      else
+	return "Dh";
+    }
 
   /* Try mangling as a Neon type, TYPE_NAME is non-NULL if this is a
      builtin type.  */

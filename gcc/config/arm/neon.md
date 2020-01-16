@@ -34,9 +34,9 @@
   [(set_attr "type" "neon_store1_1reg")])
 
 (define_insn "*neon_mov<mode>"
-  [(set (match_operand:VDX 0 "nonimmediate_operand"
+  [(set (match_operand:VDXMOV 0 "nonimmediate_operand"
 	  "=w,Un,w, w, w,  ?r,?w,?r, ?Us,*r")
-	(match_operand:VDX 1 "general_operand"
+	(match_operand:VDXMOV 1 "general_operand"
 	  " w,w, Dm,Dn,Uni, w, r, Usi,r,*r"))]
   "TARGET_NEON
    && (register_operand (operands[0], <MODE>mode)
@@ -161,8 +161,8 @@
 })
 
 (define_expand "mov<mode>"
-  [(set (match_operand:VH 0 "s_register_operand")
-	(match_operand:VH 1 "s_register_operand"))]
+  [(set (match_operand:VHFBF 0 "s_register_operand")
+	(match_operand:VHFBF 1 "s_register_operand"))]
   "TARGET_NEON"
 {
   gcc_checking_assert (aligned_operand (operands[0], <MODE>mode));

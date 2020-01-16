@@ -1,3 +1,21 @@
+2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* g++.dg/abi/mangle-neon.C: Add BF16 SIMD types.
+	* g++.dg/ext/arm-bf16/bf16-mangle-1.C: New test.
+	* gcc.target/arm/bfloat16_scalar_1_1.c: New test.
+	* gcc.target/arm/bfloat16_scalar_1_2.c: New test.
+	* gcc.target/arm/bfloat16_scalar_2_1.c: New test.
+	* gcc.target/arm/bfloat16_scalar_2_2.c: New test.
+	* gcc.target/arm/bfloat16_scalar_3_1.c: New test.
+	* gcc.target/arm/bfloat16_scalar_3_2.c: New test.
+	* gcc.target/arm/bfloat16_scalar_4.c: New test.
+	* gcc.target/arm/bfloat16_simd_1_1.c: New test.
+	* gcc.target/arm/bfloat16_simd_1_2.c: New test.
+	* gcc.target/arm/bfloat16_simd_2_1.c: New test.
+	* gcc.target/arm/bfloat16_simd_2_2.c: New test.
+	* gcc.target/arm/bfloat16_simd_3_1.c: New test.
+	* gcc.target/arm/bfloat16_simd_3_2.c: New test.
+
 2020-01-16  Mihail Ionescu  <mihail.ionescu@arm.com>
 2020-01-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
