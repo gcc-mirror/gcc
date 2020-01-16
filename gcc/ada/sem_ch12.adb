@@ -7431,35 +7431,25 @@ package body Sem_Ch12 is
            and then Present (Full_View (T))
            and then not In_Open_Scopes (Scope (T))
          then
-            --  In the generic, the full type was visible. Save the private
-            --  entity, for subsequent exchange.
+            --  In the generic, the full declaration was visible
 
             Switch_View (T);
 
          elsif Has_Private_View (N)
            and then not Is_Private_Type (T)
            and then not Has_Been_Exchanged (T)
-           and then Etype (Get_Associated_Node (N)) /= T
+           and then (not In_Open_Scopes (Scope (T))
+                      or else Nkind (Parent (N)) = N_Subtype_Declaration)
          then
-            --  Only the private declaration was visible in the generic. If
-            --  the type appears in a subtype declaration, the subtype in the
+            --  In the generic, only the private declaration was visible
+
+            --  If the type appears in a subtype declaration, the subtype in
             --  instance must have a view compatible with that of its parent,
             --  which must be exchanged (see corresponding code in Restore_
-            --  Private_Views). Otherwise, if the type is defined in a parent
-            --  unit, leave full visibility within instance, which is safe.
+            --  Private_Views) so we make an exception to the open scope rule.
 
-            if In_Open_Scopes (Scope (Base_Type (T)))
-              and then not Is_Private_Type (Base_Type (T))
-              and then Comes_From_Source (Base_Type (T))
-            then
-               null;
-
-            elsif Nkind (Parent (N)) = N_Subtype_Declaration
-              or else not In_Private_Part (Scope (Base_Type (T)))
-            then
-               Prepend_Elmt (T, Exchanged_Views);
-               Exchange_Declarations (Etype (Get_Associated_Node (N)));
-            end if;
+            Prepend_Elmt (T, Exchanged_Views);
+            Exchange_Declarations (Etype (Get_Associated_Node (N)));
 
          --  For composite types with inconsistent representation exchange
          --  component types accordingly.
