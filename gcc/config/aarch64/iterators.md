@@ -22,6 +22,9 @@
 ;; Mode Iterators
 ;; -------------------------------------------------------------------
 
+;; Condition-code iterators.
+(define_mode_iterator CC_ONLY [CC])
+(define_mode_iterator CCFP_CCFPE [CCFP CCFPE])
 
 ;; Iterator for General Purpose Integer registers (32- and 64-bit modes)
 (define_mode_iterator GPI [SI DI])
@@ -832,6 +835,9 @@
 ;; -------------------------------------------------------------------
 ;; Mode attributes
 ;; -------------------------------------------------------------------
+
+;; "e" for signaling operations, "" for quiet operations.
+(define_mode_attr e [(CCFP "") (CCFPE "e")])
 
 ;; In GPI templates, a string like "%<w>0" will expand to "%w0" in the
 ;; 32-bit version and "%x0" in the 64-bit version.

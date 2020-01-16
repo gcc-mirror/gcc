@@ -1026,12 +1026,10 @@ typedef struct
 
 #define SELECT_CC_MODE(OP, X, Y)	aarch64_select_cc_mode (OP, X, Y)
 
-#define REVERSIBLE_CC_MODE(MODE) 1
-
-#define REVERSE_CONDITION(CODE, MODE)		\
-  (((MODE) == CCFPmode || (MODE) == CCFPEmode)	\
-   ? reverse_condition_maybe_unordered (CODE)	\
-   : reverse_condition (CODE))
+/* Having an integer comparison mode guarantees that we can use
+   reverse_condition, but the usual restrictions apply to floating-point
+   comparisons.  */
+#define REVERSIBLE_CC_MODE(MODE) ((MODE) != CCFPmode && (MODE) != CCFPEmode)
 
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
   ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)

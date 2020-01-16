@@ -1,5 +1,25 @@
 2020-01-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.h (REVERSIBLE_CC_MODE): Return false
+	for FP modes.
+	(REVERSE_CONDITION): Delete.
+	* config/aarch64/iterators.md (CC_ONLY): New mode iterator.
+	(CCFP_CCFPE): Likewise.
+	(e): New mode attribute.
+	* config/aarch64/aarch64.md (ccmp<GPI:mode>): Rename to...
+	(@ccmp<CC_ONLY:mode><GPI:mode>): ...this, using CC_ONLY instead of CC.
+	(fccmp<GPF:mode>, fccmpe<GPF:mode>): Merge into...
+	(@ccmp<CCFP_CCFPE:mode><GPF:mode>): ...this combined pattern.
+	(@ccmp<CC_ONLY:mode><GPI:mode>_rev): New pattern.
+	(@ccmp<CCFP_CCFPE:mode><GPF:mode>_rev): Likewise.
+	* config/aarch64/aarch64.c (aarch64_gen_compare_reg): Update
+	name of generator from gen_ccmpdi to gen_ccmpccdi.
+	(aarch64_gen_ccmp_next): Use code_for_ccmp.  If we want to reverse
+	the previous comparison but aren't able to, use the new ccmp_rev
+	patterns instead.
+
+2020-01-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gimplify.c (gimplify_return_expr): Use poly_int_tree_p rather
 	than testing directly for INTEGER_CST.
 	(gimplify_target_expr, gimplify_omp_depend): Likewise.

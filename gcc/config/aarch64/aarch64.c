@@ -2345,9 +2345,9 @@ aarch64_gen_compare_reg (RTX_CODE code, rtx x, rtx y)
 
       rtx x_hi = operand_subword (x, 1, 0, TImode);
       rtx y_hi = operand_subword (y, 1, 0, TImode);
-      emit_insn (gen_ccmpdi (cc_reg, cc_reg, x_hi, y_hi,
-			     gen_rtx_EQ (cc_mode, cc_reg, const0_rtx),
-			     GEN_INT (AARCH64_EQ)));
+      emit_insn (gen_ccmpccdi (cc_reg, cc_reg, x_hi, y_hi,
+			       gen_rtx_EQ (cc_mode, cc_reg, const0_rtx),
+			       GEN_INT (AARCH64_EQ)));
     }
   else
     {
@@ -20270,30 +20270,28 @@ aarch64_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
     case E_HImode:
     case E_SImode:
       cmp_mode = SImode;
-      icode = CODE_FOR_ccmpsi;
       break;
 
     case E_DImode:
       cmp_mode = DImode;
-      icode = CODE_FOR_ccmpdi;
       break;
 
     case E_SFmode:
       cmp_mode = SFmode;
       cc_mode = aarch64_select_cc_mode ((rtx_code) cmp_code, op0, op1);
-      icode = cc_mode == CCFPEmode ? CODE_FOR_fccmpesf : CODE_FOR_fccmpsf;
       break;
 
     case E_DFmode:
       cmp_mode = DFmode;
       cc_mode = aarch64_select_cc_mode ((rtx_code) cmp_code, op0, op1);
-      icode = cc_mode == CCFPEmode ? CODE_FOR_fccmpedf : CODE_FOR_fccmpdf;
       break;
 
     default:
       end_sequence ();
       return NULL_RTX;
     }
+
+  icode = code_for_ccmp (cc_mode, cmp_mode);
 
   op0 = prepare_operand (icode, op0, 2, op_mode, cmp_mode, unsignedp);
   op1 = prepare_operand (icode, op1, 3, op_mode, cmp_mode, unsignedp);
@@ -20310,9 +20308,21 @@ aarch64_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
 
   if (bit_code != AND)
     {
-      prev = gen_rtx_fmt_ee (REVERSE_CONDITION (GET_CODE (prev),
-						GET_MODE (XEXP (prev, 0))),
-			     VOIDmode, XEXP (prev, 0), const0_rtx);
+      /* Treat the ccmp patterns as canonical and use them where possible,
+	 but fall back to ccmp_rev patterns if there's no other option.  */
+      rtx_code prev_code = GET_CODE (prev);
+      machine_mode prev_mode = GET_MODE (XEXP (prev, 0));
+      if ((prev_mode == CCFPmode || prev_mode == CCFPEmode)
+	  && !(prev_code == EQ
+	       || prev_code == NE
+	       || prev_code == ORDERED
+	       || prev_code == UNORDERED))
+	icode = code_for_ccmp_rev (cc_mode, cmp_mode);
+      else
+	{
+	  rtx_code code = reverse_condition (prev_code);
+	  prev = gen_rtx_fmt_ee (code, VOIDmode, XEXP (prev, 0), const0_rtx);
+	}
       aarch64_cond = AARCH64_INVERSE_CONDITION_CODE (aarch64_cond);
     }
 
