@@ -1,5 +1,9 @@
 2020-01-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/93286 - ICE with __is_constructible and variadic template.
+	* pt.c (tsubst) [TREE_LIST]: Handle pack expansion.
+	(tsubst_copy_and_build) [TRAIT_EXPR]: Always use tsubst for type2.
+
 	PR c++/93280 - ICE with aggregate assignment and DMI.
 	* init.c (get_nsdmi): Set TARGET_EXPR_DIRECT_INIT_P here.
 	* typeck2.c (digest_nsdmi_init): Not here.
