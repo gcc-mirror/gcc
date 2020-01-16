@@ -1,3 +1,9 @@
+2020-01-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93280 - ICE with aggregate assignment and DMI.
+	* init.c (get_nsdmi): Set TARGET_EXPR_DIRECT_INIT_P here.
+	* typeck2.c (digest_nsdmi_init): Not here.
+
 2020-01-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/91073
