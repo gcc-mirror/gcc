@@ -433,7 +433,7 @@ match_boz_constant (gfc_expr **result)
 
   if (x_hex
       && gfc_invalid_boz ("Hexadecimal constant at %L uses "
-			  "nonstandard syntax", &gfc_current_locus))
+			  "nonstandard X instead of Z", &gfc_current_locus))
     return MATCH_ERROR;
 
   old_loc = gfc_current_locus;

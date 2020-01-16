@@ -1,3 +1,8 @@
+2020-01-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93253
+	* fortran.dg/boz_7.f90: Updated dg-error.
+
 2020-01-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/91073

@@ -1863,9 +1863,12 @@ Fortran standard states that the treatment of the sign bit is processor
 dependent.  Gfortran interprets the sign bit as a user would expect.
 
 As a deprecated extension, GNU Fortran allows hexadecimal BOZ literal
-constants to be specified using the @code{X} prefix.  The BOZ literal
+constants to be specified using the @code{X} prefix.  That the BOZ literal
 constant can also be specified by adding a suffix to the string, for
-example, @code{Z'ABC'} and @code{'ABC'X} are equivalent.
+example, @code{Z'ABC'} and @code{'ABC'X} are equivalent.  Additionally,
+as extension, BOZ literals are permitted in some contexts outside of
+@code{DATA} and the intrinsic functions listed in the Fortran standard.
+Use @option{-fallow-invalid-boz} to enable the extension.
 
 @node Real array indices
 @subsection Real array indices
