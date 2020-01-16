@@ -13126,7 +13126,7 @@ package body Sem_Util is
             Ent : Entity_Id := First_Entity (Limited_View (Scope (Typ)));
          begin
             while Present (Ent) loop
-               if Ekind (Ent) in Incomplete_Kind
+               if Is_Incomplete_Type (Ent)
                  and then Non_Limited_View (Ent) = Typ
                then
                   return Ent;
