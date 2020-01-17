@@ -1,3 +1,14 @@
+2020-01-21  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/9311
+	* config/aarch64/aarch64.md (tlsgd_small_<mode>): Have operand 0
+	as PTR mode. Have operand 1 as being modeless, it can be P mode.
+	(*tlsgd_small_<mode>): Likewise.
+	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately)
+	<case SYMBOL_SMALL_TLSGD>: Call gen_tlsgd_small_* with a ptr_mode
+	register.  Convert that register back to dest using convert_mode.
+
+
 2020-01-21  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/riscv-sr.c (riscv_sr_match_prologue): Use INTVAL
