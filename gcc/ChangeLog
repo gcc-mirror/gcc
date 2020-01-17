@@ -54,7 +54,7 @@
 	* config/arm/vfp.md: Add BFmode to movhf patterns.
 
 2020-01-16  Mihail Ionescu  <mihail.ionescu@arm.com>
-2020-01-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* config/arm/arm-cpus.in (mve, mve_float): New features.
 	(dsp, mve, mve.fp): New options.
@@ -63,7 +63,7 @@
 	* doc/invoke.texi: Document the armv8.1-m mve and dps options.
 
 2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
-2020-01-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
+	    Thomas Preud'homme <thomas.preudhomme@arm.com>
 
 	* config/arm/arm-cpus.in (ARMv8_1m_main): Redefine as an extension to
 	Armv8-M Mainline.
@@ -71,7 +71,7 @@
 	error for using -mcmse when targeting Armv8.1-M Mainline.
 
 2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
-2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.md (nonsecure_call_internal): Do not force memory
 	address in r4 when targeting Armv8.1-M Mainline.
@@ -82,7 +82,7 @@
 	(nonsecure_call_value_reg_thumb2): Likewise.
 
 2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
-2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.c (arm_add_cfa_adjust_cfa_note): Declare early.
 	(cmse_nonsecure_call_inline_register_clear): Define new lazy_fpclear
@@ -96,7 +96,7 @@
 	(lazy_load_multiple_insn): Likewise.
 
 2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
-2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.c (vfp_emit_fstmd): Declare early.
 	(arm_emit_vfp_multi_reg_pop): Likewise.
@@ -105,7 +105,7 @@
 	restore callee-saved VFP registers.
 
 2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
-2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.c (arm_emit_multi_reg_pop): Declare early.
 	(cmse_nonsecure_call_clear_caller_saved): Rename into ...
@@ -116,7 +116,7 @@
 	(arm_reorg): Adapt to function rename.
 
 2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
-2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm-protos.h (clear_operation_p): Adapt prototype.
 	* config/arm/arm.c (clear_operation_p): Extend to be able to check a
@@ -134,7 +134,7 @@
 	* config/arm/vfp.md (clear_vfp_multiple): New define_insn.
 
 2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
-2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm-protos.h (clear_operation_p): Declare.
 	* config/arm/arm.c (clear_operation_p): New function.
@@ -149,7 +149,7 @@
 	* config/arm/unspecs.md (VUNSPEC_CLRM_APSR): New volatile unspec.
 
 2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
-2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.c (fp_sysreg_names): Declare and define.
 	(use_return_insn): Also return false for Armv8.1-M Mainline.
@@ -173,7 +173,7 @@
 	(pop_fpsysreg_insn): Likewise.
 
 2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
-2020-01-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
+	    Thomas Preud'homme <thomas.preudhomme@arm.com>
 
 	* config/arm/arm-cpus.in (armv8_1m_main): New feature.
 	(ARMv4, ARMv4t, ARMv5t, ARMv5te, ARMv5tej, ARMv6, ARMv6j, ARMv6k,

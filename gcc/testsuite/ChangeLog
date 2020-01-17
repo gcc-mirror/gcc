@@ -30,12 +30,12 @@
 	* gcc.target/arm/bfloat16_simd_3_2.c: New test.
 
 2020-01-16  Mihail Ionescu  <mihail.ionescu@arm.com>
-2020-01-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* testsuite/gcc.target/arm/multilib.exp: Add v8.1-M entries.
 
 2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
-2020-01-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
+	    Thomas Preud'homme <thomas.preudhomme@arm.com>
 
 	* gcc.target/arm/cmse/cmse-1.c: Add check for BLXNS when instructions
 	introduced in Armv8.1-M Mainline Security Extensions are available and
@@ -72,7 +72,7 @@
 	Mainline and restrict libcall count to Armv8-M.
 
 2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
-2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-13.c: Add check for VLSTM and
 	VLLDM.
@@ -85,7 +85,7 @@
 	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-8.c: Likewise.
 
 2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
-2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-13.c: Add check for
 	VPUSH and VPOP and update expectation for VSCCLRM.
@@ -96,7 +96,7 @@
 	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-8.c: Likewise.
 
 2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
-2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.target/arm/cmse/cmse-1.c: Add check for PUSH and POP and update
 	CLRM check.
@@ -126,7 +126,7 @@
 	* gcc.target/arm/cmse/mainline/8_1m/softfp/union-2.c: Likewise.
 
 2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
-2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.target/arm/cmse/bitfield-1.c: Add check for VSCCLRM.
 	* gcc.target/arm/cmse/bitfield-2.c: Likewise.
@@ -146,7 +146,7 @@
 	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-5.c: Likewise.
 
 2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
-2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.target/arm/cmse/bitfield-1.c: Add check for CLRM.
 	* gcc.target/arm/cmse/bitfield-2.c: Likewise.
@@ -184,7 +184,7 @@
 	* gcc.target/arm/cmse/mainline/8_1m/union-2.c: Likewise.
 
 2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
-2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.target/arm/cmse/bitfield-1.c: add checks for VSTR and VLDR.
 	* gcc.target/arm/cmse/bitfield-2.c: Likewise.
@@ -302,7 +302,7 @@
 	New procedure.
 
 2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
-2020-01-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
+	    Thomas Preud'homme <thomas.preudhomme@arm.com>
 
 	* lib/target-supports.exp
 	(check_effective_target_arm_arch_v8_1m_main_ok): Define.
