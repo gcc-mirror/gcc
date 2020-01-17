@@ -4399,6 +4399,22 @@
                    (match_operand:SI 2 "reg_or_int_operand")))]
   "TARGET_32BIT"
   "
+  if (TARGET_HAVE_MVE)
+    {
+      if (!reg_or_int_operand (operands[2], SImode))
+        operands[2] = force_reg (SImode, operands[2]);
+
+      /* Armv8.1-M Mainline double shifts are not expanded.  */
+      if (REG_P (operands[2]))
+	{
+	  if (!reg_overlap_mentioned_p(operands[0], operands[1]))
+	    emit_insn (gen_movdi (operands[0], operands[1]));
+
+	  emit_insn (gen_thumb2_lsll (operands[0], operands[2]));
+	  DONE;
+	}
+    }
+
   arm_emit_coreregs_64bit_shift (ASHIFT, operands[0], operands[1],
 				 operands[2], gen_reg_rtx (SImode),
 				 gen_reg_rtx (SImode));
@@ -4426,6 +4442,16 @@
                      (match_operand:SI 2 "reg_or_int_operand")))]
   "TARGET_32BIT"
   "
+  /* Armv8.1-M Mainline double shifts are not expanded.  */
+  if (TARGET_HAVE_MVE && REG_P (operands[2]))
+    {
+      if (!reg_overlap_mentioned_p(operands[0], operands[1]))
+	emit_insn (gen_movdi (operands[0], operands[1]));
+
+      emit_insn (gen_thumb2_asrl (operands[0], operands[2]));
+      DONE;
+    }
+
   arm_emit_coreregs_64bit_shift (ASHIFTRT, operands[0], operands[1],
 				 operands[2], gen_reg_rtx (SImode),
 				 gen_reg_rtx (SImode));

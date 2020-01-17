@@ -24906,14 +24906,16 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 
   /* We allow almost any value to be stored in the general registers.
      Restrict doubleword quantities to even register pairs in ARM state
-     so that we can use ldrd.  Do not allow very large Neon structure
-     opaque modes in general registers; they would use too many.  */
+     so that we can use ldrd. The same restriction applies for MVE
+     in order to support Armv8.1-M Mainline instructions.
+     Do not allow very large Neon structure  opaque modes in general
+     registers; they would use too many.  */
   if (regno <= LAST_ARM_REGNUM)
     {
       if (ARM_NUM_REGS (mode) > 4)
 	return false;
 
-      if (TARGET_THUMB2)
+      if (TARGET_THUMB2 && !TARGET_HAVE_MVE)
 	return true;
 
       return !(TARGET_LDRD && GET_MODE_SIZE (mode) > 4 && (regno & 1) != 0);

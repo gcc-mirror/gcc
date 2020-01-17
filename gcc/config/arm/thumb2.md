@@ -1626,3 +1626,19 @@
   }
   [(set_attr "predicable" "yes")]
 )
+
+(define_insn "thumb2_asrl"
+  [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
+	(ashiftrt:DI (match_dup 0)
+		     (match_operand:SI 1 "arm_general_register_operand" "r")))]
+  "TARGET_HAVE_MVE"
+  "asrl%?\\t%Q0, %R0, %1"
+  [(set_attr "predicable" "yes")])
+
+(define_insn "thumb2_lsll"
+  [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
+	(ashift:DI (match_dup 0)
+		   (match_operand:SI 1 "arm_general_register_operand" "r")))]
+  "TARGET_HAVE_MVE"
+  "lsll%?\\t%Q0, %R0, %1"
+  [(set_attr "predicable" "yes")])
