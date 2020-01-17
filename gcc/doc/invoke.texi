@@ -16970,6 +16970,10 @@ Enable 8-bit Integer Matrix Multiply instructions.  This also enables
 Advanced SIMD and floating-point instructions.  This option is enabled by
 default for @option{-march=armv8.6-a}.  Use of this option with architectures
 prior to Armv8.2-A is not supported.
+@item f64mm
+Enable 64-bit Floating point Matrix Multiply instructions.  This also enables
+SVE instructions.  Use of this option with architectures prior to Armv8.2-A is
+not supported.
 @item bf16
 Enable brain half-precision floating-point instructions.  This also enables
 Advanced SIMD and floating-point instructions.  This option is enabled by

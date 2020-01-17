@@ -1,3 +1,8 @@
+2020-01-17  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.target/aarch64/pragma_cpp_predefs_2.c: Check for f64mm
+	predef.
+
 2020-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/93228

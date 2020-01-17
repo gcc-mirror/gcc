@@ -1,3 +1,17 @@
+2020-01-17  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/aarch64/aarch64-c.c (_ARM_FEATURE_MATMUL_FLOAT64):
+	Introduce this ACLE specified predefined macro.
+	* config/aarch64/aarch64-option-extensions.def (f64mm): New.
+	(fp): Disabling this disables f64mm.
+	(simd): Disabling this disables f64mm.
+	(fp16): Disabling this disables f64mm.
+	(sve): Disabling this disables f64mm.
+	* config/aarch64/aarch64.h (AARCH64_FL_F64MM): New.
+	(AARCH64_ISA_F64MM): New.
+	(TARGET_F64MM): New.
+	* doc/invoke.texi (f64mm): Document new option.
+
 2020-01-17  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (generic_tunings): Add branch fusion.
