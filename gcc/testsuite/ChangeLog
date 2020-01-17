@@ -1,3 +1,40 @@
+2020-01-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/CVE-2005-1689-dedupe-issue.c: Ensure that all
+	test names are unique.
+	* gcc.dg/analyzer/attribute-nonnull.c: Likewise.
+	* gcc.dg/analyzer/conditionals-notrans.c: Likewise.
+	* gcc.dg/analyzer/data-model-1.c: Likewise.
+	* gcc.dg/analyzer/data-model-18.c: Likewise.
+	* gcc.dg/analyzer/data-model-8.c: Likewise.
+	* gcc.dg/analyzer/data-model-9.c: Likewise.
+	* gcc.dg/analyzer/file-1.c: Likewise.
+	* gcc.dg/analyzer/file-paths-1.c: Likewise.
+	* gcc.dg/analyzer/loop-2.c: Likewise.
+	* gcc.dg/analyzer/loop-2a.c: Likewise.
+	* gcc.dg/analyzer/loop-4.c: Likewise.
+	* gcc.dg/analyzer/loop.c: Likewise.
+	* gcc.dg/analyzer/malloc-1.c: Likewise.
+	* gcc.dg/analyzer/malloc-2.c: Likewise.
+	* gcc.dg/analyzer/malloc-ipa-10.c: Likewise.
+	* gcc.dg/analyzer/malloc-ipa-2.c: Likewise.
+	* gcc.dg/analyzer/malloc-macro-separate-events.c: Likewise.
+	* gcc.dg/analyzer/malloc-paths-1.c: Likewise.
+	* gcc.dg/analyzer/malloc-paths-2.c: Likewise.
+	* gcc.dg/analyzer/malloc-paths-3.c: Likewise.
+	* gcc.dg/analyzer/malloc-paths-4.c: Likewise.
+	* gcc.dg/analyzer/malloc-paths-5.c: Likewise.
+	* gcc.dg/analyzer/malloc-paths-7.c: Likewise.
+	* gcc.dg/analyzer/malloc-paths-9.c: Likewise.
+	* gcc.dg/analyzer/operations.c: Likewise.
+	* gcc.dg/analyzer/params.c: Likewise.
+	* gcc.dg/analyzer/pattern-test-1.c: Likewise.
+	* gcc.dg/analyzer/pattern-test-2.c: Likewise.
+	* gcc.dg/analyzer/sensitive-1.c: Likewise.
+	* gcc.dg/analyzer/switch.c: Likewise.
+	* gcc.dg/analyzer/taint-1.c: Likewise.
+	* gcc.dg/analyzer/unknown-fns.c: Likewise.
+
 2020-01-19  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/torture/pr26515.c (cris*-*-*): Conditionalize

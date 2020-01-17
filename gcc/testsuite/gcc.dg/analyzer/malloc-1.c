@@ -474,8 +474,8 @@ test_41 (int flag)
     buffer = NULL;
   }
 
-  buffer[0] = 'a'; /* { dg-warning "dereference of possibly-NULL 'buffer'" } */
-  /* { dg-warning "dereference of NULL 'buffer'" "" { target *-*-* } .-1 } */
+  buffer[0] = 'a'; /* { dg-warning "dereference of possibly-NULL 'buffer'" "possibly-NULL" } */
+  /* { dg-warning "dereference of NULL 'buffer'" "NULL" { target *-*-* } .-1 } */
 
   return buffer;
 }

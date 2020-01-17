@@ -8,7 +8,7 @@ int *test_3 (void)
   *ptr = 42; /* { dg-line unchecked_deref } */
   return ptr;
 
-  /* { dg-warning "dereference of possibly-NULL 'ptr'" "" { target *-*-* } unchecked_deref } */
-  /* { dg-message "\\(1\\) this call could return NULL" "" { target *-*-* } malloc } */
-  /* { dg-message "\\(2\\) 'ptr' could be NULL" "" { target *-*-* } unchecked_deref } */
+  /* { dg-warning "dereference of possibly-NULL 'ptr'" "warning" { target *-*-* } unchecked_deref } */
+  /* { dg-message "\\(1\\) this call could return NULL" "event 1" { target *-*-* } malloc } */
+  /* { dg-message "\\(2\\) 'ptr' could be NULL" "event 2" { target *-*-* } unchecked_deref } */
 }

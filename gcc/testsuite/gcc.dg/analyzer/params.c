@@ -8,8 +8,8 @@ static int called_function(int j)
 
   k = j - 1;
 
-  __analyzer_eval (k > 3); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (k > 3); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
   /* TODO(xfail): we're not then updating based on the assignment.  */
 
   return k;
@@ -25,8 +25,8 @@ void test(int i)
 
     i = called_function(i);
 
-    __analyzer_eval (i > 3); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-    /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+    __analyzer_eval (i > 3); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+    /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
     /* TODO(xfail): we're not updating from the returned value.  */
   }
 

@@ -29,8 +29,8 @@ void test(void)
 
   __analyzer_eval (s.i >= 256); /* { dg-warning "TRUE" } */
 
-  __analyzer_eval (s.i == 256); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (s.i == 256); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
   /* TODO(xfail^^^): ideally it should figure out i == 256 at exit.  */
 
   __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 exploded node" } */

@@ -14,8 +14,8 @@ void test_1 (void)
   struct foo *f = calloc (1, sizeof (struct foo));
   if (f == NULL)
     return;
-  __analyzer_eval (f->i == 0); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-bogus "UNKNOWN" "" { xfail *-*-* } .-1 } */
+  __analyzer_eval (f->i == 0); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
   free (f);
 }
 
@@ -27,7 +27,7 @@ void test_2 (void)
   if (f == NULL)
     return;
   memset (f, 0, sizeof (struct foo));
-  __analyzer_eval (f->i == 0); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-bogus "UNKNOWN" "" { xfail *-*-* } .-1 } */
+  __analyzer_eval (f->i == 0); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
   free (f);
 }

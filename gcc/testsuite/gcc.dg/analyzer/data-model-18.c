@@ -16,7 +16,7 @@ void test (int *p, int i, int j)
 
   __analyzer_eval (p[3] == 42); /* { dg-warning "UNKNOWN" } */
   __analyzer_eval (p[i] == 17); /* { dg-warning "TRUE" } */
-  __analyzer_eval (p[j] == 17); /* { dg-warning "UNKNOWN" "" { xfail *-*-* } } */
-  /* { dg-bogus "TRUE" "" { xfail *-*-* } .-1 } */
+  __analyzer_eval (p[j] == 17); /* { dg-warning "UNKNOWN" "desired" { xfail *-*-* } } */
+  /* { dg-bogus "TRUE" "status quo" { xfail *-*-* } .-1 } */
   // FIXME(xfails) ^^^
 }
