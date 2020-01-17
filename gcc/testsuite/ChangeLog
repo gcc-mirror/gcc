@@ -1,3 +1,8 @@
+2020-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93228
+	* g++.dg/cpp1y/attr-deprecated-3.C: New test.
+
 2020-01-17  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* g++.target/aarch64/sve/acle/general-c++/gimplify_1.C: New test.
