@@ -1,5 +1,10 @@
 2020-01-17  Matthew Malcomson  <matthew.malcomson@arm.com>
 
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_ld1ro<mode>): Use the
+	correct target macro.
+
+2020-01-17  Matthew Malcomson  <matthew.malcomson@arm.com>
+
 	* config/aarch64/aarch64-protos.h
 	(aarch64_sve_ld1ro_operand_p): New.
 	* config/aarch64/aarch64-sve-builtins-base.cc

@@ -2502,7 +2502,7 @@
 	   (match_operand:OI 1 "aarch64_sve_ld1ro_operand_<Vesize>"
 			       "UO<Vesize>")]
 	  UNSPEC_LD1RO))]
-  "TARGET_SVE && TARGET_ARMV8_6"
+  "TARGET_SVE && TARGET_F64MM"
   {
     operands[1] = gen_rtx_MEM (<VEL>mode, XEXP (operands[1], 0));
     return "ld1ro<Vesize>\t%0.<Vetype>, %2/z, %1";
