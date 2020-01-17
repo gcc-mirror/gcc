@@ -36,6 +36,7 @@ load_lib target-libpath.exp
 proc compat-use-alt-compiler { } {
     global GCC_UNDER_TEST ALT_CC_UNDER_TEST
     global compat_same_alt compat_alt_caret compat_alt_color compat_no_line_no
+    global compat_alt_urls
     global TEST_ALWAYS_FLAGS
 
     # We don't need to do this if the alternate compiler is actually
@@ -47,6 +48,9 @@ proc compat-use-alt-compiler { } {
 	}
 	if { $compat_alt_color == 0 } then {
 	    regsub -- "-fdiagnostics-color=never" $TEST_ALWAYS_FLAGS "" TEST_ALWAYS_FLAGS
+	}
+	if { $compat_alt_urls == 0 } then {
+	    regsub -- "-fdiagnostics-urls=never" $TEST_ALWAYS_FLAGS "" TEST_ALWAYS_FLAGS
 	}
 	if { $compat_no_line_no == 0 } then {
 	    regsub -- "-fno-diagnostics-show-line-numbers" $TEST_ALWAYS_FLAGS "" TEST_ALWAYS_FLAGS
@@ -80,11 +84,13 @@ proc compat_setup_dfp { } {
     global compat_have_dfp
     global compat_alt_caret
     global compat_alt_color
+    global compat_alt_urls
     global compat_no_line_no
     global TEST_ALWAYS_FLAGS compat_save_TEST_ALWAYS_FLAGS
 
     set compat_alt_caret 0
     set compat_alt_color 0
+    set compat_alt_urls 0
     set compat_no_line_no 0
     set compat_save_TEST_ALWAYS_FLAGS $TEST_ALWAYS_FLAGS
 
@@ -104,6 +110,10 @@ proc compat_setup_dfp { } {
 	if { [check_no_compiler_messages_nocache compat_alt_has_color object {
 		int dummy; } "-fdiagnostics-color=never"] != 0 } {
 	    set compat_alt_color 1
+	}
+	if { [check_no_compiler_messages_nocache compat_alt_has_urls object {
+		int dummy; } "-fdiagnostics-urls=never"] != 0 } {
+	    set compat_alt_urls 1
 	}
 	if { [check_no_compiler_messages_nocache compat_alt_has_no_line_no object {
 		int dummy; } "-fno-diagnostics-show-line-numbers"] != 0 } {
