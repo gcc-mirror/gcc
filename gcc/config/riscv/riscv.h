@@ -908,4 +908,6 @@ extern unsigned riscv_stack_boundary;
 #define SWSP_REACH (4LL << C_SxSP_BITS)
 #define SDSP_REACH (8LL << C_SxSP_BITS)
 
+#define HARD_REGNO_RENAME_OK(FROM, TO) riscv_hard_regno_rename_ok (FROM, TO)
+
 #endif /* ! GCC_RISCV_H */

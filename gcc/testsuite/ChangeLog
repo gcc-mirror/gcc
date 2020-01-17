@@ -1,3 +1,11 @@
+2020-01-30  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backport from mainline
+	2020-01-21  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/93304
+	* gcc.target/riscv/pr93304.c: New test.
+
 2020-01-29  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	Backport from mainline
