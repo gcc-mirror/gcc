@@ -5021,6 +5021,19 @@ riscv_reorg (void)
     riscv_remove_unneeded_save_restore_calls ();
 }
 
+/* Return nonzero if register FROM_REGNO can be renamed to register
+   TO_REGNO.  */
+
+bool
+riscv_hard_regno_rename_ok (unsigned from_regno ATTRIBUTE_UNUSED,
+			    unsigned to_regno)
+{
+  /* Interrupt functions can only use registers that have already been
+     saved by the prologue, even if they would normally be
+     call-clobbered.  */
+  return !cfun->machine->interrupt_handler_p || df_regs_ever_live_p (to_regno);
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"

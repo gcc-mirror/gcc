@@ -1,3 +1,8 @@
+2020-01-21  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/93304
+	* gcc.target/riscv/pr93304.c: New test.
+
 2020-01-20  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/92829

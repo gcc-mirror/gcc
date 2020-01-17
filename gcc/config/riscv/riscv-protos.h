@@ -89,4 +89,6 @@ extern void riscv_init_builtins (void);
 /* Routines implemented in riscv-common.c.  */
 extern std::string riscv_arch_str ();
 
+extern bool riscv_hard_regno_rename_ok (unsigned, unsigned);
+
 #endif /* ! GCC_RISCV_PROTOS_H */
