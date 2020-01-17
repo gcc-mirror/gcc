@@ -1,3 +1,9 @@
+2020-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93292
+	* tree-vect-stmts.c (vectorizable_comparison): Punt also if
+	get_vectype_for_scalar_type returns NULL.
+
 2020-01-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* params.opt (-param=max-predicted-iterations): Increase range from 0.

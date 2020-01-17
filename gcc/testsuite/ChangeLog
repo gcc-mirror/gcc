@@ -1,5 +1,8 @@
 2020-01-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/93292
+	* g++.dg/opt/pr93292.C: New test.
+
 	PR testsuite/93294
 	* lib/c-compat.exp (compat-use-alt-compiler): Handle
 	-fdiagnostics-urls=never similarly to -fdiagnostics-color=never.
