@@ -330,7 +330,7 @@ case $vcs_type in
             exit 1
 	fi
 
-	revision=`$GCC_GIT log -n1 --pretty=%p:%t:%H`
+	revision=`$GCC_GIT log -n1 --pretty=tformat:%p:%t:%H`
 	branch=`$GCC_GIT name-rev --name-only HEAD || :`
 	;;    
 
