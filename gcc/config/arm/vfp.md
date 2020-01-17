@@ -363,32 +363,32 @@
    (set_attr "arch"           "t2,any,any,any,a,t2,any,any,any,any,any,any")]
 )
 
-;; HFmode moves
+;; HFmode and BFmode moves
 
-(define_insn "*movhf_vfp_fp16"
-  [(set (match_operand:HF 0 "nonimmediate_operand"
-			  "= r,m,t,r,t,r,t,t,Um,r")
-	(match_operand:HF 1 "general_operand"
-			  "  m,r,t,r,r,t,Dv,Um,t,F"))]
+(define_insn "*mov<mode>_vfp_<mode>16"
+  [(set (match_operand:HFBF 0 "nonimmediate_operand"
+			  "= ?r,?m,t,r,t,r,t, t, Um,r")
+	(match_operand:HFBF 1 "general_operand"
+			  "  m,r,t,r,r,t,Dv,Um,t, F"))]
   "TARGET_32BIT
    && TARGET_VFP_FP16INST
-   && (s_register_operand (operands[0], HFmode)
-       || s_register_operand (operands[1], HFmode))"
+   && (s_register_operand (operands[0], <MODE>mode)
+       || s_register_operand (operands[1], <MODE>mode))"
  {
   switch (which_alternative)
     {
     case 0: /* ARM register from memory.  */
-      return \"ldrh%?\\t%0, %1\\t%@ __fp16\";
+      return \"ldrh%?\\t%0, %1\\t%@ __<fporbf>\";
     case 1: /* Memory from ARM register.  */
-      return \"strh%?\\t%1, %0\\t%@ __fp16\";
+      return \"strh%?\\t%1, %0\\t%@ __<fporbf>\";
     case 2: /* S register from S register.  */
-      return \"vmov\\t%0, %1\t%@ __fp16\";
+      return \"vmov\\t%0, %1\t%@ __<fporbf>\";
     case 3: /* ARM register from ARM register.  */
-      return \"mov%?\\t%0, %1\\t%@ __fp16\";
+      return \"mov%?\\t%0, %1\\t%@ __<fporbf>\";
     case 4: /* S register from ARM register.  */
     case 5: /* ARM register from S register.  */
     case 6: /* S register from immediate.  */
-      return \"vmov.f16\\t%0, %1\t%@ __fp16\";
+      return \"vmov.f16\\t%0, %1\t%@ __<fporbf>\";
     case 7: /* S register from memory.  */
       return \"vld1.16\\t{%z0}, %A1\";
     case 8: /* Memory from S register.  */
@@ -399,7 +399,7 @@
 	rtx ops[4];
 
 	bits = real_to_target (NULL, CONST_DOUBLE_REAL_VALUE (operands[1]),
-			       HFmode);
+			       <MODE>mode);
 	ops[0] = operands[0];
 	ops[1] = GEN_INT (bits);
 	ops[2] = GEN_INT (bits & 0xff00);
@@ -442,14 +442,14 @@
       (const_int 8))])]
 )
 
-(define_insn "*movhf_vfp_neon"
-  [(set (match_operand:HF 0 "nonimmediate_operand" "= t,Um,r,m,t,r,t,r,r")
-	(match_operand:HF 1 "general_operand"	   " Um, t,m,r,t,r,r,t,F"))]
+(define_insn "*mov<mode>_vfp_neon"
+  [(set (match_operand:HFBF 0 "nonimmediate_operand" "= t,Um,?r,?m,t,r,t,r,r")
+	(match_operand:HFBF 1 "general_operand"	     " Um, t, m, r,t,r,r,t,F"))]
   "TARGET_32BIT
    && TARGET_HARD_FLOAT && TARGET_NEON_FP16
    && !TARGET_VFP_FP16INST
-   && (   s_register_operand (operands[0], HFmode)
-       || s_register_operand (operands[1], HFmode))"
+   && (   s_register_operand (operands[0], <MODE>mode)
+       || s_register_operand (operands[1], <MODE>mode))"
   "*
   switch (which_alternative)
     {
@@ -458,13 +458,13 @@
     case 1:     /* memory from S register */
       return \"vst1.16\\t{%z1}, %A0\";
     case 2:     /* ARM register from memory */
-      return \"ldrh\\t%0, %1\\t%@ __fp16\";
+      return \"ldrh\\t%0, %1\\t%@ __<fporbf>\";
     case 3:     /* memory from ARM register */
-      return \"strh\\t%1, %0\\t%@ __fp16\";
+      return \"strh\\t%1, %0\\t%@ __<fporbf>\";
     case 4:	/* S register from S register */
       return \"vmov.f32\\t%0, %1\";
     case 5:	/* ARM register from ARM register */
-      return \"mov\\t%0, %1\\t%@ __fp16\";
+      return \"mov\\t%0, %1\\t%@ __<fporbf>\";
     case 6:	/* S register from ARM register */
       return \"vmov\\t%0, %1\";
     case 7:	/* ARM register from S register */
@@ -475,7 +475,7 @@
 	rtx ops[4];
 
 	bits = real_to_target (NULL, CONST_DOUBLE_REAL_VALUE (operands[1]),
-			       HFmode);
+			       <MODE>mode);
 	ops[0] = operands[0];
 	ops[1] = GEN_INT (bits);
 	ops[2] = GEN_INT (bits & 0xff00);
@@ -498,26 +498,26 @@
 )
 
 ;; FP16 without element load/store instructions.
-(define_insn "*movhf_vfp"
-  [(set (match_operand:HF 0 "nonimmediate_operand" "=r,m,t,r,t,r,r")
-	(match_operand:HF 1 "general_operand"	   " m,r,t,r,r,t,F"))]
+(define_insn "*mov<mode>_vfp"
+  [(set (match_operand:HFBF 0 "nonimmediate_operand" "=r,m,t,r,t,r,r")
+	(match_operand:HFBF 1 "general_operand"	   " m,r,t,r,r,t,F"))]
   "TARGET_32BIT
    && TARGET_HARD_FLOAT
    && !TARGET_NEON_FP16
    && !TARGET_VFP_FP16INST
-   && (   s_register_operand (operands[0], HFmode)
-       || s_register_operand (operands[1], HFmode))"
+   && (   s_register_operand (operands[0], <MODE>mode)
+       || s_register_operand (operands[1], <MODE>mode))"
   "*
   switch (which_alternative)
     {
     case 0:     /* ARM register from memory */
-      return \"ldrh\\t%0, %1\\t%@ __fp16\";
+      return \"ldrh\\t%0, %1\\t%@ __<fporbf>\";
     case 1:     /* memory from ARM register */
-      return \"strh\\t%1, %0\\t%@ __fp16\";
+      return \"strh\\t%1, %0\\t%@ __<fporbf>\";
     case 2:	/* S register from S register */
       return \"vmov.f32\\t%0, %1\";
     case 3:	/* ARM register from ARM register */
-      return \"mov\\t%0, %1\\t%@ __fp16\";
+      return \"mov\\t%0, %1\\t%@ __<fporbf>\";
     case 4:	/* S register from ARM register */
       return \"vmov\\t%0, %1\";
     case 5:	/* ARM register from S register */
@@ -528,7 +528,7 @@
 	rtx ops[4];
 
 	bits = real_to_target (NULL, CONST_DOUBLE_REAL_VALUE (operands[1]),
-			       HFmode);
+			       <MODE>mode);
 	ops[0] = operands[0];
 	ops[1] = GEN_INT (bits);
 	ops[2] = GEN_INT (bits & 0xff00);
@@ -1597,6 +1597,104 @@
   "vmrs%?\\tAPSR_nzcv, FPSCR"
   [(set_attr "conds" "set")
    (set_attr "type" "f_flag")]
+)
+
+(define_insn "push_fpsysreg_insn"
+  [(set (mem:SI (post_dec:SI (match_operand:SI 0 "s_register_operand" "+&rk")))
+   (unspec_volatile:SI [(match_operand:SI 1 "const_int_operand" "n")]
+		       VUNSPEC_VSTR_VLDR))]
+  "TARGET_HAVE_FPCXT_CMSE && use_cmse"
+  {
+    static char buf[32];
+    int fp_sysreg_enum = INTVAL (operands[1]);
+
+    gcc_assert (IN_RANGE (fp_sysreg_enum, 0, NB_FP_SYSREGS - 1));
+
+    snprintf (buf, sizeof (buf), \"vstr%%?\\t%s, [%%0, #-4]!\",
+	      fp_sysreg_names[fp_sysreg_enum]);
+    return buf;
+  }
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "store_4")]
+)
+
+(define_insn "pop_fpsysreg_insn"
+  [(set (mem:SI (post_inc:SI (match_operand:SI 0 "s_register_operand" "+&rk")))
+   (unspec_volatile:SI [(match_operand:SI 1 "const_int_operand" "n")]
+		       VUNSPEC_VSTR_VLDR))]
+  "TARGET_HAVE_FPCXT_CMSE && use_cmse"
+  {
+    static char buf[32];
+    int fp_sysreg_enum = INTVAL (operands[1]);
+
+    gcc_assert (IN_RANGE (fp_sysreg_enum, 0, NB_FP_SYSREGS - 1));
+
+    snprintf (buf, sizeof (buf), \"vldr%%?\\t%s, [%%0], #4\",
+	      fp_sysreg_names[fp_sysreg_enum]);
+    return buf;
+  }
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "load_4")]
+)
+
+;; The operands are validated through the clear_multiple_operation
+;; match_parallel predicate rather than through constraints so enable it only
+;; after reload.
+(define_insn "*clear_vfp_multiple"
+  [(match_parallel 0 "clear_vfp_multiple_operation"
+     [(unspec_volatile [(const_int 0)]
+		       VUNSPEC_VSCCLRM_VPR)])]
+  "TARGET_HAVE_FPCXT_CMSE && use_cmse && reload_completed"
+  {
+    int num_regs = XVECLEN (operands[0], 0);
+    char pattern[30];
+    const char *regname;
+    rtx reg;
+
+    strcpy (pattern, \"vscclrm%?\\t{%|\");
+    if (num_regs > 1)
+      {
+	reg = XEXP (XVECEXP (operands[0], 0, 1), 0);
+	strcat (pattern, reg_names[REGNO (reg)]);
+	if (num_regs > 2)
+	  {
+	    strcat (pattern, \"-%|\");
+	    reg = XEXP (XVECEXP (operands[0], 0, num_regs - 1), 0);
+	    strcat (pattern, reg_names[REGNO (reg)]);
+	  }
+	strcat (pattern, \", \");
+      }
+
+    strcat (pattern, \"VPR}\");
+    output_asm_insn (pattern, operands);
+    return \"\";
+  }
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "mov_reg")]
+)
+
+(define_insn "lazy_store_multiple_insn"
+  [(set (match_operand:SI 0 "s_register_operand" "+&rk")
+	(post_dec:SI (match_dup 0)))
+   (unspec_volatile [(const_int 0)
+		     (mem:SI (post_dec:SI (match_dup 0)))]
+		    VUNSPEC_VLSTM)]
+  "use_cmse && reload_completed"
+  "vlstm%?\\t%0"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "store_4")]
+)
+
+(define_insn "lazy_load_multiple_insn"
+  [(set (match_operand:SI 0 "s_register_operand" "+&rk")
+	(post_inc:SI (match_dup 0)))
+   (unspec_volatile:SI [(const_int 0)
+			(mem:SI (match_dup 0))]
+		       VUNSPEC_VLLDM)]
+  "use_cmse && reload_completed"
+  "vlldm%?\\t%0"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "load_4")]
 )
 
 (define_insn_and_split "*cmpsf_split_vfp"

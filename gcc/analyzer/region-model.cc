@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-metadata.h"
 #include "diagnostic-core.h"
 #include "tristate.h"
+#include "bitmap.h"
 #include "selftest.h"
 #include "function.h"
 #include "analyzer/analyzer.h"
@@ -4115,9 +4116,13 @@ region_model::on_assignment (const gassign *assign, region_model_context *ctxt)
 
    Updates to the region_model that should be made *before* sm-states
    are updated are done here; other updates to the region_model are done
-   in region_model::on_call_post.  */
+   in region_model::on_call_post.
 
-void
+   Return true if the function call has unknown side effects (it wasn't
+   recognized and we don't have a body for it, or are unable to tell which
+   fndecl it is).  */
+
+bool
 region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 {
   region_id lhs_rid;
@@ -4135,6 +4140,8 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
     for (unsigned i = 0; i < gimple_call_num_args (call); i++)
       check_for_poison (gimple_call_arg (call, i), ctxt);
 
+  bool unknown_side_effects = false;
+
   if (tree callee_fndecl = get_fndecl_for_call (call, ctxt))
     {
       if (is_named_call_p (callee_fndecl, "malloc", call, 1))
@@ -4147,7 +4154,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 		= get_or_create_ptr_svalue (lhs_type, new_rid);
 	      set_value (lhs_rid, ptr_sid, ctxt);
 	    }
-	  return;
+	  return false;
 	}
       else if (is_named_call_p (callee_fndecl, "__builtin_alloca", call, 1))
 	{
@@ -4160,7 +4167,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 		= get_or_create_ptr_svalue (lhs_type, new_rid);
 	      set_value (lhs_rid, ptr_sid, ctxt);
 	    }
-	  return;
+	  return false;
 	}
       else if (is_named_call_p (callee_fndecl, "strlen", call, 1))
 	{
@@ -4179,7 +4186,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 		  svalue_id result_sid
 		    = get_or_create_constant_svalue (t_cst);
 		  set_value (lhs_rid, result_sid, ctxt);
-		  return;
+		  return false;
 		}
 	    }
 	  /* Otherwise an unknown value.  */
@@ -4199,18 +4206,20 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 	  /* Use quotes to ensure the output isn't truncated.  */
 	  warning_at (call->location, 0,
 		      "num heap regions: %qi", num_heap_regions);
+	  return false;
 	}
+      else if (!fndecl_has_gimple_body_p (callee_fndecl)
+	       && !DECL_PURE_P (callee_fndecl))
+	unknown_side_effects = true;
     }
-
-  /* Unrecognized call.  */
+  else
+    unknown_side_effects = true;
 
   /* Unknown return value.  */
   if (!lhs_rid.null_p ())
     set_to_new_unknown_value (lhs_rid, lhs_type, ctxt);
 
-  /* TODO: also, any pointer arguments might have been written through,
-     or the things they point to (implying a graph traversal, which
-     presumably we need to do before overwriting the old value).  */
+  return unknown_side_effects;
 }
 
 /* Update this model for the CALL stmt, using CTXT to report any
@@ -4218,10 +4227,15 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 
    Updates to the region_model that should be made *after* sm-states
    are updated are done here; other updates to the region_model are done
-   in region_model::on_call_pre.  */
+   in region_model::on_call_pre.
+
+   If UNKNOWN_SIDE_EFFECTS is true, also call handle_unrecognized_call
+   to purge state.  */
 
 void
-region_model::on_call_post (const gcall *call, region_model_context *ctxt)
+region_model::on_call_post (const gcall *call,
+			    bool unknown_side_effects,
+			    region_model_context *ctxt)
 {
   /* Update for "free" here, after sm-handling.
 
@@ -4264,6 +4278,185 @@ region_model::on_call_post (const gcall *call, region_model_context *ctxt)
 	  }
 	return;
       }
+
+  if (unknown_side_effects)
+    handle_unrecognized_call (call, ctxt);
+}
+
+/* Helper class for region_model::handle_unrecognized_call, for keeping
+   track of all regions that are reachable, and, of those, which are
+   mutable.  */
+
+class reachable_regions
+{
+public:
+  reachable_regions (region_model *model)
+  : m_model (model), m_reachable_rids (), m_mutable_rids ()
+  {}
+
+  /* Lazily mark RID as being reachable, recursively adding regions
+     reachable from RID.  */
+  void add (region_id rid, bool is_mutable)
+  {
+    gcc_assert (!rid.null_p ());
+
+    unsigned idx = rid.as_int ();
+    /* Bail out if this region is already in the sets at the IS_MUTABLE
+       level of mutability.  */
+    if (!is_mutable && bitmap_bit_p (m_reachable_rids, idx))
+      return;
+    bitmap_set_bit (m_reachable_rids, idx);
+
+    if (is_mutable)
+      {
+	if (bitmap_bit_p (m_mutable_rids, idx))
+	  return;
+	else
+	  bitmap_set_bit (m_mutable_rids, idx);
+      }
+
+    /* If this region's value is a pointer, add the pointee.  */
+    region *reg = m_model->get_region (rid);
+    svalue_id sid = reg->get_value_direct ();
+    svalue *sval = m_model->get_svalue (sid);
+    if (sval)
+      if (region_svalue *ptr = sval->dyn_cast_region_svalue ())
+	{
+	  region_id pointee_rid = ptr->get_pointee ();
+	  /* Use const-ness of pointer type to affect mutability.  */
+	  bool ptr_is_mutable = true;
+	  if (ptr->get_type ()
+	      && TREE_CODE (ptr->get_type ()) == POINTER_TYPE
+	      && TYPE_READONLY (TREE_TYPE (ptr->get_type ())))
+	    ptr_is_mutable = false;
+	  add (pointee_rid, ptr_is_mutable);
+	}
+
+    /* Add descendents of this region.  */
+    region_id_set descendents (m_model);
+    m_model->get_descendents (rid, &descendents, region_id::null ());
+    for (unsigned i = 0; i < m_model->get_num_regions (); i++)
+      {
+	region_id iter_rid = region_id::from_int (i);
+	if (descendents.region_p (iter_rid))
+	  add (iter_rid, is_mutable);
+      }
+  }
+
+  bool mutable_p (region_id rid)
+  {
+    gcc_assert (!rid.null_p ());
+    return bitmap_bit_p (m_mutable_rids, rid.as_int ());
+  }
+
+private:
+  region_model *m_model;
+
+  /* The region ids already seen.  This has to be an auto_bitmap rather than
+     an auto_sbitmap as new regions can be created within the model during
+     the traversal.  */
+  auto_bitmap m_reachable_rids;
+
+  /* The region_ids that can be changed (accessed via non-const pointers).  */
+  auto_bitmap m_mutable_rids;
+};
+
+/* Handle a call CALL to a function with unknown behavior.
+
+   Traverse the regions in this model, determining what regions are
+   reachable from pointer arguments to CALL and from global variables,
+   recursively.
+
+   Set all reachable regions to new unknown values and purge sm-state
+   from their values, and from values that point to them.  */
+
+void
+region_model::handle_unrecognized_call (const gcall *call,
+					region_model_context *ctxt)
+{
+  tree fndecl = get_fndecl_for_call (call, ctxt);
+
+  reachable_regions reachable_regions (this);
+
+  /* Determine the reachable regions and their mutability.  */
+  {
+    /* Globals.  */
+    region_id globals_rid = get_globals_region_id ();
+    if (!globals_rid.null_p ())
+      reachable_regions.add (globals_rid, true);
+
+    /* Params that are pointers.  */
+    tree iter_param_types = NULL_TREE;
+    if (fndecl)
+      iter_param_types = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+    for (unsigned arg_idx = 0; arg_idx < gimple_call_num_args (call); arg_idx++)
+      {
+	/* Track expected param type, where available.  */
+	tree param_type = NULL_TREE;
+	if (iter_param_types)
+	  {
+	    param_type = TREE_VALUE (iter_param_types);
+	    gcc_assert (param_type);
+	    iter_param_types = TREE_CHAIN (iter_param_types);
+	  }
+
+	tree parm = gimple_call_arg (call, arg_idx);
+	svalue_id parm_sid = get_rvalue (parm, NULL);
+	svalue *parm_sval = get_svalue (parm_sid);
+	if (parm_sval)
+	  if (region_svalue *parm_ptr = parm_sval->dyn_cast_region_svalue ())
+	    {
+	      region_id pointee_rid = parm_ptr->get_pointee ();
+	      bool is_mutable = true;
+	      if (param_type
+		  && TREE_CODE (param_type) == POINTER_TYPE
+		  &&  TYPE_READONLY (TREE_TYPE (param_type)))
+		is_mutable = false;
+	      reachable_regions.add (pointee_rid, is_mutable);
+	    }
+	// FIXME: what about compound parms that contain ptrs?
+      }
+  }
+
+  /* OK: we now have all reachable regions.
+     Set them all to new unknown values.  */
+  for (unsigned i = 0; i < get_num_regions (); i++)
+    {
+      region_id iter_rid = region_id::from_int (i);
+      if (reachable_regions.mutable_p (iter_rid))
+	{
+	  region *reg = get_region (iter_rid);
+
+	  /* Purge any sm-state for any underlying svalue.  */
+	  svalue_id curr_sid = reg->get_value_direct ();
+	  if (!curr_sid.null_p ())
+	    ctxt->on_unknown_change (curr_sid);
+
+	  set_to_new_unknown_value (iter_rid,
+				    reg->get_type (),
+				    ctxt);
+	}
+    }
+
+  /* Purge sm-state for any remaining svalues that point to regions that
+     were reachable.  This helps suppress leak false-positives.
+
+     For example, if we had a malloc call that was cast to a "foo *" type,
+     we could have a temporary void * for the result of malloc which has its
+     own svalue, not reachable from the function call, but for which the
+     "foo *" svalue was reachable.  If we don't purge it, the temporary will
+     be reported as a leak.  */
+  int i;
+  svalue *svalue;
+  FOR_EACH_VEC_ELT (m_svalues, i, svalue)
+    if (region_svalue *ptr = svalue->dyn_cast_region_svalue ())
+      {
+	region_id pointee_rid = ptr->get_pointee ();
+	if (reachable_regions.mutable_p (pointee_rid))
+	  ctxt->on_unknown_change (svalue_id::from_int (i));
+      }
+
+  validate ();
 }
 
 /* Update this model for the RETURN_STMT, using CTXT to report any
@@ -5770,7 +5963,7 @@ make_region_for_type (region_id parent_rid, tree type)
   if (TREE_CODE (type) == UNION_TYPE)
     return new union_region (parent_rid, type);
 
-  if (TREE_CODE (type) == FUNCTION_TYPE)
+  if (FUNC_OR_METHOD_TYPE_P (type))
     return new function_region (parent_rid, type);
 
   /* If we have a void *, make a new symbolic region.  */
@@ -6221,11 +6414,13 @@ region_model::convert_byte_offset_to_array_index (tree ptr_type,
       /* This might not be a constant.  */
       tree byte_size = size_in_bytes (elem_type);
 
+      /* Try to get a constant by dividing, ensuring that we're in a
+	 signed representation first.  */
       tree index
-	= fold_build2 (TRUNC_DIV_EXPR, integer_type_node,
-		       offset_cst, byte_size);
-
-      if (CONSTANT_CLASS_P (index))
+	= fold_binary (TRUNC_DIV_EXPR, ssizetype,
+		       fold_convert (ssizetype, offset_cst),
+		       fold_convert (ssizetype, byte_size));
+      if (index && TREE_CODE (index) == INTEGER_CST)
 	return get_or_create_constant_svalue (index);
     }
 

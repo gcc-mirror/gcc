@@ -492,6 +492,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  = std::forward<_Tp>(__t);
       };
 
+  namespace ranges::__detail
+  {
+#if __SIZEOF_INT128__
+    using __max_diff_type = __int128;
+    using __max_size_type = unsigned __int128;
+#else
+    using __max_diff_type = long long;
+    using __max_size_type = unsigned long long;
+#endif
+
+    template<typename _Tp>
+      concept __is_integer_like = integral<_Tp>
+	|| same_as<_Tp, __max_diff_type> || same_as<_Tp, __max_size_type>;
+
+    template<typename _Tp>
+      concept __is_signed_integer_like = signed_integral<_Tp>
+	|| same_as<_Tp, __max_diff_type>;
+
+  } // namespace ranges::__detail
+
+  namespace __detail { using ranges::__detail::__is_signed_integer_like; }
+
   /// Requirements on types that can be incremented with ++.
   template<typename _Iter>
     concept weakly_incrementable = default_initializable<_Iter>
@@ -499,7 +521,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       && requires(_Iter __i)
       {
 	typename iter_difference_t<_Iter>;
-	requires signed_integral<iter_difference_t<_Iter>>;
+	requires __detail::__is_signed_integer_like<iter_difference_t<_Iter>>;
 	{ ++__i } -> same_as<_Iter&>;
 	__i++;
       };

@@ -846,7 +846,11 @@ c_parser_consume_token (c_parser *parser)
     {
       parser->tokens[0] = parser->tokens[1];
       if (parser->tokens_avail >= 3)
-	parser->tokens[1] = parser->tokens[2];
+        {
+          parser->tokens[1] = parser->tokens[2];
+          if (parser->tokens_avail >= 4)
+            parser->tokens[2] = parser->tokens[3];
+        }
     }
   parser->tokens_avail--;
 }

@@ -545,6 +545,18 @@
 	    (match_test "satisfies_constraint_Dy (op)")
 	    (match_test "satisfies_constraint_G (op)"))))
 
+(define_special_predicate "clear_multiple_operation"
+  (match_code "parallel")
+{
+ return clear_operation_p (op, /*vfp*/false);
+})
+
+(define_special_predicate "clear_vfp_multiple_operation"
+  (match_code "parallel")
+{
+ return clear_operation_p (op, /*vfp*/true);
+})
+
 (define_special_predicate "load_multiple_operation"
   (match_code "parallel")
 {

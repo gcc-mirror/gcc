@@ -1,8 +1,456 @@
+2020-01-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/acle/general-c++/gimplify_1.C: New test.
+
+2020-01-17  Mark Eggleston  <mark.eggleston@codethink.com>
+	Tobias Burnus  <burnus@gcc.gnu.org>
+
+	PR fortran/93236
+	* gfortran.dg/pr93263_1.f90: New test.
+	* gfortran.dg/pr93263_2.f90: New test.
+
+2020-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93292
+	* g++.dg/opt/pr93292.C: New test.
+
+	PR testsuite/93294
+	* lib/c-compat.exp (compat-use-alt-compiler): Handle
+	-fdiagnostics-urls=never similarly to -fdiagnostics-color=never.
+	(compat_setup_dfp): Likewise.
+
+2020-01-16  Kerem Kat  <keremkat@gmail.com>
+
+	PR c/92833
+	* c-c++-common/pr92833-1.c, c-c++-common/pr92833-2.c,
+	c-c++-common/pr92833-3.c, c-c++-common/pr92833-4.c: New tests.
+
+2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* g++.target/arm/bfloat_cpp_typecheck.C: New test.
+	* gcc.target/arm/bfloat16_scalar_typecheck.c: New test.
+	* gcc.target/arm/bfloat16_vector_typecheck_1.c: New test.
+	* gcc.target/arm/bfloat16_vector_typecheck_2.c: New test.
+
+2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* g++.dg/abi/mangle-neon.C: Add BF16 SIMD types.
+	* g++.dg/ext/arm-bf16/bf16-mangle-1.C: New test.
+	* gcc.target/arm/bfloat16_scalar_1_1.c: New test.
+	* gcc.target/arm/bfloat16_scalar_1_2.c: New test.
+	* gcc.target/arm/bfloat16_scalar_2_1.c: New test.
+	* gcc.target/arm/bfloat16_scalar_2_2.c: New test.
+	* gcc.target/arm/bfloat16_scalar_3_1.c: New test.
+	* gcc.target/arm/bfloat16_scalar_3_2.c: New test.
+	* gcc.target/arm/bfloat16_scalar_4.c: New test.
+	* gcc.target/arm/bfloat16_simd_1_1.c: New test.
+	* gcc.target/arm/bfloat16_simd_1_2.c: New test.
+	* gcc.target/arm/bfloat16_simd_2_1.c: New test.
+	* gcc.target/arm/bfloat16_simd_2_2.c: New test.
+	* gcc.target/arm/bfloat16_simd_3_1.c: New test.
+	* gcc.target/arm/bfloat16_simd_3_2.c: New test.
+
+2020-01-16  Mihail Ionescu  <mihail.ionescu@arm.com>
+	    Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* testsuite/gcc.target/arm/multilib.exp: Add v8.1-M entries.
+
+2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
+	    Thomas Preud'homme <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/cmse/cmse-1.c: Add check for BLXNS when instructions
+	introduced in Armv8.1-M Mainline Security Extensions are available and
+	restrict checks for libcall to __gnu_cmse_nonsecure_call to Armv8-M
+	targets only.  Adapt CLRM check to verify register used for BLXNS is
+	not in the CLRM register list.
+	* gcc.target/arm/cmse/cmse-14.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-4.c: Likewise and adapt
+	check for LSB clearing bit to be using the same register as BLXNS when
+	targeting Armv8.1-M Mainline.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-6.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-9.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-and-union.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/union-1.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/union-2.c: Likewise.
+	* gcc.target/arm/cmse/cmse-15.c: Count BLXNS when targeting Armv8.1-M
+	Mainline and restrict libcall count to Armv8-M.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-13.c: Add check for VLSTM and
+	VLLDM.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-8.c: Likewise.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-13.c: Add check for
+	VPUSH and VPOP and update expectation for VSCCLRM.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-8.c: Likewise.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/cmse/cmse-1.c: Add check for PUSH and POP and update
+	CLRM check.
+	* gcc.target/arm/cmse/cmse-14.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-4.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-6.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-9.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-and-union.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft-sp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft-sp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/union-1.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/union-2.c: Likewise.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/cmse/bitfield-1.c: Add check for VSCCLRM.
+	* gcc.target/arm/cmse/bitfield-2.c: Likewise.
+	* gcc.target/arm/cmse/bitfield-3.c: Likewise.
+	* gcc.target/arm/cmse/cmse-1.c: Likewise.
+	* gcc.target/arm/cmse/struct-1.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-5.c: Likewise.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/cmse/bitfield-1.c: Add check for CLRM.
+	* gcc.target/arm/cmse/bitfield-2.c: Likewise.
+	* gcc.target/arm/cmse/bitfield-3.c: Likewise.
+	* gcc.target/arm/cmse/struct-1.c: Likewise.
+	* gcc.target/arm/cmse/cmse-14.c: Likewise.
+	* gcc.target/arm/cmse/cmse-1.c: Likewise.  Restrict checks for Armv8-M
+	GPR clearing when CLRM is not available.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-4.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-6.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-9.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-5.c: likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-7.c: likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-8.c: likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/union-1.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/union-2.c: Likewise.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/cmse/bitfield-1.c: add checks for VSTR and VLDR.
+	* gcc.target/arm/cmse/bitfield-2.c: Likewise.
+	* gcc.target/arm/cmse/bitfield-3.c: Likewise.
+	* gcc.target/arm/cmse/cmse-1.c: Likewise.
+	* gcc.target/arm/cmse/struct-1.c: Likewise.
+	* gcc.target/arm/cmse/cmse.exp: Run existing Armv8-M Mainline tests
+	from mainline/8m subdirectory and new Armv8.1-M Mainline tests from
+	mainline/8_1m subdirectory.
+	* gcc.target/arm/cmse/mainline/bitfield-4.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/bitfield-4.c: This.
+	* gcc.target/arm/cmse/mainline/bitfield-5.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/bitfield-5.c: This.
+	* gcc.target/arm/cmse/mainline/bitfield-6.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/bitfield-6.c: This.
+	* gcc.target/arm/cmse/mainline/bitfield-7.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/bitfield-7.c: This.
+	* gcc.target/arm/cmse/mainline/bitfield-8.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/bitfield-8.c: This.
+	* gcc.target/arm/cmse/mainline/bitfield-9.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/bitfield-9.c: This.
+	* gcc.target/arm/cmse/mainline/bitfield-and-union-1.c: Move and rename
+	into ...
+	* gcc.target/arm/cmse/mainline/8m/bitfield-and-union.c: This.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-13.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/hard-sp/cmse-13.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-5.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/hard-sp/cmse-5.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-7.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/hard-sp/cmse-7.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-8.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/hard-sp/cmse-8.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/hard/cmse-13.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/hard/cmse-13.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/hard/cmse-5.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/hard/cmse-5.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/hard/cmse-7.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/hard/cmse-7.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/hard/cmse-8.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/hard/cmse-8.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/soft/cmse-13.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/soft/cmse-13.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/soft/cmse-5.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/soft/cmse-5.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/soft/cmse-7.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/soft/cmse-7.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/soft/cmse-8.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/soft/cmse-8.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/softfp-sp/cmse-5.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/softfp-sp/cmse-5.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/softfp-sp/cmse-7.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/softfp-sp/cmse-7.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/softfp-sp/cmse-8.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/softfp-sp/cmse-8.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-13.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/softfp/cmse-13.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-5.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/softfp/cmse-5.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-7.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/softfp/cmse-7.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-8.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/softfp/cmse-8.c: This.  Clean up
+	dg-skip-if directive for float ABI.
+	* gcc.target/arm/cmse/mainline/union-1.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/union-1.c: This.
+	* gcc.target/arm/cmse/mainline/union-2.c: Move into ...
+	* gcc.target/arm/cmse/mainline/8m/union-2.c: This.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-4.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-5.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-6.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-7.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-8.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-9.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-and-union.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-13.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-5.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-7.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-8.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-13.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-5.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-7.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-8.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-13.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-5.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-7.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-8.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-5.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-7.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-8.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-13.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-5.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-7.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-8.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/union-1.c: New file.
+	* gcc.target/arm/cmse/mainline/8_1m/union-2.c: New file.
+	* lib/target-supports.exp (check_effective_target_arm_cmse_clear_ok):
+	New procedure.
+
+2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
+	    Thomas Preud'homme <thomas.preudhomme@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_arch_v8_1m_main_ok): Define.
+	(add_options_for_arm_arch_v8_1m_main): Likewise.
+	(check_effective_target_arm_arch_v8_1m_main_multilib): Likewise.
+
+2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/bfdot-1.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/bfdot-2.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/bfdot-3.c: New.
+
+2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-3-1.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-3-2.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-3-3.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-3-4.c: New test.
+
+2020-01-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/92429
+	* gcc.dg/vect/pr92429.c: New test.
+
+2020-01-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93253
+	* fortran.dg/boz_7.f90: Updated dg-error.
+
+2020-01-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/91073
+	* g++.dg/concepts/pr91073-1.C: New.
+	* g++.dg/concepts/pr91073-2.C: Likewise.
+
+2020-01-15  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.dg/pr90838.c: New test.
+	* gcc.dg/pr93231.c: New test.
+	* gcc.target/aarch64/pr90838.c: Use #define u 0.
+
+2020-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/93273
+	* g++.dg/torture/pr93273.C: New testcase.
+
+2020-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/93247
+	* gcc.dg/vect/pr93247-1.c: New test.
+	* gcc.dg/vect/pr93247-2.c: Likewise.
+
+2020-01-15  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Wstringop-overflow-17.c: Tweak test to avoid unrelated
+	failures due the absence of loop unrolling.
+
+2020-01-15  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/93072
+	* gcc.dg/inline-42.c, gcc.dg/inline-43.c: New tests.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/signal-6.c: New test.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/dot-output.c: Add test coverage for a BB with
+	no statements.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/58237
+	* gcc.dg/analyzer/file-paths-1.c: New test.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/58237
+	* gcc.dg/analyzer/file-1.c (test_4): New.
+	* gcc.dg/analyzer/file-pr58237.c: New test.
+
+2020-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93262
+	* gcc.c-torture/execute/builtins/pr93262-chk.c: New test.
+	* gcc.c-torture/execute/builtins/pr93262-chk-lib.c: New file.
+	* gcc.c-torture/execute/builtins/pr93262-chk.x: New file.
+
+	PR tree-optimization/93249
+	* gcc.c-torture/execute/pr93249.c: New test.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/signal-5.c: New test.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/data-model-1.c: Remove xfail.
+	* gcc.dg/analyzer/data-model-5b.c: Likewise.
+	* gcc.dg/analyzer/data-model-5c.c: Likewise.
+	* gcc.dg/analyzer/setjmp-3.c: Mark "foo" as pure.
+	* gcc.dg/analyzer/setjmp-4.c: Likewise.
+	* gcc.dg/analyzer/setjmp-6.c: Likewise.
+	* gcc.dg/analyzer/setjmp-7.c: Likewise.
+	* gcc.dg/analyzer/setjmp-7a.c: Likewise.
+	* gcc.dg/analyzer/setjmp-8.c: Likewise.
+	* gcc.dg/analyzer/setjmp-9.c: Likewise.
+	* gcc.dg/analyzer/unknown-fns.c: New test.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/CVE-2005-1689-dedupe-issue.c: New test.
+
+2020-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/91576
+	* g++.dg/lto/odr-8_1.C: Remove bogus initial lines.
+
+	PR target/93009
+	* gcc.target/i386/avx512vl-pr93009.c: New test.
+
 2020-01-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/91576
-	* testsuite/g++.dg/lto/odr-8_0.C: New testcase.
-	* testsuite/g++.dg/lto/odr-8_1.C: New testcase.
+	* g++.dg/lto/odr-8_0.C: New testcase.
+	* g++.dg/lto/odr-8_1.C: New testcase.
 
 2020-01-14  David Malcolm  <dmalcolm@redhat.com>
 

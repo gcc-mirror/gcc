@@ -4122,7 +4122,8 @@ the vertical bars and the ``char *'' and ``long int'' text).
 @opindex fdiagnostics-show-cwe
 Diagnostic messages can optionally have an associated
 @url{https://cwe.mitre.org/index.html, CWE} identifier.
-GCC itself does not do this for any of its diagnostics, but plugins may do so.
+GCC itself only provides such metadata for some of the @option{-fanalyzer}
+diagnostics.  GCC plugins may also provide diagnostics with such metadata.
 By default, if this information is present, it will be printed with
 the diagnostic.  This option suppresses the printing of this metadata.
 
@@ -18153,6 +18154,7 @@ Permissible names are:
 @samp{armv6-m}, @samp{armv6s-m},
 @samp{armv7-m}, @samp{armv7e-m},
 @samp{armv8-m.base}, @samp{armv8-m.main},
+@samp{armv8.1-m.main},
 @samp{iwmmxt} and @samp{iwmmxt2}.
 
 Additionally, the following architectures, which lack support for the
@@ -18541,6 +18543,29 @@ The single- and double-precision FPv5 floating-point instructions.
 
 @item +nofp
 Disable the floating-point extensions.
+@end table
+
+@item  armv8.1-m.main
+@table @samp
+
+@item +dsp
+The DSP instructions.
+
+@item +mve
+The M-Profile Vector Extension (MVE) integer instructions.
+
+@item +mve.fp
+The M-Profile Vector Extension (MVE) integer and single precision
+floating-point instructions.
+
+@item +fp
+The single-precision floating-point instructions.
+
+@item +fp.dp
+The single- and double-precision floating-point instructions.
+
+@item +nofp
+Disable the floating-point extension.
 @end table
 
 @item  armv8-m.main

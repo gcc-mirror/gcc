@@ -66,19 +66,13 @@ string_obj *new_string_obj (const char *str)
 
 void unref (string_obj *obj)
 {
-  //__analyzer_dump();
   if (--obj->str_base.ob_refcnt == 0)
-    {
-      //__analyzer_dump();
-      free (obj);
-    }
+    free (obj);
 }
 
 void test_1 (const char *str)
 {
   string_obj *obj = new_string_obj (str);
-  //__analyzer_dump();
   if (obj)
     unref (obj);
-} /* { dg-bogus "leak of 'obj'" "" { xfail *-*-* } } */
-// TODO (xfail): not sure why this is treated as leaking
+}

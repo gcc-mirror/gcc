@@ -3258,7 +3258,7 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size,
 	  gcc_assert (*size == old_size);
 	  if (time && (*time - old_time > 1 || *time - old_time < -1)
 	      && dump_file)
-	    fprintf (dump_file, "Time mismatch in call summary %f!=%f",
+	    fprintf (dump_file, "Time mismatch in call summary %f!=%f\n",
 		     old_time.to_double (),
 		     time->to_double ());
 	}

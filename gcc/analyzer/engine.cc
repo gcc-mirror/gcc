@@ -64,7 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static int readability_comparator (const void *p1, const void *p2);
 
-/* class impl_region_model_context : public region_model_context, public log_user.  */
+/* class impl_region_model_context : public region_model_context.  */
 
 impl_region_model_context::
 impl_region_model_context (exploded_graph &eg,
@@ -133,6 +133,15 @@ impl_region_model_context::on_svalue_purge (svalue_id first_unused_sid,
   if (m_change)
     total += m_change->on_svalue_purge (first_unused_sid);
   return total;
+}
+
+void
+impl_region_model_context::on_unknown_change (svalue_id sid)
+{
+  int sm_idx;
+  sm_state_map *smap;
+  FOR_EACH_VEC_ELT (m_new_state->m_checker_states, sm_idx, smap)
+    smap->on_unknown_change (sid);
 }
 
 /* class setjmp_svalue : public svalue.  */
@@ -408,7 +417,7 @@ public:
 	const program_point &dst_point = dst_node->get_point ();
 	const gimple *stmt = dst_point.get_stmt ();
 	if (stmt)
-	  if (stmt->location != UNKNOWN_LOCATION)
+	  if (get_pure_location (stmt->location) != UNKNOWN_LOCATION)
 	    return stmt;
       }
 
@@ -876,7 +885,7 @@ exploded_node::dump (const extrinsic_state &ext_state) const
 /* Return true if FNDECL has a gimple body.  */
 // TODO: is there a pre-canned way to do this?
 
-static bool
+bool
 fndecl_has_gimple_body_p (tree fndecl)
 {
   if (fndecl == NULL_TREE)
@@ -935,6 +944,10 @@ exploded_node::on_stmt (exploded_graph &eg,
   if (const greturn *return_ = dyn_cast <const greturn *> (stmt))
     state->m_region_model->on_return (return_, &ctxt);
 
+  /* Track whether we have a gcall to a function that's not recognized by
+     anything, for which we don't have a function body, or for which we
+     don't know the fndecl.  */
+  bool unknown_side_effects = false;
   if (const gcall *call = dyn_cast <const gcall *> (stmt))
     {
       /* Debugging/test support.  */
@@ -977,6 +990,11 @@ exploded_node::on_stmt (exploded_graph &eg,
 	  /* TODO: is there a good cross-platform way to do this?  */
 	  raise (SIGINT);
 	}
+      else if (is_special_named_call_p (call, "__analyzer_dump_exploded_nodes",
+					1))
+	{
+	  /* This is handled elsewhere.  */
+	}
       else if (is_setjmp_call_p (stmt))
 	state->m_region_model->on_setjmp (call, this, &ctxt);
       else if (is_longjmp_call_p (call))
@@ -985,7 +1003,7 @@ exploded_node::on_stmt (exploded_graph &eg,
 	  return on_stmt_flags::terminate_path ();
 	}
       else
-	state->m_region_model->on_call_pre (call, &ctxt);
+	unknown_side_effects = state->m_region_model->on_call_pre (call, &ctxt);
     }
 
   bool any_sm_changes = false;
@@ -1001,7 +1019,9 @@ exploded_node::on_stmt (exploded_graph &eg,
 			    change,
 			    old_smap, new_smap);
       /* Allow the state_machine to handle the stmt.  */
-      if (!sm.on_stmt (&ctxt, snode, stmt))
+      if (sm.on_stmt (&ctxt, snode, stmt))
+	unknown_side_effects = false;
+      else
 	{
 	  /* For those stmts that were not handled by the state machine.  */
 	  if (const gcall *call = dyn_cast <const gcall *> (stmt))
@@ -1019,7 +1039,7 @@ exploded_node::on_stmt (exploded_graph &eg,
     }
 
   if (const gcall *call = dyn_cast <const gcall *> (stmt))
-    state->m_region_model->on_call_post (call, &ctxt);
+    state->m_region_model->on_call_post (call, unknown_side_effects, &ctxt);
 
   return on_stmt_flags (any_sm_changes);
 }
@@ -2280,8 +2300,8 @@ stmt_requires_new_enode_p (const gimple *stmt,
      could be consolidated into PREV_STMT, giving us an event with
      no location.  Ensure that STMT gets its own exploded_node to
      avoid this.  */
-  if (prev_stmt->location == UNKNOWN_LOCATION
-      && stmt->location != UNKNOWN_LOCATION)
+  if (get_pure_location (prev_stmt->location) == UNKNOWN_LOCATION
+      && get_pure_location (stmt->location) != UNKNOWN_LOCATION)
     return true;
 
   return false;
@@ -3078,7 +3098,7 @@ exploded_graph::dump_exploded_nodes () const
 	{
 	  if (const gimple *stmt = enode->get_stmt ())
 	    {
-	      if (richloc.get_loc () == UNKNOWN_LOCATION)
+	      if (get_pure_location (richloc.get_loc ()) == UNKNOWN_LOCATION)
 		richloc.set_range (0, stmt->location, SHOW_RANGE_WITH_CARET);
 	      else
 		richloc.add_range (stmt->location,

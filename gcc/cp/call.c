@@ -217,6 +217,7 @@ static conversion *merge_conversion_sequences (conversion *, conversion *);
 static tree build_temp (tree, tree, int, diagnostic_t *, tsubst_flags_t);
 static conversion *build_identity_conv (tree, tree);
 static inline bool conv_binds_to_array_of_unknown_bound (conversion *);
+static tree prevent_lifetime_extension (tree);
 
 /* Returns nonzero iff the destructor name specified in NAME matches BASETYPE.
    NAME can take many forms...  */
@@ -5078,7 +5079,10 @@ build_conditional_expr_1 (const op_location_t &loc,
 
       /* Make sure that lvalues remain lvalues.  See g++.oliva/ext1.C.  */
       if (glvalue_p (arg1))
-	arg2 = arg1 = cp_stabilize_reference (arg1);
+	{
+	  arg2 = arg1 = cp_stabilize_reference (arg1);
+	  arg2 = arg1 = prevent_lifetime_extension (arg1);
+	}
       else
 	arg2 = arg1 = cp_save_expr (arg1);
     }
@@ -12166,6 +12170,24 @@ initialize_reference (tree type, tree expr,
   obstack_free (&conversion_obstack, p);
 
   return expr;
+}
+
+/* If *P is an xvalue expression, prevent temporary lifetime extension if it
+   gets used to initialize a reference.  */
+
+static tree
+prevent_lifetime_extension (tree t)
+{
+  tree *p = &t;
+  while (TREE_CODE (*p) == COMPOUND_EXPR)
+    p = &TREE_OPERAND (*p, 1);
+  while (handled_component_p (*p))
+    p = &TREE_OPERAND (*p, 0);
+  /* Change a TARGET_EXPR from prvalue to xvalue.  */
+  if (TREE_CODE (*p) == TARGET_EXPR)
+    *p = build2 (COMPOUND_EXPR, TREE_TYPE (*p), *p,
+		 move (TARGET_EXPR_SLOT (*p)));
+  return t;
 }
 
 /* Subroutine of extend_ref_init_temps.  Possibly extend one initializer,

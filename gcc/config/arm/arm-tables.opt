@@ -353,7 +353,7 @@ EnumValue
 Enum(arm_arch) String(armv8-m.main) Value(28)
 
 EnumValue
-Enum(arm_arch) String(armv8-r) Value(29)
+Enum(arm_arch) String(armv8.1-m.main) Value(29)
 
 EnumValue
 Enum(arm_arch) String(iwmmxt) Value(30)

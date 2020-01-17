@@ -6181,8 +6181,8 @@
 )
 
 (define_split
-  [(set (match_operand:ANY64 0 "arm_general_register_operand" "")
-	(match_operand:ANY64 1 "arm_general_register_operand" ""))]
+  [(set (match_operand:ANY64_BF 0 "arm_general_register_operand" "")
+	(match_operand:ANY64_BF 1 "arm_general_register_operand" ""))]
   "TARGET_EITHER && reload_completed"
   [(set (match_dup 0) (match_dup 1))
    (set (match_dup 2) (match_dup 3))]
@@ -7130,52 +7130,52 @@
    (set_attr "length" "2,4,4,2,4,2,2,4,4")]
 )
 
-;; HFmode moves
-(define_expand "movhf"
-  [(set (match_operand:HF 0 "general_operand")
-	(match_operand:HF 1 "general_operand"))]
+;; HFmode and BFmode moves.
+(define_expand "mov<mode>"
+  [(set (match_operand:HFBF 0 "general_operand")
+	(match_operand:HFBF 1 "general_operand"))]
   "TARGET_EITHER"
   "
-  gcc_checking_assert (aligned_operand (operands[0], HFmode));
-  gcc_checking_assert (aligned_operand (operands[1], HFmode));
+  gcc_checking_assert (aligned_operand (operands[0], <MODE>mode));
+  gcc_checking_assert (aligned_operand (operands[1], <MODE>mode));
   if (TARGET_32BIT)
     {
       if (MEM_P (operands[0]))
-        operands[1] = force_reg (HFmode, operands[1]);
+	operands[1] = force_reg (<MODE>mode, operands[1]);
     }
   else /* TARGET_THUMB1 */
     {
       if (can_create_pseudo_p ())
         {
            if (!REG_P (operands[0]))
-	     operands[1] = force_reg (HFmode, operands[1]);
+	     operands[1] = force_reg (<MODE>mode, operands[1]);
         }
     }
   "
 )
 
-(define_insn "*arm32_movhf"
-  [(set (match_operand:HF 0 "nonimmediate_operand" "=r,m,r,r")
-	(match_operand:HF 1 "general_operand"	   " m,r,r,F"))]
+(define_insn "*arm32_mov<mode>"
+  [(set (match_operand:HFBF 0 "nonimmediate_operand" "=r,m,r,r")
+	(match_operand:HFBF 1 "general_operand"	   " m,r,r,F"))]
   "TARGET_32BIT && !TARGET_HARD_FLOAT
-   && (	  s_register_operand (operands[0], HFmode)
-       || s_register_operand (operands[1], HFmode))"
+   && (	  s_register_operand (operands[0], <MODE>mode)
+       || s_register_operand (operands[1], <MODE>mode))"
   "*
   switch (which_alternative)
     {
     case 0:	/* ARM register from memory */
-      return \"ldrh%?\\t%0, %1\\t%@ __fp16\";
+      return \"ldrh%?\\t%0, %1\\t%@ __<fporbf>\";
     case 1:	/* memory from ARM register */
-      return \"strh%?\\t%1, %0\\t%@ __fp16\";
+      return \"strh%?\\t%1, %0\\t%@ __<fporbf>\";
     case 2:	/* ARM register from ARM register */
-      return \"mov%?\\t%0, %1\\t%@ __fp16\";
+      return \"mov%?\\t%0, %1\\t%@ __<fporbf>\";
     case 3:	/* ARM register from constant */
       {
 	long bits;
 	rtx ops[4];
 
 	bits = real_to_target (NULL, CONST_DOUBLE_REAL_VALUE (operands[1]),
-			       HFmode);
+			       <MODE>mode);
 	ops[0] = operands[0];
 	ops[1] = GEN_INT (bits);
 	ops[2] = GEN_INT (bits & 0xff00);
@@ -8387,12 +8387,15 @@
   "use_cmse"
   "
   {
-    rtx tmp;
-    tmp = copy_to_suggested_reg (XEXP (operands[0], 0),
+    if (!TARGET_HAVE_FPCXT_CMSE)
+      {
+	rtx tmp =
+	  copy_to_suggested_reg (XEXP (operands[0], 0),
 				 gen_rtx_REG (SImode, R4_REGNUM),
 				 SImode);
 
-    operands[0] = replace_equiv_address (operands[0], tmp);
+	operands[0] = replace_equiv_address (operands[0], tmp);
+      }
   }")
 
 (define_insn "*call_reg_armv5"
@@ -8495,12 +8498,15 @@
   "use_cmse"
   "
   {
-    rtx tmp;
-    tmp = copy_to_suggested_reg (XEXP (operands[1], 0),
+    if (!TARGET_HAVE_FPCXT_CMSE)
+      {
+	rtx tmp =
+	  copy_to_suggested_reg (XEXP (operands[1], 0),
 				 gen_rtx_REG (SImode, R4_REGNUM),
 				 SImode);
 
-    operands[1] = replace_equiv_address (operands[1], tmp);
+	operands[1] = replace_equiv_address (operands[1], tmp);
+      }
   }")
 
 (define_insn "*call_value_reg_armv5"

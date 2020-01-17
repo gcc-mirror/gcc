@@ -88,8 +88,6 @@ public:
 
   /* Additional functionality.  */
 
-  virtual checker_event *clone () const = 0;
-
   virtual void prepare_for_emission (checker_path *,
 				     pending_diagnostic *pd,
 				     diagnostic_event_id_t emission_id);
@@ -128,11 +126,6 @@ public:
 
   label_text get_desc (bool) const FINAL OVERRIDE;
 
-  checker_event *clone () const FINAL OVERRIDE
-  {
-    return new debug_event (m_loc, m_fndecl, m_depth, m_desc);
-  }
-
 private:
   char *m_desc;
 };
@@ -156,11 +149,6 @@ public:
 
   label_text get_desc (bool) const FINAL OVERRIDE;
 
-  checker_event *clone () const FINAL OVERRIDE
-  {
-    return new custom_event (m_loc, m_fndecl, m_depth, m_desc);
-  }
-
 private:
   char *m_desc;
 };
@@ -175,11 +163,6 @@ public:
 		   const program_state &dst_state);
 
   label_text get_desc (bool) const FINAL OVERRIDE;
-
-  checker_event *clone () const FINAL OVERRIDE
-  {
-    return new statement_event (m_stmt, m_fndecl, m_depth, m_dst_state);
-  }
 
   const gimple * const m_stmt;
   const program_state m_dst_state;
@@ -196,11 +179,6 @@ public:
   }
 
   label_text get_desc (bool can_colorize) const FINAL OVERRIDE;
-
-  checker_event *clone () const FINAL OVERRIDE
-  {
-    return new function_entry_event (m_loc, m_fndecl, m_depth);
-  }
 
   bool is_function_entry_p () const FINAL OVERRIDE { return true; }
 };
@@ -220,13 +198,6 @@ public:
 		      const program_state &dst_state);
 
   label_text get_desc (bool can_colorize) const FINAL OVERRIDE;
-
-  checker_event *clone () const FINAL OVERRIDE
-  {
-    return new state_change_event (m_node, m_stmt, m_depth,
-				   m_sm, m_var, m_from, m_to, m_origin,
-				   m_dst_state);
-  }
 
   region_id get_lvalue (tree expr) const
   {
@@ -302,11 +273,6 @@ public:
 
   label_text get_desc (bool can_colorize) const FINAL OVERRIDE;
 
-  checker_event *clone () const FINAL OVERRIDE
-  {
-    return new start_cfg_edge_event (m_eedge, m_loc, m_fndecl, m_depth);
-  }
-
  private:
   label_text maybe_describe_condition (bool can_colorize) const;
 
@@ -333,11 +299,6 @@ public:
   {
     return label_text::borrow ("...to here");
   }
-
-  checker_event *clone () const FINAL OVERRIDE
-  {
-    return new end_cfg_edge_event (m_eedge, m_loc, m_fndecl, m_depth);
-  }
 };
 
 /* A concrete event subclass for an interprocedural call.  */
@@ -349,11 +310,6 @@ public:
 	      location_t loc, tree fndecl, int depth);
 
   label_text get_desc (bool can_colorize) const FINAL OVERRIDE;
-
-  checker_event *clone () const FINAL OVERRIDE
-  {
-    return new call_event (m_eedge, m_loc, m_fndecl, m_depth);
-  }
 
   bool is_call_p () const FINAL OVERRIDE;
 };
@@ -368,11 +324,6 @@ public:
 
   label_text get_desc (bool can_colorize) const FINAL OVERRIDE;
 
-  checker_event *clone () const FINAL OVERRIDE
-  {
-    return new return_event (m_eedge, m_loc, m_fndecl, m_depth);
-  }
-
   bool is_return_p () const FINAL OVERRIDE;
 };
 
@@ -386,11 +337,6 @@ public:
   : checker_event (EK_SETJMP, loc, fndecl, depth),
     m_enode (enode)
   {
-  }
-
-  setjmp_event *clone () const FINAL OVERRIDE
-  {
-    return new setjmp_event (m_loc, m_enode, m_fndecl, m_depth);
   }
 
   label_text get_desc (bool can_colorize) const FINAL OVERRIDE;
@@ -436,12 +382,6 @@ public:
   }
 
   label_text get_desc (bool can_colorize) const FINAL OVERRIDE;
-
-  rewind_from_longjmp_event *clone () const FINAL OVERRIDE
-  {
-    return new rewind_from_longjmp_event (get_eedge (),
-					  m_loc, m_fndecl, m_depth);
-  }
 };
 
 /* A concrete event subclass for rewinding from a longjmp to a setjmp,
@@ -459,13 +399,6 @@ public:
   }
 
   label_text get_desc (bool can_colorize) const FINAL OVERRIDE;
-
-  rewind_to_setjmp_event *clone () const FINAL OVERRIDE
-  {
-    return new rewind_to_setjmp_event (get_eedge (),
-				       m_loc, m_fndecl, m_depth,
-				       m_rewind_info);
-  }
 
   void prepare_for_emission (checker_path *path,
 			     pending_diagnostic *pd,
@@ -494,11 +427,6 @@ public:
 
   label_text get_desc (bool can_colorize) const FINAL OVERRIDE;
 
-  warning_event *clone () const FINAL OVERRIDE
-  {
-    return new warning_event (m_loc, m_fndecl, m_depth, m_sm, m_var, m_state);
-  }
-
 private:
   const state_machine *m_sm;
   tree m_var;
@@ -522,6 +450,11 @@ public:
   const diagnostic_event & get_event (int idx) const FINAL OVERRIDE
   {
     return *m_events[idx];
+  }
+
+  checker_event *get_checker_event (int idx)
+  {
+    return m_events[idx];
   }
 
   void dump (pretty_printer *pp) const;
@@ -573,6 +506,9 @@ public:
       }
     return false;
   }
+
+private:
+  DISABLE_COPY_AND_ASSIGN(checker_path);
 
   /* The events that have occurred along this path.  */
   auto_delete_vec<checker_event> m_events;

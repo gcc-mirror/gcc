@@ -244,10 +244,6 @@ namespace ranges
 	= !range<_Tp> && __pair_like<_Tp>
 	&& sentinel_for<tuple_element_t<1, _Tp>, tuple_element_t<0, _Tp>>;
 
-    template<typename _Tp, bool _MaxDiff = same_as<_Tp, __max_diff_type>>
-      using __make_unsigned_like_t
-	= conditional_t<_MaxDiff, __max_size_type, make_unsigned_t<_Tp>>;
-
   } // namespace __detail
 
   enum class subrange_kind : bool { unsized, sized };
@@ -717,7 +713,8 @@ namespace ranges
 	constexpr _Iterator&
 	operator+=(difference_type __n) requires __detail::__advanceable<_Winc>
 	{
-	  using namespace __detail;
+	  using __detail::__is_integer_like;
+	  using __detail::__is_signed_integer_like;
 	  if constexpr (__is_integer_like<_Winc>
 	      && !__is_signed_integer_like<_Winc>)
 	    {
@@ -734,7 +731,8 @@ namespace ranges
 	constexpr _Iterator&
 	operator-=(difference_type __n) requires __detail::__advanceable<_Winc>
 	{
-	  using namespace __detail;
+	  using __detail::__is_integer_like;
+	  using __detail::__is_signed_integer_like;
 	  if constexpr (__is_integer_like<_Winc>
 	      && !__is_signed_integer_like<_Winc>)
 	    {
@@ -804,7 +802,8 @@ namespace ranges
 	operator-(const _Iterator& __x, const _Iterator& __y)
 	  requires __detail::__advanceable<_Winc>
 	{
-	  using namespace __detail;
+	  using __detail::__is_integer_like;
+	  using __detail::__is_signed_integer_like;
 	  using _Dt = difference_type;
 	  if constexpr (__is_integer_like<_Winc>)
 	    {
@@ -892,7 +891,8 @@ namespace ranges
       || (integral<_Winc> && integral<_Bound>)
       || sized_sentinel_for<_Bound, _Winc>
       {
-	using namespace __detail;
+	using __detail::__is_integer_like;
+	using __detail::__to_unsigned_like;
 	if constexpr (__is_integer_like<_Winc> && __is_integer_like<_Bound>)
 	  return (_M_value < 0)
 	    ? ((_M_bound < 0)

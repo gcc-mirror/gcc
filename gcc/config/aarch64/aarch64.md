@@ -493,16 +493,18 @@
   ""
   "")
 
-(define_insn "ccmp<mode>"
-  [(set (match_operand:CC 1 "cc_register" "")
-	(if_then_else:CC
+(define_insn "@ccmp<CC_ONLY:mode><GPI:mode>"
+  [(set (match_operand:CC_ONLY 1 "cc_register" "")
+	(if_then_else:CC_ONLY
 	  (match_operator 4 "aarch64_comparison_operator"
 	   [(match_operand 0 "cc_register" "")
 	    (const_int 0)])
-	  (compare:CC
+	  (compare:CC_ONLY
 	    (match_operand:GPI 2 "register_operand" "r,r,r")
 	    (match_operand:GPI 3 "aarch64_ccmp_operand" "r,Uss,Usn"))
-	  (unspec:CC [(match_operand 5 "immediate_operand")] UNSPEC_NZCV)))]
+	  (unspec:CC_ONLY
+	    [(match_operand 5 "immediate_operand")]
+	    UNSPEC_NZCV)))]
   ""
   "@
    ccmp\\t%<w>2, %<w>3, %k5, %m4
@@ -511,33 +513,57 @@
   [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
 )
 
-(define_insn "fccmp<mode>"
-  [(set (match_operand:CCFP 1 "cc_register" "")
-	(if_then_else:CCFP
+(define_insn "@ccmp<CCFP_CCFPE:mode><GPF:mode>"
+  [(set (match_operand:CCFP_CCFPE 1 "cc_register" "")
+	(if_then_else:CCFP_CCFPE
 	  (match_operator 4 "aarch64_comparison_operator"
 	   [(match_operand 0 "cc_register" "")
 	    (const_int 0)])
-	  (compare:CCFP
+	  (compare:CCFP_CCFPE
 	    (match_operand:GPF 2 "register_operand" "w")
 	    (match_operand:GPF 3 "register_operand" "w"))
-	  (unspec:CCFP [(match_operand 5 "immediate_operand")] UNSPEC_NZCV)))]
+	  (unspec:CCFP_CCFPE
+	    [(match_operand 5 "immediate_operand")]
+	    UNSPEC_NZCV)))]
   "TARGET_FLOAT"
-  "fccmp\\t%<s>2, %<s>3, %k5, %m4"
+  "fccmp<e>\\t%<s>2, %<s>3, %k5, %m4"
   [(set_attr "type" "fccmp<s>")]
 )
 
-(define_insn "fccmpe<mode>"
-  [(set (match_operand:CCFPE 1 "cc_register" "")
-	 (if_then_else:CCFPE
+(define_insn "@ccmp<CC_ONLY:mode><GPI:mode>_rev"
+  [(set (match_operand:CC_ONLY 1 "cc_register" "")
+	(if_then_else:CC_ONLY
 	  (match_operator 4 "aarch64_comparison_operator"
 	   [(match_operand 0 "cc_register" "")
-	  (const_int 0)])
-	   (compare:CCFPE
+	    (const_int 0)])
+	  (unspec:CC_ONLY
+	    [(match_operand 5 "immediate_operand")]
+	    UNSPEC_NZCV)
+	  (compare:CC_ONLY
+	    (match_operand:GPI 2 "register_operand" "r,r,r")
+	    (match_operand:GPI 3 "aarch64_ccmp_operand" "r,Uss,Usn"))))]
+  ""
+  "@
+   ccmp\\t%<w>2, %<w>3, %k5, %M4
+   ccmp\\t%<w>2, %3, %k5, %M4
+   ccmn\\t%<w>2, #%n3, %k5, %M4"
+  [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
+)
+
+(define_insn "@ccmp<CCFP_CCFPE:mode><GPF:mode>_rev"
+  [(set (match_operand:CCFP_CCFPE 1 "cc_register" "")
+	(if_then_else:CCFP_CCFPE
+	  (match_operator 4 "aarch64_comparison_operator"
+	   [(match_operand 0 "cc_register" "")
+	    (const_int 0)])
+	  (unspec:CCFP_CCFPE
+	    [(match_operand 5 "immediate_operand")]
+	    UNSPEC_NZCV)
+	  (compare:CCFP_CCFPE
 	    (match_operand:GPF 2 "register_operand" "w")
-	    (match_operand:GPF 3 "register_operand" "w"))
-	  (unspec:CCFPE [(match_operand 5 "immediate_operand")] UNSPEC_NZCV)))]
+	    (match_operand:GPF 3 "register_operand" "w"))))]
   "TARGET_FLOAT"
-  "fccmpe\\t%<s>2, %<s>3, %k5, %m4"
+  "fccmp<e>\\t%<s>2, %<s>3, %k5, %M4"
   [(set_attr "type" "fccmp<s>")]
 )
 

@@ -8434,8 +8434,13 @@ update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
 	    gimple_set_op (stmt, j, *new_op);
 	  else
 	    {
+	      /* PR92429: The last argument of simplify_replace_tree disables
+		 folding when replacing arguments.  This is required as
+		 otherwise you might end up with different statements than the
+		 ones analyzed in vect_loop_analyze, leading to different
+		 vectorization.  */
 	      op = simplify_replace_tree (op, NULL_TREE, NULL_TREE,
-				     &find_in_mapping, &mapping);
+					  &find_in_mapping, &mapping, false);
 	      gimple_set_op (stmt, j, op);
 	    }
 	}
@@ -8452,7 +8457,8 @@ update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
 	 updated offset we set using ADVANCE.  Instead we have to make sure the
 	 reference in the data references point to the corresponding copy of
 	 the original in the epilogue.  */
-      if (STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_vinfo) == VMAT_GATHER_SCATTER)
+      if (STMT_VINFO_MEMORY_ACCESS_TYPE (vect_stmt_to_vectorize (stmt_vinfo))
+	  == VMAT_GATHER_SCATTER)
 	{
 	  DR_REF (dr)
 	    = simplify_replace_tree (DR_REF (dr), NULL_TREE, NULL_TREE,

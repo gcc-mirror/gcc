@@ -28,6 +28,8 @@ do whole-program analysis).
 The implementation is read-only: it doesn't attempt to change anything,
 just emit warnings.
 
+The gimple representation can be seen using @option{-fdump-ipa-analyzer}.
+
 First, we build a @code{supergraph} which combines the callgraph and all
 of the CFGs into a single directed graph, with both interprocedural and
 intraprocedural edges.  The nodes and edges in the supergraph are called

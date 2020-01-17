@@ -28,6 +28,10 @@
 ;; registers.
 (define_mode_iterator ANY64 [DI DF V8QI V4HI V4HF V2SI V2SF])
 
+;; Additional definition of ANY64 that also includes the special V4BF mode.
+;; BFmode is allowed only on define_split between ARM registers.
+(define_mode_iterator ANY64_BF [DI DF V8QI V4HI V4BF V4HF V2SI V2SF])
+
 (define_mode_iterator ANY128 [V2DI V2DF V16QI V8HI V4SI V4SF])
 
 ;; A list of integer modes that are up to one word long
@@ -80,6 +84,10 @@
 ;; Double-width vector modes plus 64-bit elements.
 (define_mode_iterator VDX [V8QI V4HI V4HF V2SI V2SF DI])
 
+;; Double-width vector modes plus 64-bit elements,
+;; with V4BFmode added, suitable for moves.
+(define_mode_iterator VDXMOV [V8QI V4HI V4HF V4BF V2SI V2SF DI])
+
 ;; Double-width vector modes, with V4HF - for vldN_lane and vstN_lane.
 (define_mode_iterator VD_LANE [V8QI V4HI V4HF V2SI V2SF])
 
@@ -101,8 +109,8 @@
 ;; Quad-width vector modes without floating-point elements.
 (define_mode_iterator VQI [V16QI V8HI V4SI])
 
-;; Quad-width vector modes, with TImode added, for moves.
-(define_mode_iterator VQXMOV [V16QI V8HI V8HF V4SI V4SF V2DI TI])
+;; Quad-width vector modes, with TImode and V8BFmode added, suitable for moves.
+(define_mode_iterator VQXMOV [V16QI V8HI V8HF V8BF V4SI V4SF V2DI TI])
 
 ;; Opaque structure types wider than TImode.
 (define_mode_iterator VSTRUCT [EI OI CI XI])
@@ -200,6 +208,12 @@
 
 ;; Vector modes for 16-bit floating-point support.
 (define_mode_iterator VH [V8HF V4HF])
+
+;; 16-bit floating-point vector modes suitable for moving (includes BFmode).
+(define_mode_iterator VHFBF [V8HF V4HF V4BF V8BF])
+
+;; 16-bit floating-point scalar modes suitable for moving (includes BFmode).
+(define_mode_iterator HFBF [HF BF])
 
 ;; Iterators used for fixed-point support.
 (define_mode_iterator FIXED [QQ HQ SQ UQQ UHQ USQ HA SA UHA USA])
@@ -484,6 +498,9 @@
 
 ;; vtbl<n> suffix for NEON vector modes.
 (define_mode_attr VTAB_n [(TI "2") (EI "3") (OI "4")])
+
+;; fp16 or bf16 marker for 16-bit float modes.
+(define_mode_attr fporbf [(HF "fp16") (BF "bf16")])
 
 ;; (Opposite) mode to convert to/from for NEON mode conversions.
 (define_mode_attr V_CVTTO [(V2SI "V2SF") (V2SF "V2SI")
@@ -804,6 +821,7 @@
 		     (V4HF "") (V8HF "_q")
 		     (V2SF "") (V4SF "_q")
 		     (V4HF "") (V8HF "_q")
+		     (V4BF "") (V8BF "_q")
 		     (DI "")   (V2DI "_q")
 		     (DF "")   (V2DF "_q")
 		     (HF "")])

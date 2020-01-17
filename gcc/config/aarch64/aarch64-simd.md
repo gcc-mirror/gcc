@@ -506,6 +506,20 @@
   [(set_attr "type" "neon_dot<q>")]
 )
 
+;; These instructions map to the __builtins for the armv8.6a I8MM usdot
+;; (vector) Dot Product operation.
+(define_insn "aarch64_usdot<vsi2qi>"
+  [(set (match_operand:VS 0 "register_operand" "=w")
+	(plus:VS
+	  (unspec:VS [(match_operand:<VSI2QI> 2 "register_operand" "w")
+		      (match_operand:<VSI2QI> 3 "register_operand" "w")]
+	  UNSPEC_USDOT)
+	  (match_operand:VS 1 "register_operand" "0")))]
+  "TARGET_I8MM"
+  "usdot\\t%0.<Vtype>, %2.<Vdottype>, %3.<Vdottype>"
+  [(set_attr "type" "neon_dot<q>")]
+)
+
 ;; These expands map to the Dot Product optab the vectorizer checks for.
 ;; The auto-vectorizer expects a dot product builtin that also does an
 ;; accumulation into the provided register.
@@ -571,6 +585,26 @@
     return "<sur>dot\\t%0.<Vtype>, %2.<Vdottype>, %3.4b[%4]";
   }
   [(set_attr "type" "neon_dot<q>")]
+)
+
+;; These instructions map to the __builtins for the armv8.6a I8MM usdot, sudot
+;; (by element) Dot Product operations.
+(define_insn "aarch64_<DOTPROD_I8MM:sur>dot_lane<VB:isquadop><VS:vsi2qi>"
+  [(set (match_operand:VS 0 "register_operand" "=w")
+	(plus:VS
+	  (unspec:VS [(match_operand:<VS:VSI2QI> 2 "register_operand" "w")
+		      (match_operand:VB 3 "register_operand" "w")
+		      (match_operand:SI 4 "immediate_operand" "i")]
+	  DOTPROD_I8MM)
+	  (match_operand:VS 1 "register_operand" "0")))]
+  "TARGET_I8MM"
+  {
+    int nunits = GET_MODE_NUNITS (<VB:MODE>mode).to_constant ();
+    int lane = INTVAL (operands[4]);
+    operands[4] = gen_int_mode (ENDIAN_LANE_N (nunits / 4, lane), SImode);
+    return "<DOTPROD_I8MM:sur>dot\\t%0.<VS:Vtype>, %2.<VS:Vdottype>, %3.4b[%4]";
+  }
+  [(set_attr "type" "neon_dot<VS:q>")]
 )
 
 (define_expand "copysign<mode>3"
@@ -7024,4 +7058,36 @@
   "TARGET_SIMD"
   "xtn\t%0.<Vntype>, %1.<Vtype>"
   [(set_attr "type" "neon_shift_imm_narrow_q")]
+)
+
+(define_insn "aarch64_bfdot<mode>"
+  [(set (match_operand:VDQSF 0 "register_operand" "=w")
+	(plus:VDQSF
+	  (unspec:VDQSF
+	   [(match_operand:<VBFMLA_W> 2 "register_operand" "w")
+	    (match_operand:<VBFMLA_W> 3 "register_operand" "w")]
+	    UNSPEC_BFDOT)
+	  (match_operand:VDQSF 1 "register_operand" "0")))]
+  "TARGET_BF16_SIMD"
+  "bfdot\t%0.<Vtype>, %2.<Vbfdottype>, %3.<Vbfdottype>"
+  [(set_attr "type" "neon_dot<q>")]
+)
+
+(define_insn "aarch64_bfdot_lane<VBF:isquadop><VDQSF:mode>"
+  [(set (match_operand:VDQSF 0 "register_operand" "=w")
+	(plus:VDQSF
+	  (unspec:VDQSF
+	   [(match_operand:<VDQSF:VBFMLA_W> 2 "register_operand" "w")
+	    (match_operand:VBF 3 "register_operand" "w")
+	    (match_operand:SI 4 "const_int_operand" "n")]
+	    UNSPEC_BFDOT)
+	  (match_operand:VDQSF 1 "register_operand" "0")))]
+  "TARGET_BF16_SIMD"
+{
+  int nunits = GET_MODE_NUNITS (<VBF:MODE>mode).to_constant ();
+  int lane = INTVAL (operands[4]);
+  operands[4] = gen_int_mode (ENDIAN_LANE_N (nunits / 2, lane), SImode);
+  return "bfdot\t%0.<VDQSF:Vtype>, %2.<VDQSF:Vbfdottype>, %3.2h[%4]";
+}
+  [(set_attr "type" "neon_dot<VDQSF:q>")]
 )

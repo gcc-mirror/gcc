@@ -2195,11 +2195,6 @@ static cpp_num
 parse_has_include (cpp_reader *pfile, enum include_type type)
 {
   cpp_num result;
-  bool paren = false;
-  cpp_hashnode *node = 0;
-  const cpp_token *token;
-  bool bracket = false;
-  char *fname = 0;
 
   result.unsignedp = false;
   result.high = 0;
@@ -2208,39 +2203,34 @@ parse_has_include (cpp_reader *pfile, enum include_type type)
 
   pfile->state.in__has_include__++;
 
-  token = cpp_get_token (pfile);
-  if (token->type == CPP_OPEN_PAREN)
-    {
-      paren = true;
-      token = cpp_get_token (pfile);
-    }
+  const cpp_token *token = cpp_get_token (pfile);
+  bool paren = token->type == CPP_OPEN_PAREN;
+  if (paren)
+    token = cpp_get_token (pfile);
 
+  bool bracket = token->type != CPP_STRING;
+  cpp_hashnode *node = NULL;
+  char *fname = NULL;
   if (token->type == CPP_STRING || token->type == CPP_HEADER_NAME)
     {
-      if (token->type == CPP_HEADER_NAME)
-	bracket = true;
       fname = XNEWVEC (char, token->val.str.len - 1);
       memcpy (fname, token->val.str.text + 1, token->val.str.len - 2);
       fname[token->val.str.len - 2] = '\0';
       node = token->val.node.node;
     }
   else if (token->type == CPP_LESS)
-    {
-      bracket = true;
-      fname = _cpp_bracket_include (pfile);
-    }
+    fname = _cpp_bracket_include (pfile);
   else
     cpp_error (pfile, CPP_DL_ERROR,
 	       "operator \"__has_include__\" requires a header string");
 
   if (fname)
     {
-      int angle_brackets = (bracket ? 1 : 0);
-
-      if (_cpp_has_header (pfile, fname, angle_brackets, type))
+      /* Do not do the lookup if we're skipping, that's unnecessary
+	 IO.  */
+      if (!pfile->state.skip_eval
+	  && _cpp_has_header (pfile, fname, bracket, type))
 	result.low = 1;
-      else
-	result.low = 0;
 
       XDELETEVEC (fname);
     }

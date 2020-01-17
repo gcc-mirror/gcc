@@ -450,6 +450,8 @@ supernode::dump_dot (graphviz_out *gv, const dump_args_t &args) const
   pp_string (pp, "<TABLE BORDER=\"0\">");
   pp_write_text_to_stream (pp);
 
+  bool had_row = false;
+
   if (m_returning_call)
     {
       gv->begin_tr ();
@@ -464,18 +466,22 @@ supernode::dump_dot (graphviz_out *gv, const dump_args_t &args) const
       if (args.m_node_annotator)
 	args.m_node_annotator->add_stmt_annotations (gv, m_returning_call);
       pp_newline (pp);
+
+      had_row = true;
     }
 
   if (entry_p ())
     {
       pp_string (pp, "<TR><TD>ENTRY</TD></TR>");
       pp_newline (pp);
+      had_row = true;
     }
 
   if (return_p ())
     {
       pp_string (pp, "<TR><TD>EXIT</TD></TR>");
       pp_newline (pp);
+      had_row = true;
     }
 
   /* Phi nodes.  */
@@ -492,6 +498,7 @@ supernode::dump_dot (graphviz_out *gv, const dump_args_t &args) const
 	args.m_node_annotator->add_stmt_annotations (gv, stmt);
 
       pp_newline (pp);
+      had_row = true;
     }
 
   /* Statements.  */
@@ -507,6 +514,15 @@ supernode::dump_dot (graphviz_out *gv, const dump_args_t &args) const
       if (args.m_node_annotator)
 	args.m_node_annotator->add_stmt_annotations (gv, stmt);
 
+      pp_newline (pp);
+      had_row = true;
+    }
+
+  /* Graphviz requires a TABLE element to have at least one TR
+     (and each TR to have at least one TD).  */
+  if (!had_row)
+    {
+      pp_string (pp, "<TR><TD>(empty)</TD></TR>");
       pp_newline (pp);
     }
 
@@ -531,13 +547,14 @@ supernode::dump_dot_id (pretty_printer *pp) const
 location_t
 supernode::get_start_location () const
 {
-  if (m_returning_call && m_returning_call->location != UNKNOWN_LOCATION)
+  if (m_returning_call
+      && get_pure_location (m_returning_call->location) != UNKNOWN_LOCATION)
     return m_returning_call->location;
 
   int i;
   gimple *stmt;
   FOR_EACH_VEC_ELT (m_stmts, i, stmt)
-    if (stmt->location != UNKNOWN_LOCATION)
+    if (get_pure_location (stmt->location) != UNKNOWN_LOCATION)
       return stmt->location;
 
   if (entry_p ())
@@ -561,10 +578,11 @@ supernode::get_end_location () const
   int i;
   gimple *stmt;
   FOR_EACH_VEC_ELT_REVERSE (m_stmts, i, stmt)
-    if (stmt->location != UNKNOWN_LOCATION)
+    if (get_pure_location (stmt->location) != UNKNOWN_LOCATION)
       return stmt->location;
 
-  if (m_returning_call && m_returning_call->location != UNKNOWN_LOCATION)
+  if (m_returning_call
+      && get_pure_location (m_returning_call->location) != UNKNOWN_LOCATION)
     return m_returning_call->location;
 
   if (entry_p ())

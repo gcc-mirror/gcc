@@ -34,18 +34,7 @@ public:
 		    pending_diagnostic *d);
   ~saved_diagnostic ();
 
-  bool operator== (const saved_diagnostic &other) const
-  {
-    return (m_sm == other.m_sm
-	    /* We don't compare m_enode.  */
-	    && m_snode == other.m_snode
-	    && m_stmt == other.m_stmt
-	    /* We don't compare m_stmt_finder.  */
-	    && m_var == other.m_var
-	    && m_state == other.m_state
-	    && m_d->equal_p (*other.m_d)
-	    && m_trailing_eedge == other.m_trailing_eedge);
-  }
+  bool operator== (const saved_diagnostic &other) const;
 
   //private:
   const state_machine *m_sm;

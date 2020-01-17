@@ -4352,10 +4352,11 @@ foreach { armfunc armflag armdefs } {
 	v8a "-march=armv8-a" __ARM_ARCH_8A__
 	v8_1a "-march=armv8.1-a" __ARM_ARCH_8A__
 	v8_2a "-march=armv8.2-a" __ARM_ARCH_8A__
+	v8r "-march=armv8-r" __ARM_ARCH_8R__
 	v8m_base "-march=armv8-m.base -mthumb -mfloat-abi=soft"
 		__ARM_ARCH_8M_BASE__
 	v8m_main "-march=armv8-m.main -mthumb" __ARM_ARCH_8M_MAIN__
-	v8r "-march=armv8-r" __ARM_ARCH_8R__ } {
+	v8_1m_main "-march=armv8.1-m.main -mthumb" __ARM_ARCH_8M_MAIN__ } {
     eval [string map [list FUNC $armfunc FLAG $armflag DEFS $armdefs ] {
 	proc check_effective_target_arm_arch_FUNC_ok { } {
 	    return [check_no_compiler_messages arm_arch_FUNC_ok assembly {
@@ -4520,6 +4521,19 @@ proc check_effective_target_arm_cmse_ok {} {
 	foo (void)
 	{
 	  asm ("bxns r0");
+	}
+    } "-mcmse"];
+}
+
+# Return 1 if this is an ARM target where ARMv8-M Security Extensions with
+# clearing instructions (clrm, vscclrm, vstr/vldr with FPCXT) is available.
+
+proc check_effective_target_arm_cmse_clear_ok {} {
+    return [check_no_compiler_messages arm_cmse_clear object {
+	int
+	foo (void)
+	{
+	  asm ("clrm {r1, r2}");
 	}
     } "-mcmse"];
 }

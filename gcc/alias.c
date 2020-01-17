@@ -1164,10 +1164,16 @@ record_alias_subset (alias_set_type superset, alias_set_type subset)
     superset_entry->has_zero_child = 1;
   else
     {
-      subset_entry = get_alias_set_entry (subset);
       if (!superset_entry->children)
 	superset_entry->children
 	  = hash_map<alias_set_hash, int>::create_ggc (64);
+
+      /* Enter the SUBSET itself as a child of the SUPERSET.  If it was
+	 already there we're done.  */
+      if (superset_entry->children->put (subset, 0))
+	return;
+
+      subset_entry = get_alias_set_entry (subset);
       /* If there is an entry for the subset, enter all of its children
 	 (if they are not already present) as children of the SUPERSET.  */
       if (subset_entry)
@@ -1185,9 +1191,6 @@ record_alias_subset (alias_set_type superset, alias_set_type subset)
 		superset_entry->children->put ((*iter).first, (*iter).second);
 	    }
 	}
-
-      /* Enter the SUBSET itself as a child of the SUPERSET.  */
-      superset_entry->children->put (subset, 0);
     }
 }
 

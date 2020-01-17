@@ -1,3 +1,401 @@
+2020-01-17  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/92692
+	* config/aarch64/aarch64.c (aarch64_split_compare_and_swap)
+	Add assert to ensure prolog has been emitted.
+	(aarch64_split_atomic_op): Likewise.
+	* config/aarch64/atomics.md (aarch64_compare_and_swap<mode>)
+	Use epilogue_completed rather than reload_completed.
+	(aarch64_atomic_exchange<mode>): Likewise.
+	(aarch64_atomic_<atomic_optab><mode>): Likewise.
+	(atomic_nand<mode>): Likewise.
+	(aarch64_atomic_fetch_<atomic_optab><mode>): Likewise.
+	(atomic_fetch_nand<mode>): Likewise.
+	(aarch64_atomic_<atomic_optab>_fetch<mode>): Likewise.
+	(atomic_nand_fetch<mode>): Likewise.
+
+2020-01-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/93133
+	* config/aarch64/aarch64.h (REVERSIBLE_CC_MODE): Return false
+	for FP modes.
+	(REVERSE_CONDITION): Delete.
+	* config/aarch64/iterators.md (CC_ONLY): New mode iterator.
+	(CCFP_CCFPE): Likewise.
+	(e): New mode attribute.
+	* config/aarch64/aarch64.md (ccmp<GPI:mode>): Rename to...
+	(@ccmp<CC_ONLY:mode><GPI:mode>): ...this, using CC_ONLY instead of CC.
+	(fccmp<GPF:mode>, fccmpe<GPF:mode>): Merge into...
+	(@ccmp<CCFP_CCFPE:mode><GPF:mode>): ...this combined pattern.
+	(@ccmp<CC_ONLY:mode><GPI:mode>_rev): New pattern.
+	(@ccmp<CCFP_CCFPE:mode><GPF:mode>_rev): Likewise.
+	* config/aarch64/aarch64.c (aarch64_gen_compare_reg): Update
+	name of generator from gen_ccmpdi to gen_ccmpccdi.
+	(aarch64_gen_ccmp_next): Use code_for_ccmp.  If we want to reverse
+	the previous comparison but aren't able to, use the new ccmp_rev
+	patterns instead.
+
+2020-01-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gimplify.c (gimplify_return_expr): Use poly_int_tree_p rather
+	than testing directly for INTEGER_CST.
+	(gimplify_target_expr, gimplify_omp_depend): Likewise.
+
+2020-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93292
+	* tree-vect-stmts.c (vectorizable_comparison): Punt also if
+	get_vectype_for_scalar_type returns NULL.
+
+2020-01-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* params.opt (-param=max-predicted-iterations): Increase range from 0.
+	* predict.c (estimate_loops): Add 1 to param_max_predicted_iterations.
+
+2020-01-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-fnsummary.c (estimate_calls_size_and_time): Fix formating of
+	dump.
+	* params.opt: (max-predicted-iterations): Set bounds.
+	* predict.c (real_almost_one, real_br_prob_base,
+	real_inv_br_prob_base, real_one_half, real_bb_freq_max): Remove.
+	(propagate_freq): Add max_cyclic_prob parameter; cap cyclic
+	probabilities; do not truncate to reg_br_prob_bases.
+	(estimate_loops_at_level): Pass max_cyclic_prob.
+	(estimate_loops): Compute max_cyclic_prob.
+	(estimate_bb_frequencies): Do not initialize real_*; update calculation
+	of back edge prob.
+	* profile-count.c (profile_probability::to_sreal): New.
+	* profile-count.h (class sreal): Move up in file.
+	(profile_probability::to_sreal): Declare.
+
+2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/arm/arm.c
+	(arm_invalid_conversion): New function for target hook.
+	(arm_invalid_unary_op): New function for target hook.
+	(arm_invalid_binary_op): New function for target hook.
+
+2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config.gcc: Add arm_bf16.h.
+	* config/arm/arm-builtins.c (arm_mangle_builtin_type): Fix comment.
+	(arm_simd_builtin_std_type): Add BFmode.
+	(arm_init_simd_builtin_types): Define element types for vector types.
+	(arm_init_bf16_types): New function.
+	(arm_init_builtins): Add arm_init_bf16_types function call.
+	* config/arm/arm-modes.def: Add BFmode and V4BF, V8BF vector modes.
+	* config/arm/arm-simd-builtin-types.def: Add V4BF, V8BF.
+	* config/arm/arm.c (aapcs_vfp_sub_candidate):  Add BFmode.
+	(arm_hard_regno_mode_ok): Add BFmode and tidy up statements.
+	(arm_vector_mode_supported_p): Add V4BF, V8BF.
+	(arm_mangle_type):  Add __bf16.
+	* config/arm/arm.h: Add V4BF, V8BF to VALID_NEON_DREG_MODE, 
+	VALID_NEON_QREG_MODE respectively. Add export arm_bf16_type_node,
+	arm_bf16_ptr_type_node.
+	* config/arm/arm.md: Add BFmode to movhf expand, mov pattern and
+	define_split between ARM registers.
+	* config/arm/arm_bf16.h: New file.
+	* config/arm/arm_neon.h: Add arm_bf16.h and Bfloat vector types.
+	* config/arm/iterators.md: (ANY64_BF, VDXMOV, VHFBF, HFBF, fporbf): New.
+	(VQXMOV): Add V8BF.
+	* config/arm/neon.md: Add BF vector types to movhf NEON move patterns.
+	* config/arm/vfp.md: Add BFmode to movhf patterns.
+
+2020-01-16  Mihail Ionescu  <mihail.ionescu@arm.com>
+	    Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm-cpus.in (mve, mve_float): New features.
+	(dsp, mve, mve.fp): New options.
+	* config/arm/arm.h (TARGET_HAVE_MVE, TARGET_HAVE_MVE_FLOAT): Define.
+	* config/arm/t-rmprofile: Map v8.1-M multilibs to v8-M.
+	* doc/invoke.texi: Document the armv8.1-m mve and dps options.
+
+2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
+	    Thomas Preud'homme <thomas.preudhomme@arm.com>
+
+	* config/arm/arm-cpus.in (ARMv8_1m_main): Redefine as an extension to
+	Armv8-M Mainline.
+	* config/arm/arm.c (arm_options_perform_arch_sanity_checks): Remove
+	error for using -mcmse when targeting Armv8.1-M Mainline.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.md (nonsecure_call_internal): Do not force memory
+	address in r4 when targeting Armv8.1-M Mainline.
+	(nonsecure_call_value_internal): Likewise.
+	* config/arm/thumb2.md (nonsecure_call_reg_thumb2): Make memory address
+	a register match_operand again.  Emit BLXNS when targeting
+	Armv8.1-M Mainline.
+	(nonsecure_call_value_reg_thumb2): Likewise.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.c (arm_add_cfa_adjust_cfa_note): Declare early.
+	(cmse_nonsecure_call_inline_register_clear): Define new lazy_fpclear
+	variable as true when floating-point ABI is not hard.  Replace
+	check against TARGET_HARD_FLOAT_ABI by checks against lazy_fpclear.
+	Generate VLSTM and VLLDM instruction respectively before and
+	after a function call to cmse_nonsecure_call function.
+	* config/arm/unspecs.md (VUNSPEC_VLSTM): Define unspec.
+	(VUNSPEC_VLLDM): Likewise.
+	* config/arm/vfp.md (lazy_store_multiple_insn): New define_insn.
+	(lazy_load_multiple_insn): Likewise.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.c (vfp_emit_fstmd): Declare early.
+	(arm_emit_vfp_multi_reg_pop): Likewise.
+	(cmse_nonsecure_call_inline_register_clear): Abstract number of VFP
+	registers to clear in max_fp_regno.  Emit VPUSH and VPOP to save and
+	restore callee-saved VFP registers.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.c (arm_emit_multi_reg_pop): Declare early.
+	(cmse_nonsecure_call_clear_caller_saved): Rename into ...
+	(cmse_nonsecure_call_inline_register_clear): This.  Save and clear
+	callee-saved GPRs as well as clear ip register before doing a nonsecure
+	call then restore callee-saved GPRs after it when targeting
+	Armv8.1-M Mainline.
+	(arm_reorg): Adapt to function rename.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm-protos.h (clear_operation_p): Adapt prototype.
+	* config/arm/arm.c (clear_operation_p): Extend to be able to check a
+	clear_vfp_multiple pattern based on a new vfp parameter.
+	(cmse_clear_registers): Generate VSCCLRM to clear VFP registers when
+	targeting Armv8.1-M Mainline.
+	(cmse_nonsecure_entry_clear_before_return): Clear VFP registers
+	unconditionally when targeting Armv8.1-M Mainline architecture.  Check
+	whether VFP registers are available before looking call_used_regs for a
+	VFP register.
+	* config/arm/predicates.md (clear_multiple_operation): Adapt to change
+	of prototype of clear_operation_p.
+	(clear_vfp_multiple_operation): New predicate.
+	* config/arm/unspecs.md (VUNSPEC_VSCCLRM_VPR): New volatile unspec.
+	* config/arm/vfp.md (clear_vfp_multiple): New define_insn.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm-protos.h (clear_operation_p): Declare.
+	* config/arm/arm.c (clear_operation_p): New function.
+	(cmse_clear_registers): Generate clear_multiple instruction pattern if
+	targeting Armv8.1-M Mainline or successor.
+	(output_return_instruction): Only output APSR register clearing if
+	Armv8.1-M Mainline instructions not available.
+	(thumb_exit): Likewise.
+	* config/arm/predicates.md (clear_multiple_operation): New predicate.
+	* config/arm/thumb2.md (clear_apsr): New define_insn.
+	(clear_multiple): Likewise.
+	* config/arm/unspecs.md (VUNSPEC_CLRM_APSR): New volatile unspec.
+
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.c (fp_sysreg_names): Declare and define.
+	(use_return_insn): Also return false for Armv8.1-M Mainline.
+	(output_return_instruction): Skip FPSCR clearing if Armv8.1-M
+	Mainline instructions are available.
+	(arm_compute_frame_layout): Allocate space in frame for FPCXTNS
+	when targeting Armv8.1-M Mainline Security Extensions.
+	(arm_expand_prologue): Save FPCXTNS if this is an Armv8.1-M
+	Mainline entry function.
+	(cmse_nonsecure_entry_clear_before_return): Clear IP and r4 if
+	targeting Armv8.1-M Mainline or successor.
+	(arm_expand_epilogue): Fix indentation of caller-saved register
+	clearing.  Restore FPCXTNS if this is an Armv8.1-M Mainline
+	entry function.
+	* config/arm/arm.h (TARGET_HAVE_FP_CMSE): New macro.
+	(FP_SYSREGS): Likewise.
+	(enum vfp_sysregs_encoding): Define enum.
+	(fp_sysreg_names): Declare.
+	* config/arm/unspecs.md (VUNSPEC_VSTR_VLDR): New volatile unspec.
+	* config/arm/vfp.md (push_fpsysreg_insn): New define_insn.
+	(pop_fpsysreg_insn): Likewise.
+
+2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
+	    Thomas Preud'homme <thomas.preudhomme@arm.com>
+
+	* config/arm/arm-cpus.in (armv8_1m_main): New feature.
+	(ARMv4, ARMv4t, ARMv5t, ARMv5te, ARMv5tej, ARMv6, ARMv6j, ARMv6k,
+	ARMv6z, ARMv6kz, ARMv6zk, ARMv6t2, ARMv6m, ARMv7, ARMv7a, ARMv7ve,
+	ARMv7r, ARMv7m, ARMv7em, ARMv8a, ARMv8_1a, ARMv8_2a, ARMv8_3a,
+	ARMv8_4a, ARMv8_5a, ARMv8m_base, ARMv8m_main, ARMv8r): Reindent.
+	(ARMv8_1m_main): New feature group.
+	(armv8.1-m.main): New architecture.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm.c (arm_arch8_1m_main): Define and default initialize.
+	(arm_option_reconfigure_globals): Initialize arm_arch8_1m_main.
+	(arm_options_perform_arch_sanity_checks): Error out when targeting
+	Armv8.1-M Mainline Security Extensions.
+	* config/arm/arm.h (arm_arch8_1m_main): Declare.
+
+2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (aarch64_bfdot,
+	aarch64_bfdot_lane, aarch64_bfdot_laneq): New.
+	* config/aarch64/aarch64-simd.md (aarch64_bfdot, aarch64_bfdot_lane,
+	aarch64_bfdot_laneq): New.
+	* config/aarch64/arm_bf16.h (vbfdot_f32, vbfdotq_f32,
+	vbfdot_lane_f32, vbfdotq_lane_f32, vbfdot_laneq_f32,
+	vbfdotq_laneq_f32): New.
+	* config/aarch64/iterators.md (UNSPEC_BFDOT, Vbfdottype,
+	VBFMLA_W, VBF): New.
+	(isquadop): Add V4BF, V8BF.
+
+2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/aarch64/aarch64-builtins.c: (enum aarch64_type_qualifiers):
+	New qualifier_lane_quadtup_index, TYPES_TERNOP_SSUS,
+	TYPES_QUADOPSSUS_LANE_QUADTUP, TYPES_QUADOPSSSU_LANE_QUADTUP.
+	(aarch64_simd_expand_args): Add case SIMD_ARG_LANE_QUADTUP_INDEX.
+	(aarch64_simd_expand_builtin): Add qualifier_lane_quadtup_index.
+	* config/aarch64/aarch64-simd-builtins.def (usdot, usdot_lane,
+	usdot_laneq, sudot_lane,sudot_laneq): New.
+	* config/aarch64/aarch64-simd.md (aarch64_usdot): New.
+	(aarch64_<sur>dot_lane): New.
+	* config/aarch64/arm_neon.h (vusdot_s32): New.
+	(vusdotq_s32): New.
+	(vusdot_lane_s32): New.
+	(vsudot_lane_s32): New.
+	* config/aarch64/iterators.md (DOTPROD_I8MM): New iterator.
+	(UNSPEC_USDOT, UNSPEC_SUDOT): New unspecs.
+
+2020-01-16  Martin Liska  <mliska@suse.cz>
+
+	* value-prof.c (dump_histogram_value): Fix
+	obvious spacing issue.
+
+2020-01-16  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-sccvn.c(vn_reference_lookup_3): Check lhs for
+	!storage_order_barrier_p.
+
+2020-01-16  Andrew Pinski  <apinski@marvell.com>
+
+	* sched-int.h (_dep): Add unused bit-field field for the padding.
+	* sched-deps.c (init_dep_1): Init unused field.
+
+2020-01-16  Andrew Pinski  <apinski@marvell.com>
+
+	* optabs.h (create_expand_operand): Initialize target field also.
+
+2020-01-16  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/92429
+	* tree-ssa-loop-niter.h (simplify_replace_tree): Add parameter.
+	* tree-ssa-loop-niter.c (simplify_replace_tree): Add parameter to
+	control folding.
+	* tree-vect-loop.c (update_epilogue_vinfo): Do not fold when replacing
+	tree.
+
+2020-01-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_split_sve_subreg_move): Apply
+	aarch64_sve_int_mode to each mode.
+
+2020-01-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/analyzer.texi (Overview): Add note about
+	-fdump-ipa-analyzer.
+
+2020-01-15  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR tree-optimization/93231
+	* tree-ssa-forwprop.c (optimize_count_trailing_zeroes): Check
+	input_type is unsigned.  Use tree_to_shwi for shift constant.
+	Check CST_STRING element size is CHAR_TYPE_SIZE bits.
+	(simplify_count_trailing_zeroes): Add test to handle known non-zero
+	inputs more efficiently.
+
+2020-01-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movsf_internal): Do not require
+	SSE2 ISA for alternatives 14 and 15.
+
+2020-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/93273
+	* tree-eh.c (sink_clobbers): If we already visited the destination
+	block do not defer insertion.
+	(pass_lower_eh_dispatch::execute): Maintain BB_VISITED for
+	the purpose of defered insertion.
+
+2020-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* BASE-VER: Bump to 10.0.1.
+
+2020-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/93247
+	* tree-vect-loop.c (update_epilogue_loop_vinfo): Check the access
+	type of the stmt that we're going to vectorize.
+
+2020-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.c (vectorize_slp_instance_root_stmt): Use a
+	VIEW_CONVERT_EXPR if the vectorized constructor has a diffeent
+	type from the lhs.
+
+2020-01-15  Martin Liska  <mliska@suse.cz>
+
+	* ipa-profile.c (ipa_profile_read_edge_summary): Do not allow
+	2 calls of streamer_read_hwi in a function call.
+
+2020-01-15  Richard Biener  <rguenther@suse.de>
+
+	* alias.c (record_alias_subset): Avoid redundant work when
+	subset is already recorded.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (-fdiagnostics-show-cwe): Add note that some of
+	the analyzer options provide CWE identifiers.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* tree-diagnostic-path.cc (path_summary::event_range::print):
+	When testing for UNKNOWN_LOCATION, look through ad-hoc wrappers
+	using get_pure_location.
+
+2020-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93262
+	* tree-ssa-dse.c (maybe_trim_memstar_call): For *_chk builtins,
+	perform head trimming only if the last argument is constant,
+	either all ones, or larger or equal to head trim, in the latter
+	case decrease the last argument by head_trim.
+
+	PR tree-optimization/93249
+	* tree-ssa-dse.c: Include builtins.h and gimple-fold.h.
+	(maybe_trim_memstar_call): Move head_trim and tail_trim vars to
+	function body scope, reindent.  For BUILTIN_IN_STRNCPY*, don't
+	perform head trim unless we can prove there are no '\0' chars
+	from the source among the first head_trim chars.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/function-set.o.
+
+2020-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93009
+	* config/i386/sse.md
+	(*<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name>_bcst_1,
+	*<sd_mask_codefor>fma_fmsub_<mode><sd_maskz_name>_bcst_1,
+	*<sd_mask_codefor>fma_fnmadd_<mode><sd_maskz_name>_bcst_1,
+	*<sd_mask_codefor>fma_fnmsub_<mode><sd_maskz_name>_bcst_1): Use
+	just a single alternative instead of two, make operands 1 and 2
+	commutative.
+
 2020-01-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/91576

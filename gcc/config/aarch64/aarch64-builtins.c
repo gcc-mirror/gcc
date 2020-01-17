@@ -110,6 +110,9 @@ enum aarch64_type_qualifiers
   /* Lane indices selected in pairs. - must be in range, and flipped for
      bigendian.  */
   qualifier_lane_pair_index = 0x800,
+  /* Lane indices selected in quadtuplets. - must be in range, and flipped for
+     bigendian.  */
+  qualifier_lane_quadtup_index = 0x1000,
 };
 
 typedef struct
@@ -176,6 +179,10 @@ aarch64_types_ternopu_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned,
       qualifier_unsigned, qualifier_immediate };
 #define TYPES_TERNOPUI (aarch64_types_ternopu_imm_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_ternop_ssus_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_unsigned, qualifier_none };
+#define TYPES_TERNOP_SSUS (aarch64_types_ternop_ssus_qualifiers)
 
 
 static enum aarch64_type_qualifiers
@@ -193,6 +200,19 @@ aarch64_types_quadopu_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
       qualifier_unsigned, qualifier_lane_index };
 #define TYPES_QUADOPU_LANE (aarch64_types_quadopu_lane_qualifiers)
+
+static enum aarch64_type_qualifiers
+aarch64_types_quadopssus_lane_quadtup_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_unsigned,
+      qualifier_none, qualifier_lane_quadtup_index };
+#define TYPES_QUADOPSSUS_LANE_QUADTUP \
+	(aarch64_types_quadopssus_lane_quadtup_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_quadopsssu_lane_quadtup_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none,
+      qualifier_unsigned, qualifier_lane_quadtup_index };
+#define TYPES_QUADOPSSSU_LANE_QUADTUP \
+	(aarch64_types_quadopsssu_lane_quadtup_qualifiers)
 
 static enum aarch64_type_qualifiers
 aarch64_types_quadopu_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -1288,6 +1308,7 @@ typedef enum
   SIMD_ARG_LANE_INDEX,
   SIMD_ARG_STRUCT_LOAD_STORE_LANE_INDEX,
   SIMD_ARG_LANE_PAIR_INDEX,
+  SIMD_ARG_LANE_QUADTUP_INDEX,
   SIMD_ARG_STOP
 } builtin_simd_arg;
 
@@ -1377,9 +1398,25 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 		  op[opc] = gen_int_mode (ENDIAN_LANE_N (nunits / 2, lane),
 					  SImode);
 		}
-	      /* Fall through - if the lane index isn't a constant then
-		 the next case will error.  */
-	      /* FALLTHRU */
+	      /* If the lane index isn't a constant then error out.  */
+	      goto constant_arg;
+	    case SIMD_ARG_LANE_QUADTUP_INDEX:
+	      /* Must be a previous operand into which this is an index and
+		 index is restricted to nunits / 4.  */
+	      gcc_assert (opc > 0);
+	      if (CONST_INT_P (op[opc]))
+		{
+		  machine_mode vmode = insn_data[icode].operand[opc - 1].mode;
+		  unsigned int nunits
+		    = GET_MODE_NUNITS (vmode).to_constant ();
+		  aarch64_simd_lane_bounds (op[opc], 0, nunits / 4, exp);
+		  /* Keep to GCC-vector-extension lane indices in the RTL.  */
+		  int lane = INTVAL (op[opc]);
+		  op[opc] = gen_int_mode (ENDIAN_LANE_N (nunits / 4, lane),
+					  SImode);
+		}
+	      /* If the lane index isn't a constant then error out.  */
+	      goto constant_arg;
 	    case SIMD_ARG_CONSTANT:
 constant_arg:
 	      if (!(*insn_data[icode].operand[opc].predicate)
@@ -1492,6 +1529,8 @@ aarch64_simd_expand_builtin (int fcode, tree exp, rtx target)
 	args[k] = SIMD_ARG_LANE_INDEX;
       else if (d->qualifiers[qualifiers_k] & qualifier_lane_pair_index)
 	args[k] = SIMD_ARG_LANE_PAIR_INDEX;
+      else if (d->qualifiers[qualifiers_k] & qualifier_lane_quadtup_index)
+	args[k] = SIMD_ARG_LANE_QUADTUP_INDEX;
       else if (d->qualifiers[qualifiers_k] & qualifier_struct_load_store_lane_index)
 	args[k] = SIMD_ARG_STRUCT_LOAD_STORE_LANE_INDEX;
       else if (d->qualifiers[qualifiers_k] & qualifier_immediate)

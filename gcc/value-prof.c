@@ -262,10 +262,10 @@ dump_histogram_value (FILE *dump_file, histogram_value hist)
 	{
 	  fprintf (dump_file,
 		   (hist->type == HIST_TYPE_TOPN_VALUES
-		    ? "Top N value counter " : "Indirect call counter"));
+		    ? "Top N value counter" : "Indirect call counter"));
 	  if (hist->hvalue.counters)
 	    {
-	      fprintf (dump_file, "all: %" PRId64 ", values: ",
+	      fprintf (dump_file, " all: %" PRId64 ", values: ",
 		       (int64_t) hist->hvalue.counters[0]);
 	      for (unsigned i = 0; i < GCOV_TOPN_VALUES; i++)
 		{

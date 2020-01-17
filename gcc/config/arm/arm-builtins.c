@@ -315,12 +315,14 @@ arm_set_sat_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define v8qi_UP  E_V8QImode
 #define v4hi_UP  E_V4HImode
 #define v4hf_UP  E_V4HFmode
+#define v4bf_UP  E_V4BFmode
 #define v2si_UP  E_V2SImode
 #define v2sf_UP  E_V2SFmode
 #define di_UP    E_DImode
 #define v16qi_UP E_V16QImode
 #define v8hi_UP  E_V8HImode
 #define v8hf_UP  E_V8HFmode
+#define v8bf_UP  E_V8BFmode
 #define v4si_UP  E_V4SImode
 #define v4sf_UP  E_V4SFmode
 #define v2di_UP  E_V2DImode
@@ -328,9 +330,10 @@ arm_set_sat_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define ei_UP	 E_EImode
 #define oi_UP	 E_OImode
 #define hf_UP	 E_HFmode
+#define bf_UP    E_BFmode
 #define si_UP	 E_SImode
 #define void_UP	 E_VOIDmode
-
+#define sf_UP	 E_SFmode
 #define UP(X) X##_UP
 
 typedef struct {
@@ -806,6 +809,11 @@ static struct arm_simd_type_info arm_simd_types [] = {
 
 /* The user-visible __fp16 type.  */
 tree arm_fp16_type_node = NULL_TREE;
+
+/* Back-end node type for brain float (bfloat) types.  */
+tree arm_bf16_type_node = NULL_TREE;
+tree arm_bf16_ptr_type_node = NULL_TREE;
+
 static tree arm_simd_intOI_type_node = NULL_TREE;
 static tree arm_simd_intEI_type_node = NULL_TREE;
 static tree arm_simd_intCI_type_node = NULL_TREE;
@@ -856,7 +864,7 @@ const char *
 arm_mangle_builtin_type (const_tree type)
 {
   const char *mangle;
-  /* Walk through all the AArch64 builtins types tables to filter out the
+  /* Walk through all the Arm builtins types tables to filter out the
      incoming type.  */
   if ((mangle = arm_mangle_builtin_vector_type (type))
       || (mangle = arm_mangle_builtin_scalar_type (type)))
@@ -897,6 +905,8 @@ arm_simd_builtin_std_type (machine_mode mode,
       return float_type_node;
     case E_DFmode:
       return double_type_node;
+    case E_BFmode:
+      return arm_bf16_type_node;
     default:
       gcc_unreachable ();
     }
@@ -1001,6 +1011,10 @@ arm_init_simd_builtin_types (void)
   arm_simd_types[Float16x8_t].eltype = arm_fp16_type_node;
   arm_simd_types[Float32x2_t].eltype = float_type_node;
   arm_simd_types[Float32x4_t].eltype = float_type_node;
+
+  /* Init Bfloat vector types with underlying __bf16 scalar type.  */
+  arm_simd_types[Bfloat16x4_t].eltype = arm_bf16_type_node;
+  arm_simd_types[Bfloat16x8_t].eltype = arm_bf16_type_node;
 
   for (i = 0; i < nelts; i++)
     {
@@ -1185,6 +1199,19 @@ arm_init_builtin (unsigned int fcode, arm_builtin_datum *d,
   fndecl = add_builtin_function (namebuf, ftype, fcode, BUILT_IN_MD,
 				 NULL, NULL_TREE);
   arm_builtin_decls[fcode] = fndecl;
+}
+
+/* Initialize the backend REAL_TYPE type supporting bfloat types.  */
+static void
+arm_init_bf16_types (void)
+{
+  arm_bf16_type_node = make_node (REAL_TYPE);
+  TYPE_PRECISION (arm_bf16_type_node) = 16;
+  SET_TYPE_MODE (arm_bf16_type_node, BFmode);
+  layout_type (arm_bf16_type_node);
+
+  lang_hooks.types.register_builtin_type (arm_bf16_type_node, "__bf16");
+  arm_bf16_ptr_type_node = build_pointer_type (arm_bf16_type_node);
 }
 
 /* Set up ACLE builtins, even builtins for instructions that are not
@@ -1954,6 +1981,8 @@ arm_init_builtins (void)
   /* This creates the arm_simd_floatHF_type_node so must come before
      arm_init_neon_builtins which uses it.  */
   arm_init_fp16_builtins ();
+
+  arm_init_bf16_types ();
 
   if (TARGET_MAYBE_HARD_FLOAT)
     {

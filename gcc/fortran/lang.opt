@@ -387,7 +387,7 @@ All intrinsics procedures are available regardless of selected standard.
 
 fallow-invalid-boz
 Fortran RejectNegative Var(flag_allow_invalid_boz)
-Allow a BOZ literal constant to appear in an invalid context.
+Allow a BOZ literal constant to appear in an invalid context and with X instead of Z.
 
 fallow-leading-underscore
 Fortran Undocumented Var(flag_allow_leading_underscore)

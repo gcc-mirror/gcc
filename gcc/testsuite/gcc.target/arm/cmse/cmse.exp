@@ -51,20 +51,37 @@ if {[check_effective_target_arm_arch_v8m_base_ok]} then {
 }
 
 if {[check_effective_target_arm_arch_v8m_main_ok]} then {
-    set MAINLINE_FLAGS [add_options_for_arm_arch_v8m_main ""]
-    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/*.c]] \
-	    "$MAINLINE_FLAGS" $DEFAULT_CFLAGS
+    set MAINLINE_8M_FLAGS [add_options_for_arm_arch_v8m_main ""]
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/8m/*.c]] \
+	    "$MAINLINE_8M_FLAGS" $DEFAULT_CFLAGS
     # Mainline -mfloat-abi=soft
-    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/soft/*.c]] \
-	    "$MAINLINE_FLAGS -mfloat-abi=soft" $DEFAULT_CFLAGS
-    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/softfp/*.c]] \
-	    "$MAINLINE_FLAGS" $DEFAULT_CFLAGS
-    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/softfp-sp/*.c]] \
-	    "$MAINLINE_FLAGS" $DEFAULT_CFLAGS
-    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/hard/*.c]] \
-	    "$MAINLINE_FLAGS" $DEFAULT_CFLAGS
-    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/hard-sp/*.c]] \
-	    "$MAINLINE_FLAGS" $DEFAULT_CFLAGS
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/8m/soft/*.c]] \
+	    "$MAINLINE_8M_FLAGS -mfloat-abi=soft" $DEFAULT_CFLAGS
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/8m/softfp/*.c]] \
+	    "$MAINLINE_8M_FLAGS" $DEFAULT_CFLAGS
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/8m/softfp-sp/*.c]] \
+	    "$MAINLINE_8M_FLAGS" $DEFAULT_CFLAGS
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/8m/hard/*.c]] \
+	    "$MAINLINE_8M_FLAGS" $DEFAULT_CFLAGS
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/8m/hard-sp/*.c]] \
+	    "$MAINLINE_8M_FLAGS" $DEFAULT_CFLAGS
+}
+
+if {[check_effective_target_arm_arch_v8_1m_main_ok]} then {
+    set MAINLINE_8_1M_FLAGS [add_options_for_arm_arch_v8_1m_main ""]
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/8_1m/*.c]] \
+	    "$MAINLINE_8_1M_FLAGS" $DEFAULT_CFLAGS
+    # Mainline -mfloat-abi=soft
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/8_1m/soft/*.c]] \
+	    "$MAINLINE_8_1M_FLAGS -mfloat-abi=soft" $DEFAULT_CFLAGS
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/8_1m/softfp/*.c]] \
+	    "$MAINLINE_8_1M_FLAGS" $DEFAULT_CFLAGS
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/8_1m/softfp-sp/*.c]] \
+	    "$MAINLINE_8_1M_FLAGS" $DEFAULT_CFLAGS
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/8_1m/hard/*.c]] \
+	    "$MAINLINE_8_1M_FLAGS" $DEFAULT_CFLAGS
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/8_1m/hard-sp/*.c]] \
+	    "$MAINLINE_8_1M_FLAGS" $DEFAULT_CFLAGS
 }
 
 set LTO_TORTURE_OPTIONS ${saved-lto_torture_options}

@@ -4,3 +4,7 @@
 *.[cCh] whitespace=indent-with-non-tab,space-before-tab,trailing-space
 *.cc whitespace=indent-with-non-tab,space-before-tab,trailing-space
 ChangeLog whitespace=indent-with-non-tab,space-before-tab,trailing-space
+# Make diff on MD files use "(define" as a function marker.
+# Use together with git config diff.md.xfuncname '^\(define.*$'
+# which is run by contrib/gcc-git-customization.sh too.
+*.md diff=md

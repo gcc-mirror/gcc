@@ -451,8 +451,9 @@ ipa_profile_read_edge_summary (class lto_input_block *ib, cgraph_edge *edge)
 
   for (i = 0; i < len; i++)
   {
-    speculative_call_target item (streamer_read_hwi (ib),
-	streamer_read_hwi (ib));
+    unsigned int target_id = streamer_read_hwi (ib);
+    int target_probability = streamer_read_hwi (ib);
+    speculative_call_target item (target_id, target_probability);
     csum->speculative_call_targets.safe_push (item);
   }
 }

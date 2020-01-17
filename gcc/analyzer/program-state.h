@@ -184,6 +184,8 @@ public:
   void on_cast (svalue_id src_sid,
 		svalue_id dst_sid);
 
+  void on_unknown_change (svalue_id sid);
+
   void validate (const state_machine &sm, int num_svalues) const;
 
   iterator_t begin () const { return m_map.begin (); }

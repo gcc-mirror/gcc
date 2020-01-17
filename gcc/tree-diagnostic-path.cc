@@ -172,7 +172,7 @@ class path_summary
 	 In particular the label for the event won't get printed.
 	 Fail more gracefully in this case by showing the event
 	 index and text, at no particular location.  */
-      if (initial_loc <= BUILTINS_LOCATION)
+      if (get_pure_location (initial_loc) <= BUILTINS_LOCATION)
 	{
 	  for (unsigned i = m_start_idx; i <= m_end_idx; i++)
 	    {

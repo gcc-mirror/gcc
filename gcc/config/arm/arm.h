@@ -81,6 +81,11 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
    the backend.  Defined in arm-builtins.c.  */
 extern tree arm_fp16_type_node;
 
+/* This type is the user-visible __bf16.  We need it in a few places in
+   the backend.  Defined in arm-builtins.c.  */
+extern tree arm_bf16_type_node;
+extern tree arm_bf16_ptr_type_node;
+
 
 #undef  CPP_SPEC
 #define CPP_SPEC "%(subtarget_cpp_spec)					\
@@ -315,6 +320,16 @@ emission of floating point pcs attributes.  */
 /* Nonzero if this chip provides the CBZ and CBNZ instructions.  */
 #define TARGET_HAVE_CBZ		(arm_arch_thumb2 || arm_arch8)
 
+/* Nonzero if this chip provides Armv8.1-M Mainline Security extensions
+   instructions (most are floating-point related).  */
+#define TARGET_HAVE_FPCXT_CMSE	(arm_arch8_1m_main)
+
+#define TARGET_HAVE_MVE (bitmap_bit_p (arm_active_target.isa, \
+				       isa_bit_mve))
+
+#define TARGET_HAVE_MVE_FLOAT (bitmap_bit_p (arm_active_target.isa, \
+					     isa_bit_mve_float))
+
 /* Nonzero if integer division instructions supported.  */
 #define TARGET_IDIV	((TARGET_ARM && arm_arch_arm_hwdiv)	\
 			 || (TARGET_THUMB && arm_arch_thumb_hwdiv))
@@ -464,6 +479,10 @@ extern int arm_arch8_3;
 
 /* Nonzero if this chip supports the ARM Architecture 8.4 extensions.  */
 extern int arm_arch8_4;
+
+/* Nonzero if this chip supports the ARM Architecture 8.1-M Mainline
+   extensions.  */
+extern int arm_arch8_1m_main;
 
 /* Nonzero if this chip supports the FP16 instructions extension of ARM
    Architecture 8.2.  */
@@ -1019,12 +1038,14 @@ extern int arm_arch_bf16;
 /* Modes valid for Neon D registers.  */
 #define VALID_NEON_DREG_MODE(MODE) \
   ((MODE) == V2SImode || (MODE) == V4HImode || (MODE) == V8QImode \
-   || (MODE) == V4HFmode || (MODE) == V2SFmode || (MODE) == DImode)
+   || (MODE) == V4HFmode || (MODE) == V2SFmode || (MODE) == DImode \
+   || (MODE) == V4BFmode)
 
 /* Modes valid for Neon Q registers.  */
 #define VALID_NEON_QREG_MODE(MODE) \
   ((MODE) == V4SImode || (MODE) == V8HImode || (MODE) == V16QImode \
-   || (MODE) == V8HFmode || (MODE) == V4SFmode || (MODE) == V2DImode)
+   || (MODE) == V8HFmode || (MODE) == V4SFmode || (MODE) == V2DImode \
+   || (MODE) == V8BFmode)
 
 /* Structure modes valid for Neon registers.  */
 #define VALID_NEON_STRUCT_MODE(MODE) \
@@ -1176,6 +1197,22 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000000, 0x00000080 }, /* AFP_REG */	\
   { 0xFFFF7FFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x0000000F }  /* ALL_REGS */	\
 }
+
+#define FP_SYSREGS \
+  DEF_FP_SYSREG (FPSCR) \
+  DEF_FP_SYSREG (FPSCR_nzcvqc) \
+  DEF_FP_SYSREG (VPR) \
+  DEF_FP_SYSREG (P0) \
+  DEF_FP_SYSREG (FPCXTNS) \
+  DEF_FP_SYSREG (FPCXTS)
+
+#define DEF_FP_SYSREG(reg) reg ## _ENUM,
+enum vfp_sysregs_encoding {
+  FP_SYSREGS
+  NB_FP_SYSREGS
+};
+#undef DEF_FP_SYSREG
+extern const char *fp_sysreg_names[NB_FP_SYSREGS];
 
 /* Any of the VFP register classes.  */
 #define IS_VFP_CLASS(X) \

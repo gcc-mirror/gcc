@@ -27,6 +27,22 @@ int *test (int *buf, int n, int *out)
   return result;
 }
 
+/* Test that we can generate valid .dot files given a BB with no
+   statements.  */
+extern int func ();
+int test_2 (void)
+{
+  int c1;
+  do
+    {
+      c1 = func ();
+      if (c1 == '\0')
+	break;
+    }
+  while (c1);
+  return c1;
+}
+
 /* { dg-final { dg-check-dot "dot-output.c.callgraph.dot" } } */
 /* { dg-final { dg-check-dot "dot-output.c.eg.dot" } } */
 /* { dg-final { dg-check-dot "dot-output.c.state-purge.dot" } } */

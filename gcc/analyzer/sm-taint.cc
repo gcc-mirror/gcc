@@ -100,7 +100,7 @@ public:
 
   bool operator== (const tainted_array_index &other) const
   {
-    return m_arg == other.m_arg;
+    return same_tree_p (m_arg, other.m_arg);
   }
 
   bool emit (rich_location *rich_loc) FINAL OVERRIDE

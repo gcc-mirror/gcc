@@ -2345,9 +2345,9 @@ aarch64_gen_compare_reg (RTX_CODE code, rtx x, rtx y)
 
       rtx x_hi = operand_subword (x, 1, 0, TImode);
       rtx y_hi = operand_subword (y, 1, 0, TImode);
-      emit_insn (gen_ccmpdi (cc_reg, cc_reg, x_hi, y_hi,
-			     gen_rtx_EQ (cc_mode, cc_reg, const0_rtx),
-			     GEN_INT (AARCH64_EQ)));
+      emit_insn (gen_ccmpccdi (cc_reg, cc_reg, x_hi, y_hi,
+			       gen_rtx_EQ (cc_mode, cc_reg, const0_rtx),
+			       GEN_INT (AARCH64_EQ)));
     }
   else
     {
@@ -4827,8 +4827,8 @@ aarch64_split_sve_subreg_move (rtx dest, rtx ptrue, rtx src)
   /* Decide which REV operation we need.  The mode with wider elements
      determines the mode of the operands and the mode with the narrower
      elements determines the reverse width.  */
-  machine_mode mode_with_wider_elts = GET_MODE (dest);
-  machine_mode mode_with_narrower_elts = GET_MODE (src);
+  machine_mode mode_with_wider_elts = aarch64_sve_int_mode (GET_MODE (dest));
+  machine_mode mode_with_narrower_elts = aarch64_sve_int_mode (GET_MODE (src));
   if (GET_MODE_UNIT_SIZE (mode_with_wider_elts)
       < GET_MODE_UNIT_SIZE (mode_with_narrower_elts))
     std::swap (mode_with_wider_elts, mode_with_narrower_elts);
@@ -18375,6 +18375,9 @@ aarch64_emit_post_barrier (enum memmodel model)
 void
 aarch64_split_compare_and_swap (rtx operands[])
 {
+  /* Split after prolog/epilog to avoid interactions with shrinkwrapping.  */
+  gcc_assert (epilogue_completed);
+
   rtx rval, mem, oldval, newval, scratch, x, model_rtx;
   machine_mode mode;
   bool is_weak;
@@ -18469,6 +18472,9 @@ void
 aarch64_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
 			 rtx value, rtx model_rtx, rtx cond)
 {
+  /* Split after prolog/epilog to avoid interactions with shrinkwrapping.  */
+  gcc_assert (epilogue_completed);
+
   machine_mode mode = GET_MODE (mem);
   machine_mode wmode = (mode == DImode ? DImode : SImode);
   const enum memmodel model = memmodel_from_int (INTVAL (model_rtx));
@@ -20270,30 +20276,28 @@ aarch64_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
     case E_HImode:
     case E_SImode:
       cmp_mode = SImode;
-      icode = CODE_FOR_ccmpsi;
       break;
 
     case E_DImode:
       cmp_mode = DImode;
-      icode = CODE_FOR_ccmpdi;
       break;
 
     case E_SFmode:
       cmp_mode = SFmode;
       cc_mode = aarch64_select_cc_mode ((rtx_code) cmp_code, op0, op1);
-      icode = cc_mode == CCFPEmode ? CODE_FOR_fccmpesf : CODE_FOR_fccmpsf;
       break;
 
     case E_DFmode:
       cmp_mode = DFmode;
       cc_mode = aarch64_select_cc_mode ((rtx_code) cmp_code, op0, op1);
-      icode = cc_mode == CCFPEmode ? CODE_FOR_fccmpedf : CODE_FOR_fccmpdf;
       break;
 
     default:
       end_sequence ();
       return NULL_RTX;
     }
+
+  icode = code_for_ccmp (cc_mode, cmp_mode);
 
   op0 = prepare_operand (icode, op0, 2, op_mode, cmp_mode, unsignedp);
   op1 = prepare_operand (icode, op1, 3, op_mode, cmp_mode, unsignedp);
@@ -20310,9 +20314,21 @@ aarch64_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
 
   if (bit_code != AND)
     {
-      prev = gen_rtx_fmt_ee (REVERSE_CONDITION (GET_CODE (prev),
-						GET_MODE (XEXP (prev, 0))),
-			     VOIDmode, XEXP (prev, 0), const0_rtx);
+      /* Treat the ccmp patterns as canonical and use them where possible,
+	 but fall back to ccmp_rev patterns if there's no other option.  */
+      rtx_code prev_code = GET_CODE (prev);
+      machine_mode prev_mode = GET_MODE (XEXP (prev, 0));
+      if ((prev_mode == CCFPmode || prev_mode == CCFPEmode)
+	  && !(prev_code == EQ
+	       || prev_code == NE
+	       || prev_code == ORDERED
+	       || prev_code == UNORDERED))
+	icode = code_for_ccmp_rev (cc_mode, cmp_mode);
+      else
+	{
+	  rtx_code code = reverse_condition (prev_code);
+	  prev = gen_rtx_fmt_ee (code, VOIDmode, XEXP (prev, 0), const0_rtx);
+	}
       aarch64_cond = AARCH64_INVERSE_CONDITION_CODE (aarch64_cond);
     }
 

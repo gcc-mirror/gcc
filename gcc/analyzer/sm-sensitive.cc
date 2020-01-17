@@ -95,7 +95,7 @@ public:
 
   bool operator== (const exposure_through_output_file &other) const
   {
-    return m_arg == other.m_arg;
+    return same_tree_p (m_arg, other.m_arg);
   }
 
   bool emit (rich_location *rich_loc) FINAL OVERRIDE

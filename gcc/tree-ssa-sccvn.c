@@ -2593,6 +2593,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 					 &offset2, &size2, &maxsize2, &reverse);
       if (base2
 	  && !reverse
+	  && !storage_order_barrier_p (lhs)
 	  && known_eq (maxsize2, size2)
 	  && multiple_p (size2, BITS_PER_UNIT)
 	  && multiple_p (offset2, BITS_PER_UNIT)
@@ -2695,6 +2696,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 					 &offset2, &size2, &maxsize2, &reverse);
       tree def_rhs = gimple_assign_rhs1 (def_stmt);
       if (!reverse
+	  && !storage_order_barrier_p (lhs)
 	  && known_size_p (maxsize2)
 	  && known_eq (maxsize2, size2)
 	  && adjust_offsets_for_equal_base_address (base, &offset,

@@ -2085,13 +2085,6 @@ struct GTY(()) language_function {
 
 #define current_vtt_parm cp_function_chain->x_vtt_parm
 
-/* A boolean flag to control whether we need to clean up the return value if a
-   local destructor throws.  Only used in functions that return by value a
-   class with a destructor.  Which 'tors don't, so we can use the same
-   field as current_vtt_parm.  */
-
-#define current_retval_sentinel current_vtt_parm
-
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */
 
@@ -8341,6 +8334,14 @@ concept_check_p (const_tree t)
   if (t && TREE_CODE (t) == TEMPLATE_ID_EXPR)
     return concept_definition_p (TREE_OPERAND (t, 0));
   return false;
+}
+
+/* True if t is a "constrained auto" type-specifier.  */
+
+inline bool
+is_constrained_auto (const_tree t)
+{
+  return is_auto (t) && PLACEHOLDER_TYPE_CONSTRAINTS (t);
 }
 
 #if CHECKING_P

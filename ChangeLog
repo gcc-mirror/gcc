@@ -1,3 +1,8 @@
+2020-01-15  Segher Boessenkool  <segher@kernel.crashing.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* .gitattributes: Add *.md diff=md.
+
 2020-01-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	The mentioned auto-generated file is no more part of the

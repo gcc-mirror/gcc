@@ -3622,7 +3622,7 @@ sink_clobbers (basic_block bb,
 
   gimple *first_sunk = NULL;
   gimple *last_sunk = NULL;
-  if (sunk)
+  if (sunk && !(succbb->flags & BB_VISITED))
     dgsi = gsi_start (sunk[succbb->index]);
   else
     dgsi = gsi_after_labels (succbb);
@@ -3910,6 +3910,7 @@ pass_lower_eh_dispatch::execute (function *fun)
 	  else if (!any_resx_to_process)
 	    sink_clobbers (bb, NULL, &any_resx_to_process);
 	}
+      bb->flags &= ~BB_VISITED;
     }
   if (redirected)
     {
@@ -3940,6 +3941,7 @@ pass_lower_eh_dispatch::execute (function *fun)
 	      gsi_insert_seq_before (&gsi, sunk[bb->index], GSI_NEW_STMT);
 	      sunk[bb->index] = NULL;
 	    }
+	  bb->flags |= BB_VISITED;
 	}
       free (rpo);
       free (sunk);

@@ -1864,9 +1864,9 @@ optimize_count_trailing_zeroes (tree array_ref, tree x, tree mulc,
   tree input_type = TREE_TYPE (x);
   unsigned input_bits = tree_to_shwi (TYPE_SIZE (input_type));
 
-  /* Check the array is not wider than integer type and the input is a 32-bit
-     or 64-bit type.  */
-  if (TYPE_PRECISION (type) > 32)
+  /* Check the array element type is not wider than 32 bits and the input is
+     an unsigned 32-bit or 64-bit type.  */
+  if (TYPE_PRECISION (type) > 32 || !TYPE_UNSIGNED (input_type))
     return false;
   if (input_bits != 32 && input_bits != 64)
     return false;
@@ -1879,7 +1879,7 @@ optimize_count_trailing_zeroes (tree array_ref, tree x, tree mulc,
   if (!low || !integer_zerop (low))
     return false;
 
-  unsigned shiftval = tree_to_uhwi (tshift);
+  unsigned shiftval = tree_to_shwi (tshift);
 
   /* Check the shift extracts the top 5..7 bits.  */
   if (shiftval < input_bits - 7 || shiftval > input_bits - 5)
@@ -1894,7 +1894,8 @@ optimize_count_trailing_zeroes (tree array_ref, tree x, tree mulc,
   if (TREE_CODE (ctor) == CONSTRUCTOR)
     return check_ctz_array (ctor, val, zero_val, shiftval, input_bits);
 
-  if (TREE_CODE (ctor) == STRING_CST)
+  if (TREE_CODE (ctor) == STRING_CST
+      && TYPE_PRECISION (type) == CHAR_TYPE_SIZE)
     return check_ctz_string (ctor, val, zero_val, shiftval, input_bits);
 
   return false;
@@ -1920,16 +1921,24 @@ simplify_count_trailing_zeroes (gimple_stmt_iterator *gsi)
 				      res_ops[1], res_ops[2], zero_val))
     {
       tree type = TREE_TYPE (res_ops[0]);
-      HOST_WIDE_INT ctzval = 0;
+      HOST_WIDE_INT ctz_val = 0;
       HOST_WIDE_INT type_size = tree_to_shwi (TYPE_SIZE (type));
       bool zero_ok
-	= CTZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (type), ctzval) == 2;
+	= CTZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (type), ctz_val) == 2;
+
+      /* If the input value can't be zero, don't special case ctz (0).  */
+      if (tree_expr_nonzero_p (res_ops[0]))
+	{
+	  zero_ok = true;
+	  zero_val = 0;
+	  ctz_val = 0;
+	}
 
       /* Skip if there is no value defined at zero, or if we can't easily
 	 return the correct value for zero.  */
       if (!zero_ok)
 	return false;
-      if (zero_val != ctzval && !(zero_val == 0 && ctzval == type_size))
+      if (zero_val != ctz_val && !(zero_val == 0 && ctz_val == type_size))
 	return false;
 
       gimple_seq seq = NULL;
@@ -1942,7 +1951,7 @@ simplify_count_trailing_zeroes (gimple_stmt_iterator *gsi)
       tree prev_lhs = gimple_call_lhs (call);
 
       /* Emit ctz (x) & 31 if ctz (0) is 32 but we need to return 0.  */
-      if (zero_val == 0 && ctzval == type_size)
+      if (zero_val == 0 && ctz_val == type_size)
 	{
 	  g = gimple_build_assign (make_ssa_name (integer_type_node),
 				   BIT_AND_EXPR, prev_lhs,

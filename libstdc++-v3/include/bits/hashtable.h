@@ -337,6 +337,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       bool _Constant_iteratorsa>
 	friend struct __detail::_Insert;
 
+      template<typename _Keya, typename _Valuea, typename _Alloca,
+	       typename _ExtractKeya, typename _Equala,
+	       typename _H1a, typename _H2a, typename _Hasha,
+	       typename _RehashPolicya, typename _Traitsa,
+	       bool _Unique_keysa>
+	friend struct __detail::_Equality;
+
     public:
       using size_type = typename __hashtable_base::size_type;
       using difference_type = typename __hashtable_base::difference_type;

@@ -1,3 +1,9 @@
+2020-01-16  Martin Liska  <mliska@suse.cz>
+
+	* lto-partition.c (lto_balanced_map): Remember
+	best_noreorder_pos and then restore to it
+	when we revert.
+
 2020-01-08  Martin Liska  <mliska@suse.cz>
 
 	* lto-partition.c (add_symbol_to_partition_1): Use ::dump_name or

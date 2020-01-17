@@ -1,6 +1,43 @@
+2020-01-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93286 - ICE with __is_constructible and variadic template.
+	* pt.c (tsubst) [TREE_LIST]: Handle pack expansion.
+	(tsubst_copy_and_build) [TRAIT_EXPR]: Always use tsubst for type2.
+
+	PR c++/93280 - ICE with aggregate assignment and DMI.
+	* init.c (get_nsdmi): Set TARGET_EXPR_DIRECT_INIT_P here.
+	* typeck2.c (digest_nsdmi_init): Not here.
+
+2020-01-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/91073
+	* cp-tree.h (is_constrained_auto): New.
+	* parser.c (cp_parser_maybe_commit_to_declaration): Correctly
+	handle concept-check expressions; take a cp_decl_specifier_seq*
+	instead of a bool.
+	(cp_parser_condition): Update call.
+	(cp_parser_simple_declaration): Likewise.
+	(cp_parser_placeholder_type_specifier): Correctly handle
+	concept-check expressions.
+
+2020-01-15  Jason Merrill  <jason@redhat.com>
+
+	Revert
+	PR c++/33799 - destroy return value if local cleanup throws.
+	* cp-tree.h (current_retval_sentinel): New macro.
+	* decl.c (start_preparsed_function): Set up cleanup for retval.
+	* typeck.c (check_return_expr): Set current_retval_sentinel.
+
+	PR c++/93257 - consteval void function.
+	* constexpr.c (verify_constant): Allow void_node.
+
+	PR c++/92871 - bad code with xvalue and GNU ?: extension.
+	* call.c (prevent_lifetime_extension): New.
+	(build_conditional_expr_1): Use it.
+
 2020-01-14  Nathan Sidwell  <nathan@acm.org>
 
-	PT c++/90916
+	PR c++/90916
 	* pt.c (retrieve_specialization): Use get_template_info, not open
 	coding access.
 

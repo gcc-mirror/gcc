@@ -14,7 +14,7 @@ int ctz1 (unsigned x)
 
 int ctz2 (unsigned x)
 {
-  const int u = 0;
+#define u 0
   static short table[64] =
     {
       32, 0, 1,12, 2, 6, u,13, 3, u, 7, u, u, u, u,14,
