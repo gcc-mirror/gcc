@@ -1,3 +1,11 @@
+2020-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92376
+	* include/bits/c++config: Only do PSTL config when the header is
+	present, to fix freestanding.
+	* libsupc++/new_opa.cc [!_GLIBCXX_HOSTED]: Declare allocation
+	functions if they were detected by configure.
+
 2020-01-16  Kai-Uwe Eckhardt  <kuehro@gmx.de>
 	    Matthew Bauer  <mjbauer95@gmail.com>
 	    Jonathan Wakely  <jwakely@redhat.com>
