@@ -1,3 +1,8 @@
+2020-01-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93299 - ICE in tsubst_copy with parenthesized expression.
+	* g++.dg/cpp1y/paren5.C: New test.
+
 2020-01-24  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* g++.dg/cpp0x/constexpr-odr1.C: Add -fdelete-null-pointer-checks.
