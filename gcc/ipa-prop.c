@@ -2876,7 +2876,7 @@ ipa_analyze_node (struct cgraph_node *node)
   fbi.bb_infos = vNULL;
   fbi.bb_infos.safe_grow_cleared (last_basic_block_for_fn (cfun));
   fbi.param_count = ipa_get_param_count (info);
-  fbi.aa_walk_budget = param_ipa_max_aa_steps;
+  fbi.aa_walk_budget = opt_for_fn (node->decl, param_ipa_max_aa_steps);
 
   for (struct cgraph_edge *cs = node->callees; cs; cs = cs->next_callee)
     {
@@ -3294,12 +3294,12 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
     {
       dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, ie->call_stmt,
 		       "converting indirect call in %s to direct call to %s\n",
-		       ie->caller->name (), callee->name ());
+		       ie->caller->dump_name (), callee->dump_name ());
     }
   if (!speculative)
     {
       struct cgraph_edge *orig = ie;
-      ie = ie->make_direct (callee);
+      ie = cgraph_edge::make_direct (ie, callee);
       /* If we resolved speculative edge the cost is already up to date
 	 for direct call (adjusted by inline_edge_duplication_hook).  */
       if (ie == orig)
@@ -3489,7 +3489,7 @@ remove_described_reference (symtab_node *symbol, struct ipa_cst_ref_desc *rdesc)
   to_del->remove_reference ();
   if (dump_file)
     fprintf (dump_file, "ipa-prop: Removed a reference from %s to %s.\n",
-	     origin->caller->dump_name (), xstrdup_for_dump (symbol->name ()));
+	     origin->caller->dump_name (), symbol->dump_name ());
   return true;
 }
 
@@ -5756,7 +5756,7 @@ ipcp_transform_function (struct cgraph_node *node)
   fbi.bb_infos = vNULL;
   fbi.bb_infos.safe_grow_cleared (last_basic_block_for_fn (cfun));
   fbi.param_count = param_count;
-  fbi.aa_walk_budget = param_ipa_max_aa_steps;
+  fbi.aa_walk_budget = opt_for_fn (node->decl, param_ipa_max_aa_steps);
 
   vec_safe_grow_cleared (descriptors, param_count);
   ipa_populate_param_decls (node, *descriptors);

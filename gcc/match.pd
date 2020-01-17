@@ -2738,9 +2738,26 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Optimize (x >> c) << c into x & (-1<<c).  */
 (simplify
- (lshift (rshift @0 INTEGER_CST@1) @1)
+ (lshift (nop_convert? (rshift @0 INTEGER_CST@1)) @1)
  (if (wi::ltu_p (wi::to_wide (@1), element_precision (type)))
-  (bit_and @0 (lshift { build_minus_one_cst (type); } @1))))
+  /* It doesn't matter if the right shift is arithmetic or logical.  */
+  (bit_and (view_convert @0) (lshift { build_minus_one_cst (type); } @1))))
+
+(simplify
+ (lshift (convert (convert@2 (rshift @0 INTEGER_CST@1))) @1)
+ (if (wi::ltu_p (wi::to_wide (@1), element_precision (type))
+      /* Allow intermediate conversion to integral type with whatever sign, as
+	 long as the low TYPE_PRECISION (type)
+	 - TYPE_PRECISION (TREE_TYPE (@2)) bits are preserved.  */
+      && INTEGRAL_TYPE_P (type)
+      && INTEGRAL_TYPE_P (TREE_TYPE (@2))
+      && INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && TYPE_PRECISION (type) == TYPE_PRECISION (TREE_TYPE (@0))
+      && (TYPE_PRECISION (TREE_TYPE (@2)) >= TYPE_PRECISION (type)
+	  || wi::geu_p (wi::to_wide (@1),
+			TYPE_PRECISION (type)
+			- TYPE_PRECISION (TREE_TYPE (@2)))))
+  (bit_and (convert @0) (lshift { build_minus_one_cst (type); } @1))))
 
 /* Optimize (x << c) >> c into x & ((unsigned)-1 >> c) for unsigned
    types.  */

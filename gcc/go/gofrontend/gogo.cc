@@ -4887,17 +4887,6 @@ Gogo::build_recover_thunks()
   this->traverse(&build_recover_thunks);
 }
 
-// Build a call to the runtime error function.
-
-Expression*
-Gogo::runtime_error(int code, Location location)
-{
-  Type* int32_type = Type::lookup_integer_type("int32");
-  Expression* code_expr = Expression::make_integer_ul(code, int32_type,
-						      location);
-  return Runtime::make_call(Runtime::RUNTIME_ERROR, location, 1, code_expr);
-}
-
 // Look for named types to see whether we need to create an interface
 // method table.
 
@@ -6346,9 +6335,8 @@ Function_declaration::get_or_make_decl(Gogo* gogo, Named_object* no)
 	    }
 
 	  if (this->asm_name_ == "runtime.gopanic"
+	      || this->asm_name_.compare(0, 13, "runtime.panic") == 0
 	      || this->asm_name_.compare(0, 15, "runtime.goPanic") == 0
-	      || this->asm_name_ == "__go_runtime_error"
-              || this->asm_name_ == "runtime.panicdottype"
               || this->asm_name_ == "runtime.block")
 	    flags |= Backend::function_does_not_return;
 	}

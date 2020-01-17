@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "target.h"
 
 /* ----- Type related -----  */
 
@@ -147,10 +148,12 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
 
   /* Recurse for vector types with the same number of subparts.  */
   else if (TREE_CODE (inner_type) == VECTOR_TYPE
-	   && TREE_CODE (outer_type) == VECTOR_TYPE
-	   && TYPE_PRECISION (inner_type) == TYPE_PRECISION (outer_type))
-    return useless_type_conversion_p (TREE_TYPE (outer_type),
-				      TREE_TYPE (inner_type));
+	   && TREE_CODE (outer_type) == VECTOR_TYPE)
+    return (known_eq (TYPE_VECTOR_SUBPARTS (inner_type),
+		      TYPE_VECTOR_SUBPARTS (outer_type))
+	    && useless_type_conversion_p (TREE_TYPE (outer_type),
+					  TREE_TYPE (inner_type))
+	    && targetm.compatible_vector_types_p (inner_type, outer_type));
 
   else if (TREE_CODE (inner_type) == ARRAY_TYPE
 	   && TREE_CODE (outer_type) == ARRAY_TYPE)

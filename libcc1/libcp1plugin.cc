@@ -3258,8 +3258,8 @@ plugin_build_new_expr (cc1_plugin::connection *self,
   if (!template_dependent_p)
     processing_template_decl--;
 
-  tree result = build_new (&placement, type, nelts, &initializer,
-			   global_scope_p, tf_error);
+  tree result = build_new (input_location, &placement, type, nelts,
+			   &initializer, global_scope_p, tf_error);
 
   if (template_dependent_p)
     processing_template_decl--;

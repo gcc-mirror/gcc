@@ -128,6 +128,8 @@ extern bool avr_xload_libgcc_p (machine_mode);
 extern rtx avr_eval_addr_attrib (rtx x);
 extern bool avr_casei_sequence_check_operands (rtx *xop);
 
+extern bool avr_float_lib_compare_returns_bool (machine_mode, enum rtx_code);
+
 static inline unsigned
 regmask (machine_mode mode, unsigned regno)
 {

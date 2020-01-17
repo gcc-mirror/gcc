@@ -3768,6 +3768,12 @@ the @code{ifunc} attribute above) that dynamically selects a clone
 suitable for current architecture.  The resolver is created only if there
 is a usage of a function with @code{target_clones} attribute.
 
+Note that any subsequent call of a function without @code{target_clone}
+from a @code{target_clone} caller will not lead to copying
+(target clone) of the called function.
+If you want to enforce such behaviour,
+we recommend declaring the calling function with the @code{flatten} attribute?
+
 @item unused
 @cindex @code{unused} function attribute
 This attribute, attached to a function, means that the function is meant

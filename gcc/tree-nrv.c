@@ -378,12 +378,10 @@ pass_return_slot::execute (function *fun)
 	  if (stmt
 	      && gimple_call_lhs (stmt)
 	      && !gimple_call_return_slot_opt_p (stmt)
-	      /* Ignore internal functions without direct optabs,
-		 those are expanded specially and aggregate_value_p
-		 on their result might result in undesirable warnings
-		 with some backends.  */
-	      && (!gimple_call_internal_p (stmt)
-		  || direct_internal_fn_p (gimple_call_internal_fn (stmt)))
+	      /* Ignore internal functions, those are expanded specially
+		 and aggregate_value_p on their result might result in
+		 undesirable warnings with some backends.  */
+	      && !gimple_call_internal_p (stmt)
 	      && aggregate_value_p (TREE_TYPE (gimple_call_lhs (stmt)),
 				    gimple_call_fndecl (stmt)))
 	    {

@@ -1611,8 +1611,7 @@ recursive_inlining (struct cgraph_edge *edge,
 
   if (dump_file)
     fprintf (dump_file,
-	     "  Performing recursive inlining on %s\n",
-	     node->name ());
+	     "  Performing recursive inlining on %s\n", node->dump_name ());
 
   /* Do the inlining and update list of recursive call during process.  */
   while (!heap.empty ())
@@ -1835,7 +1834,7 @@ resolve_noninline_speculation (edge_heap_t *edge_heap, struct cgraph_edge *edge)
 
       if (edge->count.ipa ().initialized_p ())
         spec_rem += edge->count.ipa ();
-      edge->resolve_speculation ();
+      cgraph_edge::resolve_speculation (edge);
       reset_edge_caches (where);
       ipa_update_overall_fn_summary (where);
       update_caller_keys (edge_heap, where,
@@ -1999,7 +1998,7 @@ inline_small_functions (void)
 	    if (edge->speculative
 		&& !speculation_useful_p (edge, edge->aux != NULL))
 	      {
-		edge->resolve_speculation ();
+		cgraph_edge::resolve_speculation (edge);
 		update = true;
 	      }
 	  }
@@ -2396,11 +2395,11 @@ inline_to_all_callers_1 (struct cgraph_node *node, void *data,
 	  cgraph_node *ultimate = node->ultimate_alias_target ();
 	  fprintf (dump_file,
 		   "\nInlining %s size %i.\n",
-		   ultimate->name (),
+		   ultimate->dump_name (),
 		   ipa_size_summaries->get (ultimate)->size);
 	  fprintf (dump_file,
 		   " Called once from %s %i insns.\n",
-		   node->callers->caller->name (),
+		   node->callers->caller->dump_name (),
 		   ipa_size_summaries->get (node->callers->caller)->size);
 	}
 
@@ -2411,7 +2410,7 @@ inline_to_all_callers_1 (struct cgraph_node *node, void *data,
       if (dump_file)
 	fprintf (dump_file,
 		 " Inlined into %s which now has %i size\n",
-		 caller->name (),
+		 caller->dump_name (),
 		 ipa_size_summaries->get (caller)->size);
       if (!(*num_calls)--)
 	{
@@ -2671,7 +2670,7 @@ ipa_inline (void)
 	 try to flatten itself turning it into a self-recursive
 	 function.  */
       if (dump_file)
-	fprintf (dump_file, "Flattening %s\n", node->name ());
+	fprintf (dump_file, "Flattening %s\n", node->dump_name ());
       flatten_function (node, false, true);
     }
 
@@ -2736,7 +2735,7 @@ ipa_inline (void)
 		{
 		  if (edge->count.ipa ().initialized_p ())
 		    spec_rem += edge->count.ipa ();
-		  edge->resolve_speculation ();
+		  cgraph_edge::resolve_speculation (edge);
 		  update = true;
 		  remove_functions = true;
 		}
@@ -2967,7 +2966,8 @@ early_inliner (function *fun)
 	}
       /* We iterate incremental inlining to get trivial cases of indirect
 	 inlining.  */
-      while (iterations < param_early_inliner_max_iterations
+      while (iterations < opt_for_fn (node->decl,
+				      param_early_inliner_max_iterations)
 	     && early_inline_small_functions (node))
 	{
 	  timevar_push (TV_INTEGRATION);
@@ -2986,7 +2986,8 @@ early_inliner (function *fun)
 	      es->call_stmt_time
 		= estimate_num_insns (edge->call_stmt, &eni_time_weights);
 	    }
-	  if (iterations < param_early_inliner_max_iterations - 1)
+	  if (iterations < opt_for_fn (node->decl,
+				       param_early_inliner_max_iterations) - 1)
 	    ipa_update_overall_fn_summary (node);
 	  timevar_pop (TV_INTEGRATION);
 	  iterations++;

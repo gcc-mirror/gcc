@@ -14575,6 +14575,23 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
   return NULL_TREE;
 }
 
+
+/* Worker function for `FLOAT_LIB_COMPARE_RETURNS_BOOL'.  */
+
+bool
+avr_float_lib_compare_returns_bool (machine_mode mode, enum rtx_code)
+{
+  if (mode == DFmode)
+    {
+#if WITH_DOUBLE_COMPARISON == 2
+      return true;
+#endif
+    }
+
+  // This is the GCC default and also what AVR-LibC implements.
+  return false;
+}
+
 
 
 /* Initialize the GCC target structure.  */

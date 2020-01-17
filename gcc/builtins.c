@@ -3966,6 +3966,18 @@ compute_objsize (tree dest, int ostype, tree *pdecl /* = NULL */,
       || TREE_CODE (dest) == MEM_REF)
     {
       tree ref = TREE_OPERAND (dest, 0);
+      tree reftype = TREE_TYPE (ref);
+      if (TREE_CODE (dest) == MEM_REF && TREE_CODE (reftype) == POINTER_TYPE)
+	{
+	  /* Give up for MEM_REFs of vector types; those may be synthesized
+	     from multiple assignments to consecutive data members.  See PR
+	     93200.
+	     FIXME: Deal with this more generally, e.g., by marking up such
+	     MEM_REFs at the time they're created.  */
+	  reftype = TREE_TYPE (reftype);
+	  if (TREE_CODE (reftype) == VECTOR_TYPE)
+	    return NULL_TREE;
+	}
       tree off = TREE_OPERAND (dest, 1);
       if (tree size = compute_objsize (ref, ostype, pdecl, poff))
 	{

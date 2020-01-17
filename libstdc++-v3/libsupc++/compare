@@ -38,10 +38,12 @@
 
 #include <concepts>
 
+#if __cpp_lib_concepts
+# define __cpp_lib_three_way_comparison 201711L
+#endif
+
 namespace std
 {
-#define __cpp_lib_three_way_comparison 201711L
-
   // [cmp.categories], comparison category types
 
   namespace __cmp_cat

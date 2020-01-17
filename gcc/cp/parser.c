@@ -8775,11 +8775,9 @@ cp_parser_new_expression (cp_parser* parser)
          at the end of the final token we consumed.  */
       location_t combined_loc = make_location (start_loc, start_loc,
 					       parser->lexer);
-
       /* Create a representation of the new-expression.  */
-      ret = build_new (&placement, type, nelts, &initializer, global_scope_p,
-		       tf_warning_or_error);
-      protected_set_expr_location (ret, combined_loc);
+      ret = build_new (combined_loc, &placement, type, nelts, &initializer,
+		       global_scope_p, tf_warning_or_error);
     }
 
   if (placement != NULL)
@@ -27330,6 +27328,14 @@ cp_parser_constraint_requires_parens (cp_parser *parser, bool lambda_p)
 	  gcc_fallthrough ();
 	}
       case CPP_OPEN_SQUARE:
+	{
+	  /* A primary-constraint-expression followed by a '[[' is not a
+	     postfix expression.  */
+	  if (cp_lexer_nth_token_is (parser->lexer, 2, CPP_OPEN_SQUARE))
+	    return pce_ok;
+
+	  gcc_fallthrough ();
+	}
       case CPP_PLUS_PLUS:
       case CPP_MINUS_MINUS:
       case CPP_DOT:

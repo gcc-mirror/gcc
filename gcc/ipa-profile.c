@@ -340,7 +340,7 @@ ipa_propagate_frequency_1 (struct cgraph_node *node, void *data)
 	  {
 	    if (dump_file && (dump_flags & TDF_DETAILS))
 	      fprintf (dump_file, "  Called by %s that is executed once\n",
-		       edge->caller->name ());
+		       edge->caller->dump_name ());
 	    d->maybe_unlikely_executed = false;
 	    ipa_call_summary *s = ipa_call_summaries->get (edge);
 	    if (s != NULL && s->loop_depth)
@@ -355,7 +355,7 @@ ipa_propagate_frequency_1 (struct cgraph_node *node, void *data)
 	case NODE_FREQUENCY_NORMAL:
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "  Called by %s that is normal or hot\n",
-		     edge->caller->name ());
+		     edge->caller->dump_name ());
 	  d->maybe_unlikely_executed = false;
 	  d->maybe_executed_once = false;
 	  break;
@@ -399,7 +399,7 @@ ipa_propagate_frequency (struct cgraph_node *node)
     return false;
   gcc_assert (node->analyzed);
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "Processing frequency %s\n", node->name ());
+    fprintf (dump_file, "Processing frequency %s\n", node->dump_name ());
 
   node->call_for_symbol_and_aliases (ipa_propagate_frequency_1, &d,
 				     true);
@@ -410,7 +410,7 @@ ipa_propagate_frequency (struct cgraph_node *node)
        node->only_called_at_startup = true;
        if (dump_file)
          fprintf (dump_file, "Node %s promoted to only called at startup.\n",
-		  node->name ());
+		  node->dump_name ());
        changed = true;
     }
   if ((d.only_called_at_exit && !d.only_called_at_startup)
@@ -419,7 +419,7 @@ ipa_propagate_frequency (struct cgraph_node *node)
        node->only_called_at_exit = true;
        if (dump_file)
          fprintf (dump_file, "Node %s promoted to only called at exit.\n",
-		  node->name ());
+		  node->dump_name ());
        changed = true;
     }
 
@@ -438,7 +438,7 @@ ipa_propagate_frequency (struct cgraph_node *node)
 	    {
 	      if (dump_file)
 		fprintf (dump_file, "Node %s promoted to hot.\n",
-			 node->name ());
+			 node->dump_name ());
 	      node->frequency = NODE_FREQUENCY_HOT;
 	      return true;
 	    }
@@ -448,7 +448,7 @@ ipa_propagate_frequency (struct cgraph_node *node)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "Node %s reduced to normal.\n",
-		     node->name ());
+		     node->dump_name ());
 	  node->frequency = NODE_FREQUENCY_NORMAL;
 	  changed = true;
 	}
@@ -462,7 +462,7 @@ ipa_propagate_frequency (struct cgraph_node *node)
       node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
       if (dump_file)
 	fprintf (dump_file, "Node %s promoted to unlikely executed.\n",
-		 node->name ());
+		 node->dump_name ());
       changed = true;
     }
   else if (d.maybe_executed_once && node->frequency != NODE_FREQUENCY_EXECUTED_ONCE)
@@ -470,7 +470,7 @@ ipa_propagate_frequency (struct cgraph_node *node)
       node->frequency = NODE_FREQUENCY_EXECUTED_ONCE;
       if (dump_file)
 	fprintf (dump_file, "Node %s promoted to executed once.\n",
-		 node->name ());
+		 node->dump_name ());
       changed = true;
     }
   return changed;

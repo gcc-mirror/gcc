@@ -1,3 +1,7 @@
+2020-01-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi: Fix typos, use https.
+
 2020-01-03  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/optional-map.f90: Add test for

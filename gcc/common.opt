@@ -617,7 +617,7 @@ Common Var(warn_implicit_fallthrough) RejectNegative Joined UInteger Warning Int
 Warn when a switch case falls through.
 
 Winline
-Common Var(warn_inline) Warning
+Common Var(warn_inline) Warning Optimization
 Warn when an inlined function cannot be inlined.
 
 Winvalid-memory-model
@@ -2426,7 +2426,7 @@ Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
 free
-Common Report Var(flag_ree) Init(0)
+Common Report Var(flag_ree) Init(0) Optimization
 Turn on Redundant Extensions Elimination pass.
 
 fshow-column

@@ -27,12 +27,18 @@ test01()
   std::stop_source ssrc;
   VERIFY( ssrc.stop_possible() );
   VERIFY( !ssrc.stop_requested() );
+  VERIFY( ssrc == ssrc );
+  VERIFY( !(ssrc != ssrc) );
 
   std::stop_source copy(ssrc);
   VERIFY( copy.stop_possible() );
   VERIFY( !copy.stop_requested() );
   VERIFY( ssrc.stop_possible() );
   VERIFY( !ssrc.stop_requested() );
+  VERIFY( copy == ssrc );
+  VERIFY( !(copy != ssrc) );
+  VERIFY( ssrc == ssrc );
+  VERIFY( !(ssrc != ssrc) );
 
   std::stop_source move(std::move(ssrc));
   VERIFY( move.stop_possible() );
@@ -41,6 +47,14 @@ test01()
   VERIFY( !copy.stop_requested() );
   VERIFY( !ssrc.stop_possible() );
   VERIFY( !ssrc.stop_requested() );
+  VERIFY( !(move == ssrc) );
+  VERIFY( move != ssrc );
+  VERIFY( ssrc == ssrc );
+  VERIFY( !(ssrc != ssrc) );
+  VERIFY( move == copy );
+  VERIFY( !(move != copy) );
+  VERIFY( !(copy == ssrc) );
+  VERIFY( copy != ssrc );
 }
 
 void
@@ -52,12 +66,18 @@ test02()
   std::stop_source ssrc(std::nostopstate);
   VERIFY( !ssrc.stop_possible() );
   VERIFY( !ssrc.stop_requested() );
+  VERIFY( ssrc == ssrc );
+  VERIFY( !(ssrc != ssrc) );
 
   std::stop_source copy(ssrc);
   VERIFY( !copy.stop_possible() );
   VERIFY( !copy.stop_requested() );
   VERIFY( !ssrc.stop_possible() );
   VERIFY( !ssrc.stop_requested() );
+  VERIFY( copy == ssrc );
+  VERIFY( !(copy != ssrc) );
+  VERIFY( ssrc == ssrc );
+  VERIFY( !(ssrc != ssrc) );
 
   std::stop_source move(std::move(ssrc));
   VERIFY( !move.stop_possible() );
@@ -66,24 +86,39 @@ test02()
   VERIFY( !copy.stop_requested() );
   VERIFY( !ssrc.stop_possible() );
   VERIFY( !ssrc.stop_requested() );
+  VERIFY( move == ssrc );
+  VERIFY( !(move != ssrc) );
+  VERIFY( ssrc == ssrc );
+  VERIFY( !(ssrc != ssrc) );
+  VERIFY( move == copy );
+  VERIFY( !(move != copy) );
+  VERIFY( copy == ssrc );
+  VERIFY( !(copy != ssrc) );
 }
 
 void
 test03()
 {
   std::stop_source s1;
+  std::stop_source copy(s1);
   s1.request_stop();
   std::stop_source s2(std::nostopstate);
+  VERIFY( s1 != s2 );
+
   s1.swap(s2);
   VERIFY( !s1.stop_possible() );
   VERIFY( !s1.stop_requested() );
   VERIFY( s2.stop_possible() );
   VERIFY( s2.stop_requested() );
+  VERIFY( s1 != s2 );
+  VERIFY( s2 == copy );
+
   swap(s1, s2);
   VERIFY( s1.stop_possible() );
   VERIFY( s1.stop_requested() );
   VERIFY( !s2.stop_possible() );
   VERIFY( !s2.stop_requested() );
+  VERIFY( s1 == copy );
 }
 
 int main()

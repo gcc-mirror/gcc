@@ -639,7 +639,7 @@ symbol_table::remove_unreferenced_decls (void)
 	{
 	  enqueue_node (node, &first);
 	  if (dump_file)
-	    fprintf (dump_file, " %s", node->asm_name ());
+	    fprintf (dump_file, " %s", node->dump_asm_name ());
 	}
     }
   while (first != (varpool_node *)(void *)1)
@@ -687,7 +687,7 @@ symbol_table::remove_unreferenced_decls (void)
       if (!node->aux && !node->no_reorder)
 	{
 	  if (dump_file)
-	    fprintf (dump_file, " %s", node->asm_name ());
+	    fprintf (dump_file, " %s", node->dump_asm_name ());
 	  if (referenced.contains(node))
 	    node->remove_initializer ();
 	  else

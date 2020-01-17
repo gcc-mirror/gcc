@@ -133,9 +133,18 @@ MULTILIB_MATCHES	+= march?armv7-r+fp.sp=march?armv8-r+crc+fp.sp
 
 ifeq (,$(HAS_APROFILE))
 # Map all v7-a
+
 MULTILIB_MATCHES	+= march?armv7=march?armv7-a
+
+MULTILIB_MATCHES	+= $(foreach ARCH, $(v7_a_arch_variants), \
+			     march?armv7=march?armv7-a$(ARCH))
+
 MULTILIB_MATCHES	+= $(foreach ARCH, $(v7_a_nosimd_variants) $(v7_a_simd_variants), \
 			     march?armv7+fp=march?armv7-a$(ARCH))
+
+MULTILIB_MATCHES	+= $(foreach ARCHVAR, $(v7_a_arch_variants), \
+			     $(foreach ARCH, $(v7_a_nosimd_variants) $(v7_a_simd_variants), \
+			       march?armv7+fp=march?armv7-a$(ARCHVAR)$(ARCH)))
 
 MULTILIB_MATCHES	+= march?armv7=march?armv7ve
 

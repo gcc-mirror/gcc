@@ -1,3 +1,14 @@
+2020-01-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	Implement 64-bit double functions.
+
+	PR target/92055
+	* config.host (tmake_file) [target=avr]: Add t-libf7,
+	t-libf7-math, t-libf7-math-symbols as specified by --with-libf7=.
+	* config/avr/t-avrlibc: Don't copy libgcc.a if there are modules
+	depending on sizeof (double) or sizeof (long double).
+	* config/avr/libf7: New folder.
+
 2020-01-05  Olivier Hainque  <hainque@adacore.com>
 
 	* config/gthr-vxworks.h: Guard #include vxAtomicLib.h

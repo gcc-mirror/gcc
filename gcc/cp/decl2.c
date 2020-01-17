@@ -2629,6 +2629,7 @@ determine_visibility (tree decl)
       tree attribs = (TREE_CODE (decl) == TYPE_DECL
 		      ? TYPE_ATTRIBUTES (TREE_TYPE (decl))
 		      : DECL_ATTRIBUTES (decl));
+      tree attr = lookup_attribute ("visibility", attribs);
       
       if (args != error_mark_node)
 	{
@@ -2636,7 +2637,7 @@ determine_visibility (tree decl)
 
 	  if (!DECL_VISIBILITY_SPECIFIED (decl))
 	    {
-	      if (!DECL_VISIBILITY_SPECIFIED (pattern)
+	      if (!attr
 		  && determine_hidden_inline (decl))
 		DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
 	      else
@@ -2650,7 +2651,7 @@ determine_visibility (tree decl)
 	  if (args
 	      /* Template argument visibility outweighs #pragma or namespace
 		 visibility, but not an explicit attribute.  */
-	      && !lookup_attribute ("visibility", attribs))
+	      && !attr)
 	    {
 	      int depth = TMPL_ARGS_DEPTH (args);
 	      if (DECL_VISIBILITY_SPECIFIED (decl))

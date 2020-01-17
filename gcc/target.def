@@ -3411,6 +3411,29 @@ must have move patterns for this mode.",
  hook_bool_mode_false)
 
 DEFHOOK
+(compatible_vector_types_p,
+ "Return true if there is no target-specific reason for treating\n\
+vector types @var{type1} and @var{type2} as distinct types.  The caller\n\
+has already checked for target-independent reasons, meaning that the\n\
+types are known to have the same mode, to have the same number of elements,\n\
+and to have what the caller considers to be compatible element types.\n\
+\n\
+The main reason for defining this hook is to reject pairs of types\n\
+that are handled differently by the target's calling convention.\n\
+For example, when a new @var{N}-bit vector architecture is added\n\
+to a target, the target may want to handle normal @var{N}-bit\n\
+@code{VECTOR_TYPE} arguments and return values in the same way as\n\
+before, to maintain backwards compatibility.  However, it may also\n\
+provide new, architecture-specific @code{VECTOR_TYPE}s that are passed\n\
+and returned in a more efficient way.  It is then important to maintain\n\
+a distinction between the ``normal'' @code{VECTOR_TYPE}s and the new\n\
+architecture-specific ones.\n\
+\n\
+The default implementation returns true, which is correct for most targets.",
+ bool, (const_tree type1, const_tree type2),
+ hook_bool_const_tree_const_tree_true)
+
+DEFHOOK
 (vector_alignment,
  "This hook can be used to define the alignment for a vector of type\n\
 @var{type}, in order to comply with a platform ABI.  The default is to\n\

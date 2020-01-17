@@ -1336,8 +1336,48 @@ avr-*-*)
 	    tm_file="${tm_file} ${cpu_type}/avrlibc.h"
 	    tm_defines="${tm_defines} WITH_AVRLIBC"
 	fi
+	# Work out avr_double_comparison which is 2 or 3 and is used in
+	# target hook FLOAT_LIB_COMPARE_RETURNS_BOOL to determine whether
+	# DFmode comparisons return 3-state or 2-state results.
+	case y${with_double_comparison} in
+	    y | ytristate)
+		avr_double_comparison=3
+		;;
+	    ybool | ylibf7)
+		avr_double_comparison=2
+		;;
+	    *)
+		echo "Error: --with-double-comparison= can only be used with: 'tristate', 'bool', 'libf7'" 1>&2
+		exit 1
+		;;
+	esac
+	case "y${with_libf7}" in
+	    yno)
+		# avr_double_comparison as set above.
+		;;
+	    ylibgcc)
+		avr_double_comparison=2
+		tm_defines="${tm_defines} WITH_LIBF7_LIBGCC"
+		;;
+	    y | yyes | ymath-symbols)
+		avr_double_comparison=2
+		tm_defines="${tm_defines} WITH_LIBF7_LIBGCC"
+		tm_defines="${tm_defines} WITH_LIBF7_MATH"
+		tm_defines="${tm_defines} WITH_LIBF7_MATH_SYMBOLS"
+		;;
+	    ymath)
+		avr_double_comparison=2
+		tm_defines="${tm_defines} WITH_LIBF7_LIBGCC"
+		tm_defines="${tm_defines} WITH_LIBF7_MATH"
+		;;
+	    *)
+		echo "Error: --with-libf7=${with_libf7} but can only be used with: 'libgcc', 'math', 'math-symbols', 'yes', 'no'" 1>&2
+		exit 1
+		;;
+	esac
+	tm_defines="${tm_defines} WITH_DOUBLE_COMPARISON=${avr_double_comparison}"
 	case y${with_double} in
-	    y | y32)
+	    y32)
 		avr_double=32
 		tm_defines="${tm_defines} HAVE_DOUBLE32"
 		;;
@@ -1352,7 +1392,7 @@ avr-*-*)
 		tm_defines="${tm_defines} HAVE_DOUBLE64"
 		tm_defines="${tm_defines} HAVE_DOUBLE_MULTILIB"
 		;;
-	    y32,64)
+	    y | y32,64)
 		avr_double=32
 		avr_double_multilib=1
 		tm_defines="${tm_defines} HAVE_DOUBLE32"
@@ -1365,7 +1405,7 @@ avr-*-*)
 		;;
 	esac
 	case y${with_long_double} in
-	    y | y32)
+	    y32)
 		avr_long_double=32
 		tm_defines="${tm_defines} HAVE_LONG_DOUBLE32"
 		;;
@@ -1373,7 +1413,7 @@ avr-*-*)
 		avr_long_double=64
 		tm_defines="${tm_defines} HAVE_LONG_DOUBLE64"
 		;;
-	    y64,32)
+	    y | y64,32)
 		avr_long_double=64
 		avr_long_double_multilib=1
 		tm_defines="${tm_defines} HAVE_LONG_DOUBLE32"

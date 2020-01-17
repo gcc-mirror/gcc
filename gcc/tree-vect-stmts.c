@@ -2534,14 +2534,14 @@ get_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
 }
 
 /* Return true if boolean argument MASK is suitable for vectorizing
-   conditional load or store STMT_INFO.  When returning true, store the type
+   conditional operation STMT_INFO.  When returning true, store the type
    of the definition in *MASK_DT_OUT and the type of the vectorized mask
    in *MASK_VECTYPE_OUT.  */
 
 static bool
-vect_check_load_store_mask (stmt_vec_info stmt_info, tree mask,
-			    vect_def_type *mask_dt_out,
-			    tree *mask_vectype_out)
+vect_check_scalar_mask (stmt_vec_info stmt_info, tree mask,
+			vect_def_type *mask_dt_out,
+			tree *mask_vectype_out)
 {
   vec_info *vinfo = stmt_info->vinfo;
   if (!VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (mask)))
@@ -3262,6 +3262,14 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   for (i = 0; i < nargs; i++)
     {
       op = gimple_call_arg (stmt, i);
+
+      if ((int) i == mask_opno)
+	{
+	  if (!vect_check_scalar_mask (stmt_info, op, &dt[i], &vectypes[i]))
+	    return false;
+	  continue;
+	}
+
       if (!vect_is_simple_use (op, vinfo, &dt[i], &vectypes[i]))
 	{
 	  if (dump_enabled_p ())
@@ -3269,11 +3277,6 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			     "use not simple.\n");
 	  return false;
 	}
-
-      /* Skip the mask argument to an internal function.  This operand
-	 has been converted via a pattern if necessary.  */
-      if ((int) i == mask_opno)
-	continue;
 
       /* We can only handle calls with arguments of the same type.  */
       if (rhs_type
@@ -3542,12 +3545,6 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		  vec_oprndsi.release ();
 		}
 	      continue;
-	    }
-
-	  if (mask_opno >= 0 && !vectypes[mask_opno])
-	    {
-	      gcc_assert (modifier != WIDEN);
-	      vectypes[mask_opno] = truth_type_for (vectype_in);
 	    }
 
 	  for (i = 0; i < nargs; i++)
@@ -7378,8 +7375,8 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       if (mask_index >= 0)
 	{
 	  mask = gimple_call_arg (call, mask_index);
-	  if (!vect_check_load_store_mask (stmt_info, mask, &mask_dt,
-					   &mask_vectype))
+	  if (!vect_check_scalar_mask (stmt_info, mask, &mask_dt,
+				       &mask_vectype))
 	    return false;
 	}
     }
@@ -8598,8 +8595,8 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       if (mask_index >= 0)
 	{
 	  mask = gimple_call_arg (call, mask_index);
-	  if (!vect_check_load_store_mask (stmt_info, mask, &mask_dt,
-					   &mask_vectype))
+	  if (!vect_check_scalar_mask (stmt_info, mask, &mask_dt,
+				       &mask_vectype))
 	    return false;
 	}
     }

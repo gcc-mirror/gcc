@@ -1257,9 +1257,12 @@ riscv_legitimize_tls_address (rtx loc)
   rtx dest, tp, tmp;
   enum tls_model model = SYMBOL_REF_TLS_MODEL (loc);
 
+#if 0
+  /* TLS copy relocs are now deprecated and should not be used.  */
   /* Since we support TLS copy relocs, non-PIC TLS accesses may all use LE.  */
   if (!flag_pic)
     model = TLS_MODEL_LOCAL_EXEC;
+#endif
 
   switch (model)
     {
@@ -3188,7 +3191,8 @@ riscv_print_operand_reloc (FILE *file, rtx op, bool hi_reloc)
 	break;
 
       default:
-	gcc_unreachable ();
+	output_operand_lossage ("invalid use of '%%%c'", hi_reloc ? 'h' : 'R');
+	return;
     }
 
   fprintf (file, "%s(", reloc);

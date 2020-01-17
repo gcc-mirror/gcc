@@ -1,0 +1,21 @@
+# Triggered by --with-libf7=math or --with-libf7=math-symbols
+#
+# We provide weak double wrappers for functions specified in math.h,
+# but with __ prepended to the symbol name used for the double function.
+# For example we provide double __sin (double) but neither sin nor sinl.
+# To get weak symbols according to math.h, t-libf7-math-symbols has to
+# be used which is triggered by --with-libf7=math-symbols.
+
+WITH_LIBF7_MATH_FUNCTIONS = 1
+
+# __sin, ...
+F7_ASM_WRAPS_m_dd  += $(m_dd)
+
+# __pow, __fmin, ...
+F7_ASM_WRAPS_m_ddd += $(m_ddd)
+
+# __ldexp, ...
+F7_ASM_WRAPS_m_ddx += $(m_ddx)
+
+# __lrint, ...
+F7_ASM_WRAPS_m_xd += $(m_xd)
