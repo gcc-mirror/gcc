@@ -1,3 +1,10 @@
+2020-01-17  Alexander Monakov  <amonakov@ispras.ru>
+
+	* gdbinit.in (help-gcc-hooks): New command.
+	(pp, pr, prl, pt, pct, pgg, pgq, pgs, pge, pmz, ptc, pdn, ptn, pdd, prc,
+	pi, pbm, pel, trt): Take $arg0 instead of $ if supplied. Update
+	documentation.
+
 2020-01-17  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* config/aarch64/aarch64-sve.md (@aarch64_sve_ld1ro<mode>): Use the
