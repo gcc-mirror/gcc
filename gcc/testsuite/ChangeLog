@@ -1,3 +1,11 @@
+2020-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93291
+	* gcc.dg/analyzer/pattern-test-2.c: Remove include of stdlib.h.
+	(test_2): Rewrite to explicitly perform a bitwise-or of two
+	boolean conditions.
+	(test_3): New function, to test bitwise-and.
+
 2020-01-27  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR testsuite/71727
