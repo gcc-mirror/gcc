@@ -320,7 +320,6 @@ package body Sem_Ch10 is
             Nam_Ent   : constant Entity_Id := Entity (Name (Clause));
             Cont_Item : Node_Id;
             Prag_Unit : Node_Id;
-            Subt_Mark : Node_Id;
             Use_Item  : Node_Id;
 
             function Same_Unit (N : Node_Id; P : Entity_Id) return Boolean;
@@ -390,12 +389,24 @@ package body Sem_Ch10 is
                elsif Nkind (Cont_Item) = N_Use_Type_Clause
                  and then not Used_Type_Or_Elab
                then
-                  Subt_Mark := Subtype_Mark (Cont_Item);
-                  if not Used_Type_Or_Elab
-                    and then Same_Unit (Prefix (Subt_Mark), Nam_Ent)
-                  then
-                     Used_Type_Or_Elab := True;
-                  end if;
+                  declare
+                     UE : Node_Id;
+
+                  begin
+                     --  Loop through prefixes looking for a match
+
+                     UE := Prefix (Subtype_Mark (Cont_Item));
+                     loop
+                        if not Used_Type_Or_Elab
+                          and then Same_Unit (UE, Nam_Ent)
+                        then
+                           Used_Type_Or_Elab := True;
+                        end if;
+
+                        exit when Nkind (UE) /= N_Expanded_Name;
+                        UE := Prefix (UE);
+                     end loop;
+                  end;
 
                --  Pragma Elaborate or Elaborate_All
 
