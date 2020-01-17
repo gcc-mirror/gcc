@@ -1135,8 +1135,9 @@ input_function (tree fn_decl, class data_in *data_in,
 		 we'd later ICE on.  */
 	      tree block;
 	      if (gimple_debug_inline_entry_p (stmt)
-		  && (block = gimple_block (stmt))
-		  && !inlined_function_outer_scope_p (block))
+		  && (((block = gimple_block (stmt))
+		       && !inlined_function_outer_scope_p (block))
+		      || !debug_inline_points))
 		remove = true;
 	      if (is_gimple_call (stmt)
 		  && gimple_call_internal_p (stmt))

@@ -165,6 +165,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return _M_base.compare_exchange_strong(__i1, __i2, __m); }
   };
 
+#if __cplusplus <= 201703L
+# define _GLIBCXX20_INIT(I)
+#else
+# define _GLIBCXX20_INIT(I) = I
+#endif
 
   /**
    *  @brief Generic atomic type, primary class template.
@@ -185,7 +190,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr int _S_alignment
         = _S_min_alignment > alignof(_Tp) ? _S_min_alignment : alignof(_Tp);
 
-      alignas(_S_alignment) _Tp _M_i;
+      alignas(_S_alignment) _Tp _M_i _GLIBCXX20_INIT(_Tp());
 
       static_assert(__is_trivially_copyable(_Tp),
 		    "std::atomic requires a trivially copyable type");
@@ -194,7 +199,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    "Incomplete or zero-sized types are not supported");
 
     public:
-      atomic() noexcept = default;
+      atomic() = default;
       ~atomic() noexcept = default;
       atomic(const atomic&) = delete;
       atomic& operator=(const atomic&) = delete;
@@ -348,7 +353,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return compare_exchange_strong(__e, __i, __m,
                                        __cmpexch_failure_order(__m)); }
     };
-
+#undef _GLIBCXX20_INIT
 
   /// Partial specialization for pointer types.
   template<typename _Tp>

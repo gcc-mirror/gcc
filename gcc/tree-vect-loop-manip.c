@@ -1716,19 +1716,22 @@ vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
    iterations before the scalar one (using masking to skip inactive
    elements).  This function updates the information recorded in DR to
    account for the difference.  Specifically, it updates the OFFSET
-   field of DR.  */
+   field of DR_INFO.  */
 
 static void
-vect_update_init_of_dr (struct data_reference *dr, tree niters, tree_code code)
+vect_update_init_of_dr (dr_vec_info *dr_info, tree niters, tree_code code)
 {
-  tree offset = DR_OFFSET (dr);
+  struct data_reference *dr = dr_info->dr;
+  tree offset = dr_info->offset;
+  if (!offset)
+    offset = build_zero_cst (sizetype);
 
   niters = fold_build2 (MULT_EXPR, sizetype,
 			fold_convert (sizetype, niters),
 			fold_convert (sizetype, DR_STEP (dr)));
   offset = fold_build2 (code, sizetype,
 			fold_convert (sizetype, offset), niters);
-  DR_OFFSET (dr) = offset;
+  dr_info->offset = offset;
 }
 
 
@@ -1758,7 +1761,7 @@ vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters,
     {
       dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
       if (!STMT_VINFO_GATHER_SCATTER_P (dr_info->stmt))
-	vect_update_init_of_dr (dr, niters, code);
+	vect_update_init_of_dr (dr_info, niters, code);
     }
 }
 
@@ -2446,7 +2449,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 		 tree *niters_vector, tree *step_vector,
 		 tree *niters_vector_mult_vf_var, int th,
 		 bool check_profitability, bool niters_no_overflow,
-		 tree *advance, drs_init_vec &orig_drs_init)
+		 tree *advance)
 {
   edge e, guard_e;
   tree type = TREE_TYPE (niters), guard_cond;
@@ -2693,14 +2696,6 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  scale_bbs_frequencies (&bb_after_prolog, 1, prob_prolog);
 	  scale_loop_profile (prolog, prob_prolog, bound_prolog);
 	}
-
-      /* Save original inits for each data_reference before advancing them with
-	 NITERS_PROLOG.  */
-      unsigned int i;
-      struct data_reference *dr;
-      vec<data_reference_p> datarefs = loop_vinfo->shared->datarefs;
-      FOR_EACH_VEC_ELT (datarefs, i, dr)
-	orig_drs_init.safe_push (std::make_pair (dr, DR_OFFSET (dr)));
 
       /* Update init address of DRs.  */
       vect_update_inits_of_drs (loop_vinfo, niters_prolog, PLUS_EXPR);

@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "pretty-print.h"
 #include "diagnostic-color.h"
+#include "diagnostic-event-id.h"
 #include "selftest.h"
 
 #if HAVE_ICONV
@@ -1039,6 +1040,7 @@ pp_indent (pretty_printer *pp)
    %>: closing quote.
    %': apostrophe (should only be used in untranslated messages;
        translations should use appropriate punctuation directly).
+   %@: diagnostic_event_id_ptr, for which event_id->known_p () must be true.
    %.*s: a substring the length of which is specified by an argument
 	 integer.
    %Ns: likewise, but length specified as constant in the format string.
@@ -1425,6 +1427,21 @@ pp_format (pretty_printer *pp, text_info *text)
 	    size_t len = n < 0 ? strlen (s) : strnlen (s, n);
 
 	    pp_append_text (pp, s, s + len);
+	  }
+	  break;
+
+	case '@':
+	  {
+	    /* diagnostic_event_id_t *.  */
+	    diagnostic_event_id_ptr event_id
+	      = va_arg (*text->args_ptr, diagnostic_event_id_ptr);
+	    gcc_assert (event_id->known_p ());
+
+	    pp_string (pp, colorize_start (pp_show_color (pp), "path"));
+	    pp_character (pp, '(');
+	    pp_decimal_int (pp, event_id->one_based ());
+	    pp_character (pp, ')');
+	    pp_string (pp, colorize_stop (pp_show_color (pp)));
 	  }
 	  break;
 
@@ -2338,6 +2355,21 @@ test_pp_format ()
   assert_pp_format_colored (SELFTEST_LOCATION,
 			    "`\33[01m\33[Kfoo\33[m\33[K' 12345678", "%qs %x",
 			    "foo", 0x12345678);
+  /* Verify "%@".  */
+  {
+    diagnostic_event_id_t first (2);
+    diagnostic_event_id_t second (7);
+
+    ASSERT_PP_FORMAT_2 ("first `free' at (3); second `free' at (8)",
+			"first %<free%> at %@; second %<free%> at %@",
+			&first, &second);
+    assert_pp_format_colored
+      (SELFTEST_LOCATION,
+       "first `[01m[Kfree[m[K' at [01;36m[K(3)[m[K;"
+       " second `[01m[Kfree[m[K' at [01;36m[K(8)[m[K",
+       "first %<free%> at %@; second %<free%> at %@",
+       &first, &second);
+  }
 
   /* Verify %Z.  */
   int v[] = { 1, 2, 3 }; 

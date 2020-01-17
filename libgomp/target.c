@@ -720,7 +720,8 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	  tgt->list[i].offset = OFFSET_INLINED;
 	  continue;
 	}
-      else if ((kind & typemask) == GOMP_MAP_USE_DEVICE_PTR)
+      else if ((kind & typemask) == GOMP_MAP_USE_DEVICE_PTR
+	       || (kind & typemask) == GOMP_MAP_USE_DEVICE_PTR_IF_PRESENT)
 	{
 	  tgt->list[i].key = NULL;
 	  if (!not_found_cnt)
@@ -739,16 +740,24 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	      cur_node.host_start = (uintptr_t) hostaddrs[i];
 	      cur_node.host_end = cur_node.host_start;
 	      splay_tree_key n = gomp_map_lookup (mem_map, &cur_node);
-	      if (n == NULL)
+	      if (n != NULL)
+		{
+		  cur_node.host_start -= n->host_start;
+		  hostaddrs[i]
+		    = (void *) (n->tgt->tgt_start + n->tgt_offset
+				+ cur_node.host_start);
+		}
+	      else if ((kind & typemask) == GOMP_MAP_USE_DEVICE_PTR)
 		{
 		  gomp_mutex_unlock (&devicep->lock);
 		  gomp_fatal ("use_device_ptr pointer wasn't mapped");
 		}
-	      cur_node.host_start -= n->host_start;
-	      hostaddrs[i]
-		= (void *) (n->tgt->tgt_start + n->tgt_offset
-			    + cur_node.host_start);
-	      tgt->list[i].offset = ~(uintptr_t) 0;
+	      else if ((kind & typemask) == GOMP_MAP_USE_DEVICE_PTR_IF_PRESENT)
+		/* If not present, continue using the host address.  */
+		;
+	      else
+		__builtin_unreachable ();
+	      tgt->list[i].offset = OFFSET_INLINED;
 	    }
 	  else
 	    tgt->list[i].offset = 0;
@@ -973,22 +982,40 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	      case GOMP_MAP_FIRSTPRIVATE_INT:
 	      case GOMP_MAP_ZERO_LEN_ARRAY_SECTION:
 		continue;
+	      case GOMP_MAP_USE_DEVICE_PTR_IF_PRESENT:
+		/* The OpenACC 'host_data' construct only allows 'use_device'
+		   "mapping" clauses, so in the first loop, 'not_found_cnt'
+		   must always have been zero, so all OpenACC 'use_device'
+		   clauses have already been handled.  (We can only easily test
+		   'use_device' with 'if_present' clause here.)  */
+		assert (tgt->list[i].offset == OFFSET_INLINED);
+		/* Nevertheless, FALLTHRU to the normal handling, to keep the
+		   code conceptually simple, similar to the first loop.  */
 	      case GOMP_MAP_USE_DEVICE_PTR:
 		if (tgt->list[i].offset == 0)
 		  {
 		    cur_node.host_start = (uintptr_t) hostaddrs[i];
 		    cur_node.host_end = cur_node.host_start;
 		    n = gomp_map_lookup (mem_map, &cur_node);
-		    if (n == NULL)
+		    if (n != NULL)
+		      {
+			cur_node.host_start -= n->host_start;
+			hostaddrs[i]
+			  = (void *) (n->tgt->tgt_start + n->tgt_offset
+				      + cur_node.host_start);
+		      }
+		    else if ((kind & typemask) == GOMP_MAP_USE_DEVICE_PTR)
 		      {
 			gomp_mutex_unlock (&devicep->lock);
 			gomp_fatal ("use_device_ptr pointer wasn't mapped");
 		      }
-		    cur_node.host_start -= n->host_start;
-		    hostaddrs[i]
-		      = (void *) (n->tgt->tgt_start + n->tgt_offset
-				  + cur_node.host_start);
-		    tgt->list[i].offset = ~(uintptr_t) 0;
+		    else if ((kind & typemask)
+			     == GOMP_MAP_USE_DEVICE_PTR_IF_PRESENT)
+		      /* If not present, continue using the host address.  */
+		      ;
+		    else
+		      __builtin_unreachable ();
+		    tgt->list[i].offset = OFFSET_INLINED;
 		  }
 		continue;
 	      case GOMP_MAP_STRUCT:
@@ -3001,7 +3028,6 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
   DLSYM (get_caps);
   DLSYM (get_type);
   DLSYM (get_num_devices);
-  DLSYM (get_property);
   DLSYM (init_device);
   DLSYM (fini_device);
   DLSYM (load_image);
@@ -3034,7 +3060,8 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
 			 openacc_async_queue_callback)
 	  || !DLSYM_OPT (openacc.async.exec, openacc_async_exec)
 	  || !DLSYM_OPT (openacc.async.dev2host, openacc_async_dev2host)
-	  || !DLSYM_OPT (openacc.async.host2dev, openacc_async_host2dev))
+	  || !DLSYM_OPT (openacc.async.host2dev, openacc_async_host2dev)
+	  || !DLSYM_OPT (openacc.get_property, openacc_get_property))
 	{
 	  /* Require all the OpenACC handlers if we have
 	     GOMP_OFFLOAD_CAP_OPENACC_200.  */

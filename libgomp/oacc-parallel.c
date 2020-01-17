@@ -415,7 +415,8 @@ GOACC_data_start (int flags_m, size_t mapnum,
 	= _ACC_OTHER_EVENT_INFO_VALID_BYTES;
       enter_data_event_info.other_event.parent_construct = acc_construct_data;
       for (int i = 0; i < mapnum; ++i)
-	if ((kinds[i] & 0xff) == GOMP_MAP_USE_DEVICE_PTR)
+	if ((kinds[i] & 0xff) == GOMP_MAP_USE_DEVICE_PTR
+	    || (kinds[i] & 0xff) == GOMP_MAP_USE_DEVICE_PTR_IF_PRESENT)
 	  {
 	    /* If there is one such data mapping kind, then this is actually an
 	       OpenACC 'host_data' construct.  (GCC maps the OpenACC

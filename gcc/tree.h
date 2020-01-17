@@ -1627,6 +1627,11 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE_MAP_IN_REDUCTION(NODE) \
   TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
 
+/* True on an OMP_CLAUSE_USE_DEVICE_PTR with an OpenACC 'if_present'
+   clause.  */
+#define OMP_CLAUSE_USE_DEVICE_PTR_IF_PRESENT(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_USE_DEVICE_PTR)->base.public_flag)
+
 #define OMP_CLAUSE_PROC_BIND_KIND(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_PROC_BIND)->omp_clause.subcode.proc_bind_kind)
 

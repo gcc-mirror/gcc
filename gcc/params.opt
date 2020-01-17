@@ -215,7 +215,7 @@ Common Joined UInteger Var(param_ipa_cp_single_call_penalty) Init(15) IntegerRan
 Percentage penalty functions containing a single call to another function will receive when they are evaluated for cloning.
 
 -param=ipa-cp-unit-growth=
-Common Joined UInteger Var(param_ipa_cp_unit_growth) Init(10) Param
+Common Joined UInteger Var(param_ipa_cp_unit_growth) Init(10) Param Optimization
 How much can given compilation unit grow because of the interprocedural constant propagation (in percent).
 
 -param=ipa-cp-value-list-size=
@@ -227,7 +227,7 @@ Common Joined UInteger Var(param_ipa_max_aa_steps) Init(25000) Param Optimizatio
 Maximum number of statements that will be visited by IPA formal parameter analysis based on alias analysis in any given function.
 
 -param=ipa-max-agg-items=
-Common Joined UInteger Var(param_ipa_max_agg_items) Init(16) Param
+Common Joined UInteger Var(param_ipa_max_agg_items) Init(16) Param Optimization
 Maximum number of aggregate content items for a parameter in jump functions and lattices.
 
 -param=ipa-max-param-expr-ops=
@@ -239,7 +239,7 @@ Common Joined UInteger Var(param_ipa_max_switch_predicate_bounds) Init(5) Param 
 Maximal number of boundary endpoints of case ranges of switch statement used during IPA functoin summary generation.
 
 -param=ipa-sra-max-replacements=
-Common Joined UInteger Var(param_ipa_sra_max_replacements) Init(8) IntegerRange(0, 16) Param
+Common Joined UInteger Var(param_ipa_sra_max_replacements) Optimization Init(8) IntegerRange(0, 16) Param
 Maximum pieces that IPA-SRA tracks per formal parameter, as a consequence, also the maximum number of replacements of a formal parameter.
 
 -param=ipa-sra-ptr-growth-factor=

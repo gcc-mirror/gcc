@@ -1,14 +1,13 @@
 /* { dg-do assemble { target aarch64_asm_sve_ok } } */
 /* { dg-options "-O2 -msve-vector-bits=256 --save-temps" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include <stdint.h>
 
 typedef int8_t vnx16qi __attribute__((vector_size (32)));
 typedef int16_t vnx8hi __attribute__((vector_size (32)));
-typedef int32_t vnx4si __attribute__((vector_size (32)));
 
 typedef _Float16 vnx8hf __attribute__((vector_size (32)));
-typedef float vnx4sf __attribute__((vector_size (32)));
 
 /* Predicate vector: 1 0 0 0 ... */
 
@@ -20,22 +19,39 @@ typedef float vnx4sf __attribute__((vector_size (32)));
 
 #define MASK_16		{0, 17, 2, 19, 4, 21, 6, 23, 8, 25, 10, 27, 12, 29, 14, 31}
 
-#define INDEX_32 vnx16qi
-#define INDEX_16 vnx8hi
-
-#define PERMUTE(type, nunits)						\
-type permute_##type (type x, type y)					\
-{									\
-  return __builtin_shuffle (x, y, (INDEX_##nunits) MASK_##nunits);	\
+/*
+** permute_vnx16qi:
+**	ptrue	(p[0-7])\.s, vl8
+**	sel	z0\.b, \1, z0\.b, z1\.b
+**	ret
+*/
+__SVInt8_t
+permute_vnx16qi (__SVInt8_t x, __SVInt8_t y)
+{
+  return __builtin_shuffle ((vnx16qi) x, (vnx16qi) y, (vnx16qi) MASK_32);
 }
 
-PERMUTE(vnx16qi, 32)
-PERMUTE(vnx8hi, 16)
-PERMUTE(vnx8hf, 16)
+/*
+** permute_vnx8hi:
+**	ptrue	(p[0-7])\.s, vl8
+**	sel	z0\.h, \1, z0\.h, z1\.h
+**	ret
+*/
+__SVInt16_t
+permute_vnx8hi (__SVInt16_t x, __SVInt16_t y)
+{
+  return __builtin_shuffle ((vnx8hi) x, (vnx8hi) y, (vnx8hi) MASK_16);
+}
 
-/* { dg-final { scan-assembler-not {\ttbl\t} } } */
-
-/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.b, p[0-9]+, z[0-9]+\.b, z[0-9]+\.b\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.h, p[0-9]+, z[0-9]+\.h, z[0-9]+\.h\n} 2 } } */
-
-/* { dg-final { scan-assembler-times {\tptrue\tp[0-9]+\.s, vl8\n} 3 } } */
+/*
+** permute_vnx8hf:
+**	ptrue	(p[0-7])\.s, vl8
+**	sel	z0\.h, \1, z0\.h, z1\.h
+**	ret
+*/
+__SVFloat16_t
+permute_vnx8hf (__SVFloat16_t x, __SVFloat16_t y)
+{
+  return (__SVFloat16_t) __builtin_shuffle ((vnx8hf) x, (vnx8hf) y,
+					    (vnx8hi) MASK_16);
+}

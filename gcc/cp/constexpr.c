@@ -6347,10 +6347,10 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
   if (!non_constant_p && overflow_p)
     non_constant_p = true;
 
-  /* Unshare the result unless it's a CONSTRUCTOR in which case it's already
-     unshared.  */
+  /* Unshare the result.  */
   bool should_unshare = true;
-  if (r == t || TREE_CODE (r) == CONSTRUCTOR)
+  if (r == t || (TREE_CODE (t) == TARGET_EXPR
+		 && TARGET_EXPR_INITIAL (t) == r))
     should_unshare = false;
 
   if (non_constant_p && !allow_non_constant)

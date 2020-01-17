@@ -2006,7 +2006,8 @@ rich_location::rich_location (line_maps *set, location_t loc,
   m_have_expanded_location (false),
   m_fixit_hints (),
   m_seen_impossible_fixit (false),
-  m_fixits_cannot_be_auto_applied (false)
+  m_fixits_cannot_be_auto_applied (false),
+  m_path (NULL)
 {
   add_range (loc, SHOW_RANGE_WITH_CARET, label);
 }

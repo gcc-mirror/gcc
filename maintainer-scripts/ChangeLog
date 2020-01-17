@@ -1,3 +1,20 @@
+2020-01-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* update_web_docs_git: New file.
+	* update_web_docs_svn: Remove.
+	* crontab: Use update_web_docs_svn.
+
+2020-01-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc_release: Use git instead of SVN.
+	* crontab: Update gcc_release calls.
+
+2020-01-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* update_version_git: New file.
+	* update_version:svn: Remove.
+	* crontab: Use update_version_git.
+
 2019-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* gcc_release: Use https for gcc.gnu.org.

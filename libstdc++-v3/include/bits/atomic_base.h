@@ -139,6 +139,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _IntTp>
     struct __atomic_base;
 
+#if __cplusplus <= 201703L
+# define _GLIBCXX20_INIT(I)
+#else
+# define __cpp_lib_atomic_value_initialization 201911L
+# define _GLIBCXX20_INIT(I) = I
+#endif
 
 #define ATOMIC_VAR_INIT(_VI) { _VI }
 
@@ -169,7 +175,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   struct __atomic_flag_base
   {
-    __atomic_flag_data_type _M_i;
+    __atomic_flag_data_type _M_i _GLIBCXX20_INIT({});
   };
 
   _GLIBCXX_END_EXTERN_C
@@ -267,7 +273,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr int _S_alignment =
 	sizeof(_ITp) > alignof(_ITp) ? sizeof(_ITp) : alignof(_ITp);
 
-      alignas(_S_alignment) __int_type _M_i;
+      alignas(_S_alignment) __int_type _M_i _GLIBCXX20_INIT(0);
 
     public:
       __atomic_base() noexcept = default;
@@ -595,7 +601,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       typedef _PTp* 	__pointer_type;
 
-      __pointer_type 	_M_p;
+      __pointer_type 	_M_p _GLIBCXX20_INIT(nullptr);
 
       // Factored out to facilitate explicit specialization.
       constexpr ptrdiff_t
@@ -1175,8 +1181,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __atomic_impl::__sub_fetch_flt(&_M_fp, __i); }
 
     private:
-      alignas(_S_alignment) _Fp _M_fp;
+      alignas(_S_alignment) _Fp _M_fp _GLIBCXX20_INIT(0);
     };
+#undef _GLIBCXX20_INIT
 
   template<typename _Tp,
 	   bool = is_integral_v<_Tp>, bool = is_floating_point_v<_Tp>>

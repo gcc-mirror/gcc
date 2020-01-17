@@ -1,3 +1,771 @@
+2020-01-13  Martin Liska  <mliska@suse.cz>
+
+	* ipa-cp.c (get_max_overall_size): Use newly
+	renamed param param_ipa_cp_unit_growth.
+	* params.opt: Remove legacy param name.
+
+2020-01-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/93213
+	* tree-ssa-strlen.c (handle_store): Only allow single-byte nul-over-nul
+	stores to be eliminated.
+
+2020-01-13  Martin Liska  <mliska@suse.cz>
+
+	* opts.c (print_help): Do not print CL_PARAM
+	and CL_WARNING for CL_OPTIMIZATION.
+
+2020-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR driver/92757
+	* doc/invoke.texi (Warning Options): Add caveat about some warnings
+	depending on optimization settings.
+
+2020-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90838
+	* tree-ssa-forwprop.c (simplify_count_trailing_zeroes): Use
+	SCALAR_INT_TYPE_MODE directly in CTZ_DEFINED_VALUE_AT_ZERO macro
+	argument rather than to initialize temporary for targets that
+	don't use the mode argument at all.  Initialize ctzval to avoid
+	warning at -O0.
+
+2020-01-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* tree.h (OMP_CLAUSE_USE_DEVICE_PTR_IF_PRESENT): New definition.
+	* tree-core.h: Document it.
+	* gimplify.c (gimplify_omp_workshare): Set it.
+	* omp-low.c (lower_omp_target): Use it.
+	* tree-pretty-print.c (dump_omp_clause): Print it.
+
+	* omp-low.c (lower_omp_target) <OMP_CLAUSE_USE_DEVICE_PTR etc.>:
+	Assert that for OpenACC we always have 'GOMP_MAP_USE_DEVICE_PTR'.
+
+2020-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Add tree-diagnostic-path.o.
+	* common.opt (fdiagnostics-path-format=): New option.
+	(diagnostic_path_format): New enum.
+	(fdiagnostics-show-path-depths): New option.
+	* coretypes.h (diagnostic_event_id_t): New forward decl.
+	* diagnostic-color.c (color_dict): Add "path".
+	* diagnostic-event-id.h: New file.
+	* diagnostic-format-json.cc (json_from_expanded_location): Make
+	non-static.
+	(json_end_diagnostic): Call context->make_json_for_path if it
+	exists and the diagnostic has a path.
+	(diagnostic_output_format_init): Clear context->print_path.
+	* diagnostic-path.h: New file.
+	* diagnostic-show-locus.c (colorizer::set_range): Special-case
+	when printing a run of events in a diagnostic_path so that they
+	all get the same color.
+	(layout::m_diagnostic_path_p): New field.
+	(layout::layout): Initialize it.
+	(layout::print_any_labels): Don't colorize the label text for an
+	event in a diagnostic_path.
+	(gcc_rich_location::add_location_if_nearby): Add
+	"restrict_to_current_line_spans" and "label" params.  Pass the
+	former to layout.maybe_add_location_range; pass the latter
+	when calling add_range.
+	* diagnostic.c: Include "diagnostic-path.h".
+	(diagnostic_initialize): Initialize context->path_format and
+	context->show_path_depths.
+	(diagnostic_show_any_path): New function.
+	(diagnostic_path::interprocedural_p): New function.
+	(diagnostic_report_diagnostic): Call diagnostic_show_any_path.
+	(simple_diagnostic_path::num_events): New function.
+	(simple_diagnostic_path::get_event): New function.
+	(simple_diagnostic_path::add_event): New function.
+	(simple_diagnostic_event::simple_diagnostic_event): New ctor.
+	(simple_diagnostic_event::~simple_diagnostic_event): New dtor.
+	(debug): New overload taking a diagnostic_path *.
+	* diagnostic.def (DK_DIAGNOSTIC_PATH): New.
+	* diagnostic.h (enum diagnostic_path_format): New enum.
+	(json::value): New forward decl.
+	(diagnostic_context::path_format): New field.
+	(diagnostic_context::show_path_depths): New field.
+	(diagnostic_context::print_path): New callback field.
+	(diagnostic_context::make_json_for_path): New callback field.
+	(diagnostic_show_any_path): New decl.
+	(json_from_expanded_location): New decl.
+	* doc/invoke.texi (-fdiagnostics-path-format=): New option.
+	(-fdiagnostics-show-path-depths): New option.
+	(-fdiagnostics-color): Add "path" to description of default
+	GCC_COLORS; describe it.
+	(-fdiagnostics-format=json): Document how diagnostic paths are
+	represented in the JSON output format.
+	* gcc-rich-location.h (gcc_rich_location::add_location_if_nearby):
+	Add optional params "restrict_to_current_line_spans" and "label".
+	* opts.c (common_handle_option): Handle
+	OPT_fdiagnostics_path_format_ and
+	OPT_fdiagnostics_show_path_depths.
+	* pretty-print.c: Include "diagnostic-event-id.h".
+	(pp_format): Implement "%@" format code for printing
+	diagnostic_event_id_t *.
+	(selftest::test_pp_format): Add tests for "%@".
+	* selftest-run-tests.c (selftest::run_tests): Call
+	selftest::tree_diagnostic_path_cc_tests.
+	* selftest.h (selftest::tree_diagnostic_path_cc_tests): New decl.
+	* toplev.c (general_init): Initialize global_dc->path_format and
+	global_dc->show_path_depths.
+	* tree-diagnostic-path.cc: New file.
+	* tree-diagnostic.c (maybe_unwind_expanded_macro_loc): Make
+	non-static.  Drop "diagnostic" param in favor of storing the
+	original value of "where" and re-using it.
+	(virt_loc_aware_diagnostic_finalizer): Update for dropped param of
+	maybe_unwind_expanded_macro_loc.
+	(tree_diagnostics_defaults): Initialize context->print_path and
+	context->make_json_for_path.
+	* tree-diagnostic.h (default_tree_diagnostic_path_printer): New
+	decl.
+	(default_tree_make_json_for_path): New decl.
+	(maybe_unwind_expanded_macro_loc): New decl.
+
+2020-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93210
+	* fold-const.h (native_encode_initializer,
+	can_native_interpret_type_p): Declare.
+	* fold-const.c (native_encode_string): Fix up handling with off != -1,
+	simplify.
+	(native_encode_initializer): New function, moved from dwarf2out.c.
+	Adjust to native_encode_expr compatible arguments, including dry-run
+	and partial extraction modes.  Don't handle STRING_CST.
+	(can_native_interpret_type_p): No longer static.
+	* gimple-fold.c (fold_ctor_reference): For native_encode_expr, verify
+	offset / BITS_PER_UNIT fits into int and don't call it if
+	can_native_interpret_type_p fails.  If suboff is NULL and for
+	CONSTRUCTOR fold_{,non}array_ctor_reference returns NULL, retry with
+	native_encode_initializer.
+	(fold_const_aggregate_ref_1): Formatting fix.
+	* dwarf2out.c (native_encode_initializer): Moved to fold-const.c.
+	(tree_add_const_value_attribute): Adjust caller.
+
+	PR tree-optimization/90838
+	* tree-ssa-forwprop.c (simplify_count_trailing_zeroes): Use
+	SCALAR_INT_TYPE_MODE instead of TYPE_MODE as operand of
+	CTZ_DEFINED_VALUE_AT_ZERO.
+
+2020-01-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR inline-asm/93027
+	* lra-constraints.c (match_reload): Permit input operands have the
+	same mode as output while other input operands have a different
+	mode.
+
+2020-01-10  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR tree-optimization/90838
+	* tree-ssa-forwprop.c (check_ctz_array): Add new function.
+	(check_ctz_string): Likewise.
+	(optimize_count_trailing_zeroes): Likewise.
+	(simplify_count_trailing_zeroes): Likewise.
+	(pass_forwprop::execute): Try ctz simplification.
+	* match.pd: Add matching for ctz idioms.
+
+2020-01-10  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_invalid_conversion): New function
+	for target hook.
+	(aarch64_invalid_unary_op): New function for target hook.
+	(aarch64_invalid_binary_op): New function for target hook.
+
+2020-01-10  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config.gcc: Add arm_bf16.h.
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_simd_builtin_std_type): Add BFmode.
+	(aarch64_init_simd_builtin_types): Define element types for vector
+	types.
+	(aarch64_init_bf16_types): New function.
+	(aarch64_general_init_builtins): Add arm_init_bf16_types function call.
+	* config/aarch64/aarch64-modes.def: Add BFmode and V4BF, V8BF vector
+	modes.
+	* config/aarch64/aarch64-simd-builtin-types.def: Add BF SIMD types.
+	* config/aarch64/aarch64-simd.md: Add BF vector types to NEON move
+	patterns.
+	* config/aarch64/aarch64.h (AARCH64_VALID_SIMD_DREG_MODE): Add V4BF.
+	(AARCH64_VALID_SIMD_QREG_MODE): Add V8BF.
+	* config/aarch64/aarch64.c
+	(aarch64_classify_vector_mode): Add support for BF types.
+	(aarch64_gimplify_va_arg_expr): Add support for BF types.
+	(aarch64_vq_mode): Add support for BF types.
+	(aarch64_simd_container_mode): Add support for BF types.
+	(aarch64_mangle_type): Add support for BF scalar type.
+	* config/aarch64/aarch64.md: Add BFmode to movhf pattern.
+	* config/aarch64/arm_bf16.h: New file.
+	* config/aarch64/arm_neon.h: Add arm_bf16.h and Bfloat vector types.
+	* config/aarch64/iterators.md: Add BF types to mode attributes.
+	(HFBF, GPF_TF_F16_MOV, VDMOV, VQMOV, VQMOV_NO2Em VALL_F16MOV): New.
+
+2020-01-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93173 - incorrect tree sharing.
+	* gimplify.c (copy_if_shared): No longer static.
+	* gimplify.h: Declare it.
+
+2020-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/invoke.texi (-msve-vector-bits=): Document that
+	-msve-vector-bits=128 now generates VL-specific code for
+	little-endian targets.
+	* config/aarch64/aarch64-sve-builtins.cc (register_builtin_types): Use
+	build_vector_type_for_mode to construct the data vector types.
+	* config/aarch64/aarch64.c (aarch64_convert_sve_vector_bits): Generate
+	VL-specific code for -msve-vector-bits=128 on little-endian targets.
+	(aarch64_simd_container_mode): Always prefer Advanced SIMD modes
+	for 128-bit vectors.
+
+2020-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_evpc_sel): Fix gen_vcond_mask
+	invocation.
+
+2020-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_builtin_vectorized_function): Check for specific vector modes,
+	rather than checking the number of elements and the element mode.
+
+2020-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Use
+	get_related_vectype_for_scalar_type rather than build_vector_type
+	to create the index type for a conditional reduction.
+
+2020-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (update_epilogue_loop_vinfo): Update DR_REF
+	for any type of gather or scatter, including strided accesses.
+
+2020-01-10  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-vectorizer.h (get_dr_vinfo_offset): Add missing function
+	 comment.
+
+2020-01-10  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-vect-data-refs.c (vect_create_addr_base_for_vector_ref): Use
+	get_dr_vinfo_offset
+	* tree-vect-loop.c (update_epilogue_loop_vinfo):  Remove orig_drs_init
+	parameter and its use to reset DR_OFFSET's.
+	(vect_transform_loop): Remove orig_drs_init argument.
+	* tree-vect-loop-manip.c (vect_update_init_of_dr): Update the offset
+	member of dr_vec_info rather than the offset of the associated
+	data_reference's innermost_loop_behavior.
+	(vect_update_init_of_dr): Pass dr_vec_info instead of data_reference.
+	(vect_do_peeling): Remove orig_drs_init parameter and its construction.
+	* tree-vect-stmts.c (check_scan_store): Replace use of DR_OFFSET with
+	get_dr_vinfo_offset.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+
+2020-01-10  Richard Biener  <rguenther@suse.de>
+
+	* gimple-ssa-store-merging
+	(pass_store_merging::terminate_all_aliasing_chains): Cache alias info.
+
+2020-01-10  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/93217
+	* ipa-inline-analysis.c (offline_size): Make proper parenthesis
+	encapsulation that was there before r280040.
+
+2020-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/93199
+	* tree-eh.c (sink_clobbers): Move clobbers to out-of-IL
+	sequences to avoid walking them again for secondary opportunities.
+	(pass_lower_eh_dispatch::execute): Instead actually insert
+	them here.
+
+2020-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/93199
+	* tree-eh.c (redirect_eh_edge_1): Avoid some work if possible.
+	(cleanup_all_empty_eh): Walk landing pads in reverse order to
+	avoid quadraticness.
+
+2020-01-10  Martin Jambor  <mjambor@suse.cz>
+
+	* params.opt (param_ipa_sra_max_replacements): Mark as Optimization.
+	* ipa-sra.c (pull_accesses_from_callee): New parameter caller, use it
+	to get param_ipa_sra_max_replacements.
+	(param_splitting_across_edge): Pass the caller to
+	pull_accesses_from_callee.
+
+2020-01-10  Martin Jambor  <mjambor@suse.cz>
+
+	* params.opt (param_ipcp_unit_growth): Mark as Optimization.
+	* ipa-cp.c (max_new_size): Removed.
+	(orig_overall_size): New variable.
+	(get_max_overall_size): New function.
+	(estimate_local_effects): Use it.  Adjust dump.
+	(decide_about_value): Likewise.
+	(ipcp_propagate_stage): Do not calculate max_new_size, just store
+	orig_overall_size.  Adjust dump.
+	(ipa_cp_c_finalize): Clear orig_overall_size instead of max_new_size.
+
+2020-01-10  Martin Jambor  <mjambor@suse.cz>
+
+	* params.opt (param_ipa_max_agg_items): Mark as Optimization
+	* ipa-cp.c (merge_agg_lats_step): New parameter max_agg_items, use
+	instead of param_ipa_max_agg_items.
+	(merge_aggregate_lattices): Extract param_ipa_max_agg_items from
+	optimization info for the callee.
+
+2020-01-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* lto-streamer-in.c (input_function): Remove streamed-in inline debug
+	markers	if debug_inline_points is false.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config.gcc (aarch64*-*-*): Add aarch64-sve-builtins-sve2.o to
+	extra_objs.
+	* config/aarch64/t-aarch64 (aarch64-sve-builtins.o): Depend on
+	aarch64-sve-builtins-base.def, aarch64-sve-builtins-sve2.def and
+	aarch64-sve-builtins-sve2.h.
+	(aarch64-sve-builtins-sve2.o): New rule.
+	* config/aarch64/aarch64.h (AARCH64_ISA_SVE2_AES): New macro.
+	(AARCH64_ISA_SVE2_BITPERM, AARCH64_ISA_SVE2_SHA3): Likewise.
+	(AARCH64_ISA_SVE2_SM4, TARGET_SVE2_AES, TARGET_SVE2_BITPERM): Likewise.
+	(TARGET_SVE2_SHA, TARGET_SVE2_SM4): Likewise.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Handle
+	TARGET_SVE2_AES, TARGET_SVE2_BITPERM, TARGET_SVE2_SHA3 and
+	TARGET_SVE2_SM4.
+	* config/aarch64/aarch64-sve.md: Update comments with SVE2
+	instructions that are handled here.
+	(@cond_asrd<mode>): Generalize to...
+	(@cond_<SVE_INT_SHIFT_IMM:sve_int_op><mode>): ...this.
+	(*cond_asrd<mode>_2): Generalize to...
+	(*cond_<SVE_INT_SHIFT_IMM:sve_int_op><mode>_2): ...this.
+	(*cond_asrd<mode>_z): Generalize to...
+	(*cond_<SVE_INT_SHIFT_IMM:sve_int_op><mode>_z): ...this.
+	* config/aarch64/aarch64.md (UNSPEC_LDNT1_GATHER): New unspec.
+	(UNSPEC_STNT1_SCATTER, UNSPEC_WHILEGE, UNSPEC_WHILEGT): Likewise.
+	(UNSPEC_WHILEHI, UNSPEC_WHILEHS): Likewise.
+	* config/aarch64/aarch64-sve2.md (@aarch64_gather_ldnt<mode>): New
+	pattern.
+	(@aarch64_gather_ldnt_<ANY_EXTEND:optab><SVE_FULL_SDI:mode><SVE_PARTIAL_I:mode>)
+	(@aarch64_scatter_stnt<mode>): Likewise.
+	(@aarch64_scatter_stnt_<SVE_FULL_SDI:mode><SVE_PARTIAL_I:mode>)
+	(@aarch64_mul_lane_<mode>): Likewise.
+	(@aarch64_sve_suqadd<mode>_const): Likewise.
+	(*<sur>h<addsub><mode>): Generalize to...
+	(@aarch64_pred_<SVE2_COND_INT_BINARY_REV:sve_int_op><mode>): ...this
+	new pattern.
+	(@cond_<SVE2_COND_INT_BINARY:sve_int_op><mode>): New expander.
+	(*cond_<SVE2_COND_INT_BINARY:sve_int_op><mode>_2): New pattern.
+	(*cond_<SVE2_COND_INT_BINARY:sve_int_op><mode>_3): Likewise.
+	(*cond_<SVE2_COND_INT_BINARY:sve_int_op><mode>_any): Likewise.
+	(*cond_<SVE2_COND_INT_BINARY_NOREV:sve_int_op><mode>_z): Likewise.
+	(@aarch64_sve_<SVE2_INT_BINARY:sve_int_op><mode>):: Likewise.
+	(@aarch64_sve_<SVE2_INT_BINARY:sve_int_op>_lane_<mode>): Likewise.
+	(@aarch64_pred_<SVE2_COND_INT_SHIFT:sve_int_op><mode>): Likewise.
+	(@cond_<SVE2_COND_INT_SHIFT:sve_int_op><mode>): New expander.
+	(*cond_<SVE2_COND_INT_SHIFT:sve_int_op><mode>_2): New pattern.
+	(*cond_<SVE2_COND_INT_SHIFT:sve_int_op><mode>_3): Likewise.
+	(*cond_<SVE2_COND_INT_SHIFT:sve_int_op><mode>_any): Likewise.
+	(@aarch64_sve_<SVE2_INT_TERNARY:sve_int_op><mode>): Likewise.
+	(@aarch64_sve_<SVE2_INT_TERNARY_LANE:sve_int_op>_lane_<mode>)
+	(@aarch64_sve_add_mul_lane_<mode>): Likewise.
+	(@aarch64_sve_sub_mul_lane_<mode>): Likewise.
+	(@aarch64_sve2_xar<mode>): Likewise.
+	(@aarch64_sve2_bcax<mode>): Likewise.
+	(*aarch64_sve2_eor3<mode>): Rename to...
+	(@aarch64_sve2_eor3<mode>): ...this.
+	(@aarch64_sve2_bsl<mode>): New expander.
+	(@aarch64_sve2_nbsl<mode>): Likewise.
+	(@aarch64_sve2_bsl1n<mode>): Likewise.
+	(@aarch64_sve2_bsl2n<mode>): Likewise.
+	(@aarch64_sve_add_<SHIFTRT:sve_int_op><mode>): Likewise.
+	(*aarch64_sve2_sra<mode>): Add MOVPRFX support.
+	(@aarch64_sve_add_<VRSHR_N:sve_int_op><mode>): New pattern.
+	(@aarch64_sve_<SVE2_INT_SHIFT_INSERT:sve_int_op><mode>): Likewise.
+	(@aarch64_sve2_<USMAX:su>aba<mode>): New expander.
+	(*aarch64_sve2_<USMAX:su>aba<mode>): New pattern.
+	(@aarch64_sve_<SVE2_INT_BINARY_WIDE:sve_int_op><mode>): Likewise.
+	(<su>mull<bt><Vwide>): Generalize to...
+	(@aarch64_sve_<SVE2_INT_BINARY_LONG:sve_int_op><mode>): ...this new
+	pattern.
+	(@aarch64_sve_<SVE2_INT_BINARY_LONG_lANE:sve_int_op>_lane_<mode>)
+	(@aarch64_sve_<SVE2_INT_SHIFT_IMM_LONG:sve_int_op><mode>)
+	(@aarch64_sve_add_<SVE2_INT_ADD_BINARY_LONG:sve_int_op><mode>)
+	(@aarch64_sve_add_<SVE2_INT_ADD_BINARY_LONG_LANE:sve_int_op>_lane_<mode>)
+	(@aarch64_sve_qadd_<SVE2_INT_QADD_BINARY_LONG:sve_int_op><mode>)
+	(@aarch64_sve_qadd_<SVE2_INT_QADD_BINARY_LONG_LANE:sve_int_op>_lane_<mode>)
+	(@aarch64_sve_sub_<SVE2_INT_SUB_BINARY_LONG:sve_int_op><mode>)
+	(@aarch64_sve_sub_<SVE2_INT_SUB_BINARY_LONG_LANE:sve_int_op>_lane_<mode>)
+	(@aarch64_sve_qsub_<SVE2_INT_QSUB_BINARY_LONG:sve_int_op><mode>)
+	(@aarch64_sve_qsub_<SVE2_INT_QSUB_BINARY_LONG_LANE:sve_int_op>_lane_<mode>)
+	(@aarch64_sve_<SVE2_FP_TERNARY_LONG:sve_fp_op><mode>): New patterns.
+	(@aarch64_<SVE2_FP_TERNARY_LONG_LANE:sve_fp_op>_lane_<mode>)
+	(@aarch64_sve_<SVE2_INT_UNARY_NARROWB:sve_int_op><mode>): Likewise.
+	(@aarch64_sve_<SVE2_INT_UNARY_NARROWT:sve_int_op><mode>): Likewise.
+	(@aarch64_sve_<SVE2_INT_BINARY_NARROWB:sve_int_op><mode>): Likewise.
+	(@aarch64_sve_<SVE2_INT_BINARY_NARROWT:sve_int_op><mode>): Likewise.
+	(<SHRNB:r>shrnb<mode>): Generalize to...
+	(@aarch64_sve_<SVE2_INT_SHIFT_IMM_NARROWB:sve_int_op><mode>): ...this
+	new pattern.
+	(<SHRNT:r>shrnt<mode>): Generalize to...
+	(@aarch64_sve_<SVE2_INT_SHIFT_IMM_NARROWT:sve_int_op><mode>): ...this
+	new pattern.
+	(@aarch64_pred_<SVE2_INT_BINARY_PAIR:sve_int_op><mode>): New pattern.
+	(@aarch64_pred_<SVE2_FP_BINARY_PAIR:sve_fp_op><mode>): Likewise.
+	(@cond_<SVE2_INT_BINARY_PAIR_LONG:sve_int_op><mode>): New expander.
+	(*cond_<SVE2_INT_BINARY_PAIR_LONG:sve_int_op><mode>_2): New pattern.
+	(*cond_<SVE2_INT_BINARY_PAIR_LONG:sve_int_op><mode>_z): Likewise.
+	(@aarch64_sve_<SVE2_INT_CADD:optab><mode>): Likewise.
+	(@aarch64_sve_<SVE2_INT_CMLA:optab><mode>): Likewise.
+	(@aarch64_<SVE2_INT_CMLA:optab>_lane_<mode>): Likewise.
+	(@aarch64_sve_<SVE2_INT_CDOT:optab><mode>): Likewise.
+	(@aarch64_<SVE2_INT_CDOT:optab>_lane_<mode>): Likewise.
+	(@aarch64_pred_<SVE2_COND_FP_UNARY_LONG:sve_fp_op><mode>): Likewise.
+	(@cond_<SVE2_COND_FP_UNARY_LONG:sve_fp_op><mode>): New expander.
+	(*cond_<SVE2_COND_FP_UNARY_LONG:sve_fp_op><mode>): New pattern.
+	(@aarch64_sve2_cvtnt<mode>): Likewise.
+	(@aarch64_pred_<SVE2_COND_FP_UNARY_NARROWB:sve_fp_op><mode>): Likewise.
+	(@cond_<SVE2_COND_FP_UNARY_NARROWB:sve_fp_op><mode>): New expander.
+	(*cond_<SVE2_COND_FP_UNARY_NARROWB:sve_fp_op><mode>_any): New pattern.
+	(@aarch64_sve2_cvtxnt<mode>): Likewise.
+	(@aarch64_pred_<SVE2_U32_UNARY:sve_int_op><mode>): Likewise.
+	(@cond_<SVE2_U32_UNARY:sve_int_op><mode>): New expander.
+	(*cond_<SVE2_U32_UNARY:sve_int_op><mode>): New pattern.
+	(@aarch64_pred_<SVE2_COND_INT_UNARY_FP:sve_fp_op><mode>): Likewise.
+	(@cond_<SVE2_COND_INT_UNARY_FP:sve_fp_op><mode>): New expander.
+	(*cond_<SVE2_COND_INT_UNARY_FP:sve_fp_op><mode>): New pattern.
+	(@aarch64_sve2_pmul<mode>): Likewise.
+	(@aarch64_sve_<SVE2_PMULL:optab><mode>): Likewise.
+	(@aarch64_sve_<SVE2_PMULL_PAIR:optab><mode>): Likewise.
+	(@aarch64_sve2_tbl2<mode>): Likewise.
+	(@aarch64_sve2_tbx<mode>): Likewise.
+	(@aarch64_sve_<SVE2_INT_BITPERM:sve_int_op><mode>): Likewise.
+	(@aarch64_sve2_histcnt<mode>): Likewise.
+	(@aarch64_sve2_histseg<mode>): Likewise.
+	(@aarch64_pred_<SVE2_MATCH:sve_int_op><mode>): Likewise.
+	(*aarch64_pred_<SVE2_MATCH:sve_int_op><mode>_cc): Likewise.
+	(*aarch64_pred_<SVE2_MATCH:sve_int_op><mode>_ptest): Likewise.
+	(aarch64_sve2_aes<CRYPTO_AES:aes_op>): Likewise.
+	(aarch64_sve2_aes<CRYPTO_AESMC:aesmc_op>): Likewise.
+	(*aarch64_sve2_aese_fused, *aarch64_sve2_aesd_fused): Likewise.
+	(aarch64_sve2_rax1, aarch64_sve2_sm4e, aarch64_sve2_sm4ekey): Likewise.
+	(<su>mulh<r>s<mode>3): Update after above pattern name changes.
+	* config/aarch64/iterators.md (VNx16QI_ONLY, VNx4SF_ONLY)
+	(SVE_STRUCT2, SVE_FULL_BHI, SVE_FULL_HSI, SVE_FULL_HDI)
+	(SVE2_PMULL_PAIR_I): New mode iterators.
+	(UNSPEC_ADCLB, UNSPEC_ADCLT, UNSPEC_ADDHNB, UNSPEC_ADDHNT, UNSPEC_BDEP)
+	(UNSPEC_BEXT, UNSPEC_BGRP, UNSPEC_CADD90, UNSPEC_CADD270, UNSPEC_CDOT)
+	(UNSPEC_CDOT90, UNSPEC_CDOT180, UNSPEC_CDOT270, UNSPEC_CMLA)
+	(UNSPEC_CMLA90, UNSPEC_CMLA180, UNSPEC_CMLA270, UNSPEC_COND_FCVTLT)
+	(UNSPEC_COND_FCVTNT, UNSPEC_COND_FCVTX, UNSPEC_COND_FCVTXNT)
+	(UNSPEC_COND_FLOGB, UNSPEC_EORBT, UNSPEC_EORTB, UNSPEC_FADDP)
+	(UNSPEC_FMAXP, UNSPEC_FMAXNMP, UNSPEC_FMLALB, UNSPEC_FMLALT)
+	(UNSPEC_FMLSLB, UNSPEC_FMLSLT, UNSPEC_FMINP, UNSPEC_FMINNMP)
+	(UNSPEC_HISTCNT, UNSPEC_HISTSEG, UNSPEC_MATCH, UNSPEC_NMATCH)
+	(UNSPEC_PMULLB, UNSPEC_PMULLB_PAIR, UNSPEC_PMULLT, UNSPEC_PMULLT_PAIR)
+	(UNSPEC_RADDHNB, UNSPEC_RADDHNT, UNSPEC_RSUBHNB, UNSPEC_RSUBHNT)
+	(UNSPEC_SLI, UNSPEC_SRI, UNSPEC_SABDLB, UNSPEC_SABDLT, UNSPEC_SADDLB)
+	(UNSPEC_SADDLBT, UNSPEC_SADDLT, UNSPEC_SADDWB, UNSPEC_SADDWT)
+	(UNSPEC_SBCLB, UNSPEC_SBCLT, UNSPEC_SMAXP, UNSPEC_SMINP)
+	(UNSPEC_SQCADD90, UNSPEC_SQCADD270, UNSPEC_SQDMULLB, UNSPEC_SQDMULLBT)
+	(UNSPEC_SQDMULLT, UNSPEC_SQRDCMLAH, UNSPEC_SQRDCMLAH90)
+	(UNSPEC_SQRDCMLAH180, UNSPEC_SQRDCMLAH270, UNSPEC_SQRSHRNB)
+	(UNSPEC_SQRSHRNT, UNSPEC_SQRSHRUNB, UNSPEC_SQRSHRUNT, UNSPEC_SQSHRNB)
+	(UNSPEC_SQSHRNT, UNSPEC_SQSHRUNB, UNSPEC_SQSHRUNT, UNSPEC_SQXTNB)
+	(UNSPEC_SQXTNT, UNSPEC_SQXTUNB, UNSPEC_SQXTUNT, UNSPEC_SSHLLB)
+	(UNSPEC_SSHLLT, UNSPEC_SSUBLB, UNSPEC_SSUBLBT, UNSPEC_SSUBLT)
+	(UNSPEC_SSUBLTB, UNSPEC_SSUBWB, UNSPEC_SSUBWT, UNSPEC_SUBHNB)
+	(UNSPEC_SUBHNT, UNSPEC_TBL2, UNSPEC_UABDLB, UNSPEC_UABDLT)
+	(UNSPEC_UADDLB, UNSPEC_UADDLT, UNSPEC_UADDWB, UNSPEC_UADDWT)
+	(UNSPEC_UMAXP, UNSPEC_UMINP, UNSPEC_UQRSHRNB, UNSPEC_UQRSHRNT)
+	(UNSPEC_UQSHRNB, UNSPEC_UQSHRNT, UNSPEC_UQXTNB, UNSPEC_UQXTNT)
+	(UNSPEC_USHLLB, UNSPEC_USHLLT, UNSPEC_USUBLB, UNSPEC_USUBLT)
+	(UNSPEC_USUBWB, UNSPEC_USUBWT): New unspecs.
+	(UNSPEC_SMULLB, UNSPEC_SMULLT, UNSPEC_UMULLB, UNSPEC_UMULLT)
+	(UNSPEC_SMULHS, UNSPEC_SMULHRS, UNSPEC_UMULHS, UNSPEC_UMULHRS)
+	(UNSPEC_RSHRNB, UNSPEC_RSHRNT, UNSPEC_SHRNB, UNSPEC_SHRNT): Move
+	further down file.
+	(VNARROW, Ventype): New mode attributes.
+	(Vewtype): Handle VNx2DI.  Fix typo in comment.
+	(VDOUBLE): New mode attribute.
+	(sve_lane_con): Handle VNx8HI.
+	(SVE_INT_UNARY): Include ss_abs and ss_neg for TARGET_SVE2.
+	(SVE_INT_BINARY): Likewise ss_plus, us_plus, ss_minus and us_minus.
+	(sve_int_op, sve_int_op_rev): Handle the above codes.
+	(sve_pred_int_rhs2_operand): Likewise.
+	(MULLBT, SHRNB, SHRNT): Delete.
+	(SVE_INT_SHIFT_IMM): New int iterator.
+	(SVE_WHILE): Add UNSPEC_WHILEGE, UNSPEC_WHILEGT, UNSPEC_WHILEHI
+	and UNSPEC_WHILEHS for TARGET_SVE2.
+	(SVE2_U32_UNARY, SVE2_INT_UNARY_NARROWB, SVE2_INT_UNARY_NARROWT)
+	(SVE2_INT_BINARY, SVE2_INT_BINARY_LANE, SVE2_INT_BINARY_LONG)
+	(SVE2_INT_BINARY_LONG_LANE, SVE2_INT_BINARY_NARROWB)
+	(SVE2_INT_BINARY_NARROWT, SVE2_INT_BINARY_PAIR, SVE2_FP_BINARY_PAIR)
+	(SVE2_INT_BINARY_PAIR_LONG, SVE2_INT_BINARY_WIDE): New int iterators.
+	(SVE2_INT_SHIFT_IMM_LONG, SVE2_INT_SHIFT_IMM_NARROWB): Likewise.
+	(SVE2_INT_SHIFT_IMM_NARROWT, SVE2_INT_SHIFT_INSERT, SVE2_INT_CADD)
+	(SVE2_INT_BITPERM, SVE2_INT_TERNARY, SVE2_INT_TERNARY_LANE): Likewise.
+	(SVE2_FP_TERNARY_LONG, SVE2_FP_TERNARY_LONG_LANE, SVE2_INT_CMLA)
+	(SVE2_INT_CDOT, SVE2_INT_ADD_BINARY_LONG, SVE2_INT_QADD_BINARY_LONG)
+	(SVE2_INT_SUB_BINARY_LONG, SVE2_INT_QSUB_BINARY_LONG): Likewise.
+	(SVE2_INT_ADD_BINARY_LONG_LANE, SVE2_INT_QADD_BINARY_LONG_LANE)
+	(SVE2_INT_SUB_BINARY_LONG_LANE, SVE2_INT_QSUB_BINARY_LONG_LANE)
+	(SVE2_COND_INT_UNARY_FP, SVE2_COND_FP_UNARY_LONG): Likewise.
+	(SVE2_COND_FP_UNARY_NARROWB, SVE2_COND_INT_BINARY): Likewise.
+	(SVE2_COND_INT_BINARY_NOREV, SVE2_COND_INT_BINARY_REV): Likewise.
+	(SVE2_COND_INT_SHIFT, SVE2_MATCH, SVE2_PMULL): Likewise.
+	(optab): Handle the new unspecs.
+	(su, r): Remove entries for UNSPEC_SHRNB, UNSPEC_SHRNT, UNSPEC_RSHRNB
+	and UNSPEC_RSHRNT.
+	(lr): Handle the new unspecs.
+	(bt): Delete.
+	(cmp_op, while_optab_cmp, sve_int_op): Handle the new unspecs.
+	(sve_int_op_rev, sve_int_add_op, sve_int_qadd_op, sve_int_sub_op)
+	(sve_int_qsub_op): New int attributes.
+	(sve_fp_op, rot): Handle the new unspecs.
+	* config/aarch64/aarch64-sve-builtins.h
+	(function_resolver::require_matching_pointer_type): Declare.
+	(function_resolver::resolve_unary): Add an optional boolean argument.
+	(function_resolver::finish_opt_n_resolution): Add an optional
+	type_suffix_index argument.
+	(gimple_folder::redirect_call): Declare.
+	(gimple_expander::prepare_gather_address_operands): Add an optional
+	bool parameter.
+	* config/aarch64/aarch64-sve-builtins.cc: Include
+	aarch64-sve-builtins-sve2.h.
+	(TYPES_b_unsigned, TYPES_b_integer, TYPES_bh_integer): New macros.
+	(TYPES_bs_unsigned, TYPES_hs_signed, TYPES_hs_integer): Likewise.
+	(TYPES_hd_unsigned, TYPES_hsd_signed): Likewise.
+	(TYPES_hsd_integer): Use TYPES_hsd_signed.
+	(TYPES_s_float_hsd_integer, TYPES_s_float_sd_integer): New macros.
+	(TYPES_s_unsigned): Likewise.
+	(TYPES_s_integer): Use TYPES_s_unsigned.
+	(TYPES_sd_signed, TYPES_sd_unsigned): New macros.
+	(TYPES_sd_integer): Use them.
+	(TYPES_d_unsigned): New macro.
+	(TYPES_d_integer): Use it.
+	(TYPES_d_data, TYPES_cvt_long, TYPES_cvt_narrow_s): New macros.
+	(TYPES_cvt_narrow): Likewise.
+	(DEF_SVE_TYPES_ARRAY): Include the new types macros above.
+	(preds_mx): New variable.
+	(function_builder::add_overloaded_function): Allow the new feature
+	set to be more restrictive than the original one.
+	(function_resolver::infer_pointer_type): Remove qualifiers from
+	the pointer type before printing it.
+	(function_resolver::require_matching_pointer_type): New function.
+	(function_resolver::resolve_sv_displacement): Handle functions
+	that don't support 32-bit vector indices or svint32_t vector offsets.
+	(function_resolver::finish_opt_n_resolution): Take the inferred type
+	as a separate argument.
+	(function_resolver::resolve_unary): Optionally treat all forms in
+	the same way as normal merging functions.
+	(gimple_folder::redirect_call): New function.
+	(function_expander::prepare_gather_address_operands): Add an argument
+	that says whether scaled forms are available.  If they aren't,
+	handle scaling of vector indices and don't add the extension and
+	scaling operands.
+	(function_expander::map_to_unspecs): If aarch64_sve isn't available,
+	fall back to using cond_* instead.
+	* config/aarch64/aarch64-sve-builtins-functions.h (rtx_code_function):
+	Split out the member variables into...
+	(rtx_code_function_base): ...this new base class.
+	(rtx_code_function_rotated): Inherit rtx_code_function_base.
+	(unspec_based_function): Split out the member variables into...
+	(unspec_based_function_base): ...this new base class.
+	(unspec_based_function_rotated): Inherit unspec_based_function_base.
+	(unspec_based_function_exact_insn): New class.
+	(unspec_based_add_function, unspec_based_add_lane_function)
+	(unspec_based_lane_function, unspec_based_pred_function)
+	(unspec_based_qadd_function, unspec_based_qadd_lane_function)
+	(unspec_based_qsub_function, unspec_based_qsub_lane_function)
+	(unspec_based_sub_function, unspec_based_sub_lane_function): New
+	typedefs.
+	(unspec_based_fused_function): New class.
+	(unspec_based_mla_function, unspec_based_mls_function): New typedefs.
+	(unspec_based_fused_lane_function): New class.
+	(unspec_based_mla_lane_function, unspec_based_mls_lane_function): New
+	typedefs.
+	(CODE_FOR_MODE1): New macro.
+	(fixed_insn_function): New class.
+	(while_comparison): Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.h (binary_long_lane)
+	(binary_long_opt_n, binary_narrowb_opt_n, binary_narrowt_opt_n)
+	(binary_to_uint, binary_wide, binary_wide_opt_n, compare, compare_ptr)
+	(load_ext_gather_index_restricted, load_ext_gather_offset_restricted)
+	(load_gather_sv_restricted, shift_left_imm_long): Declare.
+	(shift_left_imm_to_uint, shift_right_imm_narrowb): Likewise.
+	(shift_right_imm_narrowt, shift_right_imm_narrowb_to_uint): Likewise.
+	(shift_right_imm_narrowt_to_uint, store_scatter_index_restricted)
+	(store_scatter_offset_restricted, tbl_tuple, ternary_long_lane)
+	(ternary_long_opt_n, ternary_qq_lane_rotate, ternary_qq_rotate)
+	(ternary_shift_left_imm, ternary_shift_right_imm, ternary_uint)
+	(unary_convert_narrowt, unary_long, unary_narrowb, unary_narrowt)
+	(unary_narrowb_to_uint, unary_narrowt_to_uint, unary_to_int): Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (apply_predication):
+	Also add an initial argument for unary_convert_narrowt, regardless
+	of the predication type.
+	(build_32_64): Allow loads and stores to specify MODE_none.
+	(build_sv_index64, build_sv_uint_offset): New functions.
+	(long_type_suffix): New function.
+	(binary_imm_narrowb_base, binary_imm_narrowt_base): New classes.
+	(binary_imm_long_base, load_gather_sv_base): Likewise.
+	(shift_right_imm_narrow_wrapper, ternary_shift_imm_base): Likewise.
+	(ternary_resize2_opt_n_base, ternary_resize2_lane_base): Likewise.
+	(unary_narrowb_base, unary_narrowt_base): Likewise.
+	(binary_long_lane_def, binary_long_lane): New shape.
+	(binary_long_opt_n_def, binary_long_opt_n): Likewise.
+	(binary_narrowb_opt_n_def, binary_narrowb_opt_n): Likewise.
+	(binary_narrowt_opt_n_def, binary_narrowt_opt_n): Likewise.
+	(binary_to_uint_def, binary_to_uint): Likewise.
+	(binary_wide_def, binary_wide): Likewise.
+	(binary_wide_opt_n_def, binary_wide_opt_n): Likewise.
+	(compare_def, compare): Likewise.
+	(compare_ptr_def, compare_ptr): Likewise.
+	(load_ext_gather_index_restricted_def,
+	load_ext_gather_index_restricted): Likewise.
+	(load_ext_gather_offset_restricted_def,
+	load_ext_gather_offset_restricted): Likewise.
+	(load_gather_sv_def): Inherit from load_gather_sv_base.
+	(load_gather_sv_restricted_def, load_gather_sv_restricted): New shape.
+	(shift_left_imm_def, shift_left_imm): Likewise.
+	(shift_left_imm_long_def, shift_left_imm_long): Likewise.
+	(shift_left_imm_to_uint_def, shift_left_imm_to_uint): Likewise.
+	(store_scatter_index_restricted_def,
+	store_scatter_index_restricted): Likewise.
+	(store_scatter_offset_restricted_def,
+	store_scatter_offset_restricted): Likewise.
+	(tbl_tuple_def, tbl_tuple): Likewise.
+	(ternary_long_lane_def, ternary_long_lane): Likewise.
+	(ternary_long_opt_n_def, ternary_long_opt_n): Likewise.
+	(ternary_qq_lane_def): Inherit from ternary_resize2_lane_base.
+	(ternary_qq_lane_rotate_def, ternary_qq_lane_rotate): New shape
+	(ternary_qq_opt_n_def): Inherit from ternary_resize2_opt_n_base.
+	(ternary_qq_rotate_def, ternary_qq_rotate): New shape.
+	(ternary_shift_left_imm_def, ternary_shift_left_imm): Likewise.
+	(ternary_shift_right_imm_def, ternary_shift_right_imm): Likewise.
+	(ternary_uint_def, ternary_uint): Likewise.
+	(unary_convert): Fix typo in comment.
+	(unary_convert_narrowt_def, unary_convert_narrowt): New shape.
+	(unary_long_def, unary_long): Likewise.
+	(unary_narrowb_def, unary_narrowb): Likewise.
+	(unary_narrowt_def, unary_narrowt): Likewise.
+	(unary_narrowb_to_uint_def, unary_narrowb_to_uint): Likewise.
+	(unary_narrowt_to_uint_def, unary_narrowt_to_uint): Likewise.
+	(unary_to_int_def, unary_to_int): Likewise.
+	* config/aarch64/aarch64-sve-builtins-base.cc (unspec_cmla)
+	(unspec_fcmla, unspec_cond_fcmla, expand_mla_mls_lane): New functions.
+	(svasrd_impl): Delete.
+	(svcadd_impl::expand): Handle integer operations too.
+	(svcmla_impl::expand, svcmla_lane::expand): Likewise, using the
+	new functions to derive the unspec numbers.
+	(svmla_svmls_lane_impl): Replace with...
+	(svmla_lane_impl, svmls_lane_impl): ...these new classes.  Handle
+	integer operations too.
+	(svwhile_impl): Rename to...
+	(svwhilelx_impl): ...this and inherit from while_comparison.
+	(svasrd): Use unspec_based_function.
+	(svmla_lane): Use svmla_lane_impl.
+	(svmls_lane): Use svmls_lane_impl.
+	(svrecpe, svrsqrte): Handle unsigned integer operations too.
+	(svwhilele, svwhilelt): Use svwhilelx_impl.
+	* config/aarch64/aarch64-sve-builtins-sve2.h: New file.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc: Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.def: Likewise.
+	* config/aarch64/aarch64-sve-builtins.def: Include
+	aarch64-sve-builtins-sve2.def.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_sve_arith_immediate_p)
+	(aarch64_sve_sqadd_sqsub_immediate_p): Add a machine_mode argument.
+	* config/aarch64/aarch64.c (aarch64_sve_arith_immediate_p)
+	(aarch64_sve_sqadd_sqsub_immediate_p): Likewise.  Handle scalar
+	immediates as well as vector ones.
+	* config/aarch64/predicates.md (aarch64_sve_arith_immediate)
+	(aarch64_sve_sub_arith_immediate, aarch64_sve_qadd_immediate)
+	(aarch64_sve_qsub_immediate): Update calls accordingly.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve2.md: Add banner comments.
+	(<su>mulh<r>s<mode>3): Move further up file.
+	(<su>mull<bt><Vwide>, <r>shrnb<mode>, <r>shrnt<mode>)
+	(*aarch64_sve2_sra<mode>): Move further down file.
+	* config/aarch64/t-aarch64 (s-check-sve-md): Check aarch64-sve2.md too.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (SVE_WHILE): Add UNSPEC_WHILERW
+	and UNSPEC_WHILEWR.
+	(while_optab_cmp): Handle them.
+	* config/aarch64/aarch64-sve.md
+	(*while_<while_optab_cmp><GPI:mode><PRED_ALL:mode>_ptest): Make public
+	and add a "@" marker.
+	* config/aarch64/aarch64-sve2.md (check_<raw_war>_ptrs<mode>): Use it
+	instead of gen_aarch64_sve2_while_ptest.
+	(@aarch64_sve2_while<cmp_op><GPI:mode><PRED_ALL:mode>_ptest): Delete.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.md (UNSPEC_WHILE_LE): Rename to...
+	(UNSPEC_WHILELE): ...this.
+	(UNSPEC_WHILE_LO): Rename to...
+	(UNSPEC_WHILELO): ...this.
+	(UNSPEC_WHILE_LS): Rename to...
+	(UNSPEC_WHILELS): ...this.
+	(UNSPEC_WHILE_LT): Rename to...
+	(UNSPEC_WHILELT): ...this.
+	* config/aarch64/iterators.md (SVE_WHILE): Update accordingly.
+	(cmp_op, while_optab_cmp): Likewise.
+	* config/aarch64/aarch64.c (aarch64_sve_move_pred_via_while): Likewise.
+	* config/aarch64/aarch64-sve-builtins-base.cc (svwhilele): Likewise.
+	(svwhilelt): Likewise.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-shapes.h (unary_count): Delete.
+	(unary_to_uint): Define.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (unary_count_def)
+	(unary_count): Rename to...
+	(unary_to_uint_def, unary_to_uint): ...this.
+	* config/aarch64/aarch64-sve-builtins-base.def: Update accordingly.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-functions.h
+	(code_for_mode_function): New class.
+	(CODE_FOR_MODE0, QUIET_CODE_FOR_MODE0): New macros.
+	* config/aarch64/aarch64-sve-builtins-base.cc (svcompact_impl)
+	(svext_impl, svmul_lane_impl, svsplice_impl, svtmad_impl): Delete.
+	(svcompact, svext, svsplice): Use QUIET_CODE_FOR_MODE0.
+	(svmul_lane, svtmad): Use CODE_FOR_MODE0.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (addsub): New code attribute.
+	* config/aarch64/aarch64-simd.md (aarch64_<su_optab><optab><mode>):
+	Re-express as...
+	(aarch64_<su_optab>q<addsub><mode>): ...this, making the same change
+	in the asm string and attributes.  Fix indentation.
+	* config/aarch64/aarch64-sve.md (@aarch64_<su_optab><optab><mode>):
+	Re-express as...
+	(@aarch64_sve_<optab><mode>): ...this.
+	* config/aarch64/aarch64-sve-builtins.h
+	(function_expander::expand_signed_unpred_op): Delete.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_expander::expand_signed_unpred_op): Likewise.
+	(function_expander::map_to_rtx_codes): If the optab isn't defined,
+	try using code_for_aarch64_sve instead.
+	* config/aarch64/aarch64-sve-builtins-base.cc (svqadd_impl): Delete.
+	(svqsub_impl): Likewise.
+	(svqadd, svqsub): Use rtx_code_function instead.
+
+2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (SRHSUB, URHSUB): Delete.
+	(HADDSUB, sur, addsub): Remove them.
+
 2020-01-09  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-nrv.c (pass_return_slot::execute): Handle all internal

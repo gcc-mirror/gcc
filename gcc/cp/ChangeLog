@@ -1,3 +1,22 @@
+2020-01-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93238 - short right-shift with enum.
+	* typeck.c (cp_build_binary_op): Use folded op1 for short_shift.
+
+2020-01-10  Jason Merrill  <jason@redhat.com>
+
+	* typeck.c (cp_build_binary_op): Restore short_shift code.
+
+	PR c++/93143 - incorrect tree sharing with constexpr.
+	* constexpr.c (cxx_eval_outermost_constant_expr): Don't assume
+	CONSTRUCTORs are already unshared.
+
+	PR c++/93173 - incorrect tree sharing.
+	PR c++/93033
+	* cp-gimplify.c (cp_gimplify_init_expr, cp_gimplify_expr): Use
+	copy_if_shared after cp_genericize_tree.
+	* typeck2.c (split_nonconstant_init): Don't unshare here.
+
 2020-01-08  Jason Merrill  <jason@redhat.com>
 
 	* cp-gimplify.c (cp_gimplify_expr) [TARGET_EXPR]: Check

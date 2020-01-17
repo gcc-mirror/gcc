@@ -248,6 +248,10 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_F16		   (aarch64_isa_flags & AARCH64_FL_F16)
 #define AARCH64_ISA_SVE            (aarch64_isa_flags & AARCH64_FL_SVE)
 #define AARCH64_ISA_SVE2	   (aarch64_isa_flags & AARCH64_FL_SVE2)
+#define AARCH64_ISA_SVE2_AES	   (aarch64_isa_flags & AARCH64_FL_SVE2_AES)
+#define AARCH64_ISA_SVE2_BITPERM  (aarch64_isa_flags & AARCH64_FL_SVE2_BITPERM)
+#define AARCH64_ISA_SVE2_SHA3	   (aarch64_isa_flags & AARCH64_FL_SVE2_SHA3)
+#define AARCH64_ISA_SVE2_SM4	   (aarch64_isa_flags & AARCH64_FL_SVE2_SM4)
 #define AARCH64_ISA_V8_3	   (aarch64_isa_flags & AARCH64_FL_V8_3)
 #define AARCH64_ISA_DOTPROD	   (aarch64_isa_flags & AARCH64_FL_DOTPROD)
 #define AARCH64_ISA_AES	           (aarch64_isa_flags & AARCH64_FL_AES)
@@ -301,6 +305,18 @@ extern unsigned aarch64_architecture_version;
 
 /* SVE2 instructions, enabled through +sve2.  */
 #define TARGET_SVE2 (AARCH64_ISA_SVE2)
+
+/* SVE2 AES instructions, enabled through +sve2-aes.  */
+#define TARGET_SVE2_AES (AARCH64_ISA_SVE2_AES)
+
+/* SVE2 BITPERM instructions, enabled through +sve2-bitperm.  */
+#define TARGET_SVE2_BITPERM (AARCH64_ISA_SVE2_BITPERM)
+
+/* SVE2 SHA3 instructions, enabled through +sve2-sha3.  */
+#define TARGET_SVE2_SHA3 (AARCH64_ISA_SVE2_SHA3)
+
+/* SVE2 SM4 instructions, enabled through +sve2-sm4.  */
+#define TARGET_SVE2_SM4 (AARCH64_ISA_SVE2_SM4)
 
 /* ARMv8.3-A features.  */
 #define TARGET_ARMV8_3	(AARCH64_ISA_V8_3)
@@ -1120,13 +1136,13 @@ extern enum aarch64_code_model aarch64_cmodel;
 #define AARCH64_VALID_SIMD_DREG_MODE(MODE) \
   ((MODE) == V2SImode || (MODE) == V4HImode || (MODE) == V8QImode \
    || (MODE) == V2SFmode || (MODE) == V4HFmode || (MODE) == DImode \
-   || (MODE) == DFmode)
+   || (MODE) == DFmode || (MODE) == V4BFmode)
 
 /* Modes valid for AdvSIMD Q registers.  */
 #define AARCH64_VALID_SIMD_QREG_MODE(MODE) \
   ((MODE) == V4SImode || (MODE) == V8HImode || (MODE) == V16QImode \
    || (MODE) == V4SFmode || (MODE) == V8HFmode || (MODE) == V2DImode \
-   || (MODE) == V2DFmode)
+   || (MODE) == V2DFmode || (MODE) == V8BFmode)
 
 #define ENDIAN_LANE_N(NUNITS, N) \
   (BYTES_BIG_ENDIAN ? NUNITS - 1 - N : N)
@@ -1173,6 +1189,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    need it in many places in the backend.  Defined in aarch64-builtins.c.  */
 extern tree aarch64_fp16_type_node;
 extern tree aarch64_fp16_ptr_type_node;
+
+/* This type is the user-visible __bf16, and a pointer to that type.  Defined
+   in aarch64-builtins.c.  */
+extern tree aarch64_bf16_type_node;
+extern tree aarch64_bf16_ptr_type_node;
 
 /* The generic unwind code in libgcc does not initialize the frame pointer.
    So in order to unwind a function using a frame pointer, the very first

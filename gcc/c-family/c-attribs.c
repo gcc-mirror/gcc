@@ -3970,14 +3970,15 @@ append_access_attrs (tree t, tree attrs, const char *attrstr,
 	      return NULL_TREE;
 	    }
 
-	  if (n2 && strncmp (attrstr + n1 + 1, pos + n1, n2))
+	  if (n2 && strncmp (attrspec + n1 + 1, pos + n1, n2))
 	    {
 	      /* Mismatch in the value of the size argument.  */
 	      auto_diagnostic_group d;
 	      if (warning (OPT_Wattributes,
-			   "attribute %qs mismatch positional argument "
+			   "attribute %qs mismatched positional argument "
 			   "values %i and %i",
-			   attrstr, atoi (attrstr + n1 + 1), atoi (pos + n1))
+			   attrstr, atoi (attrspec + n1 + 1) + 1,
+			   atoi (pos + n1) + 1)
 		  && DECL_P (t))
 		inform (DECL_SOURCE_LOCATION (t),
 			"previous declaration here");

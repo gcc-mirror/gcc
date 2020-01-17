@@ -3720,13 +3720,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @returns The input stream with @p __x extracted or in an error state.
    */
   template<typename _CharT, typename _Traits>
-    std::basic_istream<_CharT, _Traits>&
+    inline std::basic_istream<_CharT, _Traits>&
     operator>>(std::basic_istream<_CharT, _Traits>& __is,
 	       std::bernoulli_distribution& __x)
     {
       double __p;
-      __is >> __p;
-      __x.param(bernoulli_distribution::param_type(__p));
+      if (__is >> __p)
+	__x.param(bernoulli_distribution::param_type(__p));
       return __is;
     }
 

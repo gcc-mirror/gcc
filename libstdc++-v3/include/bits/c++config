@@ -78,6 +78,7 @@
 //   _GLIBCXX_USE_DEPRECATED
 //   _GLIBCXX_DEPRECATED
 //   _GLIBCXX17_DEPRECATED
+//   _GLIBCXX20_DEPRECATED( string-literal )
 #ifndef _GLIBCXX_USE_DEPRECATED
 # define _GLIBCXX_USE_DEPRECATED 1
 #endif
@@ -92,6 +93,12 @@
 # define _GLIBCXX17_DEPRECATED [[__deprecated__]]
 #else
 # define _GLIBCXX17_DEPRECATED
+#endif
+
+#if defined(__DEPRECATED) && (__cplusplus > 201703L)
+# define _GLIBCXX20_DEPRECATED(MSG) [[deprecated(MSG)]]
+#else
+# define _GLIBCXX20_DEPRECATED(MSG)
 #endif
 
 // Macros for ABI tag attributes.

@@ -375,7 +375,7 @@ static profile_count max_count;
 
 /* Original overall size of the program.  */
 
-static long overall_size, max_new_size;
+static long overall_size, orig_overall_size;
 
 /* Node name to unique clone suffix number map.  */
 static hash_map<const char *, unsigned> *clone_num_suffixes;
@@ -2479,13 +2479,13 @@ set_check_aggs_by_ref (class ipcp_param_lattices *dest_plats,
    unless there are too many already.  If there are two many, return false.  If
    there are overlaps turn whole DEST_PLATS to bottom and return false.  If any
    skipped lattices were newly marked as containing variable, set *CHANGE to
-   true.  */
+   true.  MAX_AGG_ITEMS is the maximum number of lattices.  */
 
 static bool
 merge_agg_lats_step (class ipcp_param_lattices *dest_plats,
 		     HOST_WIDE_INT offset, HOST_WIDE_INT val_size,
 		     struct ipcp_agg_lattice ***aglat,
-		     bool pre_existing, bool *change)
+		     bool pre_existing, bool *change, int max_agg_items)
 {
   gcc_checking_assert (offset >= 0);
 
@@ -2520,7 +2520,7 @@ merge_agg_lats_step (class ipcp_param_lattices *dest_plats,
 	  set_agg_lats_to_bottom (dest_plats);
 	  return false;
 	}
-      if (dest_plats->aggs_count == param_ipa_max_agg_items)
+      if (dest_plats->aggs_count == max_agg_items)
 	return false;
       dest_plats->aggs_count++;
       new_al = ipcp_agg_lattice_pool.allocate ();
@@ -2574,6 +2574,8 @@ merge_aggregate_lattices (struct cgraph_edge *cs,
     ret |= set_agg_lats_contain_variable (dest_plats);
   dst_aglat = &dest_plats->aggs;
 
+  int max_agg_items = opt_for_fn (cs->callee->function_symbol ()->decl,
+				  param_ipa_max_agg_items);
   for (struct ipcp_agg_lattice *src_aglat = src_plats->aggs;
        src_aglat;
        src_aglat = src_aglat->next)
@@ -2583,7 +2585,7 @@ merge_aggregate_lattices (struct cgraph_edge *cs,
       if (new_offset < 0)
 	continue;
       if (merge_agg_lats_step (dest_plats, new_offset, src_aglat->size,
-			       &dst_aglat, pre_existing, &ret))
+			       &dst_aglat, pre_existing, &ret, max_agg_items))
 	{
 	  struct ipcp_agg_lattice *new_al = *dst_aglat;
 
@@ -2763,6 +2765,8 @@ propagate_aggs_across_jump_function (struct cgraph_edge *cs,
       if (set_check_aggs_by_ref (dest_plats, jfunc->agg.by_ref))
 	return true;
 
+      int max_agg_items = opt_for_fn (cs->callee->function_symbol ()->decl,
+				      param_ipa_max_agg_items);
       FOR_EACH_VEC_ELT (*jfunc->agg.items, i, item)
 	{
 	  HOST_WIDE_INT val_size;
@@ -2772,7 +2776,7 @@ propagate_aggs_across_jump_function (struct cgraph_edge *cs,
 	  val_size = tree_to_shwi (TYPE_SIZE (item->type));
 
 	  if (merge_agg_lats_step (dest_plats, item->offset, val_size,
-				   &aglat, pre_existing, &ret))
+				   &aglat, pre_existing, &ret, max_agg_items))
 	    {
 	      ret |= propagate_aggregate_lattice (cs, item, *aglat);
 	      aglat = &(*aglat)->next;
@@ -3416,6 +3420,23 @@ perform_estimation_of_a_value (cgraph_node *node, vec<tree> known_csts,
   val->local_size_cost = size;
 }
 
+/* Get the overall limit oof growth based on parameters extracted from growth.
+   it does not really make sense to mix functions with different overall growth
+   limits but it is possible and if it happens, we do not want to select one
+   limit at random.  */
+
+static long
+get_max_overall_size (cgraph_node *node)
+{
+  long max_new_size = orig_overall_size;
+  long large_unit = opt_for_fn (node->decl, param_large_unit_insns);
+  if (max_new_size < large_unit)
+    max_new_size = large_unit;
+  int unit_growth = opt_for_fn (node->decl, param_ipa_cp_unit_growth);
+  max_new_size += max_new_size * unit_growth / 100 + 1;
+  return max_new_size;
+}
+
 /* Iterate over known values of parameters of NODE and estimate the local
    effects in terms of time and size they have.  */
 
@@ -3478,7 +3499,7 @@ estimate_local_effects (struct cgraph_node *node)
 					   stats.freq_sum, stats.count_sum,
 					   size))
 	{
-	  if (size + overall_size <= max_new_size)
+	  if (size + overall_size <= get_max_overall_size (node))
 	    {
 	      info->do_clone_for_all_contexts = true;
 	      overall_size += size;
@@ -3488,8 +3509,8 @@ estimate_local_effects (struct cgraph_node *node)
 			 "known contexts, growth deemed beneficial.\n");
 	    }
 	  else if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "   Not cloning for all contexts because "
-		     "max_new_size would be reached with %li.\n",
+	    fprintf (dump_file, "  Not cloning for all contexts because "
+		     "maximum unit size would be reached with %li.\n",
 		     size + overall_size);
 	}
       else if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3881,14 +3902,10 @@ ipcp_propagate_stage (class ipa_topo_info *topo)
     max_count = max_count.max (node->count.ipa ());
   }
 
-  max_new_size = overall_size;
-  if (max_new_size < param_large_unit_insns)
-    max_new_size = param_large_unit_insns;
-  max_new_size += max_new_size * param_ipa_cp_unit_growth / 100 + 1;
+  orig_overall_size = overall_size;
 
   if (dump_file)
-    fprintf (dump_file, "\noverall_size: %li, max_new_size: %li\n",
-	     overall_size, max_new_size);
+    fprintf (dump_file, "\noverall_size: %li\n", overall_size);
 
   propagate_constants_topo (topo);
   if (flag_checking)
@@ -5401,11 +5418,11 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
       perhaps_add_new_callers (node, val);
       return false;
     }
-  else if (val->local_size_cost + overall_size > max_new_size)
+  else if (val->local_size_cost + overall_size > get_max_overall_size (node))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "   Ignoring candidate value because "
-		 "max_new_size would be reached with %li.\n",
+		 "maximum unit size would be reached with %li.\n",
 		 val->local_size_cost + overall_size);
       return false;
     }
@@ -5949,6 +5966,6 @@ ipa_cp_c_finalize (void)
 {
   max_count = profile_count::uninitialized ();
   overall_size = 0;
-  max_new_size = 0;
+  orig_overall_size = 0;
   ipcp_free_transformation_sum ();
 }

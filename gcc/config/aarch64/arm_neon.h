@@ -73,6 +73,9 @@ typedef __fp16 float16_t;
 typedef float float32_t;
 typedef double float64_t;
 
+typedef __Bfloat16x4_t bfloat16x4_t;
+typedef __Bfloat16x8_t bfloat16x8_t;
+
 typedef struct int8x8x2_t
 {
   int8x8_t val[2];
@@ -34605,6 +34608,8 @@ vrnd64xq_f64 (float64x2_t __a)
 }
 
 #pragma GCC pop_options
+
+#include "arm_bf16.h"
 
 #undef __aarch64_vget_lane_any
 

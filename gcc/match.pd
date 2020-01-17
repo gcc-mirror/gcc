@@ -6152,3 +6152,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (vec_perm vec_same_elem_p@0 @0 @1)
  @0)
+
+/* Match count trailing zeroes for simplify_count_trailing_zeroes in fwprop.
+   The canonical form is array[((x & -x) * C) >> SHIFT] where C is a magic
+   constant which when multiplied by a power of 2 contains a unique value
+   in the top 5 or 6 bits.  This is then indexed into a table which maps it
+   to the number of trailing zeroes.  */
+(match (ctz_table_index @1 @2 @3)
+  (rshift (mult (bit_and:c (negate @1) @1) INTEGER_CST@2) INTEGER_CST@3))

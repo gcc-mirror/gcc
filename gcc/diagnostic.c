@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-color.h"
 #include "diagnostic-url.h"
 #include "diagnostic-metadata.h"
+#include "diagnostic-path.h"
 #include "edit-context.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
@@ -187,6 +188,8 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   for (i = 0; i < rich_location::STATICALLY_ALLOCATED_RANGES; i++)
     context->caret_chars[i] = '^';
   context->show_cwe = false;
+  context->path_format = DPF_NONE;
+  context->show_path_depths = false;
   context->show_option_requested = false;
   context->abort_on_error = false;
   context->show_column = false;
@@ -658,6 +661,38 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
     }
 }
 
+/* If DIAGNOSTIC has a diagnostic_path and CONTEXT supports printing paths,
+   print the path.  */
+
+void
+diagnostic_show_any_path (diagnostic_context *context,
+			  diagnostic_info *diagnostic)
+{
+  const diagnostic_path *path = diagnostic->richloc->get_path ();
+  if (!path)
+    return;
+
+  if (context->print_path)
+    context->print_path (context, path);
+}
+
+/* Return true if the events in this path involve more than one
+   function, or false if it is purely intraprocedural.  */
+
+bool
+diagnostic_path::interprocedural_p () const
+{
+  const unsigned num = num_events ();
+  for (unsigned i = 0; i < num; i++)
+    {
+      if (get_event (i).get_fndecl () != get_event (0).get_fndecl ())
+	return true;
+      if (get_event (i).get_stack_depth () != get_event (0).get_stack_depth ())
+	return true;
+    }
+  return false;
+}
+
 void
 default_diagnostic_starter (diagnostic_context *context,
 			    diagnostic_info *diagnostic)
@@ -1122,6 +1157,8 @@ diagnostic_report_diagnostic (diagnostic_context *context,
       context->edit_context_ptr->add_fixits (diagnostic->richloc);
 
   context->lock--;
+
+  diagnostic_show_any_path (context, diagnostic);
 
   return true;
 }
@@ -1756,6 +1793,95 @@ auto_diagnostic_group::~auto_diagnostic_group ()
 	}
       global_dc->diagnostic_group_emission_count = 0;
     }
+}
+
+/* Implementation of diagnostic_path::num_events vfunc for
+   simple_diagnostic_path: simply get the number of events in the vec.  */
+
+unsigned
+simple_diagnostic_path::num_events () const
+{
+  return m_events.length ();
+}
+
+/* Implementation of diagnostic_path::get_event vfunc for
+   simple_diagnostic_path: simply return the event in the vec.  */
+
+const diagnostic_event &
+simple_diagnostic_path::get_event (int idx) const
+{
+  return *m_events[idx];
+}
+
+/* Add an event to this path at LOC within function FNDECL at
+   stack depth DEPTH.
+
+   Use m_context's printer to format FMT, as the text of the new
+   event.
+
+   Return the id of the new event.  */
+
+diagnostic_event_id_t
+simple_diagnostic_path::add_event (location_t loc, tree fndecl, int depth,
+				   const char *fmt, ...)
+{
+  pretty_printer *pp = m_event_pp;
+  pp_clear_output_area (pp);
+
+  text_info ti;
+  rich_location rich_loc (line_table, UNKNOWN_LOCATION);
+
+  va_list ap;
+
+  va_start (ap, fmt);
+
+  ti.format_spec = _(fmt);
+  ti.args_ptr = &ap;
+  ti.err_no = 0;
+  ti.x_data = NULL;
+  ti.m_richloc = &rich_loc;
+
+  pp_format (pp, &ti);
+  pp_output_formatted_text (pp);
+
+  va_end (ap);
+
+  simple_diagnostic_event *new_event
+    = new simple_diagnostic_event (loc, fndecl, depth, pp_formatted_text (pp));
+  m_events.safe_push (new_event);
+
+  pp_clear_output_area (pp);
+
+  return diagnostic_event_id_t (m_events.length () - 1);
+}
+
+/* struct simple_diagnostic_event.  */
+
+/* simple_diagnostic_event's ctor.  */
+
+simple_diagnostic_event::simple_diagnostic_event (location_t loc,
+						  tree fndecl,
+						  int depth,
+						  const char *desc)
+: m_loc (loc), m_fndecl (fndecl), m_depth (depth), m_desc (xstrdup (desc))
+{
+}
+
+/* simple_diagnostic_event's dtor.  */
+
+simple_diagnostic_event::~simple_diagnostic_event ()
+{
+  free (m_desc);
+}
+
+/* Print PATH by emitting a dummy "note" associated with it.  */
+
+DEBUG_FUNCTION
+void debug (diagnostic_path *path)
+{
+  rich_location richloc (line_table, UNKNOWN_LOCATION);
+  richloc.set_path (path);
+  inform (&richloc, "debug path");
 }
 
 /* Really call the system 'abort'.  This has to go right at the end of

@@ -1693,6 +1693,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_V2SImode:
     /* ...E_V1DImode doesn't exist.  */
     case E_V4HFmode:
+    case E_V4BFmode:
     case E_V2SFmode:
     case E_V1DFmode:
     /* 128-bit Advanced SIMD vectors.  */
@@ -1701,6 +1702,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_V4SImode:
     case E_V2DImode:
     case E_V8HFmode:
+    case E_V8BFmode:
     case E_V4SFmode:
     case E_V2DFmode:
       return TARGET_SIMD ? VEC_ADVSIMD : 0;
@@ -4272,7 +4274,7 @@ aarch64_sve_move_pred_via_while (rtx target, machine_mode mode,
 {
   rtx limit = force_reg (DImode, gen_int_mode (vl, DImode));
   target = aarch64_target_reg (target, mode);
-  emit_insn (gen_while (UNSPEC_WHILE_LO, DImode, mode,
+  emit_insn (gen_while (UNSPEC_WHILELO, DImode, mode,
 			target, const0_rtx, limit));
   return target;
 }
@@ -13937,11 +13939,17 @@ aarch64_get_arch (enum aarch64_arch arch)
 static poly_uint16
 aarch64_convert_sve_vector_bits (aarch64_sve_vector_bits_enum value)
 {
-  /* For now generate vector-length agnostic code for -msve-vector-bits=128.
-     This ensures we can clearly distinguish SVE and Advanced SIMD modes when
-     deciding which .md file patterns to use and when deciding whether
-     something is a legitimate address or constant.  */
-  if (value == SVE_SCALABLE || value == SVE_128)
+  /* 128-bit SVE and Advanced SIMD modes use different register layouts
+     on big-endian targets, so we would need to forbid subregs that convert
+     from one to the other.  By default a reinterpret sequence would then
+     involve a store to memory in one mode and a load back in the other.
+     Even if we optimize that sequence using reverse instructions,
+     it would still be a significant potential overhead.
+
+     For now, it seems better to generate length-agnostic code for that
+     case instead.  */
+  if (value == SVE_SCALABLE
+      || (value == SVE_128 && BYTES_BIG_ENDIAN))
     return poly_uint16 (2, 2);
   else
     return (int) value / 64;
@@ -15590,6 +15598,10 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	  field_t = aarch64_fp16_type_node;
 	  field_ptr_t = aarch64_fp16_ptr_type_node;
 	  break;
+	case E_BFmode:
+	  field_t = aarch64_bf16_type_node;
+	  field_ptr_t = aarch64_bf16_ptr_type_node;
+	  break;
 	case E_V2SImode:
 	case E_V4SImode:
 	    {
@@ -16103,6 +16115,8 @@ aarch64_vq_mode (scalar_mode mode)
       return V4SFmode;
     case E_HFmode:
       return V8HFmode;
+    case E_BFmode:
+      return V8BFmode;
     case E_SImode:
       return V4SImode;
     case E_HImode:
@@ -16121,7 +16135,9 @@ aarch64_vq_mode (scalar_mode mode)
 static machine_mode
 aarch64_simd_container_mode (scalar_mode mode, poly_int64 width)
 {
-  if (TARGET_SVE && known_eq (width, BITS_PER_SVE_VECTOR))
+  if (TARGET_SVE
+      && maybe_ne (width, 128)
+      && known_eq (width, BITS_PER_SVE_VECTOR))
     return aarch64_full_sve_mode (mode).else_mode (word_mode);
 
   gcc_assert (known_eq (width, 64) || known_eq (width, 128));
@@ -16136,6 +16152,8 @@ aarch64_simd_container_mode (scalar_mode mode, poly_int64 width)
 	    return V2SFmode;
 	  case E_HFmode:
 	    return V4HFmode;
+	  case E_BFmode:
+	    return V4BFmode;
 	  case E_SImode:
 	    return V2SImode;
 	  case E_HImode:
@@ -16250,9 +16268,14 @@ aarch64_mangle_type (const_tree type)
   if (lang_hooks.types_compatible_p (CONST_CAST_TREE (type), va_list_type))
     return "St9__va_list";
 
-  /* Half-precision float.  */
+  /* Half-precision floating point types.  */
   if (TREE_CODE (type) == REAL_TYPE && TYPE_PRECISION (type) == 16)
-    return "Dh";
+    {
+      if (TYPE_MODE (type) == BFmode)
+	return "u6__bf16";
+      else
+	return "Dh";
+    }
 
   /* Mangle AArch64-specific internal types.  TYPE_NAME is non-NULL_TREE for
      builtin types.  */
@@ -16407,22 +16430,20 @@ aarch64_sve_index_immediate_p (rtx base_or_step)
 	  && IN_RANGE (INTVAL (base_or_step), -16, 15));
 }
 
-/* Return true if X is a valid immediate for the SVE ADD and SUB
-   instructions.  Negate X first if NEGATE_P is true.  */
+/* Return true if X is a valid immediate for the SVE ADD and SUB instructions
+   when applied to mode MODE.  Negate X first if NEGATE_P is true.  */
 
 bool
-aarch64_sve_arith_immediate_p (rtx x, bool negate_p)
+aarch64_sve_arith_immediate_p (machine_mode mode, rtx x, bool negate_p)
 {
-  rtx elt;
-
-  if (!const_vec_duplicate_p (x, &elt)
-      || !CONST_INT_P (elt))
+  rtx elt = unwrap_const_vec_duplicate (x);
+  if (!CONST_INT_P (elt))
     return false;
 
   HOST_WIDE_INT val = INTVAL (elt);
   if (negate_p)
     val = -val;
-  val &= GET_MODE_MASK (GET_MODE_INNER (GET_MODE (x)));
+  val &= GET_MODE_MASK (GET_MODE_INNER (mode));
 
   if (val & 0xff)
     return IN_RANGE (val, 0, 0xff);
@@ -16430,23 +16451,19 @@ aarch64_sve_arith_immediate_p (rtx x, bool negate_p)
 }
 
 /* Return true if X is a valid immediate for the SVE SQADD and SQSUB
-   instructions.  Negate X first if NEGATE_P is true.  */
+   instructions when applied to mode MODE.  Negate X first if NEGATE_P
+   is true.  */
 
 bool
-aarch64_sve_sqadd_sqsub_immediate_p (rtx x, bool negate_p)
+aarch64_sve_sqadd_sqsub_immediate_p (machine_mode mode, rtx x, bool negate_p)
 {
-  rtx elt;
-
-  if (!const_vec_duplicate_p (x, &elt)
-      || !CONST_INT_P (elt))
-    return false;
-
-  if (!aarch64_sve_arith_immediate_p (x, negate_p))
+  if (!aarch64_sve_arith_immediate_p (mode, x, negate_p))
     return false;
 
   /* After the optional negation, the immediate must be nonnegative.
      E.g. a saturating add of -127 must be done via SQSUB Zn.B, Zn.B, #127
      instead of SQADD Zn.B, Zn.B, #129.  */
+  rtx elt = unwrap_const_vec_duplicate (x);
   return negate_p == (INTVAL (elt) < 0);
 }
 
@@ -19455,6 +19472,7 @@ aarch64_evpc_sel (struct expand_vec_perm_d *d)
 
   machine_mode pred_mode = aarch64_sve_pred_mode (vmode);
 
+  /* Build a predicate that is true when op0 elements should be used.  */
   rtx_vector_builder builder (pred_mode, n_patterns, 2);
   for (int i = 0; i < n_patterns * 2; i++)
     {
@@ -19465,7 +19483,8 @@ aarch64_evpc_sel (struct expand_vec_perm_d *d)
 
   rtx const_vec = builder.build ();
   rtx pred = force_reg (pred_mode, const_vec);
-  emit_insn (gen_vcond_mask (vmode, vmode, d->target, d->op1, d->op0, pred));
+  /* TARGET = PRED ? OP0 : OP1.  */
+  emit_insn (gen_vcond_mask (vmode, vmode, d->target, d->op0, d->op1, pred));
   return true;
 }
 
@@ -21732,6 +21751,55 @@ aarch64_stack_protect_guard (void)
   return NULL_TREE;
 }
 
+/* Return the diagnostic message string if conversion from FROMTYPE to
+   TOTYPE is not allowed, NULL otherwise.  */
+
+static const char *
+aarch64_invalid_conversion (const_tree fromtype, const_tree totype)
+{
+  if (element_mode (fromtype) != element_mode (totype))
+    {
+      /* Do no allow conversions to/from BFmode scalar types.  */
+      if (TYPE_MODE (fromtype) == BFmode)
+	return N_("invalid conversion from type %<bfloat16_t%>");
+      if (TYPE_MODE (totype) == BFmode)
+	return N_("invalid conversion to type %<bfloat16_t%>");
+    }
+
+  /* Conversion allowed.  */
+  return NULL;
+}
+
+/* Return the diagnostic message string if the unary operation OP is
+   not permitted on TYPE, NULL otherwise.  */
+
+static const char *
+aarch64_invalid_unary_op (int op, const_tree type)
+{
+  /* Reject all single-operand operations on BFmode except for &.  */
+  if (element_mode (type) == BFmode && op != ADDR_EXPR)
+    return N_("operation not permitted on type %<bfloat16_t%>");
+
+  /* Operation allowed.  */
+  return NULL;
+}
+
+/* Return the diagnostic message string if the binary operation OP is
+   not permitted on TYPE1 and TYPE2, NULL otherwise.  */
+
+static const char *
+aarch64_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1,
+			   const_tree type2)
+{
+  /* Reject all 2-operand operations on BFmode.  */
+  if (element_mode (type1) == BFmode
+      || element_mode (type2) == BFmode)
+    return N_("operation not permitted on type %<bfloat16_t%>");
+
+  /* Operation allowed.  */
+  return NULL;
+}
+
 /* Implement TARGET_ASM_FILE_END for AArch64.  This adds the AArch64 GNU NOTE
    section at the end if needed.  */
 #define GNU_PROPERTY_AARCH64_FEATURE_1_AND	0xc0000000
@@ -21981,6 +22049,15 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE aarch64_mangle_type
+
+#undef TARGET_INVALID_CONVERSION
+#define TARGET_INVALID_CONVERSION aarch64_invalid_conversion
+
+#undef TARGET_INVALID_UNARY_OP
+#define TARGET_INVALID_UNARY_OP aarch64_invalid_unary_op
+
+#undef TARGET_INVALID_BINARY_OP
+#define TARGET_INVALID_BINARY_OP aarch64_invalid_binary_op
 
 #undef TARGET_VERIFY_TYPE_CONTEXT
 #define TARGET_VERIFY_TYPE_CONTEXT aarch64_verify_type_context

@@ -1,5 +1,6 @@
 /* { dg-do assemble { target aarch64_asm_sve_ok } } */
 /* { dg-options "-O2 -msve-vector-bits=256 --save-temps" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include <stdint.h>
 
@@ -13,15 +14,14 @@ typedef int8_t vnx16qi __attribute__((vector_size (32)));
 
 #define INDEX_32 vnx16qi
 
-#define PERMUTE(type, nunits)						\
-type permute_##type (type x, type y)					\
-{									\
-  return __builtin_shuffle (x, y, (INDEX_##nunits) MASK_##nunits);	\
+/*
+** permute:
+**	ptrue	(p[0-7])\.h, vl16
+**	sel	z0\.b, \1, z0\.b, z1\.b
+**	ret
+*/
+__SVInt8_t
+permute (__SVInt8_t x, __SVInt8_t y)
+{
+  return __builtin_shuffle ((vnx16qi) x, (vnx16qi) y, (vnx16qi) MASK_32);
 }
-
-PERMUTE(vnx16qi, 32)
-
-/* { dg-final { scan-assembler-not {\ttbl\t} } } */
-
-/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.b, p[0-9]+, z[0-9]+\.b, z[0-9]+\.b\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tptrue\tp[0-9]+\.h, vl16\n} 1 } } */

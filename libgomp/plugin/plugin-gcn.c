@@ -3236,17 +3236,6 @@ GOMP_OFFLOAD_get_num_devices (void)
   return hsa_context.agent_count;
 }
 
-union gomp_device_property_value
-GOMP_OFFLOAD_get_property (int device, int prop)
-{
-  /* Stub. Check device and return default value for unsupported properties. */
-  /* TODO: Implement this function. */
-  get_agent_info (device);
-
-  union gomp_device_property_value nullval = { .val = 0 };
-  return nullval;
-}
-
 /* Initialize device (agent) number N so that it can be used for computation.
    Return TRUE on success.  */
 
@@ -3997,6 +3986,17 @@ GOMP_OFFLOAD_openacc_async_dev2host (int device, void *dst, const void *src,
   assert (agent == aq->agent);
   queue_push_copy (aq, dst, src, n, false);
   return true;
+}
+
+union goacc_property_value
+GOMP_OFFLOAD_openacc_get_property (int device, enum goacc_property prop)
+{
+  /* Stub. Check device and return default value for unsupported properties. */
+  /* TODO: Implement this function. */
+  get_agent_info (device);
+
+  union goacc_property_value nullval = { .val = 0 };
+  return nullval;
 }
 
 /* Set up plugin-specific thread-local-data (host-side).  */
