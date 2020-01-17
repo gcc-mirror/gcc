@@ -16769,6 +16769,7 @@ resolve_types (gfc_namespace *ns)
   gfc_data *d;
   gfc_equiv *eq;
   gfc_namespace* old_ns = gfc_current_ns;
+  bool recursive = ns->proc_name && ns->proc_name->attr.recursive;
 
   if (ns->types_resolved)
     return;
@@ -16822,7 +16823,7 @@ resolve_types (gfc_namespace *ns)
 
   gfc_traverse_ns (ns, resolve_values);
 
-  if (ns->save_all || !flag_automatic)
+  if (ns->save_all || (!flag_automatic && !recursive))
     gfc_save_all (ns);
 
   iter_stack = NULL;

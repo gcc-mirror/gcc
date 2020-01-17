@@ -1,3 +1,14 @@
+2020-01-17  Mark Eggleston  <mark.eggleston@codethink.com>
+
+        Backport from mainline
+	Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/93236
+	* resolve.c (resolve_types): Declare boolean recursive and set with the
+	value of the recursive attribute of namespace proc_name symbol
+	structure if it exists.  Call gfc_save_all if both flag_automatic and
+	recursive are false or ns->save_all is true.
+
 2020-01-10  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline
