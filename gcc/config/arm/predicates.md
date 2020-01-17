@@ -336,6 +336,15 @@
 		              && (UINTVAL (XEXP (op, 1)) < 32)")))
        (match_test "mode == GET_MODE (op)")))
 
+;; True for Armv8.1-M Mainline long shift instructions.
+(define_predicate "long_shift_imm"
+  (match_test "satisfies_constraint_Pg (op)"))
+
+(define_predicate "arm_reg_or_long_shift_imm"
+  (ior (match_test "TARGET_THUMB2
+		    && arm_general_register_operand (op, GET_MODE (op))")
+       (match_test "satisfies_constraint_Pg (op)")))
+
 ;; True for MULT, to identify which variant of shift_operator is in use.
 (define_special_predicate "mult_operator"
   (match_code "mult"))

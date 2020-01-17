@@ -1,3 +1,17 @@
+2020-01-17  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
+	    Sudakshina Das  <sudi.das@arm.com>
+
+	* config/arm/arm.md (ashldi3): Generate thumb2_lsll for both reg
+	and valid immediate.
+	(ashrdi3): Generate thumb2_asrl for both reg and valid immediate.
+	(lshrdi3): Generate thumb2_lsrl for valid immediates.
+	* config/arm/constraints.md (Pg): New.
+	* config/arm/predicates.md (long_shift_imm): New.
+	(arm_reg_or_long_shift_imm): Likewise.
+	* config/arm/thumb2.md (thumb2_asrl): New immediate alternative.
+	(thumb2_lsll): Likewise.
+	(thumb2_lsrl): New.
+
 2020-01-17  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
 	    Sudakshina Das  <sudi.das@arm.com>
 

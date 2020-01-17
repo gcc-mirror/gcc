@@ -1630,7 +1630,7 @@
 (define_insn "thumb2_asrl"
   [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
 	(ashiftrt:DI (match_dup 0)
-		     (match_operand:SI 1 "arm_general_register_operand" "r")))]
+		     (match_operand:SI 1 "arm_reg_or_long_shift_imm" "rPg")))]
   "TARGET_HAVE_MVE"
   "asrl%?\\t%Q0, %R0, %1"
   [(set_attr "predicable" "yes")])
@@ -1638,7 +1638,15 @@
 (define_insn "thumb2_lsll"
   [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
 	(ashift:DI (match_dup 0)
-		   (match_operand:SI 1 "arm_general_register_operand" "r")))]
+		   (match_operand:SI 1 "arm_reg_or_long_shift_imm" "rPg")))]
   "TARGET_HAVE_MVE"
   "lsll%?\\t%Q0, %R0, %1"
+  [(set_attr "predicable" "yes")])
+
+(define_insn "thumb2_lsrl"
+  [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
+	(lshiftrt:DI (match_dup 0)
+		     (match_operand:SI 1 "long_shift_imm" "Pg")))]
+  "TARGET_HAVE_MVE"
+  "lsrl%?\\t%Q0, %R0, %1"
   [(set_attr "predicable" "yes")])

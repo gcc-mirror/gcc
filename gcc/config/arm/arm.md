@@ -4405,8 +4405,8 @@
         operands[2] = force_reg (SImode, operands[2]);
 
       /* Armv8.1-M Mainline double shifts are not expanded.  */
-      if (REG_P (operands[2]))
-	{
+      if (arm_reg_or_long_shift_imm (operands[2], GET_MODE (operands[2])))
+        {
 	  if (!reg_overlap_mentioned_p(operands[0], operands[1]))
 	    emit_insn (gen_movdi (operands[0], operands[1]));
 
@@ -4443,7 +4443,8 @@
   "TARGET_32BIT"
   "
   /* Armv8.1-M Mainline double shifts are not expanded.  */
-  if (TARGET_HAVE_MVE && REG_P (operands[2]))
+  if (TARGET_HAVE_MVE
+      && arm_reg_or_long_shift_imm (operands[2], GET_MODE (operands[2])))
     {
       if (!reg_overlap_mentioned_p(operands[0], operands[1]))
 	emit_insn (gen_movdi (operands[0], operands[1]));
@@ -4476,6 +4477,17 @@
                      (match_operand:SI 2 "reg_or_int_operand")))]
   "TARGET_32BIT"
   "
+  /* Armv8.1-M Mainline double shifts are not expanded.  */
+  if (TARGET_HAVE_MVE
+    && long_shift_imm (operands[2], GET_MODE (operands[2])))
+    {
+      if (!reg_overlap_mentioned_p(operands[0], operands[1]))
+        emit_insn (gen_movdi (operands[0], operands[1]));
+
+      emit_insn (gen_thumb2_lsrl (operands[0], operands[2]));
+      DONE;
+    }
+
   arm_emit_coreregs_64bit_shift (LSHIFTRT, operands[0], operands[1],
 				 operands[2], gen_reg_rtx (SImode),
 				 gen_reg_rtx (SImode));
