@@ -14336,6 +14336,9 @@ aarch64_gen_atomic_cas (rtx rval, rtx mem,
 void
 aarch64_split_compare_and_swap (rtx operands[])
 {
+  /* Split after prolog/epilog to avoid interactions with shrinkwrapping.  */
+  gcc_assert (epilogue_completed);
+
   rtx rval, mem, oldval, newval, scratch;
   machine_mode mode;
   bool is_weak;
@@ -14680,6 +14683,9 @@ void
 aarch64_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
 			 rtx value, rtx model_rtx, rtx cond)
 {
+  /* Split after prolog/epilog to avoid interactions with shrinkwrapping.  */
+  gcc_assert (epilogue_completed);
+
   machine_mode mode = GET_MODE (mem);
   machine_mode wmode = (mode == DImode ? DImode : SImode);
   const enum memmodel model = memmodel_from_int (INTVAL (model_rtx));

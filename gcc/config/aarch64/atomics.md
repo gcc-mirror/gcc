@@ -53,7 +53,7 @@
    (clobber (match_scratch:SI 7 "=&r"))]
   ""
   "#"
-  "&& reload_completed"
+  "&& epilogue_completed"
   [(const_int 0)]
   {
     aarch64_split_compare_and_swap (operands);
@@ -77,7 +77,7 @@
    (clobber (match_scratch:SI 7 "=&r"))]
   ""
   "#"
-  "&& reload_completed"
+  "&& epilogue_completed"
   [(const_int 0)]
   {
     aarch64_split_compare_and_swap (operands);
@@ -169,7 +169,7 @@
    (clobber (match_scratch:SI 4 "=&r"))]
   ""
   "#"
-  "&& reload_completed"
+  "&& epilogue_completed"
   [(const_int 0)]
   {
     aarch64_split_atomic_op (SET, operands[0], NULL, operands[1],
@@ -230,7 +230,7 @@
   (clobber (match_scratch:SI 4 "=&r"))]
   ""
   "#"
-  "&& reload_completed"
+  "&& epilogue_completed"
   [(const_int 0)]
   {
     aarch64_split_atomic_op (<CODE>, NULL, operands[3], operands[0],
@@ -271,7 +271,7 @@
    (clobber (match_scratch:SI 4 "=&r"))]
   ""
   "#"
-  "&& reload_completed"
+  "&& epilogue_completed"
   [(const_int 0)]
   {
      aarch64_split_atomic_op (NOT, NULL, operands[3], operands[0],
@@ -317,7 +317,7 @@
    (clobber (match_scratch:SI 5 "=&r"))]
   ""
   "#"
-  "&& reload_completed"
+  "&& epilogue_completed"
   [(const_int 0)]
   {
     aarch64_split_atomic_op (<CODE>, operands[0], operands[4], operands[1],
@@ -361,7 +361,7 @@
    (clobber (match_scratch:SI 5 "=&r"))]
   ""
   "#"
-  "&& reload_completed"
+  "&& epilogue_completed"
   [(const_int 0)]
   {
     aarch64_split_atomic_op (NOT, operands[0], operands[4], operands[1],
@@ -408,7 +408,7 @@
    (clobber (match_scratch:SI 4 "=&r"))]
   ""
   "#"
-  "&& reload_completed"
+  "&& epilogue_completed"
   [(const_int 0)]
   {
     aarch64_split_atomic_op (<CODE>, NULL, operands[0], operands[1],
@@ -455,7 +455,7 @@
    (clobber (match_scratch:SI 4 "=&r"))]
   ""
   "#"
-  "&& reload_completed"
+  "&& epilogue_completed"
   [(const_int 0)]
   {
     aarch64_split_atomic_op (NOT, NULL, operands[0], operands[1],
