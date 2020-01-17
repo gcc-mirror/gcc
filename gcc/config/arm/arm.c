@@ -18466,7 +18466,7 @@ cmse_nonsecure_call_inline_register_clear (void)
 
 	  if (TARGET_HAVE_FPCXT_CMSE)
 	    {
-	      rtx_insn *next, *last, *pop_insn, *after = insn;
+	      rtx_insn *last, *pop_insn, *after = insn;
 
 	      start_sequence ();
 
