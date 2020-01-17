@@ -29,6 +29,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #if CHECKING_P
 
+namespace ana {
+
 namespace selftest {
 
 /* Build a VAR_DECL named NAME of type TYPE, simulating a file-level
@@ -60,5 +62,7 @@ run_analyzer_selftests ()
 }
 
 } /* end of namespace selftest.  */
+
+} // namespace ana
 
 #endif /* #if CHECKING_P */

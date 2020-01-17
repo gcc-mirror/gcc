@@ -54,6 +54,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
+namespace ana {
+
 /* Get the cgraph_edge, but only if there's an underlying function body.  */
 
 cgraph_edge *
@@ -975,5 +977,7 @@ callgraph_superedge::map_expr_from_callee_to_caller (tree callee_expr,
 
   return NULL_TREE;
 }
+
+} // namespace ana
 
 #endif /* #if ENABLE_ANALYZER */

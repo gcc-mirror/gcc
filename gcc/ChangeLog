@@ -1,3 +1,12 @@
+2020-01-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93307
+	* gdbinit.in (break-on-saved-diagnostic): Update for move of
+	diagnostic_manager into "ana" namespace.
+	* selftest-run-tests.c (selftest::run_tests): Update for move of
+	selftest::run_analyzer_selftests to
+	ana::selftest::run_analyzer_selftests.
+
 2020-01-22  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* cfgexpand.c (union_stack_vars): Update the size.

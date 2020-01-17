@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_DIAGNOSTIC_MANAGER_H
 #define GCC_ANALYZER_DIAGNOSTIC_MANAGER_H
 
+namespace ana {
+
 /* A to-be-emitted diagnostic stored within diagnostic_manager.  */
 
 class saved_diagnostic
@@ -120,5 +122,7 @@ private:
   auto_delete_vec<saved_diagnostic> m_saved_diagnostics;
   const int m_verbosity;
 };
+
+} // namespace ana
 
 #endif /* GCC_ANALYZER_DIAGNOSTIC_MANAGER_H */

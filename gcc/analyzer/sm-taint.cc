@@ -39,6 +39,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
+namespace ana {
+
 namespace {
 
 /* An experimental state machine, for tracking "taint": unsanitized uses
@@ -324,5 +326,7 @@ make_taint_state_machine (logger *logger)
 {
   return new taint_state_machine (logger);
 }
+
+} // namespace ana
 
 #endif /* #if ENABLE_ANALYZER */

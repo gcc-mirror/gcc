@@ -45,6 +45,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
+namespace ana {
+
 /* One of the end-points of a range.  */
 
 struct bound
@@ -2256,5 +2258,7 @@ analyzer_constraint_manager_cc_tests ()
 } // namespace selftest
 
 #endif /* CHECKING_P */
+
+} // namespace ana
 
 #endif /* #if ENABLE_ANALYZER */

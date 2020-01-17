@@ -31,6 +31,10 @@ along with GCC; see the file COPYING3.  If not see
    recursive callstack.  */
 // TODO: would this be better as a new tree code?
 
+using namespace ana;
+
+namespace ana {
+
 class path_var
 {
 public:
@@ -52,11 +56,15 @@ public:
   int m_stack_depth; // or -1 for globals?
 };
 
+} // namespace ana
+
 namespace inchash
 {
   extern void add_path_var (path_var pv, hash &hstate);
 } // namespace inchash
 
+
+namespace ana {
 
 /* A region_model is effectively a graph of regions and symbolic values.
    We store per-model IDs rather than pointers to make it easier to clone
@@ -549,6 +557,8 @@ public:
   region_id m_rid;
 };
 
+} // namespace ana
+
 template <>
 template <>
 inline bool
@@ -556,6 +566,8 @@ is_a_helper <region_svalue *>::test (svalue *sval)
 {
   return sval->get_kind () == SK_REGION;
 }
+
+namespace ana {
 
 /* Concrete subclass of svalue representing a specific constant value.  */
 
@@ -606,6 +618,8 @@ public:
   tree m_cst_expr;
 };
 
+} // namespace ana
+
 template <>
 template <>
 inline bool
@@ -613,6 +627,8 @@ is_a_helper <constant_svalue *>::test (svalue *sval)
 {
   return sval->get_kind () == SK_CONSTANT;
 }
+
+namespace ana {
 
 /* Concrete subclass of svalue representing a unique but unknown value.
    Comparisons of variables that share the same unknown value are known
@@ -690,6 +706,8 @@ public:
   enum poison_kind m_kind;
 };
 
+} // namespace ana
+
 template <>
 template <>
 inline bool
@@ -697,6 +715,8 @@ is_a_helper <poisoned_svalue *>::test (svalue *sval)
 {
   return sval->get_kind () == SK_POISONED;
 }
+
+namespace ana {
 
 /* Concrete subclass of svalue representing setjmp buffers, so that
    longjmp can potentially "return" to an entirely different function.  */
@@ -876,6 +896,8 @@ public:
   region_id m_active_view_rid;
 };
 
+} // namespace ana
+
 template <>
 template <>
 inline bool
@@ -883,6 +905,8 @@ is_a_helper <region *>::test (region *)
 {
   return true;
 }
+
+namespace ana {
 
 /* Concrete region subclass for storing "primitive" types (integral types,
    pointers, etc).  */
@@ -972,6 +996,8 @@ public:
   map_t m_map;
 };
 
+} // namespace ana
+
 template <>
 template <>
 inline bool
@@ -979,6 +1005,8 @@ is_a_helper <map_region *>::test (region *reg)
 {
   return (reg->dyn_cast_map_region () != NULL);
 }
+
+namespace ana {
 
 /* Abstract subclass representing a region with fields
    (either a struct or a union).  */
@@ -996,6 +1024,8 @@ public:
   bool compare_fields (const struct_or_union_region &other) const;
 };
 
+} // namespace ana
+
 template <>
 template <>
 inline bool
@@ -1004,6 +1034,8 @@ is_a_helper <struct_or_union_region *>::test (region *reg)
   return (reg->get_kind () == RK_STRUCT
 	  || reg->get_kind () == RK_UNION);
 }
+
+namespace ana {
 
 /* Concrete region subclass.  A map_region representing a struct, using
    FIELD_DECLs for its keys.  */
@@ -1024,6 +1056,8 @@ public:
   bool compare_fields (const struct_region &other) const;
 };
 
+} // namespace ana
+
 template <>
 template <>
 inline bool
@@ -1031,6 +1065,8 @@ is_a_helper <struct_region *>::test (region *reg)
 {
   return reg->get_kind () == RK_STRUCT;
 }
+
+namespace ana {
 
 /* Concrete region subclass.  A map_region representing a union, using
    FIELD_DECLs for its keys.  */
@@ -1051,6 +1087,8 @@ public:
   bool compare_fields (const union_region &other) const;
 };
 
+} // namespace ana
+
 template <>
 template <>
 inline bool
@@ -1058,6 +1096,8 @@ is_a_helper <union_region *>::test (region *reg)
 {
   return reg->get_kind () == RK_UNION;
 }
+
+namespace ana {
 
 /* Abstract map_region subclass for accessing decls, used as a base class
    for function frames and for the globals region.  */
@@ -1117,6 +1157,8 @@ public:
   int m_depth;
 };
 
+} // namespace ana
+
 template <>
 template <>
 inline bool
@@ -1124,6 +1166,8 @@ is_a_helper <frame_region *>::test (region *reg)
 {
   return reg->get_kind () == RK_FRAME;
 }
+
+namespace ana {
 
 /* Concrete region subclass, to hold global variables (data and bss).  */
 
@@ -1149,6 +1193,8 @@ class globals_region : public scope_region
   bool compare_fields (const globals_region &other) const;
 };
 
+} // namespace ana
+
 template <>
 template <>
 inline bool
@@ -1156,6 +1202,8 @@ is_a_helper <globals_region *>::test (region *reg)
 {
   return reg->get_kind () == RK_GLOBALS;
 }
+
+namespace ana {
 
 /* Concrete region subclass.  A map_region representing the code, using
    FUNCTION_DECLs for its keys.  */
@@ -1185,6 +1233,8 @@ public:
   bool compare_fields (const code_region &other) const;
 };
 
+} // namespace ana
+
 template <>
 template <>
 inline bool
@@ -1192,6 +1242,8 @@ is_a_helper <code_region *>::test (region *reg)
 {
   return reg->get_kind () == RK_CODE;
 }
+
+namespace ana {
 
 /* Concrete region subclass.  A map_region representing the code for
    a particular function, using LABEL_DECLs for its keys.  */
@@ -1223,6 +1275,8 @@ public:
   bool compare_fields (const function_region &other) const;
 };
 
+} // namespace ana
+
 template <>
 template <>
 inline bool
@@ -1230,6 +1284,8 @@ is_a_helper <function_region *>::test (region *reg)
 {
   return reg->get_kind () == RK_FUNCTION;
 }
+
+namespace ana {
 
 /* Concrete region subclass representing an array (or an array-like view
    of a parent region of memory.
@@ -1325,6 +1381,8 @@ public:
   map_t m_map;
 };
 
+} // namespace ana
+
 template <>
 template <>
 inline bool
@@ -1332,6 +1390,8 @@ is_a_helper <array_region *>::test (region *reg)
 {
   return reg->get_kind () == RK_ARRAY;
 }
+
+namespace ana {
 
 /* Concrete region subclass representing a stack, containing all stack
    frames, and implicitly providing a POISON_KIND_UNINIT value to all
@@ -1387,6 +1447,8 @@ public:
   auto_vec<region_id> m_frame_rids;
 };
 
+} // namespace ana
+
 template <>
 template <>
 inline bool
@@ -1394,6 +1456,8 @@ is_a_helper <stack_region *>::test (region *reg)
 {
   return reg->get_kind () == RK_STACK;
 }
+
+namespace ana {
 
 /* Concrete region subclass: a region within which regions can be
    dynamically allocated.  */
@@ -1421,6 +1485,8 @@ public:
 
 };
 
+} // namespace ana
+
 template <>
 template <>
 inline bool
@@ -1428,6 +1494,8 @@ is_a_helper <heap_region *>::test (region *reg)
 {
   return reg->get_kind () == RK_HEAP;
 }
+
+namespace ana {
 
 /* Concrete region subclass.  The root region, containing all regions
    (either directly, or as descendents).
@@ -1497,6 +1565,8 @@ private:
   region_id m_heap_rid;
 };
 
+} // namespace ana
+
 template <>
 template <>
 inline bool
@@ -1504,6 +1574,8 @@ is_a_helper <root_region *>::test (region *reg)
 {
   return reg->get_kind () == RK_ROOT;
 }
+
+namespace ana {
 
 /* Concrete region subclass: a region to use when dereferencing an unknown
    pointer.  */
@@ -1941,6 +2013,8 @@ struct canonicalization
   int m_next_sid_int;
 };
 
+} // namespace ana
+
 namespace inchash
 {
   extern void add (svalue_id sid, hash &hstate);
@@ -1949,9 +2023,13 @@ namespace inchash
 
 extern void debug (const region_model &rmodel);
 
+namespace ana {
+
 #if CHECKING_P
 
 namespace selftest {
+
+using namespace ::selftest;
 
 /* An implementation of region_model_context for use in selftests, which
    stores any pending_diagnostic instances passed to it.  */
@@ -2067,5 +2145,7 @@ void assert_condition (const location &loc,
 } /* end of namespace selftest.  */
 
 #endif /* #if CHECKING_P */
+
+} // namespace ana
 
 #endif /* GCC_ANALYZER_REGION_MODEL_H */

@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #if CHECKING_P
 
+namespace ana {
+
 namespace selftest {
 
 extern tree build_global_decl (const char *name, tree type);
@@ -40,7 +42,9 @@ extern void analyzer_region_model_cc_tests ();
 extern void analyzer_sm_file_cc_tests ();
 extern void analyzer_sm_signal_cc_tests ();
 
-} /* end of namespace selftest.  */
+} /* end of namespace ana::selftest.  */
+
+} // namespace ana
 
 #endif /* #if CHECKING_P */
 

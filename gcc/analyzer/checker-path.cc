@@ -61,6 +61,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
+namespace ana {
+
 /* Get a string for EK.  */
 
 const char *
@@ -953,5 +955,7 @@ checker_path::add_final_event (const state_machine *sm,
 			 sm, var, state);
   add_event (end_of_path);
 }
+
+} // namespace ana
 
 #endif /* #if ENABLE_ANALYZER */

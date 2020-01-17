@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_CHECKER_PATH_H
 #define GCC_ANALYZER_CHECKER_PATH_H
 
+namespace ana {
+
 /* An enum for discriminating between the concrete subclasses of
    checker_event.  */
 
@@ -518,5 +520,7 @@ private:
      descriptions.  */
   hash_map <const exploded_node *, diagnostic_event_id_t> m_setjmp_event_ids;
 };
+
+} // namespace ana
 
 #endif /* GCC_ANALYZER_CHECKER_PATH_H */

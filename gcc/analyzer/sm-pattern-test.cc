@@ -39,6 +39,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
+namespace ana {
+
 namespace {
 
 /* A state machine for use in DejaGnu tests, to check that
@@ -148,5 +150,7 @@ make_pattern_test_state_machine (logger *logger)
 {
   return new pattern_test_state_machine (logger);
 }
+
+} // namespace ana
 
 #endif /* #if ENABLE_ANALYZER */

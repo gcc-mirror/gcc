@@ -35,6 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
+namespace ana {
+
 /* Generate a label_text by printing FMT.
 
    Use a clone of the global_dc for formatting callbacks.
@@ -75,5 +77,7 @@ pending_diagnostic::same_tree_p (tree t1, tree t2)
 {
   return simple_cst_equal (t1, t2) == 1;
 }
+
+} // namespace ana
 
 #endif /* #if ENABLE_ANALYZER */

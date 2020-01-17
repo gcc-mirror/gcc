@@ -81,7 +81,7 @@ unsigned int
 pass_analyzer::execute (function *)
 {
 #if ENABLE_ANALYZER
-  run_checkers ();
+  ana::run_checkers ();
 #else
   sorry ("%qs was not enabled in this build of GCC"
 	 " (missing configure-time option %qs)",

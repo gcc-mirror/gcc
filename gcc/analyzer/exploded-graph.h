@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_EXPLODED_GRAPH_H
 #define GCC_ANALYZER_EXPLODED_GRAPH_H
 
+namespace ana {
+
 /* Concrete implementation of region_model_context, wiring it up to the
    rest of the analysis engine.  */
 
@@ -827,5 +829,7 @@ public:
 };
 
 // TODO: split the above up?
+
+} // namespace ana
 
 #endif /* GCC_ANALYZER_EXPLODED_GRAPH_H */

@@ -1,3 +1,46 @@
+2020-01-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93307
+	* analysis-plan.h: Wrap everything namespace "ana".
+	* analyzer-logging.cc: Likewise.
+	* analyzer-logging.h: Likewise.
+	* analyzer-pass.cc (pass_analyzer::execute): Update for "ana"
+	namespace.
+	* analyzer-selftests.cc: Wrap everything namespace "ana".
+	* analyzer-selftests.h: Likewise.
+	* analyzer.h: Likewise for forward decls of types.
+	* call-string.h: Likewise.
+	* checker-path.cc: Likewise.
+	* checker-path.h: Likewise.
+	* constraint-manager.cc: Likewise.
+	* constraint-manager.h: Likewise.
+	* diagnostic-manager.cc: Likewise.
+	* diagnostic-manager.h: Likewise.
+	* engine.cc: Likewise.
+	* engine.h: Likewise.
+	* exploded-graph.h: Likewise.
+	* function-set.cc: Likewise.
+	* function-set.h: Likewise.
+	* pending-diagnostic.cc: Likewise.
+	* pending-diagnostic.h: Likewise.
+	* program-point.cc: Likewise.
+	* program-point.h: Likewise.
+	* program-state.cc: Likewise.
+	* program-state.h: Likewise.
+	* region-model.cc: Likewise.
+	* region-model.h: Likewise.
+	* sm-file.cc: Likewise.
+	* sm-malloc.cc: Likewise.
+	* sm-pattern-test.cc: Likewise.
+	* sm-sensitive.cc: Likewise.
+	* sm-signal.cc: Likewise.
+	* sm-taint.cc: Likewise.
+	* sm.cc: Likewise.
+	* sm.h: Likewise.
+	* state-purge.h: Likewise.
+	* supergraph.cc: Likewise.
+	* supergraph.h: Likewise.
+
 2020-01-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93352

@@ -62,6 +62,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
+namespace ana {
+
 /* Dump T to PP in language-independent form, for debugging/logging/dumping
    purposes.  */
 
@@ -6906,6 +6908,8 @@ canonicalization::dump () const
   dump (stderr);
 }
 
+} // namespace ana
+
 /* Update HSTATE with a hash of SID.  */
 
 void
@@ -6929,6 +6933,8 @@ debug (const region_model &rmodel)
 {
   rmodel.dump (false);
 }
+
+namespace ana {
 
 #if CHECKING_P
 
@@ -7983,5 +7989,7 @@ analyzer_region_model_cc_tests ()
 } // namespace selftest
 
 #endif /* CHECKING_P */
+
+} // namespace ana
 
 #endif /* #if ENABLE_ANALYZER */

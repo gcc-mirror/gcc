@@ -58,6 +58,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
+namespace ana {
+
 /* class saved_diagnostic.  */
 
 /* saved_diagnostic's ctor.
@@ -1273,5 +1275,7 @@ diagnostic_manager::finish_pruning (checker_path *path) const
 	}
     }
 }
+
+} // namespace ana
 
 #endif /* #if ENABLE_ANALYZER */
