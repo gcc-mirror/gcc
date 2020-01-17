@@ -17150,23 +17150,41 @@ aarch64_sve_ld1r_operand_p (rtx op)
 	  && offset_6bit_unsigned_scaled_p (mode, addr.const_offset));
 }
 
-/* Return true if OP is a valid MEM operand for an SVE LD1RQ instruction.  */
+/* Return true if OP is a valid MEM operand for an SVE LD1R{Q,O} instruction
+   where the size of the read data is specified by `mode` and the size of the
+   vector elements are specified by `elem_mode`.   */
 bool
-aarch64_sve_ld1rq_operand_p (rtx op)
+aarch64_sve_ld1rq_ld1ro_operand_p (rtx op, machine_mode mode,
+				   scalar_mode elem_mode)
 {
   struct aarch64_address_info addr;
-  scalar_mode elem_mode = GET_MODE_INNER (GET_MODE (op));
   if (!MEM_P (op)
       || !aarch64_classify_address (&addr, XEXP (op, 0), elem_mode, false))
     return false;
 
   if (addr.type == ADDRESS_REG_IMM)
-    return offset_4bit_signed_scaled_p (TImode, addr.const_offset);
+    return offset_4bit_signed_scaled_p (mode, addr.const_offset);
 
   if (addr.type == ADDRESS_REG_REG)
     return (1U << addr.shift) == GET_MODE_SIZE (elem_mode);
 
   return false;
+}
+
+/* Return true if OP is a valid MEM operand for an SVE LD1RQ instruction.  */
+bool
+aarch64_sve_ld1rq_operand_p (rtx op)
+{
+  return aarch64_sve_ld1rq_ld1ro_operand_p (op, TImode,
+					    GET_MODE_INNER (GET_MODE (op)));
+}
+
+/* Return true if OP is a valid MEM operand for an SVE LD1RO instruction for
+   accessing a vector where the element size is specified by `elem_mode`.  */
+bool
+aarch64_sve_ld1ro_operand_p (rtx op, scalar_mode elem_mode)
+{
+  return aarch64_sve_ld1rq_ld1ro_operand_p (op, OImode, elem_mode);
 }
 
 /* Return true if OP is a valid MEM operand for an SVE LDFF1 instruction.  */

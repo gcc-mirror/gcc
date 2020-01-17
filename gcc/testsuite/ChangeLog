@@ -1,5 +1,19 @@
 2020-01-17  Matthew Malcomson  <matthew.malcomson@arm.com>
 
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_f16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_f32.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_f64.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s32.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s64.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s8.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u32.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u64.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u8.c: New test.
+
+2020-01-17  Matthew Malcomson  <matthew.malcomson@arm.com>
+
 	* gcc.target/aarch64/pragma_cpp_predefs_2.c: Check for f64mm
 	predef.
 

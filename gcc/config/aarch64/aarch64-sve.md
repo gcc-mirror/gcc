@@ -2495,6 +2495,20 @@
   }
 )
 
+(define_insn "@aarch64_sve_ld1ro<mode>"
+  [(set (match_operand:SVE_FULL 0 "register_operand" "=w")
+	(unspec:SVE_FULL
+	  [(match_operand:<VPRED> 2 "register_operand" "Upl")
+	   (match_operand:OI 1 "aarch64_sve_ld1ro_operand_<Vesize>"
+			       "UO<Vesize>")]
+	  UNSPEC_LD1RO))]
+  "TARGET_SVE && TARGET_ARMV8_6"
+  {
+    operands[1] = gen_rtx_MEM (<VEL>mode, XEXP (operands[1], 0));
+    return "ld1ro<Vesize>\t%0.<Vetype>, %2/z, %1";
+  }
+)
+
 ;; -------------------------------------------------------------------------
 ;; ---- [INT,FP] Initialize from individual elements
 ;; -------------------------------------------------------------------------

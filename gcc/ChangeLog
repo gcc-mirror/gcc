@@ -1,5 +1,32 @@
 2020-01-17  Matthew Malcomson  <matthew.malcomson@arm.com>
 
+	* config/aarch64/aarch64-protos.h
+	(aarch64_sve_ld1ro_operand_p): New.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(class load_replicate): New.
+	(class svld1ro_impl): New.
+	(class svld1rq_impl): Change to inherit from load_replicate.
+	(svld1ro): New sve intrinsic function base.
+	* config/aarch64/aarch64-sve-builtins-base.def (svld1ro):
+	New DEF_SVE_FUNCTION.
+	* config/aarch64/aarch64-sve-builtins-base.h
+	(svld1ro): New decl.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_expander::add_mem_operand): Modify assert to allow
+	OImode.
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_ld1ro<mode>): New
+	pattern.
+	* config/aarch64/aarch64.c
+	(aarch64_sve_ld1rq_operand_p): Implement in terms of ...
+	(aarch64_sve_ld1rq_ld1ro_operand_p): This.
+	(aarch64_sve_ld1ro_operand_p): New.
+	* config/aarch64/aarch64.md (UNSPEC_LD1RO): New unspec.
+	* config/aarch64/constraints.md (UOb,UOh,UOw,UOd): New.
+	* config/aarch64/predicates.md
+	(aarch64_sve_ld1ro_operand_{b,h,w,d}): New.
+
+2020-01-17  Matthew Malcomson  <matthew.malcomson@arm.com>
+
 	* config/aarch64/aarch64-c.c (_ARM_FEATURE_MATMUL_FLOAT64):
 	Introduce this ACLE specified predefined macro.
 	* config/aarch64/aarch64-option-extensions.def (f64mm): New.

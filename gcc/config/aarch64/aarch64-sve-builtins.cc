@@ -2734,7 +2734,11 @@ function_expander::add_integer_operand (HOST_WIDE_INT x)
 void
 function_expander::add_mem_operand (machine_mode mode, rtx addr)
 {
-  gcc_assert (VECTOR_MODE_P (mode));
+  /* Exception for OImode for the ld1ro intrinsics.
+     They act on 256 bit octaword data, and it's just easier to use a scalar
+     mode to represent that than add a new vector mode solely for the purpose
+     of this intrinsic.  */
+  gcc_assert (VECTOR_MODE_P (mode) || mode == OImode);
   rtx mem = gen_rtx_MEM (mode, memory_address (mode, addr));
   /* The memory is only guaranteed to be element-aligned.  */
   set_mem_align (mem, GET_MODE_ALIGNMENT (GET_MODE_INNER (mode)));

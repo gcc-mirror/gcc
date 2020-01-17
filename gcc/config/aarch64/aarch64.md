@@ -279,6 +279,7 @@
     UNSPEC_GEN_TAG		; Generate a 4-bit MTE tag.
     UNSPEC_GEN_TAG_RND		; Generate a random 4-bit MTE tag.
     UNSPEC_TAG_SPACE		; Translate address to MTE tag address space.
+    UNSPEC_LD1RO
 ])
 
 (define_c_enum "unspecv" [
