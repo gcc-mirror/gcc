@@ -153,6 +153,7 @@ listing and explanation of the binary and decimal byte size prefixes.
 * Diagnostic Message Formatting Options:: Controlling how diagnostics should
                         be formatted.
 * Warning Options::     How picky should the compiler be?
+* Static Analyzer Options:: More expensive warnings.
 * Debugging Options::   Producing debuggable code.
 * Optimize Options::    How much optimization?
 * Instrumentation Options:: Enabling profiling and extra run-time error checking.
@@ -287,13 +288,31 @@ Objective-C and Objective-C++ Dialects}.
 
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
-@gccoptlist{-fsyntax-only  -fmax-errors=@var{n}  -Wpedantic @gol
+@gccoptlist{-fanalyzer -fsyntax-only  -fmax-errors=@var{n}  -Wpedantic @gol
 -pedantic-errors @gol
 -w  -Wextra  -Wall  -Waddress  -Waddress-of-packed-member @gol
 -Waggregate-return  -Waligned-new @gol
 -Walloc-zero  -Walloc-size-larger-than=@var{byte-size} @gol
 -Walloca  -Walloca-larger-than=@var{byte-size} @gol
--Wno-aggressive-loop-optimizations  -Warray-bounds  -Warray-bounds=@var{n} @gol
+-Wno-aggressive-loop-optimizations @gol
+-Wno-analyzer-double-fclose @gol
+-Wno-analyzer-double-free @gol
+-Wno-analyzer-exposure-through-output-file @gol
+-Wno-analyzer-file-leak @gol
+-Wno-analyzer-free-of-non-heap @gol
+-Wno-analyzer-malloc-leak @gol
+-Wno-analyzer-possible-null-argument @gol
+-Wno-analyzer-possible-null-dereference @gol
+-Wno-analyzer-null-argument @gol
+-Wno-analyzer-null-dereference @gol
+-Wno-analyzer-stale-setjmp-buffer @gol
+-Wno-analyzer-tainted-array-index @gol
+-Wno-analyzer-unsafe-call-within-signal-handler @gol
+-Wno-analyzer-use-after-free @gol
+-Wno-analyzer-use-of-pointer-in-stale-stack-frame @gol
+-Wno-analyzer-use-of-uninitialized-value @gol
+-Wanalyzer-too-complex @gol
+-Warray-bounds  -Warray-bounds=@var{n} @gol
 -Wno-attributes  -Wattribute-alias=@var{n}  @gol
 -Wbool-compare  -Wbool-operation @gol
 -Wno-builtin-declaration-mismatch @gol
@@ -374,6 +393,44 @@ Objective-C and Objective-C++ Dialects}.
 -Wvla  -Wvla-larger-than=@var{byte-size}  -Wvolatile-register-var @gol
 -Wwrite-strings @gol
 -Wzero-as-null-pointer-constant}
+
+@item Static Analyzer Options
+@gccoptlist{-Wanalyzer-double-fclose @gol
+-Wanalyzer-double-free @gol
+-Wanalyzer-exposure-through-output-file @gol
+-Wanalyzer-file-leak @gol
+-Wanalyzer-free-of-non-heap @gol
+-Wanalyzer-malloc-leak @gol
+-Wanalyzer-null-argument @gol
+-Wanalyzer-null-dereference @gol
+-Wanalyzer-possible-null-argument @gol
+-Wanalyzer-possible-null-dereference @gol
+-Wanalyzer-stale-setjmp-buffer @gol
+-Wanalyzer-tainted-array-index @gol
+-Wanalyzer-unsafe-call-within-signal-handler @gol
+-Wanalyzer-use-after-free @gol
+-Wanalyzer-use-of-pointer-in-stale-stack-frame @gol
+-Wanalyzer-use-of-uninitialized-value @gol
+-Wanalyzer-too-complex  @gol
+-fanalyzer-call-summaries @gol
+-fanalyzer-checker=@var{name} @gol
+-fanalyzer-fine-grained @gol
+-fanalyzer-state-merge @gol
+-fanalyzer-state-purge @gol
+-fanalyzer-transitivity @gol
+-fanalyzer-verbose-edges @gol
+-fanalyzer-verbose-state-changes @gol
+-fanalyzer-verbosity=@var{level} @gol
+-fdump-analyzer @gol
+-fdump-analyzer-stderr @gol
+-fdump-analyzer-callgraph @gol
+-fdump-analyzer-exploded-graph @gol
+-fdump-analyzer-exploded-nodes @gol
+-fdump-analyzer-exploded-nodes-2 @gol
+-fdump-analyzer-exploded-nodes-3 @gol
+-fdump-analyzer-state-purge @gol
+-fdump-analyzer-supergraph @gol
+}
 
 @item C and Objective-C-only Warning Options
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations @gol
@@ -4023,7 +4080,8 @@ the vertical bars and the ``char *'' and ``long int'' text).
 @opindex fdiagnostics-show-cwe
 Diagnostic messages can optionally have an associated
 @url{https://cwe.mitre.org/index.html, CWE} identifier.
-GCC itself does not do this for any of its diagnostics, but plugins may do so.
+GCC itself only provides such metadata for some of the @option{-fanalyzer}
+diagnostics.  GCC plugins may also provide diagnostics with such metadata.
 By default, if this information is present, it will be printed with
 the diagnostic.  This option suppresses the printing of this metadata.
 
@@ -6416,6 +6474,169 @@ See also @option{-Wvla-larger-than=}@samp{byte-size}.
 Disable @option{-Walloca-larger-than=} warnings.  The option is
 equivalent to @option{-Walloca-larger-than=}@samp{SIZE_MAX} or larger.
 
+@item -Wno-analyzer-double-fclose
+@opindex Wanalyzer-double-fclose
+@opindex Wno-analyzer-double-fclose
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-double-fclose} to disable it.
+
+This diagnostic warns for paths through the code in which a @code{FILE *}
+can have @code{fclose} called on it more than once.
+
+@item -Wno-analyzer-double-free
+@opindex Wanalyzer-double-free
+@opindex Wno-analyzer-double-free
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-double-free} to disable it.
+
+This diagnostic warns for paths through the code in which a pointer
+can have @code{free} called on it more than once.
+
+@item -Wno-analyzer-exposure-through-output-file
+@opindex Wanalyzer-exposure-through-output-file
+@opindex Wno-analyzer-exposure-through-output-file
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-exposure-through-output-file}
+to disable it.
+
+This diagnostic warns for paths through the code in which a
+security-sensitive value is written to an output file
+(such as writing a password to a log file).
+
+@item -Wno-analyzer-file-leak
+@opindex Wanalyzer-file-leak
+@opindex Wno-analyzer-file-leak
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-file-leak}
+to disable it.
+
+This diagnostic warns for paths through the code in which a
+@code{<stdio.h>} @code{FILE *} stream object is leaked.
+
+@item -Wno-analyzer-free-of-non-heap
+@opindex Wanalyzer-free-of-non-heap
+@opindex Wno-analyzer-free-of-non-heap
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-free-of-non-heap}
+to disable it.
+
+This diagnostic warns for paths through the code in which @code{free}
+is called on a non-heap pointer (e.g. an on-stack buffer, or a global).
+
+@item -Wno-analyzer-malloc-leak
+@opindex Wanalyzer-malloc-leak
+@opindex Wno-analyzer-malloc-leak
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-malloc-leak}
+to disable it.
+
+This diagnostic warns for paths through the code in which a
+pointer allocated via @code{malloc} is leaked.
+
+@item -Wno-analyzer-possible-null-argument
+@opindex Wanalyzer-possible-null-argument
+@opindex Wno-analyzer-possible-null-argument
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-possible-null-argument} to disable it.
+
+This diagnostic warns for paths through the code in which a
+possibly-NULL value is passed to a function argument marked
+with @code{__attribute__((nonnull))} as requiring a non-NULL
+value.
+
+@item -Wno-analyzer-possible-null-dereference
+@opindex Wanalyzer-possible-null-dereference
+@opindex Wno-analyzer-possible-null-dereference
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-possible-null-dereference} to disable it.
+
+This diagnostic warns for paths through the code in which a
+possibly-NULL value is dereferenced.
+
+@item -Wno-analyzer-null-argument
+@opindex Wanalyzer-null-argument
+@opindex Wno-analyzer-null-argument
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-null-argument} to disable it.
+
+This diagnostic warns for paths through the code in which a
+value known to be NULL is passed to a function argument marked
+with @code{__attribute__((nonnull))} as requiring a non-NULL
+value.
+
+@item -Wno-analyzer-null-dereference
+@opindex Wanalyzer-null-dereference
+@opindex Wno-analyzer-null-dereference
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-null-dereference} to disable it.
+
+This diagnostic warns for paths through the code in which a
+value known to be NULL is dereferenced.
+
+@item -Wno-analyzer-stale-setjmp-buffer
+@opindex Wanalyzer-stale-setjmp-buffer
+@opindex Wno-analyzer-stale-setjmp-buffer
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-stale-setjmp-buffer} to disable it.
+
+This diagnostic warns for paths through the code in which
+@code{longjmp} is called to rewind to a @code{jmp_buf} relating
+to a @code{setjmp} call in a function that has returned.
+
+When @code{setjmp} is called on a @code{jmp_buf} to record a rewind
+location, it records the stack frame.  The stack frame becomes invalid
+when the function containing the @code{setjmp} call returns.  Attempting
+to rewind to it via @code{longjmp} would reference a stack frame that
+no longer exists, and likely lead to a crash (or worse).
+
+@item -Wno-analyzer-tainted-array-index
+@opindex Wanalyzer-tainted-array-index
+@opindex Wno-analyzer-tainted-array-index
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-tainted-array-index} to disable it.
+
+This diagnostic warns for paths through the code in which a value
+that could be under an attacker's control is used as the index
+of an array access without being sanitized.
+
+@item -Wno-analyzer-unsafe-call-within-signal-handler
+@opindex Wanalyzer-unsafe-call-within-signal-handler
+@opindex Wno-analyzer-unsafe-call-within-signal-handler
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-unsafe-call-within-signal-handler} to disable it.
+
+This diagnostic warns for paths through the code in which a
+function known to be async-signal-unsafe (such as @code{fprintf}) is
+called from a signal handler.
+
+@item -Wno-analyzer-use-after-free
+@opindex Wanalyzer-use-after-free
+@opindex Wno-analyzer-use-after-free
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-use-after-free} to disable it.
+
+This diagnostic warns for paths through the code in which a
+pointer is used after @code{free} is called on it.
+
+@item -Wno-analyzer-use-of-pointer-in-stale-stack-frame
+@opindex Wanalyzer-use-of-pointer-in-stale-stack-frame
+@opindex Wno-analyzer-use-of-pointer-in-stale-stack-frame
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-use-of-pointer-in-stale-stack-frame}
+to disable it.
+
+This diagnostic warns for paths through the code in which a pointer
+is dereferenced that points to a variable in a stale stack frame.
+
+@item -Wno-analyzer-use-of-uninitialized-value
+@opindex Wanalyzer-use-of-uninitialized-value
+@opindex Wno-analyzer-use-of-uninitialized-value
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-use-of-uninitialized-value} to disable it.
+
+This diagnostic warns for paths through the code in which an uninitialized
+value is used.
+
 @item -Warray-bounds
 @itemx -Warray-bounds=@var{n}
 @opindex Wno-array-bounds
@@ -8079,6 +8300,217 @@ attribute.
 @item -Whsa
 Issue a warning when HSAIL cannot be emitted for the compiled function or
 OpenMP construct.
+
+@end table
+
+@node Static Analyzer Options
+@section Options That Control Static Analysis
+
+@table @gcctabopt
+@item -fanalyzer
+@opindex analyzer
+@opindex fanalyzer
+@opindex fno-analyzer
+This option enables an static analysis of program flow which looks
+for ``interesting'' interprocedural paths through the
+code, and issues warnings for problems found on them.
+
+This analysis is much more expensive than other GCC warnings.
+
+Enabling this option effectively enables the following warnings:
+
+@gccoptlist{ @gol
+-Wanalyzer-double-fclose @gol
+-Wanalyzer-double-free @gol
+-Wanalyzer-exposure-through-output-file @gol
+-Wanalyzer-file-leak @gol
+-Wanalyzer-free-of-non-heap @gol
+-Wanalyzer-malloc-leak @gol
+-Wanalyzer-possible-null-argument @gol
+-Wanalyzer-possible-null-dereference @gol
+-Wanalyzer-null-argument @gol
+-Wanalyzer-null-dereference @gol
+-Wanalyzer-tainted-array-index @gol
+-Wanalyzer-unsafe-call-within-signal-handler @gol
+-Wanalyzer-use-after-free @gol
+-Wanalyzer-use-of-uninitialized-value @gol
+-Wanalyzer-use-of-pointer-in-stale-stack-frame @gol
+}
+
+This option is only available if GCC was configured with analyzer
+support enabled.
+
+@item -Wanalyzer-too-complex
+@opindex Wanalyzer-too-complex
+@opindex Wno-analyzer-too-complex
+If @option{-fanalyzer} is enabled, the analyzer uses various heuristics
+to attempt to explore the control flow and data flow in the program,
+but these can be defeated by sufficiently complicated code.
+
+By default, the analysis will silently stop if the code is too
+complicated for the analyzer to fully explore and it reaches an internal
+limit.
+
+The @option{-Wanalyzer-too-complex} option will warn if this occurs.
+
+@end table
+
+Pertinent parameters for controlling the exploration are:
+@option{--param analyzer-bb-explosion-factor=@var{value}},
+@option{--param analyzer-max-enodes-per-program-point=@var{value}},
+@option{--param analyzer-max-recursion-depth=@var{value}}, and
+@option{--param analyzer-min-snodes-for-call-summary=@var{value}}.
+
+The following options control the analyzer.
+
+@table @gcctabopt
+
+@item -fanalyzer-call-summaries
+@opindex fanalyzer-call-summaries
+@opindex fno-analyzer-call-summaries
+Simplify interprocedural analysis by computing the effect of certain calls,
+rather than exploring all paths through the function from callsite to each
+possible return.
+
+If enabled, call summaries are only used for functions with more than one
+call site, and that are sufficiently complicated (as per
+@option{--param analyzer-min-snodes-for-call-summary=@var{value}}).
+
+@item -fanalyzer-checker=@var{name}
+@opindex fanalyzer-checker
+Restrict the analyzer to run just the named checker.
+
+@item -fanalyzer-fine-grained
+@opindex fanalyzer-fine-grained
+@opindex fno-analyzer-fine-grained
+This option is intended for analyzer developers.
+
+Internally the analyzer builds an ``exploded graph'' that combines
+control flow graphs with data flow information.
+
+By default, an edge in this graph can contain the effects of a run
+of multiple statements within a basic block.  With
+@option{-fanalyzer-fine-grained}, each statement gets its own edge.
+
+@item -fno-analyzer-state-merge
+@opindex fanalyzer-state-merge
+@opindex fno-analyzer-state-merge
+This option is intended for analyzer developers.
+
+By default the analyzer will attempt to simplify analysis by merging
+sufficiently similar states at each program point as it builds its
+``exploded graph''.  With @option{-fno-analyzer-state-merge} this
+merging can be suppressed, for debugging state-handling issues.
+
+@item -fno-analyzer-state-purge
+@opindex fanalyzer-state-purge
+@opindex fno-analyzer-state-purge
+This option is intended for analyzer developers.
+
+By default the analyzer will attempt to simplify analysis by purging
+aspects of state at a program point that appear to no longer be relevant
+e.g. the values of locals that aren't accessed later in the function
+and which aren't relevant to leak analysis.
+
+With @option{-fno-analyzer-state-purge} this purging of state can
+be suppressed, for debugging state-handling issues.
+
+@item -fanalyzer-transitivity
+@opindex fanalyzer-transitivity
+@opindex fno-analyzer-transitivity
+This option enables transitivity of constraints within the analyzer.
+
+@item -fanalyzer-verbose-edges
+This option is intended for analyzer developers.  It enables more
+verbose, lower-level detail in the descriptions of control flow
+within diagnostic paths.
+
+@item -fanalyzer-verbose-state-changes
+This option is intended for analyzer developers.  It enables more
+verbose, lower-level detail in the descriptions of events relating
+to state machines within diagnostic paths.
+
+@item -fanalyzer-verbosity=@var{level}
+This option controls the complexity of the control flow paths that are
+emitted for analyzer diagnostics.
+
+The @var{level} can be one of:
+
+@table @samp
+@item 0
+At this level, interprocedural call and return events are displayed,
+along with the most pertinent state-change events relating to
+a diagnostic.  For example, for a double-@code{free} diagnostic,
+both calls to @code{free} will be shown.
+
+@item 1
+As per the previous level, but also show events for the entry
+to each function.
+
+@item 2
+As per the previous level, but also show  events relating to
+control flow (e.g. ``true path taken'' at a conditional).
+
+This level is the default.
+
+@item 3
+This level is intended for analyzer developers; it adds various
+other events intended for debugging the analyzer.
+
+@end table
+
+@item -fdump-analyzer
+@opindex fdump-analyzer
+Dump internal details about what the analyzer is doing to
+@file{@var{file}.analyzer.txt}.
+This option is overridden by @option{-fdump-analyzer-stderr}.
+
+@item -fdump-analyzer-stderr
+@opindex fdump-analyzer-stderr
+Dump internal details about what the analyzer is doing to stderr.
+This option overrides @option{-fdump-analyzer}.
+
+@item -fdump-analyzer-callgraph
+@opindex fdump-analyzer-callgraph
+Dump a representation of the call graph suitable for viewing with
+GraphViz to @file{@var{file}.callgraph.dot}.
+
+@item -fdump-analyzer-exploded-graph
+@opindex fdump-analyzer-exploded-graph
+Dump a representation of the ``exploded graph'' suitable for viewing with
+GraphViz to @file{@var{file}.eg.dot}.
+Nodes are color-coded based on state-machine states to emphasize
+state changes.
+
+@item -fdump-analyzer-exploded-nodes
+@opindex dump-analyzer-exploded-nodes
+Emit diagnostics showing where nodes in the ``exploded graph'' are
+in relation to the program source.
+
+@item -fdump-analyzer-exploded-nodes-2
+@opindex dump-analyzer-exploded-nodes-2
+Dump a textual representation of the ``exploded graph'' to
+@file{@var{file}.eg.txt}.
+
+@item -fdump-analyzer-exploded-nodes-3
+@opindex dump-analyzer-exploded-nodes-3
+Dump a textual representation of the ``exploded graph'' to
+one dump file per node, to @file{@var{file}.eg-@var{id}.txt}.
+This is typically a large number of dump files.
+
+@item -fdump-analyzer-state-purge
+@opindex fdump-analyzer-state-purge
+As per @option{-fdump-analyzer-supergraph}, dump a representation of the
+``supergraph'' suitable for viewing with GraphViz, but annotate the
+graph with information on what state will be purged at each node.
+The graph is written to @file{@var{file}.state-purge.dot}.
+
+@item -fdump-analyzer-supergraph
+@opindex fdump-analyzer-supergraph
+Dump a representation of the ``supergraph'' suitable for viewing with
+GraphViz to @file{@var{file}.supergraph.dot}.  This shows all of the
+control flow graphs in the program, with interprocedural edges for
+calls and returns.
 
 @end table
 
@@ -16332,7 +16764,11 @@ performance of the code.  Permissible values for this option are:
 @samp{ares}, @samp{exynos-m1}, @samp{emag}, @samp{falkor},
 @samp{neoverse-e1},@samp{neoverse-n1},@samp{qdf24xx}, @samp{saphira},
 @samp{phecda}, @samp{xgene1}, @samp{vulcan}, @samp{octeontx},
-@samp{octeontx81},  @samp{octeontx83}, @samp{thunderx}, @samp{thunderxt88},
+@samp{octeontx81},  @samp{octeontx83},
+@samp{octeontx2}, @samp{octeontx2t98}, @samp{octeontx2t96}
+@samp{octeontx2t93}, @samp{octeontx2f95}, @samp{octeontx2f95n},
+@samp{octeontx2f95mm}
+@samp{thunderx}, @samp{thunderxt88},
 @samp{thunderxt88p1}, @samp{thunderxt81}, @samp{tsv110},
 @samp{thunderxt83}, @samp{thunderx2t99},
 @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},

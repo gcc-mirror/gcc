@@ -59,6 +59,9 @@ public:
   symtab_node *referred;
   gimple *stmt;
   unsigned int lto_stmt_uid;
+  /* speculative id is used to link direct calls with their corresponding
+     IPA_REF_ADDR references when representing speculative calls.  */
+  unsigned int speculative_id : 16;
   unsigned int referred_index;
   ENUM_BITFIELD (ipa_ref_use) use:3;
   unsigned int speculative:1;

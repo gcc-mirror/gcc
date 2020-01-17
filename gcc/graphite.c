@@ -233,6 +233,7 @@ struct sese_scev_hash : typed_noop_remove <seir_cache_key>
 	    && operand_equal_p (key1.expr, key2.expr, 0));
   }
   static void mark_deleted (seir_cache_key &key) { key.expr = NULL_TREE; }
+  static const bool empty_zero_p = false;
   static void mark_empty (seir_cache_key &key) { key.entry_dest = 0; }
   static bool is_deleted (const seir_cache_key &key) { return !key.expr; }
   static bool is_empty (const seir_cache_key &key) { return key.entry_dest == 0; }

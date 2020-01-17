@@ -199,6 +199,8 @@ struct value_hash_traits: int_hash<int, -1, -2>
     base_type::mark_deleted (v.val);
   }
 
+  static const bool empty_zero_p = false;
+
   static void mark_empty (value_type &v)
   {
     base_type::mark_empty (v.val);

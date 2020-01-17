@@ -1,3 +1,22 @@
+2020-01-15  Segher Boessenkool  <segher@kernel.crashing.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* .gitattributes: Add *.md diff=md.
+
+2020-01-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	The mentioned auto-generated file is no more part of the
+
+	GCC sources, it's auto-generated in $(builddir) during build.
+
+	PR target/92055
+	* contrib/gcc_update (files_and_dependencies): Remove
+	entry for gcc/config/avr/t-multilib.
+
+2020-01-14  Anatoly Sokolov <aesok@dol.ru>
+
+	* MAINTAINERS: Update my email address.
+
 2020-01-13  Joseph Myers  <joseph@codesourcery.com>
 
 	* README.MOVED_TO_GIT: Remove.

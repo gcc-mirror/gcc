@@ -1,3 +1,306 @@
+2020-01-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/analyzer.texi (Overview): Add note about
+	-fdump-ipa-analyzer.
+
+2020-01-15  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR tree-optimization/93231
+	* tree-ssa-forwprop.c (optimize_count_trailing_zeroes): Check
+	input_type is unsigned.  Use tree_to_shwi for shift constant.
+	Check CST_STRING element size is CHAR_TYPE_SIZE bits.
+	(simplify_count_trailing_zeroes): Add test to handle known non-zero
+	inputs more efficiently.
+
+2020-01-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movsf_internal): Do not require
+	SSE2 ISA for alternatives 14 and 15.
+
+2020-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/93273
+	* tree-eh.c (sink_clobbers): If we already visited the destination
+	block do not defer insertion.
+	(pass_lower_eh_dispatch::execute): Maintain BB_VISITED for
+	the purpose of defered insertion.
+
+2020-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* BASE-VER: Bump to 10.0.1.
+
+2020-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/93247
+	* tree-vect-loop.c (update_epilogue_loop_vinfo): Check the access
+	type of the stmt that we're going to vectorize.
+
+2020-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.c (vectorize_slp_instance_root_stmt): Use a
+	VIEW_CONVERT_EXPR if the vectorized constructor has a diffeent
+	type from the lhs.
+
+2020-01-15  Martin Liska  <mliska@suse.cz>
+
+	* ipa-profile.c (ipa_profile_read_edge_summary): Do not allow
+	2 calls of streamer_read_hwi in a function call.
+
+2020-01-15  Richard Biener  <rguenther@suse.de>
+
+	* alias.c (record_alias_subset): Avoid redundant work when
+	subset is already recorded.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (-fdiagnostics-show-cwe): Add note that some of
+	the analyzer options provide CWE identifiers.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* tree-diagnostic-path.cc (path_summary::event_range::print):
+	When testing for UNKNOWN_LOCATION, look through ad-hoc wrappers
+	using get_pure_location.
+
+2020-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93262
+	* tree-ssa-dse.c (maybe_trim_memstar_call): For *_chk builtins,
+	perform head trimming only if the last argument is constant,
+	either all ones, or larger or equal to head trim, in the latter
+	case decrease the last argument by head_trim.
+
+	PR tree-optimization/93249
+	* tree-ssa-dse.c: Include builtins.h and gimple-fold.h.
+	(maybe_trim_memstar_call): Move head_trim and tail_trim vars to
+	function body scope, reindent.  For BUILTIN_IN_STRNCPY*, don't
+	perform head trim unless we can prove there are no '\0' chars
+	from the source among the first head_trim chars.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/function-set.o.
+
+2020-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93009
+	* config/i386/sse.md
+	(*<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name>_bcst_1,
+	*<sd_mask_codefor>fma_fmsub_<mode><sd_maskz_name>_bcst_1,
+	*<sd_mask_codefor>fma_fnmadd_<mode><sd_maskz_name>_bcst_1,
+	*<sd_mask_codefor>fma_fnmsub_<mode><sd_maskz_name>_bcst_1): Use
+	just a single alternative instead of two, make operands 1 and 2
+	commutative.
+
+2020-01-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/91576
+	* ipa-devirt.c (odr_types_equivalent_p): Compare TREE_ADDRESSABLE and
+	TYPE_MODE.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (lang_opt_files): Add analyzer.opt.
+	(ANALYZER_OBJS): New.
+	(OBJS): Add digraph.o, graphviz.o, ordered-hash-map-tests.o,
+	tristate.o and ANALYZER_OBJS.
+	(TEXI_GCCINT_FILES): Add analyzer.texi.
+	* common.opt (-fanalyzer): New driver option.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (--disable-analyzer, ENABLE_ANALYZER): New option.
+	(gccdepdir): Also create depdir for "analyzer" subdir.
+	* digraph.cc: New file.
+	* digraph.h: New file.
+	* doc/analyzer.texi: New file.
+	* doc/gccint.texi ("Static Analyzer") New menu item.
+	(analyzer.texi): Include it.
+	* doc/invoke.texi ("Static Analyzer Options"): New list and new section.
+	("Warning Options"): Add static analysis warnings to the list.
+	(-Wno-analyzer-double-fclose): New option.
+	(-Wno-analyzer-double-free): New option.
+	(-Wno-analyzer-exposure-through-output-file): New option.
+	(-Wno-analyzer-file-leak): New option.
+	(-Wno-analyzer-free-of-non-heap): New option.
+	(-Wno-analyzer-malloc-leak): New option.
+	(-Wno-analyzer-possible-null-argument): New option.
+	(-Wno-analyzer-possible-null-dereference): New option.
+	(-Wno-analyzer-null-argument): New option.
+	(-Wno-analyzer-null-dereference): New option.
+	(-Wno-analyzer-stale-setjmp-buffer): New option.
+	(-Wno-analyzer-tainted-array-index): New option.
+	(-Wno-analyzer-use-after-free): New option.
+	(-Wno-analyzer-use-of-pointer-in-stale-stack-frame): New option.
+	(-Wno-analyzer-use-of-uninitialized-value): New option.
+	(-Wanalyzer-too-complex): New option.
+	(-fanalyzer-call-summaries): New warning.
+	(-fanalyzer-checker=): New warning.
+	(-fanalyzer-fine-grained): New warning.
+	(-fno-analyzer-state-merge): New warning.
+	(-fno-analyzer-state-purge): New warning.
+	(-fanalyzer-transitivity): New warning.
+	(-fanalyzer-verbose-edges): New warning.
+	(-fanalyzer-verbose-state-changes): New warning.
+	(-fanalyzer-verbosity=): New warning.
+	(-fdump-analyzer): New warning.
+	(-fdump-analyzer-callgraph): New warning.
+	(-fdump-analyzer-exploded-graph): New warning.
+	(-fdump-analyzer-exploded-nodes): New warning.
+	(-fdump-analyzer-exploded-nodes-2): New warning.
+	(-fdump-analyzer-exploded-nodes-3): New warning.
+	(-fdump-analyzer-supergraph): New warning.
+	* doc/sourcebuild.texi (dg-require-dot): New.
+	(dg-check-dot): New.
+	* gdbinit.in (break-on-saved-diagnostic): New command.
+	* graphviz.cc: New file.
+	* graphviz.h: New file.
+	* ordered-hash-map-tests.cc: New file.
+	* ordered-hash-map.h: New file.
+	* passes.def (pass_analyzer): Add before
+	pass_ipa_whole_program_visibility.
+	* selftest-run-tests.c (selftest::run_tests): Call
+	selftest::ordered_hash_map_tests_cc_tests.
+	* selftest.h (selftest::ordered_hash_map_tests_cc_tests): New
+	decl.
+	* shortest-paths.h: New file.
+	* timevar.def (TV_ANALYZER): New timevar.
+	(TV_ANALYZER_SUPERGRAPH): Likewise.
+	(TV_ANALYZER_STATE_PURGE): Likewise.
+	(TV_ANALYZER_PLAN): Likewise.
+	(TV_ANALYZER_SCC): Likewise.
+	(TV_ANALYZER_WORKLIST): Likewise.
+	(TV_ANALYZER_DUMP): Likewise.
+	(TV_ANALYZER_DIAGNOSTICS): Likewise.
+	(TV_ANALYZER_SHORTEST_PATHS): Likewise.
+	* tree-pass.h (make_pass_analyzer): New decl.
+	* tristate.cc: New file.
+	* tristate.h: New file.
+
+2020-01-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/93254
+	* config/i386/i386.md (*movsf_internal): Require SSE2 ISA for
+	alternatives 9 and 10.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* attribs.c (excl_hash_traits::empty_zero_p): New static constant.
+	* gcov.c (function_start_pair_hash::empty_zero_p): Likewise.
+	* graphite.c (struct sese_scev_hash::empty_zero_p): Likewise.
+	* hash-map-tests.c (selftest::test_nonzero_empty_key): New selftest.
+	(selftest::hash_map_tests_c_tests): Call it.
+	* hash-map-traits.h (simple_hashmap_traits::empty_zero_p):
+	New static constant, using the value of = H::empty_zero_p.
+	(unbounded_hashmap_traits::empty_zero_p): Likewise, using the value
+	from default_hash_traits <Value>.
+	* hash-map.h (hash_map::empty_zero_p): Likewise, using the value
+	from Traits.
+	* hash-set-tests.c (value_hash_traits::empty_zero_p): Likewise.
+	* hash-table.h (hash_table::alloc_entries): Guard the loop of
+	calls to mark_empty with !Descriptor::empty_zero_p.
+	(hash_table::empty_slow): Conditionalize the memset call with a
+	check that Descriptor::empty_zero_p; otherwise, loop through the
+	entries calling mark_empty on them.
+	* hash-traits.h (int_hash::empty_zero_p): New static constant.
+	(pointer_hash::empty_zero_p): Likewise.
+	(pair_hash::empty_zero_p): Likewise.
+	* ipa-devirt.c (default_hash_traits <type_pair>::empty_zero_p):
+	Likewise.
+	* ipa-prop.c (ipa_bit_ggc_hash_traits::empty_zero_p): Likewise.
+	(ipa_vr_ggc_hash_traits::empty_zero_p): Likewise.
+	* profile.c (location_triplet_hash::empty_zero_p): Likewise.
+	* sanopt.c (sanopt_tree_triplet_hash::empty_zero_p): Likewise.
+	(sanopt_tree_couple_hash::empty_zero_p): Likewise.
+	* tree-hasher.h (int_tree_hasher::empty_zero_p): Likewise.
+	* tree-ssa-sccvn.c (vn_ssa_aux_hasher::empty_zero_p): Likewise.
+	* tree-vect-slp.c (bst_traits::empty_zero_p): Likewise.
+	* tree-vectorizer.h
+	(default_hash_traits<scalar_cond_masked_key>::empty_zero_p):
+	Likewise.
+
+2020-01-14  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* cfgloopanal.c (average_num_loop_insns): Free bbs when early return,
+	fix typo on return value.
+
+2020-01-14  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	PR ipa/69678
+	* cgraph.c (symbol_table::create_edge): Init speculative_id and
+	target_prob.
+	(cgraph_edge::make_speculative): Add param for setting speculative_id
+	and target_prob.
+	(cgraph_edge::speculative_call_info): Update comments and find reference
+	by speculative_id for multiple indirect targets.
+	(cgraph_edge::resolve_speculation): Decrease the speculations
+	for indirect edge, drop it's speculative if not direct target
+	left. Update comments.
+	(cgraph_edge::redirect_call_stmt_to_callee): Likewise.
+	(cgraph_node::dump): Print num_speculative_call_targets.
+	(cgraph_node::verify_node): Don't report error if speculative
+	edge not include statement.
+	(cgraph_edge::num_speculative_call_targets_p): New function.
+	* cgraph.h (int common_target_id): Remove.
+	(int common_target_probability): Remove.
+	(num_speculative_call_targets): New variable.
+	(make_speculative): Add param for setting speculative_id.
+	(cgraph_edge::num_speculative_call_targets_p): New declare.
+	(target_prob): New variable.
+	(speculative_id): New variable.
+	* ipa-fnsummary.c (analyze_function_body): Create and duplicate
+	  call summaries for multiple speculative call targets.
+	* cgraphclones.c (cgraph_node::create_clone): Clone speculative_id.
+	* ipa-profile.c (struct speculative_call_target): New struct.
+	(class speculative_call_summary): New class.
+	(class speculative_call_summaries): New class.
+	(call_sums): New variable.
+	(ipa_profile_generate_summary): Generate indirect multiple targets summaries.
+	(ipa_profile_write_edge_summary): New function.
+	(ipa_profile_write_summary): Stream out indirect multiple targets summaries.
+	(ipa_profile_dump_all_summaries): New function.
+	(ipa_profile_read_edge_summary): New function.
+	(ipa_profile_read_summary_section): New function.
+	(ipa_profile_read_summary): Stream in indirect multiple targets summaries.
+	(ipa_profile): Generate num_speculative_call_targets from
+	profile summaries.
+	* ipa-ref.h (speculative_id): New variable.
+	* ipa-utils.c (ipa_merge_profiles): Update with target_prob.
+	* lto-cgraph.c (lto_output_edge): Remove indirect common_target_id and
+	common_target_probability.   Stream out speculative_id and
+	num_speculative_call_targets.
+	(input_edge): Likewise.
+	* predict.c (dump_prediction): Remove edges count assert to be
+	precise.
+	* symtab.c (symtab_node::create_reference): Init speculative_id.
+	(symtab_node::clone_references): Clone speculative_id.
+	(symtab_node::clone_referring): Clone speculative_id.
+	(symtab_node::clone_reference): Clone speculative_id.
+	(symtab_node::clear_stmts_in_references): Clear speculative_id.
+	* tree-inline.c (copy_bb): Duplicate all the speculative edges
+	if indirect call contains multiple speculative targets.
+	* value-prof.h  (check_ic_target): Remove.
+	* value-prof.c  (gimple_value_profile_transformations):
+	Use void function gimple_ic_transform.
+	* value-prof.c  (gimple_ic_transform): Handle topn case.
+	Fix comment typos.  Change it to a void function.
+
+2020-01-13  Andrew Pinski  <apinski@marvell.com>
+
+	* config/aarch64/aarch64-cores.def (octeontx2): New define.
+	(octeontx2t98): New define.
+	(octeontx2t96): New define.
+	(octeontx2t93): New define.
+	(octeontx2f95): New define.
+	(octeontx2f95n): New define.
+	(octeontx2f95mm): New define.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi (-mcpu=): Document the new cpu types.
+
+2020-01-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/33799 - destroy return value if local cleanup throws.
+	* gimplify.c (gimplify_return_expr): Handle COMPOUND_EXPR.
+
 2020-01-13  Martin Liska  <mliska@suse.cz>
 
 	* ipa-cp.c (get_max_overall_size): Use newly

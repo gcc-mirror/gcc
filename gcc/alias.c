@@ -1164,10 +1164,16 @@ record_alias_subset (alias_set_type superset, alias_set_type subset)
     superset_entry->has_zero_child = 1;
   else
     {
-      subset_entry = get_alias_set_entry (subset);
       if (!superset_entry->children)
 	superset_entry->children
 	  = hash_map<alias_set_hash, int>::create_ggc (64);
+
+      /* Enter the SUBSET itself as a child of the SUPERSET.  If it was
+	 already there we're done.  */
+      if (superset_entry->children->put (subset, 0))
+	return;
+
+      subset_entry = get_alias_set_entry (subset);
       /* If there is an entry for the subset, enter all of its children
 	 (if they are not already present) as children of the SUPERSET.  */
       if (subset_entry)
@@ -1185,21 +1191,17 @@ record_alias_subset (alias_set_type superset, alias_set_type subset)
 		superset_entry->children->put ((*iter).first, (*iter).second);
 	    }
 	}
-
-      /* Enter the SUBSET itself as a child of the SUPERSET.  */
-      superset_entry->children->put (subset, 0);
     }
 }
 
-/* Record that component types of TYPE, if any, are part of that type for
+/* Record that component types of TYPE, if any, are part of SUPERSET for
    aliasing purposes.  For record types, we only record component types
    for fields that are not marked non-addressable.  For array types, we
    only record the component type if it is not marked non-aliased.  */
 
 void
-record_component_aliases (tree type)
+record_component_aliases (tree type, alias_set_type superset)
 {
-  alias_set_type superset = get_alias_set (type);
   tree field;
 
   if (superset == 0)
@@ -1253,7 +1255,21 @@ record_component_aliases (tree type)
 					 == get_alias_set (TREE_TYPE (field)));
 		}
 
-	      record_alias_subset (superset, get_alias_set (t));
+	      alias_set_type set = get_alias_set (t);
+	      record_alias_subset (superset, set);
+	      /* If the field has alias-set zero make sure to still record
+		 any componets of it.  This makes sure that for
+		   struct A {
+		     struct B {
+		       int i;
+		       char c[4];
+		     } b;
+		   };
+		 in C++ even though 'B' has alias-set zero because
+		 TYPE_TYPELESS_STORAGE is set, 'A' has the alias-set of
+		 'int' as subset.  */
+	      if (set == 0)
+		record_component_aliases (t, superset);
 	    }
       }
       break;
@@ -1269,6 +1285,19 @@ record_component_aliases (tree type)
       break;
     }
 }
+
+/* Record that component types of TYPE, if any, are part of that type for
+   aliasing purposes.  For record types, we only record component types
+   for fields that are not marked non-addressable.  For array types, we
+   only record the component type if it is not marked non-aliased.  */
+
+void
+record_component_aliases (tree type)
+{
+  alias_set_type superset = get_alias_set (type);
+  record_component_aliases (type, superset);
+}
+
 
 /* Allocate an alias set for use in storing and reading from the varargs
    spill area.  */

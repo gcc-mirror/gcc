@@ -559,12 +559,11 @@ map_arguments (tree parms, tree args)
 static tree
 build_parameter_mapping (tree expr, tree args, tree decl)
 {
-  int depth = 0;
+  tree ctx_parms = NULL_TREE;
   if (decl)
     {
       gcc_assert (TREE_CODE (decl) == TEMPLATE_DECL);
-      tree parms = DECL_TEMPLATE_PARMS (decl);
-      depth = TREE_INT_CST_LOW (TREE_PURPOSE (parms));
+      ctx_parms = DECL_TEMPLATE_PARMS (decl);
     }
   else if (current_template_parms)
     {
@@ -572,10 +571,10 @@ build_parameter_mapping (tree expr, tree args, tree decl)
 	 point of declaration of concepts is currently set after the
 	 initializer, the template parameter lists are not available
 	 when normalizing concept definitions, hence the case above.  */
-      depth = TMPL_PARMS_DEPTH (current_template_parms);
+      ctx_parms = current_template_parms;
     }
 
-  tree parms = find_template_parameters (expr, depth);
+  tree parms = find_template_parameters (expr, ctx_parms);
   tree map = map_arguments (parms, args);
   return map;
 }

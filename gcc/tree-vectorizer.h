@@ -232,6 +232,8 @@ struct default_hash_traits<scalar_cond_masked_key>
            && operand_equal_p (existing.op1, candidate.op1, 0));
   }
 
+  static const bool empty_zero_p = true;
+
   static inline void
   mark_empty (value_type &v)
   {

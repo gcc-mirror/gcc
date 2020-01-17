@@ -1,3 +1,35 @@
+2020-01-15  Segher Boessenkool  <segher@kernel.crashing.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-git-customization.sh: Change uses to use in comment.
+
+2020-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-git-customization.sh: Handle output of older git which doesn't
+	print tags/ prefixes before branchpoint/gcc-.
+
+2010-01-15  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc-git-customization.sh: Explain why we want the user's
+	upstream account name.  Don't add push rules.  Check if push rules
+	have been added and suggest that they should be removed.
+	* git-fetch-vendor.sh: Don't add push rules.
+
+2010-01-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	Revert:
+	2010-01-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc-git-customization.sh: Add back the default rule that
+	is lost by adding a custom push rule.
+	* git-fetch-vendor.sh: Likewise, also remove '+' from push specs.
+
+2010-01-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc-git-customization.sh: Add back the default rule that
+	is lost by adding a custom push rule.
+	* git-fetch-vendor.sh: Likewise, also remove '+' from push specs.
+
 2010-01-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	* contrib/git-fetch-vendor.sh: New file.

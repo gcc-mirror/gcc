@@ -2048,6 +2048,8 @@ struct excl_hash_traits: typed_noop_remove<excl_pair>
     x = value_type (NULL, NULL);
   }
 
+  static const bool empty_zero_p = false;
+
   static void mark_empty (value_type &x)
   {
     x = value_type ("", "");

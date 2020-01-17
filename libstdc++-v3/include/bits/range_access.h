@@ -347,21 +347,14 @@ namespace ranges
 
   namespace __detail
   {
-    using __max_diff_type = long long;
-    using __max_size_type = unsigned long long;
-
-    template<typename _Tp>
-      concept __is_integer_like = integral<_Tp>
-	|| same_as<_Tp, __max_diff_type> || same_as<_Tp, __max_size_type>;
-
-    template<typename _Tp>
-      concept __is_signed_integer_like = signed_integral<_Tp>
-	|| same_as<_Tp, __max_diff_type>;
-
     template<integral _Tp>
       constexpr make_unsigned_t<_Tp>
       __to_unsigned_like(_Tp __t) noexcept
       { return __t; }
+
+    template<typename _Tp, bool _MaxDiff = same_as<_Tp, __max_diff_type>>
+      using __make_unsigned_like_t
+	= conditional_t<_MaxDiff, __max_size_type, make_unsigned_t<_Tp>>;
 
     // Part of the constraints of ranges::safe_range
     template<typename _Tp>

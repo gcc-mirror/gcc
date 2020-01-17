@@ -1,0 +1,204 @@
+2020-01-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (class impl_region_model_context): Fix comment.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93212
+	* region-model.cc (make_region_for_type): Use
+	FUNC_OR_METHOD_TYPE_P rather than comparing against FUNCTION_TYPE.
+	* region-model.h (function_region::function_region): Likewise.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* program-state.cc (sm_state_map::clone_with_remapping): Copy
+	m_global_state.
+	(selftest::test_program_state_merging_2): New selftest.
+	(selftest::analyzer_program_state_cc_tests): Call it.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.h (checker_path::get_checker_event): New function.
+	(checker_path): Add DISABLE_COPY_AND_ASSIGN; make fields private.
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_for_sm_diagnostic): Replace direct
+	access to checker_path::m_events with accessor functions.  Fix
+	overlong line.
+	(diagnostic_manager::prune_interproc_events): Replace direct
+	access to checker_path::m_events with accessor functions.
+	(diagnostic_manager::finish_pruning): Likewise.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.h (checker_event::clone): Delete vfunc decl.
+	(debug_event::clone): Delete vfunc impl.
+	(custom_event::clone): Delete vfunc impl.
+	(statement_event::clone): Delete vfunc impl.
+	(function_entry_event::clone): Delete vfunc impl.
+	(state_change_event::clone): Delete vfunc impl.
+	(start_cfg_edge_event::clone): Delete vfunc impl.
+	(end_cfg_edge_event::clone): Delete vfunc impl.
+	(call_event::clone): Delete vfunc impl.
+	(return_event::clone): Delete vfunc impl.
+	(setjmp_event::clone): Delete vfunc impl.
+	(rewind_from_longjmp_event::clone): Delete vfunc impl.
+	(rewind_to_setjmp_event::clone): Delete vfunc impl.
+	(warning_event::clone): Delete vfunc impl.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* supergraph.cc (supernode::dump_dot): Ensure that the TABLE
+	element has at least one TR.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/58237
+	* engine.cc (leak_stmt_finder::find_stmt): Use get_pure_location
+	when comparing against UNKNOWN_LOCATION.
+	(stmt_requires_new_enode_p): Likewise.
+	(exploded_graph::dump_exploded_nodes): Likewise.
+	* supergraph.cc (supernode::get_start_location): Likewise.
+	(supernode::get_end_location): Likewise.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/58237
+	* analyzer-selftests.cc (selftest::run_analyzer_selftests): Call
+	selftest::analyzer_sm_file_cc_tests.
+	* analyzer-selftests.h (selftest::analyzer_sm_file_cc_tests): New
+	decl.
+	* sm-file.cc: Include "analyzer/function-set.h" and
+	"analyzer/analyzer-selftests.h".
+	(get_file_using_fns): New function.
+	(is_file_using_fn_p): New function.
+	(fileptr_state_machine::on_stmt): Return true for known functions.
+	(selftest::analyzer_sm_file_cc_tests): New function.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer-selftests.cc (selftest::run_analyzer_selftests): Call
+	selftest::analyzer_sm_signal_cc_tests.
+	* analyzer-selftests.h (selftest::analyzer_sm_signal_cc_tests):
+	New decl.
+	* sm-signal.cc: Include "analyzer/function-set.h" and
+	"analyzer/analyzer-selftests.h".
+	(get_async_signal_unsafe_fns): New function.
+	(signal_unsafe_p): Reimplement in terms of the above.
+	(selftest::analyzer_sm_signal_cc_tests): New function.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer-selftests.cc (selftest::run_analyzer_selftests): Call
+	selftest::analyzer_function_set_cc_tests.
+	* analyzer-selftests.h (selftest::analyzer_function_set_cc_tests):
+	New decl.
+	* function-set.cc: New file.
+	* function-set.h: New file.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (fndecl_has_gimple_body_p): New decl.
+	* engine.cc (impl_region_model_context::on_unknown_change): New
+	function.
+	(fndecl_has_gimple_body_p): Make non-static.
+	(exploded_node::on_stmt): Treat __analyzer_dump_exploded_nodes as
+	known.  Track whether we have a call with unknown side-effects and
+	pass it to on_call_post.
+	* exploded-graph.h (impl_region_model_context::on_unknown_change):
+	New decl.
+	* program-state.cc (sm_state_map::on_unknown_change): New function.
+	* program-state.h (sm_state_map::on_unknown_change): New decl.
+	* region-model.cc: Include "bitmap.h".
+	(region_model::on_call_pre): Return a bool, capturing whether the
+	call has unknown side effects.
+	(region_model::on_call_post): Add arg "bool unknown_side_effects"
+	and if true, call handle_unrecognized_call.
+	(class reachable_regions): New class.
+	(region_model::handle_unrecognized_call): New function.
+	* region-model.h (region_model::on_call_pre): Return a bool.
+	(region_model::on_call_post): Add arg "bool unknown_side_effects".
+	(region_model::handle_unrecognized_call): New decl.
+	(region_model_context::on_unknown_change): New vfunc.
+	(test_region_model_context::on_unknown_change): New function.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc (saved_diagnostic::operator==): Move here
+	from header.  Replace pointer equality test on m_var with call to
+	pending_diagnostic::same_tree_p.
+	* diagnostic-manager.h (saved_diagnostic::operator==): Move to
+	diagnostic-manager.cc.
+	* pending-diagnostic.cc (pending_diagnostic::same_tree_p): New.
+	* pending-diagnostic.h (pending_diagnostic::same_tree_p): New.
+	* sm-file.cc (file_diagnostic::subclass_equal_p): Replace pointer
+	equality on m_arg with call to pending_diagnostic::same_tree_p.
+	* sm-malloc.cc (malloc_diagnostic::subclass_equal_p): Likewise.
+	(possible_null_arg::subclass_equal_p): Likewise.
+	(null_arg::subclass_equal_p): Likewise.
+	(free_of_non_heap::subclass_equal_p): Likewise.
+	* sm-pattern-test.cc (pattern_match::operator==): Likewise.
+	* sm-sensitive.cc (exposure_through_output_file::operator==):
+	Likewise.
+	* sm-taint.cc (tainted_array_index::operator==): Likewise.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc (dedupe_winners::add): Add logging
+	of deduplication decisions made.
+
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* ChangeLog: New file.
+	* analyzer-selftests.cc: New file.
+	* analyzer-selftests.h: New file.
+	* analyzer.opt: New file.
+	* analysis-plan.cc: New file.
+	* analysis-plan.h: New file.
+	* analyzer-logging.cc: New file.
+	* analyzer-logging.h: New file.
+	* analyzer-pass.cc: New file.
+	* analyzer.cc: New file.
+	* analyzer.h: New file.
+	* call-string.cc: New file.
+	* call-string.h: New file.
+	* checker-path.cc: New file.
+	* checker-path.h: New file.
+	* constraint-manager.cc: New file.
+	* constraint-manager.h: New file.
+	* diagnostic-manager.cc: New file.
+	* diagnostic-manager.h: New file.
+	* engine.cc: New file.
+	* engine.h: New file.
+	* exploded-graph.h: New file.
+	* pending-diagnostic.cc: New file.
+	* pending-diagnostic.h: New file.
+	* program-point.cc: New file.
+	* program-point.h: New file.
+	* program-state.cc: New file.
+	* program-state.h: New file.
+	* region-model.cc: New file.
+	* region-model.h: New file.
+	* sm-file.cc: New file.
+	* sm-malloc.cc: New file.
+	* sm-malloc.dot: New file.
+	* sm-pattern-test.cc: New file.
+	* sm-sensitive.cc: New file.
+	* sm-signal.cc: New file.
+	* sm-taint.cc: New file.
+	* sm.cc: New file.
+	* sm.h: New file.
+	* state-purge.cc: New file.
+	* state-purge.h: New file.
+	* supergraph.cc: New file.
+	* supergraph.h: New file.
+
+2019-12-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* Initial creation
+
+
+Copyright (C) 2019-2020 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

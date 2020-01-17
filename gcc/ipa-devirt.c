@@ -150,6 +150,7 @@ struct default_hash_traits <type_pair>
   {
     return TYPE_UID (p.first) ^ TYPE_UID (p.second);
   }
+  static const bool empty_zero_p = true;
   static bool
   is_empty (type_pair p)
   {
@@ -1540,6 +1541,27 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
       warn_odr (t1, t2, NULL, NULL, warn, warned,
 		G_("a type with different size "
 		   "is defined in another translation unit"));
+      return false;
+    }
+
+  if (TREE_ADDRESSABLE (t1) != TREE_ADDRESSABLE (t2)
+      && COMPLETE_TYPE_P (t1) && COMPLETE_TYPE_P (t2))
+    {
+      warn_odr (t1, t2, NULL, NULL, warn, warned,
+		G_("one type needs to be constructed while other not"));
+      gcc_checking_assert (RECORD_OR_UNION_TYPE_P (t1));
+      return false;
+    }
+  /* There is no really good user facing warning for this.
+     Either the original reason for modes being different is lost during
+     streaming or we should catch earlier warnings.  We however must detect
+     the mismatch to avoid type verifier from cmplaining on mismatched
+     types between type and canonical type. See PR91576.  */
+  if (TYPE_MODE (t1) != TYPE_MODE (t2)
+      && COMPLETE_TYPE_P (t1) && COMPLETE_TYPE_P (t2))
+    {
+      warn_odr (t1, t2, NULL, NULL, warn, warned,
+		G_("memory layout mismatch"));
       return false;
     }
 

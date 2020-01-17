@@ -675,68 +675,133 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	   e2 = (e2 ? e2->next_callee : NULL), e = e->next_callee)
 	{
 	  profile_count count = gimple_bb (e->call_stmt)->count;
+	  /* Below code are introduced by r279373 of "Fix merging of common
+	     traget info.".
+
+	     ipa-icf runs after ipa-profile, common_target_id with
+	     common_target_probablity are useless in ipa-icf since they are
+	     moved from cgraph.h to ipa-profile.c and processed already.
+	     Need double circulation to find out each mapped direct speculative
+	     edge and do prob merge.  Not easy to construct a case to cover all
+	     circumstances here.  For src and dst both have multiple speculative
+	     targets, only N:N maps are implemented, 2:0, 2:1, 0:2, 1:2 are not
+	     implemented yet as too complicated and no test cases to cover.  */
 	  if (copy_counts)
 	    {
-	      e->indirect_info->common_target_id
-		      = e2->indirect_info->common_target_id;
-	      e->indirect_info->common_target_probability
-		      = e2->indirect_info->common_target_probability;
-	    }
-	  else if (e->indirect_info->common_target_id
-		   || e2->indirect_info->common_target_id)
-	    {
-	      sreal scale1
-		 = e->count.ipa().to_sreal_scale (count);
-	      sreal scale2
-		 = e2->count.ipa().to_sreal_scale (count);
+	      /* copy if both e and e2 have same num_speculative_call_targets.
+	       */
+	      if (e->num_speculative_call_targets_p ()
+		  == e2->num_speculative_call_targets_p ())
+		{
+		  int num_specs = e->num_speculative_call_targets_p ();
+		  cgraph_edge *direct, *indirect, *next_direct;
+		  cgraph_edge *direct2, *indirect2, *next_direct2;
+		  ipa_ref *ref;
+		  for (next_direct = e; next_direct && num_specs--;
+		       next_direct = direct->next_callee)
+		    {
+		      next_direct->speculative_call_info (direct, indirect,
+							  ref);
 
-	      if (scale1 == 0 && scale2 == 0)
-		scale1 = scale2 = 1;
-	      sreal sum = scale1 + scale2;
-	      int scaled_probability1
-		      = ((sreal)e->indirect_info->common_target_probability
-			* scale1 / sum).to_int ();
-	      int scaled_probability2
-		      = ((sreal)e2->indirect_info->common_target_probability
-			 * scale2 / sum).to_int ();
-	      if (symtab->dump_file)
-		{
-		  fprintf (symtab->dump_file,
-			   "Merging common targets %i prob %i"
-			   " and %i prob %i with scales %f %f\n",
-			   e->indirect_info->common_target_id,
-			   e->indirect_info->common_target_probability,
-			   e2->indirect_info->common_target_id,
-			   e2->indirect_info->common_target_probability,
-			   scale1.to_double (),
-			   scale2.to_double ());
-		  fprintf (symtab->dump_file, "Combined BB count ");
-		  count.dump (symtab->dump_file);
-		  fprintf (symtab->dump_file, " dst edge count ");
-		  e->count.dump (symtab->dump_file);
-		  fprintf (symtab->dump_file, " src edge count ");
-		  e2->count.dump (symtab->dump_file);
-		  fprintf (symtab->dump_file, "\n");
+		      int num_specs2 = e2->num_speculative_call_targets_p ();
+		      for (next_direct2 = e2; next_direct2 && num_specs2--;
+			   next_direct2 = direct2->next_callee)
+			{
+			  if (e2 && e2->speculative)
+			    next_direct2->speculative_call_info (direct2,
+								 indirect2,
+								 ref);
+			  if (direct->speculative_id == direct2->speculative_id
+			      && direct->lto_stmt_uid == direct2->lto_stmt_uid)
+			    {
+			      direct->target_prob = direct2->target_prob;
+			      break;
+			    }
+			}
+		    }
 		}
-	      if (e->indirect_info->common_target_id
-		  == e2->indirect_info->common_target_id)
-		e->indirect_info->common_target_probability
-		       	= scaled_probability1 + scaled_probability2;
-	      else if (!e2->indirect_info->common_target_id
-		       || scaled_probability1 > scaled_probability2)
-		e->indirect_info->common_target_probability
-		       	= scaled_probability1;
-	      else 
+	      else
+		gcc_assert (e->num_speculative_call_targets_p ()
+			    && e->num_speculative_call_targets_p ());
+	    }
+	  else if (e->num_speculative_call_targets_p ()
+		   || e2->num_speculative_call_targets_p ())
+	    {
+	      if (e->num_speculative_call_targets_p ()
+		  == e2->num_speculative_call_targets_p ())
 		{
-		  e->indirect_info->common_target_id
-			  = e2->indirect_info->common_target_id;
-		  e->indirect_info->common_target_probability
-			  = scaled_probability2;
+		  int num_specs = e->num_speculative_call_targets_p ();
+		  cgraph_edge *direct, *indirect, *next_direct;
+		  cgraph_edge *direct2, *indirect2, *next_direct2;
+		  ipa_ref *ref;
+		  for (next_direct = e; next_direct && num_specs--;
+		       next_direct = direct->next_callee)
+		    {
+		      next_direct->speculative_call_info (direct, indirect,
+							  ref);
+
+		      int num_specs2 = e2->num_speculative_call_targets_p ();
+		      for (next_direct2 = e2; next_direct2 && num_specs2--;
+			   next_direct2 = direct2->next_callee)
+			{
+			  if (e2 && e2->speculative)
+			    next_direct2->speculative_call_info (direct2,
+								 indirect2,
+								 ref);
+			  if (direct->speculative_id == direct2->speculative_id
+			      && direct->lto_stmt_uid == direct2->lto_stmt_uid)
+			    {
+			      sreal scale1
+				= e->count.ipa ().to_sreal_scale (count);
+			      sreal scale2
+				= e2->count.ipa ().to_sreal_scale (count);
+
+			      if (scale1 == 0 && scale2 == 0)
+				scale1 = scale2 = 1;
+			      sreal sum = scale1 + scale2;
+			      int scaled_prob1
+				= (((sreal)direct->target_prob)
+				   * scale1 / sum).to_int ();
+			      int scaled_prob2
+				= (((sreal)direct2->target_prob)
+				   * scale2 / sum).to_int ();
+			      if (symtab->dump_file)
+				{
+				  fprintf (
+				    symtab->dump_file,
+				    "Merging speculative id %i prob %i"
+				    " and %i prob %i with scales %f %f\n",
+				    direct->speculative_id, direct->target_prob,
+				    direct2->speculative_id,
+				    direct2->target_prob, scale1.to_double (),
+				    scale2.to_double ());
+				  fprintf (symtab->dump_file,
+					   "Combined BB count ");
+				  count.dump (symtab->dump_file);
+				  fprintf (symtab->dump_file,
+					   " dst edge count ");
+				  e->count.dump (symtab->dump_file);
+				  fprintf (symtab->dump_file,
+					   " src edge count ");
+				  e2->count.dump (symtab->dump_file);
+				  fprintf (symtab->dump_file, "\n");
+				}
+			      direct->target_prob = scaled_prob1 + scaled_prob2;
+			      break;
+			    }
+			}
+		    }
 		}
-	      if (symtab->dump_file)
-		fprintf (symtab->dump_file, "Merged as %i prob %i\n",
-			 e->indirect_info->common_target_id,
-			 e->indirect_info->common_target_probability);
+	      else if (e->num_speculative_call_targets_p ())
+		{
+		  /* Process if only dst is speculative.  */
+		  gcc_assert (!e->num_speculative_call_targets_p ());
+		}
+	      else if (e2->num_speculative_call_targets_p ())
+		{
+		  /* Process if only src is speculative.  */
+		  gcc_assert (!e2->num_speculative_call_targets_p ());
+		}
 	    }
 
 	  /* When call is speculative, we need to re-distribute probabilities

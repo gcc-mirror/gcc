@@ -2644,6 +2644,9 @@ This is equivalent to @code{dg-require-effective-target cxa_atexit}.
 @item dg-require-dll ""
 Skip the test if the target does not support DLL attributes.
 
+@item dg-require-dot ""
+Skip the test if the host does not have @command{dot}.
+
 @item dg-require-fork ""
 Skip the test if the target does not support @code{fork}.
 
@@ -2687,6 +2690,9 @@ Passes if @var{regexp} matches text in @var{filename}.
 Passes if @var{regexp} does not match text in @var{filename}.
 @item scan-module @var{module} @var{regexp} [@{ target/xfail @var{selector} @}]
 Passes if @var{regexp} matches in Fortran module @var{module}.
+@item dg-check-dot @var{filename}
+Passes if @var{filename} is a valid @file{.dot} file (by running
+@code{dot -Tpng} on it, and verifying the exit code is 0).
 @end table
 
 @subsubsection Scan the assembly output

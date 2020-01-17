@@ -858,6 +858,8 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
   edge->prev_callee = NULL;
   edge->next_callee = NULL;
   edge->lto_stmt_uid = 0;
+  edge->target_prob = 0;
+  edge->speculative_id = 0;
 
   edge->count = count;
   edge->call_stmt = call_stmt;
@@ -1044,10 +1046,16 @@ cgraph_edge::remove (cgraph_edge *edge)
    the reference representing the if conditional and attaches
    them all to the original indirect call statement.  
 
+   speculative_id is used to link direct calls with their corresponding
+   IPA_REF_ADDR references when representing speculative calls.
+
+   target_prob is the probability of the speculative call.
+
    Return direct edge created.  */
 
 cgraph_edge *
-cgraph_edge::make_speculative (cgraph_node *n2, profile_count direct_count)
+cgraph_edge::make_speculative (cgraph_node *n2, profile_count direct_count,
+			       unsigned int speculative_id, int target_prob)
 {
   cgraph_node *n = caller;
   ipa_ref *ref = NULL;
@@ -1065,24 +1073,53 @@ cgraph_edge::make_speculative (cgraph_node *n2, profile_count direct_count)
   else
     e2->can_throw_external = can_throw_external;
   e2->lto_stmt_uid = lto_stmt_uid;
+  e2->speculative_id = speculative_id;
+  e2->target_prob = target_prob;
   e2->in_polymorphic_cdtor = in_polymorphic_cdtor;
   count -= e2->count;
   symtab->call_edge_duplication_hooks (this, e2);
   ref = n->create_reference (n2, IPA_REF_ADDR, call_stmt);
   ref->lto_stmt_uid = lto_stmt_uid;
+  ref->speculative_id = speculative_id;
   ref->speculative = speculative;
   n2->mark_address_taken ();
   return e2;
 }
 
-/* Speculative call consist of three components:
-   1) an indirect edge representing the original call
-   2) an direct edge representing the new call
-   3) ADDR_EXPR reference representing the speculative check.
-   All three components are attached to single statement (the indirect
-   call) and if one of them exists, all of them must exist.
+/* Speculative calls represent a transformation of indirect calls
+   which may be later inserted into gimple in the following form:
 
-   Given speculative call edge, return all three components.
+   if (call_dest == target1)
+   target1 ();
+   else if (call_dest == target2)
+   target2 ();
+   else
+   call_dest ();
+
+   This is a win in the case when target1 and target2 are common values for
+   call_dest as determined by ipa-devirt or indirect call profiling.
+   In particular this may enable inlining and other optimizations.
+
+   Speculative call consists of the following main components:
+
+   1) One or more "speculative" direct call (num_speculative_call_targets is
+   speculative direct call count belongs to the speculative indirect call)
+   2) One or more IPA_REF_ADDR references (representing the fact that code above
+   takes address of target1 and target2)
+   3) The fallback "speculative" indirect call
+
+   Direct calls and corresponding references are linked by
+   speculative_id.
+
+   speculative_call_info returns triple
+   (direct_call, indirect call, IPA_REF_ADDR reference)
+   when called on one edge participating in the speculative call:
+
+   1) If called on direct call, its corresponding IPA_REF_ADDR and related
+   indirect call are returned.
+
+   2) If called on indirect call, it will return one of direct edges and its
+   matching IPA_REF_ADDR.
  */
 
 void
@@ -1122,7 +1159,7 @@ cgraph_edge::speculative_call_info (cgraph_edge *&direct,
 
   reference = NULL;
   for (i = 0; e->caller->iterate_reference (i, ref); i++)
-    if (ref->speculative
+    if (ref->speculative && ref->speculative_id == e->speculative_id
 	&& ((ref->stmt && ref->stmt == e->call_stmt)
 	    || (!ref->stmt && ref->lto_stmt_uid == e->lto_stmt_uid)))
       {
@@ -1138,9 +1175,18 @@ cgraph_edge::speculative_call_info (cgraph_edge *&direct,
 
 /* Speculative call EDGE turned out to be direct call to CALLEE_DECL.  Remove
    the speculative call sequence and return edge representing the call, the
-   original EDGE can be removed and deallocated.  It is up to caller to
-   redirect the call as appropriate.  Return the edge that now represents the
-   call.  */
+   original EDGE can be removed and deallocated.  Return the edge that now
+   represents the call.
+
+   For "speculative" indirect call that contains multiple "speculative"
+   targets (i.e. edge->indirect_info->num_speculative_call_targets > 1),
+   decrease the count and only remove current direct edge.
+
+   If no speculative direct call left to the speculative indirect call, remove
+   the speculative of both the indirect call and corresponding direct edge.
+
+   It is up to caller to iteratively resolve each "speculative" direct call and
+   redirect the call as appropriate.  */
 
 cgraph_edge *
 cgraph_edge::resolve_speculation (cgraph_edge *edge, tree callee_decl)
@@ -1184,7 +1230,16 @@ cgraph_edge::resolve_speculation (cgraph_edge *edge, tree callee_decl)
          in the functions inlined through it.  */
     }
   edge->count += e2->count;
-  edge->speculative = false;
+  if (edge->num_speculative_call_targets_p ())
+    {
+      /* The indirect edge has multiple speculative targets, don't remove
+	 speculative until all related direct edges are resolved.  */
+      edge->indirect_info->num_speculative_call_targets--;
+      if (!edge->indirect_info->num_speculative_call_targets)
+	edge->speculative = false;
+    }
+  else
+    edge->speculative = false;
   e2->speculative = false;
   ref->remove_reference ();
   if (e2->indirect_unknown_callee || e2->inline_failed)
@@ -1244,7 +1299,17 @@ cgraph_edge::make_direct (cgraph_edge *edge, cgraph_node *callee)
 
 /* If necessary, change the function declaration in the call statement
    associated with E so that it corresponds to the edge callee.  Speculations
-   can be resolved in the process and EDGE can be removed and deallocated.  */
+   can be resolved in the process and EDGE can be removed and deallocated.
+
+   The edge could be one of speculative direct call generated from speculative
+   indirect call.  In this circumstance, decrease the speculative targets
+   count (i.e. num_speculative_call_targets) and redirect call stmt to the
+   corresponding i-th target.  If no speculative direct call left to the
+   speculative indirect call, remove "speculative" of the indirect call and
+   also redirect stmt to it's final direct target.
+
+   It is up to caller to iteratively transform each "speculative"
+   direct call as appropriate.  */
 
 gimple *
 cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
@@ -1290,7 +1355,17 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
 	  e->caller->set_call_stmt_including_clones (e->call_stmt, new_stmt,
 						     false);
 	  e->count = gimple_bb (e->call_stmt)->count;
-	  e2->speculative = false;
+	  if (e2->num_speculative_call_targets_p ())
+	    {
+	      /* The indirect edge has multiple speculative targets, don't
+		 remove speculative until all related direct edges are
+		 redirected.  */
+	      e2->indirect_info->num_speculative_call_targets--;
+	      if (!e2->indirect_info->num_speculative_call_targets)
+		e2->speculative = false;
+	    }
+	  else
+	    e2->speculative = false;
 	  e2->count = gimple_bb (e2->call_stmt)->count;
 	  ref->speculative = false;
 	  ref->stmt = NULL;
@@ -2103,6 +2178,8 @@ cgraph_node::dump (FILE *f)
 	  if (edge->indirect_info->vptr_changed)
 	    fprintf (f, " (vptr maybe changed)");
 	}
+      fprintf (f, " Num speculative call targets: %i",
+	       edge->indirect_info->num_speculative_call_targets);
       fprintf (f, "\n");
       if (edge->indirect_info->polymorphic)
 	edge->indirect_info->context.dump (f);
@@ -3393,7 +3470,7 @@ cgraph_node::verify_node (void)
 
       for (e = callees; e; e = e->next_callee)
 	{
-	  if (!e->aux)
+	  if (!e->aux && !e->speculative)
 	    {
 	      error ("edge %s->%s has no corresponding call_stmt",
 		     identifier_to_locale (e->caller->name ()),
@@ -3730,6 +3807,14 @@ cgraph_edge::possibly_call_in_translation_unit_p (void)
     node = symtab_node::get_for_asmname (DECL_ASSEMBLER_NAME (callee->decl));
   gcc_assert (TREE_PUBLIC (node->decl));
   return node->get_availability () >= AVAIL_INTERPOSABLE;
+}
+
+/* Return num_speculative_targets of this edge.  */
+
+int
+cgraph_edge::num_speculative_call_targets_p (void)
+{
+  return indirect_info ? indirect_info->num_speculative_call_targets : 0;
 }
 
 /* A stashed copy of "symtab" for use by selftest::symbol_table_test.

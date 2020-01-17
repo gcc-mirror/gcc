@@ -3158,7 +3158,7 @@ devirtualization_time_bonus (struct cgraph_node *node,
       if (avail < AVAIL_AVAILABLE)
 	continue;
       isummary = ipa_fn_summaries->get (callee);
-      if (!isummary->inlinable)
+      if (!isummary || !isummary->inlinable)
 	continue;
 
       int size = ipa_size_summaries->get (callee)->size;

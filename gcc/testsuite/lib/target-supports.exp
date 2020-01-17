@@ -514,6 +514,19 @@ proc check_gc_sections_available { } {
     }]
 }
 
+# Returns 1 if "dot" is supported on the host.
+
+proc check_dot_available { } {
+    verbose "check_dot_available" 2
+
+    set status [remote_exec host "dot" "-V"]
+    verbose "  status: $status" 2
+    if { [lindex $status 0] != 0 } {
+	return 0
+    }
+    return 1
+}
+
 # Return 1 if according to target_info struct and explicit target list
 # target is supposed to support trampolines.
  
@@ -8584,6 +8597,14 @@ proc check_effective_target_lto_incremental { } {
     return [check_no_compiler_messages lto_incremental executable {
 	int main () { return 0; }
     } "-flto -r -nostdlib"]
+}
+
+# Return 1 if the compiler has been configured with analyzer support.
+
+proc check_effective_target_analyzer { } {
+    return [check_no_compiler_messages analyzer object {
+	void foo (void) { }
+    } "-fanalyzer"]
 }
 
 # Return 1 if -mx32 -maddress-mode=short can compile, 0 otherwise.

@@ -88,6 +88,7 @@ struct int_hash : typed_noop_remove <Type>
   static inline hashval_t hash (value_type);
   static inline bool equal (value_type existing, value_type candidate);
   static inline void mark_deleted (Type &);
+  static const bool empty_zero_p = Empty == 0;
   static inline void mark_empty (Type &);
   static inline bool is_deleted (Type);
   static inline bool is_empty (Type);
@@ -150,6 +151,7 @@ struct pointer_hash
   static inline bool equal (const value_type &existing,
 			    const compare_type &candidate);
   static inline void mark_deleted (Type *&);
+  static const bool empty_zero_p = true;
   static inline void mark_empty (Type *&);
   static inline bool is_deleted (Type *);
   static inline bool is_empty (Type *);
@@ -323,6 +325,7 @@ struct pair_hash
   static inline bool equal (const value_type &, const compare_type &);
   static inline void remove (value_type &);
   static inline void mark_deleted (value_type &);
+  static const bool empty_zero_p = T1::empty_zero_p;
   static inline void mark_empty (value_type &);
   static inline bool is_deleted (const value_type &);
   static inline bool is_empty (const value_type &);

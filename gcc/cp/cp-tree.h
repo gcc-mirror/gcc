@@ -900,6 +900,7 @@ struct named_decl_hash : ggc_remove <tree>
   inline static hashval_t hash (const value_type decl);
   inline static bool equal (const value_type existing, compare_type candidate);
 
+  static const bool empty_zero_p = true;
   static inline void mark_empty (value_type &p) {p = NULL_TREE;}
   static inline bool is_empty (value_type p) {return !p;}
 
@@ -1870,6 +1871,7 @@ struct named_label_hash : ggc_remove <named_label_entry *>
   inline static hashval_t hash (value_type);
   inline static bool equal (const value_type, compare_type);
 
+  static const bool empty_zero_p = true;
   inline static void mark_empty (value_type &p) {p = NULL;}
   inline static bool is_empty (value_type p) {return !p;}
 
@@ -7867,7 +7869,7 @@ extern bool constraints_satisfied_p		(tree, tree);
 extern void clear_satisfaction_cache		();
 extern bool* lookup_subsumption_result          (tree, tree);
 extern bool save_subsumption_result             (tree, tree, bool);
-extern tree find_template_parameters		(tree, int);
+extern tree find_template_parameters		(tree, tree);
 extern bool equivalent_constraints              (tree, tree);
 extern bool equivalently_constrained            (tree, tree);
 extern bool subsumes_constraints                (tree, tree);
@@ -8082,6 +8084,14 @@ concept_check_p (const_tree t)
   if (t && TREE_CODE (t) == TEMPLATE_ID_EXPR)
     return concept_definition_p (TREE_OPERAND (t, 0));
   return false;
+}
+
+/* True if t is a "constrained auto" type-specifier.  */
+
+inline bool
+is_constrained_auto (const_tree t)
+{
+  return is_auto (t) && PLACEHOLDER_TYPE_CONSTRAINTS (t);
 }
 
 #if CHECKING_P

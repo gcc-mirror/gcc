@@ -335,6 +335,7 @@ struct vn_ssa_aux_hasher : typed_noop_remove <vn_ssa_aux_t>
   static inline hashval_t hash (const value_type &);
   static inline bool equal (const value_type &, const compare_type &);
   static inline void mark_deleted (value_type &) {}
+  static const bool empty_zero_p = true;
   static inline void mark_empty (value_type &e) { e = NULL; }
   static inline bool is_deleted (value_type &) { return false; }
   static inline bool is_empty (value_type &e) { return e == NULL; }

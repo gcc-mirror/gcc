@@ -1703,10 +1703,9 @@ public:
   int param_index;
   /* ECF flags determined from the caller.  */
   int ecf_flags;
-  /* Profile_id of common target obtained from profile.  */
-  int common_target_id;
-  /* Probability that call will land in function with COMMON_TARGET_ID.  */
-  int common_target_probability;
+
+  /* Number of speculative call targets, it's less than GCOV_TOPN_VALUES.  */
+  unsigned num_speculative_call_targets : 16;
 
   /* Set when the call is a virtual call with the parameter being the
      associated object pointer rather than a simple direct call.  */
@@ -1764,10 +1763,14 @@ public:
 
   /* Turn edge into speculative call calling N2. Update
      the profile so the direct call is taken COUNT times
-     with FREQUENCY.  */
-  cgraph_edge *make_speculative (cgraph_node *n2, profile_count direct_count);
+     with FREQUENCY.  speculative_id is used to link direct calls with their
+     corresponding IPA_REF_ADDR references when representing speculative calls.
+     target_prob is the probability of the speculative call.  */
+  cgraph_edge *make_speculative (cgraph_node *n2, profile_count direct_count,
+				 unsigned int speculative_id = 0,
+				 int target_prob = 0);
 
-   /* Given speculative call edge, return all three components.  */
+  /* Given speculative call edge, return all three components.  */
   void speculative_call_info (cgraph_edge *&direct, cgraph_edge *&indirect,
 			      ipa_ref *&reference);
 
@@ -1775,14 +1778,34 @@ public:
      the speculative call sequence and return edge representing the call, the
      original EDGE can be removed and deallocated.  It is up to caller to
      redirect the call as appropriate.  Return the edge that now represents the
-     call.  */
+     call.
+
+     For "speculative" indirect call that contains multiple "speculative"
+     targets (i.e. edge->indirect_info->num_speculative_call_targets > 1),
+     decrease the count and only remove current direct edge.
+
+     If no speculative direct call left to the speculative indirect call, remove
+     the speculative of both the indirect call and corresponding direct edge.
+
+     It is up to caller to iteratively resolve each "speculative" direct call
+     and redirect the call as appropriate.  */
   static cgraph_edge *resolve_speculation (cgraph_edge *edge,
 					   tree callee_decl = NULL);
 
   /* If necessary, change the function declaration in the call statement
      associated with edge E so that it corresponds to the edge callee.
      Speculations can be resolved in the process and EDGE can be removed and
-     deallocated.  */
+     deallocated.
+
+     The edge could be one of speculative direct call generated from speculative
+     indirect call.  In this circumstance, decrease the speculative targets
+     count (i.e. num_speculative_call_targets) and redirect call stmt to the
+     corresponding i-th target.  If no speculative direct call left to the
+     speculative indirect call, remove "speculative" of the indirect call and
+     also redirect stmt to it's final direct target.
+
+     It is up to caller to iteratively transform each "speculative"
+     direct call as appropriate.  */
   static gimple *redirect_call_stmt_to_callee (cgraph_edge *e);
 
   /* Create clone of edge in the node N represented
@@ -1829,6 +1852,9 @@ public:
      be internal to the current translation unit.  */
   bool possibly_call_in_translation_unit_p (void);
 
+  /* Return num_speculative_targets of this edge.  */
+  int num_speculative_call_targets_p (void);
+
   /* Expected number of executions: calculated in profile.c.  */
   profile_count count;
   cgraph_node *caller;
@@ -1848,6 +1874,11 @@ public:
   /* The stmt_uid of call_stmt.  This is used by LTO to recover the call_stmt
      when the function is serialized in.  */
   unsigned int lto_stmt_uid;
+  /*  target_prob is the probability of the speculative call.  */
+  unsigned int target_prob;
+  /* speculative id is used to link direct calls with their corresponding
+     IPA_REF_ADDR references when representing speculative calls.  */
+  unsigned int speculative_id : 16;
   /* Whether this edge was made direct by indirect inlining.  */
   unsigned int indirect_inlining_edge : 1;
   /* Whether this edge describes an indirect call with an undetermined

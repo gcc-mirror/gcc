@@ -78,6 +78,7 @@ struct ipa_bit_ggc_hash_traits : public ggc_cache_remove <ipa_bits *>
     {
       return a->value == b->value && a->mask == b->mask;
     }
+  static const bool empty_zero_p = true;
   static void
   mark_empty (ipa_bits *&p)
     {
@@ -123,6 +124,7 @@ struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range *>
     {
       return a->equal_p (*b);
     }
+  static const bool empty_zero_p = true;
   static void
   mark_empty (value_range *&p)
     {
