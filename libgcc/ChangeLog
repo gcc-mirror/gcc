@@ -1,5 +1,5 @@
 2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
-2020-01-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/t-arm: Check return value of gcc rather than lack of
 	output.
