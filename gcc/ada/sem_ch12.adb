@@ -7845,8 +7845,8 @@ package body Sem_Ch12 is
                      --  Adding e.g. a dummy variable of type Pt in the body is
                      --  sufficient to make everything work, so we generate an
                      --  artificial reference to Pt on the fly and thus force
-                     --  the switcthing of views on the ground that, if the
-                     --  comparison was accepted during the semantics analysis
+                     --  the switching of views on the grounds that, if the
+                     --  comparison was accepted during the semantic analysis
                      --  of the generic, this means that the component cannot
                      --  have been private (see Sem_Type.Valid_Comparison_Arg).
 
