@@ -1,5 +1,10 @@
 2020-01-17  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* config/aarch64/aarch64.c (generic_tunings): Add branch fusion.
+	(neoversen1_tunings): Likewise.
+
+2020-01-17  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	PR target/92692
 	* config/aarch64/aarch64.c (aarch64_split_compare_and_swap)
 	Add assert to ensure prolog has been emitted.

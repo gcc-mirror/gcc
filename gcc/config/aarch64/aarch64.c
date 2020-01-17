@@ -726,7 +726,7 @@ static const struct tune_params generic_tunings =
   SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost  */
   2, /* issue_rate  */
-  (AARCH64_FUSE_AES_AESMC), /* fusible_ops  */
+  (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops  */
   "16:12",	/* function_align.  */
   "4",	/* jump_align.  */
   "8",	/* loop_align.  */
@@ -1130,7 +1130,7 @@ static const struct tune_params neoversen1_tunings =
   SVE_NOT_IMPLEMENTED, /* sve_width  */
   4, /* memmov_cost  */
   3, /* issue_rate  */
-  AARCH64_FUSE_AES_AESMC, /* fusible_ops  */
+  (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops  */
   "32:16",	/* function_align.  */
   "32:16",	/* jump_align.  */
   "32:16",	/* loop_align.  */
