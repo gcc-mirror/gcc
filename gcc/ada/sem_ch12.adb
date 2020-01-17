@@ -6794,48 +6794,6 @@ package body Sem_Ch12 is
       E      : Entity_Id;
       Astype : Entity_Id;
 
-      function Denotes_Previous_Actual (Typ : Entity_Id) return Boolean;
-      --  For a formal that is an array type, the component type is often a
-      --  previous formal in the same unit. The privacy status of the component
-      --  type will have been examined earlier in the traversal of the
-      --  corresponding actuals, and this status should not be modified for
-      --  the array (sub)type itself. However, if the base type of the array
-      --  (sub)type is private, its full view must be restored in the body to
-      --  be consistent with subsequent index subtypes, etc.
-      --
-      --  To detect this case we have to rescan the list of formals, which is
-      --  usually short enough to ignore the resulting inefficiency.
-
-      -----------------------------
-      -- Denotes_Previous_Actual --
-      -----------------------------
-
-      function Denotes_Previous_Actual (Typ : Entity_Id) return Boolean is
-         Prev : Entity_Id;
-
-      begin
-         Prev := First_Entity (Instance);
-         while Present (Prev) loop
-            if Is_Type (Prev)
-              and then Nkind (Parent (Prev)) = N_Subtype_Declaration
-              and then Is_Entity_Name (Subtype_Indication (Parent (Prev)))
-              and then Entity (Subtype_Indication (Parent (Prev))) = Typ
-            then
-               return True;
-
-            elsif Prev = E then
-               return False;
-
-            else
-               Next_Entity (Prev);
-            end if;
-         end loop;
-
-         return False;
-      end Denotes_Previous_Actual;
-
-   --  Start of processing for Check_Generic_Actuals
-
    begin
       E := First_Entity (Instance);
       while Present (E) loop
@@ -6844,14 +6802,7 @@ package body Sem_Ch12 is
            and then Scope (Etype (E)) /= Instance
            and then Is_Entity_Name (Subtype_Indication (Parent (E)))
          then
-            if Is_Array_Type (E)
-              and then not Is_Private_Type (Etype (E))
-              and then Denotes_Previous_Actual (Component_Type (E))
-            then
-               null;
-            else
-               Check_Private_View (Subtype_Indication (Parent (E)));
-            end if;
+            Check_Private_View (Subtype_Indication (Parent (E)));
 
             Set_Is_Generic_Actual_Type (E);
 
@@ -6886,15 +6837,6 @@ package body Sem_Ch12 is
 
             if Is_Discrete_Or_Fixed_Point_Type (E) then
                Set_RM_Size (E, RM_Size (Astype));
-
-            --  In nested instances, the base type of an access actual may
-            --  itself be private, and need to be exchanged.
-
-            elsif Is_Access_Type (E)
-              and then Is_Private_Type (Etype (E))
-            then
-               Check_Private_View
-                 (New_Occurrence_Of (Etype (E), Sloc (Instance)));
             end if;
 
          elsif Ekind (E) = E_Package then
@@ -7451,63 +7393,6 @@ package body Sem_Ch12 is
             Prepend_Elmt (T, Exchanged_Views);
             Exchange_Declarations (Etype (Get_Associated_Node (N)));
 
-         --  For composite types with inconsistent representation exchange
-         --  component types accordingly.
-
-         elsif Is_Access_Type (T)
-           and then Is_Private_Type (Designated_Type (T))
-           and then not Has_Private_View (N)
-           and then Present (Full_View (Designated_Type (T)))
-         then
-            Switch_View (Designated_Type (T));
-
-         elsif Is_Array_Type (T) then
-            if Is_Private_Type (Component_Type (T))
-              and then not Has_Private_View (N)
-              and then Present (Full_View (Component_Type (T)))
-            then
-               Switch_View (Component_Type (T));
-            end if;
-
-            --  The normal exchange mechanism relies on the setting of a
-            --  flag on the reference in the generic. However, an additional
-            --  mechanism is needed for types that are not explicitly
-            --  mentioned in the generic, but may be needed in expanded code
-            --  in the instance. This includes component types of arrays and
-            --  designated types of access types. This processing must also
-            --  include the index types of arrays which we take care of here.
-
-            declare
-               Indx : Node_Id;
-               Typ  : Entity_Id;
-
-            begin
-               Indx := First_Index (T);
-               while Present (Indx) loop
-                  Typ := Base_Type (Etype (Indx));
-
-                  if Is_Private_Type (Typ)
-                    and then Present (Full_View (Typ))
-                  then
-                     Switch_View (Typ);
-                  end if;
-
-                  Next_Index (Indx);
-               end loop;
-            end;
-
-         --  The following case does not test Has_Private_View (N) so it may
-         --  end up switching views when they are not supposed to be switched.
-         --  This might be in keeping with Set_Global_Type setting the flag
-         --  for an array type even if it is not private ???
-
-         elsif Is_Private_Type (T)
-           and then Present (Full_View (T))
-           and then Is_Array_Type (Full_View (T))
-           and then Is_Private_Type (Component_Type (Full_View (T)))
-         then
-            Switch_View (T);
-
          --  Finally, a non-private subtype may have a private base type, which
          --  must be exchanged for consistency. This can happen when a package
          --  body is instantiated, when the scope stack is empty but in fact
@@ -7910,6 +7795,85 @@ package body Sem_Ch12 is
                   if Nkind (Assoc) = Nkind (N) then
                      Set_Entity (New_N, Entity (Assoc));
                      Check_Private_View (N);
+
+                     --  Here we deal with a very peculiar case for which the
+                     --  Has_Private_View mechanism is not sufficient, because
+                     --  the reference to the type is implicit in the tree,
+                     --  that is to say, it's not referenced from a node but
+                     --  only from another type, namely through Component_Type.
+
+                     --    package P is
+
+                     --      type Pt is private;
+
+                     --      generic
+                     --        type Ft is array (Positive range <>) of Pt;
+                     --      package G is
+                     --        procedure Check (F1, F2 : Ft; Lt : Boolean);
+                     --      end G;
+
+                     --    private
+                     --      type Pt is new Boolean;
+                     --    end P;
+
+                     --    package body P is
+                     --      package body G is
+                     --        procedure Check (F1, F2 : Ft; Lt : Boolean) is
+                     --        begin
+                     --          if (F1 < F2) /= Lt then
+                     --            null;
+                     --          end if;
+                     --        end Check;
+                     --      end G;
+                     --    end P;
+
+                     --    type Arr is array (Positive range <>) of P.Pt;
+
+                     --    package Inst is new P.G (Arr);
+
+                     --  Pt is a global type for the generic package G and it
+                     --  is not referenced in its body, but only as component
+                     --  type of Ft, which is a local type. This means that no
+                     --  references to Pt or Ft are seen during the copy of the
+                     --  body, the only reference to Pt being seen is when the
+                     --  actuals are checked by Check_Generic_Actuals, but Pt
+                     --  is still private at this point. In the end, the views
+                     --  of Pt are not switched in the body and, therefore, the
+                     --  array comparison is rejected because the component is
+                     --  still private.
+
+                     --  Adding e.g. a dummy variable of type Pt in the body is
+                     --  sufficient to make everything work, so we generate an
+                     --  artificial reference to Pt on the fly and thus force
+                     --  the switcthing of views on the ground that, if the
+                     --  comparison was accepted during the semantics analysis
+                     --  of the generic, this means that the component cannot
+                     --  have been private (see Sem_Type.Valid_Comparison_Arg).
+
+                     if Nkind (Assoc) in N_Op_Compare
+                       and then Present (Etype (Left_Opnd (Assoc)))
+                       and then Is_Array_Type (Etype (Left_Opnd (Assoc)))
+                       and then Present (Etype (Right_Opnd (Assoc)))
+                       and then Is_Array_Type (Etype (Right_Opnd (Assoc)))
+                     then
+                        declare
+                           Ltyp : constant Entity_Id :=
+                                                     Etype (Left_Opnd (Assoc));
+                           Rtyp : constant Entity_Id :=
+                                                    Etype (Right_Opnd (Assoc));
+                        begin
+                           if Is_Private_Type (Component_Type (Ltyp)) then
+                              Check_Private_View
+                                (New_Occurrence_Of (Component_Type (Ltyp),
+                                 Sloc (N)));
+                           end if;
+                           if Is_Private_Type (Component_Type (Rtyp)) then
+                              Check_Private_View
+                                (New_Occurrence_Of (Component_Type (Rtyp),
+                                 Sloc (N)));
+                           end if;
+                        end;
+                     end if;
 
                   --  The node is a reference to a global type and acts as the
                   --  subtype mark of a qualified expression created in order
@@ -13641,11 +13605,6 @@ package body Sem_Ch12 is
 
       if Is_Private_Type (Act_T) then
          Set_Has_Private_View (Subtype_Indication (Decl_Node));
-
-      elsif Is_Access_Type (Act_T)
-        and then Is_Private_Type (Designated_Type (Act_T))
-      then
-         Set_Has_Private_View (Subtype_Indication (Decl_Node));
       end if;
 
       --  In Ada 2012 the actual may be a limited view. Indicate that
@@ -15213,11 +15172,7 @@ package body Sem_Ch12 is
             --  If not a private type, nothing else to do
 
             if not Is_Private_Type (Typ) then
-               if Is_Array_Type (Typ)
-                 and then Is_Private_Type (Component_Type (Typ))
-               then
-                  Set_Has_Private_View (N);
-               end if;
+               null;
 
             --  If it is a derivation of a private type in a context where no
             --  full view is needed, nothing to do either.
