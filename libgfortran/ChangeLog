@@ -1,5 +1,11 @@
 2020-01-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR libfortran/93234
+	* io/unit.c (set_internal_unit): Set round and sign flags
+	correctly.
+
+2020-01-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR libfortran/90374
 	* io/format.c (parse_format_list): Zero width not allowed with
 	FMT_D.
