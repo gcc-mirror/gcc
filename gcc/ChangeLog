@@ -1,8 +1,15 @@
+2020-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93312
+	* config/arm/arm.c (clear_operation_p): Don't use REGNO until
+	after checking the argument is a REG.  Don't use REGNO (reg)
+	again to set last_regno, reuse regno variable instead.
+
 2020-01-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/analyzer.texi (Limitations): Add note about NaN.
 
-2020-01-17  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
+2020-01-17  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
 	    Sudakshina Das  <sudi.das@arm.com>
 
 	* config/arm/arm.md (ashldi3): Generate thumb2_lsll for both reg
@@ -202,8 +209,8 @@
 	* config/arm/t-rmprofile: Map v8.1-M multilibs to v8-M.
 	* doc/invoke.texi: Document the armv8.1-m mve and dps options.
 
-2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
-	    Thomas Preud'homme <thomas.preudhomme@arm.com>
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm-cpus.in (ARMv8_1m_main): Redefine as an extension to
 	Armv8-M Mainline.
@@ -312,8 +319,8 @@
 	* config/arm/vfp.md (push_fpsysreg_insn): New define_insn.
 	(pop_fpsysreg_insn): Likewise.
 
-2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
-	    Thomas Preud'homme <thomas.preudhomme@arm.com>
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm-cpus.in (armv8_1m_main): New feature.
 	(ARMv4, ARMv4t, ARMv5t, ARMv5te, ARMv5tej, ARMv6, ARMv6j, ARMv6k,

@@ -13779,13 +13779,14 @@ clear_operation_p (rtx op, bool vfp)
 	return false;
 
       reg = SET_DEST (elt);
-      regno = REGNO (reg);
       zero = SET_SRC (elt);
 
       if (!REG_P (reg)
 	  || GET_MODE (reg) != expected_mode
 	  || zero != CONST0_RTX (SImode))
 	return false;
+
+      regno = REGNO (reg);
 
       if (vfp)
 	{
@@ -13800,7 +13801,7 @@ clear_operation_p (rtx op, bool vfp)
 	    return false;
 	}
 
-      last_regno = REGNO (reg);
+      last_regno = regno;
     }
 
   return true;
