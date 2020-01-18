@@ -1,3 +1,9 @@
+2020-01-20  Andrew Pinski  <apinski@marvell.com>
+
+	PR middle-end/93242
+	* targhooks.c (default_print_patchable_function_entry): Use
+	output_asm_insn to emit the nop instruction.
+
 2020-01-20  Fangrui Song  <maskray@google.com>
 
 	PR middle-end/93194
