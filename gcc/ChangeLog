@@ -1,5 +1,7 @@
 2020-01-18  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/arm/vfp.md (*clear_vfp_multiple): Remove unused variable.
+
 	PR target/93312
 	* config/arm/arm.c (clear_operation_p): Don't use REGNO until
 	after checking the argument is a REG.  Don't use REGNO (reg)
