@@ -1,5 +1,15 @@
 2020-01-27  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR rtl-optimization/93170
+	* cselib.c (cselib_invalidate_regno_val): New function, split out
+	from...
+	(cselib_invalidate_regno): ...here.
+	(cselib_invalidated_by_call_p): New function.
+	(cselib_process_insn): Iterate over all the hard-register entries in
+	REG_VALUES and invalidate any that cross call-clobbered registers.
+
+2020-01-27  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* dojump.c (split_comparison): Use HONOR_NANS rather than
 	HONOR_SNANS when splitting LTGT.
 

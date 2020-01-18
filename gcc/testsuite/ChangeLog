@@ -1,3 +1,7 @@
+2020-01-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/torture/pr93170.c: New test.
+
 2020-01-27  Martin Liska  <mliska@suse.cz>
 
 	PR target/93274
