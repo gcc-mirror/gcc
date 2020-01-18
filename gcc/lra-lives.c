@@ -1023,6 +1023,57 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	make_hard_regno_live (regno);
       }
 
+  bool live_change_p = false;
+  /* Check if bb border live info was changed.  */
+  unsigned int live_pseudos_num = 0;
+  EXECUTE_IF_SET_IN_BITMAP (df_get_live_in (bb),
+			    FIRST_PSEUDO_REGISTER, j, bi)
+    {
+      live_pseudos_num++;
+      if (! sparseset_bit_p (pseudos_live, j))
+	{
+	  live_change_p = true;
+	  if (lra_dump_file != NULL)
+	    fprintf (lra_dump_file,
+		     "  r%d is removed as live at bb%d start\n", j, bb->index);
+	  break;
+	}
+    }
+  if (! live_change_p
+      && sparseset_cardinality (pseudos_live) != live_pseudos_num)
+    {
+      live_change_p = true;
+      if (lra_dump_file != NULL)
+	EXECUTE_IF_SET_IN_SPARSESET (pseudos_live, j)
+	  if (! bitmap_bit_p (df_get_live_in (bb), j))
+	    fprintf (lra_dump_file,
+		     "  r%d is added to live at bb%d start\n", j, bb->index);
+    }
+
+  /* The order of this code and the code below is important.  At this
+     point hard_regs_live does genuinely contain only live registers.
+     Below we pretend other hard registers are live in order to create
+     conflicts with pseudos, but this fake live set shouldn't leak out
+     into the df info.  */
+  for (i = 0; HARD_REGISTER_NUM_P (i); ++i)
+    {
+      if (!TEST_HARD_REG_BIT (hard_regs_live, i))
+	continue;
+
+      if (!TEST_HARD_REG_BIT (hard_regs_spilled_into, i))
+	continue;
+
+      if (bitmap_bit_p (df_get_live_in (bb), i))
+	continue;
+
+      live_change_p = true;
+      if (lra_dump_file)
+	fprintf (lra_dump_file,
+		 "  hard reg r%d is added to live at bb%d start\n", i,
+		 bb->index);
+      bitmap_set_bit (df_get_live_in (bb), i);
+    }
+
   /* Pseudos can't go in stack regs at the start of a basic block that
      is reached by an abnormal edge.  Likewise for registers that are at
      least partly call clobbered, because caller-save, fixup_abnormal_edges
@@ -1057,32 +1108,6 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	    make_hard_regno_live (px);
     }
 
-  bool live_change_p = false;
-  /* Check if bb border live info was changed.  */
-  unsigned int live_pseudos_num = 0;
-  EXECUTE_IF_SET_IN_BITMAP (df_get_live_in (bb),
-			    FIRST_PSEUDO_REGISTER, j, bi)
-    {
-      live_pseudos_num++;
-      if (! sparseset_bit_p (pseudos_live, j))
-	{
-	  live_change_p = true;
-	  if (lra_dump_file != NULL)
-	    fprintf (lra_dump_file,
-		     "  r%d is removed as live at bb%d start\n", j, bb->index);
-	  break;
-	}
-    }
-  if (! live_change_p
-      && sparseset_cardinality (pseudos_live) != live_pseudos_num)
-    {
-      live_change_p = true;
-      if (lra_dump_file != NULL)
-	EXECUTE_IF_SET_IN_SPARSESET (pseudos_live, j)
-	  if (! bitmap_bit_p (df_get_live_in (bb), j))
-	    fprintf (lra_dump_file,
-		     "  r%d is added to live at bb%d start\n", j, bb->index);
-    }
   /* See if we'll need an increment at the end of this basic block.
      An increment is needed if the PSEUDOS_LIVE set is not empty,
      to make sure the finish points are set up correctly.  */
@@ -1100,25 +1125,6 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	break;
       if (sparseset_bit_p (pseudos_live_through_calls, j))
 	check_pseudos_live_through_calls (j, last_call_abi);
-    }
-
-  for (i = 0; HARD_REGISTER_NUM_P (i); ++i)
-    {
-      if (!TEST_HARD_REG_BIT (hard_regs_live, i))
-	continue;
-
-      if (!TEST_HARD_REG_BIT (hard_regs_spilled_into, i))
-	continue;
-
-      if (bitmap_bit_p (df_get_live_in (bb), i))
-	continue;
-
-      live_change_p = true;
-      if (lra_dump_file)
-	fprintf (lra_dump_file,
-		 "  hard reg r%d is added to live at bb%d start\n", i,
-		 bb->index);
-      bitmap_set_bit (df_get_live_in (bb), i);
     }
 
   if (need_curr_point_incr)
