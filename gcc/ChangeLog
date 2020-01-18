@@ -1,3 +1,8 @@
+2020-01-18  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc (memory_vector_mode):
+	Mark parameter unused.
+
 2020-01-18  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config.gcc <obsolete targets>: Add crisv32-*-* and cris-*-linux*
