@@ -1,3 +1,29 @@
+2020-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.in: Add coroutine-passes.o.
+	* builtin-types.def (BT_CONST_SIZE): New.
+	(BT_FN_BOOL_PTR): New.
+	(BT_FN_PTR_PTR_CONST_SIZE_BOOL): New.
+	* builtins.def (DEF_COROUTINE_BUILTIN): New.
+	* coroutine-builtins.def: New file.
+	* coroutine-passes.cc: New file.
+	* function.h (struct GTY function): Add a bit to indicate that the
+	function is a coroutine component.
+	* internal-fn.c (expand_CO_FRAME): New.
+	(expand_CO_YIELD): New.
+	(expand_CO_SUSPN): New.
+	(expand_CO_ACTOR): New.
+	* internal-fn.def (CO_ACTOR): New.
+	(CO_YIELD): New.
+	(CO_SUSPN): New.
+	(CO_FRAME): New.
+	* passes.def: Add pass_coroutine_lower_builtins,
+	pass_coroutine_early_expand_ifns.
+	* tree-pass.h (make_pass_coroutine_lower_builtins): New.
+	(make_pass_coroutine_early_expand_ifns): New.
+	* doc/invoke.texi: Document the fcoroutines command line
+	switch.
+
 2020-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/arm/vfp.md (*clear_vfp_multiple): Remove unused variable.
