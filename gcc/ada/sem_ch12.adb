@@ -6802,7 +6802,34 @@ package body Sem_Ch12 is
            and then Scope (Etype (E)) /= Instance
            and then Is_Entity_Name (Subtype_Indication (Parent (E)))
          then
+            --  Restore the proper view of the actual from the information
+            --  saved earlier by Instantiate_Type.
+
             Check_Private_View (Subtype_Indication (Parent (E)));
+
+            --  If the actual is itself the formal of a parent instance,
+            --  then also restore the proper view of its actual and so on.
+            --  That's necessary for nested instantiations of the form
+
+            --    generic
+            --      type Component is private;
+            --      type Array_Type is array (Positive range <>) of Component;
+            --    procedure Proc;
+
+            --  when the outermost actuals have inconsistent views, because
+            --  the Component_Type of Array_Type of the inner instantiations
+            --  is the actual of Component of the outermost one and not that
+            --  of the corresponding inner instantiations.
+
+            Astype := Ancestor_Subtype (E);
+            while Present (Astype)
+              and then Nkind (Parent (Astype)) = N_Subtype_Declaration
+              and then Present (Generic_Parent_Type (Parent (Astype)))
+              and then Is_Entity_Name (Subtype_Indication (Parent (Astype)))
+            loop
+               Check_Private_View (Subtype_Indication (Parent (Astype)));
+               Astype := Ancestor_Subtype (Astype);
+            end loop;
 
             Set_Is_Generic_Actual_Type (E);
 
@@ -13602,6 +13629,10 @@ package body Sem_Ch12 is
         Make_Subtype_Declaration (Loc,
           Defining_Identifier => Subt,
           Subtype_Indication  => New_Occurrence_Of (Act_T, Loc));
+
+      --  Record whether the actual is private at this point, so that
+      --  Check_Generic_Actuals can restore its proper view before the
+      --  semantic analysis of the instance.
 
       if Is_Private_Type (Act_T) then
          Set_Has_Private_View (Subtype_Indication (Decl_Node));
