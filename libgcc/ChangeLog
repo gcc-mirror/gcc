@@ -1,3 +1,7 @@
+2020-01-18  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/arit.c (DS): Apply attribute __fallthrough__.
+
 2020-01-18  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR libgcc/92988
