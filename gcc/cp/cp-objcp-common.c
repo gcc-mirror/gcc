@@ -551,6 +551,10 @@ cp_common_init_ts (void)
   MARK_TS_EXP (SIMPLE_REQ);
   MARK_TS_EXP (TYPE_REQ);
 
+  MARK_TS_EXP (CO_AWAIT_EXPR);
+  MARK_TS_EXP (CO_YIELD_EXPR);
+  MARK_TS_EXP (CO_RETURN_EXPR);
+
   c_common_init_ts ();
 }
 

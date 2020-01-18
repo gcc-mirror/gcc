@@ -73,7 +73,7 @@ CXX_C_OBJS = attribs.o incpath.o \
 # Language-specific object files for C++ and Objective C++.
 CXX_AND_OBJCXX_OBJS = \
 	cp/call.o cp/class.o cp/constexpr.o cp/constraint.o \
-	cp/cp-gimplify.o \
+	cp/coroutines.o cp/cp-gimplify.o \
 	cp/cp-objcp-common.o cp/cp-ubsan.o \
 	cp/cvt.o cp/cxx-pretty-print.o \
 	cp/decl.o cp/decl2.o cp/dump.o \

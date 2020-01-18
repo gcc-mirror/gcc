@@ -2703,7 +2703,9 @@ struct GTY(()) lang_decl_fn {
   unsigned has_dependent_explicit_spec_p : 1;
   unsigned immediate_fn_p : 1;
   unsigned maybe_deleted : 1;
-  unsigned spare : 10;
+  unsigned coroutine_p : 1;
+
+  unsigned spare : 9;
 
   /* 32-bits padding on 64-bit host.  */
 
@@ -4993,6 +4995,13 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    indicate that the qualified name denotes a template.  */
 #define QUALIFIED_NAME_IS_TEMPLATE(NODE) \
   (TREE_LANG_FLAG_1 (SCOPE_REF_CHECK (NODE)))
+
+/* [coroutines]
+*/
+
+/* True if NODE is a co-routine FUNCTION_DECL.  */
+#define DECL_COROUTINE_P(NODE) \
+  (LANG_DECL_FN_CHECK (DECL_COMMON_CHECK (NODE))->coroutine_p)
 
 /* True for an OMP_ATOMIC that has dependent parameters.  These are stored
    as an expr in operand 1, and integer_zero_node or clauses in operand 0.  */
@@ -7933,6 +7942,14 @@ extern void cp_ubsan_instrument_member_accesses (tree *);
 extern tree cp_ubsan_maybe_instrument_downcast	(location_t, tree, tree, tree);
 extern tree cp_ubsan_maybe_instrument_cast_to_vbase (location_t, tree, tree);
 extern void cp_ubsan_maybe_initialize_vtbl_ptrs (tree);
+
+/* In coroutines.cc */
+extern tree finish_co_return_stmt		(location_t, tree);
+extern tree finish_co_await_expr		(location_t, tree);
+extern tree finish_co_yield_expr		(location_t, tree);
+extern tree coro_validate_builtin_call		(tree,
+						 tsubst_flags_t = tf_warning_or_error);
+extern bool morph_fn_to_coro			(tree, tree *, tree *);
 
 /* Inline bodies.  */
 

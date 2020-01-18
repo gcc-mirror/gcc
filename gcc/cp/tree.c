@@ -5068,6 +5068,37 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
 	WALK_SUBTREE (TREE_VALUE (cap));
       break;
 
+    case CO_YIELD_EXPR:
+      if (TREE_OPERAND (*tp, 1))
+	/* Operand 1 is the tree for the relevant co_await which has any
+	   interesting sub-trees.  */
+	WALK_SUBTREE (TREE_OPERAND (*tp, 1));
+      break;
+
+    case CO_AWAIT_EXPR:
+      if (TREE_OPERAND (*tp, 1))
+	/* Operand 1 is frame variable.  */
+	WALK_SUBTREE (TREE_OPERAND (*tp, 1));
+      if (TREE_OPERAND (*tp, 2))
+	/* Operand 2 has the initialiser, and we need to walk any subtrees
+	   there.  */
+	WALK_SUBTREE (TREE_OPERAND (*tp, 2));
+      break;
+
+    case CO_RETURN_EXPR:
+      if (TREE_OPERAND (*tp, 0))
+	{
+	  if (VOID_TYPE_P (TREE_OPERAND (*tp, 0)))
+	    /* For void expressions, operand 1 is a trivial call, and any
+	       interesting subtrees will be part of operand 0.  */
+	    WALK_SUBTREE (TREE_OPERAND (*tp, 0));
+	  else if (TREE_OPERAND (*tp, 1))
+	    /* Interesting sub-trees will be in the return_value () call
+	       arguments.  */
+	    WALK_SUBTREE (TREE_OPERAND (*tp, 1));
+	}
+      break;
+
     default:
       return NULL_TREE;
     }

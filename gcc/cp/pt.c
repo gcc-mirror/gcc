@@ -16814,6 +16814,11 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	 to the containing function, inlined copy or so.  */
       return t;
 
+    case CO_AWAIT_EXPR:
+      return tsubst_expr (t, args, complain, in_decl,
+			  /*integral_constant_expression_p=*/false);
+      break;
+
     default:
       /* We shouldn't get here, but keep going if !flag_checking.  */
       if (flag_checking)
@@ -17678,6 +17683,22 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 
     case RETURN_EXPR:
       finish_return_stmt (RECUR (TREE_OPERAND (t, 0)));
+      break;
+
+    case CO_RETURN_EXPR:
+      finish_co_return_stmt (input_location, RECUR (TREE_OPERAND (t, 0)));
+      break;
+
+    case CO_YIELD_EXPR:
+      stmt = finish_co_yield_expr (input_location,
+				   RECUR (TREE_OPERAND (t, 0)));
+      RETURN (stmt);
+      break;
+
+    case CO_AWAIT_EXPR:
+      stmt = finish_co_await_expr (input_location,
+				   RECUR (TREE_OPERAND (t, 0)));
+      RETURN (stmt);
       break;
 
     case EXPR_STMT:

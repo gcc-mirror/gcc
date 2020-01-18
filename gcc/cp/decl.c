@@ -16783,6 +16783,36 @@ add_return_star_this_fixit (gcc_rich_location *richloc, tree fndecl)
 				       indent);
 }
 
+/* This function carries out the subset of finish_function operations needed
+   to emit the compiler-generated outlined helper functions used by the
+   coroutines implementation.  */
+
+static void
+emit_coro_helper (tree helper)
+{
+  /* This is a partial set of the operations done by finish_function()
+     plus emitting the result.  */
+  set_cfun (NULL);
+  current_function_decl = helper;
+  begin_scope (sk_function_parms, NULL);
+  store_parm_decls (DECL_ARGUMENTS (helper));
+  announce_function (helper);
+  allocate_struct_function (helper, false);
+  cfun->language = ggc_cleared_alloc<language_function> ();
+  poplevel (1, 0, 1);
+  maybe_save_function_definition (helper);
+  /* We must start each function with a clear fold cache.  */
+  clear_fold_cache ();
+  cp_fold_function (helper);
+  DECL_CONTEXT (DECL_RESULT (helper)) = helper;
+  BLOCK_SUPERCONTEXT (DECL_INITIAL (helper)) = helper;
+  /* This function has coroutine IFNs that we should handle in middle
+     end lowering.  */
+  cfun->coroutine_component = true;
+  cp_genericize (helper);
+  expand_or_defer_fn (helper);
+}
+
 /* Finish up a function declaration and compile that function
    all the way to assembler language output.  The free the storage
    for the function definition. INLINE_P is TRUE if we just
@@ -16795,6 +16825,10 @@ finish_function (bool inline_p)
 {
   tree fndecl = current_function_decl;
   tree fntype, ctype = NULL_TREE;
+  tree resumer = NULL_TREE, destroyer = NULL_TREE;
+  bool coro_p = flag_coroutines
+		&& !processing_template_decl
+		&& DECL_COROUTINE_P (fndecl);
 
   /* When we get some parse errors, we can end up without a
      current_function_decl, so cope.  */
@@ -16821,6 +16855,25 @@ finish_function (bool inline_p)
      error_mark_node.  */
   gcc_assert (DECL_INITIAL (fndecl) == error_mark_node);
 
+  if (coro_p)
+    {
+      if (!morph_fn_to_coro (fndecl, &resumer, &destroyer))
+	{
+	  DECL_SAVED_TREE (fndecl) = pop_stmt_list (DECL_SAVED_TREE (fndecl));
+	  poplevel (1, 0, 1);
+	  DECL_SAVED_TREE (fndecl) = error_mark_node;
+	  return fndecl;
+	}
+
+      /* We should handle coroutine IFNs in middle end lowering.  */
+      cfun->coroutine_component = true;
+
+      if (use_eh_spec_block (fndecl))
+	finish_eh_spec_block (TYPE_RAISES_EXCEPTIONS
+			      (TREE_TYPE (fndecl)),
+			      current_eh_spec_block);
+    }
+  else
   /* For a cloned function, we've already got all the code we need;
      there's no need to add any extra bits.  */
   if (!DECL_CLONED_FUNCTION_P (fndecl))
@@ -17063,6 +17116,13 @@ finish_function (bool inline_p)
       && !DECL_IMMEDIATE_FUNCTION_P (fndecl)
       && !DECL_OMP_DECLARE_REDUCTION_P (fndecl))
     cp_genericize (fndecl);
+
+  /* Emit the resumer and destroyer functions now.  */
+  if (coro_p)
+    {
+      emit_coro_helper (resumer);
+      emit_coro_helper (destroyer);
+    }
 
  cleanup:
   /* We're leaving the context of this function, so zap cfun.  It's still in

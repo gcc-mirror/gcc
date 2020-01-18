@@ -1477,6 +1477,10 @@ fconstexpr-ops-limit=
 C++ ObjC++ Joined RejectNegative Host_Wide_Int Var(constexpr_ops_limit) Init(33554432)
 -fconstexpr-ops-limit=<number>	Specify maximum number of constexpr operations during a single constexpr evaluation.
 
+fcoroutines
+C++ LTO Var(flag_coroutines)
+Enable C++ coroutines (experimental).
+
 fdebug-cpp
 C ObjC C++ ObjC++
 Emit debug annotations during preprocessing.

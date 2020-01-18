@@ -2628,6 +2628,10 @@ of a loop too many expressions need to be evaluated, the resulting constexpr
 evaluation might take too long.
 The default is 33554432 (1<<25).
 
+@item -fcoroutines
+@opindex fcoroutines
+Enable support for the C++ coroutines extension (experimental).
+
 @item -fno-elide-constructors
 @opindex fno-elide-constructors
 @opindex felide-constructors

@@ -2884,6 +2884,32 @@ expand_NOP (internal_fn, gcall *)
   /* Nothing.  But it shouldn't really prevail.  */
 }
 
+/* Coroutines, all should have been processed at this stage.  */
+
+static void
+expand_CO_FRAME (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
+static void
+expand_CO_YIELD (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
+static void
+expand_CO_SUSPN (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
+static void
+expand_CO_ACTOR (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
 /* Expand a call to FN using the operands in STMT.  FN has a single
    output operand and NARGS input operands.  */
 

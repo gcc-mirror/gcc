@@ -189,6 +189,9 @@ enum rid
   /* C++ concepts */
   RID_CONCEPT, RID_REQUIRES,
 
+  /* C++ coroutines */
+  RID_CO_AWAIT, RID_CO_YIELD, RID_CO_RETURN,
+
   /* C++ transactional memory.  */
   RID_ATOMIC_NOEXCEPT, RID_ATOMIC_CANCEL, RID_SYNCHRONIZED,
 
@@ -433,9 +436,11 @@ extern machine_mode c_default_pointer_mode;
 #define D_TRANSMEM	0X0800	/* C++ transactional memory TS.  */
 #define D_CXX_CHAR8_T	0X1000	/* In C++, only with -fchar8_t.  */
 #define D_CXX20		0x2000  /* In C++, C++20 only.  */
+#define D_CXX_COROUTINES 0x4000  /* In C++, only with coroutines.  */
 
 #define D_CXX_CONCEPTS_FLAGS D_CXXONLY | D_CXX_CONCEPTS
 #define D_CXX_CHAR8_T_FLAGS D_CXXONLY | D_CXX_CHAR8_T
+#define D_CXX_COROUTINES_FLAGS (D_CXXONLY | D_CXX_COROUTINES)
 
 /* The reserved keyword table.  */
 extern const struct c_common_resword c_common_reswords[];

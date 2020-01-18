@@ -1,3 +1,39 @@
+2020-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Make-lang.in: Add coroutines.o.
+	* cp-tree.h (lang_decl-fn): coroutine_p, new bit.
+	(DECL_COROUTINE_P): New.
+	* lex.c (init_reswords): Enable keywords when the coroutine flag
+	is set,
+	* operators.def (co_await): New operator.
+	* call.c (add_builtin_candidates): Handle CO_AWAIT_EXPR.
+	(op_error): Likewise.
+	(build_new_op_1): Likewise.
+	(build_new_function_call): Validate coroutine builtin arguments.
+	* constexpr.c (potential_constant_expression_1): Handle
+	CO_AWAIT_EXPR, CO_YIELD_EXPR, CO_RETURN_EXPR.
+	* coroutines.cc: New file.
+	* cp-objcp-common.c (cp_common_init_ts): Add CO_AWAIT_EXPR,
+	CO_YIELD_EXPR, CO_RETRN_EXPR as TS expressions.
+	* cp-tree.def (CO_AWAIT_EXPR, CO_YIELD_EXPR, (CO_RETURN_EXPR): New.
+	* cp-tree.h (coro_validate_builtin_call): New.
+	* decl.c (emit_coro_helper): New.
+	(finish_function): Handle the case when a function is found to
+	be a coroutine, perform the outlining and emit the outlined
+	functions. Set a bit to signal that this is a coroutine component.
+	* parser.c (enum required_token): New enumeration RT_CO_YIELD.
+	(cp_parser_unary_expression): Handle co_await.
+	(cp_parser_assignment_expression): Handle co_yield.
+	(cp_parser_statement): Handle RID_CO_RETURN.
+	(cp_parser_jump_statement): Handle co_return.
+	(cp_parser_operator): Handle co_await operator.
+	(cp_parser_yield_expression): New.
+	(cp_parser_required_error): Handle RT_CO_YIELD.
+	* pt.c (tsubst_copy): Handle CO_AWAIT_EXPR.
+	(tsubst_expr): Handle CO_AWAIT_EXPR, CO_YIELD_EXPR and
+	CO_RETURN_EXPRs.
+	* tree.c (cp_walk_subtrees): Likewise.
+
 2020-01-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92531 - ICE with noexcept(lambda).
