@@ -555,7 +555,7 @@ Common Joined UInteger Var(param_max_pow_sqrt_depth) Init(5) IntegerRange(1, 32)
 Maximum depth of sqrt chains to use when synthesizing exponentiation by a real constant.
 
 -param=max-predicted-iterations=
-Common Joined UInteger Var(param_max_predicted_iterations) Init(100) Param Optimization
+Common Joined UInteger Var(param_max_predicted_iterations) Init(100) IntegerRange(0, 65536) Param Optimization
 The maximum number of loop iterations we predict statically.
 
 -param=max-reload-search-insns=

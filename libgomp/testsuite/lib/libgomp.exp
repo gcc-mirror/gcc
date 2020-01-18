@@ -489,7 +489,7 @@ proc check_effective_target_openacc_amdgcn_accel_present { } {
     return [check_runtime openacc_amdgcn_accel_present {
 	#include <openacc.h>
 	int main () {
-	return !(acc_get_num_devices (acc_device_gcn) > 0);
+	return !(acc_get_num_devices (acc_device_radeon) > 0);
 	}
     } "" ]
 }

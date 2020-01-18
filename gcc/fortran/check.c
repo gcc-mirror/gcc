@@ -67,7 +67,12 @@ gfc_invalid_boz (const char *msg, locus *loc)
       return false;
     }
 
-  gfc_error (msg, loc);
+  const char hint[] = " [see %<-fno-allow-invalid-boz%>]";
+  size_t len = strlen (msg) + strlen (hint) + 1;
+  char *msg2 = (char *) alloca (len);
+  strcpy (msg2, msg);
+  strcat (msg2, hint);
+  gfc_error (msg2, loc);
   return true;
 }
 

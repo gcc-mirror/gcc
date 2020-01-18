@@ -78,6 +78,7 @@ create_expand_operand (class expand_operand *op,
 {
   op->type = type;
   op->unsigned_p = unsigned_p;
+  op->target = 0;
   op->unused = 0;
   op->mode = mode;
   op->value = value;

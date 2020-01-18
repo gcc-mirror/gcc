@@ -31,6 +31,9 @@ void f18 (int8x16_t, int8x16_t) {}
 void f19 (poly8_t a) {}
 void f20 (poly16_t a) {}
 
+void f21 (bfloat16x4_t a) {}
+void f22 (bfloat16x8_t a) {}
+
 // { dg-final { scan-assembler "_Z2f015__simd64_int8_t:" } }
 // { dg-final { scan-assembler "_Z2f116__simd64_int16_t:" } }
 // { dg-final { scan-assembler "_Z2f216__simd64_int32_t:" } }
@@ -52,3 +55,5 @@ void f20 (poly16_t a) {}
 // { dg-final { scan-assembler "_Z3f1816__simd128_int8_tS_:" } }
 // { dg-final { scan-assembler "_Z3f19a:" } }
 // { dg-final { scan-assembler "_Z3f20s:" } }
+// { dg-final { scan-assembler "_Z3f2120__simd64_bfloat16_t:" } }
+// { dg-final { scan-assembler "_Z3f2220__simd128_bfloat16_t:" } }

@@ -83,6 +83,7 @@ extern int thumb_legitimate_offset_p (machine_mode, HOST_WIDE_INT);
 extern int thumb1_legitimate_address_p (machine_mode, rtx, int);
 extern bool ldm_stm_operation_p (rtx, bool, machine_mode mode,
                                  bool, bool);
+extern bool clear_operation_p (rtx, bool);
 extern int arm_const_double_rtx (rtx);
 extern int vfp3_const_double_rtx (rtx);
 extern int neon_immediate_valid_for_move (rtx, machine_mode, rtx *, int *);

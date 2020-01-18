@@ -336,6 +336,15 @@
 		              && (UINTVAL (XEXP (op, 1)) < 32)")))
        (match_test "mode == GET_MODE (op)")))
 
+;; True for Armv8.1-M Mainline long shift instructions.
+(define_predicate "long_shift_imm"
+  (match_test "satisfies_constraint_Pg (op)"))
+
+(define_predicate "arm_reg_or_long_shift_imm"
+  (ior (match_test "TARGET_THUMB2
+		    && arm_general_register_operand (op, GET_MODE (op))")
+       (match_test "satisfies_constraint_Pg (op)")))
+
 ;; True for MULT, to identify which variant of shift_operator is in use.
 (define_special_predicate "mult_operator"
   (match_code "mult"))
@@ -544,6 +553,18 @@
 	    (not (match_test "arm_disable_literal_pool"))
 	    (match_test "satisfies_constraint_Dy (op)")
 	    (match_test "satisfies_constraint_G (op)"))))
+
+(define_special_predicate "clear_multiple_operation"
+  (match_code "parallel")
+{
+ return clear_operation_p (op, /*vfp*/false);
+})
+
+(define_special_predicate "clear_vfp_multiple_operation"
+  (match_code "parallel")
+{
+ return clear_operation_p (op, /*vfp*/true);
+})
 
 (define_special_predicate "load_multiple_operation"
   (match_code "parallel")

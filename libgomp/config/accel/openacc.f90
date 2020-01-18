@@ -50,7 +50,7 @@ module openacc_kinds
   ! integer (acc_device_kind), parameter :: acc_device_host_nonshm = 3 removed.
   integer (acc_device_kind), parameter :: acc_device_not_host = 4
   integer (acc_device_kind), parameter :: acc_device_nvidia = 5
-  integer (acc_device_kind), parameter :: acc_device_gcn = 8
+  integer (acc_device_kind), parameter :: acc_device_radeon = 8
 
 end module openacc_kinds
 
@@ -86,7 +86,7 @@ module openacc
   ! From openacc_kinds
   public :: acc_device_kind
   public :: acc_device_none, acc_device_default, acc_device_host
-  public :: acc_device_not_host, acc_device_nvidia, acc_device_gcn
+  public :: acc_device_not_host, acc_device_nvidia, acc_device_radeon
 
   public :: acc_on_device
 

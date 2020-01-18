@@ -10492,7 +10492,7 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
     {
       vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (rhs1),
 					     slp_node);
-      if (maybe_ne (TYPE_VECTOR_SUBPARTS (vectype), nunits))
+      if (!vectype || maybe_ne (TYPE_VECTOR_SUBPARTS (vectype), nunits))
 	return false;
     }
   else if (maybe_ne (nunits, TYPE_VECTOR_SUBPARTS (vectype)))

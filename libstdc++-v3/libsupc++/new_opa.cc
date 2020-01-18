@@ -43,6 +43,21 @@ extern "C" void *memalign(std::size_t boundary, std::size_t size);
 using std::new_handler;
 using std::bad_alloc;
 
+#if ! _GLIBCXX_HOSTED
+extern "C"
+{
+# if _GLIBCXX_HAVE_ALIGNED_ALLOC
+  void *aligned_alloc(size_t alignment, size_t size);
+# elif _GLIBCXX_HAVE__ALIGNED_MALLOC
+  void *_aligned_malloc(size_t size, size_t alignment);
+# elif _GLIBCXX_HAVE_POSIX_MEMALIGN
+  void *posix_memalign(void **, size_t alignment, size_t size);
+# elif _GLIBCXX_HAVE_MEMALIGN
+  void *memalign(size_t alignment, size_t size);
+# endif
+}
+#endif
+
 namespace __gnu_cxx {
 #if _GLIBCXX_HAVE_ALIGNED_ALLOC
 using ::aligned_alloc;

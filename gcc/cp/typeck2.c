@@ -1369,9 +1369,6 @@ digest_nsdmi_init (tree decl, tree init, tsubst_flags_t complain)
       && CP_AGGREGATE_TYPE_P (type))
     init = reshape_init (type, init, complain);
   init = digest_init_flags (type, init, flags, complain);
-  if (TREE_CODE (init) == TARGET_EXPR)
-    /* This represents the whole initialization.  */
-    TARGET_EXPR_DIRECT_INIT_P (init) = true;
   return init;
 }
 

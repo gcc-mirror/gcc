@@ -388,6 +388,9 @@ The implementation of call summaries is currently very simplistic.
 @item
 Lack of function pointer analysis
 @item
+The constraint-handling code assumes reflexivity in some places
+(that values are equal to themselves), which is not the case for NaN.
+@item
 The region model code creates lots of little mutable objects at each
 @code{region_model} (and thus per @code{exploded_node}) rather than
 sharing immutable objects and having the mutable state in the

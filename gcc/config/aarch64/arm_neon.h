@@ -34611,6 +34611,140 @@ vrnd64xq_f64 (float64x2_t __a)
 
 #include "arm_bf16.h"
 
+#pragma GCC push_options
+#pragma GCC target ("arch=armv8.2-a+bf16")
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfdot_f32 (float32x2_t __r, bfloat16x4_t __a, bfloat16x4_t __b)
+{
+  return __builtin_aarch64_bfdotv2sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfdotq_f32 (float32x4_t __r, bfloat16x8_t __a, bfloat16x8_t __b)
+{
+  return __builtin_aarch64_bfdotv4sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfdot_lane_f32 (float32x2_t __r, bfloat16x4_t __a, bfloat16x4_t __b,
+		 const int __index)
+{
+  return __builtin_aarch64_bfdot_lanev2sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfdotq_lane_f32 (float32x4_t __r, bfloat16x8_t __a, bfloat16x4_t __b,
+		  const int __index)
+{
+  return __builtin_aarch64_bfdot_lanev4sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfdot_laneq_f32 (float32x2_t __r, bfloat16x4_t __a, bfloat16x8_t __b,
+		  const int __index)
+{
+  return __builtin_aarch64_bfdot_laneqv2sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vbfdotq_laneq_f32 (float32x4_t __r, bfloat16x8_t __a, bfloat16x8_t __b,
+		   const int __index)
+{
+  return __builtin_aarch64_bfdot_laneqv4sf (__r, __a, __b, __index);
+}
+
+#pragma GCC pop_options
+
+/* AdvSIMD 8-bit Integer Matrix Multiply (I8MM) intrinsics.  */
+
+#pragma GCC push_options
+#pragma GCC target ("arch=armv8.2-a+i8mm")
+
+__extension__ extern __inline int32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vusdot_s32 (int32x2_t __r, uint8x8_t __a, int8x8_t __b)
+{
+  return __builtin_aarch64_usdotv8qi_ssus (__r, __a, __b);
+}
+
+__extension__ extern __inline int32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vusdotq_s32 (int32x4_t __r, uint8x16_t __a, int8x16_t __b)
+{
+  return __builtin_aarch64_usdotv16qi_ssus (__r, __a, __b);
+}
+
+__extension__ extern __inline int32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vusdot_lane_s32 (int32x2_t __r, uint8x8_t __a, int8x8_t __b, const int __index)
+{
+  return __builtin_aarch64_usdot_lanev8qi_ssuss (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline int32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vusdot_laneq_s32 (int32x2_t __r, uint8x8_t __a, int8x16_t __b,
+		  const int __index)
+{
+  return __builtin_aarch64_usdot_laneqv8qi_ssuss (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline int32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vusdotq_lane_s32 (int32x4_t __r, uint8x16_t __a, int8x8_t __b,
+		  const int __index)
+{
+  return __builtin_aarch64_usdot_lanev16qi_ssuss (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline int32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vusdotq_laneq_s32 (int32x4_t __r, uint8x16_t __a, int8x16_t __b,
+		   const int __index)
+{
+  return __builtin_aarch64_usdot_laneqv16qi_ssuss (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline int32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vsudot_lane_s32 (int32x2_t __r, int8x8_t __a, uint8x8_t __b, const int __index)
+{
+  return __builtin_aarch64_sudot_lanev8qi_sssus (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline int32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vsudot_laneq_s32 (int32x2_t __r, int8x8_t __a, uint8x16_t __b,
+		  const int __index)
+{
+  return __builtin_aarch64_sudot_laneqv8qi_sssus (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline int32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vsudotq_lane_s32 (int32x4_t __r, int8x16_t __a, uint8x8_t __b,
+		  const int __index)
+{
+  return __builtin_aarch64_sudot_lanev16qi_sssus (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline int32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vsudotq_laneq_s32 (int32x4_t __r, int8x16_t __a, uint8x16_t __b,
+		   const int __index)
+{
+  return __builtin_aarch64_sudot_laneqv16qi_sssus (__r, __a, __b, __index);
+}
+
+#pragma GCC pop_options
+
 #undef __aarch64_vget_lane_any
 
 #undef __aarch64_vdup_lane_any

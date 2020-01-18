@@ -1,3 +1,9 @@
+2020-01-16  Kerem Kat  <keremkat@gmail.com>
+
+	PR c/92833
+	* c-parser.c (c_parser_consume_token): Fix peeked token stack pop
+	to support 4 available tokens.
+
 2020-01-15  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/93072

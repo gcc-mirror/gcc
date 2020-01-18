@@ -1169,7 +1169,7 @@ public:
   }
 };
 
-class svld1rq_impl : public function_base
+class load_replicate : public function_base
 {
 public:
   unsigned int
@@ -1183,7 +1183,11 @@ public:
   {
     return fi.scalar_type (0);
   }
+};
 
+class svld1rq_impl : public load_replicate
+{
+public:
   machine_mode
   memory_vector_mode (const function_instance &fi) const OVERRIDE
   {
@@ -1194,6 +1198,23 @@ public:
   expand (function_expander &e) const OVERRIDE
   {
     insn_code icode = code_for_aarch64_sve_ld1rq (e.vector_mode (0));
+    return e.use_contiguous_load_insn (icode);
+  }
+};
+
+class svld1ro_impl : public load_replicate
+{
+public:
+  machine_mode
+  memory_vector_mode (const function_instance &fi) const OVERRIDE
+  {
+    return OImode;
+  }
+
+  rtx
+  expand (function_expander &e) const OVERRIDE
+  {
+    insn_code icode = code_for_aarch64_sve_ld1ro (e.vector_mode (0));
     return e.use_contiguous_load_insn (icode);
   }
 };
@@ -2540,6 +2561,7 @@ FUNCTION (svlasta, svlast_impl, (UNSPEC_LASTA))
 FUNCTION (svlastb, svlast_impl, (UNSPEC_LASTB))
 FUNCTION (svld1, svld1_impl,)
 FUNCTION (svld1_gather, svld1_gather_impl,)
+FUNCTION (svld1ro, svld1ro_impl,)
 FUNCTION (svld1rq, svld1rq_impl,)
 FUNCTION (svld1sb, svld1_extend_impl, (TYPE_SUFFIX_s8))
 FUNCTION (svld1sb_gather, svld1_gather_extend_impl, (TYPE_SUFFIX_s8))

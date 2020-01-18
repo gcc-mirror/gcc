@@ -1,3 +1,9 @@
+2020-01-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/93306
+	* expr.c (parse_has_include): Refactor.  Check skip_eval before
+	looking.
+
 2020-01-10  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (class diagnostic_path): New forward decl.

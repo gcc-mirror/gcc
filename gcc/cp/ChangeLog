@@ -1,3 +1,25 @@
+2020-01-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92531 - ICE with noexcept(lambda).
+	* pt.c (uses_template_parms): Don't try to enumerate all the
+	expression cases.
+
+2020-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93228
+	* parser.c (cp_parser_template_name): Look up deprecated attribute
+	in DECL_TEMPLATE_RESULT or its type's attributes.
+
+2020-01-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93286 - ICE with __is_constructible and variadic template.
+	* pt.c (tsubst) [TREE_LIST]: Handle pack expansion.
+	(tsubst_copy_and_build) [TRAIT_EXPR]: Always use tsubst for type2.
+
+	PR c++/93280 - ICE with aggregate assignment and DMI.
+	* init.c (get_nsdmi): Set TARGET_EXPR_DIRECT_INIT_P here.
+	* typeck2.c (digest_nsdmi_init): Not here.
+
 2020-01-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/91073

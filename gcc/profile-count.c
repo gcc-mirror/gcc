@@ -446,3 +446,12 @@ profile_probability::combine_with_count (profile_count count1,
   else
     return *this * even () + other * even ();
 }
+
+/* Return probability as sreal in range [0, 1].  */
+
+sreal
+profile_probability::to_sreal () const
+{
+  gcc_checking_assert (initialized_p ());
+  return ((sreal)m_val) >> (n_bits - 2);
+}

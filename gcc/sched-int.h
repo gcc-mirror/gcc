@@ -238,6 +238,8 @@ struct _dep
   /* Cached cost of the dependency.  Make sure to update UNKNOWN_DEP_COST
      when changing the size of this field.  */
   int cost:20;
+
+  unsigned unused:4;
 };
 
 #define UNKNOWN_DEP_COST ((int) ((unsigned int) -1 << 19))

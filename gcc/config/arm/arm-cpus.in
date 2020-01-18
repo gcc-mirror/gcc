@@ -129,6 +129,9 @@ define feature armv8_6
 # M-Profile security extensions.
 define feature cmse
 
+# Architecture rel 8.1-M.
+define feature armv8_1m_main
+
 # Floating point and Neon extensions.
 # VFPv1 is not supported in GCC.
 
@@ -194,6 +197,10 @@ define feature sb
 # v8-A architectures, added by default from v8.5-A
 define feature predres
 
+# M-profile Vector Extension feature bits
+define feature mve
+define feature mve_float
+
 # 8-bit Integer Matrix Multiply extension. Optional from v8.2-A.
 define feature i8mm
 
@@ -235,21 +242,21 @@ define fgroup ALL_FPU_EXTERNAL fp16 bf16
 # Everything related to the FPU extensions (FP or SIMD).
 define fgroup ALL_FP	ALL_FPU_EXTERNAL ALL_FPU_INTERNAL ALL_SIMD
 
-define fgroup ARMv4       armv4 notm
-define fgroup ARMv4t      ARMv4 thumb
-define fgroup ARMv5t      ARMv4t armv5t
-define fgroup ARMv5te     ARMv5t armv5te
-define fgroup ARMv5tej    ARMv5te
-define fgroup ARMv6       ARMv5te armv6 be8
-define fgroup ARMv6j      ARMv6
-define fgroup ARMv6k      ARMv6 armv6k
-define fgroup ARMv6z      ARMv6
-define fgroup ARMv6kz     ARMv6k quirk_armv6kz
-define fgroup ARMv6zk     ARMv6k
-define fgroup ARMv6t2     ARMv6 thumb2
+define fgroup ARMv4         armv4 notm
+define fgroup ARMv4t        ARMv4 thumb
+define fgroup ARMv5t        ARMv4t armv5t
+define fgroup ARMv5te       ARMv5t armv5te
+define fgroup ARMv5tej      ARMv5te
+define fgroup ARMv6         ARMv5te armv6 be8
+define fgroup ARMv6j        ARMv6
+define fgroup ARMv6k        ARMv6 armv6k
+define fgroup ARMv6z        ARMv6
+define fgroup ARMv6kz       ARMv6k quirk_armv6kz
+define fgroup ARMv6zk       ARMv6k
+define fgroup ARMv6t2       ARMv6 thumb2
 # This is suspect.  ARMv6-m doesn't really pull in any useful features
 # from ARMv5* or ARMv6.
-define fgroup ARMv6m      armv4 thumb armv5t armv5te armv6 be8
+define fgroup ARMv6m        armv4 thumb armv5t armv5te armv6 be8
 # This is suspect, the 'common' ARMv7 subset excludes the thumb2 'DSP' and
 # integer SIMD instructions that are in ARMv6T2.  */
 define fgroup ARMv7       ARMv6m thumb2 armv7
@@ -269,6 +276,7 @@ define fgroup ARMv8_6a    ARMv8_5a armv8_6
 define fgroup ARMv8m_base ARMv6m armv8 cmse tdiv
 define fgroup ARMv8m_main ARMv7m armv8 cmse
 define fgroup ARMv8r      ARMv8a
+define fgroup ARMv8_1m_main ARMv8m_main armv8_1m_main
 
 # Useful combinations.
 define fgroup VFPv2	vfpv2
@@ -679,6 +687,20 @@ begin arch armv8-r
  option nocrypto remove ALL_CRYPTO
  option nofp remove ALL_FP
 end arch armv8-r
+
+begin arch armv8.1-m.main
+ tune for cortex-m7
+ tune flags CO_PROC
+ base 8M_MAIN
+ isa ARMv8_1m_main
+# fp => FPv5-sp-d16; fp.dp => FPv5-d16
+ option dsp add armv7em
+ option fp add FPv5 fp16
+ option fp.dp add FPv5 FP_DBL fp16
+ option nofp remove ALL_FP
+ option mve add mve armv7em
+ option mve.fp add mve FPv5 fp16 mve_float armv7em
+end arch armv8.1-m.main
 
 begin arch iwmmxt
  tune for iwmmxt

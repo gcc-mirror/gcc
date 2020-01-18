@@ -5189,13 +5189,11 @@ region_model::eval_condition_without_cm (svalue_id lhs_sid,
     {
       if (lhs == rhs)
 	{
-	  /* If we have the same svalue, then we have equality.
+	  /* If we have the same svalue, then we have equality
+	     (apart from NaN-handling).
 	     TODO: should this definitely be the case for poisoned values?  */
 	  switch (op)
 	    {
-	    default:
-	      gcc_unreachable ();
-
 	    case EQ_EXPR:
 	    case GE_EXPR:
 	    case LE_EXPR:
@@ -5205,6 +5203,10 @@ region_model::eval_condition_without_cm (svalue_id lhs_sid,
 	    case GT_EXPR:
 	    case LT_EXPR:
 	      return tristate::TS_FALSE;
+
+	    default:
+	      /* For other ops, use the logic below.  */
+	      break;
 	    }
 	}
 
@@ -6414,11 +6416,13 @@ region_model::convert_byte_offset_to_array_index (tree ptr_type,
       /* This might not be a constant.  */
       tree byte_size = size_in_bytes (elem_type);
 
+      /* Try to get a constant by dividing, ensuring that we're in a
+	 signed representation first.  */
       tree index
-	= fold_build2 (TRUNC_DIV_EXPR, integer_type_node,
-		       offset_cst, byte_size);
-
-      if (CONSTANT_CLASS_P (index))
+	= fold_binary (TRUNC_DIV_EXPR, ssizetype,
+		       fold_convert (ssizetype, offset_cst),
+		       fold_convert (ssizetype, byte_size));
+      if (index && TREE_CODE (index) == INTEGER_CST)
 	return get_or_create_constant_svalue (index);
     }
 

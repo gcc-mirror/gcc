@@ -108,6 +108,7 @@ namespace aarch64_sve
     extern const function_base *const svlastb;
     extern const function_base *const svld1;
     extern const function_base *const svld1_gather;
+    extern const function_base *const svld1ro;
     extern const function_base *const svld1rq;
     extern const function_base *const svld1sb;
     extern const function_base *const svld1sb_gather;

@@ -1,3 +1,24 @@
+2020-01-17  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc_update <git revision>: Use git log "--pretty=tformat:%p:%t:%H",
+	not "--pretty=%p:%t:%H".
+
+2020-01-16  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc-git-customization.sh: Avoid double expansion.
+
+2020-01-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc-git-customization.sh: Check that user.name and user.email
+	are set.  Use $(cmd) instead of `cmd`.  Fix variable quoting when
+	using eval.
+
+2020-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-git-customization.sh: Verify the id to be printed is ancestor of
+	the corresponding remote release branch (or master), otherwise print
+	nothing.
+
 2020-01-15  Segher Boessenkool  <segher@kernel.crashing.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 
