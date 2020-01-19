@@ -1,3 +1,9 @@
+2020-01-25  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/93166
+	* ipa-cp.c (get_info_about_necessary_edges): Remove value
+	check assertion.
+
 2020-01-24  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/92788

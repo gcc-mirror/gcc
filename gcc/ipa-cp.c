@@ -4175,9 +4175,6 @@ get_info_about_necessary_edges (ipcp_value<valtype> *val, cgraph_node *dest,
 	      hot |= cs->maybe_hot_p ();
 	      if (cs->caller != dest)
 		non_self_recursive = true;
-	      else if (src->val)
-		gcc_assert (values_equal_for_ipcp_p (src->val->value,
-						     val->value));
 	    }
 	  cs = get_next_cgraph_edge_clone (cs);
 	}

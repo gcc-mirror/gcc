@@ -1,3 +1,8 @@
+2020-01-25  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/93166
+	* g++.dg/pr93166.C: New test.
+
 2020-01-25  Andrew Pinski <apinski@marvell.com>
 
 	* gcc.target/aarch64/vec_zeroextend.c: Fix for big-endian.
