@@ -4,6 +4,7 @@
 	-march=v10 option on target ! march_option.
 	* gcc.target/cris/asm-v10.S, gcc.target/cris/inasm-v10.c,
 	gcc.target/cris/sync-1-v10.c: Similar.
+	* lib/target-supports.exp (effective_target_march_option): New.
 
 2020-01-19  Thomas König  <tkoenig@gcc.gnu.org>
 
