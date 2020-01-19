@@ -7900,6 +7900,37 @@ package body Sem_Ch12 is
                                  Sloc (N)));
                            end if;
                         end;
+
+                     --  Here is a similar case, for the Designated_Type of an
+                     --  access type that is present as target type in a type
+                     --  conversion from another access type. In this case, if
+                     --  the base types of the designated types are different
+                     --  and the conversion was accepted during the semantic
+                     --  analysis of the generic, this means that the target
+                     --  type cannot have been private (see Valid_Conversion).
+
+                     elsif Nkind (Assoc) = N_Identifier
+                       and then Nkind (Parent (Assoc)) = N_Type_Conversion
+                       and then Subtype_Mark (Parent (Assoc)) = Assoc
+                       and then Is_Access_Type (Etype (Assoc))
+                       and then Present (Etype (Expression (Parent (Assoc))))
+                       and then
+                         Is_Access_Type (Etype (Expression (Parent (Assoc))))
+                     then
+                        declare
+                           Targ_Desig : constant Entity_Id :=
+                             Designated_Type (Etype (Assoc));
+                           Expr_Desig : constant Entity_Id :=
+                             Designated_Type
+                               (Etype (Expression (Parent (Assoc))));
+                        begin
+                           if Base_Type (Targ_Desig) /= Base_Type (Expr_Desig)
+                             and then Is_Private_Type (Targ_Desig)
+                           then
+                              Check_Private_View
+                                (New_Occurrence_Of (Targ_Desig, Sloc (N)));
+                           end if;
+                        end;
                      end if;
 
                   --  The node is a reference to a global type and acts as the
