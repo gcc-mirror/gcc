@@ -1,5 +1,15 @@
 2020-01-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/33799 - destroy return value, take 2.
+	* cp-tree.h (current_retval_sentinel): New macro.
+	(struct language_function): Add throwing_cleanup bitfield.
+	* decl.c (cxx_maybe_build_cleanup): Set it.
+	* except.c (maybe_set_retval_sentinel)
+	(maybe_splice_retval_cleanup): New functions.
+	* parser.c (cp_parser_compound_statement): Call
+	maybe_splice_retval_cleanup.
+	* typeck.c (check_return_expr): Call maybe_set_retval_sentinel.
+
 	* parser.c (cp_parser_lambda_body): Use cp_parser_function_body.
 
 2020-01-18  Jakub Jelinek  <jakub@redhat.com>

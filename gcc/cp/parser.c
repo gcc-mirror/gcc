@@ -11716,6 +11716,10 @@ cp_parser_compound_statement (cp_parser *parser, tree in_statement_expr,
     cp_parser_label_declaration (parser);
   /* Parse an (optional) statement-seq.  */
   cp_parser_statement_seq_opt (parser, in_statement_expr);
+
+  if (function_body)
+    maybe_splice_retval_cleanup (compound_stmt);
+
   /* Finish the compound-statement.  */
   finish_compound_stmt (compound_stmt);
   /* Consume the `}'.  */
