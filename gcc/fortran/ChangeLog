@@ -1,3 +1,10 @@
+2020-01-19  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/44960
+	* primary.c (gfc_match_rvalue): Break after setting MATCH_ERROR.
+	* resolve.c (resolve_function): Issue error when a
+	function call contains a reference.
+
 2020-01-17  Mark Eggleston  <mark.eggleston@codethink.com>
 
 	PR fortran/93236

@@ -1,3 +1,13 @@
+2020-01-18  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/arit.c (DS): Apply attribute __fallthrough__.
+
+2020-01-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libgcc/92988
+	* crtstuff.c (__do_global_dtors_aux): Only call __cxa_finalize if
+	DEFAULT_USE_CXA_ATEXIT is true.
+
 2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
 	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 

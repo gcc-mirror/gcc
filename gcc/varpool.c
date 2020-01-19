@@ -352,9 +352,10 @@ varpool_node::ctor_useable_for_folding_p (void)
       return DECL_INITIAL (real_node->decl) != NULL;
     }
 
-  /* Alias of readonly variable is also readonly, since the variable is stored
-     in readonly memory.  We also accept readonly aliases of non-readonly
-     locations assuming that user knows what he is asking for.  */
+  /* An alias of a read-only variable is also read-only, since the variable
+     is stored in read-only memory.  We also accept read-only aliases of
+     non-read-only locations assuming that the user knows what he is asking
+     for.  */
   if (!TREE_READONLY (decl) && !TREE_READONLY (real_node->decl))
     return false;
 

@@ -2252,7 +2252,7 @@ get_fn_local_identifier (tree orig, const char *append)
   sep = ".";
 #else
 #ifndef NO_DOLLAR_IN_LABEL
-  sep = "$"
+  sep = "$";
 #else
   sep = "_";
   pfx = "__";

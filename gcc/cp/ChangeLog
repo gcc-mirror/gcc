@@ -1,3 +1,8 @@
+2020-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* coroutines.cc (get_fn_local_identifier): Fix NO_DOT_IN_LABEL
+	but non-NO_DOLLAR_IN_LABEL case build.
+
 2020-01-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* Make-lang.in: Add coroutines.o.

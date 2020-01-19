@@ -3661,6 +3661,7 @@ gfc_match_rvalue (gfc_expr **result)
 	  gfc_error ("The leftmost part-ref in a data-ref cannot be a "
 		     "function reference at %C");
 	  m = MATCH_ERROR;
+	  break;
 	}
 
       m = MATCH_YES;

@@ -248,6 +248,8 @@ md_file=
 # Obsolete configurations.
 case ${target} in
   tile*-*-*				\
+ | crisv32-*-*				\
+ | cris-*-linux*			\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
