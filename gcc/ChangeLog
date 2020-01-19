@@ -1,3 +1,17 @@
+2020-01-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/93318
+	* cgraph.c (cgraph_edge::resolve_speculation): Fix foramting.
+	(cgraph_edge::make_direct): Remove all indirect targets.
+	(cgraph_edge::redirect_call_stmt_to_callee): Use make_direct..
+	(cgraph_node::verify_node): Verify that only one call_stmt or
+	lto_stmt_uid is set.
+	* cgraphclones.c (cgraph_edge::clone): Set only one call_stmt or
+	lto_stmt_uid.
+	* lto-cgraph.c (lto_output_edge): Simplify streaming of stmt.
+	(lto_output_ref): Simplify streaming of stmt.
+	* lto-streamer-in.c (fixup_call_stmt_edges_1): Clear lto_stmt_uid.
+
 2020-01-18  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/aarch64/aarch64-sve-builtins-base.cc (memory_vector_mode):

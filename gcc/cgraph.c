@@ -1226,8 +1226,8 @@ cgraph_edge::resolve_speculation (cgraph_edge *edge, tree callee_decl)
         fprintf (dump_file, "Speculative call turned into direct call.\n");
       edge = e2;
       e2 = tmp;
-      /* FIXME:  If EDGE is inlined, we should scale up the frequencies and counts
-         in the functions inlined through it.  */
+      /* FIXME:  If EDGE is inlined, we should scale up the frequencies
+	 and counts in the functions inlined through it.  */
     }
   edge->count += e2->count;
   if (edge->num_speculative_call_targets_p ())
@@ -1263,11 +1263,52 @@ cgraph_edge::make_direct (cgraph_edge *edge, cgraph_node *callee)
   /* If we are redirecting speculative call, make it non-speculative.  */
   if (edge->speculative)
     {
-      edge = resolve_speculation (edge, callee->decl);
+      cgraph_edge *found = NULL;
+      cgraph_edge *direct, *next;
+      ipa_ref *ref;
 
-      /* On successful speculation just return the pre existing direct edge.  */
-      if (!edge->indirect_unknown_callee)
-        return edge;
+      edge->speculative_call_info (direct, edge, ref);
+
+      /* Look all speculative targets and remove all but one corresponding
+	 to callee (if it exists).
+	 If there is only one target we can save one extra call to
+	 speculative_call_info.  */
+      if (edge->num_speculative_call_targets_p () != 1)
+	for (direct = edge->caller->callees; direct; direct = next)
+	  {
+	    next = direct->next_callee;
+	    if (direct->call_stmt == edge->call_stmt
+		&& direct->lto_stmt_uid == edge->lto_stmt_uid)
+	      {
+		direct->speculative_call_info (direct, edge, ref);
+
+		/* Compare ref not direct->callee.  Direct edge is possibly
+		   inlined or redirected.  */
+		if (!ref->referred->semantically_equivalent_p (callee))
+		  edge = direct->resolve_speculation (direct, NULL);
+		else
+		  {
+		    gcc_checking_assert (!found);
+		    found = direct;
+		  }
+	      }
+	  }
+	else if (!ref->referred->semantically_equivalent_p (callee))
+	  edge = direct->resolve_speculation (direct, NULL);
+	else
+	  found = direct;
+
+      /* On successful speculation just remove the indirect edge and
+	 return the pre existing direct edge.
+	 It is important to not remove it and redirect because the direct
+	 edge may be inlined or redirected.  */
+      if (found)
+	{
+	  resolve_speculation (edge, callee->decl);
+	  gcc_checking_assert (!found->speculative);
+	  return found;
+	}
+      gcc_checking_assert (!edge->speculative);
     }
 
   edge->indirect_unknown_callee = 0;
@@ -1328,7 +1369,7 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
       /* If there already is an direct call (i.e. as a result of inliner's
 	 substitution), forget about speculating.  */
       if (decl)
-	e = resolve_speculation (e, decl);
+	e = make_direct (e, cgraph_node::get (decl));
       else
 	{
 	  /* Expand speculation into GIMPLE code.  */
@@ -3116,6 +3157,8 @@ cgraph_node::verify_node (void)
   basic_block this_block;
   gimple_stmt_iterator gsi;
   bool error_found = false;
+  int i;
+  ipa_ref *ref = NULL;
 
   if (seen_error ())
     return;
@@ -3201,6 +3244,11 @@ cgraph_node::verify_node (void)
 	  cgraph_debug_gimple_stmt (this_cfun, e->call_stmt);
 	  error_found = true;
 	}
+      if (e->call_stmt && e->lto_stmt_uid)
+	{
+	  error ("edge has both cal_stmt and lto_stmt_uid set");
+	  error_found = true;
+	}
     }
   bool check_comdat = comdat_local_p ();
   for (e = callers; e; e = e->next_caller)
@@ -3265,6 +3313,11 @@ cgraph_node::verify_node (void)
 	  fprintf (stderr, "\n bb count: ");
 	  gimple_bb (e->call_stmt)->count.dump (stderr);
 	  fprintf (stderr, "\n");
+	  error_found = true;
+	}
+      if (e->call_stmt && e->lto_stmt_uid)
+	{
+	  error ("edge has both cal_stmt and lto_stmt_uid set");
 	  error_found = true;
 	}
     }
@@ -3398,8 +3451,6 @@ cgraph_node::verify_node (void)
       if (this_cfun->cfg)
 	{
 	  hash_set<gimple *> stmts;
-	  int i;
-	  ipa_ref *ref = NULL;
 
 	  /* Reach the trees by walking over the CFG, and note the
 	     enclosing basic-blocks in the call edges.  */
@@ -3467,6 +3518,13 @@ cgraph_node::verify_node (void)
       else
 	/* No CFG available?!  */
 	gcc_unreachable ();
+
+      for (i = 0; iterate_reference (i, ref); i++)
+	if (ref->stmt && ref->lto_stmt_uid)
+	  {
+	    error ("reference has both cal_stmt and lto_stmt_uid set");
+	    error_found = true;
+	  }
 
       for (e = callees; e; e = e->next_callee)
 	{
