@@ -1,6 +1,16 @@
 2020-01-18  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/93318
+	* cgraph.c (cgraph_edge::make_speculative): Increase number of
+	speculative targets.
+	(verify_speculative_call): New function
+	(cgraph_node::verify_node): Use it.
+	* ipa-profile.c (ipa_profile): Fix formating; do not set number of
+	speculations.
+
+2020-01-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/93318
 	* cgraph.c (cgraph_edge::resolve_speculation): Fix foramting.
 	(cgraph_edge::make_direct): Remove all indirect targets.
 	(cgraph_edge::redirect_call_stmt_to_callee): Use make_direct..

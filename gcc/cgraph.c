@@ -1076,6 +1076,7 @@ cgraph_edge::make_speculative (cgraph_node *n2, profile_count direct_count,
   e2->speculative_id = speculative_id;
   e2->target_prob = target_prob;
   e2->in_polymorphic_cdtor = in_polymorphic_cdtor;
+  indirect_info->num_speculative_call_targets++;
   count -= e2->count;
   symtab->call_edge_duplication_hooks (this, e2);
   ref = n->create_reference (n2, IPA_REF_ADDR, call_stmt);
@@ -3148,6 +3149,128 @@ cgraph_edge::verify_corresponds_to_fndecl (tree decl)
 #  pragma GCC diagnostic ignored "-Wformat-diag"
 #endif
 
+/* Verify consistency of speculative call in NODE corresponding to STMT
+   and LTO_STMT_UID.  If INDIRECT is set, assume that it is the indirect
+   edge of call sequence. Return true if error is found.
+
+   This function is called to every component of indirect call (direct edges,
+   indirect edge and refs).  To save duplicated work, do full testing only
+   in that case.  */
+static bool
+verify_speculative_call (struct cgraph_node *node, gimple *stmt,
+			 unsigned int lto_stmt_uid,
+			 struct cgraph_edge *indirect)
+{
+  if (indirect == NULL)
+    {
+      for (indirect = node->indirect_calls; indirect;
+	   indirect = indirect->next_callee)
+	if (indirect->call_stmt == stmt
+	    && indirect->lto_stmt_uid == lto_stmt_uid)
+	  break;
+      if (!indirect)
+	{
+	  error ("missing indirect call in speculative call sequence");
+	  return true;
+	}
+      if (!indirect->speculative)
+	{
+	  error ("indirect call in speculative call sequence has no "
+		 "speculative flag");
+	  return true;
+	}
+      return false;
+    }
+
+  /* Maximal number of targets.  We probably will never want to have more than
+     this.  */
+  const unsigned int num = 256;
+  cgraph_edge *direct_calls[num];
+  ipa_ref *refs[num];
+
+  for (unsigned int i = 0; i < num; i++)
+    {
+      direct_calls[i] = NULL;
+      refs[i] = NULL;
+    }
+
+  for (cgraph_edge *direct = node->callees; direct;
+       direct = direct->next_callee)
+    if (direct->call_stmt == stmt && direct->lto_stmt_uid == lto_stmt_uid)
+      {
+	if (!direct->speculative)
+	  {
+	    error ("direct call to %s in speculative call sequence has no "
+		   "speculative flag", direct->callee->dump_name ());
+	    return true;
+	  }
+	if (direct->speculative_id >= num)
+	  {
+	    error ("direct call to %s in speculative call sequence has "
+		   "speculative_uid %i out of range",
+		   direct->callee->dump_name (), direct->speculative_id);
+	    return true;
+	  }
+	if (direct_calls[direct->speculative_id])
+	  {
+	    error ("duplicate direct call to %s in speculative call sequence "
+		   "with speculative_uid %i",
+		   direct->callee->dump_name (), direct->speculative_id);
+	    return true;
+	  }
+	direct_calls[direct->speculative_id] = direct;
+      }
+
+  ipa_ref *ref;
+  for (int i = 0; node->iterate_reference (i, ref); i++)
+    if (ref->speculative
+	&& ref->stmt == stmt && ref->lto_stmt_uid == lto_stmt_uid)
+      {
+	if (ref->speculative_id >= num)
+	  {
+	    error ("direct call to %s in speculative call sequence has "
+		   "speculative_uid %i out of range",
+		   ref->referred->dump_name (), ref->speculative_id);
+	    return true;
+	  }
+	if (refs[ref->speculative_id])
+	  {
+	    error ("duplicate reference %s in speculative call sequence "
+		   "with speculative_uid %i",
+		   ref->referred->dump_name (), ref->speculative_id);
+	    return true;
+	  }
+	refs[ref->speculative_id] = ref;
+      }
+
+  int num_targets = 0;
+  for (unsigned int i = 0 ; i < num ; i++)
+    {
+      if (refs[i] && !direct_calls[i])
+	{
+	  error ("missing direct call for speculation %i", i);
+	  return true;
+	}
+      if (!refs[i] && direct_calls[i])
+	{
+	  error ("missing ref for speculation %i", i);
+	  return true;
+	}
+      if (refs[i] != NULL)
+	num_targets++;
+    }
+
+  if (num_targets != indirect->num_speculative_call_targets_p ())
+    {
+      error ("number of speculative targets %i mismatched with "
+	     "num_speculative_targets %i",
+	     num_targets,
+	     indirect->num_speculative_call_targets_p ());
+      return true;
+    }
+  return false;
+}
+
 /* Verify cgraph nodes of given cgraph node.  */
 DEBUG_FUNCTION void
 cgraph_node::verify_node (void)
@@ -3320,6 +3443,10 @@ cgraph_node::verify_node (void)
 	  error ("edge has both cal_stmt and lto_stmt_uid set");
 	  error_found = true;
 	}
+      if (e->speculative
+	  && verify_speculative_call (e->caller, e->call_stmt, e->lto_stmt_uid,
+				      NULL))
+	error_found = true;
     }
   for (e = indirect_calls; e; e = e->next_callee)
     {
@@ -3342,7 +3469,24 @@ cgraph_node::verify_node (void)
 	  fprintf (stderr, "\n");
 	  error_found = true;
 	}
+      if (e->speculative
+	  && verify_speculative_call (e->caller, e->call_stmt, e->lto_stmt_uid,
+				      e))
+	error_found = true;
     }
+  for (i = 0; iterate_reference (i, ref); i++)
+    {
+      if (ref->stmt && ref->lto_stmt_uid)
+	{
+	  error ("reference has both cal_stmt and lto_stmt_uid set");
+	  error_found = true;
+	}
+      if (ref->speculative
+	  && verify_speculative_call (this, ref->stmt,
+				      ref->lto_stmt_uid, NULL))
+	error_found = true;
+    }
+
   if (!callers && inlined_to)
     {
       error ("inlined_to pointer is set but no predecessors found");
@@ -3518,13 +3662,6 @@ cgraph_node::verify_node (void)
       else
 	/* No CFG available?!  */
 	gcc_unreachable ();
-
-      for (i = 0; iterate_reference (i, ref); i++)
-	if (ref->stmt && ref->lto_stmt_uid)
-	  {
-	    error ("reference has both cal_stmt and lto_stmt_uid set");
-	    error_found = true;
-	  }
 
       for (e = callees; e; e = e->next_callee)
 	{
