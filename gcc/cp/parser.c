@@ -11141,23 +11141,11 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
     local_specialization_stack s (lss_copy);
     tree fco = lambda_function (lambda_expr);
     tree body = start_lambda_function (fco, lambda_expr);
-    matching_braces braces;
 
-    if (braces.require_open (parser))
-      {
-	tree compound_stmt = begin_compound_stmt (0);
-
-	/* Originally C++11 required us to peek for 'return expr'; and
-	   process it specially here to deduce the return type.  N3638
-	   removed the need for that.  */
-
-	while (cp_lexer_next_token_is_keyword (parser->lexer, RID_LABEL))
-	  cp_parser_label_declaration (parser);
-	cp_parser_statement_seq_opt (parser, NULL_TREE);
-	braces.require_close (parser);
-
-	finish_compound_stmt (compound_stmt);
-      }
+    /* Originally C++11 required us to peek for 'return expr'; and
+       process it specially here to deduce the return type.  N3638
+       removed the need for that.  */
+    cp_parser_function_body (parser, false);
 
     finish_lambda_function (body);
   }

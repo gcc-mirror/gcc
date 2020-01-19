@@ -1,3 +1,7 @@
+2020-01-19  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_lambda_body): Use cp_parser_function_body.
+
 2020-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* coroutines.cc (get_fn_local_identifier): Fix NO_DOT_IN_LABEL
