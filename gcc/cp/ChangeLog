@@ -1,3 +1,11 @@
+2020-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91476 - anon-namespace reference temp clash between TUs.
+	* decl2.c (copy_linkage): Factor out of get_guard.
+	* call.c (make_temporary_var_for_ref_to_temp): Use it.
+	* decl.c (cp_finish_decomp): Use it.
+	(cp_finish_decl): determine_visibility sooner.
+
 2020-01-21  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	* coroutines.cc (finish_co_await_expr): Set return value flag.

@@ -3214,6 +3214,29 @@ build_cleanup (tree decl)
   return clean;
 }
 
+/* GUARD is a helper variable for DECL; make them have the same linkage and
+   visibility.  */
+
+void
+copy_linkage (tree guard, tree decl)
+{
+  TREE_PUBLIC (guard) = TREE_PUBLIC (decl);
+  TREE_STATIC (guard) = TREE_STATIC (decl);
+  DECL_COMMON (guard) = DECL_COMMON (decl);
+  DECL_COMDAT (guard) = DECL_COMDAT (decl);
+  if (TREE_STATIC (guard))
+    {
+      CP_DECL_THREAD_LOCAL_P (guard) = CP_DECL_THREAD_LOCAL_P (decl);
+      set_decl_tls_model (guard, DECL_TLS_MODEL (decl));
+      /* We can't rely on DECL_WEAK (decl) or DECL_ONE_ONLY (decl) here, as
+	 they may not be set until import_export_decl at EOF.  */
+      if (vague_linkage_p (decl))
+	comdat_linkage (guard);
+      DECL_VISIBILITY (guard) = DECL_VISIBILITY (decl);
+      DECL_VISIBILITY_SPECIFIED (guard) = DECL_VISIBILITY_SPECIFIED (decl);
+    }
+}
+
 /* Returns the initialization guard variable for the variable DECL,
    which has static storage duration.  */
 
@@ -3236,18 +3259,7 @@ get_guard (tree decl)
 			  VAR_DECL, sname, guard_type);
 
       /* The guard should have the same linkage as what it guards.  */
-      TREE_PUBLIC (guard) = TREE_PUBLIC (decl);
-      TREE_STATIC (guard) = TREE_STATIC (decl);
-      DECL_COMMON (guard) = DECL_COMMON (decl);
-      DECL_COMDAT (guard) = DECL_COMDAT (decl);
-      CP_DECL_THREAD_LOCAL_P (guard) = CP_DECL_THREAD_LOCAL_P (decl);
-      set_decl_tls_model (guard, DECL_TLS_MODEL (decl));
-      if (DECL_ONE_ONLY (decl))
-	make_decl_one_only (guard, cxx_comdat_group (guard));
-      if (TREE_PUBLIC (decl))
-	DECL_WEAK (guard) = DECL_WEAK (decl);
-      DECL_VISIBILITY (guard) = DECL_VISIBILITY (decl);
-      DECL_VISIBILITY_SPECIFIED (guard) = DECL_VISIBILITY_SPECIFIED (decl);
+      copy_linkage (guard, decl);
 
       DECL_ARTIFICIAL (guard) = 1;
       DECL_IGNORED_P (guard) = 1;
