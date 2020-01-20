@@ -1,3 +1,8 @@
+2020-01-19  Eric S. Raymond <esr@thyrsus.com>
+
+	* doc/contribute.texi: Update for SVN -> Git transition.
+	* doc/install.texi: Likewise.
+
 2020-01-18  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/93318

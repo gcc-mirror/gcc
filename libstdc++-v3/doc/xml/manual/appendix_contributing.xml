@@ -170,14 +170,11 @@
 
       <listitem>
 	<para>
-	  The patch itself. If you are accessing the SVN
-	  repository use <command>svn update; svn diff NEW</command>;
+	  The patch itself. If you are accessing the Git
+	  repository use <command>git pull; git diff &gt;NEW</command>;
 	  else, use <command>diff -cp OLD NEW</command> ... If your
 	  version of diff does not support these options, then get the
-	  latest version of GNU
-	  diff. The <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/wiki/SvnTricks">SVN
-	  Tricks</link> wiki page has information on customising the
-	  output of <code>svn diff</code>.
+	  latest version of GNU diff.
 	</para>
       </listitem>
 

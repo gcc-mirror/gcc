@@ -1,3 +1,15 @@
+2020-01-19  Eric S. Raymond <esr@thyrsus.com>
+
+	* doc/xml/faq.xml: Update for SVN -> Git transition.
+	* doc/xml/manual/appendix_contributing.xml: Likewise.
+	* doc/xml/manual/status_cxx1998.xml: Likewise.
+	* doc/xml/manual/status_cxx2011.xml: Likewise.
+	* doc/xml/manual/status_cxx2014.xml: Likewise.
+	* doc/xml/manual/status_cxx2017.xml: Likewise.
+	* doc/xml/manual/status_cxx2020.xml: Likewise.
+	* doc/xml/manual/status_cxxtr1.xml: Likewise.
+	* doc/xml/manual/status_cxxtr24733.xml: Likewise.
+
 2020-01-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* include/Makefile.am: Add coroutine to the std set.
