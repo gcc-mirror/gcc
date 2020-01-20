@@ -35,10 +35,10 @@ print_device_properties(acc_device_t type)
 	}
 
       v = acc_get_property (i, type,  acc_property_memory);
-      printf ("    Total memory: %zd\n", v);
+      printf ("    Total memory: %zu\n", v);
 
       v = acc_get_property (i, type, acc_property_free_memory);
-      printf ("    Free memory: %zd\n", v);
+      printf ("    Free memory: %zu\n", v);
 
       s = acc_get_property_string (i, type, acc_property_name);
       printf ("    Name: %s\n", s);

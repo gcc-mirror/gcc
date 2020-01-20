@@ -13,9 +13,8 @@
 
 void expect_device_properties
 (acc_device_t dev_type, int dev_num,
- int expected_total_mem, int expected_free_mem,
- const char* expected_vendor, const char* expected_name,
- const char* expected_driver);
+ size_t expected_memory, const char* expected_vendor,
+ const char* expected_name, const char* expected_driver);
 
 int main ()
 {
@@ -62,7 +61,9 @@ int main ()
       snprintf (driver, sizeof driver, "CUDA Driver %u.%u",
 		driver_version / 1000, driver_version % 1000 / 10);
 
+      /* Note that this check relies on the fact that the device numbering
+	 used by the nvptx plugin agrees with the CUDA device ordering. */
       expect_device_properties(acc_device_nvidia, dev_num,
-			       total_mem, free_mem, vendor, p.name, driver);
+			       total_mem, vendor, p.name, driver);
     }
 }
