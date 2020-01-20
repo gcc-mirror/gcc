@@ -11424,6 +11424,8 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
 
       TREE_STATIC (var) = TREE_STATIC (decl);
       TREE_PUBLIC (var) = TREE_PUBLIC (decl);
+      if (decl_anon_ns_mem_p (decl))
+	TREE_PUBLIC (var) = 0;
       if (vague_linkage_p (decl))
 	comdat_linkage (var);
 

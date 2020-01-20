@@ -1,3 +1,9 @@
+2020-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91476 - anon-namespace reference temp clash between TUs.
+	* call.c (make_temporary_var_for_ref_to_temp): Clear TREE_PUBLIC
+	if DECL is in the anonymous namespace.
+
 2020-01-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92531 - ICE with noexcept(lambda).
