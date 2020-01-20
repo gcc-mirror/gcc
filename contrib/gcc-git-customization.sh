@@ -81,6 +81,13 @@ then
     upstream="origin"
 fi
 ask "Local name for upstream repository" "origin" upstream
+
+v=$(git config --get-all "remote.${upstream}.fetch")
+if [ "x$v" = "x" ]
+then
+    echo "Remote $upstream does not seem to exist as a remote"
+    exit 1
+fi
 git config "gcc-config.upstream" "$upstream"
 
 remote_id=$(git config --get "gcc-config.user")
@@ -100,6 +107,7 @@ then
 	fi
     fi
 fi
+
 ask "Account name on gcc.gnu.org (for your personal branches area)" $remote_id remote_id
 git config "gcc-config.user" "$remote_id"
 
@@ -108,27 +116,44 @@ if [ "x$old_pfx" = "x" ]
 then
     old_pfx="me"
 fi
+echo
 echo "Local branch prefix for personal branches you want to share"
 echo "(local branches starting <prefix>/ can be pushed directly to your"
 ask "personal area on the gcc server)" $old_pfx new_pfx
 git config "gcc-config.userpfx" "$new_pfx"
 
-echo "Setting up tracking for personal namespace $remote_id in remotes/$upstream/${new_pfx}"
-git config --replace-all "remote.${upstream}.fetch" "+refs/users/${remote_id}/heads/*:refs/remotes/${upstream}/${new_pfx}/*" ":refs/remotes/${upstream}/${old_pfx}/"
-git config --replace-all "remote.${upstream}.fetch" "+refs/users/${remote_id}/tags/*:refs/tags/${new_pfx}/*" ":refs/tags/${old_pfx}/"
+# Scan the existing settings to see if there are any we need to rewrite.
+vendors=$(git config --get-all "remote.${upstream}.fetch" "refs/vendors/" | sed -r "s:.*refs/vendors/([^/]+)/.*:\1:" | sort | uniq)
+url=$(git config --get "remote.${upstream}.url")
+pushurl=$(git config --get "remote.${upstream}.pushurl")
+for v in $vendors
+do
+    echo "Migrating vendor $v to new remote vendors/$v"
+    git config --unset-all "remote.${upstream}.fetch" "refs/vendors/$v/"
+    git config --unset-all "remote.${upstream}.push" "refs/vendors/$v/"
+    git config "remote.vendors/${v}.url" "${url}"
+    if [ "x$pushurl" != "x" ]
+    then
+	git config "remote.vendors/${v}.pushurl" "${pushurl}"
+    fi
+    git config --add "remote.vendors/${v}.fetch" "+refs/vendors/$v/heads/*:refs/remotes/vendors/${v}/*"
+    git config --add "remote.vendors/${v}.fetch" "+refs/vendors/$v/tags/*:refs/tags/vendors/${v}/*"
+done
 
-push_rule=$(git config --get "remote.${upstream}.push")
-if [ "x$push_rule" != "x" ]
+echo "Setting up tracking for personal namespace $remote_id in remotes/${new_pfx}"
+git config "remote.${new_pfx}.url" "${url}"
+if [ "x$pushurl" != "x" ]
 then
-    echo "***********************************************"
-    echo "                  Warning"
-    echo "***********************************************"
-    echo
-    echo "Old versions of this script used to add custom push"
-    echo "rules to simplify pushing to personal branches."
-    echo "Your configuration contains such rules, but we no-longer"
-    echo "recommend doing this."
-    echo
-    echo "To delete these rules run:"
-    echo "  git config --unset-all \"remote.${upstream}.push\""
+    git config "remote.${new_pfx}.pushurl" "${pushurl}"
 fi
+git config --replace-all "remote.${new_pfx}.fetch" "+refs/users/${remote_id}/heads/*:refs/remotes/${new_pfx}/*" ":refs/remotes/${old_pfx}/"
+git config --replace-all "remote.${new_pfx}.fetch" "+refs/users/${remote_id}/tags/*:refs/tags/${new_pfx}/*" ":refs/tags/${old_pfx}/"
+git config --replace-all "remote.${new_pfx}.push" "refs/heads/${new_pfx}/*:refs/users/${remote_id}/heads/*" ":refs/users/${remote_id}"
+
+if [ "$old_pfx" != "$new_pfx" -a "$old_pfx" != "${upstream}" ]
+then
+    git config --remove-section "remote.${old_pfx}"
+fi
+
+git config --unset-all "remote.${upstream}.fetch" "refs/users/${remote_id}/"
+git config --unset-all "remote.${upstream}.push" "refs/users/${remote_id}/"

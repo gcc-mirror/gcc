@@ -1206,7 +1206,7 @@ class svld1ro_impl : public load_replicate
 {
 public:
   machine_mode
-  memory_vector_mode (const function_instance &fi ATTRIBUTE_UNUSED) const OVERRIDE
+  memory_vector_mode (const function_instance &) const OVERRIDE
   {
     return OImode;
   }

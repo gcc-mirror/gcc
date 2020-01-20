@@ -5,29 +5,29 @@
 char test_1 (FILE *logfile)
 {
   char *password = getpass (">"); /* { dg-message "\\(1\\) sensitive value acquired here" } */
-  fprintf (logfile, "got password %s\n", password); /* { dg-warning "sensitive value 'password' written to output file \\\[CWE-532\\\]" } */
-  /* { dg-message "\\(2\\) sensitive value 'password' written to output file; acquired at \\(1\\)" "" { target *-*-* } .-1 } */
+  fprintf (logfile, "got password %s\n", password); /* { dg-warning "sensitive value 'password' written to output file \\\[CWE-532\\\]" "warning" } */
+  /* { dg-message "\\(2\\) sensitive value 'password' written to output file; acquired at \\(1\\)" "event" { target *-*-* } .-1 } */
 }
 
 char test_2 (FILE *logfile, int i)
 {
   char *password = getpass (">"); /* { dg-message "\\(1\\) sensitive value acquired here" } */
   fprintf (logfile, "got password[%i]: %s\n", i, password); /* { dg-warning "sensitive value 'password' written to output file \\\[CWE-532\\\]" } */
-  /* { dg-message "\\(2\\) sensitive value 'password' written to output file; acquired at \\(1\\)" "" { target *-*-* } .-1 } */
+  /* { dg-message "\\(2\\) sensitive value 'password' written to output file; acquired at \\(1\\)" "event" { target *-*-* } .-1 } */
 }
 
 char test_3 (FILE *logfile)
 {
   char *password = getpass (">"); /* { dg-message "\\(1\\) sensitive value acquired here" } */
-  printf ("got password %s\n", password); /* { dg-warning "sensitive value 'password' written to output file \\\[CWE-532\\\]" } */
-  /* { dg-message "\\(2\\) sensitive value 'password' written to output file; acquired at \\(1\\)" "" { target *-*-* } .-1 } */
+  printf ("got password %s\n", password); /* { dg-warning "sensitive value 'password' written to output file \\\[CWE-532\\\]" "warning" } */
+  /* { dg-message "\\(2\\) sensitive value 'password' written to output file; acquired at \\(1\\)" "event" { target *-*-* } .-1 } */
 }
 
 char test_4 (FILE *logfile)
 {
   char *password = getpass (">"); /* { dg-message "\\(1\\) sensitive value acquired here" } */
-  fwrite (password, strlen (password), 1, logfile); /* { dg-warning "sensitive value 'password' written to output file \\\[CWE-532\\\]" } */
-  /* { dg-message "\\(2\\) sensitive value 'password' written to output file; acquired at \\(1\\)" "" { target *-*-* } .-1 } */
+  fwrite (password, strlen (password), 1, logfile); /* { dg-warning "sensitive value 'password' written to output file \\\[CWE-532\\\]" "warning" } */
+  /* { dg-message "\\(2\\) sensitive value 'password' written to output file; acquired at \\(1\\)" "event" { target *-*-* } .-1 } */
 }
 
 static void called_by_test_5 (const char *value)

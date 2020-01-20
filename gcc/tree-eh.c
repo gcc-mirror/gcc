@@ -356,6 +356,9 @@ struct leh_state
      split out into a separate structure so that we don't have to
      copy so much when processing other nodes.  */
   struct leh_tf_state *tf;
+
+  /* Outer non-clean up region.  */
+  eh_region outer_non_cleanup;
 };
 
 struct leh_tf_state
@@ -1624,7 +1627,8 @@ decide_copy_try_finally (int ndests, bool may_throw, gimple_seq finally)
     return f_estimate < 40 || f_estimate * 2 < sw_estimate * 3;
 }
 
-/* REG is the enclosing region for a possible cleanup region, or the region
+/* REG is current region of a LEH state.
+   is the enclosing region for a possible cleanup region, or the region
    itself.  Returns TRUE if such a region would be unreachable.
 
    Cleanup regions within a must-not-throw region aren't actually reachable
@@ -1632,10 +1636,18 @@ decide_copy_try_finally (int ndests, bool may_throw, gimple_seq finally)
    routine will call terminate before unwinding.  */
 
 static bool
-cleanup_is_dead_in (eh_region reg)
+cleanup_is_dead_in (leh_state *state)
 {
-  while (reg && reg->type == ERT_CLEANUP)
-    reg = reg->outer;
+  if (flag_checking)
+    {
+      eh_region reg = state->cur_region;
+      while (reg && reg->type == ERT_CLEANUP)
+	reg = reg->outer;
+
+      gcc_assert (reg == state->outer_non_cleanup);
+    }
+
+  eh_region reg = state->outer_non_cleanup;
   return (reg && reg->type == ERT_MUST_NOT_THROW);
 }
 
@@ -1658,7 +1670,7 @@ lower_try_finally (struct leh_state *state, gtry *tp)
   this_tf.try_finally_expr = tp;
   this_tf.top_p = tp;
   this_tf.outer = state;
-  if (using_eh_for_cleanups_p () && !cleanup_is_dead_in (state->cur_region))
+  if (using_eh_for_cleanups_p () && !cleanup_is_dead_in (state))
     {
       this_tf.region = gen_eh_region_cleanup (state->cur_region);
       this_state.cur_region = this_tf.region;
@@ -1669,6 +1681,7 @@ lower_try_finally (struct leh_state *state, gtry *tp)
       this_state.cur_region = state->cur_region;
     }
 
+  this_state.outer_non_cleanup = state->outer_non_cleanup;
   this_state.ehp_region = state->ehp_region;
   this_state.tf = &this_tf;
 
@@ -1768,6 +1781,7 @@ lower_catch (struct leh_state *state, gtry *tp)
     {
       try_region = gen_eh_region_try (state->cur_region);
       this_state.cur_region = try_region;
+      this_state.outer_non_cleanup = this_state.cur_region;
     }
 
   lower_eh_constructs_1 (&this_state, gimple_try_eval_ptr (tp));
@@ -1781,6 +1795,7 @@ lower_catch (struct leh_state *state, gtry *tp)
   emit_resx (&new_seq, try_region);
 
   this_state.cur_region = state->cur_region;
+  this_state.outer_non_cleanup = state->outer_non_cleanup;
   this_state.ehp_region = try_region;
 
   /* Add eh_seq from lowering EH in the cleanup sequence after the cleanup
@@ -1857,6 +1872,7 @@ lower_eh_filter (struct leh_state *state, gtry *tp)
       this_region = gen_eh_region_allowed (state->cur_region,
 				           gimple_eh_filter_types (inner));
       this_state.cur_region = this_region;
+      this_state.outer_non_cleanup = this_state.cur_region;
     }
 
   lower_eh_constructs_1 (&this_state, gimple_try_eval_ptr (tp));
@@ -1912,6 +1928,7 @@ lower_eh_must_not_throw (struct leh_state *state, gtry *tp)
       TREE_USED (this_region->u.must_not_throw.failure_decl) = 1;
 
       this_state.cur_region = this_region;
+      this_state.outer_non_cleanup = this_state.cur_region;
     }
 
   lower_eh_constructs_1 (&this_state, gimple_try_eval_ptr (tp));
@@ -1929,12 +1946,13 @@ lower_cleanup (struct leh_state *state, gtry *tp)
   eh_region this_region = NULL;
   struct leh_tf_state fake_tf;
   gimple_seq result;
-  bool cleanup_dead = cleanup_is_dead_in (state->cur_region);
+  bool cleanup_dead = cleanup_is_dead_in (state);
 
   if (flag_exceptions && !cleanup_dead)
     {
       this_region = gen_eh_region_cleanup (state->cur_region);
       this_state.cur_region = this_region;
+      this_state.outer_non_cleanup = state->outer_non_cleanup;
     }
 
   lower_eh_constructs_1 (&this_state, gimple_try_eval_ptr (tp));

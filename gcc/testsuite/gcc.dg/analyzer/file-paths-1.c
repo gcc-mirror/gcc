@@ -11,8 +11,8 @@ void f1 (const char *str)
   while (fgets(buf, 10, fp) != NULL) /* { dg-message "following 'false' branch\\.\\.\\." } */
     {
     }
-} /* { dg-warning "leak of FILE 'fp'" } */
-/* { dg-message "\\.\\.\\.to here" "" { target *-*-* } .-1 } */
+} /* { dg-warning "leak of FILE 'fp'" "warning" } */
+/* { dg-message "\\.\\.\\.to here" "to here" { target *-*-* } .-1 } */
 
 void f2(const char *str, int flag)
 {
@@ -21,5 +21,5 @@ void f2(const char *str, int flag)
 
   if (flag) /* { dg-message "when 'flag == 0'" } */
     fclose(fp);
-} /* { dg-warning "leak of FILE 'fp'" } */
-/* { dg-message "\\.\\.\\.to here" "" { target *-*-* } .-1 } */
+} /* { dg-warning "leak of FILE 'fp'" "warning" } */
+/* { dg-message "\\.\\.\\.to here" "to here" { target *-*-* } .-1 } */

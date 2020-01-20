@@ -3205,7 +3205,8 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo, tree * cond_expr)
    *COND_EXPR_STMT_LIST.  */
 
 class loop *
-vect_loop_versioning (loop_vec_info loop_vinfo)
+vect_loop_versioning (loop_vec_info loop_vinfo,
+		      gimple *loop_vectorized_call)
 {
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo), *nloop;
   class loop *scalar_loop = LOOP_VINFO_SCALAR_LOOP (loop_vinfo);
@@ -3339,18 +3340,18 @@ vect_loop_versioning (loop_vec_info loop_vinfo)
      if-conversion re-use that.  Note we cannot re-use the copy of
      an if-converted outer-loop when vectorizing the inner loop only.  */
   gcond *cond;
-  gimple *call;
   if ((!loop_to_version->inner || loop == loop_to_version)
-      && (call = vect_loop_vectorized_call (loop_to_version, &cond)))
+      && loop_vectorized_call)
     {
       gcc_assert (scalar_loop);
-      condition_bb = gimple_bb (cond);
+      condition_bb = gimple_bb (loop_vectorized_call);
+      cond = as_a <gcond *> (last_stmt (condition_bb));
       gimple_cond_set_condition_from_tree (cond, cond_expr);
       update_stmt (cond);
 
       if (cond_expr_stmt_list)
 	{
-	  cond_exp_gsi = gsi_for_stmt (call);
+	  cond_exp_gsi = gsi_for_stmt (loop_vectorized_call);
 	  gsi_insert_seq_before (&cond_exp_gsi, cond_expr_stmt_list,
 				 GSI_SAME_STMT);
 	}

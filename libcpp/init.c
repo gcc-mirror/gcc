@@ -578,6 +578,17 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
 
   if (CPP_OPTION (pfile, objc))
     _cpp_define_builtin (pfile, "__OBJC__ 1");
+
+  /* These two behave as macros for #ifdef, but are evaluated
+     specially inside #if.  */
+  _cpp_define_builtin (pfile, "__has_include __has_include");
+  _cpp_define_builtin (pfile, "__has_include_next __has_include_next");
+  pfile->spec_nodes.n__has_include
+    = cpp_lookup (pfile, DSC("__has_include"));
+  pfile->spec_nodes.n__has_include->flags |= NODE_DIAGNOSTIC;
+  pfile->spec_nodes.n__has_include_next
+    = cpp_lookup (pfile, DSC("__has_include_next"));
+  pfile->spec_nodes.n__has_include_next->flags |= NODE_DIAGNOSTIC;
 }
 
 /* Sanity-checks are dependent on command-line options, so it is
@@ -672,7 +683,8 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname)
     }
 
   pfile->main_file
-    = _cpp_find_file (pfile, fname, &pfile->no_search_path, false, 0, false,
+    = _cpp_find_file (pfile, fname, &pfile->no_search_path, /*angle=*/0,
+		      /*fake=*/false, /*preinclude=*/false, /*hasinclude=*/false,
 		      loc);
   if (_cpp_find_failed (pfile->main_file))
     return NULL;

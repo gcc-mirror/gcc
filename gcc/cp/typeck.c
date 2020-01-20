@@ -10090,6 +10090,9 @@ check_return_expr (tree retval, bool *no_warning)
   if (retval && retval != result)
     retval = build2 (INIT_EXPR, TREE_TYPE (result), result, retval);
 
+  if (tree set = maybe_set_retval_sentinel ())
+    retval = build2 (COMPOUND_EXPR, void_type_node, retval, set);
+
   return retval;
 }
 

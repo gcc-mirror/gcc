@@ -1,3 +1,8 @@
+2020-01-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/80005
+	* c-cppbuiltins.c (c_cpp_builtins): Don't define __has_include{,_next}.
+
 2020-01-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* c-common.c (co_await, co_yield, co_return): New.

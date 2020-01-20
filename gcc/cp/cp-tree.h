@@ -1904,6 +1904,7 @@ struct GTY(()) language_function {
   BOOL_BITFIELD can_throw : 1;
 
   BOOL_BITFIELD invalid_constexpr : 1;
+  BOOL_BITFIELD throwing_cleanup : 1;
 
   hash_table<named_label_hash> *x_named_labels;
 
@@ -1953,6 +1954,13 @@ struct GTY(()) language_function {
    constructors and destructors.  */
 
 #define current_vtt_parm cp_function_chain->x_vtt_parm
+
+/* A boolean flag to control whether we need to clean up the return value if a
+   local destructor throws.  Only used in functions that return by value a
+   class with a destructor.  Which 'tors don't, so we can use the same
+   field as current_vtt_parm.  */
+
+#define current_retval_sentinel current_vtt_parm
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */
@@ -6686,6 +6694,9 @@ extern tree begin_eh_spec_block			(void);
 extern void finish_eh_spec_block		(tree, tree);
 extern tree build_eh_type_type			(tree);
 extern tree cp_protect_cleanup_actions		(void);
+extern void maybe_splice_retval_cleanup		(tree);
+extern tree maybe_set_retval_sentinel		(void);
+
 extern tree template_parms_to_args		(tree);
 extern tree template_parms_level_to_args	(tree);
 extern tree generic_targs_for			(tree);

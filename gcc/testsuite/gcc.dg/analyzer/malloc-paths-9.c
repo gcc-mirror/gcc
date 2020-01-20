@@ -111,9 +111,9 @@ int test_3 (int x, int y)
   if (y)
     free (ptr); /* No double-'free' warning: we've already attempted
 		   to dereference it above.  */
-  return *ptr; /* { dg-warning "use after 'free' of 'ptr'" } */
+  return *ptr; /* { dg-warning "use after 'free' of 'ptr'" "use-after-free" } */
   // TODO: two warnings here:  one is from sm-malloc, the other from region model
-  /* { dg-warning "leak of 'ptr'" "" { target *-*-* } .-2 } */
+  /* { dg-warning "leak of 'ptr'" "leak" { target *-*-* } .-2 } */
 }
 
 /* "dereference of possibly-NULL 'ptr'".  */

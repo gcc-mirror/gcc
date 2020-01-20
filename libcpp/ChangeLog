@@ -1,4 +1,31 @@
-2020-01-17  Nathan Sidwell  <nathan@acm.org>
+2020-01-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/80005
+	* include/cpplib.h (BT_HAS_ATTRIBUTE): Fix comment.
+	* internal.h (struct lexer_state): Delete in__has_include field.
+	(struct spec_nodes): Rename n__has_include{,_next}__ fields.
+	(_cpp_defined_macro_p): New.
+	(_cpp_find_file): Add has_include parm.
+	* directives.c (lex_macro_node): Combine defined,
+	__has_inline{,_next} checking.
+	(do_ifdef, do_ifndef): Use _cpp_defined_macro_p.
+	(_cpp_init_directives): Refactor.
+	* expr.c (parse_defined): Use _cpp_defined_macro_p.
+	(eval_token): Adjust parse_has_include calls.
+	(parse_has_include): Add OP parameter.  Reimplement.
+	* files.c (_cpp_find_file): Add HAS_INCLUDE parm.  Use it to
+	inhibit error message.
+	(_cpp_stack_include): Adjust _cpp_find_file call.
+	(_cpp_fake_include, _cpp_compare_file_date): Likewise.
+	(open_file_failed): Remove in__has_include check.
+	(_cpp_has_header): Adjust _cpp_find_file call.
+	* identifiers.c (_cpp_init_hashtable): Don't init
+	__has_include{,_next} here ...
+	* init.c (cpp_init_builtins): ... init them here.  Define as
+	macros.
+	(cpp_read_main_file): Adjust _cpp_find_file call.
+	* pch.c (cpp_read_state): Adjust __has_include{,_next} access.
+	* traditional.c (_cpp_scan_out_locgical_line): Likewise.
 
 	PR preprocessor/93306
 	* expr.c (parse_has_include): Refactor.  Check skip_eval before

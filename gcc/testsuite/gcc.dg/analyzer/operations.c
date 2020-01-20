@@ -9,26 +9,26 @@ void test (int i, int j)
 
     i += 3;
 
-    __analyzer_eval (i > 45); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-    /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+    __analyzer_eval (i > 45); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+    /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
     /* TODO(xfail): do we really know this?  what about overflow?  */
 
     i -= 1;
 
-    __analyzer_eval (i > 44); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-    /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+    __analyzer_eval (i > 44); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+    /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
     /* TODO(xfail): do we really know this?  what about overflow?  */
 
     i = 3 * i;
 
-    __analyzer_eval (i > 132); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-    /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+    __analyzer_eval (i > 132); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+    /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
     /* TODO(xfail): do we really know this?  what about overflow?  */
 
     i /= 2;
 
-    __analyzer_eval (i > 66); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-    /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+    __analyzer_eval (i > 66); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+    /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
     /* TODO(xfail): do we really know this?  what about overflow?  */
 
     /* We don't know anything about j, so we don't know anything about k: */
@@ -37,8 +37,8 @@ void test (int i, int j)
 
     /* However, we should now know that m > 67: */
     m = i + 1;
-    __analyzer_eval (m > 67); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-    /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+    __analyzer_eval (m > 67); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+    /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
     /* TODO(xfail): do we really know this?  what about overflow?  */
   }
 }

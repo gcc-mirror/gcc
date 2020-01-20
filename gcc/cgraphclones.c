@@ -132,7 +132,8 @@ cgraph_edge::clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
 
   new_edge->inline_failed = inline_failed;
   new_edge->indirect_inlining_edge = indirect_inlining_edge;
-  new_edge->lto_stmt_uid = stmt_uid;
+  if (!call_stmt)
+    new_edge->lto_stmt_uid = stmt_uid;
   new_edge->speculative_id = speculative_id;
   /* Clone flags that depend on call_stmt availability manually.  */
   new_edge->can_throw_external = can_throw_external;

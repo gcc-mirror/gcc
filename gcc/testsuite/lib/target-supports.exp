@@ -2477,6 +2477,10 @@ proc check_effective_target_ti_c64xp { } {
     }]
 }
 
+# Check if a -march=... option is given, as part of (earlier) options.
+proc check_effective_target_march_option { } {
+    return [check-flags [list "" { *-*-* } { "-march=*" } { "" } ]]
+}
 
 proc check_alpha_max_hw_available { } {
     return [check_runtime alpha_max_hw_available {

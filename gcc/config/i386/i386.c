@@ -10764,12 +10764,24 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
       if (TARGET_GNU2_TLS)
 	{
 	  if (TARGET_64BIT)
-	    emit_insn (gen_tls_dynamic_gnu2_64 (dest, x));
+	    emit_insn (gen_tls_dynamic_gnu2_64 (Pmode, dest, x));
 	  else
 	    emit_insn (gen_tls_dynamic_gnu2_32 (dest, x, pic));
 
 	  tp = get_thread_pointer (Pmode, true);
-	  dest = force_reg (Pmode, gen_rtx_PLUS (Pmode, tp, dest));
+
+	  /* NB: Since DEST set by tls_dynamic_gnu2_64 is in ptr_mode,
+	     make sure that PLUS is done in ptr_mode.  */
+	  if (Pmode != ptr_mode)
+	    {
+	      tp = lowpart_subreg (ptr_mode, tp, Pmode);
+	      dest = lowpart_subreg (ptr_mode, dest, Pmode);
+	      dest = gen_rtx_PLUS (ptr_mode, tp, dest);
+	      dest = gen_rtx_ZERO_EXTEND (Pmode, dest);
+	    }
+	  else
+	    dest = gen_rtx_PLUS (Pmode, tp, dest);
+	  dest = force_reg (Pmode, dest);
 
 	  if (GET_MODE (x) != Pmode)
 	    x = gen_rtx_ZERO_EXTEND (Pmode, x);
@@ -10821,7 +10833,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	  rtx tmp = ix86_tls_module_base ();
 
 	  if (TARGET_64BIT)
-	    emit_insn (gen_tls_dynamic_gnu2_64 (base, tmp));
+	    emit_insn (gen_tls_dynamic_gnu2_64 (Pmode, base, tmp));
 	  else
 	    emit_insn (gen_tls_dynamic_gnu2_32 (base, tmp, pic));
 
@@ -10864,7 +10876,18 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 
       if (TARGET_GNU2_TLS)
 	{
-	  dest = force_reg (Pmode, gen_rtx_PLUS (Pmode, dest, tp));
+	  /* NB: Since DEST set by tls_dynamic_gnu2_64 is in ptr_mode,
+	     make sure that PLUS is done in ptr_mode.  */
+	  if (Pmode != ptr_mode)
+	    {
+	      tp = lowpart_subreg (ptr_mode, tp, Pmode);
+	      dest = lowpart_subreg (ptr_mode, dest, Pmode);
+	      dest = gen_rtx_PLUS (ptr_mode, tp, dest);
+	      dest = gen_rtx_ZERO_EXTEND (Pmode, dest);
+	    }
+	  else
+	    dest = gen_rtx_PLUS (Pmode, tp, dest);
+	  dest = force_reg (Pmode, dest);
 
 	  if (GET_MODE (x) != Pmode)
 	    x = gen_rtx_ZERO_EXTEND (Pmode, x);

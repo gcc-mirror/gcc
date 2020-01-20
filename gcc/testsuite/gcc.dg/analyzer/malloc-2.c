@@ -9,15 +9,15 @@ extern char *strcpy(char *__restrict __dest, const char *__restrict __src)
 void test_1 (void)
 {
   void *p = malloc (1024); /* { dg-message "\\(1\\) this call could return NULL" } */
-  strcpy ((char *)p, "hello world"); /* { dg-warning "use of possibly-NULL 'p' where non-null expected" } */
-  /* { dg-message "\\(2\\) argument 1 \\('p'\\) from \\(1\\) could be NULL where non-null expected" "" { target *-*-* } .-1 } */
+  strcpy ((char *)p, "hello world"); /* { dg-warning "use of possibly-NULL 'p' where non-null expected" "warning" } */
+  /* { dg-message "\\(2\\) argument 1 \\('p'\\) from \\(1\\) could be NULL where non-null expected" "event" { target *-*-* } .-1 } */
   free (p);
 }
 
 int *test_2 (void)
 {
   int *i = malloc (sizeof (int)); /* { dg-message "\\(1\\) this call could return NULL" } */
-  *i = 42; /* { dg-warning "dereference of possibly-NULL 'i'" } */
-  /* { dg-message "\\(2\\) 'i' could be NULL: unchecked value from \\(1\\)" "" { target *-*-* } .-1 } */
+  *i = 42; /* { dg-warning "dereference of possibly-NULL 'i'" "warning" } */
+  /* { dg-message "\\(2\\) 'i' could be NULL: unchecked value from \\(1\\)" "event" { target *-*-* } .-1 } */
   return i; 
 }

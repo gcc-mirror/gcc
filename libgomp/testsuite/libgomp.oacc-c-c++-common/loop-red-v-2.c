@@ -9,8 +9,9 @@ int main ()
   int ix;
   int ondev = 0;
   int q = 0,  h = 0;
+  int vectorsize;
 
-#pragma acc parallel vector_length(32) copy(q) copy(ondev)
+#pragma acc parallel vector_length(32) copy(q) copy(ondev) copyout(vectorsize)
   {
     int t = q;
     
@@ -32,6 +33,7 @@ int main ()
 	t += val;
       }
     q = t;
+    vectorsize = __builtin_goacc_parlevel_size (GOMP_DIM_VECTOR);
   }
 
   for (ix = 0; ix < N; ix++)
@@ -41,7 +43,7 @@ int main ()
 	{
 	  int g = 0;
 	  int w = 0;
-	  int v = ix % 32;
+	  int v = ix % vectorsize;
 
 	  val = (g << 16) | (w << 8) | v;
 	}

@@ -1132,7 +1132,7 @@ static const struct tune_params neoversen1_tunings =
   3, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops  */
   "32:16",	/* function_align.  */
-  "32:16",	/* jump_align.  */
+  "4",		/* jump_align.  */
   "32:16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
