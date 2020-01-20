@@ -1,3 +1,12 @@
+2020-01-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc-git-customization.sh: Check that user-supplied remote
+	name exists before continuting.  Use a separate remotes for the
+	personal commit area.  Convert existing personal and vendor
+	fetch rules to new layout.
+	* git-fetch-vendor.sh: New vendor layout.  Add --enable-push
+	option.
+
 2020-01-17  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc_update <git revision>: Use git log "--pretty=tformat:%p:%t:%H",
