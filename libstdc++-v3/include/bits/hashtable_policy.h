@@ -758,13 +758,11 @@ namespace __detail
     -> mapped_type&
     {
       __hashtable* __h = static_cast<__hashtable*>(this);
-      __hash_code __code = __h->_M_hash_code(__k);
-      std::size_t __bkt = __h->_M_bucket_index(__k, __code);
-      __node_type* __p = __h->_M_find_node(__bkt, __k, __code);
+      auto __ite = __h->find(__k);
 
-      if (!__p)
+      if (!__ite._M_cur)
 	__throw_out_of_range(__N("_Map_base::at"));
-      return __p->_M_v().second;
+      return __ite->second;
     }
 
   template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
@@ -777,13 +775,11 @@ namespace __detail
     -> const mapped_type&
     {
       const __hashtable* __h = static_cast<const __hashtable*>(this);
-      __hash_code __code = __h->_M_hash_code(__k);
-      std::size_t __bkt = __h->_M_bucket_index(__k, __code);
-      __node_type* __p = __h->_M_find_node(__bkt, __k, __code);
+      auto __ite = __h->find(__k);
 
-      if (!__p)
+      if (!__ite._M_cur)
 	__throw_out_of_range(__N("_Map_base::at"));
-      return __p->_M_v().second;
+      return __ite->second;
     }
 
   /**
@@ -1796,17 +1792,26 @@ namespace __detail
     template<typename _NodeT>
       struct _Equal_hash_code
       {
-       static bool
-       _S_equals(__hash_code, const _NodeT&)
-       { return true; }
+	static bool
+	_S_equals(__hash_code, const _NodeT&)
+	{ return true; }
+
+	static bool
+	_S_node_equals(const _NodeT&, const _NodeT&)
+	{ return true; }
       };
 
     template<typename _Ptr2>
       struct _Equal_hash_code<_Hash_node<_Ptr2, true>>
       {
-       static bool
-       _S_equals(__hash_code __c, const _Hash_node<_Ptr2, true>& __n)
-       { return __c == __n._M_hash_code; }
+	static bool
+	_S_equals(__hash_code __c, const _Hash_node<_Ptr2, true>& __n)
+	{ return __c == __n._M_hash_code; }
+
+	static bool
+	_S_node_equals(const _Hash_node<_Ptr2, true>& __lhn,
+		       const _Hash_node<_Ptr2, true>& __rhn)
+	{ return __lhn._M_hash_code == __rhn._M_hash_code; }
       };
 
   protected:
@@ -1817,13 +1822,21 @@ namespace __detail
     { }
 
     bool
-    _M_equals(const _Key& __k, __hash_code __c, __node_type* __n) const
+    _M_equals(const _Key& __k, __hash_code __c, const __node_type* __n) const
     {
       static_assert(__is_invocable<const _Equal&, const _Key&, const _Key&>{},
 	  "key equality predicate must be invocable with two arguments of "
 	  "key type");
       return _Equal_hash_code<__node_type>::_S_equals(__c, *__n)
 	&& _M_eq()(__k, this->_M_extract()(__n->_M_v()));
+    }
+
+    bool
+    _M_node_equals(const __node_type* __lhn, const __node_type* __rhn) const
+    {
+      return _Equal_hash_code<__node_type>::_S_node_equals(*__lhn, *__rhn)
+	&& _M_eq()(this->_M_extract()(__lhn->_M_v()),
+		   this->_M_extract()(__rhn->_M_v()));
     }
 
     void
@@ -1950,14 +1963,18 @@ namespace __detail
 	    return false;
 
 	  __node_type* __y_n = static_cast<__node_type*>(__y_prev_n->_M_nxt);
-	  for (;; __y_n = __y_n->_M_next())
+	  for (;;)
 	    {
 	      if (__this->key_eq()(_ExtractKey()(__y_n->_M_v()),
 				   _ExtractKey()(*__itx)))
 		break;
 
-	      if (!__y_n->_M_nxt
-		  || __other._M_bucket_index(__y_n->_M_next()) != __ybkt)
+	      __node_type* __y_ref_n = __y_n;
+	      for (__y_n = __y_n->_M_next(); __y_n; __y_n = __y_n->_M_next())
+		if (!__other._M_node_equals(__y_ref_n, __y_n))
+		  break;
+
+	      if (!__y_n || __other._M_bucket_index(__y_n) != __ybkt)
 		return false;
 	    }
 
