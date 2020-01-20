@@ -460,6 +460,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__hashtable_alloc(__node_alloc_type(__a))
       { }
 
+      template<typename _InputIterator>
+	_Hashtable(_InputIterator __first, _InputIterator __last,
+		   size_type __bkt_count_hint,
+		   const _H1&, const _H2&, const _Hash&,
+		   const _Equal&, const _ExtractKey&,
+		   const allocator_type&,
+		   true_type __uks);
+
+      template<typename _InputIterator>
+	_Hashtable(_InputIterator __first, _InputIterator __last,
+		   size_type __bkt_count_hint,
+		   const _H1&, const _H2&, const _Hash&,
+		   const _Equal&, const _ExtractKey&,
+		   const allocator_type&,
+		   false_type __uks);
+
     public:
       // Constructor, destructor, assignment, swap
       _Hashtable() = default;
@@ -467,13 +483,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 const _H1&, const _H2&, const _Hash&,
 		 const _Equal&, const _ExtractKey&,
 		 const allocator_type&);
-
-      template<typename _InputIterator>
-	_Hashtable(_InputIterator __first, _InputIterator __last,
-		   size_type __bkt_count_hint,
-		   const _H1&, const _H2&, const _Hash&,
-		   const _Equal&, const _ExtractKey&,
-		   const allocator_type&);
 
       _Hashtable(const _Hashtable&);
 
@@ -484,6 +493,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Hashtable(_Hashtable&&, const allocator_type&);
 
       // Use delegating constructors.
+      template<typename _InputIterator>
+	_Hashtable(_InputIterator __first, _InputIterator __last,
+		   size_type __bkt_count_hint,
+		   const _H1& __h1, const _H2& __h2, const _Hash& __h,
+		   const _Equal& __eq, const _ExtractKey& __exk,
+		   const allocator_type& __a)
+	: _Hashtable(__first, __last, __bkt_count_hint,
+		     __h1, __h2, __h, __eq, __exk, __a, __unique_keys{})
+	{ }
+
       explicit
       _Hashtable(const allocator_type& __a)
       : __hashtable_alloc(__node_alloc_type(__a))
@@ -540,7 +559,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__reuse_or_alloc_node_gen_t __roan(_M_begin(), *this);
 	_M_before_begin._M_nxt = nullptr;
 	clear();
-	this->_M_insert_range(__l.begin(), __l.end(), __roan, __unique_keys());
+
+	// We consider that all elements of __l are going to be inserted.
+	auto __l_bkt_count = _M_rehash_policy._M_bkt_for_elements(__l.size());
+
+	// Do not shrink to keep potential user reservation.
+	if (_M_bucket_count < __l_bkt_count)
+	  rehash(__l_bkt_count);
+
+	this->_M_insert_range(__l.begin(), __l.end(), __roan, __unique_keys{});
 	return *this;
       }
 
@@ -749,41 +776,41 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Emplace with hint, useless when keys are unique.
       template<typename... _Args>
 	iterator
-	_M_emplace(const_iterator, true_type __uk, _Args&&... __args)
-	{ return _M_emplace(__uk, std::forward<_Args>(__args)...).first; }
+	_M_emplace(const_iterator, true_type __uks, _Args&&... __args)
+	{ return _M_emplace(__uks, std::forward<_Args>(__args)...).first; }
 
       template<typename... _Args>
 	iterator
-	_M_emplace(const_iterator, false_type, _Args&&... __args);
+	_M_emplace(const_iterator, false_type __uks, _Args&&... __args);
 
       template<typename _Arg, typename _NodeGenerator>
 	std::pair<iterator, bool>
-	_M_insert(_Arg&&, const _NodeGenerator&, true_type, size_type = 1);
+	_M_insert(_Arg&&, const _NodeGenerator&, true_type __uks);
 
       template<typename _Arg, typename _NodeGenerator>
 	iterator
 	_M_insert(_Arg&& __arg, const _NodeGenerator& __node_gen,
-		  false_type __uk)
+		  false_type __uks)
 	{
 	  return _M_insert(cend(), std::forward<_Arg>(__arg), __node_gen,
-			   __uk);
+			   __uks);
 	}
 
       // Insert with hint, not used when keys are unique.
       template<typename _Arg, typename _NodeGenerator>
 	iterator
 	_M_insert(const_iterator, _Arg&& __arg,
-		  const _NodeGenerator& __node_gen, true_type __uk)
+		  const _NodeGenerator& __node_gen, true_type __uks)
 	{
 	  return
-	    _M_insert(std::forward<_Arg>(__arg), __node_gen, __uk).first;
+	    _M_insert(std::forward<_Arg>(__arg), __node_gen, __uks).first;
 	}
 
       // Insert with hint when keys are not unique.
       template<typename _Arg, typename _NodeGenerator>
 	iterator
 	_M_insert(const_iterator, _Arg&&,
-		  const _NodeGenerator&, false_type);
+		  const _NodeGenerator&, false_type __uks);
 
       size_type
       _M_erase(true_type, const key_type&);
@@ -1032,7 +1059,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 size_type __bkt_count_hint,
 		 const _H1& __h1, const _H2& __h2, const _Hash& __h,
 		 const _Equal& __eq, const _ExtractKey& __exk,
-		 const allocator_type& __a)
+		 const allocator_type& __a, true_type /* __uks */)
+      : _Hashtable(__bkt_count_hint, __h1, __h2, __h, __eq, __exk, __a)
+      {
+	for (; __f != __l; ++__f)
+	  this->insert(*__f);
+      }
+
+  template<typename _Key, typename _Value,
+	   typename _Alloc, typename _ExtractKey, typename _Equal,
+	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
+	   typename _Traits>
+    template<typename _InputIterator>
+      _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+		 _H1, _H2, _Hash, _RehashPolicy, _Traits>::
+      _Hashtable(_InputIterator __f, _InputIterator __l,
+		 size_type __bkt_count_hint,
+		 const _H1& __h1, const _H2& __h2, const _Hash& __h,
+		 const _Equal& __eq, const _ExtractKey& __exk,
+		 const allocator_type& __a, false_type /* __uks */)
       : _Hashtable(__h1, __h2, __h, __eq, __exk, __a)
       {
 	auto __nb_elems = __detail::__distance_fw(__f, __l);
@@ -1802,8 +1847,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       auto
       _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 		 _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-      _M_insert(_Arg&& __v, const _NodeGenerator& __node_gen, true_type,
-		size_type __n_elt)
+      _M_insert(_Arg&& __v, const _NodeGenerator& __node_gen,
+		true_type /* __uks */)
       -> pair<iterator, bool>
       {
 	const key_type& __k = this->_M_extract()(__v);
@@ -1815,7 +1860,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	_Scoped_node __node{ __node_gen(std::forward<_Arg>(__v)), this };
 	auto __pos
-	  = _M_insert_unique_node(__k, __bkt, __code, __node._M_node, __n_elt);
+	  = _M_insert_unique_node(__k, __bkt, __code, __node._M_node);
 	__node._M_node = nullptr;
 	return { __pos, true };
       }
@@ -1830,7 +1875,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 		 _H1, _H2, _Hash, _RehashPolicy, _Traits>::
       _M_insert(const_iterator __hint, _Arg&& __v,
-		const _NodeGenerator& __node_gen, false_type)
+		const _NodeGenerator& __node_gen,
+		false_type /* __uks */)
       -> iterator
       {
 	// First compute the hash code so that we don't do anything if it

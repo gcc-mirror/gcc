@@ -820,12 +820,12 @@ namespace __detail
       template<typename _InputIterator, typename _NodeGetter>
 	void
 	_M_insert_range(_InputIterator __first, _InputIterator __last,
-			const _NodeGetter&, true_type);
+			const _NodeGetter&, true_type __uks);
 
       template<typename _InputIterator, typename _NodeGetter>
 	void
 	_M_insert_range(_InputIterator __first, _InputIterator __last,
-			const _NodeGetter&, false_type);
+			const _NodeGetter&, false_type __uks);
 
     public:
       __ireturn_type
@@ -833,7 +833,7 @@ namespace __detail
       {
 	__hashtable& __h = _M_conjure_hashtable();
 	__node_gen_type __node_gen(__h);
-	return __h._M_insert(__v, __node_gen, __unique_keys());
+	return __h._M_insert(__v, __node_gen, __unique_keys{});
       }
 
       iterator
@@ -841,7 +841,7 @@ namespace __detail
       {
 	__hashtable& __h = _M_conjure_hashtable();
 	__node_gen_type __node_gen(__h);	
-	return __h._M_insert(__hint, __v, __node_gen, __unique_keys());
+	return __h._M_insert(__hint, __v, __node_gen, __unique_keys{});
       }
 
       template<typename _KType, typename... _Args>
@@ -876,7 +876,7 @@ namespace __detail
 	{
 	  __hashtable& __h = _M_conjure_hashtable();
 	  __node_gen_type __node_gen(__h);
-	  return _M_insert_range(__first, __last, __node_gen, __unique_keys());
+	  return _M_insert_range(__first, __last, __node_gen, __unique_keys{});
 	}
     };
 
@@ -889,21 +889,11 @@ namespace __detail
       _Insert_base<_Key, _Value, _Alloc, _ExtractKey, _Equal, _H1, _H2, _Hash,
 		    _RehashPolicy, _Traits>::
       _M_insert_range(_InputIterator __first, _InputIterator __last,
-		      const _NodeGetter& __node_gen, true_type)
+		      const _NodeGetter& __node_gen, true_type __uks)
       {
-	size_type __n_elt = __detail::__distance_fw(__first, __last);
-	if (__n_elt == 0)
-	  return;
-
 	__hashtable& __h = _M_conjure_hashtable();
 	for (; __first != __last; ++__first)
-	  {
-	    if (__h._M_insert(*__first, __node_gen, __unique_keys(),
-			      __n_elt).second)
-	      __n_elt = 1;
-	    else if (__n_elt != 1)
-	      --__n_elt;
-	  }
+	  __h._M_insert(*__first, __node_gen, __uks);
       }
 
   template<typename _Key, typename _Value, typename _Alloc,
@@ -915,7 +905,7 @@ namespace __detail
       _Insert_base<_Key, _Value, _Alloc, _ExtractKey, _Equal, _H1, _H2, _Hash,
 		    _RehashPolicy, _Traits>::
       _M_insert_range(_InputIterator __first, _InputIterator __last,
-		      const _NodeGetter& __node_gen, false_type)
+		      const _NodeGetter& __node_gen, false_type __uks)
       {
 	using __rehash_type = typename __hashtable::__rehash_type;
 	using __rehash_state = typename __hashtable::__rehash_state;
@@ -936,7 +926,7 @@ namespace __detail
 	  __h._M_rehash(__do_rehash.second, __saved_state);
 
 	for (; __first != __last; ++__first)
-	  __h._M_insert(*__first, __node_gen, __unique_keys());
+	  __h._M_insert(*__first, __node_gen, __uks);
       }
 
   /**
@@ -986,7 +976,7 @@ namespace __detail
       {
 	__hashtable& __h = this->_M_conjure_hashtable();
 	__node_gen_type __node_gen(__h);
-	return __h._M_insert(std::move(__v), __node_gen, __unique_keys());
+	return __h._M_insert(std::move(__v), __node_gen, __unique_keys{});
       }
 
       iterator
@@ -995,7 +985,7 @@ namespace __detail
 	__hashtable& __h = this->_M_conjure_hashtable();
 	__node_gen_type __node_gen(__h);
 	return __h._M_insert(__hint, std::move(__v), __node_gen,
-			     __unique_keys());
+			     __unique_keys{});
       }
     };
 
@@ -1036,7 +1026,7 @@ namespace __detail
 	insert(_Pair&& __v)
 	{
 	  __hashtable& __h = this->_M_conjure_hashtable();
-	  return __h._M_emplace(__unique_keys(), std::forward<_Pair>(__v));
+	  return __h._M_emplace(__unique_keys{}, std::forward<_Pair>(__v));
 	}
 
       template<typename _Pair, typename = _IFconsp<_Pair>>
@@ -1044,7 +1034,7 @@ namespace __detail
 	insert(const_iterator __hint, _Pair&& __v)
 	{
 	  __hashtable& __h = this->_M_conjure_hashtable();
-	  return __h._M_emplace(__hint, __unique_keys(),
+	  return __h._M_emplace(__hint, __unique_keys{},
 				std::forward<_Pair>(__v));
 	}
    };
