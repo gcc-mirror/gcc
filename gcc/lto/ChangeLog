@@ -1,3 +1,12 @@
+2020-01-20  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2020-01-16  Martin Liska  <mliska@suse.cz>
+
+	* lto-partition.c (lto_balanced_map): Remember
+	best_noreorder_pos and then restore to it
+	when we revert.
+
 2019-02-22  Release Manager
 
 	* GCC 8.3.0 released.

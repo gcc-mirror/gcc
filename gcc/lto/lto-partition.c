@@ -507,6 +507,7 @@ void
 lto_balanced_map (int n_lto_partitions, int max_partition_size)
 {
   int n_varpool_nodes = 0, varpool_pos = 0, best_varpool_pos = 0;
+  int best_noreorder_pos = 0;
   auto_vec <cgraph_node *> order (symtab->cgraph_count);
   auto_vec<cgraph_node *> noreorder;
   auto_vec<varpool_node *> varpool_order;
@@ -769,6 +770,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 	  best_i = i;
 	  best_n_nodes = lto_symtab_encoder_size (partition->encoder);
 	  best_varpool_pos = varpool_pos;
+	  best_noreorder_pos = noreorder_pos;
 	}
       if (symtab->dump_file)
 	fprintf (symtab->dump_file, "Step %i: added %s/%i, size %i, "
@@ -789,6 +791,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 			 i - best_i, best_i);
 	      undo_partition (partition, best_n_nodes);
 	      varpool_pos = best_varpool_pos;
+	      noreorder_pos = best_noreorder_pos;
 	    }
 	  gcc_assert (best_size == partition->insns);
 	  i = best_i;
