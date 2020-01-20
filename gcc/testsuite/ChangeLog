@@ -1,3 +1,11 @@
+2020-01-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/93319
+	* gcc.target/i386/pr93319-1a.c: New test.
+	* gcc.target/i386/pr93319-1b.c: Likewise.
+	* gcc.target/i386/pr93319-1c.c: Likewise.
+	* gcc.target/i386/pr93319-1d.c: Likewise.
+
 2020-01-20  Richard Biener  <rguenther@suse.de>
 
 	PR debug/92763

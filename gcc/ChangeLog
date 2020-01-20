@@ -1,3 +1,19 @@
+2020-01-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/93319
+	* config/i386/i386.c (legitimize_tls_address): Pass Pmode to
+	gen_tls_dynamic_gnu2_64.  Compute GNU2 TLS address in ptr_mode.
+	* config/i386/i386.md (tls_dynamic_gnu2_64): Renamed to ...
+	(@tls_dynamic_gnu2_64_<mode>): This.  Replace DI with P.
+	(*tls_dynamic_gnu2_lea_64): Renamed to ...
+	(*tls_dynamic_gnu2_lea_64_<mode>): This.  Replace DI with P.
+	Remove the {q} suffix from lea.
+	(*tls_dynamic_gnu2_call_64): Renamed to ...
+	(*tls_dynamic_gnu2_call_64_<mode>): This.  Replace DI with P.
+	(*tls_dynamic_gnu2_combine_64): Renamed to ...
+	(*tls_dynamic_gnu2_combine_64_<mode>): This.  Replace DI with P.
+	Pass Pmode to gen_tls_dynamic_gnu2_64.
+
 2020-01-20  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.h (SLOW_BYTE_ACCESS): Set to 1.
