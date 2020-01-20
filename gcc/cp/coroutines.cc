@@ -1580,6 +1580,7 @@ static hash_map<tree, suspend_point_info> *suspend_points;
 
 struct await_xform_data
 {
+  tree actor_fn;   /* Decl for context.  */
   tree actor_frame;
   tree promise_proxy;
   tree real_promise;
@@ -1660,12 +1661,16 @@ transform_await_expr (tree await_expr, await_xform_data *xform)
 static tree
 transform_await_wrapper (tree *stmt, int *do_subtree, void *d)
 {
+  /* Set actor function as new DECL_CONTEXT of label_decl.  */
+  struct await_xform_data *xform = (struct await_xform_data *) d;
+  if (TREE_CODE (*stmt) == LABEL_DECL
+      && DECL_CONTEXT (*stmt) != xform->actor_fn)
+    DECL_CONTEXT (*stmt) = xform->actor_fn;
+
   if (TREE_CODE (*stmt) != CO_AWAIT_EXPR && TREE_CODE (*stmt) != CO_YIELD_EXPR)
     return NULL_TREE;
 
   tree await_expr = *stmt;
-  await_xform_data *xform = (await_xform_data *) d;
-
   *stmt = transform_await_expr (await_expr, xform);
   if (*stmt == error_mark_node)
     *do_subtree = 0;
@@ -2018,7 +2023,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
      decide where to put things.  */
 
   await_xform_data xform
-    = {actor_frame, promise_proxy, ap, self_h_proxy, ash};
+    = {actor, actor_frame, promise_proxy, ap, self_h_proxy, ash};
 
   /* Get a reference to the initial suspend var in the frame.  */
   transform_await_expr (initial_await, &xform);

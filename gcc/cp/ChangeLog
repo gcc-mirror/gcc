@@ -1,3 +1,9 @@
+2020-02-03  Jun Ma <JunMa@linux.alibaba.com>
+
+	* coroutines.cc (transform_await_wrapper): Set actor funcion as
+	new context of label_decl.
+	(build_actor_fn): Fill new field of await_xform_data.
+
 2020-02-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93530 - ICE on invalid alignas in a template.
