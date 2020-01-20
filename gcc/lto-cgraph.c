@@ -257,10 +257,11 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
   edge->count.stream_out (ob->main_stream);
 
   bp = bitpack_create (ob->main_stream);
-  uid = (!gimple_has_body_p (edge->caller->decl) || edge->caller->thunk.thunk_p
-	 ? edge->lto_stmt_uid : gimple_uid (edge->call_stmt) + 1);
+  uid = !edge->call_stmt ? edge->lto_stmt_uid
+			 : gimple_uid (edge->call_stmt) + 1;
   bp_pack_enum (&bp, cgraph_inline_failed_t,
 	        CIF_N_REASONS, edge->inline_failed);
+  gcc_checking_assert (uid || edge->caller->thunk.thunk_p);
   bp_pack_var_len_unsigned (&bp, uid);
   bp_pack_value (&bp, edge->speculative_id, 16);
   bp_pack_value (&bp, edge->indirect_inlining_edge, 1);
@@ -669,7 +670,7 @@ lto_output_ref (struct lto_simple_output_block *ob, struct ipa_ref *ref,
 {
   struct bitpack_d bp;
   int nref;
-  int uid = ref->lto_stmt_uid;
+  int uid = !ref->stmt ? ref->lto_stmt_uid : gimple_uid (ref->stmt) + 1;
   struct cgraph_node *node;
 
   bp = bitpack_create (ob->main_stream);

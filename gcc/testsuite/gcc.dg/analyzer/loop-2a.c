@@ -14,9 +14,9 @@ void test(void)
 
 
   for (u.i=0; u.i<256; u.i++) {
-    __analyzer_eval (u.i < 256); /* { dg-warning "TRUE" } */
-    /* { dg-warning "TRUE" "" { xfail *-*-* } .-1 } */
-    /* { dg-bogus "UNKNOWN" "" { xfail *-*-* } .-2 } */
+    __analyzer_eval (u.i < 256); /* { dg-warning "TRUE" "1st" } */
+    /* { dg-warning "TRUE" "2nd" { xfail *-*-* } .-1 } */
+    /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-2 } */
     /* (should report TRUE twice). */
 
     __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 exploded nodes" } */
@@ -29,11 +29,11 @@ void test(void)
       //__analyzer_eval (u.i >= 0); /* { d-todo-g-warning "TRUE" } */
   }
 
-  __analyzer_eval (u.i >= 256); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (u.i >= 256); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
 
-  __analyzer_eval (u.i == 256); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (u.i == 256); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
   /* TODO(xfail^^^): ideally it should figure out i == 256 at exit.  */
 
   __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 exploded node" } */

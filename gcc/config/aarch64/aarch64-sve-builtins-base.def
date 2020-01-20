@@ -316,3 +316,7 @@ DEF_SVE_FUNCTION (svzip1, binary_pred, all_pred, none)
 DEF_SVE_FUNCTION (svzip2, binary, all_data, none)
 DEF_SVE_FUNCTION (svzip2, binary_pred, all_pred, none)
 #undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS AARCH64_FL_V8_6 | AARCH64_FL_F64MM
+DEF_SVE_FUNCTION (svld1ro, load_replicate, all_data, implicit)
+#undef REQUIRED_EXTENSIONS

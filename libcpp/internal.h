@@ -269,9 +269,6 @@ struct lexer_state
   /* Nonzero when parsing arguments to a function-like macro.  */
   unsigned char parsing_args;
 
-  /* Nonzero if in a __has_include__ or __has_include_next__ statement.  */
-  unsigned char in__has_include__;
-
   /* Nonzero if prevent_expansion is true only because output is
      being discarded.  */
   unsigned char discarding_output;
@@ -294,8 +291,8 @@ struct spec_nodes
   cpp_hashnode *n_false;		/* C++ keyword false */
   cpp_hashnode *n__VA_ARGS__;		/* C99 vararg macros */
   cpp_hashnode *n__VA_OPT__;		/* C++ vararg macros */
-  cpp_hashnode *n__has_include__;	/* __has_include__ operator */
-  cpp_hashnode *n__has_include_next__;	/* __has_include_next__ operator */
+  cpp_hashnode *n__has_include;		/* __has_include operator */
+  cpp_hashnode *n__has_include_next;	/* __has_include_next operator */
 };
 
 typedef struct _cpp_line_note _cpp_line_note;
@@ -645,6 +642,16 @@ cpp_in_primary_file (cpp_reader *pfile)
   return pfile->buffer->main_file;
 }
 
+/* True if NODE is a macro for the purposes of ifdef, defined etc.  */
+inline bool _cpp_defined_macro_p (cpp_hashnode *node)
+{
+  /* Do not treat conditional macros as being defined.  This is due to
+     the powerpc port using conditional macros for 'vector', 'bool',
+     and 'pixel' to act as conditional keywords.  This messes up tests
+     like #ifndef bool.  */
+  return cpp_macro_p (node) && !(node->flags & NODE_CONDITIONAL);
+}
+
 /* In macro.c */
 extern bool _cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node,
 				   location_t);
@@ -681,7 +688,8 @@ extern void _cpp_destroy_hashtable (cpp_reader *);
 /* In files.c */
 typedef struct _cpp_file _cpp_file;
 extern _cpp_file *_cpp_find_file (cpp_reader *, const char *, cpp_dir *,
-				  bool, int, bool, location_t);
+				  int angle, bool fake, bool preinclude,
+				  bool has_include, location_t);
 extern const char *_cpp_found_name (_cpp_file *);
 extern void _cpp_mark_file_once_only (cpp_reader *, struct _cpp_file *);
 extern void _cpp_fake_include (cpp_reader *, const char *);

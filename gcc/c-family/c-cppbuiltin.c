@@ -876,12 +876,6 @@ c_cpp_builtins (cpp_reader *pfile)
   /* For stddef.h.  They require macros defined in c-common.c.  */
   c_stddef_cpp_builtins ();
 
-  /* Set include test macros for all C/C++ (not for just C++11 etc.)
-     The builtins __has_include__ and __has_include_next__ are defined
-     in libcpp.  */
-  cpp_define (pfile, "__has_include(STR)=__has_include__(STR)");
-  cpp_define (pfile, "__has_include_next(STR)=__has_include_next__(STR)");
-
   if (c_dialect_cxx ())
     {
       if (flag_weak && SUPPORTS_ONE_ONLY)
@@ -1023,6 +1017,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	  /* 201810 - p1103 merging modules */
 	  cpp_define (pfile, "__cpp_modules=201810");
 	}
+      if (flag_coroutines)
+	cpp_define (pfile, "__cpp_coroutines=201902L"); /* n4835, C++20 CD */
       if (flag_tm)
 	/* Use a value smaller than the 201505 specified in
 	   the TS, since we don't yet support atomic_cancel.  */

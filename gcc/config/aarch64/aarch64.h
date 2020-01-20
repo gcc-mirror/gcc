@@ -211,6 +211,9 @@ extern unsigned aarch64_architecture_version;
 /* Brain half-precision floating-point (BFloat16) Extension.  */
 #define AARCH64_FL_BF16	      (1ULL << 36)
 
+/* 8-bit Integer Matrix Multiply (F64MM) extensions.  */
+#define AARCH64_FL_F64MM      (1ULL << 37)
+
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
 
@@ -267,6 +270,7 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_MEMTAG	   (aarch64_isa_flags & AARCH64_FL_MEMTAG)
 #define AARCH64_ISA_V8_6	   (aarch64_isa_flags & AARCH64_FL_V8_6)
 #define AARCH64_ISA_I8MM	   (aarch64_isa_flags & AARCH64_FL_I8MM)
+#define AARCH64_ISA_F64MM	   (aarch64_isa_flags & AARCH64_FL_F64MM)
 #define AARCH64_ISA_BF16	   (aarch64_isa_flags & AARCH64_FL_BF16)
 
 /* Crypto is an optional extension to AdvSIMD.  */
@@ -341,6 +345,9 @@ extern unsigned aarch64_architecture_version;
 
 /* I8MM instructions are enabled through +i8mm.  */
 #define TARGET_I8MM (AARCH64_ISA_I8MM)
+
+/* F64MM instructions are enabled through +f64mm.  */
+#define TARGET_F64MM (AARCH64_ISA_F64MM)
 
 /* BF16 instructions are enabled through +bf16.  */
 #define TARGET_BF16_FP (AARCH64_ISA_BF16)
@@ -999,14 +1006,8 @@ typedef struct
    if given data not on the nominal alignment.  */
 #define STRICT_ALIGNMENT		TARGET_STRICT_ALIGN
 
-/* Define this macro to be non-zero if accessing less than a word of
-   memory is no faster than accessing a word of memory, i.e., if such
-   accesses require more than one instruction or if there is no
-   difference in cost.
-   Although there's no difference in instruction count or cycles,
-   in AArch64 we don't want to expand to a sub-word to a 64-bit access
-   if we don't have to, for power-saving reasons.  */
-#define SLOW_BYTE_ACCESS		0
+/* Enable wide bitfield accesses for more efficient bitfield code.  */
+#define SLOW_BYTE_ACCESS 1
 
 #define NO_FUNCTION_CSE	1
 

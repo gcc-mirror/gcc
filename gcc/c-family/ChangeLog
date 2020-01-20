@@ -1,3 +1,18 @@
+2020-01-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/80005
+	* c-cppbuiltins.c (c_cpp_builtins): Don't define __has_include{,_next}.
+
+2020-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-common.c (co_await, co_yield, co_return): New.
+	* c-common.h (RID_CO_AWAIT, RID_CO_YIELD,
+	RID_CO_RETURN): New enumeration values.
+	(D_CXX_COROUTINES): Bit to identify coroutines are active.
+	(D_CXX_COROUTINES_FLAGS): Guard for coroutine keywords.
+	* c-cppbuiltin.c (__cpp_coroutines): New cpp define.
+	* c.opt (fcoroutines): New command-line switch.
+
 2020-01-10  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-format.c (local_event_ptr_node): New.

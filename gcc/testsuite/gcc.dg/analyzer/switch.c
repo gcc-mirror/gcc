@@ -19,8 +19,8 @@ void test (int i)
       __analyzer_eval (i == 0); /* { dg-warning "FALSE" } */
       __analyzer_eval (i == 2); /* { dg-warning "UNKNOWN" } */
       __analyzer_eval (i == 3); /* { dg-warning "FALSE" } */
-      __analyzer_eval (i == 4); /* { dg-warning "FALSE" "" { xfail *-*-* } } */
-      /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+      __analyzer_eval (i == 4); /* { dg-warning "FALSE" "desired" { xfail *-*-* } } */
+      /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
       /* TODO(xfail^^^): we're only checking against endpoints of case
 	 ranges, not the insides.  */
       __analyzer_eval (i == 5); /* { dg-warning "FALSE" } */

@@ -1,3 +1,229 @@
+2020-01-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/93319
+	* config/i386/i386.c (legitimize_tls_address): Pass Pmode to
+	gen_tls_dynamic_gnu2_64.  Compute GNU2 TLS address in ptr_mode.
+	* config/i386/i386.md (tls_dynamic_gnu2_64): Renamed to ...
+	(@tls_dynamic_gnu2_64_<mode>): This.  Replace DI with P.
+	(*tls_dynamic_gnu2_lea_64): Renamed to ...
+	(*tls_dynamic_gnu2_lea_64_<mode>): This.  Replace DI with P.
+	Remove the {q} suffix from lea.
+	(*tls_dynamic_gnu2_call_64): Renamed to ...
+	(*tls_dynamic_gnu2_call_64_<mode>): This.  Replace DI with P.
+	(*tls_dynamic_gnu2_combine_64): Renamed to ...
+	(*tls_dynamic_gnu2_combine_64_<mode>): This.  Replace DI with P.
+	Pass Pmode to gen_tls_dynamic_gnu2_64.
+
+2020-01-20  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.h (SLOW_BYTE_ACCESS): Set to 1.
+
+2020-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svld1ro_impl::memory_vector_mode): Remove parameter name.
+
+2020-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR debug/92763
+	* dwarf2out.c (prune_unused_types): Unconditionally mark
+	called function DIEs.
+
+2020-01-20  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/93199
+	* tree-eh.c (struct leh_state): Add
+	new field outer_non_cleanup.
+	(cleanup_is_dead_in): Pass leh_state instead
+	of eh_region.  Add a checking that state->outer_non_cleanup
+	points to outer non-clean up region.
+	(lower_try_finally): Record outer_non_cleanup
+	for this_state.
+	(lower_catch): Likewise.
+	(lower_eh_filter): Likewise.
+	(lower_eh_must_not_throw): Likewise.
+	(lower_cleanup): Likewise.
+
+2020-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93094
+	* tree-vectorizer.h (vect_loop_versioning): Adjust.
+	(vect_transform_loop): Likewise.
+	* tree-vectorizer.c (try_vectorize_loop_1): Pass down
+	loop_vectorized_call to vect_transform_loop.
+	* tree-vect-loop.c (vect_transform_loop): Pass down
+	loop_vectorized_call to vect_loop_versioning.
+	* tree-vect-loop-manip.c (vect_loop_versioning): Use
+	the earlier discovered loop_vectorized_call.
+
+2020-01-19  Eric S. Raymond <esr@thyrsus.com>
+
+	* doc/contribute.texi: Update for SVN -> Git transition.
+	* doc/install.texi: Likewise.
+
+2020-01-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/93318
+	* cgraph.c (cgraph_edge::make_speculative): Increase number of
+	speculative targets.
+	(verify_speculative_call): New function
+	(cgraph_node::verify_node): Use it.
+	* ipa-profile.c (ipa_profile): Fix formating; do not set number of
+	speculations.
+
+2020-01-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/93318
+	* cgraph.c (cgraph_edge::resolve_speculation): Fix foramting.
+	(cgraph_edge::make_direct): Remove all indirect targets.
+	(cgraph_edge::redirect_call_stmt_to_callee): Use make_direct..
+	(cgraph_node::verify_node): Verify that only one call_stmt or
+	lto_stmt_uid is set.
+	* cgraphclones.c (cgraph_edge::clone): Set only one call_stmt or
+	lto_stmt_uid.
+	* lto-cgraph.c (lto_output_edge): Simplify streaming of stmt.
+	(lto_output_ref): Simplify streaming of stmt.
+	* lto-streamer-in.c (fixup_call_stmt_edges_1): Clear lto_stmt_uid.
+
+2020-01-18  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc (memory_vector_mode):
+	Mark parameter unused.
+
+2020-01-18  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config.gcc <obsolete targets>: Add crisv32-*-* and cris-*-linux*
+
+2019-01-18  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* varpool.c (ctor_useable_for_folding_p): Fix grammar.
+
+2020-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.in: Add coroutine-passes.o.
+	* builtin-types.def (BT_CONST_SIZE): New.
+	(BT_FN_BOOL_PTR): New.
+	(BT_FN_PTR_PTR_CONST_SIZE_BOOL): New.
+	* builtins.def (DEF_COROUTINE_BUILTIN): New.
+	* coroutine-builtins.def: New file.
+	* coroutine-passes.cc: New file.
+	* function.h (struct GTY function): Add a bit to indicate that the
+	function is a coroutine component.
+	* internal-fn.c (expand_CO_FRAME): New.
+	(expand_CO_YIELD): New.
+	(expand_CO_SUSPN): New.
+	(expand_CO_ACTOR): New.
+	* internal-fn.def (CO_ACTOR): New.
+	(CO_YIELD): New.
+	(CO_SUSPN): New.
+	(CO_FRAME): New.
+	* passes.def: Add pass_coroutine_lower_builtins,
+	pass_coroutine_early_expand_ifns.
+	* tree-pass.h (make_pass_coroutine_lower_builtins): New.
+	(make_pass_coroutine_early_expand_ifns): New.
+	* doc/invoke.texi: Document the fcoroutines command line
+	switch.
+
+2020-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/arm/vfp.md (*clear_vfp_multiple): Remove unused variable.
+
+	PR target/93312
+	* config/arm/arm.c (clear_operation_p): Don't use REGNO until
+	after checking the argument is a REG.  Don't use REGNO (reg)
+	again to set last_regno, reuse regno variable instead.
+
+2020-01-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/analyzer.texi (Limitations): Add note about NaN.
+
+2020-01-17  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Sudakshina Das  <sudi.das@arm.com>
+
+	* config/arm/arm.md (ashldi3): Generate thumb2_lsll for both reg
+	and valid immediate.
+	(ashrdi3): Generate thumb2_asrl for both reg and valid immediate.
+	(lshrdi3): Generate thumb2_lsrl for valid immediates.
+	* config/arm/constraints.md (Pg): New.
+	* config/arm/predicates.md (long_shift_imm): New.
+	(arm_reg_or_long_shift_imm): Likewise.
+	* config/arm/thumb2.md (thumb2_asrl): New immediate alternative.
+	(thumb2_lsll): Likewise.
+	(thumb2_lsrl): New.
+
+2020-01-17  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Sudakshina Das  <sudi.das@arm.com>
+
+	* config/arm/arm.md (ashldi3): Generate thumb2_lsll for TARGET_HAVE_MVE.
+	(ashrdi3): Generate thumb2_asrl for TARGET_HAVE_MVE.
+	* config/arm/arm.c (arm_hard_regno_mode_ok): Allocate even odd
+	register pairs for doubleword quantities for ARMv8.1M-Mainline.
+	* config/arm/thumb2.md (thumb2_asrl): New.
+	(thumb2_lsll): Likewise.
+
+2020-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/arm/arm.c (cmse_nonsecure_call_inline_register_clear): Remove
+	unused variable.
+
+2020-01-17  Alexander Monakov  <amonakov@ispras.ru>
+
+	* gdbinit.in (help-gcc-hooks): New command.
+	(pp, pr, prl, pt, pct, pgg, pgq, pgs, pge, pmz, ptc, pdn, ptn, pdd, prc,
+	pi, pbm, pel, trt): Take $arg0 instead of $ if supplied. Update
+	documentation.
+
+2020-01-17  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_ld1ro<mode>): Use the
+	correct target macro.
+
+2020-01-17  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/aarch64/aarch64-protos.h
+	(aarch64_sve_ld1ro_operand_p): New.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(class load_replicate): New.
+	(class svld1ro_impl): New.
+	(class svld1rq_impl): Change to inherit from load_replicate.
+	(svld1ro): New sve intrinsic function base.
+	* config/aarch64/aarch64-sve-builtins-base.def (svld1ro):
+	New DEF_SVE_FUNCTION.
+	* config/aarch64/aarch64-sve-builtins-base.h
+	(svld1ro): New decl.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_expander::add_mem_operand): Modify assert to allow
+	OImode.
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_ld1ro<mode>): New
+	pattern.
+	* config/aarch64/aarch64.c
+	(aarch64_sve_ld1rq_operand_p): Implement in terms of ...
+	(aarch64_sve_ld1rq_ld1ro_operand_p): This.
+	(aarch64_sve_ld1ro_operand_p): New.
+	* config/aarch64/aarch64.md (UNSPEC_LD1RO): New unspec.
+	* config/aarch64/constraints.md (UOb,UOh,UOw,UOd): New.
+	* config/aarch64/predicates.md
+	(aarch64_sve_ld1ro_operand_{b,h,w,d}): New.
+
+2020-01-17  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/aarch64/aarch64-c.c (_ARM_FEATURE_MATMUL_FLOAT64):
+	Introduce this ACLE specified predefined macro.
+	* config/aarch64/aarch64-option-extensions.def (f64mm): New.
+	(fp): Disabling this disables f64mm.
+	(simd): Disabling this disables f64mm.
+	(fp16): Disabling this disables f64mm.
+	(sve): Disabling this disables f64mm.
+	* config/aarch64/aarch64.h (AARCH64_FL_F64MM): New.
+	(AARCH64_ISA_F64MM): New.
+	(TARGET_F64MM): New.
+	* doc/invoke.texi (f64mm): Document new option.
+
+2020-01-17  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (generic_tunings): Add branch fusion.
+	(neoversen1_tunings): Likewise.
+
 2020-01-17  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR target/92692
@@ -111,8 +337,8 @@
 	* config/arm/t-rmprofile: Map v8.1-M multilibs to v8-M.
 	* doc/invoke.texi: Document the armv8.1-m mve and dps options.
 
-2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
-	    Thomas Preud'homme <thomas.preudhomme@arm.com>
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm-cpus.in (ARMv8_1m_main): Redefine as an extension to
 	Armv8-M Mainline.
@@ -221,8 +447,8 @@
 	* config/arm/vfp.md (push_fpsysreg_insn): New define_insn.
 	(pop_fpsysreg_insn): Likewise.
 
-2020-01-16  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
-	    Thomas Preud'homme <thomas.preudhomme@arm.com>
+2020-01-16  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm-cpus.in (armv8_1m_main): New feature.
 	(ARMv4, ARMv4t, ARMv5t, ARMv5te, ARMv5tej, ARMv6, ARMv6j, ARMv6k,

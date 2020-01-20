@@ -10571,22 +10571,11 @@ uses_template_parms (tree t)
 		   || uses_template_parms (TREE_CHAIN (t)));
   else if (TREE_CODE (t) == TYPE_DECL)
     dependent_p = dependent_type_p (TREE_TYPE (t));
-  else if (DECL_P (t)
-	   || EXPR_P (t)
-	   || TREE_CODE (t) == TEMPLATE_PARM_INDEX
-	   || TREE_CODE (t) == OVERLOAD
-	   || BASELINK_P (t)
-	   || identifier_p (t)
-	   || TREE_CODE (t) == TRAIT_EXPR
-	   || TREE_CODE (t) == CONSTRUCTOR
-	   || CONSTANT_CLASS_P (t))
+  else if (t == error_mark_node)
+    dependent_p = false;
+  else
     dependent_p = (type_dependent_expression_p (t)
 		   || value_dependent_expression_p (t));
-  else
-    {
-      gcc_assert (t == error_mark_node);
-      dependent_p = false;
-    }
 
   processing_template_decl = saved_processing_template_decl;
 
@@ -16881,6 +16870,11 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	 to the containing function, inlined copy or so.  */
       return t;
 
+    case CO_AWAIT_EXPR:
+      return tsubst_expr (t, args, complain, in_decl,
+			  /*integral_constant_expression_p=*/false);
+      break;
+
     default:
       /* We shouldn't get here, but keep going if !flag_checking.  */
       if (flag_checking)
@@ -17745,6 +17739,22 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 
     case RETURN_EXPR:
       finish_return_stmt (RECUR (TREE_OPERAND (t, 0)));
+      break;
+
+    case CO_RETURN_EXPR:
+      finish_co_return_stmt (input_location, RECUR (TREE_OPERAND (t, 0)));
+      break;
+
+    case CO_YIELD_EXPR:
+      stmt = finish_co_yield_expr (input_location,
+				   RECUR (TREE_OPERAND (t, 0)));
+      RETURN (stmt);
+      break;
+
+    case CO_AWAIT_EXPR:
+      stmt = finish_co_await_expr (input_location,
+				   RECUR (TREE_OPERAND (t, 0)));
+      RETURN (stmt);
       break;
 
     case EXPR_STMT:

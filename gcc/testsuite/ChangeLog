@@ -1,3 +1,270 @@
+2020-01-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/80005
+	* g++.dg/cpp1y/feat-cxx14.C: Adjust.
+	* g++.dg/cpp1z/feat-cxx17.C: Adjust.
+	* g++.dg/cpp2a/feat-cxx2a.C: Adjust.
+	* g++.dg/cpp/pr80005.C: New.
+
+2020-01-20  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	* gfortran.dg/pr93263_1.f90: Change scan-tree-dump-not to
+	scan-tree-dump.
+
+2020-01-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/93319
+	* gcc.target/i386/pr93319-1a.c: New test.
+	* gcc.target/i386/pr93319-1b.c: Likewise.
+	* gcc.target/i386/pr93319-1c.c: Likewise.
+	* gcc.target/i386/pr93319-1d.c: Likewise.
+
+2020-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR debug/92763
+	* g++.dg/debug/pr92763.C: New testcase.
+
+2020-01-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/92536
+	* g++.dg/cpp1z/pr92536.C: New.
+
+2020-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93094
+	* gcc.dg/vect/pr93094.c: New testcase.
+
+2020-01-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/CVE-2005-1689-dedupe-issue.c: Ensure that all
+	test names are unique.
+	* gcc.dg/analyzer/attribute-nonnull.c: Likewise.
+	* gcc.dg/analyzer/conditionals-notrans.c: Likewise.
+	* gcc.dg/analyzer/data-model-1.c: Likewise.
+	* gcc.dg/analyzer/data-model-18.c: Likewise.
+	* gcc.dg/analyzer/data-model-8.c: Likewise.
+	* gcc.dg/analyzer/data-model-9.c: Likewise.
+	* gcc.dg/analyzer/file-1.c: Likewise.
+	* gcc.dg/analyzer/file-paths-1.c: Likewise.
+	* gcc.dg/analyzer/loop-2.c: Likewise.
+	* gcc.dg/analyzer/loop-2a.c: Likewise.
+	* gcc.dg/analyzer/loop-4.c: Likewise.
+	* gcc.dg/analyzer/loop.c: Likewise.
+	* gcc.dg/analyzer/malloc-1.c: Likewise.
+	* gcc.dg/analyzer/malloc-2.c: Likewise.
+	* gcc.dg/analyzer/malloc-ipa-10.c: Likewise.
+	* gcc.dg/analyzer/malloc-ipa-2.c: Likewise.
+	* gcc.dg/analyzer/malloc-macro-separate-events.c: Likewise.
+	* gcc.dg/analyzer/malloc-paths-1.c: Likewise.
+	* gcc.dg/analyzer/malloc-paths-2.c: Likewise.
+	* gcc.dg/analyzer/malloc-paths-3.c: Likewise.
+	* gcc.dg/analyzer/malloc-paths-4.c: Likewise.
+	* gcc.dg/analyzer/malloc-paths-5.c: Likewise.
+	* gcc.dg/analyzer/malloc-paths-7.c: Likewise.
+	* gcc.dg/analyzer/malloc-paths-9.c: Likewise.
+	* gcc.dg/analyzer/operations.c: Likewise.
+	* gcc.dg/analyzer/params.c: Likewise.
+	* gcc.dg/analyzer/pattern-test-1.c: Likewise.
+	* gcc.dg/analyzer/pattern-test-2.c: Likewise.
+	* gcc.dg/analyzer/sensitive-1.c: Likewise.
+	* gcc.dg/analyzer/switch.c: Likewise.
+	* gcc.dg/analyzer/taint-1.c: Likewise.
+	* gcc.dg/analyzer/unknown-fns.c: Likewise.
+
+2020-01-19  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/torture/pr26515.c (cris*-*-*): Conditionalize
+	-march=v10 option on target ! march_option.
+	* gcc.target/cris/asm-v10.S, gcc.target/cris/inasm-v10.c,
+	gcc.target/cris/sync-1-v10.c: Similar.
+	* lib/target-supports.exp (effective_target_march_option): New.
+
+2020-01-19  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/44960
+	* gfortran.dg/function_reference_1.f90: New test.
+	* gfortran.dg/function_reference_2.f90: New test.
+
+2020-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/92833
+	* c-c++-common/pr92833-4.c: Fix dg-message syntax.
+
+2020-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/co-await-syntax-00-needs-expr.C: New test.
+	* g++.dg/coroutines/co-await-syntax-01-outside-fn.C: New test.
+	* g++.dg/coroutines/co-await-syntax-02-outside-fn.C: New test.
+	* g++.dg/coroutines/co-await-syntax-03-auto.C: New test.
+	* g++.dg/coroutines/co-await-syntax-04-ctor-dtor.C: New test.
+	* g++.dg/coroutines/co-await-syntax-05-constexpr.C: New test.
+	* g++.dg/coroutines/co-await-syntax-06-main.C: New test.
+	* g++.dg/coroutines/co-await-syntax-07-varargs.C: New test.
+	* g++.dg/coroutines/co-await-syntax-08-lambda-auto.C: New test.
+	* g++.dg/coroutines/co-return-syntax-01-outside-fn.C: New test.
+	* g++.dg/coroutines/co-return-syntax-02-outside-fn.C: New test.
+	* g++.dg/coroutines/co-return-syntax-03-auto.C: New test.
+	* g++.dg/coroutines/co-return-syntax-04-ctor-dtor.C: New test.
+	* g++.dg/coroutines/co-return-syntax-05-constexpr-fn.C: New test.
+	* g++.dg/coroutines/co-return-syntax-06-main.C: New test.
+	* g++.dg/coroutines/co-return-syntax-07-vararg.C: New test.
+	* g++.dg/coroutines/co-return-syntax-08-bad-return.C: New test.
+	* g++.dg/coroutines/co-return-syntax-09-lambda-auto.C: New test.
+	* g++.dg/coroutines/co-yield-syntax-00-needs-expr.C: New test.
+	* g++.dg/coroutines/co-yield-syntax-01-outside-fn.C: New test.
+	* g++.dg/coroutines/co-yield-syntax-02-outside-fn.C: New test.
+	* g++.dg/coroutines/co-yield-syntax-03-auto.C: New test.
+	* g++.dg/coroutines/co-yield-syntax-04-ctor-dtor.C: New test.
+	* g++.dg/coroutines/co-yield-syntax-05-constexpr.C: New test.
+	* g++.dg/coroutines/co-yield-syntax-06-main.C: New test.
+	* g++.dg/coroutines/co-yield-syntax-07-varargs.C: New test.
+	* g++.dg/coroutines/co-yield-syntax-08-needs-expr.C: New test.
+	* g++.dg/coroutines/co-yield-syntax-09-lambda-auto.C: New test.
+	* g++.dg/coroutines/coro-builtins.C: New test.
+	* g++.dg/coroutines/coro-missing-gro.C: New test.
+	* g++.dg/coroutines/coro-missing-promise-yield.C: New test.
+	* g++.dg/coroutines/coro-missing-ret-value.C: New test.
+	* g++.dg/coroutines/coro-missing-ret-void.C: New test.
+	* g++.dg/coroutines/coro-missing-ueh-1.C: New test.
+	* g++.dg/coroutines/coro-missing-ueh-2.C: New test.
+	* g++.dg/coroutines/coro-missing-ueh-3.C: New test.
+	* g++.dg/coroutines/coro-missing-ueh.h: New test.
+	* g++.dg/coroutines/coro-pre-proc.C: New test.
+	* g++.dg/coroutines/coro.h: New file.
+	* g++.dg/coroutines/coro1-ret-int-yield-int.h: New file.
+	* g++.dg/coroutines/coroutines.exp: New file.
+	* g++.dg/coroutines/torture/alloc-00-gro-on-alloc-fail.C: New test.
+	* g++.dg/coroutines/torture/alloc-01-overload-newdel.C: New test.
+	* g++.dg/coroutines/torture/call-00-co-aw-arg.C: New test.
+	* g++.dg/coroutines/torture/call-01-multiple-co-aw.C: New test.
+	* g++.dg/coroutines/torture/call-02-temp-co-aw.C: New test.
+	* g++.dg/coroutines/torture/call-03-temp-ref-co-aw.C: New test.
+	* g++.dg/coroutines/torture/class-00-co-ret.C: New test.
+	* g++.dg/coroutines/torture/class-01-co-ret-parm.C: New test.
+	* g++.dg/coroutines/torture/class-02-templ-parm.C: New test.
+	* g++.dg/coroutines/torture/class-03-operator-templ-parm.C: New test.
+	* g++.dg/coroutines/torture/class-04-lambda-1.C: New test.
+	* g++.dg/coroutines/torture/class-05-lambda-capture-copy-local.C: New test.
+	* g++.dg/coroutines/torture/class-06-lambda-capture-ref.C: New test.
+	* g++.dg/coroutines/torture/co-await-00-trivial.C: New test.
+	* g++.dg/coroutines/torture/co-await-01-with-value.C: New test.
+	* g++.dg/coroutines/torture/co-await-02-xform.C: New test.
+	* g++.dg/coroutines/torture/co-await-03-rhs-op.C: New test.
+	* g++.dg/coroutines/torture/co-await-04-control-flow.C: New test.
+	* g++.dg/coroutines/torture/co-await-05-loop.C: New test.
+	* g++.dg/coroutines/torture/co-await-06-ovl.C: New test.
+	* g++.dg/coroutines/torture/co-await-07-tmpl.C: New test.
+	* g++.dg/coroutines/torture/co-await-08-cascade.C: New test.
+	* g++.dg/coroutines/torture/co-await-09-pair.C: New test.
+	* g++.dg/coroutines/torture/co-await-10-template-fn-arg.C: New test.
+	* g++.dg/coroutines/torture/co-await-11-forwarding.C: New test.
+	* g++.dg/coroutines/torture/co-await-12-operator-2.C: New test.
+	* g++.dg/coroutines/torture/co-await-13-return-ref.C: New test.
+	* g++.dg/coroutines/torture/co-ret-00-void-return-is-ready.C: New test.
+	* g++.dg/coroutines/torture/co-ret-01-void-return-is-suspend.C: New test.
+	* g++.dg/coroutines/torture/co-ret-03-different-GRO-type.C: New test.
+	* g++.dg/coroutines/torture/co-ret-04-GRO-nontriv.C: New test.
+	* g++.dg/coroutines/torture/co-ret-05-return-value.C: New test.
+	* g++.dg/coroutines/torture/co-ret-06-template-promise-val-1.C: New test.
+	* g++.dg/coroutines/torture/co-ret-07-void-cast-expr.C: New test.
+	* g++.dg/coroutines/torture/co-ret-08-template-cast-ret.C: New test.
+	* g++.dg/coroutines/torture/co-ret-09-bool-await-susp.C: New test.
+	* g++.dg/coroutines/torture/co-ret-10-expression-evaluates-once.C: New test.
+	* g++.dg/coroutines/torture/co-ret-11-co-ret-co-await.C: New test.
+	* g++.dg/coroutines/torture/co-ret-12-co-ret-fun-co-await.C: New test.
+	* g++.dg/coroutines/torture/co-ret-13-template-2.C: New test.
+	* g++.dg/coroutines/torture/co-ret-14-template-3.C: New test.
+	* g++.dg/coroutines/torture/co-yield-00-triv.C: New test.
+	* g++.dg/coroutines/torture/co-yield-01-multi.C: New test.
+	* g++.dg/coroutines/torture/co-yield-02-loop.C: New test.
+	* g++.dg/coroutines/torture/co-yield-03-tmpl.C: New test.
+	* g++.dg/coroutines/torture/co-yield-04-complex-local-state.C: New test.
+	* g++.dg/coroutines/torture/co-yield-05-co-aw.C: New test.
+	* g++.dg/coroutines/torture/co-yield-06-fun-parm.C: New test.
+	* g++.dg/coroutines/torture/co-yield-07-template-fn-param.C: New test.
+	* g++.dg/coroutines/torture/co-yield-08-more-refs.C: New test.
+	* g++.dg/coroutines/torture/co-yield-09-more-templ-refs.C: New test.
+	* g++.dg/coroutines/torture/coro-torture.exp: New file.
+	* g++.dg/coroutines/torture/exceptions-test-0.C: New test.
+	* g++.dg/coroutines/torture/func-params-00.C: New test.
+	* g++.dg/coroutines/torture/func-params-01.C: New test.
+	* g++.dg/coroutines/torture/func-params-02.C: New test.
+	* g++.dg/coroutines/torture/func-params-03.C: New test.
+	* g++.dg/coroutines/torture/func-params-04.C: New test.
+	* g++.dg/coroutines/torture/func-params-05.C: New test.
+	* g++.dg/coroutines/torture/func-params-06.C: New test.
+	* g++.dg/coroutines/torture/lambda-00-co-ret.C: New test.
+	* g++.dg/coroutines/torture/lambda-01-co-ret-parm.C: New test.
+	* g++.dg/coroutines/torture/lambda-02-co-yield-values.C: New test.
+	* g++.dg/coroutines/torture/lambda-03-auto-parm-1.C: New test.
+	* g++.dg/coroutines/torture/lambda-04-templ-parm.C: New test.
+	* g++.dg/coroutines/torture/lambda-05-capture-copy-local.C: New test.
+	* g++.dg/coroutines/torture/lambda-06-multi-capture.C: New test.
+	* g++.dg/coroutines/torture/lambda-07-multi-yield.C: New test.
+	* g++.dg/coroutines/torture/lambda-08-co-ret-parm-ref.C: New test.
+	* g++.dg/coroutines/torture/local-var-0.C: New test.
+	* g++.dg/coroutines/torture/local-var-1.C: New test.
+	* g++.dg/coroutines/torture/local-var-2.C: New test.
+	* g++.dg/coroutines/torture/local-var-3.C: New test.
+	* g++.dg/coroutines/torture/local-var-4.C: New test.
+	* g++.dg/coroutines/torture/mid-suspend-destruction-0.C: New test.
+	* g++.dg/coroutines/torture/pr92933.C: New test.
+
+2020-01-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/93234
+	* gfortran.dg/inquire_pre.f90: New test.
+
+2020-01-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93290
+	* gcc.dg/analyzer/pr93290.c: New test.
+
+2020-01-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/92542
+	* g++.dg/pr92542.C: New.
+
+2020-01-17  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
+	    Sudakshina Das  <sudi.das@arm.com>
+
+	* gcc.target/arm/armv8_1m-shift-imm_1.c: New test.
+
+2020-01-17  Mihail-Calin Ionescu <mihail.ionescu@arm.com>
+	    Sudakshina Das  <sudi.das@arm.com>
+
+	* gcc.target/arm/armv8_1m-shift-reg_1.c: New test.
+
+2020-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR testsuite/93227
+	* g++.dg/cpp0x/std-layout1.C: Use -Wno-deprecated-declarations for
+	C++20, due to std::is_pod being deprecated.
+
+2020-01-17  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_f16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_f32.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_f64.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s32.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s64.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s8.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u32.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u64.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u8.c: New test.
+
+2020-01-17  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.target/aarch64/pragma_cpp_predefs_2.c: Check for f64mm
+	predef.
+
+2020-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93228
+	* g++.dg/cpp1y/attr-deprecated-3.C: New test.
+
 2020-01-17  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* g++.target/aarch64/sve/acle/general-c++/gimplify_1.C: New test.

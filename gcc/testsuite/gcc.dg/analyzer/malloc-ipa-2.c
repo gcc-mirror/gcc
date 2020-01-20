@@ -3,12 +3,12 @@
 #include <stdlib.h>
 
 void
-calls_free (void *victim) /* { dg-message "\\(3\\) entry to 'calls_free'" } */
-/* { dg-message "\\(7\\) entry to 'calls_free'" "" { target *-*-* } .-1 } */
+calls_free (void *victim) /* { dg-message "\\(3\\) entry to 'calls_free'" "event 3" } */
+/* { dg-message "\\(7\\) entry to 'calls_free'" "event 7" { target *-*-* } .-1 } */
 {
-  free (victim); /* { dg-warning "double-'free' of 'victim'" } */
-  /* { dg-message "\\(4\\) first 'free' here" "" { target *-*-* } .-1 } */
-  /* { dg-message "\\(8\\) second 'free' here; first 'free' was at \\(4\\)" "" { target *-*-* } .-2 } */
+  free (victim); /* { dg-warning "double-'free' of 'victim'" "warning" } */
+  /* { dg-message "\\(4\\) first 'free' here" "event 4" { target *-*-* } .-1 } */
+  /* { dg-message "\\(8\\) second 'free' here; first 'free' was at \\(4\\)" "event 8" { target *-*-* } .-2 } */
 
   /* TODO: would this be better emitted at the callsite,
      for such a simple wrapper?  */
@@ -20,8 +20,8 @@ void test (void *ptr) /* { dg-message "\\(1\\) entry to 'test'" } */
 {
   do_stuff ();
 
-  calls_free (ptr); /* { dg-message "\\(2\\) calling 'calls_free' from 'test'" } */
-  /* { dg-message "\\(5\\) returning to 'test' from 'calls_free'" "" { target *-*-* } .-1 } */
+  calls_free (ptr); /* { dg-message "\\(2\\) calling 'calls_free' from 'test'" "event 2" } */
+  /* { dg-message "\\(5\\) returning to 'test' from 'calls_free'" "event 5" { target *-*-* } .-1 } */
 
   do_stuff ();
 

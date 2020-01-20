@@ -20,8 +20,8 @@ void test_1 (void *p, void *q, void *r)
 void test_1a (void *q, void *r)
 {
   void *p = NULL;
-  foo(p, q, r); /* { dg-warning "use of NULL 'p' where non-null expected" } */
-  /* { dg-message "argument 1 \\('p'\\) NULL where non-null expected" "" { target *-*-* } .-1 } */
+  foo(p, q, r); /* { dg-warning "use of NULL 'p' where non-null expected" "warning" } */
+  /* { dg-message "argument 1 \\('p'\\) NULL where non-null expected" "note" { target *-*-* } .-1 } */
 }
 
 void test_2 (void *p, void *q, void *r)
@@ -36,8 +36,8 @@ void test_3 (void *q, void *r)
 {
   void *p = malloc(1024); /* { dg-message "\\(1\\) this call could return NULL" } */
 
-  foo(p, q, r); /* { dg-warning "use of possibly-NULL 'p' where non-null expected" } */
-  /* { dg-message "argument 1 \\('p'\\) from \\(1\\) could be NULL where non-null expected" "" { target *-*-* } .-1 } */
+  foo(p, q, r); /* { dg-warning "use of possibly-NULL 'p' where non-null expected" "warning" } */
+  /* { dg-message "argument 1 \\('p'\\) from \\(1\\) could be NULL where non-null expected" "note" { target *-*-* } .-1 } */
 
   foo(p, q, r);
 
@@ -48,8 +48,8 @@ void test_4 (void *q, void *r)
 {
   void *p = malloc(1024); /* { dg-message "\\(1\\) this call could return NULL" } */
 
-  bar(p, q, r); /* { dg-warning "use of possibly-NULL 'p' where non-null expected" } */
-  /* { dg-message "argument 1 \\('p'\\) from \\(1\\) could be NULL where non-null expected" "" { target *-*-* } .-1 } */
+  bar(p, q, r); /* { dg-warning "use of possibly-NULL 'p' where non-null expected" "warning" } */
+  /* { dg-message "argument 1 \\('p'\\) from \\(1\\) could be NULL where non-null expected" "note" { target *-*-* } .-1 } */
 
   bar(p, q, r);
 
@@ -71,8 +71,8 @@ void test_5 (void *q, void *r)
 {
   void *p = malloc(1024); /* { dg-message "\\(1\\) this call could return NULL" } */
   bar_t cb = get_bar ();
-  cb(p, q, r); /* { dg-warning "use of possibly-NULL 'p' where non-null expected" } */
-  /* { dg-message "argument 1 \\('p'\\) from \\(1\\) could be NULL where non-null expected" "" { target *-*-* } .-1 } */
+  cb(p, q, r); /* { dg-warning "use of possibly-NULL 'p' where non-null expected" "warning" } */
+  /* { dg-message "argument 1 \\('p'\\) from \\(1\\) could be NULL where non-null expected" "note" { target *-*-* } .-1 } */
   /* TODO: do we want an event showing where cb is assigned "bar"?  */
 
   cb(p, q, r);

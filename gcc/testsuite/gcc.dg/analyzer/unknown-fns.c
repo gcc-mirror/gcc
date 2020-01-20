@@ -75,8 +75,8 @@ void test_4a (void)
   node_a.next = &node_b;
   node_b.ptr = malloc (sizeof (int));
   global_ptr = &node_a;
-  *node_b.ptr = 42; /* { dg-warning "possibly-NULL" } */
-  /* { dg-warning "leak" "" { target *-*-* } .-1 } */
+  *node_b.ptr = 42; /* { dg-warning "possibly-NULL" "possibly-NULL" } */
+  /* { dg-warning "leak" "leak" { target *-*-* } .-1 } */
   /* FIXME: the above leak report is correct, but is reported at the wrong
      location.  */
 } /* { dg-warning "leak" } */

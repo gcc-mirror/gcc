@@ -1,3 +1,28 @@
+2020-01-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/accel/openacc.f90 (openacc_kinds): Rename acc_device_gcn to
+	acc_device_radeon.
+	(openacc): Likewise.
+	* openacc.f90 (openacc_kinds): Likewise.
+	(openacc): Likewise.
+	* openacc.h (acc_device_t): Likewise.
+	* openacc_lib.h: Likewise.
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_openacc_amdgcn_accel_present): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-init-1.c
+	(cb_compute_construct_end): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c
+	(cb_enqueue_launch_start): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-parallel-1.c
+	(cb_enter_data_end): Likewise.
+	(cb_exit_data_start): Likewise.
+	(cb_exit_data_end): Likewise.
+	(cb_compute_construct_end): Likewise.
+	(cb_enqueue_launch_start): Likewise.
+	(cb_enqueue_launch_end): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/asyncwait-nop-1.c
+	(main): Likewise.
+
 2020-01-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* libgomp-plugin.h (enum goacc_property): New.  Adjust all users

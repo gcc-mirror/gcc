@@ -178,13 +178,13 @@ int test_12d (struct coord c)
 {
   struct coord d;
   d = c;
-  __analyzer_eval (d.x == c.x); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (d.x == c.x); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "actual" { target *-*-* } .-1 } */
   /* TODO(xfail): c and d share the same unknown value of type "coord", but
      attempts to access the fields lead to different unknown values.  */
 
-  __analyzer_eval (d.y == c.y); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (d.y == c.y); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "actual" { target *-*-* } .-1 } */
   // TODO(xfail): likewise
 
   __analyzer_eval (d.x == d.y); /* { dg-warning "UNKNOWN" } */
@@ -222,8 +222,8 @@ void test_15 (const char *str)
 {
   char ch = str[0];
   __analyzer_eval (ch == 'a'); /* { dg-warning "UNKNOWN" } */
-  __analyzer_eval (ch == str[0]); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (ch == str[0]); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
   // TODO(xfail)
 
   ch = 'a';
@@ -237,12 +237,12 @@ void test_16 (void)
 
   __analyzer_eval (msg != NULL); /* { dg-warning "TRUE" } */
 
-  __analyzer_eval (msg[0] == 'h'); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (msg[0] == 'h'); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
   // TODO(xfail)
 
-  __analyzer_eval (msg[1] == 'e'); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (msg[1] == 'e'); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
   // TODO(xfail)
 
   __analyzer_eval (strlen (msg) == 11); /* { dg-warning "TRUE" } */
@@ -260,12 +260,12 @@ void test_16_alt (void)
 
   __analyzer_eval (msg != NULL); /* { dg-warning "TRUE" } */
 
-  __analyzer_eval (msg[0] == 'h'); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (msg[0] == 'h'); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
   // TODO(xfail)
 
-  __analyzer_eval (msg[1] == 'e'); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (msg[1] == 'e'); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
   // TODO(xfail)
 
   __analyzer_eval (strlen (msg) == 11); /* { dg-warning "TRUE" } */
@@ -278,8 +278,8 @@ void test_16a (const char *msg)
 
 void test_16b (const char *msg)
 {
-  __analyzer_eval (strlen (msg) == strlen (msg)); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (strlen (msg) == strlen (msg)); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
   // TODO(xfail)
 }
 
@@ -472,8 +472,8 @@ void test_23 (struct foo *f, struct foo *g)
   i = f->i + g->i;
   j = f->i + g->i;
   k = f->i * g->i;
-  __analyzer_eval (i == j); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (i == j); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
   /* TODO(xfail): we'd need to record that the two unknown values are both
      the sum of the two unknown input values (and thus are the same); not
      yet sure if we want arbitrary expression trees in the representation
@@ -491,8 +491,8 @@ void test_24 (struct foo *f)
   /* Overwriting a whole struct should invalidate our knowledge
      about fields within it.  */
   g = *f;
-  __analyzer_eval (g.i == 42); /* { dg-warning "UNKNOWN" "" { xfail *-*-* } } */
-  /* { dg-warning "TRUE" "" { target *-*-* } .-1 } */
+  __analyzer_eval (g.i == 42); /* { dg-warning "UNKNOWN" "desired" { xfail *-*-* } } */
+  /* { dg-warning "TRUE" "status quo" { target *-*-* } .-1 } */
   // TODO(xfail)
 }
 
@@ -508,8 +508,8 @@ void test_25 (struct foo *f)
      source value should update our knowledge about fields within
      the dest value.  */
   g = *f;
-  __analyzer_eval (g.i == 43); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "FALSE" "" { target *-*-* } .-1 } */
+  __analyzer_eval (g.i == 43); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "FALSE" "status quo" { target *-*-* } .-1 } */
   // TODO(xfail)
 }
 
@@ -526,11 +526,11 @@ void test_26 (struct coord *p, struct coord *q)
      source value should update our knowledge about fields within
      the dest value.  */
   *p = *q;
-  __analyzer_eval (p->x); /* { dg-warning "UNKNOWN" "" { xfail *-*-* } } */
-  /* { dg-warning "TRUE" "" { target *-*-* } .-1 } */
+  __analyzer_eval (p->x); /* { dg-warning "UNKNOWN" "desired" { xfail *-*-* } } */
+  /* { dg-warning "TRUE" "status quo" { target *-*-* } .-1 } */
   // TODO(xfail): should have been overwritten
-  __analyzer_eval (p->y == 17); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (p->y == 17); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
   // TODO(xfail): should have been overwritten with q->y
 
   __analyzer_eval (q->x); /* { dg-warning "UNKNOWN" } */
@@ -540,29 +540,29 @@ void test_26 (struct coord *p, struct coord *q)
 void test_27 (struct coord *p)
 {
   memset (p, 0, sizeof (struct coord));
-  __analyzer_eval (p->x == 0); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (p->x == 0); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
   // TODO(xfail):
-  __analyzer_eval (p->y == 0); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (p->y == 0); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
   // TODO(xfail):
 }
 
 void test_28 (struct coord *p)
 {
   memset (p, 0, sizeof (struct coord) * 10);
-  __analyzer_eval (p[0].x == 0); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (p[0].x == 0); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
   // TODO(xfail):
-  __analyzer_eval (p[0].y == 0); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (p[0].y == 0); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
   // TODO(xfail):
 
-  __analyzer_eval (p[9].x == 0); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (p[9].x == 0); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
   // TODO(xfail):
-  __analyzer_eval (p[9].y == 0); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (p[9].y == 0); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
   // TODO(xfail):
 
   __analyzer_eval (p[10].x == 0); /* { dg-warning "UNKNOWN" } */
@@ -970,13 +970,13 @@ void test_44 (void)
 {
   struct sbits bits;
   bits.b0 = 1;
-  __analyzer_eval (bits.b0 == 1); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "FALSE" "" { target *-*-* } .-1 } */
+  __analyzer_eval (bits.b0 == 1); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "FALSE" "status quo" { target *-*-* } .-1 } */
   // TODO(xfail): ^^^^
 
   bits.b456 = 5;
-  __analyzer_eval (bits.b456 == 5); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "FALSE" "" { target *-*-* } .-1 } */
+  __analyzer_eval (bits.b456 == 5); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "FALSE" "status quo" { target *-*-* } .-1 } */
   // TODO(xfail): ^^^^
 };
 
@@ -994,13 +994,13 @@ void test_45 (void)
 {
   struct ubits bits;
   bits.b0 = 1;
-  __analyzer_eval (bits.b0 == 1); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (bits.b0 == 1); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
   // TODO(xfail): ^^^^
 
   bits.b456 = 5;
-  __analyzer_eval (bits.b456 == 5); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (bits.b456 == 5); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
   // TODO(xfail): ^^^^
 };
 
@@ -1058,10 +1058,10 @@ void test_51 (struct coord c)
 {
   struct coord d;
   memcpy (&d, &c, sizeof (struct coord));
-  __analyzer_eval (c.x == d.x); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
-  __analyzer_eval (c.y == d.y); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (c.x == d.x); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
+  __analyzer_eval (c.y == d.y); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
 }
 
 struct big
@@ -1073,8 +1073,8 @@ void test_52 (struct big b)
 {
   struct big d;
   memcpy (&d, &b, sizeof (struct big));
-  __analyzer_eval (b.ia[0] == d.ia[0]); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "" { target *-*-* } .-1 } */
+  __analyzer_eval (b.ia[0] == d.ia[0]); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
 }
 
 void test_53 (const char *msg)

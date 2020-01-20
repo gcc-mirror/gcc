@@ -8487,7 +8487,7 @@ update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
    Returns scalar epilogue loop if any.  */
 
 class loop *
-vect_transform_loop (loop_vec_info loop_vinfo)
+vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 {
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   class loop *epilogue = NULL;
@@ -8538,7 +8538,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   if (LOOP_REQUIRES_VERSIONING (loop_vinfo))
     {
       class loop *sloop
-	= vect_loop_versioning (loop_vinfo);
+	= vect_loop_versioning (loop_vinfo, loop_vectorized_call);
       sloop->force_vectorize = false;
       check_profitability = false;
     }

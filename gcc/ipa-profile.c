@@ -864,104 +864,104 @@ ipa_profile (void)
 		}
 
 	      unsigned speculative_id = 0;
-	      bool speculative_found = false;
 	      for (unsigned i = 0; i < spec_count; i++)
-	      {
-	      speculative_call_target item
-		= csum->speculative_call_targets[i];
-	      n2 = find_func_by_profile_id (item.target_id);
-	      if (n2)
 		{
-		  if (dump_file)
+		  speculative_call_target item
+		    = csum->speculative_call_targets[i];
+		  n2 = find_func_by_profile_id (item.target_id);
+		  if (n2)
 		    {
-		      fprintf (dump_file, "Indirect call -> direct call from"
-			       " other module %s => %s, prob %3.2f\n",
-			       n->dump_name (),
-			       n2->dump_name (),
-			       item.target_probability
-				 / (float) REG_BR_PROB_BASE);
-		    }
-		  if (item.target_probability < REG_BR_PROB_BASE / 2)
-		    {
-		      nuseless++;
 		      if (dump_file)
-			fprintf (dump_file,
-				 "Not speculating: probability is too low.\n");
-		    }
-		  else if (!e->maybe_hot_p ())
-		    {
-		      nuseless++;
-		      if (dump_file)
-			fprintf (dump_file,
-				 "Not speculating: call is cold.\n");
-		    }
-		  else if (n2->get_availability () <= AVAIL_INTERPOSABLE
-			   && n2->can_be_discarded_p ())
-		    {
-		      nuseless++;
-		      if (dump_file)
-			fprintf (dump_file,
-				 "Not speculating: target is overwritable "
-				 "and can be discarded.\n");
-		    }
-		  else if (!check_argument_count (n2, e))
-		    {
-		      nmismatch++;
-		      if (dump_file)
-			fprintf (dump_file,
-				 "Not speculating: "
-				 "parameter count mismatch\n");
-		    }
-		  else if (e->indirect_info->polymorphic
-			   && !opt_for_fn (n->decl, flag_devirtualize)
-			   && !possible_polymorphic_call_target_p (e, n2))
-		    {
-		      nimpossible++;
-		      if (dump_file)
-			fprintf (dump_file,
-				 "Not speculating: "
-				 "function is not in the polymorphic "
-				 "call target list\n");
+			{
+			  fprintf (dump_file,
+				   "Indirect call -> direct call from"
+				   " other module %s => %s, prob %3.2f\n",
+				   n->dump_name (),
+				   n2->dump_name (),
+				   item.target_probability
+				     / (float) REG_BR_PROB_BASE);
+			}
+		      if (item.target_probability < REG_BR_PROB_BASE / 2)
+			{
+			  nuseless++;
+			  if (dump_file)
+			    fprintf (dump_file,
+				     "Not speculating: "
+				     "probability is too low.\n");
+			}
+		      else if (!e->maybe_hot_p ())
+			{
+			  nuseless++;
+			  if (dump_file)
+			    fprintf (dump_file,
+				     "Not speculating: call is cold.\n");
+			}
+		      else if (n2->get_availability () <= AVAIL_INTERPOSABLE
+			       && n2->can_be_discarded_p ())
+			{
+			  nuseless++;
+			  if (dump_file)
+			    fprintf (dump_file,
+				     "Not speculating: target is overwritable "
+				     "and can be discarded.\n");
+			}
+		      else if (!check_argument_count (n2, e))
+			{
+			  nmismatch++;
+			  if (dump_file)
+			    fprintf (dump_file,
+				     "Not speculating: "
+				     "parameter count mismatch\n");
+			}
+		      else if (e->indirect_info->polymorphic
+			       && !opt_for_fn (n->decl, flag_devirtualize)
+			       && !possible_polymorphic_call_target_p (e, n2))
+			{
+			  nimpossible++;
+			  if (dump_file)
+			    fprintf (dump_file,
+				     "Not speculating: "
+				     "function is not in the polymorphic "
+				     "call target list\n");
+			}
+		      else
+			{
+			  /* Target may be overwritable, but profile says that
+			     control flow goes to this particular implementation
+			     of N2.  Speculate on the local alias to allow
+			     inlining.  */
+			  if (!n2->can_be_discarded_p ())
+			    {
+			      cgraph_node *alias;
+			      alias = dyn_cast<cgraph_node *>
+				   (n2->noninterposable_alias ());
+			      if (alias)
+				n2 = alias;
+			    }
+			  nconverted++;
+			  e->make_speculative (n2,
+					       e->count.apply_probability (
+						 item.target_probability),
+					       speculative_id,
+					       item.target_probability);
+			  update = true;
+			  speculative_id++;
+			}
 		    }
 		  else
 		    {
-		      /* Target may be overwritable, but profile says that
-			 control flow goes to this particular implementation
-			 of N2.  Speculate on the local alias to allow inlining.
-		       */
-		      if (!n2->can_be_discarded_p ())
-			{
-			  cgraph_node *alias;
-			  alias = dyn_cast<cgraph_node *> (n2->noninterposable_alias ());
-			  if (alias)
-			    n2 = alias;
-			}
-		      nconverted++;
-		      e->make_speculative (n2,
-					   e->count.apply_probability (
-					     item.target_probability),
-					   speculative_id,
-					   item.target_probability);
-		      update = true;
-		      speculative_id++;
-		      speculative_found = true;
+		      if (dump_file)
+			fprintf (dump_file,
+				 "Function with profile-id %i not found.\n",
+				 item.target_id);
+		      nunknown++;
 		    }
 		}
-	      else
-		{
-		  if (dump_file)
-		    fprintf (dump_file, "Function with profile-id %i not found.\n",
-			     item.target_id);
-		  nunknown++;
-		}
-	       }
-	     if (speculative_found)
-	       e->indirect_info->num_speculative_call_targets = speculative_id;
 	    }
-	 }
-       if (update)
-	 ipa_update_overall_fn_summary (n);
-     }
+	}
+      if (update)
+	ipa_update_overall_fn_summary (n);
+    }
   if (node_map_initialized)
     del_node_map ();
   if (dump_file && nindirect)

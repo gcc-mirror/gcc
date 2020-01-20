@@ -1648,7 +1648,6 @@
   {
     int num_regs = XVECLEN (operands[0], 0);
     char pattern[30];
-    const char *regname;
     rtx reg;
 
     strcpy (pattern, \"vscclrm%?\\t{%|\");

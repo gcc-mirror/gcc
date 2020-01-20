@@ -595,14 +595,13 @@ lex_macro_node (cpp_reader *pfile, bool is_def_or_undef)
     {
       cpp_hashnode *node = token->val.node.node;
 
-      if (is_def_or_undef && node == pfile->spec_nodes.n_defined)
+      if (is_def_or_undef
+	  && (node == pfile->spec_nodes.n_defined
+	      || node == pfile->spec_nodes.n__has_include
+	      || node == pfile->spec_nodes.n__has_include_next))
 	cpp_error (pfile, CPP_DL_ERROR,
-		   "\"defined\" cannot be used as a macro name");
-      else if (is_def_or_undef
-	    && (node == pfile->spec_nodes.n__has_include__
-	     || node == pfile->spec_nodes.n__has_include_next__))
-	cpp_error (pfile, CPP_DL_ERROR,
-		   "\"__has_include__\" cannot be used as a macro name");
+		   "\"%s\" cannot be used as a macro name",
+		   NODE_NAME (node));
       else if (! (node->flags & NODE_POISONED))
 	return node;
     }
@@ -1968,11 +1967,7 @@ do_ifdef (cpp_reader *pfile)
 
       if (node)
 	{
-	  /* Do not treat conditional macros as being defined.  This is due to
-	     the powerpc port using conditional macros for 'vector', 'bool',
-	     and 'pixel' to act as conditional keywords.  This messes up tests
-	     like #ifndef bool.  */
-	  skip = !cpp_macro_p (node) || (node->flags & NODE_CONDITIONAL);
+	  skip = !_cpp_defined_macro_p (node);
 	  if (!_cpp_maybe_notify_macro_use (pfile, node, pfile->directive_line))
 	    /* It wasn't a macro after all.  */
 	    skip = true;
@@ -1999,12 +1994,7 @@ do_ifndef (cpp_reader *pfile)
 
       if (node)
 	{
-	  /* Do not treat conditional macros as being defined.  This is due to
-	     the powerpc port using conditional macros for 'vector', 'bool',
-	     and 'pixel' to act as conditional keywords.  This messes up tests
-	     like #ifndef bool.  */
-	  skip = (cpp_macro_p (node)
-		  && !(node->flags & NODE_CONDITIONAL));
+	  skip = _cpp_defined_macro_p (node);
 	  if (!_cpp_maybe_notify_macro_use (pfile, node, pfile->directive_line))
 	    /* It wasn't a macro after all.  */
 	    skip = false;
@@ -2654,12 +2644,9 @@ _cpp_pop_buffer (cpp_reader *pfile)
 void
 _cpp_init_directives (cpp_reader *pfile)
 {
-  unsigned int i;
-  cpp_hashnode *node;
-
-  for (i = 0; i < (unsigned int) N_DIRECTIVES; i++)
+  for (int i = 0; i < N_DIRECTIVES; i++)
     {
-      node = cpp_lookup (pfile, dtable[i].name, dtable[i].length);
+      cpp_hashnode *node = cpp_lookup (pfile, dtable[i].name, dtable[i].length);
       node->is_directive = 1;
       node->directive_index = i;
     }

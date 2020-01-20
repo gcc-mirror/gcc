@@ -3173,6 +3173,7 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
     case ADDR_EXPR:
     case COMPOUND_EXPR:
     case COMPONENT_REF:
+    case CO_AWAIT_EXPR:
       return;
 
     case COND_EXPR:
@@ -4584,6 +4585,13 @@ build_new_function_call (tree fn, vec<tree, va_gc> **args,
       result = build_over_call (cand, flags, complain);
     }
 
+  if (flag_coroutines
+      && result
+      && TREE_CODE (result) == CALL_EXPR
+      && DECL_BUILT_IN_CLASS (TREE_OPERAND (CALL_EXPR_FN (result), 0))
+	  == BUILT_IN_NORMAL)
+   result = coro_validate_builtin_call (result);
+
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);
 
@@ -4940,6 +4948,16 @@ op_error (const op_location_t &loc,
       else
 	error_at (loc, op_error_string (G_("%qs in %<%s %E%>"), 1, match),
 		  opname, opname, arg1, TREE_TYPE (arg1));
+      break;
+
+    case CO_AWAIT_EXPR:
+      if (flag_diagnostics_show_caret)
+	error_at (loc, op_error_string (G_("%<operator %s%>"), 1, match),
+		  opname, TREE_TYPE (arg1));
+      else
+	error_at (loc, op_error_string (G_("%<operator %s%> in %<%s%E%>"),
+					  1, match),
+		   opname, opname, arg1, TREE_TYPE (arg1));
       break;
 
     default:
@@ -6197,6 +6215,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	case ADDR_EXPR:
 	case COMPOUND_EXPR:
 	case COMPONENT_REF:
+	case CO_AWAIT_EXPR:
 	  result = NULL_TREE;
 	  result_valid_p = true;
 	  break;
@@ -6489,6 +6508,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
     case REALPART_EXPR:
     case IMAGPART_EXPR:
     case ABS_EXPR:
+    case CO_AWAIT_EXPR:
       return cp_build_unary_op (code, arg1, false, complain);
 
     case ARRAY_REF:

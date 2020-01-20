@@ -177,7 +177,9 @@ enum required_token {
   RT_CLASS_TYPENAME_TEMPLATE, /* class, typename, or template */
   RT_TRANSACTION_ATOMIC, /* __transaction_atomic */
   RT_TRANSACTION_RELAXED, /* __transaction_relaxed */
-  RT_TRANSACTION_CANCEL /* __transaction_cancel */
+  RT_TRANSACTION_CANCEL, /* __transaction_cancel */
+
+  RT_CO_YIELD /* co_yield */
 };
 
 /* RAII wrapper for parser->in_type_id_in_expr_p, setting it on creation and
@@ -2637,6 +2639,12 @@ static void cp_parser_function_transaction
   (cp_parser *, enum rid);
 static tree cp_parser_transaction_cancel
   (cp_parser *);
+
+/* Coroutine extensions.  */
+
+static tree cp_parser_yield_expression
+  (cp_parser *);
+
 
 enum pragma_context {
   pragma_external,
@@ -8418,6 +8426,7 @@ cp_parser_pseudo_destructor_name (cp_parser* parser,
      postfix-expression
      ++ cast-expression
      -- cast-expression
+     await-expression
      unary-operator cast-expression
      sizeof unary-expression
      sizeof ( type-id )
@@ -8630,6 +8639,22 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 
 	    return cp_expr (finish_noexcept_expr (expr, tf_warning_or_error),
 			    noexcept_loc);
+	  }
+
+	case RID_CO_AWAIT:
+	  {
+	    tree expr;
+	    location_t kw_loc = token->location;
+
+	    /* Consume the `co_await' token.  */
+	    cp_lexer_consume_token (parser->lexer);
+	    /* Parse its cast-expression.  */
+	    expr = cp_parser_simple_cast_expression (parser);
+	    if (expr == error_mark_node)
+	      return error_mark_node;
+
+	    /* Handle [expr.await].  */
+	    return cp_expr (finish_co_await_expr (kw_loc, expr));
 	  }
 
 	default:
@@ -10063,6 +10088,7 @@ cp_parser_question_colon_clause (cp_parser* parser, cp_expr logical_or_expr)
      conditional-expression
      logical-or-expression assignment-operator assignment_expression
      throw-expression
+     yield-expression
 
    CAST_P is true if this expression is the target of a cast.
    DECLTYPE_P is true if this expression is the operand of decltype.
@@ -10079,6 +10105,10 @@ cp_parser_assignment_expression (cp_parser* parser, cp_id_kind * pidk,
      a throw-expression.  */
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_THROW))
     expr = cp_parser_throw_expression (parser);
+  /* If the next token is the `co_yield' keyword, then we're looking at
+     a yield-expression.  */
+  else if (cp_lexer_next_token_is_keyword (parser->lexer, RID_CO_YIELD))
+    expr = cp_parser_yield_expression (parser);
   /* Otherwise, it must be that we are looking at a
      logical-or-expression.  */
   else
@@ -11417,23 +11447,11 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
     local_specialization_stack s (lss_copy);
     tree fco = lambda_function (lambda_expr);
     tree body = start_lambda_function (fco, lambda_expr);
-    matching_braces braces;
 
-    if (braces.require_open (parser))
-      {
-	tree compound_stmt = begin_compound_stmt (0);
-
-	/* Originally C++11 required us to peek for 'return expr'; and
-	   process it specially here to deduce the return type.  N3638
-	   removed the need for that.  */
-
-	while (cp_lexer_next_token_is_keyword (parser->lexer, RID_LABEL))
-	  cp_parser_label_declaration (parser);
-	cp_parser_statement_seq_opt (parser, NULL_TREE);
-	braces.require_close (parser);
-
-	finish_compound_stmt (compound_stmt);
-      }
+    /* Originally C++11 required us to peek for 'return expr'; and
+       process it specially here to deduce the return type.  N3638
+       removed the need for that.  */
+    cp_parser_function_body (parser, false);
 
     finish_lambda_function (body);
   }
@@ -11577,6 +11595,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	case RID_BREAK:
 	case RID_CONTINUE:
 	case RID_RETURN:
+	case RID_CO_RETURN:
 	case RID_GOTO:
 	  std_attrs = process_stmt_hotness_attribute (std_attrs, attrs_loc);
 	  statement = cp_parser_jump_statement (parser);
@@ -12003,6 +12022,10 @@ cp_parser_compound_statement (cp_parser *parser, tree in_statement_expr,
     cp_parser_label_declaration (parser);
   /* Parse an (optional) statement-seq.  */
   cp_parser_statement_seq_opt (parser, in_statement_expr);
+
+  if (function_body)
+    maybe_splice_retval_cleanup (compound_stmt);
+
   /* Finish the compound-statement.  */
   finish_compound_stmt (compound_stmt);
   /* Consume the `}'.  */
@@ -13221,6 +13244,7 @@ cp_parser_init_statement (cp_parser *parser, tree *decl)
      continue ;
      return expression [opt] ;
      return braced-init-list ;
+     coroutine-return-statement;
      goto identifier ;
 
    GNU extension:
@@ -13291,6 +13315,7 @@ cp_parser_jump_statement (cp_parser* parser)
       cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
       break;
 
+    case RID_CO_RETURN:
     case RID_RETURN:
       {
 	tree expr;
@@ -13308,8 +13333,11 @@ cp_parser_jump_statement (cp_parser* parser)
 	  /* If the next token is a `;', then there is no
 	     expression.  */
 	  expr = NULL_TREE;
-	/* Build the return-statement.  */
-	if (FNDECL_USED_AUTO (current_function_decl) && in_discarded_stmt)
+	/* Build the return-statement, check co-return first, since type
+	   deduction is not valid there.  */
+	if (keyword == RID_CO_RETURN)
+	  statement = finish_co_return_stmt (token->location, expr);
+	else if (FNDECL_USED_AUTO (current_function_decl) && in_discarded_stmt)
 	  /* Don't deduce from a discarded return statement.  */;
 	else
 	  statement = finish_return_stmt (expr);
@@ -15887,22 +15915,25 @@ cp_parser_operator (cp_parser* parser, location_t start_loc)
     {
     case CPP_KEYWORD:
       {
-	/* The keyword should be either `new' or `delete'.  */
+	/* The keyword should be either `new', `delete' or `co_await'.  */
 	if (token->keyword == RID_NEW)
 	  op = NEW_EXPR;
 	else if (token->keyword == RID_DELETE)
 	  op = DELETE_EXPR;
+	else if (token->keyword == RID_CO_AWAIT)
+	  op = CO_AWAIT_EXPR;
 	else
 	  break;
 
-	/* Consume the `new' or `delete' token.  */
+	/* Consume the `new', `delete' or co_await token.  */
 	end_loc = cp_lexer_consume_token (parser->lexer)->location;
 
 	/* Peek at the next token.  */
 	token = cp_lexer_peek_token (parser->lexer);
 	/* If it's a `[' token then this is the array variant of the
 	   operator.  */
-	if (token->type == CPP_OPEN_SQUARE)
+	if (token->type == CPP_OPEN_SQUARE
+	    && op != CO_AWAIT_EXPR)
 	  {
 	    /* Consume the `[' token.  */
 	    cp_lexer_consume_token (parser->lexer);
@@ -17393,7 +17424,17 @@ cp_parser_template_name (cp_parser* parser,
     {
       if (TREE_DEPRECATED (decl)
 	  && deprecated_state != DEPRECATED_SUPPRESS)
-	warn_deprecated_use (decl, NULL_TREE);
+	{
+	  tree d = DECL_TEMPLATE_RESULT (decl);
+	  tree attr;
+	  if (TREE_CODE (d) == TYPE_DECL)
+	    attr = lookup_attribute ("deprecated",
+				     TYPE_ATTRIBUTES (TREE_TYPE (d)));
+	  else
+	    attr = lookup_attribute ("deprecated",
+				     DECL_ATTRIBUTES (d));
+	  warn_deprecated_use (decl, attr);
+	}
     }
   else
     {
@@ -26604,6 +26645,41 @@ cp_parser_throw_expression (cp_parser* parser)
   return expression;
 }
 
+/* Parse a yield-expression.
+
+   yield-expression:
+     co_yield assignment-expression
+     co_yield braced-init-list
+
+   Returns a CO_YIELD_EXPR representing the yield-expression.  */
+
+static tree
+cp_parser_yield_expression (cp_parser* parser)
+{
+  tree expr;
+
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+  location_t kw_loc = token->location; /* Save for later.  */
+
+  cp_parser_require_keyword (parser, RID_CO_YIELD, RT_CO_YIELD);
+
+  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+    {
+      bool expr_non_constant_p;
+      cp_lexer_set_source_position (parser->lexer);
+      /* ??? : probably a moot point?  */
+      maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
+      expr = cp_parser_braced_list (parser, &expr_non_constant_p);
+    }
+  else
+    expr = cp_parser_assignment_expression (parser);
+
+  if (expr == error_mark_node)
+    return expr;
+
+  return finish_co_yield_expr (kw_loc, expr);
+}
+
 /* GNU Extensions */
 
 /* Parse an (optional) asm-specification.
@@ -30858,6 +30934,9 @@ cp_parser_required_error (cp_parser *parser,
 	break;
       case RT_TRANSACTION_RELAXED:
 	gmsgid = G_("expected %<__transaction_relaxed%>");
+	break;
+      case RT_CO_YIELD:
+	gmsgid = G_("expected %<co_yield%>");
 	break;
       default:
 	break;

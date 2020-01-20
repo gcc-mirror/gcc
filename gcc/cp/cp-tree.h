@@ -2035,6 +2035,7 @@ struct GTY(()) language_function {
   BOOL_BITFIELD can_throw : 1;
 
   BOOL_BITFIELD invalid_constexpr : 1;
+  BOOL_BITFIELD throwing_cleanup : 1;
 
   hash_table<named_label_hash> *x_named_labels;
 
@@ -2084,6 +2085,13 @@ struct GTY(()) language_function {
    constructors and destructors.  */
 
 #define current_vtt_parm cp_function_chain->x_vtt_parm
+
+/* A boolean flag to control whether we need to clean up the return value if a
+   local destructor throws.  Only used in functions that return by value a
+   class with a destructor.  Which 'tors don't, so we can use the same
+   field as current_vtt_parm.  */
+
+#define current_retval_sentinel current_vtt_parm
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */
@@ -2845,7 +2853,9 @@ struct GTY(()) lang_decl_fn {
   unsigned has_dependent_explicit_spec_p : 1;
   unsigned immediate_fn_p : 1;
   unsigned maybe_deleted : 1;
-  unsigned spare : 10;
+  unsigned coroutine_p : 1;
+
+  unsigned spare : 9;
 
   /* 32-bits padding on 64-bit host.  */
 
@@ -5140,6 +5150,13 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define QUALIFIED_NAME_IS_TEMPLATE(NODE) \
   (TREE_LANG_FLAG_1 (SCOPE_REF_CHECK (NODE)))
 
+/* [coroutines]
+*/
+
+/* True if NODE is a co-routine FUNCTION_DECL.  */
+#define DECL_COROUTINE_P(NODE) \
+  (LANG_DECL_FN_CHECK (DECL_COMMON_CHECK (NODE))->coroutine_p)
+
 /* True for an OMP_ATOMIC that has dependent parameters.  These are stored
    as an expr in operand 1, and integer_zero_node or clauses in operand 0.  */
 #define OMP_ATOMIC_DEPENDENT_P(NODE) \
@@ -6831,6 +6848,9 @@ extern tree begin_eh_spec_block			(void);
 extern void finish_eh_spec_block		(tree, tree);
 extern tree build_eh_type_type			(tree);
 extern tree cp_protect_cleanup_actions		(void);
+extern void maybe_splice_retval_cleanup		(tree);
+extern tree maybe_set_retval_sentinel		(void);
+
 extern tree template_parms_to_args		(tree);
 extern tree template_parms_level_to_args	(tree);
 extern tree generic_targs_for			(tree);
@@ -8198,6 +8218,14 @@ extern void cp_ubsan_instrument_member_accesses (tree *);
 extern tree cp_ubsan_maybe_instrument_downcast	(location_t, tree, tree, tree);
 extern tree cp_ubsan_maybe_instrument_cast_to_vbase (location_t, tree, tree);
 extern void cp_ubsan_maybe_initialize_vtbl_ptrs (tree);
+
+/* In coroutines.cc */
+extern tree finish_co_return_stmt		(location_t, tree);
+extern tree finish_co_await_expr		(location_t, tree);
+extern tree finish_co_yield_expr		(location_t, tree);
+extern tree coro_validate_builtin_call		(tree,
+						 tsubst_flags_t = tf_warning_or_error);
+extern bool morph_fn_to_coro			(tree, tree *, tree *);
 
 /* Inline bodies.  */
   

@@ -8,8 +8,8 @@ void test_1 (void)
   free (ptr); /* { dg-line first_free } */
   free (ptr); /* { dg-line second_free } */
 
-  /* { dg-warning "double-'free' of 'ptr'"  "" { target *-*-* } second_free } */
-  /* { dg-message "\\(1\\) allocated here" "" { target *-*-* } malloc } */
-  /* { dg-message "\\(2\\) first 'free' here" "" { target *-*-* } first_free } */
-  /* { dg-message "\\(3\\) second 'free' here; first 'free' was at \\(2\\)" "" { target *-*-* } second_free } */
+  /* { dg-warning "double-'free' of 'ptr'"  "warning" { target *-*-* } second_free } */
+  /* { dg-message "\\(1\\) allocated here" "event 1" { target *-*-* } malloc } */
+  /* { dg-message "\\(2\\) first 'free' here" "event 2" { target *-*-* } first_free } */
+  /* { dg-message "\\(3\\) second 'free' here; first 'free' was at \\(2\\)" "event 3" { target *-*-* } second_free } */
 }

@@ -7,15 +7,15 @@ void test (int i, int j)
     {
       __analyzer_eval (i > 4); /* { dg-warning "TRUE" } */
       __analyzer_eval (i <= 4); /* { dg-warning "FALSE" } */
-      __analyzer_eval (i > 3); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-      /* { dg-bogus "UNKNOWN" "" { xfail *-*-* } .-1 } */
+      __analyzer_eval (i > 3); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+      /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
 
       __analyzer_eval (i > 5); /* { dg-warning "UNKNOWN" } */
-      __analyzer_eval (i != 3); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-      /* { dg-bogus "UNKNOWN" "" { xfail *-*-* } .-1 } */
+      __analyzer_eval (i != 3); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+      /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
 
-      __analyzer_eval (i == 3); /* { dg-warning "FALSE" "" { xfail *-*-* } } */
-      /* { dg-bogus "UNKNOWN" "" { xfail *-*-* } .-1 } */
+      __analyzer_eval (i == 3); /* { dg-warning "FALSE" "desired" { xfail *-*-* } } */
+      /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
 
       __analyzer_eval (i != 4); /* { dg-warning "TRUE" } */
       __analyzer_eval (i == 4); /* { dg-warning "FALSE" } */
@@ -33,8 +33,8 @@ void test (int i, int j)
       else
 	{
 	  __analyzer_eval (j >= i); /* { dg-warning "TRUE" } */
-	  __analyzer_eval (j > 4); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-	  /* { dg-bogus "UNKNOWN" "" { xfail *-*-* } .-1 } */
+	  __analyzer_eval (j > 4); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+	  /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
 	}
     }
   else
@@ -43,21 +43,21 @@ void test (int i, int j)
       __analyzer_eval (i <= 4); /* { dg-warning "TRUE" } */
       __analyzer_eval (i > 3); /* { dg-warning "UNKNOWN" } */
 
-      __analyzer_eval (i > 5); /* { dg-warning "FALSE" "" { xfail *-*-* } } */
-	  /* { dg-bogus "UNKNOWN" "" { xfail *-*-* } .-1 } */
+      __analyzer_eval (i > 5); /* { dg-warning "FALSE" "desired" { xfail *-*-* } } */
+	  /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
       __analyzer_eval (i != 3); /* { dg-warning "UNKNOWN" } */
 
       __analyzer_eval (i == 3); /* { dg-warning "UNKNOWN" } */
 
       __analyzer_eval (i != 4); /* { dg-warning "UNKNOWN" } */
       __analyzer_eval (i == 4); /* { dg-warning "UNKNOWN" } */
-      __analyzer_eval (i == 5); /* { dg-warning "FALSE" "" { xfail *-*-* } } */
-      /* { dg-bogus "UNKNOWN" "" { xfail *-*-* } .-1 } */
-      __analyzer_eval (i != 5); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-      /* { dg-bogus "UNKNOWN" "" { xfail *-*-* } .-1 } */
+      __analyzer_eval (i == 5); /* { dg-warning "FALSE" "desired" { xfail *-*-* } } */
+      /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
+      __analyzer_eval (i != 5); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+      /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
       __analyzer_eval (i < 5); /* { dg-warning "TRUE" } */
-      __analyzer_eval (i <= 5); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-      /* { dg-bogus "UNKNOWN" "" { xfail *-*-* } .-1 } */
+      __analyzer_eval (i <= 5); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+      /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
     }
 }
 
@@ -68,12 +68,12 @@ void test_2 (int i, int j, int k)
       __analyzer_eval (i == k); /* { dg-warning "UNKNOWN" } */
       if (j >= k)
 	{
-	  __analyzer_eval (i >= k); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-	  /* { dg-bogus "UNKNOWN" "" { xfail *-*-* } .-1 } */
+	  __analyzer_eval (i >= k); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+	  /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
 	  __analyzer_eval (i == k); /* { dg-warning "UNKNOWN" } */
 	  if (k >= i)
-	    __analyzer_eval (i == k); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-	  /* { dg-bogus "UNKNOWN" "" { xfail *-*-* } .-1 } */
+	    __analyzer_eval (i == k); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+	  /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
 	}
     }
 }
@@ -101,8 +101,8 @@ void test_range_int_gt_lt (int i)
 {
   if (i > 3)
     if (i < 5)
-      __analyzer_eval (i == 4); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-      /* { dg-bogus "UNKNOWN" "" { xfail *-*-* } .-1 } */
+      __analyzer_eval (i == 4); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+      /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
 }
 
 void test_range_float_gt_lt (float f)
@@ -116,8 +116,8 @@ void test_range_int_ge_lt (int i)
 {
   if (i >= 4)
     if (i < 5)
-      __analyzer_eval (i == 4); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-      /* { dg-bogus "UNKNOWN" "" { xfail *-*-* } .-1 } */
+      __analyzer_eval (i == 4); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+      /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
 }
 
 void test_range_float_ge_lt (float f)
@@ -131,8 +131,8 @@ void test_range_int_gt_le (int i)
 {
   if (i > 3)
     if (i <= 4)
-      __analyzer_eval (i == 4); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-      /* { dg-bogus "UNKNOWN" "" { xfail *-*-* } .-1 } */
+      __analyzer_eval (i == 4); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+      /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
 }
 
 void test_range_float_gt_le (float f)
@@ -146,14 +146,14 @@ void test_range_int_ge_le (int i)
 {
   if (i >= 4)
     if (i <= 4)
-      __analyzer_eval (i == 4); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-      /* { dg-bogus "UNKNOWN" "" { xfail *-*-* } .-1 } */
+      __analyzer_eval (i == 4); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+      /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
 }
 
 void test_range_float_ge_le (float f)
 {
   if (f >= 4)
     if (f <= 4)
-      __analyzer_eval (f == 4); /* { dg-warning "TRUE" "" { xfail *-*-* } } */
-      /* { dg-bogus "UNKNOWN" "" { xfail *-*-* } .-1 } */
+      __analyzer_eval (f == 4); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+      /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
 }

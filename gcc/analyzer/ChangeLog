@@ -1,5 +1,12 @@
 2020-01-17  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93290
+	* region-model.cc (region_model::eval_condition_without_cm): Avoid
+	gcc_unreachable for unexpected operations for the case where
+	we're comparing an svalue against itself.
+
+2020-01-17  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93281
 	* region-model.cc
 	(region_model::convert_byte_offset_to_array_index): Convert to
