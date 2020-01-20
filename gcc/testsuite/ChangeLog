@@ -1,3 +1,8 @@
+2020-01-22  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa.exp: Set DEFAULT_VECTCFLAGS and DEFAULT_VECTCFLAGS.
+	Call check_vect_support_and_set_flags also.
+
 2020-01-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93378
