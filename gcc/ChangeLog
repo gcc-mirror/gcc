@@ -1,3 +1,7 @@
+2020-01-20  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.h (SLOW_BYTE_ACCESS): Set to 1.
+
 2020-01-20  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64-sve-builtins-base.cc

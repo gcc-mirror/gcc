@@ -1006,14 +1006,8 @@ typedef struct
    if given data not on the nominal alignment.  */
 #define STRICT_ALIGNMENT		TARGET_STRICT_ALIGN
 
-/* Define this macro to be non-zero if accessing less than a word of
-   memory is no faster than accessing a word of memory, i.e., if such
-   accesses require more than one instruction or if there is no
-   difference in cost.
-   Although there's no difference in instruction count or cycles,
-   in AArch64 we don't want to expand to a sub-word to a 64-bit access
-   if we don't have to, for power-saving reasons.  */
-#define SLOW_BYTE_ACCESS		0
+/* Enable wide bitfield accesses for more efficient bitfield code.  */
+#define SLOW_BYTE_ACCESS 1
 
 #define NO_FUNCTION_CSE	1
 
