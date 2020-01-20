@@ -1,3 +1,11 @@
+2020-01-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/80005
+	* g++.dg/cpp1y/feat-cxx14.C: Adjust.
+	* g++.dg/cpp1z/feat-cxx17.C: Adjust.
+	* g++.dg/cpp2a/feat-cxx2a.C: Adjust.
+	* g++.dg/cpp/pr80005.C: New.
+
 2020-01-20  Mark Eggleston  <mark.eggleston@codethink.com>
 
 	* gfortran.dg/pr93263_1.f90: Change scan-tree-dump-not to

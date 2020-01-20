@@ -859,7 +859,7 @@ enum cpp_builtin_type
   BT_PRAGMA,			/* `_Pragma' operator */
   BT_TIMESTAMP,			/* `__TIMESTAMP__' */
   BT_COUNTER,			/* `__COUNTER__' */
-  BT_HAS_ATTRIBUTE,		/* `__has_attribute__(x)' */
+  BT_HAS_ATTRIBUTE,		/* `__has_attribute(x)' */
   BT_HAS_BUILTIN		/* `__has_builtin(x)' */
 };
 

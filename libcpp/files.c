@@ -504,7 +504,8 @@ _cpp_find_failed (_cpp_file *file)
 
 _cpp_file *
 _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
-		bool fake, int angle_brackets, bool implicit_preinclude,
+		int angle_brackets,
+		bool fake, bool implicit_preinclude, bool has_include,
 		location_t loc)
 {
   struct cpp_file_hash_entry *entry;
@@ -592,7 +593,8 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 		return NULL;
 	      }
 
-	    open_file_failed (pfile, file, angle_brackets, loc);
+	    if (!has_include)
+	      open_file_failed (pfile, file, angle_brackets, loc);
 	    break;
 	  }
 
@@ -1046,8 +1048,8 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
   if (!dir)
     return false;
 
-  _cpp_file *file = _cpp_find_file (pfile, fname, dir, false, angle_brackets,
-				    type == IT_DEFAULT, loc);
+  _cpp_file *file = _cpp_find_file (pfile, fname, dir, angle_brackets,
+				    false, type == IT_DEFAULT, false, loc);
   if (type == IT_DEFAULT && file == NULL)
     return false;
 
@@ -1061,9 +1063,6 @@ open_file_failed (cpp_reader *pfile, _cpp_file *file, int angle_brackets,
 {
   int sysp = pfile->line_table->highest_line > 1 && pfile->buffer ? pfile->buffer->sysp : 0;
   bool print_dep = CPP_OPTION (pfile, deps.style) > (angle_brackets || !!sysp);
-
-  if (pfile->state.in__has_include__)
-    return;
 
   errno = file->err_no;
   if (print_dep && CPP_OPTION (pfile, deps.missing_files) && errno == ENOENT)
@@ -1343,7 +1342,8 @@ cpp_clear_file_cache (cpp_reader *pfile)
 void
 _cpp_fake_include (cpp_reader *pfile, const char *fname)
 {
-  _cpp_find_file (pfile, fname, pfile->buffer->file->dir, true, 0, false, 0);
+  _cpp_find_file (pfile, fname, pfile->buffer->file->dir,
+		  0, true, false, false, 0);
 }
 
 /* Not everyone who wants to set system-header-ness on a buffer can
@@ -1461,7 +1461,8 @@ _cpp_compare_file_date (cpp_reader *pfile, const char *fname,
   if (!dir)
     return -1;
 
-  file = _cpp_find_file (pfile, fname, dir, false, angle_brackets, false, 0);
+  file = _cpp_find_file (pfile, fname, dir, angle_brackets,
+			 false, false, false, 0);
   if (file->err_no)
     return -1;
 
@@ -2004,9 +2005,11 @@ _cpp_has_header (cpp_reader *pfile, const char *fname, int angle_brackets,
 		 enum include_type type)
 {
   cpp_dir *start_dir = search_path_head (pfile, fname, angle_brackets, type);
-  _cpp_file *file = _cpp_find_file (pfile, fname, start_dir,
-				    /*fake=*/false, angle_brackets,
-				    /*implicit_preinclude=*/false, 0);
+  _cpp_file *file = _cpp_find_file (pfile, fname, start_dir, angle_brackets,
+				    /*fake=*/false,
+				    /*implicit_preinclude=*/false,
+				    /*has_include=*/true,
+				    0);
   return file->err_no != ENOENT;
 }
 
