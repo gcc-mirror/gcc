@@ -291,27 +291,26 @@ namespace __detail
 
       __node_type*  _M_cur;
 
+      _Node_iterator_base() = default;
       _Node_iterator_base(__node_type* __p) noexcept
       : _M_cur(__p) { }
 
       void
       _M_incr() noexcept
       { _M_cur = _M_cur->_M_next(); }
+
+      friend bool
+      operator==(const _Node_iterator_base& __x, const _Node_iterator_base& __y)
+      noexcept
+      { return __x._M_cur == __y._M_cur; }
+
+#if __cpp_impl_three_way_comparison < 201907L
+      friend bool
+      operator!=(const _Node_iterator_base& __x, const _Node_iterator_base& __y)
+      noexcept
+      { return __x._M_cur != __y._M_cur; }
+#endif
     };
-
-  template<typename _Value, bool _Cache_hash_code>
-    inline bool
-    operator==(const _Node_iterator_base<_Value, _Cache_hash_code>& __x,
-	       const _Node_iterator_base<_Value, _Cache_hash_code >& __y)
-    noexcept
-    { return __x._M_cur == __y._M_cur; }
-
-  template<typename _Value, bool _Cache_hash_code>
-    inline bool
-    operator!=(const _Node_iterator_base<_Value, _Cache_hash_code>& __x,
-	       const _Node_iterator_base<_Value, _Cache_hash_code>& __y)
-    noexcept
-    { return __x._M_cur != __y._M_cur; }
 
   /// Node iterators, used to iterate through all the hashtable.
   template<typename _Value, bool __constant_iterators, bool __cache>
@@ -334,7 +333,7 @@ namespace __detail
 						  const _Value&, _Value&>::type;
 
       _Node_iterator() noexcept
-      : __base_type(0) { }
+      : __base_type(nullptr) { }
 
       explicit
       _Node_iterator(__node_type* __p) noexcept
@@ -382,7 +381,7 @@ namespace __detail
       typedef const _Value&				reference;
 
       _Node_const_iterator() noexcept
-      : __base_type(0) { }
+      : __base_type(nullptr) { }
 
       explicit
       _Node_const_iterator(__node_type* __p) noexcept
@@ -1431,9 +1430,11 @@ namespace __detail
     struct _Local_iterator_base<_Key, _Value, _ExtractKey,
 				_H1, _H2, _Hash, true>
     : private _Hashtable_ebo_helper<0, _H2>
+    , _Node_iterator_base<_Value, true>
     {
     protected:
       using __base_type = _Hashtable_ebo_helper<0, _H2>;
+      using __base_node_iter = _Node_iterator_base<_Value, true>;
       using __hash_code_base = _Hash_code_base<_Key, _Value, _ExtractKey,
 					       _H1, _H2, _Hash, true>;
 
@@ -1441,31 +1442,27 @@ namespace __detail
       _Local_iterator_base(const __hash_code_base& __base,
 			   _Hash_node<_Value, true>* __p,
 			   std::size_t __bkt, std::size_t __bkt_count)
-      : __base_type(__base._M_h2()),
-	_M_cur(__p), _M_bucket(__bkt), _M_bucket_count(__bkt_count) { }
+      : __base_type(__base._M_h2()), __base_node_iter(__p)
+      , _M_bucket(__bkt), _M_bucket_count(__bkt_count) { }
 
       void
       _M_incr()
       {
-	_M_cur = _M_cur->_M_next();
-	if (_M_cur)
+	__base_node_iter::_M_incr();
+	if (this->_M_cur)
 	  {
 	    std::size_t __bkt
-	      = __base_type::_M_get()(_M_cur->_M_hash_code,
-					   _M_bucket_count);
+	      = __base_type::_M_get()(this->_M_cur->_M_hash_code,
+				      _M_bucket_count);
 	    if (__bkt != _M_bucket)
-	      _M_cur = nullptr;
+	      this->_M_cur = nullptr;
 	  }
       }
 
-      _Hash_node<_Value, true>*  _M_cur;
       std::size_t _M_bucket;
       std::size_t _M_bucket_count;
 
     public:
-      const void*
-      _M_curr() const { return _M_cur; }  // for equality ops
-
       std::size_t
       _M_get_bucket() const { return _M_bucket; }  // for debug mode
     };
@@ -1513,17 +1510,19 @@ namespace __detail
     struct _Local_iterator_base<_Key, _Value, _ExtractKey,
 				_H1, _H2, _Hash, false>
     : __hash_code_for_local_iter<_Key, _Value, _ExtractKey, _H1, _H2, _Hash>
+    , _Node_iterator_base<_Value, false>
     {
     protected:
       using __hash_code_base = _Hash_code_base<_Key, _Value, _ExtractKey,
 					       _H1, _H2, _Hash, false>;
+      using __node_iter_base = _Node_iterator_base<_Value, false>;
 
       _Local_iterator_base() : _M_bucket_count(-1) { }
 
       _Local_iterator_base(const __hash_code_base& __base,
 			   _Hash_node<_Value, false>* __p,
 			   std::size_t __bkt, std::size_t __bkt_count)
-      : _M_cur(__p), _M_bucket(__bkt), _M_bucket_count(__bkt_count)
+      : __node_iter_base(__p), _M_bucket(__bkt), _M_bucket_count(__bkt_count)
       { _M_init(__base); }
 
       ~_Local_iterator_base()
@@ -1533,8 +1532,8 @@ namespace __detail
       }
 
       _Local_iterator_base(const _Local_iterator_base& __iter)
-      : _M_cur(__iter._M_cur), _M_bucket(__iter._M_bucket),
-        _M_bucket_count(__iter._M_bucket_count)
+      : __node_iter_base(__iter), _M_bucket(__iter._M_bucket)
+      , _M_bucket_count(__iter._M_bucket_count)
       {
 	if (_M_bucket_count != -1)
 	  _M_init(*__iter._M_h());
@@ -1545,7 +1544,7 @@ namespace __detail
       {
 	if (_M_bucket_count != -1)
 	  _M_destroy();
-	_M_cur = __iter._M_cur;
+	this->_M_cur = __iter._M_cur;
 	_M_bucket = __iter._M_bucket;
 	_M_bucket_count = __iter._M_bucket_count;
 	if (_M_bucket_count != -1)
@@ -1556,17 +1555,16 @@ namespace __detail
       void
       _M_incr()
       {
-	_M_cur = _M_cur->_M_next();
-	if (_M_cur)
+	__node_iter_base::_M_incr();
+	if (this->_M_cur)
 	  {
-	    std::size_t __bkt = this->_M_h()->_M_bucket_index(_M_cur,
+	    std::size_t __bkt = this->_M_h()->_M_bucket_index(this->_M_cur,
 							      _M_bucket_count);
 	    if (__bkt != _M_bucket)
-	      _M_cur = nullptr;
+	      this->_M_cur = nullptr;
 	  }
       }
 
-      _Hash_node<_Value, false>*  _M_cur;
       std::size_t _M_bucket;
       std::size_t _M_bucket_count;
 
@@ -1578,30 +1576,9 @@ namespace __detail
       _M_destroy() { this->_M_h()->~__hash_code_base(); }
 
     public:
-      const void*
-      _M_curr() const { return _M_cur; }  // for equality ops and debug mode
-
       std::size_t
       _M_get_bucket() const { return _M_bucket; }  // for debug mode
     };
-
-  template<typename _Key, typename _Value, typename _ExtractKey,
-	   typename _H1, typename _H2, typename _Hash, bool __cache>
-    inline bool
-    operator==(const _Local_iterator_base<_Key, _Value, _ExtractKey,
-					  _H1, _H2, _Hash, __cache>& __x,
-	       const _Local_iterator_base<_Key, _Value, _ExtractKey,
-					  _H1, _H2, _Hash, __cache>& __y)
-    { return __x._M_curr() == __y._M_curr(); }
-
-  template<typename _Key, typename _Value, typename _ExtractKey,
-	   typename _H1, typename _H2, typename _Hash, bool __cache>
-    inline bool
-    operator!=(const _Local_iterator_base<_Key, _Value, _ExtractKey,
-					  _H1, _H2, _Hash, __cache>& __x,
-	       const _Local_iterator_base<_Key, _Value, _ExtractKey,
-					  _H1, _H2, _Hash, __cache>& __y)
-    { return __x._M_curr() != __y._M_curr(); }
 
   /// local iterators
   template<typename _Key, typename _Value, typename _ExtractKey,
@@ -1615,6 +1592,7 @@ namespace __detail
       using __base_type = _Local_iterator_base<_Key, _Value, _ExtractKey,
 					       _H1, _H2, _Hash, __cache>;
       using __hash_code_base = typename __base_type::__hash_code_base;
+
     public:
       typedef _Value					value_type;
       typedef typename std::conditional<__constant_iterators,
