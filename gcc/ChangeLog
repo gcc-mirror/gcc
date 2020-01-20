@@ -1,3 +1,7 @@
+2020-01-20  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (neoversen1_tunings): Set jump_align to 4.
+
 2020-01-20  Andrew Pinski  <apinski@marvell.com>
 
 	PR middle-end/93242
