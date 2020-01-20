@@ -133,6 +133,7 @@ namespace __debug
 
       unordered_set(unordered_set&& __uset,
 		    const allocator_type& __a)
+      noexcept( noexcept(_Base(std::move(__uset._M_base()), __a)) )
       : _Safe(std::move(__uset._M_safe()), __a),
 	_Base(std::move(__uset._M_base()), __a) { }
 
@@ -144,38 +145,38 @@ namespace __debug
       : _Base(__l, __n, __hf, __eql, __a) { }
 
       unordered_set(size_type __n, const allocator_type& __a)
-	: unordered_set(__n, hasher(), key_equal(), __a)
+      : unordered_set(__n, hasher(), key_equal(), __a)
       { }
 
       unordered_set(size_type __n, const hasher& __hf,
 		    const allocator_type& __a)
-	: unordered_set(__n, __hf, key_equal(), __a)
+      : unordered_set(__n, __hf, key_equal(), __a)
       { }
 
       template<typename _InputIterator>
 	unordered_set(_InputIterator __first, _InputIterator __last,
 		      size_type __n,
 		      const allocator_type& __a)
-	  : unordered_set(__first, __last, __n, hasher(), key_equal(), __a)
+	: unordered_set(__first, __last, __n, hasher(), key_equal(), __a)
 	{ }
 
       template<typename _InputIterator>
 	unordered_set(_InputIterator __first, _InputIterator __last,
 		      size_type __n, const hasher& __hf,
 		      const allocator_type& __a)
-	  : unordered_set(__first, __last, __n, __hf, key_equal(), __a)
+	: unordered_set(__first, __last, __n, __hf, key_equal(), __a)
 	{ }
 
       unordered_set(initializer_list<value_type> __l,
 		    size_type __n,
 		    const allocator_type& __a)
-	: unordered_set(__l, __n, hasher(), key_equal(), __a)
+      : unordered_set(__l, __n, hasher(), key_equal(), __a)
       { }
 
       unordered_set(initializer_list<value_type> __l,
 		    size_type __n, const hasher& __hf,
 		    const allocator_type& __a)
-	: unordered_set(__l, __n, __hf, key_equal(), __a)
+      : unordered_set(__l, __n, __hf, key_equal(), __a)
       { }
 
       ~unordered_set() = default;
@@ -701,6 +702,7 @@ namespace __debug
 
       unordered_multiset(unordered_multiset&& __uset,
 			 const allocator_type& __a)
+      noexcept( noexcept(_Base(std::move(__uset._M_base()), __a)) )
       : _Safe(std::move(__uset._M_safe()), __a),
 	_Base(std::move(__uset._M_base()), __a) { }
 
@@ -712,38 +714,38 @@ namespace __debug
       : _Base(__l, __n, __hf, __eql, __a) { }
 
       unordered_multiset(size_type __n, const allocator_type& __a)
-	: unordered_multiset(__n, hasher(), key_equal(), __a)
+      : unordered_multiset(__n, hasher(), key_equal(), __a)
       { }
 
       unordered_multiset(size_type __n, const hasher& __hf,
 			 const allocator_type& __a)
-	: unordered_multiset(__n, __hf, key_equal(), __a)
+      : unordered_multiset(__n, __hf, key_equal(), __a)
       { }
 
       template<typename _InputIterator>
 	unordered_multiset(_InputIterator __first, _InputIterator __last,
 			   size_type __n,
 			   const allocator_type& __a)
-	  : unordered_multiset(__first, __last, __n, hasher(), key_equal(), __a)
+	: unordered_multiset(__first, __last, __n, hasher(), key_equal(), __a)
 	{ }
 
       template<typename _InputIterator>
 	unordered_multiset(_InputIterator __first, _InputIterator __last,
 			   size_type __n, const hasher& __hf,
 			   const allocator_type& __a)
-	  : unordered_multiset(__first, __last, __n, __hf, key_equal(), __a)
+	: unordered_multiset(__first, __last, __n, __hf, key_equal(), __a)
 	{ }
 
       unordered_multiset(initializer_list<value_type> __l,
 			 size_type __n,
 			 const allocator_type& __a)
-	: unordered_multiset(__l, __n, hasher(), key_equal(), __a)
+      : unordered_multiset(__l, __n, hasher(), key_equal(), __a)
       { }
 
       unordered_multiset(initializer_list<value_type> __l,
 			 size_type __n, const hasher& __hf,
 			 const allocator_type& __a)
-	: unordered_multiset(__l, __n, __hf, key_equal(), __a)
+      : unordered_multiset(__l, __n, __hf, key_equal(), __a)
       { }
 
       ~unordered_multiset() = default;
