@@ -66,7 +66,7 @@ package body System.Atomic_Operations.Exchange is
       pragma Warnings (On);
 
    begin
-      case Atomic_Type'Size is
+      case Atomic_Type'Object_Size is
          when 8      => return Atomic_Exchange_1 (Item'Address, Value);
          when 16     => return Atomic_Exchange_2 (Item'Address, Value);
          when 32     => return Atomic_Exchange_4 (Item'Address, Value);
@@ -124,7 +124,7 @@ package body System.Atomic_Operations.Exchange is
       pragma Warnings (On);
 
    begin
-      case Atomic_Type'Size is
+      case Atomic_Type'Object_Size is
          when 8 =>
             return Boolean
               (Atomic_Compare_Exchange_1
@@ -154,7 +154,7 @@ package body System.Atomic_Operations.Exchange is
       pragma Unreferenced (Item);
       use type Interfaces.C.size_t;
    begin
-      return Boolean (Atomic_Always_Lock_Free (Atomic_Type'Size / 8));
+      return Boolean (Atomic_Always_Lock_Free (Atomic_Type'Object_Size / 8));
    end Is_Lock_Free;
 
 end System.Atomic_Operations.Exchange;
