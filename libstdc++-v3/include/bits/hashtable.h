@@ -460,6 +460,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__hashtable_alloc(__node_alloc_type(__a))
       { }
 
+      _Hashtable(_Hashtable&& __ht, __node_alloc_type&& __a,
+		 true_type /* alloc always equal */)
+	noexcept(std::is_nothrow_copy_constructible<_H1>::value &&
+		 std::is_nothrow_copy_constructible<_Equal>::value);
+
+      _Hashtable(_Hashtable&&, __node_alloc_type&&,
+		 false_type /* alloc always equal */);
+
       template<typename _InputIterator>
 	_Hashtable(_InputIterator __first, _InputIterator __last,
 		   size_type __bkt_count_hint,
@@ -486,11 +494,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Hashtable(const _Hashtable&);
 
-      _Hashtable(_Hashtable&&) noexcept;
+      _Hashtable(_Hashtable&& __ht)
+	noexcept( noexcept(
+	  _Hashtable(std::declval<_Hashtable>(),
+		     std::declval<__node_alloc_type>(),
+		     true_type{})) )
+      : _Hashtable(std::move(__ht), std::move(__ht._M_node_allocator()),
+		   true_type{})
+      { }
 
       _Hashtable(const _Hashtable&, const allocator_type&);
 
-      _Hashtable(_Hashtable&&, const allocator_type&);
+      _Hashtable(_Hashtable&& __ht, const allocator_type& __a)
+	noexcept( noexcept(
+	  _Hashtable(std::declval<_Hashtable>(),
+		     std::declval<__node_alloc_type>(),
+		     typename __node_alloc_traits::is_always_equal{})) )
+      : _Hashtable(std::move(__ht), __node_alloc_type(__a),
+		   typename __node_alloc_traits::is_always_equal{})
+      { }
 
       // Use delegating constructors.
       template<typename _InputIterator>
@@ -1342,18 +1364,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _Traits>
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-    _Hashtable(_Hashtable&& __ht) noexcept
+    _Hashtable(_Hashtable&& __ht, __node_alloc_type&& __a,
+	       true_type /* alloc always equal */)
+    noexcept(std::is_nothrow_copy_constructible<_H1>::value &&
+	     std::is_nothrow_copy_constructible<_Equal>::value)
     : __hashtable_base(__ht),
       __map_base(__ht),
       __rehash_base(__ht),
-      __hashtable_alloc(std::move(__ht._M_base_alloc())),
+      __hashtable_alloc(std::move(__a)),
       _M_buckets(__ht._M_buckets),
       _M_bucket_count(__ht._M_bucket_count),
       _M_before_begin(__ht._M_before_begin._M_nxt),
       _M_element_count(__ht._M_element_count),
       _M_rehash_policy(__ht._M_rehash_policy)
     {
-      // Update, if necessary, buckets if __ht is using its single bucket.
+      // Update buckets if __ht is using its single bucket.
       if (__ht._M_uses_single_bucket())
 	{
 	  _M_buckets = &_M_single_bucket;
@@ -1392,11 +1417,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _Traits>
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-    _Hashtable(_Hashtable&& __ht, const allocator_type& __a)
+    _Hashtable(_Hashtable&& __ht, __node_alloc_type&& __a,
+	       false_type /* alloc always equal */)
     : __hashtable_base(__ht),
       __map_base(__ht),
       __rehash_base(__ht),
-      __hashtable_alloc(__node_alloc_type(__a)),
+      __hashtable_alloc(std::move(__a)),
       _M_buckets(nullptr),
       _M_bucket_count(__ht._M_bucket_count),
       _M_element_count(__ht._M_element_count),
