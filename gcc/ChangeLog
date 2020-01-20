@@ -1,5 +1,10 @@
 2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* doc/sourcebuild.texi (check-function-bodies): Add an
+	optional target/xfail selector.
+
+2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR rtl-optimization/93124
 	* auto-inc-dec.c (merge_in_block): Don't add auto inc/decs to
 	bare USE and CLOBBER insns.
