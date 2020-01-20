@@ -1602,9 +1602,15 @@ merge_in_block (int max_reg, basic_block bb)
       else
 	{
 	  insn_is_add_or_inc = false;
-	  mem_insn.insn = insn;
-	  if (find_mem (&PATTERN (insn)))
-	    success_in_block++;
+	  /* We can't use auto inc/dec for bare USEs and CLOBBERs,
+	     since they aren't supposed to generate any code.  */
+	  rtx_code code = GET_CODE (PATTERN (insn));
+	  if (code != USE && code != CLOBBER)
+	    {
+	      mem_insn.insn = insn;
+	      if (find_mem (&PATTERN (insn)))
+		success_in_block++;
+	    }
 	}
 
       /* If the inc insn was merged with a mem, the inc insn is gone

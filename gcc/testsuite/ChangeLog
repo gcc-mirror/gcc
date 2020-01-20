@@ -1,3 +1,7 @@
+2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/torture/pr93124.c: New test.
+
 2020-01-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93382

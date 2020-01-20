@@ -1,3 +1,9 @@
+2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/93124
+	* auto-inc-dec.c (merge_in_block): Don't add auto inc/decs to
+	bare USE and CLOBBER insns.
+
 2020-01-22  Andrew Pinski  <apinski@marvell.com>
 
 	* config/arc/arc.c (output_short_suffix): Check insn for nullness.
