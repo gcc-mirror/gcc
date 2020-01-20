@@ -6137,7 +6137,7 @@ package body Sem_Ch3 is
          end if;
 
          --  Add a subtype declaration for each index of private array type
-         --  declaration whose etype is also private. For example:
+         --  declaration whose type is also private. For example:
 
          --     package Pkg is
          --        type Index is private;
@@ -6147,11 +6147,14 @@ package body Sem_Ch3 is
 
          --  This is currently required by the expander for the internally
          --  generated equality subprogram of records with variant parts in
-         --  which the etype of some component is such private type.
+         --  which the type of some component is such a private type. And it
+         --  also helps semantic analysis in peculiar cases where the array
+         --  type is referenced from an instance but not the index directly.
 
-         if Ekind (Current_Scope) = E_Package
+         if Is_Package_Or_Generic_Package (Current_Scope)
            and then In_Private_Part (Current_Scope)
            and then Has_Private_Declaration (Etype (Index))
+           and then Scope (Etype (Index)) = Current_Scope
          then
             declare
                Loc   : constant Source_Ptr := Sloc (Def);
