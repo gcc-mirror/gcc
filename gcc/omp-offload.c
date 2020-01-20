@@ -2400,7 +2400,20 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
   {
-    return flag_openacc && targetm.goacc.worker_partitioning;
+    if (!flag_openacc || !targetm.goacc.worker_partitioning)
+      return false;
+
+    tree attr = oacc_get_fn_attrib (current_function_decl);
+
+    if (!attr)
+      /* Not an offloaded function.  */
+      return false;
+
+    int worker_dim
+      = oacc_get_fn_dim_size (current_function_decl, GOMP_DIM_WORKER);
+
+    /* No worker partitioning if we know the number of workers is 1.  */
+    return worker_dim != 1;
   };
 
   virtual unsigned int execute (function *)
