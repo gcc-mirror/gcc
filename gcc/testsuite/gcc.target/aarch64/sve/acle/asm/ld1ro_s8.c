@@ -1,4 +1,4 @@
-/* { dg-final { check-function-bodies "**" "" "-DCHECK_ASM" } } */
+/* { dg-final { check-function-bodies "**" "" "-DCHECK_ASM" { target { ! ilp32 } } } } */
 /* { dg-additional-options "-march=armv8.6-a+sve+f64mm" } */
 /* { dg-require-effective-target aarch64_asm_f64mm_ok }  */
 
