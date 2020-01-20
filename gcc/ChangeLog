@@ -1,3 +1,14 @@
+2020-01-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.h
+	(function_expander::convert_to_pmode): Declare.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_expander::convert_to_pmode): New function.
+	(function_expander::get_contiguous_base): Use it.
+	(function_expander::prepare_gather_address_operands): Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc
+	(svwhilerw_svwhilewr_impl::expand): Likewise.
+
 2020-01-21  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	PR target/92424

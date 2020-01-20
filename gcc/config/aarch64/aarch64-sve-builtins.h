@@ -526,6 +526,7 @@ public:
 
   bool overlaps_input_p (rtx);
 
+  rtx convert_to_pmode (rtx);
   rtx get_contiguous_base (machine_mode);
   rtx get_fallback_value (machine_mode, unsigned int,
 			  unsigned int, unsigned int &);
