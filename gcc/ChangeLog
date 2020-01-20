@@ -1,3 +1,13 @@
+2020-01-19  Eric S. Raymond <esr@thyrsus.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backport from mainline:
+
+	2020-01-19  Eric S. Raymond <esr@thyrsus.com>
+
+	* doc/contribute.texi: Update for SVN -> Git transition.
+	* doc/install.texi: Likewise.
+
 2020-01-15  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/93254

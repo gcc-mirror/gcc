@@ -34,9 +34,8 @@
      clauses 20 through 33 and annex D (prior to the 2017 standard
      the library clauses started with 17).  For those who want to see
      exactly how far the project has come, or just want the latest
-     bleeding-edge code, the up-to-date source is available over
-     anonymous SVN, and can be browsed over the
-     <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/svn.html">web</link>.
+     bleeding-edge code, the up-to-date source , and can be cloned via Git: see
+     <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/git.html">web</link>.
     </para> 
 
     <para>
@@ -299,23 +298,11 @@
     Current libstdc++ sources can always be checked out of the main
     GCC source repository using the appropriate version control
     tool. At this time, that tool
-    is <application>Subversion</application>.
+    is <application>Git</application>.
     </para>
-    <para>
-    <application>Subversion</application>, or <acronym>SVN</acronym>, is
-    one of several revision control packages.  It was selected for GNU
-    projects because it's free (speech), free (beer), and very high
-    quality.  The <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://subversion.tigris.org"> Subversion
-    home page</link> has a better description.
-    </para>
-    <para>
-    The <quote>anonymous client checkout</quote> feature of SVN is
-    similar to anonymous FTP in that it allows anyone to retrieve
-    the latest libstdc++ sources.
-    </para> 
     <para>
     For more information
-    see <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/svn.html"><acronym>SVN</acronym>
+    see <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/git.html">
     details</link>.
     </para>
   </answer>
