@@ -1,3 +1,10 @@
+2020-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/faq.xml: Fix grammar.
+	* doc/xml/manual/appendix_contributing.xml: Improve instructions.
+	* doc/xml/manual/spine.xml: Update copyright years.
+	* doc/html/*: Regenerate.
+
 2020-01-19  Eric S. Raymond <esr@thyrsus.com>
 
 	* doc/xml/faq.xml: Update for SVN -> Git transition.
