@@ -25,5 +25,5 @@ recursive subroutine check(n)
 end 
 
 ! { dg-final { scan-tree-dump-not "static integer\\(kind=4\\) a" "original" } }
-! { dg-final { scan-tree-dump-not "integer\\(kind=4\\) a" "original" } }
+! { dg-final { scan-tree-dump "integer\\(kind=4\\) a" "original" } }
 
