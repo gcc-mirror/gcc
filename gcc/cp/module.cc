@@ -3220,6 +3220,8 @@ struct GTY(()) slurping {
   {
     if (owner < remap->length ())
       {
+	// FIXME: This can never be zero, make return unsigned and
+	// return 0 the error case?
 	unsigned map = (*remap)[owner];
 	return int (map >> 1);
       }
@@ -3363,10 +3365,14 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 			   implementation unit.  */
   bool interface_p : 1; /* Is an interface (partition or primary).  */
   bool exported_p : 1;	/* Direct_p && exported.  */
+  // FIXME: The following flag is at least misnamed.  rename to
+  // 'importing_p' to detect loops.
   bool imported_p : 1;	/* Import has been done.  */
   bool partition_p : 1; /* A partition.  */
   bool from_partition_p : 1; /* Direct import of a partition.  */
   bool cmi_noted_p : 1;
+  bool lazy_preprocessor_p : 1; /* Preprocessor phase to do.  */
+  bool lazy_language_p : 1;  /* Language phase to do.  */
 
   /* Record extensions emitted or permitted.  */
   unsigned char extensions : SE_BITS;
@@ -3437,9 +3443,6 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
  public:
   /* Read and write module.  */
   void write (elf_out *to, cpp_reader *);
-  void read (int fd, int e, cpp_reader *);
-
- public:
   bool read_initial (int fd, int e, cpp_reader *);
   bool read_preprocessor ();
   bool read_language ();
@@ -3468,6 +3471,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   /* Import tables. */
   void write_imports (bytes_out &cfg, bool direct);
   unsigned read_imports (bytes_in &cfg, cpp_reader *, line_maps *maps);
+
+ private:
   void write_imports (elf_out *to, unsigned *crc_ptr);
   bool read_imports (cpp_reader *, line_maps *);
 
@@ -3587,7 +3592,7 @@ module_state::module_state (tree name, module_state *parent, bool partition)
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
     parent (parent), name (name), slurp (NULL),
     flatname (NULL), filename (NULL),
-    entity_lwm (0), entity_num (0),
+    entity_lwm (~0u >> 1), entity_num (0),
     ordinary_locs (0, 0), macro_locs (0, 0),
     loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
     crc (0), mod (MODULE_UNKNOWN), remap (0), subst (0),
@@ -3595,6 +3600,7 @@ module_state::module_state (tree name, module_state *parent, bool partition)
 {
   header_p = direct_p = primary_p = interface_p = exported_p
     = imported_p = from_partition_p = cmi_noted_p = false;
+  lazy_preprocessor_p = lazy_language_p = false;
   extensions = 0;
   if (name && TREE_CODE (name) == STRING_CST)
     {
@@ -13713,6 +13719,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	error_at (loc, "import %qs has CRC mismatch", imp->get_flatname ());
 
       (*slurp->remap)[ix] = (imp->mod << 1) | (lmaps != NULL);
+
       if (lmaps)
 	set_import (imp, exported);
       dump () && dump ("Found %simport:%u %M->%u", !lmaps ? "indirect "
@@ -17017,30 +17024,6 @@ module_state::write (elf_out *to, cpp_reader *reader)
   dump () && dump ("Wrote %u sections", to->get_section_limit ());
 }
 
-/* Read a CMI from FD.  E is errno from its fopen.  Reading will
-   be lazy, if this is an import and flag_module_lazy is in effect.  */
-
-void
-module_state::read (int fd, int e, cpp_reader *reader)
-{
-  gcc_checking_assert (!slurp);
-  if (read_initial (fd, e, reader))
-    {
-      if (is_header ()
-	  && !cpp_get_options (reader)->preprocessed)
-	read_preprocessor ();
-
-      if (!flag_preprocess_only)
-	read_language ();
-    }
-
-  /* We're done with the string and non-decl sections now.  */
-  from ()->release ();
-  slurp->lru = ++lazy_lru;
-  
-  gcc_assert (slurp->current == ~0u);
-}
-
 /* Initial read of a CMI from FD. E is errno from its fopen.  Checks
    config, loads up imports and line maps.  */
 
@@ -17066,7 +17049,6 @@ module_state::read_initial (int fd, int e, cpp_reader *reader)
   /* Allocate the REMAP vector.  */
   slurp->alloc_remap (config.num_imports);
 
-  // FIXME: break import reading into phases too.
   if (ok)
     {
       /* Read the import table.  Decrement current to stop this CMI
@@ -17092,6 +17074,10 @@ module_state::read_initial (int fd, int e, cpp_reader *reader)
   mod = modules->length ();
   vec_safe_push (modules, this);
 
+  /* We always import and export ourselves. */
+  bitmap_set_bit (imports, mod);
+  bitmap_set_bit (exports, mod);
+
   if (ok)
     (*slurp->remap)[0] = mod << 1;
   dump () && dump ("Assigning %M module number %u", this, mod);
@@ -17114,15 +17100,44 @@ bool
 module_state::read_preprocessor ()
 {
   bool ok = true;
-  gcc_assert (is_header ());
 
-  // FIXME: Read imports' preprocessor
+  gcc_checking_assert (is_header ());
 
-  /* Record as a direct header.  */
-  bitmap_set_bit (slurp->headers, mod);
+  if (lazy_preprocessor_p)
+    {
+      gcc_checking_assert (unsigned (slurp->remap_module (0)) == mod);
 
-  if (ok && !read_macros ())
-    ok = false;
+      /* Read direct header imports.  */
+      unsigned len = slurp->remap->length ();
+      for (unsigned ix = 1; ok && ix != len; ix++)
+	{
+	  unsigned map = (*slurp->remap)[ix];
+	  if (map & 1)
+	    {
+	      module_state *import = (*modules)[map >> 1];
+	      if (import->is_header ())
+		{
+		  ok = import->read_preprocessor ();
+		  bitmap_ior_into (slurp->headers, import->slurp->headers);
+		}
+	    }
+	}
+
+      /* Record as a direct header.  */
+      if (ok)
+	bitmap_set_bit (slurp->headers, mod);
+
+      if (ok && !read_macros ())
+	ok = false;
+
+      lazy_preprocessor_p = false;
+
+      if (flag_preprocess_only)
+	/* We're done with the string table.  */
+	from ()->release ();
+      bool rok = check_read (0);
+      gcc_checking_assert (rok == ok);
+    }
 
   return ok;
 }
@@ -17133,73 +17148,96 @@ bool
 module_state::read_language ()
 {
   bool ok = true;
-  unsigned counts[MSC_HWM];
 
-  if (ok && !read_counts (counts))
-    ok = false;
-
-  // FIXME: Read imports' language
-
-  /* We always import and export ourselves. */
-  bitmap_set_bit (imports, mod);
-  bitmap_set_bit (exports, mod);
-
-  function_depth++; /* Prevent unexpected GCs.  */
-
-  /* Read the entity table.  */
-  entity_lwm = vec_safe_length (entity_ary);
-  if (ok && counts[MSC_entities]
-      && !read_entities (counts[MSC_entities],
-			 counts[MSC_sec_lwm], counts[MSC_sec_hwm]))
-    ok = false;
-
-  /* Read the namespace hierarchy. */
-  if (ok && counts[MSC_namespaces] && !read_namespaces (counts[MSC_namespaces]))
-    ok = false;
-
-  if (ok && !read_bindings (counts[MSC_bindings],
-			    counts[MSC_sec_lwm], counts[MSC_sec_hwm]))
-    ok = false;
-
-  /* And unnamed.  */
-  if (ok && counts[MSC_pendings] && !read_pendings (counts[MSC_pendings]))
-    ok = false;
-
-  if (ok)
+  if (lazy_language_p)
     {
-      slurp->remaining = counts[MSC_sec_hwm] - counts[MSC_sec_lwm];
-      available_clusters += counts[MSC_sec_hwm] - counts[MSC_sec_lwm];
-    }
+      gcc_assert (slurp && slurp->current == ~0u);
+      gcc_checking_assert (unsigned (slurp->remap_module (0)) == mod);
 
-  if (ok && !flag_module_lazy)
-    {
-      /* Read the sections in forward order, so that dependencies are read
-	 first.  See note about tarjan_connect.  */
-      ggc_collect ();
-
-      unsigned hwm = counts[MSC_sec_hwm];
-      for (unsigned ix = counts[MSC_sec_lwm]; ix != hwm; ix++)
+      /* Read direct imports.  */
+      unsigned len = slurp->remap->length ();
+      for (unsigned ix = 1; ok && ix != len; ix++)
 	{
-	  load_section (ix);
-	  if (from ()->get_error ())
+	  unsigned map = (*slurp->remap)[ix];
+	  if (map & 1)
 	    {
-	      ok = false;
-	      break;
+	      module_state *import = (*modules)[map >> 1];
+	      ok = import->read_language ();
 	    }
-	  ggc_collect ();
 	}
 
-      if (CHECKING_P)
-	for (unsigned ix = 0; ix != entity_num; ix++)
-	  gcc_assert (!(*entity_ary)[ix + entity_lwm].is_lazy ());
+      unsigned counts[MSC_HWM];
+
+      if (ok && !read_counts (counts))
+	ok = false;
+
+      function_depth++; /* Prevent unexpected GCs.  */
+
+      /* Read the entity table.  */
+      entity_lwm = vec_safe_length (entity_ary);
+      if (ok && counts[MSC_entities]
+	  && !read_entities (counts[MSC_entities],
+			     counts[MSC_sec_lwm], counts[MSC_sec_hwm]))
+	ok = false;
+
+      /* Read the namespace hierarchy. */
+      if (ok && counts[MSC_namespaces]
+	  && !read_namespaces (counts[MSC_namespaces]))
+	ok = false;
+
+      if (ok && !read_bindings (counts[MSC_bindings],
+				counts[MSC_sec_lwm], counts[MSC_sec_hwm]))
+	ok = false;
+
+      /* And unnamed.  */
+      if (ok && counts[MSC_pendings] && !read_pendings (counts[MSC_pendings]))
+	ok = false;
+
+      if (ok)
+	{
+	  slurp->remaining = counts[MSC_sec_hwm] - counts[MSC_sec_lwm];
+	  available_clusters += counts[MSC_sec_hwm] - counts[MSC_sec_lwm];
+	}
+
+      if (ok && !flag_module_lazy)
+	{
+	  /* Read the sections in forward order, so that dependencies are read
+	     first.  See note about tarjan_connect.  */
+	  ggc_collect ();
+
+	  unsigned hwm = counts[MSC_sec_hwm];
+	  for (unsigned ix = counts[MSC_sec_lwm]; ix != hwm; ix++)
+	    {
+	      load_section (ix);
+	      if (from ()->get_error ())
+		{
+		  ok = false;
+		  break;
+		}
+	      ggc_collect ();
+	    }
+
+	  if (CHECKING_P)
+	    for (unsigned ix = 0; ix != entity_num; ix++)
+	      gcc_assert (!(*entity_ary)[ix + entity_lwm].is_lazy ());
+	}
+
+      // FIXME: Belfast order-of-initialization means this may be inadequate.
+      if (ok && counts[MSC_inits] && !read_inits (counts[MSC_inits]))
+	ok = false;
+
+      function_depth--;
+
+      lazy_language_p = false;
+
+      gcc_assert (slurp->current == ~0u);
+
+      /* We're done with the string table.  */
+      from ()->release ();
+      bool rok = check_read (0);
+      // FIXME: This suggests simplifying check_read's behaviour
+      gcc_checking_assert (rok == ok);
     }
-
-  // FIXME: Belfast order-of-initialization means this may be inadequate.
-  if (ok && counts[MSC_inits] && !read_inits (counts[MSC_inits]))
-    ok = false;
-
-  function_depth--;
-  gcc_assert (slurp->current == ~0u);
 
   return ok;
 }
@@ -17280,9 +17318,14 @@ module_state::check_read (unsigned diag_count, tree ns, tree id)
 	    : G_("during lazy loading of %<%E%s%E@%s%>"),
 	    ns, ns == global_namespace ? "" : "::", id, get_flatname ());
 
-  if (slurp->current == ~0u && !slurp->remaining)
+  // FIXME: The lazy_preprocessor_p is too restrictive, if we've
+  // completed preprocessing and it is set, that means this header is
+  // not in the directly reachable graph.
+  if (!lazy_preprocessor_p && !lazy_language_p
+      && slurp->current == ~0u && !slurp->remaining)
     {
       lazy_open--;
+      // FIXME: Can we just keep the file mapped until after preprocessing?
       if (slurp->macro_defs.size)
 	from ()->preserve (slurp->macro_defs);
       if (slurp->macro_tbl.size)
@@ -17369,27 +17412,24 @@ module_visible_instantiation_path (bitmap *path_map_p)
   return visible;
 }
 
-/* We've just directly imported OTHER.  Update our import/export
+/* We've just directly imported IMPORT.  Update our import/export
    bitmaps.  IS_EXPORT is true if we're reexporting the OTHER.  */
 
 void
-module_state::set_import (module_state const *other, bool is_export)
+module_state::set_import (module_state const *import, bool is_export)
 {
-  gcc_checking_assert (this != other);
+  gcc_checking_assert (this != import);
 
-  /* We see OTHER's exports (which include's OTHER).
-     If OTHER is the primary interface or a partition we'll see its
-     imports.  */
-  bitmap_ior_into (imports, other->is_primary () || other->is_partition ()
-		   ? other->imports : other->exports);
+  /* We see IMPORT's exports (which includes IMPORT).  If IMPORT is
+     the primary interface or a partition we'll see its imports.  */
+  // FIXME: We have to separate out the imports that only happen in
+  // the GMF
+  bitmap_ior_into (imports, import->is_primary () || import->is_partition ()
+		   ? import->imports : import->exports);
 
   if (is_export)
     /* We'll export OTHER's exports.  */
-    bitmap_ior_into (exports, other->exports);
-
-  if (is_header () && other->is_header () && mod)
-    /* We only see OTHER's headers if it is header.  */
-    bitmap_ior_into (slurp->headers, other->slurp->headers);
+    bitmap_ior_into (exports, import->exports);
 }
 
 /* Return the declaring entity of DECL.  That is the decl determining
@@ -17712,11 +17752,28 @@ module_state::do_import (char const *fname, cpp_reader *reader)
   announce ("importing");
   imported_p = true;
   lazy_open++;
-  read (fd, e, reader);
+  if (read_initial (fd, e, reader))
+    {
+      bool preprocessed = cpp_get_options (reader)->preprocessed;
+
+      if (is_header () && !preprocessed)
+	lazy_preprocessor_p = true;
+
+      if (!flag_preprocess_only)
+	{
+	  lazy_language_p = true;
+	  if (preprocessed)
+	    /* If we're not in the preprocessor, do the language importing
+	       now, so that we try not to thrash the LRU cache in the
+	       worst case.  */
+	    read_language ();
+	}
+    }
+  slurp->lru = ++lazy_lru;
+  gcc_assert (slurp->current == ~0u);
+  
   bool ok = check_read (diags);
-  // FIXME: The below conditional looks odd.  I don't think we ever
-  // now import MODULE_CURRENT, even in module implementation units?
-  announce (flag_module_lazy && mod ? "lazy" : "imported");
+  announce (flag_module_lazy ? "lazy" : "imported");
 
   return ok;
 }
@@ -17767,9 +17824,14 @@ module_state::direct_import (cpp_reader *reader, bool lazy)
       if (exported_p)
 	exported_p = true;
 
-      (*modules)[0]->set_import (this, exported_p);
       if (is_header ())
-	import_macros ();
+	{
+	  read_preprocessor ();
+	  import_macros ();
+	}
+
+      read_language ();
+      (*modules)[0]->set_import (this, exported_p);
     }
 
   dump.pop (n);

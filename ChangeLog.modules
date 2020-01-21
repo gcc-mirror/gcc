@@ -1,6 +1,19 @@
 2020-01-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* modules.cc (struct module_state): Add
+	lazy_{preprocessor,language}_p fields.
+	(module_state::read): Delete, move into do_import.
+	(module_state::read_preprocessor): Be idempotent. Read direct
+	imports here.  Set header bitmap bits.
+	(module_state::read_language): Likwise, set import/export bits.
+	(module_state::check_read): Adjust file closing condition.
+	(module_state::set_import): Do not deal with header bitmaps here.
+	(module_state::do_import): Do the initial read (only) here.
+	(module_state::direct_import): Do the preprocessor and language
+	reading here.
+
+	gcc/cp/
 	* modules.cc (slurping::remap_module): Encode import directness in
 	remap array.
 	(module_state::read_imports): Adjust.
