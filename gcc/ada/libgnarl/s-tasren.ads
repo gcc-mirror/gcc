@@ -317,8 +317,7 @@ package System.Tasking.Rendezvous is
    function Task_Do_Or_Queue
      (Self_ID    : Task_Id;
       Entry_Call : Entry_Call_Link) return Boolean;
-   --  Call this only with abort deferred and holding no locks, except
-   --  the global RTS lock when Single_Lock is True which must be owned.
+   --  Call this only with abort deferred and holding no locks.
    --  Returns False iff the call cannot be served or queued, as is the
    --  case if the caller is not callable; i.e., a False return value
    --  indicates that Tasking_Error should be raised.

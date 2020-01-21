@@ -61,8 +61,7 @@ package System.Tasking.Entry_Calls is
       Call    : Entry_Call_Link);
    --  This procedure suspends the calling task until the specified entry
    --  call is queued abortably or completes.
-   --  Abortion must be deferred when calling this procedure, and the global
-   --  RTS lock taken when Single_Lock.
+   --  Abortion must be deferred when calling this procedure.
 
    procedure Try_To_Cancel_Entry_Call (Succeeded : out Boolean);
    pragma Inline (Try_To_Cancel_Entry_Call);
