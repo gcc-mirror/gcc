@@ -1850,7 +1850,7 @@ ipcp_lattice<valtype>::add_value (valtype newval, cgraph_edge *cs,
 	  {
 	    ipcp_value_source<valtype> *s;
 	    for (s = val->sources; s; s = s->next)
-	      if (s->cs == cs)
+	      if (s->cs == cs && s->val == src_val)
 		break;
 	    if (s)
 	      return false;
@@ -4204,6 +4204,33 @@ get_info_about_necessary_edges (ipcp_value<valtype> *val, cgraph_node *dest,
   return hot;
 }
 
+/* Given a NODE, and a set of its CALLERS, try to adjust order of the callers
+   to let a non-self-recursive caller be the first element.  Thus, we can
+   simplify intersecting operations on values that arrive from all of these
+   callers, especially when there exists self-recursive call.  Return true if
+   this kind of adjustment is possible.  */
+
+static bool
+adjust_callers_for_value_intersection (vec<cgraph_edge *> callers,
+				       cgraph_node *node)
+{
+  for (unsigned i = 0; i < callers.length (); i++)
+    {
+      cgraph_edge *cs = callers[i];
+
+      if (cs->caller != node)
+	{
+	  if (i > 0)
+	    {
+	      callers[i] = callers[0];
+	      callers[0] = cs;
+	    }
+	  return true;
+	}
+    }
+  return false;
+}
+
 /* Return a vector of incoming edges that do bring value VAL to node DEST.  It
    is assumed their number is known and equal to CALLER_COUNT.  */
 
@@ -4227,6 +4254,9 @@ gather_edges_for_value (ipcp_value<valtype> *val, cgraph_node *dest,
 	}
     }
 
+  if (caller_count > 1)
+    adjust_callers_for_value_intersection (ret, dest);
+
   return ret;
 }
 
@@ -4237,7 +4267,6 @@ static struct ipa_replace_map *
 get_replacement_map (class ipa_node_params *info, tree value, int parm_num)
 {
   struct ipa_replace_map *replace_map;
-
 
   replace_map = ggc_alloc<ipa_replace_map> ();
   if (dump_file)
@@ -4589,36 +4618,40 @@ create_specialized_node (struct cgraph_node *node,
 }
 
 /* Return true, if JFUNC, which describes a i-th parameter of call CS, is a
-   simple no-operation pass-through function to itself.  */
+   pass-through function to itself.  When SIMPLE is true, further check if
+   JFUNC is a simple no-operation pass-through.  */
 
 static bool
-self_recursive_pass_through_p (cgraph_edge *cs, ipa_jump_func *jfunc, int i)
+self_recursive_pass_through_p (cgraph_edge *cs, ipa_jump_func *jfunc, int i,
+			       bool simple = true)
 {
   enum availability availability;
   if (cs->caller == cs->callee->function_symbol (&availability)
       && availability > AVAIL_INTERPOSABLE
       && jfunc->type == IPA_JF_PASS_THROUGH
-      && ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR
+      && (!simple || ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
       && ipa_get_jf_pass_through_formal_id (jfunc) == i)
     return true;
   return false;
 }
 
 /* Return true, if JFUNC, which describes a part of an aggregate represented
-   or pointed to by the i-th parameter of call CS, is a simple no-operation
-   pass-through function to itself.  */
+   or pointed to by the i-th parameter of call CS, is a pass-through function
+   to itself.  When SIMPLE is true, further check if JFUNC is a simple
+   no-operation pass-through.  */
 
 static bool
 self_recursive_agg_pass_through_p (cgraph_edge *cs, ipa_agg_jf_item *jfunc,
-				   int i)
+				   int i, bool simple = true)
 {
   enum availability availability;
   if (cs->caller == cs->callee->function_symbol (&availability)
       && availability > AVAIL_INTERPOSABLE
       && jfunc->jftype == IPA_JF_LOAD_AGG
       && jfunc->offset == jfunc->value.load_agg.offset
-      && jfunc->value.pass_through.operation == NOP_EXPR
-      && jfunc->value.pass_through.formal_id == i)
+      && (!simple || jfunc->value.pass_through.operation == NOP_EXPR)
+      && jfunc->value.pass_through.formal_id == i
+      && useless_type_conversion_p (jfunc->value.load_agg.type, jfunc->type))
     return true;
   return false;
 }
@@ -4650,9 +4683,6 @@ find_more_scalar_values_for_callers_subset (struct cgraph_node *node,
 	  struct ipa_jump_func *jump_func;
 	  tree t;
 
-	  if (IPA_NODE_REF (cs->caller) && IPA_NODE_REF (cs->caller)->node_dead)
-	    continue;
-
 	  if (!IPA_EDGE_REF (cs)
 	      || i >= ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
 	      || (i == 0
@@ -4662,10 +4692,30 @@ find_more_scalar_values_for_callers_subset (struct cgraph_node *node,
 	      break;
 	    }
 	  jump_func = ipa_get_ith_jump_func (IPA_EDGE_REF (cs), i);
-	  if (self_recursive_pass_through_p (cs, jump_func, i))
-	    continue;
 
-	  t = ipa_value_from_jfunc (IPA_NODE_REF (cs->caller), jump_func, type);
+	  /* Besides simple pass-through jump function, arithmetic jump
+	     function could also introduce argument-direct-pass-through for
+	     self-feeding recursive call.  For example,
+
+	        fn (int i)
+	        {
+	          fn (i & 1);
+	        }
+
+	     Given that i is 0, recursive propagation via (i & 1) also gets
+	     0.  */
+	  if (self_recursive_pass_through_p (cs, jump_func, i, false))
+	    {
+	      gcc_assert (newval);
+	      t = ipa_get_jf_arith_result (
+				ipa_get_jf_pass_through_operation (jump_func),
+				newval,
+				ipa_get_jf_pass_through_operand (jump_func),
+				type);
+	    }
+	  else
+	    t = ipa_value_from_jfunc (IPA_NODE_REF (cs->caller), jump_func,
+				      type);
 	  if (!t
 	      || (newval
 		  && !values_equal_for_ipcp_p (t, newval))
@@ -4814,19 +4864,12 @@ intersect_with_plats (class ipcp_param_lattices *plats,
 	    break;
 	  if (aglat->offset - offset == item->offset)
 	    {
-	      gcc_checking_assert (item->value);
 	      if (aglat->is_single_const ())
 		{
 		  tree value = aglat->values->value;
 
 		  if (values_equal_for_ipcp_p (item->value, value))
 		    found = true;
-		  else if (item->value == error_mark_node)
-		    {
-		      /* Replace unknown place holder value with real one.  */
-		      item->value = value;
-		      found = true;
-		    }
 		}
 	      break;
 	    }
@@ -4895,12 +4938,6 @@ intersect_with_agg_replacements (struct cgraph_node *node, int index,
 	    {
 	      if (values_equal_for_ipcp_p (item->value, av->value))
 		found = true;
-	      else if (item->value == error_mark_node)
-		{
-		  /* Replace place holder value with real one.  */
-		  item->value = av->value;
-		  found = true;
-		}
 	      break;
 	    }
 	}
@@ -5005,31 +5042,16 @@ intersect_aggregates_with_edge (struct cgraph_edge *cs, int index,
 	for (unsigned i = 0; i < jfunc->agg.items->length (); i++)
 	  {
 	    struct ipa_agg_jf_item *agg_item = &(*jfunc->agg.items)[i];
-	    struct ipa_agg_value agg_value;
-
-	    if (self_recursive_agg_pass_through_p (cs, agg_item, index))
+	    tree value = ipa_agg_value_from_node (caller_info, cs->caller,
+						  agg_item);
+	    if (value)
 	      {
-		/* For a self-recursive call, if aggregate jump function is a
-		   simple pass-through, the exact value that it stands for is
-		   not known at this point, which must comes from other call
-		   sites.  But we still need to add a place holder in value
-		   sets to indicate it, here we use error_mark_node to
-		   represent the special unknown value, which will be replaced
-		   with real one during later intersecting operations.  */
-		agg_value.value = error_mark_node;
-	      }
-	    else
-	      {
-		tree value = ipa_agg_value_from_node (caller_info, cs->caller,
-						      agg_item);
-		if (!value)
-		  continue;
+		struct ipa_agg_value agg_value;
 
 		agg_value.value = value;
+		agg_value.offset = agg_item->offset;
+		inter.safe_push (agg_value);
 	      }
-
-	    agg_value.offset = agg_item->offset;
-	    inter.safe_push (agg_value);
 	  }
       else
 	FOR_EACH_VEC_ELT (inter, k, item)
@@ -5050,25 +5072,32 @@ intersect_aggregates_with_edge (struct cgraph_edge *cs, int index,
 		  {
 		    tree value;
 
-		    if (self_recursive_agg_pass_through_p (cs, ti, index))
-		      {
-			/* A simple aggregate pass-through in self-recursive
-			   call should lead to same value.  */
-			found = true;
-		      }
-		    else if ((value = ipa_agg_value_from_node (caller_info,
-							     cs->caller, ti)))
-		      {
-			if (values_equal_for_ipcp_p (item->value, value))
-			  found = true;
-			else if (item->value == error_mark_node)
-			  {
-			    /* Replace unknown place holder value with real
-			       one.  */
-			    item->value = value;
-			    found = true;
-			  }
-		      }
+		    /* Besides simple pass-through aggregate jump function,
+		       arithmetic aggregate jump function could also bring
+		       same aggregate value as parameter passed-in for
+		       self-feeding recursive call.  For example,
+
+		         fn (int *i)
+		           {
+		             int j = *i & 1;
+		             fn (&j);
+		           }
+
+		       Given that *i is 0, recursive propagation via (*i & 1)
+		       also gets 0.  */
+		    if (self_recursive_agg_pass_through_p (cs, ti, index,
+							   false))
+		      value = ipa_get_jf_arith_result (
+					ti->value.pass_through.operation,
+					item->value,
+					ti->value.pass_through.operand,
+					ti->type);
+		    else
+		      value = ipa_agg_value_from_node (caller_info,
+						       cs->caller, ti);
+
+		    if (value && values_equal_for_ipcp_p (item->value, value))
+		      found = true;
 		    break;
 		  }
 		l++;
@@ -5143,9 +5172,6 @@ find_aggregate_values_for_callers_subset (struct cgraph_node *node,
 
 	  if (!item->value)
 	    continue;
-
-	  /* All values must be real values, not unknown place holders.  */
-	  gcc_assert (item->value != error_mark_node);
 
 	  v = ggc_alloc<ipa_agg_replacement_value> ();
 	  v->index = i;
@@ -5542,13 +5568,33 @@ decide_whether_version_node (struct cgraph_node *node)
   if (info->do_clone_for_all_contexts)
     {
       struct cgraph_node *clone;
-      vec<cgraph_edge *> callers;
+      vec<cgraph_edge *> callers = node->collect_callers ();
+
+      for (int i = callers.length () - 1; i >= 0; i--)
+	{
+	  cgraph_edge *cs = callers[i];
+	  class ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
+
+	  if (caller_info && caller_info->node_dead)
+	    callers.unordered_remove (i);
+	}
+
+      if (!adjust_callers_for_value_intersection (callers, node))
+	{
+	  /* If node is not called by anyone, or all its caller edges are
+	     self-recursive, the node is not really be in use, no need to
+	     do cloning.  */
+	  callers.release ();
+	  known_csts.release ();
+	  known_contexts.release ();
+	  info->do_clone_for_all_contexts = false;
+	  return ret;
+	}
 
       if (dump_file)
 	fprintf (dump_file, " - Creating a specialized node of %s "
 		 "for all known contexts.\n", node->dump_name ());
 
-      callers = node->collect_callers ();
       find_more_scalar_values_for_callers_subset (node, known_csts, callers);
       find_more_contexts_for_caller_subset (node, &known_contexts, callers);
       ipa_agg_replacement_value *aggvals

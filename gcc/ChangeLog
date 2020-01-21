@@ -1,3 +1,25 @@
+2020-02-10  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/93203
+	* ipa-cp.c (ipcp_lattice::add_value): Add source with same call edge
+	but different source value.
+	(adjust_callers_for_value_intersection): New function.
+	(gather_edges_for_value): Adjust order of callers to let a
+	non-self-recursive caller be the first element.
+	(self_recursive_pass_through_p): Add a new parameter "simple", and
+	check generalized self-recursive pass-through jump function.
+	(self_recursive_agg_pass_through_p): Likewise.
+	(find_more_scalar_values_for_callers_subset): Compute value from
+	pass-through jump function for self-recursive.
+	(intersect_with_plats): Cleanup previous implementation code for value
+	itersection with self-recursive call edge.
+	(intersect_with_agg_replacements): Likewise.
+	(intersect_aggregates_with_edge): Deduce value from pass-through jump
+	function for self-recursive call edge.  Cleanup previous implementation
+	code for value intersection with self-recursive call edge.
+	(decide_whether_version_node): Remove dead callers and adjust order
+	to let a non-self-recursive caller be the first element.
+
 2020-02-09  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* recog.c: Move pass_split_before_sched2 code in front of
