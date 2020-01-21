@@ -1,3 +1,8 @@
+2020-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93073
+	* gcc.target/powerpc/pr93073.c: New test.
+
 2020-01-20  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	* g++.dg/coroutines/co-return-warning-1.C: New test.
