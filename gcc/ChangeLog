@@ -1,3 +1,7 @@
+2020-01-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cfgexpand.c (union_stack_vars): Update the size.
+
 2020-01-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/93381

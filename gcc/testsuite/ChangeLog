@@ -1,5 +1,9 @@
 2020-01-22  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/acle/general/stack_vars_1.c: New test.
+
+2020-01-22  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/tls_preserve_1.c: Require tls_native.
 	* gcc.target/aarch64/sve/tls_preserve_2.c: Likewise.
 	* gcc.target/aarch64/sve/tls_preserve_3.c: Likewise.
