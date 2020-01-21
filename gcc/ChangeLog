@@ -1,3 +1,8 @@
+2020-01-21  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv-sr.c (riscv_sr_match_prologue): Use INTVAL
+	instead of XINT.
+
 2020-01-21  H.J. Lu  <hongjiu.lu@intel.com>
 	    Uros Bizjak    <ubizjak@gmail.com>
 
