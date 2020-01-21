@@ -1,3 +1,8 @@
+2020-01-21  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* g++.dg/coroutines/torture/mid-suspend-destruction-0.C: Generalize
+	line terminators in patterns.
+
 2020-01-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/acle/general-c/load_1.c (f1): Cast to
