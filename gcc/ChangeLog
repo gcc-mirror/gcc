@@ -1,3 +1,17 @@
+2020-01-21  H.J. Lu  <hongjiu.lu@intel.com>
+	    Uros Bizjak    <ubizjak@gmail.com>
+
+	PR target/93319
+	* config/i386/i386.c (ix86_tls_module_base): Replace Pmode
+	with ptr_mode.
+	(legitimize_tls_address): Do GNU2 TLS address computation in
+	ptr_mode and zero-extend result to Pmode.
+	*  config/i386/i386.md (@tls_dynamic_gnu2_64_<mode>): Replace
+	:P with :PTR and Pmode with ptr_mode.
+	(*tls_dynamic_gnu2_lea_64_<mode>): Likewise.
+	(*tls_dynamic_gnu2_call_64_<mode>): Likewise.
+	(*tls_dynamic_gnu2_combine_64_<mode>): Likewise.
+
 2020-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93333

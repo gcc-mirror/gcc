@@ -1,3 +1,9 @@
+2020-01-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/93319
+	* gcc.target/i386/pr93319-1a.c: Don't include <stdio.h>.
+	(test1): Replace printf with __builtin_printf.
+
 2020-01-21  Bin Cheng  <bin.linux@linux.alibaba.com>
 
 	* g++.dg/coroutines/co-await-void_type.C: New test.
