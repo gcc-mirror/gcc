@@ -36,23 +36,24 @@ test01()
   test_range<int, random_access_iterator_wrapper> r(a);
   auto begin = r.begin();
   auto end = r.end();
-  VERIFY( *std::ranges::prev(end) == 9 );
+  auto endi = std::ranges::next(begin, end);
+  VERIFY( *std::ranges::prev(endi) == 9 );
   VERIFY(  std::ranges::prev(begin, 0) == begin );
-  VERIFY( *std::ranges::prev(end, 1) == 9 );
-  VERIFY( *std::ranges::prev(end, 3) == 7 );
+  VERIFY( *std::ranges::prev(endi, 1) == 9 );
+  VERIFY( *std::ranges::prev(endi, 3) == 7 );
   VERIFY( *std::ranges::prev(begin, -4) == 4 );
   VERIFY(  std::ranges::prev(begin, 0, begin) == begin );
   VERIFY(  std::ranges::prev(begin, 5, begin) == begin );
   VERIFY(  std::ranges::prev(begin, -5, begin) == begin );
-  VERIFY(  std::ranges::prev(begin, 0, end) == begin );
-  VERIFY( *std::ranges::prev(end, 5, begin) == 5 );
-  VERIFY(  std::ranges::prev(end, 55, begin) == begin );
-  VERIFY(  std::ranges::prev(end, 0, end) == end );
-  VERIFY(  std::ranges::prev(end, -5, end) == end );
-  VERIFY(  std::ranges::prev(end, -55, end) == end );
-  VERIFY(  std::ranges::prev(end, 0, begin) == end );
-  VERIFY( *std::ranges::prev(begin, -5, end) == 5 );
-  VERIFY(  std::ranges::prev(begin, -55, end) == end );
+  VERIFY(  std::ranges::prev(begin, 0, endi) == begin );
+  VERIFY( *std::ranges::prev(endi, 5, begin) == 5 );
+  VERIFY(  std::ranges::prev(endi, 55, begin) == begin );
+  VERIFY(  std::ranges::prev(endi, 0, endi) == end );
+  VERIFY(  std::ranges::prev(endi, -5, endi) == end );
+  VERIFY(  std::ranges::prev(endi, -55, endi) == end );
+  VERIFY(  std::ranges::prev(endi, 0, begin) == end );
+  VERIFY( *std::ranges::prev(begin, -5, endi) == 5 );
+  VERIFY(  std::ranges::prev(begin, -55, endi) == end );
 }
 
 void
@@ -62,23 +63,24 @@ test02()
   test_range<int, bidirectional_iterator_wrapper> r(a);
   auto begin = r.begin();
   auto end = r.end();
-  VERIFY( *std::ranges::prev(end) == 9 );
+  auto endi = std::ranges::next(begin, end);
+  VERIFY( *std::ranges::prev(endi) == 9 );
   VERIFY(  std::ranges::prev(begin, 0) == begin );
-  VERIFY( *std::ranges::prev(end, 1) == 9 );
-  VERIFY( *std::ranges::prev(end, 3) == 7 );
+  VERIFY( *std::ranges::prev(endi, 1) == 9 );
+  VERIFY( *std::ranges::prev(endi, 3) == 7 );
   VERIFY( *std::ranges::prev(begin, -4) == 4 );
   VERIFY(  std::ranges::prev(begin, 0, begin) == begin );
   VERIFY(  std::ranges::prev(begin, 5, begin) == begin );
   VERIFY(  std::ranges::prev(begin, -5, begin) == begin );
-  VERIFY(  std::ranges::prev(begin, 0, end) == begin );
-  VERIFY( *std::ranges::prev(end, 5, begin) == 5 );
-  VERIFY(  std::ranges::prev(end, 55, begin) == begin );
-  VERIFY(  std::ranges::prev(end, 0, end) == end );
-  VERIFY(  std::ranges::prev(end, -5, end) == end );
-  VERIFY(  std::ranges::prev(end, -55, end) == end );
-  VERIFY(  std::ranges::prev(end, 0, begin) == end );
-  VERIFY( *std::ranges::prev(begin, -5, end) == 5 );
-  VERIFY(  std::ranges::prev(begin, -55, end) == end );
+  VERIFY(  std::ranges::prev(begin, 0, endi) == begin );
+  VERIFY( *std::ranges::prev(endi, 5, begin) == 5 );
+  VERIFY(  std::ranges::prev(endi, 55, begin) == begin );
+  VERIFY(  std::ranges::prev(endi, 0, endi) == end );
+  VERIFY(  std::ranges::prev(endi, -5, endi) == end );
+  VERIFY(  std::ranges::prev(endi, -55, endi) == end );
+  VERIFY(  std::ranges::prev(endi, 0, begin) == end );
+  VERIFY( *std::ranges::prev(begin, -5, endi) == 5 );
+  VERIFY(  std::ranges::prev(begin, -55, endi) == end );
 }
 
 template<typename T>
