@@ -145,19 +145,6 @@ package System.Parameters is
    --  allow some optimizations and fine tuning within the tasking run time
    --  based on restrictions on the tasking features.
 
-   ----------------------
-   -- Locking Strategy --
-   ----------------------
-
-   Single_Lock : constant Boolean := False;
-   --  Indicates whether a single lock should be used within the tasking
-   --  run-time to protect internal structures. If True, a single lock
-   --  will be used, meaning less locking/unlocking operations, but also
-   --  more global contention. In general, Single_Lock should be set to
-   --  True on single processor machines, and to False to multi-processor
-   --  systems, but this can vary from application to application and also
-   --  depends on the scheduling policy.
-
    -------------------
    -- Task Abortion --
    -------------------
