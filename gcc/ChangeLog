@@ -1,3 +1,11 @@
+2020-01-21  Andrew Pinski  <apinski@marvel.com>
+
+	PR tree-opt/93321
+	* tree-into-ssa.c (prepare_block_for_update_1): Split out
+	from ...
+	(prepare_block_for_update): This.  Use a worklist instead of
+	recursing.
+
 2020-01-21  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
 
 	* gcc/config/arm/arm.c (clear_operation_p):
