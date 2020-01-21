@@ -1,3 +1,9 @@
+2020-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93333
+	* config/riscv/riscv.c (riscv_rtx_costs) <case ZERO_EXTRACT>: Verify
+	the last two operands are CONST_INT_P before using them as such.
+
 2020-01-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64-sve-builtins.def: Use get_typenode_from_name
