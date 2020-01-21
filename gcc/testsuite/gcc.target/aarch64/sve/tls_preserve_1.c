@@ -1,8 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fpic" } */
 /* { dg-require-effective-target fpic } */
-
-/* Clobber highs do not need to be spilled around tls usage.  */
+/* { dg-require-effective-target tls_native } */
 
 typedef float v4si __attribute__ ((vector_size (16)));
 
