@@ -1,3 +1,8 @@
+2020-01-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/asm-v8.S, gcc.target/cris/inasm-v8.c,
+	gcc.target/cris/sync-1.c: Apply effective_target_march_option.
+
 2020-01-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/93319
