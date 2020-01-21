@@ -7657,6 +7657,14 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       TREE_READONLY (decl) = 0;
     }
 
+  /* This needs to happen before extend_ref_init_temps.  */
+  if (VAR_OR_FUNCTION_DECL_P (decl))
+    {
+      if (VAR_P (decl))
+	maybe_commonize_var (decl);
+      determine_visibility (decl);
+    }
+
   if (VAR_P (decl))
     {
       duration_kind dk = decl_storage_duration (decl);
@@ -7786,11 +7794,10 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       if (VAR_P (decl))
 	{
 	  layout_var_decl (decl);
-	  maybe_commonize_var (decl);
+	  if (!flag_weak)
+	    /* Check again now that we have an initializer.  */
+	    maybe_commonize_var (decl);
 	}
-
-      /* This needs to happen after the linkage is set. */
-      determine_visibility (decl);
 
       if (var_definition_p && TREE_STATIC (decl))
 	{
@@ -8328,23 +8335,7 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	    }
 	  if (!processing_template_decl)
 	    {
-	      TREE_PUBLIC (v[i]) = TREE_PUBLIC (decl);
-	      TREE_STATIC (v[i]) = TREE_STATIC (decl);
-	      DECL_COMMON (v[i]) = DECL_COMMON (decl);
-	      DECL_COMDAT (v[i]) = DECL_COMDAT (decl);
-	      if (TREE_STATIC (v[i]))
-		{
-		  CP_DECL_THREAD_LOCAL_P (v[i])
-		    = CP_DECL_THREAD_LOCAL_P (decl);
-		  set_decl_tls_model (v[i], DECL_TLS_MODEL (decl));
-		  if (DECL_ONE_ONLY (decl))
-		    make_decl_one_only (v[i], cxx_comdat_group (v[i]));
-		  if (TREE_PUBLIC (decl))
-		    DECL_WEAK (v[i]) = DECL_WEAK (decl);
-		  DECL_VISIBILITY (v[i]) = DECL_VISIBILITY (decl);
-		  DECL_VISIBILITY_SPECIFIED (v[i])
-		    = DECL_VISIBILITY_SPECIFIED (decl);
-		}
+	      copy_linkage (v[i], decl);
 	      cp_finish_decl (v[i], init, /*constexpr*/false,
 			      /*asm*/NULL_TREE, LOOKUP_NORMAL);
 	    }

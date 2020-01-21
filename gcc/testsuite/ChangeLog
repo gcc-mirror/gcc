@@ -1,3 +1,86 @@
+2020-01-21  Bin Cheng  <bin.linux@linux.alibaba.com>
+
+	* g++.dg/coroutines/co-await-void_type.C: New test.
+
+2020-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93333
+	* gcc.c-torture/compile/pr93333.c: New test.
+
+2020-01-21  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* g++.dg/coroutines/torture/mid-suspend-destruction-0.C: Generalize
+	line terminators in patterns.
+
+2020-01-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general-c/load_1.c (f1): Cast to
+	int32_t * rather than int *.
+	* gcc.target/aarch64/sve/acle/general-c/load_2.c (f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_gather_sv_1.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_gather_sv_2.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_gather_sv_restricted_1.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/load_replicate_1.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_1.c (f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_2.c (f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_index_1.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_offset_2.c
+	(f1): Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/store_scatter_offset_restricted_1.c
+	(f1): Likewise.
+
+2020-01-21  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/92424
+	* gcc.target/aarch64/pr92424-1.c: New test.
+	* gcc.target/aarch64/pr92424-2.c: New test.
+	* gcc.target/aarch64/pr92424-3.c: New test.
+
+2020-01-21  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_f16.c: Use require
+	directive.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_u8.c: Likewise.
+	* lib/target-supports.exp: Add assembly requirement directive.
+
+2020-01-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93309
+	* gfortran.dg/external_implicit_none_2.f90: New.
+
+2020-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92328
+	* gcc.dg/torture/pr92328.c: New testcase.
+
+2020-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93073
+	* gcc.target/powerpc/pr93073.c: New test.
+
+2020-01-20  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* g++.dg/coroutines/co-return-warning-1.C: New test.
+
+2020-01-21  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/93304
+	* gcc.target/riscv/pr93304.c: New test.
+
 2020-01-20  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/92829

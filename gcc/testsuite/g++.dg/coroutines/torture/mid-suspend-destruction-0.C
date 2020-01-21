@@ -1,8 +1,8 @@
 // { dg-do run }
-// { dg-output "main: returning\n" }
-// { dg-output "Destroyed coro1\n" }
-// { dg-output "Destroyed suspend_always_prt\n" }
-// { dg-output "Destroyed Promise\n" }
+// { dg-output "main: returning(\n|\r\n|\r)" }
+// { dg-output "Destroyed coro1(\n|\r\n|\r)" }
+// { dg-output "Destroyed suspend_always_prt(\n|\r\n|\r)" }
+// { dg-output "Destroyed Promise(\n|\r\n|\r)" }
 
 // Check that we still get the right DTORs run when we let a suspended coro
 // go out of scope.

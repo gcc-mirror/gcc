@@ -13,7 +13,7 @@ f1 (svbool_t pg, signed char *s8_ptr, void *void_ptr, struct s *s_ptr,
   svld1rq (pg, s8_ptr, 0); /* { dg-error {too many arguments to function 'svld1rq'} } */
   svld1rq (0, s8_ptr); /* { dg-error {passing 'int' to argument 1 of 'svld1rq', which expects 'svbool_t'} } */
   svld1rq (pg, 0); /* { dg-error {passing 'int' to argument 2 of 'svld1rq', which expects a pointer type} } */
-  svld1rq (pg, (int *) 0);
+  svld1rq (pg, (int32_t *) 0);
   svld1rq (pg, void_ptr); /* { dg-error {passing 'void \*' to argument 2 of 'svld1rq', but 'void' is not a valid SVE element type} } */
   svld1rq (pg, s_ptr); /* { dg-error {passing 'struct s \*' to argument 2 of 'svld1rq', but 'struct s' is not a valid SVE element type} } */
   svld1rq (pg, f32_ptr);

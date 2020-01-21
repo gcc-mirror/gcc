@@ -1642,7 +1642,10 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 
     case ZERO_EXTRACT:
       /* This is an SImode shift.  */
-      if (outer_code == SET && (INTVAL (XEXP (x, 2)) > 0)
+      if (outer_code == SET
+	  && CONST_INT_P (XEXP (x, 1))
+	  && CONST_INT_P (XEXP (x, 2))
+	  && (INTVAL (XEXP (x, 2)) > 0)
 	  && (INTVAL (XEXP (x, 1)) + INTVAL (XEXP (x, 2)) == 32))
 	{
 	  *total = COSTS_N_INSNS (SINGLE_SHIFT_COST);
@@ -5019,6 +5022,19 @@ riscv_reorg (void)
   /* Do nothing unless we have -msave-restore */
   if (TARGET_SAVE_RESTORE)
     riscv_remove_unneeded_save_restore_calls ();
+}
+
+/* Return nonzero if register FROM_REGNO can be renamed to register
+   TO_REGNO.  */
+
+bool
+riscv_hard_regno_rename_ok (unsigned from_regno ATTRIBUTE_UNUSED,
+			    unsigned to_regno)
+{
+  /* Interrupt functions can only use registers that have already been
+     saved by the prologue, even if they would normally be
+     call-clobbered.  */
+  return !cfun->machine->interrupt_handler_p || df_regs_ever_live_p (to_regno);
 }
 
 /* Initialize the GCC target structure.  */

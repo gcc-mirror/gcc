@@ -442,6 +442,8 @@ public:
   rtx
   expand (function_expander &e) const OVERRIDE
   {
+    for (unsigned int i = 0; i < 2; ++i)
+      e.args[i] = e.convert_to_pmode (e.args[i]);
     return e.use_exact_insn (code_for_while (m_unspec, Pmode, e.gp_mode (0)));
   }
 

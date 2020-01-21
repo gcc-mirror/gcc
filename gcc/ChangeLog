@@ -1,3 +1,90 @@
+2020-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93333
+	* config/riscv/riscv.c (riscv_rtx_costs) <case ZERO_EXTRACT>: Verify
+	the last two operands are CONST_INT_P before using them as such.
+
+2020-01-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.def: Use get_typenode_from_name
+	to get the integer element types.
+
+2020-01-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.h
+	(function_expander::convert_to_pmode): Declare.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_expander::convert_to_pmode): New function.
+	(function_expander::get_contiguous_base): Use it.
+	(function_expander::prepare_gather_address_operands): Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc
+	(svwhilerw_svwhilewr_impl::expand): Likewise.
+
+2020-01-21  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/92424
+	* config/aarch64/aarch64.c (aarch64_declare_function_name): Set
+	cfun->machine->label_is_assembled.
+	(aarch64_print_patchable_function_entry): New.
+	(TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY): Define.
+	* config/aarch64/aarch64.h (struct machine_function): New field,
+	label_is_assembled.
+
+2020-01-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR ipa/93315
+	* ipa-profile.c (ipa_profile): Delete call_sums and set it to
+	NULL on exit.
+
+2020-01-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/93318	
+	* cgraph.c (cgraph_edge::resolve_speculation,
+	cgraph_edge::redirect_call_stmt_to_callee): Fix update of
+	call_stmt_site_hash.
+
+2020-01-21  Martin Liska  <mliska@suse.cz>
+
+	* config/rs6000/rs6000.c (common_mode_defined): Remove
+	unused variable.
+
+2020-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92328
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Preserve
+	type when value-numbering same-sized store by inserting a
+	VIEW_CONVERT_EXPR.
+	(eliminate_dom_walker::eliminate_stmt): When eliminating
+	a redundant store handle bit-reinterpretation of the same value.
+
+2020-01-21  Andrew Pinski  <apinski@marvel.com>
+
+	PR tree-opt/93321
+	* tree-into-ssa.c (prepare_block_for_update_1): Split out
+	from ...
+	(prepare_block_for_update): This.  Use a worklist instead of
+	recursing.
+
+2020-01-21  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+
+	* gcc/config/arm/arm.c (clear_operation_p):
+	Initialise last_regno, skip first iteration
+	based on the first_set value and use ints instead
+	of the unnecessary HOST_WIDE_INTs.
+
+2020-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93073
+	* config/rs6000/rs6000.c (rs6000_emit_cmove): If using fsel, punt for
+	compare_mode other than SFmode or DFmode.
+
+2020-01-21  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/93304
+	* config/riscv/riscv-protos.h (riscv_hard_regno_rename_ok): New.
+	* config/riscv/riscv.c (riscv_hard_regno_rename_ok): New.
+	* config/riscv/riscv.h (HARD_REGNO_RENAME_OK): Defined.
+
 2020-01-20  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (neoversen1_tunings): Set jump_align to 4.
