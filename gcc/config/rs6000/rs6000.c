@@ -101,9 +101,6 @@
 /* Support targetm.vectorize.builtin_mask_for_load.  */
 GTY(()) tree altivec_builtin_mask_for_load;
 
-/* Set to nonzero once AIX common-mode calls have been defined.  */
-static GTY(()) int common_mode_defined;
-
 #ifdef USING_ELFOS_H
 /* Counter for labels which are to be placed in .fixup.  */
 int fixuplabelno = 0;

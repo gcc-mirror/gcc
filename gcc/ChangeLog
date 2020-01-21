@@ -1,3 +1,8 @@
+2020-01-21  Martin Liska  <mliska@suse.cz>
+
+	* config/rs6000/rs6000.c (common_mode_defined): Remove
+	unused variable.
+
 2020-01-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92328
