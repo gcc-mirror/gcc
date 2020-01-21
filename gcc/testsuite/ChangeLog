@@ -1,3 +1,16 @@
+2020-05-01  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* gcc.dg/asan/pr87930.c: Enable on x86_64 FreeBSD.
+	* c-c++-common/asan/asan-interface-1.c: Likewise.
+	* c-c++-common/asan/clone-test-1.c: Likewise.
+	* c-c++-common/asan/no-asan-stack.c: Likewise.
+	* c-c++-common/asan/pr59063-1.c: Likewise.
+	* c-c++-common/asan/pr59063-2.c: Likewise.
+	* g++.dg/asan/asan_test.C: Likewise.
+	* g++.dg/asan/asan_test_utils.h: Likewise.
+	* g++.dg/asan/interception-failure-test-1.C: Likewise.
+	* g++.dg/asan/interception-malloc-test-1.C: Likewise.
+
 2020-04-30  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR rtl-optimization/94740
