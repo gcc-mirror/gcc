@@ -1,5 +1,8 @@
 2020-01-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60855 - ICE with sizeof VLA capture.
+	* lambda.c (is_lambda_ignored_entity): Don't look past VLA capture.
+
 	PR c++/90732 - ICE with VLA capture and generic lambda.
 	* pt.c (tsubst_lambda_expr): Repeat add_capture for VLAs.
 
