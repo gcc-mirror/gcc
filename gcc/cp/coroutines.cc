@@ -819,8 +819,11 @@ finish_co_await_expr (location_t kw, tree expr)
 
   /* Now we want to build co_await a.  */
   tree op = build_co_await (kw, a, CO_AWAIT_SUSPEND_POINT);
-  TREE_SIDE_EFFECTS (op) = 1;
-  SET_EXPR_LOCATION (op, kw);
+  if (op != error_mark_node)
+    {
+      TREE_SIDE_EFFECTS (op) = 1;
+      SET_EXPR_LOCATION (op, kw);
+    }
 
   return op;
 }
@@ -885,9 +888,11 @@ finish_co_yield_expr (location_t kw, tree expr)
      promise transform_await().  */
 
   tree op = build_co_await (kw, yield_call, CO_YIELD_SUSPEND_POINT);
-
-  op = build2_loc (kw, CO_YIELD_EXPR, TREE_TYPE (op), expr, op);
-  TREE_SIDE_EFFECTS (op) = 1;
+  if (op != error_mark_node)
+    {
+      op = build2_loc (kw, CO_YIELD_EXPR, TREE_TYPE (op), expr, op);
+      TREE_SIDE_EFFECTS (op) = 1;
+    }
 
   return op;
 }
