@@ -1,5 +1,9 @@
 2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* g++.target/aarch64/sve/acle/general-c++/whilele_1.C: Skip for ILP32.
+
+2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/acle/asm/ld1_f16.c: Skip check-function-bodies
 	test for ILP32.
 	* gcc.target/aarch64/sve/acle/asm/ld1_f32.c: Likewise.
