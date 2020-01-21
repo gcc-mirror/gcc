@@ -1144,6 +1144,15 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 	extensions and libstdc++-specific behavior into errors.
       </para>
     </listitem></varlistentry>
+    <varlistentry><term><code>_GLIBCXX_DEBUG_BACKTRACE</code></term>
+    <listitem>
+      <para>
+	Undefined by default. Considered only if libstdc++ has been configured with
+	<option>--enable-libstdcxx-backtrace=yes</option> and if <code>_GLIBCXX_DEBUG</code>
+	is defined. When defined display backtraces on
+	<link linkend="manual.ext.debug_mode">debug mode</link> assertions.
+      </para>
+    </listitem></varlistentry>
     <varlistentry><term><code>_GLIBCXX_PARALLEL</code></term>
     <listitem>
       <para>Undefined by default. When defined, compiles user code
@@ -1650,6 +1659,7 @@ A quick read of the relevant part of the GCC
       header will remain compatible between different GCC releases.
     </para>
     </section>
+
   </section>
 
   <section xml:id="manual.intro.using.concurrency" xreflabel="Concurrency"><info><title>Concurrency</title></info>

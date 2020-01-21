@@ -611,10 +611,12 @@ namespace
   void
   print_raw(PrintContext& ctx, const char* str, ptrdiff_t nbc = -1)
   {
-    if (nbc >= 0)
-      ctx._M_column += fprintf(stderr, "%.*s", (int)nbc, str);
-    else
-      ctx._M_column += fprintf(stderr, "%s", str);
+    if (nbc != 0)
+      {
+	ctx._M_column += (nbc > 0)
+	  ? fprintf(stderr, "%.*s", (int)nbc, str)
+	  : fprintf(stderr, "%s", str);
+      }
   }
 
   void
@@ -680,7 +682,7 @@ namespace
 
 	    pos += 2; // advance past "__"
 	    if (memcmp(pos, cxx1998, 9) == 0)
-	      pos += 9; // advance part "cxx1998::"
+	      pos += 9; // advance past "cxx1998::"
 
 	    str = pos;
 	  }
@@ -1093,6 +1095,58 @@ namespace
   void
   print_string(PrintContext& ctx, const char* str, ptrdiff_t nbc)
   { print_string(ctx, str, nbc, nullptr, 0); }
+
+#if _GLIBCXX_HAVE_STACKTRACE
+  int
+  print_backtrace(void* data, __UINTPTR_TYPE__ pc, const char* filename,
+		  int lineno, const char* function)
+  {
+    const int bufsize = 64;
+    char buf[bufsize];
+
+    PrintContext& ctx = *static_cast<PrintContext*>(data);
+
+    int written = __builtin_sprintf(buf, "%p ", (void*)pc);
+    print_word(ctx, buf, written);
+
+    int ret = 0;
+    if (function)
+      {
+	int status;
+	char* demangled_name =
+	  __cxxabiv1::__cxa_demangle(function, NULL, NULL, &status);
+	if (status == 0)
+	  pretty_print(ctx, demangled_name, &print_raw);
+	else
+	  print_word(ctx, function);
+
+	free(demangled_name);
+	ret = strstr(function, "main") ? 1 : 0;
+      }
+
+    print_literal(ctx, "\n");
+
+    if (filename)
+      {
+	bool wordwrap = false;
+	swap(wordwrap, ctx._M_wordwrap);
+	print_word(ctx, filename);
+
+	if (lineno)
+	  {
+	    written = __builtin_sprintf(buf, ":%u\n", lineno);
+	    print_word(ctx, buf, written);
+	  }
+	else
+	  print_literal(ctx, "\n");
+	swap(wordwrap, ctx._M_wordwrap);
+      }
+    else
+      print_literal(ctx, "???:0\n");
+
+    return ret;
+  }
+#endif
 }
 
 namespace __gnu_debug
@@ -1138,6 +1192,17 @@ namespace __gnu_debug
 	ctx._M_first_line = true;
 	print_literal(ctx, "\n");
       }
+
+#if _GLIBCXX_HAVE_STACKTRACE
+    if (_M_backtrace_state)
+      {
+	print_literal(ctx, "Backtrace:\n");
+	_M_backtrace_full(
+	  _M_backtrace_state, 1, print_backtrace, nullptr, &ctx);
+	ctx._M_first_line = true;
+	print_literal(ctx, "\n");
+      }
+#endif
 
     print_literal(ctx, "Error: ");
 

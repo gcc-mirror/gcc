@@ -60,6 +60,7 @@ libstdc___libbacktrace_la_SHORTNAME = $(obj_prefix)
 
 libstdc___libbacktrace_la_SOURCES = \
 	atomic.c \
+	backtrace.c \
 	dwarf.c \
 	fileline.c \
 	posix.c \
