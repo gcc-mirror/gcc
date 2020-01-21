@@ -1,3 +1,14 @@
+2020-01-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93352
+	* region-model.cc (int_cmp): Rename to...
+	(array_region::key_cmp): ...this, using key_t rather than int.
+	Rewrite in terms of comparisons rather than subtraction to
+	ensure qsort is anti-symmetric when handling extreme values.
+	(array_region::walk_for_canonicalization): Update for above
+	renaming.
+	* region-model.h (array_region::key_cmp): New decl.
+
 2020-01-17  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93290

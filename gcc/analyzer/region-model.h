@@ -1319,6 +1319,8 @@ public:
   static key_t key_from_constant (tree cst);
 
  private:
+  static int key_cmp (const void *, const void *);
+
   /* Mapping from tree to child region.  */
   map_t m_map;
 };
