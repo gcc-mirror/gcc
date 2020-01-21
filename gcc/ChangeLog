@@ -1,3 +1,12 @@
+2020-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92328
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Preserve
+	type when value-numbering same-sized store by inserting a
+	VIEW_CONVERT_EXPR.
+	(eliminate_dom_walker::eliminate_stmt): When eliminating
+	a redundant store handle bit-reinterpretation of the same value.
+
 2020-01-21  Andrew Pinski  <apinski@marvel.com>
 
 	PR tree-opt/93321

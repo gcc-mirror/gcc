@@ -2712,26 +2712,30 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		  || known_eq (ref->size, TYPE_PRECISION (vr->type)))
 	      && multiple_p (ref->size, BITS_PER_UNIT))
 	    {
-	      if (known_eq (ref->size, size2))
-		return vn_reference_lookup_or_insert_for_pieces
-		    (vuse, get_alias_set (lhs), vr->type, vr->operands,
-		     SSA_VAL (def_rhs));
-	      else if (! INTEGRAL_TYPE_P (TREE_TYPE (def_rhs))
-		       || type_has_mode_precision_p (TREE_TYPE (def_rhs)))
+	      tree val = NULL_TREE;
+	      if (! INTEGRAL_TYPE_P (TREE_TYPE (def_rhs))
+		  || type_has_mode_precision_p (TREE_TYPE (def_rhs)))
 		{
 		  gimple_match_op op (gimple_match_cond::UNCOND,
 				      BIT_FIELD_REF, vr->type,
 				      SSA_VAL (def_rhs),
 				      bitsize_int (ref->size),
 				      bitsize_int (offset - offset2));
-		  tree val = vn_nary_build_or_lookup (&op);
-		  if (val
-		      && (TREE_CODE (val) != SSA_NAME
-			  || ! SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val)))
-		    return vn_reference_lookup_or_insert_for_pieces
-			(vuse, get_alias_set (lhs), vr->type,
-			 vr->operands, val);
+		  val = vn_nary_build_or_lookup (&op);
 		}
+	      else if (known_eq (ref->size, size2))
+		{
+		  gimple_match_op op (gimple_match_cond::UNCOND,
+				      VIEW_CONVERT_EXPR, vr->type,
+				      SSA_VAL (def_rhs));
+		  val = vn_nary_build_or_lookup (&op);
+		}
+	      if (val
+		  && (TREE_CODE (val) != SSA_NAME
+		      || ! SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val)))
+		return vn_reference_lookup_or_insert_for_pieces
+			    (vuse, get_alias_set (lhs), vr->type,
+			     vr->operands, val);
 	    }
 	  else if (maxsize.is_constant (&maxsizei)
 		   && maxsizei % BITS_PER_UNIT == 0
@@ -5599,7 +5603,6 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
       && (TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME
 	  || is_gimple_min_invariant (gimple_assign_rhs1 (stmt))))
     {
-      tree val;
       tree rhs = gimple_assign_rhs1 (stmt);
       vn_reference_t vnresult;
       /* ???  gcc.dg/torture/pr91445.c shows that we lookup a boolean
@@ -5640,14 +5643,22 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	  else
 	    lookup_lhs = NULL_TREE;
 	}
-      val = NULL_TREE;
+      tree val = NULL_TREE;
       if (lookup_lhs)
 	val = vn_reference_lookup (lookup_lhs, gimple_vuse (stmt), VN_WALK,
 				   &vnresult, false);
       if (TREE_CODE (rhs) == SSA_NAME)
 	rhs = VN_INFO (rhs)->valnum;
       if (val
-	  && operand_equal_p (val, rhs, 0))
+	  && (operand_equal_p (val, rhs, 0)
+	      /* Due to the bitfield lookups above we can get bit
+		 interpretations of the same RHS as values here.  Those
+		 are redundant as well.  */
+	      || (TREE_CODE (val) == SSA_NAME
+		  && gimple_assign_single_p (SSA_NAME_DEF_STMT (val))
+		  && (val = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (val)))
+		  && TREE_CODE (val) == VIEW_CONVERT_EXPR
+		  && TREE_OPERAND (val, 0) == rhs)))
 	{
 	  /* We can only remove the later store if the former aliases
 	     at least all accesses the later one does or if the store
