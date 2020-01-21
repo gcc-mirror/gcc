@@ -1,3 +1,8 @@
+2020-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90732 - ICE with VLA capture and generic lambda.
+	* pt.c (tsubst_lambda_expr): Repeat add_capture for VLAs.
+
 2020-01-21  Iain Sandoe  <iain@sandoe.co.uk>
 	    Bin Cheng  <bin.cheng@linux.alibaba.com>
 
