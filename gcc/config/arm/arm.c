@@ -13751,13 +13751,14 @@ ldm_stm_operation_p (rtx op, bool load, machine_mode mode,
 bool
 clear_operation_p (rtx op, bool vfp)
 {
-  unsigned regno, last_regno;
+  unsigned regno;
+  unsigned last_regno = INVALID_REGNUM;
   rtx elt, reg, zero;
-  HOST_WIDE_INT count = XVECLEN (op, 0);
-  HOST_WIDE_INT i, first_set = vfp ? 1 : 0;
+  int count = XVECLEN (op, 0);
+  int first_set = vfp ? 1 : 0;
   machine_mode expected_mode = vfp ? E_SFmode : E_SImode;
 
-  for (i = first_set; i < count; i++)
+  for (int i = first_set; i < count; i++)
     {
       elt = XVECEXP (op, 0, i);
 
@@ -13790,14 +13791,14 @@ clear_operation_p (rtx op, bool vfp)
 
       if (vfp)
 	{
-	  if (i != 1 && regno != last_regno + 1)
+	  if (i != first_set && regno != last_regno + 1)
 	    return false;
 	}
       else
 	{
 	  if (regno == SP_REGNUM || regno == PC_REGNUM)
 	    return false;
-	  if (i != 0 && regno <= last_regno)
+	  if (i != first_set && regno <= last_regno)
 	    return false;
 	}
 

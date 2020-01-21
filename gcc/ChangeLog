@@ -1,3 +1,10 @@
+2020-01-21  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+
+	* gcc/config/arm/arm.c (clear_operation_p):
+	Initialise last_regno, skip first iteration
+	based on the first_set value and use ints instead
+	of the unnecessary HOST_WIDE_INTs.
+
 2020-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93073
