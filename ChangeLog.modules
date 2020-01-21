@@ -1,6 +1,13 @@
 2020-01-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* modules.cc (slurping::remap_module): Return unsigned, use zero
+	for error case.
+	(trees_in::tree_node): Adjust.
+	(module_state::read_{namespace,pendings}): Likewise.
+	(module_state::read_{preprocessor,language}): Likewise.
+
+	gcc/cp/
 	* modules.cc (struct module_state): Add
 	lazy_{preprocessor,language}_p fields.
 	(module_state::read): Delete, move into do_import.

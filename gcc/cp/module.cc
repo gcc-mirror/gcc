@@ -3216,16 +3216,11 @@ struct GTY(()) slurping {
     for (unsigned ix = size; ix--;)
       remap->quick_push (0);
   }
-  int remap_module (unsigned owner)
+  unsigned remap_module (unsigned owner)
   {
     if (owner < remap->length ())
-      {
-	// FIXME: This can never be zero, make return unsigned and
-	// return 0 the error case?
-	unsigned map = (*remap)[owner];
-	return int (map >> 1);
-      }
-    return -1;
+      return (*remap)[owner] >> 1;
+    return 0;
   }
 
  public:
@@ -9327,7 +9322,7 @@ trees_in::tree_node ()
 	unsigned ident = u ();
 	module_state *from = (*modules)[origin];
 
-	if (ident >= from->entity_num)
+	if (!origin || ident >= from->entity_num)
 	  set_overrun ();
 	if (!get_overrun ())
 	  {
@@ -14395,8 +14390,8 @@ module_state::read_namespace (bytes_in &sec)
     {
       if (!ns_import)
 	ns_num--;
-      int origin = slurp->remap_module (ns_import);
-      if (origin > 0)
+
+      if (unsigned origin = slurp->remap_module (ns_import))
 	{
 	  module_state *from = (*modules)[origin];
 	  if (ns_num < from->entity_num)
@@ -14407,6 +14402,8 @@ module_state::read_namespace (bytes_in &sec)
 		ns = slot;
 	    }
 	}
+      else
+	sec.set_overrun ();
     }
   else
     ns = global_namespace;
@@ -14806,9 +14803,11 @@ module_state::read_pendings (unsigned count)
       module_state *from = (*modules)[key_origin];
       tree ns = sec.tree_node ();
 
-      if (key_index >= from->entity_num || ent_index >= entity_num
+      if (!key_origin
+	  || key_index >= from->entity_num || ent_index >= entity_num
 	  || (ns && TREE_CODE (ns) != NAMESPACE_DECL))
 	sec.set_overrun ();
+
       if (sec.get_overrun ())
 	break;
 
@@ -14852,7 +14851,7 @@ module_state::read_pendings (unsigned count)
 	     specializations flag, when we load it.  */
 	  tree name = sec.tree_node ();
 	  unsigned origin = slurp->remap_module (sec.u ());
-	  if (!name || TREE_CODE (name) != IDENTIFIER_NODE)
+	  if (!origin || !name || TREE_CODE (name) != IDENTIFIER_NODE)
 	    sec.set_overrun ();
 	  if (sec.get_overrun ())
 	    break;
@@ -17105,7 +17104,7 @@ module_state::read_preprocessor ()
 
   if (lazy_preprocessor_p)
     {
-      gcc_checking_assert (unsigned (slurp->remap_module (0)) == mod);
+      gcc_checking_assert (slurp->remap_module (0) == mod);
 
       /* Read direct header imports.  */
       unsigned len = slurp->remap->length ();
@@ -17151,8 +17150,8 @@ module_state::read_language ()
 
   if (lazy_language_p)
     {
-      gcc_assert (slurp && slurp->current == ~0u);
-      gcc_checking_assert (unsigned (slurp->remap_module (0)) == mod);
+      gcc_checking_assert (slurp && slurp->current == ~0u
+			   && slurp->remap_module (0) == mod);
 
       /* Read direct imports.  */
       unsigned len = slurp->remap->length ();
