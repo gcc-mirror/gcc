@@ -1,3 +1,8 @@
+2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/93341
+	* gcc.target/aarch64/pr93341.c: New test.
+
 2020-01-23  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/analyzer/data-model-3.c: Remove hardcoded "-O2" and move

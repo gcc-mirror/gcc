@@ -1,3 +1,12 @@
+2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/93341
+	* config/aarch64/aarch64.md (UNSPEC_SPECULATION_TRACKER_REV): New
+	unspec.
+	(speculation_tracker_rev): New pattern.
+	* config/aarch64/aarch64-speculation.cc (aarch64_do_track_speculation):
+	Use speculation_tracker_rev to track the inverse condition.
+
 2020-01-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/93381
