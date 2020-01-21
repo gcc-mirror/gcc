@@ -1,3 +1,7 @@
+2020-01-20  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* g++.dg/coroutines/co-return-warning-1.C: New test.
+
 2020-01-21  Kito Cheng  <kito.cheng@sifive.com>
 
 	PR target/93304

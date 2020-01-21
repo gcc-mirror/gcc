@@ -1,3 +1,8 @@
+2020-01-21  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* coroutines.cc (finish_co_await_expr): Set return value flag.
+	(finish_co_yield_expr, morph_fn_to_coro): Ditto.
+
 2020-01-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/33799 - destroy return value, take 2.

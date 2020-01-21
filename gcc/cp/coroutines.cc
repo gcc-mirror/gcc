@@ -753,6 +753,8 @@ finish_co_await_expr (location_t kw, tree expr)
 
   if (processing_template_decl)
     {
+      current_function_returns_value = 1;
+
       if (check_for_bare_parameter_packs (expr))
 	return error_mark_node;
 
@@ -826,6 +828,8 @@ finish_co_yield_expr (location_t kw, tree expr)
 
   if (processing_template_decl)
     {
+      current_function_returns_value = 1;
+
       if (check_for_bare_parameter_packs (expr))
 	return error_mark_node;
 
@@ -2869,6 +2873,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   if (!coro_function_valid_p (orig))
     return false;
+
+  /* The ramp function does return a value.  */
+  current_function_returns_value = 1;
 
   /* We can't validly get here with an empty statement list, since there's no
      way for the FE to decide it's a coroutine in the absence of any code.  */
