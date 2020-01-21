@@ -246,7 +246,7 @@ static void cp_lexer_stop_debugging
 static cp_token_cache *cp_token_cache_new
   (cp_token *, cp_token *);
 static tree cp_parser_late_noexcept_specifier
-  (cp_parser *, tree);
+  (cp_parser *, tree, tree);
 static void noexcept_override_late_checks
   (tree, tree);
 
@@ -2388,11 +2388,11 @@ static tree cp_parser_exception_declaration
 static tree cp_parser_throw_expression
   (cp_parser *);
 static tree cp_parser_exception_specification_opt
-  (cp_parser *, cp_parser_flags);
+  (cp_parser *, cp_parser_flags, cp_cv_quals);
 static tree cp_parser_type_id_list
   (cp_parser *);
 static tree cp_parser_noexcept_specification_opt
-  (cp_parser *, cp_parser_flags, bool, bool *, bool);
+  (cp_parser *, cp_parser_flags, bool, bool *, bool, cp_cv_quals);
 
 /* GNU Extensions */
 
@@ -10908,6 +10908,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
   tree trailing_requires_clause = NULL_TREE;
   cp_decl_specifier_seq lambda_specs;
   clear_decl_specs (&lambda_specs);
+  /* A lambda op() is const unless explicitly 'mutable'.  */
+  cp_cv_quals quals = TYPE_QUAL_CONST;
 
   /* The template-parameter-list is optional, but must begin with
      an opening angle if present.  */
@@ -10999,6 +11001,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       if (lambda_specs.storage_class == sc_mutable)
 	{
 	  LAMBDA_EXPR_MUTABLE_P (lambda_expr) = 1;
+	  quals = TYPE_UNQUALIFIED;
 	  if (lambda_specs.conflicting_specifiers_p)
 	    error_at (lambda_specs.locations[ds_storage_class],
 		      "duplicate %<mutable%>");
@@ -11008,7 +11011,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 
       /* Parse optional exception specification.  */
       exception_spec
-	= cp_parser_exception_specification_opt (parser, CP_PARSER_FLAGS_NONE);
+	= cp_parser_exception_specification_opt (parser, CP_PARSER_FLAGS_NONE,
+						 quals);
 
       std_attrs = cp_parser_std_attribute_spec_seq (parser);
 
@@ -11041,7 +11045,6 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
     cp_decl_specifier_seq return_type_specs;
     cp_declarator* declarator;
     tree fco;
-    int quals;
     void *p;
 
     clear_decl_specs (&return_type_specs);
@@ -11066,8 +11069,6 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
     declarator = make_id_declarator (NULL_TREE, call_op_identifier, sfk_none,
 				     LAMBDA_EXPR_LOCATION (lambda_expr));
 
-    quals = (LAMBDA_EXPR_MUTABLE_P (lambda_expr)
-	     ? TYPE_UNQUALIFIED : TYPE_QUAL_CONST);
     declarator = make_call_declarator (declarator, param_list, quals,
 				       VIRT_SPEC_UNSPECIFIED,
                                        REF_QUAL_NONE,
@@ -21127,7 +21128,9 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  tree tx_qual = cp_parser_tx_qualifier_opt (parser);
 		  /* And the exception-specification.  */
 		  exception_specification
-		    = cp_parser_exception_specification_opt (parser, flags);
+		    = cp_parser_exception_specification_opt (parser,
+							     flags,
+							     cv_quals);
 
 		  attrs = cp_parser_std_attribute_spec_seq (parser);
 
@@ -23985,7 +23988,7 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	    parser->local_variables_forbidden_p |= THIS_FORBIDDEN;
 
 	  /* Now we can parse the noexcept-specifier.  */
-	  spec = cp_parser_late_noexcept_specifier (parser, spec);
+	  spec = cp_parser_late_noexcept_specifier (parser, spec, decl);
 
 	  if (spec != error_mark_node)
 	    TREE_TYPE (decl) = build_exception_variant (TREE_TYPE (decl), spec);
@@ -25612,10 +25615,12 @@ cp_parser_save_noexcept (cp_parser *parser)
 
 /* Used for late processing of noexcept-specifiers of member-functions.
    DEFAULT_ARG is the unparsed operand of a noexcept-specifier which
-   we saved for later; parse it now.  */
+   we saved for later; parse it now.  DECL is the declaration of the
+   member function.  */
 
 static tree
-cp_parser_late_noexcept_specifier (cp_parser *parser, tree default_arg)
+cp_parser_late_noexcept_specifier (cp_parser *parser, tree default_arg,
+				   tree decl)
 {
   /* Make sure we've gotten something that hasn't been parsed yet.  */
   gcc_assert (TREE_CODE (default_arg) == DEFERRED_PARSE);
@@ -25627,13 +25632,16 @@ cp_parser_late_noexcept_specifier (cp_parser *parser, tree default_arg)
   cp_token_cache *tokens = DEFPARSE_TOKENS (default_arg);
   cp_parser_push_lexer_for_tokens (parser, tokens);
 
+  /* We need to know if this member function was declared `const'.  Look
+     at the this parameter to figure that out.  */
+  cp_cv_quals quals = type_memfn_quals (TREE_TYPE (decl));
   /* Parse the cached noexcept-specifier.  */
   tree parsed_arg
     = cp_parser_noexcept_specification_opt (parser,
 					    CP_PARSER_FLAGS_NONE,
 					    /*require_constexpr=*/true,
 					    /*consumed_expr=*/NULL,
-					    /*return_cond=*/false);
+					    /*return_cond=*/false, quals);
 
   /* Revert to the main lexer.  */
   cp_parser_pop_lexer (parser);
@@ -25683,14 +25691,16 @@ noexcept_override_late_checks (tree type, tree fndecl)
    there are no parentheses.  CONSUMED_EXPR will be set accordingly.
    Otherwise, returns a noexcept specification unless RETURN_COND is true,
    in which case a boolean condition is returned instead.  The parser flags
-   FLAGS is used to control parsing.  */
+   FLAGS is used to control parsing.  QUALS are qualifiers indicating whether
+   the (member) function is `const'.  */
 
 static tree
 cp_parser_noexcept_specification_opt (cp_parser* parser,
 				      cp_parser_flags flags,
 				      bool require_constexpr,
 				      bool* consumed_expr,
-				      bool return_cond)
+				      bool return_cond,
+				      cp_cv_quals quals)
 {
   cp_token *token;
   const char *saved_message;
@@ -25736,7 +25746,7 @@ cp_parser_noexcept_specification_opt (cp_parser* parser,
 	  tree save_ccr = current_class_ref;
 
 	  if (current_class_type)
-	    inject_this_parameter (current_class_type, TYPE_UNQUALIFIED);
+	    inject_this_parameter (current_class_type, quals);
 
 	  if (require_constexpr)
 	    {
@@ -25796,10 +25806,13 @@ cp_parser_noexcept_specification_opt (cp_parser* parser,
 
    Returns a TREE_LIST representing the exception-specification.  The
    TREE_VALUE of each node is a type.  The parser flags FLAGS is used to
-   control parsing.  */
+   control parsing.  QUALS are qualifiers indicating whether the (member)
+   function is `const'.  */
 
 static tree
-cp_parser_exception_specification_opt (cp_parser* parser, cp_parser_flags flags)
+cp_parser_exception_specification_opt (cp_parser* parser,
+				       cp_parser_flags flags,
+				       cp_cv_quals quals)
 {
   cp_token *token;
   tree type_id_list;
@@ -25813,7 +25826,7 @@ cp_parser_exception_specification_opt (cp_parser* parser, cp_parser_flags flags)
     = cp_parser_noexcept_specification_opt (parser, flags,
 					    /*require_constexpr=*/true,
 					    /*consumed_expr=*/NULL,
-					    /*return_cond=*/false);
+					    /*return_cond=*/false, quals);
   if (type_id_list != NULL_TREE)
     return type_id_list;
 
@@ -42965,7 +42978,8 @@ cp_parser_transaction (cp_parser *parser, cp_token *token)
 						 CP_PARSER_FLAGS_NONE,
 						 /*require_constexpr=*/true,
 						 /*consumed_expr=*/NULL,
-						 /*return_cond=*/true);
+						 /*return_cond=*/true,
+						 TYPE_UNQUALIFIED);
 
   /* Keep track if we're in the lexical scope of an outer transaction.  */
   new_in = this_in | (old_in & TM_STMT_ATTR_OUTER);
@@ -43029,7 +43043,8 @@ cp_parser_transaction_expression (cp_parser *parser, enum rid keyword)
 					       CP_PARSER_FLAGS_NONE,
 					       /*require_constexpr=*/false,
 					       &noex_expr,
-					       /*return_cond=*/true);
+					       /*return_cond=*/true,
+					       TYPE_UNQUALIFIED);
 
   if (!noex || !noex_expr
       || cp_lexer_peek_token (parser->lexer)->type == CPP_OPEN_PAREN)

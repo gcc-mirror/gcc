@@ -1,5 +1,25 @@
 2020-01-22  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/92907 - noexcept does not consider "const" in member functions.
+	* parser.c (cp_parser_lambda_declarator_opt): Pass the proper
+	qualifiers to cp_parser_exception_specification_opt.
+	(cp_parser_direct_declarator): Pass the function qualifiers to
+	cp_parser_exception_specification_opt.
+	(cp_parser_class_specifier_1): Pass the function declaration to
+	cp_parser_late_noexcept_specifier.
+	(cp_parser_late_noexcept_specifier): Add a tree parameter.  Use it to
+	pass the qualifiers of the function to
+	cp_parser_noexcept_specification_opt.
+	(cp_parser_noexcept_specification_opt): New cp_cv_quals parameter.
+	Use it in inject_this_parameter.
+	(cp_parser_exception_specification_opt): New cp_cv_quals parameter.
+	Use it.
+	(cp_parser_transaction): Pass TYPE_UNQUALIFIED to
+	cp_parser_noexcept_specification_opt.
+	(cp_parser_transaction_expression): Likewise.
+
+2020-01-22  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/93324 - ICE with -Wall on constexpr if.
 	* g++.dg/cpp1z/constexpr-if33.C: New test.
 

@@ -1,5 +1,10 @@
 2020-01-22  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/92907 - noexcept does not consider "const" in member functions.
+	* g++.dg/cpp0x/noexcept56.C: New test.
+
+2020-01-22  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/93324 - ICE with -Wall on constexpr if.
 	* semantics.c (is_std_constant_evaluated_p): Check fndecl.
 
