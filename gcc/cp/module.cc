@@ -3166,12 +3166,17 @@ static loc_spans spans;
 /********************************************************************/
 /* Data needed by a module during the process of loading.  */
 struct GTY(()) slurping {
+
+  /* Remap numbers are shifted by 1.  Bit0 encodes if the import is
+     direct.  */
   vec<unsigned, va_heap, vl_embed> *
     GTY((skip)) remap;			/* Module owner remapping.  */
+
   elf_in *GTY((skip)) from;     	/* The elf loader.  */
 
   /* This map is only for header imports themselves -- the global
      headers bitmap hold it for the current TU.  */
+  // FIXME: Do we need this, now we hold directness info in the remap array?
   bitmap headers;	/* Transitive direct header import graph. */
 
   /* These objects point into the mmapped area, unless we're not doing
@@ -3180,7 +3185,7 @@ struct GTY(()) slurping {
   bytes_in macro_defs;	/* Macro definitions.  */
   bytes_in macro_tbl;	/* Macro table.  */
 
-  /* Location remapping.  */
+  /* Location remapping.  first->ordinary, second->macro.  */
   range_t GTY((skip)) loc_deltas;
 
   unsigned current;	/* Section currently being loaded.  */
@@ -3213,7 +3218,12 @@ struct GTY(()) slurping {
   }
   int remap_module (unsigned owner)
   {
-    return owner < remap->length () ? int((*remap)[owner]) : -1;
+    if (owner < remap->length ())
+      {
+	unsigned map = (*remap)[owner];
+	return int (map >> 1);
+      }
+    return -1;
   }
 
  public:
@@ -13702,7 +13712,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
       if (imp->crc != crc)
 	error_at (loc, "import %qs has CRC mismatch", imp->get_flatname ());
 
-      (*slurp->remap)[ix] = imp->mod;
+      (*slurp->remap)[ix] = (imp->mod << 1) | (lmaps != NULL);
       if (lmaps)
 	set_import (imp, exported);
       dump () && dump ("Found %simport:%u %M->%u", !lmaps ? "indirect "
@@ -17083,7 +17093,7 @@ module_state::read_initial (int fd, int e, cpp_reader *reader)
   vec_safe_push (modules, this);
 
   if (ok)
-    (*slurp->remap)[0] = mod;
+    (*slurp->remap)[0] = mod << 1;
   dump () && dump ("Assigning %M module number %u", this, mod);
 
   /* We should not have been frozen during the importing done by

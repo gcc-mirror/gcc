@@ -1,3 +1,11 @@
+2020-01-21  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* modules.cc (slurping::remap_module): Encode import directness in
+	remap array.
+	(module_state::read_imports): Adjust.
+	(module_state::read_initial): Likewise.
+
 2020-01-20  Nathan Sidwell  <nathan@acm.org>
 
 	Merge master 3a43459715e239fb8043bf64b830aaf1a9802180.
