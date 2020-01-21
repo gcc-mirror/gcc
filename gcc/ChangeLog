@@ -1,3 +1,10 @@
+2020-01-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/93318	
+	* cgraph.c (cgraph_edge::resolve_speculation,
+	cgraph_edge::redirect_call_stmt_to_callee): Fix update of
+	call_stmt_site_hash.
+
 2020-01-21  Martin Liska  <mliska@suse.cz>
 
 	* config/rs6000/rs6000.c (common_mode_defined): Remove
