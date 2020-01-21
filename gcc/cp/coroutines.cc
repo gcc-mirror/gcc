@@ -803,9 +803,12 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
   TREE_VEC_ELT (awaiter_calls, 1) = awsp_call; /* await_suspend().  */
   TREE_VEC_ELT (awaiter_calls, 2) = awrs_call; /* await_resume().  */
 
-  return build5_loc (loc, CO_AWAIT_EXPR, TREE_TYPE (awrs_call), a,
-		     e_proxy, o, awaiter_calls,
-		     build_int_cst (integer_type_node, (int) suspend_kind));
+  tree await_expr = build5_loc (loc, CO_AWAIT_EXPR,
+				TREE_TYPE (TREE_TYPE (awrs_func)),
+				a, e_proxy, o, awaiter_calls,
+				build_int_cst (integer_type_node,
+					       (int) suspend_kind));
+  return convert_from_reference (await_expr);
 }
 
 tree
@@ -1566,6 +1569,9 @@ co_await_expander (tree *stmt, int * /*do_subtree*/, void *d)
   /* This will produce the value (if one is provided) from the co_await
      expression.  */
   tree resume_call = TREE_VEC_ELT (awaiter_calls, 2); /* await_resume().  */
+  if (REFERENCE_REF_P (resume_call))
+    /* Sink to await_resume call_expr.  */
+    resume_call = TREE_OPERAND (resume_call, 0);
   switch (stmt_code)
     {
     default: /* not likely to work .. but... */

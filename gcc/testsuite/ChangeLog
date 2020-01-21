@@ -1,3 +1,7 @@
+2020-02-05  Jun Ma <JunMa@linux.alibaba.com>
+
+	* g++.dg/coroutines/co-await-14-return-ref-to-auto.C: New test.
+
 2020-02-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/analyzer/data-model-1.c (struct coord): Convert fields
