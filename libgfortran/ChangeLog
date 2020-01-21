@@ -1,3 +1,10 @@
+2020-01-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+        Backport from mainline
+	PR libfortran/93234
+	* io/unit.c (set_internal_unit): Set round and sign flags
+	correctly.
+
 2019-11-26  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
 
         Backport from mainline

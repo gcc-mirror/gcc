@@ -1,3 +1,9 @@
+2020-01-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from mainline
+	PR libfortran/93234
+	* gfortran.dg/inquire_pre.f90: New test.
+
 2020-01-20  Mark Eggleston  <mark.eggleston@codethink.com>
 
 	Backport from mainline
