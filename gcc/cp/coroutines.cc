@@ -428,8 +428,9 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
 
       /* Complete this, we're going to use it.  */
       coro_info->handle_type = complete_type_or_else (handle_type, fndecl);
+
       /* Diagnostic would be emitted by complete_type_or_else.  */
-      if (coro_info->handle_type == error_mark_node)
+      if (!coro_info->handle_type)
 	return false;
 
       /* Build a proxy for a handle to "self" as the param to
@@ -633,7 +634,13 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
   else
     o = a; /* This is most likely about to fail anyway.  */
 
-  tree o_type = complete_type_or_else (TREE_TYPE (o), o);
+  tree o_type = TREE_TYPE (o);
+  if (o_type && !VOID_TYPE_P (o_type))
+    o_type = complete_type_or_else (o_type, o);
+
+  if (!o_type)
+    return error_mark_node;
+
   if (TREE_CODE (o_type) != RECORD_TYPE)
     {
       error_at (loc, "awaitable type %qT is not a structure",
@@ -2729,6 +2736,10 @@ register_param_uses (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
 
       if (!COMPLETE_TYPE_P (actual_type))
 	actual_type = complete_type_or_else (actual_type, *stmt);
+
+      if (actual_type == NULL_TREE)
+	/* Diagnostic emitted by complete_type_or_else.  */
+	actual_type = error_mark_node;
 
       if (TREE_CODE (actual_type) == REFERENCE_TYPE)
 	actual_type = build_pointer_type (TREE_TYPE (actual_type));

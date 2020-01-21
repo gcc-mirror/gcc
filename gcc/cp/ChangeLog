@@ -1,3 +1,13 @@
+2020-01-21  Iain Sandoe  <iain@sandoe.co.uk>
+	    Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* coroutines.cc (coro_promise_type_found_p): Check for NULL return
+	from complete_type_or_else.
+	(register_param_uses): Likewise.
+	(build_co_await): Do not try to use complete_type_or_else for void
+	types, otherwise for incomplete types, check for NULL return from
+	complete_type_or_else.
+
 2020-01-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/91476 - anon-namespace reference temp clash between TUs.

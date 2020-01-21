@@ -1,3 +1,7 @@
+2020-01-21  Bin Cheng  <bin.linux@linux.alibaba.com>
+
+	* g++.dg/coroutines/co-await-void_type.C: New test.
+
 2020-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93333
