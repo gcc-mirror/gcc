@@ -82,7 +82,7 @@ permute_vnx8hf (__SVFloat16_t x, __SVFloat16_t y)
 **	ret
 */
 __SVFloat32_t
-permute_vnx4sf (__SVFloat16_t x, __SVFloat16_t y)
+permute_vnx4sf (__SVFloat32_t x, __SVFloat32_t y)
 {
   return __builtin_shuffle ((vnx4sf) x, (vnx4sf) y, (vnx4si) MASK_8);
 }

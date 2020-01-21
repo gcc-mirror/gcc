@@ -1,5 +1,10 @@
 2020-01-22  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/sel_3.c (permute_vnx4sf): Take __SVFloat32_t
+	rather than __SVFloat16_t
+
+2020-01-22  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* g++.dg/ext/sve-sizeless-1.C: Don't expect an error for alias
 	templates.
 
