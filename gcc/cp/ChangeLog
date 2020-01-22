@@ -1,3 +1,12 @@
+2020-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92992
+	* call.c (convert_arg_to_ellipsis): For decltype(nullptr) arguments
+	that have side-effects use cp_build_compound_expr.
+
 2020-01-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/91476 - anon-namespace reference temp clash between TUs.
