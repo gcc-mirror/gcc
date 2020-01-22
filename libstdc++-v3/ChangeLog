@@ -1,3 +1,10 @@
+2020-02-05  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/stl_iterator.h (move_iterator::move_iterator): Move __i
+	when initializing _M_current.
+	(move_iterator::base): Split into two overloads differing in
+	ref-qualifiers as in P1207R4 for C++20.
+
 2020-02-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/functional (_GLIBCXX_NOT_FN_CALL_OP): Un-define after
