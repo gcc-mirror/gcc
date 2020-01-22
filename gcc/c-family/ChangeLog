@@ -1,3 +1,10 @@
+2020-01-22  Jason Merrill  <jason@redhat.com>
+
+	PR testsuite/93391 - PR 40752 test fails with unsigned plain char.
+	PR c++/40752
+	* c-warn.c (conversion_warning): Check operands only after checking
+	the whole expression.  Don't check second operand of + for sign.
+
 2020-01-21  Jason Merrill  <jason@redhat.com>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
