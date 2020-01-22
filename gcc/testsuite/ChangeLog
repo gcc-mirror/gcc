@@ -1,5 +1,10 @@
 2020-01-22  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93378
+	* gcc.dg/analyzer/setjmp-pr93378.c: New test.
+
+2020-01-22  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93316
 	* gcc.dg/analyzer/data-model-1.c: Include <alloca.h>.
 	* gcc.dg/analyzer/malloc-1.c: Likewise.
