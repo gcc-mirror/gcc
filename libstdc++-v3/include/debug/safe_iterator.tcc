@@ -234,6 +234,12 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  template<typename _Ite, typename _Seq>
+    _Ite
+    __niter_base(const ::__gnu_debug::_Safe_iterator<_Ite, _Seq,
+		 std::random_access_iterator_tag>& __it)
+    { return __it.base(); }
+
   template<bool _IsMove,
 	   typename _Ite, typename _Seq, typename _Cat, typename _OI>
     _OI
