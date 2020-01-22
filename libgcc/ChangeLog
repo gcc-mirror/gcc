@@ -1,3 +1,8 @@
+2020-05-09  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config.host: Remove support for crisv32-*-* and cris*-*-linux.
+	* config/cris/libgcc-glibc.ver, config/cris/t-linux: Remove.
+
 2020-05-06  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sfp-exceptions.c (__math_force_eval): Remove.
