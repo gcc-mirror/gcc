@@ -1,5 +1,12 @@
 2020-01-22  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93382
+	* program-state.cc (sm_state_map::on_svalue_purge): If the
+	entry survives, but the origin is being purged, then reset the
+	origin to null.
+
+2020-01-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* sm-signal.cc: Fix nesting of CHECKING_P and namespace ana.
 
 2020-01-22  David Malcolm  <dmalcolm@redhat.com>

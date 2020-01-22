@@ -1,3 +1,8 @@
+2020-01-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93382
+	* gcc.dg/analyzer/pr93382.c: New test.
+
 2020-01-22  Andrew Pinski  <apinski@marvell.com>
 
 	* gcc.dg/tree-ssa/pr88497-1.c: Move to ...
