@@ -314,6 +314,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_NOEXCEPT_IF(std::is_nothrow_copy_constructible<_Iterator>::value)
     { return __it; }
 
+  template<typename _Ite, typename _Seq>
+    _Ite
+    __niter_base(const ::__gnu_debug::_Safe_iterator<_Ite, _Seq,
+		 std::random_access_iterator_tag>&);
+
   // Reverse the __niter_base transformation to get a
   // __normal_iterator back again (this assumes that __normal_iterator
   // is only used to wrap random access iterators, like pointers).
@@ -466,6 +471,15 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     __copy_move_a2(istreambuf_iterator<_CharT, char_traits<_CharT> >,
 		   istreambuf_iterator<_CharT, char_traits<_CharT> >, _CharT*);
 
+  template<bool _IsMove, typename _CharT>
+    typename __gnu_cxx::__enable_if<
+      __is_char<_CharT>::__value,
+      _GLIBCXX_STD_C::_Deque_iterator<_CharT, _CharT&, _CharT*> >::__type
+    __copy_move_a2(
+	istreambuf_iterator<_CharT, char_traits<_CharT> >,
+	istreambuf_iterator<_CharT, char_traits<_CharT> >,
+	_GLIBCXX_STD_C::_Deque_iterator<_CharT, _CharT&, _CharT*>);
+
   template<bool _IsMove, typename _II, typename _OI>
     _GLIBCXX20_CONSTEXPR
     inline _OI
@@ -538,6 +552,41 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     __copy_move_a(const ::__gnu_debug::_Safe_iterator<_IIte, _ISeq, _ICat>&,
 		  const ::__gnu_debug::_Safe_iterator<_IIte, _ISeq, _ICat>&,
 		  const ::__gnu_debug::_Safe_iterator<_OIte, _OSeq, _OCat>&);
+
+  template<typename _InputIterator, typename _Size, typename _OutputIterator>
+    _GLIBCXX20_CONSTEXPR
+    _OutputIterator
+    __copy_n_a(_InputIterator __first, _Size __n, _OutputIterator __result,
+	       bool)
+    {
+      if (__n > 0)
+	{
+	  while (true)
+	    {
+	      *__result = *__first;
+	      ++__result;
+	      if (--__n > 0)
+		++__first;
+	      else
+		break;
+	    }
+	}
+      return __result;
+    }
+
+  template<typename _CharT, typename _Size>
+    typename __gnu_cxx::__enable_if<
+      __is_char<_CharT>::__value, _CharT*>::__type
+    __copy_n_a(istreambuf_iterator<_CharT, char_traits<_CharT> >,
+	       _Size, _CharT*, bool);
+
+  template<typename _CharT, typename _Size>
+    typename __gnu_cxx::__enable_if<
+      __is_char<_CharT>::__value,
+      _GLIBCXX_STD_C::_Deque_iterator<_CharT, _CharT&, _CharT*> >::__type
+    __copy_n_a(istreambuf_iterator<_CharT, char_traits<_CharT> >, _Size,
+	       _GLIBCXX_STD_C::_Deque_iterator<_CharT, _CharT&, _CharT*>,
+	       bool);
 
   /**
    *  @brief Copies the range [first,last) into result.
