@@ -7,6 +7,7 @@
 	* config/cris/t-linux, config/cris/linux.h, config/cris/linux.opt:
 	Remove.
 	* config/cris/t-elfmulti: Remove crisv32 multilib.
+	* config/cris: Remove shared-library and CRIS v32 support.
 
 2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
 
