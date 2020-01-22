@@ -5537,6 +5537,8 @@ static void
 output_short_suffix (FILE *file)
 {
   rtx_insn *insn = current_output_insn;
+  if (!insn)
+    return;
 
   if (arc_verify_short (insn, cfun->machine->unalign, 1))
     {
