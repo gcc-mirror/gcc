@@ -1,3 +1,11 @@
+2020-01-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93375
+	* supergraph.cc (callgraph_superedge::get_arg_for_parm): Fail
+	gracefully is the number of parameters at the callee exceeds the
+	number of arguments at the call stmt.
+	(callgraph_superedge::get_parm_for_arg): Likewise.
+
 2020-01-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93382

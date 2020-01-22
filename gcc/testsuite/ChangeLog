@@ -1,3 +1,8 @@
+2020-01-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93375
+	* gcc.dg/analyzer/pr93375.c: New test.
+
 2020-01-23  Jason Merrill  <jason@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_unsigned_char):
