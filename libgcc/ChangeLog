@@ -1,6 +1,13 @@
 2020-01-22  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/92924
+	* libgcov-profiler.c (__gcov_topn_values_profiler_body): First
+	try to find an existing value, then find an empty slot
+	if not found.
+
+2020-01-22  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/92924
 	* libgcov-driver.c (prune_topn_counter): New.
 	(prune_counters): Likewise.
 	(dump_one_gcov): Prune a run-time counter.

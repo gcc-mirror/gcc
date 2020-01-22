@@ -119,35 +119,37 @@ __gcov_topn_values_profiler_body (gcov_type *counters, gcov_type value,
 
   ++counters;
 
+  /* First try to find an existing value.  */
+  int empty_counter = -1;
+
   for (unsigned i = 0; i < GCOV_TOPN_VALUES; i++)
+    if (value == counters[2 * i])
+      {
+	if (use_atomic)
+	  __atomic_fetch_add (&counters[2 * i + 1], GCOV_TOPN_VALUES,
+			      __ATOMIC_RELAXED);
+	else
+	  counters[2 * i + 1] += GCOV_TOPN_VALUES;
+	return;
+      }
+    else if (counters[2 * i + 1] <= 0)
+      empty_counter = i;
+
+  /* Find an empty slot for a new value.  */
+  if (empty_counter != -1)
     {
-      if (value == counters[2 * i])
-	{
-	  if (use_atomic)
-	    __atomic_fetch_add (&counters[2 * i + 1], GCOV_TOPN_VALUES,
-				__ATOMIC_RELAXED);
-	  else
-	    counters[2 * i + 1] += GCOV_TOPN_VALUES;
-	  return;
-	}
-      else if (counters[2 * i + 1] <= 0)
-	{
-	  /* We found an empty slot.  */
-	  counters[2 * i] = value;
-	  counters[2 * i + 1] = GCOV_TOPN_VALUES;
-	  return;
-	}
+      counters[2 * empty_counter] = value;
+      counters[2 * empty_counter + 1] = GCOV_TOPN_VALUES;
+      return;
     }
 
   /* We haven't found an empty slot, then decrement all
      counter values by one.  */
   for (unsigned i = 0; i < GCOV_TOPN_VALUES; i++)
-    {
-      if (use_atomic)
-	__atomic_fetch_sub (&counters[2 * i + 1], 1, __ATOMIC_RELAXED);
-      else
-	counters[2 * i + 1]--;
-    }
+    if (use_atomic)
+      __atomic_fetch_sub (&counters[2 * i + 1], 1, __ATOMIC_RELAXED);
+    else
+      counters[2 * i + 1]--;
 }
 
 #ifdef L_gcov_topn_values_profiler
