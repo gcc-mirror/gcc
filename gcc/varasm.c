@@ -2585,20 +2585,16 @@ assemble_name_raw (FILE *file, const char *name)
     ASM_OUTPUT_LABELREF (file, name);
 }
 
-/* Like assemble_name_raw, but should be used when NAME might refer to
-   an entity that is also represented as a tree (like a function or
-   variable).  If NAME does refer to such an entity, that entity will
-   be marked as referenced.  */
-
-void
-assemble_name (FILE *file, const char *name)
+/* Return NAME that should actually be emitted, looking through
+   transparent aliases.  If NAME refers to an entity that is also
+   represented as a tree (like a function or variable), mark the entity
+   as referenced.  */
+const char *
+assemble_name_resolve (const char *name)
 {
-  const char *real_name;
-  tree id;
+  const char *real_name = targetm.strip_name_encoding (name);
+  tree id = maybe_get_identifier (real_name);
 
-  real_name = targetm.strip_name_encoding (name);
-
-  id = maybe_get_identifier (real_name);
   if (id)
     {
       tree id_orig = id;
@@ -2610,7 +2606,18 @@ assemble_name (FILE *file, const char *name)
       gcc_assert (! TREE_CHAIN (id));
     }
 
-  assemble_name_raw (file, name);
+  return name;
+}
+
+/* Like assemble_name_raw, but should be used when NAME might refer to
+   an entity that is also represented as a tree (like a function or
+   variable).  If NAME does refer to such an entity, that entity will
+   be marked as referenced.  */
+
+void
+assemble_name (FILE *file, const char *name)
+{
+  assemble_name_raw (file, assemble_name_resolve (name));
 }
 
 /* Allocate SIZE bytes writable static space with a gensym name
