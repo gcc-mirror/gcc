@@ -1,5 +1,9 @@
 2020-01-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* sm-signal.cc: Fix nesting of CHECKING_P and namespace ana.
+
+2020-01-22  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93378
 	* engine.cc (setjmp_svalue::compare_fields): Update for
 	replacement of m_enode with m_setjmp_record.
