@@ -1,3 +1,7 @@
+2020-05-09  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/: Adjust for removing crisv32-* and cris-linux-*.
+
 2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* gcc.target/i386/pr92807-1.c: Improve the regex.

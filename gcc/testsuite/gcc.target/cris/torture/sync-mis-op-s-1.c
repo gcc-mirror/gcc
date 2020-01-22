@@ -1,4 +1,4 @@
-/* { dg-do run { target *-*-linux* } } */
+/* { dg-do run { target { ! *-*-* } } } */
 /* { dg-additional-sources "../sync-1.c" } */
 /* { dg-options "-Dop -Dtype=short -mno-unaligned-atomic-may-use-library" } */
 
@@ -47,11 +47,7 @@ type ret = 42;
 void my_abort (void) __asm__ (SYMSTR (abort)) __attribute__ ((__used__));
 void my_abort (void)
 #else
-#ifdef __gnu_linux__
-void trap_handler(int signum)
-#else
 #error "can't catch break 8"
-#endif
 #endif
 {
   if (1
@@ -77,13 +73,6 @@ void trap_handler(int signum)
 int main(void)
 {
   type ret;
-
-#ifndef TRAP_USING_ABORT
-#ifdef __gnu_linux__
-  if (signal (SIGTRAP, trap_handler) == SIG_ERR)
-    abort ();
-#endif
-#endif
 
 #ifndef mis_ok
   trap_expected = 1;
