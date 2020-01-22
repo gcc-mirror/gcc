@@ -310,8 +310,8 @@ package body Comperr is
                   End_Line;
 
                   Write_Str
-                    ("| http://www.adacore.com/ " &
-                     "section 'send a report'.");
+                    ("| https://www.adacore.com/login?mode=gap " &
+                     "section 'Create New Ticket'.");
                   End_Line;
 
                   Write_Str
@@ -325,8 +325,8 @@ package body Comperr is
                   End_Line;
 
                   Write_Str
-                    ("| http://www.adacore.com/gnattracker/ " &
-                     "section 'send a report'.");
+                    ("| https://www.adacore.com/login " &
+                     "section 'Create New Ticket'.");
                   End_Line;
 
                   Write_Str
