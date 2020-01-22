@@ -3,6 +3,8 @@
 	* resource.c (init_resource_info): Filter-out TARGET_FLAGS_REGNUM
 	from end_of_function_needs.
 
+	* config.gcc: Remove support for crisv32-*-* and cris-*-linux*.
+
 2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira-color.c (update_costs_from_allocno): Remove
