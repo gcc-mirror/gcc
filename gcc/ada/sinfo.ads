@@ -4252,6 +4252,7 @@ package Sinfo is
       --  Sloc points to left parenthesis
       --  Expression (Node3)
       --  Component_Associations (List2)
+      --  Etype (Node5-Sem)
 
       --------------------------------------------------
       -- 4.4  Expression/Relation/Term/Factor/Primary --
@@ -4657,6 +4658,7 @@ package Sinfo is
       --  Sloc points to CASE
       --  Expression (Node3) (the selecting expression)
       --  Alternatives (List4) (the case expression alternatives)
+      --  Etype (Node5-Sem)
       --  Do_Overflow_Check (Flag17-Sem)
 
       ----------------------------------------
@@ -12118,7 +12120,7 @@ package Sinfo is
         2 => True,    --  Iterator_Specification (Node2)
         3 => False,   --  unused
         4 => True,    --  Loop_Parameter_Specification (Node4)
-        5 => False),  --  Etype (Node5-Sem)
+        5 => False),  --  unused
 
      N_Allocator =>
        (1 => False,   --  Storage_Pool (Node1-Sem)
@@ -12174,7 +12176,7 @@ package Sinfo is
         2 => False,   --  unused
         3 => True,    --  Expression (Node3)
         4 => True,    --  Alternatives (List4)
-        5 => False),  --  unused
+        5 => False),  --  Etype (Node5-Sem)
 
      N_Case_Expression_Alternative =>
        (1 => False,   --  Actions (List1-Sem)
