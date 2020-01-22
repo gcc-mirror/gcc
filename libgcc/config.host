@@ -112,9 +112,6 @@ bpf-*-*)
         ;;
 cr16-*-*)
 	;;
-crisv32-*-*)
-	cpu_type=cris
-	;;
 csky*-*-*)
 	cpu_type=csky
 	;;
@@ -577,14 +574,8 @@ cr16-*-elf)
 	tmake_file="${tmake_file} cr16/t-cr16 cr16/t-crtlibid t-fdpbit"
 	extra_parts="$extra_parts crti.o crtn.o crtlibid.o"
         ;;
-crisv32-*-elf)
-	tmake_file="$tmake_file cris/t-cris t-softfp-sfdf t-softfp"
- 	;;
 cris-*-elf)
 	tmake_file="$tmake_file cris/t-cris t-softfp-sfdf t-softfp cris/t-elfmulti"
-	;;
-cris-*-linux* | crisv32-*-linux*)
-	tmake_file="$tmake_file cris/t-cris t-softfp-sfdf t-softfp cris/t-linux"
 	;;
 csky-*-elf*)
 	tmake_file="csky/t-csky t-fdpbit"
