@@ -1,5 +1,11 @@
 2020-01-22  Jakub Jelinek  <jakub@redhat.com>
 
+	* parse.c (parse_omp_structured_block): Handle ST_OMP_TARGET_PARALLEL.
+	* trans-openmp.c (gfc_trans_omp_target)
+	<case EXEC_OMP_TARGET_PARALLEL>: Call pushlevel first.
+
+2020-01-22  Jakub Jelinek  <jakub@redhat.com>
+
 	PR fortran/93329
 	* openmp.c (omp_code_to_statement): Handle remaining EXEC_OMP_*
 	cases.

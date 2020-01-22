@@ -5103,6 +5103,9 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
     case ST_OMP_TARGET_DATA:
       omp_end_st = ST_OMP_END_TARGET_DATA;
       break;
+    case ST_OMP_TARGET_PARALLEL:
+      omp_end_st = ST_OMP_END_TARGET_PARALLEL;
+      break;
     case ST_OMP_TARGET_TEAMS:
       omp_end_st = ST_OMP_END_TARGET_TEAMS;
       break;
