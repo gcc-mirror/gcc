@@ -4,6 +4,8 @@
 	from end_of_function_needs.
 
 	* config.gcc: Remove support for crisv32-*-* and cris-*-linux*.
+	* config/cris/t-linux, config/cris/linux.h, config/cris/linux.opt:
+	Remove.
 
 2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
 
