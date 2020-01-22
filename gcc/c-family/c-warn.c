@@ -1202,7 +1202,7 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
     case INTEGER_CST:
     case COMPLEX_CST:
       {
-	conversion_kind = unsafe_conversion_p (loc, type, expr, result, true);
+	conversion_kind = unsafe_conversion_p (type, expr, result, true);
 	int warnopt;
 	if (conversion_kind == UNSAFE_REAL)
 	  warnopt = OPT_Wfloat_conversion;
@@ -1310,7 +1310,7 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
       is_arith = true;
       gcc_fallthrough ();
     default:
-      conversion_kind = unsafe_conversion_p (loc, type, expr, result, true);
+      conversion_kind = unsafe_conversion_p (type, expr, result, true);
       {
 	int warnopt;
 	if (conversion_kind == UNSAFE_REAL)
