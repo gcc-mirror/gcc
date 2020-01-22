@@ -734,6 +734,9 @@ is_std_constant_evaluated_p (tree fn)
     return false;
 
   tree fndecl = cp_get_callee_fndecl_nofold (fn);
+  if (fndecl == NULL_TREE)
+    return false;
+
   if (fndecl_built_in_p (fndecl, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
 			 BUILT_IN_FRONTEND))
     return true;

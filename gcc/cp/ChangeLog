@@ -1,3 +1,8 @@
+2020-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93324 - ICE with -Wall on constexpr if.
+	* semantics.c (is_std_constant_evaluated_p): Check fndecl.
+
 2020-01-22  Patrick Palka  <ppalka@redhat.com>
 
 	* constraint.cc (get_mapped_args): Avoid using auto_vec

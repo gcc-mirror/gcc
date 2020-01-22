@@ -1,3 +1,8 @@
+2020-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93324 - ICE with -Wall on constexpr if.
+	* g++.dg/cpp1z/constexpr-if33.C: New test.
+
 2020-01-22  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/acle/general/stack_vars_1.c: New test.
