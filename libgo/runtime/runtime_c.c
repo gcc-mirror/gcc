@@ -97,7 +97,7 @@ runtime_cputicks(void)
   // Currently cputicks() is used in blocking profiler and to seed runtime·fastrand().
   // runtime·nanotime() is a poor approximation of CPU ticks that is enough for the profiler.
   // randomNumber provides better seeding of fastrand.
-  return runtime_nanotime() + randomNumber;
+  return runtime_nanotime1() + randomNumber;
 #endif
 }
 
