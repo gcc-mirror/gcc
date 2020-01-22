@@ -116,15 +116,13 @@ static int cris_initial_frame_pointer_offset (void);
 
 static void cris_operand_lossage (const char *, rtx);
 
-static int cris_reg_saved_in_regsave_area  (unsigned int, bool);
+static int cris_reg_saved_in_regsave_area  (unsigned int);
 
 static void cris_print_operand (FILE *, rtx, int);
 
 static void cris_print_operand_address (FILE *, machine_mode, rtx);
 
 static bool cris_print_operand_punct_valid_p (unsigned char code);
-
-static bool cris_output_addr_const_extra (FILE *, rtx);
 
 static void cris_conditional_register_usage (void);
 
@@ -152,7 +150,6 @@ static void cris_function_arg_advance (cumulative_args_t,
 static rtx_insn *cris_md_asm_adjust (vec<rtx> &, vec<rtx> &,
 				     vec<const char *> &,
 				     vec<rtx> &, HARD_REG_SET &);
-static bool cris_cannot_force_const_mem (machine_mode, rtx);
 
 static void cris_option_override (void);
 
@@ -164,7 +161,6 @@ static void cris_trampoline_init (rtx, tree, rtx);
 static rtx cris_function_value(const_tree, const_tree, bool);
 static rtx cris_libcall_value (machine_mode, const_rtx);
 static bool cris_function_value_regno_p (const unsigned int);
-static void cris_file_end (void);
 static unsigned int cris_hard_regno_nregs (unsigned int, machine_mode);
 static bool cris_hard_regno_mode_ok (unsigned int, machine_mode);
 static HOST_WIDE_INT cris_static_rtx_alignment (machine_mode);
@@ -202,8 +198,6 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #define TARGET_PRINT_OPERAND_ADDRESS cris_print_operand_address
 #undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
 #define TARGET_PRINT_OPERAND_PUNCT_VALID_P cris_print_operand_punct_valid_p
-#undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
-#define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA cris_output_addr_const_extra
 
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE cris_conditional_register_usage
@@ -215,8 +209,6 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START cris_file_start
-#undef TARGET_ASM_FILE_END
-#define TARGET_ASM_FILE_END cris_file_end
 
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS cris_init_libfuncs
@@ -226,9 +218,6 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P cris_legitimate_address_p
-
-#undef TARGET_LEGITIMATE_CONSTANT_P
-#define TARGET_LEGITIMATE_CONSTANT_P cris_legitimate_constant_p
 
 #undef TARGET_PREFERRED_RELOAD_CLASS
 #define TARGET_PREFERRED_RELOAD_CLASS cris_preferred_reload_class
@@ -267,9 +256,6 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #define TARGET_FUNCTION_ARG_ADVANCE cris_function_arg_advance
 #undef TARGET_MD_ASM_ADJUST
 #define TARGET_MD_ASM_ADJUST cris_md_asm_adjust
-
-#undef TARGET_CANNOT_FORCE_CONST_MEM
-#define TARGET_CANNOT_FORCE_CONST_MEM cris_cannot_force_const_mem
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED cris_frame_pointer_required
@@ -342,11 +328,8 @@ cris_movem_load_rest_p (rtx op, int offs)
   else
     i = offs + 1;
 
-  if (!TARGET_V32)
-    {
-      regno_dir = -1;
-      regno = reg_count - 1;
-    }
+  regno_dir = -1;
+  regno = reg_count - 1;
 
   elt = XVECEXP (op, 0, offs);
   src_addr = XEXP (SET_SRC (elt), 0);
@@ -446,11 +429,8 @@ cris_store_multiple_op_p (rtx op)
   else
     i = 1;
 
-  if (!TARGET_V32)
-    {
-      regno_dir = -1;
-      regno = reg_count - 1;
-    }
+  regno_dir = -1;
+  regno = reg_count - 1;
 
   if (GET_CODE (elt) != SET
       || !REG_P (SET_SRC (elt))
@@ -501,26 +481,6 @@ cris_store_multiple_op_p (rtx op)
 static void
 cris_conditional_register_usage (void)
 {
-  /* FIXME: This isn't nice.  We should be able to use that register for
-     something else if the PIC table isn't needed.  */
-  if (flag_pic)
-    fixed_regs[PIC_OFFSET_TABLE_REGNUM]
-      = call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
-
-  /* Allow use of ACR (PC in pre-V32) and tweak order.  */
-  if (TARGET_V32)
-    {
-      static const int reg_alloc_order_v32[] = REG_ALLOC_ORDER_V32;
-      unsigned int i;
-
-      fixed_regs[CRIS_ACR_REGNUM] = 0;
-
-      for (i = 0;
-          i < sizeof (reg_alloc_order_v32)/sizeof (reg_alloc_order_v32[0]);
-          i++)
-       reg_alloc_order[i] = reg_alloc_order_v32[i];
-    }
-
   if (TARGET_HAS_MUL_INSNS)
     fixed_regs[CRIS_MOF_REGNUM] = 0;
 
@@ -528,30 +488,6 @@ cris_conditional_register_usage (void)
      which has another name.  */
   if (cris_cpu_version < 8)
     reg_names[CRIS_CC0_REGNUM] = "ccr";
-}
-
-/* Return crtl->uses_pic_offset_table.  For use in cris.md,
-   since some generated files do not include function.h.  */
-
-int
-cris_cfun_uses_pic_table (void)
-{
-  return crtl->uses_pic_offset_table;
-}
-
-/* Worker function for TARGET_CANNOT_FORCE_CONST_MEM.
-   We can't put PIC addresses in the constant pool, not even the ones that
-   can be reached as pc-relative as we can't tell when or how to do that.  */
-
-static bool
-cris_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
-{
-  enum cris_symbol_type t = cris_symbol_type_of (x);
-
-  return
-    t == cris_unspec
-    || t == cris_got_symbol
-    || t == cris_rel_symbol;
 }
 
 /* Given an rtx, return the text string corresponding to the CODE of X.
@@ -637,7 +573,7 @@ cris_print_index (rtx index, FILE *file)
 
   if (REG_P (index))
     fprintf (file, "$%s.b", reg_names[REGNO (index)]);
-  else if (CRIS_CONSTANT_P (index))
+  else if (CONSTANT_P (index))
     cris_output_addr_const (file, index);
   else if (GET_CODE (index) == MULT)
     {
@@ -685,10 +621,7 @@ cris_print_base (rtx base, FILE *file)
   if (REG_P (base))
     fprintf (file, "$%s", reg_names[REGNO (base)]);
   else if (GET_CODE (base) == POST_INC)
-    {
-      gcc_assert (REGNO (XEXP (base, 0)) != CRIS_ACR_REGNUM);
-      fprintf (file, "$%s+", reg_names[REGNO (XEXP (base, 0))]);
-    }
+    fprintf (file, "$%s+", reg_names[REGNO (XEXP (base, 0))]);
   else
     cris_operand_lossage ("unexpected base-type in cris_print_base",
 			  base);
@@ -712,17 +645,11 @@ cris_fatal (char *arg)
    wrapper for a complicated conditional.  */
 
 static int
-cris_reg_saved_in_regsave_area (unsigned int regno, bool got_really_used)
+cris_reg_saved_in_regsave_area (unsigned int regno)
 {
   return
     (((df_regs_ever_live_p (regno)
-       && !call_used_or_fixed_reg_p (regno))
-      || (regno == PIC_OFFSET_TABLE_REGNUM
-	  && (got_really_used
-	      /* It is saved anyway, if there would be a gap.  */
-	      || (flag_pic
-		  && df_regs_ever_live_p (regno + 1)
-		  && !call_used_or_fixed_reg_p (regno + 1)))))
+       && !call_used_or_fixed_reg_p (regno)))
      && (regno != FRAME_POINTER_REGNUM || !frame_pointer_needed)
      && regno != CRIS_SRP_REGNUM)
     || (crtl->calls_eh_return
@@ -866,16 +793,6 @@ cris_print_operand (FILE *file, rtx x, int code)
       putc (INTVAL (x) >= -128 && INTVAL (x) <= 255 ? 'b' : 'w', file);
       return;
 
-    case 'Z':
-      /* If this is a GOT-symbol, print the size-letter corresponding to
-	 -fpic/-fPIC.  For everything else, print "d".  */
-      putc ((flag_pic == 1
-	     && GET_CODE (x) == CONST
-	     && GET_CODE (XEXP (x, 0)) == UNSPEC
-	     && XINT (XEXP (x, 0), 1) == CRIS_UNSPEC_GOTREAD)
-	    ? 'w' : 'd', file);
-      return;
-
     case '#':
       /* Output a 'nop' if there's nothing for the delay slot.
 	 This method stolen from the sparc files.  */
@@ -898,13 +815,6 @@ cris_print_operand (FILE *file, rtx x, int code)
 	fputs (optimize_size
 	       ? ".p2alignw 2,0x050f\n\t"
 	       : ".p2alignw 5,0x050f,2\n\t", file);
-      return;
-
-    case ':':
-      /* The PIC register.  */
-      if (! flag_pic)
-	internal_error ("invalid use of %<:%> modifier");
-      fprintf (file, "$%s", reg_names [PIC_OFFSET_TABLE_REGNUM]);
       return;
 
     case 'H':
@@ -1073,21 +983,6 @@ cris_print_operand (FILE *file, rtx x, int code)
 	fprintf (file, ".d");
       return;
 
-    case 'd':
-      /* If this is a GOT symbol, force it to be emitted as :GOT and
-	 :GOTPLT regardless of -fpic (i.e. not as :GOT16, :GOTPLT16).
-	 Avoid making this too much of a special case.  */
-      if (flag_pic == 1 && CRIS_CONSTANT_P (operand))
-	{
-	  int flag_pic_save = flag_pic;
-
-	  flag_pic = 2;
-	  cris_output_addr_const (file, operand);
-	  flag_pic = flag_pic_save;
-	  return;
-	}
-      break;
-
     case 'D':
       /* When emitting an sub for the high part of a DImode constant, we
 	 want to use subq for 0 and subs.w for -1.  */
@@ -1108,17 +1003,6 @@ cris_print_operand (FILE *file, rtx x, int code)
       if (!CONST_INT_P (operand) || INTVAL (operand) > 4)
 	LOSE_AND_RETURN ("invalid operand for 'T' modifier", x);
       fprintf (file, "%s", mults[INTVAL (operand)]);
-      return;
-
-    case 'u':
-      /* Print "u.w" if a GOT symbol and flag_pic == 1, else ".d".  */
-      if (flag_pic == 1
-	  && GET_CODE (operand) == CONST
-	  && GET_CODE (XEXP (operand, 0)) == UNSPEC
-	  && XINT (XEXP (operand, 0), 1) == CRIS_UNSPEC_GOTREAD)
-	fprintf (file, "u.w");
-      else
-	fprintf (file, ".d");
       return;
 
     case 0:
@@ -1162,8 +1046,6 @@ cris_print_operand (FILE *file, rtx x, int code)
 	}
       return;
 
-    case UNSPEC:
-      /* Fall through.  */
     case CONST:
       cris_output_addr_const (file, operand);
       return;
@@ -1194,7 +1076,7 @@ cris_print_operand (FILE *file, rtx x, int code)
     default:
       /* No need to handle all strange variants, let output_addr_const
 	 do it for us.  */
-      if (CRIS_CONSTANT_P (operand))
+      if (CONSTANT_P (operand))
 	{
 	  cris_output_addr_const (file, operand);
 	  return;
@@ -1207,7 +1089,7 @@ cris_print_operand (FILE *file, rtx x, int code)
 static bool
 cris_print_operand_punct_valid_p (unsigned char code)
 {
-  return (code == '#' || code == '!' || code == ':');
+  return (code == '#' || code == '!');
 }
 
 /* The PRINT_OPERAND_ADDRESS worker.  */
@@ -1304,20 +1186,10 @@ cris_initial_frame_pointer_offset (void)
 
   /* Initial offset is 0 if we don't have a frame pointer.  */
   int offs = 0;
-  bool got_really_used = false;
-
-  if (crtl->uses_pic_offset_table)
-    {
-      push_topmost_sequence ();
-      got_really_used
-	= reg_used_between_p (pic_offset_table_rtx, get_insns (),
-			      NULL);
-      pop_topmost_sequence ();
-    }
 
   /* And 4 for each register pushed.  */
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if (cris_reg_saved_in_regsave_area (regno, got_really_used))
+    if (cris_reg_saved_in_regsave_area (regno))
       offs += 4;
 
   /* And then, last, we add the locals allocated.  */
@@ -1384,15 +1256,6 @@ reg_ok_for_index_p (const_rtx x, bool strict)
   return reg_ok_for_base_p (x, strict);
 }
 
-/* No symbol can be used as an index (or more correct, as a base) together
-   with a register with PIC; the PIC register must be there.  */
-
-bool
-cris_constant_index_p (const_rtx x)
-{
-  return (CRIS_CONSTANT_P (x) && (!flag_pic || cris_valid_pic_const (x, true)));
-}
-
 /* True if X is a valid base register.  */
 
 bool
@@ -1416,8 +1279,7 @@ cris_base_or_autoincr_p (const_rtx x, bool strict)
 {
   return (cris_base_p (x, strict)
 	  || (GET_CODE (x) == POST_INC
-	      && cris_base_p (XEXP (x, 0), strict)
-	      && REGNO (XEXP (x, 0)) != CRIS_ACR_REGNUM));
+	      && cris_base_p (XEXP (x, 0), strict)));
 }
 
 /* True if X is a valid (register) index for BDAP, i.e. [Rs].S or [Rs+].S.  */
@@ -1446,14 +1308,7 @@ cris_biap_index_p (const_rtx x, bool strict)
 	      && cris_scale_int_operand (XEXP (x, 1), VOIDmode)));
 }
 
-/* Worker function for TARGET_LEGITIMATE_ADDRESS_P.
-
-   A PIC operand looks like a normal symbol here.  At output we dress it
-   in "[rPIC+symbol:GOT]" (global symbol) or "rPIC+symbol:GOTOFF" (local
-   symbol) so we exclude all addressing modes where we can't replace a
-   plain "symbol" with that.  A global PIC symbol does not fit anywhere
-   here (but is thankfully a general_operand in itself).  A local PIC
-   symbol is valid for the plain "symbol + offset" case.  */
+/* Worker function for TARGET_LEGITIMATE_ADDRESS_P.  */
 
 bool
 cris_legitimate_address_p (machine_mode mode, rtx x, bool strict)
@@ -1462,10 +1317,7 @@ cris_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 
   if (cris_base_or_autoincr_p (x, strict))
     return true;
-  else if (TARGET_V32)
-    /* Nothing else is valid then.  */
-    return false;
-  else if (cris_constant_index_p (x))
+  else if (CONSTANT_P (x))
     return true;
   /* Indexed?  */
   else if (GET_CODE (x) == PLUS)
@@ -1473,8 +1325,8 @@ cris_legitimate_address_p (machine_mode mode, rtx x, bool strict)
       x1 = XEXP (x, 0);
       x2 = XEXP (x, 1);
       /* BDAP o, Rd.  */
-      if ((cris_base_p (x1, strict) && cris_constant_index_p (x2))
-	  || (cris_base_p (x2, strict) && cris_constant_index_p (x1))
+      if ((cris_base_p (x1, strict) && CONSTANT_P (x2))
+	  || (cris_base_p (x2, strict) && CONSTANT_P (x1))
 	   /* BDAP Rs[+], Rd.  */
 	  || (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
 	      && ((cris_base_p (x1, strict)
@@ -1499,29 +1351,6 @@ cris_legitimate_address_p (machine_mode mode, rtx x, bool strict)
   return false;
 }
 
-/* Worker function for TARGET_LEGITIMATE_CONSTANT_P.  We have to handle
-   PIC constants that aren't legitimized.  FIXME: there used to be a
-   guarantee that the target LEGITIMATE_CONSTANT_P didn't have to handle
-   PIC constants, but no more (4.7 era); testcase: glibc init-first.c.
-   While that may be seen as a bug, that guarantee seems a wart by design,
-   so don't bother; fix the documentation instead.  */
-
-bool
-cris_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
-{
-  enum cris_symbol_type t;
-
-  if (flag_pic)
-    return LEGITIMATE_PIC_OPERAND_P (x);
-
-  t = cris_symbol_type_of (x);
-
-  return
-    t == cris_no_symbol
-    || t == cris_offsettable_symbol
-    || t == cris_unspec;
-}
-
 /* Worker function for LEGITIMIZE_RELOAD_ADDRESS.  */
 
 bool
@@ -1536,9 +1365,6 @@ cris_reload_address_legitimized (rtx x,
   rtx *op1p;
 
   if (GET_CODE (x) != PLUS)
-    return false;
-
-  if (TARGET_V32)
     return false;
 
   op0 = XEXP (x, 0);
@@ -1689,7 +1515,7 @@ cris_normal_notice_update_cc (rtx exp, rtx insn)
 
      (set (reg) (...)):
      CC is (reg) and (...) - unless (...) is 0 or reg is a special
-        register or (v32 and (...) is -32..-1), then CC does not change.
+	register, then CC does not change.
      CC_NO_OVERFLOW unless (...) is reg or mem.
 
      (set (mem) (...)):
@@ -1806,10 +1632,7 @@ cris_normal_notice_update_cc (rtx exp, rtx insn)
 	  else if (SET_SRC (exp) == const0_rtx
 		   || (REG_P (SET_SRC (exp))
 		       && (REGNO (SET_SRC (exp))
-			   > CRIS_LAST_GENERAL_REGISTER))
-		   || (TARGET_V32
-		       && REG_P (SET_DEST (exp))
-		       && satisfies_constraint_I (SET_SRC (exp))))
+			   > CRIS_LAST_GENERAL_REGISTER)))
 	    {
 	      /* There's no CC0 change for this case.  Just check
 		 for overlap.  */
@@ -1839,11 +1662,6 @@ cris_normal_notice_update_cc (rtx exp, rtx insn)
 	      if (GET_CODE (SET_SRC (exp)) == PLUS
 		  || GET_CODE (SET_SRC (exp)) == MINUS
 		  || GET_CODE (SET_SRC (exp)) == NEG)
-		cc_status.flags |= CC_NO_OVERFLOW;
-
-	      /* For V32, nothing with a register destination sets
-		 C and V usefully.  */
-	      if (TARGET_V32)
 		cc_status.flags |= CC_NO_OVERFLOW;
 
 	      return;
@@ -1889,10 +1707,6 @@ cris_normal_notice_update_cc (rtx exp, rtx insn)
 	      if (cris_reg_overlap_mentioned_p (cc_status.value1,
 						cc_status.value2))
 		internal_error ("internal error: sideeffect-insn affecting main effect");
-
-	      /* For V32, moves to registers don't set C and V.  */
-	      if (TARGET_V32)
-		cc_status.flags |= CC_NO_OVERFLOW;
 	      return;
 	    }
 	  else if ((REG_P (XEXP (XVECEXP (exp, 0, 0), 1))
@@ -1972,16 +1786,8 @@ cris_notice_update_cc (rtx exp, rtx_insn *insn)
       return;
 
     case CC_REV:
-    case CC_NOOV32:
     case CC_NORMAL:
       cris_normal_notice_update_cc (exp, insn);
-
-      /* The "test" insn doesn't clear (carry and) overflow on V32.  We
-        can change bge => bpl and blt => bmi by passing on to the cc0
-        user that V should not be considered; bgt and ble are taken
-        care of by other methods (see {tst,cmp}{si,hi,qi}).  */
-      if (attrval == CC_NOOV32 && TARGET_V32)
-	cc_status.flags |= CC_NO_OVERFLOW;
       return;
 
     default:
@@ -2000,7 +1806,6 @@ cris_simple_epilogue (void)
 {
   unsigned int regno;
   unsigned int reglimit = STACK_POINTER_REGNUM;
-  bool got_really_used = false;
 
   if (! reload_completed
       || frame_pointer_needed
@@ -2015,21 +1820,9 @@ cris_simple_epilogue (void)
       || !TARGET_PROLOGUE_EPILOGUE)
     return false;
 
-  /* Can't return from stacked return address with v32.  */
-  if (TARGET_V32 && cris_return_address_on_stack ())
-    return false;
-
-  if (crtl->uses_pic_offset_table)
-    {
-      push_topmost_sequence ();
-      got_really_used
-	= reg_used_between_p (pic_offset_table_rtx, get_insns (), NULL);
-      pop_topmost_sequence ();
-    }
-
   /* No simple epilogue if there are saved registers.  */
   for (regno = 0; regno < reglimit; regno++)
-    if (cris_reg_saved_in_regsave_area (regno, got_really_used))
+    if (cris_reg_saved_in_regsave_area (regno))
       return false;
 
   return true;
@@ -2273,7 +2066,7 @@ cris_address_cost (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
 	return (2 + 2) / 2;
 
       /* A BDAP with some other constant is 2 bytes extra.  */
-      if (CRIS_CONSTANT_P (tem2))
+      if (CONSTANT_P (tem2))
 	return (2 + 2 + 2) / 2;
 
       /* BDAP with something indirect should have a higher cost than
@@ -2371,7 +2164,7 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
 	return 0;
 
       /* Check allowed cases, like [r(+)?].[bwd] and const.  */
-      if (CRIS_CONSTANT_P (val_rtx))
+      if (CONSTANT_P (val_rtx))
 	return 1;
 
       if (MEM_P (val_rtx)
@@ -2415,49 +2208,6 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
   internal_error ("internal error: cris_side_effect_mode_ok with bad operands");
 }
 
-/* Whether next_cc0_user of insn is LE or GT or requires a real compare
-   insn for other reasons.  */
-
-bool
-cris_cc0_user_requires_cmp (rtx_insn *insn)
-{
-  rtx_insn *cc0_user = NULL;
-  rtx body;
-  rtx set;
-
-  gcc_assert (insn != NULL);
-
-  if (!TARGET_V32)
-    return false;
-
-  cc0_user = next_cc0_user (insn);
-  if (cc0_user == NULL)
-    return false;
-
-  body = PATTERN (cc0_user);
-  set = single_set (cc0_user);
-
-  /* Users can be sCC and bCC.  */
-  if (JUMP_P (cc0_user)
-      && GET_CODE (body) == SET
-      && SET_DEST (body) == pc_rtx
-      && GET_CODE (SET_SRC (body)) == IF_THEN_ELSE
-      && XEXP (XEXP (SET_SRC (body), 0), 0) == cc0_rtx)
-    {
-      return
-	GET_CODE (XEXP (SET_SRC (body), 0)) == GT
-	|| GET_CODE (XEXP (SET_SRC (body), 0)) == LE;
-    }
-  else if (set)
-    {
-      return
-	GET_CODE (SET_SRC (body)) == GT
-	|| GET_CODE (SET_SRC (body)) == LE;
-    }
-
-  gcc_unreachable ();
-}
-
 /* The function reg_overlap_mentioned_p in CVS (still as of 2001-05-16)
    does not handle the case where the IN operand is strict_low_part; it
    does handle it for X.  Test-case in Axis-20010516.  This function takes
@@ -2473,114 +2223,6 @@ cris_reg_overlap_mentioned_p (rtx x, rtx in)
     in = XEXP (in, 0);
 
   return reg_overlap_mentioned_p (x, in);
-}
-
-/* Return TRUE iff X is a CONST valid for e.g. indexing.
-   ANY_OPERAND is 0 if X is in a CALL_P insn or movsi, 1
-   elsewhere.  */
-
-bool
-cris_valid_pic_const (const_rtx x, bool any_operand)
-{
-  gcc_assert (flag_pic);
-
-  switch (GET_CODE (x))
-    {
-    case CONST_INT:
-    case CONST_DOUBLE:
-      return true;
-    default:
-      ;
-    }
-
-  if (GET_CODE (x) != CONST)
-    return false;
-
-  x = XEXP (x, 0);
-
-  /* Handle (const (plus (unspec .. UNSPEC_GOTREL) (const_int ...))).  */
-  if (GET_CODE (x) == PLUS
-      && GET_CODE (XEXP (x, 0)) == UNSPEC
-      && (XINT (XEXP (x, 0), 1) == CRIS_UNSPEC_GOTREL
-	  || XINT (XEXP (x, 0), 1) == CRIS_UNSPEC_PCREL)
-      && CONST_INT_P (XEXP (x, 1)))
-    x = XEXP (x, 0);
-
-  if (GET_CODE (x) == UNSPEC)
-    switch (XINT (x, 1))
-      {
-	/* A PCREL operand is only valid for call and movsi.  */
-      case CRIS_UNSPEC_PLT_PCREL:
-      case CRIS_UNSPEC_PCREL:
-	return !any_operand;
-
-      case CRIS_UNSPEC_PLT_GOTREL:
-      case CRIS_UNSPEC_PLTGOTREAD:
-      case CRIS_UNSPEC_GOTREAD:
-      case CRIS_UNSPEC_GOTREL:
-	return true;
-      default:
-	gcc_unreachable ();
-      }
-
-  return cris_symbol_type_of (x) == cris_no_symbol;
-}
-
-/* Helper function to find the right symbol-type to generate,
-   given the original (non-PIC) representation.  */
-
-enum cris_symbol_type
-cris_symbol_type_of (const_rtx x)
-{
-  switch (GET_CODE (x))
-    {
-    case SYMBOL_REF:
-      return flag_pic
-	? (SYMBOL_REF_LOCAL_P (x)
-	   ? cris_rel_symbol : cris_got_symbol)
-	: cris_offsettable_symbol;
-
-    case LABEL_REF:
-      return flag_pic ? cris_rel_symbol : cris_offsettable_symbol;
-
-    case CONST:
-      return cris_symbol_type_of (XEXP (x, 0));
-
-    case PLUS:
-    case MINUS:
-      {
-	enum cris_symbol_type t1 = cris_symbol_type_of (XEXP (x, 0));
-	enum cris_symbol_type t2 = cris_symbol_type_of (XEXP (x, 1));
-
-	gcc_assert (t1 == cris_no_symbol || t2 == cris_no_symbol);
-
-	if (t1 == cris_got_symbol || t2 == cris_got_symbol)
-	  return cris_got_symbol_needing_fixup;
-
-	return t1 != cris_no_symbol ? t1 : t2;
-      }
-
-    case CONST_INT:
-    case CONST_DOUBLE:
-      return cris_no_symbol;
-
-    case UNSPEC:
-      return cris_unspec;
-
-    default:
-      fatal_insn ("unrecognized supposed constant", x);
-    }
-
-  gcc_unreachable ();
-}
-
-/* The LEGITIMATE_PIC_OPERAND_P worker.  */
-
-int
-cris_legitimate_pic_operand (rtx x)
-{
-  /* Symbols are not valid PIC operands as-is; just constants.  */
-  return cris_valid_pic_const (x, true);
 }
 
 /* Queue an .ident string in the queue of top-level asm statements.
@@ -2604,30 +2246,12 @@ cris_asm_output_case_end (FILE *stream, int num, rtx_insn *table)
      assert that we find only what's expected.  */
   rtx_insn *whole_jump_insn = prev_nonnote_nondebug_insn (table);
   gcc_assert (whole_jump_insn != NULL_RTX && LABEL_P (whole_jump_insn));
+
   whole_jump_insn = prev_nonnote_nondebug_insn (whole_jump_insn);
-  gcc_assert (whole_jump_insn != NULL_RTX
-	      && (JUMP_P (whole_jump_insn)
-		  || (TARGET_V32 && INSN_P (whole_jump_insn)
-		      && GET_CODE (PATTERN (whole_jump_insn)) == SEQUENCE)));
+  gcc_assert (whole_jump_insn != NULL_RTX && JUMP_P (whole_jump_insn));
+
   /* Get the pattern of the casejump, so we can extract the default label.  */
   rtx whole_jump_pat = PATTERN (whole_jump_insn);
-
-  if (TARGET_V32)
-    {
-      /* This can be a SEQUENCE, meaning the delay-slot of the jump is
-	 filled.  We also output the offset word a little differently.  */
-      rtx parallel_jump
-	= (GET_CODE (whole_jump_pat) == SEQUENCE
-	   ? PATTERN (XVECEXP (whole_jump_pat, 0, 0)) : whole_jump_pat);
-
-      asm_fprintf (stream,
-		   "\t.word %LL%d-.%s\n",
-		   CODE_LABEL_NUMBER (XEXP (XEXP (XEXP (XVECEXP
-							(parallel_jump, 0, 0),
-							1), 2), 0)),
-		   (TARGET_PDEBUG ? "; default" : ""));
-      return;
-    }
 
   asm_fprintf (stream,
 	       "\t.word %LL%d-%LL%d%s\n",
@@ -2679,7 +2303,7 @@ cris_option_override (void)
 	  || strcmp ("etrax100lx", cris_cpu_str) == 0)
 	cris_cpu_version = 10;
 
-      if (cris_cpu_version < 0 || cris_cpu_version > 32)
+      if (cris_cpu_version < 0 || cris_cpu_version > 10)
 	error ("unknown CRIS version specification in %<-march=%> or "
 	       "%<-mcpu=%> : %s", cris_cpu_str);
 
@@ -2727,28 +2351,13 @@ cris_option_override (void)
 	      | MASK_DATA_ALIGN | MASK_ALIGN_BY_32);
     }
 
-  if (cris_cpu_version >= CRIS_CPU_V32)
-    target_flags &= ~(MASK_SIDE_EFFECT_PREFIXES|MASK_MUL_BUG);
-
   if (flag_pic)
     {
       /* Use error rather than warning, so invalid use is easily
 	 detectable.  Still change to the values we expect, to avoid
 	 further errors.  */
-      if (! TARGET_LINUX)
-	{
-	  error ("%<-fPIC%> and %<-fpic%> are not supported "
-		 "in this configuration");
-	  flag_pic = 0;
-	}
-
-      /* Turn off function CSE.  We need to have the addresses reach the
-	 call expanders to get PLT-marked, as they could otherwise be
-	 compared against zero directly or indirectly.  After visiting the
-	 call expanders they will then be cse:ed, as the call expanders
-	 force_reg the addresses, effectively forcing flag_no_function_cse
-	 to 0.  */
-      flag_no_function_cse = 1;
+      error ("%<-fPIC%> and %<-fpic%> are not supported on this target");
+      flag_pic = 0;
     }
 
   /* Set the per-function-data initializer.  */
@@ -2779,34 +2388,9 @@ cris_asm_output_mi_thunk (FILE *stream,
 	     ADDITIVE_SIZE_MODIFIER (-delta), -delta,
 	     reg_names[CRIS_FIRST_ARG_REG]);
 
-  if (flag_pic)
-    {
-      const char *name = XSTR (XEXP (DECL_RTL (funcdecl), 0), 0);
-
-      name = (* targetm.strip_name_encoding) (name);
-
-      if (TARGET_V32)
-	{
-	  fprintf (stream, "\tba ");
-	  assemble_name (stream, name);
-	  fprintf (stream, "%s\n\tnop\n", CRIS_PLT_PCOFFSET_SUFFIX);
-	}
-      else
-	{
-	  fprintf (stream, "\tadd.d ");
-	  assemble_name (stream, name);
-	  fprintf (stream, "%s,$pc\n", CRIS_PLT_PCOFFSET_SUFFIX);
-	}
-    }
-  else
-    {
-      fprintf (stream, "\tjump ");
-      assemble_name (stream, XSTR (XEXP (DECL_RTL (funcdecl), 0), 0));
-      fprintf (stream, "\n");
-
-      if (TARGET_V32)
-	fprintf (stream, "\tnop\n");
-    }
+  fprintf (stream, "\tjump ");
+  assemble_name (stream, XSTR (XEXP (DECL_RTL (funcdecl), 0), 0));
+  fprintf (stream, "\n");
 
   final_end_function ();
   assemble_end_function (thunkdecl, fnname);
@@ -2825,17 +2409,6 @@ cris_file_start (void)
   targetm.asm_file_start_app_off = !(TARGET_PDEBUG || flag_print_asm_name);
 
   default_file_start ();
-}
-
-/* Output that goes at the end of the file, similarly.  */
-
-static void
-cris_file_end (void)
-{
-  /* For CRIS, the default is to assume *no* executable stack, so output
-     an executable-stack-note only when needed.  */
-  if (TARGET_LINUX && trampolines_created)
-    file_end_indicate_exec_stack ();
 }
 
 /* Rename the function calls for integer multiply and divide.  */
@@ -3123,7 +2696,6 @@ cris_expand_prologue (void)
   int framesize = 0;
   rtx mem, insn;
   int return_address_on_stack = cris_return_address_on_stack ();
-  int got_really_used = false;
   int n_movem_regs = 0;
   int pretend = crtl->args.pretend_args_size;
 
@@ -3132,17 +2704,6 @@ cris_expand_prologue (void)
     return;
 
   CRIS_ASSERT (size >= 0);
-
-  if (crtl->uses_pic_offset_table)
-    {
-      /* A reference may have been optimized out (like the abort () in
-	 fde_split in unwind-dw2-fde.c, at least 3.2.1) so check that
-	 it's still used.  */
-      push_topmost_sequence ();
-      got_really_used
-	= reg_used_between_p (pic_offset_table_rtx, get_insns (), NULL);
-      pop_topmost_sequence ();
-    }
 
   /* Align the size to what's best for the CPU model.  */
   if (TARGET_STACK_ALIGN)
@@ -3236,7 +2797,7 @@ cris_expand_prologue (void)
      to be saved.  */
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     {
-      if (cris_reg_saved_in_regsave_area (regno, got_really_used))
+      if (cris_reg_saved_in_regsave_area (regno))
 	{
 	  n_movem_regs++;
 
@@ -3366,23 +2927,6 @@ cris_expand_prologue (void)
       framesize += size + cfoa_size;
     }
 
-  /* Set up the PIC register, if it is used.  */
-  if (got_really_used)
-    {
-      rtx got
-	= gen_rtx_UNSPEC (SImode, gen_rtvec (1, const0_rtx), CRIS_UNSPEC_GOT);
-      emit_move_insn (pic_offset_table_rtx, got);
-
-      /* FIXME: This is a cover-up for flow2 messing up; it doesn't
-	 follow exceptional paths and tries to delete the GOT load as
-	 unused, if it isn't used on the non-exceptional paths.  Other
-	 ports have similar or other cover-ups, or plain bugs marking
-	 the GOT register load as maybe-dead.  To see this, remove the
-	 line below and try libsupc++/vec.cc or a trivial
-	 "static void y (); void x () {try {y ();} catch (...) {}}".  */
-      emit_use (pic_offset_table_rtx);
-    }
-
   if (cris_max_stackframe && framesize > cris_max_stackframe)
     warning (0, "stackframe too big: %d bytes", framesize);
 }
@@ -3402,22 +2946,10 @@ cris_expand_epilogue (void)
   /* A reference may have been optimized out
      (like the abort () in fde_split in unwind-dw2-fde.c, at least 3.2.1)
      so check that it's still used.  */
-  int got_really_used = false;
   int n_movem_regs = 0;
 
   if (!TARGET_PROLOGUE_EPILOGUE)
     return;
-
-  if (crtl->uses_pic_offset_table)
-    {
-      /* A reference may have been optimized out (like the abort () in
-	 fde_split in unwind-dw2-fde.c, at least 3.2.1) so check that
-	 it's still used.  */
-      push_topmost_sequence ();
-      got_really_used
-	= reg_used_between_p (pic_offset_table_rtx, get_insns (), NULL);
-      pop_topmost_sequence ();
-    }
 
   /* Align byte count of stack frame.  */
   if (TARGET_STACK_ALIGN)
@@ -3428,7 +2960,7 @@ cris_expand_epilogue (void)
   for (regno = 0;
        regno < FIRST_PSEUDO_REGISTER;
        regno++)
-    if (cris_reg_saved_in_regsave_area (regno, got_really_used))
+    if (cris_reg_saved_in_regsave_area (regno))
       {
 	n_movem_regs++;
 
@@ -3448,7 +2980,7 @@ cris_expand_epilogue (void)
   for (regno = FIRST_PSEUDO_REGISTER - 1;
        regno > last_movem_reg;
        regno--)
-    if (cris_reg_saved_in_regsave_area (regno, got_really_used))
+    if (cris_reg_saved_in_regsave_area (regno))
       {
 	rtx insn;
 
@@ -3548,7 +3080,7 @@ cris_expand_epilogue (void)
      the return address on the stack.  */
   if (return_address_on_stack && pretend == 0)
     {
-      if (TARGET_V32 || crtl->calls_eh_return)
+      if (crtl->calls_eh_return)
 	{
 	  rtx mem;
 	  rtx insn;
@@ -3625,20 +3157,12 @@ cris_gen_movem_load (rtx src, rtx nregs_rtx, int nprefix)
   unsigned int regno = nregs - 1;
   int regno_inc = -1;
 
-  if (TARGET_V32)
-    {
-      regno = 0;
-      regno_inc = 1;
-    }
-
   if (GET_CODE (srcreg) == POST_INC)
     srcreg = XEXP (srcreg, 0);
 
   CRIS_ASSERT (REG_P (srcreg));
 
-  /* Don't use movem for just one insn.  The insns are equivalent except
-     for the pipeline hazard (on v32); movem does not forward the loaded
-     registers so there's a three cycles penalty for their use.  */
+  /* Don't use movem for just one insn.  The insns are equivalent.  */
   if (nregs == 1)
     return gen_movsi (gen_rtx_REG (SImode, 0), src);
 
@@ -3684,12 +3208,6 @@ cris_emit_movem_store (rtx dest, rtx nregs_rtx, int increment,
   unsigned int regno = nregs - 1;
   int regno_inc = -1;
 
-  if (TARGET_V32)
-    {
-      regno = 0;
-      regno_inc = 1;
-    }
-
   if (GET_CODE (destreg) == POST_INC)
     increment += nregs * 4;
 
@@ -3698,9 +3216,7 @@ cris_emit_movem_store (rtx dest, rtx nregs_rtx, int increment,
 
   CRIS_ASSERT (REG_P (destreg));
 
-  /* Don't use movem for just one insn.  The insns are equivalent except
-     for the pipeline hazard (on v32); movem does not forward the loaded
-     registers so there's a three cycles penalty for use.  */
+  /* Don't use movem for just one insn.  The insns are equivalent.  */
   if (nregs == 1)
     {
       rtx mov = gen_rtx_SET (dest, gen_rtx_REG (SImode, 0));
@@ -3800,138 +3316,6 @@ cris_emit_movem_store (rtx dest, rtx nregs_rtx, int increment,
   return insn;
 }
 
-/* Worker function for expanding the address for PIC function calls.  */
-
-void
-cris_expand_pic_call_address (rtx *opp, rtx *markerp)
-{
-  rtx op = *opp;
-
-  gcc_assert (flag_pic && MEM_P (op));
-  op = XEXP (op, 0);
-
-  /* It might be that code can be generated that jumps to 0 (or to a
-     specific address).  Don't die on that.  (There is a
-     testcase.)  */
-  if (CONSTANT_P (op) && !CONST_INT_P (op))
-    {
-      enum cris_symbol_type t = cris_symbol_type_of (op);
-
-      CRIS_ASSERT (can_create_pseudo_p ());
-
-      /* For local symbols (non-PLT), just get the plain symbol
-	 reference into a register.  For symbols that can be PLT, make
-	 them PLT.  */
-      if (t == cris_rel_symbol)
-	{
-	  /* For v32, we're fine as-is; just PICify the symbol.  Forcing
-	     into a register caused performance regression for 3.2.1,
-	     observable in __floatdidf and elsewhere in libgcc.  */
-	  if (TARGET_V32)
-	    {
-	      rtx sym = GET_CODE (op) != CONST ? op : get_related_value (op);
-	      HOST_WIDE_INT offs = get_integer_term (op);
-
-	      /* We can't get calls to sym+N, N integer, can we?  */
-	      gcc_assert (offs == 0);
-
-	      op = gen_rtx_CONST (Pmode,
-				  gen_rtx_UNSPEC (Pmode, gen_rtvec (1, sym),
-						  CRIS_UNSPEC_PCREL));
-	    }
-	  else
-	    op = force_reg (Pmode, op);
-
-	  /* A local call.  */
-	  *markerp = const0_rtx;
-	}
-      else if (t == cris_got_symbol)
-	{
-	  if (TARGET_AVOID_GOTPLT)
-	    {
-	      /* Change a "jsr sym" into (allocate register rM, rO)
-		 "move.d (const (unspec [sym] CRIS_UNSPEC_PLT_GOTREL)),rM"
-		 "add.d rPIC,rM,rO", "jsr rO" for pre-v32 and
-		 "jsr (const (unspec [sym] CRIS_UNSPEC_PLT_PCREL))"
-		 for v32.  */
-	      rtx tem, rm, ro;
-
-	      crtl->uses_pic_offset_table = 1;
-	      tem = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op),
-				    TARGET_V32
-				    ? CRIS_UNSPEC_PLT_PCREL
-				    : CRIS_UNSPEC_PLT_GOTREL);
-	      tem = gen_rtx_CONST (Pmode, tem);
-	      if (TARGET_V32)
-		op = tem;
-	      else
-		{
-		  rm = gen_reg_rtx (Pmode);
-		  emit_move_insn (rm, tem);
-		  ro = gen_reg_rtx (Pmode);
-		  if (expand_binop (Pmode, add_optab, rm,
-				    pic_offset_table_rtx,
-				    ro, 0, OPTAB_LIB_WIDEN) != ro)
-		    internal_error ("expand_binop failed in movsi got");
-		  op = ro;
-		}
-	    }
-	  else
-	    {
-	      /* Change a "jsr sym" into (allocate register rM, rO)
-		 "move.d (const (unspec [sym] CRIS_UNSPEC_PLTGOTREAD)),rM"
-		 "add.d rPIC,rM,rO" "jsr [rO]" with the memory access
-		 marked as not trapping and not aliasing.  No "move.d
-		 [rO],rP" as that would invite to re-use of a value
-		 that should not be reused.  FIXME: Need a peephole2
-		 for cases when this is cse:d from the call, to change
-		 back to just get the PLT entry address, so we don't
-		 resolve the same symbol over and over (the memory
-		 access of the PLTGOT isn't constant).  */
-	      rtx tem, mem, rm, ro;
-
-	      gcc_assert (can_create_pseudo_p ());
-	      crtl->uses_pic_offset_table = 1;
-	      tem = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op),
-				    CRIS_UNSPEC_PLTGOTREAD);
-	      rm = gen_reg_rtx (Pmode);
-	      emit_move_insn (rm, gen_rtx_CONST (Pmode, tem));
-	      ro = gen_reg_rtx (Pmode);
-	      if (expand_binop (Pmode, add_optab, rm,
-				pic_offset_table_rtx,
-				ro, 0, OPTAB_LIB_WIDEN) != ro)
-		internal_error ("expand_binop failed in movsi got");
-	      mem = gen_rtx_MEM (Pmode, ro);
-
-	      /* This MEM doesn't alias anything.  Whether it aliases
-		 other same symbols is unimportant.  */
-	      set_mem_alias_set (mem, new_alias_set ());
-	      MEM_NOTRAP_P (mem) = 1;
-	      op = mem;
-	    }
-
-	  /* We need to prepare this call to go through the PLT; we
-	     need to make GOT available.  */
-	  *markerp = pic_offset_table_rtx;
-	}
-      else
-	/* Can't possibly get anything else for a function-call, right?  */
-	fatal_insn ("unidentifiable call op", op);
-
-      /* If the validizing variant is called, it will try to validize
-	 the address as a valid any-operand constant, but as it's only
-	 valid for calls and moves, it will fail and always be forced
-	 into a register.  */
-      *opp = replace_equiv_address_nv (*opp, op);
-    }
-  else
-    /* Can't tell what locality a call to a non-constant address has;
-       better make the GOT register alive at it.
-       FIXME: Can we see whether the register has known constant
-       contents?  */
-    *markerp = pic_offset_table_rtx;
-}
-
 /* Make sure operands are in the right order for an addsi3 insn as
    generated by a define_split.  Nothing but REG_P as the first
    operand is recognized by addsi3 after reload.  OPERANDS contains
@@ -3968,20 +3352,7 @@ void
 cris_asm_output_symbol_ref (FILE *file, rtx x)
 {
   gcc_assert (GET_CODE (x) == SYMBOL_REF);
-
-  if (flag_pic && in_code > 0)
-    {
-     const char *origstr = XSTR (x, 0);
-     const char *str;
-     str = (* targetm.strip_name_encoding) (origstr);
-     assemble_name (file, str);
-
-     /* Sanity check.  */
-     if (!TARGET_V32 && !crtl->uses_pic_offset_table)
-       output_operand_lossage ("PIC register isn't set up");
-    }
-  else
-    assemble_name (file, XSTR (x, 0));
+  assemble_name (file, XSTR (x, 0));
 }
 
 /* Worker function for ASM_OUTPUT_LABEL_REF.  */
@@ -3989,80 +3360,7 @@ cris_asm_output_symbol_ref (FILE *file, rtx x)
 void
 cris_asm_output_label_ref (FILE *file, char *buf)
 {
-  if (flag_pic && in_code > 0)
-    {
-      assemble_name (file, buf);
-
-      /* Sanity check.  */
-      if (!TARGET_V32 && !crtl->uses_pic_offset_table)
-	internal_error ("emitting PIC operand, but PIC register "
-			"isn%'t set up");
-    }
-  else
-    assemble_name (file, buf);
-}
-
-/* Worker function for TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA.  */
-
-static bool
-cris_output_addr_const_extra (FILE *file, rtx xconst)
-{
-  switch (GET_CODE (xconst))
-    {
-      rtx x;
-
-    case UNSPEC:
-      x = XVECEXP (xconst, 0, 0);
-      CRIS_ASSERT (GET_CODE (x) == SYMBOL_REF
-		   || GET_CODE (x) == LABEL_REF
-		   || GET_CODE (x) == CONST);
-      output_addr_const (file, x);
-      switch (XINT (xconst, 1))
-	{
-	case CRIS_UNSPEC_PCREL:
-	  /* We only get this with -fpic/PIC to tell it apart from an
-	     invalid symbol.  We can't tell here, but it should only
-	     be the operand of a call or movsi.  */
-	  gcc_assert (TARGET_V32 && flag_pic);
-	  break;
-
-	case CRIS_UNSPEC_PLT_PCREL:
-	  gcc_assert (TARGET_V32);
-	  fprintf (file, ":PLT");
-	  break;
-
-	case CRIS_UNSPEC_PLT_GOTREL:
-	  gcc_assert (!TARGET_V32);
-	  fprintf (file, ":PLTG");
-	  break;
-
-	case CRIS_UNSPEC_GOTREL:
-	  gcc_assert (!TARGET_V32);
-	  fprintf (file, ":GOTOFF");
-	  break;
-
-	case CRIS_UNSPEC_GOTREAD:
-	  if (flag_pic == 1)
-	    fprintf (file, ":GOT16");
-	  else
-	    fprintf (file, ":GOT");
-	  break;
-
-	case CRIS_UNSPEC_PLTGOTREAD:
-	  if (flag_pic == 1)
-	    fprintf (file, CRIS_GOTPLT_SUFFIX "16");
-	  else
-	    fprintf (file, CRIS_GOTPLT_SUFFIX);
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-      return true;
-
-    default:
-      return false;
-    }
+  assemble_name (file, buf);
 }
 
 /* Worker function for TARGET_STRUCT_VALUE_RTX.  */
@@ -4286,51 +3584,12 @@ cris_frame_pointer_required (void)
 static void
 cris_asm_trampoline_template (FILE *f)
 {
-  if (TARGET_V32)
-    {
-      /* This normally-unused nop insn acts as an instruction to
-	 the simulator to flush its instruction cache.  None of
-	 the other instructions in the trampoline template suits
-	 as a trigger for V32.  The pc-relative addressing mode
-	 works nicely as a trigger for V10.
-	 FIXME: Have specific V32 template (possibly avoiding the
-	 use of a special instruction).  */
-      fprintf (f, "\tclearf x\n");
-      /* We have to use a register as an intermediate, choosing
-	 semi-randomly R1 (which has to not be the STATIC_CHAIN_REGNUM),
-	 so we can use it for address indirection and jsr target.  */
-      fprintf (f, "\tmove $r1,$mof\n");
-      /* +4 */
-      fprintf (f, "\tmove.d 0,$r1\n");
-      fprintf (f, "\tmove.d $%s,[$r1]\n", reg_names[STATIC_CHAIN_REGNUM]);
-      fprintf (f, "\taddq 6,$r1\n");
-      fprintf (f, "\tmove $mof,[$r1]\n");
-      fprintf (f, "\taddq 6,$r1\n");
-      fprintf (f, "\tmove $srp,[$r1]\n");
-      /* +20 */
-      fprintf (f, "\tmove.d 0,$%s\n", reg_names[STATIC_CHAIN_REGNUM]);
-      /* +26 */
-      fprintf (f, "\tmove.d 0,$r1\n");
-      fprintf (f, "\tjsr $r1\n");
-      fprintf (f, "\tsetf\n");
-      /* +36 */
-      fprintf (f, "\tmove.d 0,$%s\n", reg_names[STATIC_CHAIN_REGNUM]);
-      /* +42 */
-      fprintf (f, "\tmove.d 0,$r1\n");
-      /* +48 */
-      fprintf (f, "\tmove.d 0,$r9\n");
-      fprintf (f, "\tjump $r9\n");
-      fprintf (f, "\tsetf\n");
-    }
-  else
-    {
-      fprintf (f, "\tmove.d $%s,[$pc+20]\n", reg_names[STATIC_CHAIN_REGNUM]);
-      fprintf (f, "\tmove $srp,[$pc+22]\n");
-      fprintf (f, "\tmove.d 0,$%s\n", reg_names[STATIC_CHAIN_REGNUM]);
-      fprintf (f, "\tjsr 0\n");
-      fprintf (f, "\tmove.d 0,$%s\n", reg_names[STATIC_CHAIN_REGNUM]);
-      fprintf (f, "\tjump 0\n");
-    }
+  fprintf (f, "\tmove.d $%s,[$pc+20]\n", reg_names[STATIC_CHAIN_REGNUM]);
+  fprintf (f, "\tmove $srp,[$pc+22]\n");
+  fprintf (f, "\tmove.d 0,$%s\n", reg_names[STATIC_CHAIN_REGNUM]);
+  fprintf (f, "\tjsr 0\n");
+  fprintf (f, "\tmove.d 0,$%s\n", reg_names[STATIC_CHAIN_REGNUM]);
+  fprintf (f, "\tjump 0\n");
 }
 
 /* Implement TARGET_TRAMPOLINE_INIT.  */
@@ -4339,28 +3598,15 @@ static void
 cris_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 {
   rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
-  rtx tramp = XEXP (m_tramp, 0);
   rtx mem;
 
   emit_block_move (m_tramp, assemble_trampoline_template (),
 		   GEN_INT (TRAMPOLINE_SIZE), BLOCK_OP_NORMAL);
 
-  if (TARGET_V32)
-    {
-      mem = adjust_address (m_tramp, SImode, 6);
-      emit_move_insn (mem, plus_constant (Pmode, tramp, 38));
-      mem = adjust_address (m_tramp, SImode, 22);
-      emit_move_insn (mem, chain_value);
-      mem = adjust_address (m_tramp, SImode, 28);
-      emit_move_insn (mem, fnaddr);
-    }
-  else
-    {
-      mem = adjust_address (m_tramp, SImode, 10);
-      emit_move_insn (mem, chain_value);
-      mem = adjust_address (m_tramp, SImode, 16);
-      emit_move_insn (mem, fnaddr);
-    }
+  mem = adjust_address (m_tramp, SImode, 10);
+  emit_move_insn (mem, chain_value);
+  mem = adjust_address (m_tramp, SImode, 16);
+  emit_move_insn (mem, fnaddr);
 
   /* Note that there is no need to do anything with the cache for
      sake of a trampoline.  */
@@ -4389,7 +3635,7 @@ cris_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   return ((mode == CCmode || regno != CRIS_CC0_REGNUM)
 	  && (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
-	      || (regno != CRIS_MOF_REGNUM && regno != CRIS_ACR_REGNUM)));
+	      || regno != CRIS_MOF_REGNUM));
 }
 
 /* Return the preferred minimum alignment for a static object.  */

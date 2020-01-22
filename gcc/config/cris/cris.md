@@ -49,46 +49,8 @@
 ;; ??? But it should be re-checked for gcc > 2.7.2
 ;; FIXME: This changed some time ago (from 2000-03-16) for gcc-2.9x.
 
-;; FIXME: When PIC, all [rX=rY+S] could be enabled to match
-;; [rX=gotless_symbol].
-;; The movsi for a gotless symbol could be split (post reload).
-
-
 (define_c_enum ""
   [
-   ;; PLT reference from call expansion: operand 0 is the address,
-   ;; the mode is VOIDmode.  Always wrapped in CONST.
-   ;; The value is relative to the GOT.
-   CRIS_UNSPEC_PLT_GOTREL
-
-   ;; PLT reference from call expansion: operand 0 is the address,
-   ;; the mode is VOIDmode.  Always wrapped in CONST.
-   ;; The value is relative to the PC.  It's arch-dependent whether
-   ;; the offset counts from the start or the end of the current item.
-   CRIS_UNSPEC_PLT_PCREL
-
-   ;; The address of the global offset table as a source operand.
-   CRIS_UNSPEC_GOT
-
-   ;; The offset from the global offset table to the operand.
-   CRIS_UNSPEC_GOTREL
-
-   ;; The PC-relative offset to the operand.  It's arch-dependent whether
-   ;; the offset counts from the start or the end of the current item.
-   CRIS_UNSPEC_PCREL
-
-   ;; The index into the global offset table of a symbol, while
-   ;; also generating a GOT entry for the symbol.
-   CRIS_UNSPEC_GOTREAD
-
-   ;; Similar to CRIS_UNSPEC_GOTREAD, but also generating a PLT entry.
-   CRIS_UNSPEC_PLTGOTREAD
-
-   ;; Condition for v32 casesi jump, since it needs to have if_then_else
-   ;; form with register as one branch and default label as other.
-   ;; Operand 0 is const_int 0.
-   CRIS_UNSPEC_CASESI
-
    ;; Stack frame deallocation barrier.
    CRIS_UNSPEC_FRAME_DEALLOC
 
@@ -98,8 +60,7 @@
 
 ;; Register numbers.
 (define_constants
-  [(CRIS_GOT_REGNUM 0)
-   (CRIS_STATIC_CHAIN_REGNUM 7)
+  [(CRIS_STATIC_CHAIN_REGNUM 7)
    (CRIS_FP_REGNUM 8)
    (CRIS_SP_REGNUM 14)
    (CRIS_ACR_REGNUM 15)
@@ -125,10 +86,8 @@
 ;; In short, any "slottable" instruction must be 16 bit and not refer
 ;; to pc, or alter it.
 ;;
-;; The possible values are "yes", "no", "has_slot", "has_return_slot"
-;; and "has_call_slot".
-;; Yes/no tells whether the insn is slottable or not.  Has_call_slot means
-;; that the insn is a call insn, which for CRIS v32 has a delay-slot.
+;; The possible values are "yes", "no", "has_slot", and "has_return_slot".
+;; Yes/no tells whether the insn is slottable or not.
 ;; Of special concern is that no RTX_FRAME_RELATED insn must go in that
 ;; call delay slot, as it's located in the address *after* the call insn,
 ;; and the unwind machinery doesn't know about delay slots.
@@ -157,13 +116,13 @@
 ;; constraint pattern for the slottable pattern.  An alternative using
 ;; only "r" constraints is most often slottable.
 
-(define_attr "slottable" "no,yes,has_slot,has_return_slot,has_call_slot"
+(define_attr "slottable" "no,yes,has_slot,has_return_slot"
   (const_string "no"))
 
 ;; We also need attributes to sanely determine the condition code
 ;; state.  See cris_notice_update_cc for how this is used.
 
-(define_attr "cc" "none,clobber,normal,noov32,rev" (const_string "normal"))
+(define_attr "cc" "none,clobber,normal,rev" (const_string "normal"))
 
 ;; At the moment, this attribute is just used to help bb-reorder do its
 ;; work; the default 0 doesn't help it.  Many insns have other lengths,
@@ -180,19 +139,6 @@
 
 (define_delay (eq_attr "slottable" "has_slot")
   [(eq_attr "slottable" "yes") (nil) (nil)])
-
-;; We can't put prologue insns in call-insn delay-slots when
-;; DWARF2 unwind info is emitted, because the unwinder matches the
-;; address after the insn.  It must see the return address of a call at
-;; a position at least *one byte after* the insn, or it'll think that
-;; the insn hasn't been executed.  If the insn is in a delay-slot of a
-;; call, it's just *exactly* after the insn.
-
-(define_delay (eq_attr "slottable" "has_call_slot")
-  [(and (eq_attr "slottable" "yes")
-	(ior (not (match_test "RTX_FRAME_RELATED_P (insn)"))
-	     (not (match_test "flag_exceptions"))))
-   (nil) (nil)])
 
 ;; The insn in the return insn slot must not be the
 ;; return-address-register restore.  FIXME: Use has_slot and express
@@ -251,40 +197,13 @@
 
 ;; Normal named test patterns from SI on.
 
-(define_insn "*tstsi"
+(define_insn "tst<mode>"
   [(set (cc0)
-	(compare (match_operand:SI 0 "nonimmediate_operand" "r,Q>,m")
+	(compare (match_operand:BWD 0 "nonimmediate_operand" "r,Q>,m")
 		 (const_int 0)))]
   ""
-{
-  if (which_alternative == 0 && TARGET_V32)
-    return "cmpq 0,%0";
-  return "test.d %0";
-}
+  "test<m> %0"
   [(set_attr "slottable" "yes,yes,no")])
-
-(define_insn "*tst<mode>_cmp"
-  [(set (cc0)
-	(compare (match_operand:BW 0 "nonimmediate_operand" "r,Q>,m")
-		 (const_int 0)))]
-  "cris_cc0_user_requires_cmp (insn)"
-  "@
-   cmp<m> 0,%0
-   test<m> %0
-   test<m> %0"
-  [(set_attr "slottable" "no,yes,no")])
-
-(define_insn "*tst<mode>_non_cmp"
-  [(set (cc0)
-	(compare (match_operand:BW 0 "nonimmediate_operand" "r,Q>,m")
-		 (const_int 0)))]
-  "!cris_cc0_user_requires_cmp (insn)"
-  "@
-   move<m> %0,%0
-   test<m> %0
-   test<m> %0"
-  [(set_attr "slottable" "yes,yes,no")
-   (set_attr "cc" "noov32,*,*")])
 
 ;; It seems that the position of the sign-bit and the fact that 0.0 is
 ;; all 0-bits would make "tstsf" a straight-forward implementation;
@@ -301,11 +220,11 @@
 ;; DImode for anything else but a structure/block-mode.  Just do the
 ;; obvious stuff for the straight-forward constraint letters.
 
-(define_insn "*cmpdi_non_v32"
+(define_insn "*cmpdi"
   [(set (cc0)
 	(compare (match_operand:DI 0 "nonimmediate_operand" "rm,r,r,r,r,r,r,o")
 		 (match_operand:DI 1 "general_operand" "M,Kc,I,P,n,r,o,r")))]
-  "!TARGET_V32"
+  ""
   "@
    test.d %M0\;ax\;test.d %H0
    cmpq %1,%M0\;ax\;cmpq 0,%H0
@@ -315,18 +234,6 @@
    cmp.d %M1,%M0\;ax\;cmp.d %H1,%H0
    cmp.d %M1,%M0\;ax\;cmp.d %H1,%H0
    cmp.d %M0,%M1\;ax\;cmp.d %H0,%H1")
-
-(define_insn "*cmpdi_v32"
-  [(set (cc0)
-	(compare (match_operand:DI 0 "register_operand"  "r,r,r,r,r")
-		 (match_operand:DI 1 "nonmemory_operand" "Kc,I,P,n,r")))]
-  "TARGET_V32"
-  "@
-   cmpq %1,%M0\;ax\;cmpq 0,%H0
-   cmpq %1,%M0\;ax\;cmpq -1,%H0
-   cmp%e1.%z1 %1,%M0\;ax\;cmpq %H1,%H0
-   cmp.d %M1,%M0\;ax\;cmp.d %H1,%H0
-   cmp.d %M1,%M0\;ax\;cmp.d %H1,%H0")
 
 ;; Note that compare insns with side effect addressing mode (e.g.):
 ;;
@@ -450,8 +357,7 @@
    btst %2,%0
    clearf nz
    cmpq %p0,%2"
- [(set_attr "slottable" "yes")
-  (set_attr "cc" "noov32")])
+ [(set_attr "slottable" "yes")])
 
 ;; Move insns.
 
@@ -499,8 +405,7 @@
 {
   if (MEM_P (operands[0])
       && operands[1] != const0_rtx
-      && can_create_pseudo_p ()
-      && (!TARGET_V32 || !REG_P (operands[1])))
+      && can_create_pseudo_p ())
     operands[1] = copy_to_mode_reg (DImode, operands[1]);
 
   /* Some other ports (as of 2001-09-10 for example mcore and romp) also
@@ -530,64 +435,14 @@
     }
 })
 
-(define_insn_and_split "*movdi_insn_non_v32"
+(define_insn_and_split "*movdi_insn"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,rx,m")
 	(match_operand:DI 1 "general_operand"	   "rx,g,rxM"))]
   "(register_operand (operands[0], DImode)
     || register_operand (operands[1], DImode)
-    || operands[1] == const0_rtx)
-   && !TARGET_V32"
+    || operands[1] == const0_rtx)"
   "#"
   "&& reload_completed"
-  [(match_dup 2)]
-  "operands[2] = cris_split_movdx (operands);")
-
-;; Overlapping (but non-identical) source memory address and destination
-;; register would be a compiler bug, so we don't have to specify that.
-(define_insn "*movdi_v32"
-  [(set
-    (match_operand:DI 0 "nonimmediate_operand" "=r,rx,&r,>, m,r,x,m")
-    (match_operand:DI 1 "general_operand"     "rxi,r>,m, rx,r,m,m,x"))]
-  "TARGET_V32"
-{
-  switch (which_alternative)
-    {
-      /* FIXME: 1) Use autoincrement where possible.  2) Have peephole2,
-	 particularly for cases where the address register is dead.  */
-    case 5:
-      if (REGNO (operands[0]) == REGNO (XEXP (operands[1], 0)))
-	return "addq 4,%L1\;move.d %1,%H0\;subq 4,%L1\;move.d %1,%M0";
-      gcc_assert (REGNO (operands[0]) + 1 == REGNO (XEXP (operands[1], 0)));
-      return "move.d [%L1+],%M0\;move.d [%L1],%H0";
-    case 2:
-      /* We could do away with the addq if we knew the address-register
-	 isn't ACR.  If we knew the address-register is dead, we could do
-	 away with the subq too.  */
-      return "move.d [%L1],%M0\;addq 4,%L1\;move.d [%L1],%H0\;subq 4,%L1";
-    case 4:
-      return "move.d %M1,[%L0]\;addq 4,%L0\;move.d %H1,[%L0]\;subq 4,%L0";
-    case 6:
-      return "move [%L1],%M0\;addq 4,%L1\;move [%L1],%H0\;subq 4,%L1";
-    case 7:
-      return "move %M1,[%L0]\;addq 4,%L0\;move %H1,[%L0]\;subq 4,%L0";
-
-    default:
-      return "#";
-    }
-}
-  ;; The non-split cases clobber cc0 because of their adds and subs.
-  ;; Beware that NOTICE_UPDATE_CC is called before the forced split happens.
-  [(set_attr "cc" "*,*,clobber,*,clobber,clobber,*,*")])
-
-;; Much like "*movdi_insn_non_v32".  Overlapping registers and constants
-;; is handled so much better in cris_split_movdx.
-(define_split
-  [(set (match_operand:DI 0 "nonimmediate_operand" "")
-	(match_operand:DI 1 "general_operand" ""))]
-  "TARGET_V32
-   && reload_completed
-   && (!MEM_P (operands[0]) || !REG_P (XEXP (operands[0], 0)))
-   && (!MEM_P (operands[1]) || !REG_P (XEXP (operands[1], 0)))"
   [(match_dup 2)]
   "operands[2] = cris_split_movdx (operands);")
 
@@ -917,11 +772,9 @@
 (define_expand "movsi"
   [(set
     (match_operand:SI 0 "nonimmediate_operand" "")
-    (match_operand:SI 1 "cris_general_operand_or_symbol" ""))]
+    (match_operand:SI 1 "general_operand" ""))]
   ""
 {
-  enum cris_symbol_type t;
-
   /* If the output goes to a MEM, make sure we have zero or a register as
      input.  */
   if (MEM_P (operands[0])
@@ -929,151 +782,14 @@
       && operands[1] != const0_rtx
       && can_create_pseudo_p ())
     operands[1] = force_reg (SImode, operands[1]);
-
-  /* If we're generating PIC and have an incoming symbol, validize it to a
-     general operand or something that will match a special pattern.
-
-     FIXME: Do we *have* to recognize anything that would normally be a
-     valid symbol?  Can we exclude global PIC addresses with an added
-     offset?  */
-    if (flag_pic
-	&& CONSTANT_P (operands[1])
-	&& !cris_valid_pic_const (operands[1], false))
-      {
-	t = cris_symbol_type_of (operands[1]);
-
-	gcc_assert (t != cris_no_symbol && t != cris_offsettable_symbol);
-
-	if (! REG_S_P (operands[0]))
-	  {
-	    /* We must have a register as destination for what we're about to
-	       do, and for the patterns we generate.  */
-	    CRIS_ASSERT (can_create_pseudo_p ());
-	    operands[1] = force_reg (SImode, operands[1]);
-	  }
-	else
-	  {
-	    /* FIXME: add a REG_EQUAL (or is it REG_EQUIV) note to the
-	       destination register for the symbol.  It might not be
-	       worth it.  Measure.  */
-	    crtl->uses_pic_offset_table = 1;
-	    if (t == cris_rel_symbol)
-	      {
-		/* Change a "move.d sym(+offs),rN" into (allocate register rM)
-		   for pre-v32:
-		   "move.d (const (plus (unspec [sym]
-		    CRIS_UNSPEC_GOTREL) offs)),rM" "add.d rPIC,rM,rN"
-		   and for v32:
-		   "move.d (const (plus (unspec [sym]
-		    CRIS_UNSPEC_PCREL) offs)),rN".  */
-		rtx tem, rm, rn = operands[0];
-		rtx sym = GET_CODE (operands[1]) != CONST
-		  ? operands[1] : get_related_value (operands[1]);
-		HOST_WIDE_INT offs = get_integer_term (operands[1]);
-
-		gcc_assert (can_create_pseudo_p ());
-
-		if (TARGET_V32)
-		  {
-		    tem = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, sym),
-					  CRIS_UNSPEC_PCREL);
-		    if (offs != 0)
-		      tem = plus_constant (Pmode, tem, offs);
-		    rm = rn;
-		    emit_move_insn (rm, gen_rtx_CONST (Pmode, tem));
-		  }
-		else
-		  {
-		    /* We still uses GOT-relative addressing for
-		       pre-v32.	 */
-		    crtl->uses_pic_offset_table = 1;
-		    tem = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, sym),
-					  CRIS_UNSPEC_GOTREL);
-		    if (offs != 0)
-		      tem = plus_constant (Pmode, tem, offs);
-		    rm = gen_reg_rtx (Pmode);
-		    emit_move_insn (rm, gen_rtx_CONST (Pmode, tem));
-		    if (expand_binop (Pmode, add_optab, rm, pic_offset_table_rtx,
-				      rn, 0, OPTAB_LIB_WIDEN) != rn)
-		      internal_error ("expand_binop failed in movsi gotrel");
-		  }
-		DONE;
-	      }
-	    else if (t == cris_got_symbol)
-	      {
-		/* Change a "move.d sym,rN" into (allocate register rM, rO)
-		   "move.d (const (unspec [sym] CRIS_UNSPEC_GOTREAD)),rM"
-		   "add.d rPIC,rM,rO", "move.d [rO],rN" with
-		   the memory access marked as read-only.  */
-		rtx tem, mem, rm, ro, rn = operands[0];
-		gcc_assert (can_create_pseudo_p ());
-		tem = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, operands[1]),
-				      CRIS_UNSPEC_GOTREAD);
-		rm = gen_reg_rtx (Pmode);
-		emit_move_insn (rm, gen_rtx_CONST (Pmode, tem));
-		ro = gen_reg_rtx (Pmode);
-	        if (expand_binop (Pmode, add_optab, rm, pic_offset_table_rtx,
-				  ro, 0, OPTAB_LIB_WIDEN) != ro)
-		  internal_error ("expand_binop failed in movsi got");
-		mem = gen_rtx_MEM (Pmode, ro);
-
-		/* This MEM doesn't alias anything.  Whether it
-		   aliases other same symbols is unimportant.  */
-		set_mem_alias_set (mem, new_alias_set ());
-		MEM_NOTRAP_P (mem) = 1;
-
-		/* We can set the GOT memory read of a non-called symbol
-		   to readonly, but not that of a call symbol, as those
-		   are subject to lazy evaluation and usually have the value
-		   changed from the first call to the second (but
-		   constant thereafter).  */
-		MEM_READONLY_P (mem) = 1;
-		emit_move_insn (rn, mem);
-		DONE;
-	      }
-	    else
-	      {
-		/* We get here when we have to change something that would
-		   be recognizable if it wasn't PIC.  A ``sym'' is ok for
-		   PIC symbols both with and without a GOT entry.  And ``sym
-		   + offset'' is ok for local symbols, so the only thing it
-		   could be, is a global symbol with an offset.  Check and
-		   abort if not.  */
-		rtx reg = gen_reg_rtx (Pmode);
-		rtx sym = get_related_value (operands[1]);
-		HOST_WIDE_INT offs = get_integer_term (operands[1]);
-
-		gcc_assert (can_create_pseudo_p ()
-			    && t == cris_got_symbol_needing_fixup
-			    && sym != NULL_RTX && offs != 0);
-
-		emit_move_insn (reg, sym);
-		if (expand_binop (SImode, add_optab, reg,
-				  GEN_INT (offs), operands[0], 0,
-				  OPTAB_LIB_WIDEN) != operands[0])
-		  internal_error ("expand_binop failed in movsi got+offs");
-		DONE;
-	      }
-	  }
-      }
 })
-
-(define_insn "*movsi_got_load"
-  [(set (reg:SI CRIS_GOT_REGNUM) (unspec:SI [(const_int 0)] CRIS_UNSPEC_GOT))]
-  "flag_pic"
-{
-  return TARGET_V32
-    ? "lapc _GLOBAL_OFFSET_TABLE_,%:"
-    : "move.d $pc,%:\;sub.d .:GOTOFF,%:";
-}
-  [(set_attr "cc" "clobber")])
 
 (define_insn "*movsi_internal"
   [(set
     (match_operand:SI 0 "nonimmediate_operand"
-		      "=r,r, r,Q>,r,Q>,g,r,r, r,g,rQ>,x,  m,x")
-    (match_operand:SI 1 "cris_general_operand_or_pic_source"
-		       "r,Q>,M,M, I,r, M,n,!S,g,r,x,  rQ>,x,gi"))]
+		      "=r,r, r,Q>,r,Q>,g,r,r,g,rQ>,x,  m,x")
+    (match_operand:SI 1 "general_operand"
+		       "r,Q>,M,M, I,r, M,n,g,r,x,  rQ>,x,gi"))]
     ;; Note that we prefer not to use the S alternative (if for some reason
     ;; it competes with others) above, but g matches S.
   ""
@@ -1083,44 +799,18 @@
      letters.  FIXME: Check again.  It seems this could shrink a bit.  */
   switch (which_alternative)
     {
-    case 9:
-      if (TARGET_V32)
-       {
-	 if (!flag_pic
-	     && (GET_CODE (operands[1]) == SYMBOL_REF
-		 || GET_CODE (operands[1]) == LABEL_REF
-		 || (GET_CODE (operands[1]) == CONST
-		     && (GET_CODE (XEXP (operands[1], 0)) != UNSPEC
-			 || (XINT (XEXP (operands[1], 0), 1)
-			     == CRIS_UNSPEC_PLT_PCREL)
-			 || (XINT (XEXP (operands[1], 0), 1)
-			     == CRIS_UNSPEC_PCREL)))))
-	   {
-	     /* FIXME: Express this through (set_attr cc none) instead,
-		since we can't express the ``none'' at this point.  FIXME:
-		Use lapc for everything except const_int and when next cc0
-		user would want the flag setting.  */
-	     CC_STATUS_INIT;
-	     return "lapc %1,%0";
-	   }
-	 if (flag_pic == 1
-	     && GET_CODE (operands[1]) == CONST
-	     && GET_CODE (XEXP (operands[1], 0)) == UNSPEC
-	     && XINT (XEXP (operands[1], 0), 1) == CRIS_UNSPEC_GOTREAD)
-	   return "movu.w %1,%0";
-       }
-       /* FALLTHROUGH */
     case 0:
     case 1:
     case 5:
-    case 10:
+    case 8:
+    case 9:
       return "move.d %1,%0";
 
+    case 10:
     case 11:
     case 12:
     case 13:
-    case 14:
-      return "move %d1,%0";
+      return "move %1,%0";
 
     case 2:
     case 3:
@@ -1147,54 +837,12 @@
 	}
       return "move.d %1,%0";
 
-    case 8:
-      {
-	rtx tem = operands[1];
-	gcc_assert (GET_CODE (tem) == CONST);
-	tem = XEXP (tem, 0);
-	if (GET_CODE (tem) == PLUS
-	    && GET_CODE (XEXP (tem, 0)) == UNSPEC
-	    && (XINT (XEXP (tem, 0), 1) == CRIS_UNSPEC_GOTREL
-		|| XINT (XEXP (tem, 0), 1) == CRIS_UNSPEC_PCREL)
-	    && CONST_INT_P (XEXP (tem, 1)))
-	  tem = XEXP (tem, 0);
-	gcc_assert (GET_CODE (tem) == UNSPEC);
-	switch (XINT (tem, 1))
-	  {
-	  case CRIS_UNSPEC_GOTREAD:
-	  case CRIS_UNSPEC_PLTGOTREAD:
-	    /* Using sign-extend mostly to be consistent with the
-	       indexed addressing mode.  */
-	    if (flag_pic == 1)
-	      return "movs.w %1,%0";
-	    return "move.d %1,%0";
-
-	  case CRIS_UNSPEC_GOTREL:
-	  case CRIS_UNSPEC_PLT_GOTREL:
-	    gcc_assert (!TARGET_V32);
-	    return "move.d %1,%0";
-
-	  case CRIS_UNSPEC_PCREL:
-	  case CRIS_UNSPEC_PLT_PCREL:
-	    gcc_assert (TARGET_V32);
-	    /* LAPC doesn't set condition codes; clear them to make the
-	       (equivalence-marked) result of this insn not presumed
-	       present.  This instruction can be a PIC symbol load (for
-	       a hidden symbol) which for weak symbols will be followed
-	       by a test for NULL.  */
-	    CC_STATUS_INIT;
-	    return "lapc %1,%0";
-
-	  default:
-	    gcc_unreachable ();
-	  }
-      }
     default:
-      return "BOGUS: %1 to %0";
+      gcc_unreachable ();
     }
 }
-  [(set_attr "slottable" "yes,yes,yes,yes,yes,yes,no,no,no,no,no,yes,yes,no,no")
-   (set_attr "cc" "*,*,*,*,*,*,*,*,*,*,*,none,none,none,none")])
+  [(set_attr "slottable" "yes,yes,yes,yes,yes,yes,no,no,no,no,yes,yes,no,no")
+   (set_attr "cc" "*,*,*,*,*,*,*,*,*,*,none,none,none,none")])
 
 ;; Extend operations with side-effect from mem to register, using
 ;; MOVS/MOVU.  These are from mem to register only.
@@ -1431,66 +1079,9 @@
   [(set_attr "slottable" "yes,yes,yes,yes,yes,no,no,no,yes,yes,yes,no,yes,no")])
 
 ;; Movem patterns.  Primarily for use in function prologue and epilogue.
-;; The V32 variants have an ordering matching the expectations of the
-;; standard names "load_multiple" and "store_multiple"; pre-v32 movem
-;; store R0 in the highest memory location.
-
-(define_expand "load_multiple"
-  [(match_operand:SI 0 "register_operand" "")
-   (match_operand:SI 1 "memory_operand" "")
-   (match_operand:SI 2 "const_int_operand" "")]
-  "TARGET_V32"
-{
-  rtx indreg;
-
-  /* Apparently the predicate isn't checked, so we need to do so
-     manually.  Once happened for libstdc++-v3 locale_facets.tcc.  */
-  if (!MEM_P (operands[1]))
-    FAIL;
-
-  indreg = XEXP (operands[1], 0);
-
-  if (GET_CODE (indreg) == POST_INC)
-    indreg = XEXP (indreg, 0);
-  if (!REG_P (indreg)
-      || GET_CODE (operands[2]) != CONST_INT
-      || !REG_P (operands[0])
-      || REGNO (operands[0]) != 0
-      || INTVAL (operands[2]) > CRIS_SP_REGNUM
-      || (int) REGNO (indreg) < INTVAL (operands[2]))
-    FAIL;
-  gcc_unreachable ();
-  emit_insn (cris_gen_movem_load (operands[1], operands[2], 0));
-  DONE;
-})
-
-(define_expand "store_multiple"
-  [(match_operand:SI 0 "memory_operand" "")
-   (match_operand:SI 1 "register_operand" "")
-   (match_operand:SI 2 "const_int_operand" "")]
-  "TARGET_V32"
-{
-  rtx indreg;
-
-  /* See load_multiple.  */
-  if (!MEM_P (operands[0]))
-    FAIL;
-
-  indreg = XEXP (operands[0], 0);
-
-  if (GET_CODE (indreg) == POST_INC)
-    indreg = XEXP (indreg, 0);
-  if (!REG_P (indreg)
-      || GET_CODE (operands[2]) != CONST_INT
-      || !REG_P (operands[1])
-      || REGNO (operands[1]) != 0
-      || INTVAL (operands[2]) > CRIS_SP_REGNUM
-      || (int) REGNO (indreg) < INTVAL (operands[2]))
-    FAIL;
-  gcc_unreachable ();
-  cris_emit_movem_store (operands[0], operands[2], 0, false);
-  DONE;
-})
+;; Unfortunately, movem stores R0 in the highest memory location, thus
+;; the opposite of the expectation for the standard names "load_multiple"
+;; and "store_multiple".
 
 (define_insn "*cris_load_multiple"
   [(match_parallel 0 "cris_load_multiple_op"
@@ -1697,36 +1288,19 @@
 	(plus:DI (match_operand:DI 1 "register_operand")
 		 (match_operand:DI 2 "general_operand")))]
   ""
-{
-  if (MEM_P (operands[2]) && TARGET_V32)
-    operands[2] = force_reg (DImode, operands[2]);
-})
+  "")
 
-(define_insn "*adddi3_non_v32"
+(define_insn "*adddi3"
   [(set (match_operand:DI 0 "register_operand" "=r,r,r,&r,&r")
 	(plus:DI (match_operand:DI 1 "register_operand" "%0,0,0,0,r")
 		 (match_operand:DI 2 "general_operand" "J,N,P,g,!To")))]
-  "!TARGET_V32"
+  ""
   "@
    addq %2,%M0\;ax\;addq 0,%H0
    subq %n2,%M0\;ax\;subq 0,%H0
    add%e2.%z2 %2,%M0\;ax\;%A2 %H2,%H0
    add.d %M2,%M0\;ax\;add.d %H2,%H0
    add.d %M2,%M1,%M0\;ax\;add.d %H2,%H1,%H0")
-
-; It seems no use allowing a memory operand for this one, because we'd
-; need a scratch register for incrementing the address.
-(define_insn "*adddi3_v32"
-  [(set (match_operand:DI 0 "register_operand" "=r,r,r,r,r")
-       (plus:DI (match_operand:DI 1 "register_operand" "%0,0,0,0,0")
-                (match_operand:DI 2 "nonmemory_operand" "J,N,P,r,n")))]
-  "TARGET_V32"
-  "@
-   addq %2,%M0\;addc 0,%H0
-   subq %n2,%M0\;ax\;subq 0,%H0
-   add%e2.%z2 %2,%M0\;addc %H2,%H0
-   add.d %M2,%M0\;addc %H2,%H0
-   add.d %M2,%M0\;addc %H2,%H0")
 
 (define_expand "add<mode>3"
   [(set (match_operand:BWD 0 "register_operand")
@@ -1736,18 +1310,18 @@
   ""
   "")
 
-(define_insn "*addsi3_non_v32"
-  [(set (match_operand:SI 0 "register_operand"  "=r,r, r,r,r,r, r,r,  r")
+(define_insn "*addsi3"
+  [(set (match_operand:SI 0 "register_operand"  "=r,r, r,r,r,r,r,  r")
 	(plus:SI
-	 (match_operand:SI 1 "register_operand" "%0,0, 0,0,0,0, 0,r,  r")
-	 (match_operand:SI 2 "general_operand"   "r,Q>,J,N,n,!S,g,!To,0")))]
+	 (match_operand:SI 1 "register_operand" "%0,0, 0,0,0,0,r,  r")
+	 (match_operand:SI 2 "general_operand"   "r,Q>,J,N,n,g,!To,0")))]
 
 ;; The last constraint is due to that after reload, the '%' is not
 ;; honored, and canonicalization doesn't care about keeping the same
 ;; register as in destination.  This will happen after insn splitting.
 ;; gcc <= 2.7.2.  FIXME: Check for gcc-2.9x
 
- "!TARGET_V32"
+ ""
 {
   switch (which_alternative)
     {
@@ -1777,78 +1351,22 @@
 	}
       return "add.d %2,%0";
     case 5:
-      {
-	rtx tem = operands[2];
-	gcc_assert (GET_CODE (tem) == CONST);
-	tem = XEXP (tem, 0);
-	if (GET_CODE (tem) == PLUS
-	    && GET_CODE (XEXP (tem, 0)) == UNSPEC
-	    /* We don't allow CRIS_UNSPEC_PCREL here; we can't have a
-	       pc-relative operand in an add insn.  */
-	    && XINT (XEXP (tem, 0), 1) == CRIS_UNSPEC_GOTREL
-	    && CONST_INT_P (XEXP (tem, 1)))
-	  tem = XEXP (tem, 0);
-	gcc_assert (GET_CODE (tem) == UNSPEC);
-	switch (XINT (tem, 1))
-	  {
-	  case CRIS_UNSPEC_GOTREAD:
-	  case CRIS_UNSPEC_PLTGOTREAD:
-	    /* Using sign-extend mostly to be consistent with the
-	       indexed addressing mode.  */
-	    if (flag_pic == 1)
-	      return "adds.w %2,%0";
-	    return "add.d %2,%0";
-
-	  case CRIS_UNSPEC_PLT_GOTREL:
-	  case CRIS_UNSPEC_GOTREL:
-	    return "add.d %2,%0";
-	  default:
-	    gcc_unreachable ();
-	  }
-      }
+      return "add.d %2,%0";
     case 6:
-      return "add%u2 %2,%0";
-    case 7:
       return "add.d %2,%1,%0";
-    case 8:
+    case 7:
       return "add.d %1,%0";
     default:
       return "BOGUS addsi %2+%1 to %0";
     }
 }
- [(set_attr "slottable" "yes,yes,yes,yes,no,no,no,no,yes")])
-
-; FIXME: Check what's best: having the three-operand ACR alternative
-; before or after the corresponding-operand2 alternative.  Check for
-; *all* insns.  FIXME: constant constraint letter for -128..127.
-(define_insn "*addsi3_v32"
-  [(set (match_operand:SI 0 "register_operand"  "=r,!a,r,!a, r,r,!a,r,!a,r,r,r,!a")
-	(plus:SI
-	 (match_operand:SI 1 "register_operand" "%0,r, 0, r, 0,0,r, 0,r, 0,0,0,r")
-	 (match_operand:SI 2 "general_operand"  "r, r, Q>,Q>,J,N,NJ,L,L, P,n,g,g")))]
-  "TARGET_V32"
-  "@
-   add.d %2,%0
-   addi %2.b,%1,%0
-   add.d %2,%0
-   addo.d %2,%1,%0
-   addq %2,%0
-   subq %n2,%0
-   addoq %2,%1,%0
-   adds.w %2,%0
-   addo %2,%1,%0
-   addu.w %2,%0
-   add.d %2,%0
-   add%u2 %2,%0
-   addo.%Z2 %2,%1,%0"
-  [(set_attr "slottable" "yes,yes,yes,yes,yes,yes,yes,no,no,no,no,no,no")
-   (set_attr "cc" "*,none,*,none,*,*,none,*,none,*,*,*,none")])
+ [(set_attr "slottable" "yes,yes,yes,yes,no,no,no,yes")])
 
-(define_insn "*addhi3_non_v32"
+(define_insn "*addhi3"
   [(set (match_operand:HI 0 "register_operand"		"=r,r, r,r,r,r")
 	(plus:HI (match_operand:HI 1 "register_operand" "%0,0, 0,0,0,r")
 		 (match_operand:HI 2 "general_operand"   "r,Q>,J,N,g,!To")))]
-  "!TARGET_V32"
+  ""
   "@
    add.w %2,%0
    add.w %2,%0
@@ -1859,30 +1377,11 @@
   [(set_attr "slottable" "yes,yes,yes,yes,no,no")
    (set_attr "cc" "normal,normal,clobber,clobber,normal,normal")])
 
-(define_insn "*addhi3_v32"
-  [(set (match_operand:HI 0 "register_operand" "=r, !a,r,!a, r,r,!a,r,!a")
-	(plus:HI
-	 (match_operand:HI 1 "register_operand" "%0,r, 0, r, 0,0,r, 0,r")
-	 (match_operand:HI 2 "general_operand"  "r, r, Q>,Q>,J,N,NJ,g,g")))]
-  "TARGET_V32"
-  "@
-   add.w %2,%0
-   addi %2.b,%1,%0
-   add.w %2,%0
-   addo.w %2,%1,%0
-   addq %2,%0
-   subq %n2,%0
-   addoq %2,%1,%0
-   add.w %2,%0
-   addo.w %2,%1,%0"
-  [(set_attr "slottable" "yes,yes,yes,yes,yes,yes,yes,no,no")
-   (set_attr "cc" "*,none,*,none,clobber,clobber,none,*,none")])
-
-(define_insn "*addqi3_non_v32"
+(define_insn "*addqi3"
   [(set (match_operand:QI 0 "register_operand"		"=r,r, r,r,r,r,r")
 	(plus:QI (match_operand:QI 1 "register_operand" "%0,0, 0,0,0,0,r")
 		 (match_operand:QI 2 "general_operand"	 "r,Q>,J,N,O,g,!To")))]
-  "!TARGET_V32"
+  ""
   "@
    add.b %2,%0
    add.b %2,%0
@@ -1893,26 +1392,6 @@
    add.b %2,%1,%0"
   [(set_attr "slottable" "yes,yes,yes,yes,yes,no,no")
    (set_attr "cc" "normal,normal,clobber,clobber,clobber,normal,normal")])
-
-(define_insn "*addqi3_v32"
-  [(set (match_operand:QI 0 "register_operand"  "=r,!a,r,!a, r,r,!a,r,r,!a")
-	(plus:QI
-	 (match_operand:QI 1 "register_operand" "%0,r, 0, r, 0,0,r, 0,0,r")
-	 (match_operand:QI 2 "general_operand"   "r,r, Q>,Q>,J,N,NJ,O,g,g")))]
-  "TARGET_V32"
-  "@
-   add.b %2,%0
-   addi %2.b,%1,%0
-   add.b %2,%0
-   addo.b %2,%1,%0
-   addq %2,%0
-   subq %n2,%0
-   addoq %2,%1,%0
-   subQ -%b2,%0
-   add.b %2,%0
-   addo.b %2,%1,%0"
-  [(set_attr "slottable" "yes,yes,yes,yes,yes,yes,yes,yes,no,no")
-   (set_attr "cc" "*,none,*,none,clobber,clobber,none,clobber,*,none")])
 
 ;; Subtract.
 ;;
@@ -1927,33 +1406,19 @@
 	(minus:DI (match_operand:DI 1 "register_operand")
 		  (match_operand:DI 2 "general_operand")))]
   ""
-{
-  if (TARGET_V32 && MEM_P (operands[2]))
-    operands[2] = force_reg (DImode, operands[2]);
-})
+  "")
 
-(define_insn "*subdi3_non_v32"
+(define_insn "*subdi3"
   [(set (match_operand:DI 0 "register_operand" "=r,r,r,&r,&r")
 	(minus:DI (match_operand:DI 1 "register_operand" "0,0,0,0,r")
 		  (match_operand:DI 2 "general_operand" "J,N,P,g,!To")))]
-  "!TARGET_V32"
+  ""
   "@
    subq %2,%M0\;ax\;subq 0,%H0
    addq %n2,%M0\;ax\;addq 0,%H0
    sub%e2.%z2 %2,%M0\;ax\;%D2 %H2,%H0
    sub.d %M2,%M0\;ax\;sub.d %H2,%H0
    sub.d %M2,%M1,%M0\;ax\;sub.d %H2,%H1,%H0")
-
-(define_insn "*subdi3_v32"
-  [(set (match_operand:DI 0 "register_operand" "=r,r,r,&r")
-	(minus:DI (match_operand:DI 1 "register_operand" "0,0,0,0")
-		  (match_operand:DI 2 "nonmemory_operand" "J,N,P,r")))]
-  "TARGET_V32"
-  "@
-   subq %2,%M0\;ax\;subq 0,%H0
-   addq %n2,%M0\;ax\;addq 0,%H0
-   sub%e2.%z2 %2,%M0\;ax\;%D2 %H2,%H0
-   sub.d %M2,%M0\;ax\;sub.d %H2,%H0")
 
 (define_expand "sub<mode>3"
   [(set (match_operand:BWD 0 "register_operand")
@@ -1963,12 +1428,12 @@
   ""
   "")
 
-(define_insn "*subsi3_non_v32"
+(define_insn "*subsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r, r,r,r,r,r,r")
 	(minus:SI
 	 (match_operand:SI 1 "register_operand" "0,0, 0,0,0,0,0,r")
 	 (match_operand:SI 2 "general_operand"	"r,Q>,J,N,P,n,g,!To")))]
-  "!TARGET_V32"
+  ""
 
 ;; This does not do the optimal: "addu.w 65535,r0" when %2 is negative.
 ;; But then again, %2 should not be negative.
@@ -1983,28 +1448,12 @@
    sub.d %2,%0
    sub.d %2,%1,%0"
   [(set_attr "slottable" "yes,yes,yes,yes,no,no,no,no")])
-
-(define_insn "*subsi3_v32"
-  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r,r,r,r")
-       (minus:SI
-        (match_operand:SI 1 "register_operand" "0,0,0,0,0,0,0")
-        (match_operand:SI 2 "general_operand" "r,Q>,J,N,P,n,g")))]
-  "TARGET_V32"
-  "@
-   sub.d %2,%0
-   sub.d %2,%0
-   subq %2,%0
-   addq %n2,%0
-   sub%e2.%z2 %2,%0
-   sub.d %2,%0
-   sub.d %2,%0"
-  [(set_attr "slottable" "yes,yes,yes,yes,no,no,no")])
 
-(define_insn "*sub<mode>3_nonv32"
+(define_insn "*sub<mode>3"
   [(set (match_operand:BW 0 "register_operand"		"=r,r, r,r,r,r")
 	(minus:BW (match_operand:BW 1 "register_operand" "0,0, 0,0,0,r")
 		  (match_operand:BW 2 "general_operand"  "r,Q>,J,N,g,!To")))]
-  "!TARGET_V32"
+  ""
   "@
    sub<m> %2,%0
    sub<m> %2,%0
@@ -2014,20 +1463,6 @@
    sub<m> %2,%1,%0"
   [(set_attr "slottable" "yes,yes,yes,yes,no,no")
    (set_attr "cc" "normal,normal,clobber,clobber,normal,normal")])
-
-(define_insn "*sub<mode>3_v32"
-  [(set (match_operand:BW 0 "register_operand" "=r,r,r,r,r")
-	(minus:BW (match_operand:BW 1 "register_operand" "0,0,0,0,0")
-		  (match_operand:BW 2 "general_operand" "r,Q>,J,N,g")))]
-  "TARGET_V32"
-  "@
-   sub<m> %2,%0
-   sub<m> %2,%0
-   subq %2,%0
-   addq %n2,%0
-   sub<m> %2,%0"
-  [(set_attr "slottable" "yes,yes,yes,yes,no")
-   (set_attr "cc" "normal,normal,clobber,clobber,normal")])
 
 ;; CRIS has some add/sub-with-sign/zero-extend instructions.
 ;;  Although these perform sign/zero-extension to SImode, they are
@@ -2261,7 +1696,7 @@
 ;; QImode to HImode
 ;; FIXME: GCC should widen.
 
-(define_insn "*extopqihi_non_v32"
+(define_insn "*extopqihi"
   [(set (match_operand:HI 0 "register_operand" "=r,r,r,r")
 	(match_operator:HI
 	 3 "cris_additive_operand_extend_operator"
@@ -2269,7 +1704,7 @@
 	  (match_operator:HI
 	   4 "cris_extend_operator"
 	   [(match_operand:QI 2 "nonimmediate_operand" "r,Q>,m,!To")])]))]
-  "!TARGET_V32 && GET_MODE_SIZE (GET_MODE (operands[0])) <= UNITS_PER_WORD
+  "GET_MODE_SIZE (GET_MODE (operands[0])) <= UNITS_PER_WORD
    && (operands[1] != frame_pointer_rtx || GET_CODE (operands[3]) != PLUS)"
   "@
    %x3%E4.%m4 %2,%0
@@ -2279,22 +1714,9 @@
   [(set_attr "slottable" "yes,yes,no,no")
    (set_attr "cc" "clobber")])
 
-(define_insn "*extopqihi_v32"
-  [(set (match_operand:HI 0 "register_operand" "=r,r")
-	(match_operator:HI
-	 3 "cris_additive_operand_extend_operator"
-	 [(match_operand:HI 1 "register_operand" "0,0")
-	  (match_operator:HI
-	   4 "cris_extend_operator"
-	   [(match_operand:QI 2 "nonimmediate_operand" "r,m")])]))]
-  "TARGET_V32"
-  "%x3%e4.%m4 %2,%0"
-  [(set_attr "slottable" "yes")
-   (set_attr "cc" "clobber")])
-
 ;; QImode to SImode
 
-(define_insn "*extop<mode>si_non_v32"
+(define_insn "*extop<mode>si"
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
 	(match_operator:SI
 	 3 "cris_operand_extend_operator"
@@ -2302,8 +1724,7 @@
 	  (match_operator:SI
 	   4 "cris_extend_operator"
 	   [(match_operand:BW 2 "nonimmediate_operand" "r,Q>,m,!To")])]))]
-  "!TARGET_V32
-   && (GET_CODE (operands[3]) != UMIN || GET_CODE (operands[4]) == ZERO_EXTEND)
+  "(GET_CODE (operands[3]) != UMIN || GET_CODE (operands[4]) == ZERO_EXTEND)
    && GET_MODE_SIZE (GET_MODE (operands[0])) <= UNITS_PER_WORD
    && (operands[1] != frame_pointer_rtx || GET_CODE (operands[3]) != PLUS)"
   "@
@@ -2312,32 +1733,20 @@
    %x3%E4<m> %2,%0
    %x3%E4<m> %2,%1,%0"
   [(set_attr "slottable" "yes,yes,no,no")])
-
-(define_insn "*extop<mode>si_v32"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(match_operator:SI
-	 3 "cris_additive_operand_extend_operator"
-	 [(match_operand:SI 1 "register_operand" "0,0")
-	  (match_operator:SI
-	   4 "cris_extend_operator"
-	   [(match_operand:BW 2 "nonimmediate_operand" "r,m")])]))]
-  "TARGET_V32"
-  "%x3%e4.%m4 %2,%0"
-  [(set_attr "slottable" "yes")])
 
 ;; As with the side-effect patterns, may have to have swapped operands for add.
 ;; For commutative operands, these are the canonical forms.
 
 ;; QImode to HImode
 
-(define_insn "*addxqihi_swap_non_v32"
+(define_insn "*addxqihi_swap"
   [(set (match_operand:HI 0 "register_operand" "=r,r,r,r")
 	(plus:HI
 	 (match_operator:HI
 	  3 "cris_extend_operator"
 	  [(match_operand:QI 2 "nonimmediate_operand" "r,Q>,m,!To")])
 	 (match_operand:HI 1 "register_operand" "0,0,0,r")))]
-  "!TARGET_V32 && operands[1] != frame_pointer_rtx"
+  "operands[1] != frame_pointer_rtx"
   "@
    add%e3.b %2,%0
    add%e3.b %2,%0
@@ -2346,35 +1755,7 @@
   [(set_attr "slottable" "yes,yes,no,no")
    (set_attr "cc" "clobber")])
 
-;; A case for v32, to catch the "addo" insn in addition to "adds".  We
-;; only care to match the canonical form; there should be no other.
-
-(define_insn "*addsbw_v32"
-  [(set (match_operand:HI 0 "register_operand" "=r,r,!a")
-	(plus:HI
-	 (sign_extend:HI
-	  (match_operand:QI 2 "nonimmediate_operand" "r,m,m"))
-	 (match_operand:HI 1 "register_operand" "0,0,r")))]
-  "TARGET_V32"
-  "@
-   adds.b %2,%0
-   adds.b %2,%0
-   addo.b %2,%1,%0"
-  [(set_attr "slottable" "yes")
-   (set_attr "cc" "clobber,clobber,none")])
-
-(define_insn "*addubw_v32"
-  [(set (match_operand:HI 0 "register_operand" "=r,r")
-	(plus:HI
-	 (zero_extend:HI
-	  (match_operand:QI 2 "nonimmediate_operand" "r,m"))
-	 (match_operand:HI 1 "register_operand" "0,0")))]
-  "TARGET_V32"
-  "addu.b %2,%0"
-  [(set_attr "slottable" "yes")
-   (set_attr "cc" "clobber")])
-
-(define_insn "*extop<mode>si_swap_non_v32"
+(define_insn "*extop<mode>si"
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
 	(match_operator:SI
 	 4 "cris_plus_or_bound_operator"
@@ -2382,8 +1763,7 @@
 	   3 "cris_extend_operator"
 	   [(match_operand:BW 2 "nonimmediate_operand" "r,Q>,m,!To")])
 	  (match_operand:SI 1 "register_operand" "0,0,0,r")]))]
-  "!TARGET_V32
-   && (GET_CODE (operands[4]) != UMIN || GET_CODE (operands[3]) == ZERO_EXTEND)
+  "(GET_CODE (operands[4]) != UMIN || GET_CODE (operands[3]) == ZERO_EXTEND)
    && operands[1] != frame_pointer_rtx"
   "@
    %x4%E3<m> %2,%0
@@ -2391,40 +1771,6 @@
    %x4%E3<m> %2,%0
    %x4%E3<m> %2,%1,%0"
   [(set_attr "slottable" "yes,yes,no,no")])
-
-(define_insn "*adds<mode>_v32"
-  [(set (match_operand:SI 0 "register_operand" "=r,r,!a")
-	(plus:SI
-	 (sign_extend:SI
-	  (match_operand:BW 2 "nonimmediate_operand" "r,m,m"))
-	 (match_operand:SI 1 "register_operand" "0,0,r")))]
-  "TARGET_V32"
-  "@
-   adds<m> %2,%0
-   adds<m> %2,%0
-   addo<m> %2,%1,%0"
-  [(set_attr "slottable" "yes")
-   (set_attr "cc" "*,*,none")])
-
-(define_insn "*addu<mode>_v32"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-       (plus:SI
-        (zero_extend:SI
-          (match_operand:BW 2 "nonimmediate_operand" "r,m"))
-        (match_operand:SI 1 "register_operand" "0,0")))]
-  "TARGET_V32 && operands[1] != frame_pointer_rtx"
-  "addu<m> %2,%0"
-  [(set_attr "slottable" "yes")])
-
-(define_insn "*bound<mode>_v32"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-       (umin:SI
-        (zero_extend:SI
-         (match_operand:BW 2 "register_operand" "r"))
-        (match_operand:SI 1 "register_operand" "0")))]
-  "TARGET_V32 && operands[1] != frame_pointer_rtx"
-  "bound<m> %2,%0"
-  [(set_attr "slottable" "yes")])
 
 ;; This is the special case when we use what corresponds to the
 ;; instruction above in "casesi".  Do *not* change it to use the generic
@@ -2458,29 +1804,9 @@
 		  (pc))
 	 (label_ref (match_operand 2 "" ""))))
    (use (label_ref (match_operand 3 "" "")))]
-  "!TARGET_V32 && operands[0] != frame_pointer_rtx"
+  "operands[0] != frame_pointer_rtx"
   "adds.w [$pc+%0.w],$pc"
   [(set_attr "cc" "clobber")])
-
-;; For V32, we just have a jump, but we need to mark the table as used,
-;; and the jump insn must have the if_then_else form expected by core
-;; GCC.  Since we don't want to prolong the lifetime of the original
-;; index value, we compare against "unspec 0".  It's a pity we have to
-;; jump through to get the default label in place and to keep the jump
-;; table around.  FIXME: Look into it some time.
-
-(define_insn "*casesi_jump_v32"
-  [(set (pc)
-	(if_then_else
-	 (ltu (unspec [(const_int 0)] CRIS_UNSPEC_CASESI)
-	      (match_operand:SI 0 "const_int_operand" "n"))
-	 (match_operand:SI 1 "register_operand" "r")
-	 (label_ref (match_operand 2 "" ""))))
-   (use (label_ref (match_operand 3 "" "")))]
-  "TARGET_V32"
-  "jump %1%#"
-  [(set_attr "cc" "clobber")
-   (set_attr "slottable" "has_slot")])
 
 ;; Multiply instructions.
 
@@ -2520,24 +1846,18 @@
 
 ;; The addi insn as it is normally used.
 
-;; Make the ACR alternative taste bad enough to not choose it as a
-;; preference to avoid spilling problems (unwind-dw2-fde.c at build).
-;; FIXME: Revisit for new register allocator.
-
 (define_insn "*addi"
-  [(set (match_operand:SI 0 "register_operand" "=r,!a")
+  [(set (match_operand:SI 0 "register_operand" "=r")
 	(plus:SI
-	 (mult:SI (match_operand:SI 2 "register_operand" "r,r")
-		  (match_operand:SI 3 "const_int_operand" "n,n"))
-	 (match_operand:SI 1 "register_operand" "0,r")))]
+	 (mult:SI (match_operand:SI 2 "register_operand" "r")
+		  (match_operand:SI 3 "const_int_operand" "n"))
+	 (match_operand:SI 1 "register_operand" "0")))]
   "operands[0] != frame_pointer_rtx
    && operands[1] != frame_pointer_rtx
    && CONST_INT_P (operands[3])
    && (INTVAL (operands[3]) == 1
        || INTVAL (operands[3]) == 2 || INTVAL (operands[3]) == 4)"
-  "@
-   addi %2%T3,%0
-   addi %2%T3,%1,%0"
+  "addi %2%T3,%0"
   [(set_attr "slottable" "yes")
    (set_attr "cc" "none")])
 
@@ -2554,7 +1874,7 @@
 		  (match_operand:SI 2 "register_operand" "r"))
 	 (ashift:SI (match_operand:SI 3 "register_operand" "0")
 		    (const_int 1))))]
-  "!TARGET_V32"
+  ""
   "mstep %2,%0"
   [(set_attr "slottable" "yes")])
 
@@ -2572,8 +1892,7 @@
 		  (match_operand:SI 2 "register_operand" "r"))
 	 (mult:SI (match_operand:SI 3 "register_operand" "0")
 		  (const_int 2))))]
-  "!TARGET_V32
-   && operands[0] != frame_pointer_rtx
+  "operands[0] != frame_pointer_rtx
    && operands[1] != frame_pointer_rtx
    && operands[2] != frame_pointer_rtx
    && operands[3] != frame_pointer_rtx"
@@ -2682,8 +2001,7 @@
 			(const_int 1))))]
   ""
   "dstep %2,%0"
-  [(set_attr "slottable" "yes")
-   (set_attr "cc" "noov32")])
+  [(set_attr "slottable" "yes")])
 
 ;; Here's a variant with mult instead of ashift.
 ;;
@@ -2705,8 +2023,7 @@
    && operands[2] != frame_pointer_rtx
    && operands[3] != frame_pointer_rtx"
   "dstep %2,%0"
-  [(set_attr "slottable" "yes")
-   (set_attr "cc" "noov32")])
+  [(set_attr "slottable" "yes")])
 
 ;; Logical operators.
 
@@ -2800,11 +2117,11 @@
 ;; pressure (worse code).  That will hopefully change with an
 ;; improved reload pass.
 
-(define_insn "*expanded_andsi_non_v32"
+(define_insn "*expanded_andsi"
   [(set (match_operand:SI 0 "register_operand"	       "=r,r,r, r,r")
 	(and:SI (match_operand:SI 1 "register_operand" "%0,0,0, 0,r")
 		(match_operand:SI 2 "general_operand"   "I,r,Q>,g,!To")))]
-  "!TARGET_V32"
+  ""
   "@
    andq %2,%0
    and.d %2,%0
@@ -2812,19 +2129,6 @@
    and.d %2,%0
    and.d %2,%1,%0"
   [(set_attr "slottable" "yes,yes,yes,no,no")])
-
-(define_insn "*expanded_andsi_v32"
-  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
-	(and:SI (match_operand:SI 1 "register_operand" "%0,0,0,0")
-		(match_operand:SI 2 "general_operand" "I,r,Q>,g")))]
-  "TARGET_V32"
-  "@
-   andq %2,%0
-   and.d %2,%0
-   and.d %2,%0
-   and.d %2,%0"
-  [(set_attr "slottable" "yes,yes,yes,no")
-   (set_attr "cc" "noov32")])
 
 ;; For both QI and HI we may use the quick patterns.  This results in
 ;; useless condition codes, but that is used rarely enough for it to
@@ -2887,7 +2191,7 @@
 
 ;; Catch-all andhi3 pattern.
 
-(define_insn "*expanded_andhi_non_v32"
+(define_insn "*expanded_andhi"
   [(set (match_operand:HI 0 "register_operand"	       "=r,r,r, r,r,r,r")
 	(and:HI (match_operand:HI 1 "register_operand" "%0,0,0, 0,0,0,r")
 		(match_operand:HI 2 "general_operand"   "I,r,Q>,L,O,g,!To")))]
@@ -2897,7 +2201,7 @@
 ;; pressure (worse code).  That will hopefully change with an
 ;; improved reload pass.
 
-  "!TARGET_V32"
+  ""
   "@
    andq %2,%0
    and.w %2,%0
@@ -2908,21 +2212,6 @@
    and.w %2,%1,%0"
   [(set_attr "slottable" "yes,yes,yes,no,yes,no,no")
    (set_attr "cc" "clobber,normal,normal,normal,clobber,normal,normal")])
-
-(define_insn "*expanded_andhi_v32"
-  [(set (match_operand:HI 0 "register_operand" "=r,r,r,r,r,r")
-       (and:HI (match_operand:HI 1 "register_operand" "%0,0,0,0,0,0")
-               (match_operand:HI 2 "general_operand" "I,r,Q>,L,O,g")))]
-  "TARGET_V32"
-  "@
-   andq %2,%0
-   and.w %2,%0
-   and.w %2,%0
-   and.w %2,%0
-   anDq %b2,%0
-   and.w %2,%0"
-  [(set_attr "slottable" "yes,yes,yes,no,yes,no")
-   (set_attr "cc" "clobber,noov32,noov32,noov32,clobber,noov32")])
 
 ;; A strict_low_part pattern.
 
@@ -2936,6 +2225,7 @@
 ;;        (subreg:QI (reg:SI 15 acr [orig:27 D.7531 ] [27]) 0)
 ;;        (const_int -64 [0xf..fc0]))) x.c:126 147 {*andqi_lowpart_v32}
 ;;  (nil))
+;; (Note: the example is obsolete.)
 ;; In theory, it could reload this as a movstrictqi of the register
 ;; operand at the and:QI to the destination register and change the
 ;; and:QI operand to the same as the read-write output operand and the
@@ -2947,30 +2237,17 @@
 ;; match_dup.  FIXME: a sanity-check in gen* to refuse an insn with
 ;; input-constraints matching input-output-constraints, e.g. "+r" <- "0".
 
-(define_insn "*andhi_lowpart_non_v32"
+(define_insn "*andhi_lowpart"
   [(set (strict_low_part
 	 (match_operand:HI 0 "register_operand"	       "+r,r,r"))
 	(and:HI (match_dup 0)
 		(match_operand:HI 1 "general_operand"   "r,Q>,g")))]
-  "!TARGET_V32"
+  ""
   "@
    and.w %1,%0
    and.w %1,%0
    and.w %1,%0"
   [(set_attr "slottable" "yes,yes,no")])
-
-(define_insn "*andhi_lowpart_v32"
-  [(set (strict_low_part
-	 (match_operand:HI 0 "register_operand" "+r,r,r"))
-	(and:HI (match_dup 0)
-		(match_operand:HI 1 "general_operand" "r,Q>,g")))]
-  "TARGET_V32"
-  "@
-   and.w %1,%0
-   and.w %1,%0
-   and.w %1,%0"
-  [(set_attr "slottable" "yes,yes,no")
-   (set_attr "cc" "noov32")])
 
 (define_expand "andqi3"
   [(set (match_operand:QI 0 "register_operand")
@@ -2979,11 +2256,11 @@
   ""
   "")
 
-(define_insn "*andqi3_non_v32"
+(define_insn "*andqi3"
   [(set (match_operand:QI 0 "register_operand"	       "=r,r,r, r,r,r")
 	(and:QI (match_operand:QI 1 "register_operand" "%0,0,0, 0,0,r")
 		(match_operand:QI 2 "general_operand"   "I,r,Q>,O,g,!To")))]
-  "!TARGET_V32"
+  ""
   "@
    andq %2,%0
    and.b %2,%0
@@ -2994,44 +2271,17 @@
   [(set_attr "slottable" "yes,yes,yes,yes,no,no")
    (set_attr "cc" "clobber,normal,normal,clobber,normal,normal")])
 
-(define_insn "*andqi3_v32"
-  [(set (match_operand:QI 0 "register_operand" "=r,r,r,r,r")
-	(and:QI (match_operand:QI 1 "register_operand" "%0,0,0,0,0")
-		(match_operand:QI 2 "general_operand" "I,r,Q>,O,g")))]
-  "TARGET_V32"
-  "@
-   andq %2,%0
-   and.b %2,%0
-   and.b %2,%0
-   andQ %b2,%0
-   and.b %2,%0"
-  [(set_attr "slottable" "yes,yes,yes,yes,no")
-   (set_attr "cc" "clobber,noov32,noov32,clobber,noov32")])
-
-(define_insn "*andqi_lowpart_non_v32"
+(define_insn "*andqi_lowpart"
   [(set (strict_low_part
 	 (match_operand:QI 0 "register_operand"	       "+r,r,r"))
 	(and:QI (match_dup 0)
 		(match_operand:QI 1 "general_operand"   "r,Q>,g")))]
-  "!TARGET_V32"
+  ""
   "@
    and.b %1,%0
    and.b %1,%0
    and.b %1,%0"
   [(set_attr "slottable" "yes,yes,no")])
-
-(define_insn "*andqi_lowpart_v32"
-  [(set (strict_low_part
-	 (match_operand:QI 0 "register_operand" "+r,r,r"))
-	(and:QI (match_dup 0)
-		(match_operand:QI 1 "general_operand" "r,Q>,g")))]
-  "TARGET_V32"
-  "@
-   and.b %1,%0
-   and.b %1,%0
-   and.b %1,%0"
-  [(set_attr "slottable" "yes,yes,no")
-   (set_attr "cc" "noov32")])
 
 ;; Bitwise or.
 
@@ -3047,11 +2297,11 @@
   ""
   "")
 
-(define_insn "*iorsi3_non_v32"
+(define_insn "*iorsi3"
   [(set (match_operand:SI 0 "register_operand"	       "=r,r,r, r,r,r")
 	(ior:SI (match_operand:SI 1 "register_operand" "%0,0,0, 0,0,r")
 		(match_operand:SI 2 "general_operand"  "I, r,Q>,n,g,!To")))]
-  "!TARGET_V32"
+  ""
   "@
    orq %2,%0
    or.d %2,%0
@@ -3062,25 +2312,11 @@
   [(set_attr "slottable" "yes,yes,yes,no,no,no")
    (set_attr "cc" "normal,normal,normal,clobber,normal,normal")])
 
-(define_insn "*iorsi3_v32"
-  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r,r")
-	(ior:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,0")
-		(match_operand:SI 2 "general_operand" "I,r,Q>,n,g")))]
-  "TARGET_V32"
-  "@
-   orq %2,%0
-   or.d %2,%0
-   or.d %2,%0
-   oR.%s2 %2,%0
-   or.d %2,%0"
-  [(set_attr "slottable" "yes,yes,yes,no,no")
-   (set_attr "cc" "noov32,noov32,noov32,clobber,noov32")])
-
-(define_insn "*iorhi3_non_v32"
+(define_insn "*iorhi3"
   [(set (match_operand:HI 0 "register_operand"	       "=r,r,r, r,r,r,r")
 	(ior:HI (match_operand:HI 1 "register_operand" "%0,0,0, 0,0,0,r")
 		(match_operand:HI 2 "general_operand"   "I,r,Q>,L,O,g,!To")))]
-  "!TARGET_V32"
+  ""
   "@
    orq %2,%0
    or.w %2,%0
@@ -3092,26 +2328,11 @@
   [(set_attr "slottable" "yes,yes,yes,no,yes,no,no")
    (set_attr "cc" "clobber,normal,normal,normal,clobber,normal,normal")])
 
-(define_insn "*iorhi3_v32"
-  [(set (match_operand:HI 0 "register_operand" "=r,r,r,r,r,r")
-	(ior:HI (match_operand:HI 1 "register_operand" "%0,0,0,0,0,0")
-		(match_operand:HI 2 "general_operand" "I,r,Q>,L,O,g")))]
-  "TARGET_V32"
-  "@
-   orq %2,%0
-   or.w %2,%0
-   or.w %2,%0
-   or.w %2,%0
-   oRq %b2,%0
-   or.w %2,%0"
-  [(set_attr "slottable" "yes,yes,yes,no,yes,no")
-   (set_attr "cc" "clobber,noov32,noov32,noov32,clobber,noov32")])
-
-(define_insn "*iorqi3_non_v32"
+(define_insn "*iorqi3"
   [(set (match_operand:QI 0 "register_operand"	       "=r,r,r, r,r,r")
 	(ior:QI (match_operand:QI 1 "register_operand" "%0,0,0, 0,0,r")
 		(match_operand:QI 2 "general_operand"   "I,r,Q>,O,g,!To")))]
-  "!TARGET_V32"
+  ""
   "@
    orq %2,%0
    or.b %2,%0
@@ -3121,20 +2342,6 @@
    or.b %2,%1,%0"
   [(set_attr "slottable" "yes,yes,yes,yes,no,no")
    (set_attr "cc" "clobber,normal,normal,clobber,normal,normal")])
-
-(define_insn "*iorqi3_v32"
-  [(set (match_operand:QI 0 "register_operand" "=r,r,r,r,r")
-	(ior:QI (match_operand:QI 1 "register_operand" "%0,0,0,0,0")
-		(match_operand:QI 2 "general_operand" "I,r,Q>,O,g")))]
-  "TARGET_V32"
-  "@
-   orq %2,%0
-   or.b %2,%0
-   or.b %2,%0
-   orQ %b2,%0
-   or.b %2,%0"
-  [(set_attr "slottable" "yes,yes,yes,yes,no")
-   (set_attr "cc" "clobber,noov32,noov32,clobber,noov32")])
 
 ;; Exclusive-or
 
@@ -3147,8 +2354,7 @@
 		(match_operand:SI 2 "register_operand" "r")))]
   ""
   "xor %2,%0"
-  [(set_attr "slottable" "yes")
-   (set_attr "cc" "noov32")])
+  [(set_attr "slottable" "yes")])
 
 (define_insn "xor<mode>3"
   [(set (match_operand:BW 0 "register_operand" "=r")
@@ -3205,8 +2411,7 @@
 	(not:SI (match_operand:SI 1 "register_operand" "0")))]
   ""
   "not %0"
-  [(set_attr "slottable" "yes")
-   (set_attr "cc" "noov32")])
+  [(set_attr "slottable" "yes")])
 
 (define_insn "one_cmpl<mode>2"
   [(set (match_operand:BW 0 "register_operand" "=r")
@@ -3229,8 +2434,7 @@
 
   return "<slr>q %2,%0";
 }
-  [(set_attr "slottable" "yes")
-   (set_attr "cc" "noov32")])
+  [(set_attr "slottable" "yes")])
 
 ;; Since gcc gets lost, and forgets to zero-extend the source (or mask
 ;; the destination) when it changes shifts of lower modes into SImode,
@@ -3280,8 +2484,7 @@
 		    (match_operand:BW 2 "register_operand" "r")))]
   ""
   "<slr><m> %2,%0"
-  [(set_attr "slottable" "yes")
-   (set_attr "cc" "noov32")])
+  [(set_attr "slottable" "yes")])
 
 (define_insn "*<shlr><mode>_lowpart"
   [(set (strict_low_part (match_operand:BW 0 "register_operand" "+r"))
@@ -3289,8 +2492,7 @@
 		    (match_operand:BW 1 "register_operand" "r")))]
   ""
   "<slr><m> %1,%0"
-  [(set_attr "slottable" "yes")
-   (set_attr "cc" "noov32")])
+  [(set_attr "slottable" "yes")])
 
 ;; Arithmetic/logical shift left.
 
@@ -3311,7 +2513,7 @@
        ? "lslq %2,%0" : "lsl<m> %2,%0");
 }
   [(set_attr "slottable" "yes")
-   (set_attr "cc" "noov32,clobber")])
+   (set_attr "cc" "*,clobber")])
 
 ;; A strict_low_part matcher.
 
@@ -3321,8 +2523,7 @@
 		   (match_operand:HI 1 "register_operand" "r")))]
   ""
   "lsl<m> %1,%0"
-  [(set_attr "slottable" "yes")
-   (set_attr "cc" "noov32")])
+  [(set_attr "slottable" "yes")])
 
 ;; Various strange insns that gcc likes.
 
@@ -3340,8 +2541,7 @@
 	(abs:SI (match_operand:SI 1 "register_operand" "r")))]
   ""
   "abs %1,%0"
-  [(set_attr "slottable" "yes")
-   (set_attr "cc" "noov32")])
+  [(set_attr "slottable" "yes")])
 
 ;; FIXME: GCC should be able to do these expansions itself.
 
@@ -3359,16 +2559,14 @@
 	(clz:SI (match_operand:SI 1 "register_operand" "r")))]
   "TARGET_HAS_LZ"
   "lz %1,%0"
-  [(set_attr "slottable" "yes")
-   (set_attr "cc" "noov32")])
+  [(set_attr "slottable" "yes")])
 
 (define_insn "bswapsi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
         (bswap:SI (match_operand:SI 1 "register_operand" "0")))]
   "TARGET_HAS_SWAP"
   "swapwb %0"
-  [(set_attr "slottable" "yes")
-   (set_attr "cc" "noov32")])
+  [(set_attr "slottable" "yes")])
 
 ;; This instruction swaps all bits in a register.
 ;; That means that the most significant bit is put in the place
@@ -3380,8 +2578,7 @@
 		   CRIS_UNSPEC_SWAP_BITS))]
   "TARGET_HAS_SWAP"
   "swapwbr %0"
-  [(set_attr "slottable" "yes")
-   (set_attr "cc" "noov32")])
+  [(set_attr "slottable" "yes")])
 
 ;; Implement ctz using two instructions, one for bit swap and one for clz.
 ;; Defines a scratch register to avoid clobbering input.
@@ -3405,16 +2602,13 @@
 	(umin:SI  (match_operand:SI 1 "register_operand" "")
 		  (match_operand:SI 2 "general_operand" "")))]
   ""
-{
-  if (MEM_P (operands[2]) && TARGET_V32)
-    operands[2] = force_reg (SImode, operands[2]);
-})
+  "")
 
-(define_insn "*uminsi3_non_v32"
+(define_insn "*uminsi3"
   [(set (match_operand:SI 0 "register_operand"		 "=r,r, r,r")
 	(umin:SI  (match_operand:SI 1 "register_operand" "%0,0, 0,r")
 		  (match_operand:SI 2 "general_operand"   "r,Q>,g,!To")))]
-  "!TARGET_V32"
+  ""
 {
   if (CONST_INT_P (operands[2]))
     {
@@ -3435,30 +2629,6 @@
   return "bound.d %2,%0";
 }
  [(set_attr "slottable" "yes,yes,no,no")])
-
-(define_insn "*uminsi3_v32"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(umin:SI  (match_operand:SI 1 "register_operand" "%0,0")
-		  (match_operand:SI 2 "nonmemory_operand" "r,i")))]
-  "TARGET_V32"
-{
-  if (GET_CODE (operands[2]) == CONST_INT)
-    {
-      /* Constant operands are zero-extended, so only 32-bit operands
-	 may be negative.  */
-      if (INTVAL (operands[2]) >= 0)
-	{
-	  if (INTVAL (operands[2]) < 256)
-	    return "bound.b %2,%0";
-
-	  if (INTVAL (operands[2]) < 65536)
-	    return "bound.w %2,%0";
-	}
-    }
-
-  return "bound.d %2,%0";
-}
- [(set_attr "slottable" "yes,no")])
 
 ;; Jump and branch insns.
 
@@ -3477,21 +2647,12 @@
 (define_expand "indirect_jump"
   [(set (pc) (match_operand:SI 0 "nonimmediate_operand"))]
   ""
-{
-  if (TARGET_V32 && MEM_P (operands[0]))
-    operands[0] = force_reg (SImode, operands[0]);
-})
+  "")
 
-(define_insn "*indirect_jump_non_v32"
+(define_insn "*indirect_jump"
   [(set (pc) (match_operand:SI 0 "nonimmediate_operand" "rm"))]
-  "!TARGET_V32"
+  ""
   "jump %0")
-
-(define_insn "*indirect_jump_v32"
-  [(set (pc) (match_operand:SI 0 "register_operand" "r"))]
-  "TARGET_V32"
-  "jump %0%#"
-  [(set_attr "slottable" "has_slot")])
 
 ;; Return insn.  Used whenever the epilogue is very simple; if it is only
 ;; a single ret or jump [sp+].  No allocated stack space or saved
@@ -3551,13 +2712,7 @@
 		      (label_ref (match_operand 3 "" ""))
 		      (pc)))]
   ""
-{
-  cris_reduce_compare (&operands[0], &operands[1], &operands[2]);
-  if (TARGET_V32 && !REG_P (operands[1]))
-    operands[1] = force_reg (DImode, operands[1]);
-  if (TARGET_V32 && MEM_P (operands[2]))
-    operands[2] = force_reg (DImode, operands[2]);
-})
+  "cris_reduce_compare (&operands[0], &operands[1], &operands[2]);")
 
 
 ;; We suffer from the same overflow-bit-gets-in-the-way problem as
@@ -3652,13 +2807,7 @@
 	(match_operator:SI 1 "ordered_comparison_operator"
 	 [(cc0) (const_int 0)]))]
   ""
-{
-  cris_reduce_compare (&operands[1], &operands[2], &operands[3]);
-  if (TARGET_V32 && !REG_P (operands[2]))
-    operands[2] = force_reg (DImode, operands[2]);
-  if (TARGET_V32 && MEM_P (operands[3]))
-    operands[3] = force_reg (DImode, operands[3]);
-})
+  "cris_reduce_compare (&operands[1], &operands[2], &operands[3]);")
 
 (define_expand "cstore<mode>4"
   [(set (cc0) (compare
@@ -3715,73 +2864,31 @@
 ;; instructions is a different issue.
 
 (define_expand "call"
-  [(parallel [(call (match_operand:QI 0 "cris_mem_call_operand" "")
-		    (match_operand 1 "general_operand" ""))
+  [(parallel [(call (match_operand:SI 0 "indirect_operand")
+		    (match_operand 1 "general_operand"))
 	      (clobber (reg:SI CRIS_SRP_REGNUM))])]
   ""
 {
-  gcc_assert (MEM_P (operands[0]));
-  if (flag_pic)
-    cris_expand_pic_call_address (&operands[0], &operands[1]);
-  else
-    operands[1] = const0_rtx;
+  operands[1] = const0_rtx;
 })
 
 ;; Accept operands for operand 0 in order of preference.
 
-(define_insn "*expanded_call_non_v32"
+(define_insn "*expanded_call"
   [(call (mem:QI (match_operand:SI 0 "general_operand" "r,Q>,g"))
-	 (match_operand:SI 1 "cris_call_type_marker" "rM,rM,rM"))
+	 (const_int 0))
    (clobber (reg:SI CRIS_SRP_REGNUM))]
-  "!TARGET_V32"
+  ""
   "jsr %0")
 
-(define_insn "*expanded_call_v32"
-  [(call
-    (mem:QI
-     (match_operand:SI 0 "cris_nonmemory_operand_or_callable_symbol" "n,r,U,i"))
-    (match_operand:SI 1 "cris_call_type_marker" "rM,rM,rM,rM"))
-   (clobber (reg:SI CRIS_SRP_REGNUM))]
-  "TARGET_V32"
-  "@
-   jsr %0%#
-   jsr %0%#
-   bsr %0%#
-   bsr %0%#"
-  [(set_attr "slottable" "has_call_slot")])
-
-;; Parallel when calculating and reusing address of indirect pointer
-;; with simple offset.  (Makes most sense with PIC.)  It looks a bit
-;; wrong not to have the clobber last, but that's the way combine
-;; generates it (except it doesn't look into the *inner* mem, so this
-;; just matches a peephole2).  FIXME: investigate that.
-(define_insn "*expanded_call_side"
-  [(call (mem:QI
-	  (mem:SI
-	   (plus:SI (match_operand:SI 0 "cris_bdap_operand" "%r,  r,r")
-		    (match_operand:SI 1 "cris_bdap_operand" "r>Rn,r,>Rn"))))
-	 (match_operand:SI 2 "cris_call_type_marker" "rM,rM,rM"))
-   (clobber (reg:SI CRIS_SRP_REGNUM))
-   (set (match_operand:SI 3 "register_operand" "=*0,r,r")
-	(plus:SI (match_dup 0)
-		 (match_dup 1)))]
-  ;; Disabled until after reload until we can avoid an output reload for
-  ;; operand 3 (being forbidden for call insns).
-  "reload_completed && !TARGET_AVOID_GOTPLT && !TARGET_V32"
-  "jsr [%3=%0%S1]")
-
 (define_expand "call_value"
-  [(parallel [(set (match_operand 0 "" "")
-		   (call (match_operand:QI 1 "cris_mem_call_operand" "")
-			 (match_operand 2 "" "")))
+  [(parallel [(set (match_operand 0 "")
+		   (call (match_operand:SI 1 "indirect_operand")
+			 (match_operand 2 "")))
 	      (clobber (reg:SI CRIS_SRP_REGNUM))])]
   ""
 {
-  gcc_assert (MEM_P (operands[1]));
-  if (flag_pic)
-    cris_expand_pic_call_address (&operands[1], &operands[2]);
-  else
-    operands[2] = const0_rtx;
+  operands[2] = const0_rtx;
 })
 
 ;; The validity other than "general" of
@@ -3790,50 +2897,14 @@
 ;;  We also accept a PLT symbol.  We output it as [rPIC+sym:GOTPLT] rather
 ;; than requiring getting rPIC + sym:PLT into a register.
 
-(define_insn "*expanded_call_value_non_v32"
+(define_insn "*expanded_call_value"
   [(set (match_operand 0 "nonimmediate_operand" "=g,g,g")
 	(call (mem:QI (match_operand:SI 1 "general_operand" "r,Q>,g"))
-	      (match_operand:SI 2 "cris_call_type_marker" "rM,rM,rM")))
+	      (const_int 0)))
    (clobber (reg:SI CRIS_SRP_REGNUM))]
-  "!TARGET_V32"
+  ""
   "Jsr %1"
   [(set_attr "cc" "clobber")])
-
-;; See similar call special-case.
-(define_insn "*expanded_call_value_side"
-  [(set (match_operand 0 "nonimmediate_operand" "=g,g,g")
-	(call
-	 (mem:QI
-	  (mem:SI
-	   (plus:SI (match_operand:SI 1 "cris_bdap_operand" "%r,  r,r")
-		    (match_operand:SI 2 "cris_bdap_operand" "r>Rn,r,>Rn"))))
-	 (match_operand:SI 3 "cris_call_type_marker" "rM,rM,rM")))
-   (clobber (reg:SI CRIS_SRP_REGNUM))
-   (set (match_operand:SI 4 "register_operand" "=*1,r,r")
-	(plus:SI (match_dup 1)
-		 (match_dup 2)))]
-  ;; Disabled until after reload until we can avoid an output reload for
-  ;; operand 4 (being forbidden for call insns).
-  "reload_completed && !TARGET_AVOID_GOTPLT && !TARGET_V32"
-  "Jsr [%4=%1%S2]"
-  [(set_attr "cc" "clobber")])
-
-(define_insn "*expanded_call_value_v32"
-  [(set
-    (match_operand 0 "nonimmediate_operand" "=g,g,g,g")
-    (call
-     (mem:QI
-      (match_operand:SI 1 "cris_nonmemory_operand_or_callable_symbol" "n,r,U,i"))
-     (match_operand:SI 2 "cris_call_type_marker" "rM,rM,rM,rM")))
-   (clobber (reg:SI 16))]
-  "TARGET_V32"
-  "@
-   Jsr %1%#
-   Jsr %1%#
-   Bsr %1%#
-   Bsr %1%#"
-  [(set_attr "cc" "clobber")
-   (set_attr "slottable" "has_call_slot")])
 
 ;; Used in debugging.  No use for the direct pattern; unfilled
 ;; delayed-branches are taken care of by other means.
@@ -3844,9 +2915,9 @@
   "nop"
   [(set_attr "cc" "none")])
 
-;; Same as the gdb trap breakpoint, will cause a SIGTRAP for
-;; cris-linux* and crisv32-linux*, as intended.  Will work in
-;; freestanding environments with sufficient framework.
+;; Same as the gdb trap breakpoint: would cause a SIGTRAP for
+;; cris-linux* and will work in freestanding environments with
+;; sufficient framework.
 (define_insn "trap"
   [(trap_if (const_int 1) (const_int 8))]
   "TARGET_TRAP_USING_BREAK8"
@@ -3873,7 +2944,7 @@
 ;; this expansion, you must change the macro ASM_OUTPUT_CASE_END
 ;; accordingly, to add the default case at the end of the jump-table.
 
-(define_expand "cris_casesi_non_v32"
+(define_expand "casesi"
   [(set (match_dup 5) (match_operand:SI 0 "general_operand" ""))
    (set (match_dup 6)
 	(minus:SI (match_dup 5)
@@ -3899,62 +2970,6 @@
   operands[6] = gen_reg_rtx (SImode);
   operands[7] = gen_reg_rtx (SImode);
 })
-
-;; FIXME: Check effect of not JUMP_TABLES_IN_TEXT_SECTION.
-(define_expand "cris_casesi_v32"
-  [(set (match_dup 5) (match_operand:SI 0 "general_operand"))
-   (set (match_dup 6)
-       (minus:SI (match_dup 5)
-		 (match_operand:SI 1 "const_int_operand")))
-   (set (match_dup 7)
-       (umin:SI (match_dup 6)
-		(match_operand:SI 2 "const_int_operand")))
-   (set (match_dup 8) (match_dup 11))
-   (set (match_dup 9)
-       (plus:SI (mult:SI (match_dup 7) (const_int 2))
-		(match_dup 8)))
-   (set (match_dup 10)
-       (plus:SI (sign_extend:SI (mem:HI (match_dup 9)))
-		(match_dup 9)))
-   (parallel
-    [(set (pc)
-	 (if_then_else
-	  (ltu (unspec [(const_int 0)] CRIS_UNSPEC_CASESI) (match_dup 2))
-	  (match_dup 10)
-	  (label_ref (match_operand 4 "" ""))))
-     (use (label_ref (match_dup 3)))])]
-  "TARGET_V32"
-{
-  int i;
-  rtx xlabel = gen_rtx_LABEL_REF (VOIDmode, operands[3]);
-  for (i = 5; i <= 10; i++)
-    operands[i] = gen_reg_rtx (SImode);
-  operands[2] = plus_constant (SImode, operands[2], 1);
-
-  /* Don't forget to decorate labels too, for PIC.  */
-  operands[11] = flag_pic
-    ? gen_rtx_CONST (Pmode,
-		    gen_rtx_UNSPEC (Pmode, gen_rtvec (1, xlabel),
-				    CRIS_UNSPEC_PCREL))
-    : xlabel;
-})
-
-(define_expand "casesi"
-  [(match_operand:SI 0 "general_operand")
-   (match_operand:SI 1 "const_int_operand")
-   (match_operand:SI 2 "const_int_operand")
-   (match_operand 3 "" "")
-   (match_operand 4 "" "")]
-  ""
-{
-  if (TARGET_V32)
-    emit_insn (gen_cris_casesi_v32 (operands[0], operands[1], operands[2],
-				    operands[3], operands[4]));
-  else
-    emit_insn (gen_cris_casesi_non_v32 (operands[0], operands[1], operands[2],
-					operands[3], operands[4]));
-  DONE;
-})
 
 ;; Split-patterns.  Some of them have modes unspecified.  This
 ;; should always be ok; if for no other reason sparc.md has it as
@@ -3975,8 +2990,6 @@
 ;;  op [rx],rz
 ;; Lose if rz=ry or rx=rz.
 ;; Call this op-extend-split.
-;; Do not match for V32; the addo and addi shouldn't be split
-;; up.
 
 (define_split
   [(set (match_operand 0 "cris_nonsp_register_operand" "")
@@ -3986,8 +2999,7 @@
 	  (match_operator
 	   3 "cris_extend_operator"
 	   [(match_operand 2 "memory_operand" "")])]))]
-  "!TARGET_V32
-   && REG_P (operands[0])
+  "REG_P (operands[0])
    && REG_P (operands[1])
    && REGNO (operands[1]) != REGNO (operands[0])
    && GET_MODE_SIZE (GET_MODE (operands[0])) <= UNITS_PER_WORD
@@ -4016,8 +3028,7 @@
 	  (match_operator
 	   3 "cris_extend_operator"
 	   [(match_operand 2 "memory_operand" "")])]))]
-  "!TARGET_V32
-   && REG_P (operands[0])
+  "REG_P (operands[0])
    && REG_P (operands[1])
    && REGNO (operands[1]) != REGNO (operands[0])
    && GET_MODE_SIZE (GET_MODE (operands[0])) <= UNITS_PER_WORD
@@ -4044,8 +3055,7 @@
 	   3 "cris_extend_operator"
 	   [(match_operand 2 "memory_operand" "")])
 	  (match_operand 1 "register_operand" "")]))]
-  "!TARGET_V32
-   && REG_P (operands[0])
+  "REG_P (operands[0])
    && REG_P (operands[1])
    && REGNO (operands[1]) != REGNO (operands[0])
    && GET_MODE_SIZE (GET_MODE (operands[0])) <= UNITS_PER_WORD
@@ -4070,8 +3080,7 @@
 	   3 "cris_extend_operator"
 	   [(match_operand 2 "memory_operand" "")])
 	  (match_operand 1 "register_operand" "")]))]
-  "!TARGET_V32
-   && REG_P (operands[0])
+  "REG_P (operands[0])
    && REG_P (operands[1])
    && REGNO (operands[1]) != REGNO (operands[0])
    && GET_MODE_SIZE (GET_MODE (operands[0])) <= UNITS_PER_WORD
@@ -4099,8 +3108,7 @@
 	 3 "cris_orthogonal_operator"
 	 [(match_operand 1 "register_operand" "")
 	  (match_operand 2 "memory_operand" "")]))]
-  "!TARGET_V32
-   && REG_P (operands[0])
+  "REG_P (operands[0])
    && REG_P (operands[1])
    && REGNO (operands[1]) != REGNO (operands[0])
    && GET_MODE_SIZE (GET_MODE (operands[0])) <= UNITS_PER_WORD
@@ -4123,8 +3131,7 @@
 	 3 "cris_commutative_orth_op"
 	 [(match_operand 2 "memory_operand" "")
 	  (match_operand 1 "register_operand" "")]))]
-  "!TARGET_V32
-   && REG_P (operands[0])
+  "REG_P (operands[0])
    && REG_P (operands[1])
    && REGNO (operands[1]) != REGNO (operands[0])
    && GET_MODE_SIZE (GET_MODE (operands[0])) <= UNITS_PER_WORD
@@ -4147,8 +3154,7 @@
 	 3 "cris_commutative_orth_op"
 	 [(match_operand 1 "register_operand" "")
 	  (match_operand 2 "memory_operand" "")]))]
-  "!TARGET_V32
-   && REG_P (operands[0]) && REG_P (operands[1])
+  "REG_P (operands[0]) && REG_P (operands[1])
    && REGNO (operands[1]) != REGNO (operands[0])
    && GET_MODE_SIZE (GET_MODE (operands[0])) <= UNITS_PER_WORD
    && REG_P (XEXP (operands[2], 0))
@@ -4170,8 +3176,7 @@
 	 3 "cris_orthogonal_operator"
 	 [(match_operand 2 "memory_operand" "")
 	  (match_operand 1 "register_operand" "")]))]
-  "!TARGET_V32
-   && REG_P (operands[0]) && REG_P (operands[1])
+  "REG_P (operands[0]) && REG_P (operands[1])
    && REGNO (operands[1]) != REGNO (operands[0])
    && GET_MODE_SIZE (GET_MODE (operands[0])) <= UNITS_PER_WORD
    && REG_P (XEXP (operands[2], 0))
@@ -4848,7 +3853,7 @@
   /* Make sure we have canonical RTX so we match the insn pattern -
      not a constant in the first operand.  We also require the order
      (plus reg mem) to match the final pattern.  */
-  if (CRIS_CONSTANT_P (otherop) || MEM_P (otherop))
+  if (CONSTANT_P (otherop) || MEM_P (otherop))
     {
       operands[7] = operands[1];
       operands[8] = otherop;
@@ -4899,7 +3904,7 @@
   /* Make sure we have canonical RTX so we match the insn pattern -
      not a constant in the first operand.  We also require the order
      (plus reg mem) to match the final pattern.  */
-  if (CRIS_CONSTANT_P (otherop) || MEM_P (otherop))
+  if (CONSTANT_P (otherop) || MEM_P (otherop))
     {
       operands[7] = operands[1];
       operands[8] = otherop;
@@ -5044,127 +4049,6 @@
   operands[3] = gen_rtx_ZERO_EXTEND (SImode, op1);
   operands[4] = GEN_INT (trunc_int_for_mode (INTVAL (operands[1]), QImode));
 })
-
-;; Try and avoid GOTPLT reads escaping a call: transform them into
-;; PLT.  Curiously (but thankfully), peepholes for instructions
-;; *without side-effects* that just feed a call (or call_value) are
-;; not matched neither in a build or test-suite, so those patterns are
-;; omitted.
-
-;; A "normal" move where we don't check the consumer.
-
-(define_peephole2 ; gotplt-to-plt
-  [(set
-    (match_operand:SI 0 "register_operand" "")
-    (match_operator:SI
-     1 "cris_mem_op"
-     [(plus:SI
-       (reg:SI CRIS_GOT_REGNUM)
-       (const:SI
-	(unspec:SI [(match_operand:SI 2 "cris_general_operand_or_symbol" "")]
-		   CRIS_UNSPEC_PLTGOTREAD)))]))]
-  "flag_pic
-   && cris_valid_pic_const (XEXP (XEXP (operands[1], 0), 1), true)
-   && REGNO_REG_CLASS (REGNO (operands[0])) == REGNO_REG_CLASS (0)"
-  [(set (match_dup 0) (const:SI (unspec:SI [(match_dup 2)] CRIS_UNSPEC_PLT_GOTREL)))
-   (set (match_dup 0) (plus:SI (match_dup 0) (reg:SI CRIS_GOT_REGNUM)))]
-  "")
-
-;; And one set with a side-effect getting the PLTGOT offset.
-;; First call and call_value variants.
-
-(define_peephole2 ; gotplt-to-plt-side-call
-  [(parallel
-    [(set
-      (match_operand:SI 0 "register_operand" "")
-      (match_operator:SI
-       1 "cris_mem_op"
-       [(plus:SI
-	 (reg:SI CRIS_GOT_REGNUM)
-	 (const:SI
-	  (unspec:SI [(match_operand:SI
-		       2 "cris_general_operand_or_symbol" "")]
-		     CRIS_UNSPEC_PLTGOTREAD)))]))
-     (set (match_operand:SI 3 "register_operand" "")
-	  (plus:SI (reg:SI CRIS_GOT_REGNUM)
-		   (const:SI
-		    (unspec:SI [(match_dup 2)] CRIS_UNSPEC_PLTGOTREAD))))])
-  (parallel [(call (mem:QI (match_dup 0))
-		    (match_operand 4 "" ""))
-	      (clobber (reg:SI CRIS_SRP_REGNUM))])]
-  "flag_pic
-   && cris_valid_pic_const (XEXP (XEXP (operands[1], 0), 1), true)
-   && peep2_reg_dead_p (2, operands[0])"
-  [(parallel [(call (mem:QI (match_dup 1))
-		    (match_dup 4))
-	      (clobber (reg:SI CRIS_SRP_REGNUM))
-	      (set (match_dup 3)
-		   (plus:SI (reg:SI CRIS_GOT_REGNUM)
-			    (const:SI
-			     (unspec:SI [(match_dup 2)]
-					CRIS_UNSPEC_PLTGOTREAD))))])]
-  "")
-
-(define_peephole2 ; gotplt-to-plt-side-call-value
-  [(parallel
-    [(set
-      (match_operand:SI 0 "register_operand" "")
-      (match_operator:SI
-       1 "cris_mem_op"
-       [(plus:SI
-	 (reg:SI CRIS_GOT_REGNUM)
-	 (const:SI
-	  (unspec:SI [(match_operand:SI
-		       2 "cris_general_operand_or_symbol" "")]
-		     CRIS_UNSPEC_PLTGOTREAD)))]))
-     (set (match_operand:SI 3 "register_operand" "")
-	  (plus:SI (reg:SI CRIS_GOT_REGNUM)
-		   (const:SI
-		    (unspec:SI [(match_dup 2)] CRIS_UNSPEC_PLTGOTREAD))))])
-   (parallel [(set (match_operand 5 "" "")
-		   (call (mem:QI (match_dup 0))
-			 (match_operand 4 "" "")))
-	      (clobber (reg:SI CRIS_SRP_REGNUM))])]
-  "flag_pic
-   && cris_valid_pic_const (XEXP (XEXP (operands[1], 0), 1), true)
-   && peep2_reg_dead_p (2, operands[0])"
-  [(parallel [(set (match_dup 5)
-		   (call (mem:QI (match_dup 1))
-			 (match_dup 4)))
-	      (clobber (reg:SI CRIS_SRP_REGNUM))
-	      (set (match_dup 3)
-		   (plus:SI (reg:SI CRIS_GOT_REGNUM)
-			    (const:SI
-			     (unspec:SI [(match_dup 2)]
-					CRIS_UNSPEC_PLTGOTREAD))))])]
-  "")
-
-(define_peephole2 ; gotplt-to-plt-side
-  [(parallel
-    [(set
-      (match_operand:SI 0 "register_operand" "")
-      (match_operator:SI
-       1 "cris_mem_op"
-       [(plus:SI
-	 (reg:SI CRIS_GOT_REGNUM)
-	 (const:SI
-	  (unspec:SI [(match_operand:SI
-		       2 "cris_general_operand_or_symbol" "")]
-		     CRIS_UNSPEC_PLTGOTREAD)))]))
-     (set (match_operand:SI 3 "register_operand" "")
-	  (plus:SI (reg:SI CRIS_GOT_REGNUM)
-		   (const:SI
-		    (unspec:SI [(match_dup 2)] CRIS_UNSPEC_PLTGOTREAD))))])]
-  "flag_pic
-   && cris_valid_pic_const (XEXP (XEXP (operands[1], 0), 1), true)
-   && REGNO_REG_CLASS (REGNO (operands[0])) == REGNO_REG_CLASS (0)"
-  [(set (match_dup 3)
-	(const:SI (unspec:SI [(match_dup 2)] CRIS_UNSPEC_PLTGOTREAD)))
-   (set (match_dup 3) (plus:SI (match_dup 3) (reg:SI CRIS_GOT_REGNUM)))
-   (set (match_dup 0)
-	(const:SI (unspec:SI [(match_dup 2)] CRIS_UNSPEC_PLT_GOTREL)))
-   (set (match_dup 0) (plus:SI (match_dup 0) (reg:SI CRIS_GOT_REGNUM)))]
-  "")
 
 ;; Local variables:
 ;; mode:emacs-lisp
