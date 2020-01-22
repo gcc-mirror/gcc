@@ -7,7 +7,7 @@ jmp_buf buf;
 int
 test (void)
 {
-  if (_setjmp (buf) != 0)
+  if (setjmp (buf) != 0)
     return 0;
 
   longjmp (buf, 1);
