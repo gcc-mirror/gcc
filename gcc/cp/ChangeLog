@@ -1,6 +1,16 @@
 2020-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-12-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92438
+	* parser.c (cp_parser_constructor_declarator_p): If open paren
+	is followed by RID_ATTRIBUTE, skip over the attribute tokens and
+	try to parse type specifier.
+
+2020-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
 	2019-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/92992
