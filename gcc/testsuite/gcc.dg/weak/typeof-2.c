@@ -42,7 +42,6 @@ int bar3 (int x)
 // { dg-final { if [string match s390*-*-* $target_triplet ] {return} } }
 // Likewise for CRIS targets.
 // { dg-final { if [string match cris-*-* $target_triplet ] {return} } }
-// { dg-final { if [string match crisv32-*-* $target_triplet ] {return} } }
 // Likewise for m68k targets.
 // { dg-final { if [string match fido-*-* $target_triplet ] {return} } }
 // { dg-final { if [string match m68k-*-* $target_triplet ] {return} } }
