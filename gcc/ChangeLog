@@ -6,6 +6,7 @@
 	* config.gcc: Remove support for crisv32-*-* and cris-*-linux*.
 	* config/cris/t-linux, config/cris/linux.h, config/cris/linux.opt:
 	Remove.
+	* config/cris/t-elfmulti: Remove crisv32 multilib.
 
 2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
 
