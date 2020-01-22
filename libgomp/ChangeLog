@@ -1,6 +1,16 @@
 2020-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/93219
+	* libgomp.h (gomp_print_string): Change return type from void to int.
+	* affinity-fmt.c (gomp_print_string): Likewise.  Return true if
+	not all characters have been written.
+
+2020-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
 	2019-12-31  Ayush Mittal  <ayush.m@samsung.com>
 
 	PR libgomp/93065
