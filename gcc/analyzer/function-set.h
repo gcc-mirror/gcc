@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_FUNCTION_SET_H
 #define GCC_ANALYZER_FUNCTION_SET_H
 
+namespace ana {
+
 /* A set of names.  */
 
 class function_set
@@ -42,5 +44,7 @@ private:
   const char * const *m_names; // must be sorted
   size_t m_count;
 };
+
+} // namespace ana
 
 #endif /* GCC_ANALYZER_FUNCTION_SET_H */

@@ -969,7 +969,8 @@ func ReplaceAll(s, old, new string) string {
 }
 
 // EqualFold reports whether s and t, interpreted as UTF-8 strings,
-// are equal under Unicode case-folding.
+// are equal under Unicode case-folding, which is a more general
+// form of case-insensitivity.
 func EqualFold(s, t string) bool {
 	for s != "" && t != "" {
 		// Extract first rune from each string.
@@ -1093,7 +1094,7 @@ func Index(s, substr string) int {
 		i++
 		fails++
 		if fails >= 4+i>>4 && i < t {
-			// See comment in ../bytes/bytes_generic.go.
+			// See comment in ../bytes/bytes.go.
 			j := indexRabinKarp(s[i:], substr)
 			if j < 0 {
 				return -1

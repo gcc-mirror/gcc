@@ -27,14 +27,20 @@ struct coro1 {
   // Some awaitables to use in tests.
   // With progress printing for debug.
   struct suspend_never_prt {
+#ifdef MISSING_AWAIT_READY
+#else
   bool await_ready() const noexcept { return true; }
+#endif
   void await_suspend(handle_type) const noexcept { PRINT ("susp-never-susp");}
   void await_resume() const noexcept { PRINT ("susp-never-resume");}
   };
 
   struct  suspend_always_prt {
   bool await_ready() const noexcept { return false; }
+#ifdef MISSING_AWAIT_SUSPEND
+#else
   void await_suspend(handle_type) const noexcept { PRINT ("susp-always-susp");}
+#endif
   void await_resume() const noexcept { PRINT ("susp-always-resume");}
   ~suspend_always_prt() { PRINT ("susp-always-dtor"); }
   };
@@ -46,7 +52,10 @@ struct coro1 {
     ~suspend_always_intprt() {}
     bool await_ready() const noexcept { return false; }
     void await_suspend(coro::coroutine_handle<>) const noexcept { PRINT ("susp-always-susp-intprt");}
+#ifdef MISSING_AWAIT_RESUME
+#else
     int await_resume() const noexcept { PRINT ("susp-always-resume-intprt"); return x;}
+#endif
   };
   
   /* This returns the square of the int that it was constructed with.  */

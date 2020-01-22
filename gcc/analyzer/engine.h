@@ -21,6 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_ENGINE_H
 #define GCC_ANALYZER_ENGINE_H
 
+namespace ana {
+
 extern void run_checkers ();
+
+} // namespace ana
 
 #endif /* GCC_ANALYZER_ENGINE_H */

@@ -99,7 +99,7 @@
 // line order:
 //
 //     func ExamplePerm() {
-//         for _, value := range Perm(4) {
+//         for _, value := range Perm(5) {
 //             fmt.Println(value)
 //         }
 //         // Unordered output: 4
@@ -344,6 +344,7 @@ type common struct {
 	skipped bool                // Test of benchmark has been skipped.
 	done    bool                // Test is finished and all subtests have completed.
 	helpers map[string]struct{} // functions to be skipped when writing file/line info
+	cleanup func()              // optional function to be called at the end of the test
 
 	chatty     bool   // A copy of the chatty flag.
 	finished   bool   // Test function has completed.
@@ -479,6 +480,9 @@ func (c *common) decorate(s string, skip int) string {
 	buf := new(strings.Builder)
 	// Every line is indented at least 4 spaces.
 	buf.WriteString("    ")
+	if c.chatty {
+		fmt.Fprintf(buf, "%s: ", c.name)
+	}
 	fmt.Fprintf(buf, "%s:%d: ", file, line)
 	lines := strings.Split(s, "\n")
 	if l := len(lines); l > 1 && lines[l-1] == "" {
@@ -540,6 +544,7 @@ func fmtDuration(d time.Duration) string {
 
 // TB is the interface common to T and B.
 type TB interface {
+	Cleanup(func())
 	Error(args ...interface{})
 	Errorf(format string, args ...interface{})
 	Fail()
@@ -547,6 +552,7 @@ type TB interface {
 	Failed() bool
 	Fatal(args ...interface{})
 	Fatalf(format string, args ...interface{})
+	Helper()
 	Log(args ...interface{})
 	Logf(format string, args ...interface{})
 	Name() string
@@ -554,7 +560,6 @@ type TB interface {
 	SkipNow()
 	Skipf(format string, args ...interface{})
 	Skipped() bool
-	Helper()
 
 	// A private method to prevent users implementing the
 	// interface and so future additions to it will not
@@ -662,9 +667,7 @@ func (c *common) log(s string) {
 func (c *common) logDepth(s string, depth int) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	if !c.done {
-		c.output = append(c.output, c.decorate(s, depth+1)...)
-	} else {
+	if c.done {
 		// This test has already finished. Try and log this message
 		// with our parent. If we don't have a parent, panic.
 		for parent := c.parent; parent != nil; parent = parent.parent {
@@ -676,8 +679,20 @@ func (c *common) logDepth(s string, depth int) {
 			}
 		}
 		panic("Log in goroutine after " + c.name + " has completed")
+	} else {
+		if c.chatty {
+			fmt.Print(c.decorate(s, depth+1))
+			return
+		}
+		c.output = append(c.output, c.decorate(s, depth+1)...)
 	}
 }
+
+// This is needed for gccgo to get the tests to pass, because
+// runtime.Callers doesn't correctly handle skips that land in the
+// middle of a sequence of inlined functions.
+// This shouldn't make any difference for normal use.
+//go:noinline
 
 // Log formats its arguments using default formatting, analogous to Println,
 // and records the text in the error log. For tests, the text will be printed only if
@@ -692,11 +707,23 @@ func (c *common) Log(args ...interface{}) { c.log(fmt.Sprintln(args...)) }
 // depend on the value of the -test.v flag.
 func (c *common) Logf(format string, args ...interface{}) { c.log(fmt.Sprintf(format, args...)) }
 
+// This is needed for gccgo to get the tests to pass, because
+// runtime.Callers doesn't correctly handle skips that land in the
+// middle of a sequence of inlined functions.
+// This shouldn't make any difference for normal use.
+//go:noinline
+
 // Error is equivalent to Log followed by Fail.
 func (c *common) Error(args ...interface{}) {
 	c.log(fmt.Sprintln(args...))
 	c.Fail()
 }
+
+// This is needed for gccgo to get the tests to pass, because
+// runtime.Callers doesn't correctly handle skips that land in the
+// middle of a sequence of inlined functions.
+// This shouldn't make any difference for normal use.
+//go:noinline
 
 // Errorf is equivalent to Logf followed by Fail.
 func (c *common) Errorf(format string, args ...interface{}) {
@@ -704,17 +731,35 @@ func (c *common) Errorf(format string, args ...interface{}) {
 	c.Fail()
 }
 
+// This is needed for gccgo to get the tests to pass, because
+// runtime.Callers doesn't correctly handle skips that land in the
+// middle of a sequence of inlined functions.
+// This shouldn't make any difference for normal use.
+//go:noinline
+
 // Fatal is equivalent to Log followed by FailNow.
 func (c *common) Fatal(args ...interface{}) {
 	c.log(fmt.Sprintln(args...))
 	c.FailNow()
 }
 
+// This is needed for gccgo to get the tests to pass, because
+// runtime.Callers doesn't correctly handle skips that land in the
+// middle of a sequence of inlined functions.
+// This shouldn't make any difference for normal use.
+//go:noinline
+
 // Fatalf is equivalent to Logf followed by FailNow.
 func (c *common) Fatalf(format string, args ...interface{}) {
 	c.log(fmt.Sprintf(format, args...))
 	c.FailNow()
 }
+
+// This is needed for gccgo to get the tests to pass, because
+// runtime.Callers doesn't correctly handle skips that land in the
+// middle of a sequence of inlined functions.
+// This shouldn't make any difference for normal use.
+//go:noinline
 
 // Skip is equivalent to Log followed by SkipNow.
 func (c *common) Skip(args ...interface{}) {
@@ -767,11 +812,37 @@ func (c *common) Helper() {
 	c.helpers[callerName(1)] = struct{}{}
 }
 
+// Cleanup registers a function to be called when the test finishes.
+// Cleanup functions will be called in last added, first called
+// order.
+func (c *common) Cleanup(f func()) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	oldCleanup := c.cleanup
+	c.cleanup = func() {
+		if oldCleanup != nil {
+			defer oldCleanup()
+		}
+		f()
+	}
+}
+
+// runCleanup is called at the end of the test.
+func (c *common) runCleanup() {
+	c.mu.Lock()
+	cleanup := c.cleanup
+	c.cleanup = nil
+	c.mu.Unlock()
+	if cleanup != nil {
+		cleanup()
+	}
+}
+
 // callerName gives the function name (qualified with a package path)
 // for the caller after skip frames (where 0 means the current function).
 func callerName(skip int) string {
 	// Make room for the skip PC.
-	var pc [1]uintptr
+	var pc [2]uintptr
 	n := runtime.Callers(skip+2, pc[:]) // skip + runtime.Callers + callerName
 	if n == 0 {
 		panic("testing: zero callers found")
@@ -828,8 +899,8 @@ func (t *T) Parallel() {
 	t.raceErrors += -race.Errors()
 }
 
-// An internal type but exported because it is cross-package; part of the implementation
-// of the "go test" command.
+// InternalTest is an internal type but exported because it is cross-package;
+// it is part of the implementation of the "go test" command.
 type InternalTest struct {
 	Name string
 	F    func(*T)
@@ -853,7 +924,6 @@ func tRunner(t *T, fn func(t *T)) {
 			t.Errorf("race detected during execution of test")
 		}
 
-		t.duration += time.Since(t.start)
 		// If the test panicked, print any test output before dying.
 		err := recover()
 		signal := true
@@ -870,9 +940,19 @@ func tRunner(t *T, fn func(t *T)) {
 		}
 		if err != nil {
 			t.Fail()
-			t.report()
+			// Flush the output log up to the root before dying.
+			t.mu.Lock()
+			root := &t.common
+			for ; root.parent != nil; root = root.parent {
+				root.duration += time.Since(root.start)
+				fmt.Fprintf(root.parent.w, "--- FAIL: %s (%s)\n", root.name, fmtDuration(root.duration))
+				root.parent.mu.Lock()
+				io.Copy(root.parent.w, bytes.NewReader(root.output))
+			}
 			panic(err)
 		}
+
+		t.duration += time.Since(t.start)
 
 		if len(t.sub) > 0 {
 			// Run parallel subtests.
@@ -903,6 +983,7 @@ func tRunner(t *T, fn func(t *T)) {
 		}
 		t.signal <- signal
 	}()
+	defer t.runCleanup()
 
 	t.start = time.Now()
 	t.raceErrors = -race.Errors()
@@ -1169,8 +1250,8 @@ func listTests(matchString func(pat, str string) (bool, error), tests []Internal
 	}
 }
 
-// An internal function but exported because it is cross-package; part of the implementation
-// of the "go test" command.
+// RunTests is an internal function but exported because it is cross-package;
+// it is part of the implementation of the "go test" command.
 func RunTests(matchString func(pat, str string) (bool, error), tests []InternalTest) (ok bool) {
 	ran, ok := runTests(matchString, tests)
 	if !ran && !haveExamples {

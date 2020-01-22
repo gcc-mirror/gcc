@@ -26,6 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 extern tree is_zero_assignment (const gimple *stmt);
 extern bool any_pointer_p (tree var);
 
+namespace ana {
+
 class state_machine;
 class sm_context;
 class pending_diagnostic;
@@ -174,5 +176,7 @@ extern state_machine *make_taint_state_machine (logger *logger);
 extern state_machine *make_sensitive_state_machine (logger *logger);
 extern state_machine *make_signal_state_machine (logger *logger);
 extern state_machine *make_pattern_test_state_machine (logger *logger);
+
+} // namespace ana
 
 #endif /* GCC_ANALYZER_SM_H */

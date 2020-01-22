@@ -1,3 +1,40 @@
+2020-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92907 - noexcept does not consider "const" in member functions.
+	* g++.dg/cpp0x/noexcept56.C: New test.
+
+2020-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93324 - ICE with -Wall on constexpr if.
+	* semantics.c (is_std_constant_evaluated_p): Check fndecl.
+
+2020-01-22  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (get_mapped_args): Avoid using auto_vec
+	as a vector element.  Release the vectors inside the lists
+	vector.
+	* parser.c (cp_literal_operator_id): Free the buffer.
+
+2020-01-22  Jun Ma  <JunMa@linux.alibaba.com>
+
+	* coroutines.cc (finish_co_await_expr): Add error check on return
+	value of build_co_await.
+	(finish_co_yield_expr,): Ditto.
+
+2020-01-22  Jun Ma  <JunMa@linux.alibaba.com>
+
+	* coroutines.cc (lookup_awaitable_member): Lookup an awaitable member.
+	(lookup_promise_method): Emit diagnostic when get NULL_TREE back only.
+	(build_co_await): Use lookup_awaitable_member instead of lookup_member.
+
+2020-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60855 - ICE with sizeof VLA capture.
+	* lambda.c (is_lambda_ignored_entity): Don't look past VLA capture.
+
+	PR c++/90732 - ICE with VLA capture and generic lambda.
+	* pt.c (tsubst_lambda_expr): Repeat add_capture for VLAs.
+
 2020-01-21  Iain Sandoe  <iain@sandoe.co.uk>
 	    Bin Cheng  <bin.cheng@linux.alibaba.com>
 

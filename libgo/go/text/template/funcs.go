@@ -441,19 +441,18 @@ func basicKind(v reflect.Value) (kind, error) {
 // eq evaluates the comparison a == b || a == c || ...
 func eq(arg1 reflect.Value, arg2 ...reflect.Value) (bool, error) {
 	v1 := indirectInterface(arg1)
-	k1, err := basicKind(v1)
-	if err != nil {
-		return false, err
+	if v1 != zero {
+		if t1 := v1.Type(); !t1.Comparable() {
+			return false, fmt.Errorf("uncomparable type %s: %v", t1, v1)
+		}
 	}
 	if len(arg2) == 0 {
 		return false, errNoComparison
 	}
+	k1, _ := basicKind(v1)
 	for _, arg := range arg2 {
 		v2 := indirectInterface(arg)
-		k2, err := basicKind(v2)
-		if err != nil {
-			return false, err
-		}
+		k2, _ := basicKind(v2)
 		truth := false
 		if k1 != k2 {
 			// Special case: Can compare integer values regardless of type's sign.
@@ -480,7 +479,14 @@ func eq(arg1 reflect.Value, arg2 ...reflect.Value) (bool, error) {
 			case uintKind:
 				truth = v1.Uint() == v2.Uint()
 			default:
-				panic("invalid kind")
+				if v2 == zero {
+					truth = v1 == v2
+				} else {
+					if t2 := v2.Type(); !t2.Comparable() {
+						return false, fmt.Errorf("uncomparable type %s: %v", t2, v2)
+					}
+					truth = v1.Interface() == v2.Interface()
+				}
 			}
 		}
 		if truth {
@@ -636,6 +642,8 @@ var (
 	jsQuot      = []byte(`\"`)
 	jsLt        = []byte(`\x3C`)
 	jsGt        = []byte(`\x3E`)
+	jsAmp       = []byte(`\x26`)
+	jsEq        = []byte(`\x3D`)
 )
 
 // JSEscape writes to w the escaped JavaScript equivalent of the plain text data b.
@@ -664,6 +672,10 @@ func JSEscape(w io.Writer, b []byte) {
 				w.Write(jsLt)
 			case '>':
 				w.Write(jsGt)
+			case '&':
+				w.Write(jsAmp)
+			case '=':
+				w.Write(jsEq)
 			default:
 				w.Write(jsLowUni)
 				t, b := c>>4, c&0x0f
@@ -698,7 +710,7 @@ func JSEscapeString(s string) string {
 
 func jsIsSpecial(r rune) bool {
 	switch r {
-	case '\\', '\'', '"', '<', '>':
+	case '\\', '\'', '"', '<', '>', '&', '=':
 		return true
 	}
 	return r < ' ' || utf8.RuneSelf <= r

@@ -57,6 +57,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
+namespace ana {
+
 /* class sm_state_map.  */
 
 /* sm_state_map's ctor.  */
@@ -1395,5 +1397,7 @@ analyzer_program_state_cc_tests ()
 } // namespace selftest
 
 #endif /* CHECKING_P */
+
+} // namespace ana
 
 #endif /* #if ENABLE_ANALYZER */

@@ -1,3 +1,99 @@
+2020-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92907 - noexcept does not consider "const" in member functions.
+	* parser.c (cp_parser_lambda_declarator_opt): Pass the proper
+	qualifiers to cp_parser_exception_specification_opt.
+	(cp_parser_direct_declarator): Pass the function qualifiers to
+	cp_parser_exception_specification_opt.
+	(cp_parser_class_specifier_1): Pass the function declaration to
+	cp_parser_late_noexcept_specifier.
+	(cp_parser_late_noexcept_specifier): Add a tree parameter.  Use it to
+	pass the qualifiers of the function to
+	cp_parser_noexcept_specification_opt.
+	(cp_parser_noexcept_specification_opt): New cp_cv_quals parameter.
+	Use it in inject_this_parameter.
+	(cp_parser_exception_specification_opt): New cp_cv_quals parameter.
+	Use it.
+	(cp_parser_transaction): Pass TYPE_UNQUALIFIED to
+	cp_parser_noexcept_specification_opt.
+	(cp_parser_transaction_expression): Likewise.
+
+2020-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93324 - ICE with -Wall on constexpr if.
+	* g++.dg/cpp1z/constexpr-if33.C: New test.
+
+2020-01-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/stack_vars_1.c: New test.
+
+2020-01-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/tls_preserve_1.c: Require tls_native.
+	* gcc.target/aarch64/sve/tls_preserve_2.c: Likewise.
+	* gcc.target/aarch64/sve/tls_preserve_3.c: Likewise.
+
+2020-01-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/sel_3.c (permute_vnx4sf): Take __SVFloat32_t
+	rather than __SVFloat16_t
+
+2020-01-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.dg/ext/sve-sizeless-1.C: Don't expect an error for alias
+	templates.
+
+2020-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93381
+	* gcc.dg/torture/pr93381.c: New testcase.
+
+2020-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93335
+	* gcc.c-torture/compile/pr93335.c: New test.
+
+	PR target/91298
+	* gcc.target/i386/pr91298-1.c: New test.
+	* gcc.target/i386/pr91298-2.c: New test.
+
+	* gfortran.dg/gomp/target-parallel1.f90: New test.
+	* gfortran.dg/goacc/pr93329.f90: Enable commented out target parallel
+	test.
+
+	PR fortran/93329
+	* gfortran.dg/goacc/pr93329.f90: New test.
+
+2020-01-22  Jun Ma  <JunMa@linux.alibaba.com>
+
+	* g++.dg/coroutines/coro1-missing-await-method.C: New test.
+
+2020-01-21  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/93119
+	* gcc.target/aarch64/pr93119.c: New test.
+
+2020-01-22  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/93348
+	* gcc.c-torture/compile/pr93348-1.c: New test.
+
+2020-01-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93352
+	* gcc.dg/analyzer/pr93352.c: New test.
+
+2020-01-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/asm-v8.S, gcc.target/cris/inasm-v8.c,
+	gcc.target/cris/sync-1.c: Apply effective_target_march_option.
+
+2020-01-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/93319
+	* gcc.target/i386/pr93319-1a.c: Don't include <stdio.h>.
+	(test1): Replace printf with __builtin_printf.
+
 2020-01-21  Bin Cheng  <bin.linux@linux.alibaba.com>
 
 	* g++.dg/coroutines/co-await-void_type.C: New test.

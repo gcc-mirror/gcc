@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_CONSTRAINT_MANAGER_H
 #define GCC_ANALYZER_CONSTRAINT_MANAGER_H
 
+namespace ana {
+
 class constraint_manager;
 
 /* Abstract base class for specifying how state should be purged.  */
@@ -242,5 +244,7 @@ public:
 				enum constraint_op c_op,
 				equiv_class_id rhs_id);
 };
+
+} // namespace ana
 
 #endif /* GCC_ANALYZER_CONSTRAINT_MANAGER_H */

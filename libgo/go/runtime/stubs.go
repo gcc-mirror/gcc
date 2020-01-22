@@ -240,9 +240,14 @@ func asmcgocall(fn, arg unsafe.Pointer) int32 {
 	return 0
 }
 
-// round n up to a multiple of a.  a must be a power of 2.
-func round(n, a uintptr) uintptr {
+// alignUp rounds n up to a multiple of a. a must be a power of 2.
+func alignUp(n, a uintptr) uintptr {
 	return (n + a - 1) &^ (a - 1)
+}
+
+// alignDown rounds n down to a multiple of a. a must be a power of 2.
+func alignDown(n, a uintptr) uintptr {
+	return n &^ (a - 1)
 }
 
 // checkASM returns whether assembly runtime checks have passed.

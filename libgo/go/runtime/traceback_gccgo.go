@@ -20,7 +20,7 @@ func printcreatedby(gp *g) {
 	if entry != 0 && tracepc > entry {
 		tracepc -= sys.PCQuantum
 	}
-	function, file, line, _ := funcfileline(tracepc, -1)
+	function, file, line, _ := funcfileline(tracepc, -1, false)
 	if function != "" && showframe(function, gp, false) && gp.goid != 1 {
 		printcreatedby1(function, file, line, entry, pc)
 	}
@@ -93,7 +93,7 @@ func traceback(skip int32) {
 func printAncestorTraceback(ancestor ancestorInfo) {
 	print("[originating from goroutine ", ancestor.goid, "]:\n")
 	for fidx, pc := range ancestor.pcs {
-		function, file, line, _ := funcfileline(pc, -1)
+		function, file, line, _ := funcfileline(pc, -1, false)
 		if showfuncinfo(function, fidx == 0) {
 			printAncestorTracebackFuncInfo(function, file, line, pc)
 		}
@@ -102,7 +102,7 @@ func printAncestorTraceback(ancestor ancestorInfo) {
 		print("...additional frames elided...\n")
 	}
 	// Show what created goroutine, except main goroutine (goid 1).
-	function, file, line, _ := funcfileline(ancestor.gopc, -1)
+	function, file, line, _ := funcfileline(ancestor.gopc, -1, false)
 	if function != "" && showfuncinfo(function, false) && ancestor.goid != 1 {
 		printcreatedby1(function, file, line, funcentry(ancestor.gopc), ancestor.gopc)
 	}

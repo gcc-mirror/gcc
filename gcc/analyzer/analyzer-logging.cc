@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
+namespace ana {
+
 /* Implementation of class logger.  */
 
 /* ctor for logger.  */
@@ -220,5 +222,7 @@ log_user::set_logger (logger *logger)
     m_logger->decref ("log_user::set_logger");
   m_logger = logger;
 }
+
+} // namespace ana
 
 #endif /* #if ENABLE_ANALYZER */

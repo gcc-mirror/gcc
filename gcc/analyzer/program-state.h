@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_PROGRAM_STATE_H
 #define GCC_ANALYZER_PROGRAM_STATE_H
 
+namespace ana {
+
 /* Data shared by all program_state instances.  */
 
 class extrinsic_state
@@ -46,6 +48,8 @@ public:
   /* The state machines.  */
   auto_delete_vec <state_machine> &m_checkers;
 };
+
+} // namespace ana
 
 template <> struct default_hash_traits<svalue_id>
 : public pod_hash_traits<svalue_id>
@@ -91,6 +95,8 @@ pod_hash_traits<svalue_id>::is_empty (value_type v)
 {
   return v.null_p ();
 }
+
+namespace ana {
 
 /* Map from svalue_id to state machine state, also capturing the origin of
    each state.  */
@@ -361,5 +367,7 @@ class state_change
  private:
   auto_vec<sm_change> m_sm_changes;
 };
+
+} // namespace ana
 
 #endif /* GCC_ANALYZER_PROGRAM_STATE_H */

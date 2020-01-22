@@ -39,6 +39,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
+namespace ana {
+
 namespace {
 
 /* A state machine for detecting misuses of <stdio.h>'s FILE * API.  */
@@ -433,5 +435,7 @@ analyzer_sm_file_cc_tests ()
 } // namespace selftest
 
 #endif /* CHECKING_P */
+
+} // namespace ana
 
 #endif /* #if ENABLE_ANALYZER */

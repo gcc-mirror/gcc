@@ -2607,11 +2607,16 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
     case SYMBOL_SMALL_TLSGD:
       {
 	rtx_insn *insns;
-	machine_mode mode = GET_MODE (dest);
-	rtx result = gen_rtx_REG (mode, R0_REGNUM);
+	/* The return type of __tls_get_addr is the C pointer type
+	   so use ptr_mode.  */
+	rtx result = gen_rtx_REG (ptr_mode, R0_REGNUM);
+	rtx tmp_reg = dest;
+
+	if (GET_MODE (dest) != ptr_mode)
+	  tmp_reg = can_create_pseudo_p () ? gen_reg_rtx (ptr_mode) : result;
 
 	start_sequence ();
-	if (TARGET_ILP32)
+	if (ptr_mode == SImode)
 	  aarch64_emit_call_insn (gen_tlsgd_small_si (result, imm));
 	else
 	  aarch64_emit_call_insn (gen_tlsgd_small_di (result, imm));
@@ -2619,7 +2624,11 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
 	end_sequence ();
 
 	RTL_CONST_CALL_P (insns) = 1;
-	emit_libcall_block (insns, dest, result, imm);
+	emit_libcall_block (insns, tmp_reg, result, imm);
+	/* Convert back to the mode of the dest adding a zero_extend
+	   from SImode (ptr_mode) to DImode (Pmode). */
+	if (dest != tmp_reg)
+	  convert_move (dest, tmp_reg, true);
 	return;
       }
 
@@ -20193,14 +20202,15 @@ aarch64_expand_subvti (rtx op0, rtx low_dest, rtx low_in1,
     }
   else
     {
-      if (CONST_INT_P (low_in2))
-	{
-	  high_in2 = force_reg (DImode, high_in2);
-	  emit_insn (gen_subdi3_compare1_imm (low_dest, low_in1, low_in2,
-					      GEN_INT (-INTVAL (low_in2))));
-	}
+      if (aarch64_plus_immediate (low_in2, DImode))
+	emit_insn (gen_subdi3_compare1_imm (low_dest, low_in1, low_in2,
+					    GEN_INT (-INTVAL (low_in2))));
       else
-	emit_insn (gen_subdi3_compare1 (low_dest, low_in1, low_in2));
+	{
+	  low_in2 = force_reg (DImode, low_in2);
+	  emit_insn (gen_subdi3_compare1 (low_dest, low_in1, low_in2));
+	}
+      high_in2 = force_reg (DImode, high_in2);
 
       if (unsigned_p)
 	emit_insn (gen_usubdi3_carryinC (high_dest, high_in1, high_in2));

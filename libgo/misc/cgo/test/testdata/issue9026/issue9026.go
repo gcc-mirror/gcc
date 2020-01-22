@@ -4,9 +4,9 @@ package issue9026
 // per-package counter used to create fresh identifiers.
 
 /*
-typedef struct {} git_merge_file_input;
+typedef struct { int i; } git_merge_file_input;
 
-typedef struct {} git_merge_file_options;
+typedef struct { int j; } git_merge_file_options;
 
 void git_merge_file(
         git_merge_file_input *in,
@@ -29,7 +29,7 @@ func Test(t *testing.T) {
 	// Brittle: the assertion may fail spuriously when the algorithm
 	// changes, but should remain stable otherwise.
 	got := fmt.Sprintf("%T %T", in, opts)
-	want := "issue9026._Ctype_struct___0 *issue9026._Ctype_struct___0"
+	want := "issue9026._Ctype_struct___0 *issue9026._Ctype_struct___1"
 	if got != want {
 		t.Errorf("Non-deterministic type names: got %s, want %s", got, want)
 	}

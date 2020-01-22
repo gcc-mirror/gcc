@@ -62,6 +62,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
+namespace ana {
+
 /* Dump T to PP in language-independent form, for debugging/logging/dumping
    purposes.  */
 
@@ -2387,15 +2389,20 @@ array_region::get_key_for_child_region (region_id child_rid, key_t *out) const
   return false;
 }
 
-/* qsort comparator for int.  */
+/* qsort comparator for array_region's keys.  */
 
-static int
-int_cmp (const void *p1, const void *p2)
+int
+array_region::key_cmp (const void *p1, const void *p2)
 {
-  int i1 = *(const int *)p1;
-  int i2 = *(const int *)p2;
+  key_t i1 = *(const key_t *)p1;
+  key_t i2 = *(const key_t *)p2;
 
-  return i1 - i2;
+  if (i1 > i2)
+    return 1;
+  else if (i1 < i2)
+    return -1;
+  else
+    return 0;
 }
 
 /* Implementation of region::walk_for_canonicalization vfunc for
@@ -2412,7 +2419,7 @@ array_region::walk_for_canonicalization (canonicalization *c) const
       int key_a = (*iter).first;
       keys.quick_push (key_a);
     }
-  keys.qsort (int_cmp);
+  keys.qsort (key_cmp);
 
   unsigned i;
   int key;
@@ -6901,6 +6908,8 @@ canonicalization::dump () const
   dump (stderr);
 }
 
+} // namespace ana
+
 /* Update HSTATE with a hash of SID.  */
 
 void
@@ -6924,6 +6933,8 @@ debug (const region_model &rmodel)
 {
   rmodel.dump (false);
 }
+
+namespace ana {
 
 #if CHECKING_P
 
@@ -7978,5 +7989,7 @@ analyzer_region_model_cc_tests ()
 } // namespace selftest
 
 #endif /* CHECKING_P */
+
+} // namespace ana
 
 #endif /* #if ENABLE_ANALYZER */

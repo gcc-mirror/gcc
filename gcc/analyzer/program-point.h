@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_PROGRAM_POINT_H
 #define GCC_ANALYZER_PROGRAM_POINT_H
 
+namespace ana {
+
 class exploded_graph;
 
 /* An enum for distinguishing the various kinds of program_point.  */
@@ -306,5 +308,7 @@ public:
   const function_point m_function_point;
   call_string m_call_string;
 };
+
+} // namespace ana
 
 #endif /* GCC_ANALYZER_PROGRAM_POINT_H */

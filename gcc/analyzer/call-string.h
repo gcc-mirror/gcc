@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_CALL_STRING_H
 #define GCC_ANALYZER_CALL_STRING_H
 
+namespace ana {
+
 class supergraph;
 class call_superedge;
 class return_superedge;
@@ -72,5 +74,7 @@ private:
 
   auto_vec<const return_superedge *> m_return_edges;
 };
+
+} // namespace ana
 
 #endif /* GCC_ANALYZER_CALL_STRING_H */

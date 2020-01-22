@@ -971,6 +971,67 @@ func TestRenameToDirFailed(t *testing.T) {
 	}
 }
 
+func TestRenameCaseDifference(pt *testing.T) {
+	from, to := "renameFROM", "RENAMEfrom"
+	tests := []struct {
+		name   string
+		create func() error
+	}{
+		{"dir", func() error {
+			return Mkdir(from, 0777)
+		}},
+		{"file", func() error {
+			fd, err := Create(from)
+			if err != nil {
+				return err
+			}
+			return fd.Close()
+		}},
+	}
+
+	for _, test := range tests {
+		pt.Run(test.name, func(t *testing.T) {
+			defer chtmpdir(t)()
+
+			if err := test.create(); err != nil {
+				t.Fatalf("failed to create test file: %s", err)
+			}
+
+			if _, err := Stat(to); err != nil {
+				// Sanity check that the underlying filesystem is not case sensitive.
+				if IsNotExist(err) {
+					t.Skipf("case sensitive filesystem")
+				}
+				t.Fatalf("stat %q, got: %q", to, err)
+			}
+
+			if err := Rename(from, to); err != nil {
+				t.Fatalf("unexpected error when renaming from %q to %q: %s", from, to, err)
+			}
+
+			fd, err := Open(".")
+			if err != nil {
+				t.Fatalf("Open .: %s", err)
+			}
+
+			// Stat does not return the real case of the file (it returns what the called asked for)
+			// So we have to use readdir to get the real name of the file.
+			dirNames, err := fd.Readdirnames(-1)
+			if err != nil {
+				t.Fatalf("readdirnames: %s", err)
+			}
+
+			if dirNamesLen := len(dirNames); dirNamesLen != 1 {
+				t.Fatalf("unexpected dirNames len, got %q, want %q", dirNamesLen, 1)
+			}
+
+			if dirNames[0] != to {
+				t.Errorf("unexpected name, got %q, want %q", dirNames[0], to)
+			}
+		})
+	}
+}
+
 func exec(t *testing.T, dir, cmd string, args []string, expect string) {
 	r, w, err := Pipe()
 	if err != nil {
@@ -1157,9 +1218,7 @@ func testChtimes(t *testing.T, name string) {
 	pmt := postStat.ModTime()
 	if !pat.Before(at) {
 		switch runtime.GOOS {
-		case "plan9", "nacl":
-			// Ignore.
-			// Plan 9, NaCl:
+		case "plan9":
 			// Mtime is the time of the last change of
 			// content.  Similarly, atime is set whenever
 			// the contents are accessed; also, it is set
@@ -1349,10 +1408,6 @@ func TestSeek(t *testing.T) {
 		{0, io.SeekCurrent, 2<<32 - 1},
 	}
 	for i, tt := range tests {
-		if runtime.GOOS == "nacl" && tt.out > 1<<30 {
-			t.Logf("skipping test case #%d on nacl; https://golang.org/issue/21728", i)
-			continue
-		}
 		if runtime.GOOS == "hurd" && tt.out > 1<<32 {
 			t.Logf("skipping test case #%d on Hurd: file too large", i)
 			continue
@@ -1373,7 +1428,7 @@ func TestSeek(t *testing.T) {
 
 func TestSeekError(t *testing.T) {
 	switch runtime.GOOS {
-	case "js", "nacl", "plan9":
+	case "js", "plan9":
 		t.Skipf("skipping test on %v", runtime.GOOS)
 	}
 
@@ -2253,8 +2308,6 @@ func TestPipeThreads(t *testing.T) {
 		t.Skip("skipping on Plan 9; does not support runtime poller")
 	case "js":
 		t.Skip("skipping on js; no support for os.Pipe")
-	case "darwin":
-		t.Skip("skipping on Darwin; issue 33953")
 	}
 
 	threads := 100
@@ -2353,5 +2406,47 @@ func TestUserHomeDir(t *testing.T) {
 	}
 	if !fi.IsDir() {
 		t.Fatalf("dir %s is not directory; type = %v", dir, fi.Mode())
+	}
+}
+
+func TestDirSeek(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		testenv.SkipFlaky(t, 36019)
+	}
+	wd, err := Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	f, err := Open(wd)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dirnames1, err := f.Readdirnames(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ret, err := f.Seek(0, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ret != 0 {
+		t.Fatalf("seek result not zero: %d", ret)
+	}
+
+	dirnames2, err := f.Readdirnames(0)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+
+	if len(dirnames1) != len(dirnames2) {
+		t.Fatalf("listings have different lengths: %d and %d\n", len(dirnames1), len(dirnames2))
+	}
+	for i, n1 := range dirnames1 {
+		n2 := dirnames2[i]
+		if n1 != n2 {
+			t.Fatalf("different name i=%d n1=%s n2=%s\n", i, n1, n2)
+		}
 	}
 }

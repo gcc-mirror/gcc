@@ -1155,17 +1155,18 @@ check_main_parameter_types (tree decl)
 	     "%q+D declared as variadic function", decl);
 }
 
-/* Warns if the conversion of EXPR to TYPE may alter a value.
+/* Warns and returns true if the conversion of EXPR to TYPE may alter a value.
    This is a helper function for warnings_for_convert_and_check.  */
 
-static void
+static bool
 conversion_warning (location_t loc, tree type, tree expr, tree result)
 {
   tree expr_type = TREE_TYPE (expr);
   enum conversion_safety conversion_kind;
+  bool is_arith = false;
 
   if (!warn_conversion && !warn_sign_conversion && !warn_float_conversion)
-    return;
+    return false;
 
   /* This may happen, because for LHS op= RHS we preevaluate
      RHS and create C_MAYBE_CONST_EXPR <SAVE_EXPR <RHS>>, which
@@ -1195,7 +1196,7 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
       if (TYPE_PRECISION (type) == 1 && !TYPE_UNSIGNED (type))
 	warning_at (loc, OPT_Wconversion,
 		    "conversion to %qT from boolean expression", type);
-      return;
+      return true;
 
     case REAL_CST:
     case INTEGER_CST:
@@ -1210,7 +1211,39 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
 	else
 	  break;
 
-	if (TREE_CODE_CLASS (TREE_CODE (result)) == tcc_constant)
+	if (conversion_kind == UNSAFE_SIGN)
+	  {
+	    bool cstresult
+	      = (result
+		 && TREE_CODE_CLASS (TREE_CODE (result)) == tcc_constant);
+	    if (TYPE_UNSIGNED (type))
+	      {
+		if (cstresult)
+		  warning_at (loc, OPT_Wsign_conversion,
+			      "unsigned conversion from %qT to %qT "
+			      "changes value from %qE to %qE",
+			      expr_type, type, expr, result);
+		else
+		  warning_at (loc, OPT_Wsign_conversion,
+			      "unsigned conversion from %qT to %qT "
+			      "changes the value of %qE",
+			      expr_type, type, expr);
+	      }
+	    else
+	      {
+		if (cstresult)
+		  warning_at (loc, OPT_Wsign_conversion,
+			      "signed conversion from %qT to %qT changes "
+			      "value from %qE to %qE",
+			      expr_type, type, expr, result);
+		else
+		  warning_at (loc, OPT_Wsign_conversion,
+			      "signed conversion from %qT to %qT changes "
+			      "the value of %qE",
+			      expr_type, type, expr);
+	      }
+	  }
+	else if (TREE_CODE_CLASS (TREE_CODE (result)) == tcc_constant)
 	  warning_at (loc, warnopt,
 		      "conversion from %qT to %qT changes value from %qE to %qE",
 		      expr_type, type, expr, result);
@@ -1218,8 +1251,48 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
 	  warning_at (loc, warnopt,
 		      "conversion from %qT to %qT changes the value of %qE",
 		      expr_type, type, expr);
-	break;
+	return true;
       }
+
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case MULT_EXPR:
+    case MAX_EXPR:
+    case MIN_EXPR:
+    case TRUNC_MOD_EXPR:
+    case FLOOR_MOD_EXPR:
+    case TRUNC_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case EXACT_DIV_EXPR:
+    case RDIV_EXPR:
+      {
+	tree op0 = TREE_OPERAND (expr, 0);
+	tree op1 = TREE_OPERAND (expr, 1);
+	if (conversion_warning (loc, type, op0, result)
+	    || conversion_warning (loc, type, op1, result))
+	  return true;
+	goto arith_op;
+      }
+
+    case PREDECREMENT_EXPR:
+    case PREINCREMENT_EXPR:
+    case POSTDECREMENT_EXPR:
+    case POSTINCREMENT_EXPR:
+    case LSHIFT_EXPR:
+    case RSHIFT_EXPR:
+    case FIX_TRUNC_EXPR:
+    case NON_LVALUE_EXPR:
+    case NEGATE_EXPR:
+    case BIT_NOT_EXPR:
+      {
+	/* Unary ops or binary ops for which we only care about the lhs.  */
+	tree op0 = TREE_OPERAND (expr, 0);
+	if (conversion_warning (loc, type, op0, result))
+	  return true;
+	goto arith_op;
+      }
+
     case COND_EXPR:
       {
 	/* In case of COND_EXPR, we do not care about the type of
@@ -1227,31 +1300,48 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
 	tree op1 = TREE_OPERAND (expr, 1);
 	tree op2 = TREE_OPERAND (expr, 2);
 
-	conversion_warning (loc, type, op1, result);
-	conversion_warning (loc, type, op2, result);
-	return;
+	return (conversion_warning (loc, type, op1, result)
+		|| conversion_warning (loc, type, op2, result));
       }
 
-    default: /* 'expr' is not a constant.  */
+    arith_op:
+      /* We didn't warn about the operands, we might still want to warn if
+	 -Warith-conversion.  */
+      is_arith = true;
+      gcc_fallthrough ();
+    default:
       conversion_kind = unsafe_conversion_p (loc, type, expr, result, true);
-      if (conversion_kind == UNSAFE_IMAGINARY)
-	warning_at (loc, OPT_Wconversion,
-		    "conversion from %qT to %qT discards imaginary component",
-		    expr_type, type);
-      else
-	{
-	  int warnopt;
-	  if (conversion_kind == UNSAFE_REAL)
-	    warnopt = OPT_Wfloat_conversion;
-	  else if (conversion_kind)
-	    warnopt = OPT_Wconversion;
-	  else
-	    break;
+      {
+	int warnopt;
+	if (conversion_kind == UNSAFE_REAL)
+	  warnopt = OPT_Wfloat_conversion;
+	else if (conversion_kind == UNSAFE_SIGN)
+	  warnopt = OPT_Wsign_conversion;
+	else if (conversion_kind)
+	  warnopt = OPT_Wconversion;
+	else
+	  break;
+	if (is_arith
+	    && global_dc->option_enabled (warnopt,
+					  global_dc->lang_mask,
+					  global_dc->option_state))
+	  warnopt = OPT_Warith_conversion;
+	if (conversion_kind == UNSAFE_SIGN)
+	  warning_at (loc, warnopt, "conversion to %qT from %qT "
+		      "may change the sign of the result",
+		      type, expr_type);
+	else if (conversion_kind == UNSAFE_IMAGINARY)
+	  warning_at (loc, warnopt,
+		      "conversion from %qT to %qT discards imaginary component",
+		      expr_type, type);
+	else
 	  warning_at (loc, warnopt,
 		      "conversion from %qT to %qT may change value",
 		      expr_type, type);
-	}
+	return true;
+      }
     }
+  return false;
 }
 
 /* Produce warnings after a conversion. RESULT is the result of

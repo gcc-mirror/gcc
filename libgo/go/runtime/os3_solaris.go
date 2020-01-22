@@ -25,13 +25,6 @@ func getncpu() int32 {
 	return n
 }
 
-func osinit() {
-	ncpu = getncpu()
-	if physPageSize == 0 {
-		physPageSize = uintptr(getPageSize())
-	}
-}
-
 func sysargs(argc int32, argv **byte) {
 	executablePath = gostringnocopy(getexecname())
 }

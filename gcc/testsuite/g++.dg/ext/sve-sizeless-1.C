@@ -74,7 +74,7 @@ template class templated_struct5<svint8_t>;
 
 #if __cplusplus >= 201103L
 template<int N> using typedef_sizeless1 = svint8_t;
-template<int N> using typedef_sizeless1 = svint8_t; // { dg-error {redefinition of 'template<int N> using typedef_sizeless1 = svint8_t'} "" { target c++11 } }
+template<int N> using typedef_sizeless1 = svint8_t;
 template<typename T> using array = T[2];
 #endif
 

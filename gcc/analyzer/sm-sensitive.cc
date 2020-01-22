@@ -39,6 +39,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
+namespace ana {
+
 namespace {
 
 /* An experimental state machine, for tracking exposure of sensitive
@@ -244,5 +246,7 @@ make_sensitive_state_machine (logger *logger)
 {
   return new sensitive_state_machine (logger);
 }
+
+} // namespace ana
 
 #endif /* #if ENABLE_ANALYZER */

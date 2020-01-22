@@ -79,7 +79,7 @@ func (ci *Frames) Next() (frame Frame, more bool) {
 
 	// Subtract 1 from PC to undo the 1 we added in callback in
 	// go-callers.c.
-	function, file, line, _ := funcfileline(pc-1, int32(i))
+	function, file, line, _ := funcfileline(pc-1, int32(i), more)
 	if function == "" && file == "" {
 		return Frame{}, more
 	}
@@ -127,7 +127,7 @@ type Func struct {
 // the a *Func describing the innermost function, but with an entry
 // of the outermost function.
 func FuncForPC(pc uintptr) *Func {
-	name, _, _, _ := funcfileline(pc, -1)
+	name, _, _, _ := funcfileline(pc, -1, false)
 	if name == "" {
 		return nil
 	}
@@ -156,7 +156,7 @@ func (f *Func) Entry() uintptr {
 // The result will not be accurate if pc is not a program
 // counter within f.
 func (f *Func) FileLine(pc uintptr) (file string, line int) {
-	_, file, line, _ = funcfileline(pc, -1)
+	_, file, line, _ = funcfileline(pc, -1, false)
 	return file, line
 }
 
@@ -230,5 +230,5 @@ func demangleSymbol(s string) string {
 }
 
 // implemented in go-caller.c
-func funcfileline(uintptr, int32) (string, string, int, int)
+func funcfileline(uintptr, int32, bool) (string, string, int, int)
 func funcentry(uintptr) uintptr

@@ -62,6 +62,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
+namespace ana {
+
 static int readability_comparator (const void *p1, const void *p2);
 
 /* class impl_region_model_context : public region_model_context.  */
@@ -882,6 +884,8 @@ exploded_node::dump (const extrinsic_state &ext_state) const
   dump (stderr, ext_state);
 }
 
+} // namespace ana
+
 /* Return true if FNDECL has a gimple body.  */
 // TODO: is there a pre-canned way to do this?
 
@@ -897,6 +901,8 @@ fndecl_has_gimple_body_p (tree fndecl)
 
   return n->has_gimple_body_p ();
 }
+
+namespace ana {
 
 /* A pending_diagnostic subclass for implementing "__analyzer_dump_path".  */
 
@@ -2930,6 +2936,8 @@ struct function_call_string
   call_string m_cs;
 };
 
+} // namespace ana
+
 template <> struct default_hash_traits<function_call_string>
 : public pod_hash_traits<function_call_string>
 {
@@ -2974,6 +2982,8 @@ pod_hash_traits<function_call_string>::is_empty (value_type v)
 {
   return v.m_fun == reinterpret_cast<function *> (NULL);
 }
+
+namespace ana {
 
 /* Top-level cluster for generating .dot output for exploded graphs,
    handling the functionless nodes, and grouping the remaining nodes by
@@ -3630,5 +3640,7 @@ run_checkers ()
   if (owns_dump_fout)
     fclose (dump_fout);
 }
+
+} // namespace ana
 
 #endif /* #if ENABLE_ANALYZER */

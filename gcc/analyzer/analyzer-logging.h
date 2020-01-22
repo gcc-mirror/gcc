@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef ANALYZER_LOGGING_H
 #define ANALYZER_LOGGING_H
 
+namespace ana {
+
 /* A logger encapsulates a logging stream: a way to send
    lines of pertinent information to a FILE *.  */
 
@@ -256,5 +258,7 @@ log_user::exit_scope (const char *scope_name)
 
 #define LOG_FUNC_4(LOGGER, FMT, A0, A1, A2, A3) \
   log_scope s (LOGGER, __func__, FMT, A0, A1, A2, A3)
+
+} // namespace ana
 
 #endif /* ANALYZER_LOGGING_H */

@@ -1107,6 +1107,10 @@ Wshift-negative-value
 C ObjC C++ ObjC++ Var(warn_shift_negative_value) Init(-1) Warning
 Warn if left shifting a negative value.
 
+Warith-conversion
+C ObjC C++ ObjC++ Var(warn_arith_conv) Warning
+Warn if conversion of the result of arithmetic might change the value even though converting the operands cannot.
+
 Wsign-compare
 C ObjC C++ ObjC++ Var(warn_sign_compare) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about signed-unsigned comparisons.
