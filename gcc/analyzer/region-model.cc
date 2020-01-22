@@ -4701,8 +4701,12 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
 
 /* Assert that SRC_TYPE can be converted to DST_TYPE as a no-op.  */
 
-#define ASSERT_COMPAT_TYPES(SRC_TYPE, DST_TYPE) \
-  gcc_checking_assert (useless_type_conversion_p ((SRC_TYPE), (DST_TYPE)))
+static void
+assert_compat_types (tree src_type, tree dst_type)
+{
+  if (src_type && dst_type && !VOID_TYPE_P (dst_type))
+    gcc_checking_assert (useless_type_conversion_p (src_type, dst_type));
+}
 
 /* Get the id of the region for PV within this region_model,
    emitting any diagnostics to CTXT.  */
@@ -4714,7 +4718,7 @@ region_model::get_lvalue (path_var pv, region_model_context *ctxt)
     return region_id::null ();
 
   region_id result_rid = get_lvalue_1 (pv, ctxt);
-  ASSERT_COMPAT_TYPES (get_region (result_rid)->get_type (),
+  assert_compat_types (get_region (result_rid)->get_type (),
 		       TREE_TYPE (pv.m_tree));
   return result_rid;
 }
@@ -4795,7 +4799,7 @@ region_model::get_rvalue (path_var pv, region_model_context *ctxt)
     return svalue_id::null ();
   svalue_id result_sid = get_rvalue_1 (pv, ctxt);
 
-  ASSERT_COMPAT_TYPES (get_svalue (result_sid)->get_type (),
+  assert_compat_types (get_svalue (result_sid)->get_type (),
 		       TREE_TYPE (pv.m_tree));
 
   return result_sid;
