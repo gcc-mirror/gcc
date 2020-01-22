@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <alloca.h>
 #include "analyzer-decls.h"
 
 struct foo

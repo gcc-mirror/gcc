@@ -1,5 +1,11 @@
 2020-01-22  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93316
+	* analyzer.cc (is_setjmp_call_p): Check for "setjmp" as well as
+	"_setjmp".
+
+2020-01-22  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93307
 	* analysis-plan.h: Wrap everything namespace "ana".
 	* analyzer-logging.cc: Likewise.

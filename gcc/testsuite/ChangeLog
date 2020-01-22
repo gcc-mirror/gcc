@@ -1,3 +1,25 @@
+2020-01-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93316
+	* gcc.dg/analyzer/data-model-1.c: Include <alloca.h>.
+	* gcc.dg/analyzer/malloc-1.c: Likewise.
+	* gcc.dg/analyzer/malloc-callbacks.c (get_alloca): Return
+	__builtin_alloca rather than alloca.
+	* gcc.dg/analyzer/malloc-paths-8.c: Include <alloca.h>.
+	* gcc.dg/analyzer/sensitive-1.c: Define __EXTENSIONS__ before
+	including unistd.h.
+	* gcc.dg/analyzer/setjmp-2.c: Replace include of <setjmp.h>
+	with "test-setjmp.h" and usage of setjmp with new SETJMP macro.
+	* gcc.dg/analyzer/setjmp-3.c: Likewise.
+	* gcc.dg/analyzer/setjmp-4.c: Likewise.
+	* gcc.dg/analyzer/setjmp-5.c: Likewise.
+	* gcc.dg/analyzer/setjmp-6.c: Likewise.
+	* gcc.dg/analyzer/setjmp-7.c: Likewise.
+	* gcc.dg/analyzer/setjmp-7a.c: Likewise.
+	* gcc.dg/analyzer/setjmp-8.c: Likewise.
+	* gcc.dg/analyzer/setjmp-9.c: Likewise.
+	* gcc.dg/analyzer/test-setjmp.h: New header.
+
 2020-01-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/92907 - noexcept does not consider "const" in member functions.

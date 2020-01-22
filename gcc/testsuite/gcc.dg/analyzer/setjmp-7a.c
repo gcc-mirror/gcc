@@ -1,7 +1,7 @@
 /* { dg-additional-options "-fdiagnostics-show-line-numbers -fdiagnostics-path-format=inline-events -fdiagnostics-show-caret" } */
 /* { dg-enable-nn-line-numbers "" } */
 
-#include <setjmp.h>
+#include "test-setjmp.h"
 #include <stdlib.h>
 
 extern int foo (int) __attribute__ ((__pure__));
@@ -26,7 +26,7 @@ void outer (void)
 
   foo (0);
 
-  i = setjmp(env);
+  i = SETJMP(env);
 
   if (i == 0)
     {
@@ -49,7 +49,7 @@ void outer (void)
     |
   'outer': event 2
     |
-    |   NN |   i = setjmp(env);
+    |   NN |   i = SETJMP(env);
     |      |       ^~~~~~
     |      |       |
     |      |       (2) 'setjmp' called here
@@ -103,7 +103,7 @@ void outer (void)
     |
   'outer': event 12
     |
-    |   NN |   i = setjmp(env);
+    |   NN |   i = SETJMP(env);
     |      |       ^~~~~~
     |      |       |
     |      |       (12) ...to 'setjmp' in 'outer' (saved at (2))

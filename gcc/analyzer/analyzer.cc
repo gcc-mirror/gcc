@@ -91,7 +91,8 @@ is_setjmp_call_p (const gimple *stmt)
 {
   /* TODO: is there a less hacky way to check for "setjmp"?  */
   if (const gcall *call = dyn_cast <const gcall *> (stmt))
-    if (is_special_named_call_p (call, "_setjmp", 1))
+    if (is_special_named_call_p (call, "setjmp", 1)
+	|| is_special_named_call_p (call, "_setjmp", 1))
       return true;
 
   return false;
