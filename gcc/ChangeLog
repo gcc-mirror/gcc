@@ -6,15 +6,11 @@
 	predicate, not whenever it is CONST_INT.  Otherwise, force_reg it.
 	Call force_reg on high_in2 unconditionally.
 
-2020-01-22  Jakub Jelinek  <jakub@redhat.com>
-
 	PR target/91298
 	* output.h (assemble_name_resolve): Declare.
 	* varasm.c (assemble_name_resolve): New function.
 	(assemble_name): Use it.
 	* config/i386/i386.h (ASM_OUTPUT_SYMBOL_REF): Define.
-
-2020-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
 	2020-01-21  Jakub Jelinek  <jakub@redhat.com>
@@ -23,18 +19,10 @@
 	* config/riscv/riscv.c (riscv_rtx_costs) <case ZERO_EXTRACT>: Verify
 	the last two operands are CONST_INT_P before using them as such.
 
-2020-01-22  Jakub Jelinek  <jakub@redhat.com>
-
-	Backported from mainline
-	2020-01-21  Jakub Jelinek  <jakub@redhat.com>
-
 	PR target/93073
 	* config/rs6000/rs6000.c (rs6000_emit_cmove): If using fsel, punt for
 	compare_mode other than SFmode or DFmode.
 
-2020-01-22  Jakub Jelinek  <jakub@redhat.com>
-
-	Backported from mainline
 	2020-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93009
@@ -46,9 +34,6 @@
 	just a single alternative instead of two, make operands 1 and 2
 	commutative.
 
-2020-01-22  Jakub Jelinek  <jakub@redhat.com>
-
-	Backported from mainline
 	2020-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/93202
@@ -56,9 +41,6 @@
 	output_operand_lossage instead of gcc_unreachable.
 	* doc/md.texi (riscv f constraint): Fix typo.
 
-2020-01-22  Jakub Jelinek  <jakub@redhat.com>
-
-	Backported from mainline
 	2020-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/93088
@@ -66,9 +48,6 @@
 	128 reg copies for regs with single definitions.  Move definitions
 	to first uses.
 
-2020-01-22  Jakub Jelinek  <jakub@redhat.com>
-
-	Backported from mainline
 	2020-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/93087
