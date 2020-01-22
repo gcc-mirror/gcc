@@ -17,12 +17,11 @@ func getPageSize() int32
 //extern sysconf
 func sysconf(int32) _C_long
 
-func getncpu() int32 {
-	n := int32(sysconf(__SC_NPROCESSORS_ONLN))
-	if n < 1 {
-		return 1
+func osinit() {
+	ncpu = getncpu()
+	if physPageSize == 0 {
+		physPageSize = uintptr(getPageSize())
 	}
-	return n
 }
 
 func sysargs(argc int32, argv **byte) {
