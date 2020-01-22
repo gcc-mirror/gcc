@@ -1,6 +1,13 @@
 2020-05-09  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.target/cris/: Adjust for removing crisv32-* and cris-linux-*.
+	* gcc.dg/20020919-1.c, gcc.dg/pr31866.c, gcc.dg/pr46647.c,
+	gcc.dg/sibcall-10.c, gcc.dg/sibcall-3.c, gcc.dg/sibcall-4.c,
+	gcc.dg/sibcall-9.c, gcc.dg/torture/cris-asm-mof-1.c,
+	gcc.dg/torture/cris-volatile-1.c, gcc.dg/torture/pr38948.c,
+	gcc.dg/tree-ssa/20040204-1.c, gcc.dg/tree-ssa/loop-1.c,
+	gcc.dg/weak/typeof-2.c, lib/target-supports.exp: Remove remaining
+	traces of crisv32-*.
 
 2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
 
