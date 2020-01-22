@@ -1,3 +1,9 @@
+2020-01-22  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/92924
+	* profile.c (compute_value_histograms): Divide
+	all counter values.
+
 2020-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/91298
