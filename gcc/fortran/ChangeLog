@@ -1,3 +1,9 @@
+2020-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/93329
+	* openmp.c (omp_code_to_statement): Handle remaining EXEC_OMP_*
+	cases.
+
 2020-01-17  Mark Eggleston  <mark.eggleston@codethink.com>
 
         Backport from mainline
