@@ -4928,10 +4928,10 @@ find_func_aliases (struct function *fn, gimple *origt)
 	      get_constraint_for_ptr_offset (gimple_assign_rhs1 (t),
 					     NULL_TREE, &rhsc);
 	    }
-	  else if ((CONVERT_EXPR_CODE_P (code)
-		    && !(POINTER_TYPE_P (gimple_expr_type (t))
-			 && !POINTER_TYPE_P (TREE_TYPE (rhsop))))
+	  else if (CONVERT_EXPR_CODE_P (code)
 		   || gimple_assign_single_p (t))
+	    /* See through conversions, single RHS are handled by
+	       get_constraint_for_rhs.  */
 	    get_constraint_for_rhs (rhsop, &rhsc);
 	  else if (code == COND_EXPR)
 	    {
@@ -4950,14 +4950,16 @@ find_func_aliases (struct function *fn, gimple *origt)
 	    ;
 	  else
 	    {
-	      /* All other operations are merges.  */
+	      /* All other operations are possibly offsetting merges.  */
 	      auto_vec<ce_s, 4> tmp;
 	      struct constraint_expr *rhsp;
 	      unsigned i, j;
-	      get_constraint_for_rhs (gimple_assign_rhs1 (t), &rhsc);
+	      get_constraint_for_ptr_offset (gimple_assign_rhs1 (t),
+					     NULL_TREE, &rhsc);
 	      for (i = 2; i < gimple_num_ops (t); ++i)
 		{
-		  get_constraint_for_rhs (gimple_op (t, i), &tmp);
+		  get_constraint_for_ptr_offset (gimple_op (t, i),
+						 NULL_TREE, &tmp);
 		  FOR_EACH_VEC_ELT (tmp, j, rhsp)
 		    rhsc.safe_push (*rhsp);
 		  tmp.truncate (0);

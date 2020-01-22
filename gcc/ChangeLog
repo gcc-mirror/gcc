@@ -1,6 +1,15 @@
 2020-02-14  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2020-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93381
+	* tree-ssa-structalias.c (find_func_aliases): Assume offsetting
+	throughout, handle all conversions the same.
+
+2020-02-14  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2020-01-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/93439
