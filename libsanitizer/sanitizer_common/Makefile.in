@@ -130,6 +130,7 @@ am__objects_1 = sancov_flags.lo sanitizer_allocator.lo \
 	sanitizer_linux_libcdep.lo sanitizer_linux_s390.lo \
 	sanitizer_mac.lo sanitizer_mac_libcdep.lo sanitizer_netbsd.lo \
 	sanitizer_openbsd.lo sanitizer_persistent_allocator.lo \
+	sanitizer_platform_limits_freebsd.lo \
 	sanitizer_platform_limits_linux.lo \
 	sanitizer_platform_limits_openbsd.lo \
 	sanitizer_platform_limits_posix.lo \
@@ -401,6 +402,7 @@ sanitizer_common_files = \
 	sanitizer_netbsd.cpp \
 	sanitizer_openbsd.cpp \
 	sanitizer_persistent_allocator.cpp \
+	sanitizer_platform_limits_freebsd.cpp \
 	sanitizer_platform_limits_linux.cpp \
 	sanitizer_platform_limits_openbsd.cpp \
 	sanitizer_platform_limits_posix.cpp \
@@ -557,6 +559,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_netbsd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_openbsd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_persistent_allocator.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_platform_limits_freebsd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_platform_limits_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_platform_limits_openbsd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_platform_limits_posix.Plo@am__quote@
