@@ -90,9 +90,6 @@ static char cris_output_insn_is_bound = 0;
    goes in code or in a static initializer.  */
 static int in_code = 0;
 
-/* Fix for reg_overlap_mentioned_p.  */
-static int cris_reg_overlap_mentioned_p (rtx, rtx);
-
 static machine_mode cris_promote_function_mode (const_tree, machine_mode,
 						     int *, const_tree, int);
 
@@ -290,9 +287,9 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 /* Helper for cris_load_multiple_op and cris_ret_movem_op.  */
 
 bool
-cris_movem_load_rest_p (rtx op, int offs)
+cris_movem_load_rest_p (rtx op)
 {
-  unsigned int reg_count = XVECLEN (op, 0) - offs;
+  unsigned int reg_count = XVECLEN (op, 0);
   rtx src_addr;
   int i;
   rtx elt;
@@ -303,35 +300,36 @@ cris_movem_load_rest_p (rtx op, int offs)
   /* Perform a quick check so we don't blow up below.  FIXME: Adjust for
      other than (MEM reg).  */
   if (reg_count <= 1
-      || GET_CODE (XVECEXP (op, 0, offs)) != SET
-      || !REG_P (SET_DEST (XVECEXP (op, 0, offs)))
-      || !MEM_P (SET_SRC (XVECEXP (op, 0, offs))))
+      || GET_CODE (XVECEXP (op, 0, 0)) != SET
+      || !REG_P (SET_DEST (XVECEXP (op, 0, 0)))
+      || !MEM_P (SET_SRC (XVECEXP (op, 0, 0))))
     return false;
 
   /* Check a possible post-inc indicator.  */
-  if (GET_CODE (SET_SRC (XVECEXP (op, 0, offs + 1))) == PLUS)
+  if (GET_CODE (XVECEXP (op, 0, 1)) == SET
+      && GET_CODE (SET_SRC (XVECEXP (op, 0, 1))) == PLUS)
     {
-      rtx reg = XEXP (SET_SRC (XVECEXP (op, 0, offs + 1)), 0);
-      rtx inc = XEXP (SET_SRC (XVECEXP (op, 0, offs + 1)), 1);
+      rtx reg = XEXP (SET_SRC (XVECEXP (op, 0, 1)), 0);
+      rtx inc = XEXP (SET_SRC (XVECEXP (op, 0, 1)), 1);
 
       reg_count--;
 
       if (reg_count == 1
 	  || !REG_P (reg)
-	  || !REG_P (SET_DEST (XVECEXP (op, 0, offs + 1)))
-	  || REGNO (reg) != REGNO (SET_DEST (XVECEXP (op, 0, offs + 1)))
+	  || !REG_P (SET_DEST (XVECEXP (op, 0, 1)))
+	  || REGNO (reg) != REGNO (SET_DEST (XVECEXP (op, 0, 1)))
 	  || !CONST_INT_P (inc)
 	  || INTVAL (inc) != (HOST_WIDE_INT) reg_count * 4)
 	return false;
-      i = offs + 2;
+      i = 2;
     }
   else
-    i = offs + 1;
+    i = 1;
 
   regno_dir = -1;
   regno = reg_count - 1;
 
-  elt = XVECEXP (op, 0, offs);
+  elt = XVECEXP (op, 0, 0);
   src_addr = XEXP (SET_SRC (elt), 0);
 
   if (GET_CODE (elt) != SET
@@ -399,15 +397,15 @@ cris_store_multiple_op_p (rtx op)
   dest_addr = XEXP (dest, 0);
 
   /* Check a possible post-inc indicator.  */
-  if (GET_CODE (SET_SRC (XVECEXP (op, 0, 1))) == PLUS)
+  if (GET_CODE (XVECEXP (op, 0, 1)) == SET
+      && GET_CODE (SET_SRC (XVECEXP (op, 0, 1))) == PLUS)
     {
       rtx reg = XEXP (SET_SRC (XVECEXP (op, 0, 1)), 0);
       rtx inc = XEXP (SET_SRC (XVECEXP (op, 0, 1)), 1);
 
       reg_count--;
 
-      if (reg_count == 1
-	  || !REG_P (reg)
+      if (!REG_P (reg)
 	  || !REG_P (SET_DEST (XVECEXP (op, 0, 1)))
 	  || REGNO (reg) != REGNO (SET_DEST (XVECEXP (op, 0, 1)))
 	  || !CONST_INT_P (inc)
@@ -1501,302 +1499,6 @@ cris_memory_move_cost (machine_mode mode,
     return 6;
 }
 
-/* Worker for cris_notice_update_cc; handles the "normal" cases.
-   FIXME: this code is historical; its functionality should be
-   refactored to look at insn attributes and moved to
-   cris_notice_update_cc.  Except, we better lose cc0 entirely.  */
-
-static void
-cris_normal_notice_update_cc (rtx exp, rtx insn)
-{
-  /* "Normal" means, for:
-     (set (cc0) (...)):
-     CC is (...).
-
-     (set (reg) (...)):
-     CC is (reg) and (...) - unless (...) is 0 or reg is a special
-	register, then CC does not change.
-     CC_NO_OVERFLOW unless (...) is reg or mem.
-
-     (set (mem) (...)):
-     CC does not change.
-
-     (set (pc) (...)):
-     CC does not change.
-
-     (parallel
-      (set (reg1) (mem (bdap/biap)))
-      (set (reg2) (bdap/biap))):
-     CC is (reg1) and (mem (reg2))
-
-     (parallel
-      (set (mem (bdap/biap)) (reg1)) [or 0]
-      (set (reg2) (bdap/biap))):
-     CC does not change.
-
-     (where reg and mem includes strict_low_parts variants thereof)
-
-     For all others, assume CC is clobbered.
-     Note that we do not have to care about setting CC_NO_OVERFLOW,
-     since the overflow flag is set to 0 (i.e. right) for
-     instructions where it does not have any sane sense, but where
-     other flags have meanings.  (This includes shifts; the carry is
-     not set by them).
-
-     Note that there are other parallel constructs we could match,
-     but we don't do that yet.  */
-
-  if (GET_CODE (exp) == SET)
-    {
-      /* FIXME: Check when this happens.  It looks like we should
-	 actually do a CC_STATUS_INIT here to be safe.  */
-      if (SET_DEST (exp) == pc_rtx)
-	return;
-
-      /* Record CC0 changes, so we do not have to output multiple
-	 test insns.  */
-      if (SET_DEST (exp) == cc0_rtx)
-	{
-	  CC_STATUS_INIT;
-
-	  if (GET_CODE (SET_SRC (exp)) == COMPARE
-	      && XEXP (SET_SRC (exp), 1) == const0_rtx)
-	    cc_status.value1 = XEXP (SET_SRC (exp), 0);
-	  else
-	    cc_status.value1 = SET_SRC (exp);
-
-          /* Handle flags for the special btstq on one bit.  */
-	  if (GET_CODE (cc_status.value1) == ZERO_EXTRACT
-	      && XEXP (cc_status.value1, 1) == const1_rtx)
-	    {
-	      if (CONST_INT_P (XEXP (cc_status.value1, 0)))
-		/* Using cmpq.  */
-		cc_status.flags = CC_INVERTED;
-	      else
-		/* A one-bit btstq.  */
-		cc_status.flags = CC_Z_IN_NOT_N;
-	    }
-
-	  else if (GET_CODE (SET_SRC (exp)) == COMPARE)
-	    {
-	      if (!REG_P (XEXP (SET_SRC (exp), 0))
-		  && XEXP (SET_SRC (exp), 1) != const0_rtx)
-		/* For some reason gcc will not canonicalize compare
-		   operations, reversing the sign by itself if
-		   operands are in wrong order.  */
-		/* (But NOT inverted; eq is still eq.) */
-		cc_status.flags = CC_REVERSED;
-
-	      /* This seems to be overlooked by gcc.  FIXME: Check again.
-		 FIXME:  Is it really safe?  */
-	      cc_status.value2
-		= gen_rtx_MINUS (GET_MODE (SET_SRC (exp)),
-				 XEXP (SET_SRC (exp), 0),
-				 XEXP (SET_SRC (exp), 1));
-	    }
-	  return;
-	}
-      else if (REG_P (SET_DEST (exp))
-	       || (GET_CODE (SET_DEST (exp)) == STRICT_LOW_PART
-		   && REG_P (XEXP (SET_DEST (exp), 0))))
-	{
-	  /* A register is set; normally CC is set to show that no
-	     test insn is needed.  Catch the exceptions.  */
-
-	  /* If not to cc0, then no "set"s in non-natural mode give
-	     ok cc0...  */
-	  if (GET_MODE_SIZE (GET_MODE (SET_DEST (exp))) > UNITS_PER_WORD
-	      || GET_MODE_CLASS (GET_MODE (SET_DEST (exp))) == MODE_FLOAT)
-	    {
-	      /* ... except add:s and sub:s in DImode.  */
-	      if (GET_MODE (SET_DEST (exp)) == DImode
-		  && (GET_CODE (SET_SRC (exp)) == PLUS
-		      || GET_CODE (SET_SRC (exp)) == MINUS))
-		{
-		  CC_STATUS_INIT;
-		  cc_status.value1 = SET_DEST (exp);
-		  cc_status.value2 = SET_SRC (exp);
-
-		  if (cris_reg_overlap_mentioned_p (cc_status.value1,
-						    cc_status.value2))
-		    cc_status.value2 = 0;
-
-		  /* Add and sub may set V, which gets us
-		     unoptimizable results in "gt" and "le" condition
-		     codes.  */
-		  cc_status.flags |= CC_NO_OVERFLOW;
-
-		  return;
-		}
-	    }
-	  else if (SET_SRC (exp) == const0_rtx
-		   || (REG_P (SET_SRC (exp))
-		       && (REGNO (SET_SRC (exp))
-			   > CRIS_LAST_GENERAL_REGISTER)))
-	    {
-	      /* There's no CC0 change for this case.  Just check
-		 for overlap.  */
-	      if (cc_status.value1
-		  && modified_in_p (cc_status.value1, insn))
-		cc_status.value1 = 0;
-
-	      if (cc_status.value2
-		  && modified_in_p (cc_status.value2, insn))
-		cc_status.value2 = 0;
-
-	      return;
-	    }
-	  else
-	    {
-	      CC_STATUS_INIT;
-	      cc_status.value1 = SET_DEST (exp);
-	      cc_status.value2 = SET_SRC (exp);
-
-	      if (cris_reg_overlap_mentioned_p (cc_status.value1,
-						cc_status.value2))
-		cc_status.value2 = 0;
-
-	      /* Some operations may set V, which gets us
-		 unoptimizable results in "gt" and "le" condition
-		 codes.  */
-	      if (GET_CODE (SET_SRC (exp)) == PLUS
-		  || GET_CODE (SET_SRC (exp)) == MINUS
-		  || GET_CODE (SET_SRC (exp)) == NEG)
-		cc_status.flags |= CC_NO_OVERFLOW;
-
-	      return;
-	    }
-	}
-      else if (MEM_P (SET_DEST (exp))
-	       || (GET_CODE (SET_DEST (exp)) == STRICT_LOW_PART
-		   && MEM_P (XEXP (SET_DEST (exp), 0))))
-	{
-	  /* When SET to MEM, then CC is not changed (except for
-	     overlap).  */
-	  if (cc_status.value1
-	      && modified_in_p (cc_status.value1, insn))
-	    cc_status.value1 = 0;
-
-	  if (cc_status.value2
-	      && modified_in_p (cc_status.value2, insn))
-	    cc_status.value2 = 0;
-
-	  return;
-	}
-    }
-  else if (GET_CODE (exp) == PARALLEL)
-    {
-      if (GET_CODE (XVECEXP (exp, 0, 0)) == SET
-	  && GET_CODE (XVECEXP (exp, 0, 1)) == SET
-	  && REG_P (XEXP (XVECEXP (exp, 0, 1), 0)))
-	{
-	  if (REG_P (XEXP (XVECEXP (exp, 0, 0), 0))
-	      && MEM_P (XEXP (XVECEXP (exp, 0, 0), 1)))
-	    {
-	      CC_STATUS_INIT;
-
-	      /* For "move.S [rx=ry+o],rz", say CC reflects
-		 value1=rz and value2=[rx] */
-	      cc_status.value1 = XEXP (XVECEXP (exp, 0, 0), 0);
-	      cc_status.value2
-		= replace_equiv_address (XEXP (XVECEXP (exp, 0, 0), 1),
-					 XEXP (XVECEXP (exp, 0, 1), 0));
-
-	      /* Huh?  A side-effect cannot change the destination
-		 register.  */
-	      if (cris_reg_overlap_mentioned_p (cc_status.value1,
-						cc_status.value2))
-		internal_error ("internal error: sideeffect-insn affecting main effect");
-	      return;
-	    }
-	  else if ((REG_P (XEXP (XVECEXP (exp, 0, 0), 1))
-		    || XEXP (XVECEXP (exp, 0, 0), 1) == const0_rtx)
-		   && MEM_P (XEXP (XVECEXP (exp, 0, 0), 0)))
-	    {
-	      /* For "move.S rz,[rx=ry+o]" and "clear.S [rx=ry+o]",
-		 say flags are not changed, except for overlap.  */
-	      if (cc_status.value1
-		  && modified_in_p (cc_status.value1, insn))
-		cc_status.value1 = 0;
-
-	      if (cc_status.value2
-		  && modified_in_p (cc_status.value2, insn))
-		cc_status.value2 = 0;
-
-	      return;
-	    }
-	}
-    }
-
-  /* If we got here, the case wasn't covered by the code above.  */
-  CC_STATUS_INIT;
-}
-
-/*  This function looks into the pattern to see how this insn affects
-    condition codes.
-
-    Used when to eliminate test insns before a condition-code user,
-    such as a "scc" insn or a conditional branch.  This includes
-    checking if the entities that cc was updated by, are changed by the
-    operation.
-
-    Currently a jumble of the old peek-inside-the-insn and the newer
-    check-cc-attribute methods.  */
-
-void
-cris_notice_update_cc (rtx exp, rtx_insn *insn)
-{
-  enum attr_cc attrval = get_attr_cc (insn);
-
-  /* Check if user specified "-mcc-init" as a bug-workaround.  Remember
-     to still set CC_REVERSED as below, since that's required by some
-     compare insn alternatives.  (FIXME: GCC should do this virtual
-     operand swap by itself.)  A test-case that may otherwise fail is
-     gcc.c-torture/execute/20000217-1.c -O0 and -O1.  */
-  if (TARGET_CCINIT)
-    {
-      CC_STATUS_INIT;
-
-      if (attrval == CC_REV)
-	cc_status.flags = CC_REVERSED;
-      return;
-    }
-
-  /* Slowly, we're converting to using attributes to control the setting
-     of condition-code status.  */
-  switch (attrval)
-    {
-    case CC_NONE:
-      /* Even if it is "none", a setting may clobber a previous
-	 cc-value, so check.  */
-      if (GET_CODE (exp) == SET)
-	{
-	  if (cc_status.value1
-	      && modified_in_p (cc_status.value1, insn))
-	    cc_status.value1 = 0;
-
-	  if (cc_status.value2
-	      && modified_in_p (cc_status.value2, insn))
-	    cc_status.value2 = 0;
-	}
-      return;
-
-    case CC_CLOBBER:
-      CC_STATUS_INIT;
-      return;
-
-    case CC_REV:
-    case CC_NORMAL:
-      cris_normal_notice_update_cc (exp, insn);
-      return;
-
-    default:
-      internal_error ("unknown cc_attr value");
-    }
-
-  CC_STATUS_INIT;
-}
-
 /* Return != 0 if the return sequence for the current function is short,
    like "ret" or "jump [sp+]".  Prior to reloading, we can't tell if
    registers must be saved, so return 0 then.  */
@@ -2208,23 +1910,6 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
   internal_error ("internal error: cris_side_effect_mode_ok with bad operands");
 }
 
-/* The function reg_overlap_mentioned_p in CVS (still as of 2001-05-16)
-   does not handle the case where the IN operand is strict_low_part; it
-   does handle it for X.  Test-case in Axis-20010516.  This function takes
-   care of that for THIS port.  FIXME: strict_low_part is going away
-   anyway.  */
-
-static int
-cris_reg_overlap_mentioned_p (rtx x, rtx in)
-{
-  /* The function reg_overlap_mentioned now handles when X is
-     strict_low_part, but not when IN is a STRICT_LOW_PART.  */
-  if (GET_CODE (in) == STRICT_LOW_PART)
-    in = XEXP (in, 0);
-
-  return reg_overlap_mentioned_p (x, in);
-}
-
 /* Queue an .ident string in the queue of top-level asm statements.
    If the front-end is done, we must be being called from toplev.c.
    In that case, do nothing.  */
@@ -2480,22 +2165,20 @@ cris_split_movdx (rtx *operands)
 	  /* We normally copy the low-numbered register first.  However, if
 	     the first register operand 0 is the same as the second register of
 	     operand 1, we must copy in the opposite order.  */
-	  emit_insn (gen_rtx_SET (operand_subword (dest, reverse, TRUE, mode),
-				  operand_subword (src, reverse, TRUE, mode)));
+	  emit_move_insn (operand_subword (dest, reverse, TRUE, mode),
+			  operand_subword (src, reverse, TRUE, mode));
 
-	  emit_insn (gen_rtx_SET (operand_subword (dest, !reverse, TRUE, mode),
-				  operand_subword (src, !reverse, TRUE, mode)));
+	  emit_move_insn (operand_subword (dest, !reverse, TRUE, mode),
+			  operand_subword (src, !reverse, TRUE, mode));
 	}
       /* Constant-to-reg copy.  */
       else if (CONST_INT_P (src) || GET_CODE (src) == CONST_DOUBLE)
 	{
 	  rtx words[2];
 	  split_double (src, &words[0], &words[1]);
-	  emit_insn (gen_rtx_SET (operand_subword (dest, 0, TRUE, mode),
-				  words[0]));
+	  emit_move_insn (operand_subword (dest, 0, TRUE, mode), words[0]);
 
-	  emit_insn (gen_rtx_SET (operand_subword (dest, 1, TRUE, mode),
-				  words[1]));
+	  emit_move_insn (operand_subword (dest, 1, TRUE, mode), words[1]);
 	}
       /* Mem-to-reg copy.  */
       else if (MEM_P (src))
@@ -2522,18 +2205,15 @@ cris_split_movdx (rtx *operands)
 		 addresses ourselves, we must add a post-inc note
 		 manually.  */
 	      mem = change_address (src, SImode, addr);
-	      insn
-		= gen_rtx_SET (operand_subword (dest, 0, TRUE, mode), mem);
-	      insn = emit_insn (insn);
+	      insn = emit_move_insn (operand_subword (dest, 0, TRUE, mode),
+				     mem);
 	      if (GET_CODE (XEXP (mem, 0)) == POST_INC)
 		REG_NOTES (insn)
 		  = alloc_EXPR_LIST (REG_INC, XEXP (XEXP (mem, 0), 0),
 				     REG_NOTES (insn));
 
 	      mem = copy_rtx (mem);
-	      insn
-		= gen_rtx_SET (operand_subword (dest, 1, TRUE, mode), mem);
-	      insn = emit_insn (insn);
+	      insn = emit_move_insn (operand_subword (dest, 1, TRUE, mode), mem);
 	      if (GET_CODE (XEXP (mem, 0)) == POST_INC)
 		REG_NOTES (insn)
 		  = alloc_EXPR_LIST (REG_INC, XEXP (XEXP (mem, 0), 0),
@@ -2548,19 +2228,17 @@ cris_split_movdx (rtx *operands)
 	      if (side_effects_p (addr))
 		fatal_insn ("unexpected side-effects in address", addr);
 
-	      emit_insn (gen_rtx_SET
-			 (operand_subword (dest, reverse, TRUE, mode),
-			  change_address
-			  (src, SImode,
-			   plus_constant (Pmode, addr,
-					  reverse * UNITS_PER_WORD))));
-	      emit_insn (gen_rtx_SET
-			 (operand_subword (dest, ! reverse, TRUE, mode),
-			  change_address
-			  (src, SImode,
-			   plus_constant (Pmode, addr,
-					  (! reverse) *
-					  UNITS_PER_WORD))));
+	      emit_move_insn (operand_subword (dest, reverse, TRUE, mode),
+			      change_address
+			      (src, SImode,
+			       plus_constant (Pmode, addr,
+					      reverse * UNITS_PER_WORD)));
+	      emit_move_insn (operand_subword (dest, ! reverse, TRUE, mode),
+			      change_address
+			      (src, SImode,
+			       plus_constant (Pmode, addr,
+					      (! reverse) *
+					      UNITS_PER_WORD)));
 	    }
 	}
       else
@@ -2582,17 +2260,14 @@ cris_split_movdx (rtx *operands)
 	  /* Whenever we emit insns with post-incremented addresses
 	     ourselves, we must add a post-inc note manually.  */
 	  mem = change_address (dest, SImode, addr);
-	  insn
-	    = gen_rtx_SET (mem, operand_subword (src, 0, TRUE, mode));
-	  insn = emit_insn (insn);
+	  insn = emit_move_insn (mem, operand_subword (src, 0, TRUE, mode));
 	  if (GET_CODE (XEXP (mem, 0)) == POST_INC)
 	    REG_NOTES (insn)
 	      = alloc_EXPR_LIST (REG_INC, XEXP (XEXP (mem, 0), 0),
 				 REG_NOTES (insn));
 
 	  mem = copy_rtx (mem);
-	  insn = gen_rtx_SET (mem, operand_subword (src, 1, TRUE, mode));
-	  insn = emit_insn (insn);
+	  insn = emit_move_insn (mem, operand_subword (src, 1, TRUE, mode));
 	  if (GET_CODE (XEXP (mem, 0)) == POST_INC)
 	    REG_NOTES (insn)
 	      = alloc_EXPR_LIST (REG_INC, XEXP (XEXP (mem, 0), 0),
@@ -2606,15 +2281,13 @@ cris_split_movdx (rtx *operands)
 	  if (side_effects_p (addr))
 	    fatal_insn ("unexpected side-effects in address", addr);
 
-	  emit_insn (gen_rtx_SET
-		     (change_address (dest, SImode, addr),
-		      operand_subword (src, 0, TRUE, mode)));
+	  emit_move_insn (change_address (dest, SImode, addr),
+			  operand_subword (src, 0, TRUE, mode));
 
-	  emit_insn (gen_rtx_SET
-		     (change_address (dest, SImode,
-				      plus_constant (Pmode, addr,
-						     UNITS_PER_WORD)),
-		      operand_subword (src, 1, TRUE, mode)));
+	  emit_move_insn (change_address (dest, SImode,
+					  plus_constant (Pmode, addr,
+							 UNITS_PER_WORD)),
+			  operand_subword (src, 1, TRUE, mode));
 	}
     }
 
@@ -2727,10 +2400,7 @@ cris_expand_prologue (void)
 	   stdarg_regs > 0;
 	   regno--, pretend -= 4, stdarg_regs--)
 	{
-	  insn = emit_insn (gen_rtx_SET (stack_pointer_rtx,
-					 plus_constant (Pmode,
-							stack_pointer_rtx,
-							-4)));
+	  insn = emit_insn (gen_add2_insn (stack_pointer_rtx, GEN_INT (-4)));
 	  /* FIXME: When dwarf2 frame output and unless asynchronous
 	     exceptions, make dwarf2 bundle together all stack
 	     adjustments like it does for registers between stack
@@ -2755,9 +2425,8 @@ cris_expand_prologue (void)
   /* Save SRP if not a leaf function.  */
   if (return_address_on_stack)
     {
-      insn = emit_insn (gen_rtx_SET (stack_pointer_rtx,
-				     plus_constant (Pmode, stack_pointer_rtx,
-						    -4 - pretend)));
+      insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
+				       GEN_INT (-4 - pretend)));
       pretend = 0;
       RTX_FRAME_RELATED_P (insn) = 1;
 
@@ -2771,9 +2440,8 @@ cris_expand_prologue (void)
   /* Set up the frame pointer, if needed.  */
   if (frame_pointer_needed)
     {
-      insn = emit_insn (gen_rtx_SET (stack_pointer_rtx,
-				     plus_constant (Pmode, stack_pointer_rtx,
-						    -4 - pretend)));
+      insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
+				       GEN_INT (-4 - pretend)));
       pretend = 0;
       RTX_FRAME_RELATED_P (insn) = 1;
 
@@ -2820,7 +2488,10 @@ cris_expand_prologue (void)
 		     side-effects insns are allowed.  */
 		  if ((last_movem_reg + 1) * 4 + size >= 64
 		      && (last_movem_reg + 1) * 4 + size <= 128
-		      && (cris_cpu_version >= CRIS_CPU_SVINTO || n_saved == 1)
+		      && cris_cpu_version >= CRIS_CPU_SVINTO
+		      /* Don't use side-effect assignment for a single
+			 move.  */
+		      && n_saved > 1
 		      && TARGET_SIDE_EFFECT_PREFIXES)
 		    {
 		      mem
@@ -2836,10 +2507,9 @@ cris_expand_prologue (void)
 		  else
 		    {
 		      insn
-			= gen_rtx_SET (stack_pointer_rtx,
-				       plus_constant (Pmode, stack_pointer_rtx,
-						      -(n_saved * 4 + size)));
-		      insn = emit_insn (insn);
+			= emit_insn (gen_add2_insn (stack_pointer_rtx,
+						    GEN_INT (-(n_saved * 4
+							       + size))));
 		      RTX_FRAME_RELATED_P (insn) = 1;
 
 		      mem = gen_rtx_MEM (SImode, stack_pointer_rtx);
@@ -2853,10 +2523,8 @@ cris_expand_prologue (void)
 		  size = 0;
 		}
 
-	      insn = emit_insn (gen_rtx_SET (stack_pointer_rtx,
-					     plus_constant (Pmode,
-							    stack_pointer_rtx,
-							    -4 - size)));
+	      insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
+					       GEN_INT (-4 - size)));
 	      RTX_FRAME_RELATED_P (insn) = 1;
 
 	      mem = gen_rtx_MEM (SImode, stack_pointer_rtx);
@@ -2880,7 +2548,9 @@ cris_expand_prologue (void)
 	 do it if side-effects insns are allowed.  */
       if ((last_movem_reg + 1) * 4 + size >= 64
 	  && (last_movem_reg + 1) * 4 + size <= 128
-	  && (cris_cpu_version >= CRIS_CPU_SVINTO || n_saved == 1)
+	  && cris_cpu_version >= CRIS_CPU_SVINTO
+	  /* Don't use side-effect assignment for a single move. */
+	  && n_saved > 1
 	  && TARGET_SIDE_EFFECT_PREFIXES)
 	{
 	  mem
@@ -2893,11 +2563,8 @@ cris_expand_prologue (void)
 	}
       else
 	{
-	  insn
-	    = gen_rtx_SET (stack_pointer_rtx,
-			   plus_constant (Pmode, stack_pointer_rtx,
-					  -(n_saved * 4 + size)));
-	  insn = emit_insn (insn);
+	  insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
+					   GEN_INT (-(n_saved * 4 + size))));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 
 	  mem = gen_rtx_MEM (SImode, stack_pointer_rtx);
@@ -2909,20 +2576,16 @@ cris_expand_prologue (void)
       /* We have to put outgoing argument space after regs.  */
       if (cfoa_size)
 	{
-	  insn = emit_insn (gen_rtx_SET (stack_pointer_rtx,
-					 plus_constant (Pmode,
-							stack_pointer_rtx,
-							-cfoa_size)));
+	  insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
+					   GEN_INT (-cfoa_size)));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	  framesize += cfoa_size;
 	}
     }
   else if ((size + cfoa_size) > 0)
     {
-      insn = emit_insn (gen_rtx_SET (stack_pointer_rtx,
-				     plus_constant (Pmode,
-						    stack_pointer_rtx,
-						    -(cfoa_size + size))));
+      insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
+				       GEN_INT (-(cfoa_size + size))));
       RTX_FRAME_RELATED_P (insn) = 1;
       framesize += size + cfoa_size;
     }
@@ -2988,9 +2651,8 @@ cris_expand_epilogue (void)
 	  {
 	    /* There is an area for outgoing parameters located before
 	       the saved registers.  We have to adjust for that.  */
-	    emit_insn (gen_rtx_SET (stack_pointer_rtx,
-				    plus_constant (Pmode, stack_pointer_rtx,
-						   argspace_offset)));
+	    emit_insn (gen_add2_insn (stack_pointer_rtx,
+				      GEN_INT (argspace_offset)));
 	    /* Make sure we only do this once.  */
 	    argspace_offset = 0;
 	  }
@@ -3013,9 +2675,7 @@ cris_expand_epilogue (void)
 
       if (argspace_offset)
 	{
-	  emit_insn (gen_rtx_SET (stack_pointer_rtx,
-				  plus_constant (Pmode, stack_pointer_rtx,
-						 argspace_offset)));
+	  emit_insn (gen_add2_insn (stack_pointer_rtx, GEN_INT (argspace_offset)));
 	  argspace_offset = 0;
 	}
 
@@ -3023,8 +2683,7 @@ cris_expand_epilogue (void)
 			 gen_rtx_POST_INC (SImode, stack_pointer_rtx));
       set_mem_alias_set (mem, get_frame_alias_set ());
       insn
-	= emit_insn (cris_gen_movem_load (mem,
-					  GEN_INT (last_movem_reg + 1), 0));
+	= emit_insn (cris_gen_movem_load (mem, GEN_INT (last_movem_reg + 1)));
       /* Whenever we emit insns with post-incremented addresses
 	 ourselves, we must add a post-inc note manually.  */
       if (side_effects_p (PATTERN (insn)))
@@ -3071,8 +2730,7 @@ cris_expand_epilogue (void)
 	 yet.  */
       size += argspace_offset;
 
-      emit_insn (gen_rtx_SET (stack_pointer_rtx,
-			      plus_constant (Pmode, stack_pointer_rtx, size)));
+      emit_insn (gen_add2_insn (stack_pointer_rtx, GEN_INT (size)));
     }
 
   /* If this function has no pushed register parameters
@@ -3097,9 +2755,8 @@ cris_expand_epilogue (void)
 	    = alloc_EXPR_LIST (REG_INC, stack_pointer_rtx, REG_NOTES (insn));
 
 	  if (crtl->calls_eh_return)
-	    emit_insn (gen_addsi3 (stack_pointer_rtx,
-				   stack_pointer_rtx,
-				   gen_raw_REG (SImode, CRIS_STACKADJ_REG)));
+	    emit_insn (gen_add2_insn (stack_pointer_rtx,
+				      gen_raw_REG (SImode, CRIS_STACKADJ_REG)));
 	  cris_expand_return (false);
 	}
       else
@@ -3131,23 +2788,20 @@ cris_expand_epilogue (void)
 	    = alloc_EXPR_LIST (REG_INC, stack_pointer_rtx, REG_NOTES (insn));
 	}
 
-      emit_insn (gen_rtx_SET (stack_pointer_rtx,
-			      plus_constant (Pmode, stack_pointer_rtx,
-					     pretend)));
+      emit_insn (gen_add2_insn (stack_pointer_rtx, GEN_INT (pretend)));
     }
 
   /* Perform the "physical" unwinding that the EH machinery calculated.  */
   if (crtl->calls_eh_return)
-    emit_insn (gen_addsi3 (stack_pointer_rtx,
-			   stack_pointer_rtx,
-			   gen_raw_REG (SImode, CRIS_STACKADJ_REG)));
+    emit_insn (gen_add2_insn (stack_pointer_rtx,
+			      gen_raw_REG (SImode, CRIS_STACKADJ_REG)));
   cris_expand_return (false);
 }
 
 /* Worker function for generating movem from mem for load_multiple.  */
 
 rtx
-cris_gen_movem_load (rtx src, rtx nregs_rtx, int nprefix)
+cris_gen_movem_load (rtx src, rtx nregs_rtx)
 {
   int nregs = INTVAL (nregs_rtx);
   rtvec vec;
@@ -3166,30 +2820,45 @@ cris_gen_movem_load (rtx src, rtx nregs_rtx, int nprefix)
   if (nregs == 1)
     return gen_movsi (gen_rtx_REG (SImode, 0), src);
 
-  vec = rtvec_alloc (nprefix + nregs
-		     + (GET_CODE (XEXP (src, 0)) == POST_INC));
+  vec = rtvec_alloc (nregs + (GET_CODE (XEXP (src, 0)) == POST_INC));
 
   if (GET_CODE (XEXP (src, 0)) == POST_INC)
     {
-      RTVEC_ELT (vec, nprefix + 1)
+      RTVEC_ELT (vec, 1)
 	= gen_rtx_SET (srcreg, plus_constant (Pmode, srcreg, nregs * 4));
       eltno++;
     }
 
   src = replace_equiv_address (src, srcreg);
-  RTVEC_ELT (vec, nprefix)
+  RTVEC_ELT (vec, 0)
     = gen_rtx_SET (gen_rtx_REG (SImode, regno), src);
   regno += regno_inc;
 
   for (i = 1; i < nregs; i++, eltno++)
     {
-      RTVEC_ELT (vec, nprefix + eltno)
+      RTVEC_ELT (vec, eltno)
 	= gen_rtx_SET (gen_rtx_REG (SImode, regno),
 		       adjust_address_nv (src, SImode, i * 4));
       regno += regno_inc;
     }
 
   return gen_rtx_PARALLEL (VOIDmode, vec);
+}
+
+/* Convenience function for CRIS-local use of emit_insn, wrapping the
+   argument in a parallel with a clobber of CRIS_CC0_REGNUM before
+   passing on to emit_insn. */
+
+rtx_insn *
+cris_emit_insn (rtx x)
+{
+  rtvec vec = rtvec_alloc (2);
+
+  RTVEC_ELT (vec, 0) = x;
+  RTVEC_ELT (vec, 1)
+    = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, CRIS_CC0_REGNUM));
+
+  return emit_insn (gen_rtx_PARALLEL (VOIDmode, vec));
 }
 
 /* Worker function for generating movem to mem.  If FRAME_RELATED, notes
@@ -3219,11 +2888,9 @@ cris_emit_movem_store (rtx dest, rtx nregs_rtx, int increment,
   /* Don't use movem for just one insn.  The insns are equivalent.  */
   if (nregs == 1)
     {
-      rtx mov = gen_rtx_SET (dest, gen_rtx_REG (SImode, 0));
-
       if (increment == 0)
 	{
-	  insn = emit_insn (mov);
+	  insn = emit_move_insn (dest, gen_rtx_REG (SImode, 0));
 	  if (frame_related)
 	    RTX_FRAME_RELATED_P (insn) = 1;
 	  return insn;
@@ -3231,11 +2898,15 @@ cris_emit_movem_store (rtx dest, rtx nregs_rtx, int increment,
 
       /* If there was a request for a side-effect, create the ordinary
          parallel.  */
-      vec = rtvec_alloc (2);
+      vec = rtvec_alloc (3);
 
+      rtx mov = gen_rtx_SET (dest, gen_rtx_REG (SImode, 0));
       RTVEC_ELT (vec, 0) = mov;
       RTVEC_ELT (vec, 1) = gen_rtx_SET (destreg, plus_constant (Pmode, destreg,
 								increment));
+      RTVEC_ELT (vec, 2)
+	= gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, CRIS_CC0_REGNUM));
+
       if (frame_related)
 	{
 	  RTX_FRAME_RELATED_P (mov) = 1;

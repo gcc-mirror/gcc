@@ -123,7 +123,8 @@
 	 (match_operand:BWD 2 "<atomic_op_op_pred>" "<atomic_op_op_cnstr>")))
    (set (match_operand:BWD 0 "register_operand" "=&r")
 	(match_dup 1))
-   (clobber (match_scratch:SI 3 "=&r"))]
+   (clobber (match_scratch:SI 3 "=&r"))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
   "<MODE>mode == QImode || !TARGET_ATOMICS_MAY_CALL_LIBFUNCS"
 {
   /* Can't be too sure; better ICE if this happens.  */
@@ -226,7 +227,8 @@
 	 [(match_dup 2)
 	  (match_dup 3)
 	  (match_operand:BWD 4 "register_operand" "r")]
-	 CRIS_UNSPEC_ATOMIC_SWAP_MEM))]
+	 CRIS_UNSPEC_ATOMIC_SWAP_MEM))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
   "<MODE>mode == QImode || !TARGET_ATOMICS_MAY_CALL_LIBFUNCS"
 {
   if (cris_cpu_version == 10)

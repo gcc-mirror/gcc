@@ -9,6 +9,31 @@
 	* config/cris/t-elfmulti: Remove crisv32 multilib.
 	* config/cris: Remove shared-library and CRIS v32 support.
 
+	Move trivially from cc0 to reg:CC model, removing most optimizations.
+	* config/cris/cris.md: Remove all side-effect patterns and their
+	splitters.  Remove most peepholes.  Add clobbers of CRIS_CC0_REGNUM
+	to all but post-reload control-flow and movem insns.  Remove
+	constraints on all modified expanders.  Remove obsoleted cc0-related
+	references.
+	(attr "cc"): Remove alternative "rev".
+	(mode_iterator BWDD, DI_, SI_): New.
+	(mode_attr sCC_destc, cmp_op1c, cmp_op2c): New.
+	("tst<mode>"): Remove; fold as "M" alternative into compare insn.
+	("mstep_shift", "mstep_mul"): Remove patterns.
+	("s<rcond>", "s<ocond>", "s<ncond>"): Anonymize.
+	* config/cris/cris.c: Change all non-condition-code,
+	non-control-flow emitted insns to add a parallel with clobber of
+	CRIS_CC0_REGNUM, mostly by changing from gen_rtx_SET with
+	emit_insn to use of emit_move_insn, gen_add2_insn or
+	cris_emit_insn, as convenient.
+	(cris_reg_overlap_mentioned_p)
+	(cris_normal_notice_update_cc, cris_notice_update_cc): Remove.
+	(cris_movem_load_rest_p): Don't assume all elements in a
+	PARALLEL are SETs.
+	(cris_store_multiple_op_p): Ditto.
+	(cris_emit_insn): New function.
+	* cris/cris-protos.h (cris_emit_insn): Declare.
+
 2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira-color.c (update_costs_from_allocno): Remove

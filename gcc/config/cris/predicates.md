@@ -51,7 +51,7 @@
 
 (define_predicate "cris_load_multiple_op"
   (and (match_code "parallel")
-       (match_test "cris_movem_load_rest_p (op, 0)")))
+       (match_test "cris_movem_load_rest_p (op)")))
 
 (define_predicate "cris_store_multiple_op"
   (and (match_code "parallel")

@@ -698,11 +698,8 @@ struct cum_args {int regs;};
 
 /* Node: Condition Code */
 
-#define NOTICE_UPDATE_CC(EXP, INSN) cris_notice_update_cc (EXP, INSN)
-
-/* FIXME: Maybe define CANONICALIZE_COMPARISON later, when playing with
-   optimizations.  It is needed; currently we do this with instruction
-   patterns and NOTICE_UPDATE_CC.  */
+/* FIXME: Maybe define TARGET_CANONICALIZE_COMPARISON later, when
+   playing with optimizations.  Definitely define SELECT_CC_MODE.  */
 
 
 /* Node: Costs */
