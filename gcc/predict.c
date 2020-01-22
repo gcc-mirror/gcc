@@ -3937,12 +3937,14 @@ compute_function_frequency (void)
   if (profile_status_for_fn (cfun) != PROFILE_READ)
     {
       int flags = flags_from_decl_or_type (current_function_decl);
-      if ((ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa_p ()
-	   && ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa() == profile_count::zero ())
-	  || lookup_attribute ("cold", DECL_ATTRIBUTES (current_function_decl))
-	     != NULL)
+      if (lookup_attribute ("cold", DECL_ATTRIBUTES (current_function_decl))
+	  != NULL)
+	node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
+      else if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa_p ()
+	       && (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa ()
+		   == profile_count::zero ()))
 	{
-          node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
+	  node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
 	  warn_function_cold (current_function_decl);
 	}
       else if (lookup_attribute ("hot", DECL_ATTRIBUTES (current_function_decl))
