@@ -1,10 +1,10 @@
-2020-01-22  Jun Ma <JunMa@linux.alibaba.com>
+2020-01-22  Jun Ma  <JunMa@linux.alibaba.com>
 
 	* coroutines.cc (finish_co_await_expr): Add error check on return
 	value of build_co_await.
 	(finish_co_yield_expr,): Ditto.
 
-2020-01-22  Jun Ma <JunMa@linux.alibaba.com>
+2020-01-22  Jun Ma  <JunMa@linux.alibaba.com>
 
 	* coroutines.cc (lookup_awaitable_member): Lookup an awaitable member.
 	(lookup_promise_method): Emit diagnostic when get NULL_TREE back only.
