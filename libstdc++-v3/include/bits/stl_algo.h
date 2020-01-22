@@ -2523,6 +2523,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _ValueType;
       typedef typename iterator_traits<_BidirectionalIterator>::difference_type
 	  _DistanceType;
+      typedef _Temporary_buffer<_BidirectionalIterator, _ValueType> _TmpBuf;
 
       if (__first == __middle || __middle == __last)
 	return;
@@ -2530,8 +2531,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const _DistanceType __len1 = std::distance(__first, __middle);
       const _DistanceType __len2 = std::distance(__middle, __last);
 
-      typedef _Temporary_buffer<_BidirectionalIterator, _ValueType> _TmpBuf;
-      _TmpBuf __buf(__first, __len1 + __len2);
+      // __merge_adaptive will use a buffer for the smaller of
+      // [first,middle) and [middle,last).
+      _TmpBuf __buf(__first, std::min(__len1, __len2));
 
       if (__buf.begin() == 0)
 	std::__merge_without_buffer
@@ -2740,6 +2742,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  std::__merge_sort_with_buffer(__first, __middle, __buffer, __comp);
 	  std::__merge_sort_with_buffer(__middle, __last, __buffer, __comp);
 	}
+
       std::__merge_adaptive(__first, __middle, __last,
 			    _Distance(__middle - __first),
 			    _Distance(__last - __middle),
@@ -5005,9 +5008,14 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	_ValueType;
       typedef typename iterator_traits<_RandomAccessIterator>::difference_type
 	_DistanceType;
-
       typedef _Temporary_buffer<_RandomAccessIterator, _ValueType> _TmpBuf;
-      _TmpBuf __buf(__first, std::distance(__first, __last));
+
+      if (__first == __last)
+	return;
+
+      // __stable_sort_adaptive sorts the range in two halves,
+      // so the buffer only needs to fit half the range at once.
+      _TmpBuf __buf(__first, (__last - __first + 1) / 2);
 
       if (__buf.begin() == 0)
 	std::__inplace_stable_sort(__first, __last, __comp);
