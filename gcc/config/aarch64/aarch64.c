@@ -17247,14 +17247,15 @@ aarch64_expand_subvti (rtx op0, rtx low_dest, rtx low_in1,
     }
   else
     {
-      if (CONST_INT_P (low_in2))
-	{
-	  high_in2 = force_reg (DImode, high_in2);
-	  emit_insn (gen_subdi3_compare1_imm (low_dest, low_in1, low_in2,
-					      GEN_INT (-INTVAL (low_in2))));
-	}
+      if (aarch64_plus_immediate (low_in2, DImode))
+	emit_insn (gen_subdi3_compare1_imm (low_dest, low_in1, low_in2,
+					    GEN_INT (-INTVAL (low_in2))));
       else
-	emit_insn (gen_subdi3_compare1 (low_dest, low_in1, low_in2));
+	{
+	  low_in2 = force_reg (DImode, low_in2);
+	  emit_insn (gen_subdi3_compare1 (low_dest, low_in1, low_in2));
+	}
+      high_in2 = force_reg (DImode, high_in2);
 
       if (unsigned_p)
 	emit_insn (gen_usubdi3_carryinC (high_dest, high_in1, high_in2));

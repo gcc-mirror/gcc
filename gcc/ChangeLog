@@ -1,5 +1,13 @@
 2020-01-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/93335
+	* config/aarch64/aarch64.c (aarch64_expand_subvti): Only use
+	gen_subdi3_compare1_imm if low_in2 satisfies aarch64_plus_immediate
+	predicate, not whenever it is CONST_INT.  Otherwise, force_reg it.
+	Call force_reg on high_in2 unconditionally.
+
+2020-01-22  Jakub Jelinek  <jakub@redhat.com>
+
 	PR target/91298
 	* output.h (assemble_name_resolve): Declare.
 	* varasm.c (assemble_name_resolve): New function.
