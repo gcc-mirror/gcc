@@ -5708,6 +5708,8 @@ build_c_cast (location_t loc, tree type, tree expr)
     expr = TREE_OPERAND (expr, 0);
 
   value = expr;
+  if (int_operands)
+    value = remove_c_maybe_const_expr (value);
 
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
