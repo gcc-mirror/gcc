@@ -1,6 +1,20 @@
 2020-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93009
+	* config/i386/sse.md
+	(*<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name>_bcst_1,
+	*<sd_mask_codefor>fma_fmsub_<mode><sd_maskz_name>_bcst_1,
+	*<sd_mask_codefor>fma_fnmadd_<mode><sd_maskz_name>_bcst_1,
+	*<sd_mask_codefor>fma_fnmsub_<mode><sd_maskz_name>_bcst_1): Use
+	just a single alternative instead of two, make operands 1 and 2
+	commutative.
+
+2020-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
 	2020-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/93202
