@@ -18,7 +18,7 @@
 # optimization options.
 
 # Exit immediately if this isn't a CRIS target.
-if { ![istarget cris-*-*] && ![istarget crisv32-*-*] } then {
+if { ![istarget cris-*-*] } then {
   return
 }
 

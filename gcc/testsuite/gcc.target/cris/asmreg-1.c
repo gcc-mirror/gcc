@@ -3,7 +3,7 @@
 /* { dg-final { scan-assembler "\\\.ifnc \\\$r9-\\\$r10-\\\$r11-\\\$r12" } } */
 
 /* Sanity check for asm register operands in syscall failed for
-   cris-axis-linux-gnu due to regmove bug.
+   cris-axis-linux-gnu due to a regmove bug.
    Hans-Peter Nilsson <hp@axis.com>.  */
 
 extern void lseek64 (int, long long, int);
