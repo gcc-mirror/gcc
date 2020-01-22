@@ -1,3 +1,7 @@
+2020-01-27  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* configure: Regenerate.
+
 2020-01-24  Nathan Sidwell  <nathan@acm.org>
 
 	* expr.c (parse_has_include): Remove bogus controlling macro code.

@@ -1,3 +1,7 @@
+2020-01-27  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* configure: Regenerate.
+
 2020-01-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/93426
