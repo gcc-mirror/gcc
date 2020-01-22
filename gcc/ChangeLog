@@ -1,5 +1,10 @@
 2020-01-28  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-loop.c (vectorizable_reduction): Fail gracefully
+	for reduction chains that (now) include a call.
+
+2020-01-28  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR tree-optimization/92822
 	* tree-ssa-forwprop.c (simplify_vector_constructor): When filling
 	out the don't-care elements of a vector whose significant elements
