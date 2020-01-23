@@ -1,3 +1,9 @@
+2020-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93346
+	* config/i386/i386.md (*bmi2_bzhi_<mode>3_2, *bmi2_bzhi_<mode>3_3):
+	New define_insn patterns.
+
 2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* doc/sourcebuild.texi (check-function-bodies): Add an
