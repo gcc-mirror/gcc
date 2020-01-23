@@ -696,7 +696,7 @@ package body Sem_Ch6 is
       R_Type : constant Entity_Id := Etype (Scope_Id);
       --  Function result subtype
 
-      procedure Check_Return_Obj_Accessibility (Return_Stmt : Node_Id);
+      procedure Check_Return_Construct_Accessibility (Return_Stmt : Node_Id);
       --  Apply legality rule of 6.5 (5.9) to the access discriminants of an
       --  aggregate in a return statement.
 
@@ -704,24 +704,26 @@ package body Sem_Ch6 is
       --  Check that the return_subtype_indication properly matches the result
       --  subtype of the function, as required by RM-6.5(5.1/2-5.3/2).
 
-      ------------------------------------
-      -- Check_Return_Obj_Accessibility --
-      ------------------------------------
+      ------------------------------------------
+      -- Check_Return_Construct_Accessibility --
+      ------------------------------------------
 
-      procedure Check_Return_Obj_Accessibility (Return_Stmt : Node_Id) is
+      procedure Check_Return_Construct_Accessibility (Return_Stmt : Node_Id) is
          Assoc         : Node_Id;
          Agg           : Node_Id := Empty;
          Discr         : Entity_Id;
          Expr          : Node_Id;
          Obj           : Node_Id;
          Process_Exprs : Boolean := False;
-         Return_Obj    : Node_Id;
+         Return_Con    : Node_Id;
 
       begin
-         --  Only perform checks on record types with access discriminants
+         --  Only perform checks on record types with access discriminants and
+         --  non-internally generated functions.
 
          if not Is_Record_Type (R_Type)
            or else not Has_Discriminants (R_Type)
+           or else not Comes_From_Source (Return_Stmt)
          then
             return;
          end if;
@@ -738,32 +740,47 @@ package body Sem_Ch6 is
          --  simple return statement the expression is part of the node.
 
          if Nkind (Return_Stmt) = N_Extended_Return_Statement then
-            Return_Obj := Last (Return_Object_Declarations (Return_Stmt));
+            --  Obtain the object definition from the expanded extended return
 
-            --  We could be looking at something that's been expanded with
-            --  an initialzation procedure which we can safely ignore.
+            Return_Con := First (Return_Object_Declarations (Return_Stmt));
+            while Present (Return_Con) loop
+               --  Inspect the original node to avoid object declarations
+               --  expanded into renamings.
 
-            if Nkind (Return_Obj) /= N_Object_Declaration then
-               return;
-            end if;
+               if Nkind (Original_Node (Return_Con)) = N_Object_Declaration
+                 and then Comes_From_Source (Original_Node (Return_Con))
+               then
+                  exit;
+               end if;
+
+               Nlists.Next (Return_Con);
+            end loop;
+
+            pragma Assert (Present (Return_Con));
+
+            --  Could be dealing with a renaming
+
+            Return_Con := Original_Node (Return_Con);
          else
-            Return_Obj := Return_Stmt;
+            Return_Con := Return_Stmt;
          end if;
 
          --  We may need to check an aggregate or a subtype indication
          --  depending on how the discriminants were specified and whether
          --  we are looking at an extended return statement.
 
-         if Nkind (Return_Obj) = N_Object_Declaration
-           and then Nkind (Object_Definition (Return_Obj))
+         if Nkind (Return_Con) = N_Object_Declaration
+           and then Nkind (Object_Definition (Return_Con))
                       = N_Subtype_Indication
          then
-            Assoc := First (Constraints
-                             (Constraint (Object_Definition (Return_Obj))));
+            Assoc := Original_Node
+                       (First
+                         (Constraints
+                           (Constraint (Object_Definition (Return_Con)))));
          else
             --  Qualified expressions may be nested
 
-            Agg := Original_Node (Expression (Return_Obj));
+            Agg := Original_Node (Expression (Return_Con));
             while Nkind (Agg) = N_Qualified_Expression loop
                Agg := Original_Node (Expression (Agg));
             end loop;
@@ -896,7 +913,7 @@ package body Sem_Ch6 is
                end if;
             end if;
          end loop;
-      end Check_Return_Obj_Accessibility;
+      end Check_Return_Construct_Accessibility;
 
       -------------------------------------
       -- Check_Return_Subtype_Indication --
@@ -1103,7 +1120,7 @@ package body Sem_Ch6 is
             Resolve (Expr, R_Type);
             Check_Limited_Return (N, Expr, R_Type);
 
-            Check_Return_Obj_Accessibility (N);
+            Check_Return_Construct_Accessibility (N);
          end if;
 
          --  RETURN only allowed in SPARK as the last statement in function
@@ -1159,7 +1176,7 @@ package body Sem_Ch6 is
 
             Check_References (Stm_Entity);
 
-            Check_Return_Obj_Accessibility (N);
+            Check_Return_Construct_Accessibility (N);
 
             --  Check RM 6.5 (5.9/3)
 
