@@ -3589,6 +3589,9 @@ impl_run_checkers (logger *logger)
 void
 run_checkers ()
 {
+  /* Save input_location.  */
+  location_t saved_input_location = input_location;
+
   /* Handle -fdump-analyzer and -fdump-analyzer-stderr.  */
   FILE *dump_fout = NULL;
   /* Track if we're responsible for closing dump_fout.  */
@@ -3619,6 +3622,11 @@ run_checkers ()
 
   if (owns_dump_fout)
     fclose (dump_fout);
+
+  /* Restore input_location.  Subsequent passes may assume that input_location
+     is some arbitrary value *not* in the block tree, which might be violated
+     if we didn't restore it.  */
+  input_location = saved_input_location;
 }
 
 } // namespace ana

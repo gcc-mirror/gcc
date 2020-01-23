@@ -1,5 +1,10 @@
 2020-01-27  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93349
+	* engine.cc (run_checkers): Save and restore input_location.
+
+2020-01-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* call-string.cc (call_string::cmp_1): Delete, moving body to...
 	(call_string::cmp): ...here.
 	* call-string.h (call_string::cmp_1): Delete decl.
