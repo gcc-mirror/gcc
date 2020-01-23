@@ -1293,6 +1293,7 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
   for (i = 0; i < nargs; ++i)
     {
       tree arg = CALL_EXPR_ARG (t, i);
+      tree oarg = arg;
 
       /* To handle string built-ins we need to pass ADDR_EXPR<STRING_CST> since
 	 expand_builtin doesn't know how to look in the values table.  */
@@ -1327,6 +1328,8 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
 	    arg = braced_lists_to_strings (TREE_TYPE (arg), arg);
 	  if (TREE_CODE (arg) == STRING_CST)
 	    arg = build_address (arg);
+	  else
+	    arg = oarg;
 	}
 
       args[i] = arg;

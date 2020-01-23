@@ -1,5 +1,9 @@
 2020-01-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/93331 - ICE with __builtin_strchr.
+	* constexpr.c (cxx_eval_builtin_function_call): Use the original
+	argument if we didn't manage to extract a STRING_CST.
+
 	PR c++/93345 - ICE with defaulted dtor and template.
 	PR c++/33799
 	* decl.c (cxx_maybe_build_cleanup): Don't try to set
