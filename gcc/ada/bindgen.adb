@@ -457,7 +457,7 @@ package body Bindgen is
 
       if not Bind_For_Library and not CodePeer_Mode then
          WBI ("      procedure s_stalib_adafinal;");
-         Set_String ("      pragma Import (C, s_stalib_adafinal, ");
+         Set_String ("      pragma Import (Ada, s_stalib_adafinal, ");
          Set_String ("""system__standard_library__adafinal"");");
          Write_Statement_Buffer;
       end if;
