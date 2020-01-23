@@ -1,3 +1,9 @@
+2020-01-23  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c (prune_topn_counter): Remove
+	check for -1 as we only prune run-time counters
+	that do not generate an invalid state.
+
 2020-01-22  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/92924
