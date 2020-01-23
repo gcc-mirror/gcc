@@ -1,3 +1,8 @@
+2020-01-23  Martin Sebor  <msebor@redhat.com>
+
+	PR c/84919
+	* gcc.dg/Wrestrict-20.c: New test.
+
 2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* g++.target/aarch64/sve/acle/general-c++/whilele_1.C: Skip for ILP32.
