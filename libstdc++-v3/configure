@@ -72956,6 +72956,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef acosl
 
 int
 main ()
@@ -73006,6 +73007,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef asinl
 
 int
 main ()
@@ -73056,6 +73058,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef atan2l
 
 int
 main ()
@@ -73106,6 +73109,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef atanl
 
 int
 main ()
@@ -73156,6 +73160,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef ceill
 
 int
 main ()
@@ -73206,6 +73211,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef cosl
 
 int
 main ()
@@ -73256,6 +73262,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef coshl
 
 int
 main ()
@@ -73306,6 +73313,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef expl
 
 int
 main ()
@@ -73356,6 +73364,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef fabsl
 
 int
 main ()
@@ -73406,6 +73415,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef floorl
 
 int
 main ()
@@ -73456,6 +73466,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef fmodl
 
 int
 main ()
@@ -73506,6 +73517,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef frexpl
 
 int
 main ()
@@ -73556,6 +73568,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef ldexpl
 
 int
 main ()
@@ -73606,6 +73619,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef log10l
 
 int
 main ()
@@ -73656,6 +73670,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef logl
 
 int
 main ()
@@ -73706,6 +73721,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef modfl
 
 int
 main ()
@@ -73756,6 +73772,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef powl
 
 int
 main ()
@@ -73806,6 +73823,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef sinl
 
 int
 main ()
@@ -73856,6 +73874,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef sinhl
 
 int
 main ()
@@ -73906,6 +73925,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef sqrtl
 
 int
 main ()
@@ -73956,6 +73976,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef tanl
 
 int
 main ()
@@ -74006,6 +74027,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
+#undef tanhl
 
 int
 main ()
