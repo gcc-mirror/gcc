@@ -853,8 +853,7 @@ extern tree c_common_signed_type (tree);
 extern tree c_common_signed_or_unsigned_type (int, tree);
 extern void c_common_init_ts (void);
 extern tree c_build_bitfield_integer_type (unsigned HOST_WIDE_INT, int);
-extern enum conversion_safety unsafe_conversion_p (location_t, tree, tree, tree,
-						   bool);
+extern enum conversion_safety unsafe_conversion_p (tree, tree, tree, bool);
 extern bool decl_with_nonnull_addr_p (const_tree);
 extern tree c_fully_fold (tree, bool, bool *, bool = false);
 extern tree c_wrap_maybe_const (tree, bool);

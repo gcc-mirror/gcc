@@ -262,6 +262,7 @@
     UNSPEC_REV_SUBREG
     UNSPEC_REINTERPRET
     UNSPEC_SPECULATION_TRACKER
+    UNSPEC_SPECULATION_TRACKER_REV
     UNSPEC_COPYSIGN
     UNSPEC_TTEST		; Represent transaction test.
     UNSPEC_UPDATE_FFR
@@ -7214,6 +7215,20 @@
   {
     operands[1] = gen_rtx_REG (DImode, SPECULATION_TRACKER_REGNUM);
     output_asm_insn ("csel\\t%1, %1, xzr, %m0", operands);
+    return "";
+  }
+  [(set_attr "type" "csel")]
+)
+
+;; Like speculation_tracker, but track the inverse condition.
+(define_insn "speculation_tracker_rev"
+  [(set (reg:DI SPECULATION_TRACKER_REGNUM)
+	(unspec:DI [(reg:DI SPECULATION_TRACKER_REGNUM) (match_operand 0)]
+	 UNSPEC_SPECULATION_TRACKER_REV))]
+  ""
+  {
+    operands[1] = gen_rtx_REG (DImode, SPECULATION_TRACKER_REGNUM);
+    output_asm_insn ("csel\\t%1, %1, xzr, %M0", operands);
     return "";
   }
   [(set_attr "type" "csel")]

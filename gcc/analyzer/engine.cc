@@ -155,7 +155,7 @@ impl_region_model_context::on_unknown_change (svalue_id sid)
 bool
 setjmp_svalue::compare_fields (const setjmp_svalue &other) const
 {
-  return m_enode == other.m_enode;
+  return m_setjmp_record == other.m_setjmp_record;
 }
 
 /* Implementation of svalue::add_to_hash vfunc for setjmp_svalue.  */
@@ -163,15 +163,15 @@ setjmp_svalue::compare_fields (const setjmp_svalue &other) const
 void
 setjmp_svalue::add_to_hash (inchash::hash &hstate) const
 {
-  hstate.add_int (m_enode->m_index);
+  hstate.add_int (m_setjmp_record.m_enode->m_index);
 }
 
 /* Get the index of the stored exploded_node.  */
 
 int
-setjmp_svalue::get_index () const
+setjmp_svalue::get_enode_index () const
 {
-  return m_enode->m_index;
+  return m_setjmp_record.m_enode->m_index;
 }
 
 /* Implementation of svalue::print_details vfunc for setjmp_svalue.  */
@@ -181,7 +181,7 @@ setjmp_svalue::print_details (const region_model &model ATTRIBUTE_UNUSED,
 			      svalue_id this_sid ATTRIBUTE_UNUSED,
 			      pretty_printer *pp) const
 {
-  pp_printf (pp, "setjmp: EN: %i", m_enode->m_index);
+  pp_printf (pp, "setjmp: EN: %i", get_enode_index ());
 }
 
 /* Concrete implementation of sm_context, wiring it up to the rest of this
@@ -1172,11 +1172,11 @@ exploded_node::on_longjmp (exploded_graph &eg,
   if (!setjmp_sval)
     return;
 
+  const setjmp_record tmp_setjmp_record = setjmp_sval->get_setjmp_record ();
+
   /* Build a custom enode and eedge for rewinding from the longjmp
      call back to the setjmp.  */
-
-  const exploded_node *enode_origin = setjmp_sval->get_exploded_node ();
-  rewind_info_t rewind_info (enode_origin);
+  rewind_info_t rewind_info (tmp_setjmp_record);
 
   const gcall *setjmp_call = rewind_info.get_setjmp_call ();
   const program_point &setjmp_point = rewind_info.get_setjmp_point ();
@@ -1217,7 +1217,7 @@ exploded_node::on_longjmp (exploded_graph &eg,
       exploded_edge *eedge
 	= eg.add_edge (const_cast<exploded_node *> (this), next, NULL,
 		       change,
-		       new rewind_info_t (enode_origin));
+		       new rewind_info_t (tmp_setjmp_record));
 
       /* For any diagnostics that were queued here (such as leaks) we want
 	 the checker_path to show the rewinding events after the "final event"

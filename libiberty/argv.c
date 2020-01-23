@@ -327,6 +327,14 @@ writeargv (char * const *argv, FILE *f)
           arg++;
         }
 
+      /* Write out a pair of quotes for an empty argument.  */
+      if (arg == *argv)
+	if (EOF == fputs ("\"\"", f))
+	  {
+	    status = 1;
+	    goto done;
+	  }
+
       if (EOF == fputc ('\n', f))
         {
           status = 1;

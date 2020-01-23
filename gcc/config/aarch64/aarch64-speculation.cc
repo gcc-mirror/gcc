@@ -215,20 +215,13 @@ aarch64_do_track_speculation ()
 			  && REG_P (XEXP (cond, 0))
 			  && REGNO (XEXP (cond, 0)) == CC_REGNUM
 			  && XEXP (cond, 1) == const0_rtx);
-	      enum rtx_code inv_cond_code
-		= reversed_comparison_code (cond, insn);
-	      /* We should be able to reverse all conditions.  */
-	      gcc_assert (inv_cond_code != UNKNOWN);
-	      rtx inv_cond = gen_rtx_fmt_ee (inv_cond_code, GET_MODE (cond),
-					     copy_rtx (XEXP (cond, 0)),
-					     copy_rtx (XEXP (cond, 1)));
+	      rtx branch_tracker = gen_speculation_tracker (copy_rtx (cond));
+	      rtx fallthru_tracker = gen_speculation_tracker_rev (cond);
 	      if (inverted)
-		std::swap (cond, inv_cond);
+		std::swap (branch_tracker, fallthru_tracker);
 
-	      insert_insn_on_edge (gen_speculation_tracker (cond),
-				   BRANCH_EDGE (bb));
-	      insert_insn_on_edge (gen_speculation_tracker (inv_cond),
-				   FALLTHRU_EDGE (bb));
+	      insert_insn_on_edge (branch_tracker, BRANCH_EDGE (bb));
+	      insert_insn_on_edge (fallthru_tracker, FALLTHRU_EDGE (bb));
 	      needs_tracking = true;
 	    }
 	  else if (GET_CODE (PATTERN (insn)) == RETURN)

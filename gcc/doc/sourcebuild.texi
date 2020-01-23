@@ -2723,7 +2723,7 @@ assembly output.
 Passes if @var{symbol} is not defined as a hidden symbol in the test's
 assembly output.
 
-@item check-function-bodies @var{prefix} @var{terminator} [@var{option}]
+@item check-function-bodies @var{prefix} @var{terminator} [@var{option} [@{ target/xfail @var{selector} @}]]
 Looks through the source file for comments that give the expected assembly
 output for selected functions.  Each line of expected output starts with the
 prefix string @var{prefix} and the expected output for a function as a whole

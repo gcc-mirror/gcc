@@ -3438,3 +3438,5 @@ struct GTY(())  machine_function {
   (TARGET_LOAD_STORE_PAIRS \
    && (TUNE_P5600 || TUNE_I6400 || TUNE_P6600) \
    && !TARGET_MICROMIPS && !TARGET_FIX_24K)
+
+#define NEED_INDICATE_EXEC_STACK 0

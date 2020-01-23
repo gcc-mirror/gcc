@@ -1163,7 +1163,7 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
 {
   tree expr_type = TREE_TYPE (expr);
   enum conversion_safety conversion_kind;
-  bool is_arith = false;
+  int arith_ops = 0;
 
   if (!warn_conversion && !warn_sign_conversion && !warn_float_conversion)
     return false;
@@ -1202,7 +1202,7 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
     case INTEGER_CST:
     case COMPLEX_CST:
       {
-	conversion_kind = unsafe_conversion_p (loc, type, expr, result, true);
+	conversion_kind = unsafe_conversion_p (type, expr, result, true);
 	int warnopt;
 	if (conversion_kind == UNSAFE_REAL)
 	  warnopt = OPT_Wfloat_conversion;
@@ -1266,14 +1266,8 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
     case CEIL_DIV_EXPR:
     case EXACT_DIV_EXPR:
     case RDIV_EXPR:
-      {
-	tree op0 = TREE_OPERAND (expr, 0);
-	tree op1 = TREE_OPERAND (expr, 1);
-	if (conversion_warning (loc, type, op0, result)
-	    || conversion_warning (loc, type, op1, result))
-	  return true;
-	goto arith_op;
-      }
+      arith_ops = 2;
+      goto default_;
 
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
@@ -1285,13 +1279,8 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
     case NON_LVALUE_EXPR:
     case NEGATE_EXPR:
     case BIT_NOT_EXPR:
-      {
-	/* Unary ops or binary ops for which we only care about the lhs.  */
-	tree op0 = TREE_OPERAND (expr, 0);
-	if (conversion_warning (loc, type, op0, result))
-	  return true;
-	goto arith_op;
-      }
+      arith_ops = 1;
+      goto default_;
 
     case COND_EXPR:
       {
@@ -1304,13 +1293,9 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
 		|| conversion_warning (loc, type, op2, result));
       }
 
-    arith_op:
-      /* We didn't warn about the operands, we might still want to warn if
-	 -Warith-conversion.  */
-      is_arith = true;
-      gcc_fallthrough ();
+    default_:
     default:
-      conversion_kind = unsafe_conversion_p (loc, type, expr, result, true);
+      conversion_kind = unsafe_conversion_p (type, expr, result, true);
       {
 	int warnopt;
 	if (conversion_kind == UNSAFE_REAL)
@@ -1321,11 +1306,31 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
 	  warnopt = OPT_Wconversion;
 	else
 	  break;
-	if (is_arith
+
+	if (arith_ops
 	    && global_dc->option_enabled (warnopt,
 					  global_dc->lang_mask,
 					  global_dc->option_state))
-	  warnopt = OPT_Warith_conversion;
+	  {
+	    for (int i = 0; i < arith_ops; ++i)
+	      {
+		tree op = TREE_OPERAND (expr, i);
+		/* Avoid -Wsign-conversion for (unsigned)(x + (-1)).  */
+		if (TREE_CODE (expr) == PLUS_EXPR && i == 1
+		    && INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
+		    && TREE_CODE (op) == INTEGER_CST
+		    && tree_int_cst_sgn (op) < 0)
+		  op = fold_build1 (NEGATE_EXPR, TREE_TYPE (op), op);
+		tree opr = convert (type, op);
+		if (unsafe_conversion_p (type, op, opr, true))
+		  goto op_unsafe;
+	      }
+	    /* The operands seem safe, we might still want to warn if
+	       -Warith-conversion.  */
+	    warnopt = OPT_Warith_conversion;
+	  op_unsafe:;
+	  }
+
 	if (conversion_kind == UNSAFE_SIGN)
 	  warning_at (loc, warnopt, "conversion to %qT from %qT "
 		      "may change the sign of the result",

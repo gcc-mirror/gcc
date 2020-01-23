@@ -718,20 +718,42 @@ is_a_helper <poisoned_svalue *>::test (svalue *sval)
 
 namespace ana {
 
+/* A bundle of information recording a setjmp call, corresponding roughly
+   to a jmp_buf.  */
+
+struct setjmp_record
+{
+  setjmp_record (const exploded_node *enode,
+		 const gcall *setjmp_call)
+  : m_enode (enode), m_setjmp_call (setjmp_call)
+  {
+  }
+
+  bool operator== (const setjmp_record &other) const
+  {
+    return (m_enode == other.m_enode
+	    && m_setjmp_call == other.m_setjmp_call);
+  }
+
+  const exploded_node *m_enode;
+  const gcall *m_setjmp_call;
+};
+
 /* Concrete subclass of svalue representing setjmp buffers, so that
    longjmp can potentially "return" to an entirely different function.  */
 
 class setjmp_svalue : public svalue
 {
 public:
-  setjmp_svalue (const exploded_node *enode, tree type)
-  : svalue (type), m_enode (enode)
+  setjmp_svalue (const setjmp_record &setjmp_record,
+		 tree type)
+  : svalue (type), m_setjmp_record (setjmp_record)
   {}
 
   bool compare_fields (const setjmp_svalue &other) const;
 
   svalue *clone () const FINAL OVERRIDE
-  { return new setjmp_svalue (m_enode, get_type ()); }
+  { return new setjmp_svalue (m_setjmp_record, get_type ()); }
 
   enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_SETJMP; }
 
@@ -739,9 +761,9 @@ public:
 
   setjmp_svalue *dyn_cast_setjmp_svalue () FINAL OVERRIDE { return this; }
 
-  int get_index () const;
+  int get_enode_index () const;
 
-  const exploded_node *get_exploded_node () const { return m_enode; }
+  const setjmp_record &get_setjmp_record () const { return m_setjmp_record; }
 
  private:
   void print_details (const region_model &model,
@@ -749,7 +771,7 @@ public:
 		      pretty_printer *pp) const
     FINAL OVERRIDE;
 
-  const exploded_node *m_enode;
+  setjmp_record m_setjmp_record;
 };
 
 /* An enum for discriminating between the different concrete subclasses

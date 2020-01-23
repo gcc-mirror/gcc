@@ -3660,7 +3660,7 @@ region_model::dump_summary_of_map (pretty_printer *pp,
 	case SK_SETJMP:
 	  dump_separator (pp, is_first);
 	  pp_printf (pp, "setjmp: EN: %i",
-		     sval->dyn_cast_setjmp_svalue ()->get_index ());
+		     sval->dyn_cast_setjmp_svalue ()->get_enode_index ());
 	  break;
 	}
     }
@@ -4493,10 +4493,11 @@ region_model::on_setjmp (const gcall *call, const exploded_node *enode,
   region_id buf_rid = deref_rvalue (gimple_call_arg (call, 0), ctxt);
   region *buf = get_region (buf_rid);
 
-  /* Create a setjmp_svalue for ENODE and store it in BUF_RID's region.  */
+  /* Create a setjmp_svalue for this call and store it in BUF_RID's region.  */
   if (buf)
     {
-      svalue *sval = new setjmp_svalue (enode, buf->get_type ());
+      setjmp_record r (enode, call);
+      svalue *sval = new setjmp_svalue (r, buf->get_type ());
       svalue_id new_sid = add_svalue (sval);
       set_value (buf_rid, new_sid, ctxt);
     }

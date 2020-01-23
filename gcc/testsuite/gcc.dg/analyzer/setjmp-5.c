@@ -1,7 +1,7 @@
 /* { dg-additional-options "-fdiagnostics-show-line-numbers -fdiagnostics-path-format=inline-events -fdiagnostics-show-caret" } */
 /* { dg-enable-nn-line-numbers "" } */
 
-#include <setjmp.h>
+#include "test-setjmp.h"
 #include <stddef.h>
 #include "analyzer-decls.h"
 
@@ -9,7 +9,7 @@ static jmp_buf env;
 
 static void inner (void)
 {
-  setjmp (env);
+  SETJMP (env);
 }
 
 void outer (void)
@@ -45,7 +45,7 @@ void outer (void)
            |
          'inner': event 4
            |
-           |   NN |   setjmp (env);
+           |   NN |   SETJMP (env);
            |      |   ^~~~~~
            |      |   |
            |      |   (4) 'setjmp' called here

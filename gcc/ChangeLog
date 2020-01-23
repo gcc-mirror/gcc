@@ -1,3 +1,82 @@
+2020-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/93402
+	* postreload.c (reload_combine_recognize_pattern): Don't try to adjust
+	USE insns.
+
+2020-01-23  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	* config.in: Regenerated.
+	* config/mips/linux.h (NEED_INDICATE_EXEC_STACK): Define to 1
+	for TARGET_LIBC_GNUSTACK.
+	* configure: Regenerated.
+	* configure.ac: Define TARGET_LIBC_GNUSTACK if glibc version is
+	found to be 2.31 or greater.
+
+2020-01-23  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	* config/mips/linux.h (NEED_INDICATE_EXEC_STACK): Define to
+	TARGET_SOFT_FLOAT.
+	* config/mips/mips.c (TARGET_ASM_FILE_END): Define to ...
+	(mips_asm_file_end): New function. Delegate to
+	file_end_indicate_exec_stack if NEED_INDICATE_EXEC_STACK is true.
+	* config/mips/mips.h (NEED_INDICATE_EXEC_STACK): Define to 0.
+
+2020-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93376
+	* config/i386/i386-modes.def (POImode): New mode.
+	(MAX_BITSIZE_MODE_ANY_INT): Change from 128 to 160.
+	* config/i386/i386.md (DPWI): New mode attribute.
+	(addv<mode>4, subv<mode>4): Use <DPWI> instead of <DWI>.
+	(QWI): Rename to...
+	(QPWI): ... this.  Use POI instead of OI for TImode.
+	(*addv<dwi>4_doubleword, *addv<dwi>4_doubleword_1,
+	*subv<dwi>4_doubleword, *subv<dwi>4_doubleword_1): Use <QPWI>
+	instead of <QWI>.
+
+2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/93341
+	* config/aarch64/aarch64.md (UNSPEC_SPECULATION_TRACKER_REV): New
+	unspec.
+	(speculation_tracker_rev): New pattern.
+	* config/aarch64/aarch64-speculation.cc (aarch64_do_track_speculation):
+	Use speculation_tracker_rev to track the inverse condition.
+
+2020-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93381
+	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): Take
+	alias-set of the def as argument and record the first one.
+	(vn_walk_cb_data::first_set): New member.
+	(vn_reference_lookup_3): Pass the alias-set of the current def
+	to push_partial_def.  Fix alias-set used in the aggregate copy
+	case.
+	(vn_reference_lookup): Consistently set *last_vuse_ptr.
+	* real.c (clear_significand_below): Fix out-of-bound access.
+
+2020-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93346
+	* config/i386/i386.md (*bmi2_bzhi_<mode>3_2, *bmi2_bzhi_<mode>3_3):
+	New define_insn patterns.
+
+2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/sourcebuild.texi (check-function-bodies): Add an
+	optional target/xfail selector.
+
+2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/93124
+	* auto-inc-dec.c (merge_in_block): Don't add auto inc/decs to
+	bare USE and CLOBBER insns.
+
+2020-01-22  Andrew Pinski  <apinski@marvell.com>
+
+	* config/arc/arc.c (output_short_suffix): Check insn for nullness.
+
 2020-01-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93307

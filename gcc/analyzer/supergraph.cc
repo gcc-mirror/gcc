@@ -879,16 +879,19 @@ callgraph_superedge::get_arg_for_parm (tree parm_to_find,
   gcc_assert  (TREE_CODE (parm_to_find) == PARM_DECL);
 
   tree callee = get_callee_decl ();
+  const gcall *call_stmt = get_call_stmt ();
 
-  int i = 0;
+  unsigned i = 0;
   for (tree iter_parm = DECL_ARGUMENTS (callee); iter_parm;
        iter_parm = DECL_CHAIN (iter_parm), ++i)
     {
+      if (i >= gimple_call_num_args (call_stmt))
+	return NULL_TREE;
       if (iter_parm == parm_to_find)
 	{
 	  if (out)
 	    *out = callsite_expr::from_zero_based_param (i);
-	  return gimple_call_arg (get_call_stmt (), i);
+	  return gimple_call_arg (call_stmt, i);
 	}
     }
 
@@ -906,12 +909,15 @@ callgraph_superedge::get_parm_for_arg (tree arg_to_find,
 				       callsite_expr *out) const
 {
   tree callee = get_callee_decl ();
+  const gcall *call_stmt = get_call_stmt ();
 
-  int i = 0;
+  unsigned i = 0;
   for (tree iter_parm = DECL_ARGUMENTS (callee); iter_parm;
        iter_parm = DECL_CHAIN (iter_parm), ++i)
     {
-      tree param = gimple_call_arg (get_call_stmt (), i);
+      if (i >= gimple_call_num_args (call_stmt))
+	return NULL_TREE;
+      tree param = gimple_call_arg (call_stmt, i);
       if (arg_to_find == param)
 	{
 	  if (out)

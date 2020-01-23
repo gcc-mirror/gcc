@@ -1228,7 +1228,8 @@ parse_target_attributes (void **input,
 	  grid_attrs_found = true;
 	  break;
 	}
-      else if ((id & GOMP_TARGET_ARG_DEVICE_ALL) == GOMP_TARGET_ARG_DEVICE_ALL)
+      else if ((id & GOMP_TARGET_ARG_DEVICE_MASK)
+	       == GOMP_TARGET_ARG_DEVICE_ALL)
 	{
 	  gcn_dims_found = true;
 	  switch (id & GOMP_TARGET_ARG_ID_MASK)

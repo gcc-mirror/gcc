@@ -604,7 +604,7 @@ proc check_function_body { functions name body_regexp } {
 
 # Check the implementations of functions against expected output.  Used as:
 #
-# { dg-do { check-function-bodies PREFIX TERMINATOR[ OPTION] } }
+# { dg-do { check-function-bodies PREFIX TERMINATOR[ OPTION[ SELECTOR]] } }
 #
 # See sourcebuild.texi for details.
 
@@ -612,11 +612,11 @@ proc check-function-bodies { args } {
     if { [llength $args] < 2 } {
 	error "too few arguments to check-function-bodies"
     }
-    if { [llength $args] > 3 } {
+    if { [llength $args] > 4 } {
 	error "too many arguments to check-function-bodies"
     }
 
-    if { [llength $args] == 3 } {
+    if { [llength $args] >= 3 } {
 	set required_flag [lindex $args 2]
 
 	upvar 2 dg-extra-tool-flags extra_tool_flags
@@ -628,6 +628,16 @@ proc check-function-bodies { args } {
 	}
 	if { ![regexp " $required_flag " $flags] } {
 	    return
+	}
+    }
+
+    set xfail_all 0
+    if { [llength $args] >= 4 } {
+	switch [dg-process-target [lindex $args 3]] {
+	    "S" { }
+	    "N" { return }
+	    "F" { set xfail_all 1 }
+	    "P" { }
 	}
     }
 
@@ -694,7 +704,7 @@ proc check-function-bodies { args } {
 	    }
 	} elseif { [string equal -length $terminator_len $line $terminator] } {
 	    if { ![string equal $selector "N"] } {
-		if { [string equal $selector "F"] } {
+		if { $xfail_all || [string equal $selector "F"] } {
 		    setup_xfail "*-*-*"
 		}
 		set testname "$testcase check-function-bodies $function_name"

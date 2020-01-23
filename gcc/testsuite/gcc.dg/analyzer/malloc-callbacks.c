@@ -12,7 +12,9 @@ get_malloc (void)
 static allocator_t __attribute__((noinline))
 get_alloca (void)
 {
-  return alloca;
+  /* On e.g. Solaris, alloca is a macro so we can't take its address;
+     use __builtin_alloca instead.  */
+  return __builtin_alloca;
 }
 
 static deallocator_t __attribute__((noinline))

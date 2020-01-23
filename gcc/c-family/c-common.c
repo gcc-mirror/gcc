@@ -1324,13 +1324,10 @@ int_safely_convertible_to_real_p (const_tree from_type, const_tree to_type)
    to TYPE.  */
 
 enum conversion_safety
-unsafe_conversion_p (location_t loc, tree type, tree expr, tree result,
-		     bool check_sign)
+unsafe_conversion_p (tree type, tree expr, tree result, bool check_sign)
 {
   enum conversion_safety give_warning = SAFE_CONVERSION; /* is 0 or false */
   tree expr_type = TREE_TYPE (expr);
-
-  loc = expansion_point_location_if_in_system_header (loc);
 
   expr = fold_for_warn (expr);
 
@@ -1402,7 +1399,7 @@ unsafe_conversion_p (location_t loc, tree type, tree expr, tree result,
 	   with different type of EXPR, but it is still safe, because when EXPR
 	   is a constant, it's type is not used in text of generated warnings
 	   (otherwise they could sound misleading).  */
-	return unsafe_conversion_p (loc, type, TREE_REALPART (expr), result,
+	return unsafe_conversion_p (type, TREE_REALPART (expr), result,
 				    check_sign);
       /* Conversion from complex constant with non-zero imaginary part.  */
       else
@@ -1412,10 +1409,10 @@ unsafe_conversion_p (location_t loc, tree type, tree expr, tree result,
 	  if (TREE_CODE (type) == COMPLEX_TYPE)
 	    {
 	      enum conversion_safety re_safety =
-		unsafe_conversion_p (loc, type, TREE_REALPART (expr),
+		unsafe_conversion_p (type, TREE_REALPART (expr),
 				     result, check_sign);
 	      enum conversion_safety im_safety =
-		unsafe_conversion_p (loc, type, imag_part, result, check_sign);
+		unsafe_conversion_p (type, imag_part, result, check_sign);
 
 	      /* Merge the results into appropriate single warning.  */
 
@@ -5732,8 +5729,26 @@ check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
   if (warn_format)
     check_function_sentinel (fntype, nargs, argarray);
 
-  if (warn_restrict)
-    warned_p |= check_function_restrict (fndecl, fntype, nargs, argarray);
+  if (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
+    {
+      switch (DECL_FUNCTION_CODE (fndecl))
+	{
+	case BUILT_IN_SPRINTF:
+	case BUILT_IN_SPRINTF_CHK:
+	case BUILT_IN_SNPRINTF:
+	case BUILT_IN_SNPRINTF_CHK:
+	  /* Let the sprintf pass handle these.  */
+	  return warned_p;
+
+	default:
+	  break;
+	}
+    }
+
+  /* check_function_restrict sets the DECL_READ_P for arguments
+     so it must be called unconditionally.  */
+  warned_p |= check_function_restrict (fndecl, fntype, nargs, argarray);
+
   return warned_p;
 }
 
@@ -8068,7 +8083,7 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
 	if (TREE_CODE (type0) == INTEGER_TYPE
 	    && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE)
 	  {
-	    if (unsafe_conversion_p (loc, TREE_TYPE (type1), op0,
+	    if (unsafe_conversion_p (TREE_TYPE (type1), op0,
 				     NULL_TREE, false))
 	      {
 		if (complain)
@@ -8117,7 +8132,7 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
 	if (TREE_CODE (type0) == INTEGER_TYPE
 	    && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE)
 	  {
-	    if (unsafe_conversion_p (loc, TREE_TYPE (type1), op0,
+	    if (unsafe_conversion_p (TREE_TYPE (type1), op0,
 				     NULL_TREE, false))
 	      {
 		if (complain)
@@ -8133,7 +8148,7 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
 		     || TREE_CODE (type0) == INTEGER_TYPE)
 		 && SCALAR_FLOAT_TYPE_P (TREE_TYPE (type1)))
 	  {
-	    if (unsafe_conversion_p (loc, TREE_TYPE (type1), op0,
+	    if (unsafe_conversion_p (TREE_TYPE (type1), op0,
 				     NULL_TREE, false))
 	      {
 		if (complain)

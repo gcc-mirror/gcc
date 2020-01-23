@@ -453,6 +453,11 @@ sm_state_map::on_svalue_purge (const state_machine &sm,
 
 	  to_remove.safe_push (dst_sid);
 	}
+      else if ((*iter).second.m_origin.as_int () >= first_unused_sid.as_int ())
+	{
+	  /* If the origin svalue is being purged, then reset it to null.  */
+	  (*iter).second.m_origin = svalue_id::null ();
+	}
     }
 
   int i;

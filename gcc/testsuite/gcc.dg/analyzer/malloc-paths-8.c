@@ -1,6 +1,7 @@
 /* { dg-additional-options "-fanalyzer-transitivity" } */
 
 #include <stddef.h>
+#include <alloca.h>
 #include <stdlib.h>
 
 extern void do_stuff (const void *);

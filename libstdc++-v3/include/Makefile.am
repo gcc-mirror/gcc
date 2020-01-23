@@ -1245,22 +1245,12 @@ stamp-float128:
 endif
 
 # This header is not installed, it's only used to build libstdc++ itself.
-${host_builddir}/largefile-config.h: ${CONFIG_HEADER} \
-				     ${glibcxx_srcdir}/include/bits/c++config
-	@echo '#if defined _GLIBCXX_CXX_CONFIG_H || defined _FEATURES_H' > $@
-	@echo '# error "This file must be included before any others"' >> $@
-	@echo '#endif' >> $@
-	@echo >> $@
-	@echo '/* Enable large inode numbers on Mac OS X 10.5.  */' >> $@
-	@echo '#ifndef _DARWIN_USE_64_BIT_INODE' >> $@
-	@echo '# define _DARWIN_USE_64_BIT_INODE 1' >> $@
-	@echo '#endif' >> $@
-	@echo >> $@
-	@echo '/* Number of bits in a file offset, on hosts where this is settable. */' >> $@
-	@grep '_FILE_OFFSET_BITS' ${CONFIG_HEADER} >> $@
-	@echo >> $@
-	@echo '/* Define for large files, on AIX-style hosts. */' >> $@
-	@grep '_LARGE_FILES' ${CONFIG_HEADER} >> $@
+${host_builddir}/largefile-config.h: ${CONFIG_HEADER}
+	@rm -f $@.tmp
+	@-grep 'define _DARWIN_USE_64_BIT_INODE' ${CONFIG_HEADER} >> $@.tmp
+	@-grep 'define _FILE_OFFSET_BITS' ${CONFIG_HEADER} >> $@.tmp
+	@-grep 'define _LARGE_FILES' ${CONFIG_HEADER} >> $@.tmp
+	@mv $@.tmp $@
 
 # NB: The non-empty default ldbl_compat works around an AIX sed
 # oddity, see libstdc++/31957 for details.

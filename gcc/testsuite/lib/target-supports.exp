@@ -3115,6 +3115,14 @@ proc check_effective_target_dfprt { } {
     }]
 }
 
+# Return 1 iff target has unsigned plain 'char' by default.
+
+proc check_effective_target_unsigned_char {} {
+    return [check_no_compiler_messages unsigned_char assembly {
+	char ar[(char)-1];
+    }]
+}
+
 proc check_effective_target_powerpc_popcntb_ok { } {
     return [check_cached_effective_target powerpc_popcntb_ok {
 

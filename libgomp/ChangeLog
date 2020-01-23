@@ -1,3 +1,8 @@
+2020-01-23  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (parse_target_attributes): Use correct mask for
+	the device id.
+
 2020-01-20  Andrew Stubbs  <ams@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/loop-auto-1.c: Skip test on gcn.

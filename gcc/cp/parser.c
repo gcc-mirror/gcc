@@ -6467,16 +6467,27 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 		      tree fns = get_fns (tid);
 		      if (OVL_SINGLE_P (fns))
 			tmpl = OVL_FIRST (fns);
-		      error_at (token->location, "function template-id %qD "
-				"in nested-name-specifier", tid);
+		      if (function_concept_p (fns))
+			error_at (token->location, "concept-id %qD "
+				  "in nested-name-specifier", tid);
+		      else
+			error_at (token->location, "function template-id "
+				  "%qD in nested-name-specifier", tid);
 		    }
 		  else
 		    {
-		      /* Variable template.  */
 		      tmpl = TREE_OPERAND (tid, 0);
-		      gcc_assert (variable_template_p (tmpl));
-		      error_at (token->location, "variable template-id %qD "
-				"in nested-name-specifier", tid);
+		      if (variable_concept_p (tmpl)
+			  || standard_concept_p (tmpl))
+			error_at (token->location, "concept-id %qD "
+				  "in nested-name-specifier", tid);
+		      else
+			{
+			  /* Variable template.  */
+			  gcc_assert (variable_template_p (tmpl));
+			  error_at (token->location, "variable template-id "
+				    "%qD in nested-name-specifier", tid);
+			}
 		    }
 		  if (tmpl)
 		    inform (DECL_SOURCE_LOCATION (tmpl),

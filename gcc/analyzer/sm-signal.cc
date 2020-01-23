@@ -369,7 +369,8 @@ analyzer_sm_signal_cc_tests ()
 
 } // namespace selftest
 
+#endif /* CHECKING_P */
+
 } // namespace ana
 
-#endif /* CHECKING_P */
 #endif /* #if ENABLE_ANALYZER */

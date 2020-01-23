@@ -1,4 +1,4 @@
-#include <setjmp.h>
+#include "test-setjmp.h"
 #include <stddef.h>
 #include <stdlib.h>
 
@@ -24,7 +24,7 @@ void outer (void)
 
   foo (0);
 
-  i = setjmp(env);
+  i = SETJMP(env);
 
   if (i == 0)
     {
