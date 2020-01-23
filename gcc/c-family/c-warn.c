@@ -1315,10 +1315,14 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
 	    for (int i = 0; i < arith_ops; ++i)
 	      {
 		tree op = TREE_OPERAND (expr, i);
-		tree opr = convert (type, op);
 		/* Avoid -Wsign-conversion for (unsigned)(x + (-1)).  */
-		bool minus = TREE_CODE (expr) == PLUS_EXPR && i == 1;
-		if (unsafe_conversion_p (type, op, opr, !minus))
+		if (TREE_CODE (expr) == PLUS_EXPR && i == 1
+		    && INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
+		    && TREE_CODE (op) == INTEGER_CST
+		    && tree_int_cst_sgn (op) < 0)
+		  op = fold_build1 (NEGATE_EXPR, TREE_TYPE (op), op);
+		tree opr = convert (type, op);
+		if (unsafe_conversion_p (type, op, opr, true))
 		  goto op_unsafe;
 	      }
 	    /* The operands seem safe, we might still want to warn if
