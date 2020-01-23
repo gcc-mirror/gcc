@@ -1,5 +1,14 @@
 2020-01-23  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
 
+	* config.in: Regenerated.
+	* config/mips/linux.h (NEED_INDICATE_EXEC_STACK): Define to 1
+	for TARGET_LIBC_GNUSTACK.
+	* configure: Regenerated.
+	* configure.ac: Define TARGET_LIBC_GNUSTACK if glibc version is
+	found to be 2.31 or greater.
+
+2020-01-23  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
 	* config/mips/linux.h (NEED_INDICATE_EXEC_STACK): Define to
 	TARGET_SOFT_FLOAT.
 	* config/mips/mips.c (TARGET_ASM_FILE_END): Define to ...

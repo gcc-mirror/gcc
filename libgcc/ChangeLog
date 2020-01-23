@@ -1,5 +1,9 @@
 2020-01-23  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
 
+	* config/mips/gnustack.h: Check for TARGET_LIBC_GNUSTACK also.
+
+2020-01-23  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
 	* config/mips/gnustack.h: New file.
 	* config/mips/crti.S: Include gnustack.h.
 	* config/mips/crtn.S: Likewise.

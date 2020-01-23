@@ -53,4 +53,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef NEED_INDICATE_EXEC_STACK
 
+#ifdef TARGET_LIBC_GNUSTACK
+#define NEED_INDICATE_EXEC_STACK 1
+#else
 #define NEED_INDICATE_EXEC_STACK TARGET_SOFT_FLOAT
+#endif

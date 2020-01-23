@@ -6247,6 +6247,18 @@ if test x$gcc_cv_libc_provides_hwcap_in_tcb = xyes; then
 	    [Define if your target C Library provides the AT_HWCAP value in the TCB])
 fi
 
+# Check if the target LIBC handles PT_GNU_STACK.
+gcc_cv_libc_gnustack=unknown
+case "$target" in
+  mips*-*-linux*)
+    GCC_GLIBC_VERSION_GTE_IFELSE([2], [31], [gcc_cv_libc_gnustack=yes], )
+    ;;
+esac
+if test x$gcc_cv_libc_gnustack = xyes; then
+  AC_DEFINE(TARGET_LIBC_GNUSTACK, 1,
+            [Define if your target C Library properly handles PT_GNU_STACK])
+fi
+
 AC_MSG_CHECKING(dl_iterate_phdr in target C library)
 gcc_cv_target_dl_iterate_phdr=unknown
 case "$target" in
