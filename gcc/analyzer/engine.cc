@@ -1634,7 +1634,7 @@ worklist::add_node (exploded_node *enode)
    Return 0 if they are equal.  */
 
 int
-worklist::key_t::cmp_1 (const worklist::key_t &ka, const worklist::key_t &kb)
+worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
 {
   const program_point &point_a = ka.m_enode->get_point ();
   const program_point &point_b = kb.m_enode->get_point ();
@@ -1710,9 +1710,12 @@ worklist::key_t::cmp_1 (const worklist::key_t &ka, const worklist::key_t &kb)
       sm_state_map *smap_a = state_a.m_checker_states[sm_idx];
       sm_state_map *smap_b = state_b.m_checker_states[sm_idx];
 
-      int sm_cmp = smap_a->hash () - smap_b->hash ();
-      if (sm_cmp)
-	return sm_cmp;
+      hashval_t hash_a = smap_a->hash ();
+      hashval_t hash_b = smap_b->hash ();
+      if (hash_a < hash_b)
+	return -1;
+      else if (hash_a > hash_b)
+	return 1;
     }
 
   /* Otherwise, we have two enodes at the same program point but with
@@ -1720,30 +1723,6 @@ worklist::key_t::cmp_1 (const worklist::key_t &ka, const worklist::key_t &kb)
      so order them by enode index, so that we have at least have a
      stable sort.  */
   return ka.m_enode->m_index - kb.m_enode->m_index;
-}
-
-/* Comparator for implementing worklist::key_t comparison operators.
-   Return negative if KA is before KB
-   Return positive if KA is after KB
-   Return 0 if they are equal.  */
-
-int
-worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
-{
-  int result = cmp_1 (ka, kb);
-
-  /* Check that the ordering is symmetric  */
-#if CHECKING_P
-  int reversed = cmp_1 (kb, ka);
-  gcc_assert (reversed == -result);
-#endif
-
-  /* We should only have 0 for equal (point, state) pairs.  */
-  gcc_assert (result != 0
-	      || (*ka.m_enode->get_ps_key ()
-		  == *kb.m_enode->get_ps_key ()));
-
-  return result;
 }
 
 /* exploded_graph's ctor.  */

@@ -1,5 +1,17 @@
 2020-01-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* call-string.cc (call_string::cmp_1): Delete, moving body to...
+	(call_string::cmp): ...here.
+	* call-string.h (call_string::cmp_1): Delete decl.
+	* engine.cc (worklist::key_t::cmp_1): Delete, moving body to...
+	(worklist::key_t::cmp): ...here.  Implement hash comparisons
+	via comparison rather than subtraction to avoid overflow issues.
+	* exploded-graph.h (worklist::key_t::cmp_1): Delete decl.
+	* region-model.cc (tree_cmp): Eliminate buggy checking for
+	symmetry.
+
+2020-01-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* analyzer.cc  (is_named_call_p): Check that fndecl is "extern"
 	and at file scope.  Potentially disregard prefix _ or __ in
 	fndecl's name.  Bail if the identifier is NULL.

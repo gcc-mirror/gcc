@@ -652,7 +652,6 @@ private:
     }
 
   private:
-    static int cmp_1 (const key_t &ka, const key_t &kb);
     static int cmp (const key_t &ka, const key_t &kb);
 
     int get_scc_id (const exploded_node *enode) const

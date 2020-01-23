@@ -1843,21 +1843,7 @@ tree_cmp (const void *p1, const void *p2)
   const_tree t1 = *(const_tree const *)p1;
   const_tree t2 = *(const_tree const *)p2;
 
-  int result = tree_cmp (t1, t2);
-
-  /* Check that the ordering is symmetric  */
-#if CHECKING_P
-  int reversed = tree_cmp (t2, t1);
-  gcc_assert (reversed == -result);
-#endif
-
-  /* We should only have 0 for equal pairs.  */
-#if 0
-  gcc_assert (result != 0
-	      || t1 == t2);
-#endif
-
-  return result;
+  return tree_cmp (t1, t2);
 }
 
 /* Attempt to merge MAP_REGION_A and MAP_REGION_B into MERGED_MAP_REGION,
