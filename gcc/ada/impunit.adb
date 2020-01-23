@@ -181,6 +181,7 @@ package body Impunit is
     ("a-ssicst", F),  -- Ada.Streams.Stream_IO.C_Streams
     ("a-suteio", F),  -- Ada.Strings.Unbounded.Text_IO
     ("a-swuwti", F),  -- Ada.Strings.Wide_Unbounded.Wide_Text_IO
+    ("a-tasini", F),  -- Ada.Task_Initialization
     ("a-tiocst", F),  -- Ada.Text_IO.C_Streams
     ("a-wtcstr", F),  -- Ada.Wide_Text_IO.C_Streams
 

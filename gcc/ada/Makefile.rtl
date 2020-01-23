@@ -39,6 +39,7 @@ GNATRTL_TASKING_OBJS= \
   a-sytaco$(objext) \
   a-tasatt$(objext) \
   a-taside$(objext) \
+  a-tasini$(objext) \
   a-taster$(objext) \
   g-boubuf$(objext) \
   g-boumai$(objext) \
