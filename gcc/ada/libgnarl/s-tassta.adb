@@ -1187,6 +1187,12 @@ package body System.Tasking.Stages is
          --  we do not call Set_Jmpbuf_Address (which needs Self) before we
          --  set Self in Enter_Task
 
+         --  Call the initialization hook if any
+
+         if Global_Initialization_Handler /= null then
+            Global_Initialization_Handler.all;
+         end if;
+
          --  Call the task body procedure
 
          --  The task body is called with abort still deferred. That

@@ -368,6 +368,14 @@ package System.Tasking is
    --  Used to represent protected procedures to be executed when task
    --  terminates.
 
+   type Initialization_Handler is access procedure;
+   pragma Favor_Top_Level (Initialization_Handler);
+   --  Use to represent procedures to be executed at task initialization.
+
+   Global_Initialization_Handler : Initialization_Handler := null;
+   pragma Atomic (Global_Initialization_Handler);
+   --  Global handler called when each task initializes.
+
    ------------------------------------
    -- Dispatching domain definitions --
    ------------------------------------
