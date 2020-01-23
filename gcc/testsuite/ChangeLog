@@ -1,3 +1,8 @@
+2020-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93376
+	* gcc.dg/pr93376.c: New test.
+
 2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/93341

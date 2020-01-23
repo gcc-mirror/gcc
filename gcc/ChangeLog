@@ -1,3 +1,16 @@
+2020-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93376
+	* config/i386/i386-modes.def (POImode): New mode.
+	(MAX_BITSIZE_MODE_ANY_INT): Change from 128 to 160.
+	* config/i386/i386.md (DPWI): New mode attribute.
+	(addv<mode>4, subv<mode>4): Use <DPWI> instead of <DWI>.
+	(QWI): Rename to...
+	(QPWI): ... this.  Use POI instead of OI for TImode.
+	(*addv<dwi>4_doubleword, *addv<dwi>4_doubleword_1,
+	*subv<dwi>4_doubleword, *subv<dwi>4_doubleword_1): Use <QPWI>
+	instead of <QWI>.
+
 2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/93341
