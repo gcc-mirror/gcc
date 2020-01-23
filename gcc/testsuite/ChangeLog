@@ -1,3 +1,8 @@
+2020-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/sigsetjmp-5.c: New test.
+	* gcc.dg/analyzer/sigsetjmp-6.c: New test.
+
 2020-01-27  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/91171

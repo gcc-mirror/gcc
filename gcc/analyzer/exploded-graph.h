@@ -302,13 +302,15 @@ private:
 };
 
 /* Extra data for an exploded_edge that represents a rewind from a
-   longjmp to a setjmp.  */
+   longjmp to a setjmp (or from a siglongjmp to a sigsetjmp).  */
 
 class rewind_info_t : public exploded_edge::custom_info_t
 {
 public:
-  rewind_info_t (const setjmp_record &setjmp_record)
-  : m_setjmp_record (setjmp_record)
+  rewind_info_t (const setjmp_record &setjmp_record,
+		 const gcall *longjmp_call)
+  : m_setjmp_record (setjmp_record),
+    m_longjmp_call (longjmp_call)
   {}
 
   void print (pretty_printer *pp) FINAL OVERRIDE
@@ -339,6 +341,11 @@ public:
     return m_setjmp_record.m_setjmp_call;
   }
 
+  const gcall *get_longjmp_call () const
+  {
+    return m_longjmp_call;
+  }
+
   const exploded_node *get_enode_origin () const
   {
     return m_setjmp_record.m_enode;
@@ -346,6 +353,7 @@ public:
 
 private:
   setjmp_record m_setjmp_record;
+  const gcall *m_longjmp_call;
 };
 
 /* Statistics about aspects of an exploded_graph.  */

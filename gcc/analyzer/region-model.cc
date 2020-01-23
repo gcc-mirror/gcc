@@ -4480,11 +4480,11 @@ region_model::on_return (const greturn *return_stmt, region_model_context *ctxt)
     set_value (get_lvalue (lhs, ctxt), get_rvalue (rhs, ctxt), ctxt);
 }
 
-/* Update this model for a call and return of "setjmp" at CALL within ENODE,
-   using CTXT to report any diagnostics.
+/* Update this model for a call and return of setjmp/sigsetjmp at CALL within
+   ENODE, using CTXT to report any diagnostics.
 
-   This is for the initial direct invocation of setjmp (which returns 0),
-   as opposed to any second return due to longjmp.  */
+   This is for the initial direct invocation of setjmp/sigsetjmp (which returns
+   0), as opposed to any second return due to longjmp/sigsetjmp.  */
 
 void
 region_model::on_setjmp (const gcall *call, const exploded_node *enode,

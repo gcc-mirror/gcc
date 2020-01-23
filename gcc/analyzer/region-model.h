@@ -718,8 +718,8 @@ is_a_helper <poisoned_svalue *>::test (svalue *sval)
 
 namespace ana {
 
-/* A bundle of information recording a setjmp call, corresponding roughly
-   to a jmp_buf.  */
+/* A bundle of information recording a setjmp/sigsetjmp call, corresponding
+   roughly to a jmp_buf.  */
 
 struct setjmp_record
 {
@@ -739,8 +739,9 @@ struct setjmp_record
   const gcall *m_setjmp_call;
 };
 
-/* Concrete subclass of svalue representing setjmp buffers, so that
-   longjmp can potentially "return" to an entirely different function.  */
+/* Concrete subclass of svalue representing buffers for setjmp/sigsetjmp,
+   so that longjmp/siglongjmp can potentially "return" to an entirely
+   different function.  */
 
 class setjmp_svalue : public svalue
 {

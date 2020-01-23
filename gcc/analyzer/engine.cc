@@ -1001,7 +1001,7 @@ exploded_node::on_stmt (exploded_graph &eg,
 	{
 	  /* This is handled elsewhere.  */
 	}
-      else if (is_setjmp_call_p (stmt))
+      else if (is_setjmp_call_p (call))
 	state->m_region_model->on_setjmp (call, this, &ctxt);
       else if (is_longjmp_call_p (call))
 	{
@@ -1126,7 +1126,8 @@ public:
     return warning_at
       (richloc, OPT_Wanalyzer_stale_setjmp_buffer,
        "%qs called after enclosing function of %qs has returned",
-       "longjmp", "setjmp");
+       get_user_facing_name (m_longjmp_call),
+       get_user_facing_name (m_setjmp_call));
   }
 
   const char *get_kind () const FINAL OVERRIDE
@@ -1143,10 +1144,10 @@ private:
   const gcall *m_longjmp_call;
 };
 
-/* Handle LONGJMP_CALL, a call to "longjmp".
+/* Handle LONGJMP_CALL, a call to longjmp or siglongjmp.
 
-   Attempt to locate where "setjmp" was called on the jmp_buf and build an
-   exploded_node and exploded_edge to it representing a rewind to that frame,
+   Attempt to locate where setjmp/sigsetjmp was called on the jmp_buf and build
+   an exploded_node and exploded_edge to it representing a rewind to that frame,
    handling the various kinds of failure that can occur.  */
 
 void
@@ -1174,9 +1175,9 @@ exploded_node::on_longjmp (exploded_graph &eg,
 
   const setjmp_record tmp_setjmp_record = setjmp_sval->get_setjmp_record ();
 
-  /* Build a custom enode and eedge for rewinding from the longjmp
-     call back to the setjmp.  */
-  rewind_info_t rewind_info (tmp_setjmp_record);
+  /* Build a custom enode and eedge for rewinding from the longjmp/siglongjmp
+     call back to the setjmp/sigsetjmp.  */
+  rewind_info_t rewind_info (tmp_setjmp_record, longjmp_call);
 
   const gcall *setjmp_call = rewind_info.get_setjmp_call ();
   const program_point &setjmp_point = rewind_info.get_setjmp_point ();
@@ -1217,7 +1218,7 @@ exploded_node::on_longjmp (exploded_graph &eg,
       exploded_edge *eedge
 	= eg.add_edge (const_cast<exploded_node *> (this), next, NULL,
 		       change,
-		       new rewind_info_t (tmp_setjmp_record));
+		       new rewind_info_t (tmp_setjmp_record, longjmp_call));
 
       /* For any diagnostics that were queued here (such as leaks) we want
 	 the checker_path to show the rewinding events after the "final event"
@@ -1369,7 +1370,7 @@ rewind_info_t::add_events_to_path (checker_path *emission_path,
     (new rewind_from_longjmp_event
      (&eedge, src_point.get_supernode ()->get_end_location (),
       src_point.get_fndecl (),
-      src_stack_depth));
+      src_stack_depth, this));
   emission_path->add_event
     (new rewind_to_setjmp_event
      (&eedge, get_setjmp_call ()->location,
