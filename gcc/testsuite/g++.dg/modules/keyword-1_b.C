@@ -2,8 +2,8 @@
 
 import bob;
 
-::import (d);
-import (e); // { dg-error "expected module-name" }
+::import (d); // not import
+import (e); // not import
 
 void foo ()
 {

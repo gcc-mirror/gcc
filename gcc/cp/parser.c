@@ -682,7 +682,7 @@ cp_lexer_destroy (cp_lexer *lexer)
    to cp_lexer_debugging_p within this source file at compile time, when the
    lexer is not being debugged.  */
 
-#define LEXER_DEBUGGING_ENABLED_P false
+#define LEXER_DEBUGGING_ENABLED_P true // FIXME: false
 
 /* Returns nonzero if debugging information should be output.  */
 
@@ -894,13 +894,6 @@ cp_lexer_tokenize (cp_lexer *lexer, int extern_c_depth)
       cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
 
     first:
-      if (mode == decl_pragma)
-	{
-	  if (tok->type == CPP_PRAGMA_EOL)
-	    mode = decl_start;
-	  continue;
-	}
-
       switch (tok->type)
 	{
 	case CPP_PRAGMA:
@@ -944,7 +937,7 @@ cp_lexer_tokenize (cp_lexer *lexer, int extern_c_depth)
 	    mode = decl_start;
 	  break;
 
-	case CPP_SEMICOLON:
+	case CPP_PRAGMA_EOL:
 	  if (!depth && mode == decl_header)
 	    goto done;
 	  mode = decl_start;
@@ -964,33 +957,19 @@ cp_lexer_tokenize (cp_lexer *lexer, int extern_c_depth)
 	      break;
 
 	    case decl_start:
-	      if (tok->keyword == RID_EXPORT)
+	      if (tok->type == CPP_NAME
+		  && C_RID_CODE (tok->u.value) == RID__EXPORT)
 		;
 	      else if (tok->keyword == RID_EXTERN)
 		mode = decl_extern_c;
 	      else if (tok->type == CPP_NAME && !depth && modules_p ()
-		       && C_RID_CODE (tok->u.value) == RID_IMPORT
-		       /* 'import' at top level, or __import inside extern C.  */
-		       && (!extern_c_depth
-			   || IDENTIFIER_POINTER (tok->u.value)[0] == '_'))
+		       && C_RID_CODE (tok->u.value) == RID__IMPORT)
 		{
-		  bool search = IDENTIFIER_POINTER (tok->u.value)[0] != '_';
-		  if (search)
-		    cpp_enable_filename_token (parse_in, true);
 		  tok = vec_safe_push (lexer->buffer, cp_token ());
 		  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
-		  if (search)
-		    cpp_enable_filename_token (parse_in, false);
-		  if (tok->type == CPP_HEADER_NAME
-		      || tok->type == CPP_STRING)
+		  if (tok->type == CPP_HEADER_NAME)
 		    {
 		      /* A stoppable decl.  */
-		      tok->u.value = module_map_header
-			(parse_in, tok->location,
-			 search && !cpp_get_options (parse_in)->preprocessed,
-			 TREE_STRING_POINTER (tok->u.value),
-			 TREE_STRING_LENGTH (tok->u.value));
-		      tok->type = CPP_HEADER_NAME;
 		      mode = decl_header;
 		    }
 		  else
@@ -1027,22 +1006,6 @@ cp_lexer_tokenize (cp_lexer *lexer, int extern_c_depth)
 
   lexer->last_token++;
   return true;
-}
-
-/* TOK must not be a macro expansion.  Warn if not.  */
-
-static void
-cp_lexer_not_macro (cp_token *tok)
-{
-  location_t loc = tok->location;
-
-  if (IS_ADHOC_LOC (loc))
-    loc = get_location_from_adhoc_loc (line_table, loc);
-
-  if (IS_MACRO_LOC (loc))
-    error_at (tok->location,
-	     "%qs must not be from macro expansion",
-	     tok->type == CPP_NAME ? IDENTIFIER_POINTER (tok->u.value) : ";");
 }
 
 /* Update the globals input_location and the input file stack from TOKEN.  */
@@ -2325,6 +2288,7 @@ enum module_preamble
   MP_GMF,	/* Global Module Fragment.  */
 };
 
+static void cp_parser_module_directive_end (cp_parser *parser);
 static module_preamble cp_parser_module_declaration
   (cp_parser *parser, module_preamble, bool exporting);
 static bool cp_parser_import_declaration
@@ -3545,12 +3509,13 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
       else if (!flag_concepts && id == ridpointers[(int)RID_CONCEPT])
 	inform (location, "%<concept%> only available with %<-std=c++2a%> or "
 		"%<-fconcepts%>");
-      else if (C_RID_CODE (id) == RID_MODULE || C_RID_CODE (id) == RID_IMPORT)
+      else if (!strcmp ("module", IDENTIFIER_POINTER (id))
+	       || !strcmp ("import", IDENTIFIER_POINTER (id)))
 	{
 	  if (!modules_p ())
-	    inform (location, "%qE only available with -fmodules-ts", id);
+	    inform (location, "%qE only available with %<-fmodules-ts%>", id);
 	  else
-	    inform (location, "%E-declaration not permitted here", id);
+	    inform (location, "%qE was not recognized as a control-line", id);
 	}
       else if (processing_template_decl && current_class_type
 	       && TYPE_BINFO (current_class_type))
@@ -4920,14 +4885,17 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 
       if (modules_p ())
 	{
-	  bool exporting = token->keyword == RID_EXPORT;
+	  // FIXME: We can stop this C_RID_CODE confusion
+
+	  bool exporting = token->type == CPP_NAME
+	    && C_RID_CODE (token->u.value) == RID__EXPORT;
 	  cp_token *next
 	    = exporting ? cp_lexer_peek_nth_token (parser->lexer, 2) : token;
 	  if (next->type != CPP_NAME
 	      || (cp_lexer_peek_nth_token (parser->lexer, exporting + 2)->type
 		  == CPP_SCOPE))
 	    ;
-	  else if (C_RID_CODE (next->u.value) == RID_MODULE && !extern_c_depth)
+	  else if (C_RID_CODE (next->u.value) == RID__MODULE && !extern_c_depth)
 	    {
 	      if (deferred_imports)
 		// FIXME: I think p1103 makes this unnecessary
@@ -4938,24 +4906,18 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	      if (exporting)
 		cp_lexer_consume_token (parser->lexer);
 
-	      if (!next->main_source_p)
-		error_at (next->location,
-			  "%qE must be directly in the main source file",
-			  next->u.value);
 	      preamble
 		= cp_parser_module_declaration (parser, preamble, exporting);
 	      deferred_imports = true;
 	      continue;
 	    }
-	  else if (C_RID_CODE (next->u.value) == RID_IMPORT
-		   && (!extern_c_depth
-		       || IDENTIFIER_POINTER (next->u.value)[0] == '_'))
+	  else if (C_RID_CODE (next->u.value) == RID__IMPORT)
 	    {
 	      if (preamble == MP_FIRST)
 		preamble = MP_NOTHING;
 	      if (exporting)
 		cp_lexer_consume_token (parser->lexer);
-	      if (named_module_p ()
+	      if (false && named_module_p ()
 		  && IDENTIFIER_POINTER (next->u.value)[0] == '_')
 		{
 		  error_at (next->location, "include-translated header unit"
@@ -13575,19 +13537,39 @@ cp_parser_module_name (cp_parser *parser, int kind)
   return parent;
 }
 
+static void
+cp_parser_module_directive_end (cp_parser *parser)
+{
+  parser->lexer->in_pragma = false;
+
+  for (bool first = true;; first = false)
+    {
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
+      if (token->type != CPP_EOF)
+	cp_lexer_consume_token (parser->lexer);
+
+      if (token->type == CPP_PRAGMA_EOL)
+	break;
+      if (first)
+	cp_parser_error (parser, "expected end of control-line");
+      if (token->type == CPP_EOF)
+	break;
+    }
+}
+
 /* Named module-declaration
-     module ;
-     [export] module module-name attr-spec-seq-opt ;
+     __module ; PRAGMA_EOL
+     [__export] __module module-name attr-spec-seq-opt ; PRAGMA_EOL
 */
 
+// FIXME: This is untidy due to the 1857 transition in progress
 static module_preamble
 cp_parser_module_declaration (cp_parser *parser, module_preamble preamble,
 			      bool exporting)
 {
+  /* We're a pseudo pragma.  */
+  parser->lexer->in_pragma = true;
   cp_token *token = cp_lexer_consume_token (parser->lexer);
-
-  /* The 'module' keyword must not be a macro.  */
-  cp_lexer_not_macro (token);
 
   if (preamble == MP_FIRST && !exporting
       && cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
@@ -13595,55 +13577,62 @@ cp_parser_module_declaration (cp_parser *parser, module_preamble preamble,
       /* Start global module fragment.  */
       cp_lexer_consume_token (parser->lexer);
       module_kind |= MK_GLOBAL;
-      return MP_GMF;
+      preamble = MP_GMF;
+      goto out;
     }
 
-  module_state *mod = cp_parser_module_name (parser, true);
-  tree attrs = cp_parser_attributes_opt (parser);
+  {
+    module_state *mod = cp_parser_module_name (parser, true);
+    tree attrs = cp_parser_attributes_opt (parser);
 
-  if (!mod || !cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
-    {
-      /* Syntax error.  */
-      cp_parser_skip_to_end_of_statement (parser);
-      if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
-	cp_lexer_consume_token (parser->lexer);
+    if (!mod || !cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
+      {
+	/* Syntax error.  */
+	cp_parser_skip_to_end_of_statement (parser);
+	if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+	  cp_lexer_consume_token (parser->lexer);
 
-      /* Remain in whatever state we were.  */
-      return preamble;
-    }
+	/* Remain in whatever state we were.  */
+	goto out;
+      }
 
-  /* Other cases will emit an error in declare_module.  */
-  if (preamble == MP_NOTHING)
-    error_at (token->location, "global module fragment not present");
+    /* Other cases will emit an error in declare_module.  */
+    if (preamble == MP_NOTHING)
+      error_at (token->location, "global module fragment not present");
 
-  if (declare_module (mod, token->location, exporting, attrs, parse_in))
-    preamble = MP_PREAMBLE;
+    if (declare_module (mod, token->location, exporting, attrs, parse_in))
+      preamble = MP_PREAMBLE;
+  }
+
+ out:;
+  cp_parser_module_directive_end (parser);
 
   return preamble;
 }
 
 /* Import-declaration
-   import module-name attr-spec-seq-opt ; */
+   [__export] __import module-name attr-spec-seq-opt ; PRAGMA_EOL */
+// FIXME: This is untidy due to the 1857 transition in progress
 
 static bool
 cp_parser_import_declaration (cp_parser *parser, module_preamble preamble,
 			      bool exporting)
 {
+  /* We're a pseudo pragma.  */
+  parser->lexer->in_pragma = true;
+
   cp_token *token = cp_lexer_consume_token (parser->lexer);
-  int need_hdr = IDENTIFIER_POINTER (token->u.value)[0] == '_' ? -1 : 0;
+  int need_hdr = 0;//IDENTIFIER_POINTER (token->u.value)[0] == '_' ? -1 : 0;
   module_state *mod = cp_parser_module_name (parser, need_hdr);
   tree attrs = cp_parser_attributes_opt (parser);
-  cp_token *semi = cp_lexer_peek_token (parser->lexer);
-
-  if (semi->type == CPP_SEMICOLON)
-    cp_lexer_not_macro (semi);
+  bool ok = true;
 
   if (!mod || !cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
     {
       cp_parser_skip_to_end_of_statement (parser);
       if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
 	cp_lexer_consume_token (parser->lexer);
-      return false;
+      ok = false;
     }
   else
     {
@@ -13651,12 +13640,15 @@ cp_parser_import_declaration (cp_parser *parser, module_preamble preamble,
 	{
 	  error_at (token->location,
 		    "module import declarations must be within preamble");
-	  return false;
+	  ok = false;
 	}
       else
-	return import_module (mod, token->location, exporting, attrs, parse_in,
-			      current_lang_name == lang_name_c);
+	ok = import_module (mod, token->location, exporting, attrs, parse_in,
+			    current_lang_name == lang_name_c);
     }
+
+  cp_parser_module_directive_end (parser);
+  return ok;
 }
 
 /*  export-declaration.

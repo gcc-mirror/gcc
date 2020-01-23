@@ -842,4 +842,17 @@ post_options (cpp_reader *pfile)
       CPP_OPTION (pfile, trigraphs) = 0;
       CPP_OPTION (pfile, warn_trigraphs) = 0;
     }
+
+  if (CPP_OPTION (pfile, module_directives))
+    {
+      pfile->spec_nodes.n__export = cpp_lookup (pfile, DSC("__export"));
+      pfile->spec_nodes.n__module = cpp_lookup (pfile, DSC("__module"));
+      pfile->spec_nodes.n__import = cpp_lookup (pfile, DSC("__import"));
+      pfile->spec_nodes.n_export = CPP_OPTION (pfile, preprocessed)
+	? pfile->spec_nodes.n__export : cpp_lookup (pfile, DSC ("export"));
+      pfile->spec_nodes.n_module = CPP_OPTION (pfile, preprocessed)
+	? pfile->spec_nodes.n__module : cpp_lookup (pfile, DSC("module"));
+      pfile->spec_nodes.n_import =  CPP_OPTION (pfile, preprocessed)
+	? pfile->spec_nodes.n__import : cpp_lookup (pfile, DSC("import"));
+    }
 }

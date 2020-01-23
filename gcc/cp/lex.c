@@ -387,34 +387,28 @@ module_preprocess_token (cpp_reader *pfile, cpp_token *tok, void *data_)
 {
   enum mode_sm
   {
-   msm_start_decl,
-   msm_other_decl,
-   msm_module_decl,
-   msm_extern_decl,
-   msm_pragma,
+   msm_idle,
+   msm_module_name,
+   msm_module_end,
   };
   struct state
   {
-    unsigned depth;
-    unsigned short extern_c;
     mode_sm mode : 8;
     bool is_import : 1;
     bool is_header : 1;
-    bool is_translated : 1;
-    bool got_colon : 1;
-    bool want_dot : 1;
-    bool want_semi : 1;
     bool got_export : 1;
+    bool got_colon : 1;
     location_t header_loc;
+    unsigned tok_ix;
     mkdeps *deps;
     module_state *module;
 
     state (mkdeps *deps)
-      : depth (0), extern_c (0), mode (msm_start_decl),
-      is_import (false), is_header (false), is_translated (false),
-      got_colon (false), want_dot (false), want_semi (false),
-      got_export (false), header_loc (UNKNOWN_LOCATION),
-      deps (deps), module (NULL)
+      : mode (msm_idle),
+      is_import (false), is_header (false),
+      got_export (false), got_colon (false),
+      header_loc (UNKNOWN_LOCATION),
+      tok_ix (0), deps (deps), module (NULL)
     {
     }
   };
@@ -422,7 +416,7 @@ module_preprocess_token (cpp_reader *pfile, cpp_token *tok, void *data_)
 
   if (!tok)
     {
-      /* Initialize.  */
+      /* Initialize or teardown.  */
       if (data)
 	{
 	  delete data;
@@ -434,243 +428,125 @@ module_preprocess_token (cpp_reader *pfile, cpp_token *tok, void *data_)
     }
 
   if (tok->type == CPP_PADDING || tok->type == CPP_COMMENT)
+    // FIXME: I don't think these can occur now?
     /* Unchanged state.  */
     return data;
 
   tree ident = NULL_TREE;
   switch (data->mode)
     {
-    case msm_pragma:
-      if (tok->type == CPP_PRAGMA_EOL)
-	data->mode = msm_start_decl;
-      break;
-
-    case msm_start_decl:
-      if (tok->type == CPP_PRAGMA)
-	{
-	  data->mode = msm_pragma;
-	  break;
-	}
-
-      if (!data->depth && tok->type == CPP_NAME)
+    case msm_idle:
+      if (tok->type == CPP_NAME)
 	{
 	  tree ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node.node));
 	  int keyword = C_RID_CODE (ident);
 	  switch (keyword)
 	    {
 	    default:
-	      goto maybe_end;
+	      break;
 
-	    case RID_EXPORT:
+	    case RID__EXPORT:
 	      data->got_export = true;
-	      break; /* Remain at start.  */
-
-	    case RID_EXTERN:
-	      data->mode = msm_extern_decl;
 	      break;
 
-	    case RID_IMPORT:
-	    case RID_MODULE:
-	      /* We allow __import inside extern C blocks, because
-		 that's how many C headers work.  Unfortunately.  */
-	      data->is_translated = IDENTIFIER_POINTER (ident)[0] == '_';
-	      if (!data->is_translated && data->extern_c)
-		goto maybe_end;
-	      if (keyword == RID_IMPORT)
-		{
-		  if (cpp_get_options (pfile)->preprocessed)
-		    data->is_translated = true;
-		  if (!data->is_translated)
-		    cpp_enable_filename_token (pfile, true);
-		  data->is_import = true;
-		}
-	      data->mode = msm_module_decl;
+	    case RID__IMPORT:
+	      data->is_import = true;
+	      /* FALLTHRU */
+	    case RID__MODULE:
+	      data->mode = msm_module_name;
+	      data->tok_ix = 0;
+	      data->got_colon = false;
+	      data->is_header = false;
 	      break;
 	    }
-	  break;
 	}
-      /* FALLTHROUGH */
+      break;
 
-    maybe_end:
-      data->mode = msm_other_decl;
-      /* FALLTHROUGH */
+    case msm_module_name:
+      if (data->is_import && !data->tok_ix
+	  && tok->type == CPP_HEADER_NAME)
+	{
+	  /* A header name.  The preprocessor will have already
+	     done include searching and canonicalization.  */
+	  tree string = build_string (tok->val.str.len,
+				      (const char *)tok->val.str.text);
+	  /* Rewrite the token we were given.  */
+	  tok->val.str.len = TREE_STRING_LENGTH (string);
+	  tok->val.str.text
+	    = (const unsigned char *)TREE_STRING_POINTER (string);
+	  tok->type = CPP_HEADER_NAME;
 
-    case msm_other_decl:
+	  ident = string;
+	  data->is_header = true;
+	  data->header_loc = tok->src_loc;
+	  data->mode = msm_module_end;
+	  goto header_unit;
+	}
+
       switch (tok->type)
 	{
-	case CPP_OPEN_BRACE:
-	case CPP_OPEN_PAREN:
-	case CPP_OPEN_SQUARE:
-	  data->depth++;
-	  break;
-
-	case CPP_CLOSE_PAREN:
-	case CPP_CLOSE_SQUARE:
-	  if (data->depth)
-	    data->depth--;
-	  break;
-
-	case CPP_CLOSE_BRACE:
-	  if (data->depth)
-	    data->depth--;
-	  else if (data->extern_c)
-	    data->extern_c--;
-	  /* FALLTHROUGH */
-
-	case CPP_SEMICOLON:
-	case CPP_PRAGMA_EOL:
-	  data->got_export = false;
-	  data->mode = msm_start_decl;
-	  break;
-
 	default:
-	  /* Still in a decl.  */
+	  data->mode = msm_module_end;
 	  break;
-	}
-      break;
 
-    case msm_extern_decl:
-      if (!data->want_semi)
-	{
-	  /* Not handling string concatenation or whatever here.  Bad
-	     user, no biscuit!  */
-	  if (tok->type != CPP_STRING)
-	    goto maybe_end;
-	  /* We only care about extern "C" {.  */
-	  if (tok->val.str.len != 3
-	      || tok->val.str.text[1] != 'C')
-	    goto maybe_end;
-	  data->want_semi = true;
-	}
-      else
-	{
-	  data->want_semi = false;
-	  if (tok->type != CPP_OPEN_BRACE)
-	    goto maybe_end;
-	  data->extern_c++;
-	  data->mode = msm_start_decl;
-	}
-      break;
-
-    case msm_module_decl:
-      if (data->is_import && !data->want_dot && !data->got_colon)
-	{
-	  if (!data->is_translated)
-	    cpp_enable_filename_token (pfile, false);
-	  if (tok->type == CPP_HEADER_NAME || tok->type == CPP_STRING)
-	    {
-	      tree string = build_string (tok->val.str.len,
-					  (const char *)tok->val.str.text);
-	      string = module_map_header (pfile, tok->src_loc,
-					  !data->is_translated,
-					  (const char *)tok->val.str.text,
-					  tok->val.str.len);
-	      /* Rewrite the token we were given.  */
-	      tok->val.str.len = TREE_STRING_LENGTH (string);
-	      tok->val.str.text
-		= (const unsigned char *)TREE_STRING_POINTER (string);
-	      ident = string;
-	      tok->type = CPP_HEADER_NAME;
-	      data->is_header = true;
-	      data->header_loc = tok->src_loc;
-	      goto header_unit;
-	    }
-
-	  if (data->extern_c)
-	    /* Inside an extern C it must be a header unit.  */
-	    goto square_one;
-	}
-
-      if (!data->is_header && !data->deps)
-	goto maybe_end;
-
-      switch (tok->type)
-	{
 	case CPP_COLON:
-	  if (data->depth)
-	    break;
-	  if (data->got_colon ||
-	      (data->is_import ? bool (data->module)
-	       : !(data->module && data->want_dot)))
-	    goto square_one;
+	  if (data->got_colon)
+	    data->mode = msm_module_end;
 	  data->got_colon = true;
-	  data->want_dot = false;
-	  break;
-
+	  if (!data->tok_ix)
+	    /* We have a leading ':'  */
+	    data->tok_ix--;
+	  /* FALLTHROUGH  */
 	case CPP_DOT:
-	  if (data->depth)
-	    break;
-	  if (!data->want_dot || data->is_header)
-	    goto square_one;
-	  data->want_dot = false;
+	  if (!(data->tok_ix & 1))
+	    data->mode = msm_module_end;
 	  break;
 
-	case CPP_OPEN_PAREN:
-	case CPP_OPEN_SQUARE:
-	  if (!data->want_dot)
-	    goto square_one;
-	  data->depth++;
-	  data->want_semi = true;
-	  break;
+	case CPP_PRAGMA_EOL:
+	case CPP_EOF:
+	  goto module_end;
 
-	case CPP_CLOSE_PAREN:
-	case CPP_CLOSE_SQUARE:
-	  if (!data->want_semi)
-	    goto square_one;
-	  if (!data->depth)
+	case CPP_NAME:
+	  if (data->tok_ix & 1)
 	    {
-	      if (tok->type == CPP_CLOSE_BRACE && data->extern_c)
-		data->extern_c--;
-	      goto square_one;
+	      data->mode = msm_module_end;
+	      break;
 	    }
-	  data->depth--;
+
+	  ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node.node));
+	header_unit:
+	  data->module = get_module (ident, data->module, data->got_colon);
 	  break;
+	}
+      data->tok_ix++;
+      break;
 
-	case CPP_SEMICOLON:
-	  if (data->depth)
-	    break;
-	  if (!data->want_dot)
-	    goto square_one;
-
+    case msm_module_end:
+      if (tok->type == CPP_PRAGMA_EOL
+	  || tok->type == CPP_EOF)
+	{
+	module_end:;
+	  /* End of the directive, register the dep and maybe import
+	     the header.  */
 	  if (data->module)
 	    {
 	      if (data->is_header)
 		/* Load the legacy import.  */
 		import_module (data->module, data->header_loc,
-			       data->got_export, NULL, pfile,
-			       data->extern_c);
+			       data->got_export, NULL, pfile, false);
+
 	      if (data->deps)
 		module_preprocess (data->deps, data->module,
 				   data->is_import ? 0
 				   : data->got_export ? +1 : -1);
 	    }
 
-	  /* FALLTHROUGH.  */
-	square_one:
-	default:
-	  {
-	    data->module = NULL;
-	    data->header_loc = UNKNOWN_LOCATION;
-	    data->got_colon = data->is_import = data->is_header = false;
-	    data->want_dot = data->want_semi = false;
-	    data->got_export = false;
-	    /* Reprocess the char.  */
-	    goto maybe_end;
-	  }
-	  break;
+	  data->module = NULL;
+	  data->header_loc = UNKNOWN_LOCATION;
+	  data->is_import = data->is_header = false;
+	  data->got_export = false;
 
-	case CPP_NAME:
-	  if (data->depth)
-	    break;
-	  if (data->want_dot)
-	    goto square_one;
-
-	  ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node.node));
-
-	header_unit:
-	  data->want_dot = true;
-	  data->module = get_module (ident, data->module, data->got_colon);
-	  break;
+	  data->mode = msm_idle;
 	}
       break;
     }

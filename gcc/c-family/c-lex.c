@@ -653,11 +653,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
       break;
 
     case CPP_HEADER_NAME:
-      /* An angle header name.  The value will be surrounded by BRA &
-	 KET.  */
       *value = build_string (tok->val.str.len, (const char *)tok->val.str.text);
-      /* Mutate into a header name.  */
-      type = CPP_HEADER_NAME;
       break;
 
       /* These tokens should not be visible outside cpplib.  */

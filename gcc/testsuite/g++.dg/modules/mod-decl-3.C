@@ -19,7 +19,8 @@ export
 
 namespace Bink
 {
-  import ben; // { dg-error "does not name" }
+  import  // { dg-error "does not name" }
+  ben;
 }
 
 // { dg-warning "not writing module" "" { target *-*-* } 0 }

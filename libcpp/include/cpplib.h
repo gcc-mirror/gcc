@@ -490,6 +490,9 @@ struct cpp_options
   /* Nonzero for the '::' token.  */
   unsigned char scope;
 
+  /* Nonzero means tokenize C++20 module directives.  */
+  unsigned char module_directives;
+
   /* Holds the name of the target (execution) character set.  */
   const char *narrow_charset;
 

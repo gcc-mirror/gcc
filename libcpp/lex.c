@@ -2642,6 +2642,111 @@ _cpp_lex_token (cpp_reader *pfile)
 	    }
 	  else if (pfile->state.in_deferred_pragma)
 	    result = &pfile->directive_result;
+	  else if (__builtin_expect (pfile->spec_nodes.n_export != 0, false)
+		   && result->type == CPP_NAME
+		   && !pfile->state.skipping
+		   /* Unlike regular directives, we do not deal with
+		      tokenizing module directives as macro arguments.
+		      That's not permitted.  */
+		   && !pfile->state.parsing_args)
+	    {
+	      /* P1857.  Before macro expansion, At start of logical
+		 line ... */
+	      /* We don't have to consider lookaheads at this point.  */
+	      gcc_checking_assert (!pfile->lookaheads);
+
+	      // FIXME defer this state change to as late as possible
+	      /* Enter deferred-pragma mode for the token lookahead.  */
+	      pfile->state.in_deferred_pragma = 1;
+	      pfile->state.pragma_allow_expansion = true;
+	      pfile->state.save_comments = 0;
+	      pfile->directive_line = result->src_loc;
+
+	      // FIXME do something about discarding_output
+	      cpp_token *peek = result;
+	      cpp_token *keyword = result;
+	      cpp_hashnode *node = result->val.node.node;
+	      bool is_export = node == pfile->spec_nodes.n_export;
+	      unsigned backup = 0;
+	      int importedness = 0;
+
+	      if (__builtin_expect (is_export, false))
+		{
+		  /* ... skip past an export preprocessing token.  */
+		  peek = keyword = _cpp_lex_direct (pfile);
+		  backup++;
+		  if (peek->type != CPP_NAME)
+		    goto not_module;
+		  node = peek->val.node.node;
+		}
+
+	      if (__builtin_expect (node == pfile->spec_nodes.n__import, false))
+		importedness = -1;
+	      else if (__builtin_expect (node == pfile->spec_nodes.n_import,
+					 false))
+		importedness = +1;
+	      if (importedness
+		  || __builtin_expect (node == pfile->spec_nodes.n_module,
+				       false))
+		{
+		  /* ... 'module' or 'import' token ... */
+
+		  if (importedness)
+		    /* After 'import' a header name may appear.  */
+		    pfile->state.angled_headers = true;
+		  peek = _cpp_lex_direct (pfile);
+		  backup++;
+		  
+		  /* ... import followed by identifier, ':', '<' or
+		     header-name preprocessing tokens, or module
+		     followed by identifier, ':' or ';' preprocessing
+		     tokens.  */
+		  if (peek->type == CPP_NAME
+		      || peek->type == CPP_COLON
+		      ||  (importedness
+			   ? (peek->type == CPP_LESS
+			      || (peek->type == CPP_STRING
+				  && peek->val.str.text[0] != 'R')
+			      || peek->type == CPP_HEADER_NAME)
+			   : peek->type == CPP_SEMICOLON))
+		    if (_cpp_setup_module_directive (pfile, result, keyword,
+						     importedness))
+		      {
+			if (importedness)
+			  {
+			    /* Tell the tokenizer we expect a
+			       header-name down the road.  */
+			    unsigned count = backup + 1;
+			    if (importedness < 0)
+			      count |= 16;
+			    pfile->state.directive_file_token = count;
+			  }
+			goto module;
+		      }
+		}
+
+	    not_module:
+	      /* Drop out of directive mode.  */
+	      pfile->state.save_comments
+		= !CPP_OPTION (pfile, discard_comments);
+	      pfile->state.in_deferred_pragma = 0;
+	      pfile->state.angled_headers = false;
+
+	    module:
+	      /* In either case we want to backup the peeked tokens.  */
+	      if (backup)
+		{
+		  bool eol = peek->type == CPP_PRAGMA_EOL;
+		  if (!eol || backup > 1)
+		    {
+		      /* Put put the peeked tokens back  */
+		      _cpp_backup_tokens_direct (pfile, backup);
+		      /* But if the last one was an EOL, forget it.  */
+		      if (eol)
+			pfile->lookaheads--;
+		    }
+		}
+	    }
 
 	  if (pfile->cb.line_change && !pfile->state.skipping)
 	    pfile->cb.line_change (pfile, result, pfile->state.parsing_args);
@@ -2742,6 +2847,9 @@ _cpp_lex_direct (cpp_reader *pfile)
     {
       if (pfile->state.in_deferred_pragma)
 	{
+	  // FIXME: It is annoying that we emit a line marker to go
+	  // back one line, and then immediately advance to the next
+	  // line.  (Not modules-specific?)
 	  result->type = CPP_PRAGMA_EOL;
 	  pfile->state.in_deferred_pragma = false;
 	  if (!pfile->state.pragma_allow_expansion)

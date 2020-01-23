@@ -1,5 +1,5 @@
 // { dg-additional-options -fmodules-ts }
-#define SEMI ; // { dg-error "macro expansion" }
-import bob SEMI // { dg-message "expansion of macro" }
-#define IMPORT import
+#define SEMI ; // this is ok since p1857
+import bob SEMI
+#define IMPORT import // { dg-error "does not name a type" }
 IMPORT bob ;

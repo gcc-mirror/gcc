@@ -4,5 +4,4 @@ import "cpp-5_a.H" // { dg-error "expected" }
 
 int main ()
 {
-  return;
 }

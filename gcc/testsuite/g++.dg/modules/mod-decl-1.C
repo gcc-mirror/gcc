@@ -10,17 +10,20 @@ module foo.second; // { dg-error "already declared" }
 
 namespace Foo 
 {
-  module third; // { dg-error "does not name a type" }
+  module  // { dg-error "does not name a type" }
+  third;
 }
 
 struct Baz
 {
-  module forth;  // { dg-error "does not name a type" }
+  module   // { dg-error "does not name a type" }
+  forth;
 };
 
 void Bink ()
 {
-  module fifth;  // { dg-error "not declared" }
+  module   // { dg-error "not declared" }
+    fifth;
 }
 
 module a.; // { dg-error "expected" }

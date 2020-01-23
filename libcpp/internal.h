@@ -276,8 +276,11 @@ struct lexer_state
   /* Nonzero to skip evaluating part of an expression.  */
   unsigned int skip_eval;
 
-  /* Nonzero when handling a deferred pragma.  */
+  /* Nonzero when tokenizing a deferred pragma.  */
   unsigned char in_deferred_pragma;
+
+  /* Count to token that is a header-name.  */
+  unsigned char directive_file_token;
 
   /* Nonzero if the deferred pragma being handled allows macro expansion.  */
   unsigned char pragma_allow_expansion;
@@ -293,6 +296,14 @@ struct spec_nodes
   cpp_hashnode *n__VA_OPT__;		/* C++ vararg macros */
   cpp_hashnode *n__has_include;		/* __has_include operator */
   cpp_hashnode *n__has_include_next;	/* __has_include_next operator */
+
+  /* C++2a modules, only set when module_directives is in effect.  */
+  cpp_hashnode *n_export;
+  cpp_hashnode *n_module;
+  cpp_hashnode *n_import;
+  cpp_hashnode *n__module; /* Remapped identifiers.  */
+  cpp_hashnode *n__import;
+  cpp_hashnode *n__export;
 };
 
 typedef struct _cpp_line_note _cpp_line_note;
@@ -749,6 +760,9 @@ extern void _cpp_define_builtin (cpp_reader *, const char *);
 extern char ** _cpp_save_pragma_names (cpp_reader *);
 extern void _cpp_restore_pragma_names (cpp_reader *, char **);
 extern int _cpp_do__Pragma (cpp_reader *, location_t);
+extern bool _cpp_setup_module_directive (cpp_reader *, cpp_token *first,
+					 cpp_token *keyword_token,
+					 int importedness);
 extern void _cpp_init_directives (cpp_reader *);
 extern void _cpp_init_internal_pragmas (cpp_reader *);
 extern void _cpp_do_file_change (cpp_reader *, enum lc_reason, const char *,

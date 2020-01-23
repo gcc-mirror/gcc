@@ -1,3 +1,53 @@
+2020-01-23  Nathan Sidwell  <nathan@acm.org>
+
+	Implement p1857, part 1
+	libcpp/
+	* internal.h (struct lexer_state): Add directive_file_token field.
+	(struct spec_nodes): Add module directive nodes.
+	(_cpp_setup_module_directive): Declare.
+	* include/cpplib.h (struct cpp_options): Add module_directives field.
+	* directives.c (_cpp_setup_module_directive): New.
+	* init.c (post_options): Provess module_directives option.
+	* lex.c (_cpp_lex_token): Add module directive handling.
+	* macro.c (cpp_get_token_1): Add directive_file_token handling.
+	gcc/cp/
+	* lex.c (module_preprocess_token): Reimplement.
+	* parser.c (cp_lexer_tokenize): Module lines end in
+	CPP_PRAGMA_EOL.
+	(cp_lexer_not_macro): Delete.
+	(cp_parser_module_directive_end): New.
+	(cp_parser_diagnose_invalid_typename): Adjust.
+	(cp_parser_translation_unit): Adjust.
+	(cp_parser_{module,import}_declaration): Adjust.
+	gcc/c-family/
+	* c-common.h (enum rid): Add RID__MODULE and co.
+	* c-common.c (c_common_reswords): Add __module and co.
+	* c-lex.c (c_lex_with_flags): Adjust CPP_HEADER_NAME handling.
+	* c-opts.c (c_common_post_options): Set module_directives option.
+	gcc/testsuite/
+	* g++.dg/modules/anon-2_b.C: Adjust error/scans.
+	* g++.dg/modules/atom-preamble-1.C: Likewise.
+	* g++.dg/modules/atom-preamble-3.C: Likewise.
+	* g++.dg/modules/cpp-2_c.C: Likewise.
+	* g++.dg/modules/cpp-5_b.C: Likewise.
+	* g++.dg/modules/cpp-5_c.C: Likewise.
+	* g++.dg/modules/dep-2.C: Likewise.
+	* g++.dg/modules/keyword-1_b.C: Likewise.
+	* g++.dg/modules/legacy-3_b.H: Likewise.
+	* g++.dg/modules/legacy-3_c.H: Likewise.
+	* g++.dg/modules/legacy-6_c.C: Likewise.
+	* g++.dg/modules/legacy-6_d.C: Likewise.
+	* g++.dg/modules/mod-decl-0-2a.C: Likewise.
+	* g++.dg/modules/mod-decl-0.C: Likewise.
+	* g++.dg/modules/mod-decl-1.C: Likewise.
+	* g++.dg/modules/mod-decl-3.C: Likewise.
+	* g++.dg/modules/token-1.C: Likewise.
+	* g++.dg/modules/token-2_b.C: Likewise.
+	* g++.dg/modules/token-3.C: Likewise.
+	* g++.dg/modules/token-4.C: Likewise.
+	* g++.dg/modules/exp-xlate-1_b.C: XFAIL
+	* g++.dg/modules/inc-xlate-1_d.C: XFAIL
+
 2020-01-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
