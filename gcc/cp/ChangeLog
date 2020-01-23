@@ -1,3 +1,9 @@
+2020-01-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/92804
+	* parser.c (cp_parser_nested_name_specifier_opt): Properly
+	diagnose concept-ids.
+
 2020-01-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/93331 - ICE with __builtin_strchr.
