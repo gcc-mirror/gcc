@@ -38,6 +38,8 @@
 	* config/cris/cris.md (zcond): New code_iterator.
 	("*cbranch<mode>4_btstq<CC>"): New insn_and_split.
 
+	* config/cris/cris.c (TARGET_FLAGS_REGNUM): Define.
+
 2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira-color.c (update_costs_from_allocno): Remove

@@ -219,6 +219,16 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #undef TARGET_PREFERRED_RELOAD_CLASS
 #define TARGET_PREFERRED_RELOAD_CLASS cris_preferred_reload_class
 
+/* We don't define TARGET_FIXED_CONDITION_CODE_REGS, as at the time of
+   this writing, it has an effect only on pre-reload CSE and when
+   scheduling (and for "macro fusion" at that).  Neither applies for
+   CRIS so don't waste compilation cycles on enabling a pass that does
+   nothing.  Beware of changes to its usage; it may make sense to enable
+   "later".  */
+
+#undef TARGET_FLAGS_REGNUM
+#define TARGET_FLAGS_REGNUM CRIS_CC0_REGNUM
+
 #undef TARGET_REGISTER_MOVE_COST
 #define TARGET_REGISTER_MOVE_COST cris_register_move_cost
 #undef TARGET_MEMORY_MOVE_COST
