@@ -10427,19 +10427,15 @@ any_template_parm_r (tree t, void *data)
     }									\
   while (0)
 
+  /* A mention of a member alias/typedef is a use of all of its template
+     arguments, including those from the enclosing class, so we don't use
+     alias_template_specialization_p here.  */
+  if (TYPE_P (t) && typedef_variant_p (t))
+    if (tree tinfo = TYPE_ALIAS_TEMPLATE_INFO (t))
+      WALK_SUBTREE (TI_ARGS (tinfo));
+
   switch (TREE_CODE (t))
     {
-    case RECORD_TYPE:
-    case UNION_TYPE:
-    case ENUMERAL_TYPE:
-      /* Search for template parameters in type aliases.  */
-      if (tree ats = alias_template_specialization_p (t, nt_opaque))
-	{
-	  tree tinfo = TYPE_ALIAS_TEMPLATE_INFO (ats);
-	  WALK_SUBTREE (TI_ARGS (tinfo));
-        }
-      break;
-
     case TEMPLATE_TYPE_PARM:
       /* Type constraints of a placeholder type may contain parameters.  */
       if (is_auto (t))
@@ -10472,6 +10468,8 @@ any_template_parm_r (tree t, void *data)
 	tree cparms = ftpi->ctx_parms;
 	while (TMPL_PARMS_DEPTH (dparms) > ftpi->max_depth)
 	  dparms = TREE_CHAIN (dparms);
+	while (TMPL_PARMS_DEPTH (cparms) > TMPL_PARMS_DEPTH (dparms))
+	  cparms = TREE_CHAIN (cparms);
 	while (dparms
 	       && (TREE_TYPE (TREE_VALUE (dparms))
 		   != TREE_TYPE (TREE_VALUE (cparms))))
