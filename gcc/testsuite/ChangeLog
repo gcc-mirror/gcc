@@ -1,5 +1,8 @@
 2020-01-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR inline-asm/93027
+	* gcc.target/i386/pr93027.c: Require lp64 target rather x86_64-*-*.
+
 	PR rtl-optimization/93402
 	* gcc.c-torture/execute/pr93402.c: New test.
 
