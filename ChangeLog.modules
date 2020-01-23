@@ -1,5 +1,9 @@
 2020-01-23  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* expr.c (parse_defined): Fixup for modules.
+	(parse_has_include): Remove controlling macro nonsense.
+
 	Implement p1857, part 1
 	libcpp/
 	* internal.h (struct lexer_state): Add directive_file_token field.

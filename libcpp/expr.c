@@ -1063,6 +1063,7 @@ parse_defined (cpp_reader *pfile)
 	}
     }
 
+  bool is_defined = false;
   if (node)
     {
       if ((pfile->context != initial_context
@@ -1070,8 +1071,10 @@ parse_defined (cpp_reader *pfile)
 	  && CPP_OPTION (pfile, warn_expansion_to_defined))
         cpp_pedwarning (pfile, CPP_W_EXPANSION_TO_DEFINED,
 		        "this use of \"defined\" may not be portable");
-
-      _cpp_maybe_notify_macro_use (pfile, node, token->src_loc);
+      is_defined = _cpp_defined_macro_p (node);
+      if (!_cpp_maybe_notify_macro_use (pfile, node, token->src_loc))
+	/* It wasn't a macro after all.  */
+	is_defined = false;
       _cpp_mark_macro_used (node);
 
       /* A possible controlling macro of the form #if !defined ().
@@ -1088,7 +1091,7 @@ parse_defined (cpp_reader *pfile)
   result.unsignedp = false;
   result.high = 0;
   result.overflow = false;
-  result.low = node && _cpp_defined_macro_p (node);
+  result.low = is_defined;
   return result;
 }
 
@@ -2211,14 +2214,12 @@ parse_has_include (cpp_reader *pfile, cpp_hashnode *op, include_type type)
   pfile->state.angled_headers = false;
 
   bool bracket = token->type != CPP_STRING;
-  cpp_hashnode *node = NULL;
   char *fname = NULL;
   if (token->type == CPP_STRING || token->type == CPP_HEADER_NAME)
     {
       fname = XNEWVEC (char, token->val.str.len - 1);
       memcpy (fname, token->val.str.text + 1, token->val.str.len - 2);
       fname[token->val.str.len - 2] = '\0';
-      node = token->val.node.node;
     }
   else if (token->type == CPP_LESS)
     fname = _cpp_bracket_include (pfile);
@@ -2240,9 +2241,6 @@ parse_has_include (cpp_reader *pfile, cpp_hashnode *op, include_type type)
   if (paren && !SEEN_EOL () && cpp_get_token (pfile)->type != CPP_CLOSE_PAREN)
     cpp_error (pfile, CPP_DL_ERROR,
 	       "missing ')' after \"%s\" operand", NODE_NAME (op));
-
-  if (node)
-    pfile->mi_ind_cmacro = node;
 
   return result;
 }
