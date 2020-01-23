@@ -1,3 +1,7 @@
+2020-01-23  Jeff Law  <law@redhat.com>
+
+	* config/h8300/h8300.c (h8300_option_override): Fix diagnostic text.
+
 2020-01-23  Mikael Tillenius  <mti-1@tillenius.com>
 
 	* config/h8300/h8300.h (FUNCTION_PROFILER): Fix emission of
