@@ -17393,7 +17393,8 @@ cxx_maybe_build_cleanup (tree decl, tsubst_flags_t complain)
       && !mark_used (decl, complain) && !(complain & tf_error))
     return error_mark_node;
 
-  if (cleanup && cfun && !expr_noexcept_p (cleanup, tf_none))
+  if (cleanup && cfun && !processing_template_decl
+      && !expr_noexcept_p (cleanup, tf_none))
     cp_function_chain->throwing_cleanup = true;
 
   return cleanup;

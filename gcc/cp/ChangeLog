@@ -1,3 +1,10 @@
+2020-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93345 - ICE with defaulted dtor and template.
+	PR c++/33799
+	* decl.c (cxx_maybe_build_cleanup): Don't try to set
+	throwing_cleanup in a template.
+
 2020-01-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/92907 - noexcept does not consider "const" in member functions.
