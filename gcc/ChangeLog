@@ -1,3 +1,8 @@
+2020-01-23  Mikael Tillenius  <mti-1@tillenius.com>
+
+	* config/h8300/h8300.h (FUNCTION_PROFILER): Fix emission of
+	profiling label
+
 2020-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/93402
