@@ -1,3 +1,10 @@
+2020-01-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91947
+	* include/Makefile.am (${host_builddir}/largefile-config.h): Simplify
+	rule.
+	* include/Makefile.in: Regenerate.
+
 2020-01-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/faq.xml: Fix grammar.
