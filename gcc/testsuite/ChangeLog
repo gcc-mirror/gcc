@@ -1,3 +1,9 @@
+2020-01-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93367
+	* gcc.dg/analyzer/abort.c: Remove include of <assert.h>.
+	Replace use of assert with a custom assertion implementation.
+
 2020-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/93027
