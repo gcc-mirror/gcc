@@ -1,5 +1,26 @@
 2020-01-22  Andrew Pinski  <apinski@marvell.com>
 
+	* gcc.dg/tree-ssa/pr88497-1.c: Move to ...
+	* gcc.dg/vect/pr88497-1.c: This.
+	* gcc.dg/tree-ssa/pr88497-2.c: Move to ...
+	* gcc.dg/vect/pr88497-2.c: This.
+	* gcc.dg/tree-ssa/pr88497-3.c: Move to ...
+	* gcc.dg/vect/pr88497-3.c: This.
+	* gcc.dg/tree-ssa/pr88497-4.c: Move to ...
+	* gcc.dg/vect/pr88497-4.c: This.
+	* gcc.dg/tree-ssa/pr88497-5.c: Move to ...
+	* gcc.dg/vect/pr88497-5.c: This.
+	* gcc.dg/tree-ssa/pr88497-6.c: Move to ...
+	* gcc.dg/vect/pr88497-6.c: This.
+	* gcc.dg/tree-ssa/pr88497-7.c: Move to ...
+	* gcc.dg/vect/pr88497-7.c: This.
+
+	Revert:
+	* tree-ssa.exp: Set DEFAULT_VECTCFLAGS and DEFAULT_VECTCFLAGS.
+	Call check_vect_support_and_set_flags also.
+
+2020-01-22  Andrew Pinski  <apinski@marvell.com>
+
 	* tree-ssa.exp: Set DEFAULT_VECTCFLAGS and DEFAULT_VECTCFLAGS.
 	Call check_vect_support_and_set_flags also.
 
