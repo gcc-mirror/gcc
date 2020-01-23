@@ -34,6 +34,10 @@
 	(cris_emit_insn): New function.
 	* cris/cris-protos.h (cris_emit_insn): Declare.
 
+	PR target/93372
+	* config/cris/cris.md (zcond): New code_iterator.
+	("*cbranch<mode>4_btstq<CC>"): New insn_and_split.
+
 2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira-color.c (update_costs_from_allocno): Remove

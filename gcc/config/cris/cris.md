@@ -178,6 +178,7 @@
 (define_code_attr shlr [(ashiftrt "ashr") (lshiftrt "lshr") (ashift "ashl")])
 (define_code_attr slr [(ashiftrt "asr") (lshiftrt "lsr") (ashift "lsl")])
 
+(define_code_iterator zcond [eq ne])
 (define_code_iterator ncond [eq ne gtu ltu geu leu])
 (define_code_iterator ocond [gt le])
 (define_code_iterator rcond [lt ge])
@@ -1930,6 +1931,32 @@
   [(set (reg:CC CRIS_CC0_REGNUM) (compare:CC (match_dup 1) (match_dup 2)))
    (set (pc)
 	(if_then_else (match_op_dup 0 [(reg:CC CRIS_CC0_REGNUM) (const_int 0)])
+		      (label_ref (match_dup 3))
+		      (pc)))]
+  "")
+
+;; FIXME: this matches only a subset of what the "*btst" pattern can handle.
+(define_insn_and_split "*cbranch<mode>4_btstq<CC>"
+  [(set (pc)
+	(if_then_else
+	 (zcond
+	  (zero_extract:BWD
+	   (match_operand:BWD 0 "register_operand" "r")
+	   (match_operand 1 "const_int_operand" "Kc")
+	   (const_int 0))
+	  (const_int 0))
+	 (label_ref (match_operand 2 ""))
+	 (pc)))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
+  ""
+  "#"
+  "&& reload_completed"
+  [(set (reg:CC CRIS_CC0_REGNUM)
+	(compare:CC
+	 (zero_extract:SI (match_dup 0) (match_dup 1) (const_int 0))
+	 (const_int 0)))
+   (set (pc)
+	(if_then_else (zcond (reg:CC CRIS_CC0_REGNUM) (const_int 0))
 		      (label_ref (match_dup 3))
 		      (pc)))]
   "")
