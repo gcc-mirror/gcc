@@ -1,3 +1,7 @@
+2020-01-23  Alexandre Oliva <oliva@adacore.com>
+
+	* testsuite/27_io/fpos/mbstate_t/1.cc: Zero-init mbstate_t.
+
 2020-01-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/91947
