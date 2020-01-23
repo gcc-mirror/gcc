@@ -63,6 +63,11 @@ package body System.OS_Lib is
    --  Mode = 1 - copy time stamps and read/write/execute attributes
    --  Mode = 2 - copy read/write/execute attributes
 
+   function Is_Dirsep (C : Character) return Boolean;
+   pragma Inline (Is_Dirsep);
+   --  Returns True if C is a directory separator. On Windows we
+   --  accept both \ and / as a directory separator.
+
    On_Windows : constant Boolean := Directory_Separator = '\';
    --  An indication that we are on Windows. Used in Normalize_Pathname, to
    --  deal with drive letters in the beginning of absolute paths.
@@ -336,22 +341,6 @@ package body System.OS_Lib is
       ----------------
 
       function Build_Path (Dir : String; File : String) return String is
-         function Is_Dirsep (C : Character) return Boolean;
-         pragma Inline (Is_Dirsep);
-         --  Returns True if C is a directory separator. On Windows we
-         --  handle both styles of directory separator.
-
-         ---------------
-         -- Is_Dirsep --
-         ---------------
-
-         function Is_Dirsep (C : Character) return Boolean is
-         begin
-            return C = Directory_Separator or else C = '/';
-         end Is_Dirsep;
-
-         --  Local variables
-
          Base_File_Ptr : Integer;
          --  The base file name is File (Base_File_Ptr + 1 .. File'Last)
 
@@ -1472,6 +1461,15 @@ package body System.OS_Lib is
       return Is_Absolute_Path (Name'Address, Name'Length) /= 0;
    end Is_Absolute_Path;
 
+   ---------------
+   -- Is_Dirsep --
+   ---------------
+
+   function Is_Dirsep (C : Character) return Boolean is
+   begin
+      return C = Directory_Separator or else C = '/';
+   end Is_Dirsep;
+
    ------------------
    -- Is_Directory --
    ------------------
@@ -2085,17 +2083,61 @@ package body System.OS_Lib is
 
       Fold_To_Lower_Case : constant Boolean :=
                              not Case_Sensitive
-                               and then Get_File_Names_Case_Sensitive = 0;
+                                 and then Get_File_Names_Case_Sensitive = 0;
+
+      Cur_Dir_Len : Natural  := 0;
+      End_Path    : Natural  := Name'Length;
+      Last        : Positive := 1;
+      Path_Buffer : String (1 .. End_Path + 2 * Max_Path + 4);
+      --  We need to potentially store in this buffer the following elements:
+      --  the path itself, the current directory if the path is relative,
+      --  and additional fragments up to Max_Path in length in case
+      --  there are any symlinks.
 
       function Final_Value (S : String) return String;
       --  Make final adjustment to the returned string. This function strips
       --  trailing directory separators, and folds returned string to lower
       --  case if required.
 
-      function Get_Directory  (Dir : String) return String;
-      --  If Dir is not empty, return it, adding a directory separator
-      --  if not already present, otherwise return current working directory
-      --  with terminating directory separator.
+      procedure Fill_Directory (Drive_Only : Boolean := False);
+      --  Fill Cur_Dir and Cur_Dir_Len with Directory and ending directory
+      --  separator or with current directory if Directory is not defined.
+      --  If Drive_Only is True takes only Drive letter with colon and
+      --  directory separator from Directory parameter or from current
+      --  directory if Directory parameter is empty.
+
+      function Is_With_Drive (Name : String) return Boolean;
+      pragma Inline (Is_With_Drive);
+      --  Returns True only if the Name is including a drive
+      --  letter at start.
+
+      function Missed_Drive_Letter (Name : String) return Boolean;
+      --  Missed drive letter at start of the normalized pathname
+
+      -------------------
+      -- Is_With_Drive --
+      -------------------
+
+      function Is_With_Drive (Name : String) return Boolean is
+      begin
+         return Name'Length > 1
+           and then Name (Name'First + 1) = ':'
+           and then (Name (Name'First) in 'a' .. 'z'
+                     or else Name (Name'First) in 'A' .. 'Z');
+      end Is_With_Drive;
+
+      -------------------------
+      -- Missed_Drive_Letter --
+      -------------------------
+
+      function Missed_Drive_Letter (Name : String) return Boolean is
+      begin
+         return On_Windows
+           and then not Is_With_Drive (Name)
+           and then (Name'Length < 2 -- not \\name case
+                     or else Name (Name'First .. Name'First + 1)
+                             /= Directory_Separator & Directory_Separator);
+      end Missed_Drive_Letter;
 
       -----------------
       -- Final_Value --
@@ -2116,22 +2158,14 @@ package body System.OS_Lib is
 
          Last := S1'Last;
 
-         if Last > 1
-           and then (S1 (Last) = '/'
-                       or else
-                     S1 (Last) = Directory_Separator)
-         then
-            --  Special case for Windows: C:\
-
-            if Last = 3
+         if Last > 1 and then Is_Dirsep (S1 (Last))
+           and then not
+             (On_Windows -- Special case for Windows: C:\
+              and then Last = 3
               and then S1 (1) /= Directory_Separator
-              and then S1 (2) = ':'
-            then
-               null;
-
-            else
-               Last := Last - 1;
-            end if;
+              and then S1 (2) = ':')
+         then
+            Last := Last - 1;
          end if;
 
          --  And ensure that there is a trailing directory separator if the
@@ -2148,90 +2182,80 @@ package body System.OS_Lib is
          end if;
       end Final_Value;
 
-      -------------------
-      -- Get_Directory --
-      -------------------
+      --------------------
+      -- Fill_Directory --
+      --------------------
 
-      function Get_Directory (Dir : String) return String is
+      procedure Fill_Directory (Drive_Only : Boolean := False) is
       begin
-         --  Directory given, add directory separator if needed
+         if Drive_Only and then Is_With_Drive (Directory) then
+            Path_Buffer (1 .. 3) :=
+              Directory (Directory'First .. Directory'First + 2);
 
-         if Dir'Length > 0 then
-            declare
-               Result : String   :=
-                          Normalize_Pathname
-                            (Dir, "", Resolve_Links, Case_Sensitive)
-                             & Directory_Separator;
-               Last   : Positive := Result'Last - 1;
+         elsif Directory = ""
+           or else not Is_Absolute_Path (Directory)
+           or else Missed_Drive_Letter (Directory)
+         then
+            --  Directory name not given or it is not absolute or without drive
+            --  letter on Windows, get current directory.
 
-            begin
-               --  On Windows, change all '/' to '\'
+            Cur_Dir_Len := Max_Path;
 
-               if On_Windows then
-                  for J in Result'First .. Last - 1 loop
-                     if Result (J) = '/' then
-                        Result (J) := Directory_Separator;
-                     end if;
-                  end loop;
+            Get_Current_Dir (Path_Buffer'Address, Cur_Dir_Len'Address);
+
+            if Cur_Dir_Len = 0 then
+               raise Program_Error;
+            end if;
+
+            if not Resolve_Links then
+               Last := Cur_Dir_Len;
+            end if;
+
+            if not Drive_Only and then Directory /= "" then
+               if On_Windows and then Is_Absolute_Path (Directory) then
+                  --  Drive letter taken from current directory but directory
+                  --  itself taken from Directory parameter.
+
+                  Path_Buffer (3 .. Directory'Length + 2) := Directory;
+                  Cur_Dir_Len := Directory'Length + 2;
+                  Last := 3;
+
+               else
+                  --  Append relative Directory to current directory
+
+                  Path_Buffer
+                    (Cur_Dir_Len + 1 .. Cur_Dir_Len + Directory'Length) :=
+                    Directory;
+                  Cur_Dir_Len := Cur_Dir_Len + Directory'Length;
                end if;
+            end if;
 
-               --  Include additional directory separator, if needed
-
-               if Result (Last) /= Directory_Separator then
-                  Last := Last + 1;
-               end if;
-
-               return Result (Result'First .. Last);
-            end;
-
-         --  Directory name not given, get current directory
+         elsif Directory'Length >= Path_Buffer'Length then
+            raise Constraint_Error with "Directory name to big";
 
          else
-            declare
-               Buffer   : String (1 .. Max_Path + 2);
-               Path_Len : Natural := Max_Path;
-
-            begin
-               Get_Current_Dir (Buffer'Address, Path_Len'Address);
-
-               if Path_Len = 0 then
-                  raise Program_Error;
-               end if;
-
-               if Buffer (Path_Len) /= Directory_Separator then
-                  Path_Len := Path_Len + 1;
-                  Buffer (Path_Len) := Directory_Separator;
-               end if;
-
-               --  By default, the drive letter on Windows is in upper case
-
-               if On_Windows
-                 and then Path_Len >= 2
-                 and then Buffer (2) = ':'
-               then
-                  System.Case_Util.To_Upper (Buffer (1 .. 1));
-               end if;
-
-               return Buffer (1 .. Path_Len);
-            end;
+            Path_Buffer (1 .. Directory'Length) := Directory;
+            Cur_Dir_Len := Directory'Length;
          end if;
-      end Get_Directory;
+
+         if Drive_Only then
+            --  When we need only drive letter from current directory on
+            --  Windows
+
+            Cur_Dir_Len := 3;
+            Last := Cur_Dir_Len;
+
+         elsif not Is_Dirsep (Path_Buffer (Cur_Dir_Len)) then
+            Cur_Dir_Len := Cur_Dir_Len + 1;
+            Path_Buffer (Cur_Dir_Len) := Directory_Separator;
+         end if;
+      end Fill_Directory;
 
       --  Local variables
 
       Max_Iterations : constant := 500;
 
-      Cur_Dir     : constant String  := Get_Directory (Directory);
-      Cur_Dir_Len : constant Natural := Cur_Dir'Length;
-
-      End_Path    : Natural := Name'Length;
-      Last        : Positive := 1;
       Link_Buffer : String (1 .. Max_Path + 2);
-      Path_Buffer : String (1 .. End_Path + Cur_Dir_Len + Max_Path + 2);
-      --  We need to potentially store in this buffer the following elements:
-      --  the path itself, the current directory if the path is relative,
-      --  and additional fragments up to Max_Path in length in case
-      --  there are any symlinks.
 
       Finish : Positive;
       Start  : Positive;
@@ -2247,14 +2271,23 @@ package body System.OS_Lib is
       end if;
 
       if Is_Absolute_Path (Name) then
-         Path_Buffer (1 .. End_Path) := Name;
+         if Missed_Drive_Letter (Name) then
+            Fill_Directory (Drive_Only => True);
+
+            --  Take only drive letter part with colon
+
+            End_Path := End_Path + 2;
+            Path_Buffer (3 .. End_Path) := Name;
+
+         else
+            Path_Buffer (1 .. End_Path) := Name;
+         end if;
 
       else
          --  If this is a relative pathname, prepend current directory
-         Path_Buffer (1 .. Cur_Dir_Len) := Cur_Dir;
+         Fill_Directory;
          Path_Buffer (Cur_Dir_Len + 1 .. Cur_Dir_Len + End_Path) := Name;
          End_Path := Cur_Dir_Len + End_Path;
-         Last := Cur_Dir_Len;
       end if;
 
       --  Special handling for Windows:
@@ -2271,30 +2304,11 @@ package body System.OS_Lib is
             end if;
          end loop;
 
-         --  If we have an absolute path starting with a directory
-         --  separator (but not a UNC path), we need to have the drive letter
-         --  in front of the path. Get_Current_Dir returns a path starting
-         --  with a drive letter. So we take this drive letter and prepend it
-         --  to the current path.
+         --  Ensure drive letter is upper-case
 
-         if Path_Buffer (1) = Directory_Separator
-           and then Path_Buffer (2) /= Directory_Separator
-         then
-            if Cur_Dir'Length > 2
-              and then Cur_Dir (Cur_Dir'First + 1) = ':'
-            then
-               Path_Buffer (3 .. End_Path + 2) :=
-                 Path_Buffer (1 .. End_Path);
-               Path_Buffer (1 .. 2) :=
-                 Cur_Dir (Cur_Dir'First .. Cur_Dir'First + 1);
-               End_Path := End_Path + 2;
-            end if;
+         pragma Assert (Path_Buffer (2) = ':');
 
-         --  We have a drive letter already, ensure it is upper-case
-
-         elsif Path_Buffer (1) in 'a' .. 'z'
-           and then Path_Buffer (2) = ':'
-         then
+         if Path_Buffer (1) in 'a' .. 'z' then
             System.Case_Util.To_Upper (Path_Buffer (1 .. 1));
          end if;
 
