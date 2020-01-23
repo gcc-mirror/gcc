@@ -10678,6 +10678,7 @@ package body Sem_Attr is
 
                      if not Is_Itype (Btyp)
                        and then not Has_Convention_Pragma (Btyp)
+                       and then Convention (Entity (P)) /= Convention_Intrinsic
                      then
                         Error_Msg_FE
                           ("\probable missing pragma Convention for &",

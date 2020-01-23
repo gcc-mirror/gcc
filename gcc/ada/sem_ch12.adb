@@ -10785,7 +10785,13 @@ package body Sem_Ch12 is
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => New_List (Make_Null_Statement (Loc))));
 
-         Set_Is_Intrinsic_Subprogram (Defining_Unit_Name (New_Spec));
+         --  RM 12.6 (16 2/2): The procedure has convention Intrinsic
+
+         Set_Convention (Defining_Unit_Name (New_Spec), Convention_Intrinsic);
+
+         --  Eliminate the calls to it when optimization is enabled
+
+         Set_Is_Inlined (Defining_Unit_Name (New_Spec));
          return Decl_Node;
 
       else
