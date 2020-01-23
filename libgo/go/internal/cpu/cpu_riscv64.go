@@ -3,5 +3,3 @@
 // license that can be found in the LICENSE file.
 
 package cpu
-
-const CacheLinePadSize = 32
