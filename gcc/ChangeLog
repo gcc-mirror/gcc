@@ -1,3 +1,12 @@
+2020-01-23  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	* config/mips/linux.h (NEED_INDICATE_EXEC_STACK): Define to
+	TARGET_SOFT_FLOAT.
+	* config/mips/mips.c (TARGET_ASM_FILE_END): Define to ...
+	(mips_asm_file_end): New function. Delegate to
+	file_end_indicate_exec_stack if NEED_INDICATE_EXEC_STACK is true.
+	* config/mips/mips.h (NEED_INDICATE_EXEC_STACK): Define to 0.
+
 2020-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93376
