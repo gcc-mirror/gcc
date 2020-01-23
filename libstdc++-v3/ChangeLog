@@ -1,5 +1,74 @@
 2020-01-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/92895
+	* include/std/stop_token (stop_token::stop_possible()): Call new
+	_M_stop_possible() function.
+	(stop_token::stop_requested()): Do not use stop_possible().
+	(stop_token::binary_semaphore): New class, as temporary stand-in for
+	std::binary_semaphore.
+	(stop_token::_Stop_cb::_M_callback): Add noexcept to type.
+	(stop_token::_Stop_cb::_M_destroyed, stop_token::_Stop_cb::_M_done):
+	New data members for symchronization with stop_callback destruction.
+	(stop_token::_Stop_cb::_Stop_cb): Make non-template.
+	(stop_token::_Stop_cb::_M_linked, stop_token::_Stop_cb::_S_execute):
+	Remove.
+	(stop_token::_Stop_cb::_M_run): New member function.
+	(stop_token::_Stop_state::_M_stopped, stop_token::_Stop_state::_M_mtx):
+	Remove.
+	(stop_token::_Stop_state::_M_owners): New data member to track
+	reference count for ownership.
+	(stop_token::_Stop_state::_M_value): New data member combining a
+	spinlock, the stop requested flag, and the reference count for
+	associated stop_source objects.
+	(stop_token::_Stop_state::_M_requester): New data member for
+	synchronization with stop_callback destruction.
+	(stop_token::_Stop_state::_M_stop_possible()): New member function.
+	(stop_token::_Stop_state::_M_stop_requested()): Inspect relevant bit
+	of _M_value.
+	(stop_token::_Stop_state::_M_add_owner)
+	(stop_token::_Stop_state::_M_release_ownership)
+	(stop_token::_Stop_state::_M_add_ssrc)
+	(stop_token::_Stop_state::_M_sub_ssrc): New member functions for
+	updating reference counts.
+	(stop_token::_Stop_state::_M_lock, stop_token::_Stop_state::_M_unlock)
+	(stop_token::_Stop_state::_M_lock, stop_token::_Stop_state::_M_unlock)
+	(stop_token::_Stop_state::_M_try_lock)
+	(stop_token::_Stop_state::_M_try_lock_and_stop)
+	(stop_token::_Stop_state::_M_do_try_lock): New member functions for
+	managing spinlock.
+	(stop_token::_Stop_state::_M_request_stop): Use atomic operations to
+	read and update state. Release lock while running callbacks. Use new
+	data members to synchronize with callback destruction.
+	(stop_token::_Stop_state::_M_remove_callback): Likewise.
+	(stop_token::_Stop_state::_M_register_callback): Use atomic operations
+	to read and update state.
+	(stop_token::_Stop_state_ref): Handle type to manage _Stop_state,
+	replacing shared_ptr.
+	(stop_source::stop_source(const stop_source&)): Update reference count.
+	(stop_source::operator=(const stop_source&)): Likewise.
+	(stop_source::~stop_source()): Likewise.
+	(stop_source::stop_source(stop_source&&)): Define as defaulted.
+	(stop_source::operator=(stop_source&&)): Establish postcondition on
+	parameter.
+	(stop_callback): Enforce preconditions on template parameter. Replace
+	base class with data member of new _Cb_impl type.
+	(stop_callback::stop_callback(const stop_token&, Cb&&))
+	(stop_callback::stop_callback(stop_token&&, Cb&&)): Fix TOCTTOU race.
+	(stop_callback::_Cb_impl): New type wrapping _Callback member and
+	defining the _S_execute member function.
+	* testsuite/30_threads/stop_token/stop_callback/deadlock-mt.cc: New
+	test.
+	* testsuite/30_threads/stop_token/stop_callback/deadlock.cc: New test.
+	* testsuite/30_threads/stop_token/stop_callback/destroy.cc: New test.
+	* testsuite/30_threads/stop_token/stop_callback/destructible_neg.cc:
+	New test.
+	* testsuite/30_threads/stop_token/stop_callback/invocable_neg.cc: New
+	test.
+	* testsuite/30_threads/stop_token/stop_callback/invoke.cc: New test.
+	* testsuite/30_threads/stop_token/stop_source/assign.cc: New test.
+	* testsuite/30_threads/stop_token/stop_token/stop_possible.cc: New
+	test.
+
 	* libsupc++/compare (__detail::__3way_builtin_ptr_cmp): Use
 	three_way_comparable_with.
 	(__detail::__3way_cmp_with): Remove workaround for fixed bug.
