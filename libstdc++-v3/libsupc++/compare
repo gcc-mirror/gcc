@@ -48,10 +48,7 @@ namespace std
 
   namespace __cmp_cat
   {
-    enum class _Eq
-    { equal = 0, equivalent = equal, nonequal = 1, nonequivalent = nonequal };
-
-    enum class _Ord { _Less = -1, _Greater = 1 };
+    enum class _Ord { equivalent = 0, less = -1, greater = 1 };
 
     enum class _Ncmp { _Unordered = -127 };
 
@@ -65,11 +62,6 @@ namespace std
   {
     int _M_value;
     bool _M_is_ordered;
-
-    constexpr explicit
-    partial_ordering(__cmp_cat::_Eq __v) noexcept
-    : _M_value(int(__v)), _M_is_ordered(true)
-    { }
 
     constexpr explicit
     partial_ordering(__cmp_cat::_Ord __v) noexcept
@@ -146,13 +138,13 @@ namespace std
 
   // valid values' definitions
   inline constexpr partial_ordering
-  partial_ordering::less(__cmp_cat::_Ord::_Less);
+  partial_ordering::less(__cmp_cat::_Ord::less);
 
   inline constexpr partial_ordering
-  partial_ordering::equivalent(__cmp_cat::_Eq::equivalent);
+  partial_ordering::equivalent(__cmp_cat::_Ord::equivalent);
 
   inline constexpr partial_ordering
-  partial_ordering::greater(__cmp_cat::_Ord::_Greater);
+  partial_ordering::greater(__cmp_cat::_Ord::greater);
 
   inline constexpr partial_ordering
   partial_ordering::unordered(__cmp_cat::_Ncmp::_Unordered);
@@ -160,10 +152,6 @@ namespace std
   class weak_ordering
   {
     int _M_value;
-
-    constexpr explicit
-    weak_ordering(__cmp_cat::_Eq __v) noexcept : _M_value(int(__v))
-    { }
 
     constexpr explicit
     weak_ordering(__cmp_cat::_Ord __v) noexcept : _M_value(int(__v))
@@ -243,22 +231,17 @@ namespace std
 
   // valid values' definitions
   inline constexpr weak_ordering
-  weak_ordering::less(__cmp_cat::_Ord::_Less);
+  weak_ordering::less(__cmp_cat::_Ord::less);
 
   inline constexpr weak_ordering
-  weak_ordering::equivalent(__cmp_cat::_Eq::equivalent);
+  weak_ordering::equivalent(__cmp_cat::_Ord::equivalent);
 
   inline constexpr weak_ordering
-  weak_ordering::greater(__cmp_cat::_Ord::_Greater);
+  weak_ordering::greater(__cmp_cat::_Ord::greater);
 
   class strong_ordering
   {
     int _M_value;
-
-    constexpr explicit
-    strong_ordering(__cmp_cat::_Eq __v) noexcept
-    : _M_value(int(__v))
-    { }
 
     constexpr explicit
     strong_ordering(__cmp_cat::_Ord __v) noexcept
@@ -350,16 +333,16 @@ namespace std
 
   // valid values' definitions
   inline constexpr strong_ordering
-  strong_ordering::less(__cmp_cat::_Ord::_Less);
+  strong_ordering::less(__cmp_cat::_Ord::less);
 
   inline constexpr strong_ordering
-  strong_ordering::equal(__cmp_cat::_Eq::equal);
+  strong_ordering::equal(__cmp_cat::_Ord::equivalent);
 
   inline constexpr strong_ordering
-  strong_ordering::equivalent(__cmp_cat::_Eq::equivalent);
+  strong_ordering::equivalent(__cmp_cat::_Ord::equivalent);
 
   inline constexpr strong_ordering
-  strong_ordering::greater(__cmp_cat::_Ord::_Greater);
+  strong_ordering::greater(__cmp_cat::_Ord::greater);
 
 
   // named comparison functions

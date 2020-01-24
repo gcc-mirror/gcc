@@ -1,3 +1,13 @@
+2020-01-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/compare (__cmp_cat::_Eq): Remove enumeration type.
+	(__cmp_cat::_Ord::equivalent): Add enumerator.
+	(__cmp_cat::_Ord::_Less, __cmp_cat::_Ord::_Greater): Rename to less
+	and greater.
+	(partial_ordering, weak_ordering, strong_ordering): Remove
+	constructors taking __cmp_cat::_Eq parameters. Use renamed
+	enumerators.
+
 2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
 
 	* acinclude.m4: Handle `--with-toolexeclibdir='.
