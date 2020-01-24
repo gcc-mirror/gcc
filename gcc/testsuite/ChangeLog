@@ -1,3 +1,8 @@
+2020-01-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93414 - poor diagnostic for dynamic_cast in constexpr context.
+	* g++.dg/cpp2a/constexpr-dynamic18.C: New test.
+
 2020-01-25  Feng Xue  <fxue@os.amperecomputing.com>
 
 	PR ipa/93166

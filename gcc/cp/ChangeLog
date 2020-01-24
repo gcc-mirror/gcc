@@ -1,3 +1,9 @@
+2020-01-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93414 - poor diagnostic for dynamic_cast in constexpr context.
+	* constexpr.c (cxx_eval_dynamic_cast_fn): Add a reference
+	dynamic_cast diagnostic.
+
 2020-01-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/93400 - ICE with constrained friend.
