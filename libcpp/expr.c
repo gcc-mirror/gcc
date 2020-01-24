@@ -2211,14 +2211,12 @@ parse_has_include (cpp_reader *pfile, cpp_hashnode *op, include_type type)
   pfile->state.angled_headers = false;
 
   bool bracket = token->type != CPP_STRING;
-  cpp_hashnode *node = NULL;
   char *fname = NULL;
   if (token->type == CPP_STRING || token->type == CPP_HEADER_NAME)
     {
       fname = XNEWVEC (char, token->val.str.len - 1);
       memcpy (fname, token->val.str.text + 1, token->val.str.len - 2);
       fname[token->val.str.len - 2] = '\0';
-      node = token->val.node.node;
     }
   else if (token->type == CPP_LESS)
     fname = _cpp_bracket_include (pfile);
@@ -2240,9 +2238,6 @@ parse_has_include (cpp_reader *pfile, cpp_hashnode *op, include_type type)
   if (paren && !SEEN_EOL () && cpp_get_token (pfile)->type != CPP_CLOSE_PAREN)
     cpp_error (pfile, CPP_DL_ERROR,
 	       "missing ')' after \"%s\" operand", NODE_NAME (op));
-
-  if (node)
-    pfile->mi_ind_cmacro = node;
 
   return result;
 }
