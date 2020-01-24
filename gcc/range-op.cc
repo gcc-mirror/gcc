@@ -2207,7 +2207,12 @@ operator_bitwise_or::op1_range (irange &r, tree type,
   if (types_compatible_p (type, boolean_type_node))
     return op_logical_or.op1_range (r, type, lhs, op2);
 
-  // For now do nothing with bitwise OR of value_range's.
+  if (lhs.zero_p ())
+    {
+      tree zero = build_zero_cst (type);
+      r = int_range<1> (zero, zero);
+      return true;
+    }
   r.set_varying (type);
   return true;
 }
@@ -2781,10 +2786,39 @@ pointer_and_operator::wi_fold (irange &r, tree type,
 class pointer_or_operator : public range_operator
 {
 public:
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
+  virtual bool op2_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op1) const;
   virtual void wi_fold (irange &r, tree type,
 			const wide_int &lh_lb, const wide_int &lh_ub,
 			const wide_int &rh_lb, const wide_int &rh_ub) const;
 } op_pointer_or;
+
+bool
+pointer_or_operator::op1_range (irange &r, tree type,
+				const irange &lhs,
+				const irange &op2 ATTRIBUTE_UNUSED) const
+{
+  if (lhs.zero_p ())
+    {
+      tree zero = build_zero_cst (type);
+      r = int_range<1> (zero, zero);
+      return true;
+    }
+  r.set_varying (type);
+  return true;
+}
+
+bool
+pointer_or_operator::op2_range (irange &r, tree type,
+				const irange &lhs,
+				const irange &op1) const
+{
+  return pointer_or_operator::op1_range (r, type, lhs, op1);
+}
 
 void
 pointer_or_operator::wi_fold (irange &r, tree type,
