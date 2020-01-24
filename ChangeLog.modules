@@ -1,3 +1,15 @@
+2020-01-24  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/c-family/
+	* c-common.h (enum rid): Remove non-underbarred module RIDs.
+	* c-common.c (c_common_reswords): Remove non-underbarred module keywords.
+	gcc/cp/
+	* lex.c (init_reswords): Module keywords are keywords.
+	* parser.c (cp_lexer_tokenize): Look for keywords.
+	(cp_parser_translation_unit): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/exp-xlate-1_b.C: Remove bogus xfail.
+
 2020-01-23  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/

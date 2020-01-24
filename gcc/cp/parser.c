@@ -682,7 +682,7 @@ cp_lexer_destroy (cp_lexer *lexer)
    to cp_lexer_debugging_p within this source file at compile time, when the
    lexer is not being debugged.  */
 
-#define LEXER_DEBUGGING_ENABLED_P true // FIXME: false
+#define LEXER_DEBUGGING_ENABLED_P false
 
 /* Returns nonzero if debugging information should be output.  */
 
@@ -957,13 +957,11 @@ cp_lexer_tokenize (cp_lexer *lexer, int extern_c_depth)
 	      break;
 
 	    case decl_start:
-	      if (tok->type == CPP_NAME
-		  && C_RID_CODE (tok->u.value) == RID__EXPORT)
+	      if (tok->keyword == RID__EXPORT)
 		;
 	      else if (tok->keyword == RID_EXTERN)
 		mode = decl_extern_c;
-	      else if (tok->type == CPP_NAME && !depth && modules_p ()
-		       && C_RID_CODE (tok->u.value) == RID__IMPORT)
+	      else if (tok->keyword == RID__IMPORT && !depth)
 		{
 		  tok = vec_safe_push (lexer->buffer, cp_token ());
 		  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
@@ -4885,17 +4883,10 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 
       if (modules_p ())
 	{
-	  // FIXME: We can stop this C_RID_CODE confusion
-
-	  bool exporting = token->type == CPP_NAME
-	    && C_RID_CODE (token->u.value) == RID__EXPORT;
+	  bool exporting = token->keyword == RID__EXPORT;
 	  cp_token *next
 	    = exporting ? cp_lexer_peek_nth_token (parser->lexer, 2) : token;
-	  if (next->type != CPP_NAME
-	      || (cp_lexer_peek_nth_token (parser->lexer, exporting + 2)->type
-		  == CPP_SCOPE))
-	    ;
-	  else if (C_RID_CODE (next->u.value) == RID__MODULE && !extern_c_depth)
+	  if (next->keyword == RID__MODULE && !extern_c_depth)
 	    {
 	      if (deferred_imports)
 		// FIXME: I think p1103 makes this unnecessary
@@ -4911,7 +4902,7 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	      deferred_imports = true;
 	      continue;
 	    }
-	  else if (C_RID_CODE (next->u.value) == RID__IMPORT)
+	  else if (next->keyword == RID__IMPORT)
 	    {
 	      if (preamble == MP_FIRST)
 		preamble = MP_NOTHING;

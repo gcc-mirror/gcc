@@ -190,8 +190,7 @@ enum rid
   RID_CONCEPT, RID_REQUIRES,
 
   /* C++ modules.  */
-  RID_MODULE, RID_IMPORT, // FIXME: delete when p1857 completed
-  RID__MODULE, RID__IMPORT, RID__EXPORT, // p1857
+  RID__MODULE, RID__IMPORT, RID__EXPORT, /* Internal tokens.  */
 
   /* C++ coroutines */
   RID_CO_AWAIT, RID_CO_YIELD, RID_CO_RETURN,
