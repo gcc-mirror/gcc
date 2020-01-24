@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-require-effective-target fopenmp }
 // { dg-additional-options "-fno-var-tracking-assignments -fopenmp" }
 
 struct A

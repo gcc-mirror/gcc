@@ -1,3 +1,8 @@
+2020-01-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR debug/92763
+	* g++.dg/debug/pr92763.C: Require fopenmp.
+
 2020-01-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93367
