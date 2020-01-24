@@ -1,5 +1,14 @@
 2020-01-24  Jason Merrill  <jason@redhat.com>
 
+	PR c++/93400 - ICE with constrained friend.
+	* constraint.cc (maybe_substitute_reqs_for): New.
+	* decl.c (function_requirements_equivalent_p): Call it.
+	* pt.c (tsubst_friend_function): Only substitute
+	TEMPLATE_PARMS_CONSTRAINTS.
+	(tsubst_template_parms): Copy constraints.
+
+2020-01-24  Jason Merrill  <jason@redhat.com>
+
 	PR c++/93279 - ICE with lambda in member operator.
 	* name-lookup.c (maybe_save_operator_binding): Don't remember
 	class-scope bindings.

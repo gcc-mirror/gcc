@@ -7832,6 +7832,7 @@ extern void remove_constraints                  (tree);
 extern tree current_template_constraints	(void);
 extern tree associate_classtype_constraints     (tree);
 extern tree build_constraints                   (tree, tree);
+extern tree maybe_substitute_reqs_for		(tree, const_tree);
 extern tree get_template_head_requirements	(tree);
 extern tree get_trailing_function_requirements	(tree);
 extern tree get_shorthand_constraints           (tree);

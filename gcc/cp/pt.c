@@ -10834,29 +10834,12 @@ tsubst_friend_function (tree decl, tree args)
       DECL_SAVED_TREE (DECL_TEMPLATE_RESULT (new_friend))
 	= DECL_SAVED_TREE (DECL_TEMPLATE_RESULT (decl));
 
-      /* Attach the template requirements to the new declaration
-         for declaration matching. We need to rebuild the requirements
-         so that parameter levels match.  */
-      if (tree ci = get_constraints (decl))
-	{
-	  tree parms = DECL_TEMPLATE_PARMS (new_friend);
-	  tree args = generic_targs_for (new_friend);
-	  tree treqs = tsubst_constraint (CI_TEMPLATE_REQS (ci), args,
-					  tf_warning_or_error, NULL_TREE);
-	  tree freqs = tsubst_constraint (CI_DECLARATOR_REQS (ci), args,
-					  tf_warning_or_error, NULL_TREE);
-
-	  /* Update the constraints -- these won't really be valid for
-	     checking, but that's not what we need them for. These ensure
-	     that the declared function can find the friend during
-	     declaration matching.  */
-	  tree new_ci = get_constraints (new_friend);
-	  CI_TEMPLATE_REQS (new_ci) = treqs;
-	  CI_DECLARATOR_REQS (new_ci) = freqs;
-
-	  /* Also update the template parameter list.  */
-	  TEMPLATE_PARMS_CONSTRAINTS (parms) = treqs;
-	}
+      /* Substitute TEMPLATE_PARMS_CONSTRAINTS so that parameter levels will
+	 match in decls_match.  */
+      tree parms = DECL_TEMPLATE_PARMS (new_friend);
+      tree treqs = TEMPLATE_PARMS_CONSTRAINTS (parms);
+      treqs = maybe_substitute_reqs_for (treqs, new_friend);
+      TEMPLATE_PARMS_CONSTRAINTS (parms) = treqs;
     }
 
   /* The mangled name for the NEW_FRIEND is incorrect.  The function
@@ -13225,6 +13208,8 @@ tsubst_template_parms (tree parms, tree args, tsubst_flags_t complain)
 	tree_cons (size_int (TMPL_PARMS_DEPTH (parms)
 			     - TMPL_ARGS_DEPTH (args)),
 		   new_vec, NULL_TREE);
+      TEMPLATE_PARMS_CONSTRAINTS (*new_parms)
+	= TEMPLATE_PARMS_CONSTRAINTS (parms);
     }
 
   --processing_template_decl;

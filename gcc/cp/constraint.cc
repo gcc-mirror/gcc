@@ -1189,6 +1189,29 @@ remove_constraints (tree t)
     decl_constraints->remove (t);
 }
 
+/* If DECL is a friend, substitute into REQS to produce requirements suitable
+   for declaration matching.  */
+
+tree
+maybe_substitute_reqs_for (tree reqs, const_tree decl_)
+{
+  if (reqs == NULL_TREE)
+    return NULL_TREE;
+  tree decl = CONST_CAST_TREE (decl_);
+  tree result = STRIP_TEMPLATE (decl);
+  if (DECL_FRIEND_P (result))
+    {
+      tree tmpl = decl == result ? DECL_TI_TEMPLATE (result) : decl;
+      tree gargs = generic_targs_for (tmpl);
+      processing_template_decl_sentinel s;
+      if (uses_template_parms (gargs))
+	++processing_template_decl;
+      reqs = tsubst_constraint (reqs, gargs,
+				tf_warning_or_error, NULL_TREE);
+    }
+  return reqs;
+}
+
 /* Returns the template-head requires clause for the template
    declaration T or NULL_TREE if none.  */
 
