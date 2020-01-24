@@ -2207,6 +2207,10 @@ target if target binutils supported.
 The following options only apply to building cross compilers.
 
 @table @code
+@item --with-toolexeclibdir=@var{dir}
+Specify the installation directory for libraries built with a cross compiler.
+The default is @option{$@{gcc_tooldir@}/lib}.
+
 @item --with-sysroot
 @itemx --with-sysroot=@var{dir}
 Tells GCC to consider @var{dir} as the root of a tree that contains

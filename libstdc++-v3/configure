@@ -942,6 +942,7 @@ enable_libstdcxx_filesystem_ts
 enable_cet
 with_gxx_include_dir
 enable_version_specific_runtime_libs
+with_toolexeclibdir
 with_gcc_major_version_only
 '
       ac_precious_vars='build_alias
@@ -1669,6 +1670,9 @@ Optional Packages:
                           set the std::string ABI to use by default
   --with-gxx-include-dir=DIR
                           installation directory for include files
+  --with-toolexeclibdir=DIR
+                          install libraries built with a cross compiler within
+                          DIR
   --with-gcc-major-version-only
                           use only GCC major number in filesystem paths
 
@@ -12053,7 +12057,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12056 "configure"
+#line 12060 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12159,7 +12163,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12162 "configure"
+#line 12166 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15851,7 +15855,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15854 "configure"
+#line 15858 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15886,7 +15890,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15889 "configure"
+#line 15893 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15921,7 +15925,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15924 "configure"
+#line 15928 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15957,7 +15961,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15960 "configure"
+#line 15964 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -16110,7 +16114,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16113 "configure"
+#line 16117 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16152,7 +16156,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16155 "configure"
+#line 16159 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -16186,7 +16190,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16189 "configure"
+#line 16193 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -77837,6 +77841,22 @@ fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $version_specific_libs" >&5
 $as_echo "$version_specific_libs" >&6; }
 
+
+# Check whether --with-toolexeclibdir was given.
+if test "${with_toolexeclibdir+set}" = set; then :
+  withval=$with_toolexeclibdir; case ${with_toolexeclibdir} in
+  /)
+    ;;
+  */)
+    with_toolexeclibdir=`echo $with_toolexeclibdir | sed 's,/$,,'`
+    ;;
+esac
+else
+  with_toolexeclibdir=no
+fi
+
+
+
   # Default case for install directory for include files.
   if test $version_specific_libs = no && test $gxx_include_dir = no; then
     gxx_include_dir='include/c++/${gcc_version}'
@@ -77867,7 +77887,14 @@ $as_echo "$version_specific_libs" >&6; }
     if test -n "$with_cross_host" &&
        test x"$with_cross_host" != x"no"; then
       glibcxx_toolexecdir='${exec_prefix}/${host_alias}'
-      glibcxx_toolexeclibdir='${toolexecdir}/lib'
+      case ${with_toolexeclibdir} in
+	no)
+	  glibcxx_toolexeclibdir='${toolexecdir}/lib'
+	  ;;
+	*)
+	  glibcxx_toolexeclibdir=${with_toolexeclibdir}
+	  ;;
+      esac
     else
       glibcxx_toolexecdir='${libdir}/gcc/${host_alias}'
       glibcxx_toolexeclibdir='${libdir}'

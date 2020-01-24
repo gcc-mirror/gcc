@@ -1,5 +1,5 @@
 /* PR inline-asm/93027 */
-/* { dg-do compile  { target x86_64-*-* } } */
+/* { dg-do compile  { target lp64 } } */
 /* { dg-options "-O0" } */
 
 int main (void) {

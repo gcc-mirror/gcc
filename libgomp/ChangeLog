@@ -1,3 +1,27 @@
+2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure.ac: Handle `--with-toolexeclibdir='.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2020-01-24  Frederik Harwath  <frederik@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-aux.c
+	(expect_device_properties): Remove "expected_free_mem" argument,
+	change "expected_total_mem" argument type to size_t;
+	change types of acc_get_property results to size_t,
+	adapt format strings.
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property.c:
+	Use %zu instead of %zd to print size_t values.
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-2.c: Adapt and
+	rename to ...
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-nvptx.c: ... this.
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-3.c: Adapt and
+	rename to ...
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-host.c: ... this.
+
 2020-01-23  Andrew Stubbs  <ams@codesourcery.com>
 
 	* plugin/plugin-gcn.c (parse_target_attributes): Use correct mask for

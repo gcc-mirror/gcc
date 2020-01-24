@@ -1,3 +1,8 @@
+2020-01-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92852 - ICE with generic lambda and reference var.
+	* constexpr.c (maybe_constant_value): Likewise.
+
 2020-01-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/92804

@@ -378,8 +378,8 @@ h8300_option_override (void)
 
  if ((!TARGET_H8300S  &&  TARGET_NEXR) && (!TARGET_H8300SX && TARGET_NEXR))
    {
-      warning (OPT_mno_exr, "%<-mno-exr%> valid only with %<-ms%> or "
-	       "%<-msx%> - Option ignored!");
+      warning (OPT_mno_exr, "%<-mno-exr%> is valid only with %<-ms%> or "
+	       "%<-msx%> - option ignored");
    }
 
 #ifdef H8300_LINUX 
@@ -1647,40 +1647,52 @@ h8300_print_operand (FILE *file, rtx x, int code)
     case 's':
       if (GET_CODE (x) == CONST_INT)
 	fprintf (file, "#%ld", (INTVAL (x)) & 0xff);
-      else
+      else if (GET_CODE (x) == REG)
 	fprintf (file, "%s", byte_reg (x, 0));
+      else
+	output_operand_lossage ("Expected register or constant integer.");
       break;
     case 't':
       if (GET_CODE (x) == CONST_INT)
 	fprintf (file, "#%ld", (INTVAL (x) >> 8) & 0xff);
-      else
+      else if (GET_CODE (x) == REG)
 	fprintf (file, "%s", byte_reg (x, 1));
+      else
+	output_operand_lossage ("Expected register or constant integer.");
       break;
     case 'w':
       if (GET_CODE (x) == CONST_INT)
 	fprintf (file, "#%ld", INTVAL (x) & 0xff);
-      else
+      else if (GET_CODE (x) == REG)
 	fprintf (file, "%s",
 		 byte_reg (x, TARGET_H8300 ? 2 : 0));
+      else
+	output_operand_lossage ("Expected register or constant integer.");
       break;
     case 'x':
       if (GET_CODE (x) == CONST_INT)
 	fprintf (file, "#%ld", (INTVAL (x) >> 8) & 0xff);
-      else
+      else if (GET_CODE (x) == REG)
 	fprintf (file, "%s",
 		 byte_reg (x, TARGET_H8300 ? 3 : 1));
+      else
+	output_operand_lossage ("Expected register or constant integer.");
       break;
     case 'y':
       if (GET_CODE (x) == CONST_INT)
 	fprintf (file, "#%ld", (INTVAL (x) >> 16) & 0xff);
-      else
+      else if (GET_CODE (x) == REG)
 	fprintf (file, "%s", byte_reg (x, 0));
+      else
+	output_operand_lossage ("Expected register or constant integer.");
       break;
     case 'z':
       if (GET_CODE (x) == CONST_INT)
 	fprintf (file, "#%ld", (INTVAL (x) >> 24) & 0xff);
-      else
+      else if (GET_CODE (x) == REG)
 	fprintf (file, "%s", byte_reg (x, 1));
+      else
+	output_operand_lossage ("Expected register or constant integer.");
       break;
 
     default:

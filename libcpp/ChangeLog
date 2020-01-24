@@ -1,3 +1,7 @@
+2020-01-24  Nathan Sidwell  <nathan@acm.org>
+
+	* expr.c (parse_has_include): Remove bogus controlling macro code.
+
 2020-01-20  Nathan Sidwell  <nathan@acm.org>
 
 	PR preprocessor/80005
