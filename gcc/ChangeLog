@@ -1,3 +1,9 @@
+2020-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93276
+	* digraph.cc (test_edge::test_edge): Specify template for base
+	class initializer.
+
 2020-01-27  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.c (arc_rtx_costs): Update mul64 cost.

@@ -1,3 +1,27 @@
+2020-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93276
+	* analyzer.h (PUSH_IGNORE_WFORMAT, POP_IGNORE_WFORMAT): Guard these
+	macros with GCC_VERSION >= 4006, making them no-op otherwise.
+	* engine.cc (exploded_edge::exploded_edge): Specify template for
+	base class initializer.
+	(exploded_graph::add_edge): Specify template when chaining up to
+	base class add_edge implementation.
+	(viz_callgraph_node::dump_dot): Drop redundant "typename".
+	(viz_callgraph_edge::viz_callgraph_edge): Specify template for
+	base class initializer.
+	* program-state.cc (sm_state_map::clone_with_remapping): Drop
+	redundant "typename".
+	(sm_state_map::print): Likewise.
+	(sm_state_map::hash): Likewise.
+	(sm_state_map::operator==): Likewise.
+	(sm_state_map::remap_svalue_ids): Likewise.
+	(sm_state_map::on_svalue_purge): Likewise.
+	(sm_state_map::validate): Likewise.
+	* program-state.h (sm_state_map::iterator_t): Likewise.
+	* supergraph.h (superedge::superedge): Specify template for base
+	class initializer.
+
 2020-01-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93375

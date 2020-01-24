@@ -304,7 +304,7 @@ class superedge : public dedge<supergraph_traits>
 
  protected:
   superedge (supernode *src, supernode *dest, enum edge_kind kind)
-  : dedge (src, dest),
+  : dedge<supergraph_traits> (src, dest),
     m_kind (kind)
   {}
 

@@ -87,7 +87,7 @@ sm_state_map::clone_with_remapping (const one_way_svalue_id_map &id_map) const
 {
   sm_state_map *result = new sm_state_map ();
   result->m_global_state = m_global_state;
-  for (typename map_t::iterator iter = m_map.begin ();
+  for (map_t::iterator iter = m_map.begin ();
        iter != m_map.end ();
        ++iter)
     {
@@ -121,7 +121,7 @@ sm_state_map::print (const state_machine &sm, pretty_printer *pp) const
       pp_printf (pp, "global: %s", sm.get_state_name (m_global_state));
       first = false;
     }
-  for (typename map_t::iterator iter = m_map.begin ();
+  for (map_t::iterator iter = m_map.begin ();
        iter != m_map.end ();
        ++iter)
     {
@@ -172,7 +172,7 @@ sm_state_map::hash () const
   /* Accumulate the result by xoring a hash for each slot, so that the
      result doesn't depend on the ordering of the slots in the map.  */
 
-  for (typename map_t::iterator iter = m_map.begin ();
+  for (map_t::iterator iter = m_map.begin ();
        iter != m_map.end ();
        ++iter)
     {
@@ -199,7 +199,7 @@ sm_state_map::operator== (const sm_state_map &other) const
   if (m_map.elements () != other.m_map.elements ())
     return false;
 
-  for (typename map_t::iterator iter = m_map.begin ();
+  for (map_t::iterator iter = m_map.begin ();
        iter != m_map.end ();
        ++iter)
     {
@@ -395,7 +395,7 @@ sm_state_map::remap_svalue_ids (const svalue_id_map &map)
   map_t tmp_map;
 
   /* Build an intermediate map, using the new sids.  */
-  for (typename map_t::iterator iter = m_map.begin ();
+  for (map_t::iterator iter = m_map.begin ();
        iter != m_map.end ();
        ++iter)
     {
@@ -411,7 +411,7 @@ sm_state_map::remap_svalue_ids (const svalue_id_map &map)
   m_map.empty ();
 
   /* Copy over from intermediate map.  */
-  for (typename map_t::iterator iter = tmp_map.begin ();
+  for (map_t::iterator iter = tmp_map.begin ();
        iter != tmp_map.end ();
        ++iter)
     {
@@ -437,7 +437,7 @@ sm_state_map::on_svalue_purge (const state_machine &sm,
   /* TODO: ideally remove the slot directly; for now
      do it in two stages.  */
   auto_vec<svalue_id> to_remove;
-  for (typename map_t::iterator iter = m_map.begin ();
+  for (map_t::iterator iter = m_map.begin ();
        iter != m_map.end ();
        ++iter)
     {
@@ -507,7 +507,7 @@ sm_state_map::validate (const state_machine &sm,
   return;
 #endif
 
-  for (typename map_t::iterator iter = m_map.begin ();
+  for (map_t::iterator iter = m_map.begin ();
        iter != m_map.end ();
        ++iter)
     {

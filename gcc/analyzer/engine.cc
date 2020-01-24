@@ -1377,7 +1377,7 @@ rewind_info_t::add_events_to_path (checker_path *emission_path,
       dst_stack_depth, this));
 }
 
-/* class exploded_edge : public dedge.  */
+/* class exploded_edge : public dedge<eg_traits>.  */
 
 /* exploded_edge's ctor.  */
 
@@ -1385,7 +1385,7 @@ exploded_edge::exploded_edge (exploded_node *src, exploded_node *dest,
 			      const superedge *sedge,
 			      const state_change &change,
 			      custom_info_t *custom_info)
-: dedge (src, dest), m_sedge (sedge), m_change (change),
+: dedge<eg_traits> (src, dest), m_sedge (sedge), m_change (change),
   m_custom_info (custom_info)
 {
   change.validate (dest->get_state ());
@@ -1991,7 +1991,7 @@ exploded_graph::add_edge (exploded_node *src, exploded_node *dest,
 			  exploded_edge::custom_info_t *custom_info)
 {
   exploded_edge *e = new exploded_edge (src, dest, sedge, change, custom_info);
-  digraph::add_edge (e);
+  digraph<eg_traits>::add_edge (e);
   return e;
 }
 
@@ -3332,7 +3332,7 @@ public:
 	// TODO: also show the per-callstring breakdown
 	const exploded_graph::call_string_data_map_t *per_cs_data
 	  = args.m_eg->get_per_call_string_data ();
-	for (typename exploded_graph::call_string_data_map_t::iterator iter
+	for (exploded_graph::call_string_data_map_t::iterator iter
 	       = per_cs_data->begin ();
 	     iter != per_cs_data->end ();
 	     ++iter)
@@ -3391,7 +3391,7 @@ class viz_callgraph_edge : public dedge<viz_callgraph_traits>
 public:
   viz_callgraph_edge (viz_callgraph_node *src, viz_callgraph_node *dest,
 		     const call_superedge *call_sedge)
-  : dedge (src, dest),
+  : dedge<viz_callgraph_traits> (src, dest),
     m_call_sedge (call_sedge)
   {}
 
