@@ -626,22 +626,23 @@ gori_compute::~gori_compute ()
 {
 }
 
-// Given the statement S, return an evaluation in R for NAME when the
-// lhs evaluates to LHS.  Returning false means the name being looked
-// for was not resolvable.  If present, NAME_RANGE is any known range
-// for NAME coming into S.
+// Return an evaluation for NAME as it would appear in STMT when the
+// statement's lhs evaluates to LHS.  If successful, return TRUE and
+// store the evaluation in R, otherwise return FALSE.
+//
+// If present, NAME_RANGE is any known range for NAME coming into STMT.
 
 bool
-gori_compute::compute_operand_range (irange &r, gimple *s,
+gori_compute::compute_operand_range (irange &r, gimple *stmt,
 				     const irange &lhs,
 				     tree name,
 				     const irange *name_range)
 {
-  if (gimple_range_handler (s))
-    return compute_operand_range_op (r, s, lhs, name, name_range);
-  if (is_a<gswitch *> (s))
-    return compute_operand_range_switch (r, as_a<gswitch *> (s), lhs, name,
-					 name_range);
+  if (gimple_range_handler (stmt))
+    return compute_operand_range_op (r, stmt, lhs, name, name_range);
+  if (is_a<gswitch *> (stmt))
+    return compute_operand_range_switch (r, as_a<gswitch *> (stmt), lhs,
+					 name, name_range);
   return false;
 }
 
@@ -705,10 +706,11 @@ is_gimple_logical_p (const gimple *gs)
   return false;
 }
 
-// Given the range_op S, return an evaluation in R for NAME when the
-// lhs evaluates to LHS.  Returning false means the name being looked
-// for was not resolvable.  If present, NAME_RANGE is any known range
-// for NAME coming into S.
+// Return an evaluation for NAME as it would appear in STMT when the
+// statement's lhs evaluates to LHS.  If successful, return TRUE and
+// store the evaluation in R, otherwise return FALSE.
+//
+// If present, NAME_RANGE is any known range for NAME coming into STMT.
 
 bool
 gori_compute::compute_operand_range_op (irange &r, gimple *stmt,
