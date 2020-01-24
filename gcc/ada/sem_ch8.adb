@@ -906,10 +906,108 @@ package body Sem_Ch8 is
             Find_Type (Subtype_Mark (N));
          end if;
 
-      elsif Present (Subtype_Mark (N)) then
-         Find_Type (Subtype_Mark (N));
-         T := Entity (Subtype_Mark (N));
-         Analyze (Nam);
+      elsif Present (Subtype_Mark (N))
+        or else not Present (Access_Definition (N))
+      then
+         if Present (Subtype_Mark (N)) then
+            Find_Type (Subtype_Mark (N));
+            T := Entity (Subtype_Mark (N));
+            Analyze (Nam);
+
+         --  AI12-0275: Case of object renaming without a subtype_mark
+
+         else
+            Analyze (Nam);
+
+            --  Normal case of no overloading in object name
+
+            if not Is_Overloaded (Nam) then
+
+               --  Catch error cases (such as attempting to rename a procedure
+               --  or package) using the shorthand form.
+
+               if No (Etype (Nam))
+                 or else Etype (Nam) = Standard_Void_Type
+               then
+                  Error_Msg_N ("object name expected in renaming", Nam);
+
+                  Set_Ekind (Id, E_Variable);
+                  Set_Etype (Id, Any_Type);
+
+                  return;
+
+               else
+                  T := Etype (Nam);
+               end if;
+
+            --  Case of overloaded name, which will be illegal if there's more
+            --  than one acceptable interpretation (such as overloaded function
+            --  calls).
+
+            else
+               declare
+                  I    : Interp_Index;
+                  I1   : Interp_Index;
+                  It   : Interp;
+                  It1  : Interp;
+                  Nam1 : Entity_Id;
+
+               begin
+                  --  More than one candidate interpretation is available
+
+                  --  Remove procedure calls, which syntactically cannot appear
+                  --  in this context, but which cannot be removed by type
+                  --  checking, because the context does not impose a type.
+
+                  Get_First_Interp (Nam, I, It);
+                  while Present (It.Typ) loop
+                     if It.Typ = Standard_Void_Type then
+                        Remove_Interp (I);
+                     end if;
+
+                     Get_Next_Interp (I, It);
+                  end loop;
+
+                  Get_First_Interp (Nam, I, It);
+                  I1  := I;
+                  It1 := It;
+
+                  --  If there's no type present, we have an error case (such
+                  --  as overloaded procedures named in the object renaming).
+
+                  if No (It.Typ) then
+                     Error_Msg_N ("object name expected in renaming", Nam);
+
+                     Set_Ekind (Id, E_Variable);
+                     Set_Etype (Id, Any_Type);
+
+                     return;
+                  end if;
+
+                  Get_Next_Interp (I, It);
+
+                  if Present (It.Typ) then
+                     Nam1  := It1.Nam;
+                     It1 := Disambiguate (Nam, I1, I, Any_Type);
+
+                     if It1 = No_Interp then
+                        Error_Msg_N ("ambiguous name in object renaming", Nam);
+
+                        Error_Msg_Sloc := Sloc (It.Nam);
+                        Error_Msg_N ("\\possible interpretation#!", Nam);
+
+                        Error_Msg_Sloc := Sloc (Nam1);
+                        Error_Msg_N ("\\possible interpretation#!", Nam);
+
+                        return;
+                     end if;
+                  end if;
+
+                  Set_Etype (Nam, It1.Typ);
+                  T := It1.Typ;
+               end;
+            end if;
+         end if;
 
          --  The object renaming declaration may become Ghost if it renames a
          --  Ghost entity.
