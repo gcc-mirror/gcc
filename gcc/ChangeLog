@@ -1,5 +1,12 @@
 2020-01-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/93395
+	* config/i386/sse.md (*avx_vperm_broadcast_v4sf,
+	*avx_vperm_broadcast_<mode>,
+	<sse2_avx_avx512f>_vpermil<mode><mask_name>,
+	*<sse2_avx_avx512f>_vpermilp<mode><mask_name>):
+	Move before avx2_perm<mode>/avx512f_perm<mode>.
+
 	PR target/93376
 	* simplify-rtx.c (simplify_const_unary_operation,
 	simplify_const_binary_operation): Punt for mode precision above

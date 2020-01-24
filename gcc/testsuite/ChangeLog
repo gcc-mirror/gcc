@@ -1,3 +1,9 @@
+2020-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93395
+	* gcc.target/i386/pr93395.c: New test.
+	* gcc.target/i386/avx512vl-vpermilpdi-1.c: Remove xfail.
+
 2020-01-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93299 - ICE in tsubst_copy with parenthesized expression.
