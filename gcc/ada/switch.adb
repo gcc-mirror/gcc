@@ -165,7 +165,10 @@ package body Switch is
           (Switch_Chars (First .. Last) = "-param"        or else
            Switch_Chars (First .. Last) = "dumpdir"       or else
            Switch_Chars (First .. Last) = "dumpbase"      or else
-           Switch_Chars (First .. Last) = "dumpbase-ext");
+           Switch_Chars (First .. Last) = "dumpbase-ext"  or else
+           -- Can we remove auxbase-strip and auxbase already?
+           Switch_Chars (First .. Last) = "auxbase-strip" or else
+           Switch_Chars (First .. Last) = "auxbase");
    end Is_Internal_GCC_Switch;
 
    ---------------
