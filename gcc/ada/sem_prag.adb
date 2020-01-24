@@ -4756,6 +4756,13 @@ package body Sem_Prag is
          then
             null;
 
+         --  For Ada_2020, pre/postconditions can appear on formal subprograms
+
+         elsif Nkind (Subp_Decl) = N_Formal_Concrete_Subprogram_Declaration
+            and then Ada_Version >= Ada_2020
+         then
+            null;
+
          --  Otherwise the placement is illegal
 
          else
@@ -30022,6 +30029,13 @@ package body Sem_Prag is
                --  anonymous wrapper package.
 
                elsif Present (Generic_Parent (Specification (Stmt))) then
+                  return Stmt;
+
+               --  Ada_2020: contract on formal subprogram
+
+               elsif Is_Generic_Actual_Subprogram (Defining_Entity (Stmt))
+                 and then Ada_Version >= Ada_2020
+               then
                   return Stmt;
                end if;
             end if;
