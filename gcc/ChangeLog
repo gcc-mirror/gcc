@@ -1,3 +1,23 @@
+2020-01-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (vec_cmp<mode>di): Use
+	gcn_fp_compare_operator.
+	(vec_cmpu<mode>di): Use gcn_compare_operator.
+	(vec_cmp<u>v64qidi): Use gcn_compare_operator.
+	(vec_cmp<mode>di_exec): Use gcn_fp_compare_operator.
+	(vec_cmpu<mode>di_exec): Use gcn_compare_operator.
+	(vec_cmp<u>v64qidi_exec): Use gcn_compare_operator.
+	(vec_cmp<mode>di_dup): Use gcn_fp_compare_operator.
+	(vec_cmp<mode>di_dup_exec): Use gcn_fp_compare_operator.
+	(vcond<VEC_ALLREG_MODE:mode><VEC_ALLREG_ALT:mode>): Use
+	gcn_fp_compare_operator.
+	(vcond<VEC_ALLREG_MODE:mode><VEC_ALLREG_ALT:mode>_exec): Use
+	gcn_fp_compare_operator.
+	(vcondu<VEC_ALLREG_MODE:mode><VEC_ALLREG_INT_MODE:mode>): Use
+	gcn_fp_compare_operator.
+	(vcondu<VEC_ALLREG_MODE:mode><VEC_ALLREG_INT_MODE:mode>_exec): Use
+	gcn_fp_compare_operator.
+
 2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
 
 	* doc/install.texi (Cross-Compiler-Specific Options): Document
