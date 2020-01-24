@@ -2441,14 +2441,15 @@ package body Sprint is
             Write_Indent;
             Set_Debug_Sloc;
             Sprint_Node (Defining_Identifier (Node));
-            Write_Str (" : ");
 
             --  Ada 2005 (AI-230): Access renamings
 
             if Present (Access_Definition (Node)) then
+               Write_Str (" : ");
                Sprint_Node (Access_Definition (Node));
 
             elsif Present (Subtype_Mark (Node)) then
+               Write_Str (" : ");
 
                --  Ada 2005 (AI-423): Object renaming with a null exclusion
 
@@ -2458,8 +2459,13 @@ package body Sprint is
 
                Sprint_Node (Subtype_Mark (Node));
 
+            --  AI12-0275: Object_Renaming_Declaration without explicit subtype
+
+            elsif Ada_Version >= Ada_2020 then
+               null;
+
             else
-               Write_Str (" ??? ");
+               Write_Str (" :  ??? ");
             end if;
 
             Write_Str_With_Col_Check (" renames ");
