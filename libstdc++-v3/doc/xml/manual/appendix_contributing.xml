@@ -170,9 +170,10 @@
 
       <listitem>
 	<para>
-	  The patch itself. If you are accessing the Git
-	  repository use <command>git pull; git diff &gt;NEW</command>;
-	  else, use <command>diff -cp OLD NEW</command> ... If your
+	  The patch itself. If you are using the Git repository use
+	  <command>git diff</command> or <command>git format-patch</command>
+	  to produce a patch;
+	  otherwise, use <command>diff -cp OLD NEW</command>. If your
 	  version of diff does not support these options, then get the
 	  latest version of GNU diff.
 	</para>
