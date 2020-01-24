@@ -1132,7 +1132,7 @@ static const struct tune_params neoversen1_tunings =
   3, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops  */
   "32:16",	/* function_align.  */
-  "32:16",	/* jump_align.  */
+  "4",		/* jump_align.  */
   "32:16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
@@ -2607,11 +2607,16 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
     case SYMBOL_SMALL_TLSGD:
       {
 	rtx_insn *insns;
-	machine_mode mode = GET_MODE (dest);
-	rtx result = gen_rtx_REG (mode, R0_REGNUM);
+	/* The return type of __tls_get_addr is the C pointer type
+	   so use ptr_mode.  */
+	rtx result = gen_rtx_REG (ptr_mode, R0_REGNUM);
+	rtx tmp_reg = dest;
+
+	if (GET_MODE (dest) != ptr_mode)
+	  tmp_reg = can_create_pseudo_p () ? gen_reg_rtx (ptr_mode) : result;
 
 	start_sequence ();
-	if (TARGET_ILP32)
+	if (ptr_mode == SImode)
 	  aarch64_emit_call_insn (gen_tlsgd_small_si (result, imm));
 	else
 	  aarch64_emit_call_insn (gen_tlsgd_small_di (result, imm));
@@ -2619,7 +2624,11 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
 	end_sequence ();
 
 	RTL_CONST_CALL_P (insns) = 1;
-	emit_libcall_block (insns, dest, result, imm);
+	emit_libcall_block (insns, tmp_reg, result, imm);
+	/* Convert back to the mode of the dest adding a zero_extend
+	   from SImode (ptr_mode) to DImode (Pmode). */
+	if (dest != tmp_reg)
+	  convert_move (dest, tmp_reg, true);
 	return;
       }
 
@@ -18123,6 +18132,34 @@ aarch64_declare_function_name (FILE *stream, const char* name,
   /* Don't forget the type directive for ELF.  */
   ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "function");
   ASM_OUTPUT_LABEL (stream, name);
+
+  cfun->machine->label_is_assembled = true;
+}
+
+/* Implement PRINT_PATCHABLE_FUNCTION_ENTRY.  Check if the patch area is after
+   the function label and emit a BTI if necessary.  */
+
+void
+aarch64_print_patchable_function_entry (FILE *file,
+					unsigned HOST_WIDE_INT patch_area_size,
+					bool record_p)
+{
+  if (cfun->machine->label_is_assembled
+      && aarch64_bti_enabled ()
+      && !cgraph_node::get (cfun->decl)->only_called_directly_p ())
+    {
+      /* Remove the BTI that follows the patch area and insert a new BTI
+	 before the patch area right after the function label.  */
+      rtx_insn *insn = next_real_nondebug_insn (get_insns ());
+      if (insn
+	  && INSN_P (insn)
+	  && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
+	  && XINT (PATTERN (insn), 1) == UNSPECV_BTI_C)
+	delete_insn (insn);
+      asm_fprintf (file, "\thint\t34 // bti c\n");
+    }
+
+  default_print_patchable_function_entry (file, patch_area_size, record_p);
 }
 
 /* Implement ASM_OUTPUT_DEF_FROM_DECLS.  Output .variant_pcs for aliases.  */
@@ -20165,14 +20202,15 @@ aarch64_expand_subvti (rtx op0, rtx low_dest, rtx low_in1,
     }
   else
     {
-      if (CONST_INT_P (low_in2))
-	{
-	  high_in2 = force_reg (DImode, high_in2);
-	  emit_insn (gen_subdi3_compare1_imm (low_dest, low_in1, low_in2,
-					      GEN_INT (-INTVAL (low_in2))));
-	}
+      if (aarch64_plus_immediate (low_in2, DImode))
+	emit_insn (gen_subdi3_compare1_imm (low_dest, low_in1, low_in2,
+					    GEN_INT (-INTVAL (low_in2))));
       else
-	emit_insn (gen_subdi3_compare1 (low_dest, low_in1, low_in2));
+	{
+	  low_in2 = force_reg (DImode, low_in2);
+	  emit_insn (gen_subdi3_compare1 (low_dest, low_in1, low_in2));
+	}
+      high_in2 = force_reg (DImode, high_in2);
 
       if (unsigned_p)
 	emit_insn (gen_usubdi3_carryinC (high_dest, high_in1, high_in2));
@@ -21969,6 +22007,9 @@ aarch64_run_selftests (void)
 
 #undef TARGET_ASM_TRAMPOLINE_TEMPLATE
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE aarch64_asm_trampoline_template
+
+#undef TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY
+#define TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY aarch64_print_patchable_function_entry
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST aarch64_build_builtin_va_list

@@ -396,6 +396,20 @@ struct gcn_image_desc
   struct global_var_info *global_variables;
 };
 
+/* This enum mirrors the corresponding LLVM enum's values for all ISAs that we
+   support.
+   See https://llvm.org/docs/AMDGPUUsage.html#amdgpu-ef-amdgpu-mach-table */
+
+typedef enum {
+  EF_AMDGPU_MACH_AMDGCN_GFX801 = 0x028,
+  EF_AMDGPU_MACH_AMDGCN_GFX803 = 0x02a,
+  EF_AMDGPU_MACH_AMDGCN_GFX900 = 0x02c,
+  EF_AMDGPU_MACH_AMDGCN_GFX906 = 0x02f,
+} EF_AMDGPU_MACH;
+
+const static int EF_AMDGPU_MACH_MASK = 0x000000ff;
+typedef EF_AMDGPU_MACH gcn_isa;
+
 /* Description of an HSA GPU agent (device) and the program associated with
    it.  */
 
@@ -408,8 +422,9 @@ struct agent_info
   /* Whether the agent has been initialized.  The fields below are usable only
      if it has been.  */
   bool initialized;
-  /* Precomputed check for problem architectures.  */
-  bool gfx900_p;
+
+  /* The instruction set architecture of the device. */
+  gcn_isa device_isa;
 
   /* Command queues of the agent.  */
   hsa_queue_t *sync_queue;
@@ -1213,7 +1228,8 @@ parse_target_attributes (void **input,
 	  grid_attrs_found = true;
 	  break;
 	}
-      else if ((id & GOMP_TARGET_ARG_DEVICE_ALL) == GOMP_TARGET_ARG_DEVICE_ALL)
+      else if ((id & GOMP_TARGET_ARG_DEVICE_MASK)
+	       == GOMP_TARGET_ARG_DEVICE_ALL)
 	{
 	  gcn_dims_found = true;
 	  switch (id & GOMP_TARGET_ARG_ID_MASK)
@@ -1232,7 +1248,8 @@ parse_target_attributes (void **input,
 
   if (gcn_dims_found)
     {
-      if (agent->gfx900_p && gcn_threads == 0 && override_z_dim == 0)
+      if (agent->device_isa == EF_AMDGPU_MACH_AMDGCN_GFX900
+	  && gcn_threads == 0 && override_z_dim == 0)
 	{
 	  gcn_threads = 4;
 	  GCN_WARNING ("VEGA BUG WORKAROUND: reducing default number of "
@@ -1576,6 +1593,74 @@ get_data_memory_region (hsa_region_t region, void *data)
 {
   return get_memory_region (region, (hsa_region_t *)data,
 			    HSA_REGION_GLOBAL_FLAG_COARSE_GRAINED);
+}
+
+static int
+elf_gcn_isa_field (Elf64_Ehdr *image)
+{
+  return image->e_flags & EF_AMDGPU_MACH_MASK;
+}
+
+const static char *gcn_gfx801_s = "gfx801";
+const static char *gcn_gfx803_s = "gfx803";
+const static char *gcn_gfx900_s = "gfx900";
+const static char *gcn_gfx906_s = "gfx906";
+const static int gcn_isa_name_len = 6;
+
+/* Returns the name that the HSA runtime uses for the ISA or NULL if we do not
+   support the ISA. */
+
+static const char*
+isa_hsa_name (int isa) {
+  switch(isa)
+    {
+    case EF_AMDGPU_MACH_AMDGCN_GFX801:
+      return gcn_gfx801_s;
+    case EF_AMDGPU_MACH_AMDGCN_GFX803:
+      return gcn_gfx803_s;
+    case EF_AMDGPU_MACH_AMDGCN_GFX900:
+      return gcn_gfx900_s;
+    case EF_AMDGPU_MACH_AMDGCN_GFX906:
+      return gcn_gfx906_s;
+    }
+  return NULL;
+}
+
+/* Returns the user-facing name that GCC uses to identify the architecture (e.g.
+   with -march) or NULL if we do not support the ISA.
+   Keep in sync with /gcc/config/gcn/gcn.{c,opt}.  */
+
+static const char*
+isa_gcc_name (int isa) {
+  switch(isa)
+    {
+    case EF_AMDGPU_MACH_AMDGCN_GFX801:
+      return "carrizo";
+    case EF_AMDGPU_MACH_AMDGCN_GFX803:
+      return "fiji";
+    default:
+      return isa_hsa_name (isa);
+    }
+}
+
+/* Returns the code which is used in the GCN object code to identify the ISA with
+   the given name (as used by the HSA runtime).  */
+
+static gcn_isa
+isa_code(const char *isa) {
+  if (!strncmp (isa, gcn_gfx801_s, gcn_isa_name_len))
+    return EF_AMDGPU_MACH_AMDGCN_GFX801;
+
+  if (!strncmp (isa, gcn_gfx803_s, gcn_isa_name_len))
+    return EF_AMDGPU_MACH_AMDGCN_GFX803;
+
+  if (!strncmp (isa, gcn_gfx900_s, gcn_isa_name_len))
+    return EF_AMDGPU_MACH_AMDGCN_GFX900;
+
+  if (!strncmp (isa, gcn_gfx906_s, gcn_isa_name_len))
+    return EF_AMDGPU_MACH_AMDGCN_GFX906;
+
+  return -1;
 }
 
 /* }}}  */
@@ -2257,6 +2342,39 @@ find_load_offset (Elf64_Addr *load_offset, struct agent_info *agent,
   return res;
 }
 
+/* Check that the GCN ISA of the given image matches the ISA of the agent. */
+
+static bool
+isa_matches_agent (struct agent_info *agent, Elf64_Ehdr *image)
+{
+  int isa_field = elf_gcn_isa_field (image);
+  const char* isa_s = isa_hsa_name (isa_field);
+  if (!isa_s)
+    {
+      hsa_error ("Unsupported ISA in GCN code object.", HSA_STATUS_ERROR);
+      return false;
+    }
+
+  if (isa_field != agent->device_isa)
+    {
+      char msg[120];
+      const char *agent_isa_s = isa_hsa_name (agent->device_isa);
+      const char *agent_isa_gcc_s = isa_gcc_name (agent->device_isa);
+      assert (agent_isa_s);
+      assert (agent_isa_gcc_s);
+
+      snprintf (msg, sizeof msg,
+		"GCN code object ISA '%s' does not match GPU ISA '%s'.\n"
+		"Try to recompile with '-foffload=-march=%s'.\n",
+		isa_s, agent_isa_s, agent_isa_gcc_s);
+
+      hsa_error (msg, HSA_STATUS_ERROR);
+      return false;
+    }
+
+  return true;
+}
+
 /* Create and finalize the program consisting of all loaded modules.  */
 
 static bool
@@ -2288,6 +2406,9 @@ create_and_finalize_hsa_program (struct agent_info *agent)
   if (module)
     {
       Elf64_Ehdr *image = (Elf64_Ehdr *)module->image_desc->gcn_image->image;
+
+      if (!isa_matches_agent (agent, image))
+	goto fail;
 
       /* Hide relocations from the HSA runtime loader.
 	 Keep a copy of the unmodified section headers to use later.  */
@@ -3294,7 +3415,10 @@ GOMP_OFFLOAD_init_device (int n)
 					  &buf);
   if (status != HSA_STATUS_SUCCESS)
     return hsa_error ("Error querying the name of the agent", status);
-  agent->gfx900_p = (strncmp (buf, "gfx900", 6) == 0);
+
+  agent->device_isa = isa_code (buf);
+  if (agent->device_isa < 0)
+    return hsa_error ("Unknown GCN agent architecture.", HSA_STATUS_ERROR);
 
   status = hsa_fns.hsa_queue_create_fn (agent->id, queue_size,
 					HSA_QUEUE_TYPE_MULTI,

@@ -186,6 +186,7 @@ configure_deps = \
 	$(srcdir)/../config/multi.m4 \
 	$(srcdir)/../config/override.m4 \
 	$(srcdir)/../config/picflag.m4 \
+	$(srcdir)/../config/toolexeclibdir.m4 \
 	$(srcdir)/../config/unwind_ipinfo.m4
 
 $(srcdir)/configure: @MAINT@ $(configure_deps)

@@ -10717,7 +10717,7 @@ ix86_tls_module_base (void)
   if (!ix86_tls_module_base_symbol)
     {
       ix86_tls_module_base_symbol
-	= gen_rtx_SYMBOL_REF (Pmode, "_TLS_MODULE_BASE_");
+	= gen_rtx_SYMBOL_REF (ptr_mode, "_TLS_MODULE_BASE_");
 
       SYMBOL_REF_FLAGS (ix86_tls_module_base_symbol)
 	|= TLS_MODEL_GLOBAL_DYNAMIC << SYMBOL_FLAG_TLS_SHIFT;
@@ -10748,8 +10748,6 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
   switch (model)
     {
     case TLS_MODEL_GLOBAL_DYNAMIC:
-      dest = gen_reg_rtx (Pmode);
-
       if (!TARGET_64BIT)
 	{
 	  if (flag_pic && !TARGET_PECOFF)
@@ -10763,24 +10761,16 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 
       if (TARGET_GNU2_TLS)
 	{
+	  dest = gen_reg_rtx (ptr_mode);
 	  if (TARGET_64BIT)
-	    emit_insn (gen_tls_dynamic_gnu2_64 (Pmode, dest, x));
+	    emit_insn (gen_tls_dynamic_gnu2_64 (ptr_mode, dest, x));
 	  else
 	    emit_insn (gen_tls_dynamic_gnu2_32 (dest, x, pic));
 
-	  tp = get_thread_pointer (Pmode, true);
-
-	  /* NB: Since DEST set by tls_dynamic_gnu2_64 is in ptr_mode,
-	     make sure that PLUS is done in ptr_mode.  */
-	  if (Pmode != ptr_mode)
-	    {
-	      tp = lowpart_subreg (ptr_mode, tp, Pmode);
-	      dest = lowpart_subreg (ptr_mode, dest, Pmode);
-	      dest = gen_rtx_PLUS (ptr_mode, tp, dest);
-	      dest = gen_rtx_ZERO_EXTEND (Pmode, dest);
-	    }
-	  else
-	    dest = gen_rtx_PLUS (Pmode, tp, dest);
+	  tp = get_thread_pointer (ptr_mode, true);
+	  dest = gen_rtx_PLUS (ptr_mode, tp, dest);
+	  if (GET_MODE (dest) != Pmode)
+	     dest = gen_rtx_ZERO_EXTEND (Pmode, dest);
 	  dest = force_reg (Pmode, dest);
 
 	  if (GET_MODE (x) != Pmode)
@@ -10792,6 +10782,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	{
 	  rtx caddr = ix86_tls_get_addr ();
 
+	  dest = gen_reg_rtx (Pmode);
 	  if (TARGET_64BIT)
 	    {
 	      rtx rax = gen_rtx_REG (Pmode, AX_REG);
@@ -10815,8 +10806,6 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
       break;
 
     case TLS_MODEL_LOCAL_DYNAMIC:
-      base = gen_reg_rtx (Pmode);
-
       if (!TARGET_64BIT)
 	{
 	  if (flag_pic)
@@ -10832,19 +10821,22 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	{
 	  rtx tmp = ix86_tls_module_base ();
 
+	  base = gen_reg_rtx (ptr_mode);
 	  if (TARGET_64BIT)
-	    emit_insn (gen_tls_dynamic_gnu2_64 (Pmode, base, tmp));
+	    emit_insn (gen_tls_dynamic_gnu2_64 (ptr_mode, base, tmp));
 	  else
 	    emit_insn (gen_tls_dynamic_gnu2_32 (base, tmp, pic));
 
-	  tp = get_thread_pointer (Pmode, true);
-	  set_unique_reg_note (get_last_insn (), REG_EQUAL,
-			       gen_rtx_MINUS (Pmode, tmp, tp));
+	  tp = get_thread_pointer (ptr_mode, true);
+	  if (GET_MODE (base) != Pmode)
+	    base = gen_rtx_ZERO_EXTEND (Pmode, base);
+	  base = force_reg (Pmode, base);
 	}
       else
 	{
 	  rtx caddr = ix86_tls_get_addr ();
 
+	  base = gen_reg_rtx (Pmode);
 	  if (TARGET_64BIT)
 	    {
 	      rtx rax = gen_rtx_REG (Pmode, AX_REG);
@@ -10876,11 +10868,8 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 
       if (TARGET_GNU2_TLS)
 	{
-	  /* NB: Since DEST set by tls_dynamic_gnu2_64 is in ptr_mode,
-	     make sure that PLUS is done in ptr_mode.  */
-	  if (Pmode != ptr_mode)
+	  if (GET_MODE (tp) != Pmode)
 	    {
-	      tp = lowpart_subreg (ptr_mode, tp, Pmode);
 	      dest = lowpart_subreg (ptr_mode, dest, Pmode);
 	      dest = gen_rtx_PLUS (ptr_mode, tp, dest);
 	      dest = gen_rtx_ZERO_EXTEND (Pmode, dest);

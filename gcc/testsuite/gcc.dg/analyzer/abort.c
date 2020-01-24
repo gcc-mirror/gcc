@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "analyzer-decls.h"
@@ -62,11 +61,20 @@ void test_4 (void *ptr)
 
 /**************************************************************************/
 
+/* Verify that we discover conditions from assertions if the assert macro
+   isn't disabled, and that it has its failure-handler labelled with
+   __attribute__ ((__noreturn__)).
+   This attribute isn't present for all implementations of <assert.h>, so
+   we have to test the idea using our own assert macro.  */
+
+extern void my_assert_fail (const char *expr, const char *file, int line)
+  __attribute__ ((__noreturn__));
+
+#define MY_ASSERT(EXPR) \
+  do { if (!(EXPR)) my_assert_fail (#EXPR, __FILE__, __LINE__); } while (0)
+
 void test_5 (int i)
 {
-  assert (i < 10);
-
-  /* We have not defined NDEBUG, so this will call __assert_fail if
-     i >= 10, which is labelled with __attribute__ ((__noreturn__)).  */
+  MY_ASSERT (i < 10);
   __analyzer_eval (i < 10); /* { dg-warning "TRUE" } */
 }

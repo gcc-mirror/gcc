@@ -20,7 +20,7 @@ f1 (svbool_t pg, signed char *s8_ptr, short *s16_ptr,
   svldnt1_gather_offset (pg, s32_ptr, s32, 0); /* { dg-error {too many arguments to function 'svldnt1_gather_offset'} } */
   svldnt1_gather_offset (0, s32_ptr, u32); /* { dg-error {passing 'int' to argument 1 of 'svldnt1_gather_offset', which expects 'svbool_t'} } */
   svldnt1_gather_offset (pg, 0, s32); /* { dg-error {passing 'int' to argument 2 of 'svldnt1_gather_offset', which expects a pointer type} } */
-  svldnt1_gather_offset (pg, (int *) 0, u32);
+  svldnt1_gather_offset (pg, (int32_t *) 0, u32);
   svldnt1_gather_offset (pg, void_ptr, u32); /* { dg-error {passing 'void \*' to argument 2 of 'svldnt1_gather_offset', but 'void' is not a valid SVE element type} } */
   svldnt1_gather_offset (pg, s_ptr, u32); /* { dg-error {passing 'struct s \*' to argument 2 of 'svldnt1_gather_offset', but 'struct s' is not a valid SVE element type} } */
   svldnt1_gather_offset (pg, f32_ptr, u32);

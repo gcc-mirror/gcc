@@ -1,5 +1,9 @@
 #include <stdio.h>
+
+/* Solaris needs this for <unistd.h> to declare getpass.  */
+#define __EXTENSIONS__
 #include <unistd.h>
+
 #include <string.h>
 
 char test_1 (FILE *logfile)

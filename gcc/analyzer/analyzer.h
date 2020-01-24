@@ -24,6 +24,9 @@ along with GCC; see the file COPYING3.  If not see
 /* Forward decls of common types, with indentation to show inheritance.  */
 
 class graphviz_out;
+
+namespace ana {
+
 class supergraph;
 class supernode;
 class superedge;
@@ -67,6 +70,8 @@ class state_purge_map;
 class state_purge_per_ssa_name;
 class state_change;
 class rewind_info_t;
+
+} // namespace ana
 
 extern bool is_special_named_call_p (const gcall *call, const char *funcname,
 				     unsigned int num_args);

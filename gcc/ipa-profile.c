@@ -1023,6 +1023,9 @@ ipa_profile (void)
   if (dump_file && (dump_flags & TDF_DETAILS))
     symtab->dump (dump_file);
 
+  delete call_sums;
+  call_sums = NULL;
+
   return 0;
 }
 

@@ -8,9 +8,8 @@
 
 void expect_device_properties
 (acc_device_t dev_type, int dev_num,
- int expected_total_mem, int expected_free_mem,
- const char* expected_vendor, const char* expected_name,
- const char* expected_driver)
+ size_t expected_memory, const char* expected_vendor,
+ const char* expected_name, const char* expected_driver)
 {
   const char *vendor = acc_get_property_string (dev_num, dev_type,
 						acc_property_vendor);
@@ -21,22 +20,23 @@ void expect_device_properties
       abort ();
     }
 
-  int total_mem = acc_get_property (dev_num, dev_type,
-				    acc_property_memory);
-  if (total_mem != expected_total_mem)
+  size_t total_mem = acc_get_property (dev_num, dev_type,
+				       acc_property_memory);
+  if (total_mem != expected_memory)
     {
-      fprintf (stderr, "Expected acc_property_memory to equal %d, "
-	       "but was %d.\n", expected_total_mem, total_mem);
+      fprintf (stderr, "Expected acc_property_memory to equal %zu, "
+	       "but was %zu.\n", expected_memory, total_mem);
       abort ();
 
     }
 
-  int free_mem = acc_get_property (dev_num, dev_type,
+  size_t free_mem = acc_get_property (dev_num, dev_type,
 				   acc_property_free_memory);
-  if (free_mem != expected_free_mem)
+  if (free_mem > total_mem)
     {
-      fprintf (stderr, "Expected acc_property_free_memory to equal %d, "
-	       "but was %d.\n", expected_free_mem, free_mem);
+      fprintf (stderr, "Expected acc_property_free_memory <= acc_property_memory"
+	       ", but free memory was %zu and total memory was %zu.\n",
+	       free_mem, total_mem);
       abort ();
     }
 
@@ -59,11 +59,11 @@ void expect_device_properties
     }
 
   int unknown_property = 16058;
-  int v = acc_get_property (dev_num, dev_type, (acc_device_property_t)unknown_property);
+  size_t v = acc_get_property (dev_num, dev_type, (acc_device_property_t)unknown_property);
   if (v != 0)
     {
       fprintf (stderr, "Expected value of unknown numeric property to equal 0, "
-	       "but was %d.\n", v);
+	       "but was %zu.\n", v);
       abort ();
     }
 
@@ -72,7 +72,7 @@ void expect_device_properties
   if (s != NULL)
     {
       fprintf (stderr, "Expected value of unknown string property to be NULL, "
-	       "but was %d.\n", s);
+	       "but was %s.\n", s);
       abort ();
     }
 

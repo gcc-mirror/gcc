@@ -21,6 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_SUPERGRAPH_H
 #define GCC_ANALYZER_SUPERGRAPH_H
 
+using namespace ana;
+
+namespace ana {
+
 /* Forward decls, using indentation to show inheritance.  */
 
 class supergraph;
@@ -372,6 +376,8 @@ class callgraph_superedge : public superedge
   cgraph_edge *const m_cedge;
 };
 
+} // namespace ana
+
 template <>
 template <>
 inline bool
@@ -381,6 +387,8 @@ is_a_helper <const callgraph_superedge *>::test (const superedge *sedge)
 	  || sedge->get_kind () == SUPEREDGE_CALL
 	  || sedge->get_kind () == SUPEREDGE_RETURN);
 }
+
+namespace ana {
 
 /* A subclass of superedge representing an interprocedural call.  */
 
@@ -416,6 +424,8 @@ class call_superedge : public callgraph_superedge
   }
 };
 
+} // namespace ana
+
 template <>
 template <>
 inline bool
@@ -423,6 +433,8 @@ is_a_helper <const call_superedge *>::test (const superedge *sedge)
 {
   return sedge->get_kind () == SUPEREDGE_CALL;
 }
+
+namespace ana {
 
 /* A subclass of superedge represesnting an interprocedural return.  */
 
@@ -453,6 +465,8 @@ class return_superedge : public callgraph_superedge
   }
 };
 
+} // namespace ana
+
 template <>
 template <>
 inline bool
@@ -460,6 +474,8 @@ is_a_helper <const return_superedge *>::test (const superedge *sedge)
 {
   return sedge->get_kind () == SUPEREDGE_RETURN;
 }
+
+namespace ana {
 
 /* A subclass of superedge that corresponds to a CFG edge.  */
 
@@ -487,6 +503,8 @@ class cfg_superedge : public superedge
   const ::edge m_cfg_edge;
 };
 
+} // namespace ana
+
 template <>
 template <>
 inline bool
@@ -494,6 +512,8 @@ is_a_helper <const cfg_superedge *>::test (const superedge *sedge)
 {
   return sedge->get_kind () == SUPEREDGE_CFG_EDGE;
 }
+
+namespace ana {
 
 /* A subclass for edges from switch statements, retaining enough
    information to identify the pertinent case, and for adding labels
@@ -526,6 +546,8 @@ class switch_cfg_superedge : public cfg_superedge {
   const int m_idx;
 };
 
+} // namespace ana
+
 template <>
 template <>
 inline bool
@@ -533,6 +555,8 @@ is_a_helper <const switch_cfg_superedge *>::test (const superedge *sedge)
 {
   return sedge->dyn_cast_switch_cfg_superedge () != NULL;
 }
+
+namespace ana {
 
 /* Base class for adding additional content to the .dot output
    for a supergraph.  */
@@ -550,5 +574,7 @@ class dot_annotator
 };
 
 extern cgraph_edge *supergraph_call_edge (function *fun, gimple *stmt);
+
+} // namespace ana
 
 #endif /* GCC_ANALYZER_SUPERGRAPH_H */

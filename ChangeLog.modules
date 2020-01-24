@@ -1,5 +1,7 @@
 2020-01-24  Nathan Sidwell  <nathan@acm.org>
 
+	Merge master a1f6eff20e3bb32c5051e77093ee28faec2abca0
+
 	gcc/c-family/
 	* c-common.h (enum rid): Remove non-underbarred module RIDs.
 	* c-common.c (c_common_reswords): Remove non-underbarred module keywords.

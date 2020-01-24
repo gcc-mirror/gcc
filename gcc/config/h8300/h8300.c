@@ -378,8 +378,8 @@ h8300_option_override (void)
 
  if ((!TARGET_H8300S  &&  TARGET_NEXR) && (!TARGET_H8300SX && TARGET_NEXR))
    {
-      warning (OPT_mno_exr, "%<-mno-exr%> valid only with %<-ms%> or "
-	       "%<-msx%> - Option ignored!");
+      warning (OPT_mno_exr, "%<-mno-exr%> is valid only with %<-ms%> or "
+	       "%<-msx%> - option ignored");
    }
 
 #ifdef H8300_LINUX 

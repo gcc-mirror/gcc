@@ -1,6 +1,6 @@
 /* Check that we can assemble both base atomic variants, for v0.  */
 /* { dg-do assemble } */
-/* { dg-options "-O2 -march=v0" } */
+/* { dg-options "-O2 -march=v0" { target { ! march_option } } } */
 
 #ifndef type
 #define type char

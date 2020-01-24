@@ -238,7 +238,6 @@ func (c *Cmd) argv() []string {
 
 // skipStdinCopyError optionally specifies a function which reports
 // whether the provided stdin copy error should be ignored.
-// It is non-nil everywhere but Plan 9, which lacks EPIPE. See exec_posix.go.
 var skipStdinCopyError func(error) bool
 
 func (c *Cmd) stdin() (f *os.File, err error) {
@@ -368,6 +367,8 @@ func lookExtensions(path, dir string) (string, error) {
 }
 
 // Start starts the specified command but does not wait for it to complete.
+//
+// If Start returns successfully, the c.Process field will be set.
 //
 // The Wait method will return the exit code and release associated resources
 // once the command exits.
@@ -606,8 +607,8 @@ func (c *closeOnce) close() {
 // standard output when the command starts.
 //
 // Wait will close the pipe after seeing the command exit, so most callers
-// need not close the pipe themselves; however, an implication is that
-// it is incorrect to call Wait before all reads from the pipe have completed.
+// need not close the pipe themselves. It is thus incorrect to call Wait
+// before all reads from the pipe have completed.
 // For the same reason, it is incorrect to call Run when using StdoutPipe.
 // See the example for idiomatic usage.
 func (c *Cmd) StdoutPipe() (io.ReadCloser, error) {
@@ -631,8 +632,8 @@ func (c *Cmd) StdoutPipe() (io.ReadCloser, error) {
 // standard error when the command starts.
 //
 // Wait will close the pipe after seeing the command exit, so most callers
-// need not close the pipe themselves; however, an implication is that
-// it is incorrect to call Wait before all reads from the pipe have completed.
+// need not close the pipe themselves. It is thus incorrect to call Wait
+// before all reads from the pipe have completed.
 // For the same reason, it is incorrect to use Run when using StderrPipe.
 // See the StdoutPipe example for idiomatic usage.
 func (c *Cmd) StderrPipe() (io.ReadCloser, error) {

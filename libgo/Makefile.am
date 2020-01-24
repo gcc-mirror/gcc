@@ -262,7 +262,8 @@ toolexeclibgohash_DATA = \
 	hash/adler32.gox \
 	hash/crc32.gox \
 	hash/crc64.gox \
-	hash/fnv.gox
+	hash/fnv.gox \
+	hash/maphash.gox
 
 toolexeclibgohtmldir = $(toolexeclibgodir)/html
 
@@ -402,6 +403,7 @@ toolexeclibgounicode_DATA = \
 noinst_DATA = \
 	golang.org/x/net/nettest.gox \
 	internal/cfg.gox \
+	internal/obscuretestdata.gox \
 	internal/testenv.gox \
 	internal/trace.gox \
 	net/internal/socktest.gox \

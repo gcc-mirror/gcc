@@ -1248,7 +1248,22 @@ cgraph_edge::resolve_speculation (cgraph_edge *edge, tree callee_decl)
   else
     e2->callee->remove_symbol_and_inline_clones ();
   if (edge->caller->call_site_hash)
-    cgraph_update_edge_in_call_site_hash (edge);
+    {
+      /* We always maintain direct edge in the call site hash, if one
+	 exists.  */
+      if (!edge->num_speculative_call_targets_p ())
+	cgraph_update_edge_in_call_site_hash (edge);
+      else
+	{
+	  cgraph_edge *e;
+	  for (e = edge->caller->callees;
+	       e->call_stmt != edge->call_stmt
+	       || e->lto_stmt_uid != edge->lto_stmt_uid;
+	       e = e->next_callee)
+	    ;
+	  cgraph_update_edge_in_call_site_hash (e);
+	}
+    }
   return edge;
 }
 
@@ -1414,7 +1429,20 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
 	  /* Indirect edges are not both in the call site hash.
 	     get it updated.  */
 	  if (e->caller->call_site_hash)
-	    cgraph_update_edge_in_call_site_hash (e2);
+	    {
+	      if (!e2->num_speculative_call_targets_p ())
+		cgraph_update_edge_in_call_site_hash (e2);
+	      else
+		{
+		  cgraph_edge *e;
+		  for (e = e2->caller->callees;
+		       e->call_stmt != e2->call_stmt
+		       || e->lto_stmt_uid != e2->lto_stmt_uid;
+		       e = e->next_callee)
+		    ;
+		  cgraph_update_edge_in_call_site_hash (e);
+		}
+	    }
 	  pop_cfun ();
 	  /* Continue redirecting E to proper target.  */
 	}

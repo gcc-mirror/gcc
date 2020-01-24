@@ -1693,7 +1693,8 @@ struct vn_walk_cb_data
      ao_ref_init (&orig_ref, orig_ref_);
    }
   ~vn_walk_cb_data ();
-  void *push_partial_def (const pd_data& pd, tree, HOST_WIDE_INT);
+  void *push_partial_def (const pd_data& pd, tree,
+			  alias_set_type, HOST_WIDE_INT);
 
   vn_reference_t vr;
   ao_ref orig_ref;
@@ -1706,6 +1707,7 @@ struct vn_walk_cb_data
   /* The first defs range to avoid splay tree setup in most cases.  */
   pd_range first_range;
   tree first_vuse;
+  alias_set_type first_set;
   splay_tree known_ranges;
   obstack ranges_obstack;
 };
@@ -1746,13 +1748,13 @@ pd_tree_dealloc (void *, void *)
 }
 
 /* Push PD to the vector of partial definitions returning a
-   value when we are ready to combine things with VUSE and MAXSIZEI,
+   value when we are ready to combine things with VUSE, SET and MAXSIZEI,
    NULL when we want to continue looking for partial defs or -1
    on failure.  */
 
 void *
 vn_walk_cb_data::push_partial_def (const pd_data &pd, tree vuse,
-				   HOST_WIDE_INT maxsizei)
+				   alias_set_type set, HOST_WIDE_INT maxsizei)
 {
   const HOST_WIDE_INT bufsize = 64;
   /* We're using a fixed buffer for encoding so fail early if the object
@@ -1773,6 +1775,7 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd, tree vuse,
       first_range.offset = pd.offset;
       first_range.size = pd.size;
       first_vuse = vuse;
+      first_set = set;
       last_vuse_ptr = NULL;
       /* Continue looking for partial defs.  */
       return NULL;
@@ -1903,10 +1906,10 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd, tree vuse,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
 		 "Successfully combined %u partial definitions\n", ndefs);
-      /* ???  If we track partial defs alias-set we could use that if it
-         is the same for all.  Use zero for now.  */
+      /* We are using the alias-set of the first store we encounter which
+	 should be appropriate here.  */
       return vn_reference_lookup_or_insert_for_pieces
-		(first_vuse, 0, vr->type, vr->operands, val);
+		(first_vuse, first_set, vr->type, vr->operands, val);
     }
   else
     {
@@ -2492,7 +2495,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  pd.rhs = build_constructor (NULL_TREE, NULL);
 	  pd.offset = (offset2i - offseti) / BITS_PER_UNIT;
 	  pd.size = leni;
-	  return data->push_partial_def (pd, vuse, maxsizei);
+	  return data->push_partial_def (pd, vuse, 0, maxsizei);
 	}
     }
 
@@ -2553,7 +2556,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      pd.rhs = gimple_assign_rhs1 (def_stmt);
 	      pd.offset = (offset2i - offseti) / BITS_PER_UNIT;
 	      pd.size = size2i / BITS_PER_UNIT;
-	      return data->push_partial_def (pd, vuse, maxsizei);
+	      return data->push_partial_def (pd, vuse, get_alias_set (lhs),
+					     maxsizei);
 	    }
 	}
     }
@@ -2665,7 +2669,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      pd.rhs = rhs;
 	      pd.offset = (offset2i - offseti) / BITS_PER_UNIT;
 	      pd.size = size2i / BITS_PER_UNIT;
-	      return data->push_partial_def (pd, vuse, maxsizei);
+	      return data->push_partial_def (pd, vuse, get_alias_set (lhs),
+					     maxsizei);
 	    }
 	}
     }
@@ -2712,26 +2717,30 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		  || known_eq (ref->size, TYPE_PRECISION (vr->type)))
 	      && multiple_p (ref->size, BITS_PER_UNIT))
 	    {
-	      if (known_eq (ref->size, size2))
-		return vn_reference_lookup_or_insert_for_pieces
-		    (vuse, get_alias_set (lhs), vr->type, vr->operands,
-		     SSA_VAL (def_rhs));
-	      else if (! INTEGRAL_TYPE_P (TREE_TYPE (def_rhs))
-		       || type_has_mode_precision_p (TREE_TYPE (def_rhs)))
+	      tree val = NULL_TREE;
+	      if (! INTEGRAL_TYPE_P (TREE_TYPE (def_rhs))
+		  || type_has_mode_precision_p (TREE_TYPE (def_rhs)))
 		{
 		  gimple_match_op op (gimple_match_cond::UNCOND,
 				      BIT_FIELD_REF, vr->type,
 				      SSA_VAL (def_rhs),
 				      bitsize_int (ref->size),
 				      bitsize_int (offset - offset2));
-		  tree val = vn_nary_build_or_lookup (&op);
-		  if (val
-		      && (TREE_CODE (val) != SSA_NAME
-			  || ! SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val)))
-		    return vn_reference_lookup_or_insert_for_pieces
-			(vuse, get_alias_set (lhs), vr->type,
-			 vr->operands, val);
+		  val = vn_nary_build_or_lookup (&op);
 		}
+	      else if (known_eq (ref->size, size2))
+		{
+		  gimple_match_op op (gimple_match_cond::UNCOND,
+				      VIEW_CONVERT_EXPR, vr->type,
+				      SSA_VAL (def_rhs));
+		  val = vn_nary_build_or_lookup (&op);
+		}
+	      if (val
+		  && (TREE_CODE (val) != SSA_NAME
+		      || ! SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val)))
+		return vn_reference_lookup_or_insert_for_pieces
+			    (vuse, get_alias_set (lhs), vr->type,
+			     vr->operands, val);
 	    }
 	  else if (maxsize.is_constant (&maxsizei)
 		   && maxsizei % BITS_PER_UNIT == 0
@@ -2747,7 +2756,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      pd.rhs = SSA_VAL (def_rhs);
 	      pd.offset = (offset2i - offseti) / BITS_PER_UNIT;
 	      pd.size = size2i / BITS_PER_UNIT;
-	      return data->push_partial_def (pd, vuse, maxsizei);
+	      return data->push_partial_def (pd, vuse, get_alias_set (lhs),
+					     maxsizei);
 	    }
 	}
     }
@@ -2760,6 +2770,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	       || TREE_CODE (gimple_assign_rhs1 (def_stmt)) == MEM_REF
 	       || handled_component_p (gimple_assign_rhs1 (def_stmt))))
     {
+      tree lhs = gimple_assign_lhs (def_stmt);
       tree base2;
       int i, j, k;
       auto_vec<vn_reference_op_s> rhs;
@@ -2866,7 +2877,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	{
 	  if (data->partial_defs.is_empty ())
 	    return vn_reference_lookup_or_insert_for_pieces
-	      (vuse, get_alias_set (rhs1), vr->type, vr->operands, val);
+	      (vuse, get_alias_set (lhs), vr->type, vr->operands, val);
 	  /* This is the only interesting case for partial-def handling
 	     coming from targets that like to gimplify init-ctors as
 	     aggregate copies from constant data like aarch64 for
@@ -2878,7 +2889,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      pd.rhs = val;
 	      pd.offset = 0;
 	      pd.size = maxsizei / BITS_PER_UNIT;
-	      return data->push_partial_def (pd, vuse, maxsizei);
+	      return data->push_partial_def (pd, vuse, get_alias_set (lhs),
+					     maxsizei);
 	    }
 	}
 
@@ -3201,6 +3213,8 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
       return NULL_TREE;
     }
 
+  if (last_vuse_ptr)
+    *last_vuse_ptr = vr1.vuse;
   return vn_reference_lookup_1 (&vr1, vnresult);
 }
 
@@ -5599,7 +5613,6 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
       && (TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME
 	  || is_gimple_min_invariant (gimple_assign_rhs1 (stmt))))
     {
-      tree val;
       tree rhs = gimple_assign_rhs1 (stmt);
       vn_reference_t vnresult;
       /* ???  gcc.dg/torture/pr91445.c shows that we lookup a boolean
@@ -5640,14 +5653,22 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	  else
 	    lookup_lhs = NULL_TREE;
 	}
-      val = NULL_TREE;
+      tree val = NULL_TREE;
       if (lookup_lhs)
 	val = vn_reference_lookup (lookup_lhs, gimple_vuse (stmt), VN_WALK,
 				   &vnresult, false);
       if (TREE_CODE (rhs) == SSA_NAME)
 	rhs = VN_INFO (rhs)->valnum;
       if (val
-	  && operand_equal_p (val, rhs, 0))
+	  && (operand_equal_p (val, rhs, 0)
+	      /* Due to the bitfield lookups above we can get bit
+		 interpretations of the same RHS as values here.  Those
+		 are redundant as well.  */
+	      || (TREE_CODE (val) == SSA_NAME
+		  && gimple_assign_single_p (SSA_NAME_DEF_STMT (val))
+		  && (val = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (val)))
+		  && TREE_CODE (val) == VIEW_CONVERT_EXPR
+		  && TREE_OPERAND (val, 0) == rhs)))
 	{
 	  /* We can only remove the later store if the former aliases
 	     at least all accesses the later one does or if the store

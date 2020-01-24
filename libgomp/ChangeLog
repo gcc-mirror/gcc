@@ -1,3 +1,62 @@
+2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure.ac: Handle `--with-toolexeclibdir='.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2020-01-24  Frederik Harwath  <frederik@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-aux.c
+	(expect_device_properties): Remove "expected_free_mem" argument,
+	change "expected_total_mem" argument type to size_t;
+	change types of acc_get_property results to size_t,
+	adapt format strings.
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property.c:
+	Use %zu instead of %zd to print size_t values.
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-2.c: Adapt and
+	rename to ...
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-nvptx.c: ... this.
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-3.c: Adapt and
+	rename to ...
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-host.c: ... this.
+
+2020-01-23  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (parse_target_attributes): Use correct mask for
+	the device id.
+
+2020-01-20  Andrew Stubbs  <ams@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-auto-1.c: Skip test on gcn.
+	* testsuite/libgomp.oacc-c-c++-common/loop-dim-default.c (main):
+	Adjust test dimensions for amdgcn.
+	* testsuite/libgomp.oacc-c-c++-common/loop-gwv-1.c (main): Adjust
+	gang/worker/vector expectations dynamically.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-gwv-1.c
+	(main): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-v-1.c (main): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-v-2.c (main): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-1.c (main): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-2.c (main): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-wv-1.c (main): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-v-1.c (main): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-w-1.c (main): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-wv-1.c (main): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c
+	(acc_gang): Recognise acc_device_radeon.
+	(acc_worker): Likewise.
+	(acc_vector): Likewise.
+	(main): Set expectations for amdgcn.
+	* testsuite/libgomp.oacc-c-c++-common/routine-gwv-1.c
+	(main): Adjust gang/worker/vector expectations dynamically.
+	* testsuite/libgomp.oacc-c-c++-common/routine-v-1.c (main): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-w-1.c (main): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-wv-1.c (main): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-wv-2.c: Set expectations
+	for amdgcn.
+
 2020-01-17  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/accel/openacc.f90 (openacc_kinds): Rename acc_device_gcn to

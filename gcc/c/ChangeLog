@@ -1,3 +1,9 @@
+2020-01-22  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/93348
+	* c-typeck.c (build_c_cast): Call remove_c_maybe_const_expr on
+	argument with integer operands.
+
 2020-01-16  Kerem Kat  <keremkat@gmail.com>
 
 	PR c/92833

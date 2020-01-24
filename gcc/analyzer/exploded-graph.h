@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_EXPLODED_GRAPH_H
 #define GCC_ANALYZER_EXPLODED_GRAPH_H
 
+namespace ana {
+
 /* Concrete implementation of region_model_context, wiring it up to the
    rest of the analysis engine.  */
 
@@ -305,8 +307,8 @@ private:
 class rewind_info_t : public exploded_edge::custom_info_t
 {
 public:
-  rewind_info_t (const exploded_node *enode_origin)
-  : m_enode_origin (enode_origin)
+  rewind_info_t (const setjmp_record &setjmp_record)
+  : m_setjmp_record (setjmp_record)
   {}
 
   void print (pretty_printer *pp) FINAL OVERRIDE
@@ -322,7 +324,7 @@ public:
 
   const program_point &get_setjmp_point () const
   {
-    const program_point &origin_point = m_enode_origin->get_point ();
+    const program_point &origin_point = get_enode_origin ()->get_point ();
 
     /* "origin_point" ought to be before the call to "setjmp".  */
     gcc_assert (origin_point.get_kind () == PK_BEFORE_STMT);
@@ -334,13 +336,16 @@ public:
 
   const gcall *get_setjmp_call () const
   {
-    return as_a <const gcall *> (get_setjmp_point ().get_stmt ());
+    return m_setjmp_record.m_setjmp_call;
   }
 
-  const exploded_node *get_enode_origin () const { return m_enode_origin; }
+  const exploded_node *get_enode_origin () const
+  {
+    return m_setjmp_record.m_enode;
+  }
 
 private:
-  const exploded_node *m_enode_origin;
+  setjmp_record m_setjmp_record;
 };
 
 /* Statistics about aspects of an exploded_graph.  */
@@ -827,5 +832,7 @@ public:
 };
 
 // TODO: split the above up?
+
+} // namespace ana
 
 #endif /* GCC_ANALYZER_EXPLODED_GRAPH_H */

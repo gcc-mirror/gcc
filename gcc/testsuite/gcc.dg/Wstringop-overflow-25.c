@@ -290,11 +290,17 @@ NOIPA void test_strcpy_alloc2_4 (void)
     sink (vla);					\
   } while (0)
 
-NOIPA void test_strcpy_vla (void)
+// Hack around PR 92829.
+#define XUR(min, max) \
+  (++idx, (vals[idx] < min || max < vals[idx] ? min : vals[idx]))
+
+NOIPA void test_strcpy_vla (const size_t vals[])
 {
-  size_t r_0_1 = UR (0, 1);
-  size_t r_1_2 = UR (1, 2);
-  size_t r_2_3 = UR (2, 3);
+  size_t idx = 0;
+
+  size_t r_0_1 = XUR (0, 1);
+  size_t r_1_2 = XUR (1, 2);
+  size_t r_2_3 = XUR (2, 3);
 
   T (char, S (0), r_0_1);
   T (char, S (1), r_0_1);       // { dg-warning "\\\[-Wstringop-overflow" }

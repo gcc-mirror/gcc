@@ -1327,8 +1327,9 @@ lambda_static_thunk_p (tree fn)
 bool
 is_lambda_ignored_entity (tree val)
 {
-  /* Look past normal capture proxies.  */
-  if (is_normal_capture_proxy (val))
+  /* Look past normal, non-VLA capture proxies.  */
+  if (is_normal_capture_proxy (val)
+      && !variably_modified_type_p (TREE_TYPE (val), NULL_TREE))
     return true;
 
   /* Always ignore lambda fields, their names are only for debugging.  */

@@ -1,6 +1,6 @@
 # Check that commands in cmd are install to $GOROOT/bin, not $GOBIN.
 # Verifies golang.org/issue/32674.
-[gccgo] stop
+[gccgo] skip
 env GOBIN=gobin
 mkdir gobin
 go list -f '{{.Target}}' cmd/go

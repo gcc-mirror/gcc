@@ -112,9 +112,11 @@ merge_topn_values_set (gcov_type *counters)
   for (unsigned i = 0; i < GCOV_TOPN_VALUES; i++)
     {
       if (read_counters[2 * i + 1] == 0)
-	return;
+	continue;
 
       unsigned j;
+      int slot = -1;
+
       for (j = 0; j < GCOV_TOPN_VALUES; j++)
 	{
 	  if (counters[2 * j] == read_counters[2 * i])
@@ -123,18 +125,23 @@ merge_topn_values_set (gcov_type *counters)
 	      break;
 	    }
 	  else if (counters[2 * j + 1] == 0)
-	    {
-	      counters[2 * j] += read_counters[2 * i];
-	      counters[2 * j + 1] += read_counters[2 * i + 1];
-	      break;
-	    }
+	    slot = j;
 	}
 
-      /* We haven't found a slot, bail out.  */
       if (j == GCOV_TOPN_VALUES)
 	{
-	  counters[1] = -1;
-	  return;
+	  if (slot > 0)
+	    {
+	      /* If we found empty slot, add the value.  */
+	      counters[2 * slot] = read_counters[2 * i];
+	      counters[2 * slot + 1] = read_counters[2 * i + 1];
+	    }
+	  else
+	    {
+	      /* We haven't found a slot, bail out.  */
+	      counters[1] = -1;
+	      return;
+	    }
 	}
     }
 }

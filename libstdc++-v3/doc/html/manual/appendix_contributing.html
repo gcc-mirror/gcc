@@ -90,14 +90,12 @@
 	  easily and simply show the existing error or test new
 	  functionality.
 	</p></li><li class="listitem"><p>
-	  The patch itself. If you are accessing the SVN
-	  repository use <span class="command"><strong>svn update; svn diff NEW</strong></span>;
-	  else, use <span class="command"><strong>diff -cp OLD NEW</strong></span> ... If your
+	  The patch itself. If you are using the Git repository use
+	  <span class="command"><strong>git diff</strong></span> or <span class="command"><strong>git format-patch</strong></span>
+	  to produce a patch;
+	  otherwise, use <span class="command"><strong>diff -cp OLD NEW</strong></span>. If your
 	  version of diff does not support these options, then get the
-	  latest version of GNU
-	  diff. The <a class="link" href="http://gcc.gnu.org/wiki/SvnTricks" target="_top">SVN
-	  Tricks</a> wiki page has information on customising the
-	  output of <code class="code">svn diff</code>.
+	  latest version of GNU diff.
 	</p></li><li class="listitem"><p>
 	  When you have all these pieces, bundle them up in a
 	  mail message and send it to libstdc++@gcc.gnu.org. All

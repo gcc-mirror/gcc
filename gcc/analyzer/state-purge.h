@@ -68,6 +68,8 @@ pod_hash_traits<function_point>::is_empty (value_type v)
   return v.get_kind () == PK_EMPTY;
 }
 
+namespace ana {
+
 /* The result of analyzing which SSA names can be purged from state at
    different points in the program, so that we can simplify program_state
    objects, in the hope of reducing state-blowup.  */
@@ -158,5 +160,7 @@ public:
 private:
   const state_purge_map *m_map;
 };
+
+} // namespace ana
 
 #endif /* GCC_ANALYZER_STATE_PURGE_H */

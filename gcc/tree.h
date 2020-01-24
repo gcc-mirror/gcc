@@ -3827,7 +3827,7 @@ id_equal (const_tree id, const char *str)
 inline bool
 id_equal (const char *str, const_tree id)
 {
-  return !strcmp (str, IDENTIFIER_POINTER (id));
+  return id_equal (id, str);
 }
 
 /* Return the number of elements in the VECTOR_TYPE given by NODE.  */

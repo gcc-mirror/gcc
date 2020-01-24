@@ -262,6 +262,7 @@
     UNSPEC_REV_SUBREG
     UNSPEC_REINTERPRET
     UNSPEC_SPECULATION_TRACKER
+    UNSPEC_SPECULATION_TRACKER_REV
     UNSPEC_COPYSIGN
     UNSPEC_TTEST		; Represent transaction test.
     UNSPEC_UPDATE_FFR
@@ -6755,10 +6756,10 @@
 ;; instructions in the TLS stubs, in order to enable linker relaxation.
 ;; Therefore we treat the stubs as an atomic sequence.
 (define_expand "tlsgd_small_<mode>"
- [(parallel [(set (match_operand 0 "register_operand")
+ [(parallel [(set (match_operand:PTR 0 "register_operand")
                   (call (mem:DI (match_dup 2)) (const_int 1)))
 	     (unspec:DI [(const_int 0)] UNSPEC_CALLEE_ABI)
-	     (unspec:DI [(match_operand:PTR 1 "aarch64_valid_symref")] UNSPEC_GOTSMALLTLS)
+	     (unspec:DI [(match_operand 1 "aarch64_valid_symref")] UNSPEC_GOTSMALLTLS)
 	     (clobber (reg:DI LR_REGNUM))])]
  ""
 {
@@ -6766,10 +6767,10 @@
 })
 
 (define_insn "*tlsgd_small_<mode>"
-  [(set (match_operand 0 "register_operand" "")
+  [(set (match_operand:PTR 0 "register_operand" "")
 	(call (mem:DI (match_operand:DI 2 "" "")) (const_int 1)))
    (unspec:DI [(const_int 0)] UNSPEC_CALLEE_ABI)
-   (unspec:DI [(match_operand:PTR 1 "aarch64_valid_symref" "S")] UNSPEC_GOTSMALLTLS)
+   (unspec:DI [(match_operand 1 "aarch64_valid_symref" "S")] UNSPEC_GOTSMALLTLS)
    (clobber (reg:DI LR_REGNUM))
   ]
   ""
@@ -7214,6 +7215,20 @@
   {
     operands[1] = gen_rtx_REG (DImode, SPECULATION_TRACKER_REGNUM);
     output_asm_insn ("csel\\t%1, %1, xzr, %m0", operands);
+    return "";
+  }
+  [(set_attr "type" "csel")]
+)
+
+;; Like speculation_tracker, but track the inverse condition.
+(define_insn "speculation_tracker_rev"
+  [(set (reg:DI SPECULATION_TRACKER_REGNUM)
+	(unspec:DI [(reg:DI SPECULATION_TRACKER_REGNUM) (match_operand 0)]
+	 UNSPEC_SPECULATION_TRACKER_REV))]
+  ""
+  {
+    operands[1] = gen_rtx_REG (DImode, SPECULATION_TRACKER_REGNUM);
+    output_asm_insn ("csel\\t%1, %1, xzr, %M0", operands);
     return "";
   }
   [(set_attr "type" "csel")]

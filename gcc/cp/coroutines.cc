@@ -428,8 +428,9 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
 
       /* Complete this, we're going to use it.  */
       coro_info->handle_type = complete_type_or_else (handle_type, fndecl);
+
       /* Diagnostic would be emitted by complete_type_or_else.  */
-      if (coro_info->handle_type == error_mark_node)
+      if (!coro_info->handle_type)
 	return false;
 
       /* Build a proxy for a handle to "self" as the param to
@@ -496,13 +497,30 @@ lookup_promise_method (tree fndecl, tree member_id, location_t loc,
   tree promise = get_coroutine_promise_type (fndecl);
   tree pm_memb
     = lookup_member (promise, member_id,
-		     /*protect*/ 1, /*want_type*/ 0, tf_warning_or_error);
-  if (musthave && (pm_memb == NULL_TREE || pm_memb == error_mark_node))
+		     /*protect=*/1, /*want_type=*/0, tf_warning_or_error);
+  if (musthave && pm_memb == NULL_TREE)
     {
       error_at (loc, "no member named %qE in %qT", member_id, promise);
       return error_mark_node;
     }
   return pm_memb;
+}
+
+/* Lookup an Awaitable member, which should be await_ready, await_suspend
+   or await_resume.  */
+
+static tree
+lookup_awaitable_member (tree await_type, tree member_id, location_t loc)
+{
+  tree aw_memb
+    = lookup_member (await_type, member_id,
+		     /*protect=*/1, /*want_type=*/0, tf_warning_or_error);
+  if (aw_memb == NULL_TREE)
+    {
+      error_at (loc, "no member named %qE in %qT", member_id, await_type);
+      return error_mark_node;
+    }
+  return aw_memb;
 }
 
 /* Here we check the constraints that are common to all keywords (since the
@@ -633,7 +651,13 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
   else
     o = a; /* This is most likely about to fail anyway.  */
 
-  tree o_type = complete_type_or_else (TREE_TYPE (o), o);
+  tree o_type = TREE_TYPE (o);
+  if (o_type && !VOID_TYPE_P (o_type))
+    o_type = complete_type_or_else (o_type, o);
+
+  if (!o_type)
+    return error_mark_node;
+
   if (TREE_CODE (o_type) != RECORD_TYPE)
     {
       error_at (loc, "awaitable type %qT is not a structure",
@@ -643,25 +667,18 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
 
   /* Check for required awaitable members and their types.  */
   tree awrd_meth
-    = lookup_member (o_type, coro_await_ready_identifier,
-		     /* protect */ 1, /*want_type=*/0, tf_warning_or_error);
-
+    = lookup_awaitable_member (o_type, coro_await_ready_identifier, loc);
   if (!awrd_meth || awrd_meth == error_mark_node)
     return error_mark_node;
-
   tree awsp_meth
-    = lookup_member (o_type, coro_await_suspend_identifier,
-		     /* protect */ 1, /*want_type=*/0, tf_warning_or_error);
-
+    = lookup_awaitable_member (o_type, coro_await_suspend_identifier, loc);
   if (!awsp_meth || awsp_meth == error_mark_node)
     return error_mark_node;
 
   /* The type of the co_await is the return type of the awaitable's
-     co_resume(), so we need to look that up.  */
+     await_resume, so we need to look that up.  */
   tree awrs_meth
-    = lookup_member (o_type, coro_await_resume_identifier,
-		     /* protect */ 1, /*want_type=*/0, tf_warning_or_error);
-
+    = lookup_awaitable_member (o_type, coro_await_resume_identifier, loc);
   if (!awrs_meth || awrs_meth == error_mark_node)
     return error_mark_node;
 
@@ -753,6 +770,8 @@ finish_co_await_expr (location_t kw, tree expr)
 
   if (processing_template_decl)
     {
+      current_function_returns_value = 1;
+
       if (check_for_bare_parameter_packs (expr))
 	return error_mark_node;
 
@@ -800,8 +819,11 @@ finish_co_await_expr (location_t kw, tree expr)
 
   /* Now we want to build co_await a.  */
   tree op = build_co_await (kw, a, CO_AWAIT_SUSPEND_POINT);
-  TREE_SIDE_EFFECTS (op) = 1;
-  SET_EXPR_LOCATION (op, kw);
+  if (op != error_mark_node)
+    {
+      TREE_SIDE_EFFECTS (op) = 1;
+      SET_EXPR_LOCATION (op, kw);
+    }
 
   return op;
 }
@@ -826,6 +848,8 @@ finish_co_yield_expr (location_t kw, tree expr)
 
   if (processing_template_decl)
     {
+      current_function_returns_value = 1;
+
       if (check_for_bare_parameter_packs (expr))
 	return error_mark_node;
 
@@ -864,9 +888,11 @@ finish_co_yield_expr (location_t kw, tree expr)
      promise transform_await().  */
 
   tree op = build_co_await (kw, yield_call, CO_YIELD_SUSPEND_POINT);
-
-  op = build2_loc (kw, CO_YIELD_EXPR, TREE_TYPE (op), expr, op);
-  TREE_SIDE_EFFECTS (op) = 1;
+  if (op != error_mark_node)
+    {
+      op = build2_loc (kw, CO_YIELD_EXPR, TREE_TYPE (op), expr, op);
+      TREE_SIDE_EFFECTS (op) = 1;
+    }
 
   return op;
 }
@@ -2726,6 +2752,10 @@ register_param_uses (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
       if (!COMPLETE_TYPE_P (actual_type))
 	actual_type = complete_type_or_else (actual_type, *stmt);
 
+      if (actual_type == NULL_TREE)
+	/* Diagnostic emitted by complete_type_or_else.  */
+	actual_type = error_mark_node;
+
       if (TREE_CODE (actual_type) == REFERENCE_TYPE)
 	actual_type = build_pointer_type (TREE_TYPE (actual_type));
 
@@ -2869,6 +2899,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   if (!coro_function_valid_p (orig))
     return false;
+
+  /* The ramp function does return a value.  */
+  current_function_returns_value = 1;
 
   /* We can't validly get here with an empty statement list, since there's no
      way for the FE to decide it's a coroutine in the absence of any code.  */

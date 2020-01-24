@@ -1,3 +1,34 @@
+2020-01-23  Jason Merrill  <jason@redhat.com>
+
+	* c-warn.c (conversion_warning): Change -Wsign-conversion handling.
+
+2020-01-23  Martin Sebor  <msebor@redhat.com>
+
+	PR c/84919
+	* c-common.c (check_function_arguments): Avoid overlap checking
+	of sprintf functions.
+
+2020-01-22  Jason Merrill  <jason@redhat.com>
+
+	PR testsuite/93391 - PR 40752 test fails with unsigned plain char.
+	PR c++/40752
+	* c-warn.c (conversion_warning): Check operands only after checking
+	the whole expression.  Don't check second operand of + for sign.
+
+2020-01-21  Jason Merrill  <jason@redhat.com>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/40752 - useless -Wconversion with short +=.
+	* c.opt (-Warith-conversion): New.
+	* c-warn.c (conversion_warning): Recurse for operands of
+	operators.  Only warn about the whole expression with
+	-Warith-conversion.
+
+2020-01-21  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (unsafe_conversion_p): Don't warn, return UNSAFE_SIGN.
+	* c-warn.c (conversion_warning): Warn about UNSAFE_SIGN.
+
 2020-01-20  Nathan Sidwell  <nathan@acm.org>
 
 	PR preprocessor/80005

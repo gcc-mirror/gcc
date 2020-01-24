@@ -2602,12 +2602,21 @@ function_expander::overlaps_input_p (rtx x)
   return false;
 }
 
+/* Convert ptr_mode value X to Pmode.  */
+rtx
+function_expander::convert_to_pmode (rtx x)
+{
+  if (ptr_mode == SImode)
+    x = simplify_gen_unary (ZERO_EXTEND, DImode, x, SImode);
+  return x;
+}
+
 /* Return the base address for a contiguous load or store function.
    MEM_MODE is the mode of the addressed memory.  */
 rtx
 function_expander::get_contiguous_base (machine_mode mem_mode)
 {
-  rtx base = args[1];
+  rtx base = convert_to_pmode (args[1]);
   if (mode_suffix_id == MODE_vnum)
     {
       /* Use the size of the memory mode for extending loads and truncating
@@ -2814,9 +2823,7 @@ function_expander::prepare_gather_address_operands (unsigned int argno,
     {
       /* Scalar base, vector displacement.  This is the order that the md
 	 pattern wants.  */
-      if (Pmode == SImode)
-	args[argno] = simplify_gen_unary (ZERO_EXTEND, DImode,
-					  args[argno], SImode);
+      args[argno] = convert_to_pmode (args[argno]);
       vector_type = displacement_vector_type ();
       if (units == UNITS_elements && !scaled_p)
 	shift_idx = argno + 1;

@@ -2431,7 +2431,7 @@ get_mapped_args (tree map)
      list. Note that the list will be sparse (not all arguments supplied),
      but instantiation is guaranteed to only use the parameters in the
      mapping, so null arguments would never be used.  */
-  auto_vec< auto_vec<tree> > lists (count);
+  auto_vec< vec<tree> > lists (count);
   lists.quick_grow_cleared (count);
   for (tree p = map; p; p = TREE_CHAIN (p))
     {
@@ -2440,7 +2440,7 @@ get_mapped_args (tree map)
       template_parm_level_and_index (TREE_VALUE (p), &level, &index);
 
       /* Insert the argument into its corresponding position.  */
-      auto_vec<tree> &list = lists[level - 1];
+      vec<tree> &list = lists[level - 1];
       if (index >= (int)list.length ())
 	list.safe_grow_cleared (index + 1);
       list[index] = TREE_PURPOSE (p);
@@ -2450,11 +2450,12 @@ get_mapped_args (tree map)
   tree args = make_tree_vec (lists.length ());
   for (unsigned i = 0; i != lists.length (); ++i)
     {
-      auto_vec<tree> &list = lists[i];
+      vec<tree> &list = lists[i];
       tree level = make_tree_vec (list.length ());
       for (unsigned j = 0; j < list.length(); ++j)
 	TREE_VEC_ELT (level, j) = list[j];
       SET_TMPL_ARGS_LEVEL (args, i + 1, level);
+      list.release ();
     }
   SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT (args, 0);
 

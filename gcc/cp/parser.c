@@ -244,7 +244,7 @@ static void cp_lexer_stop_debugging
 static cp_token_cache *cp_token_cache_new
   (cp_token *, cp_token *);
 static tree cp_parser_late_noexcept_specifier
-  (cp_parser *, tree);
+  (cp_parser *, tree, tree);
 static void noexcept_override_late_checks
   (tree, tree);
 
@@ -2517,11 +2517,11 @@ static tree cp_parser_exception_declaration
 static tree cp_parser_throw_expression
   (cp_parser *);
 static tree cp_parser_exception_specification_opt
-  (cp_parser *, cp_parser_flags);
+  (cp_parser *, cp_parser_flags, cp_cv_quals);
 static tree cp_parser_type_id_list
   (cp_parser *);
 static tree cp_parser_noexcept_specification_opt
-  (cp_parser *, cp_parser_flags, bool, bool *, bool);
+  (cp_parser *, cp_parser_flags, bool, bool *, bool, cp_cv_quals);
 
 /* GNU Extensions */
 
@@ -3483,6 +3483,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	}
       else
 	error_at (location, "%qE does not name a type", id);
+
       /* If we're in a template class, it's possible that the user was
 	 referring to a type from a base class.  For example:
 
@@ -3496,8 +3497,16 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
       else if (cxx_dialect < cxx11 && C_RID_CODE (id) == RID_NOEXCEPT)
 	inform (location, "C++11 %<noexcept%> only available with "
 		"%<-std=c++11%> or %<-std=gnu++11%>");
-      else if (cxx_dialect < cxx11
-	       && TREE_CODE (id) == IDENTIFIER_NODE
+      else if (TREE_CODE (id) == IDENTIFIER_NODE
+	       && (id_equal (id, "module") || id_equal (id, "import")))
+	{
+	  if (!modules_p ())
+	    inform (location, "%qE only available with %<-fmodules-ts%>", id);
+	  else
+	    inform (location, "%qE was not recognized as a control-line", id);
+	}
+      else if (TREE_CODE (id) == IDENTIFIER_NODE
+	       && cxx_dialect < cxx11
 	       && id_equal (id, "thread_local"))
 	inform (location, "C++11 %<thread_local%> only available with "
 		"%<-std=c++11%> or %<-std=gnu++11%>");
@@ -3507,48 +3516,32 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
       else if (!flag_concepts && id == ridpointers[(int)RID_CONCEPT])
 	inform (location, "%<concept%> only available with %<-std=c++2a%> or "
 		"%<-fconcepts%>");
-      else if (!strcmp ("module", IDENTIFIER_POINTER (id))
-	       || !strcmp ("import", IDENTIFIER_POINTER (id)))
-	{
-	  if (!modules_p ())
-	    inform (location, "%qE only available with %<-fmodules-ts%>", id);
-	  else
-	    inform (location, "%qE was not recognized as a control-line", id);
-	}
       else if (processing_template_decl && current_class_type
 	       && TYPE_BINFO (current_class_type))
-	{
-	  tree b;
-
-	  for (b = TREE_CHAIN (TYPE_BINFO (current_class_type));
-	       b;
-	       b = TREE_CHAIN (b))
-	    {
-	      tree base_type = BINFO_TYPE (b);
-	      if (CLASS_TYPE_P (base_type)
-		  && dependent_type_p (base_type))
-		{
-		  tree field;
-		  /* Go from a particular instantiation of the
-		     template (which will have an empty TYPE_FIELDs),
-		     to the main version.  */
-		  base_type = CLASSTYPE_PRIMARY_TEMPLATE_TYPE (base_type);
-		  for (field = TYPE_FIELDS (base_type);
-		       field;
-		       field = DECL_CHAIN (field))
-		    if (TREE_CODE (field) == TYPE_DECL
-			&& DECL_NAME (field) == id)
-		      {
-			inform (location,
-				"(perhaps %<typename %T::%E%> was intended)",
-				BINFO_TYPE (b), id);
-			break;
-		      }
-		  if (field)
-		    break;
-		}
-	    }
-	}
+	for (tree b = TREE_CHAIN (TYPE_BINFO (current_class_type));
+	     b; b = TREE_CHAIN (b))
+	  {
+	    tree base_type = BINFO_TYPE (b);
+	    if (CLASS_TYPE_P (base_type) && dependent_type_p (base_type))
+	      {
+		tree field;
+		/* Go from a particular instantiation of the
+		   template (which will have an empty TYPE_FIELDs),
+		   to the main version.  */
+		base_type = CLASSTYPE_PRIMARY_TEMPLATE_TYPE (base_type);
+		for (field = TYPE_FIELDS (base_type);
+		     field; field = DECL_CHAIN (field))
+		  if (TREE_CODE (field) == TYPE_DECL && DECL_NAME (field) == id)
+		    {
+		      inform (location,
+			      "(perhaps %<typename %T::%E%> was intended)",
+			      BINFO_TYPE (b), id);
+		      break;
+		    }
+		if (field)
+		  break;
+	      }
+	  }
     }
   /* Here we diagnose qualified-ids where the scope is actually correct,
      but the identifier does not resolve to a valid type name.  */
@@ -6726,16 +6719,27 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 		      tree fns = get_fns (tid);
 		      if (OVL_SINGLE_P (fns))
 			tmpl = OVL_FIRST (fns);
-		      error_at (token->location, "function template-id %qD "
-				"in nested-name-specifier", tid);
+		      if (function_concept_p (fns))
+			error_at (token->location, "concept-id %qD "
+				  "in nested-name-specifier", tid);
+		      else
+			error_at (token->location, "function template-id "
+				  "%qD in nested-name-specifier", tid);
 		    }
 		  else
 		    {
-		      /* Variable template.  */
 		      tmpl = TREE_OPERAND (tid, 0);
-		      gcc_assert (variable_template_p (tmpl));
-		      error_at (token->location, "variable template-id %qD "
-				"in nested-name-specifier", tid);
+		      if (variable_concept_p (tmpl)
+			  || standard_concept_p (tmpl))
+			error_at (token->location, "concept-id %qD "
+				  "in nested-name-specifier", tid);
+		      else
+			{
+			  /* Variable template.  */
+			  gcc_assert (variable_template_p (tmpl));
+			  error_at (token->location, "variable template-id "
+				    "%qD in nested-name-specifier", tid);
+			}
 		    }
 		  if (tmpl)
 		    inform (DECL_SOURCE_LOCATION (tmpl),
@@ -11167,6 +11171,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
   tree trailing_requires_clause = NULL_TREE;
   cp_decl_specifier_seq lambda_specs;
   clear_decl_specs (&lambda_specs);
+  /* A lambda op() is const unless explicitly 'mutable'.  */
+  cp_cv_quals quals = TYPE_QUAL_CONST;
 
   /* The template-parameter-list is optional, but must begin with
      an opening angle if present.  */
@@ -11258,6 +11264,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       if (lambda_specs.storage_class == sc_mutable)
 	{
 	  LAMBDA_EXPR_MUTABLE_P (lambda_expr) = 1;
+	  quals = TYPE_UNQUALIFIED;
 	  if (lambda_specs.conflicting_specifiers_p)
 	    error_at (lambda_specs.locations[ds_storage_class],
 		      "duplicate %<mutable%>");
@@ -11267,7 +11274,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 
       /* Parse optional exception specification.  */
       exception_spec
-	= cp_parser_exception_specification_opt (parser, CP_PARSER_FLAGS_NONE);
+	= cp_parser_exception_specification_opt (parser, CP_PARSER_FLAGS_NONE,
+						 quals);
 
       std_attrs = cp_parser_std_attribute_spec_seq (parser);
 
@@ -11300,7 +11308,6 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
     cp_decl_specifier_seq return_type_specs;
     cp_declarator* declarator;
     tree fco;
-    int quals;
     void *p;
 
     clear_decl_specs (&return_type_specs);
@@ -11325,8 +11332,6 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
     declarator = make_id_declarator (NULL_TREE, call_op_identifier, sfk_none,
 				     LAMBDA_EXPR_LOCATION (lambda_expr));
 
-    quals = (LAMBDA_EXPR_MUTABLE_P (lambda_expr)
-	     ? TYPE_UNQUALIFIED : TYPE_QUAL_CONST);
     declarator = make_call_declarator (declarator, param_list, quals,
 				       VIRT_SPEC_UNSPECIFIED,
                                        REF_QUAL_NONE,
@@ -15859,6 +15864,7 @@ cp_literal_operator_id (const char* name)
 			      + strlen (name) + 10);
   sprintf (buffer, UDLIT_OP_ANSI_FORMAT, name);
   identifier = get_identifier (buffer);
+  XDELETEVEC (buffer);
 
   return identifier;
 }
@@ -21619,7 +21625,9 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  tree tx_qual = cp_parser_tx_qualifier_opt (parser);
 		  /* And the exception-specification.  */
 		  exception_specification
-		    = cp_parser_exception_specification_opt (parser, flags);
+		    = cp_parser_exception_specification_opt (parser,
+							     flags,
+							     cv_quals);
 
 		  attrs = cp_parser_std_attribute_spec_seq (parser);
 
@@ -24477,7 +24485,7 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	    parser->local_variables_forbidden_p |= THIS_FORBIDDEN;
 
 	  /* Now we can parse the noexcept-specifier.  */
-	  spec = cp_parser_late_noexcept_specifier (parser, spec);
+	  spec = cp_parser_late_noexcept_specifier (parser, spec, decl);
 
 	  if (spec == error_mark_node)
 	    spec = NULL_TREE;
@@ -26123,10 +26131,12 @@ cp_parser_save_noexcept (cp_parser *parser)
 
 /* Used for late processing of noexcept-specifiers of member-functions.
    DEFAULT_ARG is the unparsed operand of a noexcept-specifier which
-   we saved for later; parse it now.  */
+   we saved for later; parse it now.  DECL is the declaration of the
+   member function.  */
 
 static tree
-cp_parser_late_noexcept_specifier (cp_parser *parser, tree default_arg)
+cp_parser_late_noexcept_specifier (cp_parser *parser, tree default_arg,
+				   tree decl)
 {
   /* Make sure we've gotten something that hasn't been parsed yet.  */
   gcc_assert (TREE_CODE (default_arg) == DEFERRED_PARSE);
@@ -26138,13 +26148,16 @@ cp_parser_late_noexcept_specifier (cp_parser *parser, tree default_arg)
   cp_token_cache *tokens = DEFPARSE_TOKENS (default_arg);
   cp_parser_push_lexer_for_tokens (parser, tokens);
 
+  /* We need to know if this member function was declared `const'.  Look
+     at the this parameter to figure that out.  */
+  cp_cv_quals quals = type_memfn_quals (TREE_TYPE (decl));
   /* Parse the cached noexcept-specifier.  */
   tree parsed_arg
     = cp_parser_noexcept_specification_opt (parser,
 					    CP_PARSER_FLAGS_NONE,
 					    /*require_constexpr=*/true,
 					    /*consumed_expr=*/NULL,
-					    /*return_cond=*/false);
+					    /*return_cond=*/false, quals);
 
   /* Revert to the main lexer.  */
   cp_parser_pop_lexer (parser);
@@ -26194,14 +26207,16 @@ noexcept_override_late_checks (tree type, tree fndecl)
    there are no parentheses.  CONSUMED_EXPR will be set accordingly.
    Otherwise, returns a noexcept specification unless RETURN_COND is true,
    in which case a boolean condition is returned instead.  The parser flags
-   FLAGS is used to control parsing.  */
+   FLAGS is used to control parsing.  QUALS are qualifiers indicating whether
+   the (member) function is `const'.  */
 
 static tree
 cp_parser_noexcept_specification_opt (cp_parser* parser,
 				      cp_parser_flags flags,
 				      bool require_constexpr,
 				      bool* consumed_expr,
-				      bool return_cond)
+				      bool return_cond,
+				      cp_cv_quals quals)
 {
   cp_token *token;
   const char *saved_message;
@@ -26247,7 +26262,7 @@ cp_parser_noexcept_specification_opt (cp_parser* parser,
 	  tree save_ccr = current_class_ref;
 
 	  if (current_class_type)
-	    inject_this_parameter (current_class_type, TYPE_UNQUALIFIED);
+	    inject_this_parameter (current_class_type, quals);
 
 	  if (require_constexpr)
 	    {
@@ -26307,10 +26322,13 @@ cp_parser_noexcept_specification_opt (cp_parser* parser,
 
    Returns a TREE_LIST representing the exception-specification.  The
    TREE_VALUE of each node is a type.  The parser flags FLAGS is used to
-   control parsing.  */
+   control parsing.  QUALS are qualifiers indicating whether the (member)
+   function is `const'.  */
 
 static tree
-cp_parser_exception_specification_opt (cp_parser* parser, cp_parser_flags flags)
+cp_parser_exception_specification_opt (cp_parser* parser,
+				       cp_parser_flags flags,
+				       cp_cv_quals quals)
 {
   cp_token *token;
   tree type_id_list;
@@ -26324,7 +26342,7 @@ cp_parser_exception_specification_opt (cp_parser* parser, cp_parser_flags flags)
     = cp_parser_noexcept_specification_opt (parser, flags,
 					    /*require_constexpr=*/true,
 					    /*consumed_expr=*/NULL,
-					    /*return_cond=*/false);
+					    /*return_cond=*/false, quals);
   if (type_id_list != NULL_TREE)
     return type_id_list;
 
@@ -43479,7 +43497,8 @@ cp_parser_transaction (cp_parser *parser, cp_token *token)
 						 CP_PARSER_FLAGS_NONE,
 						 /*require_constexpr=*/true,
 						 /*consumed_expr=*/NULL,
-						 /*return_cond=*/true);
+						 /*return_cond=*/true,
+						 TYPE_UNQUALIFIED);
 
   /* Keep track if we're in the lexical scope of an outer transaction.  */
   new_in = this_in | (old_in & TM_STMT_ATTR_OUTER);
@@ -43543,7 +43562,8 @@ cp_parser_transaction_expression (cp_parser *parser, enum rid keyword)
 					       CP_PARSER_FLAGS_NONE,
 					       /*require_constexpr=*/false,
 					       &noex_expr,
-					       /*return_cond=*/true);
+					       /*return_cond=*/true,
+					       TYPE_UNQUALIFIED);
 
   if (!noex || !noex_expr
       || cp_lexer_peek_token (parser->lexer)->type == CPP_OPEN_PAREN)

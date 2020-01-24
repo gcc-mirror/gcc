@@ -391,17 +391,20 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 		      n->used_as_abstract_origin = true;
 		}
 	    }
-	  /* If any symbol in a comdat group is reachable, force
-	     all externally visible symbols in the same comdat
+	  /* If any non-external and non-local symbol in a comdat group is
+ 	     reachable, force all externally visible symbols in the same comdat
 	     group to be reachable as well.  Comdat-local symbols
 	     can be discarded if all uses were inlined.  */
-	  if (node->same_comdat_group)
+	  if (node->same_comdat_group
+	      && node->externally_visible
+	      && !DECL_EXTERNAL (node->decl))
 	    {
 	      symtab_node *next;
 	      for (next = node->same_comdat_group;
 		   next != node;
 		   next = next->same_comdat_group)
 		if (!next->comdat_local_p ()
+		    && !DECL_EXTERNAL (next->decl)
 		    && !reachable.add (next))
 		  enqueue_node (next, &first, &reachable);
 	    }

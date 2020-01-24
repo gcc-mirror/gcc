@@ -1,8 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fpic -msve-vector-bits=256 -fno-schedule-insns" } */
 /* { dg-require-effective-target fpic } */
-
-/* Clobber highs must be spilled around tls usage.  */
+/* { dg-require-effective-target tls_native } */
 
 typedef float v8si __attribute__ ((vector_size (32)));
 

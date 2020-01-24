@@ -1,3 +1,44 @@
+2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
+
+	* Makefile.in (configure_deps): Add `toolexeclibdir.m4'.
+	* configure.ac: Handle `--with-toolexeclibdir='.
+	* configure: Regenerate.
+
+2020-01-23  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	* config/mips/gnustack.h: Check for TARGET_LIBC_GNUSTACK also.
+
+2020-01-23  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	* config/mips/gnustack.h: New file.
+	* config/mips/crti.S: Include gnustack.h.
+	* config/mips/crtn.S: Likewise.
+	* config/mips/mips16.S: Likewise.
+	* config/mips/vr4120-div.S: Likewise.
+
+2020-01-23  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c (prune_topn_counter): Remove
+	check for -1 as we only prune run-time counters
+	that do not generate an invalid state.
+
+2020-01-22  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/92924
+	* libgcov-profiler.c (__gcov_topn_values_profiler_body): First
+	try to find an existing value, then find an empty slot
+	if not found.
+
+2020-01-22  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/92924
+	* libgcov-driver.c (prune_topn_counter): New.
+	(prune_counters): Likewise.
+	(dump_one_gcov): Prune a run-time counter.
+	* libgcov-profiler.c (__gcov_topn_values_profiler_body):
+	For a known value, add GCOV_TOPN_VALUES to value.
+	Otherwise, decrement all counters by one.
+
 2020-01-18  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/arit.c (DS): Apply attribute __fallthrough__.

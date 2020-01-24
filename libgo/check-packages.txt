@@ -3,7 +3,6 @@ archive/zip
 bufio
 bytes
 cmd/go/internal/cache
-cmd/go/internal/dirhash
 cmd/go/internal/generate
 cmd/go/internal/get
 cmd/go/internal/imports
@@ -13,13 +12,10 @@ cmd/go/internal/lockedfile/internal/filelock
 cmd/go/internal/modconv
 cmd/go/internal/modfetch
 cmd/go/internal/modfetch/codehost
-cmd/go/internal/modfile
 cmd/go/internal/modload
-cmd/go/internal/module
 cmd/go/internal/mvs
 cmd/go/internal/par
 cmd/go/internal/search
-cmd/go/internal/semver
 cmd/go/internal/txtar
 cmd/go/internal/work
 cmd/internal/buildid
@@ -96,6 +92,7 @@ hash/adler32
 hash/crc32
 hash/crc64
 hash/fnv
+hash/maphash
 html
 html/template
 image
@@ -163,6 +160,8 @@ strings
 sync
 sync/atomic
 syscall
+testing
+testing/iotest
 testing/quick
 text/scanner
 text/tabwriter

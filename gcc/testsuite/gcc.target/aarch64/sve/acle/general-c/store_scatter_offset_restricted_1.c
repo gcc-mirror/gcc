@@ -20,7 +20,7 @@ f1 (svbool_t pg, signed char *s8_ptr, short *s16_ptr,
   svstnt1_scatter_offset (pg, s32_ptr, u32, s32, 0); /* { dg-error {too many arguments to function 'svstnt1_scatter_offset'} } */
   svstnt1_scatter_offset (0, s32_ptr, u32, s32); /* { dg-error {passing 'int' to argument 1 of 'svstnt1_scatter_offset', which expects 'svbool_t'} } */
   svstnt1_scatter_offset (pg, 0, u32, s32);
-  svstnt1_scatter_offset (pg, (int *) 0, u32, s32);
+  svstnt1_scatter_offset (pg, (int32_t *) 0, u32, s32);
   svstnt1_scatter_offset (pg, void_ptr, u32, s32);
   svstnt1_scatter_offset (pg, s_ptr, u32, s32); /* { dg-warning "passing argument 2 of 'svstnt1_scatter_u32offset_s32' from incompatible pointer type" } */
   svstnt1_scatter_offset (pg, f32_ptr, u32, s32); /* { dg-warning "passing argument 2 of 'svstnt1_scatter_u32offset_s32' from incompatible pointer type" } */

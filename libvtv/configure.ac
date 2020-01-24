@@ -78,6 +78,8 @@ AM_MAINTAINER_MODE
 
 LIBVTV_CONFIGURE
 
+GCC_WITH_TOOLEXECLIBDIR
+
 # Calculate toolexeclibdir
 # Also toolexecdir, though it's only used in toolexeclibdir
 case ${version_specific_libs} in
@@ -93,7 +95,14 @@ case ${version_specific_libs} in
        test x"$with_cross_host" != x"no"; then
       # Install a library built with a cross compiler in tooldir, not libdir.
       toolexecdir='$(exec_prefix)/$(target_alias)'
-      toolexeclibdir='$(toolexecdir)/lib'
+      case ${with_toolexeclibdir} in
+	no)
+	  toolexeclibdir='$(toolexecdir)/lib'
+	  ;;
+	*)
+	  toolexeclibdir=${with_toolexeclibdir}
+	  ;;
+      esac
     else
       toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
       toolexeclibdir='$(libdir)'

@@ -50,7 +50,7 @@ import (
 // pc should be the program counter of the compiler-generated code that
 // triggered this panic.
 func panicCheck1(pc uintptr, msg string) {
-	name, _, _, _ := funcfileline(pc-1, -1)
+	name, _, _, _ := funcfileline(pc-1, -1, false)
 	if hasPrefix(name, "runtime.") {
 		throw(msg)
 	}
@@ -548,6 +548,14 @@ func Goexit() {
 	// for detailed comments.
 	gp := getg()
 	gp.goexiting = true
+
+	// Create a panic object for Goexit, so we can recognize when it might be
+	// bypassed by a recover().
+	var p _panic
+	p.goexit = true
+	p.link = gp._panic
+	gp._panic = (*_panic)(noescape(unsafe.Pointer(&p)))
+
 	for {
 		d := gp._defer
 		if d == nil {
@@ -608,7 +616,12 @@ func preprintpanics(p *_panic) {
 func printpanics(p *_panic) {
 	if p.link != nil {
 		printpanics(p.link)
-		print("\t")
+		if !p.link.goexit {
+			print("\t")
+		}
+	}
+	if p.goexit {
+		return
 	}
 	print("panic: ")
 	printany(p.arg)
@@ -704,9 +717,12 @@ func gopanic(e interface{}) {
 		d._panic = nil
 
 		if p.recovered {
-			atomic.Xadd(&runningPanicDefers, -1)
-
 			gp._panic = p.link
+			if gp._panic != nil && gp._panic.goexit && gp._panic.aborted {
+				Goexit()
+				throw("Goexit returned")
+			}
+			atomic.Xadd(&runningPanicDefers, -1)
 
 			// Aborted panics are marked but remain on the g.panic list.
 			// Remove them from the list.
@@ -715,6 +731,11 @@ func gopanic(e interface{}) {
 			}
 			if gp._panic == nil { // must be done with signal
 				gp.sig = 0
+			}
+
+			if gp._panic != nil && gp._panic.goexit {
+				Goexit()
+				throw("Goexit returned")
 			}
 
 			// Unwind the stack by throwing an exception.
@@ -922,7 +943,7 @@ func makefuncreturning() {
 func gorecover() interface{} {
 	gp := getg()
 	p := gp._panic
-	if p != nil && !p.recovered {
+	if p != nil && !p.goexit && !p.recovered {
 		p.recovered = true
 		return p.arg
 	}

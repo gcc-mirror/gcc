@@ -420,7 +420,10 @@ clear_significand_below (REAL_VALUE_TYPE *r, unsigned int n)
   for (i = 0; i < w; ++i)
     r->sig[i] = 0;
 
-  r->sig[w] &= ~(((unsigned long)1 << (n % HOST_BITS_PER_LONG)) - 1);
+  /* We are actually passing N == SIGNIFICAND_BITS which would result
+     in an out-of-bound access below.  */
+  if (n % HOST_BITS_PER_LONG != 0)
+    r->sig[w] &= ~(((unsigned long)1 << (n % HOST_BITS_PER_LONG)) - 1);
 }
 
 /* Divide the significands of A and B, placing the result in R.  Return

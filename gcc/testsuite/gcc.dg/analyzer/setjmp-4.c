@@ -1,7 +1,7 @@
 /* { dg-additional-options "-fdiagnostics-show-line-numbers -fdiagnostics-path-format=inline-events -fdiagnostics-show-caret" } */
 /* { dg-enable-nn-line-numbers "" } */
 
-#include <setjmp.h>
+#include "test-setjmp.h"
 #include "analyzer-decls.h"
 
 extern int foo (int) __attribute__ ((__pure__));
@@ -23,7 +23,7 @@ void outer (int y)
 
 int main (void)
 {   
-  if (!setjmp(buf))
+  if (!SETJMP(buf))
     outer (42);
   else
     __analyzer_dump_path (); /* { dg-message "path" } */
@@ -42,14 +42,14 @@ int main (void)
     |
   'main': event 2
     |
-    |   NN |   if (!setjmp(buf))
+    |   NN |   if (!SETJMP(buf))
     |      |        ^~~~~~
     |      |        |
     |      |        (2) 'setjmp' called here
     |
   'main': events 3-5
     |
-    |   NN |   if (!setjmp(buf))
+    |   NN |   if (!SETJMP(buf))
     |      |      ^
     |      |      |
     |      |      (3) following 'true' branch...
@@ -87,14 +87,14 @@ int main (void)
     |
   'main': event 10
     |
-    |   NN |   if (!setjmp(buf))
+    |   NN |   if (!SETJMP(buf))
     |      |        ^~~~~~
     |      |        |
     |      |        (10) ...to 'setjmp' in 'main' (saved at (2))
     |
   'main': events 11-13
     |
-    |   NN |   if (!setjmp(buf))
+    |   NN |   if (!SETJMP(buf))
     |      |      ^
     |      |      |
     |      |      (11) following 'false' branch...

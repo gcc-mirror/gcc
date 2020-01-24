@@ -62,6 +62,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
+namespace ana {
+
 /* Dump T to PP in language-independent form, for debugging/logging/dumping
    purposes.  */
 
@@ -2387,15 +2389,20 @@ array_region::get_key_for_child_region (region_id child_rid, key_t *out) const
   return false;
 }
 
-/* qsort comparator for int.  */
+/* qsort comparator for array_region's keys.  */
 
-static int
-int_cmp (const void *p1, const void *p2)
+int
+array_region::key_cmp (const void *p1, const void *p2)
 {
-  int i1 = *(const int *)p1;
-  int i2 = *(const int *)p2;
+  key_t i1 = *(const key_t *)p1;
+  key_t i2 = *(const key_t *)p2;
 
-  return i1 - i2;
+  if (i1 > i2)
+    return 1;
+  else if (i1 < i2)
+    return -1;
+  else
+    return 0;
 }
 
 /* Implementation of region::walk_for_canonicalization vfunc for
@@ -2412,7 +2419,7 @@ array_region::walk_for_canonicalization (canonicalization *c) const
       int key_a = (*iter).first;
       keys.quick_push (key_a);
     }
-  keys.qsort (int_cmp);
+  keys.qsort (key_cmp);
 
   unsigned i;
   int key;
@@ -3653,7 +3660,7 @@ region_model::dump_summary_of_map (pretty_printer *pp,
 	case SK_SETJMP:
 	  dump_separator (pp, is_first);
 	  pp_printf (pp, "setjmp: EN: %i",
-		     sval->dyn_cast_setjmp_svalue ()->get_index ());
+		     sval->dyn_cast_setjmp_svalue ()->get_enode_index ());
 	  break;
 	}
     }
@@ -4486,10 +4493,11 @@ region_model::on_setjmp (const gcall *call, const exploded_node *enode,
   region_id buf_rid = deref_rvalue (gimple_call_arg (call, 0), ctxt);
   region *buf = get_region (buf_rid);
 
-  /* Create a setjmp_svalue for ENODE and store it in BUF_RID's region.  */
+  /* Create a setjmp_svalue for this call and store it in BUF_RID's region.  */
   if (buf)
     {
-      svalue *sval = new setjmp_svalue (enode, buf->get_type ());
+      setjmp_record r (enode, call);
+      svalue *sval = new setjmp_svalue (r, buf->get_type ());
       svalue_id new_sid = add_svalue (sval);
       set_value (buf_rid, new_sid, ctxt);
     }
@@ -6901,6 +6909,8 @@ canonicalization::dump () const
   dump (stderr);
 }
 
+} // namespace ana
+
 /* Update HSTATE with a hash of SID.  */
 
 void
@@ -6924,6 +6934,8 @@ debug (const region_model &rmodel)
 {
   rmodel.dump (false);
 }
+
+namespace ana {
 
 #if CHECKING_P
 
@@ -7978,5 +7990,7 @@ analyzer_region_model_cc_tests ()
 } // namespace selftest
 
 #endif /* CHECKING_P */
+
+} // namespace ana
 
 #endif /* #if ENABLE_ANALYZER */

@@ -9,11 +9,13 @@ int main ()
   int ix;
   int exit = 0;
   int ondev = 0;
+  int vectorsize;
 
   for (ix = 0; ix < N;ix++)
     ary[ix] = -1;
   
-#pragma acc parallel vector_length(32) copy(ary) copy(ondev)
+#pragma acc parallel vector_length(32) copy(ary) copy(ondev) \
+	    copyout(vectorsize)
   {
 #pragma acc loop vector
     for (unsigned ix = 0; ix < N; ix++)
@@ -31,6 +33,7 @@ int main ()
 	else
 	  ary[ix] = ix;
       }
+    vectorsize = __builtin_goacc_parlevel_size (GOMP_DIM_VECTOR);
   }
 
   for (ix = 0; ix < N; ix++)
@@ -40,7 +43,7 @@ int main ()
 	{
 	  int g = 0;
 	  int w = 0;
-	  int v = ix % 32;
+	  int v = ix % vectorsize;
 
 	  expected = (g << 16) | (w << 8) | v;
 	}

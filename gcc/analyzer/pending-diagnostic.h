@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_PENDING_DIAGNOSTIC_H
 #define GCC_ANALYZER_PENDING_DIAGNOSTIC_H
 
+namespace ana {
+
 /* Various bundles of information used for generating more precise
    messages for events within a diagnostic_path, for passing to the
    various "describe_*" vfuncs of pending_diagnostic.  See those
@@ -266,5 +268,7 @@ class pending_diagnostic_subclass : public pending_diagnostic
     return *(const Subclass*)this == other;
   }
 };
+
+} // namespace ana
 
 #endif /* GCC_ANALYZER_PENDING_DIAGNOSTIC_H */

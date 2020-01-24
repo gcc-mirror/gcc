@@ -61,6 +61,8 @@ any_pointer_p (tree var)
   return POINTER_TYPE_P (TREE_TYPE (var));
 }
 
+namespace ana {
+
 /* Add a state with name NAME to this state_machine.
    The string is required to outlive the state_machine.
 
@@ -118,5 +120,7 @@ make_checkers (auto_delete_vec <state_machine> &out, logger *logger)
 					  (*sm)->get_name ()));
     }
 }
+
+} // namespace ana
 
 #endif /* #if ENABLE_ANALYZER */

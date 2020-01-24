@@ -281,6 +281,7 @@ func efaceeq(x, y eface) bool {
 	}
 	return eq(x.data, y.data)
 }
+
 func ifaceeq(x, y iface) bool {
 	xtab := x.tab
 	if xtab == nil && y.tab == nil {
@@ -463,7 +464,6 @@ var hashkey [4]uintptr
 func alginit() {
 	// Install AES hash algorithms if the instructions needed are present.
 	if (GOARCH == "386" || GOARCH == "amd64") &&
-		GOOS != "nacl" &&
 		support_aes &&
 		cpu.X86.HasAES && // AESENC
 		cpu.X86.HasSSSE3 && // PSHUFB
@@ -488,7 +488,7 @@ func initAlgAES() {
 	getRandomData(aeskeysched[:])
 }
 
-// Note: These routines perform the read with an native endianness.
+// Note: These routines perform the read with a native endianness.
 func readUnaligned32(p unsafe.Pointer) uint32 {
 	q := (*[4]byte)(p)
 	if sys.BigEndian {

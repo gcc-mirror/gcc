@@ -291,11 +291,11 @@ command-line options).
 end
 
 define break-on-saved-diagnostic
-break diagnostic_manager::add_diagnostic
+break ana::diagnostic_manager::add_diagnostic
 end
 
 document break-on-saved-diagnostic
-Put a breakpoint on diagnostic_manager::add_diagnostic, called within
+Put a breakpoint on ana::diagnostic_manager::add_diagnostic, called within
 the analyzer whenever a diagnostic is saved for later de-duplication and
 possible emission.
 end

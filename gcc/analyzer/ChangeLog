@@ -1,3 +1,112 @@
+2020-01-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93375
+	* supergraph.cc (callgraph_superedge::get_arg_for_parm): Fail
+	gracefully is the number of parameters at the callee exceeds the
+	number of arguments at the call stmt.
+	(callgraph_superedge::get_parm_for_arg): Likewise.
+
+2020-01-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93382
+	* program-state.cc (sm_state_map::on_svalue_purge): If the
+	entry survives, but the origin is being purged, then reset the
+	origin to null.
+
+2020-01-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-signal.cc: Fix nesting of CHECKING_P and namespace ana.
+
+2020-01-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93378
+	* engine.cc (setjmp_svalue::compare_fields): Update for
+	replacement of m_enode with m_setjmp_record.
+	(setjmp_svalue::add_to_hash): Likewise.
+	(setjmp_svalue::get_index): Rename...
+	(setjmp_svalue::get_enode_index): ...to this.
+	(setjmp_svalue::print_details): Update for replacement of m_enode
+	with m_setjmp_record.
+	(exploded_node::on_longjmp): Likewise.
+	* exploded-graph.h (rewind_info_t::m_enode_origin): Replace...
+	(rewind_info_t::m_setjmp_record): ...with this.
+	(rewind_info_t::rewind_info_t): Update for replacement of m_enode
+	with m_setjmp_record.
+	(rewind_info_t::get_setjmp_point): Likewise.
+	(rewind_info_t::get_setjmp_call): Likewise.
+	* region-model.cc (region_model::dump_summary_of_map): Likewise.
+	(region_model::on_setjmp): Likewise.
+	* region-model.h (struct setjmp_record): New struct.
+	(setjmp_svalue::m_enode): Replace...
+	(setjmp_svalue::m_setjmp_record): ...with this.
+	(setjmp_svalue::setjmp_svalue): Update for replacement of m_enode
+	with m_setjmp_record.
+	(setjmp_svalue::clone): Likewise.
+	(setjmp_svalue::get_index): Rename...
+	(setjmp_svalue::get_enode_index): ...to this.
+	(setjmp_svalue::get_exploded_node): Replace...
+	(setjmp_svalue::get_setjmp_record): ...with this.
+
+2020-01-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93316
+	* analyzer.cc (is_setjmp_call_p): Check for "setjmp" as well as
+	"_setjmp".
+
+2020-01-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93307
+	* analysis-plan.h: Wrap everything namespace "ana".
+	* analyzer-logging.cc: Likewise.
+	* analyzer-logging.h: Likewise.
+	* analyzer-pass.cc (pass_analyzer::execute): Update for "ana"
+	namespace.
+	* analyzer-selftests.cc: Wrap everything namespace "ana".
+	* analyzer-selftests.h: Likewise.
+	* analyzer.h: Likewise for forward decls of types.
+	* call-string.h: Likewise.
+	* checker-path.cc: Likewise.
+	* checker-path.h: Likewise.
+	* constraint-manager.cc: Likewise.
+	* constraint-manager.h: Likewise.
+	* diagnostic-manager.cc: Likewise.
+	* diagnostic-manager.h: Likewise.
+	* engine.cc: Likewise.
+	* engine.h: Likewise.
+	* exploded-graph.h: Likewise.
+	* function-set.cc: Likewise.
+	* function-set.h: Likewise.
+	* pending-diagnostic.cc: Likewise.
+	* pending-diagnostic.h: Likewise.
+	* program-point.cc: Likewise.
+	* program-point.h: Likewise.
+	* program-state.cc: Likewise.
+	* program-state.h: Likewise.
+	* region-model.cc: Likewise.
+	* region-model.h: Likewise.
+	* sm-file.cc: Likewise.
+	* sm-malloc.cc: Likewise.
+	* sm-pattern-test.cc: Likewise.
+	* sm-sensitive.cc: Likewise.
+	* sm-signal.cc: Likewise.
+	* sm-taint.cc: Likewise.
+	* sm.cc: Likewise.
+	* sm.h: Likewise.
+	* state-purge.h: Likewise.
+	* supergraph.cc: Likewise.
+	* supergraph.h: Likewise.
+
+2020-01-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93352
+	* region-model.cc (int_cmp): Rename to...
+	(array_region::key_cmp): ...this, using key_t rather than int.
+	Rewrite in terms of comparisons rather than subtraction to
+	ensure qsort is anti-symmetric when handling extreme values.
+	(array_region::walk_for_canonicalization): Update for above
+	renaming.
+	* region-model.h (array_region::key_cmp): New decl.
+
 2020-01-17  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93290

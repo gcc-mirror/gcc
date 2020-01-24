@@ -61,6 +61,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
+namespace ana {
+
 namespace {
 
 /* An experimental state machine, for tracking calls to async-signal-unsafe
@@ -368,4 +370,7 @@ analyzer_sm_signal_cc_tests ()
 } // namespace selftest
 
 #endif /* CHECKING_P */
+
+} // namespace ana
+
 #endif /* #if ENABLE_ANALYZER */

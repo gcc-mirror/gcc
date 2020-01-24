@@ -1,3 +1,80 @@
+2020-01-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/92804
+	* parser.c (cp_parser_nested_name_specifier_opt): Properly
+	diagnose concept-ids.
+
+2020-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93331 - ICE with __builtin_strchr.
+	* constexpr.c (cxx_eval_builtin_function_call): Use the original
+	argument if we didn't manage to extract a STRING_CST.
+
+	PR c++/93345 - ICE with defaulted dtor and template.
+	PR c++/33799
+	* decl.c (cxx_maybe_build_cleanup): Don't try to set
+	throwing_cleanup in a template.
+
+2020-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92907 - noexcept does not consider "const" in member functions.
+	* g++.dg/cpp0x/noexcept56.C: New test.
+
+2020-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93324 - ICE with -Wall on constexpr if.
+	* semantics.c (is_std_constant_evaluated_p): Check fndecl.
+
+2020-01-22  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (get_mapped_args): Avoid using auto_vec
+	as a vector element.  Release the vectors inside the lists
+	vector.
+	* parser.c (cp_literal_operator_id): Free the buffer.
+
+2020-01-22  Jun Ma  <JunMa@linux.alibaba.com>
+
+	* coroutines.cc (finish_co_await_expr): Add error check on return
+	value of build_co_await.
+	(finish_co_yield_expr,): Ditto.
+
+2020-01-22  Jun Ma  <JunMa@linux.alibaba.com>
+
+	* coroutines.cc (lookup_awaitable_member): Lookup an awaitable member.
+	(lookup_promise_method): Emit diagnostic when get NULL_TREE back only.
+	(build_co_await): Use lookup_awaitable_member instead of lookup_member.
+
+2020-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60855 - ICE with sizeof VLA capture.
+	* lambda.c (is_lambda_ignored_entity): Don't look past VLA capture.
+
+	PR c++/90732 - ICE with VLA capture and generic lambda.
+	* pt.c (tsubst_lambda_expr): Repeat add_capture for VLAs.
+
+2020-01-21  Iain Sandoe  <iain@sandoe.co.uk>
+	    Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* coroutines.cc (coro_promise_type_found_p): Check for NULL return
+	from complete_type_or_else.
+	(register_param_uses): Likewise.
+	(build_co_await): Do not try to use complete_type_or_else for void
+	types, otherwise for incomplete types, check for NULL return from
+	complete_type_or_else.
+
+2020-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91476 - anon-namespace reference temp clash between TUs.
+	* decl2.c (copy_linkage): Factor out of get_guard.
+	* call.c (make_temporary_var_for_ref_to_temp): Use it.
+	* decl.c (cp_finish_decomp): Use it.
+	(cp_finish_decl): determine_visibility sooner.
+
+2020-01-21  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* coroutines.cc (finish_co_await_expr): Set return value flag.
+	(finish_co_yield_expr, morph_fn_to_coro): Ditto.
+
 2020-01-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/33799 - destroy return value, take 2.

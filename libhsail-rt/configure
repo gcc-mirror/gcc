@@ -773,6 +773,7 @@ enable_silent_rules
 enable_maintainer_mode
 enable_dependency_tracking
 enable_version_specific_runtime_libs
+with_toolexeclibdir
 enable_shared
 enable_static
 with_pic
@@ -1435,6 +1436,9 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-toolexeclibdir=DIR
+                          install libraries built with a cross compiler within
+                          DIR
   --with-pic              try to use only PIC/non-PIC objects [default=use
                           both]
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
@@ -4653,6 +4657,22 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_version_specific_runtime_libs" >&5
 $as_echo "$enable_version_specific_runtime_libs" >&6; }
 
+
+# Check whether --with-toolexeclibdir was given.
+if test "${with_toolexeclibdir+set}" = set; then :
+  withval=$with_toolexeclibdir; case ${with_toolexeclibdir} in
+  /)
+    ;;
+  */)
+    with_toolexeclibdir=`echo $with_toolexeclibdir | sed 's,/$,,'`
+    ;;
+esac
+else
+  with_toolexeclibdir=no
+fi
+
+
+
 # Calculate toolexeclibdir
 # Also toolexecdir, though it's only used in toolexeclibdir
 case ${enable_version_specific_runtime_libs} in
@@ -4668,7 +4688,14 @@ case ${enable_version_specific_runtime_libs} in
        test x"$with_cross_host" != x"no"; then
       # Install a library built with a cross compiler in tooldir, not libdir.
       toolexecdir='$(exec_prefix)/$(target_alias)'
-      toolexeclibdir='$(toolexecdir)/lib'
+      case ${with_toolexeclibdir} in
+	no)
+	  toolexeclibdir='$(toolexecdir)/lib'
+	  ;;
+	*)
+	  toolexeclibdir=${with_toolexeclibdir}
+	  ;;
+      esac
     else
       toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
       toolexeclibdir='$(libdir)'
@@ -11212,7 +11239,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11215 "configure"
+#line 11242 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11318,7 +11345,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11321 "configure"
+#line 11348 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

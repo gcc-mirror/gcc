@@ -85,7 +85,7 @@ func (b *decimal) set(s string) (ok bool) {
 	for ; i < len(s); i++ {
 		switch {
 		case s[i] == '_':
-			// underscoreOK already called
+			// readFloat already checked underscores
 			continue
 		case s[i] == '.':
 			if sawdot {
@@ -141,7 +141,7 @@ func (b *decimal) set(s string) (ok bool) {
 		e := 0
 		for ; i < len(s) && ('0' <= s[i] && s[i] <= '9' || s[i] == '_'); i++ {
 			if s[i] == '_' {
-				// underscoreOK already called
+				// readFloat already checked underscores
 				continue
 			}
 			if e < 10000 {
@@ -160,10 +160,11 @@ func (b *decimal) set(s string) (ok bool) {
 }
 
 // readFloat reads a decimal mantissa and exponent from a float
-// string representation. It returns ok==false if the number could
-// not fit return types or is invalid.
+// string representation. It returns ok==false if the number
+// is invalid.
 func readFloat(s string) (mantissa uint64, exp int, neg, trunc, hex, ok bool) {
 	i := 0
+	underscores := false
 
 	// optional sign
 	if i >= len(s) {
@@ -196,7 +197,7 @@ func readFloat(s string) (mantissa uint64, exp int, neg, trunc, hex, ok bool) {
 	for ; i < len(s); i++ {
 		switch c := s[i]; true {
 		case c == '_':
-			// underscoreOK already called
+			underscores = true
 			continue
 
 		case c == '.':
@@ -272,7 +273,7 @@ func readFloat(s string) (mantissa uint64, exp int, neg, trunc, hex, ok bool) {
 		e := 0
 		for ; i < len(s) && ('0' <= s[i] && s[i] <= '9' || s[i] == '_'); i++ {
 			if s[i] == '_' {
-				// underscoreOK already called
+				underscores = true
 				continue
 			}
 			if e < 10000 {
@@ -292,6 +293,11 @@ func readFloat(s string) (mantissa uint64, exp int, neg, trunc, hex, ok bool) {
 	if mantissa != 0 {
 		exp = dp - ndMant
 	}
+
+	if underscores && !underscoreOK(s) {
+		return
+	}
+
 	ok = true
 	return
 }
@@ -560,12 +566,16 @@ func atof32(s string) (f float32, err error) {
 	}
 
 	mantissa, exp, neg, trunc, hex, ok := readFloat(s)
-	if hex && ok {
+	if !ok {
+		return 0, syntaxError(fnParseFloat, s)
+	}
+
+	if hex {
 		f, err := atofHex(s, &float32info, mantissa, exp, neg, trunc)
 		return float32(f), err
 	}
 
-	if optimize && ok {
+	if optimize {
 		// Try pure floating-point arithmetic conversion.
 		if !trunc {
 			if f, ok := atof32exact(mantissa, exp, neg); ok {
@@ -603,11 +613,15 @@ func atof64(s string) (f float64, err error) {
 	}
 
 	mantissa, exp, neg, trunc, hex, ok := readFloat(s)
-	if hex && ok {
+	if !ok {
+		return 0, syntaxError(fnParseFloat, s)
+	}
+
+	if hex {
 		return atofHex(s, &float64info, mantissa, exp, neg, trunc)
 	}
 
-	if optimize && ok {
+	if optimize {
 		// Try pure floating-point arithmetic conversion.
 		if !trunc {
 			if f, ok := atof64exact(mantissa, exp, neg); ok {
@@ -664,9 +678,6 @@ func atof64(s string) (f float64, err error) {
 // ParseFloat recognizes the strings "NaN", "+Inf", and "-Inf" as their
 // respective special floating point values. It ignores case when matching.
 func ParseFloat(s string, bitSize int) (float64, error) {
-	if !underscoreOK(s) {
-		return 0, syntaxError(fnParseFloat, s)
-	}
 	if bitSize == 32 {
 		f, err := atof32(s)
 		return float64(f), err

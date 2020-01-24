@@ -305,7 +305,7 @@ x)
 	    "") ;;
 	    $goarch) ;;
 	    $goos) ;;
-	    aix | android | darwin | dragonfly | freebsd | hurd | js | linux | nacl | netbsd | openbsd | plan9 | solaris | windows)
+	    aix | android | darwin | dragonfly | freebsd | hurd | illumos | js | linux | nacl | netbsd | openbsd | plan9 | solaris | windows)
 		tag1=nonmatchingtag
 		;;
 	    386 | amd64 | amd64p32 | arm | armbe | arm64 | arm64be | alpha | ia64 | m68k | mips | mipsle | mips64 | mips64le | mips64p32 | mips64p32le·| nios2 | ppc | ppc64 | ppc64le | riscv64 | s390 | s390x | sh | shbe | sparc | sparc64 | wasm)
@@ -317,7 +317,7 @@ x)
 	    "") ;;
 	    $goarch) ;;
 	    $goos) ;;
-	    aix | android | darwin | dragonfly | freebsd | hurd | js | linux | nacl | netbsd | openbsd | plan9 | solaris | windows)
+	    aix | android | darwin | dragonfly | freebsd | hurd | illumos | js | linux | nacl | netbsd | openbsd | plan9 | solaris | windows)
 		tag2=nonmatchingtag
 		;;
 	    386 | amd64 | amd64p32 | arm | armbe | arm64 | arm64be | alpha | ia64 | m68k | mips | mipsle | mips64 | mips64le | mips64p32 | mips64p32le·| nios2 | ppc | ppc64 | ppc64le | riscv64 | s390 | s390x | sh | shbe | sparc | sparc64 | wasm)
@@ -517,6 +517,11 @@ symtogo() {
     if expr "$tp" : '^\.' >/dev/null 2>&1; then
       continue
     fi
+    # Skip type descriptors.  These are normally skipped because they
+    # are weak symbols, but if not using GNU nm we may see them here.
+    if expr "$tp" : '^type\.\.' >/dev/null 2>&1; then
+      continue
+    fi
     s=$(echo "$tp" | sed -e 's/\.\.z2f/%/g' | sed -e 's/.*%//')
     # Screen out methods (X.Y.Z).
     if ! expr "$s" : '^[^.]*\.[^.]*$' >/dev/null 2>&1; then
@@ -624,7 +629,9 @@ exampleoutput() {
 		echo 'import _ "./_xtest_"'
 	    fi
 	fi
-	echo 'import "testing"'
+	if test "$package" != "testing"; then
+		echo 'import "testing"'
+	fi
 	echo 'import "testing/internal/testdeps"'
 	if ! test -n "$testmain"; then
 		echo 'import __os__ "os"'

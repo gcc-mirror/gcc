@@ -820,7 +820,7 @@ mostlyclean-local:
 @NATIVE_TRUE@go$(EXEEXT): $(go_cmd_go_files) $(LIBGOTOOL) $(LIBGODEP)
 @NATIVE_TRUE@	$(GOLINK) $(go_cmd_go_files) $(LIBGOTOOL) $(LIBS) $(NET_LIBS)
 @NATIVE_TRUE@gofmt$(EXEEXT): $(go_cmd_gofmt_files) $(LIBGODEP)
-@NATIVE_TRUE@	$(GOLINK) $(go_cmd_gofmt_files) $(LIBS) $(NET_LIBS)
+@NATIVE_TRUE@	$(GOLINK) $(go_cmd_gofmt_files) $(LIBGOTOOL) $(LIBS) $(NET_LIBS)
 @NATIVE_TRUE@cgo$(EXEEXT): $(go_cmd_cgo_files) zdefaultcc.go $(LIBGOTOOL) $(LIBGODEP)
 @NATIVE_TRUE@	$(GOLINK) $(go_cmd_cgo_files) zdefaultcc.go $(LIBGOTOOL) $(LIBS) $(NET_LIBS)
 @NATIVE_TRUE@vet$(EXEEXT): $(go_cmd_vet_files) $(LIBGOTOOL) $(LIBGODEP)
@@ -886,6 +886,10 @@ mostlyclean-local:
 @NATIVE_TRUE@	cp $(libgodir)/zdefaultcc.go check-go-dir/src/cmd/go/internal/cfg/
 @NATIVE_TRUE@	cp -r $(cmdsrcdir)/go/testdata check-go-dir/src/cmd/go/
 @NATIVE_TRUE@	cp -r $(cmdsrcdir)/internal check-go-dir/src/cmd/
+@NATIVE_TRUE@	$(MKDIR_P) check-go-dir/src/cmd/vendor/golang.org/x
+@NATIVE_TRUE@	cp -r $(libgosrcdir)/golang.org/x/mod check-go-dir/src/cmd/vendor/golang.org/x/
+@NATIVE_TRUE@	cp -r $(libgosrcdir)/golang.org/x/crypto check-go-dir/src/cmd/vendor/golang.org/x/
+@NATIVE_TRUE@	cp -r $(libgosrcdir)/golang.org/x/xerrors check-go-dir/src/cmd/vendor/golang.org/x/
 @NATIVE_TRUE@	cp $(libgodir)/objabi.go check-go-dir/src/cmd/internal/objabi/
 @NATIVE_TRUE@	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
 @NATIVE_TRUE@	abs_checkdir=`cd check-go-dir && $(PWD_COMMAND)`; \

@@ -785,6 +785,8 @@ AC_DEFUN([GLIBCXX_EXPORT_INSTALL_INFO], [
     [version_specific_libs=no])
   AC_MSG_RESULT($version_specific_libs)
 
+  GCC_WITH_TOOLEXECLIBDIR
+
   # Default case for install directory for include files.
   if test $version_specific_libs = no && test $gxx_include_dir = no; then
     gxx_include_dir='include/c++/${gcc_version}'
@@ -815,7 +817,14 @@ AC_DEFUN([GLIBCXX_EXPORT_INSTALL_INFO], [
     if test -n "$with_cross_host" &&
        test x"$with_cross_host" != x"no"; then
       glibcxx_toolexecdir='${exec_prefix}/${host_alias}'
-      glibcxx_toolexeclibdir='${toolexecdir}/lib'
+      case ${with_toolexeclibdir} in
+	no)
+	  glibcxx_toolexeclibdir='${toolexecdir}/lib'
+	  ;;
+	*)
+	  glibcxx_toolexeclibdir=${with_toolexeclibdir}
+	  ;;
+      esac
     else
       glibcxx_toolexecdir='${libdir}/gcc/${host_alias}'
       glibcxx_toolexeclibdir='${libdir}'

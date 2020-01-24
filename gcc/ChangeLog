@@ -1,3 +1,279 @@
+2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
+
+	* doc/install.texi (Cross-Compiler-Specific Options): Document
+	`--with-toolexeclibdir' option.
+
+2020-01-24  Hans-Peter Nilsson  <hp@axis.com>
+
+	* target.def (flags_regnum): Also mention effect on delay slot filling.
+	* doc/tm.texi: Regenerate.
+
+2020-01-23  Jeff Law  <law@redhat.com>
+
+	* config/h8300/h8300.c (h8300_option_override): Fix diagnostic text.
+
+2020-01-23  Mikael Tillenius  <mti-1@tillenius.com>
+
+	* config/h8300/h8300.h (FUNCTION_PROFILER): Fix emission of
+	profiling label
+
+2020-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/93402
+	* postreload.c (reload_combine_recognize_pattern): Don't try to adjust
+	USE insns.
+
+2020-01-23  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	* config.in: Regenerated.
+	* config/mips/linux.h (NEED_INDICATE_EXEC_STACK): Define to 1
+	for TARGET_LIBC_GNUSTACK.
+	* configure: Regenerated.
+	* configure.ac: Define TARGET_LIBC_GNUSTACK if glibc version is
+	found to be 2.31 or greater.
+
+2020-01-23  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	* config/mips/linux.h (NEED_INDICATE_EXEC_STACK): Define to
+	TARGET_SOFT_FLOAT.
+	* config/mips/mips.c (TARGET_ASM_FILE_END): Define to ...
+	(mips_asm_file_end): New function. Delegate to
+	file_end_indicate_exec_stack if NEED_INDICATE_EXEC_STACK is true.
+	* config/mips/mips.h (NEED_INDICATE_EXEC_STACK): Define to 0.
+
+2020-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93376
+	* config/i386/i386-modes.def (POImode): New mode.
+	(MAX_BITSIZE_MODE_ANY_INT): Change from 128 to 160.
+	* config/i386/i386.md (DPWI): New mode attribute.
+	(addv<mode>4, subv<mode>4): Use <DPWI> instead of <DWI>.
+	(QWI): Rename to...
+	(QPWI): ... this.  Use POI instead of OI for TImode.
+	(*addv<dwi>4_doubleword, *addv<dwi>4_doubleword_1,
+	*subv<dwi>4_doubleword, *subv<dwi>4_doubleword_1): Use <QPWI>
+	instead of <QWI>.
+
+2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/93341
+	* config/aarch64/aarch64.md (UNSPEC_SPECULATION_TRACKER_REV): New
+	unspec.
+	(speculation_tracker_rev): New pattern.
+	* config/aarch64/aarch64-speculation.cc (aarch64_do_track_speculation):
+	Use speculation_tracker_rev to track the inverse condition.
+
+2020-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93381
+	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): Take
+	alias-set of the def as argument and record the first one.
+	(vn_walk_cb_data::first_set): New member.
+	(vn_reference_lookup_3): Pass the alias-set of the current def
+	to push_partial_def.  Fix alias-set used in the aggregate copy
+	case.
+	(vn_reference_lookup): Consistently set *last_vuse_ptr.
+	* real.c (clear_significand_below): Fix out-of-bound access.
+
+2020-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93346
+	* config/i386/i386.md (*bmi2_bzhi_<mode>3_2, *bmi2_bzhi_<mode>3_3):
+	New define_insn patterns.
+
+2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/sourcebuild.texi (check-function-bodies): Add an
+	optional target/xfail selector.
+
+2020-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/93124
+	* auto-inc-dec.c (merge_in_block): Don't add auto inc/decs to
+	bare USE and CLOBBER insns.
+
+2020-01-22  Andrew Pinski  <apinski@marvell.com>
+
+	* config/arc/arc.c (output_short_suffix): Check insn for nullness.
+
+2020-01-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93307
+	* gdbinit.in (break-on-saved-diagnostic): Update for move of
+	diagnostic_manager into "ana" namespace.
+	* selftest-run-tests.c (selftest::run_tests): Update for move of
+	selftest::run_analyzer_selftests to
+	ana::selftest::run_analyzer_selftests.
+
+2020-01-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cfgexpand.c (union_stack_vars): Update the size.
+
+2020-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93381
+	* tree-ssa-structalias.c (find_func_aliases): Assume offsetting
+	throughout, handle all conversions the same.
+
+2020-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93335
+	* config/aarch64/aarch64.c (aarch64_expand_subvti): Only use
+	gen_subdi3_compare1_imm if low_in2 satisfies aarch64_plus_immediate
+	predicate, not whenever it is CONST_INT.  Otherwise, force_reg it.
+	Call force_reg on high_in2 unconditionally.
+
+2020-01-22  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/92924
+	* profile.c (compute_value_histograms): Divide
+	all counter values.
+
+2020-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91298
+	* output.h (assemble_name_resolve): Declare.
+	* varasm.c (assemble_name_resolve): New function.
+	(assemble_name): Use it.
+	* config/i386/i386.h (ASM_OUTPUT_SYMBOL_REF): Define.
+
+2020-01-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/sourcebuild.texi (Texinfo Manuals, Front End): Refer to
+	update_web_docs_git instead of update_web_docs_svn.
+
+2020-01-21  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/9311
+	* config/aarch64/aarch64.md (tlsgd_small_<mode>): Have operand 0
+	as PTR mode. Have operand 1 as being modeless, it can be P mode.
+	(*tlsgd_small_<mode>): Likewise.
+	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately)
+	<case SYMBOL_SMALL_TLSGD>: Call gen_tlsgd_small_* with a ptr_mode
+	register.  Convert that register back to dest using convert_mode.
+
+2020-01-21  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv-sr.c (riscv_sr_match_prologue): Use INTVAL
+	instead of XINT.
+
+2020-01-21  H.J. Lu  <hongjiu.lu@intel.com>
+	    Uros Bizjak    <ubizjak@gmail.com>
+
+	PR target/93319
+	* config/i386/i386.c (ix86_tls_module_base): Replace Pmode
+	with ptr_mode.
+	(legitimize_tls_address): Do GNU2 TLS address computation in
+	ptr_mode and zero-extend result to Pmode.
+	*  config/i386/i386.md (@tls_dynamic_gnu2_64_<mode>): Replace
+	:P with :PTR and Pmode with ptr_mode.
+	(*tls_dynamic_gnu2_lea_64_<mode>): Likewise.
+	(*tls_dynamic_gnu2_call_64_<mode>): Likewise.
+	(*tls_dynamic_gnu2_combine_64_<mode>): Likewise.
+
+2020-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93333
+	* config/riscv/riscv.c (riscv_rtx_costs) <case ZERO_EXTRACT>: Verify
+	the last two operands are CONST_INT_P before using them as such.
+
+2020-01-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.def: Use get_typenode_from_name
+	to get the integer element types.
+
+2020-01-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.h
+	(function_expander::convert_to_pmode): Declare.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_expander::convert_to_pmode): New function.
+	(function_expander::get_contiguous_base): Use it.
+	(function_expander::prepare_gather_address_operands): Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc
+	(svwhilerw_svwhilewr_impl::expand): Likewise.
+
+2020-01-21  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/92424
+	* config/aarch64/aarch64.c (aarch64_declare_function_name): Set
+	cfun->machine->label_is_assembled.
+	(aarch64_print_patchable_function_entry): New.
+	(TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY): Define.
+	* config/aarch64/aarch64.h (struct machine_function): New field,
+	label_is_assembled.
+
+2020-01-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR ipa/93315
+	* ipa-profile.c (ipa_profile): Delete call_sums and set it to
+	NULL on exit.
+
+2020-01-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/93318	
+	* cgraph.c (cgraph_edge::resolve_speculation,
+	cgraph_edge::redirect_call_stmt_to_callee): Fix update of
+	call_stmt_site_hash.
+
+2020-01-21  Martin Liska  <mliska@suse.cz>
+
+	* config/rs6000/rs6000.c (common_mode_defined): Remove
+	unused variable.
+
+2020-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92328
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Preserve
+	type when value-numbering same-sized store by inserting a
+	VIEW_CONVERT_EXPR.
+	(eliminate_dom_walker::eliminate_stmt): When eliminating
+	a redundant store handle bit-reinterpretation of the same value.
+
+2020-01-21  Andrew Pinski  <apinski@marvel.com>
+
+	PR tree-opt/93321
+	* tree-into-ssa.c (prepare_block_for_update_1): Split out
+	from ...
+	(prepare_block_for_update): This.  Use a worklist instead of
+	recursing.
+
+2020-01-21  Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+
+	* gcc/config/arm/arm.c (clear_operation_p):
+	Initialise last_regno, skip first iteration
+	based on the first_set value and use ints instead
+	of the unnecessary HOST_WIDE_INTs.
+
+2020-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93073
+	* config/rs6000/rs6000.c (rs6000_emit_cmove): If using fsel, punt for
+	compare_mode other than SFmode or DFmode.
+
+2020-01-21  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/93304
+	* config/riscv/riscv-protos.h (riscv_hard_regno_rename_ok): New.
+	* config/riscv/riscv.c (riscv_hard_regno_rename_ok): New.
+	* config/riscv/riscv.h (HARD_REGNO_RENAME_OK): Defined.
+
+2020-01-20  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (neoversen1_tunings): Set jump_align to 4.
+
+2020-01-20  Andrew Pinski  <apinski@marvell.com>
+
+	PR middle-end/93242
+	* targhooks.c (default_print_patchable_function_entry): Use
+	output_asm_insn to emit the nop instruction.
+
+2020-01-20  Fangrui Song  <maskray@google.com>
+
+	PR middle-end/93194
+	* targhooks.c (default_print_patchable_function_entry): Align to
+	POINTER_SIZE.
+
 2020-01-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/93319

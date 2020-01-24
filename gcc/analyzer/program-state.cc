@@ -57,6 +57,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
+namespace ana {
+
 /* class sm_state_map.  */
 
 /* sm_state_map's ctor.  */
@@ -450,6 +452,11 @@ sm_state_map::on_svalue_purge (const state_machine &sm,
 				 map, e.m_state);
 
 	  to_remove.safe_push (dst_sid);
+	}
+      else if ((*iter).second.m_origin.as_int () >= first_unused_sid.as_int ())
+	{
+	  /* If the origin svalue is being purged, then reset it to null.  */
+	  (*iter).second.m_origin = svalue_id::null ();
 	}
     }
 
@@ -1395,5 +1402,7 @@ analyzer_program_state_cc_tests ()
 } // namespace selftest
 
 #endif /* CHECKING_P */
+
+} // namespace ana
 
 #endif /* #if ENABLE_ANALYZER */

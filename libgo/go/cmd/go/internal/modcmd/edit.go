@@ -9,17 +9,19 @@ package modcmd
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"cmd/go/internal/base"
+	"cmd/go/internal/lockedfile"
 	"cmd/go/internal/modfetch"
-	"cmd/go/internal/modfile"
 	"cmd/go/internal/modload"
-	"cmd/go/internal/module"
+	"cmd/go/internal/work"
+
+	"golang.org/x/mod/modfile"
+	"golang.org/x/mod/module"
 )
 
 var cmdEdit = &base.Command{
@@ -53,12 +55,17 @@ The -exclude=path@version and -dropexclude=path@version flags
 add and drop an exclusion for the given module path and version.
 Note that -exclude=path@version is a no-op if that exclusion already exists.
 
-The -replace=old[@v]=new[@v] and -dropreplace=old[@v] flags
-add and drop a replacement of the given module path and version pair.
-If the @v in old@v is omitted, the replacement applies to all versions
-with the old module path. If the @v in new@v is omitted, the new path
-should be a local module root directory, not a module path.
-Note that -replace overrides any existing replacements for old[@v].
+The -replace=old[@v]=new[@v] flag adds a replacement of the given
+module path and version pair. If the @v in old@v is omitted, a
+replacement without a version on the left side is added, which applies
+to all versions of the old module path. If the @v in new@v is omitted,
+the new path should be a local module root directory, not a module
+path. Note that -replace overrides any redundant replacements for old[@v],
+so omitting @v will drop existing replacements for specific versions.
+
+The -dropreplace=old[@v] flag drops a replacement of the given
+module path and version pair. If the @v is omitted, a replacement without
+a version on the left side is dropped.
 
 The -require, -droprequire, -exclude, -dropexclude, -replace,
 and -dropreplace editing flags may be repeated, and the changes
@@ -130,6 +137,7 @@ func init() {
 	cmdEdit.Flag.Var(flagFunc(flagReplace), "replace", "")
 	cmdEdit.Flag.Var(flagFunc(flagDropExclude), "dropexclude", "")
 
+	work.AddModCommonFlags(cmdEdit)
 	base.AddBuildFlagsNX(&cmdEdit.Flag)
 }
 
@@ -157,11 +165,11 @@ func runEdit(cmd *base.Command, args []string) {
 	if len(args) == 1 {
 		gomod = args[0]
 	} else {
-		gomod = filepath.Join(modload.ModRoot(), "go.mod")
+		gomod = modload.ModFilePath()
 	}
 
 	if *editModule != "" {
-		if err := module.CheckPath(*editModule); err != nil {
+		if err := module.CheckImportPath(*editModule); err != nil {
 			base.Fatalf("go mod: invalid -module: %v", err)
 		}
 	}
@@ -172,7 +180,7 @@ func runEdit(cmd *base.Command, args []string) {
 		}
 	}
 
-	data, err := ioutil.ReadFile(gomod)
+	data, err := lockedfile.Read(gomod)
 	if err != nil {
 		base.Fatalf("go: %v", err)
 	}
@@ -215,13 +223,19 @@ func runEdit(cmd *base.Command, args []string) {
 		return
 	}
 
-	unlock := modfetch.SideLock()
-	defer unlock()
-	lockedData, err := ioutil.ReadFile(gomod)
-	if err == nil && !bytes.Equal(lockedData, data) {
-		base.Fatalf("go: go.mod changed during editing; not overwriting")
+	// Make a best-effort attempt to acquire the side lock, only to exclude
+	// previous versions of the 'go' command from making simultaneous edits.
+	if unlock, err := modfetch.SideLock(); err == nil {
+		defer unlock()
 	}
-	if err := ioutil.WriteFile(gomod, out, 0666); err != nil {
+
+	err = lockedfile.Transform(gomod, func(lockedData []byte) ([]byte, error) {
+		if !bytes.Equal(lockedData, data) {
+			return nil, errors.New("go.mod changed during editing; not overwriting")
+		}
+		return out, nil
+	})
+	if err != nil {
 		base.Fatalf("go: %v", err)
 	}
 }
@@ -233,7 +247,7 @@ func parsePathVersion(flag, arg string) (path, version string) {
 		base.Fatalf("go mod: -%s=%s: need path@version", flag, arg)
 	}
 	path, version = strings.TrimSpace(arg[:i]), strings.TrimSpace(arg[i+1:])
-	if err := module.CheckPath(path); err != nil {
+	if err := module.CheckImportPath(path); err != nil {
 		base.Fatalf("go mod: -%s=%s: invalid path: %v", flag, arg, err)
 	}
 
@@ -255,7 +269,7 @@ func parsePath(flag, arg string) (path string) {
 		base.Fatalf("go mod: -%s=%s: need just path, not path@version", flag, arg)
 	}
 	path = arg
-	if err := module.CheckPath(path); err != nil {
+	if err := module.CheckImportPath(path); err != nil {
 		base.Fatalf("go mod: -%s=%s: invalid path: %v", flag, arg, err)
 	}
 	return path
@@ -269,7 +283,7 @@ func parsePathVersionOptional(adj, arg string, allowDirPath bool) (path, version
 	} else {
 		path, version = strings.TrimSpace(arg[:i]), strings.TrimSpace(arg[i+1:])
 	}
-	if err := module.CheckPath(path); err != nil {
+	if err := module.CheckImportPath(path); err != nil {
 		if !allowDirPath || !modfile.IsDirectoryPath(path) {
 			return path, version, fmt.Errorf("invalid %s path: %v", adj, err)
 		}

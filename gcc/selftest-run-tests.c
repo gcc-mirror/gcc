@@ -119,7 +119,7 @@ selftest::run_tests ()
   lang_hooks.run_lang_selftests ();
 
   /* Run the analyzer selftests (if enabled).  */
-  run_analyzer_selftests ();
+  ana::selftest::run_analyzer_selftests ();
 
   /* Force a GC at the end of the selftests, to shake out GC-related
      issues.  For example, if any GC-managed items have buggy (or missing)

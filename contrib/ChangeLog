@@ -1,3 +1,7 @@
+2020-01-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	* git-add-vendor-branch.sh: New file.
+
 2020-01-20  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc-git-customization.sh: Check that user-supplied remote

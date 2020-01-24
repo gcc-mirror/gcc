@@ -5170,14 +5170,14 @@ build_conditional_expr_1 (const op_location_t &loc,
 	     but the warnings (like Wsign-conversion) have already been
 	     given by the scalar build_conditional_expr_1. We still check
 	     unsafe_conversion_p to forbid truncating long long -> float.  */
-	  if (unsafe_conversion_p (loc, stype, arg2, NULL_TREE, false))
+	  if (unsafe_conversion_p (stype, arg2, NULL_TREE, false))
 	    {
 	      if (complain & tf_error)
 		error_at (loc, "conversion of scalar %qH to vector %qI "
 			       "involves truncation", arg2_type, vtype);
 	      return error_mark_node;
 	    }
-	  if (unsafe_conversion_p (loc, stype, arg3, NULL_TREE, false))
+	  if (unsafe_conversion_p (stype, arg3, NULL_TREE, false))
 	    {
 	      if (complain & tf_error)
 		error_at (loc, "conversion of scalar %qH to vector %qI "
@@ -11973,14 +11973,7 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
 	 GR and suffixed with a sequence number mangled using the usual rules
 	 for a seq-id. Temporaries are numbered with a pre-order, depth-first,
 	 left-to-right walk of the complete initializer.  */
-
-      TREE_STATIC (var) = TREE_STATIC (decl);
-      TREE_PUBLIC (var) = TREE_PUBLIC (decl);
-      if (vague_linkage_p (decl))
-	comdat_linkage (var);
-
-      CP_DECL_THREAD_LOCAL_P (var) = CP_DECL_THREAD_LOCAL_P (decl);
-      set_decl_tls_model (var, DECL_TLS_MODEL (decl));
+      copy_linkage (var, decl);
 
       tree name = mangle_ref_init_variable (decl);
       DECL_NAME (var) = name;

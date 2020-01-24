@@ -15,6 +15,9 @@ func Load(ptr *uint32) uint32
 func Loadp(ptr unsafe.Pointer) unsafe.Pointer
 
 //go:noescape
+func Load8(ptr *uint8) uint8
+
+//go:noescape
 func Load64(ptr *uint64) uint64
 
 //go:noescape
@@ -54,6 +57,9 @@ func CasRel(ptr *uint32, old, new uint32) bool
 
 //go:noescape
 func Store(ptr *uint32, val uint32)
+
+//go:noescape
+func Store8(ptr *uint8, val uint8)
 
 //go:noescape
 func Store64(ptr *uint64, val uint64)

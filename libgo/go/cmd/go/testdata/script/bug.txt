@@ -1,14 +1,15 @@
 # Verify that go bug creates the appropriate URL issue body
 
 [!linux] skip
+[gccgo] skip
 
 go install
 env BROWSER=$GOPATH/bin/browser
 go bug
 exists $TMPDIR/browser
 grep '^go version' $TMPDIR/browser
-[!gccgo] grep '^GOROOT/bin/go version: go version' $TMPDIR/browser
-[!gccgo] grep '^GOROOT/bin/go tool compile -V: compile version' $TMPDIR/browser
+grep '^GOROOT/bin/go version: go version' $TMPDIR/browser
+grep '^GOROOT/bin/go tool compile -V: compile version' $TMPDIR/browser
 grep '^uname -sr: Linux' $TMPDIR/browser
 
 -- go.mod --

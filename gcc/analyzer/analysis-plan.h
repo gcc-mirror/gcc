@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_ANALYSIS_PLAN_H
 #define GCC_ANALYZER_ANALYSIS_PLAN_H
 
+namespace ana {
+
 /* A class to encapsulate decisions about how the analysis should happen.
    Examples:
    - the order in which functions should be analyzed, so that function
@@ -52,5 +54,7 @@ private:
      accessed via the "m_uid" field.  */
   auto_vec<int> m_index_by_uid;
 };
+
+} // namespace ana
 
 #endif /* GCC_ANALYZER_ANALYSIS_PLAN_H */

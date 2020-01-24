@@ -863,7 +863,15 @@ compute_value_histograms (histogram_values values, unsigned cfg_checksum,
 
       if (hist->type == HIST_TYPE_TOPN_VALUES
 	  || hist->type == HIST_TYPE_INDIR_CALL)
-	sort_hist_values (hist);
+	{
+	  /* Each count value is multiplied by GCOV_TOPN_VALUES.  */
+	  if (hist->hvalue.counters[2] != -1)
+	    for (unsigned i = 0; i < GCOV_TOPN_VALUES; i++)
+	      hist->hvalue.counters[2 * i + 2]
+		= RDIV (hist->hvalue.counters[2 * i + 2], GCOV_TOPN_VALUES);
+
+	  sort_hist_values (hist);
+	}
 
       /* Time profiler counter is not related to any statement,
          so that we have to read the counter and set the value to

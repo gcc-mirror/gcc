@@ -1,3 +1,7 @@
+2020-01-23  Alexandre Oliva <oliva@adacore.com>
+
+	* argv.c (writeargv): Output empty args as "".
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
