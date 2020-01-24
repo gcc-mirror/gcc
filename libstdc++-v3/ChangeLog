@@ -1,5 +1,13 @@
 2020-02-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	Backport from mainline
+	2020-01-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91947
+	* include/Makefile.am (${host_builddir}/largefile-config.h): Simplify
+	rule.
+	* include/Makefile.in: Regenerate.
+
 	Backport from mainlne
 	2019-10-04  Jonathan Wakely  <jwakely@redhat.com>
 
