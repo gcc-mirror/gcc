@@ -510,14 +510,8 @@ gori_compute::range_of_expr (irange &r, tree expr, gimple *s)
   switch (TREE_CODE (expr))
     {
       case INTEGER_CST:
-	// If we encounter an overflow, simply punt and drop to varying
-	// since we have no idea how it will be used.
-        if (!TREE_OVERFLOW_P (expr))
-	  {
-	    r.set (expr, expr);
-	    return true;
-	  }
-	break;
+	r.set (expr, expr);
+	return true;
 
       case SSA_NAME:
         range_of_ssa_name (r, expr, s);

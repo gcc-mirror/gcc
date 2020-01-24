@@ -630,8 +630,6 @@ irange::check ()
 	  {
 	    tree lb = tree_lower_bound (i);
 	    tree ub = tree_upper_bound (i);
-
-	    gcc_assert (!TREE_OVERFLOW_P (lb) && !TREE_OVERFLOW_P (ub));
 	    int cmp = compare_values (lb, ub);
 	    gcc_assert (cmp == 0 || cmp == -1 || cmp == -2);
 	  }
