@@ -1673,6 +1673,7 @@ package body Sem is
       pragma Pack (Unit_Number_Set);
 
       Main_CU : constant Node_Id := Cunit (Main_Unit);
+      Spec_CU : Node_Id := Empty;
 
       Seen, Done : Unit_Number_Set := (others => False);
       --  Seen (X) is True after we have seen unit X in the walk. This is used
@@ -2146,26 +2147,42 @@ package body Sem is
                   null;
 
                when others =>
-                  Par := Scope (Defining_Entity (Unit (CU)));
 
-                  if Is_Child_Unit (Defining_Entity (Unit (CU))) then
-                     while Present (Par)
-                       and then Par /= Standard_Standard
-                       and then Par /= Cunit_Entity (Main_Unit)
-                     loop
-                        Par := Scope (Par);
-                     end loop;
+                  --  Skip spec of main unit for now, we want to process it
+                  --  after all other specs.
+
+                  if Nkind (Unit (CU)) = N_Package_Declaration
+                    and then Library_Unit (CU) = Main_CU
+                    and then CU /= Main_CU
+                  then
+                     Spec_CU := CU;
+                  else
+                     Par := Scope (Defining_Entity (Unit (CU)));
+
+                     if Is_Child_Unit (Defining_Entity (Unit (CU))) then
+                        while Present (Par)
+                          and then Par /= Standard_Standard
+                          and then Par /= Cunit_Entity (Main_Unit)
+                        loop
+                           Par := Scope (Par);
+                        end loop;
+                     end if;
+
+                     if Par /= Cunit_Entity (Main_Unit) then
+                        Do_Unit_And_Dependents (CU, N);
+                     end if;
                   end if;
-
-                  if Par /= Cunit_Entity (Main_Unit) then
-                     Do_Unit_And_Dependents (CU, N);
-                  end if;
-
             end case;
          end;
 
          Next_Elmt (Cur);
       end loop;
+
+      --  Now process main package spec if skipped
+
+      if Present (Spec_CU) then
+         Do_Unit_And_Dependents (Spec_CU, Unit (Spec_CU));
+      end if;
 
       --  Now process package bodies on which main depends, followed by bodies
       --  of parents, if present, and finally main itself.
