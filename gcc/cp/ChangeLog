@@ -1,3 +1,9 @@
+2020-01-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93279 - ICE with lambda in member operator.
+	* name-lookup.c (maybe_save_operator_binding): Don't remember
+	class-scope bindings.
+
 2020-01-27  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/91826
