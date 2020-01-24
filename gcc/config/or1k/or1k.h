@@ -30,6 +30,8 @@
       builtin_define ("__or1k__");		\
       if (TARGET_CMOV)				\
 	builtin_define ("__or1k_cmov__");	\
+      if (TARGET_HARD_FLOAT)			\
+	builtin_define ("__or1k_hard_float__");	\
       builtin_assert ("cpu=or1k");		\
       builtin_assert ("machine=or1k");		\
     }						\
