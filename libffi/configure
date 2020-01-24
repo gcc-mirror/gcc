@@ -813,6 +813,7 @@ enable_debug
 enable_structs
 enable_raw_api
 enable_purify_safety
+with_toolexeclibdir
 enable_symvers
 with_gcc_major_version_only
 '
@@ -1476,6 +1477,9 @@ Optional Packages:
   --with-pic              try to use only PIC/non-PIC objects [default=use
                           both]
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
+  --with-toolexeclibdir=DIR
+                          install libraries built with a cross compiler within
+                          DIR
   --with-gcc-major-version-only
                           use only GCC major number in filesystem paths
 
@@ -11557,7 +11561,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11560 "configure"
+#line 11564 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11663,7 +11667,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11666 "configure"
+#line 11670 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16177,10 +16181,33 @@ $as_echo "#define USING_PURIFY 1" >>confdefs.h
 fi
 
 
+
+# Check whether --with-toolexeclibdir was given.
+if test "${with_toolexeclibdir+set}" = set; then :
+  withval=$with_toolexeclibdir; case ${with_toolexeclibdir} in
+  /)
+    ;;
+  */)
+    with_toolexeclibdir=`echo $with_toolexeclibdir | sed 's,/$,,'`
+    ;;
+esac
+else
+  with_toolexeclibdir=no
+fi
+
+
+
 if test -n "$with_cross_host" &&
    test x"$with_cross_host" != x"no"; then
   toolexecdir='$(exec_prefix)/$(target_alias)'
-  toolexeclibdir='$(toolexecdir)/lib'
+  case ${with_toolexeclibdir} in
+    no)
+      toolexeclibdir='$(toolexecdir)/lib'
+      ;;
+    *)
+      toolexeclibdir=${with_toolexeclibdir}
+      ;;
+  esac
 else
   toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
   toolexeclibdir='$(libdir)'

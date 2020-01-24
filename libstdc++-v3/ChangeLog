@@ -1,3 +1,21 @@
+2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
+
+	* acinclude.m4: Handle `--with-toolexeclibdir='.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* doc/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++17/Makefile.in: Regenerate.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/filesystem/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2020-01-23  Alexandre Oliva <oliva@adacore.com>
 
 	* crossconfig.m4 (GLIBCXX_CHECK_MATH_DECL): Reject macros.

@@ -1,3 +1,9 @@
+2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
+
+	* Makefile.in (configure_deps): Add `toolexeclibdir.m4'.
+	* configure.ac: Handle `--with-toolexeclibdir='.
+	* configure: Regenerate.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

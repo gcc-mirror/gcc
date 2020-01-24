@@ -1,3 +1,8 @@
+2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
+
+	* doc/install.texi (Cross-Compiler-Specific Options): Document
+	`--with-toolexeclibdir' option.
+
 2020-01-24  Hans-Peter Nilsson  <hp@axis.com>
 
 	* target.def (flags_regnum): Also mention effect on delay slot filling.

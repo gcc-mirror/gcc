@@ -80,6 +80,8 @@ AC_DEFUN([DRUNTIME_INSTALL_DIRECTORIES],
     [version_specific_libs=no])
   AC_MSG_RESULT($version_specific_libs)
 
+  GCC_WITH_TOOLEXECLIBDIR
+
   # Version-specific runtime libs processing.
   if test $version_specific_libs = yes; then
     libphobos_toolexecdir='${libdir}/gcc/${host_alias}'
@@ -89,7 +91,14 @@ AC_DEFUN([DRUNTIME_INSTALL_DIRECTORIES],
     # Install a library built with a cross compiler in tooldir, not libdir.
     if test -n "$with_cross_host" && test x"$with_cross_host" != x"no"; then
       libphobos_toolexecdir='${exec_prefix}/${host_alias}'
-      libphobos_toolexeclibdir='${toolexecdir}/lib'
+      case ${with_toolexeclibdir} in
+	no)
+	  libphobos_toolexeclibdir='${toolexecdir}/lib'
+	  ;;
+	*)
+	  libphobos_toolexeclibdir=${with_toolexeclibdir}
+	  ;;
+      esac
     else
       libphobos_toolexecdir='${libdir}/gcc/${host_alias}'
       libphobos_toolexeclibdir='${libdir}'
