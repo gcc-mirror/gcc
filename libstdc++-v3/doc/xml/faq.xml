@@ -34,8 +34,8 @@
      clauses 20 through 33 and annex D (prior to the 2017 standard
      the library clauses started with 17).  For those who want to see
      exactly how far the project has come, or just want the latest
-     bleeding-edge code, the up-to-date source , and can be cloned via Git: see
-     <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/git.html">web</link>.
+     bleeding-edge code, the up-to-date source can be cloned via
+     <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/git.html">Git</link>.
     </para> 
 
     <para>
@@ -295,15 +295,11 @@
     download sites</link> is provided on the main GCC site.
     </para>
     <para>
-    Current libstdc++ sources can always be checked out of the main
-    GCC source repository using the appropriate version control
-    tool. At this time, that tool
-    is <application>Git</application>.
-    </para>
-    <para>
-    For more information
-    see <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/git.html">
-    details</link>.
+    Current libstdc++ sources can always be found in the main GCC source
+    repository, available using the appropriate version control tool.
+    At this time, that tool is <application>Git</application>.
+    For more details see the documentation on
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/git.html">using the Git repository</link>.
     </para>
   </answer>
 </qandaentry>
