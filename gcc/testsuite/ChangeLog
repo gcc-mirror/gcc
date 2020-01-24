@@ -1,3 +1,8 @@
+2020-01-24  Jeff Law  <law@redhat.com
+
+	PR target/13721
+	* gcc.target/h8300/pr13721.c: New test.
+
 2020-01-24  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR debug/92763

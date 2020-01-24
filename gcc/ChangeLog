@@ -1,3 +1,10 @@
+2020-01-24  Jeff Law  <law@redhat.com>
+
+	PR target/13721
+	* config/h8300/h8300.c (h8300_print_operand): Only call byte_reg
+	for REGs.  Call output_operand_lossage to get more reasonable
+	diagnostics.
+
 2020-01-24  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (vec_cmp<mode>di): Use
