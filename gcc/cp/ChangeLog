@@ -1,5 +1,11 @@
 2020-01-24  Jason Merrill  <jason@redhat.com>
 
+	PR c++/93279 - ICE with lambda in member operator.
+	* name-lookup.c (maybe_save_operator_binding): Don't remember
+	class-scope bindings.
+
+2020-01-24  Jason Merrill  <jason@redhat.com>
+
 	PR c++/93377 - ICE with member alias in constraint.
 	* pt.c (any_template_parm_r): Look at template arguments for all
 	aliases, not only alias templates.
