@@ -1,3 +1,10 @@
+2020-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93376
+	* simplify-rtx.c (simplify_const_unary_operation,
+	simplify_const_binary_operation): Punt for mode precision above
+	MAX_BITSIZE_MODE_ANY_INT.
+
 2020-01-24  Andrew Pinski  <apinski@marvell.com>
 
 	* config/arm/aarch-cost-tables.h (cortexa57_extra_costs): Change
