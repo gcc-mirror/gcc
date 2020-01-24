@@ -1,3 +1,8 @@
+2020-01-24  Jason Merrill  <jason@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_unsigned_char):
+	New.
+
 2020-01-24  Jeff Law  <law@redhat.com
 
 	PR target/13721
