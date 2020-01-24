@@ -1557,28 +1557,24 @@ operator_rshift::op1_range (irange &r,
 			    const irange &lhs,
 			    const irange &op2) const
 {
-  tree shift_amount;
-  if (op2.singleton_p (&shift_amount))
+  tree shift;
+  if (op2.singleton_p (&shift))
     {
-      widest_irange shifted (shift_amount, shift_amount);
+      widest_irange shift_range (shift, shift);
       widest_irange lb, ub;
       range_op_handler (LSHIFT_EXPR, type)->fold_range (lb, type, lhs,
-							shifted);
+							shift_range);
       //    LHS
       // 0000 0111 = OP1 >> 3
       //
-      // Assuming an 8-bit integer, OP1 is anything from 0011 1000 to
-      // 0011 1111.  That is, a range from LHS<<3 plus a mask of the 3
-      // bits we shifted on the right hand side (0x07).
-      //
-      // MASK = (1 << SHIFT) - 1
-      tree mask = fold_build2 (MINUS_EXPR, type,
+      // OP1 is anything from 0011 1000 to 0011 1111.  That is, a
+      // range from LHS<<3 plus a mask of the 3 bits we shifted on the
+      // right hand side (0x07).
+
+      tree mask = fold_build1 (BIT_NOT_EXPR, type,
 			       fold_build2 (LSHIFT_EXPR, type,
-					    build_one_cst (op2.type ()),
-					    shift_amount),
-			       build_one_cst (type));
-      if (TREE_OVERFLOW (mask))
-	return false;
+					    build_minus_one_cst (type),
+					    shift));
       widest_irange mask_range (build_zero_cst (type), mask);
       range_op_handler (PLUS_EXPR, type)->fold_range (ub, type, lb,
 						      mask_range);
