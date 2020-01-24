@@ -1,5 +1,6 @@
 // PR c++/88337 - Implement P1327R1: Allow dynamic_cast/typeid in constexpr.
 // { dg-do compile { target c++2a } }
+// { dg-additional-options "-fdelete-null-pointer-checks" }
 
 // dynamic_cast in a constructor.
 // [class.cdtor]#6: "If the operand of the dynamic_cast refers to the object

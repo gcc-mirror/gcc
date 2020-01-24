@@ -1,5 +1,6 @@
 // P0784R7
 // { dg-do compile { target c++2a } }
+// { dg-additional-options "-fdelete-null-pointer-checks" }
 
 template <int N>
 constexpr bool
