@@ -1,3 +1,9 @@
+2020-01-24  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/92788
+	* tree-ssa-threadedge.c (thread_across_edge): Check EDGE_COMPLEX
+	not EDGE_ABNORMAL.
+
 2020-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93395
