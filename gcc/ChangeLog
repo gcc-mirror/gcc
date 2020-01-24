@@ -1,3 +1,8 @@
+2020-01-24  Hans-Peter Nilsson  <hp@axis.com>
+
+	* target.def (flags_regnum): Also mention effect on delay slot filling.
+	* doc/tm.texi: Regenerate.
+
 2020-01-23  Jeff Law  <law@redhat.com>
 
 	* config/h8300/h8300.c (h8300_option_override): Fix diagnostic text.
