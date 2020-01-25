@@ -1,5 +1,17 @@
 2020-01-27  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR target/92822
+	* config/aarch64/aarch64-simd.md (aarch64_get_half<mode>): New
+	expander.
+	(@aarch64_split_simd_mov<mode>): Use it.
+	(aarch64_simd_mov_from_<mode>low): Add a GPR alternative.
+	Leave the vec_extract patterns to handle 2-element vectors.
+	(aarch64_simd_mov_from_<mode>high): Likewise.
+	(vec_extract<VQMOV_NO2E:mode><Vhalf>): New expander.
+	(vec_extractv2dfv1df): Likewise.
+
+2020-01-27  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_if_then_else_costs): Match
 	jump conditions for *compare_condjump<GPI:mode>.
 

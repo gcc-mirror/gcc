@@ -282,37 +282,51 @@
         rtx dst_high_part = gen_highpart (<VHALF>mode, dst);
 	rtx lo = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, false);
 	rtx hi = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, true);
-
-        emit_insn
-          (gen_aarch64_simd_mov_from_<mode>low (dst_low_part, src, lo));
-        emit_insn
-          (gen_aarch64_simd_mov_from_<mode>high (dst_high_part, src, hi));
+        emit_insn (gen_aarch64_get_half<mode> (dst_low_part, src, lo));
+        emit_insn (gen_aarch64_get_half<mode> (dst_high_part, src, hi));
       }
     DONE;
   }
 )
 
-(define_insn "aarch64_simd_mov_from_<mode>low"
-  [(set (match_operand:<VHALF> 0 "register_operand" "=r")
+(define_expand "aarch64_get_half<mode>"
+  [(set (match_operand:<VHALF> 0 "register_operand")
         (vec_select:<VHALF>
-          (match_operand:VQMOV 1 "register_operand" "w")
-          (match_operand:VQMOV 2 "vect_par_cnst_lo_half" "")))]
-  "TARGET_SIMD && reload_completed"
-  "umov\t%0, %1.d[0]"
-  [(set_attr "type" "neon_to_gp<q>")
-   (set_attr "length" "4")
-  ])
+          (match_operand:VQMOV 1 "register_operand")
+          (match_operand 2 "ascending_int_parallel")))]
+  "TARGET_SIMD"
+)
+
+(define_insn_and_split "aarch64_simd_mov_from_<mode>low"
+  [(set (match_operand:<VHALF> 0 "register_operand" "=w,?r")
+        (vec_select:<VHALF>
+          (match_operand:VQMOV_NO2E 1 "register_operand" "w,w")
+          (match_operand:VQMOV_NO2E 2 "vect_par_cnst_lo_half" "")))]
+  "TARGET_SIMD"
+  "@
+   #
+   umov\t%0, %1.d[0]"
+  "&& reload_completed && aarch64_simd_register (operands[0], <VHALF>mode)"
+  [(set (match_dup 0) (match_dup 1))]
+  {
+    operands[1] = aarch64_replace_reg_mode (operands[1], <VHALF>mode);
+  }
+  [(set_attr "type" "mov_reg,neon_to_gp<q>")
+   (set_attr "length" "4")]
+)
 
 (define_insn "aarch64_simd_mov_from_<mode>high"
-  [(set (match_operand:<VHALF> 0 "register_operand" "=r")
+  [(set (match_operand:<VHALF> 0 "register_operand" "=w,?r")
         (vec_select:<VHALF>
-          (match_operand:VQMOV 1 "register_operand" "w")
-          (match_operand:VQMOV 2 "vect_par_cnst_hi_half" "")))]
-  "TARGET_SIMD && reload_completed"
-  "umov\t%0, %1.d[1]"
-  [(set_attr "type" "neon_to_gp<q>")
-   (set_attr "length" "4")
-  ])
+          (match_operand:VQMOV_NO2E 1 "register_operand" "w,w")
+          (match_operand:VQMOV_NO2E 2 "vect_par_cnst_hi_half" "")))]
+  "TARGET_SIMD"
+  "@
+   dup\\t%d0, %1.d[1]
+   umov\t%0, %1.d[1]"
+  [(set_attr "type" "neon_dup<q>,neon_to_gp<q>")
+   (set_attr "length" "4")]
+)
 
 (define_insn "orn<mode>3"
  [(set (match_operand:VDQ_I 0 "register_operand" "=w")
@@ -6138,6 +6152,35 @@
     emit_insn
       (gen_aarch64_get_lane<mode> (operands[0], operands[1], operands[2]));
     DONE;
+})
+
+;; Extract a 64-bit vector from one half of a 128-bit vector.
+(define_expand "vec_extract<mode><Vhalf>"
+  [(match_operand:<VHALF> 0 "register_operand")
+   (match_operand:VQMOV_NO2E 1 "register_operand")
+   (match_operand 2 "immediate_operand")]
+  "TARGET_SIMD"
+{
+  int start = INTVAL (operands[2]);
+  if (start != 0 && start != <nunits> / 2)
+    FAIL;
+  rtx sel = aarch64_gen_stepped_int_parallel (<nunits> / 2, start, 1);
+  emit_insn (gen_aarch64_get_half<mode> (operands[0], operands[1], sel));
+  DONE;
+})
+
+;; Extract a single-element 64-bit vector from one half of a 128-bit vector.
+(define_expand "vec_extractv2dfv1df"
+  [(match_operand:V1DF 0 "register_operand")
+   (match_operand:V2DF 1 "register_operand")
+   (match_operand 2 "immediate_operand")]
+  "TARGET_SIMD"
+{
+  /* V1DF is rarely used by other patterns, so it should be better to hide
+     it in a subreg destination of a normal DF op.  */
+  rtx scalar0 = gen_lowpart (DFmode, operands[0]);
+  emit_insn (gen_vec_extractv2dfdf (scalar0, operands[1], operands[2]));
+  DONE;
 })
 
 ;; aes
