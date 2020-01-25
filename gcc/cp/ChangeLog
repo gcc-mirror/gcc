@@ -1,3 +1,35 @@
+2020-01-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93414 - poor diagnostic for dynamic_cast in constexpr context.
+	* constexpr.c (cxx_eval_dynamic_cast_fn): Add a reference
+	dynamic_cast diagnostic.
+
+2020-01-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93400 - ICE with constrained friend.
+	* constraint.cc (maybe_substitute_reqs_for): New.
+	* decl.c (function_requirements_equivalent_p): Call it.
+	* pt.c (tsubst_friend_function): Only substitute
+	TEMPLATE_PARMS_CONSTRAINTS.
+	(tsubst_template_parms): Copy constraints.
+
+2020-01-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93279 - ICE with lambda in member operator.
+	* name-lookup.c (maybe_save_operator_binding): Don't remember
+	class-scope bindings.
+
+2020-01-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93377 - ICE with member alias in constraint.
+	* pt.c (any_template_parm_r): Look at template arguments for all
+	aliases, not only alias templates.
+
+2020-01-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93299 - ICE in tsubst_copy with parenthesized expression.
+	* pt.c (tsubst_copy): Handle a REF_PARENTHESIZED_P VIEW_CONVERT_EXPR.
+
 2020-01-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92852 - ICE with generic lambda and reference var.

@@ -1,3 +1,34 @@
+2020-01-25  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/93166
+	* ipa-cp.c (get_info_about_necessary_edges): Remove value
+	check assertion.
+
+2020-01-24  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/92788
+	* tree-ssa-threadedge.c (thread_across_edge): Check EDGE_COMPLEX
+	not EDGE_ABNORMAL.
+
+2020-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93395
+	* config/i386/sse.md (*avx_vperm_broadcast_v4sf,
+	*avx_vperm_broadcast_<mode>,
+	<sse2_avx_avx512f>_vpermil<mode><mask_name>,
+	*<sse2_avx_avx512f>_vpermilp<mode><mask_name>):
+	Move before avx2_perm<mode>/avx512f_perm<mode>.
+
+	PR target/93376
+	* simplify-rtx.c (simplify_const_unary_operation,
+	simplify_const_binary_operation): Punt for mode precision above
+	MAX_BITSIZE_MODE_ANY_INT.
+
+2020-01-24  Andrew Pinski  <apinski@marvell.com>
+
+	* config/arm/aarch-cost-tables.h (cortexa57_extra_costs): Change
+	alu.shift_reg to 0.
+
 2020-01-24  Jeff Law  <law@redhat.com>
 
 	PR target/13721
