@@ -1,5 +1,9 @@
 2020-01-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR ipa/93166
+	* g++.dg/pr93166.C: Move to ...
+	* g++.dg/pr93166_0.C: ... here.  Turn it into a proper lto test.
+
 	PR tree-optimization/92788
 	* g++.dg/pr92788.C: Move to ...
 	* g++.target/i386/pr92788.C: ... here.  Remove target from dg-do line.
