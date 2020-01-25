@@ -1,3 +1,7 @@
+2020-01-25  Andrew Pinski <apinski@marvell.com>
+
+	* gcc.target/aarch64/vec_zeroextend.c: Fix for big-endian.
+
 2020-01-24  Jeff Law  <law@redhat.com
 
 	PR tree-optimization/92788
