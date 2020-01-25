@@ -1,3 +1,9 @@
+2020-01-25  John David Anglin  <danglin@gcc.gnu.org>
+
+	* inclhack.def (hpux_c99_inttypes4): New, add missing SCNuMAX defines.
+	* fixincl.x: Regenerate.
+	* tests/base/inttypes.h: Update for above fix.
+
 2019-12-30  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR libgomp/93066
