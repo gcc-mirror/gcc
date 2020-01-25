@@ -1,3 +1,8 @@
+2020-01-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_if_then_else_costs): Match
+	jump conditions for *compare_condjump<GPI:mode>.
+
 2020-01-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93276
