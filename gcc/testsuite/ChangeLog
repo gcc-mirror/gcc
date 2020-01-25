@@ -1,3 +1,10 @@
+2020-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/92788
+	* g++.dg/pr92788.C: Move to ...
+	* g++.target/i386/pr92788.C: ... here.  Remove target from dg-do line.
+	Change type of operator new's first parameter to __SIZE_TYPE__.
+
 2020-01-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93414 - poor diagnostic for dynamic_cast in constexpr context.
