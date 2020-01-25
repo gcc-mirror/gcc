@@ -2455,16 +2455,26 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	 it and its source indexes to make the permutation supported.
 	 For now it mimics a blend.  */
       vec_perm_builder sel (refnelts, refnelts, 1);
+      bool all_same_p = true;
       for (i = 0; i < elts.length (); ++i)
-	sel.quick_push (elts[i].second + elts[i].first * refnelts);
+	{
+	  sel.quick_push (elts[i].second + elts[i].first * refnelts);
+	  all_same_p &= known_eq (sel[i], sel[0]);
+	}
       /* And fill the tail with "something".  It's really don't care,
          and ideally we'd allow VEC_PERM to have a smaller destination
-	 vector.  As heuristic try to preserve a uniform orig[0] which
-	 facilitates later pattern-matching VEC_PERM_EXPR to a
-	 BIT_INSERT_EXPR.  */
+	 vector.  As a heuristic:
+
+	 (a) if what we have so far duplicates a single element, make the
+	     tail do the same
+
+	 (b) otherwise preserve a uniform orig[0].  This facilitates
+	     later pattern-matching of VEC_PERM_EXPR to a BIT_INSERT_EXPR.  */
       for (; i < refnelts; ++i)
-	sel.quick_push ((elts[0].second == 0 && elts[0].first == 0
-			 ? 0 : refnelts) + i);
+	sel.quick_push (all_same_p
+			? sel[0]
+			: (elts[0].second == 0 && elts[0].first == 0
+			   ? 0 : refnelts) + i);
       vec_perm_indices indices (sel, orig[1] ? 2 : 1, refnelts);
       if (!can_vec_perm_const_p (TYPE_MODE (perm_type), indices))
 	return false;
