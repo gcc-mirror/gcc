@@ -1,3 +1,8 @@
+2020-01-26  Darius Galis  <darius.galis@cyberthorstudios.com>
+
+	* config/rx/rx.md (setmemsi): Added rx_allow_string_insns constraint
+	(rx_setmem): Likewise.
+
 2020-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93412
