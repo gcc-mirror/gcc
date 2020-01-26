@@ -1,5 +1,10 @@
 2020-01-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/90992
+	* except.c (maybe_noexcept_warning): Check DECL_IN_SYSTEM_HEADER and
+	temporarily enable -Wsystem-headers.  Change second warning to
+	conditional inform.
+
 	PR c++/90997
 	* semantics.c (finish_call_expr): Don't call
 	instantiate_non_dependent_expr before warn_for_memset.
