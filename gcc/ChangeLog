@@ -1,3 +1,9 @@
+2020-01-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92601
+	* tree.c (verify_type_variant): Only verify TYPE_NEEDS_CONSTRUCTING
+	of complete types.
+
 2020-01-26  Darius Galis  <darius.galis@cyberthorstudios.com>
 
 	* config/rx/rx.md (setmemsi): Added rx_allow_string_insns constraint
