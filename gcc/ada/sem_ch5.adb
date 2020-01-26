@@ -3388,35 +3388,12 @@ package body Sem_Ch5 is
       --  The following exception is raised by routine Prepare_Loop_Statement
       --  to avoid further analysis of a transformed loop.
 
-      function Disable_Constant (N : Node_Id) return Traverse_Result;
-      --  If N represents an E_Variable entity, set Is_True_Constant To False
-
-      procedure Disable_Constants is new Traverse_Proc (Disable_Constant);
-      --  Helper for Analyze_Loop_Statement, to unset Is_True_Constant on
-      --  variables referenced within an OpenACC construct.
-
       procedure Prepare_Loop_Statement
         (Iter            : Node_Id;
          Stop_Processing : out Boolean);
       --  Determine whether loop statement N with iteration scheme Iter must be
       --  transformed prior to analysis, and if so, perform it.
       --  If Stop_Processing is set to True, should stop further processing.
-
-      ----------------------
-      -- Disable_Constant --
-      ----------------------
-
-      function Disable_Constant (N : Node_Id) return Traverse_Result is
-      begin
-         if Is_Entity_Name (N)
-            and then Present (Entity (N))
-            and then Ekind (Entity (N)) = E_Variable
-         then
-            Set_Is_True_Constant (Entity (N), False);
-         end if;
-
-         return OK;
-      end Disable_Constant;
 
       ----------------------------
       -- Prepare_Loop_Statement --
@@ -4034,15 +4011,6 @@ package body Sem_Ch5 is
 
       if No (Iter) and then not Has_Exit (Ent) then
          Check_Unreachable_Code (Stmt);
-      end if;
-
-      --  Variables referenced within a loop subject to possible OpenACC
-      --  offloading may be implicitly written to as part of the OpenACC
-      --  transaction. Clear flags possibly conveying that they are constant,
-      --  set for example when the code does not explicitly assign them.
-
-      if Is_OpenAcc_Environment (Stmt) then
-         Disable_Constants (Stmt);
       end if;
    end Analyze_Loop_Statement;
 
