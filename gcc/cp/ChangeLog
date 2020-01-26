@@ -1,3 +1,9 @@
+2020-01-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90997
+	* semantics.c (finish_call_expr): Don't call
+	instantiate_non_dependent_expr before warn_for_memset.
+
 2020-01-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93414 - poor diagnostic for dynamic_cast in constexpr context.
