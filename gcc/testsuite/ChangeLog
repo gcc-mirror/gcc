@@ -1,5 +1,8 @@
 2020-01-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/93412
+	* gcc.dg/pr93412.c: New test.
+
 	PR target/93430
 	* gcc.dg/pr93430.c: New test.
 	* gcc.target/i386/avx2-pr93430.c: New test.

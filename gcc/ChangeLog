@@ -1,5 +1,10 @@
 2020-01-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/93412
+	* config/i386/i386.md (*addv<dwi>4_doubleword, *subv<dwi>4_doubleword):
+	Use nonimmediate_operand instead of x86_64_hilo_general_operand and
+	drop <di> from constraint of last operand.
+
 	PR target/93430
 	* config/i386/sse.md (*avx_vperm_broadcast_<mode>): Disallow for
 	TARGET_AVX2 and V4DFmode not in the split condition, but in the
