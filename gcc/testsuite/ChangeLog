@@ -1,3 +1,8 @@
+2020-01-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/71727
+	* gcc.target/aarch64/pr71727.c: Add -fcommon.
+
 2020-01-27  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/analyzer/sigsetjmp-5.c: New test.
