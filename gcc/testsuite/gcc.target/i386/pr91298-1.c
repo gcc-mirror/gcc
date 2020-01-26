@@ -1,6 +1,7 @@
 /* PR target/91298 */
 /* { dg-do assemble } */
 /* { dg-options "-O2 -g -fdollars-in-identifiers" } */
+/* { dg-xfail-if "No support for $ in identifiers" { *-*-solaris2.* && { ! gas } } } */
 
 int $a[18];
 int *foo (void) { return &$a[0]; }
