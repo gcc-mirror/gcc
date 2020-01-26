@@ -1,3 +1,9 @@
+2020-01-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr91298-1.c: xfail on Solaris/x86 with native
+	assembler.
+	* gcc.target/i386/pr91298-2.c: Likewise.
+
 2020-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93412
