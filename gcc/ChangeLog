@@ -1,3 +1,10 @@
+2020-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93430
+	* config/i386/sse.md (*avx_vperm_broadcast_<mode>): Disallow for
+	TARGET_AVX2 and V4DFmode not in the split condition, but in the
+	pattern condition, though allow { 0, 0, 0, 0 } broadcast always.
+
 2020-01-25  Feng Xue  <fxue@os.amperecomputing.com>
 
 	PR ipa/93166
