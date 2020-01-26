@@ -1,6 +1,6 @@
 2020-01-26  Marek Polacek  <polacek@redhat.com>
 
-	PR tree-optimization/93436
+	PR sanitizer/93436
 	* sanopt.c (sanitize_rewrite_addressable_params): Avoid crash on
 	null DECL_NAME.
 
