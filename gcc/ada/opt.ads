@@ -1253,11 +1253,6 @@ package Opt is
    --  cannot be simultaneous compilations with the object files in the same
    --  object directory, if project files are used.
 
-   OpenAcc_Enabled : Boolean := False;
-   --  GNAT
-   --  Indicates whether OpenAcc pragmas should be taken into account. Set to
-   --  True by the use of -fopenacc.
-
    type Operating_Mode_Type is (Check_Syntax, Check_Semantics, Generate_Code);
    pragma Ordered (Operating_Mode_Type);
    Operating_Mode : Operating_Mode_Type := Generate_Code;

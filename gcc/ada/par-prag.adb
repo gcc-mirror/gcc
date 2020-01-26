@@ -1315,10 +1315,6 @@ begin
 
       when Pragma_Abort_Defer
          | Pragma_Abstract_State
-         | Pragma_Acc_Data
-         | Pragma_Acc_Kernels
-         | Pragma_Acc_Loop
-         | Pragma_Acc_Parallel
          | Pragma_Aggregate_Individually_Assign
          | Pragma_Async_Readers
          | Pragma_Async_Writers
