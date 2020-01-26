@@ -1,3 +1,11 @@
+2020-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* calls.c (special_function_p): Split out the check for DECL_NAME
+	being non-NULL and fndecl being extern at file scope into a
+	new maybe_special_function_p and call it.  Drop check for fndecl
+	being non-NULL that was after a usage of DECL_NAME (fndecl).
+	* tree.h (maybe_special_function_p): New inline function.
+
 2020-01-30  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (gather<mode>_exec): Move contents ...

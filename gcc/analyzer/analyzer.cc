@@ -65,18 +65,10 @@ is_named_call_p (tree fndecl, const char *funcname)
   gcc_assert (fndecl);
   gcc_assert (funcname);
 
-  /* Exclude functions not at the file scope, or not `extern',
-     since they are not the magic functions we would otherwise
-     think they are.  */
-  if (!((DECL_CONTEXT (fndecl) == NULL_TREE
-	 || TREE_CODE (DECL_CONTEXT (fndecl)) == TRANSLATION_UNIT_DECL)
-	&& TREE_PUBLIC (fndecl)))
+  if (!maybe_special_function_p (fndecl))
     return false;
 
   tree identifier = DECL_NAME (fndecl);
-  if (identifier == NULL)
-    return false;
-
   const char *name = IDENTIFIER_POINTER (identifier);
   const char *tname = name;
 
