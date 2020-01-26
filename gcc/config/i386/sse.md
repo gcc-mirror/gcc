@@ -19912,9 +19912,10 @@
 	  (match_operand:VF_256 1 "nonimmediate_operand" "m,o,?v")
 	  (match_parallel 2 "avx_vbroadcast_operand"
 	    [(match_operand 3 "const_int_operand" "C,n,n")])))]
-  "TARGET_AVX"
+  "TARGET_AVX
+   && (<MODE>mode != V4DFmode || !TARGET_AVX2 || operands[3] == const0_rtx)"
   "#"
-  "&& reload_completed && (<MODE>mode != V4DFmode || !TARGET_AVX2)"
+  "&& reload_completed"
   [(set (match_dup 0) (vec_duplicate:VF_256 (match_dup 1)))]
 {
   rtx op0 = operands[0], op1 = operands[1];

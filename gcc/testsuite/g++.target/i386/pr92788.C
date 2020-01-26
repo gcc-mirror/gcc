@@ -1,4 +1,4 @@
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target c++11 } */
 /* { dg-options "-O3 -fnon-call-exceptions -ftracer -march=k8 -Wno-return-type" } */
 
@@ -17,7 +17,7 @@ struct is_same : integral_constant<true> {};
 
 template <bool, typename _Tp> using __enable_if_t = _Tp;
 
-void *operator new(unsigned long, void *__p) { return __p; }
+void *operator new(__SIZE_TYPE__, void *__p) { return __p; }
 
 template <typename _Iterator, typename> class __normal_iterator {
 

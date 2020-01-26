@@ -1,3 +1,27 @@
+2020-01-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr91298-1.c: xfail on Solaris/x86 with native
+	assembler.
+	* gcc.target/i386/pr91298-2.c: Likewise.
+
+2020-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93412
+	* gcc.dg/pr93412.c: New test.
+
+	PR target/93430
+	* gcc.dg/pr93430.c: New test.
+	* gcc.target/i386/avx2-pr93430.c: New test.
+
+	PR ipa/93166
+	* g++.dg/pr93166.C: Move to ...
+	* g++.dg/pr93166_0.C: ... here.  Turn it into a proper lto test.
+
+	PR tree-optimization/92788
+	* g++.dg/pr92788.C: Move to ...
+	* g++.target/i386/pr92788.C: ... here.  Remove target from dg-do line.
+	Change type of operator new's first parameter to __SIZE_TYPE__.
+
 2020-01-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93414 - poor diagnostic for dynamic_cast in constexpr context.

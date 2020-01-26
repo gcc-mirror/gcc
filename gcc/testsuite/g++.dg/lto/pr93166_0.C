@@ -1,5 +1,10 @@
-// { dg-do compile }
-// { dg-options "-shared -flto -O2 -fPIC -fvisibility=hidden" }
+// PR ipa/93166
+// { dg-lto-do link }
+// { dg-lto-options { { -fPIC -O2 -flto -fvisibility=hidden } } }
+// { dg-require-effective-target shared }
+// { dg-require-effective-target fpic }
+// { dg-extra-ld-options "-shared" }
+// { dg-require-visibility "" }
 
 namespace Qt {
 enum DropAction {};
