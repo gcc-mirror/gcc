@@ -736,7 +736,9 @@ simplify_truncation (machine_mode mode, rtx op,
      (*_extract:M1 (truncate:M1 (reg:M2)) (len) (pos')) if possible without
      changing len.  */
   if ((GET_CODE (op) == ZERO_EXTRACT || GET_CODE (op) == SIGN_EXTRACT)
-      && REG_P (XEXP (op, 0))
+      && (REG_P (XEXP (op, 0))
+	  || (SUBREG_P (XEXP (op, 0))
+	      && REG_P (SUBREG_REG (XEXP (op, 0)))))
       && GET_MODE (XEXP (op, 0)) == GET_MODE (op)
       && CONST_INT_P (XEXP (op, 1))
       && CONST_INT_P (XEXP (op, 2)))
