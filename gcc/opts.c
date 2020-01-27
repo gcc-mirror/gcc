@@ -1285,6 +1285,14 @@ print_filtered_help (unsigned int include_flags,
 			       | CL_COMMON | CL_TARGET)) == 0)
 	continue;
 
+      /* If an option contains a language specification,
+	 exclude it from common unless all languages are present.  */
+      if ((include_flags & CL_COMMON)
+	  && !(option->flags & CL_DRIVER)
+	  && (option->flags & CL_LANG_ALL)
+	  && (option->flags & CL_LANG_ALL) != CL_LANG_ALL)
+	continue;
+
       found = true;
       /* Skip switches that have already been printed.  */
       if (opts->x_help_printed[i])

@@ -1,5 +1,11 @@
 2020-01-27  Martin Liska  <mliska@suse.cz>
 
+	PR driver/91220
+	* opts.c (print_filtered_help): Exclude language-specific
+	options from --help=common unless enabled in all FEs.
+
+2020-01-27  Martin Liska  <mliska@suse.cz>
+
 	* opts.c (print_help): Exclude params from
 	all except --help=param.
 
