@@ -1,5 +1,10 @@
 2020-01-27  Martin Liska  <mliska@suse.cz>
 
+	* opts.c (print_help): Exclude params from
+	all except --help=param.
+
+2020-01-27  Martin Liska  <mliska@suse.cz>
+
 	PR target/93274
 	* config/i386/i386-features.c (make_resolver_func):
 	Align the code with ppc64 target implementation.
