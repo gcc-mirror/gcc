@@ -449,8 +449,9 @@
 
    /* At post-reload time, we'll get here for e.g. split multi-mode insns
       with a memory destination.  Go directly to the clobber-less variant.
-      FIXME: Also applies to zero source.  */
-   if (MEM_P (operands[0]) && reload_completed)
+      FIXME: Also applies to special-register source or destination.  */
+   if (reload_completed
+       && (MEM_P (operands[0]) || operands[1] == const0_rtx))
      {
         emit_insn (gen_rtx_SET (operands[0], operands[1]));
         DONE;
@@ -697,6 +698,20 @@
    move %1,%0"
   [(set_attr "slottable" "yes,yes,yes,no,no,no")
    (set_attr "enabled" "<mov_tomem_enabled>")])
+
+(define_split ;; "*mov_fromzero<mode>_split"
+  [(set (match_operand:BWD 0 "register_operand") (const_int 0))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
+  "reload_completed
+   && REGNO(operands[0]) <= CRIS_LAST_GENERAL_REGISTER"
+  [(set (match_dup 0) (const_int 0))]
+  "")
+
+(define_insn "*mov_fromzero<mode>"
+  [(set (match_operand:BWD 0 "register_operand" "=r") (const_int 0))]
+  "reload_completed"
+  "clear<m> %0"
+  [(set_attr "slottable" "yes")])
 
 ;; Movem patterns.  Primarily for use in function prologue and epilogue.
 ;; Unfortunately, movem stores R0 in the highest memory location, thus

@@ -43,11 +43,14 @@
 	* config/cris/cris.h (REVERSIBLE_CC_MODE): Define to true.
 
 	* config/cris/cris.md ("movsi"): For memory destination
-	post-reload, generate clobberless variant.
+	post-reload, generate clobberless variant.  Similarly for a
+	zero-source post-reload.
 	("*mov_tomem<mode>_split"): New split.
 	("*mov_tomem<mode>"): New insn.
 	("enabled", mov_tomem_enabled): Define and use to exclude "x" ->
 	"Q>m" for less-than-SImode.
+	("*mov_fromzero<mode>_split"): New split.
+	("*mov_fromzero<mode>"): New insn.
 
 2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
 
