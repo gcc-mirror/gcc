@@ -1,3 +1,8 @@
+2020-02-05  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* hashtab.c (htab_remove_elt): Make a parameter const.
+	(htab_remove_elt_with_hash): Likewise.
+
 2020-01-23  Alexandre Oliva <oliva@adacore.com>
 
 	* argv.c (writeargv): Output empty args as "".
