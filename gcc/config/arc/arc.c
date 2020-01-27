@@ -9091,49 +9091,71 @@ arc_get_aux_arg (rtx pat, int *auxr)
 bool
 prepare_move_operands (rtx *operands, machine_mode mode)
 {
-  /* First handle aux attribute.  */
-  if (mode == SImode
-      && (MEM_P (operands[0]) || MEM_P (operands[1])))
+  if ((MEM_P (operands[0]) || MEM_P (operands[1]))
+      && SCALAR_INT_MODE_P (mode))
     {
-      rtx tmp;
-      int auxr = 0;
-      if (MEM_P (operands[0]) && arc_is_aux_reg_p (operands[0]))
+      /* First handle aux attribute.  */
+      if (mode == SImode)
 	{
-	  /* Save operation.  */
-	  if (arc_get_aux_arg (operands[0], &auxr))
+	  rtx tmp;
+	  int auxr = 0;
+	  if (MEM_P (operands[0]) && arc_is_aux_reg_p (operands[0]))
 	    {
-	      tmp = gen_reg_rtx (SImode);
-	      emit_move_insn (tmp, GEN_INT (auxr));
-	    }
-	  else
-	    {
-	      tmp = XEXP (operands[0], 0);
-	    }
+	      /* Save operation.  */
+	      if (arc_get_aux_arg (operands[0], &auxr))
+		{
+		  tmp = gen_reg_rtx (SImode);
+		  emit_move_insn (tmp, GEN_INT (auxr));
+		}
+	      else
+		tmp = XEXP (operands[0], 0);
 
-	  operands[1] = force_reg (SImode, operands[1]);
+	      operands[1] = force_reg (SImode, operands[1]);
+	      emit_insn (gen_rtx_UNSPEC_VOLATILE
+			 (VOIDmode, gen_rtvec (2, operands[1], tmp),
+			  VUNSPEC_ARC_SR));
+	      return true;
+	    }
+	  if (MEM_P (operands[1]) && arc_is_aux_reg_p (operands[1]))
+	    {
+	      if (arc_get_aux_arg (operands[1], &auxr))
+		{
+		  tmp = gen_reg_rtx (SImode);
+		  emit_move_insn (tmp, GEN_INT (auxr));
+		}
+	      else
+		{
+		  tmp = XEXP (operands[1], 0);
+		  gcc_assert (GET_CODE (tmp) == SYMBOL_REF);
+		}
+	      /* Load operation.  */
+	      gcc_assert (REG_P (operands[0]));
+	      emit_insn (gen_rtx_SET (operands[0],
+				      gen_rtx_UNSPEC_VOLATILE
+				      (SImode, gen_rtvec (1, tmp),
+				       VUNSPEC_ARC_LR)));
+	      return true;
+	    }
+	}
+      /* Second, we check for the uncached.  */
+      if (arc_is_uncached_mem_p (operands[0]))
+	{
+	  if (!REG_P (operands[1]))
+	    operands[1] = force_reg (mode, operands[1]);
 	  emit_insn (gen_rtx_UNSPEC_VOLATILE
-		     (VOIDmode, gen_rtvec (2, operands[1], tmp),
-		      VUNSPEC_ARC_SR));
+		     (VOIDmode, gen_rtvec (2, operands[0], operands[1]),
+		      VUNSPEC_ARC_STDI));
 	  return true;
 	}
-      if (MEM_P (operands[1]) && arc_is_aux_reg_p (operands[1]))
+      if (arc_is_uncached_mem_p (operands[1]))
 	{
-	  if (arc_get_aux_arg (operands[1], &auxr))
-	    {
-	      tmp = gen_reg_rtx (SImode);
-	      emit_move_insn (tmp, GEN_INT (auxr));
-	    }
-	  else
-	    {
-	      tmp = XEXP (operands[1], 0);
-	      gcc_assert (GET_CODE (tmp) == SYMBOL_REF);
-	    }
-	  /* Load operation.  */
-	  gcc_assert (REG_P (operands[0]));
-	  emit_insn (gen_rtx_SET (operands[0],
-				  gen_rtx_UNSPEC_VOLATILE
-				  (SImode, gen_rtvec (1, tmp),
-				   VUNSPEC_ARC_LR)));
+	  if (MEM_P (operands[0]))
+	    operands[0] = force_reg (mode, operands[0]);
+	  emit_insn (gen_rtx_SET
+		     (operands[0],
+		      gen_rtx_UNSPEC_VOLATILE
+		      (mode, gen_rtvec (1, operands[1]),
+		       VUNSPEC_ARC_LDDI)));
 	  return true;
 	}
     }
@@ -11162,23 +11184,39 @@ arc_is_uncached_mem_p (rtx pat)
     return false;
 
   /* Get the attributes.  */
-  if (TREE_CODE (addr) == MEM_REF)
+  if (TREE_CODE (addr) == MEM_REF
+      || TREE_CODE (addr) == VAR_DECL)
     {
       attrs = TYPE_ATTRIBUTES (TREE_TYPE (addr));
       if (lookup_attribute ("uncached", attrs))
 	return true;
-
+    }
+  if (TREE_CODE (addr) == MEM_REF)
+    {
       attrs = TYPE_ATTRIBUTES (TREE_TYPE (TREE_OPERAND (addr, 0)));
+      if (lookup_attribute ("uncached", attrs))
+	return true;
+      attrs = TYPE_ATTRIBUTES (TREE_TYPE (TREE_OPERAND (addr, 1)));
       if (lookup_attribute ("uncached", attrs))
 	return true;
     }
 
-  /* For COMPONENT_REF, use the FIELD_DECL from tree operand 1.  */
-  if (TREE_CODE (addr) == COMPONENT_REF)
+  /* Check the definitions of the structs.  */
+  while (handled_component_p (addr))
     {
-      attrs = TYPE_ATTRIBUTES (TREE_TYPE (TREE_OPERAND (addr, 1)));
-      if (lookup_attribute ("uncached", attrs))
-	return true;
+      if (TREE_CODE (addr) == COMPONENT_REF)
+	{
+	  attrs = TYPE_ATTRIBUTES (TREE_TYPE (addr));
+	  if (lookup_attribute ("uncached", attrs))
+	    return true;
+	  attrs = TYPE_ATTRIBUTES (TREE_TYPE (TREE_OPERAND (addr, 0)));
+	  if (lookup_attribute ("uncached", attrs))
+	    return true;
+	  attrs = TYPE_ATTRIBUTES (TREE_TYPE (TREE_OPERAND (addr, 1)));
+	  if (lookup_attribute ("uncached", attrs))
+	    return true;
+	}
+      addr = TREE_OPERAND (addr, 0);
     }
   return false;
 }

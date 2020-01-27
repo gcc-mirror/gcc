@@ -164,6 +164,8 @@
   VUNSPEC_ARC_BLOCKAGE
   VUNSPEC_ARC_EH_RETURN
   VUNSPEC_ARC_ARC600_RTIE
+  VUNSPEC_ARC_LDDI
+  VUNSPEC_ARC_STDI
   ])
 
 (define_constants
@@ -4681,6 +4683,64 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   "sr\t%0, [%1]"
   [(set_attr "length" "8,4,8,4")
    (set_attr "type" "sr,sr,sr,sr")])
+
+(define_mode_iterator ALLI [QI HI SI (DI "TARGET_LL64")])
+(define_mode_attr mALLI [(QI "b") (HI "%_") (SI "") (DI "d")])
+
+(define_insn "lddi<mode>"
+  [(set (match_operand:ALLI 0 "register_operand" "=r")
+	(unspec_volatile:ALLI [(match_operand:ALLI 1 "memory_operand" "m")]
+			      VUNSPEC_ARC_LDDI))]
+  ""
+  "ld<mALLI>%U1.di\\t%0,%1"
+  [(set_attr "type" "load")])
+
+(define_insn "stdi<mode>"
+  [(unspec_volatile [(match_operand:ALLI 0 "memory_operand"    "m,m,Usc")
+		     (match_operand:ALLI 1 "nonmemory_operand" "r,Cm3,i")]
+		    VUNSPEC_ARC_STDI)]
+  ""
+  "st<mALLI>%U0.di\\t%1,%0"
+  [(set_attr "length" "*,*,8")
+   (set_attr "type" "store")])
+
+(define_insn_and_split "*stdidi_split"
+  [(unspec_volatile [(match_operand:DI 0 "memory_operand"   "m")
+		     (match_operand:DI 1 "register_operand" "r")]
+		    VUNSPEC_ARC_STDI)]
+  "!TARGET_LL64"
+  "#"
+  "&& reload_completed"
+  [(unspec_volatile:SI [(match_dup 2) (match_dup 3)] VUNSPEC_ARC_STDI)
+   (unspec_volatile:SI [(match_dup 4) (match_dup 5)] VUNSPEC_ARC_STDI)]
+  "
+  {
+   operands[3] = gen_lowpart (SImode, operands[1]);
+   operands[5] = gen_highpart_mode (SImode, DImode, operands[1]);
+   operands[2] = gen_lowpart (SImode, operands[0]);
+   operands[4] = gen_highpart (SImode, operands[0]);
+  }
+  "
+  )
+
+(define_insn_and_split "*lddidi_split"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec_volatile:DI [(match_operand:DI 1 "memory_operand" "m")]
+			    VUNSPEC_ARC_LDDI))]
+  "!TARGET_LL64"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 2) (unspec_volatile:SI [(match_dup 3)] VUNSPEC_ARC_LDDI))
+   (set (match_dup 4) (unspec_volatile:SI [(match_dup 5)] VUNSPEC_ARC_LDDI))]
+  "
+  {
+   operands[3] = gen_lowpart (SImode, operands[1]);
+   operands[5] = gen_highpart (SImode, operands[1]);
+   operands[2] = gen_lowpart (SImode, operands[0]);
+   operands[4] = gen_highpart (SImode, operands[0]);
+  }
+  "
+  )
 
 (define_insn "trap_s"
   [(unspec_volatile [(match_operand:SI 0 "immediate_operand" "L,Cal")]

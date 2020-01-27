@@ -1,3 +1,14 @@
+2020-01-27  Claudiu Zissulescu  <claziss@synopsys.com>
+	    Petro Karashchenko  <petro.karashchenko@ring.com>
+
+	* gcc.target/arc/uncached-3.c: New test.
+	* gcc.target/arc/uncached-4.c: Likewise.
+	* gcc.target/arc/uncached-5.c: Likewise.
+	* gcc.target/arc/uncached-6.c: Likewise.
+	* gcc.target/arc/uncached-7.c: Likewise.
+	* gcc.target/arc/uncached-8.c: Likewise.
+	* gcc.target/arc/arc.exp (ll64): New predicate.
+
 2020-01-27  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.dg/torture/pr93170.c: New test.
