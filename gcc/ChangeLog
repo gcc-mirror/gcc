@@ -1,3 +1,134 @@
+2020-01-27  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/93403
+	* tree-profile.c (gimple_init_gcov_profiler): Generate
+	both __gcov_indirect_call_profiler_v4 and
+	__gcov_indirect_call_profiler_v4_atomic.
+
+2020-01-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/92822
+	* config/aarch64/aarch64-simd.md (aarch64_get_half<mode>): New
+	expander.
+	(@aarch64_split_simd_mov<mode>): Use it.
+	(aarch64_simd_mov_from_<mode>low): Add a GPR alternative.
+	Leave the vec_extract patterns to handle 2-element vectors.
+	(aarch64_simd_mov_from_<mode>high): Likewise.
+	(vec_extract<VQMOV_NO2E:mode><Vhalf>): New expander.
+	(vec_extractv2dfv1df): Likewise.
+
+2020-01-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_if_then_else_costs): Match
+	jump conditions for *compare_condjump<GPI:mode>.
+
+2020-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93276
+	* digraph.cc (test_edge::test_edge): Specify template for base
+	class initializer.
+
+2020-01-27  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_rtx_costs): Update mul64 cost.
+
+2020-01-27  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-protos.h (gen_mlo): Remove.
+	(gen_mhi): Likewise.
+	* config/arc/arc.c (AUX_MULHI): Define.
+	(arc_must_save_reister): Special handling for r58/59.
+	(arc_compute_frame_size): Consider mlo/mhi registers.
+	(arc_save_callee_saves): Emit fp/sp move only when emit_move
+	paramter is true.
+	(arc_conditional_register_usage): Remove TARGET_BIG_ENDIAN from
+	mlo/mhi name selection.
+	(arc_restore_callee_saves): Don't early restore blink when ISR.
+	(arc_expand_prologue): Add mlo/mhi saving.
+	(arc_expand_epilogue): Add mlo/mhi restoring.
+	(gen_mlo): Remove.
+	(gen_mhi): Remove.
+	* config/arc/arc.h (DBX_REGISTER_NUMBER): Correct register
+	numbering when MUL64 option is used.
+	(DWARF2_FRAME_REG_OUT): Define.
+	* config/arc/arc.md (arc600_stall): New pattern.
+	(VUNSPEC_ARC_ARC600_STALL): Define.
+	(mulsi64): Use correct mlo/mhi registers.
+	(mulsi_600): Clean it up.
+	* config/arc/predicates.md (mlo_operand): Remove any dependency on
+	TARGET_BIG_ENDIAN.
+	(mhi_operand): Likewise.
+
+2020-01-27  Claudiu Zissulescu  <claziss@synopsys.com>
+	    Petro Karashchenko  <petro.karashchenko@ring.com>
+
+	* config/arc/arc.c (arc_is_uncached_mem_p): Check struct
+	attributes if needed.
+	(prepare_move_operands): Generate special unspec instruction for
+	direct access.
+	(arc_isuncached_mem_p): Propagate uncached attribute to each
+	structure member.
+	* config/arc/arc.md (VUNSPEC_ARC_LDDI): Define.
+	(VUNSPEC_ARC_STDI): Likewise.
+	(ALLI): New mode iterator.
+	(mALLI): New mode attribute.
+	(lddi): New instruction pattern.
+	(stdi): Likewise.
+	(stdidi_split): Split instruction for architectures which are not
+	supporting ll64 option.
+	(lddidi_split): Likewise.
+
+2020-01-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/92989
+	* lra-lives.c (process_bb_lives): Update the live-in set before
+	processing additional clobbers.
+
+2020-01-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/93170
+	* cselib.c (cselib_invalidate_regno_val): New function, split out
+	from...
+	(cselib_invalidate_regno): ...here.
+	(cselib_invalidated_by_call_p): New function.
+	(cselib_process_insn): Iterate over all the hard-register entries in
+	REG_VALUES and invalidate any that cross call-clobbered registers.
+
+2020-01-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* dojump.c (split_comparison): Use HONOR_NANS rather than
+	HONOR_SNANS when splitting LTGT.
+
+2020-01-27  Martin Liska  <mliska@suse.cz>
+
+	PR driver/91220
+	* opts.c (print_filtered_help): Exclude language-specific
+	options from --help=common unless enabled in all FEs.
+
+2020-01-27  Martin Liska  <mliska@suse.cz>
+
+	* opts.c (print_help): Exclude params from
+	all except --help=param.
+
+2020-01-27  Martin Liska  <mliska@suse.cz>
+
+	PR target/93274
+	* config/i386/i386-features.c (make_resolver_func):
+	Align the code with ppc64 target implementation.
+	Do not generate a unique name for resolver function.
+
+2020-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93397
+	* tree-vect-slp.c (vect_analyze_slp_instance): Delay
+	converted reduction chain SLP graph adjustment.
+
+2020-01-26  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/93436
+	* sanopt.c (sanitize_rewrite_addressable_params): Avoid crash on
+	null DECL_NAME.
+
 2020-01-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92601

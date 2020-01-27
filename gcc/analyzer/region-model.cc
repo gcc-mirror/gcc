@@ -1843,21 +1843,7 @@ tree_cmp (const void *p1, const void *p2)
   const_tree t1 = *(const_tree const *)p1;
   const_tree t2 = *(const_tree const *)p2;
 
-  int result = tree_cmp (t1, t2);
-
-  /* Check that the ordering is symmetric  */
-#if CHECKING_P
-  int reversed = tree_cmp (t2, t1);
-  gcc_assert (reversed == -result);
-#endif
-
-  /* We should only have 0 for equal pairs.  */
-#if 0
-  gcc_assert (result != 0
-	      || t1 == t2);
-#endif
-
-  return result;
+  return tree_cmp (t1, t2);
 }
 
 /* Attempt to merge MAP_REGION_A and MAP_REGION_B into MERGED_MAP_REGION,
@@ -4480,11 +4466,11 @@ region_model::on_return (const greturn *return_stmt, region_model_context *ctxt)
     set_value (get_lvalue (lhs, ctxt), get_rvalue (rhs, ctxt), ctxt);
 }
 
-/* Update this model for a call and return of "setjmp" at CALL within ENODE,
-   using CTXT to report any diagnostics.
+/* Update this model for a call and return of setjmp/sigsetjmp at CALL within
+   ENODE, using CTXT to report any diagnostics.
 
-   This is for the initial direct invocation of setjmp (which returns 0),
-   as opposed to any second return due to longjmp.  */
+   This is for the initial direct invocation of setjmp/sigsetjmp (which returns
+   0), as opposed to any second return due to longjmp/sigsetjmp.  */
 
 void
 region_model::on_setjmp (const gcall *call, const exploded_node *enode,

@@ -1,4 +1,20 @@
+2020-01-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/93443
+	* coroutines.cc (morph_fn_to_coro): Check the ramp return
+	value when it is constructed from the 'get return object'.
+
+2020-01-27  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/91826
+	* name-lookup.c (is_ancestor): Allow CHILD to be a namespace alias.
+
 2020-01-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90992
+	* except.c (maybe_noexcept_warning): Check DECL_IN_SYSTEM_HEADER and
+	temporarily enable -Wsystem-headers.  Change second warning to
+	conditional inform.
 
 	PR c++/90997
 	* semantics.c (finish_call_expr): Don't call

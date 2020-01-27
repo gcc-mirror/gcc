@@ -3,7 +3,7 @@
 // { dg-options "-Wnoexcept" }
 
 template <class T>
-T f (T t) { return t; }		// { dg-warning "does not throw" }
+T f (T t) { return t; }		// { dg-message "does not throw" }
 
 #define SA(X) static_assert(X, #X)
 

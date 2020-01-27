@@ -1,3 +1,93 @@
+2020-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93349
+	* engine.cc (run_checkers): Save and restore input_location.
+
+2020-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* call-string.cc (call_string::cmp_1): Delete, moving body to...
+	(call_string::cmp): ...here.
+	* call-string.h (call_string::cmp_1): Delete decl.
+	* engine.cc (worklist::key_t::cmp_1): Delete, moving body to...
+	(worklist::key_t::cmp): ...here.  Implement hash comparisons
+	via comparison rather than subtraction to avoid overflow issues.
+	* exploded-graph.h (worklist::key_t::cmp_1): Delete decl.
+	* region-model.cc (tree_cmp): Eliminate buggy checking for
+	symmetry.
+
+2020-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.cc  (is_named_call_p): Check that fndecl is "extern"
+	and at file scope.  Potentially disregard prefix _ or __ in
+	fndecl's name.  Bail if the identifier is NULL.
+	(is_setjmp_call_p): Expect a gcall rather than plain gimple.
+	Remove special-case check for leading prefix, and also check for
+	sigsetjmp.
+	(is_longjmp_call_p): Also check for siglongjmp.
+	(get_user_facing_name): New function.
+	* analyzer.h (is_setjmp_call_p): Expect a gcall rather than plain
+	gimple.
+	(get_user_facing_name): New decl.
+	* checker-path.cc (setjmp_event::get_desc): Use
+	get_user_facing_name to avoid hardcoding the function name.
+	(rewind_event::rewind_event): Add rewind_info param, using it to
+	initialize new m_rewind_info field, and strengthen the assertion.
+	(rewind_from_longjmp_event::get_desc): Use get_user_facing_name to
+	avoid hardcoding the function name.
+	(rewind_to_setjmp_event::get_desc): Likewise.
+	* checker-path.h (setjmp_event::setjmp_event): Add setjmp_call
+	param and use it to initialize...
+	(setjmp_event::m_setjmp_call): New field.
+	(rewind_event::rewind_event): Add rewind_info param.
+	(rewind_event::m_rewind_info): New protected field.
+	(rewind_from_longjmp_event::rewind_from_longjmp_event): Add
+	rewind_info param.
+	(class rewind_to_setjmp_event): Move rewind_info field to parent
+	class.
+	* diagnostic-manager.cc (diagnostic_manager::add_events_for_eedge):
+	Update setjmp-handling for is_setjmp_call_p requiring a gcall;
+	pass the call to the new setjmp_event.
+	* engine.cc (exploded_node::on_stmt): Update for is_setjmp_call_p
+	requiring a gcall.
+	(stale_jmp_buf::emit): Use get_user_facing_name to avoid
+	hardcoding the function names.
+	(exploded_node::on_longjmp): Pass the longjmp_call when
+	constructing rewind_info.
+	(rewind_info_t::add_events_to_path): Pass the rewind_info_t to the
+	rewind_from_longjmp_event's ctor.
+	* exploded-graph.h (rewind_info_t::rewind_info_t): Add
+	longjmp_call param.
+	(rewind_info_t::get_longjmp_call): New.
+	(rewind_info_t::m_longjmp_call): New.
+	* region-model.cc (region_model::on_setjmp): Update comment to
+	indicate this is also for sigsetjmp.
+	* region-model.h (struct setjmp_record): Likewise.
+	(class setjmp_svalue): Likewise.
+
+2020-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93276
+	* analyzer.h (PUSH_IGNORE_WFORMAT, POP_IGNORE_WFORMAT): Guard these
+	macros with GCC_VERSION >= 4006, making them no-op otherwise.
+	* engine.cc (exploded_edge::exploded_edge): Specify template for
+	base class initializer.
+	(exploded_graph::add_edge): Specify template when chaining up to
+	base class add_edge implementation.
+	(viz_callgraph_node::dump_dot): Drop redundant "typename".
+	(viz_callgraph_edge::viz_callgraph_edge): Specify template for
+	base class initializer.
+	* program-state.cc (sm_state_map::clone_with_remapping): Drop
+	redundant "typename".
+	(sm_state_map::print): Likewise.
+	(sm_state_map::hash): Likewise.
+	(sm_state_map::operator==): Likewise.
+	(sm_state_map::remap_svalue_ids): Likewise.
+	(sm_state_map::on_svalue_purge): Likewise.
+	(sm_state_map::validate): Likewise.
+	* program-state.h (sm_state_map::iterator_t): Likewise.
+	* supergraph.h (superedge::superedge): Specify template for base
+	class initializer.
+
 2020-01-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93375

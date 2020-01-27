@@ -33,6 +33,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    the executable file might be covered by the GNU General Public License.  */
 
 
+#ifdef __ARC_RF16__
+	/* Use object attributes to inform other tools this file is
+	safe for RF16 configuration.  */
+	.arc_attribute Tag_ARC_ABI_rf16, 1
+#endif
+
 #if (__ARC_TLS_REGNO__ != -1)
  /* ANSI concatenation macros.  */
 

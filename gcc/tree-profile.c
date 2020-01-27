@@ -120,7 +120,6 @@ gimple_init_gcov_profiler (void)
   tree gcov_type_ptr;
   tree ic_profiler_fn_type;
   tree average_profiler_fn_type;
-  const char *profiler_fn_name;
   const char *fn_name;
 
   if (!gcov_type_node)
@@ -167,6 +166,7 @@ gimple_init_gcov_profiler (void)
       fn_name = concat ("__gcov_topn_values_profiler", fn_suffix, NULL);
       tree_topn_values_profiler_fn
 	= build_fn_decl (fn_name, topn_values_profiler_fn_type);
+      free (CONST_CAST (char *, fn_name));
 
       TREE_NOTHROW (tree_topn_values_profiler_fn) = 1;
       DECL_ATTRIBUTES (tree_topn_values_profiler_fn)
@@ -181,10 +181,10 @@ gimple_init_gcov_profiler (void)
 					  gcov_type_node,
 					  ptr_type_node,
 					  NULL_TREE);
-      profiler_fn_name = "__gcov_indirect_call_profiler_v4";
-
+      fn_name = concat ("__gcov_indirect_call_profiler_v4", fn_suffix, NULL);
       tree_indirect_call_profiler_fn
-	      = build_fn_decl (profiler_fn_name, ic_profiler_fn_type);
+	= build_fn_decl (fn_name, ic_profiler_fn_type);
+      free (CONST_CAST (char *, fn_name));
 
       TREE_NOTHROW (tree_indirect_call_profiler_fn) = 1;
       DECL_ATTRIBUTES (tree_indirect_call_profiler_fn)

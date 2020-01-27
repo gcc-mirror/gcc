@@ -75,8 +75,6 @@ extern int arc_hazard (rtx_insn *, rtx_insn *);
 extern int arc_write_ext_corereg (rtx);
 extern rtx gen_acc1 (void);
 extern rtx gen_acc2 (void);
-extern rtx gen_mlo (void);
-extern rtx gen_mhi (void);
 extern bool arc_branch_size_unknown_p (void);
 struct arc_ccfsm;
 extern void arc_ccfsm_record_condition (rtx, bool, rtx_insn *,

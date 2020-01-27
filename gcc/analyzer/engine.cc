@@ -1001,7 +1001,7 @@ exploded_node::on_stmt (exploded_graph &eg,
 	{
 	  /* This is handled elsewhere.  */
 	}
-      else if (is_setjmp_call_p (stmt))
+      else if (is_setjmp_call_p (call))
 	state->m_region_model->on_setjmp (call, this, &ctxt);
       else if (is_longjmp_call_p (call))
 	{
@@ -1126,7 +1126,8 @@ public:
     return warning_at
       (richloc, OPT_Wanalyzer_stale_setjmp_buffer,
        "%qs called after enclosing function of %qs has returned",
-       "longjmp", "setjmp");
+       get_user_facing_name (m_longjmp_call),
+       get_user_facing_name (m_setjmp_call));
   }
 
   const char *get_kind () const FINAL OVERRIDE
@@ -1143,10 +1144,10 @@ private:
   const gcall *m_longjmp_call;
 };
 
-/* Handle LONGJMP_CALL, a call to "longjmp".
+/* Handle LONGJMP_CALL, a call to longjmp or siglongjmp.
 
-   Attempt to locate where "setjmp" was called on the jmp_buf and build an
-   exploded_node and exploded_edge to it representing a rewind to that frame,
+   Attempt to locate where setjmp/sigsetjmp was called on the jmp_buf and build
+   an exploded_node and exploded_edge to it representing a rewind to that frame,
    handling the various kinds of failure that can occur.  */
 
 void
@@ -1174,9 +1175,9 @@ exploded_node::on_longjmp (exploded_graph &eg,
 
   const setjmp_record tmp_setjmp_record = setjmp_sval->get_setjmp_record ();
 
-  /* Build a custom enode and eedge for rewinding from the longjmp
-     call back to the setjmp.  */
-  rewind_info_t rewind_info (tmp_setjmp_record);
+  /* Build a custom enode and eedge for rewinding from the longjmp/siglongjmp
+     call back to the setjmp/sigsetjmp.  */
+  rewind_info_t rewind_info (tmp_setjmp_record, longjmp_call);
 
   const gcall *setjmp_call = rewind_info.get_setjmp_call ();
   const program_point &setjmp_point = rewind_info.get_setjmp_point ();
@@ -1217,7 +1218,7 @@ exploded_node::on_longjmp (exploded_graph &eg,
       exploded_edge *eedge
 	= eg.add_edge (const_cast<exploded_node *> (this), next, NULL,
 		       change,
-		       new rewind_info_t (tmp_setjmp_record));
+		       new rewind_info_t (tmp_setjmp_record, longjmp_call));
 
       /* For any diagnostics that were queued here (such as leaks) we want
 	 the checker_path to show the rewinding events after the "final event"
@@ -1369,7 +1370,7 @@ rewind_info_t::add_events_to_path (checker_path *emission_path,
     (new rewind_from_longjmp_event
      (&eedge, src_point.get_supernode ()->get_end_location (),
       src_point.get_fndecl (),
-      src_stack_depth));
+      src_stack_depth, this));
   emission_path->add_event
     (new rewind_to_setjmp_event
      (&eedge, get_setjmp_call ()->location,
@@ -1377,7 +1378,7 @@ rewind_info_t::add_events_to_path (checker_path *emission_path,
       dst_stack_depth, this));
 }
 
-/* class exploded_edge : public dedge.  */
+/* class exploded_edge : public dedge<eg_traits>.  */
 
 /* exploded_edge's ctor.  */
 
@@ -1385,7 +1386,7 @@ exploded_edge::exploded_edge (exploded_node *src, exploded_node *dest,
 			      const superedge *sedge,
 			      const state_change &change,
 			      custom_info_t *custom_info)
-: dedge (src, dest), m_sedge (sedge), m_change (change),
+: dedge<eg_traits> (src, dest), m_sedge (sedge), m_change (change),
   m_custom_info (custom_info)
 {
   change.validate (dest->get_state ());
@@ -1633,7 +1634,7 @@ worklist::add_node (exploded_node *enode)
    Return 0 if they are equal.  */
 
 int
-worklist::key_t::cmp_1 (const worklist::key_t &ka, const worklist::key_t &kb)
+worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
 {
   const program_point &point_a = ka.m_enode->get_point ();
   const program_point &point_b = kb.m_enode->get_point ();
@@ -1709,9 +1710,12 @@ worklist::key_t::cmp_1 (const worklist::key_t &ka, const worklist::key_t &kb)
       sm_state_map *smap_a = state_a.m_checker_states[sm_idx];
       sm_state_map *smap_b = state_b.m_checker_states[sm_idx];
 
-      int sm_cmp = smap_a->hash () - smap_b->hash ();
-      if (sm_cmp)
-	return sm_cmp;
+      hashval_t hash_a = smap_a->hash ();
+      hashval_t hash_b = smap_b->hash ();
+      if (hash_a < hash_b)
+	return -1;
+      else if (hash_a > hash_b)
+	return 1;
     }
 
   /* Otherwise, we have two enodes at the same program point but with
@@ -1719,30 +1723,6 @@ worklist::key_t::cmp_1 (const worklist::key_t &ka, const worklist::key_t &kb)
      so order them by enode index, so that we have at least have a
      stable sort.  */
   return ka.m_enode->m_index - kb.m_enode->m_index;
-}
-
-/* Comparator for implementing worklist::key_t comparison operators.
-   Return negative if KA is before KB
-   Return positive if KA is after KB
-   Return 0 if they are equal.  */
-
-int
-worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
-{
-  int result = cmp_1 (ka, kb);
-
-  /* Check that the ordering is symmetric  */
-#if CHECKING_P
-  int reversed = cmp_1 (kb, ka);
-  gcc_assert (reversed == -result);
-#endif
-
-  /* We should only have 0 for equal (point, state) pairs.  */
-  gcc_assert (result != 0
-	      || (*ka.m_enode->get_ps_key ()
-		  == *kb.m_enode->get_ps_key ()));
-
-  return result;
 }
 
 /* exploded_graph's ctor.  */
@@ -1991,7 +1971,7 @@ exploded_graph::add_edge (exploded_node *src, exploded_node *dest,
 			  exploded_edge::custom_info_t *custom_info)
 {
   exploded_edge *e = new exploded_edge (src, dest, sedge, change, custom_info);
-  digraph::add_edge (e);
+  digraph<eg_traits>::add_edge (e);
   return e;
 }
 
@@ -3332,7 +3312,7 @@ public:
 	// TODO: also show the per-callstring breakdown
 	const exploded_graph::call_string_data_map_t *per_cs_data
 	  = args.m_eg->get_per_call_string_data ();
-	for (typename exploded_graph::call_string_data_map_t::iterator iter
+	for (exploded_graph::call_string_data_map_t::iterator iter
 	       = per_cs_data->begin ();
 	     iter != per_cs_data->end ();
 	     ++iter)
@@ -3391,7 +3371,7 @@ class viz_callgraph_edge : public dedge<viz_callgraph_traits>
 public:
   viz_callgraph_edge (viz_callgraph_node *src, viz_callgraph_node *dest,
 		     const call_superedge *call_sedge)
-  : dedge (src, dest),
+  : dedge<viz_callgraph_traits> (src, dest),
     m_call_sedge (call_sedge)
   {}
 
@@ -3609,6 +3589,9 @@ impl_run_checkers (logger *logger)
 void
 run_checkers ()
 {
+  /* Save input_location.  */
+  location_t saved_input_location = input_location;
+
   /* Handle -fdump-analyzer and -fdump-analyzer-stderr.  */
   FILE *dump_fout = NULL;
   /* Track if we're responsible for closing dump_fout.  */
@@ -3639,6 +3622,11 @@ run_checkers ()
 
   if (owns_dump_fout)
     fclose (dump_fout);
+
+  /* Restore input_location.  Subsequent passes may assume that input_location
+     is some arbitrary value *not* in the block tree, which might be violated
+     if we didn't restore it.  */
+  input_location = saved_input_location;
 }
 
 } // namespace ana

@@ -1,3 +1,74 @@
+2020-01-27  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* gcc.target/arm/armv8_2-fp16-move-1.c: Update following load/store
+	optimisation.
+
+2020-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93349
+	* gcc.dg/analyzer/torture/pr93349.c: New test.
+
+2020-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93291
+	* gcc.dg/analyzer/pattern-test-2.c: Remove include of stdlib.h.
+	(test_2): Rewrite to explicitly perform a bitwise-or of two
+	boolean conditions.
+	(test_3): New function, to test bitwise-and.
+
+2020-01-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/71727
+	* gcc.target/aarch64/pr71727.c: Add -fcommon.
+
+2020-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/sigsetjmp-5.c: New test.
+	* gcc.dg/analyzer/sigsetjmp-6.c: New test.
+
+2020-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/91171
+	* gcc.dg/graphite/scop-21.c: un-XFAIL.
+
+2020-01-27  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/interrupt-6.c: Update test.
+
+2020-01-27  Claudiu Zissulescu  <claziss@synopsys.com>
+	    Petro Karashchenko  <petro.karashchenko@ring.com>
+
+	* gcc.target/arc/uncached-3.c: New test.
+	* gcc.target/arc/uncached-4.c: Likewise.
+	* gcc.target/arc/uncached-5.c: Likewise.
+	* gcc.target/arc/uncached-6.c: Likewise.
+	* gcc.target/arc/uncached-7.c: Likewise.
+	* gcc.target/arc/uncached-8.c: Likewise.
+	* gcc.target/arc/arc.exp (ll64): New predicate.
+
+2020-01-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/torture/pr93170.c: New test.
+
+2020-01-27  Martin Liska  <mliska@suse.cz>
+
+	PR target/93274
+	* gcc.target/i386/pr81213.c: Adjust to not expect
+	a globally unique name.
+
+2020-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93397
+	* gcc.dg/torture/pr93397.c: New testcase.
+
+2020-01-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/85781
+	* gfortran.dg/bind_c_char_2.f90: New.
+	* gfortran.dg/bind_c_char_3.f90: New.
+	* gfortran.dg/bind_c_char_4.f90: New.
+	* gfortran.dg/bind_c_char_5.f90: New.
+
 2020-01-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/i386/pr91298-1.c: xfail on Solaris/x86 with native

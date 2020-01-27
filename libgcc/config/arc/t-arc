@@ -43,6 +43,7 @@ LIB1ASMFUNCS = _mulsi3 _umulsidi3  _umulsi3_highpart _muldi3 \
 # used in an asm wrapper.
 
 LIB2ADD = fp-bit.c dp-bit.c
+LIB2ADD += $(srcdir)/config/arc/lib2funcs.c
 
 dp-bit.c: $(srcdir)/fp-bit.c
 	echo '#ifndef __big_endian__' > dp-bit.c

@@ -54,7 +54,10 @@ is_special_named_call_p (const gcall *call, const char *funcname,
   return is_named_call_p (fndecl, funcname, call, num_args);
 }
 
-/* Helper function for checkers.  Does FNDECL have the given FUNCNAME?  */
+/* Helper function for checkers.  Is FNDECL an extern fndecl at file scope
+   that has the given FUNCNAME?
+
+   Compare with special_function_p in calls.c.  */
 
 bool
 is_named_call_p (tree fndecl, const char *funcname)
@@ -62,11 +65,38 @@ is_named_call_p (tree fndecl, const char *funcname)
   gcc_assert (fndecl);
   gcc_assert (funcname);
 
-  return 0 == strcmp (IDENTIFIER_POINTER (DECL_NAME (fndecl)), funcname);
+  /* Exclude functions not at the file scope, or not `extern',
+     since they are not the magic functions we would otherwise
+     think they are.  */
+  if (!((DECL_CONTEXT (fndecl) == NULL_TREE
+	 || TREE_CODE (DECL_CONTEXT (fndecl)) == TRANSLATION_UNIT_DECL)
+	&& TREE_PUBLIC (fndecl)))
+    return false;
+
+  tree identifier = DECL_NAME (fndecl);
+  if (identifier == NULL)
+    return false;
+
+  const char *name = IDENTIFIER_POINTER (identifier);
+  const char *tname = name;
+
+  /* Potentially disregard prefix _ or __ in FNDECL's name, but not if
+     FUNCNAME itself has leading underscores (e.g. when looking for
+     "__analyzer_eval").  */
+  if (funcname[0] != '_' && name[0] == '_')
+    {
+      if (name[1] == '_')
+	tname += 2;
+      else
+	tname += 1;
+    }
+
+  return 0 == strcmp (tname, funcname);
 }
 
-/* Helper function for checkers.  Does FNDECL have the given FUNCNAME, and
-   does CALL have the given number of arguments?  */
+/* Helper function for checkers.  Is FNDECL an extern fndecl at file scope
+   that has the given FUNCNAME, and does CALL have the given number of
+   arguments?  */
 
 bool
 is_named_call_p (tree fndecl, const char *funcname,
@@ -84,30 +114,55 @@ is_named_call_p (tree fndecl, const char *funcname,
   return true;
 }
 
-/* Return true if stmt is a setjmp call.  */
+/* Return true if stmt is a setjmp or sigsetjmp call.  */
 
 bool
-is_setjmp_call_p (const gimple *stmt)
+is_setjmp_call_p (const gcall *call)
 {
-  /* TODO: is there a less hacky way to check for "setjmp"?  */
-  if (const gcall *call = dyn_cast <const gcall *> (stmt))
-    if (is_special_named_call_p (call, "setjmp", 1)
-	|| is_special_named_call_p (call, "_setjmp", 1))
-      return true;
+  if (is_special_named_call_p (call, "setjmp", 1)
+      || is_special_named_call_p (call, "sigsetjmp", 2))
+    return true;
 
   return false;
 }
 
-/* Return true if stmt is a longjmp call.  */
+/* Return true if stmt is a longjmp or siglongjmp call.  */
 
 bool
 is_longjmp_call_p (const gcall *call)
 {
-  /* TODO: is there a less hacky way to check for "longjmp"?  */
-  if (is_special_named_call_p (call, "longjmp", 2))
+  if (is_special_named_call_p (call, "longjmp", 2)
+      || is_special_named_call_p (call, "siglongjmp", 2))
     return true;
 
   return false;
+}
+
+/* For a CALL that matched is_special_named_call_p or is_named_call_p for
+   some name, return a name for the called function suitable for use in
+   diagnostics (stripping the leading underscores).  */
+
+const char *
+get_user_facing_name (const gcall *call)
+{
+  tree fndecl = gimple_call_fndecl (call);
+  gcc_assert (fndecl);
+
+  tree identifier = DECL_NAME (fndecl);
+  gcc_assert (identifier);
+
+  const char *name = IDENTIFIER_POINTER (identifier);
+
+  /* Strip prefix _ or __ in FNDECL's name.  */
+  if (name[0] == '_')
+    {
+      if (name[1] == '_')
+	return name + 2;
+      else
+	return name + 1;
+    }
+
+  return name;
 }
 
 /* Generate a label_text instance by formatting FMT, using a

@@ -1,3 +1,9 @@
+2020-01-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93426
+	* include/std/span (span): Fix deduction guide.
+	* testsuite/23_containers/span/deduction.cc: New test.
+
 2020-01-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libsupc++/compare (__cmp_cat::_Eq): Remove enumeration type.

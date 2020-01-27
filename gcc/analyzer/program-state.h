@@ -132,7 +132,7 @@ public:
     svalue_id m_origin;
   };
   typedef hash_map <svalue_id, entry_t> map_t;
-  typedef typename map_t::iterator iterator_t;
+  typedef map_t::iterator iterator_t;
 
   sm_state_map ();
 

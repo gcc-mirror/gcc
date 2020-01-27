@@ -2156,6 +2156,52 @@ cselib_lookup (rtx x, machine_mode mode,
   return ret;
 }
 
+/* Invalidate the value at *L, which is part of REG_VALUES (REGNO).  */
+
+static void
+cselib_invalidate_regno_val (unsigned int regno, struct elt_list **l)
+{
+  cselib_val *v = (*l)->elt;
+  if (*l == REG_VALUES (regno))
+    {
+      /* Maintain the invariant that the first entry of
+	 REG_VALUES, if present, must be the value used to set
+	 the register, or NULL.  This is also nice because
+	 then we won't push the same regno onto user_regs
+	 multiple times.  */
+      (*l)->elt = NULL;
+      l = &(*l)->next;
+    }
+  else
+    unchain_one_elt_list (l);
+
+  v = canonical_cselib_val (v);
+
+  bool had_locs = v->locs != NULL;
+  rtx_insn *setting_insn = v->locs ? v->locs->setting_insn : NULL;
+
+  /* Now, we clear the mapping from value to reg.  It must exist, so
+     this code will crash intentionally if it doesn't.  */
+  for (elt_loc_list **p = &v->locs; ; p = &(*p)->next)
+    {
+      rtx x = (*p)->loc;
+
+      if (REG_P (x) && REGNO (x) == regno)
+	{
+	  unchain_one_elt_loc_list (p);
+	  break;
+	}
+    }
+
+  if (had_locs && v->locs == 0 && !PRESERVED_VALUE_P (v->val_rtx))
+    {
+      if (setting_insn && DEBUG_INSN_P (setting_insn))
+	n_useless_debug_values++;
+      else
+	n_useless_values++;
+    }
+}
+
 /* Invalidate any entries in reg_values that overlap REGNO.  This is called
    if REGNO is changing.  MODE is the mode of the assignment to REGNO, which
    is used to determine how many hard registers are being changed.  If MODE
@@ -2202,9 +2248,6 @@ cselib_invalidate_regno (unsigned int regno, machine_mode mode)
       while (*l)
 	{
 	  cselib_val *v = (*l)->elt;
-	  bool had_locs;
-	  rtx_insn *setting_insn;
-	  struct elt_loc_list **p;
 	  unsigned int this_last = i;
 
 	  if (i < FIRST_PSEUDO_REGISTER && v != NULL)
@@ -2219,44 +2262,7 @@ cselib_invalidate_regno (unsigned int regno, machine_mode mode)
 	    }
 
 	  /* We have an overlap.  */
-	  if (*l == REG_VALUES (i))
-	    {
-	      /* Maintain the invariant that the first entry of
-		 REG_VALUES, if present, must be the value used to set
-		 the register, or NULL.  This is also nice because
-		 then we won't push the same regno onto user_regs
-		 multiple times.  */
-	      (*l)->elt = NULL;
-	      l = &(*l)->next;
-	    }
-	  else
-	    unchain_one_elt_list (l);
-
-	  v = canonical_cselib_val (v);
-
-	  had_locs = v->locs != NULL;
-	  setting_insn = v->locs ? v->locs->setting_insn : NULL;
-
-	  /* Now, we clear the mapping from value to reg.  It must exist, so
-	     this code will crash intentionally if it doesn't.  */
-	  for (p = &v->locs; ; p = &(*p)->next)
-	    {
-	      rtx x = (*p)->loc;
-
-	      if (REG_P (x) && REGNO (x) == i)
-		{
-		  unchain_one_elt_loc_list (p);
-		  break;
-		}
-	    }
-
-	  if (had_locs && v->locs == 0 && !PRESERVED_VALUE_P (v->val_rtx))
-	    {
-	      if (setting_insn && DEBUG_INSN_P (setting_insn))
-		n_useless_debug_values++;
-	      else
-		n_useless_values++;
-	    }
+	  cselib_invalidate_regno_val (i, l);
 	}
     }
 }
@@ -2714,6 +2720,28 @@ fp_setter_insn (rtx_insn *insn)
   return true;
 }
 
+/* V is one of the values in REG_VALUES (REGNO).  Return true if it
+   would be invalidated by CALLEE_ABI.  */
+
+static bool
+cselib_invalidated_by_call_p (const function_abi &callee_abi,
+			      unsigned int regno, cselib_val *v)
+{
+  machine_mode mode = GET_MODE (v->val_rtx);
+  if (mode == VOIDmode)
+    {
+      v = REG_VALUES (regno)->elt;
+      if (!v)
+	/* If we don't know what the mode of the constant value is, and we
+	   don't know what mode the register was set in, conservatively
+	   assume that the register is clobbered.  The value's going to be
+	   essentially useless in this case anyway.  */
+	return true;
+      mode = GET_MODE (v->val_rtx);
+    }
+  return callee_abi.clobbers_reg_p (mode, regno);
+}
+
 /* Record the effects of INSN.  */
 
 void
@@ -2748,24 +2776,17 @@ cselib_process_insn (rtx_insn *insn)
     {
       function_abi callee_abi = insn_callee_abi (insn);
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (elt_list *values = REG_VALUES (i))
-	  {
-	    /* If we know what mode the value was set in, check whether
-	       it is still available after the call in that mode.  If we
-	       don't know the mode, we have to check for the worst-case
-	       scenario instead.  */
-	    if (values->elt)
-	      {
-		machine_mode mode = GET_MODE (values->elt->val_rtx);
-		if (callee_abi.clobbers_reg_p (mode, i))
-		  cselib_invalidate_regno (i, mode);
-	      }
-	    else
-	      {
-		if (callee_abi.clobbers_at_least_part_of_reg_p (i))
-		  cselib_invalidate_regno (i, reg_raw_mode[i]);
-	      }
-	  }
+	{
+	  elt_list **l = &REG_VALUES (i);
+	  while (*l)
+	    {
+	      cselib_val *v = (*l)->elt;
+	      if (v && cselib_invalidated_by_call_p (callee_abi, i, v))
+		cselib_invalidate_regno_val (i, l);
+	      else
+		l = &(*l)->next;
+	    }
+	}
 
       /* Since it is not clear how cselib is going to be used, be
 	 conservative here and treat looping pure or const functions

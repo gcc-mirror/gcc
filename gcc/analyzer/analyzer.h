@@ -78,8 +78,10 @@ extern bool is_special_named_call_p (const gcall *call, const char *funcname,
 extern bool is_named_call_p (tree fndecl, const char *funcname);
 extern bool is_named_call_p (tree fndecl, const char *funcname,
 			     const gcall *call, unsigned int num_args);
-extern bool is_setjmp_call_p (const gimple *stmt);
+extern bool is_setjmp_call_p (const gcall *call);
 extern bool is_longjmp_call_p (const gcall *call);
+
+extern const char *get_user_facing_name (const gcall *call);
 
 extern void register_analyzer_pass ();
 
@@ -98,17 +100,21 @@ public:
   ~auto_cfun () { pop_cfun (); }
 };
 
-/* Begin suppressing -Wformat and -Wformat-extra-args.  */
+/* Macros for temporarily suppressing -Wformat and -Wformat-extra-args,
+   for those versions of GCC that support pragmas within a function
+   (4.6 onwards).  */
 
-#define PUSH_IGNORE_WFORMAT \
+#if GCC_VERSION >= 4006
+# define PUSH_IGNORE_WFORMAT \
   _Pragma("GCC diagnostic push") \
   _Pragma("GCC diagnostic ignored \"-Wformat\"") \
   _Pragma("GCC diagnostic ignored \"-Wformat-extra-args\"")
-
-/* Finish suppressing -Wformat and -Wformat-extra-args.  */
-
-#define POP_IGNORE_WFORMAT \
+# define POP_IGNORE_WFORMAT \
   _Pragma("GCC diagnostic pop")
+#else
+# define PUSH_IGNORE_WFORMAT
+# define POP_IGNORE_WFORMAT
+#endif
 
 /* A template for creating hash traits for a POD type.  */
 

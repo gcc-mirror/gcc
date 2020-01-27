@@ -818,12 +818,14 @@ diagnostic_manager::add_events_for_eedge (const exploded_edge &eedge,
     case PK_BEFORE_STMT:
       {
 	const gimple *stmt = dst_point.get_stmt ();
-	if (is_setjmp_call_p (stmt))
+	const gcall *call = dyn_cast <const gcall *> (stmt);
+	if (call && is_setjmp_call_p (call))
 	  emission_path->add_event
 	    (new setjmp_event (stmt->location,
 			       dst_node,
 			       dst_point.get_fndecl (),
-			       dst_stack_depth));
+			       dst_stack_depth,
+			       call));
 	else
 	  emission_path->add_event
 	    (new statement_event (stmt,
