@@ -1,3 +1,8 @@
+2020-01-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90731
+	* decl.c (grokdeclarator): Propagate eh spec from typedef.
+
 2020-01-28  Martin Liska  <mliska@suse.cz>
 
 	PR c++/92440

@@ -12848,6 +12848,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  memfn_quals |= type_memfn_quals (type);
 	  rqual = type_memfn_rqual (type);
 	  type_quals = TYPE_UNQUALIFIED;
+	  raises = TYPE_RAISES_EXCEPTIONS (type);
 	}
     }
 
