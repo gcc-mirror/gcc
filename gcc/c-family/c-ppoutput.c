@@ -187,14 +187,9 @@ scan_translation_unit (cpp_reader *pfile)
     {
       location_t loc = UNKNOWN_LOCATION;
       const cpp_token *token = cpp_get_token_with_location (pfile, &loc);
-      cpp_token tmp;
       if (filter)
 	{
-	  /* The hook is permitted to rewrite the token.  So copy it.
-	     It'd be nice to do this neaterally.  */
-	  tmp = *token;
-	  token = &tmp;
-	  filter = lang_hooks.preprocess_token (pfile, &tmp, filter);
+	  filter = lang_hooks.preprocess_token (pfile, token, filter);
 	  if (!filter)
 	    {
 	      /* We're bailing out, possibly in the middle of a #if
@@ -308,7 +303,10 @@ scan_translation_unit (cpp_reader *pfile)
     }
 
   if (filter)
-    filter = lang_hooks.preprocess_token (pfile, NULL, filter);
+    {
+      filter = lang_hooks.preprocess_token (pfile, NULL, filter);
+      gcc_checking_assert (!filter);
+    }
 }
 
 static void

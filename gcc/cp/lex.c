@@ -384,7 +384,7 @@ interface_strcmp (const char* s)
    is a hand-coded co-routine!  */
 
 void *
-module_preprocess_token (cpp_reader *pfile, cpp_token *tok, void *data_)
+module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, void *data_)
 {
   enum mode_sm
   {
@@ -428,11 +428,6 @@ module_preprocess_token (cpp_reader *pfile, cpp_token *tok, void *data_)
       return data;
     }
 
-  if (tok->type == CPP_PADDING || tok->type == CPP_COMMENT)
-    // FIXME: I don't think these can occur now?
-    /* Unchanged state.  */
-    return data;
-
   tree ident = NULL_TREE;
   switch (data->mode)
     {
@@ -469,15 +464,8 @@ module_preprocess_token (cpp_reader *pfile, cpp_token *tok, void *data_)
 	{
 	  /* A header name.  The preprocessor will have already
 	     done include searching and canonicalization.  */
-	  tree string = build_string (tok->val.str.len,
-				      (const char *)tok->val.str.text);
-	  /* Rewrite the token we were given.  */
-	  tok->val.str.len = TREE_STRING_LENGTH (string);
-	  tok->val.str.text
-	    = (const unsigned char *)TREE_STRING_POINTER (string);
-	  tok->type = CPP_HEADER_NAME;
-
-	  ident = string;
+	  ident = build_string (tok->val.str.len,
+				(const char *)tok->val.str.text);
 	  data->is_header = true;
 	  data->header_loc = tok->src_loc;
 	  data->mode = msm_module_end;
@@ -486,6 +474,10 @@ module_preprocess_token (cpp_reader *pfile, cpp_token *tok, void *data_)
 
       switch (tok->type)
 	{
+	case CPP_PADDING:
+	case CPP_COMMENT:
+	  gcc_unreachable ();
+
 	default:
 	  data->mode = msm_module_end;
 	  break;
@@ -510,6 +502,7 @@ module_preprocess_token (cpp_reader *pfile, cpp_token *tok, void *data_)
 	case CPP_NAME:
 	  if (data->tok_ix & 1)
 	    {
+	      /* Got name instead of [.:].  */
 	      data->mode = msm_module_end;
 	      break;
 	    }

@@ -6941,7 +6941,7 @@ extern void set_identifier_kind			(tree, cp_identifier_kind);
 extern bool cxx_init				(void);
 extern void cxx_finish				(void);
 extern bool in_main_input_context		(void);
-extern void *module_preprocess_token (cpp_reader *, cpp_token *, void *);
+extern void *module_preprocess_token (cpp_reader *, const cpp_token *, void *);
 extern tree module_map_header (cpp_reader *, location_t, bool,
 			       const char *, size_t);
 

@@ -1,3 +1,16 @@
+2020-01-27  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/
+	* langhooks.h (preprocess_token): Take a const cpp_token pointer.
+	gcc/c-family/
+	* (c-ppoutput.c (scan_translation_unit): Preprocess lang hook
+	doesn't alter the token.
+
+	gcc/cp/
+	* cp-tree.h (module_preprocess_token): Take const cpp_token
+	pointer.
+	* lex.c (module_preprocess_token): Take const cpp_token.
+
 2020-01-24  Nathan Sidwell  <nathan@acm.org>
 
 	Merge master a1f6eff20e3bb32c5051e77093ee28faec2abca0
