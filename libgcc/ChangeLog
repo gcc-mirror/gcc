@@ -1,3 +1,13 @@
+2020-01-27  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/93403
+	* libgcov-profiler.c (__gcov_indirect_call_profiler_v4):
+	Call __gcov_indirect_call_profiler_body.
+	(__gcov_indirect_call_profiler_body): New.
+	(__gcov_indirect_call_profiler_v4_atomic): New.
+	* libgcov.h (__gcov_indirect_call_profiler_v4_atomic):
+	New declaration.
+
 2020-01-27  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/crti.S: Add RF16 object attribute.

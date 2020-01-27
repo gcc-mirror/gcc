@@ -199,8 +199,9 @@ struct indirect_call_tuple __gcov_indirect_call;
    as a pointer to a function.  */
 
 /* Tries to determine the most common value among its inputs. */
-void
-__gcov_indirect_call_profiler_v4 (gcov_type value, void* cur_func)
+static inline void
+__gcov_indirect_call_profiler_body (gcov_type value, void *cur_func,
+				    int use_atomic)
 {
   /* If the C++ virtual tables contain function descriptors then one
      function may have multiple descriptors and we need to dereference
@@ -208,10 +209,26 @@ __gcov_indirect_call_profiler_v4 (gcov_type value, void* cur_func)
   if (cur_func == __gcov_indirect_call.callee
       || (__LIBGCC_VTABLE_USES_DESCRIPTORS__
 	  && *(void **) cur_func == *(void **) __gcov_indirect_call.callee))
-    __gcov_topn_values_profiler_body (__gcov_indirect_call.counters, value, 0);
+    __gcov_topn_values_profiler_body (__gcov_indirect_call.counters, value,
+				      use_atomic);
 
   __gcov_indirect_call.callee = NULL;
 }
+
+void
+__gcov_indirect_call_profiler_v4 (gcov_type value, void *cur_func)
+{
+  __gcov_indirect_call_profiler_body (value, cur_func, 0);
+}
+
+#if GCOV_SUPPORTS_ATOMIC
+void
+__gcov_indirect_call_profiler_v4_atomic (gcov_type value, void *cur_func)
+{
+  __gcov_indirect_call_profiler_body (value, cur_func, 1);
+}
+#endif
+
 #endif
 
 #ifdef L_gcov_time_profiler

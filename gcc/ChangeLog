@@ -1,3 +1,10 @@
+2020-01-27  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/93403
+	* tree-profile.c (gimple_init_gcov_profiler): Generate
+	both __gcov_indirect_call_profiler_v4 and
+	__gcov_indirect_call_profiler_v4_atomic.
+
 2020-01-27  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/92822
