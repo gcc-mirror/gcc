@@ -1,5 +1,18 @@
 2020-01-27  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93451
+	* region-model.cc (tree_cmp): For the REAL_CST case, impose an
+	arbitrary order on NaNs relative to other NaNs and to non-NaNs;
+	const-correctness tweak.
+	(ana::selftests::build_real_cst_from_string): New function.
+	(ana::selftests::append_interesting_constants): New function.
+	(ana::selftests::test_tree_cmp_on_constants): New test.
+	(ana::selftests::test_canonicalization_4): New test.
+	(ana::selftests::analyzer_region_model_cc_tests): Call the new
+	tests.
+
+2020-01-27  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/93349
 	* engine.cc (run_checkers): Save and restore input_location.
 
