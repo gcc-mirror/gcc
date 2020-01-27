@@ -1,5 +1,13 @@
 2020-02-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/90691
+	* expr.c (fold_for_warn): Call maybe_constant_value.
+	* constexpr.c (struct constexpr_ctx): Add uid_sensitive bit-field.
+	(maybe_constant_value): Add uid_sensitive parm.
+	(get_fundef_copy): Don't copy if it's true.
+	(cxx_eval_call_expression): Don't instantiate if it's true.
+	(cxx_eval_outermost_constant_expr): Likewise.
+
 	PR c++/92852
 	* constexpr.c (maybe_constant_value): Don't unshare if the cached
 	value is the same as the argument.
