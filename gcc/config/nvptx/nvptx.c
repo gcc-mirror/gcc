@@ -6043,11 +6043,11 @@ nvptx_can_change_mode_class (machine_mode, machine_mode, reg_class_t)
 /* Implement TARGET_GOACC_ADJUST_PRIVATE_DECL.  Set "oacc gangprivate"
    attribute for gang-private variable declarations.  */
 
-void
+static tree
 nvptx_goacc_adjust_private_decl (tree decl, int level)
 {
   if (level != GOMP_DIM_GANG)
-    return;
+    return decl;
 
   if (!lookup_attribute ("oacc gangprivate", DECL_ATTRIBUTES (decl)))
     {
@@ -6060,6 +6060,8 @@ nvptx_goacc_adjust_private_decl (tree decl, int level)
       tree id = get_identifier ("oacc gangprivate");
       DECL_ATTRIBUTES (decl) = tree_cons (id, NULL, DECL_ATTRIBUTES (decl));
     }
+
+  return decl;
 }
 
 /* Implement TARGET_GOACC_EXPAND_ACCEL_VAR.  Place "oacc gangprivate"

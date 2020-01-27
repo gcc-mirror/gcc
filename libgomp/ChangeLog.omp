@@ -1,5 +1,9 @@
 2020-07-15  Julian Brown  <julian@codesourcery.com>
 
+	* testsuite/libgomp.oacc-c-c++-common/broadcast-many.c: New test.
+
+2020-07-15  Julian Brown  <julian@codesourcery.com>
+
 	* testsuite/libgomp.oacc-fortran/collapse-1.f90: Fix race condition.
 	* testsuite/libgomp.oacc-fortran/collapse-2.f90: Likewise.
 

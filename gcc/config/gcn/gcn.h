@@ -571,9 +571,8 @@ struct GTY(()) machine_function
   HOST_WIDE_INT local_vars;
   HOST_WIDE_INT callee_saves;
 
-  unsigned lds_allocated;
-  hash_map<tree, int> *lds_allocs;
-
+  unsigned HOST_WIDE_INT reduction_base;
+  unsigned HOST_WIDE_INT reduction_limit;
   vec<tree, va_gc> *reduc_decls;
 
   bool use_flat_addressing;
