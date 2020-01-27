@@ -1,5 +1,9 @@
 2020-01-27  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.c (arc_rtx_costs): Update mul64 cost.
+
+2020-01-27  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc-protos.h (gen_mlo): Remove.
 	(gen_mhi): Likewise.
 	* config/arc/arc.c (AUX_MULHI): Define.

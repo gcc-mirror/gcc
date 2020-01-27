@@ -5877,6 +5877,12 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
 		  nolimm = true;
 		if (satisfies_constraint_Clo (x))
 		  nolimm = true;
+		break;
+	      case MULT:
+		if (TARGET_MUL64_SET)
+		  if (SIGNED_INT12 (INTVAL (x)))
+		    nolimm = true;
+		break;
 	      default:
 		break;
 	      }
