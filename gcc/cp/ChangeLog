@@ -1,5 +1,8 @@
 2020-01-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/90731
+	* decl.c (grokdeclarator): Propagate eh spec from typedef.
+
 	PR c++/90966
 	* pt.c (tsubst_copy) [STRING_CST]: Don't use fold_convert.
 
