@@ -1,3 +1,8 @@
+2020-01-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/mips/mips.c (mips_declare_object_name)
+	[USE_GNU_UNIQUE_OBJECT]: Support use of gnu_unique_object.
+
 2020-01-27  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/93403
