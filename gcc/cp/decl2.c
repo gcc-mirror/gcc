@@ -1228,7 +1228,7 @@ is_late_template_attribute (tree attr, tree decl)
    the declaration itself is dependent, so all attributes should be applied
    at instantiation time.  */
 
-static tree
+tree
 splice_template_attributes (tree *attr_p, tree decl)
 {
   tree *p = attr_p;

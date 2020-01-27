@@ -11937,9 +11937,13 @@ grokdeclarator (const cp_declarator *declarator,
 	    attr_flags |= (int) ATTR_FLAG_FUNCTION_NEXT;
 	  if (declarator->kind == cdk_array)
 	    attr_flags |= (int) ATTR_FLAG_ARRAY_NEXT;
+	  /* Assume that any attributes that get applied late to templates will
+	     DTRT when applied to the declaration as a whole.  */
+	  tree late_attrs = splice_template_attributes (&attrs, type);
 	  returned_attrs = decl_attributes (&type,
 					    chainon (returned_attrs, attrs),
 					    attr_flags);
+	  returned_attrs = chainon (late_attrs, returned_attrs);
 	}
 
       inner_declarator = declarator->declarator;
