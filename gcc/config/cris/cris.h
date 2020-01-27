@@ -701,6 +701,9 @@ struct cum_args {int regs;};
 /* FIXME: Maybe define TARGET_CANONICALIZE_COMPARISON later, when
    playing with optimizations.  Definitely define SELECT_CC_MODE.  */
 
+#define REVERSIBLE_CC_MODE(MODE) true
+
+/* No known need to define REVERSE_CONDITION, the default is good.  */
 
 /* Node: Costs */
 
