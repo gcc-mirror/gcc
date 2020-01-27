@@ -1,6 +1,16 @@
 2020-02-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backport from mainline
+	2020-01-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/93434
+	* tree-predcom.c (split_data_refs_to_components): Record which
+	components have had aliasing loads removed.  Prevent store-store
+	commoning for all such components.
+
+2020-02-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backport from mainline
 	2019-11-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/92710

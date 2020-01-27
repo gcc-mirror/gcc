@@ -1,5 +1,10 @@
 2020-02-18  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR tree-optimization/93434
+	* gcc.c-torture/execute/pr93434.c: New test.
+
+2020-02-18  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR tree-optimization/92710
 	* gcc.dg/vect/pr92710.c: New test.
 
