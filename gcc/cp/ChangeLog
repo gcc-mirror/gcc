@@ -1,3 +1,10 @@
+2020-04-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90750
+	PR c++/79585
+	* decl.c (grokdeclarator): Move dependent attribute to decl.
+	* decl2.c (splice_template_attributes): No longer static.
+
 2020-04-21  Martin Sebor  <msebor@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 
