@@ -1,3 +1,8 @@
+2020-01-27  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* gcc.target/arm/armv8_2-fp16-move-1.c: Update following load/store
+	optimisation.
+
 2020-01-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93349
