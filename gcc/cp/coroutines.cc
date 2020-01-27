@@ -3526,14 +3526,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   /* Switch to using 'input_location' as the loc, since we're now more
      logically doing things related to the end of the function.  */
-  /* done, we just need the return value.  */
-  bool no_warning;
-  if (same_type_p (TREE_TYPE (gro), fn_return_type))
-    {
-      /* Already got the result.  */
-      r = check_return_expr (DECL_RESULT (orig), &no_warning);
-    }
-  else
+
+  /* The ramp is done, we just need the return value.  */
+  if (!same_type_p (TREE_TYPE (gro), fn_return_type))
     {
       /* construct the return value with a single GRO param.  */
       vec<tree, va_gc> *args = make_tree_vector_single (gro);
@@ -3545,6 +3540,13 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       add_stmt (r);
       release_tree_vector (args);
     }
+  /* Else the GRO is the return and we already built it in place.  */
+
+  bool no_warning;
+  r = check_return_expr (DECL_RESULT (orig), &no_warning);
+  if (error_operand_p (r) && warn_return_type)
+    /* Suppress -Wreturn-type for the ramp.  */
+    TREE_NO_WARNING (orig) = true;
 
   r = build_stmt (input_location, RETURN_EXPR, DECL_RESULT (orig));
   TREE_NO_WARNING (r) |= no_warning;

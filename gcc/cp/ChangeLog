@@ -1,3 +1,9 @@
+2020-01-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/93443
+	* coroutines.cc (morph_fn_to_coro): Check the ramp return
+	value when it is constructed from the 'get return object'.
+
 2020-01-27  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/91826
