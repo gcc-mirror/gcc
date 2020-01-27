@@ -1,5 +1,10 @@
 2020-01-28  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR tree-optimization/93434
+	* gcc.c-torture/execute/pr93434.c: New test.
+
+2020-01-28  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR testsuite/93460
 	* gcc.dg/torture/pr93170.c: Add -Wpsabi.
 
