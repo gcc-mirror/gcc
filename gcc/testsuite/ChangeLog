@@ -1,3 +1,8 @@
+2020-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/91171
+	* gcc.dg/graphite/scop-21.c: un-XFAIL.
+
 2020-01-27  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* gcc.target/arc/interrupt-6.c: Update test.
