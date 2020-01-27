@@ -1,3 +1,9 @@
+2020-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93397
+	* tree-vect-slp.c (vect_analyze_slp_instance): Delay
+	converted reduction chain SLP graph adjustment.
+
 2020-01-26  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/93436
