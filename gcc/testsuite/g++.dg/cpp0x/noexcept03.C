@@ -35,7 +35,7 @@ void f2(T a) noexcept (noexcept (f (a)))
   f(a);
 }
 
-struct A { A() { } };		// { dg-warning "does not throw" }
+struct A { A() { } };		// { dg-message "does not throw" }
 
 int main()
 {

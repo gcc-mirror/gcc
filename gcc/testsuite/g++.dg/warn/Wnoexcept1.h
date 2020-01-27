@@ -4,17 +4,6 @@
 using size_t = decltype(sizeof(42));
 inline void * operator new (size_t, void *p) noexcept { return p; }
 
-class NotNoexcept {
-public:
-  NotNoexcept() noexcept(false) {}
-  NotNoexcept(const NotNoexcept&) noexcept(false) {}
-  NotNoexcept(NotNoexcept &&) noexcept(false) {}
-  ~NotNoexcept() noexcept(false) {}
-
-  NotNoexcept&operator=(const NotNoexcept&) noexcept(false) { return *this;}
-  NotNoexcept&operator=(NotNoexcept &&) noexcept(false) {return *this;}
-};
-
 template<typename _Up, typename... _Args>
 void
 construct1(_Up* __p, _Args... __args)
@@ -33,5 +22,4 @@ public:
 
 private:
   size_t Bla;
-  NotNoexcept Dummy;
 };

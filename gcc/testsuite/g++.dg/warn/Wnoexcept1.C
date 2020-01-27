@@ -7,7 +7,7 @@
 // We expect a warning at the declaration of construct2, since Automatic2 is
 // defined below; we don't expect one for construct1, because Automatic1 is
 // defined in the fake system header.
-// { dg-warning "noexcept-expression" "" { target *-*-* } 26 }
+// { dg-warning "noexcept-expression" "" { target *-*-* } 15 }
 
 class Automatic2 {
 public:
@@ -15,7 +15,6 @@ public:
 
 private:
   size_t Bla;
-  NotNoexcept Dummy;
 };
 
 union U
