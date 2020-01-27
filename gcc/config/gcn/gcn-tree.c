@@ -329,14 +329,12 @@ gcn_goacc_get_worker_red_decl (tree type, unsigned offset)
     }
   else
     {
-      char name[50];
-      sprintf (name, ".oacc_reduction_%u", offset);
-      tree decl = create_tmp_var_raw (var_type, name);
+      gcc_assert (offset
+		  < (machfun->reduction_limit - machfun->reduction_base));
+      tree ptr_type = build_pointer_type (var_type);
+      tree addr = build_int_cst (ptr_type, machfun->reduction_base + offset);
 
-      DECL_CONTEXT (decl) = NULL_TREE;
-      TREE_STATIC (decl) = 1;
-
-      varpool_node::finalize_decl (decl);
+      tree decl = build_simple_mem_ref (addr);
 
       vec_safe_grow_cleared (machfun->reduc_decls, offset + 1, true);
       (*machfun->reduc_decls)[offset] = decl;
@@ -555,34 +553,36 @@ gcn_goacc_reduction (gcall *call)
 
 tree
 gcn_goacc_create_propagation_record (tree record_type, bool sender,
-				     const char *name)
+				     const char *name,
+				     unsigned HOST_WIDE_INT offset)
 {
-  tree type = record_type;
-
-  TYPE_ADDR_SPACE (type) = ADDR_SPACE_LDS;
+  tree type = build_qualified_type (record_type,
+				    TYPE_QUALS_NO_ADDR_SPACE (record_type)
+				    | ENCODE_QUAL_ADDR_SPACE (ADDR_SPACE_LDS));
 
   if (!sender)
-    type = build_pointer_type (type);
-
-  tree decl = create_tmp_var_raw (type, name);
-
-  if (sender)
     {
-      DECL_CONTEXT (decl) = NULL_TREE;
-      TREE_STATIC (decl) = 1;
+      tree ptr_type = build_pointer_type (type);
+      return create_tmp_var_raw (ptr_type, name);
     }
 
-  if (sender)
-    varpool_node::finalize_decl (decl);
+  if (record_type == char_type_node)
+    offset = 1;
 
-  return decl;
+  gcc_assert (cfun);
+
+  machine_function *machfun = cfun->machine;
+  unsigned HOST_WIDE_INT size = tree_to_uhwi (TYPE_SIZE_UNIT (record_type));
+
+  tree ptr_type = build_pointer_type (type);
+  return build_int_cst (ptr_type, offset);
 }
 
-void
+tree
 gcn_goacc_adjust_private_decl (tree var, int level)
 {
   if (level != GOMP_DIM_GANG)
-    return;
+    return var;
 
   tree type = TREE_TYPE (var);
   tree lds_type = build_qualified_type (type,
@@ -601,6 +601,8 @@ gcn_goacc_adjust_private_decl (tree var, int level)
 
   if (machfun)
     machfun->use_flat_addressing = true;
+
+  return var;
 }
 
 /* }}}  */

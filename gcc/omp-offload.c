@@ -1847,7 +1847,7 @@ maybe_discard_oacc_function (tree decl)
 struct addr_expr_rewrite_info
 {
   gimple *stmt;
-  hash_set<tree> *adjusted_vars;
+  hash_map<tree, tree> *adjusted_vars;
   bool avoid_pointer_conversion;
   bool modified;
 };
@@ -1861,19 +1861,20 @@ rewrite_addr_expr (tree *tp, int *walk_subtrees, void *data)
   if (TREE_CODE (*tp) == ADDR_EXPR)
     {
       tree arg = TREE_OPERAND (*tp, 0);
+      tree *new_arg = info->adjusted_vars->get (arg);
 
-      if (info->adjusted_vars->contains (arg))
+      if (new_arg)
 	{
 	  if (info->avoid_pointer_conversion)
 	    {
-	      *tp = build_fold_addr_expr (arg);
+	      *tp = build_fold_addr_expr (*new_arg);
 	      info->modified = true;
 	      *walk_subtrees = 0;
 	    }
 	  else
 	    {
 	      gimple_stmt_iterator gsi = gsi_for_stmt (info->stmt);
-	      tree repl = build_fold_addr_expr (arg);
+	      tree repl = build_fold_addr_expr (*new_arg);
 	      gimple *stmt1
 		= gimple_build_assign (make_ssa_name (TREE_TYPE (repl)), repl);
 	      tree conv = convert_to_pointer (TREE_TYPE (*tp),
@@ -1886,6 +1887,15 @@ rewrite_addr_expr (tree *tp, int *walk_subtrees, void *data)
 	      info->modified = true;
 	      *walk_subtrees = 0;
 	    }
+	}
+    }
+  else if (TREE_CODE (*tp) == VAR_DECL)
+    {
+      tree *new_decl = info->adjusted_vars->get (*tp);
+      if (new_decl)
+	{
+	  *tp = *new_decl;
+	  info->modified = true;
 	}
     }
 
@@ -1921,7 +1931,8 @@ is_sync_builtin_call (gcall *call)
 
 tree
 default_goacc_create_propagation_record (tree record_type, bool sender,
-					 const char *name)
+					 const char *name,
+					 unsigned HOST_WIDE_INT ARG_UNUSED (offset))
 {
   tree type = record_type;
 
@@ -2096,8 +2107,106 @@ execute_oacc_loop_designation ()
 int
 execute_oacc_gimple_workers (void)
 {
-  oacc_do_neutering ();
-  calculate_dominance_info (CDI_DOMINATORS);
+  unsigned HOST_WIDE_INT reduction_size[GOMP_DIM_MAX];
+  unsigned HOST_WIDE_INT private_size[GOMP_DIM_MAX];
+
+  for (unsigned i = 0; i < GOMP_DIM_MAX; i++)
+    {
+      reduction_size[i] = 0;
+      private_size[i] = 0;
+    }
+
+  /* Calculate shared memory size required for reduction variables and
+     gang-private memory for this offloaded function.  */
+  basic_block bb;
+  FOR_ALL_BB_FN (bb, cfun)
+    {
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+	   !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  if (!is_gimple_call (stmt))
+	    continue;
+	  gcall *call = as_a <gcall *> (stmt);
+	  if (!gimple_call_internal_p (call))
+	    continue;
+	  enum internal_fn ifn_code = gimple_call_internal_fn (call);
+	  switch (ifn_code)
+	    {
+	    default: break;
+	    case IFN_GOACC_REDUCTION:
+	      if (integer_minus_onep (gimple_call_arg (call, 3)))
+		continue;
+	      else
+		{
+		  unsigned code = TREE_INT_CST_LOW (gimple_call_arg (call, 0));
+		  /* Only count reduction variables once: the choice to pick
+		     the setup call is fairly arbitrary.  */
+		  if (code == IFN_GOACC_REDUCTION_SETUP)
+		    {
+		      int level = TREE_INT_CST_LOW (gimple_call_arg (call, 3));
+		      tree var = gimple_call_arg (call, 2);
+		      tree offset = gimple_call_arg (call, 5);
+		      tree var_type = TREE_TYPE (var);
+		      unsigned HOST_WIDE_INT limit
+			= tree_to_uhwi (offset)
+			  + tree_to_uhwi (TYPE_SIZE_UNIT (var_type));
+		      reduction_size[level]
+			= MAX (reduction_size[level], limit);
+		    }
+		}
+	      break;
+	    case IFN_UNIQUE:
+	      {
+		enum ifn_unique_kind kind
+		  = ((enum ifn_unique_kind)
+		     TREE_INT_CST_LOW (gimple_call_arg (call, 0)));
+
+		if (kind == IFN_UNIQUE_OACC_PRIVATE)
+		  {
+		    HOST_WIDE_INT level
+		      = TREE_INT_CST_LOW (gimple_call_arg (call, 2));
+		    if (level == -1)
+		      break;
+		    for (unsigned i = 3;
+			 i < gimple_call_num_args (call);
+			 i++)
+		      {
+			tree arg = gimple_call_arg (call, i);
+			gcc_assert (TREE_CODE (arg) == ADDR_EXPR);
+			tree decl = TREE_OPERAND (arg, 0);
+			unsigned HOST_WIDE_INT align = DECL_ALIGN_UNIT (decl);
+			private_size[level] = ((private_size[level] + align - 1)
+					       & ~(align - 1));
+			unsigned HOST_WIDE_INT decl_size
+			  = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (decl)));
+			private_size[level] += decl_size;
+		      }
+		  }
+	      }
+	      break;
+	    }
+	}
+    }
+
+  int dims[GOMP_DIM_MAX];
+
+  for (unsigned i = 0; i < GOMP_DIM_MAX; i++)
+    dims[i] = oacc_get_fn_dim_size (current_function_decl, i);
+
+  /* Find bounds of shared-memory buffer space we can use.  */
+  unsigned HOST_WIDE_INT bounds_lo = 0, bounds_hi = 0;
+  if (targetm.goacc.shared_mem_layout)
+    targetm.goacc.shared_mem_layout (&bounds_lo, &bounds_hi, dims,
+				     private_size, reduction_size);
+
+  /* Perform worker partitioning unless we know the number of workers is 1.  */
+  if (dims[GOMP_DIM_WORKER] != 1)
+    {
+      oacc_do_neutering (bounds_lo, bounds_hi);
+      calculate_dominance_info (CDI_DOMINATORS);
+    }
   return 0;
 }
 
@@ -2114,7 +2223,7 @@ execute_oacc_device_lower ()
   for (unsigned i = 0; i < GOMP_DIM_MAX; i++)
     dims[i] = oacc_get_fn_dim_size (current_function_decl, i);
 
-  hash_set<tree> adjusted_vars;
+  hash_map<tree, tree> adjusted_vars;
 
   /* Now lower internal loop functions to target-specific code
      sequences.  */
@@ -2221,9 +2330,11 @@ execute_oacc_device_lower ()
 			if (targetm.goacc.adjust_private_decl)
 			  {
 			    tree oldtype = TREE_TYPE (decl);
-			    targetm.goacc.adjust_private_decl (decl, level);
-			    if (TREE_TYPE (decl) != oldtype)
-			      adjusted_vars.add (decl);
+			    tree newdecl
+			      = targetm.goacc.adjust_private_decl (decl, level);
+			    if (TREE_TYPE (newdecl) != oldtype
+				|| newdecl != decl)
+			      adjusted_vars.put (decl, newdecl);
 			  }
 		      }
 		    remove = true;
@@ -2398,22 +2509,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  virtual bool gate (function *fun)
   {
-    if (!flag_openacc || !targetm.goacc.worker_partitioning)
-      return false;
-
-    tree attr = oacc_get_fn_attrib (current_function_decl);
-
-    if (!attr)
-      /* Not an offloaded function.  */
-      return false;
-
-    int worker_dim
-      = oacc_get_fn_dim_size (current_function_decl, GOMP_DIM_WORKER);
-
-    /* No worker partitioning if we know the number of workers is 1.  */
-    return worker_dim != 1;
+    return flag_openacc
+	   && targetm.goacc.worker_partitioning
+	   && oacc_get_fn_attrib (fun->decl);
   };
 
   virtual unsigned int execute (function *)

@@ -27,6 +27,6 @@ typedef auto_vec<bb_pair_t> bb_pair_vec_t;
 
 extern void omp_find_sese (auto_vec<basic_block> &blocks,
 			   bb_pair_vec_t &regions);
-extern void oacc_do_neutering (void);
+extern void oacc_do_neutering (unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT);
 
 #endif

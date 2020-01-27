@@ -1,5 +1,71 @@
 2020-07-15  Julian Brown  <julian@codesourcery.com>
 
+	* config/gcn/gcn-protos.h (gcn_goacc_adjust_private_decl): Update
+	prototype.
+	* config/gcn/gcn-tree.c (gcn_goacc_get_worker_red_decl): Use
+	preallocated block of LDS memory.
+	(gcn_goacc_create_propagation_record): Add OFFSET parameter, and return
+	temporary LDS space at that offset.  Return pointer in "sender" case.
+	(gcn_goacc_adjust_private_decl): Return var.
+	* config/gcn/gcn.c (acc_lds_size, gangprivate_hwm, lds_allocs): New
+	global vars.
+	(ACC_LDS_SIZE): Define as acc_lds_size.
+	(gcn_init_machine_status): Don't initialise lds_allocated and
+	lds_allocs fields of machine function struct.
+	(gcn_option_override): Handle default size for gang-private variables
+	and -mgang-local-size option.
+	(gcn_expand_prologue): Use LDS_SIZE instead of LDS_SIZE-1 when
+	initialising M0_REG.
+	(gcn_shared_mem_layout): New function.
+	(gcn_print_lds_decl): Update comment. Use global lds_allocs map and
+	gangprivate_hwm variable.
+	(TARGET_GOACC_SHARED_MEM_LAYOUT): Define target hook.
+	* config/gcn/gcn.h (machine_function): Remove lds_allocated,
+	lds_allocs. Add reduction_base, reduction_limit.
+	* config/gcn/gcn.opt (gang_local_size_opt): New global.
+	(mgang-local-size=): New option.
+	* config/nvptx/nvptx.c (nvptx_goacc_adjust_private_decl): Return var.
+	* doc/tm.texi.in (TARGET_GOACC_SHARED_MEM_LAYOUT): Place documentation
+	hook.
+	* doc/tm.texi: Regenerate.
+	* omp-offload.c (addr_expr_rewrite_info): Change adjusted_vars to a
+	hash_map.
+	(rewrite_addr_expr): Rewrite VAR_DECLs also.
+	(default_goacc_create_propagation_record): Add OFFSET parameter.
+	(execute_oacc_gimple_workers): Calculate per-function reduction
+	temporary and private-variable size.  Call OpenACC shared_mem_layout
+	hook.  Move num_workers==1 handling here.
+	(execute_oacc_device_lower): Fix for adjusted_vars being a hash_map
+	rather than a hash_set.
+	(pass_oacc_gimple_workers::gate): Remove num_workers==1 handling from
+	here.  Enable pass for all OpenACC routines in order to call shared
+	memory-layout hook.
+	* omp-sese.c (targhooks.h, diagnostic-core.h): Add includes.
+	(build_sender_ref): Handle sender_decl being pointer.
+	(worker_single_copy): Add PLACEMENT and ISOLATE_BROADCASTS parameters.
+	Pass placement argument to create_propagation_record hook invocations.
+	Handle sender_decl being pointer and isolate_broadcasts inserting extra
+	barriers.
+	(blk_offset_map_t): Add typedef.
+	(neuter_worker_single): Add BLK_OFFSET_MAP parameter.  Pass
+	preallocated range to worker_single_copy call.
+	(dfs_broadcast_reachable_1): New function.
+	(idx_decl_pair_t, used_range_vec_t): New typedefs.
+	(sort_size_descending): New function.
+	(addr_range): New class.
+	(splay_tree_compare_addr_range, splay_tree_free_key, first_fit_range,
+	merge_ranges_1, merge_ranges): New functions.
+	(oacc_do_neutering): Add BOUNDS_LO, BOUNDS_HI parameters.  Arrange
+	layout of shared memory for broadcast operations.
+	* omp-sese.h (oacc_do_neutering): Update prototype.
+	* target.def (adjust_private_decl): Change return type to tree.
+	(create_propagation_record): Add OFFSET parameter.
+	(shared_mem_layout): New hook.
+	* targhooks.h (default_goacc_create_propagation_record): Update
+	prototype.
+
+2020-07-15  Julian Brown  <julian@codesourcery.com>
+
 	* omp-offload.c (pass_oacc_gimple_workers::gate): Disable worker
 	partitioning if num_workers is 1.
 
