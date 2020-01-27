@@ -147,6 +147,7 @@
 	(not (match_test "dead_or_set_regno_p (insn, CRIS_SRP_REGNUM)")))
    (nil) (nil)])
 
+(define_attr "enabled" "no,yes" (const_string "yes"))
 
 ;; Iterator definitions.
 
@@ -445,6 +446,15 @@
       && operands[1] != const0_rtx
       && can_create_pseudo_p ())
     operands[1] = force_reg (SImode, operands[1]);
+
+   /* At post-reload time, we'll get here for e.g. split multi-mode insns
+      with a memory destination.  Go directly to the clobber-less variant.
+      FIXME: Also applies to zero source.  */
+   if (MEM_P (operands[0]) && reload_completed)
+     {
+        emit_insn (gen_rtx_SET (operands[0], operands[1]));
+        DONE;
+     }
 })
 
 (define_insn "*movsi_internal"
@@ -650,6 +660,43 @@
    move %1,%0
    move %1,%0"
   [(set_attr "slottable" "yes,yes,yes,yes,yes,no,no,no,yes,yes,yes,no,yes,no")])
+
+;; Post-reload, for memory destinations, split the clobber-variant and
+;; get rid of the clobber.
+
+(define_split ;; "*mov_tomem<mode>_split"
+  [(set (match_operand:BWD 0 "memory_operand")
+	(match_operand:BWD 1 "nonmemory_operand"))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
+  "reload_completed"
+  [(set (match_dup 0) (match_dup 1))]
+  "")
+
+;; Exclude moving special-registers to memory from matching for
+;; less-than-SImode, as they are SImode only (or actually, the size of
+;; the register, but the ones free for "x" are naturally SImode; see
+;; special measures taken for reload).
+;; This might be a belt-and-suspenders thing, as a move from special
+;; register to memory in less-than-SImode should not have made it here.
+
+(define_mode_attr mov_tomem_enabled
+  [(SI "yes,yes,yes,yes,yes,yes")
+   (HI "yes,yes,no,yes,yes,no")
+   (QI "yes,yes,no,yes,yes,no")])
+
+(define_insn "*mov_tomem<mode>"
+  [(set (match_operand:BWD 0 "memory_operand"   "=Q>,Q>,Q>,m,m,m")
+	(match_operand:BWD 1 "nonmemory_operand" "M, r, x, M,r,x"))]
+  "reload_completed"
+  "@
+   clear<m> %0
+   move<m> %1,%0
+   move %1,%0
+   clear<m> %0
+   move<m> %1,%0
+   move %1,%0"
+  [(set_attr "slottable" "yes,yes,yes,no,no,no")
+   (set_attr "enabled" "<mov_tomem_enabled>")])
 
 ;; Movem patterns.  Primarily for use in function prologue and epilogue.
 ;; Unfortunately, movem stores R0 in the highest memory location, thus

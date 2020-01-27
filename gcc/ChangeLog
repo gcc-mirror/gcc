@@ -42,6 +42,13 @@
 
 	* config/cris/cris.h (REVERSIBLE_CC_MODE): Define to true.
 
+	* config/cris/cris.md ("movsi"): For memory destination
+	post-reload, generate clobberless variant.
+	("*mov_tomem<mode>_split"): New split.
+	("*mov_tomem<mode>"): New insn.
+	("enabled", mov_tomem_enabled): Define and use to exclude "x" ->
+	"Q>m" for less-than-SImode.
+
 2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira-color.c (update_costs_from_allocno): Remove
