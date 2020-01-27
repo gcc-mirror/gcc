@@ -1,3 +1,9 @@
+2020-01-27  Martin Liska  <mliska@suse.cz>
+
+	PR target/93274
+	* gcc.target/i386/pr81213.c: Adjust to not expect
+	a globally unique name.
+
 2020-01-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/93397

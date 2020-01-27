@@ -1,3 +1,10 @@
+2020-01-27  Martin Liska  <mliska@suse.cz>
+
+	PR target/93274
+	* config/i386/i386-features.c (make_resolver_func):
+	Align the code with ppc64 target implementation.
+	Do not generate a unique name for resolver function.
+
 2020-01-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/93397
