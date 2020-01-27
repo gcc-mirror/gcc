@@ -1,4 +1,31 @@
 2020-01-27  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-protos.h (gen_mlo): Remove.
+	(gen_mhi): Likewise.
+	* config/arc/arc.c (AUX_MULHI): Define.
+	(arc_must_save_reister): Special handling for r58/59.
+	(arc_compute_frame_size): Consider mlo/mhi registers.
+	(arc_save_callee_saves): Emit fp/sp move only when emit_move
+	paramter is true.
+	(arc_conditional_register_usage): Remove TARGET_BIG_ENDIAN from
+	mlo/mhi name selection.
+	(arc_restore_callee_saves): Don't early restore blink when ISR.
+	(arc_expand_prologue): Add mlo/mhi saving.
+	(arc_expand_epilogue): Add mlo/mhi restoring.
+	(gen_mlo): Remove.
+	(gen_mhi): Remove.
+	* config/arc/arc.h (DBX_REGISTER_NUMBER): Correct register
+	numbering when MUL64 option is used.
+	(DWARF2_FRAME_REG_OUT): Define.
+	* config/arc/arc.md (arc600_stall): New pattern.
+	(VUNSPEC_ARC_ARC600_STALL): Define.
+	(mulsi64): Use correct mlo/mhi registers.
+	(mulsi_600): Clean it up.
+	* config/arc/predicates.md (mlo_operand): Remove any dependency on
+	TARGET_BIG_ENDIAN.
+	(mhi_operand): Likewise.
+
+2020-01-27  Claudiu Zissulescu  <claziss@synopsys.com>
 	    Petro Karashchenko  <petro.karashchenko@ring.com>
 
 	* config/arc/arc.c (arc_is_uncached_mem_p): Check struct

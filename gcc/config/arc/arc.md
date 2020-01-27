@@ -164,6 +164,7 @@
   VUNSPEC_ARC_BLOCKAGE
   VUNSPEC_ARC_EH_RETURN
   VUNSPEC_ARC_ARC600_RTIE
+  VUNSPEC_ARC_ARC600_STALL
   VUNSPEC_ARC_LDDI
   VUNSPEC_ARC_STDI
   ])
@@ -2238,6 +2239,9 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    (set_attr "predicable" "no, no, yes")
    (set_attr "cond" "nocond, canuse_limm, canuse")])
 
+; The gcc-internal representation may differ from the hardware
+; register number in order to allow the generic code to correctly
+; split the concatenation of mhi and mlo.
 (define_insn_and_split "mulsi64"
  [(set (match_operand:SI 0 "register_operand"            "=w")
 	(mult:SI (match_operand:SI 1 "register_operand"  "%c")
@@ -2247,12 +2251,13 @@ core_3, archs4x, archs4xd, archs4xd_slow"
  "#"
  "TARGET_MUL64_SET && reload_completed"
   [(const_int 0)]
-{
-  emit_insn (gen_mulsi_600 (operands[1], operands[2],
-			gen_mlo (), gen_mhi ()));
-  emit_move_insn (operands[0], gen_mlo ());
-  DONE;
-}
+  {
+   rtx mhi = gen_rtx_REG (SImode, R59_REG);
+   rtx mlo = gen_rtx_REG (SImode, R58_REG);
+   emit_insn (gen_mulsi_600 (operands[1], operands[2], mlo, mhi));
+   emit_move_insn (operands[0], mlo);
+   DONE;
+  }
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
@@ -2262,23 +2267,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 		 (match_operand:SI 1 "nonmemory_operand" "Rcq#q,cL,I,Cal")))
    (clobber (match_operand:SI 3 "mhi_operand" ""))]
   "TARGET_MUL64_SET"
-; The assembler mis-assembles mul64 / mulu64 with "I" constraint constants,
-; using a machine code pattern that only allows "L" constraint constants.
-;  "mul64%? \t0, %0, %1%&"
-{
-  if (satisfies_constraint_I (operands[1])
-      && !satisfies_constraint_L (operands[1]))
-    {
-      /* MUL64 <0,>b,s12 00101bbb10000100 0BBBssssssSSSSSS  */
-      int n = true_regnum (operands[0]);
-      int i = INTVAL (operands[1]);
-      asm_fprintf (asm_out_file, "\t.short %d`", 0x2884 + ((n & 7) << 8));
-      asm_fprintf (asm_out_file, "\t.short %d`",
-		   ((i & 0x3f) << 6) + ((i >> 6) & 0x3f) + ((n & 070) << 9));
-      return "; mul64%? \t0, %0, %1%&";
-    }
-  return "mul64%? \t0, %0, %1%&";
-}
+  "mul64%?\\t0,%0,%1"
   [(set_attr "length" "*,4,4,8")
    (set_attr "iscompact" "maybe,false,false,false")
    (set_attr "type" "multi,multi,multi,multi")
@@ -4296,6 +4285,14 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   ""
   [(set_attr "length" "0")
    (set_attr "type" "block")]
+)
+
+(define_insn "arc600_stall"
+  [(unspec_volatile [(const_int 0)] VUNSPEC_ARC_ARC600_STALL)]
+  "TARGET_MUL64_SET"
+  "mov\\t0,mlo\t;wait until multiply complete."
+  [(set_attr "length" "4")
+   (set_attr "type" "move")]
 )
 
 ;; Split up troublesome insns for better scheduling.
