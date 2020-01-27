@@ -1682,7 +1682,7 @@ extract_code_and_val_from_cond_with_ops (tree name, enum tree_code cond_code,
    (to transform signed values into unsigned) and at the end xor
    SGNBIT back.  */
 
-static wide_int
+wide_int
 masked_increment (const wide_int &val_in, const wide_int &mask,
 		  const wide_int &sgnbit, unsigned int prec)
 {

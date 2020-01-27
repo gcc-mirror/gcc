@@ -1833,6 +1833,9 @@ operator_logical_and::op2_range (irange &r, tree type,
 class operator_bitwise_and : public range_operator
 {
 public:
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &lh,
+			   const irange &rh) const;
   virtual bool op1_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op2) const;
@@ -1844,7 +1847,90 @@ public:
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
 		        const wide_int &rh_ub) const;
+private:
+  void simple_op1_range_solver (irange &r, tree type,
+				const irange &lhs,
+				const irange &op2) const;
+  void remove_impossible_ranges (irange &r, const irange &rh) const;
 } op_bitwise_and;
+
+static bool
+unsigned_singleton_p (const irange &op)
+{
+  tree mask;
+  if (op.singleton_p (&mask))
+    {
+      wide_int x = wi::to_wide (mask);
+      return wi::ge_p (x, 0, TYPE_SIGN (op.type ()));
+    }
+  return false;
+}
+
+void
+operator_bitwise_and::remove_impossible_ranges (irange &r,
+						const irange &rh) const
+{
+  if (!unsigned_singleton_p (rh))
+    return;
+
+  tree tmask;
+  rh.singleton_p (&tmask);
+  if (!tree_fits_uhwi_p (tmask)) // FIXME: Rewrite to wide_int's.
+    return;
+  unsigned HOST_WIDE_INT mask = tree_to_uhwi (tmask);
+  tree type = r.type ();
+  unsigned prec = TYPE_PRECISION (type);
+  unsigned leading_zeros = __builtin_clz (mask);
+  if (prec <= leading_zeros)
+    return;
+  widest_irange impossible_ranges;
+
+  /* We know that starting at the most significant bit, any 0 number is
+     impossible, so the following ranges are impossible:
+
+	x & 0b1001 1010
+
+	    0b01xx xxxx   [0100 0000, 0111 1111]
+	    0b001x xxxx   [0010 0000, 0011 1111]
+	    0b0000 01xx   [0000 0100, 0000 0111]
+	    0b0000 0001   [0000 0001, 0000 0001]
+  */
+  for (unsigned int i = 0; i <= prec - leading_zeros - 1; ++i)
+    if ((mask & (1 << i)) == 0)
+      {
+	tree lb = fold_build2 (LSHIFT_EXPR, type,
+			       build_one_cst (type),
+			       build_int_cst (type, i));
+	tree ub_left = fold_build1 (BIT_NOT_EXPR, type,
+				    fold_build2 (LSHIFT_EXPR, type,
+						 build_minus_one_cst (type),
+						 build_int_cst (type, i)));
+	tree ub_right = fold_build2 (LSHIFT_EXPR, type,
+				     build_one_cst (type),
+				     build_int_cst (type, i));
+	tree ub = fold_build2 (BIT_IOR_EXPR, type, ub_left, ub_right);
+	impossible_ranges.union_ (int_range<1> (lb, ub));
+      }
+  if (!impossible_ranges.undefined_p ())
+    {
+      impossible_ranges.invert ();
+      r.intersect (impossible_ranges);
+    }
+}
+
+bool
+operator_bitwise_and::fold_range (irange &r, tree type,
+				  const irange &lh,
+				  const irange &rh) const
+{
+  if (range_operator::fold_range (r, type, lh, rh))
+    {
+      remove_impossible_ranges (r, rh);
+      return true;
+    }
+  return false;
+}
+
 
 // Optimize BIT_AND_EXPR and BIT_IOR_EXPR in terms of a mask if
 // possible.  Basically, see if we can optimize:
@@ -2023,10 +2109,89 @@ operator_bitwise_and::wi_fold (irange &r, tree type,
     value_range_with_overflow (r, type, new_lb, new_ub);
 }
 
-static bool
-unsigned_mask_p (tree type, const irange &op)
+// FIXME: Eventually move tree-vrp.c version here.
+wide_int
+masked_increment (const wide_int &val_in, const wide_int &mask,
+		  const wide_int &sgnbit, unsigned int prec);
+
+void
+operator_bitwise_and::simple_op1_range_solver (irange &r, tree type,
+					       const irange &lhs,
+					       const irange &op2) const
 {
-  return (TYPE_UNSIGNED (type) && op.singleton_p ());
+  if (!op2.singleton_p ())
+    {
+      // We bail on anything that's not a singleton mask, but at least
+      // we can determine non-zeroness.
+      if (!lhs.contains_p (build_zero_cst (type)))
+	r = range_nonzero (type);
+      else
+	r.set_varying (type);
+      return;
+    }
+  unsigned int nprec = TYPE_PRECISION (type);
+  wide_int cst2v = op2.lower_bound ();
+  bool cst2n = wi::neg_p (cst2v, TYPE_SIGN (type));
+  wide_int sgnbit;
+  if (cst2n)
+    sgnbit = wi::set_bit_in_zero (nprec - 1, nprec);
+  else
+    sgnbit = wi::zero (nprec);
+
+  // Solve [lhs.lower_bound (), +INF] = x & MASK.
+  //
+  // Minimum unsigned value for >= if (VAL & CST2) == VAL is VAL and
+  // maximum unsigned value is ~0.  For signed comparison, if CST2
+  // doesn't have most significant bit set, handle it similarly.  If
+  // CST2 has MSB set, the minimum is the same, and maximum is ~0U/2.
+  wide_int valv = lhs.lower_bound ();
+  wide_int minv = valv & cst2v, maxv;
+  bool we_know_nothing = false;
+  if (minv != valv)
+    {
+      /* If (VAL & CST2) != VAL, X & CST2 can't be equal to
+	 VAL.  */
+      minv = masked_increment (valv, cst2v, sgnbit, nprec);
+      if (minv == valv)
+	{
+	  r.set_varying (type);
+	  we_know_nothing = true;
+	  // If we can't determine anything on this bound, fall
+	  // through and conservatively solve for the other end point.
+	}
+    }
+  maxv = wi::mask (nprec - (cst2n ? 1 : 0), false, nprec);
+  r = int_range<1> (type, minv, maxv);
+
+  // Solve [-INF, lhs.upper_bound ()] = x & MASK.
+  //
+  // Minimum unsigned value for <= is 0 and maximum unsigned value is
+  // VAL | ~CST2 if (VAL & CST2) == VAL.  Otherwise, find smallest
+  // VAL2 where
+  // VAL2 > VAL && (VAL2 & CST2) == VAL2 and use (VAL2 - 1) | ~CST2
+  // as maximum.
+  // For signed comparison, if CST2 doesn't have most significant bit
+  // set, handle it similarly.  If CST2 has MSB set, the maximum is
+  // the same and minimum is INT_MIN.
+  valv = lhs.upper_bound ();
+  minv = valv & cst2v;
+  if (minv == valv)
+    maxv = valv;
+  else
+    {
+      maxv = masked_increment (valv, cst2v, sgnbit, nprec);
+      if (maxv == valv)
+	{
+	  if (we_know_nothing)
+	    r.set_undefined ();
+	  return;
+	}
+      maxv -= 1;
+    }
+  maxv |= ~cst2v;
+  minv = sgnbit;
+  int_range<1> upper_bits (type, minv, maxv);
+  r.intersect (upper_bits);
 }
 
 bool
@@ -2038,39 +2203,23 @@ operator_bitwise_and::op1_range (irange &r, tree type,
   if (types_compatible_p (type, boolean_type_node))
     return op_logical_and.op1_range (r, type, lhs, op2);
 
-  if (unsigned_mask_p (type, op2))
+  if (lhs.num_pairs () == 1)
+    simple_op1_range_solver (r, type, lhs, op2);
+  else
     {
-      tree mask;
-      op2.singleton_p (&mask);
-
-      if (lhs.zero_p ())
+      r.set_undefined ();
+      for (unsigned i = 0; i < lhs.num_pairs (); ++i)
 	{
-	  r = int_range<1> (build_zero_cst (type),
-			    fold_build1 (BIT_NOT_EXPR, type, mask));
-	  return true;
+	  widest_irange chunk (lhs.type (),
+			       lhs.lower_bound (i),
+			       lhs.upper_bound (i));
+	  widest_irange res;
+	  simple_op1_range_solver (res, type, chunk, op2);
+	  r.union_ (res);
 	}
-      if (!lhs.contains_p (build_zero_cst (type)))
-	{
-	  unsigned nzeros = tree_ctz (mask);
-	  tree first_one = build_int_cst (type, 1 << nzeros);
-	  // If all bits are on, the lower bound is a better
-	  // approximation.
-	  if (nzeros == 0)
-	    r = int_range<1> (type, lhs.lower_bound (), max_limit (type));
-	  else
-	    r = int_range<1> (first_one, TYPE_MAX_VALUE (type));
-	  return true;
-	}
+      if (r.undefined_p ())
+	r.set_varying (type);
     }
-
-  if (!lhs.contains_p (build_zero_cst (type)))
-    {
-      r = range_nonzero (type);
-      return true;
-    }
-
-  // For now do nothing with bitwise AND of value_range's.
-  r.set_varying (type);
   return true;
 }
 
