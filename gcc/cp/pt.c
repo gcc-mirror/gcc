@@ -16772,13 +16772,24 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
     case INTEGER_CST:
     case REAL_CST:
-    case STRING_CST:
     case COMPLEX_CST:
       {
 	/* Instantiate any typedefs in the type.  */
 	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	r = fold_convert (type, t);
 	gcc_assert (TREE_CODE (r) == code);
+	return r;
+      }
+
+    case STRING_CST:
+      {
+	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	r = t;
+	if (type != TREE_TYPE (t))
+	  {
+	    r = copy_node (t);
+	    TREE_TYPE (r) = type;
+	  }
 	return r;
       }
 
