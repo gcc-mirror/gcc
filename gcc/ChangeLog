@@ -40,6 +40,8 @@
 
 	* config/cris/cris.c (TARGET_FLAGS_REGNUM): Define.
 
+	* config/cris/cris.h (REVERSIBLE_CC_MODE): Define to true.
+
 2020-05-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira-color.c (update_costs_from_allocno): Remove
