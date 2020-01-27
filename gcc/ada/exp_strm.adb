@@ -1119,25 +1119,20 @@ package body Exp_Strm is
      (Loc            : Source_Ptr;
       Typ            : Entity_Id;
       Decl           : out Node_Id;
-      Fnam           : out Entity_Id;
-      Use_Underlying : Boolean := True)
+      Fnam           : out Entity_Id)
    is
-      B_Typ      : Entity_Id := Base_Type (Typ);
+      B_Typ      : constant Entity_Id := Underlying_Type (Base_Type (Typ));
       Cn         : Name_Id;
       Constr     : List_Id;
       Decls      : List_Id;
       Discr      : Entity_Id;
-      Discr_Elmt : Elmt_Id   := No_Elmt;
+      Discr_Elmt : Elmt_Id            := No_Elmt;
       J          : Pos;
       Obj_Decl   : Node_Id;
       Odef       : Node_Id;
       Stms       : List_Id;
 
    begin
-      if Use_Underlying then
-         B_Typ := Underlying_Type (B_Typ);
-      end if;
-
       Decls  := New_List;
       Constr := New_List;
 

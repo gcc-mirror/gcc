@@ -4921,20 +4921,17 @@ package body Sem_Ch13 is
          return;
       end if;
 
-      --  Rep clause applies to full view of incomplete type or private type if
-      --  we have one (if not, this is a premature use of the type). However,
-      --  certain semantic checks need to be done on the specified entity (i.e.
-      --  the private view), so we save it in Ent.
+      --  Rep clause applies to (underlying) full view of private or incomplete
+      --  type if we have one (if not, this is a premature use of the type).
+      --  However, some semantic checks need to be done on the specified entity
+      --  i.e. the private view, so we save it in Ent.
 
       if Is_Private_Type (Ent)
         and then Is_Derived_Type (Ent)
         and then not Is_Tagged_Type (Ent)
         and then No (Full_View (Ent))
+        and then No (Underlying_Full_View (Ent))
       then
-         --  If this is a private type whose completion is a derivation from
-         --  another private type, there is no full view, and the attribute
-         --  belongs to the type itself, not its underlying parent.
-
          U_Ent := Ent;
 
       elsif Ekind (Ent) = E_Incomplete_Type then

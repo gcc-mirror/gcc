@@ -7669,19 +7669,26 @@ package body Sem_Ch3 is
             Full_Parent := Full_View (Full_Parent);
          end if;
 
-         --  And its underlying full view if necessary
+         --  If the full view is itself derived from another private type
+         --  and has got an underlying full view, and this is done for a
+         --  completion, i.e. to build the underlying full view of the type,
+         --  then use this underlying full view. We cannot do that if this
+         --  is not a completion, i.e. to build the full view of the type,
+         --  because this would break the privacy status of the parent.
 
          if Is_Private_Type (Full_Parent)
            and then Present (Underlying_Full_View (Full_Parent))
+           and then Is_Completion
          then
             Full_Parent := Underlying_Full_View (Full_Parent);
          end if;
 
-         --  For record, concurrent, access and most enumeration types, the
-         --  derivation from full view requires a fully-fledged declaration.
-         --  In the other cases, just use an itype.
+         --  For private, record, concurrent, access and almost all enumeration
+         --  types, the derivation from the full view requires a fully-fledged
+         --  declaration. In the other cases, just use an itype.
 
-         if Is_Record_Type (Full_Parent)
+         if Is_Private_Type (Full_Parent)
+           or else Is_Record_Type (Full_Parent)
            or else Is_Concurrent_Type (Full_Parent)
            or else Is_Access_Type (Full_Parent)
            or else
@@ -8047,7 +8054,9 @@ package body Sem_Ch3 is
          end if;
 
          --  If this is not a completion, construct the implicit full view by
-         --  deriving from the full view of the parent type.
+         --  deriving from the full view of the parent type. But if this is a
+         --  completion, the derived private type being built is a full view
+         --  and the full derivation can only be its underlying full view.
 
          --  ??? If the parent is untagged private and its completion is
          --  tagged, this mechanism will not work because we cannot derive from
@@ -8055,10 +8064,16 @@ package body Sem_Ch3 is
 
          if Present (Full_View (Parent_Type))
            and then not Is_Tagged_Type (Full_View (Parent_Type))
-           and then not Is_Completion
+           and then not Error_Posted (N)
          then
             Build_Full_Derivation;
-            Set_Full_View (Derived_Type, Full_Der);
+
+            if not Is_Completion then
+               Set_Full_View (Derived_Type, Full_Der);
+            else
+               Set_Underlying_Full_View (Derived_Type, Full_Der);
+               Set_Is_Underlying_Full_View (Full_Der);
+            end if;
          end if;
       end if;
 
