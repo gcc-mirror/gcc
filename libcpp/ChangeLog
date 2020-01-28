@@ -1,3 +1,23 @@
+2020-01-28  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/93452
+	* internal.h (struct spec_nodes): Drop n__has_include{,_next}.
+	* directives.c (lex_macro_node): Don't check __has_include redef.
+	* expr.c (eval_token): Drop __has_include eval.
+	(parse_has_include): Move to ...
+	* macro.c (builtin_has_include): ... here.
+	(_cpp_builtin_macro_text): Eval __has_include{,_next}.
+	* include/cpplib.h (enum cpp_builtin_type): Add BT_HAS_INCLUDE{,_NEXT}.
+	* init.c (builtin_array): Add them.
+	(cpp_init_builtins): Drop __has_include{,_next} init here ...
+	* pch.c (cpp_read_state): ... and here.
+	* traditional.c (enum ls): Drop has_include states ...
+	(_cpp_scan_out_logical_line): ... and here.
+
+2020-01-27  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* configure: Regenerate.
+
 2020-01-24  Nathan Sidwell  <nathan@acm.org>
 
 	* expr.c (parse_has_include): Remove bogus controlling macro code.

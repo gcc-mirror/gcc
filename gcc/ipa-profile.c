@@ -134,7 +134,8 @@ static void
 dump_histogram (FILE *file, vec<histogram_entry *> histogram)
 {
   unsigned int i;
-  gcov_type overall_time = 0, cumulated_time = 0, cumulated_size = 0, overall_size = 0;
+  gcov_type overall_time = 0, cumulated_time = 0, cumulated_size = 0,
+	    overall_size = 0;
   
   fprintf (dump_file, "Histogram:\n");
   for (i = 0; i < histogram.length (); i++)
@@ -266,7 +267,8 @@ ipa_profile_generate_summary (void)
   call_sums = new ipa_profile_call_summaries (symtab);
 
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
-    if (ENTRY_BLOCK_PTR_FOR_FN (DECL_STRUCT_FUNCTION (node->decl))->count.ipa_p ())
+    if (ENTRY_BLOCK_PTR_FOR_FN
+	  (DECL_STRUCT_FUNCTION (node->decl))->count.ipa_p ())
       FOR_EACH_BB_FN (bb, DECL_STRUCT_FUNCTION (node->decl))
 	{
 	  int time = 0;
@@ -300,30 +302,31 @@ ipa_profile_generate_summary (void)
 							  j))
 			    continue;
 
-			  if (val == 0)
+			  if (val == 0 || count == 0)
 			    continue;
 
-			  speculative_call_target item (
-			    val, GCOV_COMPUTE_SCALE (count, all));
-			  if (item.target_probability > REG_BR_PROB_BASE)
+			  if (count > all)
 			    {
 			      if (dump_file)
 				fprintf (dump_file,
 					 "Probability capped to 1\n");
-			      item.target_probability = REG_BR_PROB_BASE;
+			      count = all;
 			    }
+			  speculative_call_target item (
+			    val, GCOV_COMPUTE_SCALE (count, all));
 			  csum->speculative_call_targets.safe_push (item);
 			}
 
-		      gimple_remove_histogram_value (DECL_STRUCT_FUNCTION (node->decl),
-						      stmt, h);
+		      gimple_remove_histogram_value
+			 (DECL_STRUCT_FUNCTION (node->decl), stmt, h);
 		    }
 		}
 	      time += estimate_num_insns (stmt, &eni_time_weights);
 	      size += estimate_num_insns (stmt, &eni_size_weights);
 	    }
 	  if (bb->count.ipa_p () && bb->count.initialized_p ())
-	    account_time_size (&hashtable, histogram, bb->count.ipa ().to_gcov_type (),
+	    account_time_size (&hashtable, histogram,
+			       bb->count.ipa ().to_gcov_type (),
 			       time, size);
 	}
   histogram.qsort (cmp_counts);
@@ -864,6 +867,7 @@ ipa_profile (void)
 		}
 
 	      unsigned speculative_id = 0;
+	      profile_count orig = e->count;
 	      for (unsigned i = 0; i < spec_count; i++)
 		{
 		  speculative_call_target item
@@ -881,7 +885,8 @@ ipa_profile (void)
 				   item.target_probability
 				     / (float) REG_BR_PROB_BASE);
 			}
-		      if (item.target_probability < REG_BR_PROB_BASE / 2)
+		      if (item.target_probability
+		 	  < REG_BR_PROB_BASE / GCOV_TOPN_VALUES / 2)
 			{
 			  nuseless++;
 			  if (dump_file)
@@ -939,11 +944,12 @@ ipa_profile (void)
 				n2 = alias;
 			    }
 			  nconverted++;
+			  profile_probability prob
+				 = profile_probability::from_reg_br_prob_base
+					(item.target_probability).adjusted ();
 			  e->make_speculative (n2,
-					       e->count.apply_probability (
-						 item.target_probability),
-					       speculative_id,
-					       item.target_probability);
+					       orig.apply_probability (prob),
+					       speculative_id);
 			  update = true;
 			  speculative_id++;
 			}

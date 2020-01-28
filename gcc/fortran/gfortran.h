@@ -1592,9 +1592,11 @@ typedef struct gfc_symbol
      current statement have the mark member nonzero.  Of these symbols,
      symbols with old_symbol equal to NULL are symbols created within
      the current statement.  Otherwise, old_symbol points to a copy of
-     the old symbol. gfc_new is used in symbol.c to flag new symbols.  */
+     the old symbol. gfc_new is used in symbol.c to flag new symbols.
+     comp_mark is used to indicate variables which have component accesses
+     in OpenMP/OpenACC directive clauses.  */
   struct gfc_symbol *old_symbol;
-  unsigned mark:1, gfc_new:1;
+  unsigned mark:1, comp_mark:1, gfc_new:1;
 
   /* The tlink field is used in the front end to carry the module
      declaration of separate module procedures so that the characteristics

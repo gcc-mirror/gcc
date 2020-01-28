@@ -2580,11 +2580,11 @@ Integer_expression::do_import(Import_expression* imp, Location loc)
 	  return Expression::make_error(loc);
 	}
       if (pos == std::string::npos)
-	mpfr_set_ui(real, 0, GMP_RNDN);
+	mpfr_set_ui(real, 0, MPFR_RNDN);
       else
 	{
 	  std::string real_str = num.substr(0, pos);
-	  if (mpfr_init_set_str(real, real_str.c_str(), 10, GMP_RNDN) != 0)
+	  if (mpfr_init_set_str(real, real_str.c_str(), 10, MPFR_RNDN) != 0)
 	    {
 	      go_error_at(imp->location(), "bad number in import data: %qs",
 			  real_str.c_str());
@@ -2599,7 +2599,7 @@ Integer_expression::do_import(Import_expression* imp, Location loc)
 	imag_str = num.substr(pos);
       imag_str = imag_str.substr(0, imag_str.size() - 1);
       mpfr_t imag;
-      if (mpfr_init_set_str(imag, imag_str.c_str(), 10, GMP_RNDN) != 0)
+      if (mpfr_init_set_str(imag, imag_str.c_str(), 10, MPFR_RNDN) != 0)
 	{
 	  go_error_at(imp->location(), "bad number in import data: %qs",
 		      imag_str.c_str());
@@ -2639,7 +2639,7 @@ Integer_expression::do_import(Import_expression* imp, Location loc)
   else
     {
       mpfr_t val;
-      if (mpfr_init_set_str(val, num.c_str(), 10, GMP_RNDN) != 0)
+      if (mpfr_init_set_str(val, num.c_str(), 10, MPFR_RNDN) != 0)
 	{
 	  go_error_at(imp->location(), "bad number in import data: %qs",
 		      num.c_str());
@@ -2753,7 +2753,7 @@ class Float_expression : public Expression
     : Expression(EXPRESSION_FLOAT, location),
       type_(type)
   {
-    mpfr_init_set(this->val_, *val, GMP_RNDN);
+    mpfr_init_set(this->val_, *val, MPFR_RNDN);
   }
 
   // Write VAL to export data.
@@ -2923,8 +2923,8 @@ Float_expression::do_get_backend(Translate_context* context)
 void
 Float_expression::export_float(String_dump *exp, const mpfr_t val)
 {
-  mp_exp_t exponent;
-  char* s = mpfr_get_str(NULL, &exponent, 10, 0, val, GMP_RNDN);
+  mpfr_exp_t exponent;
+  char* s = mpfr_get_str(NULL, &exponent, 10, 0, val, MPFR_RNDN);
   if (*s == '-')
     exp->write_c_string("-");
   exp->write_c_string("0.");
@@ -4781,7 +4781,7 @@ Unary_expression::eval_constant(Operator op, const Numeric_constant* unc,
 	  unc->get_float(&uval);
 	  mpfr_t val;
 	  mpfr_init(val);
-	  mpfr_neg(val, uval, GMP_RNDN);
+	  mpfr_neg(val, uval, MPFR_RNDN);
 	  nc->set_float(unc->type(), val);
 	  mpfr_clear(uval);
 	  mpfr_clear(val);
@@ -5613,8 +5613,8 @@ Binary_expression::compare_float(const Numeric_constant* left_nc,
   if (!type->is_abstract() && type->float_type() != NULL)
     {
       int bits = type->float_type()->bits();
-      mpfr_prec_round(left_val, bits, GMP_RNDN);
-      mpfr_prec_round(right_val, bits, GMP_RNDN);
+      mpfr_prec_round(left_val, bits, MPFR_RNDN);
+      mpfr_prec_round(right_val, bits, MPFR_RNDN);
     }
 
   *cmp = mpfr_cmp(left_val, right_val);
@@ -5649,10 +5649,10 @@ Binary_expression::compare_complex(const Numeric_constant* left_nc,
   if (!type->is_abstract() && type->complex_type() != NULL)
     {
       int bits = type->complex_type()->bits();
-      mpfr_prec_round(mpc_realref(left_val), bits / 2, GMP_RNDN);
-      mpfr_prec_round(mpc_imagref(left_val), bits / 2, GMP_RNDN);
-      mpfr_prec_round(mpc_realref(right_val), bits / 2, GMP_RNDN);
-      mpfr_prec_round(mpc_imagref(right_val), bits / 2, GMP_RNDN);
+      mpfr_prec_round(mpc_realref(left_val), bits / 2, MPFR_RNDN);
+      mpfr_prec_round(mpc_imagref(left_val), bits / 2, MPFR_RNDN);
+      mpfr_prec_round(mpc_realref(right_val), bits / 2, MPFR_RNDN);
+      mpfr_prec_round(mpc_imagref(right_val), bits / 2, MPFR_RNDN);
     }
 
   *cmp = mpc_cmp(left_val, right_val) != 0;
@@ -5899,10 +5899,10 @@ Binary_expression::eval_float(Operator op, const Numeric_constant* left_nc,
   switch (op)
     {
     case OPERATOR_PLUS:
-      mpfr_add(val, left_val, right_val, GMP_RNDN);
+      mpfr_add(val, left_val, right_val, MPFR_RNDN);
       break;
     case OPERATOR_MINUS:
-      mpfr_sub(val, left_val, right_val, GMP_RNDN);
+      mpfr_sub(val, left_val, right_val, MPFR_RNDN);
       break;
     case OPERATOR_OR:
     case OPERATOR_XOR:
@@ -5911,20 +5911,20 @@ Binary_expression::eval_float(Operator op, const Numeric_constant* left_nc,
     case OPERATOR_MOD:
     case OPERATOR_LSHIFT:
     case OPERATOR_RSHIFT:
-      mpfr_set_ui(val, 0, GMP_RNDN);
+      mpfr_set_ui(val, 0, MPFR_RNDN);
       ret = false;
       break;
     case OPERATOR_MULT:
-      mpfr_mul(val, left_val, right_val, GMP_RNDN);
+      mpfr_mul(val, left_val, right_val, MPFR_RNDN);
       break;
     case OPERATOR_DIV:
       if (!mpfr_zero_p(right_val))
-	mpfr_div(val, left_val, right_val, GMP_RNDN);
+	mpfr_div(val, left_val, right_val, MPFR_RNDN);
       else
 	{
 	  go_error_at(location, "division by zero");
           nc->set_invalid();
-	  mpfr_set_ui(val, 0, GMP_RNDN);
+	  mpfr_set_ui(val, 0, MPFR_RNDN);
 	}
       break;
     default:
@@ -18868,7 +18868,7 @@ Numeric_constant::Numeric_constant(const Numeric_constant& a)
       mpz_init_set(this->u_.int_val, a.u_.int_val);
       break;
     case NC_FLOAT:
-      mpfr_init_set(this->u_.float_val, a.u_.float_val, GMP_RNDN);
+      mpfr_init_set(this->u_.float_val, a.u_.float_val, MPFR_RNDN);
       break;
     case NC_COMPLEX:
       mpc_init2(this->u_.complex_val, mpc_precision);
@@ -18896,7 +18896,7 @@ Numeric_constant::operator=(const Numeric_constant& a)
       mpz_init_set(this->u_.int_val, a.u_.int_val);
       break;
     case NC_FLOAT:
-      mpfr_init_set(this->u_.float_val, a.u_.float_val, GMP_RNDN);
+      mpfr_init_set(this->u_.float_val, a.u_.float_val, MPFR_RNDN);
       break;
     case NC_COMPLEX:
       mpc_init2(this->u_.complex_val, mpc_precision);
@@ -19014,9 +19014,9 @@ Numeric_constant::set_float(Type* type, const mpfr_t val)
       && !type->float_type()->is_abstract())
     bits = type->float_type()->bits();
   if (Numeric_constant::is_float_neg_zero(val, bits))
-    mpfr_init_set_ui(this->u_.float_val, 0, GMP_RNDN);
+    mpfr_init_set_ui(this->u_.float_val, 0, MPFR_RNDN);
   else
-    mpfr_init_set(this->u_.float_val, val, GMP_RNDN);
+    mpfr_init_set(this->u_.float_val, val, MPFR_RNDN);
 }
 
 // Set to a complex value.
@@ -19036,14 +19036,14 @@ Numeric_constant::set_complex(Type* type, const mpc_t val)
     bits = type->complex_type()->bits() / 2;
 
   mpfr_t real;
-  mpfr_init_set(real, mpc_realref(val), GMP_RNDN);
+  mpfr_init_set(real, mpc_realref(val), MPFR_RNDN);
   if (Numeric_constant::is_float_neg_zero(real, bits))
-    mpfr_set_ui(real, 0, GMP_RNDN);
+    mpfr_set_ui(real, 0, MPFR_RNDN);
 
   mpfr_t imag;
-  mpfr_init_set(imag, mpc_imagref(val), GMP_RNDN);
+  mpfr_init_set(imag, mpc_imagref(val), MPFR_RNDN);
   if (Numeric_constant::is_float_neg_zero(imag, bits))
-    mpfr_set_ui(imag, 0, GMP_RNDN);
+    mpfr_set_ui(imag, 0, MPFR_RNDN);
 
   mpc_init2(this->u_.complex_val, mpc_precision);
   mpc_set_fr_fr(this->u_.complex_val, real, imag, MPC_RNDNN);
@@ -19062,7 +19062,7 @@ Numeric_constant::is_float_neg_zero(const mpfr_t val, int bits)
     return false;
   if (mpfr_zero_p(val))
     return true;
-  mp_exp_t min_exp;
+  mpfr_exp_t min_exp;
   switch (bits)
     {
     case 0:
@@ -19107,7 +19107,7 @@ void
 Numeric_constant::get_float(mpfr_t* val) const
 {
   go_assert(this->is_float());
-  mpfr_init_set(*val, this->u_.float_val, GMP_RNDN);
+  mpfr_init_set(*val, this->u_.float_val, MPFR_RNDN);
 }
 
 // Get a complex value.
@@ -19167,7 +19167,7 @@ Numeric_constant::mpfr_to_unsigned_long(const mpfr_t fval,
     return NC_UL_NOTINT;
   mpz_t ival;
   mpz_init(ival);
-  mpfr_get_z(ival, fval, GMP_RNDN);
+  mpfr_get_z(ival, fval, MPFR_RNDN);
   To_unsigned_long ret = this->mpz_to_unsigned_long(ival, val);
   mpz_clear(ival);
   return ret;
@@ -19234,7 +19234,7 @@ Numeric_constant::mpfr_to_memory_size(const mpfr_t fval, int64_t* val) const
     return false;
   mpz_t ival;
   mpz_init(ival);
-  mpfr_get_z(ival, fval, GMP_RNDN);
+  mpfr_get_z(ival, fval, MPFR_RNDN);
   bool ret = this->mpz_to_memory_size(ival, val);
   mpz_clear(ival);
   return ret;
@@ -19255,14 +19255,14 @@ Numeric_constant::to_int(mpz_t* val) const
       if (!mpfr_integer_p(this->u_.float_val))
 	return false;
       mpz_init(*val);
-      mpfr_get_z(*val, this->u_.float_val, GMP_RNDN);
+      mpfr_get_z(*val, this->u_.float_val, MPFR_RNDN);
       return true;
     case NC_COMPLEX:
       if (!mpfr_zero_p(mpc_imagref(this->u_.complex_val))
 	  || !mpfr_integer_p(mpc_realref(this->u_.complex_val)))
 	return false;
       mpz_init(*val);
-      mpfr_get_z(*val, mpc_realref(this->u_.complex_val), GMP_RNDN);
+      mpfr_get_z(*val, mpc_realref(this->u_.complex_val), MPFR_RNDN);
       return true;
     default:
       go_unreachable();
@@ -19278,15 +19278,15 @@ Numeric_constant::to_float(mpfr_t* val) const
     {
     case NC_INT:
     case NC_RUNE:
-      mpfr_init_set_z(*val, this->u_.int_val, GMP_RNDN);
+      mpfr_init_set_z(*val, this->u_.int_val, MPFR_RNDN);
       return true;
     case NC_FLOAT:
-      mpfr_init_set(*val, this->u_.float_val, GMP_RNDN);
+      mpfr_init_set(*val, this->u_.float_val, MPFR_RNDN);
       return true;
     case NC_COMPLEX:
       if (!mpfr_zero_p(mpc_imagref(this->u_.complex_val)))
 	return false;
-      mpfr_init_set(*val, mpc_realref(this->u_.complex_val), GMP_RNDN);
+      mpfr_init_set(*val, mpc_realref(this->u_.complex_val), MPFR_RNDN);
       return true;
     default:
       go_unreachable();
@@ -19391,7 +19391,7 @@ Numeric_constant::check_int_type(Integer_type* type, bool issue_error,
 	  return false;
 	}
       mpz_init(val);
-      mpfr_get_z(val, this->u_.float_val, GMP_RNDN);
+      mpfr_get_z(val, this->u_.float_val, MPFR_RNDN);
       break;
 
     case NC_COMPLEX:
@@ -19406,7 +19406,7 @@ Numeric_constant::check_int_type(Integer_type* type, bool issue_error,
 	  return false;
 	}
       mpz_init(val);
-      mpfr_get_z(val, mpc_realref(this->u_.complex_val), GMP_RNDN);
+      mpfr_get_z(val, mpc_realref(this->u_.complex_val), MPFR_RNDN);
       break;
 
     default:
@@ -19460,11 +19460,11 @@ Numeric_constant::check_float_type(Float_type* type, bool issue_error,
     {
     case NC_INT:
     case NC_RUNE:
-      mpfr_init_set_z(val, this->u_.int_val, GMP_RNDN);
+      mpfr_init_set_z(val, this->u_.int_val, MPFR_RNDN);
       break;
 
     case NC_FLOAT:
-      mpfr_init_set(val, this->u_.float_val, GMP_RNDN);
+      mpfr_init_set(val, this->u_.float_val, MPFR_RNDN);
       break;
 
     case NC_COMPLEX:
@@ -19478,7 +19478,7 @@ Numeric_constant::check_float_type(Float_type* type, bool issue_error,
             }
 	  return false;
 	}
-      mpfr_init_set(val, mpc_realref(this->u_.complex_val), GMP_RNDN);
+      mpfr_init_set(val, mpc_realref(this->u_.complex_val), MPFR_RNDN);
       break;
 
     default:
@@ -19495,8 +19495,8 @@ Numeric_constant::check_float_type(Float_type* type, bool issue_error,
     }
   else
     {
-      mp_exp_t exp = mpfr_get_exp(val);
-      mp_exp_t max_exp;
+      mpfr_exp_t exp = mpfr_get_exp(val);
+      mpfr_exp_t max_exp;
       switch (type->bits())
 	{
 	case 32:
@@ -19527,8 +19527,8 @@ Numeric_constant::check_float_type(Float_type* type, bool issue_error,
 	    default:
 	      go_unreachable();
 	    }
-	  mpfr_set(t, val, GMP_RNDN);
-	  mpfr_set(val, t, GMP_RNDN);
+	  mpfr_set(t, val, MPFR_RNDN);
+	  mpfr_set(val, t, MPFR_RNDN);
 	  mpfr_clear(t);
 
 	  this->set_float(type, val);
@@ -19555,7 +19555,7 @@ Numeric_constant::check_complex_type(Complex_type* type, bool issue_error,
   if (type->is_abstract())
     return true;
 
-  mp_exp_t max_exp;
+  mpfr_exp_t max_exp;
   switch (type->bits())
     {
     case 64:
@@ -19687,12 +19687,12 @@ Numeric_constant::hash(unsigned int seed) const
       break;
     case NC_COMPLEX:
       mpfr_init(m);
-      mpc_abs(m, this->u_.complex_val, GMP_RNDN);
-      val = mpfr_get_ui(m, GMP_RNDN);
+      mpc_abs(m, this->u_.complex_val, MPFR_RNDN);
+      val = mpfr_get_ui(m, MPFR_RNDN);
       mpfr_clear(m);
       break;
     case NC_FLOAT:
-      f = mpfr_get_d_2exp(&e, this->u_.float_val, GMP_RNDN) * 4294967295.0;
+      f = mpfr_get_d_2exp(&e, this->u_.float_val, MPFR_RNDN) * 4294967295.0;
       val = static_cast<unsigned long>(e + static_cast<long>(f));
       break;
     default:

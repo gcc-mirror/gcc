@@ -78,9 +78,9 @@ const char *profile_quality_display_names[] =
   "estimated locally",
   "estimated locally, globally 0",
   "estimated locally, globally 0 adjusted",
-  "adjusted",
-  "auto FDO",
   "guessed",
+  "auto FDO",
+  "adjusted",
   "precise"
 };
 

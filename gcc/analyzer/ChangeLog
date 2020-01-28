@@ -1,3 +1,43 @@
+2020-01-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93316
+	* engine.cc (rewind_info_t::update_model): Get the longjmp call
+	stmt via get_longjmp_call () rather than assuming it is the last
+	stmt in the longjmp's supernode.
+	(rewind_info_t::add_events_to_path): Get the location_t for the
+	rewind_from_longjmp_event via get_longjmp_call () rather than from
+	the supernode's get_end_location ().
+
+2020-01-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (poisoned_value_diagnostic::emit): Update for
+	renaming of warning_at overload to warning_meta.
+	* sm-file.cc (file_leak::emit): Likewise.
+	* sm-malloc.cc (double_free::emit): Likewise.
+	(possible_null_deref::emit): Likewise.
+	(possible_null_arg::emit): Likewise.
+	(null_deref::emit): Likewise.
+	(null_arg::emit): Likewise.
+	(use_after_free::emit): Likewise.
+	(malloc_leak::emit): Likewise.
+	(free_of_non_heap::emit): Likewise.
+	* sm-sensitive.cc (exposure_through_output_file::emit): Likewise.
+	* sm-signal.cc (signal_unsafe_call::emit): Likewise.
+	* sm-taint.cc (tainted_array_index::emit): Likewise.
+
+2020-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93451
+	* region-model.cc (tree_cmp): For the REAL_CST case, impose an
+	arbitrary order on NaNs relative to other NaNs and to non-NaNs;
+	const-correctness tweak.
+	(ana::selftests::build_real_cst_from_string): New function.
+	(ana::selftests::append_interesting_constants): New function.
+	(ana::selftests::test_tree_cmp_on_constants): New test.
+	(ana::selftests::test_canonicalization_4): New test.
+	(ana::selftests::analyzer_region_model_cc_tests): Call the new
+	tests.
+
 2020-01-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93349

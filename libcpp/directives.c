@@ -596,9 +596,7 @@ lex_macro_node (cpp_reader *pfile, bool is_def_or_undef)
       cpp_hashnode *node = token->val.node.node;
 
       if (is_def_or_undef
-	  && (node == pfile->spec_nodes.n_defined
-	      || node == pfile->spec_nodes.n__has_include
-	      || node == pfile->spec_nodes.n__has_include_next))
+	  && node == pfile->spec_nodes.n_defined)
 	cpp_error (pfile, CPP_DL_ERROR,
 		   "\"%s\" cannot be used as a macro name",
 		   NODE_NAME (node));

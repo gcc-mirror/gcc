@@ -1,3 +1,150 @@
+2020-01-28  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/93272
+	* ira-lives.c (process_out_of_region_eh_regs): New function.
+	(process_bb_node_lives): Call it.
+
+2020-01-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* coverage.c (read_counts_file): Make error message lowercase.
+
+2020-01-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* profile-count.c (profile_quality_display_names): Fix ordering.
+
+2020-01-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/93318	
+	* cgraph.c (cgraph_add_edge_to_call_site_hash): Update call site
+	hash only when edge is first within the sequence.
+	(cgraph_edge::set_call_stmt): Update handling of speculative calls.
+	(symbol_table::create_edge): Do not set target_prob.
+	(cgraph_edge::remove_caller): Watch for speculative calls when updating
+	the call site hash.
+	(cgraph_edge::make_speculative): Drop target_prob parameter.
+	(cgraph_edge::speculative_call_info): Remove.
+	(cgraph_edge::first_speculative_call_target): New member function.
+	(update_call_stmt_hash_for_removing_direct_edge): New function.
+	(cgraph_edge::resolve_speculation): Rewrite to new API.
+	(cgraph_edge::speculative_call_for_target): New member function.
+	(cgraph_edge::make_direct): Rewrite to new API; fix handling of
+	multiple speculation targets.
+	(cgraph_edge::redirect_call_stmt_to_callee): Likewise; fix updating
+	of profile.
+	(verify_speculative_call): Verify that targets form an interval.
+	* cgraph.h (cgraph_edge::speculative_call_info): Remove.
+	(cgraph_edge::first_speculative_call_target): New member function.
+	(cgraph_edge::next_speculative_call_target): New member function.
+	(cgraph_edge::speculative_call_target_ref): New member function.
+	(cgraph_edge;:speculative_call_indirect_edge): New member funtion.
+	(cgraph_edge): Remove target_prob.
+	* cgraphclones.c (cgraph_node::set_call_stmt_including_clones):
+	Fix handling of speculative calls.
+	* ipa-devirt.c (ipa_devirt): Fix handling of speculative cals.
+	* ipa-fnsummary.c (analyze_function_body): Likewise.
+	* ipa-inline.c (speculation_useful_p): Use new speculative call API.
+	* ipa-profile.c (dump_histogram): Fix formating.
+	(ipa_profile_generate_summary): Watch for overflows.
+	(ipa_profile): Do not require probablity to be 1/2; update to new API.
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Update to new API.
+	(update_indirect_edges_after_inlining): Update to new API.
+	* ipa-utils.c (ipa_merge_profiles): Rewrite merging of speculative call
+	profiles.
+	* profile-count.h: (profile_probability::adjusted): New.
+	* tree-inline.c (copy_bb): Update to new speculative call API; fix
+	updating of profile.
+	* value-prof.c (gimple_ic_transform): Rename to ...
+	(dump_ic_profile): ... this one; update dumping.
+	(stream_in_histogram_value): Fix formating.
+	(gimple_value_profile_transformations): Update.
+
+2020-01-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/91461
+	* config/i386/i386.md (*movoi_internal_avx): Remove
+	TARGET_SSE_TYPELESS_STORES check.
+	(*movti_internal): Prefer TARGET_AVX over
+	TARGET_SSE_TYPELESS_STORES.
+	(*movtf_internal): Likewise.
+	* config/i386/sse.md (mov<mode>_internal): Prefer TARGET_AVX over
+	TARGET_SSE_TYPELESS_STORES.  Remove "<MODE_SIZE> == 16" check
+	from TARGET_SSE_TYPELESS_STORES.
+
+2020-01-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-core.h (warning_at): Rename overload to...
+	(warning_meta): ...this.
+	(emit_diagnostic_valist): Delete decl of overload taking
+	diagnostic_metadata.
+	* diagnostic.c (emit_diagnostic_valist): Likewise for defn.
+	(warning_at): Rename overload taking diagnostic_metadata to...
+	(warning_meta): ...this.
+
+2020-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93439
+	* tree-parloops.c (create_loop_fn): Move clique bookkeeping...
+	* tree-cfg.c (move_sese_region_to_fn): ... here.
+	(verify_types_in_gimple_reference): Verify used cliques are
+	tracked.
+
+2020-01-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/91399
+	* config/i386/i386-options.c (set_ix86_tune_features): Add an
+	argument of a pointer to struct gcc_options and pass it to
+	parse_mtune_ctrl_str.
+	(ix86_function_specific_restore): Pass opts to
+	set_ix86_tune_features.
+	(ix86_option_override_internal): Likewise.
+	(parse_mtune_ctrl_str): Add an argument of a pointer to struct
+	gcc_options and use it for x_ix86_tune_ctrl_string.
+
+2020-01-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/87763
+	* simplify-rtx.c (simplify_truncation): Extend sign/zero_extract
+	simplification to handle subregs as well as bare regs.
+	* config/i386/i386.md (*testqi_ext_3): Match QI extracts too.
+
+2020-01-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (vectorizable_reduction): Fail gracefully
+	for reduction chains that (now) include a call.
+
+2020-01-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/92822
+	* tree-ssa-forwprop.c (simplify_vector_constructor): When filling
+	out the don't-care elements of a vector whose significant elements
+	are duplicates, make the don't-care elements duplicates too.
+
+2020-01-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/93434
+	* tree-predcom.c (split_data_refs_to_components): Record which
+	components have had aliasing loads removed.  Prevent store-store
+	commoning for all such components.
+
+2020-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93418
+	* config/i386/i386.c (ix86_fold_builtin) <do_shift>: If mask is not
+	-1 or is_vshift is true, use new_vector with number of elts npatterns
+	rather than new_unary_operation.
+
+	PR tree-optimization/93454
+	* gimple-fold.c (fold_array_ctor_reference): Perform
+	elt_size.to_uhwi () just once, instead of calling it in every
+	iteration.  Punt if that value is above size of the temporary
+	buffer.  Decrease third native_encode_expr argument when
+	bufoff + elt_sz is above size of buf.
+
+2020-01-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/mips/mips.c (mips_declare_object_name)
+	[USE_GNU_UNIQUE_OBJECT]: Support use of gnu_unique_object.
+
 2020-01-27  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/93403

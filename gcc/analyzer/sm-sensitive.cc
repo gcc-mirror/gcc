@@ -105,9 +105,10 @@ public:
     diagnostic_metadata m;
     /* CWE-532: Information Exposure Through Log Files */
     m.add_cwe (532);
-    return warning_at (rich_loc, m, OPT_Wanalyzer_exposure_through_output_file,
-		       "sensitive value %qE written to output file",
-		       m_arg);
+    return warning_meta (rich_loc, m,
+			 OPT_Wanalyzer_exposure_through_output_file,
+			 "sensitive value %qE written to output file",
+			 m_arg);
   }
 
   label_text describe_state_change (const evdesc::state_change &change)

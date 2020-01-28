@@ -1,3 +1,10 @@
+2020-01-28  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/deep-copy-2.f90: Remove test from here.
+	* testsuite/libgomp.oacc-fortran/deep-copy-3.f90: Don't use mixed
+	component/non-component variable refs in a single directive.
+	* testsuite/libgomp.oacc-fortran/classtypes-1.f95: Likewise.
+
 2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
 
 	* configure.ac: Handle `--with-toolexeclibdir='.

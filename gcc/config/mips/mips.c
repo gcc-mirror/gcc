@@ -9775,7 +9775,14 @@ mips_declare_object_name (FILE *stream, const char *name,
 			  tree decl ATTRIBUTE_UNUSED)
 {
 #ifdef ASM_OUTPUT_TYPE_DIRECTIVE
-  ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "object");
+#ifdef USE_GNU_UNIQUE_OBJECT
+  /* As in elfos.h.  */
+  if (USE_GNU_UNIQUE_OBJECT && DECL_ONE_ONLY (decl)
+      && (!DECL_ARTIFICIAL (decl) || !TREE_READONLY (decl)))
+    ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "gnu_unique_object");
+  else
+#endif
+    ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "object");
 #endif
 
   size_directive_output = 0;

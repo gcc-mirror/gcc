@@ -106,7 +106,7 @@ static bool gimple_divmod_fixed_value_transform (gimple_stmt_iterator *);
 static bool gimple_mod_pow2_value_transform (gimple_stmt_iterator *);
 static bool gimple_mod_subtract_transform (gimple_stmt_iterator *);
 static bool gimple_stringops_transform (gimple_stmt_iterator *);
-static void gimple_ic_transform (gimple_stmt_iterator *);
+static void dump_ic_profile (gimple_stmt_iterator *gsi);
 
 /* Allocate histogram value.  */
 
@@ -386,7 +386,9 @@ stream_in_histogram_value (class lto_input_block *ib, gimple *stmt)
 	default:
 	  gcc_unreachable ();
 	}
-      new_val->hvalue.counters = XNEWVAR (gcov_type, sizeof (*new_val->hvalue.counters) * ncounters);
+      new_val->hvalue.counters = XNEWVAR (gcov_type,
+					  sizeof (*new_val->hvalue.counters)
+					  * ncounters);
       new_val->n_counters = ncounters;
       for (i = 0; i < ncounters; i++)
 	new_val->hvalue.counters[i] = streamer_read_gcov_count (ib);
@@ -629,7 +631,8 @@ gimple_value_profile_transformations (void)
 	    }
 
 	  /* The function never thansforms a GIMPLE statement.  */
-	  gimple_ic_transform (&gsi);
+	  if (dump_enabled_p ())
+	    dump_ic_profile (&gsi);
         }
     }
 
@@ -1388,13 +1391,10 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
   return dcall_stmt;
 }
 
-/* There maybe multiple indirect targets in histogram.  Check every
-   indirect/virtual call if callee function exists, if not exist, leave it to
-   LTO stage for later process.  Modify code of this indirect call to an if-else
-   structure in ipa-profile finally.  */
+/* Dump info about indirect call profile.  */
 
 static void
-gimple_ic_transform (gimple_stmt_iterator *gsi)
+dump_ic_profile (gimple_stmt_iterator *gsi)
 {
   gcall *stmt;
   histogram_value histogram;
@@ -1423,37 +1423,25 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
       if (!get_nth_most_common_value (NULL, "indirect call", histogram, &val,
 				      &count, &all, j))
 	return;
-
-      /* Minimum probability.  should be higher than 25%.  */
-      if (4 * count <= all)
-	return;
+      if (!count)
+	continue;
 
       direct_call = find_func_by_profile_id ((int) val);
 
       if (direct_call == NULL)
-	{
-	  if (val)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (
-		  MSG_MISSED_OPTIMIZATION, stmt,
-		  "Indirect call -> direct call from other "
-		  "module %T=> %i (will resolve only with LTO)\n",
-		  gimple_call_fn (stmt), (int) val);
-	    }
-	  return;
-	}
-
-      if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
-			   "Indirect call -> direct call "
-			   "%T => %T transformation on insn postponed\n",
-			   gimple_call_fn (stmt), direct_call->decl);
-	  dump_printf_loc (MSG_NOTE, stmt,
-			   "hist->count %" PRId64 " hist->all %" PRId64 "\n",
-			   count, all);
-	}
+	dump_printf_loc (
+	  MSG_MISSED_OPTIMIZATION, stmt,
+	  "Indirect call -> direct call from other "
+	  "module %T=> %i (will resolve by ipa-profile only with LTO)\n",
+	  gimple_call_fn (stmt), (int) val);
+      else
+	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
+			 "Indirect call -> direct call "
+			 "%T => %T (will resolve by ipa-profile)\n",
+			 gimple_call_fn (stmt), direct_call->decl);
+      dump_printf_loc (MSG_NOTE, stmt,
+		       "hist->count %" PRId64 " hist->all %" PRId64 "\n",
+		       count, all);
     }
 }
 

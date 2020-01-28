@@ -336,6 +336,56 @@ unsigned num_expanded_macros_counter = 0;
    from macro expansion.  */
 unsigned num_macro_tokens_counter = 0;
 
+/* Handle meeting "__has_include" builtin macro.  */
+
+static int
+builtin_has_include (cpp_reader *pfile, cpp_hashnode *op, bool has_next)
+{
+  int result = 0;
+
+  pfile->state.angled_headers = true;
+  const cpp_token *token = cpp_get_token (pfile);
+  bool paren = token->type == CPP_OPEN_PAREN;
+  if (paren)
+    token = cpp_get_token (pfile);
+  else
+    cpp_error (pfile, CPP_DL_ERROR,
+	       "missing '(' before \"%s\" operand", NODE_NAME (op));
+  pfile->state.angled_headers = false;
+
+  bool bracket = token->type != CPP_STRING;
+  char *fname = NULL;
+  if (token->type == CPP_STRING || token->type == CPP_HEADER_NAME)
+    {
+      fname = XNEWVEC (char, token->val.str.len - 1);
+      memcpy (fname, token->val.str.text + 1, token->val.str.len - 2);
+      fname[token->val.str.len - 2] = '\0';
+    }
+  else if (token->type == CPP_LESS)
+    fname = _cpp_bracket_include (pfile);
+  else
+    cpp_error (pfile, CPP_DL_ERROR,
+	       "operator \"%s\" requires a header-name", NODE_NAME (op));
+
+  if (fname)
+    {
+      /* Do not do the lookup if we're skipping, that's unnecessary
+	 IO.  */
+      if (!pfile->state.skip_eval
+	  && _cpp_has_header (pfile, fname, bracket,
+			      has_next ? IT_INCLUDE_NEXT : IT_INCLUDE))
+	result = 1;
+
+      XDELETEVEC (fname);
+    }
+
+  if (paren && !SEEN_EOL () && cpp_get_token (pfile)->type != CPP_CLOSE_PAREN)
+    cpp_error (pfile, CPP_DL_ERROR,
+	       "missing ')' after \"%s\" operand", NODE_NAME (op));
+
+  return result;
+}
+
 /* Emits a warning if NODE is a macro defined in the main file that
    has not been used.  */
 int
@@ -571,6 +621,12 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
 
     case BT_HAS_BUILTIN:
       number = pfile->cb.has_builtin (pfile);
+      break;
+
+    case BT_HAS_INCLUDE:
+    case BT_HAS_INCLUDE_NEXT:
+      number = builtin_has_include (pfile, node,
+				    node->value.builtin == BT_HAS_INCLUDE_NEXT);
       break;
     }
 

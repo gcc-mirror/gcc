@@ -1,3 +1,9 @@
+2020-01-27  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* lib-link.m4 (AC_LIB_LINKFLAGS_BODY): Add new
+	--with-libXXX-type=... option.  Use this to guide the selection of
+	either a shared library or a static library.
+
 2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
 
 	* toolexeclibdir.m4: New file.

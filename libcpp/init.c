@@ -404,6 +404,8 @@ static const struct builtin_macro builtin_array[] =
   B("__has_attribute",	 BT_HAS_ATTRIBUTE, true),
   B("__has_cpp_attribute", BT_HAS_ATTRIBUTE, true),
   B("__has_builtin",	 BT_HAS_BUILTIN,   true),
+  B("__has_include",	 BT_HAS_INCLUDE,   true),
+  B("__has_include_next",BT_HAS_INCLUDE_NEXT,   true),
   /* Keep builtins not used for -traditional-cpp at the end, and
      update init_builtins() if any more are added.  */
   B("_Pragma",		 BT_PRAGMA,        true),
@@ -578,17 +580,6 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
 
   if (CPP_OPTION (pfile, objc))
     _cpp_define_builtin (pfile, "__OBJC__ 1");
-
-  /* These two behave as macros for #ifdef, but are evaluated
-     specially inside #if.  */
-  _cpp_define_builtin (pfile, "__has_include __has_include");
-  _cpp_define_builtin (pfile, "__has_include_next __has_include_next");
-  pfile->spec_nodes.n__has_include
-    = cpp_lookup (pfile, DSC("__has_include"));
-  pfile->spec_nodes.n__has_include->flags |= NODE_DIAGNOSTIC;
-  pfile->spec_nodes.n__has_include_next
-    = cpp_lookup (pfile, DSC("__has_include_next"));
-  pfile->spec_nodes.n__has_include_next->flags |= NODE_DIAGNOSTIC;
 }
 
 /* Sanity-checks are dependent on command-line options, so it is

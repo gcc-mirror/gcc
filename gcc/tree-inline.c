@@ -2181,47 +2181,51 @@ copy_bb (copy_body_data *id, basic_block bb,
 		  if (edge)
 		    {
 		      struct cgraph_edge *old_edge = edge;
-		      profile_count old_cnt = edge->count;
-		      edge = edge->clone (id->dst_node, call_stmt,
-					  gimple_uid (stmt),
-					  num, den,
-					  true);
 
-		      /* A speculative call is consist of edges - indirect edge
-			 and direct edges (one indirect edeg may has multiple
-			 direct edges).  Duplicate the whole thing and
-			 distribute frequencies accordingly.  */
+		      /* A speculative call is consist of multiple
+			 edges - indirect edge and one or more direct edges
+			 Duplicate the whole thing and distribute frequencies
+			 accordingly.  */
 		      if (edge->speculative)
 			{
-			  struct cgraph_edge *direct, *indirect;
-			  struct ipa_ref *ref;
+			  int n = 0;
+			  profile_count direct_cnt
+				 = profile_count::zero ();
 
-			  gcc_assert (!edge->indirect_unknown_callee);
-			  old_edge->speculative_call_info (direct, indirect, ref);
-			  while (old_edge->next_callee
-				 && old_edge->next_callee->speculative
-				 && indirect->num_speculative_call_targets_p ()
-				      > 1)
-			    {
-			      id->dst_node->clone_reference (ref, stmt);
+			  /* First figure out the distribution of counts
+			     so we can re-scale BB profile accordingly.  */
+			  for (cgraph_edge *e = old_edge; e;
+			       e = e->next_speculative_call_target ())
+			    direct_cnt = direct_cnt + e->count;
 
-			      edge = old_edge->next_callee;
-			      edge = edge->clone (id->dst_node, call_stmt,
-						  gimple_uid (stmt), num, den,
-						  true);
-			      old_edge = old_edge->next_callee;
-			      gcc_assert (!edge->indirect_unknown_callee);
-
-			      /* If the indirect edge has multiple speculative
-				 calls, iterate through all direct calls
-				 associated to the speculative call and clone
-				 all related direct edges before cloning the
-				 related indirect edge.  */
-			      old_edge->speculative_call_info (direct, indirect,
-							       ref);
-			    }
-
+			  cgraph_edge *indirect
+				 = old_edge->speculative_call_indirect_edge ();
 			  profile_count indir_cnt = indirect->count;
+
+			  /* Next iterate all direct edges, clone it and its
+			     corresponding reference and update profile.  */
+			  for (cgraph_edge *e = old_edge;
+			       e;
+			       e = e->next_speculative_call_target ())
+			    {
+			      profile_count cnt = e->count;
+
+			      id->dst_node->clone_reference
+				 (e->speculative_call_target_ref (), stmt);
+			      edge = e->clone (id->dst_node, call_stmt,
+					       gimple_uid (stmt), num, den,
+					       true);
+			      profile_probability prob
+				 = cnt.probability_in (direct_cnt
+						       + indir_cnt);
+			      edge->count
+				 = copy_basic_block->count.apply_probability
+					 (prob);
+			      n++;
+			    }
+			  gcc_checking_assert
+				 (indirect->num_speculative_call_targets_p ()
+				  == n);
 
 			  /* Duplicate the indirect edge after all direct edges
 			     cloned.  */
@@ -2231,14 +2235,19 @@ copy_bb (copy_body_data *id, basic_block bb,
 						      true);
 
 			  profile_probability prob
-			     = indir_cnt.probability_in (old_cnt + indir_cnt);
+			     = indir_cnt.probability_in (direct_cnt
+							 + indir_cnt);
 			  indirect->count
 			     = copy_basic_block->count.apply_probability (prob);
-			  edge->count = copy_basic_block->count - indirect->count;
-			  id->dst_node->clone_reference (ref, stmt);
 			}
 		      else
-			edge->count = copy_basic_block->count;
+			{
+			  edge = edge->clone (id->dst_node, call_stmt,
+					      gimple_uid (stmt),
+					      num, den,
+					      true);
+			  edge->count = copy_basic_block->count;
+			}
 		    }
 		  break;
 

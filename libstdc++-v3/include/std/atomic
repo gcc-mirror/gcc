@@ -174,7 +174,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  @brief Generic atomic type, primary class template.
    *
-   *  @tparam _Tp  Type to be made atomic, must be trivally copyable.
+   *  @tparam _Tp  Type to be made atomic, must be trivially copyable.
    */
   template<typename _Tp>
     struct atomic

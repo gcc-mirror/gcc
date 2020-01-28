@@ -109,8 +109,8 @@ pass_test_metadata::execute (function *fun)
 	    /* CWE-242: Use of Inherently Dangerous Function.  */
 	    diagnostic_metadata m;
 	    m.add_cwe (242);
-	    warning_at (&richloc, m, 0,
-			"never use %qs", "gets");
+	    warning_meta (&richloc, m, 0,
+			  "never use %qs", "gets");
 	  }
       }
 

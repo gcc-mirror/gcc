@@ -1811,11 +1811,22 @@ tree_cmp (const_tree t1, const_tree t2)
 
     case REAL_CST:
       {
-	real_value *rv1 = TREE_REAL_CST_PTR (t1);
-	real_value *rv2 = TREE_REAL_CST_PTR (t2);
+	const real_value *rv1 = TREE_REAL_CST_PTR (t1);
+	const real_value *rv2 = TREE_REAL_CST_PTR (t2);
+	if (real_compare (UNORDERED_EXPR, rv1, rv2))
+	  {
+	    /* Impose an arbitrary order on NaNs relative to other NaNs
+	       and to non-NaNs.  */
+	    if (int cmp_isnan = real_isnan (rv1) - real_isnan (rv2))
+	      return cmp_isnan;
+	    if (int cmp_issignaling_nan
+		  = real_issignaling_nan (rv1) - real_issignaling_nan (rv2))
+	      return cmp_issignaling_nan;
+	    return real_isneg (rv1) - real_isneg (rv2);
+	  }
 	if (real_compare (LT_EXPR, rv1, rv2))
 	  return -1;
-	if (real_compare (LT_EXPR, rv2, rv1))
+	if (real_compare (GT_EXPR, rv1, rv2))
 	  return 1;
 	return 0;
       }
@@ -3816,27 +3827,26 @@ public:
 	{
 	  diagnostic_metadata m;
 	  m.add_cwe (457); /* "CWE-457: Use of Uninitialized Variable".  */
-	  return warning_at (rich_loc, m,
-			     OPT_Wanalyzer_use_of_uninitialized_value,
-			     "use of uninitialized value %qE",
-			     m_expr);
+	  return warning_meta (rich_loc, m,
+			       OPT_Wanalyzer_use_of_uninitialized_value,
+			       "use of uninitialized value %qE",
+			       m_expr);
 	}
 	break;
       case POISON_KIND_FREED:
 	{
 	  diagnostic_metadata m;
 	  m.add_cwe (416); /* "CWE-416: Use After Free".  */
-	  return warning_at (rich_loc, m,
-			     OPT_Wanalyzer_use_after_free,
-			     "use after %<free%> of %qE",
-			     m_expr);
+	  return warning_meta (rich_loc, m,
+			       OPT_Wanalyzer_use_after_free,
+			       "use after %<free%> of %qE",
+			       m_expr);
 	}
 	break;
       case POISON_KIND_POPPED_STACK:
 	{
-	  diagnostic_metadata m;
 	  /* TODO: which CWE?  */
-	  return warning_at (rich_loc, m,
+	  return warning_at (rich_loc,
 			     OPT_Wanalyzer_use_of_pointer_in_stale_stack_frame,
 			     "use of pointer %qE within stale stack frame",
 			     m_expr);
@@ -6927,6 +6937,58 @@ namespace ana {
 
 namespace selftest {
 
+/* Build a constant tree of the given type from STR.  */
+
+static tree
+build_real_cst_from_string (tree type, const char *str)
+{
+  REAL_VALUE_TYPE real;
+  real_from_string (&real, str);
+  return build_real (type, real);
+}
+
+/* Append various "interesting" constants to OUT (e.g. NaN).  */
+
+static void
+append_interesting_constants (auto_vec<tree> *out)
+{
+  out->safe_push (build_int_cst (integer_type_node, 0));
+  out->safe_push (build_int_cst (integer_type_node, 42));
+  out->safe_push (build_int_cst (unsigned_type_node, 0));
+  out->safe_push (build_int_cst (unsigned_type_node, 42));
+  out->safe_push (build_real_cst_from_string (float_type_node, "QNaN"));
+  out->safe_push (build_real_cst_from_string (float_type_node, "-QNaN"));
+  out->safe_push (build_real_cst_from_string (float_type_node, "SNaN"));
+  out->safe_push (build_real_cst_from_string (float_type_node, "-SNaN"));
+  out->safe_push (build_real_cst_from_string (float_type_node, "0.0"));
+  out->safe_push (build_real_cst_from_string (float_type_node, "-0.0"));
+  out->safe_push (build_real_cst_from_string (float_type_node, "Inf"));
+  out->safe_push (build_real_cst_from_string (float_type_node, "-Inf"));
+}
+
+/* Verify that tree_cmp is a well-behaved comparator for qsort, even
+   if the underlying constants aren't comparable.  */
+
+static void
+test_tree_cmp_on_constants ()
+{
+  auto_vec<tree> csts;
+  append_interesting_constants (&csts);
+
+  /* Try sorting every triple. */
+  const unsigned num = csts.length ();
+  for (unsigned i = 0; i < num; i++)
+    for (unsigned j = 0; j < num; j++)
+      for (unsigned k = 0; k < num; k++)
+	{
+	  auto_vec<tree> v (3);
+	  v.quick_push (csts[i]);
+	  v.quick_push (csts[j]);
+	  v.quick_push (csts[k]);
+	  v.qsort (tree_cmp);
+	}
+}
+
 /* Implementation detail of the ASSERT_CONDITION_* macros.  */
 
 void
@@ -7577,6 +7639,25 @@ test_canonicalization_3 ()
   ASSERT_EQ (model0, model1);
 }
 
+/* Verify that we can canonicalize a model containing NaN and other real
+   constants.  */
+
+static void
+test_canonicalization_4 ()
+{
+  auto_vec<tree> csts;
+  append_interesting_constants (&csts);
+
+  region_model model;
+
+  unsigned i;
+  tree cst;
+  FOR_EACH_VEC_ELT (csts, i, cst)
+    model.get_rvalue (cst, NULL);
+
+  model.canonicalize (NULL);
+}
+
 /* Assert that if we have two region_model instances
    with values VAL_A and VAL_B for EXPR that they are
    mergable.  Write the merged model to *OUT_MERGED_MODEL,
@@ -7957,6 +8038,7 @@ test_constraint_merging ()
 void
 analyzer_region_model_cc_tests ()
 {
+  test_tree_cmp_on_constants ();
   test_dump ();
   test_unique_constants ();
   test_svalue_equality ();
@@ -7969,6 +8051,7 @@ analyzer_region_model_cc_tests ()
   test_canonicalization_1 ();
   test_canonicalization_2 ();
   test_canonicalization_3 ();
+  test_canonicalization_4 ();
   test_state_merging ();
   test_constraint_merging ();
 }

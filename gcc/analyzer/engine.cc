@@ -1333,21 +1333,13 @@ void
 rewind_info_t::update_model (region_model *model,
 			     const exploded_edge &eedge)
 {
-  const exploded_node &src_enode = *eedge.m_src;
-  const program_point &src_point = src_enode.get_point ();
-
-  const gimple *last_stmt
-    = src_point.get_supernode ()->get_last_stmt ();
-  gcc_assert (last_stmt);
-  const gcall *longjmp_call = as_a <const gcall *> (last_stmt);
-
   const program_point &longjmp_point = eedge.m_src->get_point ();
   const program_point &setjmp_point = eedge.m_dest->get_point ();
 
   gcc_assert (longjmp_point.get_stack_depth ()
 	      >= setjmp_point.get_stack_depth ());
 
-  model->on_longjmp (longjmp_call,
+  model->on_longjmp (get_longjmp_call (),
 		     get_setjmp_call (),
 		     setjmp_point.get_stack_depth (), NULL);
 }
@@ -1368,7 +1360,7 @@ rewind_info_t::add_events_to_path (checker_path *emission_path,
 
   emission_path->add_event
     (new rewind_from_longjmp_event
-     (&eedge, src_point.get_supernode ()->get_end_location (),
+     (&eedge, get_longjmp_call ()->location,
       src_point.get_fndecl (),
       src_stack_depth, this));
   emission_path->add_event

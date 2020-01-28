@@ -6148,8 +6148,9 @@ redeclare_class_template (tree type, tree parms, tree cons)
 	      && (TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (tmpl_parm))
 		  != TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm)))))
 	{
+	  auto_diagnostic_group d;
 	  error ("template parameter %q+#D", tmpl_parm);
-	  error ("redeclared here as %q#D", parm);
+	  inform (input_location, "redeclared here as %q#D", parm);
 	  return false;
 	}
 
@@ -6159,6 +6160,7 @@ redeclare_class_template (tree type, tree parms, tree cons)
       tree p2 = TREE_VEC_ELT (parms, i);
       if (!template_parameter_constraints_equivalent_p (p1, p2))
 	{
+	  auto_diagnostic_group d;
 	  error ("declaration of template parameter %q+#D with different "
 		 "constraints", parm);
 	  inform (DECL_SOURCE_LOCATION (tmpl_parm),
@@ -6172,6 +6174,7 @@ redeclare_class_template (tree type, tree parms, tree cons)
 
 	     A template-parameter may not be given default arguments
 	     by two different declarations in the same scope.  */
+	  auto_diagnostic_group d;
 	  error_at (input_location, "redefinition of default argument for %q#D", parm);
 	  inform (DECL_SOURCE_LOCATION (tmpl_parm),
 		  "original definition appeared here");
@@ -6206,6 +6209,7 @@ redeclare_class_template (tree type, tree parms, tree cons)
   /* Two classes with different constraints declare different entities.  */
   if (!cp_tree_equal (req1, req2))
     {
+      auto_diagnostic_group d;
       error_at (input_location, "redeclaration %q#D with different "
                                 "constraints", tmpl);
       inform (DECL_SOURCE_LOCATION (tmpl),
@@ -16772,13 +16776,24 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
     case INTEGER_CST:
     case REAL_CST:
-    case STRING_CST:
     case COMPLEX_CST:
       {
 	/* Instantiate any typedefs in the type.  */
 	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	r = fold_convert (type, t);
 	gcc_assert (TREE_CODE (r) == code);
+	return r;
+      }
+
+    case STRING_CST:
+      {
+	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	r = t;
+	if (type != TREE_TYPE (t))
+	  {
+	    r = copy_node (t);
+	    TREE_TYPE (r) = type;
+	  }
 	return r;
       }
 
