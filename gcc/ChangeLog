@@ -1,3 +1,9 @@
+2020-01-28  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/93272
+	* ira-lives.c (process_out_of_region_eh_regs): New function.
+	(process_bb_node_lives): Call it.
+
 2020-01-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	* coverage.c (read_counts_file): Make error message lowercase.
