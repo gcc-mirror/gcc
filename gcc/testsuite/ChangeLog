@@ -1,3 +1,8 @@
+2020-01-28  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/93437
+	* g++.dg/warn/Wstringop-overflow-5.C: New test.a
+
 2020-01-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/tree-prof/indir-call-prof.C: Update template.
