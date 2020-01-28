@@ -10,6 +10,10 @@
 
 2020-01-28  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/93470
+	* include/bits/refwrap.h (reference_wrapper::operator()): Restrict
+	static assertion to object types.
+
 	PR libstdc++/93325
 	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Use AC_SEARCH_LIBS for
 	clock_gettime instead of explicit glibc version check.
