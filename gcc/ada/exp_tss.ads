@@ -94,6 +94,7 @@ package Exp_Tss is
    TSS_Stream_Output      : constant TNT := "SO";  -- Stream Output attribute
    TSS_Stream_Read        : constant TNT := "SR";  -- Stream Read attribute
    TSS_Stream_Write       : constant TNT := "SW";  -- Stream Write attribute
+   TSS_Put_Image          : constant TNT := "PI";  -- Put_Image attribute
    TSS_To_Any             : constant TNT := "TA";  -- PolyORB/DSA To_Any
    TSS_TypeCode           : constant TNT := "TC";  -- PolyORB/DSA TypeCode
 
@@ -116,6 +117,7 @@ package Exp_Tss is
       TSS_Stream_Output,
       TSS_Stream_Read,
       TSS_Stream_Write,
+      TSS_Put_Image,
       TSS_To_Any,
       TSS_TypeCode);
 

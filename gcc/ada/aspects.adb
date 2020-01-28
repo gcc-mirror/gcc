@@ -500,136 +500,36 @@ package body Aspects is
 
    --  Table used for Same_Aspect, maps aspect to canonical aspect
 
-   Canonical_Aspect : constant array (Aspect_Id) of Aspect_Id :=
-   (No_Aspect                           => No_Aspect,
-    Aspect_Abstract_State               => Aspect_Abstract_State,
-    Aspect_Address                      => Aspect_Address,
-    Aspect_Alignment                    => Aspect_Alignment,
-    Aspect_All_Calls_Remote             => Aspect_All_Calls_Remote,
-    Aspect_Annotate                     => Aspect_Annotate,
-    Aspect_Async_Readers                => Aspect_Async_Readers,
-    Aspect_Async_Writers                => Aspect_Async_Writers,
-    Aspect_Asynchronous                 => Aspect_Asynchronous,
-    Aspect_Atomic                       => Aspect_Atomic,
-    Aspect_Atomic_Components            => Aspect_Atomic_Components,
-    Aspect_Attach_Handler               => Aspect_Attach_Handler,
-    Aspect_Bit_Order                    => Aspect_Bit_Order,
-    Aspect_Component_Size               => Aspect_Component_Size,
-    Aspect_Constant_After_Elaboration   => Aspect_Constant_After_Elaboration,
-    Aspect_Constant_Indexing            => Aspect_Constant_Indexing,
-    Aspect_Contract_Cases               => Aspect_Contract_Cases,
-    Aspect_Convention                   => Aspect_Convention,
-    Aspect_CPU                          => Aspect_CPU,
-    Aspect_Default_Component_Value      => Aspect_Default_Component_Value,
-    Aspect_Default_Initial_Condition    => Aspect_Default_Initial_Condition,
-    Aspect_Default_Iterator             => Aspect_Default_Iterator,
-    Aspect_Default_Storage_Pool         => Aspect_Default_Storage_Pool,
-    Aspect_Default_Value                => Aspect_Default_Value,
-    Aspect_Depends                      => Aspect_Depends,
-    Aspect_Dimension                    => Aspect_Dimension,
-    Aspect_Dimension_System             => Aspect_Dimension_System,
-    Aspect_Disable_Controlled           => Aspect_Disable_Controlled,
-    Aspect_Discard_Names                => Aspect_Discard_Names,
-    Aspect_Dispatching_Domain           => Aspect_Dispatching_Domain,
-    Aspect_Dynamic_Predicate            => Aspect_Predicate,
-    Aspect_Effective_Reads              => Aspect_Effective_Reads,
-    Aspect_Effective_Writes             => Aspect_Effective_Writes,
-    Aspect_Elaborate_Body               => Aspect_Elaborate_Body,
-    Aspect_Export                       => Aspect_Export,
-    Aspect_Extensions_Visible           => Aspect_Extensions_Visible,
-    Aspect_External_Name                => Aspect_External_Name,
-    Aspect_External_Tag                 => Aspect_External_Tag,
-    Aspect_Favor_Top_Level              => Aspect_Favor_Top_Level,
-    Aspect_Ghost                        => Aspect_Ghost,
-    Aspect_Global                       => Aspect_Global,
-    Aspect_Implicit_Dereference         => Aspect_Implicit_Dereference,
-    Aspect_Import                       => Aspect_Import,
-    Aspect_Independent                  => Aspect_Independent,
-    Aspect_Independent_Components       => Aspect_Independent_Components,
-    Aspect_Inline                       => Aspect_Inline,
-    Aspect_Inline_Always                => Aspect_Inline,
-    Aspect_Initial_Condition            => Aspect_Initial_Condition,
-    Aspect_Initializes                  => Aspect_Initializes,
-    Aspect_Input                        => Aspect_Input,
-    Aspect_Interrupt_Handler            => Aspect_Interrupt_Handler,
-    Aspect_Interrupt_Priority           => Aspect_Priority,
-    Aspect_Invariant                    => Aspect_Invariant,
-    Aspect_Iterable                     => Aspect_Iterable,
-    Aspect_Iterator_Element             => Aspect_Iterator_Element,
-    Aspect_Link_Name                    => Aspect_Link_Name,
-    Aspect_Linker_Section               => Aspect_Linker_Section,
-    Aspect_Lock_Free                    => Aspect_Lock_Free,
-    Aspect_Machine_Radix                => Aspect_Machine_Radix,
-    Aspect_Max_Entry_Queue_Depth        => Aspect_Max_Entry_Queue_Depth,
-    Aspect_Max_Entry_Queue_Length       => Aspect_Max_Entry_Queue_Length,
-    Aspect_Max_Queue_Length             => Aspect_Max_Queue_Length,
-    Aspect_No_Caching                   => Aspect_No_Caching,
-    Aspect_No_Elaboration_Code_All      => Aspect_No_Elaboration_Code_All,
-    Aspect_No_Inline                    => Aspect_No_Inline,
-    Aspect_No_Return                    => Aspect_No_Return,
-    Aspect_No_Tagged_Streams            => Aspect_No_Tagged_Streams,
-    Aspect_Obsolescent                  => Aspect_Obsolescent,
-    Aspect_Object_Size                  => Aspect_Object_Size,
-    Aspect_Output                       => Aspect_Output,
-    Aspect_Pack                         => Aspect_Pack,
-    Aspect_Part_Of                      => Aspect_Part_Of,
-    Aspect_Persistent_BSS               => Aspect_Persistent_BSS,
-    Aspect_Post                         => Aspect_Post,
-    Aspect_Postcondition                => Aspect_Post,
-    Aspect_Pre                          => Aspect_Pre,
-    Aspect_Precondition                 => Aspect_Pre,
-    Aspect_Predicate                    => Aspect_Predicate,
-    Aspect_Predicate_Failure            => Aspect_Predicate_Failure,
-    Aspect_Preelaborate                 => Aspect_Preelaborate,
-    Aspect_Preelaborable_Initialization => Aspect_Preelaborable_Initialization,
-    Aspect_Priority                     => Aspect_Priority,
-    Aspect_Pure                         => Aspect_Pure,
-    Aspect_Pure_Function                => Aspect_Pure_Function,
-    Aspect_Refined_Depends              => Aspect_Refined_Depends,
-    Aspect_Refined_Global               => Aspect_Refined_Global,
-    Aspect_Refined_Post                 => Aspect_Refined_Post,
-    Aspect_Refined_State                => Aspect_Refined_State,
-    Aspect_Remote_Access_Type           => Aspect_Remote_Access_Type,
-    Aspect_Remote_Call_Interface        => Aspect_Remote_Call_Interface,
-    Aspect_Remote_Types                 => Aspect_Remote_Types,
-    Aspect_Read                         => Aspect_Read,
-    Aspect_Relative_Deadline            => Aspect_Relative_Deadline,
-    Aspect_Scalar_Storage_Order         => Aspect_Scalar_Storage_Order,
-    Aspect_Secondary_Stack_Size         => Aspect_Secondary_Stack_Size,
-    Aspect_Shared                       => Aspect_Atomic,
-    Aspect_Shared_Passive               => Aspect_Shared_Passive,
-    Aspect_Simple_Storage_Pool          => Aspect_Simple_Storage_Pool,
-    Aspect_Simple_Storage_Pool_Type     => Aspect_Simple_Storage_Pool_Type,
-    Aspect_Size                         => Aspect_Size,
-    Aspect_Small                        => Aspect_Small,
-    Aspect_SPARK_Mode                   => Aspect_SPARK_Mode,
-    Aspect_Static_Predicate             => Aspect_Predicate,
-    Aspect_Storage_Pool                 => Aspect_Storage_Pool,
-    Aspect_Storage_Size                 => Aspect_Storage_Size,
-    Aspect_Stream_Size                  => Aspect_Stream_Size,
-    Aspect_Suppress                     => Aspect_Suppress,
-    Aspect_Suppress_Debug_Info          => Aspect_Suppress_Debug_Info,
-    Aspect_Suppress_Initialization      => Aspect_Suppress_Initialization,
-    Aspect_Synchronization              => Aspect_Synchronization,
-    Aspect_Test_Case                    => Aspect_Test_Case,
-    Aspect_Thread_Local_Storage         => Aspect_Thread_Local_Storage,
-    Aspect_Type_Invariant               => Aspect_Invariant,
-    Aspect_Unchecked_Union              => Aspect_Unchecked_Union,
-    Aspect_Unimplemented                => Aspect_Unimplemented,
-    Aspect_Universal_Aliasing           => Aspect_Universal_Aliasing,
-    Aspect_Universal_Data               => Aspect_Universal_Data,
-    Aspect_Unmodified                   => Aspect_Unmodified,
-    Aspect_Unreferenced                 => Aspect_Unreferenced,
-    Aspect_Unreferenced_Objects         => Aspect_Unreferenced_Objects,
-    Aspect_Unsuppress                   => Aspect_Unsuppress,
-    Aspect_Variable_Indexing            => Aspect_Variable_Indexing,
-    Aspect_Value_Size                   => Aspect_Value_Size,
-    Aspect_Volatile                     => Aspect_Volatile,
-    Aspect_Volatile_Components          => Aspect_Volatile_Components,
-    Aspect_Volatile_Full_Access         => Aspect_Volatile_Full_Access,
-    Aspect_Volatile_Function            => Aspect_Volatile_Function,
-    Aspect_Warnings                     => Aspect_Warnings,
-    Aspect_Write                        => Aspect_Write);
+   type Aspect_To_Aspect_Mapping is array (Aspect_Id) of Aspect_Id;
+
+   function Init_Canonical_Aspect return Aspect_To_Aspect_Mapping;
+   --  Initialize the Canonical_Aspect mapping below
+
+   function Init_Canonical_Aspect return Aspect_To_Aspect_Mapping is
+      Result : Aspect_To_Aspect_Mapping;
+   begin
+      --  They all map to themselves...
+
+      for Aspect in Aspect_Id loop
+         Result (Aspect) := Aspect;
+      end loop;
+
+      --  ...except for these:
+
+      Result (Aspect_Dynamic_Predicate)  := Aspect_Predicate;
+      Result (Aspect_Inline_Always)      := Aspect_Inline;
+      Result (Aspect_Interrupt_Priority) := Aspect_Priority;
+      Result (Aspect_Postcondition)      := Aspect_Post;
+      Result (Aspect_Precondition)       := Aspect_Pre;
+      Result (Aspect_Shared)             := Aspect_Atomic;
+      Result (Aspect_Static_Predicate)   := Aspect_Predicate;
+      Result (Aspect_Type_Invariant)     := Aspect_Invariant;
+
+      return Result;
+   end Init_Canonical_Aspect;
+
+   Canonical_Aspect : constant Aspect_To_Aspect_Mapping :=
+     Init_Canonical_Aspect;
 
    function Same_Aspect (A1 : Aspect_Id; A2 : Aspect_Id) return Boolean is
    begin

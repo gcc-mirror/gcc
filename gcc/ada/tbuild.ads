@@ -140,6 +140,10 @@ package Tbuild is
    --  all cases, and the second only for while loops), and if one of these
    --  restrictions is being violated, an error message is posted on Node.
 
+   function Make_Increment
+     (Loc : Source_Ptr; Index : Entity_Id; Typ : Entity_Id) return Node_Id;
+   --  Return an assignment statement of the form "Index := Typ'Succ (Index);"
+
    function Make_Integer_Literal
      (Loc    : Source_Ptr;
       Intval : Int) return Node_Id;

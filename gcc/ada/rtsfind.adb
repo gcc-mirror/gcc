@@ -572,6 +572,10 @@ package body Rtsfind is
          elsif U_Id in Ada_Strings_Child then
             Name_Buffer (12) := '.';
 
+            if U_Id in Ada_Strings_Text_Output_Child then
+               Name_Buffer (24) := '.';
+            end if;
+
          elsif U_Id in Ada_Text_IO_Child then
             Name_Buffer (12) := '.';
 

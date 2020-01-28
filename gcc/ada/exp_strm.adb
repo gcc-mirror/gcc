@@ -297,7 +297,7 @@ package body Exp_Strm is
         Make_Defining_Identifier (Loc,
           Chars => Make_TSS_Name_Local (Typ, TSS_Stream_Output));
 
-      Build_Stream_Procedure (Loc, Typ, Decl, Pnam, Stms, False);
+      Build_Stream_Procedure (Loc, Typ, Decl, Pnam, Stms, Outp => False);
    end Build_Array_Output_Procedure;
 
    --------------------------------
@@ -420,7 +420,7 @@ package body Exp_Strm is
       end loop;
 
       Build_Stream_Procedure
-        (Loc, Typ, Decl, Pnam, New_List (Stm), Nam = Name_Read);
+        (Loc, Typ, Decl, Pnam, New_List (Stm), Outp => Nam = Name_Read);
    end Build_Array_Read_Write_Procedure;
 
    ---------------------------------
@@ -1320,7 +1320,7 @@ package body Exp_Strm is
 
       Pnam := Make_Stream_Subprogram_Name (Loc, Typ, TSS_Stream_Output);
 
-      Build_Stream_Procedure (Loc, Typ, Decl, Pnam, Stms, False);
+      Build_Stream_Procedure (Loc, Typ, Decl, Pnam, Stms, Outp => False);
    end Build_Record_Or_Elementary_Output_Procedure;
 
    ---------------------------------
@@ -1585,7 +1585,7 @@ package body Exp_Strm is
       end if;
 
       Build_Stream_Procedure
-        (Loc, Typ, Decl, Pnam, Stms, Nam = Name_Read);
+        (Loc, Typ, Decl, Pnam, Stms, Outp => Nam = Name_Read);
    end Build_Record_Read_Write_Procedure;
 
    ----------------------------------

@@ -37,6 +37,7 @@ with Exp_Ch9;  use Exp_Ch9;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Disp; use Exp_Disp;
 with Exp_Dist; use Exp_Dist;
+with Exp_Put_Image;
 with Exp_Smem; use Exp_Smem;
 with Exp_Strm; use Exp_Strm;
 with Exp_Tss;  use Exp_Tss;
@@ -265,6 +266,7 @@ package body Exp_Ch3 is
    --     typSW          provides result of 'Write attribute
    --     typSI          provides result of 'Input attribute
    --     typSO          provides result of 'Output attribute
+   --     typPI          provides result of 'Put_Image attribute
    --
    --  The following entries are additionally present for non-limited tagged
    --  types, and implement additional dispatching operations for predefined
@@ -9924,6 +9926,8 @@ package body Exp_Ch3 is
       --  Set to True if Tag_Typ has a primitive that renames the predefined
       --  equality operator. Used to implement (RM 8-5-4(8)).
 
+      use Exp_Put_Image;
+
    --  Start of processing for Make_Predefined_Primitive_Specs
 
    begin
@@ -9940,6 +9944,17 @@ package body Exp_Ch3 is
             Parameter_Type      => New_Occurrence_Of (Tag_Typ, Loc))),
 
         Ret_Type => Standard_Long_Long_Integer));
+
+      --  Spec of Put_Image
+
+      if Enable_Put_Image (Tag_Typ)
+        and then No (TSS (Tag_Typ, TSS_Put_Image))
+      then
+         Append_To (Res, Predef_Spec_Or_Body (Loc,
+           Tag_Typ => Tag_Typ,
+           Name    => Make_TSS_Name (Tag_Typ, TSS_Put_Image),
+           Profile => Build_Put_Image_Profile (Loc, Tag_Typ)));
+      end if;
 
       --  Specs for dispatching stream attributes
 
@@ -10450,6 +10465,8 @@ package body Exp_Ch3 is
 
       pragma Warnings (Off, Ent);
 
+      use Exp_Put_Image;
+
    begin
       pragma Assert (not Is_Interface (Tag_Typ));
 
@@ -10531,6 +10548,15 @@ package body Exp_Ch3 is
                 Attribute_Name  => Name_Size)))));
 
       Append_To (Res, Decl);
+
+      --  Body of Put_Image
+
+      if Enable_Put_Image (Tag_Typ)
+        and then No (TSS (Tag_Typ, TSS_Put_Image))
+      then
+         Build_Record_Put_Image_Procedure (Loc, Tag_Typ, Decl, Ent);
+         Append_To (Res, Decl);
+      end if;
 
       --  Bodies for Dispatching stream IO routines. We need these only for
       --  non-limited types (in the limited case there is no dispatching).

@@ -37,6 +37,7 @@ with Exp_Dist; use Exp_Dist;
 with Exp_Imgv; use Exp_Imgv;
 with Exp_Pakd; use Exp_Pakd;
 with Exp_Strm; use Exp_Strm;
+with Exp_Put_Image;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Expander; use Expander;
@@ -1737,22 +1738,19 @@ package body Exp_Attr is
 
    procedure Expand_N_Attribute_Reference (N : Node_Id) is
       Loc   : constant Source_Ptr   := Sloc (N);
-      Typ   : constant Entity_Id    := Etype (N);
-      Btyp  : constant Entity_Id    := Base_Type (Typ);
       Pref  : constant Node_Id      := Prefix (N);
-      Ptyp  : constant Entity_Id    := Etype (Pref);
       Exprs : constant List_Id      := Expressions (N);
-      Id    : constant Attribute_Id := Get_Attribute_Id (Attribute_Name (N));
 
-      procedure Rewrite_Stream_Proc_Call (Pname : Entity_Id);
-      --  Rewrites a stream attribute for Read, Write or Output with the
-      --  procedure call. Pname is the entity for the procedure to call.
+      procedure Rewrite_Attribute_Proc_Call (Pname : Entity_Id);
+      --  Rewrites an attribute for Read, Write, Output, or Put_Image with a
+      --  call to the appropriate TSS procedure. Pname is the entity for the
+      --  procedure to call.
 
-      ------------------------------
-      -- Rewrite_Stream_Proc_Call --
-      ------------------------------
+      ---------------------------------
+      -- Rewrite_Attribute_Proc_Call --
+      ---------------------------------
 
-      procedure Rewrite_Stream_Proc_Call (Pname : Entity_Id) is
+      procedure Rewrite_Attribute_Proc_Call (Pname : Entity_Id) is
          Item       : constant Node_Id   := Next (First (Exprs));
          Item_Typ   : constant Entity_Id := Etype (Item);
          Formal     : constant Entity_Id := Next_Formal (First_Formal (Pname));
@@ -1847,8 +1845,8 @@ package body Exp_Attr is
             end if;
          end if;
 
-         --  The stream operation to call may be a renaming created by an
-         --  attribute definition clause, and may not be frozen yet. Ensure
+         --  The stream operation to call might be a renaming created by an
+         --  attribute definition clause, and might not be frozen yet. Ensure
          --  that it has the necessary extra formals.
 
          if not Is_Frozen (Pname) then
@@ -1863,7 +1861,12 @@ package body Exp_Attr is
              Parameter_Associations => Exprs));
 
          Analyze (N);
-      end Rewrite_Stream_Proc_Call;
+      end Rewrite_Attribute_Proc_Call;
+
+      Typ   : constant Entity_Id    := Etype (N);
+      Btyp  : constant Entity_Id    := Base_Type (Typ);
+      Ptyp  : constant Entity_Id    := Etype (Pref);
+      Id    : constant Attribute_Id := Get_Attribute_Id (Attribute_Name (N));
 
    --  Start of processing for Expand_N_Attribute_Reference
 
@@ -5110,7 +5113,7 @@ package body Exp_Attr is
 
          --  If we fall through, Pname is the name of the procedure to call
 
-         Rewrite_Stream_Proc_Call (Pname);
+         Rewrite_Attribute_Proc_Call (Pname);
       end Output;
 
       ---------
@@ -5434,6 +5437,126 @@ package body Exp_Attr is
 
          Analyze_And_Resolve (N, Typ, Suppress => Access_Check);
       end Priority;
+
+      ---------------
+      -- Put_Image --
+      ---------------
+
+      when Attribute_Put_Image => Put_Image : declare
+         use Exp_Put_Image;
+         U_Type : constant Entity_Id := Underlying_Type (Entity (Pref));
+         Pname  : Entity_Id;
+         Decl   : Node_Id;
+
+      begin
+         --  If no underlying type, we have an error that will be diagnosed
+         --  elsewhere, so here we just completely ignore the expansion.
+
+         if No (U_Type) then
+            return;
+         end if;
+
+         --  If there is a TSS for Put_Image, just call it
+
+         Pname := TSS (U_Type, TSS_Put_Image);
+         if No (Pname) then
+            if Is_Tagged_Type (U_Type) and then Is_Derived_Type (U_Type) then
+               Pname := Find_Optional_Prim_Op (U_Type, TSS_Put_Image);
+               pragma Assert
+                 (Has_Interfaces (U_Type) -- ????interfaces not yet supported
+                    or else Enable_Put_Image (U_Type) = Present (Pname));
+            else
+               Pname := Find_Inherited_TSS (U_Type, TSS_Put_Image);
+            end if;
+         end if;
+
+         if No (Pname) then
+            --  For elementary types, we call the routine in System.Put_Images
+            --  directly.
+
+            if Is_Elementary_Type (U_Type) then
+               Rewrite (N, Build_Elementary_Put_Image_Call (N));
+               Analyze (N);
+               return;
+
+            --  ???It would be nice to call Build_String_Put_Image_Call below
+            --  if U_Type is a standard string type, but it currently generates
+            --  something like:
+            --
+            --     Put_Image_String (Sink, String (X));
+            --
+            --  so if X is of a private type whose full type is "new String",
+            --  then the type conversion is illegal. To fix that, we would need
+            --  to do unchecked conversions of access values, taking care to
+            --  deal with thin and fat pointers properly. For now, we just fall
+            --  back to Build_Array_Put_Image_Procedure in these cases, so the
+            --  following says "Root_Type (Entity (Pref))" instead of "U_Type".
+
+            elsif Is_Standard_String_Type (Root_Type (Entity (Pref))) then
+               Rewrite (N, Build_String_Put_Image_Call (N));
+               Analyze (N);
+               return;
+
+            elsif Is_Array_Type (U_Type) then
+               Build_Array_Put_Image_Procedure (N, U_Type, Decl, Pname);
+               Insert_Action (N, Decl);
+
+            --  Tagged type case, use the primitive Put_Image function. Note
+            --  that this will dispatch in the class-wide case which is what we
+            --  want.
+
+            elsif Is_Tagged_Type (U_Type) then
+               Pname := Find_Optional_Prim_Op (U_Type, TSS_Put_Image);
+
+               --  ????Need Find_Optional_Prim_Op instead of Find_Prim_Op,
+               --  because we might be deriving from a predefined type, which
+               --  currently has Enable_Put_Image False.
+
+               if No (Pname) then
+                  Rewrite (N, Build_Unknown_Put_Image_Call (N));
+                  Analyze (N);
+                  return;
+               end if;
+
+            elsif Is_Protected_Type (U_Type) then
+               Rewrite (N, Build_Protected_Put_Image_Call (N));
+               Analyze (N);
+               return;
+
+            elsif Is_Task_Type (U_Type) then
+               Rewrite (N, Build_Task_Put_Image_Call (N));
+               Analyze (N);
+               return;
+
+            --  All other record type cases, including protected records
+
+            else
+               pragma Assert (Is_Record_Type (U_Type));
+
+               --  Program_Error is raised when calling the default
+               --  implementation of the Put_Image attribute of an
+               --  Unchecked_Union type. ???It would be friendlier to print a
+               --  canned string. See handling of unchecked unions in
+               --  exp_put_image.adb (which is not reachable).
+
+               if Is_Unchecked_Union (Base_Type (U_Type)) then
+                  Rewrite (N,
+                    Make_Raise_Program_Error (Loc,
+                      Reason => PE_Unchecked_Union_Restriction));
+                  Set_Etype (N, Standard_Void_Type);
+                  return;
+               end if;
+
+               Build_Record_Put_Image_Procedure
+                 (Loc, Full_Base (U_Type), Decl, Pname);
+               Insert_Action (N, Decl);
+            end if;
+         end if;
+
+         --  If we fall through, Pname is the procedure to be called
+
+         Rewrite_Attribute_Proc_Call (Pname);
+      end Put_Image;
 
       ------------------
       -- Range_Length --
@@ -5765,7 +5888,7 @@ package body Exp_Attr is
             end if;
          end if;
 
-         Rewrite_Stream_Proc_Call (Pname);
+         Rewrite_Attribute_Proc_Call (Pname);
       end Read;
 
       ---------
@@ -7411,7 +7534,7 @@ package body Exp_Attr is
 
          --  If we fall through, Pname is the procedure to be called
 
-         Rewrite_Stream_Proc_Call (Pname);
+         Rewrite_Attribute_Proc_Call (Pname);
       end Write;
 
       --  Component_Size is handled by the back end, unless the component size

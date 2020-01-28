@@ -2838,12 +2838,12 @@ package body Sem_Ch8 is
       if Nkind (Nam) = N_Attribute_Reference then
 
          --  In the case of an abstract formal subprogram association, rewrite
-         --  an actual given by a stream attribute as the name of the
-         --  corresponding stream primitive of the type.
+         --  an actual given by a stream or Put_Image attribute as the name of
+         --  the corresponding stream or Put_Image primitive of the type.
 
-         --  In a generic context the stream operations are not generated, and
-         --  this must be treated as a normal attribute reference, to be
-         --  expanded in subsequent instantiations.
+         --  In a generic context the stream and Put_Image operations are not
+         --  generated, and this must be treated as a normal attribute
+         --  reference, to be expanded in subsequent instantiations.
 
          if Is_Actual
            and then Is_Abstract_Subprogram (Formal_Spec)
@@ -2851,12 +2851,12 @@ package body Sem_Ch8 is
          then
             declare
                Prefix_Type : constant Entity_Id := Entity (Prefix (Nam));
-               Stream_Prim : Entity_Id;
+               Prim : Entity_Id;
 
             begin
-               --  The class-wide forms of the stream attributes are not
-               --  primitive dispatching operations (even though they
-               --  internally dispatch to a stream attribute).
+               --  The class-wide forms of the stream and Put_Image attributes
+               --  are not primitive dispatching operations (even though they
+               --  internally dispatch).
 
                if Is_Class_Wide_Type (Prefix_Type) then
                   Error_Msg_N
@@ -2873,20 +2873,24 @@ package body Sem_Ch8 is
 
                case Attribute_Name (Nam) is
                   when Name_Input =>
-                     Stream_Prim :=
+                     Prim :=
                        Find_Optional_Prim_Op (Prefix_Type, TSS_Stream_Input);
 
                   when Name_Output =>
-                     Stream_Prim :=
+                     Prim :=
                        Find_Optional_Prim_Op (Prefix_Type, TSS_Stream_Output);
 
                   when Name_Read =>
-                     Stream_Prim :=
+                     Prim :=
                        Find_Optional_Prim_Op (Prefix_Type, TSS_Stream_Read);
 
                   when Name_Write =>
-                     Stream_Prim :=
+                     Prim :=
                        Find_Optional_Prim_Op (Prefix_Type, TSS_Stream_Write);
+
+                  when Name_Put_Image =>
+                     Prim :=
+                       Find_Optional_Prim_Op (Prefix_Type, TSS_Put_Image);
 
                   when others =>
                      Error_Msg_N
@@ -2895,10 +2899,13 @@ package body Sem_Ch8 is
                      return;
                end case;
 
-               --  If no operation was found, and the type is limited, the user
-               --  should have defined one.
+               --  If no stream operation was found, and the type is limited,
+               --  the user should have defined one. This rule does not apply
+               --  to Put_Image.
 
-               if No (Stream_Prim) then
+               if No (Prim)
+                 and then Attribute_Name (Nam) /= Name_Put_Image
+               then
                   if Is_Limited_Type (Prefix_Type) then
                      Error_Msg_NE
                       ("stream operation not defined for type&",
@@ -2919,9 +2926,9 @@ package body Sem_Ch8 is
                declare
                   Prim_Name : constant Node_Id :=
                                 Make_Identifier (Sloc (Nam),
-                                  Chars => Chars (Stream_Prim));
+                                  Chars => Chars (Prim));
                begin
-                  Set_Entity (Prim_Name, Stream_Prim);
+                  Set_Entity (Prim_Name, Prim);
                   Rewrite (Nam, Prim_Name);
                   Analyze (Nam);
                end;
