@@ -1,5 +1,10 @@
 2020-01-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/93418
+	* config/i386/i386.c (ix86_fold_builtin) <do_shift>: If mask is not
+	-1 or is_vshift is true, use new_vector with number of elts npatterns
+	rather than new_unary_operation.
+
 	PR tree-optimization/93454
 	* gimple-fold.c (fold_array_ctor_reference): Perform
 	elt_size.to_uhwi () just once, instead of calling it in every
