@@ -1,3 +1,10 @@
+2020-01-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/tree-prof/indir-call-prof.C: Update template.
+	* gcc.dg/tree-prof/crossmodule-indircall-1.c: Add more targets.
+	* gcc.dg/tree-prof/crossmodule-indircall-1a.c: Add more targets.
+	* gcc.dg/tree-prof/indir-call-prof.c: Update template.
+
 2020-01-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/91461

@@ -1,3 +1,49 @@
+2020-01-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/93318	
+	* cgraph.c (cgraph_add_edge_to_call_site_hash): Update call site
+	hash only when edge is first within the sequence.
+	(cgraph_edge::set_call_stmt): Update handling of speculative calls.
+	(symbol_table::create_edge): Do not set target_prob.
+	(cgraph_edge::remove_caller): Watch for speculative calls when updating
+	the call site hash.
+	(cgraph_edge::make_speculative): Drop target_prob parameter.
+	(cgraph_edge::speculative_call_info): Remove.
+	(cgraph_edge::first_speculative_call_target): New member function.
+	(update_call_stmt_hash_for_removing_direct_edge): New function.
+	(cgraph_edge::resolve_speculation): Rewrite to new API.
+	(cgraph_edge::speculative_call_for_target): New member function.
+	(cgraph_edge::make_direct): Rewrite to new API; fix handling of
+	multiple speculation targets.
+	(cgraph_edge::redirect_call_stmt_to_callee): Likewise; fix updating
+	of profile.
+	(verify_speculative_call): Verify that targets form an interval.
+	* cgraph.h (cgraph_edge::speculative_call_info): Remove.
+	(cgraph_edge::first_speculative_call_target): New member function.
+	(cgraph_edge::next_speculative_call_target): New member function.
+	(cgraph_edge::speculative_call_target_ref): New member function.
+	(cgraph_edge;:speculative_call_indirect_edge): New member funtion.
+	(cgraph_edge): Remove target_prob.
+	* cgraphclones.c (cgraph_node::set_call_stmt_including_clones):
+	Fix handling of speculative calls.
+	* ipa-devirt.c (ipa_devirt): Fix handling of speculative cals.
+	* ipa-fnsummary.c (analyze_function_body): Likewise.
+	* ipa-inline.c (speculation_useful_p): Use new speculative call API.
+	* ipa-profile.c (dump_histogram): Fix formating.
+	(ipa_profile_generate_summary): Watch for overflows.
+	(ipa_profile): Do not require probablity to be 1/2; update to new API.
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Update to new API.
+	(update_indirect_edges_after_inlining): Update to new API.
+	* ipa-utils.c (ipa_merge_profiles): Rewrite merging of speculative call
+	profiles.
+	* profile-count.h: (profile_probability::adjusted): New.
+	* tree-inline.c (copy_bb): Update to new speculative call API; fix
+	updating of profile.
+	* value-prof.c (gimple_ic_transform): Rename to ...
+	(dump_ic_profile): ... this one; update dumping.
+	(stream_in_histogram_value): Fix formating.
+	(gimple_value_profile_transformations): Update.
+
 2020-01-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/91461
