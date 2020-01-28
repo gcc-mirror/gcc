@@ -8290,6 +8290,7 @@ package body Exp_Ch7 is
          Ref  := Convert_Concurrent (Ref, Typ);
 
       elsif Is_Private_Type (Typ)
+        and then Present (Underlying_Type (Typ))
         and then Is_Concurrent_Type (Underlying_Type (Typ))
       then
          Utyp := Corresponding_Record_Type (Underlying_Type (Typ));
