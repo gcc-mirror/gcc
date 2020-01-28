@@ -1,3 +1,13 @@
+2020-01-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-core.h (warning_at): Rename overload to...
+	(warning_meta): ...this.
+	(emit_diagnostic_valist): Delete decl of overload taking
+	diagnostic_metadata.
+	* diagnostic.c (emit_diagnostic_valist): Likewise for defn.
+	(warning_at): Rename overload taking diagnostic_metadata to...
+	(warning_meta): ...this.
+
 2020-01-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/93439

@@ -3827,27 +3827,26 @@ public:
 	{
 	  diagnostic_metadata m;
 	  m.add_cwe (457); /* "CWE-457: Use of Uninitialized Variable".  */
-	  return warning_at (rich_loc, m,
-			     OPT_Wanalyzer_use_of_uninitialized_value,
-			     "use of uninitialized value %qE",
-			     m_expr);
+	  return warning_meta (rich_loc, m,
+			       OPT_Wanalyzer_use_of_uninitialized_value,
+			       "use of uninitialized value %qE",
+			       m_expr);
 	}
 	break;
       case POISON_KIND_FREED:
 	{
 	  diagnostic_metadata m;
 	  m.add_cwe (416); /* "CWE-416: Use After Free".  */
-	  return warning_at (rich_loc, m,
-			     OPT_Wanalyzer_use_after_free,
-			     "use after %<free%> of %qE",
-			     m_expr);
+	  return warning_meta (rich_loc, m,
+			       OPT_Wanalyzer_use_after_free,
+			       "use after %<free%> of %qE",
+			       m_expr);
 	}
 	break;
       case POISON_KIND_POPPED_STACK:
 	{
-	  diagnostic_metadata m;
 	  /* TODO: which CWE?  */
-	  return warning_at (rich_loc, m,
+	  return warning_at (rich_loc,
 			     OPT_Wanalyzer_use_of_pointer_in_stale_stack_frame,
 			     "use of pointer %qE within stale stack frame",
 			     m_expr);

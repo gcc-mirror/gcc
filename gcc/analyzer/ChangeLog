@@ -1,3 +1,20 @@
+2020-01-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (poisoned_value_diagnostic::emit): Update for
+	renaming of warning_at overload to warning_meta.
+	* sm-file.cc (file_leak::emit): Likewise.
+	* sm-malloc.cc (double_free::emit): Likewise.
+	(possible_null_deref::emit): Likewise.
+	(possible_null_arg::emit): Likewise.
+	(null_deref::emit): Likewise.
+	(null_arg::emit): Likewise.
+	(use_after_free::emit): Likewise.
+	(malloc_leak::emit): Likewise.
+	(free_of_non_heap::emit): Likewise.
+	* sm-sensitive.cc (exposure_through_output_file::emit): Likewise.
+	* sm-signal.cc (signal_unsafe_call::emit): Likewise.
+	* sm-taint.cc (tainted_array_index::emit): Likewise.
+
 2020-01-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93451

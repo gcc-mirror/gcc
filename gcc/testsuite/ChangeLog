@@ -1,3 +1,9 @@
+2020-01-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_plugin_test_metadata.c: Update for
+	renaming of warning_at overload to warning_meta.
+	* gcc.dg/plugin/diagnostic_plugin_test_paths.c: Likewise.
+
 2020-01-28  Tobias Burnus  <tobias@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 

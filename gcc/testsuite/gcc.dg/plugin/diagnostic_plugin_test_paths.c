@@ -328,7 +328,8 @@ example_2 ()
 			 entry_to_wrapped_free, "wrapped_free");
 	  path.add_leaf_call (call_to_free, 2, "free");
 	  if (i == 0 && call_to_missing_location.m_fun)
-	    path.add_leaf_call (call_to_missing_location, 0, "missing_location");
+	    path.add_leaf_call (call_to_missing_location, 0,
+				"missing_location");
 	}
 
       richloc.set_path (&path);
@@ -336,8 +337,8 @@ example_2 ()
       diagnostic_metadata m;
       m.add_cwe (415); /* CWE-415: Double Free.  */
 
-      warning_at (&richloc, m, 0,
-		  "double-free of %qs", "ptr");
+      warning_meta (&richloc, m, 0,
+		    "double-free of %qs", "ptr");
     }
 }
 
@@ -415,9 +416,9 @@ example_3 ()
       /* CWE-479: Signal Handler Use of a Non-reentrant Function.  */
       m.add_cwe (479);
 
-      warning_at (&richloc, m, 0,
-		  "call to %qs from within signal handler",
-		  "fprintf");
+      warning_meta (&richloc, m, 0,
+		    "call to %qs from within signal handler",
+		    "fprintf");
     }
 }
 
