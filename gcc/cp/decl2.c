@@ -3228,8 +3228,12 @@ copy_linkage (tree guard, tree decl)
     {
       CP_DECL_THREAD_LOCAL_P (guard) = CP_DECL_THREAD_LOCAL_P (decl);
       set_decl_tls_model (guard, DECL_TLS_MODEL (decl));
-      /* We can't rely on DECL_WEAK (decl) or DECL_ONE_ONLY (decl) here, as
-	 they may not be set until import_export_decl at EOF.  */
+      if (DECL_ONE_ONLY (decl))
+	make_decl_one_only (guard, cxx_comdat_group (guard));
+      if (TREE_PUBLIC (decl))
+	DECL_WEAK (guard) = DECL_WEAK (decl);
+      /* Also check vague_linkage_p, as DECL_WEAK and DECL_ONE_ONLY might not
+	 be set until import_export_decl at EOF.  */
       if (vague_linkage_p (decl))
 	comdat_linkage (guard);
       DECL_VISIBILITY (guard) = DECL_VISIBILITY (decl);

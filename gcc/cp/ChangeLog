@@ -1,5 +1,9 @@
 2020-01-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/93477
+	PR c++/91476
+	* decl2.c (copy_linkage): Do copy DECL_ONE_ONLY and DECL_WEAK.
+
 	PR c++/90546
 	* call.c (build_user_type_conversion_1): Allow a template conversion
 	returning an rvalue reference to bind directly to an lvalue.
