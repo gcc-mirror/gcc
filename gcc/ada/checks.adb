@@ -6515,9 +6515,6 @@ package body Checks is
    -- Generate_Discriminant_Check --
    ---------------------------------
 
-   --  Note: the code for this procedure is derived from the
-   --  Emit_Discriminant_Check Routine in trans.c.
-
    procedure Generate_Discriminant_Check (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
       Pref : constant Node_Id    := Prefix (N);
