@@ -1,3 +1,8 @@
+2020-01-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/93393
+	* gcc.dg/torture/pr93133.c: XFAIL for powerpc*-*-*.
+
 2020-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/91118
