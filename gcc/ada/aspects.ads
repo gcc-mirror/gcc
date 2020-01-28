@@ -38,11 +38,11 @@
 -- Adding New Aspects --
 ------------------------
 
---  In general, each aspect should have a corresponding pragma, so that the
---  newly developed functionality is available for Ada versions < Ada 2012.
+--  In general, each aspect should have a corresponding pragma or attribute, so
+--  that the newly developed functionality is available for old Ada versions.
 --  When both are defined, it is convenient to first transform the aspect into
---  an equivalent pragma in Sem_Ch13.Analyze_Aspect_Specifications, and then
---  analyze the pragma in Sem_Prag.Analyze_Pragma.
+--  an equivalent pragma or attribute in Sem_Ch13.Analyze_Aspect_Specifications
+--  and then analyze that.
 
 --  To add a new aspect, you need to do the following
 
@@ -57,7 +57,7 @@
 --       treatments later.
 
 --    5. If the semantic analysis of expressions/names in the aspect should not
---       occur at the point the aspect is defined, add code in the adequate
+--       occur at the point the aspect is defined, add code in the appropriate
 --       semantic analysis procedure for the aspect. For example, this is the
 --       case for aspects Pre and Post on subprograms, which are preanalyzed
 --       at the end of the declaration list to which the subprogram belongs,
@@ -131,6 +131,7 @@ package Aspects is
       Aspect_Predicate,                     -- GNAT
       Aspect_Predicate_Failure,
       Aspect_Priority,
+      Aspect_Put_Image,
       Aspect_Read,
       Aspect_Refined_Depends,               -- GNAT
       Aspect_Refined_Global,                -- GNAT
@@ -392,6 +393,7 @@ package Aspects is
       Aspect_Predicate                  => Expression,
       Aspect_Predicate_Failure          => Expression,
       Aspect_Priority                   => Expression,
+      Aspect_Put_Image                  => Name,
       Aspect_Read                       => Name,
       Aspect_Refined_Depends            => Expression,
       Aspect_Refined_Global             => Expression,
@@ -514,6 +516,7 @@ package Aspects is
       Aspect_Priority                     => Name_Priority,
       Aspect_Pure                         => Name_Pure,
       Aspect_Pure_Function                => Name_Pure_Function,
+      Aspect_Put_Image                    => Name_Put_Image,
       Aspect_Read                         => Name_Read,
       Aspect_Refined_Depends              => Name_Refined_Depends,
       Aspect_Refined_Global               => Name_Refined_Global,
@@ -719,6 +722,7 @@ package Aspects is
       Aspect_Priority                     => Always_Delay,
       Aspect_Pure                         => Always_Delay,
       Aspect_Pure_Function                => Always_Delay,
+      Aspect_Put_Image                    => Always_Delay,
       Aspect_Read                         => Always_Delay,
       Aspect_Relative_Deadline            => Always_Delay,
       Aspect_Remote_Access_Type           => Always_Delay,

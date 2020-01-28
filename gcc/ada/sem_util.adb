@@ -17235,6 +17235,7 @@ package body Sem_Util is
            or else TSS_Name = TSS_Stream_Output
            or else TSS_Name = TSS_Stream_Read
            or else TSS_Name = TSS_Stream_Write
+           or else TSS_Name = TSS_Put_Image
            or else Is_Predefined_Interface_Primitive (E)
          then
             return True;

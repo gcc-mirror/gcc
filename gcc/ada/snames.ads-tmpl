@@ -1057,6 +1057,7 @@ package Snames is
 
    First_Procedure_Attribute           : constant Name_Id := N + $;
    Name_Output                         : constant Name_Id := N + $;
+   Name_Put_Image                      : constant Name_Id := N + $;
    Name_Read                           : constant Name_Id := N + $;
    Name_Write                          : constant Name_Id := N + $;
    Last_Procedure_Attribute            : constant Name_Id := N + $;
@@ -1725,6 +1726,7 @@ package Snames is
       --  Attributes designating procedures
 
       Attribute_Output,
+      Attribute_Put_Image,
       Attribute_Read,
       Attribute_Write,
 

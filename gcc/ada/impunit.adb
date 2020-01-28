@@ -620,14 +620,21 @@ package body Impunit is
    --  The following units should be used only in Ada 202X mode
 
    Non_Imp_File_Names_2X : constant File_List := (
-    ("a-stteou", T),  -- Ada.Strings.Text_Output
     ("a-nubinu", T),  -- Ada.Numerics.Big_Numbers
     ("a-nbnbin", T),  -- Ada.Numerics.Big_Numbers.Big_Integers
     ("a-nbnbre", T),  -- Ada.Numerics.Big_Numbers.Big_Reals
     ("s-aotase", T),  -- System.Atomic_Operations.Test_And_Set
     ("s-atoope", T),  -- System.Atomic_Operations
     ("s-atopar", T),  -- System.Atomic_Operations.Arithmetic
-    ("s-atopex", T)); -- System.Atomic_Operations.Exchange
+    ("s-atopex", T),  -- System.Atomic_Operations.Exchange
+    ("a-stteou", T),  -- Ada.Strings.Text_Output
+    ("a-stouut", T),  -- Ada.Strings.Text_Output.Utils
+    ("a-stoubu", T),  -- Ada.Strings.Text_Output.Buffers
+    ("a-stoufi", T),  -- Ada.Strings.Text_Output.Files
+    ("a-stobfi", T),  -- Ada.Strings.Text_Output.Basic_Files
+    ("a-stobbu", T),  -- Ada.Strings.Text_Output.Bit_Buckets
+    ("a-stoufo", T)   -- Ada.Strings.Text_Output.Formatting
+   );
 
    -----------------------
    -- Alternative Units --

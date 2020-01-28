@@ -16423,6 +16423,7 @@ package body Sem_Ch12 is
             OK := (Is_Fun and then Num_F = 1);
 
          when Attribute_Output
+            | Attribute_Put_Image
             | Attribute_Read
             | Attribute_Write
          =>

@@ -365,6 +365,24 @@ package body Tbuild is
         End_Label              => End_Label);
    end Make_Implicit_Loop_Statement;
 
+   --------------------
+   -- Make_Increment --
+   --------------------
+
+   function Make_Increment
+     (Loc : Source_Ptr; Index : Entity_Id; Typ : Entity_Id) return Node_Id is
+   begin
+      return Make_Assignment_Statement (Loc,
+               Name => New_Occurrence_Of (Index, Loc),
+               Expression =>
+                 Make_Attribute_Reference (Loc,
+                   Prefix =>
+                     New_Occurrence_Of (Typ, Loc),
+                   Attribute_Name => Name_Succ,
+                   Expressions => New_List (
+                     New_Occurrence_Of (Index, Loc))));
+   end Make_Increment;
+
    --------------------------
    -- Make_Integer_Literal --
    ---------------------------
