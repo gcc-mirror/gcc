@@ -1422,20 +1422,14 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
         ac_has_nanosleep=yes
         ;;
       gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
-        AC_MSG_CHECKING([for at least GNU libc 2.17])
-        AC_TRY_COMPILE(
-          [#include <features.h>],
-          [
-          #if ! __GLIBC_PREREQ(2, 17)
-          #error
-          #endif
-          ],
-          [glibcxx_glibc217=yes], [glibcxx_glibc217=no])
-        AC_MSG_RESULT($glibcxx_glibc217)
-
-        if test x"$glibcxx_glibc217" = x"yes"; then
-          ac_has_clock_monotonic=yes
-          ac_has_clock_realtime=yes
+        # Don't use link test for freestanding library, in case gcc_no_link=yes
+        if test x"$is_hosted" = xyes; then
+          # Versions of glibc before 2.17 needed -lrt for clock_gettime.
+          AC_SEARCH_LIBS(clock_gettime, [rt])
+          if test x"$ac_cv_search_clock_gettime" = x"none required"; then
+            ac_has_clock_monotonic=yes
+            ac_has_clock_realtime=yes
+          fi
         fi
         ac_has_nanosleep=yes
         ac_has_sched_yield=yes

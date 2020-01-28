@@ -8,6 +8,13 @@
 
 	* configure: Regenerate.
 
+2020-01-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93325
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Use AC_SEARCH_LIBS for
+	clock_gettime instead of explicit glibc version check.
+	* configure: Regenerate.
+
 2020-01-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/93426
