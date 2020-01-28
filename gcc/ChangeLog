@@ -1,5 +1,9 @@
 2020-01-28  Jan Hubicka  <hubicka@ucw.cz>
 
+	* profile-count.c (profile_quality_display_names): Fix ordering.
+
+2020-01-28  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR lto/93318	
 	* cgraph.c (cgraph_add_edge_to_call_site_hash): Update call site
 	hash only when edge is first within the sequence.
