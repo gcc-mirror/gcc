@@ -1,3 +1,7 @@
+2020-02-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	* md.texi (Define Subst): Match closing paren in example.
+
 2020-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/58218
