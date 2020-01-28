@@ -1,5 +1,13 @@
 2020-01-28  Andrew Benson  <abensonca@gmail.com>
 
+        PR fortran/93461
+        * trans.h: Increase GFC_MAX_MANGLED_SYMBOL_LEN to
+        GFC_MAX_SYMBOL_LEN*3+5 to allow for inclusion of submodule name,
+        plus the "." between module and submodule names.
+        * gfortran.dg/pr93461.f90: New test.
+
+2020-01-28  Andrew Benson  <abensonca@gmail.com>
+
 	PR fortran/93473
 	* parse.c: Increase length of char variables to allow them to hold
 	a concatenated module + submodule name.
