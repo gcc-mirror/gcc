@@ -1,5 +1,15 @@
 2020-01-28  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93316
+	* engine.cc (rewind_info_t::update_model): Get the longjmp call
+	stmt via get_longjmp_call () rather than assuming it is the last
+	stmt in the longjmp's supernode.
+	(rewind_info_t::add_events_to_path): Get the location_t for the
+	rewind_from_longjmp_event via get_longjmp_call () rather than from
+	the supernode's get_end_location ().
+
+2020-01-28  David Malcolm  <dmalcolm@redhat.com>
+
 	* region-model.cc (poisoned_value_diagnostic::emit): Update for
 	renaming of warning_at overload to warning_meta.
 	* sm-file.cc (file_leak::emit): Likewise.
