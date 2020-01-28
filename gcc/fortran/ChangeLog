@@ -1,5 +1,12 @@
 2020-01-28  Tobias Burnus  <tobias@codesourcery.com>
 
+	PR fortran/93464
+	* openmp.c (gfc_omp_check_optional_argument): Avoid ICE when
+	DECL_LANG_SPECIFIC and GFC_DESCRIPTOR_TYPE_P but not
+	GFC_DECL_SAVED_DESCRIPTOR as for local allocatable character vars.
+
+2020-01-28  Tobias Burnus  <tobias@codesourcery.com>
+
 	* gfortran.texi (Runtime): Remove tailing '.' in @menu.
 
 2020-01-27  Tobias Burnus  <tobias@codesourcery.com>
