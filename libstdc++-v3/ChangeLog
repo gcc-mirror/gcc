@@ -1,3 +1,9 @@
+2020-01-28  Martin Liska  <mliska@suse.cz>
+
+	PR libstdc++/93478
+	* include/std/atomic: Fix typo.
+	* include/std/optional: Likewise.
+
 2020-01-27  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* configure: Regenerate.
