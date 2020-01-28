@@ -12,4 +12,4 @@ foo (char *s)
 }
 
 /* { dg-final { scan-assembler-times "vmovdqa\[ \\t\]+\[^\n\]*%xmm" 4 } } */
-/* { dg-final { scan-assembler-times "vmovups\[ \\t\]+\[^\n\]*%xmm" 4 } } */
+/* { dg-final { scan-assembler-times "vmovdqu\[ \\t\]+\[^\n\]*%xmm" 4 } } */

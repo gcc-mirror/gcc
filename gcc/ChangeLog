@@ -1,3 +1,15 @@
+2020-01-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/91461
+	* config/i386/i386.md (*movoi_internal_avx): Remove
+	TARGET_SSE_TYPELESS_STORES check.
+	(*movti_internal): Prefer TARGET_AVX over
+	TARGET_SSE_TYPELESS_STORES.
+	(*movtf_internal): Likewise.
+	* config/i386/sse.md (mov<mode>_internal): Prefer TARGET_AVX over
+	TARGET_SSE_TYPELESS_STORES.  Remove "<MODE_SIZE> == 16" check
+	from TARGET_SSE_TYPELESS_STORES.
+
 2020-01-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-core.h (warning_at): Rename overload to...

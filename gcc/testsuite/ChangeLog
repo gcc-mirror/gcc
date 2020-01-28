@@ -1,3 +1,24 @@
+2020-01-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/91461
+	* gcc.target/i386/avx256-unaligned-store-2.c: Don't check
+	vmovups.
+	* gcc.target/i386/avx256-unaligned-store-3.c: Likewise.
+	* gcc.target/i386/pieces-memcpy-4.c: Likewise.
+	* gcc.target/i386/pieces-memcpy-5.c: Likewise.
+	* gcc.target/i386/pieces-memcpy-6.c: Likewise.
+	* gcc.target/i386/pieces-strcpy-2.c: Likewise.
+	* gcc.target/i386/pr90980-1.c: Likewise.
+	* gcc.target/i386/pr87317-4.c: Check "\tvmovd\t" instead of
+	"vmovd" to avoid matching "vmovdqu".
+	* gcc.target/i386/pr87317-5.c: Likewise.
+	* gcc.target/i386/pr87317-7.c: Likewise.
+	* gcc.target/i386/pr91461-1.c: New test.
+	* gcc.target/i386/pr91461-2.c: Likewise.
+	* gcc.target/i386/pr91461-3.c: Likewise.
+	* gcc.target/i386/pr91461-4.c: Likewise.
+	* gcc.target/i386/pr91461-5.c: Likewise.
+
 2020-01-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/plugin/diagnostic_plugin_test_metadata.c: Update for
