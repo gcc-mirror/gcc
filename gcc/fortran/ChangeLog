@@ -1,3 +1,10 @@
+2020-01-28  Andrew Benson  <abensonca@gmail.com>
+
+	PR fortran/93473
+	* parse.c: Increase length of char variables to allow them to hold
+	a concatenated module + submodule name.
+	* gfortran.dg/pr93473.f90: New test.
+
 2020-01-28  Julian Brown  <julian@codesourcery.com>
 
 	PR fortran/93025
