@@ -1,3 +1,12 @@
+2020-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93454
+	* gimple-fold.c (fold_array_ctor_reference): Perform
+	elt_size.to_uhwi () just once, instead of calling it in every
+	iteration.  Punt if that value is above size of the temporary
+	buffer.  Decrease third native_encode_expr argument when
+	bufoff + elt_sz is above size of buf.
+
 2020-01-27  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/mips/mips.c (mips_declare_object_name)

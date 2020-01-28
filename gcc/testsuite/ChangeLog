@@ -1,3 +1,8 @@
+2020-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/93454
+	* gcc.dg/pr93454.c: New test.
+
 2020-01-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93451
