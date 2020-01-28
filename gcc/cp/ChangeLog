@@ -1,6 +1,12 @@
 2020-01-28  Martin Liska  <mliska@suse.cz>
 
 	PR c++/92440
+	* pt.c (redeclare_class_template): Group couple of
+	errors and inform messages with auto_diagnostic_group.
+
+2020-01-28  Martin Liska  <mliska@suse.cz>
+
+	PR c++/92440
 	* pt.c (redeclare_class_template): Use inform
 	for the second location.
 
