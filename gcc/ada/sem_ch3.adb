@@ -7735,9 +7735,13 @@ package body Sem_Ch3 is
                end if;
 
             else
+               --  If the parent type is private, this is not a completion and
+               --  we build the full derivation recursively as a completion.
+
                Build_Derived_Type
                  (Full_N, Full_Parent, Full_Der,
-                  Is_Completion => False, Derive_Subps => False);
+                  Is_Completion => Is_Private_Type (Full_Parent),
+                  Derive_Subps => False);
             end if;
 
             --  The full declaration has been introduced into the tree and
@@ -7925,7 +7929,9 @@ package body Sem_Ch3 is
          --  case (see point 5. of its head comment) since we build it for the
          --  derived subtype.
 
-         if Present (Full_View (Parent_Type))
+         if (Present (Full_View (Parent_Type))
+             or else (Present (Underlying_Full_View (Parent_Type))
+                       and then Is_Completion))
            and then not Is_Itype (Derived_Type)
          then
             declare
@@ -7977,8 +7983,14 @@ package body Sem_Ch3 is
             end;
          end if;
 
-      elsif Present (Full_View (Parent_Type))
-        and then Has_Discriminants (Full_View (Parent_Type))
+      elsif (Present (Full_View (Parent_Type))
+              and then
+             Has_Discriminants (Full_View (Parent_Type)))
+        or else (Present (Underlying_Full_View (Parent_Type))
+                  and then
+                 Has_Discriminants (Underlying_Full_View (Parent_Type))
+                  and then
+                 Is_Completion)
       then
          if Has_Unknown_Discriminants (Parent_Type)
            and then Nkind (Subtype_Indication (Type_Definition (N))) =
