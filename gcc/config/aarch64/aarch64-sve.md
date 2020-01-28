@@ -111,9 +111,11 @@
 ;; ---- [INT] MLS and MSB
 ;; ---- [INT] Dot product
 ;; ---- [INT] Sum of absolute differences
+;; ---- [INT] Matrix multiply-accumulate
 ;; ---- [FP] General ternary arithmetic corresponding to unspecs
 ;; ---- [FP] Complex multiply-add
 ;; ---- [FP] Trigonometric multiply-add
+;; ---- [FP] Matrix multiply-accumulate
 ;;
 ;; == Comparisons and selects
 ;; ---- [INT,FP] Select based on predicates
@@ -2380,6 +2382,10 @@
 ;; - LD1RD
 ;; - LD1RH
 ;; - LD1RW
+;; - LD1ROB (F64MM)
+;; - LD1ROD (F64MM)
+;; - LD1ROH (F64MM)
+;; - LD1ROW (F64MM)
 ;; - LD1RQB
 ;; - LD1RQD
 ;; - LD1RQH
@@ -2502,7 +2508,7 @@
 	   (match_operand:OI 1 "aarch64_sve_ld1ro_operand_<Vesize>"
 			       "UO<Vesize>")]
 	  UNSPEC_LD1RO))]
-  "TARGET_SVE && TARGET_F64MM"
+  "TARGET_SVE_F64MM"
   {
     operands[1] = gen_rtx_MEM (<VEL>mode, XEXP (operands[1], 0));
     return "ld1ro<Vesize>\t%0.<Vetype>, %2/z, %1";
@@ -6083,7 +6089,9 @@
 ;; -------------------------------------------------------------------------
 ;; Includes:
 ;; - SDOT
+;; - SUDOT   (I8MM)
 ;; - UDOT
+;; - USDOT   (I8MM)
 ;; -------------------------------------------------------------------------
 
 ;; Four-element integer dot-product with accumulation.
@@ -6121,6 +6129,39 @@
   [(set_attr "movprfx" "*,yes")]
 )
 
+(define_insn "@aarch64_<sur>dot_prod<vsi2qi>"
+  [(set (match_operand:VNx4SI_ONLY 0 "register_operand" "=w, ?&w")
+        (plus:VNx4SI_ONLY
+	  (unspec:VNx4SI_ONLY
+	    [(match_operand:<VSI2QI> 1 "register_operand" "w, w")
+	     (match_operand:<VSI2QI> 2 "register_operand" "w, w")]
+	    DOTPROD_US_ONLY)
+	  (match_operand:VNx4SI_ONLY 3 "register_operand" "0, w")))]
+  "TARGET_SVE_I8MM"
+  "@
+   <sur>dot\\t%0.s, %1.b, %2.b
+   movprfx\t%0, %3\;<sur>dot\\t%0.s, %1.b, %2.b"
+   [(set_attr "movprfx" "*,yes")]
+)
+
+(define_insn "@aarch64_<sur>dot_prod_lane<vsi2qi>"
+  [(set (match_operand:VNx4SI_ONLY 0 "register_operand" "=w, ?&w")
+	(plus:VNx4SI_ONLY
+	  (unspec:VNx4SI_ONLY
+	    [(match_operand:<VSI2QI> 1 "register_operand" "w, w")
+	     (unspec:<VSI2QI>
+	       [(match_operand:<VSI2QI> 2 "register_operand" "y, y")
+		(match_operand:SI 3 "const_int_operand")]
+	       UNSPEC_SVE_LANE_SELECT)]
+	    DOTPROD_I8MM)
+	  (match_operand:VNx4SI_ONLY 4 "register_operand" "0, w")))]
+  "TARGET_SVE_I8MM"
+  "@
+   <sur>dot\\t%0.s, %1.b, %2.b[%3]
+   movprfx\t%0, %4\;<sur>dot\\t%0.s, %1.b, %2.b[%3]"
+  [(set_attr "movprfx" "*,yes")]
+)
+
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] Sum of absolute differences
 ;; -------------------------------------------------------------------------
@@ -6149,6 +6190,30 @@
     emit_insn (gen_udot_prod<vsi2qi> (operands[0], diff, ones, operands[3]));
     DONE;
   }
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [INT] Matrix multiply-accumulate
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - SMMLA (I8MM)
+;; - UMMLA (I8MM)
+;; - USMMLA (I8MM)
+;; -------------------------------------------------------------------------
+
+(define_insn "@aarch64_sve_add_<optab><vsi2qi>"
+  [(set (match_operand:VNx4SI_ONLY 0 "register_operand" "=w, ?&w")
+	(plus:VNx4SI_ONLY
+	  (unspec:VNx4SI_ONLY
+	    [(match_operand:<VSI2QI> 2 "register_operand" "w, w")
+	     (match_operand:<VSI2QI> 3 "register_operand" "w, w")]
+	    MATMUL)
+	  (match_operand:VNx4SI_ONLY 1 "register_operand" "0, w")))]
+  "TARGET_SVE_I8MM"
+  "@
+   <sur>mmla\\t%0.s, %2.b, %3.b
+   movprfx\t%0, %1\;<sur>mmla\\t%0.s, %2.b, %3.b"
+  [(set_attr "movprfx" "*,yes")]
 )
 
 ;; -------------------------------------------------------------------------
@@ -6479,6 +6544,28 @@
   "@
    ftmad\t%0.<Vetype>, %0.<Vetype>, %2.<Vetype>, #%3
    movprfx\t%0, %1\;ftmad\t%0.<Vetype>, %0.<Vetype>, %2.<Vetype>, #%3"
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Matrix multiply-accumulate
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - FMMLA (F32MM,F64MM)
+;; -------------------------------------------------------------------------
+
+;; The mode iterator enforces the target requirements.
+(define_insn "@aarch64_sve_<sve_fp_op><mode>"
+  [(set (match_operand:SVE_MATMULF 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_MATMULF
+	  [(match_operand:SVE_MATMULF 2 "register_operand" "w, w")
+	   (match_operand:SVE_MATMULF 3 "register_operand" "w, w")
+	   (match_operand:SVE_MATMULF 1 "register_operand" "0, w")]
+	  FMMLA))]
+  "TARGET_SVE"
+  "@
+   <sve_fp_op>\\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
+   movprfx\t%0, %1\;<sve_fp_op>\\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>"
   [(set_attr "movprfx" "*,yes")]
 )
 
@@ -7484,6 +7571,18 @@
 	  PERMUTE))]
   "TARGET_SVE"
   "<perm_insn>\t%0.<Vetype>, %1.<Vetype>, %2.<Vetype>"
+)
+
+;; Apply PERMUTE to 128-bit sequences.  The behavior of these patterns
+;; doesn't depend on the mode.
+(define_insn "@aarch64_sve_<optab><mode>"
+  [(set (match_operand:SVE_FULL 0 "register_operand" "=w")
+	(unspec:SVE_FULL
+	  [(match_operand:SVE_FULL 1 "register_operand" "w")
+	   (match_operand:SVE_FULL 2 "register_operand" "w")]
+	  PERMUTEQ))]
+  "TARGET_SVE_F64MM"
+  "<perm_insn>\t%0.q, %1.q, %2.q"
 )
 
 ;; Concatenate two vectors and extract a subvector.  Note that the

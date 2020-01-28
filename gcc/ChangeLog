@@ -1,3 +1,82 @@
+2020-01-31  Dennis Zhang  <dennis.zhang@arm.com>
+	    Matthew Malcomson  <matthew.malcomson@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/invoke.texi (f32mm): Document new AArch64 -march= extension.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_SVE_MATMUL_INT8, __ARM_FEATURE_SVE_MATMUL_FP32 and
+	__ARM_FEATURE_SVE_MATMUL_FP64 as appropriate.  Don't define
+	__ARM_FEATURE_MATMUL_FP64.
+	* config/aarch64/aarch64-option-extensions.def (fp, simd, fp16)
+	(sve): Add AARCH64_FL_F32MM to the list of extensions that should
+	be disabled at the same time.
+	(f32mm): New extension.
+	* config/aarch64/aarch64.h (AARCH64_FL_F32MM): New macro.
+	(AARCH64_FL_F64MM): Bump to the next bit up.
+	(AARCH64_ISA_F32MM, TARGET_SVE_I8MM, TARGET_F32MM, TARGET_SVE_F32MM)
+	(TARGET_SVE_F64MM): New macros.
+	* config/aarch64/iterators.md (SVE_MATMULF): New mode iterator.
+	(UNSPEC_FMMLA, UNSPEC_SMATMUL, UNSPEC_UMATMUL, UNSPEC_USMATMUL)
+	(UNSPEC_TRN1Q, UNSPEC_TRN2Q, UNSPEC_UZP1Q, UNSPEC_UZP2Q, UNSPEC_ZIP1Q)
+	(UNSPEC_ZIP2Q): New unspeccs.
+	(DOTPROD_US_ONLY, PERMUTEQ, MATMUL, FMMLA): New int iterators.
+	(optab, sur, perm_insn): Handle the new unspecs.
+	(sve_fp_op): Handle UNSPEC_FMMLA.  Resort.
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_ld1ro<mode>): Use
+	TARGET_SVE_F64MM instead of separate tests.
+	(@aarch64_<DOTPROD_US_ONLY:sur>dot_prod<vsi2qi>): New pattern.
+	(@aarch64_<DOTPROD_US_ONLY:sur>dot_prod_lane<vsi2qi>): Likewise.
+	(@aarch64_sve_add_<MATMUL:optab><vsi2qi>): Likewise.
+	(@aarch64_sve_<FMMLA:sve_fp_op><mode>): Likewise.
+	(@aarch64_sve_<PERMUTEQ:optab><mode>): Likewise.
+	* config/aarch64/aarch64-sve-builtins.cc (TYPES_s_float): New macro.
+	(TYPES_s_float_hsd_integer, TYPES_s_float_sd_integer): Use it.
+	(TYPES_s_signed): New macro.
+	(TYPES_s_integer): Use it.
+	(TYPES_d_float): New macro.
+	(TYPES_d_data): Use it.
+	* config/aarch64/aarch64-sve-builtins-shapes.h (mmla): Declare.
+	(ternary_intq_uintq_lane, ternary_intq_uintq_opt_n, ternary_uintq_intq)
+	(ternary_uintq_intq_lane, ternary_uintq_intq_opt_n): Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (mmla_def): New class.
+	(svmmla): New shape.
+	(ternary_resize2_opt_n_base): Add TYPE_CLASS2 and TYPE_CLASS3
+	template parameters.
+	(ternary_resize2_lane_base): Likewise.
+	(ternary_resize2_base): New class.
+	(ternary_qq_lane_base): Likewise.
+	(ternary_intq_uintq_lane_def): Likewise.
+	(ternary_intq_uintq_lane): New shape.
+	(ternary_intq_uintq_opt_n_def): New class
+	(ternary_intq_uintq_opt_n): New shape.
+	(ternary_qq_lane_def): Inherit from ternary_qq_lane_base.
+	(ternary_uintq_intq_def): New class.
+	(ternary_uintq_intq): New shape.
+	(ternary_uintq_intq_lane_def): New class.
+	(ternary_uintq_intq_lane): New shape.
+	(ternary_uintq_intq_opt_n_def): New class.
+	(ternary_uintq_intq_opt_n): New shape.
+	* config/aarch64/aarch64-sve-builtins-base.h (svmmla, svsudot)
+	(svsudot_lane, svtrn1q, svtrn2q, svusdot, svusdot_lane, svusmmla)
+	(svuzp1q, svuzp2q, svzip1q, svzip2q): Declare.
+	* config/aarch64/aarch64-sve-builtins-base.cc (svdot_lane_impl):
+	Generalize to...
+	(svdotprod_lane_impl): ...this new class.
+	(svmmla_impl, svusdot_impl): New classes.
+	(svdot_lane): Update to use svdotprod_lane_impl.
+	(svmmla, svsudot, svsudot_lane, svtrn1q, svtrn2q, svusdot)
+	(svusdot_lane, svusmmla, svuzp1q, svuzp2q, svzip1q, svzip2q): New
+	functions.
+	* config/aarch64/aarch64-sve-builtins-base.def (svmmla): New base
+	function, with no types defined.
+	(svmmla, svusmmla, svsudot, svsudot_lane, svusdot, svusdot_lane): New
+	AARCH64_FL_I8MM functions.
+	(svmmla): New AARCH64_FL_F32MM function.
+	(svld1ro): Depend only on AARCH64_FL_F64MM, not on AARCH64_FL_V8_6.
+	(svmmla, svtrn1q, svtrn2q, svuz1q, svuz2q, svzip1q, svzip2q): New
+	AARCH64_FL_F64MM function.
+	(REQUIRED_EXTENSIONS):
+
 2020-01-31  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (addv64di3_exec): Allow one '0' in each

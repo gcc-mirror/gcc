@@ -376,6 +376,10 @@
 ;; elements.
 (define_mode_iterator SVE_FULL_SDF [VNx4SF VNx2DF])
 
+;; Same, but with the appropriate conditions for FMMLA support.
+(define_mode_iterator SVE_MATMULF [(VNx4SF "TARGET_SVE_F32MM")
+				   (VNx2DF "TARGET_SVE_F64MM")])
+
 ;; Fully-packed SVE vector modes that have 32-bit elements.
 (define_mode_iterator SVE_FULL_S [VNx4SI VNx4SF])
 
@@ -613,9 +617,19 @@
     UNSPEC_FMLA		; Used in aarch64-sve.md.
     UNSPEC_FMLS		; Used in aarch64-sve.md.
     UNSPEC_FEXPA	; Used in aarch64-sve.md.
+    UNSPEC_FMMLA	; Used in aarch64-sve.md.
     UNSPEC_FTMAD	; Used in aarch64-sve.md.
     UNSPEC_FTSMUL	; Used in aarch64-sve.md.
     UNSPEC_FTSSEL	; Used in aarch64-sve.md.
+    UNSPEC_SMATMUL	; Used in aarch64-sve.md.
+    UNSPEC_UMATMUL	; Used in aarch64-sve.md.
+    UNSPEC_USMATMUL	; Used in aarch64-sve.md.
+    UNSPEC_TRN1Q	; Used in aarch64-sve.md.
+    UNSPEC_TRN2Q	; Used in aarch64-sve.md.
+    UNSPEC_UZP1Q	; Used in aarch64-sve.md.
+    UNSPEC_UZP2Q	; Used in aarch64-sve.md.
+    UNSPEC_ZIP1Q	; Used in aarch64-sve.md.
+    UNSPEC_ZIP2Q	; Used in aarch64-sve.md.
     UNSPEC_COND_CMPEQ_WIDE ; Used in aarch64-sve.md.
     UNSPEC_COND_CMPGE_WIDE ; Used in aarch64-sve.md.
     UNSPEC_COND_CMPGT_WIDE ; Used in aarch64-sve.md.
@@ -2066,6 +2080,7 @@
 (define_int_iterator DOTPROD [UNSPEC_SDOT UNSPEC_UDOT])
 
 (define_int_iterator DOTPROD_I8MM [UNSPEC_USDOT UNSPEC_SUDOT])
+(define_int_iterator DOTPROD_US_ONLY [UNSPEC_USDOT])
 
 (define_int_iterator ADDSUBHN [UNSPEC_ADDHN UNSPEC_RADDHN
 			       UNSPEC_SUBHN UNSPEC_RSUBHN])
@@ -2119,6 +2134,10 @@
 (define_int_iterator PERMUTE [UNSPEC_ZIP1 UNSPEC_ZIP2
 			      UNSPEC_TRN1 UNSPEC_TRN2
 			      UNSPEC_UZP1 UNSPEC_UZP2])
+
+(define_int_iterator PERMUTEQ [UNSPEC_ZIP1Q UNSPEC_ZIP2Q
+			       UNSPEC_TRN1Q UNSPEC_TRN2Q
+			       UNSPEC_UZP1Q UNSPEC_UZP2Q])
 
 (define_int_iterator OPTAB_PERMUTE [UNSPEC_ZIP1 UNSPEC_ZIP2
 				    UNSPEC_UZP1 UNSPEC_UZP2])
@@ -2553,6 +2572,11 @@
 
 (define_int_iterator SVE_PITER [UNSPEC_PFIRST UNSPEC_PNEXT])
 
+(define_int_iterator MATMUL [UNSPEC_SMATMUL UNSPEC_UMATMUL
+			     UNSPEC_USMATMUL])
+
+(define_int_iterator FMMLA [UNSPEC_FMMLA])
+
 ;; Iterators for atomic operations.
 
 (define_int_iterator ATOMIC_LDOP
@@ -2624,14 +2648,23 @@
 			(UNSPEC_PMULLB_PAIR "pmullb_pair")
 			(UNSPEC_PMULLT "pmullt")
 			(UNSPEC_PMULLT_PAIR "pmullt_pair")
+			(UNSPEC_SMATMUL "smatmul")
 			(UNSPEC_SQCADD90 "sqcadd90")
 			(UNSPEC_SQCADD270 "sqcadd270")
 			(UNSPEC_SQRDCMLAH "sqrdcmlah")
 			(UNSPEC_SQRDCMLAH90 "sqrdcmlah90")
 			(UNSPEC_SQRDCMLAH180 "sqrdcmlah180")
 			(UNSPEC_SQRDCMLAH270 "sqrdcmlah270")
+			(UNSPEC_TRN1Q "trn1q")
+			(UNSPEC_TRN2Q "trn2q")
+			(UNSPEC_UMATMUL "umatmul")
+			(UNSPEC_USMATMUL "usmatmul")
+			(UNSPEC_UZP1Q "uzp1q")
+			(UNSPEC_UZP2Q "uzp2q")
 			(UNSPEC_WHILERW "vec_check_raw_alias")
 			(UNSPEC_WHILEWR "vec_check_war_alias")
+			(UNSPEC_ZIP1Q "zip1q")
+			(UNSPEC_ZIP2Q "zip2q")
 			(UNSPEC_COND_FABS "abs")
 			(UNSPEC_COND_FADD "add")
 			(UNSPEC_COND_FCADD90 "cadd90")
@@ -2761,6 +2794,8 @@
 		      (UNSPEC_UQRSHL  "u") (UNSPEC_SQRSHL  "s")
 		      (UNSPEC_SDOT "s") (UNSPEC_UDOT "u")
 		      (UNSPEC_USDOT "us") (UNSPEC_SUDOT "su")
+		      (UNSPEC_SMATMUL "s") (UNSPEC_UMATMUL "u")
+		      (UNSPEC_USMATMUL "us")
 ])
 
 (define_int_attr r [(UNSPEC_SQDMULH "") (UNSPEC_SQRDMULH "r")
@@ -2879,8 +2914,11 @@
 				   (UNSPEC_AUTIB1716 "14")])
 
 (define_int_attr perm_insn [(UNSPEC_ZIP1 "zip1") (UNSPEC_ZIP2 "zip2")
+			    (UNSPEC_ZIP1Q "zip1") (UNSPEC_ZIP2Q "zip2")
 			    (UNSPEC_TRN1 "trn1") (UNSPEC_TRN2 "trn2")
-			    (UNSPEC_UZP1 "uzp1") (UNSPEC_UZP2 "uzp2")])
+			    (UNSPEC_TRN1Q "trn1") (UNSPEC_TRN2Q "trn2")
+			    (UNSPEC_UZP1 "uzp1") (UNSPEC_UZP2 "uzp2")
+			    (UNSPEC_UZP1Q "uzp1") (UNSPEC_UZP2Q "uzp2")])
 
 ; op code for REV instructions (size within which elements are reversed).
 (define_int_attr rev_op [(UNSPEC_REV64 "64") (UNSPEC_REV32 "32")
@@ -3163,6 +3201,7 @@
 			    (UNSPEC_RSQRTS "frsqrts")
 			    (UNSPEC_FADDP "faddp")
 			    (UNSPEC_FADDV "faddv")
+			    (UNSPEC_FEXPA "fexpa")
 			    (UNSPEC_FMAXNMP "fmaxnmp")
 			    (UNSPEC_FMAXNMV "fmaxnmv")
 			    (UNSPEC_FMAXP "fmaxp")
@@ -3177,7 +3216,7 @@
 			    (UNSPEC_FMLS "fmls")
 			    (UNSPEC_FMLSLB "fmlslb")
 			    (UNSPEC_FMLSLT "fmlslt")
-			    (UNSPEC_FEXPA "fexpa")
+			    (UNSPEC_FMMLA "fmmla")
 			    (UNSPEC_FTSMUL "ftsmul")
 			    (UNSPEC_FTSSEL "ftssel")
 			    (UNSPEC_COND_FABS "fabs")

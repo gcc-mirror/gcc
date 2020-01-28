@@ -173,6 +173,7 @@ DEF_SVE_FUNCTION (svmla, ternary_opt_n, all_data, mxz)
 DEF_SVE_FUNCTION (svmla_lane, ternary_lane, all_float, none)
 DEF_SVE_FUNCTION (svmls, ternary_opt_n, all_data, mxz)
 DEF_SVE_FUNCTION (svmls_lane, ternary_lane, all_float, none)
+DEF_SVE_FUNCTION (svmmla, mmla, none, none)
 DEF_SVE_FUNCTION (svmov, unary, b, z)
 DEF_SVE_FUNCTION (svmsb, ternary_opt_n, all_data, mxz)
 DEF_SVE_FUNCTION (svmul, binary_opt_n, all_data, mxz)
@@ -317,6 +318,26 @@ DEF_SVE_FUNCTION (svzip2, binary, all_data, none)
 DEF_SVE_FUNCTION (svzip2, binary_pred, all_pred, none)
 #undef REQUIRED_EXTENSIONS
 
-#define REQUIRED_EXTENSIONS AARCH64_FL_V8_6 | AARCH64_FL_F64MM
+#define REQUIRED_EXTENSIONS AARCH64_FL_I8MM
+DEF_SVE_FUNCTION (svmmla, mmla, s_integer, none)
+DEF_SVE_FUNCTION (svusmmla, ternary_uintq_intq, s_signed, none)
+DEF_SVE_FUNCTION (svsudot, ternary_intq_uintq_opt_n, s_signed, none)
+DEF_SVE_FUNCTION (svsudot_lane, ternary_intq_uintq_lane, s_signed, none)
+DEF_SVE_FUNCTION (svusdot, ternary_uintq_intq_opt_n, s_signed, none)
+DEF_SVE_FUNCTION (svusdot_lane, ternary_uintq_intq_lane, s_signed, none)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS AARCH64_FL_F32MM
+DEF_SVE_FUNCTION (svmmla, mmla, s_float, none)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS AARCH64_FL_F64MM
 DEF_SVE_FUNCTION (svld1ro, load_replicate, all_data, implicit)
+DEF_SVE_FUNCTION (svmmla, mmla, d_float, none)
+DEF_SVE_FUNCTION (svtrn1q, binary, all_data, none)
+DEF_SVE_FUNCTION (svtrn2q, binary, all_data, none)
+DEF_SVE_FUNCTION (svuzp1q, binary, all_data, none)
+DEF_SVE_FUNCTION (svuzp2q, binary, all_data, none)
+DEF_SVE_FUNCTION (svzip1q, binary, all_data, none)
+DEF_SVE_FUNCTION (svzip2q, binary, all_data, none)
 #undef REQUIRED_EXTENSIONS
