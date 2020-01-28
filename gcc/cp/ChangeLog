@@ -1,5 +1,9 @@
 2020-01-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/90546
+	* call.c (build_user_type_conversion_1): Allow a template conversion
+	returning an rvalue reference to bind directly to an lvalue.
+
 	PR c++/90731
 	* decl.c (grokdeclarator): Propagate eh spec from typedef.
 
