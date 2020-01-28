@@ -265,7 +265,7 @@ read_counts_file (void)
 	  else if (entry->lineno_checksum != lineno_checksum
 		   || entry->cfg_checksum != cfg_checksum)
 	    {
-	      error ("Profile data for function %u is corrupted", fn_ident);
+	      error ("profile data for function %u is corrupted", fn_ident);
 	      error ("checksum is (%x,%x) instead of (%x,%x)",
 		     entry->lineno_checksum, entry->cfg_checksum,
 		     lineno_checksum, cfg_checksum);

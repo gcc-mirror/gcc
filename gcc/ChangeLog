@@ -1,5 +1,9 @@
 2020-01-28  Jan Hubicka  <hubicka@ucw.cz>
 
+	* coverage.c (read_counts_file): Make error message lowercase.
+
+2020-01-28  Jan Hubicka  <hubicka@ucw.cz>
+
 	* profile-count.c (profile_quality_display_names): Fix ordering.
 
 2020-01-28  Jan Hubicka  <hubicka@ucw.cz>
