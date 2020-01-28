@@ -4289,8 +4289,7 @@ package body Sem_Ch6 is
          --  Legacy implementation (relying on front-end inlining)
 
          if not Back_End_Inlining then
-            if (Has_Pragma_Inline_Always (Spec_Id)
-                 and then not Opt.Disable_FE_Inline_Always)
+            if Has_Pragma_Inline_Always (Spec_Id)
               or else (Front_End_Inlining
                         and then not Opt.Disable_FE_Inline)
             then

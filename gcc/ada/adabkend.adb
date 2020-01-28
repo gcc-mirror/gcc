@@ -189,7 +189,6 @@ package body Adabkend is
          elsif Switch_Chars (First .. Last) = "fno-inline" then
             Lib.Store_Compilation_Switch (Switch_Chars);
             Opt.Disable_FE_Inline := True;
-            Opt.Disable_FE_Inline_Always := True;
             return;
 
          --  Similar processing for -fpreserve-control-flow

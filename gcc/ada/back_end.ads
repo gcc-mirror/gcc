@@ -67,7 +67,6 @@ package Back_End is
    --  default for all of these in Opt is False).
    --
    --    Opt.Disable_FE_Inline
-   --    Opt.Disable_FE_Inline_Always
    --    Opt.Suppress_Control_Float_Optimizations
    --    Opt.Generate_SCO
    --    Opt.Generate_SCO_Instance_Table
