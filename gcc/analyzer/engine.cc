@@ -2962,7 +2962,7 @@ template <>
 inline void
 pod_hash_traits<function_call_string>::mark_empty (value_type &v)
 {
-  v.m_fun = reinterpret_cast<function *> (NULL);
+  v.m_fun = NULL;
 }
 template <>
 inline bool
@@ -2974,7 +2974,7 @@ template <>
 inline bool
 pod_hash_traits<function_call_string>::is_empty (value_type v)
 {
-  return v.m_fun == reinterpret_cast<function *> (NULL);
+  return v.m_fun == NULL;
 }
 
 namespace ana {
