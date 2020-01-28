@@ -3757,11 +3757,8 @@ ipa_devirt (void)
  	       with the speculation.  */
 	    if (e->speculative)
 	      {
-		struct cgraph_edge *e2;
-		struct ipa_ref *ref;
-		e->speculative_call_info (e2, e, ref);
-		if (e2->callee->ultimate_alias_target ()
-		    == likely_target->ultimate_alias_target ())
+		bool found = e->speculative_call_for_target (likely_target);
+		if (found)
 		  {
 		    fprintf (dump_file, "We agree with speculation\n\n");
 		    nok++;

@@ -262,6 +262,16 @@ public:
       return ret;
     }
 
+  /* Return THIS with quality set to ADJUSTED.  */
+  profile_probability adjusted () const
+    {
+      profile_probability ret = *this;
+      if (!initialized_p ())
+	return *this;
+      ret.m_quality = ADJUSTED;
+      return ret;
+    }
+
   int to_reg_br_prob_base () const
     {
       gcc_checking_assert (initialized_p ());
