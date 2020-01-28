@@ -6,4 +6,4 @@
 // non-type template parameter.
 
 template <int i> struct X;	// { dg-error "template parameter" }
-template <int* p> struct X;	// { dg-error "redeclared here" }
+template <int* p> struct X;	// { dg-message "note: redeclared here" }

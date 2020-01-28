@@ -1,3 +1,11 @@
+2020-01-28  Martin Liska  <mliska@suse.cz>
+
+	PR c++/92440
+	* g++.dg/template/pr92440.C: New test.
+	* g++.dg/cpp0x/vt-34314.C: Update error to note.
+	* g++.dg/template/pr59930-2.C: Likewise.
+	* g++.old-deja/g++.pt/redecl1.C: Likewise.
+
 2020-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/93418

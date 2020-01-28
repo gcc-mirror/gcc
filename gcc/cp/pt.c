@@ -6149,7 +6149,7 @@ redeclare_class_template (tree type, tree parms, tree cons)
 		  != TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm)))))
 	{
 	  error ("template parameter %q+#D", tmpl_parm);
-	  error ("redeclared here as %q#D", parm);
+	  inform (input_location, "redeclared here as %q#D", parm);
 	  return false;
 	}
 
