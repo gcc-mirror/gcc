@@ -1,3 +1,11 @@
+2020-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92948 - Fix class NTTP with template arguments.
+	* pt.c (convert_nontype_argument): Use IMPLICIT_CONV_EXPR when
+	converting a value-dependent expression to a class type.
+	(tsubst_copy) <case VIEW_CONVERT_EXPR>: Allow IMPLICIT_CONV_EXPR
+	as the result of the tsubst_copy call.
+
 2020-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/91118

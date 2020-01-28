@@ -7074,7 +7074,8 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
   if (non_dep)
     expr = instantiate_non_dependent_expr_internal (expr, complain);
 
-  if (value_dependent_expression_p (expr))
+  const bool val_dep_p = value_dependent_expression_p (expr);
+  if (val_dep_p)
     expr = canonicalize_expr_argument (expr, complain);
 
   /* 14.3.2/5: The null pointer{,-to-member} conversion is applied
@@ -7100,10 +7101,17 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	     a conversion function with a value-dependent argument, which
 	     could invoke taking the address of a temporary representing
 	     the result of the conversion.  */
-	  if (COMPOUND_LITERAL_P (expr)
-	      && CONSTRUCTOR_IS_DEPENDENT (expr)
-	      && MAYBE_CLASS_TYPE_P (expr_type)
-	      && TYPE_HAS_CONVERSION (expr_type))
+	  if (!same_type_ignoring_top_level_qualifiers_p (type, expr_type)
+	      && ((COMPOUND_LITERAL_P (expr)
+		   && CONSTRUCTOR_IS_DEPENDENT (expr)
+		   && MAYBE_CLASS_TYPE_P (expr_type)
+		   && TYPE_HAS_CONVERSION (expr_type))
+		  /* Similarly, converting e.g. an integer to a class
+		     involves a constructor call.  convert_like would
+		     create a TARGET_EXPR, but in a template we can't
+		     use AGGR_INIT_EXPR, and the TARGET_EXPR would lead
+		     to a bogus error.  */
+		  || (val_dep_p && MAYBE_CLASS_TYPE_P (type))))
 	    {
 	      expr = build1 (IMPLICIT_CONV_EXPR, type, expr);
 	      IMPLICIT_CONV_EXPR_NONTYPE_ARG (expr) = true;
@@ -7189,8 +7197,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 
       /* Notice that there are constant expressions like '4 % 0' which
 	 do not fold into integer constants.  */
-      if (TREE_CODE (expr) != INTEGER_CST
-	  && !value_dependent_expression_p (expr))
+      if (TREE_CODE (expr) != INTEGER_CST && !val_dep_p)
 	{
 	  if (complain & tf_error)
 	    {
@@ -7265,7 +7272,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	Here, we do not care about functions, as they are invalid anyway
 	for a parameter of type pointer-to-object.  */
 
-      if (value_dependent_expression_p (expr))
+      if (val_dep_p)
 	/* Non-type template parameters are OK.  */
 	;
       else if (cxx_dialect >= cxx11 && integer_zerop (expr))
@@ -7333,8 +7340,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	    }
 	}
 
-      if (TYPE_REF_OBJ_P (TREE_TYPE (expr))
-	  && value_dependent_expression_p (expr))
+      if (TYPE_REF_OBJ_P (TREE_TYPE (expr)) && val_dep_p)
 	/* OK, dependent reference.  We don't want to ask whether a DECL is
 	   itself value-dependent, since what we want here is its address.  */;
       else
@@ -7412,7 +7418,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 
       /* [temp.arg.nontype] bullet 1 says the pointer to member
          expression must be a pointer-to-member constant.  */
-      if (!value_dependent_expression_p (expr)
+      if (!val_dep_p
 	  && !check_valid_ptrmem_cst_expr (type, expr, complain))
 	return NULL_TREE;
 
@@ -7429,7 +7435,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
     {
       /* [temp.arg.nontype] bullet 1 says the pointer to member
          expression must be a pointer-to-member constant.  */
-      if (!value_dependent_expression_p (expr)
+      if (!val_dep_p
 	  && !check_valid_ptrmem_cst_expr (type, expr, complain))
 	return NULL_TREE;
 
@@ -7452,7 +7458,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
     {
       /* Replace the argument with a reference to the corresponding template
 	 parameter object.  */
-      if (!value_dependent_expression_p (expr))
+      if (!val_dep_p)
 	expr = get_template_parm_object (expr, complain);
       if (expr == error_mark_node)
 	return NULL_TREE;
@@ -16406,7 +16412,9 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		}
 	      else
 		{
-		  gcc_assert (CP_TYPE_CONST_P (TREE_TYPE (op)));
+		  gcc_assert (CP_TYPE_CONST_P (TREE_TYPE (op))
+			      || (TREE_CODE (op) == IMPLICIT_CONV_EXPR
+				  && IMPLICIT_CONV_EXPR_NONTYPE_ARG (op)));
 		  return op;
 		}
 	    }
