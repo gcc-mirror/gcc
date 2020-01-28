@@ -1,3 +1,15 @@
+2020-01-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/91399
+	* config/i386/i386-options.c (set_ix86_tune_features): Add an
+	argument of a pointer to struct gcc_options and pass it to
+	parse_mtune_ctrl_str.
+	(ix86_function_specific_restore): Pass opts to
+	set_ix86_tune_features.
+	(ix86_option_override_internal): Likewise.
+	(parse_mtune_ctrl_str): Add an argument of a pointer to struct
+	gcc_options and use it for x_ix86_tune_ctrl_string.
+
 2020-01-28  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/87763
