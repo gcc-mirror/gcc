@@ -1,6 +1,11 @@
 2020-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2020-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93418
+	* gcc.target/i386/avx2-pr93418.c: New test.
+
 	2020-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/93402

@@ -33418,8 +33418,13 @@ ix86_fold_builtin (tree fndecl, int n_args,
 		    countt = build_int_cst (integer_type_node, count);
 		}
 	      tree_vector_builder builder;
-	      builder.new_unary_operation (TREE_TYPE (args[0]), args[0],
-					   false);
+	      if (mask != HOST_WIDE_INT_M1U || is_vshift)
+		builder.new_vector (TREE_TYPE (args[0]),
+				    TYPE_VECTOR_SUBPARTS (TREE_TYPE (args[0])),
+				    1);
+	      else
+		builder.new_unary_operation (TREE_TYPE (args[0]), args[0],
+					     false);
 	      unsigned int cnt = builder.encoded_nelts ();
 	      for (unsigned int i = 0; i < cnt; ++i)
 		{
