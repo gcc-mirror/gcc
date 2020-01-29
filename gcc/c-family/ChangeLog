@@ -1,3 +1,8 @@
+2020-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89357
+	* c-attribs.c (check_cxx_fundamental_alignment_constraints): Remove.
+
 2019-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
