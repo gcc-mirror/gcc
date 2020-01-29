@@ -1,3 +1,9 @@
+2020-01-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR bootstrap/93409
+	* config/gcn/gcn-hsa.h (ASM_SPEC): Add -mattr=-code-object-v3 as
+	LLVM's assembler changed the default in version 9.
+
 2020-01-24  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/89689
