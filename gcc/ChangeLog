@@ -1,5 +1,31 @@
 2020-01-29  Martin Jambor  <mjambor@suse.cz>
 
+	PR tree-optimization/92706
+	* tree-sra.c (struct access): Adjust comment of
+	grp_total_scalarization.
+	(find_access_in_subtree): Look for single children spanning an entire
+	access.
+	(scalarizable_type_p): Allow register accesses, adjust callers.
+	(completely_scalarize): Remove function.
+	(scalarize_elem): Likewise.
+	(create_total_scalarization_access): Likewise.
+	(sort_and_splice_var_accesses): Do not track total scalarization
+	flags.
+	(analyze_access_subtree): New parameter totally, adjust to new meaning
+	of grp_total_scalarization.
+	(analyze_access_trees): Pass new parameter to analyze_access_subtree.
+	(can_totally_scalarize_forest_p): New function.
+	(create_total_scalarization_access): Likewise.
+	(create_total_access_and_reshape): Likewise.
+	(total_should_skip_creating_access): Likewise.
+	(totally_scalarize_subtree): Likewise.
+	(analyze_all_variable_accesses): Perform total scalarization after
+	subaccess propagation using the new functions above.
+	(initialize_constant_pool_replacements): Output initializers by
+	traversing the access tree.
+
+2020-01-29  Martin Jambor  <mjambor@suse.cz>
+
 	* tree-sra.c (verify_sra_access_forest): New function.
 	(verify_all_sra_access_forests): Likewise.
 	(create_artificial_child_access): Set parent.
