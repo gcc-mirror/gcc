@@ -1,5 +1,15 @@
 2020-01-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	* libsupc++/compare (__detail::__3way_builtin_ptr_cmp): Use
+	three_way_comparable_with.
+	(__detail::__3way_cmp_with): Remove workaround for fixed bug.
+	(compare_three_way::operator()): Remove redundant constraint from
+	requires-clause.
+	(__detail::_Synth3way::operator()): Use three_way_comparable_with
+	instead of workaround.
+	* testsuite/18_support/comparisons/object/93479.cc: Prune extra
+	output due to simplified constraints on compare_three_way::operator().
+
 	PR libstdc++/93479
 	* libsupc++/compare (__3way_builtin_ptr_cmp): Require <=> to be valid.
 	* testsuite/18_support/comparisons/object/93479.cc: New test.

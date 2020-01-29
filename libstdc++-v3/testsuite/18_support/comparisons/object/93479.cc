@@ -42,3 +42,5 @@ test02()
   std::compare_three_way{}(x, ""); // { dg-error "no match" }
   std::compare_three_way{}("", x); // { dg-error "no match" }
 }
+
+// { dg-prune-output "in requirements with" }
