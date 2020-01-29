@@ -992,9 +992,19 @@ gcn_vec_constant (machine_mode mode, int a)
     return CONST2_RTX (mode);*/
 
   int units = GET_MODE_NUNITS (mode);
-  rtx tem = gen_int_mode (a, GET_MODE_INNER (mode));
-  rtvec v = rtvec_alloc (units);
+  machine_mode innermode = GET_MODE_INNER (mode);
 
+  rtx tem;
+  if (FLOAT_MODE_P (innermode))
+    {
+      REAL_VALUE_TYPE rv;
+      real_from_integer (&rv, NULL, a, SIGNED);
+      tem = const_double_from_real_value (rv, innermode);
+    }
+  else
+    tem = gen_int_mode (a, innermode);
+
+  rtvec v = rtvec_alloc (units);
   for (int i = 0; i < units; ++i)
     RTVEC_ELT (v, i) = tem;
 

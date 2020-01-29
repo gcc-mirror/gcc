@@ -701,34 +701,6 @@
     DONE;
   })
 
-(define_expand "gather<mode>_exec"
-  [(match_operand:VEC_ALLREG_MODE 0 "register_operand")
-   (match_operand:DI 1 "register_operand")
-   (match_operand:V64SI 2 "register_operand")
-   (match_operand 3 "immediate_operand")
-   (match_operand:SI 4 "gcn_alu_operand")
-   (match_operand:DI 5 "gcn_exec_reg_operand")]
-  ""
-  {
-    rtx undefmode = gcn_gen_undef (<MODE>mode);
-
-    rtx addr = gcn_expand_scaled_offsets (DEFAULT_ADDR_SPACE, operands[1],
-					  operands[2], operands[4],
-					  INTVAL (operands[3]), operands[5]);
-
-    if (GET_MODE (addr) == V64DImode)
-      emit_insn (gen_gather<mode>_insn_1offset_exec (operands[0], addr,
-						     const0_rtx, const0_rtx,
-						     const0_rtx, undefmode,
-						     operands[5]));
-    else
-      emit_insn (gen_gather<mode>_insn_2offsets_exec (operands[0], operands[1],
-						      addr, const0_rtx,
-						      const0_rtx, const0_rtx,
-						      undefmode, operands[5]));
-    DONE;
-  })
-
 ; Allow any address expression
 (define_expand "gather<mode>_expr<exec>"
   [(set (match_operand:VEC_ALLREG_MODE 0 "register_operand")
@@ -2801,9 +2773,12 @@
 		(<MODE>mode, exec, operands[1], gen_rtx_SCRATCH (V64DImode));
     rtx as = gen_rtx_CONST_INT (VOIDmode, MEM_ADDR_SPACE (operands[1]));
     rtx v = gen_rtx_CONST_INT (VOIDmode, MEM_VOLATILE_P (operands[1]));
-    rtx undef = gcn_gen_undef (<MODE>mode);
-    emit_insn (gen_gather<mode>_expr_exec (operands[0], addr, as, v, undef,
-					   exec));
+
+    /* Masked lanes are required to hold zero.  */
+    emit_move_insn (operands[0], gcn_vec_constant (<MODE>mode, 0));
+
+    emit_insn (gen_gather<mode>_expr_exec (operands[0], addr, as, v,
+					   operands[0], exec));
     DONE;
   })
 
@@ -2843,8 +2818,23 @@
 	operands[2] = tmp;
       }
 
-    emit_insn (gen_gather<mode>_exec (operands[0], operands[1], operands[2],
-				      operands[3], operands[4], exec));
+    rtx addr = gcn_expand_scaled_offsets (DEFAULT_ADDR_SPACE, operands[1],
+					  operands[2], operands[4],
+					  INTVAL (operands[3]), exec);
+
+    /* Masked lanes are required to hold zero.  */
+    emit_move_insn (operands[0], gcn_vec_constant (<MODE>mode, 0));
+
+    if (GET_MODE (addr) == V64DImode)
+      emit_insn (gen_gather<mode>_insn_1offset_exec (operands[0], addr,
+						     const0_rtx, const0_rtx,
+						     const0_rtx, operands[0],
+						     exec));
+    else
+      emit_insn (gen_gather<mode>_insn_2offsets_exec (operands[0], operands[1],
+						      addr, const0_rtx,
+						      const0_rtx, const0_rtx,
+						      operands[0], exec));
     DONE;
   })
 

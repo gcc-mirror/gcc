@@ -1,3 +1,11 @@
+2020-01-30  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (gather<mode>_exec): Move contents ...
+	(mask_gather_load<mode>): ... here, and zero-initialize the
+	destination.
+	(maskload<mode>di): Zero-initialize the destination.
+	* config/gcn/gcn.c:
+
 2020-01-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93356
