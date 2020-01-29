@@ -1,3 +1,8 @@
+2020-01-24  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/89689
+	* builtins.def (BUILT_IN_OBJECT_SIZE): Make it const rather than pure.
+
 2020-01-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Revert:
