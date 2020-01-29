@@ -1,3 +1,8 @@
+2020-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/89357
+	* c-attribs.c (check_cxx_fundamental_alignment_constraints): Remove.
+
 2020-01-23  Jason Merrill  <jason@redhat.com>
 
 	* c-warn.c (conversion_warning): Change -Wsign-conversion handling.
