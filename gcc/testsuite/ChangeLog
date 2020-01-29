@@ -1,3 +1,8 @@
+2020-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/93463
+	* gfortran.dg/goacc/pr93463.f90: New test.
+
 2020-01-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/93428
