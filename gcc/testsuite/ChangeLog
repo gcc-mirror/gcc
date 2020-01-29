@@ -3,6 +3,10 @@
 	Backported from mainline
 	2020-01-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/91118
+	* g++.dg/gomp/pr91118-1.C: New test.
+	* g++.dg/gomp/pr91118-2.C: New test.
+
 	PR fortran/93463
 	* gfortran.dg/goacc/pr93463.f90: New test.
 

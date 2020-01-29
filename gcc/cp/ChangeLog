@@ -1,3 +1,12 @@
+2020-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2020-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91118
+	* cp-gimplify.c (cxx_omp_predetermined_sharing): Return
+	OMP_CLAUSE_DEFAULT_SHARED for typeinfo decls.
+
 2020-01-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/90546

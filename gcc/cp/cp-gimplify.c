@@ -2107,6 +2107,10 @@ cxx_omp_predetermined_sharing (tree decl)
 	   && DECL_OMP_PRIVATIZED_MEMBER (decl)))
     return OMP_CLAUSE_DEFAULT_SHARED;
 
+  /* Similarly for typeinfo symbols.  */
+  if (VAR_P (decl) && DECL_ARTIFICIAL (decl) && DECL_TINFO_P (decl))
+    return OMP_CLAUSE_DEFAULT_SHARED;
+
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
 }
 
