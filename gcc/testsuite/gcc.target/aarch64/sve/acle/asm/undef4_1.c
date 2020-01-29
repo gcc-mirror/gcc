@@ -38,6 +38,13 @@ TEST_UNDEF (float16, svfloat16x4_t,
 	    z0 = svundef4_f16 ())
 
 /*
+** bfloat16:
+**	ret
+*/
+TEST_UNDEF (bfloat16, svbfloat16x4_t,
+	    z0 = svundef4_bf16 ())
+
+/*
 ** int32:
 **	ret
 */

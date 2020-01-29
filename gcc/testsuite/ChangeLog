@@ -1,3 +1,157 @@
+2020-01-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/acle/general-c++/mangle_1.C: Test mangling
+	of svbfloat16_t.
+	* g++.target/aarch64/sve/acle/general-c++/mangle_2.C: Likewise for
+	__SVBfloat16_t.
+	* gcc.target/aarch64/sve/acle/asm/clasta_bf16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/clastb_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/cnt_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/create2_1.c (create_bf16): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/create3_1.c (create_bf16): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/create4_1.c (create_bf16): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_lane_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dupq_lane_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ext_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/get2_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/get3_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/get4_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/insr_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lasta_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lastb_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1ro_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld1rq_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld2_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld3_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ld4_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldff1_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnf1_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/ldnt1_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/len_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_f16.c
+	(reinterpret_f16_bf16_tied1, reinterpret_f16_bf16_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_f32.c
+	(reinterpret_f32_bf16_tied1, reinterpret_f32_bf16_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_f64.c
+	(reinterpret_f64_bf16_tied1, reinterpret_f64_bf16_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_s16.c
+	(reinterpret_s16_bf16_tied1, reinterpret_s16_bf16_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_s32.c
+	(reinterpret_s32_bf16_tied1, reinterpret_s32_bf16_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_s64.c
+	(reinterpret_s64_bf16_tied1, reinterpret_s64_bf16_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_s8.c
+	(reinterpret_s8_bf16_tied1, reinterpret_s8_bf16_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_u16.c
+	(reinterpret_u16_bf16_tied1, reinterpret_u16_bf16_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_u32.c
+	(reinterpret_u32_bf16_tied1, reinterpret_u32_bf16_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_u64.c
+	(reinterpret_u64_bf16_tied1, reinterpret_u64_bf16_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/reinterpret_u8.c
+	(reinterpret_u8_bf16_tied1, reinterpret_u8_bf16_untied): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/rev_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/sel_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/set2_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/set3_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/set4_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/splice_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st1_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st2_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st3_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/st4_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/stnt1_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/tbl_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/undef2_1.c (bfloat16_t): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/undef3_1.c (bfloat16_t): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/undef4_1.c (bfloat16_t): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/undef_1.c (bfloat16_t): Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/annotate_1.c (ret_bf16, ret_bf16x2)
+	(ret_bf16x3, ret_bf16x4): Likewise.
+	* gcc.target/aarch64/sve/pcs/annotate_2.c (fn_bf16, fn_bf16x2)
+	(fn_bf16x3, fn_bf16x4): Likewise.
+	* gcc.target/aarch64/sve/pcs/annotate_3.c (fn_bf16, fn_bf16x2)
+	(fn_bf16x3, fn_bf16x4): Likewise.
+	* gcc.target/aarch64/sve/pcs/annotate_4.c (fn_bf16, fn_bf16x2)
+	(fn_bf16x3, fn_bf16x4): Likewise.
+	* gcc.target/aarch64/sve/pcs/annotate_5.c (fn_bf16, fn_bf16x2)
+	(fn_bf16x3, fn_bf16x4): Likewise.
+	* gcc.target/aarch64/sve/pcs/annotate_6.c (fn_bf16, fn_bf16x2)
+	(fn_bf16x3, fn_bf16x4): Likewise.
+	* gcc.target/aarch64/sve/pcs/annotate_7.c (fn_bf16, fn_bf16x2)
+	(fn_bf16x3, fn_bf16x4): Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/gnu_vectors_1.c (bfloat16x16_t): New
+	typedef.
+	(bfloat16_callee, bfloat16_caller): New tests.
+	* gcc.target/aarch64/sve/pcs/gnu_vectors_2.c (bfloat16x16_t): New
+	typedef.
+	(bfloat16_callee, bfloat16_caller): New tests.
+	* gcc.target/aarch64/sve/pcs/return_4.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_4_128.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_4_256.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_4_512.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_4_1024.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_4_2048.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_5.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_5_128.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_5_256.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_5_512.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_5_1024.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_5_2048.c (CALLER_BF16): New macro.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_6.c (bfloat16_t): New typedef.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_6_128.c (bfloat16_t): New typedef.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_6_256.c (bfloat16_t): New typedef.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_6_512.c (bfloat16_t): New typedef.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_6_1024.c (bfloat16_t): New typedef.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_6_2048.c (bfloat16_t): New typedef.
+	(callee_bf16, caller_bf16): New tests.
+	* gcc.target/aarch64/sve/pcs/return_7.c (callee_bf16): Likewise
+	(caller_bf16): Likewise.
+	* gcc.target/aarch64/sve/pcs/return_8.c (callee_bf16): Likewise
+	(caller_bf16): Likewise.
+	* gcc.target/aarch64/sve/pcs/return_9.c (callee_bf16): Likewise
+	(caller_bf16): Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/tbl2_bf16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/tbx_bf16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilerw_bf16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/whilewr_bf16.c: Likewise.
+
 2020-01-31  Dennis Zhang  <dennis.zhang@arm.com>
 	    Matthew Malcomson  <matthew.malcomson@arm.com>
 	    Richard Sandiford  <richard.sandiford@arm.com>

@@ -1,3 +1,34 @@
+2020-01-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/arm_sve.h: Include arm_bf16.h.
+	* config/aarch64/aarch64-modes.def (BF): Move definition before
+	VECTOR_MODES.  Remove separate VECTOR_MODES for V4BF and V8BF.
+	(SVE_MODES): Handle BF modes.
+	* config/aarch64/aarch64.c (aarch64_classify_vector_mode): Handle
+	BF modes.
+	(aarch64_full_sve_mode): Likewise.
+	* config/aarch64/iterators.md (SVE_STRUCT): Add VNx16BF, VNx24BF
+	and VNx32BF.
+	(SVE_FULL, SVE_FULL_HSD, SVE_ALL): Add VNx8BF.
+	(Vetype, Vesize, Vctype, VEL, Vel, VEL_INT, V128, v128, vwcore)
+	(V_INT_EQUIV, v_int_equiv, V_FP_EQUIV, v_fp_equiv, vector_count)
+	(insn_length, VSINGLE, vsingle, VPRED, vpred, VDOUBLE): Handle the
+	new SVE BF modes.
+	* config/aarch64/aarch64-sve-builtins.h (TYPE_bfloat): New
+	type_class_index.
+	* config/aarch64/aarch64-sve-builtins.cc (TYPES_all_arith): New macro.
+	(TYPES_all_data): Add bf16.
+	(TYPES_reinterpret1, TYPES_reinterpret): Likewise.
+	(register_tuple_type): Increase buffer size.
+	* config/aarch64/aarch64-sve-builtins.def (svbfloat16_t): New type.
+	(bf16): New type suffix.
+	* config/aarch64/aarch64-sve-builtins-base.def (svabd, svadd, svaddv)
+	(svcmpeq, svcmpge, svcmpgt, svcmple, svcmplt, svcmpne, svmad, svmax)
+	(svmaxv, svmin, svminv, svmla, svmls, svmsb, svmul, svsub, svsubr):
+	Change type from all_data to all_arith.
+	* config/aarch64/aarch64-sve-builtins-sve2.def (svaddp, svmaxp)
+	(svminp): Likewise.
+
 2020-01-31  Dennis Zhang  <dennis.zhang@arm.com>
 	    Matthew Malcomson  <matthew.malcomson@arm.com>
 	    Richard Sandiford  <richard.sandiford@arm.com>

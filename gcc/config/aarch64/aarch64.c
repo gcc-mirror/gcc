@@ -1656,6 +1656,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_VNx8HImode:
     case E_VNx4SImode:
     case E_VNx2DImode:
+    case E_VNx8BFmode:
     case E_VNx8HFmode:
     case E_VNx4SFmode:
     case E_VNx2DFmode:
@@ -1666,6 +1667,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_VNx16HImode:
     case E_VNx8SImode:
     case E_VNx4DImode:
+    case E_VNx16BFmode:
     case E_VNx16HFmode:
     case E_VNx8SFmode:
     case E_VNx4DFmode:
@@ -1674,6 +1676,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_VNx24HImode:
     case E_VNx12SImode:
     case E_VNx6DImode:
+    case E_VNx24BFmode:
     case E_VNx24HFmode:
     case E_VNx12SFmode:
     case E_VNx6DFmode:
@@ -1682,6 +1685,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_VNx32HImode:
     case E_VNx16SImode:
     case E_VNx8DImode:
+    case E_VNx32BFmode:
     case E_VNx32HFmode:
     case E_VNx16SFmode:
     case E_VNx8DFmode:
@@ -16109,8 +16113,10 @@ aarch64_full_sve_mode (scalar_mode mode)
       return VNx4SFmode;
     case E_HFmode:
       return VNx8HFmode;
+    case E_BFmode:
+      return VNx8BFmode;
     case E_DImode:
-	return VNx2DImode;
+      return VNx2DImode;
     case E_SImode:
       return VNx4SImode;
     case E_HImode:

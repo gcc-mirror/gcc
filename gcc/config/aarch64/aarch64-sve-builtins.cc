@@ -184,8 +184,15 @@ CONSTEXPR const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1] = {
 /*     _f16 _f32 _f64
    _s8 _s16 _s32 _s64
    _u8 _u16 _u32 _u64.  */
-#define TYPES_all_data(S, D) \
+#define TYPES_all_arith(S, D) \
   TYPES_all_float (S, D), TYPES_all_integer (S, D)
+
+/*     _bf16
+	_f16 _f32 _f64
+   _s8  _s16 _s32 _s64
+   _u8  _u16 _u32 _u64.  */
+#define TYPES_all_data(S, D) \
+  S (bf16), TYPES_all_arith (S, D)
 
 /* _b only.  */
 #define TYPES_b(S, D) \
@@ -371,14 +378,17 @@ CONSTEXPR const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1] = {
   TYPES_inc_dec_n1 (D, u32), \
   TYPES_inc_dec_n1 (D, u64)
 
-/* {     _f16 _f32 _f64 }   {     _f16 _f32 _f64 }
-   { _s8 _s16 _s32 _s64 } x { _s8 _s16 _s32 _s64 }
-   { _u8 _u16 _u32 _u64 }   { _u8 _u16 _u32 _u64 }.  */
+/* {     _bf16           }   {     _bf16           }
+   {      _f16 _f32 _f64 }   {      _f16 _f32 _f64 }
+   { _s8  _s16 _s32 _s64 } x { _s8  _s16 _s32 _s64 }
+   { _u8  _u16 _u32 _u64 }   { _u8  _u16 _u32 _u64 }.  */
 #define TYPES_reinterpret1(D, A) \
+  D (A, bf16), \
   D (A, f16), D (A, f32), D (A, f64), \
   D (A, s8), D (A, s16), D (A, s32), D (A, s64), \
   D (A, u8), D (A, u16), D (A, u32), D (A, u64)
 #define TYPES_reinterpret(S, D) \
+  TYPES_reinterpret1 (D, bf16), \
   TYPES_reinterpret1 (D, f16), \
   TYPES_reinterpret1 (D, f32), \
   TYPES_reinterpret1 (D, f64), \
@@ -428,6 +438,7 @@ DEF_SVE_TYPES_ARRAY (all_signed);
 DEF_SVE_TYPES_ARRAY (all_float_and_signed);
 DEF_SVE_TYPES_ARRAY (all_unsigned);
 DEF_SVE_TYPES_ARRAY (all_integer);
+DEF_SVE_TYPES_ARRAY (all_arith);
 DEF_SVE_TYPES_ARRAY (all_data);
 DEF_SVE_TYPES_ARRAY (b);
 DEF_SVE_TYPES_ARRAY (b_unsigned);
@@ -3351,7 +3362,7 @@ register_tuple_type (unsigned int num_vectors, vector_type_index type)
 	      && TYPE_ALIGN (tuple_type) == 128);
 
   /* Work out the structure name.  */
-  char buffer[sizeof ("svfloat64x4_t")];
+  char buffer[sizeof ("svbfloat16x4_t")];
   const char *vector_type_name = vector_types[type].acle_name;
   snprintf (buffer, sizeof (buffer), "%.*sx%d_t",
 	    (int) strlen (vector_type_name) - 2, vector_type_name,

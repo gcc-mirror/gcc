@@ -185,6 +185,39 @@ caller_f16 (void)
 }
 
 /*
+** callee_bf16:
+**	mov	z0\.h, h4
+**	mov	z1\.h, h5
+**	mov	z2\.h, h6
+**	mov	z3\.h, h7
+**	ret
+*/
+svbfloat16x4_t __attribute__((noipa))
+callee_bf16 (bfloat16_t h0, bfloat16_t h1, bfloat16_t h2, bfloat16_t h3,
+	     bfloat16_t h4, bfloat16_t h5, bfloat16_t h6, bfloat16_t h7)
+{
+  return svcreate4 (svdup_bf16 (h4), svdup_bf16 (h5),
+		    svdup_bf16 (h6), svdup_bf16 (h7));
+}
+
+/*
+** caller_bf16:
+**	...
+**	bl	callee_bf16
+**	trn2	z0\.h, z0\.h, z3\.h
+**	ldp	x29, x30, \[sp\], 16
+**	ret
+*/
+svbfloat16_t __attribute__((noipa))
+caller_bf16 (bfloat16_t h0, bfloat16_t h1, bfloat16_t h2, bfloat16_t h3,
+	     bfloat16_t h4, bfloat16_t h5, bfloat16_t h6, bfloat16_t h7)
+{
+  svbfloat16x4_t res;
+  res = callee_bf16 (h0, h1, h2, h3, h4, h5, h6, h7);
+  return svtrn2 (svget4 (res, 0), svget4 (res, 3));
+}
+
+/*
 ** callee_s32:
 **	mov	z0\.s, #1
 **	mov	z1\.s, #2
