@@ -1,6 +1,37 @@
 2020-01-29  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/92706
+	* tree-sra.c (struct access): Fields first_link, last_link,
+	next_queued and grp_queued renamed to first_rhs_link, last_rhs_link,
+	next_rhs_queued and grp_rhs_queued respectively, new fields
+	first_lhs_link, last_lhs_link, next_lhs_queued and grp_lhs_queued.
+	(struct assign_link): Field next renamed to next_rhs, new field
+	next_lhs.  Updated comment.
+	(work_queue_head): Renamed to rhs_work_queue_head.
+	(lhs_work_queue_head): New variable.
+	(add_link_to_lhs): New function.
+	(relink_to_new_repr): Also relink LHS lists.
+	(add_access_to_work_queue): Renamed to add_access_to_rhs_work_queue.
+	(add_access_to_lhs_work_queue): New function.
+	(pop_access_from_work_queue): Renamed to
+	pop_access_from_rhs_work_queue.
+	(pop_access_from_lhs_work_queue): New function.
+	(build_accesses_from_assign): Also add links to LHS lists and to LHS
+	work_queue.
+	(child_would_conflict_in_lacc): Renamed to
+	child_would_conflict_in_acc.  Adjusted parameter names.
+	(create_artificial_child_access): New parameter set_grp_read, use it.
+	(subtree_mark_written_and_enqueue): Renamed to
+	subtree_mark_written_and_rhs_enqueue.
+	(propagate_subaccesses_across_link): Renamed to
+	propagate_subaccesses_from_rhs.
+	(propagate_subaccesses_from_lhs): New function.
+	(propagate_all_subaccesses): Also propagate subaccesses from LHSs to
+	RHSs.
+
+2020-01-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/92706
 	* tree-sra.c (struct access): Adjust comment of
 	grp_total_scalarization.
 	(find_access_in_subtree): Look for single children spanning an entire

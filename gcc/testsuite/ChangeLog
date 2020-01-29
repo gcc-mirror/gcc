@@ -1,6 +1,11 @@
 2020-01-29  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/92706
+	* gcc.dg/tree-ssa/pr92706-1.c: New test.
+
+2020-01-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/92706
 	* gcc.dg/tree-ssa/pr92706-2.c: New test.
 	* gcc.dg/guality/pr59776.c: Xfail tests for s2.g.
 

@@ -167,11 +167,15 @@ struct access
   struct access *next_sibling;
 
   /* Pointers to the first and last element in the linked list of assign
-     links.  */
-  struct assign_link *first_link, *last_link;
+     links for propagation from LHS to RHS.  */
+  struct assign_link *first_rhs_link, *last_rhs_link;
 
-  /* Pointer to the next access in the work queue.  */
-  struct access *next_queued;
+  /* Pointers to the first and last element in the linked list of assign
+     links for propagation from LHS to RHS.  */
+  struct assign_link *first_lhs_link, *last_lhs_link;
+
+  /* Pointer to the next access in the work queues.  */
+  struct access *next_rhs_queued, *next_lhs_queued;
 
   /* Replacement variable for this access "region."  Never to be accessed
      directly, always only by the means of get_access_replacement() and only
@@ -184,8 +188,11 @@ struct access
   /* Is this particular access write access? */
   unsigned write : 1;
 
-  /* Is this access currently in the work queue?  */
-  unsigned grp_queued : 1;
+  /* Is this access currently in the rhs work queue?  */
+  unsigned grp_rhs_queued : 1;
+
+  /* Is this access currently in the lhs work queue?  */
+  unsigned grp_lhs_queued : 1;
 
   /* Does this group contain a write access?  This flag is propagated down the
      access tree.  */
@@ -262,12 +269,14 @@ typedef struct access *access_p;
 static object_allocator<struct access> access_pool ("SRA accesses");
 
 /* A structure linking lhs and rhs accesses from an aggregate assignment.  They
-   are used to propagate subaccesses from rhs to lhs as long as they don't
-   conflict with what is already there.  */
+   are used to propagate subaccesses from rhs to lhs and vice versa as long as
+   they don't conflict with what is already there.  In the RHS->LHS direction,
+   we also propagate grp_write flag to lazily mark that the access contains any
+   meaningful data.  */
 struct assign_link
 {
   struct access *lacc, *racc;
-  struct assign_link *next;
+  struct assign_link *next_rhs, *next_lhs;
 };
 
 /* Alloc pool for allocating assign link structures.  */
@@ -327,7 +336,7 @@ static struct obstack name_obstack;
 
 /* Head of a linked list of accesses that need to have its subaccesses
    propagated to their assignment counterparts. */
-static struct access *work_queue_head;
+static struct access *rhs_work_queue_head, *lhs_work_queue_head;
 
 /* Dump contents of ACCESS to file F in a human friendly way.  If GRP is true,
    representative fields are dumped, otherwise those which only describe the
@@ -534,79 +543,155 @@ get_var_base_offset_size_access (tree base, HOST_WIDE_INT offset,
 }
 
 /* Add LINK to the linked list of assign links of RACC.  */
+
 static void
 add_link_to_rhs (struct access *racc, struct assign_link *link)
 {
   gcc_assert (link->racc == racc);
 
-  if (!racc->first_link)
+  if (!racc->first_rhs_link)
     {
-      gcc_assert (!racc->last_link);
-      racc->first_link = link;
+      gcc_assert (!racc->last_rhs_link);
+      racc->first_rhs_link = link;
     }
   else
-    racc->last_link->next = link;
+    racc->last_rhs_link->next_rhs = link;
 
-  racc->last_link = link;
-  link->next = NULL;
+  racc->last_rhs_link = link;
+  link->next_rhs = NULL;
 }
 
-/* Move all link structures in their linked list in OLD_RACC to the linked list
-   in NEW_RACC.  */
+/* Add LINK to the linked list of lhs assign links of LACC.  */
+
 static void
-relink_to_new_repr (struct access *new_racc, struct access *old_racc)
+add_link_to_lhs (struct access *lacc, struct assign_link *link)
 {
-  if (!old_racc->first_link)
-    {
-      gcc_assert (!old_racc->last_link);
-      return;
-    }
+  gcc_assert (link->lacc == lacc);
 
-  if (new_racc->first_link)
+  if (!lacc->first_lhs_link)
     {
-      gcc_assert (!new_racc->last_link->next);
-      gcc_assert (!old_racc->last_link || !old_racc->last_link->next);
-
-      new_racc->last_link->next = old_racc->first_link;
-      new_racc->last_link = old_racc->last_link;
+      gcc_assert (!lacc->last_lhs_link);
+      lacc->first_lhs_link = link;
     }
   else
-    {
-      gcc_assert (!new_racc->last_link);
+    lacc->last_lhs_link->next_lhs = link;
 
-      new_racc->first_link = old_racc->first_link;
-      new_racc->last_link = old_racc->last_link;
-    }
-  old_racc->first_link = old_racc->last_link = NULL;
+  lacc->last_lhs_link = link;
+  link->next_lhs = NULL;
 }
 
-/* Add ACCESS to the work queue (which is actually a stack).  */
+/* Move all link structures in their linked list in OLD_ACC to the linked list
+   in NEW_ACC.  */
+static void
+relink_to_new_repr (struct access *new_acc, struct access *old_acc)
+{
+  if (old_acc->first_rhs_link)
+    {
+
+      if (new_acc->first_rhs_link)
+	{
+	  gcc_assert (!new_acc->last_rhs_link->next_rhs);
+	  gcc_assert (!old_acc->last_rhs_link
+		      || !old_acc->last_rhs_link->next_rhs);
+
+	  new_acc->last_rhs_link->next_rhs = old_acc->first_rhs_link;
+	  new_acc->last_rhs_link = old_acc->last_rhs_link;
+	}
+      else
+	{
+	  gcc_assert (!new_acc->last_rhs_link);
+
+	  new_acc->first_rhs_link = old_acc->first_rhs_link;
+	  new_acc->last_rhs_link = old_acc->last_rhs_link;
+	}
+      old_acc->first_rhs_link = old_acc->last_rhs_link = NULL;
+    }
+  else
+    gcc_assert (!old_acc->last_rhs_link);
+
+  if (old_acc->first_lhs_link)
+    {
+
+      if (new_acc->first_lhs_link)
+	{
+	  gcc_assert (!new_acc->last_lhs_link->next_lhs);
+	  gcc_assert (!old_acc->last_lhs_link
+		      || !old_acc->last_lhs_link->next_lhs);
+
+	  new_acc->last_lhs_link->next_lhs = old_acc->first_lhs_link;
+	  new_acc->last_lhs_link = old_acc->last_lhs_link;
+	}
+      else
+	{
+	  gcc_assert (!new_acc->last_lhs_link);
+
+	  new_acc->first_lhs_link = old_acc->first_lhs_link;
+	  new_acc->last_lhs_link = old_acc->last_lhs_link;
+	}
+      old_acc->first_lhs_link = old_acc->last_lhs_link = NULL;
+    }
+  else
+    gcc_assert (!old_acc->last_lhs_link);
+
+}
+
+/* Add ACCESS to the work to queue for propagation of subaccesses from RHS to
+   LHS (which is actually a stack).  */
 
 static void
-add_access_to_work_queue (struct access *access)
+add_access_to_rhs_work_queue (struct access *access)
 {
-  if (access->first_link && !access->grp_queued)
+  if (access->first_rhs_link && !access->grp_rhs_queued)
     {
-      gcc_assert (!access->next_queued);
-      access->next_queued = work_queue_head;
-      access->grp_queued = 1;
-      work_queue_head = access;
+      gcc_assert (!access->next_rhs_queued);
+      access->next_rhs_queued = rhs_work_queue_head;
+      access->grp_rhs_queued = 1;
+      rhs_work_queue_head = access;
     }
 }
 
-/* Pop an access from the work queue, and return it, assuming there is one.  */
+/* Add ACCESS to the work to queue for propagation of subaccesses from LHS to
+   RHS (which is actually a stack).  */
+
+static void
+add_access_to_lhs_work_queue (struct access *access)
+{
+  if (access->first_lhs_link && !access->grp_lhs_queued)
+    {
+      gcc_assert (!access->next_lhs_queued);
+      access->next_lhs_queued = lhs_work_queue_head;
+      access->grp_lhs_queued = 1;
+      lhs_work_queue_head = access;
+    }
+}
+
+/* Pop an access from the work queue for propagating from RHS to LHS, and
+   return it, assuming there is one.  */
 
 static struct access *
-pop_access_from_work_queue (void)
+pop_access_from_rhs_work_queue (void)
 {
-  struct access *access = work_queue_head;
+  struct access *access = rhs_work_queue_head;
 
-  work_queue_head = access->next_queued;
-  access->next_queued = NULL;
-  access->grp_queued = 0;
+  rhs_work_queue_head = access->next_rhs_queued;
+  access->next_rhs_queued = NULL;
+  access->grp_rhs_queued = 0;
   return access;
 }
 
+/* Pop an access from the work queue for propagating from LHS to RHS, and
+   return it, assuming there is one.  */
+
+static struct access *
+pop_access_from_lhs_work_queue (void)
+{
+  struct access *access = lhs_work_queue_head;
+
+  lhs_work_queue_head = access->next_lhs_queued;
+  access->next_lhs_queued = NULL;
+  access->grp_lhs_queued = 0;
+  return access;
+}
 
 /* Allocate necessary structures.  */
 
@@ -1203,7 +1288,9 @@ build_accesses_from_assign (gimple *stmt)
       link->lacc = lacc;
       link->racc = racc;
       add_link_to_rhs (racc, link);
-      add_access_to_work_queue (racc);
+      add_link_to_lhs (lacc, link);
+      add_access_to_rhs_work_queue (racc);
+      add_access_to_lhs_work_queue (lacc);
 
       /* Let's delay marking the areas as written until propagation of accesses
 	 across link, unless the nature of rhs tells us that its data comes
@@ -2492,17 +2579,17 @@ analyze_access_trees (struct access *access)
   return ret;
 }
 
-/* Return true iff a potential new child of LACC at offset OFFSET and with size
+/* Return true iff a potential new child of ACC at offset OFFSET and with size
    SIZE would conflict with an already existing one.  If exactly such a child
-   already exists in LACC, store a pointer to it in EXACT_MATCH.  */
+   already exists in ACC, store a pointer to it in EXACT_MATCH.  */
 
 static bool
-child_would_conflict_in_lacc (struct access *lacc, HOST_WIDE_INT norm_offset,
+child_would_conflict_in_acc (struct access *acc, HOST_WIDE_INT norm_offset,
 			      HOST_WIDE_INT size, struct access **exact_match)
 {
   struct access *child;
 
-  for (child = lacc->first_child; child; child = child->next_sibling)
+  for (child = acc->first_child; child; child = child->next_sibling)
     {
       if (child->offset == norm_offset && child->size == size)
 	{
@@ -2528,7 +2615,7 @@ child_would_conflict_in_lacc (struct access *lacc, HOST_WIDE_INT norm_offset,
 static struct access *
 create_artificial_child_access (struct access *parent, struct access *model,
 				HOST_WIDE_INT new_offset,
-				bool set_grp_write)
+				bool set_grp_read, bool set_grp_write)
 {
   struct access **child;
   tree expr = parent->base;
@@ -2551,8 +2638,8 @@ create_artificial_child_access (struct access *parent, struct access *model,
   access->size = model->size;
   access->type = model->type;
   access->parent = parent;
+  access->grp_read = set_grp_read;
   access->grp_write = set_grp_write;
-  access->grp_read = false;
   access->reverse = model->reverse;
 
   child = &parent->first_child;
@@ -2571,16 +2658,16 @@ create_artificial_child_access (struct access *parent, struct access *model,
    and has assignment links leading from it, re-enqueue it.  */
 
 static void
-subtree_mark_written_and_enqueue (struct access *access)
+subtree_mark_written_and_rhs_enqueue (struct access *access)
 {
   if (access->grp_write)
     return;
   access->grp_write = true;
-  add_access_to_work_queue (access);
+  add_access_to_rhs_work_queue (access);
 
   struct access *child;
   for (child = access->first_child; child; child = child->next_sibling)
-    subtree_mark_written_and_enqueue (child);
+    subtree_mark_written_and_rhs_enqueue (child);
 }
 
 /* Propagate subaccesses and grp_write flags of RACC across an assignment link
@@ -2590,7 +2677,7 @@ subtree_mark_written_and_enqueue (struct access *access)
    possible.  */
 
 static bool
-propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
+propagate_subaccesses_from_rhs (struct access *lacc, struct access *racc)
 {
   struct access *rchild;
   HOST_WIDE_INT norm_delta = lacc->offset - racc->offset;
@@ -2603,7 +2690,7 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
       gcc_checking_assert (!comes_initialized_p (racc->base));
       if (racc->grp_write)
 	{
-	  subtree_mark_written_and_enqueue (lacc);
+	  subtree_mark_written_and_rhs_enqueue (lacc);
 	  ret = true;
 	}
     }
@@ -2615,7 +2702,7 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
       if (!lacc->grp_write)
 	{
 	  ret = true;
-	  subtree_mark_written_and_enqueue (lacc);
+	  subtree_mark_written_and_rhs_enqueue (lacc);
 	}
       return ret;
     }
@@ -2625,7 +2712,7 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
       if (!lacc->grp_write)
 	{
 	  ret = true;
-	  subtree_mark_written_and_enqueue (lacc);
+	  subtree_mark_written_and_rhs_enqueue (lacc);
 	}
       if (!lacc->first_child && !racc->first_child)
 	{
@@ -2655,7 +2742,7 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
       struct access *new_acc = NULL;
       HOST_WIDE_INT norm_offset = rchild->offset + norm_delta;
 
-      if (child_would_conflict_in_lacc (lacc, norm_offset, rchild->size,
+      if (child_would_conflict_in_acc (lacc, norm_offset, rchild->size,
 					&new_acc))
 	{
 	  if (new_acc)
@@ -2663,17 +2750,17 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
 	      if (!new_acc->grp_write && rchild->grp_write)
 		{
 		  gcc_assert (!lacc->grp_write);
-		  subtree_mark_written_and_enqueue (new_acc);
+		  subtree_mark_written_and_rhs_enqueue (new_acc);
 		  ret = true;
 		}
 
 	      rchild->grp_hint = 1;
 	      new_acc->grp_hint |= new_acc->grp_read;
 	      if (rchild->first_child
-		  && propagate_subaccesses_across_link (new_acc, rchild))
+		  && propagate_subaccesses_from_rhs (new_acc, rchild))
 		{
 		  ret = 1;
-		  add_access_to_work_queue (new_acc);
+		  add_access_to_rhs_work_queue (new_acc);
 		}
 	    }
 	  else
@@ -2681,7 +2768,7 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
 	      if (!lacc->grp_write)
 		{
 		  ret = true;
-		  subtree_mark_written_and_enqueue (lacc);
+		  subtree_mark_written_and_rhs_enqueue (lacc);
 		}
 	    }
 	  continue;
@@ -2692,23 +2779,67 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
 	  if (rchild->grp_write && !lacc->grp_write)
 	    {
 	      ret = true;
-	      subtree_mark_written_and_enqueue (lacc);
+	      subtree_mark_written_and_rhs_enqueue (lacc);
 	    }
 	  continue;
 	}
 
       rchild->grp_hint = 1;
       new_acc = create_artificial_child_access (lacc, rchild, norm_offset,
-						lacc->grp_write
-						|| rchild->grp_write);
+						false, (lacc->grp_write
+							|| rchild->grp_write));
       gcc_checking_assert (new_acc);
       if (racc->first_child)
-	propagate_subaccesses_across_link (new_acc, rchild);
+	propagate_subaccesses_from_rhs (new_acc, rchild);
 
-      add_access_to_work_queue (lacc);
+      add_access_to_rhs_work_queue (lacc);
       ret = true;
     }
 
+  return ret;
+}
+
+/* Propagate subaccesses of LACC across an assignment link to RACC if they
+   should inhibit total scalarization of the corresponding area.  No flags are
+   being propagated in the process.  Return true if anything changed.  */
+
+static bool
+propagate_subaccesses_from_lhs (struct access *lacc, struct access *racc)
+{
+  if (is_gimple_reg_type (racc->type)
+      || lacc->grp_unscalarizable_region
+      || racc->grp_unscalarizable_region)
+    return false;
+
+  /* TODO: Do we want set some new racc flag to stop potential total
+     scalarization if lacc is a scalar access (and none fo the two have
+     children)?  */
+
+  bool ret = false;
+  HOST_WIDE_INT norm_delta = racc->offset - lacc->offset;
+  for (struct access *lchild = lacc->first_child;
+       lchild;
+       lchild = lchild->next_sibling)
+    {
+      struct access *matching_acc = NULL;
+      HOST_WIDE_INT norm_offset = lchild->offset + norm_delta;
+
+      if (lchild->grp_unscalarizable_region
+	  || child_would_conflict_in_acc (racc, norm_offset, lchild->size,
+					  &matching_acc))
+	{
+	  if (matching_acc
+	      && propagate_subaccesses_from_lhs (lchild, matching_acc))
+	    add_access_to_lhs_work_queue (matching_acc);
+	  continue;
+	}
+
+      struct access *new_acc
+	=  create_artificial_child_access (racc, lchild, norm_offset,
+					   true, false);
+      propagate_subaccesses_from_lhs (lchild, new_acc);
+      ret = true;
+    }
   return ret;
 }
 
@@ -2717,16 +2848,16 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
 static void
 propagate_all_subaccesses (void)
 {
-  while (work_queue_head)
+  while (rhs_work_queue_head)
     {
-      struct access *racc = pop_access_from_work_queue ();
+      struct access *racc = pop_access_from_rhs_work_queue ();
       struct assign_link *link;
 
       if (racc->group_representative)
 	racc= racc->group_representative;
-      gcc_assert (racc->first_link);
+      gcc_assert (racc->first_rhs_link);
 
-      for (link = racc->first_link; link; link = link->next)
+      for (link = racc->first_rhs_link; link; link = link->next_rhs)
 	{
 	  struct access *lacc = link->lacc;
 
@@ -2739,20 +2870,45 @@ propagate_all_subaccesses (void)
 	    {
 	      if (!lacc->grp_write)
 		{
-		  subtree_mark_written_and_enqueue (lacc);
+		  subtree_mark_written_and_rhs_enqueue (lacc);
 		  reque_parents = true;
 		}
 	    }
-	  else if (propagate_subaccesses_across_link (lacc, racc))
+	  else if (propagate_subaccesses_from_rhs (lacc, racc))
 	    reque_parents = true;
 
 	  if (reque_parents)
 	    do
 	      {
-		add_access_to_work_queue (lacc);
+		add_access_to_rhs_work_queue (lacc);
 		lacc = lacc->parent;
 	      }
 	    while (lacc);
+	}
+    }
+
+  while (lhs_work_queue_head)
+    {
+      struct access *lacc = pop_access_from_lhs_work_queue ();
+      struct assign_link *link;
+
+      if (lacc->group_representative)
+	lacc = lacc->group_representative;
+      gcc_assert (lacc->first_lhs_link);
+
+      if (!bitmap_bit_p (candidate_bitmap, DECL_UID (lacc->base)))
+	continue;
+
+      for (link = lacc->first_lhs_link; link; link = link->next_lhs)
+	{
+	  struct access *racc = link->racc;
+
+	  if (racc->group_representative)
+	    racc = racc->group_representative;
+	  if (!bitmap_bit_p (candidate_bitmap, DECL_UID (racc->base)))
+	    continue;
+	  if (propagate_subaccesses_from_lhs (lacc, racc))
+	    add_access_to_lhs_work_queue (racc);
 	}
     }
 }
