@@ -8989,6 +8989,19 @@ coerce_innermost_template_parms (tree parms,
   return coerced_args;
 }
 
+/* Returns true if T is a wrapper to make a C++20 template parameter
+   object const.  */
+
+static bool
+class_nttp_const_wrapper_p (tree t)
+{
+  if (cxx_dialect < cxx2a)
+    return false;
+  return (TREE_CODE (t) == VIEW_CONVERT_EXPR
+	  && CP_TYPE_CONST_P (TREE_TYPE (t))
+	  && TREE_CODE (TREE_OPERAND (t, 0)) == TEMPLATE_PARM_INDEX);
+}
+
 /* Returns 1 if template args OT and NT are equivalent.  */
 
 int
@@ -9000,6 +9013,11 @@ template_args_equal (tree ot, tree nt, bool partial_order /* = false */)
     return false;
   if (nt == any_targ_node || ot == any_targ_node)
     return true;
+
+  if (class_nttp_const_wrapper_p (nt))
+    nt = TREE_OPERAND (nt, 0);
+  if (class_nttp_const_wrapper_p (ot))
+    ot = TREE_OPERAND (ot, 0);
 
   if (TREE_CODE (nt) == TREE_VEC)
     /* For member templates */

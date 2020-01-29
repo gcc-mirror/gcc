@@ -1,5 +1,10 @@
 2020-01-29  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/91754 - Fix template arguments comparison with class NTTP.
+	* g++.dg/cpp2a/nontype-class30.C: New test.
+
+2020-01-29  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/92948 - Fix class NTTP with template arguments.
 	* g++.dg/cpp2a/nontype-class28.C: New test.
 	* g++.dg/cpp2a/nontype-class29.C: New test.

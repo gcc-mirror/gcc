@@ -1,5 +1,12 @@
 2020-01-29  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/91754 - Fix template arguments comparison with class NTTP.
+	* pt.c (class_nttp_const_wrapper_p): New.
+	(template_args_equal): See through class_nttp_const_wrapper_p
+	arguments.
+
+2020-01-29  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/92948 - Fix class NTTP with template arguments.
 	* pt.c (convert_nontype_argument): Use IMPLICIT_CONV_EXPR when
 	converting a value-dependent expression to a class type.
