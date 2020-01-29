@@ -1,3 +1,10 @@
+2020-01-29  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (verify_sra_access_forest): New function.
+	(verify_all_sra_access_forests): Likewise.
+	(create_artificial_child_access): Set parent.
+	(analyze_all_variable_accesses): Call the verifier.
+
 2020-01-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraph.c (cgraph_edge::resolve_speculation): Only lookup direct edge

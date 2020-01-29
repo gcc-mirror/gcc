@@ -2321,6 +2321,88 @@ build_access_trees (struct access *access)
   return true;
 }
 
+/* Traverse the access forest where ROOT is the first root and verify that
+   various important invariants hold true.  */
+
+DEBUG_FUNCTION void
+verify_sra_access_forest (struct access *root)
+{
+  struct access *access = root;
+  tree first_base = root->base;
+  gcc_assert (DECL_P (first_base));
+  do
+    {
+      gcc_assert (access->base == first_base);
+      if (access->parent)
+	gcc_assert (access->offset >= access->parent->offset
+		    && access->size <= access->parent->size);
+      if (access->next_sibling)
+	gcc_assert (access->next_sibling->offset
+		    >= access->offset + access->size);
+
+      poly_int64 poffset, psize, pmax_size;
+      bool reverse;
+      tree base = get_ref_base_and_extent (access->expr, &poffset, &psize,
+					   &pmax_size, &reverse);
+      HOST_WIDE_INT offset, size, max_size;
+      if (!poffset.is_constant (&offset)
+	  || !psize.is_constant (&size)
+	  || !pmax_size.is_constant (&max_size))
+	gcc_unreachable ();
+      gcc_assert (base == first_base);
+      gcc_assert (offset == access->offset);
+      gcc_assert (access->grp_unscalarizable_region
+		  || size == max_size);
+      gcc_assert (max_size == access->size);
+      gcc_assert (reverse == access->reverse);
+
+      if (access->first_child)
+	{
+	  gcc_assert (access->first_child->parent == access);
+	  access = access->first_child;
+	}
+      else if (access->next_sibling)
+	{
+	  gcc_assert (access->next_sibling->parent == access->parent);
+	  access = access->next_sibling;
+	}
+      else
+	{
+	  while (access->parent && !access->next_sibling)
+	    access = access->parent;
+	  if (access->next_sibling)
+	    access = access->next_sibling;
+	  else
+	    {
+	      gcc_assert (access == root);
+	      root = root->next_grp;
+	      access = root;
+	    }
+	}
+    }
+  while (access);
+}
+
+/* Verify access forests of all candidates with accesses by calling
+   verify_access_forest on each on them.  */
+
+DEBUG_FUNCTION void
+verify_all_sra_access_forests (void)
+{
+  bitmap_iterator bi;
+  unsigned i;
+  EXECUTE_IF_SET_IN_BITMAP (candidate_bitmap, 0, i, bi)
+    {
+      tree var = candidate (i);
+      struct access *access = get_first_repr_for_decl (var);
+      if (access)
+	{
+	  gcc_assert (access->base == var);
+	  verify_sra_access_forest (access);
+	}
+    }
+}
+
 /* Return true if expr contains some ARRAY_REFs into a variable bounded
    array.  */
 
@@ -2566,6 +2648,7 @@ create_artificial_child_access (struct access *parent, struct access *model,
   access->offset = new_offset;
   access->size = model->size;
   access->type = model->type;
+  access->parent = parent;
   access->grp_write = set_grp_write;
   access->grp_read = false;
   access->reverse = model->reverse;
@@ -2849,6 +2932,9 @@ analyze_all_variable_accesses (void)
     }
 
   propagate_all_subaccesses ();
+
+  if (flag_checking)
+    verify_all_sra_access_forests ();
 
   bitmap_copy (tmp, candidate_bitmap);
   EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
