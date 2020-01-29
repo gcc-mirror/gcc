@@ -1,3 +1,10 @@
+2020-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93428
+	* tree-vect-slp.c (vect_build_slp_tree_2): Compute the load
+	permutation when the load node is created.
+	(vect_analyze_slp_instance): Re-use it here.
+
 2020-01-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-prop.c (update_indirect_edges_after_inlining): Fix warning.

@@ -1,3 +1,8 @@
+2020-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93428
+	* gcc.dg/torture/pr93428.c: New testcase.
+
 2020-01-28  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/93437
