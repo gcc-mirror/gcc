@@ -1,3 +1,8 @@
+2020-01-29  Joel Hutton  <Joel.Hutton@arm.com>
+
+	PR target/93221
+	* ira.c (ira): Revert use of simplified LRA algorithm.
+
 2020-01-29  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/92706
