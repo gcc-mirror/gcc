@@ -8432,6 +8432,15 @@ package body Exp_Ch7 is
                end if;
             end;
 
+            --  If the object is unanalyzed, set its expected type for use in
+            --  Convert_View in case an additional conversion is needed.
+
+            if No (Etype (Ref))
+              and then Nkind (Ref) /= N_Unchecked_Type_Conversion
+            then
+               Set_Etype (Ref, Typ);
+            end if;
+
             Ref := Convert_View (Fin_Id, Ref);
          end if;
 
