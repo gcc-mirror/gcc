@@ -1,3 +1,14 @@
+2020-01-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Revert:
+
+	2020-01-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/87763
+	* simplify-rtx.c (simplify_truncation): Extend sign/zero_extract
+	simplification to handle subregs as well as bare regs.
+	* config/i386/i386.md (*testqi_ext_3): Match QI extracts too.
+
 2020-01-29  Joel Hutton  <Joel.Hutton@arm.com>
 
 	PR target/93221
