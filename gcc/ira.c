@@ -5205,35 +5205,27 @@ ira (FILE *f)
   /* Perform target specific PIC register initialization.  */
   targetm.init_pic_reg ();
 
-  if (optimize)
-    {
-      ira_conflicts_p = true;
+  ira_conflicts_p = optimize > 0;
 
-      /* Determine the number of pseudos actually requiring coloring.  */
-      unsigned int num_used_regs = 0;
-      for (unsigned int i = FIRST_PSEUDO_REGISTER; i < DF_REG_SIZE (df); i++)
-	if (DF_REG_DEF_COUNT (i) || DF_REG_USE_COUNT (i))
-	  num_used_regs++;
+  /* Determine the number of pseudos actually requiring coloring.  */
+  unsigned int num_used_regs = 0;
+  for (unsigned int i = FIRST_PSEUDO_REGISTER; i < DF_REG_SIZE (df); i++)
+    if (DF_REG_DEF_COUNT (i) || DF_REG_USE_COUNT (i))
+      num_used_regs++;
 
-      /* If there are too many pseudos and/or basic blocks (e.g. 10K
-	 pseudos and 10K blocks or 100K pseudos and 1K blocks), we will
-	 use simplified and faster algorithms in LRA.  */
-      lra_simple_p
-	= ira_use_lra_p
-	  && num_used_regs >= (1U << 26) / last_basic_block_for_fn (cfun);
-    }
-  else
-    {
-      ira_conflicts_p = false;
-      lra_simple_p = ira_use_lra_p;
-    }
+  /* If there are too many pseudos and/or basic blocks (e.g. 10K
+     pseudos and 10K blocks or 100K pseudos and 1K blocks), we will
+     use simplified and faster algorithms in LRA.  */
+  lra_simple_p
+    = ira_use_lra_p
+      && num_used_regs >= (1U << 26) / last_basic_block_for_fn (cfun);
 
   if (lra_simple_p)
     {
       /* It permits to skip live range splitting in LRA.  */
       flag_caller_saves = false;
       /* There is no sense to do regional allocation when we use
-	 simplified LRA.  */
+	simplified LRA.  */
       flag_ira_region = IRA_REGION_ONE;
       ira_conflicts_p = false;
     }

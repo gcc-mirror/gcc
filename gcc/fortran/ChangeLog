@@ -1,3 +1,9 @@
+2020-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/93463
+	* openmp.c (oacc_code_to_statement): Handle
+	EXEC_OACC_{ROUTINE,UPDATE,WAIT,CACHE,{ENTER,EXIT}_DATA,DECLARE}.
+
 2020-01-28  Andrew Benson  <abensonca@gmail.com>
 
         PR fortran/93461

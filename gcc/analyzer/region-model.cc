@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
+#include "diagnostic-core.h"
 #include "graphviz.h"
 #include "options.h"
 #include "cgraph.h"
@@ -37,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "diagnostic-color.h"
 #include "diagnostic-metadata.h"
-#include "diagnostic-core.h"
 #include "tristate.h"
 #include "bitmap.h"
 #include "selftest.h"
@@ -88,14 +88,12 @@ dump_tree (pretty_printer *pp, tree t)
 void
 path_var::dump (pretty_printer *pp) const
 {
-PUSH_IGNORE_WFORMAT
   if (m_tree == NULL_TREE)
     pp_string (pp, "NULL");
   if (CONSTANT_CLASS_P (m_tree))
     pp_printf (pp, "%qE", m_tree);
   else
     pp_printf (pp, "(%qE @ %i)", m_tree, m_stack_depth);
-POP_IGNORE_WFORMAT
 }
 
 /* For use in printing a comma-separated list.  */
@@ -318,13 +316,11 @@ svalue::print (const region_model &model,
   this_sid.print (pp);
   pp_string (pp, ": {");
 
-PUSH_IGNORE_WFORMAT
   if (m_type)
     {
       gcc_assert (TYPE_P (m_type));
       pp_printf (pp, "type: %qT, ", m_type);
     }
-POP_IGNORE_WFORMAT
 
   /* vfunc.  */
   print_details (model, this_sid, pp);
@@ -686,9 +682,7 @@ constant_svalue::print_details (const region_model &model ATTRIBUTE_UNUSED,
 				svalue_id this_sid ATTRIBUTE_UNUSED,
 				pretty_printer *pp) const
 {
-PUSH_IGNORE_WFORMAT
   pp_printf (pp, "%qE", m_cst_expr);
-POP_IGNORE_WFORMAT
 }
 
 /* Implementation of svalue::get_child_sid vfunc for constant_svalue.  */
@@ -1284,9 +1278,7 @@ region::dump_to_pp (const region_model &model,
     }
   if (m_type)
     {
-PUSH_IGNORE_WFORMAT
       pp_printf (pp, "%s type: %qT", field_prefix, m_type);
-POP_IGNORE_WFORMAT
       pp_newline (pp);
     }
 
@@ -1336,9 +1328,7 @@ region::dump_child_label (const region_model &model,
 	pp_string (pp, "active ");
       else
 	pp_string (pp, "inactive ");
-PUSH_IGNORE_WFORMAT
       pp_printf (pp, "view as %qT: ", child->get_type ());
-POP_IGNORE_WFORMAT
     }
 }
 
@@ -1468,10 +1458,8 @@ region::print_fields (const region_model &model ATTRIBUTE_UNUSED,
   pp_printf (pp, ", sval: ");
   m_sval_id.print (pp);
 
-PUSH_IGNORE_WFORMAT
   if (m_type)
     pp_printf (pp, ", type: %qT", m_type);
-POP_IGNORE_WFORMAT
 }
 
 /* Determine if a pointer to this region must be non-NULL.
@@ -1574,9 +1562,7 @@ map_region::print_fields (const region_model &model,
 	pp_string (pp, ", ");
       tree expr = (*iter).first;
       region_id child_rid = (*iter).second;
-PUSH_IGNORE_WFORMAT
       pp_printf (pp, "%qE: ", expr);
-POP_IGNORE_WFORMAT
       child_rid.print (pp);
     }
   pp_string (pp, "}");
@@ -1601,9 +1587,7 @@ map_region::dump_dot_to_pp (const region_model &model,
 
       pp_printf (pp, "rid_label_%i [label=\"", child_rid.as_int ());
       pp_write_text_to_stream (pp);
-PUSH_IGNORE_WFORMAT
       pp_printf (pp, "%qE", expr);
-POP_IGNORE_WFORMAT
       pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/false);
       pp_string (pp, "\"];");
       pp_newline (pp);
@@ -1633,12 +1617,10 @@ map_region::dump_child_label (const region_model &model,
       if (child_rid == (*iter).second)
 	{
 	  tree key = (*iter).first;
-PUSH_IGNORE_WFORMAT
 	  if (DECL_P (key))
 	    pp_printf (pp, "%qD: ", key);
 	  else
 	    pp_printf (pp, "%qE: ", key);
-POP_IGNORE_WFORMAT
 	}
     }
 }
@@ -2246,9 +2228,7 @@ array_region::print_fields (const region_model &model,
 	pp_string (pp, ", ");
       int key = (*iter).first;
       region_id child_rid = (*iter).second;
-PUSH_IGNORE_WFORMAT
       pp_printf (pp, "[%i]: ", key);
-POP_IGNORE_WFORMAT
       child_rid.print (pp);
     }
   pp_string (pp, "}");
@@ -2273,9 +2253,7 @@ array_region::dump_dot_to_pp (const region_model &model,
 
       pp_printf (pp, "rid_label_%i [label=\"", child_rid.as_int ());
       pp_write_text_to_stream (pp);
-PUSH_IGNORE_WFORMAT
       pp_printf (pp, "%qi", key);
-POP_IGNORE_WFORMAT
       pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/false);
       pp_string (pp, "\"];");
       pp_newline (pp);

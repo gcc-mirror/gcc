@@ -100,22 +100,6 @@ public:
   ~auto_cfun () { pop_cfun (); }
 };
 
-/* Macros for temporarily suppressing -Wformat and -Wformat-extra-args,
-   for those versions of GCC that support pragmas within a function
-   (4.6 onwards).  */
-
-#if GCC_VERSION >= 4006
-# define PUSH_IGNORE_WFORMAT \
-  _Pragma("GCC diagnostic push") \
-  _Pragma("GCC diagnostic ignored \"-Wformat\"") \
-  _Pragma("GCC diagnostic ignored \"-Wformat-extra-args\"")
-# define POP_IGNORE_WFORMAT \
-  _Pragma("GCC diagnostic pop")
-#else
-# define PUSH_IGNORE_WFORMAT
-# define POP_IGNORE_WFORMAT
-#endif
-
 /* A template for creating hash traits for a POD type.  */
 
 template <typename Type>

@@ -1353,6 +1353,23 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	  *max_nunits = this_max_nunits;
 	  (*tree_size)++;
 	  node = vect_create_new_slp_node (stmts);
+	  /* And compute the load permutation.  Whether it is actually
+	     a permutation depends on the unrolling factor which is
+	     decided later.  */
+	  vec<unsigned> load_permutation;
+	  int j;
+	  stmt_vec_info load_info;
+	  load_permutation.create (group_size);
+	  stmt_vec_info first_stmt_info
+	    = DR_GROUP_FIRST_ELEMENT (SLP_TREE_SCALAR_STMTS (node)[0]);
+	  FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), j, load_info)
+	    {
+	      int load_place = vect_get_place_in_interleaving_chain
+		  (load_info, first_stmt_info);
+	      gcc_assert (load_place != -1);
+	      load_permutation.safe_push (load_place);
+	    }
+	  SLP_TREE_LOAD_PERMUTATION (node) = load_permutation;
 	  return node;
 	}
     }
@@ -2254,22 +2271,19 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	  bool loads_permuted = false;
 	  FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (new_instance), i, load_node)
 	    {
-	      vec<unsigned> load_permutation;
-	      int j;
+	      if (!SLP_TREE_LOAD_PERMUTATION (load_node).exists ())
+		continue;
+	      unsigned j;
 	      stmt_vec_info load_info;
 	      bool this_load_permuted = false;
-	      load_permutation.create (group_size);
 	      stmt_vec_info first_stmt_info = DR_GROUP_FIRST_ELEMENT
 		  (SLP_TREE_SCALAR_STMTS (load_node)[0]);
 	      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (load_node), j, load_info)
-		{
-		  int load_place = vect_get_place_in_interleaving_chain
-		      (load_info, first_stmt_info);
-		  gcc_assert (load_place != -1);
-		  if (load_place != j)
+		if (SLP_TREE_LOAD_PERMUTATION (load_node)[j] != j)
+		  {
 		    this_load_permuted = true;
-		  load_permutation.safe_push (load_place);
-		}
+		    break;
+		  }
 	      if (!this_load_permuted
 		  /* The load requires permutation when unrolling exposes
 		     a gap either because the group is larger than the SLP
@@ -2278,10 +2292,9 @@ vect_analyze_slp_instance (vec_info *vinfo,
 		      || (group_size == DR_GROUP_SIZE (first_stmt_info)
 			  && DR_GROUP_GAP (first_stmt_info) == 0)))
 		{
-		  load_permutation.release ();
+		  SLP_TREE_LOAD_PERMUTATION (load_node).release ();
 		  continue;
 		}
-	      SLP_TREE_LOAD_PERMUTATION (load_node) = load_permutation;
 	      loads_permuted = true;
 	    }
 

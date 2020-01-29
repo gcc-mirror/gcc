@@ -3787,7 +3787,7 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 
       param_index = ici->param_index;
       jfunc = ipa_get_ith_jump_func (top, param_index);
-      cgraph_node *spec_target;
+      cgraph_node *spec_target = NULL;
 
       /* FIXME: This may need updating for multiple calls.  */
       if (ie->speculative)

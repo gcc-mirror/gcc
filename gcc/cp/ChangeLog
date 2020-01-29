@@ -1,4 +1,32 @@
+2020-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91754 - Fix template arguments comparison with class NTTP.
+	* pt.c (class_nttp_const_wrapper_p): New.
+	(template_args_equal): See through class_nttp_const_wrapper_p
+	arguments.
+
+2020-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92948 - Fix class NTTP with template arguments.
+	* pt.c (convert_nontype_argument): Use IMPLICIT_CONV_EXPR when
+	converting a value-dependent expression to a class type.
+	(tsubst_copy) <case VIEW_CONVERT_EXPR>: Allow IMPLICIT_CONV_EXPR
+	as the result of the tsubst_copy call.
+
+2020-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91118
+	* cp-gimplify.c (cxx_omp_predetermined_sharing): Return
+	OMP_CLAUSE_DEFAULT_SHARED for typeinfo decls.
+
 2020-01-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93442
+	* parser.c (cp_parser_lambda_expression): Clear in_discarded_stmt.
+
+	PR c++/93477
+	PR c++/91476
+	* decl2.c (copy_linkage): Do copy DECL_ONE_ONLY and DECL_WEAK.
 
 	PR c++/90546
 	* call.c (build_user_type_conversion_1): Allow a template conversion

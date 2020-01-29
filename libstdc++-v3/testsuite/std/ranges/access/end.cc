@@ -29,6 +29,8 @@ test01()
 {
   int a[2] = {};
 
+  // t + extent_v<T> if E is of array type T.
+
   static_assert(same_as<decltype(std::ranges::end(a)), decltype(a + 2)>);
   static_assert(noexcept(std::ranges::end(a)));
   VERIFY( std::ranges::end(a) == (a + 2) );
@@ -44,13 +46,16 @@ test02()
 
   int a[] = { 0, 1 };
 
+  // Otherwise, decay-copy(t.end()) if it is a valid expression
+  // and its type S models sentinel_for<decltype(ranges::begin(E))>.
+
   test_range<int, random_access_iterator_wrapper> r(a);
   static_assert(same_as<decltype(std::ranges::end(r)), decltype(r.end())>);
-  VERIFY( std::ranges::end(r) == r.end() );
+  VERIFY( std::ranges::end(r) == std::ranges::next(r.begin(), 2) );
 
   test_range<int, input_iterator_wrapper> i(a);
   static_assert(same_as<decltype(std::ranges::end(i)), decltype(i.end())>);
-  VERIFY( std::ranges::end(i) == i.end() );
+  VERIFY( std::ranges::end(i) == std::ranges::next(i.begin(), 2) );
 
   test_range<int, output_iterator_wrapper> o(a);
   static_assert(same_as<decltype(std::ranges::end(o)), decltype(o.end())>);
@@ -92,6 +97,9 @@ test03()
 {
   R r;
   const R& c = r;
+
+  // Otherwise, decay-copy(end(t)) if it is a valid expression
+  // and its type S models sentinel_for<decltype(ranges::begin(E))>.
 
   static_assert(same_as<decltype(std::ranges::end(r)), decltype(end(r))>);
   static_assert(!noexcept(std::ranges::end(r)));

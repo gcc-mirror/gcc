@@ -1,3 +1,21 @@
+2020-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* analyzer.h (PUSH_IGNORE_WFORMAT, POP_IGNORE_WFORMAT): Remove.
+	* constraint-manager.cc: Include diagnostic-core.h before graphviz.h.
+	(range::dump, equiv_class::print): Don't use PUSH_IGNORE_WFORMAT or
+	POP_IGNORE_WFORMAT.
+	* state-purge.cc: Include diagnostic-core.h before
+	gimple-pretty-print.h.
+	(state_purge_annotator::add_node_annotations, print_vec_of_names):
+	Don't use PUSH_IGNORE_WFORMAT or POP_IGNORE_WFORMAT.
+	* region-model.cc: Move diagnostic-core.h include before graphviz.h.
+	(path_var::dump, svalue::print, constant_svalue::print_details,
+	region::dump_to_pp, region::dump_child_label, region::print_fields,
+	map_region::print_fields, map_region::dump_dot_to_pp,
+	map_region::dump_child_label, array_region::print_fields,
+	array_region::dump_dot_to_pp): Don't use PUSH_IGNORE_WFORMAT or
+	POP_IGNORE_WFORMAT.
+
 2020-01-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93316

@@ -1,3 +1,63 @@
+2020-01-29  Jeff Law  <law@redhat.com
+
+	PR tree-optimization/89689
+	* gcc.dg/pr89689.c: New test.
+
+2020-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91754 - Fix template arguments comparison with class NTTP.
+	* g++.dg/cpp2a/nontype-class30.C: New test.
+
+2020-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92948 - Fix class NTTP with template arguments.
+	* g++.dg/cpp2a/nontype-class28.C: New test.
+	* g++.dg/cpp2a/nontype-class29.C: New test.
+
+2020-01-29  Joel Hutton  <Joel.Hutton@arm.com>
+
+	PR target/93221
+	* gcc.target/aarch64/pr93221.c: New test.
+
+2020-01-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/92706
+	* gcc.dg/tree-ssa/pr92706-1.c: New test.
+
+2020-01-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/92706
+	* gcc.dg/tree-ssa/pr92706-2.c: New test.
+	* gcc.dg/guality/pr59776.c: Xfail tests for s2.g.
+
+2020-01-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-prof/indir-call-prof-2.c: New testcase.
+
+2020-01-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/93393
+	* gcc.dg/torture/pr93133.c: XFAIL for powerpc*-*-*.
+
+2020-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91118
+	* g++.dg/gomp/pr91118-1.C: New test.
+	* g++.dg/gomp/pr91118-2.C: New test.
+
+	PR fortran/93463
+	* gfortran.dg/goacc/pr93463.f90: New test.
+
+2020-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93428
+	* gcc.dg/torture/pr93428.c: New testcase.
+
+2020-01-28  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/93437
+	* g++.dg/warn/Wstringop-overflow-5.C: New test.a
+
 2020-01-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/tree-prof/indir-call-prof.C: Update template.

@@ -675,8 +675,16 @@ namespace __gnu_test
 	{
 	  T* end;
 
-	  friend bool operator==(const sentinel& s, const I& i)
+	  friend bool operator==(const sentinel& s, const I& i) noexcept
 	  { return s.end == i.ptr; }
+
+	  friend auto operator-(const sentinel& s, const I& i) noexcept
+	    requires std::random_access_iterator<I>
+	  { return s.end - i.ptr; }
+
+	  friend auto operator-(const I& i, const sentinel& s) noexcept
+	    requires std::random_access_iterator<I>
+	  { return i.ptr - s.end; }
 	};
 
       auto
